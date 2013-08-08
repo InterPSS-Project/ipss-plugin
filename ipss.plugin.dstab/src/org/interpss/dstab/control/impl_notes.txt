@@ -1,0 +1,26 @@
+Steps to implement a controller model
+
+follow org.interpss.dstab.control.exc.ieee.y1968.type1.* coding standard
+
+- create a new package, such as com.interpss.dstab.control.exc.dc1a
+- copy all files from an existing model to the new package and use refactor to change name
+- modify <*>ExcitorData fields for the new model
+- implement dynamic simulation methods in the <*>Excitor
+- use a Swing GUI editor, such as NetBeans, modify the GUI Panel. If the model is not
+  intended for GEditor, comment out the following statement
+
+    // UI Editor panel
+    private static NBSimpleExciterEditPanel _editPanel = new NBSimpleExciterEditPanel();
+    
+    /**
+     * Get the editor panel for controller data editing
+     *
+     * @return the editor panel object
+     */
+    public Object getEditPanel() {
+        _editPanel.init(this);
+        return _editPanel;
+    }    
+
+- Not apply - add the model to the ControllerRegister.java
+- write JUnit test case - Test<*>ExcitorCase.java

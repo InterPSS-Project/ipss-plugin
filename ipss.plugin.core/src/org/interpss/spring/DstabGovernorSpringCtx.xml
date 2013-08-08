@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+         xmlns:p="http://www.springframework.org/schema/p"
+	     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+
+	<bean id="simpleGovernor" 
+	      class="org.interpss.dstab.control.gov.simple.SimpleGovernor"
+	      scope="prototype"	
+	      p:name="Simple Governor"
+	      p:category="InterPSS"
+	      p:desc="An InterPSS simple governor implementation" />
+
+	<bean id="ieeeSteamNRGovernor" 
+	      class="org.interpss.dstab.control.gov.ieee.steamNR.IeeeSteamNRGovernor"
+	      scope="prototype"	
+	      p:name="IEEE Steam NR"
+	      p:category="IEEE"
+	      p:desc="An IEEE Steam NR governor implementation" />
+
+	<bean id="ieeeSteamTDSRGovernor" 
+	      class="org.interpss.dstab.control.gov.ieee.steamTDSR.IeeeSteamTDSRGovernor"
+	      scope="prototype"	
+	      p:name="IEEE Steam TD SR"
+	      p:category="IEEE"
+	      p:desc="An IEEE Steam TD SR governor implementation" />
+
+	<bean id="ieeeSteamTCSRGovernor" 
+	      class="org.interpss.dstab.control.gov.ieee.steamTCSR.IeeeSteamTCSRGovernor"
+	      scope="prototype"	
+	      p:name="IEEE Steam TC SR"
+	      p:category="IEEE"
+	      p:desc="An IEEE Steam TC SR governor implementation" />
+	
+	<bean id="ieeeHTurbineGovernor" 
+	      class="org.interpss.dstab.control.gov.ieee.hturbine.IeeeHTurbineGovernor"
+	      scope="prototype"	
+	      p:name="IEEE Hydro Turbine"
+	      p:category="IEEE"
+	      p:desc="An IEEE Hydro Turbine governor implementation" />
+	
+<!--
+	<bean id="sampleCustomGovernor" 
+	      class="custom.dstab.gov.sample.CustomGovernor"
+	      scope="prototype"	
+	      p:name="Sample Custom Governor"
+	      p:category="InterPSS"
+	      p:desc="A sample custom governor implementation" />
+
+	<bean id="ieeeST1Governor" 
+	      class="org.interpss.dstab.control.gov.ieee.ieeeST1.IeeeST1Governor"
+	      scope="prototype"	
+	      p:name="IEEE ST1 Governor"
+	      p:category="IEEE-Governor"
+	      p:desc="IEEE ST1 Governor implementation" />
+
+	<bean id="ieeeST2Governor" 
+	      class="org.interpss.dstab.control.gov.ieee.ieeeST2.IeeeST2Governor"
+	      scope="prototype"	
+	      p:name="IEEE ST2 Governor"
+	      p:category="IEEE-Governor"
+	      p:desc="IEEE ST2 Governor implementation" />
+-->
+</beans>

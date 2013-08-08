@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+         xmlns:p="http://www.springframework.org/schema/p"
+	     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+
+	<!--
+		Excitor model object list
+		=========================
+
+		defining an excitor model includes the following two steps:
+		
+		1) define the exciter model 
+			id: a unique Object id
+			class: the full class name of the implementation
+			name: exciter name, it has to be unique. Also, the name should not be changed
+			      since ipss data file is linked to this name.
+			description: description for the custom file
+		2) add the adapter to the customAdapterList
+		
+			<list>
+				...
+				<ref bean="myExciterId"/>
+			</list>
+	-->
+	
+	<bean id="simpleExciter" 
+	      class="org.interpss.dstab.control.exc.simple.SimpleExciter"
+	      scope="prototype"	
+	      p:name="Simple Exciter"
+	      p:category="InterPSS"
+	      p:desc="An InterPSS simple exciter implementation" />
+
+	<bean id="ieee1968Type1Exciter" 
+	      class="org.interpss.dstab.control.exc.ieee.y1968.type1.Ieee1968Type1Exciter"
+	      scope="prototype"	
+	      p:name="IEEE-1968 Type1"
+	      p:category="IEEE-1968"
+	      p:desc="IEEE 1968 Type-1 exciter implementation" />
+
+	<bean id="ieee1968Type1sExciter" 
+	      class="org.interpss.dstab.control.exc.ieee.y1968.type1s.Ieee1968Type1sExciter"
+	      scope="prototype"	
+	      p:name="IEEE-1968 Type1s"
+	      p:category="IEEE-1968"
+	      p:desc="IEEE 1968 Type-1s exciter implementation" />
+
+	<bean id="ieee1968Type2Exciter" 
+	      class="org.interpss.dstab.control.exc.ieee.y1968.type2.Ieee1968Type2Exciter"
+	      scope="prototype"	
+	      p:name="IEEE-1968 Type2"
+	      p:category="IEEE-1968"
+	      p:desc="IEEE 1968 Type-2 exciter implementation" />
+
+	<bean id="ieee1968Type3Exciter" 
+	      class="org.interpss.dstab.control.exc.ieee.y1968.type3.Ieee1968Type3Exciter"
+	      scope="prototype"	
+	      p:name="IEEE-1968 Type3"
+	      p:category="IEEE-1968"
+	      p:desc="IEEE 1968 Type-3 exciter implementation" />
+
+	<bean id="ieee1968Type4Exciter" 
+	      class="org.interpss.dstab.control.exc.ieee.y1968.type4.Ieee1968Type4Exciter"
+	      scope="prototype"	
+	      p:name="IEEE-1968 Type4"
+	      p:category="IEEE-1968"
+	      p:desc="IEEE 1968 Type-4 exciter implementation" />
+<!--
+	<bean id="ieeeDC_1AExciter" 
+	      class="org.interpss.dstab.control.exc.ieee.ieeeDC1A.IEEE_DC1AExciter"
+	      scope="prototype"	
+	      p:name="IEEE DC-1A"
+	      p:category="IEEE-Exciter"
+	      p:desc="The IEEE DC-1A Type exciter implementation" />
+	
+	<bean id="ieeeAC_4AExciter" 
+	      class="org.interpss.dstab.control.exc.ieee.ieeeAC4A.IEEE_AC4AExciter"
+	      scope="prototype"	
+	      p:name="IEEE AC-4A"
+	      p:category="IEEE-Exciter"
+	      p:desc="The IEEE AC-4A Type exciter implementation" />
+	<bean id="sampleCustomExciter" 
+	  	class="org.interpss.sample.plugin.dstab.cml.exc.SampleExc"
+	    scope="prototype"	
+	    p:name="Sample Custom Exciter"
+	    p:category="InterPSS Sample"
+	    p:desc="A sample custom exciter plugin implementation" />
+-->	    
+
+<!-- BPA Exciter List
+ -->
+	<bean id="bpa_eaExciter" 
+	      class="org.interpss.dstab.control.exc.bpa.ea.BpaEaTypeExciter"
+	      scope="prototype"	
+	      p:name="BPA EA"
+	      p:category="BPA-Exciter"
+	      p:desc="The BAP EA Type exciter implementation" />
+
+	<bean id="bpa_ecExciter" 
+	      class="org.interpss.dstab.control.exc.bpa.ec.BpaEcTypeExciter"
+	      scope="prototype"	
+	      p:name="BPA ECA"
+	      p:category="BPA-Exciter"
+	      p:desc="The BAP EC Type exciter implementation" />
+
+	<bean id="bpa_ekExciter" 
+	      class="org.interpss.dstab.control.exc.bpa.ek.BpaEkTypeExciter"
+	      scope="prototype"	
+	      p:name="BPA EK"
+	      p:category="BPA-Exciter"
+	      p:desc="The BAP EK Type exciter implementation" />
+
+	<bean id="bpa_faExciter" 
+	      class="org.interpss.dstab.control.exc.bpa.fa.BpaFaTypeExciter"
+	      scope="prototype"	
+	      p:name="BPA FA"
+	      p:category="BPA-Exciter"
+	      p:desc="The BAP FA Type exciter implementation" />
+
+	<bean id="bpa_fjExciter" 
+	      class="org.interpss.dstab.control.exc.bpa.fj.BpaFjTypeExciter"
+	      scope="prototype"	
+	      p:name="BPA FJ"
+	      p:category="BPA-Exciter"
+	      p:desc="The BAP FJ Type exciter implementation" />
+
+	<bean id="bpa_fkExciter" 
+	      class="org.interpss.dstab.control.exc.bpa.fk.BpaFkTypeExciter"
+	      scope="prototype"	
+	      p:name="BPA FK"
+	      p:category="BPA-Exciter"
+	      p:desc="The BAP FK Type exciter implementation" />
+</beans>

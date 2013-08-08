@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+         xmlns:p="http://www.springframework.org/schema/p"
+	     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+
+	<import resource="classpath:org/interpss/spring/DstabExciterSpringCtx.xml"/>
+	<import resource="classpath:org/interpss/spring/DstabGovernorSpringCtx.xml"/>
+	<import resource="classpath:org/interpss/spring/DstabStabilizerSpringCtx.xml"/>	
+
+	<bean id="cmlFieldObjectFactory" 
+	      class="org.interpss.dstab.control.cml.CMLFieldObjectFactory"	
+		  scope="singleton">	
+	</bean>
+
+	<bean id="scriptDStabSimuOutputHandler" 
+	      class="org.interpss.dstab.script.ScriptSimuOutputHandler" 
+	      scope="prototype">	
+	</bean>
+
+	<bean id="busFreqMeasurementImpl" 
+	      class="org.interpss.dstab.measure.BusFreqMeasurementImpl"	
+		  scope="prototype">	
+		<constructor-arg index="0">
+				<value>0.01</value></constructor-arg>  <!-- Tf -->
+		<constructor-arg index="1">
+				<value>0.01</value></constructor-arg>  <!-- Tw -->
+	</bean>
+	
+</beans>

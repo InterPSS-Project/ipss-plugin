@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/EMF"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Spring"/>
+	<classpathentry kind="lib" path="/ipss.lib/lib/ipss/ipss_core.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib/lib/ieee/ieee.odm_pss.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib/lib/ieee/ieee.odm.schema.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib/lib/apache/commons-logging.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib/lib/apache/commons-math3-3.0.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/apache/poi-3.8.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/apache/poi-ooxml-3.8.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/apache/poi-ooxml-schemas-3.8.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
