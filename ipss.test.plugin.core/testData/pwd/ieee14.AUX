@@ -1,0 +1,231 @@
+//--------------------------------------------------------------------------------
+//CASE INFORMATION
+//--------------------------------------------------------------------------------
+DATA (PWCASEINFORMATION, [BusNum,AreaNum,ZoneNum,BGLossMW,BGLossMVR,LoadMW,LoadMW:1,LoadMVR,LoadMVR:1,
+   SSAMVR,GenMW,GenMW:1,GenMVR,GenMVR:1,PVmonBusPLoad,PVmonBusQLoad,PVMonGenMW,
+   PVMonGenMVR,IntNum,BGPosSpinReserve,BGNegSpinReserve,SubNum,MTDCNum,BusSlack,
+   SSAMW,pwDocLocalPath,MonBranchPLoss,MonBranchQLoss,PVMonShuntActQ,
+   PVMonShuntActP,BGNIslands,GenNum,BusLoadNum,SSNum,BranchNum,BranchNum:1,
+   BranchNum:2,BranchNum:3,BranchNum:4,BranchNum:5,BranchNum:6,BranchNum:7,
+   BranchNum:8,BranchNum:9,BranchNum:10,DCLineNum,InjGrpNum])
+{
+    14      1      1 13.397 30.072 259.000  0.000 73.500  0.000 -21.188 272.400  0.000 78.500  0.000 "NO " "NO " "NO " "NO "      0 49727.600 50272.400      0      0 "     0Bus 1    (1) in Area IEEE14 (1);"  0.000 "C:\Users\LN\Desktop\ieee14.AUX" "NO " "NO " "NO " "NO "      1      5     11      0     17      0      0      0      0      0      0      0      0      0      0      0      0
+   <SUBDATA PWCaseHeader>
+     //Case Description
+      08/19/93 UW ARCHIVE           100.0  1962 W IEEE 14 Bus Test Case
+   </SUBDATA>
+}
+
+
+DATA (BUS, [BusNum,BusName,BusNomVolt,BusPUVolt,BusAngle,BusG:1,BusB:1,AreaNum,ZoneNum,
+   SubNum,BusSlack,BusStatus,BusNum:1,BusName_NomVolt:1,BusLongName,BusKVVolt,
+   BusRad,BusE,BusF,BusMCMW,BusMWMCEnergy,BusMWMCCongestion,BusMWMCLosses,
+   BusMCMVAR,BusMvarMCCongestion,BusMvarMCLosses,BusMCVolt,BusRGVoltSet,OwnerNum,
+   BusEquiv,BusScale,TimeDomainSelected,LSName,BusMonEle,BusVoltLim,
+   BusVoltLimLow,BusVoltLimHigh,BusVoltLPUnenforce,LPOPFConstraint,BusLossSensMW,
+   BusLossSensMVR,DCLossMultiplier,Latitude,Longitude,LatitudeString,
+   LongitudeString,Datum,PVmonBusVoltage,PVMonBusVoltageKV,PVmonBusAngle,
+   pvMonVQSense,PVmonBusPLoad,PVmonBusQLoad,PVMonBusShunt,qvBusMinVolt,
+   qvBusMaxVolt,qvBusStepSize])
+{
+    1 "Bus 1   " 132.00 1.060000   0.000000   0.0000   0.0000      1      1 "" "YES" "Connected" "" "" "Bus 1    132" 139.9200   0.000000   1.0600   0.0000 "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" ""      1 "Study" "NO " "NO " "Default" "YES" "NO "   0.9000   1.1000 "   " "No"   0.0000   0.0000   1.0000 "" "" "" "" "" "NO " "NO " "NO " "NO " "NO " "NO " "NO "  0.100  1.100  0.010
+    2 "Bus 2   " 132.00 1.045000  -4.980000   0.0000   0.0000      1      1 "" "NO " "Connected" "" "" "Bus 2    132" 137.9400  -0.086917   1.0411  -0.0907 "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" ""      1 "Study" "NO " "NO " "Default" "YES" "NO "   0.9000   1.1000 "   " "No"   0.0000   0.0000   1.0000 "" "" "" "" "" "NO " "NO " "NO " "NO " "NO " "NO " "NO "  0.100  1.100  0.010
+    3 "Bus 3   " 132.00 1.010000 -12.720000   0.0000   0.0000      1      1 "" "NO " "Connected" "" "" "Bus 3    132" 133.3200  -0.222006   0.9852  -0.2224 "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" ""      1 "Study" "NO " "NO " "Default" "YES" "NO "   0.9000   1.1000 "   " "No"   0.0000   0.0000   1.0000 "" "" "" "" "" "NO " "NO " "NO " "NO " "NO " "NO " "NO "  0.100  1.100  0.010
+    4 "Bus 4   " 132.00 1.019000 -10.330000   0.0000   0.0000      1      1 "" "NO " "Connected" "" "" "Bus 4    132" 134.5080  -0.180293   1.0025  -0.1827 "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" ""      1 "Study" "NO " "NO " "Default" "YES" "NO "   0.9000   1.1000 "   " "No"   0.0000   0.0000   1.0000 "" "" "" "" "" "NO " "NO " "NO " "NO " "NO " "NO " "NO "  0.100  1.100  0.010
+    5 "Bus 5   " 132.00 1.020000  -8.780000   0.0000   0.0000      1      1 "" "NO " "Connected" "" "" "Bus 5    132" 134.6400  -0.153240   1.0080  -0.1557 "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" ""      1 "Study" "NO " "NO " "Default" "YES" "NO "   0.9000   1.1000 "   " "No"   0.0000   0.0000   1.0000 "" "" "" "" "" "NO " "NO " "NO " "NO " "NO " "NO " "NO "  0.100  1.100  0.010
+    6 "Bus 6   "  35.00 1.070000 -14.220000   0.0000   0.0000      1      1 "" "NO " "Connected" "" "" "Bus 6    35"  37.4500  -0.248186   1.0372  -0.2628 "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" ""      1 "Study" "NO " "NO " "Default" "YES" "NO "   0.9000   1.1000 "   " "No"   0.0000   0.0000   1.0000 "" "" "" "" "" "NO " "NO " "NO " "NO " "NO " "NO " "NO "  0.100  1.100  0.010
+    7 "Bus 7   "  35.00 1.062000 -13.370000   0.0000   0.0000      1      1 "" "NO " "Connected" "" "" "Bus 7    35"  37.1700  -0.233351   1.0332  -0.2456 "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" ""      1 "Study" "NO " "NO " "Default" "YES" "NO "   0.9000   1.1000 "   " "No"   0.0000   0.0000   1.0000 "" "" "" "" "" "NO " "NO " "NO " "NO " "NO " "NO " "NO "  0.100  1.100  0.010
+    8 "Bus 8   "  35.00 1.090000 -13.360000   0.0000   0.0000      1      1 "" "NO " "Connected" "" "" "Bus 8    10"  10.9000  -0.233176   1.0605  -0.2519 "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" ""      1 "Study" "NO " "NO " "Default" "YES" "NO "   0.9000   1.1000 "   " "No"   0.0000   0.0000   1.0000 "" "" "" "" "" "NO " "NO " "NO " "NO " "NO " "NO " "NO "  0.100  1.100  0.010
+    9 "Bus 9   "  35.00 1.056000 -14.940000   0.0000  19.0000      1      1 "" "NO " "Connected" "" "" "Bus 9    35"  36.9600  -0.260752   1.0203  -0.2722 "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" ""      1 "Study" "NO " "NO " "Default" "YES" "NO "   0.9000   1.1000 "   " "No"   0.0000   0.0000   1.0000 "" "" "" "" "" "NO " "NO " "NO " "NO " "NO " "NO " "NO "  0.100  1.100  0.010
+   10 "Bus 10  "  35.00 1.051000 -15.100000   0.0000   0.0000      1      1 "" "NO " "Connected" "" "" "Bus 10   35"  36.7850  -0.263545   1.0147  -0.2738 "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" ""      1 "Study" "NO " "NO " "Default" "YES" "NO "   0.9000   1.1000 "   " "No"   0.0000   0.0000   1.0000 "" "" "" "" "" "NO " "NO " "NO " "NO " "NO " "NO " "NO "  0.100  1.100  0.010
+   11 "Bus 11  "  35.00 1.057000 -14.790000   0.0000   0.0000      1      1 "" "NO " "Connected" "" "" "Bus 11   35"  36.9950  -0.258134   1.0220  -0.2698 "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" ""      1 "Study" "NO " "NO " "Default" "YES" "NO "   0.9000   1.1000 "   " "No"   0.0000   0.0000   1.0000 "" "" "" "" "" "NO " "NO " "NO " "NO " "NO " "NO " "NO "  0.100  1.100  0.010
+   12 "Bus 12  "  35.00 1.055000 -15.070000   0.0000   0.0000      1      1 "" "NO " "Connected" "" "" "Bus 12   35"  36.9250  -0.263021   1.0187  -0.2743 "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" ""      1 "Study" "NO " "NO " "Default" "YES" "NO "   0.9000   1.1000 "   " "No"   0.0000   0.0000   1.0000 "" "" "" "" "" "NO " "NO " "NO " "NO " "NO " "NO " "NO "  0.100  1.100  0.010
+   13 "Bus 13  "  35.00 1.050000 -15.160000   0.0000   0.0000      1      1 "" "NO " "Connected" "" "" "Bus 13   35"  36.7500  -0.264592   1.0135  -0.2746 "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" ""      1 "Study" "NO " "NO " "Default" "YES" "NO "   0.9000   1.1000 "   " "No"   0.0000   0.0000   1.0000 "" "" "" "" "" "NO " "NO " "NO " "NO " "NO " "NO " "NO "  0.100  1.100  0.010
+   14 "Bus 14  "  35.00 1.036000 -16.040000   0.0000   0.0000      1      1 "" "NO " "Connected" "" "" "Bus 14   35"  36.2600  -0.279951   0.9957  -0.2863 "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" ""      1 "Study" "NO " "NO " "Default" "YES" "NO "   0.9000   1.1000 "   " "No"   0.0000   0.0000   1.0000 "" "" "" "" "" "NO " "NO " "NO " "NO " "NO " "NO " "NO "  0.100  1.100  0.010
+   15 "Bus 15  " 132.00 1.060000   0.000000   0.0000   0.0000      1      1 "" "NO " "Connected" "" "" "Bus 15   132" 139.9200   0.000000   1.0600   0.0000 "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" ""      1 "Study" "NO " "NO " "Default" "YES" "NO "   0.9000   1.1000 "   " "No"   0.0000   0.0000   1.0000 "" "" "" "" "" "NO " "NO " "NO " "NO " "NO " "NO " "NO "  0.100  1.100  0.010
+   16 "Bus 16  " 132.00 1.060000   0.000000   0.0000   0.0000      1      1 "" "NO " "Connected" "" "" "Bus 16   132" 139.9200   0.000000   1.0600   0.0000 "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" ""      1 "Study" "NO " "NO " "Default" "YES" "NO "   0.9000   1.1000 "   " "No"   0.0000   0.0000   1.0000 "" "" "" "" "" "NO " "NO " "NO " "NO " "NO " "NO " "NO "  0.100  1.100  0.010
+   17 "Bus 17  "  35.00 1.036000 -16.040000   0.0000   0.0000      1      1 "" "NO " "Connected" "" "" "Bus 17   35"  36.2600  -0.279951   0.9957  -0.2863 "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" ""      1 "Study" "NO " "NO " "Default" "YES" "NO "   0.9000   1.1000 "   " "No"   0.0000   0.0000   1.0000 "" "" "" "" "" "NO " "NO " "NO " "NO " "NO " "NO " "NO "  0.100  1.100  0.010
+   18 "Bus 18  "  35.00 1.036000 -16.040000   0.0000   0.0000      1      1 "" "NO " "Connected" "" "" "Bus 18   35"  36.2600  -0.279951   0.9957  -0.2863 "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" ""      1 "Study" "NO " "NO " "Default" "YES" "NO "   0.9000   1.1000 "   " "No"   0.0000   0.0000   1.0000 "" "" "" "" "" "NO " "NO " "NO " "NO " "NO " "NO " "NO "  0.100  1.100  0.010
+}
+
+DATA (LOAD, [BusNum,LoadID,LoadStatus,LoadSMW,LoadSMVR,LoadIMW,LoadIMVR,LoadZMW,LoadZMVR,
+   AreaNum,ZoneNum,GenAGCAble,OwnerNum])
+{
+    2 "1 " "Closed"    21.700    12.700     0.000     0.000     0.000     0.000      1      1 "YES"      1
+    3 "1 " "Closed"    94.200    19.000     0.000     0.000     0.000     0.000      1      1 "YES"      1
+    4 "1 " "Closed"    47.800    -3.900     0.000     0.000     0.000     0.000      1      1 "YES"      1
+    5 "1 " "Closed"     7.600     1.600     0.000     0.000     0.000     0.000      1      1 "YES"      1
+    6 "1 " "Closed"    11.200     7.500     0.000     0.000     0.000     0.000      1      1 "YES"      1
+    9 "1 " "Closed"    29.500    16.600     0.000     0.000     0.000     0.000      1      1 "YES"      1
+   10 "1 " "Closed"     9.000     5.800     0.000     0.000     0.000     0.000      1      1 "YES"      1
+   11 "1 " "Closed"     3.500     1.800     0.000     0.000     0.000     0.000      1      1 "YES"      1
+   12 "1 " "Closed"     6.100     1.600     0.000     0.000     0.000     0.000      1      1 "YES"      1
+   13 "1 " "Closed"    13.500     5.800     0.000     0.000     0.000     0.000      1      1 "YES"      1
+   14 "1 " "Closed"    14.900     5.000     0.000     0.000     0.000     0.000      1      1 "YES"      1
+}
+
+DATA (GEN, [BusNum,GenID,GenStatus,GenMW,GenMVR,GenAGCAble,GenEnforceMWLimits,GenMWMin,
+   GenMWMax,GenParFac,GenAVRAble,GenVoltSet,GenRegNum,GenMVRMin,GenMVRMax,
+   GenRMPCT,GenUseCapCurve,GenUseLDCRCC,GenXLDCRCC,GenMVABase,GenZR,GenZX,
+   GenStepR,GenStepX,GenStepTap,AreaNum,ZoneNum,CTGMakeUpGen,CTGMakeUpGen:1,
+   GenPostCTGPreventAGC,TSGovRespLimit,GenMWOrgMin,GenMWOrgMax,GenFuelType,
+   GenUnitType,GenIOA,GenIOB,GenIOC,GenIOD,GenVariableOM,GenExtraOMCost,
+   GenExtraFuelCost,GenCostMultiplier,GenFuelCost,GenLPMW,GenOPFFastStart,
+   TimeDomainSelected,PVMonGenMW,PVMonGenMVR,PVMonGenMVRReserve,GenZR,GenZX,
+   GenStepR,GenStepX,GenStepTap,GenMVABase,GenRegNum,OwnerNum,OwnPercent])
+{
+    1 "1" "Closed"  232.4000  -16.9000 "YES" "NO " -10000.0000 10000.0000    0.0000 "YES" 1.060000     1    0.0000    0.0000  100.0000 "NO " "NO"  0.000  100.0000   0.00000   1.00000   0.00000   0.00000   1.00000      1      1 "" "" "NO" "Normal" -10000.0000 10000.0000 "Unknown" "UN (Unknown)"   0.0000  10.0000   0.0100   0.0000   0.0000   0.0000   0.0000   1.0000   1.0000 "If Agcable" "NO " "NO " "NO " "NO " "NO "   0.0000   1.0000   0.0000   0.0000   1.0000 100.0000     1      1 100.0000
+    2 "1" "Closed"   40.0000   42.4000 "NO " "NO " -10000.0000 10000.0000    0.0000 "YES" 1.045000     2  -40.0000   50.0000  100.0000 "NO " "NO"  0.000  100.0000   0.00000   1.00000   0.00000   0.00000   1.00000      1      1 "" "" "NO" "Normal" -10000.0000 10000.0000 "Unknown" "UN (Unknown)"   0.0000  10.0000   0.0100   0.0000   0.0000   0.0000   0.0000   1.0000   1.0000 "If Agcable" "NO " "NO " "NO " "NO " "NO "   0.0000   1.0000   0.0000   0.0000   1.0000 100.0000     2      1 100.0000
+    3 "1" "Closed"    0.0000   23.4000 "NO " "NO " -10000.0000 10000.0000    0.0000 "YES" 1.010000     3    0.0000   40.0000  100.0000 "NO " "NO"  0.000  100.0000   0.00000   1.00000   0.00000   0.00000   1.00000      1      1 "" "" "NO" "Normal" -10000.0000 10000.0000 "Unknown" "UN (Unknown)"   0.0000  10.0000   0.0100   0.0000   0.0000   0.0000   0.0000   1.0000   1.0000 "If Agcable" "NO " "NO " "NO " "NO " "NO "   0.0000   1.0000   0.0000   0.0000   1.0000 100.0000     3      1 100.0000
+    6 "1" "Closed"    0.0000   12.2000 "NO " "NO " -10000.0000 10000.0000    0.0000 "YES" 1.070000     6   -6.0000   24.0000  100.0000 "NO " "NO"  0.000  100.0000   0.00000   1.00000   0.00000   0.00000   1.00000      1      1 "" "" "NO" "Normal" -10000.0000 10000.0000 "Unknown" "UN (Unknown)"   0.0000  10.0000   0.0100   0.0000   0.0000   0.0000   0.0000   1.0000   1.0000 "If Agcable" "NO " "NO " "NO " "NO " "NO "   0.0000   1.0000   0.0000   0.0000   1.0000 100.0000     6      1 100.0000
+    8 "1" "Closed"    0.0000   17.4000 "NO " "NO " -10000.0000 10000.0000    0.0000 "YES" 1.090000     8   -6.0000   24.0000  100.0000 "NO " "NO"  0.000  100.0000   0.00000   1.00000   0.00000   0.00000   1.00000      1      1 "" "" "NO" "Normal" -10000.0000 10000.0000 "Unknown" "UN (Unknown)"   0.0000  10.0000   0.0100   0.0000   0.0000   0.0000   0.0000   1.0000   1.0000 "If Agcable" "NO " "NO " "NO " "NO " "NO "   0.0000   1.0000   0.0000   0.0000   1.0000 100.0000     8      1 100.0000
+}
+
+DATA (BRANCH, [BusNum,BusNum:1,LineCircuit,LineStatus,LineR,LineX,LineC,LineG,LineAMVA,
+   LineAMVA:1,LineAMVA:2,LineAMVA:3,LineAMVA:4,LineAMVA:5,LineAMVA:6,LineAMVA:7,
+   LineShuntMW,LineShuntMW:1,LineShuntMVR,LineShuntMVR:1,LineTap,LinePhase,
+   SeriesCapStatus,NormLineStatus,LineIsSeriesCap,LineMeter,
+   LineMCMVA,LSName,LineMonEle,LPOPFConstraint,TimeDomainSelected,
+   LineLPEnforceMVAEquality,LineLength,OwnerNum,OwnPercent,XfrmerMagnetizingG,
+   XfrmerMagnetizingB,BranchDeviceType,ConsolidateBranch,PVMonBranchMW,
+   PVMonBranchMVR,PVMonBranchMVA,BranchMonPTDF,MonBranchPLoss,MonBranchQLoss,
+   PVMonXfmrTap,PVMonXFRegVal,PVMonXFTapPos,PVMonXFRegErr])
+{
+    15    2 " 1" "Closed"  0.019380  0.059170  0.052800  0.000000     0.000     0.000     0.000     0.000     0.000     0.000     0.000     0.000    0.0000    0.0000    0.0000    0.0000 1.000000   0.000000 "Not Bypassed" "Closed"  "NO " "From" "" "Default" "YES" "No" "NO " "NO "   0.0000      1 100.0000 "" "" "Line" "" "NO" "NO" "NO" "NO" "NO " "NO " "NO " "NO" "NO" "NO"
+    16    5 " 1" "Closed"  0.054030  0.223040  0.049200  0.000000     0.000     0.000     0.000     0.000     0.000     0.000     0.000     0.000    0.0000    0.0000    0.0000    0.0000 1.000000   0.000000 "Not Bypassed" "Closed"  "NO " "From" "" "Default" "YES" "No" "NO " "NO "   0.0000      1 100.0000 "" "" "Line" "" "NO" "NO" "NO" "NO" "NO " "NO " "NO " "NO" "NO" "NO"
+    2     3 " 1" "Closed"  0.046990  0.197970  0.043800  0.000000     0.000     0.000     0.000     0.000     0.000     0.000     0.000     0.000    0.0000    0.0000    0.0000    0.0000 1.000000   0.000000 "Not Bypassed" "Closed"  "NO " "From" "" "Default" "YES" "No" "NO " "NO "   0.0000      1 100.0000 "" "" "Line" "" "NO" "NO" "NO" "NO" "NO " "NO " "NO " "NO" "NO" "NO"
+    2     4 " 1" "Closed"  0.058110  0.176320  0.034000  0.000000     0.000     0.000     0.000     0.000     0.000     0.000     0.000     0.000    0.0000    0.0000    0.0000    0.0000 1.000000   0.000000 "Not Bypassed" "Closed"  "NO " "From" "" "Default" "YES" "No" "NO " "NO "   0.0000      1 100.0000 "" "" "Line" "" "NO" "NO" "NO" "NO" "NO " "NO " "NO " "NO" "NO" "NO"
+    2     5 " 1" "Closed"  0.056950  0.173880  0.034600  0.000000     0.000     0.000     0.000     0.000     0.000     0.000     0.000     0.000    0.0000    0.0000    0.0000    0.0000 1.000000   0.000000 "Not Bypassed" "Closed"  "NO " "From" "" "Default" "YES" "No" "NO " "NO "   0.0000      1 100.0000 "" "" "Line" "" "NO" "NO" "NO" "NO" "NO " "NO " "NO " "NO" "NO" "NO"
+    3     4 " 1" "Closed"  0.067010  0.171030  0.012800  0.000000     0.000     0.000     0.000     0.000     0.000     0.000     0.000     0.000    0.0000    0.0000    0.0000    0.0000 1.000000   0.000000 "Not Bypassed" "Closed"  "NO " "From" "" "Default" "YES" "No" "NO " "NO "   0.0000      1 100.0000 "" "" "Line" "" "NO" "NO" "NO" "NO" "NO " "NO " "NO " "NO" "NO" "NO"
+    4     5 " 1" "Closed"  0.013350  0.042110  0.000000  0.000000     0.000     0.000     0.000     0.000     0.000     0.000     0.000     0.000    0.0000    0.0000    0.0000    0.0000 1.000000   0.000000 "Not Bypassed" "Closed"  "NO " "From" "" "Default" "YES" "No" "NO " "NO "   0.0000      1 100.0000 "" "" "Line" "" "NO" "NO" "NO" "NO" "NO " "NO " "NO " "NO" "NO" "NO"
+    4     7 " 1" "Closed"  0.000000  0.209120  0.000000  0.000000     0.000     0.000     0.000     0.000     0.000     0.000     0.000     0.000    0.0000    0.0000    0.0000    0.0000 0.978000   0.000000 "Not Bypassed" "Closed"  "NO " "From" "" "Default" "YES" "No" "NO " "NO "   0.0000      1 100.0000   0.0000   0.0000 "Transformer" "" "NO" "NO" "NO" "NO" "NO " "NO " "NO " "NO " "NO " "NO "
+    4     9 " 1" "Closed"  0.000000  0.556180  0.000000  0.000000     0.000     0.000     0.000     0.000     0.000     0.000     0.000     0.000    0.0000    0.0000    0.0000    0.0000 0.969000   0.000000 "Not Bypassed" "Closed"  "NO " "From" "" "Default" "YES" "No" "NO " "NO "   0.0000      1 100.0000   0.0000   0.0000 "Transformer" "" "NO" "NO" "NO" "NO" "NO " "NO " "NO " "NO " "NO " "NO "
+    5     6 " 1" "Closed"  0.000000  0.252020  0.000000  0.000000     0.000     0.000     0.000     0.000     0.000     0.000     0.000     0.000    0.0000    0.0000    0.0000    0.0000 0.932000   0.000000 "Not Bypassed" "Closed"  "NO " "From" "" "Default" "YES" "No" "NO " "NO "   0.0000      1 100.0000   0.0000   0.0000 "Transformer" "" "NO" "NO" "NO" "NO" "NO " "NO " "NO " "NO " "NO " "NO "
+    6    11 " 1" "Closed"  0.094980  0.198900  0.000000  0.000000     0.000     0.000     0.000     0.000     0.000     0.000     0.000     0.000    0.0000    0.0000    0.0000    0.0000 1.000000   0.000000 "Not Bypassed" "Closed"  "NO " "From" "" "Default" "YES" "No" "NO " "NO "   0.0000      1 100.0000 "" "" "Line" "" "NO" "NO" "NO" "NO" "NO " "NO " "NO " "NO" "NO" "NO"
+    6    12 " 1" "Closed"  0.122910  0.255810  0.000000  0.000000     0.000     0.000     0.000     0.000     0.000     0.000     0.000     0.000    0.0000    0.0000    0.0000    0.0000 1.000000   0.000000 "Not Bypassed" "Closed"  "NO " "From" "" "Default" "YES" "No" "NO " "NO "   0.0000      1 100.0000 "" "" "Line" "" "NO" "NO" "NO" "NO" "NO " "NO " "NO " "NO" "NO" "NO"
+    6    13 " 1" "Closed"  0.066150  0.130270  0.000000  0.000000     0.000     0.000     0.000     0.000     0.000     0.000     0.000     0.000    0.0000    0.0000    0.0000    0.0000 1.000000   0.000000 "Not Bypassed" "Closed"  "NO " "From" "" "Default" "YES" "No" "NO " "NO "   0.0000      1 100.0000 "" "" "Line" "" "NO" "NO" "NO" "NO" "NO " "NO " "NO " "NO" "NO" "NO"
+    7     8 " 1" "Closed"  0.000000  0.176150  0.000000  0.000000     0.000     0.000     0.000     0.000     0.000     0.000     0.000     0.000    0.0000    0.0000    0.0000    0.0000 1.000000   0.000000 "Not Bypassed" "Closed"  "NO " "From" "" "Default" "YES" "No" "NO " "NO "   0.0000      1 100.0000 "" "" "Line" "" "NO" "NO" "NO" "NO" "NO " "NO " "NO " "NO" "NO" "NO"
+    7     9 " 1" "Closed"  0.000000  0.110010  0.000000  0.000000     0.000     0.000     0.000     0.000     0.000     0.000     0.000     0.000    0.0000    0.0000    0.0000    0.0000 1.000000   0.000000 "Not Bypassed" "Closed"  "NO " "From" "" "Default" "YES" "No" "NO " "NO "   0.0000      1 100.0000 "" "" "Line" "" "NO" "NO" "NO" "NO" "NO " "NO " "NO " "NO" "NO" "NO"
+    9    10 " 1" "Closed"  0.031810  0.084500  0.000000  0.000000     0.000     0.000     0.000     0.000     0.000     0.000     0.000     0.000    0.0000    0.0000    0.0000    0.0000 1.000000   0.000000 "Not Bypassed" "Closed"  "NO " "From" "" "Default" "YES" "No" "NO " "NO "   0.0000      1 100.0000 "" "" "Line" "" "NO" "NO" "NO" "NO" "NO " "NO " "NO " "NO" "NO" "NO"
+    9    17 " 1" "Closed"  0.127110  0.270380  0.000000  0.000000     0.000     0.000     0.000     0.000     0.000     0.000     0.000     0.000    0.0000    0.0000    0.0000    0.0000 1.000000   0.000000 "Not Bypassed" "Closed"  "NO " "From" "" "Default" "YES" "No" "NO " "NO "   0.0000      1 100.0000 "" "" "Line" "" "NO" "NO" "NO" "NO" "NO " "NO " "NO " "NO" "NO" "NO"
+   10    11 " 1" "Closed"  0.082050  0.192070  0.000000  0.000000     0.000     0.000     0.000     0.000     0.000     0.000     0.000     0.000    0.0000    0.0000    0.0000    0.0000 1.000000   0.000000 "Not Bypassed" "Closed"  "NO " "From" "" "Default" "YES" "No" "NO " "NO "   0.0000      1 100.0000 "" "" "Line" "" "NO" "NO" "NO" "NO" "NO " "NO " "NO " "NO" "NO" "NO"
+   12    13 " 1" "Closed"  0.220920  0.199880  0.000000  0.000000     0.000     0.000     0.000     0.000     0.000     0.000     0.000     0.000    0.0000    0.0000    0.0000    0.0000 1.000000   0.000000 "Not Bypassed" "Closed"  "NO " "From" "" "Default" "YES" "No" "NO " "NO "   0.0000      1 100.0000 "" "" "Line" "" "NO" "NO" "NO" "NO" "NO " "NO " "NO " "NO" "NO" "NO"
+   13    18 " 1" "Closed"  0.170930  0.348020  0.000000  0.000000     0.000     0.000     0.000     0.000     0.000     0.000     0.000     0.000    0.0000    0.0000    0.0000    0.0000 1.000000   0.000000 "Not Bypassed" "Closed"  "NO " "From" "" "Default" "YES" "No" "NO " "NO "   0.0000      1 100.0000 "" "" "Line" "" "NO" "NO" "NO" "NO" "NO " "NO " "NO " "NO" "NO" "NO"
+}
+
+DATA (TRANSFORMER, [BusNum,BusNum:1,LineCircuit,LineXFType,XFAuto,XFRegMin,XFRegMax,XFRegTargetType,
+   XFTapMin,XFTapMax,XFStep,XFTableNum,XFRegBus,OPFAreaXFPS,LineXfmr,
+   TimeDomainSelectedXF,XFOPFRegEnforceLimits,XFConfiguration,XFFixedTap,
+   XFFixedTap:1,XFNominalKV,XFNominalKV:1,XFMVABase,UseDelay,UseSecRegRange,
+   MoveDelay,MoveDelay:1,MoveDelay:2,MoveDelay:3,MoveDelay:4,MoveDelay:5,
+   MoveDelay:6,MoveDelay:7,StepsToMove,StepsToMove:1,XFRegMin:1,XFRegMax:1])
+{
+    4     7 " 1" "Fixed" "No"   0.51000   1.50000 "Middle of Reg Range"   0.51000   1.50000   0.00625      0     0 "NO " "YES" "NO " "NO " "Unknown"   1.00000   1.00000 132.00000  35.00000 100.00000 "NO " "NO "       30       30       15       15       15       15       10       10      1      1   0.51000   1.50000
+    4     9 " 1" "Fixed" "No"   0.51000   1.50000 "Middle of Reg Range"   0.51000   1.50000   0.00625      0     0 "NO " "YES" "NO " "NO " "Unknown"   1.00000   1.00000 132.00000  35.00000 100.00000 "NO " "NO "       30       30       15       15       15       15       10       10      1      1   0.51000   1.50000
+    5     6 " 1" "Fixed" "No"   0.51000   1.50000 "Middle of Reg Range"   0.51000   1.50000   0.00625      0     0 "NO " "YES" "NO " "NO " "Unknown"   1.00000   1.00000 132.00000  35.00000 100.00000 "NO " "NO "       30       30       15       15       15       15       10       10      1      1   0.51000   1.50000
+}
+
+DATA (BRANCH, [CustomString, CustomString:1, CustomString:2, BusNum, BusNum:1, LineCircuit, LineXfmr, LineR, LineX,
+ LineC, LineAMVA, LineAMVA:1, LineAMVA:2, LineMonEle, LSName, LineStatus])
+{
+ "ZBR" "zero_im_line" "bus1_bus15" 1 15 1 No 0.000000 0.000010 0.000000 13.5 15.0 15.0 "YES" "ZBR1" "Closed"
+ "ZBR" "zero_im_line" "bus1_bus16" 1 16 1 No 0.000000 0.000010 0.000000 13.5 15.0 15.0 "YES" "ZBR2" "Closed"
+}
+DATA (BRANCH, [CustomString, CustomString:1, CustomString:2, BusNum, BusNum:1, LineCircuit, LineXfmr,  LineR, LineX, LineC,
+ LineAMVA, LineAMVA:1, LineAMVA:2,  LineMonEle, LSName, LineStatus, NormLineStatus])
+{
+ "Breaker" "breaker_1" "bus17_bus14" 17 14 1 No 0.0 0.000010 0.0 13.5 15.0 15.0 "No" "" CLOSED CLOSED
+ "Breaker" "breaker_2" "bus18_bus14" 18 14 1 No 0.0 0.000010 0.0 13.5 15.0 15.0 "No" "" CLOSED CLOSED
+ }
+ 
+DATA (AREA, [AreaNum,AreaName,BGAGC,BGAutoSS,BGAutoXF,EnforceGenMWLimits,SAName,
+   ConvergenceTol,AreaEDIncludeLossPF,BusSlack,AreaUnSpecifiedStudyMW,
+   OPFAreaLoadMW,CTGMakeUpGen,OPFAreaXFTaps,OPFAreaXFPS,OPFAreaDCLineMW,
+   OPFAreaLineLim,OPFAreaInterfaceLim,OPFAreaVoltLim,AreaLPOPFUseMargLoss,
+   AreaLPUnenforceable,OPFAreaMWMC,DCLossMultiplier,MargCostReference,
+   MargCostReference:1])
+{
+     1 "IEEE14" "Off AGC" "YES" "YES" "YES" "" 999.9900 "YES" "Bus 2    (2)"        0.000 "NO "   0.0000 "NO " "NO " "YES" "YES" "YES" "NO " "NO " "   " ""   1.0000 "Existing" ""
+}
+
+DATA (ZONE, [ZoneNum,ZoneName,DCLossMultiplier])
+{
+     1 "IEEE 14 "   1.0000
+}
+
+DATA (OWNER, [OwnerNum,OwnerName])
+{
+     1 "1"
+   <SUBDATA Bus>
+     1
+     2
+     3
+     4
+     5
+     6
+     7
+     8
+     9
+     10
+     11
+     12
+     13
+     14
+     15
+     16
+     17
+     18
+   </SUBDATA>
+   <SUBDATA Load>
+     2 1 
+     3 1 
+     4 1 
+     5 1 
+     6 1 
+     9 1 
+     10 1 
+     11 1 
+     12 1 
+     13 1 
+     14 1 
+   </SUBDATA>
+   <SUBDATA Gen>
+     1 1 100.0
+     2 1 100.0
+     3 1 100.0
+     6 1 100.0
+     8 1 100.0
+   </SUBDATA>
+   <SUBDATA Branch>
+     15 2  1 100.0
+     16 5  1 100.0
+     2 3  1 100.0
+     2 4  1 100.0
+     2 5  1 100.0
+     3 4  1 100.0
+     4 5  1 100.0
+     4 7  1 100.0
+     4 9  1 100.0
+     5 6  1 100.0
+     6 11  1 100.0
+     6 12  1 100.0
+     6 13  1 100.0
+     7 8  1 100.0
+     7 9  1 100.0
+     9 10  1 100.0
+     17 14  1 100.0
+     10 11  1 100.0
+     12 13  1 100.0
+     18 14  1 100.0
+   </SUBDATA>
+}
+
+
+
+
+SCRIPT
+{
+SelectAll(Bus); // select all
+SetData(Bus, [Selected], ["NO"], Selected); //  set all to be not selected
+UnSelectAll(Bus); // unselect all
+}

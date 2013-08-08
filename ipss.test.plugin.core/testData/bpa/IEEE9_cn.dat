@@ -1,0 +1,31 @@
+(POWERFLOW,CASEID=IEEE9,PROJECT=IEEE_9BUS_TEST_SYSTEM)
+/MVA_BASE=100\
+/SOL_ITER,DECOUPLED=2,NEWTON=15,OPITM=0\
+/P_OUTPUT_LIST,ZONES=ALL\
+/RPT_SORT=ZONE\
+/NEW_BASE,FILE=IEEE90.BSE\
+/PF_MAP,FILE = IEEE90.MAP\
+/NETWORK_DATA\
+A  NF        Gen1     16.5           01    
+BS    Gen1    16.501                      999. 999.      1.01    
+B     Bus1    230.01                  
+B     BusA    230.01 125. 70.0     20.         
+B     BusB    230.01  90. 40.0     10.    
+B     BusC    230.01 100. 55.0     20.       
+B     Bus2    230.01 35.0 10.0            
+BE    发电机2 18.001                      163. 999       1.01
+B     Bus3    230.01
+BE    Gen3    13.801                       85. 999.      1.01
+.L -----------------  transmission lines ----------------------------
+L     Bus1    230. BusA    230.       .0100 .0850        .0440
+L     Bus1    230. BusB    230.       .0170 .0920        .0395
+L     BusA    230. Bus2    230.       .0320 .1610        .0765
+L     BusB    230. Bus3    230.       .0390 .1700        .0895
+L     Bus2    230. BusC    230.       .0085 .0720       .03725
+L     BusC    230. Bus3    230.       .0119 .1008       .05225
+.T ----- transformers ---------
+T     Gen1    16.5 Bus1    230.             .0567             16.5 242. 
+T     发电机2 18.0 Bus2    230.             .0625             18.0 242. 
+T     Gen3    13.8 Bus3    230.             .0586             13.8 242. 
+(END)
+

@@ -1,0 +1,2271 @@
+(POWERFLOW,CASEID=2011FD,PROJECT=2011年丰大方式)                                
+/MVA_BASE=100 \
+/P_OUTPUT_LIST,FULL \
+/RPT_SORT=ZONE\
+/P_ANALYSIS_RPT,LEVEL=4,FULL\
+/OVERLOAD_RPT,TX=62.5,LINE=85\
+/ NEW_BASE,FILE = 07c.bse \
+/PF_MAP,FILE=2011FD.MAP\
+./ SOLUTION\
+.>AI_CONTROL=CON<
+.>LTC=ON<
+/SOL_ITER,DECOUPLED=30,CURRENT=30,NEWTON=25,OPTIM=0\
+BQ    DES1    20. 2255.0439.1128.9-208    300. 145.      1.01
+BE    CSG053  15.822422. 218.7 296-477     1200387.1     10031002
+BE    CSG062  15. 2270.7541.4638.5-139    160. 105.      1.041039
+BE    CSG076  13.822137.192.28 105-423    640. 313.2     10121011
+BE    CSG077  15.82266.0941.6430.8-255    400. 204.      10191018
+BE    CSG082  13.822173.492.8977.3-608     1400341.3     1.   999
+BE    CSG085  18. 22246.6189.1 242-800     1450378.4      991 .99
+BE    CSG111  13.822347.9205.8 292-999     1980654.8     10111.01
++     CSG111  13.802              -157
+BE    CSG118  20. 22221.4123.5 110-329    720. 136.      1.011009
+BE    CSG140  20. 22313.9199.1 169-536     1080467.1     1.011009
+BE    CSG141  20. 2258.3931.74 124-589    790. 102.3      998 997
+BE    CSG142  15.82230.  18.  .305 -16    600. 259.      10031002
+BE    CSG150  15.82235.1216.4617.8-172    250. 82.88     1.011009
+BE    CSG172  20. 22150. 95.2318.7-742     1280329.3     10071006
+BE    CSG173  15.822274.6170.9 260-570     1600545.      10051004
+BE    EQG160  20. 22134. 69.6867. -547     1000120.       961 .96
+BE    CSG184  13.822195.4148.1-151-602     1650351.5      998 997
+BE    CSG186  20. 22294. 160.2 139-642     1700400.      1.   999
+.BE    CSG187  20. 22363.9213.5 184-999     2850 1206      998 997
+.+     CSG187  20. 02              -584
+BE    CSG190  22. 22300.1166.7 442-934     1920590.3     10031002
+BE    CSG193  20. 22127.476.4862.6-630    980. 445.8     10121011
+
+BQ    HAIM1   27. 50180. 90.          31082940.1356.     1.
+.BQ    HAIM1   27. 5060.  30.          1036990. 452.      1.
+.BQ    HAIM2   27. 5060.  30.          1036990. 452.      1.
+.BQ    HAIM3   27. 5060.  30.          1036990. 452.      1.
+BQ    HOHW1   22. 50120. 72.          25202360.800.      1.
+.BQ    HOHW1   22. 5030.  18.           600590. 200.      1.
+.BQ    HOHW2   22. 5030.  18.           600590. 200.      1.
+.BQ    HOHW3   22. 5030.  18.           660590. 200.      1.
+.BQ    HOHW4   22. 5030.  18.           660590. 200.       .95
+BQ    HSYB1   20. 5030.  16.           600580. 200.      1.
+.BQ    HSYB1   20. 5015.  8.            300290. 100.      1.
+.BQ    HSYB2   20. 5015.  8.            300290. 100.      1.
+BQ    HZX1    18. 5012.  8.            300200. 145.      1.02
+BQ    JIH3    27. 50120. 60.          20001600.904.      1.02
+.BQ    JIH3    27. 5060.  30.          1000800. 452.      1.02
+.BQ    JIH4    27. 5060.  30.          1000800. 452.      1.02
+BQ    LYJ1    20. 5015.  8.            315200. 100.      1.01
+BQ    NPS3    26. 50140. 80.          41524140.1916.     1.01
+.BQ    NPS3    26. 5035.  20.           990990. 479.      1.01
+.BQ    NPS4    26. 5035.  20.           990990. 479.      1.01
+.BQ    NPS5    26. 5035.  20.          1086 1080479.      1.01
+.BQ    NPS6    26. 5035.  20.          1086 1080479.      1.01
+BQ    PIH1    27. 50120. 60.          20001890.904.      1.01
+.BQ    PIH1    27. 5060.  30.          1000990. 452.      1.01
+.BQ    PIH2    27. 5060.  30.          1000900. 452.      1.01
+BQ    PIS4    20. 5030.  20.           600600. 290.      1.
+.BQ    PIS4    20. 5015.  10.           300300. 145.      1.
+.BQ    PIS5    20. 5015.  10.           300300. 145.      1.
+BQ    QIAOK1  22. 5030.  18.           650520. 150.      1.01
+BQ    SJA4    20. 5030.  16.           600580. 290.      1005
+.BQ    SJA4    20. 5015.  8.            300290. 145.      1.01
+.BQ    SJA5    20. 5015.  8.            300290. 145.      1.
+BQ    SJB1    19. 5015.  7.            350300. 170.      1.01
+BQ    SJB2    19. 5015.  7.            350300. 170.      1.
+BQ    SJC1    19. 5084.  45.          19801727.1960.     1.01
+.BQ    SJC1    19. 5028.  15.           660427.1320.      1.01
+.BQ    SJC2    19. 5028.  15.           660650. 320.      1.01
+.BQ    SJC3    19. 5028.  15.           660650. 320.      1.01
+BE    TOG3    20. 50150. 84.  4.71-.53     280080.25     1.   999
+BQ    YAX1    20. 5072.  21.6         12001200.520.      1.01
+.BQ    YAX1    20. 5036.  10.8          600600. 260.      1.01
+.BQ    YAX2    20. 5036.  10.8          600600. 260.      1.01
+BQ    ZEL3    27. 50120. 60.          20001980.904.      1.
+.BQ    ZEL3    27. 5060.  30.          1000990. 452.      1.
+.BQ    ZEL4    27. 5060.  30.          1000990. 452.      1.
+BQ    ZUH3    20. 5060.  36.          12001200.432. 120. 1.
+.BQ    ZUH3    20. 5030.  18.           600600. 216. 60.  1.
+.BQ    ZUH4    20. 5030.  18.           600600. 216. 60.  1.
+B  NF 4ANS51   525AS345.2206.5 234 201                   1.01
+B     4AS51    525AS
+BQ    4ASg1   20. AS18.  7.            900900. 360.      1.02
+.BQ    4ASg1   20. AS18.  7.            300300. 120.      1.02
+.BQ    4ASg2   20. AS                   300300. 120.      1.02
+.BQ    4ASg3   20. AS                   300300. 120.      1.02
+B     4NY51    525AS
+B     4NY52    525AS
+BQ    4NYg1   20. AS54.  21.          900 900. 300. -160.1.02
+.BQ    4NYg1   20. AS18.  7.            300300. 100. -40. 1.02
+.BQ    4NYg2   20. AS18.  7.            300300. 100. -40. 1.02
+.BQ    4NYg3   20. AS18.  7.            300300. 100. -80. 1.02
+BQ    4NYg5   20. AS54.  21.           900900. 300. -240.1.02
+.BQ    4NYg5   20. AS18.  7.            300300. 100. -80. 1.02
+.BQ    4NYg6   20. AS18.  7.            300300. 100. -80. 1.02
+.BQ    4NYg7   20. AS18.  7.            300300. 100. -80. 1.02
+BE    CSG040  15.8AS454.2377.3 228-113     1470419.1      998 997
+B  yn JH50     525BN79.6123.0941.690.5                           
+BE yn CSG197  6.3 BN101.664.1  464 -12     1689182.      10311.03
+B  yn CXHLZ50  525CX
+
+.B  yn HP50CK   525CX
+.B  yn HP50CP   525CX
+B  yn JAQ50    525CX
+B  yn XIAOW50  525CX
+BE yn CSG200  10.5CX 1273777.1 814 337     2197311.3     10051004
+BQ yn DD1G    22. DD30.  11.           600600. 200. -75. 1.02
+BE yn LBG1G   15.7DD22.9535.2832.3-129    600. 146.2      994 993
+.BQ yn LBG1G   15.7DD5.7828.8718.08 -32    150. 90.       1.
+.BQ yn LBG2G   15.7DD5.7828.8718.08 -32    150. 90.       1.
+.BQ yn LBG3G   15.7DD5.7828.8718.08 -32    150. 90.       1.
+.BQ yn LBG4G   15.7DD5.6088.6688.08 -32    150. 10.       1.
+BQ yn YW1G    22. DD30.  11.           600600. 360.      1.02
+B     SHAJIAOA 220DG772.8308.4 315 214
+.B  yn DBSCB1   525DH
+.B  yn DBSCB2   525DH
+B  yn DBSCD1   525DH
+B  yn DBSCD2   525DH
+B  yn DH50     525DH60.4916.08 103 220
+BQ yn DYJ41G  13.8DH                  700 700  130.      1.
+.BQ yn DYJ41G  13.8DH                   175175. 30.       1.
+.BQ yn DYJ42G  13.8DH                   175175. 30.       1.
+.BQ yn DYJ43G  13.8DH                   175175. 20.       1.
+.BQ yn DYJ44G  13.8DH                   175175. 50.       1.
+B  yn DYJ450   525DH
+BE yn CSG155  13.8DH          .083-7.6    120. 19.8      1.   999
+B  yn TPJ50    525DH          -.087.44
+BE yn CSG198  6.3 DH277.8141.366.3 -72     1582257.8     10011.
+B  yn DL50     525DL213.9100.3 426 482
+BQ yn GGQ1G   15.7DL                   225125. 30.       1.
+B  yn GGQ50    525DL
+.BE yn CSG195  38.5DL 1032706.5 650 316     2732359.8      994 993
+BE yn CSG195  38.5DL 1032706.5 650 316     3132359.8      994 993
+BQ yn XJS6G   20. DN24.  10.           300300. 120.      1.01
+BQ yn XLT7G   20. DN24.  10.           300300. 180.      1.
+BE yn CSG196  6.3 DN 1186721.1 565 554     2577272.      10321031
+BE    EQG007  13.8DY62.2333.2534.6 -59    200. 110.      10181017
+B     4DUS51   525DY135.671.1465.437.1
+B     4FUQ51   525DY525.7274.7 252 111
+BE    CSG041  10.5GX844.8442.5 430-153     1783654.6      997 996
+BE    CSG042  20. GX569.4276.4 400-.04     1200304.1     10121011
+BE    CSG045  15.7GX177.863.1 75.380.     338. 45.       10011.
+BE    CSG046  15.7GX469.4232.9 23210.5    784. 193.7      993 992
+BQ    FANGCG1 22. GX                  12601200.250. -160.1.02
+.BQ    FANGCG1 22. GX                   630600. 125. -80. 1.02
+.BQ    FANGCG2 22. GX                   630600. 125. -80. 1.02
+B  NF FCG50    525GX
+BE    CSG069  10.5GX622. 341.4 23668.4     1188346.7      991 .99
+BQ GX GUIGCG1 20. GX                  12001200.330. -160.1.01
+.BQ GX GUIGCG1 20. GX                   600600. 165. -80. 1.01
+.BQ GX GUIGCG2 20. GX                   600600. 165. -80. 1.01
+
+BE    CSG127  15.7GX306.9177.172.878.7    550. 79.08     1.   999
+BQ    PINBAG2 15.7GX13.056.5067.32 -50    130. 75.  -30. 1.
+BQ GX QINZHG2 22. GX25.  3.            630600. 150. -50. 1.02
+
+BS    YANTAG1 15.7GX                  12081208 400. -400.1.01
+.BS    YANTAG1 15.7GX                   302195.39.814     1.01
+.BQ    YANTAG2 15.7GX                   302302. 100.  -1001.01
+.BQ    YANTAG3 15.7GX                   302302. 100.  -1001.01
+.BQ    YANTAG4 15.7GX                   302302. 100.  -1001.01
+
+B     4GUIY51  525GY286.2114.9 -7636.7
+BE    CSG020  15.8GY339.4380.3 18284.      1000389.4     10151014
+B     4QINGY5  525GY327.6231.7 156 139
+BE    CSG033  15.8GY207.7123.5 319-260     1455322.8      993 992
+BE    CSG035  15.8GY115.766.0923.7-140    711.9226.1     1.011009
+B     4XIF51   525GY367.5133.9 191 268
+B     4XINGS51 525GY605.1422.1 422 299
+
+B  yn HLB50    525HH171.983.14-6.343.2
+
+B  yn XJS50    525HH
+B  yn XLT50    525HH
+B  BKPBKP      400HK866.372.32 267 129
+BE BKPCSG044  23. HK193.277.28 -9347.2     396333.07     10011.
+B  CPKCPK      400HK 1865240.31026 245
+B     DAYAWAN= 525HK
+B     NPS      400HK324.469.8  19495.
+BQ    NPS1    26. HK32.2 18.4          984980. 435.      1.01
+BQ    NPS2    26. HK32.2 18.4          984980. 435.      1.01
+B     SZE      400HK419.268.67 24994.7
+B     FUSHAN50 525HN232.7105.171.189.6
+.B     FUSHAN50 525HN
+.B     FUSHANz  525HN677.1228.1 174 271
+BE    CSG072  13.8HN 1368650.71048-110     2708757.       994 993
+.B     GANGCH50 525HW
+B     LINSD50  525HW
+B     NANLIN50 525HW
+BQ yn JH1G    18. JH                  17501550.600.  -500 .97
+.BQ yn JH1G    18. JH                   350350. 120.  -100 .97
+.BQ yn JH2G    18. JH                   350350. 120.  -100 .97
+.BQ yn JH3G    18. JH                   350350. 120.  -100 .97
+.BQ yn JH4G    18. JH                   350300. 120.  -100 .97
+.BQ yn JH5G    18. JH                   350200. 120.  -100 .97
+B     4GPT51   525KL
+BQ    4GPTg1  18. KL                  30003000.900. -120 1.01
+.BQ    4GPTg1  18. KL                   600600. 180.      1.01
+.BQ    4GPTg2  18. KL                   600600. 180.      1.01
+.BQ    4GPTg3  18. KL                   600600. 180.      1.01
+.BQ    4GPTg4  18. KL                   600600. 180. -60. 1.01
+.BQ    4GPTg5  18. KL                   600600. 180. -60. 1.01
+B     4LIP51   525KL145.439.8568.1 190
+B     4SHIB51  525KL165.273.8176.989.9
+.B  yn BF50     525KM529.2353.2 286 346
+.B  yn BF50C    525KM
+.B  yn BF50Q1   525KM
+.B  yn BF50Q2   525KM
+.B  yn CK50     525KM537.2334.7 222 342
+.B  yn CK50H    525KM
+.B  yn CK50QD   525KM
+.B  yn CP50     525KM456.8271.7 214 332
+.B  yn CP50B    525KM
+.B  yn CP50H    525KM
+.B  yn QD50     525KM532.5330.7 225 319
+.B  yn QD50B1   525KM
+.B  yn QD50B2   525KM
+.B  yn QD50C    525KM
+B     4LIUPS51 525LP333.4199.6 168 186
+BQ    LONGTAG118. LT                  49004900.1960.-10501.01
+.BQ    LONGTAG118. LT                   700700. 280.  -1501.01
+.BQ    LONGTAG218. LT                   700700. 280.  -1501.01
+.BQ    LONGTAG318. LT                   700700. 280.  -1501.01
+.BQ    LONGTAG418. LT                   700700. 280.  -1501.01
+.BQ    LONGTAG518. LT                   700700. 280.  -1501.01
+.BQ    LONGTAG618. LT                   700700. 280.  -1501.01
+.BQ    LONGTAG718. LT                   700700. 280.  -1501.01
+BQ yn DCS1G   15.7MW          .477-90 900 900. 500.      1.01
+.BQ yn DCS1G   15.7MW                   225225. 100.      1.01
+.BQ yn DCS2G   15.7MW          .159 -30    225. 100.      1.01
+.BQ yn DCS3G   15.7MW          .158 -30    225. 150.      1.01
+.BQ yn DCS4G   15.7MW          .16  -30    225. 150.      1.01
+
+
+.B  yn DCS50    525MW10.273.182 258 220
+.B  yn DCS50    525MW10.273.182 259 131
+B  yn DCS50    525MW10.273.182 259 171
+BE yn CSG051  15.7MW120.468.39-16881.2    742.6186.3     10091008
+BQ yn JAQ1G   18. MW                   600580. 120.      1.02
+BE yn MW1G    18. MW          -7.4.3561300 1300183.9     1.021019
+.BQ yn MW1G    18. MW                   300300. 180. -50. 1.02
+.BQ yn MW3G    15.7MW                   250250. 160.      1.02
+.BQ yn MW4G    15.7MW          .286 -44    250. 160.      1.02
+.BQ yn MW5G    15.7MW          .294 -45    250. 160.      1.02
+.BQ yn MW6G    15.7MW          .281 -44    250. 160.      1.02
+B  yn MW50     525MW10.773.44418.658.4
+.B  yn MW50     525MW10.773.44410.7 188
+BE yn CSG117  13.8MW52.6429.8517.712.7    492.6144.      10781077
+
+BQ yn XIAOW1G 18. MW                  42004200.1080.-420.1012
+.BQ yn XIAOW1G 18. MW                   700700. 180. -70. 1012
+.BQ yn XIAOW2G 18. MW                   700700. 180. -70. 1012
+.BQ yn XIAOW3G 18. MW                   700700. 180. -70. 1012
+.BQ yn XIAOW4G 18. MW                   700700. 180. -70. 1012
+.BQ yn XIAOW5G 18. MW                   700700. 180. -70. 1012
+.BQ yn XIAOW6G 18. MW                   700700. 180. -70. 1012
+B  NF BAIS50   525N1627.7355.4 347 319
+B     CHONGZ50 525N1490.8283.4 299 272
+B  GX GUIGC50  525N1
+B     GUILSC1  525N1
+B     GUILSC2  525N1
+B  NF HAIGAN50 525N1307.4116.174.874.7
+B  NF HESAC50  525N1
+B  NF HEZHOSC1 525N1
+B  NF HEZHOSC2 525N1
+B  NF HEZHOU50 525N1203.8102.2 113 199
+B     LONGTA50 525N1
+B     TPSC     525N1
+B     TPSC1    525N1
+B     TPSC1P   525N1
+B     TPSCP    525N1
+B  NF WUZHO50  525N1336.6120.3 159 169
+B     YANTA50  525N1
+B  NF YONGAN50 525N113.973.1095.89 150
+.B  NF YONGAN50 525N1
+.B  NF YONGANZ  525N113.983.0455.59 146
+B  NF YULINSC1 525N1
+B  NF YULINSC2 525N1
+
+
+
+.B     YN01-HLZ 525CX                      -5001 -434     1. 
+.B     GD01-HLZ 525N2                       4781 -508     1.
+.B  NF XR-HLZ   525N4                      -3001 -118     1006
+.B  NF BA-HLZ   525N2                       27801.8        978
+.B  NF ANSH-HLZ 525N4                      -3001 -241     1006
+.B  NF ZQ-HLZ   525N2                       2819155.7      978
+.B  NF MW-HLZ   230N6                      -1802 -203
+.B     HUIZ-HLZ 525SX                       2819-10.1
+.B     JINZ-HLZ 525SX                      -3001-53.2
+.B     GZ-HLZ   220XX                       1655-27.5
+
+..天广直流
+.
+.       天广直流双极送端有功P MW：180≦P<450   450≦P<720   720≦P<990   990≦P<1260   1260≦P<1530  1530≦P<1800  1800≦P<1980
+. MW-HLZ 应投滤波器对应无功 MVar：    160         240          320          480            640          720            720
+. GZ-HLZ 应投滤波器对应无功 MVar：    200         300          400          500            700          800           1000
+.
+B  NF MW-HLZ  230.N61802.924.2    720.
+B     GZ-HLZ  220.XX-1654942.5    900.
+.BD NF TSQ_POS 209.N6    2 150.   5. 140. 274.1800.MW-HLZ  230.
+.BD NF GNG_POS 198.N2    2 150.   5. 140. 240.1800.GZ-HLZ  220.
+.LD NF TSQ_POS 209.1GNG_POS 198.  1800 22.16            R900.  500. 15. 18. 960
+.BD NF TSQ_NEG 209.N6   2 150.    5. 140. 274.1800.MW-HLZ  230.
+.BD NF GNG_NEG 198.N2   2 150.    5. 140. 240.1800.GZ-HLZ  220.
+.LD NF TSQ_NEG 209.1GNG_NEG 198.  1800 22.16            R900.  500. 15. 18. 960
+..
+.R  NF MW-HLZ  230.1TSQ_POS 209.  TSQ_POS 209.266.8216.223
+.R  NF GZ-HLZ  220.1GNG_POS 198.  GNG_POS 198.266.8216.223
+.R  NF MW-HLZ  230.1TSQ_NEG 209.  TSQ_NEG 209.266.8216.223
+.R  NF GZ-HLZ  220.1GNG_NEG 198.  GNG_NEG 198.266.8216.223
+..
+.T  NF MW-HLZ  230. TSQ_POS 209.  10622.0    .01412             230. 209.
+.T  NF GZ-HLZ  220. GNG_POS 198.  10112.0    .01622             230. 198.
+.T  NF MW-HLZ  230. TSQ_NEG 209.  10622.0    .01412             230. 209.
+.T  NF GZ-HLZ  220. GNG_NEG 198.  10112.0    .01622             230. 198.
+
+.L  NF MW-HLZ  230. TSQM220 230.             0.0001
+.T  NF GZ-HLZ  220. BEIJIAOA220.             0.0001             220. 220.
+..
+...高肇直流
+.
+.         高肇直流双极送端有功P MW： 300≦P<1200  1200≦P<1650  1650≦P<2100   2100≦P<2550   2550≦P<3000  3000≦P<3300  3300≦P<3600
+. ANSH-HLZ 应投滤波器对应无功 MVar：      260           390          650           910            1170          1300           1430
+. ZQ-HLZ   应投滤波器对应无功 MVar：      280           560          700           980            1260          1680           1820
+.
+.BD NF ANSH-POS210.N4    2 270.   5. 140. 100.3100.ANSH-HLZ 525
+.BD NF ANSH-NEG210.N4    2 270.   5. 140. 100.3100.ANSH-HLZ 525
+.BD NF ZQ-POS  199.N2    2 270.   5. 140. 100.3100.ZQ-HLZ   525
+.BD NF ZQ-NEG  199.N2    2 270.   5. 140. 100.3100.ZQ-HLZ   525
+B  NF ANSH-HLZ525.N43001.1572.    1300                   1006
+B  NF ZQ-HLZ  525.N2-28191564.    1680                   .978
+.T  NF ANSH-HLZ525. ANSH-POS210.  1800       .00899            525.0209.7
+.T  NF ANSH-HLZ525. ANSH-NEG210.  1800       .00899            525. 209.7
+.T  NF ZQ-HLZ  525. ZQ-POS  199.  1800       .00900            525. 198.9
+.T  NF ZQ-HLZ  525. ZQ-NEG  199.  1800       .00900            525. 198.9
+.R  NF ANSH-HLZ525.1ANSH-POS210.  ANSH-POS210 630. 4987521
+.R  NF ANSH-HLZ525.1ANSH-NEG210.  ANSH-NEG210 630. 4987521
+.R  NF ZQ-HLZ  525.1ZQ-POS  199.  ZQ-POS  199 630. 4856323
+.R  NF ZQ-HLZ  525.1ZQ-NEG  199.  ZQ-NEG  199 630. 4856323
+.LD NF ANSH-POS210.1ZQ-POS  199.  3100  10.0            R1500. 500. 15. 18. 980
+.LD NF ANSH-NEG210.1ZQ-NEG  199.  3100  10.0            R1500. 500. 15. 18. 980
+...mono pole Metallic Return
+.LD    ANSH-NEG210.1ZQ-NEG  199.  3000  20.0            R1500. 500. 15. 18. 980
+....
+.B     DCZQ=   500.N2                 0
+.T     DCZQ=   500. ZQ-HLZ  525.             .0001             500.0500.
+..安高线
+.L  NF ANSH-HLZ525. 4ANS51  525.1 3785 .00004.00107      .05100 10 4x720
+.L  NF ANSH-HLZ525. 4ANS51  525.2 3785 .00004.00107      .05100 10 4x720
+.纳高线
+.L     4NY52   525. ANSH-HLZ525.  2500  .0006 .0083      0.4688
+.
+./L     DCZQ=   500. YANDU=  500.1      0.00010.0021      0.1099 20 4x400
+./L     DCZQ=   500. YANDU=  500.2      0.00010.0021      0.1099 20 4x400
+....
+...兴安直流
+.
+.         兴安直流双极送端有功P MW：300≦P≦1050  1050<P≦1200  1200<P≦1650   1650<P≦1950   1950<P≦2100  2100<P≦2400  2400<P≦2700   2700<P≦3000    3000<P≦3300
+. XR-HLZ   应投滤波器对应无功 MVar：     280           420           560           700            840            980           1120          1260             1400
+. BA-HLZ   应投滤波器对应无功 MVar：     310           465           620           775            930           1085           1240          1395             1550
+
+.BD NF XR-POS  210.N4    2 270.   5. 140. 100.3100.XR-HLZ   525
+.BD NF XR-NEG  210.N4    2 270.   5. 140. 100.3100.XR-HLZ   525
+.BD NF BA-POS  199.N2    2 270.   5. 140. 100.3100.BA-HLZ   525
+.BD NF BA-NEG  199.N2    2 270.   5. 140. 100.3100.BA-HLZ   525
+B  NF XR-HLZ  525.N43001.1575.    1400                   1006
+B  NF BA-HLZ  525.N2-27801544.    1555                   .978
+.T  NF XR-HLZ  525. XR-POS  210.  1800       .00899            525. 209.7
+.T  NF XR-HLZ  525. XR-NEG  210.  1800       .00899            525. 209.7
+.T  NF BA-HLZ  525. BA-POS  199.  1800       .00900            525. 198.9
+.T  NF BA-HLZ  525. BA-NEG  199.  1800       .00900            525. 198.9
+.R  NF XR-HLZ  525. XR-POS  210.  XR-POS  210 630. 4987521
+.R  NF XR-HLZ  525. XR-NEG  210.  XR-NEG  210 630. 4987521
+.R  NF BA-HLZ  525. BA-POS  199.  BA-POS  199 630. 4856323
+.R  NF BA-HLZ  525. BA-NEG  199.  BA-NEG  199 630. 4856323
+..mono pole Metallic Return
+..//LD    XR-NEG  210.1BA-NEG  199.  3000  20.0            R1500. 500. 15. 18. 980
+.LD    XR-POS  210.1BA-POS  199.  300012.15             R1500. 500. 15. 18. 980
+.LD    XR-NEG  210.1BA-NEG  199.  300012.15             R1500. 500. 15. 18. 980
+..
+.T     BA-HLZ  525. BAOAN=  500.             .0001             500.0500.
+.L     XINREN50525. XR-HLZ  525.             0.0001
+...
+...
+..江城直流...............
+.         江城直流双极送端有功P MW：300≦P<830  830≦P<1138  1138≦P<1418   1418≦P<1715   1715≦P<1959  1959≦P<2191  2191≦P<2443   2443≦P<2615    2615≦P<2917   2917≦P≦3000
+. JINZ-HLZ 应投滤波器对应无功 MVar：    280         420           560           720            860           1000         1160          1320             1480           1640
+. HUIZ-HLZ 应投滤波器对应无功 MVar：    280         420           560           700            860           1020         1180          1320             1480           1640
+
+...............
+.BS    BJZ500  525.SX                  31003000.9999.-99991005
+.L     JINZ-HLZ525. BJZ500  525.1     2      .00010
+.L     JINZ-HLZ525. BJZ500  525.2     2      .00010
+B     JINZ-HLZ525.SX3001.1568.    1500.
+B     HUIZ-HLZ525.SX-28191576.    1520.
+.BD    JINZ-POS217.SX    2 200.   5. 140. 100.3000.JINZ-HLZ 525
+.BD    HUIZ-POS217.SX    2 200.   5. 140. 100.3000.HUIZ-HLZ 525
+.T     JINZ-HLZ525. JINZ-POS217.  1800       .00833            525.0217.
+.T     HUIZ-HLZ525. HUIZ-POS217.  1800       .00833            525.0217.
+.R     JINZ-HLZ525.1JINZ-POS217.  JINZ-POS217.6100047500
+.R     HUIZ-HLZ525.1HUIZ-POS217.  HUIZ-POS217.6037549875
+.LD    JINZ-POS217.2HUIZ-POS217.  300010.               I1410. 500. 15. 17.1067
+...
+.BD    JINZ-NEG217.SX    2 200.   5. 140. 100.3000.JINZ-HLZ 525
+.BD    HUIZ-NEG217.SX    2 200.   5. 140. 100.3000.HUIZ-HLZ 525
+.T     JINZ-HLZ525. JINZ-NEG217.  1800       .00833            525.0217.
+.T     HUIZ-HLZ525. HUIZ-NEG217.  1800       .00833            525.0217.
+.R     JINZ-HLZ525.1JINZ-NEG217.  JINZ-NEG217.6100047500
+.R     HUIZ-HLZ525.1HUIZ-NEG217.  HUIZ-NEG217.6037549875
+.LD    JINZ-NEG217.2HUIZ-NEG217.  300010.               I1410. 500. 15. 17.1067
+.
+.B     DCHZ=   500.N2                                     1.00
+.T     HUIZ-HLZ525.2DCHZ=   500.             0.0001            500. 500.
+./L     DCHZ=   500. BOLUO=  500.1 5000 .00002.00043      .02041 4  4x720
+./L     DCHZ=   500. BOLUO=  500.2 5000 .00002.00043      .02041 4  4x720
+.\
+.
+
+.....楚穗直流   云南楚雄---->广东穗东(±800kV直流)
+.         楚穗直流双极送端有功P MW：  0≦P≦750  750<P≦1500  1500<P≦1750  1750<P≦2250  2250<P≦2500  2500<P≦3000  3000≦P≦3250 
+. YN01-HLZ  应投滤波器对应无功 MVar：    374         561          748            935          1122          1309           1496    
+. GD01-HLZ  应投滤波器对应无功 MVar：    380         570          760            950          1140          1370           1580    
+.------------------------------------------------------------------------------------------------------------------------------
+.         楚穗直流双极送端有功P MW：3250<P≦3500  3500<P≦4000  4000<P≦4250  4250<P≦4500  4500<P≦5000  5000<P≦5250  5250<P≦5750
+. YN01-HLZ  应投滤波器对应无功 MVar：   1683          1870          2057          2244          2431          2618         2805
+. GD01-HLZ  应投滤波器对应无功 MVar：                 1790          2000          2210          2400          2590         2800   
+
+..楚雄换流站-和平站联络线  双回参数实测 091123 LGJ-4×500/13.365KM 
+.L     CXHLZ50 525. HP50    525.1 3000 .00016.00155      .08485  14
+.L     CXHLZ50 525. HP50    525.2 3000 .00011.00137      .08511  14
+..
+B     YN01-HLZ525.CX5001.2868.    2430.                  1.0
+B     GD01-HLZ525.N2-47802914.    2400.                  1.0
+.L     YN01-HLZ525. CXHLZ50 525.1            0.0001
+.L     YN01-HLZ525. CXHLZ50 525.2            0.0001
+..
+.B     DCSUID= 500.XX                                     1.01
+.T     DCSUID= 500. GD01-HLZ525.1            0.0001            500. 500.
+.T     DCSUID= 500. GD01-HLZ525.2            0.0001            500. 500.
+.T     DCSUID= 500. GD01-HLZ525.3            0.0001            500. 500.
+...
+.BD    YN01-POS340.CX    2 200.   5. 120. 100.3125.YN01-HLZ 525
+.BD    GD01-POS330.N2    2 200.   5. 120. 100.3125.GD01-HLZ 525
+.T     YN01-HLZ525. YN01-POS340.  3002       .00658            525.0340.
+.T     GD01-HLZ525. GD01-POS330.  2940       .00670            525.0330.
+.R     YN01-HLZ525.1YN01-POS340.  YN01-POS 3406431248562
+.R     GD01-HLZ525.1GD01-POS330.  GD01-POS 3306693845938
+.LD    YN01-POS340.1GD01-POS330.  3125 11.17            R2500.800.  15. 18.1446
+...
+.BD    YN01-NEG340.CX    2 200.   5. 120. 100.3125.YN01-HLZ 525
+.BD    GD01-NEG330.N2    2 200.   5. 120. 100.3125.GD01-HLZ 525
+.T     YN01-HLZ525. YN01-NEG340.  3002       .00658            525.0340.
+.T     GD01-HLZ525. GD01-NEG330.  2940       .00670            525.0330.
+.R     YN01-HLZ525.1YN01-NEG340.  YN01-NEG 3406431248562
+.R     GD01-HLZ525.1GD01-NEG330.  GD01-NEG 3306693845938
+.LD    YN01-NEG340.1GD01-NEG330.  3125 11.17            R2500.800.  15. 18.1446
+
+
+B     DCHZ=    525N2                                     1.
+B     DCZQ=    525N2
+.B  NF LUODON50 525N2
+.B  NF MAOMIN50 525N2
+.B     XIANLS50 525N2
+.B  NF BAISK1   525N6
+.B     BAISLPK1 525N6
+.B     BAISLPK2 525N6
+.B     GUILIN51 525N6
+B     HCSC     525N6
+B     HCSC1    525N6
+B     LBSC1    525N6
+B     LBSC2    525N6
+B     MBSC     525N6
+B  NF TSQ50    525N627.5110.139.97 103
+.BE NF TSQBG1
+BQ NF TSQBG1  18. N6                  13201304.420. -480.1.
+BE    TSQDG1  18. N6          4.88-483     1200540.4     1.   999
+B  NF TSQM220  230N6111.236.4834.4 274
+B  NF TSQM50   525N6               271
+.B     YSH50C   525N6
+B     YSHSC    525N6
+B     QINZH50  525NN
+.B  yn BMSCB1   525PE
+.B  yn BMSCB2   525PE
+B  yn BMSCM1   525PE
+B  yn BMSCM2   525PE
+B  yn BSH50    525PE
+B  yn MHSCH1   525PE
+B  yn MHSCH2   525PE
+B  yn MHSCM1   525PE
+B  yn MHSCM2   525PE
+B  yn MJ50     525PE-1.7419.32-423 -36                           
+B  yn DD50     525QJ
+
+
+.B  yn LP50Q1   525QJ
+.B  yn LP50Q2   525QJ
+B  yn QJ50     525QJ
+
+.B  yn QJB50L1  525QJ
+.B  yn QJB50L2  525QJ
+B  yn XW50     525QJ
+B  yn YW50     525QJ
+BS    BJZ500   525SX                  3100 300157.75     1005
+BE    EQG012  20. TR441. 308.6 405-187     1950659.3     10181017
+B     4SONGT51 525TR291.7127.2 16842.
+B     4TONGR51 525TR347.6168.2-1.421.8                   1009
+
+B     AOLIYOU= 525XX
+B     BA1      220XX
+B     BA2      220XX
+B     BA3      220XX
+B     BA31    34.5XX               180
+B     BA32    34.5XX               180
+B     BA33    34.5XX               180
+B     BAOAN    220XX 2316981.7 9521026
+B     BAOAN=   525XX                                     1.04
+BE    BEIJIAO= 525XX                                     1.00
+B     BEIJIAOA 220XX2009.988.1 934 508
+.B     BEIJIAOB 220XX360.4156.4 162 100
+B     BJ1      220XX
+B     BJ2      220XX
+B     BJ3      220XX
+B     BJ31    34.5XX              40.
+B     BJ32    34.5XX              40.
+B     BJ33    34.5XX              40.
+B     BL2      220XX
+B     BL3      220XX
+B     BL32    34.5XX
+B     BL33    34.5XX
+B     BOLUO    220XX759.7267.7 304 391
+B     BOLUO=   525XX                                     1.04
+B     CANGJIA= 525XX
+B     CANGJIAN 220XX345.2153.5 14385.6
+B     CJ3      220XX
+B     CJ33    34.5XX
+B     DCSUID=  525XX                                     1.01
+B     DG1      220XX
+B     DG2      220XX
+B     DG3      220XX
+B     DG31    34.5XX               120
+B     DG32    34.5XX               120
+B     DG33    34.5XX               120
+B     DG34    34.5XX
+B     DG4      220XX
+B     DGT=     525XX
+B     DIELING  220XX440.3147.  181 144
+B     DIELING= 525XX
+B     DL2      220XX
+B     DL3      220XX
+B     DL32    34.5XX
+B     DL33    34.5XX
+B     DONGGUA= 525XX                                     1.04
+B     DONGGUAN 220XX 1622654.8 636 387
+B     FUYUAN   220XX248.891.6897.593.5
+B     FUYUAN=  525XX
+B     FY1      220XX
+B     FY2      220XX
+B     FY31    34.5XX              60.
+B     FY32    34.5XX              60.
+B     GA1      220XX
+B     GA3      220XX
+B     GA31    34.5XX
+B     GA33    34.5XX
+B     GANGCHE= 525XX
+B     GANGCHEN 220XX566.7177.1 204 338
+B     GC1      220XX
+B     GC2      220XX
+B     GC3      220XX
+B     GC31    34.5XX               180
+B     GC32    34.5XX               120
+B     GC33    34.5XX               120
+B     GC34    34.5XX
+B     GC4      220XX
+B     GF1      220XX
+B     GF2      220XX
+B     GF31    34.5XX
+B     GF32    34.5XX
+B     GH2      220XX
+B     GH32    34.5XX
+B     GN1      220XX
+B     GN3      220XX
+B     GN31    34.5XX               120
+B     GN33    34.5XX               120
+B     GN34    34.5XX               120
+B     GN4      220XX
+B     GS2      220XX
+B     GS32    34.5XX
+B     GS34    34.5XX
+B     GS4      220XX
+B     GUANCHE= 525XX                                     1046
+B     GUANCHEN 220XX 2105939.9 901 600
+BE    GUANGNA= 525XX                                     1005
+B     GUANGNAA 220XX 1315536.1 545 810
+B     GUANGNAB 220XX 1777782.7 6821004
+B     GUIFENG  220XX205.574.7 73.6 341
+B     GUIFENG= 525XX
+B     GUISHAN  220XX 1104382.4 463 618
+B     GUISHAN= 525XX                                     1.05
+B     GUOAN    220XX 1109410.1 142 742
+B     GUOAN=   525XX
+B     HAIMEN=  525XX
+B     HANJIAN= 525XX                                     1.05
+.B     HANJIANG 220XX488.1174.315.1 296
+B     HD2      220XX
+B     HD3      220XX
+B     HD32    34.5XX              60.
+B     HD33    34.5XX              60.
+B     HENGLI   220XX 1264448.5 483 281
+B     HENGLI=  525XX                                     1.04
+B     HESHUYB= 525XX
+B     HJ3      220XX
+B     HJ33    34.5XX
+B     HL1      220XX
+B     HL2      220XX
+B     HL3      220XX
+B     HL31    34.5XX               180
+B     HL32    34.5XX               180
+B     HL33    34.5XX               180
+B     HL34    34.5XX               180
+B     HL4      220XX
+B     HONGHAW= 525XX
+B     HUADU    220XX 1474581.1 644 430
+B     HUADU=   525XX
+B     HUIZHOU  220XX 1222444.7 5071027
+B     HUIZHOU= 525XX                                     1.03
+B     HZ1      220XX
+B     HZ2      220XX
+B     HZ3      220XX
+B     HZ31    34.5XX              80.
+B     HZ32    34.5XX              80.
+B     HZ33    34.5XX              80.
+B     HZXUNEN= 525XX
+B     JIANGME= 525XX                                     1.05
+B     JIANGMEN 220XX 1262454.4 512 655
+B     JIAYING  220XX214.363.18100. 459
+B     JIAYING= 525XX                                     1.04
+B     JINGHAB= 525XX
+B     JM1      220XX
+B     JM2      220XX
+B     JM31    34.5XX
+B     JM32    34.5XX
+B     JY1      220XX
+B     JY31    34.5XX
+B     KP2      220XX
+B     KP32    34.5XX               180
+B     KP34    34.5XX               180
+B     KP4      220XX
+B     KUNPENG  220XX 1238453.5 467 688
+B     KUNPENG= 525XX                                     1.02
+B     KUWAN    220XX340.3115.6 146 109
+B     KUWAN=   525XX                                     1.02
+B     KW1      220XX
+B     KW2      220XX
+B     KW31    34.5XX               120
+B     KW32    34.5XX               120
+B     LD1      220XX
+B     LD2      220XX
+B     LD3      220XX
+B     LD31    34.5XX               120
+B     LD32    34.5XX               120
+B     LD33    34.5XX               120
+B     LD34    34.5XX               120
+B     LD4      220XX
+B     LG1      220XX
+B     LG31    34.5XX
+B     LINGAO=  525XX
+B     LIYUJIA= 525XX
+.B     LUGANG   220XX578.6171.6 289 438
+B     LUGANG=  525XX
+B     LUODONG= 525XX                                     1.05
+B     LUODONGA 220XX 1183515.9 587 421                   1.02
+B     LUODONGB 220XX 1065359.4 648 629                   1.05    
+B     MAOHU    220XX324.4131.5 13675.1
+B     MAOHU=   525XX
+B     MAOMING  220XX588. 138.8 233 511
+B     MAOMING= 525XX                                     1.07
+B     MH2      220XX
+B     MH3      220XX
+B     MH32    34.5XX
+B     MH33    34.5XX
+B     MM1      220XX
+B     MM2      220XX
+B     MM31    34.5XX               120
+B     MM32    34.5XX
+B     PC1      220XX
+B     PC2      220XX
+B     PC3      220XX
+B     PC31    34.5XX               120
+B     PC32    34.5XX               120
+B     PC33    34.5XX               120
+B     PC34    34.5XX               120
+B     PC4      220XX
+BE    PENGCHE= 525XX                            -167     1.00
+B     PENGCHEA 220XX 1437642.2 614 409
+B     PENGCHEB 220XX719.1302.2 306 394
+B     PINGHAI= 525XX
+B     PINGSHB= 525XX
+B     QIAOKOU= 525XX
+B     QJ1      220XX
+B     QJ2      220XX
+B     QJ31    34.5XX
+B     QJ32    34.5XX
+B     QUJIANG  220XX532.9183.296.8 705
+B     QUJIANG= 525XX                                     1.04
+B     RJ2      220XX
+B     RJ3      220XX
+B     RJ32    34.5XX
+B     RJ33    34.5XX
+B     RONGJIA= 525XX                                     1.04
+B     RONGJIAN 220XX860.3250.8 312 308
+B     SD1      220XX
+B     SD2      220XX
+B     SD3      220XX
+B     SD31    34.5XX
+B     SD32    34.5XX
+B     SD33    34.5XX
+B     SHAJIAB= 525XX                                     1.05
+B     SHAJIAC= 525XX                                     1036
+B     SHAJIAO= 525XX
+B     SHAJIB=  525XX                                     1.05
+B     SHANGZH= 525XX
+B     SHANGZHA 220XX378.8103.4 135 446
+B     SHANTOU= 525XX                                     1.05
+.B     SHANTOUA 220XX 1369370.  547-999
+.+     SHANTOUA 22002              -488
+B     SHENZHE= 525XX                                     1.04
+B     SHENZHEN 220XX 1147455.2 459 274
+B     SHIYANG  220XX493. 228.3 201 374
+B     SHIYANG= 525XX                                     1.05
+B     SHUIXIA= 525XX
+B     SHUIXIAN 220XX 1225528.7 473 435
+B     SHUNDE=  525XX                                     1.05
+.B     SHUNDEA  220XX720.8344.5 337 134
+BE    SHUNDEA  220XX1485.688.5684. 488                   1017    
+.B     SHUNDEB  220XX764.3344.  347 354
+B     SHZ1     220XX
+B     SHZ31   34.5XX
+B     ST1      220XX
+B     ST3      220XX
+B     ST31    34.5XX               -90
+B     ST33    34.5XX               -90
+B     SX2      220XX
+B     SX3      220XX
+B     SX32    66. XX               306
+B     SX33    66. XX               306
+B     SY1      220XX
+B     SY2      220XX
+B     SY31    66. XX
+B     SY32    66. XX
+B     SZ3      220XX
+B     SZ33    34.5XX               120
+B     SZ34    34.5XX               120
+B     SZ35    34.5XX               120
+B     SZ4      220XX
+B     SZ5      220XX
+B     TONGGU=  525XX          -4.6-.65
+B     WUYI     220XX435.4162.655.7 290
+B     WUYI=    525XX
+B     WY1      220XX
+B     WY31    34.5XX
+B     XIANGSH= 525XX                                     1.05
+.B     XIANGSHA 220XX1543.607.6596 785                            
+B     XIANLS   220XX273.3157.4-215 417
+B     XIANLS=  525XX
+B     XIJIANG  220XX 983.422.6 628 319
+B     XIJIANG= 525XX                                     1.04
+B     XJ2      220XX
+B     XJ32    34.5XX               120
+B     XJ34    34.5XX               120
+B     XJ4      220XX
+B     XLS2     220XX
+B     XLS32   34.5XX               120
+B     XS1      220XX
+B     XS2      220XX
+B     XS3      220XX
+B     XS31    34.5XX
+B     XS32    34.5XX               100
+B     XS33    34.5XX               100
+B     XUNENG1= 525XX                                     1.05
+B     XUNENG2= 525XX
+B     YANDU    220XX938.1263.4 285 522
+B     YANDU=   525XX
+B     YANGXI=  525XX
+B     YD2      220XX
+B     YD3      220XX
+B     YD32    34.5XX               100
+B     YD33    34.5XX              50.
+B     ZC1      220XX
+B     ZC2      220XX
+B     ZC3      220XX
+B     ZC31    34.5XX               120
+B     ZC32    34.5XX               120
+B     ZC33    34.5XX               120
+B     ZC34    34.5XX              80.
+B     ZC4      220XX
+B     ZENGCHE= 525XX                                     1.04
+B     ZENGCHEA 220XX758.9364.  277 626
+B     ZENGCHEB 220XX846.6338.  332 385
+B     ZHELINC= 525XX
+B     ZHENZHO= 525XX
+B     ZHENZHOU 220XX144.657.  59.333.5
+B     ZHUHAIB= 525XX
+B     ZIJING=  525XX
+.BE    ZIJINGA  220XX 1402568.96.79-999                   1075    
+.+     ZIJINGA  22002          6.79-999
+.B     ZIJING+1 220XX              -999
+.L     ZIJING+1 220 ZIJINGA  220              .0001                 
+.+     ZIJING+1 22002              -357
+B     ZJ1      220XX
+B     ZJ2      220XX
+B     ZJ31    66. XX               156
+B     ZJ32    66. XX               156
+B     ZZ1      220XX
+B     ZZ31    34.5XX               120
+B     4DJ51    525XY
+BQ    4DJg1   20. XY72.  28.           880880. 400. -200.1.
+.BQ    4DJg1   20. XY18.  7.            220220. 100. -60. 1.
+.BQ    4DJg2   20. XY18.  7.            220220. 100. -60. 1.
+.BQ    4DJg3   20. XY18.  7.            220220. 100. -50. 1.
+.BQ    4DJg4   20. XY18.  7.            220220. 100. -30. 1.
+BE    EQG013  10.5XY309.7173.5 110 -34    950. 225.6     1.021019
+B     4JINZ5   525XY362.2159.9 176 313
+B     4XYDC51  525XY
+BQ    4XYDCg2 22. XY15.  8.            600450. 360.      1.
+B     BAHE50   525XY
+B     FAER50   525XY
+BQ    FAERG1  22. XY84.  42.          12001100.580. -140.1.
+.BQ    FAERG1  22. XY42.  21.           600500. 290. -70. 1.
+.BQ    FAERG2  22. XY42.  21.           600600. 290. -70. 1.
+B     GUANGZ50 525XY
+BQ    GUANGZG115.8XY                  10401040.400. -320.1.
+.BQ    GUANGZG115.8XY                   260260. 100. -80. 1.
+.BQ    GUANGZG215.8XY                   260260. 100. -80. 1.
+.BQ    GUANGZG315.8XY                   260260. 100. -80. 1.
+.BQ    GUANGZG415.8XY                   260260. 100. -80. 1.
+B     PANNAN50 525XY
+BQ    PANNANG122. XY84.  42.          1200860. 400.  -2801.01
+.BQ    PANNANG122. XY42.  21.           600430. 200.  -1401.01
+.BQ    PANNANG222. XY42.  21.           600430. 200.  -1401.01
+B     XINREN50 525XY
+B  yn YX50     525YI367.7198.6 183 364
+BE yn CSG201  6.3 YI96.5136.6244.242.1    133. 12.46     10411.04
+
+BQ yn ZX1G    22. ZT72.3 28.4122.3-164    600. 200. -75.  .99
+B  yn ZXD50    525ZT-5.02-1.16-4.3 179
+BE yn CSG199  6.3 ZT983. 697.9 411 154     2006456.2     10141013
+B     4DF51    525ZY
+BQ    4DFg1   20. ZY54.  21.           900900. 300. -200.1.02
+.BQ    4DFg1   20. ZY18.  7.            300300. 100. -70. 1.02
+.BQ    4DFg2   20. ZY18.  7.            300300. 100. -60. 1.02
+.BQ    4DFg3   20. ZY18.  7.            300300. 100. -70. 1.02
+B     4QB51    525ZY
+BQ    4QBg1   20. ZY36.  14.           600600. 300. -160.1.02
+.BQ    4QBg1   20. ZY18.  7.            300300. 150. -80. 1.02
+.BQ    4QBg2   20. ZY18.  7.            300300. 150. -80. 1.02
+B     4QX51    525ZY
+BQ    4QXg1   20. ZY54.  21.           900900. 300. -170.1.02
+.BQ    4QXg1   20. ZY18.  7.            300300. 100. -60. 1.02
+.BQ    4QXg2   20. ZY18.  7.            300300. 100. -60. 1.02
+.BQ    4QXg3   20. ZY18.  7.            300300. 100. -50. 1.02
+BE    CSG034  10.5ZY880.5620.8 60978.4     1710408.4      993 992
+.B     4YAX51   525ZY851.3554.  316 324
+BE    4YAX51   525ZY851.3554.  316 324                   1017    
+B     4YX51    525ZY
+BQ    4YXg1   20. ZY54.  21.           900900. 350. -240.1.02
+.BQ    4YXg1   20. ZY18.  7.            300300. 150. -80. 1.02
+.BQ    4YXg3   20. ZY18.  7.            300300. 150. -80. 1.02
+.BQ    4YXg4   20. ZY18.  7.            300300. 50.  -80. 1.02
+L     4LIUPS51 525 4ANS51   525        00839 09335                 
+T     CSG040  15.8 4ANS51   525        00117 03772             15.8525.
+T     4ASg1   20.  4AS51    525        .0002 .0130             20. 536.3
+.T     4ASg1   20.  4AS51    525        .0007 .0389             20. 536.3
+.T     4ASg2   20.  4AS51    525        .0007 .0389             20. 536.3
+.T     4ASg3   20.  4AS51    525        .0007 .0389             20. 536.3
+T     4DFg1   20.  4DF51    525       .00023.01297             20. 536.3
+.T     4DFg1   20.  4DF51    525        .0007 .0389             20. 536.3
+.T     4DFg2   20.  4DF51    525        .0007 .0389             20. 536.3
+.T     4DFg3   20.  4DF51    525        .0007 .0389             20. 536.3
+T     EQG007  13.8 4FUQ51   525        00385 07552             13.8525.
+T     4DJg1   20.  4DJ51    525       .00015.0115              20. 525.
+.T     4DJg1   20.  4DJ51    525        .0006 .046              20. 525.
+.T     4DJg2   20.  4DJ51    525        .0006 .046              20. 525.
+.T     4DJg3   20.  4DJ51    525        .0006 .046              20. 525.
+.T     4DJg4   20.  4DJ51    525        .0006 .046              20. 525.
+T     4TONGR51 525 EQG012  20.         00302 .0305            525. 20.
+T     EQG012  20.  4SONGT51 525        01102 09625             20. 525.
+T     EQG013  10.5 4JINZ5   525        00076 03096             10.5525.
+T     4GPTg1  18.  4GPT51   525             .00434             18. 537.5
+.T     4GPTg1  18.  4GPT51   525              .0217             18. 537.5
+.T     4GPTg2  18.  4GPT51   525              .0217             18. 537.5
+.T     4GPTg3  18.  4GPT51   525              .0217             18. 537.5
+.T     4GPTg4  18.  4GPT51   525              .0217             18. 537.5
+.T     4GPTg5  18.  4GPT51   525              .0217             18. 537.5
+L     4ANS51   525 4AS51    5251 2240  .0002 .0016       .0903     
+L     4ANS51   525 4AS51    5252 2500  .0001 .0018       .0954     
+L     4ANS51   525 4GUIY51  5251 2240  .0012 .0117       .6434     
+L     4ANS51   525 4GUIY51  5252 2500  .0014 .0128       .7038     
+L     4ANS51   525 4QINGY5  5251 2648  .0007 .0102       .5412     
+L     4ANS51   525 4QINGY5  5252 2648  .0007 .0102       .5412     
+
+T     4GUIY51  525 CSG033  15.8        00262 02601            525. 15.8
+T     CSG020  15.8 4XINGS51 525              05889             15.8525.
+T     4LIUPS51 525 CSG040  15.8        00081 03292            525. 15.8
+L     4LIUPS51 525 4NY52    525        .0002 .0031       .1795     
+T     4NYg1   20.  4NY51    525        .0002 .0130             20. 536.3
+.T     4NYg1   20.  4NY51    525        .0007 .0389             20. 536.3
+.T     4NYg2   20.  4NY51    525        .0007 .0389             20. 536.3
+.T     4NYg3   20.  4NY51    525        .0007 .0389             20. 536.3
+T     4NYg5   20.  4NY52    525        .0002 .0130             20. 536.3
+.T     4NYg5   20.  4NY52    525        .0007 .0389             20. 536.3
+.T     4NYg6   20.  4NY52    525        .0007 .0389             20. 536.3
+.T     4NYg7   20.  4NY52    525        .0007 .0389             20. 536.3
+T     4QBg1   20.  4QB51    525        .0003 .0195             20. 536.3
+.T     4QBg1   20.  4QB51    525        .0007 .0389             20. 536.3
+.T     4QBg2   20.  4QB51    525        .0007 .0389             20. 536.3
+T     4QXg1   20.  4QX51    525        .0002 .0130             20. 536.3
+.T     4QXg1   20.  4QX51    525        .0007 .0389             20. 536.3
+.T     4QXg2   20.  4QX51    525        .0007 .0389             20. 536.3
+.T     4QXg3   20.  4QX51    525        .0007 .0389             20. 536.3
+L     4SONGT51 525 4TONGR51 5251       00826 09317                 
+T     CSG034  10.5 4YAX51   525        00089 01815             10.5525.
+T     CSG035  15.8 4XIF51   525        00163 04119             15.8525.
+T     4XYDCg2 22.  4XYDC51  525              .0202             22. 536.
+T     4YXg1   20.  4YX51    525       .00023 .0130             20. 536.3
+.T     4YXg1   20.  4YX51    525        .0007 .0389             20. 536.3
+.T     4YXg3   20.  4YX51    525        .0007 .0389             20. 536.3
+.T     4YXg4   20.  4YX51    525        .0007 .0389             20. 536.3
+T     BA-HLZ   525 BAOAN=   525              00009            525. 525.
+T     BA1      220 BA31    34.5        00055 04205            220.  34.5
+T     BA1      220 BAOAN    220        00008-.0018            220. 230.
+T     BA1      220 BAOAN=   525        00004 01669            220. 525.
+T     BA2      220 BA32    34.5        00055 04205            220.  34.5
+T     BA2      220 BAOAN    220        00008-.0018            220. 229.9
+T     BA2      220 BAOAN=   525        00004 01669            220. 525.
+T     BA3      220 BA33    34.5        00055 04205            220.  34.5
+T     BA3      220 BAOAN    220        00008-.0018            220. 229.9
+T     BA3      220 BAOAN=   525        00004 01669            220. 525.
+T     SUHE50   525 CSG041  10.5        00121 04321       .0621525. 10.5
+T     CSG041  10.5 HECHI50  525        00691 .0744             10.5525.
+.T     CSG041  10.5 LAIB50   525       -00185 08309             10.5525.
+.T     CSG041  10.5 FENGY50  525       -00165 05321       02813 10.5525.
+
+
+T     CSG127  15.7 BAIS50   525              03827             15.7525.
+L     CHONGZ50 525 BAIS50   525        00012 06866                 
+T     CSG140  20.  BAOAN    220        00045 01688             20. 220.
+L     ZHENZHO= 525 BAOAN=   5251      .00043.01072      .68300     
+L     ZHENZHO= 525 BAOAN=   5252      .00043.01072      .68300     
+T     CSG042  20.  JIULO50  525        00134 05248       .0193 20. 525.
+T     CSG042  20.  HAIGAN50 525        00857 09401             20. 525.
+T     CSG042  20.  YULIN50  525        00366 09119             20. 525.
+T     BJ1      220 BEIJIAO= 525        00005 01667            220. 525.
+T     BJ2      220 BEIJIAO= 525        00005 01667            220. 525.
+T     BJ3      220 BEIJIAO= 525        00005 .0188            220. 525.
+T     BJ2      220 BEIJIAOA 220        00012-.0006            220. 226.9
+T     BJ3      220 BEIJIAOA 220        00012-.0008            220. 226.9
+T     GZ-HLZ   220 BEIJIAOA 220              .0001            220. 220.
+L     BEIJIAOA 220 GUANGNAA 220        00309 .0222                 
+T     BJ1      220 BEIJIAOA 220        00012-.0006            220. 226.9
+T     BF50     525 CSG200  10.5        00608 08439            525.  10.5
+.L     BF50     525 BF50C    525              .0001                 
+.L     BF50     525 BF50Q1   525              .0001                 
+.L     BF50     525 BF50Q2   525              .0001                 
+T     BJ1      220 BJ31    34.5        00088 05733            220.  34.5
+T     BJ2      220 BJ32    34.5        00088 05733            220.  34.5
+T     BJ3      220 BJ33    34.5        00088 .0572            220.  34.5
+L     JINZ-HLZ 525 BJZ500   5251             .0001                 
+L     JINZ-HLZ 525 BJZ500   5252             .0001                 
+L     NPS      400 BKP      400        00214 02257                 
+L     SZE      400 BKP      400        00203 02189                 
+L     BKP      400 CPK      4001       00006 00069       .0173     
+L     BKP      400 CPK      4002       00006 00069       .0173     
+T     CSG044  23.  BKP      400       .00008 00854             23. 42376
+T     CSG044  23.  CPK      400       .00005 00315             23. 424.9
+T     BL2      220 BL32    34.5        00066 05843            220.  34.5
+T     BL2      220 BOLUO    220        00008-.002             220. 229.9
+T     BL2      220 BOLUO=   525        00011 02024            220. 525.
+T     BL3      220 BL33    34.5        00066 05843            220.  34.5
+T     BL3      220 BOLUO    220        00008-.002             220. 229.9
+T     BL3      220 BOLUO=   525        00011 02024            220. 525.
+.L     BMSCB1   525 BSH50    525              .0001                 
+.L     BMSCB2   525 BSH50    525              .0001                 
+L     BOLUO    220 SHANGZHA 220        00515 03676                 
+T     BOLUO    220 EQG160  20.         00312 .0607            220.  20.
+T     CJ3      220 CANGJIA= 525        00004 01604            220. 525.
+L     CANGJIAN 220 YANDU    220        00069 00818                 
+T     CJ3      220 CANGJIAN 220        00008-.0022            220. 229.9
+T     WUZHO50  525 CSG045  15.7        00185 03288            525.  15.7
+T     CSG045  15.7 HEZHOU50 525        02438 19353             15.7525.
+T     CSG127  15.7 CHONGZ50 525        00336 .1214             15.7525.
+T     CJ3      220 CJ33    34.5        00056 04122            220.  34.5
+
+.L     CK50     525 LP50     525        05003109741       00685
+
+.L     CK50     525 HP50     525        55829278922
+T     CSG200  10.5 CK50     525        00139 03866             10.5525.
+.L     CK50     525 CK50H    525              .0001                 
+.L     CK50     525 CK50QD   525              .0001                 
+
+.L     CP50     525 LP50     525        22388222489
+T     CSG200  10.5 CP50     525        00185 05849             10.5525.
+
+.L     CP50     525 CP50B    525              .0001                 
+.L     CP50     525 CP50H    525              .0001                 
+L     SZE      400 CPK      400        00033 00411            
+L     NPS      400 CPK      400        00069 00959                 
+L     CXHLZ50  525 HP50     5251       00013 00145       08498     
+L     CXHLZ50  525 HP50     5252       00013 00145       08498     
+L     YN01-HLZ 525 CXHLZ50  5251             .0001                 
+L     YN01-HLZ 525 CXHLZ50  5252             .0001                 
+L     YN01-HLZ 525 CXHLZ50  5253             .0001                 
+T     CSG046  15.7 NANN50   525        00415 06275             15.7525.
+T     CSG046  15.7 YONGZ50  525              07773             15.7525.
+T     CSG046  15.7 PINGG50  525        03719 26287             15.7525.
+T     NPS      400 DAYAWAN= 5251       00014 01433            400. 48837
+T     NPS      400 DAYAWAN= 5252       00014 01433            400. 48837
+T     NPS2    26.  DAYAWAN= 525        00012 .0135             26. 530.
+T     HUIZ-HLZ 525 DCHZ=    525              00009            525. 525.
+T     DCS1G   15.7 DCS50    525        00008 01435             15.7534.3
+.T     DCS1G   15.7 DCS50    525        .0003 05726             15.7534.3
+.L     DCS2G   15.7 DCS50    525        00031 05848
+.L     DCS3G   15.7 DCS50    525        00031 05858
+L     4DF51    525 4QX51    5251 2214  .0007 .0068       .373      
+L     4DF51    525 4QX51    5252 2214  .0007 .0068       .3731     
+.L     DCS4G   15.7 DCS50    525        00031 05838
+T     DCS50    525 CSG051  15.7              .0537            525. 15.7
+T     DCSUID=  525 GD01-HLZ 5251             .0001            500. 500.
+T     DCSUID=  525 GD01-HLZ 5252             .0001            500. 500.
+T     DCSUID=  525 GD01-HLZ 5253             .0001            500. 500.
+T     DCZQ=    525 ZQ-HLZ   525              .0001            500. 500.
+T     DD1G    22.  DD50     525        00027 .0202             22. 536.
+
+T     DG1      220 DG31    34.5        .001  05775            220.  34.5
+T     DG1      220 DONGGUA= 525        00005 01886            220. 525.
+T     DG1      220 DONGGUAN 220        .0001-.0029            220. 234.5
+T     DG2      220 DG32    34.5        .001  05775            220.  34.5
+T     DG2      220 DONGGUA= 525        00005 01886            220. 525.
+T     DG2      220 DONGGUAN 220        .0001-.0029            220. 234.5
+T     DG3      220 DG33    34.5        .001  05775            220.  34.5
+T     DG3      220 DONGGUA= 525        00005 01886            220. 525.
+T     DG3      220 DONGGUAN 220        .0001-.0029            220. 234.5
+T     DG4      220 DG34    34.5        .001  05775            220.  34.5
+T     DG4      220 DONGGUA= 525        00005 01886            220. 525.
+T     DG4      220 DONGGUAN 220        .0001-.0029            220. 234.5
+T     DH50     525 CSG198  6.3         00095 02065            525.  6.3
+L     DIELING  220 WUYI     220        00561 02533                 
+T     DL2      220 DIELING  220        00004-.0017            220. 229.9
+T     DL3      220 DIELING  220        00004-.0017            220. 229.9
+T     DL2      220 DIELING= 525        00015 01973            220. 525.
+T     DL3      220 DIELING= 525        00015 01973            220. 525.
+T     LUODONGB 220 CSG053  15.8        02215 25519            220.  15.8
+T     CSG053  15.8 YANDU    220        00181 02054             15.8220.
+T     DL2      220 DL32    34.5        00157 05607            220.  34.5
+T     DL3      220 DL33    34.5        00157 05607            220.  34.5
+T     CSG195  38.5 DL50     525        00027 02446             38.5525.
+T     CSG199  6.3  DLE50    525              04467             6.3 525.
+
+L     4DJ51    525 BAHE50   525  1500  .0021 .0111       .0102     
+T     DYJ41G  13.8 DYJ450   525       .00007.01423             13.8536.
+.T     DYJ41G  13.8 DYJ450   525        .0003 .0569             13.8536.
+.T     DYJ42G  13.8 DYJ450   525        .0003 .0569             13.8536.
+.T     DYJ43G  13.8 DYJ450   525        .0003 .0569             13.8536.
+.T     DYJ44G  13.8 DYJ450   525        .0003 .0569             13.8536.
+T     FAERG1  22.  FAER50   525              .0101             22. 536.
+.T     FAERG1  22.  FAER50   525              .0202             22. 536.
+.T     FAERG2  22.  FAER50   525              .0202             22. 536.
+T     FANGCG1 22.  FCG50    525             .0105              22. 525.
+.T     FANGCG1 22.  FCG50    525              .021              22. 525.
+.T     FANGCG2 22.  FCG50    525              .021              22. 525.
+
+.T     CSG069  10.5 FENGY50  525       28.11950.458             10.5525.
+.L     FENGY50  525 SUHE50   525        06451 44037
+
+.T     FUSHAN50 525 FUSHANz  525              .018             525. 525.
+.T     CSG072  13.8 FUSHANz  525        00128 00953             13.8525.
+T     CSG072  13.8 FUSHAN50 525        00091 .0271             13.8525.
+T     FY1      220 FUYUAN   220        00008-.0022            220. 229.9
+T     FY2      220 FUYUAN   220        00008-.0022            220. 229.9
+T     FY1      220 FUYUAN=  525        00004 01604            220. 525.
+T     FY2      220 FUYUAN=  525        00004 01604            220. 525.
+L     4DUS51   525 HCSC     525  2644  00162 02124      1.2133     
+L     4DUS51   525 HCSC1    525  2644  00162 02124      1.2133     
+T     FY1      220 FY31    34.5        00056 04122            220.  34.5
+T     FY2      220 FY32    34.5        00056 04122            220.  34.5
+T     GA1      220 GA31    34.5        00056 04122            220.  34.5
+T     GA1      220 GUOAN    220        00008-.0022            220. 229.9
+T     GA1      220 GUOAN=   525        00004 01604            220. 525.
+T     GA3      220 GA33    34.5        00056 04122            220.  34.5
+T     GA3      220 GUOAN    220        00008-.0022            220. 229.9
+T     GA3      220 GUOAN=   525        00004 01604            220. 525.
+.T     GANGCH50 525 GANGCHE= 525              00009            525. 525.
+T     GH2      220 GANGCHE= 525        00015 02014            220. 525.
+T     GANGCHEN 220 CSG186  20.         00142 02556            220.  20.
+L     GANGCHEN 220 MAOMING  220        00829 03626                 
+T     GH2      220 GANGCHEN 220        00004-.0018            220. 229.9
+T     CSG062  15.  SHUIXIAN 220        00192 06581             15. 220.
+T     GC1      220 GC31    34.5        00055 04119            220.  34.5
+T     GC1      220 GUANCHE= 525        00004 01612            220. 525.
+T     GC1      220 GUANCHEN 220        00008-.0022            220. 229.9
+T     GC2      220 GC32    34.5        00055 04119            220.  34.5
+T     GC2      220 GUANCHE= 525        00004 01612            220. 525.
+T     GC2      220 GUANCHEN 220        00008-.0022            220. 229.9
+T     GC3      220 GC33    34.5        00055 04119            220.  34.5
+T     GC3      220 GUANCHE= 525        00004 01612            220. 525.
+L     4FUQ51   525 4SHIB51  5251 2500  .0007 .0093       .4911     
+L     4FUQ51   525 4SHIB51  5252 2500  .0007 .0092       .489      
+T     GC3      220 GUANCHEN 220        00008-.0022            220. 229.9
+T     GC4      220 GC34    34.5        00055 04119            220.  34.5
+T     GC4      220 GUANCHE= 525        00004 01612            220. 525.
+T     GC4      220 GUANCHEN 220        00008-.0022            220. 229.9
+T     GF1      220 GF31    34.5        00055 04112            220.  34.5
+T     GF1      220 GUIFENG  220        00008-.0022            220. 229.9
+T     GF1      220 GUIFENG= 525        00004 01613            220. 525.
+T     GF2      220 GF32    34.5        00055 04112            220.  34.5
+T     GF2      220 GUIFENG  220        00008-.0022            220. 229.9
+T     GF2      220 GUIFENG= 525        00004 01613            220. 525.
+T     GGQ1G   15.7 GGQ50    525        .0003 05726             15.7534.3
+T     GH2      220 GH32    34.5        00157 05838            220.  34.5
+T     GN1      220 GN31    34.5        00056 04123            220.  34.5
+T     GN1      220 GUANGNA= 525        00004 01612            220. 525.
+T     GN1      220 GUANGNAA 220        00008-.0022            220. 232.9
+T     GN3      220 GN33    34.5        00055 04044            220.  34.5
+T     GN3      220 GUANGNA= 525        00004 01606            220. 525.
+T     GN3      220 GUANGNAB 220        00008-.0022            220. 232.9
+T     GN4      220 GN34    34.5        00055 04044            220.  34.5
+T     GN4      220 GUANGNA= 525        00004 01606            220. 525.
+T     GN4      220 GUANGNAB 220        00008-.0022            220. 232.9
+T     GS2      220 GS32    34.5        00018 .0455            220.  34.5
+T     GS2      220 GUISHAN  220        00003-.0024            220. 229.9
+T     GS2      220 GUISHAN= 525        00001 .0177            220. 525.
+T     GS4      220 GS34    34.5        00018 .0455            220.  34.5
+T     GS4      220 GUISHAN  220        00003-.0024            220. 229.9
+T     GS4      220 GUISHAN= 525        00001 .0177            220. 525.
+L     GUANCHEN 220 SHAJIAOA 220        .0009 00661                 
+L     GUANGNAA 220 SHIYANG  220        00182 01473                 
+T     GUANGNAA 220 CSG193  20.         00074 02085            220.  20.
+L     GUANGNAB 220 ZENGCHEA 220        00108 01099                 
+T     CSG085  18.  GUANGNAB 220        00068 01798             18. 220.
+T     GUANGZG115.8 GUANGZ50 525        .0002 .0117             15.8536.3
+.T     GUANGZG115.8 GUANGZ50 525        .0008 .0467             15.8536.3
+.T     GUANGZG215.8 GUANGZ50 525        .0008 .0467             15.8536.3
+.T     GUANGZG315.8 GUANGZ50 525        .0008 .0467             15.8536.3
+.T     GUANGZG415.8 GUANGZ50 525        .0008 .0467             15.8536.3
+.L     CSG069  10.5 SUHE50   525       154656489879       .0092
+.T     CSG069  10.5 LAIB50   525       22.24548.772             10.5525.
+T     HECHI50  525 CSG069  10.5        202371.2645            525. 10.5
+T     CSG069  10.5 GUILIN52 525              06411             10.5525.
+T     CSG069  10.5 LIUDO50  525        00118 07835             10.5525.
+T     CSG069  10.5 SHATA50  525        00048 03345       .0285 10.5525.
+T     CSG150  15.8 GUIFENG  220        00173 05071             15.8220.
+T     GUIGCG1 20.  GUIGC50  525             .01780             20. 538.
+.T     GUIGCG1 20.  GUIGC50  525              03559             20. 538.
+.T     GUIGCG2 20.  GUIGC50  525              03559             20. 538.
+
+
+T     GUISHAN  220 CSG190  22.         00121 02815            220.  22.
+L     GUOAN    220 GUISHAN  220        00123 00836            
+T     GUOAN    220 CSG190  22.         00069 01388            220.  22.
+L     HAIGAN50 525 JIULO50  5251       00174 06924                 
+L     YULIN50  525 HAIGAN50 525        33642147444                 
+T     HAIM1   27.  HAIMEN=  525       .00006.00442             27. 525.
+.T     HAIM1   27.  HAIMEN=  500        00017 01325             27. 525.
+.T     HAIM2   27.  HAIMEN=  500        00017 01325             27. 525.
+.T     HAIM3   27.  HAIMEN=  500        00017 01325             27. 525.
+T     HJ3      220 HANJIAN= 525              .0175            220. 525.
+.L     HANJIANG 220 ST3      220       -05045-38553
+.L     HANJIANG 220 LUGANG   220        14638 67475
+.L     SHANTOUA 220 HANJIANG 220        00318 01824           
+.T     CSG187  20.  HANJIANG 220        00206 .0311             20. 220.
+T     HJ3      220 HANJIANG 220        00003-.0022            220. 229.9
+T     HD2      220 HD32    34.5        00055 04107            220.  34.5
+T     HD2      220 HUADU    220        00008-.0019            220. 236.
+T     HD2      220 HUADU=   525        00004 01678            220. 525.
+T     HD3      220 HD33    34.5        00055 04107            220.  34.5
+T     HD3      220 HUADU    220        00008-.0019            220. 236.
+T     HD3      220 HUADU=   525        00004 01678            220. 525.
+
+.L     CSG076  13.8 XS3      220       -00895-83191
+.L     CSG076  13.8 XS2      220       -01089-87145
+.T     CSG076  13.8 XIANGSHA 220        00099 02176             13.8220.
+T     HL1      220 HENGLI   220        00008-.0022            220. 229.9
+T     HL2      220 HENGLI   220        00008-.0022            220. 229.9
+T     HL3      220 HENGLI   220        00008-.0022            220. 229.9
+T     HL4      220 HENGLI   220        00008-.0022            220. 229.9
+T     HL1      220 HENGLI=  525        00004 01606            220. 525.
+T     HL2      220 HENGLI=  525        00004 01606            220. 525.
+T     HL3      220 HENGLI=  525        00004 01606            220. 525.
+T     HL4      220 HENGLI=  525        00004 01606            220. 525.
+T     HSYB1   20.  HESHUYB= 525       .0003201892              20. 525.
+.T     HSYB1   20.  HESHUYB= 500        00063 03784             20. 525.
+.T     HSYB2   20.  HESHUYB= 500        00063 03784             20. 525.
+T     ZENGCHEB 220 CSG077  15.8        00144 03926            220.  15.8
+L     HEZHOU50 525 WUZHO50  525        00641 09466       04814     
+T     HH50     525 CSG196  6.3         00081 03575            525.  6.3
+
+T     HJ3      220 HJ33    34.5        00018 .0456            220.  34.5
+T     HL1      220 HL31    34.5        00055 04044            220.  34.5
+T     HL2      220 HL32    34.5        00055 04044            220.  34.5
+T     HL3      220 HL33    34.5        00055 04044            220.  34.5
+T     HL4      220 HL34    34.5        00055 04044            220.  34.5
+T     HLB50    525 CSG196  6.3         01989 12671            525. 6.3
+T     HOHW1   22.  HONGHAW= 525             .00511             22. 525.
+.T     HOHW1   22.  HONGHAW= 500              02042             22. 525.
+.T     HOHW2   22.  HONGHAW= 500              02042             22. 525.
+.T     HOHW3   22.  HONGHAW= 500              02042             22. 525.
+.T     HOHW4   22.  HONGHAW= 500              02042             22. 525.
+.L     HP50     525 QD50     525        47245280735
+.T     LP50     525 HP50     525       70967532.466            525. 525.
+T     HP50     525 CSG200  10.5        .0278 15932       12882525. 10.5
+.L     HP50     525 HP50CK   525              .0001                 
+.L     HP50     525 HP50CP   525              .0001                 
+T     CSG082  13.8 MAOHU    220        18646136411             13.8220.
+T     CSG082  13.8 RONGJIAN 220        00169 03532             13.8220.
+T     CSG082  13.8 JIAYING  220        00091 01927             13.8220.
+T     CSG184  13.8 HUADU    220              .4678             13.8220.
+L     XIANLS   220 HUADU    220        .0151 12999                 
+L     HUADU    220 QUJIANG  220        01865 09467                 
+T     CSG141  20.  HUADU    220        18577285189             20. 220.
+L     HUADU    220 KUWAN    220        00451 03304                 
+T     HUIZHOU  220 CSG172  20.         00057 01282            220.  20.
+T     HZ1      220 HUIZHOU  220        00008-.0018            220. 229.9
+T     HZ2      220 HUIZHOU  220        00008-.0018            220. 229.9
+T     HZ3      220 HUIZHOU  220        00008-.0018            220. 229.9
+T     HZ1      220 HUIZHOU= 525        00011 02005            220. 525.
+T     HZ2      220 HUIZHOU= 525        00011 02005            220. 525.
+T     HZ3      220 HUIZHOU= 525        00011 02005            220. 525.
+T     ZENGCHEA 220 CSG085  18.         00069 03046            220.  18.
+T     HZ1      220 HZ31    34.5        00074 05707            220.  34.5
+T     HZ2      220 HZ32    34.5        00074 05707            220.  34.5
+T     HZ3      220 HZ33    34.5        00074 05707            220.  34.5
+T     HZX1    18.  HZXUNEN= 525        00073 04194             18. 522.
+T     JAQ1G   18.  JAQ50    525        .0005 .0175             18. 536.
+
+T     JH1G    18.  JH50     525        00012 00731             18. 536.
+.T     JH1G    18.  JH50     525        .0006 .037              18. 536.
+.T     JH2G    18.  JH50     525        .0006 .0359             18. 536.
+.T     JH3G    18.  JH50     525        .0006 .0359             18. 536.
+.T     JH4G    18.  JH50     525        .0006 .037              18. 536.
+.T     JH5G    18.  JH50     525        .0006 .037              18. 536.
+T     CSG197  6.3  JH50     525        00686 14794             6.3 525.
+.L     MJ50     525 JH50     5253       08971 79046
+.L     MJ50     525 JH50     5254       08971 79046
+
+T     JM1      220 JIANGME= 525        00005 02067            220. 500.
+T     JM2      220 JIANGME= 525        00005 02067            220. 500.
+L     JIANGMEN 220 WUYI     220        00485 02479                 
+T     JIANGMEN 220 CSG173  15.8        00179 02337            220.  15.8
+T     JM1      220 JIANGMEN 220        00012-.0021            220. 218.5
+T     JM2      220 JIANGMEN 220        00012-.0021            220. 218.5
+.L     JIAYING  220 MAOHU    220       1181293.4036                 
+L     JIAYING  220 RONGJIAN 220        00569 02986                 
+T     JY1      220 JIAYING  220        00006-.0021            220. 229.9
+T     JY1      220 JIAYING= 525        00004 .0164            220. 525.
+T     JIH3    27.  JINGHAB= 525        00009 00663             27. 525.
+.T     JIH3    27.  JINGHAB= 500        00017 01325             27. 525.
+.T     JIH4    27.  JINGHAB= 500        00017 01325             27. 525.
+
+T     JM1      220 JM31    34.5        00088 06246            220.  34.5
+T     JM2      220 JM32    34.5        00088 06246            220.  34.5
+T     JY1      220 JY31    34.5        00055 .0411            220.  34.5
+T     KP2      220 KP32    34.5        00055 04129            220.  34.5
+T     KP2      220 KUNPENG  220        00008-.0023            220. 229.9
+T     KP2      220 KUNPENG= 525        00004 01616            220. 525.
+T     KP4      220 KP34    34.5        00055 04117            220.  34.5
+T     KP4      220 KUNPENG  220        00008-.0022            220. 229.9
+T     KP4      220 KUNPENG= 525        00004 01624            220. 525.
+T     KUNPENG  220 CSG118  20.         00052 02309            220.  20.
+L     KUWAN    220 QUJIANG  220        00454 03688       02234     
+.L     XIANLS   220 KUWAN    220       26379810.220
+.L     CSG184  13.8 KUWAN    220       11917337.923
+T     CSG141  20.  KUWAN    220              26967       00576 20. 220.
+T     KW1      220 KUWAN    220        00008-.0023            220. 223.9
+T     KW2      220 KUWAN    220        00008-.0022            220. 223.9
+T     KW1      220 KUWAN=   525        00004 01616            220. 525.
+T     KW2      220 KUWAN=   525        00004 01624            220. 525.
+T     KW1      220 KW31    34.5        00055 04129            220.  34.5
+T     KW2      220 KW32    34.5        00055 04117            220.  34.5
+.
+T     TSQM220  230 LBG1G   15.7        00398 03827            230.  15.7
+
+T     LD1      220 LD31    34.5        00085 05538            220.  34.5
+T     LD1      220 LUODONG= 525        00011 01918            220. 525.
+T     LD1      220 LUODONGA 220        00006-.0025            220. 232.9
+T     LD2      220 LD32    34.5        00085 05538            220.  34.5
+T     LD2      220 LUODONG= 525        00011 01918            220. 525.
+T     LD2      220 LUODONGB 220        00006-.0025            220. 232.9
+T     LD3      220 LD33    34.5        00085 05538            220.  34.5
+T     LD3      220 LUODONG= 525        00011 01918            220. 525.
+T     LD3      220 LUODONGB 220        00006-.0025            220. 232.9
+T     LD4      220 LD34    34.5        00085 05538            220.  34.5
+L     4JINZ5   525 4XYDC51  5251       .0003 .0031       .1663     
+L     4JINZ5   525 TSQ50    525  2500  .0002 .0021       .1166     
+T     LD4      220 LUODONG= 525        00011 01918            220. 525.
+T     LD4      220 LUODONGA 220        00006-.0025            220. 232.9
+T     LG1      220 LG31    34.5        00055 04112            220.  34.5
+T     LG1      220 LUGANG   220        00008-.0022            220. 229.9
+T     LG1      220 LUGANG=  525        00004 01613            220. 525.
+T     NPS3    26.  LINGAO=  525        00003 00327             26. 525.
+.T     NPS3    26.  LINGAO=  500        00012 01306             26. 525.
+.T     NPS4    26.  LINGAO=  500        00012 01306             26. 525.
+.T     NPS5    26.  LINGAO=  500        00012 01306             26. 525.
+.T     NPS6    26.  LINGAO=  500        00012 01306             26. 525.
+
+T     LYJ1    20.  LIYUJIA= 525        00057 03946             20. 550.
+T     LONGTAG118.  LONGTA50 525             .0031              18. 537.5
+.T     LONGTAG118.  LONGTA50 525              .0217             18. 537.5
+.T     LONGTAG218.  LONGTA50 525              .0217             18. 537.5
+.T     LONGTAG318.  LONGTA50 525              .0217             18. 537.5
+.T     LONGTAG418.  LONGTA50 525              .0217             18. 537.5
+.T     LONGTAG518.  LONGTA50 525              .0217             18. 537.5
+.T     LONGTAG618.  LONGTA50 525              .0217             18. 537.5
+.T     LONGTAG718.  LONGTA50 525              .0217             18. 537.5
+
+T     CSG200  10.5 LP50     525        00361 06283             10.5525.
+.L     LP50     525 LP50Q1   525              .0001                 
+.L     LP50     525 LP50Q2   525              .0001                 
+.T     ST3      220 LUGANG   220       -02639-.2624            220. 220.
+.L     LUGANG   220 SHANTOUA 220        .0015 00987                 
+.T     LUGANG   220 CSG187  20.         00061 02224            220.  20.
+.T     LUODON50 525 LUODONG= 525              00009            525. 525.
+T     LUODONGA 220 CSG184  13.8              .1217            220.  13.8
+L     XIANLS   220 LUODONGA 220        03262 46708            
+L     LUODONGA 220 LUODONGB 220        00488 04159                 
+L     XIJIANG  220 LUODONGA 220        00241 01553                 
+T     CSG184  13.8 LUODONGB 220        00103 .0402             13.8220.
+.L     XIJIANG  220 LUODONGB 220        00029 22727
+L     YANDU    220 LUODONGB 220        01414 07123           
+L     XIANLS   220 LUODONGB 220        01256 07342                 
+L     RONGJIAN 220 MAOHU    220        01134 06364            
+T     MH2      220 MAOHU    220        00012-.0002            220. 229.9
+T     MH3      220 MAOHU    220        00008-.0017            220. 229.9
+T     MH2      220 MAOHU=   525        00005 01873            220. 525.
+T     MH3      220 MAOHU=   525        00011 01994            220. 525.
+.T     MAOMIN50 525 MAOMING= 525              00009            525. 525.
+T     MAOMING  220 CSG186  20.         00109 01853            220.  20.
+T     MM1      220 MAOMING  220             -.0007            220. 229.9
+T     MM2      220 MAOMING  220             -.0007            220. 229.9
+T     MM1      220 MAOMING= 525        00017 01674            220. 525.
+T     MM2      220 MAOMING= 525        00017 01674            220. 525.
+T     MH2      220 MH32    34.5        .0011 05528            220.  34.5
+T     MH3      220 MH33    34.5        00066 05596            220.  34.5
+T     MJ50     525 CSG197  6.3         00214 01847            525.  6.3
+T     MM1      220 MM31    34.5        00054 05634            220.  34.5
+T     MM2      220 MM32    34.5        00054 05634            220.  34.5
+T     CSG111  13.8 PENGCHEB 220        .0008 03965             13.8220.
+T     ZIJINGA  220 CSG111  13.8        00031 01048            220.  13.8
+L     MW-HLZ   230 TSQM220  230              .0001                 
+
+T     MW1G    18.  MW50     525        00007 00864             18. 536.
+.T     MW1G    18.  MW50     525        .0005 03432             18. 536.
+.T     MW3G    15.7 MW50     525        .0003 .0457             15.7536.
+.T     MW50     525 MW4G    15.7        00031 04737            525.  15.7
+.T     MW5G    15.7 MW50     525        00031 04676             15.7525.
+.L     MW50     525 MW6G    15.7        00031 04778
+
+T     MW50     525 CSG117  13.8        00124 05938            525. 13.8
+T     NANN50   525 PINGG50  5251       00504 08948            525. 525.
+L     NPS      400 SZE      400        00041 00528       .1374     
+T     NPS1    26.  NPS      400        00012 .0135             26. 424.
+T     PANNANG122.  PANNAN50 525              .0101             22. 536. 
+.T     PANNANG122.  PANNAN50 525              .0202             22. 536.
+.T     PANNANG222.  PANNAN50 525              .0202             22. 536.
+T     PC1      220 PC31    34.5        00056 04141            220.  34.5
+T     PC1      220 PENGCHE= 525        00004 01624            220. 525.
+T     PC1      220 PENGCHEA 220        00008-.0022            220. 229.9
+T     PC2      220 PC32    34.5        00056 04161            220.  34.5
+T     PC2      220 PENGCHE= 525        00004 01618            220. 525.
+T     PC2      220 PENGCHEA 220        00008-.0022            220. 229.9
+T     PC3      220 PC33    34.5        00056 .0415            220.  34.5
+T     PC3      220 PENGCHE= 525        00004 01618            220. 525.
+T     PC3      220 PENGCHEB 220        00008-.0022            220. 229.9
+T     PC4      220 PC34    34.5        00056 04141            220.  34.5
+T     PC4      220 PENGCHE= 525        00004 01624            220. 525.
+T     PC4      220 PENGCHEA 220        00008-.0022            220. 229.9
+L     PENGCHEB 220 ZIJINGA  220        00084 01006                 
+T     PIH1    27.  PINGHAI= 525        00008 00663             27. 525.
+.T     PIH1    27.  PINGHAI= 500        00017 01325             27. 525.
+.T     PIH2    27.  PINGHAI= 500        00017 01325             27. 525.
+T     PINBAG2 15.7 TSQM220  230        00986 14525             15.7230.
+T     PINBAG2 15.7 TSQ50    525              41635             15.7525.
+T     PIS4    20.  PINGSHB= 525        00030 02007             20. 525.
+.T     PIS4    20.  PINGSHB= 500        00061 04028             20. 525.
+.T     PIS5    20.  PINGSHB= 500        00061 .04               20. 525.
+T     QD50     525 CSG200  10.5        00016 02906            525. 10.5
+.L     QD50     525 QD50B1   525              .0001                 
+.L     QD50     525 QD50B2   525              .0001                 
+.L     QD50     525 QD50C    525              .0001                 
+T     QIAOK1  22.  QIAOKOU= 525              02072             22. 525.
+T     QINZH50  525 QINZHG2 22.               01992            525.  22.
+T     QJ1      220 QJ31    34.5        00111 .0542            220.  34.5
+T     QJ1      220 QUJIANG  220        00013-.0019            220. 236.
+T     QJ1      220 QUJIANG= 525        00004 01838            220. 525.
+T     QJ2      220 QJ32    34.5        00075 .0576            220.  34.5
+T     QJ2      220 QUJIANG  220        00008-.0018            220. 236.
+T     QJ2      220 QUJIANG= 525        .0001 .0188            220. 525.
+
+T     QJB50    525 CSG199  6.3         00018 04058            525.  6.3
+.L     QJB50    525 QJB50L1  525              .0001                 
+.L     QJB50    525 QJB50L2  525              .0001                 
+.T     QUJIANG  220 XIANLS   220       142818564773            220. 220.
+.L     CSG184  13.8 QUJIANG  220        .554520.934
+T     QUJIANG  220 CSG141  20.         00049 01791            220.  20.
+T     RJ2      220 RJ32    34.5        00055 04088            220.  34.5
+T     RJ2      220 RONGJIA= 525        00004 .0165            220. 525.
+T     RJ2      220 RONGJIAN 220        00006-.0021            220. 229.9
+L     4LIP51   525 GUILIN52 5251 3420  .0011 .0135      1.405      
+L     4LIP51   525 GUILIN52 5252 3420  .0011 .0135      1.405      
+T     RJ3      220 RJ33    34.5        00055 04113            220.  34.5
+T     RJ3      220 RONGJIA= 525        00004 01643            220. 525.
+T     RJ3      220 RONGJIAN 220        00006-.0021            220. 229.9
+T     SD1      220 SD31    34.5        00055 03901            220.  34.5
+T     SD1      220 SHUNDE=  525        00004 01829            220. 525.
+T     SD1      220 SHUNDEA  220        00012-.0012            220. 229.9
+T     SD2      220 SD32    34.5        00055 03912            220.  34.5
+L     4LIUPS51 525 4NY51    5251 2500  .0002 .0031       .1795     
+T     SD2      220 SHUNDE=  525        00004 01826            220. 525.
+T     SD2      220 SHUNDEA  220        00012-.0011            220. 229.9
+T     SD3      220 SD33    34.5        00055 03912            220.  34.5
+T     SD3      220 SHUNDE=  525        00004 01826            220. 525.
+T     SD3      220 SHUNDEA  220        00012-.0011            220. 229.9
+
+L     SHAJIAO= 525 SHAJIAC= 525             .00009                 
+T     SJC1    19.  SHAJIAC= 525        00011 00712             19. 525.
+.T     SJC1    19.  SHAJIAC= 500        00035 02095             19. 525.
+.T     SJC2    19.  SHAJIAC= 500        00031 02234             19. 523.
+.T     SJC3    19.  SHAJIAC= 500        00035 02095             19. 525.
+T     SJA4    20.  SHAJIAO= 525        00030 02043             20. 525.
+.T     SJA4    20.  SHAJIAO= 500        00061 04086             20. 525.
+.T     SJA5    20.  SHAJIAO= 500        00061 04086             20. 525.
+T     SHAJIB=  525 SHAJIAOA 220        00066 04134            500. 22733
+T     CSG142  15.8 SHAJIAOA 220        00042 01992             15.824125
+.T     CSG142  15.8 SHAJIAOA 2201       00127 05977             15.824125
+.T     CSG142  15.8 SHAJIAOA 2202       00127 05977             15.824125
+.T     CSG142  15.8 SHAJIAOA 2203       00127 05977             15.824125
+T     SJB1    19.  SHAJIB= 525.        00055 03641             19. 532.         
+T     SJB2    19.  SHAJIAB=525.        00055 03641             19. 532.
+T     SHZ1     220 SHANGZH= 525        00004 01613            220. 525.
+T     EQG160  20.  SHANGZHA 220        00118 02471             20. 220.
+T     SHZ1     220 SHANGZHA 220        00008-.0022            220. 229.9
+T     ST1      220 SHANTOU= 525        00011 02001            220. 525.
+T     ST3      220 SHANTOU= 525        00011 01997            220. 525.
+.T     SHANTOUA 220 ST3      220        00008-00181            220. 220.         
+.T     SHANTOUA 220 CSG187  20.         00071 01205            220.  20.
+.T     ST1      220 SHANTOUA 220        00008-.0018            220. 229.9
+T     SZ3      220 SHENZHE= 525        00011 01887            220. 525.
+T     SZ4      220 SHENZHE= 525        00011 01887            220. 525.
+T     SZ5      220 SHENZHE= 525        00011 01887            220. 525.
+T     SZE      400 SHENZHE= 5251       00017 .018             400. 48837
+T     SZE      400 SHENZHE= 5252       00017 .018             400. 48837
+T     SZ3      220 SHENZHEN 220        00008-.0019            220. 232.9
+T     SZ4      220 SHENZHEN 220        00008-.0019            220. 232.9
+T     SZ5      220 SHENZHEN 220        00008-.0019            220. 232.9
+T     CSG193  20.  SHIYANG  220        00068 05218             20. 220.
+T     SY1      220 SHIYANG  220        00008-.001             220. 230.
+T     SY2      220 SHIYANG  220        00008-.001             220. 230.
+T     SY1      220 SHIYANG= 525        00004 .017             220. 525.
+T     SY2      220 SHIYANG= 525        00004 .017             220. 525.
+T     SX2      220 SHUIXIA= 525        00004 .017             220. 525.
+T     SX3      220 SHUIXIA= 525        00004 .017             220. 525.
+T     SX2      220 SHUIXIAN 220        00008-.001             220. 229.9
+T     SX3      220 SHUIXIAN 220        00008-.001             220. 229.9
+T     DES1    20.  SHUNDEA  220        00076 04684             20. 220.
+.L     SHUNDEA  220 SHUNDEB  220              .0001
+T     SHZ1     220 SHZ31   34.5        00055 04112            220.  34.5
+T     ST1      220 ST31    34.5        00075 05751            220.  34.5
+.L     CSG187  20.  ST3      220       -.036 -62195
+T     ST3      220 ST33    34.5        00075 .0573            220.  34.5
+T     SX2      220 SX32    66.         00056 .023             220.  66.
+T     SX3      220 SX33    66.         00056 .023             220.  66.
+T     SY1      220 SY31    66.         00056 .023             220.  66.
+T     SY2      220 SY32    66.         00056 .023             220.  66.
+T     SZ3      220 SZ33    34.5        00074 05733            220.  34.5
+T     SZ4      220 SZ34    34.5        00074 05733            220.  34.5
+T     SZ5      220 SZ35    34.5        00074 05733            220.  34.5
+
+T     TBB50    525 CSG196  6.3         00095 04693            525. 6.3
+T     TOG3    20.  TONGGU=  525        00006 00465             20. 525.
+.
+T     CSG155  13.8 TPJ50    525        00304 27576             13.8525.
+T     TSQ50    525 TSQM220  230        00102 02417            525. 230.
+T     TSQBG1  18.  TSQ50    525             .0093              18. 550.
+.T     TSQBG1  18.  TSQ50    5251             .056              18. 550.
+.T     TSQBG1  18.  TSQ50    5252             .056              18. 550.
+.T     TSQBG1  18.  TSQ50    5253             .056              18. 550.
+.T     TSQBG1  18.  TSQ50    5254             .056              18. 550.
+.T     TSQBG1  18.  TSQ50    5255             .056              18. 550.
+.T     TSQBG1  18.  TSQ50    5256             .056              18. 550.
+T     TSQM220  230 TSQDG1  18.         00011 .0108            230.  18.
+T     TSQM220  230 TSQM50   525              01676            230. 525.
+T     CSG173  15.8 WUYI     220        00762 05649             15.8220.
+T     WY1      220 WUYI     220        00008-.0019            220. 229.9
+T     WY1      220 WUYI=    525        00011 02004            220. 525.
+T     WY1      220 WY31    34.5        00066 05703            220.  34.5
+T     XS1      220 XIANGSH= 525        00004 01605            220. 525.
+T     XS2      220 XIANGSH= 525        00004 01605            220. 525.
+T     XS3      220 XIANGSH= 525        00004 01644            220. 525.
+.T     XIANGSHA 220 XS3      220        00008-00201            220. 220. 
+.T     XIANGSHA 220 XS2      220        00008-00211            220. 220. 
+T     XS1      220 XIANGSHA 220        00008-.0022            220. 229.9
+.L     XIJIANG  220 XIANLS   220       -11637253854
+T     CSG184  13.8 XIANLS   220        .0025 02426             13.8220.
+T     XLS2     220 XIANLS   220        00004-.0024            220. 230.
+.T     XIANLS50 525 XIANLS=  525              00009            525. 525.
+T     XLS2     220 XIANLS=  525        00015 02171            220. 525.
+T     XIAOW1G 18.  XIAOW50  525       .00008.00317             18. 536.
+.T     XIAOW1G 18.  XIAOW50  525        .0005 .019              18. 536.
+.T     XIAOW2G 18.  XIAOW50  525        .0005 .019              18. 536.
+.T     XIAOW3G 18.  XIAOW50  525        .0005 .019              18. 536.
+.T     XIAOW4G 18.  XIAOW50  525        .0005 .019              18. 536.
+.T     XIAOW5G 18.  XIAOW50  525        .0005 .019              18. 536.
+.T     XIAOW6G 18.  XIAOW50  525        .0005 .019              18. 536.
+T     XIJIANG  220 CSG184  13.8              05188            220.  13.8 
+T     XJ2      220 XIJIANG  220        00008-.0022            220. 229.9
+L     4NY51    525 4ANS51   525  2500  .0006 .0097       .5557     
+L     4NY52    525 4ANS51   525  2500  .0006 .0097       .5557     
+L     4NY52    525 ANSH-HLZ 525  2500  .0006 .0083       .4688     
+T     XJ4      220 XIJIANG  220        00008-.0022            220. 229.9
+T     XJ2      220 XIJIANG= 525        00004 01604            220. 525.
+T     XJ4      220 XIJIANG= 525        00004 01604            220. 525.
+T     XJ2      220 XJ32    34.5        00056 04122            220.  34.5
+T     XJ4      220 XJ34    34.5        00056 04122            220.  34.5
+T     XJS6G   20.  XJS50    525        .0005 03432             20. 525.
+T     XLS2     220 XLS32   34.5        00157 05787            220.  34.5
+T     XLT7G   20.  XLT50    525        .0005 03432             20. 525.
+T     XS1      220 XS31    34.5        00055 .0413            220.  34.5
+.L     XS2      220 XS3      220             04635       .0119     
+T     XS2      220 XS32    34.5        00055 .0412            220.  34.5
+T     XS3      220 XS33    34.5        00055 04101            220.  34.5
+T     YD2      220 YANDU    220        00007-.0017            220. 229.9
+T     YD3      220 YANDU    220        00007-.0017            220. 229.9
+T     YD2      220 YANDU=   525        00011 01974            220. 525.
+T     YD3      220 YANDU=   525        00011 01974            220. 525.
+T     YAX1    20.  YANGXI=  525              01036             20. 525.
+.T     YAX1    20.  YANGXI=  500              02072             20. 525.
+.T     YAX2    20.  YANGXI=  500              02072             20. 525.
+T     YANTAG1 15.7 YANTA50  525             .0122              15.7525.
+.T     YANTAG1 15.7 YANTA50  525              .049              15.7525.
+.T     YANTAG2 15.7 YANTA50  525              .0487             15.7525.
+.T     YANTAG3 15.7 YANTA50  525              .0488             15.7525.
+.T     YANTAG4 15.7 YANTA50  525              .0488             15.7525.
+T     YD2      220 YD32    34.5        00067 05534            220.  34.5
+T     YD3      220 YD33    34.5        00067 05534            220.  34.5
+T     CSG199  6.3  YFB50    525        00313 04605             6.3 525.
+.T     YONGAN50 525 YONGANZ  525              .018             525. 525.
+T     YSH50    525 CSG196  6.3         00214 03807            525.  6.3
+T     YW1G    22.  YW50     525        00027 02029             22. 536.
+T     YX50     525 CSG201  6.3         01116 12024            525.  6.3
+T     ZC1      220 ZC31    34.5        00088 05665            220.  34.5
+T     ZC1      220 ZENGCHE= 525        00005 01875            220. 525.
+T     ZC1      220 ZENGCHEB 220        00012-.0019            220. 226.9
+T     ZC2      220 ZC32    34.5        00088 05665            220.  34.5
+T     ZC2      220 ZENGCHE= 525        00005 01875            220. 525.
+T     ZC2      220 ZENGCHEB 220        00012-.0019            220. 226.9
+T     ZC3      220 ZC33    34.5        00088 05665            220.  34.5
+T     ZC3      220 ZENGCHE= 525        00005 01875            220. 525.
+T     ZC3      220 ZENGCHEB 220        00012-.0019            220. 226.9
+T     ZC4      220 ZC34    34.5        00055 04044            220.  34.5
+T     ZC4      220 ZENGCHE= 525        00004 01606            220. 525.
+T     ZC4      220 ZENGCHEA 220        00008-.0022            220. 226.9
+T     ZEL3    27.  ZHELINC= 525        00008 00663             27. 525.
+.T     ZEL3    27.  ZHELINC= 500        00017 01325             27. 525.
+.T     ZEL4    27.  ZHELINC= 500        00017 01325             27. 525.
+T     ZZ1      220 ZHENZHO= 525        00004 01614            220. 525.
+T     ZZ1      220 ZHENZHOU 220        00008-.0022            220. 230.
+T     ZUH3    20.  ZHUHAIB= 525        00010 01072             20. 525.
+.T     ZUH3    20.  ZHUHAIB= 500        00021 02144             20. 525.
+.T     ZUH4    20.  ZHUHAIB= 500        00021 02144             20. 525.
+T     ZJ1      220 ZIJING=  525        00004 .017             220. 525.
+T     ZJ2      220 ZIJING=  525        00004 .017             220. 525.
+.T     ZIJINGA  220 ZJ2      220        00008-00095            220. 220.         
+L     4QB51    525 4YX51    525  2500  .0003 .0041       .2349     
+L     4QB51    525 4YX51    5252 2500  .0003 .0041       .2349     
+T     ZJ1      220 ZIJINGA  220        00008-.001             220. 230.
+T     ZJ1      220 ZJ31    66.         00056 .023             220.  66.
+T     ZJ2      220 ZJ32    66.         00056 .023             220.  66.
+T     ZXD50    525 ZX1G    22.         00033 02494            525. 22.
+T     ZZ1      220 ZZ31    34.5        00055 04112            220.  34.5
+L     4QINGY5  525 4DUS51   5251 3000  00086 01122       .641      
+L     4QINGY5  525 4DUS51   5252 3000  00086 01122       .641      
+L     4QINGY5  525 4FUQ51   525  2500  .0008 .0108       .5718     
+L     4QX51    525 4XIF51   5251 2500  .0005 .0069       .3495     
+L     4QX51    525 4XIF51   5252 2500  .0005 .0069       .35       
+L     4SHIB51  525 4GPT51   5251 3320  .0006 .008        .4258     
+L     4SHIB51  525 4GPT51   5252 3320  .0006 .008        .4258     
+L     4SHIB51  525 4LIP51   5251 3420  .0009 .0111      1.154      
+L     4SHIB51  525 4LIP51   5252 3420  .0009 .0111      1.154      
+L     4SHIB51  525 4TONGR51 5251 2648  .0005 .0074       .392      
+L     4SHIB51  525 4TONGR51 5252 2651  .0005 .0077       .4086     
+L     4SONGT51 525 4TONGR51 525  2500  .0007 .0099       .5232     
+L     4XIF51   525 4GUIY51  5251 2500  .0003 .0039       .2052     
+L     4XIF51   525 4GUIY51  5252 2500  .0003 .004        .21       
+L     4XIF51   525 4YAX51   525  2705  .0004 .0062       .3481     
+L     4XINGS51 525 4FUQ51   5251 2648  .0004 .0057       .3242     
+L     4XINGS51 525 4GUIY51  5251 2500  .0004 .0055       .3126     
+L     4YAX51   525 4FUQ51   5251 2500  .0014 .0133       .7312     
+L     4YAX51   525 4FUQ51   5252 2500  .001  .0137       .7289     
+L     4YX51    525 4YAX51   525  3000  .0001 .0013       .0688     
+L     4YX51    525 4YAX51   5252 3000  .0001 .0013       .0688     
+L  NF ANSH-HLZ 525 4ANS51   5251 3785  00004 00107       .051      
+L  NF ANSH-HLZ 525 4ANS51   5252 3785  00004 00107       .051      
+L     AOLIYOU= 525 GANGCHE= 5251 2000 .00032.00286      .16933     
+L     AOLIYOU= 525 GANGCHE= 5252 2000 .00032.00286      .16933     
+L     BAHE50   525 4ANS51   525  2716  00044 00455       .2576     
+L     BAHE50   525 4QINGY5  525  2786  00096 01262       .7212     
+L     BAHE50   525 XINREN50 5251 2756  00077 00788       .4464     
+L     BAHE50   525 XINREN50 5252 2786  00068 00892       .5094     
+.L  NF BAIS50   525 BAISLPK1 525              .0001                 
+.L  NF BAIS50   525 BAISLPK2 525              .0001                 
+L  NF BAIS50   525 YONGAN50 5251 2280  00087 01095       05214     
+L  NF BAIS50   525 YONGAN50 5252 2280  00087 01095       05214     
+.L  NF BAISK1   525 BAIS50   525              .0001                 
+L     BAOAN=   525 GUANCHE= 525  2840 .00028.00365      .21343     
+L     BAOAN=   525 PENGCHE= 5251 2840 .00008.00080      .04611     
+L     BAOAN=   525 PENGCHE= 5252 2840 .00009.00081      .04611     
+L     BEIJIAO= 525 HUADU=   5251 2840 .00019.00283      .16455     
+L     BEIJIAO= 525 HUADU=   5252 2840 .00019.00283      .16698     
+L     BEIJIAO= 525 ZENGCHE= 5251 2840 .00060.00451      .24106     
+L     BEIJIAO= 525 ZENGCHE= 5252 2840 .00058.00451      .25009     
+.L     BEIJIAOA 220 BEIJIAOB 220              .0001
+L  yn BF50     525 YX50     5251 1250  .0005 00728       .4321     
+L  yn BF50     525 YX50     5252 1250  00056 00714       42047     
+L  yn BF50     525 CP50     5251 1250  00055 .0054       .3023     
+L  yn BF50     525 HP50     5251 1250  00091 00976       55194     
+L     BMSCM1   525 BSH50    525             -.0061                 
+L     BMSCM2   525 BSH50    525             -.0061                 
+L     BOLUO=   525 HENGLI=  5251 3560 .00024.00357      .21416     
+L     BOLUO=   525 HENGLI=  5252 3560 .00027.00350      .21416     
+L     BOLUO=   525 KUWAN=   525  3580 .00046.01240      .74667     
+L     CANGJIA= 525 YANDU=   5251 3990 .00011.00273      .17364     
+L     CANGJIA= 525 YANDU=   5252 3990 .00011.00273      .17364     
+L     CHONGZ50 525 NANN50   525  2500  00078 01261       .7269     
+L  yn CP50     525 HP50     5251 1250  00036 00436       24964     
+L     DAYAWAN= 5252HUIZHOU= 525  2385 .00056.00578      .31009     
+.L     DBSCB1   525 BSH50    525              .0001                 
+.L     DBSCB2   525 BSH50    525              .0001                 
+L     DBSCD1   525 BSH50    525             -.0102                 
+L     DBSCD2   525 BSH50    525             -.0102                 
+L     DCHZ=    525 BOLUO=   5251 3990 .00005.00031      .01736     
+L     DCHZ=    525 BOLUO=   5252 3990 .00006.00032      .01736     
+L  yn DCS50    525 BF50     5251 1250  00192 02759      1.489      
+L  yn DCS50    525 BF50     5252 1250  .002  02561      1.549      
+L     DCSUID=  525 HENGLI=  5251 2385 .00044.00492      .28252     
+L     DCSUID=  525 HENGLI=  5252 2385 .00033.00488      .28459     
+L     DCSUID=  525 SHUIXIA= 525  2385 .00020.00270      .16791     
+L     DCSUID=  525 SHUIXIA= 5251 3990 .00015.00293      .18638     
+L     DCSUID=  525 SHUIXIA= 5252 3990 .00015.00293      .18638     
+L     DCSUID=  525 ZENGCHE= 5252 2840 .00013.00148      .08476     
+L     DCZQ=    525 YANDU=   5251 3990 .00002.00014      .00579     
+L     DCZQ=    525 YANDU=   5252 3990	      .00014      .00579     
+L  yn DD50     525 LP50     5251 2000  00043 00616       35244     
+L  yn DD50     525 LP50     5252 2000  00043 00616       35244     
+L     DGT=     525 HUIZHOU= 5252 2385 .00047.00442      .22927     
+L  yn DH50     525 DBSCD1   525  1500  .0017 .0205      2.031      
+L  yn DH50     525 DBSCD2   525  1500  .0017 .0205      2.031      
+L     DIELING= 525 CANGJIA= 5251 3990 .00046.01181      .75246     
+L     DIELING= 525 CANGJIA= 5252 3990 .00046.01181      .75246     
+L     DIELING= 525 WUYI=    5251 2840 .00055.00775      .47810     
+L     DIELING= 525 WUYI=    5252 2840 .00055.00775      .47810     
+L     DONGGUA= 525 HUIZHOU= 5251 2385 .00082.00533      .29382     
+L  yn DYJ450   525 DH50     525  1200  00066 .0067       .3806     
+L  yn DYJ450   525 TPJ50    525   500  00012 .0012       .0827     
+L     FAER50   525 BAHE50   5251 2900  00099 01292       .7383     
+L     FAER50   525 BAHE50   5252 2900  00099 01292       .7383     
+L     FENGY50  525 GUIGC50  5251 1250  00003 00029       01753     
+L     FENGY50  525 GUIGC50  5252 1250  00003 00029       01753     
+L     FENGY50  525 LAIB50   525  2204  00084 00859       .4865     
+L     FUYUAN=  525 DONGGUA= 5251 3990 .00015.00356      .22579     
+L     FUYUAN=  525 DONGGUA= 5252 3990 .00015.00356      .22579     
+L     FUYUAN=  525 HZXUNEN= 5251 3990 .00019.00321      .20017     
+L     FUYUAN=  525 HZXUNEN= 5252 3990 .00019.00321      .20017     
+L     GANGCHE= 525 NANLIN50 525  1500  .0012 .0133       .7205     
+L     GANGCHE= 525 MAOMING= 5251 2000 .00060.00759      .46479     
+L     GANGCHE= 525 MAOMING= 5252 2000 .00058.00759      .46479     
+L  yn GGQ50    525 DL50     525  2800  00103 01152       65795     
+L     GUANGZ50 525 XINREN50 525  2000  .0005 .0064       .3408     
+L     GUIFENG= 525 TONGGU=  5251 2840 .00027.00681      .43411     
+L     GUIFENG= 525 TONGGU=  5252 2840 .00027.00681      .43411     
+L     GUIFENG= 525 TONGGU=  5253 2840 .00027.00681      .43411     
+L     GUIFENG= 525 TONGGU=  5254 2840 .00027.00681      .43411     
+L     GUIFENG= 525 XIANGSH= 5251 2840 .00020.00500      .31835     
+L     GUIFENG= 525 XIANGSH= 5252 2840 .00020.00500      .31835     
+.L     GUILIN51 525 GUILIN52 525              .0001                 
+L     GUILIN52 525 GUILSC1  525             -.0112                 
+L     GUILIN52 525 GUILSC2  525             -.0112                 
+L     GUILSC1  5252XIANLS=  5251 3342  .0018 .0223      2.323      
+L     GUILSC2  5252XIANLS=  5252 3342  .0018 .0223      2.323      
+L     GUISHAN= 525 GUOAN=   5251 3620 .00017.00274      .17282     
+L     GUISHAN= 525 GUOAN=   5252 3620 .00013.00274      .17282     
+L     GUISHAN= 525 SHIYANG= 5251 3990 .00024.00590      .37623     
+L     GUISHAN= 525 SHIYANG= 5252 3990 .00024.00590      .37623     
+L     GUISHAN= 525 XIANGSH= 5251 3620 .00015.00328      .20738     
+L     GUISHAN= 525 XIANGSH= 5252 3620 .00015.00328      .20738     
+L     HAIGAN50 525 FCG50    5251 2000  00021 .003        18698     
+L     HAIGAN50 525 FCG50    5252 2000  00021 00299       18639     
+L     HAIGAN50 525 JIULO50  525  2000  00032 00448       27899     
+L     HAIGAN50 525 YONGZ50  525  3000  00092 01297       80808     
+L     HAIMEN=  525 LUGANG=  5251 3560 .00019.00315      .19874     
+L     HAIMEN=  525 LUGANG=  5252 3560 .00019.00315      .19874     
+L     HCSC     525 HECHI50  525             -.0112                 
+L     HCSC1    525 HECHI50  525             -.0112                 
+L  NF HECHI50  525 LIUDO50  5251 2596  00115 01503       .8585     
+L  NF HECHI50  525 LIUDO50  5252 2596  00115 01503       .8585     
+L     HENGLI=  525 DGT=     5252 3150 .00017.00170      .09520     
+L     HENGLI=  525 DONGGUA= 5251 3150 .00011.00172      .09520     
+L  GX HESAC50  525 SUHE50   5251             .0001                 
+L     HESHUYB= 525 JIAYING= 5251 2385 .00017.00109      .06159     
+L     HESHUYB= 525 JIAYING= 5252 2385 .00017.00109      .06159     
+L     HEZHOU50 525 HEZHOSC1 525             -.0082                 
+L     HEZHOU50 525 HEZHOSC2 525             -.0082                 
+L  NF HEZHOU50 5252LUODONG= 5251 2596  .0021 .0294      1.4244     
+L  NF HEZHOU50 5252LUODONG= 5252 2596  .0021 .0294      1.4244     
+L  yn HH50     525 TBB50    5251 1250  00063 00607       35912     
+L  yn HH50     525 TBB50    5252 1250  00054 .0061       35813     
+L  yn HH50     525 XJS50    525  1250  00045 00405       24032     
+L  yn HH50     525 YSH50    5251 2500  00081 01341       76826     
+L  yn HH50     525 YSH50    5252 2500  00078 01347       76861     
+L  yn HLB50    525 HH50     5251 2500  .0002 .003        .2712     
+L  yn HLB50    525 HH50     5252 2500  .0002 .003        .2712     
+L     HONGHAW= 525 MAOHU=   5251 3230 .00015.00278      .14012     
+L     HONGHAW= 525 MAOHU=   5252 3230 .00015.00276      .14012     
+L  yn HP50     525 DL50     5251 1500  00142 02186      1.187      
+L  yn HP50     525 DL50     5252 1500  00138 02028      1.0955     
+L  yn HP50     525 CK50     5251 1500  00054 00703       39666     
+L  yn HP50     525 CK50     5252 1250  00056 00716       .3944     
+L     HUADU=   525 BOLUO=   5252 3772 .00112.01318      .79297     
+L     HUADU=   525 KUWAN=   525  3580 .00034.00913      .54987     
+L     HUIZHOU= 525 MAOHU=   5251 2840 .00092.01122      .61731     
+L     HUIZHOU= 525 MAOHU=   5252 2840 .00087.01114      .61976     
+L     HZXUNEN= 525 BOLUO=   525  2840 .00016.00162      .09391     
+L  yn JAQ50    525 CXHLZ50  5251       00194 02245      2.4459     
+L  yn JAQ50    525 CXHLZ50  5252       00194 02245      2.4459     
+L  yn JH50     525 MJ50     5251 3000  00132 01853      1.0555     
+L  yn JH50     525 MJ50     5252 3000  00132 .0183      1.0556     
+L     JIANGME= 525 XIJIANG= 5251 2344 .00060.00537      .29535     
+L     JIAYING= 525 RONGJIA= 5251 2840 .00100.01187      .68300     
+L     JIAYING= 525 RONGJIA= 5252 2840 .00106.01187      .68300     
+L     JIULO50  525 YULIN50  525  2000  00126 01643       .9387     
+L     KUNPENG= 525 DONGGUA= 5251 2840 .00025.00261      .14233     
+L     KUNPENG= 525 DONGGUA= 5252 2840 .00026.00262      .14226     
+L  NF LAIB50   525 WUZHO50  5251 2228  .0022 02297      1.3906     
+L  NF LAIB50   525 WUZHO50  5252 2228  00227 .0227      1.2651     
+L  NF LBSC1    525 BAIS50   525             -.0111                 
+L  NF LBSC2    525 BAIS50   525             -.0111                 
+L     LINGAO=  525 KUNPENG= 5251 2840 .00033.00378      .20799     
+L     LINGAO=  525 KUNPENG= 5252 2840 .00034.00370      .20799     
+L     LINGAO=  525 SHENZHE= 5251 2840 .00033.00437      .23864     
+L     LINGAO=  525 SHENZHE= 5252 2840 .00053.00418      .24157     
+L     LINSD50  525 FUSHAN50 525  1500  .0001 .0014       .0776     
+L     LIUDO50  525 GUILIN52 5251 2656  00091 01281       79805     
+L     LIUDO50  525 GUILIN52 5252 2656  00091 01281       79805     
+L  NF LIUDO50  525 HEZHOSC1 5251 2596  00157 02054      1.1733     
+L  NF LIUDO50  525 HEZHOSC2 5252 2596  00157 02054      1.1733     
+L     LIYUJIA= 525 QIAOKOU= 525  1500 .00004.00017      .00960     
+L     LONGTA50 525 HECHI50  5251 2500  00125 01633       .9329     
+L  NF LP50     525 LBSC1    525  2500  00179 .0218      2.195      
+L  NF LP50     525 LBSC2    525  2500  00179 .0218      2.195      
+L  NF LP50     525 TSQM50   525  2500  00077 .0088       53116     
+L     LUGANG=  525 ZHENZHO= 5251 3990 .00067.01699      1.0824     
+L     LUGANG=  525 ZHENZHO= 5252 3990 .00067.01699      1.0883     
+L     LUODONG= 525 BEIJIAO= 5251 2840 .00043.00390      .21223     
+L     LUODONG= 525 BEIJIAO= 5252 2385 .00053.00399      .21341     
+L     LUODONG= 525 XIJIANG= 5251 2344 .00034.00208      .13845     
+L     LUODONG= 525 XIJIANG= 5252 2840 .00043.00235      .13845     
+L     MAOMING= 525 DIELING= 5251 2840 .00105.01476      .84165     
+L     MAOMING= 525 DIELING= 5252 2840 .00106.01489      .84165     
+L  NF MBSC     525 BAIS50   525             -.0114                 
+L  yn MHSCH1   525 HLB50    5251 2500  .0002 .0031       .2751     
+L  yn MHSCH2   525 HLB50    5252 2500  .0002 .0031       .2751     
+L  yn MHSCM1   525 MHSCH1   525  2500       -.0084                 
+L  yn MHSCM2   525 MHSCH2   525  2500       -.0084                 
+L  yn MJ50     525 BMSCM1   525  1500  .001  .0122      1.223      
+L  yn MJ50     525 BMSCM2   525  1500  .001  .0122      1.223      
+L  yn MJ50     525 MHSCM1   525  2500  00113 01308      1.4253     
+L  yn MJ50     525 MHSCM2   525  2500  00113 01308      1.4253     
+L  yn MJ50     525 YX50     5251 1250  00081 01414       .764      
+L  yn MJ50     525 YX50     5252 1250  00081 01475       .799      
+L  yn MW50     525 CP50     5251 1250  00202 02358      1.3        
+L  yn MW50     525 CP50     5252 1250  .002  .0233      1.285      
+L     NANLIN50 525 LINSD50  525  1500  .0006 .0009      3.2149     
+L  NF NANN50   525 PINGG50  525  2280  00084 00981       53514     
+L     NANN50   525 YONGZ50  5251 2500  00048 00631       .3606     
+L     NANN50   525 YONGZ50  5252 2500  00048 00631       .3606     
+L  NF NANN50   525 YULIN50  5251 2500  .0016 01996       94989     
+L  NF NANN50   525 YULIN50  5252 2500  .0016 01996       94989     
+L     PANNAN50 525 XINREN50 5251 2500  00041 .0071       .3939     
+L     PANNAN50 525 XINREN50 5252 2500  00041 .0071       .3939     
+L     PENGCHE= 525 SHENZHE= 5251 2840 .00033.00275      .15255     
+L  NF PINGG50  525 LAIB50   5251 2280  00163 01713      1.0379     
+L  NF PINGG50  525 LAIB50   5252 2280  00175 01793      1.0336     
+L     PINGG50  525 LONGTA50 525  2500  00173 02264      1.2935     
+L     PINGHAI= 525 ZHENZHO= 5251 3990 .00015 .004       .25468     
+L     PINGHAI= 525 ZHENZHO= 5252 3990 .00015 .004       .25468     
+L     PINGSHB= 525 QUJIANG= 525  2400 .00101.01168      .62917     
+L  yn QD50     525 HH50     5251 2500  00103 01564       88828     
+L  yn QD50     525 HH50     5252 2500  00115 01555       89943     
+L  yn QD50     525 LP50     5251 2500  00085 01619       89559     
+L  yn QD50     525 LP50     5252 2500  00038 01693       78852     
+L  yn QD50     525 BF50     5251 1250  00101 00639       36677                  
+L  yn QD50     525 BF50     5252 1250  00101 00645       36339                  
+L  yn QD50     525 CK50     525  1250  00048 00662       37104     
+L     QIAOKOU= 525 QUJIANG= 5251 2000 .00187.01960      1.0453     
+L     QIAOKOU= 525 QUJIANG= 5252 2000 .00173.01907      1.0453     
+L     QINZH50  525 JIULO50  525  2428  00026 00362       22561     
+L  yn QJ50     525 QJB50    525  1250  00041 00406       22014     
+L  yn QJB50    525 CK50     5251 1250  00104 01334       75554     
+L  yn QJB50    525 CK50     5252 1250  00092 01341       77566     
+L  yn QJB50    525 DLE50    5251 2000  00061 .0093       48526     
+L  yn QJB50    525 DLE50    5252 1500  00062 00939       .5057     
+L  yn QJB50    525 LP50     5251 1500  00078 00822       47525     
+L  yn QJB50    525 LP50     5252 1500  00061 00841       47949     
+L     QUJIANG= 525 HUADU=   5251 2840 .00095.01427      .82848     
+L     QUJIANG= 525 HUADU=   5252 2840 .00097.01427      .84276     
+L     QUJIANG= 525 KUWAN=   525  3620 .00041.00936      .55877     
+L     RONGJIA= 525 JINGHAB= 5251 3990 .00030.00798      .48041     
+L     RONGJIA= 525 JINGHAB= 5252 3990 .00030.00798      .48041     
+L     RONGJIA= 525 MAOHU=   5251 2840 .00092.01234      .68413     
+L     RONGJIA= 525 MAOHU=   5252 2840 .00116.01354      .75528     
+L     SHAJIAB= 525 GUANGNA= 525  2840 .00088.00592      .32128     
+L     SHAJIAC= 525 GUANGNA= 525  2840 .00050.00580      .29354     
+L     SHAJIAC= 525 SHAJIAB= 525  2000       .00009      .00579     
+L     SHANGZH= 525 BOLUO=   5251 3620 .00043.00931      .58758     
+L     SHANGZH= 525 BOLUO=   5252 3620 .00043.00931      .58758     
+L     SHANGZH= 525 JIAYING= 5251 3560 .00071.01541      .97353     
+L     SHANGZH= 525 JIAYING= 5252 3560 .00071.01541      .97353     
+L     SHANTOU= 525 HANJIAN= 5251 3340 .00054.00615      .35858     
+L     SHANTOU= 525 HANJIAN= 5252 3340 .00054.00615      .35858     
+L     SHANTOU= 525 LUGANG=  5251 3560 .00032.00524      .33124     
+L     SHANTOU= 525 LUGANG=  5252 3560 .00032.00524      .33123      
+L     SHANTOU= 525 RONGJIA= 5251 2840 .00044.00419      .23393     
+L     SHANTOU= 525 RONGJIA= 5252 2840 .00040.00422      .23393     
+L     SHATA50  525 LAIB50   525  2500  .0011 .0112       .6296     
+L  NF SHATA50  525 LIUDO50  5251 2500  00029 00381       .2175     
+L  NF SHATA50  525 LIUDO50  5252 2500  00029 00381       .2175     
+L     SHATA50  525 LONGTA50 5251 2500  00213 02785      1.5912     
+L     SHATA50  525 LONGTA50 5252 2500  00213 02785      1.5912     
+L     SHUIXIA= 525 GUANCHE= 5251 3620 .00013.00268      .16936     
+L     SHUIXIA= 525 GUANCHE= 5252 3620 .00016.00356      .22524     
+L     SHUIXIA= 525 ZENGCHE= 525  3620 .00005.00125      .07892     
+L     SHUNDE=  525 GUANGNA= 5251 2840 .00054.00682      .37906     
+L     SHUNDE=  525 GUANGNA= 5252 2840 .00050.00686      .38295     
+L     SHUNDE=  525 JIANGME= 5251 2840 .00031.00327      .17349     
+L  NF SUHE50   525 LAIB50   5251 1250        .0043       .2583     
+L  NF SUHE50   525 LAIB50   5252 1250        .0043       .2583     
+L  NF TPSC     525 TPSCP    525             -.0106                 
+L  NF TPSC1    525 TPSC1P   525             -.0106                 
+L  NF TPSC1P   525 PINGG50  525             -00152                 
+L  NF TPSCP    525 PINGG50  525             -00152                 
+L  NF TSQ50    525 TPSC     525  2280  00289 03003      1.7971     
+L  NF TSQ50    525 TPSC1    525  2280  00336 03032      1.8324     
+L  NF TSQM50   525 MBSC     525  2580  00185 02336      1.2532     
+L  NF TSQM50   525 TSQ50    525  2500  00015 00199       11913     
+L     WUYI=    525 JIANGME= 5251 2840 .00040.00562      .34719     
+L     WUYI=    525 JIANGME= 5252 2840 .00040.00562      .34719     
+L     WUYI=    525 SHIYANG= 5251 3990 .00043.01090      .69458     
+L     WUYI=    525 SHIYANG= 5252 3990 .00043.01090      .69458     
+L  NF WUZHO50  5252LUODONG= 5251 2228  00213 02266      1.0708     
+L  NF WUZHO50  5252LUODONG= 5252 2228  00213 02266      1.1618     
+L     XIANGSH= 525 SHUNDE=  5251 2840 .00024.00238      .13221     
+L     XIANGSH= 525 SHUNDE=  5252 2840 .00024.00238      .13223     
+L     XIANLS=  525 HUADU=   5251 3620 .00079.01291      .76327     
+L     XIANLS=  525 HUADU=   5252 3620 .00076.01293      .76327     
+L  yn XIAOW50  525 CXHLZ50  5251 3000  00167 01943      2.1169     
+L  yn XIAOW50  525 CXHLZ50  5252 3000  00167 01943      2.1169     
+L  yn XIAOW50  525 HP50     525  3000  00164 01907      1.7115     
+L     XINREN50 525 4JINZ5   5251 2756  .0006 .0057       .3117     
+L     XINREN50 525 4JINZ5   5252 2300  .0006 .0057       .3117     
+L     XINREN50 525 XR-HLZ   525              .0001                 
+L  yn XLT50    525 HH50     525  1250  00029 00301       18281     
+L     XUNENG1= 525 BEIJIAO= 525  1420 .00072.01050      .57643     
+L     XUNENG1= 525 XUNENG2= 525  1420 .00004.00015      .00565     
+L     XUNENG2= 525 ZENGCHE= 5251 2385 .00102.00796      .46965     
+L     XUNENG2= 525 ZENGCHE= 5252 2385 .00115.00856      .45587     
+L  yn XW50     525 DLE50    525  1250  00021 00233       12192     
+L     YANDU=   525 HUADU=   5251 3772 .00088.01332      .81034     
+L     YANDU=   525 HUADU=   5252 3772 .00083.01327      .81034     
+L     YANDU=   525 XIJIANG= 5251 3990 .00033.00446      .26245     
+L     YANDU=   525 XIJIANG= 5252 3990 .00030.00445      .26223     
+L     YANGXI=  525 DIELING= 5251 2000 .00063.00798      .45787     
+L     YANGXI=  525 DIELING= 5252 2000 .00063.00798      .45787     
+L     YANTA50  525 PINGG50  525  1250  .001  .0102       .5723     
+L     YANTA50  525 SHATA50  525  1250  00243 .0244      1.3736     
+L  yn YFB50    525 DLE50    5251 2000  00082 01431       81949     
+L  yn YFB50    525 DLE50    5252 2000  00076 .0144       81999     
+L  NF YONGAN50 525 NANN50   5251 2500  00084 01046       .4982     
+L  NF YONGAN50 525 NANN50   5252 2500  00084 01046       .4982     
+.L     YSH50    525 YSH50C   525              .0001                 
+L     YSH50    525 YSHSC    525             -.0143                 
+L     YSHSC    525 CHONGZ50 525  3000  00197 02386      2.4921     
+L     YULIN50  525 FENGY50  525  2500  00074 00758       .4293     
+L  NF YULIN50  525 YULINSC1 525             -.0057                 
+L  NF YULIN50  525 YULINSC2 525             -.0057                 
+L  NF YULINSC1 5252MAOMING= 5251 2712  00131 01422       68017     
+L  NF YULINSC2 5252MAOMING= 5252 2712  00131 01422       68017     
+L  yn YW50     525 LP50     5251 2000  .0005 00464       26796     
+L  yn YW50     525 LP50     5252 2000  00042 .0046       26712     
+L     ZHELINC= 525 HANJIAN= 5251 3340 .00035.00618      .36868     
+L     ZHELINC= 525 HANJIAN= 5252 3340 .00035.00618      .36868     
+L     ZHUHAIB= 525 GUOAN=   5251 3620 .00018.00401      .25346     
+L     ZHUHAIB= 525 GUOAN=   5252 3620 .00018.00401      .25346     
+L     ZIJING=  525 PENGCHE= 5251 3990 .00005.00145      .09261     
+L     ZIJING=  525 PENGCHE= 5252 3990 .00005.00145      .09261     
+L     ZIJING=  525 SHAJIAO= 5251 3150 .00007.00155      .09794     
+L  yn ZXD50    525 YFB50    525  3380  00101 01504       85944     
+.......
+.+  1  4ANS51  525.02              -136.
+.+  2  4ANS51  525.02              -90. 
+.+  3  4ANS51  525.02              -90. 
+.+  1  4LIP51  525.02              -136.
+.+  2  4LIP51  525.02              -136.
+.+  1  4QINGY5 525.02              -109.
+.+  2  4QINGY5 525.02              -136.
+.+  3  4QINGY5 525.02              -136.
+.+  1  4SHIB51 525.02              -164.
+.+  2  4SHIB51 525.02              -164.
+.+  1  BAHE50  525.02              -109.
+.+  2  BAHE50  525.02              -109.
+.+  1  BAIS50  525.02              -108.
+.+  2  BAIS50  525.02              -108.
+.+  3  BAIS50  525.02              -108.
+.+  4  BAIS50  525.02              -164.
+.+  5  BAIS50  525.02              -164.
+.+  1  BF50    525.02              -109.
+.+  2  BF50    525.02              -109.
+.+  1  BOLUO=  525.02              -136
+.+  2  BOLUO=  525.02              -136
+.+  1  BSH50   525.02              -164.
+.+  2  BSH50   525.02              -164.
+.+  3  BSH50   525.02              -164.
+.+  4  BSH50   525.02              -164.
+.+  1  CHONGZ50525.02              -191.
+.+  1  CK50    525.02              -109.
+.+  2  CP50    525.02              -109.
+.+  3  CP50    525.02              -109.
+.+  1  CXHLZ50 525.02              -163.
+.+  2  CXHLZ50 525.02              -163.
+.+  3  CXHLZ50 525.02              -163.
+.+  4  CXHLZ50 525.02              -163.
+.+  1  DCS50   525.02              -109.
+.+  2  DCS50   525.02              -109.
+.+  1  DH50    525.02              -164.
+.+  2  DH50    525.02              -164.
+.+  1  DIELING=525.02              -109
+.+  2  DIELING=525.02              -109
+.+  1  DL50    525.02              -109.
+.+  2  DL50    525.02              -136.
+.+     DLE50   525.02              -109.
+.+     FUSHAN50525.02              -328.
+.+     GANGCHE=525.02              -82. 
+.+  3  GUILIN52525.02              -109.
+.+  4  GUILIN52525.02              -109.
+.+  1  GUILIN52525.02              -109.
+.+  2  GUILIN52525.02              -109.
+.+     GUILSC1 525.02              -164.
+.+     GUILSC2 525.02              -164.
+.+  1  HECHI50 525.02              -136.
+.+  2  HECHI50 525.02              -136.
+.+  3  HECHI50 525.02              -136.
+.+     HEZHOSC1525.02              -110.
+.+     HEZHOSC2525.02              -110.
+.+  1  HEZHOU50525.02              -110.
+.+  2  HEZHOU50525.02              -110.
+.+  1  HH50    525.02              -109.
+.+  2  HH50    525.02              -109.
+.+  3  HH50    525.02              -136.
+.+  1  HLB50   525.02              -136.
+.+  2  HLB50   525.02              -136.
+.+  1  HP50    525.02              -136.
+.+  2  HP50    525.02              -136.
+.+  1  HUADU=  525.02              -136
+.+  2  HUADU=  525.02              -136
+.+  3  HUADU=  525.02              -109
+.+  4  HUADU=  525.02              -109
+.+  1  JAQ50   525.02              -163.
+.+  2  JAQ50   525.02              -163.
+.+  1  JIAYING=525.02              -136
+.+  2  JIAYING=525.02              -109
+.+  3  JIAYING=525.02              -109
+.+  4  JIAYING=525.02              -109
+.+  1  LAIB50  525.02              -136.
+.+  2  LAIB50  525.02              -136.
+.+  3  LAIB50  525.02              -136.
+.+  1  LIUDO50 525.02              -120.
+.+  2  LIUDO50 525.02              -120.
+.+  1  LONGTA50525.02              -109.
+.+  2  LONGTA50525.02              -136.
+.+  3  LONGTA50525.02              -136.
+.+  1  LP50    525.02              -136.
+.+  2  LP50    525.02              -136.
+.+  3  LP50    525.02              -164.
+.+  4  LP50    525.02              -164.
+.+  1  LUGANG= 525.02              -109
+.+  2  LUGANG= 525.02              -109
+.+  1  LUODONG=525.02              -110.
+.+  2  LUODONG=525.02              -110.
+.+  3  LUODONG=525.02              -136.
+.+  4  LUODONG=525.02              -136.
+.+  1  MAOMING=525.02              -136
+.+  2  MAOMING=525.02              -109
+.+  1  MJ50    525.02              -109.
+.+  2  MJ50    525.02              -109.
+.+  3  MJ50    525.02              -136.
+.+  4  MJ50    525.02              -136.
+.+  5  MW50    525.02              -109.
+.+  6  MW50    525.02              -109.
+.+     NANLIN50525.02              -328.
+.+  1  NANN50  525.02              -109.
+.+  2  NANN50  525.02              -120.
+.+  3  NANN50  525.02              -120.
+.+  1  PINGG50 525.02              -109.
+.+  2  PINGG50 525.02              -136.
+.+  3  PINGG50 525.02              -136.
+.+     QD50    525.02              -136.
+.+     QIAOKOU=525.02              -136
+.+  1  QJB50   525.02              -109.
+.+  2  QJB50   525.02              -82. 
+.+  1  QUJIANG=525.02              -109
+.+  2  QUJIANG=525.02              -109
+.+  3  QUJIANG=525.02              -109
+.+     RONGJIA=525.02              -136
+.+     SHANGZH=525.02              -109
+.+  1  SHATA50 525.02              -109 
+.+  2  SHATA50 525.02              -109 
+.+  3  SHATA50 525.02              -136.
+.+  1  TSQ50   525.02              -136.
+.+  2  TSQ50   525.02              -136.
+.+  3  TSQ50   525.02              -136.
+.+     TSQM50  525.02              -108.
+.+  1  WUZHO50 525.02              -136.
+.+  2  WUZHO50 525.02              -136.
+.+  1  XIANLS= 525.02              -191.
+.+  2  XIANLS= 525.02              -191.
+.+  3  XIAOW50 525.02              -136.
+.+  1  XIAOW50 525.02              -163.
+.+  2  XIAOW50 525.02              -163.
+.+  1  YFB50   525.02              -109.
+.+  2  YFB50   525.02              -136.
+.+  3  YSH50   525.02              -191.
+.+  1  YULIN50 525.02              -136.
+.+  2  YULIN50 525.02              -180.
+.+  3  YULIN50 525.02              -180.
+.+     YULINSC1525.02              -120.
+.+     YULINSC2525.02              -120.
+.+  1  YX50    525.02              -109.
+.+  2  YX50    525.02              -109.
+.+  1  ZHENZHO=525.02              -109
+.+  2  ZHENZHO=525.02              -109
+L+    4ANS51  525. 4QINGY5 525.1 90.
+L+    4ANS51  525. 4QINGY5 525.2 90.
+L+    4JINZ5  525. TSQ50   525.            136.
+L+    4LIP51  525. GUILIN52525.1 136.      109.
+L+    4LIP51  525. GUILIN52525.2 136.      109.
+L+    4QINGY5 525. 4DUS51  525.1 136.
+L+    4QINGY5 525. 4DUS51  525.2 136.
+L+    4SHIB51 525. 4LIP51  525.1 164.
+L+    4SHIB51 525. 4LIP51  525.2 164.
+L+    BAHE50  525. 4ANS51  525.            136.
+L+    BAHE50  525. 4QINGY5 525.            109.
+L+    BAIS50  525. YONGAN50525.1 108.      
+L+    BAIS50  525. YONGAN50525.2 108.      
+L+    CHONGZ50525. NANN50  525.            109.
+L+    DIELING=525. CANGJIA=525.1 109.      0.
+L+    DIELING=525. CANGJIA=525.2 109.      0.
+L+    FAER50  525. BAHE50  525.1           109.
+L+    FAER50  525. BAHE50  525.2           109.
+L+    GANGCHE=525. NANLIN50525.  82.       328.
+L+    GUILSC1 525. XIANLS= 525.1 164.      191.
+L+    GUILSC2 525. XIANLS= 525.2 164.      191.
+L+    HCSC    525. HECHI50 525.            136.
+L+    HCSC1   525. HECHI50 525.            136.
+L+    HECHI50 525. LIUDO50 525.1           120.
+L+    HECHI50 525. LIUDO50 525.2           120.
+L+    HEZHOU50525. LUODONG=525.1 110.      110.
+L+    HEZHOU50525. LUODONG=525.2 110.      110.
+L+    HH50    525. YSH50   525.1 109.
+L+    HH50    525. YSH50   525.2 109.
+L+    JIAYING=525. RONGJIA=525.1 109.       0.
+L+    JIAYING=525. RONGJIA=525.2 109.       0.
+L+    JIULO50 525. YULIN50 525.            136.
+L+    LAIB50  525. WUZHO50 525.1 136.      136.
+L+    LAIB50  525. WUZHO50 525.2           136.
+L+    LBSC1   525. BAIS50  525.            164.
+L+    LBSC2   525. BAIS50  525.            164.
+L+    LINSD50 525. FUSHAN50525.            328.
+L+    LIUDO50 525. GUILIN52525.1           109.
+L+    LIUDO50 525. GUILIN52525.2           109.
+L+    LIUDO50 525. HEZHOSC1525.1           110.
+L+    LIUDO50 525. HEZHOSC2525.2           110.
+L+    LONGTA50525. HECHI50 525.1           136.
+L+    LP50    525. LBSC1   525.  164.
+L+    LP50    525. LBSC2   525.  164.
+L+    LUGANG= 525. ZHENZHO=525.1 109.      109.
+L+    LUGANG= 525. ZHENZHO=525.2 109.      109.
+L+    MAOMING=525. DIELING=525.1 109.      0.
+L+    MAOMING=525. DIELING=525.2 136.      0.
+L+    MBSC    525.1BAIS50  525.            108.
+L+    NANN50  525. YULIN50 525.1           180.
+L+    NANN50  525. YULIN50 525.2           180.
+L+    PINGG50 525. LAIB50  525.1           136.
+L+    PINGG50 525. LAIB50  525.2           136.
+L+    PINGG50 525. LONGTA50525.  109.      109.
+L+    QIAOKOU=525. QUJIANG=525.1           109.
+L+    QIAOKOU=525. QUJIANG=525.2 136.
+L+    QUJIANG=525. HUADU=  525.1 109.
+L+    QUJIANG=525. HUADU=  525.2 109.
+L+    RONGJIA=525. MAOHU=  525.2 136.       0.
+L+    SHANGZH=525. BOLUO=  525.1 0.        136.
+L+    SHANGZH=525. BOLUO=  525.2 0.        136.
+L+    SHANGZH=525. JIAYING=525.1 109.      109.
+L+    SHANGZH=525. JIAYING=525.2           136.      
+L+    SHATA50 525. LONGTA50525.1 109       136.
+L+    SHATA50 525. LONGTA50525.2 109       136.
+L+    TPSC1P  525. PINGG50 525.            136.
+L+    TPSCP   525. PINGG50 525.            136.
+L+    TSQ50   525. TPSC    525.  136.
+L+    TSQ50   525. TPSC1   525.  136.
+L+    TSQM50  525.1MBSC    525.  108.
+L+    WUZHO50 525.2LUODONG=525.1           136.
+L+    WUZHO50 525.2LUODONG=525.2           136.
+L+    XIANLS= 525. HUADU=  525.1           109.
+L+    XIANLS= 525. HUADU=  525.2           109.
+L+    YANDU=  525. HUADU=  525.1 0.        136.
+L+    YANDU=  525. HUADU=  525.2 0.        136.
+L+    YANTA50 525. SHATA50 525.            136.
+L+    YONGAN50525. NANN50  525.1           120.
+L+    YONGAN50525. NANN50  525.2           120.
+.L+    YSH50   525. YSH50C  525.  191.
+L+    YSHSC   525. CHONGZ50525.            191.
+L+    YULINSC1525. MAOMING=525.1 120.
+L+    YULINSC2525. MAOMING=525.2 120.
+.L+ yn BMSCB1  525. BSH50   525.    0.      164.
+.L+ yn BMSCB2  525. BSH50   525.    0.      164.
+.L+ yn DBSCB1  525. BSH50   525.            164.
+.L+ yn DBSCB2  525. BSH50   525.            164.
+L+ yn DCS50   525. BF50    525.1 109.      109.
+L+ yn DCS50   525. BF50    525.2 109.      109.
+L+ yn DH50    525. DBSCD1  525.  164.
+L+ yn DH50    525. DBSCD2  525.  164.
+L+ yn GGQ50   525. DL50    525.    0.      109. 
+L+ yn HP50    525. DL50    525.1 136.        0.
+L+ yn HP50    525. DL50    525.2   0.      136.
+L+ yn JAQ50   525. CXHLZ50 525.1 163.      163.
+L+ yn JAQ50   525. CXHLZ50 525.2 163.      163.
+L+ yn JH50    525. MJ50    525.1   0.      109.
+L+ yn JH50    525. MJ50    525.2   0.      109.
+L+ yn MHSCH1  525. HLB50   525.1   0.      136. 
+L+ yn MHSCH2  525. HLB50   525.2   0.      136. 
+L+ yn MJ50    525. MHSCM1  525.  136.      0.
+L+ yn MJ50    525. MHSCM2  525.  136.      0.
+L+ yn MJ50    525. YX50    525.1   0.      109. 
+L+ yn MJ50    525. YX50    525.2   0.      109. 
+L+ yn MW50    525. CP50    525.1 109.      109.
+L+ yn MW50    525. CP50    525.2 109.      109.
+L+ yn QD50    525. HH50    525.1 136.        0.
+L+ yn QD50    525. HH50    525.2   0.      136.
+L+ yn QD50    525. LP50    525.1   0.      136.
+L+ yn QD50    525. LP50    525.2   0.      136.
+L+ yn QJB50   525. CK50    525.1   0.      109.
+L+ yn QJB50   525. CK50    525.2 109.        0.
+L+ yn QJB50   525. DLE50   525.1 82.
+L+ yn XIAOW50 525. CXHLZ50 525.1 163.      163.
+L+ yn XIAOW50 525. CXHLZ50 525.2 163.      163.
+L+ yn XIAOW50 525. HP50    525.  136.      136.
+L+ yn YFB50   525. DLE50   525.1           109. 
+L+ yn YFB50   525. DLE50   525.2 109.           
+L+ yn ZXD50   525. YFB50   525.            136.
+
++  1  BSH50   525.02              -164.
++  2  BSH50   525.02              -164.
++  3  BSH50   525.02              -164.
++  4  BSH50   525.02              -164.
++     YSH50   525.02              -191.
+
+.....
+B  yn HP50     525CX331.6220.3 164 212                           
+B  yn BF50     525KM609.5356.1 286 346                           
+B  yn CK50     525KM397.1336.5 222 342                           
+B  yn CP50     525KM566.5260.7 214 332                           
+B  yn QD50     525KM535.6326.6 225 319                           
+.L     HP50     525 CP50     525        06499 53954
+.T     QD50     525 CP50     525        00992 .1913            525. 525.
+.L     CK50     525 CP50     525        00344 10596       01594
+.L     CP50     525 BF50     525        00208 07035
+.T     BF50     525 HP50     525        06803 63585            525. 525.
+.T     BF50     525 CK50     525        01385 20809            525. 525.
+B  yn LP50     525QJ128.893.7992.489.6                           
+.L     BF50     525 LP50     525        .1144135283
+.L     LP50     525 QD50     5253       00052 54265       04946
+.L     LP50     525 QD50     5254       00052 54265       04946
+.L     CK50     525 QD50     525       -00027 .0941
+.L     BF50     525 QD50     525        00417 11623       .0435
+.......
+B  yn YFB50    525ZT180.1103. 4.16 204                           
+B  yn QJB50    525QJ457.5303.9 388 175                           
+B  yn DLE50    525QJ207.4130.6 16171.5
+.L     QJB50    525 DLE50    5253      -00245 23881
+.L     QJB50    525 DLE50    5254      -00245 23881
+.L     YFB50    525 DLE50    5253       03365 .6121       02475
+.L     YFB50    525 DLE50    5254       03365 .6121       02475
+.L     YFB50    525 QJB50    525        07843 59271
+.....
+B     GUILIN52 525N1352.6215.8 334 251                           
+.L     SHATA50  525 GUILIN52 525        00821 15986
+.T     GUILIN52 525 LIUDO50  5253       00746 54223            525. 525.
+.T     GUILIN52 525 LIUDO50  5254       00746 54223            525. 525.
+B  NF HECHI50  525N1287.8136.931.3 110                           
+.L     FENGY50  525 HECHI50  525        68606194677
+L     HECHI50  525 SUHE50   525        02541 18296                 
+.T     HECHI50  525 LAIB50   525        48933185196            525. 525.
+B     LIUDO50  525N1213.4120.3 129 146                           
+.L     SHATA50  525 LIUDO50  5253       00285 12129
+.L     SHATA50  525 LIUDO50  5254       00285 12129
+B  NF SUHE50   525N1250.879.31 -41 199                           
+.L     LAIB50   525 SUHE50   5253       05362 82431
+.L     LAIB50   525 SUHE50   5254       05362 82431
+.B  NF LAIB50   525N1235.6106.2 140 110                           
+.L     FENGY50  525 LAIB50   5251       00164 10699
+B  NF SHATA50  525N1652.5274.5 260 270                           
+.B  GX FENGY50  525N1490.1253.  477 174    
+.......
+B  NF PINGG50  525N1389.6216.4 1746.27                           
+.L     PINGG50  525 YONGZ50  525        01914 24957
+B  NF NANN50   525N1728. 318.  335 380                           
+.L     YONGZ50  525 NANN50   5253      -00021 10694
+.L     YONGZ50  525 NANN50   5254      -00021 10694
+B  NF YONGZ50  525GX329.2198.4 225 190 
+..........
+B  NF YULIN50  525N1520.5219.3 303 394                           
+.T     JIULO50  525 YULIN50  5251       13312 83037            525. 525.
+B  NF JIULO50  525GX280.490.25.73680.4    
+.....
+B  yn TBB50    525HH363.4217.2 208 182                           
+B  yn HH50     525HH536. 274.8 284 283                           
+B  yn YSH50    525WS231.7176.7 238 244                           
+.L     TBB50    525 HH50     5253      -00181 11308       02809
+.L     TBB50    525 HH50     5254      -00181 11308       02809
+.L     YSH50    525 HH50     5253       02222 40703
+.L     YSH50    525 HH50     5254       02222 40703 
+.L     TBB50    525 YSH50    525        00282 20669  
+......
+T     CSG041  10.5 LAIB50   525              08309             10.5525.
+T     CSG041  10.5 FENGY50  525              05321       02813 10.5525.
+B  GX FENGY50  525N1490.1246.  477 174 
+B  NF LAIB50   525N1235.6101.2 140 110 
+..............
+B     XIANGSHA 220XX1543.607.6596 785  
+T     CSG076  13.8 XIANGSHA 220        00106 02285            13.8 220. 
+T     XS2      220 XIANGSHA 220        00008-.0022            220. 229.9
+T     XS3      220 XIANGSHA 220        00008-.0021            220. 229.9
+
+B     SHANTOUA 220XX 1336356.7637.874.       
+B     HANJIANG 220XX483.7173.712.5 305
+B     LUGANG   220XX572.1170.8 286 451
+T     SHANTOUA 220 CSG187  20.        .00069 01221            220. 20.          
+T     LUGANG   220 CSG187  20.         00059 02234            220.  20.
+T     CSG187  20.  HANJIANG 220        00204 03124            20.  220.  
+BE    CSG187  20. 22361.4212.6 183-999     2850 1206      998 997
++     CSG187  20. 02              -578     
+T     ST1      220 SHANTOUA 220        00008-.0018            220. 229.9
+T     ST3      220 SHANTOUA 220        00007-.0018            220. 229.9   
+L     HANJIANG 220 SHANTOUA 220        00336 01884
+L     SHANTOUA 220 LUGANG   220        00156 01013 
+
+T     ZJ2      220 ZIJINGA  220        00008-.001             220. 230.
+B     ZIJINGA  220XX1365.548.4391 1181
+                                         
+(END)

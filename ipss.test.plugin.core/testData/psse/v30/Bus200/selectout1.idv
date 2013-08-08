@@ -1,0 +1,8 @@
+bat_branch_app_r_x_channel -1 -1 -1  28  29 '1' '1' '1'
+bat_branch_app_r_x_channel -1 -1 -1 185 188 '1' '1' '1'
+/bat_machine_array_channel -1 2 4 '1' '1'
+/* save snap shot as a file (save the contents of dynamic working memory)
+snap 
+./tmp/ssn1
+
+

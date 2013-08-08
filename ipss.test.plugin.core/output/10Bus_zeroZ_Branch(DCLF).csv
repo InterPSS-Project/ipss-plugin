@@ -1,0 +1,13 @@
+BRANCH
+BusNum,BusName,BusNum:1,BusName:1,LineCircuit,LineStatus,BranchDeviceType,LineXfmr,LineMW,LineMVR,LineMVA,LineLimMVA,LineMaxPercent,LineLossMW,LineLossMVR
+1,3W_Gen_SW,3,3W_Out,1,Closed,Transformer,YES,306.2,0.0,306.2,1200.0,25.5,0.00,0.00
+3,3W_Out,4,To_End_Par,1,Closed,Line,NO,152.6,0.0,152.6,0.0,0.0,0.00,0.00
+3,3W_Out,4,To_End_Par,2,Closed,Line,NO,152.6,0.0,152.6,0.0,0.0,0.00,0.00
+10,Bus10,4,To_End_Par,1,Closed,Line,NO,-52.1,0.0,52.1,0.0,0.0,0.00,0.00
+11,Bus11,4,To_End_Par,1,Closed,Line,NO,-252.1,0.0,252.1,0.0,0.0,0.00,0.00
+7,Bus7,5,Area_2_HV,1,Closed,Line,NO,97.9,0.0,97.9,0.0,0.0,0.00,0.00
+5,Area_2_HV,8,Bus8,1,Closed,Line,NO,95.9,0.0,95.9,0.0,0.0,0.00,0.00
+7,Bus7,6,Area_2_LV,T9,Closed,Transformer,YES,-97.9,0.0,97.9,900.0,10.9,0.00,0.00
+8,Bus8,9,Bus9,1,Closed,Line,NO,95.9,0.0,95.9,0.0,0.0,0.00,0.00
+9,Bus9,10,Bus10,1,Closed,Line,NO,-52.1,0.0,52.1,0.0,0.0,0.00,0.00
+9,Bus9,11,Bus11,1,Closed,Line,NO,147.9,0.0,147.9,0.0,0.0,0.00,0.00

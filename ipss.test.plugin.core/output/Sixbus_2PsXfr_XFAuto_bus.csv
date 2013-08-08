@@ -1,0 +1,7 @@
+Bus Records,,,,,,,,,,,,,,,
+Number,Name,Area Name,Nom kV,PU Volt,Volt (kV),Angle (Deg),Load MW,Load Mvar,Gen MW,Gen Mvar,Switched Shunts Mvar,Act G Shunt MW,Act B Shunt Mvar,Area Num,Zone Num
+1,3W_Gen_SW,1,19.4,1,19.4,0,,,310.51,78.37,,1,1,1,6
+3,3W_Out,1,230,1.07226,246.62,-4.6,,,,,,1.15,1.15,1,6
+4,To_End_Par,1,230,1.05015,241.535,-8.74,400,50,,,,1.1,1.1,1,2
+5,Area_2_HV,2,230,1.05001,241.502,-8.34,,,,,,2.21,2.21,2,2
+6,Area_2_LV,2,19.4,1,19.4,-38.04,,,100,-5.18,,2,2,2,2

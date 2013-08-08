@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pss:pssStudyCase id="idvalue0"  schemaVersion="0.9.0"
+xmlns:pss="http://www.ieee.org/odm/Schema/2008" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.ieee.org/odm/Schema/2008 ../../../ieee.odm_pss/schema/ODMSchema.xsd ">
+	<pss:contentInfo>
+		<pss:originalDataFormat>InterPSS</pss:originalDataFormat>
+		<pss:adapterProviderVersion>1.0</pss:adapterProviderVersion>
+	</pss:contentInfo>
+	<pss:networkCategory>Transmission</pss:networkCategory>
+	<pss:analysisCategory>TransientStability</pss:analysisCategory>
+	<pss:dstabNet id="idvalue1">
+		<pss:basePower unit="MVA" value="100" />
+		<pss:frequency unit="Hz" value="50" />
+		<pss:busList>
+			<pss:dstabBus scCode="Contributing" id="Bus-1" offLine="false" areaNumber="1" zoneNumber="1">
+				<pss:baseVoltage unit="KV" value="138"></pss:baseVoltage>
+				<pss:genData>
+					<pss:dstabEquivGen code="PQ" id="Bus4-Gen1">
+						<pss:power im="1.0" unit="PU" re="2.0"/>
+						<pss:mvaBase unit="MVA" value="600"/>
+						<pss:ratedMachVoltage unit="KV" value="138" />
+						<pss:eq1MachModel>
+							<pss:H>3</pss:H>
+							<pss:D>1</pss:D>
+							<pss:poles>2</pss:poles>
+							<pss:xl>0.01</pss:xl>
+							<pss:ra>0.011</pss:ra>
+							<pss:xd>0.5</pss:xd>
+							<pss:xq>0.2</pss:xq>
+							<pss:xd1>0.1</pss:xd1>
+							<pss:Td01 unit="Sec" value="5.0" />
+							<pss:seFmt1>
+								<pss:se100>12</pss:se100>
+								<pss:se120>23</pss:se120>
+								<pss:sliner>0.7</pss:sliner>
+							</pss:seFmt1>
+						</pss:eq1MachModel>
+					</pss:dstabEquivGen>
+				</pss:genData>
+                <pss:loadData>
+                    <pss:equivLoad id="L1" code="CONST_P">
+                        <pss:constPLoad unit="PU" im="0.2" re="0.2"/>
+                    </pss:equivLoad>
+                </pss:loadData>	
+			</pss:dstabBus>
+			<pss:dstabBus scCode="Contributing" id="Bus-5" offLine="false" areaNumber="1" zoneNumber="1">
+				<pss:baseVoltage unit="KV" value="138" />
+				<pss:genData>
+					<pss:dstabEquivGen code="Swing" id="Bus5-Gen1">
+						<pss:desiredVoltage unit="PU" value="1.00" />
+						<pss:desiredAngle unit="DEG" value="0.0" />
+						<pss:mvaBase unit="MVA" value="100"/>
+						<pss:ratedMachVoltage unit="KV" value="138" />
+						<pss:equiMachModel>
+							<pss:equivSource>
+								<pss:scMva3Phase>10000.0</pss:scMva3Phase>
+								<pss:xOverR3Phase>20.0</pss:xOverR3Phase>
+								<pss:scMva1Phase>5000.0</pss:scMva1Phase>
+								<pss:xOverR1Phase>20.0</pss:xOverR1Phase>
+							</pss:equivSource>
+						</pss:equiMachModel>
+					</pss:dstabEquivGen>
+				</pss:genData>
+			</pss:dstabBus>
+		</pss:busList>
+		<pss:branchList>
+			<pss:dstabLine id="Bus1-Bus5" circuitId="1" offLine="false">
+				<pss:fromBus idRef="Bus-1"></pss:fromBus>
+				<pss:toBus idRef="Bus-5"></pss:toBus>
+				<pss:z im="0.05" unit="PU" re="0.01" />
+				<pss:fromShuntY im="0.25" unit="PU" />
+				<pss:toShuntY im="0.25" unit="PU" />
+			</pss:dstabLine>
+		</pss:branchList>
+		<pss:hasLoadflowData>true</pss:hasLoadflowData>
+		<pss:positiveSeqDataOnly>false</pss:positiveSeqDataOnly>
+		<pss:hasShortCircuitData>false</pss:hasShortCircuitData>
+		<pss:saturatedMachineParameter>false</pss:saturatedMachineParameter>
+	</pss:dstabNet>
+</pss:pssStudyCase>

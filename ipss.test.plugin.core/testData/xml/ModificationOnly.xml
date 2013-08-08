@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ipss:InterPSS xmlns:ipss="http://www.interpss.org/schema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.interpss.org/schema ../../../ipss.xml.shema/schema/InterPSS.xsd ">
+	<ipss:modification>
+		<ipss:busChangeRecList>
+			<ipss:busChangeRec>
+				<ipss:recId>BusChangeRec-1</ipss:recId>
+				<ipss:busId>0006</ipss:busId>
+				<ipss:offLine>true</ipss:offLine>
+			</ipss:busChangeRec>
+			
+			<ipss:busChangeRec>
+				<ipss:recId>AclfBusChangeRec-1</ipss:recId>
+				<ipss:busId>0014</ipss:busId>
+				<ipss:aclfBusChangeData>
+					<ipss:loadChangeData>
+						<ipss:valueChange>
+							<ipss:changeAction>increase</ipss:changeAction>
+							<ipss:percent>0.1</ipss:percent>
+							<ipss:unit>PU</ipss:unit>
+						</ipss:valueChange>
+					</ipss:loadChangeData>
+				</ipss:aclfBusChangeData>				
+			</ipss:busChangeRec>
+			
+			<ipss:busChangeRec>
+				<ipss:recId>AclfBusChangeRec-2</ipss:recId>
+				<ipss:busId>0013</ipss:busId>
+				<ipss:aclfBusChangeData>
+					<ipss:loadChangeData>
+						<ipss:valueChange>
+							<ipss:changeAction>set</ipss:changeAction>
+							<ipss:unit>PU</ipss:unit>							
+							<ipss:value>
+								<ipss:re>0.15</ipss:re>
+								<ipss:im>0.06</ipss:im>
+							</ipss:value>
+						</ipss:valueChange></ipss:loadChangeData></ipss:aclfBusChangeData>
+
+			</ipss:busChangeRec>
+			
+			<ipss:busChangeRec>
+				<ipss:recId>AclfBusChangeRec-3</ipss:recId>
+				<ipss:busId>0012</ipss:busId>
+				<ipss:aclfBusChangeData>
+					<ipss:loadChangeData>
+						<ipss:valueChange>
+							<ipss:changeAction>add</ipss:changeAction>
+							<ipss:unit>mVA</ipss:unit>
+							<ipss:value>
+								<ipss:re>1.0</ipss:re>
+								<ipss:im>1.0</ipss:im>
+							</ipss:value>
+						</ipss:valueChange>
+					</ipss:loadChangeData>
+				</ipss:aclfBusChangeData>
+			</ipss:busChangeRec>
+			
+			<ipss:busChangeRec>
+				<ipss:recId>AclfBusChangeRec-4</ipss:recId>
+				<ipss:busId>0001</ipss:busId>
+				<ipss:aclfBusChangeData>
+					<ipss:genChangeData>
+						<ipss:swingVoltageChange>
+							<ipss:changeAction>increase</ipss:changeAction>
+							<ipss:percent>1.0</ipss:percent>
+							<ipss:unit>Percent</ipss:unit>
+						</ipss:swingVoltageChange></ipss:genChangeData></ipss:aclfBusChangeData>
+			</ipss:busChangeRec>
+			<ipss:busChangeRec>
+				<ipss:recId>AclfBusChangeRec-5</ipss:recId>
+				<ipss:busId>0003</ipss:busId>
+				<ipss:genOutage>true</ipss:genOutage>
+			</ipss:busChangeRec>
+			<ipss:busChangeRec>
+				<ipss:recId>AclfBusChangeRec-6</ipss:recId>
+				<ipss:busId>0009</ipss:busId>
+				<ipss:loadShedding>true</ipss:loadShedding>
+			</ipss:busChangeRec></ipss:busChangeRecList>
+			
+		<ipss:branchChangeRecList>
+			
+			<ipss:branchChangeRec>
+				<ipss:recId>BranchChangeRec-1</ipss:recId>
+				<ipss:fromBusId>0010</ipss:fromBusId>
+				<ipss:toBusId>0009</ipss:toBusId>
+				<ipss:offLine>true</ipss:offLine>
+			</ipss:branchChangeRec>
+			
+			<ipss:branchChangeRec>
+				<ipss:recId>AclfBranchChangeRec-1</ipss:recId>
+				<ipss:fromBusId>0004</ipss:fromBusId>
+				<ipss:toBusId>0007</ipss:toBusId>
+				<ipss:aclfBranchChangeData>
+					<ipss:branchZChange>
+						<ipss:changeAction>increase</ipss:changeAction>
+						<ipss:percent>10.0</ipss:percent>
+						<ipss:unit>Percent</ipss:unit>
+					</ipss:branchZChange>
+				</ipss:aclfBranchChangeData>
+			</ipss:branchChangeRec>
+		</ipss:branchChangeRecList>
+
+	</ipss:modification>
+</ipss:InterPSS>

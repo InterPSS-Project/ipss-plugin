@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<pssStudyCase id="ODM_StudyCase" schemaVersion="0.9.0"
+    xmlns="http://www.ieee.org/odm/Schema/2008"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://www.ieee.org/odm/Schema/2008 ../../../ieee.odm_pss/schema/ODMSchema.xsd ">
+    <contentInfo>
+        <originalDataFormat>IEEE-ODM-PSS</originalDataFormat>
+        <adapterProviderName>www.interpss.org</adapterProviderName>
+        <adapterProviderVersion>1.00</adapterProviderVersion>
+    </contentInfo>		
+    <networkCategory>Transmission</networkCategory>
+    <analysisCategory>ShortCircuit</analysisCategory>
+    <acscNet id="Base_Case_from_IEEECDF_format">
+        <basePower unit="MVA" value="100.0"/>
+        <busList>
+            <acscBus id="Bus1" offLine="false" number="1" zoneNumber="1"
+            	areaNumber="1" name="Bus-1 13.8 KV" scCode="Non-contributing">
+            	<baseVoltage unit="KV" value="13.8" />
+            	<voltage unit="PU" value="1.0" />
+            	<angle unit="DEG" value="0.0" />
+				<loadData>
+					<acscEquivLoad code="CONST_P" id="Bus1Load">
+						<constPLoad im="80.0" unit="MVA" re="160.0" />
+					</acscEquivLoad>
+				</loadData>
+			</acscBus>
+            <acscBus id="Bus2" offLine="false" number="1" zoneNumber="1"
+            	areaNumber="1" name="Bus-2 13.8 KV" scCode="Non-contributing">
+            	<baseVoltage unit="KV" value="13.8" />
+            	<voltage unit="PU" value="1.0" />
+            	<angle unit="DEG" value="0.0" />
+				<loadData>
+					<acscEquivLoad code="CONST_P" id="Bus2Load">
+						<constPLoad im="100.0" unit="MVA" re="200.0" />
+					</acscEquivLoad>
+				</loadData>
+			</acscBus>
+            <acscBus id="Bus3" offLine="false" number="1" zoneNumber="1"
+            	areaNumber="1" name="Bus-3 13.8 KV" scCode="Non-contributing">
+            	<baseVoltage unit="KV" value="13.8" />
+            	<voltage unit="PU" value="1.0" />
+            	<angle unit="DEG" value="0.0" />
+				<loadData>
+					<acscEquivLoad code="CONST_P" id="Bus3Load">
+						<constPLoad im="130.0" unit="MVA" re="370.0" />
+					</acscEquivLoad>
+				</loadData>
+			</acscBus>
+            <acscBus id="Bus4" offLine="false" number="1" zoneNumber="1"
+            	areaNumber="1" name="Gen Bus-4 1000 Volt" scCode="Contributing">
+            	<baseVoltage unit="VOLT" value="1000.0" />
+            	<voltage unit="PU" value="1.0" />
+            	<angle unit="DEG" value="0.0" />
+           		<genData>
+            		<acscEquivGen code="PV" id="gen4">
+            			<power unit="MVA" im="0.0" re="500.0" />
+            			<desiredVoltage unit="PU" value="1.05" />
+            			<potiveZ im="0.02" unit="PU"/>
+            			<negativeZ im="0.02" unit="PU"/>
+            			<zeroZ im="1.0e10" unit="PU"/>
+            			<grounding groundingConnection="SolidGrounded">
+            				<groundingZ im="0.0" unit="PU"/>
+            			</grounding>
+            		</acscEquivGen>
+            		<!--
+            		To define multiple contribute generator, use the acscGenData structure 
+            		<acscGenData id="" code="PQ">
+            		</acscGenData>
+            		 -->
+            	</genData>
+ 			</acscBus>
+            <acscBus id="Bus5" offLine="false" number="1" zoneNumber="1"
+            	areaNumber="1" name="Gen Bus-5 4000 Volt" scCode="Contributing">
+            	<baseVoltage unit="VOLT" value="4000.0" />
+            	<voltage unit="PU" value="1.0" />
+            	<angle unit="DEG" value="0.0" />
+           		<genData>
+            		<acscEquivGen code="Swing" id="gen5">
+            			<desiredVoltage unit="PU" value="1.05" />
+            			<desiredAngle unit="DEG" value="0.0"/>
+            			<potiveZ im="0.02" unit="PU"/>
+            			<negativeZ im="0.02" unit="PU"/>
+            			<zeroZ im="1.0e10" unit="PU"/>
+            			<grounding groundingConnection="SolidGrounded">
+            				<groundingZ im="0.0" unit="PU"/>
+            			</grounding>
+            		</acscEquivGen>
+            	</genData>
+ 			</acscBus>
+        </busList>
+        <branchList>
+			<acscLine id="Bus1->Bus2(1)" circuitId="1" offLine="false" zoneNumber="1" areaNumber="1">
+				<fromBus idRef="Bus1"/>
+				<toBus idRef="Bus2"/>
+				<z im="0.25" unit="PU" re="0.04" />
+				<totalShuntY im="0.5" unit="PU"/>
+				<z0 im="0.7" unit="PU"/>
+			</acscLine>
+			<acscLine id="Bus1->Bus3(1)" circuitId="1" offLine="false" zoneNumber="1" areaNumber="1">
+				<fromBus idRef="Bus1"/>
+				<toBus idRef="Bus3"/>
+				<z im="0.35" unit="PU" re="0.1" />
+				<z0 im="1.0" unit="PU"/>
+			</acscLine>
+			<acscLine id="Bus2->Bus3(1)" circuitId="1" offLine="false" zoneNumber="1" areaNumber="1">
+				<fromBus idRef="Bus2"/>
+				<toBus idRef="Bus3"/>
+				<z im="0.3" unit="PU" re="0.08" />
+				<totalShuntY im="0.5" unit="PU"/>
+				<z0 im="0.75" unit="PU"/>
+			</acscLine>
+			<acscXfr id="Bus4->Bus2(1)" circuitId="1" offLine="false" zoneNumber="1" areaNumber="1">
+				<fromBus idRef="Bus4"/>
+				<toBus idRef="Bus2"/>
+				<z im="0.015" unit="PU" re="0.0" />
+				<fromTurnRatio unit="PU" value="1.0" />
+				<toTurnRatio unit="PU" value="1.05" />
+				<z0 im="0.03" unit="PU"/>
+				<fromSideConnection xfrConnection="Wye">
+					<grounding groundingConnection="Ungrounded"></grounding></fromSideConnection>
+				<toSideConnection xfrConnection="Delta"></toSideConnection>
+			</acscXfr>
+			<acscXfr id="Bus5->Bus3(1)" circuitId="1" offLine="false" zoneNumber="1" areaNumber="1">
+				<fromBus idRef="Bus5"/>
+				<toBus idRef="Bus3"/>
+				<z im="0.03" unit="PU" re="0.0" />
+				<fromTurnRatio unit="PU" value="1.0" />
+				<toTurnRatio unit="PU" value="1.05" />
+				<z0 im="0.03" unit="PU"/>
+				<fromSideConnection xfrConnection="Wye">
+					<grounding groundingConnection="Ungrounded"></grounding></fromSideConnection>
+				<toSideConnection xfrConnection="Delta"></toSideConnection>
+			</acscXfr>
+        </branchList>
+        <hasLoadflowData>true</hasLoadflowData>
+        <positiveSeqDataOnly>false</positiveSeqDataOnly>
+    </acscNet>
+</pssStudyCase>

@@ -1,0 +1,7 @@
+BUS
+BusNum,BusName,AreaName,BusNomVolt,BusPUVolt,BusKVVolt,BusAngle,BusLoadMW,BusLoadMVR,BusGenMW,BusGenMVR,BusSS,BusG,BusB,AreaNum,ZoneNum
+1,3W_Gen_SW,1,19.40,1.00000,19.400,0.00,,,307.23,0.00,,1.00,1.00,1,6
+3,3W_Out,1,230.00,1.00000,230.000,-5.33,,,,,,1.00,1.00,1,6
+4,To_End_Par,1,230.00,1.00000,230.000,-10.05,400.00,0.00,,,,1.00,1.00,1,2
+5,Area_2_HV,2,230.00,1.00000,230.000,-9.61,,,,,,2.00,2.00,2,2
+6,Area_2_LV,2,19.40,1.00000,19.400,-9.31,,,100.00,0.00,,2.00,2.00,2,2

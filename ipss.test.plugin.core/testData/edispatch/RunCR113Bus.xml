@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<InterPSS xmlns="http://www.interpss.org/schema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.interpss.org/schema ../../../ipss.xml/schema/InterPSS.xsd ">
+
+  <runStudyCase>
+  <analysisRunType>RunAclf</analysisRunType>
+  <gridRunOption>
+    <enableGridRun>true</enableGridRun>
+    <remoteJobCreation>true</remoteJobCreation>
+  </gridRunOption>
+  <standardRun>
+  <runAclfStudyCase>
+    <defaultAclfAlgorithm>
+      <lfMethod>NR</lfMethod>
+      <maxIterations>20</maxIterations>
+      <tolerance>1.0E-4</tolerance>
+      <nonDivergent>true</nonDivergent>
+    </defaultAclfAlgorithm>
+    <aclfStudyCaseList>
+      <aclfStudyCase>
+        <recId>LOSE60-70_1</recId>
+        <recName>LOSE60-70</recName>
+        <recDesc>CONTINGENCY LOSE60-70</recDesc>
+        <modification>
+          <branchChangeRecList>
+            <branchChangeRec>
+              <recId>OpenLine_1_1</recId>
+              <recName>Open line, contingency 1 event 1</recName>
+              <recDesc>OPEN LINE FROM BUS 60 TO BUS 70 CIRCUIT 1</recDesc>
+              <fromBusId>60</fromBusId>
+              <toBusId>70</toBusId>
+              <circuitNumber>1</circuitNumber>
+              <offLine>true</offLine>
+            </branchChangeRec>
+          </branchChangeRecList>
+        </modification>
+      </aclfStudyCase>
+      
+      <aclfStudyCase>
+        <recId>LOSE60-70_1_1</recId>
+        <recName>LOSE60-70</recName>
+        <recDesc>CONTINGENCY LOSE60-70 by dummy bus 60701</recDesc>
+        <modification>
+          <branchChangeRecList>
+            <branchChangeRec>
+              <recId>OpenLine_1_1_1</recId>
+              <recName>Open line, contingency 1 event 1</recName>
+              <recDesc>OPEN LINE FROM BUS 60 TO BUS 60701 CIRCUIT 1</recDesc>
+              <fromBusId>60</fromBusId>
+              <toBusId>60701</toBusId>
+              <circuitNumber>1</circuitNumber>
+              <offLine>true</offLine>
+            </branchChangeRec>
+          </branchChangeRecList>
+        </modification>
+      </aclfStudyCase>
+      
+      <aclfStudyCase>
+        <recId>LOSE60-70_1_2</recId>
+        <recName>LOSE60-70</recName>
+        <recDesc>CONTINGENCY LOSE60-70 by dummy bus 60702</recDesc>
+        <modification>
+          <branchChangeRecList>
+            <branchChangeRec>
+              <recId>OpenLine_1_1_2</recId>
+              <recName>Open line, contingency 1 event 1</recName>
+              <recDesc>OPEN LINE FROM BUS 60702 TO BUS 70 CIRCUIT 1</recDesc>
+              <fromBusId>60702</fromBusId>
+              <toBusId>70</toBusId>
+              <circuitNumber>1</circuitNumber>
+              <offLine>true</offLine>
+            </branchChangeRec>
+          </branchChangeRecList>
+        </modification>
+      </aclfStudyCase>
+      
+      <aclfStudyCase>
+        <recId>LOSE60-70_1_3</recId>
+        <recName>LOSE60-70</recName>
+        <recDesc>CONTINGENCY LOSE60-70 by dummy bus 60701</recDesc>
+        <modification>
+          <branchChangeRecList>
+            <branchChangeRec>
+              <recId>OpenLine_1_1_3</recId>
+              <recName>Open line, contingency 1 event 1</recName>
+              <recDesc>OPEN LINE FROM BUS 60701 TO BUS 60702 CIRCUIT 1</recDesc>
+              <fromBusId>60701</fromBusId>
+              <toBusId>60702</toBusId>
+              <circuitNumber>1</circuitNumber>
+              <offLine>true</offLine>
+            </branchChangeRec>
+          </branchChangeRecList>
+        </modification>
+      </aclfStudyCase>
+      
+      <aclfStudyCase>
+        <recId>LOSE70-90_2</recId>
+        <recName>LOSE70-90</recName>
+        <recDesc>CONTINGENCY LOSE70-90</recDesc>
+        <modification>
+          <branchChangeRecList>
+            <branchChangeRec>
+              <recId>OpenLine_2_1</recId>
+              <recName>Open line, contingency 2 event 1</recName>
+              <recDesc>OPEN LINE FROM BUS 70 TO BUS 90 CIRCUIT 1</recDesc>
+              <fromBusId>70</fromBusId>
+              <toBusId>90</toBusId>
+              <circuitNumber>1</circuitNumber>
+              <offLine>true</offLine>
+            </branchChangeRec>
+          </branchChangeRecList>
+        </modification>
+      </aclfStudyCase>
+      <aclfStudyCase>
+        <recId>LOSE60-80_3</recId>
+        <recName>LOSE60-80</recName>
+        <recDesc>CONTINGENCY LOSE60-80</recDesc>
+        <modification>
+          <branchChangeRecList>
+            <branchChangeRec>
+              <recId>OpenLine_3_1</recId>
+              <recName>Open line, contingency 3 event 1</recName>
+              <recDesc>OPEN LINE FROM BUS 60 TO BUS 80 CIRCUIT 1</recDesc>
+              <fromBusId>60</fromBusId>
+              <toBusId>80</toBusId>
+              <circuitNumber>1</circuitNumber>
+              <offLine>true</offLine>
+            </branchChangeRec>
+          </branchChangeRecList>
+        </modification>
+      </aclfStudyCase>
+      <aclfStudyCase>
+        <recId>LOSE80-151_4</recId>
+        <recName>LOSE80-151</recName>
+        <recDesc>CONTINGENCY LOSE80-151</recDesc>
+        <modification>
+          <branchChangeRecList>
+            <branchChangeRec>
+              <recId>OpenLine_4_1</recId>
+              <recName>Open line, contingency 4 event 1</recName>
+              <recDesc>OPEN LINE FROM BUS 80 TO BUS 151 CIRCUIT 1</recDesc>
+              <fromBusId>80</fromBusId>
+              <toBusId>151</toBusId>
+              <circuitNumber>1</circuitNumber>
+              <offLine>true</offLine>
+            </branchChangeRec>
+          </branchChangeRecList>
+        </modification>
+      </aclfStudyCase>
+    </aclfStudyCaseList>
+  </runAclfStudyCase>
+  </standardRun>
+  </runStudyCase>
+</InterPSS>

@@ -1,0 +1,13 @@
+(POWERFLOW,CASEID=OMIB,PROJECT=OMIB_TEST_SYSTEM)
+/MVA_BASE=100 \
+/P_OUTPUT_LIST,FULL \
+/RPT_SORT=ZONE\
+/P_ANALYSIS_RPT,LEVEL=4,FULL\
+/OVERLOAD_RPT,TX=70,LINE=80\
+/NEW_BASE,FILE=OMIB.BSE\
+/NETWORK_DATA\                                               
+BE    Gen1    13.80120   10               42.5           1.0 
+BS    infBus  13.801                                     1.0 
+.L -----------------  transmission lines ----------------------------
+L     Gen1    13.8 infBus  13.8       .01   .03                           
+(END)     

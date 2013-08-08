@@ -1,0 +1,23 @@
+(POWERFLOW,CASEID=OMIB,PROJECT=OMIB_TEST_SYSTEM)
+/SOL_ITER,DECOUPLED=15,NEWTON=15\
+/P_OUTPUTLIST,FULL\
+/RPT_SORT=ZONE\
+/ANALYSIS_SELECT\
+>UNSCH<
+>SYSTEMZONE<
+>UVOV<
+>BUS<
+>LINELOAD<
+>SPIN<
+/NEW_BASE,FILE=OMIB.BSE\
+/NETWORK_DATA\
+B     Bus2    15.0011599.60.                                       
+.BQ    Gen1    18. GD1300.10.      6       1355 116.4     1.
+.EQG017
+BE    EQG009  20. GX                      1808 679       1008 
+BS    infBus  15.001                                     0.99
+.L -----------------  transmission lines ----------------------------
+T     EQG009  20.0 Bus2    15.0       0.0   .0003             20.0 15.0         
+.T ----- transformers --------- 
+L     Bus2    15.0 infBus  15.0       0.0   .01                           
+(END)     

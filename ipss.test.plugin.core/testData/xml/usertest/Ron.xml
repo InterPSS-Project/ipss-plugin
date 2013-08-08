@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ipss:InterPSS xmlns:ipss="http://www.interpss.org/schema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.interpss.org/schema ../../../ipss.xml/schema/InterPSS.xsd">
+	<ipss:runStudyCase>
+		<ipss:analysisRunType>RunAclf</ipss:analysisRunType>
+ 		<ipss:standardRun>
+		<ipss:aclfStudyCaseList>
+			<ipss:aclfStudyCase>
+				<ipss:recId>AclfRunCase-1</ipss:recId>
+				<ipss:recDesc>Swing bus voltage increase 0.1 pu</ipss:recDesc>
+				<ipss:modification>
+					<ipss:busChangeRecList>
+						<ipss:busChangeRec>
+							<ipss:recId>BusChangeRec1</ipss:recId>
+							<ipss:busId>0004</ipss:busId>
+							<ipss:aclfBusChangeData>
+								<ipss:genChangeData>
+									<ipss:swingVoltageChange>
+										<ipss:changeAction>add</ipss:changeAction>
+										<ipss:value>0.1</ipss:value>
+										<ipss:unit>PU</ipss:unit>
+									</ipss:swingVoltageChange></ipss:genChangeData></ipss:aclfBusChangeData>
+						</ipss:busChangeRec></ipss:busChangeRecList></ipss:modification>
+				<ipss:lfMethod>NR</ipss:lfMethod>
+				<ipss:maxIterations>20</ipss:maxIterations>
+				<ipss:tolerance>0.0001</ipss:tolerance>
+			</ipss:aclfStudyCase>
+			<ipss:aclfStudyCase>
+				<ipss:recId>AclfRunCase-2</ipss:recId>
+				<ipss:recDesc>Swing bus voltage increase -0.1 pu</ipss:recDesc>
+				<ipss:modification>
+					<ipss:busChangeRecList>
+						<ipss:busChangeRec>
+							<ipss:recId>BusChangeRec2</ipss:recId>
+							<ipss:busId>004</ipss:busId>
+							<ipss:aclfBusChangeData>
+								<ipss:genChangeData>
+									<ipss:swingVoltageChange>
+										<ipss:changeAction>add</ipss:changeAction>
+										<ipss:value>-0.1</ipss:value>
+										<ipss:unit>PU</ipss:unit>
+									</ipss:swingVoltageChange></ipss:genChangeData></ipss:aclfBusChangeData>
+						</ipss:busChangeRec></ipss:busChangeRecList></ipss:modification>
+				<ipss:lfMethod>NR</ipss:lfMethod>
+				<ipss:maxIterations>20</ipss:maxIterations>
+				<ipss:tolerance>0.0001</ipss:tolerance>
+			</ipss:aclfStudyCase>
+		</ipss:aclfStudyCaseList>
+ 		</ipss:standardRun>
+	</ipss:runStudyCase>
+</ipss:InterPSS>

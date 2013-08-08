@@ -1,0 +1,512 @@
+(POWERFLOW,CASEID=NF10,PROJECT=XTSJ)                                            
+/MVA_BASE=100\
+/P_OUTPUTLIST,FULL\
+/RPT_SORT=ZONE\
+/ANALYSIS_SELECT\
+>UNSCH<
+>SYSTEMZONE<
+>UVOV<
+>BUS<
+>LINELOAD<
+>SPIN<
+/SOL_ITER,DECOUPLED=2,NEWTON=15\
+/ NEW_BASE,FILE =07c.BSE\
+/PF_MAP,FILE=NF10fd.MAP\
+/NETWORK_DATA\
+                                                  
+B     ANSH-HLZ 525DC              1151                       
+B     ANSHHLZ1 525DC 3001 1557                               
+B  gz BAHE-KAI 525gz               540                       
+B     BEIJIAO  230DC 1849467.3 8651263                   .966
+B     BEIJIAO1 230DC-1686927.2                               
+B     BOLUO0H  525GD488.3128. 170.521.                       
+B     BS-H     525GX361.6252.8 159-510                   1024
+B     DAYW50P  525GD561.2190. -65.69.6                       
+B     DONGG0H  525GD 1661711.5799.180.                       
+B     DONGG20H 525GD 1881718.11186959.                       
+B     GD-HLZ   525DC-2794 1603                               
+B     GD01-HLZ 525DC-4781 2914                               
+B     HONGM0H  525GD 1341475.3641.338.                       
+B     HUICH50H 525GD454. 147.8211.-110                       
+B     HUIZ-HLZ 525DC              1650                       
+B     HUIZHLZ1 525DC-2821 1603                               
+B     HUIZXN0P 525GD                                         
+B     KAIP0H   525GD251.8102.379.0198.                       
+B     KGZ      525GX              -191                       
+B     LONGG0H  525GD843.1307.483.2965.                       
+B     MAOM0H   525GD636.2157.6-61.1586                   1006
+B     MEIZH0H  525GD918.4291.9503.1380                       
+B     NANSHA0H 525GD687.5260.1414.266.                       
+B     PENGC0H  525GD 1410533.6668.585.                       
+B     PG2-H    525GX400.1203.8 17229.8                   1014
+B     SANX50H  525GD 1142262.8-5521272                       
+B     SC-BS1   525GX                                         
+B     SC-BS2   525GX                                         
+B     SC-BST   525GX                                         
+B     SC-HC1   525GX                                         
+B     SC-HC2   525GX                                         
+B     SC-PG1   525GX                                         
+B     SC-PG2   525GX                                         
+B     SHENZ0H  525GD 1781588.8855.1168                       
+B     SHIPAI0H 525GD 1351428. 607.413.                       
+B     SHUNDE0H 525GD 1351509.1801.659.                       
+B     TSQD-M1  230DC 1802917.                                
+B     XINHUI0H 525GD582.5172.3132.841.                       
+B     XRENHLZ1 525DC 3001 1557                           1026
+B     XUNENG1P 525GD                                         
+B     YN01-HLZ 525DC              2095                       
+B     YN01HLZ1 525DC 5001 2749                               
+B     ZENGC0H  525GD 1105392.2284.626.                       
+B     ZENGD0H  525GD              3081                   .994
+B     ZHONGS0H 525GD 1131379.2730.308.                       
+B     ZQ-HLZ1  525DC-2835 1619                               
+B  yn baofengg 525yn87.2981.36 879-481                   1.02
+B  yn caopug   525yn144.8126.8 790-523                       
+B  yn dacs500g 525yn16.774.73     -162                   1.  
+B  yn dianxig  525yn267.8110.4 393 379                       
+B  yn jinganqg 525yn              -382                   1032
+B  yn luopingg 525yn82.5 59.0149.7                           
+B  yn qujingbg 525yn315.6255.  407 295                       
+B  yn yuxig    525yn156.3120.  428-117                       
+B     BAIHD0H  525DC 1418522.1586.2122                   .991
+B     BEIJ0H   525GD8.9143.1934.22-109                   .988
+B     DUSHAN-H 525GX404.5146.6 17486.                    1017
+BQ    EQG001  20. GD          3608-680     6325 1454     1.
++     EQG001  20. 02              -900
+BQ    EQG002  13.5GX          363 -143    634. 239.9      985
+BE    EQG003  10.5GX          228 -79.    570. 175.7     1.  
+BE    EQG004  26. GD          4551-999     5764 1500     1006
+BE gz EQG005  24. gz          104.-139     2660316.8     1.  
+BE    EQG006  18. GX          1433-853     2674916.7      999
+BE    EQG007  15. GD          980 -256     1194559.9     1.  
+BE gz EQG009  20. gz          1158-269     2160236.       989
+BE    EQG010  18. GD          15  -4.      1355116.4     1.  
+BE    EQG011  20. GD          663 -270     1488486.9     1.  
+BE    EQG012  10.5GX          668 -217    704. 253.      1.  
+BE    EQG013  18. GD          12  -1.7     108454.44     1.  
+BE    EQG014  13.8GX          156 -178     1831649.      1007
+BE    EQG015  13.8GD          555 -174    842. 236.2      994
+BE    EQG016  26. GD          1382-690     2931569.7     1.  
+BE    EQG017  18. GX              1505     6008 1179     1008
+BE    EQG018  13.8GD          632 -177    714. 299.      1.  
+BE    EQG019  20. GD          1315-394     3968565.5     1.01
+BE    EQG020  20. GD          2597-688     2632 1178     1.  
+BE    EQG021  26. GD          3598-800     8144 1244     1.
++     EQG021  26. 02              -726  
+BE    EQG022  15.8GD          2078-595     2288834.5     1002
+BE    EQG023  20. GD          1640-676     4819 1330     1005
+BE    EQG024  20. GD          1086-617     2987550.1     1.  
+BE    EQG025  18. GX          632 -256     2020771.      1017
+BE    EQG026  18. GX              -30.     2202720.3     1.02
+BE gz EQG027  24. gz                       3350686.6     1005
+BE    EQG028  22. GD          3121-157     4859 1265     1.
++     EQG028  20. 02              -999  
+BE gz EQG029  20. gz          1166-389     3570880.8     1049
+BE yn EQG030  20. y1          303          1352350.       997
+BE gz EQG031  15.8gz          941 -323     2210598.1     1005
+BE yn EQG032  18. yn              4.       1200223.5     1.  
+BE yn EQG033  18. yn          224 503.     5339876.      1009
+BE yn EQG034  15.8yn                       2735615.8      999
+BE gz EQG035  20. gz          749          5010 1020      997
+BE yn EQG036  10.5y1          1053-692     2026706.4     1017
+BE yn EQG037  20. yn              11.3     2100425.8     1.  
+BE yn EQG038  10.5yn          239 -93.     2151586.1     1023
+BE yn EQG039  20. y1          935 -550     2222637.3     1.01
+
+B     GAOM0H   525GD796.5254.7323.418.                   .991
+B     GAOME0H  525GD366.7121.1159.111.                   1001
+B     GG-H     525GX180.1129.9 150244.                   1015
+B     GL-H     525GX322.9191.4 198-527                   .992
+B     GUANGN0H 525GD 1232501.9780.679.                   .999
+B  gz GUIY     525gz973.1323.8-531 707                   1022
+B     HC-H     525GX340.5125.685.5-367                   1015
+B     HEY50H   525GD193.741.6968.4303.                   1010
+B     HUADU0H  525GD965.9224.6184.573.                   .994
+B  gz HUISHUI  525gz468.4181.1 356-199                   1019
+B     HUIZ0H   525GD 1020300.511411507                   1002
+B     HZ-H     525GX237. 109.6 102-146                   .984
+B     JIANGM0H 525GD570.2194. 259.334.                   .997
+B     LB-H     525GX161.2103.9 498237.                   1012
+B     LD-H     525GX316.4138.7 13117.                    .996
+B  gz LIPING   525gz209.394.4 97.4-312                   .989
+B     LT-5G    525GX     1983     -104                   1027
+B     LUODO0H  525GD 1465638.7733.-203                   .984
+B     NN-H     525GX1096.560.1 679275.                   1007
+B     PG-H     525GX352.5174.9 168-577                   1015
+B  gz QDONG    525gz800. 237.7 4351159                   1019
+B  gz QDONG3   525gz800. 588.3 118-145                   .990
+B     QINGY50H 525GD     56.28    32.                    1002
+B     SHAJ50P  525GD              -159                   1.  
+B     ST-H     525GX678.4318.4 320-497                   .992
+B     TSQB-H   525GX     14.71    -332                   1026
+B     TSQD-H   525GX80.           -107                   1026
+B     TSQD-M   230DC35.  23.43    1304                   1031
+B     WZ-H     525GX335.4123.4 158-96                    .991
+B  gz XINREN   525gz378.3251.6 21148.                    1021
+B     XREN-HLZ 525DC              1898                   1023
+B     YANGJ50H 525GD525.6161.1819.400.                   .999
+B     YL-H     525GX769.2399.7 760-35                    .999
+B     YT-5G    525GX              -50                    1026
+B     ZHAOQ0H  525GD985.2350. 437.641.                   1000
+B     ZQ-HLZ   525DC              1614                   1001
+B  yn changkg  525yn98.4 83.351007-116                   1018
+B  yn hongheg  525yn618.3489.5 4427.                     1022
+B  gz kaiguan  525gz710.1299.8-329647.                   1027
+B  yn kunxibg  525yn164.4141.5 351-387                   1013
+B  yn lixianjg 525yn86.3417.24160.955.                   1028
+B  yn manw500g 525xn14.7 6.91725. -99                    1032
+B  yn qidiang  525yn27.6819.431002-108                   1.02
+B  yn wenshang 525yn338.2243.5 200200.                   1034
+B  yn xiaowang 525yn              -504                   1029
+BS    GG1S    18. GX42.84150.             480.2300.      1.04
+
+
+L     BEIJIAO1 230 BEIJIAO  230              .0001            
+L     HUIZHLZ1 525 HUIZ-HLZ 525              .0001
+L     TSQD-M1  230 TSQD-M   230              .0001             
+L     XRENHLZ1 525 XREN-HLZ 525              .0001
+L     YN01HLZ1 525 YN01-HLZ 525              .0001
+L     ANSHHLZ1 525 ANSH-HLZ 525              .0001
+L     ZQ-HLZ1  525 ZQ-HLZ   525              .0001            
+L     GD01-HLZ 525 ZENGD0H  525              .0001            
+L     GD-HLZ   525 BAIHD0H  525              .0001            
+
+
+.T     YANGJ50H 525 EQG001  20.        .00009.01285            500.  20.
+.T     EQG001  20.  MAOM0H   525       .00025.00847            20.   500.
+
+T     YANGJ50H 525 EQG001  20.        .00009.01085            500.  20.
+T     EQG001  20.  MAOM0H   525       .00025.00447            20.   500.
+
+.T     YANGJ50H 525 EQG001  20.        .00009.00985            500.  20.
+.T     EQG001  20.  MAOM0H   525       .00025.00247            20.   500.
+
+
+T     BEIJ0H   525 BEIJIAO  230             .01039            500. 220.         
+
+T     BAIHD0H  525 EQG020  20.        .00003.02484            500.  20.
+T     PENGC0H  525 EQG020  20.              .03138             500.20. 
+
+.T     BAIHD0H  525 EQG020  20.        .00003.02284            500.  20.
+.T     PENGC0H  525 EQG020  20.              .02938             500.20. 
+
+T     GAOME0H  525 EQG018  13.8       .03492 .2564            500.  13.8
+T     NANSHA0H 525 EQG023  20.              .03457             500.20.  
+T     BOLUO0H  525 EQG011  20.        .00231 .038              500.20. 
+T     XINHUI0H 525 EQG024  20.        .00024.00857             500.20. 
+T     EQG023  20.  SHAJ50P  5251            .00268             20. 52777
+T     EQG004  26.  DAYW50P  525             .00707             26. 52187
+T     EQG022  15.8 DONGG20H 525             .02981             15.8500.
+T     EQG010  18.  XUNENG1P 5251             .0081             18. 525.
+T     EQG022  15.8 HONGM0H  525              .0435             15.8500.
+T     EQG013  18.  HUIZXN0P 5251             .0101             18. 525.
+T     EQG021  26.  MEIZH0H  525       .00008 .0066             26. 500.
+T     EQG004  26.  SHENZ0H  525             .01716            26.   500.
+T     EQG007  15.  GAOM0H   525             .02005            15.   500.
+T     EQG021  26.  HUIZ0H   525       .00004.00772            26.   500.
+T     EQG024  20.  KAIP0H   525       .00094.08912            20.   500.
+T     EQG015  13.8 LUODO0H  525        .0039.07447            13.8  500.
+T     EQG016  26.  SHENZ0H  525       .00018.01242            26.   500.
+T     EQG016  26.  LONGG0H  525             .01085            26.   500.
+T     EQG018  13.8 ZHAOQ0H  525       .00144.04207            13.8  500.
+T     EQG028  22.  SANX50H  525       .00026.00665            22.   500.
+T     EQG022  15.8 ZENGC0H  525       .00033.01855            15.8  500.
+T     EQG028  22.  SHUNDE0H 525             .02377            22.   500.
+T     EQG028  22.  ZHONGS0H 525             .02525            22.   500.
+T     EQG023  20.  GUANGN0H 525             .02016            20.  500.        
+T     EQG011  20.  HEY50H   525       .00011.03621            20.  500. 
+T     EQG019  20.  HUADU0H  525       .00086.01119            20.  500. 
+T     EQG024  20.  JIANGM0H 525       .00146.06189            20.  500. 
+T     EQG015  13.8 QINGY50H 525        .0015.04527            13.8 500. 
+T     EQG017  18.  LT-5G    5251            .00090             18. 545.8
+T     EQG017  18.  YT-5G    5251            .00797             18. 54467
+T     EQG034  15.8 manw500g 5251      .00001.00932             15.855067
+T     EQG034  15.8 dacs500g 5251      .00016.01342             15.855067
+
+T     GG1S    18.  GG-H     525             .02168             18. 525.
+.T     GG1S    18.  GG-H     525             .02168             18. 537. 
+
+T     EQG031  15.8 GUIY     525       .00262.02772             15.8525.
+T     EQG025  18.  TSQB-H   5251            .00937             18. 55174
+T     XREN-HLZ 525 EQG027  24.        .00016.00617            525.  24.
+T     EQG039  20.  changkg  525             .03097             20. 525.
+T     EQG030  20.  qidiang  525             .06693             20. 525.
+T     luopingg 525 EQG030  20.        .00014.01119            525.  20.
+T     dianxig  525 EQG038  10.5             .02573            525.  10.5
+T     EQG032  18.  jinganqg 5251             .01               18. 550.
+T     EQG037  20.  xiaowang 5251             .0058             20. 550.
+T     EQG026  18.  TSQB-H   525             .20871            18.   525.
+T     TSQD-M   230 EQG026  18.        .00026.01093             230.18. 
+
+T     ANSH-HLZ 525 EQG029  20.        .00123.03008             525.20. 
+T     kaiguan  525 EQG029  20.        .00014.00960             525.20. 
+
+T     EQG005  24.  BAHE-KAI 525       .00027.00852            24.   525.
+T     EQG002  13.5 BS-H     525             .04161            13.5  525.
+.T     HZ-H     525 EQG003  10.5       .01088.13951             525.10.5
+.T     WZ-H     525 EQG003  10.5             .04567             525.10.5
+T     HZ-H     525 EQG003  10.5        01525 .1945             525.10.5
+T     WZ-H     525 EQG003  10.5        00003 03502             525.10.5
+T     YL-H     525 EQG006  18.               .0264             525.18. 
+T     EQG012  10.5 GL-H     525       .00022.08082            10.5  525.
+T     EQG009  20.  QDONG    525       .00397.06171            20.   525.
+T     QDONG3   525 EQG009  20.         .0002 .0105             525.20. 
+T     EQG035  20.  GUIY     525       .00039.00796            20.   525.
+T     EQG012  10.5 LD-H     525       .00444.13183            10.5  525.
+T     EQG012  10.5 ST-H     525             .04553            10.5  525.
+T     QDONG    525 EQG031  15.8       .00841.10345             525.15.8
+T     EQG035  20.  QDONG    525       .00029.01465            20.   525.
+T     EQG025  18.  XINREN   525       .00051.04968            18.   525.
+T     TSQD-H   525 TSQD-M   230              .016              525. 230.
+T     hongheg  525 EQG036  10.5             .01478             525.10.5
+T     EQG033  18.  lixianjg 525             .00632            18.   525.
+T     qujingbg 525 EQG039  20.              .02493             525.20. 
+T     TSQB-H   525 TSQD-M   230       .00136.01518             525. 230.
+.T     TSQB-H   525 TSQD-M   230       .00136.01018             525. 230.
+T     EQG006  18.  NN-H     525       .00018 .0201            18.   525.
+T     EQG014  13.8 HC-H     525       .00627.08843            13.8  525.
+T     EQG031  15.8 HUISHUI  525       .00027.03958            15.8  525.
+T     EQG036  10.5 wenshang 525       .00011.05963            10.5  525.
+T     LB-H     525 EQG014  13.8             .01284            525.  13.8 
+T     GG-H     525 EQG014  13.8       .00464 .1211            525.  13.8
+
+
+L     MAOM0H   525 YANGJ50H 5253      .01322.13338
+L     BOLUO0H  525 HEY50H   5253      .00845.09104
+.L     SHENZ0H  525 DAYW50P  525             .04454
+L     DAYW50P  525 SHENZ0H  525             .04454
+L     SHIPAI0H 525 DONGG0H  5253            .02128                    
+L     MEIZH0H  525 HEY50H   525       .00136.01814                    
+L     HUICH50H 525 HUIZ0H   525       .00015.02015                    
+L     MEIZH0H  525 HUIZ0H   525       .00289.03846
+L     XINHUI0H 525 JIANGM0H 525             .02679      .00882
+L     KAIP0H   525 YANGJ50H 5253      .00307.09007            
+L     BAIHD0H  525 PENGC0H  5251      .00009.001        .05722
+L     BAIHD0H  525 PENGC0H  5252      .00009.001        .05722
+L     LONGG0H  525 SHENZ0H  525       .00034.00385            
+L     QINGY50H 525 LUODO0H  525       .01213.12108            
+L     BEIJ0H   525 ZENGC0H  5251      .00036.00444      .25181
+L     BEIJ0H   525 ZENGC0H  5252      .00036.00444      .25181
+L     ZQ-HLZ   525 ZHAOQ0H  5251      .00009.0019       .12116
+L     ZQ-HLZ   525 ZHAOQ0H  5252      .00009.0019       .12116
+L     BOLUO0H  525 HEY50H   5251      .00063.00925      .53427
+L     BOLUO0H  525 HEY50H   5252      .00063.00925      .53427
+L     BOLUO0H  525 HUICH50H 5251      .00045.00553      .31476
+L     BOLUO0H  525 HUICH50H 5252      .00045.00553      .31476
+L     BOLUO0H  525 SHIPAI0H 5251      .00027.00372      .21377
+L     BOLUO0H  525 SHIPAI0H 5252      .00027.00372      .21377
+L     DAYW50P  525 HUIZ0H   525       .00054.00553      .31476
+L     DONGG0H  525 HUICH50H 5251      .00045.0058       .33748
+L     DONGG0H  525 HUICH50H 5252      .00045.0058       .33748
+L     DONGG0H  525 HUIZ0H   5251      .00054.00517      .29194
+L     DONGG0H  525 HUIZ0H   5252      .00054.00517      .29194
+L     DONGG0H  525 LONGG0H  5251      .00018.00245      .13737
+L     DONGG0H  525 LONGG0H  5252      .00018.00245      .13737
+L     GAOME0H  525 ZHAOQ0H  5251      .00018.00254      .14619
+L     GAOME0H  525 ZHAOQ0H  5252      .00018.00254      .14619
+L     GUANGN0H 525 SHAJ50P  5251      .00036.00426      .24608
+L     GUANGN0H 525 SHAJ50P  5252      .00036.00426      .24608
+L     HONGM0H  525 DONGG20H 5251      .00009.00254      .21863
+L     HONGM0H  525 DONGG20H 5252      .00009.00254      .21863
+L     HUADU0H  525 BEIJ0H   5251      .00027.00299      .17166
+L     HUADU0H  525 BEIJ0H   5252      .00027.00299      .17166
+L     HUADU0H  525 BOLUO0H  5251      .00091.01333      .77054
+L     HUADU0H  525 BOLUO0H  5252      .00091.01333      .77054
+L     HUIZXN0P 525 BOLUO0H  525       .00018.00172      .09735
+L     HUIZXN0P 525 HUICH50H 5251      .00018.00345      .20032
+L     HUIZXN0P 525 HUICH50H 5252      .00018.00345      .20032
+L     JIANGM0H 525 GAOM0H   5251      .00036.00517      .29768
+L     JIANGM0H 525 GAOM0H   5252      .00036.00517      .29768
+L     JIANGM0H 525 SHUNDE0H 5251      .00027.00308      .17739
+L     JIANGM0H 525 SHUNDE0H 5252      .00027.00308      .17739
+L     KAIP0H   525 JIANGM0H 5251      .00045.00599      .34343
+L     KAIP0H   525 JIANGM0H 5252      .00045.00599      .34343
+L     KAIP0H   525 NANSHA0H 5251      .00073.00989      .57374
+L     KAIP0H   525 NANSHA0H 5252      .00073.00989      .57374
+L     LUODO0H  525 BEIJ0H   5251      .00036.00372      .21179
+L     LUODO0H  525 BEIJ0H   5252      .00027.00372      .21179
+L     LUODO0H  525 GAOM0H   5251      .00018.00245      .13737
+L     LUODO0H  525 GAOM0H   5252      .00018.00245      .13737
+L     NANSHA0H 525 GUANGN0H 5251      .00036.00481      .27474
+L     NANSHA0H 525 GUANGN0H 5252      .00036.00481      .27474
+L     PENGC0H  525 SHENZ0H  5251      .00018.00263      .14884
+L     PENGC0H  525 SHENZ0H  5252      .00018.00263      .14884
+L     SANX50H  525 NANSHA0H 5251      .00045.00635      .36559
+L     SANX50H  525 NANSHA0H 5252      .00045.00635      .36559
+L     SHAJ50P  525 PENGC0H  5251      .00045.00635      .36063
+L     SHAJ50P  525 PENGC0H  5252      .00027.00363      .20606
+L     SHIPAI0H 525 DONGG0H  5251      .00009.00163      .13991
+L     SHIPAI0H 525 DONGG0H  5252      .00009.00163      .13991
+L     SHUNDE0H 525 NANSHA0H 5251      .00045.00544      .30903
+L     SHUNDE0H 525 NANSHA0H 5252      .00045.00544      .30903
+L     XINHUI0H 525 ZHONGS0H 5251      .00027.0039       .22502
+L     XINHUI0H 525 ZHONGS0H 5252      .00027.0039       .22502
+L     XUNENG1P 525 BEIJ0H   525       .001  .01034      .58377
+L     XUNENG1P 525 ZENGC0H  5251      .00082.00816      .4636 
+L     XUNENG1P 525 ZENGC0H  5252      .00082.00816      .4636 
+L     YANGJ50H 525 KAIP0H   5251      .00063.00871      .498  
+L     YANGJ50H 525 KAIP0H   5252      .00063.00871      .498  
+L     ZENGC0H  525 HONGM0H  5251      .00009.00254      .21863
+L     ZENGC0H  525 HONGM0H  5252      .00009.00254      .21863
+L     ZENGC0H  525 ZENGD0H  5251      .00009.00154      .08588
+L     ZENGC0H  525 ZENGD0H  5252      .00018.00154      .08588
+L     ZENGD0H  525 HONGM0H  5251      .00027.00426      .24751
+L     ZENGD0H  525 HONGM0H  5252      .00027.00426      .24751
+L     ZENGD0H  525 SHIPAI0H 5251      .00036.00499      .28621
+L     ZENGD0H  525 SHIPAI0H 5252      .00045.00508      .28621
+L     ZHAOQ0H  525 GAOM0H   5251      .00027.00435      .25313
+L     ZHAOQ0H  525 GAOM0H   5252      .00027.00435      .25313
+L     ZHONGS0H 525 SANX50H  5251      .00036.00753      .65588
+L     ZHONGS0H 525 SANX50H  5252      .00036.00753      .65588
+L     ZHONGS0H 525 SHUNDE0H 5251      .00018.00245      .13737
+L     ZHONGS0H 525 SHUNDE0H 5252      .00018.00245      .13737
+
+
+L     HUIZ-HLZ 525 BOLUO0H  5251       .0003 .0054       .0255
+L     HUIZ-HLZ 525 BOLUO0H  5252       .0003 .0054       .0255
+L     caopug   525 kunxibg  5253            .04169           
+L     luopingg 525 qidiang  5253      .00158.10016            
+L     ANSH-HLZ 525 kaiguan  5253      .00213.02013
+.L     HUISHUI  525 GUIY     525       .01547.11913
+L     GUIY     525 HUISHUI  525       .01547.11913
+L     GUIY     525 QDONG    525       .00048.00715
+.L     HZ-H     525 WZ-H     525       .00861 .1138
+L     HZ-H     525 WZ-H     525        00802 08714
+L     GG-H     525 LB-H     5252      .00437.12642
+.L     ST-H     525 LD-H     5253       .0024.05959
+L     LD-H     525 ST-H     5253       .0024.05959
+.L     YL-H     525 NN-H     5253      .00454 .0903
+L     NN-H     525 YL-H     5253      .00454 .0903
+L     PG-H     525 PG2-H    525       .00888.11065
+L     wenshang 525 hongheg  5253       .0062.12205
+L     ANSH-HLZ 525 kaiguan  5251      .00004.00101      .05947
+L     ANSH-HLZ 525 kaiguan  5252      .00004.00101      .05947
+L  gz BAHE-KAI 525 HUISHUI  5251       .0009 .0129       .687
+L  gz BAHE-KAI 525 XREN-HLZ 5251       .0007 .0093       .4947
+L  gz BAHE-KAI 525 XREN-HLZ 5252       .0007 .0093       .4947
+L  gz BAHE-KAI 525 kaiguan  5251       .0006 .0066       .3628
+L  gz GUIY     525 kaiguan  5251       .0012 .0121       .6642
+L  gz GUIY     525 kaiguan  5252       .0012 .0119       .653
+L  gz HUISHUI  525 kaiguan  5251       .0007 .0097       .5112
+L  gz HUISHUI  525 kaiguan  5252       .0007 .0097       .5112
+L  gz QDONG    525 HUISHUI  5251       .0007 .0105       .5606
+L  gz QDONG3   525 QDONG    5251       .0006 .0092       .4397
+L  gz QDONG3   525 QDONG    5252       .0006 .0092       .4397
+L  gz TSQB-H   525 XINREN   5251       .0003 .0031       .1675
+L  gz XREN-HLZ 525 XINREN   5251       .0003 .003        .1675
+L  yn YN01-HLZ 525 kunxibg  5251       .0002 .0015       .1956
+L  yn YN01-HLZ 525 kunxibg  5252       .0002 .0015       .1956
+L  yn baofengg 525 qidiang  5251       .0004 .0064       .3541
+L  yn baofengg 525 qidiang  5252       .0004 .0064       .3541
+L  yn caopug   525 baofengg 5251       .0004 .0053       .2832
+L  yn caopug   525 baofengg 5252       .0004 .0053       .2832
+L  yn caopug   525 kunxibg  5251       00027 .0043       .235
+L  yn caopug   525 kunxibg  5252       00022 .0035       .1876
+L  yn changkg  525 kunxibg  5251       00045 .0071       .3941
+L  yn changkg  525 kunxibg  5252       00044 .0068       .3797
+L  yn changkg  525 qidiang  5251       .0004 .0063       .3467
+L  yn changkg  525 qujingbg 5251       .0008 .0122       .7655
+L  yn changkg  525 qujingbg 5252       .0008 .0122       .7655
+L  yn dacs500g 525 baofengg 5251       .0024 .0277      1.5165
+L  yn dacs500g 525 baofengg 5252       .0023 .0266      1.4575
+L  yn dianxig  525 kunxibg  5251       00136 .0209      1.181
+L  yn dianxig  525 kunxibg  5252       00124 .019       1.0771
+L  yn hongheg  525 qidiang  5251       .0011 .0162       .9151
+L  yn hongheg  525 qidiang  5252       .0011 .0162       .9151
+L  yn lixianjg 525 yuxig    5251       .0009 .0141       .7958
+L  yn lixianjg 525 yuxig    5252       .0009 .0141       .7958
+L  yn manw500g 525 caopug   5251       .002  .0237      1.2981
+L  yn manw500g 525 caopug   5252       .002  .0237      1.2981
+L  yn qidiang  525 luopingg 5251       .001  .0156       .8827
+L  yn qidiang  525 luopingg 5252       .001  .0156       .8827
+L  yn qujingbg 525 luopingg 5251       .0006 .0083       .5143
+L  yn qujingbg 525 luopingg 5252       .0006 .0083       .5143
+L  yn yuxig    525 baofengg 5251       .0005 .0077       .4263
+L  yn yuxig    525 baofengg 5252       .0005 .0077       .4263
+
+...new
+L     YANGJ50H525. GAOME0H 525.1      .00091.01324      .75929      
+L     YANGJ50H525. GAOME0H 525.2      .00091.01324      .75929     
+L     MAOM0H  525. YANGJ50H525.1      .00109.01488      .84705     
+L     MAOM0H  525. YANGJ50H525.2      .00109.01488      .84705      
+L     HUADU0H 525. ZHAOQ0H 525.1      .001  .01388      .79865     
+L     HUADU0H 525. ZHAOQ0H 525.2      .001  .01388      .79865     
+L     HUADU0H 525. QINGY50H525.1      .00063.01379      1.1982             
+L     HUADU0H 525. QINGY50H525.2      .00063.01379      1.1982             
+L     TSQB-H  525. SC-PG1  525.1      0.00290.0321      1.7348     
+L     TSQB-H  525. SC-PG2  525.1      0.00290.0321      1.7348      
+L     SC-PG1  525. PG-H    525.1      0.0   -.0127      0.0            
+L     SC-PG2  525. PG-H    525.1      0.0   -.0127      0.0                  
+L     SC-BS1  525. BS-H    525.1      0.0   -.0107      0.0           
+L     SC-BS2  525. BS-H    525.1      0.0   -.0107      0.0        
+L     PG-H    525. LB-H    525.1      0.00170.0190      1.0198      
+L     PG-H    525. LB-H    525.2      0.00170.0190      1.0198      
+L     LB-H    525. WZ-H    525.1      0.00220.0245      1.3191    
+L     LB-H    525. WZ-H    525.2      0.00220.0245      1.3191      
+L     WZ-H    525. LUODO0H 525.1      0.00190.0218      1.1639     
+L     WZ-H    525. LUODO0H 525.2      0.00190.0218      1.1639     
+L     luopingg525. TSQD-H  525.1      0.00080.0088      0.4766      
+L     TSQD-H  525. SC-BST  525.1      0.00150.0216      1.1849     
+L     SC-BST  525. BS-H    525.1      0.0   -.0106      0.0         
+L     luopingg525. SC-BS1  525.1      0.00170.0218      2.2898     
+L     luopingg525. SC-BS2  525.1      0.00170.0218      2.2898      
+L     BS-H    525. PG2-H   525.1      0.00080.0116      0.6316      
+L     BS-H    525. PG2-H   525.2      0.00080.0116      0.6316     
+L     PG2-H   525. NN-H    525.1      0.00080.0116      0.6316      
+L     PG2-H   525. NN-H    525.2      0.00080.0116      0.6316      
+L     NN-H    525. YL-H    525.1      0.00140.0203      1.1067    
+L     NN-H    525. YL-H    525.2      0.00140.0203      1.1067     
+L     YL-H    525. MAOM0H  525.1      0.00100.0146      0.7881     
+L     YL-H    525. MAOM0H  525.2      0.00100.0146      0.7881     
+L     TSQD-H  525. TSQB-H  525.1      0.00010.0020      0.1108    
+L     DUSHAN-H525. SC-HC1  525.1      0.00160.0235      1.2855      
+L     DUSHAN-H525. SC-HC2  525.1      0.00160.0235      1.2855      
+L     SC-HC1  525. HC-H    525.1      0.0   -.0157      0.0            
+L     SC-HC2  525. HC-H    525.1      0.0   -.0157      0.0        
+
+L     HC-H    525. LD-H    525.1      0.00100.0154      0.8384     
+L     HC-H    525. LD-H    525.2      0.00100.0154      0.8384      
+L     LD-H    525. HZ-H    525.1      0.00140.0210      1.1458     
+L     LD-H    525. HZ-H    525.2      0.00140.0210      1.1458      
+L     HZ-H    525. LUODO0H 525.1      0.00180.0260      1.4141     
+L     HZ-H    525. LUODO0H 525.2      0.00180.0260      1.4141      
+L     LIPING  525. GL-H    525.1      0.00110.0137      1.4215     
+L     LIPING  525. GL-H    525.2      0.00110.0137      1.4215     
+L     GL-H    525. QINGY50H525.1      0.00180.0225      2.3513      
+L     GL-H    525. QINGY50H525.2      0.00180.0225      2.3513     
+L     LT-5G   525. HC-H    525.1      0.00110.0167      0.9110     
+L     LT-5G   525. ST-H    525.1      0.00200.0286      1.5648     
+L     LT-5G   525. ST-H    525.2      0.00200.0286      1.5648      
+L     LT-5G   525. PG-H    525.1      0.00160.0240      1.3134      
+L     LD-H    525. GL-H    525.1      0.00100.0145      0.7881      
+L     LD-H    525. GL-H    525.2      0.00100.0145      0.7881      
+L     PG-H    525. YT-5G   525.1      0.00090.0102      0.5431      
+L     YT-5G   525. ST-H    525.1      0.00190.0221      1.1861     
+L     ST-H    525. LB-H    525.1      0.00090.0102      0.5431    
+L     ST-H    525. LD-H    525.1      0.00020.0040      0.2123      
+L     ST-H    525. LD-H    525.2      0.00020.0040      0.2123     
+L     PG-H    525. NN-H    525.1      0.00090.0104      0.5542     
+L     LB-H    525. GG-H    525.1      0.00070.0089      0.4711      
+L     GG-H    525. YL-H    525.1      0.00060.0073      0.3879     
+L     wenshang525. KGZ     525.1      0.00190.0122      2.5357  
+L     KGZ     525. NN-H    525.1      0.00070.0130      0.7146 
+L  yn hongheg 525. wenshang525.1     1.00079.01383      .75963                 120  0    135km   
+L  yn hongheg 525. wenshang525.2     1.00079.01383      .75963                 120  0    135km   
+L  yn xiaowang525. YN01-HLZ525.1      0.00150.0181      1.9210                  180  180  248
+L  yn xiaowang525. YN01-HLZ525.2      0.00150.0181      1.9210                  180  180  248
+L  yn xiaowang525. kunxibg 525.1      0.00140.0171      1.8134                  180  180  234
+L     jinganqg525. YN01-HLZ525.1      0.0017 .0218      2.2975                 210  210  299km
+L     jinganqg525. YN01-HLZ525.2      0.0017 .0218      2.2975                 210  210  299km
+.E  yn xiaowang525. YN01-HLZ525.1      0.00150.0184      1.9210                  180  180  248
+.E  yn xiaowang525. YN01-HLZ525.2      0.00150.0184      1.9210                  180  180  248
+.E  yn xiaowang525. kunxibg 525.1      0.00140.0174      1.8134                  180  180  234
+.E     jinganqg525. YN01-HLZ525.1      0.0017 .0220      2.2975                 210  210  299km
+.E     jinganqg525. YN01-HLZ525.2      0.0017 .0220      2.2975                 210  210  299km
+L  yn lixianjg525. hongheg 525.1      0.0014 .0165      1.7212                        120Mvar  120Mvar 226km ½ô´ÕÐÍ 6¡Á300
+L  yn lixianjg525. hongheg 525.2      0.0014 .0165      1.7212                        120Mvar  120Mvar 226km ½ô´ÕÐÍ 6¡Á300
+L  gz XREN-HLZ525. DUSHAN-H525.1      0.00150.0194      1.4532       
+L     QDONG3  525. LIPING  525.1      .00087 .0110      1.1526                 180    0  150km  6x300     
+L     QDONG3  525. LIPING  525.2      .00087 .0110      1.1526                 180    0  150km  6x300     
+L     HUISHUI 525. DUSHAN-H525.1      .00080 .0114      0.6046                 150       110km  4x400  
+L     HUISHUI 525. DUSHAN-H525.2      .00080 .0114      0.6046                 150       110km  4x400  
+(END)

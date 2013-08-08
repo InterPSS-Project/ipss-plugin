@@ -1,0 +1,83 @@
+DATA (BUS, [BusNum,BusName,BusNomVolt,BusPUVolt,BusAngle,BusG:1,BusB:1,AreaNum,ZoneNum,
+   SubNum,BusSlack,BusStatus,BusNum:1,BusName_NomVolt:1,BusLongName,BusKVVolt,
+   BusRad,BusE,BusF,BusMCMW,BusMWMCEnergy,BusMWMCCongestion,BusMWMCLosses,
+   BusMCMVAR,BusMvarMCCongestion,BusMvarMCLosses,BusMCVolt,BusRGVoltSet,OwnerNum,
+   BusEquiv,BusScale,TimeDomainSelected,LSName,BusMonEle,BusVoltLim,
+   BusVoltLimLow,BusVoltLimHigh,BusVoltLPUnenforce,LPOPFConstraint,BusLossSensMW,
+   BusLossSensMVR,DCLossMultiplier,Latitude,Longitude,LatitudeString,
+   LongitudeString,Datum,PVmonBusVoltage,PVMonBusVoltageKV,PVmonBusAngle,
+   pvMonVQSense,PVmonBusPLoad,PVmonBusQLoad,PVMonBusShunt,qvBusMinVolt,
+   qvBusMaxVolt,qvBusStepSize])
+{
+    1 "3W_Gen_SW  "  19.40 1.000000   0.000000   1.0000   1.0000      1      6 "" "YES" "Connected" "" "" "3W_Gen_SW   19.4"  19.4000   0.000000   1.0000   0.0000 "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" ""      1 "Study" "NO " "NO " "Default" "YES" "NO "   0.9000   1.1000 "   " "No"   0.0000   0.0000   1.0000 "" "" "" "" "" "NO " "NO " "NO " "NO " "NO " "NO " "NO "  0.100  1.100  0.010
+    3 "3W_Out     " 230.00 1.000000  -4.834182   1.0000   1.0000      1      6 "" "NO " "Connected" "" "" "3W_Out      230" 230.0000  -0.084372   0.9964  -0.0843 "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" ""      1 "Study" "NO " "NO " "Default" "YES" "NO "   0.9000   1.1000 "   " "No"   0.0000   0.0000   1.0000 "" "" "" "" "" "NO " "NO " "NO " "NO " "NO " "NO " "NO "  0.100  1.100  0.010
+    4 "To_End_Par " 230.00 1.000000  -9.554237   1.0000   1.0000      1      2 "" "NO " "Connected" "" "" "To_End_Par  230" 230.0000  -0.166753   0.9861  -0.1660 "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" ""      1 "Study" "NO " "NO " "Default" "YES" "NO "   0.9000   1.1000 "   " "No"   0.0000   0.0000   1.0000 "" "" "" "" "" "NO " "NO " "NO " "NO " "NO " "NO " "NO "  0.100  1.100  0.010
+    5 "Area_2_HV  " 230.00 1.000000  -9.114724   2.0000   2.0000      2      2 "" "NO " "Connected" "" "" "Area_2_HV   230" 230.0000  -0.159082   0.9874  -0.1584 "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" ""      2 "Study" "NO " "NO " "Default" "YES" "NO "   0.9000   1.1000 "   " "No"   0.0000   0.0000   1.0000 "" "" "" "" "" "NO " "NO " "NO " "NO " "NO " "NO " "NO "  0.100  1.100  0.010
+    6 "Area_2_LV  "  19.40 1.000000 -38.815258   2.0000   2.0000      2      2 "" "NO " "Connected" "" "" "Area_2_LV   19.4"  19.4000  -0.677454   0.7792  -0.6268 "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" "Not Valid" ""      2 "Study" "NO " "NO " "Default" "YES" "NO "   0.9000   1.1000 "   " "No"   0.0000   0.0000   1.0000 "" "" "" "" "" "NO " "NO " "NO " "NO " "NO " "NO " "NO "  0.100  1.100  0.010
+}
+
+DATA (LOAD, [BusNum,LoadID,LoadStatus,LoadSMW,LoadSMVR,LoadIMW,LoadIMVR,LoadZMW,LoadZMVR,
+   AreaNum,ZoneNum,GenAGCAble,OwnerNum])
+{
+    4 "1 " "Closed"   400.000    50.000     0.000     0.000     0.000     0.000      1      1 "YES"      1
+}
+
+DATA (GEN, [BusNum,GenID,GenStatus,GenMW,GenMVR,GenAGCAble,GenEnforceMWLimits,GenMWMin,
+   GenMWMax,GenParFac,GenAVRAble,GenVoltSet,GenRegNum,GenMVRMin,GenMVRMax,
+   GenRMPCT,GenUseCapCurve,GenUseLDCRCC,GenXLDCRCC,GenMVABase,GenZR,GenZX,
+   GenStepR,GenStepX,GenStepTap,AreaNum,ZoneNum,CTGMakeUpGen,CTGMakeUpGen:1,
+   GenPostCTGPreventAGC,TSGovRespLimit,GenMWOrgMin,GenMWOrgMax,GenFuelType,
+   GenUnitType,GenIOA,GenIOB,GenIOC,GenIOD,GenVariableOM,GenExtraOMCost,
+   GenExtraFuelCost,GenCostMultiplier,GenFuelCost,GenLPMW,GenOPFFastStart,
+   TimeDomainSelected,PVMonGenMW,PVMonGenMVR,PVMonGenMVRReserve,GenZR,GenZX,
+   GenStepR,GenStepX,GenStepTap,GenMVABase,GenRegNum,OwnerNum,OwnPercent])
+{
+    1 "1 " "Closed"  307.2330    0.0000 "YES" "NO "    1.0000  100.0000    1.0000 "YES" 1.000000     1 -100.0000  300.0000   92.0000 "NO " "NO"  0.000  100.0000   0.00760   0.35430   0.00000   0.00000   1.00000      1      6 "" "" "NO" "Normal"   1.0000 100.0000 "Unknown" "UN (Unknown)"   0.0000  10.0000   0.0100   0.0000   0.0000   0.0000   0.0000   1.0000   1.0000 "If Agcable" "NO " "NO " "NO " "NO " "NO "   0.0076   0.3543   0.0000   0.0000   1.0000 100.0000     1      1 100.0000
+    6 "1 " "Closed"  100.0000    0.0000 "YES" "YES"    1.0000  100.0000    1.0000 "YES" 1.000000     6 -100.0000  200.0000   92.0000 "NO " "NO"  0.000  100.0000   0.00760   0.35430   0.00000   0.00000   1.00000      2      2 "" "" "NO" "Normal"   1.0000 100.0000 "Unknown" "UN (Unknown)"   0.0000  10.0000   0.0100   0.0000   0.0000   0.0000   0.0000   1.0000   1.0000 "If Agcable" "NO " "NO " "NO " "NO " "NO "   0.0076   0.3543   0.0000   0.0000   1.0000 100.0000     6      2 100.0000
+}
+
+DATA (BRANCH, [BusNum,BusNum:1,LineCircuit,LineStatus,LineR,LineX,LineC,LineG,LineAMVA,
+   LineAMVA:1,LineAMVA:2,LineAMVA:3,LineAMVA:4,LineAMVA:5,LineAMVA:6,LineAMVA:7,
+   LineShuntMW,LineShuntMW:1,LineShuntMVR,LineShuntMVR:1,LineTap,LinePhase,
+   SeriesCapStatus,NormLineStatus,SeriesCapStatus,LineIsSeriesCap,LineMeter,
+   LineMCMVA,LSName,LineMonEle,LPOPFConstraint,TimeDomainSelected,
+   LineLPEnforceMVAEquality,LineLength,OwnerNum,OwnPercent,XfrmerMagnetizingG,
+   XfrmerMagnetizingB,BranchDeviceType,ConsolidateBranch,PVMonBranchMW,
+   PVMonBranchMVR,PVMonBranchMVA,BranchMonPTDF,MonBranchPLoss,MonBranchQLoss,
+   PVMonXfmrTap,PVMonXFRegVal,PVMonXFTapPos,PVMonXFRegErr])
+{
+    1     3 "1 " "Closed"  0.012200  0.027562  1.000000  0.000000  1200.000  1150.000  1090.000     0.000     0.000     0.000     0.000     0.000    0.0000    0.0000    0.0000    0.0000 0.962000   0.000000 "Not Bypassed" "Closed" "Not Bypassed" "NO " "From" "" "Default" "YES" "No" "NO " "NO "   1.0000      1  12.3800   0.0012  -0.0042 "Transformer" "" "NO" "NO" "NO" "NO" "NO " "NO " "NO " "NO " "NO " "NO "
+    3     4 "1 " "Closed"  0.026000  0.054000  1.090000  0.000000     0.000     0.000     0.000     0.000     0.000     0.000     0.000     0.000    0.0000    0.0000    0.0000    0.0000 1.000000   0.000000 "Not Bypassed" "Closed" "Not Bypassed" "NO " "From" "" "Default" "YES" "No" "NO " "NO "  90.0000      2  20.0000 "" "" "Line" "" "NO" "NO" "NO" "NO" "NO " "NO " "NO " "NO" "NO" "NO"
+    3     4 "2 " "Closed"  0.026000  0.054000  1.090000  0.000000     0.000     0.000     0.000     0.000     0.000     0.000     0.000     0.000    0.0000    0.0000    0.0000    0.0000 1.000000   0.000000 "Not Bypassed" "Closed" "Not Bypassed" "NO " "From" "" "Default" "YES" "No" "NO " "NO "  90.0000      1  13.3300 "" "" "Line" "" "NO" "NO" "NO" "NO" "NO " "NO " "NO " "NO" "NO" "NO"
+    4     5 "1 " "Closed"  0.020000  0.008000  1.000000  0.000000     0.000     0.000     0.000     0.000     0.000     0.000     0.000     0.000    0.0000    0.0000    0.0000    0.0000 1.000000   0.000000 "Not Bypassed" "Closed" "Not Bypassed" "NO " "From" "" "Default" "YES" "No" "NO " "NO "  70.0000      1  16.3900 "" "" "Line" "" "NO" "NO" "NO" "NO" "NO " "NO " "NO " "NO" "NO" "NO"
+    5     6 "T9" "Closed"  0.020000  0.005333  1.000000  0.000000   900.000   850.000   799.000     0.000     0.000     0.000     0.000     0.000    0.0000    0.0000    0.0000    0.0000 1.015910  30.000000 "Not Bypassed" "Closed" "Not Bypassed" "NO " "From" "" "Default" "YES" "No" "NO " "NO "   1.0000      1  19.0481   0.0011  -0.0005 "Transformer" "" "NO" "NO" "NO" "NO" "NO " "NO " "NO " "NO " "NO " "NO "
+}
+
+DATA (TRANSFORMER, [BusNum,BusNum:1,LineCircuit,LineXFType,XFAuto,XFRegMin,XFRegMax,XFRegTargetType,
+   XFTapMin,XFTapMax,XFStep,XFTableNum,XFRegBus,OPFAreaXFPS,LineXfmr,
+   TimeDomainSelectedXF,XFOPFRegEnforceLimits,XFConfiguration,XFFixedTap,
+   XFFixedTap:1,XFNominalKV,XFNominalKV:1,XFMVABase,UseDelay,UseSecRegRange,
+   MoveDelay,MoveDelay:1,MoveDelay:2,MoveDelay:3,MoveDelay:4,MoveDelay:5,
+   MoveDelay:6,MoveDelay:7,StepsToMove,StepsToMove:1,XFRegMin:1,XFRegMax:1])
+{
+    1     3 "1 " "LTC" "Yes"   0.93000   1.16000 "Middle of Reg Range"   0.87619   1.04781   0.00536      0     0 "NO " "YES" "NO " "NO " "Wye - Wye"   1.00000   1.05000  19.40000 230.00000 1000.00000 "NO " "NO "       30       30       15       15       15       15       10       10      1      1   0.51000   1.50000
+    5     6 "T9" "Mvar" "Yes" -250.00000 -175.00000 "Middle of Reg Range"   0.97500   1.05000   0.00682      0     0 "NO " "YES" "NO " "NO " "Wye - Wye"   1.00000   1.00000 230.00000  19.40000 900.00000 "NO " "NO "       30       30       15       15       15       15       10       10      1      1  51.00000 150.00000
+}
+
+DATA (AREA, [AreaNum,AreaName,BGAGC,BGAutoSS,BGAutoXF,EnforceGenMWLimits,SAName,
+   ConvergenceTol,AreaEDIncludeLossPF,BusSlack,AreaUnSpecifiedStudyMW,
+   OPFAreaLoadMW,CTGMakeUpGen,OPFAreaXFTaps,OPFAreaXFPS,OPFAreaDCLineMW,
+   OPFAreaLineLim,OPFAreaInterfaceLim,OPFAreaVoltLim,AreaLPOPFUseMargLoss,
+   AreaLPUnenforceable,OPFAreaMWMC,DCLossMultiplier,MargCostReference,
+   MargCostReference:1])
+{
+     1 "1" "Off AGC" "YES" "YES" "YES" ""   1.0000 "YES" ""        0.000 "NO "   0.0000 "NO " "NO " "YES" "YES" "YES" "NO " "NO " "   " ""   1.0000 "Existing" ""
+     2 "2" "Off AGC" "YES" "YES" "YES" ""   1.0000 "YES" ""        0.000 "NO "   0.0000 "NO " "NO " "YES" "YES" "YES" "NO " "NO " "   " ""   1.0000 "Existing" ""
+}
+
+DATA (ZONE, [ZoneNum,ZoneName,DCLossMultiplier])
+{
+     1 "1"   1.0000
+     2 "2"   1.0000
+     6 "6"   1.0000
+}

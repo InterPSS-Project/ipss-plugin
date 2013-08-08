@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="ASCII"?>
+<ipss:Network xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ipss="www.interpss.com/core/net" id="test net" allowParallelBranch="false">
+  <branchList id="Bus1->Bus2(1)" name="Branch 1" toBus="Bus2" fromBus="Bus1"/>
+  <branchList id="Bus2->Bus3(1)" name="Branch 2" toBus="Bus3" fromBus="Bus2"/>
+  <branchList id="Bus3->Bus1(1)" name="Branch 3" toBus="Bus1" fromBus="Bus3"/>
+  <busList id="Bus1" name="Bus 1" area="//@areaList.0" zone="//@zoneList.0" baseVoltage="1.0" toBranchList="Bus3->Bus1(1)" fromBranchList="Bus1->Bus2(1)"/>
+  <busList id="Bus2" name="Bus 2" area="//@areaList.0" zone="//@zoneList.0" baseVoltage="1.0" toBranchList="Bus1->Bus2(1)" fromBranchList="Bus2->Bus3(1)"/>
+  <busList id="Bus3" name="Bus 3" area="//@areaList.0" zone="//@zoneList.0" baseVoltage="1.0" toBranchList="Bus2->Bus3(1)" fromBranchList="Bus3->Bus1(1)"/>
+  <zoneList sortNumber="1"/>
+  <areaList sortNumber="1"/>
+</ipss:Network>

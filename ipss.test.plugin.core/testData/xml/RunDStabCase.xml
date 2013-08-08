@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ipss:InterPSS xmlns:ipss="http://www.interpss.org/schema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.interpss.org/schema ../../../ipss.xml/schema/InterPSS.xsd ">
+	<ipss:runStudyCase>
+		<ipss:analysisRunType>RunDStab</ipss:analysisRunType>
+		<ipss:standardRun>
+		<ipss:runDStabStudyCase>
+		<ipss:dStabStudyCaseList>
+		<ipss:dStabStudyCase>
+			<ipss:recId>DStabRun_1</ipss:recId>
+			
+			<ipss:simuConfig>
+				<ipss:totalSimuTimeSec>1.0</ipss:totalSimuTimeSec>
+				<ipss:simuStepSec>0.002</ipss:simuStepSec>
+				<ipss:simuMethod>ModifiedEuler</ipss:simuMethod>
+				<ipss:absoluteMachAngValue>false</ipss:absoluteMachAngValue>
+				<ipss:refMachineBusId>Mach@0003</ipss:refMachineBusId>
+			</ipss:simuConfig>
+
+			<ipss:aclfAlgorithm>
+			<ipss:lfMethod>NR</ipss:lfMethod>
+			<ipss:maxIterations>20</ipss:maxIterations>
+			<ipss:tolerance>0.0001</ipss:tolerance>
+			</ipss:aclfAlgorithm>
+
+			<ipss:dynamicEventData>
+				<ipss:disableEvent>true</ipss:disableEvent>
+			</ipss:dynamicEventData>
+		</ipss:dStabStudyCase>
+
+		<ipss:dStabStudyCase>
+			<ipss:recId>DStabRun_2</ipss:recId>
+			<ipss:simuConfig>
+				<ipss:totalSimuTimeSec>10.0</ipss:totalSimuTimeSec>
+				<ipss:simuStepSec>0.002</ipss:simuStepSec>
+				<ipss:simuMethod>ModifiedEuler</ipss:simuMethod>
+				<ipss:absoluteMachAngValue>false</ipss:absoluteMachAngValue>
+				<ipss:refMachineBusId>Mach@0003</ipss:refMachineBusId>
+			</ipss:simuConfig>
+			<ipss:aclfAlgorithm>
+				<ipss:lfMethod>NR</ipss:lfMethod>
+				<ipss:maxIterations>20</ipss:maxIterations>
+				<ipss:tolerance>0.0001</ipss:tolerance>
+			</ipss:aclfAlgorithm>
+			<ipss:dynamicEventData>
+				<ipss:disableEvent>false</ipss:disableEvent>
+				<ipss:eventList>
+					<ipss:event>
+						<ipss:recId>Fault_0003</ipss:recId>
+						<ipss:recName>Fault@0003</ipss:recName>
+						<ipss:eventType>Fault</ipss:eventType>
+						<ipss:startTimeSec>1.0</ipss:startTimeSec>
+						<ipss:durationSec>0.1</ipss:durationSec>
+						<ipss:fault>
+							<ipss:faultType>BusFault</ipss:faultType>
+							<ipss:faultCategory>Fault_3P</ipss:faultCategory>
+							<ipss:busBranchId>0003</ipss:busBranchId>
+						</ipss:fault>
+					</ipss:event>
+				</ipss:eventList>
+			</ipss:dynamicEventData>
+			<ipss:outputConfig>
+				<ipss:outputFilter>true</ipss:outputFilter>
+				<ipss:outputVarList>
+					<ipss:variableName>Machine - Mach@0001</ipss:variableName>
+					<ipss:variableName>Bus - 0005</ipss:variableName>
+				</ipss:outputVarList>
+			</ipss:outputConfig>
+		</ipss:dStabStudyCase>
+		</ipss:dStabStudyCaseList>
+		</ipss:runDStabStudyCase>
+		</ipss:standardRun>
+	</ipss:runStudyCase>
+</ipss:InterPSS>

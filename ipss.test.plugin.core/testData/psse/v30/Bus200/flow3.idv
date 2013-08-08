@@ -1,0 +1,38 @@
+LOFL
+CASE
+./200busV29-peak.sav
+FNSL,OPT
+0 0 0 0 0 0
+0
+CONL ALL
+0 100
+0 100
+1
+CONG
+ORDR
+FACT
+TYSL
+TYSL
+SAVE
+./tmp/sme2
+RTRN,FACT
+LOFL
+CASE
+./tmp/sme2
+RTRN,FACT
+DYRE
+./200bus-gen-0805.dyr
+cc1
+ct1
+,,,
+compile
+ALTR
+6
+Y
+50,.2
+Y
+,,0.005
+N
+N
+0
+0

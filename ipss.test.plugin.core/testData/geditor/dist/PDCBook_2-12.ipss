@@ -1,0 +1,125 @@
+<jgx-1.0>
+<model>
+	<a class="label" id="1" val="1" rect="348,6,150,30" attr="0"/>
+	<a class="bus" id="2" val="2" rect="408,114,73,5" attr="1">
+		<a class="port" id="3"/>
+		<a class="port" id="4" val="3"/>
+		<a class="port" id="5" val="3"/>
+		<a class="port" id="6" val="3"/>
+		<a class="port" id="7" val="3"/>
+	</a>
+	<a class="label" id="8" val="2" rect="396,78,50,20" attr="0"/>
+	<a class="bus" id="9" val="4" rect="264,270,361,5" attr="1">
+		<a class="port" id="10"/>
+		<a class="port" id="11" val="3"/>
+		<a class="port" id="12" val="3"/>
+		<a class="port" id="13" val="3"/>
+		<a class="port" id="14" val="3"/>
+	</a>
+	<a class="label" id="15" val="4" rect="258,246,50,20" attr="0"/>
+	<a class="bus" id="16" val="5" rect="582,570,40,5" attr="1">
+		<a class="port" id="17"/>
+		<a class="port" id="18" val="3"/>
+		<a class="port" id="19" val="3"/>
+		<a class="port" id="20" val="3"/>
+		<a class="port" id="21" val="3"/>
+	</a>
+	<a class="label" id="22" val="5" rect="528,540,50,20" attr="0"/>
+	<a class="bus" id="23" val="6" rect="312,570,40,5" attr="1">
+		<a class="port" id="24"/>
+		<a class="port" id="25" val="3"/>
+		<a class="port" id="26" val="3"/>
+		<a class="port" id="27" val="3"/>
+		<a class="port" id="28" val="3"/>
+	</a>
+	<a class="label" id="29" val="6" rect="252,546,50,20" attr="0"/>
+	<a class="bus" id="30" val="7" rect="582,388,40,5" attr="1">
+		<a class="port" id="31"/>
+		<a class="port" id="32" val="3"/>
+		<a class="port" id="33" val="3"/>
+		<a class="port" id="34" val="3"/>
+		<a class="port" id="35" val="3"/>
+	</a>
+	<a class="label" id="36" val="7" rect="528,354,50,20" attr="0"/>
+	<a class="branch" id="37" val="8" src="14" tgt="28" pts="330.0,275.0,330.0,300.0,330.0,546.0,330.0,570.0" attr="2"/>
+	<a class="branch" id="38" val="9" src="35" tgt="21" pts="602.0,393.0,602.0,408.0,602.0,555.0,602.0,570.0" attr="3"/>
+	<a class="branch" id="39" val="10" src="14" tgt="35" pts="600.0,275.0,600.0,294.0,600.0,372.0,600.0,388.0" attr="4"/>
+	<a class="branch" id="40" val="11" src="7" tgt="14" pts="444.5,119.0,444.5,134.0,444.0,252.0,444.0,270.0" attr="5"/>
+	<a class="annotateLabel" id="41" val="2" rect="492,102,79,43" attr="6"/>
+	<a class="annotateLabel" id="42" val="4" rect="648,264,61,37" attr="6"/>
+	<a class="annotateLabel" id="43" val="5" rect="636,558,61,43" attr="7"/>
+	<a class="annotateLabel" id="44" val="6" rect="360,558,67,37" attr="6"/>
+	<a class="annotateLabel" id="45" val="7" rect="630,378,61,43" attr="6"/>
+</model>
+<attrs>
+	<map id="0">
+		<a key="backgroundColor" val="255,255,255"/>
+		<a key="bordercolor" val="255,255,255"/>
+		<a key="opaque" val="true"/>
+	</map>
+	<map id="1" pid="0">
+		<a key="backgroundColor" val="128,128,128"/>
+	</map>
+	<map id="2">
+		<a key="extraLabels" val=","/>
+		<a key="extraLabelPositions" val="2.0,5.0,52.0,35.0"/>
+		<a key="labelposition" val="498,28"/>
+	</map>
+	<map id="3">
+		<a key="extraLabels" val=","/>
+		<a key="extraLabelPositions" val="2.0,5.0,52.0,35.0"/>
+		<a key="labelposition" val="599,-27"/>
+	</map>
+	<map id="4">
+		<a key="extraLabels" val=","/>
+		<a key="extraLabelPositions" val="2.0,5.0,52.0,35.0"/>
+		<a key="labelposition" val="539,-20"/>
+	</map>
+	<map id="5">
+		<a key="extraLabels" val=","/>
+		<a key="extraLabelPositions" val="2.0,5.0,52.0,35.0"/>
+		<a key="labelposition" val="575,-30"/>
+	</map>
+	<map id="6" pid="0">
+		<a key="font" val="Arial Narrow,10,0"/>
+	</map>
+	<map id="7" pid="0">
+		<a key="font" val="Arial Narrow,10,1"/>
+	</map>
+</attrs>
+<user>
+	<a key="5" val="%3CGBusForm+orientation%3D%221%22+new-state%3D%22false%22+base-voltage%3D%22480.0%22+zone%3D%221%22+status%3D%22true%22+area%3D%221%22%3E%3Cannotate-label%3E69.4%0A%280.145%29%3C%2Fannotate-label%3E%3Cbus-label%3EBus-3%3C%2Fbus-label%3E%3Cdisplay-str%3EBus-3%3C%2Fdisplay-str%3E%3Cdist-bus-data+bus-rating%3D%22750.0%22+z0-r%3D%220.0%22+mva-rating3-p%3D%220.0%22+loading%3D%22100.0%22+x_r1-p%3D%220.0%22+z1-x%3D%220.25%22+rated-volt%3D%221.0%22+z1-r%3D%220.0125%22+eff%3D%22100.0%22+mva-rating1-p%3D%220.0%22+VAngle%3D%220.0%22+z2-x%3D%220.25%22+z2-r%3D%220.012%22+has-load-schedule%3D%22false%22+PFactor%3D%220.8%22+motor-percent%3D%2280.0%22+x_r3-p%3D%220.0%22+z0-x%3D%220.25%22+voltage%3D%221.0%22%3E%3CVAngleUnit%3EDeg%3C%2FVAngleUnit%3E%3CPFactorUnit%3EPU%3C%2FPFactorUnit%3E%3Cbus-rating-unit%3EHP%3C%2Fbus-rating-unit%3E%3CZUnit%3EPU%3C%2FZUnit%3E%3Cvoltage-unit%3EPU%3C%2Fvoltage-unit%3E%3Cz1-list+xmlns%3Axsi%3D%22http%3A%2F%2Fwww.w3.org%2F2001%2FXMLSchema-instance%22+x%3D%220.0%22+x_-r%3D%220.0%22+r%3D%220.0%22+xsi%3Atype%3D%22java%3Aorg.interpss.editor.data.common.ZData%22%2F%3E%3Cz1-list+xmlns%3Axsi%3D%22http%3A%2F%2Fwww.w3.org%2F2001%2FXMLSchema-instance%22+x%3D%220.0%22+x_-r%3D%220.0%22+r%3D%220.0%22+xsi%3Atype%3D%22java%3Aorg.interpss.editor.data.common.ZData%22%2F%3E%3Cz1-list+xmlns%3Axsi%3D%22http%3A%2F%2Fwww.w3.org%2F2001%2FXMLSchema-instance%22+x%3D%220.0%22+x_-r%3D%220.0%22+r%3D%220.0%22+xsi%3Atype%3D%22java%3Aorg.interpss.editor.data.common.ZData%22%2F%3E%3Cmva-rating-unit%3EMVA%3C%2Fmva-rating-unit%3E%3Cground+x%3D%220.0%22+r%3D%220.0%22%3E%3Cunit%3EOhm%3C%2Funit%3E%3Ccode%3EUngrounded%3C%2Fcode%3E%3C%2Fground%3E%3Cbus-code%3EIndMotor%3C%2Fbus-code%3E%3Crated-volt-unit%3EPU%3C%2Frated-volt-unit%3E%3C%2Fdist-bus-data%3E%3Cbase-volt-unit%3EVolt%3C%2Fbase-volt-unit%3E%3Capp-type%3EDistribution%3C%2Fapp-type%3E%3Cname%3EBus-3%3C%2Fname%3E%3Cname-id-str%3EBus-3%280003%29%3C%2Fname-id-str%3E%3Cid%3E0003%3C%2Fid%3E%3C%2FGBusForm%3E"/>
+	<a key="6" val="%3CGBusForm+orientation%3D%221%22+new-state%3D%22false%22+base-voltage%3D%2213800.0%22+zone%3D%221%22+status%3D%22true%22+area%3D%221%22%3E%3Cannotate-label%3E226.2%0A%280.016%29%3C%2Fannotate-label%3E%3Cbus-label%3EBus-4%3C%2Fbus-label%3E%3Cdisplay-str%3EBus-4%3C%2Fdisplay-str%3E%3Cdist-bus-data+bus-rating%3D%225.0%22+z0-r%3D%220.0033333333333333335%22+mva-rating3-p%3D%220.0%22+loading%3D%22100.0%22+x_r1-p%3D%220.0%22+z1-x%3D%220.1%22+rated-volt%3D%221.0%22+z1-r%3D%220.0033333333333333335%22+eff%3D%220.0%22+mva-rating1-p%3D%220.0%22+VAngle%3D%220.0%22+z2-x%3D%220.1%22+z2-r%3D%220.0033333333333333335%22+has-load-schedule%3D%22false%22+PFactor%3D%220.8%22+motor-percent%3D%2280.0%22+x_r3-p%3D%220.0%22+z0-x%3D%220.1%22+voltage%3D%221.0%22%3E%3CVAngleUnit%3EDeg%3C%2FVAngleUnit%3E%3CPFactorUnit%3EPU%3C%2FPFactorUnit%3E%3Cbus-rating-unit%3EMva%3C%2Fbus-rating-unit%3E%3CZUnit%3EPU%3C%2FZUnit%3E%3Cvoltage-unit%3EPU%3C%2Fvoltage-unit%3E%3Cz1-list+xmlns%3Axsi%3D%22http%3A%2F%2Fwww.w3.org%2F2001%2FXMLSchema-instance%22+x%3D%220.0%22+x_-r%3D%220.0%22+r%3D%220.0%22+xsi%3Atype%3D%22java%3Aorg.interpss.editor.data.common.ZData%22%2F%3E%3Cz1-list+xmlns%3Axsi%3D%22http%3A%2F%2Fwww.w3.org%2F2001%2FXMLSchema-instance%22+x%3D%220.0%22+x_-r%3D%220.0%22+r%3D%220.0%22+xsi%3Atype%3D%22java%3Aorg.interpss.editor.data.common.ZData%22%2F%3E%3Cz1-list+xmlns%3Axsi%3D%22http%3A%2F%2Fwww.w3.org%2F2001%2FXMLSchema-instance%22+x%3D%220.0%22+x_-r%3D%220.0%22+r%3D%220.0%22+xsi%3Atype%3D%22java%3Aorg.interpss.editor.data.common.ZData%22%2F%3E%3Cmva-rating-unit%3EMVA%3C%2Fmva-rating-unit%3E%3Cground+x%3D%220.0%22+r%3D%220.0%22%3E%3Cunit%3EOhm%3C%2Funit%3E%3Ccode%3EUngrounded%3C%2Fcode%3E%3C%2Fground%3E%3Cbus-code%3EGenerator%3C%2Fbus-code%3E%3Crated-volt-unit%3EPU%3C%2Frated-volt-unit%3E%3C%2Fdist-bus-data%3E%3Cbase-volt-unit%3EVolt%3C%2Fbase-volt-unit%3E%3Capp-type%3EDistribution%3C%2Fapp-type%3E%3Cname%3EBus-4%3C%2Fname%3E%3Cname-id-str%3EBus-4%280004%29%3C%2Fname-id-str%3E%3Cid%3E0004%3C%2Fid%3E%3C%2FGBusForm%3E"/>
+	<a key="8" val="%3CGBranchForm+new-state%3D%22false%22+circuit-number%3D%221%22+zone%3D%221%22+status%3D%22true%22+area%3D%221%22%3E%3Csource-label%3E1.2%2Bj0.7%3C%2Fsource-label%3E%3Cdist-branch-data+to-rated-volt%3D%2213800.0%22+z0-r%3D%220.0%22+half-shunt-b0%3D%220.0%22+xfr-rating%3D%220.0%22+length%3D%22300.0%22+xfr-tap-to-side-tap%3D%221.0%22+xfr-tap-from-side-tap%3D%221.0%22+half-shunt-b%3D%220.0%22+ZX%3D%220.0547%22+ZR%3D%220.202%22+has-service-schedule%3D%22false%22+z0-x%3D%220.0%22+from-rated-volt%3D%2213800.0%22%3E%3Cto-xfr-connect-data%3E%3Ccode%3EDelta%3C%2Fcode%3E%3Cgrounding+x%3D%220.0%22+r%3D%220.0%22%3E%3Cunit%3EOhm%3C%2Funit%3E%3Ccode%3EUngrounded%3C%2Fcode%3E%3C%2Fgrounding%3E%3C%2Fto-xfr-connect-data%3E%3Chalf-shunt-bUnit%3EmicroMho%3C%2Fhalf-shunt-bUnit%3E%3Clength-unit%3EFt%3C%2Flength-unit%3E%3CZUnit%3EMVA%3C%2FZUnit%3E%3Cxfr-rating-unit%3EMVA%3C%2Fxfr-rating-unit%3E%3Cxfr-tap-unit%3EPU%3C%2Fxfr-tap-unit%3E%3Cz0-unit%3EOhm%3C%2Fz0-unit%3E%3Cfrom-xfr-connect-data%3E%3Ccode%3EWye%3C%2Fcode%3E%3Cgrounding+x%3D%220.0%22+r%3D%220.0%22%3E%3Cunit%3EOhm%3C%2Funit%3E%3Ccode%3EUngrounded%3C%2Fcode%3E%3C%2Fgrounding%3E%3C%2Ffrom-xfr-connect-data%3E%3Cbranch-code%3EFeeder%3C%2Fbranch-code%3E%3Crated-volt-unit%3EVolt%3C%2Frated-volt-unit%3E%3C%2Fdist-branch-data%3E%3Ctarget-label%3E1.2%2Bj0.7%3C%2Ftarget-label%3E%3Cdisplay-str%3E%232%3C%2Fdisplay-str%3E%3Cfrom-bus-name%3EBus-2%3C%2Ffrom-bus-name%3E%3Cto-id%3E0004%3C%2Fto-id%3E%3Cto-bus-name%3EBus-4%3C%2Fto-bus-name%3E%3Cfrom-id%3E0002%3C%2Ffrom-id%3E%3Cbranch-number%3E0001%3C%2Fbranch-number%3E%3Cdefault-name%3EBus-2-%26gt%3BBus-4%3C%2Fdefault-name%3E%3Capp-type%3EDistribution%3C%2Fapp-type%3E%3Cname%3E%232%3C%2Fname%3E%3Cname-id-str%3E%232%280002-%26gt%3B0004%29%3C%2Fname-id-str%3E%3Cid%3E0002-%26gt%3B0004%3C%2Fid%3E%3C%2FGBranchForm%3E"/>
+	<a key="9" val="%3CGBranchForm+new-state%3D%22false%22+circuit-number%3D%221%22+zone%3D%221%22+status%3D%22true%22+area%3D%221%22%3E%3Csource-label%3E1.2%2Bj0.7%3C%2Fsource-label%3E%3Cdist-branch-data+to-rated-volt%3D%22480.0%22+z0-r%3D%220.0%22+half-shunt-b0%3D%220.0%22+xfr-rating%3D%221.0%22+length%3D%221000.0%22+xfr-tap-to-side-tap%3D%221.0%22+xfr-tap-from-side-tap%3D%221.0%22+half-shunt-b%3D%220.0%22+ZX%3D%225.9184%22+ZR%3D%220.9864%22+has-service-schedule%3D%22false%22+z0-x%3D%225.9184%22+from-rated-volt%3D%2213800.0%22%3E%3Cto-xfr-connect-data%3E%3Ccode%3EDelta%3C%2Fcode%3E%3Cgrounding+x%3D%220.0%22+r%3D%220.0%22%3E%3Cunit%3EOhm%3C%2Funit%3E%3Ccode%3EUngrounded%3C%2Fcode%3E%3C%2Fgrounding%3E%3C%2Fto-xfr-connect-data%3E%3Chalf-shunt-bUnit%3EmicroMho%3C%2Fhalf-shunt-bUnit%3E%3Clength-unit%3EFt%3C%2Flength-unit%3E%3CZUnit%3E%25%3C%2FZUnit%3E%3Cxfr-rating-unit%3EMVA%3C%2Fxfr-rating-unit%3E%3Cxfr-tap-unit%3EPU%3C%2Fxfr-tap-unit%3E%3Cz0-unit%3E%25%3C%2Fz0-unit%3E%3Cfrom-xfr-connect-data%3E%3Ccode%3EWye%3C%2Fcode%3E%3Cgrounding+x%3D%220.0%22+r%3D%220.0%22%3E%3Cunit%3EOhm%3C%2Funit%3E%3Ccode%3EUngrounded%3C%2Fcode%3E%3C%2Fgrounding%3E%3C%2Ffrom-xfr-connect-data%3E%3Cbranch-code%3ETransformer%3C%2Fbranch-code%3E%3Crated-volt-unit%3EVolt%3C%2Frated-volt-unit%3E%3C%2Fdist-branch-data%3E%3Ctarget-label%3E1.2%2Bj0.7%3C%2Ftarget-label%3E%3Cdisplay-str%3ET2%3C%2Fdisplay-str%3E%3Cfrom-bus-name%3EBus-5%3C%2Ffrom-bus-name%3E%3Cto-id%3E0003%3C%2Fto-id%3E%3Cto-bus-name%3EBus-3%3C%2Fto-bus-name%3E%3Cfrom-id%3E0005%3C%2Ffrom-id%3E%3Cbranch-number%3E0002%3C%2Fbranch-number%3E%3Cdefault-name%3EBus-5-%26gt%3BBus-3%3C%2Fdefault-name%3E%3Capp-type%3EDistribution%3C%2Fapp-type%3E%3Cname%3ET2%3C%2Fname%3E%3Cname-id-str%3ET2%280005-%26gt%3B0003%29%3C%2Fname-id-str%3E%3Cid%3E0005-%26gt%3B0003%3C%2Fid%3E%3C%2FGBranchForm%3E"/>
+	<a key="2" val="%3CGBusForm+orientation%3D%221%22+new-state%3D%22false%22+base-voltage%3D%2269000.0%22+zone%3D%221%22+status%3D%22true%22+area%3D%221%22%3E%3Cannotate-label%3E56702.2%0A%280.822%29%3C%2Fannotate-label%3E%3Cbus-label%3EBus-1%3C%2Fbus-label%3E%3Cdisplay-str%3EBus-1%3C%2Fdisplay-str%3E%3Cdist-bus-data+bus-rating%3D%220.0%22+z0-r%3D%220.0%22+mva-rating3-p%3D%22400.0%22+loading%3D%22100.0%22+x_r1-p%3D%22100.0%22+z1-x%3D%220.0%22+rated-volt%3D%221.0%22+z1-r%3D%220.0%22+eff%3D%220.0%22+mva-rating1-p%3D%22300.0%22+VAngle%3D%220.0%22+z2-x%3D%220.0%22+z2-r%3D%220.0%22+has-load-schedule%3D%22false%22+PFactor%3D%220.8%22+motor-percent%3D%2280.0%22+x_r3-p%3D%227.0%22+z0-x%3D%220.0%22+voltage%3D%221.0%22%3E%3CVAngleUnit%3EDeg%3C%2FVAngleUnit%3E%3CPFactorUnit%3EPU%3C%2FPFactorUnit%3E%3Cbus-rating-unit%3EHP%3C%2Fbus-rating-unit%3E%3CZUnit%3EPU%3C%2FZUnit%3E%3Cvoltage-unit%3EPU%3C%2Fvoltage-unit%3E%3Cz1-list+xmlns%3Axsi%3D%22http%3A%2F%2Fwww.w3.org%2F2001%2FXMLSchema-instance%22+x%3D%220.0%22+x_-r%3D%220.0%22+r%3D%220.0%22+xsi%3Atype%3D%22java%3Aorg.interpss.editor.data.common.ZData%22%2F%3E%3Cz1-list+xmlns%3Axsi%3D%22http%3A%2F%2Fwww.w3.org%2F2001%2FXMLSchema-instance%22+x%3D%220.0%22+x_-r%3D%220.0%22+r%3D%220.0%22+xsi%3Atype%3D%22java%3Aorg.interpss.editor.data.common.ZData%22%2F%3E%3Cz1-list+xmlns%3Axsi%3D%22http%3A%2F%2Fwww.w3.org%2F2001%2FXMLSchema-instance%22+x%3D%220.0%22+x_-r%3D%220.0%22+r%3D%220.0%22+xsi%3Atype%3D%22java%3Aorg.interpss.editor.data.common.ZData%22%2F%3E%3Cmva-rating-unit%3EMVA%3C%2Fmva-rating-unit%3E%3Cground+x%3D%220.0%22+r%3D%220.0%22%3E%3Cunit%3EOhm%3C%2Funit%3E%3Ccode%3ESolidGrounded%3C%2Fcode%3E%3C%2Fground%3E%3Cbus-code%3EUtility%3C%2Fbus-code%3E%3Crated-volt-unit%3EPU%3C%2Frated-volt-unit%3E%3C%2Fdist-bus-data%3E%3Cbase-volt-unit%3EVolt%3C%2Fbase-volt-unit%3E%3Capp-type%3EDistribution%3C%2Fapp-type%3E%3Cname%3EBus-1%3C%2Fname%3E%3Cname-id-str%3EBus-1%280001%29%3C%2Fname-id-str%3E%3Cid%3E0001%3C%2Fid%3E%3C%2FGBusForm%3E"/>
+	<a key="11" val="%3CGBranchForm+new-state%3D%22false%22+circuit-number%3D%221%22+zone%3D%221%22+status%3D%22true%22+area%3D%221%22%3E%3Csource-label%3E1.2%2Bj0.7%3C%2Fsource-label%3E%3Cdist-branch-data+to-rated-volt%3D%2213800.0%22+z0-r%3D%220.0%22+half-shunt-b0%3D%220.0%22+xfr-rating%3D%225.0%22+length%3D%221000.0%22+xfr-tap-to-side-tap%3D%221.0%22+xfr-tap-from-side-tap%3D%221.0%22+half-shunt-b%3D%220.0%22+ZX%3D%225.7373%22+ZR%3D%220.38249%22+has-service-schedule%3D%22false%22+z0-x%3D%225.7373%22+from-rated-volt%3D%2269000.0%22%3E%3Cto-xfr-connect-data%3E%3Ccode%3EDelta%3C%2Fcode%3E%3Cgrounding+x%3D%220.0%22+r%3D%220.0%22%3E%3Cunit%3EOhm%3C%2Funit%3E%3Ccode%3EUngrounded%3C%2Fcode%3E%3C%2Fgrounding%3E%3C%2Fto-xfr-connect-data%3E%3Chalf-shunt-bUnit%3EmicroMho%3C%2Fhalf-shunt-bUnit%3E%3Clength-unit%3EFt%3C%2Flength-unit%3E%3CZUnit%3E%25%3C%2FZUnit%3E%3Cxfr-rating-unit%3EMVA%3C%2Fxfr-rating-unit%3E%3Cxfr-tap-unit%3EPU%3C%2Fxfr-tap-unit%3E%3Cz0-unit%3E%25%3C%2Fz0-unit%3E%3Cfrom-xfr-connect-data%3E%3Ccode%3EWye%3C%2Fcode%3E%3Cgrounding+x%3D%220.0%22+r%3D%220.0%22%3E%3Cunit%3EOhm%3C%2Funit%3E%3Ccode%3EUngrounded%3C%2Fcode%3E%3C%2Fgrounding%3E%3C%2Ffrom-xfr-connect-data%3E%3Cbranch-code%3ETransformer%3C%2Fbranch-code%3E%3Crated-volt-unit%3EVolt%3C%2Frated-volt-unit%3E%3C%2Fdist-branch-data%3E%3Ctarget-label%3E1.2%2Bj0.7%3C%2Ftarget-label%3E%3Cdisplay-str%3ET1%3C%2Fdisplay-str%3E%3Cfrom-bus-name%3EBus-1%3C%2Ffrom-bus-name%3E%3Cto-id%3E0002%3C%2Fto-id%3E%3Cto-bus-name%3EBus-2%3C%2Fto-bus-name%3E%3Cfrom-id%3E0001%3C%2Ffrom-id%3E%3Cbranch-number%3E0004%3C%2Fbranch-number%3E%3Cdefault-name%3EBus-1-%26gt%3BBus-2%3C%2Fdefault-name%3E%3Capp-type%3EDistribution%3C%2Fapp-type%3E%3Cname%3ET1%3C%2Fname%3E%3Cname-id-str%3ET1%280001-%26gt%3B0002%29%3C%2Fname-id-str%3E%3Cid%3E0001-%26gt%3B0002%3C%2Fid%3E%3C%2FGBranchForm%3E"/>
+	<a key="4" val="%3CGBusForm+orientation%3D%221%22+new-state%3D%22false%22+base-voltage%3D%2213800.0%22+zone%3D%221%22+status%3D%22true%22+area%3D%221%22%3E%3Cannotate-label%3E0.0%0A%280.000%29%3C%2Fannotate-label%3E%3Cbus-label%3EBus-2%3C%2Fbus-label%3E%3Cdisplay-str%3EBus-2%3C%2Fdisplay-str%3E%3Cdist-bus-data+bus-rating%3D%220.0%22+z0-r%3D%220.0%22+mva-rating3-p%3D%220.0%22+loading%3D%22100.0%22+x_r1-p%3D%220.0%22+z1-x%3D%220.0%22+rated-volt%3D%221.0%22+z1-r%3D%220.0%22+eff%3D%220.0%22+mva-rating1-p%3D%220.0%22+VAngle%3D%220.0%22+z2-x%3D%220.0%22+z2-r%3D%220.0%22+has-load-schedule%3D%22false%22+PFactor%3D%220.8%22+motor-percent%3D%2280.0%22+x_r3-p%3D%220.0%22+z0-x%3D%220.0%22+voltage%3D%221.0%22%3E%3CVAngleUnit%3EDeg%3C%2FVAngleUnit%3E%3CPFactorUnit%3EPU%3C%2FPFactorUnit%3E%3Cbus-rating-unit%3EHP%3C%2Fbus-rating-unit%3E%3CZUnit%3EPU%3C%2FZUnit%3E%3Cvoltage-unit%3EPU%3C%2Fvoltage-unit%3E%3Cz1-list+xmlns%3Axsi%3D%22http%3A%2F%2Fwww.w3.org%2F2001%2FXMLSchema-instance%22+x%3D%220.0%22+x_-r%3D%220.0%22+r%3D%220.0%22+xsi%3Atype%3D%22java%3Aorg.interpss.editor.data.common.ZData%22%2F%3E%3Cz1-list+xmlns%3Axsi%3D%22http%3A%2F%2Fwww.w3.org%2F2001%2FXMLSchema-instance%22+x%3D%220.0%22+x_-r%3D%220.0%22+r%3D%220.0%22+xsi%3Atype%3D%22java%3Aorg.interpss.editor.data.common.ZData%22%2F%3E%3Cz1-list+xmlns%3Axsi%3D%22http%3A%2F%2Fwww.w3.org%2F2001%2FXMLSchema-instance%22+x%3D%220.0%22+x_-r%3D%220.0%22+r%3D%220.0%22+xsi%3Atype%3D%22java%3Aorg.interpss.editor.data.common.ZData%22%2F%3E%3Cmva-rating-unit%3EMVA%3C%2Fmva-rating-unit%3E%3Cground+x%3D%220.0%22+r%3D%220.0%22%3E%3Cunit%3EOhm%3C%2Funit%3E%3Ccode%3EUngrounded%3C%2Fcode%3E%3C%2Fground%3E%3Cbus-code%3ENon-Contribute%3C%2Fbus-code%3E%3Crated-volt-unit%3EPU%3C%2Frated-volt-unit%3E%3C%2Fdist-bus-data%3E%3Cbase-volt-unit%3EVolt%3C%2Fbase-volt-unit%3E%3Capp-type%3EDistribution%3C%2Fapp-type%3E%3Cname%3EBus-2%3C%2Fname%3E%3Cname-id-str%3EBus-2%280002%29%3C%2Fname-id-str%3E%3Cid%3E0002%3C%2Fid%3E%3C%2FGBusForm%3E"/>
+	<a key="7" val="%3CGBusForm+orientation%3D%221%22+new-state%3D%22false%22+base-voltage%3D%2213800.0%22+zone%3D%221%22+status%3D%22true%22+area%3D%221%22%3E%3Cannotate-label%3E29.3%0A%280.002%29%3C%2Fannotate-label%3E%3Cbus-label%3EBus-5%3C%2Fbus-label%3E%3Cdisplay-str%3EBus-5%3C%2Fdisplay-str%3E%3Cdist-bus-data+bus-rating%3D%220.0%22+z0-r%3D%220.0%22+mva-rating3-p%3D%220.0%22+loading%3D%22100.0%22+x_r1-p%3D%220.0%22+z1-x%3D%220.0%22+rated-volt%3D%221.0%22+z1-r%3D%220.0%22+eff%3D%220.0%22+mva-rating1-p%3D%220.0%22+VAngle%3D%220.0%22+z2-x%3D%220.0%22+z2-r%3D%220.0%22+has-load-schedule%3D%22false%22+PFactor%3D%220.8%22+motor-percent%3D%2280.0%22+x_r3-p%3D%220.0%22+z0-x%3D%220.0%22+voltage%3D%221.0%22%3E%3CVAngleUnit%3EDeg%3C%2FVAngleUnit%3E%3CPFactorUnit%3EPU%3C%2FPFactorUnit%3E%3Cbus-rating-unit%3EHP%3C%2Fbus-rating-unit%3E%3CZUnit%3EPU%3C%2FZUnit%3E%3Cvoltage-unit%3EPU%3C%2Fvoltage-unit%3E%3Cz1-list+xmlns%3Axsi%3D%22http%3A%2F%2Fwww.w3.org%2F2001%2FXMLSchema-instance%22+x%3D%220.0%22+x_-r%3D%220.0%22+r%3D%220.0%22+xsi%3Atype%3D%22java%3Aorg.interpss.editor.data.common.ZData%22%2F%3E%3Cz1-list+xmlns%3Axsi%3D%22http%3A%2F%2Fwww.w3.org%2F2001%2FXMLSchema-instance%22+x%3D%220.0%22+x_-r%3D%220.0%22+r%3D%220.0%22+xsi%3Atype%3D%22java%3Aorg.interpss.editor.data.common.ZData%22%2F%3E%3Cz1-list+xmlns%3Axsi%3D%22http%3A%2F%2Fwww.w3.org%2F2001%2FXMLSchema-instance%22+x%3D%220.0%22+x_-r%3D%220.0%22+r%3D%220.0%22+xsi%3Atype%3D%22java%3Aorg.interpss.editor.data.common.ZData%22%2F%3E%3Cmva-rating-unit%3EMVA%3C%2Fmva-rating-unit%3E%3Cground+x%3D%220.0%22+r%3D%220.0%22%3E%3Cunit%3EOhm%3C%2Funit%3E%3Ccode%3EUngrounded%3C%2Fcode%3E%3C%2Fground%3E%3Cbus-code%3ENon-Contribute%3C%2Fbus-code%3E%3Crated-volt-unit%3EPU%3C%2Frated-volt-unit%3E%3C%2Fdist-bus-data%3E%3Cbase-volt-unit%3EVolt%3C%2Fbase-volt-unit%3E%3Capp-type%3EDistribution%3C%2Fapp-type%3E%3Cname%3EBus-5%3C%2Fname%3E%3Cname-id-str%3EBus-5%280005%29%3C%2Fname-id-str%3E%3Cid%3E0005%3C%2Fid%3E%3C%2FGBusForm%3E"/>
+	<a key="1" val="%3CGNetForm+new-state%3D%22false%22+next-branch-number%3D%225%22+next-bus-number%3D%226%22+base-kVA%3D%22100000.0%22+freq-hZ%3D%2250.0%22+allow-parallel-branch%3D%22false%22+check-bus-duplication%3D%22true%22%3E%3Cacsc-net-data+has-aclf-data%3D%22false%22+has-adjustment%3D%22false%22%2F%3E%3Cbase-volt-list+xmlns%3Axsi%3D%22http%3A%2F%2Fwww.w3.org%2F2001%2FXMLSchema-instance%22+xsi%3Atype%3D%22java%3Ajava.lang.String%22%3E1000.00%3C%2Fbase-volt-list%3E%3Cbase-volt-list+xmlns%3Axsi%3D%22http%3A%2F%2Fwww.w3.org%2F2001%2FXMLSchema-instance%22+xsi%3Atype%3D%22java%3Ajava.lang.String%22%3E13800.00%3C%2Fbase-volt-list%3E%3Cbase-volt-list+xmlns%3Axsi%3D%22http%3A%2F%2Fwww.w3.org%2F2001%2FXMLSchema-instance%22+xsi%3Atype%3D%22java%3Ajava.lang.String%22%3E480.00%3C%2Fbase-volt-list%3E%3Cbase-volt-list+xmlns%3Axsi%3D%22http%3A%2F%2Fwww.w3.org%2F2001%2FXMLSchema-instance%22+xsi%3Atype%3D%22java%3Ajava.lang.String%22%3E69000.00%3C%2Fbase-volt-list%3E%3Capp-type%3EDistribution%3C%2Fapp-type%3E%3Cdisplay-str%3EPDCBook_2_12+Sample%3C%2Fdisplay-str%3E%3CDStabNetData%3E%3Cacsc-net-data+has-aclf-data%3D%22false%22+has-adjustment%3D%22false%22%2F%3E%3C%2FDStabNetData%3E%3Cnet-type%3EAcscNetwork%3C%2Fnet-type%3E%3Cdist-net-data+load-schedule-points%3D%220%22+active-sc-points%3D%220%22+total-loss-kw-hr%3D%220.0%22+sc-points%3D%220%22+load-schedule-period-length%3D%221.0%22%3E%3Cload-schedule-period-unit%3EHour%3C%2Fload-schedule-period-unit%3E%3Csc-std%3EGeneric%3C%2Fsc-std%3E%3C%2Fdist-net-data%3E%3Cdescription%3EThis+network+is+created+by+InterPSS+OneLine+Draw+Module%3C%2Fdescription%3E%3Cid%3EPDCBook_2_12+Sample%3C%2Fid%3E%3C%2FGNetForm%3E"/>
+	<a key="10" val="%3CGBranchForm+new-state%3D%22false%22+circuit-number%3D%221%22+zone%3D%221%22+status%3D%22true%22+area%3D%221%22%3E%3Csource-label%3E1.2%2Bj0.7%3C%2Fsource-label%3E%3Cdist-branch-data+to-rated-volt%3D%2213800.0%22+z0-r%3D%220.0%22+half-shunt-b0%3D%220.0%22+xfr-rating%3D%220.0%22+length%3D%221000.0%22+xfr-tap-to-side-tap%3D%221.0%22+xfr-tap-from-side-tap%3D%221.0%22+half-shunt-b%3D%220.0%22+ZX%3D%220.054%22+ZR%3D%220.16%22+has-service-schedule%3D%22false%22+z0-x%3D%220.0%22+from-rated-volt%3D%2213800.0%22%3E%3Cto-xfr-connect-data%3E%3Ccode%3EDelta%3C%2Fcode%3E%3Cgrounding+x%3D%220.0%22+r%3D%220.0%22%3E%3Cunit%3EOhm%3C%2Funit%3E%3Ccode%3EUngrounded%3C%2Fcode%3E%3C%2Fgrounding%3E%3C%2Fto-xfr-connect-data%3E%3Chalf-shunt-bUnit%3EmicroMho%3C%2Fhalf-shunt-bUnit%3E%3Clength-unit%3EFt%3C%2Flength-unit%3E%3CZUnit%3E%25%3C%2FZUnit%3E%3Cxfr-rating-unit%3EMVA%3C%2Fxfr-rating-unit%3E%3Cxfr-tap-unit%3EPU%3C%2Fxfr-tap-unit%3E%3Cz0-unit%3EOhm%3C%2Fz0-unit%3E%3Cfrom-xfr-connect-data%3E%3Ccode%3EWye%3C%2Fcode%3E%3Cgrounding+x%3D%220.0%22+r%3D%220.0%22%3E%3Cunit%3EOhm%3C%2Funit%3E%3Ccode%3EUngrounded%3C%2Fcode%3E%3C%2Fgrounding%3E%3C%2Ffrom-xfr-connect-data%3E%3Cbranch-code%3EFeeder%3C%2Fbranch-code%3E%3Crated-volt-unit%3EVolt%3C%2Frated-volt-unit%3E%3C%2Fdist-branch-data%3E%3Ctarget-label%3E1.2%2Bj0.7%3C%2Ftarget-label%3E%3Cdisplay-str%3E%231%3C%2Fdisplay-str%3E%3Cfrom-bus-name%3EBus-2%3C%2Ffrom-bus-name%3E%3Cto-id%3E0005%3C%2Fto-id%3E%3Cto-bus-name%3EBus-5%3C%2Fto-bus-name%3E%3Cfrom-id%3E0002%3C%2Ffrom-id%3E%3Cbranch-number%3E0003%3C%2Fbranch-number%3E%3Cdefault-name%3EBus-2-%26gt%3BBus-5%3C%2Fdefault-name%3E%3Capp-type%3EDistribution%3C%2Fapp-type%3E%3Cname%3E%231%3C%2Fname%3E%3Cname-id-str%3E%231%280002-%26gt%3B0005%29%3C%2Fname-id-str%3E%3Cid%3E0002-%26gt%3B0005%3C%2Fid%3E%3C%2FGBranchForm%3E"/>
+	<a key="3" val=""/>
+</user>
+<view>
+	<a key="editable" val="true"/>
+	<a key="bendable" val="true"/>
+	<a key="cloneable" val="false"/>
+	<a key="connectable" val="true"/>
+	<a key="disconnectable" val="true"/>
+	<a key="disconnectOnMove" val="false"/>
+	<a key="doubleBuffered" val="true"/>
+	<a key="dragEnabled" val="false"/>
+	<a key="dropEnabled" val="true"/>
+	<a key="moveable" val="true"/>
+	<a key="sizeable" val="true"/>
+	<a key="gridVisible" val="false"/>
+	<a key="gridEnabled" val="true"/>
+	<a key="gridSize" val="6.0"/>
+	<a key="gridMode" val="0"/>
+	<a key="scale" val="1.0"/>
+	<a key="antiAlias" val="false"/>
+</view>
+<proj>
+%3Cproj-data+dirty%3D%22true%22+new-project%3D%22false%22%3E%3Caclf-case-name%3EAclf+Analysis+Case%3C%2Faclf-case-name%3E%3Ccase-list+xmlns%3Axsi%3D%22http%3A%2F%2Fwww.w3.org%2F2001%2FXMLSchema-instance%22+current-report-id%3D%22-1%22+case-type%3D%221%22+xsi%3Atype%3D%22java%3Aorg.interpss.editor.data.proj.CaseData%22%3E%3Ccase-name%3EAclf+Analysis+Case%3C%2Fcase-name%3E%3Cdescription%3E%3C%2Fdescription%3E%3Caclf-case-data+acc-factor%3D%221.0%22+tolerance%3D%221.0E-4%22+max-iteration%3D%2220%22+show-summary%3D%22true%22+init-bus-volt%3D%22true%22%3E%3Cmethod%3ENR%3C%2Fmethod%3E%3C%2Faclf-case-data%3E%3C%2Fcase-list%3E%3Ccase-list+xmlns%3Axsi%3D%22http%3A%2F%2Fwww.w3.org%2F2001%2FXMLSchema-instance%22+current-report-id%3D%22-1%22+case-type%3D%222%22+xsi%3Atype%3D%22java%3Aorg.interpss.editor.data.proj.CaseData%22%3E%3Ccase-name%3EAcsc+Analysis+Case%3C%2Fcase-name%3E%3Cdescription%3E%3C%2Fdescription%3E%3Cacsc-case-data+MFactor%3D%22100.0%22%3E%3Cbus-init-volt%3EUnitV%3C%2Fbus-init-volt%3E%3Cfault-data+distance%3D%220.0%22+LL_R%3D%220.0%22+LG_X%3D%220.0%22+LL_X%3D%220.0%22+LG_R%3D%220.0%22%3E%3Ccategory%3E3P%3C%2Fcategory%3E%3Cbus-branch-name-id%3EBus-2%280002%29%3C%2Fbus-branch-name-id%3E%3Cbus-branch-id%3E0002%3C%2Fbus-branch-id%3E%3Ctype%3EBus%3C%2Ftype%3E%3C%2Ffault-data%3E%3C%2Facsc-case-data%3E%3C%2Fcase-list%3E%3Cacsc-case-name%3EAcsc+Analysis+Case%3C%2Facsc-case-name%3E%3Cdescription%3EAn+InterPSS+project+created+be+InterPSS+OneLine+Draw%3C%2Fdescription%3E%3Cfilepath%3EC%3A%5Ceclipse%5CInterpss3.1%5Cipss.editor%5Cprojects%5Csamples%5CPDCBook_2-12.ipss%3C%2Ffilepath%3E%3Cproject-name%3EPDCBook_2_12+Sample%3C%2Fproject-name%3E%3C%2Fproj-data%3E
+</proj>
+</jgx-1.0>

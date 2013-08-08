@@ -1,0 +1,18 @@
+(POWERFLOW,CASEID=OMIB,PROJECT=OMIB_TEST_SYSTEM)
+/SOL_ITER,DECOUPLED=15,NEWTON=15\
+./P_INPUT_LIST,ZONES=ALL\
+/MVA_BASE=100 \
+/P_OUTPUT_LIST,FULL \
+/RPT_SORT=ZONE\
+/P_ANALYSIS_RPT,LEVEL=4,FULL\
+/OVERLOAD_RPT,TX=70,LINE=80\
+/NEW_BASE,FILE=OMIB.BSE\
+/NETWORK_DATA\
+B     Bus2    15.001                                                    
+BQ    Gen1    15. 01658.5256.2 321        1194 559.9     1.   999 
+BS    infBus  15.001                                     1.0 
+.L -----------------  transmission lines ----------------------------
+L     Gen1    15.0 Bus2    15.0       0.0   .03               
+.T ----- transformers --------- 
+L     Bus2    15.0 infBus  15.0       0.0   .07                           
+(END)     

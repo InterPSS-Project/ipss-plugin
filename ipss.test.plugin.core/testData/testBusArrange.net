@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ipss:Network xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ipss="www.interpss.com/core/net">
+  <busList id="A" name="A" fromBranchList="A->E(1)"/>
+  <busList id="B" name="B" toBranchList="G->B(1)"/>
+  <busList id="C" name="C" fromBranchList="C->I(1) C->F(1)" toBranchList="D->C(1)"/>
+  <busList id="D" name="D" fromBranchList="D->C(1)" toBranchList="E->D(1)"/>
+  <busList id="E" name="E" fromBranchList="E->D(1)" toBranchList="A->E(1)"/>
+  <busList id="F" name="F" fromBranchList="F->G(1)" toBranchList="C->F(1)"/>
+  <busList id="G" name="G" fromBranchList="G->B(1) G->H(1)" toBranchList="F->G(1)"/>
+  <busList id="H" name="H" toBranchList="G->H(1)"/>
+  <busList id="I" name="I" toBranchList="C->I(1)"/>
+  <branchList id="A->E(1)" name="A->E" fromBus="A" toBus="E"/>
+  <branchList id="E->D(1)" name="E->D" fromBus="E" toBus="D"/>
+  <branchList id="D->C(1)" name="D->C" fromBus="D" toBus="C"/>
+  <branchList id="C->I(1)" name="C->I" fromBus="C" toBus="I"/>
+  <branchList id="C->F(1)" name="C->F" fromBus="C" toBus="F"/>
+  <branchList id="F->G(1)" name="F->G" fromBus="F" toBus="G"/>
+  <branchList id="G->B(1)" name="G->B" fromBus="G" toBus="B"/>
+  <branchList id="G->H(1)" name="G->H" fromBus="G" toBus="H"/>
+</ipss:Network>

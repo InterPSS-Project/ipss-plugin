@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<pssStudyCase xmlns="http://www.ieee.org/odm/Schema/2008" id="ODM_StudyCase">
+    <schemaVersion>V0.8</schemaVersion>
+    <contentInfo>
+        <originalDataFormat>BPA</originalDataFormat>
+        <adapterProviderName>www.interpss.org</adapterProviderName>
+        <adapterProviderVersion>1.00</adapterProviderVersion>
+    </contentInfo>
+    <networkCategory>Transmission</networkCategory>
+    <analysisCategory>TransientStability</analysisCategory>
+    <dstabNet id="Base_Case_from_BPA_loadflow_format">
+        <nvPairList/>
+        <basePower unit="MVA" value="100.0"/>
+        <busList>
+            <dstabBus id="Bus1" offLine="false" zoneName="01" zoneNumber="1" areaNumber="1" name="Bus2">
+                <nvPairList/>
+                <baseVoltage unit="KV" value="15.0"/>
+                <genData>
+                    <equivGen code="NoneGen"/>
+                </genData>
+            </dstabBus>
+            <dstabBus id="Bus2" offLine="false" zoneName="GX" zoneNumber="1" areaNumber="1" name="Gen1">
+                <nvPairList/>
+                <baseVoltage unit="KV" value="18.0"/>
+                <voltage unit="PU" value="1.008"/>
+                <genData>
+                    <equivGen code="PV">
+                        <power unit="MVA" im="0.0" re="6008.0"/>
+                        <desiredVoltage unit="PU" value="1.008"/>
+                        <qLimit unit="MVAR" active="false" min="0.0" max="1179.0"/>
+                    </equivGen>
+                </genData>
+                <loadData>
+                    <equivLoad code="CONST_P">
+                        <constPLoad unit="MVA" im="1160.0" re="5999.0"/>
+                    </equivLoad>
+                </loadData>
+                <dynamicGenList>
+                    <dynamicGen id="1">
+                        <ratedPower unit="MW" value="100.0"/>
+                        <ratedVoltage unit="KV" value="18.0"/>
+                        <pContributionPercent>100.0</pContributionPercent>
+                        <qContributionPercent>100.0</qContributionPercent>
+                        <eq11Ed11MachModel>
+                            <H>325.56</H>
+                            <D>0.0</D>
+                            <xl>0.0015</xl>
+                            <ra>0.0</ra>
+                            <xd>0.0134</xd>
+                            <xq>0.0084</xq>
+                            <xd1>0.0040</xd1>
+                            <Td01 unit="Sec" value="9.6"/>
+                            <seFmt1>
+<se100>0.0</se100>
+<se120>0.0</se120>
+<sliner>10.0</sliner>
+                            </seFmt1>
+                            <xq1>0.0068</xq1>
+                            <Tq01 unit="Sec" value="2.79"/>
+                            <xd11>0.0028</xd11>
+                            <Td011 unit="Sec" value="0.0746"/>
+                            <xq11>0.0033</xq11>
+                            <Tq011 unit="Sec" value="0.1472"/>
+                        </eq11Ed11MachModel>
+                        <excBPATypeFJ>
+                            <desc>BPA FJ Type Exciter, excId-1</desc>
+                            <loadRc>0.0</loadRc>
+                            <loadXc>0.0</loadXc>
+                            <transTr unit="Sec" value="0.0"/>
+                            <Ka>30.0</Ka>
+                            <Ta unit="Sec" value="0.04"/>
+                            <Vrmax>5.0</Vrmax>
+                            <Vrmin>-5.0</Vrmin>
+                            <EFDMAX>4.03</EFDMAX>
+                            <EFDMIN>-3.22</EFDMIN>
+                            <TB unit="Sec" value="0.01"/>
+                            <TC unit="Sec" value="0.01"/>
+                            <KF>0.01</KF>
+                            <TF unit="Sec" value="0.7"/>
+                            <KC>0.1</KC>
+                        </excBPATypeFJ>
+                    </dynamicGen>
+                </dynamicGenList>
+            </dstabBus>
+            <dstabBus id="Bus3" offLine="false" zoneName="01" zoneNumber="1" areaNumber="1" name="infBus">
+                <nvPairList/>
+                <baseVoltage unit="KV" value="15.0"/>
+                <voltage unit="PU" value="0.99"/>
+                <angle unit="DEG" value="0.0"/>
+                <genData>
+                    <equivGen code="Swing">
+                        <power unit="MVA" im="0.0" re="0.0"/>
+                        <desiredVoltage unit="PU" value="0.99"/>
+                        <desiredAngle unit="DEG" value="0.0"/>
+                    </equivGen>
+                </genData>
+                <dynamicGenList>
+                    <dynamicGen id="1">
+                        <ratedPower unit="MW" value="100.0"/>
+                        <ratedVoltage unit="KV" value="15.0"/>
+                        <pContributionPercent>100.0</pContributionPercent>
+                        <qContributionPercent>100.0</qContributionPercent>
+                        <classicMachModel>
+                            <H>999999.0</H>
+                            <D>0.0</D>
+                            <xd1>1.0E-4</xd1>
+                        </classicMachModel>
+                    </dynamicGen>
+                </dynamicGenList>
+            </dstabBus>
+        </busList>
+        <branchList>
+            <dstabXfr circuitId="0" id="Bus2_to_Bus1_cirId_0" offLine="false" zoneNumber="1" areaNumber="1">
+                <fromBus idRef="Bus2"/>
+                <toBus idRef="Bus1"/>
+                <z unit="PU" im="0.03" re="0.0"/>
+                <fromTurnRatio unit="PU" value="1.0"/>
+                <toTurnRatio unit="PU" value="1.0"/>
+                <xfrInfo>
+                    <fromRatedVoltage unit="KV" value="18.0"/>
+                    <toRatedVoltage unit="KV" value="15.0"/>
+                </xfrInfo>
+            </dstabXfr>
+            <dstabLine circuitId="0" id="Bus1_to_Bus3_cirId_0" offLine="false" zoneNumber="1" areaNumber="1">
+                <nvPairList/>
+                <fromBus idRef="Bus1"/>
+                <toBus idRef="Bus3"/>
+                <z unit="PU" im="0.07" re="0.0"/>
+                <ratingLimit/>
+                <lineInfo/>
+            </dstabLine>
+        </branchList>
+        <hasLoadflowData>false</hasLoadflowData>
+        <positiveSeqDataOnly>false</positiveSeqDataOnly>
+        <saturatedMachineParameter>false</saturatedMachineParameter>
+    </dstabNet>
+</pssStudyCase>

@@ -1,0 +1,10 @@
+open
+2
+./flow0.dat
+lofl  
+bat_read 0 ./200busV30-peak.raw
+/bat_machine_data 11 '1' 1 1 0 0 0 1250 22.973 900 -900 2700 0.0 3000 0 1 0 0 1 1 1 1 1
+/bat_machine_data 36 '1' 1 1 0 0 0 1340 124.977 600 -525 1682 0.0 1770 0 1 0 0 1 1 1 1 1
+bat_fdns 0 0 0 0 0 0 -1 0
+bat_lout 0 1
+bat_save ./200busV30-peak.sav

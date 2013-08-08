@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PSSStudyCase id="ODM_StudyCase" xmlns="http://www.ieee.org/cmte/psace/oss/odm/pss/Schema/v1">
+  <schemaVersion>V0.5</schemaVersion>
+  <contentInfo>
+    <originalDataFormat>Cim</originalDataFormat>
+    <originalFormatVersion>Cim14</originalFormatVersion>
+    <adapterProviderName>www.interpss.org</adapterProviderName>
+    <adapterProviderVersion>1.00</adapterProviderVersion>
+  </contentInfo>
+  <baseCase id="Base_Case_from_Cim14">
+    <networkCategory>Transmission</networkCategory>
+    <analysisCategory>Loadflow</analysisCategory>
+    <basePower value="100.0" unit="MVA"/>
+    <busList>
+      <bus id="_ID_SUB1_VLevel_220KV" number="1" name="Substation1 220.00kV">
+        <baseVoltage value="220.0" unit="KV"/>
+        <loadflowData/>
+      </bus>
+      <bus id="_ID_SUB1_VLevel_15KV" number="2" name="Substation1 15.00kV">
+        <baseVoltage value="15.0" unit="KV"/>
+        <loadflowData>
+          <genData>
+            <equivGen>
+              <power re="30.0" im="15.803480629279111" unit="MVA"/>
+            </equivGen>
+            <contributeGenList>
+              <contributeGen id="_ID_SUB1_GenUnit1" name="SUB1_GT1" offLine="false">
+                <desc>name: SUB1_GT1, localName : SUB1_GT1</desc>
+                <genData code="PQ">
+                  <power re="30.0" im="15.803480629279111" unit="MVA"/>
+                </genData>
+              </contributeGen>
+            </contributeGenList>
+          </genData>
+        </loadflowData>
+      </bus>
+      <bus id="_ID_SUB2_VLevel_220KV" number="3" name="Substation2 220.00kV">
+        <baseVoltage value="220.0" unit="KV"/>
+        <loadflowData>
+          <loadData>
+            <equivLoad code="CONST_P">
+              <constPLoad re="50.0" im="20.0" unit="MVA"/>
+            </equivLoad>
+            <contributeLoadList>
+              <contributeLoad id="_ID_SUB2_LOAD1" name="Sub2_Load" offLine="false">
+                <desc>name: Sub2_Load, localName : Sub2_Load</desc>
+                <constPLoad re="50.0" im="20.0" unit="MVA"/>
+              </contributeLoad>
+            </contributeLoadList>
+          </loadData>
+        </loadflowData>
+      </bus>
+      <bus id="_ID_SUB3_VLevel_220KV" number="4" name="Substation3 220.00kV">
+        <baseVoltage value="220.0" unit="KV"/>
+        <loadflowData/>
+      </bus>
+      <bus id="_ID_SUB3_VLevel_15KV" number="5" name="Substation3 15.00kV">
+        <baseVoltage value="15.0" unit="KV"/>
+        <loadflowData>
+          <genData>
+            <equivGen>
+              <power re="30.0" im="13.076696830622017" unit="MVA"/>
+            </equivGen>
+            <contributeGenList>
+              <contributeGen id="_ID_SUB3_GenUnit2" name="SUB3_GT2" offLine="false">
+                <desc>name: SUB3_GT2, localName : SUB3_GT2</desc>
+                <genData code="PQ">
+                  <power re="30.0" im="13.076696830622017" unit="MVA"/>
+                </genData>
+              </contributeGen>
+            </contributeGenList>
+          </genData>
+        </loadflowData>
+      </bus>
+    </busList>
+    <branchList>
+      <branch id="Bus2_to_Bus1_cirId_1" circuitId="1" offLine="false" name="Sub1_TR1">
+        <desc>name: Sub1_TR1, localName : Sub1_TR1</desc>
+        <fromBus idRef="_ID_SUB1_VLevel_15KV" windingType="Primary"/>
+        <toBus idRef="_ID_SUB1_VLevel_220KV" windingType="Secondary"/>
+        <loadflowData code="Transformer">
+          <z re="0.9648" im="44.7896" unit="OHM"/>
+          <fromShuntY re="0.0" im="-2.5625E-6" unit="MHO"/>
+          <fromTurnRatio value="1.0" unit="PU"/>
+          <toTurnRatio value="1.0" unit="PU"/>
+          <xfrInfo>
+            <ratedVoltage1 value="15.0" unit="KV"/>
+            <ratedVoltage2 value="220.0" unit="KV"/>
+            <ratedPower12 value="100.0" unit="MVA"/>
+          </xfrInfo>
+        </loadflowData>
+      </branch>
+      <branch id="Bus5_to_Bus4_cirId_1" circuitId="1" offLine="false" name="Sub3_TR2">
+        <desc>name: Sub3_TR2, localName : Sub3_TR2</desc>
+        <fromBus idRef="_ID_SUB3_VLevel_15KV" windingType="Primary"/>
+        <toBus idRef="_ID_SUB3_VLevel_220KV" windingType="Secondary"/>
+        <loadflowData code="Transformer">
+          <z re="0.9648" im="44.7896" unit="OHM"/>
+          <fromShuntY re="0.0" im="-2.5625E-6" unit="MHO"/>
+          <fromTurnRatio value="1.0" unit="PU"/>
+          <toTurnRatio value="1.0" unit="PU"/>
+          <xfrInfo>
+            <ratedVoltage1 value="15.0" unit="KV"/>
+            <ratedVoltage2 value="220.0" unit="KV"/>
+            <ratedPower12 value="100.0" unit="MVA"/>
+          </xfrInfo>
+        </loadflowData>
+      </branch>
+      <branch id="Bus1_to_Bus4_cirId_1" circuitId="1" offLine="false" name="LN1AC Sub1 to Sub3">
+        <desc>name: LN1AC Sub1 to Sub3, localName : LN1AC</desc>
+        <fromBus idRef="_ID_SUB1_VLevel_220KV"/>
+        <toBus idRef="_ID_SUB3_VLevel_220KV"/>
+        <loadflowData code="Line">
+          <z re="0.231" im="0.325" unit="OHM"/>
+          <totalShuntY re="0.489" im="0.348" unit="MHO"/>
+        </loadflowData>
+      </branch>
+      <branch id="Bus1_to_Bus3_cirId_1" circuitId="1" offLine="false" name="LN2AC Sub1 to Sub2">
+        <desc>name: LN2AC Sub1 to Sub2, localName : LN2AC</desc>
+        <fromBus idRef="_ID_SUB1_VLevel_220KV"/>
+        <toBus idRef="_ID_SUB2_VLevel_220KV"/>
+        <loadflowData code="Line">
+          <z re="0.215" im="0.245" unit="OHM"/>
+          <totalShuntY re="0.498" im="0.48" unit="MHO"/>
+        </loadflowData>
+      </branch>
+      <branch id="Bus3_to_Bus4_cirId_1" circuitId="1" offLine="false" name="LN3AC Sub2 to Sub3">
+        <desc>name: LN3AC Sub2 to Sub3, localName : LN3AC</desc>
+        <fromBus idRef="_ID_SUB2_VLevel_220KV"/>
+        <toBus idRef="_ID_SUB3_VLevel_220KV"/>
+        <loadflowData code="Line">
+          <z re="0.656" im="0.233" unit="OHM"/>
+          <totalShuntY re="0.543" im="0.356" unit="MHO"/>
+        </loadflowData>
+      </branch>
+    </branchList>
+  </baseCase>
+  <scenarioList/>
+</PSSStudyCase>

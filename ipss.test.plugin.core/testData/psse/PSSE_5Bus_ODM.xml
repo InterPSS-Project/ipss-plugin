@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PSSStudyCase id="ODM_StudyCase">
+	<schemaVersion>V0.4</schemaVersion>
+	<contentInfo>
+		<originalDataFormat>PSS-E</originalDataFormat>
+		<originalFormatVersion>PSSEV30</originalFormatVersion>
+		<adapterProviderName>www.interpss.org</adapterProviderName>
+		<adapterProviderVersion>1.00</adapterProviderVersion>
+	</contentInfo>
+
+	<baseCase id="Base_Case_from_PSS_E_format" name="LABORATORIO DE SIMULACION SISTEMAS DE POTENCIA, ICE, I-2008">
+		<desc>BASICO 1, SEMINARIO DE GRADUACION INTERPSS</desc>
+
+		<ownerList>
+			<owner id="1" number="1" name="'LSSP        '" />
+		</ownerList>
+
+		<nvPairList>
+
+			<nvPair>
+				<name>CaseIndicator</name>
+				<value>0</value>
+			</nvPair>
+		</nvPairList>
+		<networkCategory>Transmission</networkCategory>
+		<analysisCategory>Loadflow</analysisCategory>
+		<basePower value="100.0" unit="MVA" />
+
+		<busList>
+
+			<bus id="Bus1" number="1" areaNumber="1" name="UNO-U1      " offLine="false">
+
+				<ownerList>
+					<owner id="1" />
+				</ownerList>
+				<baseVoltage value="13.8" unit="KV" />
+
+				<loadflowData>
+					<voltage value="1.0" unit="PU" />
+					<angle value="0.0" unit="DEG" />
+
+					<genData>
+
+						<equivGen code="Swing">
+							<power re="22.546" im="15.854" unit="MVA" />
+							<desiredVoltage value="1.0" unit="PU" />
+							<desiredAngle value="0.0" unit="DEG" />
+							<qLimit max="35.0" min="-35.0" unit="MVAR" />
+							<pLimit max="45.0" min="15.0" unit="MW" />
+						</equivGen>
+
+						<contributeGenList>
+
+							<contributeGen id="'1 '" name="Gen:'1 '(1)" offLine="false">
+								<desc>PSSE Generator '1 ' at Bus 1</desc>
+
+								<ownerList>
+									<owner id="1" ownership="1.0" />
+								</ownerList>
+								<ratedMva value="68.24" unit="MVA" />
+
+								<genData>
+									<power re="22.546" im="15.854" unit="MVA" />
+									<desiredVoltage value="1.0" unit="PU" />
+									<qLimit max="35.0" min="-35.0" unit="MVAR" />
+									<pLimit max="45.0" min="15.0" unit="MW" />
+								</genData>
+								<sourceZ re="0.0" im="0.229" unit="PU" />
+								<mvarVControlParticipateFactor>1.0</mvarVControlParticipateFactor>
+							</contributeGen>
+						</contributeGenList>
+					</genData>
+				</loadflowData>
+			</bus>
+
+			<bus id="Bus2" number="2" areaNumber="1" name="UNO-230     " offLine="false">
+
+				<ownerList>
+					<owner id="1" />
+				</ownerList>
+				<baseVoltage value="230.0" unit="KV" />
+
+				<loadflowData>
+					<voltage value="0.97352" unit="PU" />
+					<angle value="-2.2818" unit="DEG" />
+
+					<genData>
+						<equivGen code="NoneGen" />
+					</genData>
+				</loadflowData>
+			</bus>
+
+			<bus id="Bus3" number="3" areaNumber="1" name="DOS-230     " offLine="false">
+
+				<ownerList>
+					<owner id="1" />
+				</ownerList>
+				<baseVoltage value="230.0" unit="KV" />
+
+				<loadflowData>
+					<voltage value="0.97022" unit="PU" />
+					<angle value="-2.4868" unit="DEG" />
+
+					<genData>
+						<equivGen code="NoneGen" />
+					</genData>
+				</loadflowData>
+			</bus>
+
+			<bus id="Bus4" number="4" areaNumber="1" name="TRES-34.5   " offLine="false">
+
+				<ownerList>
+					<owner id="1" />
+				</ownerList>
+				<baseVoltage value="34.5" unit="KV" />
+
+				<loadflowData>
+					<voltage value="0.91985" unit="PU" />
+					<angle value="-7.4596" unit="DEG" />
+
+					<genData>
+						<equivGen code="NoneGen" />
+					</genData>
+
+					<loadData>
+
+						<equivLoad code="CONST_P">
+							<constPLoad re="45.0" im="25.0" unit="MVA" />
+						</equivLoad>
+
+						<contributeLoadList>
+
+							<contributeLoad id="'1 '" name="Load:'1 '(4)" offLine="false" areaNumber="1" zoneNumber="1">
+								<desc>PSSE Load '1 ' at Bus 4</desc>
+
+								<ownerList>
+									<owner id="1" />
+								</ownerList>
+								<constPLoad re="45.0" im="25.0" unit="MVA" />
+							</contributeLoad>
+						</contributeLoadList>
+					</loadData>
+				</loadflowData>
+			</bus>
+
+			<bus id="Bus5" number="5" areaNumber="1" name="UNO-U2      " offLine="false">
+
+				<ownerList>
+					<owner id="1" />
+				</ownerList>
+				<baseVoltage value="13.8" unit="KV" />
+
+				<loadflowData>
+					<voltage value="1.0" unit="PU" />
+					<angle value="-0.0047" unit="DEG" />
+
+					<genData>
+
+						<equivGen code="PV">
+							<power re="22.5" im="15.852" unit="MVA" />
+							<desiredVoltage value="1.0" unit="PU" />
+							<qLimit max="35.0" min="-35.0" unit="MVAR" />
+							<pLimit max="45.0" min="15.0" unit="MW" />
+						</equivGen>
+
+						<contributeGenList>
+
+							<contributeGen id="'1 '" name="Gen:'1 '(5)" offLine="false">
+								<desc>PSSE Generator '1 ' at Bus 5</desc>
+
+								<ownerList>
+									<owner id="1" ownership="1.0" />
+								</ownerList>
+								<ratedMva value="68.24" unit="MVA" />
+
+								<genData>
+									<power re="22.5" im="15.852" unit="MVA" />
+									<desiredVoltage value="1.0" unit="PU" />
+									<qLimit max="35.0" min="-35.0" unit="MVAR" />
+									<pLimit max="45.0" min="15.0" unit="MW" />
+								</genData>
+								<sourceZ re="0.0" im="0.229" unit="PU" />
+								<mvarVControlParticipateFactor>1.0</mvarVControlParticipateFactor>
+							</contributeGen>
+						</contributeGenList>
+					</genData>
+				</loadflowData>
+			</bus>
+		</busList>
+
+		<branchList>
+
+			<branch id="Bus2_to_Bus3_cirId_1" circuitId="1" offLine="false">
+
+				<ownerList>
+					<owner id="1" ownership="1.0" />
+				</ownerList>
+				<fromBus idRef="Bus2" />
+				<toBus idRef="Bus3" />
+
+				<loadflowData code="Line">
+					<z re="0.0015" im="0.0085" unit="PU" />
+					<totalShuntY re="0.0" im="0.0164" unit="PU" />
+					<meterLocation>FromSide</meterLocation>
+
+					<branchRatingLimit>
+						<mva rating1="300.0" rating2="330.0" rating3="0.0" unit="MVA" />
+					</branchRatingLimit>
+				</loadflowData>
+			</branch>
+
+			<branch id="Bus2_to_Bus1_cirId_1" circuitId="1" name="T1          " offLine="false">
+
+				<ownerList>
+					<owner id="1" ownership="1.0" />
+				</ownerList>
+				<fromBus idRef="Bus2" />
+				<toBus idRef="Bus1" />
+
+				<loadflowData code="Transformer" xfr3W="false">
+					<z re="0.0" im="0.17191" unit="PU" />
+					<fromTap value="1.0" unit="PU" />
+					<toTap value="1.0" unit="PU" />
+					<meterLocation>ToSide</meterLocation>
+
+					<xfrInfo>
+						<dataOnSystemBase>true</dataOnSystemBase>
+						<ratedPower12 value="100.0" unit="MVA" />
+					</xfrInfo>
+
+					<branchRatingLimit>
+						<mva rating1="79.0" rating2="118.5" rating3="0.0" unit="MVA" />
+					</branchRatingLimit>
+				</loadflowData>
+			</branch>
+
+			<branch id="Bus5_to_Bus2_cirId_1" circuitId="1" name="T1          " offLine="false">
+
+				<ownerList>
+					<owner id="1" ownership="1.0" />
+				</ownerList>
+				<fromBus idRef="Bus5" />
+				<toBus idRef="Bus2" />
+
+				<loadflowData code="Transformer" xfr3W="false">
+					<z re="0.0" im="0.17191" unit="PU" />
+					<fromTap value="1.0" unit="PU" />
+					<toTap value="1.0" unit="PU" />
+					<meterLocation>FromSide</meterLocation>
+
+					<xfrInfo>
+						<dataOnSystemBase>true</dataOnSystemBase>
+						<ratedPower12 value="100.0" unit="MVA" />
+					</xfrInfo>
+
+					<branchRatingLimit>
+						<mva rating1="79.0" rating2="118.5" rating3="0.0" unit="MVA" />
+					</branchRatingLimit>
+				</loadflowData>
+			</branch>
+
+			<branch id="Bus3_to_Bus4_cirId_1" circuitId="1" name="T1          " offLine="false">
+
+				<ownerList>
+					<owner id="1" ownership="1.0" />
+				</ownerList>
+				<fromBus idRef="Bus3" />
+				<toBus idRef="Bus4" />
+
+				<loadflowData code="Transformer" xfr3W="false">
+					<z re="0.0" im="0.17191" unit="PU" />
+					<fromTap value="1.0" unit="PU" />
+					<toTap value="1.0" unit="PU" />
+					<meterLocation>ToSide</meterLocation>
+
+					<xfrInfo>
+						<dataOnSystemBase>true</dataOnSystemBase>
+						<ratedPower12 value="100.0" unit="MVA" />
+					</xfrInfo>
+
+					<branchRatingLimit>
+						<mva rating1="79.0" rating2="118.5" rating3="0.0" unit="MVA" />
+					</branchRatingLimit>
+				</loadflowData>
+			</branch>
+		</branchList>
+
+		<areaList>
+
+			<area id="1" number="1" name="'ICE         '">
+				<swingBusId idRef="Bus1" />
+				<desiredExchangePower value="0.0" unit="MW" />
+				<exchangeErrTolerance value="0.0" unit="MW" />
+			</area>
+		</areaList>
+
+		<lossZoneList>
+			<lossZone id="1" number="1" name="'CENTRAL     '" />
+		</lossZoneList>
+	</baseCase>
+	<scenarioList />
+</PSSStudyCase>

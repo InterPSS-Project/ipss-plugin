@@ -1,0 +1,12 @@
+//10Bus_zeroZ test case contingency data
+DATA (CONTINGENCY, [CTGLabel,CTGSkip,CTGProc,CTGSolved,LoadMW,CustomString])
+{
+ "001A" "NO " "NO" "NO" 0.0 "ctg1"
+ <SUBDATA CTGElement>
+ "BRANCH 9 10 1 OPEN" "" CHECK //breaker bus9-bus10
+ </SUBDATA>
+ "001B" "NO " "NO" "NO" 0.0 "ctg2"
+ <SUBDATA CTGElement>
+ "BRANCH 9 11 1 OPEN" "" CHECK //breaker Bus9-Bus11
+ </SUBDATA>
+ }

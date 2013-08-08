@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ipss:InterPSS xmlns:ipss="http://www.interpss.org/schema"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+          xsi:schemaLocation="http://www.interpss.org/schema ../../../ipss.xml/schema/InterPSS.xsd ">
+	<ipss:runStudyCase>
+		<ipss:analysisRunType>RunAcsc</ipss:analysisRunType>
+		<ipss:standardRun>
+		<ipss:runAcscStudyCase>
+		<ipss:acscStudyCaseList>
+			<ipss:acscStudyCase>
+			<ipss:recId>AcscRun-1</ipss:recId>
+			<ipss:faultData>
+				<ipss:faultType>BusFault</ipss:faultType>
+				<ipss:faultCategory>Fault_3P</ipss:faultCategory>
+				<ipss:busBranchId>2</ipss:busBranchId>
+			</ipss:faultData>
+			</ipss:acscStudyCase>
+
+			<ipss:acscStudyCase>
+			<ipss:recId>AcscRun-2</ipss:recId>
+			<ipss:faultData>
+				<ipss:faultType>BusFault</ipss:faultType>
+				<ipss:faultCategory>Fault_3P</ipss:faultCategory>
+				<ipss:busBranchId>2</ipss:busBranchId>
+			</ipss:faultData>
+			</ipss:acscStudyCase>
+		</ipss:acscStudyCaseList>
+		</ipss:runAcscStudyCase>
+		</ipss:standardRun>
+	</ipss:runStudyCase>
+</ipss:InterPSS>
