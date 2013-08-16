@@ -7,6 +7,8 @@ import org.interpss.datamodel.bean.BaseJSONBean;
 
 public class CAResultBean extends BaseJSONBean{
 	
+	public String contId;
+	
 	public String branchId;
 	
 	public double preFlow, postFlow,limit, loading;

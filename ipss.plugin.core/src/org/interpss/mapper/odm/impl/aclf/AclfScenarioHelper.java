@@ -24,6 +24,8 @@
 
 package org.interpss.mapper.odm.impl.aclf;
 
+import java.util.List;
+
 import org.ieee.odm.schema.AclfAlgorithmXmlType;
 import org.ieee.odm.schema.ApparentPowerXmlType;
 import org.ieee.odm.schema.BranchChangeRecSetXmlType;
@@ -113,6 +115,23 @@ public class AclfScenarioHelper {
 			OutageBranch outageBranch = CoreObjectFactory.createOutageBranch(branch, cont);
 			cont.addOutageBranch(outageBranch);
 			outageBranch.setOutageType(bra.getOutage()==BranchOutageEnumType.OPEN?BranchOutageType.OPEN:BranchOutageType.CLOSE);
+		}			
+		return cont;
+	}
+	
+	/**
+	 * add a contingency to a Contingency object
+	 * 
+	 * @param contId contingency id
+	 * @param outageBranchList outage branch list defined in the contingency
+	 * @param net
+	 * @return
+	 */
+	public static Contingency mapContingency(String contId,List<String> outageBranchList, AclfNetwork net) {
+		Contingency cont = CoreObjectFactory.createContingency(contId);
+		for (String id : outageBranchList) {
+			AclfBranch branch = net.getBranch(id);
+			cont.addOutageBranch(CoreObjectFactory.createOutageBranch(branch, cont));
 		}			
 		return cont;
 	}
