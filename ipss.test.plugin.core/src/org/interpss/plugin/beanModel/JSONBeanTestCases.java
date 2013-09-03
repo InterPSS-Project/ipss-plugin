@@ -34,8 +34,8 @@ import org.interpss.datamodel.bean.aclf.AclfNetBean;
 import org.interpss.datamodel.bean.aclf.AclfNetResultBean;
 import org.interpss.datamodel.bean.datatype.BranchValueBean;
 import org.interpss.datamodel.bean.datatype.ComplexBean;
-import org.interpss.mapper.bean.aclf.AclfNetBeanMapper;
-import org.interpss.mapper.bean.aclf.AclfResultBeanMapper;
+import org.interpss.mapper.bean.aclf.AclfBean2NetMapper;
+import org.interpss.mapper.bean.aclf.AclfNet2ResultBeanMapper;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.junit.Test;
 
@@ -50,7 +50,7 @@ public class JSONBeanTestCases extends CorePluginTestSetup {
 	public void testCase1() throws Exception {
 		AclfNetBean netBean = createNetCaseData1();
 		
-		AclfNetwork aclfNet = new AclfNetBeanMapper()
+		AclfNetwork aclfNet = new AclfBean2NetMapper()
 			.map2Model(netBean)
 			.getAclfNet();
 		
@@ -65,7 +65,7 @@ public class JSONBeanTestCases extends CorePluginTestSetup {
 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.57943)<0.0001);
 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-2.2994)<0.0001);
 		
-		AclfNetResultBean aclfResult = new AclfResultBeanMapper()
+		AclfNetResultBean aclfResult = new AclfNet2ResultBeanMapper()
 				.map2Model(aclfNet);
 		
 		System.out.println(new Gson().toJson(aclfResult));
@@ -75,7 +75,7 @@ public class JSONBeanTestCases extends CorePluginTestSetup {
 	public void testCase2() throws Exception {
 		AclfNetBean netBean = createNetCaseData2();
 		
-		AclfNetwork aclfNet = new AclfNetBeanMapper()
+		AclfNetwork aclfNet = new AclfBean2NetMapper()
 			.map2Model(netBean)
 			.getAclfNet();
 		

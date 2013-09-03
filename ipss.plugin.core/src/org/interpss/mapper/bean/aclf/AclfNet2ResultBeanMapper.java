@@ -51,11 +51,11 @@ import com.interpss.core.datatype.Mismatch;
  * 
  * @author mzhou
  */
-public class AclfResultBeanMapper extends AbstractMapper<AclfNetwork, AclfNetResultBean> {
+public class AclfNet2ResultBeanMapper extends AbstractMapper<AclfNetwork, AclfNetResultBean> {
 	/**
 	 * constructor
 	 */
-	public AclfResultBeanMapper() {
+	public AclfNet2ResultBeanMapper() {
 	}
 	
 	/**

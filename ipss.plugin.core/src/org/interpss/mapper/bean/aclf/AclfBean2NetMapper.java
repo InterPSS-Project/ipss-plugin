@@ -54,11 +54,11 @@ import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
 
-public class AclfNetBeanMapper extends AbstractMapper<AclfNetBean, SimuContext> {
+public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext> {
 	/**
 	 * constructor
 	 */
-	public AclfNetBeanMapper() {
+	public AclfBean2NetMapper() {
 	}
 	
 	/**

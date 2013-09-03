@@ -54,14 +54,19 @@ import com.interpss.core.datatype.Mismatch;
  * 
  * 
  */
-public class BaseNetBeanMapper extends AbstractMapper<AclfNetwork, AclfNetBean> {
+public class AclfNet2BeanMapper extends AbstractMapper<AclfNetwork, AclfNetBean> {
 	/**
 	 * constructor
 	 */
-	public BaseNetBeanMapper() {
+	public AclfNet2BeanMapper() {
 	}
 	
-	
+	/**
+	 * map an AclfNetwork object to a AclfNetBean object
+	 * 
+	 * @param aclfNet AclfNetwork object
+	 * @return AclfNetBean object
+	 */
 	@Override public AclfNetBean map2Model(AclfNetwork aclfNet) throws InterpssException {
 		AclfNetBean netBean = new AclfNetBean();
 
@@ -70,7 +75,13 @@ public class BaseNetBeanMapper extends AbstractMapper<AclfNetwork, AclfNetBean> 
 		return netBean;
 	}	
 	
-	
+	/**
+	 * map an AclfNetwork object to a AclfNetBean object
+	 * 
+	 * @param aclfNet AclfNetwork object
+	 * @param AclfNetBean object
+	 * @return false if there is any issue during the mapping process
+	 */
 	@Override public boolean map2Model(AclfNetwork aclfNet, AclfNetBean netBean) {
 		boolean noError = true;
 		
