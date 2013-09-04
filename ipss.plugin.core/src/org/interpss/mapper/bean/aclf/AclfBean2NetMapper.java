@@ -54,7 +54,7 @@ import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
 
-public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext> {
+public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean<AclfBusBean, AclfBranchBean>, SimuContext> {
 	/**
 	 * constructor
 	 */
@@ -67,7 +67,7 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 	 * @param netBean AclfNetBean object
 	 * @return SimuContext object
 	 */
-	@Override public SimuContext map2Model(AclfNetBean netBean) throws InterpssException {
+	@Override public SimuContext map2Model(AclfNetBean<AclfBusBean, AclfBranchBean> netBean) throws InterpssException {
 		final SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.NOT_DEFINED);
 		if (this.map2Model(netBean, simuCtx)) {
   	  		simuCtx.setId("InterPSS_SimuCtx");
@@ -84,7 +84,7 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 	 * @param netBean an AclfNetBean object, representing a aclf base network
 	 * @param simuCtx
 	 */
-	@Override public boolean map2Model(AclfNetBean netBean, SimuContext simuCtx) {
+	@Override public boolean map2Model(AclfNetBean<AclfBusBean, AclfBranchBean> netBean, SimuContext simuCtx) {
 		boolean noError = true;
 		simuCtx.setNetType(SimuCtxType.ACLF_NETWORK);
 		AclfNetwork aclfNet = CoreObjectFactory.createAclfNetwork();

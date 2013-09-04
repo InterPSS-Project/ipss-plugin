@@ -29,22 +29,22 @@ import java.util.List;
 
 import org.interpss.datamodel.bean.BaseNetBean;
 
-public class AclfNetBean extends BaseNetBean {
+public class AclfNetBean<TBus extends AclfBusBean, TBra extends AclfBranchBean> extends BaseNetBean {
 	
-	public List<AclfBusBean> 
+	public List<TBus> 
 		bus_list;					// bus result bean list
-	public List<AclfBranchBean> 
+	public List<TBra> 
 		branch_list;                // branch result bean list
 	
-	public AclfNetBean() { bus_list = new ArrayList<AclfBusBean>(); branch_list = new ArrayList<AclfBranchBean>(); }
+	public AclfNetBean() { bus_list = new ArrayList<TBus>(); branch_list = new ArrayList<TBra>(); }
 	
 	public boolean validate(List<String> msgList) {
 		boolean noErr = super.validate(msgList);
 		
-		for (AclfBusBean bean : this.bus_list) 
+		for (TBus bean : this.bus_list) 
 			if (!bean.validate(msgList))
 				noErr = false;
-		for (AclfBranchBean bean : this.branch_list) 
+		for (TBra bean : this.branch_list) 
 			if (!bean.validate(msgList))
 				noErr = false;
 		return noErr; 

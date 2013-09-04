@@ -59,10 +59,10 @@ public class AclfNet2ResultBeanMapper extends AbstractMapper<AclfNetwork, AclfNe
 	}
 	
 	/**
-	 * map into store in the AclfNetBean object into simuCtx object
+	 * map info stored in the AclfNet object into AclfNetResultBean object
 	 * 
-	 * @param netBean AclfNetBean object
-	 * @return SimuContext object
+	 * @param aclfNet AclfNetwork object
+	 * @return AclfNetResultBean object
 	 */
 	@Override public AclfNetResultBean map2Model(AclfNetwork aclfNet) throws InterpssException {
 		AclfNetResultBean aclfResult = new AclfNetResultBean();
@@ -73,7 +73,7 @@ public class AclfNet2ResultBeanMapper extends AbstractMapper<AclfNetwork, AclfNe
 	}	
 	
 	/**
-	 * map the AclfNetBean object into simuCtx object
+	 * map the AclfNetwork object into AclfNetResultBean object
 	 * 
 	 * @param netBean an AclfNetBean object, representing a aclf base network
 	 * @param simuCtx
