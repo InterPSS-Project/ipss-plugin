@@ -26,6 +26,8 @@ package org.interpss.datamodel.bean;
 
 import java.util.List;
 
+import com.interpss.common.util.IpssLogger;
+
 /**
  * Base bean class. The bean data model is intended for use in combination
  * with JSON. Wire communication efficiency is considered in the data structure
@@ -34,11 +36,20 @@ import java.util.List;
  * @author mzhou
  *
  */
-public abstract class BaseJSONBean {
+public abstract class BaseJSONBean implements Comparable<BaseJSONBean> {
 	public String 	    
 		id,      		// net, bus, branch id. only bus.id is mandatory
 		name,    		// net, bus, branch name, optional
 		desc;    		// net, bus, branch description, optional
 	
+	@Override public int compareTo(BaseJSONBean bean) {
+		if (id.equals(bean.id))
+			return 0;
+		else {
+			IpssLogger.ipssLogger.warning("BaseJSONBean.id is not equal");
+			return 1;
+		}
+	}
+
 	abstract public boolean validate(List<String> msgList); 
 }

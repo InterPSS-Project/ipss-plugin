@@ -24,7 +24,10 @@
 
 package org.interpss.datamodel.bean.aclf;
 
+import org.interpss.datamodel.bean.BaseJSONBean;
 import org.interpss.datamodel.bean.datatype.ComplexBean;
+
+import com.interpss.common.util.IpssLogger;
 
 public class AclfBranchResultBean extends AclfBranchBean {
 
@@ -37,4 +40,17 @@ public class AclfBranchResultBean extends AclfBranchBean {
 		cur;			// branch current in amps, for Xfr, it is at the high voltage side
 	
 	public AclfBranchResultBean() { }
+	
+	@Override public int compareTo(BaseJSONBean b) {
+		int eql = super.compareTo(b);
+		
+		AclfBranchResultBean bean = (AclfBranchResultBean)b;
+
+		if (this.f_num != bean.f_num) {
+			IpssLogger.ipssLogger.warning("AclfBranchResultBean.f_num is not equal");
+			eql = 1;
+		}
+
+		return eql;
+	}	
 }

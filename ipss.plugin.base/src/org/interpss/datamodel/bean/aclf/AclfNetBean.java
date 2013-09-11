@@ -24,7 +24,19 @@
 
 package org.interpss.datamodel.bean.aclf;
 
+import org.interpss.datamodel.bean.BaseJSONBean;
+
 
 public class AclfNetBean extends BaseAclfNetBean<AclfBusBean, AclfBranchBean> {
 	public AclfNetBean() { super(); }
+	
+	@Override public int compareTo(BaseJSONBean b) {
+		int eql = super.compareTo(b);
+		
+		AclfNetBean bean = (AclfNetBean)b;
+
+		// do nothing
+		
+		return eql;
+	}		
 }

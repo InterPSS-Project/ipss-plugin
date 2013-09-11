@@ -1,11 +1,10 @@
 package org.interpss.datamodel.bean;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.interpss.datamodel.bean.aclf.AclfBranchBean;
-import org.interpss.datamodel.bean.aclf.AclfBusBean;
 import org.interpss.numeric.datatype.Unit.UnitType;
+
+import com.interpss.common.util.IpssLogger;
 
 public abstract class BaseNetBean extends BaseJSONBean {
 	public double base_kva; // network base kva
@@ -27,6 +26,19 @@ public abstract class BaseNetBean extends BaseJSONBean {
 	
 	
 	public BaseNetBean() {  }
+	
+	@Override public int compareTo(BaseJSONBean b) {
+		int eql = super.compareTo(b);
+		
+		BaseNetBean bean = (BaseNetBean)b;
+
+		if (this.unit_ang != bean.unit_ang) {
+			IpssLogger.ipssLogger.warning("BaseNetBean.unit_ang is not equal");
+			eql = 1;
+		}
+
+		return eql;
+	}	
 
 	public boolean validate(List<String> msgList) {
 		boolean noErr = true;

@@ -4,7 +4,9 @@ import java.util.List;
 
 import org.interpss.datamodel.bean.datatype.ComplexBean;
 
-public class BaseBusBean extends BaseJSONBean{
+import com.interpss.common.util.IpssLogger;
+
+public class BaseBusBean extends BaseJSONBean {
 		
 	public long 
 	    number;    
@@ -13,7 +15,7 @@ public class BaseBusBean extends BaseJSONBean{
 	
 	public double
 		base_v,				// bus base voltage
-		v_mag=1.0,          // bus voltage in pu		
+		v_mag= 1.0,          // bus voltage in pu		
 		v_ang = 0.0,		// bus voltage angle
 	    vmax = 1.1,
 	    vmin = 0.9;
@@ -29,9 +31,20 @@ public class BaseBusBean extends BaseJSONBean{
 		
 	public BaseBusBean() {}
 	
+	@Override public int compareTo(BaseJSONBean b) {
+		int eql = super.compareTo(b);
+		
+		BaseBusBean bean = (BaseBusBean)b;
+
+		if (this.number != bean.number) {
+			IpssLogger.ipssLogger.warning("BaseBusBean.number is not equal");
+			eql = 1;
+		}
+
+		return eql;
+	}	
+
 	public boolean validate(List<String> msgList) { 
 		return true;
 	}
-	
-
 }

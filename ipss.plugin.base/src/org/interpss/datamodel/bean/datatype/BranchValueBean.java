@@ -24,12 +24,32 @@
 
 package org.interpss.datamodel.bean.datatype;
 
+import org.interpss.numeric.util.NumericUtil;
 
-public class BranchValueBean {
+import com.interpss.common.util.IpssLogger;
+
+
+public class BranchValueBean  implements Comparable<BranchValueBean> {
 	public double
 		f ,				// value at the from side
 		t ;				// value at the to side
 	
 	public BranchValueBean() { }
 	public BranchValueBean(double f, double t) { this.f = f; this.t = t; }
+	
+	@Override public int compareTo(BranchValueBean bean) {
+		int eql = 0;
+		
+		if (!NumericUtil.equals(this.f, bean.f, 0.0001)) {
+			IpssLogger.ipssLogger.warning("BranchValueBean.f is not equal");
+			eql = 1;
+		}
+		
+		if (!NumericUtil.equals(this.t, bean.t, 0.0001)) {
+			IpssLogger.ipssLogger.warning("BranchValueBean.t is not equal");
+			eql = 1;
+		}	
+		
+		return eql;
+	}	
 }

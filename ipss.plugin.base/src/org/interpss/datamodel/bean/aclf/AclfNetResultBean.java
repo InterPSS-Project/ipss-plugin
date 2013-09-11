@@ -24,6 +24,7 @@
 
 package org.interpss.datamodel.bean.aclf;
 
+import org.interpss.datamodel.bean.BaseJSONBean;
 import org.interpss.datamodel.bean.datatype.ComplexBean;
 import org.interpss.datamodel.bean.datatype.MismatchResultBean;
 
@@ -40,4 +41,14 @@ public class AclfNetResultBean extends BaseAclfNetBean<AclfBusBean, AclfBranchRe
 		max_mis;					// max mismatch
 	
 	public AclfNetResultBean() { super(); }
+	
+	@Override public int compareTo(BaseJSONBean b) {
+		int eql = super.compareTo(b);
+		
+		AclfNetResultBean bean = (AclfNetResultBean)b;
+
+		// do nothing
+		
+		return eql;
+	}	
 }

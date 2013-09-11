@@ -5,6 +5,8 @@ import java.util.List;
 import org.interpss.datamodel.bean.datatype.BranchValueBean;
 import org.interpss.datamodel.bean.datatype.ComplexBean;
 
+import com.interpss.common.util.IpssLogger;
+
 public class BaseBranchBean extends BaseJSONBean {
 	/**
 	 * branch type code
@@ -37,6 +39,19 @@ public class BaseBranchBean extends BaseJSONBean {
 	public BaseBranchBean() {
 	}
 
+	@Override public int compareTo(BaseJSONBean b) {
+		int eql = super.compareTo(b);
+		
+		BaseBranchBean bean = (BaseBranchBean)b;
+
+		if (this.f_num != bean.f_num) {
+			IpssLogger.ipssLogger.warning("BaseBranchBean.f_num is not equal");
+			eql = 1;
+		}
+
+		return eql;
+	}	
+	
 	public boolean validate(List<String> msgList) {
 		return true;
 	}

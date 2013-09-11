@@ -25,9 +25,12 @@
 package org.interpss.datamodel.bean.datatype;
 
 import org.apache.commons.math3.complex.Complex;
+import org.interpss.numeric.util.NumericUtil;
+
+import com.interpss.common.util.IpssLogger;
 
 
-public class ComplexBean {
+public class ComplexBean  implements Comparable<ComplexBean> {
 	public double
 		re,				// real part
 		im;				// imaginary part
@@ -37,4 +40,20 @@ public class ComplexBean {
 	public ComplexBean(Complex c) {this.re = c.getReal(); this.im = c.getImaginary(); }
 
 	public Complex toComplex() { return new Complex(this.re, this.im); }
+	
+	@Override public int compareTo(ComplexBean bean) {
+		int eql = 0;
+		
+		if (!NumericUtil.equals(this.re, bean.re, 0.0001)) {
+			IpssLogger.ipssLogger.warning("ComplexBean.re is not equal");
+			eql = 1;
+		}
+		
+		if (!NumericUtil.equals(this.im, bean.im, 0.0001)) {
+			IpssLogger.ipssLogger.warning("ComplexBean.im is not equal");
+			eql = 1;
+		}	
+		
+		return eql;
+	}		
 }

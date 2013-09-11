@@ -27,6 +27,7 @@ package org.interpss.datamodel.bean.aclf;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.interpss.datamodel.bean.BaseJSONBean;
 import org.interpss.datamodel.bean.BaseNetBean;
 
 public class BaseAclfNetBean<TBus extends AclfBusBean, TBra extends AclfBranchBean> extends BaseNetBean {
@@ -37,6 +38,16 @@ public class BaseAclfNetBean<TBus extends AclfBusBean, TBra extends AclfBranchBe
 		branch_list;                // branch result bean list
 	
 	public BaseAclfNetBean() { bus_list = new ArrayList<TBus>(); branch_list = new ArrayList<TBra>(); }
+	
+	@Override public int compareTo(BaseJSONBean b) {
+		int eql = super.compareTo(b);
+		
+		BaseAclfNetBean<TBus,TBra> bean = (BaseAclfNetBean<TBus,TBra>)b;
+
+		// do nothing
+		
+		return eql;
+	}	
 	
 	public boolean validate(List<String> msgList) {
 		boolean noErr = super.validate(msgList);
