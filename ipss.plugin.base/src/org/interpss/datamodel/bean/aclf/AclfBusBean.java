@@ -9,19 +9,19 @@ public class AclfBusBean  extends BaseBusBean {
 	/**
 	 * bus generator type code 
 	 */
-	public static enum GenCode {Swing, PV, PQ};
+	public static enum GenCode {Swing, PV, PQ, NonGen};
 	
 	/**
 	 * bus load type code 
 	 */
-	public static enum LoadCode {ConstP, ConstI, ConstZ};	
+	public static enum LoadCode {ConstP, ConstI, ConstZ, NonLoad};	
 	
 	
 	public GenCode 
-		gen_code;				// bus generator code
+		gen_code = GenCode.NonGen;				// bus generator code
 	
 	public LoadCode 
-		load_code;				// bus load code	
+		load_code = LoadCode.NonLoad;				// bus load code	
 		
 	public AclfBusBean() {}
 	

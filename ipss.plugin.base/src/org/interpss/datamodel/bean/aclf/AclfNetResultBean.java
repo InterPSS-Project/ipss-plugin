@@ -24,14 +24,10 @@
 
 package org.interpss.datamodel.bean.aclf;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.interpss.datamodel.bean.BaseNetBean;
 import org.interpss.datamodel.bean.datatype.ComplexBean;
 import org.interpss.datamodel.bean.datatype.MismatchResultBean;
 
-public class AclfNetResultBean extends AclfNetBean<AclfBusBean, AclfBranchResultBean> {
+public class AclfNetResultBean extends BaseAclfNetBean<AclfBusBean, AclfBranchResultBean> {
 	public boolean
 		lf_converge;				// AC loadflow convergence
 	

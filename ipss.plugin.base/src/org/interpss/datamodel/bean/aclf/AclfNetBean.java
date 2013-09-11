@@ -24,29 +24,7 @@
 
 package org.interpss.datamodel.bean.aclf;
 
-import java.util.ArrayList;
-import java.util.List;
 
-import org.interpss.datamodel.bean.BaseNetBean;
-
-public class AclfNetBean<TBus extends AclfBusBean, TBra extends AclfBranchBean> extends BaseNetBean {
-	
-	public List<TBus> 
-		bus_list;					// bus result bean list
-	public List<TBra> 
-		branch_list;                // branch result bean list
-	
-	public AclfNetBean() { bus_list = new ArrayList<TBus>(); branch_list = new ArrayList<TBra>(); }
-	
-	public boolean validate(List<String> msgList) {
-		boolean noErr = super.validate(msgList);
-		
-		for (TBus bean : this.bus_list) 
-			if (!bean.validate(msgList))
-				noErr = false;
-		for (TBra bean : this.branch_list) 
-			if (!bean.validate(msgList))
-				noErr = false;
-		return noErr; 
-	}	
+public class AclfNetBean extends BaseAclfNetBean<AclfBusBean, AclfBranchBean> {
+	public AclfNetBean() { super(); }
 }
