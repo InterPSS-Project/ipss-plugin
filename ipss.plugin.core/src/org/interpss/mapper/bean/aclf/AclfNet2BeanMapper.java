@@ -26,16 +26,11 @@ package org.interpss.mapper.bean.aclf;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.datamodel.bean.BaseBranchBean;
-import org.interpss.datamodel.bean.BaseBusBean;
-import org.interpss.datamodel.bean.BaseNetBean;
 import org.interpss.datamodel.bean.aclf.AclfBranchBean;
-import org.interpss.datamodel.bean.aclf.AclfBranchResultBean;
 import org.interpss.datamodel.bean.aclf.AclfBusBean;
 import org.interpss.datamodel.bean.aclf.AclfNetBean;
-import org.interpss.datamodel.bean.aclf.AclfNetResultBean;
 import org.interpss.datamodel.bean.datatype.BranchValueBean;
 import org.interpss.datamodel.bean.datatype.ComplexBean;
-import org.interpss.datamodel.bean.datatype.MismatchResultBean;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.Number2String;
 
@@ -46,8 +41,6 @@ import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfXformer;
-import com.interpss.core.algo.AclfMethod;
-import com.interpss.core.datatype.Mismatch;
 
 /**
  * mapper implementation to map AclfNetwork object to BaseNetBean
@@ -117,13 +110,15 @@ public class AclfNet2BeanMapper extends AbstractMapper<AclfNetwork, AclfNetBean>
 		bean.vmin = format(bus.getVLimit().getMin()) == 0? bean.vmin : format(bus.getVLimit().getMin());
 
 		bean.gen_code = bus.isGenPQ() || !bus.isGen() ? AclfBusBean.GenCode.PQ :
-			(bus.isGenPV() ? AclfBusBean.GenCode.PV : AclfBusBean.GenCode.Swing);
+			(bus.isGenPV() ? AclfBusBean.GenCode.PV : 
+				(bus.isSwing()? AclfBusBean.GenCode.Swing : AclfBusBean.GenCode.NonGen));
 				
 		Complex gen = bus.getGenResults();
 		bean.gen = new ComplexBean(format(gen));
 
 		bean.load_code = bus.isConstPLoad() ? AclfBusBean.LoadCode.ConstP :
-			(bus.isConstZLoad() ? AclfBusBean.LoadCode.ConstZ : AclfBusBean.LoadCode.ConstI);
+			(bus.isConstZLoad() ? AclfBusBean.LoadCode.ConstZ : 
+				(bus.isConstILoad() ? AclfBusBean.LoadCode.ConstI : AclfBusBean.LoadCode.NonLoad));
 
 		Complex load = bus.getLoadResults();
 		bean.load = new ComplexBean(format(load));
@@ -189,8 +184,9 @@ public class AclfNet2BeanMapper extends AbstractMapper<AclfNetwork, AclfNetBean>
 	private double format(double x) {
 		return new Double(Number2String.toStr(x)).doubleValue();
 	}
-
+/*
 	private double format2(double x) {
 		return new Double(Number2String.toStr(x, "#0.0#")).doubleValue();
 	}
+*/	
 }

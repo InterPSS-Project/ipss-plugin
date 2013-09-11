@@ -26,7 +26,6 @@ package org.interpss.mapper.bean.aclf;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.datamodel.bean.BaseBranchBean;
-import org.interpss.datamodel.bean.BaseBusBean;
 import org.interpss.datamodel.bean.aclf.AclfBranchResultBean;
 import org.interpss.datamodel.bean.aclf.AclfBusBean;
 import org.interpss.datamodel.bean.aclf.AclfNetResultBean;
@@ -131,14 +130,16 @@ public class AclfNet2ResultBeanMapper extends AbstractMapper<AclfNetwork, AclfNe
 		bean.vmax = format(bus.getVLimit().getMax()) == 0? bean.vmax : format(bus.getVLimit().getMax());
 		bean.vmin = format(bus.getVLimit().getMin()) == 0? bean.vmin : format(bus.getVLimit().getMin());
 
-		bean.gen_code = bus.isGenPQ() || !bus.isGen() ? AclfBusBean.GenCode.PQ :
-			(bus.isGenPV() ? AclfBusBean.GenCode.PV : AclfBusBean.GenCode.Swing);
+		bean.gen_code = bus.isGenPQ() ? AclfBusBean.GenCode.PQ :
+			(bus.isGenPV() ? AclfBusBean.GenCode.PV : 
+				(bus.isSwing() ? AclfBusBean.GenCode.Swing : AclfBusBean.GenCode.NonGen));
 				
 		Complex gen = bus.getGenResults();
 		bean.gen = new ComplexBean(format(gen));
 
 		bean.load_code = bus.isConstPLoad() ? AclfBusBean.LoadCode.ConstP :
-			(bus.isConstZLoad() ? AclfBusBean.LoadCode.ConstZ : AclfBusBean.LoadCode.ConstI);
+			(bus.isConstZLoad() ? AclfBusBean.LoadCode.ConstZ : 
+				(bus.isConstILoad() ? AclfBusBean.LoadCode.ConstI : AclfBusBean.LoadCode.NonLoad));
 
 		Complex load = bus.getLoadResults();
 		bean.load = new ComplexBean(format(load));

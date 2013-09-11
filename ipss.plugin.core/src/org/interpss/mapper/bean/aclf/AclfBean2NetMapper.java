@@ -54,7 +54,7 @@ import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
 
-public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean<AclfBusBean, AclfBranchBean>, SimuContext> {
+public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext> {
 	/**
 	 * constructor
 	 */
@@ -67,7 +67,7 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean<AclfBusBean, 
 	 * @param netBean AclfNetBean object
 	 * @return SimuContext object
 	 */
-	@Override public SimuContext map2Model(AclfNetBean<AclfBusBean, AclfBranchBean> netBean) throws InterpssException {
+	@Override public SimuContext map2Model(AclfNetBean netBean) throws InterpssException {
 		final SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.NOT_DEFINED);
 		if (this.map2Model(netBean, simuCtx)) {
   	  		simuCtx.setId("InterPSS_SimuCtx");
@@ -84,7 +84,7 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean<AclfBusBean, 
 	 * @param netBean an AclfNetBean object, representing a aclf base network
 	 * @param simuCtx
 	 */
-	@Override public boolean map2Model(AclfNetBean<AclfBusBean, AclfBranchBean> netBean, SimuContext simuCtx) {
+	@Override public boolean map2Model(AclfNetBean netBean, SimuContext simuCtx) {
 		boolean noError = true;
 		simuCtx.setNetType(SimuCtxType.ACLF_NETWORK);
 		AclfNetwork aclfNet = CoreObjectFactory.createAclfNetwork();
@@ -147,18 +147,24 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean<AclfBusBean, 
 				      pvBus.setGenP(busBean.gen.re);
 				pvBus.setVoltMag(busBean.v_mag);
 			}
-			else {
+			else if (busBean.gen_code==AclfBusBean.GenCode.Swing) {
 				bus.setGenCode(AclfGenCode.SWING);
 				AclfSwingBus swingBus = bus.toSwingBus();
 				swingBus.setVoltMag(busBean.v_mag);
 				swingBus.setVoltAngDeg(busBean.v_ang);
+			}
+			else {
+				bus.setGenCode(AclfGenCode.NON_GEN);
+				bus.setVoltageMag(busBean.v_mag);
+				bus.setVoltageAng(Math.toRadians(busBean.v_ang));
 			}
 			
 		}
 		
 		if (busBean.load_code != null) {
 			bus.setLoadCode(busBean.load_code==AclfBusBean.LoadCode.ConstP? AclfLoadCode.CONST_P :
-				(busBean.load_code==AclfBusBean.LoadCode.ConstI? AclfLoadCode.CONST_I : AclfLoadCode.CONST_Z));
+				(busBean.load_code==AclfBusBean.LoadCode.ConstI? AclfLoadCode.CONST_I : 
+					(busBean.load_code==AclfBusBean.LoadCode.ConstZ? AclfLoadCode.CONST_Z : AclfLoadCode.NON_LOAD)));
 			if (busBean.load != null) {
 				bus.setLoadP(busBean.load.re);
 				bus.setLoadQ(busBean.load.im);
