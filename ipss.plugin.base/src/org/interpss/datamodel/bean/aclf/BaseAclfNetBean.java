@@ -30,6 +30,8 @@ import java.util.List;
 import org.interpss.datamodel.bean.BaseJSONBean;
 import org.interpss.datamodel.bean.BaseNetBean;
 
+import com.interpss.common.util.IpssLogger;
+
 public class BaseAclfNetBean<TBus extends AclfBusBean, TBra extends AclfBranchBean> extends BaseNetBean {
 	
 	public List<TBus> 
@@ -44,10 +46,38 @@ public class BaseAclfNetBean<TBus extends AclfBusBean, TBra extends AclfBranchBe
 		
 		BaseAclfNetBean<TBus,TBra> bean = (BaseAclfNetBean<TBus,TBra>)b;
 
-		// do nothing
+		for (TBus bus : this.bus_list) {
+			TBus bus1 = bean.getBus(bus.id);
+			if (bus.compareTo(bus1) != 0)
+				eql = 1;
+		}
 		
+		for (TBra bra : this.branch_list) {
+			TBra bra1 = bean.getBranch(bra.id);
+			if (bra.compareTo(bra1) != 0)
+				eql = 1;
+		}
+
 		return eql;
 	}	
+	
+	public TBus getBus(String id) {
+		for (TBus bus : this.bus_list) {
+			if (bus.id.equals(id))
+				return bus;
+		}
+		IpssLogger.ipssLogger.warning("Bus " + id + " cannot be found");
+		return null;
+	}
+	
+	public TBra getBranch(String id) {
+		for (TBra bra : this.branch_list) {
+			if (bra.id.equals(id))
+				return bra;
+		}
+		IpssLogger.ipssLogger.warning("Branch " + id + " cannot be found");
+		return null;
+	}
 	
 	public boolean validate(List<String> msgList) {
 		boolean noErr = super.validate(msgList);

@@ -26,6 +26,7 @@ package org.interpss.datamodel.bean.aclf;
 
 import org.interpss.datamodel.bean.BaseJSONBean;
 import org.interpss.datamodel.bean.datatype.ComplexBean;
+import org.interpss.numeric.util.NumericUtil;
 
 import com.interpss.common.util.IpssLogger;
 
@@ -46,10 +47,15 @@ public class AclfBranchResultBean extends AclfBranchBean {
 		
 		AclfBranchResultBean bean = (AclfBranchResultBean)b;
 
-		if (this.f_num != bean.f_num) {
-			IpssLogger.ipssLogger.warning("AclfBranchResultBean.f_num is not equal");
-			eql = 1;
-		}
+		if (this.flow_f2t.compareTo(bean.flow_f2t) != 0) {
+			IpssLogger.ipssLogger.warning("AclfBranchResultBean.flow_f2t is not equal"); eql = 1; }
+		if (this.flow_t2f.compareTo(bean.flow_t2f) != 0) {
+			IpssLogger.ipssLogger.warning("AclfBranchResultBean.flow_t2f is not equal"); eql = 1; }
+		if (this.loss.compareTo(bean.loss) != 0) {
+			IpssLogger.ipssLogger.warning("AclfBranchResultBean.loss is not equal"); eql = 1; }
+		
+		if (!NumericUtil.equals(this.cur, bean.cur, CMP_ERR)) {
+			IpssLogger.ipssLogger.warning("AclfBranchResultBean.cur is not equal"); eql = 1; }
 
 		return eql;
 	}	

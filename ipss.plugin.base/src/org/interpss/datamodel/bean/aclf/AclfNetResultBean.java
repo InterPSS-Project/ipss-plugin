@@ -28,6 +28,8 @@ import org.interpss.datamodel.bean.BaseJSONBean;
 import org.interpss.datamodel.bean.datatype.ComplexBean;
 import org.interpss.datamodel.bean.datatype.MismatchResultBean;
 
+import com.interpss.common.util.IpssLogger;
+
 public class AclfNetResultBean extends BaseAclfNetBean<AclfBusBean, AclfBranchResultBean> {
 	public boolean
 		lf_converge;				// AC loadflow convergence
@@ -47,7 +49,10 @@ public class AclfNetResultBean extends BaseAclfNetBean<AclfBusBean, AclfBranchRe
 		
 		AclfNetResultBean bean = (AclfNetResultBean)b;
 
-		// do nothing
+		if (this.lf_converge != bean.lf_converge) {
+			IpssLogger.ipssLogger.warning("AclfNetResultBean.lf_converge is not equal"); eql = 1; }
+		
+		
 		
 		return eql;
 	}	

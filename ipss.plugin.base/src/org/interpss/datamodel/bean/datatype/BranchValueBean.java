@@ -24,6 +24,7 @@
 
 package org.interpss.datamodel.bean.datatype;
 
+import org.interpss.datamodel.bean.BaseJSONBean;
 import org.interpss.numeric.util.NumericUtil;
 
 import com.interpss.common.util.IpssLogger;
@@ -40,15 +41,11 @@ public class BranchValueBean  implements Comparable<BranchValueBean> {
 	@Override public int compareTo(BranchValueBean bean) {
 		int eql = 0;
 		
-		if (!NumericUtil.equals(this.f, bean.f, 0.0001)) {
-			IpssLogger.ipssLogger.warning("BranchValueBean.f is not equal");
-			eql = 1;
-		}
+		if (!NumericUtil.equals(this.f, bean.f, BaseJSONBean.CMP_ERR)) {
+			IpssLogger.ipssLogger.warning("BranchValueBean.f is not equal"); eql = 1; }
 		
-		if (!NumericUtil.equals(this.t, bean.t, 0.0001)) {
-			IpssLogger.ipssLogger.warning("BranchValueBean.t is not equal");
-			eql = 1;
-		}	
+		if (!NumericUtil.equals(this.t, bean.t, BaseJSONBean.CMP_ERR)) {
+			IpssLogger.ipssLogger.warning("BranchValueBean.t is not equal"); eql = 1; }	
 		
 		return eql;
 	}	

@@ -24,8 +24,10 @@
 
 package org.interpss.datamodel.bean.datatype;
 
+import com.interpss.common.util.IpssLogger;
 
-public class MismatchResultBean {
+
+public class MismatchResultBean implements Comparable<MismatchResultBean> {
 	public ComplexBean
 		err;				// real/reactive power mismatch
 	
@@ -34,4 +36,18 @@ public class MismatchResultBean {
  		q_bus_id;       	// reactive power mismatch bus id
 
 	public MismatchResultBean() { }
+	
+	@Override public int compareTo(MismatchResultBean bean) {
+		int eql = 0;
+		
+		if (this.err.compareTo(bean.err) != 0) {
+			IpssLogger.ipssLogger.warning("MismatchResultBean.err is not equal"); eql = 1; }
+		
+		if (!this.p_bus_id.equals(bean.p_bus_id)) {
+			IpssLogger.ipssLogger.warning("MismatchResultBean.p_bus_id is not equal"); eql = 1; }
+		if (!this.q_bus_id.equals(bean.q_bus_id)) {
+			IpssLogger.ipssLogger.warning("MismatchResultBean.q_bus_id is not equal"); eql = 1; }
+		
+		return eql;
+	}	
 }

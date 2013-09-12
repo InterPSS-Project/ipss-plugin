@@ -37,13 +37,16 @@ import com.interpss.common.util.IpssLogger;
  *
  */
 public abstract class BaseJSONBean implements Comparable<BaseJSONBean> {
+	public static double CMP_ERR = 0.0001;
+	
 	public String 	    
-		id,      		// net, bus, branch id. only bus.id is mandatory
+		id = "Not Defined",      		// net, bus, branch id. only bus.id is mandatory
 		name,    		// net, bus, branch name, optional
 		desc;    		// net, bus, branch description, optional
 	
 	@Override public int compareTo(BaseJSONBean bean) {
-		if (id.equals(bean.id))
+		if (this.id.equals(bean.id))
+			// some times bean.id is not defined
 			return 0;
 		else {
 			IpssLogger.ipssLogger.warning("BaseJSONBean.id is not equal");

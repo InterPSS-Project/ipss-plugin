@@ -14,8 +14,8 @@ public class AclfBranchBean extends BaseBranchBean {
 	
 	
 	public BranchValueBean 
-	ratio,				// xfr branch turn ratio
-	ang;				// PsXfr shifting angle
+			ratio = new BranchValueBean(1.0,1.0),				// xfr branch turn ratio
+			ang = new BranchValueBean(0.0,0.0);				// PsXfr shifting angle
 	
 	
 	public AclfBranchBean() {}
@@ -25,10 +25,11 @@ public class AclfBranchBean extends BaseBranchBean {
 		
 		AclfBranchBean bean = (AclfBranchBean)b;
 
-		if (this.f_num != bean.f_num) {
-			IpssLogger.ipssLogger.warning("AclfBranchBean.f_num is not equal");
-			eql = 1;
-		}
+		if (this.ratio.compareTo(bean.ratio) != 0) {
+			IpssLogger.ipssLogger.warning("AclfBranchBean.ratio is not equal");	eql = 1; }
+
+		if (this.ang.compareTo(bean.ang) != 0) {
+			IpssLogger.ipssLogger.warning("AclfBranchBean.ang is not equal");	eql = 1; }
 
 		return eql;
 	}	
