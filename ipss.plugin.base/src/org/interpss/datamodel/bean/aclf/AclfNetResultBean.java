@@ -50,10 +50,18 @@ public class AclfNetResultBean extends BaseAclfNetBean<AclfBusBean, AclfBranchRe
 		AclfNetResultBean bean = (AclfNetResultBean)b;
 
 		if (this.lf_converge != bean.lf_converge) {
-			IpssLogger.ipssLogger.warning("AclfNetResultBean.lf_converge is not equal"); eql = 1; }
+			IpssLogger.ipssLogger.warning("AclfNetResultBean.lf_converge is not equal, " + this.lf_converge + ", " + bean.lf_converge); eql = 1; }
 		
+		if (this.gen.compareTo(bean.gen) != 0) {
+			IpssLogger.ipssLogger.warning("AclfNetResultBean.gen is not equal");	eql = 1; }		
+		if (this.load.compareTo(bean.load) != 0) {
+			IpssLogger.ipssLogger.warning("AclfNetResultBean.load is not equal");	eql = 1; }	
+		if (this.loss.compareTo(bean.loss) != 0) {
+			IpssLogger.ipssLogger.warning("AclfNetResultBean.loss is not equal");	eql = 1; }	
 		
-		
+		// mismatch is random
+		//if (this.max_mis.compareTo(bean.max_mis) != 0) {
+		//	IpssLogger.ipssLogger.warning("AclfNetResultBean.max_mis is not equal");	eql = 1; }			
 		return eql;
 	}	
 }

@@ -46,10 +46,10 @@ public class ComplexBean  implements Comparable<ComplexBean> {
 		int eql = 0;
 		
 		if (!NumericUtil.equals(this.re, bean.re, BaseJSONBean.CMP_ERR)) {
-			IpssLogger.ipssLogger.warning("ComplexBean.re is not equal"); eql = 1; }
+			IpssLogger.ipssLogger.warning("ComplexBean.re is not equal, " + this.re + ", " + bean.re); eql = 1; }
 		
 		if (!NumericUtil.equals(this.im, bean.im, BaseJSONBean.CMP_ERR)) {
-			IpssLogger.ipssLogger.warning("ComplexBean.im is not equal"); eql = 1; }	
+			IpssLogger.ipssLogger.warning("ComplexBean.im is not equal, " + this.im + ", " + bean.im); eql = 1; }	
 		
 		return eql;
 	}		

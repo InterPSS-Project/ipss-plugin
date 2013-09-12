@@ -33,7 +33,7 @@ public class AclfNetBean extends BaseAclfNetBean<AclfBusBean, AclfBranchBean> {
 	@Override public int compareTo(BaseJSONBean b) {
 		int eql = super.compareTo(b);
 		
-		AclfNetBean bean = (AclfNetBean)b;
+		//AclfNetBean bean = (AclfNetBean)b;
 
 		// do nothing
 		

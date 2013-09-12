@@ -4,9 +4,7 @@ import java.util.List;
 
 import org.interpss.datamodel.bean.BaseBranchBean;
 import org.interpss.datamodel.bean.BaseJSONBean;
-import org.interpss.datamodel.bean.BaseBranchBean.BranchCode;
 import org.interpss.datamodel.bean.datatype.BranchValueBean;
-import org.interpss.datamodel.bean.datatype.ComplexBean;
 
 import com.interpss.common.util.IpssLogger;
 

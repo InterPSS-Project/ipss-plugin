@@ -32,39 +32,20 @@ public abstract class BaseNetBean extends BaseJSONBean {
 		BaseNetBean bean = (BaseNetBean)b;
 
 		if (!NumericUtil.equals(this.base_kva, bean.base_kva, CMP_ERR)) {
-			IpssLogger.ipssLogger.warning("BaseNetBean.base_kva is not equal");
-			eql = 1;
-		}
+			IpssLogger.ipssLogger.warning("BaseNetBean.base_kva is not equal, " + this.base_kva + ", " + bean.base_kva);	eql = 1; }
 		
 		if (this.unit_ang != bean.unit_ang) {
-			IpssLogger.ipssLogger.warning("BaseNetBean.unit_ang is not equal");
-			eql = 1;
-		}
-
+			IpssLogger.ipssLogger.warning("BaseNetBean.unit_ang is not equal, " + this.unit_ang + ", " + bean.unit_ang); eql = 1; }
 		if (this.unit_bus_v != bean.unit_bus_v) {
-			IpssLogger.ipssLogger.warning("BaseNetBean.unit_bus_v is not equal");
-			eql = 1;
-		}
-
+			IpssLogger.ipssLogger.warning("BaseNetBean.unit_bus_v is not equal, " + this.unit_bus_v + ", " + bean.unit_bus_v); eql = 1; }
 		if (this.unit_bus_p != bean.unit_bus_p) {
-			IpssLogger.ipssLogger.warning("BaseNetBean.unit_bus_p is not equal");
-			eql = 1;
-		}
-
+			IpssLogger.ipssLogger.warning("BaseNetBean.unit_bus_p is not equal, " + this.unit_bus_p + ", " + bean.unit_bus_p); eql = 1; }
 		if (this.unit_branch_z != bean.unit_branch_z) {
-			IpssLogger.ipssLogger.warning("BaseNetBean.unit_branch_z is not equal");
-			eql = 1;
-		}
-
+			IpssLogger.ipssLogger.warning("BaseNetBean.unit_branch_z is not equal, " + this.unit_branch_z + ", " + bean.unit_branch_z); eql = 1; }
 		if (this.unit_branch_cur != bean.unit_branch_cur) {
-			IpssLogger.ipssLogger.warning("BaseNetBean.unit_ang is not equal");
-			eql = 1;
-		}
-
+			IpssLogger.ipssLogger.warning("BaseNetBean.unit_ang is not equal, " + this.unit_branch_cur + ", " + bean.unit_branch_cur); eql = 1; }
 		if (this.unit_branch_b != bean.unit_branch_b) {
-			IpssLogger.ipssLogger.warning("BaseNetBean.unit_branch_b is not equal");
-			eql = 1;
-		}
+			IpssLogger.ipssLogger.warning("BaseNetBean.unit_branch_b is not equal, " + this.unit_branch_b + ", " + bean.unit_branch_b); eql = 1; }
 
 		return eql;
 	}	

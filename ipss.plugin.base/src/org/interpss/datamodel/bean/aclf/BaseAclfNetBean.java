@@ -46,17 +46,11 @@ public class BaseAclfNetBean<TBus extends AclfBusBean, TBra extends AclfBranchBe
 		
 		BaseAclfNetBean<TBus,TBra> bean = (BaseAclfNetBean<TBus,TBra>)b;
 
-		for (TBus bus : this.bus_list) {
-			TBus bus1 = bean.getBus(bus.id);
-			if (bus.compareTo(bus1) != 0)
-				eql = 1;
-		}
+		for (TBus bus : this.bus_list) 
+			if (bus.compareTo(bean.getBus(bus.id)) != 0) eql = 1; 
 		
-		for (TBra bra : this.branch_list) {
-			TBra bra1 = bean.getBranch(bra.id);
-			if (bra.compareTo(bra1) != 0)
-				eql = 1;
-		}
+		for (TBra bra : this.branch_list)
+			if (bra.compareTo(bean.getBranch(bra.id)) != 0) eql = 1; 
 
 		return eql;
 	}	
