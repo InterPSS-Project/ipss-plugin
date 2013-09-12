@@ -27,20 +27,14 @@ package org.interpss.plugin.beanModel;
 import static org.junit.Assert.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.datamodel.bean.BaseBranchBean;
-import org.interpss.datamodel.bean.aclf.AclfBranchBean;
-import org.interpss.datamodel.bean.aclf.AclfBusBean;
 import org.interpss.datamodel.bean.aclf.AclfNetBean;
 import org.interpss.datamodel.bean.aclf.AclfNetResultBean;
-import org.interpss.datamodel.bean.datatype.BranchValueBean;
-import org.interpss.datamodel.bean.datatype.ComplexBean;
 import org.interpss.mapper.bean.aclf.AclfBean2NetMapper;
 import org.interpss.mapper.bean.aclf.AclfNet2BeanMapper;
 import org.interpss.mapper.bean.aclf.AclfNet2ResultBeanMapper;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.junit.Test;
 
-import com.google.gson.Gson;
 import com.interpss.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
