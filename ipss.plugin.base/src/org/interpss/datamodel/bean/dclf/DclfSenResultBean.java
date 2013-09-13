@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.interpss.datamodel.bean.BaseJSONBean;
-import org.interpss.datamodel.bean.BaseNetBean;
 
 public class DclfSenResultBean extends BaseJSONBean {	
 	
