@@ -1,5 +1,5 @@
 /*
- * @(#) AclfNetBeanMapper.java   
+ * @(#) AclfBean2NetMapper.java   
  *
  * Copyright (C) 2008-2013 www.interpss.org
  *
@@ -26,8 +26,6 @@ package org.interpss.mapper.bean.aclf;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.datamodel.bean.BaseBranchBean;
-import org.interpss.datamodel.bean.BaseBusBean;
-import org.interpss.datamodel.bean.BaseNetBean;
 import org.interpss.datamodel.bean.aclf.AclfBranchBean;
 import org.interpss.datamodel.bean.aclf.AclfBusBean;
 import org.interpss.datamodel.bean.aclf.AclfNetBean;
@@ -53,7 +51,12 @@ import com.interpss.core.net.Zone;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
-
+/**
+ * Mapper to map an AclfNetBean object to an AclfNetwork (SimuContext) object
+ * 
+ * @author mzhou
+ *
+ */
 public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext> {
 	/**
 	 * constructor
@@ -62,7 +65,7 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 	}
 	
 	/**
-	 * map into store in the BaseNetBean object into simuCtx object
+	 * map info store in the BAclfNetBean object into simuCtx object
 	 * 
 	 * @param netBean AclfNetBean object
 	 * @return SimuContext object
@@ -164,7 +167,8 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 		if (busBean.load_code != null) {
 			bus.setLoadCode(busBean.load_code==AclfBusBean.LoadCode.ConstP? AclfLoadCode.CONST_P :
 				(busBean.load_code==AclfBusBean.LoadCode.ConstI? AclfLoadCode.CONST_I : 
-					(busBean.load_code==AclfBusBean.LoadCode.ConstZ? AclfLoadCode.CONST_Z : AclfLoadCode.NON_LOAD)));
+					(busBean.load_code==AclfBusBean.LoadCode.ConstZ? AclfLoadCode.CONST_Z : 
+						AclfLoadCode.NON_LOAD)));
 			if (busBean.load != null) {
 				bus.setLoadP(busBean.load.re);
 				bus.setLoadQ(busBean.load.im);
@@ -199,7 +203,8 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 		
 		branch.setBranchCode(branchBean.bra_code == BaseBranchBean.BranchCode.Line? AclfBranchCode.LINE :
 			(branchBean.bra_code == BaseBranchBean.BranchCode.Xfr? AclfBranchCode.XFORMER :
-			(branchBean.bra_code == BaseBranchBean.BranchCode.ZBR? AclfBranchCode.ZBR: AclfBranchCode.PS_XFORMER)));
+				(branchBean.bra_code == BaseBranchBean.BranchCode.ZBR? AclfBranchCode.ZBR: 
+					AclfBranchCode.PS_XFORMER)));
 		if (branchBean.z != null)
 			branch.setZ(branchBean.z.toComplex());
 		if (branch.getBranchCode() == AclfBranchCode.LINE) {

@@ -60,9 +60,10 @@ public class AclfNet2ResultBeanMapper extends BaseAclfNet2BeanMapper<AclfNetResu
 	@Override public AclfNetResultBean map2Model(AclfNetwork aclfNet) throws InterpssException {
 		AclfNetResultBean aclfResult = new AclfNetResultBean();
 
-		map2Model(aclfNet, aclfResult);
-		
-		return aclfResult;
+		if (map2Model(aclfNet, aclfResult))
+			return aclfResult;
+		else
+			throw new InterpssException("Error during mapping AclfNetwork object to AclfNetResultBean");
 	}	
 	
 	/**

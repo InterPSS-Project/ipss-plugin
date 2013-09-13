@@ -41,12 +41,17 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfXformer;
 
 /**
- * base mapper implementation to map AclfNetwork object to BaseNetBean (AclfNetBean and AclfNetResultBean)
+ * base mapper functions for mapping AclfNetwork object to BaseNetBean (AclfNetBean and AclfNetResultBean)
  * 
  * 
  */
 public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfNetwork, TBean> {
-	
+	/**
+	 * map an AclfBus object to an AclfBusBean 
+	 * 
+	 * @param bus
+	 * @param bean
+	 */
 	protected void mapBaseBus(AclfBus bus, AclfBusBean bean) {
 		bean.number = bus.getNumber();
 		bean.id = bus.getId();
@@ -63,14 +68,16 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 
 		bean.gen_code = bus.isGenPQ() || !bus.isGen() ? AclfBusBean.GenCode.PQ :
 			(bus.isGenPV() ? AclfBusBean.GenCode.PV : 
-				(bus.isSwing()? AclfBusBean.GenCode.Swing : AclfBusBean.GenCode.NonGen));
+				(bus.isSwing()? AclfBusBean.GenCode.Swing : 
+					AclfBusBean.GenCode.NonGen));
 				
 		Complex gen = bus.getGenResults();
 		bean.gen = new ComplexBean(format(gen));
 
 		bean.load_code = bus.isConstPLoad() ? AclfBusBean.LoadCode.ConstP :
 			(bus.isConstZLoad() ? AclfBusBean.LoadCode.ConstZ : 
-				(bus.isConstILoad() ? AclfBusBean.LoadCode.ConstI : AclfBusBean.LoadCode.NonLoad));
+				(bus.isConstILoad() ? AclfBusBean.LoadCode.ConstI : 
+					AclfBusBean.LoadCode.NonLoad));
 
 		Complex load = bus.getLoadResults();
 		bean.load = new ComplexBean(format(load));
@@ -87,6 +94,12 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 		
 	}
 	
+	/**
+	 * map an AclfBranch object to an AclfBranchBean 
+	 * 
+	 * @param branch
+	 * @param bean
+	 */
 	protected void mapBaseBranch(AclfBranch branch, AclfBranchBean bean) {
 		bean.id = branch.getId();
 		bean.name = branch.getName();
@@ -103,7 +116,8 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 		
 		bean.bra_code = branch.isLine() ? BaseBranchBean.BranchCode.Line :
 			(branch.isXfr() ? BaseBranchBean.BranchCode.Xfr : 
-			(branch.isPSXfr() ? BaseBranchBean.BranchCode.PsXfr:BaseBranchBean.BranchCode.ZBR ));
+				(branch.isPSXfr() ? BaseBranchBean.BranchCode.PsXfr:
+					BaseBranchBean.BranchCode.ZBR ));
 		
 		Complex z = branch.getZ();
 		bean.z = new ComplexBean(z);
@@ -125,7 +139,6 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 		bean.mvaRatingA = branch.getRatingMva1();
 		bean.mvaRatingB = branch.getRatingMva2();
 		bean.mvaRatingC = branch.getRatingMva3();			
-		
 	}	
 	
 	protected Complex format(Complex x) {

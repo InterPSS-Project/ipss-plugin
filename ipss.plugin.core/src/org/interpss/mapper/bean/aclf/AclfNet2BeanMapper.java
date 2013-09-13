@@ -1,5 +1,5 @@
 /*
- * @(#) AclfResultBeanMapper.java   
+ * @(#) AclfNet2BeanMapper.java   
  *
  * Copyright (C) 2008-2013 www.interpss.org
  *
@@ -34,7 +34,7 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 
 /**
- * mapper implementation to map AclfNetwork object to BaseNetBean
+ * mapper implementation to map AclfNetwork object to AclfNetBean
  * 
  * 
  */
@@ -54,9 +54,10 @@ public class AclfNet2BeanMapper extends BaseAclfNet2BeanMapper<AclfNetBean> {
 	@Override public AclfNetBean map2Model(AclfNetwork aclfNet) throws InterpssException {
 		AclfNetBean aclfResult = new AclfNetBean();
 
-		map2Model(aclfNet, aclfResult);
-		
-		return aclfResult;
+		if (map2Model(aclfNet, aclfResult))
+			return aclfResult;
+		else
+			throw new InterpssException("Error during mapping AclfNetwork to AclfNetBean");
 	}	
 	
 	/**
