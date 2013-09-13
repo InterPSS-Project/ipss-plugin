@@ -69,7 +69,7 @@ public class AclfNet2ResultBeanMapper extends BaseAclfNet2BeanMapper<AclfNetResu
 	 * map the AclfNetwork object into AclfNetResultBean object
 	 * 
 	 * @param netBean an AclfNetBean object, representing a aclf base network
-	 * @param simuCtx
+	 * @param aclfResult
 	 */
 	@Override public boolean map2Model(AclfNetwork aclfNet, AclfNetResultBean aclfResult) {
 		boolean noError = true;

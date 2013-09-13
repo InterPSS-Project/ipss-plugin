@@ -1,12 +1,5 @@
 package org.interpss.mapper.bean.dclf;
 
-import java.util.List;
-
-import org.interpss.datamodel.bean.dclf.DclfBranchResultBean;
-import org.interpss.datamodel.bean.dclf.DclfSenResultBean;
-import org.interpss.datamodel.bean.dclf.GSFResultBean;
-
-import com.interpss.core.aclf.AclfBranch;
 
 public class DclfSenResultBeanMapper {
 	
