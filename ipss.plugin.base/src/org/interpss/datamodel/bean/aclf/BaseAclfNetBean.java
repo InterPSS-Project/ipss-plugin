@@ -1,5 +1,5 @@
 /*
- * @(#)AclfNetBean.java   
+ * @(#)BaseAclfNetBean.java   
  *
  * Copyright (C) 2008-2013 www.interpss.org
  *
@@ -32,6 +32,14 @@ import org.interpss.datamodel.bean.BaseNetBean;
 
 import com.interpss.common.util.IpssLogger;
 
+/**
+ * Base Bean class for storing AclfNetwork object info
+ * 
+ * @author mzhou
+ *
+ * @param <TBus> template for AclfBusBean
+ * @param <TBra> template for AclfBranchBean
+ */
 public class BaseAclfNetBean<TBus extends AclfBusBean, TBra extends AclfBranchBean> extends BaseNetBean {
 	
 	public List<TBus> 

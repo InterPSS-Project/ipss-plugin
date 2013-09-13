@@ -30,6 +30,12 @@ import org.interpss.numeric.util.NumericUtil;
 
 import com.interpss.common.util.IpssLogger;
 
+/**
+ * Bean class for storing AclfBranch result info
+ * 
+ * @author mzhou
+ *
+ */
 public class AclfBranchResultBean extends AclfBranchBean {
 
 	public ComplexBean 
@@ -54,7 +60,7 @@ public class AclfBranchResultBean extends AclfBranchBean {
 		if (this.loss.compareTo(bean.loss) != 0) {
 			IpssLogger.ipssLogger.warning("AclfBranchResultBean.loss is not equal, " + this.loss + ", " + bean.loss); eql = 1; }
 		
-		if (!NumericUtil.equals(this.cur, bean.cur, 0.1)) {  // in amps
+		if (!NumericUtil.equals(this.cur, bean.cur, BaseJSONBean.ACT_ERR)) {  // in amps
 			IpssLogger.ipssLogger.warning("AclfBranchResultBean.cur is not equal, " + this.cur + ", " + bean.cur); eql = 1; }
 
 		return eql;

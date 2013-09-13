@@ -26,7 +26,12 @@ package org.interpss.datamodel.bean.aclf;
 
 import org.interpss.datamodel.bean.BaseJSONBean;
 
-
+/**
+ * Bean class for stoing AclfNetwork object info
+ * 
+ * @author mzhou
+ *
+ */
 public class AclfNetBean extends BaseAclfNetBean<AclfBusBean, AclfBranchBean> {
 	public AclfNetBean() { super(); }
 	

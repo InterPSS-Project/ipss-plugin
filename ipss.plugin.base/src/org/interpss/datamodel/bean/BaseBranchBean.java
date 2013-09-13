@@ -1,40 +1,75 @@
+/*
+ * @(#)BaseBusBean.java   
+ *
+ * Copyright (C) 2008-2013 www.interpss.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU LESSER GENERAL PUBLIC LICENSE
+ * as published by the Free Software Foundation; either version 2.1
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * @Author Mike Zhou
+ * @Version 1.0
+ * @Date 01/10/2013
+ * 
+ *   Revision History
+ *   ================
+ *
+ */
 package org.interpss.datamodel.bean;
 
 import java.util.List;
 
-import org.interpss.datamodel.bean.datatype.BranchValueBean;
 import org.interpss.datamodel.bean.datatype.ComplexBean;
 import org.interpss.numeric.util.NumericUtil;
 
 import com.interpss.common.util.IpssLogger;
 
+/**
+ * Base Branch Bean class
+ * 
+ * @author mzhou
+ *
+ */
 public class BaseBranchBean extends BaseJSONBean {
 	/**
 	 * branch type code
 	 */
 	public static enum BranchCode {
-		Line, // transmission line
-		Xfr, // transformer
-		PsXfr, // phase-shifting transformer
-		ZBR    // zero impedance line
+			Line, 			// transmission line
+			Xfr, 			// transformer
+			PsXfr, 			// phase-shifting transformer
+			ZBR    			// zero impedance line
 	};
 
 	public String 
-			f_id, // branch from side bus id
-			t_id, // branch to side bus id
-			cir_id = "1"; // branch circuit id/number
+			f_id, 			// branch from side bus id
+			t_id, 			// branch to side bus id
+			cir_id = "1"; 	// branch circuit id/number
 
-	public long f_num, t_num;
+	public long 
+			f_num, 			// branch from side bus number 
+			t_num; 			// branch to side bus number
 	
-	public String f_name, t_name;
+	public String 
+			f_name, 		// branch from side bus name
+			t_name;			// branch to side bus number
 
-	public int status;	
+	public int status;		// branch in-service status
 
 	public ComplexBean 
-	    z,					// branch z
-	    shunt_y ;     		// branch total shunt y
+	    	z,					// branch z
+	    	shunt_y ;     		// branch total shunt y
 	
-	public double mvaRatingA, mvaRatingB, mvaRatingC;	
+	public double 
+			mvaRatingA, 		// branch mva rating 
+			mvaRatingB, 		// branch mva rating 
+			mvaRatingC;			// branch mva rating 
 
 	public BranchCode bra_code = BranchCode.Line; // branch type code
 
@@ -66,11 +101,11 @@ public class BaseBranchBean extends BaseJSONBean {
 		if (this.shunt_y.compareTo(bean.shunt_y) != 0) {
 			IpssLogger.ipssLogger.warning("BaseBranchBean.shunt_y is not equal"); eql = 1; }
 
-		if (!NumericUtil.equals(this.mvaRatingA, bean.mvaRatingA, CMP_ERR)) {
+		if (!NumericUtil.equals(this.mvaRatingA, bean.mvaRatingA, PU_ERR)) {
 			IpssLogger.ipssLogger.warning("BaseBranchBean.basemvaRatingA is not equal, " + this.mvaRatingA + ", " + bean.mvaRatingA); eql = 1; }
-		if (!NumericUtil.equals(this.mvaRatingB, bean.mvaRatingB, CMP_ERR)) {
+		if (!NumericUtil.equals(this.mvaRatingB, bean.mvaRatingB, PU_ERR)) {
 			IpssLogger.ipssLogger.warning("BaseBranchBean.basemvaRatingB is not equal, " + this.mvaRatingB + ", " + bean.mvaRatingB); eql = 1; }
-		if (!NumericUtil.equals(this.mvaRatingC, bean.mvaRatingC, CMP_ERR)) {
+		if (!NumericUtil.equals(this.mvaRatingC, bean.mvaRatingC, PU_ERR)) {
 			IpssLogger.ipssLogger.warning("BaseBranchBean.basemvaRatingC is not equal, " + this.mvaRatingC + ", " + bean.mvaRatingC); eql = 1; }
 		
 		if (this.bra_code != bean.bra_code) {
@@ -79,7 +114,7 @@ public class BaseBranchBean extends BaseJSONBean {
 		return eql;
 	}	
 	
-	public boolean validate(List<String> msgList) {
+	@Override public boolean validate(List<String> msgList) {
 		return true;
 	}
 }

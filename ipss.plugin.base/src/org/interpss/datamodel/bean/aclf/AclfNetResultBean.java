@@ -30,6 +30,12 @@ import org.interpss.datamodel.bean.datatype.MismatchResultBean;
 
 import com.interpss.common.util.IpssLogger;
 
+/**
+ * Bean class for storing AclfNetwork result info
+ * 
+ * @author mzhou
+ *
+ */
 public class AclfNetResultBean extends BaseAclfNetBean<AclfBusBean, AclfBranchResultBean> {
 	public boolean
 		lf_converge;				// AC loadflow convergence

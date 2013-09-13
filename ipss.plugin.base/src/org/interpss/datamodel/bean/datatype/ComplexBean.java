@@ -30,7 +30,12 @@ import org.interpss.numeric.util.NumericUtil;
 
 import com.interpss.common.util.IpssLogger;
 
-
+/**
+ * Bean class for store a complex number
+ * 
+ * @author mzhou
+ *
+ */
 public class ComplexBean  implements Comparable<ComplexBean> {
 	public double
 		re,				// real part
@@ -42,13 +47,19 @@ public class ComplexBean  implements Comparable<ComplexBean> {
 
 	public Complex toComplex() { return new Complex(this.re, this.im); }
 	
+	/**
+	 * compare this object with the bean object
+	 * 
+	 * @param bean the bean object to be compared with this object
+	 * @return 0 if the two objects are equal, 1 if not equal
+	 */
 	@Override public int compareTo(ComplexBean bean) {
 		int eql = 0;
 		
-		if (!NumericUtil.equals(this.re, bean.re, BaseJSONBean.CMP_ERR)) {
+		if (!NumericUtil.equals(this.re, bean.re, BaseJSONBean.PU_ERR)) {
 			IpssLogger.ipssLogger.warning("ComplexBean.re is not equal, " + this.re + ", " + bean.re); eql = 1; }
 		
-		if (!NumericUtil.equals(this.im, bean.im, BaseJSONBean.CMP_ERR)) {
+		if (!NumericUtil.equals(this.im, bean.im, BaseJSONBean.PU_ERR)) {
 			IpssLogger.ipssLogger.warning("ComplexBean.im is not equal, " + this.im + ", " + bean.im); eql = 1; }	
 		
 		return eql;

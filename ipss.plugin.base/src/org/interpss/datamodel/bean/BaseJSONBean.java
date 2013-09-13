@@ -37,13 +37,27 @@ import com.interpss.common.util.IpssLogger;
  *
  */
 public abstract class BaseJSONBean implements Comparable<BaseJSONBean> {
-	public static double CMP_ERR = 0.0001;
+	/**
+	 * default error tolerance for Bean object comparison for value in PU
+	 */
+	public static double PU_ERR = 0.0001;
+	
+	/**
+	 * error tolerance for actual value, for example Amps, comparison
+	 */
+	public static double ACT_ERR = 0.1;
 	
 	public String 	    
 		id = "Not Defined",      		// net, bus, branch id. only bus.id is mandatory
 		name,    		// net, bus, branch name, optional
 		desc;    		// net, bus, branch description, optional
 	
+	/**
+	 * compare this object with the bean object
+	 * 
+	 * @param bean the bean object to be compared with this object
+	 * @return 0 if the two objects are equal, 1 if not equal
+	 */
 	@Override public int compareTo(BaseJSONBean bean) {
 		if (this.id.equals(bean.id))
 			// some times bean.id is not defined
@@ -54,5 +68,11 @@ public abstract class BaseJSONBean implements Comparable<BaseJSONBean> {
 		}
 	}
 
+	/**
+	 * validate this object
+	 * 
+	 * @param msgList contains err messages during the validation.
+	 * @return true if passed the validation
+	 */
 	abstract public boolean validate(List<String> msgList); 
 }

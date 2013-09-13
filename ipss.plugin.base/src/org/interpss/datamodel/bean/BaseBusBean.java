@@ -1,3 +1,26 @@
+/*
+ * @(#)BaseBusBean.java   
+ *
+ * Copyright (C) 2008-2013 www.interpss.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU LESSER GENERAL PUBLIC LICENSE
+ * as published by the Free Software Foundation; either version 2.1
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * @Author Mike Zhou
+ * @Version 1.0
+ * @Date 01/10/2013
+ * 
+ *   Revision History
+ *   ================
+ *
+ */
 package org.interpss.datamodel.bean;
 
 import java.util.List;
@@ -7,24 +30,30 @@ import org.interpss.numeric.util.NumericUtil;
 
 import com.interpss.common.util.IpssLogger;
 
+/**
+ * Base Bus Bean class
+ * 
+ * @author mzhou
+ *
+ */
 public class BaseBusBean extends BaseJSONBean {
 		
 	public long 
-	    number;    
+	    number;    				// bus number
 	
-	public int status;
+	public int status;			// bus in-service status
 	
 	public double
-		base_v,				// bus base voltage
-		v_mag= 1.0,          // bus voltage in pu		
-		v_ang = 0.0,		// bus voltage angle
-	    vmax = 1.1,
-	    vmin = 0.9;
+		base_v,					// bus base voltage
+		v_mag= 1.0,          	// bus voltage in pu		
+		v_ang = 0.0,			// bus voltage angle
+	    vmax = 1.1,				// bus voltage upper limit
+	    vmin = 0.9;				// bus voltage lower limit
 		
 	public ComplexBean
-	     gen, 					// bus generation
+	    gen, 					// bus generation
 	    load, 					// bus load
-	    shunt;
+	    shunt;					// bus shunt Y
 	
 	public long 
 		area =1, 				// bus area number/id
@@ -40,15 +69,15 @@ public class BaseBusBean extends BaseJSONBean {
 		if (this.number != bean.number) {
 			IpssLogger.ipssLogger.warning("BaseBusBean.number is not equal, " + this.number + ", " + bean.number); eql = 1; }
 
-		if (!NumericUtil.equals(this.base_v, bean.base_v, CMP_ERR)) {
+		if (!NumericUtil.equals(this.base_v, bean.base_v, PU_ERR)) {
 			IpssLogger.ipssLogger.warning("BaseBusBean.base_v is not equal, " + this.base_v + ", " + bean.base_v); eql = 1; }
-		if (!NumericUtil.equals(this.v_mag, bean.v_mag, CMP_ERR)) {
+		if (!NumericUtil.equals(this.v_mag, bean.v_mag, PU_ERR)) {
 			IpssLogger.ipssLogger.warning("BaseBusBean.v_mag is not equal, " + this.v_mag + ", " + bean.v_mag); eql = 1;	}
-		if (!NumericUtil.equals(this.v_ang, bean.v_ang, CMP_ERR)) {
+		if (!NumericUtil.equals(this.v_ang, bean.v_ang, PU_ERR)) {
 			IpssLogger.ipssLogger.warning("BaseBusBean.v_ang is not equal, " + this.v_ang + ", " + bean.v_ang); eql = 1; }
-		if (!NumericUtil.equals(this.vmax, bean.vmax, CMP_ERR)) {
+		if (!NumericUtil.equals(this.vmax, bean.vmax, PU_ERR)) {
 			IpssLogger.ipssLogger.warning("BaseBusBean.vmax is not equal, " + this.vmax + ", " + bean.vmax); eql = 1; }
-		if (!NumericUtil.equals(this.vmin, bean.vmin, CMP_ERR)) {
+		if (!NumericUtil.equals(this.vmin, bean.vmin, PU_ERR)) {
 			IpssLogger.ipssLogger.warning("BaseBusBean.vmin is not equal, " + this.vmin + ", " + bean.vmin); eql = 1; }
 
 		if (this.gen.compareTo(bean.gen) != 0) {
@@ -66,7 +95,7 @@ public class BaseBusBean extends BaseJSONBean {
 		return eql;
 	}	
 
-	public boolean validate(List<String> msgList) { 
+	@Override public boolean validate(List<String> msgList) { 
 		return true;
 	}
 }

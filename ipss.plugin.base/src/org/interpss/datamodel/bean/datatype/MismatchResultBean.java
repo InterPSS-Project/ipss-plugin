@@ -26,7 +26,12 @@ package org.interpss.datamodel.bean.datatype;
 
 import com.interpss.common.util.IpssLogger;
 
-
+/**
+ * Bean for storing AC Loadflow mismatch info
+ * 
+ * @author mzhou
+ *
+ */
 public class MismatchResultBean implements Comparable<MismatchResultBean> {
 	public ComplexBean
 		err;				// real/reactive power mismatch
@@ -37,6 +42,12 @@ public class MismatchResultBean implements Comparable<MismatchResultBean> {
 
 	public MismatchResultBean() { }
 	
+	/**
+	 * compare this object with the bean object
+	 * 
+	 * @param bean the bean object to be compared with this object
+	 * @return 0 if the two objects are equal, 1 if not equal
+	 */
 	@Override public int compareTo(MismatchResultBean bean) {
 		int eql = 0;
 		
