@@ -46,7 +46,7 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
 import com.interpss.simu.util.sample.SampleCases;
 
-public class AclfBeanMapperTestCases extends CorePluginTestSetup {
+public class AclfBeanMapperTest extends CorePluginTestSetup {
 	//@Test
 	public void testCase() throws Exception {
   		AclfNetwork net = CoreObjectFactory.createAclfNetwork();

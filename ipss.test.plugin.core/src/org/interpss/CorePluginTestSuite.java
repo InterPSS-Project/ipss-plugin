@@ -36,7 +36,7 @@ import org.interpss.dstab.mach.RoundRotorMachineTest;
 import org.interpss.dstab.mach.SalientPoleMachineTest;
 import org.interpss.odm.acsc.Acsc5Bus_ODM_TestCase;
 import org.interpss.odm.psse.v30.GuideSample_TestCase;
-import org.interpss.plugin.beanModel.AclfBeanMapperTestCases;
+import org.interpss.plugin.beanModel.AclfBeanMapperTest;
 import org.interpss.spring.SimuAppCtxTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
@@ -104,7 +104,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	
 	GuideSample_TestCase.class,
 	
-	AclfBeanMapperTestCases.class,
+	AclfBeanMapperTest.class,
 })
 public class CorePluginTestSuite {
 }
