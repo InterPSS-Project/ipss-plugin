@@ -66,31 +66,33 @@ public class BaseBusBean extends BaseJSONBean {
 		
 		BaseBusBean bean = (BaseBusBean)b;
 
+		String str = "ID: " + this.id + " BaseBusBean.";
+		
 		if (this.number != bean.number) {
-			IpssLogger.ipssLogger.warning("BaseBusBean.number is not equal, " + this.number + ", " + bean.number); eql = 1; }
+			IpssLogger.ipssLogger.warning(str + "number is not equal, " + this.number + ", " + bean.number); eql = 1; }
 
 		if (!NumericUtil.equals(this.base_v, bean.base_v, PU_ERR)) {
-			IpssLogger.ipssLogger.warning("BaseBusBean.base_v is not equal, " + this.base_v + ", " + bean.base_v); eql = 1; }
+			IpssLogger.ipssLogger.warning(str + "base_v is not equal, " + this.base_v + ", " + bean.base_v); eql = 1; }
 		if (!NumericUtil.equals(this.v_mag, bean.v_mag, PU_ERR)) {
-			IpssLogger.ipssLogger.warning("BaseBusBean.v_mag is not equal, " + this.v_mag + ", " + bean.v_mag); eql = 1;	}
+			IpssLogger.ipssLogger.warning(str + "v_mag is not equal, " + this.v_mag + ", " + bean.v_mag); eql = 1;	}
 		if (!NumericUtil.equals(this.v_ang, bean.v_ang, PU_ERR)) {
-			IpssLogger.ipssLogger.warning("BaseBusBean.v_ang is not equal, " + this.v_ang + ", " + bean.v_ang); eql = 1; }
+			IpssLogger.ipssLogger.warning(str + "v_ang is not equal, " + this.v_ang + ", " + bean.v_ang); eql = 1; }
 		if (!NumericUtil.equals(this.vmax, bean.vmax, PU_ERR)) {
-			IpssLogger.ipssLogger.warning("BaseBusBean.vmax is not equal, " + this.vmax + ", " + bean.vmax); eql = 1; }
+			IpssLogger.ipssLogger.warning(str + "vmax is not equal, " + this.vmax + ", " + bean.vmax); eql = 1; }
 		if (!NumericUtil.equals(this.vmin, bean.vmin, PU_ERR)) {
-			IpssLogger.ipssLogger.warning("BaseBusBean.vmin is not equal, " + this.vmin + ", " + bean.vmin); eql = 1; }
+			IpssLogger.ipssLogger.warning(str + "vmin is not equal, " + this.vmin + ", " + bean.vmin); eql = 1; }
 
 		if (this.gen.compareTo(bean.gen) != 0) {
-			IpssLogger.ipssLogger.warning("BaseBusBean.gen is not equal"); eql = 1; }
+			IpssLogger.ipssLogger.warning(str + "gen is not equal"); eql = 1; }
 		if (this.load.compareTo(bean.load) != 0) {
-			IpssLogger.ipssLogger.warning("BaseBusBean.load is not equal"); eql = 1; }
+			IpssLogger.ipssLogger.warning(str + "load is not equal"); eql = 1; }
 		if (this.shunt.compareTo(bean.shunt) != 0) {
-			IpssLogger.ipssLogger.warning("BaseBusBean.shunt is not equal"); eql = 1; }
+			IpssLogger.ipssLogger.warning(str + "shunt is not equal"); eql = 1; }
 		
 		if (this.area != bean.area) {
-			IpssLogger.ipssLogger.warning("BaseBusBean.area is not equal, " + this.area + ", " + bean.area); eql = 1; }
+			IpssLogger.ipssLogger.warning(str + "area is not equal, " + this.area + ", " + bean.area); eql = 1; }
 		if (this.zone != bean.zone) {
-			IpssLogger.ipssLogger.warning("BaseBusBean.zone is not equal, " + this.zone + ", " + bean.zone); eql = 1; }
+			IpssLogger.ipssLogger.warning(str + "zone is not equal, " + this.zone + ", " + bean.zone); eql = 1; }
 		
 		return eql;
 	}	

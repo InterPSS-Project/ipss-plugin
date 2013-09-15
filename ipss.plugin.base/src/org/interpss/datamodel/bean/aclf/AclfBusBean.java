@@ -61,11 +61,13 @@ public class AclfBusBean  extends BaseBusBean {
 		int eql = super.compareTo(b);
 		
 		AclfBusBean bean = (AclfBusBean)b;
+		
+		String str = "ID: " + this.id + " AclfBusBean.";
 
 		if (this.gen_code != bean.gen_code) {
-			IpssLogger.ipssLogger.warning("AclfBusBean.gen_code is not equal, " + this.gen_code + ", " + bean.gen_code); eql = 1; }
+			IpssLogger.ipssLogger.warning(str + "gen_code is not equal, " + this.gen_code + ", " + bean.gen_code); eql = 1; }
 		if (this.load_code != bean.load_code) {
-			IpssLogger.ipssLogger.warning("AclfBusBean.load_code is not equal, " + this.load_code + ", " + bean.load_code); eql = 1; }
+			IpssLogger.ipssLogger.warning(str + "load_code is not equal, " + this.load_code + ", " + bean.load_code); eql = 1; }
 
 		return eql;
 	}	
