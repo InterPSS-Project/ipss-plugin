@@ -66,7 +66,7 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 		bean.vmax = format(bus.getVLimit().getMax()) == 0? bean.vmax : format(bus.getVLimit().getMax());
 		bean.vmin = format(bus.getVLimit().getMin()) == 0? bean.vmin : format(bus.getVLimit().getMin());
 
-		bean.gen_code = bus.isGenPQ() || !bus.isGen() ? AclfBusBean.GenCode.PQ :
+		bean.gen_code = bus.isGenPQ()? AclfBusBean.GenCode.PQ :
 			(bus.isGenPV() ? AclfBusBean.GenCode.PV : 
 				(bus.isSwing()? AclfBusBean.GenCode.Swing : 
 					AclfBusBean.GenCode.NonGen));
