@@ -43,10 +43,15 @@ public abstract class BaseJSONBean implements Comparable<BaseJSONBean> {
 	public static double PU_ERR = 0.0001;
 	
 	/**
-	 * error tolerance for actual value, for example Amps, comparison
+	 * error tolerance for amps value comparison
 	 */
-	public static double ACT_ERR = 0.1;
+	public static double CUR_ERR = 0.1;
 	
+	/**
+	 * error tolerance for angle in deg value comparison
+	 */
+	public static double ANG_ERR = 0.01;
+
 	public String 	    
 		id = "Not Defined",      		// net, bus, branch id. only bus.id is mandatory
 		name,    		// net, bus, branch name, optional
