@@ -62,7 +62,7 @@ public class AclfBranchResultBean extends AclfBranchBean {
 		if (this.loss.compareTo(bean.loss) != 0) {
 			IpssLogger.ipssLogger.warning(str + "loss is not equal"); eql = 1; }
 		
-		if (!NumericUtil.equals(this.cur, bean.cur, BaseJSONBean.ACT_ERR)) {  // in amps
+		if (!NumericUtil.equals(this.cur, bean.cur, BaseJSONBean.CUR_ERR)) {  // in amps
 			IpssLogger.ipssLogger.warning(str + "cur is not equal, " + this.cur + ", " + bean.cur); eql = 1; }
 
 		return eql;

@@ -75,7 +75,7 @@ public class BaseBusBean extends BaseJSONBean {
 			IpssLogger.ipssLogger.warning(str + "base_v is not equal, " + this.base_v + ", " + bean.base_v); eql = 1; }
 		if (!NumericUtil.equals(this.v_mag, bean.v_mag, PU_ERR)) {
 			IpssLogger.ipssLogger.warning(str + "v_mag is not equal, " + this.v_mag + ", " + bean.v_mag); eql = 1;	}
-		if (!NumericUtil.equals(this.v_ang, bean.v_ang, PU_ERR)) {
+		if (!NumericUtil.equals(this.v_ang, bean.v_ang, ANG_ERR)) {
 			IpssLogger.ipssLogger.warning(str + "v_ang is not equal, " + this.v_ang + ", " + bean.v_ang); eql = 1; }
 		if (!NumericUtil.equals(this.vmax, bean.vmax, PU_ERR)) {
 			IpssLogger.ipssLogger.warning(str + "vmax is not equal, " + this.vmax + ", " + bean.vmax); eql = 1; }
