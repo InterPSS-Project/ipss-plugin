@@ -52,7 +52,7 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 	 * @param bus
 	 * @param bean
 	 */
-	protected void mapBaseBus(AclfBus bus, AclfBusBean bean) {
+	public static void mapBaseBus(AclfBus bus, AclfBusBean bean) {
 		bean.number = bus.getNumber();
 		bean.id = bus.getId();
 		bean.name = bus.getName();
@@ -100,7 +100,7 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 	 * @param branch
 	 * @param bean
 	 */
-	protected void mapBaseBranch(AclfBranch branch, AclfBranchBean bean) {
+	public static void mapBaseBranch(AclfBranch branch, AclfBranchBean bean) {
 		bean.id = branch.getId();
 		bean.name = branch.getName();
 		bean.f_id = branch.getFromBus().getId();
@@ -141,16 +141,16 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 		bean.mvaRatingC = branch.getRatingMva3();			
 	}	
 	
-	protected Complex format(Complex x) {
+	protected static Complex format(Complex x) {
 		return new Complex(new Double(Number2String.toStr(x.getReal())).doubleValue(), 
 				           new Double(Number2String.toStr(x.getImaginary())).doubleValue());
 	}
 
-	protected double format(double x) {
+	protected static double format(double x) {
 		return new Double(Number2String.toStr(x)).doubleValue();
 	}
 
-	protected double format2(double x) {
+	protected static double format2(double x) {
 		return new Double(Number2String.toStr(x, "#0.0#")).doubleValue();
 	}	
 }
