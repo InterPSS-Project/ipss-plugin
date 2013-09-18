@@ -138,8 +138,8 @@ public class AclfBusDataHelper {
 			aclfBus.setLoadCode(AclfLoadCode.NON_LOAD);
 		}
 
-		if (xmlBusData.getShuntY() != null) {
-			YXmlType shuntY = xmlBusData.getShuntY();
+		if (xmlBusData.getShuntYData() != null && xmlBusData.getShuntYData().getEquivY().getY() != null) {
+			YXmlType shuntY = xmlBusData.getShuntYData().getEquivY().getY();
 //			byte unit = shuntY.getUnit() == YUnitType.MVAR? UnitType.mVar : UnitType.PU;
 			UnitType unit = ToYUnit.f(shuntY.getUnit());
 			Complex ypu = UnitHelper.yConversion(new Complex(shuntY.getRe(), shuntY.getIm()),

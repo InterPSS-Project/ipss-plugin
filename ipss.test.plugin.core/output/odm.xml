@@ -49,7 +49,11 @@
                 <loadData>
                     <equivLoad code="NoneLoad"/>
                 </loadData>
-                <shuntY unit="PU" re="0.01" im="0.01"/>
+                <shuntYData>
+                    <equivY status="true">
+                        <y unit="PU" re="0.01" im="0.01"/>
+                    </equivY>
+                </shuntYData>
             </aclfBus>
             <aclfBus id="Bus3" areaNumber="1" zoneNumber="6" number="3" offLine="false" name="3W_Out     ">
                 <ownerList id="1">
@@ -64,7 +68,11 @@
                 <loadData>
                     <equivLoad code="NoneLoad"/>
                 </loadData>
-                <shuntY unit="PU" re="0.01" im="0.01"/>
+                <shuntYData>
+                    <equivY status="true">
+                        <y unit="PU" re="0.01" im="0.01"/>
+                    </equivY>
+                </shuntYData>
             </aclfBus>
             <aclfBus id="Bus4" areaNumber="1" zoneNumber="2" number="4" offLine="false" name="To_End_Par ">
                 <ownerList id="1">
@@ -88,7 +96,11 @@
                         <constPLoad unit="MVA" re="400.0" im="50.0"/>
                     </equivLoad>
                 </loadData>
-                <shuntY unit="PU" re="0.01" im="0.01"/>
+                <shuntYData>
+                    <equivY status="true">
+                        <y unit="PU" re="0.01" im="0.01"/>
+                    </equivY>
+                </shuntYData>
             </aclfBus>
             <aclfBus id="Bus5" areaNumber="2" zoneNumber="2" number="5" offLine="false" name="Area_2_HV  ">
                 <ownerList id="2">
@@ -103,7 +115,11 @@
                 <loadData>
                     <equivLoad code="NoneLoad"/>
                 </loadData>
-                <shuntY unit="PU" re="0.02" im="0.02"/>
+                <shuntYData>
+                    <equivY status="true">
+                        <y unit="PU" re="0.02" im="0.02"/>
+                    </equivY>
+                </shuntYData>
             </aclfBus>
             <aclfBus id="Bus6" areaNumber="2" zoneNumber="2" number="6" offLine="false" name="Area_2_LV  ">
                 <ownerList id="2">
@@ -135,7 +151,11 @@
                 <loadData>
                     <equivLoad code="NoneLoad"/>
                 </loadData>
-                <shuntY unit="PU" re="0.02" im="0.02"/>
+                <shuntYData>
+                    <equivY status="true">
+                        <y unit="PU" re="0.02" im="0.02"/>
+                    </equivY>
+                </shuntYData>
             </aclfBus>
         </busList>
         <branchList>
