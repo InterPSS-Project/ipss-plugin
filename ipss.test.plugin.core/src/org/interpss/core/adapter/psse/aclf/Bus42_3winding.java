@@ -1,5 +1,5 @@
  /*
-  * @(#)NEIsoEDTestCases.java   
+  * @(#)CR_UserTestCases.java   
   *
   * Copyright (C) 2008 www.interpss.org
   *
@@ -22,7 +22,9 @@
   *
   */
 
-package org.interpss.core.adapter.psse;
+package org.interpss.core.adapter.psse.aclf;
+
+import static org.junit.Assert.assertTrue;
 
 import org.interpss.CorePluginObjFactory;
 import org.interpss.CorePluginTestSetup;
@@ -31,30 +33,36 @@ import org.junit.Test;
 
 import com.interpss.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
-public class NEIsoEDTestCases extends CorePluginTestSetup {
+public class Bus42_3winding extends CorePluginTestSetup {
 	@Test
-	public void testCase1() throws Exception {
-//		IpssFileAdapter adapter = CorePluginObjFactory.getCustomFileAdapter("psse");
-//		//SimuContext simuCtx = adapter.load("testData/psse/test_model_V29.raw", SpringAppContext.getIpssMsgHub());
-//		SimuContext simuCtx = adapter.load("testData/psse/test_model_V30.raw");
-//  		//System.out.println(simuCtx.getAclfNet().net2String());
-//
-//		AclfNetwork net = simuCtx.getAclfNet();
-		
+	public void testCaseNoDC() throws Exception {
 		AclfNetwork net = CorePluginObjFactory
-				.getFileAdapter(IpssFileAdapter.FileFormat.PSSE)
-				.load("testData/psse/test_model_V30.raw")
-				.getAclfNet();			
-		
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
-	  	algo.setNonDivergent(true);
-	  	algo.setLfMethod(AclfMethod.NR);
-	  	net.setBypassDataCheck(true);
+				.getFileAdapter(IpssFileAdapter.FileFormat.PSSE, IpssFileAdapter.Version.PSSE_30)
+				.load("testData/psse/v30/42bus_3winding_from_PSSE_V30_NoDC.raw")
+				.getAclfNet();	
+
+		//IpssLogger.getLogger().setLevel(Level.INFO);
+		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
+	  	
+  		assertTrue(net.isLfConverged());	
+	}
+
+	//@Test
+	public void testCase1() throws Exception {
+		AclfNetwork net = CorePluginObjFactory
+				.getFileAdapter(IpssFileAdapter.FileFormat.PSSE, IpssFileAdapter.Version.PSSE_30)
+				.load("testData/psse/v30/42bus_3winding_from_PSSE_V30.raw")
+				.getAclfNet();	
+
+		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	algo.loadflow();
+  		//System.out.println(net.net2String());
+	  	
+  		//assertTrue(net.isLfConverged());	
 	}
 }
 

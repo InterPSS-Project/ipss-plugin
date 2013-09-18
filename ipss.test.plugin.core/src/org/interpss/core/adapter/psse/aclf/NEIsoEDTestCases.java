@@ -1,5 +1,5 @@
  /*
-  * @(#)CR_UserTestCases.java   
+  * @(#)NEIsoEDTestCases.java   
   *
   * Copyright (C) 2008 www.interpss.org
   *
@@ -22,44 +22,39 @@
   *
   */
 
-package org.interpss.core.adapter.psse;
+package org.interpss.core.adapter.psse.aclf;
 
-import static org.junit.Assert.assertTrue;
-
-import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginObjFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
-import org.interpss.numeric.datatype.Unit.UnitType;
 import org.junit.Test;
 
 import com.interpss.CoreObjectFactory;
-import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.adpter.AclfSwingBus;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
-public class GuideSampleTestCases extends CorePluginTestSetup {
+public class NEIsoEDTestCases extends CorePluginTestSetup {
 	@Test
-	public void testCase() throws Exception {
+	public void testCase1() throws Exception {
+//		IpssFileAdapter adapter = CorePluginObjFactory.getCustomFileAdapter("psse");
+//		//SimuContext simuCtx = adapter.load("testData/psse/test_model_V29.raw", SpringAppContext.getIpssMsgHub());
+//		SimuContext simuCtx = adapter.load("testData/psse/test_model_V30.raw");
+//  		//System.out.println(simuCtx.getAclfNet().net2String());
+//
+//		AclfNetwork net = simuCtx.getAclfNet();
+		
 		AclfNetwork net = CorePluginObjFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.PSSE)
-				.load("testData/psse/PSSE_GuideSample.raw")
+				.load("testData/psse/test_model_V30.raw")
 				.getAclfNet();			
 		
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
-	  	algo.setLfMethod(AclfMethod.NR);
+	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setNonDivergent(true);
+	  	algo.setLfMethod(AclfMethod.NR);
+	  	net.setBypassDataCheck(true);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
-	  	
-  		AclfBus swingBus = net.getBus("Bus3011");
-  		AclfSwingBus swing = swingBus.toSwingBus();
-  		Complex p = swing.getGenResults(UnitType.mW);
-  		//System.out.println("------>" + p.getReal() + ", " + p.getImaginary());
-  		assertTrue(Math.abs(p.getReal()-258.657)<0.01);
-  		assertTrue(Math.abs(p.getImaginary()-104.040)<0.01);
 	}
 }
 

@@ -10,11 +10,14 @@ import org.interpss.core.adapter.internal.Bus11856Test;
 import org.interpss.core.adapter.internal.Bus1824Test;
 import org.interpss.core.adapter.internal.Bus6384Test;
 import org.interpss.core.adapter.internal.IEEE14Test;
-import org.interpss.core.adapter.psse.CR_UserTestCases;
-import org.interpss.core.adapter.psse.GuideSampleTestCases;
-import org.interpss.core.adapter.psse.Mod_SixBus_DclfPsXfr;
-import org.interpss.core.adapter.psse.PSSE_IEEE9Bus_Test;
-import org.interpss.core.adapter.psse.SixBus_DclfPsXfr;
+import org.interpss.core.adapter.psse.aclf.CR_UserTestCases;
+import org.interpss.core.adapter.psse.aclf.GuideSample_TestCase;
+import org.interpss.core.adapter.psse.aclf.Mod_SixBus_DclfPsXfr;
+import org.interpss.core.adapter.psse.aclf.PSSE_5Bus_TestCase;
+import org.interpss.core.adapter.psse.aclf.PSSE_IEEE9Bus_Test;
+import org.interpss.core.adapter.psse.aclf.SixBus_DclfPsXfr;
+import org.interpss.core.adapter.psse.acsc.Acsc5Bus_ODM_TestCase;
+import org.interpss.core.adapter.psse.acsc.IEEE9Bus_Acsc_test;
 import org.interpss.core.adapter.pwd.PWDIEEE14BusTestCase;
 import org.interpss.core.adapter.ucte.UCTEFormatAusPowerTest;
 import org.interpss.core.ca.IEEE14BusBreakerTest;
@@ -35,8 +38,6 @@ import org.interpss.dstab.mach.Eq1MachineCaseTest;
 import org.interpss.dstab.mach.MachineSaturationTest;
 import org.interpss.dstab.mach.RoundRotorMachineTest;
 import org.interpss.dstab.mach.SalientPoleMachineTest;
-import org.interpss.odm.acsc.Acsc5Bus_ODM_TestCase;
-import org.interpss.odm.psse.v30.GuideSample_TestCase;
 import org.interpss.plugin.beanModel.AclfBeanMapperTest;
 import org.interpss.spring.SimuAppCtxTest;
 import org.junit.runner.RunWith;
@@ -91,11 +92,15 @@ import org.junit.runners.Suite.SuiteClasses;
 	BPASampleTestCases.class,
 	UCTEFormatAusPowerTest.class,
 	CR_UserTestCases.class,
-	GuideSampleTestCases.class,
+	GuideSample_TestCase.class,
+	PSSE_5Bus_TestCase.class,
 	SixBus_DclfPsXfr.class,
 	Mod_SixBus_DclfPsXfr.class,
 	PWDIEEE14BusTestCase.class,
 	PSSE_IEEE9Bus_Test.class,
+	
+	Acsc5Bus_ODM_TestCase.class,
+	IEEE9Bus_Acsc_test.class,
 	
 	GESampleTestCases.class,
 	
