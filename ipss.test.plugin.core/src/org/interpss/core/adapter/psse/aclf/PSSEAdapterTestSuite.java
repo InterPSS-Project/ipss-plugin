@@ -1,4 +1,4 @@
-package org.interpss.core.adapter.psse;
+package org.interpss.core.adapter.psse.aclf;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
