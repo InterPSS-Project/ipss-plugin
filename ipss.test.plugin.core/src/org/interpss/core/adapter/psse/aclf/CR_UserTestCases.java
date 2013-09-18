@@ -22,47 +22,62 @@
   *
   */
 
-package org.interpss.core.adapter.psse;
+package org.interpss.core.adapter.psse.aclf;
 
 import static org.junit.Assert.assertTrue;
 
+import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginObjFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
+import org.interpss.numeric.datatype.Unit.UnitType;
 import org.junit.Test;
 
 import com.interpss.CoreObjectFactory;
+import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.adpter.AclfSwingBus;
+import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
-public class Bus42_3winding extends CorePluginTestSetup {
+public class CR_UserTestCases extends CorePluginTestSetup {
 	@Test
-	public void testCaseNoDC() throws Exception {
-		AclfNetwork net = CorePluginObjFactory
-				.getFileAdapter(IpssFileAdapter.FileFormat.PSSE, IpssFileAdapter.Version.PSSE_30)
-				.load("testData/psse/v30/42bus_3winding_from_PSSE_V30_NoDC.raw")
-				.getAclfNet();	
-
-		//IpssLogger.getLogger().setLevel(Level.INFO);
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
-	  	algo.loadflow();
-  		//System.out.println(net.net2String());
-	  	
-  		assertTrue(net.isLfConverged());	
-	}
-
-	//@Test
 	public void testCase1() throws Exception {
 		AclfNetwork net = CorePluginObjFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.PSSE, IpssFileAdapter.Version.PSSE_30)
-				.load("testData/psse/v30/42bus_3winding_from_PSSE_V30.raw")
+				.load("testData/psse/PSSE_5Bus_Test.raw")
 				.getAclfNet();	
-
+		
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	algo.setLfMethod(AclfMethod.PQ);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 	  	
-  		//assertTrue(net.isLfConverged());	
+  		AclfBus swingBus = net.getBus("Bus1");
+  		AclfSwingBus swing = swingBus.toSwingBus();
+  		Complex p = swing.getGenResults(UnitType.mW);
+  		assertTrue(Math.abs(p.getReal()-22.547)<0.01);
+  		assertTrue(Math.abs(p.getImaginary()-15.852)<0.01);	  	
+	}
+
+	@Test
+	public void testCase2() throws Exception {
+		AclfNetwork net = CorePluginObjFactory
+				.getFileAdapter(IpssFileAdapter.FileFormat.PSSE)
+				.load("testData/psse/MXV-1120MW_FNC475_FEC196_FAC212_InterPSS_3d.raw")
+				.getAclfNet();			
+
+		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	algo.setLfMethod(AclfMethod.PQ);
+	  	algo.loadflow();
+  		//System.out.println(net.net2String());
+
+	  	AclfBus swingBus = net.getBus("Bus1");
+	  	AclfSwingBus swing = swingBus.toSwingBus();
+  		Complex p = swing.getGenResults(UnitType.mW);
+  		//System.out.println(p.getReal() + "  " + p.getImaginary());
+  		assertTrue(Math.abs(p.getReal()-1841.677)<0.01);
+  		assertTrue(Math.abs(p.getImaginary()-11.733)<0.01);	  	
 	}
 }
 

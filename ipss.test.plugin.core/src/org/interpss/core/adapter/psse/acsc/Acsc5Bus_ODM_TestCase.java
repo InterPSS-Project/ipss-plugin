@@ -22,7 +22,7 @@
   *
   */
 
-package org.interpss.odm.acsc;
+package org.interpss.core.adapter.psse.acsc;
 
 import static org.junit.Assert.assertTrue;
 

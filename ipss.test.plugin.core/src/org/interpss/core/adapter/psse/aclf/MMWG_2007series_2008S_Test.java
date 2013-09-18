@@ -22,7 +22,7 @@
   *
   */
 
-package org.interpss.core.adapter.psse;
+package org.interpss.core.adapter.psse.aclf;
 
 import org.interpss.CorePluginObjFactory;
 import org.interpss.CorePluginTestSetup;

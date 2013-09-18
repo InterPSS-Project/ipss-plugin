@@ -22,7 +22,7 @@
   *
   */
 
-package org.interpss.odm.psse.v30;
+package org.interpss.core.adapter.psse.aclf;
 
 import static org.junit.Assert.assertTrue;
 
