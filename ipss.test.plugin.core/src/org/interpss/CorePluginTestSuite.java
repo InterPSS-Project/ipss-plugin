@@ -13,6 +13,7 @@ import org.interpss.core.adapter.internal.IEEE14Test;
 import org.interpss.core.adapter.psse.CR_UserTestCases;
 import org.interpss.core.adapter.psse.GuideSampleTestCases;
 import org.interpss.core.adapter.psse.Mod_SixBus_DclfPsXfr;
+import org.interpss.core.adapter.psse.PSSE_IEEE9Bus_Test;
 import org.interpss.core.adapter.psse.SixBus_DclfPsXfr;
 import org.interpss.core.adapter.pwd.PWDIEEE14BusTestCase;
 import org.interpss.core.adapter.ucte.UCTEFormatAusPowerTest;
@@ -94,6 +95,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	SixBus_DclfPsXfr.class,
 	Mod_SixBus_DclfPsXfr.class,
 	PWDIEEE14BusTestCase.class,
+	PSSE_IEEE9Bus_Test.class,
 	
 	GESampleTestCases.class,
 	
