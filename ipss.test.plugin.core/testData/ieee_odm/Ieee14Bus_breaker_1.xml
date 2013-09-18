@@ -163,7 +163,11 @@
                         <constPLoad unit="MVA" im="16.6" re="29.5"/>
                     </equivLoad>
                 </loadData>
-                <shuntY unit="PU" im="0.19" re="0.0"/>
+                <shuntYData>
+                	<equivY satus="true">
+                	   <y unit="PU" im="0.19" re="0.0"/>
+                	</equivY>
+                </shuntYData>
             </aclfBus>
             <aclfBus id="Bus10" offLine="false" number="10" zoneNumber="1" areaNumber="1" name="Bus 10    LV">
                 <baseVoltage unit="KV" value="35.0"/>

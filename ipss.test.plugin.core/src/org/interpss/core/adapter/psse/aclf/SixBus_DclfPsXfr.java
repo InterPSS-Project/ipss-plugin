@@ -58,7 +58,7 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v30/SixBus_2WPsXfr.raw")
 					.setFormat(IpssAdapter.FileFormat.PSSE)
 					.setPsseVersion(PsseVersion.PSSE_30)
-					.load(true, "output/odm.xml")
+					.load()
 					.getAclfNet();
   		//System.out.println(net.net2String());
 
