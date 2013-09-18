@@ -24,80 +24,55 @@
 
 package org.interpss.core.adapter.psse.aclf;
 
+import static com.interpss.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.adapter.IODMAdapter;
-import org.ieee.odm.adapter.psse.PSSEAdapter;
-import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.datamodel.bean.aclf.AclfNetBean;
 import org.interpss.mapper.bean.aclf.AclfNet2BeanMapper;
-import org.interpss.mapper.odm.ODMAclfParserMapper;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.junit.Test;
 
 import com.interpss.CoreObjectFactory;
-import com.interpss.SimuObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
+import com.interpss.pssl.plugin.IpssAdapter;
+import com.interpss.pssl.plugin.IpssAdapter.PsseVersion;
 
 public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup { 
 	@Test
 	public void compare() throws Exception {
-		IODMAdapter adapter = new PSSEAdapter(PSSEAdapter.PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile("testdata/psse/v30/IEEE9Bus/ieee9.raw"));
-		
-		AclfModelParser parser = (AclfModelParser)adapter.getModel();
-		//parser.stdout();
-		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.ACLF_NETWORK);
-		if (!new ODMAclfParserMapper()
-					.map2Model(parser, simuCtx)) {
-  	  		System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-  	  		return;
-		}		
-		AclfNetwork net = simuCtx.getAclfNet();
+		// load the test data V30
+		AclfNetwork net = IpssAdapter.importAclfNet("testdata/psse/v30/IEEE9Bus/ieee9.raw")
+				.setFormat(PSSE)
+				.setPsseVersion(PsseVersion.PSSE_30)
+				.load()
+				.getAclfNet();
 		AclfNetBean netBean = new AclfNet2BeanMapper().map2Model(net);
 		
-		IODMAdapter adapter1 = new PSSEAdapter(PSSEAdapter.PsseVersion.PSSE_32);
-		assertTrue(adapter1.parseInputFile("testdata/psse/v32/ieee9_v32.raw"));
-		
-		AclfModelParser parser1 = (AclfModelParser)adapter1.getModel();
-		//parser.stdout();
-		
-		SimuContext simuCtx1 = SimuObjectFactory.createSimuNetwork(SimuCtxType.ACLF_NETWORK);
-		if (!new ODMAclfParserMapper()
-					.map2Model(parser1, simuCtx1)) {
-  	  		System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-  	  		return;
-		}		
-		AclfNetwork net1 = simuCtx1.getAclfNet();
+		// load the test data V32
+		AclfNetwork net1 = IpssAdapter.importAclfNet("testdata/psse/v32/ieee9_v32.raw")
+				.setFormat(PSSE)
+				.setPsseVersion(PsseVersion.PSSE_32)
+				.load()
+				.getAclfNet();
 		AclfNetBean netBean1 = new AclfNet2BeanMapper().map2Model(net1);
 		
+		// compare the data model
 		netBean.compareTo(netBean1);
 	}
 	
 	@Test
 	public void testV30() throws Exception {
-		IODMAdapter adapter = new PSSEAdapter(PSSEAdapter.PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile("testdata/psse/v30/IEEE9Bus/ieee9.raw"));
-		
-		AclfModelParser parser = (AclfModelParser)adapter.getModel();
-		//parser.stdout();
-		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.ACLF_NETWORK);
-		if (!new ODMAclfParserMapper()
-					.map2Model(parser, simuCtx)) {
-  	  		System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-  	  		return;
-		}		
-		AclfNetwork net = simuCtx.getAclfNet();
+		AclfNetwork net = IpssAdapter.importAclfNet("testdata/psse/v30/IEEE9Bus/ieee9.raw")
+				.setFormat(PSSE)
+				.setPsseVersion(PsseVersion.PSSE_30)
+				.load()
+				.getAclfNet();
 
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethod.PQ);
@@ -113,19 +88,11 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testV32() throws Exception {
-		IODMAdapter adapter = new PSSEAdapter(PSSEAdapter.PsseVersion.PSSE_32);
-		assertTrue(adapter.parseInputFile("testdata/psse/v32/ieee9_v32.raw"));
-		
-		AclfModelParser parser = (AclfModelParser)adapter.getModel();
-		//parser.stdout();
-		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.ACLF_NETWORK);
-		if (!new ODMAclfParserMapper()
-					.map2Model(parser, simuCtx)) {
-  	  		System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-  	  		return;
-		}		
-		AclfNetwork net = simuCtx.getAclfNet();
+		AclfNetwork net = IpssAdapter.importAclfNet("testdata/psse/v32/ieee9_v32.raw")
+				.setFormat(PSSE)
+				.setPsseVersion(PsseVersion.PSSE_32)
+				.load()
+				.getAclfNet();
 
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethod.PQ);
