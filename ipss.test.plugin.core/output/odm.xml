@@ -50,7 +50,7 @@
                     <equivLoad code="NoneLoad"/>
                 </loadData>
                 <shuntYData>
-                    <equivY status="true">
+                    <equivY offLine="false">
                         <y unit="PU" re="0.01" im="0.01"/>
                     </equivY>
                 </shuntYData>
@@ -69,7 +69,7 @@
                     <equivLoad code="NoneLoad"/>
                 </loadData>
                 <shuntYData>
-                    <equivY status="true">
+                    <equivY offLine="false">
                         <y unit="PU" re="0.01" im="0.01"/>
                     </equivY>
                 </shuntYData>
@@ -97,7 +97,7 @@
                     </equivLoad>
                 </loadData>
                 <shuntYData>
-                    <equivY status="true">
+                    <equivY offLine="false">
                         <y unit="PU" re="0.01" im="0.01"/>
                     </equivY>
                 </shuntYData>
@@ -116,7 +116,7 @@
                     <equivLoad code="NoneLoad"/>
                 </loadData>
                 <shuntYData>
-                    <equivY status="true">
+                    <equivY offLine="false">
                         <y unit="PU" re="0.02" im="0.02"/>
                     </equivY>
                 </shuntYData>
@@ -152,7 +152,7 @@
                     <equivLoad code="NoneLoad"/>
                 </loadData>
                 <shuntYData>
-                    <equivY status="true">
+                    <equivY offLine="false">
                         <y unit="PU" re="0.02" im="0.02"/>
                     </equivY>
                 </shuntYData>
