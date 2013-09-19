@@ -60,7 +60,7 @@ public class BaseBranchBean extends BaseJSONBean {
 			f_name, 		// branch from side bus name
 			t_name;			// branch to side bus number
 
-	public int status;		// branch in-service status
+	public int status;		// branch in-service status, 1 in service; 0 out of service
 
 	public ComplexBean 
 	    	z,					// branch z
