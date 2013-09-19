@@ -53,9 +53,10 @@ public abstract class BaseJSONBean implements Comparable<BaseJSONBean> {
 	public static double ANG_ERR = 0.01;
 
 	public String 	    
-		id = "Not Defined",      		// net, bus, branch id. only bus.id is mandatory
-		name,    		// net, bus, branch name, optional
-		desc;    		// net, bus, branch description, optional
+		id = "Not Defined", 	// net, bus, branch id. only bus.id is mandatory
+		name,    				// net, bus, branch name, optional
+		desc,    				// net, bus, branch description, optional
+		info;                   // extra info
 	
 	/**
 	 * compare this object with the bean object

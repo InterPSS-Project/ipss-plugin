@@ -31,6 +31,7 @@ import org.interpss.datamodel.bean.BaseJSONBean;
 import org.interpss.datamodel.bean.BaseNetBean;
 
 import com.interpss.common.util.IpssLogger;
+import com.interpss.common.util.NetUtilFunc;
 
 /**
  * Base Bean class for storing AclfNetwork object info
@@ -70,6 +71,33 @@ public class BaseAclfNetBean<TBus extends AclfBusBean, TBra extends AclfBranchBe
 		}
 		IpssLogger.ipssLogger.warning("Bus " + id + " cannot be found");
 		return null;
+	}
+	
+	public AclfBusBean createAclfBusBean(String id) {
+		AclfBusBean bus = new AclfBusBean();
+		bus.id = id;
+		this.bus_list.add((TBus)bus);
+		return bus;
+	}
+	
+	public AclfBranchBean createAclfBranchBean(String fromId, String toId, String cirId) {
+		AclfBranchBean bra = new AclfBranchBean();
+		bra.f_id = fromId;
+		bra.t_id = toId;
+		bra.cir_id = cirId;
+		bra.id = NetUtilFunc.ToBranchId.f(fromId, toId, cirId);
+		this.branch_list.add((TBra)bra);
+		return bra;
+	}
+	
+	public AclfBranchResultBean createAclfBranchResultBean(String fromId, String toId, String cirId) {
+		AclfBranchResultBean bra = new AclfBranchResultBean();
+		bra.f_id = fromId;
+		bra.t_id = toId;
+		bra.cir_id = cirId;
+		bra.id = NetUtilFunc.ToBranchId.f(fromId, toId, cirId);
+		this.branch_list.add((TBra)bra);
+		return bra;
 	}
 	
 	public TBra getBranch(String id) {

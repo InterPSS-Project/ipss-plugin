@@ -46,7 +46,7 @@ public class BaseBusBean extends BaseJSONBean {
 	public double
 		base_v,					// bus base voltage
 		v_mag= 1.0,          	// bus voltage in pu		
-		v_ang = 0.0,			// bus voltage angle
+		v_ang = 0.0,			// bus voltage angle in deg
 	    vmax = 1.1,				// bus voltage upper limit
 	    vmin = 0.9;				// bus voltage lower limit
 		
