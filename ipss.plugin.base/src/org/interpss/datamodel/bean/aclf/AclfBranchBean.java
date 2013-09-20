@@ -40,8 +40,8 @@ import com.interpss.common.util.IpssLogger;
 public class AclfBranchBean extends BaseBranchBean {
 	
 	public BranchValueBean 
-			ratio = new BranchValueBean(1.0,1.0),				// xfr branch turn ratio
-			ang = new BranchValueBean(0.0,0.0);				// PsXfr shifting angle
+			ratio = new BranchValueBean(1.0,1.0),			// xfr branch turn ratio
+			ang = new BranchValueBean(0.0,0.0);				// PsXfr shifting angle, in rad
 	
 	
 	public AclfBranchBean() {}
