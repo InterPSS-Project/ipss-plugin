@@ -44,7 +44,8 @@ public class BaseBranchBean extends BaseJSONBean {
 			Line, 			// transmission line
 			Xfr, 			// transformer
 			PsXfr, 			// phase-shifting transformer
-			ZBR    			// zero impedance line
+			ZBR,   			// zero impedance line
+			Breaker         // breaker
 	};
 
 	public String 
@@ -60,7 +61,7 @@ public class BaseBranchBean extends BaseJSONBean {
 			f_name, 		// branch from side bus name
 			t_name;			// branch to side bus number
 
-	public int status;		// branch in-service status, 1 in service; 0 out of service
+	public int status = 1;		// branch in-service status, 1 in service; 0 out of service
 
 	public ComplexBean 
 	    	z,					// branch z
