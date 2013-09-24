@@ -69,7 +69,7 @@ public class BaseAclfNetBean<TBus extends AclfBusBean, TBra extends AclfBranchBe
 			if (bus.id.equals(id))
 				return bus;
 		}
-		IpssLogger.ipssLogger.warning("Bus " + id + " cannot be found");
+		logCompareMsg("Bus " + id + " cannot be found");
 		return null;
 	}
 	
@@ -105,7 +105,7 @@ public class BaseAclfNetBean<TBus extends AclfBusBean, TBra extends AclfBranchBe
 			if (bra.id.equals(id))
 				return bra;
 		}
-		IpssLogger.ipssLogger.warning("Branch " + id + " cannot be found");
+		logCompareMsg("Branch " + id + " cannot be found");
 		return null;
 	}
 	

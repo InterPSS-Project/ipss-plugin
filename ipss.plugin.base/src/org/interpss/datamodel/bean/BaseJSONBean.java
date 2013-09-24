@@ -69,7 +69,7 @@ public abstract class BaseJSONBean implements Comparable<BaseJSONBean> {
 			// some times bean.id is not defined
 			return 0;
 		else {
-			IpssLogger.ipssLogger.warning("BaseJSONBean.id is not equal");
+			logCompareMsg("BaseJSONBean.id is not equal");
 			return 1;
 		}
 	}
@@ -81,4 +81,13 @@ public abstract class BaseJSONBean implements Comparable<BaseJSONBean> {
 	 * @return true if passed the validation
 	 */
 	abstract public boolean validate(List<String> msgList); 
+	
+	/**
+	 * log warning msg during the comparison process
+	 * 
+	 * @param msg
+	 */
+	public void logCompareMsg(String msg) {
+		IpssLogger.ipssLogger.warning(msg);
+	}
 }

@@ -58,18 +58,18 @@ public class AclfNetResultBean extends BaseAclfNetBean<AclfBusBean, AclfBranchRe
 		String str = "ID: " + this.id + " AclfNetResultBean.";
 
 		if (this.lf_converge != bean.lf_converge) {
-			IpssLogger.ipssLogger.warning(str + "lf_converge is not equal, " + this.lf_converge + ", " + bean.lf_converge); eql = 1; }
+			logCompareMsg(str + "lf_converge is not equal, " + this.lf_converge + ", " + bean.lf_converge); eql = 1; }
 		
 		if (this.gen.compareTo(bean.gen) != 0) {
-			IpssLogger.ipssLogger.warning(str + "gen is not equal");	eql = 1; }		
+			logCompareMsg(str + "gen is not equal");	eql = 1; }		
 		if (this.load.compareTo(bean.load) != 0) {
-			IpssLogger.ipssLogger.warning(str + "load is not equal");	eql = 1; }	
+			logCompareMsg(str + "load is not equal");	eql = 1; }	
 		if (this.loss.compareTo(bean.loss) != 0) {
-			IpssLogger.ipssLogger.warning(str + "loss is not equal");	eql = 1; }	
+			logCompareMsg(str + "loss is not equal");	eql = 1; }	
 		
 		// mismatch is random
 		//if (this.max_mis.compareTo(bean.max_mis) != 0) {
-		//	IpssLogger.ipssLogger.warning("AclfNetResultBean.max_mis is not equal");	eql = 1; }			
+		//	logCompareMsg("AclfNetResultBean.max_mis is not equal");	eql = 1; }			
 		return eql;
 	}	
 }
