@@ -54,10 +54,10 @@ public class AclfBranchBean extends BaseBranchBean {
 		String str = "ID: " + this.id + " AclfBranchBean.";
 		
 		if (this.ratio.compareTo(bean.ratio) != 0) {
-			IpssLogger.ipssLogger.warning(str + "ratio is not equal");	eql = 1; }
+			logCompareMsg(str + "ratio is not equal");	eql = 1; }
 
 		if (this.ang.compareTo(bean.ang) != 0) {
-			IpssLogger.ipssLogger.warning(str + "ang is not equal");	eql = 1; }
+			logCompareMsg(str + "ang is not equal");	eql = 1; }
 
 		return eql;
 	}	

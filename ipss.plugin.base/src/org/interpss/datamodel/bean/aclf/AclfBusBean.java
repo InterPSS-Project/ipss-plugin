@@ -65,9 +65,9 @@ public class AclfBusBean  extends BaseBusBean {
 		String str = "ID: " + this.id + " AclfBusBean.";
 
 		if (this.gen_code != bean.gen_code) {
-			IpssLogger.ipssLogger.warning(str + "gen_code is not equal, " + this.gen_code + ", " + bean.gen_code); eql = 1; }
+			logCompareMsg(str + "gen_code is not equal, " + this.gen_code + ", " + bean.gen_code); eql = 1; }
 		if (this.load_code != bean.load_code) {
-			IpssLogger.ipssLogger.warning(str + "load_code is not equal, " + this.load_code + ", " + bean.load_code); eql = 1; }
+			logCompareMsg(str + "load_code is not equal, " + this.load_code + ", " + bean.load_code); eql = 1; }
 
 		return eql;
 	}	
