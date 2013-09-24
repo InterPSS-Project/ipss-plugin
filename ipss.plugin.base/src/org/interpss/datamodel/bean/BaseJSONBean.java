@@ -24,6 +24,7 @@
 
 package org.interpss.datamodel.bean;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.interpss.common.util.IpssLogger;
@@ -37,6 +38,8 @@ import com.interpss.common.util.IpssLogger;
  *
  */
 public abstract class BaseJSONBean implements Comparable<BaseJSONBean> {
+	public static enum CompareLog { Console, MsgList };
+	
 	/**
 	 * default error tolerance for Bean object comparison for value in PU
 	 */
@@ -57,6 +60,28 @@ public abstract class BaseJSONBean implements Comparable<BaseJSONBean> {
 		name,    				// net, bus, branch name, optional
 		desc,    				// net, bus, branch description, optional
 		info;                   // extra info
+
+	private static List<String> msgList = new ArrayList<>();
+	private static CompareLog compareLog = CompareLog.Console;
+	
+	/**
+	 * set compare warning msg log method
+	 * 
+	 * @param log
+	 */
+	public void setCompareLog(CompareLog log) {
+		compareLog = log;
+		msgList.clear();
+	}
+
+	/**
+	 * get the Msg List
+	 * 
+	 * @return
+	 */
+	public List<String> getMsgList() {
+		return msgList;
+	}
 	
 	/**
 	 * compare this object with the bean object
@@ -88,6 +113,9 @@ public abstract class BaseJSONBean implements Comparable<BaseJSONBean> {
 	 * @param msg
 	 */
 	public void logCompareMsg(String msg) {
-		IpssLogger.ipssLogger.warning(msg);
+		if (compareLog == CompareLog.Console)
+			IpssLogger.ipssLogger.warning(msg);
+		else
+			msgList.add(msg);
 	}
 }
