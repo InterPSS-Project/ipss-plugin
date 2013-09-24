@@ -56,14 +56,14 @@ public class AclfBranchResultBean extends AclfBranchBean {
 		String str = "ID: " + this.id + " AclfBranchResultBean.";
 
 		if (this.flow_f2t.compareTo(bean.flow_f2t) != 0) {
-			IpssLogger.ipssLogger.warning(str + "flow_f2t is not equal"); eql = 1; }
+			logCompareMsg(str + "flow_f2t is not equal"); eql = 1; }
 		if (this.flow_t2f.compareTo(bean.flow_t2f) != 0) {
-			IpssLogger.ipssLogger.warning(str + "flow_t2f is not equal"); eql = 1; }
+			logCompareMsg(str + "flow_t2f is not equal"); eql = 1; }
 		if (this.loss.compareTo(bean.loss) != 0) {
-			IpssLogger.ipssLogger.warning(str + "loss is not equal"); eql = 1; }
+			logCompareMsg(str + "loss is not equal"); eql = 1; }
 		
 		if (!NumericUtil.equals(this.cur, bean.cur, BaseJSONBean.CUR_ERR)) {  // in amps
-			IpssLogger.ipssLogger.warning(str + "cur is not equal, " + this.cur + ", " + bean.cur); eql = 1; }
+			logCompareMsg(str + "cur is not equal, " + this.cur + ", " + bean.cur); eql = 1; }
 
 		return eql;
 	}	
