@@ -27,6 +27,7 @@ package org.interpss.datamodel.bean;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.gson.Gson;
 import com.interpss.common.util.IpssLogger;
 
 /**
@@ -117,5 +118,9 @@ public abstract class BaseJSONBean implements Comparable<BaseJSONBean> {
 			IpssLogger.ipssLogger.warning(msg);
 		else
 			msgList.add(msg);
+	}
+	
+	public String toString() {
+		return new Gson().toJson(this);
 	}
 }
