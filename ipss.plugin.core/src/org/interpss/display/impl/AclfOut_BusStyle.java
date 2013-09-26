@@ -149,8 +149,8 @@ public class AclfOut_BusStyle {
 
 		int cnt = 0;
 		for (Branch br : bus.getBranchList()) {
-			AclfBranch bra = (AclfBranch) br;
-			if (bra.isActive()) {
+			if (br.isActive() && br instanceof AclfBranch) {
+				AclfBranch bra = (AclfBranch) br;
 
 //				final AclfBus busj = bus.equals(bra.getFromAclfBus())?
 //					bra.getToAclfBus() : bra.getFromAclfBus();
