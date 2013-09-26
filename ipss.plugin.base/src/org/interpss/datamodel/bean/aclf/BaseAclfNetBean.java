@@ -68,7 +68,7 @@ public class BaseAclfNetBean<TBus extends AclfBusBean, TBra extends AclfBranchBe
 			if (bus.id.equals(id))
 				return bus;
 		}
-		logCompareMsg("Bus " + id + " cannot be found");
+		//logCompareMsg("Bus " + id + " cannot be found");
 		return null;
 	}
 	
@@ -104,7 +104,7 @@ public class BaseAclfNetBean<TBus extends AclfBusBean, TBra extends AclfBranchBe
 			if (bra.id.equals(id))
 				return bra;
 		}
-		logCompareMsg("Branch " + id + " cannot be found");
+		//logCompareMsg("Branch " + id + " cannot be found");
 		return null;
 	}
 	
@@ -113,7 +113,7 @@ public class BaseAclfNetBean<TBus extends AclfBusBean, TBra extends AclfBranchBe
 			if (bra.f_id.equals(fId) && bra.t_id.equals(tId) && bra.cir_id.equals(cirId))
 				return bra;
 		}
-		logCompareMsg("Branch " + fId + "->" + tId + "(" + cirId + ") cannot be found");
+		//logCompareMsg("Branch " + fId + "->" + tId + "(" + cirId + ") cannot be found");
 		return null;
 	}
 
