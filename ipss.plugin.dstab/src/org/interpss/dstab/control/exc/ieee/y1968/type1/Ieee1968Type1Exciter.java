@@ -26,6 +26,7 @@ package org.interpss.dstab.control.exc.ieee.y1968.type1;
 import java.lang.reflect.Field;
 
 import org.interpss.dstab.control.cml.block.DelayControlBlock;
+import org.interpss.dstab.control.cml.block.IntegrationControlBlock;
 import org.interpss.dstab.control.cml.block.WashoutControlBlock;
 import org.interpss.dstab.control.cml.func.SeFunction;
 
@@ -36,6 +37,7 @@ import com.interpss.dstab.controller.annotate.AnControllerField;
 import com.interpss.dstab.controller.annotate.AnFunctionField;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
+import com.sun.org.apache.xml.internal.resolver.helpers.Debug;
 
 /**
  * 
@@ -44,54 +46,63 @@ import com.interpss.dstab.mach.Machine;
  */
 @AnController(
    input="mach.vt",
-   output="this.delayBlock.y",
-   refPoint="this.kaDelayBlock.u0 - pss.vs + this.krDelayBlock.y + this.washoutBlock.y",
-   display= {} )
+   output="this.teDelayBlock.y",
+   refPoint="this.kaDelayBlock.u0 - pss.vs + mach.vt + this.washoutBlock.y",
+   display= {}
+   //debug = true
+   )
 public class Ieee1968Type1Exciter extends AnnotateExciter {
-	   // fefine a CML delay block, krDelayBlock----1/(1+sTr)
+	   public double ke = 1.0, te=1.0;
+
+	   // define a CML delay block, krDelayBlock----1/(1+sTr)
        public double kr = 1.0/*constant*/,tr = 0.04;
        @AnControllerField(
             type= CMLFieldEnum.ControlBlock,
             input="mach.vt",
             parameter={"type.NoLimit", "this.kr", "this.tr"},
-            y0="0.0",
-            initOrderNumber=-1 )
+            y0="mach.vt",//debug = true,
+            initOrderNumber=-1 
+            )
        DelayControlBlock krDelayBlock;
        
-	   // fefine a CML delay block
+	   // define a CML delay block
 	   public double ka = 50.0, ta = 0.05, vrmax = 10.0, vrmin = 0.0;
 	   @AnControllerField(
 	      type= CMLFieldEnum.ControlBlock,
 	      input="this.refPoint + pss.vs - this.washoutBlock.y - this.krDelayBlock.y",
 	      parameter={"type.NonWindup", "this.ka", "this.ta", "this.vrmax", "this.vrmin"},
-	      y0="this.delayBlock.u0 + this.seFunc.y" // ,debug=true
+	      y0="this.teDelayBlock.u0 + this.seFunc.y*this.teDelayBlock.y"  
+	      //initOrderNumber=2 //,debug=true
 	   )
 	   DelayControlBlock kaDelayBlock;
-
-	   // fefine a CML delay block
-	   public double ke1 = 1.0 /* ke1 = 1/Ke  */, te_ke = 0.1 /* te_ke = Te/Ke */;
+       
+	   
+	   public double  ke1 = 1/ke  , te_ke = te/ke;
 	   @AnControllerField(
 	      type= CMLFieldEnum.ControlBlock,
-	      input="this.kaDelayBlock.y - this.seFunc.y",
+	      input="this.kaDelayBlock.y - this.seFunc.y*this.teDelayBlock.y",
 	      parameter={"type.NoLimit", "this.ke1", "this.te_ke"},
-	      y0="mach.efd"  // ,debug=true
-	   )
-	   DelayControlBlock delayBlock;
+	      y0="mach.efd"	//debug =true,
+	      //initOrderNumber=1 
+	      )
+	   DelayControlBlock teDelayBlock;
+	   
+		
 
-	   // fefine a CML Se block
+	   // define a CML Se block
 	   public double e1 = 3.1, seE1 = 0.33, e2 = 2.3, seE2 = 0.1;
 	   @AnFunctionField(
-	      input= {"this.delayBlock.y"},
+	      input= {"mach.efd"},
 	      parameter={"this.e1", "this.seE1", "this.e2", "this.seE2"}	)
 	   SeFunction seFunc;
 
-	   // fefine a CML washout block
+	   // define a CML washout block
 	   public double kf = 1.0, tf = 0.05, k = kf/tf;
 	   @AnControllerField(
 	      type= CMLFieldEnum.ControlBlock,
-	      input="this.delayBlock.y",
+	      input="this.teDelayBlock.y",
 	      parameter={"type.NoLimit", "this.k", "this.tf"},
-	      feedback = true  // ,debug=true
+	      feedback = true   //,debug=true
 	   )
 	   WashoutControlBlock washoutBlock;
  	
@@ -144,15 +155,19 @@ public class Ieee1968Type1Exciter extends AnnotateExciter {
         this.ta = getData().getTa();
         this.vrmax = getData().getVrmax();
         this.vrmin = getData().getVrmin();
-		this.ke1 = 1.0/getData().getKe();
-		this.te_ke = getData().getTe() / getData().getKe();
+		this.ke = getData().getKe();
+		
+		this.te = getData().getTe();
 		this.e1 = getData().getE1();
 		this.seE1 = getData().getSeE1();
 		this.e2 = getData().getE2();
 		this.seE2 = getData().getSeE2();
-		this.k = getData().getKf()/getData().getTf();
+		this.kf  = getData().getKf();
 		this.tf = getData().getTf();
 
+		this.ke1 = 1.0/this.ke;
+		this.te_ke = this.te/this.ke;
+		this.k = kf/tf;
 		// call the super method to init CML field/controller states
         return super.initStates(bus, mach);
     }

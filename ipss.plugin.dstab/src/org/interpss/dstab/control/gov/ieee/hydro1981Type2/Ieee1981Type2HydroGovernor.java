@@ -22,7 +22,7 @@
   *
   */
 
-package org.interpss.dstab.control.gov.ieee.hturbine;
+package org.interpss.dstab.control.gov.ieee.hydro1981Type2;
 
 import java.lang.reflect.Field;
 
@@ -42,7 +42,7 @@ import com.interpss.dstab.mach.Machine;
         output="this.wFilterBlock.y",
         refPoint="this.gainBlock.u0 + this.delayBlock.y",
         display= {})
-public class IeeeHTurbineGovernor extends AnnotateGovernor {
+public class Ieee1981Type2HydroGovernor extends AnnotateGovernor {
 	 public double k = 1.0, t2 = 0.5, t1 = 0.01;
     @AnControllerField(
             type= CMLFieldEnum.ControlBlock,
@@ -82,7 +82,7 @@ public class IeeeHTurbineGovernor extends AnnotateGovernor {
      * Default Constructor
      *
      */
-    public IeeeHTurbineGovernor() {
+    public Ieee1981Type2HydroGovernor() {
         this.setName("ieeeHTurbineGovernor");
         this.setCategory("IEEE");
     }
@@ -93,10 +93,10 @@ public class IeeeHTurbineGovernor extends AnnotateGovernor {
      * @param id excitor id
      * @param name excitor name
      */
-    public IeeeHTurbineGovernor(String id, String name, String caty) {
+    public Ieee1981Type2HydroGovernor(String id, String name, String caty) {
         super(id, name, caty);
         // _data is defined in the parent class. However init it here is a MUST
-        _data = new IeeeHTurbineGovernorData();
+        _data = new Ieee1981Type3HydroGovernorData();
     }
     
     /**
@@ -104,8 +104,8 @@ public class IeeeHTurbineGovernor extends AnnotateGovernor {
      *
      * @return the data object
      */
-    public IeeeHTurbineGovernorData getData() {
-        return (IeeeHTurbineGovernorData)_data;
+    public Ieee1981Type3HydroGovernorData getData() {
+        return (Ieee1981Type3HydroGovernorData)_data;
     }
     
     /**

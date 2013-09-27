@@ -22,7 +22,7 @@
   *
   */
 
-package org.interpss.dstab.control.gov.ieee.steamTDSR;
+package org.interpss.dstab.control.gov.ieee.steamTCDR;
 
 import java.lang.reflect.Field;
 
@@ -123,7 +123,7 @@ public class IeeeSteamTCDRGovernor extends AnnotateGovernor {
     public IeeeSteamTCDRGovernor(String id, String name, String caty) {
         super(id, name, caty);
         // _data is defined in the parent class. However init it here is a MUST
-        _data = new IeeeSteamTDSRGovernorData();
+        _data = new IeeeSteamTCDRGovernorData();
     }
     
     /**
@@ -131,8 +131,8 @@ public class IeeeSteamTCDRGovernor extends AnnotateGovernor {
      *
      * @return the data object
      */
-    public IeeeSteamTDSRGovernorData getData() {
-        return (IeeeSteamTDSRGovernorData)_data;
+    public IeeeSteamTCDRGovernorData getData() {
+        return (IeeeSteamTCDRGovernorData)_data;
     }
     
     /**

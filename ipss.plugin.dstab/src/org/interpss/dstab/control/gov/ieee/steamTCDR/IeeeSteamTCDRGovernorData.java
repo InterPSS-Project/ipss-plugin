@@ -22,11 +22,11 @@
   *
   */
 
-package org.interpss.dstab.control.gov.ieee.steamTDSR;
+package org.interpss.dstab.control.gov.ieee.steamTCDR;
 
 import org.interpss.dstab.control.base.BaseControllerData;
 
-public class IeeeSteamTDSRGovernorData extends BaseControllerData {
+public class IeeeSteamTCDRGovernorData extends BaseControllerData {
 	private double k = 10.0;
 	private double t1 = 0.5;
 	private double t2 = 0.1;
@@ -64,7 +64,7 @@ public class IeeeSteamTDSRGovernorData extends BaseControllerData {
 		{"flp",		"-1000.0", 	"1000.0"} 
 	};
 
-	public IeeeSteamTDSRGovernorData() {
+	public IeeeSteamTCDRGovernorData() {
 		setRangeParameters(controllerParameters);
 	}
 

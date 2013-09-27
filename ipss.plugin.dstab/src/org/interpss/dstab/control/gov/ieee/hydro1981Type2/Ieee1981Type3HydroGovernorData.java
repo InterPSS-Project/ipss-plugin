@@ -22,11 +22,11 @@
   *
   */
 
-package org.interpss.dstab.control.gov.ieee.hturbine;
+package org.interpss.dstab.control.gov.ieee.hydro1981Type2;
 
 import org.interpss.dstab.control.base.BaseControllerData;
 
-public class IeeeHTurbineGovernorData extends BaseControllerData {
+public class Ieee1981Type3HydroGovernorData extends BaseControllerData {
 	private double k = 1.0;
 	private double t1 = 0.01;
 	private double t2 = 0.5;
@@ -46,7 +46,7 @@ public class IeeeHTurbineGovernorData extends BaseControllerData {
 		{"tw", 		"-1000.0", 	"1000.0"}, 
 	};
 
-	public IeeeHTurbineGovernorData() {
+	public Ieee1981Type3HydroGovernorData() {
 		setRangeParameters(controllerParameters);
 	}
 

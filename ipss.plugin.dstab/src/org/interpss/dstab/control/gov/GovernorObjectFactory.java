@@ -27,12 +27,12 @@ package org.interpss.dstab.control.gov;
 import org.interpss.dstab.control.gov.bpa.giGaTbcombinedType.BpaGIGATBCombinedGovernor;
 import org.interpss.dstab.control.gov.bpa.gsTb.BpaGsTbCombineGovernor;
 import org.interpss.dstab.control.gov.bpa.hydro.BpaGHTypeHydroGovernor;
-import org.interpss.dstab.control.gov.ieee.hturbine.IeeeHTurbineGovernor;
+import org.interpss.dstab.control.gov.ieee.hydro1981Type2.Ieee1981Type2HydroGovernor;
 import org.interpss.dstab.control.gov.ieee.ieeeST1.IeeeST1Governor;
 import org.interpss.dstab.control.gov.ieee.ieeeST2.IeeeST2Governor;
 import org.interpss.dstab.control.gov.ieee.steamNR.IeeeSteamNRGovernor;
+import org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor;
 import org.interpss.dstab.control.gov.ieee.steamTCSR.IeeeSteamTCSRGovernor;
-import org.interpss.dstab.control.gov.ieee.steamTDSR.IeeeSteamTCDRGovernor;
 import org.interpss.dstab.control.gov.simple.SimpleGovernor;
 
 import com.interpss.dstab.mach.Machine;
@@ -66,8 +66,8 @@ public class GovernorObjectFactory {
 	 * @param machine parent machine object
 	 * @return
 	 */	
-	public static IeeeHTurbineGovernor createIeeeHTurbineGovernor(String id, String name, Machine machine) {
-		IeeeHTurbineGovernor gov = new IeeeHTurbineGovernor(id, name, "InterPSS");
+	public static Ieee1981Type2HydroGovernor createIeeeHTurbineGovernor(String id, String name, Machine machine) {
+		Ieee1981Type2HydroGovernor gov = new Ieee1981Type2HydroGovernor(id, name, "InterPSS");
 		gov.setMachine(machine); 
 		return gov;
   	}
