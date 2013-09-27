@@ -22,7 +22,7 @@
   *
   */
 
-package org.interpss.dstab.control.gov.ieee.hturbine;
+package org.interpss.dstab.control.gov.ieee.hydro1981Type2;
 
 import java.util.Vector;
 
@@ -33,13 +33,13 @@ public class NBIeeeHTurbineEditPanel extends javax.swing.JPanel implements ICust
 	private static final long serialVersionUID = 1;
 
 	// define data to be edited
-	IeeeHTurbineGovernorData _data;
+	Ieee1981Type3HydroGovernorData _data;
 
     /** Creates new form FaultLocDataPanel */
     public NBIeeeHTurbineEditPanel() {
         initComponents();
         // init the field to the default values
-        _data = new IeeeHTurbineGovernorData();
+        _data = new Ieee1981Type3HydroGovernorData();
         setData2Editor("");
         
         // associate the editing fields with the verifier class defined at the end of this calss
@@ -58,7 +58,7 @@ public class NBIeeeHTurbineEditPanel extends javax.swing.JPanel implements ICust
      */
 	public void init(Object controller) {
 		// init the data object from the bus object being edited
-		_data = ((IeeeHTurbineGovernor)controller).getData();
+		_data = ((Ieee1981Type2HydroGovernor)controller).getData();
 	}
 	
 	/**
