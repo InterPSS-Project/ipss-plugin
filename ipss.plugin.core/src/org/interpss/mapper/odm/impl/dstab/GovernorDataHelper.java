@@ -37,10 +37,10 @@ import org.ieee.odm.schema.SteamTurbineBPATBModelXmlType;
 import org.interpss.dstab.control.gov.GovernorObjectFactory;
 import org.interpss.dstab.control.gov.bpa.gsTb.BpaGsTbCombineGovernor;
 import org.interpss.dstab.control.gov.bpa.hydro.BpaGHTypeHydroGovernor;
-import org.interpss.dstab.control.gov.ieee.hturbine.IeeeHTurbineGovernor;
+import org.interpss.dstab.control.gov.ieee.hydro1981Type2.Ieee1981Type2HydroGovernor;
 import org.interpss.dstab.control.gov.ieee.steamNR.IeeeSteamNRGovernor;
+import org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor;
 import org.interpss.dstab.control.gov.ieee.steamTCSR.IeeeSteamTCSRGovernor;
-import org.interpss.dstab.control.gov.ieee.steamTDSR.IeeeSteamTCDRGovernor;
 import org.interpss.dstab.control.gov.simple.SimpleGovernor;
 
 import com.interpss.common.exp.InterpssException;
@@ -172,7 +172,7 @@ public class GovernorDataHelper {
 		}
 		else if (govXmlRec instanceof GovHydroTurbineXmlType) {
 			GovHydroTurbineXmlType govXml = (GovHydroTurbineXmlType)govXmlRec;
-			IeeeHTurbineGovernor gov = GovernorObjectFactory.createIeeeHTurbineGovernor(mach.getId()+"_Gov", govXml.getName(), mach);						
+			Ieee1981Type2HydroGovernor gov = GovernorObjectFactory.createIeeeHTurbineGovernor(mach.getId()+"_Gov", govXml.getName(), mach);						
 			gov.getData().setK(govXml.getK());
 			gov.getData().setT1(govXml.getT1().getValue());
 			gov.getData().setT2(govXml.getT2().getValue());

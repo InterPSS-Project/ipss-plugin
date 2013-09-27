@@ -22,7 +22,7 @@
   *
   */
 
-package org.interpss.dstab.control.gov.ieee.steamTDSR;
+package org.interpss.dstab.control.gov.ieee.steamTCDR;
 
 import java.util.Vector;
 
@@ -33,13 +33,13 @@ public class NBIeeeSteamTCDREditPanel extends javax.swing.JPanel implements ICus
 	private static final long serialVersionUID = 1;
 
 	// define data to be edited
-	IeeeSteamTDSRGovernorData _data;
+	IeeeSteamTCDRGovernorData _data;
 
     /** Creates new form FaultLocDataPanel */
     public NBIeeeSteamTCDREditPanel() {
         initComponents();
         // init the field to the default values
-        _data = new IeeeSteamTDSRGovernorData();
+        _data = new IeeeSteamTCDRGovernorData();
         setData2Editor("");
         
         // associate the editing fields with the verifier class defined at the end of this calss
