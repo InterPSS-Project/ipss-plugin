@@ -121,7 +121,7 @@ public class Acsc5Bus_ODM_TestCase extends CorePluginTestSetup {
 	  	 * iPU_012 = 0.0000 + j0.0000  -13.47708 + j30.27969  0.0000 + j0.0000
 	  	 */
 	  	assertTrue(TestUtilFunc.compare(fault.getFaultResult().getSCCurrent_012(), 
-	  			0.0, 0.0, -13.65224, 30.20264, 0.0, 0.0) );		
+	  			0.0, 0.0, -13.47708, 30.27969, 0.0, 0.0) );		
 	}
 }
 
