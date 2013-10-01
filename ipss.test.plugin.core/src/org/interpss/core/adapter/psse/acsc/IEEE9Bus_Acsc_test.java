@@ -160,7 +160,7 @@ public class IEEE9Bus_Acsc_test {
 	  	//fault current
 	  	//0.0000 + j0.0000  -1.4243 + j15.62133  0.0000 + j0.0000
 	  	assertTrue(TestUtilFunc.compare(fault.getFaultResult().getSCCurrent_012(), 
-	  			0.0, 0.0, -1.43567, 15.62629, 0.0, 0.0) );
+	  			0.0, 0.0, -1.4243, 15.62133, 0.0, 0.0) );
 	  	//voltage @Bus1
 	  	//0.0000 + j0.0000  0.61592 + j0.01616  0.0000 + j0.0000
 	  	assertTrue(TestUtilFunc.compare(fault.getFaultResult().getBusVoltage_012(net.getAcscBus("Bus1")), 
@@ -206,14 +206,14 @@ public class IEEE9Bus_Acsc_test {
 	  	System.out.println(fault.getFaultResult().getBusVoltage_012(net.getAcscBus("Bus4")));
 	  	
 	    //seq voltage @Bus4
-	  	//0.0000 + j0.0000  0.62007 + j-0.00338  0.40515 + j-0.03568
+	  	//0.0000 + j0.0000  0.61992 + j-0.00361  0.40512 + j-0.03572
 	  	
 	  	/*PWD: Fault Data - Buses
 	  	 Seq. Volt +	 Seq. Volt -
 	  	      0.61997	      0.40682
          */
 	  	assertTrue(TestUtilFunc.compare(fault.getFaultResult().getBusVoltage_012(net.getAcscBus("Bus4")), 
-	  			0.0, 0.0, 0.62007, -0.00338, 0.40515, -0.03568) );
+	  			0.0, 0.0, 0.61992, -0.00361, 0.40512, -0.03572) );
 		
 	}
 	
