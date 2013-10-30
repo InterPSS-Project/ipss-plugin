@@ -32,7 +32,7 @@ import com.interpss.spring.CoreCommonSpringFactory;
 public class CorePluginTestSetup {
 	protected static IPSSMsgHub msg;
 
-	@BeforeClass
+	@BeforeClass  
 	public static void setSpringAppCtx() {
 		IpssCorePlugin.init();
 		msg = CoreCommonSpringFactory.getIpssMsgHub();
