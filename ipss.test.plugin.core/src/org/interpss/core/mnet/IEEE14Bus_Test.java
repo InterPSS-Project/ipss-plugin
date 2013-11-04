@@ -52,6 +52,7 @@ public class IEEE14Bus_Test extends CorePluginTestSetup {
 		
   		//System.out.println(net.net2String());
 		assertTrue((net.getBusList().size() == 14 && net.getBranchList().size() == 20));
+		assertTrue(!net.isContainChildNet());
 		
 		/*
 		 * Define child network configuration info
@@ -103,6 +104,7 @@ public class IEEE14Bus_Test extends CorePluginTestSetup {
 		
 		// see diagram - https://docs.google.com/a/interpss.org/file/d/0BzjeDvtdQBeyUHNISk5kVmlHYzg/edit
 		assertTrue((net.getBusList().size() == 12 && net.getBranchList().size() == 16));
+		assertTrue(net.isContainChildNet());
 		
 		// check the created child network
 		AclfNetwork childAclfNet = (AclfNetwork)net.getChildNet("childNet").getNetwork();
