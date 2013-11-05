@@ -26,6 +26,7 @@ import org.interpss.core.ca.IEEE14BusBreaker_equivCABranch_Test;
 import org.interpss.core.ca.IEEE14BusBreaker_islandBus_Test;
 import org.interpss.core.ca.IEEE14BusBreaker_lf_Test;
 import org.interpss.core.ca.SampleSwitchBreakerModelTest;
+import org.interpss.core.mnet.MNet_IEEE14Bus_Test;
 import org.interpss.dstab.DStab_2Bus;
 import org.interpss.dstab.control.cml.block.DelayControlBlockTests;
 import org.interpss.dstab.control.cml.block.FilterControlBlockTests;
@@ -112,6 +113,8 @@ import org.junit.runners.Suite.SuiteClasses;
 	GuideSample_TestCase.class,
 	
 	AclfBeanMapperTest.class,
+	
+	MNet_IEEE14Bus_Test.class,
 })
 public class CorePluginTestSuite {
 }

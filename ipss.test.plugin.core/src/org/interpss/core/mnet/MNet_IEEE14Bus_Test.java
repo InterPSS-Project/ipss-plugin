@@ -35,13 +35,15 @@ import com.interpss.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.net.BranchBusSide;
 import com.interpss.core.net.childnet.ChildNetInterfaceBranch;
 import com.interpss.core.net.childnet.ChildNetwork;
 import com.interpss.core.net.childnet.ChildNetworkFactory;
+import com.interpss.core.net.childnet.impl.AclfBusChildNetHelper;
 import com.interpss.core.net.childnet.impl.ChildNetworkProcessor;
 
-public class IEEE14Bus_Test extends CorePluginTestSetup {
+public class MNet_IEEE14Bus_Test extends CorePluginTestSetup {
 	@Test 
 	public void bus14testCase() throws Exception {
 		// load the IEEE-14 Bus system
@@ -64,37 +66,25 @@ public class IEEE14Bus_Test extends CorePluginTestSetup {
 		 *    Bus6->Bus13(1)  @Bus6
 		 *    Bus12->Bus13(1) @Bus12
 		 */
-		ChildNetwork<AclfBus,AclfBranch> childNet = ChildNetworkFactory.eINSTANCE.createChildNetwork();
-		childNet.setId("childNet");
-		net.getChildNetList().add(childNet);
-		// at this point, we need to decide what type of child network to be created
-		childNet.setNetwork( CoreObjectFactory.createAclfNetwork());
+		ChildNetwork<AclfBus,AclfBranch> childNet = CoreObjectFactory.createChildAclfNet(net, "childNet");
 		
-		/*
-		 * see diagram - https://docs.google.com/a/interpss.org/file/d/0BzjeDvtdQBeyUHNISk5kVmlHYzg/edit
-		 * 
-		 * define an interface branch
-		 *    Bus9->Bus14(1)  @Bus9
-		 *    Bus6->Bus13(1)  @Bus6
-		 *    Bus12->Bus13(1) @Bus12
-		 */
-		AclfBranch branch = net.getBranch("Bus9->Bus14(1)");
+		//AclfBranch branch = net.getBranch("Bus9->Bus14(1)");
 		ChildNetInterfaceBranch intBranch = ChildNetworkFactory.eINSTANCE.createChildNetInterfaceBranch();
-		intBranch.setBranch(branch);
+		intBranch.setBranchId("Bus9->Bus14(1)");
 		intBranch.setInterfaceBusSide(BranchBusSide.FROM_SIDE);		
 		intBranch.setChildNetSide(BranchBusSide.TO_SIDE);
 		childNet.getInterfaceBranches().add(intBranch);		
 
-		branch = net.getBranch("Bus6->Bus13(1)");
+		//branch = net.getBranch("Bus6->Bus13(1)");
 		intBranch = ChildNetworkFactory.eINSTANCE.createChildNetInterfaceBranch();
-		intBranch.setBranch(branch);
+		intBranch.setBranchId("Bus6->Bus13(1)");
 		intBranch.setInterfaceBusSide(BranchBusSide.FROM_SIDE);		
 		intBranch.setChildNetSide(BranchBusSide.TO_SIDE);
 		childNet.getInterfaceBranches().add(intBranch);		
 
-		branch = net.getBranch("Bus12->Bus13(1)");
+		//branch = net.getBranch("Bus12->Bus13(1)");
 		intBranch = ChildNetworkFactory.eINSTANCE.createChildNetInterfaceBranch();
-		intBranch.setBranch(branch);
+		intBranch.setBranchId("Bus12->Bus13(1)");
 		intBranch.setInterfaceBusSide(BranchBusSide.FROM_SIDE);		
 		intBranch.setChildNetSide(BranchBusSide.TO_SIDE);
 		childNet.getInterfaceBranches().add(intBranch);		
@@ -112,9 +102,11 @@ public class IEEE14Bus_Test extends CorePluginTestSetup {
 		
 		for (ChildNetInterfaceBranch cbranch : childNet.getInterfaceBranches()) {
 			// interface bus should still be in the parent net
-			assertTrue(net.getBus(cbranch.getInterfaceBus().getId()) != null);
+			assertTrue(net.getBus(cbranch.getInterfaceBusParentNet().getId()) != null);
 			// interface bus should be defined as Swing bus in the child net
-			assertTrue(childAclfNet.getBus(cbranch.getInterfaceBus().getId()).isSwing());
+			assertTrue(childAclfNet.getBus(cbranch.getInterfaceBusIdChineNet()).isSwing());
 		}
+		
+		//System.out.println(net.net2String());
 	}
 }
