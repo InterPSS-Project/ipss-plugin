@@ -140,9 +140,7 @@
                     </equivLoad>
                 </loadData>
                 <shuntYData>
-                	<equivY>
-                	   <y unit="PU" im="0.19" re="0.0"/>
-                	</equivY>
+                	<equivY unit="PU" im="0.19" re="0.0"/>
                 </shuntYData>
             </aclfBus>
             <aclfBus id="Bus10" offLine="false" number="10" zoneNumber="1" areaNumber="1" name="Bus 10    LV">
