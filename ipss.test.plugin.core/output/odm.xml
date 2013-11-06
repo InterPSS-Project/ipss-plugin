@@ -50,9 +50,7 @@
                     <equivLoad code="NoneLoad"/>
                 </loadData>
                 <shuntYData>
-                    <equivY offLine="false">
-                        <y unit="PU" re="0.01" im="0.01"/>
-                    </equivY>
+                    <equivY unit="PU" re="0.01" im="0.01"/>
                 </shuntYData>
             </aclfBus>
             <aclfBus id="Bus3" areaNumber="1" zoneNumber="6" number="3" offLine="false" name="3W_Out     ">
@@ -69,9 +67,7 @@
                     <equivLoad code="NoneLoad"/>
                 </loadData>
                 <shuntYData>
-                    <equivY offLine="false">
-                        <y unit="PU" re="0.01" im="0.01"/>
-                    </equivY>
+                    <equivY unit="PU" re="0.01" im="0.01"/>
                 </shuntYData>
             </aclfBus>
             <aclfBus id="Bus4" areaNumber="1" zoneNumber="2" number="4" offLine="false" name="To_End_Par ">
@@ -97,9 +93,7 @@
                     </equivLoad>
                 </loadData>
                 <shuntYData>
-                    <equivY offLine="false">
-                        <y unit="PU" re="0.01" im="0.01"/>
-                    </equivY>
+                    <equivY unit="PU" re="0.01" im="0.01"/>
                 </shuntYData>
             </aclfBus>
             <aclfBus id="Bus5" areaNumber="2" zoneNumber="2" number="5" offLine="false" name="Area_2_HV  ">
@@ -116,9 +110,7 @@
                     <equivLoad code="NoneLoad"/>
                 </loadData>
                 <shuntYData>
-                    <equivY offLine="false">
-                        <y unit="PU" re="0.02" im="0.02"/>
-                    </equivY>
+                    <equivY unit="PU" re="0.02" im="0.02"/>
                 </shuntYData>
             </aclfBus>
             <aclfBus id="Bus6" areaNumber="2" zoneNumber="2" number="6" offLine="false" name="Area_2_LV  ">
@@ -152,9 +144,7 @@
                     <equivLoad code="NoneLoad"/>
                 </loadData>
                 <shuntYData>
-                    <equivY offLine="false">
-                        <y unit="PU" re="0.02" im="0.02"/>
-                    </equivY>
+                    <equivY unit="PU" re="0.02" im="0.02"/>
                 </shuntYData>
             </aclfBus>
         </busList>
