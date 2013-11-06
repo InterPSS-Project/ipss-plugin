@@ -36,11 +36,11 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.algo.impl.mnet.AclfBusChildNetHelper;
 import com.interpss.core.net.BranchBusSide;
 import com.interpss.core.net.childnet.ChildNetInterfaceBranch;
 import com.interpss.core.net.childnet.ChildNetwork;
 import com.interpss.core.net.childnet.ChildNetworkFactory;
-import com.interpss.core.net.childnet.impl.AclfBusChildNetHelper;
 import com.interpss.core.net.childnet.impl.ChildNetworkProcessor;
 
 public class MNet_IEEE14Bus_Test extends CorePluginTestSetup {
