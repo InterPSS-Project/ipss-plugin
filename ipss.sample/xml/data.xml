@@ -1,0 +1,13 @@
+<customer>
+	<personal>
+		<fname>John</fname>
+		<lname>Smith</lname>
+		<address>1234 some address</address>
+		<phone>111-123-1234</phone>
+	</personal>
+	<preferences>
+		<favGenre>Comedy</favGenre>
+	</preferences>
+</customer>
+
+
