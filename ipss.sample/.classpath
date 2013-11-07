@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/ipss.lib/lib/ipss/ipss_core.impl.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib/lib/ipss/ipss_pssl.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib/lib/ipss/ipss_core.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib/lib/ipss/ipss_plugin.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib/lib/ipss/ipss_plugin.grid.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib/lib/ipss/ipss_xml.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib/lib/ipss/ipss_editor_ui.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib/lib/ipss/ipss_editor.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib/lib/ipss/ipss_jgraph.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib/lib/ipss/ipss_pad.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib/lib/ieee/ieee.odm_pss.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/plugins/custom.plugin.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/plugins/IpssCustomController.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/spring/spring-2.5.6.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/swing/swing-layout-1.0.3.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/custom/tsinghua.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/jgraph.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/eclipse/org.eclipse.emf.common.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/eclipse/org.eclipse.emf.ecore.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/eclipse/org.eclipse.emf.ecore.xmi.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/eclipse/org.eclipse.emf.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/xml/xmlbeans-2.3.0.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib/lib/ieee/ieee.odm.schema.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/sparse/csparsej-1.1.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/apache/commons-math3-3.2.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="output" path="runtime"/>
+</classpath>
