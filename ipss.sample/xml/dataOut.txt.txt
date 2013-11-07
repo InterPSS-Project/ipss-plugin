@@ -1,0 +1,8 @@
+
+		
+		SELECT film.title, inventory.total 
+			FROM film, inventory 
+			WHERE film.genre = '' 
+				AND film.title = inventory.title 
+				AND inventory.total > 0;
+	
