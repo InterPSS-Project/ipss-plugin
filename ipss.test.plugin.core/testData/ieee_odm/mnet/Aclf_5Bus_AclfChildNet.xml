@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pss:pssStudyCase id="StudyCase" xmlns:pss="http://www.ieee.org/odm/Schema/2008" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.ieee.org/odm/Schema/2008 ../../../../ieee.odm_pss/schema/ODMSchema.xsd " schemaVersion="0.9.0">
+	<pss:contentInfo>
+		<pss:originalDataFormat>InterPSS</pss:originalDataFormat>
+		<pss:adapterProviderVersion>1.0</pss:adapterProviderVersion>
+	</pss:contentInfo>
+	<pss:networkCategory>Transmission</pss:networkCategory>
+	<pss:analysisCategory>Loadflow</pss:analysisCategory>
+	<pss:aclfNet id="Aclf5BusBaseCase">
+		<pss:basePower unit="MVA" value="100" />
+		<pss:frequency unit="Hz" value="50" />
+		<pss:busList>
+			<pss:aclfBus id="Bus-1" offLine="false" areaNumber="1" zoneNumber="1">
+				<pss:baseVoltage unit="KV" value="138"></pss:baseVoltage>
+				<pss:loadData>
+					<pss:equivLoad code="CONST_P" id="Load-1">
+						<pss:constPLoad im="0.8" unit="PU" re="1.6" />
+					</pss:equivLoad>
+				</pss:loadData>
+			</pss:aclfBus>
+			<pss:aclfBus id="Bus-2" areaNumber="1" offLine="false" zoneNumber="1">
+				<pss:baseVoltage unit="KV" value="138" />
+				<pss:loadData>
+					<pss:equivLoad code="CONST_P" id="Load-2">
+						<pss:constPLoad im="1.0" unit="PU" re="2.0" />
+					</pss:equivLoad>
+				</pss:loadData>
+				<pss:shuntYData>
+                	<pss:equivY unit="PU" im="-0.1" re="0.1" />
+                </pss:shuntYData>				
+			</pss:aclfBus>
+			<pss:aclfBus id="Bus-3" areaNumber="1" offLine="false" zoneNumber="1">
+				<pss:baseVoltage unit="KV" value="138" />
+				<pss:loadData>
+					<pss:equivLoad code="CONST_P" id="Load-3">
+						<pss:constPLoad im="1.3" unit="PU" re="3.7" />
+					</pss:equivLoad>
+				</pss:loadData>
+				<pss:shuntYData>
+                </pss:shuntYData>
+			</pss:aclfBus>
+			<pss:aclfBus id="Bus-4" areaNumber="1" zoneNumber="1" offLine="false">
+				<pss:baseVoltage unit="KV" value="1" />
+				<pss:genData>
+					<pss:equivGen code="PV" id="Bus4-Gen1">
+						<pss:power im="0.0" unit="PU" re="5.0" />
+						<pss:desiredVoltage unit="PU" value="1.05" />
+					</pss:equivGen>
+				</pss:genData>
+				<pss:loadData>
+					<pss:equivLoad id="L1" code="CONST_P">
+						<pss:constPLoad unit="PU" im="0.2" re="0.2" />
+					</pss:equivLoad>
+				</pss:loadData>
+				<pss:shuntYData>
+                	<pss:equivY unit="PU" im="-0.5" re="0.1"/>
+                </pss:shuntYData>				
+			</pss:aclfBus>
+			<pss:aclfBus id="Bus-5" offLine="false" areaNumber="1" zoneNumber="1">
+				<pss:baseVoltage unit="KV" value="4" />
+				<pss:genData>
+					<pss:equivGen code="Swing" id="Bus5-Gen1">
+						<pss:desiredVoltage unit="PU" value="1.05" />
+						<pss:desiredAngle unit="DEG" value="0.0" />
+					</pss:equivGen>
+				</pss:genData>
+			</pss:aclfBus>
+		</pss:busList>
+		<pss:branchList>
+			<pss:aclfLine id="Bus2-Bus1" circuitId="1" offLine="false">
+				<pss:fromBus idRef="Bus-2"></pss:fromBus>
+				<pss:toBus idRef="Bus-1"></pss:toBus>
+				<pss:z im="0.25" unit="PU" re="0.04" />
+				<pss:fromShuntY im="0.25" unit="PU" />
+				<pss:toShuntY im="0.25" unit="PU" />
+			</pss:aclfLine>
+			<pss:aclfLine id="Bus3-Bus1" circuitId="1" offLine="false">
+				<pss:fromBus idRef="Bus-3"></pss:fromBus>
+				<pss:toBus idRef="Bus-1"></pss:toBus>
+				<pss:z im="0.35" unit="PU" re="0.1" />
+				<pss:fromShuntY im="0" unit="PU" />
+				<pss:toShuntY im="0" unit="PU" />
+			</pss:aclfLine>
+			<pss:aclfLine id="Bus2-Bus3" circuitId="1" offLine="false">
+				<pss:fromBus idRef="Bus-2"></pss:fromBus>
+				<pss:toBus idRef="Bus-3"></pss:toBus>
+				<pss:z im="0.3" unit="PU" re="0.08" />
+				<pss:totalShuntY im="0.5" unit="PU" />
+			</pss:aclfLine>
+			<pss:aclfXfr id="Bus4-Bus2">
+				<pss:fromBus idRef="Bus-4"></pss:fromBus>
+				<pss:toBus idRef="Bus-2"></pss:toBus>
+				<pss:z im="0.016" unit="PU" re="0.0" />
+				<pss:fromTurnRatio unit="PU" value="1.0" />
+				<pss:toTurnRatio unit="PU" value="1.05" />
+			</pss:aclfXfr>
+			<pss:aclfXfr id="Bus5-Bus3">
+				<pss:fromBus idRef="Bus-5"></pss:fromBus>
+				<pss:toBus idRef="Bus-3"></pss:toBus>
+				<pss:z im="0.03" unit="PU" re="0.0" />
+				<pss:fromTurnRatio unit="PU" value="1.0" />
+				<pss:toTurnRatio unit="PU" value="1.05" />
+			</pss:aclfXfr>
+		</pss:branchList>
+		<pss:hasChildNet>true</pss:hasChildNet>
+		<pss:childNetDef>
+			<pss:childNetRef idRef="AclfChileNet1"></pss:childNetRef>
+			<pss:interfaceBranch>
+				<pss:branch idRef="Bus2-Bus1"></pss:branch>
+				<pss:interfaceBusSide>ToSide</pss:interfaceBusSide>
+				<pss:childNetSide>ToSide</pss:childNetSide>
+				<pss:interfaceBusIdChildNet  idRef="ChildBus-1"></pss:interfaceBusIdChildNet>
+			</pss:interfaceBranch>
+			<pss:interfaceBranch>
+				<pss:branch idRef="Bus3-Bus1"></pss:branch>
+				<pss:interfaceBusSide>ToSide</pss:interfaceBusSide>
+				<pss:childNetSide>ToSide</pss:childNetSide>
+				<pss:interfaceBusIdChildNet  idRef="ChildBus-1"></pss:interfaceBusIdChildNet>
+			</pss:interfaceBranch>
+		</pss:childNetDef>
+	</pss:aclfNet>
+
+
+	<pss:childAclfNet id="AclfChileNet1">
+		<pss:basePower unit="MVA" value="100" />
+		<pss:busList>
+			<pss:aclfBus id="ChildBus-1">
+				<pss:baseVoltage unit="KV" value="138.0" />
+				<pss:genData>
+					<pss:equivGen code="Swing" id="ChildBus-1-Gen1">
+						<pss:desiredVoltage unit="PU" value="1.0" />
+						<pss:desiredAngle unit="DEG" value="0.0" />
+					</pss:equivGen>
+				</pss:genData>
+			</pss:aclfBus>
+			<pss:aclfBus id="ChildBus-2">
+				<pss:baseVoltage unit="VOLT" value="4160.0"></pss:baseVoltage>
+				<pss:loadData>
+					<pss:equivLoad code="CONST_P" id="ChildBus-2-Load-1">
+						<pss:constPLoad im="0.2" unit="PU" re="0.1" />
+					</pss:equivLoad>
+				</pss:loadData>				
+			</pss:aclfBus>
+		</pss:busList>
+		<pss:branchList>
+			<pss:aclfXfr id="DistBranchId">
+				<pss:fromBus idRef="ChildBus-1"></pss:fromBus>
+				<pss:toBus idRef="ChildBus-2"></pss:toBus>
+				<pss:z im="0.1" unit="PU" re="0.0" />
+				<pss:fromTurnRatio unit="PU" value="1.0" />
+				<pss:toTurnRatio unit="PU" value="1.0" />
+			</pss:aclfXfr>
+		</pss:branchList>
+		<pss:hasChildNet>false</pss:hasChildNet>
+	</pss:childAclfNet>
+</pss:pssStudyCase>
