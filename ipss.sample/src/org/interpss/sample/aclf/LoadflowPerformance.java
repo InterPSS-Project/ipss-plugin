@@ -24,20 +24,16 @@
 
 package org.interpss.sample.aclf;
 
-import java.util.logging.Level;
-
+import org.interpss.CorePluginObjFactory;
 import org.interpss.IpssCorePlugin;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.spring.EditorPluginSpringFactory;
 
 import com.interpss.CoreObjectFactory;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.simu.SimuContext;
-import com.interpss.spring.CoreCommonSpringFactory;
 
 
 public class LoadflowPerformance {
@@ -50,12 +46,11 @@ public class LoadflowPerformance {
 	  	 * time loading data, create ODM and InterPSS Simulation object
 	  	 */
 	  	timer.start();
-		IpssFileAdapter adapter = EditorPluginSpringFactory.getCustomFileAdapter("ieee");
-		SimuContext simuCtx = adapter.load("testData/UCTE_2000_WinterOffPeak.ieee");
+		AclfNetwork adjNet = CorePluginObjFactory
+				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
+				.load("testData/UCTE_2000_WinterOffPeak.ieee")
+				.getAclfNet();		  	
 	  	timer.logStd("Time for loading the case: ");
-
-		AclfNetwork adjNet = simuCtx.getAclfNet();
-		//IPSSMsgHub msg = IpssAclf.getMsgHub();
 
 		/*
 		 * time running a full NR loadflow

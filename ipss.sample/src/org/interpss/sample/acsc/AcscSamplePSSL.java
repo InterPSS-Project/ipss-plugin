@@ -7,6 +7,7 @@ import org.interpss.display.AcscOutFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.CoreObjectFactory;
+import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
@@ -25,7 +26,7 @@ import com.interpss.pssl.simu.net.IpssAcscNet.AcscNetworkDSL;
 
 public class AcscSamplePSSL {
 
-	public static void main(String[] args) {
+	public static void main(String[] args)  throws InterpssException {
 		IpssCorePlugin.init();
 		
 		AcscSamplePSSL test = new AcscSamplePSSL();
@@ -35,7 +36,7 @@ public class AcscSamplePSSL {
 		test.lfVoltTest();
 	}
 	
-	public void unitVoltTest() {
+	public void unitVoltTest() throws InterpssException {
 		AcscNetwork faultNet = createTestNet();
 		
 		System.out.println(faultNet.net2String());
@@ -52,7 +53,7 @@ public class AcscSamplePSSL {
 		System.out.println(AcscOutFunc.faultResult2String(faultNet, algo));		
 	}
 
-	public void lfVoltTest() {
+	public void lfVoltTest()  throws InterpssException {
 		AcscNetwork faultNet = createTestNet();
 		IpssAclf.createAclfAlgo(faultNet)                        
 		            .lfMethod(AclfMethod.NR)
