@@ -106,6 +106,7 @@ public class SampleLoadflow {
   		
   		// create an AclfBranch object
   		AclfBranch branch = CoreObjectFactory.createAclfBranch();
+  		net.addBranch(branch, "Bus1", "Bus2");
   		// set branch name, description and circuit number
   		branch.setAttributes("Branch 1", "", "1");
   		// set branch to a Line branch
@@ -115,7 +116,6 @@ public class SampleLoadflow {
 		// set branch parameters
   		lineBranch.setZ(new Complex(0.05, 0.1), UnitType.PU, 4000.0);
   		// add the branch from Bus1 to Bus2
-  		net.addBranch(branch, "Bus1", "Bus2");
 	  	
 	  	// create the default loadflow algorithm
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
