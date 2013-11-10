@@ -17,7 +17,7 @@ import org.interpss.display.AclfOutFunc;
 import org.interpss.dstab.DStabTestSetupBase;
 import org.interpss.dstab.output.TextSimuOutputHandler;
 import org.interpss.mapper.odm.ODMAclfParserMapper;
-import org.interpss.mapper.odm.ODMDStabDataMapper;
+import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.interpss.numeric.NumericConstant;
 import org.junit.Test;
 
@@ -129,7 +129,7 @@ public class BpaO7CTest extends DStabTestSetupBase {
 		out.close();
 		
 		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-		if (!new ODMDStabDataMapper(msg)
+		if (!new ODMDStabParserMapper(msg)
 					.map2Model(parser, simuCtx)) {
 			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
 			return;
@@ -195,7 +195,7 @@ public class BpaO7CTest extends DStabTestSetupBase {
 			//System.out.println(parser.toXmlDoc(false));
 
 			SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-			if (!new ODMDStabDataMapper(msg)
+			if (!new ODMDStabParserMapper(msg)
 						.map2Model(parser, simuCtx)) {
 				System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
 				return;

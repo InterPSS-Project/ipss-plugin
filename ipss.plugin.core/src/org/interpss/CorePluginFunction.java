@@ -3,12 +3,14 @@ package org.interpss;
 import java.util.List;
 
 import org.ieee.odm.model.aclf.AclfModelParser;
+import org.ieee.odm.model.acsc.AcscModelParser;
+import org.ieee.odm.model.dstab.DStabModelParser;
 import org.ieee.odm.schema.AcscFaultCategoryEnumType;
 import org.ieee.odm.schema.LoadflowNetXmlType;
 import org.interpss.datatype.DblBusValue;
 import org.interpss.display.AclfOutFunc;
-import org.interpss.display.DclfOutFunc;
 import org.interpss.display.AclfOutFunc.BusIdStyle;
+import org.interpss.display.DclfOutFunc;
 import org.interpss.display.impl.AclfOut_BusStyle;
 import org.interpss.display.impl.AclfOut_PSSE;
 import org.interpss.mapper.odm.ODMAclfNetMapper;
@@ -23,8 +25,10 @@ import com.interpss.common.func.IFunction2;
 import com.interpss.common.func.IFunction4;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.dclf.DclfAlgorithm;
 import com.interpss.core.net.OriginalDataFormat;
+import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.devent.BranchOutageType;
 
 /**
@@ -38,6 +42,8 @@ public class CorePluginFunction {
 	 * 		ODM Mapping functions
 	 ************************************************************/
 
+	///////////////  AclfNetwork ////////////////////
+	
 	/**
 	 * Aclf ODM model parser to AclfNetwork object mapping function
 	 */
@@ -59,7 +65,34 @@ public class CorePluginFunction {
 						.map2Model(xmlNet)
 						.getAclfNet();
 		}};
-	
+
+	///////////////// AcscNetwork /////////////////////
+
+	/**
+	 * Acsc ODM model parser to AclfNetwork object mapping function
+	 */
+	public static IFunction<AcscModelParser, AcscNetwork> AcscParser2AcscNet = 
+		new FunctionAdapter<AcscModelParser, AcscNetwork>() {
+			@Override public AcscNetwork fx(AcscModelParser parser) throws InterpssException {
+				return CorePluginSpringFactory.getOdm2AcscParserMapper()
+							.map2Model(parser)
+							.getAcscNet();
+		}};
+		
+	///////////////// DStabNetwork /////////////////////
+
+	/**
+	 * DStab ODM model parser to DStabNetwork object mapping function
+	 */
+	public static IFunction<DStabModelParser, DStabilityNetwork> DStabParser2AcscNet = 
+		new FunctionAdapter<DStabModelParser, DStabilityNetwork>() {
+			@Override public DStabilityNetwork fx(DStabModelParser parser) throws InterpssException {
+				return CorePluginSpringFactory.getOdm2DStabParserMapper()
+							.map2Model(parser)
+							.getDStabilityNet();
+		}};
+
+			
 	/* **********************************************************
 	 * 		Aclf Output function, including Sensitivity analysis
 	 ************************************************************/

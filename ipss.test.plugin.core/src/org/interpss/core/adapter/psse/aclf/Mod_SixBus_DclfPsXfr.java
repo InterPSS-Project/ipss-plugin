@@ -63,7 +63,7 @@ public class Mod_SixBus_DclfPsXfr extends CorePluginTestSetup {
 					.setPsseVersion(PsseVersion.PSSE_30)
 					.xfrBranchModel(ODMAclfNetMapper.XfrBranchModel.InterPSS)
 					.load(true, "output/odm.xml")
-					.getAclfNet();
+					.getNet();
   		//System.out.println(net.net2String());
 
 	  	net.accept(CoreObjectFactory.createLfAlgoVisitor());
@@ -88,7 +88,7 @@ public class Mod_SixBus_DclfPsXfr extends CorePluginTestSetup {
 					.setPsseVersion(PsseVersion.PSSE_30)
 					.xfrBranchModel(ODMAclfNetMapper.XfrBranchModel.PSSE)
 					.load(true, "output/odm.xml")
-					.getAclfNet();
+					.getNet();
   		//System.out.println(net.net2String());
 
 	  	net.accept(CoreObjectFactory.createLfAlgoVisitor());
@@ -113,7 +113,7 @@ public class Mod_SixBus_DclfPsXfr extends CorePluginTestSetup {
 					.psseVersion(PsseVersion.PSSE_30)
 					.xfrBranchModel(ODMAclfNetMapper.XfrBranchModel.InterPSS)
 					.load()
-					.getAclfNet();
+					.getNet();
   		//System.out.println(net.net2String());
 		/*
 		net.accept(CoreObjectFactory.createBusNoArrangeVisitor());
@@ -158,7 +158,7 @@ public class Mod_SixBus_DclfPsXfr extends CorePluginTestSetup {
 					.psseVersion(PsseVersion.PSSE_30)
 					.xfrBranchModel(ODMAclfNetMapper.XfrBranchModel.PSSE)
 					.load()
-					.getAclfNet();
+					.getNet();
   		//System.out.println(net.net2String());
 		/*
 		net.accept(CoreObjectFactory.createBusNoArrangeVisitor());

@@ -45,7 +45,7 @@ public class IEEE14BusBreaker_dclf_Test extends CorePluginTestSetup {
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/ieee_odm/ieee14Bus_breaker.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
-				.getAclfNet();
+				.getNet();
 	  	//System.out.println(net.net2String());
 
 		DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net);
@@ -63,7 +63,7 @@ public class IEEE14BusBreaker_dclf_Test extends CorePluginTestSetup {
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/ieee_odm/ieee14Bus_breaker.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
-				.getAclfNet();
+				.getNet();
 	  	//System.out.println(net.net2String());
 		
 	  	net.accept(new ZeroZBranchProcesor(true));
@@ -86,7 +86,7 @@ public class IEEE14BusBreaker_dclf_Test extends CorePluginTestSetup {
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/ieee_odm/ieee14Bus_breaker_1.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
-				.getAclfNet();
+				.getNet();
 	  	//System.out.println(net.net2String());
 		
 	  	net.accept(new ZeroZBranchProcesor(true));

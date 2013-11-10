@@ -1,7 +1,7 @@
 /*
- * @(#)ODMDStabDataMapper.java   
+ * @(#)ODMOpfDataMapper.java   
  *
- * Copyright (C) 2008-2010 www.interpss.org
+ * Copyright (C) 2008 www.interpss.org
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU LESSER GENERAL PUBLIC LICENSE
@@ -13,7 +13,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * @Author Mike Zhou, Stephen Hau
+ * @Author Mike Zhou
  * @Version 1.0
  * @Date 11/15/2010
  * 
@@ -24,24 +24,14 @@
 
 package org.interpss.mapper.odm;
 
-import org.ieee.odm.model.dstab.DStabModelParser;
-import org.interpss.mapper.odm.impl.dstab.AbstractODMDStabDataMapper;
-
-import com.interpss.common.msg.IPSSMsgHub;
+import org.ieee.odm.model.aclf.AclfModelParser;
+import org.interpss.mapper.odm.impl.opf.AbstractODMOpfParserMapper;
 
 /**
- * mapper implementation to map ODM to InterPSS object model for DStab
+ * mapper implementation to map ODM to InterPSS object model for Opf
  * 
  * @author mzhou
  *
  */
-public class ODMDStabDataMapper extends AbstractODMDStabDataMapper<DStabModelParser> {
-	/**
-	 * constructor
-	 * 
-	 * @param msg
-	 */
-	public ODMDStabDataMapper(IPSSMsgHub msg) {
-		this.msg = msg;
-	}
+public class ODMOpfParserMapper extends AbstractODMOpfParserMapper<AclfModelParser> {
 }

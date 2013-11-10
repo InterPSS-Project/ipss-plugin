@@ -54,7 +54,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/ieee_odm/ieee14Bus_breaker.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
-				.getAclfNet();
+				.getNet();
 	  	//System.out.println(net.net2String());
 
 	  	// create the default loadflow algorithm
@@ -83,7 +83,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/ieee_odm/ieee14Bus_breaker.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
-				.getAclfNet();
+				.getNet();
 
 		IpssLogger.getLogger().setLevel(Level.INFO);
 		
@@ -120,7 +120,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/ieee_odm/ieee14Bus_breaker.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
-				.getAclfNet();
+				.getNet();
 
 		IpssLogger.getLogger().setLevel(Level.INFO);
 		
@@ -156,7 +156,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/ieee_odm/ieee14Bus_breaker.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
-				.getAclfNet();
+				.getNet();
 
 		IpssLogger.getLogger().setLevel(Level.INFO);
 		
@@ -199,7 +199,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/ieee_odm/ieee14Bus_breaker_1.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
-				.getAclfNet();
+				.getNet();
 
 		IpssLogger.getLogger().setLevel(Level.INFO);
 		

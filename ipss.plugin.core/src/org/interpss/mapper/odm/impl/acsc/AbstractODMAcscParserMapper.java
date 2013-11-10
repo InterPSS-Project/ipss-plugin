@@ -41,7 +41,6 @@ import org.ieee.odm.schema.BranchXmlType;
 import org.ieee.odm.schema.BusXmlType;
 import org.ieee.odm.schema.GroundingEnumType;
 import org.ieee.odm.schema.GroundingXmlType;
-import org.ieee.odm.schema.LFGenCodeEnumType;
 import org.ieee.odm.schema.LineShortCircuitXmlType;
 import org.ieee.odm.schema.NetworkCategoryEnumType;
 import org.ieee.odm.schema.OriginalDataFormatEnumType;
@@ -85,12 +84,12 @@ import com.interpss.simu.SimuCtxType;
  *
  * @param <Tfrom>
  */
-public abstract class AbstractODMAcscDataMapper<Tfrom> extends AbstractODMAclfParserMapper<Tfrom> {
+public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclfParserMapper<Tfrom> {
 	/**
 	 * constructor
 	 * 
 	 */
-	public AbstractODMAcscDataMapper() {
+	public AbstractODMAcscParserMapper() {
 	}
 	
 	/**

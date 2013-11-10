@@ -55,7 +55,7 @@ public class BPAFormat extends IpssFileAdapterBase {
 				System.out.println(adapter.getModel().toXmlDoc(outfile));
 
 			String filepath = filepathAry[0];
-			if (CorePluginSpringFactory.getOdm2DStabMapper().map2Model((DStabModelParser)adapter.getModel(), simuCtx)) {
+			if (CorePluginSpringFactory.getOdm2DStabParserMapper().map2Model((DStabModelParser)adapter.getModel(), simuCtx)) {
 	  	  		simuCtx.setName(filepath.substring(filepath.lastIndexOf(File.separatorChar)+1));
 	  	  		simuCtx.setDesc("This project is created by input file " + filepath);
 			}

@@ -13,8 +13,8 @@ import org.ieee.odm.model.acsc.AcscModelParser;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
-import org.interpss.mapper.odm.ODMAcscDataMapper;
-import org.interpss.mapper.odm.ODMDStabDataMapper;
+import org.interpss.mapper.odm.ODMAcscParserMapper;
+import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.Number2String;
 import org.junit.Test;
@@ -53,7 +53,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		
 		
 		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-		if (!new ODMDStabDataMapper(msg)
+		if (!new ODMDStabParserMapper(msg)
 					.map2Model(parser, simuCtx)) {
 			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
 			return;

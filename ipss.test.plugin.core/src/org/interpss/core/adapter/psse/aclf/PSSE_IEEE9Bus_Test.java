@@ -51,7 +51,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_31)
 				.load()
-				.getAclfNet();
+				.getNet();
 	}
 
 	//@Test
@@ -61,7 +61,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_30)
 				.load()
-				.getAclfNet();
+				.getNet();
 		AclfNetBean netBean30 = new AclfNet2BeanMapper().map2Model(net30);
 		
 		// load the test data V29
@@ -69,7 +69,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_29)
 				.load()
-				.getAclfNet();
+				.getNet();
 		AclfNetBean netBean29 = new AclfNet2BeanMapper().map2Model(net29);
 		
 		// compare the data model with V30
@@ -80,7 +80,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_31)
 				.load()
-				.getAclfNet();
+				.getNet();
 		AclfNetBean netBean31 = new AclfNet2BeanMapper().map2Model(net31);
 		
 		// compare the data model  with V30
@@ -91,7 +91,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_32)
 				.load()
-				.getAclfNet();
+				.getNet();
 		AclfNetBean netBean32 = new AclfNet2BeanMapper().map2Model(net32);
 		
 		// compare the data model  with V30
@@ -102,7 +102,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_33)
 				.load()
-				.getAclfNet();
+				.getNet();
 		AclfNetBean netBean33 = new AclfNet2BeanMapper().map2Model(net33);
 		
 		// compare the data model with V30
@@ -115,7 +115,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_30)
 				.load()
-				.getAclfNet();
+				.getNet();
 
 		testVAclf(net);
 	}
@@ -126,7 +126,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_29)
 				.load()
-				.getAclfNet();
+				.getNet();
 
 		testVAclf(net);
 	}
@@ -137,7 +137,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_31)
 				.load()
-				.getAclfNet();
+				.getNet();
 
 		testVAclf(net);
 	}
@@ -148,7 +148,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_32)
 				.load()
-				.getAclfNet();
+				.getNet();
 
 		testVAclf(net);
 	}
@@ -159,7 +159,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_33)
 				.load()
-				.getAclfNet();
+				.getNet();
 
 		testVAclf(net);
 	}

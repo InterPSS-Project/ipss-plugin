@@ -33,7 +33,7 @@ import java.util.logging.Level;
 
 import org.ieee.odm.ODMObjectFactory;
 import org.ieee.odm.model.dstab.DStabModelParser;
-import org.interpss.mapper.odm.ODMDStabDataMapper;
+import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.junit.Test;
 
 import com.interpss.SimuObjectFactory;
@@ -56,7 +56,7 @@ public class DStab_2Bus extends DStabTestSetupBase {
 			//System.out.println(parser.toXmlDoc(false));
 
 			SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-			if (!new ODMDStabDataMapper(msg)
+			if (!new ODMDStabParserMapper(msg)
 						.map2Model(parser, simuCtx)) {
 				System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
 				return;

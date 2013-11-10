@@ -45,7 +45,7 @@ public class IEEE14Bus_odm_Test extends CorePluginTestSetup {
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/ieee_odm/ieee14Bus.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
-				.getAclfNet();
+				.getNet();
 		
   		//System.out.println(net.net2String());
 		assertTrue((net.getBusList().size() == 14 && net.getBranchList().size() == 20));
