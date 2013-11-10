@@ -25,7 +25,7 @@
 package org.interpss.mapper.odm;
 
 import org.ieee.odm.model.acsc.AcscModelParser;
-import org.interpss.mapper.odm.impl.acsc.AbstractODMAcscDataMapper;
+import org.interpss.mapper.odm.impl.acsc.AbstractODMAcscParserMapper;
 
 /**
  * mapper implementation to map ODM to InterPSS object model for Acsc
@@ -33,5 +33,5 @@ import org.interpss.mapper.odm.impl.acsc.AbstractODMAcscDataMapper;
  * @author mzhou
  *
  */
-public class ODMAcscDataMapper extends AbstractODMAcscDataMapper<AcscModelParser> {
+public class ODMAcscParserMapper extends AbstractODMAcscParserMapper<AcscModelParser> {
 }

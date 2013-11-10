@@ -60,7 +60,7 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 					.setFormat(IpssAdapter.FileFormat.PSSE)
 					.setPsseVersion(PsseVersion.PSSE_30)
 					.load(true, "output/odm.xml")
-					.getAclfNet();
+					.getNet();
   		//System.out.println(net.net2String());
 
 	  	net.accept(CoreObjectFactory.createLfAlgoVisitor());
@@ -83,7 +83,7 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/pwd/SixBus_2WPsXfr.aux")
 					.setFormat(IpssAdapter.FileFormat.PWD)
 					.load(true, "output/odm.xml")
-					.getAclfNet();
+					.getNet();
   		//System.out.println(net.net2String());
 		/*
 		net.accept(CoreObjectFactory.createBusNoArrangeVisitor());
@@ -139,7 +139,7 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 					.xfrBranchModel(ODMAclfNetMapper.XfrBranchModel.InterPSS)
 					.setFormat(IpssAdapter.FileFormat.PWD)
 					.load()
-					.getAclfNet();
+					.getNet();
 
 		DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net);
 		algo.calculateDclf();
@@ -160,7 +160,7 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 					//.xfrBranchModel(ODMAclfNetMapper.XfrBranchModel.InterPSS)
 					.setFormat(IpssAdapter.FileFormat.PWD)
 					.load()
-					.getAclfNet();
+					.getNet();
 		
 		DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net);
 		algo.calculateDclf();
@@ -181,7 +181,7 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 					//.xfrBranchModel(ODMAclfNetMapper.XfrBranchModel.InterPSS)
 					.setFormat(IpssAdapter.FileFormat.PWD)
 					.load()
-					.getAclfNet();
+					.getNet();
 		
 		for (Branch b : net.getBranchList()) {
 			AclfBranch branch = (AclfBranch)b;
@@ -207,7 +207,7 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 					.xfrBranchModel(ODMAclfNetMapper.XfrBranchModel.InterPSS)
 					.setFormat(IpssAdapter.FileFormat.PWD)
 					.load()
-					.getAclfNet();
+					.getNet();
 		
 		for (Branch b : net.getBranchList()) {
 			AclfBranch branch = (AclfBranch)b;

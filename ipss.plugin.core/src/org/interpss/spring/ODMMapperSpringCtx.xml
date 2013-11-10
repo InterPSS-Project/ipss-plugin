@@ -16,19 +16,19 @@
 	      scope="singleton">	
 	</bean>	
 
-	<bean id="odm2AcscMapper" 
-	      class="org.interpss.mapper.odm.ODMAcscDataMapper"
+	<bean id="odm2AcscParserMapper" 
+	      class="org.interpss.mapper.odm.ODMAcscParserMapper"
 	      scope="singleton">	
 	</bean>	
 	
-	<bean id="odm2DStabMapper" 
-	      class="org.interpss.mapper.odm.ODMDStabDataMapper"
+	<bean id="odm2DStabParserMapper" 
+	      class="org.interpss.mapper.odm.ODMDStabParserMapper"
 	      scope="singleton">	
 	      <constructor-arg>	<ref bean="ipssMsgHub"/>  </constructor-arg>	      
 	</bean>	
 	
-	<bean id="odm2OpfMapper" 
-	      class="org.interpss.mapper.odm.ODMOpfDataMapper"
+	<bean id="odm2OpfParserMapper" 
+	      class="org.interpss.mapper.odm.ODMOpfParserMapper"
 	      scope="singleton">	
 	</bean>	
 </beans>

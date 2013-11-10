@@ -102,12 +102,12 @@ import com.interpss.simu.SimuCtxType;
  *
  * @param <Tfrom>
  */
-public abstract class AbstractODMOpfDataMapper <Tfrom> extends AbstractODMAclfParserMapper<Tfrom> {
+public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclfParserMapper<Tfrom> {
 	/**
 	 * constructor
 	 * 
 	 */
-	public AbstractODMOpfDataMapper() {
+	public AbstractODMOpfParserMapper() {
 	}
 	
 	/**

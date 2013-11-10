@@ -48,7 +48,7 @@ public class IEEE14BusBreakerTest extends CorePluginTestSetup {
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/ieee_odm/ieee14Bus_breaker.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
-				.getAclfNet();
+				.getNet();
 		
 	  	double smallBranchZ = 0.00001;
 	  	net.accept(new ZeroZBranchProcesor(smallBranchZ, true));
@@ -68,7 +68,7 @@ public class IEEE14BusBreakerTest extends CorePluginTestSetup {
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/ieee_odm/ieee14Bus_breaker.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
-				.getAclfNet();
+				.getNet();
 		
 	  	net.setVisitedStatus(false);
 	  	net.markSmallZBranch(0.00001, false);		
