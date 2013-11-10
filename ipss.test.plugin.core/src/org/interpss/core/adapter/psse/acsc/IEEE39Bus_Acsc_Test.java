@@ -9,7 +9,7 @@ import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
 import org.ieee.odm.model.acsc.AcscModelParser;
-import org.interpss.mapper.odm.ODMAcscDataMapper;
+import org.interpss.mapper.odm.ODMAcscParserMapper;
 import org.junit.Test;
 
 import com.interpss.CoreObjectFactory;
@@ -32,7 +32,7 @@ public class IEEE39Bus_Acsc_Test {
 		AcscModelParser acscParser =(AcscModelParser) adapter.getModel();
 			
 		
-		AcscNetwork faultNet = new ODMAcscDataMapper().map2Model(acscParser).getAcscNet();
+		AcscNetwork faultNet = new ODMAcscParserMapper().map2Model(acscParser).getAcscNet();
 		System.out.println(faultNet.net2String());
 		
 //	  	SimpleFaultAlgorithm algo = CoreObjectFactory.createSimpleFaultAlgorithm(faultNet);

@@ -8,7 +8,7 @@ import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
 import org.ieee.odm.model.acsc.AcscModelParser;
 import org.interpss.IpssCorePlugin;
-import org.interpss.mapper.odm.ODMAcscDataMapper;
+import org.interpss.mapper.odm.ODMAcscParserMapper;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.interpss.numeric.util.TestUtilFunc;
@@ -39,7 +39,7 @@ public class IEEE9Bus_Acsc_test {
 			AcscModelParser acscParser =(AcscModelParser) adapter.getModel();
 			//acscParser.stdout();
 			
-			AcscNetwork net = new ODMAcscDataMapper().map2Model(acscParser).getAcscNet();
+			AcscNetwork net = new ODMAcscParserMapper().map2Model(acscParser).getAcscNet();
 			
 			//set the order in original sequence for better testing
 			for(int i=1;i<=net.getNoBus();i++){
@@ -123,7 +123,7 @@ public class IEEE9Bus_Acsc_test {
 		AcscModelParser acscParser =(AcscModelParser) adapter.getModel();
 		//acscParser.stdout();
 		
-		AcscNetwork net = new ODMAcscDataMapper().map2Model(acscParser).getAcscNet();
+		AcscNetwork net = new ODMAcscParserMapper().map2Model(acscParser).getAcscNet();
 		
 		//set the order in original sequence for better testing
 		for(int i=1;i<=net.getNoBus();i++){

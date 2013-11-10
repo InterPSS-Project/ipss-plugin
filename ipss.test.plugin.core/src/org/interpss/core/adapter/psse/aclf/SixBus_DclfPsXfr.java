@@ -59,7 +59,7 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
 					.setFormat(IpssAdapter.FileFormat.PSSE)
 					.setPsseVersion(PsseVersion.PSSE_30)
 					.load()
-					.getAclfNet();
+					.getNet();
   		//System.out.println(net.net2String());
 
 	  	net.accept(CoreObjectFactory.createLfAlgoVisitor());
@@ -83,7 +83,7 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
 					.setFormat(IpssAdapter.FileFormat.PSSE)
 					.setPsseVersion(PsseVersion.PSSE_30)
 					.load()
-					.getAclfNet();
+					.getNet();
   		//System.out.println(net.net2String());
 		/*
 		net.accept(CoreObjectFactory.createBusNoArrangeVisitor());
@@ -117,7 +117,7 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
 					.setFormat(IpssAdapter.FileFormat.PSSE)
 					.setPsseVersion(PsseVersion.PSSE_30)
 					.load()
-					.getAclfNet();
+					.getNet();
 
 		DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net);
 		
@@ -146,7 +146,7 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
 					.setFormat(IpssAdapter.FileFormat.PSSE)
 					.setPsseVersion(PsseVersion.PSSE_30)
 					.load()
-					.getAclfNet();
+					.getNet();
   		//System.out.println(net.net2String());
 
 	  	net.accept(CoreObjectFactory.createLfAlgoVisitor());
@@ -171,7 +171,7 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
 					.setFormat(IpssAdapter.FileFormat.PSSE)
 					.setPsseVersion(PsseVersion.PSSE_30)
 					.load()
-					.getAclfNet();
+					.getNet();
 
 		DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net);
 		algo.calculateDclf();

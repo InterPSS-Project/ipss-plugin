@@ -57,7 +57,7 @@ import org.ieee.odm.schema.XfrShortCircuitXmlType;
 import org.interpss.mapper.odm.ODMAclfNetMapper;
 import org.interpss.mapper.odm.ODMHelper;
 import org.interpss.mapper.odm.impl.aclf.AclfBusDataHelper;
-import org.interpss.mapper.odm.impl.acsc.AbstractODMAcscDataMapper;
+import org.interpss.mapper.odm.impl.acsc.AbstractODMAcscParserMapper;
 
 import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
@@ -79,13 +79,13 @@ import com.interpss.simu.SimuCtxType;
  *
  * @param <Tfrom>
  */
-public abstract class AbstractODMDStabDataMapper<Tfrom> extends AbstractODMAcscDataMapper<Tfrom> {
+public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcscParserMapper<Tfrom> {
 	protected IPSSMsgHub msg = null;
 	
 	/**
 	 * constructor
 	 */
-	public AbstractODMDStabDataMapper() {
+	public AbstractODMDStabParserMapper() {
 	}
 		
 	/**

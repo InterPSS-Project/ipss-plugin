@@ -33,7 +33,7 @@ import java.util.logging.Level;
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.model.acsc.AcscModelParser;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.mapper.odm.ODMAcscDataMapper;
+import org.interpss.mapper.odm.ODMAcscParserMapper;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.TestUtilFunc;
 import org.junit.Test;
@@ -59,7 +59,7 @@ public class Acsc5Bus_ODM_TestCase extends CorePluginTestSetup {
 		parser.parse(new FileInputStream(file));	
 		//System.out.println(parser.toXmlDoc());
 		
-		AcscNetwork faultNet = new ODMAcscDataMapper().map2Model(parser).getAcscNet();
+		AcscNetwork faultNet = new ODMAcscParserMapper().map2Model(parser).getAcscNet();
 		//System.out.println(faultNet.net2String());
 		
 	  	SimpleFaultAlgorithm algo = CoreObjectFactory.createSimpleFaultAlgorithm(faultNet);
@@ -83,7 +83,7 @@ public class Acsc5Bus_ODM_TestCase extends CorePluginTestSetup {
 		AcscModelParser parser = new AcscModelParser();
 		parser.parse(new FileInputStream(file));		
 		//System.out.println(parser.toXmlDoc());
-		AcscNetwork faultNet = new ODMAcscDataMapper().map2Model(parser).getAcscNet();
+		AcscNetwork faultNet = new ODMAcscParserMapper().map2Model(parser).getAcscNet();
 		//System.out.println(faultNet.net2String());
 
 		///////////////////compare aclfNet ///////////////////////////
