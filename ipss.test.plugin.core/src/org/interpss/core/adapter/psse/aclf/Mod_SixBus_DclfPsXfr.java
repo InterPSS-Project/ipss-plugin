@@ -58,12 +58,12 @@ public class Mod_SixBus_DclfPsXfr extends CorePluginTestSetup {
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
 		ODMLogger.getLogger().setLevel(Level.WARNING);
 
-		AclfNetwork net = IpssAdapter.importNet("testData/psse/v30/Mod_SixBus_2WPsXfr.raw")
+		AclfNetwork net = IpssAdapter.importNet("testData/adpter/psse/v30/Mod_SixBus_2WPsXfr.raw")
 					.setFormat(IpssAdapter.FileFormat.PSSE)
 					.setPsseVersion(PsseVersion.PSSE_30)
 					.xfrBranchModel(ODMAclfNetMapper.XfrBranchModel.InterPSS)
 					.load(true, "output/odm.xml")
-					.getNet();
+					.getImportedObj();
   		//System.out.println(net.net2String());
 
 	  	net.accept(CoreObjectFactory.createLfAlgoVisitor());
@@ -83,12 +83,12 @@ public class Mod_SixBus_DclfPsXfr extends CorePluginTestSetup {
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
 		ODMLogger.getLogger().setLevel(Level.WARNING);
 
-		AclfNetwork net = IpssAdapter.importNet("testData/psse/v30/Mod_SixBus_2WPsXfr.raw")
+		AclfNetwork net = IpssAdapter.importNet("testData/adpter/psse/v30/Mod_SixBus_2WPsXfr.raw")
 					.setFormat(IpssAdapter.FileFormat.PSSE)
 					.setPsseVersion(PsseVersion.PSSE_30)
 					.xfrBranchModel(ODMAclfNetMapper.XfrBranchModel.PSSE)
 					.load(true, "output/odm.xml")
-					.getNet();
+					.getImportedObj();
   		//System.out.println(net.net2String());
 
 	  	net.accept(CoreObjectFactory.createLfAlgoVisitor());
@@ -108,12 +108,12 @@ public class Mod_SixBus_DclfPsXfr extends CorePluginTestSetup {
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
 		ODMLogger.getLogger().setLevel(Level.WARNING);
 
-		AclfNetwork net = IpssAdapter.importNet("testData/psse/v30/Mod_SixBus_2WPsXfr.raw")
+		AclfNetwork net = IpssAdapter.importNet("testData/adpter/psse/v30/Mod_SixBus_2WPsXfr.raw")
 					.format(IpssAdapter.FileFormat.PSSE)
 					.psseVersion(PsseVersion.PSSE_30)
 					.xfrBranchModel(ODMAclfNetMapper.XfrBranchModel.InterPSS)
 					.load()
-					.getNet();
+					.getImportedObj();
   		//System.out.println(net.net2String());
 		/*
 		net.accept(CoreObjectFactory.createBusNoArrangeVisitor());
@@ -153,12 +153,12 @@ public class Mod_SixBus_DclfPsXfr extends CorePluginTestSetup {
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
 		ODMLogger.getLogger().setLevel(Level.WARNING);
 
-		AclfNetwork net = IpssAdapter.importNet("testData/psse/v30/Mod_SixBus_2WPsXfr.raw")
+		AclfNetwork net = IpssAdapter.importNet("testData/adpter/psse/v30/Mod_SixBus_2WPsXfr.raw")
 					.format(IpssAdapter.FileFormat.PSSE)
 					.psseVersion(PsseVersion.PSSE_30)
 					.xfrBranchModel(ODMAclfNetMapper.XfrBranchModel.PSSE)
 					.load()
-					.getNet();
+					.getImportedObj();
   		//System.out.println(net.net2String());
 		/*
 		net.accept(CoreObjectFactory.createBusNoArrangeVisitor());

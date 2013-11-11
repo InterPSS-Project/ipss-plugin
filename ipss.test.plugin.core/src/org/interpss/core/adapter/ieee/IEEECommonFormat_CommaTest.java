@@ -43,7 +43,7 @@ public class IEEECommonFormat_CommaTest extends CorePluginTestSetup {
 	public void testCase1() throws Exception {
 		AclfNetwork net = CorePluginObjFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testdata/ieee_format/ieee14_comma.ieee")
+				.load("testdata/adpter/ieee_format/ieee14_comma.ieee")
 				.getAclfNet();	
 		
 //		IODMAdapter adapter = new IeeeCDFAdapter(IpssLogger.getLogger());

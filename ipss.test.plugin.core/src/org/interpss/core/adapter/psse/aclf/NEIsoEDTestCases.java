@@ -46,7 +46,7 @@ public class NEIsoEDTestCases extends CorePluginTestSetup {
 		
 		AclfNetwork net = CorePluginObjFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.PSSE)
-				.load("testData/psse/test_model_V30.raw")
+				.load("testData/adpter/psse/test_model_V30.raw")
 				.getAclfNet();			
 		
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);

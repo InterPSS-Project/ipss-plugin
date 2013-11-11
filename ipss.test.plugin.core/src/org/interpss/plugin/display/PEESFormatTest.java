@@ -19,7 +19,7 @@ public class PEESFormatTest {
 	@Test
 	public void testCase1() throws Exception {
 		IODMAdapter adapter = new PSSEAdapter(PSSEAdapter.PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile("testData/psse/PSSE_5Bus_Test.raw"));		
+		assertTrue(adapter.parseInputFile("testData/adpter/psse/PSSE_5Bus_Test.raw"));		
 		
 		AclfNetwork net = CorePluginSpringFactory
 				.getOdm2AclfParserMapper(ODMAclfNetMapper.XfrBranchModel.InterPSS)

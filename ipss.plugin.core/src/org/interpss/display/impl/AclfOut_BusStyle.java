@@ -25,7 +25,7 @@
 package org.interpss.display.impl;
 
 import static com.interpss.common.util.IpssLogger.ipssLogger;
-import static com.interpss.dc.DcPluginFunction.OutputSolarNet;
+import static org.interpss.CorePluginFunction.OutputSolarNet;
 import static org.interpss.CorePluginFunction.FormatKVStr;
 import static org.interpss.CorePluginFunction.OutputBusId;
 

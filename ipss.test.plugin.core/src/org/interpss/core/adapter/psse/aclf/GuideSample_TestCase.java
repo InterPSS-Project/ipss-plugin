@@ -51,7 +51,7 @@ public class GuideSample_TestCase extends CorePluginTestSetup {
 	@Test
 	public void testCase() throws Exception {
 		IODMAdapter adapter = new PSSEAdapter(PSSEAdapter.PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile("testData/psse/PSSE_GuideSample.raw"));		
+		assertTrue(adapter.parseInputFile("testData/adpter/psse/PSSE_GuideSample.raw"));		
 		
 		AclfModelParser parser = (AclfModelParser)adapter.getModel();
 		
@@ -83,7 +83,7 @@ public class GuideSample_TestCase extends CorePluginTestSetup {
 	@Test
 	public void testCase1() throws Exception {
 		IODMAdapter adapter = new PSSEAdapter(PSSEAdapter.PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile("testData/psse/PSSE_GuideSample.raw"));		
+		assertTrue(adapter.parseInputFile("testData/adpter/psse/PSSE_GuideSample.raw"));		
 		
 		AclfNetwork net = CorePluginSpringFactory
 				.getOdm2AclfParserMapper(ODMAclfNetMapper.XfrBranchModel.InterPSS)

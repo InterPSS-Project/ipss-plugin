@@ -42,10 +42,10 @@ public class IEEE14BusBreaker_dclf_Test extends CorePluginTestSetup {
 	@Test 
 	public void case1_regularMethod() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importNet("testData/ieee_odm/ieee14Bus_breaker.xml")
+		AclfNetwork net = IpssAdapter.importNet("testData/odm/ieee14Bus_breaker.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
-				.getNet();
+				.getImportedObj();
 	  	//System.out.println(net.net2String());
 
 		DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net);
@@ -60,10 +60,10 @@ public class IEEE14BusBreaker_dclf_Test extends CorePluginTestSetup {
 	@Test 
 	public void case1_smallZ() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importNet("testData/ieee_odm/ieee14Bus_breaker.xml")
+		AclfNetwork net = IpssAdapter.importNet("testData/odm/ieee14Bus_breaker.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
-				.getNet();
+				.getImportedObj();
 	  	//System.out.println(net.net2String());
 		
 	  	net.accept(new ZeroZBranchProcesor(true));
@@ -83,10 +83,10 @@ public class IEEE14BusBreaker_dclf_Test extends CorePluginTestSetup {
 		// test casa with a small-Z brach loop at Bus-14
 		
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importNet("testData/ieee_odm/ieee14Bus_breaker_1.xml")
+		AclfNetwork net = IpssAdapter.importNet("testData/odm/ieee14Bus_breaker_1.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
-				.getNet();
+				.getImportedObj();
 	  	//System.out.println(net.net2String());
 		
 	  	net.accept(new ZeroZBranchProcesor(true));

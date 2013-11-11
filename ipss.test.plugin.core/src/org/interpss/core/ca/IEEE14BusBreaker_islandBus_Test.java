@@ -46,10 +46,10 @@ public class IEEE14BusBreaker_islandBus_Test extends CorePluginTestSetup {
 	@Test 
 	public void case1() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importNet("testData/ieee_odm/ieee14Bus_breaker.xml")
+		AclfNetwork net = IpssAdapter.importNet("testData/odm/ieee14Bus_breaker.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
-				.getNet();
+				.getImportedObj();
 	  	//System.out.println(net.net2String());
 
 		List<OutageBranch> list = new ArrayList<OutageBranch>();
@@ -80,10 +80,10 @@ public class IEEE14BusBreaker_islandBus_Test extends CorePluginTestSetup {
 	@Test 
 	public void case_smallZ() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importNet("testData/ieee_odm/ieee14Bus_breaker.xml")
+		AclfNetwork net = IpssAdapter.importNet("testData/odm/ieee14Bus_breaker.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
-				.getNet();
+				.getImportedObj();
 	  	//System.out.println(net.net2String());
 		
 	  	net.accept(new ZeroZBranchProcesor(0.00001, true));

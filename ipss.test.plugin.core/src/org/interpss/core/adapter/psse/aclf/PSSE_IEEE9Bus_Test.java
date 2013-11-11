@@ -47,40 +47,40 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 	//@Test
 	public void load() throws Exception {
 		// load the test data V33
-		AclfNetwork net33 = IpssAdapter.importNet("testdata/psse/v31/ieee9_v31.raw")
+		AclfNetwork net33 = IpssAdapter.importNet("testdata/adpter/psse/v31/ieee9_v31.raw")
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_31)
 				.load()
-				.getNet();
+				.getImportedObj();
 	}
 
 	//@Test
 	public void compare() throws Exception {
 		// load the test data V30
-		AclfNetwork net30 = IpssAdapter.importNet("testdata/psse/v30/IEEE9Bus/ieee9.raw")
+		AclfNetwork net30 = IpssAdapter.importNet("testdata/adpter/psse/v30/IEEE9Bus/ieee9.raw")
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_30)
 				.load()
-				.getNet();
+				.getImportedObj();
 		AclfNetBean netBean30 = new AclfNet2BeanMapper().map2Model(net30);
 		
 		// load the test data V29
-		AclfNetwork net29 = IpssAdapter.importNet("testdata/psse/v29/ieee9_v29.raw")
+		AclfNetwork net29 = IpssAdapter.importNet("testdata/adpter/psse/v29/ieee9_v29.raw")
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_29)
 				.load()
-				.getNet();
+				.getImportedObj();
 		AclfNetBean netBean29 = new AclfNet2BeanMapper().map2Model(net29);
 		
 		// compare the data model with V30
 		netBean30.compareTo(netBean29);
 
 		// load the test data V31
-		AclfNetwork net31 = IpssAdapter.importNet("testdata/psse/v31/ieee9_v31.raw")
+		AclfNetwork net31 = IpssAdapter.importNet("testdata/adpter/psse/v31/ieee9_v31.raw")
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_31)
 				.load()
-				.getNet();
+				.getImportedObj();
 		AclfNetBean netBean31 = new AclfNet2BeanMapper().map2Model(net31);
 		
 		// compare the data model  with V30
@@ -91,18 +91,18 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_32)
 				.load()
-				.getNet();
+				.getImportedObj();
 		AclfNetBean netBean32 = new AclfNet2BeanMapper().map2Model(net32);
 		
 		// compare the data model  with V30
 		netBean30.compareTo(netBean32);
 		
 		// load the test data V33
-		AclfNetwork net33 = IpssAdapter.importNet("testdata/psse/v33/ieee9_v33.raw")
+		AclfNetwork net33 = IpssAdapter.importNet("testdata/adpter/psse/v33/ieee9_v33.raw")
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_33)
 				.load()
-				.getNet();
+				.getImportedObj();
 		AclfNetBean netBean33 = new AclfNet2BeanMapper().map2Model(net33);
 		
 		// compare the data model with V30
@@ -111,55 +111,55 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 	
 	@Test
 	public void testV30() throws Exception {
-		AclfNetwork net = IpssAdapter.importNet("testdata/psse/v30/IEEE9Bus/ieee9.raw")
+		AclfNetwork net = IpssAdapter.importNet("testdata/adpter/psse/v30/IEEE9Bus/ieee9.raw")
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_30)
 				.load()
-				.getNet();
+				.getImportedObj();
 
 		testVAclf(net);
 	}
 
 	@Test
 	public void testV29() throws Exception {
-		AclfNetwork net = IpssAdapter.importNet("testdata/psse/v29/ieee9_v29.raw")
+		AclfNetwork net = IpssAdapter.importNet("testdata/adpter/psse/v29/ieee9_v29.raw")
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_29)
 				.load()
-				.getNet();
+				.getImportedObj();
 
 		testVAclf(net);
 	}
 
 	@Test
 	public void testV31() throws Exception {
-		AclfNetwork net = IpssAdapter.importNet("testdata/psse/v31/ieee9_v31.raw")
+		AclfNetwork net = IpssAdapter.importNet("testdata/adpter/psse/v31/ieee9_v31.raw")
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_31)
 				.load()
-				.getNet();
+				.getImportedObj();
 
 		testVAclf(net);
 	}
 	
 	@Test
 	public void testV32() throws Exception {
-		AclfNetwork net = IpssAdapter.importNet("testdata/psse/v32/ieee9_v32.raw")
+		AclfNetwork net = IpssAdapter.importNet("testdata/adpter/psse/v32/ieee9_v32.raw")
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_32)
 				.load()
-				.getNet();
+				.getImportedObj();
 
 		testVAclf(net);
 	}
 	
 	@Test
 	public void testV33() throws Exception {
-		AclfNetwork net = IpssAdapter.importNet("testdata/psse/v33/ieee9_v33.raw")
+		AclfNetwork net = IpssAdapter.importNet("testdata/adpter/psse/v33/ieee9_v33.raw")
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_33)
 				.load()
-				.getNet();
+				.getImportedObj();
 
 		testVAclf(net);
 	}

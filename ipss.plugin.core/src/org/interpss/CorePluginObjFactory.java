@@ -23,6 +23,11 @@
  */
 package org.interpss;
 
+import java.io.File;
+import java.io.FileInputStream;
+
+import org.ieee.odm.ODMObjectFactory;
+import org.ieee.odm.model.dc.DcSystemModelParser;
 import org.interpss.fadapter.BPAFormat;
 import org.interpss.fadapter.GEFormat;
 import org.interpss.fadapter.IeeeCDFFormat;
@@ -34,6 +39,8 @@ import org.interpss.fadapter.UCTEFormat;
 import org.interpss.spring.CorePluginSpringFactory;
 
 import com.interpss.common.exp.InterpssException;
+import com.interpss.dc.DcNetwork;
+import com.interpss.dc.common.IpssDcSysException;
 
 /**
  * Core plugin object factory
@@ -86,4 +93,25 @@ public class CorePluginObjFactory {
 		} 
 		throw new InterpssException("Error - File adapter format/version not implemented");
 	}
+	
+	/**
+	 * Create a DcSysNetwork object by loading an ODM xml file
+	 * 
+	 * @param filename
+	 * @return
+	 * @throws IpssDcSysException
+	 */
+	@Deprecated public static DcNetwork createDcNetwork(String filename) throws IpssDcSysException {
+		try {
+			File file = new File(filename);
+			DcSystemModelParser parser = ODMObjectFactory.createDcSystemModelParser();
+			if (!parser.parse(new FileInputStream(file))) {
+				throw new IpssDcSysException("Xml input file parsing error");
+			}
+			//System.out.println(parser.toXmlDoc(false));
+			return CorePluginSpringFactory.getOdm2DcSysParserMapper().map2Model(parser);
+		} catch (Exception e) {
+			throw new IpssDcSysException(e.toString());
+		}
+	}	
 }

@@ -33,8 +33,8 @@ public class IEEE9Bus_Acsc_test {
 			IpssCorePlugin.init();
 			PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
 			assertTrue(adapter.parseInputFile(NetType.AcscNet, new String[]{
-					"testData/psse/v30/IEEE9Bus/ieee9.raw",
-					"testData/psse/v30/IEEE9Bus/ieee9.seq"
+					"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
+					"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq"
 			}));
 			AcscModelParser acscParser =(AcscModelParser) adapter.getModel();
 			//acscParser.stdout();
@@ -117,8 +117,8 @@ public class IEEE9Bus_Acsc_test {
 		IpssCorePlugin.init();
 		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.AcscNet, new String[]{
-				"testData/psse/v30/IEEE9Bus/ieee9.raw",
-				"testData/psse/v30/IEEE9Bus/ieee9.seq"
+				"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
+				"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq"
 		}));
 		AcscModelParser acscParser =(AcscModelParser) adapter.getModel();
 		//acscParser.stdout();

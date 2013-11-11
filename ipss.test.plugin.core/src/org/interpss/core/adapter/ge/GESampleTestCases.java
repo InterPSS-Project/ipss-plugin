@@ -43,7 +43,7 @@ public class GESampleTestCases extends CorePluginTestSetup {
 	public void odmAdapterTestCase() throws Exception {
 		AclfNetwork net = CorePluginObjFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.GE_PSLF)
-				.load("testdata/ge/Sample18Bus.epc")
+				.load("testdata/adpter/ge/Sample18Bus.epc")
 				.getAclfNet();	
 		
 //		IODMAdapter adapter = ODMObjectFactory.createODMAdapter(ODMFileFormatEnum.GePSLF);
