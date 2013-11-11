@@ -42,7 +42,7 @@ public class IEEE14Bus_odm_Test extends CorePluginTestSetup {
 	@Test 
 	public void processZeroZBranch() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/ieee_odm/ieee14Bus.xml")
+		AclfNetwork net = IpssAdapter.importNet("testData/ieee_odm/ieee14Bus.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getNet();

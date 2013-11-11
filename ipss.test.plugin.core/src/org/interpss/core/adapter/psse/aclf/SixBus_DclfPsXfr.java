@@ -55,7 +55,7 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
 		ODMLogger.getLogger().setLevel(Level.WARNING);
 
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v30/SixBus_2WPsXfr.raw")
+		AclfNetwork net = IpssAdapter.importNet("testData/psse/v30/SixBus_2WPsXfr.raw")
 					.setFormat(IpssAdapter.FileFormat.PSSE)
 					.setPsseVersion(PsseVersion.PSSE_30)
 					.load()
@@ -79,7 +79,7 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
 		ODMLogger.getLogger().setLevel(Level.WARNING);
 
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v30/SixBus_2WPsXfr.raw")
+		AclfNetwork net = IpssAdapter.importNet("testData/psse/v30/SixBus_2WPsXfr.raw")
 					.setFormat(IpssAdapter.FileFormat.PSSE)
 					.setPsseVersion(PsseVersion.PSSE_30)
 					.load()
@@ -113,7 +113,7 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
 		ODMLogger.getLogger().setLevel(Level.WARNING);
 
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v30/SixBus_2WPsXfr.raw")
+		AclfNetwork net = IpssAdapter.importNet("testData/psse/v30/SixBus_2WPsXfr.raw")
 					.setFormat(IpssAdapter.FileFormat.PSSE)
 					.setPsseVersion(PsseVersion.PSSE_30)
 					.load()
@@ -142,7 +142,7 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
 		ODMLogger.getLogger().setLevel(Level.WARNING);
 
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v30/SixBus_2WPsXfr_1.raw")
+		AclfNetwork net = IpssAdapter.importNet("testData/psse/v30/SixBus_2WPsXfr_1.raw")
 					.setFormat(IpssAdapter.FileFormat.PSSE)
 					.setPsseVersion(PsseVersion.PSSE_30)
 					.load()
@@ -167,7 +167,7 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
 		ODMLogger.getLogger().setLevel(Level.WARNING);
 
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v30/SixBus_2WPsXfr_1.raw")
+		AclfNetwork net = IpssAdapter.importNet("testData/psse/v30/SixBus_2WPsXfr_1.raw")
 					.setFormat(IpssAdapter.FileFormat.PSSE)
 					.setPsseVersion(PsseVersion.PSSE_30)
 					.load()

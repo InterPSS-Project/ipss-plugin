@@ -1,5 +1,6 @@
 package org.interpss.dstab;
 
+import org.interpss.core.adapter.odm.dstab.DStab_2Bus;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;

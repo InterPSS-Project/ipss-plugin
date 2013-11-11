@@ -51,7 +51,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 	@Test 
 	public void case1_regularMethod() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/ieee_odm/ieee14Bus_breaker.xml")
+		AclfNetwork net = IpssAdapter.importNet("testData/ieee_odm/ieee14Bus_breaker.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getNet();
@@ -80,7 +80,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 	@Test 
 	public void case2_zeroZBranchProcessingBranchType()  throws InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/ieee_odm/ieee14Bus_breaker.xml")
+		AclfNetwork net = IpssAdapter.importNet("testData/ieee_odm/ieee14Bus_breaker.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getNet();
@@ -117,7 +117,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 	@Test 
 	public void case2_zeroZBranchProcessingZValue()  throws InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/ieee_odm/ieee14Bus_breaker.xml")
+		AclfNetwork net = IpssAdapter.importNet("testData/ieee_odm/ieee14Bus_breaker.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getNet();
@@ -153,7 +153,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 	@Test 
 	public void case2_zeroZBranch_ProtectedBranch()  throws InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/ieee_odm/ieee14Bus_breaker.xml")
+		AclfNetwork net = IpssAdapter.importNet("testData/ieee_odm/ieee14Bus_breaker.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getNet();
@@ -196,7 +196,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 	@Test 
 	public void case2_zeroZBranchProcessingZValue_1()  throws InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/ieee_odm/ieee14Bus_breaker_1.xml")
+		AclfNetwork net = IpssAdapter.importNet("testData/ieee_odm/ieee14Bus_breaker_1.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getNet();
