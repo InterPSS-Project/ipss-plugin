@@ -21,7 +21,7 @@ public class IEEE009Bus_Test extends CorePluginTestSetup{
 	public void testLF() throws Exception{
 		AclfNetwork net = CorePluginObjFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testData/ieee_format/009ieee.cf")
+				.load("testData/adpter/ieee_format/009ieee.cf")
 				.getAclfNet();	
 
 		

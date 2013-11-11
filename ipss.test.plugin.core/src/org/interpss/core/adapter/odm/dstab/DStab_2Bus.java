@@ -29,21 +29,20 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.logging.Level;
 
 import org.ieee.odm.ODMObjectFactory;
 import org.ieee.odm.model.dstab.DStabModelParser;
-import org.interpss.dstab.DStabTestSetupBase;
+import org.interpss.core.dstab.DStabTestSetupBase;
 import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.junit.Test;
 
 import com.interpss.SimuObjectFactory;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateVariableRecorder;
 import com.interpss.dstab.common.DStabOutSymbol;
+import com.interpss.pssl.plugin.IpssAdapter;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
@@ -51,53 +50,43 @@ public class DStab_2Bus extends DStabTestSetupBase {
 	
 	@Test
 	public void OdmTestCase() throws Exception {
-		File file = new File("testData/ieee_odm/Tran_2Bus_062011.xml");
-		DStabModelParser parser = ODMObjectFactory.createDStabModelParser();
-		if (parser.parse(new FileInputStream(file))) {
-			//System.out.println(parser.toXmlDoc(false));
-
-			SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-			if (!new ODMDStabParserMapper(msg)
-						.map2Model(parser, simuCtx)) {
-				System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-				return;
-			}
-			//System.out.println(simuCtx.getDStabilityNet().net2String());
-			
-			//IpssLogger.getLogger().setLevel(Level.INFO);
-			DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
-			LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
-			assertTrue(aclfAlgo.loadflow());
+		//IpssLogger.getLogger().setLevel(Level.INFO);
+		DynamicSimuAlgorithm dstabAlgo = IpssAdapter.importNet("testData/odm/dstab/Tran_2Bus_062011.xml")
+				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
+				.load()
+				.getImportedObj();
+		
+		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
+		assertTrue(aclfAlgo.loadflow());
 			//System.out.println(AclfOutFunc.loadFlowSummary(simuCtx.getDStabilityNet()));
 				
-			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
-			dstabAlgo.setSimuStepSec(0.001);
-			dstabAlgo.setTotalSimuTimeSec(0.01);
+		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+		dstabAlgo.setSimuStepSec(0.001);
+		dstabAlgo.setTotalSimuTimeSec(0.01);
 			
-			double[] timePoints   = {0.0,    0.004,    0.007,    0.01},
+		double[] timePoints   = {0.0,    0.004,    0.007,    0.01},
    	      			 machPePoints = {0.3347, 0.3347,   0.3347,   0.3347},
    	      			 machVPoints  = {1.0841, 1.0841,   1.0841,   1.0841};
 
-			StateVariableRecorder stateTestRecorder = new StateVariableRecorder(0.0001);
-			stateTestRecorder.addTestRecords("Bus-1-mach1", MachineState, 
+		StateVariableRecorder stateTestRecorder = new StateVariableRecorder(0.0001);
+		stateTestRecorder.addTestRecords("Bus-1-mach1", MachineState, 
 					DStabOutSymbol.OUT_SYMBOL_MACH_EQ1, timePoints, machVPoints);
-			stateTestRecorder.addTestRecords("Bus-1-mach1", MachineState, 
+		stateTestRecorder.addTestRecords("Bus-1-mach1", MachineState, 
 					DStabOutSymbol.OUT_SYMBOL_MACH_PE, timePoints, machPePoints);
-			dstabAlgo.setSimuOutputHandler(stateTestRecorder);
+		dstabAlgo.setSimuOutputHandler(stateTestRecorder);
 			
-			//IpssLogger.getLogger().setLevel(Level.INFO);
-			//dstabAlgo.setSimuOutputHandler(new TextSimuOutputHandler());
-			if (dstabAlgo.initialization()) {
-				//System.out.println(simuCtx.getDStabilityNet().net2String());
+		//IpssLogger.getLogger().setLevel(Level.INFO);
+		//dstabAlgo.setSimuOutputHandler(new TextSimuOutputHandler());
+		if (dstabAlgo.initialization()) {
+			//System.out.println(simuCtx.getDStabilityNet().net2String());
 
-				System.out.println("Running DStab simulation ...");
-				assertTrue(dstabAlgo.performSimulation());
-			}
-			
-			assertTrue(stateTestRecorder.diffTotal("Bus-1-mach1", MachineState, 
-					DStabOutSymbol.OUT_SYMBOL_MACH_EQ1) < 0.0001);
-			assertTrue(stateTestRecorder.diffTotal("Bus-1-mach1", MachineState, 
-					DStabOutSymbol.OUT_SYMBOL_MACH_PE) < 0.001);			
+			System.out.println("Running DStab simulation ...");
+			assertTrue(dstabAlgo.performSimulation());
 		}
+			
+		assertTrue(stateTestRecorder.diffTotal("Bus-1-mach1", MachineState, 
+					DStabOutSymbol.OUT_SYMBOL_MACH_EQ1) < 0.0001);
+		assertTrue(stateTestRecorder.diffTotal("Bus-1-mach1", MachineState, 
+					DStabOutSymbol.OUT_SYMBOL_MACH_PE) < 0.001);			
 	}
 }

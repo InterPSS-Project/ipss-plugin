@@ -36,7 +36,7 @@ public class UCTEFormatIEEE14BusTest extends CorePluginTestSetup {
 	public void testCase1() throws Exception {
 		AclfNetwork net = CorePluginObjFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.UCTE)
-				.load("testData/ucte/ieee14.uct")
+				.load("testData/adpter/ucte/ieee14.uct")
 				.getAclfNet();
 		
 //		IpssFileAdapter adapter = PluginSpringCtx.getCustomFileAdapter("uct");

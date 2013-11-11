@@ -44,7 +44,7 @@ public class IEEECommonFormatTest extends CorePluginTestSetup {
 	public void bus14testCase() throws Exception {
 		AclfNetwork net = CorePluginObjFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testdata/ieee_format/Ieee14Bus.ieee")
+				.load("testdata/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();		
 		
   		//System.out.println(net.net2String());
@@ -64,7 +64,7 @@ public class IEEECommonFormatTest extends CorePluginTestSetup {
 	@Test
 	public void bus39testCase() throws Exception{
 		IpssFileAdapter adapter = CorePluginObjFactory.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF);
-		SimuContext simuCtx = adapter.load("testData/ieee_format/ieee039.DAT");
+		SimuContext simuCtx = adapter.load("testData/adpter/ieee_format/ieee039.DAT");
 
 		AclfNetwork net = simuCtx.getAclfNet();
   		assertTrue(net.getBusList().size() == 39);
@@ -86,7 +86,7 @@ public class IEEECommonFormatTest extends CorePluginTestSetup {
 	@Test
 	public void bus30testCase() throws Exception{
 		IpssFileAdapter adapter = CorePluginObjFactory.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF);
-		SimuContext simuCtx = adapter.load("testData/ieee_format/ieee30.ieee");
+		SimuContext simuCtx = adapter.load("testData/adpter/ieee_format/ieee30.ieee");
 
 		AclfNetwork net = simuCtx.getAclfNet();
   		assertTrue((net.getBusList().size() == 30 && net.getBranchList().size() == 41));
@@ -107,7 +107,7 @@ public class IEEECommonFormatTest extends CorePluginTestSetup {
 	@Test
 	public void bus57testCase() throws Exception{
 		IpssFileAdapter adapter = CorePluginObjFactory.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF);
-		SimuContext simuCtx = adapter.load("testData/ieee_format/ieee57.ieee");
+		SimuContext simuCtx = adapter.load("testData/adpter/ieee_format/ieee57.ieee");
 
 		AclfNetwork net = simuCtx.getAclfNet();
   		assertTrue((net.getBusList().size() == 57 && net.getBranchList().size() == 80));
@@ -130,7 +130,7 @@ public class IEEECommonFormatTest extends CorePluginTestSetup {
 	@Test
 	public void bus118testCase() throws Exception{
 		IpssFileAdapter adapter = CorePluginObjFactory.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF);
-		SimuContext simuCtx = adapter.load("testData/ieee_format/ieee118.ieee");
+		SimuContext simuCtx = adapter.load("testData/adpter/ieee_format/ieee118.ieee");
 
 		AclfNetwork net = simuCtx.getAclfNet();
   		assertTrue((net.getBusList().size() == 118 && net.getBranchList().size() == 186));

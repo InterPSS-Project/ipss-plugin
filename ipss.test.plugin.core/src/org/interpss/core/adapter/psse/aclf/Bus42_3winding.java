@@ -40,7 +40,7 @@ public class Bus42_3winding extends CorePluginTestSetup {
 	public void testCaseNoDC() throws Exception {
 		AclfNetwork net = CorePluginObjFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.PSSE, IpssFileAdapter.Version.PSSE_30)
-				.load("testData/psse/v30/42bus_3winding_from_PSSE_V30_NoDC.raw")
+				.load("testData/adpter/psse/v30/42bus_3winding_from_PSSE_V30_NoDC.raw")
 				.getAclfNet();	
 
 		//IpssLogger.getLogger().setLevel(Level.INFO);
@@ -55,7 +55,7 @@ public class Bus42_3winding extends CorePluginTestSetup {
 	public void testCase1() throws Exception {
 		AclfNetwork net = CorePluginObjFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.PSSE, IpssFileAdapter.Version.PSSE_30)
-				.load("testData/psse/v30/42bus_3winding_from_PSSE_V30.raw")
+				.load("testData/adpter/psse/v30/42bus_3winding_from_PSSE_V30.raw")
 				.getAclfNet();	
 
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);

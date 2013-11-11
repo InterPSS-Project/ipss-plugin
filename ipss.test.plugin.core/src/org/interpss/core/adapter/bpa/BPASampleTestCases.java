@@ -43,7 +43,7 @@ public class BPASampleTestCases extends CorePluginTestSetup {
 	public void odmAdapterTestCase() throws Exception {
 		AclfNetwork net = CorePluginObjFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.BPA)
-				.load("testData/bpa/IEEE9.dat")
+				.load("testData/adpter/bpa/IEEE9.dat")
 				.getAclfNet();	
 		
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
@@ -62,7 +62,7 @@ public class BPASampleTestCases extends CorePluginTestSetup {
 	public void odmAdapterTestCase1() throws Exception {
 		AclfNetwork net = CorePluginObjFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.BPA)
-				.load("testData/bpa/Test009bpa.dat")
+				.load("testData/adpter/bpa/Test009bpa.dat")
 				.getAclfNet();	
 		
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
@@ -79,7 +79,7 @@ public class BPASampleTestCases extends CorePluginTestSetup {
 	public void outputTestCase() throws Exception {
 		AclfNetwork net = CorePluginObjFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.BPA)
-				.load("testData/bpa/Test009bpa.dat")
+				.load("testData/adpter/bpa/Test009bpa.dat")
 				.getAclfNet();	
 		System.out.println(net.net2String());
 	}

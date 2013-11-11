@@ -30,6 +30,10 @@ import org.interpss.mapper.odm.ODMAcscParserMapper;
 import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.interpss.mapper.odm.ODMOpfParserMapper;
 
+import com.interpss.dc.mapper.ODMDcSysNetMapper;
+import com.interpss.dc.mapper.ODMDcSysParserMapper;
+import com.interpss.dist.mapper.ODMDistNetMapper;
+import com.interpss.dist.mapper.ODMDistParserMapper;
 import com.interpss.spring.CoreSimuSpringFactory;
 
 /**
@@ -79,9 +83,37 @@ public class CorePluginSpringFactory extends CoreSimuSpringFactory {
 	public static ODMDStabParserMapper getOdm2DStabParserMapper() {
 		return (ODMDStabParserMapper) springAppCtx.getBean("odm2DStabParserMapper");
 	}	
+	
+	/**
+	 * create a ODMDistParserMapper object from the Spring container
+	 */
+	public static ODMDistParserMapper getOdm2DistParserMapper() {
+		return (ODMDistParserMapper) springAppCtx.getBean("odm2DistParserMapper");
+	}	
 
 	/**
-	 * create a ODMOpfDataMapper object from the Spring container
+	 * create a ODMDistNetMapper object from the Spring container
+	 */	
+	public static ODMDistNetMapper getOdm2DistNetMapper() {
+		return (ODMDistNetMapper) springAppCtx.getBean("odm2DistNetMapper");
+	}	
+	
+	/**
+	 * create a ODMDcSysParserMapper object from the Spring container
+	 */	
+	public static ODMDcSysParserMapper getOdm2DcSysParserMapper() {
+		return (ODMDcSysParserMapper) springAppCtx.getBean("odm2DcSysParserMapper");
+	}		
+
+	/**
+	 * create a ODMDcSysNetMapper object from the Spring container
+	 */	
+	public static ODMDcSysNetMapper getOdm2DcSysNetMapper() {
+		return (ODMDcSysNetMapper) springAppCtx.getBean("odm2DcSysNetMapper");
+	}		
+
+	/**
+	 * create a ODMOpfParserMapper object from the Spring container
 	 */
 	public static ODMOpfParserMapper getOdm2OpfParserMapper() {
 		return (ODMOpfParserMapper) springAppCtx.getBean("odm2OpfParserMapper");

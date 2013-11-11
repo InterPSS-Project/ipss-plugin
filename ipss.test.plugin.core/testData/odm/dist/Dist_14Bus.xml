@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pss:pssStudyCase id="Two-bus-Study" 
+    xmlns:pss="http://www.ieee.org/odm/Schema/2008" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="http://www.ieee.org/odm/Schema/2008  ../../../ieee.odm_pss/schema/StudyCase.xsd ">
+  <pss:schemaVersion>V0.8</pss:schemaVersion>
+  <pss:networkCategory>Distribution</pss:networkCategory>
+  <pss:analysisCategory>DistributionAnalysis</pss:analysisCategory>
+  <pss:distNet id="SampleDistCase">
+    <pss:basePower unit="MVA" value="100"/>
+    <pss:busList>
+    	<pss:distUtilityBus id="Bus-1">
+    		<pss:baseVoltage unit="KV" value="138.0" />
+    		<pss:voltage unit="PU" value="1.0"/>
+    		<pss:angle unit="RAD" value="0.0"/>
+    		<pss:source>
+    			<pss:scMva3Phase>1000.0</pss:scMva3Phase>
+    			<pss:xOverR3Phase>100.0</pss:xOverR3Phase>
+    			<pss:scMva1Phase>800.0</pss:scMva1Phase>
+    			<pss:xOverR1Phase>100.0</pss:xOverR1Phase>
+    		</pss:source>
+    	</pss:distUtilityBus>
+    	
+    	<pss:distNonContributeBus id="Bus-2">
+    		<pss:baseVoltage unit="VOLT" value="4160.0" />
+    	</pss:distNonContributeBus>
+    	
+    	<pss:distNonContributeBus id="Bus-3">
+    		<pss:baseVoltage unit="VOLT" value="4160.0" />
+    	</pss:distNonContributeBus>
+    	
+    	<pss:distGeneratorBus id="Bus-4">
+    		<pss:baseVoltage unit="VOLT" value="4160.0" />
+    		<pss:ratedVoltage unit="PU" value="1.0" />
+    		<pss:pFactor unit="PU" value="0.8" />
+    		<pss:grounding groundingConnection="Ungrounded"></pss:grounding>
+    		<pss:z1List>
+    			<pss:z  re="0.0" im="0.1" unit="PU"/>
+    		</pss:z1List>
+    		<pss:z0  re="0.0" im="0.05" unit="PU" />
+    		<pss:z2  re="0.0" im="0.1" unit="PU" />
+    		<pss:retedMva unit="MVA" value="6.25" />
+    		<pss:loading unit="PU" value="1.0" />
+    	</pss:distGeneratorBus>
+    	
+    	<pss:distNonContributeBus id="Bus-5">
+    		<pss:baseVoltage unit="VOLT" value="4160.0" />
+    	</pss:distNonContributeBus>
+    	
+    	<pss:distNonContributeBus id="Bus-6">
+    		<pss:baseVoltage unit="VOLT" value="4160.0" />
+    	</pss:distNonContributeBus>
+    	
+    	<pss:distNonContributeBus id="Bus-7">
+    		<pss:baseVoltage unit="VOLT" value="4160.0" />
+    	</pss:distNonContributeBus>
+    	
+    	<pss:distMixedLoadBus id="Bus-8">
+    		<pss:baseVoltage unit="VOLT" value="4160.0" />
+    		<pss:ratedVoltage unit="PU" value="1.0" />
+    		<pss:pFactor unit="PU" value="0.9" />
+    		<pss:grounding groundingConnection="Ungrounded"></pss:grounding>
+    		<pss:z1List>
+    			<pss:z im="0.1" unit="PU" />
+    		</pss:z1List>
+    		<pss:z0 im="0.1" unit="PU" />
+    		<pss:z2 im="0.1" unit="PU" />
+    		<pss:totalKva unit="MVA" value="10" />
+    		<pss:motorPercent>50.0</pss:motorPercent>
+    	</pss:distMixedLoadBus>
+    	
+    	<pss:distMixedLoadBus id="Bus-9">
+    		<pss:baseVoltage unit="VOLT" value="4160.0" />
+    		<pss:ratedVoltage unit="PU" value="1.0" />
+    		<pss:pFactor unit="PU" value="0.9" />
+    		<pss:grounding groundingConnection="Ungrounded"></pss:grounding>
+    		<pss:z1List>
+    			<pss:z im="0.1" unit="PU" />
+    		</pss:z1List>
+    		<pss:z0 im="0.1" unit="PU" />
+    		<pss:z2 im="0.1" unit="PU" />
+    		<pss:totalKva unit="MVA" value="10" />
+    		<pss:motorPercent>50.0</pss:motorPercent>
+    	</pss:distMixedLoadBus>
+    	
+    	<pss:distGeneratorBus id="Bus-10">
+    		<pss:baseVoltage unit="VOLT" value="4160.0" />
+    		<pss:ratedVoltage unit="PU" value="1.0" />
+    		<pss:pFactor unit="PU" value="0.8" />
+    		<pss:grounding groundingConnection="Ungrounded"></pss:grounding>
+    		<pss:z1List>
+    			<pss:z  re="0.0" im="0.1" unit="PU"/>
+    		</pss:z1List>
+    		<pss:z0  re="0.0" im="0.05" unit="PU" />
+    		<pss:z2  re="0.0" im="0.1" unit="PU" />
+    		<pss:retedMva unit="MVA" value="6.25" />
+    		<pss:loading unit="PU" value="1.0" />
+    	</pss:distGeneratorBus>
+    	
+    	<pss:distMixedLoadBus id="Bus-11">
+    		<pss:baseVoltage unit="VOLT" value="4160.0" />
+    		<pss:ratedVoltage unit="PU" value="1.0" />
+    		<pss:pFactor unit="PU" value="0.9" />
+    		<pss:grounding groundingConnection="Ungrounded"></pss:grounding>
+    		<pss:z1List>
+    			<pss:z im="0.1" unit="PU" />
+    		</pss:z1List>
+    		<pss:z0 im="0.1" unit="PU" />
+    		<pss:z2 im="0.1" unit="PU" />
+    		<pss:totalKva unit="MVA" value="10" />
+    		<pss:motorPercent>50.0</pss:motorPercent>
+    	</pss:distMixedLoadBus>
+    	
+    	<pss:distNonContributeBus id="Bus-12">
+    		<pss:baseVoltage unit="VOLT" value="4160.0" />
+    	</pss:distNonContributeBus>
+    	
+    	<pss:distMixedLoadBus id="Bus-13">
+    		<pss:baseVoltage unit="VOLT" value="4160.0" />
+    		<pss:ratedVoltage unit="PU" value="1.0" />
+    		<pss:pFactor unit="PU" value="0.9" />
+    		<pss:grounding groundingConnection="Ungrounded"></pss:grounding>
+    		<pss:z1List>
+    			<pss:z im="0.1" unit="PU" />
+    		</pss:z1List>
+    		<pss:z0 im="0.1" unit="PU" />
+    		<pss:z2 im="0.1" unit="PU" />
+    		<pss:totalKva unit="MVA" value="10" />
+    		<pss:motorPercent>50.0</pss:motorPercent>
+    	</pss:distMixedLoadBus>
+
+    	<pss:distNonContributeBus id="Bus-14">
+    		<pss:baseVoltage unit="VOLT" value="4160.0" />
+    	</pss:distNonContributeBus>
+    </pss:busList>
+
+    <pss:branchList>
+      <pss:distXfrBranch id="Bus1_Bus2">
+      	<pss:fromBus idRef="Bus-1"></pss:fromBus>
+      	<pss:toBus idRef="Bus-2"></pss:toBus>
+      	<pss:rating unit="MVA" value="10.0"/>
+      	<pss:primaryRatedVoltage unit="KV" value="138.0"/>
+      	<pss:secondaryRatedVoltage unit="KV" value="4.16"/>
+      	<pss:z1 re="0.0" im="7.0" unit="Percent" />
+      	<pss:z0 re="0.0" im="7.0" unit="Percent" />
+      	<pss:primaryTurnRatio unit="PU" value="1.0"/>
+      	<pss:secondaryTurnRatio unit="PU" value="1.0"/>
+      	<pss:primaryConnection xfrConnection="Wye">
+      		<pss:grounding groundingConnection="Ungrounded">
+      		</pss:grounding>
+      	</pss:primaryConnection>
+      	<pss:secondaryConnection xfrConnection="Delta">
+      	</pss:secondaryConnection>
+      </pss:distXfrBranch>
+
+      <pss:distFeederBranch id="Bus2_Bus3">
+      	<pss:fromBus idRef="Bus-2"></pss:fromBus>
+      	<pss:toBus idRef="Bus-3"></pss:toBus>
+      	<pss:z1 im="0.01" unit="PU" />
+      </pss:distFeederBranch>
+      
+      <pss:distFeederBranch id="Bus3_Bus5">
+      	<pss:fromBus idRef="Bus-3"></pss:fromBus>
+      	<pss:toBus idRef="Bus-5"></pss:toBus>
+      	<pss:z1 im="0.01" unit="PU" />
+      </pss:distFeederBranch>
+      
+      <pss:distFeederBranch id="Bus4_Bus5">
+      	<pss:fromBus idRef="Bus-4"></pss:fromBus>
+      	<pss:toBus idRef="Bus-5"></pss:toBus>
+      	<pss:z1 im="0.01" unit="PU" />
+      </pss:distFeederBranch>
+      
+      <pss:distFeederBranch id="Bus5_Bus6">
+      	<pss:fromBus idRef="Bus-5"></pss:fromBus>
+      	<pss:toBus idRef="Bus-6"></pss:toBus>
+      	<pss:z1 im="0.01" unit="PU" />
+      </pss:distFeederBranch>
+      
+      <pss:distFeederBranch id="Bus6_Bus7">
+      	<pss:fromBus idRef="Bus-6"></pss:fromBus>
+      	<pss:toBus idRef="Bus-7"></pss:toBus>
+      	<pss:z1 im="0.01" unit="PU" />
+      </pss:distFeederBranch>
+      
+      <pss:distFeederBranch id="Bus7_Bus8">
+      	<pss:fromBus idRef="Bus-7"></pss:fromBus>
+      	<pss:toBus idRef="Bus-8"></pss:toBus>
+      	<pss:z1 im="0.01" unit="PU" />
+      </pss:distFeederBranch>
+      
+      <pss:distFeederBranch id="Bus7_Bus9">
+      	<pss:fromBus idRef="Bus-7"></pss:fromBus>
+      	<pss:toBus idRef="Bus-9"></pss:toBus>
+      	<pss:z1 im="0.01" unit="PU" />
+      </pss:distFeederBranch>
+      
+      <pss:distFeederBranch id="Bus2_Bus12">
+      	<pss:fromBus idRef="Bus-2"></pss:fromBus>
+      	<pss:toBus idRef="Bus-12"></pss:toBus>
+      	<pss:z1 im="0.01" unit="PU" />
+      </pss:distFeederBranch>
+      
+      <pss:distFeederBranch id="Bus10_Bus14">
+      	<pss:fromBus idRef="Bus-10"></pss:fromBus>
+      	<pss:toBus idRef="Bus-14"></pss:toBus>
+      	<pss:z1 im="0.01" unit="PU" />
+      </pss:distFeederBranch>
+      
+      <pss:distFeederBranch id="Bus14_Bus11">
+      	<pss:fromBus idRef="Bus-14"></pss:fromBus>
+      	<pss:toBus idRef="Bus-11"></pss:toBus>
+      	<pss:z1 im="0.01" unit="PU" />
+      </pss:distFeederBranch>
+      
+      <pss:distFeederBranch id="Bus14_Bus12">
+      	<pss:fromBus idRef="Bus-14"></pss:fromBus>
+      	<pss:toBus idRef="Bus-12"></pss:toBus>
+      	<pss:z1 im="0.01" unit="PU" />
+      </pss:distFeederBranch>
+      
+      <pss:distFeederBranch id="Bus12_Bus13">
+      	<pss:fromBus idRef="Bus-12"></pss:fromBus>
+      	<pss:toBus idRef="Bus-13"></pss:toBus>
+      	<pss:z1 im="0.01" unit="PU" />
+      </pss:distFeederBranch>
+      
+    </pss:branchList>
+    <pss:positiveSeqDataOnly>true</pss:positiveSeqDataOnly>
+    <pss:scStd>Generic</pss:scStd>
+    <pss:scPointList>
+    	<pss:scPoint>
+    		<pss:name>ScAnalysis</pss:name>
+    		<pss:enabled>true</pss:enabled>
+    		<pss:desc>Only one sc analysis point</pss:desc>
+    	</pss:scPoint>
+    </pss:scPointList>
+  </pss:distNet>
+</pss:pssStudyCase>
+

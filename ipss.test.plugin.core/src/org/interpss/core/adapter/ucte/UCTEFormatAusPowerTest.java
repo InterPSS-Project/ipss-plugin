@@ -45,7 +45,7 @@ public class UCTEFormatAusPowerTest extends CorePluginTestSetup {
 	public void testCaseAclfNet() throws Exception {
 		AclfNetwork net = CorePluginObjFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.UCTE)
-				.load("testData/ucte/MarioTest1_Simple.uct")
+				.load("testData/adpter/ucte/MarioTest1_Simple.uct")
 				.getAclfNet();
 		
   		//System.out.println(net.net2String());
@@ -64,7 +64,7 @@ public class UCTEFormatAusPowerTest extends CorePluginTestSetup {
 	@Test
 	public void testCase1() throws Exception {
 		IpssFileAdapter adapter = CorePluginObjFactory.getFileAdapter(IpssFileAdapter.FileFormat.UCTE);
-		SimuContext simuCtx = adapter.load("testData/ucte/MarioTest1_Simple.uct");
+		SimuContext simuCtx = adapter.load("testData/adpter/ucte/MarioTest1_Simple.uct");
 
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(simuCtx.getAclfNet());
 	  	algo.loadflow();
@@ -82,7 +82,7 @@ public class UCTEFormatAusPowerTest extends CorePluginTestSetup {
 	//@Test
 	public void testCase2() throws Exception {
 		IpssFileAdapter adapter = CorePluginObjFactory.getFileAdapter(IpssFileAdapter.FileFormat.UCTE);
-		SimuContext simuCtx = adapter.load("testData/ucte/MarioTest2_Xfr.uct");
+		SimuContext simuCtx = adapter.load("testData/adpter/ucte/MarioTest2_Xfr.uct");
 
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(simuCtx.getAclfNet());
 	  	algo.loadflow();
@@ -99,7 +99,7 @@ public class UCTEFormatAusPowerTest extends CorePluginTestSetup {
 	//@Test
 	public void testCase3() throws Exception {
 		IpssFileAdapter adapter = CorePluginObjFactory.getFileAdapter(IpssFileAdapter.FileFormat.UCTE);
-		SimuContext simuCtx = adapter.load("testData/ucte/MarioTest3_XfrReg.uct");
+		SimuContext simuCtx = adapter.load("testData/adpter/ucte/MarioTest3_XfrReg.uct");
   		//System.out.println(simuCtx.getAclfNet().net2String());
 
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(simuCtx.getAclfNet());
@@ -117,7 +117,7 @@ public class UCTEFormatAusPowerTest extends CorePluginTestSetup {
 	//@Test
 	public void testCase4() throws Exception {
 		IpssFileAdapter adapter = CorePluginObjFactory.getFileAdapter(IpssFileAdapter.FileFormat.UCTE);
-		SimuContext simuCtx = adapter.load("testData/ucte/MarioTest4_PSXfr1.uct");
+		SimuContext simuCtx = adapter.load("testData/adpter/ucte/MarioTest4_PSXfr1.uct");
   		//System.out.println(simuCtx.getAclfNet().net2String());
 
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(simuCtx.getAclfNet());

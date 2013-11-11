@@ -42,7 +42,7 @@ public class IEEE14_3WXfrTest extends CorePluginTestSetup {
 	public void bus14testCase() throws Exception {
 		AclfNetwork net = CorePluginObjFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testdata/ieee_format/Ieee14Bus.ieee")
+				.load("testdata/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();		
 		
 		net.removeBranch("Bus4->Bus7(1)");

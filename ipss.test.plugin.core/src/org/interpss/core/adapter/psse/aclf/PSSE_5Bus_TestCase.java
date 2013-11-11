@@ -49,7 +49,7 @@ public class PSSE_5Bus_TestCase extends CorePluginTestSetup {
 	@Test
 	public void testCase1() throws Exception {
 		IODMAdapter adapter = new PSSEAdapter(PSSEAdapter.PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile("testdata/psse/PSSE_5Bus_Test.raw"));
+		assertTrue(adapter.parseInputFile("testdata/adpter/psse/PSSE_5Bus_Test.raw"));
 		
 		AclfModelParser parser = (AclfModelParser)adapter.getModel();
 		//parser.stdout();

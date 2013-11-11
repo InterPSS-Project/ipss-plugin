@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pss:pssStudyCase id="Two-Bus-Study" xmlns:pss="http://www.ieee.org/odm/Schema/2008" 
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+     xsi:schemaLocation="http://www.ieee.org/odm/Schema/2008 ../../../ieee.odm_pss/schema/StudyCase.xsd ">
+  <pss:schemaVersion>V0.8.1</pss:schemaVersion>
+    <pss:networkCategory>DcSystem</pss:networkCategory>
+    <pss:analysisCategory>DcSystemAnalysis</pss:analysisCategory>
+  <pss:dcNet id="DcfBaseCase">
+    <pss:basePower unit="KVA" value="1.0" />
+    <pss:busList>
+      <pss:dcBus id="Bus1" name="Bus-1" code="Inverter">
+        <pss:baseVoltage unit="VOLT" value="500" />
+        <pss:voltage unit="VOLT" value="510" />
+          <pss:inverter>
+        	<pss:powerRating unit="KW" value="3.8" />
+        	<pss:vdcLimit max="550" min="195" unit="VOLT" />
+        	<pss:lossParamList>
+         		<pss:lossParam vdc="195.0" a="4019.5" b="22.8" c="-0.000009"/>
+         		<pss:lossParam vdc="213.7" a="4020.2" b="23.1" c="-0.000009"/>
+         		<pss:lossParam vdc="232.4" a="4020.8" b="23.5" c="-0.000009"/>
+         		<pss:lossParam vdc="251.1" a="4021.5" b="23.8" c="-0.000008"/>
+         		<pss:lossParam vdc="269.7" a="4022.1" b="24.2" c="-0.000008"/>
+         		<pss:lossParam vdc="288.4" a="4022.8" b="24.5" c="-0.000008"/>
+         		<pss:lossParam vdc="307.1" a="4023.4" b="24.9" c="-0.000008"/>
+         		<pss:lossParam vdc="325.8" a="4024.1" b="25.2" c="-0.000008"/>
+         		<pss:lossParam vdc="344.5" a="4024.7" b="25.6" c="-0.000008"/>
+         		<pss:lossParam vdc="363.2" a="4025.4" b="25.9" c="-0.000008"/>
+         		<pss:lossParam vdc="381.8" a="4026.0" b="26.3" c="-0.000008"/>
+         		<pss:lossParam vdc="400.5" a="4026.6" b="26.6" c="-0.000008"/>
+         		<pss:lossParam vdc="419.2" a="4027.3" b="27.0" c="-0.000008"/>
+         		<pss:lossParam vdc="437.9" a="4027.9" b="27.3" c="-0.000008"/>
+         		<pss:lossParam vdc="456.6" a="4028.6" b="27.7" c="-0.000008"/>
+         		<pss:lossParam vdc="475.3" a="4029.2" b="28.0" c="-0.000007"/>
+         		<pss:lossParam vdc="493.9" a="4029.9" b="28.4" c="-0.000007"/>
+         		<pss:lossParam vdc="512.6" a="4030.5" b="28.7" c="-0.000007"/>
+         		<pss:lossParam vdc="531.3" a="4031.2" b="29.1" c="-0.000007"/>
+         		<pss:lossParam vdc="550.0" a="4031.8" b="29.4" c="-0.000007"/>
+        	</pss:lossParamList>
+		</pss:inverter>
+      </pss:dcBus>
+      <pss:dcBus id="Bus2" name="Bus-2" code="PowerSource">
+        <pss:baseVoltage unit="VOLT" value="500" />
+        <pss:power unit="KW" value="3.5" />
+      </pss:dcBus>
+    </pss:busList>
+    <pss:branchList>
+      <pss:dcBranch areaNumber="1" zoneNumber="1" circuitId="1" id="Branch_1">
+      	<pss:fromBus idRef="Bus1"></pss:fromBus>
+      	<pss:toBus idRef="Bus2"></pss:toBus>
+      	<pss:feeder>
+      		<pss:r r="1.0" unit="OHM"></pss:r>
+      	</pss:feeder>
+      </pss:dcBranch>
+    </pss:branchList>
+    <pss:ratedVoltage unit="VOLT" value="600.0" />
+  </pss:dcNet>
+</pss:pssStudyCase>

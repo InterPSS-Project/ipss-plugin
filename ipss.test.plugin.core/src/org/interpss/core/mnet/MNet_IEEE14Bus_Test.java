@@ -49,7 +49,7 @@ public class MNet_IEEE14Bus_Test extends CorePluginTestSetup {
 		// load the IEEE-14 Bus system
 		AclfNetwork net = CorePluginObjFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testdata/ieee_format/Ieee14Bus.ieee")
+				.load("testdata/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();		
 		
   		//System.out.println(net.net2String());

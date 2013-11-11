@@ -11,6 +11,9 @@ import org.interpss.core.adapter.internal.Bus1824Test;
 import org.interpss.core.adapter.internal.Bus6384Test;
 import org.interpss.core.adapter.internal.IEEE14Test;
 import org.interpss.core.adapter.odm.acsc.Acsc5Bus_ODM_TestCase;
+import org.interpss.core.adapter.odm.dist.DistLF14BusTest;
+import org.interpss.core.adapter.odm.dist.DistLF14Bus_PathLF_Test;
+import org.interpss.core.adapter.odm.dist.DistSample2BusTest;
 import org.interpss.core.adapter.odm.dstab.DStab_2Bus;
 import org.interpss.core.adapter.psse.aclf.CR_UserTestCases;
 import org.interpss.core.adapter.psse.aclf.GuideSample_TestCase;
@@ -27,18 +30,26 @@ import org.interpss.core.ca.IEEE14BusBreaker_equivCABranch_Test;
 import org.interpss.core.ca.IEEE14BusBreaker_islandBus_Test;
 import org.interpss.core.ca.IEEE14BusBreaker_lf_Test;
 import org.interpss.core.ca.SampleSwitchBreakerModelTest;
+import org.interpss.core.dcsys.DcSample_2BusTest;
+import org.interpss.core.dcsys.Inverter_2BusTest;
+import org.interpss.core.dcsys.POC_Test1;
+import org.interpss.core.dcsys.POC_Test2_1;
+import org.interpss.core.dcsys.POC_Test2_2;
+import org.interpss.core.dcsys.POC_Test2_3;
+import org.interpss.core.dcsys.PVModelList_2BusTest;
+import org.interpss.core.dist.DistSys_Test;
+import org.interpss.core.dstab.cml.block.DelayControlBlockTests;
+import org.interpss.core.dstab.cml.block.FilterControlBlockTests;
+import org.interpss.core.dstab.cml.block.IntegrationControlBlockTests;
+import org.interpss.core.dstab.cml.block.PIControlBlockTests;
+import org.interpss.core.dstab.cml.block.WashoutControlBlockTests;
+import org.interpss.core.dstab.mach.EConstMachineTest;
+import org.interpss.core.dstab.mach.Eq1Ed1MachineTest;
+import org.interpss.core.dstab.mach.Eq1MachineCaseTest;
+import org.interpss.core.dstab.mach.MachineSaturationTest;
+import org.interpss.core.dstab.mach.RoundRotorMachineTest;
+import org.interpss.core.dstab.mach.SalientPoleMachineTest;
 import org.interpss.core.mnet.MNet_IEEE14Bus_Test;
-import org.interpss.dstab.control.cml.block.DelayControlBlockTests;
-import org.interpss.dstab.control.cml.block.FilterControlBlockTests;
-import org.interpss.dstab.control.cml.block.IntegrationControlBlockTests;
-import org.interpss.dstab.control.cml.block.PIControlBlockTests;
-import org.interpss.dstab.control.cml.block.WashoutControlBlockTests;
-import org.interpss.dstab.mach.EConstMachineTest;
-import org.interpss.dstab.mach.Eq1Ed1MachineTest;
-import org.interpss.dstab.mach.Eq1MachineCaseTest;
-import org.interpss.dstab.mach.MachineSaturationTest;
-import org.interpss.dstab.mach.RoundRotorMachineTest;
-import org.interpss.dstab.mach.SalientPoleMachineTest;
 import org.interpss.plugin.beanModel.AclfBeanMapperTest;
 import org.interpss.spring.SimuAppCtxTest;
 import org.junit.runner.RunWith;
@@ -62,6 +73,9 @@ import org.junit.runners.Suite.SuiteClasses;
 	IEEE14BusBreaker_lf_Test.class,
 	IEEE14BusBreakerTest.class,
 	
+	// Ascsc ODM
+	Acsc5Bus_ODM_TestCase.class,
+
 	// DStab controller building blocks
 	DelayControlBlockTests.class,
 	FilterControlBlockTests.class,
@@ -76,12 +90,25 @@ import org.junit.runners.Suite.SuiteClasses;
 	MachineSaturationTest.class,
 	RoundRotorMachineTest.class,
 	SalientPoleMachineTest.class,
-	
-	// Ascsc ODM
-	Acsc5Bus_ODM_TestCase.class,
-	
+
 	// DStab ODM
 	DStab_2Bus.class,
+	
+	// Dist
+	DistLF14Bus_PathLF_Test.class,
+	DistLF14BusTest.class,
+	DistSample2BusTest.class,
+	DistSys_Test.class,	
+	
+	// DC System
+	DcSample_2BusTest.class,
+	Inverter_2BusTest.class,
+	PVModelList_2BusTest.class,
+	
+	POC_Test1.class,
+	POC_Test2_1.class,
+	POC_Test2_2.class,
+	POC_Test2_3.class,
 	
 	// Spring 
 	SimuAppCtxTest.class,	

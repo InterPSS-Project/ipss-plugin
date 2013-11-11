@@ -26,8 +26,8 @@ public class IEEE39Bus_Acsc_Test {
 		
 		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.AcscNet, new String[]{
-				"testData/psse/v30/IEEE39Bus/IEEE39bus_v30.raw",
-				"testData/psse/v30/IEEE39Bus/IEEE39bus_v30.seq"
+				"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_v30.raw",
+				"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_v30.seq"
 		}));
 		AcscModelParser acscParser =(AcscModelParser) adapter.getModel();
 			

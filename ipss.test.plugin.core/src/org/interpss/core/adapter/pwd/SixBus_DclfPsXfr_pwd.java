@@ -56,11 +56,11 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
 		ODMLogger.getLogger().setLevel(Level.WARNING);
 
-		AclfNetwork net = IpssAdapter.importNet("testData/psse/v30/SixBus_2WPsXfr.raw")
+		AclfNetwork net = IpssAdapter.importNet("testData/adpter/psse/v30/SixBus_2WPsXfr.raw")
 					.setFormat(IpssAdapter.FileFormat.PSSE)
 					.setPsseVersion(PsseVersion.PSSE_30)
 					.load(true, "output/odm.xml")
-					.getNet();
+					.getImportedObj();
   		//System.out.println(net.net2String());
 
 	  	net.accept(CoreObjectFactory.createLfAlgoVisitor());
@@ -80,10 +80,10 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
 		ODMLogger.getLogger().setLevel(Level.WARNING);
 
-		AclfNetwork net = IpssAdapter.importNet("testData/pwd/SixBus_2WPsXfr.aux")
+		AclfNetwork net = IpssAdapter.importNet("testData/adpter/pwd/SixBus_2WPsXfr.aux")
 					.setFormat(IpssAdapter.FileFormat.PWD)
 					.load(true, "output/odm.xml")
-					.getNet();
+					.getImportedObj();
   		//System.out.println(net.net2String());
 		/*
 		net.accept(CoreObjectFactory.createBusNoArrangeVisitor());
@@ -135,11 +135,11 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
 		ODMLogger.getLogger().setLevel(Level.WARNING);
 
-		AclfNetwork net = IpssAdapter.importNet("testData/pwd/SixBus_2WPsXfr_1.aux")
+		AclfNetwork net = IpssAdapter.importNet("testData/adpter/pwd/SixBus_2WPsXfr_1.aux")
 					.xfrBranchModel(ODMAclfNetMapper.XfrBranchModel.InterPSS)
 					.setFormat(IpssAdapter.FileFormat.PWD)
 					.load()
-					.getNet();
+					.getImportedObj();
 
 		DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net);
 		algo.calculateDclf();
@@ -156,11 +156,11 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
 		ODMLogger.getLogger().setLevel(Level.WARNING);
 
-		AclfNetwork net = IpssAdapter.importNet("testData/pwd/SixBus_2WPsXfr_1.aux")
+		AclfNetwork net = IpssAdapter.importNet("testData/adpter/pwd/SixBus_2WPsXfr_1.aux")
 					//.xfrBranchModel(ODMAclfNetMapper.XfrBranchModel.InterPSS)
 					.setFormat(IpssAdapter.FileFormat.PWD)
 					.load()
-					.getNet();
+					.getImportedObj();
 		
 		DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net);
 		algo.calculateDclf();
@@ -177,11 +177,11 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
 		ODMLogger.getLogger().setLevel(Level.WARNING);
 
-		AclfNetwork net = IpssAdapter.importNet("testData/pwd/SixBus_2WPsXfr_1.aux")
+		AclfNetwork net = IpssAdapter.importNet("testData/adpter/pwd/SixBus_2WPsXfr_1.aux")
 					//.xfrBranchModel(ODMAclfNetMapper.XfrBranchModel.InterPSS)
 					.setFormat(IpssAdapter.FileFormat.PWD)
 					.load()
-					.getNet();
+					.getImportedObj();
 		
 		for (Branch b : net.getBranchList()) {
 			AclfBranch branch = (AclfBranch)b;
@@ -203,11 +203,11 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
 		ODMLogger.getLogger().setLevel(Level.WARNING);
 
-		AclfNetwork net = IpssAdapter.importNet("testData/pwd/SixBus_2WPsXfr_2.aux")
+		AclfNetwork net = IpssAdapter.importNet("testData/adpter/pwd/SixBus_2WPsXfr_2.aux")
 					.xfrBranchModel(ODMAclfNetMapper.XfrBranchModel.InterPSS)
 					.setFormat(IpssAdapter.FileFormat.PWD)
 					.load()
-					.getNet();
+					.getImportedObj();
 		
 		for (Branch b : net.getBranchList()) {
 			AclfBranch branch = (AclfBranch)b;

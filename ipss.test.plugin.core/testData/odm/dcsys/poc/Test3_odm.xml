@@ -1,0 +1,1835 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pss:pssStudyCase id="Two-Bus-Study" xmlns:pss="http://www.ieee.org/odm/Schema/2008" 
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+     xsi:schemaLocation="http://www.ieee.org/odm/Schema/2008 ../../../ieee.odm_pss/schema/ODMSchema.xsd "
+     schemaVersion="0.9.0">
+<!--
+	Data change per the "Test 1 & Test 2 05" file from LightMile 
+	  inverter maxP -> 5500
+ -->
+    <pss:networkCategory>DcSystem</pss:networkCategory>
+    <pss:analysisCategory>DcSystemAnalysis</pss:analysisCategory>
+  <pss:dcNet id="DcfBaseCase">
+    <pss:basePower unit="KVA" value="1.0" />
+    <pss:busList>
+      <pss:dcBus id="Inverter" name="Inverter" code="Inverter">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+          <pss:inverter>
+        	<pss:powerRating unit="W" value="4500" />
+        	<pss:loss a1="0.03454898" 
+        			  a2="4012.80997132" 
+        	          b1="0.0187016"  
+        	          b2="19.1253744" 
+        	          c1="0.000000004446715" 
+        	          c2="-0.00000960782619" />
+		</pss:inverter>
+      </pss:dcBus>
+<!-- 1-9 -->
+      <pss:dcBus id="Bus_Str1" name="Bus_Str1" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus1_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus1_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus1_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus1_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus1_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus1_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus1_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus1_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str2" name="Bus_Str2" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus2_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus2_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus2_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus2_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus2_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus2_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus2_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus2_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str3" name="Bus_Str3" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus3_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus3_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus3_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus3_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus3_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus3_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus3_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus3_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str4" name="Bus_Str4" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus4_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus4_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus4_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus4_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus4_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus4_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus4_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus4_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str5" name="Bus_Str5" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus5_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus5_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus5_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus5_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus5_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus5_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus5_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus5_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str6" name="Bus_Str6" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus6_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus6_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus6_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus6_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus6_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus6_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus6_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus6_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str7" name="Bus_Str7" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus7_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus7_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus7_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus7_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus7_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus7_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus7_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus7_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str8" name="Bus_Str8" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus8_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus8_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus8_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus8_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus8_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus8_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus8_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus8_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str9" name="Bus_Str9" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus9_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus9_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus9_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus9_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus9_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus9_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus9_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus9_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>   
+      <pss:dcBus id="Bus_Str10" name="Bus_Str10" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus10_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus10_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus10_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus10_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus10_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus10_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus10_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus10_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+<!-- 11-20 -->
+      <pss:dcBus id="Bus_Str11" name="Bus_Str11" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus11_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus11_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus11_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus11_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus11_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus11_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus11_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus11_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str12" name="Bus_Str12" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus12_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus12_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus12_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus12_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus12_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus12_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus12_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus12_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str13" name="Bus_Str13" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus13_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus13_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus13_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus13_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus13_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus13_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus13_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus13_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str14" name="Bus_Str14" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus14_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus14_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus14_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus14_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus14_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus14_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus14_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus14_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str15" name="Bus_Str15" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus15_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus15_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus15_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus15_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus15_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus15_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus15_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus15_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str16" name="Bus_Str16" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus16_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus16_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus16_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus16_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus16_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus16_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus16_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus16_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str17" name="Bus_Str17" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus17_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus17_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus17_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus17_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus17_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus17_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus17_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus17_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str18" name="Bus_Str18" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus18_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus18_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus18_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus18_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus18_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus18_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus18_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus18_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str19" name="Bus_Str19" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus19_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus19_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus19_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus19_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus19_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus19_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus19_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus19_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>  
+      <pss:dcBus id="Bus_Str20" name="Bus_Str20" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus20_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus20_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus20_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus20_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus20_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus20_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus20_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus20_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>  
+<!-- 21-30 -->
+      <pss:dcBus id="Bus_Str21" name="Bus_Str21" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus21_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus21_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus21_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus21_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus21_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus21_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus21_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus21_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str22" name="Bus_Str22" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus22_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus22_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus22_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus22_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus22_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus22_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus22_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus22_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str23" name="Bus_Str23" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus23_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus23_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus23_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus23_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus23_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus23_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus23_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus23_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str24" name="Bus_Str24" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus24_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus24_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus24_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus24_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus24_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus24_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus24_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus24_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str25" name="Bus_Str25" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus25_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus25_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus25_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus25_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus25_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus25_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus25_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus25_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str26" name="Bus_Str26" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus26_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus26_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus26_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus26_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus26_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus26_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus26_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus26_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str27" name="Bus_Str27" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus27_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus27_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus27_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus27_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus27_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus27_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus27_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus27_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str28" name="Bus_Str28" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus28_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus28_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus28_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus28_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus28_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus28_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus28_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus28_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str29" name="Bus_Str29" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus29_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus29_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus29_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus29_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus29_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus29_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus29_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus29_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>   
+      <pss:dcBus id="Bus_Str30" name="Bus_Str30" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus30_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus30_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus30_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus30_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus30_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus30_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus30_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus30_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+<!-- 31-40 -->
+      <pss:dcBus id="Bus_Str31" name="Bus_Str31" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus31_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus31_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus31_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus31_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus31_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus31_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus31_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus31_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str32" name="Bus_Str32" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus32_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus32_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus32_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus32_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus32_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus32_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus32_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus32_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str33" name="Bus_Str33" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus33_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus33_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus33_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus33_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus33_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus33_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus33_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus33_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str34" name="Bus_Str34" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus34_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus34_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus34_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus34_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus34_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus34_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus34_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus34_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str35" name="Bus_Str35" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus35_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus35_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus35_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus35_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus35_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus35_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus35_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus35_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str36" name="Bus_Str36" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus36_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus36_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus36_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus36_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus36_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus36_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus36_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus36_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str37" name="Bus_Str37" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus37_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus37_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus37_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus37_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus37_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus37_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus37_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus37_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str38" name="Bus_Str38" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus38_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus38_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus38_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus38_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus38_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus38_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus38_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus38_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str39" name="Bus_Str39" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus39_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus39_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus39_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus39_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus39_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus39_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus39_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus39_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>   
+      <pss:dcBus id="Bus_Str40" name="Bus_Str40" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus40_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus40_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus40_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus40_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus40_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus40_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus40_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus40_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+<!-- 41-50 -->
+      <pss:dcBus id="Bus_Str41" name="Bus_Str41" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus41_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus41_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus41_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus41_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus41_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus41_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus41_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus41_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str42" name="Bus_Str42" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus42_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus42_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus42_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus42_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus42_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus42_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus42_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus42_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str43" name="Bus_Str43" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus43_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus43_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus43_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus43_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus43_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus43_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus43_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus43_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str44" name="Bus_Str44" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus44_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus44_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus44_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus44_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus44_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus44_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus44_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus44_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str45" name="Bus_Str45" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus45_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus45_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus45_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus45_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus45_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus45_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus45_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus45_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str46" name="Bus_Str46" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus46_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus46_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus46_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus46_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus46_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus46_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus46_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus46_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str47" name="Bus_Str47" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus47_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus47_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus47_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus47_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus47_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus47_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus47_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus47_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str48" name="Bus_Str48" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus48_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus48_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus48_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus48_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus48_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus48_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus48_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus48_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str49" name="Bus_Str49" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus49_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus49_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus49_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus49_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus49_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus49_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus49_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus49_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>   
+      <pss:dcBus id="Bus_Str50" name="Bus_Str50" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus50_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus50_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus50_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus50_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus50_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus50_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus50_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus50_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+<!-- 51-60 -->
+      <pss:dcBus id="Bus_Str51" name="Bus_Str51" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus51_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus51_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus51_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus51_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus51_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus51_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus51_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus51_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str52" name="Bus_Str52" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus52_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus52_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus52_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus52_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus52_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus52_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus52_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus52_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str53" name="Bus_Str53" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus53_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus53_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus53_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus53_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus53_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus53_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus53_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus53_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str54" name="Bus_Str54" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus54_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus54_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus54_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus54_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus54_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus54_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus54_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus54_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str55" name="Bus_Str55" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus55_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus55_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus55_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus55_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus55_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus55_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus55_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus55_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str56" name="Bus_Str56" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus56_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus56_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus56_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus56_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus56_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus56_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus56_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus56_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str57" name="Bus_Str57" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus57_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus57_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus57_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus57_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus57_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus57_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus57_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus57_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str58" name="Bus_Str58" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus58_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus58_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus58_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus58_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus58_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus58_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus58_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus58_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str59" name="Bus_Str59" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus59_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus59_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus59_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus59_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus59_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus59_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus59_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus59_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>   
+      <pss:dcBus id="Bus_Str60" name="Bus_Str60" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus60_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus60_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus60_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus60_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus60_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus60_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus60_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus60_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+<!-- 61-70 -->
+      <pss:dcBus id="Bus_Str61" name="Bus_Str61" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus61_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus61_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus61_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus61_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus61_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus61_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus61_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus61_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str62" name="Bus_Str62" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus62_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus62_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus62_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus62_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus62_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus62_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus62_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus62_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str63" name="Bus_Str63" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus63_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus63_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus63_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus63_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus63_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus63_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus63_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus63_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str64" name="Bus_Str64" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus64_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus64_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus64_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus64_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus64_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus64_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus64_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus64_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str65" name="Bus_Str65" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus65_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus65_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus65_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus65_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus65_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus65_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus65_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus65_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str66" name="Bus_Str66" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus66_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus66_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus66_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus66_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus66_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus66_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus66_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus66_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str67" name="Bus_Str67" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus67_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus67_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus67_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus67_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus67_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus67_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus67_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus67_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str68" name="Bus_Str68" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus68_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus68_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus68_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus68_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus68_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus68_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus68_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus68_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str69" name="Bus_Str69" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus69_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus69_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus69_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus69_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus69_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus69_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus69_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus69_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>   
+      <pss:dcBus id="Bus_Str70" name="Bus_Str70" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus70_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus70_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus70_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus70_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus70_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus70_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus70_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus70_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+<!-- 71-80 -->
+      <pss:dcBus id="Bus_Str71" name="Bus_Str71" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus71_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus71_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus71_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus71_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus71_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus71_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus71_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus71_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str72" name="Bus_Str72" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus72_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus72_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus72_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus72_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus72_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus72_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus72_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus72_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str73" name="Bus_Str73" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus73_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus73_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus73_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus73_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus73_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus73_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus73_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus73_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str74" name="Bus_Str74" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus74_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus74_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus74_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus74_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus74_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus74_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus74_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus74_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str75" name="Bus_Str75" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus75_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus75_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus75_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus75_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus75_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus75_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus75_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus75_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str76" name="Bus_Str76" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus76_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus76_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus76_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus76_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus76_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus76_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus76_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus76_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str77" name="Bus_Str77" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus77_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus77_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus77_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus77_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus77_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus77_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus77_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus77_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str78" name="Bus_Str78" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus78_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus78_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus78_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus78_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus78_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus78_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus78_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus78_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str79" name="Bus_Str79" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus79_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus79_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus79_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus79_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus79_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus79_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus79_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus79_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>   
+      <pss:dcBus id="Bus_Str80" name="Bus_Str80" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus80_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus80_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus80_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus80_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus80_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus80_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus80_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus80_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+<!-- 81-90-->
+      <pss:dcBus id="Bus_Str81" name="Bus_Str81" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus81_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus81_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus81_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus81_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus81_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus81_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus81_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus81_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str82" name="Bus_Str82" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus82_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus82_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus82_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus82_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus82_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus82_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus82_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus82_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str83" name="Bus_Str83" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus83_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus83_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus83_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus83_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus83_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus83_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus83_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus83_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str84" name="Bus_Str84" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus84_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus84_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus84_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus84_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus84_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus84_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus84_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus84_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str85" name="Bus_Str85" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus85_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus85_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus85_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus85_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus85_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus85_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus85_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus85_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str86" name="Bus_Str86" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus86_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus86_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus86_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus86_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus86_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus86_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus86_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus86_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str87" name="Bus_Str87" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus87_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus87_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus87_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus87_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus87_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus87_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus87_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus87_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str88" name="Bus_Str88" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus88_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus88_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus88_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus88_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus88_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus88_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus88_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus88_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str89" name="Bus_Str89" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus89_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus89_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus89_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus89_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus89_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus89_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus89_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus89_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>   
+      <pss:dcBus id="Bus_Str90" name="Bus_Str90" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus90_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus90_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus90_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus90_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus90_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus90_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus90_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus90_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+<!-- 91-100 -->
+      <pss:dcBus id="Bus_Str91" name="Bus_Str91" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus91_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus91_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus91_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus91_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus91_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus91_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus91_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus91_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str92" name="Bus_Str92" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus92_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus92_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus92_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus92_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus92_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus92_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus92_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus92_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str93" name="Bus_Str93" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus93_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus93_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus93_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus93_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus93_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus93_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus93_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus93_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str94" name="Bus_Str94" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus94_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus94_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus94_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus94_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus94_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus94_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus94_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus94_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str95" name="Bus_Str95" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus95_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus95_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus95_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus95_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus95_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus95_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus95_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus95_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str96" name="Bus_Str96" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus96_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus96_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus96_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus96_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus96_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus96_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus96_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus96_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str97" name="Bus_Str97" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus97_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus97_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus97_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus97_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus97_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus97_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus97_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus97_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str98" name="Bus_Str98" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus98_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus98_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus98_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus98_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus98_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus98_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus98_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus98_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str99" name="Bus_Str99" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus99_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus99_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus99_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus99_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus99_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus99_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus99_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus99_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>   
+      <pss:dcBus id="Bus_Str100" name="Bus_Str100" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus100_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus100_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus100_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus100_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus100_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus100_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus100_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus100_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+<!-- 101-110 -->
+      <pss:dcBus id="Bus_Str101" name="Bus_Str101" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus101_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus101_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus101_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus101_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus101_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus101_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus101_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus101_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str102" name="Bus_Str102" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus102_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus102_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus102_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus102_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus102_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus102_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus102_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus102_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str103" name="Bus_Str103" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus103_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus103_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus103_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus103_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus103_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus103_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus103_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus103_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str104" name="Bus_Str104" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus104_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus104_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus104_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus104_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus104_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus104_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus104_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus104_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str105" name="Bus_Str105" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus105_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus105_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus105_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus105_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus105_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus105_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus105_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus105_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str106" name="Bus_Str106" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus106_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus106_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus106_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus106_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus106_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus106_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus106_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus106_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str107" name="Bus_Str107" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus107_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus107_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus107_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus107_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus107_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus107_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus107_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus107_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str108" name="Bus_Str108" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus108_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus108_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus108_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus108_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus108_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus108_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus108_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus108_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str109" name="Bus_Str109" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus109_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus109_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus109_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus109_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus109_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus109_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus109_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus109_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>   
+      <pss:dcBus id="Bus_Str110" name="Bus_Str110" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus110_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus110_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus110_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus110_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus110_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus110_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus110_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus110_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+<!-- 111-120 -->
+      <pss:dcBus id="Bus_Str111" name="Bus_Str111" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus111_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus111_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus111_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus111_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus111_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus111_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus111_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus111_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str112" name="Bus_Str112" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus112_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus112_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus112_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus112_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus112_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus112_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus112_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus112_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str113" name="Bus_Str113" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus113_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus113_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus113_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus113_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus113_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus113_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus113_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus113_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str114" name="Bus_Str114" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus114_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus114_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus114_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus114_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus114_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus114_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus114_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus114_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str115" name="Bus_Str115" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus115_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus115_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus115_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus115_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus115_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus115_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus115_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus115_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str116" name="Bus_Str116" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus116_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus116_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus116_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus116_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus116_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus116_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus116_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus116_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str117" name="Bus_Str117" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus117_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus117_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus117_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus117_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus117_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus117_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus117_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus117_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str118" name="Bus_Str118" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus118_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus118_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus118_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus118_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus118_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus118_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus118_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus118_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str119" name="Bus_Str119" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus119_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus119_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus119_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus119_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus119_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus119_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus119_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus119_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>   
+      <pss:dcBus id="Bus_Str120" name="Bus_Str120" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus120_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus120_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus120_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus120_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus120_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus120_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus120_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus120_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+<!-- 121-125 -->
+      <pss:dcBus id="Bus_Str121" name="Bus_Str121" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus121_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus121_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus121_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus121_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus121_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus121_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus121_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus121_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str122" name="Bus_Str122" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus122_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus122_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus122_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus122_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus122_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus122_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus122_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus122_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str123" name="Bus_Str123" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus123_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus123_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus123_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus123_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus123_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus123_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus123_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus123_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str124" name="Bus_Str124" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus124_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus124_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus124_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus124_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus124_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus124_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus124_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus124_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str125" name="Bus_Str125" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="432" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus125_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus125_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus125_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus125_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus125_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus125_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus125_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus125_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+    </pss:busList>
+    <pss:branchList>
+      <pss:dcBranch areaNumber="1" zoneNumber="1" circuitId="1" id="Branch_1">
+      	<pss:fromBus idRef="Inverter"></pss:fromBus>
+      	<pss:toBus idRef="Bus_Str1"></pss:toBus>
+      	<pss:feeder>
+      		<pss:r r="0.005" unit="OHM"></pss:r>
+      		<pss:length unit="Ft" value="10.0" />
+      		<pss:gage>6 AWG</pss:gage>
+      	</pss:feeder>
+      	<pss:homeRun>
+      		<pss:r unit="OHM" r="0.075" />
+      		<pss:length unit="Ft" value="40.0" />
+      		<pss:gage>12 AWG</pss:gage>
+      	</pss:homeRun>
+      </pss:dcBranch>
+      <pss:dcBranch areaNumber="1" zoneNumber="1" circuitId="1" id="Branch_2">
+      	<pss:fromBus idRef="Inverter"></pss:fromBus>
+      	<pss:toBus idRef="Bus_Str2"></pss:toBus>
+      	<pss:feeder>
+      		<pss:r r="0.005" unit="OHM"></pss:r>
+      		<pss:length unit="Ft" value="50.0" />
+      		<pss:gage>6 AWG</pss:gage>
+      	</pss:feeder>
+      	<pss:homeRun>
+      		<pss:r unit="OHM" r="0.112" />
+      		<pss:length unit="Ft" value="200.0" />
+      		<pss:gage>12 AWG</pss:gage>
+      	</pss:homeRun>
+      </pss:dcBranch>
+    </pss:branchList>
+    <pss:ratedVoltage unit="VOLT" value="400.0" />
+    <pss:pvModelList>
+    	<pss:ivFuncPVModel name="" id="pvModelId" sign="-1" shadingFactor="1.0">
+    		<pss:dataType>Function</pss:dataType>
+      				<pss:a>1.00</pss:a>
+      				<pss:b>1496.28</pss:b>
+      				<pss:c>1742.52</pss:c>
+      				<pss:d>-8662.26</pss:d>
+      				<pss:e>-106292.95</pss:e>
+      				<pss:f>550906.48</pss:f>
+    	</pss:ivFuncPVModel>
+    </pss:pvModelList>
+  </pss:dcNet>
+</pss:pssStudyCase>
