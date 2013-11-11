@@ -1,5 +1,5 @@
  /*
-  * @(#)CR_UserTestCases.java   
+  * @(#)Acsc5Bus_ODM_TestCase.java   
   *
   * Copyright (C) 2008 www.interpss.org
   *
@@ -22,25 +22,18 @@
   *
   */
 
-package org.interpss.core.adapter.psse.acsc;
+package org.interpss.core.adapter.odm.acsc;
 
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.logging.Level;
-
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.model.acsc.AcscModelParser;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.mapper.odm.ODMAcscParserMapper;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.TestUtilFunc;
 import org.junit.Test;
 
 import com.interpss.CoreObjectFactory;
 import com.interpss.QA.compare.aclf.AclfNetModelComparator;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.fault.AcscBusFault;
@@ -48,19 +41,17 @@ import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.ScBusVoltageType;
 import com.interpss.core.algo.SimpleFaultAlgorithm;
+import com.interpss.pssl.plugin.IpssAdapter;
 import com.interpss.pssl.simu.IpssAclf;
 import com.interpss.simu.util.sample.SampleCases;
 
 public class Acsc5Bus_ODM_TestCase extends CorePluginTestSetup {
 	@Test
 	public void testCaseNoLF() throws Exception {
-		File file = new File("testdata/ieee_odm/ODM_AcscNoLF_5Bus.xml");
-		AcscModelParser parser = new AcscModelParser();
-		parser.parse(new FileInputStream(file));	
-		//System.out.println(parser.toXmlDoc());
-		
-		AcscNetwork faultNet = new ODMAcscParserMapper().map2Model(parser).getAcscNet();
-		//System.out.println(faultNet.net2String());
+		AcscNetwork faultNet = IpssAdapter.importNet("testData/ieee_odm/acsc/ODM_AcscNoLF_5Bus.xml")
+				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
+				.load()
+				.getNet();
 		
 	  	SimpleFaultAlgorithm algo = CoreObjectFactory.createSimpleFaultAlgorithm(faultNet);
   		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus2", algo);
@@ -77,14 +68,10 @@ public class Acsc5Bus_ODM_TestCase extends CorePluginTestSetup {
 
 	@Test
 	public void testCaseLF() throws Exception {
-		IpssLogger.ipssLogger.setLevel(Level.INFO);
-		
-		File file = new File("testdata/ieee_odm/ODM_Acsc_5Bus.xml");
-		AcscModelParser parser = new AcscModelParser();
-		parser.parse(new FileInputStream(file));		
-		//System.out.println(parser.toXmlDoc());
-		AcscNetwork faultNet = new ODMAcscParserMapper().map2Model(parser).getAcscNet();
-		//System.out.println(faultNet.net2String());
+		AcscNetwork faultNet = IpssAdapter.importNet("testData/ieee_odm/acsc/ODM_Acsc_5Bus.xml")
+				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
+				.load()
+				.getNet();		
 
 		///////////////////compare aclfNet ///////////////////////////
 		

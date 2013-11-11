@@ -22,7 +22,7 @@
   *
   */
 
-package org.interpss.dstab;
+package org.interpss.core.adapter.odm.dstab;
 
 import static com.interpss.dstab.cache.StateVariableRecorder.StateVarRecType.MachineState;
 import static org.junit.Assert.assertTrue;
@@ -33,6 +33,7 @@ import java.util.logging.Level;
 
 import org.ieee.odm.ODMObjectFactory;
 import org.ieee.odm.model.dstab.DStabModelParser;
+import org.interpss.dstab.DStabTestSetupBase;
 import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.junit.Test;
 
