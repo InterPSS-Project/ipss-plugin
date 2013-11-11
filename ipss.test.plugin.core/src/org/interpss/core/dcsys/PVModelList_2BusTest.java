@@ -26,7 +26,6 @@ package org.interpss.core.dcsys;
 
 import static org.junit.Assert.assertTrue;
 
-import org.interpss.CorePluginObjFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.junit.Test;
@@ -35,11 +34,16 @@ import com.interpss.DcSysObjectFactory;
 import com.interpss.dc.DcBus;
 import com.interpss.dc.DcNetwork;
 import com.interpss.dc.common.IDcNetEVisitor;
+import com.interpss.pssl.plugin.IpssAdapter;
 
 public class PVModelList_2BusTest  extends CorePluginTestSetup { 
 	@Test
 	public void pvModel2BusCase() throws Exception {
-		DcNetwork dcNet = CorePluginObjFactory.createDcNetwork("testData/odm/dcsys/PVModelList2Bus.xml");
+		//DcNetwork dcNet = CorePluginObjFactory.createDcNetwork("testData/odm/dcsys/PVModelList2Bus.xml");
+		DcNetwork dcNet = IpssAdapter.importNet("testData/odm/dcsys/PVModelList2Bus.xml")
+				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
+				.load()
+				.getImportedObj();		
 		//System.out.println(dcNet.net2String());
 		
 		IDcNetEVisitor algo = DcSysObjectFactory.createDcPowerFlowAlgorithm();

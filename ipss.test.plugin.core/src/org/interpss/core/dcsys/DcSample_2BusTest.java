@@ -26,7 +26,6 @@ package org.interpss.core.dcsys;
 
 import static org.junit.Assert.assertTrue;
 
-import org.interpss.CorePluginObjFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.junit.Test;
@@ -36,11 +35,15 @@ import com.interpss.dc.DcBranch;
 import com.interpss.dc.DcBus;
 import com.interpss.dc.DcNetwork;
 import com.interpss.dc.common.IDcNetEVisitor;
+import com.interpss.pssl.plugin.IpssAdapter;
 
 public class DcSample_2BusTest  extends CorePluginTestSetup { 
 	@Test
 	public void simple2BusPSourceCase() throws Exception {
-		DcNetwork dcNet = CorePluginObjFactory.createDcNetwork("testData/odm/dcsys/simple2BusPSource.xml");
+		DcNetwork dcNet = IpssAdapter.importNet("testData/odm/dcsys/simple2BusPSource.xml")
+				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
+				.load()
+				.getImportedObj();		
 		//System.out.println(dcNet.net2String());
 		
 		IDcNetEVisitor algo = DcSysObjectFactory.createDcPowerFlowAlgorithm();
@@ -55,7 +58,11 @@ public class DcSample_2BusTest  extends CorePluginTestSetup {
 
 	@Test
 	public void simple2BusCase() throws Exception {
-		DcNetwork dcNet = CorePluginObjFactory.createDcNetwork("testData/odm/dcsys/simple2Bus.xml");
+		//DcNetwork dcNet = CorePluginObjFactory.createDcNetwork("testData/odm/dcsys/simple2Bus.xml");
+		DcNetwork dcNet = IpssAdapter.importNet("testData/odm/dcsys/simple2Bus.xml")
+				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
+				.load()
+				.getImportedObj();		
 		//System.out.println(dcNet.net2String());
 		
 		IDcNetEVisitor algo = DcSysObjectFactory.createDcPowerFlowAlgorithm();
@@ -80,7 +87,11 @@ public class DcSample_2BusTest  extends CorePluginTestSetup {
 
 	@Test
 	public void pvModel2BusCase() throws Exception {
-		DcNetwork dcNet = CorePluginObjFactory.createDcNetwork("testData/odm/dcsys/PVModel2Bus.xml");
+		//DcNetwork dcNet = CorePluginObjFactory.createDcNetwork("testData/odm/dcsys/PVModel2Bus.xml");
+		DcNetwork dcNet = IpssAdapter.importNet("testData/odm/dcsys/PVModel2Bus.xml")
+				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
+				.load()
+				.getImportedObj();		
 		//System.out.println(dcNet.net2String());
 		
 		IDcNetEVisitor algo = DcSysObjectFactory.createDcPowerFlowAlgorithm();

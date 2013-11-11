@@ -39,13 +39,15 @@ import com.interpss.dist.algo.DistPathLfAlgorithm;
 import com.interpss.dist.algo.path.DistPathBranchWalker;
 import com.interpss.dist.algo.path.DistPathBusWalker;
 import com.interpss.dist.algo.path.DistPathNetInitinizer;
-import com.interpss.pssl.simu.IpssDist;
+import com.interpss.pssl.plugin.IpssAdapter;
 
 public class DistLF14Bus_PathLF_Test  extends CorePluginTestSetup {
 	@Test
 	public void bus14_lf1_Test() throws Exception {
-		DistNetwork distNet = IpssDist.loadDistNetwork("testData/odm/dist/Dist_14Bus.xml")
-				.getDistNetwork();
+		DistNetwork distNet = IpssAdapter.importNet("testData/odm/dist/Dist_14Bus.xml")
+				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
+				.load()
+				.getImportedObj();
 		
 		distNet.createAcscNetData();
 		distNet.getFaultNet().setLfDataLoaded(true);
@@ -64,8 +66,10 @@ public class DistLF14Bus_PathLF_Test  extends CorePluginTestSetup {
 	
 	@Test
 	public void bus14_lf_Test() throws Exception {
-		DistNetwork distNet = IpssDist.loadDistNetwork("testData/odm/dist/Dist_14Bus.xml")
-				.getDistNetwork();
+		DistNetwork distNet = IpssAdapter.importNet("testData/odm/dist/Dist_14Bus.xml")
+				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
+				.load()
+				.getImportedObj();
 		
 		distNet.createAcscNetData();
 		distNet.getFaultNet().setLfDataLoaded(true);
@@ -86,11 +90,13 @@ public class DistLF14Bus_PathLF_Test  extends CorePluginTestSetup {
 
 	@Test
 	public void bus14_walk_Test() throws Exception {
-		DistNetwork distNet = IpssDist.loadDistNetwork("testData/odm/dist/Dist_14Bus.xml")
-				.getDistNetwork();
+		DistNetwork distNet = IpssAdapter.importNet("testData/odm/dist/Dist_14Bus.xml")
+				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
+				.load()
+				.getImportedObj();
 		//System.out.println(distNet.net2String());
 		
-		NetPathWalkAlgorithm walkAlgo = CoreObjectFactory.createNetPathWalkAlgorithm();
+		NetPathWalkAlgorithm<?,?> walkAlgo = CoreObjectFactory.createNetPathWalkAlgorithm();
 
 		// forward walking
 		walkAlgo.branchWalkThough(distNet, 
