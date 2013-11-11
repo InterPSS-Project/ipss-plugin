@@ -26,39 +26,28 @@ package org.interpss.core.adapter.odm.dist;
 
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-import java.io.FileInputStream;
-
-import org.ieee.odm.ODMObjectFactory;
-import org.ieee.odm.model.dist.DistModelParser;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.spring.CorePluginSpringFactory;
 import org.junit.Test;
 
 import com.interpss.dist.DistBus;
 import com.interpss.dist.DistNetwork;
+import com.interpss.pssl.plugin.IpssAdapter;
 import com.interpss.pssl.simu.IpssDist;
 import com.interpss.pssl.simu.net.IpssDistNet.DistNetDSL;
 
 public class DistSample2BusTest  extends CorePluginTestSetup { 
 	@Test
 	public void simple2BusTest() throws Exception {
-		File file = new File("testData/odm/dist/Sample2Bus.xml");
-		DistModelParser parser = ODMObjectFactory.createDistModelParser();
-		if (!parser.parse(new FileInputStream(file))) {
-		}
-		//System.out.println(parser.toXmlDoc(false));
-			
-		DistNetwork distNet = CorePluginSpringFactory
-					.getOdm2DistParserMapper().map2Model(parser);
+		DistNetwork distNet = IpssAdapter.importNet("testData/odm/dist/Sample2Bus.xml")
+				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
+				.load()
+				.getImportedObj();		
 		//System.out.println(distNet.net2String());
 		
 		DistNetDSL distNetDSL = IpssDist.wrapDistNetwork(distNet);
 		distNetDSL.loadflow();
-		//System.out.println(distNet.getAclfNetwork().net2String());
-		//System.out.println(AclfOutFunc.lfResultsBusStyle(distNetDSL.getAclfNetwork()));
 	  	
-	  	DistBus bus = (DistBus)distNetDSL.getDistNetwork().getBus("Bus-1");
+	  	DistBus bus = distNet.getBus("Bus-1");
 	  	//System.out.println(bus.getAcscBus().getGenResults().getReal());
 	  	//System.out.println(bus.getAcscBus().getGenResults().getImaginary());
 	  	assertTrue(Math.abs(bus.getAcscBus().getGenResults().getReal() + 0.05) < 0.001);
@@ -67,12 +56,16 @@ public class DistSample2BusTest  extends CorePluginTestSetup {
 
 	@Test
 	public void simple2BusDSLTest() throws Exception {
-		DistNetDSL distNetDSL = IpssDist.loadDistNetwork("testData/odm/dist/Sample2Bus.xml");
-		distNetDSL.loadflow();
+		DistNetwork distNet = IpssAdapter.importNet("testData/odm/dist/Sample2Bus.xml")
+				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
+				.load()
+				.getImportedObj();
 		//System.out.println(distNet.getAclfNetwork().net2String());
-		//System.out.println(AclfOutFunc.lfResultsBusStyle(distNetDSL.getAclfNetwork()));
-	  	
-	  	DistBus bus = (DistBus)distNetDSL.getDistNetwork().getBus("Bus-1");
+
+		DistNetDSL distNetDSL = IpssDist.wrapDistNetwork(distNet);
+		distNetDSL.loadflow();	  	
+
+		DistBus bus = distNet.getBus("Bus-1");
 	  	//System.out.println(bus.getAcscBus().getGenResults().getReal());
 	  	//System.out.println(bus.getAcscBus().getGenResults().getImaginary());
 	  	assertTrue(Math.abs(bus.getAcscBus().getGenResults().getReal() + 0.05) < 0.001);
@@ -81,12 +74,17 @@ public class DistSample2BusTest  extends CorePluginTestSetup {
 
 	@Test
 	public void simple2BusDSL_MixedLoad_Test() throws Exception {
-		DistNetDSL distNetDSL = IpssDist.loadDistNetwork("testData/odm/dist/Sample2BusMixedLoad.xml");
-		distNetDSL.loadflow();
+		DistNetwork distNet = IpssAdapter.importNet("testData/odm/dist/Sample2BusMixedLoad.xml")
+				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
+				.load()
+				.getImportedObj();		
 		//System.out.println(distNetDSL.getAclfNetwork().net2String());
 		//System.out.println(AclfOutFunc.lfResultsBusStyle(distNetDSL.getAclfNetwork()));
 	  	
-	  	DistBus bus = (DistBus)distNetDSL.getDistNetwork().getBus("Bus-1");
+		DistNetDSL distNetDSL = IpssDist.wrapDistNetwork(distNet);
+		distNetDSL.loadflow();		
+		
+	  	DistBus bus = distNet.getBus("Bus-1");
 	  	//System.out.println(bus.getAcscBus().getGenResults().getReal());
 	  	//System.out.println(bus.getAcscBus().getGenResults().getImaginary());
 	  	assertTrue(Math.abs(bus.getAcscBus().getGenResults().getReal() - 0.07998) < 0.001);

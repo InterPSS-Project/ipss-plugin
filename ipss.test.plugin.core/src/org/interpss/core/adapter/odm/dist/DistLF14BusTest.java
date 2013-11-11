@@ -31,20 +31,23 @@ import org.junit.Test;
 
 import com.interpss.dist.DistBus;
 import com.interpss.dist.DistNetwork;
+import com.interpss.pssl.plugin.IpssAdapter;
 import com.interpss.pssl.simu.IpssDist;
 import com.interpss.pssl.simu.net.IpssDistNet.DistNetDSL;
 
 public class DistLF14BusTest  extends CorePluginTestSetup { 
 	@Test
 	public void simple2BusTest() throws Exception {
-		DistNetwork distNet = IpssDist.loadDistNetwork("testData/odm/dist/Dist_14Bus.xml")
-				.getDistNetwork();
+		DistNetwork distNet = IpssAdapter.importNet("testData/odm/dist/Dist_14Bus.xml")
+				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
+				.load()
+				.getImportedObj();		
 		//System.out.println(distNet.net2String());
 		
 		DistNetDSL distNetDSL = IpssDist.wrapDistNetwork(distNet);
 		distNetDSL.loadflow();
 	  	
-	  	DistBus bus = (DistBus)distNetDSL.getDistNetwork().getBus("Bus-1");
+	  	DistBus bus = distNet.getBus("Bus-1");
 	  	//System.out.println(bus.getAcscBus().getGenResults().getReal());
 	  	//System.out.println(bus.getAcscBus().getGenResults().getImaginary());
 	  	assertTrue(Math.abs(bus.getAcscBus().getGenResults().getReal() - 0.26) < 0.001);
