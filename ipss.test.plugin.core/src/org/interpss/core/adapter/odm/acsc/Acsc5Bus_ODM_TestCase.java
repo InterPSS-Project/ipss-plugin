@@ -48,10 +48,10 @@ import com.interpss.simu.util.sample.SampleCases;
 public class Acsc5Bus_ODM_TestCase extends CorePluginTestSetup {
 	@Test
 	public void testCaseNoLF() throws Exception {
-		AcscNetwork faultNet = IpssAdapter.importNet("testData/ieee_odm/acsc/ODM_AcscNoLF_5Bus.xml")
+		AcscNetwork faultNet = IpssAdapter.importNet("testData/odm/acsc/ODM_AcscNoLF_5Bus.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
-				.getNet();
+				.getImportedObj();
 		
 	  	SimpleFaultAlgorithm algo = CoreObjectFactory.createSimpleFaultAlgorithm(faultNet);
   		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus2", algo);
@@ -68,10 +68,10 @@ public class Acsc5Bus_ODM_TestCase extends CorePluginTestSetup {
 
 	@Test
 	public void testCaseLF() throws Exception {
-		AcscNetwork faultNet = IpssAdapter.importNet("testData/ieee_odm/acsc/ODM_Acsc_5Bus.xml")
+		AcscNetwork faultNet = IpssAdapter.importNet("testData/odm/acsc/ODM_Acsc_5Bus.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
-				.getNet();		
+				.getImportedObj();		
 
 		///////////////////compare aclfNet ///////////////////////////
 		

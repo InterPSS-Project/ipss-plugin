@@ -45,7 +45,7 @@ public class CR_UserTestCases extends CorePluginTestSetup {
 	public void testCase1() throws Exception {
 		AclfNetwork net = CorePluginObjFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.PSSE, IpssFileAdapter.Version.PSSE_30)
-				.load("testData/psse/PSSE_5Bus_Test.raw")
+				.load("testData/adpter/psse/PSSE_5Bus_Test.raw")
 				.getAclfNet();	
 		
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
@@ -64,7 +64,7 @@ public class CR_UserTestCases extends CorePluginTestSetup {
 	public void testCase2() throws Exception {
 		AclfNetwork net = CorePluginObjFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.PSSE)
-				.load("testData/psse/MXV-1120MW_FNC475_FEC196_FAC212_InterPSS_3d.raw")
+				.load("testData/adpter/psse/MXV-1120MW_FNC475_FEC196_FAC212_InterPSS_3d.raw")
 				.getAclfNet();			
 
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);

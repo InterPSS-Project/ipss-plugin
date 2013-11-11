@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pss:pssStudyCase id="Two-Bus-Study" xmlns:pss="http://www.ieee.org/odm/Schema/2008" 
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+     xsi:schemaLocation="http://www.ieee.org/odm/Schema/2008 ../../../ieee.odm_pss/schema/StudyCase.xsd ">
+  <pss:schemaVersion>V0.8.1</pss:schemaVersion>
+    <pss:networkCategory>DcSystem</pss:networkCategory>
+    <pss:analysisCategory>DcSystemAnalysis</pss:analysisCategory>
+  <pss:dcNet id="DcfBaseCase">
+    <pss:basePower unit="KVA" value="1.0" />
+    <pss:busList>
+      <pss:dcBus id="Inverter" name="Inverter" code="Inverter">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="400" />
+          <pss:inverter>
+        	<pss:powerRating unit="W" value="3800" />
+        	<pss:vdcLimit max="600" min="20" unit="VOLT" />
+        	<pss:mpptLimit max="550" min="150" unit="W" />
+        	<pss:loss a1="0.03454898" a2="4012.80997132" 
+        	          b1="0.0187016"  b2="19.1253744" 
+        	          c1="0.000000004446715" c2="-0.00000960782619" />
+		</pss:inverter>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str1" name="Bus_Str1" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="400" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus1_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus1_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus1_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus1_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus1_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus1_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus1_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus1_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+      <pss:dcBus id="Bus_Str2" name="Bus_Str2" code="PVModule">
+        <pss:baseVoltage unit="VOLT" value="400" />
+        <pss:voltage unit="VOLT" value="400" />
+        <pss:pvModule dataType="Function">
+        	<pss:pvModuleItem id="Bus2_Mod1" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus2_Mod2" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus2_Mod3" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus2_Mod4" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus2_Mod5" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus2_Mod6" pvModelRef="pvModelId"  />
+        	<pss:pvModuleItem id="Bus2_Mod7" pvModelRef="pvModelId" />
+        	<pss:pvModuleItem id="Bus2_Mod8" pvModelRef="pvModelId"  />
+        </pss:pvModule>
+      </pss:dcBus>
+    </pss:busList>
+    <pss:branchList>
+      <pss:dcBranch areaNumber="1" zoneNumber="1" circuitId="1" id="Branch_1">
+      	<pss:fromBus idRef="Inverter"></pss:fromBus>
+      	<pss:toBus idRef="Bus_Str1"></pss:toBus>
+      	<pss:feeder>
+      		<pss:r r="0.005" unit="OHM"></pss:r>
+      		<pss:length unit="Ft" value="10.0" />
+      		<pss:gage>6 AWG</pss:gage>
+      	</pss:feeder>
+      	<pss:homeRun>
+      		<pss:r unit="OHM" r="0.075" />
+      		<pss:length unit="Ft" value="40.0" />
+      		<pss:gage>12 AWG</pss:gage>
+      	</pss:homeRun>
+      </pss:dcBranch>
+      <pss:dcBranch areaNumber="1" zoneNumber="1" circuitId="1" id="Branch_2">
+      	<pss:fromBus idRef="Inverter"></pss:fromBus>
+      	<pss:toBus idRef="Bus_Str2"></pss:toBus>
+      	<pss:feeder>
+      		<pss:r r="0.005" unit="OHM"></pss:r>
+      		<pss:length unit="Ft" value="50.0" />
+      		<pss:gage>6 AWG</pss:gage>
+      	</pss:feeder>
+      	<pss:homeRun>
+      		<pss:r unit="OHM" r="0.112" />
+      		<pss:length unit="Ft" value="200.0" />
+      		<pss:gage>12 AWG</pss:gage>
+      	</pss:homeRun>
+      </pss:dcBranch>
+    </pss:branchList>
+    <pss:ratedVoltage unit="VOLT" value="400.0" />
+    <pss:pvModelList>
+    	<pss:ivFuncPVModel name="" id="pvModelId" sign="-1" shadingFactor="1.0">
+    		<pss:dataType>Function</pss:dataType>
+      				<pss:a>-1.00</pss:a>
+      				<pss:b>62459.12</pss:b>
+      				<pss:c>1084659.85</pss:c>
+      				<pss:d>-15073.63</pss:d>
+      				<pss:e>-3803549.03</pss:e>
+      				<pss:f>854096.87</pss:f>
+    	</pss:ivFuncPVModel>
+    </pss:pvModelList>
+  </pss:dcNet>
+</pss:pssStudyCase>

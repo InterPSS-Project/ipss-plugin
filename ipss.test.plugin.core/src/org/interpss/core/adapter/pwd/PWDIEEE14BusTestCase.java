@@ -50,7 +50,7 @@ public class PWDIEEE14BusTestCase extends CorePluginTestSetup {
 	public void odmAdapterTestCase() throws Exception {
 		AclfNetwork net = CorePluginObjFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.PWD)
-				.load("testData/pwd/ieee14.AUX")
+				.load("testData/adpter/pwd/ieee14.AUX")
 				.getAclfNet();	
 		
 		System.out.println(net.net2String());
@@ -69,7 +69,7 @@ public class PWDIEEE14BusTestCase extends CorePluginTestSetup {
 	}	
 	@Test
 	public void testCaseStringInput() throws Exception{
-		String file = "testData/pwd/ieee14.AUX";
+		String file = "testData/adpter/pwd/ieee14.AUX";
   		IODMAdapter adapter = ODMObjectFactory
 				.createODMAdapter(ODMFileFormatEnum.PWD);
 

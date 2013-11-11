@@ -45,10 +45,10 @@ public class IEEE14BusBreakerTest extends CorePluginTestSetup {
 	@Test 
 	public void processZeroZBranch() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importNet("testData/ieee_odm/ieee14Bus_breaker.xml")
+		AclfNetwork net = IpssAdapter.importNet("testData/odm/ieee14Bus_breaker.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
-				.getNet();
+				.getImportedObj();
 		
 	  	double smallBranchZ = 0.00001;
 	  	net.accept(new ZeroZBranchProcesor(smallBranchZ, true));
@@ -65,10 +65,10 @@ public class IEEE14BusBreakerTest extends CorePluginTestSetup {
 	@Test 
 	public void findZeroZPath() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importNet("testData/ieee_odm/ieee14Bus_breaker.xml")
+		AclfNetwork net = IpssAdapter.importNet("testData/odm/ieee14Bus_breaker.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
-				.getNet();
+				.getImportedObj();
 		
 	  	net.setVisitedStatus(false);
 	  	net.markSmallZBranch(0.00001, false);		

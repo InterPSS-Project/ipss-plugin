@@ -47,7 +47,7 @@ public class RoseHulman_UserTestCases extends CorePluginTestSetup {
 	@Test
 	public void odm_testCase() throws Exception {
 		IODMAdapter adapter = new PSSEAdapter(PSSEAdapter.PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile("testData/psse/v30/HEonly_with_loads_added_for_interconnects3.raw"));		
+		assertTrue(adapter.parseInputFile("testData/adpter/psse/v30/HEonly_with_loads_added_for_interconnects3.raw"));		
 		
 		AclfNetwork net = CorePluginSpringFactory
 				.getOdm2AclfParserMapper(ODMAclfNetMapper.XfrBranchModel.InterPSS)

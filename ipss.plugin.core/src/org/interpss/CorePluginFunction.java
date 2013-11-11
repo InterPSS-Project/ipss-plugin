@@ -6,6 +6,8 @@ import org.ieee.odm.model.aclf.AclfModelParser;
 import org.ieee.odm.model.acsc.AcscModelParser;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.ieee.odm.schema.AcscFaultCategoryEnumType;
+import org.ieee.odm.schema.DcNetworkXmlType;
+import org.ieee.odm.schema.DistributionNetXmlType;
 import org.ieee.odm.schema.LoadflowNetXmlType;
 import org.interpss.datatype.DblBusValue;
 import org.interpss.display.AclfOutFunc;
@@ -28,7 +30,10 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.dclf.DclfAlgorithm;
 import com.interpss.core.net.OriginalDataFormat;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dc.DcNetwork;
+import com.interpss.dc.output.DcSysResultOutput;
+import com.interpss.dist.DistNetwork;
+import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.devent.BranchOutageType;
 
 /**
@@ -84,14 +89,40 @@ public class CorePluginFunction {
 	/**
 	 * DStab ODM model parser to DStabNetwork object mapping function
 	 */
-	public static IFunction<DStabModelParser, DStabilityNetwork> DStabParser2AcscNet = 
-		new FunctionAdapter<DStabModelParser, DStabilityNetwork>() {
-			@Override public DStabilityNetwork fx(DStabModelParser parser) throws InterpssException {
+	public static IFunction<DStabModelParser, DynamicSimuAlgorithm> DStabParser2DStabAlgo = 
+		new FunctionAdapter<DStabModelParser, DynamicSimuAlgorithm>() {
+			@Override public DynamicSimuAlgorithm fx(DStabModelParser parser) throws InterpssException {
 				return CorePluginSpringFactory.getOdm2DStabParserMapper()
 							.map2Model(parser)
-							.getDStabilityNet();
+							.getDynSimuAlgorithm();
 		}};
 
+	///////////////// DistNetwork /////////////////////		
+		
+	public static IFunction<DistributionNetXmlType, DistNetwork> DistXmlNet2DistNet = 
+		new FunctionAdapter<DistributionNetXmlType, DistNetwork>() {
+			@Override public DistNetwork fx(DistributionNetXmlType xmlNet) throws InterpssException {
+				return CorePluginSpringFactory.getOdm2DistNetMapper()
+								.map2Model(xmlNet);
+		}};	
+	
+	///////////////// DcSysNetwork /////////////////////			
+
+	public static IFunction<DcNetworkXmlType, DcNetwork> DcSysXmlNet2DcSysNet = 
+		new FunctionAdapter<DcNetworkXmlType, DcNetwork>() {
+			@Override public DcNetwork fx(DcNetworkXmlType xmlNet) throws InterpssException {
+				return CorePluginSpringFactory.getOdm2DcSysNetMapper()
+							.map2Model(xmlNet);
+		}};
+
+	/* **********************************************************
+	 * 		Output functions
+	 ************************************************************/
+	public static IFunction<DcNetwork, String> OutputSolarNet = 
+		new FunctionAdapter<DcNetwork, String>() {
+			@Override public String fx(DcNetwork net) throws InterpssException {
+				return DcSysResultOutput.solarAnalysisReuslt(net).toString();
+		}};				
 			
 	/* **********************************************************
 	 * 		Aclf Output function, including Sensitivity analysis

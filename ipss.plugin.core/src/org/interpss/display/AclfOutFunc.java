@@ -26,10 +26,10 @@ package org.interpss.display;
 
 import static com.interpss.common.util.IpssLogger.ipssLogger;
 import static com.interpss.core.funcImpl.AclfFunction.BranchRatingAptr;
-import static com.interpss.dc.DcPluginFunction.OutputSolarNet;
 import static org.interpss.CorePluginFunction.OutputBusId;
 
 import org.apache.commons.math3.complex.Complex;
+import org.interpss.CorePluginFunction;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.Number2String;
 
@@ -151,7 +151,7 @@ public class AclfOutFunc {
 				  				DcNetwork dcnet = (DcNetwork)n3rd;
 						  		str.append("\n\nChildNet : " + dcnet.getId() + "\n");
 						  		str.append("Parent net interface bus Id: " + dcnet.getParentNetInterfaceBusId() + "\n");
-						  		str.append(OutputSolarNet.fx(dcnet));
+						  		str.append(CorePluginFunction.OutputSolarNet.fx(dcnet));
 				  			} catch (InterpssException e) {
 				  				ipssLogger.severe(e.toString());
 				  				str.append(e.toString());

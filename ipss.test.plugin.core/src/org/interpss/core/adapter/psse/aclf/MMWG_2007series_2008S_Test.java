@@ -45,7 +45,7 @@ public class MMWG_2007series_2008S_Test extends CorePluginTestSetup {
 		
 		AclfNetwork net = CorePluginObjFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.PSSE)
-				.load("testData/psse/MMWG_2007series_2008S_Final.raw")
+				.load("testData/adpter/psse/MMWG_2007series_2008S_Final.raw")
 				.getAclfNet();			
 		
 
