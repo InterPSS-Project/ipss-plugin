@@ -69,7 +69,7 @@ public abstract class AbstractODMNetDataMapper<Tfrom, Tto> extends AbstractMappe
 	 * @param xmlNet
 	 * @return
 	 */
-	public void mapNetworkData(Network net, NetworkXmlType xmlNet) {
+	public void mapNetworkData(Network<?,?> net, NetworkXmlType xmlNet) {
 		net.setId(xmlNet.getId());
 		net.setName(xmlNet.getName() == null? "ODM Loadflow Case" : xmlNet.getName());
 		net.setDesc(xmlNet.getDesc());
@@ -86,7 +86,7 @@ public abstract class AbstractODMNetDataMapper<Tfrom, Tto> extends AbstractMappe
 	 * @param bus
 	 * @param net
 	 */
-	public void mapBaseBusData(BusXmlType busRec, Bus bus, Network net) {
+	public void mapBaseBusData(BusXmlType busRec, Bus bus, Network<?,?> net) {
 		if (busRec.getNumber() != null)
 			bus.setNumber(busRec.getNumber());
 		bus.setName(busRec.getName() == null? "Bus" : busRec.getName());

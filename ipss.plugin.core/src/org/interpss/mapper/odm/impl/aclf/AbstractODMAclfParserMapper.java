@@ -86,6 +86,12 @@ public abstract class AbstractODMAclfParserMapper<Tfrom> extends AbstractODMSimu
 			mapper.setOriginalDataFormat(ODMHelper.map(ofmt));		
 
 			noError = mapper.map2Model(xmlNet, simuCtx);
+			
+			if (xmlNet.isHasChildNet() != null && xmlNet.isHasChildNet()) {
+				parser.getChildNetList();
+				xmlNet.getChildNetDef();
+			}
+			
 		} else {
 			ipssLogger.severe("Error: currently only Transmission NetworkType has been implemented");
 			return false;
