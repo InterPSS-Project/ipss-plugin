@@ -28,12 +28,12 @@ import org.interpss.mapper.odm.ODMAclfNetMapper;
 import org.interpss.mapper.odm.ODMAclfParserMapper;
 import org.interpss.mapper.odm.ODMAcscParserMapper;
 import org.interpss.mapper.odm.ODMDStabParserMapper;
+import org.interpss.mapper.odm.ODMDcSysNetMapper;
+import org.interpss.mapper.odm.ODMDcSysParserMapper;
+import org.interpss.mapper.odm.ODMDistNetMapper;
+import org.interpss.mapper.odm.ODMDistParserMapper;
 import org.interpss.mapper.odm.ODMOpfParserMapper;
 
-import com.interpss.dc.mapper.ODMDcSysNetMapper;
-import com.interpss.dc.mapper.ODMDcSysParserMapper;
-import com.interpss.dist.mapper.ODMDistNetMapper;
-import com.interpss.dist.mapper.ODMDistParserMapper;
 import com.interpss.spring.CoreSimuSpringFactory;
 
 /**

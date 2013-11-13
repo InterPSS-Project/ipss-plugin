@@ -31,4 +31,30 @@
 	      class="org.interpss.mapper.odm.ODMOpfParserMapper"
 	      scope="singleton">	
 	</bean>	
+	
+<!--
+		ODM model to ipss DcNetwork mapping 
+ -->	
+	<bean id="odm2DcSysParserMapper" 
+	      class="org.interpss.mapper.odm.ODMDcSysParserMapper"
+	      scope="singleton">	
+	</bean>		
+
+	<bean id="odm2DcSysNetMapper" 
+	      class="org.interpss.mapper.odm.ODMDcSysNetMapper"
+	      scope="singleton">	
+	</bean>	
+	
+<!--
+		ODM model to ipss DistNetwork mapping 
+ -->	
+	<bean id="odm2DistParserMapper" 
+	      class="org.interpss.mapper.odm.ODMDistParserMapper"
+	      scope="singleton">	
+	</bean>		
+
+	<bean id="odm2DistNetMapper" 
+	      class="org.interpss.mapper.odm.ODMDistNetMapper"
+	      scope="singleton">	
+	</bean>			
 </beans>
