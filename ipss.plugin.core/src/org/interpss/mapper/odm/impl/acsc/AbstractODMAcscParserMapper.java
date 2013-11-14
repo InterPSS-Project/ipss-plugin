@@ -160,6 +160,10 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 						noError = false;
 					}
 				}		
+				
+				/*
+				 * a parent acsc net cannot contain any child network 
+				 */
 			} catch (InterpssException e) {
 				ipssLogger.severe(e.toString());
 				e.printStackTrace();

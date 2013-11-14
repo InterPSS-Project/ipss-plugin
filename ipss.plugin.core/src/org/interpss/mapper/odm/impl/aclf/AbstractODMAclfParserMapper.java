@@ -88,6 +88,9 @@ public abstract class AbstractODMAclfParserMapper<Tfrom> extends AbstractODMSimu
 
 			noError = mapper.map2Model(xmlNet, simuCtx);
 			
+			/*
+			 * a parent aclf net may contain child aclfNet or distNet network(s) 
+			 */
 			if (xmlNet.isHasChildNet() != null && xmlNet.isHasChildNet()) {
 				if (!new MultiNetAclfHelper(simuCtx.getAclfNet()).mapChildNet(xmlNet.getChildNetDef(), xfrBranchModel))
 					noError = false;

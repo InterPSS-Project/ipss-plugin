@@ -148,6 +148,10 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 				//System.out.println("map branch " + branch.getId());
 			}
 			
+			/*
+			 * a child aclf net cannot contain any child network 
+			 */
+			
 			// process CA monitoring status. The function only applies to PWD
 			if (this.originalFormat == OriginalDataFormat.PWD) {
 				if (xmlNet.getExtension() != null) {

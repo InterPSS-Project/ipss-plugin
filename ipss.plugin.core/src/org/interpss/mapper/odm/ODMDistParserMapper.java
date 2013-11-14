@@ -23,62 +23,10 @@ package org.interpss.mapper.odm;
  *
  */
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
-
 import org.ieee.odm.model.dist.DistModelParser;
-import org.ieee.odm.schema.DistributionNetXmlType;
-import org.ieee.odm.schema.NetworkCategoryEnumType;
-import org.interpss.mapper.odm.impl.mnet.MultiNetDistHelper;
+import org.interpss.mapper.odm.impl.dist.AbstractODMDistParserMapper;
 
-import com.interpss.SimuObjectFactory;
-import com.interpss.common.exp.InterpssException;
-import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
-
-public class ODMDistParserMapper extends AbstractODMNetDataMapper<DistModelParser, SimuContext> {
+public class ODMDistParserMapper extends AbstractODMDistParserMapper<DistModelParser> {
 	public ODMDistParserMapper() {
 	}
-	
-	/**
-	 * transfer info stored in the parser object into the distNet object
-	 * 
-	 * @param p an ODM parser object, representing an ODM xml file
-	 * @return DistNetwork object
-	 */
-	@Override
-	public SimuContext map2Model(DistModelParser p) throws InterpssException {
-		final SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DISTRIBUTE_NET);
-		if (map2Model(p, simuCtx))
-			return simuCtx;
-		else
-			throw new InterpssException("Error - map ODM model to create DistNetwork object");
-	}
-	
-	/**
-	 * transfer info stored in the parser object into this distNet object
-	 * 
-	 * @param p an ODM parser object, representing an ODM xml file
-	 * @param distNet
-	 * @return
-	 */
-	@Override
-	public boolean map2Model(DistModelParser p, SimuContext simuCtx) {
-		boolean noError = true;
-		
-		DistModelParser parser = (DistModelParser)p;
-		if (parser.getStudyCase().getNetworkCategory() == NetworkCategoryEnumType.DISTRIBUTION) {
-			DistributionNetXmlType xmlNet = parser.getDistNet();
-			noError = new ODMDistNetMapper().map2Model(xmlNet, simuCtx.getDistNet());
-			
-			if (xmlNet.isHasChildNet() != null && xmlNet.isHasChildNet()) {
-				if (!new MultiNetDistHelper(simuCtx.getDistNet()).mapChildNet(xmlNet.getChildNetDef()))
-					noError = false;
-			}
-		} else {
-			ipssLogger.severe("Error: wrong network type, " + parser.getStudyCase().getNetworkCategory());
-			return false;
-		}
-		
-		return noError;
-	}	
 }
