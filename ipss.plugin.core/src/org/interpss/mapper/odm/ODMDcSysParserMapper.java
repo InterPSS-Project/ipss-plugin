@@ -29,13 +29,15 @@ import static com.interpss.common.util.IpssLogger.ipssLogger;
 import org.ieee.odm.model.dc.DcSystemModelParser;
 import org.ieee.odm.schema.DcNetworkXmlType;
 import org.ieee.odm.schema.NetworkCategoryEnumType;
-import org.interpss.mapper.odm.AbstractODMNetDataMapper;
 
 import com.interpss.DcSysObjectFactory;
+import com.interpss.SimuObjectFactory;
 import com.interpss.dc.DcNetwork;
 import com.interpss.dc.common.IpssDcSysException;
+import com.interpss.simu.SimuContext;
+import com.interpss.simu.SimuCtxType;
 
-public class ODMDcSysParserMapper extends AbstractODMNetDataMapper<DcSystemModelParser, DcNetwork> {
+public class ODMDcSysParserMapper extends AbstractODMNetDataMapper<DcSystemModelParser, SimuContext> {
 	public ODMDcSysParserMapper() {
 	}
 	
@@ -46,15 +48,16 @@ public class ODMDcSysParserMapper extends AbstractODMNetDataMapper<DcSystemModel
 	 * @return DcNetwork object
 	 */
 	@Override
-	public DcNetwork map2Model(DcSystemModelParser p) throws IpssDcSysException {
+	public SimuContext map2Model(DcSystemModelParser p) throws IpssDcSysException {
 		
 //		if (!License.getInstance().isValid()) {
 //			throw new IpssDcSysException("Invalid license");
 //		}
 		
-		DcNetwork dcNet = DcSysObjectFactory.createDcNetwork();
-		if (map2Model(p, dcNet))
-			return dcNet;
+		final SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DC_SYSTEM_NET);
+		//DcNetwork dcNet = DcSysObjectFactory.createDcNetwork();
+		if (map2Model(p, simuCtx))
+			return simuCtx;
 		else
 			throw new IpssDcSysException("Error - map ODM model to create DcNetwork object");
 	}
@@ -67,12 +70,12 @@ public class ODMDcSysParserMapper extends AbstractODMNetDataMapper<DcSystemModel
 	 * @return
 	 */
 	@Override
-	public boolean map2Model(DcSystemModelParser parser, DcNetwork dcNet) {
+	public boolean map2Model(DcSystemModelParser parser, SimuContext simuCtx) {
 		boolean noError = true;
 		
 		if (parser.getStudyCase().getNetworkCategory() == NetworkCategoryEnumType.DC_SYSTEM ) {
 			DcNetworkXmlType xmlNet = parser.getDcNet();
-			noError = new ODMDcSysNetMapper().map2Model(xmlNet, dcNet);
+			noError = new ODMDcSysNetMapper().map2Model(xmlNet, simuCtx.getDcSysNet());
 		} else {
 			ipssLogger.severe("Error: wrong network category type for DC system analysis");
 			return false;

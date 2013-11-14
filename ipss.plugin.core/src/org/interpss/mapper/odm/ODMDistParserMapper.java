@@ -28,13 +28,14 @@ import static com.interpss.common.util.IpssLogger.ipssLogger;
 import org.ieee.odm.model.dist.DistModelParser;
 import org.ieee.odm.schema.DistributionNetXmlType;
 import org.ieee.odm.schema.NetworkCategoryEnumType;
-import org.interpss.mapper.odm.AbstractODMNetDataMapper;
+import org.interpss.mapper.odm.impl.mnet.MultiNetDistHelper;
 
-import com.interpss.DistObjectFactory;
+import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
-import com.interpss.dist.DistNetwork;
+import com.interpss.simu.SimuContext;
+import com.interpss.simu.SimuCtxType;
 
-public class ODMDistParserMapper extends AbstractODMNetDataMapper<DistModelParser, DistNetwork> {
+public class ODMDistParserMapper extends AbstractODMNetDataMapper<DistModelParser, SimuContext> {
 	public ODMDistParserMapper() {
 	}
 	
@@ -45,10 +46,10 @@ public class ODMDistParserMapper extends AbstractODMNetDataMapper<DistModelParse
 	 * @return DistNetwork object
 	 */
 	@Override
-	public DistNetwork map2Model(DistModelParser p) throws InterpssException {
-		DistNetwork distNet = DistObjectFactory.createDistNetwork();      
-		if (map2Model(p, distNet))
-			return distNet;
+	public SimuContext map2Model(DistModelParser p) throws InterpssException {
+		final SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DISTRIBUTE_NET);
+		if (map2Model(p, simuCtx))
+			return simuCtx;
 		else
 			throw new InterpssException("Error - map ODM model to create DistNetwork object");
 	}
@@ -61,16 +62,17 @@ public class ODMDistParserMapper extends AbstractODMNetDataMapper<DistModelParse
 	 * @return
 	 */
 	@Override
-	public boolean map2Model(DistModelParser p, DistNetwork distNet) {
+	public boolean map2Model(DistModelParser p, SimuContext simuCtx) {
 		boolean noError = true;
 		
 		DistModelParser parser = (DistModelParser)p;
 		if (parser.getStudyCase().getNetworkCategory() == NetworkCategoryEnumType.DISTRIBUTION) {
 			DistributionNetXmlType xmlNet = parser.getDistNet();
-			noError = new ODMDistNetMapper().map2Model(xmlNet, distNet);
+			noError = new ODMDistNetMapper().map2Model(xmlNet, simuCtx.getDistNet());
 			
 			if (xmlNet.isHasChildNet() != null && xmlNet.isHasChildNet()) {
-
+				if (!new MultiNetDistHelper(simuCtx.getDistNet()).mapChildNet(xmlNet.getChildNetDef()))
+					noError = false;
 			}
 		} else {
 			ipssLogger.severe("Error: wrong network type, " + parser.getStudyCase().getNetworkCategory());

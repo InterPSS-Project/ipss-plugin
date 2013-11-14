@@ -49,6 +49,7 @@ import org.interpss.core.dstab.mach.Eq1MachineCaseTest;
 import org.interpss.core.dstab.mach.MachineSaturationTest;
 import org.interpss.core.dstab.mach.RoundRotorMachineTest;
 import org.interpss.core.dstab.mach.SalientPoleMachineTest;
+import org.interpss.core.mnet.MNet_Aclf5Bus_Child_Test;
 import org.interpss.core.mnet.MNet_IEEE14Bus_Test;
 import org.interpss.plugin.beanModel.AclfBeanMapperTest;
 import org.interpss.spring.SimuAppCtxTest;
@@ -142,6 +143,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	AclfBeanMapperTest.class,
 	
 	MNet_IEEE14Bus_Test.class,
+	MNet_Aclf5Bus_Child_Test.class,
 })
 public class CorePluginTestSuite {
 }
