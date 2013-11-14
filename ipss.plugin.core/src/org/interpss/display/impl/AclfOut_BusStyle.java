@@ -85,6 +85,7 @@ public class AclfOut_BusStyle {
 		}
 		
 		if (mainNet.isContainChildNet()) {
+			/*
 		  	for (Network n : mainNet.getChildNetworks()) {
 	  			AclfNetwork childNet = null;
 		  		if (n instanceof AclfNetwork) {
@@ -116,7 +117,8 @@ public class AclfOut_BusStyle {
 				  		}
 				  	}		  			
 		  		}
-		  	}		  	
+		  	}
+		  	*/		  	
 		}
 		
 		return str;
