@@ -130,6 +130,7 @@ public class AclfOutFunc {
 		}
 		
 		if (net.isContainChildNet()) {
+			/*
 		  	for (Network n : net.getChildNetworks()) {
 	  			AclfNetwork aclfNet = null;
 		  		if (n instanceof AclfNetwork) {
@@ -159,7 +160,8 @@ public class AclfOutFunc {
 				  		}
 				  	}		  			
 		  		}
-		  	}		  	
+		  	}
+		  	*/		  	
 		}
 		return str;
 	}
