@@ -27,13 +27,13 @@ package org.interpss.core.dcsys;
 import static org.junit.Assert.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
+import org.interpss.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
 import com.interpss.DcSysObjectFactory;
 import com.interpss.dc.DcBus;
 import com.interpss.dc.DcNetwork;
 import com.interpss.dc.common.IDcNetEVisitor;
-import com.interpss.pssl.plugin.IpssAdapter;
 
 public class Inverter_2BusTest  extends CorePluginTestSetup { 
 	@Test

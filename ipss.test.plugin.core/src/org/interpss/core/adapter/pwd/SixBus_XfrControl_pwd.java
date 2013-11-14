@@ -33,11 +33,11 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.sparse.base.ISparseEquation.SolverType;
 import org.interpss.numeric.util.NumericUtil;
+import org.interpss.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.pssl.plugin.IpssAdapter;
 
 public class SixBus_XfrControl_pwd extends CorePluginTestSetup {
 	@Test

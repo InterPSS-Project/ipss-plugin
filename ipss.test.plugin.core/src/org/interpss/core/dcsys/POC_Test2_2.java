@@ -28,12 +28,12 @@ import static org.junit.Assert.assertTrue;
 
 import org.interpss.CorePluginFunction;
 import org.interpss.CorePluginTestSetup;
+import org.interpss.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
 import com.interpss.DcSysObjectFactory;
 import com.interpss.dc.DcNetwork;
 import com.interpss.dc.algo.DcPowerFlowAlgorithm;
-import com.interpss.pssl.plugin.IpssAdapter;
 
 public class POC_Test2_2  extends CorePluginTestSetup { 
 	@Test

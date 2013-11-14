@@ -27,13 +27,13 @@ package org.interpss.core.adapter.odm.dist;
 import static org.junit.Assert.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
+import org.interpss.pssl.plugin.IpssAdapter;
+import org.interpss.pssl.simu.IpssDist;
+import org.interpss.pssl.simu.net.IpssDistNet.DistNetDSL;
 import org.junit.Test;
 
 import com.interpss.dist.DistBus;
 import com.interpss.dist.DistNetwork;
-import com.interpss.pssl.plugin.IpssAdapter;
-import com.interpss.pssl.simu.IpssDist;
-import com.interpss.pssl.simu.net.IpssDistNet.DistNetDSL;
 
 public class DistLF14BusTest  extends CorePluginTestSetup { 
 	@Test

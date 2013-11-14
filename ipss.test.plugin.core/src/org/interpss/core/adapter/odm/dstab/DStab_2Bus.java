@@ -34,6 +34,7 @@ import org.ieee.odm.ODMObjectFactory;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.core.dstab.DStabTestSetupBase;
 import org.interpss.mapper.odm.ODMDStabParserMapper;
+import org.interpss.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
 import com.interpss.SimuObjectFactory;
@@ -42,7 +43,6 @@ import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateVariableRecorder;
 import com.interpss.dstab.common.DStabOutSymbol;
-import com.interpss.pssl.plugin.IpssAdapter;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 

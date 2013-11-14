@@ -1,0 +1,15 @@
+Structure
+
+          Core      ODM  
+            ^        ^  
+            |        |      plugin.base
+                            plugin.dstab   >>  plugin.core
+                            plugin.core
+                               ^
+                               |
+                PSSL Layer
+                
+                     ^
+                     |
+
+         App, Impl specific Plug Layer   

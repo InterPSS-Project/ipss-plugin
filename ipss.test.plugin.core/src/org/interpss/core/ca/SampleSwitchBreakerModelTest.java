@@ -31,6 +31,7 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.algo.ZeroZBranchProcesor;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
+import org.interpss.pssl.simu.net.IpssAclfNet;
 import org.junit.Test;
 
 import com.interpss.CoreObjectFactory;
@@ -42,7 +43,6 @@ import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.pssl.simu.net.IpssAclfNet;
 
 
 public class SampleSwitchBreakerModelTest extends CorePluginTestSetup {
