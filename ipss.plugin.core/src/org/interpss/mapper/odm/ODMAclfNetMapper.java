@@ -28,7 +28,8 @@ import org.ieee.odm.schema.LoadflowNetXmlType;
 import org.interpss.mapper.odm.impl.aclf.AbstractODMAclfNetMapper;
 
 /**
- * mapper implementation to map ODM to InterPSS object model for Aclf
+ * Mapper implementation to map ODM LoadflowNetXmlType object to AclfNetwork object. It
+ * is used, for example, to map AclfNet child netwrk.
  * 
  * @author mzhou
  *
