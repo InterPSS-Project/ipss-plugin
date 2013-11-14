@@ -28,7 +28,7 @@ import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.mapper.odm.impl.aclf.AbstractODMAclfParserMapper;
 
 /**
- * mapper implementation to map ODM to InterPSS object model for Aclf
+ * mapper implementation to map ODM parser object to InterPSS object model for Aclf
  * 
  * @author mzhou
  *
