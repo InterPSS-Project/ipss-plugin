@@ -166,6 +166,10 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 					}
 				}
 				
+				/*
+				 * a parent dstab net cannot contain any child network 
+				 */
+				
 				// map the dynamic simulation settings information
 				if(parser.getStudyCase().getStudyScenario() !=null){
 					IpssStudyScenarioXmlType s = (IpssStudyScenarioXmlType)parser.getStudyCase().getStudyScenario().getValue();
