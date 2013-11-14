@@ -34,6 +34,7 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.algo.ZeroZBranchProcesor;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
+import org.interpss.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
 import com.interpss.CoreObjectFactory;
@@ -44,7 +45,6 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.pssl.plugin.IpssAdapter;
 
 
 public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {

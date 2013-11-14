@@ -28,12 +28,12 @@ import static org.junit.Assert.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.algo.ZeroZBranchProcesor;
+import org.interpss.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.net.Branch;
-import com.interpss.pssl.plugin.IpssAdapter;
 
 
 public class IEEE14BusBreaker_equivCABranch_Test extends CorePluginTestSetup {

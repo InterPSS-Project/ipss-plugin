@@ -27,6 +27,7 @@ package org.interpss.core.mnet;
 import static org.junit.Assert.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
+import org.interpss.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -34,7 +35,6 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.net.BranchBusSide;
 import com.interpss.core.net.childnet.ChildNetInterfaceBranch;
 import com.interpss.dist.DistNetwork;
-import com.interpss.pssl.plugin.IpssAdapter;
 
 public class MNet_Aclf5Bus_Child_Test extends CorePluginTestSetup {
 	@Test 

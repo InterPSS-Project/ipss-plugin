@@ -36,6 +36,8 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.display.DclfOutFunc;
 import org.interpss.mapper.odm.ODMAclfNetMapper;
 import org.interpss.numeric.datatype.Unit.UnitType;
+import org.interpss.pssl.plugin.IpssAdapter;
+import org.interpss.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.Test;
 
 import com.interpss.CoreObjectFactory;
@@ -45,8 +47,6 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
 import com.interpss.core.dclf.DclfAlgorithm;
 import com.interpss.core.net.Branch;
-import com.interpss.pssl.plugin.IpssAdapter;
-import com.interpss.pssl.plugin.IpssAdapter.PsseVersion;
 
 /*
  * This test case compares InterPSS and PSS/E xfr branch model

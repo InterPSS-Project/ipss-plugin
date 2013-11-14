@@ -35,6 +35,8 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.display.DclfOutFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
+import org.interpss.pssl.plugin.IpssAdapter;
+import org.interpss.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.Test;
 
 import com.interpss.CoreObjectFactory;
@@ -45,8 +47,6 @@ import com.interpss.core.aclf.adpter.AclfSwingBus;
 import com.interpss.core.dclf.DclfAlgorithm;
 import com.interpss.core.net.Bus;
 import com.interpss.core.net.RefBusType;
-import com.interpss.pssl.plugin.IpssAdapter;
-import com.interpss.pssl.plugin.IpssAdapter.PsseVersion;
 
 public class SixBus_DclfPsXfr extends CorePluginTestSetup {
 	@Test

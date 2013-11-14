@@ -24,7 +24,7 @@
 
 package org.interpss.core.adapter.psse.aclf;
 
-import static com.interpss.pssl.plugin.IpssAdapter.FileFormat.PSSE;
+import static org.interpss.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
@@ -32,6 +32,8 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.datamodel.bean.aclf.AclfNetBean;
 import org.interpss.mapper.bean.aclf.AclfNet2BeanMapper;
 import org.interpss.numeric.datatype.Unit.UnitType;
+import org.interpss.pssl.plugin.IpssAdapter;
+import org.interpss.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.Test;
 
 import com.interpss.CoreObjectFactory;
@@ -40,8 +42,6 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.pssl.plugin.IpssAdapter;
-import com.interpss.pssl.plugin.IpssAdapter.PsseVersion;
 
 public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup { 
 	//@Test
