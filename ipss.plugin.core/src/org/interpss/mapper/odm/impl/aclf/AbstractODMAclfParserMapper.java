@@ -34,7 +34,7 @@ import org.ieee.odm.schema.OriginalDataFormatEnumType;
 import org.interpss.mapper.odm.AbstractODMSimuCtxDataMapper;
 import org.interpss.mapper.odm.ODMAclfNetMapper;
 import org.interpss.mapper.odm.ODMHelper;
-import org.interpss.mapper.odm.impl.mnet.MultiNetMapHelper;
+import org.interpss.mapper.odm.impl.mnet.MultiNetAclfHelper;
 
 import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
@@ -89,7 +89,7 @@ public abstract class AbstractODMAclfParserMapper<Tfrom> extends AbstractODMSimu
 			noError = mapper.map2Model(xmlNet, simuCtx);
 			
 			if (xmlNet.isHasChildNet() != null && xmlNet.isHasChildNet()) {
-				if (!new MultiNetMapHelper(simuCtx).mapChildNet(parser.getChildNetList(), xmlNet.getChildNetDef(), xfrBranchModel))
+				if (!new MultiNetAclfHelper(simuCtx.getAclfNet()).mapChildNet(xmlNet.getChildNetDef(), xfrBranchModel))
 					noError = false;
 			}
 			

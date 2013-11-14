@@ -1,5 +1,5 @@
  /*
-  * @(#)IEEE14BusTest.java   
+  * @(#)MNet_Aclf5Bus_Child_Test.java   
   *
   * Copyright (C) 2006 www.interpss.org
   *
@@ -33,6 +33,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.net.BranchBusSide;
 import com.interpss.core.net.childnet.ChildNetInterfaceBranch;
+import com.interpss.dist.DistNetwork;
 import com.interpss.pssl.plugin.IpssAdapter;
 
 public class MNet_Aclf5Bus_Child_Test extends CorePluginTestSetup {
@@ -94,5 +95,12 @@ public class MNet_Aclf5Bus_Child_Test extends CorePluginTestSetup {
 		assertTrue(interBra.getInterfaceBusSide() == BranchBusSide.TO_SIDE);
 		assertTrue(interBra.getChildNetSide() == BranchBusSide.TO_SIDE);
 		assertTrue(interBra.getInterfaceBusIdChineNet().equals("DistBus-1"));		
+		
+		DistNetwork distNet = (DistNetwork)net.getChildNet("DistChileNet1").getNetwork();
+		assertTrue(distNet.isContainChildNet());	
+		interBra = distNet.getChildNet("ChildDcSysteNet1").getInterfaceBranch("DistBranchId");
+		assertTrue(interBra.getInterfaceBusSide() == BranchBusSide.TO_SIDE);
+		assertTrue(interBra.getChildNetSide() == BranchBusSide.TO_SIDE);
+		assertTrue(interBra.getInterfaceBusIdChineNet().equals("DcBus1"));
 	}	
 }

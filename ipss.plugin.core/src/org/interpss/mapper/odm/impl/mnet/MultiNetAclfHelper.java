@@ -1,5 +1,5 @@
 /*
- * @(#)AbstractODMOpfDataMapper.java   
+ * @(#)MultiNetAclfHelper.java   
  *
  * Copyright (C) 2008 www.interpss.org
  *
@@ -15,7 +15,7 @@
  *
  * @Author Mike Zhou
  * @Version 1.0
- * @Date 02/15/2008
+ * @Date 11/15/2013
  * 
  *   Revision History
  *   ================
@@ -30,11 +30,6 @@ import static org.interpss.CorePluginFunction.DistXmlNet2DistNet;
 
 import java.util.List;
 
-import javax.xml.bind.JAXBElement;
-
-import org.ieee.odm.model.base.BaseJaxbHelper;
-import org.ieee.odm.schema.BranchBusSideEnumType;
-import org.ieee.odm.schema.ChildNetInterfaceBranchXmlType;
 import org.ieee.odm.schema.ChildNetworkDefXmlType;
 import org.ieee.odm.schema.DistributionNetXmlType;
 import org.ieee.odm.schema.LoadflowNetXmlType;
@@ -47,49 +42,37 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.net.BranchBusSide;
-import com.interpss.core.net.childnet.ChildNetInterfaceBranch;
 import com.interpss.core.net.childnet.ChildNetwork;
 import com.interpss.dist.DistBranch;
 import com.interpss.dist.DistBus;
 import com.interpss.dist.DistNetwork;
-import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
 
 /**
- * 
+ * AclfNet parent net Supported child net types: 1) AclfNet; 2) DistNet 
  * 
  * @author mzhou
  *
  */
-public class MultiNetMapHelper {
-	private SimuContext simuCtx;
+public class MultiNetAclfHelper extends BaseMultiNetHelper {
+	private AclfNetwork parentAclfNet;
 	
-	public MultiNetMapHelper(SimuContext simuCtx) {
-		this.simuCtx = simuCtx;
+	public MultiNetAclfHelper(AclfNetwork net) {
+		this.parentAclfNet = net;
 	}
 
-	public boolean mapChildNet(List<JAXBElement<? extends NetworkXmlType>> childNets, List<ChildNetworkDefXmlType> childNetDefList) {
-		return mapChildNet(childNets, childNetDefList, ODMAclfNetMapper.XfrBranchModel.InterPSS);
-	}
-	
-	public boolean mapChildNet(List<JAXBElement<? extends NetworkXmlType>> childNets, List<ChildNetworkDefXmlType> childNetDefList, ODMAclfNetMapper.XfrBranchModel xfrBranchModel) {
-		if (this.simuCtx.getNetType() == SimuCtxType.ACLF_NETWORK) {
-			AclfNetwork parentAclfNet = this.simuCtx.getAclfNet();
+	public boolean mapChildNet(List<ChildNetworkDefXmlType> childNetDefList, ODMAclfNetMapper.XfrBranchModel xfrBranchModel) {
+		try {
 			for (ChildNetworkDefXmlType xmlChildDef : childNetDefList) {
 				NetworkXmlType xmlChildNet = (NetworkXmlType)xmlChildDef.getChildNetRef().getIdRef();
 				if (xmlChildNet != null) {
-					try {
-						if (xmlChildNet instanceof LoadflowNetXmlType) {
-							mapAclfChildNet(parentAclfNet, xmlChildDef, xfrBranchModel);
-						}
-						else if (xmlChildNet instanceof DistributionNetXmlType) {
-							mapDistChildNet(parentAclfNet, xmlChildDef);
-						} 
-					} catch (InterpssException e) {
-						ipssLogger.severe(e.toString());
-						return false;
+					if (xmlChildNet instanceof LoadflowNetXmlType) {
+						mapAclfChildNet(parentAclfNet, xmlChildDef, xfrBranchModel);
 					}
+					else if (xmlChildNet instanceof DistributionNetXmlType) {
+						mapDistChildNet(parentAclfNet, xmlChildDef);
+					} 
+					else
+						ipssLogger.warning("Only AclfNet and DistNet could be defined as Child network of AclfNet");
 				}
 				else {
 					ipssLogger.severe("Child network reference cannot be located in the ChileNetList");
@@ -97,6 +80,8 @@ public class MultiNetMapHelper {
 				}
 			}
 			return true;
+		} catch (InterpssException e) {
+			ipssLogger.severe(e.toString());
 		}
 		return false;
 	}
@@ -113,23 +98,9 @@ public class MultiNetMapHelper {
 	private void mapDistChildNet(AclfNetwork parentAclfNet, ChildNetworkDefXmlType xmlChildDef) throws InterpssException {
 		NetworkXmlType xmlChildNet = (NetworkXmlType)xmlChildDef.getChildNetRef().getIdRef();
 		ChildNetwork<DistBus,DistBranch> childNetContainer = DistObjectFactory.createChildDistNet(parentAclfNet, xmlChildNet.getId());
-		DistNetwork childAclfNet = DistXmlNet2DistNet.fx((DistributionNetXmlType)xmlChildNet);
-		childNetContainer.setNetwork(childAclfNet);	
+		DistNetwork childDistNet = DistXmlNet2DistNet.fx((DistributionNetXmlType)xmlChildNet);
+		childNetContainer.setNetwork(childDistNet);	
 		
 		mapInterfaceBranch(childNetContainer, xmlChildDef);		
 	}	
-	
-	private void mapInterfaceBranch(ChildNetwork<?,?> childNetContainer, ChildNetworkDefXmlType xmlChildDef) {
-		for (ChildNetInterfaceBranchXmlType xmlInterBranch : xmlChildDef.getInterfaceBranch()) {
-			ChildNetInterfaceBranch intBranch = CoreObjectFactory.createChildNetInerfaceBranch(childNetContainer);
-			intBranch.setBranchId(BaseJaxbHelper.getRecId(xmlInterBranch.getBranch()));
-			intBranch.setInterfaceBusSide(xmlInterBranch.getInterfaceBusSide() == BranchBusSideEnumType.FROM_SIDE?
-					BranchBusSide.FROM_SIDE : BranchBusSide.TO_SIDE);		
-			intBranch.setChildNetSide(xmlInterBranch.getChildNetSide() == BranchBusSideEnumType.FROM_SIDE?
-					BranchBusSide.FROM_SIDE : BranchBusSide.TO_SIDE);
-			if (xmlInterBranch.getInterfaceBusIdChildNet() != null)
-				intBranch.setInterfaceBusIdChineNet(BaseJaxbHelper.getRecId(xmlInterBranch.getInterfaceBusIdChildNet()));
-			childNetContainer.getInterfaceBranches().add(intBranch);
-		}		
-	}
 }
