@@ -28,15 +28,19 @@ import static org.junit.Assert.assertTrue;
 
 import org.interpss.CorePluginObjFactory;
 import org.interpss.CorePluginTestSetup;
+import org.interpss.display.AclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
+import org.interpss.numeric.datatype.Unit.UnitType;
 import org.junit.Test;
 
 import com.interpss.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.adpter.AclfSwingBus;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.algo.impl.mnet.AclfBusChildNetHelper;
+import com.interpss.core.algo.impl.mnet.DefaultMultiNetLfSolver;
 import com.interpss.core.net.BranchBusSide;
 import com.interpss.core.net.childnet.ChildNetInterfaceBranch;
 import com.interpss.core.net.childnet.ChildNetwork;
@@ -108,5 +112,18 @@ public class MNet_IEEE14Bus_Test extends CorePluginTestSetup {
 		}
 		
 		//System.out.println(net.net2String());
+		
+		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		algo.setMultiNetSolver(new DefaultMultiNetLfSolver(algo));
+	  	algo.loadflow();
+	  	
+  		assertTrue(net.isLfConverged());		
+ 		AclfBus swingBus = (AclfBus)net.getBus("Bus1");
+ 		AclfSwingBus swing = swingBus.toSwingBus();
+		System.out.println(swing.getGenResults(UnitType.PU));
+		System.out.println(AclfOutFunc.loadFlowSummary(net));
+		
+  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.32386)<0.0001);
+  		assertTrue( Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.16889)<0.0001);
 	}
 }
