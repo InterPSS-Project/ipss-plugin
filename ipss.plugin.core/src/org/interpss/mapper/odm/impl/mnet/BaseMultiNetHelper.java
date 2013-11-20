@@ -51,7 +51,7 @@ public class BaseMultiNetHelper {
 					BranchBusSide.FROM_SIDE : BranchBusSide.TO_SIDE);
 			if (xmlInterBranch.getInterfaceBusIdChildNet() != null)
 				intBranch.setInterfaceBusIdChineNet(BaseJaxbHelper.getRecId(xmlInterBranch.getInterfaceBusIdChildNet()));
-			childNetContainer.getInterfaceBranches().add(intBranch);
+			//childNetContainer.getInterfaceBranches().add(intBranch);
 		}		
 	}
 }
