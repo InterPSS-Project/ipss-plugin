@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.emf.common.util.EList;
+import org.ieee.odm.model.IODMModelParser;
 import org.ieee.odm.model.ODMModelParser;
 import org.interpss.datatype.DblBranchValue;
 import org.interpss.datatype.DblBusValue;
@@ -299,7 +300,7 @@ public class IpssDclf extends BaseDSL {
   		/**
   		 * set injection bus number
   		 */
-  		public DclfAlgorithmDSL setInjectionBusNo(int n) { return setInjectionBusId(ODMModelParser.BusIdPreFix+n);} 
+  		public DclfAlgorithmDSL setInjectionBusNo(int n) { return setInjectionBusId(IODMModelParser.BusIdPreFix+n);} 
   		/**
   		 * set injection bus number
   		 */
@@ -318,11 +319,11 @@ public class IpssDclf extends BaseDSL {
   		/**
   		 * set withdraw bus number
   		 */
-  		public DclfAlgorithmDSL setWithdrawBusNo(int n) { return setWithdrawBusId(ODMModelParser.BusIdPreFix+n);} 
+  		public DclfAlgorithmDSL setWithdrawBusNo(int n) { return setWithdrawBusId(IODMModelParser.BusIdPreFix+n);} 
   		/**
   		 * set withdraw bus number
   		 */
-  		public DclfAlgorithmDSL withdrawBusNo(int n) { return this.setWithdrawBusId(ODMModelParser.BusIdPreFix+n); } 
+  		public DclfAlgorithmDSL withdrawBusNo(int n) { return this.setWithdrawBusId(IODMModelParser.BusIdPreFix+n); } 
 
   		/**
   		 *  add injection bus info for multiple bus analysis scenario, with contribution factor
@@ -346,7 +347,7 @@ public class IpssDclf extends BaseDSL {
   		 * @return
   		 */
 		public DclfAlgorithmDSL addInjectionBus(int n, double contriPercent) { 
-			return addInjectionBus(ODMModelParser.BusIdPreFix+n, contriPercent);} 
+			return addInjectionBus(IODMModelParser.BusIdPreFix+n, contriPercent);} 
   		
   		/**
   		 *  add withdraw bus info for multiple bus analysis scenario, with contribution factor
@@ -369,7 +370,7 @@ public class IpssDclf extends BaseDSL {
   		 * @return
   		 */
 		public DclfAlgorithmDSL addWithdrawBus(int n, double contriPercent) { 
-			return addWithdrawBus(ODMModelParser.BusIdPreFix+n, contriPercent);} 
+			return addWithdrawBus(IODMModelParser.BusIdPreFix+n, contriPercent);} 
 
 		/**
 		 * set withdraw buses. Bus genPartFactor is used for contribution percent
