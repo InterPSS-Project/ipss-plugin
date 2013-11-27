@@ -55,7 +55,7 @@ public class CAResultComparator {
 			ContingencyResult benchMarkCAResult =cntgTable.get(cont.getId());
 			if(benchMarkCAResult!=null){
 			  for (MonitoringBranch monBra : cont.getMonitoringBranches()) {
-				AclfBranch br = monBra.getAclfBranch();
+				AclfBranch br = monBra.getBranch();
 				double preFlow = br.getDclfFlow();
 				double shiftedFlow = monBra.getShiftedFlow();
 				double postFlow = preFlow + shiftedFlow;

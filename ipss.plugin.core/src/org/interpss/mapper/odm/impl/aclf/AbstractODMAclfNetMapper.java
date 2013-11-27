@@ -231,7 +231,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 							xmlBra.getFromBusId() + ", " + xmlBra.getToBusId() + ", " + xmlBra.getCircuitId());
 				}
 				else {
-					branch.setAclfBranch(b);
+					branch.setBranch(b);
 					branch.setWeight(xmlBra.getWeight());
 				}
 			}
