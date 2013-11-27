@@ -50,8 +50,8 @@ public class DistPathBusLfSolver extends DistPathBusWalker {
 		if (!DistPathLfHelper.atFlowIntoSide(branch, bus)) {
 			// calculate branch loss based on the flowOutgoing
 			DistBranch distBranch = (DistBranch)branch;
-			double cur = flowOutgoing.divide(distBus.getAcscBus().getVoltage()).abs();
-			Complex loss = distBranch.getAcscBranch().getZ().multiply(cur*cur);
+			double cur = flowOutgoing.divide(distBus.getBus().getVoltage()).abs();
+			Complex loss = distBranch.getBranch().getZ().multiply(cur*cur);
 			flowOutgoing = flowOutgoing.multiply(-1.0).add(loss);
 		}
 		
@@ -87,7 +87,7 @@ public class DistPathBusLfSolver extends DistPathBusWalker {
 		if (!DistPathLfHelper.atFlowIntoSide(branch, bus)) {
 			DistBranch distBranch = (DistBranch)branch;
 			double cur = DistPathLfHelper.current(distBranch).abs();
-			Complex loss = distBranch.getAcscBranch().getZ().multiply(cur*cur);
+			Complex loss = distBranch.getBranch().getZ().multiply(cur*cur);
 			flow = flow.subtract(loss);
 		}
 		return flow;

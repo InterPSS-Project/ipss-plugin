@@ -350,7 +350,7 @@ public class BpaO7CTest extends DStabTestSetupBase {
 		// define a 3P fault
 		DStabBus faultBus = net.getDStabBus(busId);
 		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@"+busId, net);
-  		fault.setAcscBus(faultBus);
+  		fault.setBus(faultBus);
 		fault.setFaultCode(SimpleFaultCode.GROUND_3P);
 		fault.setZLGFault(NumericConstant.SmallScZ);
 		fault.setZLLFault(new Complex(0.0, 0.0));

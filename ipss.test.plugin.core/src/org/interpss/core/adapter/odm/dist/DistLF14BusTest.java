@@ -50,8 +50,8 @@ public class DistLF14BusTest  extends CorePluginTestSetup {
 	  	DistBus bus = distNet.getBus("Bus-1");
 	  	//System.out.println(bus.getAcscBus().getGenResults().getReal());
 	  	//System.out.println(bus.getAcscBus().getGenResults().getImaginary());
-	  	assertTrue(Math.abs(bus.getAcscBus().getGenResults().getReal() - 0.26) < 0.001);
-	  	assertTrue(Math.abs(bus.getAcscBus().getGenResults().getImaginary() - 0.168) < 0.001);
+	  	assertTrue(Math.abs(bus.getBus().getGenResults().getReal() - 0.26) < 0.001);
+	  	assertTrue(Math.abs(bus.getBus().getGenResults().getImaginary() - 0.168) < 0.001);
 	}
 }
 
