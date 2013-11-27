@@ -117,7 +117,7 @@ public class IneffetiveOutageAnalysis {
 		for (OutageBranch outBranch : cont.getOutageBranches()) {
 			if (outBranch.isActive() && 
 					outBranch.getOutageType() == BranchOutageType.OPEN) {  // ineffective outage branch only applies to OPEN outage type
-				AclfBranch branch = outBranch.getAclfBranch();
+				AclfBranch branch = outBranch.getBranch();
 				String fid = branch.getFromBus().getId();    // consolidated bus
 				if (branch.isChildBranch() &&                          // make sure the outage branch is a child branch of a consolidated bus
 						StringUtil.contain(zeroZLoopBusIdSet, fid)) {      

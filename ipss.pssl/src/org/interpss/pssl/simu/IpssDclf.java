@@ -658,13 +658,13 @@ public class IpssDclf extends BaseDSL {
   		*/
   		public double lineOutageDFactor()   throws ReferenceBusException {
   			if (this.sfMonitorType == SFactorMonitorType.BRANCH)
-  	  			return algo.lineOutageDFactor(this.outageBranch.getAclfBranch(), this.getMontorBranch());	
+  	  			return algo.lineOutageDFactor(this.outageBranch.getBranch(), this.getMontorBranch());	
   			else {
   				// LODF for flow interface
   				double sum = 0.0;
   				for (FlowInterfaceBranch b : this.flowInterface.getInterfaceBranches()) {
-  					this.monitorBranch(b.getAclfBranch());
-  	  	  			double sf = algo.lineOutageDFactor(this.outageBranch.getAclfBranch(), this.getMontorBranch());	
+  					this.monitorBranch(b.getBranch());
+  	  	  			double sf = algo.lineOutageDFactor(this.outageBranch.getBranch(), this.getMontorBranch());	
   					sum += (b.isBranchDir()? 1.0 : -1.0) * b.getWeight() * sf;
   				}
   				return sum; 
@@ -726,7 +726,7 @@ public class IpssDclf extends BaseDSL {
   			else {
   				double[] sumAry = null;
   				for (FlowInterfaceBranch b : this.flowInterface.getInterfaceBranches()) {
-  					this.monitorBranch(b.getAclfBranch());
+  					this.monitorBranch(b.getBranch());
   	  				double[] xAry = algo.getLineOutageDFactors(this.getMontorBranch(), this.invE_PTDF);
   	  				if (sumAry == null)
   	  					sumAry = new double[xAry.length];
@@ -751,7 +751,7 @@ public class IpssDclf extends BaseDSL {
   				// this.sfMonitorType == SFactorMonitorType.FLOW_INTERFACE
   				double sum = 0.0;
   				for (FlowInterfaceBranch b : this.flowInterface.getInterfaceBranches()) {
-  					this.monitorBranch(b.getAclfBranch());
+  					this.monitorBranch(b.getBranch());
   					sum += (b.isBranchDir()? 1.0 : -1.0) * b.getWeight() * calBranchGSF();
   				}
   				return sum; 
@@ -946,7 +946,7 @@ public class IpssDclf extends BaseDSL {
   				AclfBranch branch = (AclfBranch)b;
   				if (!branch.getId().equals(this.outageBranch.getId())) {
   					try {
-  						double f = algo.lineOutageDFactor(this.outageBranch.getAclfBranch(), branch);
+  						double f = algo.lineOutageDFactor(this.outageBranch.getBranch(), branch);
   	  					DblBranchValue v = list.get(size-1);
   	  					if (Math.abs(f) > Math.abs(v.value)) {
   	  	  					v.value = f;
