@@ -56,7 +56,7 @@ public class DistOutFunc {
 				DistBus distBus = (DistBus) b;
 				DistBusAdapter aBusApt = (DistBusAdapter) distBus
 						.getAdapter(DistBusAdapter.class);
-				distBus.getAcscBus().setVoltage(aBusApt.getPointVoltage(i));
+				distBus.getBus().setVoltage(aBusApt.getPointVoltage(i));
 			}
 
 			str.append(AclfOutFunc.loadFlowSummary(distNet.getAclfNet()));

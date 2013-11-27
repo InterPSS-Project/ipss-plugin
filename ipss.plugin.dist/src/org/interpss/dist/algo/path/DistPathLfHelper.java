@@ -21,7 +21,7 @@ public class DistPathLfHelper {
 		DistBus bus = (DistBus)(branch.getIntFlag()==1?branch.getFromBus():branch.getToBus());
 //		System.out.println("Branch: " + branch.getId() + 
 //				" voltage: " + ComplexFunc.toMagAng(bus.getAcscBus().getVoltage()) + " @" + bus.getId());
-		return flow.divide(bus.getAcscBus().getVoltage()).conjugate();
+		return flow.divide(bus.getBus().getVoltage()).conjugate();
 	}
 	
 	/**
