@@ -108,13 +108,13 @@ public class AcscOutFunc {
 		StringBuffer str = new StringBuffer("");
 		try {
 			double baseKVA = net.getBaseKva();
-			double baseV = bf.getAcscBus().getBaseVoltage();
+			double baseV = bf.getBus().getBaseVoltage();
 
 			str.append("\n\n              Bus Fault Info\n");
 			str.append("              ==============\n\n");
 
 			str.append("          Fault Id:      " + bf.getId() + "\n");
-			str.append("          Bus name:      " + bf.getAcscBus().getName() + "\n");
+			str.append("          Bus name:      " + bf.getBus().getName() + "\n");
 			str.append("          Fault type:    " + bf.getFaultCode() + "\n");
 			
 			str.append(faultCurrent(bf, baseKVA, baseV));

@@ -74,8 +74,8 @@ public class DistSys_Test extends CorePluginTestSetup {
 	  	DistBus bus = (DistBus)distNet.getDistNetwork().getBus("Bus1");
 	  	//System.out.println(bus.getAcscBus().getGenResults().getReal());
 	  	//System.out.println(bus.getAcscBus().getGenResults().getImaginary());
-	  	assertTrue(Math.abs(bus.getAcscBus().getGenResults().getReal() + 0.05) < 0.001);
-	  	assertTrue(Math.abs(bus.getAcscBus().getGenResults().getImaginary() + 0.0349) < 0.0001);
+	  	assertTrue(Math.abs(bus.getBus().getGenResults().getReal() + 0.05) < 0.001);
+	  	assertTrue(Math.abs(bus.getBus().getGenResults().getImaginary() + 0.0349) < 0.0001);
 	}
 }
 

@@ -50,8 +50,8 @@ public class DistSample2BusTest  extends CorePluginTestSetup {
 	  	DistBus bus = distNet.getBus("Bus-1");
 	  	//System.out.println(bus.getAcscBus().getGenResults().getReal());
 	  	//System.out.println(bus.getAcscBus().getGenResults().getImaginary());
-	  	assertTrue(Math.abs(bus.getAcscBus().getGenResults().getReal() + 0.05) < 0.001);
-	  	assertTrue(Math.abs(bus.getAcscBus().getGenResults().getImaginary() + 0.0349) < 0.0001);
+	  	assertTrue(Math.abs(bus.getBus().getGenResults().getReal() + 0.05) < 0.001);
+	  	assertTrue(Math.abs(bus.getBus().getGenResults().getImaginary() + 0.0349) < 0.0001);
 	}
 
 	@Test
@@ -68,8 +68,8 @@ public class DistSample2BusTest  extends CorePluginTestSetup {
 		DistBus bus = distNet.getBus("Bus-1");
 	  	//System.out.println(bus.getAcscBus().getGenResults().getReal());
 	  	//System.out.println(bus.getAcscBus().getGenResults().getImaginary());
-	  	assertTrue(Math.abs(bus.getAcscBus().getGenResults().getReal() + 0.05) < 0.001);
-	  	assertTrue(Math.abs(bus.getAcscBus().getGenResults().getImaginary() + 0.0349) < 0.0001);
+	  	assertTrue(Math.abs(bus.getBus().getGenResults().getReal() + 0.05) < 0.001);
+	  	assertTrue(Math.abs(bus.getBus().getGenResults().getImaginary() + 0.0349) < 0.0001);
 	}
 
 	@Test
@@ -87,8 +87,8 @@ public class DistSample2BusTest  extends CorePluginTestSetup {
 	  	DistBus bus = distNet.getBus("Bus-1");
 	  	//System.out.println(bus.getAcscBus().getGenResults().getReal());
 	  	//System.out.println(bus.getAcscBus().getGenResults().getImaginary());
-	  	assertTrue(Math.abs(bus.getAcscBus().getGenResults().getReal() - 0.07998) < 0.001);
-	  	assertTrue(Math.abs(bus.getAcscBus().getGenResults().getImaginary() - 0.067659) < 0.0001);
+	  	assertTrue(Math.abs(bus.getBus().getGenResults().getReal() - 0.07998) < 0.001);
+	  	assertTrue(Math.abs(bus.getBus().getGenResults().getImaginary() - 0.067659) < 0.0001);
 	}
 }
 
