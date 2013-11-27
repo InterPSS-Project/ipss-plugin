@@ -55,7 +55,7 @@ public class DclfResultBeanMapper extends AbstractMapper<DclfAlgorithm, DclfNetR
 	@Override
 	public boolean map2Model(DclfAlgorithm algo, DclfNetResultBean dclfResult) {
 
-		AclfNetwork aclfNet = algo.getAclfNetwork();
+		AclfNetwork aclfNet = algo.getNetwork();
 
 		boolean noError = true;
 
@@ -83,7 +83,7 @@ public class DclfResultBeanMapper extends AbstractMapper<DclfAlgorithm, DclfNetR
 		// map Dclf result
 		bean.v_mag = 1.0;
 		int n = bus.getSortNumber();
-		bean.v_ang = format(algo.getAclfNetwork().isRefBus(bus) ? 0.0 : Math
+		bean.v_ang = format(algo.getNetwork().isRefBus(bus) ? 0.0 : Math
 				.toDegrees(algo.getBusAngle(n)));
 		
 		double pgen = (bus.isRefBus() ? algo.getBusPower(bus) : bus

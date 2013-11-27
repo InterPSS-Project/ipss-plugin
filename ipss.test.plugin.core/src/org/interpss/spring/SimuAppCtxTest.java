@@ -52,7 +52,7 @@ public class SimuAppCtxTest extends CorePluginTestSetup {
 		SimuContext simuCtx = CoreSimuSpringFactory.getSimuContextTypeAclf();
 		SampleCases.load_LF_5BusSystem(simuCtx.getAclfNet());
 		simuCtx.setLoadflowAlgorithm(CoreSpringFactory.getLoadflowAlgorithm());
-		simuCtx.getLoadflowAlgorithm().setAclfNetwork(simuCtx.getAclfNet());
+		simuCtx.getLoadflowAlgorithm().setNetwork(simuCtx.getAclfNet());
 		//System.out.println(net.net2String());
 
 	  	LoadflowAlgorithm algo = simuCtx.getLoadflowAlgorithm();

@@ -68,7 +68,7 @@ public class DclfOutFunc {
 	public static String branchFlow(DclfAlgorithm algo, double threshhold) {
 		StringBuffer str = new StringBuffer("\n");
 		str.append(branchFlowTitle() + "\n");
-		for (Branch bra : algo.getAclfNetwork().getBranchList()) {
+		for (Branch bra : algo.getNetwork().getBranchList()) {
 			if (bra.isActive()) {
 				AclfBranch aclfBra = (AclfBranch)bra;
 				double mwFlow = algo.getBranchFlow(aclfBra, UnitType.mW);
@@ -100,12 +100,12 @@ public class DclfOutFunc {
 		str.append("      DC Loadflow Results\n\n");
 		str.append("   Bud Id       VoltAng(deg)     Gen     Load    ShuntG\n");
 		str.append("=========================================================\n");
-		double baseMva = algo.getAclfNetwork().getBaseKva() * 0.001;
-		for (Bus bus : algo.getAclfNetwork().getBusList()) {
+		double baseMva = algo.getNetwork().getBaseKva() * 0.001;
+		for (Bus bus : algo.getNetwork().getBusList()) {
 			if (bus.isActive()) {
 				AclfBus aclfBus = (AclfBus)bus; 
 				int n = bus.getSortNumber();
-				double angle = algo.getAclfNetwork().isRefBus(bus)?
+				double angle = algo.getNetwork().isRefBus(bus)?
 						0.0 : Math.toDegrees(algo.getBusAngle(n));
 				double pgen =  (aclfBus.isRefBus()? algo.getBusPower(aclfBus) : aclfBus.getGenP()) * baseMva; 
 				double pload =  aclfBus.getLoadP() * baseMva; 

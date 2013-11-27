@@ -182,7 +182,7 @@ public class IpssDclf extends BaseDSL {
 		 * @return
 		 */
 		public DclfAlgorithmDSL acceptAclfNetVisitor(IAclfNetBVisitor visitor) {
-			this.algo.getAclfNetwork().accept(visitor);
+			this.algo.getNetwork().accept(visitor);
 			return this;
 		}
 		
@@ -205,7 +205,7 @@ public class IpssDclf extends BaseDSL {
   		 * 
   		 * @return
   		 */
-  		public AclfNetwork aclfNet() { return this.algo().getAclfNetwork(); }
+  		public AclfNetwork aclfNet() { return this.algo().getNetwork(); }
   		/**
   		 * get the AclfNet object
   		 * 
@@ -457,7 +457,7 @@ public class IpssDclf extends BaseDSL {
   		 * @param intfId
   		 */
   		public DclfAlgorithmDSL monitorFlowInterface(String intfId) {
-  			return monitorFlowInterface(this.getAlgorithm().getAclfNetwork().getFlowInterface(intfId)); 
+  			return monitorFlowInterface(this.getAlgorithm().getNetwork().getFlowInterface(intfId)); 
   		} 
 
   		// set outage branch info

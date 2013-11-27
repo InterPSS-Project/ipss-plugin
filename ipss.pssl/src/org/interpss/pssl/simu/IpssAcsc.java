@@ -84,7 +84,7 @@ public class IpssAcsc extends BaseDSL {
 		 * 
 		 * @return
 		 */
-		public AcscNetwork getAcscNet() { return this.algo.getAcscNetwork(); }
+		public AcscNetwork getAcscNet() { return this.algo.getNetwork(); }
  		
 		/**
 		 * create a bus fault
