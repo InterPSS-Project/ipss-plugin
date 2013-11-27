@@ -191,7 +191,7 @@ public class ContingencyAnalysisHelper {
 						 * calculation only for the monitor branches defined in the contingency object.
 						 */
 						for (MonitoringBranch mon : cont.getMonitoringBranches()) {
-							double shiftedFlow = singleOutageMonitorBranchFlow(cont, mon.getAclfBranch(), distRefBusList);
+							double shiftedFlow = singleOutageMonitorBranchFlow(cont, mon.getBranch(), distRefBusList);
 						    mon .setShiftedFlow(shiftedFlow);
 						}
 					}
@@ -226,7 +226,7 @@ public class ContingencyAnalysisHelper {
 					}
 					else {
 						for (MonitoringBranch mon : cont.getMonitoringBranches()) {
-							double shiftedFlow = this.multiOutageMonitorBranchFlow(cont, mon.getAclfBranch(), distRefBusList);
+							double shiftedFlow = this.multiOutageMonitorBranchFlow(cont, mon.getBranch(), distRefBusList);
 							mon.setShiftedFlow(shiftedFlow);
 						}
 					}
@@ -273,10 +273,10 @@ public class ContingencyAnalysisHelper {
 		// mark outage branch to make sure not being processed in the
 		// find-constraint-branch process
 		for (OutageBranch bra : cont.getOutageBranches()) 
-			bra.getAclfBranch().setIntFlag(1);		
+			bra.getBranch().setIntFlag(1);		
 
 		for (EquivOutageBranch bra : cont.getEquivOutageBranches()) 
-			bra.getAclfBranch().setIntFlag(1);		
+			bra.getBranch().setIntFlag(1);		
 	}
 	
 	/**
@@ -324,7 +324,7 @@ public class ContingencyAnalysisHelper {
 		if (outBranch.getOutageType() == BranchOutageType.OPEN) {
 			algoDsl.setLODFAnalysisType(LODFSenAnalysisType.SINGLE_BRANCH);
 			
-			AclfBranch branch = outBranch.getAclfBranch();
+			AclfBranch branch = outBranch.getBranch();
 			//outBranch.setIntFlag(1);
 			algoDsl.outageBranch(branch);
 
@@ -359,7 +359,7 @@ public class ContingencyAnalysisHelper {
 		double flowLODF = 0.0;
 		if (factors != null) // factors = null if branch is an outage branch
 			for (OutageBranch bra : algoDsl.outageBranchList()) {
-				AclfBranch aclfBra = bra.getAclfBranch();
+				AclfBranch aclfBra = bra.getBranch();
 				if ( aclfBra.getSortNumber() >= 0) {         
 					double f = factors[aclfBra.getSortNumber()];
 					if (bra.getOutageType() == BranchOutageType.OPEN ) {
@@ -398,7 +398,7 @@ public class ContingencyAnalysisHelper {
 	private double shiftFlowBranchClose(OutageBranch outBranch, AclfBranch monBranch) throws ReferenceBusException, InterpssException, PSSLException, IpssNumericException {
 		//algoDsl.setLODFAnalysisType(LODFSenAnalysisType.SINGLE_BRANCH);
 		
-		AclfBranch branch = outBranch.getAclfBranch();
+		AclfBranch branch = outBranch.getBranch();
 		//algoDsl.outageBranch(branch);
 
 		// calculate flow caused by the branch outage
@@ -465,7 +465,7 @@ public class ContingencyAnalysisHelper {
 		double sf = algoDsl.algo().psXfrShiftFactor(branch, monitorBranch);
 		if ( cont.nEquivOutageBranches() == 1) {
 			algoDsl.setLODFAnalysisType(LODFSenAnalysisType.SINGLE_BRANCH);
-			AclfBranch outBranch = cont.getActiveEquivOutageBranch().getAclfBranch();
+			AclfBranch outBranch = cont.getActiveEquivOutageBranch().getBranch();
 			double lodf = algoDsl.outageBranch(outBranch)
 								.monitorBranch(monitorBranch)
 								.lineOutageDFactor();
@@ -487,7 +487,7 @@ public class ContingencyAnalysisHelper {
 				if (factors != null) // factors = null if branch is an outage branch
 					for (OutageBranch bra : algoDsl.outageBranchList()) {
 						if (bra.getBranch().getSortNumber() >= 0) {
-							AclfBranch outageBranch = bra.getAclfBranch();
+							AclfBranch outageBranch = bra.getBranch();
 							sf += factors[outageBranch.getSortNumber()] * algoDsl.algo().psXfrShiftFactor(branch, outageBranch);
 						}
 					}				
@@ -519,7 +519,7 @@ public class ContingencyAnalysisHelper {
 
 		if ( cont.nEquivOutageBranches() == 1) {
 			algoDsl.setLODFAnalysisType(LODFSenAnalysisType.SINGLE_BRANCH);
-			AclfBranch outBranch = cont.getActiveEquivOutageBranch().getAclfBranch();
+			AclfBranch outBranch = cont.getActiveEquivOutageBranch().getBranch();
 			double lodf = algoDsl.outageBranch(outBranch)
 								.monitorBranch(monitorBranch)
 								.lineOutageDFactor();
@@ -543,7 +543,7 @@ public class ContingencyAnalysisHelper {
 				if (factors != null) // factors = null if branch is an outage branch
 					for (OutageBranch outBranch : algoDsl.outageBranchList()) {
 						if (outBranch.getBranch().getSortNumber() >= 0) {
-							AclfBranch outageBranch = outBranch.getAclfBranch();
+							AclfBranch outageBranch = outBranch.getBranch();
 							double gsf_i = algoDsl.withdrawBusType(BusSenAnalysisType.REF_BUS)
 											.injectionBusId(injBus.getId())
 											.monitorBranch(outageBranch)
@@ -572,7 +572,7 @@ public class ContingencyAnalysisHelper {
 		for (OutageBranch bra : cont.getOutageBranches()) {
 			System.out.println("Outage branch : " + bra.getId() + " " + bra.getOutageType() + 
 					           "  outage branch status:" + bra.isActive() +
-					           "  aclf branch status:" + bra.getAclfBranch().isActive() +
+					           "  aclf branch status:" + bra.getBranch().isActive() +
 					           "  island#:" + bra.getIslandNumber());
 		}
 		
@@ -585,14 +585,14 @@ public class ContingencyAnalysisHelper {
 				"  load: " + Number2String.toStr(cont.getTotalIslandLoad()*aclfNet.getBaseMva()));		
 
 		for (MonitoringBranch mon : cont.getMonitoringBranches()) {
-			double pre_flow = algoDsl.algo().getBranchFlow(mon.getAclfBranch());
+			double pre_flow = algoDsl.algo().getBranchFlow(mon.getBranch());
 			double post_flow = pre_flow + mon.getShiftedFlow();
-			System.out.println("\nMonitoring branch: " + mon.getAclfBranch().getId() + 
+			System.out.println("\nMonitoring branch: " + mon.getBranch().getId() + 
 					"   Shifted power flow (Mw): " + Number2String.toStr(mon.getShiftedFlow()*aclfNet.getBaseMva()));
 			System.out.println("branch flow(mW) [pre, post]: " + Number2String.toStr(pre_flow*aclfNet.getBaseMva()) + 
 					", " + Number2String.toStr(post_flow*aclfNet.getBaseMva()) + 
 					"\nloading(%): " + Number2String.toStr(Math.abs(mon.getLoading())));
-			double limit = mon.getAclfBranch().getRatingMva2();
+			double limit = mon.getBranch().getRatingMva2();
 			double pct = ((post_flow*aclfNet.getBaseMva() - limit)/limit+1)*100;
 			pct = Math.abs(pct);
 			System.out.println("branch flow (mw) [post, limit]: "+ Number2String.toStr(post_flow*aclfNet.getBaseMva())+

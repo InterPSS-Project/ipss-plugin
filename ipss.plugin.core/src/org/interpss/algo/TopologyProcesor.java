@@ -187,12 +187,12 @@ public class TopologyProcesor {
 		*/
 
 		for (OutageBranch branch : contingency.getOutageBranches()) {
-			if (branch.getAclfBranch().isActive()) {
-				branch.getAclfBranch().setIntFlag(1);
-				branch.getAclfBranch().setStatus(false);
+			if (branch.getBranch().isActive()) {
+				branch.getBranch().setIntFlag(1);
+				branch.getBranch().setStatus(false);
 			}
 			else
-				branch.getAclfBranch().setIntFlag(0);
+				branch.getBranch().setIntFlag(0);
 		}		
 
 		List<String> list = new AclfNetHelper(aclfNet).checkRefBus(); 
@@ -200,8 +200,8 @@ public class TopologyProcesor {
 			; //System.out.println("There are island buses: " + list.toString() + " for contingency " + contingency.getId());
 		
 		for (OutageBranch branch : contingency.getOutageBranches()) {
-			if (branch.getAclfBranch().getIntFlag() == 1)
-				branch.getAclfBranch().setStatus(true);
+			if (branch.getBranch().getIntFlag() == 1)
+				branch.getBranch().setStatus(true);
 		}		
 
 		contingency.getIslandBuses().clear();
@@ -228,12 +228,12 @@ public class TopologyProcesor {
 	public void findIslandBusByRegionalSearch(Contingency contingency) throws InterpssException {		
 		
 		for (OutageBranch branch : contingency.getOutageBranches()) {
-			if (branch.getAclfBranch().isActive()) {
-				branch.getAclfBranch().setIntFlag(1);
+			if (branch.getBranch().isActive()) {
+				branch.getBranch().setIntFlag(1);
 				branch.setStatus(false);
 			}
 			else
-				branch.getAclfBranch().setIntFlag(0);
+				branch.getBranch().setIntFlag(0);
 		}		
 		
 		// Make a judgment of whether to check connectivity by zone or by area
@@ -245,7 +245,7 @@ public class TopologyProcesor {
 		boolean byZone = true;
 		boolean byArea = false;
 		for (OutageBranch b : contingency.getOutageBranches()) {	
-			AclfBranch bra = b.getAclfBranch();
+			AclfBranch bra = b.getBranch();
 			Long fZoneNum = bra.getFromBus().getZone().getNumber();
 			Long tZoneNum = bra.getToBus().getZone().getNumber();
 			Long fAreaNum = bra.getFromBus().getArea().getNumber();
@@ -313,8 +313,8 @@ public class TopologyProcesor {
 			
 		
 		for (OutageBranch branch : contingency.getOutageBranches()) {
-			if (branch.getAclfBranch().getIntFlag() == 1)
-				branch.getAclfBranch().setStatus(true);
+			if (branch.getBranch().getIntFlag() == 1)
+				branch.getBranch().setStatus(true);
 		}			
 
 		contingency.getIslandBuses().clear();

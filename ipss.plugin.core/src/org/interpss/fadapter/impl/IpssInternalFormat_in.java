@@ -344,7 +344,7 @@ public class IpssInternalFormat_in {
     	bra.setBranchCode(AclfBranchCode.LINE);
 		AclfLine line = bra.toLine();
     	
-    	line.getAclfBranch().setZ(new Complex(r,x));
+    	line.getBranch().setZ(new Complex(r,x));
     	line.setHShuntY(new Complex(0.0,Math.abs(b)), UnitType.PU, 1.0); // Unit is PU, no need to enter baseV
     }
 
