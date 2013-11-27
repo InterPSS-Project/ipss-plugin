@@ -567,10 +567,10 @@ public class AclfBranchDataHelper {
 			
 			if (xfrData.getStarVMag() != null && xfrData.getStarVAng() != null) {
 				if (xfrData.getStarVMag().getUnit() == VoltageUnitType.PU || xfrData.getStarVAng().getUnit() == AngleUnitType.DEG) {
-					AclfBus starBus = (AclfBus)xfr3W.getAclf3WBranch().getStarBus();
+					AclfBus starBus = (AclfBus)xfr3W.getBranch().getStarBus();
 					starBus.setVoltage(xfrData.getStarVMag().getValue(),
 					                   Math.toRadians(xfrData.getStarVAng().getValue()));
-					xfr3W.getAclf3WBranch().setVoltageStarBus(starBus.getVoltage());
+					xfr3W.getBranch().setVoltageStarBus(starBus.getVoltage());
 				}
 				else {
 					throw new InterpssException("function not implemented yet"); 

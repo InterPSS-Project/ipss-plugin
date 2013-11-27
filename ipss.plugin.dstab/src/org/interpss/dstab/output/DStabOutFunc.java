@@ -150,7 +150,7 @@ public class DStabOutFunc {
 	}
 
 	public static String initConditionSummary(DynamicSimuAlgorithm algo) {
-		DStabilityNetwork net = algo.getDStabNet();
+		DStabilityNetwork net = algo.getNetwork();
 		StringBuffer str = new StringBuffer("");
 		try {
 			double refAng = 0.0;
