@@ -41,7 +41,6 @@ import com.interpss.core.aclf.adpter.AclfSwingBus;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.simu.util.sample.SampleCases;
-import com.interpss.spring.CoreCommonSpringFactory;
 
 
 public class PVGenQLimitControlSample {
