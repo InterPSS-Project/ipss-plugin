@@ -28,6 +28,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
+import org.interpss.QA.compare.aclf.AclfNetModelComparator;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.TestUtilFunc;
 import org.interpss.pssl.plugin.IpssAdapter;
@@ -35,7 +36,6 @@ import org.interpss.pssl.simu.IpssAclf;
 import org.junit.Test;
 
 import com.interpss.CoreObjectFactory;
-import com.interpss.QA.compare.aclf.AclfNetModelComparator;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.fault.AcscBusFault;
