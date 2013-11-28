@@ -26,13 +26,13 @@ package org.interpss.sample.aclf;
 
 import static com.interpss.common.util.IpssLogger.ipssLogger;
 
-import java.util.logging.Level;
-
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.PerformanceTimer;
+import org.interpss.pssl.simu.IpssAclf;
+import org.interpss.pssl.simu.net.IpssAclfNet;
 
 import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
@@ -48,8 +48,6 @@ import com.interpss.core.aclf.adpter.AclfLine;
 import com.interpss.core.aclf.adpter.AclfLoadBus;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.pssl.simu.IpssAclf;
-import com.interpss.pssl.simu.net.IpssAclfNet;
 
 
 public class SampleLoadflow {
@@ -179,7 +177,7 @@ public class SampleLoadflow {
 	  	//	  define a function load object, 
 	  	//	  p = p(0)*(a + b*v + (1.0-a-b)*v*v)
 	  	//	  q = q(0)*(a + b*v + (1.0-a-b)*v*v)
-	  	AclfBus bus2 = net.getAclfBus("Bus2");
+	  	AclfBus bus2 = net.getBus("Bus2");
   		try {
   			FunctionLoad fload = CoreObjectFactory.createFunctionLoad(bus2);
   			fload.getP().setA(0.3);
