@@ -40,7 +40,7 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 
 public class IEEE14Bus_odm_Test extends CorePluginTestSetup {
 	@Test 
-	public void processZeroZBranch() throws  InterpssException {
+	public void test() throws  InterpssException {
 		// Create an AclfNetwork object
 		AclfNetwork net = IpssAdapter.importNet("testData/odm/ieee14Bus.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
@@ -59,5 +59,27 @@ public class IEEE14Bus_odm_Test extends CorePluginTestSetup {
   		AclfSwingBus swing = swingBus.toSwingBus();
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.32393)<0.0001);
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.16549)<0.0001);
+	}
+	
+	@Test 
+	public void testFLoad() throws  InterpssException {
+		// Create an AclfNetwork object
+		AclfNetwork net = IpssAdapter.importNet("testData/odm/ieee14Bus_FLoad.xml")
+				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
+				.load()
+				.getImportedObj();
+		
+  		//System.out.println(net.net2String());
+		assertTrue((net.getBusList().size() == 14 && net.getBranchList().size() == 20));
+
+	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	algo.loadflow();
+  		//System.out.println(net.net2String());
+	  	
+  		assertTrue(net.isLfConverged());		
+  		AclfBus swingBus = (AclfBus)net.getBus("Bus1");
+  		AclfSwingBus swing = swingBus.toSwingBus();
+  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.3395)<0.0001);
+  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.16725)<0.0001);
 	}	
 }
