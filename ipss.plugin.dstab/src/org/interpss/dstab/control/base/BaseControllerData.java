@@ -34,7 +34,6 @@ public abstract class BaseControllerData {
 	/**
 	 * to store controller parameter range for GUI editor data range
 	 *  
-	 *             
 	 *                min          max
 		{"ka", 		"-1000.0", 	"1000.0"}, 
 		{"ta", 		"-1000.0", 	"1000.0"}, 
@@ -98,7 +97,7 @@ public abstract class BaseControllerData {
 	}
 
 	/**
-	 * check if the vaule (int) is out of the range for the parameter, for example "ka"
+	 * check if the value (int) is out of the range for the parameter, for example "ka"
 	 * 
 	 * @param name parameter name, for example, "ka"
 	 * @param value parameter value
