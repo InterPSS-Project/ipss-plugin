@@ -244,13 +244,16 @@ public class AclfBusDataHelper {
 		LFLoadCodeEnumType code = xmlLoadData.getEquivLoad().getValue().getCode();
 		aclfBus.setLoadCode(code == LFLoadCodeEnumType.CONST_I ? AclfLoadCode.CONST_I : 
 					(code == LFLoadCodeEnumType.CONST_Z ? AclfLoadCode.CONST_Z : 
+						// Functional Load at the AclfBus level is treated as a constP load. The P is adjusted
+						// during the Aclf adjustment process
 						(code == LFLoadCodeEnumType.CONST_P || code == LFLoadCodeEnumType.FUNCTION_LOAD ? AclfLoadCode.CONST_P : 
 							AclfLoadCode.NON_LOAD)));
 		AclfLoadBus loadBus = aclfBus.toLoadBus();
 		LoadflowLoadDataXmlType xmlEquivLoad = xmlLoadData.getEquivLoad().getValue();
 		if (xmlEquivLoad != null) {
 			if (code == LFLoadCodeEnumType.FUNCTION_LOAD) {
-				// When code = FunctionLoad, the ZIP load units should be the same
+				// 1) When code = FunctionLoad, the ZIP load units should be the same
+				// 2) the p, i, z element is optional
 				PowerXmlType p = xmlEquivLoad.getConstPLoad(),
 							 i = xmlEquivLoad.getConstILoad(),
 							 z = xmlEquivLoad.getConstZLoad();
