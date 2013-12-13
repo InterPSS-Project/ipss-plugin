@@ -46,7 +46,7 @@ public class MNet_Aclf5Bus_Child_Test extends CorePluginTestSetup {
 				.getImportedObj();
 		//System.out.println(net.net2String());	
 		
-		assertTrue(net.isContainChildNet());
+		assertTrue(net.getChildNetList().size() > 0);
 		assertTrue(net.getChildNetList().size() == 1);
 		assertTrue(net.getChildNet("AclfChileNet1") != null);
 		assertTrue(net.getChildNet("AclfChileNet1").getInterfaceBranches().size() == 2);
@@ -66,7 +66,7 @@ public class MNet_Aclf5Bus_Child_Test extends CorePluginTestSetup {
 				.getImportedObj();
 		//System.out.println(net.net2String());	
 		
-		assertTrue(net.isContainChildNet());
+		assertTrue(net.getChildNetList().size() > 0);
 		assertTrue(net.getChildNetList().size() == 1);
 		assertTrue(net.getChildNet("DistChileNet1") != null);
 		assertTrue(net.getChildNet("DistChileNet1").getInterfaceBranches().size() == 2);
@@ -86,7 +86,7 @@ public class MNet_Aclf5Bus_Child_Test extends CorePluginTestSetup {
 				.getImportedObj();
 		//System.out.println(net.net2String());	
 		
-		assertTrue(net.isContainChildNet());
+		assertTrue(net.getChildNetList().size() > 0);
 		assertTrue(net.getChildNetList().size() == 1);
 		assertTrue(net.getChildNet("DistChileNet1") != null);
 		assertTrue(net.getChildNet("DistChileNet1").getInterfaceBranches().size() == 2);
@@ -97,7 +97,7 @@ public class MNet_Aclf5Bus_Child_Test extends CorePluginTestSetup {
 		assertTrue(interBra.getInterfaceBusIdChineNet().equals("DistBus-1"));		
 		
 		DistNetwork distNet = (DistNetwork)net.getChildNet("DistChileNet1").getNetwork();
-		assertTrue(distNet.isContainChildNet());	
+		assertTrue(distNet.getChildNetList().size() > 0);	
 		interBra = distNet.getChildNet("ChildDcSysteNet1").getInterfaceBranch("DistBranchId");
 		assertTrue(interBra.getInterfaceBusSide() == BranchBusSide.TO_SIDE);
 		assertTrue(interBra.getChildNetSide() == BranchBusSide.TO_SIDE);
