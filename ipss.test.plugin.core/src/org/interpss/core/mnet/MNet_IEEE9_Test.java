@@ -82,7 +82,7 @@ public class MNet_IEEE9_Test extends CorePluginTestSetup {
 		
 		
 		assertTrue((net.getBusList().size() == 8 && net.getBranchList().size() == 7));
-		assertTrue(net.isContainChildNet());
+		assertTrue(net.getChildNetList().size() > 0);
 		
 		// check the created child network
 		AclfNetwork childAclfNet = (AclfNetwork)net.getChildNet("childNet").getNetwork();
