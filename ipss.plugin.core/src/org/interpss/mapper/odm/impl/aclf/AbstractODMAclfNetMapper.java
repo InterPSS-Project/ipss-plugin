@@ -81,7 +81,7 @@ import com.interpss.simu.SimuCtxType;
  */
 public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtxDataMapper<Tfrom> {
 	private ODMAclfNetMapper.XfrBranchModel xfrBranchModel = ODMAclfNetMapper.XfrBranchModel.InterPSS;
-	private OriginalDataFormat originalFormat = OriginalDataFormat.IPSS_EDITOR;
+	private OriginalDataFormat originalFormat = OriginalDataFormat.IPSS_API;
 	
 	/**
 	 * constructor
