@@ -46,6 +46,8 @@ import com.interpss.common.exp.IpssCacheException;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
+import com.interpss.core.algo.AclfMethod;
+import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.simu.util.sample.SampleCases;
 
 public class AclfCacheTest extends CorePluginTestSetup {
@@ -101,6 +103,149 @@ public class AclfCacheTest extends CorePluginTestSetup {
 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-2.2994)<0.0001);
 	}
 
+	@Test
+	public void Bus5PVLimitTest() throws IpssCacheException, InterpssException {
+  		AclfNetwork netbase = SampleCases.create5BusAclfPVBusLimit();
+		//System.out.println(net.net2String());
+
+		AclfNetCacheWrapper cache = new AclfNetCacheWrapper(client);
+
+		long key = cache.put(netbase);
+		 
+		AclfNetwork net = cache.get(key);
+		//System.out.println(net1.net2String());
+		
+		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	algo.setLfMethod(AclfMethod.NR);
+	  	algo.setMaxIterations(20);
+	  	algo.setTolerance(0.0001, UnitType.PU, net.getBaseKva());
+	  	algo.loadflow();
+//  		System.out.println(net.net2String());
+	  	
+  		assertTrue(net.isLfConverged());
+  		
+  		AclfBus swingBus = (AclfBus)net.getBus("5");
+		AclfSwingBus swing = swingBus.toSwingBus();
+  		//System.out.println(swing.getGenResults(UnitType.PU, net.getBaseKva()));
+		//	gen       : 2.2 + 2.81i pu   220,305.69 + 281,286.09i kva
+		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.20306)<0.0001);
+		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-2.81286)<0.0001);		
+	}
+	
+	@Test
+	public void Bus5PQLimitTest() throws IpssCacheException, InterpssException {
+  		AclfNetwork netbase = SampleCases.create5BusAclfPQBusLimit();
+		//System.out.println(net.net2String());
+
+		AclfNetCacheWrapper cache = new AclfNetCacheWrapper(client);
+
+		long key = cache.put(netbase);
+		 
+		AclfNetwork net = cache.get(key);
+		//System.out.println(net1.net2String());
+		
+		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	algo.setLfMethod(AclfMethod.NR);
+	  	algo.setMaxIterations(20);
+	  	algo.setTolerance(0.0001, UnitType.PU, net.getBaseKva());
+	  	algo.loadflow();
+  		//System.out.println(net.net2String());
+	  	
+  		assertTrue(net.isLfConverged());
+  		
+  		AclfBus swingBus = (AclfBus)net.getBus("5");
+		AclfSwingBus swing = swingBus.toSwingBus();
+  		//System.out.println(swing.getGenResults(UnitType.PU, net.getBaseKva()));
+		//	gen       : 2.31 + 2.21i pu   230,828.51 + 220,525.26i kva
+		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.308285)<0.0001);
+		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-2.20525)<0.0001);		
+	}
+	
+	@Test
+	public void Bus5FuncLoadTest() throws IpssCacheException, InterpssException {
+  		AclfNetwork netbase = SampleCases.create5BusAclfFuncLoad();
+		//System.out.println(net.net2String());
+
+		AclfNetCacheWrapper cache = new AclfNetCacheWrapper(client);
+
+		long key = cache.put(netbase);
+		 
+		AclfNetwork net = cache.get(key);
+		//System.out.println(net1.net2String());
+		
+  		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	algo.setLfMethod(AclfMethod.NR);
+	  	algo.setMaxIterations(20);
+	  	algo.setTolerance(0.0001, UnitType.PU, net.getBaseKva());
+		algo.loadflow();
+  		//System.out.println(net.net2String());
+	  	
+  		assertTrue(net.isLfConverged());
+  		
+  		AclfBus swingBus = (AclfBus)net.getBus("5");
+		AclfSwingBus swing = swingBus.toSwingBus();
+  		//System.out.println(swing.getGenResults(UnitType.PU, net.getBaseKva()));
+		//       gen       : 2.42 + 2.22i pu   242,384.84 + 222,269.55i kva
+		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.42385)<0.0001);
+		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-2.22270)<0.0001);		
+	}
+
+	@Test
+	public void Bus5ReQBusVoltTest() throws IpssCacheException, InterpssException {
+  		AclfNetwork netbase = SampleCases.create5BusAclfReQBusVolt();
+		//System.out.println(net.net2String());
+
+		AclfNetCacheWrapper cache = new AclfNetCacheWrapper(client);
+
+		long key = cache.put(netbase);
+		 
+		AclfNetwork net = cache.get(key);
+		
+		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	algo.setLfMethod(AclfMethod.NR);
+	  	algo.setMaxIterations(50);
+	  	algo.setTolerance(0.0001, UnitType.PU, net.getBaseKva());
+	  	algo.loadflow();
+  		//System.out.println(net.net2String());
+	  	
+  		assertTrue(net.isLfConverged());
+  		
+  		AclfBus swingBus = (AclfBus)net.getBus("5");
+		AclfSwingBus swing = swingBus.toSwingBus();
+  		//System.out.println(swing.getGenResults(UnitType.PU, net.getBaseKva()));
+		//	gen       : 2.27 + 2.41i pu   226,904.73 + 240,532.99i kva
+		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.26904)<0.0001);
+		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-2.40532)<0.0001);
+	}
+
+	@Test
+	public void Bus5ReQBranchQTest() throws IpssCacheException, InterpssException {
+  		AclfNetwork netbase = SampleCases.create5BusAclfReQBranchQ();
+		//System.out.println(net.net2String());
+
+		AclfNetCacheWrapper cache = new AclfNetCacheWrapper(client);
+
+		long key = cache.put(netbase);
+		 
+		AclfNetwork net = cache.get(key);
+
+		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	algo.setLfMethod(AclfMethod.NR);
+	  	algo.setMaxIterations(50);
+	  	algo.setTolerance(0.0001, UnitType.PU, net.getBaseKva());
+	  	algo.loadflow();
+  		//System.out.println(net.net2String());
+	  	
+  		assertTrue(net.isLfConverged());
+  		
+  		AclfBus swingBus = (AclfBus)net.getBus("5");
+		AclfSwingBus swing = swingBus.toSwingBus();
+  		//System.out.println(swing.getGenResults(UnitType.PU, net.getBaseKva()));
+		//	 gen       : 2.27 + 2.4i pu   226,956.27 + 240,255.07i kva
+		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.26956)<0.001);
+		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-2.402255)<0.001);
+	}
+	
 	@Test
 	public void IEEE14BusTest() throws IpssCacheException, InterpssException {
 		AclfNetwork net = CorePluginObjFactory
