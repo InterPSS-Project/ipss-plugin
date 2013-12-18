@@ -27,7 +27,9 @@ package org.interpss.core.cache;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.interpss.CorePluginObjFactory;
 import org.interpss.CorePluginTestSetup;
+import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.junit.After;
 import org.junit.Before;
@@ -39,6 +41,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.interpss.CoreObjectFactory;
 import com.interpss.cache.UgidGenerator;
 import com.interpss.cache.aclf.AclfNetCacheWrapper;
+import com.interpss.common.exp.InterpssException;
 import com.interpss.common.exp.IpssCacheException;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
@@ -96,8 +99,31 @@ public class AclfCacheTest extends CorePluginTestSetup {
   		//System.out.println(swing.getGenResults(UnitType.PU, net.getBaseKva()));
 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.57943)<0.0001);
 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-2.2994)<0.0001);
-
 	}
+
+	@Test
+	public void IEEE14BusTest() throws IpssCacheException, InterpssException {
+		AclfNetwork net = CorePluginObjFactory
+				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
+				.load("testdata/adpter/ieee_format/Ieee14Bus.ieee")
+				.getAclfNet();
+		//System.out.println(net.net2String());
+
+		AclfNetCacheWrapper cache = new AclfNetCacheWrapper(client);
+
+		long key = cache.put(net);
+		 
+		AclfNetwork net1 = cache.get(key);
+		System.out.println(net1.net2String());
+		
+	  	net1.accept(CoreObjectFactory.createLfAlgoVisitor());
+  		//System.out.println(net.net2String());
+	  	
+  		assertTrue(net1.isLfConverged());		
+  		AclfSwingBus swing = net1.getBus("Bus1").toSwingBus();
+  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.32393)<0.0001);
+  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.16549)<0.0001);	
+  	}
 	
 	@After
 	public void cleanup() {
