@@ -34,6 +34,7 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.contingency.Contingency;
 import com.interpss.core.aclf.contingency.OutageBranch;
 import com.interpss.core.common.visitor.IAclfNetBVisitor;
@@ -126,7 +127,7 @@ public class ZeroZBranchProcesor implements IAclfNetBVisitor {
 	}
 	
 	@Override
-	public boolean visit(AclfNetwork net) {
+	public boolean visit(BaseAclfNetwork<?,?> net) {
 		try {
 			// bus and branch visited status will be used
 			// in mark the zero branch
@@ -164,7 +165,7 @@ public class ZeroZBranchProcesor implements IAclfNetBVisitor {
 		return true;
 	}
 
-	private void busBasedSearch(AclfNetwork net) throws InterpssException {
+	private void busBasedSearch(BaseAclfNetwork<?,?> net) throws InterpssException {
 		// bus and branch visited status will be used
 		// in the zero Z branch processing
 		net.setVisitedStatus(false);
@@ -330,7 +331,7 @@ public class ZeroZBranchProcesor implements IAclfNetBVisitor {
 		return busBasedResultTable.get(busId);
 	}
 
-	private void debugBusBasedSearch(AclfNetwork net) throws InterpssException {
+	private void debugBusBasedSearch(BaseAclfNetwork<?,?> net) throws InterpssException {
 		// bus and branch visited status will be used
 		// in the zero Z branch processing
 		net.setVisitedStatus(false);
