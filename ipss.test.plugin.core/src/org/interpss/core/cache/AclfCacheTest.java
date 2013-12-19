@@ -61,7 +61,7 @@ public class AclfCacheTest extends CorePluginTestSetup {
 		client = HazelcastClient.newHazelcastClient(clientConfig);
 		UgidGenerator.IdGenerator = client.getIdGenerator("GuidGenerator");		
 	}
-	
+	   
 	@Test
 	public void Bus5SampleTest() throws IpssCacheException {
   		AclfNetwork net = CoreObjectFactory.createAclfNetwork();
@@ -244,6 +244,53 @@ public class AclfCacheTest extends CorePluginTestSetup {
 		//	 gen       : 2.27 + 2.4i pu   226,956.27 + 240,255.07i kva
 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.26956)<0.001);
 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-2.402255)<0.001);
+	}
+
+	@Test
+	public void TapControlTest() throws IpssCacheException, InterpssException {
+		AclfNetwork netbase = SampleCases.sample2BusXfrTapControl();
+		//System.out.println(net.net2String());
+
+		AclfNetCacheWrapper cache = new AclfNetCacheWrapper(client);
+
+		long key = cache.put(netbase);
+		 
+		AclfNetwork net = cache.get(key);
+		//System.out.println(net1.net2String());	
+		
+		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	algo.loadflow();
+  		//System.out.println(net.net2String());
+
+  		AclfBus swingBus = (AclfBus)net.getBus("0001");
+		AclfSwingBus swing = swingBus.toSwingBus();
+		//      gen       : 1.12 + 1.03i pu   111,529.19 + 103,059.25i kva
+		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-1.1153)<0.0001);
+		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-1.0306)<0.0001);
+		
+	}
+
+	@Test
+	public void PsXfrPControlTest() throws IpssCacheException, InterpssException {
+		AclfNetwork netbase = SampleCases.sample3BusPSXfrPControl();
+		//System.out.println(net.net2String());
+
+		AclfNetCacheWrapper cache = new AclfNetCacheWrapper(client);
+
+		long key = cache.put(netbase);
+		 
+		AclfNetwork net = cache.get(key);
+		//System.out.println(net1.net2String());
+		
+		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	algo.loadflow();
+  		//System.out.println(net.net2String());
+
+  		AclfBus swingBus = (AclfBus)net.getBus("0001");
+		AclfSwingBus swing = swingBus.toSwingBus();
+//		//     gen       : 0.4 + 0.51i pu   39,997.07 + 50,711.88i kva
+		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-0.39997)<0.0001);
+		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-0.50711)<0.0001);		
 	}
 	
 	@Test
