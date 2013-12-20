@@ -28,6 +28,7 @@ import com.interpss.common.func.IFunction2;
 import com.interpss.common.func.IFunction4;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.dclf.DclfAlgorithm;
 import com.interpss.core.net.OriginalDataFormat;
@@ -150,9 +151,9 @@ public class CorePluginFunction {
 	 *   
 	 *   StringBuffer outText = aclfResultBusStype.apply(aclfNet);
 	 */
-	public static IFunction<AclfNetwork, StringBuffer> AclfResultBusStyle = 
-		new FunctionAdapter<AclfNetwork, StringBuffer>() {
-			@Override public StringBuffer f(AclfNetwork net) {
+	public static IFunction<BaseAclfNetwork<?,?>, StringBuffer> AclfResultBusStyle = 
+		new FunctionAdapter<BaseAclfNetwork<?,?>, StringBuffer>() {
+			@Override public StringBuffer f(BaseAclfNetwork<?,?> net) {
 				return AclfOut_BusStyle.lfResultsBusStyle(net, BusIdStyle.BusId_No);
 			}
 		};

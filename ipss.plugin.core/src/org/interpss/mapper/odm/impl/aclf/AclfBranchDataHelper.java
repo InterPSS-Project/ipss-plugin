@@ -69,6 +69,7 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.adj.AdjControlType;
 import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.adj.TapControl;
@@ -86,7 +87,7 @@ import com.interpss.core.net.Branch;
  *
  */
 public class AclfBranchDataHelper {
-	private AclfNetwork aclfNet = null;
+	private BaseAclfNetwork<?,?> aclfNet = null;
 	private Branch branch = null;
 	private ODMAclfNetMapper.XfrBranchModel xfrBranchModel = ODMAclfNetMapper.XfrBranchModel.InterPSS;
 	
@@ -96,7 +97,7 @@ public class AclfBranchDataHelper {
 	 * @param aclfNet
 	 * @param bra
 	 */
-	public AclfBranchDataHelper(AclfNetwork aclfNet, Branch bra, ODMAclfNetMapper.XfrBranchModel xfrBranchModel) {
+	public AclfBranchDataHelper(BaseAclfNetwork<?,?> aclfNet, Branch bra, ODMAclfNetMapper.XfrBranchModel xfrBranchModel) {
 		this.aclfNet = aclfNet;
 		this.branch = bra;
 		this.xfrBranchModel = xfrBranchModel;

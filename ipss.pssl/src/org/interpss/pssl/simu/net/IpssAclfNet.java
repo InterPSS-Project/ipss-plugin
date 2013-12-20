@@ -43,6 +43,7 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.adj.AclfAdjustFactory;
 import com.interpss.core.aclf.adj.AdjControlType;
 import com.interpss.core.aclf.adj.FunctionLoad;
@@ -276,7 +277,7 @@ public class IpssAclfNet extends BaseDSL {
 	 *
 	 * @param <T>
 	 */
-	public static class AclfBaseNetDSL<T extends AclfNetwork> {
+	public static class AclfBaseNetDSL<T extends BaseAclfNetwork<?,?>> {
 		T net = null;
 		
 		/**
@@ -340,21 +341,21 @@ public class IpssAclfNet extends BaseDSL {
 
 	// ================ private implementation =======================
 
-	public static class AclfBusDSL extends AclfBusBaseDSL<AclfBus, AclfNetwork, AclfBusDSL>{
+	public static class AclfBusDSL extends AclfBusBaseDSL<AclfBus, BaseAclfNetwork<?,?>, AclfBusDSL>{
 		// for addAclfBus()
-		public AclfBusDSL(String busId, String busName, AclfNetwork net) {
+		public AclfBusDSL(String busId, String busName, BaseAclfNetwork<?,?> net) {
 			super(busId, busName, CoreObjectFactory.createAclfBus(busId, net), net);
 		}
 		// for getAclfBus()
-		public AclfBusDSL(String busId, AclfNetwork net)  throws Exception {
+		public AclfBusDSL(String busId, BaseAclfNetwork<?,?> net)  throws Exception {
 			super(net.getBus(busId), net);
 		}
-		public AclfBusDSL(AclfBus bus, AclfNetwork net)  throws Exception {
+		public AclfBusDSL(AclfBus bus, BaseAclfNetwork<?,?> net)  throws Exception {
 			super(bus, net);
 		}
 	}
 	
-	public static class AclfBusBaseDSL<TBus extends Bus, TNet extends Network, TAclfDSL> 
+	public static class AclfBusBaseDSL<TBus extends Bus, TNet extends Network<?,?>, TAclfDSL> 
 							extends BaseNetDSL<TBus, TNet, AclfBusBaseDSL<TBus,TNet, TAclfDSL>>{
 		// for getAclfBus()
 		public AclfBusBaseDSL(TBus bus, TNet net)  throws Exception {
@@ -477,29 +478,29 @@ public class IpssAclfNet extends BaseDSL {
 
 	// ================ private implementation =======================
 
-	public static class AclfBranchDSL extends AclfBranchBaseDSL<AclfBranch, AclfNetwork, AclfBranchDSL>{
+	public static class AclfBranchDSL extends AclfBranchBaseDSL<AclfBranch, BaseAclfNetwork<?,?>, AclfBranchDSL>{
 		// for addAclfBranch()
-		public AclfBranchDSL(AclfBranch branch, AclfNetwork net) throws Exception {
+		public AclfBranchDSL(AclfBranch branch, BaseAclfNetwork<?,?> net) throws Exception {
 			super(branch, net);
 		}
 		// for addAclfBranch()
-		public AclfBranchDSL(String fromBusId, String toBusId, AclfNetwork net) {
+		public AclfBranchDSL(String fromBusId, String toBusId, BaseAclfNetwork<?,?> net) {
 			this(fromBusId, toBusId, "1", net);
 		}
-		public AclfBranchDSL(String fromBusId, String toBusId, AclfBranch branch, AclfNetwork net) {
+		public AclfBranchDSL(String fromBusId, String toBusId, AclfBranch branch, BaseAclfNetwork<?,?> net) {
 			this(fromBusId, toBusId, "1", branch, net);
 		}
 		// for addAclfBranch()
-		public AclfBranchDSL(String fromBusId, String toBusId, String cirId, AclfNetwork net) {
+		public AclfBranchDSL(String fromBusId, String toBusId, String cirId, BaseAclfNetwork<?,?> net) {
 			super(fromBusId, toBusId, cirId, CoreObjectFactory.createAclfBranch(), net);
 		}
 
-		public AclfBranchDSL(String fromBusId, String toBusId, String cirId, AclfBranch branch, AclfNetwork net) {
+		public AclfBranchDSL(String fromBusId, String toBusId, String cirId, AclfBranch branch, BaseAclfNetwork<?,?> net) {
 			super(fromBusId, toBusId, cirId, branch, net);
 		}
 	}
 	
-	public static class AclfBranchBaseDSL<TBra extends Branch, TNet extends Network, TAclfDSL> extends BaseNetDSL<TBra, TNet, TAclfDSL>{
+	public static class AclfBranchBaseDSL<TBra extends Branch, TNet extends Network<?,?>, TAclfDSL> extends BaseNetDSL<TBra, TNet, TAclfDSL>{
 		// for getAclfBranch()
 		public AclfBranchBaseDSL(TBra branch, TNet net) throws Exception {
 			super(net);

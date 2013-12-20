@@ -163,7 +163,7 @@ public class IEEE9Bus_Acsc_test {
 	  			0.0, 0.0, -1.4243, 15.62133, 0.0, 0.0) );
 	  	//voltage @Bus1
 	  	//0.0000 + j0.0000  0.61592 + j0.01616  0.0000 + j0.0000
-	  	assertTrue(TestUtilFunc.compare(fault.getFaultResult().getBusVoltage_012(net.getAcscBus("Bus1")), 
+	  	assertTrue(TestUtilFunc.compare(fault.getFaultResult().getBusVoltage_012(net.getBus("Bus1")), 
 	  			0.0, 0.0, 0.61592, 0.01616, 0.0, 0.0) );
 	  	
 	  	
@@ -185,7 +185,7 @@ public class IEEE9Bus_Acsc_test {
 	  	
 	    //seq voltage @Bus1
 	  	//0.0000 + j0.0000  0.88659 + j0.01024  -0.15334 + j0.01034
-	  	assertTrue(TestUtilFunc.compare(fault.getFaultResult().getBusVoltage_012(net.getAcscBus("Bus1")), 
+	  	assertTrue(TestUtilFunc.compare(fault.getFaultResult().getBusVoltage_012(net.getBus("Bus1")), 
 	  			0.0, 0.0, 0.88659, 0.01024, -0.15334, 0.01034) );
 	  	
 	  	
@@ -203,7 +203,7 @@ public class IEEE9Bus_Acsc_test {
 		
 		acscAlgo.calculateBusFault(fault);
 	  	//System.out.println(fault.getFaultResult().getSCCurrent_012());
-	  	System.out.println(fault.getFaultResult().getBusVoltage_012(net.getAcscBus("Bus4")));
+	  	System.out.println(fault.getFaultResult().getBusVoltage_012(net.getBus("Bus4")));
 	  	
 	    //seq voltage @Bus4
 	  	//0.0000 + j0.0000  0.61992 + j-0.00361  0.40512 + j-0.03572
@@ -212,7 +212,7 @@ public class IEEE9Bus_Acsc_test {
 	  	 Seq. Volt +	 Seq. Volt -
 	  	      0.61997	      0.40682
          */
-	  	assertTrue(TestUtilFunc.compare(fault.getFaultResult().getBusVoltage_012(net.getAcscBus("Bus4")), 
+	  	assertTrue(TestUtilFunc.compare(fault.getFaultResult().getBusVoltage_012(net.getBus("Bus4")), 
 	  			0.0, 0.0, 0.61992, -0.00361, 0.40512, -0.03572) );
 		
 	}

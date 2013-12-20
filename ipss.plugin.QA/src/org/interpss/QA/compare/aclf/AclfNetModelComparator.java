@@ -8,6 +8,7 @@ import org.interpss.QA.compare.IDataComparator;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfNetwork;
 
 /**
  * AclfNetwork model comparator
@@ -15,13 +16,13 @@ import com.interpss.core.aclf.AclfNetwork;
  * @author mzhou
  *
  */
-public class AclfNetModelComparator implements IDataComparator<AclfNetwork, AclfNetwork> {
+public class AclfNetModelComparator implements IDataComparator<BaseAclfNetwork<?,?>, BaseAclfNetwork<?,?>> {
 	// limit max number of output msg size
 	public static int MaxMsgSize = 100;
 	
 	private List<String> msgList = new ArrayList<>();
 	
-	private IDataComparator<AclfNetwork, AclfNetwork> netComparator;
+	private IDataComparator<BaseAclfNetwork<?,?>, BaseAclfNetwork<?,?>> netComparator;
 	private IDataComparator<AclfBus, AclfBus> busComparator;
 	private IDataComparator<AclfBranch, AclfBranch> branchComparator;
 	
@@ -32,7 +33,7 @@ public class AclfNetModelComparator implements IDataComparator<AclfNetwork, Aclf
 	 * @param busComparator
 	 * @param branchComparator
 	 */
-	public AclfNetModelComparator(IDataComparator<AclfNetwork, AclfNetwork> netComparator, 
+	public AclfNetModelComparator(IDataComparator<BaseAclfNetwork<?,?>, BaseAclfNetwork<?,?>> netComparator, 
 			     IDataComparator<AclfBus, AclfBus> busComparator, 
 			     IDataComparator<AclfBranch, AclfBranch> branchComparator) {
 		this.netComparator = netComparator;
@@ -50,7 +51,7 @@ public class AclfNetModelComparator implements IDataComparator<AclfNetwork, Aclf
 		this.branchComparator = new AclfBranchDataComparator();
 	}
 	
-	@Override public boolean compare(AclfNetwork baseNet, AclfNetwork net) {
+	@Override public boolean compare(BaseAclfNetwork<?,?> baseNet, BaseAclfNetwork<?,?> net) {
 		boolean status = true;
 		this.msgList.clear();
 		

@@ -53,7 +53,7 @@ public class DistLF14Bus_PathLF_Test  extends CorePluginTestSetup {
 		distNet.getFaultNet().setLfDataLoaded(true);
 		
 		distNet.accept(new DistPathLfAlgorithm(0.001, 20));
-		assertTrue(distNet.getAclfNet().isLfConverged());
+		assertTrue(distNet.getAcscNet().isLfConverged());
 		
 /*		
 		for (Bus b : distNet.getBusList()) {
@@ -76,7 +76,7 @@ public class DistLF14Bus_PathLF_Test  extends CorePluginTestSetup {
 		
 		DistPathLfAlgorithm algo = new DistPathLfAlgorithm(distNet, true);
 		algo.loadflow();
-		assertTrue(distNet.getAclfNet().isLfConverged());
+		assertTrue(distNet.getAcscNet().isLfConverged());
 /*		
 		for (Bus b : distNet.getBusList()) {
 			DistBus bus = (DistBus)b;

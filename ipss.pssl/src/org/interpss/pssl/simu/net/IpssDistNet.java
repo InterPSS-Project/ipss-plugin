@@ -29,6 +29,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import com.interpss.CoreObjectFactory;
 import com.interpss.DistObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.net.Area;
 import com.interpss.core.net.Zone;
@@ -119,7 +120,7 @@ public class IpssDistNet {
 		public DistNetDSL setDescription(String s) {this.distNet.setDesc(s); return this;}
 		
 		public DistNetwork getDistNetwork() { return this.distNet; }
-		public AclfNetwork getAclfNetwork() {
+		public AcscNetwork getAcscNetwork() {
 			if (!this.acscNetDataCreated) {
 				this.createAcscNetData();
 				distNet.getFaultNet().setLfDataLoaded(true);
@@ -129,7 +130,7 @@ public class IpssDistNet {
 		}
 		
 		public boolean loadflow() {
-			AclfNetwork aclfNet = this.getAclfNetwork();
+			AcscNetwork aclfNet = this.getAcscNetwork();
 		  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(aclfNet);
 		  	return algo.loadflow();			
 		}

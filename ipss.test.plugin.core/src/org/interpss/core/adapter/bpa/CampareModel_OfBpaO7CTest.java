@@ -17,6 +17,7 @@ import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
@@ -70,7 +71,7 @@ public class CampareModel_OfBpaO7CTest extends DStabTestSetupBase {
 
 	IAclfNetComparator netCompRules = new IAclfNetComparator() {
 		@Override
-		public boolean compare(AclfNetwork baseNet, AclfNetwork net) {
+		public boolean compare(BaseAclfNetwork<?,?> baseNet, BaseAclfNetwork<?,?> net) {
 			boolean ok = true;
 			if (baseNet.getNoBus() != net.getNoBus()) {
 				IpssLogger.getLogger().warning("NoOfBus not the same: " + baseNet.getNoBus() + ", " + net.getNoBus());

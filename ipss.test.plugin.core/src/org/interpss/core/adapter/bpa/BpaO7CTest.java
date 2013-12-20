@@ -146,7 +146,8 @@ public class BpaO7CTest extends DStabTestSetupBase {
 		// run load flow first before initialization 
 		//LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		LoadflowAlgorithm  algo=CoreObjectFactory.createLoadflowAlgorithm(net);
-		assertTrue(net.accept(algo));
+	  	algo.loadflow();
+		assertTrue(net.isLfConverged());
 		//get the genResult
 		/*
 		System.out.println("Dstab network lf result");

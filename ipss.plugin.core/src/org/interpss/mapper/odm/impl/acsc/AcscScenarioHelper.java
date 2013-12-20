@@ -139,7 +139,7 @@ public class AcscScenarioHelper {
 			AcscBusFault acscBusFault = CoreObjectFactory.createAcscBusFault(faultBusId, acscFaultNet);
 			acscAglo.addBusFault(faultBusId, idStr, acscBusFault);
 
-			AcscBus bus = acscFaultNet.getAcscBus(faultBusId);
+			AcscBus bus = acscFaultNet.getBus(faultBusId);
 			double baseV=bus.getBaseVoltage();
 			double baseKVA= bus.getNetwork().getBaseKva();
 
@@ -151,7 +151,7 @@ public class AcscScenarioHelper {
 			AcscBranchFault acscBraFault = CoreObjectFactory.createAcscBranchFault(faultBranchId, acscFaultNet);
 			acscAglo.addBranchFault(faultBranchId, idStr, acscBraFault);
 
-			AcscBranch acscBra = acscFaultNet.getAcscBranch(faultBranchId);
+			AcscBranch acscBra = acscFaultNet.getBranch(faultBranchId);
 			double baseV = acscBra.getFromAclfBus().getBaseVoltage();
 			double baseKVA= acscBra.getNetwork().getBaseKva();
 

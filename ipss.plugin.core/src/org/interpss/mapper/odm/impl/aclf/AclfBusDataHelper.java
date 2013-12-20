@@ -55,6 +55,7 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.adj.FunctionLoad;
 import com.interpss.core.aclf.adj.PQBusLimit;
 import com.interpss.core.aclf.adj.PVBusLimit;
@@ -72,7 +73,7 @@ import com.interpss.core.aclf.adpter.AclfSwingBus;
  *
  */
 public class AclfBusDataHelper {
-	private AclfNetwork aclfNet = null;
+	private BaseAclfNetwork<?,?> aclfNet = null;
 	private AclfBus aclfBus = null;
 	
 	/**
@@ -80,7 +81,7 @@ public class AclfBusDataHelper {
 	 * 
 	 * @param aclfNet
 	 */
-	public AclfBusDataHelper(AclfNetwork aclfNet) {
+	public AclfBusDataHelper(BaseAclfNetwork<?,?> aclfNet) {
 		this.aclfNet = aclfNet;
 	}
 	

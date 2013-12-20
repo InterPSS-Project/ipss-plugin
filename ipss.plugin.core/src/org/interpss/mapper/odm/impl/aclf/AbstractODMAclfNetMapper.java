@@ -62,6 +62,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.XfrZTableEntry;
 import com.interpss.core.aclf.flow.FlowInterface;
 import com.interpss.core.aclf.flow.FlowInterfaceBranch;
@@ -184,7 +185,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 	 * @param xmlNet
 	 * @return
 	 */
-	public void mapAclfNetworkData(AclfNetwork net, LoadflowNetXmlType xmlNet) throws InterpssException {
+	public void mapAclfNetworkData(BaseAclfNetwork<?,?> net, LoadflowNetXmlType xmlNet) throws InterpssException {
 		mapNetworkData(net, xmlNet);
 		
 		// map Xfr Z Table
@@ -301,7 +302,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 	 * @param msg
 	 * @throws Exception
 	 */
-	public void mapAclfBranchData(BaseBranchXmlType xmlBranch, Branch branch, AclfNetwork adjNet) throws InterpssException {
+	public void mapAclfBranchData(BaseBranchXmlType xmlBranch, Branch branch, BaseAclfNetwork<?,?> adjNet) throws InterpssException {
 		if (adjNet.getOriginalDataFormat() == OriginalDataFormat.PWD) {
 			AclfBranchPWDExtension ext = new AclfBranchPWDExtension();
 			branch.setExtensionObject(ext);
@@ -334,7 +335,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 		}
 	}
 	
-	private void setAclfBranchData(BranchXmlType xmlBranchRec, Branch branch, AclfNetwork adjNet) throws InterpssException {
+	private void setAclfBranchData(BranchXmlType xmlBranchRec, Branch branch, BaseAclfNetwork<?,?> adjNet) throws InterpssException {
 		mapBaseBranchRec(xmlBranchRec, branch, adjNet);		
 		if (branch instanceof AclfBranch) {
 			AclfBranch aclfBranch = (AclfBranch)branch;

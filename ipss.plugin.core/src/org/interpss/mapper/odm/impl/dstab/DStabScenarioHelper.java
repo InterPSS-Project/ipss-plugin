@@ -230,7 +230,7 @@ public class DStabScenarioHelper {
 				eventObj.setType(DynamicEventType.BUS_FAULT);
 				String faultBusId = busFaultXml.getRefBus().getBusId();
 				AcscBusFault busFault = CoreObjectFactory.createAcscBusFault(Constants.Token_BusFaultId+faultBusId, dstabNet);
-				AcscBus bus = this.dstabNet.getAcscBus(faultBusId);
+				AcscBus bus = this.dstabNet.getBus(faultBusId);
 				busFault.setFaultBus(bus);
 				
 				double baseV=bus.getBaseVoltage();
@@ -261,7 +261,7 @@ public class DStabScenarioHelper {
 		String faultBranchId = faultXml.getRefBranch().getBranchId();
 		DStabBranchFault branchFault = DStabObjectFactory.createDStabBranchFault(Constants.Token_BranchFaultId + faultBranchId);
 		
-		AcscBranch branch = this.dstabNet.getAcscBranch(faultBranchId);
+		AcscBranch branch = this.dstabNet.getBranch(faultBranchId);
 		double baseV = branch.getFromAclfBus().getBaseVoltage();
 		double baseKVA= branch.getNetwork().getBaseKva();			
 		AcscScenarioHelper.setBranchFaultInfo(faultXml, branchFault, baseV, baseKVA);

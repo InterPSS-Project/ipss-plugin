@@ -252,7 +252,7 @@ public class AcscOutFunc {
 			str.append("                              (pu)       (Amp) \n");
 			str.append("     --------------------   --------   ----------\n");
 
-			List<AclfBranch> branchList = net.getBranchList();
+			List<AcscBranch> branchList = net.getBranchList();
 			int cnt = 0;
 			for (int n = 0; n < branchList.size(); n++) {
 				AcscBranch bra = (AcscBranch) branchList.get(n);
@@ -275,7 +275,7 @@ public class AcscOutFunc {
 			str.append("                              (pu)       (Amp)        (pu)       (Amp)        (pu)       (Amp) \n");
 			str.append("     --------------------   --------   ----------   --------   ----------   --------   ----------\n");
 
-			List<AclfBranch> branchList = net.getBranchList();
+			List<AcscBranch> branchList = net.getBranchList();
 			int cnt = 0;
 			for (int n = 0; n < branchList.size(); n++) {
 				AcscBranch bra = (AcscBranch) branchList.get(n);
