@@ -306,7 +306,7 @@ public class AclfCacheTest extends CorePluginTestSetup {
 		long key = cache.put(net);
 		 
 		AclfNetwork net1 = cache.get(key);
-		System.out.println(net1.net2String());
+		//System.out.println(net1.net2String());
 		
 	  	net1.accept(CoreObjectFactory.createLfAlgoVisitor());
   		//System.out.println(net.net2String());
