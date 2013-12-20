@@ -59,7 +59,7 @@ public class DistOutFunc {
 				distBus.getBus().setVoltage(aBusApt.getPointVoltage(i));
 			}
 
-			str.append(AclfOutFunc.loadFlowSummary(distNet.getAclfNet()));
+			str.append(AclfOutFunc.loadFlowSummary(distNet.getAcscNet()));
 		}
 
 		return str;

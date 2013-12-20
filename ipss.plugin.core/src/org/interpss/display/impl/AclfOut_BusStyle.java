@@ -24,8 +24,6 @@
 
 package org.interpss.display.impl;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
-import static org.interpss.CorePluginFunction.OutputSolarNet;
 import static org.interpss.CorePluginFunction.FormatKVStr;
 import static org.interpss.CorePluginFunction.OutputBusId;
 
@@ -35,18 +33,14 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.Number2String;
 
 import com.interpss.common.datatype.UnitHelper;
-import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.adpter.AclfCapacitorBus;
 import com.interpss.core.aclf.adpter.AclfGenBus;
 import com.interpss.core.aclf.adpter.AclfPSXformer;
 import com.interpss.core.net.Branch;
-import com.interpss.core.net.Bus;
-import com.interpss.core.net.Network;
-import com.interpss.dc.DcNetwork;
-import com.interpss.dist.DistNetwork;
 
 /**
  * Aclf output functions, IEEE Bus Style
@@ -69,7 +63,7 @@ public class AclfOut_BusStyle {
 	 * @param style
 	 * @return
 	 */
-	public static StringBuffer lfResultsBusStyle(AclfNetwork mainNet, AclfOutFunc.BusIdStyle style) {
+	public static StringBuffer lfResultsBusStyle(BaseAclfNetwork<?,?> mainNet, AclfOutFunc.BusIdStyle style) {
 		StringBuffer str = new StringBuffer("");
 		try {
 			str.append(busStyleTitle(mainNet));
@@ -125,7 +119,7 @@ public class AclfOut_BusStyle {
 	}
 	
 
-	private static StringBuffer lfResultsBusStyle(AclfBus bus, AclfNetwork net, AclfOutFunc.BusIdStyle style) {
+	private static StringBuffer lfResultsBusStyle(AclfBus bus, BaseAclfNetwork<?,?> net, AclfOutFunc.BusIdStyle style) {
 		double baseKVA = net.getBaseKva();
 		StringBuffer str = new StringBuffer("");
 
@@ -231,7 +225,7 @@ public class AclfOut_BusStyle {
 		return str;
 	}
 	
-	private static StringBuffer busStyleTitle(AclfNetwork net) {
+	private static StringBuffer busStyleTitle(BaseAclfNetwork<?,?> net) {
 		StringBuffer str = new StringBuffer("");
 		
 		if (net.getChildNetList().size() > 0) 

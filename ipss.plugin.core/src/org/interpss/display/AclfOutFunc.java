@@ -39,6 +39,7 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.adj.AdjControlType;
 import com.interpss.core.aclf.adj.FunctionLoad;
 import com.interpss.core.aclf.adj.PQBusLimit;
@@ -91,7 +92,7 @@ public class AclfOutFunc {
 	 * @param net
 	 * @return
 	 */
-	public static StringBuffer loadFlowSummary(AclfNetwork net) {
+	public static StringBuffer loadFlowSummary(BaseAclfNetwork<?,?> net) {
 		return loadFlowSummary(net, true);
 	}
 	
@@ -102,7 +103,7 @@ public class AclfOutFunc {
 	 * @param includeAdj
 	 * @return
 	 */
-	public static StringBuffer loadFlowSummary(AclfNetwork net, boolean includeAdj) {
+	public static StringBuffer loadFlowSummary(BaseAclfNetwork<?,?> net, boolean includeAdj) {
 		StringBuffer str = new StringBuffer(_loadFlowSummary((AclfNetwork) net));
 
 		try {
@@ -296,7 +297,7 @@ public class AclfOutFunc {
 	 * @param prefix
 	 * @return
 	 */
-	public static String maxMismatchToString(AclfNetwork net, String prefix) {
+	public static String maxMismatchToString(BaseAclfNetwork<?,?> net, String prefix) {
 		try {
 			double baseKVA = net.getBaseKva();
 			String str = "\n"+prefix+"                         Max Power Mismatches\n"
@@ -428,7 +429,7 @@ public class AclfOutFunc {
 	 * @return
 	 * @throws Exception
 	 */
-	public static StringBuffer pvBusLimitToString(AclfNetwork net) throws Exception {
+	public static StringBuffer pvBusLimitToString(BaseAclfNetwork<?,?> net) throws Exception {
 		final StringBuffer str = new StringBuffer("");
 
 		str.append("\n\n");
@@ -470,7 +471,7 @@ public class AclfOutFunc {
 	 * @return
 	 * @throws Exception
 	 */
-	public static StringBuffer pqBusLimitToString(AclfNetwork net) 	throws Exception {
+	public static StringBuffer pqBusLimitToString(BaseAclfNetwork<?,?> net) 	throws Exception {
 		StringBuffer str = new StringBuffer("");
 
 		str.append("\n\n");
@@ -516,7 +517,7 @@ public class AclfOutFunc {
 	 * @return
 	 * @throws Exception
 	 */
-	public static StringBuffer remoteQBusToString(AclfNetwork net) throws Exception {
+	public static StringBuffer remoteQBusToString(BaseAclfNetwork<?,?> net) throws Exception {
 		StringBuffer str = new StringBuffer("");
 
 		str.append("\n\n");
@@ -564,7 +565,7 @@ public class AclfOutFunc {
 	 * @return
 	 * @throws Exception
 	 */
-	public static StringBuffer aclfFuncLoadToString(AclfNetwork net) throws Exception {
+	public static StringBuffer aclfFuncLoadToString(BaseAclfNetwork<?,?> net) throws Exception {
 		StringBuffer str = new StringBuffer("");
 
 		double baseKVA = net.getBaseKva();
@@ -612,7 +613,7 @@ public class AclfOutFunc {
 	 * @return
 	 * @throws Exception
 	 */
-	public static StringBuffer tapVControlToString(AclfNetwork net) throws Exception {
+	public static StringBuffer tapVControlToString(BaseAclfNetwork<?,?> net) throws Exception {
 		StringBuffer str = new StringBuffer("");
 
 		double baseKva = net.getBaseKva();
@@ -682,7 +683,7 @@ public class AclfOutFunc {
 	 * @return
 	 * @throws Exception
 	 */
-	public static StringBuffer psXfrPControlToString(AclfNetwork net) throws Exception {
+	public static StringBuffer psXfrPControlToString(BaseAclfNetwork<?,?> net) throws Exception {
 		StringBuffer str = new StringBuffer("");
 
 		double baseKVA = net.getBaseKva();
