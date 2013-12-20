@@ -36,15 +36,14 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.Number2String;
 
 import com.interpss.common.util.IpssLogger;
-import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.AcscBus;
 import com.interpss.core.acsc.AcscNetwork;
+import com.interpss.core.acsc.BaseAcscNetwork;
 import com.interpss.core.acsc.fault.AcscBranchFault;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.SimpleFaultAlgorithm;
-import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 
 /**
@@ -159,7 +158,7 @@ public class AcscOutFunc {
 	}
 	
 	private static String displayBusVoltage(AcscBusFault bf) {
-		AcscNetwork net = bf.getFaultResult().getAcscNet();
+		BaseAcscNetwork<?,?> net = bf.getFaultResult().getAcscNet();
 		try {
 			bf.getFaultResult().calBranchCurrent();
 			bf.getFaultResult().calContributingCurrent();
@@ -237,7 +236,7 @@ public class AcscOutFunc {
 	}
 
 	private static String displayBranchCurrent(AcscBusFault bf) {
-		AcscNetwork net = bf.getFaultResult().getAcscNet();
+		BaseAcscNetwork<?,?> net = bf.getFaultResult().getAcscNet();
 		try {
 			bf.getFaultResult().calBranchCurrent();
 		} catch (Exception e) {
@@ -252,7 +251,7 @@ public class AcscOutFunc {
 			str.append("                              (pu)       (Amp) \n");
 			str.append("     --------------------   --------   ----------\n");
 
-			List<AcscBranch> branchList = net.getBranchList();
+			List<?> branchList = net.getBranchList();
 			int cnt = 0;
 			for (int n = 0; n < branchList.size(); n++) {
 				AcscBranch bra = (AcscBranch) branchList.get(n);
@@ -275,7 +274,7 @@ public class AcscOutFunc {
 			str.append("                              (pu)       (Amp)        (pu)       (Amp)        (pu)       (Amp) \n");
 			str.append("     --------------------   --------   ----------   --------   ----------   --------   ----------\n");
 
-			List<AcscBranch> branchList = net.getBranchList();
+			List<?> branchList = net.getBranchList();
 			int cnt = 0;
 			for (int n = 0; n < branchList.size(); n++) {
 				AcscBranch bra = (AcscBranch) branchList.get(n);
