@@ -49,7 +49,7 @@ public class IpssCorePlugin {
 	 * Core plugin Sptring ctx file path
 	 */
 	public final static String CtxPath = "org/interpss/spring/CorePluginSpringCtx.xml";
-	
+	   
 	/**
 	 * initialize core plugin 
 	 */

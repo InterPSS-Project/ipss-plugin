@@ -68,6 +68,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.AcscBus;
 import com.interpss.core.acsc.AcscNetwork;
+import com.interpss.core.acsc.BaseAcscNetwork;
 import com.interpss.core.acsc.BusGroundCode;
 import com.interpss.core.acsc.BusScCode;
 import com.interpss.core.acsc.SequenceCode;
@@ -186,7 +187,7 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 	 * @param xmlNet
 	 * @return
 	 */
-	public void mapAcscNetworkData(AcscNetwork net, ShortCircuitNetXmlType xmlNet) throws InterpssException {
+	public void mapAcscNetworkData(BaseAcscNetwork<?,?> net, ShortCircuitNetXmlType xmlNet) throws InterpssException {
 		new ODMAclfNetMapper().mapAclfNetworkData(net, xmlNet);
 		net.setPositiveSeqDataOnly(xmlNet.isPositiveSeqDataOnly());		
 		net.setLfDataLoaded(xmlNet.isHasLoadflowData());
