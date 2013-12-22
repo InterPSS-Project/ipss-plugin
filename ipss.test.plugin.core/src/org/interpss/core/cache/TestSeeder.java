@@ -5,11 +5,12 @@ import org.interpss.IpssCorePlugin;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.core.HazelcastInstance;
+import com.interpss.CoreObjectFactory;
 import com.interpss.cache.UgidGenerator;
-import com.interpss.cache.aclf.AclfNetCacheWrapper;
+import com.interpss.cache.acsc.AcscNetCacheWrapper;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.exp.IpssCacheException;
-import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.simu.util.sample.SampleCases;
 
 public class TestSeeder {
@@ -28,14 +29,15 @@ public class TestSeeder {
 	private static void seedNetwork(final HazelcastInstance client) throws IpssCacheException, InterpssException {
 		IpssCorePlugin.init();
 		
-		AclfNetwork net = SampleCases.sample3BusPSXfrPControl();
-		System.out.println(net.net2String());
+  		AcscNetwork acscNet = CoreObjectFactory.createAcscNetwork();
+		SampleCases.load_SC_5BusSystem(acscNet);
+		System.out.println(acscNet.net2String());
+		
+		AcscNetCacheWrapper cache = new AcscNetCacheWrapper(client);
 
-		AclfNetCacheWrapper cache = new AclfNetCacheWrapper(client);
-
-		long key = cache.put(net);
+		long key = cache.put(acscNet);
 		 
-		AclfNetwork net1 = cache.get(key);
-		System.out.println(net1.net2String());
+		AcscNetwork net = cache.get(key);
+		System.out.println(net.net2String());
 	}
 }
