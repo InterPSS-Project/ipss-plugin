@@ -27,10 +27,12 @@ package org.interpss.core.cache;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginObjFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.Unit.UnitType;
+import org.interpss.numeric.util.TestUtilFunc;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,16 +43,21 @@ import com.hazelcast.core.HazelcastInstance;
 import com.interpss.CoreObjectFactory;
 import com.interpss.cache.UgidGenerator;
 import com.interpss.cache.aclf.AclfNetCacheWrapper;
+import com.interpss.cache.acsc.AcscNetCacheWrapper;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.exp.IpssCacheException;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
+import com.interpss.core.acsc.AcscNetwork;
+import com.interpss.core.acsc.fault.AcscBusFault;
+import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.algo.SimpleFaultAlgorithm;
 import com.interpss.simu.util.sample.SampleCases;
 
-public class AclfCacheTest extends CorePluginTestSetup {
+public class CacheTest extends CorePluginTestSetup {
 	HazelcastInstance client;
 	
 	@Before
@@ -61,6 +68,10 @@ public class AclfCacheTest extends CorePluginTestSetup {
 		client = HazelcastClient.newHazelcastClient(clientConfig);
 		UgidGenerator.IdGenerator = client.getIdGenerator("GuidGenerator");		
 	}
+	
+	///////////////////////////////////////////////////////////////////
+	////          Aclf Test                              //////////////
+	///////////////////////////////////////////////////////////////////	
 	   
 	@Test
 	public void Bus5SampleTest() throws IpssCacheException {
@@ -316,6 +327,42 @@ public class AclfCacheTest extends CorePluginTestSetup {
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.32393)<0.0001);
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.16549)<0.0001);	
   	}
+	
+	///////////////////////////////////////////////////////////////////
+	////          Acsc Test                              //////////////
+	///////////////////////////////////////////////////////////////////
+
+	@Test
+	public void Acsc5Bus() throws IpssCacheException, InterpssException {
+  		AcscNetwork acscNet = CoreObjectFactory.createAcscNetwork();
+		SampleCases.load_SC_5BusSystem(acscNet);
+		//System.out.println(acscNet.net2String());
+		
+		AcscNetCacheWrapper cache = new AcscNetCacheWrapper(client);
+
+		long key = cache.put(acscNet);
+		 
+		AcscNetwork net = cache.get(key);
+		//System.out.println(net.net2String());		
+		
+	  	SimpleFaultAlgorithm algo = CoreObjectFactory.createSimpleFaultAlgorithm(net);
+  		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("2", algo);
+		fault.setFaultCode(SimpleFaultCode.GROUND_3P);
+		fault.setZLGFault(new Complex(0.0, 0.0));
+		fault.setZLLFault(new Complex(0.0, 0.0));
+		
+	  	algo.calculateBusFault(fault);
+  		//System.out.println(fault.toString(faultBus.getBaseVoltage(), faultNet.getBaseKva()));
+		/*
+		 fault amps(1): (  0.0000 + j 32.57143) pu
+		 fault amps(2): (  0.0000 + j  0.0000) pu
+		 fault amps(0): (  0.0000 + j  0.0000) pu
+		 */
+	  	assertTrue(TestUtilFunc.compare(fault.getFaultResult().getSCCurrent_012(), 
+	  			0.0, 0.0, 0.0, 32.57142857157701, 0.0, 0.0) );
+		
+		//System.out.println(AcscOut.faultResult2String(faultNet));
+	}	
 	
 	@After
 	public void cleanup() {
