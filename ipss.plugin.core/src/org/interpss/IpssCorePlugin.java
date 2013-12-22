@@ -37,7 +37,7 @@ import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.algo.BusNumberArrangeRule;
 import com.interpss.spring.CoreCommonSpringFactory;
-
+  
 /**
  * Core plugin runtime configuration functioin
  * 
