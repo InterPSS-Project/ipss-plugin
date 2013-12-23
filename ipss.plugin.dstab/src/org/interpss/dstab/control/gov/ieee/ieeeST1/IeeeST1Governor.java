@@ -77,12 +77,12 @@ public class IeeeST1Governor extends AbstractGovernor {
 	 * Set controller parameters
 	 * 
 	 * @param xmlString controller parameter xml string
-	 */
 	@Override
 	public void setDataXmlString(final String xmlString) {
 		super.setDataXmlString(xmlString);
 		_data = XmlBeanUtil.toObject(xmlString, IeeeST1GovernorData.class);
 	}
+	 */
 	
 	/**
 	 *  Init the controller states
