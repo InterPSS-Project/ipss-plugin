@@ -24,13 +24,21 @@
 
 package org.interpss.dstab.control.exc.simple;
 
+import java.io.IOException;
+
+import com.hazelcast.nio.ObjectDataInput;
+import com.hazelcast.nio.ObjectDataOutput;
+import com.hazelcast.nio.serialization.DataSerializable;
+
 /**
  * A JavaBean to store data for the Simple exciter model. It needs to follow
  * JavaBean convention so that the controller data object be serialized/
  * deserialized for grid computing.
  *
  */
-public class SimpleExciterData {
+public class SimpleExciterData implements DataSerializable {
+	private static final long serialVersionUID = 1L;
+	
 	public SimpleExciterData() {}
 
 	// We need to put the default values here, so that the controller could be 
@@ -95,5 +103,19 @@ public class SimpleExciterData {
 	public void setVrmin(final double vrmin) {
 		this.vrmin = vrmin;
 	}
+	
+	@Override public void writeData(ObjectDataOutput out) throws IOException {
+		out.writeDouble(this.ka);
+		out.writeDouble(this.ta);
+		out.writeDouble(this.vrmax);
+		out.writeDouble(this.vrmin);		
+	}
+
+	@Override public void readData(ObjectDataInput in) throws IOException {
+		this.ka = in.readDouble();
+		this.ta = in.readDouble();
+		this.vrmax = in.readDouble();
+		this.vrmin = in.readDouble();		
+	}	
 }
 

@@ -24,11 +24,14 @@
 
 package org.interpss.dstab.control.gov.simple;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 
 import org.interpss.dstab.control.cml.block.DelayControlBlock;
 import org.interpss.dstab.control.cml.block.GainBlock;
 
+import com.hazelcast.nio.ObjectDataInput;
+import com.hazelcast.nio.ObjectDataOutput;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.controller.AnnotateGovernor;
 import com.interpss.dstab.controller.annotate.AnController;
@@ -99,6 +102,16 @@ public class SimpleGovernor extends AnnotateGovernor {
         return (SimpleGovernorData)_data;
     }
     
+	@Override public void writeData(ObjectDataOutput out) throws IOException {
+		super.writeData(out);
+		this.getData().writeData(out);
+	}
+
+	@Override public void readData(ObjectDataInput in) throws IOException {
+		super.readData(in);
+		this._data = new SimpleGovernorData();
+		this.getData().readData(in);
+	}	    
     /**
      *  Init the controller states
      *

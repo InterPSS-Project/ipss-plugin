@@ -25,10 +25,14 @@
 
 package org.interpss.dstab.control.pss.simple;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 
 import org.interpss.dstab.control.cml.block.FilterControlBlock;
+import org.interpss.dstab.control.gov.simple.SimpleGovernorData;
 
+import com.hazelcast.nio.ObjectDataInput;
+import com.hazelcast.nio.ObjectDataOutput;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.controller.AnnotateStabilizer;
 import com.interpss.dstab.controller.annotate.AnController;
@@ -93,6 +97,17 @@ public class SimpleStabilizer extends AnnotateStabilizer {
 	 */
 	public SimpleStabilizerData getData() {
 		return (SimpleStabilizerData)_data;
+	}
+	
+	@Override public void writeData(ObjectDataOutput out) throws IOException {
+		super.writeData(out);
+		this.getData().writeData(out);
+	}
+
+	@Override public void readData(ObjectDataInput in) throws IOException {
+		super.readData(in);
+		this._data = new SimpleStabilizerData();
+		this.getData().readData(in);
 	}
 	
 	/**

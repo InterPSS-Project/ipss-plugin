@@ -24,10 +24,13 @@
 
 package org.interpss.dstab.control.exc.simple;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 
 import org.interpss.dstab.control.cml.block.DelayControlBlock;
 
+import com.hazelcast.nio.ObjectDataInput;
+import com.hazelcast.nio.ObjectDataOutput;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.controller.AnnotateExciter;
 import com.interpss.dstab.controller.annotate.AnController;
@@ -90,6 +93,17 @@ public class SimpleExciter extends AnnotateExciter {
     public SimpleExciterData getData() {
         return (SimpleExciterData)this._data;
     }
+    
+	@Override public void writeData(ObjectDataOutput out) throws IOException {
+		super.writeData(out);
+		this.getData().writeData(out);
+	}
+
+	@Override public void readData(ObjectDataInput in) throws IOException {
+		super.readData(in);
+		this._data = new SimpleExciterData();
+		this.getData().readData(in);
+	}	 
     
     /**
      *  Init the controller states
