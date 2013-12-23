@@ -24,13 +24,21 @@
 
 package org.interpss.dstab.control.gov.simple;
 
+import java.io.IOException;
+
+import com.hazelcast.nio.ObjectDataInput;
+import com.hazelcast.nio.ObjectDataOutput;
+import com.hazelcast.nio.serialization.DataSerializable;
+
 /**
  * A JavaBean to store data for the Simple governor model. It needs to follow
  * JavaBean convention so that the controller data object be serialized/
  * deserialized for grid computing.
  *
  */
-public class SimpleGovernorData {
+public class SimpleGovernorData implements DataSerializable {
+	private static final long serialVersionUID = 1L;
+	
 	public SimpleGovernorData() {}
 	
 	private double k = 10.0;
@@ -85,4 +93,18 @@ public class SimpleGovernorData {
 	public void setT1(final double t1) {
 		this.t1 = t1;
 	}
+	
+	@Override public void writeData(ObjectDataOutput out) throws IOException {
+		out.writeDouble(this.k);
+		out.writeDouble(this.t1);
+		out.writeDouble(this.pmax);
+		out.writeDouble(this.pmin);		
+	}
+
+	@Override public void readData(ObjectDataInput in) throws IOException {
+		this.k = in.readDouble();
+		this.t1 = in.readDouble();
+		this.pmax = in.readDouble();
+		this.pmin = in.readDouble();		
+	}	
 } // SimpleExcAdapter
