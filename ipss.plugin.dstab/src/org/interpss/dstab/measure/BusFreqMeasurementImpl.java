@@ -24,13 +24,14 @@
 
 package org.interpss.dstab.measure;
 
-import java.util.StringTokenizer;
+import java.io.IOException;
 
 import org.interpss.dstab.control.cml.block.DelayControlBlock;
 import org.interpss.dstab.control.cml.block.WashoutControlBlock;
 
+import com.hazelcast.nio.ObjectDataInput;
+import com.hazelcast.nio.ObjectDataOutput;
 import com.interpss.common.datatype.Constants;
-import com.interpss.common.exp.InterpssRuntimeException;
 import com.interpss.dstab.controller.block.adapt.CMLControlBlock1stOrderAdapter;
 
 /**
@@ -41,7 +42,7 @@ import com.interpss.dstab.controller.block.adapt.CMLControlBlock1stOrderAdapter;
  *
  */
 public class BusFreqMeasurementImpl extends CMLControlBlock1stOrderAdapter {
-	private static final long serialVersionUID = 1;
+	private static final long serialVersionUID = 1L;
 
 	private double baseFreq = 0.0;
 	private double angle0 = 0.0;
@@ -141,27 +142,15 @@ public class BusFreqMeasurementImpl extends CMLControlBlock1stOrderAdapter {
 		this.tw = tw;
 	}
 
-	/* To make this controller ready for Grid computing, we need to implement 
-	 * 		1) Default Constructor
-	 * 		2) serialize() and 
-	 * 		3) de-serialize().
-	 */
-
-	@Override public String serialize() {
-		String name = this.getClass().getName();
-		return name + "|" + tf + "," + tw;
+	@Override
+	public void readData(ObjectDataInput in) throws IOException {
+		this.tf = in.readDouble();
+		this.tw = in.readDouble();
 	}
 
-	@Override public Object deserialize(String str) throws InterpssRuntimeException {
-		String classname = str.substring(0, str.indexOf('|'));
-		if (!classname.equals(this.getClass().getName())) {
-			throw new InterpssRuntimeException("Programming error, deserialize() of "
-							+ this.getClass().getName());
-		}
-		String params = str.substring(str.indexOf('|') + 1);
-		StringTokenizer st = new StringTokenizer(params, ",");
-		this.tf = new Double(st.nextToken()).doubleValue();
-		this.tw = new Double(st.nextToken()).doubleValue();
-		return this;
+	@Override
+	public void writeData(ObjectDataOutput out) throws IOException {
+		out.writeDouble(this.tf);
+		out.writeDouble(this.tw);
 	}
 }
