@@ -99,17 +99,6 @@ public class SimpleStabilizer extends AnnotateStabilizer {
 		return (SimpleStabilizerData)_data;
 	}
 	
-	@Override public void writeData(ObjectDataOutput out) throws IOException {
-		super.writeData(out);
-		this.getData().writeData(out);
-	}
-
-	@Override public void readData(ObjectDataInput in) throws IOException {
-		super.readData(in);
-		this._data = new SimpleStabilizerData();
-		this.getData().readData(in);
-	}
-	
 	/**
 	 *  Init the controller states
 	 *  

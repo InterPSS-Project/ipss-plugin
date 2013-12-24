@@ -144,12 +144,16 @@ public class BusFreqMeasurementImpl extends CMLControlBlock1stOrderAdapter {
 
 	@Override
 	public void readData(ObjectDataInput in) throws IOException {
+		this.baseFreq = in.readDouble();
+		this.angle0 = in.readDouble();
 		this.tf = in.readDouble();
 		this.tw = in.readDouble();
 	}
 
 	@Override
 	public void writeData(ObjectDataOutput out) throws IOException {
+		out.writeDouble(this.baseFreq);
+		out.writeDouble(this.angle0);
 		out.writeDouble(this.tf);
 		out.writeDouble(this.tw);
 	}
