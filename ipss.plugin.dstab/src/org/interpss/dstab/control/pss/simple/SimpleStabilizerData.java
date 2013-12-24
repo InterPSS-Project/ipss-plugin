@@ -25,11 +25,6 @@
 
 package org.interpss.dstab.control.pss.simple;
 
-import java.io.IOException;
-
-import com.hazelcast.nio.ObjectDataInput;
-import com.hazelcast.nio.ObjectDataOutput;
-import com.hazelcast.nio.serialization.DataSerializable;
 
 
 /**
@@ -38,8 +33,7 @@ import com.hazelcast.nio.serialization.DataSerializable;
  * deserialized for grid computing.
  *
  */
-public class SimpleStabilizerData implements DataSerializable {
-	private static final long serialVersionUID = 1L;
+public class SimpleStabilizerData {
 	
 	public SimpleStabilizerData() {}
 
@@ -135,24 +129,4 @@ public class SimpleStabilizerData implements DataSerializable {
 	public void setVsmin(final double vsmin) {
 		this.vsmin = vsmin;
 	}
-	
-	@Override public void writeData(ObjectDataOutput out) throws IOException {
-		out.writeDouble(this.ks);
-		out.writeDouble(this.t1);
-		out.writeDouble(this.t2);
-		out.writeDouble(this.t3);
-		out.writeDouble(this.t4);
-		out.writeDouble(this.vsmax);
-		out.writeDouble(this.vsmin);		
-	}
-
-	@Override public void readData(ObjectDataInput in) throws IOException {
-		this.ks = in.readDouble();
-		this.t1 = in.readDouble();
-		this.t2 = in.readDouble();
-		this.t3 = in.readDouble();
-		this.t4 = in.readDouble();
-		this.vsmax = in.readDouble();
-		this.vsmin = in.readDouble();		
-	}		
 } 

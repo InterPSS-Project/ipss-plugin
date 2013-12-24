@@ -36,9 +36,7 @@ import com.hazelcast.nio.serialization.DataSerializable;
  * deserialized for grid computing.
  *
  */
-public class SimpleGovernorData implements DataSerializable {
-	private static final long serialVersionUID = 1L;
-	
+public class SimpleGovernorData {
 	public SimpleGovernorData() {}
 	
 	private double k = 10.0;
@@ -93,18 +91,4 @@ public class SimpleGovernorData implements DataSerializable {
 	public void setT1(final double t1) {
 		this.t1 = t1;
 	}
-	
-	@Override public void writeData(ObjectDataOutput out) throws IOException {
-		out.writeDouble(this.k);
-		out.writeDouble(this.t1);
-		out.writeDouble(this.pmax);
-		out.writeDouble(this.pmin);		
-	}
-
-	@Override public void readData(ObjectDataInput in) throws IOException {
-		this.k = in.readDouble();
-		this.t1 = in.readDouble();
-		this.pmax = in.readDouble();
-		this.pmin = in.readDouble();		
-	}	
 } // SimpleExcAdapter

@@ -29,6 +29,7 @@ import java.lang.reflect.Field;
 
 import org.interpss.dstab.control.cml.block.DelayControlBlock;
 import org.interpss.dstab.control.cml.block.GainBlock;
+import org.interpss.dstab.control.exc.simple.SimpleExciterData;
 
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
@@ -101,17 +102,7 @@ public class SimpleGovernor extends AnnotateGovernor {
     public SimpleGovernorData getData() {
         return (SimpleGovernorData)_data;
     }
-    
-	@Override public void writeData(ObjectDataOutput out) throws IOException {
-		super.writeData(out);
-		this.getData().writeData(out);
-	}
-
-	@Override public void readData(ObjectDataInput in) throws IOException {
-		super.readData(in);
-		this._data = new SimpleGovernorData();
-		this.getData().readData(in);
-	}	    
+	    
     /**
      *  Init the controller states
      *
