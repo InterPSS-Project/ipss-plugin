@@ -26,21 +26,20 @@ package org.interpss.core.dstab.mach;
 
 import static org.junit.Assert.assertTrue;
 
-import org.interpss.numeric.datatype.Unit.UnitType;
 import org.junit.Test;
 
-import com.interpss.DStabObjectFactory;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.mach.EConstMachine;
-import com.interpss.dstab.mach.MachineType;
+import com.interpss.dstab.util.sample.SampleDStabCase;
 
 public class EConstMachineTest extends TestSetupBase {
 	@Test
 	public void test_Case1() {
 		// create a machine in a two-bus network. The loadflow already converged
-		EConstMachine mach = createMachine();
+		DStabilityNetwork net = SampleDStabCase.createDStabTestNet();
+		EConstMachine mach = SampleDStabCase.createEConstMachine(net);
 		
 		// calculate mach state init values
 		DStabBus bus = net.getDStabBus("Gen");
@@ -90,20 +89,4 @@ public class EConstMachineTest extends TestSetupBase {
 		assertTrue(Math.abs(mach.getPe()-0.8) < 0.00001);
 		assertTrue(Math.abs(mach.getPm()-1.0) < 0.00001);
 	}
-	
-	public EConstMachine createMachine() {
-		// create a two-bus network. Loadflow calculated
-		DStabilityNetwork net = createTestDStabBus();
-
-		EConstMachine mach = (EConstMachine)DStabObjectFactory.
-							createMachine("MachId", "MachName", MachineType.ECONSTANT, net, "Gen");
-		DStabBus bus = net.getDStabBus("Gen");
-		mach.setRating(100, UnitType.mVA, net.getBaseKva());
-		mach.setRatedVoltage(1000.0);
-		mach.setMultiFactors(bus);
-		mach.setH(5.0);
-		mach.setD(0.01);
-		mach.setXd1(0.3);
-		return mach;
-	}	
 }
