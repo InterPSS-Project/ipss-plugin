@@ -26,22 +26,21 @@ package org.interpss.core.dstab.mach;
 
 import static org.junit.Assert.assertTrue;
 
-import org.interpss.numeric.datatype.Unit.UnitType;
 import org.junit.Test;
 
-import com.interpss.DStabObjectFactory;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.DynamicSimuMethod;
-import com.interpss.dstab.mach.MachineType;
 import com.interpss.dstab.mach.SalientPoleMachine;
+import com.interpss.dstab.util.sample.SampleDStabCase;
 
 public class SalientPoleMachineTest extends TestSetupBase {
 	
 	@Test
 	public void test_Case1() {
 		// create a machine in a two-bus network. The loadflow already converged
-		SalientPoleMachine mach = createMachine();
+		DStabilityNetwork net = SampleDStabCase.createDStabTestNet();
+		SalientPoleMachine mach = SampleDStabCase.createSalientPoleMachine(net);
 		
 		// calculate mach state init values
 		DStabBus bus = net.getDStabBus("Gen");
@@ -113,36 +112,4 @@ public class SalientPoleMachineTest extends TestSetupBase {
 		assertTrue(Math.abs(mach.getPe()-0.803) < 0.00001);
 		assertTrue(Math.abs(mach.getPm()-1.0) < 0.00001);
 	}
-	
-	public SalientPoleMachine createMachine() {
-		// create a two-bus network. Loadflow calculated
-		DStabilityNetwork net = createTestDStabBus();
-
-		// create a machine and connect to the bus "Gen"
-		SalientPoleMachine mach = (SalientPoleMachine)DStabObjectFactory.
-							createMachine("MachId", "MachName", MachineType.EQ11_SALIENT_POLE, net, "Gen");
-		DStabBus bus = net.getDStabBus("Gen");		
-		// set machine data
-		mach.setRating(100, UnitType.mVA, net.getBaseKva());
-		mach.setRatedVoltage(1000.0);
-		mach.setMultiFactors(bus);
-		mach.setH(5.0);
-		mach.setD(0.01);
-		mach.setX0(0.1);
-		mach.setX2(0.2);
-		mach.setRa(0.003);
-		mach.setXl(0.14);
-		mach.setXd(1.1);
-		mach.setXq(1.08);
-		mach.setXd1(0.23);
-		mach.setTd01(5.6);
-		mach.setXd11(0.12);
-		mach.setTq011(0.05);
-		mach.setXq11(0.15);
-		mach.setTd011(0.03);
-		mach.setSliner(2.0);  // no saturation
-		mach.setSe100(1.0);
-		mach.setSe120(1.0);		
-		return mach;
-	}	
 }
