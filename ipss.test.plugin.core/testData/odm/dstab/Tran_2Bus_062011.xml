@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <pss:pssStudyCase id="idvalue0"  schemaVersion="0.9.0"
+xmlns:ipss="http://www.interpss.org/Schema/odm/2008" 
 xmlns:pss="http://www.ieee.org/odm/Schema/2008" 
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-xsi:schemaLocation="http://www.ieee.org/odm/Schema/2008 ../../../ieee.odm_pss/schema/ODMSchema.xsd ">
+xsi:schemaLocation="http://www.ieee.org/odm/Schema/2008 ../schema/ODMSchema.xsd "
+>
 	<pss:contentInfo>
 		<pss:originalDataFormat>InterPSS</pss:originalDataFormat>
 		<pss:adapterProviderVersion>1.0</pss:adapterProviderVersion>
@@ -36,6 +38,30 @@ xsi:schemaLocation="http://www.ieee.org/odm/Schema/2008 ../../../ieee.odm_pss/sc
 								<pss:sliner>0.7</pss:sliner>
 							</pss:seFmt1>
 						</pss:eq1MachModel>
+						<pss:excSimpleType>
+							<pss:name>SimpleExe</pss:name>
+							<pss:Ka>1.0</pss:Ka>
+							<pss:Ta unit="Sec" value="0.01" />
+							<pss:Vrmax>10.0</pss:Vrmax>
+							<pss:Vrmin>-10.0</pss:Vrmin>
+						</pss:excSimpleType>
+						<pss:govSimpleType>
+							<pss:name>SimpleGov</pss:name>
+							<pss:K>1.0</pss:K>
+							<pss:T1 unit="Sec" value="0.1" />
+							<pss:Pmax>1.0</pss:Pmax>
+							<pss:Pmin>0.0</pss:Pmin>
+						</pss:govSimpleType>
+						<pss:pssSimpleType>
+							<pss:name>SimplePSS</pss:name>
+							<pss:Ks>10.0</pss:Ks>
+							<pss:T1 unit="Sec" value="0.01" />
+							<pss:T2 unit="Sec" value="0.1" />
+							<pss:T3 unit="Sec" value="0.02" />
+							<pss:T4 unit="Sec" value="0.2" />
+							<pss:Vsmax>10.0</pss:Vsmax>
+							<pss:Vsmin>-10.0</pss:Vsmin>
+						</pss:pssSimpleType>
 					</pss:dstabEquivGen>
 				</pss:genData>
                 <pss:loadData>
