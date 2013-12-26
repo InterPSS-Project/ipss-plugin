@@ -90,11 +90,7 @@ public class SimpleExciter extends AnnotateExciter {
     public SimpleExciterData getData() {
         return (SimpleExciterData)this._data;
     }
- /*   
-    @Override public Class<?> getDataClass() {
-    	return SimpleExciterData.class;
-    }
-*/    
+
     /**
      *  Init the controller states
      *

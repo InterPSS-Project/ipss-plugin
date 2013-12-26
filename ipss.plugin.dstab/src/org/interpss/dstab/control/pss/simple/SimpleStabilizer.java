@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 
 import org.interpss.dstab.control.cml.block.FilterControlBlock;
+import org.interpss.dstab.control.exc.simple.SimpleExciterData;
 import org.interpss.dstab.control.gov.simple.SimpleGovernorData;
 
 import com.hazelcast.nio.ObjectDataInput;
