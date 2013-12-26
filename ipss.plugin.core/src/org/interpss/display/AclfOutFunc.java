@@ -217,7 +217,7 @@ public class AclfOutFunc {
 		str.append(String.format("%-12s ", OutputBusId.f(bus, bus.getNetwork().getOriginalDataFormat())));
 		str.append(String.format("%-17s ", bus.code2String()));
 		str.append(String.format("%10.5f   ", bus.getVoltageMag(UnitType.PU)));
-		str.append(String.format("%9.1f   ", bus.getVoltageAng(UnitType.Deg)));
+		str.append(String.format("%9.2f   ", bus.getVoltageAng(UnitType.Deg)));
 		str.append(String.format("%10.4f", busPQ.getReal()));
 		str.append(String.format("%10.4f", busPQ.getImaginary()));
 		str.append(String.format("   %-10s ", bus.getName()));

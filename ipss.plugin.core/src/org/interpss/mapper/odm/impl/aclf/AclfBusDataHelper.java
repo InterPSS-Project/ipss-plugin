@@ -43,6 +43,11 @@ import org.ieee.odm.schema.LoadflowBusXmlType;
 import org.ieee.odm.schema.LoadflowGenDataXmlType;
 import org.ieee.odm.schema.LoadflowLoadDataXmlType;
 import org.ieee.odm.schema.PowerXmlType;
+import org.ieee.odm.schema.ReactivePowerUnitType;
+import org.ieee.odm.schema.ReactivePowerXmlType;
+import org.ieee.odm.schema.ShuntCompensatorBlockXmlType;
+import org.ieee.odm.schema.ShuntCompensatorModeEnumType;
+import org.ieee.odm.schema.ShuntCompensatorXmlType;
 import org.ieee.odm.schema.VoltageXmlType;
 import org.ieee.odm.schema.YXmlType;
 import org.interpss.numeric.datatype.LimitType;
@@ -55,6 +60,7 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.SwitchedShunt;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.adj.FunctionLoad;
 import com.interpss.core.aclf.adj.PQBusLimit;
@@ -65,6 +71,11 @@ import com.interpss.core.aclf.adpter.AclfLoadBus;
 import com.interpss.core.aclf.adpter.AclfPQGenBus;
 import com.interpss.core.aclf.adpter.AclfPVGenBus;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
+import com.interpss.core.aclf.facts.FACTSFactory;
+import com.interpss.core.aclf.facts.QBank;
+import com.interpss.core.aclf.facts.StaticVarCompensator;
+import com.interpss.core.aclf.facts.VarCompensatorControlMode;
+import com.interpss.core.aclf.impl.SwitchedShuntImpl;
 
 /**
  * Aclf bus data ODM mapping helper functions
@@ -148,6 +159,10 @@ public class AclfBusDataHelper {
 			//System.out.println("----------->" + shuntY.getIm() + ", " + shuntY.getUnit() + ", " + ypu.getImaginary());
 			aclfBus.setShuntY(ypu);
 		}
+		
+		if(xmlBusData.getShuntCompensator()!=null){
+			mapSwitchShuntData(xmlBusData.getShuntCompensator());
+		}
 	}
 	
 	private void mapGenData(BusGenDataXmlType xmlGenData) throws InterpssException {
@@ -181,8 +196,10 @@ public class AclfBusDataHelper {
 						throw new InterpssException("For Gen PV bus, equivGenData.desiredVoltage has to be defined, busId: " + aclfBus.getId());
 					double vpu = UnitHelper.vConversion(vXml.getValue(),
 						aclfBus.getBaseVoltage(), ToVoltageUnit.f(vXml.getUnit()), UnitType.PU);
-				
+				    
+					//TODO need to comment out for WECC model QA
 					pvBus.setVoltMag(vpu, UnitType.PU);
+					
 					if (xmlEquivGenData.getQLimit() != null) {
   			  			final PVBusLimit pvLimit = CoreObjectFactory.createPVBusLimit(aclfBus);
   			  			pvLimit.setQLimit(new LimitType(xmlEquivGenData.getQLimit().getMax(), 
@@ -207,6 +224,7 @@ public class AclfBusDataHelper {
 						// In order to process the info in a late stage, we need to save both aclfBus and xmlEquivGenData objects
 						AclfBus remoteBus = aclfNet.getBus(remoteId);
 	  					if (remoteBus != null) {
+	  						//TODO remoteQ control needs to be changed 
 	  	  					if (remoteBus.isGenPV())
 	  	  						remoteBus.setGenCode(AclfGenCode.GEN_PQ);
 
@@ -316,5 +334,56 @@ public class AclfBusDataHelper {
 					loadBus.setLoad(new Complex(p.getRe(), p.getIm()), ToApparentPowerUnit.f(p.getUnit()));				
 			}
 		}
+	}
+	
+	
+	private void mapSwitchShuntData(ShuntCompensatorXmlType xmlSwitchedShuntData){
+		//TODO 
+		SwitchedShunt swchShunt = new SwitchedShuntImpl();
+		//swithced shunt is a also a AclfControlBus
+		this.aclfBus.setBusControl(swchShunt);
+		
+		ReactivePowerXmlType binit = xmlSwitchedShuntData.getBInit();
+		
+		//cacluate the factor to convert binit to pu based.
+		double factor = binit.getUnit()==ReactivePowerUnitType.PU?1.0:
+			             binit.getUnit()==ReactivePowerUnitType.MVAR?0.01:
+			            	 binit.getUnit()==ReactivePowerUnitType.KVAR?1.0E-5:
+			            		 1.0E-8; // VAR->1.0E-8 with a 100 MVA base
+		
+		swchShunt.setBInit(binit.getValue()*factor);
+		
+		VarCompensatorControlMode mode = xmlSwitchedShuntData.getMode()==ShuntCompensatorModeEnumType.CONTINUOUS?
+				VarCompensatorControlMode.CONTINUOUS:xmlSwitchedShuntData.getMode()==ShuntCompensatorModeEnumType.DISCRETE?
+				VarCompensatorControlMode.DISCRETE:VarCompensatorControlMode.FIXED;
+		
+		swchShunt.setControlMode(mode);
+		
+		LimitType vLimit = new LimitType(xmlSwitchedShuntData.getDesiredVoltageRange().getMax(),
+				xmlSwitchedShuntData.getDesiredVoltageRange().getMin());
+		
+		for(ShuntCompensatorBlockXmlType varBankXml:xmlSwitchedShuntData.getBlock()){
+			QBank varBank= FACTSFactory.eINSTANCE.createQBank();
+			swchShunt.getVarBankArray().add(varBank);
+			
+			varBank.setSteps(varBankXml.getSteps());
+			ReactivePowerXmlType unitVarXml = varBankXml.getIncrementB();
+			
+			factor = unitVarXml.getUnit()==ReactivePowerUnitType.PU?1.0:
+				unitVarXml.getUnit()==ReactivePowerUnitType.MVAR?1.0E-2:
+					unitVarXml.getUnit()==ReactivePowerUnitType.KVAR?1.0E-5:
+	            		 1.0E-8; 
+			//TODO UnitQMVar is in pu
+			varBank.setUnitQMvar(unitVarXml.getValue()*factor);
+			
+		}
+						
+						
+						
+						
+						
+						
+						
+		
 	}
 }
