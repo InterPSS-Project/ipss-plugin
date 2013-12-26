@@ -28,8 +28,6 @@ import org.interpss.datamodel.bean.BaseJSONBean;
 import org.interpss.datamodel.bean.datatype.ComplexBean;
 import org.interpss.numeric.util.NumericUtil;
 
-import com.interpss.common.util.IpssLogger;
-
 /**
  * Bean class for storing AclfBranch result info
  * 

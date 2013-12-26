@@ -117,6 +117,7 @@ public class BaseAclfNetBean<TBus extends AclfBusBean, TBra extends AclfBranchBe
 		return null;
 	}
 
+	@Override
 	public boolean validate(List<String> msgList) {
 		boolean noErr = super.validate(msgList);
 		

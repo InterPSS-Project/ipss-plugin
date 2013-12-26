@@ -120,6 +120,7 @@ public abstract class BaseJSONBean implements Comparable<BaseJSONBean> {
 			msgList.add(msg);
 	}
 	
+	@Override
 	public String toString() {
 		return new Gson().toJson(this);
 	}

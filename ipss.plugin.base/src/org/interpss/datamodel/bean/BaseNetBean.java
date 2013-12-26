@@ -28,8 +28,6 @@ import java.util.List;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
 
-import com.interpss.common.util.IpssLogger;
-
 /**
  * Base Network Bean class
  * 
