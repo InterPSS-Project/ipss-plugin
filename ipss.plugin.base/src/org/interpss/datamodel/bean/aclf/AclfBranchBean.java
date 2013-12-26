@@ -29,8 +29,6 @@ import org.interpss.datamodel.bean.BaseBranchBean;
 import org.interpss.datamodel.bean.BaseJSONBean;
 import org.interpss.datamodel.bean.datatype.BranchValueBean;
 
-import com.interpss.common.util.IpssLogger;
-
 /**
  * Bean class for storing AclfBranch object info
  * 
@@ -62,5 +60,6 @@ public class AclfBranchBean extends BaseBranchBean {
 		return eql;
 	}	
 	
+	@Override
 	public boolean validate(List<String> msgList) { return true; }
 }

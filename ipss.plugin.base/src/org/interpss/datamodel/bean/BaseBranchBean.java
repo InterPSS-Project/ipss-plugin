@@ -28,8 +28,6 @@ import java.util.List;
 import org.interpss.datamodel.bean.datatype.ComplexBean;
 import org.interpss.numeric.util.NumericUtil;
 
-import com.interpss.common.util.IpssLogger;
-
 /**
  * Base Branch Bean class
  * 
