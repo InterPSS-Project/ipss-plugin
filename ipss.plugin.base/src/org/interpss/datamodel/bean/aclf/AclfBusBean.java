@@ -28,8 +28,6 @@ import java.util.List;
 import org.interpss.datamodel.bean.BaseBusBean;
 import org.interpss.datamodel.bean.BaseJSONBean;
 
-import com.interpss.common.util.IpssLogger;
-
 /**
  * Bean class for storing AclfBus info
  * 

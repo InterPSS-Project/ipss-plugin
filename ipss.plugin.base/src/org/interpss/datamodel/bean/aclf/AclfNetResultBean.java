@@ -28,8 +28,6 @@ import org.interpss.datamodel.bean.BaseJSONBean;
 import org.interpss.datamodel.bean.datatype.ComplexBean;
 import org.interpss.datamodel.bean.datatype.MismatchResultBean;
 
-import com.interpss.common.util.IpssLogger;
-
 /**
  * Bean class for storing AclfNetwork result info
  * 
