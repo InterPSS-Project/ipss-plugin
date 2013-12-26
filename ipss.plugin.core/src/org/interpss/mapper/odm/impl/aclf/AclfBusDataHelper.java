@@ -339,7 +339,7 @@ public class AclfBusDataHelper {
 	
 	private void mapSwitchShuntData(ShuntCompensatorXmlType xmlSwitchedShuntData){
 		//TODO 
-		SwitchedShunt swchShunt = new SwitchedShuntImpl();
+		SwitchedShunt swchShunt = CoreObjectFactory.createSwitchedShunt();
 		//swithced shunt is a also a AclfControlBus
 		this.aclfBus.setBusControl(swchShunt);
 		
