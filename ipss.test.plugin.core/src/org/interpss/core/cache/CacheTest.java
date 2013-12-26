@@ -70,6 +70,10 @@ import com.interpss.dstab.mach.SalientPoleMachine;
 import com.interpss.dstab.util.sample.SampleDStabCase;
 import com.interpss.simu.util.sample.SampleCases;
 
+/*
+ * Please note: start the TestCacheServer before running this test case. 
+ */
+
 public class CacheTest extends CorePluginTestSetup {
 	HazelcastInstance client;
 	
