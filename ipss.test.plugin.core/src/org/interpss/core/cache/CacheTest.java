@@ -27,6 +27,8 @@ package org.interpss.core.cache;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Collection;
+
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginObjFactory;
 import org.interpss.CorePluginTestSetup;
@@ -41,7 +43,9 @@ import org.junit.Test;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.query.SqlPredicate;
 import com.interpss.CoreObjectFactory;
+import com.interpss.cache.AbstractNetCacheWrapper;
 import com.interpss.cache.UgidGenerator;
 import com.interpss.cache.aclf.AclfNetCacheWrapper;
 import com.interpss.cache.acsc.AcscNetCacheWrapper;
@@ -84,6 +88,26 @@ public class CacheTest extends CorePluginTestSetup {
 		clientConfig.addAddress("127.0.0.1");
 		client = HazelcastClient.newHazelcastClient(clientConfig);
 		UgidGenerator.IdGenerator = client.getIdGenerator("GuidGenerator");		
+	}
+
+	///////////////////////////////////////////////////////////////////
+	////          Use NetId Test                         //////////////
+	///////////////////////////////////////////////////////////////////
+
+	@Test
+	public void netIdTest() throws IpssCacheException {
+  		AclfNetwork net = CoreObjectFactory.createAclfNetwork();
+		SampleCases.load_LF_5BusSystem(net);
+		//System.out.println(net.net2String());
+
+		AclfNetCacheWrapper cache = new AclfNetCacheWrapper(client);
+		String netId = "netId1";
+		cache.put(net, netId);
+		
+		SqlPredicate predicate = new SqlPredicate("netId = '" + netId + "'");
+		Collection<Object> list = client.getMap(AbstractNetCacheWrapper.MN_AclfNet).values(predicate);
+		//System.out.println("size: " + list.size());
+		assertTrue(list.size() > 0);
 	}
 	
 	///////////////////////////////////////////////////////////////////
