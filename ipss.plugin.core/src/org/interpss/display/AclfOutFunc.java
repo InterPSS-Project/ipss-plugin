@@ -345,7 +345,7 @@ public class AclfOutFunc {
 					(bus.getVoltageMag() > max || bus.getVoltageMag() < min))
 				buf.append(String.format("     %12s  %6d  %6d  %8.4f    %8s    %8s\n", 
 						bus.getId(), bus.getArea().getNumber(), bus.getZone().getNumber(),
-						bus.getVoltageMag(), bus.getGenCodeBaseCase(), bus.getGenCode()));
+						bus.getVoltageMag(), "BaseGenCode", bus.getGenCode()));
   		}		
 		
 		buf.append("\n\nLF Assistance Gen List\nAreaNo,  ZoneNo,  GenNo\n");
@@ -355,7 +355,7 @@ public class AclfOutFunc {
 				AclfBus bus = (AclfBus)b;
 				if (bus.isActive() &&
 						(bus.getVoltageMag() > max || bus.getVoltageMag() < min) &&
-						(bus.getGenCodeBaseCase() ==  AclfGenCode.GEN_PV && !bus.isGen())) {
+						(/*bus.getGenCodeBaseCase() ==  AclfGenCode.GEN_PV &&*/ !bus.isGen())) {
 					buf.append(String.format("%d,  %d,  %s, ", 
 							bus.getArea().getNumber(), bus.getZone().getNumber(), bus.getId().substring(3)));
 					buf.append(" voltage, QLimit: " + 
