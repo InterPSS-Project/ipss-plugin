@@ -64,18 +64,18 @@ import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.adj.FunctionLoad;
 import com.interpss.core.aclf.adj.PQBusLimit;
 import com.interpss.core.aclf.adj.PVBusLimit;
+import com.interpss.core.aclf.adj.QBank;
 import com.interpss.core.aclf.adj.RemoteQBus;
 import com.interpss.core.aclf.adj.RemoteQControlType;
 import com.interpss.core.aclf.adj.SwitchedShunt;
+import com.interpss.core.aclf.adj.VarCompensatorControlMode;
 import com.interpss.core.aclf.adj.impl.SwitchedShuntImpl;
 import com.interpss.core.aclf.adpter.AclfLoadBus;
 import com.interpss.core.aclf.adpter.AclfPQGenBus;
 import com.interpss.core.aclf.adpter.AclfPVGenBus;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
 import com.interpss.core.aclf.facts.FACTSFactory;
-import com.interpss.core.aclf.facts.QBank;
 import com.interpss.core.aclf.facts.StaticVarCompensator;
-import com.interpss.core.aclf.facts.VarCompensatorControlMode;
 
 /**
  * Aclf bus data ODM mapping helper functions
@@ -363,7 +363,7 @@ public class AclfBusDataHelper {
 				xmlSwitchedShuntData.getDesiredVoltageRange().getMin());
 		
 		for(ShuntCompensatorBlockXmlType varBankXml:xmlSwitchedShuntData.getBlock()){
-			QBank varBank= FACTSFactory.eINSTANCE.createQBank();
+			QBank varBank= CoreObjectFactory.createQBank();
 			swchShunt.getVarBankArray().add(varBank);
 			
 			varBank.setSteps(varBankXml.getSteps());
