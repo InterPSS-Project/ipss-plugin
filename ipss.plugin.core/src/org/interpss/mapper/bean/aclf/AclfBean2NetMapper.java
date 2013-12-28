@@ -170,8 +170,7 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 					(busBean.load_code==AclfBusBean.LoadCode.ConstZ? AclfLoadCode.CONST_Z : 
 						AclfLoadCode.NON_LOAD)));
 			if (busBean.load != null) {
-				bus.setLoadP(busBean.load.re);
-				bus.setLoadQ(busBean.load.im);
+				bus.setLoad(new Complex(busBean.load.re, busBean.load.im));
 			}
 		}
 		

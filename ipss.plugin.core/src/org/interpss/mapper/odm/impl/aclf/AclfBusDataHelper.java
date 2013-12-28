@@ -248,9 +248,11 @@ public class AclfBusDataHelper {
 					ToAngleUnit.f(angXml.getUnit()), UnitType.Rad);				
 			swing.setVoltMag(vpu, UnitType.PU);
 			swing.setVoltAng(angRad, UnitType.Rad);		
-			if (xmlEquivGenData.getPower() != null) 
-				swing.setGenP(xmlEquivGenData.getPower().getRe(),
-						ToApparentPowerUnit.f(xmlEquivGenData.getPower().getUnit()));
+			if (xmlEquivGenData.getPower() != null) {
+				double pPU = UnitHelper.pConversion(xmlEquivGenData.getPower().getRe(), aclfNet.getBaseKva(), 
+						ToApparentPowerUnit.f(xmlEquivGenData.getPower().getUnit()), UnitType.PU);
+				swing.getBus().setGenP(pPU);
+			}
 		} else {
 			aclfBus.setGenCode(AclfGenCode.NON_GEN);
 		}
