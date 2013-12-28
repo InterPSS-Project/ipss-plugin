@@ -401,7 +401,7 @@ public class IpssAclfNet extends BaseDSL {
   		public TAclfDSL setVoltageSpec(double vmsg, UnitType magUnit, double vang, UnitType degUnit) {
   	  						if (getAclfBus().getGenCode() == AclfGenCode.SWING) {
   	  							AclfSwingBus swingBus = SwingBusAptr.f(getAclfBus());
-  	  							swingBus.setVoltMag(vmsg, magUnit);	swingBus.setVoltAng(vang, degUnit);	
+  	  							swingBus.setDesiredVoltMag(vmsg, magUnit);	swingBus.setDesiredVoltAng(vang, degUnit);	
   	  						} return (TAclfDSL)this;	}
   		public TAclfDSL genP_vMag(double p, UnitType punit, double v, UnitType vunit) { return setGenP_VMag(p, punit, v, vunit); }
 		@SuppressWarnings(value="unchecked")
@@ -409,7 +409,7 @@ public class IpssAclfNet extends BaseDSL {
   	  						if (getAclfBus().getGenCode() == AclfGenCode.GEN_PV) {
   	  							AclfPVGenBus pv = getAclfBus().toPVBus();
   	  							pv.setGenP(p, punit);
-  	  							pv.setVoltMag( v, vunit );
+  	  							pv.setDesiredVoltMag( v, vunit );
   	  						} return (TAclfDSL)this;		}
   		public TAclfDSL gen(Complex gen, UnitType unit) { return setGen(gen, unit); }
 		@SuppressWarnings(value="unchecked")
