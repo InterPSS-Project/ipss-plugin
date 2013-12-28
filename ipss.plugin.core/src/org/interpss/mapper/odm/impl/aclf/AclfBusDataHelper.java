@@ -198,7 +198,7 @@ public class AclfBusDataHelper {
 						aclfBus.getBaseVoltage(), ToVoltageUnit.f(vXml.getUnit()), UnitType.PU);
 				    
 					//TODO need to comment out for WECC model QA
-					pvBus.setVoltMag(vpu, UnitType.PU);
+					pvBus.setDesiredVoltMag(vpu, UnitType.PU);
 					
 					if (xmlEquivGenData.getQLimit() != null) {
   			  			final PVBusLimit pvLimit = CoreObjectFactory.createPVBusLimit(aclfBus);
@@ -246,8 +246,8 @@ public class AclfBusDataHelper {
 			AngleXmlType angXml = xmlGenData.getEquivGen().getValue().getDesiredAngle(); 
 			double angRad = UnitHelper.angleConversion(angXml.getValue(),
 					ToAngleUnit.f(angXml.getUnit()), UnitType.Rad);				
-			swing.setVoltMag(vpu, UnitType.PU);
-			swing.setVoltAng(angRad, UnitType.Rad);		
+			swing.setDesiredVoltMag(vpu, UnitType.PU);
+			swing.setDesiredVoltAng(angRad, UnitType.Rad);		
 			if (xmlEquivGenData.getPower() != null) {
 				double pPU = UnitHelper.pConversion(xmlEquivGenData.getPower().getRe(), aclfNet.getBaseKva(), 
 						ToApparentPowerUnit.f(xmlEquivGenData.getPower().getUnit()), UnitType.PU);
