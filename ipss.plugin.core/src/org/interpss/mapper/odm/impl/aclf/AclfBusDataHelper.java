@@ -271,26 +271,38 @@ public class AclfBusDataHelper {
 				if(elem!=null){
 					
 				LoadflowGenDataXmlType xmlGen= elem.getValue();
+				
 				//Map load flow generator data
 				AclfGen gen= CoreObjectFactory.createAclfGen();
 				gen.setId(xmlGen.getId());
 				
+				gen.setStatus(!xmlGen.isOffLine());
+				/*
 				double Mva =xmlGen.getMvaBase().getValue();
 				double MvaFactor = xmlGen.getMvaBase().getUnit()==ApparentPowerUnitType.MVA?1.0:
 					    xmlGen.getMvaBase().getUnit()==ApparentPowerUnitType.KVA?1.0E-3:
 						xmlGen.getMvaBase().getUnit()==ApparentPowerUnitType.VA?1.0E-6:
 							100.0; //PU, assuming 100 MVA Base
-				gen.setMvaBase(Mva*MvaFactor);
+				*/
+				gen.setMvaBase(UnitHelper.pConversion(xmlGen.getMvaBase().getValue(), 
+						baseKva, ToApparentPowerUnit.f(xmlGen.getMvaBase().getUnit()), UnitType.mVA ));
+				
+				gen.setDesiredVoltMag(UnitHelper.vConversion(xmlGen.getDesiredVoltage().getValue(),
+						aclfBus.getBaseVoltage(), ToVoltageUnit.f(xmlGen.getDesiredVoltage().getUnit()), UnitType.PU));
 				
 				PowerXmlType genPower = xmlGen.getPower();
+				
 				Complex genPQ= new Complex(genPower.getRe(),genPower.getIm());
+				/*
 				double genFactor = genPower.getUnit()==ApparentPowerUnitType.MVA?1.0E-2:
 							genPower.getUnit()==ApparentPowerUnitType.KVA?1.0E-5:
 								genPower.getUnit()==ApparentPowerUnitType.VA?1.0E-8:
 								1.0; //PU, assuming 100 MVA Base
+				*/
 				
-				//AclfGen power is defined in pu, 100 MVA-based
-				gen.setGen(genPQ.multiply(genFactor));
+				//AclfGen power is defined in pu, system MVA-based
+				gen.setGen(UnitHelper.pConversion(genPQ, 
+						baseKva, ToApparentPowerUnit.f(xmlGen.getPower().getUnit()), UnitType.PU ));
 				
 				if(xmlGen.getSourceZ()!=null)
 				gen.setSourceZ(new Complex(xmlGen.getSourceZ().getRe(),xmlGen.getSourceZ().getIm()));
