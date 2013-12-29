@@ -194,7 +194,7 @@ public class AclfBusDataHelper {
 						aclfBus.getBaseVoltage(), ToVoltageUnit.f(vXml.getUnit()), UnitType.PU);
 				    
 					//TODO need to comment out for WECC model QA
-					pvBus.setVoltMag(vpu, UnitType.PU);
+					pvBus.setDesiredVoltMag(vpu, UnitType.PU);
 					
 					if (xmlEquivGenData.getQLimit() != null) {
   			  			final PVBusLimit pvLimit = CoreObjectFactory.createPVBusLimit(aclfBus);
@@ -242,11 +242,13 @@ public class AclfBusDataHelper {
 			AngleXmlType angXml = xmlGenData.getEquivGen().getValue().getDesiredAngle(); 
 			double angRad = UnitHelper.angleConversion(angXml.getValue(),
 					ToAngleUnit.f(angXml.getUnit()), UnitType.Rad);				
-			swing.setVoltMag(vpu, UnitType.PU);
-			swing.setVoltAng(angRad, UnitType.Rad);		
-			if (xmlEquivGenData.getPower() != null) 
-				swing.setGenP(xmlEquivGenData.getPower().getRe(),
-						ToApparentPowerUnit.f(xmlEquivGenData.getPower().getUnit()));
+			swing.setDesiredVoltMag(vpu, UnitType.PU);
+			swing.setDesiredVoltAng(angRad, UnitType.Rad);		
+			if (xmlEquivGenData.getPower() != null) {
+				double pPU = UnitHelper.pConversion(xmlEquivGenData.getPower().getRe(), aclfNet.getBaseKva(), 
+						ToApparentPowerUnit.f(xmlEquivGenData.getPower().getUnit()), UnitType.PU);
+				swing.getBus().setGenP(pPU);
+			}
 		} else {
 			aclfBus.setGenCode(AclfGenCode.NON_GEN);
 		}
@@ -341,45 +343,39 @@ public class AclfBusDataHelper {
 		
 		ReactivePowerXmlType binit = xmlSwitchedShuntData.getBInit();
 		
-		//cacluate the factor to convert binit to pu based.
-		double factor = binit.getUnit()==ReactivePowerUnitType.PU?1.0:
-			             binit.getUnit()==ReactivePowerUnitType.MVAR?0.01:
-			            	 binit.getUnit()==ReactivePowerUnitType.KVAR?1.0E-5:
-			            		 1.0E-8; // VAR->1.0E-8 with a 100 MVA base
-		
-		swchShunt.setBInit(binit.getValue()*factor);
-		
-		VarCompensatorControlMode mode = xmlSwitchedShuntData.getMode()==ShuntCompensatorModeEnumType.CONTINUOUS?
-				VarCompensatorControlMode.CONTINUOUS:xmlSwitchedShuntData.getMode()==ShuntCompensatorModeEnumType.DISCRETE?
-				VarCompensatorControlMode.DISCRETE:VarCompensatorControlMode.FIXED;
-		
-		swchShunt.setControlMode(mode);
-		
-		LimitType vLimit = new LimitType(xmlSwitchedShuntData.getDesiredVoltageRange().getMax(),
-				xmlSwitchedShuntData.getDesiredVoltageRange().getMin());
-		
-		for(ShuntCompensatorBlockXmlType varBankXml:xmlSwitchedShuntData.getBlock()){
-			QBank varBank= CoreObjectFactory.createQBank();
-			swchShunt.getVarBankArray().add(varBank);
+		if (binit != null) {
+			//cacluate the factor to convert binit to pu based.
+			double factor = binit.getUnit()==ReactivePowerUnitType.PU?1.0:
+				             binit.getUnit()==ReactivePowerUnitType.MVAR?0.01:
+				            	 binit.getUnit()==ReactivePowerUnitType.KVAR?1.0E-5:
+				            		 1.0E-8; // VAR->1.0E-8 with a 100 MVA base
 			
-			varBank.setSteps(varBankXml.getSteps());
-			ReactivePowerXmlType unitVarXml = varBankXml.getIncrementB();
+			swchShunt.setBInit(binit.getValue()*factor);
+
+			VarCompensatorControlMode mode = xmlSwitchedShuntData.getMode()==ShuntCompensatorModeEnumType.CONTINUOUS?
+					VarCompensatorControlMode.CONTINUOUS:xmlSwitchedShuntData.getMode()==ShuntCompensatorModeEnumType.DISCRETE?
+					VarCompensatorControlMode.DISCRETE:VarCompensatorControlMode.FIXED;
 			
-			factor = unitVarXml.getUnit()==ReactivePowerUnitType.PU?1.0:
-				unitVarXml.getUnit()==ReactivePowerUnitType.MVAR?1.0E-2:
-					unitVarXml.getUnit()==ReactivePowerUnitType.KVAR?1.0E-5:
-	            		 1.0E-8; 
-			//TODO UnitQMVar is in pu
-			varBank.setUnitQMvar(unitVarXml.getValue()*factor);
+			swchShunt.setControlMode(mode);
 			
+			LimitType vLimit = new LimitType(xmlSwitchedShuntData.getDesiredVoltageRange().getMax(),
+					xmlSwitchedShuntData.getDesiredVoltageRange().getMin());
+			
+			for(ShuntCompensatorBlockXmlType varBankXml:xmlSwitchedShuntData.getBlock()){
+				QBank varBank= CoreObjectFactory.createQBank();
+				swchShunt.getVarBankArray().add(varBank);
+				
+				varBank.setSteps(varBankXml.getSteps());
+				ReactivePowerXmlType unitVarXml = varBankXml.getIncrementB();
+				
+				factor = unitVarXml.getUnit()==ReactivePowerUnitType.PU?1.0:
+					unitVarXml.getUnit()==ReactivePowerUnitType.MVAR?1.0E-2:
+						unitVarXml.getUnit()==ReactivePowerUnitType.KVAR?1.0E-5:
+		            		 1.0E-8; 
+				//TODO UnitQMVar is in pu
+				varBank.setUnitQMvar(unitVarXml.getValue()*factor);
+				
+			}
 		}
-						
-						
-						
-						
-						
-						
-						
-		
 	}
 }

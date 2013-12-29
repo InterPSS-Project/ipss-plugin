@@ -257,8 +257,8 @@ public class IpssInternalFormat_in {
       	if (bus != null ) {
         	bus.setGenCode(AclfGenCode.SWING);
 			final AclfSwingBus swing = bus.toSwingBus();
-    		swing.setVoltMag(bus.getVoltageMag(), UnitType.PU);
-    		swing.setVoltAng(bus.getVoltageAng(UnitType.Rad), UnitType.Rad);
+    		swing.setDesiredVoltMag(bus.getVoltageMag(), UnitType.PU);
+    		swing.setDesiredVoltAng(bus.getVoltageAng(UnitType.Rad), UnitType.Rad);
       	} else {
 			throw new InterpssRuntimeException("AclfDataFile.loadSwingBusInfo_2, Swing bus:" + id + " is not in the system" );
 		}
@@ -287,7 +287,7 @@ public class IpssInternalFormat_in {
       		pvLimit.setQLimit(new LimitType(qmax,qmin), UnitType.mVA);
       		pvLimit.setStatus(true);
 			final AclfPVGenBus pv = bus.toPVBus();
-        	pv.setVoltMag(pvLimit.getVSpecified(UnitType.PU), UnitType.PU);
+        	pv.setDesiredVoltMag(pvLimit.getVSpecified(UnitType.PU), UnitType.PU);
       	} else {
       		ipssLogger.info(str);
 			throw new InterpssRuntimeException("AclfDataFile.loadPVBusInfo_2, PV bus:" + id + " is not in the system" );
