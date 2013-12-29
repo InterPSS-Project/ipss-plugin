@@ -27,7 +27,6 @@ package org.interpss.mapper.odm.impl.aclf;
 import org.ieee.odm.schema.XformerZTableXmlType;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 
 /**
  * Xfr Z Table correction helper
