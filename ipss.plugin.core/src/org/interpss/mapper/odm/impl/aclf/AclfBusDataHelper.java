@@ -29,8 +29,11 @@ import static org.interpss.mapper.odm.ODMFunction.BusXmlRef2BusId;
 import static org.interpss.mapper.odm.ODMUnitHelper.ToAngleUnit;
 import static org.interpss.mapper.odm.ODMUnitHelper.ToApparentPowerUnit;
 import static org.interpss.mapper.odm.ODMUnitHelper.ToReactivePowerUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.ToActivePowerUnit;
 import static org.interpss.mapper.odm.ODMUnitHelper.ToVoltageUnit;
 import static org.interpss.mapper.odm.ODMUnitHelper.ToYUnit;
+
+import javax.xml.bind.JAXBElement;
 
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.schema.AngleXmlType;
@@ -57,9 +60,9 @@ import com.interpss.CoreObjectFactory;
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBus;
+import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
-import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.adj.FunctionLoad;
 import com.interpss.core.aclf.adj.PQBusLimit;
@@ -69,13 +72,10 @@ import com.interpss.core.aclf.adj.RemoteQBus;
 import com.interpss.core.aclf.adj.RemoteQControlType;
 import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.adj.VarCompensatorControlMode;
-import com.interpss.core.aclf.adj.impl.SwitchedShuntImpl;
 import com.interpss.core.aclf.adpter.AclfLoadBus;
 import com.interpss.core.aclf.adpter.AclfPQGenBus;
 import com.interpss.core.aclf.adpter.AclfPVGenBus;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
-import com.interpss.core.aclf.facts.FACTSFactory;
-import com.interpss.core.aclf.facts.StaticVarCompensator;
 
 /**
  * Aclf bus data ODM mapping helper functions
@@ -259,6 +259,78 @@ public class AclfBusDataHelper {
 		
 		if (xmlEquivGenData.getMwControlParticipateFactor() != null)
 			aclfBus.setGenPartFactor(xmlEquivGenData.getMwControlParticipateFactor());
+		
+		//map contributing generator data 
+		mapContributeGenListData(xmlGenData);
+	}
+	
+	private void mapContributeGenListData(BusGenDataXmlType xmlGenData) throws InterpssException{
+		double baseKva = aclfBus.getNetwork().getBaseKva();
+		if(xmlGenData.getContributeGen()!=null){
+			for(JAXBElement<? extends LoadflowGenDataXmlType> elem :xmlGenData.getContributeGen()){
+				if(elem!=null){
+					
+				LoadflowGenDataXmlType xmlGen= elem.getValue();
+				//Map load flow generator data
+				AclfGen gen= CoreObjectFactory.createAclfGen();
+				gen.setId(xmlGen.getId());
+				
+				double Mva =xmlGen.getMvaBase().getValue();
+				double MvaFactor = xmlGen.getMvaBase().getUnit()==ApparentPowerUnitType.MVA?1.0:
+					    xmlGen.getMvaBase().getUnit()==ApparentPowerUnitType.KVA?1.0E-3:
+						xmlGen.getMvaBase().getUnit()==ApparentPowerUnitType.VA?1.0E-6:
+							100.0; //PU, assuming 100 MVA Base
+				gen.setMvaBase(Mva*MvaFactor);
+				
+				PowerXmlType genPower = xmlGen.getPower();
+				Complex genPQ= new Complex(genPower.getRe(),genPower.getIm());
+				double genFactor = genPower.getUnit()==ApparentPowerUnitType.MVA?1.0E-2:
+							genPower.getUnit()==ApparentPowerUnitType.KVA?1.0E-5:
+								genPower.getUnit()==ApparentPowerUnitType.VA?1.0E-8:
+								1.0; //PU, assuming 100 MVA Base
+				
+				//AclfGen power is defined in pu, 100 MVA-based
+				gen.setGen(genPQ.multiply(genFactor));
+				
+				if(xmlGen.getSourceZ()!=null)
+				gen.setSourceZ(new Complex(xmlGen.getSourceZ().getRe(),xmlGen.getSourceZ().getIm()));
+				
+				// generator step-up transformer: z = 0, Tap =1.0 by default, which means
+				// the transformer is modeled separately.
+				if(xmlGen.getXfrZ()!=null){
+				  if(xmlGen.getXfrZ().getIm()!=0 ||xmlGen.getXfrZ().getRe()!=0){
+				      gen.setXfrZ(new Complex(xmlGen.getXfrZ().getRe(),xmlGen.getXfrZ().getIm()));
+				      gen.setXfrTap(xmlGen.getXfrTap());
+			        }
+				}
+				//AclfGen active power limit is defined in pu, system MVA-based
+				if(xmlGen.getPLimit()!=null)
+				gen.setPGenLimit(UnitHelper.pConversion( new LimitType(xmlGen.getPLimit().getMax(),xmlGen.getPLimit().getMin()), 
+						baseKva, ToActivePowerUnit.f(xmlGen.getPLimit().getUnit()), UnitType.PU ));
+				
+				//AclfGen reactive power limit
+				if(xmlGen.getQLimit()!=null)
+				gen.setQGenLimit(UnitHelper.pConversion( new LimitType(xmlGen.getQLimit().getMax(),xmlGen.getQLimit().getMin()), 
+						baseKva, ToReactivePowerUnit.f(xmlGen.getQLimit().getUnit()), UnitType.PU ));
+				
+				if(xmlGen.getRemoteVoltageControlBus()!=null){
+				String remoteId = BusXmlRef2BusId.fx(xmlGen.getRemoteVoltageControlBus());
+				gen.setRemoteVControlBusId(remoteId);
+				}
+				
+				
+				gen.setMvarControlPFactor(xmlGen.getMvarVControlParticipateFactor());
+				
+				//MW pf is optional
+				if(xmlGen.getMwControlParticipateFactor()!=0)
+				gen.setMwControlPFactor(xmlGen.getMwControlParticipateFactor());
+				
+				//add the generator to the bus GenList
+				aclfBus.getGenList().add(gen);
+				
+				}
+			}
+		}
 	}
 	
 	private void mapLoadData(BusLoadDataXmlType xmlLoadData) throws InterpssException {
@@ -364,7 +436,8 @@ public class AclfBusDataHelper {
 			
 			LimitType vLimit = new LimitType(xmlSwitchedShuntData.getDesiredVoltageRange().getMax(),
 					xmlSwitchedShuntData.getDesiredVoltageRange().getMin());
-			
+			//TODO vLimit is missing
+			//swchShunt.set
 			for(ShuntCompensatorBlockXmlType varBankXml:xmlSwitchedShuntData.getBlock()){
 				QBank varBank= CoreObjectFactory.createQBank();
 				swchShunt.getVarBankArray().add(varBank);

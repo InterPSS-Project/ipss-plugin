@@ -17,7 +17,6 @@ import org.interpss.numeric.datatype.LimitType;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.hvdc.ConverterType;
 import com.interpss.core.aclf.hvdc.HvdcControlMode;
-import com.interpss.core.aclf.hvdc.HvdcLine2T;
 import com.interpss.core.aclf.hvdc.HvdcLine2TCCC;
 import com.interpss.core.aclf.hvdc.Inverter;
 import com.interpss.core.aclf.hvdc.Rectifier;
