@@ -287,7 +287,8 @@ public class AclfBusDataHelper {
 				gen.setMvaBase(UnitHelper.pConversion(xmlGen.getMvaBase().getValue(), 
 						baseKva, ToApparentPowerUnit.f(xmlGen.getMvaBase().getUnit()), UnitType.mVA ));
 				
-				gen.setDesiredVoltMag(UnitHelper.vConversion(xmlGen.getDesiredVoltage().getValue(),
+				if (xmlGen.getDesiredVoltage() != null)
+					gen.setDesiredVoltMag(UnitHelper.vConversion(xmlGen.getDesiredVoltage().getValue(),
 						aclfBus.getBaseVoltage(), ToVoltageUnit.f(xmlGen.getDesiredVoltage().getUnit()), UnitType.PU));
 				
 				PowerXmlType genPower = xmlGen.getPower();
@@ -312,7 +313,7 @@ public class AclfBusDataHelper {
 				if(xmlGen.getXfrZ()!=null){
 				  if(xmlGen.getXfrZ().getIm()!=0 ||xmlGen.getXfrZ().getRe()!=0){
 				      gen.setXfrZ(new Complex(xmlGen.getXfrZ().getRe(),xmlGen.getXfrZ().getIm()));
-				      gen.setXfrTap(xmlGen.getXfrTap());
+				      gen.setXfrTap(xmlGen.getXfrTap() != null? xmlGen.getXfrTap() : 1.0);
 			        }
 				}
 				//AclfGen active power limit is defined in pu, system MVA-based
