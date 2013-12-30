@@ -334,7 +334,7 @@ public class AclfBusDataHelper {
 				gen.setMvarControlPFactor(xmlGen.getMvarVControlParticipateFactor());
 				
 				//MW pf is optional
-				if(xmlGen.getMwControlParticipateFactor()!=0)
+				if(xmlGen.getMwControlParticipateFactor()!=null)
 				gen.setMwControlPFactor(xmlGen.getMwControlParticipateFactor());
 				
 				//add the generator to the bus GenList
