@@ -38,7 +38,11 @@ public class IEEE9_MultiGenTest extends CorePluginTestSetup{
 		
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
-  	
+	  	
+  	    /*-------------------------
+  	     *       base case
+  	     *------------------------
+  	     */
 	  	assertTrue(net.isLfConverged());
  		System.out.println(AclfOutFunc.loadFlowSummary(net));
  		//System.out.println(AclfOut_PSSE.lfResults(net, Format.GUI));
@@ -46,7 +50,22 @@ public class IEEE9_MultiGenTest extends CorePluginTestSetup{
  		System.out.println(gen1_PQ);
  		assertTrue(NumericUtil.equals(gen1_PQ,new Complex(0.425,-0.054617),1.0E-4));
 	  	
-  		
+ 		//test the getGenP
+ 		assertTrue(net.getBus("Bus3").getGenP()==0.850);
+ 		
+ 		/*------------------------------------
+  	     *       case -2: Gen-1 at bus3 is out of service
+  	     *------------------------------------
+ 		 */
+ 		net.getBus("Bus3").getGenList().get(0).setStatus(false);
+ 		algo.loadflow();
+ 	  	
+	  	assertTrue(net.isLfConverged());
+ 		System.out.println(AclfOutFunc.loadFlowSummary(net));
+ 		
+ 		//test the getGenP
+ 		assertTrue(net.getBus("Bus3").getGenP()==0.425);
+ 		
 	}
 
 }
