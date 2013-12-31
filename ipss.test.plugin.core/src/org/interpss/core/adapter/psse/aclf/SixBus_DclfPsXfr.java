@@ -95,7 +95,7 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
 		DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net);
 		algo.calculateDclf();
 
-		System.out.println(DclfOutFunc.dclfResults(algo, false));
+		//System.out.println(DclfOutFunc.dclfResults(algo, false));
   		assertTrue(Math.abs(algo.getBusPower(net.getBus("Bus1"))-3.0723)<0.0001);
   		
 		for (Bus b : net.getBusList()) {
@@ -124,14 +124,14 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
 		net.setRefBusId("Bus3");
 		net.setRefBusType(RefBusType.USER_DEFINED);
 		
-		net.getBus("Bus1").setGenP(3.0723);
+//		net.getBus("Bus1").setGenP(3.0723);
 		
 		algo.calculateDclf();
 
-		System.out.println(DclfOutFunc.dclfResults(algo, false));
-		//System.out.println(algo.getBusPower(net.getAclfBus("Bus1")));
-  		assertTrue(Math.abs(algo.getBusPower(net.getBus("Bus1"))-3.0623)<0.0001);
-  		assertTrue(Math.abs(Math.toDegrees(algo.getBusAngle("Bus1"))-4.38)<0.01);
+		//System.out.println(DclfOutFunc.dclfResults(algo, false));
+		System.out.println(algo.getBusPower(net.getBus("Bus1")) + ", " + Math.toDegrees(algo.getBusAngle("Bus1")));
+  		assertTrue(Math.abs(algo.getBusPower(net.getBus("Bus1"))-1.99)<0.0001);
+  		assertTrue(Math.abs(Math.toDegrees(algo.getBusAngle("Bus1"))-2.848746)<0.001);
 
 		algo.destroy();			
 	}
