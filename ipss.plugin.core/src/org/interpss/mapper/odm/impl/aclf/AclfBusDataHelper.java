@@ -229,7 +229,7 @@ public class AclfBusDataHelper {
 	  	  						remoteBus.setGenCode(AclfGenCode.GEN_PQ);
 
 	  	  			  		final RemoteQBus reQBus = CoreObjectFactory.createRemoteQBus(aclfBus, 
-	  	  			  				RemoteQControlType.BUS_VOLTAGE, aclfNet, remoteId);
+	  	  			  				RemoteQControlType.BUS_VOLTAGE, remoteId);
 	  	  			  		reQBus.setQLimit(new LimitType(xmlEquivGenData.getQLimit().getMax(), 
 	  														xmlEquivGenData.getQLimit().getMin()), 
 	  														ToReactivePowerUnit.f(xmlEquivGenData.getQLimit().getUnit()));						
