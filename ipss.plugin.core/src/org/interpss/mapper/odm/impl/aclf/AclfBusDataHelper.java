@@ -267,6 +267,10 @@ public class AclfBusDataHelper {
 	private void mapContributeGenListData(BusGenDataXmlType xmlGenData) throws InterpssException{
 		double baseKva = aclfBus.getNetwork().getBaseKva();
 		if(xmlGenData.getContributeGen()!=null){
+			/*
+			 * in general, gen code is defined at the equivGen level.
+			 */
+			LFGenCodeEnumType genCode = xmlGenData.getEquivGen().getValue().getCode();
 			for(JAXBElement<? extends LoadflowGenDataXmlType> elem :xmlGenData.getContributeGen()){
 				if(elem!=null){
 					
@@ -284,6 +288,10 @@ public class AclfBusDataHelper {
 						xmlGen.getMvaBase().getUnit()==ApparentPowerUnitType.VA?1.0E-6:
 							100.0; //PU, assuming 100 MVA Base
 				*/
+				gen.setCode(genCode == LFGenCodeEnumType.SWING? AclfGenCode.SWING : 
+								genCode == LFGenCodeEnumType.PQ? AclfGenCode.GEN_PQ :
+									genCode == LFGenCodeEnumType.PV? AclfGenCode.GEN_PV : AclfGenCode.NON_GEN);
+				
 				gen.setMvaBase(UnitHelper.pConversion(xmlGen.getMvaBase().getValue(), 
 						baseKva, ToApparentPowerUnit.f(xmlGen.getMvaBase().getUnit()), UnitType.mVA ));
 				
