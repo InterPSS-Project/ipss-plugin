@@ -23,7 +23,7 @@
   */
 
 package org.interpss.core.adapter.psse.aclf;
-
+ 
 import static org.interpss.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.Assert.assertTrue;
 
