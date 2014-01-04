@@ -354,6 +354,7 @@ public class AclfBusDataHelper {
 		}
 	}
 	
+	// TODO
 	private void mapLoadData(BusLoadDataXmlType xmlLoadData) throws InterpssException {
 		LFLoadCodeEnumType code = xmlLoadData.getEquivLoad().getValue().getCode();
 		aclfBus.setLoadCode(code == LFLoadCodeEnumType.CONST_I ? AclfLoadCode.CONST_I : 
