@@ -299,8 +299,8 @@ public class IpssAclfNet extends BaseDSL {
 		public AclfBaseNetDSL<T> setBaseKva(double kva) { this.net.setBaseKva(kva); return this; }  
 		public AclfBaseNetDSL<T> baseKva(double kva) { this.net.setBaseKva(kva); return this; }  
 		public AclfBaseNetDSL<T> baseMva(double kva) { this.net.setBaseKva(kva*0.0001); return this; }  
-		public AclfBaseNetDSL<T> setAllowParallelBranch(boolean b) {this.net.setAllowParallelBranch(b); return this; }
-		public AclfBaseNetDSL<T> allowParallelBranch(boolean b) {this.net.setAllowParallelBranch(b); return this; }
+		//public AclfBaseNetDSL<T> setAllowParallelBranch(boolean b) {this.net.setAllowParallelBranch(b); return this; }
+		//public AclfBaseNetDSL<T> allowParallelBranch(boolean b) {this.net.setAllowParallelBranch(b); return this; }
 		
 		
 		public T getAclfNet() {return this.net; }

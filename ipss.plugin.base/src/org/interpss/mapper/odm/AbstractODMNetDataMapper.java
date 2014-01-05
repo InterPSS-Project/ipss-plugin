@@ -76,7 +76,7 @@ public abstract class AbstractODMNetDataMapper<Tfrom, Tto> extends AbstractMappe
 		net.setBaseKva(xmlNet.getBasePower().getValue()*
 				(xmlNet.getBasePower().getUnit()==ApparentPowerUnitType.MVA?1000.0:1.0));
 				// BasePowerUnit [ MVA, KVA]
-		net.setAllowParallelBranch(true);
+		//net.setAllowParallelBranch(true);
 	}
 	
 	/**

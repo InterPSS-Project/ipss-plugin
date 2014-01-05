@@ -101,8 +101,8 @@ public class IpssDistNet {
 			distNet.setDesc("DistNetDesc");
 			distNet.setBaseKva(100000.0);
 			distNet.setFrequency(50.0);
-			distNet.setAllowParallelBranch(false);
-			distNet.setCheckElementDuplication(true);				
+			//distNet.setAllowParallelBranch(false);
+			//distNet.setCheckElementDuplication(true);				
 		}
 
 		/**

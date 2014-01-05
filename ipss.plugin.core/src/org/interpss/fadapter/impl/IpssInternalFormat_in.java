@@ -52,7 +52,7 @@ public class IpssInternalFormat_in {
     public static AclfNetwork loadFile(final java.io.BufferedReader din, final IPSSMsgHub msg) throws Exception {
     	// create a AclfAdjNetwork object to hold the loadflow data
     	final AclfNetwork  adjNet = CoreObjectFactory.createAclfNetwork();
-    	adjNet.setAllowParallelBranch(true);
+    	//adjNet.setAllowParallelBranch(true);
     	
     	// process loadflow data line-by-line
       	String str = din.readLine();
