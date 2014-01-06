@@ -136,7 +136,7 @@ public class AclfOut_BusStyle {
 		str.append(Number2String.toStr(-12, id) + " ");
 		str.append(String.format(" %s ", FormatKVStr.f(bus.getBaseVoltage()*0.001)));
 		str.append(Number2String.toStr("0.0000", bus.getVoltageMag(UnitType.PU)) + " ");
-		str.append(Number2String.toStr("##0.0", bus.getVoltageAng(UnitType.Deg)) + " ");
+		str.append(Number2String.toStr("##0.00", bus.getVoltageAng(UnitType.Deg)) + " ");
 		str.append(Number2String.toStr("####0.00", busGen.getReal()) + " ");
 		str.append(Number2String.toStr("####0.00", busGen.getImaginary()) + " ");
 		str.append(Number2String.toStr("####0.00", busLoad.getReal()) + " ");
@@ -186,7 +186,7 @@ public class AclfOut_BusStyle {
 					}
 				}
 				if (cnt++ > 0)
-					str.append(Number2String.toStr(67, " ")	+ "    ");
+					str.append(Number2String.toStr(67, " ")	+ "     ");
 				id = style == AclfOutFunc.BusIdStyle.BusId_No?
 						OutputBusId.f(toBus, net.getOriginalDataFormat()):
 						toBus.getName().trim();
@@ -240,8 +240,8 @@ public class AclfOut_BusStyle {
 	private static StringBuffer title() {
 		StringBuffer str = new StringBuffer("");
 		str.append("------------------------------------------------------------------------------------------------------------------------------------------\n");
-		str.append(" Bus ID             Bus Voltage         Generation           Load             To             Branch P+jQ          Xfr Ratio   PS-Xfr Ang\n");
-		str.append("              baseKV    Mag   Ang     (mW)    (mVar)    (mW)    (mVar)      Bus ID      (mW)    (mVar)   (kA)   (From)  (To) (from)   (to)\n");
+		str.append(" Bus ID            Bus Voltage          Generation           Load             To             Branch P+jQ          Xfr Ratio   PS-Xfr Ang\n");
+		str.append("             baseKV  Mag/pu  Ang/deg   (mW)    (mVar)    (mW)    (mVar)      Bus ID      (mW)    (mVar)   (kA)   (From)  (To) (from)   (to)\n");
 		str.append("------------------------------------------------------------------------------------------------------------------------------------------\n");
 		return str;
 	}

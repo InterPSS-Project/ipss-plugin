@@ -36,6 +36,7 @@ import org.ieee.odm.model.IODMModelParser;
 import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.mapper.odm.ODMAclfNetMapper;
+import org.interpss.mapper.odm.ODMAclfNetMapper.XfrBranchModel;
 import org.interpss.spring.CorePluginSpringFactory;
 
 import com.interpss.SimuObjectFactory;
@@ -96,7 +97,7 @@ public class IpssFileAdapterBase implements IpssFileAdapter {
 		if (debug)
 			System.out.println(adapter.getModel().toXmlDoc(outfile));
 		
-		if (CorePluginSpringFactory.getOdm2AclfParserMapper(this.xfrBranchModel.InterPSS)
+		if (CorePluginSpringFactory.getOdm2AclfParserMapper(XfrBranchModel.InterPSS)
 					.map2Model((AclfModelParser)adapter.getModel(), simuCtx)) {
   	  		simuCtx.setName(filepath.substring(filepath.lastIndexOf(File.separatorChar)+1));
   	  		simuCtx.setDesc("This project is created by input file " + filepath);
@@ -115,6 +116,7 @@ public class IpssFileAdapterBase implements IpssFileAdapter {
 	/**
 	 * @return the fileFilterString
 	 */
+	@Override
 	public String getFileFilterString() {
 		return fileFilterString;
 	}
@@ -129,6 +131,7 @@ public class IpssFileAdapterBase implements IpssFileAdapter {
 	/**
 	 * @return the name
 	 */
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -143,6 +146,7 @@ public class IpssFileAdapterBase implements IpssFileAdapter {
 	/**
 	 * @return the versionList
 	 */
+	@Override
 	public String[] getVersionList() {
 		return versionList;
 	}
@@ -154,6 +158,7 @@ public class IpssFileAdapterBase implements IpssFileAdapter {
 		this.versionList = versionList;
 	}
 
+	@Override
 	public String getExtension() {
 		return extension;
 	}
@@ -162,6 +167,7 @@ public class IpssFileAdapterBase implements IpssFileAdapter {
 		extension = s;
 	}
 
+	@Override
 	public String getExtensionDstab() {
 		return extensionDstab;
 	}
@@ -170,6 +176,7 @@ public class IpssFileAdapterBase implements IpssFileAdapter {
 		extensionDstab = s;
 	}
 
+	@Override
 	public String getDescription() {
 		return description;
 	}
@@ -178,32 +185,38 @@ public class IpssFileAdapterBase implements IpssFileAdapter {
 		description = s;
 	}
 
+	@Override
 	public void load(SimuContext simuCtx, String[] filepathAry, boolean debug, String outfile) throws InterpssException {
 		throw new InterpssRuntimeException("Load() need to implemented");
 	}
 
+	@Override
 	public SimuContext load(String filepath) throws InterpssException {
   		final SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.NOT_DEFINED);
   		load(simuCtx, filepath, false, null);
   		return simuCtx;
 	}
 
+	@Override
 	public SimuContext loadDebug(String filepath) throws InterpssException {
   		final SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.NOT_DEFINED);
   		load(simuCtx, filepath, true, null);
   		return simuCtx;
 	}
 
+	@Override
 	public SimuContext loadDebug(String filepath, String outfile) throws InterpssException {
   		final SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.NOT_DEFINED);
   		load(simuCtx, filepath, true, outfile);
   		return simuCtx;
 	}
 
+	@Override
 	public AclfNetwork loadAclfNet(String filepath) throws InterpssException {
 		return load(filepath).getAclfNet();
 	}
 
+	@Override
 	public boolean save(String filepath, SimuContext net) throws InterpssException {
 		throw new InterpssRuntimeException("Save need to implemented");
 	}
@@ -211,6 +224,7 @@ public class IpssFileAdapterBase implements IpssFileAdapter {
 	/**
 	 * @return the versionSelected
 	 */
+	@Override
 	public String getVersionSelected() {
 		return versionSelected;
 	}
@@ -218,6 +232,7 @@ public class IpssFileAdapterBase implements IpssFileAdapter {
 	/**
 	 * @param versionSelected the versionSelected to set
 	 */
+	@Override
 	public void setVersionSelected(String versionSelected) {
 		this.versionSelected = versionSelected;
 		

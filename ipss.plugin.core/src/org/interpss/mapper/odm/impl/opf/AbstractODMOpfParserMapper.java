@@ -27,7 +27,6 @@ package org.interpss.mapper.odm.impl.opf;
 import static com.interpss.common.util.IpssLogger.ipssLogger;
 import static org.interpss.mapper.odm.ODMUnitHelper.ToActivePowerUnit;
 import static org.interpss.mapper.odm.ODMUnitHelper.ToReactivePowerUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.ToApparentPowerUnit;
 import static org.interpss.mapper.odm.ODMUnitHelper.ToVoltageUnit;
 
 import javax.xml.bind.JAXBElement;
@@ -62,7 +61,6 @@ import org.ieee.odm.schema.SqrCoeffXmlType;
 import org.ieee.odm.schema.StairStepXmlType;
 import org.ieee.odm.schema.VoltageLimitXmlType;
 import org.ieee.odm.schema.VoltageUnitType;
-import org.ieee.odm.schema.XformerZTableXmlType;
 import org.interpss.mapper.odm.ODMAclfNetMapper;
 import org.interpss.mapper.odm.ODMHelper;
 import org.interpss.mapper.odm.impl.aclf.AbstractODMAclfParserMapper;
@@ -78,7 +76,6 @@ import com.interpss.core.common.curve.CommonCurveFactory;
 import com.interpss.core.common.curve.NumericCurveModel;
 import com.interpss.core.common.curve.PieceWiseCurve;
 import com.interpss.core.common.curve.QuadraticCurve;
-import com.interpss.core.common.curve.impl.PieceWiseCurveImpl;
 import com.interpss.opf.BaseOpfNetwork;
 import com.interpss.opf.Constraint;
 import com.interpss.opf.IncrementalCost;
@@ -168,11 +165,11 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 				for (JAXBElement<? extends BaseBranchXmlType> b : xmlNet.getBranchList().getBranch()) {
 					if (xmlNet.getOpfNetType() == OpfNetworkEnumType.SIMPLE_DCLF) {
 						DclfOpfBranch opfDclfBranch = OpfObjectFactory.createDclfOpfBranch();
-						aclfNetMapper.mapAclfBranchData(b.getValue(), opfDclfBranch, (DclfOpfNetwork)opfNet);
+						aclfNetMapper.mapAclfBranchData(b.getValue(), opfDclfBranch, opfNet);
 					}
 					else {
 						OpfBranch opfBranch = OpfObjectFactory.createOpfBranch();
-						aclfNetMapper.mapAclfBranchData(b.getValue(), opfBranch, (OpfNetwork)opfNet);
+						aclfNetMapper.mapAclfBranchData(b.getValue(), opfBranch, opfNet);
 						// map MW rating
 						BranchXmlType branchXml = (BranchXmlType)b.getValue();
 						if(branchXml.getRatingLimit()!=null){

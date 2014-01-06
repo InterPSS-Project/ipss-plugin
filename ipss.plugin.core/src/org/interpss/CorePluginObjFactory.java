@@ -34,6 +34,7 @@ import org.interpss.fadapter.UCTEFormat;
 import org.interpss.spring.CorePluginSpringFactory;
 
 import com.interpss.common.exp.InterpssException;
+import com.interpss.spring.CoreCommonSpringFactory;
 
 /**
  * Core plugin object factory
@@ -64,25 +65,25 @@ public class CorePluginObjFactory {
 	public static IpssFileAdapter getFileAdapter(IpssFileAdapter.FileFormat f, IpssFileAdapter.Version v)
 					throws InterpssException {
 		if (f == IpssFileAdapter.FileFormat.IEEECDF) {
-			return new IeeeCDFFormat(CorePluginSpringFactory.getIpssMsgHub());
+			return new IeeeCDFFormat(CoreCommonSpringFactory.getIpssMsgHub());
 		}
 		else if (f == IpssFileAdapter.FileFormat.GE_PSLF) {
-			return new GEFormat(CorePluginSpringFactory.getIpssMsgHub());
+			return new GEFormat(CoreCommonSpringFactory.getIpssMsgHub());
 		} 
 		else if (f == IpssFileAdapter.FileFormat.PSSE) {
-			return new PTIFormat(v, CorePluginSpringFactory.getIpssMsgHub());
+			return new PTIFormat(v, CoreCommonSpringFactory.getIpssMsgHub());
 		} 
 		else if (f == IpssFileAdapter.FileFormat.BPA) {
-			return new BPAFormat(CorePluginSpringFactory.getIpssMsgHub());
+			return new BPAFormat(CoreCommonSpringFactory.getIpssMsgHub());
 		} 
 		else if (f == IpssFileAdapter.FileFormat.PWD) {
-			return new PWDFormat(CorePluginSpringFactory.getIpssMsgHub());
+			return new PWDFormat(CoreCommonSpringFactory.getIpssMsgHub());
 		} 
 		else if (f == IpssFileAdapter.FileFormat.UCTE) {
-			return new UCTEFormat(CorePluginSpringFactory.getIpssMsgHub());
+			return new UCTEFormat(CoreCommonSpringFactory.getIpssMsgHub());
 		} 
 		else if (f == IpssFileAdapter.FileFormat.IpssInternal) {
-			return new IpssInternalFormat(CorePluginSpringFactory.getIpssMsgHub());
+			return new IpssInternalFormat(CoreCommonSpringFactory.getIpssMsgHub());
 		} 
 		throw new InterpssException("Error - File adapter format/version not implemented");
 	}
