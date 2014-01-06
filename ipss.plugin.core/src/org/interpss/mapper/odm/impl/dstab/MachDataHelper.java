@@ -28,7 +28,6 @@ import static org.interpss.mapper.odm.ODMUnitHelper.ToApparentPowerUnit;
 import static org.interpss.mapper.odm.ODMUnitHelper.ToVoltageUnit;
 
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.schema.ActivePowerXmlType;
 import org.ieee.odm.schema.ApparentPowerXmlType;
 import org.ieee.odm.schema.ClassicMachineXmlType;
 import org.ieee.odm.schema.Eq11Ed11MachineXmlType;
