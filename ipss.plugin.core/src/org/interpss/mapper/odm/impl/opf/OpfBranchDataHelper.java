@@ -27,15 +27,11 @@ package org.interpss.mapper.odm.impl.opf;
 import static org.interpss.mapper.odm.ODMUnitHelper.ToActivePowerUnit;
 import org.ieee.odm.schema.ActivePowerRatingXmlType;
 import org.ieee.odm.schema.ActivePowerUnitType;
-import org.ieee.odm.schema.ApparentPowerUnitType;
 import org.ieee.odm.schema.BaseBranchXmlType;
 import org.ieee.odm.schema.BranchXmlType;
-import org.ieee.odm.schema.CurrentUnitType;
-import org.ieee.odm.schema.CurrentXmlType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.common.datatype.UnitHelper;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.opf.OpfBranch;
 
 /**

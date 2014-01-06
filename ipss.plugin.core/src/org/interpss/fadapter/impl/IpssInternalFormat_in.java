@@ -253,7 +253,7 @@ public class IpssInternalFormat_in {
 			}
       	}
 
-      	AclfBus bus = (AclfBus)net.getBus(id);
+      	AclfBus bus = net.getBus(id);
       	if (bus != null ) {
         	bus.setGenCode(AclfGenCode.SWING);
 			final AclfSwingBus swing = bus.toSwingBus();
@@ -365,14 +365,14 @@ public class IpssInternalFormat_in {
 			}
       	}
 
-    	AclfBranch bra = (AclfBranch)net.getBranch(fid, tid, cirNo);
+    	AclfBranch bra = net.getBranch(fid, tid, cirNo);
     	if (bra != null) {
     	 	bra.setBranchCode(AclfBranchCode.XFORMER);
         	bra.setFromTurnRatio( t );
         	bra.setToTurnRatio( 1.0 );
       	}
     	else {
-    		bra = (AclfBranch)net.getBranch(tid, fid, cirNo);
+    		bra = net.getBranch(tid, fid, cirNo);
         	if (bra != null) {
           	bra.setBranchCode(AclfBranchCode.XFORMER);
     			bra.setFromTurnRatio(1.0);
