@@ -24,20 +24,16 @@ package org.interpss.display;
  */
 
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
 import static com.interpss.core.funcImpl.AclfFunction.BranchRatingAptr;
 import static org.interpss.CorePluginFunction.OutputBusId;
 
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.CorePluginFunction;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.Number2String;
 
 import com.interpss.common.datatype.Constants;
-import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
-import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.adj.AdjControlType;
@@ -59,10 +55,7 @@ import com.interpss.core.datatype.Mismatch;
 import com.interpss.core.funcImpl.CoreUtilFunc;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
-import com.interpss.core.net.Network;
 import com.interpss.core.net.OriginalDataFormat;
-import com.interpss.dc.DcNetwork;
-import com.interpss.dist.DistNetwork;
 
 /**
  * Aclf system output functions
