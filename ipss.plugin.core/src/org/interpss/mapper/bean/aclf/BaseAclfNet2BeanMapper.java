@@ -85,8 +85,8 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 		Complex sh = bus.getShuntY();
 		bean.shunt = new ComplexBean(format(sh));
 		
-		bean.area = (long) 1;
-		bean.zone = (long) 1;
+		bean.area = 1;
+		bean.zone = 1;
 		if(bus.getArea() !=null)
 		bean.area = bus.getArea().getNumber();
 		if(bus.getZone() != null)
