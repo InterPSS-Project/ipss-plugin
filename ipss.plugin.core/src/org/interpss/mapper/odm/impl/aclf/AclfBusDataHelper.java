@@ -73,7 +73,7 @@ import com.interpss.core.aclf.adj.RemoteQBus;
 import com.interpss.core.aclf.adj.RemoteQControlType;
 import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.adj.VarCompensatorControlMode;
-import com.interpss.core.aclf.adpter.AclfLoadBus;
+import com.interpss.core.aclf.adpter.AclfLoadBusAdapter;
 import com.interpss.core.aclf.adpter.AclfPQGenBus;
 import com.interpss.core.aclf.adpter.AclfPVGenBus;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
@@ -420,8 +420,11 @@ public class AclfBusDataHelper {
 						// during the Aclf adjustment process
 						(code == LFLoadCodeEnumType.CONST_P || code == LFLoadCodeEnumType.FUNCTION_LOAD ? AclfLoadCode.CONST_P : 
 							AclfLoadCode.NON_LOAD)));
+
 		
 		AclfLoadBus loadBus = aclfBus.toLoadBus();
+		AclfLoadBusAdapter loadBus = aclfBus.toLoadBus();
+
 		LoadflowLoadDataXmlType xmlEquivLoad = xmlLoadData.getEquivLoad().getValue();
 		if (xmlEquivLoad != null) {
 			if (code == LFLoadCodeEnumType.FUNCTION_LOAD) {

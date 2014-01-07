@@ -43,7 +43,7 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adj.PVBusLimit;
 import com.interpss.core.aclf.adpter.AclfCapacitorBus;
 import com.interpss.core.aclf.adpter.AclfLine;
-import com.interpss.core.aclf.adpter.AclfLoadBus;
+import com.interpss.core.aclf.adpter.AclfLoadBusAdapter;
 import com.interpss.core.aclf.adpter.AclfPQGenBus;
 import com.interpss.core.aclf.adpter.AclfPVGenBus;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
@@ -182,7 +182,7 @@ public class IpssInternalFormat_in {
     		 bus.setGenCode(AclfGenCode.NON_GEN);
     		 //bus.setGen(new complex(pg,qg), UnitType.mVA, net.getBaseKva());
     		 bus.setLoadCode(AclfLoadCode.CONST_P);
-   			 final AclfLoadBus load = bus.toLoadBus();
+   			 final AclfLoadBusAdapter load = bus.toLoadBus();
     		 load.setLoad(new Complex(pl,ql), UnitType.mVA);
     	}
     	else {
@@ -229,7 +229,7 @@ public class IpssInternalFormat_in {
     	 	bus.setGenCode(AclfGenCode.NON_GEN);
     	 	//bus.setGen(new complex(pg,qg), UnitType.mVA, net.getBaseKva());
     	 	bus.setLoadCode(AclfLoadCode.CONST_P);
-  			final AclfLoadBus load = bus.toLoadBus();
+  			final AclfLoadBusAdapter load = bus.toLoadBus();
     	 	load.setLoad(new Complex(pl,ql), UnitType.mVA);
      	}
      	else {
