@@ -38,7 +38,7 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.adpter.AclfCapacitorBus;
-import com.interpss.core.aclf.adpter.AclfGenBus;
+import com.interpss.core.aclf.adpter.AclfGenBusAdapter;
 import com.interpss.core.aclf.adpter.AclfPSXformer;
 import com.interpss.core.net.Branch;
 
@@ -123,7 +123,7 @@ public class AclfOut_BusStyle {
 		double baseKVA = net.getBaseKva();
 		StringBuffer str = new StringBuffer("");
 
-		AclfGenBus genBus = bus.toGenBus();
+		AclfGenBusAdapter genBus = bus.toGenBus();
 		Complex busGen = genBus.getGenResults(UnitType.mVA);
 		Complex busLoad = genBus.getLoadResults(UnitType.mVA);
 		if (bus.isCapacitor()) {

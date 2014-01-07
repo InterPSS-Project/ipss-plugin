@@ -45,7 +45,7 @@ import com.interpss.core.aclf.adj.RemoteQBus;
 import com.interpss.core.aclf.adj.RemoteQControlType;
 import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.adj.XfrTapControlType;
-import com.interpss.core.aclf.adpter.AclfGenBus;
+import com.interpss.core.aclf.adpter.AclfGenBusAdapter;
 import com.interpss.core.aclf.adpter.AclfPSXformer;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.path.NetPathWalkDirectionEnum;
@@ -435,7 +435,7 @@ public class AclfOutFunc {
 		for( AclfBus bus : net.getBusList()) {
 			if (bus.isPVBusLimit()) {
 				PVBusLimit pv = bus.getPVBusLimit();
-				AclfGenBus genBus = pv.getParentBus().toGenBus();
+				AclfGenBusAdapter genBus = pv.getParentBus().toGenBus();
 				str.append(Number2String.toStr(5, " "));
 				str.append(Number2String.toStr(-8, OutputBusId.f(pv.getParentBus(), 
 						pv.getParentBus().getNetwork().getOriginalDataFormat())));
@@ -478,7 +478,7 @@ public class AclfOutFunc {
 			AclfBus bus = (AclfBus)b;
 			if (bus.isPQBusLimit()) {
 				PQBusLimit pq = bus.getPQBusLimit();
-				AclfGenBus genBus = pq.getParentBus().toGenBus();
+				AclfGenBusAdapter genBus = pq.getParentBus().toGenBus();
 				str.append(Number2String.toStr(5, " "));
 				str.append(Number2String.toStr(-8, OutputBusId.f(pq.getParentBus(), net.getOriginalDataFormat())) + " ");
 				str.append(Number2String.toStr("####0.00", genBus.getGenResults(
@@ -524,7 +524,7 @@ public class AclfOutFunc {
 			AclfBus bus = (AclfBus)b;
 			if (bus.isRemoteQBus()) {
 				RemoteQBus re = bus.getRemoteQBus();
-				AclfGenBus genBus = re.getParentBus().toGenBus();
+				AclfGenBusAdapter genBus = re.getParentBus().toGenBus();
 				str.append(Number2String.toStr(5, " "));
 				str.append(Number2String.toStr(-9, OutputBusId.f(re.getParentBus(), net.getOriginalDataFormat())));
 				str.append(Number2String.toStr(-9,

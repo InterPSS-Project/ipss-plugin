@@ -56,7 +56,7 @@ import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.adj.XfrTapControlType;
 import com.interpss.core.aclf.adpter.AclfCapacitorBus;
 import com.interpss.core.aclf.adpter.AclfLine;
-import com.interpss.core.aclf.adpter.AclfLoadBus;
+import com.interpss.core.aclf.adpter.AclfLoadBusAdapter;
 import com.interpss.core.aclf.adpter.AclfPQGenBus;
 import com.interpss.core.aclf.adpter.AclfPSXformer;
 import com.interpss.core.aclf.adpter.AclfPVGenBus;
@@ -432,7 +432,7 @@ public class IpssAclfNet extends BaseDSL {
   		public TAclfDSL load(Complex load, UnitType unit) { return setLoad(load, unit); }
 		@SuppressWarnings(value="unchecked")
   		public TAclfDSL setLoad(Complex load, UnitType unit) { 
-  	  						AclfLoadBus loadBus = LoadBusAptr.f(getAclfBus());
+  	  						AclfLoadBusAdapter loadBus = LoadBusAptr.f(getAclfBus());
   	  						loadBus.setLoad(load, unit); 
   	  						return (TAclfDSL)this;  		}
   		public TAclfDSL shuntY(Complex y, UnitType unit) { return setShuntY(y, unit); } 
