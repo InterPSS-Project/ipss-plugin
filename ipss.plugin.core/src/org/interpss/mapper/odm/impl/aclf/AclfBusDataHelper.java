@@ -26,10 +26,10 @@ package org.interpss.mapper.odm.impl.aclf;
 
 import static com.interpss.common.util.IpssLogger.ipssLogger;
 import static org.interpss.mapper.odm.ODMFunction.BusXmlRef2BusId;
+import static org.interpss.mapper.odm.ODMUnitHelper.ToActivePowerUnit;
 import static org.interpss.mapper.odm.ODMUnitHelper.ToAngleUnit;
 import static org.interpss.mapper.odm.ODMUnitHelper.ToApparentPowerUnit;
 import static org.interpss.mapper.odm.ODMUnitHelper.ToReactivePowerUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.ToActivePowerUnit;
 import static org.interpss.mapper.odm.ODMUnitHelper.ToVoltageUnit;
 import static org.interpss.mapper.odm.ODMUnitHelper.ToYUnit;
 
@@ -359,141 +359,135 @@ public class AclfBusDataHelper {
 	
 	private void mapLoadData(BusLoadDataXmlType xmlLoadData) throws InterpssException {
 		double baseKva = aclfBus.getNetwork().getBaseKva();
+		aclfBus.setLoadCode(AclfLoadCode.NON_LOAD);
 		
-		//Bus load code
-		LFLoadCodeEnumType code = xmlLoadData.getEquivLoad().getValue().getCode();
-		aclfBus.setLoadCode(code == LFLoadCodeEnumType.CONST_I ? AclfLoadCode.CONST_I : 
-			(code == LFLoadCodeEnumType.CONST_Z ? AclfLoadCode.CONST_Z : 
-				(code == LFLoadCodeEnumType.CONST_P  ? AclfLoadCode.CONST_P : 
-					 code == LFLoadCodeEnumType.FUNCTION_LOAD?AclfLoadCode.ZIP:
-					AclfLoadCode.NON_LOAD)));
-		
-         // map each connecting load
-		if(xmlLoadData.getContributeLoad()!=null){
-			if(xmlLoadData.getContributeLoad().size()>0){
-				for(JAXBElement<? extends LoadflowLoadDataXmlType> elem: xmlLoadData.getContributeLoad()){
-					if(elem!=null){
-						LoadflowLoadDataXmlType loadElem = elem.getValue();
-						
-						AclfLoad load = CoreObjectFactory.createAclfLoad();
-						aclfBus.getLoadList().add(load);
-						//status
-						load.setStatus(!loadElem.isOffLine());
-					    // load code		
-						code = loadElem.getCode();
-						load.setCode(code == LFLoadCodeEnumType.CONST_I ? AclfLoadCode.CONST_I : 
-							(code == LFLoadCodeEnumType.CONST_Z ? AclfLoadCode.CONST_Z : 
-								(code == LFLoadCodeEnumType.CONST_P  ? AclfLoadCode.CONST_P : 
-									 code == LFLoadCodeEnumType.FUNCTION_LOAD?AclfLoadCode.ZIP:
-									AclfLoadCode.NON_LOAD)));
-						
+		/*
+		 * we assume that the equivLoad override the contributing load list
+		 */
+		LoadflowLoadDataXmlType xmlEquivLoad = xmlLoadData.getEquivLoad().getValue();
+		if (xmlEquivLoad != null && xmlEquivLoad.getCode() != null) {
+			// to detect the <equivLoad/> situation
+			//Bus load code
+			LFLoadCodeEnumType code = xmlEquivLoad.getCode();
+			aclfBus.setLoadCode(code == LFLoadCodeEnumType.CONST_I ? AclfLoadCode.CONST_I : 
+				(code == LFLoadCodeEnumType.CONST_Z ? AclfLoadCode.CONST_Z : 
+					(code == LFLoadCodeEnumType.CONST_P  ? AclfLoadCode.CONST_P : 
+						 code == LFLoadCodeEnumType.FUNCTION_LOAD?AclfLoadCode.ZIP:
+						AclfLoadCode.NON_LOAD)));
 
-						PowerXmlType p = loadElem.getConstPLoad(),
-									 i = loadElem.getConstILoad(),
-									 z = loadElem.getConstZLoad();
+			AclfLoadBusAdapter loadBus = aclfBus.toLoadBus();
 
-						if (p != null) {
-							load.setLoadCP(UnitHelper.pConversion( new Complex(p.getRe(),p.getIm()), 
-									baseKva, ToApparentPowerUnit.f(p.getUnit()), UnitType.PU ));
-						}
-						
-						if (i != null) {
-							load.setLoadCI(UnitHelper.pConversion( new Complex(i.getRe(),i.getIm()), 
-									baseKva, ToApparentPowerUnit.f(i.getUnit()), UnitType.PU ));
-						}
+			//LoadflowLoadDataXmlType xmlEquivLoad = xmlLoadData.getEquivLoad().getValue();
+			if (xmlEquivLoad != null) {
+				if (code == LFLoadCodeEnumType.FUNCTION_LOAD) {
+					// 1) When code = FunctionLoad, the ZIP load units should be the same
+					// 2) the p, i, z element is optional
+					PowerXmlType p = xmlEquivLoad.getConstPLoad(),
+								 i = xmlEquivLoad.getConstILoad(),
+								 z = xmlEquivLoad.getConstZLoad();
+					double re = 0.0, im = 0.0;
+					ApparentPowerUnitType unit = null;
+					if (p != null) {
+						unit = p.getUnit();
+						re += p.getRe();
+						im += p.getIm();
+					}
+					
+					if (i != null) {
+						if (unit == null) 
+							unit = i.getUnit();
+						if (unit != i.getUnit()) 
+							throw new InterpssException("Inconsitent FunctionLoad power unit");
+						re += i.getRe();
+						im += i.getIm();
+					}
 
-						if (z != null) {
-							load.setLoadCZ(UnitHelper.pConversion( new Complex(z.getRe(),z.getIm()), 
-									baseKva, ToApparentPowerUnit.f(z.getUnit()), UnitType.PU ));
-						}
-					  
+					if (z != null) {
+						if (unit == null) 
+							unit = z.getUnit();
+						if (unit != z.getUnit()) 
+							throw new InterpssException("Inconsitent FunctionLoad power unit");					
+						re += z.getRe();
+						im += z.getIm();
+					}
+					
+					 // P = P0 * [ Ap + Bp * V + Cp * V*V ], where Cp = 1.0 - Ap - Bp
+	                 // Q = Q0 * [ Aq + Bq * V + Cq * V*V ], where Cq = 1.0 - Aq - Bq
+					 //
+					loadBus.setLoad(new Complex(re, im), ToApparentPowerUnit.f(unit));
+			  		FunctionLoad fl = CoreObjectFactory.createFunctionLoad(aclfBus);
+			  		if (re != 0.0) {
+			  			if (p != null)
+			  				fl.getP().setA(p.getRe()/re);
+			  			if (i != null)
+			  				fl.getP().setB(i.getRe()/re);
+			  		}
+			  		if (im != 0.0) {
+			  			if (p != null)
+			  				fl.getQ().setA(p.getIm()/im);
+			  			if (i != null)
+			  				fl.getQ().setB(i.getIm()/im);
+			  		}
+				}
+				else {
+					PowerXmlType p = null;
+					if (aclfBus.getLoadCode() == AclfLoadCode.CONST_P)
+						p = xmlEquivLoad.getConstPLoad();
+					else if (aclfBus.getLoadCode() == AclfLoadCode.CONST_I)
+						p = xmlEquivLoad.getConstILoad();
+					else if (aclfBus.getLoadCode() == AclfLoadCode.CONST_Z)	
+						p = xmlEquivLoad.getConstZLoad();
+					
+					if (p != null)
+						loadBus.setLoad(new Complex(p.getRe(), p.getIm()), ToApparentPowerUnit.f(p.getUnit()));				
+				}
+			}
+		}
+		else {
+	         // map each connecting load
+			if(xmlLoadData.getContributeLoad()!=null){
+				if(xmlLoadData.getContributeLoad().size()>0){
+					// we set parent bus load code to constant power
+					aclfBus.setLoadCode(AclfLoadCode.CONST_P);
+					for(JAXBElement<? extends LoadflowLoadDataXmlType> elem: xmlLoadData.getContributeLoad()){
+						if(elem!=null){
+							LoadflowLoadDataXmlType loadElem = elem.getValue();
+							
+							AclfLoad load = CoreObjectFactory.createAclfLoad();
+							aclfBus.getLoadList().add(load);
+							//status
+							load.setStatus(!loadElem.isOffLine());
+						    // load code		
+							AclfLoadCode code = AclfLoadCode.NON_LOAD;
+							PowerXmlType p = loadElem.getConstPLoad(),
+										 i = loadElem.getConstILoad(),
+										 z = loadElem.getConstZLoad();
+
+							if (p != null) {
+								code = code == AclfLoadCode.NON_LOAD? AclfLoadCode.CONST_P : AclfLoadCode.ZIP;
+								load.setLoadCP(UnitHelper.pConversion( new Complex(p.getRe(),p.getIm()), 
+										baseKva, ToApparentPowerUnit.f(p.getUnit()), UnitType.PU ));
+							}
+							
+							if (i != null) {
+								code = code == AclfLoadCode.NON_LOAD? AclfLoadCode.CONST_I : AclfLoadCode.ZIP;
+								load.setLoadCI(UnitHelper.pConversion( new Complex(i.getRe(),i.getIm()), 
+										baseKva, ToApparentPowerUnit.f(i.getUnit()), UnitType.PU ));
+							}
+
+							if (z != null) {
+								code = code == AclfLoadCode.NON_LOAD? AclfLoadCode.CONST_Z : AclfLoadCode.ZIP;
+								load.setLoadCZ(UnitHelper.pConversion( new Complex(z.getRe(),z.getIm()), 
+										baseKva, ToApparentPowerUnit.f(z.getUnit()), UnitType.PU ));
+							}
+
+							load.setCode(code);
+					   }
 				   }
 			   }
-				
-		   }
-		}
-		/*
-		LFLoadCodeEnumType code = xmlLoadData.getEquivLoad().getValue().getCode();
-		aclfBus.setLoadCode(code == LFLoadCodeEnumType.CONST_I ? AclfLoadCode.CONST_I : 
-					(code == LFLoadCodeEnumType.CONST_Z ? AclfLoadCode.CONST_Z : 
-						// Functional Load at the AclfBus level is treated as a constP load. The P is adjusted
-						// during the Aclf adjustment process
-						(code == LFLoadCodeEnumType.CONST_P || code == LFLoadCodeEnumType.FUNCTION_LOAD ? AclfLoadCode.CONST_P : 
-							AclfLoadCode.NON_LOAD)));
-
-		
-		AclfLoadBus loadBus = aclfBus.toLoadBus();
-		AclfLoadBusAdapter loadBus = aclfBus.toLoadBus();
-
-		LoadflowLoadDataXmlType xmlEquivLoad = xmlLoadData.getEquivLoad().getValue();
-		if (xmlEquivLoad != null) {
-			if (code == LFLoadCodeEnumType.FUNCTION_LOAD) {
-				// 1) When code = FunctionLoad, the ZIP load units should be the same
-				// 2) the p, i, z element is optional
-				PowerXmlType p = xmlEquivLoad.getConstPLoad(),
-							 i = xmlEquivLoad.getConstILoad(),
-							 z = xmlEquivLoad.getConstZLoad();
-				double re = 0.0, im = 0.0;
-				ApparentPowerUnitType unit = null;
-				if (p != null) {
-					unit = p.getUnit();
-					re += p.getRe();
-					im += p.getIm();
-				}
-				
-				if (i != null) {
-					if (unit == null) 
-						unit = i.getUnit();
-					if (unit != i.getUnit()) 
-						throw new InterpssException("Inconsitent FunctionLoad power unit");
-					re += i.getRe();
-					im += i.getIm();
-				}
-
-				if (z != null) {
-					if (unit == null) 
-						unit = z.getUnit();
-					if (unit != z.getUnit()) 
-						throw new InterpssException("Inconsitent FunctionLoad power unit");					
-					re += z.getRe();
-					im += z.getIm();
-				}
-				
-				
-				 // P = P0 * [ Ap + Bp * V + Cp * V*V ], where Cp = 1.0 - Ap - Bp
-                 // Q = Q0 * [ Aq + Bq * V + Cq * V*V ], where Cq = 1.0 - Aq - Bq
-				 //
-				loadBus.setLoad(new Complex(re, im), ToApparentPowerUnit.f(unit));
-		  		FunctionLoad fl = CoreObjectFactory.createFunctionLoad(aclfBus);
-		  		if (re != 0.0) {
-		  			if (p != null)
-		  				fl.getP().setA(p.getRe()/re);
-		  			if (i != null)
-		  				fl.getP().setB(i.getRe()/re);
-		  		}
-		  		if (im != 0.0) {
-		  			if (p != null)
-		  				fl.getQ().setA(p.getIm()/im);
-		  			if (i != null)
-		  				fl.getQ().setB(i.getIm()/im);
-		  		}
-			}
-			else {
-				PowerXmlType p = null;
-				if (aclfBus.getLoadCode() == AclfLoadCode.CONST_P)
-					p = xmlEquivLoad.getConstPLoad();
-				else if (aclfBus.getLoadCode() == AclfLoadCode.CONST_I)
-					p = xmlEquivLoad.getConstILoad();
-				else if (aclfBus.getLoadCode() == AclfLoadCode.CONST_Z)	
-					p = xmlEquivLoad.getConstZLoad();
-				
-				if (p != null)
-					loadBus.setLoad(new Complex(p.getRe(), p.getIm()), ToApparentPowerUnit.f(p.getUnit()));				
 			}
 		}
-      */
 	}
-	
 	
 	private void mapSwitchShuntData(ShuntCompensatorXmlType xmlSwitchedShuntData){
 		//TODO 
