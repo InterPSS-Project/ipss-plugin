@@ -62,6 +62,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfGenCode;
+import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.adj.FunctionLoad;
@@ -196,8 +197,7 @@ public class AclfBusDataHelper {
 						throw new InterpssException("For Gen PV bus, equivGenData.desiredVoltage has to be defined, busId: " + aclfBus.getId());
 					double vpu = UnitHelper.vConversion(vXml.getValue(),
 						aclfBus.getBaseVoltage(), ToVoltageUnit.f(vXml.getUnit()), UnitType.PU);
-				    
-					//TODO need to comment out for WECC model QA
+				    //TODO comment out for WECC System QA, to use the input voltage as the PV bus voltage
 					pvBus.setDesiredVoltMag(vpu, UnitType.PU);
 					
 					if (xmlEquivGenData.getQLimit() != null) {
@@ -212,10 +212,12 @@ public class AclfBusDataHelper {
 			else {
 				// remote bus voltage
 				ipssLogger.fine("Bus is a RemoteQBus, id: " + aclfBus.getId());
+				
 					aclfBus.setGenCode(AclfGenCode.GEN_PQ);
 			  		final AclfPQGenBus gen = aclfBus.toPQBus();
 			  		gen.setGen(new Complex(xmlEquivGenData.getPower().getRe(), xmlEquivGenData.getPower().getIm()), 
  					           ToApparentPowerUnit.f(xmlEquivGenData.getPower().getUnit()));
+ 			   
 					String remoteId = BusXmlRef2BusId.fx(xmlEquivGenData.getRemoteVoltageControlBus());
 					if (remoteId != null) {
 						// TODO : the remote bus might located behind the bus in the ODM file
@@ -354,8 +356,63 @@ public class AclfBusDataHelper {
 		}
 	}
 	
-	// TODO
+	
 	private void mapLoadData(BusLoadDataXmlType xmlLoadData) throws InterpssException {
+		double baseKva = aclfBus.getNetwork().getBaseKva();
+		
+		//Bus load code
+		LFLoadCodeEnumType code = xmlLoadData.getEquivLoad().getValue().getCode();
+		aclfBus.setLoadCode(code == LFLoadCodeEnumType.CONST_I ? AclfLoadCode.CONST_I : 
+			(code == LFLoadCodeEnumType.CONST_Z ? AclfLoadCode.CONST_Z : 
+				(code == LFLoadCodeEnumType.CONST_P  ? AclfLoadCode.CONST_P : 
+					 code == LFLoadCodeEnumType.FUNCTION_LOAD?AclfLoadCode.ZIP:
+					AclfLoadCode.NON_LOAD)));
+		
+         // map each connecting load
+		if(xmlLoadData.getContributeLoad()!=null){
+			if(xmlLoadData.getContributeLoad().size()>0){
+				for(JAXBElement<? extends LoadflowLoadDataXmlType> elem: xmlLoadData.getContributeLoad()){
+					if(elem!=null){
+						LoadflowLoadDataXmlType loadElem = elem.getValue();
+						
+						AclfLoad load = CoreObjectFactory.createAclfLoad();
+						aclfBus.getLoadList().add(load);
+						//status
+						load.setStatus(!loadElem.isOffLine());
+					    // load code		
+						code = loadElem.getCode();
+						load.setCode(code == LFLoadCodeEnumType.CONST_I ? AclfLoadCode.CONST_I : 
+							(code == LFLoadCodeEnumType.CONST_Z ? AclfLoadCode.CONST_Z : 
+								(code == LFLoadCodeEnumType.CONST_P  ? AclfLoadCode.CONST_P : 
+									 code == LFLoadCodeEnumType.FUNCTION_LOAD?AclfLoadCode.ZIP:
+									AclfLoadCode.NON_LOAD)));
+						
+
+						PowerXmlType p = loadElem.getConstPLoad(),
+									 i = loadElem.getConstILoad(),
+									 z = loadElem.getConstZLoad();
+
+						if (p != null) {
+							load.setLoadCP(UnitHelper.pConversion( new Complex(p.getRe(),p.getIm()), 
+									baseKva, ToApparentPowerUnit.f(p.getUnit()), UnitType.PU ));
+						}
+						
+						if (i != null) {
+							load.setLoadCI(UnitHelper.pConversion( new Complex(i.getRe(),i.getIm()), 
+									baseKva, ToApparentPowerUnit.f(i.getUnit()), UnitType.PU ));
+						}
+
+						if (z != null) {
+							load.setLoadCZ(UnitHelper.pConversion( new Complex(z.getRe(),z.getIm()), 
+									baseKva, ToApparentPowerUnit.f(z.getUnit()), UnitType.PU ));
+						}
+					  
+				   }
+			   }
+				
+		   }
+		}
+		/*
 		LFLoadCodeEnumType code = xmlLoadData.getEquivLoad().getValue().getCode();
 		aclfBus.setLoadCode(code == LFLoadCodeEnumType.CONST_I ? AclfLoadCode.CONST_I : 
 					(code == LFLoadCodeEnumType.CONST_Z ? AclfLoadCode.CONST_Z : 
@@ -363,6 +420,7 @@ public class AclfBusDataHelper {
 						// during the Aclf adjustment process
 						(code == LFLoadCodeEnumType.CONST_P || code == LFLoadCodeEnumType.FUNCTION_LOAD ? AclfLoadCode.CONST_P : 
 							AclfLoadCode.NON_LOAD)));
+		
 		AclfLoadBus loadBus = aclfBus.toLoadBus();
 		LoadflowLoadDataXmlType xmlEquivLoad = xmlLoadData.getEquivLoad().getValue();
 		if (xmlEquivLoad != null) {
@@ -398,10 +456,10 @@ public class AclfBusDataHelper {
 					im += z.getIm();
 				}
 				
-				/*
-				 * P = P0 * [ Ap + Bp * V + Cp * V*V ], where Cp = 1.0 - Ap - Bp
-                   Q = Q0 * [ Aq + Bq * V + Cq * V*V ], where Cq = 1.0 - Aq - Bq
-				 */
+				
+				 // P = P0 * [ Ap + Bp * V + Cp * V*V ], where Cp = 1.0 - Ap - Bp
+                 // Q = Q0 * [ Aq + Bq * V + Cq * V*V ], where Cq = 1.0 - Aq - Bq
+				 //
 				loadBus.setLoad(new Complex(re, im), ToApparentPowerUnit.f(unit));
 		  		FunctionLoad fl = CoreObjectFactory.createFunctionLoad(aclfBus);
 		  		if (re != 0.0) {
@@ -430,6 +488,7 @@ public class AclfBusDataHelper {
 					loadBus.setLoad(new Complex(p.getRe(), p.getIm()), ToApparentPowerUnit.f(p.getUnit()));				
 			}
 		}
+      */
 	}
 	
 	
