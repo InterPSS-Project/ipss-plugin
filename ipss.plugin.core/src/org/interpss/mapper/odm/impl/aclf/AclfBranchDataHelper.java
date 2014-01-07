@@ -61,7 +61,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import com.interpss.CoreObjectFactory;
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.aclf.Aclf3WXformer;
+import com.interpss.core.aclf.Aclf3WBranch;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
@@ -72,8 +72,8 @@ import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.adpter.AclfLine;
 import com.interpss.core.aclf.adpter.AclfPSXformer;
 import com.interpss.core.aclf.adpter.AclfXformer;
-import com.interpss.core.aclf.adpter.PSXfr3WAdapter;
-import com.interpss.core.aclf.adpter.Xfr3WAdapter;
+import com.interpss.core.aclf.adpter.Aclf3WPSXformer;
+import com.interpss.core.aclf.adpter.Aclf3WXformer;
 import com.interpss.core.net.Branch;
 
 /**
@@ -450,7 +450,7 @@ public class AclfBranchDataHelper {
 	public void setXfr3WBranchData(Xfr3WBranchXmlType xml3WXfr) throws InterpssException {
 		ipssLogger.info("Xfr3WBranchXmlType: " + xml3WXfr.getId());
 		
-		Aclf3WXformer branch3W = (Aclf3WXformer)this.branch;
+		Aclf3WBranch branch3W = (Aclf3WBranch)this.branch;
 		branch3W.setBranchCode(AclfBranchCode.W3_XFORMER);
 		// create three 2W xfr branch objects and a star bus object 
 		branch3W.create2WBranches(AclfBranchCode.XFORMER);
@@ -461,7 +461,7 @@ public class AclfBranchDataHelper {
 		branch3W.getTertAclfBranch().setStatus(!xml3WXfr.isOffLine() && !xml3WXfr.isWind3OffLine());
 		
 		// create a 3W xfr wrapper (adapter) for processing 3W data
-		Xfr3WAdapter xfr3W = branch3W.to3WXfr();
+		Aclf3WXformer xfr3W = branch3W.to3WXfr();
 		
 		setXfr3WData(xml3WXfr, xfr3W);
 	}
@@ -475,7 +475,7 @@ public class AclfBranchDataHelper {
 	public void setPsXfr3WBranchData(PSXfr3WBranchXmlType xmlPsXfr3W) throws InterpssException {
 		ipssLogger.info("PSXfr3WBranchXmlType: " + xmlPsXfr3W.getId());
 		
-		Aclf3WXformer branch3W = (Aclf3WXformer)this.branch;
+		Aclf3WBranch branch3W = (Aclf3WBranch)this.branch;
 		branch3W.setBranchCode(AclfBranchCode.W3_PS_XFORMER);
 		branch3W.create2WBranches(AclfBranchCode.PS_XFORMER);
 		
@@ -484,7 +484,7 @@ public class AclfBranchDataHelper {
 		branch3W.getToAclfBranch().setStatus(!xmlPsXfr3W.isWind2OffLine());
 		branch3W.getTertAclfBranch().setStatus(!xmlPsXfr3W.isWind3OffLine());
 
-		PSXfr3WAdapter psXfr3W = branch3W.toPS3WXfr();
+		Aclf3WPSXformer psXfr3W = branch3W.toPS3WXfr();
 		
 		setXfr3WData(xmlPsXfr3W, psXfr3W);
 /*
@@ -506,8 +506,8 @@ public class AclfBranchDataHelper {
 		}
 	}
 
-	private void setXfr3WData(Xfr3WBranchXmlType xml3WXfr, Xfr3WAdapter xfr3W) throws InterpssException {
-		Aclf3WXformer branch3W = (Aclf3WXformer)this.branch;
+	private void setXfr3WData(Xfr3WBranchXmlType xml3WXfr, Aclf3WXformer xfr3W) throws InterpssException {
+		Aclf3WBranch branch3W = (Aclf3WBranch)this.branch;
 		double baseKva = aclfNet.getBaseKva();
 		
 //        <magnitizingY unit="PU" im="-0.0042" re="0.0012"/>
