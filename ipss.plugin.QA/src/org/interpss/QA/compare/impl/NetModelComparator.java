@@ -13,7 +13,7 @@ import org.interpss.datamodel.bean.aclf.BaseAclfNetBean;
 import org.interpss.numeric.util.NumericUtil;
 
 import com.interpss.common.util.IpssLogger;
-import com.interpss.core.aclf.Aclf3WXformer;
+import com.interpss.core.aclf.Aclf3WBranch;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
@@ -241,8 +241,8 @@ public class NetModelComparator<TBus extends AclfBusBean, TBra extends AclfBranc
 		// calculate 3W Xfr star bus voltage
 		if (this.resultType == ResultFileType.PSSE) {
 			for ( Branch bra : net.getSpecialBranchList()) {
-				if (bra instanceof Aclf3WXformer) {
-					Aclf3WXformer xfr3W = (Aclf3WXformer)bra;
+				if (bra instanceof Aclf3WBranch) {
+					Aclf3WBranch xfr3W = (Aclf3WBranch)bra;
 					xfr3W.calculateStarBusVoltage();
 					AclfBus star = (AclfBus)xfr3W.getStarBus();
 					star.setVoltage(xfr3W.getVoltageStarBus());
