@@ -221,7 +221,7 @@ public class DepPSSECompareFileProcessor extends DepBaseCompareFileProcessor<QAA
 					rec.genq = this.busQ; 
 				}
 				else {
-					Complex busPQ = this.bus.getGenResults();
+					Complex busPQ = this.bus.getNetGenResults();
 					double mw = busPQ.getReal()*this.baseMva;
 					double mvar = busPQ.getImaginary()*this.baseMva;
 					if (!NumericUtil.equals(this.busP, mw, 0.1)) {
@@ -260,7 +260,7 @@ public class DepPSSECompareFileProcessor extends DepBaseCompareFileProcessor<QAA
 					rec.loadq = this.busQ; 
 				}
 				else {
-					Complex busPQ = this.bus.getLoadResults();
+					Complex busPQ = this.bus.getNetLoadResults();
 					double mw = busPQ.getReal()*this.baseMva;
 					double mvar = busPQ.getImaginary()*this.baseMva;
 					if (!NumericUtil.equals(this.busP, mw, 0.1)) {

@@ -86,7 +86,7 @@ public class AclfResultComparator extends NetModelComparator<AclfBusBean, AclfBr
 		 * Compare gen P, Q
 		 */
 		if (bus.isGen()) {
-			Complex busPQ = bus.getGenResults();
+			Complex busPQ = bus.getNetGenResults();
 			double p = busPQ.getReal();
 			double q = busPQ.getImaginary();
 			if (!NumericUtil.equals(rec.gen.re, p, PQErr)) {
@@ -110,7 +110,7 @@ public class AclfResultComparator extends NetModelComparator<AclfBusBean, AclfBr
 		 * Compare load P, Q
 		 */
 		if (bus.isLoad()) {
-			Complex busPQ = bus.getLoadResults();
+			Complex busPQ = bus.getNetLoadResults();
 			double p = busPQ.getReal();
 			double q = busPQ.getImaginary();
 			if (!NumericUtil.equals(rec.load.re, p, PQErr)) {

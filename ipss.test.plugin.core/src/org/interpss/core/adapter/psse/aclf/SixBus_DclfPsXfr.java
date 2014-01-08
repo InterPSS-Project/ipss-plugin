@@ -60,6 +60,8 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
 					.setPsseVersion(PsseVersion.PSSE_30)
 					.load()
 					.getImportedObj();
+		//for (AclfBus bus : net.getBusList())
+		//	bus.initMultiGen();
   		//System.out.println(net.net2String());
 
 	  	net.accept(CoreObjectFactory.createLfAlgoVisitor());
@@ -84,7 +86,7 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
 					.setPsseVersion(PsseVersion.PSSE_30)
 					.load()
 					.getImportedObj();
-  		//System.out.println(net.net2String());
+  		System.out.println(net.net2String());
 		/*
 		net.accept(CoreObjectFactory.createBusNoArrangeVisitor());
 		for (Bus b : net.getBusList())

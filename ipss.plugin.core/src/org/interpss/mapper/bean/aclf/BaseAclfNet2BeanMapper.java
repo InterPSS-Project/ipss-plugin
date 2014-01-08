@@ -71,7 +71,7 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 				(bus.isSwing()? AclfBusBean.GenCode.Swing : 
 					AclfBusBean.GenCode.NonGen));
 				
-		Complex gen = bus.getGenResults();
+		Complex gen = bus.getNetGenResults();
 		bean.gen = new ComplexBean(format(gen));
 
 		bean.load_code = bus.isConstPLoad() ? AclfBusBean.LoadCode.ConstP :
@@ -79,7 +79,7 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 				(bus.isConstILoad() ? AclfBusBean.LoadCode.ConstI : 
 					AclfBusBean.LoadCode.NonLoad));
 
-		Complex load = bus.getLoadResults();
+		Complex load = bus.getNetLoadResults();
 		bean.load = new ComplexBean(format(load));
 		
 		Complex sh = bus.getShuntY();

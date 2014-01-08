@@ -85,7 +85,7 @@ public class DepAclfResultComparator	extends DepDclfResultComparator {
 		/*
 		 * Compare gen P, Q
 		 */
-		Complex busPQ = bus.getGenResults();
+		Complex busPQ = bus.getNetGenResults();
 		double p = busPQ.getReal();
 		double q = busPQ.getImaginary();
 		if (!NumericUtil.equals(rec.genp, p, PQErr)) {
@@ -107,7 +107,7 @@ public class DepAclfResultComparator	extends DepDclfResultComparator {
 		/*
 		 * Compare load P, Q
 		 */
-		busPQ = bus.getLoadResults();
+		busPQ = bus.getNetLoadResults();
 		p = busPQ.getReal();
 		q = busPQ.getImaginary();
 		if (!NumericUtil.equals(rec.loadp, p, PQErr)) {

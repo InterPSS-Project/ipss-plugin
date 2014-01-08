@@ -36,14 +36,14 @@ public class AclfBusDataComparator extends DataComparatorAdapter<AclfBus, AclfBu
 		if (baseBus.getGenCode() != bus.getGenCode()) {
 			this.msg += "\nbus.genCode not equal: " + baseBus.getId() + ", " + baseBus.getGenCode() + "(base), " + bus.getGenCode(); ok = false; }
 
-		if (!NumericUtil.equals(baseBus.getGen(), bus.getGen())) {
-			this.msg += "\nbus.gen not equal: " + baseBus.getId() + ", " + Number2String.toStr(baseBus.getGen()) + "(base), " + Number2String.toStr(bus.getGen()); ok = false; 	}
+		if (!NumericUtil.equals(baseBus.getGenPQ(), bus.getGenPQ())) {
+			this.msg += "\nbus.gen not equal: " + baseBus.getId() + ", " + Number2String.toStr(baseBus.getGenPQ()) + "(base), " + Number2String.toStr(bus.getGenPQ()); ok = false; 	}
 		
 		if (baseBus.getLoadCode() != bus.getLoadCode()) {
 			this.msg += "\nbus.loadCode not equal: " + baseBus.getId() + ", " + baseBus.getLoadCode() + "(base), " + bus.getLoadCode(); ok = false; }
 
-		if (!NumericUtil.equals(baseBus.getLoad(), bus.getLoad())) {
-			this.msg += "\nbus.load not equal: " + baseBus.getId() + ", " + Number2String.toStr(baseBus.getLoad()) + "(base), " + Number2String.toStr(bus.getLoad()); ok = false; 	}
+		if (!NumericUtil.equals(baseBus.getLoadPQ(), bus.getLoadPQ())) {
+			this.msg += "\nbus.load not equal: " + baseBus.getId() + ", " + Number2String.toStr(baseBus.getLoadPQ()) + "(base), " + Number2String.toStr(bus.getLoadPQ()); ok = false; 	}
 
 		if (!NumericUtil.equals(baseBus.getShuntY(), bus.getShuntY())) {
 			this.msg += "\nbus.shuntY not equal: " + baseBus.getId() + ", " + Number2String.toStr(baseBus.getShuntY()) + "(base), " + Number2String.toStr(bus.getShuntY()); ok = false; 	}

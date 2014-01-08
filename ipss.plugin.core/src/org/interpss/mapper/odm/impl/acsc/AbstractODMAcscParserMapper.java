@@ -272,7 +272,7 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 			 *                = equivY_0/v    for Constant current load
 			 * 
 			 */
-			Complex eqivShuntY1= acscBus.getLoad().conjugate();
+			Complex eqivShuntY1= acscBus.getLoadPQ().conjugate();
 			acscBus.setScLoadShuntY1(eqivShuntY1);
 		}
 		else if(acscBus.isFunctionLoad()){
@@ -306,7 +306,7 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 				 *                = equivY_0/v    for Constant current load
 				 * 
 				 */
-				Complex eqivShuntY2= acscBus.getLoad().conjugate();
+				Complex eqivShuntY2= acscBus.getLoadPQ().conjugate();
 				acscBus.setScLoadShuntY2(eqivShuntY2);
 			}
 			else if(acscBus.isFunctionLoad()){
