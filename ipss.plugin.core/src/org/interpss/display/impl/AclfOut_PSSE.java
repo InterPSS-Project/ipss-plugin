@@ -92,7 +92,7 @@ public class AclfOut_PSSE {
 		double qgen = 0.0, qload = 0.0, qshunt = 0.0;
 		char qchar = ' ';
 		if (bus.isGen()) {
-			Complex c = bus.getGenResults();
+			Complex c = bus.getNetGenResults();
 			pgen = pu2Mva * c.getReal();
 			qgen = pu2Mva * c.getImaginary();
 			// R = regulating, L = low limit, H = high limit
@@ -207,7 +207,7 @@ BUS  10002 GZ-HLZ      220.00 CKT     MW     MVAR     MVA  %I 1.0445PU  -47.34  
  FROM GENERATION                    600.0    34.4R  601.0 601 19.095KV               MW     MVAR    1 GD             19 50
  */
 		if (bus.isGen() && !bus.isCapacitor()) {
-			Complex pq = bus.getGenResults();
+			Complex pq = bus.getNetGenResults();
 			s += formatBusLoad("FROM GENERATION", pq.getReal()*factor, pq.getImaginary()*factor, pq.abs()*factor);
 			
 			//double iper = 986;
