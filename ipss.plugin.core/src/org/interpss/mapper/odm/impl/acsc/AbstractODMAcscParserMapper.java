@@ -42,6 +42,7 @@ import org.ieee.odm.schema.BusXmlType;
 import org.ieee.odm.schema.GroundingEnumType;
 import org.ieee.odm.schema.GroundingXmlType;
 import org.ieee.odm.schema.LineShortCircuitXmlType;
+import org.ieee.odm.schema.LoadflowGenDataXmlType;
 import org.ieee.odm.schema.NetworkCategoryEnumType;
 import org.ieee.odm.schema.OriginalDataFormatEnumType;
 import org.ieee.odm.schema.PSXfrShortCircuitXmlType;
@@ -67,6 +68,7 @@ import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.AcscBus;
+import com.interpss.core.acsc.AcscGen;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.BaseAcscNetwork;
 import com.interpss.core.acsc.BusGroundCode;
@@ -252,6 +254,46 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 			setBusScZg(acscBus, acscBus.getBaseVoltage(), acscBus.getNetwork().getBaseKva(), 
 					scGenData.getGrounding());
 	}
+	
+    private void setContributeGenInfo(ShortCircuitBusXmlType busDataXml, AcscBus acscBus){
+    	if(busDataXml.getGenData().getContributeGen()!=null){
+			if(busDataXml.getGenData().getContributeGen().size()>0){
+				for(JAXBElement<? extends LoadflowGenDataXmlType> genElem : busDataXml.getGenData().getContributeGen()){
+					ShortCircuitGenDataXmlType scGenXml = (ShortCircuitGenDataXmlType)genElem.getValue();
+					
+					AcscGen scGen = (AcscGen) acscBus.getGenerator(scGenXml.getId());
+					if(scGen==null){
+						scGen = CoreObjectFactory.createAcscGen();
+						acscBus.getGenList().add(scGen);
+					}
+					//TODO regarding the PU, it should be on Generator base or network base?
+					/* in PSS/E, it is entered in pu on generator MBASE base
+					   in the following zConversion, if the fUnit =tUnit, the result Zout is the same as input Zin
+					 */
+					if(scGenXml.getPotiveZ()!=null){
+						ZXmlType z1=scGenXml.getPotiveZ();
+						Complex z1pu = UnitHelper.zConversion( new Complex(z1.getRe(), z1.getIm()), acscBus.getBaseVoltage(), 
+								acscBus.getNetwork().getBaseKva(), ToZUnit.f(z1.getUnit()), UnitType.PU );
+						scGen.setPosGenZ(z1pu);
+					}
+					if(scGenXml.getNegativeZ()!=null){
+						ZXmlType z2=scGenXml.getNegativeZ();
+						Complex z2pu = UnitHelper.zConversion( new Complex(z2.getRe(), z2.getIm()), acscBus.getBaseVoltage(), 
+								acscBus.getNetwork().getBaseKva(), ToZUnit.f(z2.getUnit()), UnitType.PU );
+						scGen.setNegGenZ(z2pu);
+					}
+					if(scGenXml.getZeroZ()!=null){
+						ZXmlType z0=scGenXml.getZeroZ();
+						Complex z0pu = UnitHelper.zConversion( new Complex(z0.getRe(), z0.getIm()), acscBus.getBaseVoltage(), 
+								acscBus.getNetwork().getBaseKva(), ToZUnit.f(z0.getUnit()), UnitType.PU );
+						scGen.setZeroGenZ(z0pu);
+					}
+					
+					
+				}
+			}
+		}
+    }
 
 	private void setBusLoadEquivShuntY(ShortCircuitBusXmlType acscBusXml, AcscBus acscBus) {
 		// at this point we assume that acscContributeLoadList has been consolidated to
