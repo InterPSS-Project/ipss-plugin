@@ -77,7 +77,7 @@ public class GuideSample_TestCase extends CorePluginTestSetup {
   		Complex p = swing.getGenResults(UnitType.mW);
   		//System.out.println(p.getReal() + ", " + p.getImaginary());
   		assertTrue(Math.abs(p.getReal()-258.6568)<0.01);
-  		assertTrue(Math.abs(p.getImaginary()-104.04017)<0.01);
+  		assertTrue(Math.abs(p.getImaginary()-104.05312)<0.01);
 	}
 
 	@Test
