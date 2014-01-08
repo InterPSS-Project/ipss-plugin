@@ -172,11 +172,11 @@ public class AclfBusDataHelper {
 		if (xmlEquivGenData.getCode() == LFGenCodeEnumType.PQ) {
 			aclfBus.setGenCode(AclfGenCode.GEN_PQ);
 			AclfPQGenBus pqBus = aclfBus.toPQBus();
+			double p = xmlEquivGenData.getPower().getRe(), 
+	               q =  xmlEquivGenData.getPower().getIm();
 			if (xmlEquivGenData.getPower() != null)
-				pqBus.setGen(new Complex(xmlEquivGenData.getPower().getRe(), 
-					                 xmlEquivGenData.getPower().getIm()),
-					                 ToApparentPowerUnit.f(xmlEquivGenData.getPower().getUnit()));
-			if (xmlEquivGenData.getVoltageLimit() != null) {
+				pqBus.setGen(new Complex(p, q), ToApparentPowerUnit.f(xmlEquivGenData.getPower().getUnit()));
+			if (p != 0.0 && q != 0.0 && xmlEquivGenData.getVoltageLimit() != null) {
 			  		final PQBusLimit pqLimit = CoreObjectFactory.createPQBusLimit(aclfBus);
 			  		pqLimit.setVLimit(new LimitType(xmlEquivGenData.getVoltageLimit().getMax(), 
 			  										xmlEquivGenData.getVoltageLimit().getMin()), 
