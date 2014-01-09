@@ -41,6 +41,7 @@ import org.ieee.odm.schema.GovernorModelXmlType;
 import org.ieee.odm.schema.IpssStudyScenarioXmlType;
 import org.ieee.odm.schema.LFGenCodeEnumType;
 import org.ieee.odm.schema.LineDStabXmlType;
+import org.ieee.odm.schema.LoadflowGenDataXmlType;
 import org.ieee.odm.schema.MachineModelXmlType;
 import org.ieee.odm.schema.NetworkCategoryEnumType;
 import org.ieee.odm.schema.OriginalDataFormatEnumType;
@@ -59,6 +60,7 @@ import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabBus;
+import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.mach.Machine;
@@ -194,7 +196,7 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 	}	
 	
 	private void setDStabBusData(DStabBusXmlType dstabBusXml, DStabBus dstabBus)  throws InterpssException {
-		int cnt = 0;
+		
 		/*
 		 * It is assumed that contribute generators are consolidated to the equivGen, only the Aclf and Acsc part
 		 */
@@ -210,36 +212,53 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 		   
 				DStabGenDataXmlType dyGen = null;
 				if (dstabBusXml.getGenData().getContributeGen() != null && dstabBusXml.getGenData().getContributeGen().size() == 1) {
-					dyGen = (DStabGenDataXmlType)dstabBusXml.getGenData().getContributeGen().get(0).getValue();
+					for(JAXBElement<? extends LoadflowGenDataXmlType> dyGenElem: dstabBusXml.getGenData().getContributeGen()){
+					    dyGen = (DStabGenDataXmlType)dyGenElem.getValue();
+					    if(dstabBus.getGenerator(dyGen.getId()) instanceof DStabGen){
+					         DStabGen dyGenObj=(DStabGen) dstabBus.getGenerator(dyGen.getId());
+					         setDynGenData(dstabBus,dyGen,dyGenObj);
+					    }
+					    else{
+					    	ipssLogger.severe("The generator, Id="+ dyGen.getId()+ " of the bus # "+dstabBus.getId()+
+					    			" is NOT of DStabGen type!");
+					    }
+					}
 				}
 				else 
 					dyGen = (DStabGenDataXmlType)dstabBusXml.getGenData().getEquivGen().getValue();
 				
-				// create the machine model and added to the parent bus object
-				MachineModelXmlType machXmlRec = dyGen.getMachineModel().getValue();
-				String machId = dstabBus.getId() + "-mach" + ++cnt;
-				Machine mach = new MachDataHelper(dstabBus, dyGen.getMvaBase(), dyGen.getRatedMachVoltage())
-									.createMachine(machXmlRec, machId);
-				
-				if (dyGen.getExciter() != null) {
-					// create the exc model and add to the parent machine object
-					ExciterModelXmlType excXml = dyGen.getExciter().getValue();
-					new ExciterDataHelper(mach).createExciter(excXml);
-
-					if (dyGen.getStabilizer() != null) {
-						// create the pss model and add to the parent
-						// machine object
-						StabilizerModelXmlType pssXml = dyGen.getStabilizer().getValue();
-						new StabilizerDataHelper(mach).createStabilizer(pssXml);
-					}
-				}
-
-				if (dyGen.getGovernor() != null) {
-					// create the gov model and add to the parent machine object
-					GovernorModelXmlType govXml = dyGen.getGovernor().getValue();
-					new GovernorDataHelper(mach).createGovernor(govXml);
-				}
+				setDynGenData(dstabBus,dyGen,null);
 			}
 	   }	
     }
+
+	private void setDynGenData(DStabBus dstabBus, 
+			DStabGenDataXmlType dyGen, DStabGen dyGenObj) throws InterpssException {
+		// create the machine model and added to the parent bus object
+		MachineModelXmlType machXmlRec = dyGen.getMachineModel().getValue();
+		String machId = dstabBus.getId() + "-mach" + (dyGenObj==null?1:dyGenObj.getId());
+		Machine mach = new MachDataHelper(dstabBus, dyGen.getMvaBase(), dyGen.getRatedMachVoltage())
+							.createMachine(machXmlRec, machId);
+		if(dyGenObj!=null)
+			dyGenObj.setMach(mach);
+		
+		if (dyGen.getExciter() != null) {
+			// create the exc model and add to the parent machine object
+			ExciterModelXmlType excXml = dyGen.getExciter().getValue();
+			new ExciterDataHelper(mach).createExciter(excXml);
+
+			if (dyGen.getStabilizer() != null) {
+				// create the pss model and add to the parent
+				// machine object
+				StabilizerModelXmlType pssXml = dyGen.getStabilizer().getValue();
+				new StabilizerDataHelper(mach).createStabilizer(pssXml);
+			}
+		}
+
+		if (dyGen.getGovernor() != null) {
+			// create the gov model and add to the parent machine object
+			GovernorModelXmlType govXml = dyGen.getGovernor().getValue();
+			new GovernorDataHelper(mach).createGovernor(govXml);
+		}
+	}
 }

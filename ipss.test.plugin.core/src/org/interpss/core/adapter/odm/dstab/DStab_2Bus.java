@@ -33,12 +33,14 @@ import java.io.FileInputStream;
 import org.ieee.odm.ODMObjectFactory;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.core.dstab.DStabTestSetupBase;
+import org.interpss.display.AclfOutFunc;
 import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.interpss.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
 import com.interpss.SimuObjectFactory;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateVariableRecorder;
@@ -58,8 +60,10 @@ public class DStab_2Bus extends DStabTestSetupBase {
 		
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		assertTrue(aclfAlgo.loadflow());
-			//System.out.println(AclfOutFunc.loadFlowSummary(simuCtx.getDStabilityNet()));
-				
+		System.out.println(AclfOutFunc.loadFlowSummary(dstabAlgo.getNetwork()));
+		DStabilityNetwork dsNet = dstabAlgo.getNetwork();
+		System.out.println(dstabAlgo.getNetwork().net2String());
+		
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.001);
 		dstabAlgo.setTotalSimuTimeSec(0.01);

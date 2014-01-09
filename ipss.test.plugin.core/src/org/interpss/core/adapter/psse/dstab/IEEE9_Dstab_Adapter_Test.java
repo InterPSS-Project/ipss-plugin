@@ -169,6 +169,7 @@ public class IEEE9_Dstab_Adapter_Test {
 	    assertTrue(mach.getTd01()==8.96);
 	    assertTrue(mach.getTd011()==0.04);
 	    assertTrue(mach.getTq011()==0.06);
+	    
 	    /*
 	     * check sequence network data
 	     */
