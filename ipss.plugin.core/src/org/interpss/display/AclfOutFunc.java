@@ -97,7 +97,7 @@ public class AclfOutFunc {
 	 * @return
 	 */
 	public static StringBuffer loadFlowSummary(BaseAclfNetwork<?,?> net, boolean includeAdj) {
-		StringBuffer str = new StringBuffer(_loadFlowSummary((AclfNetwork) net));
+		StringBuffer str = new StringBuffer(_loadFlowSummary(net));
 
 		try {
 			if (includeAdj) {
@@ -160,7 +160,7 @@ public class AclfOutFunc {
 		return str;
 	}
 
-	private static StringBuffer _loadFlowSummary(AclfNetwork net) {
+	private static StringBuffer _loadFlowSummary(BaseAclfNetwork<?,?> net) {
 		final StringBuffer str = new StringBuffer("");
 		try {
 			str.append("\n                          Load Flow Summary\n");
@@ -368,7 +368,7 @@ public class AclfOutFunc {
 	 * @param net
 	 * @return
 	 */
-	public static StringBuffer branchMvaRatingViolationList(AclfNetwork net) {
+	public static StringBuffer branchMvaRatingViolationList(BaseAclfNetwork<?, ?> net) {
 		StringBuffer str = new StringBuffer("");
 		if (net.hasBranchMavRatingViolation()) {
 			str.append("\n\n");
@@ -390,7 +390,7 @@ public class AclfOutFunc {
 		return str;
 	}
 
-	private static void processBranchMvaRatingViolation(AclfNetwork net,
+	private static void processBranchMvaRatingViolation(BaseAclfNetwork<?, ?> net,
 			StringBuffer str, AclfBranch bra) {
 		if (bra.isActive()) {
 			AclfBranchRating adapter = BranchRatingAptr.f(bra);
