@@ -57,6 +57,7 @@ import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.CoreObjectFactory;
+import com.interpss.DStabObjectFactory;
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBus;
@@ -77,6 +78,8 @@ import com.interpss.core.aclf.adpter.AclfLoadBusAdapter;
 import com.interpss.core.aclf.adpter.AclfPQGenBus;
 import com.interpss.core.aclf.adpter.AclfPVGenBus;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
+import com.interpss.core.acsc.AcscBus;
+import com.interpss.dstab.DStabBus;
 
 /**
  * Aclf bus data ODM mapping helper functions
@@ -279,7 +282,14 @@ public class AclfBusDataHelper {
 				LoadflowGenDataXmlType xmlGen= elem.getValue();
 				
 				//Map load flow generator data
-				AclfGen gen= CoreObjectFactory.createAclfGen();
+				AclfGen gen= null;
+				if(aclfBus  instanceof DStabBus)
+					gen = DStabObjectFactory.createDStabGen();
+				else if (aclfBus  instanceof AcscBus)
+					gen = CoreObjectFactory.createAcscGen();
+				else 
+				   gen = CoreObjectFactory.createAclfGen();
+				
 				gen.setId(xmlGen.getId());
 				
 				gen.setStatus(!xmlGen.isOffLine());
