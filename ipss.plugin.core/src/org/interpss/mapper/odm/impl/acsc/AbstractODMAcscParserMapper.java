@@ -215,8 +215,10 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 				acscBusXml.setScCode(ShortCircuitBusEnumType.NON_CONTRIBUTING);
 		}
 		
-		if (acscBusXml.getScCode() == ShortCircuitBusEnumType.CONTRIBUTING) 
+		if (acscBusXml.getScCode() == ShortCircuitBusEnumType.CONTRIBUTING){ 
 			setContributeBusInfo(acscBusXml, acscBus);
+			setContributeGenInfo(acscBusXml, acscBus);
+		}
 		else  // non-contributing
 			setNonContributeBusFormInfo(acscBus);
 		
