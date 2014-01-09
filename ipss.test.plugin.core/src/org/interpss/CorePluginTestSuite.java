@@ -39,6 +39,7 @@ import org.interpss.core.dcsys.POC_Test2_2;
 import org.interpss.core.dcsys.POC_Test2_3;
 import org.interpss.core.dcsys.PVModelList_2BusTest;
 import org.interpss.core.dist.DistSys_Test;
+import org.interpss.core.dstab.DStab_IEEE9Bus_Test;
 import org.interpss.core.dstab.cml.block.DelayControlBlockTests;
 import org.interpss.core.dstab.cml.block.FilterControlBlockTests;
 import org.interpss.core.dstab.cml.block.IntegrationControlBlockTests;
@@ -95,6 +96,9 @@ import org.junit.runners.Suite.SuiteClasses;
 
 	// DStab ODM
 	DStab_2Bus.class,
+	
+	//DStab PSS/E
+	DStab_IEEE9Bus_Test.class,
 	
 	// Dist
 	DistLF14Bus_PathLF_Test.class,
