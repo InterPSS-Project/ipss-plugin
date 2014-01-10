@@ -36,6 +36,7 @@ import static org.interpss.mapper.odm.ODMUnitHelper.ToYUnit;
 import javax.xml.bind.JAXBElement;
 
 import org.apache.commons.math3.complex.Complex;
+import org.ieee.odm.model.aclf.AclfParserHelper;
 import org.ieee.odm.schema.AngleXmlType;
 import org.ieee.odm.schema.ApparentPowerUnitType;
 import org.ieee.odm.schema.BusGenDataXmlType;
@@ -87,9 +88,9 @@ import com.interpss.dstab.DStabBus;
  * @author mzhou
  *
  */
-public class AclfBusDataHelper {
+public class AclfBusDataHelper<TBus extends AclfBus> {
 	private BaseAclfNetwork<?,?> aclfNet = null;
-	private AclfBus aclfBus = null;
+	private TBus bus = null;
 	
 	/**
 	 * constructor
@@ -105,8 +106,8 @@ public class AclfBusDataHelper {
 	 * 
 	 * @param bus
 	 */
-	public void setAclfBus(AclfBus bus) {
-		this.aclfBus = bus;
+	public void setBus(TBus bus) {
+		this.bus = bus;
 	}
 	
 	/**
@@ -120,14 +121,14 @@ public class AclfBusDataHelper {
 		double vpu = 1.0;
 		if (vXml != null) {
 			UnitType unit = ToVoltageUnit.f(vXml.getUnit());
-			vpu = UnitHelper.vConversion(vXml.getValue(), aclfBus.getBaseVoltage(), unit, UnitType.PU);
+			vpu = UnitHelper.vConversion(vXml.getValue(), bus.getBaseVoltage(), unit, UnitType.PU);
 		}
 		double angRad = 0.0;
 		if (xmlBusData.getAngle() !=  null) {
 			UnitType unit = ToAngleUnit.f(xmlBusData.getAngle().getUnit()); 
 			angRad = UnitHelper.angleConversion(xmlBusData.getAngle().getValue(), unit, UnitType.Rad); 
 		}
-		aclfBus.setVoltage(vpu, angRad);
+		bus.setVoltage(vpu, angRad);
 		//System.out.println(aclfBus.getId() + "  " + Number2String.toStr(aclfBus.getVoltage()));
 
 		if (xmlBusData.getGenData()!=null) {
@@ -139,7 +140,7 @@ public class AclfBusDataHelper {
 				aclfBus.setGenCode(AclfGenCode.NON_GEN);
 			*/
 		} else {
-			aclfBus.setGenCode(AclfGenCode.NON_GEN);
+			bus.setGenCode(AclfGenCode.NON_GEN);
 		}
 
 		if (xmlBusData.getLoadData() != null) {
@@ -151,7 +152,7 @@ public class AclfBusDataHelper {
 				aclfBus.setLoadCode(AclfLoadCode.NON_LOAD);
 			*/	
 		} else {
-			aclfBus.setLoadCode(AclfLoadCode.NON_LOAD);
+			bus.setLoadCode(AclfLoadCode.NON_LOAD);
 		}
 
 		if (xmlBusData.getShuntYData() != null && xmlBusData.getShuntYData().getEquivY() != null) {
@@ -159,9 +160,9 @@ public class AclfBusDataHelper {
 //			byte unit = shuntY.getUnit() == YUnitType.MVAR? UnitType.mVar : UnitType.PU;
 			UnitType unit = ToYUnit.f(shuntY.getUnit());
 			Complex ypu = UnitHelper.yConversion(new Complex(shuntY.getRe(), shuntY.getIm()),
-					aclfBus.getBaseVoltage(), aclfNet.getBaseKva(), unit, UnitType.PU);
+					bus.getBaseVoltage(), aclfNet.getBaseKva(), unit, UnitType.PU);
 			//System.out.println("----------->" + shuntY.getIm() + ", " + shuntY.getUnit() + ", " + ypu.getImaginary());
-			aclfBus.setShuntY(ypu);
+			bus.setShuntY(ypu);
 		}
 		
 		if(xmlBusData.getShuntCompensator()!=null){
@@ -170,58 +171,63 @@ public class AclfBusDataHelper {
 	}
 	
 	private void mapGenData(BusGenDataXmlType xmlGenData) throws InterpssException {
-		LoadflowGenDataXmlType xmlEquivGenData = xmlGenData.getEquivGen().getValue();
-		VoltageXmlType vXml = xmlEquivGenData.getDesiredVoltage();
-		if (xmlEquivGenData.getCode() == LFGenCodeEnumType.PQ) {
-			aclfBus.setGenCode(AclfGenCode.GEN_PQ);
-			AclfPQGenBus pqBus = aclfBus.toPQBus();
-			double p = xmlEquivGenData.getPower().getRe(), 
-	               q =  xmlEquivGenData.getPower().getIm();
-			if (xmlEquivGenData.getPower() != null)
-				pqBus.setGen(new Complex(p, q), ToApparentPowerUnit.f(xmlEquivGenData.getPower().getUnit()));
-			if (p != 0.0 && q != 0.0 && xmlEquivGenData.getVoltageLimit() != null) {
-			  		final PQBusLimit pqLimit = CoreObjectFactory.createPQBusLimit(aclfBus);
-			  		pqLimit.setVLimit(new LimitType(xmlEquivGenData.getVoltageLimit().getMax(), 
-			  										xmlEquivGenData.getVoltageLimit().getMin()), 
-			  										ToVoltageUnit.f(xmlEquivGenData.getVoltageLimit().getUnit()));						
+		LoadflowGenDataXmlType xmlDefaultGen = AclfParserHelper.getDefaultGen(xmlGenData);
+		VoltageXmlType vXml = xmlDefaultGen.getDesiredVoltage();
+		if (xmlDefaultGen.getCode() == LFGenCodeEnumType.PQ) {
+			bus.setGenCode(AclfGenCode.GEN_PQ);
+			AclfPQGenBus pqBus = bus.toPQBus();
+			double p = xmlDefaultGen.getPower().getRe(), 
+	               q = xmlDefaultGen.getPower().getIm();
+			if (xmlDefaultGen.getPower() != null)
+				pqBus.setGen(new Complex(p, q), ToApparentPowerUnit.f(xmlDefaultGen.getPower().getUnit()));
+			if (p != 0.0 || q != 0.0) {
+				if (xmlDefaultGen.getVoltageLimit() != null) {
+			  		final PQBusLimit pqLimit = CoreObjectFactory.createPQBusLimit(bus);
+			  		pqLimit.setVLimit(new LimitType(xmlDefaultGen.getVoltageLimit().getMax(), 
+			  										xmlDefaultGen.getVoltageLimit().getMin()), 
+			  										ToVoltageUnit.f(xmlDefaultGen.getVoltageLimit().getUnit()));						
+				}
 			}
-		} else if (xmlEquivGenData.getCode() == LFGenCodeEnumType.PV &&
-				xmlEquivGenData != null) {
-			if (xmlEquivGenData.getRemoteVoltageControlBus() == null) {
-				aclfBus.setGenCode(AclfGenCode.GEN_PV);
-				AclfPVGenBus pvBus = aclfBus.toPVBus();
+			else {
+				bus.setGenCode(AclfGenCode.NON_GEN);
+			}
+		} else if (xmlDefaultGen.getCode() == LFGenCodeEnumType.PV &&
+				xmlDefaultGen != null) {
+			if (xmlDefaultGen.getRemoteVoltageControlBus() == null) {
+				bus.setGenCode(AclfGenCode.GEN_PV);
+				AclfPVGenBus pvBus = bus.toPVBus();
 				//if (xmlEquivGenData == null)
 				//	System.out.print(busXmlData);
-				if (xmlEquivGenData.getPower() != null) {
-					pvBus.setGenP(xmlEquivGenData.getPower().getRe(),
-							ToApparentPowerUnit.f(xmlEquivGenData.getPower().getUnit()));
+				if (xmlDefaultGen.getPower() != null) {
+					pvBus.setGenP(xmlDefaultGen.getPower().getRe(),
+							ToApparentPowerUnit.f(xmlDefaultGen.getPower().getUnit()));
 				
 					if (vXml == null)
-						throw new InterpssException("For Gen PV bus, equivGenData.desiredVoltage has to be defined, busId: " + aclfBus.getId());
+						throw new InterpssException("For Gen PV bus, equivGenData.desiredVoltage has to be defined, busId: " + bus.getId());
 					double vpu = UnitHelper.vConversion(vXml.getValue(),
-						aclfBus.getBaseVoltage(), ToVoltageUnit.f(vXml.getUnit()), UnitType.PU);
+						bus.getBaseVoltage(), ToVoltageUnit.f(vXml.getUnit()), UnitType.PU);
 				    //TODO comment out for WECC System QA, to use the input voltage as the PV bus voltage
 					pvBus.setDesiredVoltMag(vpu, UnitType.PU);
 					
-					if (xmlEquivGenData.getQLimit() != null) {
-  			  			final PVBusLimit pvLimit = CoreObjectFactory.createPVBusLimit(aclfBus);
-  			  			pvLimit.setQLimit(new LimitType(xmlEquivGenData.getQLimit().getMax(), 
-  			  										xmlEquivGenData.getQLimit().getMin()), 
-  			  									ToReactivePowerUnit.f(xmlEquivGenData.getQLimit().getUnit()));
-  			  			pvLimit.setStatus(xmlEquivGenData.getQLimit().isActive());
+					if (xmlDefaultGen.getQLimit() != null) {
+  			  			final PVBusLimit pvLimit = CoreObjectFactory.createPVBusLimit(bus);
+  			  			pvLimit.setQLimit(new LimitType(xmlDefaultGen.getQLimit().getMax(), 
+  			  										xmlDefaultGen.getQLimit().getMin()), 
+  			  									ToReactivePowerUnit.f(xmlDefaultGen.getQLimit().getUnit()));
+  			  			pvLimit.setStatus(xmlDefaultGen.getQLimit().isActive());
 					}
 				}
 			}
 			else {
 				// remote bus voltage
-				ipssLogger.fine("Bus is a RemoteQBus, id: " + aclfBus.getId());
+				ipssLogger.fine("Bus is a RemoteQBus, id: " + bus.getId());
 				
-					aclfBus.setGenCode(AclfGenCode.GEN_PQ);
-			  		final AclfPQGenBus gen = aclfBus.toPQBus();
-			  		gen.setGen(new Complex(xmlEquivGenData.getPower().getRe(), xmlEquivGenData.getPower().getIm()), 
- 					           ToApparentPowerUnit.f(xmlEquivGenData.getPower().getUnit()));
+					bus.setGenCode(AclfGenCode.GEN_PQ);
+			  		final AclfPQGenBus gen = bus.toPQBus();
+			  		gen.setGen(new Complex(xmlDefaultGen.getPower().getRe(), xmlDefaultGen.getPower().getIm()), 
+ 					           ToApparentPowerUnit.f(xmlDefaultGen.getPower().getUnit()));
  			   
-					String remoteId = BusXmlRef2BusId.fx(xmlEquivGenData.getRemoteVoltageControlBus());
+					String remoteId = BusXmlRef2BusId.fx(xmlDefaultGen.getRemoteVoltageControlBus());
 					if (remoteId != null) {
 						// TODO : the remote bus might located behind the bus in the ODM file
 						// The remote bus to be adjusted is normally defined as a PV bus. It needs to
@@ -233,66 +239,64 @@ public class AclfBusDataHelper {
 	  	  					if (remoteBus.isGenPV())
 	  	  						remoteBus.setGenCode(AclfGenCode.GEN_PQ);
 
-	  	  			  		final RemoteQBus reQBus = CoreObjectFactory.createRemoteQBus(aclfBus, 
+	  	  			  		final RemoteQBus reQBus = CoreObjectFactory.createRemoteQBus(bus, 
 	  	  			  				RemoteQControlType.BUS_VOLTAGE, remoteId);
-	  	  			  		reQBus.setQLimit(new LimitType(xmlEquivGenData.getQLimit().getMax(), 
-	  														xmlEquivGenData.getQLimit().getMin()), 
-	  														ToReactivePowerUnit.f(xmlEquivGenData.getQLimit().getUnit()));						
-	  	  			  		reQBus.setVSpecified(UnitHelper.vConversion(xmlEquivGenData.getDesiredVoltage().getValue(),
-	  								aclfBus.getBaseVoltage(), ToVoltageUnit.f(vXml.getUnit()), UnitType.PU));					
+	  	  			  		reQBus.setQLimit(new LimitType(xmlDefaultGen.getQLimit().getMax(), 
+	  														xmlDefaultGen.getQLimit().getMin()), 
+	  														ToReactivePowerUnit.f(xmlDefaultGen.getQLimit().getUnit()));						
+	  	  			  		reQBus.setVSpecified(UnitHelper.vConversion(xmlDefaultGen.getDesiredVoltage().getValue(),
+	  								bus.getBaseVoltage(), ToVoltageUnit.f(vXml.getUnit()), UnitType.PU));					
 	  					}
 					}
 			}
-		} else if (xmlEquivGenData.getCode() == LFGenCodeEnumType.SWING) {
-			aclfBus.setGenCode(AclfGenCode.SWING);
-			AclfSwingBus swing = aclfBus.toSwingBus();
+		} else if (xmlDefaultGen.getCode() == LFGenCodeEnumType.SWING) {
+			bus.setGenCode(AclfGenCode.SWING);
+			AclfSwingBus swing = bus.toSwingBus();
 			double vpu = UnitHelper.vConversion(vXml.getValue(),
-					aclfBus.getBaseVoltage(), ToVoltageUnit.f(vXml.getUnit()), UnitType.PU);
-			AngleXmlType angXml = xmlGenData.getEquivGen().getValue().getDesiredAngle(); 
+					bus.getBaseVoltage(), ToVoltageUnit.f(vXml.getUnit()), UnitType.PU);
+			AngleXmlType angXml = xmlDefaultGen.getDesiredAngle(); 
 			double angRad = UnitHelper.angleConversion(angXml.getValue(),
 					ToAngleUnit.f(angXml.getUnit()), UnitType.Rad);				
 			swing.setDesiredVoltMag(vpu, UnitType.PU);
 			swing.setDesiredVoltAng(angRad, UnitType.Rad);		
-			if (xmlEquivGenData.getPower() != null) {
-				double pPU = UnitHelper.pConversion(xmlEquivGenData.getPower().getRe(), aclfNet.getBaseKva(), 
-						ToApparentPowerUnit.f(xmlEquivGenData.getPower().getUnit()), UnitType.PU);
+			if (xmlDefaultGen.getPower() != null) {
+				double pPU = UnitHelper.pConversion(xmlDefaultGen.getPower().getRe(), aclfNet.getBaseKva(), 
+						ToApparentPowerUnit.f(xmlDefaultGen.getPower().getUnit()), UnitType.PU);
 				swing.getBus().setGenP(pPU);
 			}
 		} else {
-			aclfBus.setGenCode(AclfGenCode.NON_GEN);
+			bus.setGenCode(AclfGenCode.NON_GEN);
 		}
 		
-		if (xmlEquivGenData.getMwControlParticipateFactor() != null)
-			aclfBus.setGenPartFactor(xmlEquivGenData.getMwControlParticipateFactor());
+		if (xmlDefaultGen.getMwControlParticipateFactor() != null)
+			bus.setGenPartFactor(xmlDefaultGen.getMwControlParticipateFactor());
 		
 		//map contributing generator data 
 		mapContributeGenListData(xmlGenData);
 	}
 	
 	private void mapContributeGenListData(BusGenDataXmlType xmlGenData) throws InterpssException{
-		double baseKva = aclfBus.getNetwork().getBaseKva();
+		LoadflowGenDataXmlType xmlDefaultGen = AclfParserHelper.getDefaultGen(xmlGenData);
+		
+		double baseKva = bus.getNetwork().getBaseKva();
 		if(xmlGenData.getContributeGen()!=null){
 			/*
 			 * in general, gen code is defined at the equivGen level.
 			 */
-			LFGenCodeEnumType genCode = xmlGenData.getEquivGen().getValue().getCode();
+			LFGenCodeEnumType genCode = xmlDefaultGen.getCode();
+			int genCnt = 1;
 			for(JAXBElement<? extends LoadflowGenDataXmlType> elem :xmlGenData.getContributeGen()){
 				if(elem!=null){
 					
 				LoadflowGenDataXmlType xmlGen= elem.getValue();
 				
 				//Map load flow generator data
-				AclfGen gen= null;
-				if(aclfBus  instanceof DStabBus)
-					gen = DStabObjectFactory.createDStabGen();
-				else if (aclfBus  instanceof AcscBus)
-					gen = CoreObjectFactory.createAcscGen();
-				else 
-				   gen = CoreObjectFactory.createAclfGen();
+				AclfGen gen= this.bus instanceof DStabBus? DStabObjectFactory.createDStabGen() :
+								this.bus instanceof AcscBus? CoreObjectFactory.createAcscGen() : 
+									CoreObjectFactory.createAclfGen();
+				gen.setId(xmlGen.getId()!=null?xmlGen.getId():this.bus.getId()+"-G"+genCnt++);
 				
-				gen.setId(xmlGen.getId());
-				
-				gen.setStatus(!xmlGen.isOffLine());
+				gen.setStatus(xmlGen.isOffLine()==null?true:!xmlGen.isOffLine());
 				/*
 				double Mva =xmlGen.getMvaBase().getValue();
 				double MvaFactor = xmlGen.getMvaBase().getUnit()==ApparentPowerUnitType.MVA?1.0:
@@ -304,16 +308,16 @@ public class AclfBusDataHelper {
 								genCode == LFGenCodeEnumType.PQ? AclfGenCode.GEN_PQ :
 									genCode == LFGenCodeEnumType.PV? AclfGenCode.GEN_PV : AclfGenCode.NON_GEN);
 				
-				gen.setMvaBase(UnitHelper.pConversion(xmlGen.getMvaBase().getValue(), 
-						baseKva, ToApparentPowerUnit.f(xmlGen.getMvaBase().getUnit()), UnitType.mVA ));
+				double genMva = xmlGen.getMvaBase() != null? xmlGen.getMvaBase().getValue() : baseKva*0.001;
+				gen.setMvaBase(genMva);
 				
 				if (xmlGen.getDesiredVoltage() != null)
 					gen.setDesiredVoltMag(UnitHelper.vConversion(xmlGen.getDesiredVoltage().getValue(),
-						aclfBus.getBaseVoltage(), ToVoltageUnit.f(xmlGen.getDesiredVoltage().getUnit()), UnitType.PU));
+						bus.getBaseVoltage(), ToVoltageUnit.f(xmlGen.getDesiredVoltage().getUnit()), UnitType.PU));
 				
 				PowerXmlType genPower = xmlGen.getPower();
 				
-				Complex genPQ= new Complex(genPower.getRe(),genPower.getIm());
+				Complex genPQ= genPower!=null? new Complex(genPower.getRe(),genPower.getIm()) : new Complex(0.0,0.0);
 				/*
 				double genFactor = genPower.getUnit()==ApparentPowerUnitType.MVA?1.0E-2:
 							genPower.getUnit()==ApparentPowerUnitType.KVA?1.0E-5:
@@ -322,8 +326,8 @@ public class AclfBusDataHelper {
 				*/
 				
 				//AclfGen power is defined in pu, system MVA-based
-				gen.setGen(UnitHelper.pConversion(genPQ, 
-						baseKva, ToApparentPowerUnit.f(xmlGen.getPower().getUnit()), UnitType.PU ));
+				gen.setGen(UnitHelper.pConversion(genPQ, baseKva, 
+						ToApparentPowerUnit.f(xmlGen.getPower()==null?ApparentPowerUnitType.PU:xmlGen.getPower().getUnit()), UnitType.PU ));
 				
 				if(xmlGen.getSourceZ()!=null)
 				gen.setSourceZ(new Complex(xmlGen.getSourceZ().getRe(),xmlGen.getSourceZ().getIm()));
@@ -352,14 +356,13 @@ public class AclfBusDataHelper {
 				}
 				
 				
-				gen.setMvarControlPFactor(xmlGen.getMvarVControlParticipateFactor());
+				gen.setMvarControlPFactor(xmlGen.getMvarVControlParticipateFactor()!=null?xmlGen.getMvarVControlParticipateFactor():1.0);
 				
 				//MW pf is optional
-				if(xmlGen.getMwControlParticipateFactor()!=null)
-				gen.setMwControlPFactor(xmlGen.getMwControlParticipateFactor());
+				gen.setMwControlPFactor(xmlGen.getMwControlParticipateFactor()!=null?xmlGen.getMwControlParticipateFactor():1.0);
 				
 				//add the generator to the bus GenList
-				aclfBus.getGenList().add(gen);
+				bus.getGenList().add(gen);
 				
 				}
 			}
@@ -368,33 +371,33 @@ public class AclfBusDataHelper {
 	
 	
 	private void mapLoadData(BusLoadDataXmlType xmlLoadData) throws InterpssException {
-		double baseKva = aclfBus.getNetwork().getBaseKva();
-		aclfBus.setLoadCode(AclfLoadCode.NON_LOAD);
+		double baseKva = bus.getNetwork().getBaseKva();
+		bus.setLoadCode(AclfLoadCode.NON_LOAD);
 		
 		/*
 		 * we assume that the equivLoad override the contributing load list
 		 */
-		LoadflowLoadDataXmlType xmlEquivLoad = xmlLoadData.getEquivLoad().getValue();
-		if (xmlEquivLoad != null && xmlEquivLoad.getCode() != null) {
+		LoadflowLoadDataXmlType xmlDefaultLoad = AclfParserHelper.getDefaultLoad(xmlLoadData);
+		if (xmlDefaultLoad != null && xmlDefaultLoad.getCode() != null) {
 			// to detect the <equivLoad/> situation
 			//Bus load code
-			LFLoadCodeEnumType code = xmlEquivLoad.getCode();
-			aclfBus.setLoadCode(code == LFLoadCodeEnumType.CONST_I ? AclfLoadCode.CONST_I : 
+			LFLoadCodeEnumType code = xmlDefaultLoad.getCode();
+			bus.setLoadCode(code == LFLoadCodeEnumType.CONST_I ? AclfLoadCode.CONST_I : 
 				(code == LFLoadCodeEnumType.CONST_Z ? AclfLoadCode.CONST_Z : 
 					(code == LFLoadCodeEnumType.CONST_P  ? AclfLoadCode.CONST_P : 
 						 code == LFLoadCodeEnumType.FUNCTION_LOAD?AclfLoadCode.ZIP:
 						AclfLoadCode.NON_LOAD)));
 
-			AclfLoadBusAdapter loadBus = aclfBus.toLoadBus();
+			AclfLoadBusAdapter loadBus = bus.toLoadBus();
 
 			//LoadflowLoadDataXmlType xmlEquivLoad = xmlLoadData.getEquivLoad().getValue();
-			if (xmlEquivLoad != null) {
+			if (xmlDefaultLoad != null) {
 				if (code == LFLoadCodeEnumType.FUNCTION_LOAD) {
 					// 1) When code = FunctionLoad, the ZIP load units should be the same
 					// 2) the p, i, z element is optional
-					PowerXmlType p = xmlEquivLoad.getConstPLoad(),
-								 i = xmlEquivLoad.getConstILoad(),
-								 z = xmlEquivLoad.getConstZLoad();
+					PowerXmlType p = xmlDefaultLoad.getConstPLoad(),
+								 i = xmlDefaultLoad.getConstILoad(),
+								 z = xmlDefaultLoad.getConstZLoad();
 					double re = 0.0, im = 0.0;
 					ApparentPowerUnitType unit = null;
 					if (p != null) {
@@ -425,7 +428,7 @@ public class AclfBusDataHelper {
 	                 // Q = Q0 * [ Aq + Bq * V + Cq * V*V ], where Cq = 1.0 - Aq - Bq
 					 //
 					loadBus.setLoad(new Complex(re, im), ToApparentPowerUnit.f(unit));
-			  		FunctionLoad fl = CoreObjectFactory.createFunctionLoad(aclfBus);
+			  		FunctionLoad fl = CoreObjectFactory.createFunctionLoad(bus);
 			  		if (re != 0.0) {
 			  			if (p != null)
 			  				fl.getP().setA(p.getRe()/re);
@@ -441,12 +444,12 @@ public class AclfBusDataHelper {
 				}
 				else {
 					PowerXmlType p = null;
-					if (aclfBus.getLoadCode() == AclfLoadCode.CONST_P)
-						p = xmlEquivLoad.getConstPLoad();
-					else if (aclfBus.getLoadCode() == AclfLoadCode.CONST_I)
-						p = xmlEquivLoad.getConstILoad();
-					else if (aclfBus.getLoadCode() == AclfLoadCode.CONST_Z)	
-						p = xmlEquivLoad.getConstZLoad();
+					if (bus.getLoadCode() == AclfLoadCode.CONST_P)
+						p = xmlDefaultLoad.getConstPLoad();
+					else if (bus.getLoadCode() == AclfLoadCode.CONST_I)
+						p = xmlDefaultLoad.getConstILoad();
+					else if (bus.getLoadCode() == AclfLoadCode.CONST_Z)	
+						p = xmlDefaultLoad.getConstZLoad();
 					
 					if (p != null)
 						loadBus.setLoad(new Complex(p.getRe(), p.getIm()), ToApparentPowerUnit.f(p.getUnit()));				
@@ -458,15 +461,15 @@ public class AclfBusDataHelper {
 			if(xmlLoadData.getContributeLoad()!=null){
 				if(xmlLoadData.getContributeLoad().size()>0){
 					// we set parent bus load code to constant power
-					aclfBus.setLoadCode(AclfLoadCode.CONST_P);
+					bus.setLoadCode(AclfLoadCode.CONST_P);
 					for(JAXBElement<? extends LoadflowLoadDataXmlType> elem: xmlLoadData.getContributeLoad()){
 						if(elem!=null){
 							LoadflowLoadDataXmlType loadElem = elem.getValue();
 							
 							AclfLoad load = CoreObjectFactory.createAclfLoad();
-							aclfBus.getLoadList().add(load);
+							bus.getLoadList().add(load);
 							//status
-							load.setStatus(!loadElem.isOffLine());
+							load.setStatus(loadElem.isOffLine()!=null?!loadElem.isOffLine():true);
 						    // load code		
 							AclfLoadCode code = AclfLoadCode.NON_LOAD;
 							PowerXmlType p = loadElem.getConstPLoad(),
@@ -503,7 +506,7 @@ public class AclfBusDataHelper {
 		//TODO 
 		SwitchedShunt swchShunt = CoreObjectFactory.createSwitchedShunt();
 		//swithced shunt is a also a AclfControlBus
-		this.aclfBus.setBusControl(swchShunt);
+		this.bus.setBusControl(swchShunt);
 		
 		ReactivePowerXmlType binit = xmlSwitchedShuntData.getBInit();
 		

@@ -29,6 +29,7 @@ import static com.interpss.common.util.IpssLogger.ipssLogger;
 import javax.xml.bind.JAXBElement;
 
 import org.ieee.odm.model.dstab.DStabModelParser;
+import org.ieee.odm.model.dstab.DStabParserHelper;
 import org.ieee.odm.schema.AnalysisCategoryEnumType;
 import org.ieee.odm.schema.BaseBranchXmlType;
 import org.ieee.odm.schema.BranchXmlType;
@@ -119,7 +120,7 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 				dstabAlgo.setAclfAlgorithm(lfAlgo);
 
 				// map the bus info
-				AclfBusDataHelper helper = new AclfBusDataHelper(dstabNet);
+				AclfBusDataHelper<DStabBus> helper = new AclfBusDataHelper<>(dstabNet);
 				for (JAXBElement<? extends BusXmlType> bus : xmlNet.getBusList().getBus()) {
 					DStabBusXmlType dstabBusXml = (DStabBusXmlType) bus.getValue();
 					
@@ -129,7 +130,7 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 					mapBaseBusData(dstabBusXml, dstabBus, dstabNet);
 						
 					// map the Aclf info part
-					helper.setAclfBus(dstabBus);
+					helper.setBus(dstabBus);
 					helper.setAclfBusData(dstabBusXml);
 						
 					// if the record includes Acsc bus info, do the mapping
@@ -201,34 +202,14 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 		 * It is assumed that contribute generators are consolidated to the equivGen, only the Aclf and Acsc part
 		 */
 
-		if(dstabBusXml.getGenData().getEquivGen()!=null){
-			
-			if(dstabBusXml.getGenData().getEquivGen().getValue().getCode()!=LFGenCodeEnumType.NONE_GEN){
-		   
-				//Please note: currently multi-generators are NOT allowed
-				if (dstabBusXml.getGenData().getContributeGen() != null && dstabBusXml.getGenData().getContributeGen().size() > 1) {
-					throw new InterpssException("Currently multiple contributing generators are not supported in DStab");
-				}
-		   
-				DStabGenDataXmlType dyGen = null;
-				if (dstabBusXml.getGenData().getContributeGen() != null && dstabBusXml.getGenData().getContributeGen().size() == 1) {
-					for(JAXBElement<? extends LoadflowGenDataXmlType> dyGenElem: dstabBusXml.getGenData().getContributeGen()){
-					    dyGen = (DStabGenDataXmlType)dyGenElem.getValue();
-					    if(dstabBus.getGenerator(dyGen.getId()) instanceof DStabGen){
-					         DStabGen dyGenObj=(DStabGen) dstabBus.getGenerator(dyGen.getId());
-					         setDynGenData(dstabBus,dyGen,dyGenObj);
-					    }
-					    else{
-					    	ipssLogger.severe("The generator, Id="+ dyGen.getId()+ " of the bus # "+dstabBus.getId()+
-					    			" is NOT of DStabGen type!");
-					    }
-					}
-				}
-				else 
-					dyGen = (DStabGenDataXmlType)dstabBusXml.getGenData().getEquivGen().getValue();
-				
-				setDynGenData(dstabBus,dyGen,null);
+		if(dstabBusXml.getGenData().getContributeGen().size() > 0){
+			//Please note: currently multi-generators are NOT allowed
+			if (dstabBusXml.getGenData().getContributeGen() != null && dstabBusXml.getGenData().getContributeGen().size() > 1) {
+				throw new InterpssException("Currently multiple contributing generators are not supported in DStab");
 			}
+			
+			DStabGenDataXmlType dyGen = DStabParserHelper.getDefaultGen(dstabBusXml.getGenData());
+			setDynGenData(dstabBus,dyGen,null);
 	   }	
     }
 
