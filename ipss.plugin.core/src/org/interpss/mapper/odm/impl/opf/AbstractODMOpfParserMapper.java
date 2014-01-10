@@ -230,7 +230,7 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 		mapBaseBusData(busRec, opfGenBus, net);
 
 		AclfBusDataHelper helper = new AclfBusDataHelper(net);
-		helper.setAclfBus(opfGenBus);
+		helper.setBus(opfGenBus);
 		helper.setAclfBusData(busRec);
 		
 
@@ -388,7 +388,7 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 		mapBaseBusData(busRec, opfGenBus, net);
 
 		AclfBusDataHelper helper = new AclfBusDataHelper(net);
-		helper.setAclfBus(opfGenBus);
+		helper.setBus(opfGenBus);
 		helper.setAclfBusData(busRec);
 		
 		/*

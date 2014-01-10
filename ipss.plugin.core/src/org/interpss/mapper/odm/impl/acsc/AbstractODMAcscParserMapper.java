@@ -35,6 +35,7 @@ import javax.xml.bind.JAXBElement;
 
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.model.acsc.AcscModelParser;
+import org.ieee.odm.model.acsc.AcscParserHelper;
 import org.ieee.odm.schema.AnalysisCategoryEnumType;
 import org.ieee.odm.schema.BaseBranchXmlType;
 import org.ieee.odm.schema.BranchXmlType;
@@ -64,6 +65,7 @@ import org.interpss.numeric.NumericConstant;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.CoreObjectFactory;
+import com.interpss.DStabObjectFactory;
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.acsc.AcscBranch;
@@ -77,6 +79,7 @@ import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.acsc.XfrConnectCode;
 import com.interpss.core.acsc.adpter.AcscLine;
 import com.interpss.core.acsc.adpter.AcscXformer;
+import com.interpss.dstab.DStabBus;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
@@ -126,7 +129,7 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 				mapAcscNetworkData(acscFaultNet,xmlNet);
 
 				// map the bus info
-				AclfBusDataHelper helper = new AclfBusDataHelper(acscFaultNet);
+				AclfBusDataHelper<AcscBus> helper = new AclfBusDataHelper<>(acscFaultNet);
 				for (JAXBElement<? extends BusXmlType> busXml : xmlNet.getBusList().getBus()) {
 					ShortCircuitBusXmlType acscBusXml = (ShortCircuitBusXmlType)busXml.getValue();
 					// for short circuit, the bus could be acscBus or acscNoLFBus 
@@ -139,7 +142,7 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 
 					// map the Aclf info part		
 					if (acscFaultNet.isLfDataLoaded()) {
-						helper.setAclfBus(acscBus);
+						helper.setBus(acscBus);
 						helper.setAclfBusData(acscBusXml);
 					}
 					
@@ -209,7 +212,7 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 			//if (acscBusXml.getGenData() != null && acscBusXml.getGenData().getEquivGen().getValue().getCode()!=LFGenCodeEnumType.NONE_GEN) 
 			// we do not assume any Lf info. The gen could be defined as a none-gen for Lf, yet a contributing gen for SC
 			
-			if (acscBusXml.getGenData() != null && acscBusXml.getGenData().getEquivGen() != null) 
+			if (acscBusXml.getGenData().getContributeGen().size() > 0) 
 				acscBusXml.setScCode(ShortCircuitBusEnumType.CONTRIBUTING);
 			else
 				acscBusXml.setScCode(ShortCircuitBusEnumType.NON_CONTRIBUTING);
@@ -222,7 +225,7 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 		else  // non-contributing
 			setNonContributeBusFormInfo(acscBus);
 		
-		if (acscBusXml.getLoadData() != null && acscBusXml.getLoadData().getEquivLoad() != null)
+		if (acscBusXml.getLoadData() != null && acscBusXml.getLoadData().getContributeLoad().size() > 0)
 			setBusLoadEquivShuntY(acscBusXml, acscBus);
 		
 		if (acscBusXml.getSwithedShuntLoadZeroY() != null) {
@@ -244,7 +247,7 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 		acscBus.setScCode(BusScCode.CONTRIBUTE);
 		// at this point it is assumed that contribute generators have been consolidated to the 
 		// acscEquivGen. The consolidation logic is implemented in AcscParserHelper.createBusScEquivGenData()
-		ShortCircuitGenDataXmlType scGenData = (ShortCircuitGenDataXmlType)busDataXml.getGenData().getEquivGen().getValue();
+		ShortCircuitGenDataXmlType scGenData = AcscParserHelper.getDefaultScGen(busDataXml.getGenData());
 		setBusScZ(acscBus, acscBus.getNetwork().getBaseKva(), 
 					scGenData.getPotiveZ(),
 					scGenData.getNegativeZ(),
@@ -265,7 +268,8 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 					
 					AcscGen scGen = (AcscGen) acscBus.getGenerator(scGenXml.getId());
 					if(scGen==null){
-						scGen = CoreObjectFactory.createAcscGen();
+						scGen = acscBus instanceof DStabBus? DStabObjectFactory.createDStabGen() :
+									CoreObjectFactory.createAcscGen();
 						acscBus.getGenList().add(scGen);
 					}
 					//TODO regarding the PU, it should be on Generator base or network base?
@@ -304,7 +308,7 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 		// we should not check condition here, since by arriving here acscLoadData should be of type ShortCircuitLoadDataXmlType 
 		//if(acscBusXml.getLoadData().getEquivLoad().getValue() instanceof ShortCircuitLoadDataXmlType){
 			
-		ShortCircuitLoadDataXmlType acscLoadData = (ShortCircuitLoadDataXmlType)acscBusXml.getLoadData().getEquivLoad().getValue();
+		ShortCircuitLoadDataXmlType acscLoadData = AcscParserHelper.getDefaultScLoad(acscBusXml.getLoadData());
 		
 		// 1) positive sequence 
 		if(acscBus.isConstPLoad()||acscBus.isConstILoad()){	
