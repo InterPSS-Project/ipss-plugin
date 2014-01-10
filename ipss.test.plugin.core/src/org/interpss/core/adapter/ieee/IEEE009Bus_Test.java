@@ -24,7 +24,7 @@ public class IEEE009Bus_Test extends CorePluginTestSetup{
 				.load("testData/adpter/ieee_format/009ieee.cf")
 				.getAclfNet();	
 
-		
+		System.out.println(net.net2String());
   		assertTrue((net.getBusList().size() == 9&& net.getBranchList().size() == 9));
 
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);

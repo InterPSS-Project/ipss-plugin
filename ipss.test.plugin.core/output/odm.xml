@@ -18,7 +18,7 @@
         </nvPair>
         <basePower unit="MVA" value="100.0"/>
         <busList>
-            <aclfBus id="Bus1" areaNumber="1" zoneNumber="6" number="1" offLine="false" name="3W_Gen_SW  ">
+            <aclfBus GenCode="Swing" id="Bus1" areaNumber="1" zoneNumber="6" number="1" offLine="false" name="3W_Gen_SW  ">
                 <ownerList id="1">
                     <ownership unit="PU" value="1.0"/>
                 </ownerList>
@@ -26,18 +26,14 @@
                 <voltage unit="PU" value="1.0"/>
                 <angle unit="DEG" value="0.0"/>
                 <genData>
-                    <equivGen code="Swing">
-                        <power unit="MVA" re="0.0" im="0.0"/>
-                        <desiredVoltage unit="PU" value="1.0"/>
-                        <desiredAngle unit="DEG" value="0.0"/>
-                    </equivGen>
-                    <contributeGen id="1" offLine="false" name="Gen:1(1)">
+                    <contributeGen code="Swing" id="1" offLine="false" name="Gen:1(1)">
                         <desc>PSSE Generator 1 at Bus 1</desc>
                         <ownerList id="1">
                             <ownership unit="PU" value="1.0"/>
                         </ownerList>
                         <power unit="MVA" re="200.0" im="30.0"/>
                         <desiredVoltage unit="PU" value="1.0"/>
+                        <desiredAngle unit="DEG" value="0.0"/>
                         <qLimit unit="MVAR" max="300.0" min="-100.0"/>
                         <pLimit unit="MW" max="100.0" min="1.0"/>
                         <mvaBase unit="MVA" value="100.0"/>
@@ -45,46 +41,33 @@
                         <mvarVControlParticipateFactor>0.92</mvarVControlParticipateFactor>
                     </contributeGen>
                 </genData>
-                <loadData>
-                    <equivLoad/>
-                </loadData>
+                <loadData/>
                 <shuntYData>
                     <equivY unit="PU" re="0.01" im="0.01"/>
                 </shuntYData>
             </aclfBus>
-            <aclfBus id="Bus3" areaNumber="1" zoneNumber="6" number="3" offLine="false" name="3W_Out     ">
+            <aclfBus GenCode="NoneGen" id="Bus3" areaNumber="1" zoneNumber="6" number="3" offLine="false" name="3W_Out     ">
                 <ownerList id="1">
                     <ownership unit="PU" value="1.0"/>
                 </ownerList>
                 <baseVoltage unit="KV" value="230.0"/>
                 <voltage unit="PU" value="1.02443"/>
                 <angle unit="DEG" value="-4.0004"/>
-                <genData>
-                    <equivGen code="NoneGen">
-                        <power unit="MVA" re="0.0" im="0.0"/>
-                    </equivGen>
-                </genData>
-                <loadData>
-                    <equivLoad/>
-                </loadData>
+                <genData/>
+                <loadData/>
                 <shuntYData>
                     <equivY unit="PU" re="0.01" im="0.01"/>
                 </shuntYData>
             </aclfBus>
-            <aclfBus id="Bus4" areaNumber="1" zoneNumber="2" number="4" offLine="false" name="To_End_Par ">
+            <aclfBus GenCode="NoneGen" id="Bus4" areaNumber="1" zoneNumber="2" number="4" offLine="false" name="To_End_Par ">
                 <ownerList id="1">
                     <ownership unit="PU" value="1.0"/>
                 </ownerList>
                 <baseVoltage unit="KV" value="230.0"/>
                 <voltage unit="PU" value="1.00844"/>
                 <angle unit="DEG" value="-19.088"/>
-                <genData>
-                    <equivGen code="NoneGen">
-                        <power unit="MVA" re="0.0" im="0.0"/>
-                    </equivGen>
-                </genData>
+                <genData/>
                 <loadData>
-                    <equivLoad/>
                     <contributeLoad id="'1 '" areaNumber="1" zoneNumber="1" offLine="false" name="Load:'1 '(4)">
                         <desc>PSSE Load '1 ' at Bus 4</desc>
                         <ownerList id="1">
@@ -97,26 +80,20 @@
                     <equivY unit="PU" re="0.01" im="0.01"/>
                 </shuntYData>
             </aclfBus>
-            <aclfBus id="Bus5" areaNumber="2" zoneNumber="2" number="5" offLine="false" name="Area_2_HV  ">
+            <aclfBus GenCode="NoneGen" id="Bus5" areaNumber="2" zoneNumber="2" number="5" offLine="false" name="Area_2_HV  ">
                 <ownerList id="2">
                     <ownership unit="PU" value="1.0"/>
                 </ownerList>
                 <baseVoltage unit="KV" value="230.0"/>
                 <voltage unit="PU" value="1.00844"/>
                 <angle unit="DEG" value="-19.088"/>
-                <genData>
-                    <equivGen code="NoneGen">
-                        <power unit="MVA" re="0.0" im="0.0"/>
-                    </equivGen>
-                </genData>
-                <loadData>
-                    <equivLoad/>
-                </loadData>
+                <genData/>
+                <loadData/>
                 <shuntYData>
                     <equivY unit="PU" re="0.02" im="0.02"/>
                 </shuntYData>
             </aclfBus>
-            <aclfBus id="Bus6" areaNumber="2" zoneNumber="2" number="6" offLine="false" name="Area_2_LV  ">
+            <aclfBus GenCode="PV" id="Bus6" areaNumber="2" zoneNumber="2" number="6" offLine="false" name="Area_2_LV  ">
                 <ownerList id="2">
                     <ownership unit="PU" value="1.0"/>
                 </ownerList>
@@ -124,11 +101,7 @@
                 <voltage unit="PU" value="1.00844"/>
                 <angle unit="DEG" value="-19.088"/>
                 <genData>
-                    <equivGen code="PV">
-                        <power unit="MVA" re="0.0" im="0.0"/>
-                        <desiredVoltage unit="PU" value="1.00844"/>
-                    </equivGen>
-                    <contributeGen id="1" offLine="false" name="Gen:1(6)">
+                    <contributeGen code="PV" id="1" offLine="false" name="Gen:1(6)">
                         <desc>PSSE Generator 1 at Bus 6</desc>
                         <ownerList id="2">
                             <ownership unit="PU" value="1.0"/>
@@ -142,9 +115,7 @@
                         <mvarVControlParticipateFactor>0.92</mvarVControlParticipateFactor>
                     </contributeGen>
                 </genData>
-                <loadData>
-                    <equivLoad/>
-                </loadData>
+                <loadData/>
                 <shuntYData>
                     <equivY unit="PU" re="0.02" im="0.02"/>
                 </shuntYData>

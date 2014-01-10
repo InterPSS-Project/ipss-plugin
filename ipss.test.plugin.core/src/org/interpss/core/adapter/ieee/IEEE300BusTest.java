@@ -43,7 +43,7 @@ public class IEEE300BusTest extends CorePluginTestSetup {
 	public void xtestCase5() throws Exception{
 		AclfNetwork net = CorePluginObjFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testData/ieee_format/ieee300.ieee")
+				.load("testData/adpter/ieee_format/ieee300.ieee")
 				.getAclfNet();	
 		
 //		IpssFileAdapter adapter = PluginSpringCtx.getCustomFileAdapter("ieee");

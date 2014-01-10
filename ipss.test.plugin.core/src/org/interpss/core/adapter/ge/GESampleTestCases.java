@@ -26,21 +26,27 @@ package org.interpss.core.adapter.ge;
 
 import static org.junit.Assert.assertTrue;
 
+import java.util.logging.Level;
+
 import org.interpss.CorePluginObjFactory;
 import org.interpss.CorePluginTestSetup;
+import org.interpss.display.AclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.junit.Test;
 
 import com.interpss.CoreObjectFactory;
+import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
+import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
 public class GESampleTestCases extends CorePluginTestSetup {
 	@Test
 	public void odmAdapterTestCase() throws Exception {
+		IpssLogger.getLogger().setLevel(Level.INFO);
 		AclfNetwork net = CorePluginObjFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.GE_PSLF)
 				.load("testdata/adpter/ge/Sample18Bus.epc")
@@ -58,9 +64,15 @@ public class GESampleTestCases extends CorePluginTestSetup {
 		assertTrue(net.getNoBranch() == 24);
 		
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		//algo.setInitBusVoltage(true);
+	  	//algo.setMaxIterations(25);
+	  	algo.setLfMethod(AclfMethod.PQ);
+	  	//algo.setNonDivergent(true);
 	  	algo.loadflow();
-		//System.out.println(net.net2String());
-	  	
+	  
+		System.out.println(net.net2String());
+		System.out.println(AclfOutFunc.loadFlowSummary(net));
+		
   		assertTrue(net.isLfConverged());		
   		AclfBus swingBus = (AclfBus)net.getBus("Bus101");
   		AclfSwingBus swing = swingBus.toSwingBus();

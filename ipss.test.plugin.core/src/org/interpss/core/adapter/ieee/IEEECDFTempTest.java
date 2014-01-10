@@ -43,7 +43,7 @@ public class IEEECDFTempTest extends CorePluginTestSetup {
 	@Test
 	public void bus39testCase() throws Exception{
 		IpssFileAdapter adapter = CorePluginObjFactory.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF);
-		SimuContext simuCtx = adapter.load("testData/ieee_format/ieee039.DAT");
+		SimuContext simuCtx = adapter.load("testData/adpter/ieee_format/ieee039.DAT");
 
 		AclfNetwork net = simuCtx.getAclfNet();
   		assertTrue(net.getBusList().size() == 39);

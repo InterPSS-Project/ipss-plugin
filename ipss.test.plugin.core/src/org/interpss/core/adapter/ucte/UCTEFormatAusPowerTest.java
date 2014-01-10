@@ -48,12 +48,12 @@ public class UCTEFormatAusPowerTest extends CorePluginTestSetup {
 				.load("testData/adpter/ucte/MarioTest1_Simple.uct")
 				.getAclfNet();
 		
-  		//System.out.println(net.net2String());
+  		System.out.println(net.net2String());
 
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
-	  	
+	  	assertTrue(net.isLfConverged());
   		AclfBus swingBus = net.getBus("B4____1");
   		AclfSwingBus swing = swingBus.toSwingBus();
   		Complex p = swing.getGenResults(UnitType.mW);
