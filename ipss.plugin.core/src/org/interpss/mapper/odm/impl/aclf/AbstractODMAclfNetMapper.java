@@ -169,14 +169,21 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 				}
 			}
 			
-			aclfNet.adjustXfrZ();
+			postAclfNetProcessing(aclfNet);
 			
 		} catch (InterpssException e) {
 			//e.printStackTrace();
 			ipssLogger.severe(e.toString());
 			noError = false;
 		}
+
 		return noError;
+	}
+	
+	public static void postAclfNetProcessing(BaseAclfNetwork<?,?> aclfNet) throws InterpssException {
+		aclfNet.adjustXfrZ();
+		
+		aclfNet.initMultiGen();
 	}
 
 	/**
