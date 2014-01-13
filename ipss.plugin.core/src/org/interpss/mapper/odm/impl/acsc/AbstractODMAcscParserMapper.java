@@ -59,6 +59,7 @@ import org.ieee.odm.schema.YXmlType;
 import org.ieee.odm.schema.ZXmlType;
 import org.interpss.mapper.odm.ODMAclfNetMapper;
 import org.interpss.mapper.odm.ODMHelper;
+import org.interpss.mapper.odm.impl.aclf.AbstractODMAclfNetMapper;
 import org.interpss.mapper.odm.impl.aclf.AbstractODMAclfParserMapper;
 import org.interpss.mapper.odm.impl.aclf.AclfBusDataHelper;
 import org.interpss.numeric.NumericConstant;
@@ -170,6 +171,8 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 				/*
 				 * a parent acsc net cannot contain any child network 
 				 */
+				
+				AbstractODMAclfNetMapper.postAclfNetProcessing(acscFaultNet);
 			} catch (InterpssException e) {
 				ipssLogger.severe(e.toString());
 				e.printStackTrace();

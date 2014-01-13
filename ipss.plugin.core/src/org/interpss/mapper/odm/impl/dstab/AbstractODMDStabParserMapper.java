@@ -51,6 +51,7 @@ import org.ieee.odm.schema.StabilizerModelXmlType;
 import org.ieee.odm.schema.XfrDStabXmlType;
 import org.interpss.mapper.odm.ODMAclfNetMapper;
 import org.interpss.mapper.odm.ODMHelper;
+import org.interpss.mapper.odm.impl.aclf.AbstractODMAclfNetMapper;
 import org.interpss.mapper.odm.impl.aclf.AclfBusDataHelper;
 import org.interpss.mapper.odm.impl.acsc.AbstractODMAcscParserMapper;
 
@@ -172,6 +173,8 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 					new DStabScenarioHelper(dstabNet,dstabAlgo).
 								mapOneFaultScenario(s);
 				}
+				
+				AbstractODMAclfNetMapper.postAclfNetProcessing(dstabNet);
 			} catch (InterpssException e) {
 				ipssLogger.severe(e.toString());
 				e.printStackTrace();
