@@ -17,8 +17,8 @@ xsi:schemaLocation="http://www.ieee.org/odm/Schema/2008 ../schema/ODMSchema.xsd 
 		<pss:busList>
 			<pss:dstabBus scCode="Contributing" id="Bus-1" offLine="false" areaNumber="1" zoneNumber="1">
 				<pss:baseVoltage unit="KV" value="138"></pss:baseVoltage>
-				<pss:genData>
-					<pss:dstabEquivGen code="PQ" id="Bus4-Gen1">
+				<pss:genData code="PQ">
+					<pss:dstabContributeGen id="Bus4-Gen1">
 						<pss:power im="1.0" unit="PU" re="2.0"/>
 						<pss:mvaBase unit="MVA" value="600"/>
 						<pss:ratedMachVoltage unit="KV" value="138" />
@@ -62,7 +62,7 @@ xsi:schemaLocation="http://www.ieee.org/odm/Schema/2008 ../schema/ODMSchema.xsd 
 							<pss:Vsmax>10.0</pss:Vsmax>
 							<pss:Vsmin>-10.0</pss:Vsmin>
 						</pss:pssSimpleType>
-					</pss:dstabEquivGen>
+					</pss:dstabContributeGen>
 				</pss:genData>
                 <pss:loadData>
                     <pss:equivLoad id="L1" code="CONST_P">
@@ -72,8 +72,8 @@ xsi:schemaLocation="http://www.ieee.org/odm/Schema/2008 ../schema/ODMSchema.xsd 
 			</pss:dstabBus>
 			<pss:dstabBus scCode="Contributing" id="Bus-5" offLine="false" areaNumber="1" zoneNumber="1">
 				<pss:baseVoltage unit="KV" value="138" />
-				<pss:genData>
-					<pss:dstabEquivGen code="Swing" id="Bus5-Gen1">
+				<pss:genData code="Swing">
+					<pss:dstabContributeGen id="Bus5-Gen1">
 						<pss:desiredVoltage unit="PU" value="1.00" />
 						<pss:desiredAngle unit="DEG" value="0.0" />
 						<pss:mvaBase unit="MVA" value="100"/>
@@ -86,7 +86,7 @@ xsi:schemaLocation="http://www.ieee.org/odm/Schema/2008 ../schema/ODMSchema.xsd 
 								<pss:xOverR1Phase>20.0</pss:xOverR1Phase>
 							</pss:equivSource>
 						</pss:equiMachModel>
-					</pss:dstabEquivGen>
+					</pss:dstabContributeGen>
 				</pss:genData>
 			</pss:dstabBus>
 		</pss:busList>
