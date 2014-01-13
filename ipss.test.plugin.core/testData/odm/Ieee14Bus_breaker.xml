@@ -36,46 +36,46 @@
                 <baseVoltage unit="KV" value="132.0"/>
                 <voltage unit="PU" value="1.06"/>
                 <angle unit="DEG" value="0.0"/>
-                <genData>
-                    <equivGen code="Swing" id="gen1">
+                <genData code="Swing">
+                    <contributeGen id="gen1">
                         <power unit="MVA" im="-16.9" re="232.4"/>
                         <desiredVoltage unit="PU" value="1.06"/>
                         <desiredAngle unit="DEG" value="0.0"/>
-                    </equivGen>
+                    </contributeGen>
                 </genData>
             </aclfBus>
             <aclfBus id="Bus2" offLine="false" number="2" zoneNumber="1" areaNumber="1" name="Bus 2     HV">
                 <baseVoltage unit="KV" value="132.0"/>
                 <voltage unit="PU" value="1.045"/>
                 <angle unit="DEG" value="-4.98"/>
-                <genData>
-                    <equivGen code="PV" id="gen2">
+                <genData code="PV">
+                    <contributeGen id="gen2">
                         <power unit="MVA" im="42.4" re="40.0"/>
                         <desiredVoltage unit="PU" value="1.045"/>
                         <qLimit unit="MVAR" min="-40.0" max="50.0"/>
-                    </equivGen>
+                    </contributeGen>
                 </genData>
                 <loadData>
-                    <equivLoad code="CONST_P" id="load2">
+                    <contributeLoad code="CONST_P" id="load2">
                         <constPLoad unit="MVA" im="12.7" re="21.7"/>
-                    </equivLoad>
+                    </contributeLoad>
                 </loadData>
             </aclfBus>
             <aclfBus id="Bus3" offLine="false" number="3" zoneNumber="1" areaNumber="1" name="Bus 3     HV">
                 <baseVoltage unit="KV" value="132.0"/>
                 <voltage unit="PU" value="1.01"/>
                 <angle unit="DEG" value="-12.72"/>
-                <genData>
-                    <equivGen code="PV" id="gen3">
+                <genData code="PV">
+                    <contributeGen id="gen3">
                         <power unit="MVA" im="23.4" re="0.0"/>
                         <desiredVoltage unit="PU" value="1.01"/>
                         <qLimit unit="MVAR" min="0.0" max="40.0"/>
-                    </equivGen>
+                    </contributeGen>
                 </genData>
                 <loadData>
-                    <equivLoad code="CONST_P" id="load3">
+                    <contributeLoad code="CONST_P" id="load3">
                         <constPLoad unit="MVA" im="19.0" re="94.2"/>
-                    </equivLoad>
+                    </contributeLoad>
                 </loadData>
             </aclfBus>
             <aclfBus id="Bus4" offLine="false" number="4" zoneNumber="1" areaNumber="1" name="Bus 4     HV">
@@ -83,9 +83,9 @@
                 <voltage unit="PU" value="1.019"/>
                 <angle unit="DEG" value="-10.33"/>
                 <loadData>
-                    <equivLoad code="CONST_P" id="load4">
+                    <contributeLoad code="CONST_P" id="load4">
                         <constPLoad unit="MVA" im="-3.9" re="47.8"/>
-                    </equivLoad>
+                    </contributeLoad>
                 </loadData>
             </aclfBus>
             <aclfBus id="Bus5" offLine="false" number="5" zoneNumber="1" areaNumber="1" name="Bus 5     HV">
@@ -93,26 +93,26 @@
                 <voltage unit="PU" value="1.02"/>
                 <angle unit="DEG" value="-8.78"/>
                 <loadData>
-                    <equivLoad code="CONST_P" id="load5">
+                    <contributeLoad code="CONST_P" id="load5">
                         <constPLoad unit="MVA" im="1.6" re="7.6"/>
-                    </equivLoad>
+                    </contributeLoad>
                 </loadData>
             </aclfBus>
             <aclfBus id="Bus6" offLine="false" number="6" zoneNumber="1" areaNumber="1" name="Bus 6     LV">
                 <baseVoltage unit="KV" value="35.0"/>
                 <voltage unit="PU" value="1.07"/>
                 <angle unit="DEG" value="-14.22"/>
-                <genData>
-                    <equivGen code="PV" id="gen6">
+                <genData code="PV">
+                    <contributeGen id="gen6">
                         <power unit="MVA" im="12.2" re="0.0"/>
                         <desiredVoltage unit="PU" value="1.07"/>
                         <qLimit unit="MVAR" min="-6.0" max="24.0"/>
-                    </equivGen>
+                    </contributeGen>
                 </genData>
                 <loadData>
-                    <equivLoad code="CONST_P" id="load6">
+                    <contributeLoad code="CONST_P" id="load6">
                         <constPLoad unit="MVA" im="7.5" re="11.2"/>
-                    </equivLoad>
+                    </contributeLoad>
                 </loadData>
             </aclfBus>
             <aclfBus id="Bus71" offLine="false" number="71" zoneNumber="1" areaNumber="1" name="Bus 7     ZV">
@@ -144,12 +144,12 @@
                 <baseVoltage unit="KV" value="10.0"/>
                 <voltage unit="PU" value="1.09"/>
                 <angle unit="DEG" value="-13.36"/>
-                <genData>
-                    <equivGen code="PV" id="gen8">
+                <genData code="PV">
+                    <contributeGen id="gen8">
                         <power unit="MVA" im="17.4" re="0.0"/>
                         <desiredVoltage unit="PU" value="1.09"/>
                         <qLimit unit="MVAR" min="-6.0" max="24.0"/>
-                    </equivGen>
+                    </contributeGen>
                 </genData>
             </aclfBus>
             <aclfBus id="Bus9" offLine="false" number="9" zoneNumber="1" areaNumber="1" name="Bus 9     LV">
@@ -157,9 +157,9 @@
                 <voltage unit="PU" value="1.056"/>
                 <angle unit="DEG" value="-14.94"/>
                 <loadData>
-                    <equivLoad code="CONST_P" id="load9">
+                    <contributeLoad code="CONST_P" id="load9">
                         <constPLoad unit="MVA" im="16.6" re="29.5"/>
-                    </equivLoad>
+                    </contributeLoad>
                 </loadData>
                 <shuntYData>
                 	<equivY unit="PU" im="0.19" re="0.0"/>
@@ -170,9 +170,9 @@
                 <voltage unit="PU" value="1.051"/>
                 <angle unit="DEG" value="-15.1"/>
                 <loadData>
-                    <equivLoad code="CONST_P" id="load10">
+                    <contributeLoad code="CONST_P" id="load10">
                         <constPLoad unit="MVA" im="5.8" re="9.0"/>
-                    </equivLoad>
+                    </contributeLoad>
                 </loadData>
             </aclfBus>
             <aclfBus id="Bus11" offLine="false" number="11" zoneNumber="1" areaNumber="1" name="Bus 11    LV">
@@ -180,9 +180,9 @@
                 <voltage unit="PU" value="1.057"/>
                 <angle unit="DEG" value="-14.79"/>
                 <loadData>
-                    <equivLoad code="CONST_P" id="load11">
+                    <contributeLoad code="CONST_P" id="load11">
                         <constPLoad unit="MVA" im="1.8" re="3.5"/>
-                    </equivLoad>
+                    </contributeLoad>
                 </loadData>
             </aclfBus>
             <aclfBus id="Bus12" offLine="false" number="12" zoneNumber="1" areaNumber="1" name="Bus 12    LV">
@@ -190,9 +190,9 @@
                 <voltage unit="PU" value="1.055"/>
                 <angle unit="DEG" value="-15.07"/>
                 <loadData>
-                    <equivLoad code="CONST_P" id="load12">
+                    <contributeLoad code="CONST_P" id="load12">
                         <constPLoad unit="MVA" im="1.6" re="6.1"/>
-                    </equivLoad>
+                    </contributeLoad>
                 </loadData>
             </aclfBus>
             <aclfBus id="Bus13" offLine="false" number="13" zoneNumber="1" areaNumber="1" name="Bus 13    LV">
@@ -200,9 +200,9 @@
                 <voltage unit="PU" value="1.05"/>
                 <angle unit="DEG" value="-15.16"/>
                 <loadData>
-                    <equivLoad code="CONST_P" id="load13">
+                    <contributeLoad code="CONST_P" id="load13">
                         <constPLoad unit="MVA" im="5.8" re="13.5"/>
-                    </equivLoad>
+                    </contributeLoad>
                 </loadData>
             </aclfBus>
             
@@ -236,9 +236,9 @@
                 <voltage unit="PU" value="1.036"/>
                 <angle unit="DEG" value="-16.04"/>
                 <loadData>
-                    <equivLoad code="CONST_P" id="load14">
+                    <contributeLoad code="CONST_P" id="load14">
                         <constPLoad unit="MVA" im="5.0" re="14.9"/>
-                    </equivLoad>
+                    </contributeLoad>
                 </loadData>
             </aclfBus>
         </busList>        

@@ -123,7 +123,7 @@ public class IEEE9_Dstab_Adapter_Test {
 	    
 	    assertTrue(bus1.getGenList().get(0) instanceof DStabGen);
 	    DStabGen gen1 =(DStabGen) bus1.getGenList().get(0);
-	    assertTrue(gen1.getCode()==AclfGenCode.SWING);
+	    assertTrue(bus1.getGenCode()==AclfGenCode.SWING);
 	    
 	    /*
 	     * <power unit="MVA" re="71.64" im="27.05"/>

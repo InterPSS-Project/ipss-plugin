@@ -19,9 +19,9 @@
             	<voltage unit="PU" value="1.0" />
             	<angle unit="DEG" value="0.0" />
 				<loadData>
-					<acscEquivLoad code="CONST_P" id="Bus1Load">
+					<acscContributeLoad code="CONST_P" id="Bus1Load">
 						<constPLoad im="80.0" unit="MVA" re="160.0" />
-					</acscEquivLoad>
+					</acscContributeLoad>
 				</loadData>
 			</acscBus>
             <acscBus id="Bus2" offLine="false" number="1" zoneNumber="1"
@@ -30,9 +30,9 @@
             	<voltage unit="PU" value="1.0" />
             	<angle unit="DEG" value="0.0" />
 				<loadData>
-					<acscEquivLoad code="CONST_P" id="Bus2Load">
+					<acscContributeLoad code="CONST_P" id="Bus2Load">
 						<constPLoad im="100.0" unit="MVA" re="200.0" />
-					</acscEquivLoad>
+					</acscContributeLoad>
 				</loadData>
 			</acscBus>
             <acscBus id="Bus3" offLine="false" number="1" zoneNumber="1"
@@ -41,9 +41,9 @@
             	<voltage unit="PU" value="1.0" />
             	<angle unit="DEG" value="0.0" />
 				<loadData>
-					<acscEquivLoad code="CONST_P" id="Bus3Load">
+					<acscContributeLoad code="CONST_P" id="Bus3Load">
 						<constPLoad im="130.0" unit="MVA" re="370.0" />
-					</acscEquivLoad>
+					</acscContributeLoad>
 				</loadData>
 			</acscBus>
             <acscBus id="Bus4" offLine="false" number="1" zoneNumber="1"
@@ -51,8 +51,8 @@
             	<baseVoltage unit="VOLT" value="1000.0" />
             	<voltage unit="PU" value="1.0" />
             	<angle unit="DEG" value="0.0" />
-           		<genData>
-            		<acscEquivGen code="PV" id="gen4">
+           		<genData code="PV">
+            		<acscContributeGen id="gen4">
             			<power unit="MVA" im="0.0" re="500.0" />
             			<desiredVoltage unit="PU" value="1.05" />
             			<potiveZ im="0.02" unit="PU"/>
@@ -61,7 +61,7 @@
             			<grounding groundingConnection="SolidGrounded">
             				<groundingZ im="0.0" unit="PU"/>
             			</grounding>
-            		</acscEquivGen>
+            		</acscContributeGen>
             		<!--
             		To define multiple contribute generator, use the acscGenData structure 
             		<acscGenData id="" code="PQ">
@@ -74,8 +74,8 @@
             	<baseVoltage unit="VOLT" value="4000.0" />
             	<voltage unit="PU" value="1.0" />
             	<angle unit="DEG" value="0.0" />
-           		<genData>
-            		<acscEquivGen code="Swing" id="gen5">
+           		<genData code="Swing">
+            		<acscContributeGen id="gen5">
             			<desiredVoltage unit="PU" value="1.05" />
             			<desiredAngle unit="DEG" value="0.0"/>
             			<potiveZ im="0.02" unit="PU"/>
@@ -84,7 +84,7 @@
             			<grounding groundingConnection="SolidGrounded">
             				<groundingZ im="0.0" unit="PU"/>
             			</grounding>
-            		</acscEquivGen>
+            		</acscContributeGen>
             	</genData>
  			</acscBus>
         </busList>

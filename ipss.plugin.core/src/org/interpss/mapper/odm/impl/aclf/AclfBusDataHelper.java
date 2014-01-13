@@ -173,7 +173,7 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 	private void mapGenData(BusGenDataXmlType xmlGenData) throws InterpssException {
 		LoadflowGenDataXmlType xmlDefaultGen = AclfParserHelper.getDefaultGen(xmlGenData);
 		VoltageXmlType vXml = xmlDefaultGen.getDesiredVoltage();
-		if (xmlDefaultGen.getCode() == LFGenCodeEnumType.PQ) {
+		if (xmlGenData.getCode() == LFGenCodeEnumType.PQ) {
 			bus.setGenCode(AclfGenCode.GEN_PQ);
 			AclfPQGenBus pqBus = bus.toPQBus();
 			double p = xmlDefaultGen.getPower().getRe(), 
@@ -191,7 +191,7 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 			else {
 				bus.setGenCode(AclfGenCode.NON_GEN);
 			}
-		} else if (xmlDefaultGen.getCode() == LFGenCodeEnumType.PV &&
+		} else if (xmlGenData.getCode() == LFGenCodeEnumType.PV &&
 				xmlDefaultGen != null) {
 			if (xmlDefaultGen.getRemoteVoltageControlBus() == null) {
 				bus.setGenCode(AclfGenCode.GEN_PV);
@@ -249,7 +249,7 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 	  					}
 					}
 			}
-		} else if (xmlDefaultGen.getCode() == LFGenCodeEnumType.SWING) {
+		} else if (xmlGenData.getCode() == LFGenCodeEnumType.SWING) {
 			bus.setGenCode(AclfGenCode.SWING);
 			AclfSwingBus swing = bus.toSwingBus();
 			double vpu = UnitHelper.vConversion(vXml.getValue(),
@@ -283,7 +283,7 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 			/*
 			 * in general, gen code is defined at the equivGen level.
 			 */
-			LFGenCodeEnumType genCode = xmlDefaultGen.getCode();
+			LFGenCodeEnumType genCode = xmlGenData.getCode();
 			int genCnt = 1;
 			for(JAXBElement<? extends LoadflowGenDataXmlType> elem :xmlGenData.getContributeGen()){
 				if(elem!=null){
@@ -304,10 +304,11 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 						xmlGen.getMvaBase().getUnit()==ApparentPowerUnitType.VA?1.0E-6:
 							100.0; //PU, assuming 100 MVA Base
 				*/
+				/*
 				gen.setCode(genCode == LFGenCodeEnumType.SWING? AclfGenCode.SWING : 
 								genCode == LFGenCodeEnumType.PQ? AclfGenCode.GEN_PQ :
 									genCode == LFGenCodeEnumType.PV? AclfGenCode.GEN_PV : AclfGenCode.NON_GEN);
-				
+				*/
 				double genMva = xmlGen.getMvaBase() != null? xmlGen.getMvaBase().getValue() : baseKva*0.001;
 				gen.setMvaBase(genMva);
 				

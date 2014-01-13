@@ -28,15 +28,15 @@
             <acscBus id="Bus4" offLine="false" number="1" zoneNumber="1"
             	areaNumber="1" name="Gen Bus-4 1000 Volt" scCode="Contributing">
             	<baseVoltage unit="VOLT" value="1000.0" />
-           		<genData>
-            		<acscEquivGen code="NoneGen" id="gen4">
+           		<genData code="NoneGen">
+            		<acscContributeGen id="gen4">
             			<potiveZ im="0.02" unit="PU"/>
             			<negativeZ im="0.02" unit="PU"/>
             			<zeroZ im="1.0e10" unit="PU"/>
             			<grounding groundingConnection="SolidGrounded">
             				<groundingZ im="0.0" unit="PU"/>
             			</grounding>
-            		</acscEquivGen>
+            		</acscContributeGen>
             	</genData>
  			</acscBus>
             <acscBus id="Bus5" offLine="false" number="1" zoneNumber="1"
@@ -44,15 +44,15 @@
             	<baseVoltage unit="VOLT" value="4000.0" />
             	<voltage unit="PU" value="1.0" />
             	<angle unit="DEG" value="0.0" />
-           		<genData>
-            		<acscEquivGen code="NoneGen" id="gen5">
+           		<genData code="NoneGen">
+            		<acscContributeGen id="gen5">
             			<potiveZ im="0.02" unit="PU"/>
             			<negativeZ im="0.02" unit="PU"/>
             			<zeroZ im="1.0e10" unit="PU"/>
             			<grounding groundingConnection="SolidGrounded">
             				<groundingZ im="0.0" unit="PU"/>
             			</grounding>
-            		</acscEquivGen>
+            		</acscContributeGen>
             	</genData>
  			</acscBus>
         </busList>
