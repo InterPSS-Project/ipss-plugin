@@ -154,7 +154,8 @@ public class MachDataHelper {
 			mach.setRatedVoltage(dstabBus.getBaseVoltage(), UnitType.Volt);
 		// the multiply factor is calculated using machine ratedP and ratedV against system 
 		// base kva and bus base voltage
-		mach.setMultiFactors(dstabBus);
+		//TODO setMultiFactor move to setDynGenData() in AbstractODMDStabParserMapper.
+		//mach.setMultiFactors(dstabBus);
 		mach.setPoles(machXml.getPoles()==null?2:machXml.getPoles());
 		mach.setH(machXml.getH());
 		mach.setD(machXml.getD());
@@ -173,14 +174,15 @@ public class MachDataHelper {
 			mach.setRatedVoltage(dstabBus.getBaseVoltage(), UnitType.Volt);
 		// the multiply factor is calculated using machine ratedP and ratedV against system 
 		// base kva and bus base voltage
-		mach.setMultiFactors(dstabBus);
+		//TODO setMultiFactor move to setDynGenData() in AbstractODMDStabParserMapper.
+		//mach.setMultiFactors(dstabBus);
 		// There is no poles info for some data format,such as BPA
 		mach.setPoles(machXml.getPoles()==null?2:machXml.getPoles());
 		mach.setH(machXml.getH());
 		mach.setD(machXml.getD());
 		mach.setXd1(machXml.getXd1());
-		mach.setX0(machXml.getX0() == null ? 0.0 : machXml.getX0());
-		mach.setX2(machXml.getX2() == null ? 0.0 : machXml.getX2());
+		//mach.setX0(machXml.getX0() == null ? 0.0 : machXml.getX0());
+		//mach.setX2(machXml.getX2() == null ? 0.0 : machXml.getX2());
 		mach.setRa(machXml.getRa());
 		mach.setXl(machXml.getXl() == null ? 0.0 : machXml.getXl());
 		mach.setXd(machXml.getXd());

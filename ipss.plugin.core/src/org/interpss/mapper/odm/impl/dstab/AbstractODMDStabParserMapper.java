@@ -201,19 +201,21 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 		 * It is assumed that contribute generators are consolidated to the equivGen, only the Aclf and Acsc part
 		 */
 
-		if(dstabBusXml.getGenData().getEquivGen()!=null){
-			
-			if(dstabBusXml.getGenData().getEquivGen().getValue().getCode()!=LFGenCodeEnumType.NONE_GEN){
-		   
+		if(dstabBusXml.getGenData()!=null){
+
 				//Please note: currently multi-generators are NOT allowed
-				if (dstabBusXml.getGenData().getContributeGen() != null && dstabBusXml.getGenData().getContributeGen().size() > 1) {
-					throw new InterpssException("Currently multiple contributing generators are not supported in DStab");
-				}
+//				if (dstabBusXml.getGenData().getContributeGen() != null && dstabBusXml.getGenData().getContributeGen().size() > 0) {
+//					throw new InterpssException("Currently multiple contributing generators are not supported in DStab");
+//				}
 		   
 				DStabGenDataXmlType dyGen = null;
-				if (dstabBusXml.getGenData().getContributeGen() != null && dstabBusXml.getGenData().getContributeGen().size() == 1) {
+				if (dstabBusXml.getGenData().getContributeGen() != null && dstabBusXml.getGenData().getContributeGen().size() >0) {
 					for(JAXBElement<? extends LoadflowGenDataXmlType> dyGenElem: dstabBusXml.getGenData().getContributeGen()){
 					    dyGen = (DStabGenDataXmlType)dyGenElem.getValue();
+					    //TODO input from ODM, generator is not created yet
+					    if(dstabBus.getGenerator(dyGen.getId())==null ){
+					    	ipssLogger.severe("The generator, Id="+ dyGen.getId()+ " does NOT exist in the bus # "+dstabBus.getId());
+					    }
 					    if(dstabBus.getGenerator(dyGen.getId()) instanceof DStabGen){
 					         DStabGen dyGenObj=(DStabGen) dstabBus.getGenerator(dyGen.getId());
 					         setDynGenData(dstabBus,dyGen,dyGenObj);
@@ -224,12 +226,12 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 					    }
 					}
 				}
-				else 
-					dyGen = (DStabGenDataXmlType)dstabBusXml.getGenData().getEquivGen().getValue();
-				
-				setDynGenData(dstabBus,dyGen,null);
+//				else 
+//					dyGen = (DStabGenDataXmlType)dstabBusXml.getGenData().getEquivGen().getValue();
+//				
+//				    setDynGenData(dstabBus,dyGen,null);
 			}
-	   }	
+	   	
     }
 
 	private void setDynGenData(DStabBus dstabBus, 
@@ -239,8 +241,14 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 		String machId = dstabBus.getId() + "-mach" + (dyGenObj==null?1:dyGenObj.getId());
 		Machine mach = new MachDataHelper(dstabBus, dyGen.getMvaBase(), dyGen.getRatedMachVoltage())
 							.createMachine(machXmlRec, machId);
+	
 		if(dyGenObj!=null)
 			dyGenObj.setMach(mach);
+		
+		// the multiply factor is calculated using machine ratedP and ratedV against system 
+		// base kva and bus base voltage
+		
+		mach.setMultiFactors(dstabBus);
 		
 		if (dyGen.getExciter() != null) {
 			// create the exc model and add to the parent machine object

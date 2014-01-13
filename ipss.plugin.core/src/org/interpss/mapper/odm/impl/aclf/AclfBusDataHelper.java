@@ -287,7 +287,8 @@ public class AclfBusDataHelper {
 						gen = CoreObjectFactory.createAcscGen();
 					else 
 					   gen = CoreObjectFactory.createAclfGen();
-					
+					//add bus reference
+					gen.setBus(aclfBus);
 					gen.setId(xmlGen.getId());
 					
 					gen.setStatus(!xmlGen.isOffLine());
