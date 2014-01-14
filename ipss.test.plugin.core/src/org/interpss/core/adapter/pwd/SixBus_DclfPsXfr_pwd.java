@@ -59,7 +59,7 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 		AclfNetwork net = IpssAdapter.importNet("testData/adpter/psse/v30/SixBus_2WPsXfr.raw")
 					.setFormat(IpssAdapter.FileFormat.PSSE)
 					.setPsseVersion(PsseVersion.PSSE_30)
-					.load(true, "output/odm.xml")
+					.load()    // .load(true, "output/odm.xml")
 					.getImportedObj();
   		//System.out.println(net.net2String());
 
@@ -82,7 +82,7 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 
 		AclfNetwork net = IpssAdapter.importNet("testData/adpter/pwd/SixBus_2WPsXfr.aux")
 					.setFormat(IpssAdapter.FileFormat.PWD)
-					.load(true, "output/odm.xml")
+					.load()    // .load(true, "output/odm.xml")
 					.getImportedObj();
   		//System.out.println(net.net2String());
 		/*

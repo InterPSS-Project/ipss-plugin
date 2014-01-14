@@ -62,7 +62,7 @@ public class Mod_SixBus_DclfPsXfr extends CorePluginTestSetup {
 					.setFormat(IpssAdapter.FileFormat.PSSE)
 					.setPsseVersion(PsseVersion.PSSE_30)
 					.xfrBranchModel(ODMAclfNetMapper.XfrBranchModel.InterPSS)
-					.load(true, "output/odm.xml")
+					.load()    // .load(true, "output/odm.xml")
 					.getImportedObj();
   		//System.out.println(net.net2String());
 
@@ -87,7 +87,7 @@ public class Mod_SixBus_DclfPsXfr extends CorePluginTestSetup {
 					.setFormat(IpssAdapter.FileFormat.PSSE)
 					.setPsseVersion(PsseVersion.PSSE_30)
 					.xfrBranchModel(ODMAclfNetMapper.XfrBranchModel.PSSE)
-					.load(true, "output/odm.xml")
+					.load()    // .load(true, "output/odm.xml")
 					.getImportedObj();
   		//System.out.println(net.net2String());
 
