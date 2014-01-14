@@ -132,6 +132,9 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 		//System.out.println(aclfBus.getId() + "  " + Number2String.toStr(aclfBus.getVoltage()));
 
 		if (xmlBusData.getGenData()!=null) {
+			//add check to make sure there is at least one  generator with the bus
+			if(xmlBusData.getGenData().getCode()!=LFGenCodeEnumType.NONE_GEN &&
+					xmlBusData.getGenData().getContributeGen().size()>0)
 			mapGenData(xmlBusData.getGenData());
 			/* there is no need to do the check. the mapGenData() method should do the job
 			if(xmlBusData.getGenData().getEquivGen().getValue().getCode()!=LFGenCodeEnumType.NONE_GEN)
@@ -143,7 +146,7 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 			bus.setGenCode(AclfGenCode.NON_GEN);
 		}
 
-		if (xmlBusData.getLoadData() != null) {
+		if (xmlBusData.getLoadData() != null && xmlBusData.getLoadData().getContributeLoad().size()>0) {
 			mapLoadData(xmlBusData.getLoadData());
 			/* there is no need to do the check. the mapLoadData() method should do the job
 			if(xmlBusData.getLoadData().getEquivLoad().getValue().getCode()!=LFLoadCodeEnumType.NONE_LOAD)

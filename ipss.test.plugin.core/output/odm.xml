@@ -25,12 +25,7 @@
                 <baseVoltage unit="KV" value="19.4"/>
                 <voltage unit="PU" value="1.0"/>
                 <angle unit="DEG" value="0.0"/>
-                <genData>
-                    <equivGen code="Swing">
-                        <power unit="MVA" re="0.0" im="0.0"/>
-                        <desiredVoltage unit="PU" value="1.0"/>
-                        <desiredAngle unit="DEG" value="0.0"/>
-                    </equivGen>
+                <genData code="Swing">
                     <contributeGen id="1" offLine="false" name="Gen:1(1)">
                         <desc>PSSE Generator 1 at Bus 1</desc>
                         <ownerList id="1">
@@ -38,6 +33,7 @@
                         </ownerList>
                         <power unit="MVA" re="200.0" im="30.0"/>
                         <desiredVoltage unit="PU" value="1.0"/>
+                        <desiredAngle unit="RAD" value="0.0"/>
                         <qLimit unit="MVAR" max="300.0" min="-100.0"/>
                         <pLimit unit="MW" max="100.0" min="1.0"/>
                         <mvaBase unit="MVA" value="100.0"/>
@@ -45,9 +41,7 @@
                         <mvarVControlParticipateFactor>0.92</mvarVControlParticipateFactor>
                     </contributeGen>
                 </genData>
-                <loadData>
-                    <equivLoad/>
-                </loadData>
+                <loadData/>
                 <shuntYData>
                     <equivY unit="PU" re="0.01" im="0.01"/>
                 </shuntYData>
@@ -59,14 +53,8 @@
                 <baseVoltage unit="KV" value="230.0"/>
                 <voltage unit="PU" value="1.02443"/>
                 <angle unit="DEG" value="-4.0004"/>
-                <genData>
-                    <equivGen code="NoneGen">
-                        <power unit="MVA" re="0.0" im="0.0"/>
-                    </equivGen>
-                </genData>
-                <loadData>
-                    <equivLoad/>
-                </loadData>
+                <genData code="NoneGen"/>
+                <loadData/>
                 <shuntYData>
                     <equivY unit="PU" re="0.01" im="0.01"/>
                 </shuntYData>
@@ -78,13 +66,8 @@
                 <baseVoltage unit="KV" value="230.0"/>
                 <voltage unit="PU" value="1.00844"/>
                 <angle unit="DEG" value="-19.088"/>
-                <genData>
-                    <equivGen code="NoneGen">
-                        <power unit="MVA" re="0.0" im="0.0"/>
-                    </equivGen>
-                </genData>
+                <genData code="NoneGen"/>
                 <loadData>
-                    <equivLoad/>
                     <contributeLoad id="'1 '" areaNumber="1" zoneNumber="1" offLine="false" name="Load:'1 '(4)">
                         <desc>PSSE Load '1 ' at Bus 4</desc>
                         <ownerList id="1">
@@ -104,14 +87,8 @@
                 <baseVoltage unit="KV" value="230.0"/>
                 <voltage unit="PU" value="1.00844"/>
                 <angle unit="DEG" value="-19.088"/>
-                <genData>
-                    <equivGen code="NoneGen">
-                        <power unit="MVA" re="0.0" im="0.0"/>
-                    </equivGen>
-                </genData>
-                <loadData>
-                    <equivLoad/>
-                </loadData>
+                <genData code="NoneGen"/>
+                <loadData/>
                 <shuntYData>
                     <equivY unit="PU" re="0.02" im="0.02"/>
                 </shuntYData>
@@ -123,11 +100,7 @@
                 <baseVoltage unit="KV" value="19.4"/>
                 <voltage unit="PU" value="1.00844"/>
                 <angle unit="DEG" value="-19.088"/>
-                <genData>
-                    <equivGen code="PV">
-                        <power unit="MVA" re="0.0" im="0.0"/>
-                        <desiredVoltage unit="PU" value="1.00844"/>
-                    </equivGen>
+                <genData code="PV">
                     <contributeGen id="1" offLine="false" name="Gen:1(6)">
                         <desc>PSSE Generator 1 at Bus 6</desc>
                         <ownerList id="2">
@@ -135,6 +108,7 @@
                         </ownerList>
                         <power unit="MVA" re="100.0" im="20.0"/>
                         <desiredVoltage unit="PU" value="1.0"/>
+                        <desiredAngle unit="RAD" value="0.0"/>
                         <qLimit unit="MVAR" max="200.0" min="-100.0"/>
                         <pLimit unit="MW" max="100.0" min="1.0"/>
                         <mvaBase unit="MVA" value="100.0"/>
@@ -142,9 +116,7 @@
                         <mvarVControlParticipateFactor>0.92</mvarVControlParticipateFactor>
                     </contributeGen>
                 </genData>
-                <loadData>
-                    <equivLoad/>
-                </loadData>
+                <loadData/>
                 <shuntYData>
                     <equivY unit="PU" re="0.02" im="0.02"/>
                 </shuntYData>

@@ -206,13 +206,22 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 		 */
 
 		if(dstabBusXml.getGenData().getContributeGen().size() > 0){
-			//Please note: currently multi-generators are NOT allowed
-			if (dstabBusXml.getGenData().getContributeGen() != null && dstabBusXml.getGenData().getContributeGen().size() > 1) {
-				throw new InterpssException("Currently multiple contributing generators are not supported in DStab");
-			}
-			
-			DStabGenDataXmlType dyGen = DStabParserHelper.getDefaultGen(dstabBusXml.getGenData());
-			setDynGenData(dstabBus,dyGen,null);
+			DStabGenDataXmlType dyGen = null;
+			for(JAXBElement<? extends LoadflowGenDataXmlType> dyGenElem: dstabBusXml.getGenData().getContributeGen()){
+                dyGen = (DStabGenDataXmlType)dyGenElem.getValue();
+                //TODO input from ODM, generator is not created yet
+                if(dstabBus.getGenerator(dyGen.getId())==null ){
+                        ipssLogger.severe("The generator, Id="+ dyGen.getId()+ " does NOT exist in the bus # "+dstabBus.getId());
+                }
+                if(dstabBus.getGenerator(dyGen.getId()) instanceof DStabGen){
+                     DStabGen dyGenObj=(DStabGen) dstabBus.getGenerator(dyGen.getId());
+                     setDynGenData(dstabBus,dyGen,dyGenObj);
+                }
+                else{
+                        ipssLogger.severe("The generator, Id="+ dyGen.getId()+ " of the bus # "+dstabBus.getId()+
+                                        " is NOT of DStabGen type!");
+                }
+            }
 	   }	
     }
 
