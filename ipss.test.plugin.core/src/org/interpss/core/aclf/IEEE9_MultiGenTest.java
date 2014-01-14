@@ -61,10 +61,10 @@ public class IEEE9_MultiGenTest extends CorePluginTestSetup{
  		algo.loadflow();
  	  	
 	  	assertTrue(net.isLfConverged());
- 		System.out.println(AclfOutFunc.loadFlowSummary(net));
+ 		//System.out.println(AclfOutFunc.loadFlowSummary(net));
  		
  		//test the getGenP
- 		assertTrue(net.getBus("Bus3").getGenP()==0.425);
+ 		assertTrue(net.getBus("Bus3").getGenP()==0.425*2.0); // bus gen P includes P of the 2 gen
  		
 	}
 
