@@ -228,8 +228,10 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 		else  // non-contributing
 			setNonContributeBusFormInfo(acscBus);
 		
-		if (acscBusXml.getLoadData() != null && acscBusXml.getLoadData().getContributeLoad().size() > 0)
-			setBusLoadEquivShuntY(acscBusXml, acscBus);
+		if (acscBusXml.getLoadData() != null )
+			if(acscBusXml.getLoadData().getContributeLoad().size() > 0){
+			     setBusLoadEquivShuntY(acscBusXml, acscBus);
+			}
 		
 		if (acscBusXml.getSwithedShuntLoadZeroY() != null) {
 			YXmlType y = acscBusXml.getSwithedShuntLoadZeroY();
@@ -250,11 +252,15 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 		acscBus.setScCode(BusScCode.CONTRIBUTE);
 		// at this point it is assumed that contribute generators have been consolidated to the 
 		// acscEquivGen. The consolidation logic is implemented in AcscParserHelper.createBusScEquivGenData()
+		
 		ShortCircuitGenDataXmlType scGenData = AcscParserHelper.getDefaultScGen(busDataXml.getGenData());
+		//TODO no consolidation
+		/*
 		setBusScZ(acscBus, acscBus.getNetwork().getBaseKva(), 
 					scGenData.getPotiveZ(),
 					scGenData.getNegativeZ(),
 					scGenData.getZeroZ());
+		*/
 		if(scGenData.getGrounding()==null){//no grounding provided, supposed to be ungrounded
 			acscBus.getGrounding().setCode(BusGroundCode.UNGROUNDED);
 		}
@@ -275,27 +281,37 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 									CoreObjectFactory.createAcscGen();
 						acscBus.getGenList().add(scGen);
 					}
-					//TODO regarding the PU, it should be on Generator base or network base?
-					/* in PSS/E, it is entered in pu on generator MBASE base
-					   in the following zConversion, if the fUnit =tUnit, the result Zout is the same as input Zin
+					//TODO regarding the PU, it should be on machine base or system base?
+					// in PSS/E, it is entered in pu on generator MBASE base
+					 /* 
+					  As a convention, the generator impedance is based on the generator base.
+					  This convention is also followed here. The input Z1/2/0 are required to be converted to 
+					  machine based
 					 */
+					//TODO 
 					if(scGenXml.getPotiveZ()!=null){
 						ZXmlType z1=scGenXml.getPotiveZ();
+						/*
 						Complex z1pu = UnitHelper.zConversion( new Complex(z1.getRe(), z1.getIm()), acscBus.getBaseVoltage(), 
-								acscBus.getNetwork().getBaseKva(), ToZUnit.f(z1.getUnit()), UnitType.PU );
-						scGen.setPosGenZ(z1pu);
+								scGen.getMvaBase()*1000, ToZUnit.f(z1.getUnit()), UnitType.PU );
+			            */
+						scGen.setPosGenZ(new Complex(z1.getRe(), z1.getIm()));
 					}
 					if(scGenXml.getNegativeZ()!=null){
 						ZXmlType z2=scGenXml.getNegativeZ();
+						/*
 						Complex z2pu = UnitHelper.zConversion( new Complex(z2.getRe(), z2.getIm()), acscBus.getBaseVoltage(), 
-								acscBus.getNetwork().getBaseKva(), ToZUnit.f(z2.getUnit()), UnitType.PU );
-						scGen.setNegGenZ(z2pu);
+								scGen.getMvaBase()*1000, ToZUnit.f(z2.getUnit()), UnitType.PU );
+						*/
+						scGen.setNegGenZ(new Complex(z2.getRe(), z2.getIm()));
 					}
 					if(scGenXml.getZeroZ()!=null){
 						ZXmlType z0=scGenXml.getZeroZ();
+						/*
 						Complex z0pu = UnitHelper.zConversion( new Complex(z0.getRe(), z0.getIm()), acscBus.getBaseVoltage(), 
 								acscBus.getNetwork().getBaseKva(), ToZUnit.f(z0.getUnit()), UnitType.PU );
-						scGen.setZeroGenZ(z0pu);
+						*/
+						scGen.setZeroGenZ(new Complex(z0.getRe(), z0.getIm()));
 					}
 					
 					
@@ -310,7 +326,7 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 		
 		// we should not check condition here, since by arriving here acscLoadData should be of type ShortCircuitLoadDataXmlType 
 		//if(acscBusXml.getLoadData().getEquivLoad().getValue() instanceof ShortCircuitLoadDataXmlType){
-			
+		//System.out.println("proc equiv load of bus#"+acscBus.getId());	
 		ShortCircuitLoadDataXmlType acscLoadData = AcscParserHelper.getDefaultScLoad(acscBusXml.getLoadData());
 		
 		// 1) positive sequence 
@@ -323,8 +339,9 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 			 *                = equivY_0/v    for Constant current load
 			 * 
 			 */
-			Complex eqivShuntY1= acscBus.getLoadPQ().conjugate();
-			acscBus.setScLoadShuntY1(eqivShuntY1);
+			//TODO InterPSS ACSC algo will automatically calculate scLoadShuntY1 based on load flow or by setting v=1.0 
+			//Complex eqivShuntY1= acscBus.getLoadPQ().conjugate();
+			//acscBus.setScLoadShuntY1(eqivShuntY1);
 		}
 		else if(acscBus.isFunctionLoad()){
 			try {
@@ -357,8 +374,9 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 				 *                = equivY_0/v    for Constant current load
 				 * 
 				 */
-				Complex eqivShuntY2= acscBus.getLoadPQ().conjugate();
-				acscBus.setScLoadShuntY2(eqivShuntY2);
+				//TODO InterPSS ACSC algo will automatically calculate scLoadShuntY2 if it is not provided. 
+				//Complex eqivShuntY2= acscBus.getLoadPQ().conjugate();
+				//acscBus.setScLoadShuntY2(eqivShuntY2);
 			}
 			else if(acscBus.isFunctionLoad()){
 				try {

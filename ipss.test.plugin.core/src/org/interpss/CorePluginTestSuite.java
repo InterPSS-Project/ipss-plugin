@@ -1,6 +1,8 @@
 package org.interpss;
 
 import org.interpss.core.aclf.IEEE14_3WXfrTest;
+import org.interpss.core.aclf.IEEE9_MultiGenTest;
+import org.interpss.core.aclf.IEEE9_MultiLoadTest;
 import org.interpss.core.adapter.bpa.BPASampleTestCases;
 import org.interpss.core.adapter.ge.GESampleTestCases;
 import org.interpss.core.adapter.ieee.IEEE009Bus_Test;
@@ -63,6 +65,8 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses({
 	// aclf
 	IEEE14_3WXfrTest.class,
+	IEEE9_MultiGenTest.class,
+	IEEE9_MultiLoadTest.class,
 	
 	// Dclf
 	Mod_SixBus_DclfPsXfr.class,
@@ -95,7 +99,8 @@ import org.junit.runners.Suite.SuiteClasses;
 	SalientPoleMachineTest.class,
 
 	// DStab ODM
-	DStab_2Bus.class,
+	//TODO ODM file missing Gen sourceZ or genPosZ
+	//DStab_2Bus.class,
 	
 	//DStab PSS/E
 	DStab_IEEE9Bus_Test.class,
