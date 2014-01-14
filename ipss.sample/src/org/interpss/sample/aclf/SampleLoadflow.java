@@ -45,7 +45,7 @@ import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adj.FunctionLoad;
 import com.interpss.core.aclf.adpter.AclfLine;
-import com.interpss.core.aclf.adpter.AclfLoadBus;
+import com.interpss.core.aclf.adpter.AclfLoadBusAdapter;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
@@ -84,8 +84,8 @@ public class SampleLoadflow {
   		// adapt the bus object to a swing bus object
   		AclfSwingBus swingBus = bus1.toSwingBus();
   		// set swing bus attributes
-  		swingBus.setVoltMag(1.0, UnitType.PU);
-  		swingBus.setVoltAng(0.0, UnitType.Deg);
+  		swingBus.setDesiredVoltMag(1.0, UnitType.PU);
+  		swingBus.setDesiredVoltAng(0.0, UnitType.Deg);
   		// add the bus into the network
   		//net.addBus(bus1);
   		
@@ -97,7 +97,7 @@ public class SampleLoadflow {
   		// set the bus to a constant power load bus
   		bus2.setLoadCode(AclfLoadCode.CONST_P);
   		// adapt the bus object to a Load bus object
-  		AclfLoadBus loadBus = bus2.toLoadBus();
+  		AclfLoadBusAdapter loadBus = bus2.toLoadBus();
   		// set load to the bus
   		loadBus.setLoad(new Complex(1.0, 0.8), UnitType.PU);
   		//net.addBus(bus2);

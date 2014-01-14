@@ -40,7 +40,7 @@ import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adj.AdjControlType;
 import com.interpss.core.aclf.adj.TapControl;
-import com.interpss.core.aclf.adpter.AclfLoadBus;
+import com.interpss.core.aclf.adpter.AclfLoadBusAdapter;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
 import com.interpss.core.aclf.adpter.AclfXformer;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -91,8 +91,8 @@ public class XfrTapControlSample {
   		bus1.setBaseVoltage(10000.0);
   		bus1.setGenCode(AclfGenCode.SWING);
   		AclfSwingBus swingBus = bus1.toSwingBus();
-  		swingBus.setVoltMag(1.0, UnitType.PU);
-  		swingBus.setVoltAng(0.0, UnitType.Deg);
+  		swingBus.setDesiredVoltMag(1.0, UnitType.PU);
+  		swingBus.setDesiredVoltAng(0.0, UnitType.Deg);
   		
   		AclfBus bus2 = CoreObjectFactory.createAclfBus("0002", net);
   		//net.addBus(bus2);
@@ -100,7 +100,7 @@ public class XfrTapControlSample {
   		bus2.setBaseVoltage(4000.0);
   		bus2.setGenCode(AclfGenCode.NON_GEN);
   		bus2.setLoadCode(AclfLoadCode.CONST_P);
-  		AclfLoadBus loadBus = bus2.toLoadBus();
+  		AclfLoadBusAdapter loadBus = bus2.toLoadBus();
   		loadBus.setLoad(new Complex(1.0, 0.8), UnitType.PU);
   		
   		AclfBranch branch = CoreObjectFactory.createAclfBranch();
