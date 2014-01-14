@@ -291,10 +291,10 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 				LoadflowGenDataXmlType xmlGen= elem.getValue();
 				
 				//Map load flow generator data
-				AclfGen gen= this.bus instanceof DStabBus? DStabObjectFactory.createDStabGen() :
-								this.bus instanceof AcscBus? CoreObjectFactory.createAcscGen() : 
-									CoreObjectFactory.createAclfGen();
-				gen.setId(xmlGen.getId()!=null?xmlGen.getId():this.bus.getId()+"-G"+genCnt++);
+				String id = xmlGen.getId()!=null?xmlGen.getId():this.bus.getId()+"-G"+genCnt++;
+				AclfGen gen= this.bus instanceof DStabBus? DStabObjectFactory.createDStabGen(id) :
+								this.bus instanceof AcscBus? CoreObjectFactory.createAcscGen(id) : 
+									CoreObjectFactory.createAclfGen(id);
 				
 				gen.setStatus(xmlGen.isOffLine()==null?true:!xmlGen.isOffLine());
 				/*
@@ -463,11 +463,14 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 				if(xmlLoadData.getContributeLoad().size()>0){
 					// we set parent bus load code to constant power
 					bus.setLoadCode(AclfLoadCode.CONST_P);
+					int loadCnt = 1;
 					for(JAXBElement<? extends LoadflowLoadDataXmlType> elem: xmlLoadData.getContributeLoad()){
 						if(elem!=null){
 							LoadflowLoadDataXmlType loadElem = elem.getValue();
 							
-							AclfLoad load = CoreObjectFactory.createAclfLoad();
+							String id = loadElem.getId()!=null?loadElem.getId():this.bus.getId()+"-L"+loadCnt++;
+							AclfLoad load = CoreObjectFactory.createAclfLoad(id);
+							
 							bus.getLoadList().add(load);
 							//status
 							load.setStatus(loadElem.isOffLine()!=null?!loadElem.isOffLine():true);
