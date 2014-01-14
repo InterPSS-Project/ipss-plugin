@@ -14,6 +14,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
+import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.BusScCode;
 import com.interpss.core.acsc.SequenceCode;
@@ -155,6 +156,6 @@ public class AcscSamplePSSL {
 					.toGrounding(XfrConnectCode.DELTA);
 
 		//System.out.println(netDsl.getAcscNet().net2String());
-		return netDsl.getAclfNet();
+		return (AcscNetwork)netDsl.getAcscNet();
 	}
 }
