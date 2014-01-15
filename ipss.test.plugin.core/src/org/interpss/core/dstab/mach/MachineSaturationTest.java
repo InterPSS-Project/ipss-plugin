@@ -31,6 +31,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.junit.Test;
 
 import com.interpss.DStabObjectFactory;
+import com.interpss.common.exp.InterpssException;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.mach.Eq1Ed1Machine;
@@ -39,18 +40,18 @@ import com.interpss.dstab.util.sample.SampleDStabCase;
 
 public class MachineSaturationTest extends TestSetupBase {
 	@Test
-	public void test_Case1() {
+	public void test_Case1()  throws InterpssException {
 		// create a two-bus network. Loadflow calculated
 		DStabilityNetwork net = SampleDStabCase.createDStabTestNet();
 
 		// create a machine and connect to the bus "Gen"
 		Eq1Ed1Machine mach = (Eq1Ed1Machine)DStabObjectFactory.
-							createMachine("MachId", "MachName", MachineType.EQ1_ED1_MODEL, net, "Gen");
+							createMachine("MachId", "MachName", MachineType.EQ1_ED1_MODEL, net, "Gen", "G1");
 		DStabBus bus = net.getDStabBus("Gen");
 		// set machine data
 		mach.setRating(100, UnitType.mVA, net.getBaseKva());
 		mach.setRatedVoltage(1000.0);
-		mach.setMultiFactors(bus);
+		mach.calMultiFactors();
 		mach.setH(5.0);
 		mach.setD(0.01);
 		mach.setXd(1.81);
