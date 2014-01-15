@@ -29,7 +29,7 @@ public class DStabTestUtilFunc {
 		mach.setRating(100, UnitType.mVA, net.getBaseKva());
 		mach.setRatedVoltage(1000.0);
 		mach.calMultiFactors();
-		mach.setDStabBus(bus);
+		gen.setMach(mach);
 		return net;
 	}
 }
