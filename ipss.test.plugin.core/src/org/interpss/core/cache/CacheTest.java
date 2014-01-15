@@ -478,8 +478,8 @@ public class CacheTest extends CorePluginTestSetup {
 
 		assertTrue(Math.abs(mach.getYgen().getReal()-0.01208) < 0.00001);
 		assertTrue(Math.abs(mach.getYgen().getImaginary()+2.63678) < 0.00001);
-		assertTrue(Math.abs(mach.getIgen(mach.getDStabBus()).getReal()-0.81207) < 0.00001);
-		assertTrue(Math.abs(mach.getIgen(mach.getDStabBus()).getImaginary()+3.23676) < 0.00001);			
+		assertTrue(Math.abs(mach.getIgen().getReal()-0.81207) < 0.00001);
+		assertTrue(Math.abs(mach.getIgen().getImaginary()+3.23676) < 0.00001);			
 
 		// the following values to compare to are by long-hand calculation
 		assertTrue(Math.abs(Math.toDegrees(mach.getAngle())-27.58341) < 0.00001);
@@ -543,8 +543,8 @@ public class CacheTest extends CorePluginTestSetup {
 		mach.initStates(bus);
 		assertTrue(Math.abs(mach.getYgen().getReal()-0.0567) < 0.00001);
 		assertTrue(Math.abs(mach.getYgen().getImaginary()+4.34709) < 0.00001);
-		assertTrue(Math.abs(mach.getIgen(mach.getDStabBus()).getReal()-0.85669) < 0.00001);
-		assertTrue(Math.abs(mach.getIgen(mach.getDStabBus()).getImaginary()+4.94707) < 0.00001);	
+		assertTrue(Math.abs(mach.getIgen().getReal()-0.85669) < 0.00001);
+		assertTrue(Math.abs(mach.getIgen().getImaginary()+4.94707) < 0.00001);	
 		
 		// the following values to compare to are by long-hand calculation
 		assertTrue(Math.abs(Math.toDegrees(mach.getAngle())-27.58341) < 0.00001);
@@ -611,8 +611,8 @@ public class CacheTest extends CorePluginTestSetup {
 		//System.out.println("Igen: " + mach.getIgen());
 		assertTrue(Math.abs(mach.getYgen().getReal()-0.16658) < 0.00001);
 		assertTrue(Math.abs(mach.getYgen().getImaginary()+7.49625) < 0.00001);
-		assertTrue(Math.abs(mach.getIgen(mach.getDStabBus()).getReal()-0.96657) < 0.00001);
-		assertTrue(Math.abs(mach.getIgen(mach.getDStabBus()).getImaginary()+8.09623) < 0.00001);		
+		assertTrue(Math.abs(mach.getIgen().getReal()-0.96657) < 0.00001);
+		assertTrue(Math.abs(mach.getIgen().getImaginary()+8.09623) < 0.00001);		
 
 		// the following values to compare to are by long-hand calculation
 		assertTrue(Math.abs(mach.getAngle()-0.48142) < 0.00001);
@@ -682,8 +682,8 @@ public class CacheTest extends CorePluginTestSetup {
 		mach.initStates(bus);
 		assertTrue(Math.abs(mach.getYgen().getReal()-0.16658) < 0.00001);
 		assertTrue(Math.abs(mach.getYgen().getImaginary()+7.49625) < 0.00001);
-		assertTrue(Math.abs(mach.getIgen(mach.getDStabBus()).getReal()-0.96657) < 0.00001);
-		assertTrue(Math.abs(mach.getIgen(mach.getDStabBus()).getImaginary()+8.09623) < 0.00001);
+		assertTrue(Math.abs(mach.getIgen().getReal()-0.96657) < 0.00001);
+		assertTrue(Math.abs(mach.getIgen().getImaginary()+8.09623) < 0.00001);
 
 		// the following values to compare to are by long-hand calculation
 		assertTrue(Math.abs(Math.toDegrees(mach.getAngle())-27.58341) < 0.00001);

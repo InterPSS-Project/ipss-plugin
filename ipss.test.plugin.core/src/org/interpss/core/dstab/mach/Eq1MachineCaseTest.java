@@ -50,8 +50,8 @@ public class Eq1MachineCaseTest extends TestSetupBase {
 		//System.out.println("Igen: " + mach.getIgen());
 		assertTrue(Math.abs(mach.getYgen().getReal()-0.01208) < 0.00001);
 		assertTrue(Math.abs(mach.getYgen().getImaginary()+2.63678) < 0.00001);
-		assertTrue(Math.abs(mach.getIgen(mach.getDStabBus()).getReal()-0.81207) < 0.00001);
-		assertTrue(Math.abs(mach.getIgen(mach.getDStabBus()).getImaginary()+3.23676) < 0.00001);			
+		assertTrue(Math.abs(mach.getIgen().getReal()-0.81207) < 0.00001);
+		assertTrue(Math.abs(mach.getIgen().getImaginary()+3.23676) < 0.00001);			
 
 		/*
 		System.out.println("Angle(deg) " + mach.getAngle()*Constants.RtoD);

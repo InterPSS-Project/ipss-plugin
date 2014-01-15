@@ -88,9 +88,9 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
 		  private double calLimit(double vrlimit) {
 			  	Machine mach = getMachine();
 		      DStabBus dbus = mach.getDStabBus();
-		      double vt = mach.getVdq(dbus).abs();
+		      double vt = mach.getVdq().abs();
 		     // double ifd = mach.calculateIfd(dbus);
-		      double ifd_Exc_pu=mach.calculateIfd(dbus, MachineIfdBase.EXCITER);
+		      double ifd_Exc_pu=mach.calculateIfd(MachineIfdBase.EXCITER);
 		     // System.out.println(mach.getDStabBus().getId()+", exc based IFD ="+ifd_Exc_pu+", ifd="+mach.calculateIfd(dbus));
 		      return vt * vrlimit - kc * ifd_Exc_pu;
 		     // return vt * vrlimit - kc * ifd;

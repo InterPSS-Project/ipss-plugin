@@ -105,7 +105,7 @@ public class BPASSTypeStabilizer extends AnnotateStabilizer {
 		  public double getY() {
 		  	Machine mach = getMachine();
 		  	DStabBus dbus = mach.getDStabBus();
-		    double vt = mach.getVdq(dbus).abs();
+		    double vt = mach.getVdq().abs();
 				double deltaVt = vt0 - vt;
 		  	//restrict the output
 				if(Vcutoff<=0) {

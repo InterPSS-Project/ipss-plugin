@@ -47,11 +47,11 @@ public class Eq1Ed1MachineTest extends TestSetupBase {
 		// calculate mach state init values
 		mach.initStates();
 		//System.out.println("Ygen: " + ComplexFunc.toStr(mach.getYgen()));
-		System.out.println("Igen: " +  ComplexFunc.toStr(mach.getIgen(mach.getDStabBus())));
+		System.out.println("Igen: " +  ComplexFunc.toStr(mach.getIgen()));
 		assertTrue(Math.abs(mach.getYgen().getReal()-0.0567) < 0.00001);
 		assertTrue(Math.abs(mach.getYgen().getImaginary()+4.34709) < 0.00001);
-		assertTrue(Math.abs(mach.getIgen(mach.getDStabBus()).getReal()-0.85669) < 0.00001);
-		assertTrue(Math.abs(mach.getIgen(mach.getDStabBus()).getImaginary()+4.94707) < 0.00001);	
+		assertTrue(Math.abs(mach.getIgen().getReal()-0.85669) < 0.00001);
+		assertTrue(Math.abs(mach.getIgen().getImaginary()+4.94707) < 0.00001);	
 		
 		// the following values to compare to are by long-hand calculation
 		//System.out.println("Angle, Ed1, Eq1, Efd, Pe: " + mach.getAngle()*Constants.RtoD + ", " + 
