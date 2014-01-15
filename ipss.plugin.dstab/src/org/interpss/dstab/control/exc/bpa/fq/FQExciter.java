@@ -134,7 +134,7 @@ public class FQExciter extends AnnotateExciter {
 			  private double calculateIn() {
 				  	Machine mach = getMachine();
 			      DStabBus dbus = mach.getDStabBus();
-			      double ifd_Exc_pu=mach.calculateIfd(dbus, MachineIfdBase.EXCITER);
+			      double ifd_Exc_pu=mach.calculateIfd(MachineIfdBase.EXCITER);
 			      double ve = this.getU0();
 			      return kc * ifd_Exc_pu / ve;
 			  }
