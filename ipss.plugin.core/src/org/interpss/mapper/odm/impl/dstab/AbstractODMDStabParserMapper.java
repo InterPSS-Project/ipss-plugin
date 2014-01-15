@@ -231,7 +231,7 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 		MachineModelXmlType machXmlRec = dyGen.getMachineModel().getValue();
 		String machId = dstabBus.getId() + "-mach" + (dyGenObj==null?1:dyGenObj.getId());
 		Machine mach = new MachDataHelper(dstabBus, dyGen.getMvaBase(), dyGen.getRatedMachVoltage())
-							.createMachine(machXmlRec, machId);
+							.createMachine(machXmlRec, machId, dyGen.getId());
 		if(dyGenObj!=null)
 			dyGenObj.setMach(mach);
 		
