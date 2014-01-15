@@ -82,16 +82,17 @@ public class MachDataHelper {
 	 * 
 	 * @param machXmlRec machine ODM xml record
 	 * @param machId machine Id, has to be unique for retrieval by id
+	 * @param genId parent gen Id, has to be unique for retrieval by id
 	 * @return
 	 */
-	public Machine createMachine(MachineModelXmlType machXmlRec, String machId)  throws InterpssException {
+	public Machine createMachine(MachineModelXmlType machXmlRec, String machId, String genId)  throws InterpssException {
 		// make source considering the inheritance relationship
 		if (machXmlRec instanceof Eq11Ed11MachineXmlType) {
 			Eq11Ed11MachineXmlType machXml = (Eq11Ed11MachineXmlType)machXmlRec;
 			// create a machine and connect to the bus 
 			RoundRotorMachine mach = (RoundRotorMachine)DStabObjectFactory.
 								createMachine(machId, machXml.getName(), MachineType.EQ11_ED11_ROUND_ROTOR, 
-								(DStabilityNetwork)this.dstabBus.getNetwork(), dstabBus.getId());
+								(DStabilityNetwork)this.dstabBus.getNetwork(), dstabBus.getId(), genId);
 			setEq11Ed11Data(mach, machXml);
 			return mach;
 		}
@@ -100,7 +101,7 @@ public class MachDataHelper {
 			// create a machine and connect to the bus
 			SalientPoleMachine mach = (SalientPoleMachine)DStabObjectFactory.
 								createMachine(machId, machXml.getName(), MachineType.EQ11_SALIENT_POLE, 
-								(DStabilityNetwork)this.dstabBus.getNetwork(), dstabBus.getId());
+								(DStabilityNetwork)this.dstabBus.getNetwork(), dstabBus.getId(), genId);
 			setEq11Data(mach, machXml);
 			return mach;
 		}
@@ -109,7 +110,7 @@ public class MachDataHelper {
 			// create a machine and connect to the bus
 			Eq1Ed1Machine mach = (Eq1Ed1Machine)DStabObjectFactory.
 								createMachine(machId, machXml.getName(), MachineType.EQ1_ED1_MODEL, 
-								(DStabilityNetwork)this.dstabBus.getNetwork(), dstabBus.getId());
+								(DStabilityNetwork)this.dstabBus.getNetwork(), dstabBus.getId(), genId);
 			setEq1Ed1Data(mach, machXml);
 			return mach;
 		}
@@ -118,7 +119,7 @@ public class MachDataHelper {
 			// create a machine and connect to the bus
 			Eq1Machine mach = (Eq1Machine)DStabObjectFactory.
 								createMachine(machId, machXml.getName(), MachineType.EQ1_MODEL, 
-								(DStabilityNetwork)this.dstabBus.getNetwork(), dstabBus.getId());
+								(DStabilityNetwork)this.dstabBus.getNetwork(), dstabBus.getId(), genId);
 			setEq1Data(mach, machXml);
 			return mach;
 		}
@@ -127,7 +128,7 @@ public class MachDataHelper {
 			// create a machine and connect to the bus
 			EConstMachine mach = (EConstMachine)DStabObjectFactory.
 								createMachine(machId, machXml.getName(), MachineType.ECONSTANT, 
-								(DStabilityNetwork)this.dstabBus.getNetwork(), dstabBus.getId());
+								(DStabilityNetwork)this.dstabBus.getNetwork(), dstabBus.getId(), genId);
 			setClassicData(mach, machXml);
 			return mach;
 		}
@@ -136,7 +137,7 @@ public class MachDataHelper {
 			Complex z1 = calSourceZ1(machXml);
 			Complex z0 = calSourceZ0(machXml, z1);
 			return DStabObjectFactory.createInfiniteMachine(machId, machXml.getName(), 
-					z1, z0, (DStabilityNetwork)this.dstabBus.getNetwork(), this.dstabBus.getId());
+					z1, z0, (DStabilityNetwork)this.dstabBus.getNetwork(), this.dstabBus.getId(), genId);
 		}
 		
 		throw new InterpssException("Error : Wrong mach model type, bus id: " + this.dstabBus.getId());
@@ -154,7 +155,7 @@ public class MachDataHelper {
 			mach.setRatedVoltage(dstabBus.getBaseVoltage(), UnitType.Volt);
 		// the multiply factor is calculated using machine ratedP and ratedV against system 
 		// base kva and bus base voltage
-		mach.setMultiFactors(dstabBus);
+		mach.calMultiFactors();
 		mach.setPoles(machXml.getPoles()==null?2:machXml.getPoles());
 		mach.setH(machXml.getH());
 		mach.setD(machXml.getD());
@@ -173,7 +174,7 @@ public class MachDataHelper {
 			mach.setRatedVoltage(dstabBus.getBaseVoltage(), UnitType.Volt);
 		// the multiply factor is calculated using machine ratedP and ratedV against system 
 		// base kva and bus base voltage
-		mach.setMultiFactors(dstabBus);
+		mach.calMultiFactors();
 		// There is no poles info for some data format,such as BPA
 		mach.setPoles(machXml.getPoles()==null?2:machXml.getPoles());
 		mach.setH(machXml.getH());

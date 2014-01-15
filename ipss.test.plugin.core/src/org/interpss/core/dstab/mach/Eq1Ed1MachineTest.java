@@ -26,8 +26,10 @@ package org.interpss.core.dstab.mach;
 
 import static org.junit.Assert.assertTrue;
 
+import org.interpss.numeric.datatype.ComplexFunc;
 import org.junit.Test;
 
+import com.interpss.common.exp.InterpssException;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -36,16 +38,16 @@ import com.interpss.dstab.util.sample.SampleDStabCase;
 
 public class Eq1Ed1MachineTest extends TestSetupBase {
 	@Test
-	public void test_Case1() {
+	public void test_Case1()  throws InterpssException {
 		// create a machine in a two-bus network. The loadflow already converged
 		DStabilityNetwork net = SampleDStabCase.createDStabTestNet();
+		System.out.println(net.net2String());
 		Eq1Ed1Machine mach = SampleDStabCase.createEq1Ed1Machine(net);
 		
 		// calculate mach state init values
-		DStabBus bus = net.getDStabBus("Gen");
-		mach.initStates(bus);
-		//System.out.println("Ygen: " + mach.getYgen());
-		//System.out.println("Igen: " + mach.getIgen());
+		mach.initStates();
+		//System.out.println("Ygen: " + ComplexFunc.toStr(mach.getYgen()));
+		System.out.println("Igen: " +  ComplexFunc.toStr(mach.getIgen(mach.getDStabBus())));
 		assertTrue(Math.abs(mach.getYgen().getReal()-0.0567) < 0.00001);
 		assertTrue(Math.abs(mach.getYgen().getImaginary()+4.34709) < 0.00001);
 		assertTrue(Math.abs(mach.getIgen(mach.getDStabBus()).getReal()-0.85669) < 0.00001);

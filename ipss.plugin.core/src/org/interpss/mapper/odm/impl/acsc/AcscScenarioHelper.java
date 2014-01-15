@@ -60,7 +60,7 @@ import com.interpss.core.algo.SimpleFaultAlgorithm;
  * 
  * @author mzhou
  *
- */
+ */   
 public class AcscScenarioHelper {
 	private AcscNetwork acscFaultNet = null;
 	SimpleFaultAlgorithm acscAglo = null;
