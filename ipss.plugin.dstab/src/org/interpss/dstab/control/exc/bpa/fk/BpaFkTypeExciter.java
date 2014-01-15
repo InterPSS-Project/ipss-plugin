@@ -99,8 +99,8 @@ public class BpaFkTypeExciter extends AnnotateExciter {
 		  private double calLimit(double vrlimit) {
 			  Machine mach = getMachine();
 		      DStabBus dbus = mach.getDStabBus();
-		      double vt = mach.getVdq(dbus).abs();
-		      double ifd_Exc_pu=mach.calculateIfd(dbus, MachineIfdBase.EXCITER);
+		      double vt = mach.getVdq().abs();
+		      double ifd_Exc_pu=mach.calculateIfd( MachineIfdBase.EXCITER);
 		      return vt * vrlimit - kc * ifd_Exc_pu;
 		  }
 	   };

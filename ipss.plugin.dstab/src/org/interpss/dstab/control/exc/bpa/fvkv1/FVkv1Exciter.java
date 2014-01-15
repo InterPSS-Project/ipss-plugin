@@ -91,7 +91,7 @@ public class FVkv1Exciter extends AnnotateExciter {
 		  	//judge whether ifd <=0
 		  	Machine mach = getMachine();
 		    DStabBus dbus = mach.getDStabBus();
-		  	double ifd = mach.calculateIfd(dbus, MachineIfdBase.EXCITER);
+		  	double ifd = mach.calculateIfd(MachineIfdBase.EXCITER);
 		  	if(ifd<=0){
 		  		System.out.println("ifd="+ifd);
 		  		vrmin = 0;
@@ -114,9 +114,9 @@ public class FVkv1Exciter extends AnnotateExciter {
 		  private double calLimit(double vrlimit) {
 			  	Machine mach = getMachine();
 		      DStabBus dbus = mach.getDStabBus();
-		      double vt = mach.getVdq(dbus).abs();
+		      double vt = mach.getVdq().abs();
 		      //double ifd = mach.calculateIfd(dbus);
-		      double ifd_Exc_pu=mach.calculateIfd(dbus, MachineIfdBase.EXCITER);
+		      double ifd_Exc_pu=mach.calculateIfd(MachineIfdBase.EXCITER);
 		     // System.out.println(mach.getDStabBus().getId()+", FVkv1 exc based IFD ="+ifd_Exc_pu);
 		      return vt * vrlimit - kc * ifd_Exc_pu;
 		  }

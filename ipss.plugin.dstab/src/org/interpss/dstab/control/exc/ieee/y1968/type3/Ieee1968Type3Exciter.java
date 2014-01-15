@@ -111,13 +111,13 @@ public class Ieee1968Type3Exciter extends AnnotateExciter {
 	         DStabBus dbus = mach.getDStabBus();
 
 	         // calculate Ve
-	         double vt = mach.getVdq(dbus).abs();
-	         double it = mach.getIdq(dbus).abs();
+	         double vt = mach.getVdq().abs();
+	         double it = mach.getIdq().abs();
 	         double ve = new Complex(kp*vt, ki*it).abs();
 
 	         // calculate sqrt( 1 - A )
 	         double xad = mach.getMachData().getXd() - mach.getMachData().getXl();
-	         double ifd = mach.calculateIfd(dbus, MachineIfdBase.MACHINE);
+	         double ifd = mach.calculateIfd(MachineIfdBase.MACHINE);
 	         double a = 0.78 * xad * ifd * ifd / ve;
 	         if (a > 1.0) {
 	            //System.out.println("ve, xad, ifd, a: " + ve + ", " + xad + ", " + ifd + ", " + a);
