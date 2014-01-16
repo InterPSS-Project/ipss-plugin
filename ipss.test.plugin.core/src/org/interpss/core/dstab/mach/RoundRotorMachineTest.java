@@ -47,11 +47,11 @@ public class RoundRotorMachineTest extends TestSetupBase {
 		DStabBus bus = net.getDStabBus("Gen");
 		mach.initStates(bus);
 		//System.out.println("Ygen: " + mach.getYgen());
-		//System.out.println("Igen: " + mach.getIgen());
+		System.out.println("Igen: " + mach.getIgen());
 		assertTrue(Math.abs(mach.getYgen().getReal()-0.16658) < 0.00001);
 		assertTrue(Math.abs(mach.getYgen().getImaginary()+7.49625) < 0.00001);
-		assertTrue(Math.abs(mach.getIgen().getReal()-0.96657) < 0.00001);
-		assertTrue(Math.abs(mach.getIgen().getImaginary()+8.09623) < 0.00001);
+		assertTrue(Math.abs(mach.getIgen().getReal()-0.96658) < 0.00001);
+		assertTrue(Math.abs(mach.getIgen().getImaginary()+8.09625) < 0.00001);
 
 		// the following values to compare to are by long-hand calculation
 		/*
@@ -64,7 +64,7 @@ public class RoundRotorMachineTest extends TestSetupBase {
 		assertTrue(Math.abs(mach.getEd1()+0.36656) < 0.00001);
 		assertTrue(Math.abs(mach.getEq11()-0.99590) < 0.00001);
 		assertTrue(Math.abs(mach.getEd11()+0.40106) < 0.00001);
-		assertTrue(Math.abs(mach.getEfd()-1.8800642271660648) < 0.00001);
+		assertTrue(Math.abs(mach.getEfd()-1.88008) < 0.00001);
 		assertTrue(Math.abs(mach.getPe()-0.803) < 0.00001);
 		assertTrue(Math.abs(mach.getPm()-0.803) < 0.00001);
 		
@@ -83,7 +83,7 @@ public class RoundRotorMachineTest extends TestSetupBase {
 		assertTrue(Math.abs(mach.getEd1()+0.36656) < 0.00001);
 		assertTrue(Math.abs(mach.getEq11()-0.99590) < 0.00001);
 		assertTrue(Math.abs(mach.getEd11()+0.40106) < 0.00001);
-		assertTrue(Math.abs(mach.getEfd()-1.8800642271660648) < 0.00001);
+		assertTrue(Math.abs(mach.getEfd()-1.88008) < 0.00001);
 		assertTrue(Math.abs(mach.getPe()-0.803) < 0.00001);
 		assertTrue(Math.abs(mach.getPm()-0.803) < 0.00001);
 		
@@ -98,7 +98,7 @@ public class RoundRotorMachineTest extends TestSetupBase {
 		assertTrue(Math.abs(mach.getEd1()+0.36656) < 0.00001);
 		assertTrue(Math.abs(mach.getEq11()-0.99590) < 0.00001);
 		assertTrue(Math.abs(mach.getEd11()+0.40106) < 0.00001);
-		assertTrue(Math.abs(mach.getEfd()-1.8800642271660648) < 0.00001);
+		assertTrue(Math.abs(mach.getEfd()-1.88008) < 0.00001);
 		assertTrue(Math.abs(mach.getPe()-0.803) < 0.00001);
 		assertTrue(Math.abs(mach.getPm()-0.803) < 0.00001);
 		
@@ -108,16 +108,16 @@ public class RoundRotorMachineTest extends TestSetupBase {
 
 		// again, the following values to compare to are by long-hand calculation
 		/*
-		System.out.println("Angle, Eq1, Ed1, Ed11, Eq11, Efd, Pe: " + mach.getAngle()*Constants.RtoD + ", " + 
+		System.out.println("Angle, Eq1, Ed1, Ed11, Eq11, Efd, Pe: " + mach.getAngle()*180/Math.PI + ", " + 
 				mach.getEq1() + ", " + mach.getEd1() + ", " + mach.getEd11() +  ", " + 
 				mach.getEq11() + ", " + mach.getEfd()+ ", " + mach.getPe());
 		*/		
 		assertTrue(Math.abs(Math.toDegrees(mach.getAngle())-27.60114) < 0.00001);
 		assertTrue(Math.abs(mach.getEq1()-1.09514) < 0.00001);
 		assertTrue(Math.abs(mach.getEd1()+0.36656) < 0.00001);
-		assertTrue(Math.abs(mach.getEq11()-0.9959) < 0.00001);
-		assertTrue(Math.abs(mach.getEd11()+0.40106) < 0.00001);
-		assertTrue(Math.abs(mach.getEfd()-1.8800642271660648) < 0.00001);
+		assertTrue(Math.abs(mach.getEq11()-0.995864) < 0.00001);
+		assertTrue(Math.abs(mach.getEd11()+0.401086) < 0.00001);
+		assertTrue(Math.abs(mach.getEfd()-1.8800889) < 0.00001);
 		assertTrue(Math.abs(mach.getPe()-0.803) < 0.00001);
 		assertTrue(Math.abs(mach.getPm()-1.0) < 0.00001);
 	}
