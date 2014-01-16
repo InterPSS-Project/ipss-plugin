@@ -34,7 +34,7 @@ public class IEEE9_MultiGenTest extends CorePluginTestSetup{
 				.load()
 				.getImportedObj();
 		
-		System.out.println(net.net2String());
+		//System.out.println(net.net2String());
 		
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
@@ -44,10 +44,10 @@ public class IEEE9_MultiGenTest extends CorePluginTestSetup{
   	     *------------------------
   	     */
 	  	assertTrue(net.isLfConverged());
- 		System.out.println(AclfOutFunc.loadFlowSummary(net));
+ 		//System.out.println(AclfOutFunc.loadFlowSummary(net));
  		//System.out.println(AclfOut_PSSE.lfResults(net, Format.GUI));
  		Complex gen1_PQ=net.getBus("Bus3").getGenList().get(0).getGen();
- 		System.out.println(gen1_PQ);
+ 		//System.out.println(gen1_PQ);
  		assertTrue(NumericUtil.equals(gen1_PQ,new Complex(0.425,-0.054617),1.0E-4));
 	  	
  		//test the getGenP
@@ -58,13 +58,15 @@ public class IEEE9_MultiGenTest extends CorePluginTestSetup{
   	     *------------------------------------
  		 */
  		net.getBus("Bus3").getGenList().get(0).setStatus(false);
+ 		net.initMultiGen();
+ 		     // we need re-initialize bus P and Q again.
  		algo.loadflow();
  	  	
 	  	assertTrue(net.isLfConverged());
  		//System.out.println(AclfOutFunc.loadFlowSummary(net));
  		
  		//test the getGenP
- 		assertTrue(net.getBus("Bus3").getGenP()==0.425*2.0); // bus gen P includes P of the 2 gen
+ 		assertTrue(net.getBus("Bus3").getGenP()==0.425); 
  		
 	}
 
