@@ -52,6 +52,17 @@ public class FileUtil {
 	public static boolean writeText2File(String filename, String text) {
 		return write2File(filename, text.getBytes());
 	}
+
+	/**
+	 * Write the text to the file
+	 * 
+	 * @param filename filename
+	 * @param text
+	 * @return
+	 */
+	public static boolean writeText2File(String filename, StringBuffer text) {
+		return writeText2File(filename, text.toString());
+	}
 	
 	/**
 	 * Write the text to the file
