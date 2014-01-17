@@ -53,6 +53,7 @@ import org.interpss.ext.pwd.AclfBranchPWDExtension;
 import org.interpss.ext.pwd.AclfBusPWDExtension;
 import org.interpss.mapper.odm.AbstractODMSimuCtxDataMapper;
 import org.interpss.mapper.odm.ODMAclfNetMapper;
+import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Point;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
@@ -207,6 +208,8 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 				}
 			}	
 		}
+		
+		net.setDefaultVoltageLimit(new LimitType(xmlNet.getBusVLimit().getMax(), xmlNet.getBusVLimit().getMin()));
 	}
 	
 	/**
