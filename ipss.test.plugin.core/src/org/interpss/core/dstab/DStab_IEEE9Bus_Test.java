@@ -101,7 +101,11 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 			//dstabAlgo.performOneStepSimulation();
 
 		}
-		
+		/*
+		 * Init angle 
+		 * bus1-mach1: 0.06257886961702232 Rad
+		 * bus2-mach2: 1.0672402573811874  Rad  -> relative angle = 57.5628 deg
+		 */
 		// output recorded simulation results
 		List<StateRecord> list = ssRecorder.getMachineRecords(
 				"Bus2-mach1", MachineState, DStabOutSymbol.OUT_SYMBOL_MACH_ANG);
@@ -179,7 +183,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		}));
 		DStabModelParser parser =(DStabModelParser) adapter.getModel();
 		
-		System.out.println(parser.toXmlDoc());
+		//System.out.println(parser.toXmlDoc());
 
 		
 		
@@ -233,5 +237,73 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		assertTrue(stateTestRecorder.diffTotal("Bus2-mach1", MachineState, 
 				DStabOutSymbol.OUT_SYMBOL_MACH_Efd) < 0.0001);
 	}
+	
+	@Test
+    public void IEEE9_Dstab_multiGen_Test(){
+            IpssCorePlugin.init();
+            IpssLogger.getLogger().setLevel(Level.INFO);
+            PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+            assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
+                            "testData/adpter/psse/v30/IEEE9Bus/ieee9_multiGen.raw",
+                            //"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq",
+                            "testData/adpter/psse/v30/IEEE9Bus/ieee9_dyn_multiGen.dyr"
+            }));
+            DStabModelParser parser =(DStabModelParser) adapter.getModel();
+            
+            //System.out.println(parser.toXmlDoc());
+
+            
+            
+            SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
+            if (!new ODMDStabParserMapper(msg)
+                                    .map2Model(parser, simuCtx)) {
+                    System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
+                    return;
+            }
+            
+            
+        DStabilityNetwork dsNet =simuCtx.getDStabilityNet();
+        //System.out.println(dsNet.net2String());
+
+            DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
+            LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
+            aclfAlgo.setTolerance(1.0E-4);
+            assertTrue(aclfAlgo.loadflow());
+            System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
+            
+            dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+            dstabAlgo.setSimuStepSec(0.001);
+            dstabAlgo.setTotalSimuTimeSec(0.01);
+            dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
+            
+            double[] timePoints   = {0.0,    0.004,    0.007,    0.009},
+                                   machPmPoints = {1.6300, 1.6300,   1.6300,   1.6300},
+                                   machAngPoints  = {57.56288, 57.56288,  57.56288,   57.56288},
+                                   machEfdPoints  = {1.78898, 1.78898,   1.78898,   1.78898};
+            
+            StateVariableRecorder stateTestRecorder = new StateVariableRecorder(0.0001);
+            stateTestRecorder.addTestRecords("Bus2-mach1", MachineState, 
+                                    DStabOutSymbol.OUT_SYMBOL_MACH_PM, timePoints, machPmPoints);
+            stateTestRecorder.addTestRecords("Bus2-mach1", MachineState, 
+                                    DStabOutSymbol.OUT_SYMBOL_MACH_ANG, timePoints, machAngPoints);
+            stateTestRecorder.addTestRecords("Bus2-mach1", MachineState, 
+                            DStabOutSymbol.OUT_SYMBOL_MACH_Efd, timePoints, machEfdPoints);
+            dstabAlgo.setSimuOutputHandler(stateTestRecorder);
+                    
+
+            if (dstabAlgo.initialization()) {
+                    //System.out.println(simuCtx.getDStabilityNet().net2String());
+
+                    System.out.println("Running DStab simulation ...");
+                    assertTrue(dstabAlgo.performSimulation());
+            }
+                    
+            assertTrue(stateTestRecorder.diffTotal("Bus2-mach1", MachineState, 
+                                    DStabOutSymbol.OUT_SYMBOL_MACH_PM) < 0.0001);
+            assertTrue(stateTestRecorder.diffTotal("Bus2-mach1", MachineState, 
+                                    DStabOutSymbol.OUT_SYMBOL_MACH_ANG) < 0.0001);
+            assertTrue(stateTestRecorder.diffTotal("Bus2-mach1", MachineState, 
+                            DStabOutSymbol.OUT_SYMBOL_MACH_Efd) < 0.0001);
+    }
 
 }
