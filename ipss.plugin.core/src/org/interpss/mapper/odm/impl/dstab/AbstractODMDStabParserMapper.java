@@ -201,10 +201,6 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 	
 	private void setDStabBusData(DStabBusXmlType dstabBusXml, DStabBus dstabBus)  throws InterpssException {
 		
-		/*
-		 * It is assumed that contribute generators are consolidated to the equivGen, only the Aclf and Acsc part
-		 */
-
 		if(dstabBusXml.getGenData().getContributeGen().size() > 0){
 			DStabGenDataXmlType dyGen = null;
 			for(JAXBElement<? extends LoadflowGenDataXmlType> dyGenElem: dstabBusXml.getGenData().getContributeGen()){
@@ -229,11 +225,9 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 			DStabGenDataXmlType dyGen, DStabGen dyGenObj) throws InterpssException {
 		// create the machine model and added to the parent bus object
 		MachineModelXmlType machXmlRec = dyGen.getMachineModel().getValue();
-		String machId = dstabBus.getId() + "-mach" + (dyGenObj==null?1:dyGenObj.getId());
+		String machId = dstabBus.getId() + "-mach" +dyGenObj.getId();
 		Machine mach = new MachDataHelper(dstabBus, dyGen.getMvaBase(), dyGen.getRatedMachVoltage())
 							.createMachine(machXmlRec, machId, dyGen.getId());
-		if(dyGenObj!=null)
-			dyGenObj.setMach(mach);
 		
 		if (dyGen.getExciter() != null) {
 			// create the exc model and add to the parent machine object

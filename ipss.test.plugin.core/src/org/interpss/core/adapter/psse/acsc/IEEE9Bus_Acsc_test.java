@@ -54,7 +54,7 @@ public class IEEE9Bus_Acsc_test {
 	  	
 	  		assertTrue( net.isLfConverged());
 	  		//System.out.println(AclfOutFunc.loadFlowSummary(net));
-	  		System.out.println(net.net2String());
+	  		//System.out.println(net.net2String());
 	  		/*
 	  		 * ***********************************
 	  		 *       Positive sequence
