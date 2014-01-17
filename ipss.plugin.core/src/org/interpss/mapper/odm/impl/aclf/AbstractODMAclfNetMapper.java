@@ -209,7 +209,8 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 			}	
 		}
 		
-		net.setDefaultVoltageLimit(new LimitType(xmlNet.getBusVLimit().getMax(), xmlNet.getBusVLimit().getMin()));
+		if (xmlNet.getBusVLimit() != null)
+			net.setDefaultVoltageLimit(new LimitType(xmlNet.getBusVLimit().getMax(), xmlNet.getBusVLimit().getMin()));
 	}
 	
 	/**
