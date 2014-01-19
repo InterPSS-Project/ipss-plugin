@@ -52,6 +52,7 @@ import org.ieee.odm.schema.ReactivePowerXmlType;
 import org.ieee.odm.schema.ShuntCompensatorBlockXmlType;
 import org.ieee.odm.schema.ShuntCompensatorModeEnumType;
 import org.ieee.odm.schema.ShuntCompensatorXmlType;
+import org.ieee.odm.schema.VoltageUnitType;
 import org.ieee.odm.schema.VoltageXmlType;
 import org.ieee.odm.schema.YXmlType;
 import org.interpss.numeric.datatype.LimitType;
@@ -131,6 +132,15 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 		bus.setVoltage(vpu, angRad);
 		//System.out.println(aclfBus.getId() + "  " + Number2String.toStr(aclfBus.getVoltage()));
 
+		if (xmlBusData.getVLimit() != null) {
+			double factor = 10;
+			if (xmlBusData.getVLimit().getUnit() == VoltageUnitType.KV)
+				factor = 1000.0 / bus.getBaseVoltage();
+			else if (xmlBusData.getVLimit().getUnit() == VoltageUnitType.VOLT)
+				factor = 1.0 / bus.getBaseVoltage();
+			bus.setVLimit(new LimitType(xmlBusData.getVLimit().getMax()*factor,xmlBusData.getVLimit().getMin()*factor));
+		}
+		
 		if (xmlBusData.getGenData()!=null) {
 			//add check to make sure there is at least one  generator with the bus
 			if(xmlBusData.getGenData().getCode()!=LFGenCodeEnumType.NONE_GEN &&
