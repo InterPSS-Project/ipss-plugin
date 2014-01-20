@@ -58,7 +58,7 @@ public class IEEE9_MultiGenTest extends CorePluginTestSetup{
   	     *------------------------------------
  		 */
  		net.getBus("Bus3").getGenList().get(0).setStatus(false);
- 		net.initMultiGenLoad();
+ 		net.initMultiGen();
  		     // we need re-initialize bus P and Q again.
  		algo.loadflow();
  	  	
