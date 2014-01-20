@@ -401,6 +401,8 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 						String id = loadElem.getId()!=null?loadElem.getId():this.bus.getId()+"-L"+loadCnt++;
 						AclfLoad load = CoreObjectFactory.createAclfLoad(id);
 						
+						load.setName(loadElem.getName());
+						
 						bus.getLoadList().add(load);
 						//status
 						load.setStatus(loadElem.isOffLine()!=null?!loadElem.isOffLine():true);
