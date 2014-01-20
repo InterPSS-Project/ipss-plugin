@@ -52,6 +52,7 @@ public class Acsc5Bus_ODM_TestCase extends CorePluginTestSetup {
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();
+		//System.out.println(faultNet.net2String());
 		
 	  	SimpleFaultAlgorithm algo = CoreObjectFactory.createSimpleFaultAlgorithm(faultNet);
   		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus2", algo);
@@ -60,12 +61,12 @@ public class Acsc5Bus_ODM_TestCase extends CorePluginTestSetup {
 		fault.setZLLFault(new Complex(0.0, 0.0));
 		
 	  	algo.calculateBusFault(fault);
-  		//System.out.println(fault.getFaultResult().getSCCurrent_012());
+  		System.out.println(fault.getFaultResult().getSCCurrent_012());
   		// 0.0000 + j0.0000  -0.7531 + j29.05407  0.0000 + j0.0000
 	  	assertTrue(TestUtilFunc.compare(fault.getFaultResult().getSCCurrent_012(), 
 	  			0.0, 0.0, -0.7531, 29.05407, 0.0, 0.0) );
 	}
-   /*
+   
 	@Test
 	public void testCaseLF() throws Exception {
 		AcscNetwork faultNet = IpssAdapter.importNet("testData/odm/acsc/ODM_Acsc_5Bus.xml")
@@ -73,6 +74,7 @@ public class Acsc5Bus_ODM_TestCase extends CorePluginTestSetup {
 				.load()
 				.getImportedObj();		
 
+		/*
 		///////////////////compare aclfNet ///////////////////////////
 		
   		AclfNetwork baseNet = CoreObjectFactory.createAclfNetwork();
@@ -85,6 +87,7 @@ public class Acsc5Bus_ODM_TestCase extends CorePluginTestSetup {
 			System.out.println(comparator.getMsg());
 		
 		/////////////////////////////////////////////////////////////
+		*/
 		
 		IpssAclf.createAclfAlgo(faultNet)                        
         		.lfMethod(AclfMethod.NR)
@@ -110,6 +113,5 @@ public class Acsc5Bus_ODM_TestCase extends CorePluginTestSetup {
 	  	assertTrue(TestUtilFunc.compare(fault.getFaultResult().getSCCurrent_012(), 
 	  			0.0, 0.0, -13.47708, 30.27969, 0.0, 0.0) );		
 	}
-    */
 }
 
