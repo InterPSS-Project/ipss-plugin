@@ -89,27 +89,27 @@
  			</acscBus>
         </busList>
         <branchList>
-			<acscLine id="Bus1_to_Bus2_cirId_1" circuitId="1" offLine="false" zoneNumber="1" areaNumber="1">
+			<acscLine id="Bus1->Bus2(1)" circuitId="1" offLine="false" zoneNumber="1" areaNumber="1">
 				<fromBus idRef="Bus1"/>
 				<toBus idRef="Bus2"/>
 				<z im="0.25" unit="PU" re="0.04" />
 				<totalShuntY im="0.5" unit="PU"/>
 				<z0 im="0.7" unit="PU"/>
 			</acscLine>
-			<acscLine id="Bus1_to_Bus3_cirId_1" circuitId="1" offLine="false" zoneNumber="1" areaNumber="1">
+			<acscLine id="Bus1->Bus3(1)" circuitId="1" offLine="false" zoneNumber="1" areaNumber="1">
 				<fromBus idRef="Bus1"/>
 				<toBus idRef="Bus3"/>
 				<z im="0.35" unit="PU" re="0.1" />
 				<z0 im="1.0" unit="PU"/>
 			</acscLine>
-			<acscLine id="Bus2_to_Bus3_cirId_1" circuitId="1" offLine="false" zoneNumber="1" areaNumber="1">
+			<acscLine id="Bus2->Bus3(1)" circuitId="1" offLine="false" zoneNumber="1" areaNumber="1">
 				<fromBus idRef="Bus2"/>
 				<toBus idRef="Bus3"/>
 				<z im="0.3" unit="PU" re="0.08" />
 				<totalShuntY im="0.5" unit="PU"/>
 				<z0 im="0.75" unit="PU"/>
 			</acscLine>
-			<acscXfr id="Bus4_to_Bus2_cirId_1" circuitId="1" offLine="false" zoneNumber="1" areaNumber="1">
+			<acscXfr id="Bus4->Bus2(1)" circuitId="1" offLine="false" zoneNumber="1" areaNumber="1">
 				<fromBus idRef="Bus4"/>
 				<toBus idRef="Bus2"/>
 				<z im="0.015" unit="PU" re="0.0" />
@@ -120,7 +120,7 @@
 					<grounding groundingConnection="Ungrounded"></grounding></fromSideConnection>
 				<toSideConnection xfrConnection="Delta"></toSideConnection>
 			</acscXfr>
-			<acscXfr id="Bus5_to_Bus3_cirId_1" circuitId="1" offLine="false" zoneNumber="1" areaNumber="1">
+			<acscXfr id="Bus5->Bus3(1)" circuitId="1" offLine="false" zoneNumber="1" areaNumber="1">
 				<fromBus idRef="Bus5"/>
 				<toBus idRef="Bus3"/>
 				<z im="0.03" unit="PU" re="0.0" />
