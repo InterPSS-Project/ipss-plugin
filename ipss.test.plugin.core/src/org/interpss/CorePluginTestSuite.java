@@ -103,7 +103,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	//DStab_2Bus.class,
 	
 	//DStab PSS/E
-	DStab_IEEE9Bus_Test.class,
+	//DStab_IEEE9Bus_Test.class,
 	
 	// Dist
 	DistLF14Bus_PathLF_Test.class,

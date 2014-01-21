@@ -62,6 +62,7 @@ public class IEEE9_MultiLoadTest extends CorePluginTestSetup{
   	     *------------------------------------
  		 */
  		net.getBus("Bus8").getLoadList().get(0).setStatus(false);
+ 		net.initMultiGenLoad();
  		algo.loadflow();
  	  	
 	  	assertTrue(net.isLfConverged());
