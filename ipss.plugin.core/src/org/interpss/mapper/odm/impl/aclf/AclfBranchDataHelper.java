@@ -373,7 +373,7 @@ public class AclfBranchDataHelper {
 					double factor = xmlTapAdj.getTapLimit().getUnit() == FactorUnitType.PERCENT? 0.01 : 1.0;
 					tap.setVcBusOnFromSide(xmlAdjData.getAdjBusLocation() == TapAdjustBusLocationEnumType.FROM_BUS);
 					tap.setTurnRatioLimit(new LimitType(xmlTapAdj.getTapLimit().getMax()*factor, xmlTapAdj.getTapLimit().getMin()*factor));
-					tap.setTapOnFromSide(xmlTapAdj.isTapAdjOnFromSide());
+					tap.setControlOnFromSide(xmlTapAdj.isTapAdjOnFromSide());
 					if (xmlTapAdj.getTapAdjStepSize() != null)
 						tap.setTapStepSize(xmlTapAdj.getTapAdjStepSize());
 					if (xmlTapAdj.getTapAdjSteps() != null)
@@ -392,7 +392,7 @@ public class AclfBranchDataHelper {
 					tap.setMeteredOnFromSide(xmlAdjData.isMvarMeasuredOnFormSide());
 					tap.setMvarSpecified(xmlAdjData.getDesiredValue(), ToReactivePowerUnit.f(xmlAdjData.getDesiredMvarFlowUnit()), aclfNet.getBaseKva());
 					tap.setTurnRatioLimit(new LimitType(xmlTapAdj.getTapLimit().getMax()*factor, xmlTapAdj.getTapLimit().getMin()*factor));
-					tap.setTapOnFromSide(xmlTapAdj.isTapAdjOnFromSide());
+					tap.setControlOnFromSide(xmlTapAdj.isTapAdjOnFromSide());
 					if (xmlTapAdj.getTapAdjStepSize() != null)
 						tap.setTapStepSize(xmlTapAdj.getTapAdjStepSize());
 					if (xmlTapAdj.getTapAdjSteps() != null)
