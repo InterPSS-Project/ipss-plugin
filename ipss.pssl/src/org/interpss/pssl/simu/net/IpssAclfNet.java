@@ -852,8 +852,8 @@ public class IpssAclfNet extends BaseDSL {
   	  								getObject().setTapStepSize(0.0);
   								return this; }
   		public TapControlDSL setTapStepSize(double x) {	getObject().setTapStepSize(x); return this; }
-  		public TapControlDSL setTapOnFromSide(boolean tapOnFromSide) { 
-								getObject().setTapOnFromSide(tapOnFromSide);
+  		public TapControlDSL setControlOnFromSide(boolean tapOnFromSide) { 
+								getObject().setControlOnFromSide(tapOnFromSide);
 								return this; }
   		public TapControlDSL setVcBusOnFromSide(boolean vcBusOnFromSide) { 
 								getObject().setVcBusOnFromSide(vcBusOnFromSide);
@@ -873,7 +873,7 @@ public class IpssAclfNet extends BaseDSL {
   		public TapControlDSL turnRatioLimit(double rMax, double rMin) { return setTapLimit(rMax, rMin); }
   		public TapControlDSL adjSteps(int n) { return setAdjSteps(n); }
   		public TapControlDSL tapStepSize(double x) {	return setTapStepSize(x); }
-  		public TapControlDSL tapOnFromSide(boolean tapOnFromSide) { return setTapOnFromSide(tapOnFromSide); }
+  		public TapControlDSL tapOnFromSide(boolean tapOnFromSide) { return setControlOnFromSide(tapOnFromSide); }
   		public TapControlDSL vcBusOnFromSide(boolean vcBusOnFromSide) { return setVcBusOnFromSide(vcBusOnFromSide); }
   		public TapControlDSL flowFrom2To(boolean flowFrom2To) { return setFlowFrom2To(flowFrom2To); }
   		public TapControlDSL meteredOnFromSide(boolean mvarSpecOnFromSide) { return setMeteredOnFromSide(mvarSpecOnFromSide); } 
