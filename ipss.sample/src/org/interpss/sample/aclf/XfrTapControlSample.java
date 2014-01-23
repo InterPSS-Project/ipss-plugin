@@ -63,7 +63,6 @@ public class XfrTapControlSample {
 		// control voltage on the toside
 		tap.setControlOnFromSide(false);
 		// use the toside tap to control
-		tap.setTapOnFromSide(false);
 		// control voltage to 0.90 pu
 		tap.setControlSpec(0.90);
 		
