@@ -267,11 +267,11 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 			AclfSwingBus swing = bus.toSwingBus();
 			double vpu = UnitHelper.vConversion(vXml.getValue(),
 					bus.getBaseVoltage(), ToVoltageUnit.f(vXml.getUnit()), UnitType.PU);
-			AngleXmlType angXml = xmlDefaultGen.getDesiredAngle(); 
-			double angRad = UnitHelper.angleConversion(angXml.getValue(),
-					ToAngleUnit.f(angXml.getUnit()), UnitType.Rad);				
+			//AngleXmlType angXml = xmlDefaultGen.getDesiredAngle(); 
+			//double angRad = UnitHelper.angleConversion(angXml.getValue(),
+			//		ToAngleUnit.f(angXml.getUnit()), UnitType.Rad);				
 			swing.setDesiredVoltMag(vpu, UnitType.PU);
-			swing.setDesiredVoltAng(angRad, UnitType.Rad);		
+			//swing.setDesiredVoltAng(angRad, UnitType.Rad);		
 			if (xmlDefaultGen.getPower() != null) {
 				double pPU = UnitHelper.pConversion(xmlDefaultGen.getPower().getRe(), aclfNet.getBaseKva(), 
 						ToApparentPowerUnit.f(xmlDefaultGen.getPower().getUnit()), UnitType.PU);
