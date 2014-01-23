@@ -61,6 +61,28 @@ public class IEEECommonFormatTest extends CorePluginTestSetup {
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.16549)<0.0001);
 	}
 
+	@Test 
+	public void bus14SwingBusAngtestCase() throws Exception {
+		AclfNetwork net = CorePluginObjFactory
+				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
+				.load("testdata/adpter/ieee_format/ieee14_swingAng.ieee")
+				.getAclfNet();		
+		
+  		//System.out.println(net.net2String());
+		assertTrue((net.getBusList().size() == 14 && net.getBranchList().size() == 20));
+
+	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	algo.loadflow();
+  		System.out.println(net.net2String());
+	  	
+  		assertTrue(net.isLfConverged());		
+  		AclfBus swingBus = (AclfBus)net.getBus("Bus1");
+  		AclfSwingBus swing = swingBus.toSwingBus();
+  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.32393)<0.0001);
+  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.16549)<0.0001);
+  		assertTrue(Math.abs(swing.getDesiredVoltAng(UnitType.Deg)-1.0)<0.0001);
+  	}	
+	
 	@Test
 	public void bus39testCase() throws Exception{
 		IpssFileAdapter adapter = CorePluginObjFactory.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF);
