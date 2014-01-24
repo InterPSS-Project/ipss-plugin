@@ -65,7 +65,7 @@ public class ModelChecker {
 		int totalBusNum = net.getNoActiveBus();		
 		int size = sorted.size();
 		System.out.println("Aclf Model check complete. Total bus # = "+ totalBusNum+", "
-				+ " # of bus with mismatch greater than threshold = "+ size);
+				+ " # of bus with mismatch greater than threshold (" + this.mismatchThre + ") = "+ size);
 		if(size ==0 ){			
 			return;
 		}			
