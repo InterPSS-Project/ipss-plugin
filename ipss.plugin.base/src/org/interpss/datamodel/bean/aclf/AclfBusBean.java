@@ -52,6 +52,10 @@ public class AclfBusBean  extends BaseBusBean {
 	
 	public LoadCode 
 		load_code = LoadCode.NonLoad;				// bus load code	
+	
+	public double
+		vDesired_mag= 1.0,          	// desired bus voltage in pu		
+		vDesired_ang = 0.0;				// desired bus voltage angle in deg	
 		
 	public AclfBusBean() {}
 	
