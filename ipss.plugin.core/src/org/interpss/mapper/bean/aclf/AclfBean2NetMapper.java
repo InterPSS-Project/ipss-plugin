@@ -148,13 +148,13 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 				AclfPVGenBus pvBus = bus.toPVBus();
 				if(busBean.gen != null)
 				      pvBus.setGenP(busBean.gen.re);
-				pvBus.setDesiredVoltMag(busBean.v_mag);
+				pvBus.setDesiredVoltMag(busBean.vDesired_mag);
 			}
 			else if (busBean.gen_code==AclfBusBean.GenCode.Swing) {
 				bus.setGenCode(AclfGenCode.SWING);
 				AclfSwingBus swingBus = bus.toSwingBus();
-				swingBus.setDesiredVoltMag(busBean.v_mag);
-				swingBus.setDesiredVoltAngDeg(busBean.v_ang);
+				swingBus.setDesiredVoltMag(busBean.vDesired_mag);
+				swingBus.setDesiredVoltAngDeg(busBean.vDesired_ang);
 			}
 			else {
 				bus.setGenCode(AclfGenCode.NON_GEN);
