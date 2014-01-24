@@ -63,6 +63,8 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 		bean.base_v = bus.getBaseVoltage()/1000;
 		bean.v_mag = format(bus.getVoltageMag());
 		bean.v_ang = format(bus.getVoltageAng(UnitType.Deg));
+		bean.vDesired_mag = format(bus.getDesiredVoltMag());
+		bean.vDesired_ang = format(Math.toDegrees(bus.getDesiredVoltAng()));
 		bean.vmax = format(bus.getVLimit().getMax()) == 0? bean.vmax : format(bus.getVLimit().getMax());
 		bean.vmin = format(bus.getVLimit().getMin()) == 0? bean.vmin : format(bus.getVLimit().getMin());
 
