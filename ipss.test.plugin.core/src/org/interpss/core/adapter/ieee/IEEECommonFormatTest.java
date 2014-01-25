@@ -100,7 +100,7 @@ public class IEEECommonFormatTest extends CorePluginTestSetup {
  		AclfSwingBus swing = swingBus.toSwingBus();
 //		  31 BUS-31  100   1  1  3 0.982 0.     9.2      4.6       572.8349207.0362 100.    .98200 999900 -99990    0.      0.        0                                                                                                                                                                            
   		assertTrue( Math.abs(swing.getGenResults(UnitType.PU).getReal()-5.72872)<0.0001);
-  		assertTrue( Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-2.07677)<0.0001);
+  		assertTrue( Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-2.07665)<0.0001);
   		
   		//System.out.println(AclfOut.lfResultsBusStyle(net));
   	}
