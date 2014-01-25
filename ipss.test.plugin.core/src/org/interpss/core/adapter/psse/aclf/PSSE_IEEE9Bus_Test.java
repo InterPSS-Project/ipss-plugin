@@ -168,13 +168,13 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethod.PQ);
 	  	algo.loadflow();
-  		//System.out.println(net.net2String());
+  		System.out.println(net.net2String());
 
 	  	AclfBus swingBus = net.getBus("Bus1");
 	  	AclfSwingBus swing = swingBus.toSwingBus();
   		Complex p = swing.getGenResults(UnitType.PU);
-  		assertTrue(Math.abs(p.getReal()-0.71652)<0.00001);
-  		assertTrue(Math.abs(p.getImaginary()-0.27108)<0.00001);
+  		assertTrue(Math.abs(p.getReal()-0.71646)<0.00001);
+  		assertTrue(Math.abs(p.getImaginary()-0.27107)<0.00001);
 	}	
 }
 
