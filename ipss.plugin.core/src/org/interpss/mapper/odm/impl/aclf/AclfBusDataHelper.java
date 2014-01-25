@@ -54,6 +54,7 @@ import org.ieee.odm.schema.VoltageXmlType;
 import org.ieee.odm.schema.YXmlType;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
+import org.interpss.numeric.util.Number2String;
 
 import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
@@ -118,7 +119,7 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 			angRad = UnitHelper.angleConversion(xmlBusData.getAngle().getValue(), unit, UnitType.Rad); 
 		}
 		bus.setVoltage(vpu, angRad);
-		//System.out.println(aclfBus.getId() + "  " + Number2String.toStr(aclfBus.getVoltage()));
+		//System.out.println(bus.getId() + "  " + Number2String.toStr(bus.getVoltage()));
 
 		if (xmlBusData.getVLimit() != null) {
 			double factor = 10;
@@ -140,6 +141,8 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 			bus.setGenCode(AclfGenCode.NON_GEN);
 		}
 
+		//System.out.println(bus.getId() + "  " + Number2String.toStr(bus.getVoltage()));		
+		
 		if (xmlBusData.getLoadData() != null && xmlBusData.getLoadData().getContributeLoad().size()>0) {
 			mapLoadData(xmlBusData.getLoadData());
 		} else {
