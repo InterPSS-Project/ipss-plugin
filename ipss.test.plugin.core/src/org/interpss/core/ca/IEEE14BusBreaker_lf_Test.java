@@ -65,15 +65,15 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 	  	algo.loadflow();
 	  	
 	  	// output loadflow calculation results
-	  	//System.out.println(AclfOutFunc.loadFlowSummary(net));
+	  	System.out.println(AclfOutFunc.loadFlowSummary(net));
 
-	  	System.out.println("Active buses: " + net.getNoActiveBus() + ", branches: " + net.getNoActiveBranch());
+	  	//System.out.println("Active buses: " + net.getNoActiveBus() + ", branches: " + net.getNoActiveBranch());
 	  	assertTrue(net.getNoActiveBus() == 23);
 	  	assertTrue(net.getNoActiveBranch() == 30);
 	  	
   		AclfBus swingBus = (AclfBus)net.getBus("Bus1");
   		AclfSwingBus swing = swingBus.toSwingBus();
-  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.3239)<0.0001);
+  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.3240)<0.0001);
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.1655)<0.0001);
     }	
 
@@ -138,7 +138,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 	  	algo.loadflow();
 	  	
 	  	// output loadflow calculation results
-	  	System.out.println(AclfOutFunc.loadFlowSummary(net));
+	  	//System.out.println(AclfOutFunc.loadFlowSummary(net));
 
 	  	//System.out.println("Active buses: " + net.getNoActiveBus() + ", branches: " + net.getNoActiveBranch());
 	  	assertTrue(net.getNoActiveBus() == 14);
@@ -181,7 +181,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 	  	algo.loadflow();
 	  	
 	  	// output loadflow calculation results
-	  	System.out.println(AclfOutFunc.loadFlowSummary(net));
+	  	//System.out.println(AclfOutFunc.loadFlowSummary(net));
 
 	  	System.out.println("Active buses: " + net.getNoActiveBus() + ", branches: " + net.getNoActiveBranch());
 	  	assertTrue(net.getNoActiveBus() == 15);
@@ -217,7 +217,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 	  	algo.loadflow();
 	  	
 	  	// output loadflow calculation results
-	  	System.out.println(AclfOutFunc.loadFlowSummary(net));
+	  	//System.out.println(AclfOutFunc.loadFlowSummary(net));
 
 	  	//System.out.println("Active buses: " + net.getNoActiveBus() + ", branches: " + net.getNoActiveBranch());
 	  	assertTrue(net.getNoActiveBus() == 14);
