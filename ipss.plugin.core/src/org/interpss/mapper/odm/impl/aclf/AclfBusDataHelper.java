@@ -330,11 +330,11 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 		}
 	}
 	
-	private void mapSwitchShuntData(SwitchedShuntXmlType xmlSwitchedShuntData){
+	private void mapSwitchShuntData(SwitchedShuntXmlType xmlSwitchedShuntData) throws InterpssException {
 		//TODO 
-		SwitchedShunt swchShunt = CoreObjectFactory.createSwitchedShunt();
+		SwitchedShunt swchShunt = CoreObjectFactory.createSwitchedShunt(this.bus);
 		//swithced shunt is a also a AclfControlBus
-		this.bus.setBusControl(swchShunt);
+		//this.bus.setBusControl(swchShunt);
 		
 		ReactivePowerXmlType binit = xmlSwitchedShuntData.getBInit();
 		
