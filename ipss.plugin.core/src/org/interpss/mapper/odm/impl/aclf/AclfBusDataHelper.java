@@ -331,46 +331,37 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 	}
 	
 	private void mapSwitchShuntData(SwitchedShuntXmlType xmlSwitchedShuntData) throws InterpssException {
-		//TODO 
+		double baseKva = aclfNet.getBaseKva();
+		
 		SwitchedShunt swchShunt = CoreObjectFactory.createSwitchedShunt(this.bus);
-		//swithced shunt is a also a AclfControlBus
-		//this.bus.setBusControl(swchShunt);
 		
 		ReactivePowerXmlType binit = xmlSwitchedShuntData.getBInit();
 		
 		if (binit != null) {
-			//cacluate the factor to convert binit to pu based.
-			double factor = binit.getUnit()==ReactivePowerUnitType.PU?1.0:
-				             binit.getUnit()==ReactivePowerUnitType.MVAR?0.01:
-				            	 binit.getUnit()==ReactivePowerUnitType.KVAR?1.0E-5:
-				            		 1.0E-8; // VAR->1.0E-8 with a 100 MVA base
-			
-			swchShunt.setBInit(binit.getValue()*factor);
+			swchShunt.setBInit(UnitHelper.pConversion(binit.getValue(), baseKva, ToReactivePowerUnit.f(binit.getUnit()), UnitType.PU));
 
-			VarCompensatorControlMode mode = xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.CONTINUOUS?
-					VarCompensatorControlMode.CONTINUOUS:xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.DISCRETE?
-					VarCompensatorControlMode.DISCRETE:VarCompensatorControlMode.FIXED;
+			VarCompensatorControlMode mode = 
+					xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.CONTINUOUS? VarCompensatorControlMode.CONTINUOUS :
+						xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.DISCRETE? VarCompensatorControlMode.DISCRETE :
+							VarCompensatorControlMode.FIXED;
 			
 			swchShunt.setControlMode(mode);
 			
-			LimitType vLimit = new LimitType(xmlSwitchedShuntData.getDesiredVoltageRange().getMax(),
-					xmlSwitchedShuntData.getDesiredVoltageRange().getMin());
-			//TODO vLimit is missing
-			//swchShunt.set
+			swchShunt.setDesiredVoltageRange(new LimitType(xmlSwitchedShuntData.getDesiredVoltageRange().getMax(),
+									xmlSwitchedShuntData.getDesiredVoltageRange().getMin()));
+
 			for(SwitchedShuntBlockXmlType varBankXml:xmlSwitchedShuntData.getBlock()){
-				QBank varBank= CoreObjectFactory.createQBank();
-				swchShunt.getVarBankArray().add(varBank);
+				QBank varBank= CoreObjectFactory.createQBank(swchShunt);
 				
 				varBank.setSteps(varBankXml.getSteps());
-				ReactivePowerXmlType unitVarXml = varBankXml.getIncrementB();
-				
-				factor = unitVarXml.getUnit()==ReactivePowerUnitType.PU?1.0:
-					unitVarXml.getUnit()==ReactivePowerUnitType.MVAR?1.0E-2:
-						unitVarXml.getUnit()==ReactivePowerUnitType.KVAR?1.0E-5:
-		            		 1.0E-8; 
-				//TODO UnitQMVar is in pu
-				varBank.setUnitQMvar(unitVarXml.getValue()*factor);
-				
+
+				ReactivePowerXmlType incBXml = varBankXml.getIncrementB();
+				varBank.setUnitQMvar(UnitHelper.pConversion(incBXml.getValue(), baseKva, ToReactivePowerUnit.f(incBXml.getUnit()), UnitType.PU));
+			}
+			
+			if(xmlSwitchedShuntData.getRemoteControlledBus()!=null){
+				String remoteId = BusXmlRef2BusId.fx(xmlSwitchedShuntData.getRemoteControlledBus());
+				swchShunt.setRemoteBus(aclfNet.getBus(remoteId));
 			}
 		}
 	}
