@@ -30,12 +30,14 @@ import org.interpss.CorePluginObjFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.Unit.UnitType;
+import org.interpss.numeric.util.NumericUtil;
 import org.junit.Test;
 
 import com.interpss.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
+import com.interpss.core.aclf.impl.NetInjectionHelper;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.simu.SimuContext;
 
@@ -59,6 +61,10 @@ public class IEEECommonFormatTest extends CorePluginTestSetup {
   		AclfSwingBus swing = swingBus.toSwingBus();
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.32393)<0.0001);
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.16549)<0.0001);
+  		
+  		for (AclfBus bus : net.getBusList()) 
+  			if (!NumericUtil.equals(NetInjectionHelper.powerIntoNet(bus), bus.powerIntoNet(), 0.0002))
+  				System.out.println(bus.getId() + " : " + NetInjectionHelper.powerIntoNet(bus) + ", " + bus.powerIntoNet()); 		
 	}
 
 	@Test 

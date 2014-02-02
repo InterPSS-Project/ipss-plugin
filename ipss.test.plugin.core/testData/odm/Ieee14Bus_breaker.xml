@@ -413,7 +413,9 @@
                     <toRatedVoltage unit="KV" value="35.0"/>
                 </xfrInfo>
             </aclfXfr>
-            
+        <!--
+        There is a loop in 7-> 71 -> 74 -> 72 -> 7 
+         -->    
         <!--  Zero-Z Branch -->
             <aclfLine circuitId="1" id="Bus73_to_Bus7_cirId_1" offLine="false" zoneNumber="1" areaNumber="1">
                 <fromBus idRef="Bus73"/>
