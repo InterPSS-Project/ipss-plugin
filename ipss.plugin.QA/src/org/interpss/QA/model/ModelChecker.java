@@ -27,7 +27,7 @@ import com.interpss.core.net.Branch;
 public class ModelChecker {
 	private AclfNetwork net;	
 	private double mismatchThre = 0.01;	
-	private double smallZThre = 0.0005;	
+	//private double smallZThre = 0.0005;	
 	private ArrayList<AclfBus> sortedMismatchBus = new ArrayList<AclfBus>();
 	
 	public ModelChecker(AclfNetwork net){
@@ -52,8 +52,7 @@ public class ModelChecker {
 		Hashtable<String, Double> mismatchTable = new Hashtable<>();
 		for (AclfBus bus : net.getBusList()) {
 			Complex mis = bus.mismatch(AclfMethod.NR);
-			if (bus.isActive() && mis.abs() > mismatchThre
-					&& !isSmallZBranchConnected(bus.getId(), net, smallZThre)) {
+			if (bus.isActive() && mis.abs() > mismatchThre) {
 				mismatchTable.put(bus.getId(), mis.abs());				
 			}
 		}
@@ -91,7 +90,7 @@ public class ModelChecker {
 	      DecimalFormat twoDForm = new DecimalFormat("#.###");
 	      return Double.valueOf(twoDForm.format(d));
 	 }
-
+/*
 	private boolean isSmallZBranchConnected(String busId, AclfNetwork net,
 			double smallZ) {
 		boolean smallZBra = false;
@@ -104,7 +103,7 @@ public class ModelChecker {
 		}
 		return smallZBra;
 	}
-
+*/
 	/**
 	 *  sort a hashtable
 	 * @param t hashtable	 

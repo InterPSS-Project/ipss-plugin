@@ -26,6 +26,7 @@ package org.interpss.core.adapter.ieee;
 
 import static org.junit.Assert.assertTrue;
 
+import org.interpss.CorePluginFunction;
 import org.interpss.CorePluginObjFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
@@ -36,6 +37,7 @@ import com.interpss.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
+import com.interpss.core.aclf.impl.NetInjectionHelper;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
 public class IEEECommonFormat_CommaTest extends CorePluginTestSetup {
@@ -61,12 +63,19 @@ public class IEEECommonFormat_CommaTest extends CorePluginTestSetup {
 
 		assertTrue((net.getBusList().size() == 14 && net.getBranchList().size() == 20));
 
-	  	//System.out.println(net.net2String());
+	  	System.out.println(net.net2String());
   		assertTrue(net.isLfConverged());		
   		AclfBus swingBus = (AclfBus)net.getBus("Bus1");
   		AclfSwingBus swing = swingBus.toSwingBus();
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.32393)<0.0001);
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.16549)<0.0001);
+  		
+  		/*
+  		System.out.println(CorePluginFunction.AclfResultBusStyle.f(net));
+  		
+  		System.out.println(net.getBus("Bus9").powerIntoNet());
+  		System.out.println(NetInjectionHelper.powerIntoNet(net.getBus("Bus9")));
+  		*/
 	}
 }
 
