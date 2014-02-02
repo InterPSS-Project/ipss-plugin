@@ -30,9 +30,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
+import org.interpss.CorePluginFunction;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.algo.ZeroZBranchProcesor;
-import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.pssl.plugin.IpssAdapter;
 import org.junit.Test;
@@ -48,7 +48,7 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 
 
 public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
-	@Test 
+	//@Test there is a loop in the system. 
 	public void case1_regularMethod() throws  InterpssException {
 		// Create an AclfNetwork object
 		AclfNetwork net = IpssAdapter.importNet("testData/odm/ieee14Bus_breaker.xml")
@@ -65,7 +65,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 	  	algo.loadflow();
 	  	
 	  	// output loadflow calculation results
-	  	System.out.println(AclfOutFunc.loadFlowSummary(net));
+	  	System.out.println(CorePluginFunction.AclfResultBusStyle.f(net));
 
 	  	//System.out.println("Active buses: " + net.getNoActiveBus() + ", branches: " + net.getNoActiveBranch());
 	  	assertTrue(net.getNoActiveBus() == 23);
@@ -102,7 +102,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 	  	algo.loadflow();
 	  	
 	  	// output loadflow calculation results
-	  	System.out.println(AclfOutFunc.loadFlowSummary(net));
+	  	//System.out.println(AclfOutFunc.loadFlowSummary(net));
 
 	  	System.out.println("Active buses: " + net.getNoActiveBus() + ", branches: " + net.getNoActiveBranch());
 	  	assertTrue(net.getNoActiveBus() == 14);
