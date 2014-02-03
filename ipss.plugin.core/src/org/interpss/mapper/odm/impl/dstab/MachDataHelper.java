@@ -188,7 +188,8 @@ public class MachDataHelper {
 		mach.setXq(machXml.getXq());
 		mach.setTd01(machXml.getTd01().getValue());
 		if (machXml.getSeFmt1() != null) {
-			mach.setSliner(machXml.getSeFmt1().getSliner());
+			// sliner default value 0.85
+			mach.setSliner(0.85); 
 			mach.setSe100(machXml.getSeFmt1().getSe100());
 			mach.setSe120(machXml.getSeFmt1().getSe120());					
 		}
