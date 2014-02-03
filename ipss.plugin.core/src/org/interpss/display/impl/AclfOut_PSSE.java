@@ -33,6 +33,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 
@@ -54,7 +55,7 @@ public class AclfOut_PSSE {
 	 * @param format
 	 * @return
 	 */
-	public static StringBuffer lfResults(AclfNetwork net, Format format) {
+	public static StringBuffer lfResults(BaseAclfNetwork<?,?> net, Format format) {
 		StringBuffer str = new StringBuffer("");
 		try {
 			double baseKVA = net.getBaseKva();
@@ -335,7 +336,7 @@ BUS  10002 GZ-HLZ      220.00 CKT     MW     MVAR     MVA  %I 1.0445PU  -47.34  
 		return str;
 	}
 
-	private static String psseStyleTitle(AclfNetwork net, Format format) {
+	private static String psseStyleTitle(BaseAclfNetwork net, Format format) {
 		String str = "";
 		str += "\n\n                                              Load Flow Results\n\n";
 		str += AclfOutFunc.maxMismatchToString(net,"                    ") + "\n";

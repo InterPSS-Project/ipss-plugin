@@ -69,6 +69,7 @@ import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.acsc.Acsc3WBranch;
 import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.AcscBus;
 import com.interpss.core.acsc.AcscGen;
@@ -416,6 +417,10 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 			UnitType zgUnit = ToZUnit.f(z.getUnit());			
 			bus.getGrounding().setZ(new Complex(z.getRe(), z.getIm()), zgUnit, baseV, baseKVA);
 		}
+	}
+	
+	public void setAcsc3WBranchData(BranchXmlType acscBraXml, Acsc3WBranch acscBra) {
+	    //TODO
 	}
 
 	/**
