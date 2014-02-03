@@ -201,9 +201,10 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 			  										ToVoltageUnit.f(xmlDefaultGen.getVoltageLimit().getUnit()));						
 				}
 			}
-			else {
-				bus.setGenCode(AclfGenCode.NON_GEN);
-			}
+			//TODO for multiple generators at the bus, sometimes the first generator is p=q=0 and/or offline
+//			else {
+//				bus.setGenCode(AclfGenCode.NON_GEN);
+//			}
 		} else if (xmlGenData.getCode() == LFGenCodeEnumType.PV &&
 				xmlDefaultGen != null) {
 			if (xmlDefaultGen.getRemoteVoltageControlBus() == null) {
@@ -220,7 +221,7 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 					double vpu = UnitHelper.vConversion(vXml.getValue(),
 						bus.getBaseVoltage(), ToVoltageUnit.f(vXml.getUnit()), UnitType.PU);
 				    //TODO comment out for WECC System QA, to use the input voltage as the PV bus voltage
-					pvBus.setDesiredVoltMag(vpu, UnitType.PU);
+					//pvBus.setDesiredVoltMag(vpu, UnitType.PU);
 					
 					if (xmlDefaultGen.getQLimit() != null) {
   			  			final PVBusLimit pvLimit = CoreObjectFactory.createPVBusLimit(bus);
@@ -267,9 +268,14 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 			AclfSwingBus swing = bus.toSwingBus();
 			double vpu = UnitHelper.vConversion(vXml.getValue(),
 					bus.getBaseVoltage(), ToVoltageUnit.f(vXml.getUnit()), UnitType.PU);
+			//TODO The desired bus angle is provided at bus level, not generator.
+			/*
 			AngleXmlType angXml = xmlDefaultGen.getDesiredAngle(); 
 			double angRad = UnitHelper.angleConversion(angXml.getValue(),
-					ToAngleUnit.f(angXml.getUnit()), UnitType.Rad);				
+					ToAngleUnit.f(angXml.getUnit()), UnitType.Rad);	
+			*/
+			// swing.setDesiredVoltMag() override the bus voltage, need to save it first
+			double angRad =bus.getVoltageAng();
 			swing.setDesiredVoltMag(vpu, UnitType.PU);
 			swing.setDesiredVoltAng(angRad, UnitType.Rad);		
 			if (xmlDefaultGen.getPower() != null) {
