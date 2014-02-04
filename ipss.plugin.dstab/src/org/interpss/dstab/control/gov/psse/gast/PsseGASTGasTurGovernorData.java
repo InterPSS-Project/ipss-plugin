@@ -12,6 +12,20 @@ public class PsseGASTGasTurGovernorData extends BaseControllerData {
 		private double loadLimit  = 0.5;
 		private double Kt  = 1.0;
 		private double Dturb =0.0;
+		private double VMax =0.0;
+		public double getVMax() {
+			return VMax;
+		}
+		public void setVMax(double vMax) {
+			VMax = vMax;
+		}
+		public double getVMin() {
+			return VMin;
+		}
+		public void setVMin(double vMin) {
+			VMin = vMin;
+		}
+		private double VMin =0.0;
 		
 		/**
 		 * @return the t1

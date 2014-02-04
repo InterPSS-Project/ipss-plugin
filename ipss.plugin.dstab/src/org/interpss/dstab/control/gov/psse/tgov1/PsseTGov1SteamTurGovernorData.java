@@ -8,8 +8,22 @@ public class PsseTGov1SteamTurGovernorData extends BaseControllerData {
 	    private double t1       = 0.25;
 	    private double t2       = 0.04;
 	    private double t3       = 5.0;
-		private double R    = 0.05;
-		private double Dt =0.0;
+		private double R        = 0.05;
+		private double Dt       =0.0;
+		private double vMax     =1.0;
+		public double getvMax() {
+			return vMax;
+		}
+		public void setvMax(double vMax) {
+			this.vMax = vMax;
+		}
+		public double getvMin() {
+			return vMin;
+		}
+		public void setvMin(double vMin) {
+			this.vMin = vMin;
+		}
+		private double vMin     =0.0;
 		
 		/**
 		 * @return the t1

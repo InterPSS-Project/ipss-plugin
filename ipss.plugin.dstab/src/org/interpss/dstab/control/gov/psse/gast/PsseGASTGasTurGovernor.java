@@ -152,6 +152,8 @@ DelayControlBlock t3DelayBlock;
             this.loadLimit = getData().getLoadLimit();
             this.R= getData().getR();
             this.Dturb =getData().getDturb();
+            this.vmax = getData().getVMax();
+            this.vmin = getData().getVMin();
 	        k1=1/R;
 	   
 	        
