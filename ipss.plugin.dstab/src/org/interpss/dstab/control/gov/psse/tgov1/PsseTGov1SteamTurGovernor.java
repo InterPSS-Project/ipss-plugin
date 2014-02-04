@@ -26,13 +26,13 @@ import com.interpss.dstab.mach.Machine;
  */
 @AnController(
 		   input="mach.speed-1.0",
-		   output="this.t2t3FilterBlock.y - this.dtGainBlock.y",
-		   refPoint="this.rGainBlock.u0 + mach.speed - 1.0",
+		   output="this.t2t3FilterBlock.y - this.dt*mach.speed + this.dt",
+		   refPoint="this.rGainBlock.u0",
 		   display= {})
 public class PsseTGov1SteamTurGovernor extends AnnotateGovernor{
 	public double k=1,
 		loadLimit =1.0;
-	
+	public double dt =0.0;
 	
 	//1.1 rGainBlock	
 	public double R=0.05,k1=1/R; 
@@ -60,25 +60,15 @@ DelayControlBlock t1DelayBlock;
 	@AnControllerField(
         type= CMLFieldEnum.ControlBlock,
         input="this.t1DelayBlock.y",
-        parameter={"type.NoLimit", "this.K", "this.t2","this.t3"},
+        parameter={"type.NoLimit", "this.k", "this.t2","this.t3"},
         y0="mach.pm")
 FilterControlBlock t2t3FilterBlock;
 
-	
 
-    //1.7 Dturb
-	public double dt =0.0;
-	@AnControllerField(
-	        type= CMLFieldEnum.StaticBlock,
-	        input="mach.speed - 1.0",
-	        parameter={"type.NoLimit", "this.dt"},
-	        y0="this.t2t3FilterBlock.y - mach.pm")
-	GainBlock dtGainBlock;
-	
 	    
 	    public PsseTGov1SteamTurGovernor() {
-	        this.setName("Ieee1981Type3HydroGovernor");
-	        this.setCategory("InterPSS");
+	        this.setName("PsseTGOV1SteamTurGovernor");
+	        this.setCategory("PSSE");
 	    }
 	    
 	    /**
