@@ -156,7 +156,8 @@ public class ZeroZBranchProcesor implements IAclfNetBVisitor {
 			// mark small Z branch with regarding to the threshold
 			// line branch will be turned to ZERO_IMPEDENCE branch
 			// if threshold = 0.0, Breaker branches are turned to zero-z branch
-			net.markSmallZBranch(this.threshold, true);
+			net.setSmallBranchZThreshold(this.threshold);
+			net.markZeroZBranch(true);
 
 			if (this.debug)
 				debugBusBasedSearch(net);

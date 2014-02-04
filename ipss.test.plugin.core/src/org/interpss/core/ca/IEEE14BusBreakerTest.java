@@ -71,7 +71,8 @@ public class IEEE14BusBreakerTest extends CorePluginTestSetup {
 				.getImportedObj();
 		
 	  	net.setVisitedStatus(false);
-	  	net.markSmallZBranch(0.00001, false);		
+	  	net.setSmallBranchZThreshold(0.00001);
+	  	net.markZeroZBranch(false);		
 		
 	  	List<Bus> list = net.getBus("Bus1").findZeroZPathBuses(false);
 	  	//System.out.println(list);
