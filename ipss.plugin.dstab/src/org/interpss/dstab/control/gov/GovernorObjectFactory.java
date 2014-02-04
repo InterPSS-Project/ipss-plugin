@@ -35,6 +35,7 @@ import org.interpss.dstab.control.gov.ieee.steamNR.IeeeSteamNRGovernor;
 import org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor;
 import org.interpss.dstab.control.gov.ieee.steamTCSR.IeeeSteamTCSRGovernor;
 import org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor;
+import org.interpss.dstab.control.gov.psse.ieesgo.PsseIEESGOSteamTurGovernor;
 import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
 import org.interpss.dstab.control.gov.simple.SimpleGovernor;
 
@@ -195,6 +196,11 @@ public class GovernorObjectFactory {
 		return gov;
   	}
 	
+	public static PsseIEESGOSteamTurGovernor createPsseIEESGOSteamTurGovernor(String id, String name, Machine machine) {
+		PsseIEESGOSteamTurGovernor gov = new PsseIEESGOSteamTurGovernor(id, name, "PSS/E");
+		gov.setMachine(machine); 
+		return gov;
+  	}
 	
 	//////////////////////////////////////////////////////////////
 	///      PSD-BPA Tur-Gov model
