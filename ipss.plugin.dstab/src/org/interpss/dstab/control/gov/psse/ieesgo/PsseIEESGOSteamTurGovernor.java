@@ -32,7 +32,7 @@ import com.interpss.dstab.mach.Machine;
  */
 @AnController(
 		   input="mach.speed-1.0",
-		   output="this.k2GainBlock.y + this.k3GainBlock.y + this.t6DelayBlock.y ",
+		   output="this.k20*this.t4DelayBlock.y + this.k30*this.t5DelayBlock.y + this.t6DelayBlock.y ",
 		   refPoint="this.plimitBlock.u0 + this.t3DelayBlock.y",
 		   display= {})
 public class PsseIEESGOSteamTurGovernor extends AnnotateGovernor{
@@ -42,7 +42,7 @@ public class PsseIEESGOSteamTurGovernor extends AnnotateGovernor{
 	//1.1 T1, T2 led-lag block
 	public double t1 =0, t2 =0;
 	@AnControllerField(
-	        type= CMLFieldEnum.StaticBlock,
+	        type= CMLFieldEnum.ControlBlock,
 	        input="mach.speed - 1.0",
 	        parameter={"type.NoLimit", "this.k","this.t2","this.t1"},
 	        y0="this.t3DelayBlock.u0"	)
@@ -101,21 +101,21 @@ DelayControlBlock t6DelayBlock;
 	//TODO should this be treated as a feedback
 	//1.7  1-k2 gain
 	public double k20 = 1-k2;
-	@AnControllerField(
-	        type= CMLFieldEnum.StaticBlock,
-	        input="this.t4DelayBlock.y",
-	        parameter={"type.NoLimit", "this.k20"},
-	        y0 = "this.k20*mach.pm")
-	GainBlock k2GainBlock;
+//	@AnControllerField(
+//	        type= CMLFieldEnum.StaticBlock,
+//	        input="this.t4DelayBlock.y",
+//	        parameter={"type.NoLimit", "this.k20"},
+//	        y0 = "this.k20*mach.pm")
+//	GainBlock k2GainBlock;
 
     //1.8  1-k3 gain
 	public double k30 =1-k3;
-	@AnControllerField(
-	        type= CMLFieldEnum.StaticBlock,
-	        input="this.t5DelayBlock.y",
-	        parameter={"type.NoLimit", "this.k30"},
-	        y0="this.k30*mach.pm")
-	GainBlock k3GainBlock;
+//	@AnControllerField(
+//	        type= CMLFieldEnum.StaticBlock,
+//	        input="this.t5DelayBlock.y",
+//	        parameter={"type.NoLimit", "this.k30"},
+//	        y0="this.k30*mach.pm")
+//	GainBlock k3GainBlock;
 	
 	    
 	    public PsseIEESGOSteamTurGovernor() {
@@ -162,7 +162,8 @@ DelayControlBlock t6DelayBlock;
             this.t4 = getData().getT4();
             this.t5 = getData().getT5();
             this.t6 = getData().getT6();
-            
+            this.k2 = getData().getK2();
+            this.k3 = getData().getK3();
 	        this.k20 =1-k2;
 	        this.k30 =1-k3;
 	   

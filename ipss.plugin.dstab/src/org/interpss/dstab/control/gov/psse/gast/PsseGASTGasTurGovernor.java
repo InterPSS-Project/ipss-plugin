@@ -32,13 +32,13 @@ import com.interpss.dstab.mach.Machine;
  */
 @AnController(
 		   input="mach.speed-1.0",
-		   output="this.outGainBlock.y",
+		   output="this.t2DelayBlock.y - this.Dturb*mach.speed +this.Dturb",
 		   refPoint="mach.pm",
 		   display= {})
 public class PsseGASTGasTurGovernor extends AnnotateGovernor{
-	public double k=1,
-		loadLimit =1.0;
-	
+	public static double k=1;
+	public double loadLimit =1.0;
+	public double Dturb = 0.0;
 	
 	//1.1 rGainBlock	
 	public double R=0.05,k1=1/R; 
@@ -46,14 +46,16 @@ public class PsseGASTGasTurGovernor extends AnnotateGovernor{
         type= CMLFieldEnum.StaticBlock,
         input="mach.speed - 1.0",
         parameter={"type.NoLimit", "this.k1"},
-        y0="this.refPoint - this.lValueGate.u0"	)
+        //y0="this.refPoint - this.lValueGate.u0"
+        initOrderNumber =-1
+        )
 GainBlock rGainBlock;
 
 	//1.2 low value gain
 	@AnFunctionField(
 			type = CMLFieldEnum.FunctionExpression,
-			input ={"this.refPoint - rGainBlock.y","this.loadLimit + this.ktGainBlock.y"},
-			y0= "this.t1DelayBlock.u0")
+			input ={"this.refPoint - this.rGainBlock.y","this.loadLimit + this.ktGainBlock.y"}
+			)
 	LowValueExpFunction lValueGate;
 			
 	
@@ -63,7 +65,8 @@ GainBlock rGainBlock;
         type= CMLFieldEnum.ControlBlock,
         input="this.lValueGate.y",
         parameter={"type.NonWindup", "this.k", "this.t1","this.vmax","this.vmin"},
-        y0="this.t2DelayBlock.u0"	)
+        y0="this.t2DelayBlock.u0",	
+        initOrderNumber =1)
 DelayControlBlock t1DelayBlock;
 
 
@@ -72,7 +75,7 @@ DelayControlBlock t1DelayBlock;
 	@AnControllerField(
         type= CMLFieldEnum.ControlBlock,
         input="this.t1DelayBlock.y",
-        parameter={"type.NoLimit", "this.K", "this.t2"},
+        parameter={"type.NoLimit", "this.k", "this.t2"},
         y0="mach.pm")
 DelayControlBlock t2DelayBlock;
 
@@ -96,25 +99,11 @@ DelayControlBlock t3DelayBlock;
 	        feedback=true)
 	GainBlock ktGainBlock;
 
-    //1.7 Dturb
-	public double Dturb =0.0;
-	@AnControllerField(
-	        type= CMLFieldEnum.StaticBlock,
-	        input="mach.speed - 1.0",
-	        parameter={"type.NoLimit", "this.Dturb"},
-	        y0="this.t2DelayBlock.y - mach.pm")
-	GainBlock dturbGainBlock;
-	
-	@AnControllerField(
-	        type= CMLFieldEnum.StaticBlock,
-	        input="this.t3DelayBlock.y-this.dturbGainBlock.y",
-	        parameter={"type.NoLimit", "this.k"},
-	        y0="mach.pm")
-	GainBlock outGainBlock;
+
 	    
 	    public PsseGASTGasTurGovernor() {
-	        this.setName("Ieee1981Type3HydroGovernor");
-	        this.setCategory("InterPSS");
+	        this.setName("PsseGASTGasTurGovernor");
+	        this.setCategory("PSSE");
 	    }
 	    
 	    /**

@@ -53,7 +53,8 @@ public class SeFunction extends CMLFunctionAdapter {
 	 */
 	public SeFunction(double e1, double se_e1, double e2, double se_e2)
 			throws InterpssException {
-		if (e1 <= e2 || se_e1 <= se_e2) {
+        
+		 if((e1-e2)*(se_e1-se_e2)<0){
 			throw new InterpssException("Se(Efd) data error, E1, Se(E1), E2, Se(E2): "
 					+ e1 + ", " + se_e1 + ", " + e2 + ", " + se_e2);
 		}
