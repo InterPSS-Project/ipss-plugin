@@ -420,10 +420,9 @@ public class IpssAclfNet extends BaseDSL {
   		public TAclfDSL capacitorQ(double q, UnitType unit) { return setCapacitorQ(q, unit); } 
 		@SuppressWarnings(value="unchecked")
   		public TAclfDSL setCapacitorQ(double q, UnitType unit) { 
-							if (getAclfBus().getGenCode() == AclfGenCode.CAPACITOR) {
-					  	  		AclfCapacitorBus capBus = getAclfBus().toCapacitorBus();
-					  	  		capBus.setQ(q, unit);
-							}	return (TAclfDSL)this;  		}
+					  	  	AclfCapacitorBus capBus = getAclfBus().toCapacitorBus();
+					  	  	capBus.setQ(q, unit);
+							return (TAclfDSL)this;  		}
   		
 		@SuppressWarnings(value="unchecked")
   		public TAclfDSL setLoadCode(AclfLoadCode code) { getAclfBus().setLoadCode(code); return (TAclfDSL)this; }
