@@ -313,7 +313,6 @@ public class IpssInternalFormat_in {
 
       	AclfBus bus = adjNet.getBus(id);
     	if (bus != null) {
-       	    bus.setGenCode(AclfGenCode.CAPACITOR);
 			final AclfCapacitorBus cap = bus.toCapacitorBus();
 			cap.setQ(b, UnitType.PU);
     	} else {
