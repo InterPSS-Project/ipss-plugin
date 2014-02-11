@@ -38,8 +38,8 @@ import org.interpss.datamodel.bean.datatype.BranchValueBean;
 public class AclfBranchBean extends BaseBranchBean {
 	
 	public BranchValueBean 
-			ratio = new BranchValueBean(1.0,1.0),			// xfr branch turn ratio
-			ang = new BranchValueBean(0.0,0.0);				// PsXfr shifting angle, in rad
+			ratio = new BranchValueBean(1.0,1.0),			// xfr branch turn ratio, it is assumed on the from bus side per PSSE
+			ang = new BranchValueBean(0.0,0.0);				// PsXfr shifting angle, in rad, it is assumed on the from bus side per PSSE
 	
 	
 	public AclfBranchBean() {}
