@@ -1,6 +1,7 @@
 package org.interpss.QA.rfile.aclf;
 
 import org.interpss.QA.rfile.BaseResultFileProcessor;
+import org.interpss.datamodel.bean.BaseBranchBean.BranchCode;
 import org.interpss.datamodel.bean.aclf.AclfBranchResultBean;
 import org.interpss.datamodel.bean.aclf.AclfBusBean;
 import org.interpss.datamodel.bean.aclf.AclfNetResultBean;
@@ -8,8 +9,14 @@ import org.interpss.datamodel.bean.datatype.ComplexBean;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.common.util.NetUtilFunc;
 import com.interpss.common.util.StringUtil;
 
+/*
+ * Class for implementing PSS/E result file loader. The info in the result file are stored in the
+ * qaResultSet
+ * 
+ */
 public class PSSEResultFileProcessor extends BaseResultFileProcessor {
 	public static String BusPrefix = "Bus"; 
 
@@ -17,6 +24,7 @@ public class PSSEResultFileProcessor extends BaseResultFileProcessor {
  * Some times PSS/E result file has a " " off-set at the beginning,
  *  
  *  The following sample has a " " off-set
+ 0----1----0----2----0----3----0----4----0----5----0----6----0----7----0----8----0----9----0----0----0----1----0----2----0----3----0----4----0
  BUS      1 EQN-U1      13.800 CKT     MW     MVAR     MVA   % 1.0000PU    0.00  X--- LOSSES ---X X---- AREA -----X X---- ZONE -----X      1
   FROM GENERATION                   1841.7    11.7R 1841.7  84 13.800KV               MW     MVAR    1 NORTE           1 CENTRAL
   TO   1010 FIC-EQ-NORTE230.00  1   1841.7    11.7  1841.7  46 1.0000UN              0.00   16.96    1 NORTE           1 CENTRAL
@@ -46,7 +54,8 @@ BUS      1 EQN-U1      13.800 CKT     MW     MVAR     MVA   % 1.0000PU    0.00  
 	    		BusQ_Begin, BusQ_End,	    
 	
 				BraToBus_Begin, BraToBus_End,
-				BraCirId_Begin, BraCirId_End;
+				BraCirId_Begin, BraCirId_End,
+				Tap_Begin, Tap_End;
 	
 	private boolean baseKvaProcessed = false, 
 			        busDataBegin = false;
@@ -89,7 +98,9 @@ BUS      1 EQN-U1      13.800 CKT     MW     MVAR     MVA   % 1.0000PU    0.00  
     	BraToBus_Begin = 4 + Int_offset;
     	BraToBus_End  = 11 + Int_offset;
 		BraCirId_Begin  = 31 + Int_offset;
-		BraCirId_End  = 34 + Int_offset;;
+		BraCirId_End  = 34 + Int_offset;
+		Tap_Begin  = 63 + Int_offset;
+		Tap_End  = 69 + Int_offset;
 	}
 	
 	public int getTotalBus() {
@@ -101,6 +112,7 @@ BUS  12020 CLAPHAM     115.00 CKT     MW     MVAR     MVA   % 0.9937PU    7.03  
  FROM GENERATION                      0.0    50.0H   50.0  50 114.28KV               MW     MVAR   10 NEW MEXICO    121 ZONENO
 xTO LOAD-PQ                           6.2     1.3     6.3                                         
 xTO SHUNT                             0.0   -18.5    18.5
+xTO SWITCHED SHUNT                    0.0   -27.9    27.9
 xTO  12015 CEBOLLA     69.000  1     -4.8    -0.2     4.8  15                       0.07    0.07   10 NEW MEXICO    121 ZONENO
 */
 	@Override public boolean processLine(String lineStr) throws InterpssException {
@@ -138,7 +150,7 @@ xTO  12015 CEBOLLA     69.000  1     -4.8    -0.2     4.8  15                   
 				else if (lineStr.contains(TKN_LoadPQ)) {
 					procLoadInfoLine(lineStr);
 				}
-				else if (lineStr.contains(TKN_SHUNT)) {
+				else if (lineStr.contains(TKN_SHUNT) || lineStr.contains(TKN_SWITCHED_SHUNT)) {
 					procShuntInfoLine(lineStr);
 				}
 				else { 
@@ -196,8 +208,9 @@ xTO  12015 CEBOLLA     69.000  1     -4.8    -0.2     4.8  15                   
 	}
 	
 	private void procShuntInfoLine(String lineStr) {
-		if (lineStr.contains(TKN_SHUNT)) {
-			//7:  TO SHUNT                             0.0   114.7   114.7
+		if (lineStr.contains(TKN_SHUNT) || lineStr.contains(TKN_SWITCHED_SHUNT)) {
+			// TO SWITCHED SHUNT                    0.0   -27.9    27.9
+			// TO SHUNT                             0.0   114.7   114.7
 			double shuntQ = new Double(lineStr.substring(43, 51)).doubleValue();
 				
 			curRec.shunt = new ComplexBean(0.0, shuntQ); 
@@ -230,8 +243,39 @@ xTO  12015 CEBOLLA     69.000  1     -4.8    -0.2     4.8  15                   
 				int toBusNo = new Integer(strToBusNo.trim()).intValue();
 				toId = BusPrefix+toBusNo;
 			}
-			AclfBranchResultBean braRec = this.qaResultSet.createAclfBranchResultBean(fromId, toId, cirId);
+			
+			String braId = NetUtilFunc.ToBranchId.f(fromId, toId, cirId);
+			boolean existingBranch = this.qaResultSet.getBranch(braId) != null;
+			AclfBranchResultBean braRec = existingBranch ? this.qaResultSet.getBranch(braId) :
+											this.qaResultSet.createAclfBranchResultBean(fromId, toId, cirId);
 
+			String tapStr1 = lineStr.substring(Tap_Begin, Tap_End);
+			String tapStr2 = lineStr.substring(Tap_End, Tap_End+2); 
+			
+			if (tapStr1.trim().equals("") && !existingBranch) {
+				braRec.bra_code = BranchCode.Line;
+			}
+			else {
+				// TODO detect PsXfr branch
+				if (existingBranch) {
+					if (tapStr2.equals("UN")) {
+						braRec.ratio.f = new Double(tapStr1).doubleValue();
+					}
+					else {
+						braRec.ratio.t = new Double(tapStr1).doubleValue();
+					}					
+				}
+				else {
+					braRec.bra_code = BranchCode.Xfr;
+					if (!tapStr2.equals("UN")) {
+						braRec.ratio.f = new Double(tapStr1).doubleValue();
+					}
+					else {
+						braRec.ratio.t = new Double(tapStr1).doubleValue();
+					}
+				}
+			}
+					
 			curRec.info += lineStr + "\n";
 		}
 	}

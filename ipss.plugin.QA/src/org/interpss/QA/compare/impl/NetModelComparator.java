@@ -30,9 +30,20 @@ import com.interpss.core.net.Bus;
  * @param <TBranchRec>
  */
 public class NetModelComparator<TBus extends AclfBusBean, TBra extends AclfBranchBean> {
+	public static boolean CompareBus = true;
+	public static boolean CompareBusVolt = true;
+	public static boolean CompareBusPower = true;
+	public static boolean CompareBusShunt = true;
+	
+	public static boolean CompareBranch = true;
+	public static boolean CompareBranchData = true;
+	public static boolean CompareBranchFlow = true;
+	
+	
 	public static double VMagErr = 0.0001;   //pu
 	public static double VAngErr = 0.01;     //deg
 	public static double PQErr = 0.001;      //pu
+	public static double TapErr = 0.001;      //pu
 	
 	public static enum ResultFileType {PSSE, PWD, PSLF};
 	
