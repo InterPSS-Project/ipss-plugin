@@ -4,13 +4,12 @@ import org.interpss.datamodel.bean.aclf.AclfNetResultBean;
 import org.interpss.util.ITextFileProcessor;
 
 /**
- * Base class for implementing result file loader. The info in the reuslt file are stored in the
+ * Base class for implementing result file loader. The info in the result file are stored in the
+ * qaResultSet
  * 
  * 
  * @author mzhou
  *
- * @param <TBusRec>
- * @param <TBranchRec>
  */
 
 public abstract class BaseResultFileProcessor implements ITextFileProcessor {
