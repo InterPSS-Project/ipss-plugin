@@ -56,6 +56,10 @@ public class BaseBusBean extends BaseJSONBean {
 	public long 
 		area =1, 				// bus area number/id
 		zone =1;				// bus zone number/id	
+	
+	public String
+		areaName,				// bus area name
+		zoneName;				// bus zone name
 		
 	public BaseBusBean() {}
 	
