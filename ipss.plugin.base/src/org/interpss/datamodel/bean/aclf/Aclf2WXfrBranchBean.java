@@ -30,32 +30,41 @@ import org.interpss.datamodel.bean.BaseJSONBean;
 import org.interpss.datamodel.bean.datatype.BranchValueBean;
 
 /**
- * Bean class for storing AclfBranch object info
+ * Bean class for storing Aclf two winding branch object info
  * 
- * @author mzhou
+ * @author sHou
  *
  */
-public class AclfBranchBean extends BaseBranchBean {
+public class Aclf2WXfrBranchBean extends BaseBranchBean {
 	
-	/*public BranchValueBean 
+	public static enum TapControlModeBean {Bus_Voltage, Mva_Flow};
+	
+	public BranchValueBean 
 			ratio = new BranchValueBean(1.0,1.0),			// xfr branch turn ratio, it is assumed on the from bus side per PSSE
 			ang = new BranchValueBean(0.0,0.0);				// PsXfr shifting angle, in rad, it is assumed on the from bus side per PSSE
 	
-	*/
-	public AclfBranchBean() {}
+	public TapControlModeBean controlMode = TapControlModeBean.Bus_Voltage;	// control mode
+	
+	public double 
+		limit_max,				// 
+		limit_min;
+	
+	public long controlledBusNumber;		// controlled bus number
+	
+	public Aclf2WXfrBranchBean() {}
 	
 	@Override public int compareTo(BaseJSONBean b) {
 		int eql = super.compareTo(b);
 		
-		AclfBranchBean bean = (AclfBranchBean)b;
+		Aclf2WXfrBranchBean bean = (Aclf2WXfrBranchBean)b;
 
 		String str = "ID: " + this.id + " AclfBranchBean.";
 		
-		/*if (this.ratio.compareTo(bean.ratio) != 0) {
+		if (this.ratio.compareTo(bean.ratio) != 0) {
 			logCompareMsg(str + "ratio is not equal");	eql = 1; }
 
 		if (this.ang.compareTo(bean.ang) != 0) {
-			logCompareMsg(str + "ang is not equal");	eql = 1; }*/
+			logCompareMsg(str + "ang is not equal");	eql = 1; }
 
 		return eql;
 	}	
