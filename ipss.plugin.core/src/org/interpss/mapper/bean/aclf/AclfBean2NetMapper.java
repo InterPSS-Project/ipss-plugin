@@ -24,6 +24,10 @@
 
 package org.interpss.mapper.bean.aclf;
 
+import static com.interpss.common.util.IpssLogger.ipssLogger;
+import static org.interpss.mapper.odm.ODMUnitHelper.ToActivePowerUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.ToAngleUnit;
+
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.datamodel.bean.BaseBranchBean;
 import org.interpss.datamodel.bean.aclf.AclfBranchBean;
@@ -38,6 +42,7 @@ import org.interpss.datamodel.bean.aclf.adj.TapControlBean;
 import org.interpss.datamodel.bean.aclf.adj.TapControlBean.TapControlModeBean;
 import org.interpss.datamodel.bean.aclf.adj.TapControlBean.TapControlTypeBean;
 import org.interpss.numeric.datatype.LimitType;
+import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.CoreObjectFactory;
 import com.interpss.SimuObjectFactory;
@@ -53,11 +58,13 @@ import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adj.AdjControlType;
+import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.adj.QBank;
 import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.adj.VarCompensatorControlMode;
 import com.interpss.core.aclf.adpter.AclfPQGenBus;
+import com.interpss.core.aclf.adpter.AclfPSXformer;
 import com.interpss.core.aclf.adpter.AclfPVGenBus;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
 import com.interpss.core.aclf.adpter.AclfXformer;
@@ -66,7 +73,7 @@ import com.interpss.core.net.Bus;
 import com.interpss.core.net.Zone;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
-import com.sun.java.swing.plaf.windows.TMSchema.Control;
+
 
 /**
  * Mapper to map an AclfNetBean object to an AclfNetwork (SimuContext) object
@@ -291,58 +298,88 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 		if (branch.getBranchCode() == AclfBranchCode.XFORMER ||
 				branch.getBranchCode() == AclfBranchCode.PS_XFORMER) {
 			setXfrData(branchBean, branch, aclfNet);
-		}
-		else {
-			
-		}
-		
+		}		
 		// rating		
 		branch.setRatingMva1(branchBean.mvaRatingA);
 		branch.setRatingMva2(branchBean.mvaRatingB);
 		branch.setRatingMva3(branchBean.mvaRatingC);
 	}	
 	
-	private void setXfrData(AclfBranchBean branchBean, AclfBranch branch,AclfNetwork aclfNet){
-		AclfXformer xfr = branch.toXfr();
-		if (branchBean.ratio != null) {
-			xfr.setFromTurnRatio(branchBean.ratio.f);
-			xfr.setToTurnRatio(branchBean.ratio.t);
-		}
+	private void setXfrData(AclfBranchBean branchBean, AclfBranch branch,AclfNetwork aclfNet){		
 		// control/adjustment
 		if(branchBean.tapControlBean != null){
 			TapControlBean tcb = branchBean.tapControlBean;
-			if(tcb.controlMode == TapControlModeBean.Bus_Voltage){
-				TapControl tap = null;
-				if(tcb.controlType == TapControlTypeBean.Point_Control){
-					tap = CoreObjectFactory.createTapVControlBusVoltage(branch, 
-				            AdjControlType.POINT_CONTROL, aclfNet, tcb.controlledBusId);
-					tap.setVSpecified(tcb.desiredControlTarget);
-				}else{ // range control
-					tap=CoreObjectFactory.createTapVControlBusVoltage(branch, 
-				            AdjControlType.RANGE_CONTROL, aclfNet, tcb.controlledBusId);
-						tap.setControlRange(new LimitType(tcb.upperLimit, tcb.lowerLimit));
+			try{
+				if(tcb.controlMode == TapControlModeBean.Bus_Voltage){
+					AclfXformer xfr = branch.toXfr();
+					if (branchBean.ratio != null) {
+						xfr.setFromTurnRatio(branchBean.ratio.f);
+						xfr.setToTurnRatio(branchBean.ratio.t);
+					}
+					TapControl tap = null;
+					if(tcb.controlType == TapControlTypeBean.Point_Control){
+						tap = CoreObjectFactory.createTapVControlBusVoltage(branch, 
+					            AdjControlType.POINT_CONTROL, aclfNet, tcb.controlledBusId);
+						tap.setVSpecified(tcb.desiredControlTarget);
+					}else{ // range control
+						tap=CoreObjectFactory.createTapVControlBusVoltage(branch, 
+					            AdjControlType.RANGE_CONTROL, aclfNet, tcb.controlledBusId);
+							tap.setControlRange(new LimitType(tcb.upperLimit, tcb.lowerLimit));
+					}
+					tap.setStatus(tcb.status == 1? true : false);
+					AclfBus vcBus = aclfNet.getBus(tcb.controlledBusId);				
+					tap.setVcBusOnFromSide(branch.isFromBus(vcBus));
+					tap.setControlOnFromSide(tcb.controlOnFromSide);
+					tap.setTurnRatioLimit(new LimitType(tcb.maxTap, tcb.minTap));
+					tap.setTapSteps(tcb.steps);
+					tap.setTapStepSize(tcb.stepSize);
+					
+				}else if(tcb.controlMode == TapControlModeBean.Mva_Flow){
+					AclfXformer xfr = branch.toXfr();
+					if (branchBean.ratio != null) {
+						xfr.setFromTurnRatio(branchBean.ratio.f);
+						xfr.setToTurnRatio(branchBean.ratio.t);
+					}
+					//TODO add Range Control
+					TapControl tap = CoreObjectFactory.createTapVControlMvarFlow(branch, 
+							            AdjControlType.POINT_CONTROL);
+					tap.setMeteredOnFromSide(tcb.measuredOnFromSide);
+					tap.setMvarSpecified(tcb.desiredControlTarget);
+					tap.setTurnRatioLimit(new LimitType(tcb.maxTap, tcb.minTap));
+					tap.setControlOnFromSide(tcb.controlOnFromSide);
+					tap.setTapSteps(tcb.steps);
+					tap.setTapStepSize(tcb.stepSize);
+				}else{// phase shifter control
+					AclfPSXformer psXfr = branch.toPSXfr();
+					if(branchBean.ang != null){
+						psXfr.setFromAngle(branchBean.ang.f);
+						psXfr.setToAngle(branchBean.ang.t);
+					}
+					if(tcb.controlType == TapControlTypeBean.Point_Control){
+						PSXfrPControl psxfr = CoreObjectFactory.createPSXfrPControl(branch, AdjControlType.POINT_CONTROL);
+						psxfr.setStatus(tcb.status == 1? true : false);
+						psxfr.setPSpecified(tcb.desiredControlTarget);
+						psxfr.setAngLimit(new LimitType(tcb.maxTap, tcb.minTap));
+						psxfr.setControlOnFromSide(tcb.controlOnFromSide);
+						psxfr.setMeteredOnFromSide(tcb.measuredOnFromSide);
+						
+						
+					}else{ // range control
+						PSXfrPControl psxfr = CoreObjectFactory.createPSXfrPControl(branch, AdjControlType.RANGE_CONTROL);
+						psxfr.setStatus(tcb.status == 1? true : false);
+						psxfr.setControlRange(new LimitType(tcb.upperLimit, tcb.lowerLimit));
+						psxfr.setPSpecified(tcb.desiredControlTarget);
+						psxfr.setAngLimit(new LimitType(tcb.maxTap, tcb.minTap));
+						psxfr.setControlOnFromSide(tcb.controlOnFromSide);
+						psxfr.setMeteredOnFromSide(tcb.measuredOnFromSide);
+					}
+					
+					
 				}
-				tap.setStatus(tcb.status == 1? true : false);
-				AclfBus vcBus = aclfNet.getBus(tcb.controlledBusId);				
-				tap.setVcBusOnFromSide(branch.isFromBus(vcBus));
-				tap.setControlOnFromSide(tcb.controlOnFromSide);
-				tap.setTurnRatioLimit(new LimitType(tcb.maxTap, tcb.minTap));
-				tap.setTapSteps(tcb.steps);
-				tap.setTapStepSize(tcb.stepSize);
-				
-			}else if(tcb.controlMode == TapControlModeBean.Mva_Flow){
-				//TODO add Range Control
-				TapControl tap = CoreObjectFactory.createTapVControlMvarFlow(branch, 
-						            AdjControlType.POINT_CONTROL);
-				tap.setMeteredOnFromSide(tcb.measuredOnFromSide);
-				tap.setMvarSpecified(tcb.desiredControlTarget);
-				tap.setTurnRatioLimit(new LimitType(tcb.maxTap, tcb.minTap));
-				tap.setControlOnFromSide(tcb.controlOnFromSide);
-				tap.setTapSteps(tcb.steps);
-				tap.setTapStepSize(tcb.stepSize);
-			}else{// phase shifter control
-				
+			} catch (InterpssException e) {
+				ipssLogger.severe("Error in mapping Xfr tap control data, " + e.toString());
 			}
+			
 		}
 	}
 }

@@ -24,9 +24,13 @@
 
 package org.interpss.mapper.bean.aclf;
 
+import org.apache.commons.math3.complex.Complex;
 import org.interpss.datamodel.bean.aclf.AclfBranchBean;
+import org.interpss.datamodel.bean.aclf.AclfBranchResultBean;
 import org.interpss.datamodel.bean.aclf.AclfBusBean;
 import org.interpss.datamodel.bean.aclf.AclfNetBean;
+import org.interpss.datamodel.bean.datatype.ComplexBean;
+import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
@@ -86,4 +90,14 @@ public class AclfNet2BeanMapper extends BaseAclfNet2BeanMapper<AclfNetBean> {
 
 		return noError;
 	}	
+	
+	protected void mapBaseBus(AclfBus bus, AclfBusBean bean){
+		
+	}
+	protected void mapBaseBranch(AclfBranch branch, AclfBranchBean bean){
+		
+		
+	}
+	
+	
 }
