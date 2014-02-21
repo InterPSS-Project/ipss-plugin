@@ -1,8 +1,9 @@
-package org.interpss.datamodel.bean.aclf;
+package org.interpss.datamodel.bean.aclf.adj;
 
 import java.util.List;
 
 import org.interpss.datamodel.bean.BaseJSONBean;
+import org.interpss.datamodel.bean.aclf.AclfBusBean;
 
 /**
  * Bean class for storing AclfGen info
@@ -18,20 +19,14 @@ public class AclfGenBean extends BaseJSONBean{
 	public int status;          // generator service status
 	
 	public double 
+		pgen,					// MW output
+		qgen,					// MVAR output
 		pmax,					// max MW output
 		pmin,					// min MW output
 		qmax,					// max MVAR output
 		qmin;					// min MVAR output
 	
-	public AclfBusBean connectedBus;		// the bus that this gen is connected to
-	
-	public long 
-		areaNumber =1, 			// bus area number/id
-		zoneNumber =1;			// bus zone number/id
-	
-	public String
-		areaName,				// bus area name
-		zoneName;				// bus zone name
+	//public AclfBusBean connectedBus;		// the bus that this gen is connected to	
 	
 	public double scheduledVol;  // gen scheduled voltage
 	
@@ -51,6 +46,10 @@ public class AclfGenBean extends BaseJSONBean{
 			logCompareMsg(str + "status is not equal, " + this.status + ", " + bean.status); eql = 1; }	
 
 
+		if (this.pgen != bean.pgen) {
+			logCompareMsg(str + "pgen is not equal, " + this.pgen + ", " + bean.pgen); eql = 1; }	
+		if (this.qgen != bean.qgen) {
+			logCompareMsg(str + "qgen is not equal, " + this.qgen + ", " + bean.qgen); eql = 1; }
 		if (this.pmax != bean.pmax) {
 			logCompareMsg(str + "pmax is not equal, " + this.pmax + ", " + bean.pmax); eql = 1; }	
 		if (this.pmin != bean.pmin) {
@@ -60,20 +59,10 @@ public class AclfGenBean extends BaseJSONBean{
 		if (this.qmin != bean.qmin) {
 			logCompareMsg(str + "qmin is not equal, " + this.qmin + ", " + bean.qmin); eql = 1; }
 		
-		if (this.areaNumber != bean.areaNumber) {
-			logCompareMsg(str + "area number is not equal, " + this.areaNumber + ", " + bean.areaNumber); eql = 1; }
-		if (this.zoneNumber != bean.zoneNumber) {
-			logCompareMsg(str + "zone number is not equal, " + this.zoneNumber + ", " + bean.zoneNumber); eql = 1; }
 		
-		if (!this.areaName.equals(bean.areaName)) {
-			logCompareMsg(str + "area name is not equal, " + this.areaName + ", " + bean.areaName); eql = 1; }
-		
-		if (!this.zoneName.equals(bean.zoneName)) {
-			logCompareMsg(str + "zone name is not equal, " + this.zoneName + ", " + bean.zoneName); eql = 1; }
-		
-		if(this.connectedBus.compareTo(bean.connectedBus) != 0 ){
+		/*if(this.connectedBus.compareTo(bean.connectedBus) != 0 ){
 			logCompareMsg(str + "connected bus is not equal, " + this.connectedBus + ", " + bean.connectedBus); eql = 1; }
-		
+		*/
 		if (this.scheduledVol != bean.scheduledVol) {
 			logCompareMsg(str + "scheduled voltage is not equal, " + this.scheduledVol + ", " + bean.scheduledVol); eql = 1; }
 		if (this.remoteVControlBusId.equals(bean.remoteVControlBusId)) {

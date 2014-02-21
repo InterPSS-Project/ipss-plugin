@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.interpss.datamodel.bean.BaseBranchBean;
 import org.interpss.datamodel.bean.BaseJSONBean;
+import org.interpss.datamodel.bean.aclf.adj.TapControlBean;
 import org.interpss.datamodel.bean.datatype.BranchValueBean;
 
 /**
@@ -37,12 +38,13 @@ import org.interpss.datamodel.bean.datatype.BranchValueBean;
  */
 public class AclfBranchBean extends BaseBranchBean {
 	
-	/*public BranchValueBean 
+	public BranchValueBean 
 			ratio = new BranchValueBean(1.0,1.0),			// xfr branch turn ratio, it is assumed on the from bus side per PSSE
 			ang = new BranchValueBean(0.0,0.0);				// PsXfr shifting angle, in rad, it is assumed on the from bus side per PSSE
 	
-	*/
-	public AclfBranchBean() {}
+	public TapControlBean tapControlBean;					// control bean for xfr and psxfr
+	
+	public AclfBranchBean() { }
 	
 	@Override public int compareTo(BaseJSONBean b) {
 		int eql = super.compareTo(b);
@@ -51,11 +53,11 @@ public class AclfBranchBean extends BaseBranchBean {
 
 		String str = "ID: " + this.id + " AclfBranchBean.";
 		
-		/*if (this.ratio.compareTo(bean.ratio) != 0) {
+		if (this.ratio.compareTo(bean.ratio) != 0) {
 			logCompareMsg(str + "ratio is not equal");	eql = 1; }
 
 		if (this.ang.compareTo(bean.ang) != 0) {
-			logCompareMsg(str + "ang is not equal");	eql = 1; }*/
+			logCompareMsg(str + "ang is not equal");	eql = 1; }
 
 		return eql;
 	}	
