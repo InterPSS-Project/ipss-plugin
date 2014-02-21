@@ -108,6 +108,7 @@ public class AclfNet2ResultBeanMapper extends BaseAclfNet2BeanMapper<AclfNetResu
 		return noError;
 	}	
 	
+	
 	protected void mapBaseBranch(AclfBranch branch, AclfBranchResultBean bean) {
 		super.mapBaseBranch(branch, bean);
 		
@@ -122,4 +123,6 @@ public class AclfNet2ResultBeanMapper extends BaseAclfNet2BeanMapper<AclfNetResu
 		
 		bean.cur = format2(branch.current(UnitType.Amp));
 	}	
+	
+	
 }
