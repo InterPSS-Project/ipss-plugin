@@ -29,18 +29,34 @@ import org.interpss.datamodel.bean.BaseBranchBean;
 import org.interpss.datamodel.bean.aclf.AclfBranchBean;
 import org.interpss.datamodel.bean.aclf.AclfBusBean;
 import org.interpss.datamodel.bean.aclf.AclfNetBean;
+import org.interpss.datamodel.bean.aclf.adj.AclfGenBean;
+import org.interpss.datamodel.bean.aclf.adj.AclfLoadBean;
+import org.interpss.datamodel.bean.aclf.adj.QBankBean;
+import org.interpss.datamodel.bean.aclf.adj.SwitchShuntBean;
+import org.interpss.datamodel.bean.aclf.adj.SwitchShuntBean.VarCompensatorControlModeBean;
+import org.interpss.datamodel.bean.aclf.adj.TapControlBean;
+import org.interpss.datamodel.bean.aclf.adj.TapControlBean.TapControlModeBean;
+import org.interpss.datamodel.bean.aclf.adj.TapControlBean.TapControlTypeBean;
 import org.interpss.numeric.datatype.LimitType;
 
 import com.interpss.CoreObjectFactory;
 import com.interpss.SimuObjectFactory;
+import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.mapper.AbstractMapper;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
+import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfGenCode;
+import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.adj.AdjControlType;
+import com.interpss.core.aclf.adj.QBank;
+import com.interpss.core.aclf.adj.SwitchedShunt;
+import com.interpss.core.aclf.adj.TapControl;
+import com.interpss.core.aclf.adj.VarCompensatorControlMode;
 import com.interpss.core.aclf.adpter.AclfPQGenBus;
 import com.interpss.core.aclf.adpter.AclfPVGenBus;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
@@ -50,6 +66,7 @@ import com.interpss.core.net.Bus;
 import com.interpss.core.net.Zone;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
+import com.sun.java.swing.plaf.windows.TMSchema.Control;
 
 /**
  * Mapper to map an AclfNetBean object to an AclfNetwork (SimuContext) object
@@ -148,7 +165,7 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 				AclfPVGenBus pvBus = bus.toPVBus();
 				if(busBean.gen != null)
 				      pvBus.setGenP(busBean.gen.re);
-				pvBus.setDesiredVoltMag(busBean.vDesired_mag);
+				pvBus.setDesiredVoltMag(busBean.vDesired_mag);				
 			}
 			else if (busBean.gen_code==AclfBusBean.GenCode.Swing) {
 				bus.setGenCode(AclfGenCode.SWING);
@@ -162,6 +179,19 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 				bus.setVoltageAng(Math.toRadians(busBean.v_ang));
 			}
 			
+			// gen data
+			for(AclfGenBean genBean : busBean.gen_list){
+				String id = genBean.id;
+				AclfGen gen = CoreObjectFactory.createAclfGen(id);
+				gen.setStatus(genBean.status == 1? true: false);
+				gen.setDesiredVoltMag(genBean.scheduledVol);
+				gen.setGen(new Complex(genBean.pgen, genBean.qgen));
+				gen.setPGenLimit(new LimitType(genBean.pmax,genBean.pmin));
+				gen.setQGenLimit(new LimitType(genBean.qmax,genBean.qmin));
+				gen.setRemoteVControlBusId(genBean.remoteVControlBusId);
+				bus.getGenList().add(gen);
+			}			
+			
 		}
 		
 		if (busBean.load_code != null) {
@@ -174,8 +204,58 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 			}
 		}
 		
+		// load data
+		for (AclfLoadBean loadbean : busBean.load_list) {
+			String id = loadbean.id;
+			AclfLoad ld = CoreObjectFactory.createAclfLoad(id);
+			ld.setStatus(loadbean.status == 1 ? true : false);
+			AclfLoadCode code = AclfLoadCode.NON_LOAD;
+			if (loadbean.constPload != null) {
+				code = code == AclfLoadCode.NON_LOAD ? AclfLoadCode.CONST_P
+						: AclfLoadCode.ZIP;
+				ld.setLoadCP(new Complex(loadbean.constPload.re,
+						loadbean.constPload.im));
+			}
+			if (loadbean.constIload != null) {
+				code = code == AclfLoadCode.NON_LOAD ? AclfLoadCode.CONST_I
+						: AclfLoadCode.ZIP;
+				ld.setLoadCI(new Complex(loadbean.constIload.re,
+						loadbean.constIload.im));
+			}
+			if (loadbean.constZload != null) {
+				code = code == AclfLoadCode.NON_LOAD ? AclfLoadCode.CONST_Z
+						: AclfLoadCode.ZIP;
+				ld.setLoadCZ(new Complex(loadbean.constZload.re,
+						loadbean.constZload.im));
+			}
+			ld.setCode(code);
+			bus.getLoadList().add(ld);
+		}
+		
 		if(busBean.shunt != null){
 			bus.setShuntY(new Complex(busBean.shunt.re, busBean.shunt.im));
+		}		
+		// switch shunt
+		for(SwitchShuntBean ssb: busBean.switchShunt_List){
+			try {
+				SwitchedShunt ss = CoreObjectFactory.createSwitchedShunt(bus);
+				ss.setBInit(ssb.bInit);
+				VarCompensatorControlMode mode = ssb.controlMode == VarCompensatorControlModeBean.Continuous?VarCompensatorControlMode.CONTINUOUS:
+					ssb.controlMode == VarCompensatorControlModeBean.Discrete?VarCompensatorControlMode.DISCRETE:
+						VarCompensatorControlMode.FIXED;
+				ss.setControlMode(mode);
+				ss.setDesiredVoltageRange(new LimitType(ssb.vmax, ssb.vmin));
+				for(QBankBean qbb: ssb.varBankList){
+					QBank qb = CoreObjectFactory.createQBank(ss);
+					qb.setSteps(qbb.step);
+					qb.setUnitQMvar(qbb.UnitQMvar);
+				}				
+				ss.setRemoteBus(aclfNet.getBus(ssb.remoteBusId));
+			} catch (InterpssException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 		}
 	}
 	
@@ -206,16 +286,14 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 					AclfBranchCode.PS_XFORMER)));
 		if (branchBean.z != null)
 			branch.setZ(branchBean.z.toComplex());
-		if (branch.getBranchCode() == AclfBranchCode.LINE) {
-			if (branchBean.shunt_y != null)
-				branch.setHShuntY(new Complex(0.0, branchBean.shunt_y.im*0.5));
+		if (branchBean.shunt_y != null)
+			branch.setHShuntY(new Complex(0.0, branchBean.shunt_y.im*0.5));
+		if (branch.getBranchCode() == AclfBranchCode.XFORMER ||
+				branch.getBranchCode() == AclfBranchCode.PS_XFORMER) {
+			setXfrData(branchBean, branch, aclfNet);
 		}
 		else {
-			AclfXformer xfr = branch.toXfr();
-			if (branchBean.ratio != null) {
-				xfr.setFromTurnRatio(branchBean.ratio.f);
-				xfr.setToTurnRatio(branchBean.ratio.t);
-			}
+			
 		}
 		
 		// rating		
@@ -223,4 +301,48 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 		branch.setRatingMva2(branchBean.mvaRatingB);
 		branch.setRatingMva3(branchBean.mvaRatingC);
 	}	
+	
+	private void setXfrData(AclfBranchBean branchBean, AclfBranch branch,AclfNetwork aclfNet){
+		AclfXformer xfr = branch.toXfr();
+		if (branchBean.ratio != null) {
+			xfr.setFromTurnRatio(branchBean.ratio.f);
+			xfr.setToTurnRatio(branchBean.ratio.t);
+		}
+		// control/adjustment
+		if(branchBean.tapControlBean != null){
+			TapControlBean tcb = branchBean.tapControlBean;
+			if(tcb.controlMode == TapControlModeBean.Bus_Voltage){
+				TapControl tap = null;
+				if(tcb.controlType == TapControlTypeBean.Point_Control){
+					tap = CoreObjectFactory.createTapVControlBusVoltage(branch, 
+				            AdjControlType.POINT_CONTROL, aclfNet, tcb.controlledBusId);
+					tap.setVSpecified(tcb.desiredControlTarget);
+				}else{ // range control
+					tap=CoreObjectFactory.createTapVControlBusVoltage(branch, 
+				            AdjControlType.RANGE_CONTROL, aclfNet, tcb.controlledBusId);
+						tap.setControlRange(new LimitType(tcb.upperLimit, tcb.lowerLimit));
+				}
+				tap.setStatus(tcb.status == 1? true : false);
+				AclfBus vcBus = aclfNet.getBus(tcb.controlledBusId);				
+				tap.setVcBusOnFromSide(branch.isFromBus(vcBus));
+				tap.setControlOnFromSide(tcb.controlOnFromSide);
+				tap.setTurnRatioLimit(new LimitType(tcb.maxTap, tcb.minTap));
+				tap.setTapSteps(tcb.steps);
+				tap.setTapStepSize(tcb.stepSize);
+				
+			}else if(tcb.controlMode == TapControlModeBean.Mva_Flow){
+				//TODO add Range Control
+				TapControl tap = CoreObjectFactory.createTapVControlMvarFlow(branch, 
+						            AdjControlType.POINT_CONTROL);
+				tap.setMeteredOnFromSide(tcb.measuredOnFromSide);
+				tap.setMvarSpecified(tcb.desiredControlTarget);
+				tap.setTurnRatioLimit(new LimitType(tcb.maxTap, tcb.minTap));
+				tap.setControlOnFromSide(tcb.controlOnFromSide);
+				tap.setTapSteps(tcb.steps);
+				tap.setTapStepSize(tcb.stepSize);
+			}else{// phase shifter control
+				
+			}
+		}
+	}
 }

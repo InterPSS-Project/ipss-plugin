@@ -21,7 +21,7 @@ public class SwitchShuntBean extends BaseJSONBean {
 	
 	public VarCompensatorControlModeBean controlMode;		// control mode
 	
-	public long remoteBusNumber;							// remote control bus number
+	public String remoteBusId;							// remote control bus id
 	
 	public double 											// control voltage limit
 		vmax,
@@ -39,8 +39,8 @@ public class SwitchShuntBean extends BaseJSONBean {
 
 		String str = "ID: " + this.id + " SwitchShuntBean.";
 		
-		if (this.remoteBusNumber != bean.remoteBusNumber) {
-			logCompareMsg(str + "remoteBusNumber is not equal, " + this.remoteBusNumber + ", " + bean.remoteBusNumber); eql = 1; }
+		if (!this.remoteBusId.equals(bean.remoteBusId)) {
+			logCompareMsg(str + "remoteBusNumber is not equal, " + this.remoteBusId + ", " + bean.remoteBusId); eql = 1; }
 
 		if (!NumericUtil.equals(this.vmax, bean.vmax, PU_ERR)) {
 			logCompareMsg(str + "vmax is not equal, " + this.vmax + ", " + bean.vmax); eql = 1; }
