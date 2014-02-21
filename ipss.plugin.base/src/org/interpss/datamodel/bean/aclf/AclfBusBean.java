@@ -23,10 +23,14 @@
  */
 package org.interpss.datamodel.bean.aclf;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.interpss.datamodel.bean.BaseBusBean;
 import org.interpss.datamodel.bean.BaseJSONBean;
+import org.interpss.datamodel.bean.aclf.adj.AclfGenBean;
+import org.interpss.datamodel.bean.aclf.adj.AclfLoadBean;
+import org.interpss.datamodel.bean.aclf.adj.SwitchShuntBean;
 
 /**
  * Bean class for storing AclfBus info
@@ -56,8 +60,22 @@ public class AclfBusBean  extends BaseBusBean {
 	public double
 		vDesired_mag= 1.0,          	// desired bus voltage in pu		
 		vDesired_ang = 0.0;				// desired bus voltage angle in deg	
+	
+	public List<AclfGenBean> 
+		gen_list;					// gen bean list
+	
+	public List<AclfLoadBean> 
+		load_list;                // load bean list
+	
+	public List<SwitchShuntBean>
+		switchShunt_List;			// switch shunt bean list connected to the bus
+	
 		
-	public AclfBusBean() {}
+	public AclfBusBean() {
+		gen_list = new ArrayList<AclfGenBean>();
+		load_list = new ArrayList<AclfLoadBean>();
+		switchShunt_List = new ArrayList<SwitchShuntBean>();
+	}
 	
 	@Override public int compareTo(BaseJSONBean b) {
 		int eql = super.compareTo(b);
