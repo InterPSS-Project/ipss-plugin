@@ -38,6 +38,7 @@ import org.ieee.odm.schema.AdjustmentModeEnumType;
 import org.ieee.odm.schema.AngleAdjustmentXmlType;
 import org.ieee.odm.schema.AngleUnitType;
 import org.ieee.odm.schema.ApparentPowerUnitType;
+import org.ieee.odm.schema.BranchFlowDirectionEnumType;
 import org.ieee.odm.schema.FactorUnitType;
 import org.ieee.odm.schema.LineBranchEnumType;
 import org.ieee.odm.schema.LineBranchXmlType;
@@ -69,11 +70,11 @@ import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.adj.AdjControlType;
 import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.adj.TapControl;
+import com.interpss.core.aclf.adpter.Aclf3WPSXformer;
+import com.interpss.core.aclf.adpter.Aclf3WXformer;
 import com.interpss.core.aclf.adpter.AclfLine;
 import com.interpss.core.aclf.adpter.AclfPSXformer;
 import com.interpss.core.aclf.adpter.AclfXformer;
-import com.interpss.core.aclf.adpter.Aclf3WPSXformer;
-import com.interpss.core.aclf.adpter.Aclf3WXformer;
 import com.interpss.core.net.Branch;
 
 /**
@@ -221,15 +222,16 @@ public class AclfBranchDataHelper {
                     <desiredMeasuredOnFromSide>false</desiredMeasuredOnFromSide>
                 </angleAdjustment>
       */
-				PSXfrPControl psxfr = CoreObjectFactory.createPSXfrPControl(aclfBra, AdjControlType.RANGE_CONTROL);
-				psxfr.setStatus(!xmlAngAdj.isOffLine());
-				psxfr.setControlRange(new LimitType(
-						UnitHelper.percentConversion(xmlAngAdj.getRange().getMax(), ToActivePowerUnit.f(xmlAngAdj.getDesiredActivePowerUnit()), UnitType.PU), 
-						UnitHelper.percentConversion(xmlAngAdj.getRange().getMin(), ToActivePowerUnit.f(xmlAngAdj.getDesiredActivePowerUnit()), UnitType.PU)));
-				psxfr.setPSpecified(xmlAngAdj.getDesiredValue(), ToActivePowerUnit.f(xmlAngAdj.getDesiredActivePowerUnit()), baseKva);
-				psxfr.setAngLimit(new LimitType(xmlAngAdj.getAngleLimit().getMax(), xmlAngAdj.getAngleLimit().getMin()), ToAngleUnit.f(xmlAngAdj.getAngleLimit().getUnit()));
-				psxfr.setControlOnFromSide(xmlAngAdj.isAngleAdjOnFromSide());
-				psxfr.setMeteredOnFromSide(xmlAngAdj.isDesiredMeasuredOnFromSide());
+				PSXfrPControl psxfrCon = CoreObjectFactory.createPSXfrPControl(aclfBra, AdjControlType.RANGE_CONTROL);
+				psxfrCon.setStatus(!xmlAngAdj.isOffLine());
+				psxfrCon.setControlRange(
+						UnitHelper.pConversion(new LimitType(xmlAngAdj.getRange().getMax(), xmlAngAdj.getRange().getMin()), 
+								               baseKva, ToActivePowerUnit.f(xmlAngAdj.getDesiredActivePowerUnit()), UnitType.PU));
+				psxfrCon.setFlowFrom2To(xmlAngAdj.getFlowDirection() == BranchFlowDirectionEnumType.FROM_TO);
+				psxfrCon.setPSpecified(xmlAngAdj.getDesiredValue(), ToActivePowerUnit.f(xmlAngAdj.getDesiredActivePowerUnit()), baseKva);
+				psxfrCon.setAngLimit(new LimitType(xmlAngAdj.getAngleLimit().getMax(), xmlAngAdj.getAngleLimit().getMin()), ToAngleUnit.f(xmlAngAdj.getAngleLimit().getUnit()));
+				psxfrCon.setControlOnFromSide(xmlAngAdj.isAngleAdjOnFromSide());
+				psxfrCon.setMeteredOnFromSide(xmlAngAdj.isDesiredMeasuredOnFromSide());
 			}
 		}
 		
