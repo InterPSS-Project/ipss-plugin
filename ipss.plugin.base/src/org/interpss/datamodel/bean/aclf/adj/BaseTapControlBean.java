@@ -26,7 +26,6 @@ package org.interpss.datamodel.bean.aclf.adj;
 import java.util.List;
 
 import org.interpss.datamodel.bean.BaseJSONBean;
-import org.interpss.datamodel.bean.datatype.BranchValueBean;
 import org.interpss.numeric.util.NumericUtil;
 
 /**
@@ -35,16 +34,10 @@ import org.interpss.numeric.util.NumericUtil;
  * @author sHou
  *
  */
-public class TapControlBean extends BaseJSONBean {
-	
-	public static enum TapControlModeBean {Bus_Voltage, Mva_Flow, MW_Flow};  
+public class BaseTapControlBean extends BaseJSONBean {	
+	 
 	public static enum TapControlTypeBean {Point_Control, Range_Control};
 	
-	/*public BranchValueBean 
-			ratio = new BranchValueBean(1.0,1.0),			// xfr branch turn ratio, it is assumed on the from bus side per PSSE
-			ang = new BranchValueBean(0.0,0.0);				// PsXfr shifting angle, in rad, it is assumed on the from bus side per PSSE
-	*/
-	public TapControlModeBean controlMode = TapControlModeBean.Bus_Voltage;	// control mode
 	public TapControlTypeBean controlType = TapControlTypeBean.Point_Control; // control type
 	
 	public int status = 1;		// tap control status
@@ -57,7 +50,7 @@ public class TapControlBean extends BaseJSONBean {
 		desiredControlTarget,	// tap control targeted value (point control)
 		stepSize;				// tap control step size
 	
-	public String controlledBusId;		// controlled bus number
+	
 	
 	public boolean 
 		measuredOnFromSide,		// mvar flow is measured on from side
@@ -65,14 +58,14 @@ public class TapControlBean extends BaseJSONBean {
 		
 	public int steps;						// tap control steps		
 	
-	public TapControlBean() {}
+	public BaseTapControlBean() {}
 	
 	@Override public int compareTo(BaseJSONBean b) {
 		int eql = super.compareTo(b);
 		
-		TapControlBean bean = (TapControlBean)b;
+		BaseTapControlBean bean = (BaseTapControlBean)b;
 
-		String str = "ID: " + this.id + " TapControlBean.";
+		String str = "ID: " + this.id + " BaseTapControlBean.";
 		
 		/*if (this.ratio.compareTo(bean.ratio) != 0) {
 			logCompareMsg(str + "ratio is not equal");	eql = 1; }
@@ -92,15 +85,10 @@ public class TapControlBean extends BaseJSONBean {
 			logCompareMsg(str + "stepSize is not equal, " + this.stepSize + ", " + bean.stepSize); eql = 1; }
 		if (!NumericUtil.equals(this.desiredControlTarget, bean.desiredControlTarget, ANG_ERR)) {
 			logCompareMsg(str + "desiredVoltage is not equal, " + this.desiredControlTarget + ", " + bean.desiredControlTarget); eql = 1; }
-		
-		
-		if (this.controlMode != bean.controlMode) {
-			logCompareMsg(str + "control mode is not equal, " + this.controlMode + ", " + bean.controlMode); eql = 1; }
+				
 		if (this.controlType != bean.controlType) {
 			logCompareMsg(str + "control type is not equal, " + this.controlType + ", " + bean.controlType); eql = 1; }
 		
-		if (!this.controlledBusId.equals(bean.controlledBusId)) {
-			logCompareMsg(str + "controlledBusNumber is not equal, " + this.controlledBusId + ", " + bean.controlledBusId); eql = 1; }
 		
 		if (this.steps != bean.steps) {
 			logCompareMsg(str + "steps is not equal, " + this.steps + ", " + bean.steps); eql = 1; }

@@ -27,7 +27,8 @@ import java.util.List;
 
 import org.interpss.datamodel.bean.BaseBranchBean;
 import org.interpss.datamodel.bean.BaseJSONBean;
-import org.interpss.datamodel.bean.aclf.adj.TapControlBean;
+import org.interpss.datamodel.bean.aclf.adj.PsXfrTapControlBean;
+import org.interpss.datamodel.bean.aclf.adj.XfrTapControlBean;
 import org.interpss.datamodel.bean.datatype.BranchValueBean;
 
 /**
@@ -42,7 +43,9 @@ public class AclfBranchBean extends BaseBranchBean {
 			ratio = new BranchValueBean(1.0,1.0),			// xfr branch turn ratio, it is assumed on the from bus side per PSSE
 			ang = new BranchValueBean(0.0,0.0);				// PsXfr shifting angle, in rad, it is assumed on the from bus side per PSSE
 	
-	public TapControlBean tapControlBean;					// control bean for xfr and psxfr
+	public XfrTapControlBean xfrTapControlBean;					// control bean for xfr
+	
+	public PsXfrTapControlBean psXfrTapControlBean;				// control bean for phase shiter control
 	
 	public AclfBranchBean() { }
 	
@@ -58,6 +61,10 @@ public class AclfBranchBean extends BaseBranchBean {
 
 		if (this.ang.compareTo(bean.ang) != 0) {
 			logCompareMsg(str + "ang is not equal");	eql = 1; }
+		
+		if (this.xfrTapControlBean.compareTo(bean.xfrTapControlBean) != 0) eql = 1;
+		
+		if (this.psXfrTapControlBean.compareTo(bean.psXfrTapControlBean) != 0) eql = 1;
 
 		return eql;
 	}	

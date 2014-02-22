@@ -64,4 +64,5 @@ public class ComplexBean  implements Comparable<ComplexBean> {
 		
 		return eql;
 	}		
+	
 }
