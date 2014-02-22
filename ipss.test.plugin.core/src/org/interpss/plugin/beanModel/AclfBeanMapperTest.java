@@ -188,16 +188,16 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 		SampleCases.load_LF_5BusSystem(net);
 		
 		// map AclfNet to AclfNetBean
-		AclfNetBean netBean = new AclfNet2BeanMapper().map2Model(net);		
+		AclfNetBean netBean = new AclfNet2BeanMapper().map2Model(net);	
 		
 		// map AclfNetBean back to an AclfNet object
 		AclfNetwork aclfNet = new AclfBean2NetMapper()
 			.map2Model(netBean)
-			.getAclfNet();
+			.getAclfNet();		
 		
 		// map AclfNet to AclfNetBean
 		AclfNetBean netBean1 = new AclfNet2BeanMapper().map2Model(aclfNet);		
-
+			
 		/*
 		 * compare two AclfNetBean objects
 		 * 

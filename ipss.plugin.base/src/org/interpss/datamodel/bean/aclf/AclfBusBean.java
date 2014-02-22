@@ -23,14 +23,12 @@
  */
 package org.interpss.datamodel.bean.aclf;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.interpss.datamodel.bean.BaseBusBean;
 import org.interpss.datamodel.bean.BaseJSONBean;
-import org.interpss.datamodel.bean.aclf.adj.AclfGenBean;
-import org.interpss.datamodel.bean.aclf.adj.AclfLoadBean;
 import org.interpss.datamodel.bean.aclf.adj.SwitchShuntBean;
+import org.interpss.numeric.util.NumericUtil;
 
 /**
  * Bean class for storing AclfBus info
@@ -61,21 +59,20 @@ public class AclfBusBean  extends BaseBusBean {
 		vDesired_mag= 1.0,          	// desired bus voltage in pu		
 		vDesired_ang = 0.0;				// desired bus voltage angle in deg	
 	
-	public List<AclfGenBean> 
-		gen_list;					// gen bean list
+	public double 	
+		pmax, // max MW output
+		pmin, // min MW output
+		qmax, // max MVAR output
+		qmin; // min MVAR output	
+
+	public String remoteVControlBusId;  // remote control bus id	
 	
-	public List<AclfLoadBean> 
-		load_list;                // load bean list
 	
-	public List<SwitchShuntBean>
-		switchShunt_List;			// switch shunt bean list connected to the bus
+	public SwitchShuntBean switchShunt; // switch shunt bean connected to the bus
 	
 		
-	public AclfBusBean() {
-		gen_list = new ArrayList<AclfGenBean>();
-		load_list = new ArrayList<AclfLoadBean>();
-		switchShunt_List = new ArrayList<SwitchShuntBean>();
-	}
+	public AclfBusBean() {}	
+		
 	
 	@Override public int compareTo(BaseJSONBean b) {
 		int eql = super.compareTo(b);
@@ -88,6 +85,24 @@ public class AclfBusBean  extends BaseBusBean {
 			logCompareMsg(str + "gen_code is not equal, " + this.gen_code + ", " + bean.gen_code); eql = 1; }
 		if (this.load_code != bean.load_code) {
 			logCompareMsg(str + "load_code is not equal, " + this.load_code + ", " + bean.load_code); eql = 1; }
+		
+		if (!NumericUtil.equals(this.vDesired_mag, bean.vDesired_mag, PU_ERR)) {
+			logCompareMsg(str + "vDesired_mag is not equal, " + this.vDesired_mag + ", " + bean.vDesired_mag); eql = 1; }
+		if (!NumericUtil.equals(this.vDesired_ang, bean.vDesired_ang, PU_ERR)) {
+			logCompareMsg(str + "vDesired_ang is not equal, " + this.vDesired_ang + ", " + bean.vDesired_ang); eql = 1;	}
+		
+		if (!NumericUtil.equals(this.pmax, bean.pmax, PU_ERR)) {
+			logCompareMsg(str + "pmax is not equal, " + this.pmax + ", " + bean.pmax); eql = 1; }
+		if (!NumericUtil.equals(this.qmax, bean.qmax, PU_ERR)) {
+			logCompareMsg(str + "qmax is not equal, " + this.qmax + ", " + bean.qmax); eql = 1;	}
+		
+		if (!NumericUtil.equals(this.pmin, bean.pmin, PU_ERR)) {
+			logCompareMsg(str + "pmin is not equal, " + this.pmin + ", " + bean.pmin); eql = 1; }
+		if (!NumericUtil.equals(this.qmin, bean.qmin, PU_ERR)) {
+			logCompareMsg(str + "qmin is not equal, " + this.qmin + ", " + bean.qmin); eql = 1;	}
+				
+		if(this.switchShunt.compareTo(bean.switchShunt) != 0 ) eql = 1;
+		
 
 		return eql;
 	}	
