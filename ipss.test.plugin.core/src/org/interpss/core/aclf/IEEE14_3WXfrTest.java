@@ -33,6 +33,7 @@ import org.interpss.fadapter.IpssFileAdapter;
 import org.junit.Test;
 
 import com.interpss.CoreObjectFactory;
+import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.Aclf3WXformer;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -52,6 +53,9 @@ public class IEEE14_3WXfrTest extends CorePluginTestSetup {
 		Aclf3WXformer xfr3W = CoreObjectFactory.createAclf3WXfr("Bus4", "Bus7", "Bus9", net);
 		
 		xfr3W.setZ(new Complex(0.0, 0.01), new Complex(0.0, 0.03), new Complex(0.0, 0.01));
+		
+		AclfBus bus = net.getBusList().get(2);
+		bus.getRemoteQBus();
 		
 		//System.out.println(net.net2String());
 		
