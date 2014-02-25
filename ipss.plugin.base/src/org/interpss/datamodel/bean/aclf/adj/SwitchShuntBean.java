@@ -26,11 +26,18 @@ public class SwitchShuntBean extends BaseJSONBean {
 	public double 											// control voltage limit
 		vmax,
 		vmin;
+	public double
+		qmax,
+		qmin;
 	
+	public double vSpecified; //
 	public double bInit;									// initial b value
 	
 	public ArrayList<QBankBean> varBankList;				// var bank list
 	
+	public SwitchShuntBean(){
+		varBankList = new ArrayList<QBankBean>();
+	}
 
 	@Override public int compareTo(BaseJSONBean b) {
 		int eql = super.compareTo(b);
@@ -46,8 +53,15 @@ public class SwitchShuntBean extends BaseJSONBean {
 			logCompareMsg(str + "vmax is not equal, " + this.vmax + ", " + bean.vmax); eql = 1; }
 		if (!NumericUtil.equals(this.vmin, bean.vmin, PU_ERR)) {
 			logCompareMsg(str + "vmin is not equal, " + this.vmin + ", " + bean.vmin); eql = 1;	}
-		if (!NumericUtil.equals(this.bInit, bean.bInit, ANG_ERR)) {
+		if (!NumericUtil.equals(this.qmax, bean.qmax, PU_ERR)) {
+			logCompareMsg(str + "qmax is not equal, " + this.qmax + ", " + bean.qmax); eql = 1; }
+		if (!NumericUtil.equals(this.qmin, bean.qmin, PU_ERR)) {
+			logCompareMsg(str + "qmin is not equal, " + this.qmin + ", " + bean.qmin); eql = 1;	}
+		if (!NumericUtil.equals(this.bInit, bean.bInit, PU_ERR)) {
 			logCompareMsg(str + "bInit is not equal, " + this.bInit + ", " + bean.bInit); eql = 1; }
+		
+		if (!NumericUtil.equals(this.vSpecified, bean.vSpecified, PU_ERR)) {
+			logCompareMsg(str + "vSpecified is not equal, " + this.vSpecified + ", " + bean.vSpecified); eql = 1;	}
 		
 		
 		if (this.controlMode.compareTo(bean.controlMode) != 0) {

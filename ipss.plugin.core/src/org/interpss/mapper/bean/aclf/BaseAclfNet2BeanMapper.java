@@ -28,8 +28,6 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.datamodel.bean.BaseBranchBean;
 import org.interpss.datamodel.bean.aclf.AclfBranchBean;
 import org.interpss.datamodel.bean.aclf.AclfBusBean;
-import org.interpss.datamodel.bean.aclf.adj.AclfGenBean;
-import org.interpss.datamodel.bean.aclf.adj.AclfLoadBean;
 import org.interpss.datamodel.bean.aclf.adj.BaseTapControlBean.TapControlTypeBean;
 import org.interpss.datamodel.bean.aclf.adj.PsXfrTapControlBean;
 import org.interpss.datamodel.bean.aclf.adj.QBankBean;
@@ -84,25 +82,51 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 		bean.v_ang = format(bus.getVoltageAng(UnitType.Deg));
 		bean.vDesired_mag = format(bus.getDesiredVoltMag());
 		bean.vDesired_ang = format(Math.toDegrees(bus.getDesiredVoltAng()));
-		bean.vmax = format(bus.getVLimit().getMax()) == 0? bean.vmax : format(bus.getVLimit().getMax());
-		bean.vmin = format(bus.getVLimit().getMin()) == 0? bean.vmin : format(bus.getVLimit().getMin());
+		//bean.vmax = format(bus.getVLimit().getMax()) == 0? bean.vmax : format(bus.getVLimit().getMax());
+		//bean.vmin = format(bus.getVLimit().getMin()) == 0? bean.vmin : format(bus.getVLimit().getMin());
+		
+		bean.vmax = format(bus.getVLimit().getMax());
+		bean.vmin = format(bus.getVLimit().getMin());
 
 		bean.gen_code = bus.isGenPQ()? AclfBusBean.GenCode.PQ :
 			(bus.isGenPV() ? AclfBusBean.GenCode.PV : 
 				(bus.isSwing()? AclfBusBean.GenCode.Swing : 
 					AclfBusBean.GenCode.NonGen));
 				
-		Complex gen = bus.getNetGenResults();
-		bean.gen = new ComplexBean(format(gen));
+		//Complex gen = bus.getNetGenResults();
+		//bean.gen = new ComplexBean(format(gen));
+		
+		double genp = bus.getGenP();
+		double genq = bus.getGenQ();
+		bean.gen = new ComplexBean(format(new Complex(genp, genq)));		
+		
+		if(bus.getPGenLimit() != null){
+			bean.pmax = bus.getPGenLimit().getMax();
+			bean.pmin = bus.getPGenLimit().getMin();
+		}		
+		if(bus.getQGenLimit() != null){
+			bean.qmax = bus.getQGenLimit().getMax();
+			bean.qmin = bus.getQGenLimit().getMin();
+		}
+		
+		/*if (bus.getRemoteQBus() != null)
+			if(bus.getRemoteQBus().getRemoteBus() != null){
+				String remoteBusId = bus.getRemoteQBus().getRemoteBus().getId();
+				bean.remoteVControlBusId = remoteBusId;
+			}*/			
 
 		bean.load_code = bus.isConstPLoad() ? AclfBusBean.LoadCode.ConstP :
 			(bus.isConstZLoad() ? AclfBusBean.LoadCode.ConstZ : 
 				(bus.isConstILoad() ? AclfBusBean.LoadCode.ConstI : 
 					AclfBusBean.LoadCode.NonLoad));
 
-		Complex load = bus.getNetLoadResults();
-		bean.load = new ComplexBean(format(load));
+		/*Complex load = bus.getNetLoadResults();
+		bean.load = new ComplexBean(format(load));*/
 		
+		double loadp = bus.getLoadP();
+		double loadq = bus.getLoadQ();
+		bean.load = new ComplexBean(format(new Complex(loadp, loadq)));
+				
 		Complex sh = bus.getShuntY();
 		bean.shunt = new ComplexBean(format(sh));
 		
@@ -117,20 +141,8 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 		if(bus.getZone() != null){
 			bean.zone = bus.getZone().getNumber();
 			bean.zoneName = bus.getZone().getName();
-		}
+		}		
 		
-		// map gen data
-		for (AclfGen g: bus.getGenList()){
-			AclfGenBean gbean = new AclfGenBean();
-			mapAclfGenData(g, gbean);				
-			bean.gen_list.add(gbean);
-		}
-		// map load data
-		for(AclfLoad ld: bus.getLoadList()){
-			AclfLoadBean ldb = new AclfLoadBean();
-			mapAclfLoadData(ld, ldb);			
-			bean.load_list.add(ldb);
-		}
 		// map switched shunt data
 		if (bus.getSwitchedShunt() != null) {
 			SwitchedShunt ss = bus.getSwitchedShunt();
@@ -179,7 +191,7 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 		else if (branch.getBranchCode() == AclfBranchCode.XFORMER ){
 			AclfXformer xfr = branch.toXfr();			
 			bean.ratio.f = xfr.getFromTurnRatio();
-			bean.ratio.t = xfr.getToTurnRatio();	
+			bean.ratio.t = xfr.getToTurnRatio();				
 			if(branch.getTapControl() != null){
 				TapControl tap = branch.getTapControl();
 				XfrTapControlBean tapBean = new XfrTapControlBean();
@@ -190,8 +202,10 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 			AclfPSXformer xfr = branch.toPSXfr();			
 			bean.ratio.f = xfr.getFromTurnRatio();
 			bean.ratio.t = xfr.getToTurnRatio();	
+			bean.ang.f = branch.getFromPSXfrAngle();
+			bean.ang.t = branch.getToPSXfrAngle();
 			if(branch.getPSXfrPControl() != null){
-				PSXfrPControl tap = branch.getPSXfrPControl();
+				PSXfrPControl tap = branch.getPSXfrPControl();				
 				PsXfrTapControlBean tb = new PsXfrTapControlBean();
 				bean.psXfrTapControlBean = tb;
 				mapPsXfrData(tap, tb);
@@ -208,51 +222,45 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 		ssb.controlMode = ss.getControlMode() == VarCompensatorControlMode.CONTINUOUS? VarCompensatorControlModeBean.Continuous:
 			ss.getControlMode() == VarCompensatorControlMode.DISCRETE? VarCompensatorControlModeBean.Discrete:
 				VarCompensatorControlModeBean.Fixed;
-		ssb.remoteBusId = ss.getRemoteBus().getId();
-		ssb.vmax = ss.getDesiredVoltageRange().getMax();
-		ssb.vmin = ss.getDesiredVoltageRange().getMin();
+		if(ss.getRemoteBus() != null)
+			ssb.remoteBusId = ss.getRemoteBus().getId();
+		if(ss.getDesiredVoltageRange() != null){
+			ssb.vmax = ss.getDesiredVoltageRange().getMax();
+			ssb.vmin = ss.getDesiredVoltageRange().getMin();
+		}
+		if(ss.getQLimit() != null){
+			ssb.qmax = ss.getQLimit().getMax();
+			ssb.qmin = ss.getQLimit().getMin();
+		}
 		for(QBank qb: ss.getVarBankArray()){
 			QBankBean qbb =  new QBankBean();
 			qbb.step = qb.getSteps();
 			qbb.UnitQMvar = qb.getUnitQMvar();
 			ssb.varBankList.add(qbb);
 		}
+		ssb.vSpecified = ss.getVSpecified();
 		
-	}
+	}	
 
-	private static void mapAclfGenData(AclfGen g, AclfGenBean gbean) {
-		gbean.pgen = g.getGen().getReal();
-		gbean.qgen = g.getGen().getImaginary();
-		gbean.pmax = g.getPGenLimit().getMax();
-		gbean.pmin = g.getPGenLimit().getMin();
-		gbean.qmax = g.getQGenLimit().getMax();
-		gbean.qmin = g.getQGenLimit().getMin();
-		gbean.remoteVControlBusId = g.getRemoteVControlBusId();
-		gbean.scheduledVol = g.getDesiredVoltMag();
-		gbean.status = g.isStatus() == true? 1 : 0;
-		gbean.cirId = g.getId();		
-	}
-
-	private static void mapAclfLoadData(AclfLoad ld, AclfLoadBean ldb) {
-		ldb.cirId = ld.getId();
-		ldb.status = ld.isStatus() == true? 1 : 0;
-		ldb.constIload = new ComplexBean(ld.getLoadCI().getReal(), ld.getLoadCI().getImaginary());
-		ldb.constPload = new ComplexBean(ld.getLoadCP().getReal(), ld.getLoadCP().getImaginary());
-		ldb.constZload = new ComplexBean(ld.getLoadCZ().getReal(), ld.getLoadCZ().getImaginary());			
-	}
 	
 	private static void mapPsXfrData(PSXfrPControl tap, PsXfrTapControlBean tb) {
 		tb.controlOnFromSide = tap.isControlOnFromSide();
 		tb.controlType = tap.getFlowControlType()==AdjControlType.POINT_CONTROL? TapControlTypeBean.Point_Control:
 			TapControlTypeBean.Range_Control;
 		tb.desiredControlTarget = tap.getPSpecified();
-		tb.lowerLimit = tap.getControlRange().getMin();
-		tb.upperLimit = tap.getControlRange().getMax();
-		tb.maxAngle = tap.getAngLimit().getMax();
-		tb.minAngle = tap.getAngLimit().getMin();
-		tb.measuredOnFromSide = tap.isMeteredOnFromSide();
-		tb.maxTap = tap.getControlLimit().getMax();
-		tb.minTap = tap.getControlLimit().getMin();
+		if(tap.getControlRange() != null){
+			tb.lowerLimit = tap.getControlRange().getMin();
+			tb.upperLimit = tap.getControlRange().getMax();
+		}
+		if(tap.getAngLimit() != null){
+			tb.maxAngle = Math.toDegrees(tap.getAngLimit().getMax());
+			tb.minAngle = Math.toDegrees(tap.getAngLimit().getMin());
+		}
+		if(tap.getControlLimit() != null){
+			tb.maxTap = tap.getControlLimit().getMax();
+			tb.minTap = tap.getControlLimit().getMin();
+		}
+		tb.measuredOnFromSide = tap.isMeteredOnFromSide();		
 		tb.status = tap.isStatus() == true? 1: 0;		
 	}
 
@@ -270,10 +278,14 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 		tapBean.controlOnFromSide = tap.isControlOnFromSide();
 		tapBean.controlType = tap.getFlowControlType()== AdjControlType.POINT_CONTROL? TapControlTypeBean.Point_Control:
 			TapControlTypeBean.Range_Control;
-		tapBean.lowerLimit = tap.getControlRange().getMin();
-		tapBean.upperLimit = tap.getControlRange().getMax();
-		tapBean.maxTap = tap.getControlLimit().getMax();
-		tapBean.minTap = tap.getControlLimit().getMin();
+		if(tap.getControlRange() != null){
+			tapBean.lowerLimit = tap.getControlRange().getMin();
+			tapBean.upperLimit = tap.getControlRange().getMax();
+		}
+		if(tap.getControlLimit() != null){
+			tapBean.maxTap = tap.getControlLimit().getMax();
+			tapBean.minTap = tap.getControlLimit().getMin();
+		}		
 		tapBean.measuredOnFromSide = tap.isMeteredOnFromSide();
 		tapBean.status = tap.isStatus() == true? 1: 0;
 		tapBean.steps = tap.getTapSteps();

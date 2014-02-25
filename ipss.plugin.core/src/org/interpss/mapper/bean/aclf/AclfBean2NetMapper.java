@@ -33,8 +33,6 @@ import org.interpss.datamodel.bean.BaseBranchBean;
 import org.interpss.datamodel.bean.aclf.AclfBranchBean;
 import org.interpss.datamodel.bean.aclf.AclfBusBean;
 import org.interpss.datamodel.bean.aclf.AclfNetBean;
-import org.interpss.datamodel.bean.aclf.adj.AclfGenBean;
-import org.interpss.datamodel.bean.aclf.adj.AclfLoadBean;
 import org.interpss.datamodel.bean.aclf.adj.BaseTapControlBean.TapControlTypeBean;
 import org.interpss.datamodel.bean.aclf.adj.PsXfrTapControlBean;
 import org.interpss.datamodel.bean.aclf.adj.QBankBean;
@@ -61,6 +59,8 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adj.AdjControlType;
 import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.adj.QBank;
+import com.interpss.core.aclf.adj.RemoteQBus;
+import com.interpss.core.aclf.adj.RemoteQControlType;
 import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.adj.VarCompensatorControlMode;
@@ -160,24 +160,24 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 		
 		bus.setBaseVoltage(busBean.base_v*1000);
 		
+		bus.setVoltage(busBean.v_mag, Math.toRadians(busBean.v_ang));
+		bus.setGenP(busBean.gen.re);
+		bus.setGenQ(busBean.gen.im);		
+		
 		if (busBean.gen_code != null) {
 			if (busBean.gen_code==AclfBusBean.GenCode.PQ) {
 				bus.setGenCode(AclfGenCode.GEN_PQ);
-				AclfPQGenBus pqBus = bus.toPQBus();
-				if(busBean.gen_list.size() == 0){ // no contributed gen is modeled
-					if(busBean.gen != null){					
-						pqBus.setGen(busBean.gen.toComplex());
-					}
-				}
+				/*AclfPQGenBus pqBus = bus.toPQBus();
+				if(busBean.gen != null){					
+					pqBus.setGen(busBean.gen.toComplex());
+				}*/
 								    
 			}
 			else if (busBean.gen_code==AclfBusBean.GenCode.PV) {
 				bus.setGenCode(AclfGenCode.GEN_PV);
 				AclfPVGenBus pvBus = bus.toPVBus();
-				if(busBean.gen_list.size() == 0){ // no contributed gen is modeled
-					if(busBean.gen != null)
-					      pvBus.setGenP(busBean.gen.re);
-				}
+				/*if(busBean.gen != null)
+				      pvBus.setGenP(busBean.gen.re);*/
 				
 				pvBus.setDesiredVoltMag(busBean.vDesired_mag);				
 			}
@@ -185,26 +185,34 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 				bus.setGenCode(AclfGenCode.SWING);
 				AclfSwingBus swingBus = bus.toSwingBus();
 				swingBus.setDesiredVoltMag(busBean.vDesired_mag);
-				swingBus.setDesiredVoltAngDeg(busBean.vDesired_ang);
+				swingBus.setDesiredVoltAngDeg(Math.toRadians(busBean.vDesired_ang));
 			}
 			else {
 				bus.setGenCode(AclfGenCode.NON_GEN);
-				bus.setVoltageMag(busBean.v_mag);
-				bus.setVoltageAng(Math.toRadians(busBean.v_ang));
-			}
-			
-			// gen data
-			for(AclfGenBean genBean : busBean.gen_list){
-				String id = genBean.cirId;
-				AclfGen gen = CoreObjectFactory.createAclfGen(id);
-				gen.setStatus(genBean.status == 1? true: false);
-				gen.setDesiredVoltMag(genBean.scheduledVol);
-				gen.setGen(new Complex(genBean.pgen, genBean.qgen));
-				gen.setPGenLimit(new LimitType(genBean.pmax,genBean.pmin));
-				gen.setQGenLimit(new LimitType(genBean.qmax,genBean.qmin));
-				gen.setRemoteVControlBusId(genBean.remoteVControlBusId);
-				bus.getGenList().add(gen);
+				/*bus.setVoltageMag(busBean.v_mag);
+				bus.setVoltageAng(Math.toRadians(busBean.v_ang));*/
 			}			
+			
+			//bus.setDesiredVoltMag(busBean.vDesired_mag);
+			//bus.setDesiredVoltAng(busBean.vDesired_ang);
+			
+			bus.setPGenLimit(new LimitType(busBean.pmax,busBean.pmin));
+			bus.setQGenLimit(new LimitType(busBean.qmax,busBean.qmin));
+			
+			/*String remoteBusId = busBean.remoteVControlBusId;
+			if( !remoteBusId.equals("")){
+				RemoteQBus reQBus;
+				try {
+					reQBus = CoreObjectFactory.createRemoteQBus(
+							bus, RemoteQControlType.BUS_VOLTAGE, remoteBusId);
+					reQBus.setAccFactor(0.5);
+				} catch (InterpssException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+			}*/
+			
 			
 		}
 		
@@ -213,41 +221,9 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 				(busBean.load_code==AclfBusBean.LoadCode.ConstI? AclfLoadCode.CONST_I : 
 					(busBean.load_code==AclfBusBean.LoadCode.ConstZ? AclfLoadCode.CONST_Z : 
 						AclfLoadCode.NON_LOAD)));
-			if (busBean.load != null) {
-				if(busBean.load_list.size() == 0){ // no contributed load is modeled
-					bus.setLoadPQ(new Complex(busBean.load.re, busBean.load.im));
-				}
-				
-			}
-		}
+			bus.setLoadPQ(new Complex(busBean.load.re, busBean.load.im));
+		}	
 		
-		// load data
-		for (AclfLoadBean loadbean : busBean.load_list) {
-			String id = loadbean.cirId;
-			AclfLoad ld = CoreObjectFactory.createAclfLoad(id);
-			ld.setStatus(loadbean.status == 1 ? true : false);
-			AclfLoadCode code = AclfLoadCode.NON_LOAD;
-			if (loadbean.constPload != null) {
-				code = code == AclfLoadCode.NON_LOAD ? AclfLoadCode.CONST_P
-						: AclfLoadCode.ZIP;
-				ld.setLoadCP(new Complex(loadbean.constPload.re,
-						loadbean.constPload.im));
-			}
-			if (loadbean.constIload != null) {
-				code = code == AclfLoadCode.NON_LOAD ? AclfLoadCode.CONST_I
-						: AclfLoadCode.ZIP;
-				ld.setLoadCI(new Complex(loadbean.constIload.re,
-						loadbean.constIload.im));
-			}
-			if (loadbean.constZload != null) {
-				code = code == AclfLoadCode.NON_LOAD ? AclfLoadCode.CONST_Z
-						: AclfLoadCode.ZIP;
-				ld.setLoadCZ(new Complex(loadbean.constZload.re,
-						loadbean.constZload.im));
-			}
-			ld.setCode(code);
-			bus.getLoadList().add(ld);
-		}
 		
 		if(busBean.shunt != null){
 			bus.setShuntY(new Complex(busBean.shunt.re, busBean.shunt.im));
@@ -256,14 +232,17 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 		
 		if (busBean.switchShunt != null){
 			SwitchShuntBean ssb = busBean.switchShunt;
+			
 			try {
 				SwitchedShunt ss = CoreObjectFactory.createSwitchedShunt(bus);
+				ss.setVSpecified(ssb.vSpecified);
 				ss.setBInit(ssb.bInit);
 				VarCompensatorControlMode mode = ssb.controlMode == VarCompensatorControlModeBean.Continuous?VarCompensatorControlMode.CONTINUOUS:
 					ssb.controlMode == VarCompensatorControlModeBean.Discrete?VarCompensatorControlMode.DISCRETE:
 						VarCompensatorControlMode.FIXED;
 				ss.setControlMode(mode);
 				ss.setDesiredVoltageRange(new LimitType(ssb.vmax, ssb.vmin));
+				ss.setQLimit(new LimitType(ssb.qmax, ssb.qmin));
 				for(QBankBean qbb: ssb.varBankList){
 					QBank qb = CoreObjectFactory.createQBank(ss);
 					qb.setSteps(qbb.step);
@@ -307,19 +286,17 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 			branch.setZ(branchBean.z.toComplex());
 		if (branchBean.shunt_y != null)
 			branch.setHShuntY(new Complex(0.0, branchBean.shunt_y.im*0.5));
-		if (branch.getBranchCode() == AclfBranchCode.XFORMER ) {
-			AclfXformer xfr = branch.toXfr();
-			if (branchBean.ratio != null) {
-				xfr.setFromTurnRatio(branchBean.ratio.f);
-				xfr.setToTurnRatio(branchBean.ratio.t);
-			}
+		if (branchBean.ratio != null) {
+			branch.setFromTurnRatio(branchBean.ratio.f);
+			branch.setToTurnRatio(branchBean.ratio.t);
+		}
+		if (branchBean.ang != null){
+			branch.setFromPSXfrAngle(branchBean.ang.f);
+			branch.setToPSXfrAngle(branchBean.ang.t);
+		}
+		if (branch.getBranchCode() == AclfBranchCode.XFORMER ) {			
 			setXfrData(branchBean, branch, aclfNet);
-		}else if (branch.getBranchCode() == AclfBranchCode.PS_XFORMER) {
-			AclfPSXformer psXfr = branch.toPSXfr();
-			if(branchBean.ang != null){
-				psXfr.setFromAngle(branchBean.ang.f);
-				psXfr.setToAngle(branchBean.ang.t);
-			}
+		}else if (branch.getBranchCode() == AclfBranchCode.PS_XFORMER) {			
 			setPsXfrData(branchBean, branch, aclfNet);
 		}
 		// rating		
@@ -379,7 +356,7 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 					PSXfrPControl psxfr = CoreObjectFactory.createPSXfrPControl(branch, AdjControlType.POINT_CONTROL);
 					psxfr.setStatus(tcb.status == 1? true : false);
 					psxfr.setPSpecified(tcb.desiredControlTarget);
-					psxfr.setAngLimit(new LimitType(tcb.maxAngle, tcb.minAngle));
+					psxfr.setAngLimit(new LimitType(Math.toRadians(tcb.maxAngle), Math.toRadians(tcb.minAngle)));
 					psxfr.setControlOnFromSide(tcb.controlOnFromSide);
 					psxfr.setMeteredOnFromSide(tcb.measuredOnFromSide);
 					
@@ -389,7 +366,7 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 					psxfr.setStatus(tcb.status == 1? true : false);
 					psxfr.setControlRange(new LimitType(tcb.upperLimit, tcb.lowerLimit));
 					psxfr.setPSpecified(tcb.desiredControlTarget);
-					psxfr.setAngLimit(new LimitType(tcb.maxAngle, tcb.minAngle));
+					psxfr.setAngLimit(new LimitType(Math.toRadians(tcb.maxAngle), Math.toRadians(tcb.minAngle)));
 					psxfr.setControlOnFromSide(tcb.controlOnFromSide);
 					psxfr.setMeteredOnFromSide(tcb.measuredOnFromSide);
 				}
