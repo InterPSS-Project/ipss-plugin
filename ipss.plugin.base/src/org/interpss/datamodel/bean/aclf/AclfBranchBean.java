@@ -62,9 +62,19 @@ public class AclfBranchBean extends BaseBranchBean {
 		if (this.ang.compareTo(bean.ang) != 0) {
 			logCompareMsg(str + "ang is not equal");	eql = 1; }
 		
-		if (this.xfrTapControlBean.compareTo(bean.xfrTapControlBean) != 0) eql = 1;
+		if (this.xfrTapControlBean != null && bean.xfrTapControlBean == null)
+			eql = 1;
+		if (this.xfrTapControlBean == null && bean.xfrTapControlBean != null)
+			eql = 1;
+		if (this.xfrTapControlBean != null && bean.xfrTapControlBean != null)
+			if (this.xfrTapControlBean.compareTo(bean.xfrTapControlBean) != 0) eql = 1;
 		
-		if (this.psXfrTapControlBean.compareTo(bean.psXfrTapControlBean) != 0) eql = 1;
+		if (this.psXfrTapControlBean != null && bean.psXfrTapControlBean == null)
+			eql = 1;
+		if (this.psXfrTapControlBean == null && bean.psXfrTapControlBean != null)
+			eql = 1;
+		if (this.psXfrTapControlBean != null && bean.psXfrTapControlBean != null)
+			if (this.psXfrTapControlBean.compareTo(bean.psXfrTapControlBean) != 0) eql = 1;
 
 		return eql;
 	}	

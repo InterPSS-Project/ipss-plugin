@@ -27,7 +27,11 @@ package org.interpss.plugin.beanModel;
 import static org.interpss.CorePluginFunction.AclfResultBusStyle;
 import static org.junit.Assert.assertTrue;
 
+import java.util.logging.Level;
+
+import org.ieee.odm.common.ODMLogger;
 import org.interpss.CorePluginTestSetup;
+import org.interpss.IpssCorePlugin;
 import org.interpss.datamodel.bean.BaseBranchBean.BranchCode;
 import org.interpss.datamodel.bean.aclf.AclfBranchResultBean;
 import org.interpss.datamodel.bean.aclf.AclfBusBean;
@@ -38,6 +42,8 @@ import org.interpss.mapper.bean.aclf.AclfNet2BeanMapper;
 import org.interpss.mapper.bean.aclf.AclfNet2ResultBeanMapper;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
+import org.interpss.pssl.plugin.IpssAdapter;
+import org.interpss.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.Test;
 
 import com.interpss.CoreObjectFactory;
@@ -186,6 +192,41 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 	public void testCase2() throws Exception {
   		AclfNetwork net = CoreObjectFactory.createAclfNetwork();
 		SampleCases.load_LF_5BusSystem(net);
+		
+		// map AclfNet to AclfNetBean
+		AclfNetBean netBean = new AclfNet2BeanMapper().map2Model(net);	
+		
+		// map AclfNetBean back to an AclfNet object
+		AclfNetwork aclfNet = new AclfBean2NetMapper()
+			.map2Model(netBean)
+			.getAclfNet();		
+		
+		// map AclfNet to AclfNetBean
+		AclfNetBean netBean1 = new AclfNet2BeanMapper().map2Model(aclfNet);		
+			
+		/*
+		 * compare two AclfNetBean objects
+		 * 
+		 *    netBean - mapped from the original AclfNet object net
+		 *    netBean1 - mapped from aclfNet object, which is mapped from the netBean object
+		 */
+		assertTrue(netBean1.compareTo(netBean) == 0);
+	}
+	
+	@Test
+	public void testCase_2WPsxfr() throws Exception {
+		IpssCorePlugin.init();
+        //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
+		ODMLogger.getLogger().setLevel(Level.WARNING);
+
+		AclfNetwork net = IpssAdapter.importNet("testData/adpter/psse/v30/SixBus_2WPsXfr.raw")
+					.setFormat(IpssAdapter.FileFormat.PSSE)
+					.setPsseVersion(PsseVersion.PSSE_30)
+					.load()
+					.getImportedObj();
+		
+  		//AclfNetwork net = CoreObjectFactory.createAclfNetwork();
+		//SampleCases.load_LF_5BusSystem(net);
 		
 		// map AclfNet to AclfNetBean
 		AclfNetBean netBean = new AclfNet2BeanMapper().map2Model(net);	

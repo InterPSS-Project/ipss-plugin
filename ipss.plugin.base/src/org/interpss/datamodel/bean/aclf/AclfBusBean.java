@@ -65,7 +65,7 @@ public class AclfBusBean  extends BaseBusBean {
 		qmax, // max MVAR output
 		qmin; // min MVAR output	
 
-	public String remoteVControlBusId;  // remote control bus id	
+	public String remoteVControlBusId = "";  // remote control bus id	
 	
 	
 	public SwitchShuntBean switchShunt; // switch shunt bean connected to the bus
@@ -101,7 +101,14 @@ public class AclfBusBean  extends BaseBusBean {
 		if (!NumericUtil.equals(this.qmin, bean.qmin, PU_ERR)) {
 			logCompareMsg(str + "qmin is not equal, " + this.qmin + ", " + bean.qmin); eql = 1;	}
 				
-		if(this.switchShunt.compareTo(bean.switchShunt) != 0 ) eql = 1;
+		if(this.switchShunt == null && bean.switchShunt != null)
+			eql = 1;
+		
+		if(this.switchShunt != null && bean.switchShunt == null)
+			eql = 1;
+		
+		if(this.switchShunt != null && bean.switchShunt != null)		
+			if(this.switchShunt.compareTo(bean.switchShunt) != 0 ) eql = 1;
 		
 
 		return eql;
