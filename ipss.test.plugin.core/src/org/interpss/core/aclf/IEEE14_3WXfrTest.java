@@ -55,7 +55,9 @@ public class IEEE14_3WXfrTest extends CorePluginTestSetup {
 		xfr3W.setZ(new Complex(0.0, 0.01), new Complex(0.0, 0.03), new Complex(0.0, 0.01));
 		
 		AclfBus bus = net.getBusList().get(2);
-		bus.getRemoteQBus();
+  		assertTrue(bus.isPVBusLimit());		
+  		assertTrue(!bus.isRemoteQBus());		
+  		//bus.getRemoteQBus();
 		
 		//System.out.println(net.net2String());
 		
