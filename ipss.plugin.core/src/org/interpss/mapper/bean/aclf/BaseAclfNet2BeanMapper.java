@@ -109,11 +109,11 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 			bean.qmin = bus.getQGenLimit().getMin();
 		}
 		
-		/*if (bus.getRemoteQBus() != null)
+		if (bus.getRemoteQBus() != null)
 			if(bus.getRemoteQBus().getRemoteBus() != null){
 				String remoteBusId = bus.getRemoteQBus().getRemoteBus().getId();
 				bean.remoteVControlBusId = remoteBusId;
-			}*/			
+			}			
 
 		bean.load_code = bus.isConstPLoad() ? AclfBusBean.LoadCode.ConstP :
 			(bus.isConstZLoad() ? AclfBusBean.LoadCode.ConstZ : 
@@ -228,6 +228,7 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 			ssb.vmax = ss.getDesiredVoltageRange().getMax();
 			ssb.vmin = ss.getDesiredVoltageRange().getMin();
 		}
+		
 		if(ss.getQLimit() != null){
 			ssb.qmax = ss.getQLimit().getMax();
 			ssb.qmin = ss.getQLimit().getMin();

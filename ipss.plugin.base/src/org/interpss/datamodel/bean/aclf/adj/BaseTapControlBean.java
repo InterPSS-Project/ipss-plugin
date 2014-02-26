@@ -48,9 +48,7 @@ public class BaseTapControlBean extends BaseJSONBean {
 		upperLimit,				// tap control target upper limit (range control)
 		lowerLimit,				// tap control target lower limit (range control)
 		desiredControlTarget,	// tap control targeted value (point control)
-		stepSize;				// tap control step size
-	
-	
+		stepSize;				// tap control step size	
 	
 	public boolean 
 		measuredOnFromSide,		// mvar flow is measured on from side
@@ -65,18 +63,16 @@ public class BaseTapControlBean extends BaseJSONBean {
 		
 		BaseTapControlBean bean = (BaseTapControlBean)b;
 
-		String str = "ID: " + this.id + " BaseTapControlBean.";
-		
-		/*if (this.ratio.compareTo(bean.ratio) != 0) {
-			logCompareMsg(str + "ratio is not equal");	eql = 1; }
-
-		if (this.ang.compareTo(bean.ang) != 0) {
-			logCompareMsg(str + "ang is not equal");	eql = 1; }*/
+		String str = "ID: " + this.id + " BaseTapControlBean.";		
 		
 		if (this.status != bean.status) {
 			logCompareMsg(str + "status is not equal, " + this.status + ", " + bean.status); eql = 1; }
 		
 		// compare double
+		if (!NumericUtil.equals(this.maxTap, bean.maxTap, PU_ERR)) {
+			logCompareMsg(str + "maxTap is not equal, " + this.maxTap + ", " + bean.maxTap); eql = 1; }
+		if (!NumericUtil.equals(this.minTap, bean.minTap, PU_ERR)) {
+			logCompareMsg(str + "minTap is not equal, " + this.minTap + ", " + bean.minTap); eql = 1;	}
 		if (!NumericUtil.equals(this.upperLimit, bean.upperLimit, PU_ERR)) {
 			logCompareMsg(str + "upperLimit is not equal, " + this.upperLimit + ", " + bean.upperLimit); eql = 1; }
 		if (!NumericUtil.equals(this.lowerLimit, bean.lowerLimit, PU_ERR)) {

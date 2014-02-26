@@ -96,6 +96,12 @@ public class BaseBusBean extends BaseJSONBean {
 		if (this.zone != bean.zone) {
 			logCompareMsg(str + "zone is not equal, " + this.zone + ", " + bean.zone); eql = 1; }
 		
+		if (!this.areaName.equals(bean.areaName))
+			logCompareMsg(str + "area name is not equal, " + this.areaName + ", " + bean.areaName); eql = 1; 
+		if (!this.zoneName.equals(bean.zoneName))
+			logCompareMsg(str + "zone name is not equal, " + this.zoneName + ", " + bean.zoneName); eql = 1; 
+
+		
 		return eql;
 	}	
 
