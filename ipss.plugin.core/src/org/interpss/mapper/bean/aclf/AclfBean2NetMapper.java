@@ -199,7 +199,7 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 			bus.setPGenLimit(new LimitType(busBean.pmax,busBean.pmin));
 			bus.setQGenLimit(new LimitType(busBean.qmax,busBean.qmin));
 			
-			/*String remoteBusId = busBean.remoteVControlBusId;
+			String remoteBusId = busBean.remoteVControlBusId;
 			if( !remoteBusId.equals("")){
 				RemoteQBus reQBus;
 				try {
@@ -211,7 +211,7 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 					e.printStackTrace();
 				}
 				
-			}*/
+			}
 			
 			
 		}
