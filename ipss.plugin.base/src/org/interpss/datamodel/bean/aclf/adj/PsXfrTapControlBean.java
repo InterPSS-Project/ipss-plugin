@@ -11,6 +11,8 @@ public class PsXfrTapControlBean extends BaseTapControlBean{
 		maxAngle,					// max angle
 		minAngle;					// min angle
 	
+	public boolean flowFrom2To = true;
+	
 	public PsXfrTapControlBean(){}
 	
 	@Override public int compareTo(BaseJSONBean b) {
@@ -25,7 +27,9 @@ public class PsXfrTapControlBean extends BaseTapControlBean{
 			logCompareMsg(str + "maxAngle is not equal, " + this.maxAngle + ", " + bean.maxAngle); eql = 1; }
 		if (!NumericUtil.equals(this.minAngle, bean.minAngle, PU_ERR)) {
 			logCompareMsg(str + "minAngle is not equal, " + this.minAngle + ", " + bean.minAngle); eql = 1; }
-		
+		if (this.flowFrom2To != bean.flowFrom2To){
+			logCompareMsg(str + "flowFrom2To is not equal, " + this.flowFrom2To + ", " + bean.flowFrom2To); eql = 1; }
+			
 		return eql;
 	}	
 	
