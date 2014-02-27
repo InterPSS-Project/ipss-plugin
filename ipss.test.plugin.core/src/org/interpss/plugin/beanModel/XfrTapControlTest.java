@@ -24,27 +24,14 @@
 
 package org.interpss.plugin.beanModel;
 
-import static org.interpss.CorePluginFunction.AclfResultBusStyle;
 import static org.junit.Assert.assertTrue;
 
-import java.util.logging.Level;
-
-import org.ieee.odm.common.ODMLogger;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.IpssCorePlugin;
-import org.interpss.datamodel.bean.BaseBranchBean.BranchCode;
-import org.interpss.datamodel.bean.aclf.AclfBranchResultBean;
-import org.interpss.datamodel.bean.aclf.AclfBusBean;
 import org.interpss.datamodel.bean.aclf.AclfNetBean;
-import org.interpss.datamodel.bean.aclf.AclfNetResultBean;
 import org.interpss.mapper.bean.aclf.AclfBean2NetMapper;
 import org.interpss.mapper.bean.aclf.AclfNet2BeanMapper;
-import org.interpss.mapper.bean.aclf.AclfNet2ResultBeanMapper;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.numeric.util.NumericUtil;
-import org.interpss.pssl.plugin.IpssAdapter;
-import org.interpss.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.Test;
 
 import com.interpss.CoreObjectFactory;
@@ -91,10 +78,12 @@ public class XfrTapControlTest extends CorePluginTestSetup {
 		//      gen       : 1.12 + 1.03i pu   111,529.19 + 103,059.25i kva
 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-1.1153)<0.0001);
 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-1.0306)<0.0001);
-
-		//assertTrue(Math.abs(branch.getToTurnRatio()-1.06717)<0.0001);
+		
+		assertTrue(Math.abs(branch.getToTurnRatio()-1.06717)<0.0001);
 		assertTrue(tap.isActive());
-
+		
+		//tap = aclfNet.getTapControlList().get(0);
+		
 		assertTrue(Math.abs(tap.getVcBus().getVoltageMag()-0.9)<0.0001);
 		assertTrue(Math.abs(aclfNet.getBus("0002").getVoltageMag()-0.9)<0.0001);
 	}

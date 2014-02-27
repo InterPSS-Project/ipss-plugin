@@ -108,12 +108,15 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 			bean.qmax = bus.getQGenLimit().getMax();
 			bean.qmin = bus.getQGenLimit().getMin();
 		}
+		if (bus.isRemoteQBus()){
+			if (bus.getRemoteQBus() != null)
+				if(bus.getRemoteQBus().getRemoteBus() != null){
+					String remoteBusId = bus.getRemoteQBus().getRemoteBus().getId();
+					bean.remoteVControlBusId = remoteBusId;
+				}
+		}
 		
-		if (bus.getRemoteQBus() != null)
-			if(bus.getRemoteQBus().getRemoteBus() != null){
-				String remoteBusId = bus.getRemoteQBus().getRemoteBus().getId();
-				bean.remoteVControlBusId = remoteBusId;
-			}			
+				
 
 		bean.load_code = bus.isConstPLoad() ? AclfBusBean.LoadCode.ConstP :
 			(bus.isConstZLoad() ? AclfBusBean.LoadCode.ConstZ : 
@@ -249,6 +252,7 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 		tb.controlType = tap.getFlowControlType()==AdjControlType.POINT_CONTROL? TapControlTypeBean.Point_Control:
 			TapControlTypeBean.Range_Control;
 		tb.desiredControlTarget = tap.getPSpecified();
+		tb.flowFrom2To = tap.isFlowFrom2To();
 		if(tap.getControlRange() != null){
 			tb.lowerLimit = tap.getControlRange().getMin();
 			tb.upperLimit = tap.getControlRange().getMax();

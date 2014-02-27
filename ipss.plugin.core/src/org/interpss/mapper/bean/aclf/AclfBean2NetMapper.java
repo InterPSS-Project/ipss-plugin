@@ -154,8 +154,10 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 		bus.setVLimit(new LimitType(busBean.vmax, busBean.vmin));
 		
 		Area area = CoreObjectFactory.createArea(busBean.area, aclfNet);
-		bus.setArea(area);		
+		area.setName(busBean.areaName);
+		bus.setArea(area);			
 		Zone zone = CoreObjectFactory.createZone(busBean.zone, aclfNet);
+		zone.setName(busBean.zoneName);
 		bus.setZone(zone);
 		
 		bus.setBaseVoltage(busBean.base_v*1000);
@@ -350,7 +352,7 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 	private void setPsXfrData(AclfBranchBean branchBean, AclfBranch branch,AclfNetwork aclfNet){		
 		// control/adjustment
 		if(branchBean.psXfrTapControlBean != null){
-			PsXfrTapControlBean tcb = branchBean.psXfrTapControlBean;
+			PsXfrTapControlBean tcb = branchBean.psXfrTapControlBean;			
 			try{				
 				if(tcb.controlType == TapControlTypeBean.Point_Control){
 					PSXfrPControl psxfr = CoreObjectFactory.createPSXfrPControl(branch, AdjControlType.POINT_CONTROL);
@@ -359,7 +361,7 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 					psxfr.setAngLimit(new LimitType(Math.toRadians(tcb.maxAngle), Math.toRadians(tcb.minAngle)));
 					psxfr.setControlOnFromSide(tcb.controlOnFromSide);
 					psxfr.setMeteredOnFromSide(tcb.measuredOnFromSide);
-					
+					psxfr.setFlowFrom2To(tcb.flowFrom2To);
 					
 				}else{ // range control
 					PSXfrPControl psxfr = CoreObjectFactory.createPSXfrPControl(branch, AdjControlType.RANGE_CONTROL);
@@ -369,6 +371,7 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 					psxfr.setAngLimit(new LimitType(Math.toRadians(tcb.maxAngle), Math.toRadians(tcb.minAngle)));
 					psxfr.setControlOnFromSide(tcb.controlOnFromSide);
 					psxfr.setMeteredOnFromSide(tcb.measuredOnFromSide);
+					psxfr.setFlowFrom2To(tcb.flowFrom2To);
 				}
 			} catch (InterpssException e) {
 				ipssLogger.severe("Error in mapping PsXfr tap control data, " + e.toString());

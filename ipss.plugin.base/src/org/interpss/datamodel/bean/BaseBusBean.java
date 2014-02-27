@@ -58,8 +58,8 @@ public class BaseBusBean extends BaseJSONBean {
 		zone =1;				// bus zone number/id	
 	
 	public String
-		areaName,				// bus area name
-		zoneName;				// bus zone name
+		areaName = "",				// bus area name
+		zoneName = "";				// bus zone name
 		
 	public BaseBusBean() {}
 	
@@ -95,11 +95,11 @@ public class BaseBusBean extends BaseJSONBean {
 			logCompareMsg(str + "area is not equal, " + this.area + ", " + bean.area); eql = 1; }
 		if (this.zone != bean.zone) {
 			logCompareMsg(str + "zone is not equal, " + this.zone + ", " + bean.zone); eql = 1; }
-		
-		if (!this.areaName.equals(bean.areaName))
-			logCompareMsg(str + "area name is not equal, " + this.areaName + ", " + bean.areaName); eql = 1; 
-		if (!this.zoneName.equals(bean.zoneName))
-			logCompareMsg(str + "zone name is not equal, " + this.zoneName + ", " + bean.zoneName); eql = 1; 
+				
+		if (!this.areaName.equals(bean.areaName)){
+			logCompareMsg(str + "area name is not equal, " + this.areaName + ", " + bean.areaName); eql = 1; }
+		if (!this.zoneName.equals(bean.zoneName)){
+			logCompareMsg(str + "zone name is not equal, " + this.zoneName + ", " + bean.zoneName); eql = 1;} 
 
 		
 		return eql;
