@@ -141,7 +141,7 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 	 * SVC continuous adj mode, remote bus v adjustment, no limit violation
 	 */
 	@Test
-	public void contiModeRemoteBusTest_Bean() throws InterpssException {
+	public void contiModeRemoteBusTest() throws InterpssException {
   		AclfNetwork aclfNet = CoreObjectFactory.createAclfNetwork();
 		SampleCases.load_LF_5BusSystem(aclfNet);
 		//System.out.println(net.net2String());
@@ -162,11 +162,11 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 		branch.setZ(new Complex(0.0, 0.01));
 		
 		SwitchedShunt svc = CoreObjectFactory.createSwitchedShunt(bus6, VarCompensatorControlMode.CONTINUOUS);
-		svc.setVSpecified(0.9);// TODO: Mike, it seems the Vspecified does not work since bus1.getVoltageMag() = 1.0 
+		svc.setVSpecified(0.9);
 		svc.setQLimit(new LimitType(1.0, 0.0));
 		svc.setRemoteBus(bus1);		
 		
-		System.out.println(aclfNet.net2String());		
+		//System.out.println(aclfNet.net2String());		
 		
 		// map back and forth through the bean model
 		// map AclfNet to AclfNetBean
@@ -176,7 +176,7 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 		AclfNetwork net = new AclfBean2NetMapper().map2Model(netBean)
 				.getAclfNet();
 		
-		System.out.println(net.net2String());		
+		//System.out.println(net.net2String());		
 		
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm();
 
@@ -186,49 +186,13 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
   		assertTrue(net.isLfConverged());		
 		
   		//System.out.println(swing.getGenResults(UnitType.PU, net.getBaseKva()));
-  		System.out.println(bus1.getVoltageMag());
+  		bus1 = net.getBus("1");
+  		bus6 = net.getBus("6");
+  		//System.out.println(bus1.getVoltageMag());
 		assertTrue(Math.abs(bus1.getVoltageMag()-0.9)<0.001);
 		assertTrue(Math.abs(bus6.getSwitchedShunt().getQ()-0.18278)<0.0001);
 	}
 	
-	@Test
-	public void contiModeRemoteBusTest_NoBean() throws InterpssException {
-  		AclfNetwork net = CoreObjectFactory.createAclfNetwork();
-		SampleCases.load_LF_5BusSystem(net);
-		//System.out.println(net.net2String());
-	
-		/*
-		   LF Results : 
-		      voltage   : 0.86215 pu   11897.67835 v
-		      load      : 1.6000 + j0.8000 pu   160000.0000 + j80000.0000 kva
-		*/
-		AclfBus bus1 = net.getBus("1");
-
-		AclfBus bus6 = CoreObjectFactory.createAclfBus("6", net);
-		bus6.setBaseVoltage(bus1.getBaseVoltage());
-		
-		AclfBranch branch = CoreObjectFactory.createAclfBranch();
-		net.addBranch(branch, bus6.getId(), bus1.getId());
-		branch.setBranchCode(AclfBranchCode.LINE);
-		branch.setZ(new Complex(0.0, 0.01));
-		
-		SwitchedShunt svc = CoreObjectFactory.createSwitchedShunt(bus6, VarCompensatorControlMode.CONTINUOUS);
-		svc.setVSpecified(0.9);
-		svc.setQLimit(new LimitType(1.0, 0.0));
-		svc.setRemoteBus(bus1);		
-		
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm();
-
-	  	net.accept(algo);
-  		//System.out.println(net.net2String());
-	  	
-  		assertTrue(net.isLfConverged());		
-		
-  		//System.out.println(swing.getGenResults(UnitType.PU, net.getBaseKva()));
-  		System.out.println(bus1.getVoltageMag());
-		assertTrue(Math.abs(bus1.getVoltageMag()-0.9)<0.001);
-		assertTrue(Math.abs(bus6.getSwitchedShunt().getQ()-0.18278)<0.0001);
-	}
 	
 	@Test
 	public void beanModelVerification() throws Exception {
