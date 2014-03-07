@@ -43,9 +43,9 @@ public class AclfBranchBean extends BaseBranchBean {
 			ratio = new BranchValueBean(1.0,1.0),			// xfr branch turn ratio, it is assumed on the from bus side per PSSE
 			ang = new BranchValueBean(0.0,0.0);				// PsXfr shifting angle, in rad, it is assumed on the from bus side per PSSE
 	
-	public XfrTapControlBean xfrTapControlBean;					// control bean for xfr
+	public XfrTapControlBean xfrTapControl;					// control bean for xfr
 	
-	public PsXfrTapControlBean psXfrTapControlBean;				// control bean for phase shiter control
+	public PsXfrTapControlBean psXfrTapControl;				// control bean for phase shiter control
 	
 	public AclfBranchBean() { }
 	
@@ -62,19 +62,19 @@ public class AclfBranchBean extends BaseBranchBean {
 		if (this.ang.compareTo(bean.ang) != 0) {
 			logCompareMsg(str + "ang is not equal");	eql = 1; }
 		
-		if (this.xfrTapControlBean != null && bean.xfrTapControlBean == null)
+		if (this.xfrTapControl != null && bean.xfrTapControl == null)
 			eql = 1;
-		if (this.xfrTapControlBean == null && bean.xfrTapControlBean != null)
+		if (this.xfrTapControl == null && bean.xfrTapControl != null)
 			eql = 1;
-		if (this.xfrTapControlBean != null && bean.xfrTapControlBean != null)
-			if (this.xfrTapControlBean.compareTo(bean.xfrTapControlBean) != 0) eql = 1;
+		if (this.xfrTapControl != null && bean.xfrTapControl != null)
+			if (this.xfrTapControl.compareTo(bean.xfrTapControl) != 0) eql = 1;
 		
-		if (this.psXfrTapControlBean != null && bean.psXfrTapControlBean == null)
+		if (this.psXfrTapControl != null && bean.psXfrTapControl == null)
 			eql = 1;
-		if (this.psXfrTapControlBean == null && bean.psXfrTapControlBean != null)
+		if (this.psXfrTapControl == null && bean.psXfrTapControl != null)
 			eql = 1;
-		if (this.psXfrTapControlBean != null && bean.psXfrTapControlBean != null)
-			if (this.psXfrTapControlBean.compareTo(bean.psXfrTapControlBean) != 0) eql = 1;
+		if (this.psXfrTapControl != null && bean.psXfrTapControl != null)
+			if (this.psXfrTapControl.compareTo(bean.psXfrTapControl) != 0) eql = 1;
 
 		return eql;
 	}	

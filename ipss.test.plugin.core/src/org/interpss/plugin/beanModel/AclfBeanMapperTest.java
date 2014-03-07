@@ -30,6 +30,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.logging.Level;
 
 import org.ieee.odm.common.ODMLogger;
+import org.interpss.CorePluginObjFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.IpssCorePlugin;
 import org.interpss.datamodel.bean.BaseBranchBean.BranchCode;
@@ -37,6 +38,7 @@ import org.interpss.datamodel.bean.aclf.AclfBranchResultBean;
 import org.interpss.datamodel.bean.aclf.AclfBusBean;
 import org.interpss.datamodel.bean.aclf.AclfNetBean;
 import org.interpss.datamodel.bean.aclf.AclfNetResultBean;
+import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.mapper.bean.aclf.AclfBean2NetMapper;
 import org.interpss.mapper.bean.aclf.AclfNet2BeanMapper;
 import org.interpss.mapper.bean.aclf.AclfNet2ResultBeanMapper;
@@ -44,6 +46,8 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.pssl.plugin.IpssAdapter;
 import org.interpss.pssl.plugin.IpssAdapter.PsseVersion;
+import org.interpss.pssl.simu.IpssDclf;
+import org.interpss.pssl.simu.IpssDclf.DclfAlgorithmDSL;
 import org.junit.Test;
 
 import com.interpss.CoreObjectFactory;
@@ -273,5 +277,52 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 		assertTrue(bus.getGenQ() == 0.3);
 	}	
 	
+	@Test
+	public void testCase_IEEE14() throws Exception {
+		IpssCorePlugin.init();
+        //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
+		ODMLogger.getLogger().setLevel(Level.WARNING);
+
+		AclfNetwork net = CorePluginObjFactory
+					.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
+					.load("testData/adpter/ieee_format/ieee14.ieee")
+					.getAclfNet();
+  		
+		DclfAlgorithmDSL algoDsl = IpssDclf.createDclfAlgorithm(net, false)
+				.runDclfAnalysis();
+
+		
+		net = algoDsl.getAclfNetwork();
+		
+		// map AclfNet to AclfNetBean
+		AclfNetBean netBean = new AclfNet2BeanMapper().map2Model(net);	
+		
+		// map AclfNetBean back to an AclfNet object
+		AclfNetwork aclfNet = new AclfBean2NetMapper()
+			.map2Model(netBean)
+			.getAclfNet();
+		
+		// map AclfNet to AclfNetBean
+		AclfNetBean netBean1 = new AclfNet2BeanMapper().map2Model(aclfNet);	
+		assertTrue(netBean1.compareTo(netBean) == 0);
+		
+		
+		aclfNet.accept(CoreObjectFactory.createLfAlgoVisitor());  
+		
+  		assertTrue(aclfNet.isLfConverged());	
+  		
+  		AclfBus swingBus = aclfNet.getBus("Bus1");
+		AclfSwingBus swing = swingBus.toSwingBus();
+  		System.out.println(swing.getGenResults(UnitType.PU));
+		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.323916)<0.0001);
+		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-(-0.16549584))<0.0001); 
+		
+	}
+	
+	@Test
+	public void testCase_IEEE14_Bean() throws Exception {
+	//	String JSONBEAN_14BUS_ADUI = "{'bus_list':[{'number':1,'id':'Bus1','name':'Bus 1     HV','status':1,'base_v':132,'v_mag':1.06,'v_ang':0,'gen_code':'Swing','load_code':'ConstP','shunt':{'re':0,'im':0},'area':1,'zone':1,'areaName':'Area name','zoneName':1},{'number':2,'id':'Bus2','name':'Bus 2     HV','status':1,'base_v':132,'v_mag':1.045,'v_ang':-4.98,'gen_code':'PV','gen':{'re':0.4,'im':0.424},'pmax':1,'pmin':1,'qmax':-0.4,'vDesired_mag':1.045,'remoteVControlBusId':'','load_code':'ConstP','shunt':{'re':0,'im':0},'area':1,'zone':1,'areaName':'Area name','zoneName':1},{'number':3,'id':'Bus3','name':'Bus 3     HV','status':1,'base_v':132,'v_mag':1.01,'v_ang':-12.72,'gen_code':'PV','gen':{'re':0,'im':0.234},'pmax':1,'pmin':1,'qmax':1,'vDesired_mag':1.01,'remoteVControlBusId':'','load_code':'ConstP','shunt':{'re':0,'im':0},'area':1,'zone':1,'areaName':'Area name','zoneName':1},{'number':4,'id':'Bus4','name':'Bus 4     HV','status':1,'base_v':132,'v_mag':1.019,'v_ang':-10.33,'gen_code':'PQ','load_code':'ConstP','load':{'re':0.478,'im':-0.039},'shunt':{'re':0,'im':0},'area':1,'zone':1,'areaName':'Area name','zoneName':1},{'number':5,'id':'Bus5','name':'Bus 5     HV','status':1,'base_v':132,'v_mag':1.02,'v_ang':-8.78,'gen_code':'PQ','load_code':'ConstP','load':{'re':0.076,'im':0.016},'shunt':{'re':0,'im':0},'area':1,'zone':1,'areaName':'Area name','zoneName':1},{'number':6,'id':'Bus6','name':'Bus 6     LV','status':1,'base_v':35,'v_mag':1.07,'v_ang':-14.22,'gen_code':'PV','gen':{'re':0,'im':0.122},'pmax':1,'pmin':1,'qmax':-0.06,'vDesired_mag':1.07,'remoteVControlBusId':'','load_code':'ConstP','shunt':{'re':0,'im':0},'area':1,'zone':1,'areaName':'Area name','zoneName':1},{'number':7,'id':'Bus7','name':'Bus 7     ZV','status':1,'base_v':35,'v_mag':1.062,'v_ang':-13.37,'gen_code':'PQ','load_code':'ConstP','load':{'re':0,'im':0},'shunt':{'re':0,'im':0},'area':1,'zone':1,'areaName':'Area name','zoneName':1},{'number':8,'id':'Bus8','name':'Bus 8     TV','status':1,'base_v':10,'v_mag':1.09,'v_ang':-13.36,'gen_code':'PV','gen':{'re':0,'im':0.174},'pmax':1,'pmin':1,'qmax':-0.06,'vDesired_mag':1.09,'remoteVControlBusId':'','load_code':'ConstP','shunt':{'re':0,'im':0},'area':1,'zone':1,'areaName':'Area name','zoneName':1},{'number':9,'id':'Bus9','name':'Bus 9     LV','status':1,'base_v':35,'v_mag':1.056,'v_ang':-14.94,'gen_code':'PQ','load_code':'ConstP','load':{'re':0.295,'im':0.166},'shunt':{'re':0,'im':0.19},'area':1,'zone':1,'areaName':'Area name','zoneName':1},{'number':10,'id':'Bus10','name':'Bus 10    LV','status':1,'base_v':35,'v_mag':1.051,'v_ang':-15.1,'gen_code':'PQ','load_code':'ConstP','load':{'re':0.09,'im':0.058},'shunt':{'re':0,'im':0},'area':1,'zone':1,'areaName':'Area name','zoneName':1},{'number':11,'id':'Bus11','name':'Bus 11    LV','status':1,'base_v':35,'v_mag':1.057,'v_ang':-14.79,'gen_code':'PQ','load_code':'ConstP','load':{'re':0.035,'im':0.018},'shunt':{'re':0,'im':0},'area':1,'zone':1,'areaName':'Area name','zoneName':1},{'number':12,'id':'Bus12','name':'Bus 12    LV','status':1,'base_v':35,'v_mag':1.055,'v_ang':-15.07,'gen_code':'PQ','load_code':'ConstP','load':{'re':0.061,'im':0.016},'shunt':{'re':0,'im':0},'area':1,'zone':1,'areaName':'Area name','zoneName':1},{'number':13,'id':'Bus13','name':'Bus 13    LV','status':1,'base_v':35,'v_mag':1.05,'v_ang':-15.16,'gen_code':'PQ','load_code':'ConstP','load':{'re':0.135,'im':0.058},'shunt':{'re':0,'im':0},'area':1,'zone':1,'areaName':'Area name','zoneName':1},{'number':14,'id':'Bus14','name':'Bus 14    LV','status':1,'base_v':35,'v_mag':1.036,'v_ang':-16.04,'gen_code':'PQ','load_code':'ConstP','load':{'re':0.149,'im':0.05},'shunt':{'re':0,'im':0},'area':1,'zone':1,'areaName':'Area name','zoneName':1}],'branch_list':[{'id':'Bus1->Bus2(1)','f_num':1,'t_num':2,'f_id':'Bus1','t_id':'Bus2','cir_id':1,'status':1,'z':{'re':0.01938,'im':0.05917},'bra_code':'Line','shunt_y':{'re':0,'im':0.0528}},{'id':'Bus1->Bus5(1)','f_num':1,'t_num':5,'f_id':'Bus1','t_id':'Bus5','cir_id':1,'status':1,'z':{'re':0.05403,'im':0.22304},'bra_code':'Line','shunt_y':{'re':0,'im':0.0492}},{'id':'Bus2->Bus3(1)','f_num':2,'t_num':3,'f_id':'Bus2','t_id':'Bus3','cir_id':1,'status':1,'z':{'re':0.04699,'im':0.19797},'bra_code':'Line','shunt_y':{'re':0,'im':0.0438}},{'id':'Bus2->Bus4(1)','f_num':2,'t_num':4,'f_id':'Bus2','t_id':'Bus4','cir_id':1,'status':1,'z':{'re':0.05811,'im':0.17632},'bra_code':'Line','shunt_y':{'re':0,'im':0.034}},{'id':'Bus2->Bus5(1)','f_num':2,'t_num':5,'f_id':'Bus2','t_id':'Bus5','cir_id':1,'status':1,'z':{'re':0.05695,'im':0.17388},'bra_code':'Line','shunt_y':{'re':0,'im':0.0346}},{'id':'Bus3->Bus4(1)','f_num':3,'t_num':4,'f_id':'Bus3','t_id':'Bus4','cir_id':1,'status':1,'z':{'re':0.06701,'im':0.17103},'bra_code':'Line','shunt_y':{'re':0,'im':0.0128}},{'id':'Bus4->Bus5(1)','f_num':4,'t_num':5,'f_id':'Bus4','t_id':'Bus5','cir_id':1,'status':1,'z':{'re':0.01335,'im':0.04211},'bra_code':'Line','shunt_y':{'re':0,'im':0}},{'id':'Bus6->Bus11(1)','f_num':6,'t_num':11,'f_id':'Bus6','t_id':'Bus11','cir_id':1,'status':1,'z':{'re':0.09498,'im':0.1989},'bra_code':'Line','shunt_y':{'re':0,'im':0}},{'id':'Bus6->Bus12(1)','f_num':6,'t_num':12,'f_id':'Bus6','t_id':'Bus12','cir_id':1,'status':1,'z':{'re':0.12291,'im':0.25581},'bra_code':'Line','shunt_y':{'re':0,'im':0}},{'id':'Bus6->Bus13(1)','f_num':6,'t_num':13,'f_id':'Bus6','t_id':'Bus13','cir_id':1,'status':1,'z':{'re':0.06615,'im':0.13027},'bra_code':'Line','shunt_y':{'re':0,'im':0}},{'id':'Bus9->Bus10(1)','f_num':9,'t_num':10,'f_id':'Bus9','t_id':'Bus10','cir_id':1,'status':1,'z':{'re':0.03181,'im':0.0845},'bra_code':'Line','shunt_y':{'re':0,'im':0}},{'id':'Bus9->Bus14(1)','f_num':9,'t_num':14,'f_id':'Bus9','t_id':'Bus14','cir_id':1,'status':1,'z':{'re':0.12711,'im':0.27038},'bra_code':'Line','shunt_y':{'re':0,'im':0}},{'id':'Bus10->Bus11(1)','f_num':10,'t_num':11,'f_id':'Bus10','t_id':'Bus11','cir_id':1,'status':1,'z':{'re':0.08205,'im':0.19207},'bra_code':'Line','shunt_y':{'re':0,'im':0}},{'id':'Bus12->Bus13(1)','f_num':12,'t_num':13,'f_id':'Bus12','t_id':'Bus13','cir_id':1,'status':1,'z':{'re':0.22092,'im':0.19988},'bra_code':'Line','shunt_y':{'re':0,'im':0}},{'id':'Bus13->Bus14(1)','f_num':13,'t_num':14,'f_id':'Bus13','t_id':'Bus14','cir_id':1,'status':1,'z':{'re':0.17093,'im':0.34802},'bra_code':'Line','shunt_y':{'re':0,'im':0}},{'id':'Bus4->Bus7(1)','f_num':4,'t_num':7,'f_id':'Bus4','t_id':'Bus7','cir_id':1,'status':1,'z':{'re':0,'im':0.20912},'bra_code':'Xfr','ratio':{'f':0.978,'t':1},'xfrTapControl':{'controlledBusId':0,'controlType':'No_Control','controlMode':'No_Control','measuredOnFromSide':true,'controlOnFromSide':true,'desiredControlTarget':1,'upperLimit':1.1,'lowerLimit':0.9,'steps':1,'stepSize':1}},{'id':'Bus4->Bus9(1)','f_num':4,'t_num':9,'f_id':'Bus4','t_id':'Bus9','cir_id':1,'status':1,'z':{'re':0,'im':0.55618},'bra_code':'Xfr','ratio':{'f':0.969,'t':1},'xfrTapControl':{'controlledBusId':0,'controlType':'No_Control','controlMode':'No_Control','measuredOnFromSide':true,'controlOnFromSide':true,'desiredControlTarget':1,'upperLimit':1.1,'lowerLimit':0.9,'steps':1,'stepSize':1}},{'id':'Bus5->Bus6(1)','f_num':5,'t_num':6,'f_id':'Bus5','t_id':'Bus6','cir_id':1,'status':1,'z':{'re':0,'im':0.25202},'bra_code':'Xfr','ratio':{'f':0.932,'t':1},'xfrTapControl':{'controlledBusId':0,'controlType':'No_Control','controlMode':'No_Control','measuredOnFromSide':true,'controlOnFromSide':true,'desiredControlTarget':1,'upperLimit':1.1,'lowerLimit':0.9,'steps':1,'stepSize':1}},{'id':'Bus7->Bus8(1)','f_num':7,'t_num':8,'f_id':'Bus7','t_id':'Bus8','cir_id':1,'status':1,'z':{'re':0,'im':0.17615},'bra_code':'Xfr','ratio':{'f':1,'t':1},'xfrTapControl':{'controlledBusId':0,'controlType':'No_Control','controlMode':'No_Control','measuredOnFromSide':true,'controlOnFromSide':true,'desiredControlTarget':1,'upperLimit':1.1,'lowerLimit':0.9,'steps':1,'stepSize':1}},{'id':'Bus7->Bus9(1)','f_num':7,'t_num':9,'f_id':'Bus7','t_id':'Bus9','cir_id':1,'status':1,'z':{'re':0,'im':0.11001},'bra_code':'Xfr','ratio':{'f':1,'t':1},'xfrTapControl':{'controlledBusId':0,'controlType':'No_Control','controlMode':'No_Control','measuredOnFromSide':true,'controlOnFromSide':true,'desiredControlTarget':1,'upperLimit':1.1,'lowerLimit':0.9,'steps':1,'stepSize':1}}]}}";
+		
+	}
 }
 

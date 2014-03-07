@@ -8,10 +8,12 @@ import org.interpss.numeric.util.NumericUtil;
 public class PsXfrTapControlBean extends BaseTapControlBean{
 
 	public double 
-		maxAngle,					// max angle
-		minAngle;					// min angle
+		maxAngle = 0.0,					// max angle
+		minAngle = 0.0;					// min angle
 	
 	public boolean flowFrom2To = true;
+	
+	//public TapControlModeBean controlMode = TapControlModeBean.MW_Flow;
 	
 	public PsXfrTapControlBean(){}
 	
