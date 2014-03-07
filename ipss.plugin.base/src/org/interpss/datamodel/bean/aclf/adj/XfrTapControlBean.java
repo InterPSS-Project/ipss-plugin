@@ -34,12 +34,10 @@ import org.interpss.datamodel.bean.BaseJSONBean;
  *
  */
 public class XfrTapControlBean extends BaseTapControlBean {
+		
+	//public TapControlModeBean controlMode = TapControlModeBean.Bus_Voltage;	// control mode		
 	
-	public static enum TapControlModeBean {Bus_Voltage, Mva_Flow};  	
-	
-	public TapControlModeBean controlMode = TapControlModeBean.Bus_Voltage;	// control mode		
-	
-	public String controlledBusId;		// controlled bus number
+	public String controlledBusId = "0";		// controlled bus id
 	
 	public XfrTapControlBean() {}
 	

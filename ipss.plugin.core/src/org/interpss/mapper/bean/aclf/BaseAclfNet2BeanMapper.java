@@ -28,13 +28,13 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.datamodel.bean.BaseBranchBean;
 import org.interpss.datamodel.bean.aclf.AclfBranchBean;
 import org.interpss.datamodel.bean.aclf.AclfBusBean;
+import org.interpss.datamodel.bean.aclf.adj.BaseTapControlBean.TapControlModeBean;
 import org.interpss.datamodel.bean.aclf.adj.BaseTapControlBean.TapControlTypeBean;
 import org.interpss.datamodel.bean.aclf.adj.PsXfrTapControlBean;
 import org.interpss.datamodel.bean.aclf.adj.QBankBean;
 import org.interpss.datamodel.bean.aclf.adj.SwitchShuntBean;
 import org.interpss.datamodel.bean.aclf.adj.XfrTapControlBean;
 import org.interpss.datamodel.bean.aclf.adj.SwitchShuntBean.VarCompensatorControlModeBean;
-import org.interpss.datamodel.bean.aclf.adj.XfrTapControlBean.TapControlModeBean;
 import org.interpss.datamodel.bean.datatype.BranchValueBean;
 import org.interpss.datamodel.bean.datatype.ComplexBean;
 import org.interpss.numeric.datatype.Unit.UnitType;
@@ -194,11 +194,11 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 		else if (branch.getBranchCode() == AclfBranchCode.XFORMER ){
 			AclfXformer xfr = branch.toXfr();			
 			bean.ratio.f = xfr.getFromTurnRatio();
-			bean.ratio.t = xfr.getToTurnRatio();				
+			bean.ratio.t = xfr.getToTurnRatio();	
+			XfrTapControlBean tapBean = new XfrTapControlBean();
+			bean.xfrTapControl = tapBean;
 			if(branch.getTapControl() != null){
-				TapControl tap = branch.getTapControl();
-				XfrTapControlBean tapBean = new XfrTapControlBean();
-				bean.xfrTapControlBean = tapBean;
+				TapControl tap = branch.getTapControl();				
 				mapXfrData(tap, tapBean);
 			}
 		}else if (	branch.getBranchCode() == AclfBranchCode.PS_XFORMER){
@@ -207,10 +207,10 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 			bean.ratio.t = xfr.getToTurnRatio();	
 			bean.ang.f = branch.getFromPSXfrAngle();
 			bean.ang.t = branch.getToPSXfrAngle();
+			PsXfrTapControlBean tb = new PsXfrTapControlBean();
+			bean.psXfrTapControl = tb;
 			if(branch.getPSXfrPControl() != null){
-				PSXfrPControl tap = branch.getPSXfrPControl();				
-				PsXfrTapControlBean tb = new PsXfrTapControlBean();
-				bean.psXfrTapControlBean = tb;
+				PSXfrPControl tap = branch.getPSXfrPControl();					
 				mapPsXfrData(tap, tb);
 			}
 		}

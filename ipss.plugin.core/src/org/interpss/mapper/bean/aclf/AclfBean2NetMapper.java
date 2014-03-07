@@ -25,35 +25,27 @@
 package org.interpss.mapper.bean.aclf;
 
 import static com.interpss.common.util.IpssLogger.ipssLogger;
-import static org.interpss.mapper.odm.ODMUnitHelper.ToActivePowerUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.ToAngleUnit;
-
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.datamodel.bean.BaseBranchBean;
 import org.interpss.datamodel.bean.aclf.AclfBranchBean;
 import org.interpss.datamodel.bean.aclf.AclfBusBean;
 import org.interpss.datamodel.bean.aclf.AclfNetBean;
+import org.interpss.datamodel.bean.aclf.adj.BaseTapControlBean.TapControlModeBean;
 import org.interpss.datamodel.bean.aclf.adj.BaseTapControlBean.TapControlTypeBean;
 import org.interpss.datamodel.bean.aclf.adj.PsXfrTapControlBean;
 import org.interpss.datamodel.bean.aclf.adj.QBankBean;
 import org.interpss.datamodel.bean.aclf.adj.SwitchShuntBean;
 import org.interpss.datamodel.bean.aclf.adj.SwitchShuntBean.VarCompensatorControlModeBean;
 import org.interpss.datamodel.bean.aclf.adj.XfrTapControlBean;
-import org.interpss.datamodel.bean.aclf.adj.XfrTapControlBean.TapControlModeBean;
 import org.interpss.numeric.datatype.LimitType;
-import org.interpss.numeric.datatype.Unit.UnitType;
-
 import com.interpss.CoreObjectFactory;
 import com.interpss.SimuObjectFactory;
-import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.mapper.AbstractMapper;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
-import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfGenCode;
-import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adj.AdjControlType;
@@ -64,11 +56,8 @@ import com.interpss.core.aclf.adj.RemoteQControlType;
 import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.adj.VarCompensatorControlMode;
-import com.interpss.core.aclf.adpter.AclfPQGenBus;
-import com.interpss.core.aclf.adpter.AclfPSXformer;
 import com.interpss.core.aclf.adpter.AclfPVGenBus;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
-import com.interpss.core.aclf.adpter.AclfXformer;
 import com.interpss.core.net.Area;
 import com.interpss.core.net.Bus;
 import com.interpss.core.net.Zone;
@@ -163,8 +152,10 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 		bus.setBaseVoltage(busBean.base_v*1000);
 		
 		bus.setVoltage(busBean.v_mag, Math.toRadians(busBean.v_ang));
-		bus.setGenP(busBean.gen.re);
-		bus.setGenQ(busBean.gen.im);		
+		if(busBean.gen != null){
+			bus.setGenP(busBean.gen.re);
+			bus.setGenQ(busBean.gen.im);
+		}			
 		
 		if (busBean.gen_code != null) {
 			if (busBean.gen_code==AclfBusBean.GenCode.PQ) {
@@ -223,7 +214,8 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 				(busBean.load_code==AclfBusBean.LoadCode.ConstI? AclfLoadCode.CONST_I : 
 					(busBean.load_code==AclfBusBean.LoadCode.ConstZ? AclfLoadCode.CONST_Z : 
 						AclfLoadCode.NON_LOAD)));
-			bus.setLoadPQ(new Complex(busBean.load.re, busBean.load.im));
+			if(busBean.load != null)
+				bus.setLoadPQ(new Complex(busBean.load.re, busBean.load.im));
 		}	
 		
 		
@@ -309,8 +301,8 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 	
 	private void setXfrData(AclfBranchBean branchBean, AclfBranch branch,AclfNetwork aclfNet){		
 		// control/adjustment
-		if(branchBean.xfrTapControlBean != null){
-			XfrTapControlBean tcb = branchBean.xfrTapControlBean;
+		if(branchBean.xfrTapControl != null){
+			XfrTapControlBean tcb = branchBean.xfrTapControl;
 			try{
 				if(tcb.controlMode == TapControlModeBean.Bus_Voltage){					
 					TapControl tap = null;
@@ -351,8 +343,8 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 	
 	private void setPsXfrData(AclfBranchBean branchBean, AclfBranch branch,AclfNetwork aclfNet){		
 		// control/adjustment
-		if(branchBean.psXfrTapControlBean != null){
-			PsXfrTapControlBean tcb = branchBean.psXfrTapControlBean;			
+		if(branchBean.psXfrTapControl != null){
+			PsXfrTapControlBean tcb = branchBean.psXfrTapControl;			
 			try{				
 				if(tcb.controlType == TapControlTypeBean.Point_Control){
 					PSXfrPControl psxfr = CoreObjectFactory.createPSXfrPControl(branch, AdjControlType.POINT_CONTROL);
@@ -363,7 +355,7 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 					psxfr.setMeteredOnFromSide(tcb.measuredOnFromSide);
 					psxfr.setFlowFrom2To(tcb.flowFrom2To);
 					
-				}else{ // range control
+				}else if (tcb.controlType == TapControlTypeBean.Range_Control ){ // range control
 					PSXfrPControl psxfr = CoreObjectFactory.createPSXfrPControl(branch, AdjControlType.RANGE_CONTROL);
 					psxfr.setStatus(tcb.status == 1? true : false);
 					psxfr.setControlRange(new LimitType(tcb.upperLimit, tcb.lowerLimit));

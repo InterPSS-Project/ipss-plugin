@@ -36,25 +36,28 @@ import org.interpss.numeric.util.NumericUtil;
  */
 public class BaseTapControlBean extends BaseJSONBean {	
 	 
-	public static enum TapControlTypeBean {Point_Control, Range_Control};
+	public static enum TapControlTypeBean {Point_Control, Range_Control,No_Control};
+	public static enum TapControlModeBean {Bus_Voltage, Mva_Flow, MW_Flow, No_Control};
 	
-	public TapControlTypeBean controlType = TapControlTypeBean.Point_Control; // control type
+	public TapControlTypeBean controlType = TapControlTypeBean.No_Control; // control type
+	
+	public TapControlModeBean controlMode = TapControlModeBean.No_Control;
 	
 	public int status = 1;		// tap control status
 	
 	public double 
-		maxTap,					// max tap
-		minTap,					// min tap
-		upperLimit,				// tap control target upper limit (range control)
-		lowerLimit,				// tap control target lower limit (range control)
-		desiredControlTarget,	// tap control targeted value (point control)
-		stepSize;				// tap control step size	
+		maxTap = 1.1,					// max tap
+		minTap = 0.9,					// min tap
+		upperLimit = 1.1,				// tap control target upper limit (range control)
+		lowerLimit = 0.9,				// tap control target lower limit (range control)
+		desiredControlTarget = 1.0,	// tap control targeted value (point control)
+		stepSize = 1.0;				// tap control step size	
 	
 	public boolean 
-		measuredOnFromSide,		// mvar flow is measured on from side
-	    controlOnFromSide;		// control is applied on from side	
+		measuredOnFromSide = true,		// mvar flow is measured on from side
+	    controlOnFromSide = true;		// control is applied on from side	
 		
-	public int steps;						// tap control steps		
+	public int steps = 1;						// tap control steps		
 	
 	public BaseTapControlBean() {}
 	
