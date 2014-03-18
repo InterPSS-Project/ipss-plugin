@@ -52,6 +52,9 @@ import org.ieee.odm.schema.ReactivePowerXmlType;
 import org.ieee.odm.schema.ShuntCompensatorBlockXmlType;
 import org.ieee.odm.schema.ShuntCompensatorModeEnumType;
 import org.ieee.odm.schema.ShuntCompensatorXmlType;
+import org.ieee.odm.schema.SwitchedShuntBlockXmlType;
+import org.ieee.odm.schema.SwitchedShuntModeEnumType;
+import org.ieee.odm.schema.SwitchedShuntXmlType;
 import org.ieee.odm.schema.VoltageUnitType;
 import org.ieee.odm.schema.VoltageXmlType;
 import org.ieee.odm.schema.YXmlType;
@@ -178,8 +181,8 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 			bus.setShuntY(ypu);
 		}
 		
-		if(xmlBusData.getShuntCompensator()!=null){
-			mapSwitchShuntData(xmlBusData.getShuntCompensator());
+		if(xmlBusData.getSwitchedShunt()!=null){
+			mapSwitchShuntData(xmlBusData.getSwitchedShunt());
 		}
 	}
 	
@@ -443,7 +446,7 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 		}
 	}
 	
-	private void mapSwitchShuntData(ShuntCompensatorXmlType xmlSwitchedShuntData){
+	private void mapSwitchShuntData(SwitchedShuntXmlType xmlSwitchedShuntData){
 		//TODO 
 		SwitchedShunt swchShunt = CoreObjectFactory.createSwitchedShunt();
 		//swithced shunt is a also a AclfControlBus
@@ -460,8 +463,8 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 			
 			swchShunt.setBInit(binit.getValue()*factor);
 
-			VarCompensatorControlMode mode = xmlSwitchedShuntData.getMode()==ShuntCompensatorModeEnumType.CONTINUOUS?
-					VarCompensatorControlMode.CONTINUOUS:xmlSwitchedShuntData.getMode()==ShuntCompensatorModeEnumType.DISCRETE?
+			VarCompensatorControlMode mode = xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.CONTINUOUS?
+					VarCompensatorControlMode.CONTINUOUS:xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.DISCRETE?
 					VarCompensatorControlMode.DISCRETE:VarCompensatorControlMode.FIXED;
 			
 			swchShunt.setControlMode(mode);
@@ -470,7 +473,7 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 					xmlSwitchedShuntData.getDesiredVoltageRange().getMin());
 			//TODO vLimit is missing
 			//swchShunt.set
-			for(ShuntCompensatorBlockXmlType varBankXml:xmlSwitchedShuntData.getBlock()){
+			for(SwitchedShuntBlockXmlType varBankXml:xmlSwitchedShuntData.getBlock()){
 				QBank varBank= CoreObjectFactory.createQBank();
 				swchShunt.getVarBankArray().add(varBank);
 				

@@ -223,9 +223,8 @@ public class AclfBranchDataHelper {
       */
 				PSXfrPControl psxfr = CoreObjectFactory.createPSXfrPControl(aclfBra, AdjControlType.RANGE_CONTROL);
 				psxfr.setStatus(!xmlAngAdj.isOffLine());
-				psxfr.setControlRange(new LimitType(
-						UnitHelper.percentConversion(xmlAngAdj.getRange().getMax(), ToActivePowerUnit.f(xmlAngAdj.getDesiredActivePowerUnit()), UnitType.PU), 
-						UnitHelper.percentConversion(xmlAngAdj.getRange().getMin(), ToActivePowerUnit.f(xmlAngAdj.getDesiredActivePowerUnit()), UnitType.PU)));
+				psxfr.setControlRange(UnitHelper.pConversion(new LimitType(xmlAngAdj.getRange().getMax(),xmlAngAdj.getRange().getMin()),
+						    baseKva, ToActivePowerUnit.f(xmlAngAdj.getDesiredActivePowerUnit()), UnitType.PU));
 				psxfr.setPSpecified(xmlAngAdj.getDesiredValue(), ToActivePowerUnit.f(xmlAngAdj.getDesiredActivePowerUnit()), baseKva);
 				psxfr.setAngLimit(new LimitType(xmlAngAdj.getAngleLimit().getMax(), xmlAngAdj.getAngleLimit().getMin()), ToAngleUnit.f(xmlAngAdj.getAngleLimit().getUnit()));
 				psxfr.setControlOnFromSide(xmlAngAdj.isAngleAdjOnFromSide());
