@@ -42,6 +42,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.DStabObjectFactory;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.common.util.IpssLogger;
 import com.interpss.core.funcImpl.CoreUtilFunc;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabilityNetwork;
@@ -190,8 +191,17 @@ public class MachDataHelper {
 		if (machXml.getSeFmt1() != null) {
 			// sliner default value 0.85
 			mach.setSliner(0.85); 
+			if(machXml.getSeFmt1().getSe100()>machXml.getSeFmt1().getSe120()){
+				IpssLogger.getLogger().severe("Error in Machine saturation data: s1.0 > s1.2. Machine :"+mach.getId()+"@"+mach.getDStabBus().getId()+"  s1.0 (%)= "
+			+machXml.getSeFmt1().getSe100()+", s1.2 (%) = "+machXml.getSeFmt1().getSe120()+"\n Both s1.0 and s1.2 are set to 0");
+				
+				mach.setSe100(0);
+				mach.setSe120(0);
+			}
+			else{
 			mach.setSe100(machXml.getSeFmt1().getSe100());
-			mach.setSe120(machXml.getSeFmt1().getSe120());					
+			mach.setSe120(machXml.getSeFmt1().getSe120());
+			}
 		}
 		else if (machXml.getSeFmt2() != null) {
 			// TODO
