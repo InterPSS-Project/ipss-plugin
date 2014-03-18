@@ -88,8 +88,8 @@ public class IEEE1981DC1Exciter extends AnnotateExciter {
      */
     public IEEE1981DC1Exciter() {
 	    this("id", "name", "caty");
-        this.setName("SimpleExcitor");
-        this.setCategory("InterPSS");
+        this.setName("IEEE1981DC1");
+        this.setCategory("IEEE");
     }
 
      /**

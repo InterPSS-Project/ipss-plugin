@@ -37,18 +37,18 @@ public class IEEE1981DC1ExciterData {
 
     // We need to put the default values here, so that the controller could be
     // properly initialized
-    private double tc       = 21.84;
-    private double tb       = 52.73;
-    private double ka       = 39.35;
+    private double tc       = 0;
+    private double tb       = 0;
+    private double ka       = 40;
     private double ta       = 0.02;
     private double vrmax    = 6.0;
     private double vrmin    = -6.0;
     private double ke       = 1.0;
     private double te       = 2.0;
-    private double e1    = 6.0;
-    private double e2    = 7.2;
+    private double e1       = 2.8;
+    private double e2       = 3.7;
     private double se_e1    = 0.1;
-    private double se_e2    = 0.05;
+    private double se_e2    = 0.33;
     private double kf       = 0.03;
     private double tf       = 0.350;
 
