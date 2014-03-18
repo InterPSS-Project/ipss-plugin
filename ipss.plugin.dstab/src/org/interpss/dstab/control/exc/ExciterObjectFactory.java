@@ -37,8 +37,10 @@ import org.interpss.dstab.control.exc.ieee.y1968.type1s.Ieee1968Type1sExciter;
 import org.interpss.dstab.control.exc.ieee.y1968.type2.Ieee1968Type2Exciter;
 import org.interpss.dstab.control.exc.ieee.y1968.type3.Ieee1968Type3Exciter;
 import org.interpss.dstab.control.exc.ieee.y1968.type4.Ieee1968Type4Exciter;
+import org.interpss.dstab.control.exc.ieee.y1981.ac1.IEEE1981AC1Exciter;
 import org.interpss.dstab.control.exc.ieee.y1981.dc1.IEEE1981DC1Exciter;
 import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
+import org.interpss.dstab.control.exc.ieee.y2005.st3a.IEEE2005ST3AExciter;
 import org.interpss.dstab.control.exc.simple.SimpleExciter;
 
 import com.interpss.dstab.mach.Machine;
@@ -141,7 +143,19 @@ public class ExciterObjectFactory {
 	/*
 	 * IEEE 1981 Exciter set
 	 */
-	
+	/**
+	 * factory method to create a IEEE1981AC1Exciter object
+	 * 
+	 * @param id exciter id
+	 * @param name exciter name
+	 * @param machine parent machine object
+	 * @return
+	 */
+	public static IEEE1981AC1Exciter createIeee1981AC1Exciter(String id, String name, Machine machine) {
+		IEEE1981AC1Exciter exc = new IEEE1981AC1Exciter (id, name, "IEEE");
+		exc.setMachine(machine); 
+		return exc;
+  	}
 	/**
 	 * factory method to create a IEEE1981DC1Exciter object
 	 * 
@@ -151,7 +165,7 @@ public class ExciterObjectFactory {
 	 * @return
 	 */
 	public static IEEE1981DC1Exciter createIeee1981DC1Exciter(String id, String name, Machine machine) {
-		IEEE1981DC1Exciter  exc = new IEEE1981DC1Exciter (id, name, "InterPSS");
+		IEEE1981DC1Exciter  exc = new IEEE1981DC1Exciter (id, name, "IEEE");
 		exc.setMachine(machine); 
 		return exc;
   	}
@@ -165,16 +179,28 @@ public class ExciterObjectFactory {
 	 * @return
 	 */
 	public static IEEE1981ST1Exciter createIeee1981ST1Exciter(String id, String name, Machine machine) {
-		IEEE1981ST1Exciter exc = new IEEE1981ST1Exciter (id, name, "InterPSS");
+		IEEE1981ST1Exciter exc = new IEEE1981ST1Exciter (id, name, "IEEE");
 		exc.setMachine(machine); 
 		return exc;
   	}
 	
 	
 	/*
-	 * IEEE 1992 Exciter set
+	 * IEEE 1992/2005 Exciter set
 	 */
-	
+	/**
+	 * factory method to create a IEEE1981ST1Exciter object
+	 * 
+	 * @param id exciter id
+	 * @param name exciter name
+	 * @param machine parent machine object
+	 * @return
+	 */
+	public static IEEE2005ST3AExciter createIeee2005ST3AExciter(String id, String name, Machine machine) {
+		IEEE2005ST3AExciter exc = new IEEE2005ST3AExciter (id, name, "IEEE");
+		exc.setMachine(machine); 
+		return exc;
+  	}
 	
 	/*
 	 * BPA Exciter set
