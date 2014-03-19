@@ -82,7 +82,13 @@ public class FilterControlBlock extends CMLControlBlock1stOrderAdapter {
 			return false;
 		}
 		setU(y0 / getK());
-		setStateX(y0 * (1.0 - getT1() / getT2()));
+		
+		if(getT2()>0){
+			setStateX(y0 * (1.0 - getT1() / getT2()));
+		}
+		else
+			setStateX(0);
+		
 		if (getType() == Limit
 				|| getType() == NonWindup)
 			return !limit.isViolated(y0);
