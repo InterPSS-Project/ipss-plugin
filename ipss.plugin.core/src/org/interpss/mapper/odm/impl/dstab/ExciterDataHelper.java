@@ -35,7 +35,10 @@ import org.ieee.odm.schema.ExcIEEE1968Type2XmlType;
 import org.ieee.odm.schema.ExcIEEE1968Type3XmlType;
 import org.ieee.odm.schema.ExcIEEE1968Type4XmlType;
 import org.ieee.odm.schema.ExcIEEE1981ST1XmlType;
+import org.ieee.odm.schema.ExcIEEE1981TypeAC1XmlType;
 import org.ieee.odm.schema.ExcIEEE1981TypeDC1XmlType;
+import org.ieee.odm.schema.ExcIEEE2005TypeST3AXmlType;
+import org.ieee.odm.schema.ExcIEEE2005TypeST4BXmlType;
 import org.ieee.odm.schema.ExcSimpleTypeXmlType;
 import org.ieee.odm.schema.ExciterModelXmlType;
 import org.interpss.dstab.control.exc.ExciterObjectFactory;
@@ -50,8 +53,11 @@ import org.interpss.dstab.control.exc.ieee.y1968.type1s.Ieee1968Type1sExciter;
 import org.interpss.dstab.control.exc.ieee.y1968.type2.Ieee1968Type2Exciter;
 import org.interpss.dstab.control.exc.ieee.y1968.type3.Ieee1968Type3Exciter;
 import org.interpss.dstab.control.exc.ieee.y1968.type4.Ieee1968Type4Exciter;
+import org.interpss.dstab.control.exc.ieee.y1981.ac1.IEEE1981AC1Exciter;
 import org.interpss.dstab.control.exc.ieee.y1981.dc1.IEEE1981DC1Exciter;
 import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
+import org.interpss.dstab.control.exc.ieee.y2005.st3a.IEEE2005ST3AExciter;
+import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter;
 import org.interpss.dstab.control.exc.simple.SimpleExciter;
 
 import com.interpss.common.exp.InterpssException;
@@ -202,6 +208,86 @@ public class ExciterDataHelper {
 		}
 
 		////////////////////////////////////////////
+		////    IEEE-1992 / 2005  //////////////////
+		////////////////////////////////////////////
+		
+		//IEEE 1992/2005  ST3A
+		else if (excXmlRec instanceof ExcIEEE2005TypeST3AXmlType){
+			ExcIEEE2005TypeST3AXmlType excXml =(ExcIEEE2005TypeST3AXmlType) excXmlRec;
+			IEEE2005ST3AExciter exc=ExciterObjectFactory.createIeee2005ST3AExciter(mach.getId()+"_Exc", excXml.getName(), mach);			
+			
+			exc.getData().setTr(excXml.getTR().getValue());
+			
+			exc.getData().setKa(excXml.getKa());
+			exc.getData().setTa(excXml.getTa().getValue());
+			exc.getData().setVrmax(excXml.getVrmax());
+			exc.getData().setVrmin(excXml.getVrmin());
+			
+			exc.getData().setTc(excXml.getTC().getValue());
+			exc.getData().setTb(excXml.getTB().getValue());
+			
+			exc.getData().setVimax(excXml.getVIMAX());
+			exc.getData().setVimin(excXml.getVIMIN());
+			
+			exc.getData().setKm(excXml.getKM());
+			exc.getData().setTm(excXml.getTM().getValue());
+			
+			exc.getData().setKg(excXml.getKG());
+			exc.getData().setKp(excXml.getKP());
+			exc.getData().setKi(excXml.getKI());
+			
+			exc.getData().setVbmax(excXml.getVBMAX());
+			
+			exc.getData().setKc(excXml.getKC());
+			exc.getData().setXl(excXml.getXL());
+			
+			exc.getData().setVgmax(excXml.getVGMAX());
+			
+			exc.getData().setAngKp(excXml.getTHETAP());
+			
+			exc.getData().setVmmax(excXml.getVMMAX());
+			exc.getData().setVmmin(excXml.getVMMIN());
+		}
+		
+		
+		else if (excXmlRec instanceof ExcIEEE2005TypeST4BXmlType){
+			ExcIEEE2005TypeST4BXmlType excXml =(ExcIEEE2005TypeST4BXmlType) excXmlRec;
+			IEEE2005ST4BExciter exc=ExciterObjectFactory.createIeee2005ST4BExciter(mach.getId()+"_Exc", excXml.getName(), mach);			
+			
+			exc.getData().setTr(excXml.getTR().getValue());
+			
+			exc.getData().setKa(excXml.getKa());
+			exc.getData().setTa(excXml.getTa().getValue());
+			exc.getData().setVrmax(excXml.getVrmax());
+			exc.getData().setVrmin(excXml.getVrmin());
+			
+			exc.getData().setKpr(excXml.getKPR());
+			exc.getData().setKir(excXml.getKIR());
+
+			exc.getData().setKpm(excXml.getKPM());
+			exc.getData().setKim(excXml.getKIM());
+			
+			exc.getData().setVmmax(excXml.getVMMAX());
+			exc.getData().setVmmin(excXml.getVMMIN());
+			
+			exc.getData().setKg(excXml.getKG());
+			exc.getData().setKp(excXml.getKP());
+			exc.getData().setKi(excXml.getKI());
+			
+			exc.getData().setVbmax(excXml.getVBMAX());
+			
+			exc.getData().setKc(excXml.getKC());
+			exc.getData().setXl(excXml.getXL());
+			
+			exc.getData().setAngKp(excXml.getTHETAP());
+			
+		}
+		
+		
+		
+		
+		
+		////////////////////////////////////////////
 		////    IEEE-1981     //////////////////////
 		////////////////////////////////////////////
 		
@@ -224,6 +310,29 @@ public class ExciterDataHelper {
 			exc.getData().setSe_e2(excXml.getSE2());
 			exc.getData().setKe(excXml.getKE());
 		} 
+		
+		//IEEE 1981 AC1
+		else if (excXmlRec instanceof ExcIEEE1981TypeAC1XmlType){
+			ExcIEEE1981TypeAC1XmlType excXml =(ExcIEEE1981TypeAC1XmlType) excXmlRec;
+			IEEE1981AC1Exciter exc=ExciterObjectFactory.createIeee1981AC1Exciter(mach.getId()+"_Exc", excXml.getName(), mach);			
+			exc.getData().setTr(excXml.getTR().getValue());
+			exc.getData().setKa(excXml.getKa());
+			exc.getData().setTa(excXml.getTa().getValue());
+			exc.getData().setVrmax(excXml.getVrmax());
+			exc.getData().setVrmin(excXml.getVrmin());
+			exc.getData().setTc(excXml.getTC().getValue());
+			exc.getData().setTb(excXml.getTB().getValue());		
+			exc.getData().setKf(excXml.getKF());			
+			exc.getData().setTf(excXml.getTF().getValue());
+			exc.getData().setE1(excXml.getE1());
+			exc.getData().setSe_e1(excXml.getSE1());
+			exc.getData().setE2(excXml.getE2());
+			exc.getData().setSe_e2(excXml.getSE2());
+			exc.getData().setKe(excXml.getKE());
+			exc.getData().setKc(excXml.getKC());
+			exc.getData().setKd(excXml.getKD());
+			
+		}
 
 		//IEEE 1981 ST1 Type 				
 		else if (excXmlRec instanceof ExcIEEE1981ST1XmlType){

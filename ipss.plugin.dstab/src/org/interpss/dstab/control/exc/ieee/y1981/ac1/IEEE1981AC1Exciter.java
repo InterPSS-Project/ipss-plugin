@@ -7,9 +7,8 @@ import org.interpss.dstab.control.cml.block.FilterControlBlock;
 import org.interpss.dstab.control.cml.block.GainBlock;
 import org.interpss.dstab.control.cml.block.IntegrationControlBlock;
 import org.interpss.dstab.control.cml.block.WashoutControlBlock;
-import org.interpss.dstab.control.cml.func.FexExpFunction;
+import org.interpss.dstab.control.cml.func.FexComboFunction;
 import org.interpss.dstab.control.cml.func.SeFunction;
-import org.interpss.dstab.control.exc.ieee.y1981.ac1.IEEE1981AC1ExciterData;
 
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.controller.AnnotateExciter;
@@ -22,9 +21,11 @@ import com.interpss.dstab.mach.Machine;
 
 @AnController(
 		   input="mach.vt",
-		   output="this.teIntBlock.y * this.fexFunc.y",
+		   output="this.teIntBlock.y",// * this.fexFunc.y
 		   refPoint="this.filterBlock.u0 + this.washoutBlock.y - pss.vs  + this.trDelayBlock.y",
-		   display= {})
+		   display= {},
+		   debug = true
+)
 public class IEEE1981AC1Exciter extends AnnotateExciter {
 	public double k1 = 1.0;/*constant*/
 	public double ke = 1.0 , kd =1.0;
@@ -66,7 +67,7 @@ public class IEEE1981AC1Exciter extends AnnotateExciter {
 	   public double te = 0.6, kint = 1/te, veMax = 9999, veMin = 0 ;
 	   @AnControllerField(
 	      type= CMLFieldEnum.ControlBlock,
-	      input="this.taDelayBlock.y - this.seFunc.y - this.",
+	      input="this.taDelayBlock.y - this.VFEBlock.y",
 	      parameter={"type.NonWindup", "this.kint","this.veMax","this.veMin"},
 	      y0="mach.efd / this.fexFunc.y"	)
 	   IntegrationControlBlock teIntBlock;
@@ -99,7 +100,7 @@ public class IEEE1981AC1Exciter extends AnnotateExciter {
 	   @AnFunctionField(
 	      input= {"this.teIntBlock.y","mach.ifd"},
 	      parameter={"this.kc"}	)
-	   FexExpFunction fexFunc;
+	   FexComboFunction fexFunc;
 	
 	 /*
 	 * Part-2: Define the contructors
