@@ -53,17 +53,23 @@ public class SeFunction extends CMLFunctionAdapter {
 	 */
 	public SeFunction(double e1, double se_e1, double e2, double se_e2)
 			throws InterpssException {
-        
+         
 		 if((e1-e2)*(se_e1-se_e2)<0){
 			throw new InterpssException("Se(Efd) data error, E1, Se(E1), E2, Se(E2): "
 					+ e1 + ", " + se_e1 + ", " + e2 + ", " + se_e2);
 		}
-		this.e1 = e1;
-		this.se_e1 = se_e1;
-		this.e2 = e2;
-		this.se_e2 = se_e2;
-		this.b = Math.log(se_e1 / se_e2) / (e1 - e2);
-		this.a = se_e1 / Math.exp(this.b * e1);
+		if(Math.abs(e2)<1.0E-3 ||Math.abs(se_e2)<1.0E-3){
+			this.a=0;
+			this.b=1.0;
+		}
+		else{	
+			this.e1 = e1;
+			this.se_e1 = se_e1;
+			this.e2 = e2;
+			this.se_e2 = se_e2;
+			this.b = Math.log(se_e1 / se_e2) / (e1 - e2);
+			this.a = se_e1 / Math.exp(this.b * e1);
+		}
 	}
 
 	/**
