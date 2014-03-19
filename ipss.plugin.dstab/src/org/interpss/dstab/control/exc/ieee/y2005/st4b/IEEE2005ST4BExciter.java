@@ -1,4 +1,4 @@
-package org.interpss.dstab.control.exc.ieee.y2005.st3a;
+package org.interpss.dstab.control.exc.ieee.y2005.st4b;
 
 import java.lang.reflect.Field;
 
@@ -6,6 +6,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.control.cml.block.DelayControlBlock;
 import org.interpss.dstab.control.cml.block.FilterControlBlock;
 import org.interpss.dstab.control.cml.block.GainBlock;
+import org.interpss.dstab.control.cml.block.PIControlBlock;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Vector_xy;
 
@@ -24,9 +25,9 @@ import com.interpss.dstab.mach.MachineIfdBase;
 @AnController(
 		   input="mach.vt",
 		   output="this.customBlock.y",
-		   refPoint="this.viLimitBlock.u0  - pss.vs  + this.trDelayBlock.y",
+		   refPoint="this.vrPIBlock.u0  - pss.vs  + this.trDelayBlock.y",
 		   display= {})
-public class IEEE2005ST3AExciter  extends AnnotateExciter{
+public class IEEE2005ST4BExciter  extends AnnotateExciter{
 	public double k1 = 1.0;/*constant*/
 	
 	/*
@@ -43,90 +44,62 @@ public class IEEE2005ST3AExciter  extends AnnotateExciter{
           y0="mach.vt",//debug = true,
          initOrderNumber=-1 
           )
-     DelayControlBlock trDelayBlock;
+       DelayControlBlock trDelayBlock;
 	
-	
-	// gain limit
-     public double  vimax = 5.30, vimin = -5.11;
+	   //kpr kir-- PI  block
+	   public double Kpr =1, Kir=1, vrmax =99, vrmin =-99;
 	   @AnControllerField(
-		   type= CMLFieldEnum.StaticBlock,
-		   input="this.refPoint - this.trDelayBlock.y + pss.vs",
-		   parameter={"type.Limit", "this.k1", "this.vimax", "this.vimin"},
-		   y0="this.filterBlock.u0"//,
-		   //debug = true
-		   )//initOrderNumber = 1
-	   GainBlock viLimitBlock;
-	
-	//HV Gain
-	
-	
-	   //tb-tc lead-lag block
-	   //filterBlock----(1+sTc)/(1+sTb)
-	   public double  tc = 1.0, tb = 6.67;
-	   @AnControllerField(
-		   type=CMLFieldEnum.ControlBlock,
-		   input="this.viLimitBlock.y",
-		   parameter={"type.NoLimit", "this.k1", "this.tc", "this.tb"},
-		   y0="this.taDelayBlock.u0"//,
-		   //debug = true
-		   )//initOrderNumber = 2
-	   FilterControlBlock filterBlock;
+			   type =CMLFieldEnum.ControlBlock,
+			   input="this.refPoint - this.trDelayBlock.y + pss.vs",
+			   parameter={"type.NonWindup", "this.Kpr", "this.Kir","this.vrmax","this.vrmin"},
+			   y0="this.taDelayBlock.u0"
+			   )
+	   PIControlBlock vrPIBlock;
 
 	   //taDelayBlock----Ka/(1+sTa) with limits
-	   public double ka = 300.0, ta = 0.01,vrmax = 9,vrmin = -9.0;
+	   public double ka = 1.0, ta = 0.01;
 	   @AnControllerField(
 		   type=CMLFieldEnum.ControlBlock,
-		   input="this.filterBlock.y",
-		   parameter={"type.NonWindup", "this.ka", "this.ta","this.vrmax","this.vrmin"},
-		   y0="this.tmDelayBlock.u0 + this.kgGainBlock.y"//,//this.customBlock.y",//
-		  // debug = true
+		   input="this.vrPIBlock.y",
+		   parameter={"type.NoLimit", "this.ka", "this.ta"},
+		   y0="this.vmPIBlock.u0 + this.kgGainBlock.y"//,
+		   //debug = true
 		   )//initOrderNumber = 3
 	   DelayControlBlock taDelayBlock;
 	
 	
-//	//KG feedback, gain with upper limit
+     //KG feedback, gain with upper limit
 	   
-	   public double  kg =1.0 ,vgmax = 8, vgmin = -9999, tg=0.01;
+	   public double  kg =1.0;
 	   @AnControllerField(
-		   type= CMLFieldEnum.ControlBlock,
+		   type= CMLFieldEnum.StaticBlock,
 		   input="this.customBlock.y",
-		   parameter={"type.Limit", "this.kg", "this.tg","this.vgmax", "this.vgmin"},
+		   parameter={"type.NoLimit", "this.kg"},//, "this.tg"
 		   feedback = true//,
 		   //debug=true
 		   )
-	   DelayControlBlock kgGainBlock;
+	   GainBlock kgGainBlock;
 	   
+	 /*
+	  *NOTE: VOEL LVGate block is omitted 
+	  */
 	   
-//	     public double  kg =1.0 ,vgmax = 8, vgmin = -9999, 
-//		   @AnControllerField(
-//			   type= CMLFieldEnum.StaticBlock,
-//			   input="this.customBlock.y",
-//			   parameter={"type.Limit", "this.kg","this.vgmax", "this.vgmin"},
-//			   feedback = true,
-//			   debug=true)
-//		   GainBlock kgGainBlock;
-	
-			
-		//TM delayed block
-		   //tmDelayBlock----KM/(1+sTM) with NON-Windup limits
-		   public double km = 10.0, tm = 0.01,vmmax = 9,vmmin = -9.0;
-		   @AnControllerField(
-			   type=CMLFieldEnum.ControlBlock,
+	  //KPM KIM---PI CONTROL NON-Windup limits
+	  public double Kpm = 10.0, Kim = 0.01,vmmax = 9,vmmin = -9.0;
+	  @AnControllerField(
+			   type =CMLFieldEnum.ControlBlock,
 			   input="this.taDelayBlock.y - this.kgGainBlock.y",
-			   parameter={"type.NonWindup", "this.km", "this.tm","this.vmmax","this.vmmin"},
-			   y0="this.customBlock.u0"/// / this.vbGainBlock.y
-			  // initOrderNumber = 4,
-			  // debug = true
+			   parameter={"type.NonWindup", "this.Kpm", "this.Kim","this.vmmax","this.vmmin"},
+			   y0="this.customBlock.u0"
 			   )
-		   DelayControlBlock tmDelayBlock;
+	   PIControlBlock vmPIBlock;
 	   
 	   
 	   public double kc = 1.0, kp = 2.0, ki = 1.0, vbmax = 10.0, angKp_deg =0.0, xl =1.0;
 	   @AnControllerField(
 	      type= CMLFieldEnum.StaticBlock,
-	      input= "this.tmDelayBlock.y", 
-	      y0="mach.efd",
-	      debug = true
+	      input= "this.vmPIBlock.y", 
+	      y0="mach.efd"
 	      )
 	   public ICMLStaticBlock customBlock = new CMLStaticBlockAdapter() {
 	      private LimitType limit = new LimitType(vbmax, 0.0);
@@ -165,14 +138,14 @@ public class IEEE2005ST3AExciter  extends AnnotateExciter{
 			            kp*Math.sin(angleKp));
 			   double ve = 1.0;
 			   Machine mach =(Machine) eInternalContainer();
-			  
+			   //if(mach!=null){
 			   Complex vt = mach.getParentGen().getParentBus().getVoltage();
 			   Vector_xy it_xy = DStabFunction.transfer(getMachine().getIdq(),getMachine().getAngle());
 			   Complex it = new Complex(it_xy.x,it_xy.y);
 			   // ve = |kp*vt_ + j*(ki+kp_*xl)*it_|
 			   ve = (vt.multiply(kp).add(new Complex(0,1).multiply((kpCplx.multiply(xl).add(ki)).multiply(it)))).abs();
-			  
-			   //System.out.println("ve ="+ve);
+			  // }
+			  // System.out.println("ve ="+ve);
 			   return ve;
 	    	  
 	      }
@@ -199,55 +172,8 @@ public class IEEE2005ST3AExciter  extends AnnotateExciter{
 	   };
 	   
 
-	   
-	/*
-	
-	//Compound source to calculate VE
-	   public double kp = 2.0, ki = 1.0, angKp_deg =0.0, xl =1.0;
-	   @AnFunctionField(
-		  type=CMLFieldEnum.Function,
-	      input= "0.0" 
-	      )
-	   public ICMLFunction VeFunc = new CMLFunctionAdapter() {
-		   double angleKp = Math.toRadians(angKp_deg);
-		   Complex kpCplx = new Complex( kp*Math.cos(angleKp), 
-		            kp*Math.sin(angleKp));
-		   
-		   @Override		   
-		   public double eval(double[] dAry) {
-		
-			   Complex vt = getMachine().getDStabBus().getVoltage();
-			   Vector_xy it_xy = DStabFunction.transfer(getMachine().getIdq(),getMachine().getAngle());
-			   Complex it = new Complex(it_xy.x,it_xy.y);
-			   // ve = |kp*vt_ + j*(ki+kp_*xl)*it_|
-			   double ve = (vt.multiply(kp).add(new Complex(0,1).multiply((kpCplx.multiply(xl).add(ki)).multiply(it)))).abs();
-			   
-			   return ve;
-			}		   
-	   
-	   };
-	
-	//FexFunc Expression 
-	   public double kc = 0.5;
-	   @AnFunctionField(
-	      input= {"this.VeFunc.y","mach.ifd"},
-	      parameter={"this.kc"}	
-	      )
-	   FexComboFunction fexFunc;
-	  
-	   
-	
-	//VbGain block, gain with upper limit
-	     public double  vbmax = 8, vbmin = -9999;
-		   @AnControllerField(
-			   type= CMLFieldEnum.StaticBlock,
-			   input="this.VeFunc.y*this.fexFunc.y",
-			   parameter={"type.Limit", "this.k1", "this.vbmax", "this.vbmin"},
-			   initOrderNumber = 1,
-			   debug = true)
-		   GainBlock vbGainBlock;	   
-	
-	*/
+	 
+
 	/*
 	 * Part-2: Define the contructors
 	 * ==============================
@@ -257,9 +183,9 @@ public class IEEE2005ST3AExciter  extends AnnotateExciter{
 	     * Default Constructor
 	     *
 	     */
-	    public IEEE2005ST3AExciter() {
+	    public IEEE2005ST4BExciter() {
 		this("id", "name", "caty");
-	        this.setName("IEEE2005ST3A");
+	        this.setName("IEEE2005ST4B");
 	        this.setCategory("IEEE");
 	    }
 
@@ -270,11 +196,11 @@ public class IEEE2005ST3AExciter  extends AnnotateExciter{
 	     * @param name exciter name
 	     * @param caty exciter category
 	     */
-	    public IEEE2005ST3AExciter(String id, String name, String caty) {
+	    public IEEE2005ST4BExciter(String id, String name, String caty) {
 	        super(id, name, caty);
 	        // _data is defined in the parent class. your need to initialize with
 	        // the correct type, the data object to be edited
-	        _data = new IEEE2005ST3AExciterData();
+	        _data = new IEEE2005ST4BExciterData();
 	    }
 
 	/*
@@ -287,8 +213,8 @@ public class IEEE2005ST3AExciter  extends AnnotateExciter{
 	     *
 	     * @return the data object
 	     */
-	    public IEEE2005ST3AExciterData getData() {
-	        return (IEEE2005ST3AExciterData)_data;
+	    public IEEE2005ST4BExciterData getData() {
+	        return (IEEE2005ST4BExciterData)_data;
 	    }
 
 	    /**
@@ -303,21 +229,18 @@ public class IEEE2005ST3AExciter  extends AnnotateExciter{
 	        // pass the plugin data object values to the controller
 	    	this.tr = getData().getTr();
 	    	
-	        this.vimax = getData().getVimax();
-	        this.vimin = getData().getVimin();
-	        this.tc = getData().getTc();
-	        this.tb = getData().getTb();
-	        this.ka = getData().getKa();
-	        this.ta = getData().getTa();
+	        this.Kpr = getData().getKpr();
+	        this.Kir = getData().getKir();
+	        this.ka  = 1;
+	        this.ta  = getData().getTa();
 	        this.vrmax = getData().getVrmax();
 	        this.vrmin = getData().getVrmin();
-	        this.vgmax = getData().getVgmax();
-	        this.vgmin = -9999.0; // not defined in input data, to be compatible with interPSS only
 	        
-	        this.km  = getData().getKm();
-	        this.tm  = getData().getTm();
+	        this.Kpm  = getData().getKpm();
+	        this.Kim  = getData().getKim();
 	        this.vmmax = getData().getVmmax();
 	        this.vmmin = getData().getVmmin();
+	        
 	        this.kg   = getData().getKg();
 	        this.kp = getData().getKp();
 	        this.ki = getData().getKi();

@@ -1,17 +1,19 @@
 package org.interpss.dstab.control.cml.func;
 
-import com.interpss.common.exp.InterpssException;
-import com.interpss.dstab.controller.block.adapt.CMLFunctionExpressionAdapter;
-import com.interpss.dstab.datatype.ExpCalculator;
-
-public class FexExpFunction extends CMLFunctionExpressionAdapter {
+import com.interpss.dstab.controller.block.adapt.CMLFunctionAdapter;
+/**
+ * Use the input of VE and IFD to calculate and return the Fex function result fex(IN).
+ * @author Tony Huang
+ *
+ */
+public class FexComboFunction extends CMLFunctionAdapter {
 	private double kc = 1.0;
 	/**
 	 * constructor
 	 * 
 	 * @param k
 	 */
-	public FexExpFunction(double kc) {
+	public FexComboFunction(double kc) {
 		this.kc = kc;
 	}
 
@@ -22,12 +24,11 @@ public class FexExpFunction extends CMLFunctionExpressionAdapter {
 	 * @param dAry2D contains two arrays, the first is the VE, the second is the Ifd
 	 * @return the function value
 	 */
-	@Override public double eval(double[][] dAry2D) throws InterpssException {
-		ExpCalculator veExp = getInputExpList().get(0);
-		ExpCalculator ifdExp = getInputExpList().get(1);
+	@Override public double eval(double[] dAry) {
 		
-		double ve = ifdExp.eval(dAry2D[0]);
-		double ifd = ifdExp.eval(dAry2D[1]);
+		
+		double ve = dAry[0];
+		double ifd =dAry[1];
 		
 		double In = this.kc *ifd/ve;
 		if (In <= 0.0)

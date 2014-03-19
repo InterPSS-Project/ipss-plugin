@@ -37,6 +37,7 @@ import org.interpss.dstab.control.cml.block.IntegrationControlBlock;
 import org.interpss.dstab.control.cml.block.PIControlBlock;
 import org.interpss.dstab.control.cml.block.TFunc2ndOrderBlock;
 import org.interpss.dstab.control.cml.block.WashoutControlBlock;
+import org.interpss.dstab.control.cml.func.FexComboFunction;
 import org.interpss.dstab.control.cml.func.FexFunction;
 import org.interpss.dstab.control.cml.func.GainExpFunction;
 import org.interpss.dstab.control.cml.func.GainFunction;
@@ -45,6 +46,7 @@ import org.interpss.dstab.control.cml.func.HighValueFunction;
 import org.interpss.dstab.control.cml.func.LookupTableFunction;
 import org.interpss.dstab.control.cml.func.LowValueExpFunction;
 import org.interpss.dstab.control.cml.func.LowValueFunction;
+import org.interpss.dstab.control.cml.func.MultiplyFunction;
 import org.interpss.dstab.control.cml.func.PowerFunction;
 import org.interpss.dstab.control.cml.func.SeFunction;
 import org.interpss.dstab.control.cml.func.SwitchFunction;
@@ -273,6 +275,14 @@ public class CMLFieldObjectFactory implements ICMLFieldObjectFactory {
 	    	// format : no parameter
     	    return new FexFunction();
     	}
+    	else if (field.getType() == FexComboFunction.class) {
+    		double kc = controllor.getDoubleField(StringUtil.getParameterName(parameters[0]));
+    	    return new FexComboFunction(kc);
+    	}
+    	else if (field.getType() == MultiplyFunction.class) {
+    	    return new MultiplyFunction();
+    	}
+    
     	else if (field.getType() == VthevFunction.class) {
 	    	// format : {"this.kp", "this.ki"},
     	    double kp = controllor.getDoubleField(StringUtil.getParameterName(parameters[0]));
@@ -305,6 +315,7 @@ public class CMLFieldObjectFactory implements ICMLFieldObjectFactory {
     	    double k = controllor.getDoubleField(StringUtil.getParameterName(parameters[0]));
     	    return new GainExpFunction(k);
     	}
+    
     	return null;   
     }    
     
