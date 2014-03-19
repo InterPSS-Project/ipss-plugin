@@ -41,6 +41,7 @@ import org.interpss.dstab.control.exc.ieee.y1981.ac1.IEEE1981AC1Exciter;
 import org.interpss.dstab.control.exc.ieee.y1981.dc1.IEEE1981DC1Exciter;
 import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st3a.IEEE2005ST3AExciter;
+import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter;
 import org.interpss.dstab.control.exc.simple.SimpleExciter;
 
 import com.interpss.dstab.mach.Machine;
@@ -189,7 +190,7 @@ public class ExciterObjectFactory {
 	 * IEEE 1992/2005 Exciter set
 	 */
 	/**
-	 * factory method to create a IEEE1981ST1Exciter object
+	 * factory method to create a IEEE2005ST3A Exciter object
 	 * 
 	 * @param id exciter id
 	 * @param name exciter name
@@ -198,6 +199,20 @@ public class ExciterObjectFactory {
 	 */
 	public static IEEE2005ST3AExciter createIeee2005ST3AExciter(String id, String name, Machine machine) {
 		IEEE2005ST3AExciter exc = new IEEE2005ST3AExciter (id, name, "IEEE");
+		exc.setMachine(machine); 
+		return exc;
+  	}
+	
+	/**
+	 * factory method to create a IEEE2005ST4B Exciter object
+	 * 
+	 * @param id exciter id
+	 * @param name exciter name
+	 * @param machine parent machine object
+	 * @return
+	 */
+	public static IEEE2005ST4BExciter createIeee2005ST4BExciter(String id, String name, Machine machine) {
+		IEEE2005ST4BExciter exc = new IEEE2005ST4BExciter (id, name, "IEEE");
 		exc.setMachine(machine); 
 		return exc;
   	}

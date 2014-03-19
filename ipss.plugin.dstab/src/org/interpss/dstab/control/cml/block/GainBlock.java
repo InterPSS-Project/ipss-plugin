@@ -73,7 +73,10 @@ public class GainBlock extends CMLStaticBlockAdapter {
 	}
 
 	@Override public boolean initStateY0(double y0) {
-		u = y0 / getK();
+		if(getK() ==0.0 ||Math.abs(getK())<1.0E-5)
+			u = 0;
+		else 
+		    u = y0 / getK();
 		if (getType() == Limit)
 			return !limit.isViolated(y0);
 		else {
@@ -87,6 +90,9 @@ public class GainBlock extends CMLStaticBlockAdapter {
 	}
 
 	@Override public double getU0(double y0) {
+		if(getK() ==0.0)
+			return 0.0;
+		else
 		return y0 / getK();
 	}
 
