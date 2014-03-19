@@ -2,6 +2,7 @@ package org.interpss.dstab.control.exc.ieee.y1981.ac1;
 
 import java.lang.reflect.Field;
 
+import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.control.cml.block.DelayControlBlock;
 import org.interpss.dstab.control.cml.block.FilterControlBlock;
 import org.interpss.dstab.control.cml.block.GainBlock;
@@ -9,26 +10,32 @@ import org.interpss.dstab.control.cml.block.IntegrationControlBlock;
 import org.interpss.dstab.control.cml.block.WashoutControlBlock;
 import org.interpss.dstab.control.cml.func.FexComboFunction;
 import org.interpss.dstab.control.cml.func.SeFunction;
+import org.interpss.numeric.datatype.LimitType;
+import org.interpss.numeric.datatype.Vector_xy;
 
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.controller.AnnotateExciter;
 import com.interpss.dstab.controller.annotate.AnController;
 import com.interpss.dstab.controller.annotate.AnControllerField;
 import com.interpss.dstab.controller.annotate.AnFunctionField;
+import com.interpss.dstab.controller.block.ICMLStaticBlock;
+import com.interpss.dstab.controller.block.adapt.CMLStaticBlockAdapter;
 import com.interpss.dstab.datatype.CMLFieldEnum;
+import com.interpss.dstab.funcImpl.DStabFunction;
 import com.interpss.dstab.mach.Machine;
+import com.interpss.dstab.mach.MachineIfdBase;
 
 
 @AnController(
 		   input="mach.vt",
-		   output="this.teIntBlock.y",// * this.fexFunc.y
+		   output="this.customBlock.y",// * this.fexFunc.y
 		   refPoint="this.filterBlock.u0 + this.washoutBlock.y - pss.vs  + this.trDelayBlock.y",
-		   display= {},
-		   debug = true
+		   display= {}//,
+		   //debug = true
 )
 public class IEEE1981AC1Exciter extends AnnotateExciter {
 	public double k1 = 1.0;/*constant*/
-	public double ke = 1.0 , kd =1.0;
+	
 	/*
 	 * Part-1: Define the blocks
 	 * ==============================
@@ -52,7 +59,9 @@ public class IEEE1981AC1Exciter extends AnnotateExciter {
 		   type=CMLFieldEnum.ControlBlock,
 		   input="this.refPoint  + pss.vs  - this.trDelayBlock.y- this.washoutBlock.y",
 		   parameter={"type.NoLimit", "this.k1", "this.tc", "this.tb"},
-		   y0="this.taDelayBlock.u0"  )
+		   y0="this.taDelayBlock.u0"//,
+		   //debug = true
+		   )
 	   FilterControlBlock filterBlock;
 
 	   public double ka = 39.35, ta = 0.02, vrmax = 6.0, vrmin = -6.0;
@@ -60,7 +69,9 @@ public class IEEE1981AC1Exciter extends AnnotateExciter {
 	      type= CMLFieldEnum.ControlBlock,
 	      input="this.filterBlock.y",
 	      parameter={"type.NonWindup", "this.ka", "this.ta", "this.vrmax", "this.vrmin"},
-	      y0="this.delayBlock.u0 + this.seFunc.y"	)
+	      y0="this.teIntBlock.u0 + this.VFEBlock.y"//,
+	      //debug = true
+	      )
 	   DelayControlBlock taDelayBlock;
 
 	   
@@ -69,15 +80,85 @@ public class IEEE1981AC1Exciter extends AnnotateExciter {
 	      type= CMLFieldEnum.ControlBlock,
 	      input="this.taDelayBlock.y - this.VFEBlock.y",
 	      parameter={"type.NonWindup", "this.kint","this.veMax","this.veMin"},
-	      y0="mach.efd / this.fexFunc.y"	)
+	      y0="this.customBlock.u0"//,
+	      //debug = true
+	      )
 	   IntegrationControlBlock teIntBlock;
-       
+	   
+	   //FEX and IN part component
+	   
+	   public double kc = 1.0;
 	   @AnControllerField(
 	      type= CMLFieldEnum.StaticBlock,
+	      input= "this.teIntBlock.y", 
+	      y0="mach.efd"//,
+	      //debug = true
+	      )
+	   public ICMLStaticBlock customBlock = new CMLStaticBlockAdapter() {
+	      private double fex = 0.0;
+	     
+	      @Override
+	      public boolean initStateY0(double y0) {
+	    	  double ifd= getMachine().calculateIfd(MachineIfdBase.EXCITER);
+	    	  
+		     // fex = fexFunc(this.u,ifd);
+	    	 //TODO use the "if IN <0.433, Fex = 1-0.577*IN" assumption to initialize it
+	    	  
+	          this.u = y0 + 0.577*kc*ifd;
+	          return true;
+	      }
+	      @Override
+	      public double getU0(){
+	    	  return this.u;
+	      }
+	      
+	     
+	      @Override
+	      public void eulerStep1(double u, double dt) {
+	         this.u = u;
+	      }
+	      @Override
+	      public void eulerStep2(double u, double dt) {
+	         this.u = u;
+	      }
+	      @Override
+	      public double getY() {
+	    	 double ifd= getMachine().calculateIfd(MachineIfdBase.EXCITER);
+	         fex = fexFunc(this.u,ifd);
+	         return this.u * fex;
+	      }
+	  
+	      private double fexFunc (double ve, double ifd){
+	    	  double In = kc *ifd/ve;
+	  		if (In <= 0.0)
+	  			return 1.0;
+	  		else if (In > 0.0 && In <= 0.433)
+	  			return 1.0 - 0.5777 * In;
+	  		else if (In > 0.433 && In < 0.75)
+	  			return Math.sqrt(0.75 - In * In);
+	  		else if (In >= 0.75 && In <= 1.0)
+	  			return 1.732 * (1.0 - In);
+	  		else
+	  			return 0.0; // In > 1.0
+	      }
+	   };
+	  
+	   //TODO It was found that interpss requires to use a control block for feedback block
+	   public double ke = 1.0 , kd =1.0, tfe = 0.01;
+	   @AnControllerField(
+	      type= CMLFieldEnum.ControlBlock,
 	      input="this.teIntBlock.y*this.ke + this.teIntBlock.y*this.seFunc.y + this.kd*mach.ifd",
-	      parameter={"type.NoLimit", "this.k1"},
+	      parameter={"type.NoLimit", "this.k1","this.tfe"},
 	      feedback = true	)
-	   GainBlock VFEBlock;
+	   DelayControlBlock VFEBlock;
+       
+//	   public double ke = 1.0 , kd =1.0;
+//	   @AnControllerField(
+//	      type= CMLFieldEnum.StaticBlock,
+//	      input="this.teIntBlock.y*this.ke + this.teIntBlock.y*this.seFunc.y + this.kd*mach.ifd",
+//	      parameter={"type.NoLimit", "this.k1"},
+//	      feedback = true	)
+//	   GainBlock VFEBlock;
       
 	   //seFunc----Se
 	   public double efd1 = 6.0, e1 = efd1, se_e1 = 0.1, e2 = 0.75 * efd1, se_e2 = 0.05;
@@ -95,12 +176,6 @@ public class IEEE1981AC1Exciter extends AnnotateExciter {
 	      feedback = true	)
 	   WashoutControlBlock washoutBlock;
 	
-	   
-	   public double kc = 0.5;
-	   @AnFunctionField(
-	      input= {"this.teIntBlock.y","mach.ifd"},
-	      parameter={"this.kc"}	)
-	   FexComboFunction fexFunc;
 	
 	 /*
 	 * Part-2: Define the contructors
