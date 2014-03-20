@@ -10,6 +10,7 @@ import org.interpss.dstab.control.cml.block.PIControlBlock;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Vector_xy;
 
+import com.interpss.common.util.IpssLogger;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.controller.AnnotateExciter;
 import com.interpss.dstab.controller.annotate.AnController;
@@ -108,7 +109,10 @@ public class IEEE2005ST4BExciter  extends AnnotateExciter{
 	      @Override
 	      public boolean initStateY0(double y0) {
 	    	  VB = calcVB(calcVe());
-	    	  
+	    	  if(VB ==0.0){
+	    		  IpssLogger.getLogger().severe("Error: VB of IEEE 2005 ST4B exciter is 0 for initialization, @ "+getMachine().getId() );
+	    	      return false;
+	    	  }
 	          this.u = y0/VB;
 	          //System.out.println("Y0, VB, u ="+y0+","+VB+","+u);
 	          return true;
@@ -138,13 +142,12 @@ public class IEEE2005ST4BExciter  extends AnnotateExciter{
 			            kp*Math.sin(angleKp));
 			   double ve = 1.0;
 			   Machine mach =(Machine) eInternalContainer();
-			   //if(mach!=null){
+			 
 			   Complex vt = mach.getParentGen().getParentBus().getVoltage();
-			   Vector_xy it_xy = DStabFunction.transfer(getMachine().getIdq(),getMachine().getAngle());
-			   Complex it = new Complex(it_xy.x,it_xy.y);
+			   Complex it = mach.getIxy();
 			   // ve = |kp*vt_ + j*(ki+kp_*xl)*it_|
 			   ve = (vt.multiply(kp).add(new Complex(0,1).multiply((kpCplx.multiply(xl).add(ki)).multiply(it)))).abs();
-			  // }
+			  
 			  // System.out.println("ve ="+ve);
 			   return ve;
 	    	  

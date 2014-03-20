@@ -13,6 +13,7 @@ import org.interpss.dstab.control.cml.func.SeFunction;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Vector_xy;
 
+import com.interpss.common.util.IpssLogger;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.controller.AnnotateExciter;
 import com.interpss.dstab.controller.annotate.AnController;
@@ -168,7 +169,7 @@ public class IEEE1981AC1Exciter extends AnnotateExciter {
 	   SeFunction seFunc;
 
 	   //washoutBlock----sKf/(1+sTf)
-	   public double kf = 0.0001, tf = 1.0, k = kf/tf;
+	   public double kf = 1, tf = 0.1, k = kf/tf;
 	   @AnControllerField(
 	      type= CMLFieldEnum.ControlBlock,
 	      input="this.VFEBlock.y",
@@ -251,8 +252,19 @@ public class IEEE1981AC1Exciter extends AnnotateExciter {
 	        this.tf = getData().getTf();
 	        
 	        //init the value internally used.
+	        if(te == 0.0){
+				IpssLogger.getLogger().severe("Te = 0.0 for Exciter of "+mach.getId());
+				return false;
+			}
+	        
 	        this.k1 = 1.0;
-	        this.k = kf/tf;
+			if(tf == 0.0){
+				IpssLogger.getLogger().severe("Tf =0.0 for Exciter of "+mach.getId());
+				this.k = 0.0;
+			}
+			else
+			  this.k = kf/tf;
+			
 	        this.kint = 1.0/te;
 	        veMax = 9999; 
 	        veMin = 0;
