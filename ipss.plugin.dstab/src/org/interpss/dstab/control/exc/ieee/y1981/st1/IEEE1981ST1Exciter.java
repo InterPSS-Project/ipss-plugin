@@ -10,6 +10,7 @@ import java.lang.reflect.Field;
 import org.interpss.dstab.control.cml.block.DelayControlBlock;
 import org.interpss.dstab.control.cml.block.FilterControlBlock;
 import org.interpss.dstab.control.cml.block.GainBlock;
+import org.interpss.dstab.control.cml.block.WashoutControlBlock;
 
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.controller.AnnotateExciter;
@@ -25,28 +26,47 @@ import com.interpss.dstab.mach.MachineIfdBase;
  * =================================================
  */
 @AnController(
-		   input="this.refPoint - mach.vt + pss.vs",
+		   input="mach.vt",
 		   output="this.gainCustomBlock.y",
-		   refPoint="this.gainBlock.u0 - pss.vs + mach.vt",
-		   display= {}
+		   refPoint="this.gainBlock.u0 - pss.vs + this.trDelayBlock.y + this.washoutBlock.y",
+		   display= {}//,
+		   //debug = true
 )
 
 public class IEEE1981ST1Exciter extends AnnotateExciter {
+	public double k1 = 1.0;/*constant*/
+	
+	/*
+	 * Part-1: Define the blocks
+	 * ==============================
+	 */
+	// transducer block
+	 public double tr = 0.02;
+     @AnControllerField(
+          type= CMLFieldEnum.ControlBlock,
+          input="mach.vt",
+          parameter={"type.NoLimit", "this.k1", "this.tr"},
+          y0="mach.vt",//debug = true,
+          initOrderNumber=-1 
+          )
+     DelayControlBlock trDelayBlock;
+	
+	
 	   //gainBlock----kg1 = 1.0 uses for set the limits
-	   public double kg1 = 1.0/*constant*/, vimax = 5.30, vimin = -5.11;
+	   public double vimax = 5.30, vimin = -5.11;
 	   @AnControllerField(
 		   type= CMLFieldEnum.StaticBlock,
-		   input="this.refPoint - mach.vt + pss.vs",
-		   parameter={"type.Limit", "this.kg1", "this.vimax", "this.vimin"},
+		   input="this.refPoint - this.trDelayBlock.y + pss.vs - this.washoutBlock.y",
+		   parameter={"type.Limit", "this.k1", "this.vimax", "this.vimin"},
 		   y0="this.filterBlock.u0"	)
 	   GainBlock gainBlock;
 
 	   //filterBlock----(1+sTc)/(1+sTb)
-	   public double k2 = 1.0/*constant*/, tc = 1.0, tb = 6.67;
+	   public double tc = 1.0, tb = 6.67;
 	   @AnControllerField(
 		   type=CMLFieldEnum.ControlBlock,
 		   input="this.gainBlock.y",
-		   parameter={"type.NoLimit", "this.k2", "this.tc", "this.tb"},
+		   parameter={"type.NoLimit", "this.k1", "this.tc", "this.tb"},
 		   y0="this.kaDelayBlock.u0"  )
 	   FilterControlBlock filterBlock;
 
@@ -58,8 +78,28 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
 		   parameter={"type.NoLimit", "this.ka", "this.ta"},
 		   y0="this.gainCustomBlock.u0"  )
 	   DelayControlBlock kaDelayBlock;
-
-	public double kg = 1.0/*constant*/, kc = 0.14, vrmax = 5.30, vrmin = -5.11;
+	   
+	   
+	   //washoutBlock----sKf/(1+sTf)
+	   public double kf = 1, tf = 0.01, k = kf/tf;
+	   @AnControllerField(
+	      type= CMLFieldEnum.ControlBlock,
+	      input="this.kaDelayBlock.y",
+	      parameter={"type.NoLimit", "this.k", "this.tf"},
+	      feedback = true	)
+	   WashoutControlBlock washoutBlock;
+	   /*
+	   public double vrmax = 5.30, vrmin = -5.11,kc =0;
+	   @AnControllerField(
+		   type= CMLFieldEnum.StaticBlock,
+		   input="this.kaDelayBlock.y",
+		   parameter={"type.Limit", "this.k1", "this.vrmax", "this.vrmin"},
+		   y0="mach.efd",
+		   debug = true)
+	   GainBlock gainCustomBlock;
+	   */
+   
+	public double kg = 1.0, kc = 0.0, vrmax = 5.30, vrmin = -5.11;
 	   @AnControllerField(
 	      type=CMLFieldEnum.StaticBlock,
 	      input="this.kaDelayBlock.y",
@@ -75,10 +115,14 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
 
 		  @Override
 		  public double getY() {
-				if(super.getY() > calLimit(vrmax)) {
-				  return calLimit(vrmax);
-			  }else if(super.getY() < calLimit(vrmin)) {
-				  return calLimit(vrmin);
+			  double vmax = calLimit(vrmax);
+			  double vmin = calLimit(vrmin);
+			  double y =super.getY();
+			  //System.out.println("Efd max, min, y ="+vmax+","+vmin+","+y);
+			  if(super.getY() > vmax) {
+				  return vmax;
+			  }else if(super.getY() < vmin) {
+				  return vmin;
 			  }else {
 				  return super.getY();
 			  }
@@ -88,7 +132,7 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
 		  private double calLimit(double vrlimit) {
 			  	Machine mach = getMachine();
 		      DStabBus dbus = mach.getDStabBus();
-		      double vt = mach.getVdq().abs();
+		      double vt = dbus.getVoltageMag();
 		     // double ifd = mach.calculateIfd(dbus);
 		      double ifd_Exc_pu=mach.calculateIfd(MachineIfdBase.EXCITER);
 		     // System.out.println(mach.getDStabBus().getId()+", exc based IFD ="+ifd_Exc_pu+", ifd="+mach.calculateIfd(dbus));
@@ -96,6 +140,9 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
 		     // return vt * vrlimit - kc * ifd;
 		  }
 	   };
+	   
+	   
+
 
     // UI Editor panel
   //  private static NBIEEE1981ST1ExciterEditPanel _editPanel = new NBIEEE1981ST1ExciterEditPanel();
@@ -153,6 +200,7 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
     @Override
     public boolean initStates(DStabBus bus, Machine mach) {
         // pass the plugin data object values to the controller
+    	this.tr =getData().getTr();
         this.vimax = getData().getVimax();
         this.vimin = getData().getVimin();
         this.tc = getData().getTc();
@@ -162,6 +210,10 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
         this.vrmax = getData().getVrmax();
         this.vrmin = getData().getVrmin();
         this.kc = getData().getKc();
+        this.kf = getData().getKf();
+        this.tf = getData().getTf();
+        
+        this.k= this.kf/tf;
         // always add the following statement
         return super.initStates(bus, mach);
     }
