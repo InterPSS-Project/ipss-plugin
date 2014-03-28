@@ -108,7 +108,7 @@ public class Ieee1968Type1Exciter extends AnnotateExciter {
 	   SeFunction seFunc;
 
 	   // define a CML washout block
-	   public double kf = 1.0, tf = 0.05, k =1.0;
+	   public double kf = 1.0, tf = 0.05, k = kf/tf;
 	   @AnControllerField(
 	      type= CMLFieldEnum.ControlBlock,
 	      input="this.teIntBlock.y",

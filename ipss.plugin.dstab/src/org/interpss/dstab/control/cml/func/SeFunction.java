@@ -25,6 +25,7 @@
 package org.interpss.dstab.control.cml.func;
 
 import com.interpss.common.exp.InterpssException;
+import com.interpss.common.util.IpssLogger;
 import com.interpss.dstab.controller.block.adapt.CMLFunctionAdapter;
 
 /**
@@ -107,13 +108,16 @@ public class SeFunction extends CMLFunctionAdapter {
 		double efd = dAry[0]; // the only input to this function is Efd
 		double se = 0;
 		if(this.functionType == 1){
-			se = this.b * Math.pow((efd-this.a), 2)/efd;
+			if(efd !=0.0 && efd >1.0E-2)
+			  se = this.b * Math.pow((efd-this.a), 2)/efd;
+			else
+			  se =0.0;
 		}
 		else
 			se = this.b * Math.exp(this.a * efd);
 		if(Double.isNaN(se)){
-			System.out.print("a, b ="+this.a+","+this.b);
-			throw new Error("Se function returns NAN!");
+			System.out.print("a, b, efd ="+this.a+","+this.b+","+efd);
+			IpssLogger.getLogger().severe(("Se function returns NAN!"));
 		}
 		return se;
 	}
