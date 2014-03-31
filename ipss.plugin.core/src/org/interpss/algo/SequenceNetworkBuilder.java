@@ -1,6 +1,7 @@
 package org.interpss.algo;
 
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.acsc.Acsc3WBranch;
 import com.interpss.core.acsc.AcscBranch;
@@ -118,7 +119,10 @@ public class SequenceNetworkBuilder {
 		for(Branch bra: this._net.getBranchList()){
 			if(bra instanceof AcscBranch){
 				AcscBranch scBranch = (AcscBranch) bra;
-			
+				if(bra.getId().equals("Bus19410->3WNDTR_19410_14990_14991_1(1)")){
+					System.out.print("proc Bus19410->3WNDTR_19410_14990_14991_1(1)");
+				}
+				
 			if(scBranch.isXfr() && !is3WXfrBranch(scBranch)){
 				//Line NegZ = PosZ
 				if(seq==SequenceCode.NEGATIVE){
@@ -190,7 +194,10 @@ public class SequenceNetworkBuilder {
 	}
 	
 	private boolean set3WXfrSeqData(SequenceCode seq){
-		for(Branch bra: this._net.getBranchList()){
+		for(Branch bra: this._net.getSpecialBranchList()){
+			if(bra.getId().equals("Bus19410->Bus14990->Bus14991(1)")){
+				System.out.print("proc Bus19410->Bus14990->Bus14991(1)");
+			}
 			if(bra instanceof Acsc3WBranch){
 				Acsc3WBranch bra3w = (Acsc3WBranch) bra;
 				if(seq==SequenceCode.NEGATIVE){
@@ -198,9 +205,11 @@ public class SequenceNetworkBuilder {
 					 // in ipss core engine.
 				}
 				else if(seq==SequenceCode.ZERO){
-					//HV/MV/LV : Wye-Wye-Delta connection
-					//Based on PSS/E, it will be 1-1-3 connection
 					
+					
+					//Type-1: HV/MV/LV : Wye-Wye-Delta connection
+					//Based on PSS/E, it will be 1-1-3 connection
+
 					AcscBranch fromBranch =(AcscBranch) bra3w.getFromBranch();
 					AcscBranch toBranch =(AcscBranch) bra3w.getToBranch();
 					AcscBranch terBranch =(AcscBranch) bra3w.getTertiaryBranch();
@@ -213,6 +222,78 @@ public class SequenceNetworkBuilder {
 					
 					terBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
 					terBranch.setXfrToConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+					
+					//Type 2: Two generators connecting to one HV bus with 3w step up transformer
+					/*
+					 *  19410, 14990, 14991,'1 ',2,2,1,   0.00000,   0.00000,2,'SUN G1G2    ',1,   4,1.0000
+                        0.00000,   0.10000,    34.50,   0.00000,   0.15000,    34.50,   0.00000,   0.10000,    34.50,1.01847,  31.9478
+                        230.000, 230.000,   0.000,   115.00,   138.00,   115.00, 0,      0, 0.00000, 0.00000, 0.00000, 0.00000, 999, 0, 0.00000, 0.00000
+                        13.8000,  13.800,   0.000,   115.00,   138.00,   115.00, 0,      0, 1.10000, 0.90000, 1.10000, 0.90000,  33, 0, 0.00000, 0.00000
+                        13.8000,  13.800,   0.000,   115.00,   138.00,   115.00, 0,      0, 1.10000, 0.90000, 1.10000, 0.90000,  33, 0, 0.00000, 0.00000
+					 */
+					
+					int highVoltSide = 1;
+					if(bra3w.getFromBus().getBaseVoltage()>bra3w.getToBus().getBaseVoltage() &&
+							bra3w.getFromBus().getBaseVoltage()>bra3w.getTertiaryBus().getBaseVoltage()){
+						highVoltSide =1;
+					}
+					else if(bra3w.getToBus().getBaseVoltage()>bra3w.getFromBus().getBaseVoltage() &&
+							bra3w.getToBus().getBaseVoltage()>bra3w.getTertiaryBus().getBaseVoltage()){
+						highVoltSide =2;
+					}
+					else if(bra3w.getTertiaryBus().getBaseVoltage()>bra3w.getFromBus().getBaseVoltage() &&
+							bra3w.getTertiaryBus().getBaseVoltage()>bra3w.getToBus().getBaseVoltage())
+						highVoltSide =3;
+					
+					/*
+					 * Update the 3w transformer connection if it is not an ordinary transformer
+					 * if two bus voltages are less than 35 kV and they are equal 
+					 */
+					switch(highVoltSide){
+					case 1:
+						if(bra3w.getToBus().getBaseVoltage()<bra3w.getTertiaryBus().getBaseVoltage()){
+							terBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+							toBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
+						}
+						// fromBus is HV, toBus and terBus are generator bus, thus both are Delta connection
+					   else if(bra3w.getToBus().getBaseVoltage()<35000.0 && bra3w.getToBus().getBaseVoltage()==bra3w.getTertiaryBus().getBaseVoltage()
+						&& ((AclfBus)bra3w.getToBus()).isGen() && ((AclfBus)bra3w.getTertiaryBus()).isGen()){
+							
+							toBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
+						}
+						break;
+					case 2:
+						if(bra3w.getFromBus().getBaseVoltage()<bra3w.getTertiaryBus().getBaseVoltage()){
+								terBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+								fromBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
+								
+						 }
+						// ToBus is HV, fromBus and terBus are generator bus, thus both are Delta connection
+						else if(bra3w.getFromBus().getBaseVoltage()<35000.0 && bra3w.getFromBus().getBaseVoltage()==bra3w.getTertiaryBus().getBaseVoltage()
+								&& ((AclfBus)bra3w.getFromBus()).isGen() && ((AclfBus)bra3w.getTertiaryBus()).isGen()){
+							
+							fromBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
+	
+						}
+						break;
+					case 3: //terBus is the HV
+						terBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+						
+						if(bra3w.getFromBus().getBaseVoltage()>bra3w.getToBus().getBaseVoltage())
+							toBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
+							
+						else if(bra3w.getFromBus().getBaseVoltage()<bra3w.getToBus().getBaseVoltage())
+							fromBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
+						
+						// TerBus is HV, fromBus and toBus are generator bus, thus both are Delta connection
+						else if(bra3w.getToBus().getBaseVoltage()<35000.0 && bra3w.getFromBus().getBaseVoltage()==bra3w.getToBus().getBaseVoltage()
+								&& ((AclfBus)bra3w.getFromBus()).isGen() && ((AclfBus)bra3w.getToBus()).isGen()){
+							fromBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
+							toBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
+							terBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+						}
+						break;
+					}
 					
 					
 				}
@@ -234,11 +315,9 @@ public class SequenceNetworkBuilder {
 	}
 	
 	private boolean is3WXfrBranch(AcscBranch bra){
-		if(bra.isXfr()||bra.isPSXfr()){
-			if(bra.getId().contains("3WNDTR")){
+		if(bra.getId().contains("3WNDTR")){
 				return true;
-			}	
-		}
+		}	
 		return false;
 	}
 	private boolean isGenXfr(AcscBranch bra){
@@ -250,6 +329,8 @@ public class SequenceNetworkBuilder {
 		}
 		return false;
 	}
+	
+	
 	private AcscBus getHighVoltageBus(AcscBranch bra){
 		if(bra.getFromAcscBus().getBaseVoltage()>bra.getToAcscBus().getBaseVoltage())
 			return bra.getFromAcscBus();
