@@ -60,7 +60,7 @@ public class AcscOutFunc {
 	 * @param algo
 	 * @return
 	 */
-	public static String faultResult2String(AcscNetwork faultNet, SimpleFaultAlgorithm algo) {
+	public static String faultResult2String(BaseAcscNetwork<?,?> faultNet, SimpleFaultAlgorithm algo) {
 		StringBuffer sb = new StringBuffer();
 		ipssLogger.fine(
 				"# of Fault objects = " + algo.getFaultList().size());
@@ -76,7 +76,7 @@ public class AcscOutFunc {
 		return sb.toString();
 	}
 
-	private static String branchFaultInfo(AcscBranchFault bf, AcscNetwork net) {
+	private static String branchFaultInfo(AcscBranchFault bf, BaseAcscNetwork<?,?> net) {
 		StringBuffer str = new StringBuffer("");
 		try {
 			double baseKVA = net.getBaseKva();
@@ -103,7 +103,7 @@ public class AcscOutFunc {
 		return str.toString();
 	}
 
-	private static String busFaultInfo(AcscBusFault bf, AcscNetwork net) {
+	private static String busFaultInfo(AcscBusFault bf, BaseAcscNetwork<?,?> net) {
 		StringBuffer str = new StringBuffer("");
 		try {
 			double baseKVA = net.getBaseKva();
@@ -257,8 +257,8 @@ public class AcscOutFunc {
 				AcscBranch bra = (AcscBranch) branchList.get(n);
 				str.append("     " + Number2String.toStr(-20, bra.getId())	+ "   ");
 				try {
-					Complex3x1 cpu = bf.getFaultResult().getBranchAmpsFrom2To_012(++cnt);
-					Complex3x1 camp = bf.getFaultResult().getBranchAmpsFrom2To_012(cnt, UnitType.Amp,
+					Complex3x1 cpu = bf.getFaultResult().getBranchAmpsFrom2To_012(cnt);
+					Complex3x1 camp = bf.getFaultResult().getBranchAmpsFrom2To_012(cnt++, UnitType.Amp,
 									bra.getFromBus().getBaseVoltage(),
 									net.getBaseKva());
 					str.append(Number2String.toStr("###0.###", cpu.b_1.abs()) + "   "
