@@ -12,6 +12,7 @@ import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
+import org.interpss.algo.SequenceNetworkBuilder;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.interpss.numeric.NumericConstant;
@@ -23,6 +24,7 @@ import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.SimuObjectFactory;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -43,7 +45,7 @@ import com.interpss.simu.SimuCtxType;
 
 public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 		
-		//@Test
+		@Test
 		public void test_IEEE39Bus_Dstab(){
 			IpssCorePlugin.init();
 			PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
@@ -67,7 +69,13 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 			
 			
 		    DStabilityNetwork dsNet =simuCtx.getDStabilityNet();
-		    //System.out.println(dsNet.net2String());
+		    
+		    // build sequence network
+		    SequenceNetworkBuilder seqNetHelper = new SequenceNetworkBuilder(dsNet,true);
+		    seqNetHelper.buildSequenceNetwork(SequenceCode.NEGATIVE);
+		    seqNetHelper.buildSequenceNetwork(SequenceCode.ZERO);
+		    
+		    System.out.println(dsNet.net2String());
 
 		    
 			DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
@@ -78,7 +86,7 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 			
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 			dstabAlgo.setSimuStepSec(0.004167);
-			dstabAlgo.setTotalSimuTimeSec(6);
+			dstabAlgo.setTotalSimuTimeSec(0);
 			dstabAlgo.setRefMachine(dsNet.getMachine("Bus31-mach1"));
 			dsNet.setNetEqnIterationNoEvent(6);
 			dsNet.addDynamicEvent(create3PhaseFaultEvent("Bus2",dsNet,1,0.0833),"3phaseFault@Bus2");
@@ -111,7 +119,7 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(2);
 			
-			IpssLogger.getLogger().setLevel(Level.FINE);
+			IpssLogger.getLogger().setLevel(Level.INFO);
 			if (dstabAlgo.initialization()) {
 				System.out.println("Running DStab simulation ...");
 				System.out.println(dsNet.getMachineInitCondition());
@@ -151,7 +159,7 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 			
 		}
 		
-		@Test
+		//@Test
 		public void IEEE39_Dstab_benchMark(){
 			IpssCorePlugin.init();
 			PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
