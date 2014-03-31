@@ -119,10 +119,11 @@ public class SequenceNetworkBuilder {
 		for(Branch bra: this._net.getBranchList()){
 			if(bra instanceof AcscBranch){
 				AcscBranch scBranch = (AcscBranch) bra;
+				/*
 				if(bra.getId().equals("Bus19410->3WNDTR_19410_14990_14991_1(1)")){
 					System.out.print("proc Bus19410->3WNDTR_19410_14990_14991_1(1)");
 				}
-				
+				*/
 			if(scBranch.isXfr() && !is3WXfrBranch(scBranch)){
 				//Line NegZ = PosZ
 				if(seq==SequenceCode.NEGATIVE){
@@ -195,9 +196,7 @@ public class SequenceNetworkBuilder {
 	
 	private boolean set3WXfrSeqData(SequenceCode seq){
 		for(Branch bra: this._net.getSpecialBranchList()){
-			if(bra.getId().equals("Bus19410->Bus14990->Bus14991(1)")){
-				System.out.print("proc Bus19410->Bus14990->Bus14991(1)");
-			}
+
 			if(bra instanceof Acsc3WBranch){
 				Acsc3WBranch bra3w = (Acsc3WBranch) bra;
 				if(seq==SequenceCode.NEGATIVE){
