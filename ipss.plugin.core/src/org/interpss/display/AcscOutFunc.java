@@ -254,6 +254,7 @@ public class AcscOutFunc {
 			List<?> branchList = net.getBranchList();
 			int cnt = 0;
 			for (int n = 0; n < branchList.size(); n++) {
+
 				//Only AcscBranch will be considered, skip the 3w xfr and HVDC, Facts
 				if(branchList.get(n) instanceof  AcscBranch){
 					AcscBranch bra = (AcscBranch) branchList.get(n);
