@@ -131,7 +131,7 @@ public class SequenceNetworkBuilder {
 				 // in ipss core engine.
 				}
 				else if(seq==SequenceCode.ZERO){
-					if(this.overrideSeqData || scBranch.getZ0()==null ){
+					if(this.overrideSeqData || scBranch.getZ0().abs()==0.0){
 						scBranch.setZ0(scBranch.getZ());
 						//zero sequence branch shunt B0 setting, zero by default
 						scBranch.setHB0(0);
@@ -215,12 +215,19 @@ public class SequenceNetworkBuilder {
 					
 					fromBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
 					fromBranch.setXfrToConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+					fromBranch.setZ0(fromBranch.getZ());
+					fromBranch.setHB0(0);
 					
 					toBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
 					toBranch.setXfrToConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+					toBranch.setZ0(toBranch.getZ());
+					toBranch.setHB0(0);
+					
 					
 					terBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
 					terBranch.setXfrToConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+					terBranch.setZ0(terBranch.getZ());
+					terBranch.setHB0(0);
 					
 					//Type 2: Two generators connecting to one HV bus with 3w step up transformer
 					/*
