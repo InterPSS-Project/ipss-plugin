@@ -110,7 +110,7 @@ public class PSXfrPControlTest extends CorePluginTestSetup {
 		AclfNetwork net = new AclfBean2NetMapper().map2Model(netBean)
 				.getAclfNet();
 				
-		System.out.println(net.net2String());		
+		//System.out.println(net.net2String());		
 				
 		assertTrue(net.getPsXfrPControlList().size() == 1);
 		
@@ -121,7 +121,7 @@ public class PSXfrPControlTest extends CorePluginTestSetup {
   		AclfBus swingBus = (AclfBus)net.getBus("0001");
 		AclfSwingBus swing = swingBus.toSwingBus();
 //		//     gen       : 0.4 + 0.51i pu   39,997.07 + 50,711.88i kva
-		System.out.println(swing.getGenResults(UnitType.PU).getReal());
+		//System.out.println(swing.getGenResults(UnitType.PU).getReal());
 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()- 0.40026)<0.0001);
 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-0.50697)<0.0001);
 
