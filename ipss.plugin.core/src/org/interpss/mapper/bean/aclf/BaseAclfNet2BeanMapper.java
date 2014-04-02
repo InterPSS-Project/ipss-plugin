@@ -93,8 +93,8 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 				(bus.isSwing()? AclfBusBean.GenCode.Swing : 
 					AclfBusBean.GenCode.NonGen));
 				
-		//Complex gen = bus.getNetGenResults();
-		//bean.gen = new ComplexBean(format(gen));
+		Complex gen = bus.getNetGenResults();
+		bean.lfGenResult = new ComplexBean(format(gen));
 		
 		double genp = bus.getGenP();
 		double genq = bus.getGenQ();
@@ -114,17 +114,15 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 					String remoteBusId = bus.getRemoteQBus().getRemoteBus().getId();
 					bean.remoteVControlBusId = remoteBusId;
 				}
-		}
-		
-				
+		}				
 
 		bean.load_code = bus.isConstPLoad() ? AclfBusBean.LoadCode.ConstP :
 			(bus.isConstZLoad() ? AclfBusBean.LoadCode.ConstZ : 
 				(bus.isConstILoad() ? AclfBusBean.LoadCode.ConstI : 
 					AclfBusBean.LoadCode.NonLoad));
 
-		/*Complex load = bus.getNetLoadResults();
-		bean.load = new ComplexBean(format(load));*/
+		Complex load = bus.getNetLoadResults();
+		bean.lfLoadResult = new ComplexBean(format(load));
 		
 		double loadp = bus.getLoadP();
 		double loadq = bus.getLoadQ();
@@ -188,13 +186,16 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 		if (branch.getBranchCode() == AclfBranchCode.LINE ||
 				branch.getBranchCode() == AclfBranchCode.ZBR) {
 			if (branch.getHShuntY() != null)				
-				bean.shunt_y = new ComplexBean(format(new Complex(0, branch.getHShuntY().getImaginary()*2)));				
+				bean.shunt_y = new ComplexBean(format(new Complex(branch.getHShuntY().getReal()*2,
+						branch.getHShuntY().getImaginary()*2)));				
 				
 		}
 		else if (branch.getBranchCode() == AclfBranchCode.XFORMER ){
 			AclfXformer xfr = branch.toXfr();			
 			bean.ratio.f = xfr.getFromTurnRatio();
 			bean.ratio.t = xfr.getToTurnRatio();	
+			bean.shunt_y = new ComplexBean(format(new Complex(branch.getFromShuntY().getReal()*2,
+					branch.getFromShuntY().getImaginary()*2)));
 			XfrTapControlBean tapBean = new XfrTapControlBean();
 			bean.xfrTapControl = tapBean;
 			if(branch.getTapControl() != null){
@@ -205,6 +206,8 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 			AclfPSXformer xfr = branch.toPSXfr();			
 			bean.ratio.f = xfr.getFromTurnRatio();
 			bean.ratio.t = xfr.getToTurnRatio();	
+			bean.shunt_y = new ComplexBean(format(new Complex(branch.getFromShuntY().getReal()*2,
+					branch.getFromShuntY().getImaginary()*2)));
 			bean.ang.f = branch.getFromPSXfrAngle();
 			bean.ang.t = branch.getToPSXfrAngle();
 			PsXfrTapControlBean tb = new PsXfrTapControlBean();

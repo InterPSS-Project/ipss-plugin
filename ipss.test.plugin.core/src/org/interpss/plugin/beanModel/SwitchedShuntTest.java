@@ -29,15 +29,29 @@ import static org.junit.Assert.assertTrue;
 import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
+import org.ieee.odm.adapter.IODMAdapter;
+import org.ieee.odm.adapter.psse.PSSEAdapter;
+import org.ieee.odm.common.ODMLogger;
+import org.ieee.odm.model.aclf.AclfModelParser;
+import org.interpss.CorePluginFunction;
 import org.interpss.CorePluginTestSetup;
+import org.interpss.IpssCorePlugin;
+import org.interpss.datamodel.bean.aclf.AclfBusBean;
 import org.interpss.datamodel.bean.aclf.AclfNetBean;
+import org.interpss.datamodel.bean.aclf.AclfNetResultBean;
 import org.interpss.mapper.bean.aclf.AclfBean2NetMapper;
 import org.interpss.mapper.bean.aclf.AclfNet2BeanMapper;
+import org.interpss.mapper.bean.aclf.AclfNet2ResultBeanMapper;
+import org.interpss.mapper.odm.ODMAclfNetMapper;
+import org.interpss.mapper.odm.ODMAclfParserMapper;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
+import org.interpss.pssl.plugin.IpssAdapter;
+import org.interpss.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.Test;
 
 import com.interpss.CoreObjectFactory;
+import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranch;
@@ -47,7 +61,10 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.adj.VarCompensatorControlMode;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
+import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.simu.SimuContext;
+import com.interpss.simu.SimuCtxType;
 import com.interpss.simu.util.sample.SampleCases;
 
 public class SwitchedShuntTest extends CorePluginTestSetup {
@@ -232,5 +249,38 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 		assertTrue(netBean1.compareTo(netBean) == 0);		
 		
 	}
+	
+	@Test
+	public void testCase1() throws Exception {
+		// load the test data
+		AclfNetwork net = IpssAdapter
+				.importNet(
+						"testdata/adpter/psse/PSSE_5Bus_Test_switchShunt.raw")
+				.setFormat(IpssAdapter.FileFormat.PSSE)
+				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_30).load()
+				.getImportedObj();
+
+		// map AclfNet to AclfNetBean
+		AclfNetBean netBean = new AclfNet2BeanMapper().map2Model(net);
+
+		// map AclfNetBean back to an AclfNet object
+		AclfNetwork aclfNet = new AclfBean2NetMapper().map2Model(netBean)
+				.getAclfNet();
+		
+		LoadflowAlgorithm algo = CoreObjectFactory
+				.createLoadflowAlgorithm(aclfNet);
+		algo.loadflow();
+		assertTrue(aclfNet.isLfConverged());
+
+		String swingId = "Bus1";
+		
+		AclfSwingBus swing = aclfNet.getBus(swingId).toSwingBus();
+		System.out.println("AclfNet Model: "+swing.getGenResults(UnitType.PU) );		
+		AclfNetBean netBean1 = new AclfNet2BeanMapper().map2Model(aclfNet);		
+		AclfBusBean bean = netBean1.getBus(swingId);		
+		assertTrue(swing.getGenResults(UnitType.PU).getReal() - bean.lfGenResult.re < 0.0001);
+		assertTrue(swing.getGenResults(UnitType.PU).getImaginary() - bean.lfGenResult.im < 0.0001);
+	}
+	
 }
 

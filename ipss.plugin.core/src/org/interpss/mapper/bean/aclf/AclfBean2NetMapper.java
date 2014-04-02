@@ -279,7 +279,7 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 		if (branchBean.z != null)
 			branch.setZ(branchBean.z.toComplex());
 		if (branchBean.shunt_y != null)
-			branch.setHShuntY(new Complex(0.0, branchBean.shunt_y.im*0.5));
+			branch.setHShuntY(new Complex(branchBean.shunt_y.re*0.5, branchBean.shunt_y.im*0.5));
 		if (branchBean.ratio != null) {
 			branch.setFromTurnRatio(branchBean.ratio.f);
 			branch.setToTurnRatio(branchBean.ratio.t);
@@ -288,9 +288,13 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 			branch.setFromPSXfrAngle(branchBean.ang.f);
 			branch.setToPSXfrAngle(branchBean.ang.t);
 		}
-		if (branch.getBranchCode() == AclfBranchCode.XFORMER ) {			
+		if (branch.getBranchCode() == AclfBranchCode.XFORMER ) {
+			if (branchBean.shunt_y != null)
+				branch.setFromShuntY(new Complex(branchBean.shunt_y.re*0.5, branchBean.shunt_y.im*0.5) );
 			setXfrData(branchBean, branch, aclfNet);
-		}else if (branch.getBranchCode() == AclfBranchCode.PS_XFORMER) {			
+		}else if (branch.getBranchCode() == AclfBranchCode.PS_XFORMER) {
+			if (branchBean.shunt_y != null)
+				branch.setFromShuntY(new Complex(branchBean.shunt_y.re*0.5, branchBean.shunt_y.im*0.5) );
 			setPsXfrData(branchBean, branch, aclfNet);
 		}
 		// rating		
