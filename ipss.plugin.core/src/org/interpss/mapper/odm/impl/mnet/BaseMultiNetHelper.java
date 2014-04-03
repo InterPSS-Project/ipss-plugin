@@ -50,7 +50,7 @@ public class BaseMultiNetHelper {
 			intBranch.setChildNetSide(xmlInterBranch.getChildNetSide() == BranchBusSideEnumType.FROM_SIDE?
 					BranchBusSide.FROM_SIDE : BranchBusSide.TO_SIDE);
 			if (xmlInterBranch.getInterfaceBusIdChildNet() != null)
-				intBranch.setInterfaceBusIdChineNet(BaseJaxbHelper.getRecId(xmlInterBranch.getInterfaceBusIdChildNet()));
+				intBranch.setInterfaceBusIdChildNet(BaseJaxbHelper.getRecId(xmlInterBranch.getInterfaceBusIdChildNet()));
 			//childNetContainer.getInterfaceBranches().add(intBranch);
 		}		
 	}
