@@ -44,7 +44,6 @@ import org.ieee.odm.schema.LoadflowBusXmlType;
 import org.ieee.odm.schema.LoadflowGenDataXmlType;
 import org.ieee.odm.schema.LoadflowLoadDataXmlType;
 import org.ieee.odm.schema.PowerXmlType;
-import org.ieee.odm.schema.ReactivePowerUnitType;
 import org.ieee.odm.schema.ReactivePowerXmlType;
 import org.ieee.odm.schema.SwitchedShuntBlockXmlType;
 import org.ieee.odm.schema.SwitchedShuntModeEnumType;
@@ -54,7 +53,6 @@ import org.ieee.odm.schema.VoltageXmlType;
 import org.ieee.odm.schema.YXmlType;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.numeric.util.Number2String;
 
 import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
@@ -66,9 +64,14 @@ import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.BaseAclfNetwork;
+import com.interpss.core.aclf.adj.PQBusLimit;
+import com.interpss.core.aclf.adj.PVBusLimit;
 import com.interpss.core.aclf.adj.QBank;
 import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.adj.VarCompensatorControlMode;
+import com.interpss.core.aclf.adpter.AclfPQGenBus;
+import com.interpss.core.aclf.adpter.AclfPVGenBus;
+import com.interpss.core.aclf.adpter.AclfSwingBus;
 import com.interpss.core.acsc.AcscBus;
 import com.interpss.dstab.DStabBus;
 
@@ -168,15 +171,73 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 		LoadflowGenDataXmlType xmlDefaultGen = AclfParserHelper.getDefaultGen(xmlGenData);
 		if (xmlGenData.getCode() == LFGenCodeEnumType.PQ) {
 			bus.setGenCode(AclfGenCode.GEN_PQ);
-		} else if (xmlGenData.getCode() == LFGenCodeEnumType.PV && xmlDefaultGen != null) {
+			AclfPQGenBus pqBus = bus.toPQBus();
+			double p = xmlDefaultGen.getPower().getRe(), 
+	               q = xmlDefaultGen.getPower().getIm();
+			if (xmlDefaultGen.getPower() != null)
+				pqBus.setGen(new Complex(p, q), ToApparentPowerUnit.f(xmlDefaultGen.getPower().getUnit()));
+			if (p != 0.0 || q != 0.0) {
+				if (xmlDefaultGen.getVoltageLimit() != null) {
+			  		final PQBusLimit pqLimit = CoreObjectFactory.createPQBusLimit(bus);
+			  		pqLimit.setVLimit(new LimitType(xmlDefaultGen.getVoltageLimit().getMax(), 
+			  										xmlDefaultGen.getVoltageLimit().getMin()), 
+			  										ToVoltageUnit.f(xmlDefaultGen.getVoltageLimit().getUnit()));						
+				}
+			}
+			//TODO for multiple generators at the bus, sometimes the first generator is p=q=0 and/or offline
+//			else {
+//				bus.setGenCode(AclfGenCode.NON_GEN);
+//			}
+		} else if (xmlGenData.getCode() == LFGenCodeEnumType.PV &&
+				xmlDefaultGen != null) {
 			if (xmlDefaultGen.getRemoteVoltageControlBus() == null) {
 				bus.setGenCode(AclfGenCode.GEN_PV);
+				AclfPVGenBus pvBus = bus.toPVBus();
+				//if (xmlEquivGenData == null)
+				//	System.out.print(busXmlData);
+				if (xmlDefaultGen.getPower() != null) {
+					pvBus.setGenP(xmlDefaultGen.getPower().getRe(),
+							ToApparentPowerUnit.f(xmlDefaultGen.getPower().getUnit()));
+				
+					if (vXml == null)
+						throw new InterpssException("For Gen PV bus, equivGenData.desiredVoltage has to be defined, busId: " + bus.getId());
+					double vpu = UnitHelper.vConversion(vXml.getValue(),
+						bus.getBaseVoltage(), ToVoltageUnit.f(vXml.getUnit()), UnitType.PU);
+				    //TODO comment out for WECC System QA, to use the input voltage as the PV bus voltage
+					//pvBus.setDesiredVoltMag(vpu, UnitType.PU);
+					
+					if (xmlDefaultGen.getQLimit() != null) {
+  			  			final PVBusLimit pvLimit = CoreObjectFactory.createPVBusLimit(bus);
+  			  			pvLimit.setQLimit(new LimitType(xmlDefaultGen.getQLimit().getMax(), 
+  			  										xmlDefaultGen.getQLimit().getMin()), 
+  			  									ToReactivePowerUnit.f(xmlDefaultGen.getQLimit().getUnit()));
+  			  			pvLimit.setStatus(xmlDefaultGen.getQLimit().isActive());
+					}
+				}
 			}
 			else {
 				bus.setGenCode(AclfGenCode.GEN_PQ);
 			}
 		} else if (xmlGenData.getCode() == LFGenCodeEnumType.SWING) {
 			bus.setGenCode(AclfGenCode.SWING);
+			AclfSwingBus swing = bus.toSwingBus();
+			double vpu = UnitHelper.vConversion(vXml.getValue(),
+					bus.getBaseVoltage(), ToVoltageUnit.f(vXml.getUnit()), UnitType.PU);
+			//TODO The desired bus angle is provided at bus level, not generator.
+			/*
+			AngleXmlType angXml = xmlDefaultGen.getDesiredAngle(); 
+			double angRad = UnitHelper.angleConversion(angXml.getValue(),
+					ToAngleUnit.f(angXml.getUnit()), UnitType.Rad);	
+			*/
+			// swing.setDesiredVoltMag() override the bus voltage, need to save it first
+			double angRad =bus.getVoltageAng();
+			swing.setDesiredVoltMag(vpu, UnitType.PU);
+			swing.setDesiredVoltAng(angRad, UnitType.Rad);		
+			if (xmlDefaultGen.getPower() != null) {
+				double pPU = UnitHelper.pConversion(xmlDefaultGen.getPower().getRe(), aclfNet.getBaseKva(), 
+						ToApparentPowerUnit.f(xmlDefaultGen.getPower().getUnit()), UnitType.PU);
+				swing.getBus().setGenP(pPU);
+			}
 		} else {
 			bus.setGenCode(AclfGenCode.NON_GEN);
 		}
@@ -330,28 +391,30 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 		}
 	}
 	
-	private void mapSwitchShuntData(SwitchedShuntXmlType xmlSwitchedShuntData) throws InterpssException {
-		double baseKva = aclfNet.getBaseKva();
-		
-		SwitchedShunt swchShunt = CoreObjectFactory.createSwitchedShunt(this.bus);
+	private void mapSwitchShuntData(SwitchedShuntXmlType xmlSwitchedShuntData){
+		//TODO 
+		SwitchedShunt swchShunt = CoreObjectFactory.createSwitchedShunt();
+		//swithced shunt is a also a AclfControlBus
+		this.bus.setBusControl(swchShunt);
 		
 		ReactivePowerXmlType binit = xmlSwitchedShuntData.getBInit();
 		
 		if (binit != null) {
 			swchShunt.setBInit(UnitHelper.pConversion(binit.getValue(), baseKva, ToReactivePowerUnit.f(binit.getUnit()), UnitType.PU));
 
-			VarCompensatorControlMode mode = 
-					xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.CONTINUOUS? VarCompensatorControlMode.CONTINUOUS :
-						xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.DISCRETE? VarCompensatorControlMode.DISCRETE :
-							VarCompensatorControlMode.FIXED;
+			VarCompensatorControlMode mode = xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.CONTINUOUS?
+					VarCompensatorControlMode.CONTINUOUS:xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.DISCRETE?
+					VarCompensatorControlMode.DISCRETE:VarCompensatorControlMode.FIXED;
 			
 			swchShunt.setControlMode(mode);
 			
-			swchShunt.setDesiredVoltageRange(new LimitType(xmlSwitchedShuntData.getDesiredVoltageRange().getMax(),
-									xmlSwitchedShuntData.getDesiredVoltageRange().getMin()));
-
+			LimitType vLimit = new LimitType(xmlSwitchedShuntData.getDesiredVoltageRange().getMax(),
+					xmlSwitchedShuntData.getDesiredVoltageRange().getMin());
+			//TODO vLimit is missing
+			//swchShunt.set
 			for(SwitchedShuntBlockXmlType varBankXml:xmlSwitchedShuntData.getBlock()){
-				QBank varBank= CoreObjectFactory.createQBank(swchShunt);
+				QBank varBank= CoreObjectFactory.createQBank();
+				swchShunt.getVarBankArray().add(varBank);
 				
 				varBank.setSteps(varBankXml.getSteps());
 

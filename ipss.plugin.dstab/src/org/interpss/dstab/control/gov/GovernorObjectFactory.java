@@ -28,11 +28,15 @@ import org.interpss.dstab.control.gov.bpa.giGaTbcombinedType.BpaGIGATBCombinedGo
 import org.interpss.dstab.control.gov.bpa.gsTb.BpaGsTbCombineGovernor;
 import org.interpss.dstab.control.gov.bpa.hydro.BpaGHTypeHydroGovernor;
 import org.interpss.dstab.control.gov.ieee.hydro1981Type2.Ieee1981Type2HydroGovernor;
+import org.interpss.dstab.control.gov.ieee.hydro1981Type3.Ieee1981Type3HydroGovernor;
 import org.interpss.dstab.control.gov.ieee.ieeeST1.IeeeST1Governor;
 import org.interpss.dstab.control.gov.ieee.ieeeST2.IeeeST2Governor;
 import org.interpss.dstab.control.gov.ieee.steamNR.IeeeSteamNRGovernor;
 import org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor;
 import org.interpss.dstab.control.gov.ieee.steamTCSR.IeeeSteamTCSRGovernor;
+import org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor;
+import org.interpss.dstab.control.gov.psse.ieesgo.PsseIEESGOSteamTurGovernor;
+import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
 import org.interpss.dstab.control.gov.simple.SimpleGovernor;
 
 import com.interpss.dstab.mach.Machine;
@@ -59,7 +63,7 @@ public class GovernorObjectFactory {
   	}
 
 	/**
-	 * factory method to create a IeeeHTurbineGovernor object
+	 * factory method to create an Ieee Hydro Turbine Governor
 	 * 
 	 * @param id governor id
 	 * @param name governor name
@@ -101,7 +105,7 @@ public class GovernorObjectFactory {
   	}
 
 	/**
-	 * factory method to create a IeeeSteamNRGovernor object
+	 * factory method to create an Ieee Steam Non-reheat turbine Governor object
 	 * 
 	 * @param id governor id
 	 * @param name governor name
@@ -115,7 +119,7 @@ public class GovernorObjectFactory {
   	}
 
 	/**
-	 * factory method to create a IeeeSteamTCSRGovernor object
+	 * factory method to create an Ieee Steam single-reheat turbine Governor object
 	 * 
 	 * @param id governor id
 	 * @param name governor name
@@ -129,7 +133,7 @@ public class GovernorObjectFactory {
   	}
 
 	/**
-	 * factory method to create a IeeeSteamTDSRGovernor object
+	 * factory method to create an Ieee Steam double-reheat turbine Governor object
 	 * 
 	 * @param id governor id
 	 * @param name governor name
@@ -141,7 +145,66 @@ public class GovernorObjectFactory {
 		gov.setMachine(machine); 
 		return gov;
   	}
-
+	 /**
+	  * IEEE Type 2 speed-governing model for hybro generator
+	  * corresponding to the IEEEG2 model in PSS/E
+	  * @param id
+	  * @param name
+	  * @param machine
+	  * @return
+	  */
+	 public static Ieee1981Type2HydroGovernor createIeee1981Type2HydroGovernor(String id, String name, Machine machine) {
+		 Ieee1981Type2HydroGovernor gov = new Ieee1981Type2HydroGovernor(id, name, "InterPSS");
+			gov.setMachine(machine); 
+			return gov;
+	  }
+	 
+	 /**
+	  * IEEE Type 3 speed-governing model for hybro generator
+	  * corresponding to the IEEEG3 model in PSS/E
+	  * @param id
+	  * @param name
+	  * @param machine
+	  * @return
+	  */
+	 public static Ieee1981Type3HydroGovernor createIeee1981Type3HydroGovernor(String id, String name, Machine machine) {
+		 Ieee1981Type3HydroGovernor gov = new Ieee1981Type3HydroGovernor(id, name, "InterPSS");
+			gov.setMachine(machine); 
+			return gov;
+	  }
+	 
+    //////////////////////////////////////////////////////////////
+	///      PSS/E Tur-Gov model
+	/////////////////////////////////////////////////////////////
+	
+	 /**
+	  * PSS/E GSAT Type gas turbine-governor model
+	  * @param id
+	  * @param name
+	  * @param machine
+	  * @return
+	  */
+	public static PsseGASTGasTurGovernor createPsseGASTGasTurGovernor(String id, String name, Machine machine) {
+		PsseGASTGasTurGovernor gov = new PsseGASTGasTurGovernor(id, name, "PSS/E");
+		gov.setMachine(machine); 
+		return gov;
+  	}
+	
+	public static PsseTGov1SteamTurGovernor createPsseTGOV1SteamTurGovernor(String id, String name, Machine machine) {
+		PsseTGov1SteamTurGovernor gov = new PsseTGov1SteamTurGovernor(id, name, "PSS/E");
+		gov.setMachine(machine); 
+		return gov;
+  	}
+	
+	public static PsseIEESGOSteamTurGovernor createPsseIEESGOSteamTurGovernor(String id, String name, Machine machine) {
+		PsseIEESGOSteamTurGovernor gov = new PsseIEESGOSteamTurGovernor(id, name, "PSS/E");
+		gov.setMachine(machine); 
+		return gov;
+  	}
+	
+	//////////////////////////////////////////////////////////////
+	///      PSD-BPA Tur-Gov model
+	/////////////////////////////////////////////////////////////
 	/**
 	 * factory method to create a BpaGHTypeHydroGovernor object
 	 * 

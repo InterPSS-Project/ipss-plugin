@@ -46,8 +46,12 @@ import org.ieee.odm.schema.LoadflowGenDataXmlType;
 import org.ieee.odm.schema.MachineModelXmlType;
 import org.ieee.odm.schema.NetworkCategoryEnumType;
 import org.ieee.odm.schema.OriginalDataFormatEnumType;
+import org.ieee.odm.schema.PSXfr3WBranchXmlType;
+import org.ieee.odm.schema.PSXfr3WDStabXmlType;
 import org.ieee.odm.schema.PSXfrDStabXmlType;
 import org.ieee.odm.schema.StabilizerModelXmlType;
+import org.ieee.odm.schema.Xfr3WBranchXmlType;
+import org.ieee.odm.schema.Xfr3WDStabXmlType;
 import org.ieee.odm.schema.XfrDStabXmlType;
 import org.interpss.mapper.odm.ODMAclfNetMapper;
 import org.interpss.mapper.odm.ODMHelper;
@@ -60,6 +64,8 @@ import com.interpss.DStabObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.net.Branch;
+import com.interpss.dstab.DStab3WBranch;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabGen;
@@ -144,21 +150,36 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 
 				// map the branch info
 				ODMAclfNetMapper aclfNetMapper = new ODMAclfNetMapper();
-				for (JAXBElement<? extends BaseBranchXmlType> branch : xmlNet.getBranchList().getBranch()) {
-					if (branch.getValue() instanceof LineDStabXmlType || 
-							branch.getValue() instanceof XfrDStabXmlType ||
-								branch.getValue() instanceof PSXfrDStabXmlType) {
-						DStabBranch dstabBranch = DStabObjectFactory.createDStabBranch();
-						aclfNetMapper.mapAclfBranchData(branch.getValue(), dstabBranch, dstabNet);
+				for (JAXBElement<? extends BaseBranchXmlType> branchElem : xmlNet.getBranchList().getBranch()) {
+					BaseBranchXmlType branch= branchElem.getValue();
+					Branch dstabBranch = null;
+					if   (branch instanceof Xfr3WDStabXmlType ||
+							branch instanceof PSXfr3WDStabXmlType){
+						dstabBranch = DStabObjectFactory.createDStab3WBranch();
+					}
+					else if (branch instanceof LineDStabXmlType || 
+							branch instanceof XfrDStabXmlType ||
+								branch instanceof PSXfrDStabXmlType) {
+						dstabBranch = DStabObjectFactory.createDStabBranch();
+					}
+					
+					if(dstabBranch != null){
+						aclfNetMapper.mapAclfBranchData(branch, dstabBranch, dstabNet);
 
 						// if the record includes Acsc bus info, do the mapping
 						if (xmlNet.isHasShortCircuitData()) {
-							BranchXmlType acscBraXml = (BranchXmlType)branch.getValue(); 
-							setAcscBranchData(acscBraXml, dstabBranch);
+							BranchXmlType acscBraXml = (BranchXmlType)branch;
+							if(branch instanceof Xfr3WDStabXmlType ||
+									branch instanceof PSXfr3WDStabXmlType){
+								setAcsc3WBranchData(acscBraXml, (DStab3WBranch)dstabBranch);
+							}
+							else
+							   setAcscBranchData(acscBraXml, (DStabBranch)dstabBranch);
 						}
 					}
 					else {
-						ipssLogger.severe( "Error: only aclf<Branch>, acsc<Branch> and dstab<Branch> could be used for DStab study");
+						ipssLogger.severe( "Error: only aclf<Branch>, acsc<Branch> and dstab<Branch> could be used for DStab study, \n"
+								+ "branch #"+branch.getId());
 						noError = false;
 					}
 				}
@@ -224,7 +245,16 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 	private void setDynGenData(DStabBus dstabBus, 
 			DStabGenDataXmlType dyGen, DStabGen dyGenObj) throws InterpssException {
 		// create the machine model and added to the parent bus object
+		if(dyGen.getMachineModel() ==null){
+			if(dyGen.isOffLine())
+				ipssLogger.info("Gen #"+dyGen.getId()+" @ bus#"+dstabBus.getId() +" is off line, and there is no machine model defined for it");
+			else
+			    ipssLogger.severe("No machine defined for the in-service Gen:  "+dyGen.getId()+" @ bus#"+dstabBus.getId());
+			
+			return; 
+		}
 		MachineModelXmlType machXmlRec = dyGen.getMachineModel().getValue();
+		
 		String machId = dstabBus.getId() + "-mach" +dyGenObj.getId();
 		Machine mach = new MachDataHelper(dstabBus, dyGen.getMvaBase(), dyGen.getRatedMachVoltage())
 							.createMachine(machXmlRec, machId, dyGen.getId());
