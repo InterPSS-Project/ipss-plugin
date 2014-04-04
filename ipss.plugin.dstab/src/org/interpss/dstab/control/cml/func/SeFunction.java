@@ -25,6 +25,7 @@
 package org.interpss.dstab.control.cml.func;
 
 import com.interpss.common.exp.InterpssException;
+import com.interpss.common.util.IpssLogger;
 import com.interpss.dstab.controller.block.adapt.CMLFunctionAdapter;
 
 /**
@@ -41,6 +42,10 @@ public class SeFunction extends CMLFunctionAdapter {
 
 	private double a = 1.0;
 	private double b = 1.0;
+	/*
+	 * function type 1 = quadratic , 2 = exponential
+	 */
+	private int functionType =1; // 
 
 	/**
 	 * constructor
@@ -53,16 +58,44 @@ public class SeFunction extends CMLFunctionAdapter {
 	 */
 	public SeFunction(double e1, double se_e1, double e2, double se_e2)
 			throws InterpssException {
-		if (e1 <= e2 || se_e1 <= se_e2) {
+         
+		 if((e1-e2)*(se_e1-se_e2)<0){
 			throw new InterpssException("Se(Efd) data error, E1, Se(E1), E2, Se(E2): "
 					+ e1 + ", " + se_e1 + ", " + e2 + ", " + se_e2);
 		}
-		this.e1 = e1;
-		this.se_e1 = se_e1;
-		this.e2 = e2;
-		this.se_e2 = se_e2;
-		this.b = Math.log(se_e1 / se_e2) / (e1 - e2);
-		this.a = se_e1 / Math.exp(this.b * e1);
+		if(Math.abs(e2)<1.0E-3 || Math.abs(se_e2)<1.0E-3 || Math.abs(se_e2-se_e1)<1.0E-3){
+			this.a=0.0;
+			this.b=0.0;
+		}
+		else if(se_e1<1.0E-3 && se_e2>1.0E-3 && e2>1.0){
+			//Use quadratic function as default
+			this.a = e1;
+			this.b = (se_e2*e2)/(e2-this.a)/(e2-this.a);
+		}
+		else{	
+			this.e1 = e1;
+			this.se_e1 = se_e1;
+			this.e2 = e2;
+			this.se_e2 = se_e2;
+			
+			//Use quadratic function as default
+			//Se = B*(Efd-A)^2/Efd
+			if(this.functionType == 1){
+				double X = Math.sqrt(e2/e1*se_e2/se_e1);
+				 this.a = (e2-e1*X)/(1-X);
+				 this.b = se_e1/(e1-a)/(e1-a)*e1;
+				 if(Double.isNaN(a)) a =0;
+				 if(Double.isNaN(b)) b =0;
+			}
+			
+			//Se = B*exp(Efd*A)
+			if(this.functionType == 2){
+			    this.a = Math.log(se_e1 / se_e2) / (e1 - e2);
+			    this.b = se_e1 / Math.exp(this.a * e1);
+			}
+			
+			
+		}
 	}
 
 	/**
@@ -73,7 +106,20 @@ public class SeFunction extends CMLFunctionAdapter {
 	 */
 	@Override public double eval(double[] dAry) {
 		double efd = dAry[0]; // the only input to this function is Efd
-		return this.a * Math.exp(this.b * efd);
+		double se = 0;
+		if(this.functionType == 1){
+			if(efd !=0.0 && efd >1.0E-2)
+			  se = this.b * Math.pow((efd-this.a), 2)/efd;
+			else
+			  se =0.0;
+		}
+		else
+			se = this.b * Math.exp(this.a * efd);
+		if(Double.isNaN(se)){
+			System.out.print("a, b, efd ="+this.a+","+this.b+","+efd);
+			IpssLogger.getLogger().severe(("Se function returns NAN!"));
+		}
+		return se;
 	}
 
 	@Override public String toString() {

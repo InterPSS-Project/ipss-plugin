@@ -19,6 +19,7 @@ import org.interpss.algo.TopologyProcesor;
 import org.interpss.algo.ZeroZBranchProcesor;
 import org.interpss.algo.ZeroZBranchProcesor.BusBasedSeaerchResult;
 import org.interpss.numeric.datatype.Unit.UnitType;
+import org.interpss.numeric.util.Number2String;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
@@ -26,8 +27,10 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.contingency.Contingency;
 import com.interpss.core.aclf.contingency.OutageBranch;
+import com.interpss.core.common.visitor.INetBVisitor;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 import com.mxgraph.layout.mxFastOrganicLayout;
@@ -50,7 +53,7 @@ public class TopologyHelper {
 	private static final String protectedBranchStyle = "defaultEdge;strokeColor=black";
 
 	Hashtable<String, Object> addedBusTable = new Hashtable<String, Object>();
-	AclfNetwork net = null;
+	BaseAclfNetwork<?,?> net = null;
 	Topology top = null;
 	ZeroZBranchProcesor proc = null;
 	List<String> protectedBranches = new ArrayList<String>();
@@ -65,7 +68,7 @@ public class TopologyHelper {
 	boolean displayBaseVolt = false;
 	double voltageLevel = 1.0;
 
-	public TopologyHelper(AclfNetwork net) throws InterpssException {
+	public TopologyHelper(BaseAclfNetwork<?,?> net) throws InterpssException {
 		this.net = net;
 		this.top = new Topology();
 	}
@@ -235,7 +238,7 @@ public class TopologyHelper {
 		
 		ChangeRecorder recorder = net.bookmark(false);
 		
-		net.accept(proc); 	
+		net.accept((INetBVisitor<?, ?>) proc); 	
 		
 		BusBasedSeaerchResult result = proc.getBusBasedSearchResult(processingBus);
 		String parentBus = result.getParentBusId();
@@ -522,7 +525,7 @@ public class TopologyHelper {
 
 	private String getDisplayString(String busId) {
 		String str = displayName ? this.net.getBus(busId).getName() : busId;
-		str += displayBaseVolt ? " [" + this.net.getBus(busId).getBaseVoltage()
+		str += displayBaseVolt ? " [" + Number2String.toStr(this.net.getBus(busId).getBaseVoltage()*0.001,"###0.##")
 				+ "]" : "";
 		return str;
 	}
@@ -615,6 +618,7 @@ public class TopologyHelper {
 	private boolean DFS(String busId, int length, int objLength) {
 		boolean isToBus = true;
 		int startLength = length;
+		String type = "Line";
 		String cirId = "";
 		// System.out.println(busId);
 		Bus source = net.getBus(busId);
@@ -622,8 +626,9 @@ public class TopologyHelper {
 			if (source.getBranchList() != null
 					&& ((AclfBus) source).getVoltageMag(UnitType.kV) >= voltageLevel)
 				for (Branch bra : source.getBranchList()) {
-
-					if (!bra.isGroundBranch()) {
+                    
+					if (!bra.isGroundBranch() && bra instanceof AclfBranch) {
+						type = getBranchType((AclfBranch) bra);
 						isToBus = bra.getFromBusId().equals(busId);
 						String nextBusId = isToBus ? bra.getToBusId() : bra
 								.getFromBusId();
@@ -652,7 +657,7 @@ public class TopologyHelper {
 									top.getTopGraph().insertEdge(
 											top.getTopGraph()
 													.getDefaultParent(), null,
-											branchType.Line,
+													type,
 											addedBusTable.get(busId),
 											addedBusTable.get(nextBusId));
 
@@ -660,7 +665,7 @@ public class TopologyHelper {
 									top.getTopGraph().insertEdge(
 											top.getTopGraph()
 													.getDefaultParent(), null,
-											branchType.Line,
+													type,
 											addedBusTable.get(nextBusId),
 											addedBusTable.get(busId));
 								}

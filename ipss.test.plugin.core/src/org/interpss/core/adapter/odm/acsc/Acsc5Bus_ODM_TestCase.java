@@ -28,6 +28,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
+import org.interpss.display.AcscOutFunc;
 //import org.interpss.QA.compare.aclf.AclfNetModelComparator;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.TestUtilFunc;
@@ -64,6 +65,8 @@ public class Acsc5Bus_ODM_TestCase extends CorePluginTestSetup {
   		// 0.0000 + j0.0000  -0.7531 + j29.05407  0.0000 + j0.0000
 	  	assertTrue(TestUtilFunc.compare(fault.getFaultResult().getSCCurrent_012(), 
 	  			0.0, 0.0, -0.7531, 29.05407, 0.0, 0.0) );
+	  	
+	  	System.out.println(AcscOutFunc.faultResult2String(faultNet,algo));
 	}
    /*
 	@Test

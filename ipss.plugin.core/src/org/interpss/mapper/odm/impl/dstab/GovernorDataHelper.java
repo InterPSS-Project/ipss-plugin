@@ -27,6 +27,10 @@ package org.interpss.mapper.odm.impl.dstab;
 import org.ieee.odm.schema.GovBPAGsTbCombinedModelXmlType;
 import org.ieee.odm.schema.GovBPAHydroTurbineGHXmlType;
 import org.ieee.odm.schema.GovHydroTurbineXmlType;
+import org.ieee.odm.schema.GovIEEE1981Type1XmlType;
+import org.ieee.odm.schema.GovPSSEGASTModelXmlType;
+import org.ieee.odm.schema.GovPSSEIEESGOModelXmlType;
+import org.ieee.odm.schema.GovPSSETGOV1ModelXmlType;
 import org.ieee.odm.schema.GovSimpleTypeXmlType;
 import org.ieee.odm.schema.GovSteamNRXmlType;
 import org.ieee.odm.schema.GovSteamTCDRXmlType;
@@ -41,9 +45,13 @@ import org.interpss.dstab.control.gov.ieee.hydro1981Type2.Ieee1981Type2HydroGove
 import org.interpss.dstab.control.gov.ieee.steamNR.IeeeSteamNRGovernor;
 import org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor;
 import org.interpss.dstab.control.gov.ieee.steamTCSR.IeeeSteamTCSRGovernor;
+import org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor;
+import org.interpss.dstab.control.gov.psse.ieesgo.PsseIEESGOSteamTurGovernor;
+import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
 import org.interpss.dstab.control.gov.simple.SimpleGovernor;
 
 import com.interpss.common.exp.InterpssException;
+import com.interpss.common.util.IpssLogger;
 import com.interpss.dstab.mach.Machine;
 
 /**
@@ -189,6 +197,89 @@ public class GovernorDataHelper {
 			gov.getData().setT1(govXml.getT1().getValue());
 			gov.getData().setPmax(govXml.getPmax());
 			gov.getData().setPmin(govXml.getPmin());
+		}
+		
+		//IEEEG1
+		else if(govXmlRec instanceof GovIEEE1981Type1XmlType){
+			GovIEEE1981Type1XmlType govXml = (GovIEEE1981Type1XmlType)govXmlRec;
+			if(govXml.getK2()==0.0 && govXml.getK4()==0.0 && govXml.getK6()==0.0 && govXml.getK8()==0.0){
+				IeeeSteamTCDRGovernor gov = GovernorObjectFactory.createIeeeSteamTCDRGovernor(mach.getId()+"_Gov", govXml.getName(), mach);
+				gov.getData().setK(govXml.getK());
+				gov.getData().setT1(govXml.getT1().getValue());
+				gov.getData().setT2(govXml.getT2().getValue());
+				gov.getData().setT3(govXml.getT3().getValue());
+				gov.getData().setTch(govXml.getT4().getValue());
+				gov.getData().setTrh1(govXml.getT5().getValue());
+				gov.getData().setTrh2(govXml.getT6().getValue());
+				gov.getData().setTco(govXml.getT7().getValue());
+				gov.getData().setFvhp(govXml.getK1());
+				gov.getData().setFhp(govXml.getK3());
+				gov.getData().setFip(govXml.getK5());
+				gov.getData().setFlp(govXml.getK7());
+				gov.getData().setPdown(govXml.getVClose());
+				gov.getData().setPup(govXml.getVOpen());
+				gov.getData().setPmax(govXml.getPMAX());
+				gov.getData().setPmin(govXml.getPMIN());
+				
+			}
+			else 
+				IpssLogger.getLogger().severe("GovIEEE1981Type1XmlType with  two PMech outputs is not support yet,"
+						+ " k2, k4,k6 and k8 must be zero. Gov @ Mach :"+mach.getId());
+			
+		}
+		
+        //GAST
+        else if(govXmlRec instanceof GovPSSEGASTModelXmlType){
+    	  GovPSSEGASTModelXmlType govXml = (GovPSSEGASTModelXmlType)govXmlRec;
+      	  PsseGASTGasTurGovernor gov = GovernorObjectFactory.createPsseGASTGasTurGovernor(mach.getId()+"_Gov", govXml.getName(), mach);
+		  gov.getData().setR(govXml.getR());
+		  gov.getData().setT1(govXml.getT1().getValue());
+		  gov.getData().setT2(govXml.getT2().getValue());
+		  gov.getData().setT3(govXml.getT3().getValue());
+		  
+		  gov.getData().setLoadLimit(govXml.getAT());
+		  gov.getData().setKt(govXml.getKT());
+		  gov.getData().setVMax(govXml.getVMAX());
+		  gov.getData().setVMin(govXml.getVMIN());
+		  gov.getData().setDturb(govXml.getDturb());
+		  
+		  
+        }
+		
+		//TGOV1
+        else if(govXmlRec instanceof GovPSSETGOV1ModelXmlType){
+        	GovPSSETGOV1ModelXmlType govXml = (GovPSSETGOV1ModelXmlType)govXmlRec;
+          	  PsseTGov1SteamTurGovernor gov = GovernorObjectFactory.createPsseTGOV1SteamTurGovernor(mach.getId()+"_Gov", govXml.getName(), mach);
+    		  gov.getData().setR(govXml.getR());
+    		  gov.getData().setT1(govXml.getT1().getValue());
+    		  gov.getData().setT2(govXml.getT2().getValue());
+    		  gov.getData().setT3(govXml.getT3().getValue());
+    		  gov.getData().setvMax(govXml.getVMAX());
+    		  gov.getData().setvMin(govXml.getVMIN());
+    		  gov.getData().setDt(govXml.getDt());
+        	
+			
+		}
+		
+		//IEESGO
+        else if(govXmlRec instanceof GovPSSEIEESGOModelXmlType){
+        	GovPSSEIEESGOModelXmlType govXml = (GovPSSEIEESGOModelXmlType)govXmlRec;
+        	PsseIEESGOSteamTurGovernor gov = GovernorObjectFactory.createPsseIEESGOSteamTurGovernor(mach.getId()+"_Gov", govXml.getName(), mach);
+        	gov.getData().setK1(govXml.getK1());
+        	gov.getData().setK2(govXml.getK2());
+        	gov.getData().setK3(govXml.getK3());
+        	
+        	gov.getData().setPmax(govXml.getPMAX());
+        	gov.getData().setPmin(govXml.getPMIN());
+        	
+        	gov.getData().setT1(govXml.getT1().getValue());
+        	gov.getData().setT2(govXml.getT2().getValue());
+        	gov.getData().setT3(govXml.getT3().getValue());
+        	gov.getData().setT4(govXml.getT4().getValue());
+        	gov.getData().setT5(govXml.getT5().getValue());
+        	gov.getData().setT6(govXml.getT6().getValue());
+        	
+        	
 		}
 
 		else {

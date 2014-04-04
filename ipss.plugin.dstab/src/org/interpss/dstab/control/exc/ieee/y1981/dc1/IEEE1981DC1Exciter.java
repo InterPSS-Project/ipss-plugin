@@ -9,9 +9,11 @@ import java.lang.reflect.Field;
 
 import org.interpss.dstab.control.cml.block.DelayControlBlock;
 import org.interpss.dstab.control.cml.block.FilterControlBlock;
+import org.interpss.dstab.control.cml.block.IntegrationControlBlock;
 import org.interpss.dstab.control.cml.block.WashoutControlBlock;
 import org.interpss.dstab.control.cml.func.SeFunction;
 
+import com.interpss.common.util.IpssLogger;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.controller.AnnotateExciter;
 import com.interpss.dstab.controller.annotate.AnController;
@@ -25,18 +27,38 @@ import com.interpss.dstab.mach.Machine;
  * =================================================
  */
 @AnController(
-   input="this.refPoint - mach.vt + pss.vs - this.washoutBlock.y",
-   output="this.delayBlock.y",
-   refPoint="this.filterBlock.u - pss.vs + mach.vt + this.washoutBlock.y",
-   display= {  }
+   input="mach.vt",
+   output="this.teIntBlock.y",
+   refPoint="this.filterBlock.u - pss.vs + this.trDelayBlock.y + this.washoutBlock.y",
+   display= {  }//,
+   //debug = true
 )
 
 public class IEEE1981DC1Exciter extends AnnotateExciter {
+	   public double ke =1.0;
+	   
+		public double k1 = 1.0;/*constant*/
+		
+		/*
+		 * Part-1: Define the blocks
+		 * ==============================
+		 */
+		// transducer block
+		 public double tr = 0.02;
+	     @AnControllerField(
+	          type= CMLFieldEnum.ControlBlock,
+	          input="mach.vt",
+	          parameter={"type.NoLimit", "this.k1", "this.tr"},
+	          y0="mach.vt",//debug = true,
+	          initOrderNumber=-1 
+	          )
+	     DelayControlBlock trDelayBlock;
+	   
 	   //filterBlock----(1+sTc)/(1+sTb)
-	   public double k1 = 1.0/*constant*/, tc = 52.73, tb = 21.84;
+	   public double  tc = 52.73, tb = 21.84;
 	   @AnControllerField(
 		   type=CMLFieldEnum.ControlBlock,
-		   input="this.refPoint - mach.vt + pss.vs - this.washoutBlock.y",
+		   input="this.refPoint  + pss.vs  - this.trDelayBlock.y- this.washoutBlock.y",
 		   parameter={"type.NoLimit", "this.k1", "this.tc", "this.tb"},
 		   y0="this.kaDelayBlock.u0"  )
 	   FilterControlBlock filterBlock;
@@ -46,10 +68,21 @@ public class IEEE1981DC1Exciter extends AnnotateExciter {
 	      type= CMLFieldEnum.ControlBlock,
 	      input="this.filterBlock.y",
 	      parameter={"type.NonWindup", "this.ka", "this.ta", "this.vrmax", "this.vrmin"},
-	      y0="this.delayBlock.u0 + this.seFunc.y"	)
+	      y0="this.teIntBlock.u0 + this.seFunc.y*this.teIntBlock.y + this.ke*this.teIntBlock.y"	)
 	   DelayControlBlock kaDelayBlock;
+	   
+	   
+	   public double te = 0.6, kint = 1/te;
+	   @AnControllerField(
+	      type= CMLFieldEnum.ControlBlock,
+	      input="this.kaDelayBlock.y - this.seFunc.y*this.teIntBlock.y - this.ke*this.teIntBlock.y",
+	      parameter={"type.NoLimit", "this.kint"},
+	      y0="mach.efd"//,
+	      //debug = true
+	      )
+	   IntegrationControlBlock teIntBlock;
 
-
+       /*
 	   public double ke = 1.0, ke1 = 1/ke, te = 0.6, te_ke = te/ke ;
 	   @AnControllerField(
 	      type= CMLFieldEnum.ControlBlock,
@@ -57,19 +90,20 @@ public class IEEE1981DC1Exciter extends AnnotateExciter {
 	      parameter={"type.NoLimit", "this.ke1", "this.te_ke"},
 	      y0="mach.efd"	)
 	   DelayControlBlock delayBlock;
+	   */
 
 	   //seFunc----Se
 	   public double efd1 = 6.0, e1 = efd1, se_e1 = 1.0, e2 = 0.75 * efd1, se_e2 = 0.05;
 	   @AnFunctionField(
-	      input= {"this.delayBlock.y"},
+	      input= {"this.teIntBlock.y"},
 	      parameter={"this.e1", "this.se_e1", "this.e2", "this.se_e2"}	)
 	   SeFunction seFunc;
 
 	   //washoutBlock----sKf/(1+sTf)
-	   public double kf = 0.0001, tf = 1.0, k = kf/tf;
+	   public double kf = 1, tf = 0.01, k = kf/tf;
 	   @AnControllerField(
 	      type= CMLFieldEnum.ControlBlock,
-	      input="this.delayBlock.y",
+	      input="this.teIntBlock.y",
 	      parameter={"type.NoLimit", "this.k", "this.tf"},
 	      feedback = true	)
 	   WashoutControlBlock washoutBlock;
@@ -88,8 +122,8 @@ public class IEEE1981DC1Exciter extends AnnotateExciter {
      */
     public IEEE1981DC1Exciter() {
 	    this("id", "name", "caty");
-        this.setName("SimpleExcitor");
-        this.setCategory("InterPSS");
+        this.setName("IEEE1981DC1");
+        this.setCategory("IEEE");
     }
 
      /**
@@ -144,6 +178,19 @@ public class IEEE1981DC1Exciter extends AnnotateExciter {
         this.se_e2 = getData().getSe_e2();
         this.kf = getData().getKf();
         this.tf = getData().getTf();
+        
+		if(tf == 0.0){
+			IpssLogger.getLogger().severe("Tf =0.0 for Exciter of "+mach.getId());
+			this.k = 0.0;
+		}
+		else
+		  this.k = kf/tf;
+		
+		if(te == 0.0){
+			IpssLogger.getLogger().severe("Te = 0.0 for Exciter of "+mach.getId());
+			return false;
+		}
+        
         // always add the following statement
         return super.initStates(bus, mach);
     }

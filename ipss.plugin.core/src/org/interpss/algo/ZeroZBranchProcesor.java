@@ -183,7 +183,7 @@ public class ZeroZBranchProcesor implements IAclfNetBVisitor {
 				if (!bus.isVisited()) {
 					// find all buses on the zero z branch path of the bus,
 					// including the bus itself
-					List<Bus> list = bus.findZeroZPathBuses(this.allowZeroZBranchLoop);
+					List<AclfBus> list = bus.findZeroZPathBuses(this.allowZeroZBranchLoop);
 					// if more than one, meaning there is zero-z branch(es),
 					// process zero-z branch
 					if (list.size() > 1) {
@@ -191,10 +191,12 @@ public class ZeroZBranchProcesor implements IAclfNetBVisitor {
 								+ list.size());
 						Bus parentBus = selectParentBus(list);
 						ipssLogger.info("Selected parent bus: "	+ parentBus.getId());
-						for (Bus childBus : list) {
+						for (AclfBus childBus : list) {
 							if (!childBus.getId().equals(parentBus.getId())) {
 								ipssLogger.info("child bus: " + childBus.getId());
 								parentBus.addSection(childBus);
+								
+								//consider the gen list
 							}
 						}
 					}
@@ -218,12 +220,12 @@ public class ZeroZBranchProcesor implements IAclfNetBVisitor {
 	/**
 	 * Select parent bus from the bus list
 	 * 
-	 * @param busList
+	 * @param list
 	 * @return
 	 */
-	private Bus selectParentBus(List<Bus> busList) {
+	private Bus selectParentBus(List<AclfBus> list) {
 		// first select Swing or PV
-		for (Bus b : busList) {
+		for (Bus b : list) {
 			if (b.isStatus()) {
 				AclfBus bus = (AclfBus) b;
 				// if the bus is a gen/load bus
@@ -233,7 +235,7 @@ public class ZeroZBranchProcesor implements IAclfNetBVisitor {
 
 		}
 		// next select PQ bus
-		for (Bus b : busList) {
+		for (Bus b : list) {
 			if (b.isStatus()) {
 				AclfBus bus = (AclfBus) b;
 				// if the bus is a gen/load bus
@@ -243,7 +245,7 @@ public class ZeroZBranchProcesor implements IAclfNetBVisitor {
 
 		}
 		// then select Load bus
-		for (Bus b : busList) {
+		for (Bus b : list) {
 			if (b.isStatus()) {
 				AclfBus bus = (AclfBus) b;
 				// if the bus is a gen/load bus
@@ -252,10 +254,10 @@ public class ZeroZBranchProcesor implements IAclfNetBVisitor {
 			}
 		}
 		// at the end, select bus with largest zero-z branches
-		Bus bus = busList.get(0);
+		Bus bus = list.get(0);
 		int cnt = 0;
 		boolean found = false;
-		for (Bus b : busList) {
+		for (Bus b : list) {
 			if (b.isStatus()) {
 				found = true;
 				AclfBus aclfBus = (AclfBus) b;
@@ -269,7 +271,7 @@ public class ZeroZBranchProcesor implements IAclfNetBVisitor {
 		}
 		if (found == false)
 			ipssLogger.warning("No parent bus was found for the bus group of: "
-					+ busList.toString());
+					+ list.toString());
 
 		return bus;
 	}
@@ -355,7 +357,7 @@ public class ZeroZBranchProcesor implements IAclfNetBVisitor {
 								b.getId());
 						System.out.println("Processing bus " + b.getId());
 
-						List<Bus> list = ((AclfBus) b)
+						List<AclfBus> list = ((AclfBus) b)
 								.findZeroZPathBuses(allowZeroZBranchLoop);
 						// if more than one, meaning there is zero-z branch(es),
 						// process

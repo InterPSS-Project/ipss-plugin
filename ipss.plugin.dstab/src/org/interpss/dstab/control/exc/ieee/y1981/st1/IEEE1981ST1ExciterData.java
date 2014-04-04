@@ -39,6 +39,7 @@ public class IEEE1981ST1ExciterData extends BaseControllerData {
 
     // We need to put the default values here, so that the controller could be
     // properly initialized
+    private double tr       = 0.02;
     private double vimax        = 1.4;
     private double vimin       = 0.0;
     private double tc       = 0.16;
@@ -214,6 +215,14 @@ public class IEEE1981ST1ExciterData extends BaseControllerData {
 	public void setValue(String name, int value) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	public double getTr() {
+		return tr;
+	}
+
+	public void setTr(double tr) {
+		this.tr = tr;
 	}
 
 

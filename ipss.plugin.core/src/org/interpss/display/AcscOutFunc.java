@@ -60,7 +60,7 @@ public class AcscOutFunc {
 	 * @param algo
 	 * @return
 	 */
-	public static String faultResult2String(AcscNetwork faultNet, SimpleFaultAlgorithm algo) {
+	public static String faultResult2String(BaseAcscNetwork<?,?> faultNet, SimpleFaultAlgorithm algo) {
 		StringBuffer sb = new StringBuffer();
 		ipssLogger.fine(
 				"# of Fault objects = " + algo.getFaultList().size());
@@ -76,7 +76,7 @@ public class AcscOutFunc {
 		return sb.toString();
 	}
 
-	private static String branchFaultInfo(AcscBranchFault bf, AcscNetwork net) {
+	private static String branchFaultInfo(AcscBranchFault bf, BaseAcscNetwork<?,?> net) {
 		StringBuffer str = new StringBuffer("");
 		try {
 			double baseKVA = net.getBaseKva();
@@ -103,7 +103,7 @@ public class AcscOutFunc {
 		return str.toString();
 	}
 
-	private static String busFaultInfo(AcscBusFault bf, AcscNetwork net) {
+	private static String busFaultInfo(AcscBusFault bf, BaseAcscNetwork<?,?> net) {
 		StringBuffer str = new StringBuffer("");
 		try {
 			double baseKVA = net.getBaseKva();
@@ -170,12 +170,14 @@ public class AcscOutFunc {
 		StringBuffer str = new StringBuffer("");
 		if (bf.getFaultCode() == SimpleFaultCode.GROUND_3P) {
 			str.append("\n");
-			str.append("      BusID            FaultVoltage            ContribAmps\n");
-			str.append("                    (pu)          (volts)      (pu)       (amps)\n");
-			str.append("     --------  ---------------   --------   --------   ----------\n");
+			str.append("      BusID     BusName   BasekV             FaultVoltage            ContribAmps\n");
+			str.append("                                         (pu)          (volts)      (pu)       (amps)\n");
+			str.append("     --------   --------- -------    ---------------   --------   --------   ----------\n");
 			for (Bus b : net.getBusList()) {
 				AcscBus bus = (AcscBus) b;
 				str.append("     " + Number2String.toStr(-8, bus.getId()) + "   ");
+				str.append("  "+Number2String.toStr(-10, bus.getName()) + " ");
+				str.append(Number2String.toStr(-6,Number2String.toStr("###0.##",bus.getBaseVoltage()*0.001))+ "   ");
 				Complex v1 = bf.getFaultResult().getBusVoltage_012(bus).b_1;
 				double vpu = v1.abs();
 				Complex3x1 ampPu = bf.getFaultResult().getBusContriAmps_012(bus);
@@ -191,45 +193,49 @@ public class AcscOutFunc {
 			}
 		} else {
 			str.append("\n\n");
-			str.append("      BusID            FaultVolt(1)                 FaultVolt(0)                FaultVolt(2)\n");
-			str.append("                    (pu)          (volts)         (pu)         (volts)         (pu)         (volts)\n");
-			str.append("     --------  ---------------   --------   ---------------   --------   ---------------   --------\n");
+			str.append("      BusID     Bus Name    Base kV         FaultVolt(1)                 FaultVolt(0)                FaultVolt(2)\n");
+			str.append("                                          (pu)          (volts)         (pu)         (volts)         (pu)         (volts)\n");
+			str.append("     --------   ---------   -------  ---------------   --------   ---------------   --------   ---------------   --------\n");
 			
 			for (Bus b : net.getBusList()) {
 				AcscBus bus = (AcscBus) b;
 				str.append("     " + Number2String.toStr(-8, bus.getId()) + " ");
+				str.append("  "+Number2String.toStr(-10, bus.getName()) + " ");
+				str.append(Number2String.toStr(-6,Number2String.toStr(bus.getBaseVoltage()*0.001,"###0.##"))+ "   ");
 				double vbase = bus.getBaseVoltage();
 				Complex3x1 v012 = bf.getFaultResult().getBusVoltage_012(bus);
 				double vpu1 = v012.b_1.abs();
-				str.append(ComplexFunc.toMagAng(v012.b_1));
-				str.append(Number2String.toStr("#######0.#", vpu1*vbase)	+ "   ");
+				str.append(Number2String.toStr(-14,ComplexFunc.toMagAng(v012.b_1)));
+				str.append(Number2String.toStr("#######0.#", vpu1*vbase)	+ "    ");
 				double vpu0 = v012.a_0.abs();
-				str.append(ComplexFunc.toMagAng(v012.a_0));
-				str.append(Number2String.toStr("#######0.#", vpu0*vbase)	+ "   ");
+				str.append(Number2String.toStr(-14,ComplexFunc.toMagAng(v012.a_0)));
+				str.append(Number2String.toStr("#######0.#", vpu0*vbase)	+ "     ");
 				double vpu2 = v012.c_2.abs();
-				str.append(ComplexFunc.toMagAng(v012.c_2));
+				str.append(Number2String.toStr(-14,ComplexFunc.toMagAng(v012.c_2)));
 				str.append(Number2String.toStr("#######0.#", vpu2*vbase)	+ "\n");
 			}
 
 			str.append("\n\n");
-			str.append("      BusID            FaultVolt(a)                 FaultVolt(b)                 FaultVolt(c)\n");
-			str.append("                    (pu)          (volts)         (pu)         (volts)         (pu)         (volts)\n");
-			str.append("     --------  ---------------   --------   ---------------   --------   ---------------   --------\n");
+			str.append("      BusID     Bus Name   Base kV         FaultVolt(a)                 FaultVolt(b)                 FaultVolt(c)\n");
+			str.append("                                        (pu)          (volts)         (pu)         (volts)         (pu)         (volts)\n");
+			str.append("     --------  ----------- -------  ---------------   --------   ---------------   --------   ---------------   --------\n");
 			for (Bus b : net.getBusList()) {
 				AcscBus bus = (AcscBus) b;
 				str.append("     " + Number2String.toStr(-8, bus.getId()) + " ");
+				str.append("  "+Number2String.toStr(-10, bus.getName()) + " ");
+				str.append(Number2String.toStr(-6,Number2String.toStr(bus.getBaseVoltage()*0.001,"###0.##"))+ "   ");
 				Complex3x1 v012 = bf.getFaultResult().getBusVoltage_012(bus);
 				Complex3x1 vabc = Complex3x1.z12_to_abc(v012);
 				double vphase = bus.getBaseVoltage() / NumericConstant.SqrtRoot3;
-				double vpu1 = vabc.a_0.abs();
-				str.append(ComplexFunc.toMagAng(vabc.b_1));
-				str.append(Number2String.toStr("#######0.#", vpu1*vphase) + "   ");
-				double vpu0 = vabc.b_1.abs();
-				str.append(ComplexFunc.toMagAng(vabc.a_0));
-				str.append(Number2String.toStr("#######0.#", vpu0*vphase) + "   ");
-				double vpu2 = vabc.c_2.abs();
-				str.append(ComplexFunc.toMagAng(vabc.c_2));
-				str.append(Number2String.toStr("#######0.#", vpu2*vphase)	+ "\n");
+				double vpu_a = vabc.a_0.abs();
+				str.append(Number2String.toStr(-14,ComplexFunc.toMagAng(vabc.a_0)));
+				str.append(Number2String.toStr("#######0.#", vpu_a*vphase) + "    ");
+				double vpu_b = vabc.b_1.abs();
+				str.append(Number2String.toStr(-14,ComplexFunc.toMagAng(vabc.b_1)));
+				str.append(Number2String.toStr("#######0.#", vpu_b*vphase) + "     ");
+				double vpu_c = vabc.c_2.abs();
+				str.append(Number2String.toStr(-14,ComplexFunc.toMagAng(vabc.c_2)));
+				str.append(Number2String.toStr("#######0.#", vpu_c*vphase)	+ "\n");
 			}
 		}
 		return str.toString();
@@ -254,18 +260,22 @@ public class AcscOutFunc {
 			List<?> branchList = net.getBranchList();
 			int cnt = 0;
 			for (int n = 0; n < branchList.size(); n++) {
-				AcscBranch bra = (AcscBranch) branchList.get(n);
-				str.append("     " + Number2String.toStr(-20, bra.getId())	+ "   ");
-				try {
-					Complex3x1 cpu = bf.getFaultResult().getBranchAmpsFrom2To_012(++cnt);
-					Complex3x1 camp = bf.getFaultResult().getBranchAmpsFrom2To_012(cnt, UnitType.Amp,
-									bra.getFromBus().getBaseVoltage(),
-									net.getBaseKva());
-					str.append(Number2String.toStr("###0.###", cpu.b_1.abs()) + "   "
-							+ Number2String.toStr("#######0.#", camp.b_1.abs())	+ "\n");
-				} catch (Exception e) {
-					IpssLogger.logErr(e);
-					str.append(e.toString() + "\n");
+
+				//Only AcscBranch will be considered, skip the 3w xfr and HVDC, Facts
+				if(branchList.get(n) instanceof  AcscBranch){
+					AcscBranch bra = (AcscBranch) branchList.get(n);
+					str.append("     " + Number2String.toStr(-20, bra.getId())	+ "   ");
+					try {
+						Complex3x1 cpu = bf.getFaultResult().getBranchAmpsFrom2To_012(cnt);
+						Complex3x1 camp = bf.getFaultResult().getBranchAmpsFrom2To_012(cnt++, UnitType.Amp,
+										bra.getFromBus().getBaseVoltage(),
+										net.getBaseKva());
+						str.append(Number2String.toStr("###0.###", cpu.b_1.abs()) + "   "
+								+ Number2String.toStr("#######0.#", camp.b_1.abs())	+ "\n");
+					} catch (Exception e) {
+						IpssLogger.logErr(e);
+						str.append(e.toString() + "\n");
+					}
 				}
 			}
 		} else {
@@ -277,9 +287,13 @@ public class AcscOutFunc {
 			List<?> branchList = net.getBranchList();
 			int cnt = 0;
 			for (int n = 0; n < branchList.size(); n++) {
+				
+			//Only AcscBranch will be considered, skip the 3w xfr and HVDC, Facts
+			 if(branchList.get(n) instanceof  AcscBranch){
+					
 				AcscBranch bra = (AcscBranch) branchList.get(n);
 				try {
-					Complex3x1 cpu = bf.getFaultResult().getBranchAmpsFrom2To_012(++cnt);
+					Complex3x1 cpu = bf.getFaultResult().getBranchAmpsFrom2To_012(cnt);
 					Complex3x1 camp = bf.getFaultResult().getBranchAmpsFrom2To_012(cnt, UnitType.Amp,
 									bra.getFromBus().getBaseVoltage(),
 									net.getBaseKva());
@@ -292,7 +306,7 @@ public class AcscOutFunc {
 							+ Number2String.toStr("#######0.#", camp.c_2.abs()) + "\n");
 
 					cpu = bf.getFaultResult().getBranchAmpsTo2From_012(cnt);
-					camp = bf.getFaultResult().getBranchAmpsTo2From_012(cnt,
+					camp = bf.getFaultResult().getBranchAmpsTo2From_012(cnt++,
 							UnitType.Amp, bra.getToBus().getBaseVoltage(),
 							net.getBaseKva());
 					str.append("     " + Number2String.toStr(-9, " ") + "<-"
@@ -307,6 +321,7 @@ public class AcscOutFunc {
 					IpssLogger.logErr(e);
 					str.append(e.toString() + "\n");
 				}
+			  }
 			}
 
 			str.append("\n\n");
@@ -316,37 +331,40 @@ public class AcscOutFunc {
 
 			cnt = 0;
 			for (int n = 0; n < branchList.size(); n++) {
-				AcscBranch bra = (AcscBranch) branchList.get(n);
-				str.append("     " + Number2String.toStr(-20, bra.getId()) + "   ");
-				try {
-					Complex3x1 cpu = bf.getFaultResult().getBranchAmpsFrom2To_abc(++cnt);
-					double baseV = bra.getFromBus().getBaseVoltage() / NumericConstant.SqrtRoot3;
-					Complex3x1 camp = bf.getFaultResult().getBranchAmpsFrom2To_abc(cnt, UnitType.Amp,
-									baseV,	net.getBaseKva());
-					str.append(Number2String.toStr("###0.###", cpu.a_0.abs()) + "   "
-							+ Number2String.toStr("#######0.#", camp.a_0.abs())	+ "   ");
-					str.append(Number2String.toStr("###0.###", cpu.b_1.abs()) + "   "
-							+ Number2String.toStr("#######0.#", camp.b_1.abs())	+ "   ");
-					str.append(Number2String.toStr("###0.###", cpu.c_2.abs()) + "   "
-							+ Number2String.toStr("#######0.#", camp.c_2.abs()) + "\n");
-
-					cpu = bf.getFaultResult().getBranchAmpsTo2From_abc(cnt);
-					baseV = bra.getToBus().getBaseVoltage() / NumericConstant.SqrtRoot3;
-					camp = bf.getFaultResult().getBranchAmpsTo2From_abc(cnt,
-							UnitType.Amp, baseV, net.getBaseKva());
-					str.append("     " + Number2String.toStr(-9, " ") + "<-"
-							+ Number2String.toStr(-9, " ") + "   ");
-					str.append(Number2String.toStr("###0.###", cpu.a_0.abs()) + "   "
-							+ Number2String.toStr("#######0.#", camp.a_0.abs()) + "   ");
-					str.append(Number2String.toStr("###0.###", cpu.b_1.abs()) + "   "
-							+ Number2String.toStr("#######0.#", camp.b_1.abs()) + "   ");
-					str.append(Number2String.toStr("###0.###", cpu.c_2.abs()) + "   "
-							+ Number2String.toStr("#######0.#", camp.c_2.abs()) + "\n");
-				} catch (Exception e) {
-					IpssLogger.logErr(e);
-					str.append(e.toString() + "\n");
-				}
-			}
+				//Only AcscBranch will be considered, skip the 3w xfr and HVDC, Facts
+				if(branchList.get(n) instanceof  AcscBranch){
+					AcscBranch bra = (AcscBranch) branchList.get(n);
+					str.append("     " + Number2String.toStr(-20, bra.getId()) + "   ");
+					try {
+						Complex3x1 cpu = bf.getFaultResult().getBranchAmpsFrom2To_abc(cnt);
+						double baseV = bra.getFromBus().getBaseVoltage() / NumericConstant.SqrtRoot3;
+						Complex3x1 camp = bf.getFaultResult().getBranchAmpsFrom2To_abc(cnt, UnitType.Amp,
+										baseV,	net.getBaseKva());
+						str.append(Number2String.toStr("###0.###", cpu.a_0.abs()) + "   "
+								+ Number2String.toStr("#######0.#", camp.a_0.abs())	+ "   ");
+						str.append(Number2String.toStr("###0.###", cpu.b_1.abs()) + "   "
+								+ Number2String.toStr("#######0.#", camp.b_1.abs())	+ "   ");
+						str.append(Number2String.toStr("###0.###", cpu.c_2.abs()) + "   "
+								+ Number2String.toStr("#######0.#", camp.c_2.abs()) + "\n");
+	
+						cpu = bf.getFaultResult().getBranchAmpsTo2From_abc(cnt);
+						baseV = bra.getToBus().getBaseVoltage() / NumericConstant.SqrtRoot3;
+						camp = bf.getFaultResult().getBranchAmpsTo2From_abc(cnt++,
+								UnitType.Amp, baseV, net.getBaseKva());
+						str.append("     " + Number2String.toStr(-9, " ") + "<-"
+								+ Number2String.toStr(-9, " ") + "   ");
+						str.append(Number2String.toStr("###0.###", cpu.a_0.abs()) + "   "
+								+ Number2String.toStr("#######0.#", camp.a_0.abs()) + "   ");
+						str.append(Number2String.toStr("###0.###", cpu.b_1.abs()) + "   "
+								+ Number2String.toStr("#######0.#", camp.b_1.abs()) + "   ");
+						str.append(Number2String.toStr("###0.###", cpu.c_2.abs()) + "   "
+								+ Number2String.toStr("#######0.#", camp.c_2.abs()) + "\n");
+					} catch (Exception e) {
+						IpssLogger.logErr(e);
+						str.append(e.toString() + "\n");
+					}
+			  }
+		   }
 		}
 		return str.toString();
 	}
