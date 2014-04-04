@@ -8,6 +8,7 @@ import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
 import org.ieee.odm.model.acsc.AcscModelParser;
 import org.interpss.IpssCorePlugin;
+import org.interpss.display.AcscOutFunc;
 import org.interpss.mapper.odm.ODMAcscParserMapper;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
@@ -217,6 +218,9 @@ public class IEEE9Bus_Acsc_test {
          */
 	  	assertTrue(TestUtilFunc.compare(fault.getFaultResult().getBusVoltage_012(net.getBus("Bus4")), 
 	  			0.0, 0.0, 0.61996, -0.00357, 0.40527, -0.0355) );
+	  	
+	  	//output fault analysis result
+	  	System.out.println(AcscOutFunc.faultResult2String(net,acscAlgo));
 		
 	}
 	

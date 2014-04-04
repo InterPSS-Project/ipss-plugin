@@ -51,7 +51,6 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 			PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
 			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 					"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_v30.raw",
-					//"testData/adpter/psse/v30/IEEE39Bus/ieee9.seq",
 					"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus.dyr"
 			}));
 			DStabModelParser parser =(DStabModelParser) adapter.getModel();
@@ -91,26 +90,7 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 			dsNet.setNetEqnIterationNoEvent(6);
 			dsNet.addDynamicEvent(create3PhaseFaultEvent("Bus2",dsNet,1,0.0833),"3phaseFault@Bus2");
 			
-			
-			/*
-			StateVariableRecorder ssRecorder = new StateVariableRecorder(0.0001);
-			ssRecorder.addCacheRecords("Bus30-mach1",      // mach id 
-					MachineState,    // record type
-					DStabOutSymbol.OUT_SYMBOL_MACH_ANG,       // state variable name
-					0.01,                                      // time steps for recording 
-					10);                                      // total points to record 
-			
-			ssRecorder.addCacheRecords("Bus30-mach1",      // mach id 
-					MachineState,    // record type
-					DStabOutSymbol.OUT_SYMBOL_MACH_PM,       // state variable name
-					0.01,                                      // time steps for recording 
-					10);                                      // total points to record
-			ssRecorder.addCacheRecords("Bus30-mach1",      // mach id 
-					StateVarRecType.MachineState,    // record type
-					DStabOutSymbol.OUT_SYMBOL_MACH_Efd,       // state variable name
-					0.01,                                      // time steps for recording 
-					10);
-			*/
+
 			StateMonitor sm = new StateMonitor();
 			sm.addGeneratorStdMonitor(new String[]{"Bus30-mach1","Bus31-mach1","Bus32-mach1","Bus33-mach1","Bus34-mach1"
 					,"Bus35-mach1","Bus36-mach1","Bus37-mach1","Bus38-mach1",});
@@ -124,39 +104,13 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 				System.out.println("Running DStab simulation ...");
 				System.out.println(dsNet.getMachineInitCondition());
 				dstabAlgo.performSimulation();
-				//dstabAlgo.solveDEqnStep(true);
 
 			}
 			//System.out.println(sm.toCSVString(sm.getMachAngleTable()));
 			//System.out.println(sm.toCSVString(sm.getMachEfdTable()));
 			FileUtil.writeText2File("E:/ieee39_angle.csv", sm.toCSVString(sm.getMachAngleTable()));
 			FileUtil.writeText2File("E:/ieee39_efd.csv", sm.toCSVString(sm.getMachEfdTable()));
-		   /*
-			// output recorded simulation results
-			List<StateRecord> list = ssRecorder.getMachineRecords(
-					"Bus30-mach1", MachineState, DStabOutSymbol.OUT_SYMBOL_MACH_ANG);
-			System.out.println("\n\n Bus30 Machine Anagle");
-			for (StateRecord rec : list) {
-				System.out.println(Number2String.toStr(rec.t) + ", " + Number2String.toStr(rec.variableValue));
-			}
-
-			
-			list = ssRecorder.getMachineRecords(
-					"Bus30-mach1", MachineState, DStabOutSymbol.OUT_SYMBOL_MACH_PM);
-			System.out.println("\n\n Bus30 Machine PM");
-			for (StateRecord rec : list) {
-				System.out.println(Number2String.toStr(rec.t) + ", " + Number2String.toStr(rec.variableValue));
-			}
-			list = ssRecorder.getMachineRecords(
-					"Bus30-mach1", StateVarRecType.MachineState, DStabOutSymbol.OUT_SYMBOL_MACH_Efd);
-			System.out.println("\n\n Bus30 Machine Efd");
-			for (StateRecord rec : list) {
-				System.out.println(Number2String.toStr(rec.t) + ", " + Number2String.toStr(rec.variableValue));
-			}
-			*/
-			
-			
-			
+	
 		}
 		
 		//@Test
@@ -165,7 +119,6 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 			PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
 			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 					"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_v30.raw",
-					//"testData/adpter/psse/v30/IEEE39Bus/ieee9.seq",
 					"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus.dyr"
 			}));
 			DStabModelParser parser =(DStabModelParser) adapter.getModel();
