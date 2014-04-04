@@ -30,6 +30,7 @@ import org.interpss.dstab.control.cml.block.IntegrationControlBlock;
 import org.interpss.dstab.control.cml.block.WashoutControlBlock;
 import org.interpss.dstab.control.cml.func.SeFunction;
 
+import com.interpss.common.util.IpssLogger;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.controller.AnnotateExciter;
 import com.interpss.dstab.controller.annotate.AnController;
@@ -46,13 +47,13 @@ import com.sun.org.apache.xml.internal.resolver.helpers.Debug;
  */
 @AnController(
    input="mach.vt",
-   output="this.teDelayBlock.y",
+   output="this.teIntBlock.y",
    refPoint="this.kaDelayBlock.u0 - pss.vs + mach.vt + this.washoutBlock.y",
    display= {}
    //debug = true
    )
 public class Ieee1968Type1Exciter extends AnnotateExciter {
-	   public double ke = 1.0, te=1.0;
+	   public double ke = 1.0;
 
 	   // define a CML delay block, krDelayBlock----1/(1+sTr)
        public double kr = 1.0/*constant*/,tr = 0.04;
@@ -71,21 +72,31 @@ public class Ieee1968Type1Exciter extends AnnotateExciter {
 	      type= CMLFieldEnum.ControlBlock,
 	      input="this.refPoint + pss.vs - this.washoutBlock.y - this.krDelayBlock.y",
 	      parameter={"type.NonWindup", "this.ka", "this.ta", "this.vrmax", "this.vrmin"},
-	      y0="this.teDelayBlock.u0 + this.seFunc.y*this.teDelayBlock.y"  
+	      y0="this.teIntBlock.u0 + this.seFunc.y*this.teIntBlock.y + this.ke*this.teIntBlock.y"  
 	      //initOrderNumber=2 //,debug=true
 	   )
 	   DelayControlBlock kaDelayBlock;
        
 	   
-	   public double  ke1 = 1/ke  , te_ke = te/ke;
+//	   public double  ke1 = 1/ke  , te_ke = te/ke;
+//	   @AnControllerField(
+//	      type= CMLFieldEnum.ControlBlock,
+//	      input="this.kaDelayBlock.y - this.seFunc.y*this.teDelayBlock.y",
+//	      parameter={"type.NoLimit", "this.ke1", "this.te_ke"},
+//	      y0="mach.efd"	//debug =true,
+//	      //initOrderNumber=1 
+//	      )
+//	   DelayControlBlock teDelayBlock;
+	   
+	   public double te = 0.6, kint = 1/te;
 	   @AnControllerField(
 	      type= CMLFieldEnum.ControlBlock,
-	      input="this.kaDelayBlock.y - this.seFunc.y*this.teDelayBlock.y",
-	      parameter={"type.NoLimit", "this.ke1", "this.te_ke"},
-	      y0="mach.efd"	//debug =true,
-	      //initOrderNumber=1 
+	      input="this.kaDelayBlock.y - this.seFunc.y*this.teIntBlock.y-this.ke*this.teIntBlock.y",
+	      parameter={"type.NoLimit", "this.kint"},
+	      y0="mach.efd"//,
+	      //debug = true
 	      )
-	   DelayControlBlock teDelayBlock;
+	   IntegrationControlBlock teIntBlock;
 	   
 		
 
@@ -100,7 +111,7 @@ public class Ieee1968Type1Exciter extends AnnotateExciter {
 	   public double kf = 1.0, tf = 0.05, k = kf/tf;
 	   @AnControllerField(
 	      type= CMLFieldEnum.ControlBlock,
-	      input="this.teDelayBlock.y",
+	      input="this.teIntBlock.y",
 	      parameter={"type.NoLimit", "this.k", "this.tf"},
 	      feedback = true   //,debug=true
 	   )
@@ -164,10 +175,20 @@ public class Ieee1968Type1Exciter extends AnnotateExciter {
 		this.seE2 = getData().getSeE2();
 		this.kf  = getData().getKf();
 		this.tf = getData().getTf();
-
-		this.ke1 = 1.0/this.ke;
-		this.te_ke = this.te/this.ke;
-		this.k = kf/tf;
+        
+		if(tf == 0.0){
+			IpssLogger.getLogger().severe("Tf =0.0 for Exciter of "+mach.getId());
+			this.k = 0.0;
+		}
+		else
+		  this.k = kf/tf;
+		
+		this.kr=1.0;
+		if(te == 0.0){
+			IpssLogger.getLogger().severe("Te = 0.0 for Exciter of "+mach.getId());
+			return false;
+		}
+		this.kint = 1/te;
 		// call the super method to init CML field/controller states
         return super.initStates(bus, mach);
     }

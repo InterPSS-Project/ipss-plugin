@@ -166,9 +166,9 @@ public class CorePluginFunction {
 	 *   
 	 *   StringBuffer outText = BusLfResultBusStyle.f(aclfNet, bus);
 	 */
-	public static IFunction2<AclfNetwork, AclfBus, StringBuffer> BusLfResultBusStyle = 
-		new Function2Adapter<AclfNetwork, AclfBus, StringBuffer>() {
-			@Override public StringBuffer f(AclfNetwork net, AclfBus bus) {
+	public static IFunction2<BaseAclfNetwork, AclfBus, StringBuffer> BusLfResultBusStyle = 
+		new Function2Adapter<BaseAclfNetwork, AclfBus, StringBuffer>() {
+			@Override public StringBuffer f(BaseAclfNetwork net, AclfBus bus) {
 				return AclfOut_BusStyle.busResult(net, bus);
 			}
 		};
