@@ -28,6 +28,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import com.interpss.common.datatype.Constants;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabilityNetwork;
@@ -47,23 +48,22 @@ public class Eq1MachineCaseTest extends TestSetupBase {
 		DStabBus bus = net.getDStabBus("Gen");
 		mach.initStates(bus);
 		//System.out.println("Ygen: " + mach.getYgen());
-		System.out.println("Igen: " + mach.getIgen());
+		//System.out.println("Igen: " + mach.getIgen());
 		assertTrue(Math.abs(mach.getYgen().getReal()-0.01208) < 0.00001);
 		assertTrue(Math.abs(mach.getYgen().getImaginary()+2.63678) < 0.00001);
 		assertTrue(Math.abs(mach.getIgen().getReal()-0.81207) < 0.00001);
 		assertTrue(Math.abs(mach.getIgen().getImaginary()+3.23678) < 0.00001);			
-
-		/*
-		System.out.println("Angle(deg) " + mach.getAngle()*Constants.RtoD);
+/*
+		System.out.println("Angle(deg) " + Math.abs(Math.toDegrees(mach.getAngle())));
 		System.out.println("Eq1 " + mach.getEq1());
 		System.out.println("Efd " + mach.getEfd());
 		System.out.println("Pe " + mach.getPe());
 		System.out.println("Pm " + mach.getPm());
-		*/
+*/
 		// the following values to compare to are by long-hand calculation
 		assertTrue(Math.abs(Math.toDegrees(mach.getAngle())-27.58341) < 0.00001);
 		assertTrue(Math.abs(mach.getEq1()-1.09514) < 0.00001);
-		assertTrue(Math.abs(mach.getEfd()-1.88008) < 0.00001);
+		assertTrue(Math.abs(mach.getEfd()-1.87153) < 0.00001);
 		assertTrue(Math.abs(mach.getPe()-0.803) < 0.00001);
 		assertTrue(Math.abs(mach.getPm()-0.803) < 0.00001);
 		
@@ -75,7 +75,7 @@ public class Eq1MachineCaseTest extends TestSetupBase {
 		assertTrue(Math.abs(mach.getSpeed()-1.0) < 0.00001);
 		assertTrue(Math.abs(Math.toDegrees(mach.getAngle())-27.58341) < 0.00001);
 		assertTrue(Math.abs(mach.getEq1()-1.09514) < 0.00001);
-		assertTrue(Math.abs(mach.getEfd()-1.88008) < 0.00001);
+		assertTrue(Math.abs(mach.getEfd()-1.87153) < 0.00001);
 		assertTrue(Math.abs(mach.getPe()-0.803) < 0.00001);
 		assertTrue(Math.abs(mach.getPm()-0.803) < 0.00001);
 		
@@ -88,7 +88,7 @@ public class Eq1MachineCaseTest extends TestSetupBase {
 		assertTrue(Math.abs(mach.getSpeed()-1.0) < 0.00001);
 		assertTrue(Math.abs(Math.toDegrees(mach.getAngle())-27.58341) < 0.00001);
 		assertTrue(Math.abs(mach.getEq1()-1.09514) < 0.00001);
-		assertTrue(Math.abs(mach.getEfd()-1.88008) < 0.00001);
+		assertTrue(Math.abs(mach.getEfd()-1.87153) < 0.00001);
 		assertTrue(Math.abs(mach.getPe()-0.803) < 0.00001);
 		assertTrue(Math.abs(mach.getPm()-0.803) < 0.00001);
 		
@@ -108,7 +108,7 @@ public class Eq1MachineCaseTest extends TestSetupBase {
 		assertTrue(Math.abs(Math.toDegrees(mach.getAngle())-27.60114) < 0.00001);
 		assertTrue(Math.abs(mach.getSpeed()-1.0002) < 0.00001);
 		assertTrue(Math.abs(mach.getEq1()-1.09514) < 0.00001);
-		assertTrue(Math.abs(mach.getEfd()-1.88008) < 0.00001);
+		assertTrue(Math.abs(mach.getEfd()-1.87153) < 0.00001);
 		assertTrue(Math.abs(mach.getPe()-0.803) < 0.00001);
 		assertTrue(Math.abs(mach.getPm()-1.0) < 0.00001);
 	}
