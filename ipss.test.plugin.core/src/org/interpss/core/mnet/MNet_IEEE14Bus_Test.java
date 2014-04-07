@@ -121,7 +121,7 @@ public class MNet_IEEE14Bus_Test extends CorePluginTestSetup {
  		AclfBus swingBus = (AclfBus)net.getBus("Bus1");
  		AclfSwingBus swing = swingBus.toSwingBus();
 		System.out.println(swing.getGenResults(UnitType.PU));
-		System.out.println(AclfOutFunc.loadFlowSummary(net));
+		//System.out.println(AclfOutFunc.loadFlowSummary(net));
 		
 		/*
 		 * Please note this might not be a correct way to break a strongly coupled network

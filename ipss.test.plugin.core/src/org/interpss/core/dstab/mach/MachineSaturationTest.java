@@ -68,9 +68,11 @@ public class MachineSaturationTest extends TestSetupBase {
 		mach.setSe100(12.5);
 		mach.setSe120(50.0);		
 		
-		assertTrue(Math.abs(mach.getXdAdjusted()-1.485327) < 0.0001);
+		//System.out.println(mach.getXdAdjusted());
+		assertTrue(Math.abs(mach.getXdAdjusted()-1.444036) < 0.0001);
 
 		bus.setVoltage(new Complex(1.4, 0.0));
-		assertTrue(Math.abs(mach.getXdAdjusted()-0.746303) < 0.0001);
+		//System.out.println(mach.getXdAdjusted());
+		assertTrue(Math.abs(mach.getXdAdjusted()-0.898648) < 0.0001);
 	}
 }

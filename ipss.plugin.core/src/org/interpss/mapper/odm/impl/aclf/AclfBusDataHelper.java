@@ -44,6 +44,7 @@ import org.ieee.odm.schema.LoadflowBusXmlType;
 import org.ieee.odm.schema.LoadflowGenDataXmlType;
 import org.ieee.odm.schema.LoadflowLoadDataXmlType;
 import org.ieee.odm.schema.PowerXmlType;
+import org.ieee.odm.schema.ReactivePowerUnitType;
 import org.ieee.odm.schema.ReactivePowerXmlType;
 import org.ieee.odm.schema.SwitchedShuntBlockXmlType;
 import org.ieee.odm.schema.SwitchedShuntModeEnumType;
@@ -169,6 +170,7 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 	
 	private void mapGenData(BusGenDataXmlType xmlGenData) throws InterpssException {
 		LoadflowGenDataXmlType xmlDefaultGen = AclfParserHelper.getDefaultGen(xmlGenData);
+		VoltageXmlType vXml = xmlDefaultGen.getDesiredVoltage();
 		if (xmlGenData.getCode() == LFGenCodeEnumType.PQ) {
 			bus.setGenCode(AclfGenCode.GEN_PQ);
 			AclfPQGenBus pqBus = bus.toPQBus();
@@ -400,8 +402,14 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 		ReactivePowerXmlType binit = xmlSwitchedShuntData.getBInit();
 		
 		if (binit != null) {
-			swchShunt.setBInit(UnitHelper.pConversion(binit.getValue(), baseKva, ToReactivePowerUnit.f(binit.getUnit()), UnitType.PU));
-
+			//cacluate the factor to convert binit to pu based.
+			double factor = binit.getUnit()==ReactivePowerUnitType.PU?1.0:
+				             binit.getUnit()==ReactivePowerUnitType.MVAR?0.01:
+				            	 binit.getUnit()==ReactivePowerUnitType.KVAR?1.0E-5:
+				            		 1.0E-8; // VAR->1.0E-8 with a 100 MVA base
+			
+			swchShunt.setBInit(binit.getValue()*factor);
+			
 			VarCompensatorControlMode mode = xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.CONTINUOUS?
 					VarCompensatorControlMode.CONTINUOUS:xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.DISCRETE?
 					VarCompensatorControlMode.DISCRETE:VarCompensatorControlMode.FIXED;
@@ -417,14 +425,14 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 				swchShunt.getVarBankArray().add(varBank);
 				
 				varBank.setSteps(varBankXml.getSteps());
-
-				ReactivePowerXmlType incBXml = varBankXml.getIncrementB();
-				varBank.setUnitQMvar(UnitHelper.pConversion(incBXml.getValue(), baseKva, ToReactivePowerUnit.f(incBXml.getUnit()), UnitType.PU));
-			}
-			
-			if(xmlSwitchedShuntData.getRemoteControlledBus()!=null){
-				String remoteId = BusXmlRef2BusId.fx(xmlSwitchedShuntData.getRemoteControlledBus());
-				swchShunt.setRemoteBus(aclfNet.getBus(remoteId));
+				ReactivePowerXmlType unitVarXml = varBankXml.getIncrementB();
+				
+				factor = unitVarXml.getUnit()==ReactivePowerUnitType.PU?1.0:
+					unitVarXml.getUnit()==ReactivePowerUnitType.MVAR?1.0E-2:
+						unitVarXml.getUnit()==ReactivePowerUnitType.KVAR?1.0E-5:
+		            		 1.0E-8; 
+				//TODO UnitQMVar is in pu
+				varBank.setUnitQMvar(unitVarXml.getValue()*factor);
 			}
 		}
 	}
