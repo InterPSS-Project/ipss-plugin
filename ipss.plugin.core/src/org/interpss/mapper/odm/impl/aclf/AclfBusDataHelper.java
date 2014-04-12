@@ -394,10 +394,13 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 	}
 	
 	private void mapSwitchShuntData(SwitchedShuntXmlType xmlSwitchedShuntData){
-		//TODO 
+
 		SwitchedShunt swchShunt = CoreObjectFactory.createSwitchedShunt();
+		//TODO how the switched shunt should be modeled, controlBus or shuntDevice?
 		//swithced shunt is a also a AclfControlBus
-		this.bus.setBusControl(swchShunt);
+		
+		//this.bus.setBusControl(swchShunt);
+		this.bus.setShuntDevice(swchShunt);
 		
 		ReactivePowerXmlType binit = xmlSwitchedShuntData.getBInit();
 		
