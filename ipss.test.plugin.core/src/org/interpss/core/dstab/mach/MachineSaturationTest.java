@@ -64,7 +64,7 @@ public class MachineSaturationTest extends TestSetupBase {
 		mach.setRa(0.003);
 		mach.setTd01(5.6);
 		mach.setTq01(1.5);
-		mach.setSliner(0.8);  // no saturation
+		mach.setSliner(0.8);  
 		mach.setSe100(12.5);
 		mach.setSe120(50.0);		
 		
