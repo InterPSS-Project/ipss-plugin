@@ -37,7 +37,8 @@ public class SequenceNetworkBuilder {
 			return ok = false;
 		if(!setSwitchedShuntSeqData(seq))
 			return ok = false;
-		
+		//update the sequence data attribute
+		this._net.setPositiveSeqDataOnly(false);
 		return ok;
 			
 	}
