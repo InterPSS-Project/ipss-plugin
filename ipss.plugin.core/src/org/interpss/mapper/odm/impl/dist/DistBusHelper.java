@@ -24,12 +24,12 @@
 
 package org.interpss.mapper.odm.impl.dist;
 
-import static org.interpss.mapper.odm.ODMUnitHelper.ToActivePowerUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.ToAngleUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.ToApparentPowerUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.ToFactorUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.ToVoltageUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.ToZUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.toActivePowerUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.toAngleUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.toApparentPowerUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.toFactorUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.toVoltageUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.toZUnit;
 
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.schema.FactorUnitType;
@@ -70,8 +70,8 @@ public class DistBusHelper {
 		DistUtility util = this.bus.toUtility();
 		double v = busRec.getVoltage().getValue(),
 	           ang = busRec.getAngle().getValue();
-		UnitType vunit = ToVoltageUnit.f(busRec.getVoltage().getUnit()),
-	         angunit = ToAngleUnit.f(busRec.getAngle().getUnit());
+		UnitType vunit = toVoltageUnit.apply(busRec.getVoltage().getUnit()),
+	         angunit = toAngleUnit.apply(busRec.getAngle().getUnit());
 		util.setVoltage(v, vunit, ang, angunit);
 	
 		double scMva3P = busRec.getSource().getScMva3Phase(),
@@ -88,17 +88,17 @@ public class DistBusHelper {
 	
 	private void setRotatingMachineBusData(RotatingMachineDistBusXmlType busRec, DistRotatingMachine gen) {
 		double v = busRec.getRatedVoltage().getValue();
-		UnitType vunit = ToVoltageUnit.f(busRec.getRatedVoltage().getUnit());
+		UnitType vunit = toVoltageUnit.apply(busRec.getRatedVoltage().getUnit());
 		gen.setRatedVoltage(v, vunit);
 		
 		double pf = busRec.getPFactor().getValue();
-		UnitType pfunit = ToFactorUnit.f(busRec.getPFactor().getUnit());
+		UnitType pfunit = toFactorUnit.apply(busRec.getPFactor().getUnit());
 		gen.setPFactor(pf, pfunit);
 		
 		if (busRec.getZ1() != null && busRec.getZ1().size() > 0) {
 			NamedZXmlType z = busRec.getZ1().get(0);
 			Complex z1 = new Complex(z.getRe(), z.getIm());
-			UnitType zunit = ToZUnit.f(z.getUnit());
+			UnitType zunit = toZUnit.apply(z.getUnit());
 			gen.setZ1(z1);
 			gen.setZUnit(zunit);
 		}
@@ -116,7 +116,7 @@ public class DistBusHelper {
 		objGrounding.setCode(code);
 		if (xmlGrounding.getGroundingZ() != null) {
 			Complex zg = new Complex(xmlGrounding.getGroundingZ().getRe(), xmlGrounding.getGroundingZ().getIm());
-			UnitType zgunit = ToZUnit.f(xmlGrounding.getGroundingZ().getUnit());
+			UnitType zgunit = toZUnit.apply(xmlGrounding.getGroundingZ().getUnit());
 			objGrounding.setZ(zg, zgunit, bus.getBaseVoltage(), bus.getNetwork().getBaseKva());		
 		}
 	}
@@ -126,7 +126,7 @@ public class DistBusHelper {
 		setRotatingMachineBusData(busRec, gen);
 		
 		double kw = busRec.getRetedMva().getValue();
-		UnitType kwunit = ToApparentPowerUnit.f(busRec.getRetedMva().getUnit());
+		UnitType kwunit = toApparentPowerUnit.apply(busRec.getRetedMva().getUnit());
 		gen.setRatedKW(kw, kwunit);
 		
 		// set loading in percent
@@ -140,7 +140,7 @@ public class DistBusHelper {
 		setRotatingMachineBusData(busRec, motor);
 
 		double hp = busRec.getRatedPower().getValue();
-		UnitType hpunit = ToActivePowerUnit.f(busRec.getRatedPower().getUnit());
+		UnitType hpunit = toActivePowerUnit.apply(busRec.getRatedPower().getUnit());
 		motor.setRatedHP(hp, hpunit);
 
 		double eff = busRec.getEfficiency().getValue(),
@@ -167,7 +167,7 @@ public class DistBusHelper {
 		setRotatingMachineBusData(busRec, load);
 		
 		double kva = busRec.getTotalKva().getValue();
-		UnitType kvaunit = ToApparentPowerUnit.f(busRec.getTotalKva().getUnit());
+		UnitType kvaunit = toApparentPowerUnit.apply(busRec.getTotalKva().getUnit());
 		load.setTotalKva(kva, kvaunit);
 
 		double percent = busRec.getMotorPercent();

@@ -24,7 +24,7 @@
 
 package org.interpss.mapper.odm.impl.opf;
 
-import static org.interpss.mapper.odm.ODMUnitHelper.ToActivePowerUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.toActivePowerUnit;
 import org.ieee.odm.schema.ActivePowerRatingXmlType;
 import org.ieee.odm.schema.ActivePowerUnitType;
 import org.ieee.odm.schema.BaseBranchXmlType;
@@ -64,7 +64,7 @@ public class OpfBranchDataHelper {
 		BranchXmlType branchXml = (BranchXmlType)braXml;
 		ActivePowerRatingXmlType mwLim = branchXml.getRatingLimit().getMw();
 		ActivePowerUnitType unit=  mwLim.getUnit();
-		UnitType ipssUnit = ToActivePowerUnit.f(unit);		
+		UnitType ipssUnit = toActivePowerUnit.apply(unit);		
 		double baseKVA = opfBranch.getNetwork().getBaseKva();
 		
 		if(mwLim.getRating1()!=null){

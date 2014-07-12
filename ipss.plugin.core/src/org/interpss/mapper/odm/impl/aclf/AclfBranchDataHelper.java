@@ -26,12 +26,12 @@ package org.interpss.mapper.odm.impl.aclf;
 
 import static com.interpss.common.util.IpssLogger.ipssLogger;
 import static org.interpss.mapper.odm.ODMFunction.BusXmlRef2BusId;
-import static org.interpss.mapper.odm.ODMUnitHelper.ToActivePowerUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.ToAngleUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.ToReactivePowerUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.ToVoltageUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.ToYUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.ToZUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.toActivePowerUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.toAngleUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.toReactivePowerUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.toVoltageUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.toYUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.toZUnit;
 
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.schema.AdjustmentModeEnumType;
@@ -124,12 +124,12 @@ public class AclfBranchDataHelper {
 		}
 
 		line.setZ(new Complex(xmlLineBranch.getZ().getRe(), xmlLineBranch.getZ().getIm()), 
-				ToZUnit.f(xmlLineBranch.getZ().getUnit()), 
+				toZUnit.apply(xmlLineBranch.getZ().getUnit()), 
 			aclfBra.getFromAclfBus().getBaseVoltage());
 		if (xmlLineBranch.getTotalShuntY() != null)
 		line.setHShuntY(new Complex(0.5 * xmlLineBranch.getTotalShuntY().getRe(),
 					0.5 * xmlLineBranch.getTotalShuntY().getIm()),
-					ToYUnit.f(xmlLineBranch.getTotalShuntY().getUnit()), 
+					toYUnit.apply(xmlLineBranch.getTotalShuntY().getUnit()), 
 					aclfBra.getFromAclfBus().getBaseVoltage());
 
 		YXmlType fromShuntY = xmlLineBranch.getFromShuntY(),
@@ -139,14 +139,14 @@ public class AclfBranchDataHelper {
 			Complex ypu = UnitHelper.yConversion(new Complex(fromShuntY.getRe(),	
 					fromShuntY.getIm()),
 					aclfBra.getFromAclfBus().getBaseVoltage(), baseKva,
-					ToYUnit.f(fromShuntY.getUnit()), UnitType.PU);
+					toYUnit.apply(fromShuntY.getUnit()), UnitType.PU);
 			aclfBra.setFromShuntY(ypu);
 		}
 		if (toShuntY != null) {
 			Complex ypu = UnitHelper.yConversion(new Complex(toShuntY.getRe(),	
 					toShuntY.getIm()),
 					aclfBra.getToAclfBus().getBaseVoltage(), baseKva,
-					ToYUnit.f(toShuntY.getUnit()), UnitType.PU);
+					toYUnit.apply(toShuntY.getUnit()), UnitType.PU);
 			aclfBra.setToShuntY(ypu);
 		}
 	}
@@ -173,7 +173,7 @@ public class AclfBranchDataHelper {
 		if (fromShuntY != null) {
 			Complex ypu = UnitHelper.yConversion(new Complex(fromShuntY.getRe(),	fromShuntY.getIm()),
 					aclfBra.getFromAclfBus().getBaseVoltage(), baseKva,
-					ToYUnit.f(fromShuntY.getUnit()), UnitType.PU);
+					toYUnit.apply(fromShuntY.getUnit()), UnitType.PU);
 			aclfBra.setFromShuntY(ypu);
 		}
 	}
@@ -194,10 +194,10 @@ public class AclfBranchDataHelper {
 		AclfPSXformer psXfr = aclfBra.toPSXfr();
 		if(xmlPsXfrBranch.getFromAngle() != null)
 			psXfr.setFromAngle(xmlPsXfrBranch.getFromAngle().getValue(), 
-					ToAngleUnit.f(xmlPsXfrBranch.getFromAngle().getUnit()));
+					toAngleUnit.apply(xmlPsXfrBranch.getFromAngle().getUnit()));
 		if(xmlPsXfrBranch.getToAngle() != null)
 			psXfr.setToAngle(xmlPsXfrBranch.getToAngle().getValue(), 
-					ToAngleUnit.f(xmlPsXfrBranch.getToAngle().getUnit()));
+					toAngleUnit.apply(xmlPsXfrBranch.getToAngle().getUnit()));
 		
 		if (xmlPsXfrBranch.getAngleAdjustment() != null) {
 			AngleAdjustmentXmlType xmlAngAdj = xmlPsXfrBranch.getAngleAdjustment();
@@ -208,8 +208,8 @@ public class AclfBranchDataHelper {
 			if (xmlAngAdj.getMode() == AdjustmentModeEnumType.VALUE_ADJUSTMENT) {
 				PSXfrPControl psxfr = CoreObjectFactory.createPSXfrPControl(aclfBra, AdjControlType.POINT_CONTROL);
 				psxfr.setStatus(!xmlAngAdj.isOffLine());
-				psxfr.setPSpecified(xmlAngAdj.getDesiredValue(), ToActivePowerUnit.f(xmlAngAdj.getDesiredActivePowerUnit()), baseKva);
-				psxfr.setAngLimit(new LimitType(xmlAngAdj.getAngleLimit().getMax(), xmlAngAdj.getAngleLimit().getMin()), ToAngleUnit.f(xmlAngAdj.getAngleLimit().getUnit()));
+				psxfr.setPSpecified(xmlAngAdj.getDesiredValue(), toActivePowerUnit.apply(xmlAngAdj.getDesiredActivePowerUnit()), baseKva);
+				psxfr.setAngLimit(new LimitType(xmlAngAdj.getAngleLimit().getMax(), xmlAngAdj.getAngleLimit().getMin()), toAngleUnit.apply(xmlAngAdj.getAngleLimit().getUnit()));
 				psxfr.setControlOnFromSide(xmlAngAdj.isAngleAdjOnFromSide());
 				psxfr.setMeteredOnFromSide(xmlAngAdj.isDesiredMeasuredOnFromSide());
 			}
@@ -239,9 +239,9 @@ public class AclfBranchDataHelper {
 				PSXfrPControl psxfr = CoreObjectFactory.createPSXfrPControl(aclfBra, AdjControlType.RANGE_CONTROL);
 				psxfr.setStatus(!xmlAngAdj.isOffLine());
 				psxfr.setControlRange(UnitHelper.pConversion(new LimitType(xmlAngAdj.getRange().getMax(),xmlAngAdj.getRange().getMin()),
-						    baseKva, ToActivePowerUnit.f(xmlAngAdj.getDesiredActivePowerUnit()), UnitType.PU));
-				psxfr.setPSpecified(xmlAngAdj.getDesiredValue(), ToActivePowerUnit.f(xmlAngAdj.getDesiredActivePowerUnit()), baseKva);
-				psxfr.setAngLimit(new LimitType(xmlAngAdj.getAngleLimit().getMax(), xmlAngAdj.getAngleLimit().getMin()), ToAngleUnit.f(xmlAngAdj.getAngleLimit().getUnit()));
+						    baseKva, toActivePowerUnit.apply(xmlAngAdj.getDesiredActivePowerUnit()), UnitType.PU));
+				psxfr.setPSpecified(xmlAngAdj.getDesiredValue(), toActivePowerUnit.apply(xmlAngAdj.getDesiredActivePowerUnit()), baseKva);
+				psxfr.setAngLimit(new LimitType(xmlAngAdj.getAngleLimit().getMax(), xmlAngAdj.getAngleLimit().getMin()), toAngleUnit.apply(xmlAngAdj.getAngleLimit().getUnit()));
 				psxfr.setControlOnFromSide(xmlAngAdj.isAngleAdjOnFromSide());
 				psxfr.setMeteredOnFromSide(xmlAngAdj.isDesiredMeasuredOnFromSide());
 			}
@@ -338,7 +338,7 @@ public class AclfBranchDataHelper {
 		double baseV = fromBaseV > toBaseV ? fromBaseV : toBaseV;
 		xfr.setZ(new Complex(xmlXfrBranch.getZ().getRe() * zratio, xmlXfrBranch
 				.getZ().getIm() * zratio),
-				ToZUnit.f(xmlXfrBranch.getZ().getUnit()), baseV);
+				toZUnit.apply(xmlXfrBranch.getZ().getUnit()), baseV);
 
 		if (this.xfrBranchModel == ODMAclfNetMapper.XfrBranchModel.InterPSS) {
 			xfr.setFromTurnRatio(fTap, UnitType.PU);
@@ -372,7 +372,7 @@ public class AclfBranchDataHelper {
 					if(xmlAdjData.getMode()==AdjustmentModeEnumType.VALUE_ADJUSTMENT){
 						tap=CoreObjectFactory.createTapVControlBusVoltage(aclfBra, 
 							            AdjControlType.POINT_CONTROL, aclfNet, vcBusId);
-						tap.setVSpecified(xmlAdjData.getDesiredValue(), ToVoltageUnit.f(xmlAdjData.getDesiredVoltageUnit()));
+						tap.setVSpecified(xmlAdjData.getDesiredValue(), toVoltageUnit.apply(xmlAdjData.getDesiredVoltageUnit()));
 					}
 
 					else {
@@ -404,7 +404,7 @@ public class AclfBranchDataHelper {
 							            AdjControlType.POINT_CONTROL);
 					double factor = xmlTapAdj.getTapLimit().getUnit() == FactorUnitType.PERCENT? 0.01 : 1.0;
 					tap.setMeteredOnFromSide(xmlAdjData.isMvarMeasuredOnFormSide());
-					tap.setMvarSpecified(xmlAdjData.getDesiredValue(), ToReactivePowerUnit.f(xmlAdjData.getDesiredMvarFlowUnit()), aclfNet.getBaseKva());
+					tap.setMvarSpecified(xmlAdjData.getDesiredValue(), toReactivePowerUnit.apply(xmlAdjData.getDesiredMvarFlowUnit()), aclfNet.getBaseKva());
 					tap.setTurnRatioLimit(new LimitType(xmlTapAdj.getTapLimit().getMax()*factor, xmlTapAdj.getTapLimit().getMin()*factor));
 					tap.setControlOnFromSide(xmlTapAdj.isTapAdjOnFromSide());
 					if (xmlTapAdj.getTapAdjStepSize() != null)
@@ -507,15 +507,15 @@ public class AclfBranchDataHelper {
         <tertShiftAngle unit="DEG" value="30.0"/>
  */
 		if (xmlPsXfr3W.getFromAngle() != null && xmlPsXfr3W.getFromAngle().getValue() != 0.0) {
-			UnitType unit = ToAngleUnit.f(xmlPsXfr3W.getFromAngle().getUnit());
+			UnitType unit = toAngleUnit.apply(xmlPsXfr3W.getFromAngle().getUnit());
 			psXfr3W.setFromAngle(xmlPsXfr3W.getFromAngle().getValue(), unit);
 		}
 		if (xmlPsXfr3W.getToAngle() != null && xmlPsXfr3W.getToAngle().getValue() != 0.0) {
-			UnitType unit = ToAngleUnit.f(xmlPsXfr3W.getToAngle().getUnit());
+			UnitType unit = toAngleUnit.apply(xmlPsXfr3W.getToAngle().getUnit());
 			psXfr3W.setToAngle(xmlPsXfr3W.getToAngle().getValue(), unit);
 		}
 		if (xmlPsXfr3W.getTertShiftAngle() != null && xmlPsXfr3W.getTertShiftAngle().getValue() != 0.0) {
-			UnitType unit = ToAngleUnit.f(xmlPsXfr3W.getTertShiftAngle().getUnit());
+			UnitType unit = toAngleUnit.apply(xmlPsXfr3W.getTertShiftAngle().getUnit());
 			psXfr3W.setTertAngle(xmlPsXfr3W.getTertShiftAngle().getValue(), unit);
 		}
 	}
@@ -529,7 +529,7 @@ public class AclfBranchDataHelper {
 		if (fromShuntY != null) {
 			Complex ypu = UnitHelper.yConversion(new Complex(fromShuntY.getRe(),	fromShuntY.getIm()),
 					branch3W.getFromBus().getBaseVoltage(), baseKva,
-					ToYUnit.f(fromShuntY.getUnit()), UnitType.PU);
+					toYUnit.apply(fromShuntY.getUnit()), UnitType.PU);
 			branch3W.getFromAclfBranch().setFromShuntY(ypu);
 		}
 
@@ -602,7 +602,7 @@ public class AclfBranchDataHelper {
 		Complex z12 = new Complex(xml3WXfr.getZ().getRe()*zratio, xml3WXfr.getZ().getIm()*zratio);
 		Complex z23 = new Complex(xml3WXfr.getZ23().getRe()*zratio, xml3WXfr.getZ23().getIm()*zratio);
 		Complex z31 = new Complex(xml3WXfr.getZ31().getRe()*zratio, xml3WXfr.getZ31().getIm()*zratio);
-		UnitType unit = ToZUnit.f(xml3WXfr.getZ().getUnit());
+		UnitType unit = toZUnit.apply(xml3WXfr.getZ().getUnit());
 		// set 3W xfr branch z to the three 2W xfr branches
 		xfr3W.setZ(z12, z31, z23, unit, baseV);
 

@@ -24,7 +24,7 @@
 
 package org.interpss.pssl.plugin.odm;
 
-import static org.interpss.mapper.odm.ODMUnitHelper.ToApparentPowerUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.toApparentPowerUnit;
 
 import org.ieee.odm.schema.IpssAclfAlgorithmXmlType;
 import org.ieee.odm.schema.LfMethodEnumType;
@@ -71,7 +71,7 @@ public class AclfDslODMRunner {
 		
 		if (algoXml.getTolerance() != null)
 			algoDsl.setTolerance(algoXml.getTolerance().getValue(), 
-					ToApparentPowerUnit.f(algoXml.getTolerance().getUnit()));
+					toApparentPowerUnit.apply(algoXml.getTolerance().getUnit()));
 		
 		if (algoXml.isNonDivergent() != null)
 			algoDsl.nonDivergent(algoXml.isNonDivergent());

@@ -25,9 +25,9 @@
 package org.interpss.mapper.odm.impl.dcsys;
 
 import static com.interpss.common.util.IpssLogger.ipssLogger;
-import static org.interpss.mapper.odm.ODMUnitHelper.ToActivePowerUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.ToVoltageUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.ToZUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.toActivePowerUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.toVoltageUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.toZUnit;
 
 import javax.xml.bind.JAXBElement;
 
@@ -211,12 +211,12 @@ public abstract class AbstractODMDcSysNetMapper<T> extends AbstractODMNetDataMap
 		// voltage can be defined for all bus types
 		if (busRec.getVoltage() != null)
 			bus.setVoltage(busRec.getVoltage().getValue(), 
-					ToVoltageUnit.f(busRec.getVoltage().getUnit()));		
+					toVoltageUnit.apply(busRec.getVoltage().getUnit()));		
 		
 		if (bus.getCode() == DcBusCode.POWER_SOURCE) {
 			if (busRec.getPower() != null)
 				bus.setSourcePower(busRec.getPower().getValue(), 
-						ToActivePowerUnit.f(busRec.getPower().getUnit()));		
+						toActivePowerUnit.apply(busRec.getPower().getUnit()));		
 			else 
 				throw new IpssDcSysException("For PowerSource bus type, the power field needs specified");
 		}
@@ -226,7 +226,7 @@ public abstract class AbstractODMDcSysNetMapper<T> extends AbstractODMNetDataMap
 			bus.setLoad(0.0);		
 		else if (busRec.getLoad() != null)
 			bus.setLoad(busRec.getLoad().getValue(), 
-					ToActivePowerUnit.f(busRec.getLoad().getUnit()));		
+					toActivePowerUnit.apply(busRec.getLoad().getUnit()));		
 		
 		if (bus.getCode() == DcBusCode.PV_MODULE) {
 			if (busRec.getPvModule() != null) {
@@ -346,7 +346,7 @@ public abstract class AbstractODMDcSysNetMapper<T> extends AbstractODMNetDataMap
 	
 	private double getROhm(DcFeederXmlType feeder) throws IpssDcSysException {
 		double r = feeder.getR().getR();
-		UnitType unit = ToZUnit.f(feeder.getR().getUnit());
+		UnitType unit = toZUnit.apply(feeder.getR().getUnit());
 		if (unit == UnitType.Ohm)
 			;  // doing nothing
 		else if (unit == UnitType.OhmPerFt || unit == UnitType.OhmPerM) {

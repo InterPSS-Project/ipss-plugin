@@ -24,7 +24,7 @@
 
 package org.interpss.core.aclf.smallz;
 
-import static org.interpss.CorePluginFunction.AclfResultBusStyle;
+import static org.interpss.CorePluginFunction.aclfResultBusStyle;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
@@ -64,7 +64,7 @@ public class IEEE14Bus_SmallZBranch_Test extends CorePluginTestSetup {
 	  	algo.loadflow();
 	  	
 	  	// output loadflow calculation results
-	  	System.out.println(AclfResultBusStyle.f(net));
+	  	System.out.println(aclfResultBusStyle.apply(net));
 	  	
 		net.setSmallBranchZThreshold(0.00001);
 	  	// (-0.12495394051074982, 0.08613362908363342)

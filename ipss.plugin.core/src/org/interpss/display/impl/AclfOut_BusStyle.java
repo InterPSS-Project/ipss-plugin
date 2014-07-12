@@ -24,7 +24,7 @@
 
 package org.interpss.display.impl;
 
-import static org.interpss.CorePluginFunction.FormatKVStr;
+import static org.interpss.CorePluginFunction.formatKVStr;
 import static org.interpss.CorePluginFunction.OutputBusId;
 
 import org.apache.commons.math3.complex.Complex;
@@ -134,7 +134,7 @@ public class AclfOut_BusStyle {
 				OutputBusId.f(bus, net.getOriginalDataFormat()):
 				bus.getName().trim();
 		str.append(Number2String.toStr(-12, id) + " ");
-		str.append(String.format(" %s ", FormatKVStr.f(bus.getBaseVoltage()*0.001)));
+		str.append(String.format(" %s ", formatKVStr.apply(bus.getBaseVoltage()*0.001)));
 		str.append(Number2String.toStr("0.0000", bus.getVoltageMag(UnitType.PU)) + " ");
 		str.append(Number2String.toStr("##0.00", bus.getVoltageAng(UnitType.Deg)) + " ");
 		str.append(Number2String.toStr("####0.00", busGen.getReal()) + " ");

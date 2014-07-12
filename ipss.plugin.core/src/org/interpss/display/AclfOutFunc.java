@@ -24,7 +24,7 @@ package org.interpss.display;
  */
 
 
-import static com.interpss.core.funcImpl.AclfFunction.BranchRatingAptr;
+import static com.interpss.core.funcImpl.AclfFunction.branchRatingAptr;
 import static org.interpss.CorePluginFunction.OutputBusId;
 
 import org.apache.commons.math3.complex.Complex;
@@ -393,7 +393,7 @@ public class AclfOutFunc {
 	private static void processBranchMvaRatingViolation(BaseAclfNetwork<?, ?> net,
 			StringBuffer str, AclfBranch bra) {
 		if (bra.isActive()) {
-			AclfBranchRating adapter = BranchRatingAptr.f(bra);
+			AclfBranchRating adapter = branchRatingAptr.apply(bra);
 			if (adapter.isRatingViolated(SecAnalysisViolationType.BRANCH_THERMAL_MVA_RATING, net.getBaseKva())) {
 				str.append(Number2String.toStr(-25, bra.getId()));
 				Complex mva = bra.powerFrom2To(UnitType.mVA);

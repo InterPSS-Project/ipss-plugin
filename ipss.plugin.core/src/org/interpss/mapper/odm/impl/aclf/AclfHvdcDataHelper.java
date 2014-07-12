@@ -1,9 +1,9 @@
 package org.interpss.mapper.odm.impl.aclf;
 
-import static org.interpss.mapper.odm.ODMUnitHelper.ToActivePowerUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.ToAngleUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.ToVoltageUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.ToZUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.toActivePowerUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.toAngleUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.toVoltageUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.toZUnit;
 
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.common.ODMLogger;
@@ -64,13 +64,13 @@ public class AclfHvdcDataHelper {
 		if(this.hvdc2T.getControlMode()==HvdcControlMode.CURRENT){
 		//	this.hvdc2T.setCurrentDemand(hvdc2TXml.getCurrentDemand().getValue());
 		}else if(this.hvdc2T.getControlMode()==HvdcControlMode.POWER)
-			this.hvdc2T.setPowerDemand(hvdc2TXml.getPowerDemand().getValue(), ToActivePowerUnit.f(hvdc2TXml.getPowerDemand().getUnit()));
+			this.hvdc2T.setPowerDemand(hvdc2TXml.getPowerDemand().getValue(), toActivePowerUnit.apply(hvdc2TXml.getPowerDemand().getUnit()));
 		else //HVDC Line is Blocked
 			this.hvdc2T.setStatus(false);
 		
 		
 		//Scheduled compound dc voltage, kV by default
-		this.hvdc2T.setScheduledDCVoltage(hvdc2TXml.getScheduledDCVoltage().getValue(), ToVoltageUnit.f(hvdc2TXml.getScheduledDCVoltage().getUnit()));
+		this.hvdc2T.setScheduledDCVoltage(hvdc2TXml.getScheduledDCVoltage().getValue(), toVoltageUnit.apply(hvdc2TXml.getScheduledDCVoltage().getUnit()));
 		
 		//TODO VCMOD mode switch dc voltage
 		//this.hvdc2T.setSwitchModeVoltage()
@@ -83,7 +83,7 @@ public class AclfHvdcDataHelper {
 		end dc voltage VDCR, set RCOMP to the dc line resistance, RDC; otherwise, set 
 		RCOMP to the appropriate fraction of RDC.
 		*/
-		this.hvdc2T.setCompondR(hvdc2TXml.getCompoundingR().getR(),ToZUnit.f(hvdc2TXml.getCompoundingR().getUnit()));
+		this.hvdc2T.setCompondR(hvdc2TXml.getCompoundingR().getR(),toZUnit.apply(hvdc2TXml.getCompoundingR().getUnit()));
 		
 		
 		
@@ -140,7 +140,7 @@ public class AclfHvdcDataHelper {
 		
 		rectifier.setFiringAngLimit(new LimitType(rectifierXml.getMaxFiringAngle().getValue(), 
 				rectifierXml.getMinFiringAngle().getValue()),
-				ToAngleUnit.f(rectifierXml.getMaxFiringAngle().getUnit()));	
+				toAngleUnit.apply(rectifierXml.getMaxFiringAngle().getUnit()));	
 		
 		//RCR and XCR in ohm
 		rectifier.setCommutingZ(new Complex(rectifierXml.getCommutatingZ().getRe(),rectifierXml.getCommutatingZ().getIm()));
@@ -193,7 +193,7 @@ public class AclfHvdcDataHelper {
 
 		inverter.setFiringAngLimit(new LimitType(inverterXml
 				.getMaxFiringAngle().getValue(), inverterXml
-				.getMinFiringAngle().getValue()), ToAngleUnit.f(inverterXml
+				.getMinFiringAngle().getValue()), toAngleUnit.apply(inverterXml
 				.getMaxFiringAngle().getUnit()));
 
 		// RCR and XCR in ohm

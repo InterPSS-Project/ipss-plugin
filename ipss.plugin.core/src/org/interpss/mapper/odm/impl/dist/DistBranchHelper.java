@@ -24,13 +24,13 @@
 
 package org.interpss.mapper.odm.impl.dist;
 
-import static org.interpss.mapper.odm.ODMUnitHelper.ToApparentPowerUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.ToCurrentUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.ToFactorUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.ToLengthUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.ToVoltageUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.ToYUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.ToZUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.toApparentPowerUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.toCurrentUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.toFactorUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.toLengthUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.toVoltageUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.toYUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.toZUnit;
 
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.schema.BreakerDistBranchXmlType;
@@ -59,12 +59,12 @@ public class DistBranchHelper {
 		double l = 1.0;
 		if (branchRec.getLength() != null) {
 			l = branchRec.getLength().getValue();
-			UnitType lunit = ToLengthUnit.f(branchRec.getLength().getUnit());
+			UnitType lunit = toLengthUnit.apply(branchRec.getLength().getUnit());
 			feeder.setLength(l, lunit);
 		}
 		
 		Complex z1 = new Complex(branchRec.getZ1().getRe(), branchRec.getZ1().getIm());
-		UnitType zunit = ToZUnit.f(branchRec.getZ1().getUnit());
+		UnitType zunit = toZUnit.apply(branchRec.getZ1().getUnit());
 		Complex z0 = new Complex(0.0, 0.0);
 	    if (branchRec.getZ0() != null)
 	    	z0 = new Complex(branchRec.getZ0().getRe(), branchRec.getZ0().getIm());
@@ -72,7 +72,7 @@ public class DistBranchHelper {
 
 		if (branchRec.getShuntY() != null) {
 			Complex y1 = new Complex(branchRec.getShuntY().getRe(), branchRec.getShuntY().getIm());
-			UnitType yunit = ToYUnit.f(branchRec.getShuntY().getUnit());
+			UnitType yunit = toYUnit.apply(branchRec.getShuntY().getUnit());
     		Complex y0 = new Complex(0.0, 0.0);
     		if (branchRec.getShuntY0() != null)
     			y0 = new Complex(branchRec.getShuntY0().getRe(), branchRec.getShuntY0().getIm());
@@ -85,7 +85,7 @@ public class DistBranchHelper {
 	public void setXFormerBranchData(XFormerDistBranchXmlType branchRec) {
 		DistXformer xfrObj = this.branch.toXFormer();
 		double rating = branchRec.getRating().getValue();
-		UnitType runit = ToApparentPowerUnit.f(branchRec.getRating().getUnit());
+		UnitType runit = toApparentPowerUnit.apply(branchRec.getRating().getUnit());
 		xfrObj.setRating(rating, runit);
 		
 		double priV = branchRec.getPrimaryRatedVoltage().getValue(),
@@ -94,7 +94,7 @@ public class DistBranchHelper {
 		xfrObj.setRatedVoltage(priV, senV, vunit);
 		
 		Complex z1 = new Complex(branchRec.getZ1().getRe(), branchRec.getZ1().getIm());
-		UnitType zunit = ToZUnit.f(branchRec.getZ1().getUnit());
+		UnitType zunit = toZUnit.apply(branchRec.getZ1().getUnit());
 		Complex z0 = new Complex(0.0, 0.0);
 		if (branchRec.getZ0() != null)
 			z0 = new Complex(branchRec.getZ0().getRe(), branchRec.getZ0().getIm());
@@ -102,7 +102,7 @@ public class DistBranchHelper {
 		
 		double priRatio = branchRec.getPrimaryTurnRatio().getValue(),
 		       senRatio = branchRec.getSecondaryTurnRatio().getValue();
-		UnitType tunit = ToFactorUnit.f(branchRec.getPrimaryTurnRatio().getUnit());       
+		UnitType tunit = toFactorUnit.apply(branchRec.getPrimaryTurnRatio().getUnit());       
 		xfrObj.setTurnRatio(priRatio, senRatio, tunit);
 		
 		if (branchRec.getPrimaryConnection() != null && branchRec.getSecondaryConnection() != null) {
@@ -123,22 +123,22 @@ public class DistBranchHelper {
 	public void setReactorBranchData(ReactorDistBranchXmlType branchRec) {
 		DistReactor reactor = this.branch.toReactor();
 		double x = branchRec.getX().getX();
-		UnitType xunit = ToZUnit.f(branchRec.getX().getUnit());
+		UnitType xunit = toZUnit.apply(branchRec.getX().getUnit());
 		reactor.setX(x, xunit);
 
 		double v = branchRec.getRatedVoltage().getValue();
-		UnitType vunit = ToVoltageUnit.f(branchRec.getRatedVoltage().getUnit());
+		UnitType vunit = toVoltageUnit.apply(branchRec.getRatedVoltage().getUnit());
 		reactor.setRatedVolt(v, vunit);
 		
 		double amp = branchRec.getRatedAmp().getValue();
-		UnitType ampunit = ToCurrentUnit.f(branchRec.getRatedAmp().getUnit());
+		UnitType ampunit = toCurrentUnit.apply(branchRec.getRatedAmp().getUnit());
 		reactor.setRatedAmp(amp, ampunit);
 	}
 	
 	public void setBreakerBranchData(BreakerDistBranchXmlType branchRec) {
 		DistBreaker breaker = this.branch.toBreaker();
 		double r = branchRec.getR().getR();
-		UnitType runit = ToZUnit.f(branchRec.getR().getUnit());
+		UnitType runit = toZUnit.apply(branchRec.getR().getUnit());
 		breaker.setR(r, runit);
 	}
 	

@@ -24,6 +24,8 @@
 
 package org.interpss.mapper.odm;
 
+import java.util.function.Function;
+
 import org.ieee.odm.schema.ActivePowerUnitType;
 import org.ieee.odm.schema.AngleUnitType;
 import org.ieee.odm.schema.ApparentPowerUnitType;
@@ -36,7 +38,6 @@ import org.ieee.odm.schema.YUnitType;
 import org.ieee.odm.schema.ZUnitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
-import com.interpss.common.func.FunctionAdapter;
 import com.interpss.common.func.IFunction;
 
 /**
@@ -52,66 +53,43 @@ public class ODMUnitHelper {
 	 * convert XML power unit to InterPSS UnitType
 	 * 
 	 */
-	public static IFunction<ApparentPowerUnitType, UnitType> ToApparentPowerUnit = 
-		new FunctionAdapter<ApparentPowerUnitType, UnitType>() {
-			@Override public UnitType f(ApparentPowerUnitType from) {
-				return toApparentPowerUnit(from);
-			}
-			private UnitType toApparentPowerUnit(ApparentPowerUnitType unit) {
+	public static Function<ApparentPowerUnitType, UnitType> toApparentPowerUnit = unit -> {
 				if (unit == ApparentPowerUnitType.KVA)
 					return UnitType.kVA;
 				else if (unit == ApparentPowerUnitType.MVA)
 					return UnitType.mVA;
 				return UnitType.PU;
-			}
-		};
+			};
 
 	/**
 	 * convert XML power unit to InterPSS UnitType
 	 * 
 	 */
-	public static IFunction<ActivePowerUnitType, UnitType> ToActivePowerUnit = 
-		new FunctionAdapter<ActivePowerUnitType, UnitType>() {
-			@Override public UnitType f(ActivePowerUnitType from) {
-				return toActivePowerUnit(from);
-			}
-			private UnitType toActivePowerUnit(ActivePowerUnitType unit) {
+	public static Function<ActivePowerUnitType, UnitType> toActivePowerUnit = unit -> {
 				if (unit == ActivePowerUnitType.KW)
 					return UnitType.kW;
 				else if (unit == ActivePowerUnitType.MW)
 					return UnitType.mW;
 				return UnitType.PU;
-			}
-		};
+			};
 
 	/**
 	 * convert XML power unit to InterPSS UnitType
 	 * 
 	 */
-	public static IFunction<ReactivePowerUnitType, UnitType> ToReactivePowerUnit = 
-		new FunctionAdapter<ReactivePowerUnitType, UnitType>() {
-			@Override public UnitType f(ReactivePowerUnitType from) {
-				return toReactivePowerUnit(from);
-			}
-			private UnitType toReactivePowerUnit(ReactivePowerUnitType unit) {
+	public static Function<ReactivePowerUnitType, UnitType> toReactivePowerUnit = unit -> {
 				if (unit == ReactivePowerUnitType.KVAR)
 					return UnitType.kVar;
 				else if (unit == ReactivePowerUnitType.MVAR)
 					return UnitType.mVar;
 				return UnitType.PU;
-			}		
-		};
+			};
 
 	/**
 	 * convert XML Z unit to InterPSS UnitType
 	 * 
 	 */
-	public static IFunction<ZUnitType, UnitType> ToZUnit = 
-		new FunctionAdapter<ZUnitType, UnitType>() {
-			@Override public UnitType f(ZUnitType from) {
-				return toZUnit(from);
-			}
-			private UnitType toZUnit(ZUnitType unit) {
+	public static Function<ZUnitType, UnitType> toZUnit = unit -> {
 				if (unit == ZUnitType.OHM)
 					return UnitType.Ohm;
 				else if (unit == ZUnitType.OHM_PER_FT)
@@ -125,8 +103,7 @@ public class ODMUnitHelper {
 				else if (unit == ZUnitType.KVA)
 					return UnitType.kVA;
 				return UnitType.PU;
-			}
-		};
+			};
   
 	/**
 	 * convert XML Y unit to Ipss UnitType
@@ -134,12 +111,7 @@ public class ODMUnitHelper {
 	 * @param unit power unit 
 	 * @return
 	 */
-	public static IFunction<YUnitType, UnitType> ToYUnit = 
-		new FunctionAdapter<YUnitType, UnitType>() {
-			@Override public UnitType f(YUnitType from) {
-				return toYUnit(from);
-			}
-			private UnitType toYUnit(YUnitType unit) {
+	public static Function<YUnitType, UnitType> toYUnit = unit -> {
 				if (unit == YUnitType.MHO)
 					return UnitType.Mho;
 				else if (unit == YUnitType.MICROMHO)
@@ -149,8 +121,7 @@ public class ODMUnitHelper {
 				else if (unit == YUnitType.KVAR)
 					return UnitType.kVar;
 				return UnitType.PU;
-			}
-		};
+			};
 
 
 	/**
@@ -159,19 +130,13 @@ public class ODMUnitHelper {
 	 * @param unit power unit 
 	 * @return
 	 */
-	public static IFunction<VoltageUnitType, UnitType> ToVoltageUnit = 
-		new FunctionAdapter<VoltageUnitType, UnitType>() {
-			@Override public UnitType f(VoltageUnitType from) {
-				return toVoltageUnit(from);
-			}
-			private UnitType toVoltageUnit(VoltageUnitType unit) {
+	public static Function<VoltageUnitType, UnitType> toVoltageUnit = unit -> {
 				if (unit == VoltageUnitType.VOLT)
 					return UnitType.Volt;
 				else if (unit == VoltageUnitType.KV)
 					return UnitType.kV;
 				return UnitType.PU;
-			}
-		};
+			};
 
 	/**
 	 * convert XML current unit to Ipss UnitType
@@ -179,19 +144,13 @@ public class ODMUnitHelper {
 	 * @param unit power unit 
 	 * @return
 	 */
-	public static IFunction<CurrentUnitType, UnitType> ToCurrentUnit = 
-		new FunctionAdapter<CurrentUnitType, UnitType>() {
-			@Override public UnitType f(CurrentUnitType from) {
-				return toCurrentUnit(from);
-			}
-			private UnitType toCurrentUnit(CurrentUnitType unit) {
+	public static Function<CurrentUnitType, UnitType> toCurrentUnit = unit -> {
 				if (unit == CurrentUnitType.AMP)
 					return UnitType.Amp;
 				else if (unit == CurrentUnitType.KA)
 					return UnitType.kAmp;
 				return UnitType.PU;
-			}
-		};
+			};
 
 	
 	/**
@@ -200,17 +159,11 @@ public class ODMUnitHelper {
 	 * @param unit power unit 
 	 * @return
 	 */
-	public static IFunction<AngleUnitType, UnitType> ToAngleUnit = 
-		new FunctionAdapter<AngleUnitType, UnitType>() {
-			@Override public UnitType f(AngleUnitType from) {
-				return toAngleUnit(from);
-			}
-			private UnitType toAngleUnit(AngleUnitType unit) {
+	public static Function<AngleUnitType, UnitType> toAngleUnit = unit -> {
 				if (unit == AngleUnitType.DEG)
 					return UnitType.Deg;
 				return UnitType.Rad;
-			}
-		};
+			};
 
 	
 	/**
@@ -219,17 +172,11 @@ public class ODMUnitHelper {
 	 * @param unit power unit 
 	 * @return
 	 */
-	public static IFunction<FactorUnitType, UnitType> ToFactorUnit = 
-		new FunctionAdapter<FactorUnitType, UnitType>() {
-			@Override public UnitType f(FactorUnitType from) {
-				return toFactorUnit(from);
-			}
-			private UnitType toFactorUnit(FactorUnitType unit) {
+	public static Function<FactorUnitType, UnitType> toFactorUnit = unit -> {
 				if (unit == FactorUnitType.PERCENT)
 					return UnitType.Percent;
 				return UnitType.PU;
-			}
-		};
+			};
 	
 	/**
 	 * convert XML length unit to Ipss UnitType
@@ -237,12 +184,7 @@ public class ODMUnitHelper {
 	 * @param unit power unit 
 	 * @return
 	 */
-	public static IFunction<LengthUnitType, UnitType> ToLengthUnit = 
-		new FunctionAdapter<LengthUnitType, UnitType>() {
-			@Override public UnitType f(LengthUnitType from) {
-				return toLengthUnit(from);
-			}
-			private UnitType toLengthUnit(LengthUnitType unit) {
+	public static Function<LengthUnitType, UnitType> toLengthUnit = unit -> {
 				if (unit == LengthUnitType.FT)
 					return UnitType.Ft;
 				else if (unit == LengthUnitType.M)
@@ -252,6 +194,5 @@ public class ODMUnitHelper {
 				else if (unit == LengthUnitType.MILE)
 					return UnitType.Mile;
 				return UnitType.Ft;
-			}		
-		};
+			};
 }

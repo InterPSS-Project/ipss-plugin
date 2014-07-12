@@ -1,6 +1,7 @@
 package org.interpss;
 
 import java.util.List;
+import java.util.function.Function;
 
 import org.ieee.odm.model.aclf.AclfModelParser;
 import org.ieee.odm.model.acsc.AcscModelParser;
@@ -137,11 +138,9 @@ public class CorePluginFunction {
 	 *   
 	 *   StringBuffer outText = aclfResultSummary.apply(aclfNet);
 	 */
-	public static IFunction<AclfNetwork, StringBuffer> AclfResultSummary = 
-		new FunctionAdapter<AclfNetwork, StringBuffer>() {
-			@Override public StringBuffer f(AclfNetwork net) {
+	public static Function<AclfNetwork, StringBuffer> aclfResultSummary = net -> {
 				return AclfOutFunc.loadFlowSummary(net);
-		}};
+		};
 
 	/**
 	 * Create output text for Aclf result in the BusStyle format
@@ -151,12 +150,9 @@ public class CorePluginFunction {
 	 *   
 	 *   StringBuffer outText = aclfResultBusStype.apply(aclfNet);
 	 */
-	public static IFunction<BaseAclfNetwork<?,?>, StringBuffer> AclfResultBusStyle = 
-		new FunctionAdapter<BaseAclfNetwork<?,?>, StringBuffer>() {
-			@Override public StringBuffer f(BaseAclfNetwork<?,?> net) {
+	public static Function<BaseAclfNetwork<?,?>, StringBuffer> aclfResultBusStyle = net -> {
 				return AclfOut_BusStyle.lfResultsBusStyle(net, BusIdStyle.BusId_No);
-			}
-		};
+			};
 
 	/**
 	 * Create output text for Aclf bus result in the BusStyle format
@@ -198,14 +194,11 @@ public class CorePluginFunction {
 	 * function for output LF result for Google cloud edition
 	 * 
 	 */
-	public static IFunction<AclfNetwork, StringBuffer> OutputLF4Google = 
-		new FunctionAdapter<AclfNetwork, StringBuffer>() {
-			@Override public StringBuffer f(AclfNetwork net) {
+	public static IFunction<AclfNetwork, StringBuffer> outputLF4Google = net -> {
 				if (net.getOriginalDataFormat() == OriginalDataFormat.CIM)
 					return AclfOutFunc.loadFlowSummary(net);
-				return AclfResultBusStyle.f(net);
-			}
-		};
+				return aclfResultBusStyle.apply(net);
+			};
 	
 	/**
 	 * function to format bus id for output
@@ -224,32 +217,26 @@ public class CorePluginFunction {
 	 * function to format KV for output
 	 * 
 	 */
-	public static IFunction<Double, String> FormatKVStr = 
-		new FunctionAdapter<Double, String>() {
-			@Override public String f(Double kv) {
+	public static Function<Double, String> formatKVStr = kv -> {
 				if (kv > 1000.0)
 					return String.format("%6.1f ", kv);
 				else if (kv > 100.0)
 					return String.format("%6.2f ", kv);
 				else	
 					return String.format("%6.3f ", kv);
-			}
-	};
+			};
 
   
 	/**
 	 * Function to map ODM AcscFaultCategoryEnumType to InterPSS BranchOutageType
 	 */
-	public static IFunction<AcscFaultCategoryEnumType, BranchOutageType> MapBranchOutageType = 
-		new FunctionAdapter<AcscFaultCategoryEnumType, BranchOutageType>() {
-			@Override public BranchOutageType f(AcscFaultCategoryEnumType caty) {
+	public static Function<AcscFaultCategoryEnumType, BranchOutageType> MapBranchOutageType = caty -> {
 				if (caty == AcscFaultCategoryEnumType.OUTAGE_1_PHASE)
 					return BranchOutageType.SINGLE_PHASE;
 				else if (caty == AcscFaultCategoryEnumType.OUTAGE_2_PHASE)
 					return BranchOutageType.DOUBLE_PHASE;		
 				return BranchOutageType.THREE_PHASE;
-			}		
-		};
+			};
 		
 
 	/* **********************************************************
