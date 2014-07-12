@@ -222,7 +222,7 @@ public class DStabScenarioHelper {
 				eventObj.setType(DynamicEventType.BRANCH_OUTAGE);
 				String faultBranchId = braFaultXml.getRefBranch().getBranchId();
 				BranchOutageEvent bOutageEvent = DStabObjectFactory.createBranchOutageEvent(faultBranchId, dstabNet);
-				bOutageEvent.setOutageType(MapBranchOutageType.f(faultXml.getFaultCategory()));
+				bOutageEvent.setOutageType(MapBranchOutageType.apply(faultXml.getFaultCategory()));
 				eventObj.setBranchDynamicEvent(bOutageEvent);
 			} 
 			else if (eventXml.getFault().getFaultType() == AcscFaultTypeEnumType.BUS_FAULT) {

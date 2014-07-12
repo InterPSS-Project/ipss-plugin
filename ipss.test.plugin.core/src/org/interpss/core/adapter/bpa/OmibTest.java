@@ -2,7 +2,7 @@ package org.interpss.core.adapter.bpa;
 
 import static com.interpss.dstab.cache.StateVariableRecorder.StateVarRecType.GovernorState;
 import static com.interpss.dstab.cache.StateVariableRecorder.StateVarRecType.MachineState;
-import static org.interpss.CorePluginFunction.AclfResultBusStyle;
+import static org.interpss.CorePluginFunction.aclfResultBusStyle;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -73,7 +73,7 @@ public class OmibTest extends DStabTestSetupBase{
 		// run load flow test case
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		assertTrue(aclfAlgo.loadflow());
-		System.out.println(AclfResultBusStyle.f(net));
+		System.out.println(aclfResultBusStyle.apply(net));
 		//System.out.println("GENq="+net.getAclfBus("Bus2").getGenResults().getImaginary());
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.001);
