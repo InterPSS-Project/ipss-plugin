@@ -24,7 +24,7 @@
 
 package org.interpss.plugin.beanModel;
 
-import static org.interpss.CorePluginFunction.AclfResultBusStyle;
+import static org.interpss.CorePluginFunction.aclfResultBusStyle;
 import static org.junit.Assert.assertTrue;
 
 import java.util.logging.Level;
@@ -65,7 +65,7 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 	  	net.accept(CoreObjectFactory.createLfAlgoVisitor());
   		//System.out.println(net.net2String());
 		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet));
-  		System.out.println(AclfResultBusStyle.f(net));
+  		System.out.println(aclfResultBusStyle.apply(net));
 	}
 	
 	@Test

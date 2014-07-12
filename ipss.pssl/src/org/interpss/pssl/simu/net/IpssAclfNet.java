@@ -25,8 +25,8 @@ package org.interpss.pssl.simu.net;
 
 import static com.interpss.common.util.IpssLogger.ipssLogger;
 import static com.interpss.common.util.NetUtilFunc.ToBranchId;
-import static com.interpss.core.funcImpl.AclfFunction.LoadBusAptr;
-import static com.interpss.core.funcImpl.AclfFunction.SwingBusAptr;
+import static com.interpss.core.funcImpl.AclfFunction.loadBusAptr;
+import static com.interpss.core.funcImpl.AclfFunction.swingBusAptr;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.ComplexFunc;
@@ -400,7 +400,7 @@ public class IpssAclfNet extends BaseDSL {
 		@SuppressWarnings(value="unchecked")
   		public TAclfDSL setVoltageSpec(double vmsg, UnitType magUnit, double vang, UnitType degUnit) {
   	  						if (getAclfBus().getGenCode() == AclfGenCode.SWING) {
-  	  							AclfSwingBus swingBus = SwingBusAptr.f(getAclfBus());
+  	  							AclfSwingBus swingBus = swingBusAptr.apply(getAclfBus());
   	  							swingBus.setDesiredVoltMag(vmsg, magUnit);	swingBus.setDesiredVoltAng(vang, degUnit);	
   	  						} return (TAclfDSL)this;	}
   		public TAclfDSL genP_vMag(double p, UnitType punit, double v, UnitType vunit) { return setGenP_VMag(p, punit, v, vunit); }
@@ -431,7 +431,7 @@ public class IpssAclfNet extends BaseDSL {
   		public TAclfDSL load(Complex load, UnitType unit) { return setLoad(load, unit); }
 		@SuppressWarnings(value="unchecked")
   		public TAclfDSL setLoad(Complex load, UnitType unit) { 
-  	  						AclfLoadBusAdapter loadBus = LoadBusAptr.f(getAclfBus());
+  	  						AclfLoadBusAdapter loadBus = loadBusAptr.apply(getAclfBus());
   	  						loadBus.setLoad(load, unit); 
   	  						return (TAclfDSL)this;  		}
   		public TAclfDSL shuntY(Complex y, UnitType unit) { return setShuntY(y, unit); } 

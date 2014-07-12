@@ -1,6 +1,6 @@
 package org.interpss.core.adapter.bpa;
 
-import static org.interpss.CorePluginFunction.AclfResultBusStyle;
+import static org.interpss.CorePluginFunction.aclfResultBusStyle;
 import static org.junit.Assert.assertTrue;
 
 import org.ieee.odm.adapter.IODMAdapter;
@@ -33,6 +33,6 @@ public class Bpa07c_0615_Test extends DStabTestSetupBase {
 		
 		LoadflowAlgorithm  algo=CoreObjectFactory.createLoadflowAlgorithm(net);
 		net.accept(algo);
-		System.out.println(AclfResultBusStyle.f(net));
+		System.out.println(aclfResultBusStyle.apply(net));
 	}
 }

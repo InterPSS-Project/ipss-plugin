@@ -24,7 +24,7 @@
 
 package org.interpss.pssl.plugin;
 
-import static org.interpss.CorePluginFunction.AclfResultSummary;
+import static org.interpss.CorePluginFunction.aclfResultSummary;
 import static org.interpss.pssl.plugin.IpssAdapter.importNet;
 import static com.interpss.common.util.IpssLogger.ipssLogger;
 
@@ -170,7 +170,7 @@ public class CmdRunner {
 		new AclfDslODMRunner(net)
 		      .runAclf(algoXml);
 		
-		FileUtil.write2File(outputFilename, AclfResultSummary.f(net).toString().getBytes());
+		FileUtil.write2File(outputFilename, aclfResultSummary.apply(net).toString().getBytes());
 		ipssLogger.info("Ouput written to " + this.outputFilename);
 
 		return SimuObjectFactory.createSimuCtxTypeAclfNet(net);

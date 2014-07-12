@@ -25,10 +25,10 @@
 package org.interpss.mapper.odm.impl.acsc;
 
 import static com.interpss.common.util.IpssLogger.ipssLogger;
-import static com.interpss.core.funcImpl.AcscFunction.AcscLineAptr;
-import static com.interpss.core.funcImpl.AcscFunction.AcscXfrAptr;
-import static org.interpss.mapper.odm.ODMUnitHelper.ToYUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.ToZUnit;
+import static com.interpss.core.funcImpl.AcscFunction.acscLineAptr;
+import static com.interpss.core.funcImpl.AcscFunction.acscXfrAptr;
+import static org.interpss.mapper.odm.ODMUnitHelper.toYUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.toZUnit;
 
 import javax.activation.UnsupportedDataTypeException;
 import javax.xml.bind.JAXBElement;
@@ -359,7 +359,7 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 		
 		if(acscLoadData.getShuntLoadNegativeY()!=null){
 			YXmlType y2 = acscLoadData.getShuntLoadNegativeY();
-			UnitType unit = ToYUnit.f(y2.getUnit());
+			UnitType unit = toYUnit.apply(y2.getUnit());
 			Complex ypu = UnitHelper.yConversion(new Complex(y2.getRe(), y2.getIm()),
 					acscBus.getBaseVoltage(), acscBus.getNetwork().getBaseKva(), unit, UnitType.PU);
 		    acscBus.setScLoadShuntY2(ypu);
@@ -393,7 +393,7 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 		//2) Zero sequence part
 		if(acscLoadData.getShuntLoadZeroY()!=null){
 			YXmlType y0 = acscLoadData.getShuntLoadNegativeY();
-			UnitType unit = ToYUnit.f(y0.getUnit());
+			UnitType unit = toYUnit.apply(y0.getUnit());
 			Complex ypu = UnitHelper.yConversion(new Complex(y0.getRe(), y0.getIm()),
 					acscBus.getBaseVoltage(), acscBus.getNetwork().getBaseKva(), unit, UnitType.PU);
 		    acscBus.setScLoadShuntY0(ypu);
@@ -404,7 +404,7 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 
 	private void setBusScZ(AcscBus bus, double baseKVA, 
 			ZXmlType z1, ZXmlType z2, ZXmlType z0) {
-		UnitType zUnit = ToZUnit.f(z1.getUnit());
+		UnitType zUnit = toZUnit.apply(z1.getUnit());
 		bus.setScGenZ(new Complex(z1.getRe(), z1.getIm()), SequenceCode.POSITIVE, zUnit);
 		bus.setScGenZ(new Complex(z2.getRe(), z2.getIm()), SequenceCode.NEGATIVE, zUnit);
 		bus.setScGenZ(new Complex(z0.getRe(), z0.getIm()), SequenceCode.ZERO, zUnit);
@@ -414,7 +414,7 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 		bus.getGrounding().setCode(ODMHelper.toBusGroundCode(g.getGroundingConnection()));
 		ZXmlType z = g.getGroundingZ();
 		if(z != null){
-			UnitType zgUnit = ToZUnit.f(z.getUnit());			
+			UnitType zgUnit = toZUnit.apply(z.getUnit());			
 			bus.getGrounding().setZ(new Complex(z.getRe(), z.getIm()), zgUnit, baseV, baseKVA);
 		}
 	}
@@ -444,13 +444,13 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 
 	private void setAcscLineFormInfo(LineShortCircuitXmlType braXml, AcscBranch acscBra) {
 		double baseV = acscBra.getFromAclfBus().getBaseVoltage();
-		AcscLine line = AcscLineAptr.f(acscBra);
+		AcscLine line = acscLineAptr.apply(acscBra);
 		ZXmlType z0 = braXml.getZ0();
 		if (z0 != null)
-			line.setZ0(new Complex(z0.getRe(), z0.getIm()),	ToZUnit.f(z0.getUnit()), baseV);
+			line.setZ0(new Complex(z0.getRe(), z0.getIm()),	toZUnit.apply(z0.getUnit()), baseV);
 		YXmlType y0 = braXml.getY0Shunt();
 		if (y0 != null)
-			line.setHB0(0.5*y0.getIm(), ToYUnit.f(y0.getUnit()), baseV);
+			line.setHB0(0.5*y0.getIm(), toYUnit.apply(y0.getUnit()), baseV);
 	}
 
 	// for SC, Xfr and PSXfr behave the same
@@ -458,10 +458,10 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 		double baseV = acscBra.getFromAclfBus().getBaseVoltage() > acscBra
 		.getToAclfBus().getBaseVoltage() ? acscBra.getFromAclfBus()
 				.getBaseVoltage() : acscBra.getToAclfBus().getBaseVoltage();
-				AcscXformer xfr = AcscXfrAptr.f(acscBra);
+				AcscXformer xfr = acscXfrAptr.apply(acscBra);
 				ZXmlType z0 = braXml.getZ0();
 				if (z0 != null)
-					xfr.setZ0(new Complex(z0.getRe(), z0.getIm()), ToZUnit.f(z0.getUnit()), baseV);
+					xfr.setZ0(new Complex(z0.getRe(), z0.getIm()), toZUnit.apply(z0.getUnit()), baseV);
 
 				XformerConnectionXmlType connect = braXml.getFromSideConnection();
 				if(connect != null){
@@ -471,7 +471,7 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 						ZXmlType z = connect.getGrounding().getGroundingZ();
 						if (z != null) 
 							xfr.setFromConnectGroundZ(calXfrConnectCode(connect), new Complex(z.getRe(), z.getIm()),
-									ToZUnit.f(z.getUnit()));
+									toZUnit.apply(z.getUnit()));
 					}
 				}				
 
@@ -483,7 +483,7 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 						ZXmlType z = connect.getGrounding().getGroundingZ();
 						if (z != null) 
 							xfr.setFromConnectGroundZ(calXfrConnectCode(connect), new Complex(z.getRe(), z.getIm()),
-									ToZUnit.f(z.getUnit()));
+									toZUnit.apply(z.getUnit()));
 					}
 				}	
 	}

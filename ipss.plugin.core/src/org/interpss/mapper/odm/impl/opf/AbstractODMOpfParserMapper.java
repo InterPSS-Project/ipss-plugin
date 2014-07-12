@@ -25,9 +25,9 @@
 package org.interpss.mapper.odm.impl.opf;
 
 import static com.interpss.common.util.IpssLogger.ipssLogger;
-import static org.interpss.mapper.odm.ODMUnitHelper.ToActivePowerUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.ToReactivePowerUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.ToVoltageUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.toActivePowerUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.toReactivePowerUnit;
+import static org.interpss.mapper.odm.ODMUnitHelper.toVoltageUnit;
 
 import javax.xml.bind.JAXBElement;
 
@@ -336,7 +336,7 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 				double pmax = pLmt.getMax();
 				double pmin = pLmt.getMin();
 				ActivePowerUnitType unit= pLmt.getUnit();
-				UnitType ipssUnit = ToActivePowerUnit.f(unit);
+				UnitType ipssUnit = toActivePowerUnit.apply(unit);
 				// convert all to pu				
 				LimitType limit = UnitHelper.pConversion(new LimitType(pmax, pmin), baseKva, ipssUnit, UnitType.PU);
 				ctrtIpss.setPLimit( limit);			
@@ -345,7 +345,7 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 				double qmax = qLmt.getMax();
 				double qmin = qLmt.getMin();
 				ReactivePowerUnitType unit = qLmt.getUnit();
-				UnitType ipssUnit = ToReactivePowerUnit.f(unit);
+				UnitType ipssUnit = toReactivePowerUnit.apply(unit);
 				LimitType limit = UnitHelper.pConversion(new LimitType(qmax, qmin), baseKva, ipssUnit, UnitType.PU);
 				ctrtIpss.setQLimit( limit);					
 			}else if(ctrtXml.getVolLimit()!=null){
@@ -353,7 +353,7 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 				double vmax = vLmt.getMax();
 				double vmin = vLmt.getMin();
 				VoltageUnitType unit = vLmt.getUnit();
-				UnitType ipssUnit = ToVoltageUnit.f(unit);
+				UnitType ipssUnit = toVoltageUnit.apply(unit);
 				LimitType limit = UnitHelper.pConversion(new LimitType(vmax, vmin), baseKva, ipssUnit, UnitType.PU);
 				ctrtIpss.setVLimit(limit);						
 			}			

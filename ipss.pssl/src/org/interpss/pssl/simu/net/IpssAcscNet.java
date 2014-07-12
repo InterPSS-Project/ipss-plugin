@@ -24,9 +24,9 @@
 
 package org.interpss.pssl.simu.net;
 
-import static com.interpss.core.funcImpl.AcscFunction.AcscPSXfrAptr;
-import static com.interpss.core.funcImpl.AcscFunction.AcscXfrAptr;
-import static com.interpss.core.funcImpl.AcscFunction.Str2ScGroundCode;
+import static com.interpss.core.funcImpl.AcscFunction.acscPSXfrAptr;
+import static com.interpss.core.funcImpl.AcscFunction.acscXfrAptr;
+import static com.interpss.core.funcImpl.AcscFunction.str2ScGroundCode;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Unit.UnitType;
@@ -133,7 +133,7 @@ public class IpssAcscNet extends BaseDSL {
   								getAcscBus().setScGenZ(new Complex(0.0, 1.0e10), SequenceCode.ZERO);  								
   							} return this;}
   		public AcscBusDSL setZ(Complex z, SequenceCode seq, UnitType unit) { getAcscBus().setScGenZ(z, seq, unit); return this;}
-  		public AcscBusDSL setGroundCode(String code) { getAcscBus().getGrounding().setCode(Str2ScGroundCode.f(code)); return this;}
+  		public AcscBusDSL setGroundCode(String code) { getAcscBus().getGrounding().setCode(str2ScGroundCode.apply(code)); return this;}
   		public AcscBusDSL setGroundZ(Complex z, UnitType unit) { getAcscBus().getGrounding().setZ(z, unit, getAcscBus().getBaseVoltage(), getAcscNet().getBaseKva()); return this;}
 
   		public AcscBusDSL scCode(BusScCode code) { return setScCode(code); } 
@@ -175,11 +175,11 @@ public class IpssAcscNet extends BaseDSL {
 			getAcscBranch().setZ0( UnitHelper.zConversion(z, baseV,
 						getAcscNet().getBaseKva(), unit, UnitType.PU)); return this; };
 		public AcscBranchDSL setFromGrounding(XfrConnectCode code, Complex z, UnitType unit) { 
-								AcscXformer xfr = AcscXfrAptr.f(getAcscBranch());
+								AcscXformer xfr = acscXfrAptr.apply(getAcscBranch());
 								xfr.setFromConnectGroundZ(code, z, unit);
 								return this; };
 		public AcscBranchDSL setToGrounding(XfrConnectCode code, Complex z, UnitType unit) { 
-								AcscXformer xfr = AcscPSXfrAptr.f(getAcscBranch());
+								AcscXformer xfr = acscPSXfrAptr.apply(getAcscBranch());
 								xfr.setToConnectGroundZ(code, z, unit);
 								return this; };
 								

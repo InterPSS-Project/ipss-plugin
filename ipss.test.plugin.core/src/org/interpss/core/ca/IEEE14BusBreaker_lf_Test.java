@@ -65,7 +65,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 	  	algo.loadflow();
 	  	
 	  	// output loadflow calculation results
-	  	System.out.println(CorePluginFunction.AclfResultBusStyle.f(net));
+	  	System.out.println(CorePluginFunction.aclfResultBusStyle.apply(net));
 
 	  	//System.out.println("Active buses: " + net.getNoActiveBus() + ", branches: " + net.getNoActiveBranch());
 	  	assertTrue(net.getNoActiveBus() == 23);

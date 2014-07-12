@@ -24,7 +24,7 @@
 
 package org.interpss.display.impl;
 
-import static org.interpss.CorePluginFunction.FormatKVStr;
+import static org.interpss.CorePluginFunction.formatKVStr;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.display.AclfOutFunc;
@@ -85,7 +85,7 @@ public class AclfOut_PSSE {
 		String s = "";
 		s += String.format(" %7s %-12s%6s %3d %6.4f %6.1f", 
 						bus.getNumber(), bus.getName(),
-						FormatKVStr.f(bus.getBaseVoltage()*0.001),
+						formatKVStr.apply(bus.getBaseVoltage()*0.001),
 						bus.getArea().getNumber(),
 						bus.getVoltageMag(), bus.getVoltageAng(UnitType.Deg));
 		
@@ -117,7 +117,7 @@ public class AclfOut_PSSE {
 		
 		s += String.format(" -----------------------------------------------------------------------------\n");		
 		s += String.format("                             %3d %6s      ",
-						bus.getZone().getNumber(), FormatKVStr.f(bus.getVoltageMag(UnitType.kV)));
+						bus.getZone().getNumber(), formatKVStr.apply(bus.getVoltageMag(UnitType.kV)));
 		
 		s += String.format(" %7.1f%s %7.1f %7.1f", qgen, qchar, qload, qshunt);
 		
@@ -140,7 +140,7 @@ public class AclfOut_PSSE {
 		String s = braCnt == 0? "" : "                                                                       ";
 		s += String.format("%7s %-12s%6s %3d %2s",
 						toBus.getNumber(), toBus.getName(),
-						FormatKVStr.f(toBus.getBaseVoltage()*0.001),
+						formatKVStr.apply(toBus.getBaseVoltage()*0.001),
 						toBus.getArea().getNumber(), branch.getCircuitNumber());
 
 		Complex pq = onFromSide? branch.powerFrom2To(UnitType.mVar) :
