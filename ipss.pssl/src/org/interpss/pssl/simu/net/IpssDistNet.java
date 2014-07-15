@@ -28,6 +28,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.CoreObjectFactory;
 import com.interpss.DistObjectFactory;
+import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -120,7 +121,7 @@ public class IpssDistNet {
 		public DistNetDSL setDescription(String s) {this.distNet.setDesc(s); return this;}
 		
 		public DistNetwork getDistNetwork() { return this.distNet; }
-		public AcscNetwork getAcscNetwork() {
+		public AcscNetwork getAcscNetwork() throws InterpssException {
 			if (!this.acscNetDataCreated) {
 				this.createAcscNetData();
 				distNet.getFaultNet().setLfDataLoaded(true);
@@ -129,7 +130,7 @@ public class IpssDistNet {
 			return distNet.getAcscNet();
 		}
 		
-		public boolean loadflow() {
+		public boolean loadflow() throws InterpssException {
 			AcscNetwork aclfNet = this.getAcscNetwork();
 		  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(aclfNet);
 		  	return algo.loadflow();			
@@ -139,32 +140,32 @@ public class IpssDistNet {
 		 * Bus elements
 		 * ============
 		 */
-		public DistUtility addUtility(String id, double baseV, UnitType unit) {
+		public DistUtility addUtility(String id, double baseV, UnitType unit) throws InterpssException {
 			DistBus bus = addBus(id, baseV, unit);
 			bus.setBusCode(DistBusCode.UTILITY);
 			return bus.toUtility();}
 
-		public DistGenerator addGenerator(String id, double baseV, UnitType unit) {
+		public DistGenerator addGenerator(String id, double baseV, UnitType unit) throws InterpssException {
 			DistBus bus = addBus(id, baseV, unit);
 			bus.setBusCode(DistBusCode.GENERATOR);
 			return bus.toGenerator();}
 		
-		public DistSynMotor addSynMotor(String id, double baseV, UnitType unit) {
+		public DistSynMotor addSynMotor(String id, double baseV, UnitType unit) throws InterpssException {
 			DistBus bus = addBus(id, baseV, unit);
 			bus.setBusCode(DistBusCode.SYN_MOTOR);
 			return bus.toSynMotor();}
 
-		public DistIndMotor addIndMotor(String id, double baseV, UnitType unit) {
+		public DistIndMotor addIndMotor(String id, double baseV, UnitType unit) throws InterpssException {
 			DistBus bus = addBus(id, baseV, unit);
 			bus.setBusCode(DistBusCode.IND_MOTOR);
 			return bus.toIndMotor();}
 
-		public DistMixedLoad addMixedLoad(String id, double baseV, UnitType unit) {
+		public DistMixedLoad addMixedLoad(String id, double baseV, UnitType unit) throws InterpssException {
 			DistBus bus = addBus(id, baseV, unit);
 			bus.setBusCode(DistBusCode.MIXED_LOAD);
 			return bus.toMixedLoad();}
 
-		public DistNonContribBus addNonContributeBus(String id, double baseV, UnitType unit) {
+		public DistNonContribBus addNonContributeBus(String id, double baseV, UnitType unit) throws InterpssException {
 			DistBus bus = addBus(id, baseV, unit);
 			bus.setBusCode(DistBusCode.NON_CONTRIBUTE);
 			return bus.toNonContribBus();}
@@ -173,22 +174,22 @@ public class IpssDistNet {
 		 * Branch elements
 		 * ===============
 		 */
-		public DistFeeder addFeeder(String fromId, String toId) {
+		public DistFeeder addFeeder(String fromId, String toId) throws InterpssException {
 			DistBranch branch = addBranch(fromId, toId);
 			branch.setBranchCode(DistBranchCode.FEEDER);		
 			return branch.toFeeder();}
 
-		public DistBreaker addBreaker(String fromId, String toId) {
+		public DistBreaker addBreaker(String fromId, String toId) throws InterpssException {
 			DistBranch branch = addBranch(fromId, toId);
 			branch.setBranchCode(DistBranchCode.BREAKER);		
 			return branch.toBreaker();}
 
-		public DistReactor addReactor(String fromId, String toId) {
+		public DistReactor addReactor(String fromId, String toId) throws InterpssException {
 			DistBranch branch = addBranch(fromId, toId);
 			branch.setBranchCode(DistBranchCode.REACTOR);		
 			return branch.toReactor();}
 
-		public DistXformer addXformer(String fromId, String toId) {
+		public DistXformer addXformer(String fromId, String toId) throws InterpssException {
 			DistBranch branch = addBranch(fromId, toId);
 			branch.setBranchCode(DistBranchCode.TRANSFROMER);		
 			return branch.toXFormer();}
@@ -197,13 +198,13 @@ public class IpssDistNet {
 		 * Private functions
 		 * =================
 		 */
-		private void createAcscNetData() {
+		private void createAcscNetData() throws InterpssException {
 			distNet.createAcscNetData();
 			distNet.getFaultNet().setLfDataLoaded(true);
 			distNet.getFaultNet().setScDataLoaded(true);
 			this.acscNetDataCreated = true;}
 		
-		private DistBus addBus(String id, double baseV, UnitType unit) {
+		private DistBus addBus(String id, double baseV, UnitType unit) throws InterpssException {
 			DistBus bus = DistObjectFactory.createDistBus(id, this.distNet);
 			//bus.setId(id);
 			bus.setStatus(true);
@@ -217,7 +218,7 @@ public class IpssDistNet {
 			return bus;
 		}
 	
-		private DistBranch addBranch(String from_id, String to_id) {
+		private DistBranch addBranch(String from_id, String to_id) throws InterpssException {
 			DistBranch branch = DistObjectFactory.createDistBranch();
 			branch.setStatus(true);
 			Area area = CoreObjectFactory.createArea(1, this.distNet);

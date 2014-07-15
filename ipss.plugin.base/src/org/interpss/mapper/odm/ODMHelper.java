@@ -136,9 +136,9 @@ public class ODMHelper {
 	 * @param list
 	 * @return
 	 */
-	public static NameTagXmlType getRecordByName(String recName, List list) {
-		for (Object o : list) {
-			NameTagXmlType scase = (NameTagXmlType)o;
+	public static NameTagXmlType getRecordByName(String recName, List<NameTagXmlType> list) {
+		for (NameTagXmlType scase : list) {
+			//NameTagXmlType scase = (NameTagXmlType)o;
 			if (scase.getName().equals(recName))
 				return scase;
 		}
@@ -152,11 +152,11 @@ public class ODMHelper {
 	 * @param list
 	 * @return
 	 */
-	public static String[] getRecNameArray(List list) {
+	public static String[] getRecNameArray(List<NameTagXmlType> list) {
 		String[] sAry = new String[list.size()];
 		int cnt = 0;
-		for (Object o : list) {
-			NameTagXmlType scase = (NameTagXmlType)o;
+		for (NameTagXmlType scase : list) {
+			//NameTagXmlType scase = (NameTagXmlType)o;
 			sAry[cnt++] = scase.getName();
 		}
 		return sAry;

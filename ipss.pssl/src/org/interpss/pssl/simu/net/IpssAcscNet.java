@@ -34,6 +34,7 @@ import org.interpss.pssl.simu.BaseDSL;
 
 import com.interpss.CoreObjectFactory;
 import com.interpss.common.datatype.UnitHelper;
+import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.acsc.AcscBranch;
@@ -107,21 +108,21 @@ public class IpssAcscNet extends BaseDSL {
 		public BaseAcscNetwork<?,?> getAcscNet() {return this.net; }
 		public BaseAcscNetwork<?,?> getFaultNet() {return this.net; }
 
-		public AcscBusDSL addAcscBus(String busId, String busName) {
+		public AcscBusDSL addAcscBus(String busId, String busName) throws InterpssException {
 			return new AcscBusDSL(busId, busName, getAcscNet()); }	
-		public AcscBranchDSL addAcscBranch(String fromBusId, String toBusId) {
+		public AcscBranchDSL addAcscBranch(String fromBusId, String toBusId) throws InterpssException {
 			return new AcscBranchDSL(fromBusId, toBusId, getAcscNet()); }
 	}
 	
 	/*
 	 * 	Add Acsc Bus
 	 */
-	public static AcscBusDSL addAcscBus(String busId, String busName, AcscNetwork net) {
+	public static AcscBusDSL addAcscBus(String busId, String busName, AcscNetwork net) throws InterpssException {
 		return new AcscBusDSL(busId, busName, net);
 	}	
 	
 	public static class AcscBusDSL extends IpssAclfNet.AclfBusBaseDSL<AcscBus, BaseAcscNetwork<?,?>, AcscBusDSL>{
-		public AcscBusDSL(String busId, String busName, BaseAcscNetwork<?,?> net) {
+		public AcscBusDSL(String busId, String busName, BaseAcscNetwork<?,?> net) throws InterpssException {
 			super(busId, busName, CoreObjectFactory.createAcscBus(busId, net), net);
 		}
 
@@ -148,15 +149,15 @@ public class IpssAcscNet extends BaseDSL {
 	/*
 	 *   Add Acsc Branch
 	 */
-	public static AcscBranchDSL addAcscBranch(String fromBusId, String toBusId, AcscNetwork net) {
+	public static AcscBranchDSL addAcscBranch(String fromBusId, String toBusId, AcscNetwork net) throws InterpssException {
 		return new AcscBranchDSL(fromBusId, toBusId, net);
 	}
 	
 	public static class AcscBranchDSL extends IpssAclfNet.AclfBranchBaseDSL<AcscBranch, BaseAcscNetwork<?,?>, AcscBranchDSL>{
-		public AcscBranchDSL(String fromBusId, String toBusId, BaseAcscNetwork<?,?> net) {
+		public AcscBranchDSL(String fromBusId, String toBusId, BaseAcscNetwork<?,?> net) throws InterpssException {
 			this(fromBusId, toBusId, "1", net);
 		}
-		public AcscBranchDSL(String fromBusId, String toBusId, String cirId, BaseAcscNetwork<?,?> net) {
+		public AcscBranchDSL(String fromBusId, String toBusId, String cirId, BaseAcscNetwork<?,?> net) throws InterpssException {
 			super(fromBusId, toBusId, cirId, CoreObjectFactory.createAcscBranch(), net);
 		}
 		

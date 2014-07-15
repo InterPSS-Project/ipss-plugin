@@ -33,6 +33,7 @@ import org.interpss.pssl.simu.IpssDist;
 import org.interpss.pssl.simu.net.IpssDistNet.DistNetDSL;
 import org.junit.Test;
 
+import com.interpss.common.exp.InterpssException;
 import com.interpss.core.acsc.BusGroundCode;
 import com.interpss.core.acsc.XFormerConnectCode;
 import com.interpss.dist.DistBus;
@@ -42,7 +43,7 @@ import com.interpss.dist.adpter.DistXformer;
 
 public class DistSys_Test extends CorePluginTestSetup {
 	@Test
-	public void singlePointTest1() {
+	public void singlePointTest1() throws InterpssException {
 		DistNetDSL distNet = IpssDist.createDistNetwork("Sample DistNetwork")      
         						.setBaseKva(100000.0);
 		
