@@ -25,6 +25,7 @@
 package org.interpss.mapper.bean.aclf;
 
 import static com.interpss.common.util.IpssLogger.ipssLogger;
+
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.datamodel.bean.BaseBranchBean;
 import org.interpss.datamodel.bean.aclf.AclfBranchBean;
@@ -38,10 +39,12 @@ import org.interpss.datamodel.bean.aclf.adj.SwitchShuntBean;
 import org.interpss.datamodel.bean.aclf.adj.SwitchShuntBean.VarCompensatorControlModeBean;
 import org.interpss.datamodel.bean.aclf.adj.XfrTapControlBean;
 import org.interpss.numeric.datatype.LimitType;
+
 import com.interpss.CoreObjectFactory;
 import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.mapper.AbstractMapper;
+import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
@@ -110,12 +113,17 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 		
 		aclfNet.setBaseKva(netBean.base_kva);
 		
-		for (AclfBusBean busBean : netBean.bus_list) {
-			mapBusBean(busBean, aclfNet);
-		}
+		try {
+			for (AclfBusBean busBean : netBean.bus_list) {
+				mapBusBean(busBean, aclfNet);
+			}
 
-		for (AclfBranchBean branchBean : netBean.branch_list) {
-			mapBranchBean(branchBean, aclfNet);
+			for (AclfBranchBean branchBean : netBean.branch_list) {
+				mapBranchBean(branchBean, aclfNet);
+			}
+		} catch (InterpssException e) {
+			IpssLogger.ipssLogger.severe(e.toString());
+			noError = false;	
 		}
 
 		return noError;
@@ -128,7 +136,7 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 	 * @param busBean AclfBusBean object to be mapped
 	 * @param aclfNet AclfNetwork object
 	 */
-	private void mapBusBean(AclfBusBean busBean, AclfNetwork aclfNet) {
+	private void mapBusBean(AclfBusBean busBean, AclfNetwork aclfNet) throws InterpssException {
 		AclfBus bus = CoreObjectFactory.createAclfBus(busBean.id, aclfNet);
 		bus.setNumber(busBean.number);
 		
@@ -258,7 +266,7 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 	 * @param branchBean AclfBranchBean object to be mapped
 	 * @param aclfNet AclfNetwork object
 	 */
-	private void mapBranchBean(AclfBranchBean branchBean, AclfNetwork aclfNet) {
+	private void mapBranchBean(AclfBranchBean branchBean, AclfNetwork aclfNet) throws InterpssException {
 		AclfBranch branch = CoreObjectFactory.createAclfBranch();
 		branch.setId(branchBean.id);
 		branch.setName(branchBean.name);

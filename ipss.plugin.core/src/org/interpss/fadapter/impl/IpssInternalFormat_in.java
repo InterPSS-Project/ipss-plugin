@@ -143,7 +143,7 @@ public class IpssInternalFormat_in {
       	return adjNet;
     }
 
-    public static void loadBusInfo(final String str, final AclfNetwork net) {
+    public static void loadBusInfo(final String str, final AclfNetwork net) throws InterpssException {
       	// MsgHub.sendInfoMsg("Bus: " + str);
       	final java.util.StringTokenizer st =
          		new java.util.StringTokenizer(str);

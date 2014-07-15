@@ -198,7 +198,13 @@ public abstract class AbstractODMDcSysNetMapper<T> extends AbstractODMNetDataMap
 	 */
 	private void mapDcBusData(DcBusXmlType busRec, DcNetwork dcNet) throws IpssDcSysException {
 		// create DcBus object, bus.baseVoltage initialized with net.RatedVoltage
-		DcBus bus = DcSysObjectFactory.createDcBus(busRec.getId(), dcNet);
+		DcBus bus = null;
+		try {
+			bus = DcSysObjectFactory.createDcBus(busRec.getId(), dcNet);
+		} catch (InterpssException e) {
+			throw new IpssDcSysException(e.toString());
+		}
+		
 		super.mapBaseBusData(busRec, bus, dcNet);
 		
 		bus.setCode(busRec.getCode() == DcBusCodeEnumType.VOLTAGE_SOURCE ? DcBusCode.VOLTAGE_SOURCE :

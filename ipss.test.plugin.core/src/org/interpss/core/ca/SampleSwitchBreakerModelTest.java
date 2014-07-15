@@ -47,7 +47,7 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 
 public class SampleSwitchBreakerModelTest extends CorePluginTestSetup {
 	@Test 
-	public void case1_regularMethod() {
+	public void case1_regularMethod() throws InterpssException {
 		// Create an AclfNetwork object
 		AclfNetwork net = IpssAclfNet.createAclfNetwork("Net")
 				.setBaseKva(100000.0)
@@ -94,7 +94,7 @@ public class SampleSwitchBreakerModelTest extends CorePluginTestSetup {
 	  	//System.out.println(net.net2String());
     }	
 
-	private void set2BusNetworkData(AclfNetwork net, IPSSMsgHub msg) {
+	private void set2BusNetworkData(AclfNetwork net, IPSSMsgHub msg) throws InterpssException {
 		IpssAclfNet.addAclfBus("Bus1", "Bus 1", net)
 				.setBaseVoltage(4000.0)
 				.setGenCode(AclfGenCode.SWING)
