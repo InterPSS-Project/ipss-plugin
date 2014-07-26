@@ -29,21 +29,13 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
-import org.apache.commons.math3.complex.Complex;
-import org.interpss.numeric.NumericConstant;
-import org.interpss.numeric.datatype.Unit.UnitType;
-
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
-import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.BaseAclfNetwork;
-import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.contingency.Contingency;
 import com.interpss.core.aclf.contingency.OutageBranch;
-import com.interpss.core.aclf.facts.StaticVarCompensator;
-import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.common.visitor.IAclfNetBVisitor;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
