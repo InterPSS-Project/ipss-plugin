@@ -4,14 +4,17 @@ import org.interpss.QA.result.QAAclfBranchRec;
 import org.interpss.QA.result.QAAclfBusRec;
 import org.interpss.QA.result.QAResultContainer;
 import org.interpss.numeric.datatype.Unit.UnitType;
+import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.util.Number2String;
 import org.interpss.numeric.util.NumericUtil;
 
+import com.interpss.common.exp.InterpssException;
 import com.interpss.core.DclfObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.dclf.DclfAlgorithm;
+import com.interpss.core.dclf.common.ReferenceBusException;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 
@@ -231,7 +234,13 @@ public class DepDclfResultComparator	extends DepNetModelComparator<QAAclfBusRec,
 		if (this.algo == null) {
 			this.algo = DclfObjectFactory.createDclfAlgorithm(net, applyAdjust);
 			//DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net, false);
-			algo.calculateDclf();	
+			try {
+				algo.calculateDclf();
+			} catch (InterpssException | ReferenceBusException
+					| IpssNumericException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}	
 		}
 		
 		// compare bus angle
@@ -270,8 +279,8 @@ public class DepDclfResultComparator	extends DepNetModelComparator<QAAclfBusRec,
 					
 				// compare angle
 				double angDeg = Math.toDegrees(algo.getBusAngle(fn) - algo.getBusAngle(tn));
-				QAAclfBusRec frec = this.qaResultSet.getBusResult(bra.getFromBusId());
-				QAAclfBusRec trec = this.qaResultSet.getBusResult(bra.getToBusId());
+				QAAclfBusRec frec = this.qaResultSet.getBusResult(bra.getFromPhysicalBusId());
+				QAAclfBusRec trec = this.qaResultSet.getBusResult(bra.getToPhysicalBusId());
 				double rangDeg = Math.toDegrees(frec.vang - trec.vang);
 				if (Math.abs(rangDeg-angDeg) > max )
 					max = Math.abs(rangDeg-angDeg);
@@ -310,8 +319,8 @@ public class DepDclfResultComparator	extends DepNetModelComparator<QAAclfBusRec,
 					//IpssLogger.getLogger().warning(msg);
 					addErrMsg(msg);
 				}
-				branchResult.append(String.format("%s, %s, %s, %5.4f\n", bra.getFromBusId(), 
-						bra.getToBusId(), bra.getCircuitNumber(), pflow * baseMva));
+				branchResult.append(String.format("%s, %s, %s, %5.4f\n", bra.getFromPhysicalBusId(), 
+						bra.getToPhysicalBusId(), bra.getCircuitNumber(), pflow * baseMva));
 			}
 		}
 		addErrMsg("Max branch power diff: " + max + " pu");
@@ -321,7 +330,7 @@ public class DepDclfResultComparator	extends DepNetModelComparator<QAAclfBusRec,
 		return this.errMsgList.size() == 3;  // there are three status msg
 	}
 
-	public String outDclfResult(double angOffset) {
+	public String outDclfResult(double angOffset) throws InterpssException, ReferenceBusException, IpssNumericException {
 		DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net);
 		algo.calculateDclf();
 		

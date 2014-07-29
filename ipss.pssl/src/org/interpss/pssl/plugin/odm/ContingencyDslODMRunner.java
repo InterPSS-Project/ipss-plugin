@@ -30,6 +30,7 @@ import org.interpss.display.ContingencyOutFunc;
 
 import com.interpss.CoreObjectFactory;
 import com.interpss.SimuObjectFactory;
+import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.simu.SimuCtxType;
@@ -67,10 +68,14 @@ public class ContingencyDslODMRunner {
 		algo.setNonDivergent(algoXml.getDefaultAclfAlgorithm().isNonDivergent());
 		algo.setTolerance(algoXml.getDefaultAclfAlgorithm().getTolerance().getValue());
 		
-		mscase.analysis(algo, 
-				( algoXml.getType() == ContingencyAnalysisEnumType.N_1? ContingencyAnalysisType.N1 :
-					(algoXml.getType() == ContingencyAnalysisEnumType.N_2? ContingencyAnalysisType.N2 :
-						ContingencyAnalysisType.N11)));
+		try {
+			mscase.analysis(algo, 
+					( algoXml.getType() == ContingencyAnalysisEnumType.N_1? ContingencyAnalysisType.N1 :
+						(algoXml.getType() == ContingencyAnalysisEnumType.N_2? ContingencyAnalysisType.N2 :
+							ContingencyAnalysisType.N11)));
+		} catch (InterpssException e) {
+			e.printStackTrace();
+		}
 
 		return ContingencyOutFunc.securityMargin(mscase);	
 	}

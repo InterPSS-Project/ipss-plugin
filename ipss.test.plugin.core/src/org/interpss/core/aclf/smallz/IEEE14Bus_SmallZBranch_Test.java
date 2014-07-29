@@ -196,7 +196,7 @@ public class IEEE14Bus_SmallZBranch_Test extends CorePluginTestSetup {
 	 *          p <- |  <- Sum ( non-zeroZ branch power)
 	 *               |  <- Sum ( recursive calculate zero-Z branch power on the opposite side)
 	 */
-	Complex samllZBranchFlow(AclfBranch branch, AclfBus bus) {
+	Complex samllZBranchFlow(AclfBranch branch, AclfBus bus) throws InterpssException {
 		if (bus.isSwing() || bus.isGenPV())
 			return null; 
 		Complex p = new Complex(0.0,0.0);

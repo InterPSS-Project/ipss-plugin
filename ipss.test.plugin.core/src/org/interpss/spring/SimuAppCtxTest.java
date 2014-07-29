@@ -48,7 +48,7 @@ import com.interpss.spring.CoreSpringFactory;
 public class SimuAppCtxTest extends CorePluginTestSetup {
 	
 	@Test
-	public void testSimuCtxAclf() {
+	public void testSimuCtxAclf() throws InterpssException {
 		SimuContext simuCtx = CoreSimuSpringFactory.getSimuContextTypeAclf();
 		SampleCases.load_LF_5BusSystem(simuCtx.getAclfNet());
 		simuCtx.setLoadflowAlgorithm(CoreSpringFactory.getLoadflowAlgorithm());

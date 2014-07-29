@@ -31,6 +31,7 @@ import org.ieee.odm.schema.LfMethodEnumType;
 import org.interpss.pssl.simu.IpssAclf;
 import org.interpss.pssl.simu.IpssAclf.LfAlgoDSL;
 
+import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethod;
 
@@ -57,8 +58,9 @@ public class AclfDslODMRunner {
 	 * 
 	 * @param algoXml
 	 * @return
+	 * @throws InterpssException 
 	 */
-	public boolean runAclf(IpssAclfAlgorithmXmlType algoXml) {
+	public boolean runAclf(IpssAclfAlgorithmXmlType algoXml) throws InterpssException {
 		LfAlgoDSL algoDsl = IpssAclf.createAclfAlgo(net);
 		
 		algoDsl.lfMethod(algoXml.getLfMethod() == LfMethodEnumType.NR ? AclfMethod.NR

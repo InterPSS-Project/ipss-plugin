@@ -24,6 +24,7 @@
 
 package org.interpss.display;
 
+import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.net.Branch;
@@ -73,7 +74,11 @@ public class DebugOutFunc {
 			buf.append(offSet + "  Branch type: " + branch.getBranchCode() + "\n\n");
 			
 			if (level > 1)
-				buf.append(busConnectivityInfo((AclfBus)branch.getOppositeBus(bus), level-1, offSet + OffSet_Space));
+				try {
+					buf.append(busConnectivityInfo((AclfBus)branch.getOppositeBus(bus), level-1, offSet + OffSet_Space));
+				} catch (InterpssException e) {
+					e.printStackTrace();
+				}
 		}
 
 		// display debug info the connected branches

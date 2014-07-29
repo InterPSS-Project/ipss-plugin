@@ -26,6 +26,7 @@ package org.interpss.pssl.simu;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.CoreObjectFactory;
+import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.algo.AclfMethod;
@@ -199,7 +200,8 @@ public class IpssAclf extends BaseDSL {
   		 * run Aclf Loadlow
   		 * 
   		 * @return
+  		 * @throws InterpssException 
   		 */
-  		public boolean runLoadflow() { return this.algo.loadflow(); }
+  		public boolean runLoadflow() throws InterpssException { return this.algo.loadflow(); }
 	}
 }

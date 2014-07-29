@@ -4,6 +4,7 @@ import static org.interpss.CorePluginFunction.BusLfResultBusStyle;
 
 import org.apache.commons.math3.complex.Complex;
 
+import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
@@ -24,7 +25,11 @@ public abstract class QAOutFunc {
 		buf.append("\nBus/Branch debug info: \n\n" + bus.toString(net.getBaseKva()));
 		for (Branch b : bus.getBranchList()) {
 			AclfBranch bra = (AclfBranch)b;
-			buf.append("\n\n" + bra.getOppositeBus(bus).toString(net.getBaseKva()));
+			try {
+				buf.append("\n\n" + bra.getOppositeBus(bus).toString(net.getBaseKva()));
+			} catch (InterpssException e) {
+				e.printStackTrace();
+			}
 			buf.append("\n\n" + bra.toString(net.getBaseKva()));
 		}
 

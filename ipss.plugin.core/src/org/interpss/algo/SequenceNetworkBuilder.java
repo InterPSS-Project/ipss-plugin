@@ -158,7 +158,7 @@ public class SequenceNetworkBuilder {
 						//type-2 // Delta-Yg
 						else if(getHighVoltageBus(scBranch).getBaseVoltage()<230000
 							&& !isGenXfr(scBranch)){
-							if(scBranch.getFromBusId().equals(getHighVoltageBus(scBranch).getId())){
+							if(scBranch.getFromPhysicalBusId().equals(getHighVoltageBus(scBranch).getId())){
 							  scBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
 							  scBranch.setXfrToConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
 							}

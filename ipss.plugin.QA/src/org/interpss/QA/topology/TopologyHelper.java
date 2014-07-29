@@ -629,9 +629,9 @@ public class TopologyHelper {
                     
 					if (!bra.isGroundBranch() && bra instanceof AclfBranch) {
 						type = getBranchType((AclfBranch) bra);
-						isToBus = bra.getFromBusId().equals(busId);
-						String nextBusId = isToBus ? bra.getToBusId() : bra
-								.getFromBusId();
+						isToBus = bra.getFromPhysicalBusId().equals(busId);
+						String nextBusId = isToBus ? bra.getToPhysicalBusId() : bra
+								.getFromPhysicalBusId();
 						if (net.getBus(nextBusId) != null
 								&& net.getBus(nextBusId).getVoltageMag(
 										UnitType.kV) >= voltageLevel)
@@ -692,9 +692,9 @@ public class TopologyHelper {
 
 			if (!bra.isGroundBranch() && bra.isActive()
 					&& ((AclfBranch) bra).getZ().abs() <= zThreshold) {
-				isToBus = bra.getFromBusId().equals(busId);
-				String nextBusId = isToBus ? bra.getToBusId() : bra
-						.getFromBusId();
+				isToBus = bra.getFromPhysicalBusId().equals(busId);
+				String nextBusId = isToBus ? bra.getToPhysicalBusId() : bra
+						.getFromPhysicalBusId();
 				if (!nextBusId.equals(sourceBusId)) { // fromBusId-->buId
 					if (!addedBusTable.containsKey(nextBusId)) {
 
@@ -736,7 +736,7 @@ public class TopologyHelper {
 			if (!forward) {// in backward direction
 				for (Branch bra : source.getToBranchList()) {
 					if (!bra.isGroundBranch()) {
-						String fromBusId = bra.getFromBusId();
+						String fromBusId = bra.getFromPhysicalBusId();
 						if (!fromBusId.equals(sourceBusId)) {
 							if (!addedBusTable.containsKey(fromBusId)) {
 								x = Math.random();
@@ -773,7 +773,7 @@ public class TopologyHelper {
 			} else { // in forward direction
 				for (Branch bra : source.getFromBranchList()) {
 					if (!bra.isGroundBranch()) {
-						String toBusId = bra.getToBusId();
+						String toBusId = bra.getToPhysicalBusId();
 						if (!toBusId.equals(sourceBusId)) {
 							if (!addedBusTable.containsKey(toBusId)) {
 								x = Math.random();

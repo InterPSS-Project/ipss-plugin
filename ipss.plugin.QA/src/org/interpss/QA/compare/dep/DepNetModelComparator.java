@@ -14,6 +14,7 @@ import org.interpss.QA.result.QABusRec;
 import org.interpss.QA.result.QAResultContainer;
 import org.interpss.numeric.util.NumericUtil;
 
+import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
@@ -126,7 +127,7 @@ public class DepNetModelComparator<TBusRec extends QABusRec, TBranchRec extends 
 			QAAclfBranchRec rec = (QAAclfBranchRec)this.qaResultSet.getBranchResult(branch.getId());
 			if (branch.isActive() && rec == null) {
 				addErrMsg("Active Branch not found in the result file, " + branch.getId());
-				String id = ToBranchId.f(branch.getToBusId(), branch.getFromBusId(), branch.getCircuitNumber());
+				String id = ToBranchId.f(branch.getToPhysicalBusId(), branch.getFromPhysicalBusId(), branch.getCircuitNumber());
 				if (this.qaResultSet.getBranchResult(id) != null)
 					addErrMsg("Branch in reverse direction found:  " + branch.getId());
 				if (branch.getFromBus().isActive() || branch.getToBus().isActive()) {
@@ -258,7 +259,12 @@ public class DepNetModelComparator<TBusRec extends QABusRec, TBranchRec extends 
 		buf.append("\n\n\nBus/Branch debug info: \n\n" + bus.toString(net.getBaseKva()));
 		for (Branch b : bus.getBranchList()) {
 			AclfBranch bra = (AclfBranch)b;
-			buf.append("\n\n" + bra.getOppositeBus(bus).toString(net.getBaseKva()));
+			try {
+				buf.append("\n\n" + bra.getOppositeBus(bus).toString(net.getBaseKva()));
+			} catch (InterpssException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			buf.append("\n\n" + bra.toString(net.getBaseKva()));
 		}
 
