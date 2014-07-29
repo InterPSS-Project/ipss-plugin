@@ -29,6 +29,7 @@ import static org.junit.Assert.assertTrue;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.algo.ZeroZBranchProcesor;
 import org.interpss.display.DclfOutFunc;
+import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
@@ -36,11 +37,12 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.DclfObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.dclf.DclfAlgorithm;
+import com.interpss.core.dclf.common.ReferenceBusException;
 
 
 public class IEEE14BusBreaker_dclf_Test extends CorePluginTestSetup {
 	@Test 
-	public void case1_regularMethod() throws  InterpssException {
+	public void case1_regularMethod() throws  InterpssException, ReferenceBusException, IpssNumericException {
 		// Create an AclfNetwork object
 		AclfNetwork net = IpssAdapter.importNet("testData/odm/ieee14Bus_breaker.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
@@ -58,7 +60,7 @@ public class IEEE14BusBreaker_dclf_Test extends CorePluginTestSetup {
     }	
 	
 	@Test 
-	public void case1_smallZ() throws  InterpssException {
+	public void case1_smallZ() throws  InterpssException, ReferenceBusException, IpssNumericException {
 		// Create an AclfNetwork object
 		AclfNetwork net = IpssAdapter.importNet("testData/odm/ieee14Bus_breaker.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
@@ -79,7 +81,7 @@ public class IEEE14BusBreaker_dclf_Test extends CorePluginTestSetup {
     }	
 
 	@Test 
-	public void case1_smallZ_1() throws  InterpssException {
+	public void case1_smallZ_1() throws  InterpssException, ReferenceBusException, IpssNumericException {
 		// test casa with a small-Z brach loop at Bus-14
 		
 		// Create an AclfNetwork object

@@ -25,6 +25,7 @@ import org.junit.Test;
 import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.SimuObjectFactory;
+import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.SequenceCode;
@@ -49,7 +50,7 @@ import com.interpss.simu.SimuCtxType;
 public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	
 	@Test
-	public void test_IEEE9Bus_Dstab(){
+	public void test_IEEE9Bus_Dstab() throws InterpssException{
 		IpssCorePlugin.init();
 		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
@@ -201,7 +202,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	}
 	
 	//@Test
-	public void IEEE9_Dstab_benchMark(){
+	public void IEEE9_Dstab_benchMark() throws InterpssException{
 		IpssCorePlugin.init();
 		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
@@ -269,7 +270,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	}
 	
 	//@Test
-	public void IEEE9_Dstab_GenWithoutMach(){
+	public void IEEE9_Dstab_GenWithoutMach() throws InterpssException{
 		IpssCorePlugin.init();
 		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
@@ -337,7 +338,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 				DStabOutSymbol.OUT_SYMBOL_MACH_Efd) < 0.00001);
 	}
 	//@Test
-    public void IEEE9_Dstab_multiGen_Test(){
+    public void IEEE9_Dstab_multiGen_Test() throws InterpssException{
             IpssCorePlugin.init();
             IpssLogger.getLogger().setLevel(Level.INFO);
             PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
@@ -425,7 +426,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	
 	
 	//@Test
-	public void test_ieee_1981_exciter(){
+	public void test_ieee_1981_exciter() throws InterpssException{
 		IpssCorePlugin.init();
 		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
@@ -487,7 +488,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	}
 	
 	//@Test
-	public void test_ieee_2005_exciter(){
+	public void test_ieee_2005_exciter() throws InterpssException{
 		IpssCorePlugin.init();
 		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{

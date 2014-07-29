@@ -5,6 +5,7 @@ import org.interpss.numeric.sparse.ISparseEqnDouble;
 import org.interpss.numeric.util.NumericUtil;
 
 import com.interpss.CoreObjectFactory;
+import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.JacobianMatrixType;
@@ -41,8 +42,12 @@ public class AclfNetDataComparator extends DataComparatorAdapter<BaseAclfNetwork
 	
 		if (this.compareB1Matrix) {
 			System.out.println("Compare B1 matrix ...");
-			if (!compareBMatrix(baseNet, net))
-				ok = false;
+			try {
+				if (!compareBMatrix(baseNet, net))
+					ok = false;
+			} catch (InterpssException e) {
+				e.printStackTrace();
+			}
 			System.out.println("Compare B1 matrix completed");
 		}
 		
@@ -50,7 +55,7 @@ public class AclfNetDataComparator extends DataComparatorAdapter<BaseAclfNetwork
 		return ok;
 	}			
 	
-	private boolean compareBMatrix(BaseAclfNetwork<?,?> baseNet, BaseAclfNetwork<?,?> net) {
+	private boolean compareBMatrix(BaseAclfNetwork<?,?> baseNet, BaseAclfNetwork<?,?> net) throws InterpssException {
 		boolean ok = true;
 	
 		baseNet.accept(CoreObjectFactory.createBusNoArrangeVisitor());	  
