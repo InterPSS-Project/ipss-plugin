@@ -180,8 +180,9 @@ public class IpssDclf extends BaseDSL {
 		 * 
 		 * @param visitor
 		 * @return
+		 * @throws InterpssException 
 		 */
-		public DclfAlgorithmDSL acceptAclfNetVisitor(IAclfNetBVisitor visitor) {
+		public DclfAlgorithmDSL acceptAclfNetVisitor(IAclfNetBVisitor visitor) throws InterpssException {
 			this.algo.getNetwork().accept(visitor);
 			return this;
 		}
@@ -241,14 +242,16 @@ public class IpssDclf extends BaseDSL {
   		 * get the cached B1 matrix
   		 * 
   		 * @return
+  		 * @throws InterpssException 
   		 */
-  		public ISparseEqnDouble getB1Matrix() { return this.algo.getB1Matrix(); }
+  		public ISparseEqnDouble getB1Matrix() throws InterpssException { return this.algo.getB1Matrix(); }
   		/**
   		 * get the cached B11 matrix
   		 * 
   		 * @return
+  		 * @throws InterpssException 
   		 */
-  		public ISparseEqnDouble getB11Matrix() { return this.algo.getB11Matrix(); }
+  		public ISparseEqnDouble getB11Matrix() throws InterpssException { return this.algo.getB11Matrix(); }
 
   		// set sensitivity analysis type
 		
@@ -584,15 +587,21 @@ public class IpssDclf extends BaseDSL {
   		 * run Dclf loadflow
   		 * 
   		 * @param checkCondition
+  		 * @throws IpssNumericException 
+  		 * @throws ReferenceBusException 
+  		 * @throws InterpssException 
   		 */
-  		public DclfAlgorithmDSL runDclfAnalysis(boolean checkCondition) { 
+  		public DclfAlgorithmDSL runDclfAnalysis(boolean checkCondition) throws InterpssException, ReferenceBusException, IpssNumericException { 
   			if (!checkCondition || this.algo.checkCondition())
   				this.algo.calculateDclf(); 
   			return this; }
   		/**
   		 * run Dclf loadflow
+  		 * @throws IpssNumericException 
+  		 * @throws ReferenceBusException 
+  		 * @throws InterpssException 
   		 */
-  		public DclfAlgorithmDSL runDclfAnalysis() { 
+  		public DclfAlgorithmDSL runDclfAnalysis() throws InterpssException, ReferenceBusException, IpssNumericException { 
 			return runDclfAnalysis(false);	}
 
   		/**
@@ -635,8 +644,10 @@ public class IpssDclf extends BaseDSL {
   		 * @param type sensitivity type
   		 * @param injectBusId inject bus id
   		 * @param busSortNumber bus number where sensitivity is measured
+  		 * @throws IpssNumericException 
+  		 * @throws InterpssException 
   		 */
-  		public double busSensitivity(SenAnalysisType type, String injectBusId, int busSortNumber)   throws ReferenceBusException  {
+  		public double busSensitivity(SenAnalysisType type, String injectBusId, int busSortNumber)   throws ReferenceBusException, InterpssException, IpssNumericException  {
   			return this.algo.calBusSensitivity(type, injectBusId, busSortNumber); }
   		
   		/** 
@@ -709,8 +720,9 @@ public class IpssDclf extends BaseDSL {
 				...					
 			}  		   
   		   </code>
+  		 * @throws InterpssException 
   		 */
-  		public void calLineOutageDFactors(String contId)   throws ReferenceBusException, OutageConnectivityException, IpssNumericException  {
+  		public void calLineOutageDFactors(String contId)   throws ReferenceBusException, OutageConnectivityException, IpssNumericException, InterpssException  {
   			this.invE_PTDF = algo.calLineOutageDFactors(contId);	}
   		private Object invE_PTDF = null;
 

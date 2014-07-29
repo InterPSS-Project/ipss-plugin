@@ -145,8 +145,9 @@ public class TopologyProcesor {
 	 * @param refBranch
 	 * @param refBus
 	 * @param branchIdList
+	 * @throws InterpssException 
 	 */
-	private void searchBranchInSubstation(AclfBranch refBranch, Bus refBus, List<String> branchIdList) {
+	private void searchBranchInSubstation(AclfBranch refBranch, Bus refBus, List<String> branchIdList) throws InterpssException {
 		for (Branch bra : refBus.getBranchList()) {
 			if (!bra.getId().equals(refBranch.getId()) &&   // do not include the refBranch
 					bra.isActive() &&                       // branch has to be active
@@ -327,7 +328,7 @@ public class TopologyProcesor {
 		}		
 	}
 	
-	private boolean distanceToNeighbourLargerThanDis(AclfBranch bra, int dis, boolean byZone, boolean byArea	){
+	private boolean distanceToNeighbourLargerThanDis(AclfBranch bra, int dis, boolean byZone, boolean byArea	) throws InterpssException{
 		long zoneNum = 0;
 		long areaNum = 0;
 		if(byZone)
@@ -380,9 +381,10 @@ public class TopologyProcesor {
 	 * @param num zone/area number
 	 * @param byZone search within a zone
 	 * @param byArea search within a area
+	 * @throws InterpssException 
 	 */
 		
-	public boolean checkConnectivity( Long num, boolean byZone, boolean byArea){
+	public boolean checkConnectivity( Long num, boolean byZone, boolean byArea) throws InterpssException{
 		this.groupBusList = new ArrayList<Bus>();		
 		this.byArea = byArea;
 		this.byzone = byZone;
@@ -402,14 +404,15 @@ public class TopologyProcesor {
 		//System.out.println("Ref bus is " + this.refBus.getId());
 		
 		return checkConnectivity(num);
-		
 	}
+	
 	/**
 	 * find that reference bus within a zone/area as the starting porint for the search 
 	 * 
 	 * @param num zone/area number	 
+	 * @throws InterpssException 
 	 */
-	private boolean findRefBus( Long num){	
+	private boolean findRefBus( Long num) throws InterpssException{	
 		// If the swing bus is in the zone/area, use it as the ref bus
 		for (Bus b: this.groupBusList){
 			AclfBus bus = (AclfBus) b;				
@@ -446,8 +449,9 @@ public class TopologyProcesor {
 	/**
 	 * recursively check network connectivity from within a zone or a area 
 	 * @param num zone/area number	 
+	 * @throws InterpssException 
 	 */
-	private boolean checkConnectivity(Long num) {
+	private boolean checkConnectivity(Long num) throws InterpssException {
 		
 		initForWalk();
 		
@@ -507,8 +511,9 @@ public class TopologyProcesor {
 	 * 
 	 * @param 
 	 * @return 	List<Bus> a Bus list contains all the islanded buses for this search
+	 * @throws InterpssException 
 	 */
-	private List<Bus> visitBuses() {
+	private List<Bus> visitBuses() throws InterpssException {
 
 		this.busBranchWalkThrough();
 
@@ -521,7 +526,7 @@ public class TopologyProcesor {
 		return islandedBusList;
 	}
 	
-	private void busBranchWalkThrough() {		
+	private void busBranchWalkThrough() throws InterpssException {		
 		// then walk through the bus list until it is done
 		boolean done = false;
 		while (!done) {
@@ -534,7 +539,7 @@ public class TopologyProcesor {
 			}			
 		}			
 	}
-	private boolean visitBus(Bus elem) { 
+	private boolean visitBus(Bus elem) throws InterpssException { 
 		boolean done = true;
 		AclfBus aclfBus = (AclfBus)elem;
 		if (aclfBus.getIntFlag() == 0) {  // if the bus is marked, mark the opposite buses
@@ -554,6 +559,7 @@ public class TopologyProcesor {
 	}	
 	
 	/**
+	 * @throws InterpssException 
 	 * Starting from the bus, find all the connecting branches within range steps
 	 * 
 	 * @param busId starting bus id
@@ -561,7 +567,7 @@ public class TopologyProcesor {
 	 * @return List<String> a list of branches
 	 * @exception
 	 */
-	public List<String> findBranchAroundBusWithinRange(String busId, double range){
+	public List<String> findBranchAroundBusWithinRange(String busId, double range) throws InterpssException{
 		Bus bus = this.aclfNet.getBus(busId);
 		
 		for (Branch branch : this.aclfNet.getBranchList())

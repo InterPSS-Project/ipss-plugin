@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Hashtable;
 import java.util.List;
 
+import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.pssl.common.PSSLException;
 import org.interpss.pssl.simu.IpssDclf;
 import org.interpss.pssl.simu.IpssDclf.DclfAlgorithmDSL;
@@ -40,7 +41,7 @@ public class CAResultComparator {
 
 	
 	public boolean compare(double violationThreshold) 
-			throws InterpssException, ReferenceBusException, PSSLException{
+			throws InterpssException, ReferenceBusException, PSSLException, IpssNumericException {
 		DclfAlgorithmDSL algoCtg = IpssDclf.createDclfAlgorithm(this.net, false)
 				.runDclfAnalysis();
 

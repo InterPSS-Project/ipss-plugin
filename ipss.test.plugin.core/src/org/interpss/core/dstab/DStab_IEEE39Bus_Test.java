@@ -23,6 +23,7 @@ import org.junit.Test;
 import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.SimuObjectFactory;
+import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.acsc.fault.AcscBusFault;
@@ -46,7 +47,7 @@ import com.interpss.simu.SimuCtxType;
 public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 		
 		@Test
-		public void test_IEEE39Bus_Dstab(){
+		public void test_IEEE39Bus_Dstab() throws InterpssException{
 			IpssCorePlugin.init();
 			PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
 			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
@@ -114,7 +115,7 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 		}
 		
 		//@Test
-		public void IEEE39_Dstab_benchMark(){
+		public void IEEE39_Dstab_benchMark() throws InterpssException{
 			IpssCorePlugin.init();
 			PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
 			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{

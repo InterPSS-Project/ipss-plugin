@@ -30,6 +30,7 @@ import java.util.List;
 import org.eclipse.emf.ecore.change.util.ChangeRecorder;
 import org.interpss.algo.ZeroZBranchProcesor;
 
+import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.common.util.StringUtil;
 import com.interpss.core.aclf.AclfBranch;
@@ -63,8 +64,9 @@ public class IneffetiveOutageAnalysis {
 	 * Constructor.  
 	 * 
 	 * @param net AclfNetwork object
+	 * @throws InterpssException 
 	 */
-	public IneffetiveOutageAnalysis(AclfNetwork net) {
+	public IneffetiveOutageAnalysis(AclfNetwork net) throws InterpssException {
 		this(net,  0.0001);
 	}
 	
@@ -74,8 +76,9 @@ public class IneffetiveOutageAnalysis {
 	 * 
 	 * @param net AclfNetwork object
 	 * @param smallBranchZ
+	 * @throws InterpssException 
 	 */
-	public IneffetiveOutageAnalysis(AclfNetwork net, double smallBranchZ) {
+	public IneffetiveOutageAnalysis(AclfNetwork net, double smallBranchZ) throws InterpssException {
 		if (!net.isZeroZBranchProcessed()) {
 			this.net = net;
 		  	IpssLogger.ipssLogger.info("Bookmar network for searching ineffective outage branch");
@@ -100,8 +103,9 @@ public class IneffetiveOutageAnalysis {
 	 * 
 	 * @param net
 	 * @param debug
+	 * @throws InterpssException 
 	 */
-	public IneffetiveOutageAnalysis(AclfNetwork net, boolean debug) {
+	public IneffetiveOutageAnalysis(AclfNetwork net, boolean debug) throws InterpssException {
 		this(net);
 		this.debug = debug;
 	}
@@ -142,17 +146,17 @@ public class IneffetiveOutageAnalysis {
 		// bus/branch visited status is used to detect loop situation
 		Bus parentBus = branch.getFromBus();
 		parentBus.setVisited(false);
-		for (Branch bra : parentBus.getConnectedBranchList())
+		for (Branch bra : parentBus.getConnectedPhysicalBranchList())
 			bra.setVisited(false);
 		for (Bus bus : parentBus.getBusSecList()) {
 			bus.setVisited(false);
-			for (Branch bra : bus.getConnectedBranchList())
+			for (Branch bra : bus.getConnectedPhysicalBranchList())
 				bra.setVisited(false);
 		}
 
 		// start from the from side to see if the walk along the child branch path arrive at 
 		// the to side
-		return isBranchInLoop(branch, branch.getFromBusConnected(), branch.getToBusConnected(), cont);
+		return isBranchInLoop(branch, branch.getFromPhysicalBusConnected(), branch.getToPhysicalBusConnected(), cont);
 	}
 
 	/**
@@ -172,27 +176,32 @@ public class IneffetiveOutageAnalysis {
 		startBus.setVisited(true);
 		refBranch.setVisited(true);
 
-		for (Branch branch : startBus.getConnectedBranchList()) {
+		for (Branch branch : startBus.getConnectedPhysicalBranchList()) {
 			if (!branch.isVisited() && 
 					!branch.getId().equals(refBranch.getId())) {  // exclude ref branch from the search path
 				if (!AclfFunction.isOpenOutageBranch(branch.getId(), cont.getOutageBranches())) {
 					  // stop the search path if meet a outage branch
 					if (branch.isChildBranch()) {    // make sure the branch to be searched is a child branch
-						Bus optBus = branch.getConnectedOppositeBus(startBus);
-						if (optBus.getId().equals(endBus.getId())) {
-							// meet the original outage branch to side, loop situation detected
-							if (this.debug)
-								System.out.println("Branch" + branch.getId() + " is in a zero z loop");
-							return true;  
+						Bus optBus;
+						try {
+							optBus = branch.getConnectedPhysicalOppositeBus(startBus);
+							if (optBus.getId().equals(endBus.getId())) {
+								// meet the original outage branch to side, loop situation detected
+								if (this.debug)
+									System.out.println("Branch" + branch.getId() + " is in a zero z loop");
+								return true;  
+							}
+							else
+								// continue search
+								// 
+								//   condition:
+								//       - branch is not a outage branch
+								//       - branch is a child branch
+								if (isBranchInLoop(branch, optBus, endBus, cont))
+									return true;							
+						} catch (InterpssException e) {
+							IpssLogger.ipssLogger.severe("Programming error: " + e.toString());
 						}
-						else
-							// continue search
-							// 
-							//   condition:
-							//       - branch is not a outage branch
-							//       - branch is a child branch
-							if (isBranchInLoop(branch, optBus, endBus, cont))
-								return true;
 					}
 					else {
 						if (this.debug)

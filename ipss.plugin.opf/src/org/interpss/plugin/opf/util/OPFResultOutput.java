@@ -106,8 +106,8 @@ public class OPFResultOutput {
 			AclfBranch bra = (AclfBranch) branch;
 			/*int braNum =  bra.getSortNumber()+1;*/
 			braNum =  braNum+ 1;
-			String fbus = bra.getFromBusId();
-			String tbus = bra.getToBusId();
+			String fbus = bra.getFromPhysicalBusId();
+			String tbus = bra.getToPhysicalBusId();
 			String cirId = bra.getCircuitNumber();
 			double flow = ((BaseOpfBranch) bra).DcPowerFrom2To()*baseKva;
 			double rating = ((BaseOpfBranch) bra).getRatingMw1()*baseKva;	

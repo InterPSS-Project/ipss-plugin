@@ -5,6 +5,7 @@ import java.util.Hashtable;
 import java.util.List;
 
 import org.eclipse.emf.ecore.change.util.ChangeRecorder;
+import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.util.Number2String;
 import org.interpss.pssl.common.PSSLException;
 import org.interpss.pssl.simu.IpssDclf;
@@ -139,8 +140,9 @@ public class CAResultVerifier {
 	 * @throws InterpssException
 	 * @throws ReferenceBusException
 	 * @throws PSSLException
+	 * @throws IpssNumericException 
 	 */
-	public boolean verify(double threshold) throws InterpssException, ReferenceBusException, PSSLException{	
+	public boolean verify(double threshold) throws InterpssException, ReferenceBusException, PSSLException, IpssNumericException{	
 		this.setViolationThreshold(threshold);
 		return this.verify();
 	}
@@ -152,8 +154,9 @@ public class CAResultVerifier {
 	 * @throws InterpssException
 	 * @throws ReferenceBusException
 	 * @throws PSSLException
+	 * @throws IpssNumericException 
 	 */
-	public boolean verify() throws InterpssException, ReferenceBusException, PSSLException{		
+	public boolean verify() throws InterpssException, ReferenceBusException, PSSLException, IpssNumericException{		
 		this.msgList.clear();
 		this.hasIsland = false;
 		

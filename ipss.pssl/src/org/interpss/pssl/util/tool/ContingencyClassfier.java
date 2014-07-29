@@ -3,6 +3,7 @@ package org.interpss.pssl.util.tool;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.pssl.common.PSSLException;
 import org.interpss.pssl.simu.IpssDclf;
 import org.interpss.pssl.simu.IpssDclf.DclfAlgorithmDSL;
@@ -46,7 +47,7 @@ public class ContingencyClassfier {
 	
 	
 		
-	public void classify() throws InterpssException, ReferenceBusException, PSSLException {		
+	public void classify() throws InterpssException, ReferenceBusException, PSSLException, IpssNumericException {		
 		
 		for (Contingency cont : contList) {
 			DclfAlgorithmDSL algoCtg = IpssDclf.createDclfAlgorithm(aclfNet, false)
