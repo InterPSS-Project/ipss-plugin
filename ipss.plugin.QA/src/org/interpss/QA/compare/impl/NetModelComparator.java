@@ -183,14 +183,14 @@ public class NetModelComparator<TBus extends AclfBusBean, TBra extends AclfBranc
 	 * @param smallZThreshold
 	 * @return
 	 */
-	public List<AclfBus> getLargeMisBusList(double err, double smallZThreshold) {
+	public List<AclfBus> getLargeMisBusList(double err, double smallZThreshold) throws InterpssException {
 		setBusVoltage();
 		
 		List<AclfBus> busList = new ArrayList<AclfBus>();
 		double max = 0.0;
 		for (Bus b : net.getBusList()) {
 			AclfBus bus = (AclfBus)b;
-			if (!bus.connect2SmallZBranch()) {
+			if (!bus.connect2ZeroZBranch()) {
 				Complex  mis = bus.mismatch(AclfMethod.NR);
 				if (mis.abs() > err) {
 					busList.add(bus);
@@ -215,7 +215,7 @@ public class NetModelComparator<TBus extends AclfBusBean, TBra extends AclfBranc
 	 * 
 	 * @return
 	 */
-	public AclfBus getLargestMisBus(double smallZThreshold) {
+	public AclfBus getLargestMisBus(double smallZThreshold) throws InterpssException {
 		setBusVoltage();
 		
 		AclfBus misbus = null;
@@ -223,7 +223,7 @@ public class NetModelComparator<TBus extends AclfBusBean, TBra extends AclfBranc
 		for (Bus b : net.getBusList()) {
 			AclfBus bus = (AclfBus)b;
 			Complex  mis = bus.mismatch(AclfMethod.NR);
-			if (mis.abs() > max && !bus.connect2SmallZBranch()) {
+			if (mis.abs() > max && !bus.connect2ZeroZBranch()) {
 				max = mis.abs();
 				misbus = bus;
 			}
