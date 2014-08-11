@@ -52,7 +52,7 @@ public class IEEE14Bus_SmallZBranch_Test extends CorePluginTestSetup {
 				.load()
 				.getImportedObj();
 		
-		net.setSmallBranchZThreshold(0.000000000000001);
+		net.setZeroZBranchThreshold(0.000000000000001);
 		
 	  	//System.out.println(net.net2String());
 
@@ -66,7 +66,7 @@ public class IEEE14Bus_SmallZBranch_Test extends CorePluginTestSetup {
 	  	// output loadflow calculation results
 	  	System.out.println(aclfResultBusStyle.apply(net));
 	  	
-		net.setSmallBranchZThreshold(0.00001);
+		net.setZeroZBranchThreshold(0.00001);
 	  	// (-0.12495394051074982, 0.08613362908363342)
 	  	System.out.println(net.getBus("Bus14").currentIntoNet());
 	  	//System.out.println(net.getBus("Bus18").currentIntoNet());
@@ -93,11 +93,11 @@ public class IEEE14Bus_SmallZBranch_Test extends CorePluginTestSetup {
 */  		
     }	
 	
-	public Complex currentIntoNet(AclfBus bus) {
+	public Complex currentIntoNet(AclfBus bus) throws InterpssException {
 		return currentIntoNet(bus, null);
 	}
 	
-	public Complex currentIntoNet(AclfBus bus, AclfBranch excludeBranch) {
+	public Complex currentIntoNet(AclfBus bus, AclfBranch excludeBranch) throws InterpssException {
 		Complex sum = bus.getVoltage().multiply(bus.yii());
 		for( Branch b : bus.getBranchList()) {
 			if ( b.isActive() && b instanceof AclfBranch) {
@@ -105,7 +105,7 @@ public class IEEE14Bus_SmallZBranch_Test extends CorePluginTestSetup {
 					;  // bypass the branch
 				else {
 					AclfBranch bra = (AclfBranch)b;
-					if (bra.isSmallZBranch())
+					if (bra.isZeroZBranch())
 						sum = sum.add(smallZBranchCurrent(bra, bra.isFromBus(bus)? BranchFlowDirection.FROM_TO : BranchFlowDirection.TO_FROM));
 					else {
 						Complex vj = bra.isGroundBranch() ?	new Complex(0.0,0.0) :
@@ -145,7 +145,7 @@ public class IEEE14Bus_SmallZBranch_Test extends CorePluginTestSetup {
 		return sum;
 	}
 	
-	Complex smallZBranchCurrent(AclfBranch branch, BranchFlowDirection dir) {
+	Complex smallZBranchCurrent(AclfBranch branch, BranchFlowDirection dir) throws InterpssException {
 		// FROM-TO dir, currnt is calculated at the TO-side
 		return currentIntoNet(dir == BranchFlowDirection.FROM_TO? branch.getToAclfBus() : branch.getFromAclfBus(), branch);
 	}
@@ -158,7 +158,7 @@ public class IEEE14Bus_SmallZBranch_Test extends CorePluginTestSetup {
 	 *                     |  -> Sum ( recursive calculate zero-Z branch power)
 	 */
 	Complex powerTo2From(AclfBranch branch) throws InterpssException {
-		if (branch.isSmallZBranch()) {
+		if (branch.isZeroZBranch()) {
 			return samllZBranchFlowTo2From(branch);
 		}
 		else
@@ -166,7 +166,7 @@ public class IEEE14Bus_SmallZBranch_Test extends CorePluginTestSetup {
 	}
 
 	Complex powerFrom2To(AclfBranch branch)  throws InterpssException {
-		if (branch.isSmallZBranch()) {
+		if (branch.isZeroZBranch()) {
 			return samllZBranchFlowTo2From(branch).multiply(-1.0);
 		}
 		else
@@ -210,7 +210,7 @@ public class IEEE14Bus_SmallZBranch_Test extends CorePluginTestSetup {
 		for( Branch b : bus.getBranchList()) {
 			if ( !b.getId().equals(branch.getId()) && b.isActive() && b instanceof AclfBranch) {
 				AclfBranch bra = (AclfBranch)b;
-				if (bra.isSmallZBranch()) {
+				if (bra.isZeroZBranch()) {
 					// since the branch is a small Z branch, we need to use the opposite side to 
 					// recursively continue the calculation
 					Complex x = samllZBranchFlow(bra, (AclfBus)bra.getOppositeBus(bus));

@@ -156,7 +156,7 @@ public class DepNetModelComparator<TBusRec extends QABusRec, TBranchRec extends 
 	 * @param smallZThreshold
 	 * @return
 	 */
-	public List<AclfBus> getLargeMisBusList(double err, double smallZThreshold) {
+	public List<AclfBus> getLargeMisBusList(double err, double smallZThreshold) throws InterpssException {
 		for (Bus b : net.getBusList()) {
 			AclfBus bus = (AclfBus)b;
 			QAAclfBusRec rec = (QAAclfBusRec)this.qaResultSet.getBusResult(b.getId());
@@ -170,7 +170,7 @@ public class DepNetModelComparator<TBusRec extends QABusRec, TBranchRec extends 
 		double max = 0.0;
 		for (Bus b : net.getBusList()) {
 			AclfBus bus = (AclfBus)b;
-			if (!bus.connect2SmallZBranch()) {
+			if (!bus.connect2ZeroZBranch()) {
 				Complex  mis = bus.mismatch(AclfMethod.NR);
 				if (mis.abs() > err) {
 					busList.add(bus);
@@ -195,7 +195,7 @@ public class DepNetModelComparator<TBusRec extends QABusRec, TBranchRec extends 
 	 * 
 	 * @return
 	 */
-	public AclfBus getLargestMisBus(double smallZThreshold) {
+	public AclfBus getLargestMisBus(double smallZThreshold) throws InterpssException {
 		for (Bus b : net.getBusList()) {
 			AclfBus bus = (AclfBus)b;
 			QAAclfBusRec rec = (QAAclfBusRec)this.qaResultSet.getBusResult(b.getId());
@@ -216,7 +216,7 @@ public class DepNetModelComparator<TBusRec extends QABusRec, TBranchRec extends 
 		for (Bus b : net.getBusList()) {
 			AclfBus bus = (AclfBus)b;
 			Complex  mis = bus.mismatch(AclfMethod.NR);
-			if (mis.abs() > max && !bus.connect2SmallZBranch()) {
+			if (mis.abs() > max && !bus.connect2ZeroZBranch()) {
 				max = mis.abs();
 				misbus = bus;
 			}

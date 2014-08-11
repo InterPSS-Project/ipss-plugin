@@ -37,11 +37,13 @@ import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.contingency.Contingency;
 import com.interpss.core.aclf.contingency.OutageBranch;
 import com.interpss.core.common.visitor.IAclfNetBVisitor;
+import com.interpss.core.funcImpl.ZeroZBranchFunction;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 
 /**
- * A processor, a AclfNetwork visitor, to process Small/Zero Z branches.
+ * A processor, a AclfNetwork visitor, to process Small/Zero Z branches to 
+ * create a switch/break network model or consolidate network.
  * 
  * @author mzhou
  * 
@@ -148,7 +150,7 @@ public class ZeroZBranchProcesor implements IAclfNetBVisitor {
 			// mark small Z branch with regarding to the threshold
 			// line branch will be turned to ZERO_IMPEDENCE branch
 			// if threshold = 0.0, Breaker branches are turned to zero-z branch
-			net.setSmallBranchZThreshold(this.threshold);
+			net.setZeroZBranchThreshold(this.threshold);
 			net.markZeroZBranch(true);
 
 			if (this.debug)
@@ -165,6 +167,13 @@ public class ZeroZBranchProcesor implements IAclfNetBVisitor {
 		return true;
 	}
 
+	/*
+	The switch/break model is implemented using the bus section concept and child branch concept.
+	It is independent of the zero Z branch concept. Zero Z branch could be used to create a switch/break
+	network model.
+	
+	The following method consolidate the network model by creating a switch/break network model.
+	 */
 	private void busBasedSearch(BaseAclfNetwork<?,?> net) throws InterpssException {
 		// bus and branch visited status will be used
 		// in the zero Z branch processing
@@ -181,7 +190,7 @@ public class ZeroZBranchProcesor implements IAclfNetBVisitor {
 					if (list.size() > 1) {
 						ipssLogger.info("Select parent bus, total buses: "
 								+ list.size());
-						Bus parentBus = selectParentBus(list);
+						Bus parentBus = ZeroZBranchFunction.selectParentBus.apply(list);
 						ipssLogger.info("Selected parent bus: "	+ parentBus.getId());
 						for (Bus childBus : list) {
 							if (!childBus.getId().equals(parentBus.getId())) {
@@ -215,6 +224,7 @@ public class ZeroZBranchProcesor implements IAclfNetBVisitor {
 	 * @param list
 	 * @return
 	 */
+	/*
 	private Bus selectParentBus(List<Bus> list) {
 		// first select Swing or PV
 		for (Bus b : list) {
@@ -267,6 +277,7 @@ public class ZeroZBranchProcesor implements IAclfNetBVisitor {
 
 		return bus;
 	}
+	*/
 
 	/*
 	 * debug stuff
@@ -357,7 +368,7 @@ public class ZeroZBranchProcesor implements IAclfNetBVisitor {
 						if (list.size() > 1) {
 							ipssLogger.info("Select parent bus, total buses: "
 									+ list.size());
-							Bus parentBus = selectParentBus(list);
+							Bus parentBus = ZeroZBranchFunction.selectParentBus.apply(list);
 							System.out.println("Select parent bus "
 									+ parentBus.getId() + " total buses: "
 									+ list.size());
