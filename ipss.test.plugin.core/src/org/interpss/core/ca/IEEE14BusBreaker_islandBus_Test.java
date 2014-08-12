@@ -86,7 +86,8 @@ public class IEEE14BusBreaker_islandBus_Test extends CorePluginTestSetup {
 				.getImportedObj();
 	  	//System.out.println(net.net2String());
 		
-	  	net.accept(new ZeroZBranchProcesor(0.00001, true));
+		net.setZeroZBranchThreshold(0.00001);
+	  	net.accept(new ZeroZBranchProcesor(true));
 	  	assertTrue(net.isZeroZBranchProcessed());
 
 	  	List<OutageBranch> list = new ArrayList<OutageBranch>();

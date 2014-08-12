@@ -88,8 +88,8 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 		IpssLogger.getLogger().setLevel(Level.INFO);
 		
 	  	// process zero impedance branches in the network
-	  	double smallBranchZ = 0.00001;
-	  	net.accept(new ZeroZBranchProcesor(smallBranchZ, true));
+	  	net.setZeroZBranchThreshold(0.00001);
+	  	net.accept(new ZeroZBranchProcesor(true));
 	  	//net.accept(new ZeroZBranchProcesor(true));
 	  	assertTrue(net.isZeroZBranchProcessed());
 	  	//System.out.println(net.net2String());
@@ -125,8 +125,8 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 		IpssLogger.getLogger().setLevel(Level.INFO);
 		
 	  	// process zero impedance branches in the network
-	  	double smallBranchZ = 0.00001;
-	  	net.accept(new ZeroZBranchProcesor(smallBranchZ, true));
+		net.setZeroZBranchThreshold(0.00001);
+	  	net.accept(new ZeroZBranchProcesor(true));
 	  	assertTrue(net.isZeroZBranchProcessed());
 	  	//System.out.println(net.net2String());
 
@@ -161,8 +161,8 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 		IpssLogger.getLogger().setLevel(Level.INFO);
 		
 	  	// process zero impedance branches in the network
-	  	double smallBranchZ = 0.00001;
-	  	ZeroZBranchProcesor proc = new ZeroZBranchProcesor(smallBranchZ, true);
+		net.setZeroZBranchThreshold(0.00001);
+	  	ZeroZBranchProcesor proc = new ZeroZBranchProcesor(true);
 	  	
 	  	// add one protected branch
 	  	List<String> proList = new ArrayList<String>();
@@ -204,8 +204,8 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 		IpssLogger.getLogger().setLevel(Level.INFO);
 		
 	  	// process zero impedance branches in the network
-	  	double smallBranchZ = 0.00001;
-	  	net.accept(new ZeroZBranchProcesor(smallBranchZ, true));
+		net.setZeroZBranchThreshold(0.00001);
+	  	net.accept(new ZeroZBranchProcesor(true));
 	  	assertTrue(net.isZeroZBranchProcessed());
 	  	//System.out.println(net.net2String());
 

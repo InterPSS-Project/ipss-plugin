@@ -77,10 +77,11 @@ public abstract class AbstractHourlyNetworkModel {
 	 */
 	public AclfNetwork getAclfNet(int hr, double smallBranchZ) throws InterpssException { 
 		this.setHour(hr);
+		this.getAclfNet().setZeroZBranchThreshold(smallBranchZ);
 		
 		processNetDataForConsolidation(smallBranchZ);
 
-	  	ZeroZBranchProcesor proc = new ZeroZBranchProcesor(smallBranchZ);
+	  	ZeroZBranchProcesor proc = new ZeroZBranchProcesor();
 	  	if (this.getAclfNet().getContingencyList().size() > 0)
 	  		proc.setContingencyList(this.getAclfNet().getContingencyList());
 	  	this.getAclfNet().accept(proc);
@@ -137,10 +138,11 @@ public abstract class AbstractHourlyNetworkModel {
 		// set hr for the network model, Apply all
 		// outage and override for the hour
 		setHour(hr);
+		this.getAclfNet().setZeroZBranchThreshold(smallBranchZ);
 
 		processNetDataForConsolidation(smallBranchZ);
 
-	  	ZeroZBranchProcesor proc = new ZeroZBranchProcesor(smallBranchZ);
+	  	ZeroZBranchProcesor proc = new ZeroZBranchProcesor();
 	  	if (this.getAclfNet().getContingencyList().size() > 0)
 	  		proc.setContingencyList(this.getAclfNet().getContingencyList());
 	  	this.getAclfNet().accept(proc);
