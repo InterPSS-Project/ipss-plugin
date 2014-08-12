@@ -27,8 +27,6 @@ package org.interpss.core.ca;
 import static org.junit.Assert.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.algo.ZeroZBranchProcesor;
-import org.interpss.display.DclfOutFunc;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.pssl.plugin.IpssAdapter;
 import org.junit.Test;
@@ -38,6 +36,7 @@ import com.interpss.core.DclfObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.dclf.DclfAlgorithm;
 import com.interpss.core.dclf.common.ReferenceBusException;
+import com.interpss.core.funcImpl.ZeroZBranchProcesor;
 
 
 public class IEEE14BusBreaker_dclf_Test extends CorePluginTestSetup {

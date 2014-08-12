@@ -2,22 +2,17 @@ package org.interpss.QA.topology;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Font;
 import java.awt.TextArea;
 import java.awt.TextComponent;
-import java.awt.event.KeyEvent;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
-import javax.swing.JComponent;
 import javax.swing.JFrame;
 
 import org.eclipse.emf.ecore.change.util.ChangeRecorder;
 import org.interpss.algo.TopologyProcesor;
-import org.interpss.algo.ZeroZBranchProcesor;
-import org.interpss.algo.ZeroZBranchProcesor.BusBasedSeaerchResult;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.Number2String;
 
@@ -31,11 +26,10 @@ import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.contingency.Contingency;
 import com.interpss.core.aclf.contingency.OutageBranch;
 import com.interpss.core.common.visitor.INetBVisitor;
+import com.interpss.core.funcImpl.ZeroZBranchProcesor;
+import com.interpss.core.funcImpl.ZeroZBranchProcesor.BusBasedSeaerchResult;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
-import com.mxgraph.layout.mxFastOrganicLayout;
-import com.mxgraph.layout.mxIGraphLayout;
-import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.util.mxConstants;
 import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxStylesheet;

@@ -2,13 +2,13 @@ package org.interpss.pssl.simu;
 
 import java.util.List;
 
-import org.interpss.algo.ZeroZBranchProcesor;
 import org.interpss.pssl.plugin.IpssAdapter.FileImportDSL;
 import org.interpss.pssl.simu.IpssDclf.DclfAlgorithmDSL;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.funcImpl.AclfNetHelper;
+import com.interpss.core.funcImpl.ZeroZBranchProcesor;
 
 /**
  * Abstract base Hourly network model object for storing base case and the current AclfNet object.       
