@@ -78,8 +78,8 @@ public class SampleSwitchBreakerModelTest extends CorePluginTestSetup {
 	  	set2BusNetworkData(net, msg);
 	  	
 	  	// process zero impedance branches in the network
-	  	double smallBranchZ = 0.00001;
-	  	net.accept(new ZeroZBranchProcesor(smallBranchZ));
+	  	net.setZeroZBranchThreshold(0.00001);
+	  	net.accept(new ZeroZBranchProcesor());
 	  	assertTrue(net.isZeroZBranchProcessed());
 
 	  	// create the default loadflow algorithm
