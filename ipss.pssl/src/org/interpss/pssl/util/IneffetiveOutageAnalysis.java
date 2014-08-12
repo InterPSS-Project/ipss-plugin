@@ -82,8 +82,9 @@ public class IneffetiveOutageAnalysis {
 		if (!net.isZeroZBranchProcessed()) {
 			this.net = net;
 		  	IpssLogger.ipssLogger.info("Bookmar network for searching ineffective outage branch");
+		  	this.net.setZeroZBranchThreshold(smallBranchZ);
 			
-		  	ZeroZBranchProcesor proc = new ZeroZBranchProcesor(smallBranchZ);
+		  	ZeroZBranchProcesor proc = new ZeroZBranchProcesor();
 		  	net.accept(proc);			
 		  	IpssLogger.ipssLogger.info("Network consolidation for searching ineffective outage branch");
 		}

@@ -51,8 +51,8 @@ public class IEEE14BusBreakerTest extends CorePluginTestSetup {
 				.load()
 				.getImportedObj();
 		
-	  	double smallBranchZ = 0.00001;
-	  	net.accept(new ZeroZBranchProcesor(smallBranchZ, true));
+	  	net.setZeroZBranchThreshold(0.00001);
+	  	net.accept(new ZeroZBranchProcesor(true));
 	  	assertTrue(net.isZeroZBranchProcessed());
 	  	
 	  	// at this point, all buses and small-z branches should be visited
