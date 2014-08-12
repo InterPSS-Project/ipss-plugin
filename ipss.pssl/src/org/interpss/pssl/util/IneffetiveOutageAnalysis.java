@@ -27,9 +27,6 @@ package org.interpss.pssl.util;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.emf.ecore.change.util.ChangeRecorder;
-import org.interpss.algo.ZeroZBranchProcesor;
-
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.common.util.StringUtil;
@@ -40,6 +37,7 @@ import com.interpss.core.aclf.contingency.BranchOutageType;
 import com.interpss.core.aclf.contingency.Contingency;
 import com.interpss.core.aclf.contingency.OutageBranch;
 import com.interpss.core.funcImpl.AclfFunction;
+import com.interpss.core.funcImpl.ZeroZBranchProcesor;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 

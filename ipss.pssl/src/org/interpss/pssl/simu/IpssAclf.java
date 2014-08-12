@@ -27,7 +27,6 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.IMultiNetLfSolver;
