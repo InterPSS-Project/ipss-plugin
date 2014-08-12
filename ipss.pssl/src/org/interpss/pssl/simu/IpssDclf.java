@@ -32,7 +32,6 @@ import java.util.List;
 
 import org.eclipse.emf.common.util.EList;
 import org.ieee.odm.model.IODMModelParser;
-import org.ieee.odm.model.ODMModelParser;
 import org.interpss.datatype.DblBranchValue;
 import org.interpss.datatype.DblBusValue;
 import org.interpss.display.DclfOutFunc;

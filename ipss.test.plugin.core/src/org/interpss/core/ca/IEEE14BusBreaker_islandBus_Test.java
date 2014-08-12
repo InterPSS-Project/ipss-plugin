@@ -30,16 +30,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.algo.ZeroZBranchProcesor;
 import org.interpss.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
 import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.contingency.OutageBranch;
 import com.interpss.core.aclf.contingency.impl.IslandBusProcesor;
+import com.interpss.core.funcImpl.ZeroZBranchProcesor;
 
 
 public class IEEE14BusBreaker_islandBus_Test extends CorePluginTestSetup {
