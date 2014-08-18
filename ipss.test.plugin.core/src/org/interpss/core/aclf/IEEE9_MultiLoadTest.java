@@ -49,7 +49,7 @@ public class IEEE9_MultiLoadTest extends CorePluginTestSetup{
 	  	assertTrue(net.isLfConverged());
  		System.out.println(AclfOutFunc.loadFlowSummary(net));
  		//System.out.println(AclfOut_PSSE.lfResults(net, Format.GUI));
- 		Complex gen1_PQ=net.getBus("Bus3").getGenList().get(0).getGen();
+ 		Complex gen1_PQ=net.getBus("Bus3").getContributeGenList().get(0).getGen();
  		System.out.println(gen1_PQ);
  		assertTrue(NumericUtil.equals(gen1_PQ,new Complex(0.85, -0.1092),1.0E-4));
  		
@@ -61,8 +61,8 @@ public class IEEE9_MultiLoadTest extends CorePluginTestSetup{
   	     *       case -2: Load-1 at bus8 is out of service
   	     *------------------------------------
  		 */
- 		net.getBus("Bus8").getLoadList().get(0).setStatus(false);
- 		net.initMultiGenLoad();
+ 		net.getBus("Bus8").getContributeLoadList().get(0).setStatus(false);
+ 		net.initContributeGenLoad();
  		algo.loadflow();
  	  	
 	  	assertTrue(net.isLfConverged());
