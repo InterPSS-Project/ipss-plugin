@@ -22,7 +22,7 @@ public class DStabTestUtilFunc {
 		bus.setGenCode(AclfGenCode.GEN_PQ);
 		
 		DStabGen gen = DStabObjectFactory.createDStabGen("G1");
-		bus.getGenList().add(gen);
+		bus.getContributeGenList().add(gen);
 
 		Eq1Machine mach = (Eq1Machine)DStabObjectFactory.
 							createMachine("MachId", "MachName", MachineType.EQ1_MODEL, net, "BusId", "G1");
