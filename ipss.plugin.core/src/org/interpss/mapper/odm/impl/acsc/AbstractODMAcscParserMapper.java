@@ -276,11 +276,11 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 				for(JAXBElement<? extends LoadflowGenDataXmlType> genElem : busDataXml.getGenData().getContributeGen()){
 					ShortCircuitGenDataXmlType scGenXml = (ShortCircuitGenDataXmlType)genElem.getValue();
 					
-					AcscGen scGen = (AcscGen) acscBus.getGenerator(scGenXml.getId());
+					AcscGen scGen = (AcscGen) acscBus.getContributeGen(scGenXml.getId());
 					if(scGen==null){
 						scGen = acscBus instanceof DStabBus? DStabObjectFactory.createDStabGen() :
 									CoreObjectFactory.createAcscGen();
-						acscBus.getGenList().add(scGen);
+						acscBus.getContributeGenList().add(scGen);
 					}
 					//TODO regarding the PU, it should be on machine base or system base?
 					// in PSS/E, it is entered in pu on generator MBASE base

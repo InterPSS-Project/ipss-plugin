@@ -119,10 +119,10 @@ public class IEEE9_Dstab_Adapter_Test {
 	     */
 	    
 	    DStabBus bus1 = dsNet.getDStabBus("Bus1");
-	    assertTrue(bus1.getGenList().size()==1);
+	    assertTrue(bus1.getContributeGenList().size()==1);
 	    
-	    assertTrue(bus1.getGenList().get(0) instanceof DStabGen);
-	    DStabGen gen1 =(DStabGen) bus1.getGenList().get(0);
+	    assertTrue(bus1.getContributeGenList().get(0) instanceof DStabGen);
+	    DStabGen gen1 =(DStabGen) bus1.getContributeGenList().get(0);
 	    assertTrue(bus1.getGenCode()==AclfGenCode.SWING);
 	    
 	    /*

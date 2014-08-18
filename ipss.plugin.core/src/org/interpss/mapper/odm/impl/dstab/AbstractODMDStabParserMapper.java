@@ -227,11 +227,11 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 			for(JAXBElement<? extends LoadflowGenDataXmlType> dyGenElem: dstabBusXml.getGenData().getContributeGen()){
                 dyGen = (DStabGenDataXmlType)dyGenElem.getValue();
                 //TODO input from ODM, generator is not created yet
-                if(dstabBus.getGenerator(dyGen.getId())==null ){
+                if(dstabBus.getContributeGen(dyGen.getId())==null ){
                         ipssLogger.severe("The generator, Id="+ dyGen.getId()+ " does NOT exist in the bus # "+dstabBus.getId());
                 }
-                if(dstabBus.getGenerator(dyGen.getId()) instanceof DStabGen){
-                     DStabGen dyGenObj=(DStabGen) dstabBus.getGenerator(dyGen.getId());
+                if(dstabBus.getContributeGen(dyGen.getId()) instanceof DStabGen){
+                     DStabGen dyGenObj=(DStabGen) dstabBus.getContributeGen(dyGen.getId());
                      setDynGenData(dstabBus,dyGen,dyGenObj);
                 }
                 else{

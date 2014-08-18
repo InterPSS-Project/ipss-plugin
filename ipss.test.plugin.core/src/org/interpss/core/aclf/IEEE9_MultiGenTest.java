@@ -46,7 +46,7 @@ public class IEEE9_MultiGenTest extends CorePluginTestSetup{
 	  	assertTrue(net.isLfConverged());
  		//System.out.println(AclfOutFunc.loadFlowSummary(net));
  		//System.out.println(AclfOut_PSSE.lfResults(net, Format.GUI));
- 		Complex gen1_PQ=net.getBus("Bus3").getGenList().get(0).getGen();
+ 		Complex gen1_PQ=net.getBus("Bus3").getContributeGenList().get(0).getGen();
  		//System.out.println(gen1_PQ);
  		assertTrue(NumericUtil.equals(gen1_PQ,new Complex(0.425,-0.054617),1.0E-4));
 	  	
@@ -57,8 +57,8 @@ public class IEEE9_MultiGenTest extends CorePluginTestSetup{
   	     *       case -2: Gen-1 at bus3 is out of service
   	     *------------------------------------
  		 */
- 		net.getBus("Bus3").getGenList().get(0).setStatus(false);
- 		net.getBus("Bus3").initMultiGen();
+ 		net.getBus("Bus3").getContributeGenList().get(0).setStatus(false);
+ 		net.getBus("Bus3").initContributeGen();
  		     // we need re-initialize bus P and Q again.
  		algo.loadflow();
  	  	

@@ -334,7 +334,7 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 				gen.setMwControlPFactor(xmlGen.getMwControlParticipateFactor()!=null?xmlGen.getMwControlParticipateFactor():1.0);
 				
 				//add the generator to the bus GenList
-				bus.getGenList().add(gen);
+				bus.getContributeGenList().add(gen);
 			}
 		}
 	}
@@ -359,7 +359,7 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 						
 						load.setName(loadElem.getName());
 						
-						bus.getLoadList().add(load);
+						bus.getContributeLoadList().add(load);
 						//status
 						load.setStatus(loadElem.isOffLine()!=null?!loadElem.isOffLine():true);
 					    // load code		

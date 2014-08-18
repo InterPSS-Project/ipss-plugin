@@ -36,6 +36,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.funcImpl.ZeroZBranchFunction;
 import com.interpss.core.funcImpl.ZeroZBranchProcesor;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
@@ -72,7 +73,7 @@ public class IEEE14BusBreakerTest extends CorePluginTestSetup {
 		
 	  	net.setVisitedStatus(false);
 	  	net.setZeroZBranchThreshold(0.00001);
-	  	net.markZeroZBranch(false);		
+	  	ZeroZBranchFunction.markZeroZBranch.accept(net);		
 		
 	  	List<Bus> list = net.getBus("Bus1").findZeroZPathBuses(false);
 	  	//System.out.println(list);

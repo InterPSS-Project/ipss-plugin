@@ -225,9 +225,9 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 
   		AclfBus swingBus = (AclfBus)net.getBus("Bus1");
   		AclfSwingBus swing = swingBus.toSwingBus();
-	  	//System.out.println("----> " + swing.getGenResults(UnitType.PU).getReal() + ", " + swing.getGenResults(UnitType.PU).getImaginary());
-  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.3236)<0.0001);
-  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.1663)<0.0001);
+	  	System.out.println("----> " + swing.getGenResults(UnitType.PU).getReal() + ", " + swing.getGenResults(UnitType.PU).getImaginary());
+  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.3239)<0.0001);
+  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.1655)<0.0001);
 	}	
 	
 }

@@ -184,7 +184,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 	public static void postAclfNetProcessing(BaseAclfNetwork<?,?> aclfNet) throws InterpssException {
 		aclfNet.adjustXfrZ();
 		
-		aclfNet.initMultiGenLoad();
+		aclfNet.initContributeGenLoad();
 	}
 
 	/**
