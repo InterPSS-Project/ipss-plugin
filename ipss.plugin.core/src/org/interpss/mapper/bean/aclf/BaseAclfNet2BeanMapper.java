@@ -52,7 +52,7 @@ import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.adj.QBank;
 import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.adj.TapControl;
-import com.interpss.core.aclf.adj.VarCompensatorControlMode;
+import com.interpss.core.aclf.adj.VarCompensationMode;
 import com.interpss.core.aclf.adj.XfrTapControlType;
 import com.interpss.core.aclf.adpter.AclfPSXformer;
 import com.interpss.core.aclf.adpter.AclfXformer;
@@ -225,8 +225,8 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 	
 	private static void mapSwitchShuntData(SwitchedShunt ss, SwitchShuntBean ssb) {
 		ssb.bInit = ss.getBInit();
-		ssb.controlMode = ss.getControlMode() == VarCompensatorControlMode.CONTINUOUS? VarCompensatorControlModeBean.Continuous:
-			ss.getControlMode() == VarCompensatorControlMode.DISCRETE? VarCompensatorControlModeBean.Discrete:
+		ssb.controlMode = ss.getControlMode() == VarCompensationMode.CONTINUOUS? VarCompensatorControlModeBean.Continuous:
+			ss.getControlMode() == VarCompensationMode.DISCRETE? VarCompensatorControlModeBean.Discrete:
 				VarCompensatorControlModeBean.Fixed;
 		if(ss.getRemoteBus() != null)
 			ssb.remoteBusId = ss.getRemoteBus().getId();

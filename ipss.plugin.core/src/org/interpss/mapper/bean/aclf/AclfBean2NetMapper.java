@@ -58,7 +58,7 @@ import com.interpss.core.aclf.adj.RemoteQBus;
 import com.interpss.core.aclf.adj.RemoteQControlType;
 import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.adj.TapControl;
-import com.interpss.core.aclf.adj.VarCompensatorControlMode;
+import com.interpss.core.aclf.adj.VarCompensationMode;
 import com.interpss.core.aclf.adpter.AclfPVGenBus;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
 import com.interpss.core.net.Area;
@@ -239,9 +239,9 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 				SwitchedShunt ss = CoreObjectFactory.createSwitchedShunt(bus);
 				ss.setVSpecified(ssb.vSpecified);
 				ss.setBInit(ssb.bInit);
-				VarCompensatorControlMode mode = ssb.controlMode == VarCompensatorControlModeBean.Continuous?VarCompensatorControlMode.CONTINUOUS:
-					ssb.controlMode == VarCompensatorControlModeBean.Discrete?VarCompensatorControlMode.DISCRETE:
-						VarCompensatorControlMode.FIXED;
+				VarCompensationMode mode = ssb.controlMode == VarCompensatorControlModeBean.Continuous?VarCompensationMode.CONTINUOUS:
+					ssb.controlMode == VarCompensatorControlModeBean.Discrete?VarCompensationMode.DISCRETE:
+						VarCompensationMode.FIXED;
 				ss.setControlMode(mode);
 				ss.setDesiredVoltageRange(new LimitType(ssb.vmax, ssb.vmin));
 				ss.setQLimit(new LimitType(ssb.qmax, ssb.qmin));
