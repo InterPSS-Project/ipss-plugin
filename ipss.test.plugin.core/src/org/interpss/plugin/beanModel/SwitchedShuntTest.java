@@ -59,7 +59,7 @@ import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adj.SwitchedShunt;
-import com.interpss.core.aclf.adj.VarCompensatorControlMode;
+import com.interpss.core.aclf.adj.VarCompensationMode;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -82,7 +82,7 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 		AclfBus bus = aclfNet.getBus("1");
 		bus.setLoadQ(1.0);
 		
-		SwitchedShunt svc = CoreObjectFactory.createSwitchedShunt(bus, VarCompensatorControlMode.FIXED);
+		SwitchedShunt svc = CoreObjectFactory.createSwitchedShunt(bus, VarCompensationMode.FIXED);
 		svc.setBInit(0.2/0.86215/0.86215);
 		
 		// map back and forth through the bean model
@@ -124,7 +124,7 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 		AclfBus bus = aclfNet.getBus("1");
 		bus.setLoadQ(0.8);
 		
-		SwitchedShunt svc = CoreObjectFactory.createSwitchedShunt(bus, VarCompensatorControlMode.CONTINUOUS);
+		SwitchedShunt svc = CoreObjectFactory.createSwitchedShunt(bus, VarCompensationMode.CONTINUOUS);
 		svc.setVSpecified(0.9);
 		svc.setQLimit(new LimitType(1.0, 0.0));
 		
@@ -178,7 +178,7 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 		branch.setBranchCode(AclfBranchCode.LINE);
 		branch.setZ(new Complex(0.0, 0.01));
 		
-		SwitchedShunt svc = CoreObjectFactory.createSwitchedShunt(bus6, VarCompensatorControlMode.CONTINUOUS);
+		SwitchedShunt svc = CoreObjectFactory.createSwitchedShunt(bus6, VarCompensationMode.CONTINUOUS);
 		svc.setVSpecified(0.9);
 		svc.setQLimit(new LimitType(1.0, 0.0));
 		svc.setRemoteBus(bus1);		
@@ -226,7 +226,7 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 		AclfBus bus = net.getBus("1");
 		bus.setLoadQ(0.8);
 		
-		SwitchedShunt svc = CoreObjectFactory.createSwitchedShunt(bus, VarCompensatorControlMode.CONTINUOUS);
+		SwitchedShunt svc = CoreObjectFactory.createSwitchedShunt(bus, VarCompensationMode.CONTINUOUS);
 		svc.setVSpecified(0.9);
 		svc.setQLimit(new LimitType(1.0, 0.0));
 		

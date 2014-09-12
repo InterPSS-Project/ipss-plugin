@@ -69,7 +69,7 @@ import com.interpss.core.aclf.adj.PQBusLimit;
 import com.interpss.core.aclf.adj.PVBusLimit;
 import com.interpss.core.aclf.adj.QBank;
 import com.interpss.core.aclf.adj.SwitchedShunt;
-import com.interpss.core.aclf.adj.VarCompensatorControlMode;
+import com.interpss.core.aclf.adj.VarCompensationMode;
 import com.interpss.core.aclf.adpter.AclfPQGenBus;
 import com.interpss.core.aclf.adpter.AclfPVGenBus;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
@@ -400,7 +400,7 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 		//swithced shunt is a also a AclfControlBus
 		
 		//this.bus.setBusControl(swchShunt);
-		this.bus.setShuntDevice(swchShunt);
+		this.bus.setSwitchedShuntDevice(swchShunt);
 		
 		ReactivePowerXmlType binit = xmlSwitchedShuntData.getBInit();
 		
@@ -413,9 +413,9 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 			
 			swchShunt.setBInit(binit.getValue()*factor);
 			
-			VarCompensatorControlMode mode = xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.CONTINUOUS?
-					VarCompensatorControlMode.CONTINUOUS:xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.DISCRETE?
-					VarCompensatorControlMode.DISCRETE:VarCompensatorControlMode.FIXED;
+			VarCompensationMode mode = xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.CONTINUOUS?
+					VarCompensationMode.CONTINUOUS:xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.DISCRETE?
+					VarCompensationMode.DISCRETE:VarCompensationMode.FIXED;
 			
 			swchShunt.setControlMode(mode);
 			
