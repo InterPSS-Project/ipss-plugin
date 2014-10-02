@@ -1,0 +1,35 @@
+
+                          Load Flow Summary
+
+                         Max Power Mismatches
+             Bus              dPmax       Bus              dQmax
+            -------------------------------------------------------
+            Bus5             0.000005  Bus4             0.000057 (pu)
+                            0.5160040                   5.669102 (kva)
+
+     BusID       Name           Code           Volt(pu)   Angle(deg)     P(pu)     Q(pu)
+  ---------------------------------------------------------------------------------------
+  Bus1         Bus 1     HV Swing                1.06000         0.0       2.3239   -0.1655
+  Bus2         Bus 2     HV PV    + ConstP       1.04500        -5.0       0.1830    0.3085
+  Bus3         Bus 3     HV PV    + ConstP       1.01000       -12.7      -0.9420    0.0607
+  Bus4         Bus 4     HV PQ    + ConstP       1.01767       -10.3      -0.4780    0.0390
+  Bus5         Bus 5     HV PQ    + ConstP       1.01952        -8.8      -0.0760   -0.0160
+  Bus6         Bus 6     LV PV    + ConstP       1.07000       -14.2      -0.1120    0.0523
+  Bus7         Bus 7     ZV PQ                   1.06152       -13.4       0.0000    0.0000
+  Bus8         Bus 8     TV PV                   1.09000       -13.4       0.0000    0.1762
+  Bus9         Bus 9     LV PQ    + ConstP       1.05593       -14.9      -0.2950   -0.1660
+  Bus10        Bus 10    LV PQ    + ConstP       1.05099       -15.1      -0.0900   -0.0580
+  Bus11        Bus 11    LV PQ    + ConstP       1.05691       -14.8      -0.0350   -0.0180
+  Bus12        Bus 12    LV PQ    + ConstP       1.05519       -15.1      -0.0610   -0.0160
+  Bus13        Bus 13    LV PQ    + ConstP       1.05038       -15.2      -0.1350   -0.0580
+  Bus14        Bus 14    LV PQ    + ConstP       1.03553       -16.0      -0.1490   -0.0500
+
+
+                  PV Bus Limit Adjustment/Control
+
+      BusID     Vact     Vspec      Q      Qmax     Qmin   Status
+     -------- -------- -------- -------- -------- -------- ------
+     Bus2       1.0450   1.0450     0.44     0.50    -0.40    on
+     Bus3       1.0100   1.0100     0.25     0.40     0.00    on
+     Bus6       1.0700   1.0700     0.13     0.24    -0.06    on
+     Bus8       1.0900   1.0900     0.18     0.24    -0.06    on
