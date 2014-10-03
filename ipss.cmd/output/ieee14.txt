@@ -7,22 +7,22 @@
             Bus5             0.000005  Bus4             0.000057 (pu)
                             0.5160040                   5.669102 (kva)
 
-     BusID       Name           Code           Volt(pu)   Angle(deg)     P(pu)     Q(pu)
-  ---------------------------------------------------------------------------------------
-  Bus1         Bus 1     HV Swing                1.06000         0.0       2.3239   -0.1655
-  Bus2         Bus 2     HV PV    + ConstP       1.04500        -5.0       0.1830    0.3085
-  Bus3         Bus 3     HV PV    + ConstP       1.01000       -12.7      -0.9420    0.0607
-  Bus4         Bus 4     HV PQ    + ConstP       1.01767       -10.3      -0.4780    0.0390
-  Bus5         Bus 5     HV PQ    + ConstP       1.01952        -8.8      -0.0760   -0.0160
-  Bus6         Bus 6     LV PV    + ConstP       1.07000       -14.2      -0.1120    0.0523
-  Bus7         Bus 7     ZV PQ                   1.06152       -13.4       0.0000    0.0000
-  Bus8         Bus 8     TV PV                   1.09000       -13.4       0.0000    0.1762
-  Bus9         Bus 9     LV PQ    + ConstP       1.05593       -14.9      -0.2950   -0.1660
-  Bus10        Bus 10    LV PQ    + ConstP       1.05099       -15.1      -0.0900   -0.0580
-  Bus11        Bus 11    LV PQ    + ConstP       1.05691       -14.8      -0.0350   -0.0180
-  Bus12        Bus 12    LV PQ    + ConstP       1.05519       -15.1      -0.0610   -0.0160
-  Bus13        Bus 13    LV PQ    + ConstP       1.05038       -15.2      -0.1350   -0.0580
-  Bus14        Bus 14    LV PQ    + ConstP       1.03553       -16.0      -0.1490   -0.0500
+     BusID          Code           Volt(pu)   Angle(deg)     P(pu)     Q(pu)      Bus Name   
+  -------------------------------------------------------------------------------------------
+  Bus1         Swing                1.06000        0.00       2.3239   -0.1655   Bus 1     HV 
+  Bus2         PV    + ConstP       1.04500       -4.98       0.1830    0.3085   Bus 2     HV 
+  Bus3         PV    + ConstP       1.01000      -12.73      -0.9420    0.0607   Bus 3     HV 
+  Bus4         PQ    + ConstP       1.01767      -10.31      -0.4780    0.0390   Bus 4     HV 
+  Bus5         PQ    + ConstP       1.01952       -8.77      -0.0760   -0.0160   Bus 5     HV 
+  Bus6         PV    + ConstP       1.07000      -14.22      -0.1120    0.0523   Bus 6     LV 
+  Bus7         PQ                   1.06152      -13.36       0.0000    0.0000   Bus 7     ZV 
+  Bus8         PV                   1.09000      -13.36       0.0000    0.1762   Bus 8     TV 
+  Bus9         PQ    + ConstP       1.05593      -14.94      -0.2950   -0.1660   Bus 9     LV 
+  Bus10        PQ    + ConstP       1.05099      -15.10      -0.0900   -0.0580   Bus 10    LV 
+  Bus11        PQ    + ConstP       1.05691      -14.79      -0.0350   -0.0180   Bus 11    LV 
+  Bus12        PQ    + ConstP       1.05519      -15.08      -0.0610   -0.0160   Bus 12    LV 
+  Bus13        PQ    + ConstP       1.05038      -15.16      -0.1350   -0.0580   Bus 13    LV 
+  Bus14        PQ    + ConstP       1.03553      -16.03      -0.1490   -0.0500   Bus 14    LV 
 
 
                   PV Bus Limit Adjustment/Control
