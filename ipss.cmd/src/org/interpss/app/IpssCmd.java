@@ -1,19 +1,18 @@
-package com.interpss.app;
+package org.interpss.app;
 
 import static com.interpss.common.util.IpssLogger.ipssLogger;
 
 import org.interpss.IpssCorePlugin;
-import org.interpss.numeric.sparse.base.ISparseEquation;
-
-import com.interpss.common.exp.InterpssException;
 import org.interpss.pssl.plugin.CmdRunner;
 import org.interpss.pssl.plugin.IpssAdapter;
 import org.interpss.pssl.simu.BaseDSL;
+
+import com.interpss.common.exp.InterpssException;
 import com.interpss.spring.CoreCommonSpringFactory;
 
 public class IpssCmd {
 	private static boolean outHelpInfo = false;
-	private static boolean nativeSolver = false;
+	//private static boolean nativeSolver = false;
 
 	private static String inputFilename = null;
 	private static IpssAdapter.FileFormat format = IpssAdapter.FileFormat.IEEE_ODM;
@@ -25,6 +24,8 @@ public class IpssCmd {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		IpssCorePlugin.init();
+
 		try {
 			parseCmdInput(args);
 			
@@ -37,9 +38,9 @@ public class IpssCmd {
 				return;
 			}
 			
-			IpssCorePlugin.init();
 			BaseDSL.setMsgHub(CoreCommonSpringFactory.getIpssMsgHub());		
-			
+		
+			/*
 			if (nativeSolver) {
 				ipssLogger.info("Using native sparse solver");
 				IpssCorePlugin.setSparseEqnSolver(ISparseEquation.SolverType.Native);
@@ -47,7 +48,7 @@ public class IpssCmd {
 			}
 			else 
 				ipssLogger.info("Using default Java sparse solver");			
-			
+			*/
 			new CmdRunner()
 					.inputFilename(inputFilename)
 					.format(format)
@@ -83,12 +84,14 @@ public class IpssCmd {
 			if (HelpOptStr.equals(args[cnt])) {
 				outHelpInfo = true;
 			}
+			/*
 			else if (SolverOptStr.equals(args[cnt])) {
 				if (Parm_Native.equals(args[++cnt]))
 					nativeSolver = true;
 				else 
 					throw new InterpssException("Wrong sparse solver type");
 			} 
+			*/
 			else if (InOptStr.equals(args[cnt])) {
 				inputFilename = args[++cnt];
 			} 
@@ -130,34 +133,33 @@ public class IpssCmd {
 
 	}
 	
-	private final static String SolverOptStr = "-s";
-	private final static String InOptStr = "-i";
-	private final static String FormatOPtStr = "-f";
-	private final static String VersionOptStr = "-v";
-	private final static String ControlOptStr = "-c";
-	private final static String OutOptStr = "-o";
-	private final static String HelpOptStr = "-h";
+	//private final static String SolverOptStr = "-s";
+	private final static String InOptStr 		= "-i";
+	private final static String FormatOPtStr 	= "-f";
+	private final static String VersionOptStr 	= "-v";
+	private final static String ControlOptStr 	= "-c";
+	private final static String OutOptStr 		= "-o";
+	private final static String HelpOptStr 		= "-h";
 
-	private final static String Parm_Native = "native";
+	//private final static String Parm_Native = "native";
 	
-	private final static String FMT_IEEECDF = "IEEE-CDF";
-	private final static String FMT_PSSE = "PSSE";
-	private final static String FMT_PSLF = "GE-PSLF";
-	private final static String FMT_UCTE = "UCTE";
-	private final static String FMT_BPA = "BPA";
-	private final static String FMT_PWD = "PWD";
-	private final static String FMT_ODM = "IEEE-ODM";
+	private final static String FMT_IEEECDF 	= "IEEE-CDF";
+	private final static String FMT_PSSE 		= "PSSE";
+	private final static String FMT_PSLF 		= "GE-PSLF";
+	private final static String FMT_UCTE 		= "UCTE";
+	private final static String FMT_BPA 		= "BPA";
+	private final static String FMT_PWD 		= "PWD";
+	private final static String FMT_ODM 		= "IEEE-ODM";
 	
-	private final static String VER_PSSEV30 = "PSSEV30";
-	private final static String VER_PSSEV29 = "PSSEV29";
-	private final static String VER_PSSEV26 = "PSSEV26";
+	private final static String VER_PSSEV30 	= "PSSEV30";
+	private final static String VER_PSSEV29 	= "PSSEV29";
+	private final static String VER_PSSEV26 	= "PSSEV26";
 
 	private static String getHelpInfo() {
-		return "java com.interpss.app.IpssCmd [-h] [-s native] -i inputFile [-f IEEE-CDF|PSSE|GE-PSLF|UCTE|BPA|PWD|IEEE-ODM] [-v PSSEV30|PSSEV29|PSSEV26] [-c controlFile] [-o outputFile|Console] \n"
+		return "java org.interpss.app.IpssCmd [-h] -i inputFile [-f IEEE-CDF|PSSE|GE-PSLF|UCTE|BPA|PWD|IEEE-ODM] [-v PSSEV30|PSSEV29|PSSEV26] [-c controlFile] [-o outputFile|Console] \n"
 				+ "  -h for help info\n"
-				+ "  -s native running InterPSS using native sparse solver, otherwise using the default sparse solver\n"
-				+ "  -i input file\n"
-				+ "  -f input file format\n"
+				+ "  -i input file, relative to the current dir or full path\n"
+				+ "  -f input file format, default IEEE-CDF\n"
 				+ "  -v input file version\n"
 				+ "  -c ODM Xml file to control the run\n"
 				+ "  -o simulation result output file\n";
