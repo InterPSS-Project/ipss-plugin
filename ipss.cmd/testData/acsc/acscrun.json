@@ -1,0 +1,11 @@
+{	"runAclf":false,
+ 	"runAclfConfig":{"lfMethod":"NR","maxIteration":20,"tolerance":1.0E-4,"nonDivergent":false,"initBusVoltage":false,"accFactor":1.0},
+ 	"type":"BUS_FAULT",
+ 	"category":"GROUND_3P",
+ 	"zLG":{"re":0.0,"im":0.0},
+ 	"zLL":{"re":0.0,"im":0.0},
+ 	"faultBusId":"\u003cid\u003e",
+ 	"faultBranchFromId":"\u003cid\u003e",
+ 	"faultBranchToId":"\u003cid\u003e",
+ 	"distance":0.0
+ }
