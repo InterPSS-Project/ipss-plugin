@@ -22,20 +22,25 @@
   *
   */
 
-package org.interpss.pssl.plugin;
+package org.interpss.pssl.plugin.cmd;
 
+import static com.interpss.common.util.IpssLogger.ipssLogger;
 import static org.interpss.CorePluginFunction.aclfResultSummary;
 import static org.interpss.pssl.plugin.IpssAdapter.importNet;
-import static com.interpss.common.util.IpssLogger.ipssLogger;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 import org.ieee.odm.model.ext.ipss.IpssScenarioHelper;
 import org.ieee.odm.schema.IpssAclfAlgorithmXmlType;
+import org.interpss.pssl.plugin.IpssAdapter;
 import org.interpss.pssl.plugin.IpssAdapter.FileImportDSL;
-import org.interpss.pssl.plugin.odm.AclfDslODMRunner;
+import org.interpss.pssl.plugin.cmd.json.AclfRunConfigBean;
+import org.interpss.pssl.plugin.cmd.json.BaseJSONBean;
 import org.interpss.util.FileUtil;
 
+import com.google.gson.Gson;
 import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.StringUtil;
@@ -62,7 +67,7 @@ public class CmdRunner {
 	private String inputFilename = null;
 	private IpssAdapter.FileFormat format = IpssAdapter.FileFormat.IEEE_ODM;
 	private IpssAdapter.PsseVersion version = IpssAdapter.PsseVersion.PSSE_30;
-	private String odmControlFilename = null;
+	private String controlFilename = null;
 	private String outputFilename = null;
 	
 	/**
@@ -107,11 +112,11 @@ public class CmdRunner {
 	/**
 	 * set ODM control file name
 	 * 
-	 * @param odmControlFilename
+	 * @param controlFilename
 	 * @return
 	 */
-	public CmdRunner odmControlFilename(String odmControlFilename) {
-		this.odmControlFilename = odmControlFilename;
+	public CmdRunner controlFilename(String controlFilename) {
+		this.controlFilename = controlFilename;
 		return this;
 	}
 
@@ -133,7 +138,7 @@ public class CmdRunner {
 	 * @throws FileNotFoundException
 	 * @throws InterpssException
 	 */
-	public SimuContext run() throws FileNotFoundException, InterpssException {
+	public SimuContext run() throws FileNotFoundException, IOException, InterpssException {
 		prepareForRun();
 		
 		FileImportDSL inDsl = importNet(this.inputFilename)
@@ -149,26 +154,39 @@ public class CmdRunner {
 			return runAclf(inDsl);
 	}
 	
-	private SimuContext runAclf(FileImportDSL inDsl) throws FileNotFoundException, InterpssException {
+	private SimuContext runAclf(FileImportDSL inDsl) throws FileNotFoundException, IOException, InterpssException {
 		AclfNetwork net = inDsl.getImportedObj();	
 		
+		AclfRunConfigBean algoBean = null;
 		IpssAclfAlgorithmXmlType algoXml = null;
+		
 		if (inDsl.getOdmParser().getStudyScenario() != null) {
+			// the run configure info has been defined in the ODM Parser object
 			algoXml = new IpssScenarioHelper(inDsl.getOdmParser())
 						.getAclfAnalysis()
 						.getAclfAlgo();
 		}
-		else if (this.odmControlFilename != null) {
-			algoXml = new IpssScenarioHelper(this.odmControlFilename)
+		else if (this.controlFilename != null) {
+			// the run configure info is defined in a control file in ODM format or in JSON format
+			if (this.controlFilename.toLowerCase().endsWith(".xml"))
+				algoXml = new IpssScenarioHelper(this.controlFilename)
             			.getAclfAnalysis()
             			.getAclfAlgo();
+			else if (this.controlFilename.toLowerCase().endsWith(".json")) {
+				algoBean = BaseJSONBean.toBean(this.controlFilename, AclfRunConfigBean.class);
+			}
 		}
 		
-		if (algoXml == null)
+		if (algoXml != null) {
+			new AclfDslRunner(net)
+		      		.runAclf(algoXml);
+		}
+		else if (algoBean != null) {
+			new AclfDslRunner(net)
+		      		.runAclf(algoBean);
+		}
+		else
 			throw new InterpssException("Input error: Aclf algorithm not defined");
-
-		new AclfDslODMRunner(net)
-		      .runAclf(algoXml);
 		
 		FileUtil.write2File(outputFilename, aclfResultSummary.apply(net).toString().getBytes());
 		ipssLogger.info("Ouput written to " + this.outputFilename);
