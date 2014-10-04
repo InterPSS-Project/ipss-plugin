@@ -19,12 +19,12 @@ public class AcscRunConfigBean extends BaseJSONBean {
 			           zLL = new ComplexBean();
 	
 	// Bus fault only
-	public String faultBusId = "<id>";
+	public String faultBusId = "id";
 	
 	// Branch fault only
-	public String faultBranchFromId = "<id>";
+	public String faultBranchFromId = "id";
 
-	public String faultBranchToId = "<id>";
+	public String faultBranchToId = "id";
 
 	public double distance = 0.0;
 }

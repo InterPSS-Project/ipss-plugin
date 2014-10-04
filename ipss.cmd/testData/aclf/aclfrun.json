@@ -1,1 +1,12 @@
-{"lfMethod":"NR","maxIteration":20,"tolerance":1.0E-4,"nonDivergent":false,"initBusVoltage":false,"accFactor":1.0}
+{
+	"inputFilename":"testData/aclf/ieee14.ieee",
+	"outputFilename":"output/ieee14.txt",
+	"format":"IEEECommonFormat",
+	"version":"PSSE_30",
+	"lfMethod":"NR",
+	"maxIteration":20,
+	"tolerance":1.0E-4,
+	"nonDivergent":false,
+	"initBusVoltage":false,
+	"accFactor":1.0
+}
