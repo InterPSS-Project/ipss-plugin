@@ -22,12 +22,14 @@
   *
   */
 
-package org.interpss.pssl.plugin.odm;
+package org.interpss.pssl.plugin.cmd;
 
 import static org.interpss.mapper.odm.ODMUnitHelper.toApparentPowerUnit;
 
 import org.ieee.odm.schema.IpssAclfAlgorithmXmlType;
 import org.ieee.odm.schema.LfMethodEnumType;
+import org.interpss.numeric.datatype.Unit.UnitType;
+import org.interpss.pssl.plugin.cmd.json.AclfRunConfigBean;
 import org.interpss.pssl.simu.IpssAclf;
 import org.interpss.pssl.simu.IpssAclf.LfAlgoDSL;
 
@@ -41,7 +43,7 @@ import com.interpss.core.algo.AclfMethod;
  * @author mzhou
  *
  */
-public class AclfDslODMRunner {
+public class AclfDslRunner {
 	private AclfNetwork net;
 	
 	/**
@@ -49,7 +51,7 @@ public class AclfDslODMRunner {
 	 * 
 	 * @param net AclfNetwork object
 	 */
-	public AclfDslODMRunner(AclfNetwork net) {
+	public AclfDslRunner(AclfNetwork net) {
 		this.net = net;
 	}
 	
@@ -83,6 +85,34 @@ public class AclfDslODMRunner {
 
 		if (algoXml.getAccFactor() != null)
 			algoDsl.gsAccFactor(algoXml.getAccFactor());		
+		
+		return algoDsl.runLoadflow();	
+	}
+	
+	/**
+	 * run aclf using the JSON case definition
+	 * 
+	 * @param algoBean
+	 * @return
+	 * @throws InterpssException 
+	 */
+	public boolean runAclf(AclfRunConfigBean algoBean) throws InterpssException {
+		LfAlgoDSL algoDsl = IpssAclf.createAclfAlgo(net);
+		
+		algoDsl.lfMethod(algoBean.lfMethod == LfMethodEnumType.NR ? AclfMethod.NR
+					: (algoBean.lfMethod == LfMethodEnumType.PQ ? AclfMethod.PQ
+							: (algoBean.lfMethod == LfMethodEnumType.CUSTOM ? AclfMethod.CUSTOM 
+									: AclfMethod.GS)));
+		
+		algoDsl.setMaxIterations(algoBean.maxIteration);
+		
+		algoDsl.setTolerance(algoBean.tolerance, UnitType.PU);
+		
+		algoDsl.nonDivergent(algoBean.nonDivergent);
+
+		algoDsl.initBusVoltage(algoBean.initBusVoltage);
+
+		algoDsl.gsAccFactor(algoBean.accFactor);		
 		
 		return algoDsl.runLoadflow();	
 	}

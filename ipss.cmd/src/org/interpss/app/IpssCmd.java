@@ -3,8 +3,8 @@ package org.interpss.app;
 import static com.interpss.common.util.IpssLogger.ipssLogger;
 
 import org.interpss.IpssCorePlugin;
-import org.interpss.pssl.plugin.CmdRunner;
 import org.interpss.pssl.plugin.IpssAdapter;
+import org.interpss.pssl.plugin.cmd.CmdRunner;
 import org.interpss.pssl.simu.BaseDSL;
 
 import com.interpss.common.exp.InterpssException;
@@ -53,7 +53,7 @@ public class IpssCmd {
 					.inputFilename(inputFilename)
 					.format(format)
 					.version(psseVersion)
-					.odmControlFilename(controlFilename)
+					.controlFilename(controlFilename)
 					.outputFilename(outputFilename)
 					.run();
 			
@@ -156,12 +156,12 @@ public class IpssCmd {
 	private final static String VER_PSSEV26 	= "PSSEV26";
 
 	private static String getHelpInfo() {
-		return "java org.interpss.app.IpssCmd [-h] -i inputFile [-f IEEE-CDF|PSSE|GE-PSLF|UCTE|BPA|PWD|IEEE-ODM] [-v PSSEV30|PSSEV29|PSSEV26] [-c controlFile] [-o outputFile|Console] \n"
+		return "java org.interpss.app.IpssCmd [-h] -i inputFile [-f IEEE-CDF|PSSE|GE-PSLF|UCTE|BPA|PWD|IEEE-ODM] [-v PSSEV30|PSSEV29|PSSEV26] [-c controlFile(*.xml)|(*.json)] [-o outputFile|Console] \n"
 				+ "  -h for help info\n"
 				+ "  -i input file, relative to the current dir or full path\n"
 				+ "  -f input file format, default IEEE-CDF\n"
 				+ "  -v input file version\n"
-				+ "  -c ODM Xml file to control the run\n"
+				+ "  -c ODM Xml *.xml or JSON *.json file to control the run\n"
 				+ "  -o simulation result output file\n";
 	}	
 

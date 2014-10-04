@@ -22,7 +22,7 @@
   *
   */
 
-package org.interpss.pssl.plugin.odm;
+package org.interpss.pssl.plugin.cmd;
 
 import org.ieee.odm.schema.ContingencyAnalysisEnumType;
 import org.ieee.odm.schema.ContingencyAnalysisXmlType;
@@ -43,7 +43,7 @@ import com.interpss.simu.multicase.aclf.ContingencyAnalysisType;
  * @author mzhou
  *
  */
-public class ContingencyDslODMRunner {
+public class ContingencyDslRunner {
 	private AclfNetwork net;
 	
 	/**
@@ -51,7 +51,7 @@ public class ContingencyDslODMRunner {
 	 * 
 	 * @param net
 	 */
-	public ContingencyDslODMRunner(AclfNetwork net) {
+	public ContingencyDslRunner(AclfNetwork net) {
 		this.net = net;
 	}
 	

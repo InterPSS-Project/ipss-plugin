@@ -22,7 +22,7 @@
   *
   */
 
-package org.interpss.pssl.plugin.odm;
+package org.interpss.pssl.plugin.cmd;
 
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.schema.AcscBaseFaultXmlType;
@@ -46,7 +46,7 @@ import com.interpss.core.datatype.IFaultResult;
  * @author mzhou
  *
  */
-public class AcscDslODMRunner {
+public class AcscDslRunner {
 	private AcscNetwork net;
 	
 	/**
@@ -54,7 +54,7 @@ public class AcscDslODMRunner {
 	 * 
 	 * @param net AcscNetwork object
 	 */
-	public AcscDslODMRunner(AcscNetwork net) {
+	public AcscDslRunner(AcscNetwork net) {
 		this.net = net;
 	}
 	
