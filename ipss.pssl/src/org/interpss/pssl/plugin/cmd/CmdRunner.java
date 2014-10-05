@@ -50,6 +50,12 @@ import com.interpss.simu.SimuContext;
  *
  */
 public class CmdRunner {
+	/**
+	 * Cmd run type enum
+	 * 
+	 * @author Mike
+	 *
+	 */
 	public static enum RunType {Aclf, Acsc, DStab};
 	
 	/**
@@ -71,11 +77,6 @@ public class CmdRunner {
 	 * Cmd run control file
 	 */
 	private String controlFilename = null;
-	
-	/**
-	 * Cmd run configure JSON bean 
-	 */
-	//private AclfRunConfigBean aclfBean;
 	
 	/**
 	 * default constructor
@@ -137,11 +138,13 @@ public class CmdRunner {
 			return SimuObjectFactory.createSimuCtxTypeAclfNet(net);
 		}
 		else {
+			// other run types to be implemented
 			throw new InterpssException("Function Not implemented");
 		}
 	}
 	
 	private AclfRunConfigBean loadAclfRunConfigInfo() throws IOException {
+		// load the control file content and turn it into a AclfRunConfigBean JSON bean
 		AclfRunConfigBean aclfBean = BaseJSONBean.toBean(this.controlFilename, AclfRunConfigBean.class);
 
 		// set output file if necessary

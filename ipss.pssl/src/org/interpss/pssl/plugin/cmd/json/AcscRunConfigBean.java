@@ -5,6 +5,12 @@ import org.interpss.datamodel.bean.datatype.ComplexBean;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.acsc.fault.SimpleFaultType;
 
+/**
+ * TODO
+ * 
+ * @author Mike
+ *
+ */
 public class AcscRunConfigBean extends BaseJSONBean {
 	
 	public boolean runAclf = false;
