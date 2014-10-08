@@ -7,7 +7,14 @@ import com.interpss.core.acsc.fault.SimpleFaultType;
 
 public class AcscRunConfigBean extends BaseJSONBean {
 	
+	public String seqFilename = "name";
+	
+	public String acscOutputFilename = "name";
+	
+	// flag to indicate whether or not the pre-fault bus voltage is based on load flow result?
 	public boolean runAclf = false;
+	
+	public String aclfConfigFilename = "name";
 	
 	public AclfRunConfigBean runAclfConfig = new AclfRunConfigBean();
 	
@@ -22,9 +29,12 @@ public class AcscRunConfigBean extends BaseJSONBean {
 	public String faultBusId = "id";
 	
 	// Branch fault only
-	public String faultBranchFromId = "id";
+	public String faultBranchFromId = "fBusId";
 
-	public String faultBranchToId = "id";
-
+	public String faultBranchToId = "tBusId";
+	
+	public String faultBranchCirId = "cirId";
+	
+	// Distrance is measured starting from the fromBus side
 	public double distance = 0.0;
 }
