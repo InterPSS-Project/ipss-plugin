@@ -1,7 +1,7 @@
 @echo off
 
 REM define ipss lib location
-set IpssLib_HOME=C:\Users\Qiuhua\git\ipss-common\ipss.lib\lib
+set IpssLib_HOME=C:\Users\tony\git\ipss-common\ipss.lib\lib
 
 REM define Java classpath
 
