@@ -122,7 +122,7 @@ public class CmdRunner {
 			AclfRunConfigBean aclfBean = loadAclfRunConfigInfo();
 			
 			// load the study case file
-			FileImportDSL inDsl = importAclfNet(aclfBean.aclfCaseFilename)
+			FileImportDSL inDsl = importAclfNet(aclfBean.aclfCaseFileName)
 					.setFormat(aclfBean.format)
 					.setPsseVersion(aclfBean.version)
 					.load();	
@@ -135,8 +135,8 @@ public class CmdRunner {
 			      		.runAclf(aclfBean);
 			
 			// output Loadflow result
-			FileUtil.write2File(aclfBean.aclfOutputFilename, aclfResultSummary.apply(net).toString().getBytes());
-			ipssLogger.info("Ouput written to " + aclfBean.aclfOutputFilename);
+			FileUtil.write2File(aclfBean.aclfOutputFileName, aclfResultSummary.apply(net).toString().getBytes());
+			ipssLogger.info("Ouput written to " + aclfBean.aclfOutputFileName);
 
 			return SimuObjectFactory.createSimuCtxTypeAclfNet(net);
 		}
@@ -149,7 +149,7 @@ public class CmdRunner {
 			FileImportDSL inDsl =  new FileImportDSL();
 			inDsl.setFormat(acscBean.runAclfConfig.format)
 				 .setPsseVersion(acscBean.runAclfConfig.version)
-			     .load(new String[]{acscBean.runAclfConfig.aclfCaseFilename,
+			     .load(new String[]{acscBean.runAclfConfig.aclfCaseFileName,
 					acscBean.seqFilename});
 			
 			// map ODM to InterPSS model object
@@ -180,9 +180,9 @@ public class CmdRunner {
 		AclfRunConfigBean aclfBean = BaseJSONBean.toBean(this.controlFilename, AclfRunConfigBean.class);
 
 		// set output file if necessary
-		if (aclfBean.aclfOutputFilename == null) {
-			String str = StringUtil.getFileNameNoExt(aclfBean.aclfCaseFilename);
-			aclfBean.aclfOutputFilename = OutputDir + SysSeparator + str + ".txt";
+		if (aclfBean.aclfOutputFileName == null) {
+			String str = StringUtil.getFileNameNoExt(aclfBean.aclfCaseFileName);
+			aclfBean.aclfOutputFileName = OutputDir + SysSeparator + str + ".txt";
 		}
 		
 		return aclfBean;
