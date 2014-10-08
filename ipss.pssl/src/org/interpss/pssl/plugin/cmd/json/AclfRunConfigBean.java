@@ -4,9 +4,9 @@ import org.ieee.odm.schema.LfMethodEnumType;
 import org.interpss.pssl.plugin.IpssAdapter;
 
 public class AclfRunConfigBean extends BaseJSONBean {
-	public String aclfCaseFilename = "name";
+	public String aclfCaseFileName = "name";
 
-	public String aclfOutputFilename = "name";
+	public String aclfOutputFileName = "name";
 
 	public IpssAdapter.FileFormat format = IpssAdapter.FileFormat.IEEECommonFormat;
 	
