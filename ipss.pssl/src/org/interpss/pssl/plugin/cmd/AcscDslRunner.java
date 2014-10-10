@@ -32,12 +32,14 @@ import org.ieee.odm.schema.AcscFaultAnalysisXmlType;
 import org.ieee.odm.schema.AcscFaultCategoryEnumType;
 import org.ieee.odm.schema.AcscFaultTypeEnumType;
 import org.ieee.odm.schema.ComplexXmlType;
+import org.interpss.pssl.plugin.cmd.json.AcscRunConfigBean;
 import org.interpss.pssl.simu.IpssAcsc;
 import org.interpss.pssl.simu.IpssAcsc.FaultAlgoDSL;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
+import com.interpss.core.acsc.fault.SimpleFaultType;
 import com.interpss.core.datatype.IFaultResult;
 
 /**
@@ -91,6 +93,39 @@ public class AcscDslRunner {
   			// TODO
   		}
 		return null;
+	}
+	
+	/**
+	 * run the acsc analysis case and return the analysis results
+	 * 
+	 * @param acscConfigBean
+	 * @return
+	 */
+	public IFaultResult runAcsc(AcscRunConfigBean acscBean)  throws InterpssException {
+
+		FaultAlgoDSL algo = IpssAcsc.createAcscAlgo(this.net);
+
+		if (acscBean.type==SimpleFaultType.BUS_FAULT) {
+			
+	  		algo.createBusFault(acscBean.faultBusId)
+	  			.faultCode(acscBean.category)
+	  			.zLGFault(acscBean.zLG.toComplex())
+	  			.zLLFault(acscBean.zLL.toComplex())
+	  			.calculateFault();
+	  		return algo.getResult();
+		}
+		else if (acscBean.type==SimpleFaultType.BRANCH_FAULT) {
+			
+	  		algo.createBranchFault(acscBean.faultBranchFromId, acscBean.faultBranchToId, acscBean.faultBranchCirId)
+	  			.faultCode(acscBean.category)
+	  			.zLGFault(acscBean.zLG.toComplex())
+	  			.zLLFault(acscBean.zLL.toComplex())
+	  			.distance(acscBean.distance)
+	  			.calculateFault();
+	  		return algo.getResult();
+		}
+		
+	return null;
 	}
 	
 	private SimpleFaultCode mapCode(AcscFaultCategoryEnumType caty) {

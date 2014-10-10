@@ -13,12 +13,12 @@ public class AclfRunConfigBean extends BaseJSONBean {
 	/**
 	 *  input file name, mandatory
 	 */  
-	public String inputFilename = "name";
+	public String aclfCaseFileName = "name";
 
 	/**
 	 *  output file name, optional
 	 */
-	public String outputFilename = "name";
+	public String aclfOutputFileName = "name";
 
 	/**
 	 * input file format

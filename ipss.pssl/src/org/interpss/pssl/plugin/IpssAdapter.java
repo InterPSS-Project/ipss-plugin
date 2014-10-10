@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 
 import org.ieee.odm.adapter.IODMAdapter;
+import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.bpa.BPAAdapter;
 import org.ieee.odm.adapter.ge.GePslfAdapter;
 import org.ieee.odm.adapter.ieeecdf.IeeeCDFAdapter;
@@ -102,7 +103,7 @@ public class IpssAdapter extends BaseDSL {
 	 * @param filename custom filename
 	 * @return
 	 */
-	public static FileImportDSL importNet(String filename) {
+	public static FileImportDSL importAclfNet(String filename) {
 		return new FileImportDSL(filename);
 	}
 	
@@ -135,7 +136,10 @@ public class IpssAdapter extends BaseDSL {
 	 *
 	 */
 	public static class FileImportDSL {
-		private String filename;
+		private String file1Name;
+		private String file2Name;
+		private String file3Name;
+		
 		private FileFormat format;
 		private PsseVersion psseVersion;
 		private ODMAclfNetMapper.XfrBranchModel xfrBranchModel = ODMAclfNetMapper.XfrBranchModel.InterPSS;
@@ -247,8 +251,37 @@ public class IpssAdapter extends BaseDSL {
 		 * @param filename customer filename
 		 */
 		public FileImportDSL(String filename) {
-			this.filename = filename;
+			this.file1Name = filename;
 		}
+		
+		/**
+		 * constructor
+		 * 
+		 * @param fileNameAry an array of import file names
+		 */
+		public FileImportDSL(String[] fileNameAry ) {
+			if(fileNameAry.length>3){
+			  try {
+				throw new InterpssException("At most three input files, i.e., lf,sequence and dynamic, are supported!");
+			} catch (InterpssException e) {
+				e.printStackTrace();
+			}
+			}
+			else if(fileNameAry.length==3){
+				 this.file1Name = fileNameAry[0];
+				 this.file2Name = fileNameAry[1];
+				 this.file3Name = fileNameAry[2];
+			}
+			else if(fileNameAry.length==2){
+				 this.file1Name = fileNameAry[0];
+				 this.file2Name = fileNameAry[1];
+				
+			}
+			else if(fileNameAry.length==1){
+				 this.file1Name = fileNameAry[0];
+			}
+		}
+		
 		/**
 		 * constructor
 		 * 
@@ -324,7 +357,7 @@ public class IpssAdapter extends BaseDSL {
 		 * @param name
 		 * @return
 		 */
-		public FileImportDSL setFilename(String name) { this.filename = name; return this; }
+		public FileImportDSL setFilename(String name) { this.file1Name = name; return this; }
 		/**
 		 * custom file name to be imported
 		 * 
@@ -424,13 +457,16 @@ public class IpssAdapter extends BaseDSL {
 		 * @return
 		 */
 		public FileImportDSL load(boolean debug, String filename) { 
+			
+			if(filename !=null) this.file1Name = filename;
+			
 			try {
-				ipssLogger.info("Load file: " + this.filename + " of format " + this.format);
+				ipssLogger.info("Load file: " + this.file1Name + " of format " + this.format);
 
 				if ( this.format == FileFormat.IEEE_ODM) {
 					ODMModelParser parser = new ODMModelParser();
 
-					FileInputStream inStream = new FileInputStream(new File(this.filename));
+					FileInputStream inStream = new FileInputStream(new File(this.file1Name));
 					if (parser.parse(inStream)) {
 						//System.out.println(parser.toXmlDoc(false));
 						if (parser.getStudyCase().getNetworkCategory() == NetworkCategoryEnumType.DC_SYSTEM) {
@@ -449,13 +485,13 @@ public class IpssAdapter extends BaseDSL {
 						}
 					}
 					else {
-						psslMsg.sendErrorMsg("Error in loading file: " + this.filename);
+						psslMsg.sendErrorMsg("Error in loading file: " + this.file1Name);
 						return null;
 					}
 					inStream.close();
 				}
 				else {
-					getAdapter().parseInputFile(this.filename);
+					getAdapter().parseInputFile(this.file1Name);
 					
 					if (debug) {
 						if (filename == null)
@@ -472,6 +508,44 @@ public class IpssAdapter extends BaseDSL {
 				psslMsg.sendErrorMsg("Error in loading file: " + e.toString());
 			}
 			return null; 
+		}
+		
+		public FileImportDSL load(String[] fileNameAry) { 
+			
+			if(fileNameAry.length>3){
+				  try {
+					throw new InterpssException("At most three input files, i.e., lf,sequence and dynamic, are supported!");
+				} catch (InterpssException e) {
+					e.printStackTrace();
+				}
+				}
+				else if(fileNameAry.length>1){
+					 this.file1Name = fileNameAry[0];
+					 this.file2Name = fileNameAry[1];
+					 this.file3Name = fileNameAry[2];
+					 
+					 if(getAdapter() instanceof PSSEAdapter){
+						 NetType type = fileNameAry.length ==3?NetType.DStabNet: NetType.AcscNet;
+						 getAdapter().parseInputFile(type, fileNameAry);
+						 odmParser = adapter.getModel();
+					 }
+					 else{
+						 try {
+							throw new InterpssException("Only PSS/E format is supported for importing files including sequence and/or dynamic data!");
+						} catch (InterpssException e) {
+							
+							e.printStackTrace();
+						}
+					 }
+					 
+					return this;
+				}
+				
+				else if(fileNameAry.length==1){
+					return load(false, fileNameAry[0]);
+				}
+			
+			return null;
 		}
 	}
 }
