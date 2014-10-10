@@ -1,6 +1,6 @@
 {
-	"inputFilename":"testData/aclf/ieee14.ieee",
-	"outputFilename":"output/ieee14.txt",
+	"aclfCaseFileName":"testData/aclf/ieee14.ieee",
+	"acscOutputFileName":"output/ieee14.txt",
 	"format":"IEEECommonFormat",
 	"version":"PSSE_30",
 	"lfMethod":"NR",

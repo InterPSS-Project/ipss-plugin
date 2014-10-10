@@ -99,20 +99,23 @@ public class AclfDslRunner {
 	public boolean runAclf(AclfRunConfigBean algoBean) throws InterpssException {
 		LfAlgoDSL algoDsl = IpssAclf.createAclfAlgo(net);
 		
-		algoDsl.lfMethod(algoBean.lfMethod == LfMethodEnumType.NR ? AclfMethod.NR
-					: (algoBean.lfMethod == LfMethodEnumType.PQ ? AclfMethod.PQ
-							: (algoBean.lfMethod == LfMethodEnumType.CUSTOM ? AclfMethod.CUSTOM 
-									: AclfMethod.GS)));
-		
-		algoDsl.setMaxIterations(algoBean.maxIteration);
-		
-		algoDsl.setTolerance(algoBean.tolerance, UnitType.PU);
-		
-		algoDsl.nonDivergent(algoBean.nonDivergent);
-
-		algoDsl.initBusVoltage(algoBean.initBusVoltage);
-
-		algoDsl.gsAccFactor(algoBean.accFactor);		
+		// if algoBean is null, run with the default setting
+		if(algoBean !=null){
+			algoDsl.lfMethod(algoBean.lfMethod == LfMethodEnumType.NR ? AclfMethod.NR
+						: (algoBean.lfMethod == LfMethodEnumType.PQ ? AclfMethod.PQ
+								: (algoBean.lfMethod == LfMethodEnumType.CUSTOM ? AclfMethod.CUSTOM 
+										: AclfMethod.GS)));
+			
+			algoDsl.setMaxIterations(algoBean.maxIteration);
+			
+			algoDsl.setTolerance(algoBean.tolerance, UnitType.PU);
+			
+			algoDsl.nonDivergent(algoBean.nonDivergent);
+	
+			algoDsl.initBusVoltage(algoBean.initBusVoltage);
+	
+			algoDsl.gsAccFactor(algoBean.accFactor);
+		}
 		
 		return algoDsl.runLoadflow();	
 	}
