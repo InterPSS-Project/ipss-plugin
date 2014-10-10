@@ -26,13 +26,14 @@ package org.interpss.pssl.plugin.cmd;
 
 import static com.interpss.common.util.IpssLogger.ipssLogger;
 import static org.interpss.CorePluginFunction.aclfResultSummary;
-import static org.interpss.pssl.plugin.IpssAdapter.importNet;
+import static org.interpss.pssl.plugin.IpssAdapter.importAclfNet;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.interpss.pssl.plugin.IpssAdapter.FileImportDSL;
 import org.interpss.pssl.plugin.cmd.json.AclfRunConfigBean;
+import org.interpss.pssl.plugin.cmd.json.AcscRunConfigBean;
 import org.interpss.pssl.plugin.cmd.json.BaseJSONBean;
 import org.interpss.util.FileUtil;
 
@@ -40,6 +41,9 @@ import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.StringUtil;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.acsc.AcscNetwork;
+import com.interpss.core.acsc.fault.SimpleFaultType;
+import com.interpss.core.datatype.IFaultResult;
 import com.interpss.simu.SimuContext;
 
 /**
@@ -119,7 +123,7 @@ public class CmdRunner {
 			AclfRunConfigBean aclfBean = loadAclfRunConfigInfo();
 			
 			// load the study case file
-			FileImportDSL inDsl = importNet(aclfBean.inputFilename)
+			FileImportDSL inDsl = importAclfNet(aclfBean.aclfCaseFileName)
 					.setFormat(aclfBean.format)
 					.setPsseVersion(aclfBean.version)
 					.load();	
@@ -132,10 +136,41 @@ public class CmdRunner {
 			      		.runAclf(aclfBean);
 			
 			// output Loadflow result
-			FileUtil.write2File(aclfBean.outputFilename, aclfResultSummary.apply(net).toString().getBytes());
-			ipssLogger.info("Ouput written to " + aclfBean.outputFilename);
+			FileUtil.write2File(aclfBean.aclfOutputFileName, aclfResultSummary.apply(net).toString().getBytes());
+			ipssLogger.info("Ouput written to " + aclfBean.aclfOutputFileName);
 
 			return SimuObjectFactory.createSimuCtxTypeAclfNet(net);
+		}
+		else if(this.runType == RunType.Acsc) {
+			
+			// load the Acsc run configure info stored in the control file
+			AcscRunConfigBean acscBean = loadAcscRunConfigInfo();
+			
+		    // import the file(s)
+			FileImportDSL inDsl =  new FileImportDSL();
+			inDsl.setFormat(acscBean.runAclfConfig.format)
+				 .setPsseVersion(acscBean.runAclfConfig.version)
+			     .load(new String[]{acscBean.runAclfConfig.aclfCaseFileName,
+					acscBean.seqFilename});
+			
+			// map ODM to InterPSS model object
+			AcscNetwork net = inDsl.getImportedObj();	
+			
+			IFaultResult scResults = new AcscDslRunner(net).runAcsc(acscBean);
+			
+			// output short circuit result
+			
+			// require the base votlage of the fault point
+			double baseV = acscBean.type == SimpleFaultType.BUS_FAULT? net.getBus(acscBean.faultBusId).getBaseVoltage():
+				                                  net.getBus(acscBean.faultBranchFromId).getBaseVoltage();
+				
+			FileUtil.write2File(acscBean.acscOutputFilename, scResults.toString(baseV).getBytes());
+			ipssLogger.info("Ouput written to " + acscBean.acscOutputFilename);
+			
+			// create a simuContext and return it
+			SimuContext sc = SimuObjectFactory.createSimuCtxTypeAcscNet();
+			sc.setAcscNet(net);
+			return sc;
 		}
 		else {
 			// other run types to be implemented
@@ -148,11 +183,31 @@ public class CmdRunner {
 		AclfRunConfigBean aclfBean = BaseJSONBean.toBean(this.controlFilename, AclfRunConfigBean.class);
 
 		// set output file if necessary
-		if (aclfBean.outputFilename == null) {
-			String str = StringUtil.getFileNameNoExt(aclfBean.inputFilename);
-			aclfBean.outputFilename = OutputDir + SysSeparator + str + ".txt";
+		if (aclfBean.aclfOutputFileName == null) {
+			String str = StringUtil.getFileNameNoExt(aclfBean.aclfCaseFileName);
+			aclfBean.aclfOutputFileName = OutputDir + SysSeparator + str + ".txt";
 		}
 		
 		return aclfBean;
+	}
+	
+	private AcscRunConfigBean loadAcscRunConfigInfo() throws IOException {
+		AcscRunConfigBean acscBean = BaseJSONBean.toBean(this.controlFilename, AcscRunConfigBean.class);
+
+		// load Aclf config file if necessary
+		if (acscBean.runAclf==true && acscBean.aclfConfigFilename == null) {
+			try {
+				throw new InterpssException("Configuration conflict: runAclf = true, but Aclf Configuration file is not provided!");
+			} catch (InterpssException e) {
+				e.printStackTrace();
+			}
+			
+		}
+		else if(acscBean.runAclf==true && acscBean.aclfConfigFilename != null) {
+			acscBean.runAclfConfig = BaseJSONBean.toBean(acscBean.aclfConfigFilename, AclfRunConfigBean.class);
+		}
+		
+		
+		return acscBean;
 	}
 }
