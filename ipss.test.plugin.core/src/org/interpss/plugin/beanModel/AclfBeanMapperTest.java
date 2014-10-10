@@ -221,7 +221,7 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
 		ODMLogger.getLogger().setLevel(Level.WARNING);
 
-		AclfNetwork net = IpssAdapter.importNet("testData/adpter/psse/v30/SixBus_2WPsXfr.raw")
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/SixBus_2WPsXfr.raw")
 					.setFormat(IpssAdapter.FileFormat.PSSE)
 					.setPsseVersion(PsseVersion.PSSE_30)
 					.load()
@@ -254,7 +254,7 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
 		ODMLogger.getLogger().setLevel(Level.WARNING);
 
-		AclfNetwork net = IpssAdapter.importNet("testData/adpter/psse/v30/SixBus_2WPsXfr.raw")
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/SixBus_2WPsXfr.raw")
 					.setFormat(IpssAdapter.FileFormat.PSSE)
 					.setPsseVersion(PsseVersion.PSSE_30)
 					.load()

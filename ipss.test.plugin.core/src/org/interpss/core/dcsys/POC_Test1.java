@@ -41,7 +41,7 @@ public class POC_Test1  extends CorePluginTestSetup {
 	@Test
 	public void baseTest() throws Exception {
 		//DcNetwork dcNet = CorePluginObjFactory.createDcNetwork("testData/odm/dcsys/poc/Test1_odm.xml");
-		DcNetwork dcNet = IpssAdapter.importNet("testData/odm/dcsys/poc/Test1_odm.xml")
+		DcNetwork dcNet = IpssAdapter.importAclfNet("testData/odm/dcsys/poc/Test1_odm.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();		
@@ -62,7 +62,7 @@ public class POC_Test1  extends CorePluginTestSetup {
 	@Test
 	public void base1Test() throws Exception {
 //		DcNetwork dcNet = CorePluginObjFactory.createDcNetwork("testData/odm/dcsys/poc/Test1_odm.xml");
-		DcNetwork dcNet = IpssAdapter.importNet("testData/odm/dcsys/poc/Test1_odm.xml")
+		DcNetwork dcNet = IpssAdapter.importAclfNet("testData/odm/dcsys/poc/Test1_odm.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();		
@@ -83,7 +83,7 @@ public class POC_Test1  extends CorePluginTestSetup {
 	@Test
 	public void mpptTest() throws Exception {
 		//DcNetwork dcNet = CorePluginObjFactory.createDcNetwork("testData/odm/dcsys/poc/Test1_odm.xml");
-		DcNetwork dcNet = IpssAdapter.importNet("testData/odm/dcsys/poc/Test1_odm.xml")
+		DcNetwork dcNet = IpssAdapter.importAclfNet("testData/odm/dcsys/poc/Test1_odm.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();		

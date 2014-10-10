@@ -40,7 +40,7 @@ import com.interpss.dc.common.IDcNetEVisitor;
 public class DcSample_2BusTest  extends CorePluginTestSetup { 
 	@Test
 	public void simple2BusPSourceCase() throws Exception {
-		DcNetwork dcNet = IpssAdapter.importNet("testData/odm/dcsys/simple2BusPSource.xml")
+		DcNetwork dcNet = IpssAdapter.importAclfNet("testData/odm/dcsys/simple2BusPSource.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();		
@@ -59,7 +59,7 @@ public class DcSample_2BusTest  extends CorePluginTestSetup {
 	@Test
 	public void simple2BusCase() throws Exception {
 		//DcNetwork dcNet = CorePluginObjFactory.createDcNetwork("testData/odm/dcsys/simple2Bus.xml");
-		DcNetwork dcNet = IpssAdapter.importNet("testData/odm/dcsys/simple2Bus.xml")
+		DcNetwork dcNet = IpssAdapter.importAclfNet("testData/odm/dcsys/simple2Bus.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();		
@@ -88,7 +88,7 @@ public class DcSample_2BusTest  extends CorePluginTestSetup {
 	@Test
 	public void pvModel2BusCase() throws Exception {
 		//DcNetwork dcNet = CorePluginObjFactory.createDcNetwork("testData/odm/dcsys/PVModel2Bus.xml");
-		DcNetwork dcNet = IpssAdapter.importNet("testData/odm/dcsys/PVModel2Bus.xml")
+		DcNetwork dcNet = IpssAdapter.importAclfNet("testData/odm/dcsys/PVModel2Bus.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();		

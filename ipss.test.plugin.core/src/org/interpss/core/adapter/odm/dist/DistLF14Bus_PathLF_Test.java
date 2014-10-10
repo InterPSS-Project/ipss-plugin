@@ -44,7 +44,7 @@ import com.interpss.dist.algo.path.DistPathNetInitinizer;
 public class DistLF14Bus_PathLF_Test  extends CorePluginTestSetup {
 	@Test
 	public void bus14_lf1_Test() throws Exception {
-		DistNetwork distNet = IpssAdapter.importNet("testData/odm/dist/Dist_14Bus.xml")
+		DistNetwork distNet = IpssAdapter.importAclfNet("testData/odm/dist/Dist_14Bus.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();
@@ -66,7 +66,7 @@ public class DistLF14Bus_PathLF_Test  extends CorePluginTestSetup {
 	
 	@Test
 	public void bus14_lf_Test() throws Exception {
-		DistNetwork distNet = IpssAdapter.importNet("testData/odm/dist/Dist_14Bus.xml")
+		DistNetwork distNet = IpssAdapter.importAclfNet("testData/odm/dist/Dist_14Bus.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();
@@ -90,7 +90,7 @@ public class DistLF14Bus_PathLF_Test  extends CorePluginTestSetup {
 
 	@Test
 	public void bus14_walk_Test() throws Exception {
-		DistNetwork distNet = IpssAdapter.importNet("testData/odm/dist/Dist_14Bus.xml")
+		DistNetwork distNet = IpssAdapter.importAclfNet("testData/odm/dist/Dist_14Bus.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();

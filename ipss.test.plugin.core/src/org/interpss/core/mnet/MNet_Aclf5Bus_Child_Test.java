@@ -40,7 +40,7 @@ public class MNet_Aclf5Bus_Child_Test extends CorePluginTestSetup {
 	@Test 
 	public void aclfChildNetTest() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importNet("testData/odm/mnet/Aclf_5Bus_AclfChildNet.xml")
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/mnet/Aclf_5Bus_AclfChildNet.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();
@@ -60,7 +60,7 @@ public class MNet_Aclf5Bus_Child_Test extends CorePluginTestSetup {
 	@Test 
 	public void distChildNetTest() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importNet("testData/odm/mnet/Aclf_5Bus_DistChildNet.xml")
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/mnet/Aclf_5Bus_DistChildNet.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();
@@ -80,7 +80,7 @@ public class MNet_Aclf5Bus_Child_Test extends CorePluginTestSetup {
 	@Test 
 	public void distDcSysChildNetTest() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importNet("testData/odm/mnet/Aclf_5Bus_DistDcSysChildNet.xml")
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/mnet/Aclf_5Bus_DistDcSysChildNet.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();

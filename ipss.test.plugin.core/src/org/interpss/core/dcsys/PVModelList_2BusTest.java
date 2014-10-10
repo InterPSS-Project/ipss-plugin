@@ -40,7 +40,7 @@ public class PVModelList_2BusTest  extends CorePluginTestSetup {
 	@Test
 	public void pvModel2BusCase() throws Exception {
 		//DcNetwork dcNet = CorePluginObjFactory.createDcNetwork("testData/odm/dcsys/PVModelList2Bus.xml");
-		DcNetwork dcNet = IpssAdapter.importNet("testData/odm/dcsys/PVModelList2Bus.xml")
+		DcNetwork dcNet = IpssAdapter.importAclfNet("testData/odm/dcsys/PVModelList2Bus.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();		

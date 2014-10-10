@@ -46,7 +46,7 @@ public class SixBus_XfrControl_pwd extends CorePluginTestSetup {
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
 		ODMLogger.getLogger().setLevel(Level.WARNING);
 
-		AclfNetwork net = IpssAdapter.importNet("testData/pwd/SixBus_XfrControl.aux")
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/pwd/SixBus_XfrControl.aux")
 					.setFormat(IpssAdapter.FileFormat.PWD)
 					//.load(true, "output/odm.xml")
 					.load()

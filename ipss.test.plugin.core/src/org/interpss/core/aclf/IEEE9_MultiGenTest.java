@@ -28,7 +28,7 @@ public class IEEE9_MultiGenTest extends CorePluginTestSetup{
 	     *      3,'2 ',    42.500,   -5.430, 99990.000,-99990.000,1.02500,     0,   100.000,   0.00000,   0.214,   0.00000,   0.00000,1.00000,1,  100.0,  9999.000, -9999.000,   1,1.0000,   0,0.0000,   0,0.0000,   0,0.0000
 		 * 
 		 */
-		AclfNetwork net = IpssAdapter.importNet("testdata/adpter/psse/v30/IEEE9Bus/ieee9_multiGen.raw")
+		AclfNetwork net = IpssAdapter.importAclfNet("testdata/adpter/psse/v30/IEEE9Bus/ieee9_multiGen.raw")
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_30)
 				.load()

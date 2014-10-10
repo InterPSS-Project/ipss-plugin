@@ -49,7 +49,7 @@ import com.interpss.simu.util.sample.SampleCases;
 public class Acsc5Bus_ODM_TestCase extends CorePluginTestSetup {
 	@Test
 	public void testCaseNoLF() throws Exception {
-		AcscNetwork faultNet = IpssAdapter.importNet("testData/odm/acsc/ODM_AcscNoLF_5Bus.xml")
+		AcscNetwork faultNet = IpssAdapter.importAclfNet("testData/odm/acsc/ODM_AcscNoLF_5Bus.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();

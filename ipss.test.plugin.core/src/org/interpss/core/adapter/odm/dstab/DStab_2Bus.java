@@ -53,7 +53,7 @@ public class DStab_2Bus extends DStabTestSetupBase {
 	@Test
 	public void OdmTestCase() throws Exception {
 		//IpssLogger.getLogger().setLevel(Level.INFO);
-		DynamicSimuAlgorithm dstabAlgo = IpssAdapter.importNet("testData/odm/dstab/Tran_2Bus_062011.xml")
+		DynamicSimuAlgorithm dstabAlgo = IpssAdapter.importAclfNet("testData/odm/dstab/Tran_2Bus_062011.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();
