@@ -39,7 +39,7 @@ public class Inverter_2BusTest  extends CorePluginTestSetup {
 	@Test
 	public void simple2BusPSourceCase() throws Exception {
 		//DcNetwork dcNet = CorePluginObjFactory.createDcNetwork("testData/odm/dcsys/simple2BusInverter.xml");
-		DcNetwork dcNet = IpssAdapter.importNet("testData/odm/dcsys/simple2BusInverter.xml")
+		DcNetwork dcNet = IpssAdapter.importAclfNet("testData/odm/dcsys/simple2BusInverter.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();			

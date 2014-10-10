@@ -46,7 +46,7 @@ public class IEEE14BusBreakerTest extends CorePluginTestSetup {
 	@Test 
 	public void processZeroZBranch() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importNet("testData/odm/ieee14Bus_breaker.xml")
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/ieee14Bus_breaker.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();
@@ -66,7 +66,7 @@ public class IEEE14BusBreakerTest extends CorePluginTestSetup {
 	@Test 
 	public void findZeroZPath() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importNet("testData/odm/ieee14Bus_breaker.xml")
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/ieee14Bus_breaker.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();

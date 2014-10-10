@@ -45,7 +45,7 @@ public class ISONE_CompreResult extends QATestSetup {
 		IpssCorePlugin.init();
 		ODMLogger.getLogger().setLevel(Level.WARNING);
 
-		AclfNetwork net = IpssAdapter.importNet("testData/pwd/neiso_test.aux")
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/pwd/neiso_test.aux")
 					.setFormat(IpssAdapter.FileFormat.PWD)
 					.load()
 					.getImportedObj();
