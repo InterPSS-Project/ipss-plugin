@@ -40,7 +40,7 @@ public class POC_Test2_1  extends CorePluginTestSetup {
 	@Test
 	public void mpptTest() throws Exception {
 		//DcNetwork dcNet = CorePluginObjFactory.createDcNetwork("testData/odm/dcsys/poc/Test2_1_odm.xml");
-		DcNetwork dcNet = IpssAdapter.importNet("testData/odm/dcsys/poc/Test2_1_odm.xml")
+		DcNetwork dcNet = IpssAdapter.importAclfNet("testData/odm/dcsys/poc/Test2_1_odm.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();		

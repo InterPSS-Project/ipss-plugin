@@ -31,7 +31,7 @@ public class MNet_IEEE9_Test extends CorePluginTestSetup {
 	public void testFullNetLF() throws Exception{
 		IpssCorePlugin.init();
 		
-		AclfNetwork net =IpssAdapter.importNet("testdata/adpter/psse/v31/ieee9_v31.raw")
+		AclfNetwork net =IpssAdapter.importAclfNet("testdata/adpter/psse/v31/ieee9_v31.raw")
                 .setFormat(PSSE)
                 .setPsseVersion(PsseVersion.PSSE_31)
                 .load()
@@ -57,7 +57,7 @@ public class MNet_IEEE9_Test extends CorePluginTestSetup {
 		//IpssCorePlugin.init();
 		
 		//load the IEEE 9 Bus system
-		AclfNetwork net =IpssAdapter.importNet("testdata/adpter/psse/v31/ieee9_v31.raw")
+		AclfNetwork net =IpssAdapter.importAclfNet("testdata/adpter/psse/v31/ieee9_v31.raw")
 		                            .setFormat(PSSE)
 		                            .setPsseVersion(PsseVersion.PSSE_31)
 		                            .load()

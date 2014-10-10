@@ -38,7 +38,7 @@ import com.interpss.dist.DistNetwork;
 public class DistLF14BusTest  extends CorePluginTestSetup { 
 	@Test
 	public void simple2BusTest() throws Exception {
-		DistNetwork distNet = IpssAdapter.importNet("testData/odm/dist/Dist_14Bus.xml")
+		DistNetwork distNet = IpssAdapter.importAclfNet("testData/odm/dist/Dist_14Bus.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();		

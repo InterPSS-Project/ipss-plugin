@@ -31,7 +31,7 @@ public class IEEE9_MultiLoadTest extends CorePluginTestSetup{
 	@Test
 	public void multiLoadTest() throws InterpssException{
 	
-		AclfNetwork net = IpssAdapter.importNet("testdata/adpter/psse/v30/IEEE9Bus/ieee9_multiLoad.raw")
+		AclfNetwork net = IpssAdapter.importAclfNet("testdata/adpter/psse/v30/IEEE9Bus/ieee9_multiLoad.raw")
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_30)
 				.load()
