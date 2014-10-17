@@ -44,12 +44,14 @@ public abstract class BaseJSONBean {
 	 * 
 	 * @param filename file name
 	 * @param klass T class type, for example, AclfRunConfigBean.class
-	 * @return the create JSON bean
+	 * @return
 	 * @throws IOException
 	 */
 	public static <T> T toBean(String filename, Class<T> klass) throws IOException {
-		byte[] bAry = FileUtil.readFile(new File(filename));
-		return (T)new Gson().fromJson(new String(bAry), klass);
+		FileUtil.readFile(new File(filename));
+		String str = new String(FileUtil.readFile(new File(filename)));
+			// sample: "{'lfMethod':'NR','maxIteration':20,'tolerance':1.0E-4,'nonDivergent':false,'initBusVoltage':false,'accFactor':1.0}";
+		return (T)new Gson().fromJson(str, klass);
 	}
 
 	@Override

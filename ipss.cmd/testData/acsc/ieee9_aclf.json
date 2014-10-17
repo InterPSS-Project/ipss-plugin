@@ -1,7 +1,7 @@
 {
-	"aclfCaseFileName":"testData/aclf/ieee14.ieee",
+	"aclfCaseFileName":"testData/acsc/ieee9.raw",
 	"aclfOutputFileName":"ieee14_lfResult.txt",
-	"format":"IEEECommonFormat",
+	"format":"PSSE",
 	"version":"PSSE_30",
 	"lfMethod":"NR",
 	"maxIteration":20,
