@@ -192,16 +192,21 @@ public class CmdRunner {
 		AcscRunConfigBean acscBean = BaseJSONBean.toBean(this.controlFilename, AcscRunConfigBean.class);
 
 		// load Aclf config file if necessary
-		if (acscBean.runAclf==true && acscBean.aclfConfigFileName == null) {
+		if (acscBean.runAclf==true && acscBean.runAclfConfig == null ) {
 			try {
-				throw new InterpssException("Configuration conflict: runAclf = true, but Aclf Configuration file is not provided!");
+				throw new InterpssException("Configuration conflict: runAclf = true, but Aclf Configuration is null!");
 			} catch (InterpssException e) {
 				e.printStackTrace();
 			}
 			
 		}
-		else if(acscBean.aclfConfigFileName != null && !acscBean.aclfConfigFileName.equals("")) {
-			acscBean.runAclfConfig = BaseJSONBean.toBean(acscBean.aclfConfigFileName, AclfRunConfigBean.class);
+		else if(acscBean.runAclf==true &&  acscBean.runAclfConfig.aclfCaseFileName.equals("")) {
+			try {
+				throw new InterpssException("Configuration conflict: runAclf = true, but Aclf case file is not defined in the JSON file!");
+			} catch (InterpssException e) {
+				e.printStackTrace();
+			}
+			
 		}
 		
 		
