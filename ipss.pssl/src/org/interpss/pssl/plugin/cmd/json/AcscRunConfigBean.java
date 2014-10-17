@@ -14,7 +14,6 @@ public class AcscRunConfigBean extends BaseJSONBean {
 	// flag to indicate whether or not the pre-fault bus voltage is based on load flow result?
 	public boolean runAclf = false;
 	
-	public String aclfConfigFileName = "name";
 	
 	public AclfRunConfigBean runAclfConfig = new AclfRunConfigBean();
 	
