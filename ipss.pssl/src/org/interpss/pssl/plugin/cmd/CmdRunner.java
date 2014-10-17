@@ -54,12 +54,6 @@ import com.interpss.simu.SimuContext;
  *
  */
 public class CmdRunner {
-	/**
-	 * Cmd run type enum
-	 * 
-	 * @author Mike
-	 *
-	 */
 	public static enum RunType {Aclf, Acsc, DStab};
 	
 	/**
@@ -81,6 +75,11 @@ public class CmdRunner {
 	 * Cmd run control file
 	 */
 	private String controlFilename = null;
+	
+	/**
+	 * Cmd run configure JSON bean 
+	 */
+	//private AclfRunConfigBean aclfBean;
 	
 	/**
 	 * default constructor
@@ -151,7 +150,7 @@ public class CmdRunner {
 			inDsl.setFormat(acscBean.runAclfConfig.format)
 				 .setPsseVersion(acscBean.runAclfConfig.version)
 			     .load(new String[]{acscBean.runAclfConfig.aclfCaseFileName,
-					acscBean.seqFilename});
+					acscBean.seqFileName});
 			
 			// map ODM to InterPSS model object
 			AcscNetwork net = inDsl.getImportedObj();	
@@ -164,8 +163,8 @@ public class CmdRunner {
 			double baseV = acscBean.type == SimpleFaultType.BUS_FAULT? net.getBus(acscBean.faultBusId).getBaseVoltage():
 				                                  net.getBus(acscBean.faultBranchFromId).getBaseVoltage();
 				
-			FileUtil.write2File(acscBean.acscOutputFilename, scResults.toString(baseV).getBytes());
-			ipssLogger.info("Ouput written to " + acscBean.acscOutputFilename);
+			FileUtil.write2File(acscBean.acscOutputFileName, scResults.toString(baseV).getBytes());
+			ipssLogger.info("Ouput written to " + acscBean.acscOutputFileName);
 			
 			// create a simuContext and return it
 			SimuContext sc = SimuObjectFactory.createSimuCtxTypeAcscNet();
@@ -173,13 +172,11 @@ public class CmdRunner {
 			return sc;
 		}
 		else {
-			// other run types to be implemented
 			throw new InterpssException("Function Not implemented");
 		}
 	}
 	
 	private AclfRunConfigBean loadAclfRunConfigInfo() throws IOException {
-		// load the control file content and turn it into a AclfRunConfigBean JSON bean
 		AclfRunConfigBean aclfBean = BaseJSONBean.toBean(this.controlFilename, AclfRunConfigBean.class);
 
 		// set output file if necessary
@@ -195,7 +192,7 @@ public class CmdRunner {
 		AcscRunConfigBean acscBean = BaseJSONBean.toBean(this.controlFilename, AcscRunConfigBean.class);
 
 		// load Aclf config file if necessary
-		if (acscBean.runAclf==true && acscBean.aclfConfigFilename == null) {
+		if (acscBean.runAclf==true && acscBean.aclfConfigFileName == null) {
 			try {
 				throw new InterpssException("Configuration conflict: runAclf = true, but Aclf Configuration file is not provided!");
 			} catch (InterpssException e) {
@@ -203,8 +200,8 @@ public class CmdRunner {
 			}
 			
 		}
-		else if(acscBean.runAclf==true && acscBean.aclfConfigFilename != null) {
-			acscBean.runAclfConfig = BaseJSONBean.toBean(acscBean.aclfConfigFilename, AclfRunConfigBean.class);
+		else if(acscBean.aclfConfigFileName != null && !acscBean.aclfConfigFileName.equals("")) {
+			acscBean.runAclfConfig = BaseJSONBean.toBean(acscBean.aclfConfigFileName, AclfRunConfigBean.class);
 		}
 		
 		

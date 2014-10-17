@@ -519,10 +519,11 @@ public class IpssAdapter extends BaseDSL {
 					e.printStackTrace();
 				}
 				}
-				else if(fileNameAry.length>1){
+				else if(fileNameAry.length>=2){
 					 this.file1Name = fileNameAry[0];
 					 this.file2Name = fileNameAry[1];
-					 this.file3Name = fileNameAry[2];
+					 if(fileNameAry.length>2)
+					       this.file3Name = fileNameAry[2];
 					 
 					 if(getAdapter() instanceof PSSEAdapter){
 						 NetType type = fileNameAry.length ==3?NetType.DStabNet: NetType.AcscNet;

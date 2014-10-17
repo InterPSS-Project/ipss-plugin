@@ -60,8 +60,8 @@ public class IpssCmd {
 			// parse run type info 
 			else if (RunTypeOptStr.equals(args[cnt])) {
 				String str = args[++cnt];
-				runType = str.equals("Acsc") ? CmdRunner.RunType.Acsc : 
-							str.equals("DStab") ? CmdRunner.RunType.DStab : 
+				runType = str.equalsIgnoreCase("Acsc") ? CmdRunner.RunType.Acsc : 
+							str.equalsIgnoreCase("DStab") ? CmdRunner.RunType.DStab : 
 								CmdRunner.RunType.Aclf;
 			} 
 			

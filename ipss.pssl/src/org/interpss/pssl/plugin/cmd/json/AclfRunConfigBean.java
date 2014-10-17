@@ -3,60 +3,24 @@ package org.interpss.pssl.plugin.cmd.json;
 import org.ieee.odm.schema.LfMethodEnumType;
 import org.interpss.pssl.plugin.IpssAdapter;
 
-/**
- * Aclf Cmd run configuration file
- * 
- * @author Mike
- *
- */
 public class AclfRunConfigBean extends BaseJSONBean {
-	/**
-	 *  input file name, mandatory
-	 */  
-	public String aclfCaseFileName = "name";
+	public String aclfCaseFileName = ""; // change the default value for better detection
 
-	/**
-	 *  output file name, optional
-	 */
-	public String aclfOutputFileName = "name";
+	public String aclfOutputFileName = ""; // change the default value for better detection
 
-	/**
-	 * input file format
-	 */
 	public IpssAdapter.FileFormat format = IpssAdapter.FileFormat.IEEECommonFormat;
 	
-	/**
-	 * PSS/E file version
-	 */
 	public IpssAdapter.PsseVersion version = IpssAdapter.PsseVersion.PSSE_30;
 	
-	/**
-	 * Loadflow method
-	 */
 	public LfMethodEnumType lfMethod = LfMethodEnumType.NR;
 	
-	/**
-	 * max iterations for Loadflow
-	 */
 	public int maxIteration = 20;
 	
-	/**
-	 * tolerance for Loadflow convergence in PU
-	 */
 	public double tolerance = 0.0001;
 	
-	/**
-	 * If true, the non-divergent method will be used 
-	 */
 	public boolean nonDivergent = false;
 	
-	/**
-	 * if set true, bus voltage will be initialized before Loadflow calculation
-	 */
 	public boolean initBusVoltage = false;
 	
-	/**
-	 * acceleration factor for the GS method
-	 */
 	public double accFactor = 1.0;
 }

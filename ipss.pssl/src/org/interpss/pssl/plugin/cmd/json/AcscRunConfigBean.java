@@ -5,22 +5,16 @@ import org.interpss.datamodel.bean.datatype.ComplexBean;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.acsc.fault.SimpleFaultType;
 
-/**
- * TODO
- * 
- * @author Mike
- *
- */
 public class AcscRunConfigBean extends BaseJSONBean {
 	
-	public String seqFilename = "name";
+	public String seqFileName = "name";
 	
-	public String acscOutputFilename = "name";
+	public String acscOutputFileName = "name";
 	
 	// flag to indicate whether or not the pre-fault bus voltage is based on load flow result?
 	public boolean runAclf = false;
 	
-	public String aclfConfigFilename = "name";
+	public String aclfConfigFileName = "name";
 	
 	public AclfRunConfigBean runAclfConfig = new AclfRunConfigBean();
 	
