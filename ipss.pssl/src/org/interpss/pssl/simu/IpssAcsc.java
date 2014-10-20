@@ -30,7 +30,7 @@ import org.apache.commons.math3.complex.Complex;
 
 import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.acsc.AcscNetwork;
+import com.interpss.core.acsc.BaseAcscNetwork;
 import com.interpss.core.acsc.fault.AcscBranchFault;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
@@ -50,7 +50,7 @@ public class IpssAcsc extends BaseDSL {
 	 * @param net
 	 * @return
 	 */
-	public static FaultAlgoDSL createAcscAlgo(AcscNetwork net) {
+	public static FaultAlgoDSL createAcscAlgo(BaseAcscNetwork<?,?> net) {
 		return new FaultAlgoDSL(net);
 	}
 	
@@ -76,15 +76,15 @@ public class IpssAcsc extends BaseDSL {
 		 * 
 		 * @param net
 		 */
-		public FaultAlgoDSL(AcscNetwork net) {
+		public FaultAlgoDSL(BaseAcscNetwork<?,?> net) {
 			this.algo = CoreObjectFactory.createSimpleFaultAlgorithm(net);	 }
 		
 		/**
-		 * get the AcscNetwork object
+		 * get the BaseAcscNetwork<?,?> object
 		 * 
 		 * @return
 		 */
-		public AcscNetwork getAcscNet() { return (AcscNetwork)this.algo.getNetwork(); }
+		public BaseAcscNetwork<?,?> getAcscNet() { return (BaseAcscNetwork<?,?>)this.algo.getNetwork(); }
  		
 		/**
 		 * create a bus fault
