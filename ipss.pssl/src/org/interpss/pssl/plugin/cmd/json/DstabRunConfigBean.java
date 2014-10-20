@@ -20,6 +20,8 @@ public class DstabRunConfigBean extends BaseJSONBean{
 	
 	public double eventDurationSec = 0.01;
 	
+	public String referenceGeneratorId ="";
+	
 	public String[] monitoringBusAry ={};
 	
 	public String[] monitoringGenAry ={};
