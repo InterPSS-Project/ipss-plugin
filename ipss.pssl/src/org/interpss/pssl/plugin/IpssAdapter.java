@@ -181,7 +181,7 @@ public class IpssAdapter extends BaseDSL {
 		public <T> T getImportedObj() throws InterpssException { 
 			if (this.importedObj == null) {
 				this.importedObj = odmParser instanceof AcscModelParser? mapAcscNet() :	
-						   odmParser instanceof DStabModelParser? mapDStabAlgo() :	
+						   odmParser instanceof DStabModelParser? mapDStabAlgo().getNetwork() :	
 						   odmParser instanceof DistModelParser? mapDistNet() :	
 						   odmParser instanceof DcSystemModelParser? mapDcSysNet() :	
 						   mapAclfNet();

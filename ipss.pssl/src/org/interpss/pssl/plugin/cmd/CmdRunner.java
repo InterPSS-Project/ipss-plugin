@@ -35,6 +35,7 @@ import org.interpss.pssl.plugin.IpssAdapter.FileImportDSL;
 import org.interpss.pssl.plugin.cmd.json.AclfRunConfigBean;
 import org.interpss.pssl.plugin.cmd.json.AcscRunConfigBean;
 import org.interpss.pssl.plugin.cmd.json.BaseJSONBean;
+import org.interpss.pssl.plugin.cmd.json.DstabRunConfigBean;
 import org.interpss.util.FileUtil;
 
 import com.interpss.SimuObjectFactory;
@@ -44,7 +45,11 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.fault.SimpleFaultType;
 import com.interpss.core.datatype.IFaultResult;
+import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.cache.StateMonitor;
+import com.interpss.dstab.common.IDStabSimuOutputHandler;
 import com.interpss.simu.SimuContext;
+import com.interpss.simu.SimuCtxType;
 
 /**
  * Main class for implement commend line runner PSSL.
@@ -139,6 +144,7 @@ public class CmdRunner {
 			ipssLogger.info("Ouput written to " + aclfBean.aclfOutputFileName);
 
 			return SimuObjectFactory.createSimuCtxTypeAclfNet(net);
+			
 		}
 		else if(this.runType == RunType.Acsc) {
 			
@@ -170,10 +176,43 @@ public class CmdRunner {
 			SimuContext sc = SimuObjectFactory.createSimuCtxTypeAcscNet();
 			sc.setAcscNet(net);
 			return sc;
+			
 		}
+		else if(this.runType == RunType.DStab) {
+			DstabRunConfigBean dstabBean = loadDStabRunConfigInfo();
+			
+			  // import the file(s)
+			FileImportDSL inDsl =  new FileImportDSL();
+			inDsl.setFormat(dstabBean.acscConfigBean.runAclfConfig.format)
+				 .setPsseVersion(dstabBean.acscConfigBean.runAclfConfig.version)
+			     .load(new String[]{dstabBean.acscConfigBean.runAclfConfig.aclfCaseFileName,
+			    		 dstabBean.acscConfigBean.seqFileName,
+			    		 dstabBean.dynamicFileName});
+			
+			// map ODM to InterPSS model object
+			DStabilityNetwork net = inDsl.getImportedObj();	
+						
+			IDStabSimuOutputHandler outputHdler = new DstabDslRunner(net).runDstab(dstabBean);
+			
+			//output the result
+	        
+		
+			
+			if(!dstabBean.dstabOutputFileName.equals("")){
+				FileUtil.write2File(dstabBean.dstabOutputFileName, outputHdler.toString().getBytes());
+				ipssLogger.info("Ouput written to " + dstabBean.dstabOutputFileName);
+			}
+			
+			
+			SimuContext dstabSC = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
+			dstabSC.setDStabilityNet(net);
+			return dstabSC;
+		}
+		
 		else {
 			throw new InterpssException("Function Not implemented");
 		}
+		
 	}
 	
 	private AclfRunConfigBean loadAclfRunConfigInfo() throws IOException {
@@ -212,4 +251,12 @@ public class CmdRunner {
 		
 		return acscBean;
 	}
+	
+	
+	private DstabRunConfigBean loadDStabRunConfigInfo() throws IOException {
+		DstabRunConfigBean dstabBean = BaseJSONBean.toBean(this.controlFilename, DstabRunConfigBean.class);
+		
+		return dstabBean;
+	}
+	
 }

@@ -31,7 +31,8 @@ public class DstabDslRunner {
 		
 		dstabDSL.setTotalSimuTimeSec(dstabBean.totalSimuTimeSec)
 		        .setSimuTimeStep(dstabBean.simuTimeStepSec)
-		        .setIntegrationMethod(dstabBean.method);
+		        .setIntegrationMethod(dstabBean.method)
+		        .setRefMachine(dstabBean.referenceGeneratorId);
 		
 		
 		StateMonitor sm = new StateMonitor();
@@ -42,13 +43,13 @@ public class DstabDslRunner {
 		dstabDSL.setDynSimuOutputHandler(sm)
 		        .setSimuOutputPerNSteps(dstabBean.outputPerNSteps);
 		
-		dstabDSL.addDynamicEvent(dstabDSL.createBusFaultEvent(dstabBean.acscConfigBean.faultBusId,  
+		dstabDSL.addBusFaultEvent(dstabBean.acscConfigBean.faultBusId,  
 				                                              dstabBean.acscConfigBean.category, 
 											                  dstabBean.eventStartTimeSec,
 											                  dstabBean.eventDurationSec, 
 											                  dstabBean.acscConfigBean.zLG.toComplex(), 
-											                  dstabBean.acscConfigBean.zLL.toComplex()), 
-				                    "BusFault@"+dstabBean.acscConfigBean.faultBusId);
+											                  dstabBean.acscConfigBean.zLL.toComplex()); 
+				                   
 		
 		if(dstabDSL.initialize()){
 			if( dstabDSL.runDStab())

@@ -62,10 +62,12 @@ public class IpssDStab {
 	public IpssDStab(DStabilityNetwork net){
 		this.dstabNet = net;
 		this.dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, CoreCommonSpringFactory.getIpssMsgHub());
+		this.dstabAlgo.setSimuOutputHandler(outputHdler);
 	}
 	
     public 	IpssDStab setDynSimuOutputHandler(IDStabSimuOutputHandler outputHandler){
     	this.outputHdler = outputHandler;
+    	this.dstabAlgo.setSimuOutputHandler(outputHdler);
     	return this;
     }
     
@@ -109,9 +111,19 @@ public class IpssDStab {
     	return this;
     }
     
+    public IpssDStab setRefMachine(String refMachId){
+    	if(dstabNet.getMachine("Bus1-mach1")!=null)
+            this.dstabAlgo.setRefMachine(dstabNet.getMachine("Bus1-mach1"));
+    	else{
+    		IpssLogger.getLogger().severe("No machine is found for the input "+ refMachId + ", please check!");
+    	}
+        return this;
+    }
     public   DynamicSimuAlgorithm getDstabAlgo(){
             return  this.dstabAlgo;
     }
+    
+   
     
     public boolean initialize(){
     	if(!dstabNet.isLfConverged()){
@@ -149,9 +161,9 @@ public class IpssDStab {
     }
     
     
-    public DynamicEvent createBusFaultEvent(String faultBusId, SimpleFaultCode code, double startTime, double durationTime, Complex Zlg, Complex Zll){
+    public DynamicEvent addBusFaultEvent(String faultBusId, SimpleFaultCode code, double startTime, double durationTime, Complex Zlg, Complex Zll){
 	       // define an event, set the event id and event type.
-			DynamicEvent event1 = DStabObjectFactory.createDEvent("BusFault@"+faultBusId, "Bus Fault @"+faultBusId, 
+			DynamicEvent event1 = DStabObjectFactory.createDEvent("BusFault_"+code+"@"+faultBusId, "Bus Fault @"+faultBusId, 
 					DynamicEventType.BUS_FAULT, dstabNet);
 			event1.setStartTimeSec(startTime);
 			event1.setDurationSec(durationTime);
