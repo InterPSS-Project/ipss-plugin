@@ -35,6 +35,7 @@ import org.interpss.pssl.simu.IpssAclf.LfAlgoDSL;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.algo.AclfMethod;
 
 /**
@@ -44,14 +45,14 @@ import com.interpss.core.algo.AclfMethod;
  *
  */
 public class AclfDslRunner {
-	private AclfNetwork net;
+	private BaseAclfNetwork<?,?> net;
 	
 	/**
 	 * constructor
 	 * 
 	 * @param net AclfNetwork object
 	 */
-	public AclfDslRunner(AclfNetwork net) {
+	public AclfDslRunner(BaseAclfNetwork<?,?> net) {
 		this.net = net;
 	}
 	

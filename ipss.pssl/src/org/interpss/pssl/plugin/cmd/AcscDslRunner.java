@@ -38,6 +38,7 @@ import org.interpss.pssl.simu.IpssAcsc.FaultAlgoDSL;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.acsc.AcscNetwork;
+import com.interpss.core.acsc.BaseAcscNetwork;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.acsc.fault.SimpleFaultType;
 import com.interpss.core.datatype.IFaultResult;
@@ -49,14 +50,14 @@ import com.interpss.core.datatype.IFaultResult;
  *
  */
 public class AcscDslRunner {
-	private AcscNetwork net;
+	private BaseAcscNetwork<?,?> net;
 	
 	/**
 	 * constructor
 	 * 
 	 * @param net AcscNetwork object
 	 */
-	public AcscDslRunner(AcscNetwork net) {
+	public AcscDslRunner(BaseAcscNetwork<?,?> net) {
 		this.net = net;
 	}
 	
