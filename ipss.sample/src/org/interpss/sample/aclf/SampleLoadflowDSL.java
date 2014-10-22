@@ -31,6 +31,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.pssl.simu.IpssAclf;
 import org.interpss.pssl.simu.net.IpssAclfNet;
 
+import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
@@ -39,7 +40,7 @@ import com.interpss.core.algo.AclfMethod;
 
 
 public class SampleLoadflowDSL {
-	public static void main(String args[]) {
+	public static void main(String args[]) throws InterpssException {
 		IpssCorePlugin.init();
 		
 		AclfNetwork net = IpssAclfNet.createAclfNetwork("Sample AclfNetwork")
