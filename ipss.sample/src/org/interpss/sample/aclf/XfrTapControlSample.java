@@ -79,7 +79,7 @@ public class XfrTapControlSample {
 		assert(Math.abs(net.getBus("0002").getVoltageMag()-0.9)<0.0001);
 	}	
 	
-	public static AclfNetwork sampleNet2BusWithXfr()	{
+	public static AclfNetwork sampleNet2BusWithXfr() throws InterpssException	{
 		// Create an AclfNetwork object
 		AclfNetwork net = CoreObjectFactory.createAclfNetwork();
 		net.setBaseKva(100000.0);
