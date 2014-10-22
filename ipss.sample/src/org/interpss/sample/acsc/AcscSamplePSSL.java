@@ -77,7 +77,7 @@ public class AcscSamplePSSL {
 		System.out.println(AcscOutFunc.faultResult2String(faultNet, algo));		
 	}
 
-	private AcscNetwork createTestNet() {
+	private AcscNetwork createTestNet() throws InterpssException {
 		AcscNetworkDSL netDsl = IpssAcscNet.createAcscNetwork("Sample AcscNetwork");
 		netDsl.baseMva(100.0);
 
