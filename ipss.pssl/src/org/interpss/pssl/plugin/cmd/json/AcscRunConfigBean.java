@@ -12,6 +12,13 @@ import com.interpss.core.acsc.fault.SimpleFaultType;
  *
  */
 public class AcscRunConfigBean extends BaseJSONBean {
+	/**
+	 * default constructor
+	 */
+	public AcscRunConfigBean() {
+		// set the default AclfDslRunner class name
+		this.dslRunnerClassName = "org.interpss.pssl.plugin.cmd.AcscDslRunner";
+	}
 	
 	public String seqFilename = "name";
 	

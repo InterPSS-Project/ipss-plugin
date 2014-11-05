@@ -11,6 +11,14 @@ import org.interpss.pssl.plugin.IpssAdapter;
  */
 public class AclfRunConfigBean extends BaseJSONBean {
 	/**
+	 * default constructor
+	 */
+	public AclfRunConfigBean() {
+		// set the default AclfDslRunner class name
+		this.dslRunnerClassName = "org.interpss.pssl.plugin.cmd.AclfDslRunner";
+	}
+	
+	/**
 	 *  input file name, mandatory
 	 */  
 	public String aclfCaseFileName = "name";

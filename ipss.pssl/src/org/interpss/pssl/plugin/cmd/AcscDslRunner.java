@@ -33,6 +33,7 @@ import org.ieee.odm.schema.AcscFaultCategoryEnumType;
 import org.ieee.odm.schema.AcscFaultTypeEnumType;
 import org.ieee.odm.schema.ComplexXmlType;
 import org.interpss.pssl.plugin.cmd.json.AcscRunConfigBean;
+import org.interpss.pssl.plugin.cmd.json.BaseJSONBean;
 import org.interpss.pssl.simu.IpssAcsc;
 import org.interpss.pssl.simu.IpssAcsc.FaultAlgoDSL;
 
@@ -41,6 +42,7 @@ import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.acsc.fault.SimpleFaultType;
 import com.interpss.core.datatype.IFaultResult;
+import com.interpss.core.net.Network;
 
 /**
  * Acsc Dsl ODM runner implementation
@@ -48,7 +50,7 @@ import com.interpss.core.datatype.IFaultResult;
  * @author mzhou
  *
  */
-public class AcscDslRunner {
+public class AcscDslRunner implements IDslRunner {
 	private AcscNetwork net;
 	
 	/**
@@ -56,8 +58,11 @@ public class AcscDslRunner {
 	 * 
 	 * @param net AcscNetwork object
 	 */
-	public AcscDslRunner(AcscNetwork net) {
-		this.net = net;
+	public AcscDslRunner() {
+	}
+	
+	public IDslRunner net(Network<?,?> net) {
+		this.net = (AcscNetwork)net; return this;
 	}
 	
 	/**
@@ -101,8 +106,8 @@ public class AcscDslRunner {
 	 * @param acscConfigBean
 	 * @return
 	 */
-	public IFaultResult runAcsc(AcscRunConfigBean acscBean)  throws InterpssException {
-
+	public <T> T run(BaseJSONBean bean)  throws InterpssException {
+		AcscRunConfigBean acscBean = (AcscRunConfigBean) bean;
 		FaultAlgoDSL algo = IpssAcsc.createAcscAlgo(this.net);
 
 		if (acscBean.type==SimpleFaultType.BUS_FAULT) {
@@ -112,7 +117,7 @@ public class AcscDslRunner {
 	  			.zLGFault(acscBean.zLG.toComplex())
 	  			.zLLFault(acscBean.zLL.toComplex())
 	  			.calculateFault();
-	  		return algo.getResult();
+	  		return (T)algo.getResult();
 		}
 		else if (acscBean.type==SimpleFaultType.BRANCH_FAULT) {
 			
@@ -122,10 +127,10 @@ public class AcscDslRunner {
 	  			.zLLFault(acscBean.zLL.toComplex())
 	  			.distance(acscBean.distance)
 	  			.calculateFault();
-	  		return algo.getResult();
+	  		return (T)algo.getResult();
 		}
 		
-	return null;
+		return null;
 	}
 	
 	private SimpleFaultCode mapCode(AcscFaultCategoryEnumType caty) {
