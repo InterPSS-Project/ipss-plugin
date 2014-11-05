@@ -1,4 +1,5 @@
 {
+	"dslRunnerClassName":"org.interpss.pssl.plugin.cmd.AclfDslRunner",
 	"aclfCaseFileName":"testData/aclf/ieee14.ieee",
 	"aclfOutputFileName":"output/ieee14.txt",
 	"format":"IEEECommonFormat",
