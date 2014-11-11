@@ -121,7 +121,7 @@ public class CmdRunner {
 	 * @throws FileNotFoundException
 	 * @throws InterpssException
 	 */
-	public SimuContext run() throws FileNotFoundException, IOException, InterpssException {
+	public SimuContext run() throws FileNotFoundException, IOException, InterpssException, ClassNotFoundException, IllegalAccessException, InstantiationException {
 		if (this.runType == RunType.Aclf) {
 			// load the Aclf run configure info stored in the control file
 			AclfRunConfigBean aclfBean = loadAclfRunConfigInfo();
@@ -135,9 +135,9 @@ public class CmdRunner {
 			// map ODM to InterPSS model object
 			AclfNetwork net = inDsl.getImportedObj();	
 		
-			// run loadflow 
-			new AclfDslRunner(net)
-			      		.runAclf(aclfBean);
+			aclfBean.loadDslRunner()
+					.net(net)
+					.run(aclfBean);
 			
 			// output Loadflow result
 			FileUtil.write2File(aclfBean.aclfOutputFileName, aclfResultSummary.apply(net).toString().getBytes());
@@ -161,7 +161,9 @@ public class CmdRunner {
 			// map ODM to InterPSS model object
 			AcscNetwork net = inDsl.getImportedObj();	
 			
-			IFaultResult scResults = new AcscDslRunner(net).runAcsc(acscBean);
+			IFaultResult scResults = acscBean.loadDslRunner()
+											.net(net)
+											.run(acscBean);
 			
 			// output short circuit result
 			
