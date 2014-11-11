@@ -27,9 +27,11 @@ package org.interpss.pssl.plugin.cmd.json;
 import java.io.File;
 import java.io.IOException;
 
+import org.interpss.pssl.plugin.cmd.IDslRunner;
 import org.interpss.util.FileUtil;
 
 import com.google.gson.Gson;
+import com.interpss.common.exp.InterpssException;
 
 /**
  * Base bean class. The bean data model is intended for use in combination
@@ -39,6 +41,11 @@ import com.google.gson.Gson;
  *
  */
 public abstract class BaseJSONBean {
+	/**
+	 *  Dsl runner class name for customization
+	 */  
+	public String dslRunnerClassName = null;
+	
 	/**
 	 * Load the content in the file and convert into a JSon bean of type T
 	 * 
@@ -52,6 +59,20 @@ public abstract class BaseJSONBean {
 		String str = new String(FileUtil.readFile(new File(filename)));
 			// sample: "{'lfMethod':'NR','maxIteration':20,'tolerance':1.0E-4,'nonDivergent':false,'initBusVoltage':false,'accFactor':1.0}";
 		return (T)new Gson().fromJson(str, klass);
+	}
+	
+	/**
+	 * Load DSL runner using the class name
+	 * 
+	 * @return DSL runner object
+	 * @throws InterpssException
+	 */
+	public IDslRunner loadDslRunner() throws InterpssException {
+		try {
+			return (IDslRunner)Class.forName(dslRunnerClassName).newInstance();
+		} catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
+			throw new InterpssException(e.toString());
+		}
 	}
 
 	@Override

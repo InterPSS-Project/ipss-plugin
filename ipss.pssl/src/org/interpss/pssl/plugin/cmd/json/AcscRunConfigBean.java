@@ -6,12 +6,19 @@ import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.acsc.fault.SimpleFaultType;
 
 public class AcscRunConfigBean extends BaseJSONBean {
+	/**
+	 * default constructor
+	 */
+	public AcscRunConfigBean() {
+		// set the default AclfDslRunner class name
+		this.dslRunnerClassName = "org.interpss.pssl.plugin.cmd.AcscDslRunner";
+	}
 	
 	public String seqFileName = "name";
 	
 	public String acscOutputFileName = "name";
 	
-	// flag to indicate whether or not the pre-fault bus voltage is based on load flow result?
+	// flag to indicate whether or not the pre-fault bus voltage is based on load flow result
 	public boolean runAclf = false;
 	
 	

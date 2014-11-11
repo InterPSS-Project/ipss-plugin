@@ -1,4 +1,6 @@
-{	"runAclf":false,
+{	
+	"dslRunnerClassName":"org.interpss.pssl.plugin.cmd.AcscDslRunner",
+	"runAclf":false,
  	"runAclfConfig":{"lfMethod":"NR","maxIteration":20,"tolerance":1.0E-4,"nonDivergent":false,"initBusVoltage":false,"accFactor":1.0},
  	"type":"BUS_FAULT",
  	"category":"GROUND_3P",
