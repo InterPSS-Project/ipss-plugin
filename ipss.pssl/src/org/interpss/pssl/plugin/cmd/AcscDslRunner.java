@@ -24,6 +24,8 @@
 
 package org.interpss.pssl.plugin.cmd;
 
+import java.io.IOException;
+
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.schema.AcscBaseFaultXmlType;
 import org.ieee.odm.schema.AcscBranchFaultXmlType;
@@ -53,7 +55,7 @@ import com.interpss.core.net.Network;
  */
 public class AcscDslRunner implements IDslRunner {
 	private BaseAcscNetwork<?,?> net;
-	
+	private AcscRunConfigBean acscBean;
 	
 	/**
 	 * default constructor
@@ -71,9 +73,22 @@ public class AcscDslRunner implements IDslRunner {
 	}
 	
 	@Override
-	public IDslRunner net(Network<?, ?> net) {
+	public IDslRunner setNetwork(Network<?, ?> net) {
 		this.net = (BaseAcscNetwork<?, ?>) net;
 		return this;
+	}
+	
+	
+	@Override
+	public BaseJSONBean loadConfigBean(String beanFileName){
+		try {
+			acscBean = BaseJSONBean.toBean(beanFileName, AcscRunConfigBean.class);
+		} catch (IOException e) {
+			
+			e.printStackTrace();
+		}
+		
+		return acscBean;
 	}
 	
 	/**

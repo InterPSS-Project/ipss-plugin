@@ -26,6 +26,8 @@ package org.interpss.pssl.plugin.cmd;
 
 import static org.interpss.mapper.odm.ODMUnitHelper.toApparentPowerUnit;
 
+import java.io.IOException;
+
 import org.ieee.odm.schema.IpssAclfAlgorithmXmlType;
 import org.ieee.odm.schema.LfMethodEnumType;
 import org.interpss.numeric.datatype.Unit.UnitType;
@@ -36,6 +38,7 @@ import org.interpss.pssl.simu.IpssAclf.LfAlgoDSL;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.net.Network;
 
@@ -46,7 +49,8 @@ import com.interpss.core.net.Network;
  *
  */
 public class AclfDslRunner implements IDslRunner {
-	private AclfNetwork net;
+	private BaseAclfNetwork<?,?> net;
+	private AclfRunConfigBean aclfBean = null;
 	
 	/**
 	 * constructor
@@ -56,13 +60,30 @@ public class AclfDslRunner implements IDslRunner {
 	public AclfDslRunner() {
 	}
 	
+	public AclfDslRunner(BaseAclfNetwork<?,?> net) {
+		this.net = net;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.interpss.pssl.plugin.cmd.IDslRunner#net(com.interpss.core.net.Network)
 	 */
 	@Override
-	public IDslRunner net(Network<?,?> net) {
-		this.net = (AclfNetwork)net; return this;
+	public IDslRunner setNetwork(Network<?,?> net) {
+		this.net = (BaseAclfNetwork<?,?>) net; return this;
 	}
+	
+	@Override
+	public BaseJSONBean loadConfigBean(String beanFileName){
+		try {
+			aclfBean = BaseJSONBean.toBean(beanFileName, AclfRunConfigBean.class);
+		} catch (IOException e) {
+			
+			e.printStackTrace();
+		}
+		
+		return aclfBean;
+	}
+	
 	
 	/**
 	 * run aclf using the ODM case definition
