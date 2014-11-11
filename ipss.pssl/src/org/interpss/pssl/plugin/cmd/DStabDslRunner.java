@@ -10,12 +10,12 @@ import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.common.IDStabSimuOutputHandler;
 import com.interpss.dstab.devent.DynamicEvent;
 
-public class DstabDslRunner extends BaseDstabDslRunner{
+public class DStabDslRunner extends BaseDStabDslRunner{
 	
     /**
      * default constructor
      */
-	public DstabDslRunner(){
+	public DStabDslRunner(){
 		
 	}
 	
@@ -24,7 +24,7 @@ public class DstabDslRunner extends BaseDstabDslRunner{
 	 * 
 	 * @param net DStabilityNetwork object
 	 */
-	public DstabDslRunner(DStabilityNetwork net) {
+	public DStabDslRunner(DStabilityNetwork net) {
 		this.net = net;
 	}
 	

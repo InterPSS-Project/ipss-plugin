@@ -4,6 +4,10 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 
 public class DstabRunConfigBean extends BaseJSONBean{
 	
+	public DstabRunConfigBean(){
+	   // set the default AclfDslRunner class name
+	   this.dslRunnerClassName = "org.interpss.pssl.plugin.cmd.DStabDslRunner";
+	}
     public String dynamicFileName = "";
 	
 	public String dstabOutputFileName = "";
