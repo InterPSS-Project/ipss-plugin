@@ -123,6 +123,7 @@ public class CmdRunner {
 	 */
 	public SimuContext run() throws FileNotFoundException, IOException, InterpssException, ClassNotFoundException, IllegalAccessException, InstantiationException {
 		if (this.runType == RunType.Aclf) {
+			
 			// load the Aclf run configure info stored in the control file
 			AclfRunConfigBean aclfBean = loadAclfRunConfigInfo();
 			
@@ -136,7 +137,7 @@ public class CmdRunner {
 			AclfNetwork net = inDsl.getImportedObj();	
 		
 			aclfBean.loadDslRunner()
-					.net(net)
+					.setNetwork(net)
 					.run(aclfBean);
 			
 			// output Loadflow result
@@ -162,7 +163,7 @@ public class CmdRunner {
 			AcscNetwork net = inDsl.getImportedObj();	
 			
 			IFaultResult scResults = acscBean.loadDslRunner()
-											.net(net)
+											.setNetwork(net)
 											.run(acscBean);
 			
 			// output short circuit result
@@ -181,6 +182,7 @@ public class CmdRunner {
 			
 		}
 		else if(this.runType == RunType.DStab) {
+			
 			DstabRunConfigBean dstabBean = loadDStabRunConfigInfo();
 			
 			  // import the file(s)
@@ -193,9 +195,14 @@ public class CmdRunner {
 			
 			// map ODM to InterPSS model object
 			DStabilityNetwork net = inDsl.getImportedObj();	
-						
-			IDStabSimuOutputHandler outputHdler = new DstabDslRunner(net).runDstab(dstabBean);
 			
+			/*
+			IDStabSimuOutputHandler outputHdler = DslRunnerFactory.createDStabDslRunner()
+					                                               .runDstab(dstabBean);
+			*/		                                               
+			IDStabSimuOutputHandler outputHdler = dstabBean.loadDslRunner()
+			                                               .setNetwork(net)
+			                                                .run(dstabBean);
 			//output the result
 	        
 		

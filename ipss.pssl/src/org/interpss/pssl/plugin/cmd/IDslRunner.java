@@ -17,7 +17,7 @@ public interface IDslRunner {
 	 * 
 	 * @param net Network object
 	 */
-	public abstract IDslRunner net(Network<?, ?> net);
+	public abstract IDslRunner setNetwork(Network<?, ?> net);
 
 	/**
 	 * run analysis using the JSON case definition
@@ -28,7 +28,11 @@ public interface IDslRunner {
 	 */
 	public abstract <T> T run(BaseJSONBean bean) throws InterpssException;
 	
-
-	
+    /**
+     * load configuration json bean
+     * @param beanFileName
+     * @return
+     */
+	public BaseJSONBean loadConfigBean(String beanFileName) ;
 
 }
