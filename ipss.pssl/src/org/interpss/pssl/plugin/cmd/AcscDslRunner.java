@@ -33,6 +33,7 @@ import org.ieee.odm.schema.AcscFaultCategoryEnumType;
 import org.ieee.odm.schema.AcscFaultTypeEnumType;
 import org.ieee.odm.schema.ComplexXmlType;
 import org.interpss.pssl.plugin.cmd.json.AcscRunConfigBean;
+import org.interpss.pssl.plugin.cmd.json.BaseJSONBean;
 import org.interpss.pssl.simu.IpssAcsc;
 import org.interpss.pssl.simu.IpssAcsc.FaultAlgoDSL;
 
@@ -42,6 +43,7 @@ import com.interpss.core.acsc.BaseAcscNetwork;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.acsc.fault.SimpleFaultType;
 import com.interpss.core.datatype.IFaultResult;
+import com.interpss.core.net.Network;
 
 /**
  * Acsc Dsl ODM runner implementation
@@ -49,8 +51,15 @@ import com.interpss.core.datatype.IFaultResult;
  * @author mzhou
  *
  */
-public class AcscDslRunner {
+public class AcscDslRunner implements IDslRunner {
 	private BaseAcscNetwork<?,?> net;
+	
+	
+	/**
+	 * default constructor
+	 */
+	public AcscDslRunner(){
+	}
 	
 	/**
 	 * constructor
@@ -59,6 +68,12 @@ public class AcscDslRunner {
 	 */
 	public AcscDslRunner(BaseAcscNetwork<?,?> net) {
 		this.net = net;
+	}
+	
+	@Override
+	public IDslRunner net(Network<?, ?> net) {
+		this.net = (BaseAcscNetwork<?, ?>) net;
+		return this;
 	}
 	
 	/**
@@ -102,8 +117,8 @@ public class AcscDslRunner {
 	 * @param acscConfigBean
 	 * @return
 	 */
-	public IFaultResult runAcsc(AcscRunConfigBean acscBean)  throws InterpssException {
-
+	public <T> T run(BaseJSONBean bean)  throws InterpssException {
+		AcscRunConfigBean acscBean = (AcscRunConfigBean) bean;
 		FaultAlgoDSL algo = IpssAcsc.createAcscAlgo(this.net);
 
 		if (acscBean.type==SimpleFaultType.BUS_FAULT) {
@@ -113,7 +128,7 @@ public class AcscDslRunner {
 	  			.zLGFault(acscBean.zLG.toComplex())
 	  			.zLLFault(acscBean.zLL.toComplex())
 	  			.calculateFault();
-	  		return algo.getResult();
+	  		return (T)algo.getResult();
 		}
 		else if (acscBean.type==SimpleFaultType.BRANCH_FAULT) {
 			
@@ -123,10 +138,10 @@ public class AcscDslRunner {
 	  			.zLLFault(acscBean.zLL.toComplex())
 	  			.distance(acscBean.distance)
 	  			.calculateFault();
-	  		return algo.getResult();
+	  		return (T)algo.getResult();
 		}
 		
-	return null;
+		return null;
 	}
 	
 	private SimpleFaultCode mapCode(AcscFaultCategoryEnumType caty) {
@@ -140,4 +155,6 @@ public class AcscDslRunner {
 	private Complex toComplex(ComplexXmlType x) {
 		return new Complex(x.getRe(), x.getIm());
 	}
+
+	
 }

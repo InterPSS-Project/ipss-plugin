@@ -30,13 +30,14 @@ import org.ieee.odm.schema.IpssAclfAlgorithmXmlType;
 import org.ieee.odm.schema.LfMethodEnumType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.pssl.plugin.cmd.json.AclfRunConfigBean;
+import org.interpss.pssl.plugin.cmd.json.BaseJSONBean;
 import org.interpss.pssl.simu.IpssAclf;
 import org.interpss.pssl.simu.IpssAclf.LfAlgoDSL;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.algo.AclfMethod;
+import com.interpss.core.net.Network;
 
 /**
  * Run aclf DSL using ODM case definition
@@ -44,16 +45,23 @@ import com.interpss.core.algo.AclfMethod;
  * @author mzhou
  *
  */
-public class AclfDslRunner {
-	private BaseAclfNetwork<?,?> net;
+public class AclfDslRunner implements IDslRunner {
+	private AclfNetwork net;
 	
 	/**
 	 * constructor
 	 * 
 	 * @param net AclfNetwork object
 	 */
-	public AclfDslRunner(BaseAclfNetwork<?,?> net) {
-		this.net = net;
+	public AclfDslRunner() {
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.interpss.pssl.plugin.cmd.IDslRunner#net(com.interpss.core.net.Network)
+	 */
+	@Override
+	public IDslRunner net(Network<?,?> net) {
+		this.net = (AclfNetwork)net; return this;
 	}
 	
 	/**
@@ -90,14 +98,12 @@ public class AclfDslRunner {
 		return algoDsl.runLoadflow();	
 	}
 	
-	/**
-	 * run aclf using the JSON case definition
-	 * 
-	 * @param algoBean
-	 * @return
-	 * @throws InterpssException 
+	/* (non-Javadoc)
+	 * @see org.interpss.pssl.plugin.cmd.IDslRunner#runAclf(org.interpss.pssl.plugin.cmd.json.BaseJSONBean)
 	 */
-	public boolean runAclf(AclfRunConfigBean algoBean) throws InterpssException {
+	@Override
+	public <T> T run(BaseJSONBean bean) throws InterpssException {
+		AclfRunConfigBean algoBean = (AclfRunConfigBean)bean;
 		LfAlgoDSL algoDsl = IpssAclf.createAclfAlgo(net);
 		
 		// if algoBean is null, run with the default setting
@@ -118,6 +124,6 @@ public class AclfDslRunner {
 			algoDsl.gsAccFactor(algoBean.accFactor);
 		}
 		
-		return algoDsl.runLoadflow();	
+		return (T)(Boolean)algoDsl.runLoadflow();	
 	}
 }
