@@ -1,5 +1,7 @@
 package org.interpss.pssl.plugin.cmd;
 
+import java.io.IOException;
+
 import org.interpss.pssl.plugin.cmd.json.BaseJSONBean;
 
 import com.interpss.common.exp.InterpssException;
@@ -30,9 +32,9 @@ public interface IDslRunner {
 	
     /**
      * load configuration json bean
+     * 
      * @param beanFileName
      * @return
      */
-	public BaseJSONBean loadConfigBean(String beanFileName) ;
-
+	public BaseJSONBean loadConfigBean(String beanFileName) throws IOException;
 }

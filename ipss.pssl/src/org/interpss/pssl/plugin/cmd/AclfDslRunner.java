@@ -73,15 +73,8 @@ public class AclfDslRunner implements IDslRunner {
 	}
 	
 	@Override
-	public BaseJSONBean loadConfigBean(String beanFileName){
-		try {
-			aclfBean = BaseJSONBean.toBean(beanFileName, AclfRunConfigBean.class);
-		} catch (IOException e) {
-			
-			e.printStackTrace();
-		}
-		
-		return aclfBean;
+	public BaseJSONBean loadConfigBean(String beanFileName)  throws IOException {
+		return BaseJSONBean.toBean(beanFileName, AclfRunConfigBean.class);
 	}
 	
 	
