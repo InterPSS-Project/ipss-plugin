@@ -25,16 +25,8 @@ public abstract class BaseDStabDslRunner implements IDslRunner {
 	}
 	
 	@Override
-	public BaseJSONBean loadConfigBean(String beanFileName){
-		
-		try {
-			dstabBean = BaseJSONBean.toBean(beanFileName, DstabRunConfigBean.class);
-		} catch (IOException e) {
-			
-			e.printStackTrace();
-		}
-		
-		return dstabBean;
+	public BaseJSONBean loadConfigBean(String beanFileName)  throws IOException { 
+		return BaseJSONBean.toBean(beanFileName, DstabRunConfigBean.class);
 	}
 	
 	/**
