@@ -36,7 +36,7 @@ public abstract class BaseDStabDslRunner implements IDslRunner {
 	 * @param dstabConfigBean
 	 * @return
 	 */
-	public abstract IDStabSimuOutputHandler runDstab (DstabRunConfigBean dstabConfigBean);
+	protected abstract IDStabSimuOutputHandler runDstab (DstabRunConfigBean dstabConfigBean);
 
 	@Override
 	public <T> T run(BaseJSONBean bean) throws InterpssException {

@@ -28,11 +28,9 @@ public class DStabDslRunner extends BaseDStabDslRunner{
 		this.net = net;
 	}
 	
-	public IDStabSimuOutputHandler runDstab (DstabRunConfigBean dstabBean){
+	protected IDStabSimuOutputHandler runDstab (DstabRunConfigBean dstabBean){
 		
 		IpssDStab dstabDSL = new IpssDStab(net);
-		
-		
 		
 		dstabDSL.setTotalSimuTimeSec(dstabBean.totalSimuTimeSec)
 		        .setSimuTimeStep(dstabBean.simuTimeStepSec)
