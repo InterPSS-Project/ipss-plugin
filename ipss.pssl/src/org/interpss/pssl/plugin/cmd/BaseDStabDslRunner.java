@@ -2,6 +2,7 @@ package org.interpss.pssl.plugin.cmd;
 
 import java.io.IOException;
 
+import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.interpss.pssl.plugin.IpssAdapter.FileImportDSL;
 import org.interpss.pssl.plugin.cmd.json.BaseJSONBean;
 import org.interpss.pssl.plugin.cmd.json.DstabRunConfigBean;
@@ -52,7 +53,7 @@ public abstract class BaseDStabDslRunner implements IDslRunner {
 		FileImportDSL inDsl =  new FileImportDSL();
 		inDsl.setFormat(dstabBean.acscConfigBean.runAclfConfig.format)
 			 .setPsseVersion(dstabBean.acscConfigBean.runAclfConfig.version)
-		     .load(new String[]{dstabBean.acscConfigBean.runAclfConfig.aclfCaseFileName,
+		     .load(NetType.DStabNet,new String[]{dstabBean.acscConfigBean.runAclfConfig.aclfCaseFileName,
 		    		 dstabBean.acscConfigBean.seqFileName,
 		    		 dstabBean.dynamicFileName});
 		

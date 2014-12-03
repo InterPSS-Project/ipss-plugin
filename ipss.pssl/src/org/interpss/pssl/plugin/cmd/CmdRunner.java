@@ -31,6 +31,7 @@ import static org.interpss.pssl.plugin.IpssAdapter.importAclfNet;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.interpss.pssl.plugin.IpssAdapter.FileImportDSL;
 import org.interpss.pssl.plugin.cmd.json.AclfRunConfigBean;
 import org.interpss.pssl.plugin.cmd.json.AcscRunConfigBean;
@@ -156,7 +157,7 @@ public class CmdRunner {
 			FileImportDSL inDsl =  new FileImportDSL();
 			inDsl.setFormat(acscBean.runAclfConfig.format)
 				 .setPsseVersion(acscBean.runAclfConfig.version)
-			     .load(new String[]{acscBean.runAclfConfig.aclfCaseFileName,
+			     .load(NetType.AcscNet,new String[]{acscBean.runAclfConfig.aclfCaseFileName,
 					acscBean.seqFileName});
 			
 			// map ODM to InterPSS model object
@@ -189,7 +190,7 @@ public class CmdRunner {
 			FileImportDSL inDsl =  new FileImportDSL();
 			inDsl.setFormat(dstabBean.acscConfigBean.runAclfConfig.format)
 				 .setPsseVersion(dstabBean.acscConfigBean.runAclfConfig.version)
-			     .load(new String[]{dstabBean.acscConfigBean.runAclfConfig.aclfCaseFileName,
+			     .load(NetType.DStabNet,new String[]{dstabBean.acscConfigBean.runAclfConfig.aclfCaseFileName,
 			    		 dstabBean.acscConfigBean.seqFileName,
 			    		 dstabBean.dynamicFileName});
 			
