@@ -510,7 +510,7 @@ public class IpssAdapter extends BaseDSL {
 			return null; 
 		}
 		
-		public FileImportDSL load(String[] fileNameAry) { 
+		public FileImportDSL load(NetType type, String[] fileNameAry) { 
 			
 			if(fileNameAry.length>3){
 				  try {
@@ -526,7 +526,7 @@ public class IpssAdapter extends BaseDSL {
 					       this.file3Name = fileNameAry[2];
 					 
 					 if(getAdapter() instanceof PSSEAdapter){
-						 NetType type = fileNameAry.length ==3?NetType.DStabNet: NetType.AcscNet;
+						// NetType type = fileNameAry.length ==3?NetType.DStabNet: NetType.AcscNet;
 						 getAdapter().parseInputFile(type, fileNameAry);
 						 odmParser = adapter.getModel();
 					 }
