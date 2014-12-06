@@ -34,7 +34,7 @@ public class DStabDslRunner extends BaseDStabDslRunner{
 		
 		dstabDSL.setTotalSimuTimeSec(dstabBean.totalSimuTimeSec)
 		        .setSimuTimeStep(dstabBean.simuTimeStepSec)
-		        .setIntegrationMethod(dstabBean.method)
+		        .setIntegrationMethod(dstabBean.dynMethod)
 		        .setRefMachine(dstabBean.referenceGeneratorId);
 		
 		
