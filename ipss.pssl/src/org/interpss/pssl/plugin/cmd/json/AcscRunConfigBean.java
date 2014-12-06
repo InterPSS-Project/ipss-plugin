@@ -14,9 +14,9 @@ public class AcscRunConfigBean extends BaseJSONBean {
 		this.dslRunnerClassName = "org.interpss.pssl.plugin.cmd.AcscDslRunner";
 	}
 	
-	public String seqFileName = "name";
+	public String seqFileName = "";
 	
-	public String acscOutputFileName = "name";
+	public String acscOutputFileName = "";
 	
 	// flag to indicate whether or not the pre-fault bus voltage is based on load flow result
 	public boolean runAclf = false;
@@ -32,14 +32,14 @@ public class AcscRunConfigBean extends BaseJSONBean {
 			           zLL = new ComplexBean();
 	
 	// Bus fault only
-	public String faultBusId = "id";
+	public String faultBusId = "";
 	
 	// Branch fault only
-	public String faultBranchFromId = "fBusId";
+	public String faultBranchFromId = "";
 
-	public String faultBranchToId = "tBusId";
+	public String faultBranchToId = "";
 	
-	public String faultBranchCirId = "cirId";
+	public String faultBranchCirId = "";
 	
 	// Distrance is measured starting from the fromBus side
 	public double distance = 0.0;

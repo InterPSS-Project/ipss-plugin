@@ -35,8 +35,9 @@ public abstract class BaseDStabDslRunner implements IDslRunner {
 	 * 
 	 * @param dstabConfigBean
 	 * @return
+	 * @throws Exception 
 	 */
-	protected abstract IDStabSimuOutputHandler runDstab (DstabRunConfigBean dstabConfigBean);
+	protected abstract IDStabSimuOutputHandler runDstab (DstabRunConfigBean dstabConfigBean) throws Exception;
 
 	@Override
 	public <T> T run(BaseJSONBean bean) throws InterpssException {
@@ -65,7 +66,14 @@ public abstract class BaseDStabDslRunner implements IDslRunner {
 			return (T)null;
 		}	
 					
-		IDStabSimuOutputHandler outputHdler = runDstab(dstabBean);
+		IDStabSimuOutputHandler outputHdler =null;
+		try {
+			outputHdler = runDstab(dstabBean);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
 		
 		//output the result
         

@@ -122,10 +122,7 @@ public class AclfDslRunner implements IDslRunner {
 		
 		// if algoBean is null, run with the default setting
 		if(algoBean !=null){
-			algoDsl.lfMethod(algoBean.lfMethod == LfMethodEnumType.NR ? AclfMethod.NR
-						: (algoBean.lfMethod == LfMethodEnumType.PQ ? AclfMethod.PQ
-								: (algoBean.lfMethod == LfMethodEnumType.CUSTOM ? AclfMethod.CUSTOM 
-										: AclfMethod.GS)));
+			algoDsl.lfMethod(algoBean.lfMethod);
 			
 			algoDsl.setMaxIterations(algoBean.maxIteration);
 			
