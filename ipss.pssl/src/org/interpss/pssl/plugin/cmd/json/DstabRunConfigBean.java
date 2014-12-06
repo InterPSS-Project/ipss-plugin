@@ -14,7 +14,7 @@ public class DstabRunConfigBean extends BaseJSONBean{
 	
 	public AcscRunConfigBean acscConfigBean = new AcscRunConfigBean();
 	
-	public DynamicSimuMethod method = DynamicSimuMethod.MODIFIED_EULER;
+	public DynamicSimuMethod dynMethod = DynamicSimuMethod.MODIFIED_EULER;
 	
 	public double totalSimuTimeSec = 10.0;
 	
