@@ -12,6 +12,7 @@ import org.interpss.display.AcscOutFunc;
 import org.interpss.mapper.odm.ODMAcscParserMapper;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
+import org.interpss.numeric.util.MatrixUtil;
 import org.interpss.numeric.util.TestUtilFunc;
 import org.junit.Test;
 
@@ -87,6 +88,37 @@ public class IEEE9Bus_Acsc_test {
 	        assertTrue(Math.abs(posYMatrix.getA(6, 6).getReal()-2.80)<1.0E-2);
 	        assertTrue(Math.abs(posYMatrix.getA(6, 6).getImaginary()+35.45)<1.0E-2);
 	       
+	        
+	        /*
+	  		 * ***********************************
+	  		 *       Negative sequence
+	  		 * ***********************************      
+	  		 * 
+	  		 */
+	        
+       ISparseEqnComplex negYMatrix = net.formYMatrix(SequenceCode.NEGATIVE, false);
+	        
+	        //Gen Bus: Bus 1
+	        //Yii: 0.0 + (-42.63668430335097i)
+	        assertTrue(negYMatrix.getA(0, 0).getReal()==0);
+	        assertTrue(Math.abs(negYMatrix.getA(0, 0).getImaginary()+42.6366)<1.0E-4);
+	        //Yij (bus1->bus4): -0.0 + (17.636684303350968i)
+	        assertTrue(negYMatrix.getA(0, 3).getReal()==0);
+	        assertTrue(Math.abs(negYMatrix.getA(0, 3).getImaginary()-17.6366)<1.0E-4);
+	        
+	        //Load Bus: Bus 5
+	        //Yii: 3.81 - j17.84
+	        assertTrue(Math.abs(negYMatrix.getA(4, 4).getReal()-3.81)<1.0E-2);
+	        assertTrue(Math.abs(negYMatrix.getA(4, 4).getImaginary()+17.84)<1.0E-2);
+	        
+	        //Y54:-1.37 + j11.60
+	        assertTrue(Math.abs(negYMatrix.getA(4, 3).getReal()+1.37)<1.0E-2);
+	        assertTrue(Math.abs(negYMatrix.getA(4, 3).getImaginary()-11.60)<1.0E-2);
+	        
+	        //Non-Gen, Non-Load: Bus7
+	        //Yii 2.80 - j35.45
+	        assertTrue(Math.abs(negYMatrix.getA(6, 6).getReal()-2.80)<1.0E-2);
+	        assertTrue(Math.abs(negYMatrix.getA(6, 6).getImaginary()+35.45)<1.0E-2);
 			
 	        /*
 	  		 * ***********************************
@@ -110,6 +142,8 @@ public class IEEE9Bus_Acsc_test {
 	        //Yii 1.1218907410149137 + (-23.641745252186816i)
 	        assertTrue(Math.abs(zeroYMatrix.getA(6, 6).getReal()-1.12)<1.0E-2);
 	        assertTrue(Math.abs(zeroYMatrix.getA(6, 6).getImaginary()+23.64)<1.0E-2);
+	        
+	       // MatrixUtil.matrixToMatlabMFile("output/ieee9_zeroYmatrix.m", zeroYMatrix);
 	        
 		}
 	
@@ -167,27 +201,7 @@ public class IEEE9Bus_Acsc_test {
 	  	assertTrue(TestUtilFunc.compare(fault.getFaultResult().getBusVoltage_012(net.getBus("Bus1")), 
 	  			0.0, 0.0, 0.61592, 0.01616, 0.0, 0.0) );
 	  	
-	  	
-	  	//*********************************************
-	  	//             Bus4 LG Fault
-	  	//********************************************
-	  	fault = CoreObjectFactory.createAcscBusFault("Bus4", acscAlgo );
-		fault.setFaultCode(SimpleFaultCode.GROUND_LG);
-		fault.setZLGFault(new Complex(0.0, 0.0));
-		fault.setZLLFault(new Complex(0.0, 0.0));
-		
-		//pre fault profile : solved power flow
-		acscAlgo.setScBusVoltage(ScBusVoltageType.LOADFLOW_VOLT);
-		
-		acscAlgo.calculateBusFault(fault);
-	  	//System.out.println(fault.getFaultResult().getSCCurrent_012());
-	  	//System.out.println(fault.getFaultResult().getBusVoltage_012(net.getAcscBus("Bus1")));
-	  	
-	  	
-	    //seq voltage @Bus1
-	  	//0.0000 + j0.0000  0.88659 + j0.01024  -0.15334 + j0.01034
-	  	assertTrue(TestUtilFunc.compare(fault.getFaultResult().getBusVoltage_012(net.getBus("Bus1")), 
-	  			0.0, 0.0, 0.88659, 0.01024, -0.15334, 0.01034) );
+
 	  	
 	  	
 	  	//*********************************************
@@ -221,6 +235,30 @@ public class IEEE9Bus_Acsc_test {
 	  	
 	  	//output fault analysis result
 	  	System.out.println(AcscOutFunc.faultResult2String(net,acscAlgo));
+	  	
+	  	
+	  	
+	  	
+	  	//*********************************************
+	  	//             Bus4 LG Fault
+	  	//********************************************
+	  	fault = CoreObjectFactory.createAcscBusFault("Bus4", acscAlgo );
+		fault.setFaultCode(SimpleFaultCode.GROUND_LG);
+		fault.setZLGFault(new Complex(0.0, 0.0));
+		fault.setZLLFault(new Complex(0.0, 0.0));
+		
+		//pre fault profile : solved power flow
+		acscAlgo.setScBusVoltage(ScBusVoltageType.LOADFLOW_VOLT);
+		
+		acscAlgo.calculateBusFault(fault);
+	  	//System.out.println(fault.getFaultResult().getSCCurrent_012());
+	  	//System.out.println(fault.getFaultResult().getBusVoltage_012(net.getAcscBus("Bus1")));
+	  	
+	  	
+	    //seq voltage @Bus1
+	  	//0.0000 + j0.0000  0.88659 + j0.01024  -0.15334 + j0.01034
+	  	assertTrue(TestUtilFunc.compare(fault.getFaultResult().getBusVoltage_012(net.getBus("Bus1")), 
+	  			0.0, 0.0, 0.88659, 0.01024, -0.15334, 0.01034) );
 		
 	}
 	
