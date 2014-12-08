@@ -89,7 +89,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.001);
-		dstabAlgo.setTotalSimuTimeSec(10.0);
+		dstabAlgo.setTotalSimuTimeSec(5.0);
 		dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 		dsNet.addDynamicEvent(create3PhaseFaultEvent("Bus4",dsNet,11.0,0.0833),"3phaseFault@Bus4");
 
@@ -128,6 +128,8 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 
 		}
 		//System.out.println(sm.toCSVString(sm.getMachAngleTable()));
+		
+		System.out.println(sm.toCSVString(sm.getMachPeTable()));
 		
 		//FileUtil.writeText2File("E:/ieee9_angle_1step.csv", sm.toCSVString(sm.getMachAngleTable()));
 		/*
