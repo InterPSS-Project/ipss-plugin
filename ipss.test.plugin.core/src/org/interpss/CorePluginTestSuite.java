@@ -153,8 +153,8 @@ import org.junit.runners.Suite.SuiteClasses;
 	
 	AclfBeanMapperTest.class,
 	
-	MNet_IEEE14Bus_Test.class,
-	MNet_Aclf5Bus_Child_Test.class,
+	//MNet_IEEE14Bus_Test.class,
+	//MNet_Aclf5Bus_Child_Test.class,
 })
 public class CorePluginTestSuite {
 }
