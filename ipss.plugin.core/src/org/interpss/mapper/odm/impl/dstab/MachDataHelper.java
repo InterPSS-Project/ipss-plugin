@@ -161,6 +161,7 @@ public class MachDataHelper {
 		mach.setH(machXml.getH());
 		mach.setD(machXml.getD());
 		mach.setXd1(machXml.getXd1());
+		mach.setRa(machXml.getRa());
 	}
 	
 	private void setEq1Data(Eq1Machine mach, Eq1MachineXmlType machXml) throws InterpssException {
