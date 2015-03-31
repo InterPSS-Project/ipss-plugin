@@ -220,7 +220,7 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 		return dstabNet;
 	}	
 	
-	private void setDStabBusData(DStabBusXmlType dstabBusXml, DStabBus dstabBus)  throws InterpssException {
+	protected void setDStabBusData(DStabBusXmlType dstabBusXml, DStabBus dstabBus)  throws InterpssException {
 		
 		if(dstabBusXml.getGenData().getContributeGen().size() > 0){
 			DStabGenDataXmlType dyGen = null;
@@ -242,7 +242,7 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 	   }	
     }
 
-	private void setDynGenData(DStabBus dstabBus, 
+	protected void setDynGenData(DStabBus dstabBus, 
 			DStabGenDataXmlType dyGen, DStabGen dyGenObj) throws InterpssException {
 		// create the machine model and added to the parent bus object
 		if(dyGen.getMachineModel() ==null){
