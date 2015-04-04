@@ -99,8 +99,10 @@ public class SubNetworkProcessor {
 			//get the boundary bus list
 			for(String branchId: interfaceBranchIdList){
 				Branch bra = this.net.getBranch(branchId);
+				
 				//TODO avoid a bus belonging to one subNetwork still connects to one in the other subNetwork
-				bra.setStatus(false);
+				//bra.setStatus(false);
+				
 				if(!this.boundaryBusIdList.contains(bra.getFromBus().getId())){
 				    this.boundaryBusIdList.add(bra.getFromBus().getId());
 				    
@@ -236,6 +238,14 @@ public class SubNetworkProcessor {
 	public List<ChildNetwork<? extends AclfBus, ? extends AclfBranch>> getSubNetworkList(){
 		return this.subNetworkList;
 	}
+	public List<String> getInterfaceBranchIdList(){
+		return this.interfaceBranchIdList;
+	}
+	
+	public void setInterfaceBranchIdList(List<String> interfaceBranchList){
+		this.interfaceBranchIdList = interfaceBranchList;
+	}
+	
 	public Hashtable<String, Integer> getBusId2SubNetworkTable() {
 		return busId2SubNetworkTable;
 	}
