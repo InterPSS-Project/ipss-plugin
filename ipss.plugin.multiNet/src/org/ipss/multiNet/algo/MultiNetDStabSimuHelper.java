@@ -2,6 +2,7 @@ package org.ipss.multiNet.algo;
 
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.complex.ComplexField;
@@ -13,6 +14,8 @@ import org.apache.commons.math3.linear.FieldMatrix;
 import org.apache.commons.math3.linear.FieldVector;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.interpss.algo.SubNetworkProcessor;
+import org.interpss.numeric.exp.IpssNumericException;
+import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.ipss.multiNet.equivalent.NetworkEquivUtil;
 import org.ipss.multiNet.equivalent.NetworkEquivalent;
 
@@ -305,7 +308,7 @@ public  void processInterfaceBranchEquiv(){
 	   
 	  }
 
-    public Hashtable<String, NetworkEquivalent> calcMultiNetworkEquivSource(){
+    public Hashtable<String, NetworkEquivalent> calcSubNetworkEquivSource(){
     	 
     	if(subNetEquivTable ==null)
     	     throw new Error (" The subnetwork equivalent hastable is not prepared yet");
@@ -314,8 +317,9 @@ public  void processInterfaceBranchEquiv(){
 		
     	    // In order to obtain the Thevenin voltage source viewed at the boundary 
     	    // there should  be no current injection from the interface tie-lines
-    		if(subNet.initDStabNet())
+    		//if(subNet.initDStabNet())
     	     
+    		// make sure there is no current injection at the boundary
     		 subNet.setCustomBusCurrInjHashtable(null);
     		 
     	    // perform network solution to get the bus voltages
@@ -485,25 +489,46 @@ public  void processInterfaceBranchEquiv(){
       return this.Zl;
     	
     }
-
-     public boolean updateBoundaryBusEquivCurrentInjection(){
+     
+    /**
+     * 
+     *  solve the subNetworks with only current injection at the boundary buses.
+     *  
+     *  This is the second phase of the subNetwork solution. The first phase is completed with performing 
+     *   calcSubNetworkEquivSource() function. Then superpostition method is used to obtain the final network
+     *   solution result.
+     *  
+     *   bus voltage V = Vinternal + Vext_injection
+     * @return
+     */
+     public boolean solveSubNetworkWithEquivCurrentInjection(){
 	   
 		   // need to first reset all customized current injection to be zero
 		   for(DStabilityNetwork subNet: this.subNetProcessor.getSubNetworkList()){
 			   subNet.setCustomBusCurrInjHashtable(null);
+			   
+			   ISparseEqnComplex subNetY= subNet.getYMatrix();
+			   subNetY.setB2Zero();
+			   for(Entry<String,Complex> e: this.subNetCurrInjTable.get(subNet.getId()).entrySet()){
+				   subNetY.setBi(e.getValue(),subNet.getBus(e.getKey()).getSortNumber());
+			   }
+			   try {
+				    subNetY.solveEqn();
+				} catch (IpssNumericException e1) {
+					
+					e1.printStackTrace();
+					return false;
+				}
+			   
+			   for(DStabBus b:subNet.getBusList()){
+				   //superpostition method
+				   //bus voltage V = Vinternal + Vext_injection
+				   b.setVoltage(b.getVoltage().add(subNetY.getX(b.getSortNumber())));
+			   }
+			   
+			   
 		   }
-		  
-		   for(String branchId: subNetProcessor.getInterfaceBranchIdList()){
-				DStabBranch branch= net.getBranch(branchId);
-				
-				// at this stage, the statuses of boundary buses  are inactive, so it needs to be turned to active first;
-				// as the Ymatrix is already built, this won't affect the V=INV(Y)*I network solution
-				branch.setStatus(true);
-				
-				
-				DStabBus fBus = (DStabBus) branch.getFromBus();
-				DStabBus tBus = (DStabBus) branch.getToBus();
-		   }
+		   
 		   
 		   return true;
 	   }
