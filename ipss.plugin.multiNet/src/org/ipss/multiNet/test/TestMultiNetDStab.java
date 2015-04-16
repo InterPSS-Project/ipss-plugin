@@ -85,7 +85,7 @@ public class TestMultiNetDStab {
 	     * Step-2  use MultiNetDStabSimuHelper to preProcess the multiNetwork
 	     */
 	    MultiNetDStabSimuHelper multiNetHelper = new  MultiNetDStabSimuHelper(dsNet,proc);
-	    multiNetHelper.preProcess3SeqMultiSubNetwork();
+	    multiNetHelper.processInterfaceBranchEquiv();
 	    
 	    // the first subnetwork 
 	    DStabilityNetwork subNet = proc.getSubNetworkList().get(0);
@@ -178,7 +178,7 @@ public class TestMultiNetDStab {
 	     * Step-2  use MultiNetDStabSimuHelper to preProcess the multiNetwork
 	     */
 	    MultiNetDStabSimuHelper multiNetHelper = new  MultiNetDStabSimuHelper(dsNet,proc);
-	    multiNetHelper.preProcess3SeqMultiSubNetwork();
+	    multiNetHelper.processInterfaceBranchEquiv();
 	    
 	    
 	    // DStabilityNetwork subNet = (DStabilityNetwork) dsNet.getChildNetList().get(1).getNetwork();

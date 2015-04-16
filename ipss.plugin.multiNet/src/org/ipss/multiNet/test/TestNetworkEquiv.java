@@ -72,11 +72,11 @@ public class TestNetworkEquiv {
 	    proc.createSubNetworks();
 	    
 	    MultiNetDStabSimuHelper mNetDstabHelper = new  MultiNetDStabSimuHelper(dsNet,proc);
-	    mNetDstabHelper.processInterfaceBranchEquiv();
+	   // mNetDstabHelper.processInterfaceBranchEquiv();
 	    
 	    System.out.println(proc.getSubNet2BoundaryBusListTable());
 	    
-        NetworkEquivalent equiv=NetworkEquivUtil.calMultiNetworkEquiv(proc).get("SubNet-2");
+        NetworkEquivalent equiv= mNetDstabHelper.getSubNetEquivTable().get("SubNet-2");
         System.out.println(equiv.getMatrix()[0][0]);
         /*
          * ymatrix
