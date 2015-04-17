@@ -30,9 +30,15 @@ import com.interpss.dstab.devent.DynamicEventType;
 
 public class MultiNetDynamicEventProcessor extends DynamicEventProcessor {
 	
-	
-	private List<DStabilityNetwork> subnetList = null;
+
 	DStabilityNetwork net = null;
+	private MultiNetDStabSimuHelper simuHelper = null;
+	
+	
+	public MultiNetDynamicEventProcessor(MultiNetDStabSimuHelper mNetSimuHelper){
+		this.simuHelper = mNetSimuHelper;
+	}
+	
 	/**
 	 * process network dynamic event
 	 * 
@@ -79,8 +85,12 @@ public class MultiNetDynamicEventProcessor extends DynamicEventProcessor {
 						         //TODO don't forget to set the ymatrix
 						         faultSubNet.setYMatrix(ymatrix);
 						         faultSubNet.setYMatrixDirty(true);
-						         System.out.println("Time :"+t+", ymatrix of network is rebuilted:"+faultSubNet.getId());
-						         System.out.println("ymatrix = \n"+ymatrix);
+						        // System.out.println("Time :"+t+", ymatrix of network is rebuilted:"+faultSubNet.getId());
+						        // System.out.println("ymatrix = \n"+ymatrix);
+						         
+						         //update the equivalent impedance matrix
+						         
+						         this.simuHelper.updateSubNetworkEquivMatrix(faultSubNet.getId());
 		
 
 					         }
@@ -181,10 +191,12 @@ public class MultiNetDynamicEventProcessor extends DynamicEventProcessor {
 						}
                         else if(fault.getFaultCode()==SimpleFaultCode.GROUND_3P){
       
-                        	//((DStabilityNetwork) bus.getNetwork()).getYMatrix().addToA(ylarge, i, i);
-                        	//TODO for testing only
-                        	((DStabilityNetwork) bus.getNetwork()).getYMatrix().addToA(new Complex(0.5,0), i, i);
+                        	((DStabilityNetwork) bus.getNetwork()).getYMatrix().addToA(ylarge, i, i);
+                        	
+                        	
 						}
+						
+						//update the 
 						
 					}
 					/*

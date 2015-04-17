@@ -229,6 +229,34 @@ public  void processInterfaceBranchEquiv(){
     	 return  subNetEquivTable;
     }
     
+    /**
+     * update the Thevenin equivalent impedance matrix of all subNetworks
+     * @return
+     */
+    public Hashtable<String, NetworkEquivalent> updateSubNetworkEquivMatrix(){
+    	
+    	return this.subNetEquivTable = NetworkEquivUtil.calMultiNetworkEquiv(this.subNetProcessor);
+    }
+    
+    /**
+     *  update the Thevenin equivalent impedance matrix of a specific subNetwork
+     * @param subNetworkId
+     * @return
+     */
+    public Hashtable<String, NetworkEquivalent> updateSubNetworkEquivMatrix(String subNetworkId){
+    	DStabilityNetwork subNet = this.subNetProcessor.getSubNetwork(subNetworkId);
+    	if(subNet!=null){
+	    	NetworkEquivalent equiv = NetworkEquivUtil.calNetworkEquiv(subNet,
+	    			       this.subNetProcessor.getSubNet2BoundaryBusListTable().get(subNetworkId));
+	    	
+	    	this.subNetEquivTable.put(subNetworkId, equiv);
+    	}
+    	else
+    		throw new Error("No subnetwork is found with the input subNetwork Id!");
+    	return this.subNetEquivTable; 
+    }
+    
+    
     
     /**
      * Solve the [Zl][Il]=[Eth] dense matrix equations to obtain the currents flowing through the tie-lines 
