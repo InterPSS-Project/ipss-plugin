@@ -134,7 +134,7 @@ public class TestSubNetEquiv {
             // test-2  the subsystem equivalent matrix: Zth
 		    //
             
-            multiNetHelper.calcSubNetworkEquivSource();
+            multiNetHelper.solvSubNetAndUpdateEquivSource();
              
              Hashtable<String, NetworkEquivalent> equivTable= multiNetHelper.getSubNetEquivTable();
              NetworkEquivalent equiv2=equivTable.get("SubNet-2");
@@ -149,7 +149,7 @@ public class TestSubNetEquiv {
              Complex[] Vth = equiv2.getSource();
              
            //  
-           // test-4 boundary subsystem solution: interface tie-line current calculation
+           // test-4 boundary subsystem solution: solve Zl*Il = Eth to obtain currents of interface tie-lines 
            //
              
              multiNetHelper.prepareBoundarySubSystemMatrix();
@@ -179,7 +179,7 @@ public class TestSubNetEquiv {
              // test-5 use the superposition approach to solve the system
              // 
              
-             multiNetHelper.solveSubNetworkWithEquivCurrentInjection();
+             multiNetHelper.solveSubNetWithBoundaryCurrInjection();
              /*
               * Bus, Vm, Va =Bus5  ,0.995769405872312  ,-3.9527924201734583
 				Bus, Vm, Va =Bus4  ,1.025968118314481  ,-2.181732949891952
