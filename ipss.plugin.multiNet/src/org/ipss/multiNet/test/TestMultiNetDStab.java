@@ -39,7 +39,7 @@ import com.interpss.simu.SimuCtxType;
 
 public class TestMultiNetDStab {
 	
-	@Test
+	//@Test
 	public void test_IEEE9Bus_subNet_Dstab() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
@@ -132,7 +132,7 @@ public class TestMultiNetDStab {
 	     System.out.println(sm.toCSVString(sm.getBusVoltTable()));
 	}
 	
-	//@Test
+	@Test
 	public void test_IEEE9Bus_MultiSubNet_Dstab() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
@@ -176,15 +176,11 @@ public class TestMultiNetDStab {
 	    
 	    /*
 	     * Step-2  use MultiNetDStabSimuHelper to preProcess the multiNetwork
+	     *  
 	     */
+	    // in the MultiNetDStabSimuHelper constructor, subnetwork Y matrices are built, the Thevenin equivalent Zth 
+	    // matrices are prepared, the interface tie-line to boundary bus incidence matrix is formed.
 	    MultiNetDStabSimuHelper multiNetHelper = new  MultiNetDStabSimuHelper(dsNet,proc);
-	    multiNetHelper.processInterfaceBranchEquiv();
-	    
-	    
-	    // DStabilityNetwork subNet = (DStabilityNetwork) dsNet.getChildNetList().get(1).getNetwork();
-	    //This is a must, after splitting the network, it cannot run the load flow again.
-	    //subNet.setLfConverged(true);
-	    
 	    
 	    
 	    DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
@@ -198,7 +194,7 @@ public class TestMultiNetDStab {
 		
 		  // dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 		}
-		dsNet.addDynamicEvent(create3PhaseFaultEvent("Bus6", proc.getSubNetworkList().get(0),0.1d,0.05),"3phaseFault@Bus6");
+		dsNet.addDynamicEvent(create3PhaseFaultEvent("Bus6", proc.getSubNetworkList().get(0),0.3d,0.05),"3phaseFault@Bus6");
         
 
 		dstabAlgo.setSolver(new MultiNetDStabSolverImpl(dstabAlgo , IpssCorePlugin.getMsgHub(),multiNetHelper));
