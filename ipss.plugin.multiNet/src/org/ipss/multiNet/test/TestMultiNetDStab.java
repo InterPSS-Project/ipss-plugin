@@ -218,7 +218,7 @@ public class TestMultiNetDStab {
 		if (dstabAlgo.initialization()) {
 			
 			System.out.println("preFault Ymatrix: "+proc.getSubNetworkList().get(0).getYMatrix());
-			System.out.println(dsNet.getMachineInitCondition());
+			System.out.println(proc.getSubNetworkList().get(0).getMachineInitCondition());
 			
 			System.out.println("Running DStab simulation ...");
 			//timer.start();
