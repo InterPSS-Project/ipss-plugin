@@ -199,16 +199,6 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 				if (!dsNet.solveNetEqn(false))
 					throw new DStabSimuException("Exception in dstabNet.solveNetEqn()");
 				
-				// calculate dynamic measurement signals - they are secondary signals 
-				for ( Bus busi : dsNet.getBusList() ) {
-					DStabBus bus = (DStabBus)busi;
-					if(bus.isActive()){
-						if (!bus.nextStep(dt, method)) {
-							throw new DStabSimuException("Error occured, Simulation will be stopped");
-						}
-						
-					}
-				}
 				
 			}
 			
@@ -236,12 +226,26 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 				  //solve all the SubNetworks With only Boundary Current Injections
 				  this.multiNetSimuHelper.solveSubNetWithBoundaryCurrInjection();
 				  
-				  // update the 
+				  // update the dynamic attributes and calculate the bus frequency
 			      for(DStabilityNetwork dsNet: subNetList){
 				
 					for ( Bus busi : dsNet.getBusList() ) {
 						DStabBus bus = (DStabBus)busi;
 						if(bus.isActive()){
+							
+							// update dynamic attributes of the dynamic devices connected to the bus
+							 try {
+								bus.updateDynamicAttributes(false);
+							} catch (InterpssException e) {
+							
+								e.printStackTrace();
+							}
+							 // calculate bus frequency
+							 if (!bus.nextStep(dt, method)) {
+									throw new DStabSimuException("Error occured, Simulation will be stopped");
+								}
+							
+							
 							if(i>=1){
 								if(!NumericUtil.equals(bus.getVoltage(),voltageRecTable.get(bus.getId()),this.converge_tol))
 									netSolConverged =false;
