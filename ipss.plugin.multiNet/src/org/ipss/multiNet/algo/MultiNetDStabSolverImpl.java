@@ -141,7 +141,7 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 	public void nextStep(double time, double dt, DynamicSimuMethod method)  throws DStabSimuException {
 		 
 		 boolean netSolConverged = true;
-		 maxIterationTimes =10;
+		 maxIterationTimes =20;
 		 int maxOuterIterationTimes =1;
 		for(int outerIdx=0;outerIdx<maxOuterIterationTimes;outerIdx++){
 			for(int i=0;i<maxIterationTimes;i++){ 
@@ -257,11 +257,13 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 			 } // for subNetwork loop
 			
 			  if(i>0 && netSolConverged) {
-				  System.out.println("multi subNetwork solution in the nextStep() is converged!");
+				  System.out.println("multi subNetwork solution in the nextStep() is converged, iteration #"+(i+1));
 				  break;
 			  }
 	
 		  } // for maxIterationTimes loop
+			
+			
 			
 			for(DStabilityNetwork dsNet: subNetList){
 			 // backup the states
