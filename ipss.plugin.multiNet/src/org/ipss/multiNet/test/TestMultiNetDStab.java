@@ -140,8 +140,8 @@ public class TestMultiNetDStab {
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/IEEE9Bus/ieee9.raw",
 				"testData/IEEE9Bus/ieee9.seq",
-				//"testData/IEEE9Bus/ieee9_dyn_onlyGen_saturation.dyr"
-				"testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr"
+				"testData/IEEE9Bus/ieee9_dyn_GENCLS.dyr"
+				//"testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr"
 		}));
 		DStabModelParser parser =(DStabModelParser) adapter.getModel();
 		
@@ -187,21 +187,21 @@ public class TestMultiNetDStab {
 	    
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.005d);
-		dstabAlgo.setTotalSimuTimeSec(0.2);
+		dstabAlgo.setTotalSimuTimeSec(0.5d);
 		for (DStabilityNetwork subNet:proc.getSubNetworkList()){
 			subNet.setNetEqnIterationNoEvent(1);
 			subNet.setNetEqnIterationWithEvent(1);
 		
 		  // dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 		}
-		dsNet.addDynamicEvent(create3PhaseFaultEvent("Bus6", proc.getSubNetworkList().get(0),0.3d,0.05),"3phaseFault@Bus6");
+		dsNet.addDynamicEvent(create3PhaseFaultEvent("Bus6", proc.getSubNetworkList().get(0),0.1d,0.05),"3phaseFault@Bus6");
         
-
+        // use the multi subnetwork solver
 		dstabAlgo.setSolver(new MultiNetDStabSolverImpl(dstabAlgo , IpssCorePlugin.getMsgHub(),multiNetHelper));
 		
 		StateMonitor sm = new StateMonitor();
 		sm.addGeneratorStdMonitor(new String[]{"Bus1-mach1","Bus2-mach1","Bus3-mach1"});
-		sm.addBusStdMonitor(new String[]{"Bus1","Bus2","Bus3","Bus7"});
+		sm.addBusStdMonitor(new String[]{"Bus1","Bus2","Bus3","Bus5","Bus7","Bus8"});
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
@@ -212,7 +212,7 @@ public class TestMultiNetDStab {
 		
 		
 		// multiNetDynamic Event handler
-		dstabAlgo.setDynamicEventHandler(new MultiNetDynamicEventProcessor());
+		dstabAlgo.setDynamicEventHandler(new MultiNetDynamicEventProcessor(multiNetHelper));
 		
 		
 		if (dstabAlgo.initialization()) {
@@ -223,15 +223,15 @@ public class TestMultiNetDStab {
 			System.out.println("Running DStab simulation ...");
 			//timer.start();
 			while(dstabAlgo.getSimuTime()<=dstabAlgo.getTotalSimuTimeSec()){
-				  System.out.println("---------------------------------------- \n t="+dstabAlgo.getSimuTime());
+				//  System.out.println("t = "+dstabAlgo.getSimuTime());
 			     dstabAlgo.solveDEqnStep(true);
 			}
 			//timer.logStd("total simu time: ");
 		 }
 		
-		 System.out.println(sm.toCSVString(sm.getMachPeTable()));
-		
-	     System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+		//System.out.println(sm.toCSVString(sm.getMachAngleTable()));
+		System.out.println(sm.toCSVString(sm.getMachPeTable()));
+	    System.out.println(sm.toCSVString(sm.getBusVoltTable()));
 	}
 	
 	private DynamicEvent create3PhaseFaultEvent(String faultBusId, DStabilityNetwork net,double startTime, double durationTime){
@@ -261,8 +261,8 @@ public class TestMultiNetDStab {
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/IEEE9Bus/ieee9.raw",
 				"testData/IEEE9Bus/ieee9.seq",
-				//"testData/IEEE9Bus/ieee9_dyn_onlyGen_saturation.dyr"
-				"testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr"
+				"testData/IEEE9Bus/ieee9_dyn_GENCLS.dyr"
+				//"testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr"
 		}));
 		DStabModelParser parser =(DStabModelParser) adapter.getModel();
 		
@@ -292,7 +292,7 @@ public class TestMultiNetDStab {
 	    
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.005d);
-		dstabAlgo.setTotalSimuTimeSec(.5d);
+		dstabAlgo.setTotalSimuTimeSec(0.5d);
 		dsNet.setNetEqnIterationNoEvent(1);
 		dsNet.setNetEqnIterationWithEvent(1);
 		dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
@@ -301,17 +301,16 @@ public class TestMultiNetDStab {
         
 		
 		StateMonitor sm = new StateMonitor();
-		sm.addGeneratorStdMonitor(new String[]{"Bus3-mach1"});
-		sm.addBusStdMonitor(new String[]{"Bus8","Bus5","Bus1"});
+		sm.addGeneratorStdMonitor(new String[]{"Bus3-mach1","Bus2-mach1","Bus1-mach1"});
+		sm.addBusStdMonitor(new String[]{"Bus8","Bus7","Bus5","Bus3","Bus2","Bus1"});
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
 		
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		IpssLogger.getLogger().setLevel(Level.FINE);
 		
 		PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
 		
-		dstabAlgo.setDynamicEventHandler(new MultiNetDynamicEventProcessor());
 		if (dstabAlgo.initialization()) {
 			
 			
@@ -325,8 +324,8 @@ public class TestMultiNetDStab {
 		 }
 		
 		 System.out.println(sm.toCSVString(sm.getMachPeTable()));
-		
-	     System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+		//System.out.println(sm.toCSVString(sm.getMachAngleTable()));
+	   System.out.println(sm.toCSVString(sm.getBusVoltTable()));
 	}
 
 }
