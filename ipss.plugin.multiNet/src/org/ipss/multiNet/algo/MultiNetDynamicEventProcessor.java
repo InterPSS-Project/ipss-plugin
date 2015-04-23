@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.NumericConstant;
+import org.interpss.numeric.datatype.ComplexFunc;
 import org.interpss.numeric.exp.IpssNumericException;
 
 
@@ -74,8 +75,8 @@ public class MultiNetDynamicEventProcessor extends DynamicEventProcessor {
 					// all events are cleared.
 					//net.setYMatrix(net.formYMatrix(SequenceCode.POSITIVE, false));
 					
+					String  faultSubNetworkId = null;
 					for (DynamicEvent dEvent : net.getDynamicEventList()) {
-						//if (dEvent.hasEvent()) {
 						   
 					        if (dEvent.getType() == DynamicEventType.BUS_FAULT) {
 						         AcscBusFault fault = dEvent.getBusFault();
@@ -88,11 +89,8 @@ public class MultiNetDynamicEventProcessor extends DynamicEventProcessor {
 						        // System.out.println("Time :"+t+", ymatrix of network is rebuilted:"+faultSubNet.getId());
 						        // System.out.println("ymatrix = \n"+ymatrix);
 						         
-						         //update the equivalent impedance matrix
-						         
-						         this.simuHelper.updateSubNetworkEquivMatrix(faultSubNet.getId());
-		
-
+						         faultSubNetworkId =faultSubNet.getId();
+						  
 					         }
 					}
 					        
@@ -115,25 +113,9 @@ public class MultiNetDynamicEventProcessor extends DynamicEventProcessor {
 						}
 					}
 					
-
-					for (DynamicEvent dEvent : net.getDynamicEventList()) {
-						//if (dEvent.hasEvent()) {
-						   
-					        if (dEvent.getType() == DynamicEventType.BUS_FAULT) {
-						         AcscBusFault fault = dEvent.getBusFault();
-						         AcscBus bus = fault.getBus();
-						         DStabilityNetwork faultSubNet = (DStabilityNetwork) bus.getNetwork();
-						         ISparseEqnComplex ymatrix = faultSubNet.getYMatrix();
-						         
-						         System.out.println("Time :"+t+", ymatrix of network after applying bus fault:"+faultSubNet.getId());
-						         System.out.println("ymatrix = \n"+ymatrix);
-
-
-					         }
-					}
 					
-					
-					
+					  // update the Thevenin equivalent impedance matrix Zth of all subNetwork
+			         this.simuHelper.updateSubNetworkEquivMatrix(faultSubNetworkId);
 					
 				}
 			}
@@ -175,7 +157,9 @@ public class MultiNetDynamicEventProcessor extends DynamicEventProcessor {
 						
 						int i = bus.getSortNumber();
 						
-						Complex ylarge =  NumericConstant.LargeBusZ;
+						Complex z = NumericConstant.SmallScZ;
+						
+						Complex ylarge = ComplexFunc.div(1.0, z);
 						
 						if(fault.getFaultCode()==SimpleFaultCode.GROUND_LG){
 							

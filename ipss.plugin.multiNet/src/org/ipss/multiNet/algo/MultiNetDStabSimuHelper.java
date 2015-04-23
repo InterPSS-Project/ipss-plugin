@@ -366,7 +366,7 @@ public  void processInterfaceBranchEquiv(){
     }
     
    /**
-    *  The boundary subsystem matrix mainly refers to the Thevenin impedance matrix [Zl];
+    *  Build the boundary subsystem matrix (also known as the Thevenin impedance matrix [Zl]);
     * @return
     */
     public FieldMatrix<Complex> prepareBoundarySubSystemMatrix(){
