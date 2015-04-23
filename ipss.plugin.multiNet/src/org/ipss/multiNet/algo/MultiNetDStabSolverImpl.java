@@ -135,24 +135,97 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 		return true;
 	}
 	
-
+	
+	@Override public void beforeStep(double time)  throws DStabSimuException {
+		// Process dynamic events
+		if (!dstabAlgo.isDisableDynamicEvent()) {
+			applyDynamicEvent(time);
+		}
+		
+		// when every there is an event, need to update the [Zl] matrix of the boundary subsystem
+		if( hasDynEvent(time)){
+			
+			this.multiNetSimuHelper.prepareBoundarySubSystemMatrix();
+		}
+	}
+   
 	
 	@Override 
 	public void nextStep(double time, double dt, DynamicSimuMethod method)  throws DStabSimuException {
 		 
-		 boolean netSolConverged = true;
-		 maxIterationTimes =20;
-		 int maxOuterIterationTimes =1;
-		for(int outerIdx=0;outerIdx<maxOuterIterationTimes;outerIdx++){
-			for(int i=0;i<maxIterationTimes;i++){ 
+		boolean netSolConverged = true;
+		maxIterationTimes =1;
+		// int maxOuterIterationTimes =1;
+		//for(int outerIdx=0;outerIdx<maxOuterIterationTimes;outerIdx++){
+		for(int i=0;i<maxIterationTimes;i++){ 
 			 
-			// The first half step of the multi-subNetwork solution
+			// The first  step of the multi-subNetwork solution
 			for(DStabilityNetwork dsNet: subNetList){
 				
 				// make sure there is no current injection at the boundary
 				dsNet.setCustomBusCurrInjHashtable(null);
 				
-				// Solve DEqn for all dynamic bus devices
+				
+				// solve net equation
+				if (!dsNet.solveNetEqn(false))
+					throw new DStabSimuException("Exception in dstabNet.solveNetEqn()");
+				
+				
+			}  //end for-subnetwork loop
+			
+			
+					
+			 /*
+			  *  In the 2nd step, first  solve the boundary subsystem to determine the current flows
+			  *  in the tie-lines. Subsequently, feed the tie-line current back to the subsystems and 
+			  *  perform the subsystem network solution again. Last, summing up the bus voltages calculated
+			  *  in these two steps to determine the final bus voltage result.
+			  */
+			
+			 
+			// for(int i=0;i<maxIterationTimes;i++){
+				  
+				  // fetch the boundary bus voltages and form the Thevenin equivalent source arrays
+				 
+				  this.multiNetSimuHelper.updateSubNetworkEquivSource();
+	
+				  
+				  // solve the tie-line subsystems, to determine the currents flowing through the tie-lines.
+				  this.multiNetSimuHelper.solveBoundarySubSystem();
+				  
+				  //solve all the SubNetworks With only Boundary Current Injections
+				  this.multiNetSimuHelper.solveSubNetWithBoundaryCurrInjection();
+				  
+				  for(DStabilityNetwork dsNet: subNetList){
+					for ( Bus busi : dsNet.getBusList() ) {
+						DStabBus bus = (DStabBus)busi;
+						if(bus.isActive()){
+							
+							if(i>=1){
+								if(!NumericUtil.equals(bus.getVoltage(),voltageRecTable.get(bus.getId()),this.converge_tol))
+									netSolConverged =false;
+							}
+							voltageRecTable.put(bus.getId(), bus.getVoltage());
+						}
+					}
+				  }
+				  
+			
+			  if(i>0 && netSolConverged) {
+				  System.out.println("multi subNetwork solution in the nextStep() is converged, iteration #"+(i+1));
+				  break;
+			  }
+	
+		  } // for maxIterationTimes loop
+			
+			
+			
+			 /*
+			  * third step : x(t+deltaT) = x(t) + dx_dt*deltaT 
+			  */
+			  
+		  for(DStabilityNetwork dsNet: subNetList){  
+			// Solve DEqn for all dynamic bus devices
 				for (Bus b : dsNet.getBusList()) {
 					if(b.isActive()){
 						DStabBus bus = (DStabBus)b;
@@ -193,75 +266,33 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 							throw new DStabSimuException("Error occured, Simulation will be stopped");
 						}
 					}
-				}
-				
-				// solve net equation
-				if (!dsNet.solveNetEqn(false))
-					throw new DStabSimuException("Exception in dstabNet.solveNetEqn()");
-				
-				
-			}
+				} 
+			  
+			  //}
+			  
+			  
+			  // update the dynamic attributes and calculate the bus frequency
+		     //  for(DStabilityNetwork dsNet: subNetList){
 			
-			
-					
-			 /*
-			  *  In the 2nd half step, first  solve the boundary subsystem to determine the current flows
-			  *  in the tie-lines. Subsequently, feed the tie-line current back to the subsystems and 
-			  *  perform the subsystem network solution again. Last, summing up the bus voltages calculated
-			  *  in these two steps to determine the final bus voltage result.
-			  */
-			
-			 
-			 // for(int i=0;i<maxIterationTimes;i++){
-				  
-				  // fetch the boundary bus voltages and form the Thevenin equivalent source arrays
-				  if(i==0)
-					  this.multiNetSimuHelper.updateSubNetworkEquivSource();
-				  else  
-					  this.multiNetSimuHelper.solvSubNetAndUpdateEquivSource();
-				  
-				  // solve the tie-line subsystems, to determine the currents flowing through the tie-lines.
-				  this.multiNetSimuHelper.solveBoundarySubSystem();
-				  
-				  //solve all the SubNetworks With only Boundary Current Injections
-				  this.multiNetSimuHelper.solveSubNetWithBoundaryCurrInjection();
-				  
-				  // update the dynamic attributes and calculate the bus frequency
-			      for(DStabilityNetwork dsNet: subNetList){
-				
-					for ( Bus busi : dsNet.getBusList() ) {
-						DStabBus bus = (DStabBus)busi;
-						if(bus.isActive()){
-							
-							// update dynamic attributes of the dynamic devices connected to the bus
-							 try {
-								bus.updateDynamicAttributes(false);
-							} catch (InterpssException e) {
-							
-								e.printStackTrace();
-							}
-							 // calculate bus frequency
-							 if (!bus.nextStep(dt, method)) {
-									throw new DStabSimuException("Error occured, Simulation will be stopped");
-								}
-							
-							
-							if(i>=1){
-								if(!NumericUtil.equals(bus.getVoltage(),voltageRecTable.get(bus.getId()),this.converge_tol))
-									netSolConverged =false;
-							}
-							voltageRecTable.put(bus.getId(), bus.getVoltage());
+				for ( Bus busi : dsNet.getBusList() ) {
+					DStabBus bus = (DStabBus)busi;
+					if(bus.isActive()){
+						
+						// update dynamic attributes of the dynamic devices connected to the bus
+						 try {
+							bus.updateDynamicAttributes(false);
+						} catch (InterpssException e) {
+						
+							e.printStackTrace();
 						}
+						 // calculate bus frequency
+						 if (!bus.nextStep(dt, method)) {
+								throw new DStabSimuException("Error occured, Simulation will be stopped");
+							}
 					}
-			    	
-			 } // for subNetwork loop
-			
-			  if(i>0 && netSolConverged) {
-				  System.out.println("multi subNetwork solution in the nextStep() is converged, iteration #"+(i+1));
-				  break;
-			  }
-	
-		  } // for maxIterationTimes loop
+				}
+		    	
+		 } // for subNetwork loop
 			
 			
 			
@@ -288,7 +319,7 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 			}
 			
 			
-		}// for outer loop
+	//	}// for outer loop
 	
 	}
 	
