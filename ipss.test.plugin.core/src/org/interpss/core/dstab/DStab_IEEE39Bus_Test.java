@@ -85,10 +85,10 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 			
 			
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
-			dstabAlgo.setSimuStepSec(0.004167);
-			dstabAlgo.setTotalSimuTimeSec(0);
+			dstabAlgo.setSimuStepSec(0.005);
+			dstabAlgo.setTotalSimuTimeSec(8.0);
 			dstabAlgo.setRefMachine(dsNet.getMachine("Bus31-mach1"));
-			dsNet.setNetEqnIterationNoEvent(6);
+			dsNet.setNetEqnIterationNoEvent(1);
 			dsNet.addDynamicEvent(create3PhaseFaultEvent("Bus2",dsNet,1,0.0833),"3phaseFault@Bus2");
 			
 
@@ -98,10 +98,11 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(2);
+			dstabAlgo.setOutPutPerSteps(1);
 			
 			IpssLogger.getLogger().setLevel(Level.INFO);
 			if (dstabAlgo.initialization()) {
+				
 				System.out.println("Running DStab simulation ...");
 				System.out.println(dsNet.getMachineInitCondition());
 				dstabAlgo.performSimulation();

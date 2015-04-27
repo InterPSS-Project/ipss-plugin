@@ -68,11 +68,13 @@ public class MachineSaturationTest extends TestSetupBase {
 		mach.setSe100(12.5);
 		mach.setSe120(50.0);		
 		
+		// without considering Ra in calculation of voltageBehindXl, Xds = 1.444036
+		// with Ra considered, Xds = 1.4398834500687638
 		//System.out.println(mach.getXdAdjusted());
-		assertTrue(Math.abs(mach.getXdAdjusted()-1.444036) < 0.0001);
+		assertTrue(Math.abs(mach.getXdAdjusted()-1.4398834500687638) < 0.0001);
 
 		bus.setVoltage(new Complex(1.4, 0.0));
 		//System.out.println(mach.getXdAdjusted());
-		assertTrue(Math.abs(mach.getXdAdjusted()-0.898648) < 0.0001);
+		assertTrue(Math.abs(mach.getXdAdjusted()-0.896989852998746) < 0.0001);
 	}
 }

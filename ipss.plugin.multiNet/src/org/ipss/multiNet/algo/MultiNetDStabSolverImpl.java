@@ -154,12 +154,11 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 	public void nextStep(double time, double dt, DynamicSimuMethod method)  throws DStabSimuException {
 		 
 		boolean netSolConverged = true;
-		maxIterationTimes =1;
-		// int maxOuterIterationTimes =1;
-		//for(int outerIdx=0;outerIdx<maxOuterIterationTimes;outerIdx++){
+		//maxIterationTimes =1;
 		for(int i=0;i<maxIterationTimes;i++){ 
 			 
-			// The first  step of the multi-subNetwork solution
+			// The first  step of the multi-subNetwork solution is to solve each subnetwork independently without current injections from the 
+			// connection tie-lines
 			for(DStabilityNetwork dsNet: subNetList){
 				
 				// make sure there is no current injection at the boundary
@@ -167,7 +166,7 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 				
 				
 				// solve net equation
-				if (!dsNet.solveNetEqn(false))
+				if (!dsNet.solveNetEqn())
 					throw new DStabSimuException("Exception in dstabNet.solveNetEqn()");
 				
 				
@@ -176,14 +175,16 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 			
 					
 			 /*
-			  *  In the 2nd step, first  solve the boundary subsystem to determine the current flows
+			  *  In the 2nd step, first  solve the boundary tie-line subsystem to determine the current flows
 			  *  in the tie-lines. Subsequently, feed the tie-line current back to the subsystems and 
 			  *  perform the subsystem network solution again. Last, summing up the bus voltages calculated
-			  *  in these two steps to determine the final bus voltage result.
+			  *  in these two steps to determine the final bus voltages, based on the superposition theory.
+			  *  
+			  *  V = Vinternal = Vexternal
 			  */
 			
 			 
-			// for(int i=0;i<maxIterationTimes;i++){
+		
 				  
 				  // fetch the boundary bus voltages and form the Thevenin equivalent source arrays
 				 
@@ -212,7 +213,7 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 				  
 			
 			  if(i>0 && netSolConverged) {
-				  System.out.println("multi subNetwork solution in the nextStep() is converged, iteration #"+(i+1));
+				  System.out.println(getSimuTime()+","+"multi subNetwork solution in the nextStep() is converged, iteration #"+(i+1));
 				  break;
 			  }
 	
@@ -221,7 +222,9 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 			
 			
 			 /*
-			  * third step : x(t+deltaT) = x(t) + dx_dt*deltaT 
+			  * Third step : with the network solved, the bus voltage and current injections are determined, it is time to solve the dynamic devices using 
+			  * integration methods
+			  *  x(t+deltaT) = x(t) + dx_dt*deltaT 
 			  */
 			  
 		  for(DStabilityNetwork dsNet: subNetList){  
@@ -268,7 +271,8 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 					}
 				} 
 			  
-			  //}
+				
+			  // The network solution and integration steps ends here, the following is mainly to record or update some intermediate variables
 			  
 			  
 			  // update the dynamic attributes and calculate the bus frequency
@@ -295,7 +299,7 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 		 } // for subNetwork loop
 			
 			
-			
+		// back up the states	
 			for(DStabilityNetwork dsNet: subNetList){
 			 // backup the states
 			 for (Bus b :  dsNet.getBusList()) {
@@ -313,7 +317,6 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 							}
 						}
 						
-						//TODO Solve DEqn for dynamic load, e.g. induction motor
 					}
 			  }
 			}

@@ -88,7 +88,7 @@ public class TestSubNetEquiv {
 		    proc.addSubNetInterfaceBranch("Bus5->Bus7(0)");
 		    proc.addSubNetInterfaceBranch("Bus7->Bus8(0)");
 		    
-		    proc.createSubNetworks();
+		    proc.splitFullSystemIntoSubsystems(false);
 		    
 		    // need to initialize the dstab network to perform the subnetwork solution
 		    
