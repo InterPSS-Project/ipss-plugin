@@ -38,8 +38,6 @@ import org.ieee.odm.schema.YUnitType;
 import org.ieee.odm.schema.ZUnitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
-import com.interpss.common.func.IFunction;
-
 /**
  * ODM unit help functions. To use functions in this class, 
  * 

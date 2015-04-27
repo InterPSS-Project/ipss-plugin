@@ -12,7 +12,7 @@ import org.interpss.display.AcscOutFunc;
 import org.interpss.mapper.odm.ODMAcscParserMapper;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
-import org.interpss.numeric.util.MatrixUtil;
+import org.interpss.numeric.util.MatrixOutputUtil;
 import org.interpss.numeric.util.TestUtilFunc;
 import org.junit.Test;
 

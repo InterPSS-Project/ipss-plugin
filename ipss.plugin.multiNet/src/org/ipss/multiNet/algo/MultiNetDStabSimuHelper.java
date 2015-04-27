@@ -193,7 +193,7 @@ public  void processInterfaceBranchEquiv(){
     		 
     	    // perform network solution to get the bus voltages
     	     
-    		 subNet.solveNetEqn(false);
+    		 subNet.solveNetEqn();
     		 
     	
     	    // the voltages at the boundary buses are the Thevenin voltages 

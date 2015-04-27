@@ -39,7 +39,6 @@ import com.interpss.common.datatype.Constants;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.mapper.AbstractMapper;
 import com.interpss.core.aclf.Aclf3WBranch;
-import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.net.Area;
 import com.interpss.core.net.Branch;

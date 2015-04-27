@@ -19,6 +19,7 @@ import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.interpss.numeric.NumericConstant;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.Number2String;
+import org.interpss.numeric.util.PerformanceTimer;
 import org.interpss.util.FileUtil;
 import org.junit.Test;
 
@@ -49,18 +50,20 @@ import com.interpss.simu.SimuCtxType;
 
 public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	
-	@Test
+	//@Test
 	public void test_IEEE9Bus_Dstab() throws InterpssException{
 		IpssCorePlugin.init();
+		IpssCorePlugin.setLoggerLevel(Level.INFO);
 		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
-				//"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq",
+				"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq",
+				//"testData/adpter/psse/v30/IEEE9Bus/ieee9_dyn_onlyGen_saturation.dyr"
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9_dyn_onlyGen.dyr"
 		}));
 		DStabModelParser parser =(DStabModelParser) adapter.getModel();
 		
-		System.out.println(parser.toXmlDoc());
+		//System.out.println(parser.toXmlDoc());
 
 		
 		
@@ -76,11 +79,11 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	    
 	    
 	    // build sequence network
-	    SequenceNetworkBuilder seqNetHelper = new SequenceNetworkBuilder(dsNet,true);
-	    seqNetHelper.buildSequenceNetwork(SequenceCode.NEGATIVE);
-	    seqNetHelper.buildSequenceNetwork(SequenceCode.ZERO);
-	    
-	    System.out.println(dsNet.net2String());
+//	    SequenceNetworkBuilder seqNetHelper = new SequenceNetworkBuilder(dsNet,true);
+//	    seqNetHelper.buildSequenceNetwork(SequenceCode.NEGATIVE);
+//	    seqNetHelper.buildSequenceNetwork(SequenceCode.ZERO);
+//	    
+//	    System.out.println(dsNet.net2String());
 	    
 		DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
@@ -88,78 +91,57 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 		
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
-		dstabAlgo.setSimuStepSec(0.001);
-		dstabAlgo.setTotalSimuTimeSec(5.0);
+		dstabAlgo.setSimuStepSec(0.005d);
+		dstabAlgo.setTotalSimuTimeSec(3);
+		dsNet.setNetEqnIterationNoEvent(1);
+		dsNet.setNetEqnIterationWithEvent(1);
 		dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
-		dsNet.addDynamicEvent(create3PhaseFaultEvent("Bus4",dsNet,11.0,0.0833),"3phaseFault@Bus4");
-
-//		StateVariableRecorder ssRecorder = new StateVariableRecorder(0.0001);
-//		ssRecorder.addCacheRecords("Bus2-mach1",      // mach id 
-//				MachineState,    // record type
-//				DStabOutSymbol.OUT_SYMBOL_MACH_ANG,       // state variable name
-//				0.005,                                      // time steps for recording 
-//				1000);                                      // total points to record 
-//		
-//		ssRecorder.addCacheRecords("Bus2-mach1",      // mach id 
-//				MachineState,    // record type
-//				DStabOutSymbol.OUT_SYMBOL_MACH_PM,       // state variable name
-//				0.005,                                      // time steps for recording 
-//				1000);                                      // total points to record
-//		ssRecorder.addCacheRecords("Bus2-mach1",      // mach id 
-//				StateVarRecType.MachineState,    // record type
-//				DStabOutSymbol.OUT_SYMBOL_MACH_Efd,       // state variable name
-//				0.005,                                      // time steps for recording 
-//				1000);
-		
+		dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",dsNet,SimpleFaultCode.GROUND_LG,1.0d,0.05),"3phaseFault@Bus5");
+        
+        
 		
 		StateMonitor sm = new StateMonitor();
 		sm.addGeneratorStdMonitor(new String[]{"Bus1-mach1","Bus2-mach1","Bus3-mach1"});
-		
+		sm.addBusStdMonitor(new String[]{"Bus5","Bus4","Bus1"});
 		// set the output handler
 				dstabAlgo.setSimuOutputHandler(sm);
 				dstabAlgo.setOutPutPerSteps(1);
 		
 		IpssLogger.getLogger().setLevel(Level.FINE);
+		
+		PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+		
+		//for(int i =1; i<20;i++){
+			
+			
+
 		if (dstabAlgo.initialization()) {
 			System.out.println(dsNet.getMachineInitCondition());
+			
 			System.out.println("Running DStab simulation ...");
+			timer.start();
 			dstabAlgo.performSimulation();
+			
+			timer.logStd("total simu time: ");
+			}
 			//dstabAlgo.performOneStepSimulation();
 
-		}
-		//System.out.println(sm.toCSVString(sm.getMachAngleTable()));
+		//}
+		System.out.println(sm.toCSVString(sm.getMachAngleTable()));
 		
 		System.out.println(sm.toCSVString(sm.getMachPeTable()));
 		
-		//FileUtil.writeText2File("E:/ieee9_angle_1step.csv", sm.toCSVString(sm.getMachAngleTable()));
+//		FileUtil.writeText2File("output/ieee9_bus5_machPe_v5_03172015.csv",sm.toCSVString(sm.getMachPeTable()));
+//		FileUtil.writeText2File("output/ieee9_bus5_machAngle_v5_03172015.csv",sm.toCSVString(sm.getMachAngleTable()));
+//		FileUtil.writeText2File("output/ieee9_bus5_machSpd_v5_03172015.csv",sm.toCSVString(sm.getMachSpeedTable()));
+//		FileUtil.writeText2File("output/ieee9_bus5_busVolt_v5_03172015.csv",sm.toCSVString(sm.getBusVoltTable()));
+		
 		/*
-		 * Init angle 
-		 * bus1-mach1: 0.06257886961702232 Rad
-		 * bus2-mach2: 1.0672402573811874  Rad  -> relative angle = 57.5628 deg
-		 */
-//		// output recorded simulation results
-//		List<StateRecord> list = ssRecorder.getMachineRecords(
-//				"Bus2-mach1", MachineState, DStabOutSymbol.OUT_SYMBOL_MACH_ANG);
-//		System.out.println("\n\n Bus2 Machine Anagle");
-//		for (StateRecord rec : list) {
-//			System.out.println(Number2String.toStr(rec.t) + ", " + Number2String.toStr(rec.variableValue));
-//		}
-//
-//		
-//		list = ssRecorder.getMachineRecords(
-//				"Bus2-mach1", MachineState, DStabOutSymbol.OUT_SYMBOL_MACH_PM);
-//		System.out.println("\n\n Bus2 Machine PM");
-//		for (StateRecord rec : list) {
-//			System.out.println(Number2String.toStr(rec.t) + ", " + Number2String.toStr(rec.variableValue));
-//		}
-//		list = ssRecorder.getMachineRecords(
-//				"Bus2-mach1", StateVarRecType.MachineState, DStabOutSymbol.OUT_SYMBOL_MACH_Efd);
-//		System.out.println("\n\n Bus2 Machine Efd");
-//		for (StateRecord rec : list) {
-//			System.out.println(Number2String.toStr(rec.t) + ", " + Number2String.toStr(rec.variableValue));
-//		}
-		
-		
+		FileUtil.writeText2File("output/ieee9_bus5_machPe_v4_sat_03042015.csv",sm.toCSVString(sm.getMachPeTable()));
+		FileUtil.writeText2File("output/ieee9_bus5_machAngle_v4_sat_03042015.csv",sm.toCSVString(sm.getMachAngleTable()));
+		FileUtil.writeText2File("output/ieee9_bus5_machSpd_v4_sat_03042015.csv",sm.toCSVString(sm.getMachSpeedTable()));
+		FileUtil.writeText2File("output/ieee9_bus5_busVolt_v3_sat_03042015.csv",sm.toCSVString(sm.getBusVoltTable()));
+        */
 		/*
 		 *  Bus2 Machine Anagle
 				0.0000, 57.56288
@@ -203,7 +185,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		 */
 	}
 	
-	//@Test
+	@Test
 	public void IEEE9_Dstab_benchMark() throws InterpssException{
 		IpssCorePlugin.init();
 		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
@@ -229,7 +211,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	    DStabilityNetwork dsNet =simuCtx.getDStabilityNet();
 
 	    
-	    System.out.println(dsNet.net2String());
+	   // System.out.println(dsNet.net2String());
    
 		DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
@@ -241,6 +223,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		dstabAlgo.setTotalSimuTimeSec(1);
 		dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 		dsNet.setNetEqnIterationNoEvent(1);
+		dsNet.setNetEqnIterationWithEvent(1);
 		double[] timePoints   = {0.0,    0.4,    0.7,    0.9},
 	      			 machPmPoints = {1.6300, 1.6300,   1.6300,   1.6300},
 	      			 machAngPoints  = {57.56288, 57.56288,  57.56288,   57.56288},
@@ -271,7 +254,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 				DStabOutSymbol.OUT_SYMBOL_MACH_Efd) < 0.0001);
 	}
 	
-	//@Test
+	@Test
 	public void IEEE9_Dstab_GenWithoutMach() throws InterpssException{
 		IpssCorePlugin.init();
 		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
@@ -339,7 +322,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		assertTrue(stateTestRecorder.diffTotal("Bus2-mach1", MachineState, 
 				DStabOutSymbol.OUT_SYMBOL_MACH_Efd) < 0.00001);
 	}
-	//@Test
+	@Test
     public void IEEE9_Dstab_multiGen_Test() throws InterpssException{
             IpssCorePlugin.init();
             IpssLogger.getLogger().setLevel(Level.INFO);
@@ -368,7 +351,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 
             DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
             LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
-            aclfAlgo.setTolerance(1.0E-4);
+            aclfAlgo.setTolerance(1.0E-6);
             assertTrue(aclfAlgo.loadflow());
             System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
             
