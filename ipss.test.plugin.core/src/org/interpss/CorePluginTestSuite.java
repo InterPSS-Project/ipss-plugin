@@ -55,6 +55,7 @@ import org.interpss.core.dstab.mach.RoundRotorMachineTest;
 import org.interpss.core.dstab.mach.SalientPoleMachineTest;
 import org.interpss.core.mnet.MNet_Aclf5Bus_Child_Test;
 import org.interpss.core.mnet.MNet_IEEE14Bus_Test;
+import org.interpss.core.mnet.TestSubnetworkProcessor;
 import org.interpss.plugin.beanModel.AclfBeanMapperTest;
 import org.interpss.spring.SimuAppCtxTest;
 import org.junit.runner.RunWith;
@@ -103,7 +104,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	//DStab_2Bus.class,
 	
 	//DStab PSS/E
-	//DStab_IEEE9Bus_Test.class,
+	DStab_IEEE9Bus_Test.class,
 	
 	// Dist
 	DistLF14Bus_PathLF_Test.class,
@@ -152,6 +153,9 @@ import org.junit.runners.Suite.SuiteClasses;
 	GuideSample_TestCase.class,
 	
 	AclfBeanMapperTest.class,
+	
+	//multi subnetwork processor
+	TestSubnetworkProcessor.class,
 	
 	//MNet_IEEE14Bus_Test.class,
 	//MNet_Aclf5Bus_Child_Test.class,
