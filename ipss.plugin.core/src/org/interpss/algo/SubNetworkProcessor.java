@@ -44,9 +44,10 @@ public class SubNetworkProcessor {
 	
 	
     private String[] boundaryBusIdAry = null;
-	private List<String> defInterfaceBranchIdList = null;
-	private List<String> internalInterfaceBranchIdList = null;
+	private List<String> defInterfaceBranchIdList = null;  // for storing tie-line definition in data input 
+	private List<String> internalInterfaceBranchIdList = null; // for internally used
 	private List<String> boundaryBusIdList =null;
+	private List<String> externalboundaryBusIdList =null;  // for hybrid simulation use only
 	private List<ChildNetInterfaceBranch> cutSetList = null;
 	private boolean subNetworkSearched = false;
 	private Hashtable<String, Integer> busId2SubNetworkTable =  null;
@@ -98,11 +99,15 @@ public class SubNetworkProcessor {
 	 * @return
 	 */
     public void  addSubNetInterfaceBranch(String branchId, boolean childNetAtFromBusSide){
+    	
+    	
 		
 		if(this.net.getBranch(branchId)!=null){
 			ChildNetInterfaceBranch intBranch = ChildNetworkFactory.eINSTANCE.createChildNetInterfaceBranch();
 			intBranch.setBranchId(branchId);
 			intBranch.setChildNetSide(childNetAtFromBusSide? BranchBusSide.FROM_SIDE: BranchBusSide.TO_SIDE);
+			
+			
 			this.cutSetList.add(intBranch);
 			// add the branch id to the branch Id list
 			this.defInterfaceBranchIdList.add(branchId);
@@ -155,6 +160,8 @@ public class SubNetworkProcessor {
     
     private void addDummyBusToFullNet() throws InterpssException{
     	
+    	
+    		externalboundaryBusIdList = new ArrayList();
         
     	// obtain the boundary buses
         if(cutSetList.size()>0){
@@ -180,11 +187,19 @@ public class SubNetworkProcessor {
 						
 					    // add the zero-impedance line to connect the dummy bus to the original bus
 					    DStabBranch dummyBranch = DStabObjectFactory.createDStabBranch(dummyBusId, boundaryBus.getId(), (DStabilityNetwork) net);
-					    dummyBranch.setZ(new Complex(0,1.0E-5));
+					    dummyBranch.setZ(new Complex(0,1.0E-4));
+					    
+					    //set the branch status to false in order to isolate the subsystems 
+					    //dummyBranch.setStatus(false);
 					    
 					    // add the new branch to the internal tie-line list
 					    this.internalInterfaceBranchIdList.add(dummyBranch.getId());
+					    
+					    // the dummy bus is a boundary bus of the external system
+					    externalboundaryBusIdList.add(dummyBusId);
 					}
+					
+					
 					
 					// update the existing tie-line from/to buses
 			        if(isFromSide){
@@ -394,6 +409,8 @@ public class SubNetworkProcessor {
 		return this.subNetworkList;
 	}
 	public List<String> getInterfaceBranchIdList(){
+		if(this.internalInterfaceBranchIdList !=null)
+			return  this.internalInterfaceBranchIdList;
 		return this.defInterfaceBranchIdList;
 	}
 	
@@ -417,5 +434,20 @@ public class SubNetworkProcessor {
 		}
 		return null;
 	}
-
+	
+	public List<String>  getExternalSubNetBoundaryBusIdList(){
+		return this.externalboundaryBusIdList;
+	}
+	
+	public DStabilityNetwork getExternalSubNetwork(){
+		   String busid = this.externalboundaryBusIdList.get(0);
+		   int subNetIdx = busId2SubNetworkTable.get(busid);
+		   return  this.subNetworkList.get(subNetIdx);
+	}
+	
+	public void setInternalTieLineStatus(boolean status){
+		for(String id:getInterfaceBranchIdList()){
+			this.net.getBranch(id).setStatus(status);
+		}
+	}
 }
