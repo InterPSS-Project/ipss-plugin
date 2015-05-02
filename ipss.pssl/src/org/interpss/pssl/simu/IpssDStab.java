@@ -112,8 +112,8 @@ public class IpssDStab {
     }
     
     public IpssDStab setRefMachine(String refMachId){
-    	if(dstabNet.getMachine("Bus1-mach1")!=null)
-            this.dstabAlgo.setRefMachine(dstabNet.getMachine("Bus1-mach1"));
+    	if(dstabNet.getMachine(refMachId)!=null)
+            this.dstabAlgo.setRefMachine(dstabNet.getMachine(refMachId));
     	else{
     		IpssLogger.getLogger().severe("No machine is found for the input "+ refMachId + ", please check!");
     	}

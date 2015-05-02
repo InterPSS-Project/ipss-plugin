@@ -43,7 +43,7 @@ import com.interpss.simu.SimuCtxType;
 public class TestAddDummyBus {
 	
 	
-	//@Test
+	@Test
 	public void test_addDummyBus() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
@@ -76,6 +76,8 @@ public class TestAddDummyBus {
 //		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 	    
 	    // add the dummy buses
+	    
+	    dsNet.bookmark(true);
 	    
 	    DStabBus bus7 = dsNet.getBus("Bus7");
 	    
@@ -118,6 +120,12 @@ public class TestAddDummyBus {
 		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 		assertTrue(Math.abs(bus7.getVoltageMag()-1.02581)<1.0E-4);
 		assertTrue(Math.abs(bus7Dummy.getVoltageMag()-1.02581)<1.0E-4);
+		
+		
+		assertTrue(dsNet.getBusList().size()==10);
+		dsNet.rollback();
+		//TODO after rollback, should be the same as the original network
+		assertTrue(dsNet.getBusList().size()==9);
 	    
 	}
 	

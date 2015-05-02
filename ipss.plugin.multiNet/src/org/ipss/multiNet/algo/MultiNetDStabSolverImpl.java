@@ -12,6 +12,7 @@ import org.interpss.numeric.util.NumericUtil;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.msg.IPSSMsgHub;
+import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
@@ -213,7 +214,7 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 				  
 			
 			  if(i>0 && netSolConverged) {
-				  System.out.println(getSimuTime()+","+"multi subNetwork solution in the nextStep() is converged, iteration #"+(i+1));
+				  IpssLogger.getLogger().fine(getSimuTime()+","+"multi subNetwork solution in the nextStep() is converged, iteration #"+(i+1));
 				  break;
 			  }
 	
