@@ -445,6 +445,20 @@ public class SubNetworkProcessor {
 		   return  this.subNetworkList.get(subNetIdx);
 	}
 	
+	public DStabilityNetwork getInternalSubNetwork(){
+		    String busid = "";
+		   for(String id:this.boundaryBusIdList){
+			   if(!externalboundaryBusIdList.contains(id)){
+		              busid = id;
+		              break;
+			   }
+		   }
+		   int subNetIdx = busId2SubNetworkTable.get(busid);
+		   return  this.subNetworkList.get(subNetIdx);
+	}
+	
+	
+	
 	public void setInternalTieLineStatus(boolean status){
 		for(String id:getInterfaceBranchIdList()){
 			this.net.getBranch(id).setStatus(status);
