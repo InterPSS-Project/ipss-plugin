@@ -8,28 +8,45 @@ import static org.interpss.mapper.odm.ODMUnitHelper.toZUnit;
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.common.ODMLogger;
 import org.ieee.odm.schema.BusIDRefXmlType;
+import org.ieee.odm.schema.BusXmlType;
 import org.ieee.odm.schema.ConverterXmlType;
 import org.ieee.odm.schema.DCLineData2TXmlType;
 import org.ieee.odm.schema.DcLineControlModeEnumType;
 import org.ieee.odm.schema.DcLineMeteredEndEnumType;
+import org.ieee.odm.schema.VSCACControlModeEnumType;
+import org.ieee.odm.schema.VSCConverterXmlType;
+import org.ieee.odm.schema.VSCDCControlModeEnumType;
+import org.ieee.odm.schema.VSCHVDC2TXmlType;
 import org.interpss.numeric.datatype.LimitType;
 
+import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfNetwork;
+import com.interpss.core.aclf.hvdc.ACControlMode;
 import com.interpss.core.aclf.hvdc.ConverterType;
+import com.interpss.core.aclf.hvdc.DCControlMode;
 import com.interpss.core.aclf.hvdc.HvdcControlMode;
 import com.interpss.core.aclf.hvdc.HvdcLine2TCCC;
+import com.interpss.core.aclf.hvdc.HvdcLine2TVSC;
 import com.interpss.core.aclf.hvdc.Inverter;
 import com.interpss.core.aclf.hvdc.Rectifier;
+import com.interpss.core.aclf.hvdc.VSCConverter;
 import com.interpss.core.aclf.hvdc.impl.HvdcLineFactoryImpl;
 
 
 public class AclfHvdcDataHelper {
-	private AclfNetwork aclfNet = null;
+	private BaseAclfNetwork<?,?>  aclfNet = null;
 	private HvdcLine2TCCC hvdc2T = null;
-	
-	public AclfHvdcDataHelper(AclfNetwork aclfNet, HvdcLine2TCCC hvdc2T){
+	private HvdcLine2TVSC vscHvdc2T = null;
+
+	public AclfHvdcDataHelper(BaseAclfNetwork<?,?>  aclfNet, HvdcLine2TCCC hvdc2T){
 		this.aclfNet = aclfNet;
 		this.hvdc2T = hvdc2T;
+	}
+	
+	public AclfHvdcDataHelper(BaseAclfNetwork<?,?>  aclfNet, HvdcLine2TVSC vscHvdc2T){
+		this.aclfNet = aclfNet;
+		this.vscHvdc2T = vscHvdc2T;
 	}
 	//TODO Define DCLineDataXmlType as a baseModel for two-terminal HVDC and VSC-HVDC
 	// so that in the future, we can handle two kinds of HVDC under the same method here as well
@@ -118,6 +135,37 @@ public class AclfHvdcDataHelper {
 		
 		
 		return success;
+		
+	}
+	
+    
+    public boolean setVSCHvdcData(VSCHVDC2TXmlType vschvdc2TXml){
+    	boolean success = false;
+    	
+    	this.vscHvdc2T.setId(vschvdc2TXml.getId());
+    	
+    	// Rdc and rating
+    	this.vscHvdc2T.setRdc(vschvdc2TXml.getRdc().getR());
+    	
+    	if(vschvdc2TXml.getMVARating()!=null)
+    	      this.vscHvdc2T.setMVARating(vschvdc2TXml.getMVARating().getValue());
+    	
+    	
+    	// set the vsc converter data
+    	 success = this.setVSCInverterData(vschvdc2TXml.getInverter());
+    	if(!success) {
+    		IpssLogger.getLogger().severe("Error in setting the vsc inverter data");
+    		return success;
+    	}
+    	
+    	 success = this.setVSCRectifierData(vschvdc2TXml.getRectifier());
+    	 if(!success) {
+     		IpssLogger.getLogger().severe("Error in setting the vsc rectifier data");
+     		return success;
+     	}
+    	
+    	return success;
+    	
 		
 	}
 	
@@ -237,9 +285,107 @@ public class AclfHvdcDataHelper {
     	
 	}
     
-    /*
-    private boolean setVSCHvdcData(DCLineDataVSCXmlType hvdc2TXml){
+
+    
+    private boolean setVSCInverterData(VSCConverterXmlType vscConvXml){
+    	
+    	boolean success = true;
+    	VSCConverter vscInv = this.vscHvdc2T.getInvConverter();
+    	
+    	// connection bus
+    	BusXmlType busXml = (BusXmlType) vscConvXml.getBusId().getIdRef();
+    	
+    	vscInv.setBus(this.aclfNet.getBus(busXml.getId()));
+    	
+    	// DC Control mode
+    	DCControlMode dcMode = 
+    	vscConvXml.getDcControlMode() == VSCDCControlModeEnumType.BLOCKED?DCControlMode.BLOCKED:
+    		vscConvXml.getDcControlMode() == VSCDCControlModeEnumType.REAL_POWER? DCControlMode.DC_Power:DCControlMode.DC_Voltage;
+    	
+    	 vscInv.setDCControlMode(dcMode);
+    	 
+    	 vscInv.setDCSetPoint(vscConvXml.getDcSetPoint());
+    	
+    	// AC Control mode
+    	ACControlMode acMode = 
+    			vscConvXml.getAcControlMode() == VSCACControlModeEnumType.REACTIVE_POWER?ACControlMode.AC_ReactivePower:
+    				(vscConvXml.getAcControlMode() == VSCACControlModeEnumType.VOLTAGE)?ACControlMode.AC_Voltage:ACControlMode.AC_PowerFactor;
+    	 vscInv.setACControlMode(acMode);
+    	
+    	 vscInv.setACSetPoint( vscConvXml.getAcSetPoint());
+    	 
+    	 //TODO Power Loss is not considered in the VSCConveter model yet
+    	 
+    	 
+    	 //Rating, assuming to be based on MVA unit
+    	 vscInv.setMVARating( vscConvXml.getMVARating().getValue());
+    	 
+    	 
+    	 // Q limit
+    	 vscInv.setQMaxMVAr(vscConvXml.getQMax().getValue());
+    	 vscInv.setQMinMVAr(vscConvXml.getQMin().getValue());
+    	 
+    	 // remote Voltage control
+    	 vscInv.setRemoteControlPercent(vscConvXml.getRemoteCtrlPercent());
+    	 
+    	 BusXmlType remotBusXml = (BusXmlType) vscConvXml.getRemoteCtrlBusId().getIdRef();
+    	 vscInv.setRemoteControlBusId(remotBusXml.getId());
+    	
+    	
+    	return success;
+    	
+    }
+    
+ private boolean setVSCRectifierData(VSCConverterXmlType vscConvXml){
+    	
+		boolean success = true;
 		
-	}
-	*/
+	 	VSCConverter vscRec = this.vscHvdc2T.getRecConverter();
+	 	
+	 	// connection bus
+	 	BusXmlType busXml = (BusXmlType) vscConvXml.getBusId().getIdRef();
+	 	
+	 	vscRec.setBus(this.aclfNet.getBus(busXml.getId()));
+	 	
+	 	// DC Control mode
+	 	DCControlMode dcMode = 
+	 	vscConvXml.getDcControlMode() == VSCDCControlModeEnumType.BLOCKED?DCControlMode.BLOCKED:
+	 		vscConvXml.getDcControlMode() == VSCDCControlModeEnumType.REAL_POWER? DCControlMode.DC_Power:DCControlMode.DC_Voltage;
+	 	
+	 	 vscRec.setDCControlMode(dcMode);
+	 	 
+	 	 vscRec.setDCSetPoint(vscConvXml.getDcSetPoint());
+	 	
+	 	// AC Control mode
+	 	ACControlMode acMode = 
+	 			vscConvXml.getAcControlMode() == VSCACControlModeEnumType.REACTIVE_POWER?ACControlMode.AC_ReactivePower:
+	 				(vscConvXml.getAcControlMode() == VSCACControlModeEnumType.VOLTAGE)?ACControlMode.AC_Voltage:ACControlMode.AC_PowerFactor;
+	 	 vscRec.setACControlMode(acMode);
+	 	
+	 	 vscRec.setACSetPoint( vscConvXml.getAcSetPoint());
+	 	 
+	 	 //TODO Power Loss is not considered in the VSCConveter model yet
+	 	 
+	 	 
+	 	 //Rating, assuming to be based on MVA unit
+	 	 vscRec.setMVARating( vscConvXml.getMVARating().getValue());
+	 	 
+	 	 
+	 	 // Q limit
+	 	 vscRec.setQMaxMVAr(vscConvXml.getQMax().getValue());
+	 	 vscRec.setQMinMVAr(vscConvXml.getQMin().getValue());
+	 	 
+	 	 // remote Voltage control
+	 	 vscRec.setRemoteControlPercent(vscConvXml.getRemoteCtrlPercent());
+	 	 
+	 	 BusXmlType remotBusXml = (BusXmlType) vscConvXml.getRemoteCtrlBusId().getIdRef();
+	 	 vscRec.setRemoteControlBusId(remotBusXml.getId());
+    	
+   
+    	
+    	
+    	return success;
+    	
+    }
+	
 }
