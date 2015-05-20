@@ -20,12 +20,13 @@ public class DStab3SeqSimuAlgorithm {
 	
 	private DStabilityNetwork net = null;
 	
-	private Hashtable<String,Complex3x1> threeSeqVoltTable;
+	private Hashtable<String,Hashtable<Integer,Complex3x1>> threeSeqVoltTable;
 	private Hashtable<String,Complex3x1> threeSeqCurInjTable;
 	private DynamicSimuAlgorithm posSeqDstabAlgo = null;
 	
 	private ISparseEqnComplex zeroSeqYMatrix = null; 
 	private ISparseEqnComplex negSeqYMatrix  = null;
+	private String[] monitoringBusAry =null;
 	
 	
 	// for considering faults within the studied network.
@@ -33,15 +34,21 @@ public class DStab3SeqSimuAlgorithm {
 	private String faultBus = "";
 	private double seqCurThreshold = 1.0E-3; // pu
 	
+	private int k = 0;
+	
 	
 	public DStab3SeqSimuAlgorithm(DStabilityNetwork net){
 		this.net = net;
 		this.posSeqDstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, IpssCorePlugin.getMsgHub());
+		
+		threeSeqVoltTable = new Hashtable<>();
 	}
 	
 	public DStab3SeqSimuAlgorithm(DynamicSimuAlgorithm dstabAlgo){
 		this.posSeqDstabAlgo = dstabAlgo;
 		this.net = dstabAlgo.getNetwork();
+		
+		threeSeqVoltTable = new Hashtable<>();
 	}
 	
 	/**
@@ -70,13 +77,25 @@ public class DStab3SeqSimuAlgorithm {
 		this.negSeqYMatrix  = this.net.formYMatrix(SequenceCode.NEGATIVE, true);
 		this.zeroSeqYMatrix =  this.net.formYMatrix(SequenceCode.ZERO, true);
 		
+		//Step-3 initialize monitoring result table
+		if(this.monitoringBusAry!=null){
+			for(String busId: this.monitoringBusAry){
+				threeSeqVoltTable.put(busId, new Hashtable<Integer,Complex3x1>());
+			}
+		}
+		else
+			IpssLogger.getLogger().severe("No monitoring bus is defined");
+		
+		k = 0;
+		
 		return flag;
 	}
 	
 	public boolean perform3SeqSimulation(){
 		boolean flag = true;
 		while(this.posSeqDstabAlgo.getSimuTime()<=this.posSeqDstabAlgo.getTotalSimuTimeSec()){
-			flag = performOneStep3SeqSimulation(null);
+			flag = performOneStep3SeqSimulation(k++, null);
+			
 			if(!flag){
 				IpssLogger.getLogger().severe("Error during performing 3-Seq TS Simulation");
 				break;
@@ -92,36 +111,69 @@ public class DStab3SeqSimuAlgorithm {
 	 * @param threeSeqCurInjTable
 	 * @return
 	 */
-	public boolean performOneStep3SeqSimulation(Hashtable<String,Complex3x1> threeSeqCurInjTable){
+	public boolean performOneStep3SeqSimulation(int counter,Hashtable<String,Complex3x1> threeSeqCurInjTable){
 		boolean flag = true;
+		
+		Hashtable<String,Complex> negVoltTable =null;
+		Hashtable<String,Complex> zeroVoltTable =null;
+		  
 		this.threeSeqCurInjTable = threeSeqCurInjTable;
-		  if(this.threeSeqCurInjTable !=null){
+		if(this.threeSeqCurInjTable !=null){
 			  
 			 // first, solve the  positive sequence network 
 		     this.net.setCustomBusCurrInjHashtable(getSeqCurInjTable(SequenceCode.POSITIVE));
 		     flag = this.posSeqDstabAlgo.solveDEqnStep(true);
 		     
+		     
 		     //next, for the negative and zero sequence networks, the seq network is solved only when the  
 		     // maximum seq current injections is larger than the threshold (1.0E-3)
 		     Hashtable<String, Complex> negCurTable = getSeqCurInjTable(SequenceCode.NEGATIVE);
-		     if(getMaxCurMag( negCurTable)> this.seqCurThreshold);
-		         flag = flag && solveSeqNetwork(SequenceCode.NEGATIVE,negCurTable);
+		   
+		     if(getMaxCurMag( negCurTable)> this.seqCurThreshold){
+		    	 
+		    	 negVoltTable = solveSeqNetwork(SequenceCode.NEGATIVE,negCurTable);
+		          flag = flag && (negVoltTable!=null);
+		     }
 		          
 		      
 	          Hashtable<String, Complex> zeroCurTable = getSeqCurInjTable(SequenceCode.ZERO);
-	         if(getMaxCurMag( zeroCurTable)> this.seqCurThreshold);
-	             flag = flag && solveSeqNetwork(SequenceCode.ZERO,zeroCurTable);
+	          
+	          if(getMaxCurMag( zeroCurTable)> this.seqCurThreshold){
+	        	   zeroVoltTable = solveSeqNetwork(SequenceCode.ZERO,zeroCurTable);
+	               flag = flag && (zeroVoltTable!=null);
+	          }
 		          
-		     //TODO save the solution result     
+		    
 		  }
 		  else{
 			  flag = this.posSeqDstabAlgo.solveDEqnStep(true);
+			  
+			  //TODO 
 			  
 			  // check if there is an unsymmetrical fault at this step and solve the
 			  // sequence networks involved, with the fault current as the only current injected
 			  // into the negative and/or zero sequence networks
 			  
+			  
+			  
 		  }
+		
+		// save the solution result     
+        
+         for(String busId: this.monitoringBusAry){
+     	        Complex3x1 seqVolts = new  Complex3x1();
+     	        seqVolts.b_1 = this.net.getBus(busId).getVoltage();
+     	        
+     	        if(negVoltTable!=null)
+     	        	seqVolts.c_2 = negVoltTable.get(busId);
+     	        
+     	        if(zeroVoltTable!=null)
+     	        	seqVolts.a_0 = zeroVoltTable.get(busId);
+     	        
+				threeSeqVoltTable.get(busId).put(counter, seqVolts);
+		   }
+		
+		
 		  // reset it to null
 		  this.threeSeqCurInjTable = null;
 		  
@@ -136,23 +188,7 @@ public class DStab3SeqSimuAlgorithm {
     public boolean solve3SeqNetwork(){
     	
     	// Positive sequence
-    	    this.net.setCustomBusCurrInjHashtable(null);
-		   
-		   ISparseEqnComplex subNetY= this.net.getYMatrix();
-		   
-		   subNetY.setB2Zero();
-		   
-		   for(Entry<String,Complex> e: this.subNetCurrInjTable.get(subNet.getId()).entrySet()){
-			   subNetY.setBi(e.getValue(),subNet.getBus(e.getKey()).getSortNumber());
-		   }
-		   try {
-			   // solve network to obtain Vext_injection
-			    subNetY.solveEqn();
-			} catch (IpssNumericException e1) {
-				
-				e1.printStackTrace();
-				return false;
-			}
+    	  
 		
 	}
 	
@@ -168,14 +204,10 @@ public class DStab3SeqSimuAlgorithm {
 	}
 
 
-	public Hashtable<String, Complex3x1> getThreeSeqVoltTable() {
+	public Hashtable<String,Hashtable<Integer,Complex3x1>>  getThreeSeqVoltTable() {
 		return threeSeqVoltTable;
 	}
 
-
-	public void setThreeSeqVoltTable(Hashtable<String, Complex3x1> threeSeqVoltTable) {
-		this.threeSeqVoltTable = threeSeqVoltTable;
-	}
 
 
 	public Hashtable<String, Complex3x1> getThreeSeqCurInjTable() {
@@ -196,6 +228,11 @@ public class DStab3SeqSimuAlgorithm {
 
 	public void setPosSeqDstabAlgo(DynamicSimuAlgorithm posSeqDstabAlgo) {
 		this.posSeqDstabAlgo = posSeqDstabAlgo;
+	}
+	
+	
+	public void setMonitoringBusAry(String[] monBusAry){
+		this.monitoringBusAry = monBusAry;
 	}
 	
 	private Hashtable<String, Complex> getSeqCurInjTable(SequenceCode seq){
@@ -236,7 +273,9 @@ public class DStab3SeqSimuAlgorithm {
 	    return imax;
 	}
 	
-	private boolean solveSeqNetwork(SequenceCode seq,Hashtable<String, Complex> seqCurInjTable){
+	private Hashtable<String, Complex> solveSeqNetwork(SequenceCode seq,Hashtable<String, Complex> seqCurInjTable){
+		
+		 Hashtable<String, Complex>  busVoltResults = new  Hashtable<>();
 		// solve the Ymatrix
 		switch (seq){
 		
@@ -248,20 +287,75 @@ public class DStab3SeqSimuAlgorithm {
 		   
 		    subNetY.setB2Zero();
 		    
+		       for(Entry<String,Complex> e: seqCurInjTable.entrySet()){
+				   subNetY.setBi(e.getValue(),this.net.getBus(e.getKey()).getSortNumber());
+			   }
+			   try {
+				   // solve network to obtain Vext_injection
+				    subNetY.solveEqn();
+				    if(this.monitoringBusAry!=null)
+				       for(String busId:this.monitoringBusAry){
+				    	  busVoltResults.put(busId, subNetY.getX(this.net.getBus(busId).getSortNumber()));
+				      }
+				} catch (IpssNumericException e1) {
+					
+					e1.printStackTrace();
+					return null;
+				}
+		    
 		    //TODO extract the current and map them to the buses
 		    
 		    break;
 		case NEGATIVE:
-			  //TODO
+			   //TODO
+			   negSeqYMatrix.setB2Zero();
+			   
+			   for(Entry<String,Complex> e: seqCurInjTable.entrySet()){
+				 negSeqYMatrix.setBi(e.getValue(),this.net.getBus(e.getKey()).getSortNumber());
+			   }
+			   try {
+				   // solve network to obtain Vext_injection
+				   negSeqYMatrix.solveEqn();
+				   
+				   if(this.monitoringBusAry!=null)
+				     for(String busId:this.monitoringBusAry){
+				    	  busVoltResults.put(busId, negSeqYMatrix.getX(this.net.getBus(busId).getSortNumber()));
+				      }
+			   } catch (IpssNumericException e1) {
+					
+					e1.printStackTrace();
+					return null;
+			   }
+			
 			
 			break;
 		case ZERO:
-			 //TODO
+			   //TODO
+			   zeroSeqYMatrix.setB2Zero();
+			   
+			   for(Entry<String,Complex> e: seqCurInjTable.entrySet()){
+				   zeroSeqYMatrix.setBi(e.getValue(),this.net.getBus(e.getKey()).getSortNumber());
+			   }
+			   try {
+				   // solve network to obtain Vext_injection
+				   zeroSeqYMatrix.solveEqn();
+				   
+				   if(this.monitoringBusAry!=null)
+				      for(String busId:this.monitoringBusAry){
+				    	  busVoltResults.put(busId, zeroSeqYMatrix.getX(this.net.getBus(busId).getSortNumber()));
+				      }
+			   } catch (IpssNumericException e1) {
+					
+					e1.printStackTrace();
+					return null;
+			   }
 			
 			break;
 	    }
 		
 		// save the seq bus voltage result;
+		
+		return busVoltResults;
 	}
 
 	
