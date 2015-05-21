@@ -98,13 +98,17 @@ public class NetworkEquivTest {
 		 NetworkEquivalent equiv3Ph = NetworkEquivUtil.cal3PhaseNetworkTheveninEquiv((DStabNetwork3Phase) subNet, proc.getSubNet2BoundaryBusListTable().get(subNet.getId()));
 		 System.out.print(MatrixUtil.complex3x32DAry2String( equiv3Ph.getMatrix3x3()));
 		 
+		//TODO test 3-phase network equivalent by comparing it with 3-seq network equiv
+		 
 		 /**
+		  *  //3-phase//
+		  *  
 		  * aa = (0.014854848803637855, 0.08373322183556542),ab = (0.0033995433599555984, 0.03013553527656018),ac = (0.003399543359955598, 0.03013553527656018)
 			ba = (0.003399543359955596, 0.03013553527656019),bb = (0.014854848803637853, 0.08373322183556543),bc = (0.0033995433599556023, 0.030135535276560176)
 			ca = (0.003399543359955595, 0.030135535276560186),cb = (0.003399543359955602, 0.03013553527656018),cc = (0.014854848803637853, 0.08373322183556543)
 			
 			
-			3-seq transformed from 3-phase: 
+			//3-seq transformed from 3-phase: //
 			aa = (0.011455305443682248, 0.05359768655900525),ab = (6.938893903907228E-18, -8.673617379884035E-18),ac = (0.0, -1.734723475976807E-18)
 			ba = (6.938893903907228E-18, -6.938893903907228E-18),bb = (0.011455305443682248, 0.05359768655900524),bc = (0.0, -1.734723475976807E-18)
 			ca = (0.0, 6.938893903907228E-18),cb = (0.0, 6.938893903907228E-18),cc = (0.02165393552354905, 0.14400429238868578)
@@ -112,7 +116,7 @@ public class NetworkEquivTest {
 		 System.out.print("3-seq transformed from 3-phase: \n"+equiv3Ph.getMatrix3x3()[0][0].To120().toString());
 	}
 	
-	//TODO test 3-phase network equivalent by comparing it with 3-seq network equiv
+	
 	
 	//
 
