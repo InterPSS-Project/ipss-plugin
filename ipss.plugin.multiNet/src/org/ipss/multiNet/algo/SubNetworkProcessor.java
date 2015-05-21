@@ -1,4 +1,4 @@
-package org.interpss.algo;
+package org.ipss.multiNet.algo;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -6,6 +6,8 @@ import java.util.Hashtable;
 import java.util.List;
 
 import org.apache.commons.math3.complex.Complex;
+import org.ipss.threePhase.dynamic.DStabNetwork3Phase;
+import org.ipss.threePhase.util.ThreePhaseObjectFactory;
 
 import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
@@ -157,7 +159,10 @@ public class SubNetworkProcessor {
     	 return flag;
     }
 	
-    
+    /**
+     * This process relies on inputing the boundary tie-line data with the information of internal/detailed subnetwork side
+     * @throws InterpssException
+     */
     private void addDummyBusToFullNet() throws InterpssException{
     	
     	
@@ -179,7 +184,13 @@ public class SubNetworkProcessor {
 					DStabBus dummyBus = (DStabBus) this.net.getBus(dummyBusId);
 					if( dummyBus ==null){
 						
-						dummyBus = DStabObjectFactory.createDStabBus(dummyBusId, (DStabilityNetwork) this.net);
+						if(this.net instanceof DStabNetwork3Phase)
+							dummyBus = ThreePhaseObjectFactory.create3PBus(dummyBusId, (DStabNetwork3Phase) this.net);
+							
+					    else if(this.net instanceof DStabilityNetwork)
+						    dummyBus = DStabObjectFactory.createDStabBus(dummyBusId, (DStabilityNetwork) this.net);
+						
+						
 					    //basic info copy
 						dummyBus.setBaseVoltage(boundaryBus.getBaseVoltage());
 						dummyBus.setVoltage(boundaryBus.getVoltage());
@@ -296,7 +307,13 @@ public class SubNetworkProcessor {
 					
 					// for each iteration back to this layer, it means one subnetwork search is finished; subsequently, it is going to start
 					// searching a new subnetwork.
-					this.subNet = DStabObjectFactory.createDStabilityNetwork(); //(ChildNetwork<DStabBus, DStabBranch>) CoreObjectFactory.createChildNet(net, "childNet-"+(subNetIdx+1));
+					
+					if(this.net instanceof DStabNetwork3Phase)
+						this.subNet = ThreePhaseObjectFactory.create3PhaseDStabNetwork();
+					else if(this.net instanceof DStabilityNetwork)
+					     this.subNet = DStabObjectFactory.createDStabilityNetwork(); //(ChildNetwork<DStabBus, DStabBranch>) CoreObjectFactory.createChildNet(net, "childNet-"+(subNetIdx+1));
+					else
+						throw new UnsupportedOperationException("The network should be either  DStabNetwork3Phase or DStabilityNetwork type!");
 					this.subNet.setId("SubNet-"+(subNetIdx+1));
 					
 					subNetworkList.add(subNet);

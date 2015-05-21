@@ -10,8 +10,8 @@ import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
-import org.interpss.algo.SubNetworkProcessor;
 import org.interpss.mapper.odm.ODMDStabParserMapper;
+import org.ipss.multiNet.algo.SubNetworkProcessor;
 import org.junit.Test;
 
 import com.interpss.SimuObjectFactory;
