@@ -40,6 +40,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.common.mapper.AbstractMapper;
 import com.interpss.core.aclf.Aclf3WBranch;
 import com.interpss.core.aclf.BaseAclfNetwork;
+import com.interpss.core.aclf.hvdc.HvdcLine2T;
 import com.interpss.core.net.Area;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Branch3W;
@@ -141,8 +142,11 @@ public abstract class AbstractODMNetDataMapper<Tfrom, Tto> extends AbstractMappe
 				String tertBusId = BusXmlRef2BusId.fx(branchRec.getTertiaryBus());
 				((BaseAclfNetwork)net).add3WXfr((Aclf3WBranch)branch, fromBusId, toBusId, tertBusId);
 			}
+			else if(branch instanceof HvdcLine2T)
+				((BaseAclfNetwork)net).addHvdcLine2T((HvdcLine2T) branch, fromBusId, toBusId, (int)branch.getNumber());
 			else
 				net.addBranch(branch, fromBusId, toBusId);
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new InterpssException(e.toString() + ", the branch is ignored " +

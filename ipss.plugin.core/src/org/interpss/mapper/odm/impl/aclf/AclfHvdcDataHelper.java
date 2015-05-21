@@ -143,6 +143,7 @@ public class AclfHvdcDataHelper {
     	boolean success = false;
     	
     	this.vscHvdc2T.setId(vschvdc2TXml.getId());
+    	this.vscHvdc2T.setName(vschvdc2TXml.getName());
     	
     	// Rdc and rating
     	this.vscHvdc2T.setRdc(vschvdc2TXml.getRdc().getR());
@@ -326,10 +327,13 @@ public class AclfHvdcDataHelper {
     	 vscInv.setQMinMVAr(vscConvXml.getQMin().getValue());
     	 
     	 // remote Voltage control
-    	 vscInv.setRemoteControlPercent(vscConvXml.getRemoteCtrlPercent());
+    	
     	 
-    	 BusXmlType remotBusXml = (BusXmlType) vscConvXml.getRemoteCtrlBusId().getIdRef();
-    	 vscInv.setRemoteControlBusId(remotBusXml.getId());
+    	 if(vscConvXml.getRemoteCtrlBusId()!=null){
+    	         vscInv.setRemoteControlBusId((String) vscConvXml.getRemoteCtrlBusId().getIdRef());
+    	         // only when there is a remote control bus, this value is useful
+    	         vscInv.setRemoteControlPercent(vscConvXml.getRemoteCtrlPercent());
+    	 }
     	
     	
     	return success;
@@ -376,14 +380,13 @@ public class AclfHvdcDataHelper {
 	 	 vscRec.setQMinMVAr(vscConvXml.getQMin().getValue());
 	 	 
 	 	 // remote Voltage control
-	 	 vscRec.setRemoteControlPercent(vscConvXml.getRemoteCtrlPercent());
+	 
 	 	 
-	 	 BusXmlType remotBusXml = (BusXmlType) vscConvXml.getRemoteCtrlBusId().getIdRef();
-	 	 vscRec.setRemoteControlBusId(remotBusXml.getId());
-    	
-   
-    	
-    	
+	 	if(vscConvXml.getRemoteCtrlBusId()!=null){
+	         vscRec.setRemoteControlBusId((String) vscConvXml.getRemoteCtrlBusId().getIdRef());
+	    	 vscRec.setRemoteControlPercent(vscConvXml.getRemoteCtrlPercent());
+	 	}
+	 	 
     	return success;
     	
     }

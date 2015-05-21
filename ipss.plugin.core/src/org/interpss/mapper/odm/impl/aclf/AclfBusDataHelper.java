@@ -216,8 +216,8 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
   			  			pvLimit.setStatus(xmlDefaultGen.getQLimit().isActive());
 					}
 				}
-			}
-			else {
+			} 
+			else { //TODO need to set the remote bus information to control the remote bus voltage
 				bus.setGenCode(AclfGenCode.GEN_PQ);
 			}
 		} else if (xmlGenData.getCode() == LFGenCodeEnumType.SWING) {

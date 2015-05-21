@@ -36,6 +36,7 @@ import org.ieee.odm.schema.BaseBranchXmlType;
 import org.ieee.odm.schema.BranchBusSideEnumType;
 import org.ieee.odm.schema.BranchXmlType;
 import org.ieee.odm.schema.BusXmlType;
+import org.ieee.odm.schema.DCLineData2TXmlType;
 import org.ieee.odm.schema.FlowInterfaceBranchXmlType;
 import org.ieee.odm.schema.FlowInterfaceEnumType;
 import org.ieee.odm.schema.FlowInterfaceRecXmlType;
@@ -46,6 +47,7 @@ import org.ieee.odm.schema.NameValuePairXmlType;
 import org.ieee.odm.schema.PSXfr3WBranchXmlType;
 import org.ieee.odm.schema.PSXfrBranchXmlType;
 import org.ieee.odm.schema.PWDNetworkExtXmlType;
+import org.ieee.odm.schema.VSCHVDC2TXmlType;
 import org.ieee.odm.schema.XformerZTableXmlType;
 import org.ieee.odm.schema.Xfr3WBranchXmlType;
 import org.ieee.odm.schema.XfrBranchXmlType;
@@ -69,6 +71,8 @@ import com.interpss.core.aclf.flow.FlowInterface;
 import com.interpss.core.aclf.flow.FlowInterfaceBranch;
 import com.interpss.core.aclf.flow.FlowInterfaceLimit;
 import com.interpss.core.aclf.flow.FlowInterfaceType;
+import com.interpss.core.aclf.hvdc.HvdcLine2TCCC;
+import com.interpss.core.aclf.hvdc.HvdcLine2TVSC;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.BranchBusSide;
 import com.interpss.core.net.OriginalDataFormat;
@@ -144,9 +148,21 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 				Branch branch = null;
 				if (xmlBranch instanceof PSXfr3WBranchXmlType || xmlBranch instanceof Xfr3WBranchXmlType)
 					branch = CoreObjectFactory.createAclf3WXformer();
-				else
+				else if(xmlBranch instanceof DCLineData2TXmlType)
+					branch = CoreObjectFactory.createHvdcLine2T();
+				else if(xmlBranch instanceof VSCHVDC2TXmlType)
+					branch = CoreObjectFactory.createVSCHvdc2T();
+				else 
 					branch = CoreObjectFactory.createAclfBranch();
-				mapAclfBranchData(xmlBranch, branch, aclfNet);
+				
+				if(	xmlBranch instanceof DCLineData2TXmlType || xmlBranch instanceof VSCHVDC2TXmlType)
+					mapAclfHVDC2TData(xmlBranch, branch, aclfNet);
+					
+			    else 
+				   mapAclfBranchData(xmlBranch, branch, aclfNet);
+				
+			
+				
 				//System.out.println("map branch " + branch.getId());
 			}
 			
@@ -344,7 +360,45 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 			XfrBranchXmlType branchRec = (XfrBranchXmlType) xmlBranch;
 			helper.setXfrBranchData(branchRec);
 		}
+		else if (xmlBranch instanceof DCLineData2TXmlType){
+			DCLineData2TXmlType branchRec =  (DCLineData2TXmlType) xmlBranch;
+			AclfHvdcDataHelper  hvdcHelper =new AclfHvdcDataHelper(adjNet, (HvdcLine2TCCC) branch);
+			hvdcHelper.setHvdc2TData(branchRec);
+		}
+		else if(xmlBranch instanceof VSCHVDC2TXmlType){
+			VSCHVDC2TXmlType   branchRec =   (VSCHVDC2TXmlType) xmlBranch;
+			AclfHvdcDataHelper  hvdcHelper =new AclfHvdcDataHelper(adjNet, (HvdcLine2TVSC) branch);
+			hvdcHelper.setVSCHvdcData(branchRec);
+			
+		}
 	}
+	
+	
+	/**
+	 * mapp the branch record
+	 * 
+	 * @param xmlBranch
+	 * @param adjNet
+	 * @param msg
+	 * @throws Exception
+	 */
+	public void mapAclfHVDC2TData(BaseBranchXmlType xmlBranch, Branch branch, BaseAclfNetwork<?,?> adjNet) throws InterpssException {
+		mapBaseBranchRec(xmlBranch, branch, adjNet);	
+		if (xmlBranch instanceof DCLineData2TXmlType){
+			DCLineData2TXmlType branchRec =  (DCLineData2TXmlType) xmlBranch;
+			AclfHvdcDataHelper  hvdcHelper =new AclfHvdcDataHelper(adjNet, (HvdcLine2TCCC) branch);
+			hvdcHelper.setHvdc2TData(branchRec);
+		}
+		else if(xmlBranch instanceof VSCHVDC2TXmlType){
+			VSCHVDC2TXmlType   branchRec =   (VSCHVDC2TXmlType) xmlBranch;
+			AclfHvdcDataHelper  hvdcHelper =new AclfHvdcDataHelper(adjNet, (HvdcLine2TVSC) branch);
+			hvdcHelper.setVSCHvdcData(branchRec);
+			
+		}
+	}
+	
+	
+	
 	
 	private void setAclfBranchData(BranchXmlType xmlBranchRec, Branch branch, BaseAclfNetwork<?,?> adjNet) throws InterpssException {
 		mapBaseBranchRec(xmlBranchRec, branch, adjNet);		
