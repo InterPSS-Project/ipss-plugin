@@ -13,7 +13,6 @@ import org.apache.commons.math3.linear.FieldLUDecomposition;
 import org.apache.commons.math3.linear.FieldMatrix;
 import org.apache.commons.math3.linear.FieldVector;
 import org.apache.commons.math3.linear.RealMatrix;
-import org.interpss.algo.SubNetworkProcessor;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.ipss.multiNet.equivalent.NetworkEquivUtil;
@@ -246,7 +245,7 @@ public  void processInterfaceBranchEquiv(){
     public Hashtable<String, NetworkEquivalent> updateSubNetworkEquivMatrix(String subNetworkId){
     	DStabilityNetwork subNet = this.subNetProcessor.getSubNetwork(subNetworkId);
     	if(subNet!=null){
-	    	NetworkEquivalent equiv = NetworkEquivUtil.calNetworkEquiv(subNet,
+	    	NetworkEquivalent equiv = NetworkEquivUtil.calPosSeqNetworkTheveninEquiv(subNet,
 	    			       this.subNetProcessor.getSubNet2BoundaryBusListTable().get(subNetworkId));
 	    	
 	    	this.subNetEquivTable.put(subNetworkId, equiv);
