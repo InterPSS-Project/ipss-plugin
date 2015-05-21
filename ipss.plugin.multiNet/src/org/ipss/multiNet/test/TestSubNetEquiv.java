@@ -143,7 +143,7 @@ public class TestSubNetEquiv {
              assertTrue(NumericUtil.equals(equiv2.getMatrix()[0][0],new Complex(0.0, 0.15690803143610757),1.0E-6));
              
             // 
-            // test-3 the subsystem equivalent Thevenin equivalent votlage Source
+            // test-3 the subsystem equivalent Thevenin equivalent voltage Source
             //
              
              Complex[] Vth = equiv2.getSource();
@@ -154,7 +154,9 @@ public class TestSubNetEquiv {
              
              multiNetHelper.prepareBoundarySubSystemMatrix();
              
-             Hashtable<String, Hashtable<String,Complex>> subNetCurrTable = multiNetHelper.solveBoundarySubSystem();
+             multiNetHelper.solveBoundarySubSystem();
+             
+             Hashtable<String, Hashtable<String,Complex>> subNetCurrTable = multiNetHelper.getSubNetCurrInjTable();
              
              Hashtable<String,Complex>  currTable2 = subNetCurrTable.get("SubNet-2"); 
              Hashtable<String,Complex>  currTable1 = subNetCurrTable.get("SubNet-1");

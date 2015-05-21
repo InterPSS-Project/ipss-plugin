@@ -18,17 +18,14 @@ import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.ipss.multiNet.equivalent.NetworkEquivUtil;
 import org.ipss.multiNet.equivalent.NetworkEquivalent;
 
+import com.interpss.common.util.IpssLogger;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabilityNetwork;
 
-public class MultiNetDStabSimuHelper {
+public class MultiNetDStabSimuHelper extends AbstractMultiNetDStabSimuHelper{
 	
-	private DStabilityNetwork net = null;
-	private SubNetworkProcessor subNetProcessor = null;
-	private Hashtable<String, NetworkEquivalent> subNetEquivTable = null;
-	private Hashtable<String, Hashtable<String, Complex>> subNetCurrInjTable = null;
-	private Hashtable<String, FieldMatrix<Complex>> subNetIncidenceMatrixTable = null;  //Pk defined in the MATE paper
+
 	private FieldMatrix<Complex> Zl = null; // boundary subsystem matrix
 	
 	
@@ -54,7 +51,7 @@ public class MultiNetDStabSimuHelper {
 	
 	
 	
-public  void processInterfaceBranchEquiv(){
+      public  void processInterfaceBranchEquiv(){
 		
 		/*
 		 *  (1) add the fromShuntY and HShuntY of the tieLine branch to the boundary bus shuntY, if there is no fixed shuntY 
@@ -232,9 +229,9 @@ public  void processInterfaceBranchEquiv(){
      * update the Thevenin equivalent impedance matrix of all subNetworks
      * @return
      */
-    public Hashtable<String, NetworkEquivalent> updateSubNetworkEquivMatrix(){
+    public void updateSubNetworkEquivMatrix(){
     	
-    	return this.subNetEquivTable = NetworkEquivUtil.calMultiNetworkEquiv(this.subNetProcessor);
+    	this.subNetEquivTable = NetworkEquivUtil.calMultiNetworkEquiv(this.subNetProcessor);
     }
     
     /**
@@ -242,7 +239,7 @@ public  void processInterfaceBranchEquiv(){
      * @param subNetworkId
      * @return
      */
-    public Hashtable<String, NetworkEquivalent> updateSubNetworkEquivMatrix(String subNetworkId){
+    public void updateSubNetworkEquivMatrix(String subNetworkId){
     	DStabilityNetwork subNet = this.subNetProcessor.getSubNetwork(subNetworkId);
     	if(subNet!=null){
 	    	NetworkEquivalent equiv = NetworkEquivUtil.calPosSeqNetworkTheveninEquiv(subNet,
@@ -252,16 +249,18 @@ public  void processInterfaceBranchEquiv(){
     	}
     	else
     		throw new Error("No subnetwork is found with the input subNetwork Id!");
-    	return this.subNetEquivTable; 
+    	
     }
     
     
     
     /**
      * Solve the [Zl][Il]=[Eth] dense matrix equations to obtain the currents flowing through the tie-lines 
-     * @return  the boundary current injection table for all subnetworks
+     * @return  true  if solving without any error, else false.
      */
-    public Hashtable<String, Hashtable<String,Complex>> solveBoundarySubSystem(){
+    public boolean  solveBoundarySubSystem(){
+    	
+    	boolean flag =true;
     	// as the matrix is only updated when there is a network change, they can be prepared and updated only when necessary 
     	// Note: preparation and update of Zl is done outside this method
     	
@@ -303,7 +302,11 @@ public  void processInterfaceBranchEquiv(){
     		
     		
     	}
-    	return this.subNetCurrInjTable;
+    	else{
+    		 IpssLogger.getLogger().severe("The boundary sub system [Zl] matrix is null");
+    		 flag = false;
+    	}
+    	return flag;
     	
     }
     
@@ -325,7 +328,7 @@ public  void processInterfaceBranchEquiv(){
      * 
      * @return
      */
-    private Hashtable<String, FieldMatrix<Complex>> prepareInterfaceBranchBusIncidenceMatrix(){
+    protected Hashtable<String, FieldMatrix<Complex>> prepareInterfaceBranchBusIncidenceMatrix(){
     	
     	this.subNetIncidenceMatrixTable = new Hashtable<>();
     	
@@ -368,7 +371,7 @@ public  void processInterfaceBranchEquiv(){
     *  Build the boundary subsystem matrix (also known as the Thevenin impedance matrix [Zl]);
     * @return
     */
-    public FieldMatrix<Complex> prepareBoundarySubSystemMatrix(){
+    public void prepareBoundarySubSystemMatrix(){
     	int n = subNetProcessor.getInterfaceBranchIdList().size();
       
         this.Zl = new Array2DRowFieldMatrix<Complex>(ComplexField.getInstance(),n,n);
@@ -403,7 +406,6 @@ public  void processInterfaceBranchEquiv(){
     		throw new Error("The subNetIncidenceMatrixTable is not initialized yet, cannot procede the boundary subsystem matrix calculation!");
     	}
     				
-      return this.Zl;
     	
     }
      
@@ -453,102 +455,7 @@ public  void processInterfaceBranchEquiv(){
 		   return true;
 	   }
      
-     
-     
-     
-     
+    
 
-	
-	/*
-	   public boolean updateBoundaryBusEquivCurrentInjection(){
-		   
-		   // need to first reset all customized current injection to be zero
-		   for(DStabilityNetwork subNet: this.subNetProcessor.getSubNetworkList()){
-			   subNet.setCustomBusCurrInjHashtable(null);
-		   }
-		  
-		   for(String branchId: subNetProcessor.getInterfaceBranchIdList()){
-				DStabBranch branch= net.getBranch(branchId);
-				
-				// at this stage, the statuses of boundary buses  are inactive, so it needs to be turned to active first;
-				// as the Ymatrix is already built, this won't affect the V=INV(Y)*I network solution
-				branch.setStatus(true);
-				
-				
-				DStabBus fBus = (DStabBus) branch.getFromBus();
-				DStabBus tBus = (DStabBus) branch.getToBus();
-
-				 
-				 //Step-2, add the tie-line equivalent curret injection to the terminal buses
-				 
-		        //From bus side
-		        int fChildNetIdx =  this.subNetProcessor.getBusId2SubNetworkTable().get(fBus.getId());
-		        DStabilityNetwork fChileNet = this.subNetProcessor.getSubNetworkList().get(fChildNetIdx);
-		        //HasCurrentInejctionTable 
-		        if(fChileNet.getCustomBusCurrInjHashtable()==null){
-		           Hashtable<String, Complex> customBusCurTable = new Hashtable<>();
-		           fChileNet.setCustomBusCurrInjHashtable(customBusCurTable);
-		           customBusCurTable.put(fBus.getId(), tBus.getVoltage().multiply(branch.yft()).multiply(-1.0d));
-		        }
-		        else{
-		        	//fChileNet.getCustomBusCurrInjHashtable().put(fBus.getId(), tBus.getVoltage().multiply(branch.yft()).multiply(-1.0d));
-		        	
-		        	Complex currentInj = fChileNet.getCustomBusCurrInjHashtable().get(fBus.getId());
-		        	if(currentInj==null) currentInj = new Complex(0,0) ;
-		        	currentInj = currentInj.add(tBus.getVoltage().multiply(branch.yft()).multiply(-1.0d));
-		        	fChileNet.getCustomBusCurrInjHashtable().put(fBus.getId(), currentInj);
-		        }
-		        	
-		        
-		        
-		        
-		        //To Bus side
-		        int tChildNetIdx =  this.subNetProcessor.getBusId2SubNetworkTable().get(tBus.getId());
-		        DStabilityNetwork tChileNet = this.subNetProcessor.getSubNetworkList().get(tChildNetIdx);
-		        //HasCurrentInejctionTable 
-		        if(tChileNet.getCustomBusCurrInjHashtable()==null){
-		           Hashtable<String, Complex> customBusCurTable = new Hashtable<>();
-		           tChileNet.setCustomBusCurrInjHashtable(customBusCurTable);
-		           customBusCurTable.put(tBus.getId(), fBus.getVoltage().multiply(branch.ytf()).multiply(-1.0d));
-		        }
-		        else{
-		        	Complex currentInj = tChileNet.getCustomBusCurrInjHashtable().get(tBus.getId());
-		        	if(currentInj==null) currentInj = new Complex(0,0) ;
-		        	currentInj = currentInj.add(fBus.getVoltage().multiply(branch.ytf()).multiply(-1.0d));
-		        	tChileNet.getCustomBusCurrInjHashtable().put(tBus.getId(), currentInj);
-		        	
-		        }
-		        
-		        
-		        branch.setStatus(false);
-		   }
-		   
-		   for(DStabilityNetwork subNet: this.subNetProcessor.getSubNetworkList()){
-			   System.out.println(subNet.getId()+"   customCurrentTable:\n"+subNet.getCustomBusCurrInjHashtable());
-		   }
-		   
-		   return true;
-		   
-	   }
-	   */
-	   
-	   public void predictNextStepBoundaryVoltage(DStabilityNetwork net, SubNetworkProcessor subNetProc){
-		   
-	   }
-	    
-	   
-	   public SubNetworkProcessor getSubNetworkProcessor(){
-		   return this.subNetProcessor;
-	   }
-	   
-	   public Hashtable<String, FieldMatrix<Complex>>  getSubNetIncidenceMatrixTable(){
-		   
-	      return this.subNetIncidenceMatrixTable;
-       }
-	   
-	   public Hashtable<String, NetworkEquivalent> getSubNetEquivTable(){
-		   return this.subNetEquivTable;
-	   }
-	 
 
 }
