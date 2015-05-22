@@ -16,11 +16,8 @@ import org.junit.Test;
 
 import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.aclf.AclfBranch;
-import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
-import com.interpss.core.net.childnet.ChildNetwork;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
