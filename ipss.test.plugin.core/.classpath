@@ -27,5 +27,6 @@
 	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/apache/commons-math3-3.2.jar"/>
 	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/cache/hazelcast-3.4.jar"/>
 	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/cache/hazelcast-client-3.4.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ipss.plugin.multiNet"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
