@@ -142,20 +142,23 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 			   			subNet3Ph.solveNetEqn();
 			   			
 			   			// save the result
-			   			
+			   			NetworkEquivalent equiv = subNetEquivTable.get(subNet.getId());
 			   			int i =0;
 				   		for(String busId: this.subNetProcessor.getSubNet2BoundaryBusListTable().get(subNet.getId())){
 				   			        
-				   			     //TODO to save the boundary bus voltages in three-phase or three-seq 
-				   			        Complex3x1 v = ((Bus3Phase)subNet3Ph.getBus(busId)).get3PhaseVotlages();
-				   			        subNetEquivTable.get(subNet.getId()).getSource3x1()[i]=v;
+				   			     // save the boundary bus voltages in  three-seq, to avoid unnecessary coordinate transformation
+				   			     // as the Zth has already be transformed to three-seq, as the boundary subnetwork solution
+				   		         // is based on three-seq modeling. 
+				   			        Complex3x1 v = subNet3Ph.getBus(busId).get3SeqVoltage();
+				   			        equiv.getSource3x1()[i]=v;
 				   			        i++;
 				   		 }
+				   		
 		   			
 		   		 }
 		   		 else{
 		   			 
-		   			    //TODO use three-seq TS simu helper to solve seq networks or simply assuming only positive-seq network has internal current injections
+		   			    // solve seq networks assuming only positive-seq network has internal current injections
 		   			    //
 		   			    DStabNetwork3Phase subNet3Ph = (DStabNetwork3Phase)subNet;
 		   			    

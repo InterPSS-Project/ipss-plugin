@@ -5,6 +5,7 @@ import org.apache.commons.math3.linear.FieldMatrix;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
+import org.interpss.numeric.matrix.MatrixUtil;
 
 import com.interpss.common.util.IpssLogger;
 
@@ -99,6 +100,8 @@ public class NetworkEquivalent {
 	}
 
 	public Complex3x1[] getSource3x1() {
+		if(this.source3x1 ==null)
+			this.source3x1 = MatrixUtil.createComplex3x1DArray(dimension);
 		return source3x1;
 	}
 
@@ -161,12 +164,15 @@ public class NetworkEquivalent {
 				transEquiv.setMatrix3x3(m3x3);
 				
 				//step-3  perform 3-phase to three-sequence transformation for the source part
-				Complex3x1[] v3x1 = new Complex3x1[dim];
-				for(int i =0;i<dim;i++){
-					v3x1[i] = Complex3x1.abc_to_z12(this.source3x1[i]);
-				}
 				
-				transEquiv.setSource3x1(v3x1);
+				if(this.source3x1!=null){
+					Complex3x1[] v3x1 = new Complex3x1[dim];
+					for(int i =0;i<dim;i++){
+						v3x1[i] = Complex3x1.abc_to_z12(this.source3x1[i]);
+					}
+					
+					transEquiv.setSource3x1(v3x1);
+				}
 				
 				return transEquiv;
 			}
@@ -182,6 +188,9 @@ public class NetworkEquivalent {
 		
 		
 	}
+	
+	
+	
 	
 	/**
 	 * convert input current or voltage array in 120-coordinate to the corresponding ABC-coordinate
@@ -245,6 +254,9 @@ public class NetworkEquivalent {
 		        }
 		        else{
 		        	int k = dimension/3;
+		        	// this is the new dimension
+		        	this.setDimension(k);
+		        	
 		        	Complex3x3[][] blockMatrix = new Complex3x3[k][k] ;
 		        	
 		        	
