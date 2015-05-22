@@ -46,133 +46,11 @@ public class MultiNetDStabSimuHelper extends AbstractMultiNetDStabSimuHelper{
 		//consolidate the from/toShuntY and Half charging shuntY of the tie-lies to the terminal buses
 		processInterfaceBranchEquiv();
 		
-		this.subNetEquivTable = NetworkEquivUtil.calMultiNetworkEquiv(this.subNetProcessor);
+		this.subNetEquivTable = NetworkEquivUtil.calMultiNetPosSeqTheveninEquiv(this.subNetProcessor);
 	}
 	
-	
-	
-      public  void processInterfaceBranchEquiv(){
-		
-		/*
-		 *  (1) add the fromShuntY and HShuntY of the tieLine branch to the boundary bus shuntY, if there is no fixed shuntY 
-		 *  in the boundary bus, create one first.
-		 *  
-		 *  step-1: obtain the boundary information from SubNetworkProcessor, iterate over the interface branches
-		 *  
-		 *  step-2: with the iteration, obtain the two terminal buses, add the fromShuntY and HShuntY of the tie-line to the fixed shuntY of both buses 
-		 *  
-		 *  (2) equivalent current injection into the boundary buses which are to represent the contribution from the buses on the other end of the tie-line
-		 *  
-		 *  step-3:  calculate the equivalent current injection and add to the subNetwork as custom current injection
-		 *  
-		 *  
-		 */
-		
-		//Check the full network power flow convergence status
-		
-		if(!this.net.isLfConverged()){
-			try {
-				throw new Exception("The full network is not converged, cannot proceed the pre-processing of Multi-SubNetworks");
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		
-		for(String branchId:this.subNetProcessor.getInterfaceBranchIdList()){
-			DStabBranch branch= net.getBranch(branchId);
-		
-			
-					DStabBus fBus = (DStabBus) branch.getFromBus();
-					DStabBus tBus = (DStabBus) branch.getToBus();
-					
-					/*
-					 * Step-1, add the tie-line equivalent shuntY1/2/0 to the terminal buses
-					 */
-					//From bus
-					if(fBus.getShuntY()!=null){
-						
-						fBus.setShuntY(fBus.getShuntY().add(branch.getFromShuntY()).add(branch.getHShuntY()));
-						
-					}
-			        if(fBus.getScFixedShuntY0()==null){
-						
-						fBus.setScFixedShuntY0(new Complex(0,branch.getHB0()));
-						
-					}
-			        else
-			        	fBus.setScFixedShuntY0(fBus.getScFixedShuntY0().add(new Complex(0,branch.getHB0())));
-			        
-			        
-			        
-					//To bus
-					if(tBus.getShuntY()!=null){
-						
-						tBus.setShuntY(tBus.getShuntY().add(branch.getToShuntY()).add(branch.getHShuntY()));
-						
-					}
-			        if(tBus.getScFixedShuntY0()==null){
-						
-						tBus.setScFixedShuntY0(new Complex(0,branch.getHB0()));
-						
-					}
-			        else
-			        	tBus.setScFixedShuntY0(tBus.getScFixedShuntY0().add(new Complex(0,branch.getHB0())));
-			        
-	        
-			        /*
-					 * Step-2, add the tie-line equivalent curret injection to the terminal buses
-					 */
-			        //From bus side
-			        int fChildNetIdx =  this.subNetProcessor.getBusId2SubNetworkTable().get(fBus.getId());
-			        DStabilityNetwork fChileNet = this.subNetProcessor.getSubNetworkList().get(fChildNetIdx);
-			        //HasCurrentInejctionTable 
-			        if(fChileNet.getCustomBusCurrInjHashtable()==null){
-			           Hashtable<String, Complex> customBusCurTable = new Hashtable<>();
-			           fChileNet.setCustomBusCurrInjHashtable(customBusCurTable);
-			           customBusCurTable.put(fBus.getId(),  branch.getY().multiply((tBus.getVoltage().subtract(fBus.getVoltage()))));
-			        }
-			        else{
-			        	//fChileNet.getCustomBusCurrInjHashtable().put(fBus.getId(), tBus.getVoltage().multiply(branch.yft()).multiply(-1.0d));
-			        	
-			        	Complex currentInj = fChileNet.getCustomBusCurrInjHashtable().get(fBus.getId());
-			        	if(currentInj==null) currentInj = new Complex(0,0) ;
-			        	currentInj = currentInj.add(branch.getY().multiply((tBus.getVoltage().subtract(fBus.getVoltage()))));
-			        	fChileNet.getCustomBusCurrInjHashtable().put(fBus.getId(), currentInj);
-			        }
-			        	
-			        
-			        
-			        
-			        //To Bus side
-			        int tChildNetIdx =  this.subNetProcessor.getBusId2SubNetworkTable().get(tBus.getId());
-			        DStabilityNetwork tChileNet = this.subNetProcessor.getSubNetworkList().get(tChildNetIdx);
-			        //HasCurrentInejctionTable 
-			        if(tChileNet.getCustomBusCurrInjHashtable()==null){
-			           Hashtable<String, Complex> customBusCurTable = new Hashtable<>();
-			           tChileNet.setCustomBusCurrInjHashtable(customBusCurTable);
-			           customBusCurTable.put(tBus.getId(), branch.getY().multiply((fBus.getVoltage().subtract(tBus.getVoltage()))));
-			        }
-			        else{
-			        	Complex currentInj = tChileNet.getCustomBusCurrInjHashtable().get(tBus.getId());
-			        	if(currentInj==null) currentInj = new Complex(0,0) ;
-			        	currentInj = currentInj.add(branch.getY().multiply((fBus.getVoltage().subtract(tBus.getVoltage()))));
-			        	tChileNet.getCustomBusCurrInjHashtable().put(tBus.getId(), currentInj);
-			        	
-			        }
-			   // after mapping the effect of the tie-line branch to both terminal buses, set it to out-of-service     
-			  branch.setStatus(false);      	
-			}
-		
-		  // set the power flow convergence status 
-		  for( DStabilityNetwork subNet: this.subNetProcessor.getSubNetworkList()){
 
-				  subNet.setLfConverged(true);
-			  
-		  }
-	   
-	  }
-
+     
     public Hashtable<String, NetworkEquivalent> solvSubNetAndUpdateEquivSource(){
     	 
     	if(subNetEquivTable ==null)
@@ -231,7 +109,7 @@ public class MultiNetDStabSimuHelper extends AbstractMultiNetDStabSimuHelper{
      */
     public void updateSubNetworkEquivMatrix(){
     	
-    	this.subNetEquivTable = NetworkEquivUtil.calMultiNetworkEquiv(this.subNetProcessor);
+    	this.subNetEquivTable = NetworkEquivUtil.calMultiNetPosSeqTheveninEquiv(this.subNetProcessor);
     }
     
     /**

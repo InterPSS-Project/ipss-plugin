@@ -1,6 +1,7 @@
 package org.ipss.multiNet.algo;
 
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map.Entry;
 
 import org.apache.commons.math3.complex.Complex;
@@ -12,6 +13,7 @@ import org.interpss.numeric.sparse.ISparseEqnComplex;
 import com.interpss.DStabObjectFactory;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.acsc.SequenceCode;
+import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 
@@ -27,7 +29,7 @@ public class DStab3SeqSimuAlgorithm {
 	private ISparseEqnComplex zeroSeqYMatrix = null; 
 	private ISparseEqnComplex negSeqYMatrix  = null;
 	private String[] monitoringBusAry =null;
-	
+	private List<String> monitoringBusIdList =null;
 	
 	// for considering faults within the studied network.
 	private Complex Ifault = null;
@@ -185,12 +187,63 @@ public class DStab3SeqSimuAlgorithm {
 	 * solve three-sequence network equation
 	 * @return
 	 */
-    public boolean solve3SeqNetwork(){
+    public Hashtable<String,Complex3x1> solve3SeqNetwork( Hashtable<String, Complex3x1> boundary3SeqCurInjTable){
     	
-    	// Positive sequence
-    	  
+    	Hashtable<String,Complex3x1> threeSeqBusVoltTable = new Hashtable<>();
+    	
+    	// first,  current injection tables for the three sequences should be extracted 
+    	 Hashtable<String, Complex> posCurTable = getSeqCurInjTable(boundary3SeqCurInjTable, SequenceCode.POSITIVE);
+    	 Hashtable<String, Complex> negCurTable = getSeqCurInjTable(boundary3SeqCurInjTable, SequenceCode.NEGATIVE);
+    	 Hashtable<String, Complex> zeroCurTable = getSeqCurInjTable(boundary3SeqCurInjTable, SequenceCode.ZERO);
+    	
+    	 // Positive sequence
+    	// positive sequence should be solved in the same way as in the solveSubNetWithBoundaryCurrInjection() of  MultiNetDStabSimuHelper
 		
-	}
+    	 ISparseEqnComplex posSeqNetY =this.net.getYMatrix();
+    	 
+    	 posSeqNetY.setB2Zero();
+    	 
+    	 for(Entry<String,Complex> e: posCurTable.entrySet()){
+    		 posSeqNetY.setBi(e.getValue(),this.net.getBus(e.getKey()).getSortNumber());
+		   }
+		   try {
+			   // solve network to obtain Vext_injection
+			    posSeqNetY.solveEqn();
+			} catch (IpssNumericException e1) {
+				
+				e1.printStackTrace();
+				return null;
+			}
+		   
+		   for(DStabBus b:this.net.getBusList()){
+			   //superpostition method
+			   //bus voltage V = Vinternal + Vext_injection
+			   b.setVoltage(b.getVoltage().add(posSeqNetY.getX(b.getSortNumber())));
+			   
+			  // also save the result to the threeSeqBusVoltTable
+			   Complex3x1 v120 = new Complex3x1( new Complex(0,0),b.getVoltage(),new Complex(0,0));
+			   threeSeqBusVoltTable.put(b.getId(),v120);
+		   }
+    	 
+	
+        // negative sequence
+		   Hashtable<String,Complex> negVoltTable = this.solveSeqNetwork(SequenceCode.NEGATIVE, negCurTable);
+		   
+		   for(Entry<String,Complex> e: negVoltTable.entrySet()){
+			   threeSeqBusVoltTable.get(e.getKey()).c_2 =e.getValue();
+		   }
+    	
+    	// zero sequence
+		   
+          Hashtable<String,Complex> zeroVoltTable = this.solveSeqNetwork(SequenceCode.ZERO, zeroCurTable);
+		   
+		   for(Entry<String,Complex> e: zeroVoltTable.entrySet()){
+			   threeSeqBusVoltTable.get(e.getKey()).a_0 =e.getValue();
+		   }
+		   
+		   return threeSeqBusVoltTable;
+    
+    }
 	
 
 
@@ -252,6 +305,36 @@ public class DStab3SeqSimuAlgorithm {
 				  break;
 			  case ZERO:
 				  for(Entry<String, Complex3x1> nvpair :this.threeSeqCurInjTable.entrySet()){
+					  seqCurInjTable.put(nvpair.getKey(), nvpair.getValue().a_0);
+				  }
+				  break;
+			  
+			  }
+			  
+			  return seqCurInjTable;
+		  }
+		  else 
+			  return null;
+	}
+	
+	
+	private Hashtable<String, Complex> getSeqCurInjTable(Hashtable<String, Complex3x1> curInjTable, SequenceCode seq){
+		
+		Hashtable<String, Complex> seqCurInjTable = new Hashtable<>();
+		  if(this.threeSeqCurInjTable !=null){
+			  switch(seq){
+			  case POSITIVE:
+				  for(Entry<String, Complex3x1> nvpair :curInjTable.entrySet()){
+					  seqCurInjTable.put(nvpair.getKey(), nvpair.getValue().b_1);
+				  }
+				  break;
+			  case NEGATIVE:
+				  for(Entry<String, Complex3x1> nvpair :curInjTable.entrySet()){
+					  seqCurInjTable.put(nvpair.getKey(), nvpair.getValue().c_2);
+				  }
+				  break;
+			  case ZERO:
+				  for(Entry<String, Complex3x1> nvpair :curInjTable.entrySet()){
 					  seqCurInjTable.put(nvpair.getKey(), nvpair.getValue().a_0);
 				  }
 				  break;

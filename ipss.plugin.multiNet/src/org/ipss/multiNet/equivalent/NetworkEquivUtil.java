@@ -7,6 +7,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.exp.IpssNumericException;
+import org.interpss.numeric.matrix.MatrixUtil;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.interpss.numeric.sparse.ISparseEqnComplexMatrix3x3;
 import org.ipss.multiNet.algo.SubNetworkProcessor;
@@ -22,13 +23,42 @@ import com.interpss.dstab.DStabilityNetwork;
 public class NetworkEquivUtil {
 	
 	
-	public static Hashtable<String, NetworkEquivalent> calMultiNetworkEquiv( SubNetworkProcessor subNetProc){
+	public static Hashtable<String, NetworkEquivalent> calMultiNetPosSeqTheveninEquiv( SubNetworkProcessor subNetProc){
 		   
 		Hashtable<String,NetworkEquivalent> netEquivTable = new Hashtable<>();
 		
 		
 		for(DStabilityNetwork subNet:subNetProc.getSubNetworkList()){
 			NetworkEquivalent equiv = calPosSeqNetworkTheveninEquiv(subNet,subNetProc.getSubNet2BoundaryBusListTable().get(subNet.getId()));
+			netEquivTable.put(subNet.getId(), equiv);
+		}
+		
+		return netEquivTable;
+		
+	}
+	
+	
+	public static Hashtable<String, NetworkEquivalent> calMultiNet3ph3SeqTheveninEquiv( SubNetworkProcessor subNetProc, List<String> threePhaseSubNetIdList ){
+		   
+		Hashtable<String,NetworkEquivalent> netEquivTable = new Hashtable<>();
+		
+		NetworkEquivalent equiv = null;
+		for(DStabilityNetwork subNet:subNetProc.getSubNetworkList()){
+			if(threePhaseSubNetIdList!= null){
+				if(threePhaseSubNetIdList.contains(subNet.getId())){
+					if(subNet instanceof DStabNetwork3Phase){
+					       equiv = cal3PhaseNetworkTheveninEquiv((DStabNetwork3Phase) subNet,subNetProc.getSubNet2BoundaryBusListTable().get(subNet.getId()));
+					       //TODO need to determine when is the proper time to perform 3phase-to-3seq transformation
+					}
+					else
+						throw new Error(" The subnetwork for creating 3Phase Network Thevenin Equiv is not a DStabNetwork3Phase object");
+				}
+				else
+					equiv = cal3SeqNetworkTheveninEquiv(subNet,subNetProc.getSubNet2BoundaryBusListTable().get(subNet.getId()));
+			}
+			else{
+				equiv = cal3SeqNetworkTheveninEquiv(subNet,subNetProc.getSubNet2BoundaryBusListTable().get(subNet.getId()));
+			}
 			netEquivTable.put(subNet.getId(), equiv);
 		}
 		
@@ -112,7 +142,7 @@ public class NetworkEquivUtil {
 				netEquiv = new NetworkEquivalent(dim);
 				netEquiv.setEquivCoordinate(Coordinate.Three_sequence);
 		 
-				 Complex3x3[][] Z120Matrix = creatComplex3x32DArray(dim,dim);
+				 Complex3x3[][] Z120Matrix = MatrixUtil.createComplex3x32DArray(dim,dim);
 				    for(int i=0;i<dim;i++){
 				    	for(int j=0;j<dim;j++){
 				    		Z120Matrix[i][j] = new Complex3x3(posSeqZMatrix[i][j],negSeqZMatrix[i][j],zeroSeqZMatrix[i][j]);   
@@ -269,25 +299,5 @@ public static  NetworkEquivalent cal3PhaseNetworkTheveninEquiv(DStabNetwork3Phas
 	}
 
 	
-	public static Complex[][] creatComplex2DArray(int row,int col){
-		Complex[][] complexs = new Complex[row][col];
-		
-		for(int i=0;i<row;i++){
-			for(int j=0;j<col;j++){
-			  complexs[i][j] = new Complex(0,0);
-			}
-		}
-		return complexs;
-	}
 	
-	public static Complex3x3[][] creatComplex3x32DArray(int row,int col){
-		Complex3x3[][] complexs = new Complex3x3[row][col];
-		
-		for(int i=0;i<row;i++){
-			for(int j=0;j<col;j++){
-			  complexs[i][j] = new Complex3x3();
-			}
-		}
-		return complexs;
-	}
 }

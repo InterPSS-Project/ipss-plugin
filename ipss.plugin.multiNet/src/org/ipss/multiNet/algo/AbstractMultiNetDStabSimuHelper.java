@@ -21,6 +21,7 @@ public abstract class AbstractMultiNetDStabSimuHelper {
 	protected SubNetworkProcessor subNetProcessor = null;
 	protected Hashtable<String, NetworkEquivalent> subNetEquivTable = null;
 	protected Hashtable<String, Hashtable<String, Complex>> subNetCurrInjTable = null;
+	protected Hashtable<String, int[][]> subNetIncidenceAryTable = null;  //Pk defined in the MATE paper
 	protected Hashtable<String, FieldMatrix<Complex>> subNetIncidenceMatrixTable = null;  //Pk defined in the MATE paper
 
 	
@@ -45,7 +46,7 @@ public abstract class AbstractMultiNetDStabSimuHelper {
 		//consolidate the from/toShuntY and Half charging shuntY of the tie-lies to the terminal buses
 		processInterfaceBranchEquiv();
 		
-		this.subNetEquivTable = NetworkEquivUtil.calMultiNetworkEquiv(this.subNetProcessor);
+		this.subNetEquivTable = NetworkEquivUtil.calMultiNetPosSeqTheveninEquiv(this.subNetProcessor);
 	}
 	
 	
@@ -194,7 +195,7 @@ public abstract class AbstractMultiNetDStabSimuHelper {
       	
       
       /**
-       * solve each sub systems without considering current injections of the tie-lines, 
+       * solve each sub system without considering current injections of the tie-lines, 
        * and subsequently update the boundary Thevenin equivalent voltage sources.
        * @return
        */
@@ -247,22 +248,25 @@ public abstract class AbstractMultiNetDStabSimuHelper {
       		    
       		    List<String> busIdList = this.subNetProcessor.getSubNet2BoundaryBusListTable().get(subNet.getId());
       		    int n = busIdList.size();
-      		    FieldMatrix<Complex> Pk_T = new Array2DRowFieldMatrix<Complex>(ComplexField.getInstance(),m,n);
-      		    
+      		    FieldMatrix<Complex> Pk_TMatrix = new Array2DRowFieldMatrix<Complex>(ComplexField.getInstance(),m,n);
+      		    int[][] Pk_T_ary = new int[m][n];
+      		    		
       		    int i = 0;
       			for(String branchId:this.subNetProcessor.getInterfaceBranchIdList()){
       				DStabBranch branch= net.getBranch(branchId);
       			
-      				        
   					DStabBus fBus = (DStabBus) branch.getFromBus();
   					DStabBus tBus = (DStabBus) branch.getToBus();
   					int j =0;
   					for(String busId:busIdList){
   						if(busId.equals(fBus.getId())){
-  							Pk_T.setEntry(i, j, new Complex(1,0));
+  							Pk_TMatrix .setEntry(i, j, new Complex(1,0));
+  							Pk_T_ary[i][j] = 1;
   						}
-  						else if(busId.equals(tBus.getId()))
-  							  Pk_T.setEntry(i, j, new Complex(-1,0));
+  						else if(busId.equals(tBus.getId())){
+  							  Pk_TMatrix.setEntry(i, j, new Complex(-1,0));
+  							  Pk_T_ary[i][j] = -1;
+  						}
   						
   						j++;
   					}
@@ -271,7 +275,8 @@ public abstract class AbstractMultiNetDStabSimuHelper {
   					
       			} // end of interface branches loop
       			
-      			this.subNetIncidenceMatrixTable.put(subNet.getId(), Pk_T);
+      			this.subNetIncidenceMatrixTable.put(subNet.getId(), Pk_TMatrix);
+      			this.subNetIncidenceAryTable.put(subNet.getId(), Pk_T_ary);
       	 } // end of subNetwork loop
       	 return  this.subNetIncidenceMatrixTable;
       	
