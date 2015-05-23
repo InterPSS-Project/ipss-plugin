@@ -56,13 +56,14 @@ public class SubNetworkProcessor {
 	private Hashtable<String, List<String>> subNet2BoundaryBusListTable =  null;
 	private int subNetIdx =0;
 	
-	private BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch> net = null;
-	//private ChildNetwork<DStabBus, DStabBranch> childNet =null;
-	//private List<ChildNetwork<? extends AclfBus, ? extends AclfBranch>> subNetworkList =null;
 	
-	//TODO There is shortcoming in the existing childNet model, which did not allow the same bus to be co-existing in the childNet and parent network
+	private BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch> net = null;
+
+	//TODO There is shortcoming in the existing childNet model, which did not allow the same bus 
+	//to be co-existing in the childNet and parent network
 	private DStabilityNetwork subNet =null;
 	private List<DStabilityNetwork> subNetworkList = null;
+	private List<String> threePhaseSubNetIdList = null; // should be provided after subnetwork creation 
 
 	public SubNetworkProcessor(BaseAclfNetwork<?,?> net ){
 		this.net = net;
@@ -480,5 +481,23 @@ public class SubNetworkProcessor {
 		for(String id:getInterfaceBranchIdList()){
 			this.net.getBranch(id).setStatus(status);
 		}
+	}
+	
+	public List<String> getThreePhaseSubNetIdList(){
+		return this.threePhaseSubNetIdList;
+	}
+	
+	public void set3PhaseSubNetByBusId(String threePhaseBusId){
+		if(this.busId2SubNetworkTable.containsKey(threePhaseBusId)){
+			
+			int idx = this.busId2SubNetworkTable.get(threePhaseBusId);
+			
+			if(this.threePhaseSubNetIdList ==null)
+			     this.threePhaseSubNetIdList = new ArrayList<>();
+			
+			this.threePhaseSubNetIdList.add(this.subNetworkList.get(idx).getId());
+		}
+		else
+			IpssLogger.getLogger().severe("The input busId is not valid");
 	}
 }
