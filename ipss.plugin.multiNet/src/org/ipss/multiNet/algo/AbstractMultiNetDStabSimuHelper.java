@@ -185,8 +185,21 @@ public abstract class AbstractMultiNetDStabSimuHelper {
       
       
       
-      
+      /**
+       * prepare the Zl matrix of the interconnection tie-line subsystem, which
+       * links the Zth matrices of each subsystems and the tie-line impedances zl, as illustrated below
+       * 
+       * |Zth_i|-------zl------|Zth_j|
+       * 
+       */
       public abstract void prepareBoundarySubSystemMatrix();
+      
+      
+      /**
+       *  fetch the boundary bus voltages and update the Thevenin equivalent source arrays
+       * @return
+       */
+      public abstract Hashtable<String, NetworkEquivalent> updateSubNetworkEquivSource();
       
       
       
