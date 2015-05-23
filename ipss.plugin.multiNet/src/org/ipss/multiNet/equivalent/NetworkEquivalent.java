@@ -261,8 +261,8 @@ public class NetworkEquivalent {
 		        	
 		        	
 					// perform matrix transformation in a 3x3 block-wise manner
-					for(int i=0; i<dimension/3; i++){
-						for(int j=0; j<dimension/3; j++){
+					for(int i=0; i<k; i++){
+						for(int j=0; j<k; j++){
 							
 							Complex3x3 m3x3 =  new Complex3x3();
 							

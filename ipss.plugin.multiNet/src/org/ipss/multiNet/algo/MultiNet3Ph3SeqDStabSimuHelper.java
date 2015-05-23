@@ -1,5 +1,6 @@
 package org.ipss.multiNet.algo;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map.Entry;
@@ -41,14 +42,62 @@ import com.interpss.dstab.DStabilityNetwork;
 public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHelper{
 	
 	private Complex3x3[][] ZlAry = null;
-	private List<String> threePhaseSubNetIdTable = null; // should be provided after subnetwork creation 
+	private List<String> threePhModelingSubNetIdList = null; // should be provided after subnetwork creation 
 	private Hashtable<String, Hashtable<String, Complex3x1>> subNet3SeqCurrInjTable = null;
-	private DStab3SeqSimuAlgorithm dstab3Seq = null;
-	
+
 	
 	public MultiNet3Ph3SeqDStabSimuHelper (DStabilityNetwork net, SubNetworkProcessor subNetProc){
-		  //this.dstab3Seq = 
-		super(net,subNetProc);
+		this.net = net;
+		this.subNetProcessor = subNetProc;
+		
+		this.threePhModelingSubNetIdList = subNetProc.getThreePhaseSubNetIdList();
+		
+		//since the interconnection of the subnetworks are preset and kept constant during the simulation, 
+		//the corresponding interface branches to subnetwork boundary buses incidence matrix can be prepared. 
+		prepareInterfaceBranchBusIncidenceMatrix();
+		
+		//consolidate the from/toShuntY and Half charging shuntY of the tie-lies to the terminal buses
+		processInterfaceBranchEquiv();
+		
+		//calculate the subnetwork equivalent
+		this.subNetEquivTable = NetworkEquivUtil.calMultiNet3ph3SeqTheveninEquiv(subNetProc, threePhModelingSubNetIdList);
+		
+		
+	}
+	
+	@Override
+	public  void processInterfaceBranchEquiv(){
+	     
+		
+		 // process the equivalent using sequence Y and current injection
+		 super.processInterfaceBranchEquiv();
+		 
+		 // As the method in the super class using positive sequence current injection for equivalencing
+		 // Need to further process the boundary current injection table of the three-phase modeling subnetworks
+		 if(this.threePhModelingSubNetIdList !=null){
+			 for(DStabilityNetwork subNet: this.subNetProcessor.getSubNetworkList()){
+				 if(this.threePhModelingSubNetIdList.contains(subNet.getId())){
+					 
+					 DStabNetwork3Phase subNet3Ph = (DStabNetwork3Phase)subNet;
+					 
+					 // fetch the positive sequence current and save it to three-sequence
+					 
+					 if(subNet3Ph.getCustomBusCurrInjHashtable()!=null){
+						 
+						 Hashtable<String,Complex3x1> threePhCurrInjTable = new Hashtable<> ();
+						 
+						 for(Entry<String,Complex> entry: subNet3Ph.getCustomBusCurrInjHashtable().entrySet()){
+							 
+							 Complex3x1 Iabc = Complex3x1.z12_to_abc(new Complex3x1(new Complex(0,0),entry.getValue(),new Complex(0,0)));
+							 threePhCurrInjTable.put(entry.getKey(), Iabc);
+						 }
+							 
+						 subNet3Ph.set3phaseCustomCurrInjTable(threePhCurrInjTable);
+					 }
+				 }
+			 }
+		 }
+		 
 	}
 
 	@Override
@@ -98,7 +147,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 
 	@Override
 	public void updateSubNetworkEquivMatrix() {
-		this.subNetEquivTable = NetworkEquivUtil.calMultiNet3ph3SeqTheveninEquiv(this.subNetProcessor,threePhaseSubNetIdTable);
+		this.subNetEquivTable = NetworkEquivUtil.calMultiNet3ph3SeqTheveninEquiv(this.subNetProcessor,threePhModelingSubNetIdList);
 		
 	}
 
@@ -107,7 +156,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 		DStabilityNetwork subNet = this.subNetProcessor.getSubNetwork(subNetworkId);
     	if(subNet!=null){
 	    	NetworkEquivalent equiv = null;
-	    	if(this.threePhaseSubNetIdTable!= null && this.threePhaseSubNetIdTable.contains(subNetworkId))
+	    	if(this.threePhModelingSubNetIdList!= null && this.threePhModelingSubNetIdList.contains(subNetworkId))
 	    		equiv = NetworkEquivUtil.cal3PhaseNetworkTheveninEquiv((DStabNetwork3Phase) subNet,
 	    			       this.subNetProcessor.getSubNet2BoundaryBusListTable().get(subNetworkId));
 	    	else
@@ -137,7 +186,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 		   		 
 		   	    // perform network solution to get the bus voltages
 		   	     
-		   		 if(this.threePhaseSubNetIdTable!=null && this.threePhaseSubNetIdTable.contains(subNet.getId())){
+		   		 if(this.threePhModelingSubNetIdList!=null && this.threePhModelingSubNetIdList.contains(subNet.getId())){
 			   			DStabNetwork3Phase subNet3Ph = (DStabNetwork3Phase)subNet;
 			   			subNet3Ph.solveNetEqn();
 			   			
@@ -313,7 +362,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 			   		 
 			   	    // perform network solution to get the bus voltages
 			   	     
-			   		 if(this.threePhaseSubNetIdTable!=null && this.threePhaseSubNetIdTable.contains(subNet.getId())){
+			   		 if(this.threePhModelingSubNetIdList!=null && this.threePhModelingSubNetIdList.contains(subNet.getId())){
 			   			 
 			   		   // for the three-phase modeling subnetworks, they are directly solved in a way similar to the positive-seq base approach
 			   			 
@@ -384,21 +433,9 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 			   		 }
 			 }
 			   
-			   
-			   
-			   
-			
-			   
-			   
-			   
-			
-			   
-			   
-		   
-		   
-		   
 		   return true;
 	}
+	
 	
 	private Hashtable<String, Complex> solveSeqNetwork(SequenceCode seq,Hashtable<String, Complex> seqCurInjTable){
 		
