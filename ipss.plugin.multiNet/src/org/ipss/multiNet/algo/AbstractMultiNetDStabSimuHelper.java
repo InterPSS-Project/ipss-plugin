@@ -10,6 +10,7 @@ import org.apache.commons.math3.linear.FieldMatrix;
 import org.ipss.multiNet.equivalent.NetworkEquivUtil;
 import org.ipss.multiNet.equivalent.NetworkEquivalent;
 
+import com.interpss.CoreObjectFactory;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabilityNetwork;
@@ -50,10 +51,15 @@ public abstract class AbstractMultiNetDStabSimuHelper {
 	}
 	
 	
-	
+	 /**
+	  * as the full network are split by the "cutting off" the connection through the tie-lines, the shunt admittances at both ends of the 
+	  * branch needs to be added to the boundary buses, at shuntY are not modeled in the boundary subnetwork, which are formed by the tie-lines
+	  * connecting the subsystems. 
+	  */
       public  void processInterfaceBranchEquiv(){
 		
 		/*
+		 *  Major steps
 		 *  (1) add the fromShuntY and HShuntY of the tieLine branch to the boundary bus shuntY, if there is no fixed shuntY 
 		 *  in the boundary bus, create one first.
 		 *  
@@ -168,7 +174,11 @@ public abstract class AbstractMultiNetDStabSimuHelper {
 		  for( DStabilityNetwork subNet: this.subNetProcessor.getSubNetworkList()){
 
 				  subNet.setLfConverged(true);
-			  
+				  
+				  // this is necessary because bus number is required for forming the Ymatrix
+					if ( !subNet.isBusNumberArranged() ) {
+						subNet.accept(CoreObjectFactory.createBusNoArrangeVisitor());	  		
+					}	
 		  }
 	   
 	  }
@@ -242,6 +252,7 @@ public abstract class AbstractMultiNetDStabSimuHelper {
       protected Hashtable<String, FieldMatrix<Complex>> prepareInterfaceBranchBusIncidenceMatrix(){
       	
       	this.subNetIncidenceMatrixTable = new Hashtable<>();
+      	this.subNetIncidenceAryTable = new Hashtable<>();
       	
       	 for(DStabilityNetwork subNet: this.subNetProcessor.getSubNetworkList()){
       		    int m =this.subNetProcessor.getInterfaceBranchIdList().size();
