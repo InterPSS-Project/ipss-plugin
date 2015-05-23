@@ -1,14 +1,11 @@
 package org.ipss.multiNet.algo;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
-import static com.interpss.dstab.funcImpl.DStabFunction.BuiltBusState;
-import static com.interpss.dstab.funcImpl.DStabFunction.BuiltMachineState;
-import static com.interpss.dstab.funcImpl.DStabFunction.BuiltScriptDynamicBusDeviceState;
-
-import java.util.Hashtable;
 import java.util.List;
 
+import org.apache.commons.math3.complex.Complex;
+import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.util.NumericUtil;
+import org.ipss.threePhase.dynamic.DStabNetwork3Phase;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.msg.IPSSMsgHub;
@@ -22,152 +19,66 @@ import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
-import com.interpss.dstab.algo.defaultImpl.DStabSolverImpl;
 import com.interpss.dstab.common.DStabSimuException;
-import com.interpss.dstab.datatype.DStabSimuEvent;
 import com.interpss.dstab.device.DynamicBranchDevice;
 import com.interpss.dstab.device.DynamicBusDevice;
 import com.interpss.dstab.mach.Machine;
 
-public class MultiNetDStabSolverImpl extends DStabSolverImpl {
+public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 	
-	protected AbstractMultiNetDStabSimuHelper multiNetSimuHelper = null;
-	protected List<DStabilityNetwork> subNetList = null;
+	private List<String>  threePhaseSubNetIdList = null;
 
-	public MultiNetDStabSolverImpl(DynamicSimuAlgorithm algo, IPSSMsgHub msg,AbstractMultiNetDStabSimuHelper mNetSimuHelper) {
-		super(algo, msg);
-		this.msg = msg;
-		this.multiNetSimuHelper = mNetSimuHelper;
-		this.subNetList = this.multiNetSimuHelper.getSubNetworkProcessor().getSubNetworkList();
+	public MultiNet3Ph3SeqDStabSolverImpl(DynamicSimuAlgorithm algo,
+			IPSSMsgHub msg, AbstractMultiNetDStabSimuHelper mNetSimuHelper) {
+		super(algo, msg, mNetSimuHelper);
+		
+		this.threePhaseSubNetIdList = this.multiNetSimuHelper.getSubNetworkProcessor().getThreePhaseSubNetIdList();
+		
 	}
-	
-	@Override 
-	public boolean initialization() {
-		this.simuPercent = 0;
-		this.simuTime = 0; //required for running multiple DStab simulations in a loop
-		consoleMsg("Start multi-SubNetwork initialization ...");
-
-		if (!dstabAlgo.getNetwork().isLfConverged()) {
-			ipssLogger.severe("Error: Loadflow not converged yet!");
-			return false;
-		}
-		
-		// network initialization, initial bus sc data, transfer machine sc info to bus.
-		for(DStabilityNetwork dsNet: this.subNetList){
-			
-				if (!dsNet.initDStabNet()){
-					  ipssLogger.severe("Error: SubNetwork initialization error:"+dsNet.getId());
-					  return false;
-				}
-			
-		}
-		// prepare tie-line-and-boundary bus incidence matrix, Zl
-		this.multiNetSimuHelper.prepareBoundarySubSystemMatrix();
-		
-		// output initial states
-		if (!procInitOutputEvent())
-			return false;
-
-	  	//System.out.println(net.net2String());
-		consoleMsg("Initialization finished");
-		return true;		
-	}
-	
-	/**
-	 * perform a full step of simulation by solving the differential 
-	 * eqn 
-	 * 
-	 * @param updateTime indicator to update the simuTime field
-	 */
-	@Override
-	public boolean solveDEqnStep(boolean updateTime){
-		try{
-			
-		boolean hasEvent = hasDynEvent(simuTime);
-		if(hasDynEvent(simuTime)){
-			for(DStabilityNetwork dsNet: subNetList){
-				
-				// Solve DEqn for all dynamic bus devices
-				for (DStabBus bus : dsNet.getBusList()) {
-				  //only the measurements of active buses will be output. 
-				   if(bus.isActive())
-				     output(bus, simuTime, true);
-			     }
-			}
-		}
-		
-		
-		// performing actions before solving DEqn, for example, applying dynamic event
-		beforeStep(simuTime);
-
-		
-		// solving DEqn
-		nextStep(simuTime, dstabAlgo.getSimuStepSec(), dstabAlgo.getSimuMethod());
-
-		
-		if (updateTime) {
-			    
-			// output simulation results
-			++outCnt;
-            for(DStabilityNetwork dsNet: subNetList){
-				
-				// Solve DEqn for all dynamic bus devices
-			   for (DStabBus bus : dsNet.getBusList()) {
-				   //only the measurements of active buses will be output. 
-				    if(bus.isActive())
-				         output(bus, simuTime, outCnt >= outPerSteps);
-			   }
-			}
-
-				// increase simulation time
-				simuTime += dstabAlgo.getSimuStepSec();
-
-
-
-				if (outCnt >= outPerSteps)
-					outCnt = 0;
-		}
-		// performing actions after solving QEqn
-		afterStep(simuTime);
-		}catch(Exception e){
-			e.printStackTrace();
-			return false;
-		}
-		return true;
-	}
-	
-	
-	@Override public void beforeStep(double time)  throws DStabSimuException {
-		// Process dynamic events
-		if (!dstabAlgo.isDisableDynamicEvent()) {
-			applyDynamicEvent(time);
-		}
-		
-		// when every there is an event, need to update the [Zl] matrix of the boundary subsystem
-		if( hasDynEvent(time)){
-			
-			this.multiNetSimuHelper.prepareBoundarySubSystemMatrix();
-		}
-	}
-   
 	
 	@Override 
 	public void nextStep(double time, double dt, DynamicSimuMethod method)  throws DStabSimuException {
 		 
 		boolean netSolConverged = true;
-		//maxIterationTimes =1;
+		
+		// retrieve the threePhaseSubNetwork
+		
+	
 		for(int i=0;i<maxIterationTimes;i++){ 
 			 
 			// The first  step of the multi-subNetwork solution is to solve each subnetwork independently without current injections from the 
 			// connection tie-lines
 			for(DStabilityNetwork dsNet: subNetList){
 				
-				// make sure there is no current injection at the boundary
-				dsNet.setCustomBusCurrInjHashtable(null);
+				DStabNetwork3Phase dsNet3Ph = (DStabNetwork3Phase) dsNet;
 				
-				// solve net equation
-				if (!dsNet.solveNetEqn())
-					throw new DStabSimuException("Exception in dstabNet.solveNetEqn()");
+				if(this.threePhaseSubNetIdList!=null && this.threePhaseSubNetIdList.contains(dsNet.getId())){
+					
+					// make sure there is no current injection at the boundary
+					dsNet3Ph.set3phaseCustomCurrInjTable(null);
+					dsNet3Ph.solveNetEqn();
+					
+				}
+				else{
+				
+					// make sure there is no current injection at the boundary
+					dsNet.setCustomBusCurrInjHashtable(null);
+					
+					// solve net equation
+					
+					//NOTE: all subnetworks are modeled in three-phase, in order to solve the positive-sequence network
+					// the solvePosSeqNetEqn() method of the DStabNetwork3Phase object should be called.
+					if (dsNet3Ph.solvePosSeqNetEqn()){
+						
+						//TODO need to save the three-sequence bus voltage, such that it can be used for updating the 
+						// Vth in the following step.
+						for(DStabBus bus:dsNet3Ph.getBusList()){
+							bus.set3SeqVoltage(new Complex3x1(new Complex(0,0), bus.getVoltage(), new Complex(0,0)));
+						}
+						
+					}else
+						throw new DStabSimuException("Exception in dstabNet.solveNetEqn()");
+				}
 				
 			}  //end for-subnetwork loop
 			
@@ -319,46 +230,5 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 	
 	}
 	
-	@Override public boolean procInitOutputEvent() {
-		try {
-			for(DStabilityNetwork dsNet: subNetList){
-				
-				// Solve DEqn for all dynamic bus devices
-				for (DStabBus bus : dsNet.getBusList()) {
-
-					if(bus.isActive()){ // only the active bus will be consider, otherwise errors will occur
-						if (bus.isMachineBus()) {
-							for(AclfGen gen: bus.getContributeGenList()){
-							//consider active or in-service machine only
-							 if(gen.isActive() && ((DStabGen)gen).getMach()!=null){
-								  Machine mach = ((DStabGen)gen).getMach();
-								  Hashtable<String, Object> states = BuiltMachineState.f(mach, 0.0, this.dstabAlgo);
-								  procOutputEvent(DStabSimuEvent.PlotStepMachineStates, states);
-								  procOutputEvent(DStabSimuEvent.TimeStepMachineStates, states);
-							 }
-						  }
-						}
-						if (bus.getScriptDynamicBusDevice() != null) {
-				            Hashtable<String, Object> states = BuiltScriptDynamicBusDeviceState.f(bus, 0.0, this.dstabAlgo);
-				            procOutputEvent(DStabSimuEvent.TimeStepScriptDynamicBusDeviceStates, states);
-							procOutputEvent(DStabSimuEvent.PlotStepScriptDynamicBusDeviceStates, states);
-						}
-						//else {
-				            Hashtable<String, Object> states = BuiltBusState.f(bus, 0.0, this.dstabAlgo);
-				            procOutputEvent(DStabSimuEvent.TimeStepBusStates, states);
-							procOutputEvent(DStabSimuEvent.PlotStepBusStates, states);
-						//}
-					 }
-			}
-		  }
-			procOutputEvent(DStabSimuEvent.EndOfSimuStep, null);
-			return true;
-		} catch (InterpssException e) {
-			ipssLogger.severe(e.toString());
-			return false;
-		}
-	}
-	
-
 
 }

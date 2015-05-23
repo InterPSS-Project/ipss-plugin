@@ -44,6 +44,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 	private Complex3x3[][] ZlAry = null;
 	private List<String> threePhModelingSubNetIdList = null; // should be provided after subnetwork creation 
 	private Hashtable<String, Hashtable<String, Complex3x1>> subNet3SeqCurrInjTable = null;
+	private double negZeroSeqCurrTolerance=1.0E-3;  // in pu;
 
 	
 	public MultiNet3Ph3SeqDStabSimuHelper (DStabilityNetwork net, SubNetworkProcessor subNetProc){
@@ -144,6 +145,27 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
     	}
 		
 	}
+	
+	@Override
+	public Hashtable<String, NetworkEquivalent> updateSubNetworkEquivSource() {
+		for(DStabilityNetwork subNet: this.subNetProcessor.getSubNetworkList()){
+			
+    	    // the voltages at the boundary buses are the Thevenin voltages 
+    		// the busIds are ordered in an ascending manner
+    		 // the matrix and source parts are ordered in the same sequence as defined in BoundaryBusList.
+    		   int i =0;
+    		   for(String busId: this.subNetProcessor.getSubNet2BoundaryBusListTable().get(subNet.getId())){
+    			        
+    			        // TODO the only difference from the positive sequence based implementation is that
+    			        // three-sequence voltage is used here instead of positive-seq;
+    			        Complex3x1 v = subNet.getBus(busId).get3SeqVoltage();
+    			        subNetEquivTable.get(subNet.getId()).getSource3x1()[i]=v;
+    			        i++;
+    		   }
+		   }
+    	 return  subNetEquivTable;
+	}
+
 
 	@Override
 	public void updateSubNetworkEquivMatrix() {
@@ -211,7 +233,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 		   			    //
 		   			    DStabNetwork3Phase subNet3Ph = (DStabNetwork3Phase)subNet;
 		   			    
-		   			    subNet3Ph.parentSolveNetEqn();
+		   			    subNet3Ph.solvePosSeqNetEqn();
 		   			    
 				   		   int i =0;
 				   		   for(String busId: this.subNetProcessor.getSubNet2BoundaryBusListTable().get(subNet.getId())){
@@ -417,21 +439,26 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 			      	 
 			  	
 			          // negative sequence
-			  		   Hashtable<String,Complex> negVoltTable = this.solveSeqNetwork(SequenceCode.NEGATIVE, negCurTable);
-			  		   
-			  		   for(Entry<String,Complex> e: negVoltTable.entrySet()){
-			  			   this.net.getBus(e.getKey()).get3SeqVoltage().c_2 =e.getValue();
-			  		   }
+			   	       if(this.getMaxCurMag(negCurTable)>this.negZeroSeqCurrTolerance){
+				  		   Hashtable<String,Complex> negVoltTable = this.solveSeqNetwork(SequenceCode.NEGATIVE, negCurTable);
+				  		   
+				  		   for(Entry<String,Complex> e: negVoltTable.entrySet()){
+				  			   this.net.getBus(e.getKey()).get3SeqVoltage().c_2 =e.getValue();
+				  		   }
+			   	       }
 			      	
 			      	// zero sequence
 			  		   
+			   	    if(this.getMaxCurMag(zeroCurTable)>this.negZeroSeqCurrTolerance){
 			            Hashtable<String,Complex> zeroVoltTable = this.solveSeqNetwork(SequenceCode.ZERO, zeroCurTable);
 			  		   
-			  		   for(Entry<String,Complex> e: zeroVoltTable.entrySet()){
+			  		    for(Entry<String,Complex> e: zeroVoltTable.entrySet()){
 			  			   this.net.getBus(e.getKey()).get3SeqVoltage().a_0 =e.getValue();
-			  		   }
-			   		 }
-			 }
+			  		    }
+			   		} // end of zeroImax > tol
+			   	}// end of else
+			   		 
+			 }  // end of for subnetwork loop
 			   
 		   return true;
 	}
@@ -554,5 +581,15 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 		  else 
 			  return null;
 	}
+	
+	private double getMaxCurMag(Hashtable<String, Complex> seqCurInjTable){
+		double imax = 0;
+		for(Complex i :seqCurInjTable.values()){
+			  if(imax <i.abs())
+				  imax = i.abs();
+		  }
+	    return imax;
+	}
+
 
 }
