@@ -291,7 +291,7 @@ public class AclfHvdcDataHelper {
     private boolean setVSCInverterData(VSCConverterXmlType vscConvXml){
     	
     	boolean success = true;
-    	VSCConverter vscInv = this.vscHvdc2T.getInvConverter();
+    	VSCConverter vscInv = (VSCConverter)this.vscHvdc2T.getInvConverter();
     	
     	// connection bus
     	BusXmlType busXml = (BusXmlType) vscConvXml.getBusId().getIdRef();
@@ -301,30 +301,30 @@ public class AclfHvdcDataHelper {
     	// DC Control mode
     	DCControlMode dcMode = 
     	vscConvXml.getDcControlMode() == VSCDCControlModeEnumType.BLOCKED?DCControlMode.BLOCKED:
-    		vscConvXml.getDcControlMode() == VSCDCControlModeEnumType.REAL_POWER? DCControlMode.DC_Power:DCControlMode.DC_Voltage;
+    		vscConvXml.getDcControlMode() == VSCDCControlModeEnumType.REAL_POWER? DCControlMode.DC_POWER:DCControlMode.DC_VOLTAGE;
     	
-    	 vscInv.setDCControlMode(dcMode);
+    	 vscInv.setDcControlMode(dcMode);
     	 
-    	 vscInv.setDCSetPoint(vscConvXml.getDcSetPoint());
+    	 vscInv.setDcSetPoint(vscConvXml.getDcSetPoint());
     	
     	// AC Control mode
     	ACControlMode acMode = 
-    			vscConvXml.getAcControlMode() == VSCACControlModeEnumType.REACTIVE_POWER?ACControlMode.AC_ReactivePower:
-    				(vscConvXml.getAcControlMode() == VSCACControlModeEnumType.VOLTAGE)?ACControlMode.AC_Voltage:ACControlMode.AC_PowerFactor;
-    	 vscInv.setACControlMode(acMode);
+    			vscConvXml.getAcControlMode() == VSCACControlModeEnumType.REACTIVE_POWER?ACControlMode.AC_REACTIVE_POWER:
+    				(vscConvXml.getAcControlMode() == VSCACControlModeEnumType.VOLTAGE)?ACControlMode.AC_VOLTAGE:ACControlMode.AC_POWER_FACTOR;
+    	 vscInv.setAcControlMode(acMode);
     	
-    	 vscInv.setACSetPoint( vscConvXml.getAcSetPoint());
+    	 vscInv.setAcSetPoint( vscConvXml.getAcSetPoint());
     	 
     	 //TODO Power Loss is not considered in the VSCConveter model yet
     	 
     	 
     	 //Rating, assuming to be based on MVA unit
-    	 vscInv.setMVARating( vscConvXml.getMVARating().getValue());
+    	 vscInv.setMvaRating( vscConvXml.getMVARating().getValue());
     	 
     	 
     	 // Q limit
-    	 vscInv.setQMaxMVAr(vscConvXml.getQMax().getValue());
-    	 vscInv.setQMinMVAr(vscConvXml.getQMin().getValue());
+    	 vscInv.setQMaxMvar(vscConvXml.getQMax().getValue());
+    	 vscInv.setQMinMvar(vscConvXml.getQMin().getValue());
     	 
     	 // remote Voltage control
     	
@@ -344,7 +344,7 @@ public class AclfHvdcDataHelper {
     	
 		boolean success = true;
 		
-	 	VSCConverter vscRec = this.vscHvdc2T.getRecConverter();
+	 	VSCConverter vscRec = (VSCConverter)this.vscHvdc2T.getRecConverter();
 	 	
 	 	// connection bus
 	 	BusXmlType busXml = (BusXmlType) vscConvXml.getBusId().getIdRef();
@@ -354,30 +354,30 @@ public class AclfHvdcDataHelper {
 	 	// DC Control mode
 	 	DCControlMode dcMode = 
 	 	vscConvXml.getDcControlMode() == VSCDCControlModeEnumType.BLOCKED?DCControlMode.BLOCKED:
-	 		vscConvXml.getDcControlMode() == VSCDCControlModeEnumType.REAL_POWER? DCControlMode.DC_Power:DCControlMode.DC_Voltage;
+	 		vscConvXml.getDcControlMode() == VSCDCControlModeEnumType.REAL_POWER? DCControlMode.DC_POWER:DCControlMode.DC_VOLTAGE;
 	 	
-	 	 vscRec.setDCControlMode(dcMode);
+	 	 vscRec.setDcControlMode(dcMode);
 	 	 
-	 	 vscRec.setDCSetPoint(vscConvXml.getDcSetPoint());
+	 	 vscRec.setDcSetPoint(vscConvXml.getDcSetPoint());
 	 	
 	 	// AC Control mode
 	 	ACControlMode acMode = 
-	 			vscConvXml.getAcControlMode() == VSCACControlModeEnumType.REACTIVE_POWER?ACControlMode.AC_ReactivePower:
-	 				(vscConvXml.getAcControlMode() == VSCACControlModeEnumType.VOLTAGE)?ACControlMode.AC_Voltage:ACControlMode.AC_PowerFactor;
-	 	 vscRec.setACControlMode(acMode);
+	 			vscConvXml.getAcControlMode() == VSCACControlModeEnumType.REACTIVE_POWER?ACControlMode.AC_REACTIVE_POWER:
+	 				(vscConvXml.getAcControlMode() == VSCACControlModeEnumType.VOLTAGE)?ACControlMode.AC_VOLTAGE:ACControlMode.AC_POWER_FACTOR;
+	 	 vscRec.setAcControlMode(acMode);
 	 	
-	 	 vscRec.setACSetPoint( vscConvXml.getAcSetPoint());
+	 	 vscRec.setAcSetPoint( vscConvXml.getAcSetPoint());
 	 	 
 	 	 //TODO Power Loss is not considered in the VSCConveter model yet
 	 	 
 	 	 
 	 	 //Rating, assuming to be based on MVA unit
-	 	 vscRec.setMVARating( vscConvXml.getMVARating().getValue());
+	 	 vscRec.setMvaRating( vscConvXml.getMVARating().getValue());
 	 	 
 	 	 
 	 	 // Q limit
-	 	 vscRec.setQMaxMVAr(vscConvXml.getQMax().getValue());
-	 	 vscRec.setQMinMVAr(vscConvXml.getQMin().getValue());
+	 	 vscRec.setQMaxMvar(vscConvXml.getQMax().getValue());
+	 	 vscRec.setQMinMvar(vscConvXml.getQMin().getValue());
 	 	 
 	 	 // remote Voltage control
 	 
