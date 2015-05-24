@@ -149,7 +149,7 @@ public class AclfHvdcDataHelper {
     	this.vscHvdc2T.setRdc(vschvdc2TXml.getRdc().getR());
     	
     	if(vschvdc2TXml.getMVARating()!=null)
-    	      this.vscHvdc2T.setMVARating(vschvdc2TXml.getMVARating().getValue());
+    	      this.vscHvdc2T.setMvaRating(vschvdc2TXml.getMVARating().getValue());
     	
     	
     	// set the vsc converter data
