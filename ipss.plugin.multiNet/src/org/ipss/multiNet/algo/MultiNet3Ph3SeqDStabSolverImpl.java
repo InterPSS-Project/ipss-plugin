@@ -1,5 +1,7 @@
 package org.ipss.multiNet.algo;
 
+import static com.interpss.common.util.IpssLogger.ipssLogger;
+
 import java.util.List;
 
 import org.apache.commons.math3.complex.Complex;
@@ -29,11 +31,51 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 	private List<String>  threePhaseSubNetIdList = null;
 
 	public MultiNet3Ph3SeqDStabSolverImpl(DynamicSimuAlgorithm algo,
-			IPSSMsgHub msg, AbstractMultiNetDStabSimuHelper mNetSimuHelper) {
-		super(algo, msg, mNetSimuHelper);
+			AbstractMultiNetDStabSimuHelper mNetSimuHelper) {
+		super(algo, mNetSimuHelper);
 		
 		this.threePhaseSubNetIdList = this.multiNetSimuHelper.getSubNetworkProcessor().getThreePhaseSubNetIdList();
 		
+	}
+	
+	@Override 
+	public boolean initialization() {
+		this.simuPercent = 0;
+		this.simuTime = 0; //required for running multiple DStab simulations in a loop
+		consoleMsg("Start multi-SubNetwork initialization ...");
+
+		if (!dstabAlgo.getNetwork().isLfConverged()) {
+			ipssLogger.severe("Error: Loadflow not converged yet!");
+			return false;
+		}
+		
+		// network initialization, initial bus sc data, transfer machine sc info to bus.
+		for(DStabilityNetwork dsNet: this.subNetList){
+			   boolean flag = true;
+			   if(this.threePhaseSubNetIdList!=null && this.threePhaseSubNetIdList.contains(dsNet.getId())){    
+				   flag = dsNet.initDStabNet();
+			   }
+			   else{
+				   DStabNetwork3Phase dsNet3Phase = (DStabNetwork3Phase) dsNet;
+				   flag = dsNet3Phase.initPosSeqDStabNet();
+				
+			   }
+			   if (!flag){
+					  ipssLogger.severe("Error: SubNetwork initialization error:"+dsNet.getId());
+					  return false;
+				}
+			
+		}
+		// prepare tie-line-and-boundary bus incidence matrix, Zl
+		this.multiNetSimuHelper.prepareBoundarySubSystemMatrix();
+		
+		// output initial states
+		if (!procInitOutputEvent())
+			return false;
+
+	  	//System.out.println(net.net2String());
+		consoleMsg("Initialization finished");
+		return true;		
 	}
 	
 	@Override 
