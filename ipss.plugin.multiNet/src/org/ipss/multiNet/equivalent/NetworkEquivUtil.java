@@ -49,7 +49,7 @@ public class NetworkEquivUtil {
 					if(subNet instanceof DStabNetwork3Phase){
 					       equiv = cal3PhaseNetworkTheveninEquiv((DStabNetwork3Phase) subNet,subNetProc.getSubNet2BoundaryBusListTable().get(subNet.getId()));
 					       //this 3phase-to-3seq transformation is only performed on the Zth part
-					       equiv.transformCoordinate(Coordinate.Three_sequence);
+					       equiv = equiv.transformCoordinate(Coordinate.Three_sequence);
 					}
 					else
 						throw new Error(" The subnetwork for creating 3Phase Network Thevenin Equiv is not a DStabNetwork3Phase object");
