@@ -19,6 +19,7 @@ import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.interpss.numeric.sparse.ISparseEqnComplexMatrix3x3;
 import org.ipss.multiNet.equivalent.NetworkEquivUtil;
 import org.ipss.multiNet.equivalent.NetworkEquivalent;
+import org.ipss.multiNet.equivalent.NetworkEquivalent.Coordinate;
 import org.ipss.sparse.Matrix3x3.SparseEqnComplexMatrix3x3Impl;
 import org.ipss.threePhase.basic.Bus3Phase;
 import org.ipss.threePhase.dynamic.DStabNetwork3Phase;
@@ -178,9 +179,11 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 		DStabilityNetwork subNet = this.subNetProcessor.getSubNetwork(subNetworkId);
     	if(subNet!=null){
 	    	NetworkEquivalent equiv = null;
-	    	if(this.threePhModelingSubNetIdList!= null && this.threePhModelingSubNetIdList.contains(subNetworkId))
+	    	if(this.threePhModelingSubNetIdList!= null && this.threePhModelingSubNetIdList.contains(subNetworkId)){
 	    		equiv = NetworkEquivUtil.cal3PhaseNetworkTheveninEquiv((DStabNetwork3Phase) subNet,
 	    			       this.subNetProcessor.getSubNet2BoundaryBusListTable().get(subNetworkId));
+	    		equiv = equiv.transformCoordinate(Coordinate.Three_sequence);
+	    	}
 	    	else
 	    		equiv = NetworkEquivUtil.cal3SeqNetworkTheveninEquiv(subNet,
 	    			       this.subNetProcessor.getSubNet2BoundaryBusListTable().get(subNetworkId));
@@ -224,9 +227,8 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 				   			        Complex3x1 v = subNet3Ph.getBus(busId).get3SeqVoltage();
 				   			        equiv.getSource3x1()[i]=v;
 				   			        i++;
-				   		 }
+				   		}
 				   		
-		   			
 		   		 }
 		   		 else{
 		   			 
@@ -296,7 +298,9 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
     		 
     		 // set the B vector
     		 for(int i=0; i<dim;i++){
-    		    ZlMatrix.setBi(Eth[i], i);
+    			 // note the ZL is stored in [ pos,neg,zero]  sequence, while the Eth is in [a0,b1,c2] sequence
+    			 // need to perform necessary transformation
+    		    ZlMatrix.setBi(toInternal120StorageSeq(Eth[i]), i);
     		 }
     		
     		 try {
@@ -309,7 +313,15 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
     		 // retrieve the results
     		 Complex3x1[] currVector = MatrixUtil.createComplex3x1DArray(dim);
     		 for(int i=0; i<dim;i++){
-    		         currVector[i] = ZlMatrix.getX(i);
+    			     //TODO the internal 3seq Ymatrix storage sequence is [pos,neg,zero], and the result X is also with this sequence
+    			     // however, the default Complex3x1 storage is [a_0, b_1, z_2], thus a transformation is required to obtain the 
+    			     //  correct three-seq current injection value
+    			     // 
+    			 
+    			     Complex3x1 threeSeqCur = ZlMatrix.getX(i);
+    		         currVector[i] =  new Complex3x1(threeSeqCur.c_2,threeSeqCur.a_0,threeSeqCur.b_1);
+    		      
+    			
     		 }
     		 
 //    		FieldLUDecomposition<Complex> lu = new FieldLUDecomposition<>(this.Zl);
@@ -415,6 +427,11 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 								   //superpostition method
 								   //bus voltage V = Vinternal + Vext_injection
 								   bus.set3PhaseVoltages(bus.get3PhaseVotlages().add(subNetYabc.getX(b.getSortNumber())));
+								   
+								   //System.out.println(b.getId()+" Vabc :"+bus.get3PhaseVotlages().toString());
+								   // set the positive sequence voltage
+								   bus.setVoltage(bus.get3SeqVoltage().b_1);
+								   //System.out.println(b.getId()+" Vpos :"+bus.getVoltage().toString());
 							 }
 			   			
 			   		 }
@@ -427,8 +444,8 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 			   	    	 Hashtable<String, Complex> zeroCurTable = getSeqCurInjTable(this.subNet3SeqCurrInjTable.get(subNet.getId()), SequenceCode.ZERO);
 			   		
 			   	    	 
-			   	    	Hashtable<String,Complex> posVoltTable = this.solveSeqNetwork(SequenceCode.POSITIVE, posCurTable); 
-			   	    	 for(DStabBus b:this.net.getBusList()){
+			   	    	Hashtable<String,Complex> posVoltTable = this.solveSeqNetwork(subNet,SequenceCode.POSITIVE, posCurTable); 
+			   	    	 for(DStabBus b:subNet.getBusList()){
 			  			   //superpostition method
 			  			   //bus voltage V = Vinternal + Vext_injection
 			  			   b.setVoltage(b.getVoltage().add(posVoltTable.get(b.getId())));
@@ -441,20 +458,20 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 			  	
 			          // negative sequence
 			   	       if(this.getMaxCurMag(negCurTable)>this.negZeroSeqCurrTolerance){
-				  		   Hashtable<String,Complex> negVoltTable = this.solveSeqNetwork(SequenceCode.NEGATIVE, negCurTable);
+				  		   Hashtable<String,Complex> negVoltTable = this.solveSeqNetwork(subNet,SequenceCode.NEGATIVE, negCurTable);
 				  		   
 				  		   for(Entry<String,Complex> e: negVoltTable.entrySet()){
-				  			   this.net.getBus(e.getKey()).get3SeqVoltage().c_2 =e.getValue();
+				  			   subNet.getBus(e.getKey()).get3SeqVoltage().c_2 =e.getValue();
 				  		   }
 			   	       }
 			      	
 			      	// zero sequence
 			  		   
 			   	    if(this.getMaxCurMag(zeroCurTable)>this.negZeroSeqCurrTolerance){
-			            Hashtable<String,Complex> zeroVoltTable = this.solveSeqNetwork(SequenceCode.ZERO, zeroCurTable);
+			            Hashtable<String,Complex> zeroVoltTable = this.solveSeqNetwork(subNet,SequenceCode.ZERO, zeroCurTable);
 			  		   
 			  		    for(Entry<String,Complex> e: zeroVoltTable.entrySet()){
-			  			   this.net.getBus(e.getKey()).get3SeqVoltage().a_0 =e.getValue();
+			  		    	subNet.getBus(e.getKey()).get3SeqVoltage().a_0 =e.getValue();
 			  		    }
 			   		} // end of zeroImax > tol
 			   	}// end of else
@@ -469,7 +486,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 	   }
 	
 	
-	private Hashtable<String, Complex> solveSeqNetwork(SequenceCode seq,Hashtable<String, Complex> seqCurInjTable){
+	private Hashtable<String, Complex> solveSeqNetwork(DStabilityNetwork subnet, SequenceCode seq,Hashtable<String, Complex> seqCurInjTable){
 		
 		 Hashtable<String, Complex>  busVoltResults = new  Hashtable<>();
 		// solve the Ymatrix
@@ -477,14 +494,14 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 		
 	  	// Positive sequence
 		case POSITIVE:
-		    this.net.setCustomBusCurrInjHashtable(null);
+			subnet.setCustomBusCurrInjHashtable(null);
 		   
-		    ISparseEqnComplex subNetY= this.net.getYMatrix();
+		    ISparseEqnComplex subNetY= subnet.getYMatrix();
 		   
 		    subNetY.setB2Zero();
 		    
 		       for(Entry<String,Complex> e: seqCurInjTable.entrySet()){
-				   subNetY.setBi(e.getValue(),this.net.getBus(e.getKey()).getSortNumber());
+				   subNetY.setBi(e.getValue(),subnet.getBus(e.getKey()).getSortNumber());
 			   }
 			   try {
 				   // solve network to obtain Vext_injection
@@ -496,7 +513,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 					e1.printStackTrace();
 					return null;
 				}
-			   for(DStabBus bus:this.net.getBusList()){
+			   for(DStabBus bus:subnet.getBusList()){
 			    	  busVoltResults.put(bus.getId(), subNetY.getX(bus.getSortNumber()));
 			   }
 			   
@@ -505,12 +522,12 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 		    
 		    break;
 		case NEGATIVE:
-			   ISparseEqnComplex negSeqYMatrix = this.net.getNegSeqYMatrix();
+			   ISparseEqnComplex negSeqYMatrix = subnet.getNegSeqYMatrix();
 			
 			   negSeqYMatrix.setB2Zero();
 			   
 			   for(Entry<String,Complex> e: seqCurInjTable.entrySet()){
-				 negSeqYMatrix.setBi(e.getValue(),this.net.getBus(e.getKey()).getSortNumber());
+				 negSeqYMatrix.setBi(e.getValue(),subnet.getBus(e.getKey()).getSortNumber());
 			   }
 			   try {
 				   // solve network to obtain Vext_injection
@@ -522,19 +539,19 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 					return null;
 			   }
 			   
-			   for(DStabBus bus:this.net.getBusList()){
+			   for(DStabBus bus:subnet.getBusList()){
 			    	  busVoltResults.put(bus.getId(), negSeqYMatrix.getX(bus.getSortNumber()));
 			   }
 			
 			
 			break;
 		case ZERO:
-			   ISparseEqnComplex zeroSeqYMatrix = this.net.getNegSeqYMatrix();
+			   ISparseEqnComplex zeroSeqYMatrix = subnet.getZeroSeqYMatrix();
 				
 			   zeroSeqYMatrix.setB2Zero();
 			   
 			   for(Entry<String,Complex> e: seqCurInjTable.entrySet()){
-				   zeroSeqYMatrix.setBi(e.getValue(),this.net.getBus(e.getKey()).getSortNumber());
+				   zeroSeqYMatrix.setBi(e.getValue(),subnet.getBus(e.getKey()).getSortNumber());
 			   }
 			   try {
 				   // solve network to obtain Vext_injection
@@ -546,7 +563,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 					return null;
 			   }
 			   
-			   for(DStabBus bus:this.net.getBusList()){
+			   for(DStabBus bus:subnet.getBusList()){
 			    	  busVoltResults.put(bus.getId(), zeroSeqYMatrix.getX(bus.getSortNumber()));
 			   }
 			
@@ -594,6 +611,21 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 				  imax = i.abs();
 		  }
 	    return imax;
+	}
+	
+	//TODO Consider to change the internal storage to 012 sequence
+	/**
+	 * mapping the default 0/1/2 sequence to the internal 120 sequence
+	 * 
+	 * @param v012
+	 * @return
+	 */
+	private Complex3x1 toInternal120StorageSeq(Complex3x1 v012){
+		Complex3x1 result = new Complex3x1();
+		result.a_0 = v012.b_1;
+		result.b_1 = v012.c_2;
+		result.c_2 = v012.a_0;
+		return result;
 	}
 
 

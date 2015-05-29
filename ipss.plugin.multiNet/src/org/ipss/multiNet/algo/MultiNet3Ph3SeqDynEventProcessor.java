@@ -2,42 +2,28 @@ package org.ipss.multiNet.algo;
 
 import static com.interpss.common.util.IpssLogger.ipssLogger;
 
-import java.util.List;
-
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.NumericConstant;
-import org.interpss.numeric.datatype.ComplexFunc;
+import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.exp.IpssNumericException;
+import org.ipss.threePhase.dynamic.DStabNetwork3Phase;
 
-
-
-
-
-
-
-import org.interpss.numeric.sparse.ISparseEqnComplex;
-
-import com.interpss.common.exp.InterpssRuntimeException;
 import com.interpss.common.msg.IpssMessage;
 import com.interpss.core.acsc.AcscBus;
-import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.dstab.DStabilityNetwork;
-import com.interpss.dstab.algo.defaultImpl.DynamicEventProcessor;
 import com.interpss.dstab.datatype.DStabSimuTimeEvent;
 import com.interpss.dstab.devent.DynamicEvent;
 import com.interpss.dstab.devent.DynamicEventType;
 
-public class MultiNetDynamicEventProcessor extends DynamicEventProcessor {
-	
+public class MultiNet3Ph3SeqDynEventProcessor extends
+		MultiNetDynamicEventProcessor {
 
-	DStabilityNetwork net = null;
-	protected AbstractMultiNetDStabSimuHelper simuHelper = null;
-	
-	
-	public MultiNetDynamicEventProcessor(AbstractMultiNetDStabSimuHelper mNetSimuHelper){
-		this.simuHelper = mNetSimuHelper;
+	public MultiNet3Ph3SeqDynEventProcessor(
+			AbstractMultiNetDStabSimuHelper mNetSimuHelper) {
+		super(mNetSimuHelper);
+		
 	}
 	
 	/**
@@ -82,22 +68,23 @@ public class MultiNetDynamicEventProcessor extends DynamicEventProcessor {
 						         AcscBusFault fault = dEvent.getBusFault();
 						         AcscBus bus = fault.getBus();
 						         DStabilityNetwork faultSubNet = (DStabilityNetwork) bus.getNetwork();
-						         ISparseEqnComplex ymatrix = faultSubNet.formYMatrix(SequenceCode.POSITIVE, false);
-						         //TODO don't forget to set the ymatrix
-						         faultSubNet.setYMatrix(ymatrix);
-						         faultSubNet.setYMatrixDirty(true);
-						        // System.out.println("Time :"+t+", ymatrix of network is rebuilted:"+faultSubNet.getId());
-						        // System.out.println("ymatrix = \n"+ymatrix);
+						         if(faultSubNet instanceof DStabNetwork3Phase ){
+									try {
+										( (DStabNetwork3Phase)faultSubNet ).formYMatrixABC();
+									} catch (Exception e) {
+										e.printStackTrace();
+									}
+						         }
+								else{
+						        	 throw new UnsupportedOperationException(" The faulted subnetwork is not a DStabNetwork3Phase type!");
+					              }
+	
 						         
 						         faultSubNetworkId =faultSubNet.getId();
 						  
 					         }
 					}
 					        
-
-
-					
-					
 					ipssLogger.fine("Reset Ymatrix for event applying");
 
 					// apply those events which result in adding z to Y-matrix,
@@ -123,75 +110,65 @@ public class MultiNetDynamicEventProcessor extends DynamicEventProcessor {
 		return true;
 	}
 	
-	@Override
-	protected boolean hasAnyEvent(double t) {
-		boolean has = false;
-		for (DynamicEvent dEvent : net.getDynamicEventList()) {
-			if (dEvent.hasEventAt(t)) {
-				has = true;
-			}
-		}
-		return has;
-	}
-
-	@Override public void onMsgEvent(IpssMessage eventMsg) {
-		throw new InterpssRuntimeException("Method not applicable");
-	}
-	
-	// apply event before building the Y-matrix
-	@Override
-	protected void applyDynamicEventBefore(DynamicEvent e, double t) {
-		
-	}
-	
-	
 	// apply event after after building the Y-matrix
-	@Override
-	protected void applyDynamicEventAfter(DynamicEvent e, double t) throws IpssNumericException {
-		// active indicates applying the event. We only modify the Y matrix when
-				// applying an event
-				if (e.isActive()) {
-					if (e.getType() == DynamicEventType.BUS_FAULT) {
-						AcscBusFault fault = e.getBusFault();
-						AcscBus bus = fault.getBus();
+		@Override
+		protected void applyDynamicEventAfter(DynamicEvent e, double t) throws IpssNumericException {
+			// active indicates applying the event. We only modify the Y matrix when
+					// applying an event
+					if (e.isActive()) {
+						if (e.getType() == DynamicEventType.BUS_FAULT) {
+							AcscBusFault fault = e.getBusFault();
+							AcscBus bus = fault.getBus();
+							
+							int i = bus.getSortNumber();
+							
+							Complex ylarge =  NumericConstant.LargeBusZ;
+							
+							DStabNetwork3Phase net = (DStabNetwork3Phase) bus.getNetwork();
+							
+							//Need to determine the yfaultABC based on the fault type
+				            //TODO assuming the SLG fault is applied on phase A
 						
-						int i = bus.getSortNumber();
-						
-						Complex z = NumericConstant.SmallScZ;
-						
-						Complex ylarge = ComplexFunc.div(1.0, z);
-						
-						if(fault.getFaultCode()==SimpleFaultCode.GROUND_LG){
-							Complex ZfaultEquiv = fault.getZLGFault();
-							((DStabilityNetwork) bus.getNetwork()).getYMatrix().addToA(ZfaultEquiv, i, i);
+							//net.getYMatrix().addToA(y, i, i);
+							Complex3x3 yfaultABC = new Complex3x3();
+							if(fault.getFaultCode()==SimpleFaultCode.GROUND_LG){
+								yfaultABC.aa = ylarge;
+								net.getYMatrixABC().addToA(yfaultABC, i, i);
+							}
+							//TODO need to check how to model LL
+							else if(fault.getFaultCode()==SimpleFaultCode.GROUND_LL){
+								Complex3x3 yii = net.getYMatrixABC().getA(i, i);
+								yii.ab = new Complex(0,0);
+								yii.ba = new Complex(0,0);
+								//TODO whether it will affect the yii.aa and yii.bb
+								
+								net.getYMatrixABC().setA(yii,i,i);
+								
+							}
+		                    else if(fault.getFaultCode()==SimpleFaultCode.GROUND_LLG){
+		                    	yfaultABC.aa = ylarge;
+		                    	yfaultABC.bb = ylarge;
+								net.getYMatrixABC().addToA(yfaultABC, i, i);
+		                    	
+							}
+	                        else if(fault.getFaultCode()==SimpleFaultCode.GROUND_3P){
+	                        	yfaultABC.aa = ylarge;
+	                        	yfaultABC.bb = ylarge;
+	                        	yfaultABC.cc = ylarge;
+	                        	
+	                        	net.getYMatrixABC().addToA(yfaultABC, i, i);
+	                        	
+							}
+							
 						}
-						
-						else if(fault.getFaultCode()==SimpleFaultCode.GROUND_LL){
-					
-							throw new UnsupportedOperationException();
+						/*
+						 * Apply the branch fault to the Y-matrix
+						 */
+						else if (e.getType() == DynamicEventType.BRANCH_FAULT) {
+							 throw new UnsupportedOperationException();
 						}
-	                    else if(fault.getFaultCode()==SimpleFaultCode.GROUND_LLG){
-	                    
-	                    	throw new UnsupportedOperationException();
-						}
-                        else if(fault.getFaultCode()==SimpleFaultCode.GROUND_3P){
-      
-                        	((DStabilityNetwork) bus.getNetwork()).getYMatrix().addToA(ylarge, i, i);
-                        	
-                        	
-						}
-						
-						//update the 
-						
-					}
-					/*
-					 * Apply the branch fault to the Y-matrix
-					 */
-					else if (e.getType() == DynamicEventType.BRANCH_FAULT) {
-						 throw new UnsupportedOperationException();
-					}
-					 
-					}
-	}
+						 
+				} // if event is active
+		}
 
 }

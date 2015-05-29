@@ -114,7 +114,7 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 						
 						//TODO need to save the three-sequence bus voltage, such that it can be used for updating the 
 						// Vth in the following step.
-						for(DStabBus bus:dsNet3Ph.getBusList()){
+						for(DStabBus bus:dsNet.getBusList()){
 							bus.set3SeqVoltage(new Complex3x1(new Complex(0,0), bus.getVoltage(), new Complex(0,0)));
 						}
 						
@@ -131,7 +131,7 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 			  *  perform the subsystem network solution again. Last, summing up the bus voltages calculated
 			  *  in these two steps to determine the final bus voltages, based on the superposition theory.
 			  *  
-			  *  V = Vinternal = Vexternal
+			  *  V = Vinternal + Vexternal
 			  */
 			
 				  
