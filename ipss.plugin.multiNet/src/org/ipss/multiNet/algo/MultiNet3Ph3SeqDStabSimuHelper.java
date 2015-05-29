@@ -210,6 +210,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 		   	     
 		   		 if(this.threePhModelingSubNetIdList!=null && this.threePhModelingSubNetIdList.contains(subNet.getId())){
 			   			DStabNetwork3Phase subNet3Ph = (DStabNetwork3Phase)subNet;
+			   			subNet3Ph.set3phaseCustomCurrInjTable(null);
 			   			subNet3Ph.solveNetEqn();
 			   			
 			   			// save the result
@@ -462,6 +463,10 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 			   
 		   return true;
 	}
+	
+	 public Hashtable<String, Hashtable<String, Complex3x1>> getSubNet3SeqCurrInjTable(){
+		   return this.subNet3SeqCurrInjTable;
+	   }
 	
 	
 	private Hashtable<String, Complex> solveSeqNetwork(SequenceCode seq,Hashtable<String, Complex> seqCurInjTable){

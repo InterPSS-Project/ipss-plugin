@@ -197,7 +197,7 @@ public class TestMultiNetDStab {
 		dsNet.addDynamicEvent(create3PhaseFaultEvent("Bus6", proc.getSubNetworkList().get(0),0.1d,0.05),"3phaseFault@Bus6");
         
         // use the multi subnetwork solver
-		dstabAlgo.setSolver(new MultiNetDStabSolverImpl(dstabAlgo , IpssCorePlugin.getMsgHub(),multiNetHelper));
+		dstabAlgo.setSolver(new MultiNetDStabSolverImpl(dstabAlgo ,multiNetHelper));
 		
 		StateMonitor sm = new StateMonitor();
 		sm.addGeneratorStdMonitor(new String[]{"Bus1-mach1","Bus2-mach1","Bus3-mach1"});

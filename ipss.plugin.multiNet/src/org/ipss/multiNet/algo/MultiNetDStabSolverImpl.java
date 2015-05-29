@@ -8,6 +8,7 @@ import static com.interpss.dstab.funcImpl.DStabFunction.BuiltScriptDynamicBusDev
 import java.util.Hashtable;
 import java.util.List;
 
+import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.util.NumericUtil;
 
 import com.interpss.common.exp.InterpssException;
@@ -34,9 +35,8 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 	protected AbstractMultiNetDStabSimuHelper multiNetSimuHelper = null;
 	protected List<DStabilityNetwork> subNetList = null;
 
-	public MultiNetDStabSolverImpl(DynamicSimuAlgorithm algo, IPSSMsgHub msg,AbstractMultiNetDStabSimuHelper mNetSimuHelper) {
-		super(algo, msg);
-		this.msg = msg;
+	public MultiNetDStabSolverImpl(DynamicSimuAlgorithm algo, AbstractMultiNetDStabSimuHelper mNetSimuHelper) {
+		super(algo, IpssCorePlugin.getMsgHub());
 		this.multiNetSimuHelper = mNetSimuHelper;
 		this.subNetList = this.multiNetSimuHelper.getSubNetworkProcessor().getSubNetworkList();
 	}
