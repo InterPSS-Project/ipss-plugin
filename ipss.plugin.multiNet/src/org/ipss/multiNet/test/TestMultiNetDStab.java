@@ -132,8 +132,8 @@ public class TestMultiNetDStab {
 	     System.out.println(sm.toCSVString(sm.getBusVoltTable()));
 	}
 	
-	@Test
-	public void test_IEEE9Bus_MultiSubNet_Dstab() throws InterpssException{
+	//@Test
+	public void test_IEEE9Bus_MultiSubNet_Dstab_1port() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
 		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
@@ -170,6 +170,113 @@ public class TestMultiNetDStab {
 	    
 	    SubNetworkProcessor proc = new SubNetworkProcessor(dsNet);
 	    proc.addSubNetInterfaceBranch("Bus5->Bus7(0)");
+	    proc.addSubNetInterfaceBranch("Bus7->Bus8(0)");
+	    
+	    proc.splitFullSystemIntoSubsystems(false);
+	    
+	    /*
+	     * Step-2  use MultiNetDStabSimuHelper to preProcess the multiNetwork
+	     *  
+	     */
+	    // in the MultiNetDStabSimuHelper constructor, subnetwork Y matrices are built, the Thevenin equivalent Zth 
+	    // matrices are prepared, the interface tie-line to boundary bus incidence matrix is formed.
+	    MultiNetDStabSimuHelper multiNetHelper = new  MultiNetDStabSimuHelper(dsNet,proc);
+	    
+	    
+	    DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+	    
+		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+		dstabAlgo.setSimuStepSec(0.005d);
+		dstabAlgo.setTotalSimuTimeSec(0.5d);
+		for (DStabilityNetwork subNet:proc.getSubNetworkList()){
+			subNet.setNetEqnIterationNoEvent(1);
+			subNet.setNetEqnIterationWithEvent(1);
+		
+		  // dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
+		}
+		dsNet.addDynamicEvent(create3PhaseFaultEvent("Bus6", proc.getSubNetworkList().get(0),0.1d,0.05),"3phaseFault@Bus6");
+        
+        // use the multi subnetwork solver
+		dstabAlgo.setSolver(new MultiNetDStabSolverImpl(dstabAlgo ,multiNetHelper));
+		
+		StateMonitor sm = new StateMonitor();
+		sm.addGeneratorStdMonitor(new String[]{"Bus1-mach1","Bus2-mach1","Bus3-mach1"});
+		sm.addBusStdMonitor(new String[]{"Bus1","Bus2","Bus3","Bus5","Bus7","Bus8"});
+		// set the output handler
+		dstabAlgo.setSimuOutputHandler(sm);
+		dstabAlgo.setOutPutPerSteps(1);
+		
+		IpssLogger.getLogger().setLevel(Level.INFO);
+		
+		PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+		
+		
+		// multiNetDynamic Event handler
+		dstabAlgo.setDynamicEventHandler(new MultiNetDynamicEventProcessor(multiNetHelper));
+		
+		
+		if (dstabAlgo.initialization()) {
+			
+			System.out.println("preFault Ymatrix: "+proc.getSubNetworkList().get(0).getYMatrix());
+			System.out.println(proc.getSubNetworkList().get(0).getMachineInitCondition());
+			
+			System.out.println("Running DStab simulation ...");
+			//timer.start();
+			while(dstabAlgo.getSimuTime()<=dstabAlgo.getTotalSimuTimeSec()){
+				//  System.out.println("t = "+dstabAlgo.getSimuTime());
+			     dstabAlgo.solveDEqnStep(true);
+			}
+			//timer.logStd("total simu time: ");
+		 }
+		
+		System.out.println(sm.toCSVString(sm.getMachAngleTable()));
+		System.out.println(sm.toCSVString(sm.getMachPeTable()));
+	    System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+	}
+	
+	
+	/**
+	 * Bus 2,5,7 as a subsystem, with buses 5 and 7 as boundary buses
+	 * @throws InterpssException
+	 */
+	@Test
+	public void test_IEEE9Bus_MultiSubNet_Dstab_2port() throws InterpssException{
+		IpssCorePlugin.init();
+		IpssCorePlugin.setLoggerLevel(Level.INFO);
+		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
+				"testData/IEEE9Bus/ieee9.raw",
+				"testData/IEEE9Bus/ieee9.seq",
+				//"testData/IEEE9Bus/ieee9_dyn_GENCLS.dyr"
+				"testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr"
+		}));
+		DStabModelParser parser =(DStabModelParser) adapter.getModel();
+		
+		//System.out.println(parser.toXmlDoc());
+
+		
+		
+		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
+		if (!new ODMDStabParserMapper(IpssCorePlugin.getMsgHub())
+					.map2Model(parser, simuCtx)) {
+			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
+			return;
+		}
+		
+		
+	    DStabilityNetwork dsNet =simuCtx.getDStabilityNet();
+	    
+		
+		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
+		assertTrue(aclfAlgo.loadflow());
+		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
+	    
+	    /*
+	     * Step-1  split the full network into two sub-network
+	     */
+	    
+	    SubNetworkProcessor proc = new SubNetworkProcessor(dsNet);
+	    proc.addSubNetInterfaceBranch("Bus4->Bus5(0)");
 	    proc.addSubNetInterfaceBranch("Bus7->Bus8(0)");
 	    
 	    proc.splitFullSystemIntoSubsystems(false);
@@ -327,5 +434,8 @@ public class TestMultiNetDStab {
 		//System.out.println(sm.toCSVString(sm.getMachAngleTable()));
 	    System.out.println(sm.toCSVString(sm.getBusVoltTable()));
 	}
+	
+	
+	
 
 }

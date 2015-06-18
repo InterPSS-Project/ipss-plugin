@@ -29,7 +29,7 @@ import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
-public class NetworkEquivTest {
+public class TestNetworkEquivUtil {
 	
 	
 	@Test
@@ -118,6 +118,37 @@ public class NetworkEquivTest {
 	
 	
 	
-	//
+	@Test
+	public void test_SubNetEquiv_IEEE9Bus() throws InterpssException{
+		IpssCorePlugin.init();
+		IpssCorePlugin.setLoggerLevel(Level.INFO);
+		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
+				"testData/IEEE9Bus/ieee9.raw",
+				"testData/IEEE9Bus/ieee9.seq",
+				//"testData/IEEE9Bus/ieee9_dyn_onlyGen_saturation.dyr"
+				"testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr"
+		}));
+		DStabModelParser parser =(DStabModelParser) adapter.getModel();
+		
+		//System.out.println(parser.toXmlDoc());
+
+		
+		
+		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
+		if (!new ODM3PhaseDStabParserMapper(IpssCorePlugin.getMsgHub())
+					.map2Model(parser, simuCtx)) {
+			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
+			return;
+		}
+		
+		
+	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
+	    
+		
+		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
+		assertTrue(aclfAlgo.loadflow());
+		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
+	}
 
 }
