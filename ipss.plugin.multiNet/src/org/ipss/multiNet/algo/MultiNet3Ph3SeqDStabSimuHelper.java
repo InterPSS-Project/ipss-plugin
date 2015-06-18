@@ -1,16 +1,10 @@
 package org.ipss.multiNet.algo;
 
-import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map.Entry;
 
 import org.apache.commons.math3.complex.Complex;
-import org.apache.commons.math3.complex.ComplexField;
-import org.apache.commons.math3.linear.ArrayFieldVector;
-import org.apache.commons.math3.linear.FieldLUDecomposition;
-import org.apache.commons.math3.linear.FieldMatrix;
-import org.apache.commons.math3.linear.FieldVector;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.exp.IpssNumericException;
@@ -20,12 +14,12 @@ import org.interpss.numeric.sparse.ISparseEqnComplexMatrix3x3;
 import org.ipss.multiNet.equivalent.NetworkEquivUtil;
 import org.ipss.multiNet.equivalent.NetworkEquivalent;
 import org.ipss.multiNet.equivalent.NetworkEquivalent.Coordinate;
-import org.ipss.sparse.Matrix3x3.SparseEqnComplexMatrix3x3Impl;
 import org.ipss.threePhase.basic.Bus3Phase;
 import org.ipss.threePhase.dynamic.DStabNetwork3Phase;
 
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.acsc.SequenceCode;
+import com.interpss.core.sparse.impl.SparseEqnComplexMatrix3x3Impl;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabilityNetwork;
@@ -45,7 +39,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 	private Complex3x3[][] ZlAry = null;
 	private List<String> threePhModelingSubNetIdList = null; // should be provided after subnetwork creation 
 	private Hashtable<String, Hashtable<String, Complex3x1>> subNet3SeqCurrInjTable = null;
-	private double negZeroSeqCurrTolerance=1.0E-3;  // in pu;
+	private double negZeroSeqCurrTolerance=1.0E-5;  // in pu;
 
 	
 	public MultiNet3Ph3SeqDStabSimuHelper (DStabilityNetwork net, SubNetworkProcessor subNetProc){
@@ -61,10 +55,15 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 		//consolidate the from/toShuntY and Half charging shuntY of the tie-lies to the terminal buses
 		processInterfaceBranchEquiv();
 		
+		
+		
+		
+	}
+	
+	@Override
+	public void calculateSubNetTheveninEquiv(){
 		//calculate the subnetwork equivalent
-		this.subNetEquivTable = NetworkEquivUtil.calMultiNet3ph3SeqTheveninEquiv(subNetProc, threePhModelingSubNetIdList);
-		
-		
+				this.subNetEquivTable = NetworkEquivUtil.calMultiNet3ph3SeqTheveninEquiv(subNetProcessor, threePhModelingSubNetIdList);
 	}
 	
 	@Override
@@ -85,6 +84,8 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 					 // fetch the positive sequence current and save it to three-sequence
 					 
 					 if(subNet3Ph.getCustomBusCurrInjHashtable()!=null){
+						 
+						 // System.out.println(subNet3Ph.getCustomBusCurrInjHashtable());
 						 
 						 Hashtable<String,Complex3x1> threePhCurrInjTable = new Hashtable<> ();
 						 
@@ -123,13 +124,13 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
     		 // Connecting the boundary bus Thevenin equivalent to the interface branches according the
     		  // the interface branch to boundary bus incidence matrix
     		  	 for(DStabilityNetwork subNet: this.subNetProcessor.getSubNetworkList()){
-    		  		  int[][] Pk_T = this.subNetIncidenceAryTable.get(subNet.getId());
+    		  		  double[][] Pk_T = this.subNetIncidenceAryTable.get(subNet.getId());
     				  
     		  		  //TODO All Zth_k are now Complex3x3 block matrix
     		  		  Complex3x3[][] Zth_k = this.subNetEquivTable.get(subNet.getId()).getMatrix3x3();
     	    		  
     		  		  
-    		  		 int[][] Pk =MatrixUtil.transpose(Pk_T);
+    		  		 double[][] Pk =MatrixUtil.transpose(Pk_T);
     		  		 
     		  		  //  Zl_k = Pk_T*Zth_k*Pk
     		  		 
@@ -160,6 +161,9 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
     			        // TODO the only difference from the positive sequence based implementation is that
     			        // three-sequence voltage is used here instead of positive-seq;
     			        Complex3x1 v = subNet.getBus(busId).get3SeqVoltage();
+    			        
+    			        System.out.println("vth_120 @ "+busId+","+ v.toString());
+    			        
     			        subNetEquivTable.get(subNet.getId()).getSource3x1()[i]=v;
     			        i++;
     		   }
@@ -238,25 +242,15 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 		   			    
 		   			    subNet3Ph.solvePosSeqNetEqn();
 		   			    
-				   		   int i =0;
-				   		   for(String busId: this.subNetProcessor.getSubNet2BoundaryBusListTable().get(subNet.getId())){
-				   			        Complex v = subNet.getBus(busId).getVoltage();
-				   			        //TODO here assuming the neg/zero sequence votlages are zero, as there is no fault within the subnetwork
-				   			        subNetEquivTable.get(subNet.getId()).getSource3x1()[i].b_1=v;
-				   			        i++;
-				   		  }
+			   		   int i =0;
+			   		   for(String busId: this.subNetProcessor.getSubNet2BoundaryBusListTable().get(subNet.getId())){
+			   			        Complex v = subNet.getBus(busId).getVoltage();
+			   			        //TODO here assuming the neg/zero sequence voltages are zero, as there is no fault within the subnetwork
+			   			        subNetEquivTable.get(subNet.getId()).getSource3x1()[i].b_1=v;
+			   			        i++;
+			   		  }
 		   			 
-//				   		 subNet.solveNetEqn();
-//				   		 
-//				   	     // the voltages at the boundary buses are the Thevenin voltages 
-//				   		 // the busIds are ordered in an ascending manner
-//				   		 // the matrix and source parts are ordered in the same sequence as defined in BoundaryBusList.
-//				   		   int i =0;
-//				   		   for(String busId: this.subNetProcessor.getSubNet2BoundaryBusListTable().get(subNet.getId())){
-//				   			        Complex v = subNet.getBus(busId).getVoltage();
-//				   			        subNetEquivTable.get(subNet.getId()).getSource()[i]=v;
-//				   			        i++;
-//				   		  }
+				   		  
 		   		 }
 		 }
 	   	 return  subNetEquivTable;
@@ -278,7 +272,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
     		for(DStabilityNetwork subNet: this.subNetProcessor.getSubNetworkList()){
     			
     			Complex3x1[] Eth_k = this.subNetEquivTable.get(subNet.getId()).getSource3x1();
-    			int[][] Pk_T = this.subNetIncidenceAryTable.get(subNet.getId());
+    			double[][] Pk_T = this.subNetIncidenceAryTable.get(subNet.getId());
     			Eth_k = MatrixUtil.preMultiply(Pk_T,Eth_k);//Returns the result of multiplying this matrix by the vector v.
     			Eth = MatrixUtil.add(Eth,Eth_k);
     			
@@ -319,6 +313,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
     			     // 
     			 
     			     Complex3x1 threeSeqCur = ZlMatrix.getX(i);
+    			     //                              ----zero --------positive---------negative-------
     		         currVector[i] =  new Complex3x1(threeSeqCur.c_2,threeSeqCur.a_0,threeSeqCur.b_1);
     		      
     			
@@ -329,11 +324,12 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
     		
     		for(DStabilityNetwork subNet: this.subNetProcessor.getSubNetworkList()){
     			// mapping the branch current into the subnet current injection table
+    			
 //    			FieldMatrix<Complex> Pk_T = this.subNetIncidenceMatrixTable.get(subNet.getId());
 //    			FieldVector<Complex>  boundaryBusCurrInj = Pk_T.transpose().operate(currVector);
     			
-    			int[][] Pk_T = this.subNetIncidenceAryTable.get(subNet.getId());
-    			int[][] Pk = MatrixUtil.transpose(Pk_T);
+    			double[][] Pk_T = this.subNetIncidenceAryTable.get(subNet.getId());
+    			double[][] Pk = MatrixUtil.transpose(Pk_T);
     			 Complex3x1[] boundaryBusCurrInj = MatrixUtil.preMultiply(Pk,currVector);
     			
     			Hashtable<String,Complex3x1> busCurrInjTable = new Hashtable<>();
@@ -341,7 +337,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
     			for(String busId: this.subNetProcessor.getSubNet2BoundaryBusListTable().get(subNet.getId())){
     				
     				//Please note the direction of current, as fromBus -> toBus is defined as the positive for the interface tie-lie current
-    			    busCurrInjTable.put(busId, boundaryBusCurrInj[i].multiply(-1.0));
+    			    busCurrInjTable.put(busId, boundaryBusCurrInj[i].multiply(-1.0d));
     			    i++;
     			}
     			
@@ -394,6 +390,8 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 			   	     
 			   		// make sure there is no current injection at the boundary
 			   		 subNet.setCustomBusCurrInjHashtable(null);
+			   		 
+			   		 System.out.println(this.subNet3SeqCurrInjTable.get(subNet.getId()));
 			   		 
 			   	    // perform network solution to get the bus voltages
 			   	     

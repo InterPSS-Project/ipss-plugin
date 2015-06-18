@@ -48,6 +48,8 @@ public class NetworkEquivUtil {
 				if(threePhaseSubNetIdList.contains(subNet.getId())){
 					if(subNet instanceof DStabNetwork3Phase){
 					       equiv = cal3PhaseNetworkTheveninEquiv((DStabNetwork3Phase) subNet,subNetProc.getSubNet2BoundaryBusListTable().get(subNet.getId()));
+					       
+					       //System.out.println(MatrixUtil.complex3x32DAry2String(equiv.getMatrix3x3()));
 					       //this 3phase-to-3seq transformation is only performed on the Zth part
 					       equiv = equiv.transformCoordinate(Coordinate.Three_sequence);
 					}
@@ -169,6 +171,9 @@ public static  NetworkEquivalent cal3PhaseNetworkTheveninEquiv(DStabNetwork3Phas
 				e.printStackTrace();
 			}
 		}
+		
+		//System.out.println(ymatrix.getSparseEqnComplex());
+		
 		if(net.isYMatrixDirty()){
 			try {
 				ymatrix.luMatrix(1.0E-10);
@@ -191,8 +196,8 @@ public static  NetworkEquivalent cal3PhaseNetworkTheveninEquiv(DStabNetwork3Phas
 			int i=0;
 			for(String busId:boundaryBusIdList){
 				DStabBus bus = net.getBus(busId);
-				// reset the B vector
-				ymatrix.setB2Zero();
+				//System.out.println(bus.getId()+","+bus.getSortNumber());
+				
 				
 				// consider all three phases, one time for each
 				for(int phaseIdx = 0;phaseIdx<3;phaseIdx++){
@@ -204,12 +209,16 @@ public static  NetworkEquivalent cal3PhaseNetworkTheveninEquiv(DStabNetwork3Phas
 						else if(phaseIdx==2)
 							  bi =new Complex3x1(new Complex(0,0), new Complex(0,0),new Complex(1,0));
 						
+						// reset the B vector to zero every time before setting new Bi
+						ymatrix.setB2Zero();
 						ymatrix.setBi(bi,  bus.getSortNumber());
 						try {
 							ymatrix.solveEqn();
 						} catch (IpssNumericException e) {
 							e.printStackTrace();
 						}
+						
+						
 						int j=0;
 						
 						//TODO this part can be changed to use the Complex3x3 as basic storage element.
