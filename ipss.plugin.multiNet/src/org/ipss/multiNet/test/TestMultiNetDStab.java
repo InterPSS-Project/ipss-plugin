@@ -360,7 +360,7 @@ public class TestMultiNetDStab {
 			return event1;
 	}
 	
-	//@Test
+	@Test
 	public void test_IEEE9Bus_Dstab() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);

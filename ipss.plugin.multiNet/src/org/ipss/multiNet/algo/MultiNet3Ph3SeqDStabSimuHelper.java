@@ -162,7 +162,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
     			        // three-sequence voltage is used here instead of positive-seq;
     			        Complex3x1 v = subNet.getBus(busId).get3SeqVoltage();
     			        
-    			        System.out.println("vth_120 @ "+busId+","+ v.toString());
+    			        //System.out.println("vth_120 @ "+busId+","+ v.toString());
     			        
     			        subNetEquivTable.get(subNet.getId()).getSource3x1()[i]=v;
     			        i++;
@@ -356,33 +356,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 
 	@Override
 	public boolean solveSubNetWithBoundaryCurrInjection() {
-		  
-		  // need to first reset all customized current injection to be zero
-//		   for(DStabilityNetwork subNet: this.subNetProcessor.getSubNetworkList()){
-//			   subNet.setCustomBusCurrInjHashtable(null);
-//			   
-//			   ISparseEqnComplex subNetY= subNet.getYMatrix();
-//			   
-//			   subNetY.setB2Zero();
-//			   
-//			   for(Entry<String,Complex> e: this.subNetCurrInjTable.get(subNet.getId()).entrySet()){
-//				   subNetY.setBi(e.getValue(),subNet.getBus(e.getKey()).getSortNumber());
-//			   }
-//			   try {
-//				   // solve network to obtain Vext_injection
-//				    subNetY.solveEqn();
-//				} catch (IpssNumericException e1) {
-//					
-//					e1.printStackTrace();
-//					return false;
-//				}
-//			   
-//			   for(DStabBus b:subNet.getBusList()){
-//				   //superpostition method
-//				   //bus voltage V = Vinternal + Vext_injection
-//				   b.setVoltage(b.getVoltage().add(subNetY.getX(b.getSortNumber())));
-//			   }
-			   
+		 
 			   
 			   // need to separately process the three-seq subnetwork and three-phase subnetwork
 				for(DStabilityNetwork subNet: this.subNetProcessor.getSubNetworkList()){
@@ -391,7 +365,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 			   		// make sure there is no current injection at the boundary
 			   		 subNet.setCustomBusCurrInjHashtable(null);
 			   		 
-			   		 System.out.println(this.subNet3SeqCurrInjTable.get(subNet.getId()));
+			   		// System.out.println(this.subNet3SeqCurrInjTable.get(subNet.getId()));
 			   		 
 			   	    // perform network solution to get the bus voltages
 			   	     

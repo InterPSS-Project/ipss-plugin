@@ -12,6 +12,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	TestNetworkEquivUtil.class,
 	TestMultiNetDStab.class,
 	TestMultiNetDStabSimuHelper.class,
+	TestMultiNet3Ph3SeqSimHelper.class,
 	
 })
 public class MultiSubNetTestSuite {
