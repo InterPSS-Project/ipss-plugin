@@ -39,6 +39,7 @@ import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
+import com.interpss.dstab.cache.StateMonitor.MonitorRecord;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
@@ -225,7 +226,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 	 * @throws InterpssException
 	 */
 	@Test
-	public void test_3phase3SeqSubNetEquiv_IEEE9Bus() throws InterpssException{
+	public void test_3phase3SeqSubNetEquiv_IEEE9Bus_1port() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
 		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
@@ -640,7 +641,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 			
 			IpssLogger.getLogger().setLevel(Level.INFO);
 			
-			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",proc.getSubNetwork("SubNet-1"),SimpleFaultCode.GROUND_LG,0.5d,0.05),"3phaseFault@Bus5");
+			//dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",proc.getSubNetwork("SubNet-1"),SimpleFaultCode.GROUND_LG,0.5d,0.05),"3phaseFault@Bus5");
 			
 	        // TODO a special 3-phase 3seq dstab algorithm object, with the following two setting as default
 			dstabAlgo.setSolver( new MultiNet3Ph3SeqDStabSolverImpl(dstabAlgo, mNetHelper));
@@ -654,6 +655,23 @@ public class TestMultiNet3Ph3SeqSimHelper {
 			// System.out.println(sm.toCSVString(sm.getMachPeTable()));
 				
 		    System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+		    
+		    Hashtable<Integer, MonitorRecord> bus5Volts = sm.getBusVoltTable().get("Bus5");
+		    
+		    double diffSum = 0;
+		    MonitorRecord rec1 = null;
+		    
+		    int i =0;
+		    for(i=0;i<90;i++){
+		    	if(i ==0) rec1 = bus5Volts.get(i);
+		    	if(i>0 )
+		    		diffSum += Math.abs(rec1.value-bus5Volts.get(i).value);
+		    	
+		    }
+		    System.out.println("Volts@Bus5 sum difference = "+diffSum);
+		   
+		    assertTrue(diffSum<5.0E-3);
+		    
 	}
 	
 	
@@ -666,8 +684,8 @@ public class TestMultiNet3Ph3SeqSimHelper {
 		InterfaceBranch("Bus7->Bus8(0)");
 	 * 
 	 */
-	//@Test
-	public void test_3phase3SeqSimHelper_IEEE9Bus_2port() throws InterpssException{
+	@Test
+	public void test_3phase3SeqSubNetEquiv_IEEE9Bus_2port() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
 		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
@@ -766,30 +784,47 @@ public class TestMultiNet3Ph3SeqSimHelper {
 			 Hashtable<String, NetworkEquivalent>  equivTable =  mNetHelper.getSubNetEquivTable();
 			 NetworkEquivalent equiv_subNet1=equivTable.get("SubNet-1") ;
 			  assertTrue(equiv_subNet1.getEquivCoordinate()==Coordinate.Three_sequence);
-			 Complex3x3[][] equivZMatrix = equiv_subNet1.getMatrix3x3();
+			 Complex3x3[][] equivZMatrix1 = equiv_subNet1.getMatrix3x3();
 			 
 			 /*
 			  * z(0,0)
-			  * aa = (0.006112387800872096, 0.07952815643935975),ab = (0.0, 0.0),ac = (0.0, 0.0)
-				ba = (0.0, 0.0),bb = (0.006112387800872096, 0.07952815643935975),bc = (0.0, 0.0)
-				ca = (0.0, 0.0),cb = (0.0, 0.0),cc = (7.539822263951868E-4, 0.05323524399674695)
+			  * aa = (0.006112394324929721, 0.07952815172230401),ab = (0.0, 0.0),ac = (0.0, 0.0)
+                ba = (0.0, 0.0),bb = (0.006112394324929721, 0.07952815172230401),bc = (0.0, 0.0)
+                ca = (0.0, 0.0),cb = (0.0, 0.0),cc = (7.60542089712099E-4, 0.05348735912740485)
 				
 				z(0,1)
-				, aa = (0.0056247409015727804, 0.02842605562067255),ab = (0.0, 0.0),ac = (0.0, 0.0)
-				ba = (0.0, 0.0),bb = (0.0056247409015727804, 0.02842605562067255),bc = (0.0, 0.0)
-				ca = (0.0, 0.0),cb = (0.0, 0.0),cc = (-7.842980950798573E-4, 0.004623809599653661)
+				aa = (0.005624752694559396, 0.028426043580969416),ab = (0.0, 0.0),ac = (0.0, 0.0)
+                ba = (0.0, 0.0),bb = (0.005624752694559396, 0.028426043580969416),bc = (0.0, 0.0)
+                ca = (0.0, 0.0),cb = (0.0, 0.0),cc = (-7.949091419557447E-4, 0.004760098578873715)
 				
 			    z(1,0)
-				aa = (0.005624740901572781, 0.02842605562067255),ab = (0.0, 0.0),ac = (0.0, 0.0)
-				ba = (0.0, 0.0),bb = (0.005624740901572781, 0.02842605562067255),bc = (0.0, 0.0)
-				ca = (0.0, 0.0),cb = (0.0, 0.0),cc = (-7.842980950798574E-4, 0.004623809599653664)
+				aa = (0.005624752694559396, 0.02842604358096942),ab = (0.0, 0.0),ac = (0.0, 0.0)
+                ba = (0.0, 0.0),bb = (0.005624752694559396, 0.02842604358096942),bc = (0.0, 0.0)
+                ca = (0.0, 0.0),cb = (0.0, 0.0),cc = (-7.949091419557457E-4, 0.0047600985788737145)
 				
 				z(1,1)
-				, aa = (0.058441502171763686, 0.19529838105182823),ab = (0.0, 0.0),ac = (0.0, 0.0)
-				ba = (0.0, 0.0),bb = (0.058441502171763686, 0.19529838105182823),bc = (0.0, 0.0)
-				ca = (0.0, 0.0),cb = (0.0, 0.0),cc = (0.03261134419192529, 0.3173513544956359)
+				, aa = (0.058441552182728826, 0.19529831586678487),ab = (0.0, 0.0),ac = (0.0, 0.0)
+				ba = (0.0, 0.0),bb = (0.058441552182728826, 0.19529831586678487),bc = (0.0, 0.0)
+				ca = (0.0, 0.0),cb = (0.0, 0.0),cc = (0.0342089715331764, 0.32495287988637356)
+				,
 			  */
-			 System.out.println(MatrixUtil.complex3x32DAry2String(equivZMatrix));
+			 
+			 
+			 System.out.println(MatrixUtil.complex3x32DAry2String(equivZMatrix1));
+			 
+			 Complex3x3 equivZ1_00 = new Complex3x3();
+			 equivZ1_00.aa = new Complex(0.006112394324929721, 0.07952815172230401);
+			 equivZ1_00.bb = new Complex(0.006112394324929721, 0.07952815172230401);
+			 equivZ1_00.cc = new Complex(7.60542089712099E-4, 0.05348735912740485);
+			 assertTrue(equivZMatrix1[0][0].subtract(equivZ1_00).abs()<1.0E-8);
+			 
+			 
+			 
+			 Complex3x3 equivZ1_01 = new Complex3x3();
+			 equivZ1_01.aa = new Complex(0.005624752694559396, 0.028426043580969416);
+			 equivZ1_01.bb = new Complex(0.005624752694559396, 0.028426043580969416);
+			 equivZ1_01.cc = new Complex(-7.949091419557457E-4, 0.0047600985788737145);
+			 assertTrue(equivZMatrix1[0][1].subtract(equivZ1_01).abs()<1.0E-8);
 			 
 			 
 			 NetworkEquivalent equiv_subNet2=equivTable.get("SubNet-2") ;
@@ -799,27 +834,42 @@ public class TestMultiNet3Ph3SeqSimHelper {
 			 /*
 			  * equivZMatrix2 in 3-seq 
 			  * Z(0,0)
-			  * aa = (0.11337683562544085, 0.24325417157416276),ab = (0.0, 0.0),ac = (0.0, 0.0)
-				ba = (0.0, 0.0),bb = (0.11337683562544085, 0.24325417157416276),bc = (0.0, 0.0)
-				ca = (0.0, 0.0),cb = (0.0, 0.0),cc = (0.09272675387360696, 0.5000937948481665)
+			  * aa = (0.11337689329515546, 0.24325399637308914),ab = (0.0, 0.0),ac = (0.0, 0.0)
+				ba = (0.0, 0.0),bb = (0.11337689329515545, 0.24325399637308914),bc = (0.0, 0.0)
+				ca = (0.0, 0.0),cb = (0.0, 0.0),cc = (0.1014694673851629, 0.5226268860122745)
 				
 				Z(0,1)
-				aa = (0.04343351865455726, 0.1244334898321662),ab = (0.0, 0.0),ac = (0.0, 0.0)
-				ba = (0.0, 0.0),bb = (0.04343351865455726, 0.1244334898321662),bc = (0.0, 0.0)
-				ca = (0.0, 0.0),cb = (0.0, 0.0),cc = (8.952605119770054E-4, 0.06793174421372922)
+				aa = (0.043433555449656915, 0.12443340706290658),ab = (0.0, 0.0),ac = (0.0, 0.0)
+				ba = (0.0, 0.0),bb = (0.043433555449656915, 0.12443340706290658),bc = (0.0, 0.0)
+				ca = (0.0, 0.0),cb = (0.0, 0.0),cc = (0.0015504290148834112, 0.07138710283811112)
 				 
 				Z(1,0)
-				aa = (0.04343351865455726, 0.12443348983216619),ab = (0.0, 0.0),ac = (0.0, 0.0)
-				ba = (0.0, 0.0),bb = (0.04343351865455726, 0.12443348983216619),bc = (0.0, 0.0)
-				ca = (0.0, 0.0),cb = (0.0, 0.0),cc = (8.952605119770088E-4, 0.06793174421372922)
+	            aa = (0.043433555449656915, 0.12443340706290658),ab = (0.0, 0.0),ac = (0.0, 0.0)
+				ba = (0.0, 0.0),bb = (0.043433555449656915, 0.12443340706290658),bc = (0.0, 0.0)
+				ca = (0.0, 0.0),cb = (0.0, 0.0),cc = (0.0015504290148834112, 0.07138710283811112)
 				
 				Z(1,1)
-				, aa = (0.022819398397765443, 0.14317671541236235),ab = (0.0, 0.0),ac = (0.0, 0.0)
-				ba = (0.0, 0.0),bb = (0.022819398397765443, 0.14317671541236235),bc = (0.0, 0.0)
-				ca = (0.0, 0.0),cb = (0.0, 0.0),cc = (8.643582901627389E-6, 0.06375929556708093)
+				, aa = (0.022819420447181583, 0.14317667677986784),ab = (0.0, 0.0),ac = (0.0, 0.0)
+				ba = (0.0, 0.0),bb = (0.022819420447181583, 0.14317667677986784),bc = (0.0, 0.0)
+				ca = (0.0, 0.0),cb = (0.0, 0.0),cc = (2.369018180678646E-5, 0.06449226766717943)
 			  */
 			 
 			 System.out.println(MatrixUtil.complex3x32DAry2String(equivZMatrix2));
+			 
+			 
+			 Complex3x3 equivZ2_10 = new Complex3x3();
+			 equivZ2_10.aa = new Complex(0.043433555449656915, 0.12443340706290658);
+			 equivZ2_10.bb = new Complex(0.043433555449656915, 0.12443340706290658);
+			 equivZ2_10.cc = new Complex(0.0015504290148834112, 0.07138710283811112);
+			 assertTrue(equivZMatrix2[1][0].subtract(equivZ2_10).abs()<1.0E-8);
+			 
+			 
+			 
+			 Complex3x3 equivZ2_11 = new Complex3x3();
+			 equivZ2_11.aa = new Complex(0.022819420447181583, 0.14317667677986784);
+			 equivZ2_11.bb = new Complex(0.022819420447181583, 0.14317667677986784);
+			 equivZ2_11.cc = new Complex(2.369018180678646E-5, 0.06449226766717943);
+			 assertTrue(equivZMatrix2[1][1].subtract(equivZ2_11).abs()<1.0E-8);
 			 
 			 /*
 			  * equivZMatrix2 in 3-phase
@@ -844,12 +894,12 @@ public class TestMultiNet3Ph3SeqSimHelper {
 				ca = (-0.007603584938287946, -0.02647247328176047),cb = (-0.007603584938287925, -0.026472473281760476),cc = (0.015215813459477498, 0.11670424213060186)
 
 			  */
-			 System.out.println(" Z(0,0) in ABC = \n"+ Complex3x3.z12_to_abc(equivZMatrix2[0][0]).toString());
-			 System.out.println(" Z(0,1) in ABC = \n"+  Complex3x3.z12_to_abc(equivZMatrix2[0][1]).toString());
-			 System.out.println(" Z(1,0) in ABC = \n"+  Complex3x3.z12_to_abc(equivZMatrix2[1][0]).toString());
-			 System.out.println(" Z(1,1) in ABC = \n"+  Complex3x3.z12_to_abc(equivZMatrix2[1][1]).toString());
-			 
-			 
+//			 System.out.println(" Z(0,0) in ABC = \n"+ Complex3x3.z12_to_abc(equivZMatrix2[0][0]).toString());
+//			 System.out.println(" Z(0,1) in ABC = \n"+  Complex3x3.z12_to_abc(equivZMatrix2[0][1]).toString());
+//			 System.out.println(" Z(1,0) in ABC = \n"+  Complex3x3.z12_to_abc(equivZMatrix2[1][0]).toString());
+//			 System.out.println(" Z(1,1) in ABC = \n"+  Complex3x3.z12_to_abc(equivZMatrix2[1][1]).toString());
+//			 
+//			 
 		     // calculate the Vth, check that the Vth(bus5) are zeros
 			 mNetHelper.solvSubNetAndUpdateEquivSource();
 			 
@@ -928,7 +978,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 		InterfaceBranch("Bus7->Bus8(0)");
 	 * 
 	 */
-	//@Test
+	@Test
 	public void test_3phase3SeqMultiSubNetTS_IEEE9Bus_bus257_2port() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
@@ -963,11 +1013,11 @@ public class TestMultiNet3Ph3SeqSimHelper {
 
 		
 		 SubNetworkProcessor proc = new SubNetworkProcessor(dsNet);
-		 proc.addSubNetInterfaceBranch("Bus4->Bus5(0)",false);
-		 proc.addSubNetInterfaceBranch("Bus7->Bus8(0)",true);
+		 proc.addSubNetInterfaceBranch("Bus4->Bus5(0)");
+		 proc.addSubNetInterfaceBranch("Bus7->Bus8(0)");
 		
 		    
-		 proc.splitFullSystemIntoSubsystems(true);
+		 proc.splitFullSystemIntoSubsystems(false);
 		    
 		    //TODO now one needs to set the three-phase modeling subnetwork by one of the bus the subnetwork contains
 		 proc.set3PhaseSubNetByBusId("Bus5");
@@ -988,11 +1038,11 @@ public class TestMultiNet3Ph3SeqSimHelper {
 		    
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 			dstabAlgo.setSimuStepSec(0.005d);
-			dstabAlgo.setTotalSimuTimeSec(0.1d);
+			dstabAlgo.setTotalSimuTimeSec(1d);
 			
 			StateMonitor sm = new StateMonitor();
 			sm.addBusStdMonitor(new String[]{"Bus2","Bus4","Bus5","Bus7","Bus8"});
-			
+			sm.addGeneratorStdMonitor(new String[]{"Bus3-mach1","Bus2-mach1","Bus1-mach1"});
 			//sm.addBusStdMonitor(new String[]{"Bus5","Bus4","Bus7","Bus8"});
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
@@ -1000,7 +1050,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 			
 			IpssLogger.getLogger().setLevel(Level.INFO);
 			
-			//dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",proc.getSubNetwork("SubNet-2"),SimpleFaultCode.GROUND_LG,0.5d,0.05),"3phaseFault@Bus5");
+			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",proc.getSubNetwork("SubNet-2"),SimpleFaultCode.GROUND_LG,0.5d,0.05),"3phaseFault@Bus5");
 			
 	        // TODO a special 3-phase 3seq dstab algorithm object, with the following two setting as default
 			dstabAlgo.setSolver( new MultiNet3Ph3SeqDStabSolverImpl(dstabAlgo, mNetHelper));
@@ -1011,9 +1061,38 @@ public class TestMultiNet3Ph3SeqSimHelper {
 			 }
 
 		   
-			// System.out.println(sm.toCSVString(sm.getMachPeTable()));
+			System.out.println(sm.toCSVString(sm.getMachPeTable()));
 			System.out.println(sm.toCSVString(sm.getBusAngleTable()));	
 		    System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+		   
+		    double diffSum = 0;
+		    MonitorRecord rec1 = null;
+		    Hashtable<Integer, MonitorRecord> bus5Volts = sm.getBusVoltTable().get("Bus5");
+		    
+		    int i =0;
+		    for(i=0;i<90;i++){
+		    	if(i ==0) rec1 = bus5Volts.get(i);
+		    	if(i>0 )
+		    		diffSum += Math.abs(rec1.value-bus5Volts.get(i).value);
+		    	
+		    }
+		    System.out.println("Volts@Bus5 sum difference = "+diffSum);
+		    assertTrue(diffSum<1.0E-5);
+		    
+		    
+            Hashtable<Integer, MonitorRecord> bus2MachPe = sm.getMachPeTable().get("Bus2-mach1");
+		    
+		    i =0;
+		    diffSum = 0;
+		    for(i=0;i<90;i++){
+		    	if(i ==0) rec1 = bus2MachPe.get(i);
+		    	if(i>0 )
+		    		diffSum += Math.abs(rec1.value-bus2MachPe.get(i).value);
+		    	
+		    }
+		    System.out.println("MachPe@Bus2 sum difference = "+diffSum);
+		    assertTrue(diffSum<1.0E-5);
+			
 	}
 	
 	

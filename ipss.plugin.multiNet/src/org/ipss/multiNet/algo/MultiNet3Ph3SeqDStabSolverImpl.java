@@ -68,6 +68,8 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 		}
 		// prepare the equivalents of the subnetworks
 		this.multiNetSimuHelper.calculateSubNetTheveninEquiv();
+
+		
 		
 		// prepare tie-line-and-boundary bus incidence matrix, Zl
 		
@@ -87,11 +89,8 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 		 
 		boolean netSolConverged = true;
 		
-		this.converge_tol = 1.0E-7;
+		//System.out.println(" simu time = "+time);
 		
-		System.out.println(" simu time = "+time);
-		
-	
 		for(int i=0;i<maxIterationTimes;i++){ 
 			 
 			// The first  step of the multi-subNetwork solution is to solve each subnetwork independently without current injections from the 
