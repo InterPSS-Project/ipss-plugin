@@ -61,6 +61,10 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 				}
 			
 		}
+		// calculate the Thevenin equivalent of each subsystem only 
+		// after the networks have been initialized
+		this.multiNetSimuHelper.calculateSubNetTheveninEquiv();
+		
 		// prepare tie-line-and-boundary bus incidence matrix, Zl
 		this.multiNetSimuHelper.prepareBoundarySubSystemMatrix();
 		

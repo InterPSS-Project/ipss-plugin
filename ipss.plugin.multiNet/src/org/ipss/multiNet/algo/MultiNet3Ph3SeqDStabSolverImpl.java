@@ -66,7 +66,11 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 				}
 			
 		}
+		// prepare the equivalents of the subnetworks
+		this.multiNetSimuHelper.calculateSubNetTheveninEquiv();
+		
 		// prepare tie-line-and-boundary bus incidence matrix, Zl
+		
 		this.multiNetSimuHelper.prepareBoundarySubSystemMatrix();
 		
 		// output initial states
@@ -83,7 +87,9 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 		 
 		boolean netSolConverged = true;
 		
-		// retrieve the threePhaseSubNetwork
+		this.converge_tol = 1.0E-7;
+		
+		System.out.println(" simu time = "+time);
 		
 	
 		for(int i=0;i<maxIterationTimes;i++){ 
@@ -105,7 +111,7 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 				
 					// make sure there is no current injection at the boundary
 					dsNet.setCustomBusCurrInjHashtable(null);
-					
+					dsNet.setCustom3SeqBusCurrInjHashtable(null);
 					// solve net equation
 					
 					//NOTE: all subnetworks are modeled in three-phase, in order to solve the positive-sequence network
@@ -119,7 +125,7 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 						}
 						
 					}else
-						throw new DStabSimuException("Exception in dstabNet.solveNetEqn()");
+						throw new DStabSimuException("Exception in dstabNet.solvePosSeqNetEqn()");
 				}
 				
 			}  //end for-subnetwork loop
@@ -152,8 +158,9 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 						if(bus.isActive()){
 							
 							if(i>=1){
-								if(!NumericUtil.equals(bus.getVoltage(),voltageRecTable.get(bus.getId()),this.converge_tol))
-									netSolConverged =false;
+								 boolean flag = NumericUtil.equals(bus.getVoltage(),voltageRecTable.get(bus.getId()),this.converge_tol);
+								 netSolConverged = netSolConverged && flag;
+								
 							}
 							voltageRecTable.put(bus.getId(), bus.getVoltage());
 						}
@@ -161,7 +168,7 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 				  }
 				  
 			
-			  if(i>0 && netSolConverged) {
+			  if(i>=1 && netSolConverged) {
 				  IpssLogger.getLogger().fine(getSimuTime()+","+"multi subNetwork solution in the nextStep() is converged, iteration #"+(i+1));
 				  break;
 			  }

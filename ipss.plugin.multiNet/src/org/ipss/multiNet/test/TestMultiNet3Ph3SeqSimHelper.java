@@ -15,6 +15,7 @@ import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.matrix.MatrixUtil;
+import org.interpss.numeric.util.NumericUtil;
 import org.interpss.numeric.util.PerformanceTimer;
 import org.ipss.multiNet.algo.MultiNet3Ph3SeqDStabSimuHelper;
 import org.ipss.multiNet.algo.MultiNet3Ph3SeqDStabSolverImpl;
@@ -42,6 +43,84 @@ import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
 public class TestMultiNet3Ph3SeqSimHelper {
+	
+	
+	@Test
+	public void test_IEEE9Bus_3phase_dstab() throws InterpssException{
+		IpssCorePlugin.init();
+		IpssCorePlugin.setLoggerLevel(Level.INFO);
+		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
+				"testData/IEEE9Bus/ieee9.raw",
+				"testData/IEEE9Bus/ieee9.seq",
+				//"testData/IEEE9Bus/ieee9_dyn_onlyGen_saturation.dyr"
+				"testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr"
+		}));
+		DStabModelParser parser =(DStabModelParser) adapter.getModel();
+		
+		//System.out.println(parser.toXmlDoc());
+
+		
+		
+		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
+		if (!new ODM3PhaseDStabParserMapper(IpssCorePlugin.getMsgHub())
+					.map2Model(parser, simuCtx)) {
+			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
+			return;
+		}
+		
+		
+	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
+	    
+		
+		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
+		assertTrue(aclfAlgo.loadflow());
+		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
+		
+		
+		DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+		
+		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+		dstabAlgo.setSimuStepSec(0.005d);
+		dstabAlgo.setTotalSimuTimeSec(3);
+		dsNet.setNetEqnIterationNoEvent(1);
+		dsNet.setNetEqnIterationWithEvent(1);
+		dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
+		
+		//applied the event
+		dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",dsNet,SimpleFaultCode.GROUND_LG,1.0d,0.05),"3phaseFault@Bus5");
+        
+		
+		StateMonitor sm = new StateMonitor();
+		sm.addGeneratorStdMonitor(new String[]{"Bus1-mach1","Bus2-mach1","Bus3-mach1"});
+		sm.addBusStdMonitor(new String[]{"Bus5","Bus4","Bus1"});
+		
+		// set the output handler
+		dstabAlgo.setSimuOutputHandler(sm);
+		dstabAlgo.setOutPutPerSteps(5);
+		
+		IpssLogger.getLogger().setLevel(Level.WARNING);
+		
+		PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+		
+        // Must use this dynamic event process to modify the YMatrixABC
+		dstabAlgo.setDynamicEventHandler(new DynamicEventProcessor3Phase());
+		
+		if (dstabAlgo.initialization()) {
+			System.out.println(dsNet.getMachineInitCondition());
+			
+			System.out.println("Running 3Phase DStab simulation ...");
+			
+			dstabAlgo.performSimulation();
+		}
+		
+		System.out.println(sm.toCSVString(sm.getMachPeTable()));
+		
+	    System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+		
+		
+		
+	}
 	
 	//Note:network equivalent part is tested by the NetworkEquivTest
 	
@@ -145,7 +224,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 	 * Test the subnetwork equivalent
 	 * @throws InterpssException
 	 */
-	//@Test
+	@Test
 	public void test_3phase3SeqSubNetEquiv_IEEE9Bus() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
@@ -196,6 +275,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 		    
 		  MultiNet3Ph3SeqDStabSimuHelper  mNetHelper = new MultiNet3Ph3SeqDStabSimuHelper(dsNet,proc);
 		  
+		  mNetHelper.calculateSubNetTheveninEquiv();
 		  
 		  Hashtable<String, NetworkEquivalent> equivTable = mNetHelper.getSubNetEquivTable();
 		  
@@ -244,11 +324,11 @@ public class TestMultiNet3Ph3SeqSimHelper {
 	
 	
 	/**
-	 * Test the calculation of boundary tie-line current
+	 * Test the calculation of boundary tie-line current, with bus5 as the only boundary bus
 	 * @throws InterpssException
 	 */
-	//@Test
-	public void test_MultiSubNetTieLineCurrent_IEEE9Bus() throws InterpssException{
+	@Test
+	public void test_MultiSubNetTieLineCurrent_IEEE9Bus_1port() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
 		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
@@ -392,11 +472,11 @@ public class TestMultiNet3Ph3SeqSimHelper {
 	
 	
 	/**
-	 * test 3ph/3-seq co-simulation
+	 * test 3ph/3-seq co-simulation with IEEE 9 Bus system and only 1 port at the interface
 	 * 
 	 */
-	@Test
-	public void test_3phase3SeqMultiSubNetTS_IEEE9Bus() throws InterpssException{
+	//@Test
+	public void test_3phase3SeqMultiSubNetTS_IEEE9Bus_1port() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
 		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
@@ -427,13 +507,6 @@ public class TestMultiNet3Ph3SeqSimHelper {
 		assertTrue(aclfAlgo.loadflow());
 		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 		
-		Complex v5 = dsNet.getBus("Bus5").getVoltage();
-		Complex v4 = dsNet.getBus("Bus4").getVoltage();
-		Complex v7 = dsNet.getBus("Bus7").getVoltage();
-		Complex z45 = dsNet.getBranch("Bus4->Bus5(0)").getZ();
-		Complex z57 = dsNet.getBranch("Bus5->Bus7(0)").getZ();
-		Complex I_5_4 = v5.subtract(v4).divide(z45);
-		Complex I_5_7 = v5.subtract(v7).divide(z57);
 		
 		 SubNetworkProcessor proc = new SubNetworkProcessor(dsNet);
 		    proc.addSubNetInterfaceBranch("Bus4->Bus5(0)");
@@ -478,5 +551,472 @@ public class TestMultiNet3Ph3SeqSimHelper {
 		  
 		
 	}
+	
+	
+	/**
+	 * test 3ph/3-seq co-simulation with IEEE 9 Bus system and  2 port at the interface
+	 * 
+	 *  InterfaceBranch("Bus4->Bus5(0)");
+		InterfaceBranch("Bus7->Bus8(0)");
+	 * 
+	 */
+	@Test
+	public void test_3phase3SeqMultiSubNetTS_IEEE9Bus_bus57_2port() throws InterpssException{
+		IpssCorePlugin.init();
+		IpssCorePlugin.setLoggerLevel(Level.INFO);
+		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
+				"testData/IEEE9Bus/ieee9.raw",
+				"testData/IEEE9Bus/ieee9.seq",
+				//"testData/IEEE9Bus/ieee9_dyn_onlyGen_saturation.dyr"
+				"testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr"
+		}));
+		DStabModelParser parser =(DStabModelParser) adapter.getModel();
+		
+		//System.out.println(parser.toXmlDoc());
+
+		
+		
+		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
+		if (!new ODM3PhaseDStabParserMapper(IpssCorePlugin.getMsgHub())
+					.map2Model(parser, simuCtx)) {
+			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
+			return;
+		}
+		
+		
+	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
+	    
+		
+		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
+		assertTrue(aclfAlgo.loadflow());
+		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
+		
+		Complex v5 = dsNet.getBus("Bus5").getVoltage();
+		Complex v4 = dsNet.getBus("Bus4").getVoltage();
+		Complex v7 = dsNet.getBus("Bus7").getVoltage();
+		Complex v8 = dsNet.getBus("Bus8").getVoltage();
+		Complex z45 = dsNet.getBranch("Bus4->Bus5(0)").getZ();
+		Complex z78 = dsNet.getBranch("Bus7->Bus8(0)").getZ();
+		Complex I_5_4 = v5.subtract(v4).divide(z45);
+		Complex I_7_8 = v7.subtract(v8).divide(z78);
+		
+		
+		 SubNetworkProcessor proc = new SubNetworkProcessor(dsNet);
+		    proc.addSubNetInterfaceBranch("Bus4->Bus5(0)",false);
+		    proc.addSubNetInterfaceBranch("Bus2->Bus7(1)",false);
+		    proc.addSubNetInterfaceBranch("Bus7->Bus8(0)",true);
+		    
+		    proc.splitFullSystemIntoSubsystems(true);
+		    
+		    //TODO now one needs to set the three-phase modeling subnetwork by one of the bus the subnetwork contains
+		    proc.set3PhaseSubNetByBusId("Bus5");
+		    
+		    
+		    DStabNetwork3Phase subNet_1 =  (DStabNetwork3Phase) proc.getSubNetwork("SubNet-1");
+		    
+		    System.out.println(subNet_1.net2String());
+		    assertTrue(subNet_1.getNoActiveBus() ==2);
+		    
+		    DStabNetwork3Phase subNet_2 =  (DStabNetwork3Phase) proc.getSubNetwork("SubNet-2");
+		    
+		   // System.out.println(subNet_2.net2String());
+		   assertTrue(subNet_2.getNoActiveBus() ==9);
+		    
+		  MultiNet3Ph3SeqDStabSimuHelper  mNetHelper = new MultiNet3Ph3SeqDStabSimuHelper(dsNet,proc);
+		  
+		  // create multiNet3Seq3PhDStabHelper and initialize the subsystem
+		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+		    
+			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+			dstabAlgo.setSimuStepSec(0.005d);
+			dstabAlgo.setTotalSimuTimeSec(1d);
+			
+			StateMonitor sm = new StateMonitor();
+			sm.addBusStdMonitor(new String[]{"Bus5","Bus4","Bus7","Bus8"});
+			// set the output handler
+			dstabAlgo.setSimuOutputHandler(sm);
+			dstabAlgo.setOutPutPerSteps(1);
+			
+			IpssLogger.getLogger().setLevel(Level.INFO);
+			
+			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",proc.getSubNetwork("SubNet-1"),SimpleFaultCode.GROUND_LG,0.5d,0.05),"3phaseFault@Bus5");
+			
+	        // TODO a special 3-phase 3seq dstab algorithm object, with the following two setting as default
+			dstabAlgo.setSolver( new MultiNet3Ph3SeqDStabSolverImpl(dstabAlgo, mNetHelper));
+			dstabAlgo.setDynamicEventHandler(new MultiNet3Ph3SeqDynEventProcessor(mNetHelper));
+		  
+			 if(dstabAlgo.initialization()){
+				 dstabAlgo.performSimulation();
+			 }
+
+		   
+			// System.out.println(sm.toCSVString(sm.getMachPeTable()));
+				
+		    System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+	}
+	
+	
+	/**
+	 * test multi-net 3ph/3-seq simu helper with IEEE 9 Bus system and  2 port at the interface
+	 * 
+	 * different from the former test case, there is a generator within the 3phase modeling subsystem
+	 * 
+	 *  InterfaceBranch("Bus4->Bus5(0)");
+		InterfaceBranch("Bus7->Bus8(0)");
+	 * 
+	 */
+	//@Test
+	public void test_3phase3SeqSimHelper_IEEE9Bus_2port() throws InterpssException{
+		IpssCorePlugin.init();
+		IpssCorePlugin.setLoggerLevel(Level.INFO);
+		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
+				"testData/IEEE9Bus/ieee9.raw",
+				"testData/IEEE9Bus/ieee9.seq",
+				//"testData/IEEE9Bus/ieee9_dyn_onlyGen_saturation.dyr"
+				"testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr"
+		}));
+		DStabModelParser parser =(DStabModelParser) adapter.getModel();
+		
+		//System.out.println(parser.toXmlDoc());
+
+		
+		
+		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
+		if (!new ODM3PhaseDStabParserMapper(IpssCorePlugin.getMsgHub())
+					.map2Model(parser, simuCtx)) {
+			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
+			return;
+		}
+		
+		
+	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
+	    
+		
+		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
+		 aclfAlgo.setTolerance(1.0E-6);
+		assertTrue(aclfAlgo.loadflow());
+		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
+		
+		Complex v5 = dsNet.getBus("Bus5").getVoltage();
+		Complex v4 = dsNet.getBus("Bus4").getVoltage();
+		Complex v7 = dsNet.getBus("Bus7").getVoltage();
+		Complex v8 = dsNet.getBus("Bus8").getVoltage();
+		Complex z45 = dsNet.getBranch("Bus4->Bus5(0)").getZ();
+		Complex z78 = dsNet.getBranch("Bus7->Bus8(0)").getZ();
+		Complex I_5_4 = v5.subtract(v4).divide(z45);
+		Complex I_7_8 = v7.subtract(v8).divide(z78);
+		
+		System.out.println("I_5_4 = "+I_5_4);
+		System.out.println("I_7_8 = "+I_7_8);
+		
+		 SubNetworkProcessor proc = new SubNetworkProcessor(dsNet);
+		 proc.addSubNetInterfaceBranch("Bus4->Bus5(0)");
+		 proc.addSubNetInterfaceBranch("Bus7->Bus8(0)");
+		
+		    
+		 proc.splitFullSystemIntoSubsystems(false);
+		    
+		    //TODO now one needs to set the three-phase modeling subnetwork by one of the bus the subnetwork contains
+		 proc.set3PhaseSubNetByBusId("Bus5");
+		    
+		    
+		    DStabNetwork3Phase subNet_1 =  (DStabNetwork3Phase) proc.getSubNetwork("SubNet-1");
+		    
+		  //  System.out.println(subNet_1.net2String());
+		  // assertTrue(subNet_1.getNoActiveBus() ==6);
+		    
+		    DStabNetwork3Phase subNet_2 =  (DStabNetwork3Phase) proc.getSubNetwork("SubNet-2");
+		  // assertTrue(subNet_2.getNoActiveBus() ==3);
+		    
+		  MultiNet3Ph3SeqDStabSimuHelper  mNetHelper = new MultiNet3Ph3SeqDStabSimuHelper(dsNet,proc);
+		  
+		  // create multiNet3Seq3PhDStabHelper and initialize the subsystem
+		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+		    
+			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+			dstabAlgo.setSimuStepSec(0.005d);
+			dstabAlgo.setTotalSimuTimeSec(1d);
+			
+			StateMonitor sm = new StateMonitor();
+			sm.addBusStdMonitor(new String[]{"Bus2","Bus7"});
+			//sm.addBusStdMonitor(new String[]{"Bus5","Bus4","Bus7","Bus8"});
+			// set the output handler
+			dstabAlgo.setSimuOutputHandler(sm);
+			dstabAlgo.setOutPutPerSteps(1);
+			
+			IpssLogger.getLogger().setLevel(Level.INFO);
+			
+			//dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",proc.getSubNetwork("SubNet-2"),SimpleFaultCode.GROUND_LG,0.5d,0.05),"3phaseFault@Bus5");
+			
+	        // TODO a special 3-phase 3seq dstab algorithm object, with the following two setting as default
+			dstabAlgo.setSolver( new MultiNet3Ph3SeqDStabSolverImpl(dstabAlgo, mNetHelper));
+			dstabAlgo.setDynamicEventHandler(new MultiNet3Ph3SeqDynEventProcessor(mNetHelper));
+		  
+			 if(dstabAlgo.initialization()){
+				// dstabAlgo.performSimulation();
+			 }
+
+		   
+			// System.out.println(sm.toCSVString(sm.getMachPeTable()));
+			// System.out.println(sm.toCSVString(sm.getBusAngleTable()));	
+		    // System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+			 
+			 Hashtable<String, NetworkEquivalent>  equivTable =  mNetHelper.getSubNetEquivTable();
+			 NetworkEquivalent equiv_subNet1=equivTable.get("SubNet-1") ;
+			  assertTrue(equiv_subNet1.getEquivCoordinate()==Coordinate.Three_sequence);
+			 Complex3x3[][] equivZMatrix = equiv_subNet1.getMatrix3x3();
+			 
+			 /*
+			  * z(0,0)
+			  * aa = (0.006112387800872096, 0.07952815643935975),ab = (0.0, 0.0),ac = (0.0, 0.0)
+				ba = (0.0, 0.0),bb = (0.006112387800872096, 0.07952815643935975),bc = (0.0, 0.0)
+				ca = (0.0, 0.0),cb = (0.0, 0.0),cc = (7.539822263951868E-4, 0.05323524399674695)
+				
+				z(0,1)
+				, aa = (0.0056247409015727804, 0.02842605562067255),ab = (0.0, 0.0),ac = (0.0, 0.0)
+				ba = (0.0, 0.0),bb = (0.0056247409015727804, 0.02842605562067255),bc = (0.0, 0.0)
+				ca = (0.0, 0.0),cb = (0.0, 0.0),cc = (-7.842980950798573E-4, 0.004623809599653661)
+				
+			    z(1,0)
+				aa = (0.005624740901572781, 0.02842605562067255),ab = (0.0, 0.0),ac = (0.0, 0.0)
+				ba = (0.0, 0.0),bb = (0.005624740901572781, 0.02842605562067255),bc = (0.0, 0.0)
+				ca = (0.0, 0.0),cb = (0.0, 0.0),cc = (-7.842980950798574E-4, 0.004623809599653664)
+				
+				z(1,1)
+				, aa = (0.058441502171763686, 0.19529838105182823),ab = (0.0, 0.0),ac = (0.0, 0.0)
+				ba = (0.0, 0.0),bb = (0.058441502171763686, 0.19529838105182823),bc = (0.0, 0.0)
+				ca = (0.0, 0.0),cb = (0.0, 0.0),cc = (0.03261134419192529, 0.3173513544956359)
+			  */
+			 System.out.println(MatrixUtil.complex3x32DAry2String(equivZMatrix));
+			 
+			 
+			 NetworkEquivalent equiv_subNet2=equivTable.get("SubNet-2") ;
+			  assertTrue(equiv_subNet2.getEquivCoordinate()==Coordinate.Three_sequence);
+			 Complex3x3[][] equivZMatrix2 = equiv_subNet2.getMatrix3x3();
+			 
+			 /*
+			  * equivZMatrix2 in 3-seq 
+			  * Z(0,0)
+			  * aa = (0.11337683562544085, 0.24325417157416276),ab = (0.0, 0.0),ac = (0.0, 0.0)
+				ba = (0.0, 0.0),bb = (0.11337683562544085, 0.24325417157416276),bc = (0.0, 0.0)
+				ca = (0.0, 0.0),cb = (0.0, 0.0),cc = (0.09272675387360696, 0.5000937948481665)
+				
+				Z(0,1)
+				aa = (0.04343351865455726, 0.1244334898321662),ab = (0.0, 0.0),ac = (0.0, 0.0)
+				ba = (0.0, 0.0),bb = (0.04343351865455726, 0.1244334898321662),bc = (0.0, 0.0)
+				ca = (0.0, 0.0),cb = (0.0, 0.0),cc = (8.952605119770054E-4, 0.06793174421372922)
+				 
+				Z(1,0)
+				aa = (0.04343351865455726, 0.12443348983216619),ab = (0.0, 0.0),ac = (0.0, 0.0)
+				ba = (0.0, 0.0),bb = (0.04343351865455726, 0.12443348983216619),bc = (0.0, 0.0)
+				ca = (0.0, 0.0),cb = (0.0, 0.0),cc = (8.952605119770088E-4, 0.06793174421372922)
+				
+				Z(1,1)
+				, aa = (0.022819398397765443, 0.14317671541236235),ab = (0.0, 0.0),ac = (0.0, 0.0)
+				ba = (0.0, 0.0),bb = (0.022819398397765443, 0.14317671541236235),bc = (0.0, 0.0)
+				ca = (0.0, 0.0),cb = (0.0, 0.0),cc = (8.643582901627389E-6, 0.06375929556708093)
+			  */
+			 
+			 System.out.println(MatrixUtil.complex3x32DAry2String(equivZMatrix2));
+			 
+			 /*
+			  * equivZMatrix2 in 3-phase
+			  * Z(0,0) in ABC =
+			  * aa = (0.10649347504149621, 0.32886737933216403),ab = (-0.00688336058394462, 0.08561320775800127),ac = (-0.00688336058394462, 0.08561320775800127)
+				ba = (-0.006883360583944627, 0.08561320775800126),bb = (0.1064934750414962, 0.328867379332164),bc = (-0.006883360583944606, 0.08561320775800124)
+				ca = (-0.006883360583944627, 0.08561320775800126),cb = (-0.006883360583944606, 0.08561320775800124),cc = (0.1064934750414962, 0.328867379332164)
+				
+				 Z(0,1) in ABC =
+				aa = (0.029254099273697175, 0.10559957462602053),ab = (-0.014179419380860085, -0.018833915206145652),ac = (-0.014179419380860085, -0.018833915206145652)
+				ba = (-0.014179419380860085, -0.018833915206145652),bb = (0.029254099273697164, 0.10559957462602053),bc = (-0.014179419380860071, -0.018833915206145666)
+				ca = (-0.014179419380860085, -0.018833915206145652),cb = (-0.014179419380860071, -0.018833915206145666),cc = (0.029254099273697164, 0.10559957462602053)
+				
+				 Z(1,0) in ABC =
+				aa = (0.029254099273697175, 0.10559957462602053),ab = (-0.014179419380860083, -0.018833915206145652),ac = (-0.014179419380860083, -0.018833915206145652)
+				ba = (-0.014179419380860077, -0.018833915206145652),bb = (0.02925409927369716, 0.10559957462602053),bc = (-0.01417941938086008, -0.01883391520614566)
+				ca = (-0.014179419380860077, -0.018833915206145652),cb = (-0.01417941938086008, -0.01883391520614566),cc = (0.02925409927369716, 0.10559957462602053)
+				
+				 Z(1,1) in ABC =
+				aa = (0.015215813459477505, 0.11670424213060186),ab = (-0.007603584938287939, -0.026472473281760462),ac = (-0.007603584938287939, -0.026472473281760462)
+				ba = (-0.007603584938287946, -0.02647247328176047),bb = (0.015215813459477498, 0.11670424213060186),bc = (-0.007603584938287925, -0.026472473281760476)
+				ca = (-0.007603584938287946, -0.02647247328176047),cb = (-0.007603584938287925, -0.026472473281760476),cc = (0.015215813459477498, 0.11670424213060186)
+
+			  */
+			 System.out.println(" Z(0,0) in ABC = \n"+ Complex3x3.z12_to_abc(equivZMatrix2[0][0]).toString());
+			 System.out.println(" Z(0,1) in ABC = \n"+  Complex3x3.z12_to_abc(equivZMatrix2[0][1]).toString());
+			 System.out.println(" Z(1,0) in ABC = \n"+  Complex3x3.z12_to_abc(equivZMatrix2[1][0]).toString());
+			 System.out.println(" Z(1,1) in ABC = \n"+  Complex3x3.z12_to_abc(equivZMatrix2[1][1]).toString());
+			 
+			 
+		     // calculate the Vth, check that the Vth(bus5) are zeros
+			 mNetHelper.solvSubNetAndUpdateEquivSource();
+			 
+		
+			 
+			 // solve the boundary subsystem
+			  
+			 mNetHelper.solveBoundarySubSystem();
+			 
+			 Hashtable<String, Hashtable<String, Complex3x1>> curInjTable = mNetHelper.getSubNet3SeqCurrInjTable();
+		  
+			 System.out.println("I_5_4 = "+I_5_4);
+			 System.out.println("I_7_8 = "+I_7_8);
+	         
+			 // subnet-2, Iinj@Bus5
+			 Hashtable<String, Complex3x1> subNet2_curInj = curInjTable.get("SubNet-2");
+			 Complex3x1 Iinj_bus5 = subNet2_curInj.get("Bus5");
+			 System.out.println( "Iinj@Bus5 = "+Iinj_bus5.b_1);
+			 assertTrue(Iinj_bus5.b_1.add(I_5_4).abs()<1.0E-5); // inj_bus5 = I_5_4
+			 
+			 // compare Iinj @Bus7 with I_7_8;
+			 Complex3x1 Iinj_bus7 = subNet2_curInj.get("Bus7");
+			 assertTrue(Iinj_bus7.b_1.add(I_7_8).abs()<1.0E-5);
+			 
+			// subnet-1, Iinj @ Bus4
+			 Hashtable<String, Complex3x1> subNet1_curInj = curInjTable.get("SubNet-1");
+			 Complex3x1 Iinj_bus4 = subNet1_curInj.get("Bus4");
+			 
+			 // compare Iinj @ Bus4 with I_5_4;
+			 assertTrue(Iinj_bus4.b_1.subtract(I_5_4).abs()<1.0E-5);
+			 
+			 
+             Complex3x1 Iinj_bus8 = subNet1_curInj.get("Bus8");
+			 
+			 // compare Iinj @ Bus8 with I_7_8;
+			 assertTrue(Iinj_bus8.b_1.subtract(I_7_8).abs()<1.0E-5);
+			 
+			
+			 
+		
+		// solve subsystems with boundary current injections
+			mNetHelper.solveSubNetWithBoundaryCurrInjection();
+			 
+		/*
+		 * time,Bus7, Bus5, Bus4
+          0.0000,    1.02581,    0.99577,    1.02597,
+		 */
+		Complex v5new =proc.getSubNetwork("SubNet-2").getBus("Bus5").getVoltage();
+		Complex v7new =proc.getSubNetwork("SubNet-2").getBus("Bus7").getVoltage();
+		
+		Complex v4new =proc.getSubNetwork("SubNet-1").getBus("Bus4").getVoltage();
+		Complex v8new =proc.getSubNetwork("SubNet-1").getBus("Bus8").getVoltage();
+		
+		
+	    System.out.println("bus5 Volt = "+v5new.toString());
+	    System.out.println("bus7 Volt = "+v7new.toString());
+	    
+	    assertTrue(NumericUtil.equals(v4new,v4,1.0E-6));
+	    assertTrue(NumericUtil.equals(v5new,v5,1.0E-6));
+	    assertTrue(NumericUtil.equals(v7new,v7,1.0E-6));
+	    assertTrue(NumericUtil.equals(v8new,v8,1.0E-6));
+	    
+		assertTrue(Math.abs(proc.getSubNetwork("SubNet-2").getBus("Bus5").getVoltageMag()-0.99577)<5.0e-5)	; 
+		assertTrue(Math.abs(proc.getSubNetwork("SubNet-2").getBus("Bus7").getVoltageMag()-1.02581)<5.0e-5)	; 
+		assertTrue(Math.abs(proc.getSubNetwork("SubNet-1").getBus("Bus4").getVoltageMag()-1.02597)<5.0e-5)	; 
+//		  
+		
+	}
+	
+	/**
+	 * test multi-net 3ph/3-seq multi subsystems TS with IEEE 9 Bus system and  2 port at the interface
+	 * 
+	 * different from the former test case, there is a generator and transformer within the 3phase modeling subsystem
+	 * 
+	 *  InterfaceBranch("Bus4->Bus5(0)");
+		InterfaceBranch("Bus7->Bus8(0)");
+	 * 
+	 */
+	//@Test
+	public void test_3phase3SeqMultiSubNetTS_IEEE9Bus_bus257_2port() throws InterpssException{
+		IpssCorePlugin.init();
+		IpssCorePlugin.setLoggerLevel(Level.INFO);
+		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
+				"testData/IEEE9Bus/ieee9.raw",
+				"testData/IEEE9Bus/ieee9.seq",
+				//"testData/IEEE9Bus/ieee9_dyn_onlyGen_saturation.dyr"
+				"testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr"
+		}));
+		DStabModelParser parser =(DStabModelParser) adapter.getModel();
+		
+		//System.out.println(parser.toXmlDoc());
+
+		
+		
+		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
+		if (!new ODM3PhaseDStabParserMapper(IpssCorePlugin.getMsgHub())
+					.map2Model(parser, simuCtx)) {
+			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
+			return;
+		}
+		
+		
+	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
+	    
+		
+		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
+		 aclfAlgo.setTolerance(1.0E-6);
+		assertTrue(aclfAlgo.loadflow());
+		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
+
+		
+		 SubNetworkProcessor proc = new SubNetworkProcessor(dsNet);
+		 proc.addSubNetInterfaceBranch("Bus4->Bus5(0)",false);
+		 proc.addSubNetInterfaceBranch("Bus7->Bus8(0)",true);
+		
+		    
+		 proc.splitFullSystemIntoSubsystems(true);
+		    
+		    //TODO now one needs to set the three-phase modeling subnetwork by one of the bus the subnetwork contains
+		 proc.set3PhaseSubNetByBusId("Bus5");
+		    
+		    
+		    DStabNetwork3Phase subNet_1 =  (DStabNetwork3Phase) proc.getSubNetwork("SubNet-1");
+		    
+		  //  System.out.println(subNet_1.net2String());
+		  // assertTrue(subNet_1.getNoActiveBus() ==6);
+		    
+		    DStabNetwork3Phase subNet_2 =  (DStabNetwork3Phase) proc.getSubNetwork("SubNet-2");
+		  // assertTrue(subNet_2.getNoActiveBus() ==3);
+		    
+		  MultiNet3Ph3SeqDStabSimuHelper  mNetHelper = new MultiNet3Ph3SeqDStabSimuHelper(dsNet,proc);
+		  
+		  // create multiNet3Seq3PhDStabHelper and initialize the subsystem
+		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+		    
+			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+			dstabAlgo.setSimuStepSec(0.005d);
+			dstabAlgo.setTotalSimuTimeSec(0.1d);
+			
+			StateMonitor sm = new StateMonitor();
+			sm.addBusStdMonitor(new String[]{"Bus2","Bus4","Bus5","Bus7","Bus8"});
+			
+			//sm.addBusStdMonitor(new String[]{"Bus5","Bus4","Bus7","Bus8"});
+			// set the output handler
+			dstabAlgo.setSimuOutputHandler(sm);
+			dstabAlgo.setOutPutPerSteps(1);
+			
+			IpssLogger.getLogger().setLevel(Level.INFO);
+			
+			//dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",proc.getSubNetwork("SubNet-2"),SimpleFaultCode.GROUND_LG,0.5d,0.05),"3phaseFault@Bus5");
+			
+	        // TODO a special 3-phase 3seq dstab algorithm object, with the following two setting as default
+			dstabAlgo.setSolver( new MultiNet3Ph3SeqDStabSolverImpl(dstabAlgo, mNetHelper));
+			dstabAlgo.setDynamicEventHandler(new MultiNet3Ph3SeqDynEventProcessor(mNetHelper));
+		  
+			 if(dstabAlgo.initialization()){
+				 dstabAlgo.performSimulation();
+			 }
+
+		   
+			// System.out.println(sm.toCSVString(sm.getMachPeTable()));
+			System.out.println(sm.toCSVString(sm.getBusAngleTable()));	
+		    System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+	}
+	
+	
+	
 
 }

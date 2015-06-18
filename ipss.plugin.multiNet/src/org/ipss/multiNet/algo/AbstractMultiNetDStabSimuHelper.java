@@ -22,7 +22,7 @@ public abstract class AbstractMultiNetDStabSimuHelper {
 	protected SubNetworkProcessor subNetProcessor = null;
 	protected Hashtable<String, NetworkEquivalent> subNetEquivTable = null;
 	protected Hashtable<String, Hashtable<String, Complex>> subNetCurrInjTable = null;
-	protected Hashtable<String, int[][]> subNetIncidenceAryTable = null;  //Pk defined in the MATE paper
+	protected Hashtable<String, double[][]> subNetIncidenceAryTable = null;  //Pk defined in the MATE paper
 	protected Hashtable<String, FieldMatrix<Complex>> subNetIncidenceMatrixTable = null;  //Pk defined in the MATE paper
 
 	
@@ -47,9 +47,13 @@ public abstract class AbstractMultiNetDStabSimuHelper {
 		//consolidate the from/toShuntY and Half charging shuntY of the tie-lies to the terminal buses
 		processInterfaceBranchEquiv();
 		
-		this.subNetEquivTable = NetworkEquivUtil.calMultiNetPosSeqTheveninEquiv(this.subNetProcessor);
+		
 	}
 	
+	
+	public void calculateSubNetTheveninEquiv(){
+		this.subNetEquivTable = NetworkEquivUtil.calMultiNetPosSeqTheveninEquiv(this.subNetProcessor);
+	}
 	
 	 /**
 	  * as the full network are split by the "cutting off" the connection through the tie-lines, the shunt admittances at both ends of the 
@@ -88,7 +92,7 @@ public abstract class AbstractMultiNetDStabSimuHelper {
 		for(String branchId:this.subNetProcessor.getInterfaceBranchIdList()){
 			DStabBranch branch= net.getBranch(branchId);
 		
-			
+			if(branch.isActive()){
 					DStabBus fBus = (DStabBus) branch.getFromBus();
 					DStabBus tBus = (DStabBus) branch.getToBus();
 					
@@ -127,7 +131,7 @@ public abstract class AbstractMultiNetDStabSimuHelper {
 			        
 	        
 			        /*
-					 * Step-2, add the tie-line equivalent curret injection to the terminal buses
+					 * Step-2, add the tie-line equivalent current injection to the terminal buses
 					 */
 			        //From bus side
 			        int fChildNetIdx =  this.subNetProcessor.getBusId2SubNetworkTable().get(fBus.getId());
@@ -166,8 +170,10 @@ public abstract class AbstractMultiNetDStabSimuHelper {
 			        	tChileNet.getCustomBusCurrInjHashtable().put(tBus.getId(), currentInj);
 			        	
 			        }
-			   // after mapping the effect of the tie-line branch to both terminal buses, set it to out-of-service     
-			  branch.setStatus(false);      	
+			      // after mapping the effect of the tie-line branch to both terminal buses, set it to out-of-service     
+			       branch.setStatus(false);
+			       
+			    }// end of branch-active
 			}
 		
 		  // set the power flow convergence status 
@@ -273,7 +279,9 @@ public abstract class AbstractMultiNetDStabSimuHelper {
       		    List<String> busIdList = this.subNetProcessor.getSubNet2BoundaryBusListTable().get(subNet.getId());
       		    int n = busIdList.size();
       		    FieldMatrix<Complex> Pk_TMatrix = new Array2DRowFieldMatrix<Complex>(ComplexField.getInstance(),m,n);
-      		    int[][] Pk_T_ary = new int[m][n];
+      		    
+      		    //TODO convert Pk_T from int to double, to try to solve the numerical drifting issue.
+      		    double[][] Pk_T_ary = new double[m][n];
       		    		
       		    int i = 0;
       			for(String branchId:this.subNetProcessor.getInterfaceBranchIdList()){
@@ -284,12 +292,12 @@ public abstract class AbstractMultiNetDStabSimuHelper {
   					int j =0;
   					for(String busId:busIdList){
   						if(busId.equals(fBus.getId())){
-  							Pk_TMatrix .setEntry(i, j, new Complex(1,0));
-  							Pk_T_ary[i][j] = 1;
+  							Pk_TMatrix .setEntry(i, j, new Complex(1.0d,0.0d));
+  							Pk_T_ary[i][j] = 1.0d;
   						}
   						else if(busId.equals(tBus.getId())){
-  							  Pk_TMatrix.setEntry(i, j, new Complex(-1,0));
-  							  Pk_T_ary[i][j] = -1;
+  							  Pk_TMatrix.setEntry(i, j, new Complex(-1.0d,0.0d));
+  							  Pk_T_ary[i][j] = -1.0d;
   						}
   						
   						j++;
