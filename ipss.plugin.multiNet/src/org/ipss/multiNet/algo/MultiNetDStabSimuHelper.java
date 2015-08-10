@@ -22,7 +22,13 @@ import com.interpss.common.util.IpssLogger;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabilityNetwork;
-
+/**
+ * MultiNetDStabSimuHelper is a "helper" class for multi area, positive sequence based Transient Stability simulation. 
+ * This is basic multiNetDStabSimuHelper implementation. For  three-phase and/or three-sequence based multi area TS simulation,
+ * please refer to the MultiNet3Ph3SeqDstabSimuHelper class
+ * @author Qiuhua Huang
+ *
+ */
 public class MultiNetDStabSimuHelper extends AbstractMultiNetDStabSimuHelper{
 	
 
