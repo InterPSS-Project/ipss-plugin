@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 import java.util.logging.Level;
 
+import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
@@ -96,7 +97,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		dsNet.setNetEqnIterationNoEvent(1);
 		dsNet.setNetEqnIterationWithEvent(1);
 		dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
-		dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",dsNet,SimpleFaultCode.GROUND_LG,1.0d,0.05),"3phaseFault@Bus5");
+		dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",dsNet,SimpleFaultCode.GROUND_LG,new Complex(0.0),null,1.0d,0.05),"3phaseFault@Bus5");
         
         
 		
