@@ -89,7 +89,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 		dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 		
 		//applied the event
-		dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",dsNet,SimpleFaultCode.GROUND_LG,1.0d,0.05),"3phaseFault@Bus5");
+		dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",dsNet,SimpleFaultCode.GROUND_LG,new Complex(0,0), null,1.0d,0.05),"3phaseFault@Bus5");
         
 		
 		StateMonitor sm = new StateMonitor();
@@ -536,7 +536,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 			
 			IpssLogger.getLogger().setLevel(Level.INFO);
 			
-			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",proc.getSubNetwork("SubNet-2"),SimpleFaultCode.GROUND_LG,0.5d,0.05),"3phaseFault@Bus5");
+			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",proc.getSubNetwork("SubNet-2"),SimpleFaultCode.GROUND_LG,new Complex(0,0), null,0.5d,0.05),"3phaseFault@Bus5");
 			
 	        // TODO a special 3-phase 3seq dstab algorithm object, with the following two setting as default
 			dstabAlgo.setSolver( new MultiNet3Ph3SeqDStabSolverImpl(dstabAlgo, mNetHelper));
@@ -1050,7 +1050,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 			
 			IpssLogger.getLogger().setLevel(Level.INFO);
 			
-			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",proc.getSubNetwork("SubNet-2"),SimpleFaultCode.GROUND_LG,0.5d,0.05),"3phaseFault@Bus5");
+			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",proc.getSubNetwork("SubNet-2"),SimpleFaultCode.GROUND_LG,new Complex(0,0),null,0.5d,0.05),"3phaseFault@Bus5");
 			
 	        // TODO a special 3-phase 3seq dstab algorithm object, with the following two setting as default
 			dstabAlgo.setSolver( new MultiNet3Ph3SeqDStabSolverImpl(dstabAlgo, mNetHelper));
