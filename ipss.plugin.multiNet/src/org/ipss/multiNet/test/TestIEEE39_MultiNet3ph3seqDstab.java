@@ -11,9 +11,15 @@ import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
+import org.interpss.mapper.odm.ODMDStabParserMapper;
+import org.interpss.numeric.util.PerformanceTimer;
+import org.interpss.util.FileUtil;
 import org.ipss.multiNet.algo.MultiNet3Ph3SeqDStabSimuHelper;
 import org.ipss.multiNet.algo.MultiNet3Ph3SeqDStabSolverImpl;
 import org.ipss.multiNet.algo.MultiNet3Ph3SeqDynEventProcessor;
+import org.ipss.multiNet.algo.MultiNetDStabSimuHelper;
+import org.ipss.multiNet.algo.MultiNetDStabSolverImpl;
+import org.ipss.multiNet.algo.MultiNetDynamicEventProcessor;
 import org.ipss.multiNet.algo.SubNetworkProcessor;
 import org.ipss.threePhase.dynamic.DStabNetwork3Phase;
 import org.ipss.threePhase.odm.ODM3PhaseDStabParserMapper;
@@ -26,6 +32,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
@@ -38,7 +45,7 @@ public class TestIEEE39_MultiNet3ph3seqDstab {
 	 * test 3ph/3-seq co-simulation
 	 * 
 	 */
-	@Test
+	//@Test
 	public void test_3phase3SeqMultiSubNetTS_IEEE39Bus() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
@@ -118,6 +125,104 @@ public class TestIEEE39_MultiNet3ph3seqDstab {
 				
 		     System.out.println(sm.toCSVString(sm.getBusVoltTable()));
 		  
+		
+	}
+	
+	
+	/**
+	 * test 3ph/3-seq co-simulation
+	 * 
+	 */
+	@Test
+	public void test_IEEE39Bus_pos_SeqMultiSubNetTS() throws InterpssException{
+		IpssCorePlugin.init();
+		IpssCorePlugin.setLoggerLevel(Level.INFO);
+		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
+				"testData/IEEE39Bus/IEEE39bus_v30.raw",
+				"testData/IEEE39Bus/IEEE39bus_v30.seq",
+				"testData/IEEE39Bus/IEEE39bus_onlyGen.dyr"
+		}));
+		DStabModelParser parser =(DStabModelParser) adapter.getModel();
+		
+		//System.out.println(parser.toXmlDoc());
+
+		
+		
+		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
+		if (!new ODMDStabParserMapper(IpssCorePlugin.getMsgHub())
+					.map2Model(parser, simuCtx)) {
+			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
+			return;
+		}
+		
+		
+	    DStabilityNetwork dsNet = simuCtx.getDStabilityNet();
+	    
+		
+		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
+		assertTrue(aclfAlgo.loadflow());
+		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
+
+		
+		 SubNetworkProcessor proc = new SubNetworkProcessor(dsNet);
+		 /*
+		  * 15-16
+		  * 16-17
+		  * 3-4
+		  * 9-39
+		  */
+		    proc.addSubNetInterfaceBranch("Bus3->Bus4(1)");
+		    proc.addSubNetInterfaceBranch("Bus9->Bus39(1)");
+		    proc.addSubNetInterfaceBranch("Bus15->Bus16(1)");
+		    proc.addSubNetInterfaceBranch("Bus16->Bus17(1)");
+		    
+		    proc.splitFullSystemIntoSubsystems(false);
+		    
+		    //TODO now one needs to set the three-phase modeling subnetwork by one of the bus the subnetwork contains
+		   // proc.set3PhaseSubNetByBusId("Bus5");
+		    
+		  MultiNetDStabSimuHelper  mNetHelper = new MultiNetDStabSimuHelper(dsNet,proc);
+		  
+		  // create multiNet3Seq3PhDStabHelper and initialize the subsystem
+		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+		    
+			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+			dstabAlgo.setSimuStepSec(0.005d);
+			dstabAlgo.setTotalSimuTimeSec(10d);
+			
+			StateMonitor sm = new StateMonitor();
+			sm.addBusStdMonitor(new String[]{"Bus17","Bus18","Bus15","Bus16","Bus28"});
+			sm.addGeneratorStdMonitor(new String[]{"Bus30-mach1","Bus31-mach1","Bus34-mach1","Bus39-mach1"});
+			// set the output handler
+			dstabAlgo.setSimuOutputHandler(sm);
+			dstabAlgo.setOutPutPerSteps(5);
+			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
+			
+			IpssLogger.getLogger().setLevel(Level.INFO);
+			
+			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus17",proc.getSubNetworkByBusId("Bus17"),SimpleFaultCode.GROUND_3P,new Complex(0,0),null,1.0d,0.05),"3phaseFault@Bus17");
+			
+	       
+			dstabAlgo.setSolver(new MultiNetDStabSolverImpl(dstabAlgo, mNetHelper));
+			
+			dstabAlgo.setDynamicEventHandler(new MultiNetDynamicEventProcessor(mNetHelper));
+			
+			PerformanceTimer timer = new PerformanceTimer();
+		    timer.start();
+			 if(dstabAlgo.initialization()){
+				 dstabAlgo.performSimulation();
+			 }
+		     
+			 timer.end();
+			 System.out.println("used time ="+ timer.getDuration());
+//			 System.out.println(sm.toCSVString(sm.getMachPeTable()));
+//			 System.out.println(sm.toCSVString(sm.getMachAngleTable()));	
+//		     System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+		    
+		     FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//comprehensive_ch7/ieee39_mnet_pos_3p@bus17_genAngle.csv",sm.toCSVString(sm.getMachAngleTable()));
+		     FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//comprehensive_ch7/ieee39_mnet_pos_3p@bus17_busVolt.csv",sm.toCSVString(sm.getBusVoltTable()));
+		
 		
 	}
 

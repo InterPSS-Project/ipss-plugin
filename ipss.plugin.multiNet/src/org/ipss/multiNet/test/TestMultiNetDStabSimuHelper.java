@@ -86,7 +86,7 @@ public class TestMultiNetDStabSimuHelper {
 		    
 		  MultiNetDStabSimuHelper  mNetHelper = new MultiNetDStabSimuHelper(dsNet,proc);
 		  
-		  
+		  mNetHelper.calculateSubNetTheveninEquiv();
 		  Hashtable<String, NetworkEquivalent> equivTable = mNetHelper.getSubNetEquivTable();
 		  
 		  
