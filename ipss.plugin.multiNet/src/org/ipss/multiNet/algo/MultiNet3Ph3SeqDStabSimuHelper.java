@@ -160,7 +160,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
     			        
     			        // TODO the only difference from the positive sequence based implementation is that
     			        // three-sequence voltage is used here instead of positive-seq;
-    			        Complex3x1 v = subNet.getBus(busId).get3SeqVoltage();
+    			        Complex3x1 v = subNet.getBus(busId).getThreeSeqVoltage();
     			        
     			        //System.out.println("vth_120 @ "+busId+","+ v.toString());
     			        
@@ -228,7 +228,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 				   			     // save the boundary bus voltages in  three-seq, to avoid unnecessary coordinate transformation
 				   			     // as the Zth has already be transformed to three-seq, as the boundary subnetwork solution
 				   		         // is based on three-seq modeling. 
-				   			        Complex3x1 v = subNet3Ph.getBus(busId).get3SeqVoltage();
+				   			        Complex3x1 v = subNet3Ph.getBus(busId).getThreeSeqVoltage();
 				   			        equiv.getSource3x1()[i]=v;
 				   			        i++;
 				   		}
@@ -377,6 +377,8 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 				   			
 				   			ISparseEqnComplexMatrix3x3  subNetYabc = subNet3Ph.getYMatrixABC();
 				   			subNetYabc.setB2Zero();
+				            //System.out.println("3seq cur inject into detailed network:"+this.subNet3SeqCurrInjTable.toString());
+				   			
 				   			for(Entry<String,Complex3x1> e: this.subNet3SeqCurrInjTable.get(subNet.getId()).entrySet()){
 				   				   Complex3x1 IinjAbc = Complex3x1.z12_to_abc(e.getValue());
 				   				   subNetYabc.setBi(IinjAbc,subNet.getBus(e.getKey()).getSortNumber());
@@ -402,7 +404,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 								   
 								   //System.out.println(b.getId()+" Vabc :"+bus.get3PhaseVotlages().toString());
 								   // set the positive sequence voltage
-								   bus.setVoltage(bus.get3SeqVoltage().b_1);
+								   bus.setVoltage(bus.getThreeSeqVoltage().b_1);
 								   //System.out.println(b.getId()+" Vpos :"+bus.getVoltage().toString());
 							 }
 			   			
@@ -423,8 +425,8 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 			  			   b.setVoltage(b.getVoltage().add(posVoltTable.get(b.getId())));
 			  			   
 			  			  // also save the result to the bus threeSeqBusVolt
-			  			   Complex3x1 v120 = new Complex3x1( new Complex(0,0),b.getVoltage(),new Complex(0,0));
-			  			   b.set3SeqVoltage(v120);
+			  			   Complex3x1 v012 = new Complex3x1( new Complex(0,0),b.getVoltage(),new Complex(0,0));
+			  			   b.setThreeSeqVoltage(v012);
 			  		   }
 			      	 
 			  	
@@ -433,7 +435,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 				  		   Hashtable<String,Complex> negVoltTable = this.solveSeqNetwork(subNet,SequenceCode.NEGATIVE, negCurTable);
 				  		   
 				  		   for(Entry<String,Complex> e: negVoltTable.entrySet()){
-				  			   subNet.getBus(e.getKey()).get3SeqVoltage().c_2 =e.getValue();
+				  			   subNet.getBus(e.getKey()).getThreeSeqVoltage().c_2 =e.getValue();
 				  		   }
 			   	       }
 			      	
@@ -443,7 +445,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 			            Hashtable<String,Complex> zeroVoltTable = this.solveSeqNetwork(subNet,SequenceCode.ZERO, zeroCurTable);
 			  		   
 			  		    for(Entry<String,Complex> e: zeroVoltTable.entrySet()){
-			  		    	subNet.getBus(e.getKey()).get3SeqVoltage().a_0 =e.getValue();
+			  		    	subNet.getBus(e.getKey()).getThreeSeqVoltage().a_0 =e.getValue();
 			  		    }
 			   		} // end of zeroImax > tol
 			   	}// end of else
@@ -495,7 +497,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 		    break;
 		case NEGATIVE:
 			   ISparseEqnComplex negSeqYMatrix = subnet.getNegSeqYMatrix();
-			
+			   
 			   negSeqYMatrix.setB2Zero();
 			   
 			   for(Entry<String,Complex> e: seqCurInjTable.entrySet()){

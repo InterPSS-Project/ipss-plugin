@@ -102,6 +102,7 @@ public class MultiNet3Ph3SeqDynEventProcessor extends
 					
 					
 					  // update the Thevenin equivalent impedance matrix Zth of all subNetwork
+					if(faultSubNetworkId != null)
 			         this.simuHelper.updateSubNetworkEquivMatrix(faultSubNetworkId);
 					
 				}

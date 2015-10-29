@@ -144,7 +144,7 @@ public class IpssDStab {
     }
     
     /**
-     * perform simulation till the end of the simulaiton time
+     * perform simulation till the end of the simulation time
      * @return
      */
     public boolean runDStab(){

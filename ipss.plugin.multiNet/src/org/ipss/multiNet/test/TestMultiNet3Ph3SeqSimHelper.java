@@ -24,7 +24,7 @@ import org.ipss.multiNet.algo.SubNetworkProcessor;
 import org.ipss.multiNet.equivalent.NetworkEquivalent;
 import org.ipss.multiNet.equivalent.NetworkEquivalent.Coordinate;
 import org.ipss.threePhase.dynamic.DStabNetwork3Phase;
-import org.ipss.threePhase.dynamic.DynamicEventProcessor3Phase;
+import org.ipss.threePhase.dynamic.algo.DynamicEventProcessor3Phase;
 import org.ipss.threePhase.odm.ODM3PhaseDStabParserMapper;
 import org.junit.Test;
 

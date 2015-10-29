@@ -15,6 +15,7 @@ import org.ipss.multiNet.equivalent.NetworkEquivalent.Coordinate;
 import org.ipss.multiNet.equivalent.NetworkEquivalent.EquivType;
 import org.ipss.threePhase.dynamic.DStabNetwork3Phase;
 
+import com.interpss.common.datatype.Constants;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.dstab.DStabBus;
@@ -268,18 +269,37 @@ public static  NetworkEquivalent cal3PhaseNetworkTheveninEquiv(DStabNetwork3Phas
 			
 			switch (code) {
 			case ZERO:
-				seqYmatrixEqn = net.formYMatrix(SequenceCode.ZERO,true);
+				if(net.getZeroSeqYMatrix()==null)
+				    seqYmatrixEqn = net.formYMatrix(SequenceCode.ZERO,true);
+				else
+					seqYmatrixEqn = net.getZeroSeqYMatrix();
 				break;
 	        
 			case NEGATIVE:	
 				
 				//setBoundaryGenLoadInactive();
-				seqYmatrixEqn =net.formYMatrix(SequenceCode.NEGATIVE,true);
-				
+				if(net.getNegSeqYMatrix()==null)
+				     seqYmatrixEqn =net.formYMatrix(SequenceCode.NEGATIVE,true);
+				else
+					 seqYmatrixEqn = net.getNegSeqYMatrix();
 				break;
 				
 			default:
-					 seqYmatrixEqn = net.formYMatrix(SequenceCode.POSITIVE,true);
+				     if(net.getYMatrix() == null)
+					    seqYmatrixEqn = net.formYMatrix(SequenceCode.POSITIVE,true);
+				     else{
+				    	 seqYmatrixEqn = net.getYMatrix();
+				    	 
+				    	 if(net.isYMatrixDirty()){
+							try {
+								seqYmatrixEqn.luMatrix(Constants.Matrix_LU_Tolerance);
+							} catch (IpssNumericException e) {
+								e.printStackTrace();
+							}
+				    	 }
+				    	 
+				     }
+				    	 
 			}
 		
 		

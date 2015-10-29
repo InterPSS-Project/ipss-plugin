@@ -50,6 +50,7 @@ public class SubNetworkProcessor {
 	private List<String> internalInterfaceBranchIdList = null; // for internally used
 	private List<String> boundaryBusIdList =null;
 	private List<String> externalboundaryBusIdList =null;  // for hybrid simulation use only
+	private List<String> internalboundaryBusIdList =null;  // for hybrid simulation use only
 	private List<ChildNetInterfaceBranch> cutSetList = null;
 	private boolean subNetworkSearched = false;
 	private Hashtable<String, Integer> busId2SubNetworkTable =  null;
@@ -168,6 +169,7 @@ public class SubNetworkProcessor {
     	
     	
     		externalboundaryBusIdList = new ArrayList();
+    		internalboundaryBusIdList = new ArrayList();
         
     	// obtain the boundary buses
         if(cutSetList.size()>0){
@@ -178,6 +180,9 @@ public class SubNetworkProcessor {
 				AclfBranch bra = this.net.getBranch(interfaceBra.getBranchId());
 				AclfBus boundaryBus = isFromSide? bra.getFromAclfBus():bra.getToAclfBus();
 						
+				    
+					if(!internalboundaryBusIdList.contains(boundaryBus.getId()))
+						internalboundaryBusIdList.add(boundaryBus.getId());
 						
 			         // dummy bus id
 					String dummyBusId =boundaryBus.getId()+"Dummy";
@@ -414,11 +419,17 @@ public class SubNetworkProcessor {
 		this.net = net;
 	}
 
+	/**
+	 * return the internal or detailed susbsytem boundary busId array
+	 * @return
+	 */
 	public String[] getBoundaryBusIdAry() {
 		return boundaryBusIdAry = boundaryBusIdList.toArray(new String[]{"1"});
 	}
-
-
+	/**
+	 * return the internal or detailed susbsytem boundary busId list
+	 * @return
+	 */
 	public List<String> getBoundaryBusIdList() {
 		return boundaryBusIdList;
 	}
@@ -453,8 +464,24 @@ public class SubNetworkProcessor {
 		return null;
 	}
 	
+	
+	public DStabilityNetwork getSubNetworkByBusId(String busId){
+		Integer index = getBusId2SubNetworkTable().get(busId);
+		if(index == null)
+			try {
+				throw new Exception (" the input busId is not valid");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		return this.subNetworkList.get(index);
+	}
+	
 	public List<String>  getExternalSubNetBoundaryBusIdList(){
 		return this.externalboundaryBusIdList;
+	}
+	
+	public List<String>  getInternalSubNetBoundaryBusIdList(){
+		return this.internalboundaryBusIdList;
 	}
 	
 	public DStabilityNetwork getExternalSubNetwork(){
