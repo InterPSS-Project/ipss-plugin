@@ -29,7 +29,7 @@ import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
-import com.interpss.dstab.dynLoad.Ld1pac;
+import com.interpss.dstab.dynLoad.LD1PAC;
 import com.interpss.dstab.dynLoad.impl.Ld1pacImpl;
 import com.interpss.dstab.mach.EConstMachine;
 import com.interpss.dstab.mach.MachineType;
@@ -43,7 +43,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		
 		DStabBus bus1 = net.getDStabBus("Bus1");
 		
-		Ld1pac acLoad= new Ld1pacImpl(bus1,"1");
+		LD1PAC acLoad= new Ld1pacImpl(bus1,"1");
 		
 		acLoad.setLoadPercent(50);
 		acLoad.setMVABase(50);
@@ -56,8 +56,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.005d);
 		dstabAlgo.setTotalSimuTimeSec(1);
-		net.setNetEqnIterationNoEvent(1);
-		net.setNetEqnIterationWithEvent(1);
+
 		dstabAlgo.setRefMachine(net.getMachine("Swing-mach1"));
 		//net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1",net,SimpleFaultCode.GROUND_3P,0.0d,0.05),"3phaseFault@Bus5");
         
@@ -98,7 +97,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		
 		DStabBus bus1 = net.getDStabBus("Bus1");
 		
-		Ld1pac acLoad= new Ld1pacImpl(bus1,"1");
+		LD1PAC acLoad= new Ld1pacImpl(bus1,"1");
 		
 		acLoad.setLoadPercent(50);
 		acLoad.setMVABase(50);

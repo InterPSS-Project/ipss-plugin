@@ -36,6 +36,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.net.Bus;
+import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
@@ -45,7 +46,7 @@ import com.interpss.simu.SimuCtxType;
 public class investigate_3PHSubNetYabc {
 	
 	
-	@Test
+	//@Test
 	public void check_Yabc_IEEE9Bus() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
@@ -496,6 +497,105 @@ public class investigate_3PHSubNetYabc {
 			// System.out.println(sm.toCSVString(sm.getMachPeTable()));
 			System.out.println(sm.toCSVString(sm.getBusAngleTable()));	
 		    System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+	}
+	
+	
+	@Test
+	public void test_phaseShift_SeqEquiv_IEEE9Bus_1port() throws InterpssException{
+		IpssCorePlugin.init();
+		IpssCorePlugin.setLoggerLevel(Level.INFO);
+		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
+				"testData/IEEE9Bus/ieee9_deltaY.raw", 
+				"testData/IEEE9Bus/ieee9.seq",
+				//"testData/IEEE9Bus/ieee9_dyn_onlyGen_saturation.dyr"
+				"testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr"
+		}));
+		DStabModelParser parser =(DStabModelParser) adapter.getModel();
+		
+		//System.out.println(parser.toXmlDoc());
+
+		
+		
+		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
+		if (!new ODM3PhaseDStabParserMapper(IpssCorePlugin.getMsgHub())
+					.map2Model(parser, simuCtx)) {
+			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
+			return;
+		}
+		
+		
+	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
+	    
+		
+		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
+		assertTrue(aclfAlgo.loadflow());
+		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
+		
+		DStabBus bus5 = dsNet.getBus("Bus5");
+		
+		Complex bus5LoadYeq = bus5.getLoadPQ().conjugate().divide(bus5.getVoltageMag()*bus5.getVoltageMag()) ;
+		
+		System.out.println("bus5LoadYeq = "+bus5LoadYeq);
+		
+		 SubNetworkProcessor proc = new SubNetworkProcessor(dsNet);
+		    proc.addSubNetInterfaceBranch("Bus4->Bus5(0)",false);
+		    proc.addSubNetInterfaceBranch("Bus5->Bus7(0)",true);
+		
+		  //NOTE: network partitioning by adding a dummy bus
+		    proc.splitFullSystemIntoSubsystems(true);
+		    
+		    //TODO now one needs to set the three-phase modeling subnetwork by one of the bus the subnetwork contains
+		    // this must be set before initializing MultiNet3Ph3SeqDStabSimuHelper
+		    proc.set3PhaseSubNetByBusId("Bus5");
+		    
+		  MultiNet3Ph3SeqDStabSimuHelper  mNetHelper = new MultiNet3Ph3SeqDStabSimuHelper(dsNet,proc);
+		  
+		  mNetHelper.calculateSubNetTheveninEquiv();
+		  
+		  Hashtable<String, NetworkEquivalent> equivTable = mNetHelper.getSubNetEquivTable();
+		  
+		  // this subnetwork only includes bus 5;
+		  NetworkEquivalent equiv_subNet1=equivTable.get("SubNet-1") ;
+		  assertTrue(equiv_subNet1.getEquivCoordinate()==Coordinate.Three_sequence);
+		  
+		  Complex3x3[][] Zth1 = equiv_subNet1.getMatrix3x3();
+		  /*
+		   *  Zth of subnet1: 
+				aa = (0.6838343524221626, 0.273534386410797),ab = (-2.7649442826960247E-7, 8.652066345871123E-7),ac = (4.76837158203125E-7, 0.0)
+				ba = (1.364586642016441E-7, 1.4995089728242483E-7),bb = (0.6838339394690701, 0.2735336711550597),bc = (-2.384185791015625E-6, -1.430511474609375E-6)
+				ca = (-1.9073486328125E-6, 9.5367431640625E-7),cb = (1.9073486328125E-6, 9.5367431640625E-7),cc = (-1.3676696797039316, 4.000005590181085E10)
+				, 
+		   */
+		  System.out.println(" Zth of subnet1: \n"+MatrixUtil.complex3x32DAry2String(Zth1));
+		  
+		  assertTrue(Zth1[0][0].aa.subtract(new Complex(1.0,0).divide(bus5LoadYeq)).abs()<1.0E-6); 
+		  
+		  assertTrue(new Complex(1.0,0).divide(Zth1[0][0].cc).abs()<1.0E-6); 
+		  
+		  NetworkEquivalent equiv_subNet2=equivTable.get("SubNet-2") ;
+		  assertTrue(equiv_subNet2.getEquivCoordinate()==Coordinate.Three_sequence); 
+		  assertTrue(equiv_subNet2.getDimension()==1); 
+		  Complex3x3 zth2 =equiv_subNet2.getMatrix3x3()[0][0];
+		  System.out.print("Zth2 ="+zth2);
+		  /*
+		   * Zth2 =aa = (0.01272097274174288, 0.10801123285122859),ab = (0.0, 0.0),ac = (0.0, 0.0)
+			ba = (0.0, 0.0),bb = (0.01272097274174288, 0.10801123285122859),bc = (0.0, 0.0)
+			ca = (0.0, 0.0),cb = (0.0, 0.0),cc = (0.022915300399352374, 0.1758893282503875)
+		   
+		   *
+		   *previous equiv results 
+		   *Boundary Bus Id	BaseVolt(kV)	Thevenin Voltage Mag(PU)	Thevenin Voltage Angle (deg)	Zpos Real #Bus5	Zpos Imag #Bus5	Zzero Real #Bus5	Zzero Imag #Bus5
+           Bus5	230	1.073776215	2.957974716	0.012720973	0.108011233	0.0229153	0.175889328
+
+		   *
+		   */
+		 Complex3x3 zth2Calc = new Complex3x3(new Complex(0.01272097274174288, 0.10801123285122859) , 
+									 new Complex(0.01272097274174288, 0.10801123285122859), 
+									 new Complex(0.022915300399352374, 0.1758893282503875));
+		  //NOTE: because the equivalent of the interface branch from/to shuntY
+		  assertTrue(zth2.subtract(zth2Calc).abs()<1.0E-6);
+		  
 	}
 
 }

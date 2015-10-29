@@ -49,7 +49,7 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 			return false;
 		}
 		
-		// network initialization, initial bus sc data, transfer machine sc info to bus.
+		// network  initialization: mainly includes load model conversion and dynamic model initialization
 		for(DStabilityNetwork dsNet: this.subNetList){
 			   boolean flag = true;
 			   if(this.threePhaseSubNetIdList!=null && this.threePhaseSubNetIdList.contains(dsNet.getId())){    
@@ -91,8 +91,10 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 		
 		//System.out.println(" simu time = "+time);
 		
-		for(int i=0;i<maxIterationTimes;i++){ 
-			 
+		for(int i=0;i<maxIterationTimes;i++){
+			
+			netSolConverged = true;
+			
 			// The first  step of the multi-subNetwork solution is to solve each subnetwork independently without current injections from the 
 			// connection tie-lines
 			for(DStabilityNetwork dsNet: subNetList){
@@ -120,11 +122,11 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 						//TODO need to save the three-sequence bus voltage, such that it can be used for updating the 
 						// Vth in the following step.
 						for(DStabBus bus:dsNet.getBusList()){
-							bus.set3SeqVoltage(new Complex3x1(new Complex(0,0), bus.getVoltage(), new Complex(0,0)));
+							bus.setThreeSeqVoltage(new Complex3x1(new Complex(0,0), bus.getVoltage(), new Complex(0,0)));
 						}
 						
 					}else
-						throw new DStabSimuException("Exception in dstabNet.solvePosSeqNetEqn()");
+						throw new DStabSimuException("Exception in dstabNet.solvePosSeqNetEqn() : "+dsNet.getId());
 				}
 				
 			}  //end for-subnetwork loop
@@ -212,6 +214,7 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 						}
 						
 						//TODO Solve DEqn for dynamic load, e.g. induction motor
+						
 					}
 				}// bus-loop
 
