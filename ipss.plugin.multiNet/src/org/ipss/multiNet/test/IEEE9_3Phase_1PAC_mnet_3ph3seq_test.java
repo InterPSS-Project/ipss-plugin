@@ -375,7 +375,7 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 	    
 	    // add 69 kV and below distribution system
 	    
-		Bus3Phase bus10 = ThreePhaseObjectFactory.create3PBus("Bus10", dsNet);
+		Bus3Phase bus10 = ThreePhaseObjectFactory.create3PDStabBus("Bus10", dsNet);
   		bus10.setAttributes("69kV sub", "");
   		bus10.setBaseVoltage(69000.0);
   		// set the bus to a non-generator bus
@@ -384,7 +384,7 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
   		bus10.setLoadCode(AclfLoadCode.NON_LOAD);
   		
   		
-		Bus3Phase bus11 = ThreePhaseObjectFactory.create3PBus("Bus11", dsNet);
+		Bus3Phase bus11 = ThreePhaseObjectFactory.create3PDStabBus("Bus11", dsNet);
   		bus11.setAttributes("13.8 kV feeder", "");
   		bus11.setBaseVoltage(13800.0);
   		// set the bus to a non-generator bus
@@ -394,7 +394,7 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
   		
   		bus11.setLoadPQ(new Complex(0.625,-0.05));
   		
-		Bus3Phase bus12 = ThreePhaseObjectFactory.create3PBus("Bus12", dsNet);
+		Bus3Phase bus12 = ThreePhaseObjectFactory.create3PDStabBus("Bus12", dsNet);
   		bus12.setAttributes("208 V feeder", "");
   		bus12.setBaseVoltage(208.0);
   		// set the bus to a non-generator bus
@@ -587,7 +587,7 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 	    
 	    // add 69 kV and below distribution system
 	    
-		Bus3Phase bus10 = ThreePhaseObjectFactory.create3PBus("Bus10", dsNet);
+		Bus3Phase bus10 = ThreePhaseObjectFactory.create3PDStabBus("Bus10", dsNet);
   		bus10.setAttributes("69kV sub", "");
   		bus10.setBaseVoltage(69000.0);
   		// set the bus to a non-generator bus
@@ -596,7 +596,7 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
   		bus10.setLoadCode(AclfLoadCode.NON_LOAD);
   		
   		
-		Bus3Phase bus11 = ThreePhaseObjectFactory.create3PBus("Bus11", dsNet);
+		Bus3Phase bus11 = ThreePhaseObjectFactory.create3PDStabBus("Bus11", dsNet);
   		bus11.setAttributes("13.8 kV feeder", "");
   		bus11.setBaseVoltage(13800.0);
   		// set the bus to a non-generator bus
@@ -606,7 +606,7 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
   		
   		bus11.setLoadPQ(new Complex(0.625,-0.05));
   		
-		Bus3Phase bus12 = ThreePhaseObjectFactory.create3PBus("Bus12", dsNet);
+		Bus3Phase bus12 = ThreePhaseObjectFactory.create3PDStabBus("Bus12", dsNet);
   		bus12.setAttributes("208 V feeder", "");
   		bus12.setBaseVoltage(208.0);
   		// set the bus to a non-generator bus
