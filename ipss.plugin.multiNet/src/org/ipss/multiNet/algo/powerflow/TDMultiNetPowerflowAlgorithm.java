@@ -1,7 +1,5 @@
 package org.ipss.multiNet.algo.powerflow;
 
-import static org.junit.Assert.assertTrue;
-
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
@@ -27,7 +25,6 @@ import com.interpss.core.acsc.AcscBus;
 import com.interpss.core.acsc.BaseAcscNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.net.Branch;
-import com.interpss.dstab.DStabilityNetwork;
 
 public class TDMultiNetPowerflowAlgorithm {
 	
