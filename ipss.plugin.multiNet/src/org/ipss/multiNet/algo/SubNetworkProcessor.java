@@ -61,7 +61,7 @@ public class SubNetworkProcessor {
 	private BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch> net = null;
 
 	//TODO There is shortcoming in the existing childNet model, which did not allow the same bus 
-	//to be co-existing in the childNet and parent network
+	//to be co-existing in the childNet and parent network;
 	private DStabilityNetwork subNet =null;
 	private List<DStabilityNetwork> subNetworkList = null;
 	private List<String> threePhaseSubNetIdList = null; // should be provided after subnetwork creation 
