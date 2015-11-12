@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
+import org.interpss.numeric.datatype.Complex3x3;
 import org.ipss.multiNet.algo.SubNetworkProcessor;
 import org.ipss.threePhase.basic.Branch3Phase;
 import org.ipss.threePhase.basic.Bus3Phase;
@@ -19,6 +20,7 @@ import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
+import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.AcscBus;
@@ -45,7 +47,7 @@ public class TDMultiNetPowerflowAlgorithm {
 	
 	protected boolean pfFlag = true;
 	protected int iterationMax = 20;
-	protected double tolerance = 1.0E-4;
+	protected double tolerance = 1.0E-7;
 	
 	private Hashtable<String,Complex3x1> lastStepTransBoundaryBus3SeqVoltages = null;
 	
@@ -65,14 +67,28 @@ public class TDMultiNetPowerflowAlgorithm {
 		
 		transNetworkBoundaryBusIdList  = new ArrayList<>();
 		
-		 lastStepTransBoundaryBus3SeqVoltages  = new Hashtable<>();
+		lastStepTransBoundaryBus3SeqVoltages  = new Hashtable<>();
+		
+		this.transmissionNet = subNetProc.getExternalSubNetwork();
+		
+		this.distNetList = new  ArrayList<>();
+		for(String id:subNetProc.getInternalSubNetBoundaryBusIdList()){
+			BaseAclfNetwork distNet = subNetProc.getSubNetworkByBusId(id);
+			if(!this.distNetList.contains(distNet))
+			  this.distNetList.add(distNet);
+		}
 		
 		
 	}
 	
 	public boolean powerflow() throws InterpssException{
 		
+		// set the interconnection tie-line created during the network splitting to be out-of-service
 		
+		for(String tieLineId :this.subNetProcessor.getInterfaceBranchIdList()){
+			AclfBranch connectBranch = this.net.getBranch(tieLineId);
+			connectBranch.setStatus(false);
+		}
 		
 		/*
 		 * 1. network splitting should be performed before running power flow
@@ -116,6 +132,8 @@ public class TDMultiNetPowerflowAlgorithm {
 				for(Branch bra: sourceBus.getConnectedPhysicalBranchList()){
 					if(bra.isActive()){
 						Branch3Phase acLine = (Branch3Phase) bra;
+						
+						//NOTE the positive sign of branch current flow is fromBus->ToBus  
 						if(bra.getFromBus().getId().equals(sourceBus.getId())){
 							currInj3Phase = currInj3Phase.add(acLine.getCurrentAbcAtFromSide().multiply(-1));
 						}
@@ -127,11 +145,15 @@ public class TDMultiNetPowerflowAlgorithm {
 				
 				// save the three-sequence current injection to the table
 				Complex3x1 currInj3Seq = currInj3Phase.To012();
+				
+				System.out.println("3seq current injection"+currInj3Seq.toString());
 				distBoundary3SeqCurInjTable.put(sourceBus.getId(), currInj3Phase.To012());
 				
 				Bus3Phase sourceBus3Ph = (Bus3Phase) sourceBus; 
 				
 				Complex posSeqPower = sourceBus3Ph.getThreeSeqVoltage().b_1.multiply(currInj3Seq.b_1.conjugate());
+				
+				System.out.println("pos seq power = "+posSeqPower.toString());
 				
 				distBoundaryPosSeqPowerTable.put(sourceBus.getId(), posSeqPower);
 			}
@@ -171,8 +193,9 @@ public class TDMultiNetPowerflowAlgorithm {
 					   throw new Error("The  boundary bus in the tranmission network cannot be a load bus: "+transBoundaryBusId);
 				   }
 				   
-				   transBoundaryBus.setLoadPQ(e.getValue());
-				   
+				   // represent the power flow into the boundary bus as "negative" load
+				   transBoundaryBus.setLoadPQ(e.getValue().multiply(-1.0));
+				   transBoundaryBus.setLoadCode(AclfLoadCode.CONST_P);
 				   transNetworkBoundaryBusIdList.add(transBoundaryBusId);
 			   }
 			   
@@ -226,11 +249,16 @@ public class TDMultiNetPowerflowAlgorithm {
 		    	  for(BaseAclfNetwork distNet:this.distNetList){
 		    		  Bus3Phase sourceBus3Ph = (Bus3Phase) distNet.getBus(distNetId2BoundaryBusTable.get(distNet.getId()));
 		    		  
-		    		  sourceBus3Ph.set3PhaseVoltages(this.distBoundaryBus3SeqVoltages.get(sourceBus3Ph.getId()).ToAbc());
+		    		  Complex3x1 vabc = this.distBoundaryBus3SeqVoltages.get(sourceBus3Ph.getId()).ToAbc();
+		    		  
+		    		  System.out.println("updated dist source bus vabc = "+vabc);
+		    		  sourceBus3Ph.set3PhaseVoltages(vabc);
 		    		  
 		    		  DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(distNet);
-
-		  			
+                      
+		    		  // use the voltages obtained from the last step and transmission system power flow results
+		    		  distPFAlgo.setInitBusVoltageEnabled(false);
+		    		  
 						if(!distPFAlgo.powerflow()){
 							throw new Error("Distribution system power flow is NOT converged! # "+distNet.getId());
 						}
@@ -289,8 +317,11 @@ public class TDMultiNetPowerflowAlgorithm {
 						   throw new Error("The tranmission network boundary bus is not found, ID: "+transBoundaryBusId);
 					   }
 					   else{
-						   transBoundaryBus.setLoadPQ(e.getValue());
 						   
+						   // UPDATE THE EQUIVALENT LOAD VALUE
+						   transBoundaryBus.setLoadPQ(e.getValue().multiply(-1));
+						   
+						   System.out.println(" trans bounary bus equiv load = "+transBoundaryBus.getLoadPQ().toString());
 						  
 					   }
 					   
@@ -302,7 +333,7 @@ public class TDMultiNetPowerflowAlgorithm {
 		    	  /*
 		    	   *  10. solve the positive sequence power flow and the negative and zero sequence networks
 		    	   */
-		    	  
+		    	      transLfAlgo.setTolerance(1.0E-7);
 				      if(!transLfAlgo.loadflow()){
 				    	  throw new Error(" positive sequence power flow for the transmission system is not converged");
 				      }
@@ -319,18 +350,33 @@ public class TDMultiNetPowerflowAlgorithm {
 				      for( Entry<String, Complex3x1> e : transBoundaryBus3SeqVoltages.entrySet()){
 				    	  if(i>0){
 				    		  if(this.lastStepTransBoundaryBus3SeqVoltages.get(e.getKey()).subtract(e.getValue()).
-				    				  abs() >this.tolerance)
+				    				  absMax() >this.tolerance)
 				    			  this.pfFlag = false;
 				    	  }
 				    	  this.lastStepTransBoundaryBus3SeqVoltages.put(e.getKey(), e.getValue());
 				      }
 		    	     
-				      if (this.pfFlag) {
+				      if (i>0 && this.pfFlag) {
 				    	  IpssLogger.getLogger().info(" Transmision&Distribution combined power flow converges after " + i +" iterations.");
-				          break;
+				    	  System.out.println(" Transmision&Distribution combined power flow converges after " + (i+1) +" iterations.");
+				    	  // update the load flow convergence status
+				    	  this.transmissionNet.setLfConverged(true);
+				    	  
+				    	  for(BaseAclfNetwork distNet: this.distNetList){
+				    		  distNet.setLfConverged(true);
+				    	  }
+				    	  break;
 				      }
 		    	  
 		      }
+		      
+		// set the tie-line status back to be true after power flow      
+//		if(pfFlag){
+//			for(String tieLineId :this.subNetProcessor.getInterfaceBranchIdList()){
+//				AclfBranch connectBranch = this.net.getBranch(tieLineId);
+//				connectBranch.setStatus(true);
+//			}
+//		}
 		
 		return pfFlag;
 	}
@@ -377,5 +423,21 @@ public class TDMultiNetPowerflowAlgorithm {
 	     }
 		return true;
 	}
+	
+	public void setTransmissionNetwork(BaseAclfNetwork<? extends AclfBus, ?extends AclfBranch> net){
+		this.transmissionNet = net;
+	}
+	public void setDistributionNetworkList(List<BaseAclfNetwork> distributionNetList){
+		this.distNetList = distributionNetList;
+	}
+	
+	public BaseAclfNetwork getTransmissionNetwork(){
+		return this.transmissionNet;
+	}
+	
+	public List<BaseAclfNetwork> getDistributionNetworkList(){
+		return this.distNetList;
+	}
+	
 
 }
