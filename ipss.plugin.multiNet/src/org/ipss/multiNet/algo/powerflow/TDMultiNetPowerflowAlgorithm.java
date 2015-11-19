@@ -144,10 +144,10 @@ public class TDMultiNetPowerflowAlgorithm {
 				}
 				
 				// save the three-sequence current injection to the table
-				Complex3x1 currInj3Seq = currInj3Phase.To012();
+				Complex3x1 currInj3Seq = currInj3Phase.to012();
 				
 				System.out.println("3seq current injection"+currInj3Seq.toString());
-				distBoundary3SeqCurInjTable.put(sourceBus.getId(), currInj3Phase.To012());
+				distBoundary3SeqCurInjTable.put(sourceBus.getId(), currInj3Phase.to012());
 				
 				Bus3Phase sourceBus3Ph = (Bus3Phase) sourceBus; 
 				
@@ -249,7 +249,7 @@ public class TDMultiNetPowerflowAlgorithm {
 		    	  for(BaseAclfNetwork distNet:this.distNetList){
 		    		  Bus3Phase sourceBus3Ph = (Bus3Phase) distNet.getBus(distNetId2BoundaryBusTable.get(distNet.getId()));
 		    		  
-		    		  Complex3x1 vabc = this.distBoundaryBus3SeqVoltages.get(sourceBus3Ph.getId()).ToAbc();
+		    		  Complex3x1 vabc = this.distBoundaryBus3SeqVoltages.get(sourceBus3Ph.getId()).toABC();
 		    		  
 		    		  System.out.println("updated dist source bus vabc = "+vabc);
 		    		  sourceBus3Ph.set3PhaseVoltages(vabc);
@@ -279,8 +279,8 @@ public class TDMultiNetPowerflowAlgorithm {
 						}
 						
 						// save the three-sequence current injection to the table
-						Complex3x1 currInj3Seq = currInj3Phase.To012();
-						distBoundary3SeqCurInjTable.put(sourceBus3Ph.getId(), currInj3Phase.To012());
+						Complex3x1 currInj3Seq = currInj3Phase.to012();
+						distBoundary3SeqCurInjTable.put(sourceBus3Ph.getId(), currInj3Phase.to012());
 						
 						
 						
