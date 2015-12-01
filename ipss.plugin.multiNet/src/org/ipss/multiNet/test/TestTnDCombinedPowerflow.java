@@ -39,7 +39,7 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
-public class TestTransDistCombinedPowerflow {
+public class TestTnDCombinedPowerflow {
 	
 	
 	@Test
@@ -203,6 +203,7 @@ public class TestTransDistCombinedPowerflow {
   		//xfr1_2.setZ0( new Complex(0.0, 0.4 ));
   		xfr5_11.setZ( new Complex(0.0, 0.08 ));
   		xfr5_11.setZ0( new Complex(0.0, 0.08 ));
+  		
   		
   		AcscXformer xfr1 = acscXfrAptr.apply(xfr5_11);
 		xfr1.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
