@@ -11,13 +11,13 @@ import org.interpss.numeric.matrix.MatrixUtil;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.interpss.numeric.sparse.ISparseEqnComplexMatrix3x3;
 import org.ipss.multiNet.algo.SubNetworkProcessor;
-import org.ipss.multiNet.equivalent.NetworkEquivalent.Coordinate;
-import org.ipss.multiNet.equivalent.NetworkEquivalent.EquivType;
 import org.ipss.threePhase.dynamic.DStabNetwork3Phase;
 
 import com.interpss.common.datatype.Constants;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.acsc.SequenceCode;
+import com.interpss.core.net.NetCoordinate;
+import com.interpss.core.net.NetEquivType;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabilityNetwork;
 
@@ -52,7 +52,7 @@ public class NetworkEquivUtil {
 					       
 					       //System.out.println(MatrixUtil.complex3x32DAry2String(equiv.getMatrix3x3()));
 					       //this 3phase-to-3seq transformation is only performed on the Zth part
-					       equiv = equiv.transformCoordinate(Coordinate.Three_sequence);
+					       equiv = equiv.transformCoordinate(NetCoordinate.THREE_SEQUENCE);
 					}
 					else
 						throw new Error(" The subnetwork for creating 3Phase Network Thevenin Equiv is not a DStabNetwork3Phase object");
@@ -144,7 +144,7 @@ public class NetworkEquivUtil {
 		 //TODO change to use Complex3x3 to store;
 		 if(dim>0){
 				netEquiv = new NetworkEquivalent(dim);
-				netEquiv.setEquivCoordinate(Coordinate.Three_sequence);
+				netEquiv.setEquivCoordinate(NetCoordinate.THREE_SEQUENCE);
 		 
 				 Complex3x3[][] Z120Matrix = MatrixUtil.createComplex3x32DArray(dim,dim);
 				    for(int i=0;i<dim;i++){
@@ -191,8 +191,8 @@ public static  NetworkEquivalent cal3PhaseNetworkTheveninEquiv(DStabNetwork3Phas
 		
 		if(dim>0){
 			netEquiv = new NetworkEquivalent(dim);
-			netEquiv.setEquivCoordinate(Coordinate.Three_phase);
-			netEquiv.setType(EquivType.Thevenin);
+			netEquiv.setEquivCoordinate(NetCoordinate.THREE_PHASE);
+			netEquiv.setType(NetEquivType.THEVENIN);
 			
 			int i=0;
 			for(String busId:boundaryBusIdList){

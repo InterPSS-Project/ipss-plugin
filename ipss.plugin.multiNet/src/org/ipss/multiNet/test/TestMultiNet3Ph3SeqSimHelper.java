@@ -22,7 +22,6 @@ import org.ipss.multiNet.algo.MultiNet3Ph3SeqDStabSolverImpl;
 import org.ipss.multiNet.algo.MultiNet3Ph3SeqDynEventProcessor;
 import org.ipss.multiNet.algo.SubNetworkProcessor;
 import org.ipss.multiNet.equivalent.NetworkEquivalent;
-import org.ipss.multiNet.equivalent.NetworkEquivalent.Coordinate;
 import org.ipss.threePhase.dynamic.DStabNetwork3Phase;
 import org.ipss.threePhase.dynamic.algo.DynamicEventProcessor3Phase;
 import org.ipss.threePhase.odm.ODM3PhaseDStabParserMapper;
@@ -35,6 +34,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.net.NetCoordinate;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -282,7 +282,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 		  
 		  // this subnetwork only includes bus 5;
 		  NetworkEquivalent equiv_subNet1=equivTable.get("SubNet-1") ;
-		  assertTrue(equiv_subNet1.getEquivCoordinate()==Coordinate.Three_sequence);
+		  assertTrue(equiv_subNet1.getEquivCoordinate()==NetCoordinate.THREE_SEQUENCE);
 		  
 		  Complex3x3[][] Zth1 = equiv_subNet1.getMatrix3x3();
 		  /*
@@ -299,7 +299,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 		  assertTrue(new Complex(1.0,0).divide(Zth1[0][0].cc).abs()<1.0E-6); 
 		  
 		  NetworkEquivalent equiv_subNet2=equivTable.get("SubNet-2") ;
-		  assertTrue(equiv_subNet2.getEquivCoordinate()==Coordinate.Three_sequence); 
+		  assertTrue(equiv_subNet2.getEquivCoordinate()==NetCoordinate.THREE_SEQUENCE); 
 		  assertTrue(equiv_subNet2.getDimension()==1); 
 		  Complex3x3 zth2 =equiv_subNet2.getMatrix3x3()[0][0];
 		  System.out.print("Zth2 ="+zth2);
@@ -783,7 +783,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 			 
 			 Hashtable<String, NetworkEquivalent>  equivTable =  mNetHelper.getSubNetEquivTable();
 			 NetworkEquivalent equiv_subNet1=equivTable.get("SubNet-1") ;
-			  assertTrue(equiv_subNet1.getEquivCoordinate()==Coordinate.Three_sequence);
+			  assertTrue(equiv_subNet1.getEquivCoordinate()==NetCoordinate.THREE_SEQUENCE);
 			 Complex3x3[][] equivZMatrix1 = equiv_subNet1.getMatrix3x3();
 			 
 			 /*
@@ -828,7 +828,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 			 
 			 
 			 NetworkEquivalent equiv_subNet2=equivTable.get("SubNet-2") ;
-			  assertTrue(equiv_subNet2.getEquivCoordinate()==Coordinate.Three_sequence);
+			  assertTrue(equiv_subNet2.getEquivCoordinate()==NetCoordinate.THREE_SEQUENCE);
 			 Complex3x3[][] equivZMatrix2 = equiv_subNet2.getMatrix3x3();
 			 
 			 /*
