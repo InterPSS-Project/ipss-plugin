@@ -13,12 +13,12 @@ import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.interpss.numeric.sparse.ISparseEqnComplexMatrix3x3;
 import org.ipss.multiNet.equivalent.NetworkEquivUtil;
 import org.ipss.multiNet.equivalent.NetworkEquivalent;
-import org.ipss.multiNet.equivalent.NetworkEquivalent.Coordinate;
 import org.ipss.threePhase.basic.Bus3Phase;
 import org.ipss.threePhase.dynamic.DStabNetwork3Phase;
 
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.acsc.SequenceCode;
+import com.interpss.core.net.NetCoordinate;
 import com.interpss.core.sparse.impl.SparseEqnComplexMatrix3x3Impl;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabBus;
@@ -186,7 +186,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 	    	if(this.threePhModelingSubNetIdList!= null && this.threePhModelingSubNetIdList.contains(subNetworkId)){
 	    		equiv = NetworkEquivUtil.cal3PhaseNetworkTheveninEquiv((DStabNetwork3Phase) subNet,
 	    			       this.subNetProcessor.getSubNet2BoundaryBusListTable().get(subNetworkId));
-	    		equiv = equiv.transformCoordinate(Coordinate.Three_sequence);
+	    		equiv = equiv.transformCoordinate(NetCoordinate.THREE_SEQUENCE);
 	    	}
 	    	else
 	    		equiv = NetworkEquivUtil.cal3SeqNetworkTheveninEquiv(subNet,

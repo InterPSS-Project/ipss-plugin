@@ -8,18 +8,20 @@ import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.matrix.MatrixUtil;
 
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.net.NetCoordinate;
+import com.interpss.core.net.NetEquivType;
 
 public class NetworkEquivalent {
 	
-	public enum Coordinate {Three_phase, Three_sequence,Positive_sequence};
+//	public enum Coordinate {Three_phase, Three_sequence,Positive_sequence};
 	
-	public enum EquivType {Norton,Thevenin};
+//	public enum EquivType {Norton,Thevenin};
 	
 	
-	private Coordinate equivCoordinate = Coordinate.Positive_sequence;
+	private NetCoordinate equivCoordinate = NetCoordinate.POSITIVE_SEQUENCE;
 	
 		 
-	private  EquivType type = EquivType.Thevenin;
+	private  NetEquivType type = NetEquivType.THEVENIN;
 	
 	
 	private Complex[] source = null;
@@ -32,6 +34,7 @@ public class NetworkEquivalent {
 	
 	private int dimension = 0;
 	
+	/* the following two transformations are defined in Complex3x3.java already
 	private static final Complex a = new Complex(-0.5, Math.sqrt(3)/2);
 	public static final Complex[][] T = new Complex[][]{
 			{new Complex(1,0),new Complex(1,0),new Complex(1,0)},
@@ -42,7 +45,7 @@ public class NetworkEquivalent {
 			{new Complex(1.0/3,0), a.divide(3)              ,a.multiply(a).divide(3)},
 			{new Complex(1.0/3,0), a.multiply(a).divide(3)  ,a.divide(3)},
 			{new Complex(1.0/3,0), new Complex(1.0/3,0)       ,new Complex(1.0/3,0)}};
-	
+	*/
 
 	
 	public NetworkEquivalent(){
@@ -59,7 +62,7 @@ public class NetworkEquivalent {
 		matrix = new Complex[dim][dim];
 	}
 	
-	public NetworkEquivalent(int dim, Coordinate equivCoordinate,EquivType type){
+	public NetworkEquivalent(int dim, NetCoordinate equivCoordinate,NetEquivType type){
 		dimension = dim;
 		source = new Complex[dim];
 		matrix = new Complex[dim][dim];
@@ -67,19 +70,19 @@ public class NetworkEquivalent {
 		this.type = type;
 	}
 
-	public Coordinate getEquivCoordinate() {
+	public NetCoordinate getEquivCoordinate() {
 		return this.equivCoordinate;
 	}
 
-	public void setEquivCoordinate(Coordinate equivCoordinate) {
+	public void setEquivCoordinate(NetCoordinate equivCoordinate) {
 		this.equivCoordinate = equivCoordinate;
 	}
 
-	public EquivType getType() {
+	public NetEquivType getType() {
 		return type;
 	}
 
-	public void setType(EquivType type) {
+	public void setType(NetEquivType type) {
 		this.type = type;
 	}
 
@@ -126,19 +129,19 @@ public class NetworkEquivalent {
 	}
 	
 	
-	public NetworkEquivalent transformType(EquivType fType, EquivType tType){
+	public NetworkEquivalent transformType(NetEquivType fType, NetEquivType tType){
 		
 		
 		return null;
 	}
 	
 	
-	public NetworkEquivalent transformCoordinate(Coordinate toType){
+	public NetworkEquivalent transformCoordinate(NetCoordinate toType){
 		
 		NetworkEquivalent transEquiv = new NetworkEquivalent(this.getDimension());
 		
-		if(this.equivCoordinate==Coordinate.Three_phase){
-			if(toType == Coordinate.Three_sequence){
+		if(this.equivCoordinate==NetCoordinate.THREE_PHASE){
+			if(toType == NetCoordinate.THREE_SEQUENCE){
 				
 				//step-1 set the target coordinate
 				transEquiv.setEquivCoordinate(toType);
@@ -200,7 +203,7 @@ public class NetworkEquivalent {
 	 * @return
 	 */
     private Complex[] source120ToAbc(Complex[] v120){
-    	FieldMatrix<Complex> fmT= MatrixUtils.createFieldMatrix(T);
+    	FieldMatrix<Complex> fmT= MatrixUtils.createFieldMatrix(Complex3x3.T120_abc);
     	return fmT.operate(v120);
     }
     
@@ -213,7 +216,7 @@ public class NetworkEquivalent {
 	 * @return
 	 */
     private Complex[] sourceABCTo120(Complex[] vABC){
-    	FieldMatrix<Complex> fmTinv= MatrixUtils.createFieldMatrix(Tinv);
+    	FieldMatrix<Complex> fmTinv= MatrixUtils.createFieldMatrix(Complex3x3.Tabc_120);
     	return fmTinv.operate(vABC);
     }
     
@@ -225,8 +228,8 @@ public class NetworkEquivalent {
 	private Complex[][] matrix120ToAbc(Complex[][] z120){
 		//Zabc=T*Z120*T^-1
 		FieldMatrix<Complex> fmZ120= MatrixUtils.createFieldMatrix(z120);
-		FieldMatrix<Complex> fmT= MatrixUtils.createFieldMatrix(T);
-		FieldMatrix<Complex> fmTinv= MatrixUtils.createFieldMatrix(Tinv);
+		FieldMatrix<Complex> fmT= MatrixUtils.createFieldMatrix(Complex3x3.T120_abc);
+		FieldMatrix<Complex> fmTinv= MatrixUtils.createFieldMatrix(Complex3x3.Tabc_120);
 		Complex[][] Zabc = fmT.multiply(fmZ120).multiply(fmTinv).getData();
 	    return Zabc;
 	}
@@ -239,8 +242,8 @@ public class NetworkEquivalent {
 	private Complex[][] matrixAbcTo120(Complex[][] zabc){
 		//Z120=T^-1*ZABC*T
 		FieldMatrix<Complex> fmZabc= MatrixUtils.createFieldMatrix(zabc);
-		FieldMatrix<Complex> fmT= MatrixUtils.createFieldMatrix(T);
-		FieldMatrix<Complex> fmTinv= MatrixUtils.createFieldMatrix(Tinv);
+		FieldMatrix<Complex> fmT= MatrixUtils.createFieldMatrix(Complex3x3.T120_abc);
+		FieldMatrix<Complex> fmTinv= MatrixUtils.createFieldMatrix(Complex3x3.Tabc_120);
 		Complex[][] Z120 = fmTinv.multiply(fmZabc).multiply(fmT).getData();
 	    return Z120;
 	}

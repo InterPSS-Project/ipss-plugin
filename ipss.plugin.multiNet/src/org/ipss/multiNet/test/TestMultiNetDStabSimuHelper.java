@@ -18,14 +18,13 @@ import org.interpss.numeric.util.NumericUtil;
 import org.ipss.multiNet.algo.MultiNetDStabSimuHelper;
 import org.ipss.multiNet.algo.SubNetworkProcessor;
 import org.ipss.multiNet.equivalent.NetworkEquivalent;
-import org.ipss.multiNet.equivalent.NetworkEquivalent.Coordinate;
-import org.ipss.threePhase.dynamic.DStabNetwork3Phase;
 import org.junit.Test;
 
 import com.interpss.CoreObjectFactory;
 import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.net.NetCoordinate;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
@@ -91,7 +90,7 @@ public class TestMultiNetDStabSimuHelper {
 		  
 		  
 		  NetworkEquivalent equiv_subNet1=equivTable.get("SubNet-1") ;
-		  assertTrue(equiv_subNet1.getEquivCoordinate()==Coordinate.Positive_sequence);
+		  assertTrue(equiv_subNet1.getEquivCoordinate()==NetCoordinate.THREE_SEQUENCE);
 		  /*
 		   *  SubNet-1 eqv: 
 			  (0.006112387800872096, 0.07952815643935975), (0.0056247409015727804, 0.02842605562067255), 
@@ -105,7 +104,7 @@ public class TestMultiNetDStabSimuHelper {
 		  assertTrue(NumericUtil.equals(equiv_subNet1.getMatrix()[1][1], new Complex(0.058441502171763686, 0.19529838105182823),1.0E-6));
 		   // "SubNet-2": buses 2,5,7
 		  NetworkEquivalent equiv_subNet2=equivTable.get("SubNet-2") ;
-		  assertTrue(equiv_subNet2.getEquivCoordinate()==Coordinate.Positive_sequence);
+		  assertTrue(equiv_subNet2.getEquivCoordinate()==NetCoordinate.THREE_SEQUENCE);
 		  
 
           /*
