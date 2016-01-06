@@ -13,20 +13,19 @@ import com.interpss.core.net.NetEquivType;
 
 public class NetworkEquivalent {
 	
-//	public enum Coordinate {Three_phase, Three_sequence,Positive_sequence};
+	// the enum has been moved to com.interpss.core.net	
+	//public enum Coordinate {Three_phase, Three_sequence,Positive_sequence};
 	
-//	public enum EquivType {Norton,Thevenin};
+	// the enum has been moved to com.interpss.core.net
+	//	public enum EquivType {Norton,Thevenin};
 	
 	
 	private NetCoordinate equivCoordinate = NetCoordinate.POSITIVE_SEQUENCE;
-	
 		 
 	private  NetEquivType type = NetEquivType.THEVENIN;
 	
 	
 	private Complex[] source = null;
-
-	
 	private Complex[][] matrix = null;
 	
 	private Complex3x1[] source3x1 = null;
