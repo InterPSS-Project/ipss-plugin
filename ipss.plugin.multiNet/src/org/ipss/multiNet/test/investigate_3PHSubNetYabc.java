@@ -192,7 +192,7 @@ public class investigate_3PHSubNetYabc {
 		   //print out the equiv for testing
 			 NetworkEquivalent equiv_2= mNetHelper.getSubNetEquivTable().get("SubNet-2");
 			 
-			 assertTrue(equiv_2.getDimension()==2);
+			 assertTrue(equiv_2.getSource3x1().length==2);
 			 
 			 System.out.println("Zth_equiv2(120) = \n"+MatrixUtil.complex3x32DAry2String(equiv_2.getMatrix3x3()));   
 			 
@@ -569,7 +569,7 @@ public class investigate_3PHSubNetYabc {
 		  
 		  NetworkEquivalent equiv_subNet2=equivTable.get("SubNet-2") ;
 		  assertTrue(equiv_subNet2.getEquivCoordinate()==NetCoordinate.THREE_SEQUENCE); 
-		  assertTrue(equiv_subNet2.getDimension()==1); 
+		  assertTrue(equiv_subNet2.getSource3x1().length==1); 
 		  Complex3x3 zth2 =equiv_subNet2.getMatrix3x3()[0][0];
 		  System.out.print("Zth2 ="+zth2);
 		  /*

@@ -109,7 +109,7 @@ public class NetworkEquivUtil {
 				int j=0;
 				for(String busId2:boundaryBusIdList){
 				    Complex zji= ymatrix.getX(net.getBus(busId2).getSortNumber());
-				    netEquiv.getMatrix()[j][i]= zji;  // zji = Vj/Ii
+				    netEquiv.getComplexEqn().setAij(zji, j, i);  // zji = Vj/Ii
 				    j++;
 				     
 				}
@@ -225,9 +225,9 @@ public static  NetworkEquivalent cal3PhaseNetworkTheveninEquiv(DStabNetwork3Phas
 						//TODO this part can be changed to use the Complex3x3 as basic storage element.
 						for(String busId2:boundaryBusIdList){
 						    Complex3x1 zji= ymatrix.getX(net.getBus(busId2).getSortNumber());
-						    netEquiv.getMatrix()[3*j][3*i+phaseIdx]= zji.a_0;  //zji(a_phase)
-						    netEquiv.getMatrix()[3*j+1][3*i+phaseIdx]= zji.b_1;//zji(b_phase)
-						    netEquiv.getMatrix()[3*j+2][3*i+phaseIdx]= zji.c_2;//zji(c_phase)
+						    netEquiv.getComplexEqn().setAij(zji.a_0, 3*j, 3*i+phaseIdx); //zji(a_phase)
+						    netEquiv.getComplexEqn().setAij(zji.b_1, 3*j+1, 3*i+phaseIdx);//zji(b_phase)
+						    netEquiv.getComplexEqn().setAij(zji.c_2, 3*j+2, 3*i+phaseIdx);//zji(c_phase)
 						    j++;
 						     
 						}
