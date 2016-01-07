@@ -91,8 +91,18 @@ public class TestInductionMotorModel extends TestSetupBase {
 		else{
 			System.out.println("Initialization error!");
 		}
+		/*
+		 * slip =0.009598914568821991
+           motor power =(0.7999999997171088, 0.5790774480423598)
+		 */
+		assertTrue(Math.abs(indMotor.getSlip()-0.00959891)<1.0E-5);
 		
-
+		assertTrue(Math.abs(indMotor.getLoadPQ().getReal()-0.8)<1.0E-5);
+		
+		assertTrue( Math.abs(bus1.getVoltageMag()-0.99677)<1.0E-5);
+		
+		System.out.println("slip ="+indMotor.getSlip());
+		System.out.println("motor power ="+indMotor.getLoadPQ());
 		//}
 		//System.out.println(sm.toCSVString(sm.getMachAngleTable()));
 		System.out.println(sm.toCSVString(sm.getBusVoltTable()));
