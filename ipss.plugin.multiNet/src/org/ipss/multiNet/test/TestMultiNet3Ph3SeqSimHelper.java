@@ -300,7 +300,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 		  
 		  NetworkEquivalent equiv_subNet2=equivTable.get("SubNet-2") ;
 		  assertTrue(equiv_subNet2.getEquivCoordinate()==NetCoordinate.THREE_SEQUENCE); 
-		  assertTrue(equiv_subNet2.getDimension()==1); 
+		  assertTrue(equiv_subNet2.getMatrix3x3().length==1); 
 		  Complex3x3 zth2 =equiv_subNet2.getMatrix3x3()[0][0];
 		  System.out.print("Zth2 ="+zth2);
 		  /*
@@ -414,7 +414,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 			  */
 			 
 			 NetworkEquivalent equivSubNet_1 = equivTable.get("SubNet-1");
-			 assertTrue(equivSubNet_1.getDimension()==2);
+			 assertTrue(equivSubNet_1.getSource3x1().length==2);
 			 
 			 Complex3x1[] Vth1Ary = equivSubNet_1.getSource3x1();
 			 
@@ -424,7 +424,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 			 System.out.println("Vth of subNet1 = "+MatrixUtil.complex3x1Ary2String(Vth1Ary));
 			 
 			 NetworkEquivalent equivSubNet_2 = equivTable.get("SubNet-2");
-			 assertTrue(equivSubNet_2.getDimension()==1);
+			 assertTrue(equivSubNet_2.getSource3x1().length==1);
 			 
 			 Complex3x1[] Vth2Ary = equivSubNet_2.getSource3x1();
 			 
