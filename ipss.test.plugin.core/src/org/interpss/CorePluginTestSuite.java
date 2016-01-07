@@ -47,6 +47,8 @@ import org.interpss.core.dstab.cml.block.FilterControlBlockTests;
 import org.interpss.core.dstab.cml.block.IntegrationControlBlockTests;
 import org.interpss.core.dstab.cml.block.PIControlBlockTests;
 import org.interpss.core.dstab.cml.block.WashoutControlBlockTests;
+import org.interpss.core.dstab.dynLoad.TestInductionMotorModel;
+import org.interpss.core.dstab.dynLoad.TestLd1pacModel;
 import org.interpss.core.dstab.mach.EConstMachineTest;
 import org.interpss.core.dstab.mach.Eq1Ed1MachineTest;
 import org.interpss.core.dstab.mach.Eq1MachineCaseTest;
@@ -98,6 +100,10 @@ import org.junit.runners.Suite.SuiteClasses;
 	MachineSaturationTest.class,
 	RoundRotorMachineTest.class,
 	SalientPoleMachineTest.class,
+	
+	//DStab dynamic devic model
+	TestInductionMotorModel.class,
+	TestLd1pacModel.class,
 
 	// DStab ODM
 	//TODO ODM file missing Gen sourceZ or genPosZ
