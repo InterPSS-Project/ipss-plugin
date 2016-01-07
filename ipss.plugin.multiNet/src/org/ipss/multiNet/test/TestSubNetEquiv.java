@@ -139,14 +139,14 @@ public class TestSubNetEquiv {
              Hashtable<String, NetworkEquivalent> equivTable= multiNetHelper.getSubNetEquivTable();
              NetworkEquivalent equiv2=equivTable.get("SubNet-2");
             
-             System.out.println("Zii at bus7 ="+equiv2.getMatrix()[0][0]);
-             assertTrue(NumericUtil.equals(equiv2.getMatrix()[0][0],new Complex(0.0, 0.15690803143610757),1.0E-6));
+             System.out.println("Zii at bus7 ="+equiv2.getComplexEqn().getAij(0,0));
+             assertTrue(NumericUtil.equals(equiv2.getComplexEqn().getAij(0,0),new Complex(0.0, 0.15690803143610757),1.0E-6));
              
             // 
             // test-3 the subsystem equivalent Thevenin equivalent voltage Source
             //
              
-             Complex[] Vth = equiv2.getSource();
+             Complex[] Vth = equiv2.getComplexEqn().getB();
              
            //  
            // test-4 boundary subsystem solution: solve Zl*Il = Eth to obtain currents of interface tie-lines 
