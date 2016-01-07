@@ -97,11 +97,11 @@ public class TestMultiNetDStabSimuHelper {
 			  (0.005624740901572781, 0.02842605562067255), (0.058441502171763686, 0.19529838105182823), 
 		   */
 		  
-		  System.out.println("SubNet-1 eqv: \n"+MatrixUtil.complex2DAry2String(equiv_subNet1.getMatrix()));
-		  assertTrue(NumericUtil.equals(equiv_subNet1.getMatrix()[0][0], new Complex(0.006112387800872096, 0.07952815643935975),1.0E-6));
-		  assertTrue(NumericUtil.equals(equiv_subNet1.getMatrix()[0][1], new Complex(0.0056247409015727804, 0.02842605562067255),1.0E-6));
-		  assertTrue(NumericUtil.equals(equiv_subNet1.getMatrix()[1][0], new Complex(0.005624740901572781, 0.02842605562067255),1.0E-6));
-		  assertTrue(NumericUtil.equals(equiv_subNet1.getMatrix()[1][1], new Complex(0.058441502171763686, 0.19529838105182823),1.0E-6));
+		  System.out.println("SubNet-1 eqv: \n"+MatrixUtil.complex2DAry2String(equiv_subNet1.getComplexEqn().getA()));
+		  assertTrue(NumericUtil.equals(equiv_subNet1.getComplexEqn().getAij(0,0), new Complex(0.006112387800872096, 0.07952815643935975),1.0E-6));
+		  assertTrue(NumericUtil.equals(equiv_subNet1.getComplexEqn().getAij(0,1), new Complex(0.0056247409015727804, 0.02842605562067255),1.0E-6));
+		  assertTrue(NumericUtil.equals(equiv_subNet1.getComplexEqn().getAij(1,0), new Complex(0.005624740901572781, 0.02842605562067255),1.0E-6));
+		  assertTrue(NumericUtil.equals(equiv_subNet1.getComplexEqn().getAij(1,1), new Complex(0.058441502171763686, 0.19529838105182823),1.0E-6));
 		   // "SubNet-2": buses 2,5,7
 		  NetworkEquivalent equiv_subNet2=equivTable.get("SubNet-2") ;
 		  assertTrue(equiv_subNet2.getEquivCoordinate()==NetCoordinate.POSITIVE_SEQUENCE);
@@ -112,12 +112,12 @@ public class TestMultiNetDStabSimuHelper {
 			  (0.11337683562544085, 0.24325417157416276), (0.04343351865455726, 0.1244334898321662), 
 			  (0.04343351865455726, 0.12443348983216619), (0.022819398397765443, 0.14317671541236235), 
 		   */
-		  System.out.println("SubNet-2 eqv: \n"+MatrixUtil.complex2DAry2String(equiv_subNet2.getMatrix()));
+		  System.out.println("SubNet-2 eqv: \n"+MatrixUtil.complex2DAry2String(equiv_subNet2.getComplexEqn().getA()));
 		  
-		  assertTrue(NumericUtil.equals(equiv_subNet2.getMatrix()[0][0], new Complex(0.11337683562544085, 0.24325417157416276),1.0E-6));
-		  assertTrue(NumericUtil.equals(equiv_subNet2.getMatrix()[0][1], new Complex(0.04343351865455726, 0.1244334898321662),1.0E-6));
-		  assertTrue(NumericUtil.equals(equiv_subNet2.getMatrix()[1][0], new Complex(0.04343351865455726, 0.1244334898321662),1.0E-6));
-		  assertTrue(NumericUtil.equals(equiv_subNet2.getMatrix()[1][1], new Complex(0.022819398397765443, 0.14317671541236235),1.0E-6));
+		  assertTrue(NumericUtil.equals(equiv_subNet2.getComplexEqn().getAij(0,0), new Complex(0.11337683562544085, 0.24325417157416276),1.0E-6));
+		  assertTrue(NumericUtil.equals(equiv_subNet2.getComplexEqn().getAij(0,1), new Complex(0.04343351865455726, 0.1244334898321662),1.0E-6));
+		  assertTrue(NumericUtil.equals(equiv_subNet2.getComplexEqn().getAij(1,0), new Complex(0.04343351865455726, 0.1244334898321662),1.0E-6));
+		  assertTrue(NumericUtil.equals(equiv_subNet2.getComplexEqn().getAij(1,1), new Complex(0.022819398397765443, 0.14317671541236235),1.0E-6));
 		  
 		  
 		  

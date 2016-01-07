@@ -82,7 +82,7 @@ public class MultiNetDStabSimuHelper extends AbstractMultiNetDStabSimuHelper{
     		   int i =0;
     		   for(String busId: this.subNetProcessor.getSubNet2BoundaryBusListTable().get(subNet.getId())){
     			        Complex v = subNet.getBus(busId).getVoltage();
-    			        subNetEquivTable.get(subNet.getId()).getSource()[i]=v;
+    			        subNetEquivTable.get(subNet.getId()).getComplexEqn().setBi(v, i);
     			        i++;
     		   }
 		   }
@@ -102,7 +102,7 @@ public class MultiNetDStabSimuHelper extends AbstractMultiNetDStabSimuHelper{
     		   int i =0;
     		   for(String busId: this.subNetProcessor.getSubNet2BoundaryBusListTable().get(subNet.getId())){
     			        Complex v = subNet.getBus(busId).getVoltage();
-    			        subNetEquivTable.get(subNet.getId()).getSource()[i]=v;
+    			        subNetEquivTable.get(subNet.getId()).getComplexEqn().setBi(v, i);
     			        i++;
     		   }
 		   }
@@ -154,7 +154,7 @@ public class MultiNetDStabSimuHelper extends AbstractMultiNetDStabSimuHelper{
     		FieldVector<Complex> Eth = new ArrayFieldVector<Complex>( ComplexField.getInstance(), this.Zl.getRowDimension());
     	
     		for(DStabilityNetwork subNet: this.subNetProcessor.getSubNetworkList()){
-    			Complex[] Vth =this.subNetEquivTable.get(subNet.getId()).getSource();
+    			Complex[] Vth =this.subNetEquivTable.get(subNet.getId()).getComplexEqn().getB();
     			FieldVector<Complex>  Eth_k = new ArrayFieldVector<Complex>(Vth);
     			FieldMatrix<Complex> Pk_T = this.subNetIncidenceMatrixTable.get(subNet.getId());
     			Eth_k = Pk_T.operate(Eth_k);//Returns the result of multiplying this matrix by the vector v.
@@ -276,7 +276,7 @@ public class MultiNetDStabSimuHelper extends AbstractMultiNetDStabSimuHelper{
     		  // the interface branch to boundary bus incidence matrix
     		  	 for(DStabilityNetwork subNet: this.subNetProcessor.getSubNetworkList()){
     		  		  FieldMatrix<Complex>  Pk_T = this.subNetIncidenceMatrixTable.get(subNet.getId());
-    				  FieldMatrix<Complex> Zth_k = new Array2DRowFieldMatrix<>(this.subNetEquivTable.get(subNet.getId()).getMatrix());
+    				  FieldMatrix<Complex> Zth_k = new Array2DRowFieldMatrix<>(this.subNetEquivTable.get(subNet.getId()).getComplexEqn().getA());
     	    		  //  Zl_k = Pk_T*Zth_k*Pk
     				  FieldMatrix<Complex> Zl_k = Pk_T.multiply(Zth_k).multiply(Pk_T.transpose());
     				  
