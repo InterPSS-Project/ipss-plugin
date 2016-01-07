@@ -5,47 +5,21 @@ import org.apache.commons.math3.linear.FieldMatrix;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
+import org.interpss.numeric.matrix.ComplexMatrixEqn;
 import org.interpss.numeric.matrix.MatrixUtil;
 
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.net.NetCoordinate;
 import com.interpss.core.net.NetEquivType;
 
 public class NetworkEquivalent {
-	
-	// the enum has been moved to com.interpss.core.net	
-	//public enum Coordinate {Three_phase, Three_sequence,Positive_sequence};
-	
-	// the enum has been moved to com.interpss.core.net
-	//	public enum EquivType {Norton,Thevenin};
-	
-	
 	private NetCoordinate equivCoordinate = NetCoordinate.POSITIVE_SEQUENCE;
 		 
 	private  NetEquivType type = NetEquivType.THEVENIN;
 	
-	
-	private Complex[] source = null;
-	private Complex[][] matrix = null;
-	
+	private ComplexMatrixEqn complexEqn = null;
+
 	private Complex3x1[] source3x1 = null;
 	private Complex3x3[][] matrix3x3 = null;
-	
-	private int dimension = 0;
-	
-	/* the following two transformations are defined in Complex3x3.java already
-	private static final Complex a = new Complex(-0.5, Math.sqrt(3)/2);
-	public static final Complex[][] T = new Complex[][]{
-			{new Complex(1,0),new Complex(1,0),new Complex(1,0)},
-			{a.multiply(a),      a            ,new Complex(1,0)},
-			{a,               a.multiply(a)   ,new Complex(1,0)}};
-	
-	 public static final Complex[][] Tinv = new Complex[][]{
-			{new Complex(1.0/3,0), a.divide(3)              ,a.multiply(a).divide(3)},
-			{new Complex(1.0/3,0), a.multiply(a).divide(3)  ,a.divide(3)},
-			{new Complex(1.0/3,0), new Complex(1.0/3,0)       ,new Complex(1.0/3,0)}};
-	*/
-
 	
 	public NetworkEquivalent(){
 		
@@ -56,15 +30,11 @@ public class NetworkEquivalent {
 	 * @param dim  the number of equivalent port/bus 
 	 */
 	public NetworkEquivalent(int dim){
-		dimension = dim;
-		source = new Complex[dim];
-		matrix = new Complex[dim][dim];
+		this.complexEqn = new ComplexMatrixEqn(dim);
 	}
 	
 	public NetworkEquivalent(int dim, NetCoordinate equivCoordinate,NetEquivType type){
-		dimension = dim;
-		source = new Complex[dim];
-		matrix = new Complex[dim][dim];
+		this(dim);
 		this.equivCoordinate = equivCoordinate;
 		this.type = type;
 	}
@@ -84,26 +54,14 @@ public class NetworkEquivalent {
 	public void setType(NetEquivType type) {
 		this.type = type;
 	}
-
-	public Complex[] getSource() {
-		return source;
-	}
-
-	public void setSource(Complex[] source) {
-		this.source = source;
-	}
-
-	public Complex[][] getMatrix() {
-		return matrix;
-	}
-
-	public void setMatrix(Complex[][] matrix) {
-		this.matrix = matrix;
-	}
+	
+	public ComplexMatrixEqn getComplexEqn() {
+		return this.complexEqn;
+	}	
 
 	public Complex3x1[] getSource3x1() {
 		if(this.source3x1 ==null)
-			this.source3x1 = MatrixUtil.createComplex3x1DArray(dimension);
+			this.source3x1 = MatrixUtil.createComplex3x1DArray(this.complexEqn.getDimension());
 		return source3x1;
 	}
 
@@ -119,25 +77,14 @@ public class NetworkEquivalent {
 		this.matrix3x3 = matrix3x3;
 	}
 
-	public int getDimension() {
-		return dimension;
-	}
-
-	public void setDimension(int dimension) {
-		this.dimension = dimension;
-	}
-	
-	
 	public NetworkEquivalent transformType(NetEquivType fType, NetEquivType tType){
-		
-		
 		return null;
 	}
 	
 	
 	public NetworkEquivalent transformCoordinate(NetCoordinate toType){
 		
-		NetworkEquivalent transEquiv = new NetworkEquivalent(this.getDimension());
+		NetworkEquivalent transEquiv = new NetworkEquivalent(this.complexEqn.getDimension());
 		
 		if(this.equivCoordinate==NetCoordinate.THREE_PHASE){
 			if(toType == NetCoordinate.THREE_SEQUENCE){
@@ -148,10 +95,10 @@ public class NetworkEquivalent {
 				
 				//step-1.1 if the original matrix is stored in a basic matrix format, it is first transformed to a 3x3 block matrix format
 				// to better perform the coordinate the 3-phase to 3-seq transformation
-				if(this.matrix!=null && this.matrix3x3 == null)
-					      transMatrixTo3x3BlockMatrix();
-				if(this.source!=null && this.source3x1 == null)
-					      transSourceTo3x1BlockVector();
+				if(this.complexEqn!=null && this.matrix3x3 == null)
+					this.matrix3x3 = this.complexEqn.to3x3BlockMatrix();
+				if(this.complexEqn!=null && this.source3x1 == null)
+					this.source3x1 = this.complexEqn.to3x1BlockVector();
 				
 				//Step-2 perform 3-phase to three-sequence transformation for the matrix part
 				int dim = this.matrix3x3[0].length;
@@ -163,7 +110,7 @@ public class NetworkEquivalent {
 					}
 				}
 				
-				transEquiv.setMatrix3x3(m3x3);
+				transEquiv.matrix3x3 = m3x3;
 				
 				//step-3  perform 3-phase to three-sequence transformation for the source part
 				
@@ -186,13 +133,7 @@ public class NetworkEquivalent {
 		}
 		else
 			throw new UnsupportedOperationException("Only three-phase to three-sequence transformation is supported.");
-		
-		
-		
 	}
-	
-	
-	
 	
 	/**
 	 * convert input current or voltage array in 120-coordinate to the corresponding ABC-coordinate
@@ -247,75 +188,11 @@ public class NetworkEquivalent {
 	    return Z120;
 	}
 	
-	
-	public Complex3x3[][] transMatrixTo3x3BlockMatrix(){
-                //check the dimension if it is valid
-		        if((getDimension() % 3)!=0){
-		        	IpssLogger.getLogger().severe("The dimension of the matrix is not multiple times of 3!");
-		        	return null;
-		        }
-		        else{
-		        	int k = dimension/3;
-		        	// this is the new dimension
-		        	this.setDimension(k);
-		        	
-		        	Complex3x3[][] blockMatrix = new Complex3x3[k][k] ;
-		        	
-		        	
-					// perform matrix transformation in a 3x3 block-wise manner
-					for(int i=0; i<k; i++){
-						for(int j=0; j<k; j++){
-							
-							Complex3x3 m3x3 =  new Complex3x3();
-							
-							m3x3.aa=matrix[3*i][3*j];
-							m3x3.ab=matrix[3*i][3*j+1];
-							m3x3.ac=matrix[3*i][3*j+2];
-							
-							m3x3.ba=matrix[3*i+1][3*j];
-							m3x3.bb=matrix[3*i+1][3*j+1];
-							m3x3.bc=matrix[3*i+1][3*j+2];
-							
-							m3x3.ca=matrix[3*i+2][3*j];
-							m3x3.cb=matrix[3*i+2][3*j+1];
-							m3x3.cc=matrix[3*i+2][3*j+2];
-							
-							blockMatrix[i][j] = m3x3;
-							
-						}
-						
-					}
-					return this.matrix3x3 = blockMatrix;
-		        }
-				
+	public void transMatrixTo3x3BlockMatrix(){
+        this.matrix3x3 = this.complexEqn.to3x3BlockMatrix();
 	}
 	
-	public Complex3x1[] transSourceTo3x1BlockVector(){
-        //check the dimension if it is valid
-        if((getDimension() % 3)!=0){
-        	IpssLogger.getLogger().severe("The dimension of the matrix is not multiple times of 3!");
-        	return null;
-        }
-        else{
-        	int k = dimension/3;
-        	Complex3x1[] blockSource = new Complex3x1[k] ;
-        	
-			// perform matrix transformation in a 3x3 block-wise manner
-			for(int i=0; i<dimension/3; i++){
-					Complex3x1 v3X1 =  new Complex3x1();
-					
-					v3X1.a_0 = this.source[3*i];
-					v3X1.b_1 = this.source[3*i+1];
-					v3X1.c_2 = this.source[3*i+2];
-					
-					blockSource[i] = v3X1;
-				
-			}
-			return this.source3x1 = blockSource;
-        }
-		
-}
-	
-	
-
+	public void transSourceTo3x1BlockVector(){
+        this.source3x1 = this.complexEqn.to3x1BlockVector();
+	}
 }
