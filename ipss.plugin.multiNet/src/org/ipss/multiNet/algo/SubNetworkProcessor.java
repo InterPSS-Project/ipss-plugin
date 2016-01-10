@@ -309,7 +309,7 @@ public class SubNetworkProcessor {
 				
 				
 				Bus source = this.net.getBus(busId);
-				if(!source.isVisited()){
+				if(!source.isBooleanFlag()){
 					
 					// for each iteration back to this layer, it means one subnetwork search is finished; subsequently, it is going to start
 					// searching a new subnetwork.
@@ -364,7 +364,7 @@ public class SubNetworkProcessor {
       
 		Bus source = this.net.getBus(busId);
 		
-		source.setVisited(true);
+		source.setBooleanFlag(true);
 		
 		
         //System.out.println("BusId, Name, kV: "+busId+","+source.getName()+","+source.getBaseVoltage()*0.001);
@@ -388,7 +388,7 @@ public class SubNetworkProcessor {
 					}
 				}
 
-				if (!bra.isVisited() ) { // fromBusId-->buId
+				if (!bra.isBooleanFlag() ) { // fromBusId-->buId
 					
 					try {
 						this.subNet.addBranch((DStabBranch) bra, bra.getFromBus().getId(), bra.getToBus().getId() , bra.getCircuitNumber());
@@ -398,7 +398,7 @@ public class SubNetworkProcessor {
 					}
 					
 					
-					bra.setVisited(true);
+					bra.setBooleanFlag(true);
 					
 				    //DFS searching
 				    DFS(nextBusId);
