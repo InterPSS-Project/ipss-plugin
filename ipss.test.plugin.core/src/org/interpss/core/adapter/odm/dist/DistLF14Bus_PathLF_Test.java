@@ -104,9 +104,9 @@ public class DistLF14Bus_PathLF_Test  extends CorePluginTestSetup {
 				new DistPathBranchWalker());
 		
 		for (Bus b : distNet.getBusList()) 
-		 	assertTrue(b.isVisited());
+		 	assertTrue(b.isBooleanFlag());
 		for (Branch b : distNet.getBranchList())
-		 	assertTrue(b.isVisited());
+		 	assertTrue(b.isBooleanFlag());
 
 		// backward walking
 		walkAlgo.busWalkThough(distNet, 
@@ -114,9 +114,9 @@ public class DistLF14Bus_PathLF_Test  extends CorePluginTestSetup {
 				new DistPathBusWalker());
 		
 		for (Bus b : distNet.getBusList()) 
-		 	assertTrue(b.isVisited());
+		 	assertTrue(b.isBooleanFlag());
 		for (Branch b : distNet.getBranchList())
-		 	assertTrue(b.isVisited());
+		 	assertTrue(b.isBooleanFlag());
 	}
 }
 
