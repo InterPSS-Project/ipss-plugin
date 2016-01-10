@@ -63,10 +63,10 @@ public class TopologyProcesor {
 		// in the findBranchSubStation(), branch.visited status is used for branch search
 		for (Branch branch : net.getBranchList())
 			if (branch.isActive())
-				branch.setVisited(false);
+				branch.setBooleanFlag(false);
 		// the status is used to find branches between substations
 		for (Bus bus : net.getBusList())
-			bus.setVisited(false);
+			bus.setBooleanFlag(false);
 	}
 	
 	
@@ -82,7 +82,7 @@ public class TopologyProcesor {
 		List<String> branchIdList = new ArrayList<String>();
 		
 		AclfBranch branch = this.aclfNet.getBranch(branchId);
-		branch.setVisited(true);
+		branch.setBooleanFlag(true);
 		
 		if (branch.getBranchCode() != AclfBranchCode.BREAKER)
 			throw new InterpssException("The starting branch to findBranchInSubstation should be Breaker, "
@@ -105,13 +105,13 @@ public class TopologyProcesor {
 		// reset branch.visited status to its original value (false)
 		for (String id : branchIdList) {
 			Branch bra = this.aclfNet.getBranch(id);
-			bra.setVisited(false);
-			bra.getFromBus().setVisited(true);
+			bra.setBooleanFlag(false);
+			bra.getFromBus().setBooleanFlag(true);
 			for (Bus bus : bra.getFromBus().getBusSecList())
-				bus.setVisited(true);
-			bra.getToBus().setVisited(true);
+				bus.setBooleanFlag(true);
+			bra.getToBus().setBooleanFlag(true);
 			for (Bus bus : bra.getToBus().getBusSecList())
-				bus.setVisited(true);
+				bus.setBooleanFlag(true);
 		}		
 		return branchIdList;
 	}
@@ -123,11 +123,11 @@ public class TopologyProcesor {
 	 */
 	public void addBranchBetweenSubstation(List<String> branchList, List<String> islandBusList) {
 		for (String busId : islandBusList)
-			this.aclfNet.getBus(busId).setVisited(true);		
+			this.aclfNet.getBus(busId).setBooleanFlag(true);		
 		
 		for (Branch branch : aclfNet.getBranchList()) {
 			if (branch.isActive())
-				if (branch.getFromBus().isVisited() && branch.getToBus().isVisited()) {
+				if (branch.getFromBus().isBooleanFlag() && branch.getToBus().isBooleanFlag()) {
 					if (!StringUtil.contain(branchList, branch.getId())) {
 						branchList.add(branch.getId());
 					}
@@ -135,7 +135,7 @@ public class TopologyProcesor {
 		}
 		
 		for (Bus bus : this.aclfNet.getBusList())
-			bus.setVisited(false);		
+			bus.setBooleanFlag(false);		
 	}	
 	
 	/**
@@ -151,11 +151,11 @@ public class TopologyProcesor {
 		for (Branch bra : refBus.getBranchList()) {
 			if (!bra.getId().equals(refBranch.getId()) &&   // do not include the refBranch
 					bra.isActive() &&                       // branch has to be active
-					!bra.isVisited() &&                     // make sure the branch has not been visisted to prevent loop situation 
+					!bra.isBooleanFlag() &&                     // make sure the branch has not been visisted to prevent loop situation 
 					!bra.isGroundBranch()) {                // do not include ground branches
 				AclfBranch branch = (AclfBranch)bra;
 				branchIdList.add(branch.getId());
-				branch.setVisited(true);
+				branch.setBooleanFlag(true);
 				if (branch.getBranchCode() == AclfBranchCode.BREAKER)
 					// if the branch is a Breaker, continue the search
 					searchBranchInSubstation(branch, branch.getOppositeBus(refBus), branchIdList);
@@ -337,8 +337,8 @@ public class TopologyProcesor {
 			areaNum = bra.getFromBus().getArea().getNumber();
 		for (Branch branch : this.aclfNet.getBranchList())
 			if (branch.isActive())
-				branch.setVisited(false);		
-		bra.setVisited(true);
+				branch.setBooleanFlag(false);		
+		bra.setBooleanFlag(true);
 		int i = 0;
 		List<Bus> busList = new ArrayList<Bus>();
 		List<Bus> temBusList = new ArrayList<Bus>();
@@ -351,8 +351,8 @@ public class TopologyProcesor {
 			temBusList = new ArrayList<Bus>();
 			for(Bus b: busList){
 				for (Branch bran: b.getBranchList()){
-					if(bran.isActive()&& !bran.isVisited()){							
-						bran.setVisited(true);
+					if(bran.isActive()&& !bran.isBooleanFlag()){							
+						bran.setBooleanFlag(true);
 						Bus oppBus = bran.getOppositeBus(b);
 						if(byZone){
 							if(oppBus.getZone().getNumber()!=zoneNum){								
@@ -572,7 +572,7 @@ public class TopologyProcesor {
 		
 		for (Branch branch : this.aclfNet.getBranchList())
 			if (branch.isActive())
-				branch.setVisited(false);
+				branch.setBooleanFlag(false);
 		List<String> branchList = new ArrayList<String>();
 		int i = 0;
 		List<Bus> busList = new ArrayList<Bus>();
@@ -584,9 +584,9 @@ public class TopologyProcesor {
 			temBusList = new ArrayList<Bus>();
 			for(Bus b: busList){
 				for (Branch bra: b.getBranchList()){
-					if(bra.isActive()&& !bra.isVisited()){
+					if(bra.isActive()&& !bra.isBooleanFlag()){
 						branchList.add(bra.getId());
-						bra.setVisited(true);
+						bra.setBooleanFlag(true);
 						Bus oppBus = bra.getOppositeBus(b);
 						temBusList.add(oppBus);
 					}					

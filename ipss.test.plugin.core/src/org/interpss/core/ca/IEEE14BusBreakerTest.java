@@ -57,10 +57,10 @@ public class IEEE14BusBreakerTest extends CorePluginTestSetup {
 	  	
 	  	// at this point, all buses and small-z branches should be visited
 	  	for (Bus b : net.getBusList())
-	  		assertTrue(b.isVisited());
+	  		assertTrue(b.isBooleanFlag());
 	  	for (Branch b : net.getBranchList())
 	  		if (((AclfBranch)b).getBranchCode() == AclfBranchCode.ZERO_IMPEDENCE)
-	  			assertTrue(b.isVisited());
+	  			assertTrue(b.isBooleanFlag());
 	}	
 	
 	@Test 

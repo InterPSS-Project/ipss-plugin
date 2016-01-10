@@ -713,7 +713,7 @@ public class TopologyHelper {
 								addedBusTable.get(busId));
 					}
 					// update the visit state
-					net.getBus(nextBusId).setVisited(true);
+					net.getBus(nextBusId).setBooleanFlag(true);
 					// recursive DFS
 					DFS(nextBusId, zThreshold);
 
@@ -757,7 +757,7 @@ public class TopologyHelper {
 										addedBusTable.get(busId));
 							}
 							// update the visit state
-							net.getBus(fromBusId).setVisited(true);
+							net.getBus(fromBusId).setBooleanFlag(true);
 							// recursive DFS
 							DFS(fromBusId, ++length, objLength, forward);
 
@@ -786,7 +786,7 @@ public class TopologyHelper {
 								// add the busId to the processed bus list
 								addedBusTable.put(toBusId, toBus);
 								// update the visit state
-								net.getBus(toBusId).setVisited(true);
+								net.getBus(toBusId).setBooleanFlag(true);
 							} else {
 								top.getTopGraph().insertEdge(
 										top.getTopGraph().getDefaultParent(),
