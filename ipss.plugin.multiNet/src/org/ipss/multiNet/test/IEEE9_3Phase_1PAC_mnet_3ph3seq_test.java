@@ -50,7 +50,6 @@ import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.dynLoad.LD1PAC;
-import com.interpss.dstab.dynLoad.impl.Ld1pacImpl;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
@@ -275,7 +274,7 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 		
 
 		
-	    LD1PAC ac1 = new Ld1pacImpl(bus12,"1");
+	    LD1PAC ac1 = DStabObjectFactory.createLD1PAC(bus12,"1");
   		ac1.setLoadPercent(100);
   		ac1.setMVABase(75);
   		ac1.setVstall(0.65);

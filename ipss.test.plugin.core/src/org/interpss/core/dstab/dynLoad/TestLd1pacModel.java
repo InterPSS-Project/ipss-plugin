@@ -30,7 +30,6 @@ import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.dynLoad.LD1PAC;
-import com.interpss.dstab.dynLoad.impl.Ld1pacImpl;
 import com.interpss.dstab.mach.EConstMachine;
 import com.interpss.dstab.mach.MachineType;
 
@@ -43,7 +42,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		
 		DStabBus bus1 = net.getDStabBus("Bus1");
 		
-		LD1PAC acLoad= new Ld1pacImpl(bus1,"1");
+		LD1PAC acLoad= DStabObjectFactory.createLD1PAC(bus1,"1");
 		
 		acLoad.setLoadPercent(50);
 		acLoad.setMVABase(50);
@@ -97,7 +96,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		
 		DStabBus bus1 = net.getDStabBus("Bus1");
 		
-		LD1PAC acLoad= new Ld1pacImpl(bus1,"1");
+		LD1PAC acLoad= DStabObjectFactory.createLD1PAC(bus1,"1");
 		
 		acLoad.setLoadPercent(50);
 		acLoad.setMVABase(50);
@@ -137,7 +136,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		 // check the current injection compesation under normal running condition
 		 Complex Iinj = acLoad.getLoadPQ().subtract(acLoad.getPosSeqEquivY().multiply(v*v).conjugate());
 		 Iinj = Iinj.divide(bus1.getVoltage()).conjugate().multiply(-1.0);
-		 assertTrue(acLoad.getCompCurInj().subtract(Iinj).abs()<1.0E-6);
+		 assertTrue(acLoad.getCompensateCurInj().subtract(Iinj).abs()<1.0E-6);
 		 
 		 
 		 acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER);
@@ -147,7 +146,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		 System.out.println(acLoad.getLoadPQ());
 		 
 		 // check the current injection compesation under stalling condition
-		 assertTrue(acLoad.getCompCurInj().abs()==0.0);
+		 assertTrue(acLoad.getCompensateCurInj().abs()==0.0);
 		
 	}
 	
