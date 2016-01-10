@@ -144,13 +144,13 @@ public class IneffetiveOutageAnalysis {
 		
 		// bus/branch visited status is used to detect loop situation
 		Bus parentBus = branch.getFromBus();
-		parentBus.setVisited(false);
+		parentBus.setBooleanFlag(false);
 		for (Branch bra : parentBus.getConnectedPhysicalBranchList())
-			bra.setVisited(false);
+			bra.setBooleanFlag(false);
 		for (Bus bus : parentBus.getBusSecList()) {
-			bus.setVisited(false);
+			bus.setBooleanFlag(false);
 			for (Branch bra : bus.getConnectedPhysicalBranchList())
-				bra.setVisited(false);
+				bra.setBooleanFlag(false);
 		}
 
 		// start from the from side to see if the walk along the child branch path arrive at 
@@ -172,11 +172,11 @@ public class IneffetiveOutageAnalysis {
 		if (this.debug)
 			System.out.println("Ref branch " + refBranch.getId() + " startBus " + startBus.getId());
 		
-		startBus.setVisited(true);
-		refBranch.setVisited(true);
+		startBus.setBooleanFlag(true);
+		refBranch.setBooleanFlag(true);
 
 		for (Branch branch : startBus.getConnectedPhysicalBranchList()) {
-			if (!branch.isVisited() && 
+			if (!branch.isBooleanFlag() && 
 					!branch.getId().equals(refBranch.getId())) {  // exclude ref branch from the search path
 				if (!AclfFunction.isOpenOutageBranch(branch.getId(), cont.getOutageBranches())) {
 					  // stop the search path if meet a outage branch

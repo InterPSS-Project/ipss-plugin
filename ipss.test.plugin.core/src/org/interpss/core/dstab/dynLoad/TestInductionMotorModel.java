@@ -41,7 +41,7 @@ public class TestInductionMotorModel extends TestSetupBase {
 		
 		DStabBus bus1 = net.getDStabBus("Bus1");
 		
-		InductionMotor indMotor= new InductionMotorImpl(bus1,"1");
+		InductionMotor indMotor= DStabObjectFactory.createInductionMotor(bus1,"1");
 		
 
 		indMotor.setXm(3.0);
