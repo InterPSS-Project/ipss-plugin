@@ -30,7 +30,6 @@ import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.dynLoad.LD1PAC;
-import com.interpss.dstab.dynLoad.impl.Ld1pacImpl;
 import com.interpss.dstab.mach.EConstMachine;
 import com.interpss.dstab.mach.MachineType;
 
@@ -43,7 +42,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		
 		DStabBus bus1 = net.getDStabBus("Bus1");
 		
-		LD1PAC acLoad= new Ld1pacImpl(bus1,"1");
+		LD1PAC acLoad= DStabObjectFactory.createLD1PAC(bus1,"1");
 		
 		acLoad.setLoadPercent(50);
 		acLoad.setMVABase(50);
@@ -97,7 +96,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		
 		DStabBus bus1 = net.getDStabBus("Bus1");
 		
-		LD1PAC acLoad= new Ld1pacImpl(bus1,"1");
+		LD1PAC acLoad= DStabObjectFactory.createLD1PAC(bus1,"1");
 		
 		acLoad.setLoadPercent(50);
 		acLoad.setMVABase(50);
