@@ -136,7 +136,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		 // check the current injection compesation under normal running condition
 		 Complex Iinj = acLoad.getLoadPQ().subtract(acLoad.getPosSeqEquivY().multiply(v*v).conjugate());
 		 Iinj = Iinj.divide(bus1.getVoltage()).conjugate().multiply(-1.0);
-		 assertTrue(acLoad.getCompCurInj().subtract(Iinj).abs()<1.0E-6);
+		 assertTrue(acLoad.getCompensateCurInj().subtract(Iinj).abs()<1.0E-6);
 		 
 		 
 		 acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER);
@@ -146,7 +146,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		 System.out.println(acLoad.getLoadPQ());
 		 
 		 // check the current injection compesation under stalling condition
-		 assertTrue(acLoad.getCompCurInj().abs()==0.0);
+		 assertTrue(acLoad.getCompensateCurInj().abs()==0.0);
 		
 	}
 	
