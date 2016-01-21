@@ -27,6 +27,7 @@ import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
+import com.interpss.dstab.cache.StateMonitor.DynDeviceType;
 import com.interpss.dstab.dynLoad.InductionMotor;
 import com.interpss.dstab.dynLoad.impl.InductionMotorImpl;
 import com.interpss.dstab.mach.EConstMachine;
@@ -73,6 +74,8 @@ public class TestInductionMotorModel extends TestSetupBase {
 		StateMonitor sm = new StateMonitor();
 		sm.addGeneratorStdMonitor(new String[]{"Swing-mach1"});
 		sm.addBusStdMonitor(new String[]{"Bus1"});
+		sm.addDynDeviceMonitor(DynDeviceType.InductionMotor, "IndMotor_1@Bus1");
+		
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
@@ -107,7 +110,10 @@ public class TestInductionMotorModel extends TestSetupBase {
 		//System.out.println(sm.toCSVString(sm.getMachAngleTable()));
 		System.out.println(sm.toCSVString(sm.getBusVoltTable()));
 		System.out.println(sm.toCSVString(sm.getMachPeTable()));
-		
+		System.out.println(sm.toCSVString(sm.getMotorSlipTable()));
+		System.out.println(sm.toCSVString(sm.getMotorTeTable()));
+		System.out.println(sm.toCSVString(sm.getMotorTmTable()));
+		System.out.println(sm.toCSVString(sm.getMotorPTable()));
 	}
 	
 private DStabilityNetwork create2BusSystem() throws InterpssException{
