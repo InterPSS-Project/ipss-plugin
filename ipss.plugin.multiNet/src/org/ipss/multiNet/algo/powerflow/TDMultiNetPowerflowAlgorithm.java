@@ -27,6 +27,7 @@ import com.interpss.core.acsc.AcscBus;
 import com.interpss.core.acsc.BaseAcscNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.net.Branch;
+import com.interpss.core.net.NetworkType;
 
 public class TDMultiNetPowerflowAlgorithm {
 	
@@ -76,6 +77,8 @@ public class TDMultiNetPowerflowAlgorithm {
 			BaseAclfNetwork distNet = subNetProc.getSubNetworkByBusId(id);
 			if(!this.distNetList.contains(distNet))
 			  this.distNetList.add(distNet);
+			  IpssLogger.getLogger().info("Subsystem #"+distNet.getId()+" is set to be Distribution network before performing T&D Loadflow");
+			  distNet.setNetworkType(NetworkType.DISTRIBUTION);
 		}
 		
 		
@@ -188,6 +191,8 @@ public class TDMultiNetPowerflowAlgorithm {
 				   throw new Error("The tranmission network boundary bus is not found, ID: "+transBoundaryBusId);
 			   }
 			   else{
+				   
+				   
 				   //TODO assuming there is no loads at the boundary bus
 				   if(transBoundaryBus.getLoadPQ().abs()>0.0){
 					   throw new Error("The  boundary bus in the tranmission network cannot be a load bus: "+transBoundaryBusId);
@@ -196,6 +201,7 @@ public class TDMultiNetPowerflowAlgorithm {
 				   // represent the power flow into the boundary bus as "negative" load
 				   transBoundaryBus.setLoadPQ(e.getValue().multiply(-1.0));
 				   transBoundaryBus.setLoadCode(AclfLoadCode.CONST_P);
+				   
 				   transNetworkBoundaryBusIdList.add(transBoundaryBusId);
 			   }
 			   
@@ -253,6 +259,8 @@ public class TDMultiNetPowerflowAlgorithm {
 		    		  
 		    		  System.out.println("updated dist source bus vabc = "+vabc);
 		    		  sourceBus3Ph.set3PhaseVoltages(vabc);
+		    		  //manually update the positive sequence, since internally it won't be automatically updated.
+		    		  sourceBus3Ph.setVoltage(sourceBus3Ph.getThreeSeqVoltage().b_1);
 		    		  
 		    		  DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(distNet);
                       
@@ -333,7 +341,7 @@ public class TDMultiNetPowerflowAlgorithm {
 		    	  /*
 		    	   *  10. solve the positive sequence power flow and the negative and zero sequence networks
 		    	   */
-		    	      transLfAlgo.setTolerance(1.0E-7);
+		    	     // transLfAlgo.setTolerance(1.0E-7);
 				      if(!transLfAlgo.loadflow()){
 				    	  throw new Error(" positive sequence power flow for the transmission system is not converged");
 				      }
@@ -362,9 +370,17 @@ public class TDMultiNetPowerflowAlgorithm {
 				    	  // update the load flow convergence status
 				    	  this.transmissionNet.setLfConverged(true);
 				    	  
+				    	  // remove the equivalent load from the boundary buses by setting bus as NON_LOAD bus
+				    	  for(String boundaryId: transNetworkBoundaryBusIdList){
+				    		  this.transmissionNet.getBus(boundaryId).setLoadCode(AclfLoadCode.NON_LOAD);
+				    		  this.transmissionNet.getBus(boundaryId).setLoadPQ(new Complex(0.0));
+				    	  }
+				    	  
 				    	  for(BaseAclfNetwork distNet: this.distNetList){
 				    		  distNet.setLfConverged(true);
 				    	  }
+				    	  this.net.setLfConverged(true);
+				    	  
 				    	  break;
 				      }
 		    	  

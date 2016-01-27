@@ -382,6 +382,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 				   			for(Entry<String,Complex3x1> e: this.subNet3SeqCurrInjTable.get(subNet.getId()).entrySet()){
 				   				   Complex3x1 IinjAbc = Complex3x1.z12_to_abc(e.getValue());
 				   				   subNetYabc.setBi(IinjAbc,subNet.getBus(e.getKey()).getSortNumber());
+				   				   System.out.println("3phase cur inject into detailed network:"+IinjAbc.toString());
 							   }
 				   			
 				   			try {

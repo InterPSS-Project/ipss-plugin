@@ -616,7 +616,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 		    
 		    DStabNetwork3Phase subNet_1 =  (DStabNetwork3Phase) proc.getSubNetwork("SubNet-1");
 		    
-		    System.out.println(subNet_1.net2String());
+		    //System.out.println(subNet_1.net2String());
 		    assertTrue(subNet_1.getNoActiveBus() ==2);
 		    
 		    DStabNetwork3Phase subNet_2 =  (DStabNetwork3Phase) proc.getSubNetwork("SubNet-2");
