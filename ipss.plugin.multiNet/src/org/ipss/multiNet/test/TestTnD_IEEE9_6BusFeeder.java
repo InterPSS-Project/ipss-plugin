@@ -15,6 +15,10 @@ import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
+import org.interpss.numeric.util.PerformanceTimer;
+import org.ipss.multiNet.algo.MultiNet3Ph3SeqDStabSimuHelper;
+import org.ipss.multiNet.algo.MultiNet3Ph3SeqDStabSolverImpl;
+import org.ipss.multiNet.algo.MultiNet3Ph3SeqDynEventProcessor;
 import org.ipss.multiNet.algo.SubNetworkProcessor;
 import org.ipss.multiNet.algo.powerflow.TDMultiNetPowerflowAlgorithm;
 import org.ipss.threePhase.basic.Branch3Phase;
@@ -25,30 +29,37 @@ import org.ipss.threePhase.basic.Phase;
 import org.ipss.threePhase.basic.impl.Gen3PhaseImpl;
 import org.ipss.threePhase.basic.impl.Load3PhaseImpl;
 import org.ipss.threePhase.dynamic.DStabNetwork3Phase;
+import org.ipss.threePhase.dynamic.algo.DynamicEventProcessor3Phase;
 import org.ipss.threePhase.dynamic.model.InductionMotor3PhaseAdapter;
 import org.ipss.threePhase.dynamic.model.PVDistGen3Phase;
 import org.ipss.threePhase.dynamic.model.impl.SinglePhaseACMotor;
 import org.ipss.threePhase.odm.ODM3PhaseDStabParserMapper;
 import org.ipss.threePhase.powerflow.impl.DistPowerFlowOutFunc;
+import org.ipss.threePhase.util.ThreePhaseAclfOutFunc;
 import org.ipss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.Test;
 
 import com.interpss.DStabObjectFactory;
 import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.acsc.XfrConnectCode;
 import com.interpss.core.acsc.adpter.AcscXformer;
+import com.interpss.core.acsc.fault.SimpleFaultCode;
+import com.interpss.dstab.algo.DynamicSimuAlgorithm;
+import com.interpss.dstab.algo.DynamicSimuMethod;
+import com.interpss.dstab.cache.StateMonitor;
+import com.interpss.dstab.cache.StateMonitor.DynDeviceType;
 import com.interpss.dstab.dynLoad.InductionMotor;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
-
 public class TestTnD_IEEE9_6BusFeeder {
 	
 	@Test
-	public void test_TDPowerflow_IEEE9_feeder() throws InterpssException{
+	public void test_IEEE9_feeder_co_dynamicSim() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
 		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
@@ -106,72 +117,72 @@ public class TestTnD_IEEE9_6BusFeeder {
 			*/
 				
 
-			// AC motor, 50%
-			
-			 SinglePhaseACMotor ac1 = new SinglePhaseACMotor(loadBus,"1");
-		  		ac1.setLoadPercent(50);
-		  		ac1.setPhase(Phase.A);
-		  		ac1.setMVABase(acMVA);
-		  		ac1.setTstall(99); // disable ac stalling
-		  		loadBus.getPhaseADynLoadList().add(ac1);
-		  		
-		  		
-		  		
-		  	SinglePhaseACMotor ac2 = new SinglePhaseACMotor(loadBus,"2");
-		  		ac2.setLoadPercent(50);
-		  		ac2.setPhase(Phase.B);
-		  		ac2.setMVABase(acMVA);
-		  		ac2.setTstall(99); // disable ac stalling
-		  		loadBus.getPhaseBDynLoadList().add(ac2);
-		  		
-
-		  		
-		  	SinglePhaseACMotor ac3 = new SinglePhaseACMotor(loadBus,"3");
-		  		ac3.setLoadPercent(50);
-		  		ac3.setPhase(Phase.C);
-		  		ac3.setMVABase(acMVA);
-		  		ac3.setTstall(99); // disable ac stalling
-		  		loadBus.getPhaseCDynLoadList().add(ac3);
-			
-			
-			// 3 phase motor, 20%
-			
-		  		InductionMotor indMotor= DStabObjectFactory.createInductionMotor("1");
-				indMotor.setDStabBus(loadBus);
-
-				indMotor.setXm(3.0);
-				indMotor.setXl(0.07);
-				indMotor.setRa(0.032);
-				indMotor.setXr1(0.3);
-				indMotor.setRr1(0.01);
-				
-		
-				indMotor.setMVABase(motorMVA );
-				indMotor.setH(1.0);
-				
-				InductionMotor3PhaseAdapter indMotor3Phase = new InductionMotor3PhaseAdapter(indMotor);
-				indMotor3Phase.setLoadPercent(motorPercent); //0.06 MW
-				loadBus.getThreePhaseDynLoadList().add(indMotor3Phase);	
-			
-			
-			// PV generation
-			
-				Gen3Phase gen1 = new Gen3PhaseImpl();
-				gen1.setParentBus(loadBus);
-				gen1.setId("PVGen");
-				gen1.setGen(new Complex(pvGen,0));  // total gen power, system mva based
-				
-				loadBus.getThreePhaseGenList().add(gen1);
-				
-				double pvMVABase = pvGen/0.8*100;
-				gen1.setMvaBase(pvMVABase); // for dynamic simulation only
-				gen1.setPosGenZ(new Complex(0,1.0E-1));   // assuming open-circuit
-				gen1.setNegGenZ(new Complex(0,1.0E-1));
-				gen1.setZeroGenZ(new Complex(0,1.0E-1));
-				//create the PV Distributed gen model
-				PVDistGen3Phase pv = new PVDistGen3Phase(gen1);
-				pv.setUnderVoltTripAll(0.4);
-				pv.setUnderVoltTripStart(0.8);
+//			// AC motor, 50%
+//			
+//			 SinglePhaseACMotor ac1 = new SinglePhaseACMotor(loadBus,"1");
+//		  		ac1.setLoadPercent(50);
+//		  		ac1.setPhase(Phase.A);
+//		  		ac1.setMVABase(acMVA);
+//		  		ac1.setTstall(99); // disable ac stalling
+//		  		loadBus.getPhaseADynLoadList().add(ac1);
+//		  		
+//		  		
+//		  		
+//		  	SinglePhaseACMotor ac2 = new SinglePhaseACMotor(loadBus,"2");
+//		  		ac2.setLoadPercent(50);
+//		  		ac2.setPhase(Phase.B);
+//		  		ac2.setMVABase(acMVA);
+//		  		ac2.setTstall(99); // disable ac stalling
+//		  		loadBus.getPhaseBDynLoadList().add(ac2);
+//		  		
+//
+//		  		
+//		  	SinglePhaseACMotor ac3 = new SinglePhaseACMotor(loadBus,"3");
+//		  		ac3.setLoadPercent(50);
+//		  		ac3.setPhase(Phase.C);
+//		  		ac3.setMVABase(acMVA);
+//		  		ac3.setTstall(99); // disable ac stalling
+//		  		loadBus.getPhaseCDynLoadList().add(ac3);
+//			
+//			
+//			// 3 phase motor, 20%
+//			
+//		  		InductionMotor indMotor= DStabObjectFactory.createInductionMotor("1");
+//				indMotor.setDStabBus(loadBus);
+//
+//				indMotor.setXm(3.0);
+//				indMotor.setXl(0.07);
+//				indMotor.setRa(0.032);
+//				indMotor.setXr1(0.3);
+//				indMotor.setRr1(0.01);
+//				
+//		
+//				indMotor.setMVABase(motorMVA );
+//				indMotor.setH(1.0);
+//				
+//				InductionMotor3PhaseAdapter indMotor3Phase = new InductionMotor3PhaseAdapter(indMotor);
+//				indMotor3Phase.setLoadPercent(motorPercent); //0.06 MW
+//				loadBus.getThreePhaseDynLoadList().add(indMotor3Phase);	
+//			
+//			
+//			// PV generation
+//			
+//				Gen3Phase gen1 = new Gen3PhaseImpl();
+//				gen1.setParentBus(loadBus);
+//				gen1.setId("PVGen");
+//				gen1.setGen(new Complex(pvGen,0));  // total gen power, system mva based
+//				
+//				loadBus.getThreePhaseGenList().add(gen1);
+//				
+//				double pvMVABase = pvGen/0.8*100;
+//				gen1.setMvaBase(pvMVABase); // for dynamic simulation only
+//				gen1.setPosGenZ(new Complex(0,1.0E-1));   // assuming open-circuit
+//				gen1.setNegGenZ(new Complex(0,1.0E-1));
+//				gen1.setZeroGenZ(new Complex(0,1.0E-1));
+//				//create the PV Distributed generation model
+//				PVDistGen3Phase pv = new PVDistGen3Phase(gen1);
+//				pv.setUnderVoltTripAll(0.4);
+//				pv.setUnderVoltTripStart(0.8);
 			
 			
 		}
@@ -182,6 +193,8 @@ public class TestTnD_IEEE9_6BusFeeder {
 	    SubNetworkProcessor proc = new SubNetworkProcessor(dsNet);
 		 proc.addSubNetInterfaceBranch("Bus5->Bus10(0)",false);
 		 proc.splitFullSystemIntoSubsystems(true);
+		 //TODO this has to be manually identified
+		 proc.set3PhaseSubNetByBusId("Bus11");
 		 
 		 System.out.println("external boundary bus: "+proc.getExternalSubNetBoundaryBusIdList());
 		 
@@ -200,6 +213,67 @@ public class TestTnD_IEEE9_6BusFeeder {
 		 
 		 System.out.println(AclfOutFunc.loadFlowSummary(tdAlgo.getTransmissionNetwork()));
 		 System.out.println(DistPowerFlowOutFunc.powerflowResultSummary(tdAlgo.getDistributionNetworkList().get(0)));
+	
+	
+			
+		  MultiNet3Ph3SeqDStabSimuHelper  mNetHelper = new MultiNet3Ph3SeqDStabSimuHelper(dsNet,proc);
+		  
+		  // create multiNet3Seq3PhDStabHelper and initialize the subsystem
+		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+		    
+		  
+			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+			dstabAlgo.setSimuStepSec(0.005d);
+			dstabAlgo.setTotalSimuTimeSec(0.2);
+			
+
+			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
+			
+			//applied the event
+			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus9",dsNet,SimpleFaultCode.GROUND_3P,new Complex(0.0),null,0.01d,0.05),"3phaseFault@Bus5");
+	        
+			
+			StateMonitor sm = new StateMonitor();
+			sm.addGeneratorStdMonitor(new String[]{"Bus1-mach1","Bus2-mach1","Bus3-mach1"});
+			sm.addBusStdMonitor(new String[]{"Bus5","Bus4","Bus1"});
+			
+			//1Phase AC motor extended_device_Id = "ACMotor_"+this.getId()+"@"+this.getParentBus().getId()+"_phase"+this.getPhase();
+			
+			sm.addDynDeviceMonitor(DynDeviceType.ACMotor, "ACMotor_1@Bus13_phaseA");
+			// set the output handler
+			dstabAlgo.setSimuOutputHandler(sm);
+			dstabAlgo.setOutPutPerSteps(5);
+			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
+			
+			IpssLogger.getLogger().setLevel(Level.WARNING);
+			
+			PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+			
+	        // Must use this dynamic event process to modify the YMatrixABC
+//			dstabAlgo.setDynamicEventHandler(new DynamicEventProcessor3Phase());
+			
+			dstabAlgo.setSolver( new MultiNet3Ph3SeqDStabSolverImpl(dstabAlgo, mNetHelper));
+			dstabAlgo.setDynamicEventHandler(new MultiNet3Ph3SeqDynEventProcessor(mNetHelper));
+			
+			if (dstabAlgo.initialization()) {
+				System.out.println(ThreePhaseAclfOutFunc.busLfSummary(dsNet));
+				
+				System.out.println(dsNet.getMachineInitCondition());
+				
+				System.out.println("Running 3Phase DStab simulation ...");
+				timer.start();
+				//dstabAlgo.performSimulation();
+				
+				while(dstabAlgo.getSimuTime()<=dstabAlgo.getTotalSimuTimeSec()){
+					
+					dstabAlgo.solveDEqnStep(true);
+				}
+			}
+			System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+			System.out.println(sm.toCSVString(sm.getBusAngleTable()));
+			System.out.println(sm.toCSVString(sm.getAcMotorPTable()));
+		
+	
 	}
 	
 	public void addFeeder2Bus(DStabNetwork3Phase net,Bus3Phase sourceBus, int startNum, double totalMW) throws InterpssException{

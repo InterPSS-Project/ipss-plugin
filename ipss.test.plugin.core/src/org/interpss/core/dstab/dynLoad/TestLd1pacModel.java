@@ -29,6 +29,7 @@ import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
+import com.interpss.dstab.cache.StateMonitor.DynDeviceType;
 import com.interpss.dstab.dynLoad.LD1PAC;
 import com.interpss.dstab.mach.EConstMachine;
 import com.interpss.dstab.mach.MachineType;
@@ -64,9 +65,11 @@ public class TestLd1pacModel extends TestSetupBase {
 		StateMonitor sm = new StateMonitor();
 		sm.addGeneratorStdMonitor(new String[]{"Swing-mach1"});
 		sm.addBusStdMonitor(new String[]{"Bus1"});
+		//extended_device_Id = "ACMotor_"+this.getId()+"@"+this.getDStabBus().getId();
+		sm.addDynDeviceMonitor(DynDeviceType.ACMotor, "ACMotor_1@Bus1");
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
-		dstabAlgo.setOutPutPerSteps(1);
+		dstabAlgo.setOutPutPerSteps(5);
 		
 		IpssLogger.getLogger().setLevel(Level.FINE);
 		
@@ -85,7 +88,11 @@ public class TestLd1pacModel extends TestSetupBase {
 		//System.out.println(sm.toCSVString(sm.getMachAngleTable()));
 		System.out.println(sm.toCSVString(sm.getBusVoltTable()));
 		System.out.println(sm.toCSVString(sm.getMachPeTable()));
-		
+		System.out.println(sm.toCSVString(sm.getAcMotorPTable()));
+		System.out.println(sm.toCSVString(sm.getAcMotorQTable()));
+		// Total load = 0.8 pu on system base, AC motor 50% ->0.4 pu
+		assertTrue(Math.abs(sm.getAcMotorPTable().get("ACMotor_1@Bus1").get(20).value-0.400)<1.0E-4);
+		assertTrue(Math.abs(sm.getAcMotorQTable().get("ACMotor_1@Bus1").get(20).value-0.10025)<1.0E-4);
 	}
 	
 	//@Test
