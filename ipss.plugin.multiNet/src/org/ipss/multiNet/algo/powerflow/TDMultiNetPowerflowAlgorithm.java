@@ -342,13 +342,22 @@ public class TDMultiNetPowerflowAlgorithm {
 		    	   *  10. solve the positive sequence power flow and the negative and zero sequence networks
 		    	   */
 		    	     // transLfAlgo.setTolerance(1.0E-7);
-				      if(!transLfAlgo.loadflow()){
-				    	  throw new Error(" positive sequence power flow for the transmission system is not converged");
-				      }
+				     
+		
 				   
 				      transBoundaryBus3SeqVoltages = seqNetSolver.solveNegZeroSeqNetwork(transBoundary3SeqCurInjTable);
 				      
+				      // run positive sequence power flow
+				      if(!transLfAlgo.loadflow()){
+				    	  throw new Error(" positive sequence power flow for the transmission system is not converged");
+				      }
 				      
+				      //update the positive sequence voltage of the boundary buses for checking the convergence later
+				      for(Entry<String, Complex3x1> e : transBoundaryBus3SeqVoltages.entrySet()){
+				    	  e.getValue().b_1= transmissionNet.getBus(e.getKey()).getVoltage();
+				      }
+				      
+				    
 				    /*
 				     *  11. check convergence of the iteration by monitoring all the boundary buses
 				     */
@@ -365,8 +374,9 @@ public class TDMultiNetPowerflowAlgorithm {
 				      }
 		    	     
 				      if (i>0 && this.pfFlag) {
-				    	  IpssLogger.getLogger().info(" Transmision&Distribution combined power flow converges after " + i +" iterations.");
-				    	  System.out.println(" Transmision&Distribution combined power flow converges after " + (i+1) +" iterations.");
+				    	  // taking into account the 1 iteration at the initialization stage
+				    	  IpssLogger.getLogger().info(" Transmision&Distribution combined power flow converges after " + (i+2) +" iterations.");
+				    	  System.out.println(" Transmision&Distribution combined power flow converges after " + (i+2) +" iterations.");
 				    	  // update the load flow convergence status
 				    	  this.transmissionNet.setLfConverged(true);
 				    	  
