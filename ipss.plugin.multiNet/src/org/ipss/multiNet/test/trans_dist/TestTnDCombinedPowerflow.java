@@ -1,4 +1,4 @@
-package org.ipss.multiNet.test;
+package org.ipss.multiNet.test.trans_dist;
 
 import static com.interpss.core.funcImpl.AcscFunction.acscXfrAptr;
 import static org.junit.Assert.assertTrue;
@@ -99,8 +99,10 @@ public class TestTnDCombinedPowerflow {
 		 
 		 //System.out.println(tdAlgo.getTransmissionNetwork().net2String());
 		 
+		 
 		 System.out.println(AclfOutFunc.loadFlowSummary(tdAlgo.getTransmissionNetwork()));
 		 System.out.println(DistPowerFlowOutFunc.powerflowResultSummary(tdAlgo.getDistributionNetworkList().get(0)));
+		 
 	}
 	
 	@Test
