@@ -1,4 +1,4 @@
-package org.ipss.multiNet.test;
+package org.ipss.multiNet.test.trans_dist;
 
 import static com.interpss.core.funcImpl.AcscFunction.acscXfrAptr;
 import static org.junit.Assert.assertTrue;
@@ -41,7 +41,7 @@ import com.interpss.simu.SimuCtxType;
 public class TestTnD_IEEE9_8BusFeeder {
 	
 	@Test
-	public void test_IEEE9_feeder_co_dynamicSim() throws InterpssException{
+	public void test_IEEE9_8Busfeeder_powerflow() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
 		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
@@ -83,7 +83,7 @@ public class TestTnD_IEEE9_8BusFeeder {
 		int feederBusNum = 9;
 		
 		double loadPF = 0.95;
-		double loadUnbalanceFactor = 0.1;
+		double loadUnbalanceFactor = 0.2;
 		
 		double [] loadDistribution = new double[]{0.25,0.20,0.15,0.15,0.1,0.1,0.05};
 		double [] feederSectionLenghth = new double[]{0.5,0.5,1.0,1.0,1.5,2,2}; // unit in mile
@@ -152,11 +152,12 @@ public class TestTnD_IEEE9_8BusFeeder {
 	    //TODO create TDMultiNetPowerflowAlgo
 	    
 		 TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm(dsNet,proc);
-		 
+		
+		 System.out.println(tdAlgo.getTransmissionNetwork().net2String());
 	    
 		 assertTrue(tdAlgo.powerflow()); 
 		 
-		 //System.out.println(tdAlgo.getTransmissionNetwork().net2String());
+		 
 		 
 		 System.out.println(AclfOutFunc.loadFlowSummary(tdAlgo.getTransmissionNetwork()));
 		 System.out.println(DistPowerFlowOutFunc.powerflowResultSummary(tdAlgo.getDistributionNetworkList().get(0)));
@@ -180,38 +181,6 @@ public DStabNetwork3Phase createFeeder(DStabNetwork3Phase net,Bus3Phase sourceBu
 	    double zscaleFactor =  totalMW/8.0; 
 	    double q2pfactor = Math.tan(Math.acos(loadPF));
 	
-//	    DStabNetwork3Phase net = ThreePhaseObjectFactory.create3PhaseDStabNetwork();
-//		
-//		
-//		// identify this is a distribution network
-//		net.setNetworkType(NetworkType.DISTRIBUTION);
-//		
-//		Bus3Phase bus1 = ThreePhaseObjectFactory.create3PDStabBus("Bus1", net);
-//		bus1.setAttributes("feeder source", "");
-//		bus1.setBaseVoltage(baseVolt);
-//		// set the bus to a non-generator bus
-//		bus1.setGenCode(AclfGenCode.SWING);
-//		// set the bus to a constant power load bus
-//		bus1.setLoadCode(AclfLoadCode.NON_LOAD);
-//		bus1.setVoltage(new Complex(1.02,0));
-//		
-//		DStabGen constantGen = DStabObjectFactory.createDStabGen();
-//		constantGen.setId("Source");
-//		constantGen.setMvaBase(100);
-//		constantGen.setPosGenZ(new Complex(0.0,0.05));
-//		constantGen.setNegGenZ(new Complex(0.0,0.05));
-//		constantGen.setZeroGenZ(new Complex(0.0,0.05));
-//		bus1.getContributeGenList().add(constantGen);
-		
-		
-//		EConstMachine mach = (EConstMachine)DStabObjectFactory.
-//				createMachine("MachId", "MachName", MachineType.ECONSTANT, net, "Bus1", "Source");
-//	
-//		mach.setRating(100, UnitType.mVA, net.getBaseKva());
-//		mach.setRatedVoltage(baseVolt);
-//		mach.setH(50000.0);
-//		mach.setXd1(0.05);
-
 		
 		int loadIdx = 0;
 		for(int i =startBusNum;i<startBusNum+BusNum;i++){
