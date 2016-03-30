@@ -9,7 +9,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.common.ODMLogger;
 import org.ieee.odm.schema.BusIDRefXmlType;
 import org.ieee.odm.schema.BusXmlType;
-import org.ieee.odm.schema.ConverterXmlType;
+import org.ieee.odm.schema.ThyristorConverterXmlType;
 import org.ieee.odm.schema.DCLineData2TXmlType;
 import org.ieee.odm.schema.DcLineControlModeEnumType;
 import org.ieee.odm.schema.DcLineMeteredEndEnumType;
@@ -172,7 +172,7 @@ public class AclfHvdcDataHelper {
 	}
 	
 	
-	private void setRectifierData(ConverterXmlType rectifierXml){
+	private void setRectifierData(ThyristorConverterXmlType rectifierXml){
 		
 		Rectifier rectifier = null;
 		if(this.hvdc2T.getRectifier()==null){
@@ -228,7 +228,7 @@ public class AclfHvdcDataHelper {
 		
 	}
 	
-    private void setInverterData(ConverterXmlType inverterXml){
+    private void setInverterData(ThyristorConverterXmlType inverterXml){
 		
     	Inverter inverter = null;
     	if(this.hvdc2T.getInverter()==null){
