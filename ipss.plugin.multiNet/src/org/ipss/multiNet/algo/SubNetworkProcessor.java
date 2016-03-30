@@ -155,11 +155,163 @@ public class SubNetworkProcessor {
     	 }
          
     	// it calls  createSubNetworks() to split the original full network into at least two subsystems.
-         boolean flag = createSubNetworks();
+    	
+		/*
+		 * To consider both the bus splitting approach and the normal tie-line splitting approach in the same 
+		 * splitting subnetwork function,internalInterfaceBranchIdList is always considered first.However,
+		 * it is null by default, and only when no "internal used" interface branch is defined, will the input 
+		 * definition interface branches be used.
+		 */
+
+		if(this.internalInterfaceBranchIdList == null || this.internalInterfaceBranchIdList.size()==0)
+			this.internalInterfaceBranchIdList = defInterfaceBranchIdList;
+		
+         boolean flag = createSubNetworks(this.net,this.internalInterfaceBranchIdList,this.boundaryBusIdList);
     	 
     	 
     	 return flag;
     }
+    
+    
+    public boolean splitSubsystem(String subsystemId, String[] tieLineIdAry, boolean[] boundarySideAry, boolean boundaryBusSplitting){
+    	
+    	boolean flag = true;
+    	
+    	
+    	// 1. re-initialize the tie-line and cutset list
+    	
+    	List<String> subNetDefInterfaceBranchIdList = new ArrayList<>();
+    	List<ChildNetInterfaceBranch> subNetCutSetList = new ArrayList<>();
+    	
+    	DStabilityNetwork subNet = this.getSubNetwork(subsystemId);
+    	
+    	if(subNet==null){
+    		throw new Error("The input subsystem Id is not valid");
+    		
+    	}
+    	
+    	// 2. process tie line and boundary information
+    
+    		
+		int k = 0;
+		
+		if(subNet.getBranch(tieLineIdAry[k])!=null){
+			
+			// 2.1 check whether the boundary side information is available
+			if( boundarySideAry != null){
+    			ChildNetInterfaceBranch intBranch = ChildNetworkFactory.eINSTANCE.createChildNetInterfaceBranch();
+    			intBranch.setBranchId(tieLineIdAry[k]);
+    			intBranch.setChildNetSide(boundarySideAry[k]? BranchBusSide.FROM_SIDE: BranchBusSide.TO_SIDE);
+    			
+    			
+    			subNetCutSetList.add(intBranch);
+			}
+			
+		   	
+	    	// 2.2 add tieLine to InterfaceBranchIdList and/or cutsetList depending on whether the boundary side info is available
+	    	
+			subNetDefInterfaceBranchIdList.add(tieLineIdAry[k]);
+			
+			k++;
+		}
+		else{
+			IpssLogger.getLogger().severe("The branchId is invalid # " + tieLineIdAry[k]);
+		}
+		
+    	
+    	// 3. call creatSubNetworks(), it should be modified to refer to the target system to be split
+    	
+    	
+    	
+		return flag;
+    	
+    	
+    	
+    }
+    
+    
+    /**
+	  *  further split the transmission system into at least two subsystems, and the subsystem where the fault is applied
+	  *  is modeled in three-phase. While others are still modeled in three-sequence detail.
+	  *   
+	  * @param unbalanceFaultBusId
+	  * @return
+	  */
+	 public boolean splitTransmissionNetwork(String unbalanceFaultBusId){
+		 boolean flag = true;
+		 DStabilityNetwork transNet = this.getExternalSubNetwork();
+		 
+		 if(transNet==null)
+			 return flag = false;
+			 
+		 
+		 boolean validBusId = false;
+		 boolean isFaultBusLoadOrGen = false;
+		 DStabBus faultBus = transNet.getBus(unbalanceFaultBusId);
+		 // 1. check whether the bus of <unbalanceFaultBusId> is belonging to the transmission network
+		 
+		 if(faultBus ==null){
+			 return flag = false;
+		 }
+		 else if(!faultBus.isActive()){
+			 IpssLogger.getLogger().severe("The input fault bus is off-line");
+			 return flag = false;
+		 }
+		 else{
+			 
+			 if(faultBus.isLoad() || faultBus.isGen()){
+				 isFaultBusLoadOrGen = true;
+			 }
+		 
+			 // 2. get the connected branches and boundary buses
+			 //TODO : should consider the local connected subtransmission and distribution systems of  <unbalanceFaultBus>
+			 
+			 List<Branch> connectedBranchList = faultBus.getBranchList();
+			 
+			 String[] connectedBranchIdAry = new String[connectedBranchList.size()];
+			 
+			 boolean[] boundarySideAry = new boolean[connectedBranchList.size()];
+			 
+			 int k = 0;
+			 for(Branch bra:connectedBranchList){
+				 if(bra.isActive()){
+					 connectedBranchIdAry[k] = bra.getId();
+					
+					 boolean boundaryAtFromSide = bra.getFromBus().getId().equals(unbalanceFaultBusId)? false:true;
+					 
+					 // if the faulted bus itself has load(s) or Generator(s) connected to it, it can be 
+					 // modeled as a single subsystem, without violating the MATE based dynamic simulation requirement (calculating Zth based on Yii)
+                     // which means the boundary does NOT need to be extended to the neighboring buses.
+					 if(isFaultBusLoadOrGen ){
+                    	 boundaryAtFromSide = !boundaryAtFromSide;
+					 }
+                     
+                     boundarySideAry[k++] =   boundaryAtFromSide; 
+				 }
+			 }
+			 
+			 
+			 
+			 // 3. call splitSubsystem(String subsystemId, String[] tieLineIdAry, boolean[] boundarySideAry, boolean boundaryBusSplitting)
+			 //    to split the transmission system into subsystems
+			 
+			 
+			 flag = splitSubsystem(transNet.getId(), connectedBranchIdAry, boundarySideAry, true);
+			 
+			 
+			 // 4. set the subsystem associated with the bus of <unbalanceFaultBusId> to be modeled in three-phase 
+			 
+			 threePhaseSubNetIdList.add(this.getSubNetworkByBusId(unbalanceFaultBusId).getId());
+		 
+		 }
+		 
+		 return flag;
+		 
+	 
+	 }
+    
+    
+    
 	
     /**
      * This process relies on inputing the boundary tie-line data with the information of internal/detailed subnetwork side
@@ -246,19 +398,12 @@ public class SubNetworkProcessor {
 	 * 
 	 * @return
 	 */
-	private boolean createSubNetworks(){
+	private boolean createSubNetworks(BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>  _net,
+			List<String> _internalInterfaceBranchIdList, List<String> _boundaryBusIdList){
 		
-		/*
-		 * To consider both the bus splitting approach and the normal tie-line splitting approach in the same 
-		 * splitting subnetwork function,internalInterfaceBranchIdList is always considered first.However,
-		 * it is null by default, and only when no "internal used" interface branch is defined, will the input 
-		 * definition interface branches be used.
-		 */
 
-		if(this.internalInterfaceBranchIdList == null || this.internalInterfaceBranchIdList.size()==0)
-			this.internalInterfaceBranchIdList = defInterfaceBranchIdList;
 
-		if(this.internalInterfaceBranchIdList.size()>0){
+		if(_internalInterfaceBranchIdList.size()>0){
 			
 			
 			/*
@@ -267,19 +412,19 @@ public class SubNetworkProcessor {
 			 */
 			
 			//get the boundary bus list
-			for(String branchId: this.internalInterfaceBranchIdList){
-				Branch bra = this.net.getBranch(branchId);
+			for(String branchId: _internalInterfaceBranchIdList){
+				Branch bra = _net.getBranch(branchId);
 				
 				//TODO avoid a bus belonging to one subNetwork still connects to one in the other subNetwork
 				//bra.setStatus(false);
 				
-				if(!this.boundaryBusIdList.contains(bra.getFromBus().getId())){
-				    this.boundaryBusIdList.add(bra.getFromBus().getId());
+				if(!_boundaryBusIdList.contains(bra.getFromBus().getId())){
+				    _boundaryBusIdList.add(bra.getFromBus().getId());
 				    
 				}
 				
-				if(!this.boundaryBusIdList.contains(bra.getToBus().getId())){
-				    this.boundaryBusIdList.add(bra.getToBus().getId());
+				if(!_boundaryBusIdList.contains(bra.getToBus().getId())){
+				    _boundaryBusIdList.add(bra.getToBus().getId());
 				    
 				}
 				
@@ -287,7 +432,7 @@ public class SubNetworkProcessor {
 				
 			}
 			
-			Collections.sort(this.boundaryBusIdList);
+			Collections.sort(_boundaryBusIdList);
 			
 			/*
 			 * Step-2: 
@@ -305,18 +450,18 @@ public class SubNetworkProcessor {
 			 * Need to iterate over all boundary buses 
 			 */
 			subNetIdx =0;
-			for( String busId:this.boundaryBusIdList){
+			for( String busId:_boundaryBusIdList){
 				
 				
-				Bus source = this.net.getBus(busId);
+				Bus source = _net.getBus(busId);
 				if(!source.isBooleanFlag()){
 					
 					// for each iteration back to this layer, it means one subnetwork search is finished; subsequently, it is going to start
-					// searching a new subnetwork.
+					// searching a new subnetwork. Thus, a new subnetwork object needs to be created first.
 					
-					if(this.net instanceof DStabNetwork3Phase)
+					if(_net instanceof DStabNetwork3Phase)
 						this.subNet = ThreePhaseObjectFactory.create3PhaseDStabNetwork();
-					else if(this.net instanceof DStabilityNetwork)
+					else if(_net instanceof DStabilityNetwork)
 					     this.subNet = DStabObjectFactory.createDStabilityNetwork(); //(ChildNetwork<DStabBus, DStabBranch>) CoreObjectFactory.createChildNet(net, "childNet-"+(subNetIdx+1));
 					else
 						throw new UnsupportedOperationException("The network should be either  DStabNetwork3Phase or DStabilityNetwork type!");
@@ -334,7 +479,7 @@ public class SubNetworkProcessor {
 					}
 					
 					
-					DFS(busId);
+					DFS(_net, this.subNet,_internalInterfaceBranchIdList,busId);
 					subNetIdx++;
 				}
 			}
@@ -359,10 +504,11 @@ public class SubNetworkProcessor {
 		return subNetworkSearched=true;
 		
 	}
-	private boolean DFS(String busId) {
+	private boolean DFS(BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>  _net,DStabilityNetwork _subNet,
+			List<String> _internalInterfaceBranchIdList,String busId) {
 		boolean isToBus = true;
       
-		Bus source = this.net.getBus(busId);
+		Bus source = _net.getBus(busId);
 		
 		source.setBooleanFlag(true);
 		
@@ -371,15 +517,15 @@ public class SubNetworkProcessor {
         
 		for (Branch bra : source.getBranchList()) {
 
-			if (!this.internalInterfaceBranchIdList.contains(bra.getId()) && !bra.isGroundBranch() 
+			if (!_internalInterfaceBranchIdList.contains(bra.getId()) && !bra.isGroundBranch() 
 					&& bra instanceof AclfBranch) {
 				isToBus = bra.getFromBus().getId().equals(busId);
 				String nextBusId = isToBus ? bra.getToBus().getId() : bra.getFromBus().getId();
 				
-				if(this.subNet.getBus(nextBusId)==null){
+				if(_subNet.getBus(nextBusId)==null){
 					
 					try {
-						this.subNet.addBus((DStabBus) this.net.getBus(nextBusId));
+						_subNet.addBus((DStabBus) _net.getBus(nextBusId));
 						// save the busId 2 subNetwork index mapping
 						this.busId2SubNetworkTable.put(nextBusId, subNetIdx);
 						
@@ -391,7 +537,7 @@ public class SubNetworkProcessor {
 				if (!bra.isBooleanFlag() ) { // fromBusId-->buId
 					
 					try {
-						this.subNet.addBranch((DStabBranch) bra, bra.getFromBus().getId(), bra.getToBus().getId() , bra.getCircuitNumber());
+						_subNet.addBranch((DStabBranch) bra, bra.getFromBus().getId(), bra.getToBus().getId() , bra.getCircuitNumber());
 					} catch (InterpssException e) {
 	
 						e.printStackTrace();
@@ -401,7 +547,7 @@ public class SubNetworkProcessor {
 					bra.setBooleanFlag(true);
 					
 				    //DFS searching
-				    DFS(nextBusId);
+				    DFS(_net,_subNet,_internalInterfaceBranchIdList,nextBusId);
 					
 				}
 			}
@@ -437,6 +583,13 @@ public class SubNetworkProcessor {
 	public List<DStabilityNetwork> getSubNetworkList(){
 		return this.subNetworkList;
 	}
+	
+	/**
+	 * If no bus splitting is performed, then return the tie-line definition Id list.
+	 * else, return the "virtual breakers" connecting the boundary bus and the dummy bus.
+	 * 
+	 * @return
+	 */
 	public List<String> getInterfaceBranchIdList(){
 		if(this.internalInterfaceBranchIdList !=null)
 			return  this.internalInterfaceBranchIdList;
