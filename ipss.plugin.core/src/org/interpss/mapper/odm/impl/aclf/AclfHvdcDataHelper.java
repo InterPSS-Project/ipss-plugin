@@ -21,10 +21,10 @@ import org.interpss.numeric.datatype.LimitType;
 
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.BaseAclfNetwork;
-import com.interpss.core.aclf.hvdc.ACControlMode;
 import com.interpss.core.aclf.hvdc.BaseVSCConverter;
+import com.interpss.core.aclf.hvdc.ConverterAcControlMode;
+import com.interpss.core.aclf.hvdc.ConverterDcControlMode;
 import com.interpss.core.aclf.hvdc.ConverterType;
-import com.interpss.core.aclf.hvdc.DCControlMode;
 import com.interpss.core.aclf.hvdc.HvdcControlMode;
 import com.interpss.core.aclf.hvdc.HvdcLine2TCCC;
 import com.interpss.core.aclf.hvdc.HvdcLine2TVSC;
@@ -318,18 +318,18 @@ public class AclfHvdcDataHelper {
     	vscInv.setBus(this.aclfNet.getBus(busXml.getId()));
     	
     	// DC Control mode
-    	DCControlMode dcMode = 
-    	vscConvXml.getDcControlMode() == VSCDCControlModeEnumType.BLOCKED?DCControlMode.BLOCKED:
-    		vscConvXml.getDcControlMode() == VSCDCControlModeEnumType.REAL_POWER? DCControlMode.DC_POWER:DCControlMode.DC_VOLTAGE;
+    	ConverterDcControlMode dcMode = 
+    	vscConvXml.getDcControlMode() == VSCDCControlModeEnumType.BLOCKED?ConverterDcControlMode.BLOCKED:
+    		vscConvXml.getDcControlMode() == VSCDCControlModeEnumType.REAL_POWER? ConverterDcControlMode.DC_POWER:ConverterDcControlMode.DC_VOLTAGE;
     	
     	 vscInv.setDcControlMode(dcMode);
     	 
     	 vscInv.setDcSetPoint(vscConvXml.getDcSetPoint());
     	
     	// AC Control mode
-    	ACControlMode acMode = 
-    			vscConvXml.getAcControlMode() == VSCACControlModeEnumType.REACTIVE_POWER?ACControlMode.AC_REACTIVE_POWER:
-    				(vscConvXml.getAcControlMode() == VSCACControlModeEnumType.VOLTAGE)?ACControlMode.AC_VOLTAGE:ACControlMode.AC_POWER_FACTOR;
+    	ConverterAcControlMode acMode = 
+    			vscConvXml.getAcControlMode() == VSCACControlModeEnumType.REACTIVE_POWER?ConverterAcControlMode.AC_REACTIVE_POWER:
+    				(vscConvXml.getAcControlMode() == VSCACControlModeEnumType.VOLTAGE)?ConverterAcControlMode.AC_VOLTAGE:ConverterAcControlMode.AC_POWER_FACTOR;
     	 vscInv.setAcControlMode(acMode);
     	
     	 vscInv.setAcSetPoint( vscConvXml.getAcSetPoint());
@@ -371,18 +371,18 @@ public class AclfHvdcDataHelper {
 	 	vscRec.setBus(this.aclfNet.getBus(busXml.getId()));
 	 	
 	 	// DC Control mode
-	 	DCControlMode dcMode = 
-	 	vscConvXml.getDcControlMode() == VSCDCControlModeEnumType.BLOCKED?DCControlMode.BLOCKED:
-	 		vscConvXml.getDcControlMode() == VSCDCControlModeEnumType.REAL_POWER? DCControlMode.DC_POWER:DCControlMode.DC_VOLTAGE;
+	 	ConverterDcControlMode dcMode = 
+	 	vscConvXml.getDcControlMode() == VSCDCControlModeEnumType.BLOCKED?ConverterDcControlMode.BLOCKED:
+	 		vscConvXml.getDcControlMode() == VSCDCControlModeEnumType.REAL_POWER? ConverterDcControlMode.DC_POWER:ConverterDcControlMode.DC_VOLTAGE;
 	 	
 	 	 vscRec.setDcControlMode(dcMode);
 	 	 
 	 	 vscRec.setDcSetPoint(vscConvXml.getDcSetPoint());
 	 	
 	 	// AC Control mode
-	 	ACControlMode acMode = 
-	 			vscConvXml.getAcControlMode() == VSCACControlModeEnumType.REACTIVE_POWER?ACControlMode.AC_REACTIVE_POWER:
-	 				(vscConvXml.getAcControlMode() == VSCACControlModeEnumType.VOLTAGE)?ACControlMode.AC_VOLTAGE:ACControlMode.AC_POWER_FACTOR;
+	 	ConverterAcControlMode acMode = 
+	 			vscConvXml.getAcControlMode() == VSCACControlModeEnumType.REACTIVE_POWER?ConverterAcControlMode.AC_REACTIVE_POWER:
+	 				(vscConvXml.getAcControlMode() == VSCACControlModeEnumType.VOLTAGE)?ConverterAcControlMode.AC_VOLTAGE:ConverterAcControlMode.AC_POWER_FACTOR;
 	 	 vscRec.setAcControlMode(acMode);
 	 	
 	 	 vscRec.setAcSetPoint( vscConvXml.getAcSetPoint());
