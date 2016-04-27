@@ -1,5 +1,6 @@
 package org.ipss.multiNet.test;
 
+import org.ipss.multiNet.test.trans_dist.TestTnDCombinedPowerflow;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;

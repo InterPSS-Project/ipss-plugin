@@ -2,7 +2,9 @@ package org.ipss.multiNet.algo;
 
 import static com.interpss.common.util.IpssLogger.ipssLogger;
 
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
@@ -29,6 +31,7 @@ import com.interpss.dstab.mach.Machine;
 public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 	
 	private List<String>  threePhaseSubNetIdList = null;
+	private StringBuffer sb = new StringBuffer();
 
 	public MultiNet3Ph3SeqDStabSolverImpl(DynamicSimuAlgorithm algo,
 			AbstractMultiNetDStabSimuHelper mNetSimuHelper) {
@@ -158,7 +161,7 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 						DStabBus bus = (DStabBus)busi;
 						if(bus.isActive()){
 							
-							if(i>=1){
+							if(i>=4){
 								 boolean flag = NumericUtil.equals(bus.getVoltage(),voltageRecTable.get(bus.getId()),this.converge_tol);
 								 netSolConverged = netSolConverged && flag;
 								
@@ -169,14 +172,14 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 				  }
 				  
 			
-			  if(i>=1 && netSolConverged) {
+			  if(i>=4 && netSolConverged) {
 				  IpssLogger.getLogger().fine(getSimuTime()+","+"multi subNetwork solution in the nextStep() is converged, iteration #"+(i+1));
 				  break;
 			  }
 	
 		  } // for maxIterationTimes loop
 			
-			
+		
 			
 			 /*
 			  * Third step : with the network solved, the bus voltage and current injections are determined, it is time to solve the dynamic devices using 
@@ -278,7 +281,25 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 					}
 			  }
 		}
+			
+			
+		// save the interface currents
+		 
+			Hashtable<String, Hashtable<String, Complex3x1>> subNetCurInjTable = 
+					      ((MultiNet3Ph3SeqDStabSimuHelper)this.multiNetSimuHelper).getSubNet3SeqCurrInjTable();
+			
+			
+			for(DStabilityNetwork subNet: subNetList){
+				for(Entry<String,Complex3x1> e: subNetCurInjTable.get(subNet.getId()).entrySet()){
+	   				   Complex3x1 IinjAbc = Complex3x1.z12_to_abc(e.getValue());
+	   				   sb.append("t, "+time+", BusID,"+e.getKey()+",Ia=,"+IinjAbc.a_0.abs()+",Ib=,"+IinjAbc.b_1.abs()+",Ic=,"+IinjAbc.c_2.abs()+"\n");
+				}
+			}
 	
+	}
+	
+	public String getRecordResults(){
+		return sb.toString();
 	}
 	
 
