@@ -2,6 +2,8 @@ package org.ipss.multiNet.algo;
 
 import static com.interpss.common.util.IpssLogger.ipssLogger;
 
+import java.util.List;
+
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.NumericConstant;
 import org.interpss.numeric.datatype.Complex3x3;
@@ -19,11 +21,12 @@ import com.interpss.dstab.devent.DynamicEventType;
 
 public class MultiNet3Ph3SeqDynEventProcessor extends
 		MultiNetDynamicEventProcessor {
-
+   
+	private List<String> threePhaseSubNetIdList =null;
 	public MultiNet3Ph3SeqDynEventProcessor(
 			AbstractMultiNetDStabSimuHelper mNetSimuHelper) {
 		super(mNetSimuHelper);
-		
+		threePhaseSubNetIdList = mNetSimuHelper.getSubNetworkProcessor().getThreePhaseSubNetIdList();
 	}
 	
 	/**
@@ -68,7 +71,7 @@ public class MultiNet3Ph3SeqDynEventProcessor extends
 						         AcscBusFault fault = dEvent.getBusFault();
 						         AcscBus bus = fault.getBus();
 						         DStabilityNetwork faultSubNet = (DStabilityNetwork) bus.getNetwork();
-						         if(faultSubNet instanceof DStabNetwork3Phase ){
+						         if(faultSubNet instanceof DStabNetwork3Phase && this.threePhaseSubNetIdList.contains(faultSubNet.getId())){
 									try {
 										( (DStabNetwork3Phase)faultSubNet ).formYMatrixABC();
 									} catch (Exception e) {
@@ -127,38 +130,57 @@ public class MultiNet3Ph3SeqDynEventProcessor extends
 							
 							DStabNetwork3Phase net = (DStabNetwork3Phase) bus.getNetwork();
 							
-							//Need to determine the yfaultABC based on the fault type
-				            //TODO assuming the SLG fault is applied on phase A
-						
-							//net.getYMatrix().addToA(y, i, i);
-							Complex3x3 yfaultABC = new Complex3x3();
-							if(fault.getFaultCode()==SimpleFaultCode.GROUND_LG){
-								yfaultABC.aa = ylarge;
-								net.getYMatrixABC().addToA(yfaultABC, i, i);
-							}
-							//TODO need to check how to model LL
-							else if(fault.getFaultCode()==SimpleFaultCode.GROUND_LL){
-								Complex3x3 yii = net.getYMatrixABC().getA(i, i);
-								yii.ab = new Complex(0,0);
-								yii.ba = new Complex(0,0);
-								//TODO whether it will affect the yii.aa and yii.bb
+							if(this.threePhaseSubNetIdList.contains(net.getId())){
 								
-								net.getYMatrixABC().setA(yii,i,i);
-								
-							}
-		                    else if(fault.getFaultCode()==SimpleFaultCode.GROUND_LLG){
-		                    	yfaultABC.aa = ylarge;
-		                    	yfaultABC.bb = ylarge;
-								net.getYMatrixABC().addToA(yfaultABC, i, i);
-		                    	
-							}
-	                        else if(fault.getFaultCode()==SimpleFaultCode.GROUND_3P){
-	                        	yfaultABC.aa = ylarge;
-	                        	yfaultABC.bb = ylarge;
-	                        	yfaultABC.cc = ylarge;
-	                        	
-	                        	net.getYMatrixABC().addToA(yfaultABC, i, i);
-	                        	
+								//Need to determine the yfaultABC based on the fault type
+					            //TODO assuming the SLG fault is applied on phase A
+							
+								//net.getYMatrix().addToA(y, i, i);
+								Complex3x3 yfaultABC = new Complex3x3();
+								if(fault.getFaultCode()==SimpleFaultCode.GROUND_LG){
+									yfaultABC.aa = ylarge;
+									net.getYMatrixABC().addToA(yfaultABC, i, i);
+								}
+								//TODO need to check how to model LL
+								else if(fault.getFaultCode()==SimpleFaultCode.GROUND_LL){
+									
+									
+									// Based on Ifa = 0;
+									//          Ifb = (VFb-VFc)/Zf
+									//          Ifc = (-VFb+VFc)/Zf
+									
+									//Thus   Yfault = [0 0 0; 0 1, -1; 0 -1 1]/Zf
+									
+									Complex yfault = ylarge;
+									if(fault.getZLLFault()!=null){
+										if(fault.getZLLFault().abs()>1.0E-7)
+										     yfault = new Complex(1.0,0).divide(fault.getZLLFault());
+									}
+									
+									
+									yfaultABC.bb = yfault;
+									yfaultABC.bc = yfault.multiply(-1);
+									yfaultABC.cb = yfault.multiply(-1);
+									yfaultABC.cc = ylarge;
+									
+									
+									net.getYMatrixABC().addToA(yfaultABC, i, i);
+									
+								}
+			                    else if(fault.getFaultCode()==SimpleFaultCode.GROUND_LLG){
+			                    	yfaultABC.aa = ylarge;
+			                    	yfaultABC.bb = ylarge;
+									net.getYMatrixABC().addToA(yfaultABC, i, i);
+			                    	
+								}
+		                        else if(fault.getFaultCode()==SimpleFaultCode.GROUND_3P){
+		                        	yfaultABC.aa = ylarge;
+		                        	yfaultABC.bb = ylarge;
+		                        	yfaultABC.cc = ylarge;
+		                        	
+		                        	net.getYMatrixABC().addToA(yfaultABC, i, i);
+		                        	
+								}
 							}
 							
 						}
