@@ -119,98 +119,10 @@ public class TestTnD_IEEE9_6BusFeeder {
 		double motorMVA = loadMVA*motorPercent;
 		double pvGen = netTotalLoad/5.0*pvPercent/100.0;
 		
-		double acPercentphaseA = ACMotorPercent-ACPhaseUnbalance;
-		double acPercentphaseB = ACMotorPercent;
-		double acPercentphaseC = ACMotorPercent+ACPhaseUnbalance;
-		double acPhAMVA = loadMVA *acPercentphaseA/100.0/3.0;
-		double acPhBMVA = loadMVA *acPercentphaseB/100.0/3.0;
-		double acPhCMVA = loadMVA *acPercentphaseC/100.0/3.0;
+	
 	    
-	    for(int i =12;i<=16;i++){
-			Bus3Phase loadBus = (Bus3Phase) dsNet.getBus("Bus"+i);
-			
-			/*
-			Load3Phase load1 = new Load3PhaseImpl();
-			load1.set3PhaseLoad(new Complex3x1(new Complex(0.3,0.05),new Complex(0.3,0.05),new Complex(0.3,0.05)));
-			loadBus.getThreePhaseLoadList().add(load1);
-			*/
-				
-
-			// AC motor, 50%
-			
-			 SinglePhaseACMotor ac1 = new SinglePhaseACMotor(loadBus,"1");
-		  		ac1.setLoadPercent(ACMotorPercent-ACPhaseUnbalance);
-		  		ac1.setPhase(Phase.A);
-		  		//ac1.setMVABase(acPhAMVA);
-		  		ac1.setTstall(0.05); // disable ac stalling
-		  		ac1.setVstall(0.65);
-		  		loadBus.getPhaseADynLoadList().add(ac1);
-		  		
-		  		
-		  		
-		  	SinglePhaseACMotor ac2 = new SinglePhaseACMotor(loadBus,"2");
-		  		ac2.setLoadPercent(ACMotorPercent);
-		  		ac2.setPhase(Phase.B);
-		  		//ac2.setMVABase(acPhBMVA);
-		  		ac2.setTstall(0.05); // disable ac stalling
-		  		ac2.setVstall(0.65);
-		  		loadBus.getPhaseBDynLoadList().add(ac2);
-		  		
-
-		  		
-		  	SinglePhaseACMotor ac3 = new SinglePhaseACMotor(loadBus,"3");
-		  		ac3.setLoadPercent(ACMotorPercent+ACPhaseUnbalance);
-		  		ac3.setPhase(Phase.C);
-		  		//ac3.setMVABase(acPhCMVA);
-		  		ac3.setTstall(0.05); // disable ac stalling
-		  		ac3.setVstall(0.65);
-		  		loadBus.getPhaseCDynLoadList().add(ac3);
-			
-			
-			// 3 phase motor, 20%
-			
-		  		InductionMotor indMotor= DStabObjectFactory.createInductionMotor("1");
-				indMotor.setDStabBus(loadBus);
-
-				indMotor.setXm(3.0);
-				indMotor.setXl(0.07);
-				indMotor.setRa(0.032);
-				indMotor.setXr1(0.3);
-				indMotor.setRr1(0.01);
-				
-		
-				indMotor.setMVABase(motorMVA);
-				indMotor.setH(0.3);
-				indMotor.setA(0.0); //Toreque = (a+bw+cw^2)*To;
-				indMotor.setB(0.0); //Toreque = (a+bw+cw^2)*To;
-				indMotor.setC(1.0); //Toreque = (a+bw+cw^2)*To;
-				InductionMotor3PhaseAdapter indMotor3Phase = new InductionMotor3PhaseAdapter(indMotor);
-				indMotor3Phase.setLoadPercent(IndMotorPercent); //0.06 MW
-				loadBus.getThreePhaseDynLoadList().add(indMotor3Phase);	
-			
-			
-			// PV generation
-			
-//				Gen3Phase gen1 = new Gen3PhaseImpl();
-//				gen1.setParentBus(loadBus);
-//				gen1.setId("PV1");
-//				gen1.setGen(new Complex(pvGen,0));  // total gen power, system mva based
-//				
-//				loadBus.getThreePhaseGenList().add(gen1);
-//				
-//				double pvMVABase = pvGen/0.8*100;
-//				gen1.setMvaBase(pvMVABase); // for dynamic simulation only
-//				gen1.setPosGenZ(new Complex(0,1.0E-1));   // assuming open-circuit
-//				gen1.setNegGenZ(new Complex(0,1.0E-1));
-//				gen1.setZeroGenZ(new Complex(0,1.0E-1));
-//				//create the PV Distributed generation model
-//				PVDistGen3Phase pv = new PVDistGen3Phase(gen1);
-//				pv.setId("1");
-//				pv.setUnderVoltTripAll(0.4);
-//				pv.setUnderVoltTripStart(0.8);
-			
-			
-		}
+	    buildFeederDynModel(dsNet, 12, 16, ACMotorPercent, IndMotorPercent,
+				ACPhaseUnbalance, motorMVA);
 	    
 	    //==============================Bus 6========================================
 	 
@@ -234,97 +146,9 @@ public class TestTnD_IEEE9_6BusFeeder {
 		motorMVA= loadMVABus6*motorPercentBus6;
 		pvGen = netTotalLoadBus6/5.0*pvPercentBus6/100.0;
 		
-
-		acPhAMVA = loadMVABus6 *acPercentphaseA/100.0/3.0;
-		acPhBMVA = loadMVABus6 *acPercentphaseB/100.0/3.0;
-		acPhCMVA = loadMVABus6 *acPercentphaseC/100.0/3.0;
-	    
-	    for(int i =22;i<=26;i++){
-			Bus3Phase loadBus = (Bus3Phase) dsNet.getBus("Bus"+i);
-			
-			/*
-			Load3Phase load1 = new Load3PhaseImpl();
-			load1.set3PhaseLoad(new Complex3x1(new Complex(0.3,0.05),new Complex(0.3,0.05),new Complex(0.3,0.05)));
-			loadBus.getThreePhaseLoadList().add(load1);
-			*/
-				
-
-			// AC motor, 50%
-			
-			 SinglePhaseACMotor ac1 = new SinglePhaseACMotor(loadBus,"1");
-		  		ac1.setLoadPercent(acPercentphaseA);
-		  		ac1.setPhase(Phase.A);
-		  		//ac1.setMVABase(acPhAMVA);
-		  		ac1.setTstall(0.05); // disable ac stalling
-		  		ac1.setVstall(0.65);
-		  		loadBus.getPhaseADynLoadList().add(ac1);
-		  		
-		  		
-		  		
-		  	SinglePhaseACMotor ac2 = new SinglePhaseACMotor(loadBus,"2");
-		  		ac2.setLoadPercent(acPercentphaseB);
-		  		ac2.setPhase(Phase.B);
-		  		//ac2.setMVABase(acPhBMVA);
-		  		ac2.setTstall(0.05); // disable ac stalling
-		  		ac2.setVstall(0.65);
-		  		loadBus.getPhaseBDynLoadList().add(ac2);
-		  		
-
-		  		
-		  	SinglePhaseACMotor ac3 = new SinglePhaseACMotor(loadBus,"3");
-		  		ac3.setLoadPercent(acPercentphaseC);
-		  		ac3.setPhase(Phase.C);
-		  		//ac3.setMVABase(acPhCMVA);
-		  		ac3.setTstall(0.05); // disable ac stalling
-		  		ac3.setVstall(0.65);
-		  		loadBus.getPhaseCDynLoadList().add(ac3);
-			
-			
-			// 3 phase motor, 20%
-			
-		  		InductionMotor indMotor= DStabObjectFactory.createInductionMotor("1");
-				indMotor.setDStabBus(loadBus);
-
-				indMotor.setXm(3.0);
-				indMotor.setXl(0.07);
-				indMotor.setRa(0.032);
-				indMotor.setXr1(0.3);
-				indMotor.setRr1(0.01);
-				
+		buildFeederDynModel(dsNet, 22, 26, ACMotorPercent, IndMotorPercent,
+				ACPhaseUnbalance, motorMVA);
 		
-				indMotor.setMVABase(motorMVA );
-				indMotor.setH(0.3);
-				indMotor.setA(0.0); //Toreque = (a+bw+cw^2)*To;
-				indMotor.setB(0.0); //Toreque = (a+bw+cw^2)*To;
-				indMotor.setC(1.0); //Toreque = (a+bw+cw^2)*To;
-				
-				InductionMotor3PhaseAdapter indMotor3Phase = new InductionMotor3PhaseAdapter(indMotor);
-				indMotor3Phase.setLoadPercent(IndMotorPercent); //0.06 MW
-				loadBus.getThreePhaseDynLoadList().add(indMotor3Phase);	
-			
-			
-			// PV generation
-			
-//				Gen3Phase gen1 = new Gen3PhaseImpl();
-//				gen1.setParentBus(loadBus);
-//				gen1.setId("PV1");
-//				gen1.setGen(new Complex(pvGen,0));  // total gen power, system mva based
-//				
-//				loadBus.getThreePhaseGenList().add(gen1);
-//				
-//				double pvMVABase = pvGen*100/0.8;
-//				gen1.setMvaBase(pvMVABase); // for dynamic simulation only
-//				gen1.setPosGenZ(new Complex(0,1.0E-1));   // assuming open-circuit
-//				gen1.setNegGenZ(new Complex(0,1.0E-1));
-//				gen1.setZeroGenZ(new Complex(0,1.0E-1));
-//				//create the PV Distributed generation model
-//				PVDistGen3Phase pv = new PVDistGen3Phase(gen1);
-//				pv.setId("1");
-//				pv.setUnderVoltTripAll(0.4);
-//				pv.setUnderVoltTripStart(0.8);
-			
-			
-		}
 	    
 	    
 	  //==============================Bus 8========================================
@@ -347,93 +171,97 @@ public class TestTnD_IEEE9_6BusFeeder {
 		acMVA= loadMVABus8 *acPercentBus8/3.0;
 		motorMVA= loadMVABus8*motorPercentBus8;
 		pvGen = netTotalLoadBus8/5.0*pvPercentBus8/100.0;
-	    
-	    for(int i =32;i<=36;i++){
-			Bus3Phase loadBus = (Bus3Phase) dsNet.getBus("Bus"+i);
-			
-			/*
-			Load3Phase load1 = new Load3PhaseImpl();
-			load1.set3PhaseLoad(new Complex3x1(new Complex(0.3,0.05),new Complex(0.3,0.05),new Complex(0.3,0.05)));
-			loadBus.getThreePhaseLoadList().add(load1);
-			*/
-				
-
-			// AC motor, 50%
-			
-			 SinglePhaseACMotor ac1 = new SinglePhaseACMotor(loadBus,"1");
-		  		ac1.setLoadPercent(50);
-		  		ac1.setPhase(Phase.A);
-		  		ac1.setMVABase(acMVA);
-		  		ac1.setTstall(0.05); // disable ac stalling
-		  		ac1.setVstall(0.65);
-		  		loadBus.getPhaseADynLoadList().add(ac1);
-		  		
-		  		
-		  		
-		  	SinglePhaseACMotor ac2 = new SinglePhaseACMotor(loadBus,"2");
-		  		ac2.setLoadPercent(50);
-		  		ac2.setPhase(Phase.B);
-		  		ac2.setMVABase(acMVA);
-		  		ac2.setTstall(0.05); // disable ac stalling
-		  		ac2.setVstall(0.65);
-		  		loadBus.getPhaseBDynLoadList().add(ac2);
-		  		
-
-		  		
-		  	SinglePhaseACMotor ac3 = new SinglePhaseACMotor(loadBus,"3");
-		  		ac3.setLoadPercent(50);
-		  		ac3.setPhase(Phase.C);
-		  		ac3.setMVABase(acMVA);
-		  		ac3.setTstall(0.05); // disable ac stalling
-		  		ac3.setVstall(0.65);
-		  		loadBus.getPhaseCDynLoadList().add(ac3);
-			
-			
-			// 3 phase motor, 20%
-			
-		  		InductionMotor indMotor= DStabObjectFactory.createInductionMotor("1");
-				indMotor.setDStabBus(loadBus);
-
-				indMotor.setXm(3.0);
-				indMotor.setXl(0.07);
-				indMotor.setRa(0.032);
-				indMotor.setXr1(0.3);
-				indMotor.setRr1(0.01);
-				
 		
-				indMotor.setMVABase(motorMVA );
-				indMotor.setH(0.3);
-				indMotor.setA(0.0); //Toreque = (a+bw+cw^2)*To;
-				indMotor.setB(0.0); //Toreque = (a+bw+cw^2)*To;
-				indMotor.setC(1.0); //Toreque = (a+bw+cw^2)*To;
-				
-				InductionMotor3PhaseAdapter indMotor3Phase = new InductionMotor3PhaseAdapter(indMotor);
-				indMotor3Phase.setLoadPercent(IndMotorPercent); //0.06 MW
-				loadBus.getThreePhaseDynLoadList().add(indMotor3Phase);	
-			
-			
-			// PV generation
-			
-//				Gen3Phase gen1 = new Gen3PhaseImpl();
-//				gen1.setParentBus(loadBus);
-//				gen1.setId("PV1");
-//				gen1.setGen(new Complex(pvGen,0));  // total gen power, system mva based
+		buildFeederDynModel(dsNet, 32, 36, ACMotorPercent, IndMotorPercent,
+				ACPhaseUnbalance, motorMVA);
+		
+	    
+//	    for(int i =32;i<=36;i++){
+//			Bus3Phase loadBus = (Bus3Phase) dsNet.getBus("Bus"+i);
+//			
+//			/*
+//			Load3Phase load1 = new Load3PhaseImpl();
+//			load1.set3PhaseLoad(new Complex3x1(new Complex(0.3,0.05),new Complex(0.3,0.05),new Complex(0.3,0.05)));
+//			loadBus.getThreePhaseLoadList().add(load1);
+//			*/
 //				
-//				loadBus.getThreePhaseGenList().add(gen1);
+//
+//			// AC motor, 50%
+//			
+//			 SinglePhaseACMotor ac1 = new SinglePhaseACMotor(loadBus,"1");
+//		  		ac1.setLoadPercent(50);
+//		  		ac1.setPhase(Phase.A);
+//		  		ac1.setMVABase(acMVA);
+//		  		ac1.setTstall(0.05); // disable ac stalling
+//		  		ac1.setVstall(0.65);
+//		  		loadBus.getPhaseADynLoadList().add(ac1);
+//		  		
+//		  		
+//		  		
+//		  	SinglePhaseACMotor ac2 = new SinglePhaseACMotor(loadBus,"2");
+//		  		ac2.setLoadPercent(50);
+//		  		ac2.setPhase(Phase.B);
+//		  		ac2.setMVABase(acMVA);
+//		  		ac2.setTstall(0.05); // disable ac stalling
+//		  		ac2.setVstall(0.65);
+//		  		loadBus.getPhaseBDynLoadList().add(ac2);
+//		  		
+//
+//		  		
+//		  	SinglePhaseACMotor ac3 = new SinglePhaseACMotor(loadBus,"3");
+//		  		ac3.setLoadPercent(50);
+//		  		ac3.setPhase(Phase.C);
+//		  		ac3.setMVABase(acMVA);
+//		  		ac3.setTstall(0.05); // disable ac stalling
+//		  		ac3.setVstall(0.65);
+//		  		loadBus.getPhaseCDynLoadList().add(ac3);
+//			
+//			
+//			// 3 phase motor, 20%
+//			
+//		  		InductionMotor indMotor= DStabObjectFactory.createInductionMotor("1");
+//				indMotor.setDStabBus(loadBus);
+//
+//				indMotor.setXm(3.0);
+//				indMotor.setXl(0.07);
+//				indMotor.setRa(0.032);
+//				indMotor.setXr1(0.3);
+//				indMotor.setRr1(0.01);
 //				
-//				double pvMVABase = pvGen/0.8*100;
-//				gen1.setMvaBase(pvMVABase); // for dynamic simulation only
-//				gen1.setPosGenZ(new Complex(0,1.0E-1));   // assuming open-circuit
-//				gen1.setNegGenZ(new Complex(0,1.0E-1));
-//				gen1.setZeroGenZ(new Complex(0,1.0E-1));
-//				//create the PV Distributed generation model
-//				PVDistGen3Phase pv = new PVDistGen3Phase(gen1);
-//				pv.setId("1");
-//				pv.setUnderVoltTripAll(0.4);
-//				pv.setUnderVoltTripStart(0.8);
-			
-			
-		}
+//		
+//				indMotor.setMVABase(motorMVA );
+//				indMotor.setH(0.3);
+//				indMotor.setA(0.0); //Toreque = (a+bw+cw^2)*To;
+//				indMotor.setB(0.0); //Toreque = (a+bw+cw^2)*To;
+//				indMotor.setC(1.0); //Toreque = (a+bw+cw^2)*To;
+//				
+//				InductionMotor3PhaseAdapter indMotor3Phase = new InductionMotor3PhaseAdapter(indMotor);
+//				indMotor3Phase.setLoadPercent(IndMotorPercent); //0.06 MW
+//				loadBus.getThreePhaseDynLoadList().add(indMotor3Phase);	
+//			
+//			
+//			// PV generation
+//			
+////				Gen3Phase gen1 = new Gen3PhaseImpl();
+////				gen1.setParentBus(loadBus);
+////				gen1.setId("PV1");
+////				gen1.setGen(new Complex(pvGen,0));  // total gen power, system mva based
+////				
+////				loadBus.getThreePhaseGenList().add(gen1);
+////				
+////				double pvMVABase = pvGen/0.8*100;
+////				gen1.setMvaBase(pvMVABase); // for dynamic simulation only
+////				gen1.setPosGenZ(new Complex(0,1.0E-1));   // assuming open-circuit
+////				gen1.setNegGenZ(new Complex(0,1.0E-1));
+////				gen1.setZeroGenZ(new Complex(0,1.0E-1));
+////				//create the PV Distributed generation model
+////				PVDistGen3Phase pv = new PVDistGen3Phase(gen1);
+////				pv.setId("1");
+////				pv.setUnderVoltTripAll(0.4);
+////				pv.setUnderVoltTripStart(0.8);
+//			
+//			
+//		}
 	    
 	    
 	    //======================================================================
@@ -608,6 +436,95 @@ public class TestTnD_IEEE9_6BusFeeder {
 					sm.toCSVString(sm.getMachPeTable()));
 			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//GenPm.csv",
 					sm.toCSVString(sm.getMachPmTable()));
+	}
+
+
+	private void buildFeederDynModel(DStabNetwork3Phase dsNet, int startBusNum, int endBusNum,
+			double ACMotorPercent, double IndMotorPercent,
+			double ACPhaseUnbalance, double motorMVA) {
+		for(int i =startBusNum;i<=endBusNum;i++){
+			Bus3Phase loadBus = (Bus3Phase) dsNet.getBus("Bus"+i);
+			
+			/*
+			Load3Phase load1 = new Load3PhaseImpl();
+			load1.set3PhaseLoad(new Complex3x1(new Complex(0.3,0.05),new Complex(0.3,0.05),new Complex(0.3,0.05)));
+			loadBus.getThreePhaseLoadList().add(load1);
+			*/
+				
+
+			// AC motor, 50%
+			
+			 SinglePhaseACMotor ac1 = new SinglePhaseACMotor(loadBus,"1");
+		  		ac1.setLoadPercent(ACMotorPercent-ACPhaseUnbalance);
+		  		ac1.setPhase(Phase.A);
+		  	
+		  		ac1.setTstall(0.05); // disable ac stalling
+		  		ac1.setVstall(0.65);
+		  		loadBus.getPhaseADynLoadList().add(ac1);
+		  		
+		  		
+		  		
+		  	SinglePhaseACMotor ac2 = new SinglePhaseACMotor(loadBus,"2");
+		  		ac2.setLoadPercent(ACMotorPercent);
+		  		ac2.setPhase(Phase.B);
+		  		ac2.setTstall(0.05); // disable ac stalling
+		  		ac2.setVstall(0.65);
+		  		loadBus.getPhaseBDynLoadList().add(ac2);
+		  		
+
+		  		
+		  	SinglePhaseACMotor ac3 = new SinglePhaseACMotor(loadBus,"3");
+		  		ac3.setLoadPercent(ACMotorPercent+ACPhaseUnbalance);
+		  		ac3.setPhase(Phase.C);
+		  		ac3.setTstall(0.05); // disable ac stalling
+		  		ac3.setVstall(0.65);
+		  		loadBus.getPhaseCDynLoadList().add(ac3);
+			
+			
+			// 3 phase motor, 20%
+			
+		  		InductionMotor indMotor= DStabObjectFactory.createInductionMotor("1");
+				indMotor.setDStabBus(loadBus);
+
+				indMotor.setXm(3.0);
+				indMotor.setXl(0.07);
+				indMotor.setRa(0.032);
+				indMotor.setXr1(0.3);
+				indMotor.setRr1(0.01);
+				
+		
+				indMotor.setMVABase(motorMVA);
+				indMotor.setH(0.3);
+				indMotor.setA(0.0); //Toreque = (a+bw+cw^2)*To;
+				indMotor.setB(0.0); //Toreque = (a+bw+cw^2)*To;
+				indMotor.setC(1.0); //Toreque = (a+bw+cw^2)*To;
+				InductionMotor3PhaseAdapter indMotor3Phase = new InductionMotor3PhaseAdapter(indMotor);
+				indMotor3Phase.setLoadPercent(IndMotorPercent); //0.06 MW
+				loadBus.getThreePhaseDynLoadList().add(indMotor3Phase);	
+			
+			
+			// PV generation
+			
+//				Gen3Phase gen1 = new Gen3PhaseImpl();
+//				gen1.setParentBus(loadBus);
+//				gen1.setId("PV1");
+//				gen1.setGen(new Complex(pvGen,0));  // total gen power, system mva based
+//				
+//				loadBus.getThreePhaseGenList().add(gen1);
+//				
+//				double pvMVABase = pvGen/0.8*100;
+//				gen1.setMvaBase(pvMVABase); // for dynamic simulation only
+//				gen1.setPosGenZ(new Complex(0,1.0E-1));   // assuming open-circuit
+//				gen1.setNegGenZ(new Complex(0,1.0E-1));
+//				gen1.setZeroGenZ(new Complex(0,1.0E-1));
+//				//create the PV Distributed generation model
+//				PVDistGen3Phase pv = new PVDistGen3Phase(gen1);
+//				pv.setId("1");
+//				pv.setUnderVoltTripAll(0.4);
+//				pv.setUnderVoltTripStart(0.8);
+			
+			
+		}
 	}
 	
 	

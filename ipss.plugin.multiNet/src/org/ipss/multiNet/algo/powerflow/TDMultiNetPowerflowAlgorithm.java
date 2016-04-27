@@ -290,7 +290,7 @@ public class TDMultiNetPowerflowAlgorithm {
 						Complex3x1 currInj3Seq = currInj3Phase.to012();
 						distBoundary3SeqCurInjTable.put(sourceBus3Ph.getId(), currInj3Phase.to012());
 						
-						
+						System.out.println("3seq current injection:"+distBoundary3SeqCurInjTable.toString());
 						
 						Complex posSeqPower = sourceBus3Ph.getThreeSeqVoltage().b_1.multiply(currInj3Seq.b_1.conjugate());
 						

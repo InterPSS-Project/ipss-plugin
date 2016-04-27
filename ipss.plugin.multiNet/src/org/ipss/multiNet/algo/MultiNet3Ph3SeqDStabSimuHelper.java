@@ -82,7 +82,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 					 DStabNetwork3Phase subNet3Ph = (DStabNetwork3Phase)subNet;
 					 
 					 // fetch the positive sequence current and save it to three-sequence
-					 
+					 // TODO How to handle unbalanced conditions
 					 if(subNet3Ph.getCustomBusCurrInjHashtable()!=null){
 						 
 						 // System.out.println(subNet3Ph.getCustomBusCurrInjHashtable());
@@ -382,7 +382,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 				   			for(Entry<String,Complex3x1> e: this.subNet3SeqCurrInjTable.get(subNet.getId()).entrySet()){
 				   				   Complex3x1 IinjAbc = Complex3x1.z12_to_abc(e.getValue());
 				   				   subNetYabc.setBi(IinjAbc,subNet.getBus(e.getKey()).getSortNumber());
-				   				   System.out.println("3phase cur inject into detailed network:"+IinjAbc.toString());
+				   				  // System.out.println("3phase cur inject into detailed network:"+IinjAbc.toString());
 							   }
 				   			
 				   			try {
@@ -459,8 +459,8 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 	 public Hashtable<String, Hashtable<String, Complex3x1>> getSubNet3SeqCurrInjTable(){
 		   return this.subNet3SeqCurrInjTable;
 	   }
-	
-	
+	 
+
 	private Hashtable<String, Complex> solveSeqNetwork(DStabilityNetwork subnet, SequenceCode seq,Hashtable<String, Complex> seqCurInjTable){
 		
 		 Hashtable<String, Complex>  busVoltResults = new  Hashtable<>();
