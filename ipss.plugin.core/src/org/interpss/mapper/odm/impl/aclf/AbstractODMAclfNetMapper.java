@@ -383,6 +383,8 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 	 * @throws Exception
 	 */
 	public void mapAclfHVDC2TData(BaseBranchXmlType xmlBranch, Branch branch, BaseAclfNetwork<?,?> adjNet) throws InterpssException {
+		//net.addHvdcLine2T(dcLine, fromBusId, toBusId, dcLineNo);
+		//dcLine.setDcLineNumber(dcLineNo);
 		mapBaseBranchRec(xmlBranch, branch, adjNet);	
 		if (xmlBranch instanceof DCLineData2TXmlType){
 			DCLineData2TXmlType branchRec =  (DCLineData2TXmlType) xmlBranch;
