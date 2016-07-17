@@ -16,7 +16,6 @@ import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.util.FileUtil;
 import org.ipss.multiNet.algo.MultiNet3Ph3SeqDStabSimuHelper;
 import org.ipss.multiNet.algo.MultiNet3Ph3SeqDStabSolverImpl;
 import org.ipss.multiNet.algo.MultiNet3Ph3SeqDynEventProcessor;

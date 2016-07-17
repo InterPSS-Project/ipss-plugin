@@ -11,7 +11,6 @@ import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
-import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.interpss.numeric.matrix.MatrixUtil;
 import org.ipss.multiNet.algo.SubNetworkProcessor;
 import org.ipss.multiNet.equivalent.NetworkEquivUtil;

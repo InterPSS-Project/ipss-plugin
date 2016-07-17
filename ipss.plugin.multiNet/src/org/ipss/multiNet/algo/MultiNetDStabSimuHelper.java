@@ -7,12 +7,10 @@ import java.util.Map.Entry;
 import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.complex.ComplexField;
 import org.apache.commons.math3.linear.Array2DRowFieldMatrix;
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayFieldVector;
 import org.apache.commons.math3.linear.FieldLUDecomposition;
 import org.apache.commons.math3.linear.FieldMatrix;
 import org.apache.commons.math3.linear.FieldVector;
-import org.apache.commons.math3.linear.RealMatrix;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.ipss.multiNet.equivalent.NetworkEquivUtil;
@@ -57,7 +55,8 @@ public class MultiNetDStabSimuHelper extends AbstractMultiNetDStabSimuHelper{
 	
 
      
-    public Hashtable<String, NetworkEquivalent> solvSubNetAndUpdateEquivSource(){
+    @Override
+	public Hashtable<String, NetworkEquivalent> solvSubNetAndUpdateEquivSource(){
     	 
     	if(subNetEquivTable ==null)
     	     throw new Error (" The subnetwork equivalent hastable is not prepared yet");
@@ -89,7 +88,8 @@ public class MultiNetDStabSimuHelper extends AbstractMultiNetDStabSimuHelper{
     	 return  subNetEquivTable;
     }
     
-    public Hashtable<String, NetworkEquivalent> updateSubNetworkEquivSource(){
+    @Override
+	public Hashtable<String, NetworkEquivalent> updateSubNetworkEquivSource(){
    	 
     	if(subNetEquivTable ==null)
     	     throw new Error (" The subnetwork equivalent hastable is not prepared yet");
@@ -113,7 +113,8 @@ public class MultiNetDStabSimuHelper extends AbstractMultiNetDStabSimuHelper{
      * update the Thevenin equivalent impedance matrix of all subNetworks
      * @return
      */
-    public void updateSubNetworkEquivMatrix(){
+    @Override
+	public void updateSubNetworkEquivMatrix(){
     	
     	this.subNetEquivTable = NetworkEquivUtil.calMultiNetPosSeqTheveninEquiv(this.subNetProcessor);
     }
@@ -123,7 +124,8 @@ public class MultiNetDStabSimuHelper extends AbstractMultiNetDStabSimuHelper{
      * @param subNetworkId
      * @return
      */
-    public void updateSubNetworkEquivMatrix(String subNetworkId){
+    @Override
+	public void updateSubNetworkEquivMatrix(String subNetworkId){
     	DStabilityNetwork subNet = this.subNetProcessor.getSubNetwork(subNetworkId);
     	if(subNet!=null){
 	    	NetworkEquivalent equiv = NetworkEquivUtil.calPosSeqNetworkTheveninEquiv(subNet,
@@ -142,7 +144,8 @@ public class MultiNetDStabSimuHelper extends AbstractMultiNetDStabSimuHelper{
      * Solve the [Zl][Il]=[Eth] dense matrix equations to obtain the currents flowing through the tie-lines 
      * @return  true  if solving without any error, else false.
      */
-    public boolean  solveBoundarySubSystem(){
+    @Override
+	public boolean  solveBoundarySubSystem(){
     	
     	boolean flag =true;
     	// as the matrix is only updated when there is a network change, they can be prepared and updated only when necessary 
@@ -212,7 +215,8 @@ public class MultiNetDStabSimuHelper extends AbstractMultiNetDStabSimuHelper{
      * 
      * @return
      */
-    protected Hashtable<String, FieldMatrix<Complex>> prepareInterfaceBranchBusIncidenceMatrix(){
+    @Override
+	protected Hashtable<String, FieldMatrix<Complex>> prepareInterfaceBranchBusIncidenceMatrix(){
     	
     	this.subNetIncidenceMatrixTable = new Hashtable<>();
     	
@@ -255,7 +259,8 @@ public class MultiNetDStabSimuHelper extends AbstractMultiNetDStabSimuHelper{
     *  Build the boundary subsystem matrix (also known as the Thevenin impedance matrix [Zl]);
     * @return
     */
-    public void prepareBoundarySubSystemMatrix(){
+    @Override
+	public void prepareBoundarySubSystemMatrix(){
     	int n = subNetProcessor.getInterfaceBranchIdList().size();
       
         this.Zl = new Array2DRowFieldMatrix<Complex>(ComplexField.getInstance(),n,n);
@@ -304,7 +309,8 @@ public class MultiNetDStabSimuHelper extends AbstractMultiNetDStabSimuHelper{
      *   bus voltage V = Vinternal + Vext_injection
      * @return
      */
-     public boolean solveSubNetWithBoundaryCurrInjection(){
+     @Override
+	public boolean solveSubNetWithBoundaryCurrInjection(){
 	   
 		   // need to first reset all customized current injection to be zero
 		   for(DStabilityNetwork subNet: this.subNetProcessor.getSubNetworkList()){
