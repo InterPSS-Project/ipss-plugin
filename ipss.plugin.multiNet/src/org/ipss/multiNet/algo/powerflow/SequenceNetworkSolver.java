@@ -1,9 +1,6 @@
 package org.ipss.multiNet.algo.powerflow;
 
-import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.List;
-
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.exp.IpssNumericException;
@@ -11,12 +8,10 @@ import org.interpss.numeric.sparse.ISparseEqnComplex;
 
 import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.AcscBus;
-import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.BaseAcscNetwork;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.sparse.impl.SparseEqnComplexImpl;
 import com.interpss.core.sparse.solver.CSparseJEqnComplexSolver;
-import com.interpss.dstab.DStabilityNetwork;
 
 /**
  * Sequence Network Helper is to solve the negative and zeor

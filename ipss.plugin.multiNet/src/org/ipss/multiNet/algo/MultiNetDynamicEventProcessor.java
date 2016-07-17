@@ -2,8 +2,6 @@ package org.ipss.multiNet.algo;
 
 import static com.interpss.common.util.IpssLogger.ipssLogger;
 
-import java.util.List;
-
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.NumericConstant;
 import org.interpss.numeric.datatype.ComplexFunc;

@@ -7,7 +7,6 @@ import java.util.Map.Entry;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
-import org.interpss.numeric.datatype.Complex3x3;
 import org.ipss.multiNet.algo.SubNetworkProcessor;
 import org.ipss.threePhase.basic.Branch3Phase;
 import org.ipss.threePhase.basic.Bus3Phase;
