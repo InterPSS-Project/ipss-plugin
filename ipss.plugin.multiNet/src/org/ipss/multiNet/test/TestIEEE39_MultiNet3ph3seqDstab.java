@@ -13,7 +13,6 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.util.FileUtil;
 import org.ipss.multiNet.algo.MultiNet3Ph3SeqDStabSimuHelper;
 import org.ipss.multiNet.algo.MultiNet3Ph3SeqDStabSolverImpl;
 import org.ipss.multiNet.algo.MultiNet3Ph3SeqDynEventProcessor;
@@ -43,6 +42,8 @@ public class TestIEEE39_MultiNet3ph3seqDstab {
 	
 	/**
 	 * test 3ph/3-seq co-simulation
+	 * 
+	 * NOTE: 04/27/2016 This is an unidentified error in this test case
 	 * 
 	 */
 	@Test
@@ -79,22 +80,32 @@ public class TestIEEE39_MultiNet3ph3seqDstab {
 
 		
 		 SubNetworkProcessor proc = new SubNetworkProcessor(dsNet);
+		 
+		 
 		 /*
-		  * 25-26
-		  * 17-18
+		  * Divided into 3 areas. 
+		  * 15-16
+		  * 16-17
 		  * 3-4
-		  * 8-9
+		  * 9-39
 		  */
+		 /*
 		    proc.addSubNetInterfaceBranch("Bus3->Bus4(1)");
 		    proc.addSubNetInterfaceBranch("Bus9->Bus39(1)");
 		    proc.addSubNetInterfaceBranch("Bus15->Bus16(1)");
 		    proc.addSubNetInterfaceBranch("Bus16->Bus17(1)");
-		
-		    
-		    proc.splitFullSystemIntoSubsystems(false);
+		  */
+		 
+		 /*
+		  * Divided into 2 areas. 
+		  */
+		    proc.addSubNetInterfaceBranch("Bus15->Bus16(1)",false);
+		    proc.addSubNetInterfaceBranch("Bus16->Bus17(1)",true);
+		 
+		    proc.splitFullSystemIntoSubsystems(true);
 		    
 		    //TODO now one needs to set the three-phase modeling subnetwork by one of the bus the subnetwork contains
-		    proc.set3PhaseSubNetByBusId("Bus17");
+		  proc.set3PhaseSubNetByBusId("Bus17");
 		    
 		  MultiNet3Ph3SeqDStabSimuHelper  mNetHelper = new MultiNet3Ph3SeqDStabSimuHelper(dsNet,proc);
 		  
@@ -114,7 +125,7 @@ public class TestIEEE39_MultiNet3ph3seqDstab {
 			
 			IpssLogger.getLogger().setLevel(Level.INFO);
 			
-		//	dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",proc.getSubNetwork("SubNet-2"),SimpleFaultCode.GROUND_LG,new Complex(0,0),null,0.5d,0.05),"3phaseFault@Bus5");
+			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus17",proc.getSubNetworkByBusId("Bus17"),SimpleFaultCode.GROUND_LG,new Complex(0,0),null,0.5d,0.05),"3phaseFault@Bus5");
 			
 	        // TODO a special 3-phase 3seq dstab algorithm object, with the following two setting as default
 			dstabAlgo.setSolver( new MultiNet3Ph3SeqDStabSolverImpl(dstabAlgo, mNetHelper));
@@ -177,6 +188,7 @@ public class TestIEEE39_MultiNet3ph3seqDstab {
 		
 		 SubNetworkProcessor proc = new SubNetworkProcessor(dsNet);
 		 /*
+		  * Divided into 3 areas. 
 		  * 15-16
 		  * 16-17
 		  * 3-4

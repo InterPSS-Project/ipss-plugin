@@ -9,7 +9,6 @@ import org.apache.commons.math3.complex.Complex;
 import org.ipss.threePhase.dynamic.DStabNetwork3Phase;
 import org.ipss.threePhase.util.ThreePhaseObjectFactory;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
@@ -20,7 +19,6 @@ import com.interpss.core.net.Branch;
 import com.interpss.core.net.BranchBusSide;
 import com.interpss.core.net.Bus;
 import com.interpss.core.net.childnet.ChildNetInterfaceBranch;
-import com.interpss.core.net.childnet.ChildNetwork;
 import com.interpss.core.net.childnet.ChildNetworkFactory;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabBus;
