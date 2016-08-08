@@ -436,10 +436,11 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 		if (acscBraXml instanceof LineShortCircuitXmlType) { // line branch
 			setAcscLineFormInfo((LineShortCircuitXmlType)acscBraXml, acscBra);
 		} 
-		else if ( acscBraXml instanceof XfrShortCircuitXmlType ||
-				acscBraXml instanceof PSXfrShortCircuitXmlType) { // xfr or psxfr branch
+		else if ( acscBraXml instanceof XfrShortCircuitXmlType) //// xfr 
 			setAcscXfrFormInfo((XfrShortCircuitXmlType)acscBraXml, acscBra);
-		}
+		else if(acscBraXml instanceof PSXfrShortCircuitXmlType)  //psxfr branch)
+			setAcscPSXfrFormInfo((PSXfrShortCircuitXmlType)acscBraXml, acscBra);
+		
 	}
 
 	private void setAcscLineFormInfo(LineShortCircuitXmlType braXml, AcscBranch acscBra) {
@@ -455,6 +456,40 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 
 	// for SC, Xfr and PSXfr behave the same
 	private void setAcscXfrFormInfo(XfrShortCircuitXmlType braXml, AcscBranch acscBra) {
+		double baseV = acscBra.getFromAclfBus().getBaseVoltage() > acscBra
+		.getToAclfBus().getBaseVoltage() ? acscBra.getFromAclfBus()
+				.getBaseVoltage() : acscBra.getToAclfBus().getBaseVoltage();
+				AcscXformer xfr = acscXfrAptr.apply(acscBra);
+				ZXmlType z0 = braXml.getZ0();
+				if (z0 != null)
+					xfr.setZ0(new Complex(z0.getRe(), z0.getIm()), toZUnit.apply(z0.getUnit()), baseV);
+
+				XformerConnectionXmlType connect = braXml.getFromSideConnection();
+				if(connect != null){
+					XfrConnectCode conCode=calXfrConnectCode(connect);
+					acscBra.setXfrFromConnectCode(conCode);
+					if(connect.getGrounding() != null){
+						ZXmlType z = connect.getGrounding().getGroundingZ();
+						if (z != null) 
+							xfr.setFromConnectGroundZ(calXfrConnectCode(connect), new Complex(z.getRe(), z.getIm()),
+									toZUnit.apply(z.getUnit()));
+					}
+				}				
+
+				connect = braXml.getToSideConnection();
+				if(connect != null){
+					XfrConnectCode conCode=calXfrConnectCode(connect);
+					acscBra.setXfrToConnectCode(conCode);
+					if(connect.getGrounding() != null){
+						ZXmlType z = connect.getGrounding().getGroundingZ();
+						if (z != null) 
+							xfr.setFromConnectGroundZ(calXfrConnectCode(connect), new Complex(z.getRe(), z.getIm()),
+									toZUnit.apply(z.getUnit()));
+					}
+				}	
+	}
+	
+	private void setAcscPSXfrFormInfo(PSXfrShortCircuitXmlType braXml, AcscBranch acscBra) {
 		double baseV = acscBra.getFromAclfBus().getBaseVoltage() > acscBra
 		.getToAclfBus().getBaseVoltage() ? acscBra.getFromAclfBus()
 				.getBaseVoltage() : acscBra.getToAclfBus().getBaseVoltage();
