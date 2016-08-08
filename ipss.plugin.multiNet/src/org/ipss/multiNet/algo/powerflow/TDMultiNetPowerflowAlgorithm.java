@@ -46,8 +46,8 @@ public class TDMultiNetPowerflowAlgorithm {
 	
 	
 	protected boolean pfFlag = true;
-	protected int iterationMax = 20;
-	protected double tolerance = 1.0E-7;
+	protected int iterationMax = 30;
+	protected double tolerance = 5.0E-4;
 	
 	private Hashtable<String,Complex3x1> lastStepTransBoundaryBus3SeqVoltages = null;
 	
@@ -365,11 +365,15 @@ public class TDMultiNetPowerflowAlgorithm {
 				      
 				      for( Entry<String, Complex3x1> e : transBoundaryBus3SeqVoltages.entrySet()){
 				    	  if(i>0){
-				    		  if(this.lastStepTransBoundaryBus3SeqVoltages.get(e.getKey()).subtract(e.getValue()).
-				    				  absMax() >this.tolerance)
+				    		  if(this.lastStepTransBoundaryBus3SeqVoltages.get(e.getKey()).subtract(e.getValue()).absMax() > this.tolerance){
 				    			  this.pfFlag = false;
+				    			  System.out.println("i = "+i+" TDPF not converge!");
+				    			  System.out.println("Last step transmission system boundary bus 3 seq voltage: \n"+e.getKey() +","+this.lastStepTransBoundaryBus3SeqVoltages.get(e.getKey()));
+				    			  System.out.println("Current step transmission system boundary bus 3 seq voltage: \n"+e.getKey() +","+e.getValue());
+				    		      
+				    		  }
 				    	  }
-				    	  this.lastStepTransBoundaryBus3SeqVoltages.put(e.getKey(), e.getValue());
+				    	  this.lastStepTransBoundaryBus3SeqVoltages.put(e.getKey(), e.getValue().clone());
 				      }
 		    	     
 				      if (i>0 && this.pfFlag) {
