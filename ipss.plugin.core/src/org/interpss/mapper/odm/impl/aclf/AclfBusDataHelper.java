@@ -43,6 +43,7 @@ import org.ieee.odm.schema.LFGenCodeEnumType;
 import org.ieee.odm.schema.LoadflowBusXmlType;
 import org.ieee.odm.schema.LoadflowGenDataXmlType;
 import org.ieee.odm.schema.LoadflowLoadDataXmlType;
+import org.ieee.odm.schema.LoadflowShuntYDataXmlType;
 import org.ieee.odm.schema.PowerXmlType;
 import org.ieee.odm.schema.ReactivePowerUnitType;
 import org.ieee.odm.schema.ReactivePowerXmlType;
@@ -153,15 +154,37 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 			bus.setLoadCode(AclfLoadCode.NON_LOAD);
 		}
 
-		if (xmlBusData.getShuntYData() != null && xmlBusData.getShuntYData().getEquivY() != null) {
-			YXmlType shuntY = xmlBusData.getShuntYData().getEquivY();
-//			byte unit = shuntY.getUnit() == YUnitType.MVAR? UnitType.mVar : UnitType.PU;
-			UnitType unit = toYUnit.apply(shuntY.getUnit());
-			Complex ypu = UnitHelper.yConversion(new Complex(shuntY.getRe(), shuntY.getIm()),
-					bus.getBaseVoltage(), aclfNet.getBaseKva(), unit, UnitType.PU);
-			//System.out.println("----------->" + shuntY.getIm() + ", " + shuntY.getUnit() + ", " + ypu.getImaginary());
-			bus.setShuntY(ypu);
+		if (xmlBusData.getShuntYData() != null ){
+			if(xmlBusData.getShuntYData().getEquivY() != null) {
+				YXmlType shuntY = xmlBusData.getShuntYData().getEquivY();
+	//			byte unit = shuntY.getUnit() == YUnitType.MVAR? UnitType.mVar : UnitType.PU;
+				UnitType unit = toYUnit.apply(shuntY.getUnit());
+				Complex ypu = UnitHelper.yConversion(new Complex(shuntY.getRe(), shuntY.getIm()),
+						bus.getBaseVoltage(), aclfNet.getBaseKva(), unit, UnitType.PU);
+				//System.out.println("----------->" + shuntY.getIm() + ", " + shuntY.getUnit() + ", " + ypu.getImaginary());
+				bus.setShuntY(ypu);
+			}
+			// NOTE either equivY or contributeShuntY is allowed for input.
+			else if(xmlBusData.getShuntYData().getContributeShuntY() !=null){
+				int genCnt = 1;
+				Complex totalYpu = new Complex (0,0);
+				for(LoadflowShuntYDataXmlType elem :xmlBusData.getShuntYData().getContributeShuntY()){
+		
+					YXmlType shuntY = elem.getY();
+		
+					UnitType unit = toYUnit.apply(shuntY.getUnit());
+					Complex ypu = UnitHelper.yConversion(new Complex(shuntY.getRe(), shuntY.getIm()),
+							bus.getBaseVoltage(), aclfNet.getBaseKva(), unit, UnitType.PU);
+					if(!ypu.isNaN() && ypu.abs()>0)
+					     totalYpu = totalYpu.add(ypu);
+				}
+				bus.setShuntY(totalYpu);
+			}
+				
+			
 		}
+		
+		
 		
 		if(xmlBusData.getSwitchedShunt()!=null){
 			mapSwitchShuntData(xmlBusData.getSwitchedShunt());
