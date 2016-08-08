@@ -1,5 +1,6 @@
 package org.interpss.dstab.load.impl;
 
+import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.load.DynLoadCMPLDW;
 
 import com.interpss.DStabObjectFactory;
@@ -95,6 +96,30 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
     	// note: convert MVA base
     	this.mvaBase = this.getDistEquivalent().getMva();
     	
+    	double systemMVABase = abus.getNetwork().getBaseMva();
+    	
+    	/*
+    	 *  1) MVABase> 0 means DistEquivMVABase= MVABase
+			2) MVABase< 0 means DistEquivMVABase= Abs(NetMW/MVABase)
+			3) MVABase= 0 means DistEquivMVABase= Abs(NetMW/0.8)
+			
+			Note: This is a function of NetMW, so that means MW –DistMWof the distributed generation
+    	 */
+    	
+    	double netMW = abus.getLoadP()*systemMVABase ;
+    	
+    	if(this.mvaBase > 0){ // exact mva
+    		
+    	}	
+    	else if(this.mvaBase<0){
+    		this.mvaBase = Math.abs(netMW/this.mvaBase);
+    	}
+    	else{
+    		this.mvaBase = Math.abs(netMW/0.8);
+    	}
+    	
+    	
+    	
     	//1. create the low-voltage bus and the load bus
   
     	
@@ -117,22 +142,46 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
   	    distXfr.setFromBus(abus);
   	    distXfr.setToBus(lowBus);
   	    
+  	    double  mvaConvFactor = systemMVABase/this.mvaBase;
+  	    
+  	    double Xxf = this.getDistEquivalent().getXxf();
+  	    distXfr.setZ(new Complex(0, Xxf*mvaConvFactor));
+  	    
   	    //TODO map xfr data, need to convert data to system base, if mva_base is not system mva.
     	
     	distFdr = DStabObjectFactory.createDStabBranch();
     	
     	
-  	    distXfr.setFromBus(lowBus);
-  	    distXfr.setToBus(loadBus);
+  	    distFdr.setFromBus(lowBus);
+  	    distFdr.setToBus(loadBus);
+  	    
+  	    distFdr.setZ(new Complex(this.getDistEquivalent().getRfdr(),this.getDistEquivalent().getXfdr()).multiply(mvaConvFactor));
+  	    
+  	   
+  	    
+  	    // add Bss as a shunt at low bus
+  	   double Bss = this.getDistEquivalent().getBss()/mvaConvFactor;
+  	   lowBus.setShuntY(new Complex(0,Bss));
+  	    
     	
-    	//Todo map distribution feeder data, need to convert data to system base, if mva_base is not system mva.
+    	//TODO map distribution feeder data, need to convert data to system base, if mva_base is not system mva.
     	
+  	    // check if the feeder MVABase = system mvabase
+  	    double fdrMVABase = this.distEquiv.getMva();
+  	    
+  	    
+  	    
     	
     	//3. set tap = 1.0, use BFS solution technique to find out the total load at the end of load bus
     	// Pint = P*-Rfdr_pu*S^2)
     	// Qint = Q- (Xxfr+Xfdr)*S^2+Bss
     	
+  	    
+      	// obtain the total load at the parent bus Pload +jQload , set the parent bus as NON_LOAD
+
     	// iterate the determine the Pload +jQload at the load bus to make sure the total load at system bus is P0+jQ0
+  	    
+  	    
     	
     	//4. create dynamic load models and connect them to the load bus
     	
@@ -148,6 +197,7 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
     	
     	
     	
+  	    
 		return initflag ;
     	
     }
@@ -202,6 +252,18 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
 	public DynLoadVFreqDependentModel getStaticLoadModel() {
 		
 		return this.staticLoad;
+	}
+
+	@Override
+	public DStabBus getLowVoltBus() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public DStabBus getLoadBus() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
