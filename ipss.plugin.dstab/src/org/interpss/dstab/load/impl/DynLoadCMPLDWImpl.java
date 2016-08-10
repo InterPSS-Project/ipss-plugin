@@ -20,7 +20,7 @@ import com.interpss.dstab.dynLoad.impl.LD1PACImpl;
 
 
 /**
- * •	Initialization process:
+ *  Initialization process:
 		1.	Get total load P & Q, system bus V from power flow
 		2.	Add low-side bus and load bus to Ymatrix
 		3.	Add xfmr and feeder to Y matrix
@@ -34,18 +34,17 @@ import com.interpss.dstab.dynLoad.impl.LD1PACImpl;
 
 
 	Calculations during normal running:
-	•	sorc mode: (before network solution)
-		Use low-side voltage, load voltage, and frequency from previous network solution
-		Compute current injection at load bus from motor and static load models.
-		If LTC tap has changed, compute current injections at system and low-side buses to reflect tap change.
-	•	netw mode:  (iteration with network solution)
-		Update current injection at load bus from motor and static load models based on change in load bus voltage.
-	•	alge mode:  (after network solution)
+	-	source mode: (before network solution)
+    	Use low-side voltage, load voltage, and frequency from previous network solution
+	    Compute current injection at load bus from motor and static load models.
+	    If LTC tap has changed, compute current injections at system and low-side buses to reflect tap change.
+	-   network mode:  (iteration with network solution)
+	    Update current injection at load bus from motor and static load models based on change in load bus voltage.
+	    algebra mode:  (after network solution)
 	-	Check for tripping conditions and modify models as required
-	•	rate mode:  (diff. equation update)
+	    rate mode:  (diff. equation update)
 	-	Update derivatives of state variables in motor models
 
- * @author Qiuhua
  *
  */
 
@@ -73,6 +72,7 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
 	protected double fMotorB = 0.0;
 	protected double fMotorC = 0.0;
 	protected double fMotorD = 0.0;
+	protected double fEle = 0.0;
 	
 	protected int motorAType = 0;
 	protected int motorBType = 0;
@@ -455,6 +455,127 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
 	public DStabBus getLoadBus() {
 		
 		return this.loadBus;
+	}
+
+	@Override
+	public double getFmA() {
+		
+		return this.fMotorA;
+	}
+
+	@Override
+	public double getFmB() {
+		
+		return this.fMotorB;
+	}
+
+	@Override
+	public double getFmC() {
+		
+		return this.fMotorC;
+	}
+
+	@Override
+	public double getFmD() {
+		
+		return this.fMotorD;
+	}
+
+	@Override
+	public double getFel() {
+		
+		return this.fEle;
+	}
+
+	@Override
+	public void setFmA(double motorAFraction) {
+		this.fMotorA=motorAFraction;
+		
+	}
+
+	@Override
+	public void setFmB(double motorBFraction) {
+		this.fMotorB = motorBFraction;
+		
+	}
+
+	@Override
+	public void setFmC(double motorCFraction) {
+		this.fMotorC = motorCFraction;
+		
+	}
+
+	@Override
+	public void setFmD(double motorDFraction) {
+		this.fMotorD = motorDFraction;
+		
+	}
+
+	@Override
+	public void setFel(double electronicLoadFraction) {
+		this.fEle = electronicLoadFraction;
+		
+	}
+
+	@Override
+	public int getMotorTypeA() {
+		
+		return this.motorAType;
+	}
+
+	@Override
+	public int getMotorTypeB() {
+		
+		return this.motorBType;
+	}
+
+	@Override
+	public int getMotorTypeC() {
+		
+		return this.motorCType;
+	}
+
+	@Override
+	public int getMotorTypeD() {
+		
+		return this.motorDType;
+	}
+
+	@Override
+	public void setMotorTypeA(int motorTypeA) {
+		
+		this.motorAType = motorTypeA;
+		
+	}
+
+	@Override
+	public void setMotorTypeB(int motorTypeB) {
+		this.motorBType = motorTypeB;
+		
+	}
+
+	@Override
+	public void setMotorTypeC(int motorTypeC) {
+		this.motorCType = motorTypeC;
+		
+	}
+
+	@Override
+	public void setMotorTypeD(int motorTypeD) {
+		this.motorDType = motorTypeD;
+		
+	}
+
+	@Override
+	public double getMVABase() {
+		
+		return this.mvaBase;
+	}
+
+	@Override
+	public void setMVABase(double mvaBase) {
+		this.mvaBase = mvaBase;
+		
 	}
 
 }
