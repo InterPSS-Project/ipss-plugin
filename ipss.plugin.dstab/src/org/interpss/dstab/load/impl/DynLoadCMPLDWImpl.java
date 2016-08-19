@@ -6,6 +6,7 @@ import org.interpss.dstab.load.DynLoadCMPLDW;
 import com.interpss.DStabObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabilityNetwork;
@@ -118,7 +119,7 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
 		this.totalLoad = parentBus.getLoadPQ(); // or getInitLoad()
     	
     	// note: convert MVA base
-    	this.mvaBase = this.getDistEquivalent().getMva();
+    	this.mvaBase = this.getMVABase();
     	
     	double systemMVABase = abus.getNetwork().getBaseMva();
     	
@@ -130,7 +131,7 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
 			Note: This is a function of NetMW, so that means MW –DistMWof the distributed generation
     	 */
     	
-    	double netMW = abus.getLoadP()*systemMVABase ;
+    	double netMW = abus.getLoadP()*systemMVABase;
     	
     	if(this.mvaBase > 0){ // exact mva
     		
@@ -142,7 +143,7 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
     		this.mvaBase = Math.abs(netMW/0.8);
     	}
     	
-    	
+    	this.getDistEquivalent().setMva(this.mvaBase);
     	
     	//1. create the low-voltage bus and the load bus
   
@@ -151,8 +152,14 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
 			lowBus  = DStabObjectFactory.createDStabBus(abus.getId().concat(lowBusId), 
 					                                        (DStabilityNetwork) abus.getNetwork());
 			
+			lowBus.setBaseVoltage(1.0); // affacts dynamic model u/i/z multiplier calculation
+			
 			loadBus  = DStabObjectFactory.createDStabBus(abus.getId().concat(loadBusId), 
                     (DStabilityNetwork) abus.getNetwork());
+			
+			loadBus.setBaseVoltage(1.0);
+			
+			loadBus.setLoadCode(AclfLoadCode.CONST_P); // must set the load code
 			
 		} catch (InterpssException e) {
 			// TODO Auto-generated catch block
@@ -214,7 +221,7 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
     	
     	//3. calculate tap = 1.0 such that Vmag_lowBus = (Vmin + Vmax)/2
     	
-  	     double Xxfr_pu = distFdr.getZ().getReal()*Tfixhs*Tfixhs;
+  	     double Xxfr_pu = distXfr.getZ().getImaginary()*Tfixhs*Tfixhs;
   	     
   	     double Vmag_lowBus = (Vmin + Vmax)/2;
   	     
@@ -253,7 +260,7 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
   	     
   	     // VlowBus - voltage at the low voltage side of the transformer
   	     
-  	     Complex VlowBus = VtransBus.multiply(Tfixls*tap/Tfixhs);
+  	     Complex VlowBus = Vhs.multiply(Tfixls*tap/Tfixhs);
   	     this.lowBus.setVoltage(VlowBus);
   	     
   	     // ITolowBus - current following from the xfr into the low bus
@@ -287,12 +294,13 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
   	    	 }
   	     }
   	     
-  	     this.loadBus.setVoltage(VloadBus);
+  	    this.loadBus.setVoltage(VloadBus);
   	     
   	    // PQLoadBus - the total load at the load bus
   	    Complex PQLoadBus = VloadBus.multiply(ItoloadBus.conjugate());
   	    
   	    this.loadBus.setLoadPQ(PQLoadBus);
+  	    this.loadBus.setInitLoad(PQLoadBus);
     	
     	//5. connect dynamic load models to the load bus
     	// initialize the dynamic models, obtain the reactive power Qi after initialization
@@ -304,9 +312,9 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
     		if(this.motorAType == 3){
     			this.indMotorA.setDStabBus(loadBus);
     			loadBus.addDynamicLoadModel(indMotorA);
-    			this.indMotorA.setLoadPercent(fMotorA);
+    			this.indMotorA.setLoadPercent(fMotorA*100.0);
     			//this.indMotorA.setLoadFactor(loadingFactor); should be set during the data input stage
-    			
+    		
     			this.indMotorA.initStates();
     		}
     		else{
@@ -321,7 +329,7 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
     		if(this.motorBType == 3){
     			this.indMotorB.setDStabBus(loadBus);
     			loadBus.addDynamicLoadModel(indMotorB);
-    			
+    			this.indMotorB.setLoadPercent(fMotorB*100.0);
     			this.indMotorB.initStates();
     		}
     		else{
@@ -337,7 +345,7 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
     		if(this.motorCType == 3){
     			this.indMotorC.setDStabBus(loadBus);
     			loadBus.addDynamicLoadModel(indMotorC);
-    			
+    			this.indMotorC.setLoadPercent(fMotorC*100.0);
     			this.indMotorC.initStates();
     		}
     		else{
@@ -352,7 +360,7 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
     		if(this.motorDType == 1){
     			this.ac1PMotor.setDStabBus(loadBus);
     			loadBus.addDynamicLoadModel(ac1PMotor);
-    			
+    			this.ac1PMotor.setLoadPercent(this.fMotorD*100.0);
     			this.ac1PMotor.initStates();
     		}
     		else{
