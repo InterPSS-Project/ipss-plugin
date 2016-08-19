@@ -1,11 +1,14 @@
 package org.interpss.mapper.odm.impl.dstab;
 
+import org.ieee.odm.schema.DStabLoadDataXmlType;
 import org.ieee.odm.schema.DynamicLoadCMPLDWXmlType;
+import org.ieee.odm.schema.LoadCharacteristicTypeEnumType;
 import org.interpss.dstab.load.DynLoadCMPLDW;
 import org.interpss.dstab.load.impl.DynLoadCMPLDWImpl;
 
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.device.DynamicBusDevice;
 
 public class DynLoadDataHelper {
 	
@@ -17,17 +20,28 @@ public class DynLoadDataHelper {
 	}
 	
 	
-	public DynLoadDataHelper(DStabilityNetwork dstabNet, DStabBus dstabBus) {
+	public DynLoadDataHelper(DStabilityNetwork dstabNet) {
 		this.dynNet = dstabNet;
-		this.bus= dstabBus; 
+		
 	}
 	
+	public DynamicBusDevice createDynLoadModel(DStabLoadDataXmlType dynLoad, DStabBus dstabBus){
+		DynamicBusDevice loadModel = null;
+		if(dynLoad!=null){
+			if(dynLoad.getLoadXmlType()==LoadCharacteristicTypeEnumType.WECC_COMPOSITE_LOAD){
+				loadModel = createCMPLDWLoadModel(dynLoad.getLoadModel().getCMPLDWLoad(),dstabBus,dynLoad.getId());
+			}
+		}
+		return loadModel;
+	}
 	
-	public DynLoadCMPLDW createCMPLDWLoadModel(DynamicLoadCMPLDWXmlType cmpldwXml, DStabBus dstabBus, String loadId){
+	private DynLoadCMPLDW createCMPLDWLoadModel(DynamicLoadCMPLDWXmlType cmpldwXml, DStabBus dstabBus, String loadId){
+		
+		this.bus= dstabBus; 
 		
 		DynLoadCMPLDW cmpldw = new DynLoadCMPLDWImpl(loadId);
 		
-		dstabBus.setInfoOnlyDynModel(cmpldw);
+		dstabBus.setInfoOnlyDynModel(cmpldw); // CMPLDW is not a model directly used in simulation, its components are modeled and used in simulation
 		
 		cmpldw.setMVABase(cmpldwXml.getMva());
 		
@@ -74,6 +88,12 @@ public class DynLoadDataHelper {
 		cmpldw.setFmC(cmpldwXml.getFmc());
 		cmpldw.setFmD(cmpldwXml.getFmd());
 		cmpldw.setFel(cmpldwXml.getFel());
+		
+		// motor types
+		cmpldw.setMotorTypeA(cmpldwXml.getMtpA());
+		cmpldw.setMotorTypeB(cmpldwXml.getMtpB());
+		cmpldw.setMotorTypeC(cmpldwXml.getMtpC());
+		cmpldw.setMotorTypeD(cmpldwXml.getMtpD());
 		
 		// Electronic loads
 		//TODO
