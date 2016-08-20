@@ -35,7 +35,7 @@ import com.interpss.spring.CoreCommonSpringFactory;
 public class TestCMPLDWModel {
 	
 	//@Test
-	public void testPTIExample() throws InterpssException{
+	public void testCMPLDWInit() throws InterpssException{
 		IpssCorePlugin.init();
 		IPSSMsgHub msg = CoreCommonSpringFactory.getIpssMsgHub();
 		IpssLogger.getLogger().setLevel(Level.WARNING);
@@ -119,16 +119,16 @@ public class TestCMPLDWModel {
 			dstabAlgo.setSimuStepSec(0.005d);
 			dstabAlgo.setTotalSimuTimeSec(1);
 
-			dstabAlgo.setRefMachine(dsNet.getMachine("Swing-mach1"));
+			//dstabAlgo.setRefMachine(dsNet.getMachine("Swing-mach1"));
 			//net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1",net,SimpleFaultCode.GROUND_3P,0.0d,0.05),"3phaseFault@Bus5");
 	        
 	        
 			
 			StateMonitor sm = new StateMonitor();
-			sm.addGeneratorStdMonitor(new String[]{"Swing-mach1"});
-			sm.addBusStdMonitor(new String[]{"Bus1"});
+			//sm.addGeneratorStdMonitor(new String[]{"Swing-mach1"});
+			sm.addBusStdMonitor(new String[]{"Bus1","Bus3","Bus3_lowBus","Bus3_loadBus"});
 			//extended_device_Id = "ACMotor_"+this.getId()+"@"+this.getDStabBus().getId();
-			sm.addDynDeviceMonitor(DynDeviceType.ACMotor, "ACMotor_1@Bus1");
+			//sm.addDynDeviceMonitor(DynDeviceType.ACMotor, "ACMotor_1@Bus1");
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(5);

@@ -1,9 +1,10 @@
-gencls       1 "BUS-1"  115.00 "1 " : #9 mva=100000 99999 0 0 0.04 0 0
+gencls       1 "BUS-1"  115.00 "1 " : #9 mva=1000 9999 0 0 0.2 0 0
+#genrou   1 "BUS-1"  115.00 "1 " : #9 mva=1000.0  "tpdo" 8.5  "tppdo" 0.055  "tpqo" 0.54  "tppqo" 0.0830  "h" 5.94  "d" 0.0  "ld" 1.73  "lq" 1.65  "lpd" 0.230  "lpq" 0.41  "lppd" 0.20  "ll" 0.120  "s1" 0.00  "s12" 0.0  "ra" 0.00  "rcomp" 0.0  "xcomp" 0.0  "accel" 0.50
 cmpldw     3  "BUS-1"  115.0  "1 "  :  #1   mva=50 /
  "Bss"   0.04  "Rfdr"  0.04  "Xfdr"  0.04  "Fb"  0.0/
  "Xxf"   0.06  "TfixHS"  1  "TfixLS"  1  "LTC"  1  "Tmin"  0.9  "Tmax"  1.1  "step"  0.00625  /
  "Vmin"   1.0  "Vmax"  1.04  "Tdel"  30  "Ttap"  5  "Rcomp"  0  "Xcomp"  0  /
- "Fma"   0.027  "Fmb"  0.197  "Fmc"  0.015  "Fmd"  0.161  "Fel"  0.0  /
+ "Fma"   0.0  "Fmb"  0.  "Fmc"  0.0  "Fmd"  0.  "Fel"  0.0  /
  "PFel"   1  "Vd1"  0.7  "Vd2"  0.5  "Frcel"  1  /
  "Pfs"   -1  "P1e"  2  "P1c"  0.83  "P2e"  1  "P2c"  0.17  "Pfreq"  0  /
   "Q1e"  2  "Q1c"  -0.5  "Q2e"  1  "Q2c"  1.5  "Qfreq"  -1  /
