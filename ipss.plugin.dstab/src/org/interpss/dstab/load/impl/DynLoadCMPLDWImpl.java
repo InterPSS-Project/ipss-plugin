@@ -6,6 +6,7 @@ import org.interpss.dstab.load.DynLoadCMPLDW;
 import com.interpss.DStabObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabBus;
@@ -100,7 +101,7 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
 		
 	}
 	
-    public DynLoadCMPLDWImpl(String referenceId){
+    public DynLoadCMPLDWImpl(String referenceId,DStabBus abus){
 		this.groupId = referenceId;
 		this.distEquiv = new  DistNetworkEquivalentModel();
 		this.indMotorA = new  InductionMotorImpl();
@@ -109,19 +110,30 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
 		this.ac1PMotor = new  LD1PACImpl();
 		this.staticLoad= new  DynLoadVFreqDependentModelImpl();
 		
+		//set parentBus
+		this.parentBus = abus;
+		
 	}
     
     @Override
     public boolean initStates(DStabBus abus){
     	boolean initflag = true;
     	
-    	parentBus = this.getDStabBus();
+    	if(parentBus ==null) parentBus = abus;
+    	
 		this.totalLoad = parentBus.getLoadPQ(); // or getInitLoad()
+		
+		// set parentBus to nonLoad, and remove all the loads
+		parentBus.setLoadCode(AclfLoadCode.NON_LOAD);
+		parentBus.setLoadPQ(new Complex (0,0));
+		if(parentBus.getContributeLoadList().size()>0){
+			parentBus.getContributeLoadList().clear();
+		}
     	
     	// note: convert MVA base
     	this.mvaBase = this.getMVABase();
     	
-    	double systemMVABase = abus.getNetwork().getBaseMva();
+    	double systemMVABase = parentBus.getNetwork().getBaseMva();
     	
     	/*
     	 *  1) MVABase> 0 means DistEquivMVABase= MVABase
@@ -131,7 +143,7 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
 			Note: This is a function of NetMW, so that means MW –DistMWof the distributed generation
     	 */
     	
-    	double netMW = abus.getLoadP()*systemMVABase;
+    	double netMW = parentBus.getLoadP()*systemMVABase;
     	
     	if(this.mvaBase > 0){ // exact mva
     		
@@ -149,17 +161,28 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
   
     	
     	try {
-			lowBus  = DStabObjectFactory.createDStabBus(abus.getId().concat(lowBusId), 
-					                                        (DStabilityNetwork) abus.getNetwork());
+    		
+    		//add the bus connected to the low voltage side of the distribution transformer
+			lowBus  = DStabObjectFactory.createDStabBus(parentBus.getId().concat(lowBusId), 
+					                                        (DStabilityNetwork) parentBus.getNetwork());
 			
 			lowBus.setBaseVoltage(1.0); // affacts dynamic model u/i/z multiplier calculation
 			
-			loadBus  = DStabObjectFactory.createDStabBus(abus.getId().concat(loadBusId), 
-                    (DStabilityNetwork) abus.getNetwork());
+			
+			//set SortNumber
+			lowBus.setSortNumber(parentBus.getNetwork().getNoBus()-1);
+			
+			
+			//add the load bus
+			loadBus  = DStabObjectFactory.createDStabBus(parentBus.getId().concat(loadBusId), 
+                    (DStabilityNetwork) parentBus.getNetwork());
 			
 			loadBus.setBaseVoltage(1.0);
 			
 			loadBus.setLoadCode(AclfLoadCode.CONST_P); // must set the load code
+			
+			//set SortNumber
+			loadBus.setSortNumber(parentBus.getNetwork().getNoBus()-1);
 			
 		} catch (InterpssException e) {
 			// TODO Auto-generated catch block
@@ -172,9 +195,16 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
         //map xfr data, need to convert data to system base, if mva_base is not system mva.
     	
     	
-  	    distXfr = DStabObjectFactory.createDStabBranch();
-  	    distXfr.setFromBus(abus);
-  	    distXfr.setToBus(lowBus);
+  	    try {
+			distXfr = DStabObjectFactory.createDStabBranch(parentBus.getId(), lowBus.getId(), (DStabilityNetwork) parentBus.getNetwork());
+			distXfr.setBranchCode(AclfBranchCode.XFORMER);
+		} catch (InterpssException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+  	    //distXfr.setFromBus(parentBus);
+  	    //distXfr.setToBus(lowBus);
+  	    
   	    
   	    double  mvaConvFactor = systemMVABase/this.mvaBase;
   	    
@@ -195,11 +225,16 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
   	
   	  	//map distribution feeder data, need to convert data to system base, if mva_base is not system mva.
     	
-    	distFdr = DStabObjectFactory.createDStabBranch();
+    	try {
+			distFdr = DStabObjectFactory.createDStabBranch(lowBus.getId(), loadBus.getId(), (DStabilityNetwork) parentBus.getNetwork());
+		} catch (InterpssException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     	
     	
-  	    distFdr.setFromBus(lowBus);
-  	    distFdr.setToBus(loadBus);
+  	    //distFdr.setFromBus(lowBus);
+  	    //distFdr.setToBus(loadBus);
   	    
   	    distFdr.setZ(new Complex(this.getDistEquivalent().getRfdr(),this.getDistEquivalent().getXfdr()).multiply(mvaConvFactor));
   	    
@@ -250,6 +285,9 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
   	    	 tap = 1+tapNum*tap_step;
   	     }
   	     
+  	     
+  	    distXfr.setFromTurnRatio(1.0);
+  	    distXfr.setToTurnRatio(tap);
         
         //4. forward step network solution to obtain the voltage at low and load buses 
   	     
@@ -314,7 +352,9 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
     			loadBus.addDynamicLoadModel(indMotorA);
     			this.indMotorA.setLoadPercent(fMotorA*100.0);
     			//this.indMotorA.setLoadFactor(loadingFactor); should be set during the data input stage
-    		
+    		    //TODO only a temporal solution
+    			this.indMotorA.setTpp0(0.0);
+    			
     			this.indMotorA.initStates();
     		}
     		else{
@@ -330,6 +370,10 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
     			this.indMotorB.setDStabBus(loadBus);
     			loadBus.addDynamicLoadModel(indMotorB);
     			this.indMotorB.setLoadPercent(fMotorB*100.0);
+    			
+    			 //TODO only a temporal solution
+    			this.indMotorB.setTpp0(0.0);
+    			
     			this.indMotorB.initStates();
     		}
     		else{
@@ -346,6 +390,10 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
     			this.indMotorC.setDStabBus(loadBus);
     			loadBus.addDynamicLoadModel(indMotorC);
     			this.indMotorC.setLoadPercent(fMotorC*100.0);
+    			
+    			 //TODO only a temporal solution
+    			this.indMotorC.setTpp0(0.0);
+    			
     			this.indMotorC.initStates();
     		}
     		else{
@@ -361,6 +409,10 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
     			this.ac1PMotor.setDStabBus(loadBus);
     			loadBus.addDynamicLoadModel(ac1PMotor);
     			this.ac1PMotor.setLoadPercent(this.fMotorD*100.0);
+    			
+    			 //TODO only a temporal solution
+    			//this.indMotorD.setTpp0(0.0);
+    			
     			this.ac1PMotor.initStates();
     		}
     		else{
@@ -374,15 +426,15 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
     	//7. calculate the reactive power deficiency, dQ = Qint - sum{Qi}.
     	double dynLoadTotalQ = 0.0;
     	if(this.indMotorA!=null){
-    		dynLoadTotalQ = this.indMotorA.getMotorLoadQ();
+    		dynLoadTotalQ = this.indMotorA.getInitLoadPQ().getImaginary();  // this.indMotorA.getMotorLoadQ() returns power in motor mvabase
     	}
     	
     	if(this.indMotorB!=null){
-    		dynLoadTotalQ = dynLoadTotalQ + this.indMotorB.getMotorLoadQ();
+    		dynLoadTotalQ = dynLoadTotalQ + this.indMotorB.getInitLoadPQ().getImaginary();
     	}
     	
     	if(this.indMotorC!=null){
-    		dynLoadTotalQ = dynLoadTotalQ + this.indMotorC.getMotorLoadQ();
+    		dynLoadTotalQ = dynLoadTotalQ + this.indMotorC.getInitLoadPQ().getImaginary();
     	}
     	
     	if(this.ac1PMotor!=null){
@@ -391,10 +443,14 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
     	
     	
     	//8. Add capacitor bank at load bus side to compensate dQ, i.e., Bfdr = abs(dQ);
-    	double compensateQ = dynLoadTotalQ - PQLoadBus.getImaginary();
-    	double shuntB = compensateQ/VloadBus.abs()/VloadBus.abs();  
     	
-    	this.loadBus.setShuntY(new Complex(0, shuntB));
+    	//TODO since the remaining loads are represented as constant impedance, it is not necessary to calculate the compensation here
+    	// if the remaining loads are as Volt/freq depedent loads, then the compensation should be calculated, and the dstabBus initialization process needs to be updated.
+    	
+//    	double compensateQ = dynLoadTotalQ - PQLoadBus.getImaginary();
+//    	double shuntB = compensateQ/VloadBus.abs()/VloadBus.abs();  
+//    	
+//    	this.loadBus.setShuntY(new Complex(0, shuntB));
     	
   	    
 		return initflag ;
