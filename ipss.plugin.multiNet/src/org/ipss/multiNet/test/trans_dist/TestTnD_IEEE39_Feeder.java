@@ -56,7 +56,198 @@ import com.interpss.simu.SimuCtxType;
 
 public class TestTnD_IEEE39_Feeder {
 	
-	@Test
+	    //@Test
+		public void test_3phase3Seq_IEEE39Bus_Feeder_powerflow() throws InterpssException{
+			IpssCorePlugin.init();
+			IpssCorePlugin.setLoggerLevel(Level.INFO);
+			PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
+					"testData/IEEE39Bus/IEEE39bus_v30.raw",
+					"testData/IEEE39Bus/IEEE39bus_v30.seq",
+					//"testData/IEEE9Bus/ieee9_dyn_onlyGen_saturation.dyr"
+					"testData/IEEE39Bus/IEEE39bus.dyr"
+			}));
+			DStabModelParser parser =(DStabModelParser) adapter.getModel();
+			
+			//System.out.println(parser.toXmlDoc());
+
+			
+			
+			SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
+			if (!new ODM3PhaseDStabParserMapper(IpssCorePlugin.getMsgHub())
+						.map2Model(parser, simuCtx)) {
+				System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
+				return;
+			}
+			
+			
+		    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
+		    
+		    
+		    
+		    
+		    double PVPenetrationLevel = .0;
+		    double PVIncrement = PVPenetrationLevel/(1-PVPenetrationLevel) ;
+		    double ACMotorPercent = 50;
+		    double IndMotorPercent = 0;
+		    double ACPhaseUnbalance = 0;
+		   
+		    
+		   
+		    double baseVolt = 12470;
+			int feederBusNum = 9;
+			
+			double loadPF = 0.95;
+			double loadUnbalanceFactor = 0.30;
+			
+			double [] loadDistribution = new double[]{0.25,0.20,0.15,0.15,0.1,0.1,0.05};
+			double [] feederSectionLenghth = new double[]{0.5,0.5,1.0,1.0,1.5,2,2}; // unit in mile
+			//double [] feederSectionLenghth = new double[]{0.5,0.5,1.0,1.5,0.5,0.5, 1}; // unit in mile
+			
+			
+			double sysMVABASE = dsNet.getBaseMva();
+			
+			/**
+			 * --------------------- Feeders below Bus 15---------------------------- 
+			 */
+			double netTotalLoad15 = dsNet.getBus("Bus15").getContributeLoadList().get(0).getLoadCP().getReal();
+		    dsNet.getBus("Bus15").getContributeLoadList().remove(0);
+		    dsNet.getBus("Bus15").setLoadCode(AclfLoadCode.NON_LOAD);
+		    
+			 
+			 double totalLoad15 = netTotalLoad15*(1+PVIncrement)*sysMVABASE;
+			 double XfrMVA = totalLoad15/0.8;
+			 int startBusIndex = 150;
+			createFeeder(dsNet, (Bus3Phase) dsNet.getBus("Bus15"), startBusIndex , baseVolt,feederBusNum,totalLoad15,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
+			
+			buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoad15,loadDistribution);
+			
+			
+		
+			/**
+			 * --------------------- Feeders below Bus 16---------------------------- 
+			 */
+			 double netTotalLoadBus16 = dsNet.getBus("Bus16").getContributeLoadList().get(0).getLoadCP().getReal();
+			 dsNet.getBus("Bus16").getContributeLoadList().remove(0);
+			 dsNet.getBus("Bus16").setLoadCode(AclfLoadCode.NON_LOAD);
+			
+			
+			 double totalLoadBus16 = netTotalLoadBus16*(1+PVIncrement)*sysMVABASE;
+			 XfrMVA = totalLoadBus16/0.8;
+			 
+			 startBusIndex =160;
+			createFeeder(dsNet, (Bus3Phase) dsNet.getBus("Bus16"), startBusIndex, baseVolt,feederBusNum,totalLoadBus16,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
+			
+			
+			buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoadBus16,loadDistribution);
+			
+			
+			/**
+			 * --------------------- Feeders below Bus 18---------------------------- 
+			 */
+			double netTotalLoadBus18 =dsNet.getBus("Bus18").getContributeLoadList().get(0).getLoadCP().getReal();
+			 dsNet.getBus("Bus18").getContributeLoadList().remove(0);
+			 dsNet.getBus("Bus18").setLoadCode(AclfLoadCode.NON_LOAD);
+			 
+			 double totalLoadBus18 = netTotalLoadBus18*(1+PVIncrement)*sysMVABASE;
+			 XfrMVA = totalLoadBus18/0.8;
+			 
+			 startBusIndex =180;
+			createFeeder(dsNet, (Bus3Phase) dsNet.getBus("Bus18"), 180, baseVolt,feederBusNum,totalLoadBus18,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
+			
+			buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoadBus18,loadDistribution);
+			
+			
+		    
+			/**
+			 * --------------------- Feeders below Bus 26---------------------------- 
+			 */
+			double netTotalLoadBus26 = dsNet.getBus("Bus26").getContributeLoadList().get(0).getLoadCP().getReal();
+		    dsNet.getBus("Bus26").getContributeLoadList().remove(0);
+		    dsNet.getBus("Bus26").setLoadCode(AclfLoadCode.NON_LOAD);
+		    
+			 
+			 double totalLoadBus26 = netTotalLoadBus26*(1+PVIncrement)*sysMVABASE;
+			 XfrMVA = totalLoadBus26/0.8;
+			 
+			 startBusIndex =260;
+			createFeeder(dsNet, (Bus3Phase) dsNet.getBus("Bus26"), 260, baseVolt,feederBusNum,totalLoadBus26,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
+			
+			buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoadBus26,loadDistribution);
+			
+		
+			/**
+			 * --------------------- Feeders below Bus 27---------------------------- 
+			 */
+			 double netTotalLoadBus27 = dsNet.getBus("Bus27").getContributeLoadList().get(0).getLoadCP().getReal();
+			 dsNet.getBus("Bus27").getContributeLoadList().remove(0);
+			 dsNet.getBus("Bus27").setLoadCode(AclfLoadCode.NON_LOAD);
+			
+			
+			 double totalLoadBus27 = netTotalLoadBus27*(1+PVIncrement)*sysMVABASE;
+			 XfrMVA = totalLoadBus27/0.8;
+			 
+			 startBusIndex =270;
+			createFeeder(dsNet, (Bus3Phase) dsNet.getBus("Bus27"), 270, baseVolt,feederBusNum,totalLoadBus27,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
+			
+			buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoadBus27,loadDistribution);
+			
+			
+			/**
+			 * --------------------- Feeders below Bus 28---------------------------- 
+			 */
+			double netTotalLoadBus28 =dsNet.getBus("Bus28").getContributeLoadList().get(0).getLoadCP().getReal();
+			 dsNet.getBus("Bus28").getContributeLoadList().remove(0);
+			 dsNet.getBus("Bus28").setLoadCode(AclfLoadCode.NON_LOAD);
+			 
+			 double totalLoadBus28 = netTotalLoadBus28*(1+PVIncrement)*sysMVABASE;
+			 XfrMVA = totalLoadBus28/0.8;
+			 
+			 startBusIndex =280;
+			createFeeder(dsNet, (Bus3Phase) dsNet.getBus("Bus28"), 280, baseVolt,feederBusNum,totalLoadBus28,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
+			
+			buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoadBus28,loadDistribution);
+			
+			
+			
+			//TODO select 6 buses in the load center to replace them by detailed feeders
+
+		    SubNetworkProcessor proc = new SubNetworkProcessor(dsNet);
+				 proc.addSubNetInterfaceBranch("Bus15->Bus150(0)",false);
+				 proc.addSubNetInterfaceBranch("Bus16->Bus160(0)",false);
+				 proc.addSubNetInterfaceBranch("Bus18->Bus180(0)",false);
+				 proc.addSubNetInterfaceBranch("Bus26->Bus260(0)",false);
+				 proc.addSubNetInterfaceBranch("Bus27->Bus270(0)",false);
+				 proc.addSubNetInterfaceBranch("Bus28->Bus280(0)",false);
+				
+				 
+				 proc.splitFullSystemIntoSubsystems(true);
+				 
+				 // currently, if a fault at transmission system is to be considered, then it should be set to 3phase
+				// proc.set3PhaseSubNetByBusId("Bus1");
+				//TODO this has to be manually identified
+				 proc.set3PhaseSubNetByBusId("Bus151");
+				 proc.set3PhaseSubNetByBusId("Bus161");
+				 proc.set3PhaseSubNetByBusId("Bus181");   
+				 proc.set3PhaseSubNetByBusId("Bus261"); 
+				 proc.set3PhaseSubNetByBusId("Bus271"); 
+				 proc.set3PhaseSubNetByBusId("Bus281"); 
+		    
+			
+				 TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm(dsNet,proc);
+				 
+				 //System.out.println(tdAlgo.getTransmissionNetwork().net2String());
+				    
+				 assertTrue(tdAlgo.powerflow()); 
+				 
+				 
+				 System.out.println(AclfOutFunc.loadFlowSummary(tdAlgo.getTransmissionNetwork()));
+				 System.out.println(DistPowerFlowOutFunc.powerflowResultSummary(tdAlgo.getDistributionNetworkList().get(0)));
+			
+			 }
+		
+	
+	//@Test
 	public void test_3phase3Seq_IEEE39Bus_Feeder() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
@@ -436,6 +627,335 @@ public class TestTnD_IEEE39_Feeder {
 						sm.toCSVString(sm.getMachPmTable()));
 		
 		 }
+	
+	
+	@Test
+	public void test_3phase3Seq_IEEE39Bus_Feeder_constZLoad() throws InterpssException{
+		IpssCorePlugin.init();
+		IpssCorePlugin.setLoggerLevel(Level.INFO);
+		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
+				"testData/IEEE39Bus/IEEE39bus_v30.raw",
+				"testData/IEEE39Bus/IEEE39bus_v30.seq",
+				//"testData/IEEE9Bus/ieee9_dyn_onlyGen_saturation.dyr"
+				"testData/IEEE39Bus/IEEE39bus.dyr"
+		}));
+		DStabModelParser parser =(DStabModelParser) adapter.getModel();
+		
+		//System.out.println(parser.toXmlDoc());
+
+		
+		
+		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
+		if (!new ODM3PhaseDStabParserMapper(IpssCorePlugin.getMsgHub())
+					.map2Model(parser, simuCtx)) {
+			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
+			return;
+		}
+		
+		
+	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
+	    
+	    
+	    
+	    
+	    double PVPenetrationLevel = .0;
+	    double PVIncrement = PVPenetrationLevel/(1-PVPenetrationLevel) ;
+	    double ACMotorPercent = 50;
+	    double IndMotorPercent = 0;
+	    double ACPhaseUnbalance = 0;
+	   
+	    
+	   
+	    double baseVolt = 12470;
+		int feederBusNum = 9;
+		
+		double loadPF = 0.95;
+		double loadUnbalanceFactor = 0.00;
+		
+		double [] loadDistribution = new double[]{0.25,0.20,0.15,0.15,0.1,0.1,0.05};
+		double [] feederSectionLenghth = new double[]{0.5,0.5,1.0,1.0,1.5,2,2}; // unit in mile
+		//double [] feederSectionLenghth = new double[]{0.5,0.5,1.0,1.5,0.5,0.5, 1}; // unit in mile
+		
+		
+		double sysMVABASE = dsNet.getBaseMva();
+		
+		/**
+		 * --------------------- Feeders below Bus 15---------------------------- 
+		 */
+		double netTotalLoad15 = dsNet.getBus("Bus15").getContributeLoadList().get(0).getLoadCP().getReal();
+	    dsNet.getBus("Bus15").getContributeLoadList().remove(0);
+	    dsNet.getBus("Bus15").setLoadCode(AclfLoadCode.NON_LOAD);
+	    
+		 
+		 double totalLoad15 = netTotalLoad15*(1+PVIncrement)*sysMVABASE;
+		 double XfrMVA = totalLoad15/0.8;
+		 int startBusIndex = 150;
+		createFeeder(dsNet, (Bus3Phase) dsNet.getBus("Bus15"), startBusIndex , baseVolt,feederBusNum,totalLoad15,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
+		
+		//buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoad15,loadDistribution);
+		
+		
+	
+		/**
+		 * --------------------- Feeders below Bus 16---------------------------- 
+		 */
+		 double netTotalLoadBus16 = dsNet.getBus("Bus16").getContributeLoadList().get(0).getLoadCP().getReal();
+		 dsNet.getBus("Bus16").getContributeLoadList().remove(0);
+		 dsNet.getBus("Bus16").setLoadCode(AclfLoadCode.NON_LOAD);
+		
+		
+		 double totalLoadBus16 = netTotalLoadBus16*(1+PVIncrement)*sysMVABASE;
+		 XfrMVA = totalLoadBus16/0.8;
+		 
+		 startBusIndex =160;
+		createFeeder(dsNet, (Bus3Phase) dsNet.getBus("Bus16"), startBusIndex, baseVolt,feederBusNum,totalLoadBus16,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
+		
+		
+		//buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoadBus16,loadDistribution);
+		
+		
+		/**
+		 * --------------------- Feeders below Bus 18---------------------------- 
+		 */
+		double netTotalLoadBus18 =dsNet.getBus("Bus18").getContributeLoadList().get(0).getLoadCP().getReal();
+		 dsNet.getBus("Bus18").getContributeLoadList().remove(0);
+		 dsNet.getBus("Bus18").setLoadCode(AclfLoadCode.NON_LOAD);
+		 
+		 double totalLoadBus18 = netTotalLoadBus18*(1+PVIncrement)*sysMVABASE;
+		 XfrMVA = totalLoadBus18/0.8;
+		 
+		 startBusIndex =180;
+		createFeeder(dsNet, (Bus3Phase) dsNet.getBus("Bus18"), 180, baseVolt,feederBusNum,totalLoadBus18,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
+		
+		//buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoadBus18,loadDistribution);
+		
+		
+	    
+		/**
+		 * --------------------- Feeders below Bus 26---------------------------- 
+		 */
+		double netTotalLoadBus26 = dsNet.getBus("Bus26").getContributeLoadList().get(0).getLoadCP().getReal();
+	    dsNet.getBus("Bus26").getContributeLoadList().remove(0);
+	    dsNet.getBus("Bus26").setLoadCode(AclfLoadCode.NON_LOAD);
+	    
+		 
+		 double totalLoadBus26 = netTotalLoadBus26*(1+PVIncrement)*sysMVABASE;
+		 XfrMVA = totalLoadBus26/0.8;
+		 
+		 startBusIndex =260;
+		createFeeder(dsNet, (Bus3Phase) dsNet.getBus("Bus26"), 260, baseVolt,feederBusNum,totalLoadBus26,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
+		
+		//buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoadBus26,loadDistribution);
+		
+	
+		/**
+		 * --------------------- Feeders below Bus 27---------------------------- 
+		 */
+		 double netTotalLoadBus27 = dsNet.getBus("Bus27").getContributeLoadList().get(0).getLoadCP().getReal();
+		 dsNet.getBus("Bus27").getContributeLoadList().remove(0);
+		 dsNet.getBus("Bus27").setLoadCode(AclfLoadCode.NON_LOAD);
+		
+		
+		 double totalLoadBus27 = netTotalLoadBus27*(1+PVIncrement)*sysMVABASE;
+		 XfrMVA = totalLoadBus27/0.8;
+		 
+		 startBusIndex =270;
+		createFeeder(dsNet, (Bus3Phase) dsNet.getBus("Bus27"), 270, baseVolt,feederBusNum,totalLoadBus27,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
+		
+		//buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoadBus27,loadDistribution);
+		
+		
+		/**
+		 * --------------------- Feeders below Bus 28---------------------------- 
+		 */
+		double netTotalLoadBus28 =dsNet.getBus("Bus28").getContributeLoadList().get(0).getLoadCP().getReal();
+		 dsNet.getBus("Bus28").getContributeLoadList().remove(0);
+		 dsNet.getBus("Bus28").setLoadCode(AclfLoadCode.NON_LOAD);
+		 
+		 double totalLoadBus28 = netTotalLoadBus28*(1+PVIncrement)*sysMVABASE;
+		 XfrMVA = totalLoadBus28/0.8;
+		 
+		 startBusIndex =280;
+		createFeeder(dsNet, (Bus3Phase) dsNet.getBus("Bus28"), 280, baseVolt,feederBusNum,totalLoadBus28,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
+		
+		//buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoadBus28,loadDistribution);
+		
+		
+		
+		//TODO select 6 buses in the load center to replace them by detailed feeders
+
+	    SubNetworkProcessor proc = new SubNetworkProcessor(dsNet);
+			 proc.addSubNetInterfaceBranch("Bus15->Bus150(0)",false);
+			 proc.addSubNetInterfaceBranch("Bus16->Bus160(0)",false);
+			 proc.addSubNetInterfaceBranch("Bus18->Bus180(0)",false);
+			 proc.addSubNetInterfaceBranch("Bus26->Bus260(0)",false);
+			 proc.addSubNetInterfaceBranch("Bus27->Bus270(0)",false);
+			 proc.addSubNetInterfaceBranch("Bus28->Bus280(0)",false);
+			
+			 
+			 proc.splitFullSystemIntoSubsystems(true);
+			 
+			 // currently, if a fault at transmission system is to be considered, then it should be set to 3phase
+			 proc.set3PhaseSubNetByBusId("Bus1");
+			//TODO this has to be manually identified
+			 proc.set3PhaseSubNetByBusId("Bus151");
+			 proc.set3PhaseSubNetByBusId("Bus161");
+			 proc.set3PhaseSubNetByBusId("Bus181");   
+			 proc.set3PhaseSubNetByBusId("Bus261"); 
+			 proc.set3PhaseSubNetByBusId("Bus271"); 
+			 proc.set3PhaseSubNetByBusId("Bus281"); 
+	    
+		
+			 TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm(dsNet,proc);
+			 
+			 //System.out.println(tdAlgo.getTransmissionNetwork().net2String());
+			    
+			 assertTrue(tdAlgo.powerflow()); 
+			 
+			
+			 
+			 System.out.println(AclfOutFunc.loadFlowSummary(tdAlgo.getTransmissionNetwork()));
+			 System.out.println(DistPowerFlowOutFunc.powerflowResultSummary(tdAlgo.getDistributionNetworkList().get(0)));
+		
+		
+			 MultiNet3Ph3SeqDStabSimuHelper  mNetHelper = new MultiNet3Ph3SeqDStabSimuHelper(dsNet,proc);
+			  
+			  // create multiNet3Seq3PhDStabHelper and initialize the subsystem
+			 DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+			    
+			  
+				dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+				dstabAlgo.setSimuStepSec(0.005d);
+				dstabAlgo.setTotalSimuTimeSec(10.00);
+				
+
+				//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
+				
+				//applied the event
+				// SLG FAULT: Bus 17
+				// 3Phase fault: Bus 3
+				dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus28",proc.getSubNetworkByBusId("Bus28"),SimpleFaultCode.GROUND_3P,new Complex(0.0),null,1.0d,0.07),"3phaseFault@Bus5");
+		        
+				
+				StateMonitor sm = new StateMonitor();
+				sm.addGeneratorStdMonitor(new String[]{"Bus30-mach1","Bus37-mach1","Bus38-mach1"});
+				sm.addBusStdMonitor(new String[]{"Bus28","Bus27","Bus26","Bus24","Bus22","Bus18","Bus16","Bus15"});
+				sm.add3PhaseBusStdMonitor(new String[]{"Bus28","Bus38"});
+				//String[] seqVotBusAry = new String[]{"Bus28","Bus27","Bus26","Bus24","Bus22","Bus18","Bus16","Bus15"};
+				//sm.add3PhaseBusStdMonitor(seqVotBusAry);
+				
+				//1Phase AC motor extended_device_Id = "ACMotor_"+this.getId()+"@"+this.getParentBus().getId()+"_phase"+this.getPhase();
+				
+				
+				
+				//3phase induction motor extended_device_Id = "IndMotor_"+this.getId()+"@"+this.getDStabBus().getId();
+//				sm.addDynDeviceMonitor(DynDeviceType.InductionMotor, "IndMotor_1@Bus152");
+//				sm.addDynDeviceMonitor(DynDeviceType.InductionMotor, "IndMotor_1@Bus154");
+//				sm.addDynDeviceMonitor(DynDeviceType.InductionMotor, "IndMotor_1@Bus158");
+//				sm.addDynDeviceMonitor(DynDeviceType.InductionMotor, "IndMotor_1@Bus262");
+//				sm.addDynDeviceMonitor(DynDeviceType.InductionMotor, "IndMotor_1@Bus264");
+//				sm.addDynDeviceMonitor(DynDeviceType.InductionMotor, "IndMotor_1@Bus268");
+//				sm.addDynDeviceMonitor(DynDeviceType.InductionMotor, "IndMotor_1@Bus282");
+//				sm.addDynDeviceMonitor(DynDeviceType.InductionMotor, "IndMotor_1@Bus284");
+//				sm.addDynDeviceMonitor(DynDeviceType.InductionMotor, "IndMotor_1@Bus288");
+				
+				// PV gen
+				// extended_device_Id = "PVGen3Phase_"+this.getId()+"@"+this.getParentGen().getParentBus().getId();
+//				
+//				sm.addDynDeviceMonitor(DynDeviceType.PVGen, "PVGen3Phase_1@Bus12");
+//				sm.addDynDeviceMonitor(DynDeviceType.PVGen, "PVGen3Phase_1@Bus18");
+//				sm.addDynDeviceMonitor(DynDeviceType.PVGen, "PVGen3Phase_1@Bus22");
+//				sm.addDynDeviceMonitor(DynDeviceType.PVGen, "PVGen3Phase_1@Bus28");
+//				sm.addDynDeviceMonitor(DynDeviceType.PVGen, "PVGen3Phase_1@Bus32");
+//				sm.addDynDeviceMonitor(DynDeviceType.PVGen, "PVGen3Phase_1@Bus38");
+				
+				
+				// set the output handler
+				dstabAlgo.setSimuOutputHandler(sm);
+				dstabAlgo.setOutPutPerSteps(1);
+				//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
+				
+				IpssLogger.getLogger().setLevel(Level.WARNING);
+				
+				PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+				
+				timer.start();
+				
+		        // Must use this dynamic event process to modify the YMatrixABC
+//				dstabAlgo.setDynamicEventHandler(new DynamicEventProcessor3Phase());
+				
+				MultiNet3Ph3SeqDStabSolverImpl solver = new MultiNet3Ph3SeqDStabSolverImpl(dstabAlgo, mNetHelper);
+				dstabAlgo.setSolver(solver  );
+				dstabAlgo.setDynamicEventHandler(new MultiNet3Ph3SeqDynEventProcessor(mNetHelper));
+				
+				if (dstabAlgo.initialization()) {
+					//System.out.println(ThreePhaseAclfOutFunc.busLfSummary(dsNet));
+					
+					//System.out.println(dsNet.getMachineInitCondition());
+					
+					System.out.println("Running 3Phase/3sequence DStab co-simulation ...");
+					
+					//dstabAlgo.performSimulation();
+					
+					while(dstabAlgo.getSimuTime()<=dstabAlgo.getTotalSimuTimeSec()){
+						
+						dstabAlgo.solveDEqnStep(true);
+						
+						for(String busId: sm.getBusPhAVoltTable().keySet()){
+							
+							 sm.addBusPhaseVoltageMonitorRecord( busId,dstabAlgo.getSimuTime(), ((Bus3Phase)proc.getSubNetworkByBusId(busId).getBus(busId)).get3PhaseVotlages());
+						}
+						
+					}
+				}
+				
+				timer.end();
+				System.out.println("time :"+timer.getDuration());
+				//System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+				//System.out.println(sm.toCSVString(sm.getBusAngleTable()));
+				//System.out.println(sm.toCSVString(sm.getAcMotorPTable()));
+				//System.out.println(sm.toCSVString(sm.getAcMotorStateTable()));
+				
+				//tie-line current results
+//				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//subNetCurInjResults_Ld_Comp_basecase.csv",
+//						solver.getRecordResults());
+				
+				//
+				
+				/*
+				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//busVoltage.csv",
+						sm.toCSVString(sm.getBusVoltTable()));
+				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//busPhAVoltage.csv",
+						sm.toCSVString(sm.getBusPhAVoltTable()));
+				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//busPhBVoltage.csv",
+						sm.toCSVString(sm.getBusPhBVoltTable()));
+				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//busPhCVoltage.csv",
+						sm.toCSVString(sm.getBusPhCVoltTable()));
+				
+                */
+//				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//IndMotorP.csv",
+//						sm.toCSVString(sm.getMotorPTable()));
+//				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//IndMotorSlip.csv",
+//						sm.toCSVString(sm.getMotorSlipTable()));
+//				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//IndMotorQ.csv",
+//						sm.toCSVString(sm.getMotorQTable()));
+				
+//				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//pvGenP.csv",
+//						sm.toCSVString(sm.getPvGenPTable()));
+//				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//pvGenQ.csv",
+//						sm.toCSVString(sm.getPvGenQTable()));
+//				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//GenPe.csv",
+//						sm.toCSVString(sm.getMachPeTable()));
+//				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//GenPm.csv",
+//						sm.toCSVString(sm.getMachPmTable()));
+		
+				FileUtil.writeText2File("D://IEEE39_TnD_Gen_spd.csv",
+				sm.toCSVString(sm.getMachSpeedTable()));
+				
+		 }
+	
+	
 
 	/**
 	 * The first bus is feeder sending end, no load is connected; all the loads are connected at bus [2,...BusNum];
