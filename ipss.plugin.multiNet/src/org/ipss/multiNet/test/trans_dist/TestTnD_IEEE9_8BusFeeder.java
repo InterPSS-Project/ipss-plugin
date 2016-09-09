@@ -16,6 +16,7 @@ import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.PerformanceTimer;
+import org.interpss.util.FileUtil;
 import org.ipss.multiNet.algo.MultiNet3Ph3SeqDStabSimuHelper;
 import org.ipss.multiNet.algo.MultiNet3Ph3SeqDStabSolverImpl;
 import org.ipss.multiNet.algo.MultiNet3Ph3SeqDynEventProcessor;
@@ -58,7 +59,7 @@ public class TestTnD_IEEE9_8BusFeeder {
 	//@Test
 	public void test_IEEE9_8Busfeeder_powerflow() throws InterpssException{
 		IpssCorePlugin.init();
-		IpssCorePlugin.setLoggerLevel(Level.INFO);
+		IpssCorePlugin.setLoggerLevel(Level.WARNING);
 		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/IEEE9Bus/ieee9.raw",
@@ -97,7 +98,7 @@ public class TestTnD_IEEE9_8BusFeeder {
 		int feederBusNum = 9;
 		
 		double loadPF = 0.95;
-		double loadUnbalanceFactor = 0.00;
+		double loadUnbalanceFactor = 0.00; //at the scale of 0 to 1
 		
 		double [] loadDistribution = new double[]{0.25,0.20,0.15,0.15,0.1,0.1,0.05};
 		double [] feederSectionLenghth = new double[]{0.5,0.5,1.0,1.0,1.5,2,2}; // unit in mile
@@ -166,9 +167,9 @@ public class TestTnD_IEEE9_8BusFeeder {
 	    //TODO create TDMultiNetPowerflowAlgo
 	    
 		 TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm(dsNet,proc);
-		
+		 
 		 System.out.println(tdAlgo.getTransmissionNetwork().net2String());
-	    
+	     
 		 assertTrue(tdAlgo.powerflow()); 
 		 
 		 
@@ -183,7 +184,7 @@ public class TestTnD_IEEE9_8BusFeeder {
 	
 	
 	
-	//@Test
+	@Test
 	public void test_IEEE9_8Busfeeder_dynSim() throws InterpssException{
 		IpssCorePlugin.init();
 		
@@ -619,7 +620,7 @@ public class TestTnD_IEEE9_8BusFeeder {
 		 proc.splitFullSystemIntoSubsystems(true);
 		 
 		 // currently, if a fault at transmission system is to be considered, then it should be set to 3phase
-		 //proc.set3PhaseSubNetByBusId("Bus4");
+		 proc.set3PhaseSubNetByBusId("Bus4");
 		//TODO this has to be manually identified
 		 proc.set3PhaseSubNetByBusId("Bus11");
 		 proc.set3PhaseSubNetByBusId("Bus21");
@@ -666,11 +667,13 @@ public class TestTnD_IEEE9_8BusFeeder {
 			//applied the event
 			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus10",proc.getSubNetworkByBusId("Bus10"),SimpleFaultCode.GROUND_LG,new Complex(0.0),new Complex(0.0),1.0d,0.07),"3phaseFault@Bus5");
 	        
+			//dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",proc.getSubNetworkByBusId("Bus5"),SimpleFaultCode.GROUND_3P,new Complex(0.0),new Complex(0.0),0.5d,0.07),"3phaseFault@Bus5");
+	        
 			
 			StateMonitor sm = new StateMonitor();
 			sm.addGeneratorStdMonitor(new String[]{"Bus1-mach1","Bus2-mach1","Bus3-mach1"});
-			sm.addBusStdMonitor(new String[]{"Bus38","Bus32","Bus28","Bus24","Bus22","Bus18","Bus14","Bus12","Bus8","Bus6", "Bus5","Bus4","Bus1"});
-			//sm.add3PhaseBusStdMonitor(new String[]{"Bus38","Bus34","Bus32","Bus28","Bus24","Bus22","Bus18","Bus15","Bus14","Bus12","Bus11","Bus10"});
+			//sm.addBusStdMonitor(new String[]{"Bus38","Bus32","Bus28","Bus24","Bus22","Bus18","Bus14","Bus12","Bus8","Bus6", "Bus5","Bus4","Bus1"});
+			sm.add3PhaseBusStdMonitor(new String[]{"Bus2","Bus10","Bus5"});
 			
 			
 			// PV gen
@@ -712,10 +715,10 @@ public class TestTnD_IEEE9_8BusFeeder {
 					
 					dstabAlgo.solveDEqnStep(true);
 					
-//					for(String busId: sm.getBusPhAVoltTable().keySet()){
-//						
-//						 sm.addBusPhaseVoltageMonitorRecord( busId,dstabAlgo.getSimuTime(), ((Bus3Phase)proc.getSubNetworkByBusId(busId).getBus(busId)).get3PhaseVotlages());
-//					}
+					for(String busId: sm.getBusPhAVoltTable().keySet()){
+						
+						 sm.addBusPhaseVoltageMonitorRecord( busId,dstabAlgo.getSimuTime(), ((Bus3Phase)proc.getSubNetworkByBusId(busId).getBus(busId)).get3PhaseVotlages());
+					}
 					
 				}
 			}
@@ -726,17 +729,30 @@ public class TestTnD_IEEE9_8BusFeeder {
 			//System.out.println(sm.toCSVString(sm.getAcMotorPTable()));
 			//System.out.println(sm.toCSVString(sm.getAcMotorStateTable()));
 			
-			/*
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//busVoltage.csv",
-					sm.toCSVString(sm.getBusVoltTable()));
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//busPhAVoltage.csv",
+			
+//			FileUtil.writeText2File("D://powerlab MDrive//paper//PhD Project//three_phase_three_seq_for_T&D//ieee9_trans_busVoltage.csv",
+//					sm.toCSVString(sm.getBusVoltTable()));
+//			FileUtil.writeText2File("D://powerlab MDrive//paper//PhD Project//three_phase_three_seq_for_T&D//ieee9_genP.csv",
+//					sm.toCSVString(sm.getMachPeTable()));
+//			FileUtil.writeText2File("D://powerlab MDrive//paper//PhD Project//three_phase_three_seq_for_T&D//ieee9_genQ.csv",
+//					sm.toCSVString(sm.getMachQgenTable()));
+//			FileUtil.writeText2File("D://powerlab MDrive//paper//PhD Project//three_phase_three_seq_for_T&D//ieee9_genSpeed_0803.csv",
+//					sm.toCSVString(sm.getMachSpeedTable()));
+//			FileUtil.writeText2File("D://powerlab MDrive//paper//PhD Project//three_phase_three_seq_for_T&D//ieee9_genAngle_0803.csv",
+//					sm.toCSVString(sm.getMachAngleTable()));
+//			
+			
+//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//busVoltage.csv",
+//					sm.toCSVString(sm.getBusVoltTable()));
+//			
+			FileUtil.writeText2File("D://TnD_paper_dyn_IEEE9_busPhAVoltage.csv",
 					sm.toCSVString(sm.getBusPhAVoltTable()));
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//busPhBVoltage.csv",
+			FileUtil.writeText2File("D://TnD_paper_dyn_IEEE9_busPhBVoltage.csv",
 					sm.toCSVString(sm.getBusPhBVoltTable()));
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//busPhCVoltage.csv",
+			FileUtil.writeText2File("D://TnD_paper_dyn_IEEE9_busPhCVoltage.csv",
 					sm.toCSVString(sm.getBusPhCVoltTable()));
 
-			*/
+			
 	
 	}
 	
