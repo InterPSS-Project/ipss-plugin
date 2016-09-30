@@ -75,6 +75,12 @@ public abstract class AbstractODMAclfParserMapper<Tfrom> extends AbstractODMSimu
 	@Override public boolean map2Model(Tfrom p, SimuContext simuCtx) {
 		boolean noError = true;
 		AclfModelParser parser = (AclfModelParser)p;
+		
+		if(parser == null) {
+			ipssLogger.severe("Error: AclfModelParser object is null");
+			return false;
+		}
+		
 		if (parser.getStudyCase().getNetworkCategory() == NetworkCategoryEnumType.TRANSMISSION ) {
 			LoadflowNetXmlType xmlNet = parser.getNet();
 			ODMAclfNetMapper mapper = new ODMAclfNetMapper();
