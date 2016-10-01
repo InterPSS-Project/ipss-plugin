@@ -64,7 +64,7 @@ public class AclfHvdcDataHelper {
 	public boolean setHvdc2TData(DCLineData2TXmlType hvdc2TXml){
 		boolean success = true;
 		//set DCLine Id
-		this.hvdc2T.setId(hvdc2TXml.getId());
+		//this.hvdc2T.setId(hvdc2TXml.getId());
 		
 		//Control Mode
 		DcLineControlModeEnumType mode =hvdc2TXml.getControlMode();
