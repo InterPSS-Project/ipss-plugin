@@ -18,6 +18,7 @@ import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.BranchBusSide;
 import com.interpss.core.net.Bus;
+import com.interpss.core.net.Network;
 import com.interpss.core.net.childnet.ChildNetInterfaceBranch;
 import com.interpss.core.net.childnet.ChildNetworkFactory;
 import com.interpss.dstab.DStabBranch;
@@ -353,7 +354,9 @@ public class SubNetworkProcessor {
 					    
 						
 					    // add the zero-impedance line to connect the dummy bus to the original bus
-					    DStabBranch dummyBranch = DStabObjectFactory.createDStabBranch(dummyBusId, boundaryBus.getId(), (DStabilityNetwork) net);
+						
+					    DStabBranch dummyBranch = this.net instanceof DStabNetwork3Phase? ThreePhaseObjectFactory.create3PBranch(dummyBusId, boundaryBus.getId(), "0",(DStabNetwork3Phase) net):
+					    		DStabObjectFactory.createDStabBranch(dummyBusId, boundaryBus.getId(), (DStabilityNetwork) net);
 					    dummyBranch.setZ(new Complex(0,1.0E-4));
 					    
 					    //set the branch status to false in order to isolate the subsystems 
@@ -523,7 +526,10 @@ public class SubNetworkProcessor {
 				if(_subNet.getBus(nextBusId)==null){
 					
 					try {
-						_subNet.addBus((DStabBus) _net.getBus(nextBusId));
+						
+						//_subNet.addBus((DStabBus) _net.getBus(nextBusId));
+						int nextBusIdx = getBusIdx(_net,nextBusId);
+						_subNet.addBus((DStabBus)_net.getBusList().remove(nextBusIdx));
 						// save the busId 2 subNetwork index mapping
 						this.busId2SubNetworkTable.put(nextBusId, subNetIdx);
 						
@@ -554,6 +560,15 @@ public class SubNetworkProcessor {
 		return true;
 	}
 	
+	private int getBusIdx(BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch> _net, String busId){
+		int idx = -1;
+		for(int i = 0; i<_net.getBusList().size(); i++){
+			if(_net.getBusList().get(i).getId().equals(busId)){
+				idx = i;
+			}
+		}
+		return idx;
+	}
 
 	public BaseAclfNetwork<?, ?> getNet() {
 		return net;
