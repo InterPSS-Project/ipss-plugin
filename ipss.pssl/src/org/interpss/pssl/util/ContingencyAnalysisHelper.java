@@ -42,7 +42,6 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.contingency.BranchOutageType;
 import com.interpss.core.aclf.contingency.Contingency;
-import com.interpss.core.aclf.contingency.EquivOutageBranch;
 import com.interpss.core.aclf.contingency.MonitoringBranch;
 import com.interpss.core.aclf.contingency.OutageBranch;
 import com.interpss.core.algo.sec.SecAnalysisBranchRatingType;
@@ -205,7 +204,7 @@ public class ContingencyAnalysisHelper {
 				algoDsl.setLODFAnalysisType(LODFSenAnalysisType.MULTI_BRANCH);
 
 				//for (AclfBranch outBranch : cont.getOutageBranches()) {
-				for (EquivOutageBranch outBranch : cont.getEquivOutageBranches()) {
+				for (OutageBranch outBranch : cont.getEquivOutageBranches()) {
 					if (outBranch.isActive()) {
 						algoDsl.addOutageBranch(outBranch);
 					}
@@ -277,7 +276,7 @@ public class ContingencyAnalysisHelper {
 		for (OutageBranch bra : cont.getOutageBranches()) 
 			bra.getBranch().setIntFlag(1);		
 
-		for (EquivOutageBranch bra : cont.getEquivOutageBranches()) 
+		for (OutageBranch bra : cont.getEquivOutageBranches()) 
 			bra.getBranch().setIntFlag(1);		
 	}
 	
@@ -475,7 +474,7 @@ public class ContingencyAnalysisHelper {
 		}
 		else {
 			algoDsl.setLODFAnalysisType(LODFSenAnalysisType.MULTI_BRANCH);
-			for (EquivOutageBranch eq : cont.getEquivOutageBranches()) {
+			for (OutageBranch eq : cont.getEquivOutageBranches()) {
 				if (eq.isActive()) 
 					algoDsl.addOutageBranch(eq);
 			}
@@ -532,7 +531,7 @@ public class ContingencyAnalysisHelper {
 		}
 		else {
 			algoDsl.setLODFAnalysisType(LODFSenAnalysisType.MULTI_BRANCH);
-			for (EquivOutageBranch eq : cont.getEquivOutageBranches()) {
+			for (OutageBranch eq : cont.getEquivOutageBranches()) {
 				if (eq.isActive()) 
 					algoDsl.addOutageBranch(eq);
 			}
