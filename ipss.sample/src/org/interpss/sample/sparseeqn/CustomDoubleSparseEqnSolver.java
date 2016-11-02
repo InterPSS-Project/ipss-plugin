@@ -30,5 +30,13 @@ public class CustomDoubleSparseEqnSolver implements ISparseEqnSolver {
 			this.luMatrix(1.0e-10);
 		System.out.println("Call CustomDoubleSparseEqnSolver.solveEqn() ...");
 	}
+	
+	/* (non-Javadoc)
+	 * @see com.interpss.core.sparse.ISparseEqnSolver#solveEqn(double[])
+	 */
+	@Override
+	public double[] solveEqn(double[] arg0) throws IpssNumericException {
+		return null;
+	}	
 }
 
