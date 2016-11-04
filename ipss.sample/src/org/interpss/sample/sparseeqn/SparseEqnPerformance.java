@@ -26,6 +26,7 @@ package org.interpss.sample.sparseeqn;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.interpss.numeric.NumericObjectFactory;
@@ -39,14 +40,55 @@ import com.interpss.core.sparse.impl.SparseEqnDoubleImpl;
 
 public class SparseEqnPerformance {
 	public static void main(String args[]) throws Exception {
+		for (int i = 0; i < 1; i++)
+			test();
+		/*
 		test1();
 		
-		for (int i = 0; i < 100; i++)
+		for (int i = 0; i < 1; i++)
 			test2();
+		*/	
 	}	
 	
+	static void test() throws Exception {
+		int n = 21464;
+		ISparseEqnDouble eqn = buildEqnNewFormat("testData/JMatrix_20kBus.txt", n);
+		
+		eqn.setB2Unity(10);
+	  	PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+
+	  	eqn.solveEqn();
+	  	timer.logStd("Time for solving the eqnNew");
+	  	
+	  	timer.start();
+		for(int i = 0; i < n; i++) {
+			double[] dAry = new double[n];
+			dAry[10] = 1.0;
+			dAry = eqn.solveEqn(dAry);
+			// b(21463): 1.0584315036540653E-5
+			if (Math.abs(dAry[21463] - 1.0584315036540653E-5) > 1.0e-10)
+				System.out.println("Error: ");
+		}
+	  	timer.logStd("Time for solving inv[A]");
+	  	
+	  	timer.start();
+	  	IntStream.range(0,n).parallel().forEach(i -> {
+			double[] dAry = new double[n];
+			dAry[10] = 1.0;
+			try {
+				dAry = eqn.solveEqn(dAry);
+				if (Math.abs(dAry[21463] - 1.0584315036540653E-5) > 1.0e-10)
+					System.out.println("Error: ");
+				} catch (Exception e) {
+				e.printStackTrace();
+			}
+		});
+	  	
+	  	timer.logStd("Time for solving inv[A]");
+	}
+	
 	static void test1() throws Exception {
-		ISparseEqnDouble eqn = buildEqn("testData/JMatrix_9Bus.txt", 18);
+		ISparseEqnDouble eqn = buildEqnOriginalFormat("testData/JMatrix_9Bus.txt", 18);
 		
 		eqn.setB2Unity(10);
 		eqn.solveEqn();
@@ -76,7 +118,7 @@ b(17): 0.001294411022165286
 	
 	static void test2() throws Exception {
 		int n = 82437+1;
-		ISparseEqnDouble eqnOld = buildEqn("testData/JMatrix_40kBus.txt",n);
+		ISparseEqnDouble eqnOld = buildEqnOriginalFormat("testData/JMatrix_40kBus.txt",n);
 		
 		int cnt = 0;
 		int[] index = new int[n];
@@ -110,7 +152,8 @@ b(17): 0.001294411022165286
 		eqnNew.solveEqn();
 	  	timer.logStd("Time for solve the eqnNew");
 	  	
-		//System.out.println(eqn1.toString());
+		System.out.println(eqnNew.toString());
+	  	//FileUtil.writeText2File("testData/temp.txt", eqnNew.toString());
 		
 		/*
 		for (int i = 0; i < n; i++) 
@@ -118,7 +161,27 @@ b(17): 0.001294411022165286
 		*/	
 	}
 	
-	static ISparseEqnDouble buildEqn(String fileName, int n)  throws Exception {
+	static ISparseEqnDouble buildEqnNewFormat(String fileName, int n)  throws Exception {
+		ISparseEqnDouble eqn = NumericObjectFactory.createSparseEqnDouble(n);
+		
+		Stream<String> stream = Files.lines(Paths.get(fileName));
+		stream.forEach(line -> {
+			if (!line.trim().equals("")) {
+				//System.out.println(line);	
+				String[] strAry = line.split(",");
+				int i = new Integer(strAry[0]).intValue();
+				int j = new Integer(strAry[1]).intValue();
+				double a = new Double(strAry[2]).doubleValue();
+				//System.out.println(i + ", " + j + ", " + a);
+				eqn.setAij(a, i, j);
+			}
+		});
+		stream.close();
+		//System.out.println(eqn.toString());
+		return eqn;
+	}
+	
+	static ISparseEqnDouble buildEqnOriginalFormat(String fileName, int n)  throws Exception {
 		ISparseEqnDouble eqn = NumericObjectFactory.createSparseEqnDouble(n);
 		
 		Stream<String> stream = Files.lines(Paths.get(fileName));
