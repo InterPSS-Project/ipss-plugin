@@ -58,8 +58,10 @@ public class AclfNetDataComparator extends DataComparatorAdapter<BaseAclfNetwork
 	private boolean compareBMatrix(BaseAclfNetwork<?,?> baseNet, BaseAclfNetwork<?,?> net) throws InterpssException {
 		boolean ok = true;
 	
-		baseNet.accept(CoreObjectFactory.createBusNoArrangeVisitor());	  
-		net.accept(CoreObjectFactory.createBusNoArrangeVisitor());	 
+		//baseNet.accept(CoreObjectFactory.createBusNoArrangeVisitor());	  
+		//net.accept(CoreObjectFactory.createBusNoArrangeVisitor());
+		baseNet.arrangeBusNumber();	  
+		net.arrangeBusNumber();	 
 		ISparseEqnDouble baseB1 = baseNet.formB1Matrix(JacobianMatrixType.REDUCED_BMATRIX);
 		ISparseEqnDouble b1 = net.formB1Matrix(JacobianMatrixType.REDUCED_BMATRIX);
 

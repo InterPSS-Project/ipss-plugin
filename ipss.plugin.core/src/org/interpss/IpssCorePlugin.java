@@ -35,7 +35,6 @@ import org.interpss.spring.NumericSpringFactory;
 import com.interpss.CoreObjectFactory;
 import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.common.util.IpssLogger;
-import com.interpss.core.algo.BusNumberArrangeRule;
 import com.interpss.spring.CoreCommonSpringFactory;
   
 /**
@@ -95,11 +94,9 @@ public class IpssCorePlugin {
 	@Deprecated
 	public static void setSparseEqnSolver(ISparseEquation.SolverType solverType) {
 		if (solverType == ISparseEquation.SolverType.Default ) {
-			CoreObjectFactory.DefaultBusArrangeRule = BusNumberArrangeRule.TINNEY0;
 			NumericSpringFactory.setDefualtSparseEqnSolver();
 		}
 		else if (solverType == ISparseEquation.SolverType.Native ) {
-			CoreObjectFactory.DefaultBusArrangeRule = BusNumberArrangeRule.TINNEY0;
 			NumericSpringFactory.setNativeSparseEqnSolver();
 		}
 	}
