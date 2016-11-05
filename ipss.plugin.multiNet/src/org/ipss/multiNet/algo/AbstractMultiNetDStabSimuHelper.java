@@ -183,7 +183,8 @@ public abstract class AbstractMultiNetDStabSimuHelper {
 				  
 				  // this is necessary because bus number is required for forming the Ymatrix
 					if ( !subNet.isBusNumberArranged() ) {
-						subNet.accept(CoreObjectFactory.createBusNoArrangeVisitor());	  		
+						//subNet.accept(CoreObjectFactory.createBusNoArrangeVisitor());
+						subNet.arrangeBusNumber();
 					}	
 		  }
 	   
