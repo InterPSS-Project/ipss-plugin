@@ -42,9 +42,8 @@ import org.interpss.mapper.odm.ODMDistNetMapper;
 import org.interpss.mapper.odm.ODMDistParserMapper;
 import org.interpss.mapper.odm.ODMOpfParserMapper;
 
+import com.interpss.CoreCommonFactory;
 import com.interpss.common.exp.InterpssException;
-import com.interpss.spring.CoreCommonSpringFactory;
-import com.interpss.spring.CoreSimuSpringFactory;
 
 /**
  * Core plugin spring object factory
@@ -52,7 +51,7 @@ import com.interpss.spring.CoreSimuSpringFactory;
  * @author mzhou
  *
  */
-public class CorePluginFactory extends CoreSimuSpringFactory {
+public class CorePluginFactory extends CoreCommonFactory {
 	/*
 	 * 		Mapper definition Odm -> SimuCtx
 	 * 		================================
@@ -91,7 +90,7 @@ public class CorePluginFactory extends CoreSimuSpringFactory {
 	 * create a ODMDStabDataMapper object from the Spring container
 	 */
 	public static ODMDStabParserMapper getOdm2DStabParserMapper() {
-		return new ODMDStabParserMapper(CoreCommonSpringFactory.getIpssMsgHub());
+		return new ODMDStabParserMapper(CoreCommonFactory.getIpssMsgHub());
 	}	
 	
 	/**
@@ -151,25 +150,25 @@ public class CorePluginFactory extends CoreSimuSpringFactory {
 	public static IpssFileAdapter getFileAdapter(IpssFileAdapter.FileFormat f, IpssFileAdapter.Version v)
 					throws InterpssException {
 		if (f == IpssFileAdapter.FileFormat.IEEECDF) {
-			return new IeeeCDFFormat(CoreCommonSpringFactory.getIpssMsgHub());
+			return new IeeeCDFFormat(CoreCommonFactory.getIpssMsgHub());
 		}
 		else if (f == IpssFileAdapter.FileFormat.GE_PSLF) {
-			return new GEFormat(CoreCommonSpringFactory.getIpssMsgHub());
+			return new GEFormat(CoreCommonFactory.getIpssMsgHub());
 		} 
 		else if (f == IpssFileAdapter.FileFormat.PSSE) {
-			return new PTIFormat(v, CoreCommonSpringFactory.getIpssMsgHub());
+			return new PTIFormat(v, CoreCommonFactory.getIpssMsgHub());
 		} 
 		else if (f == IpssFileAdapter.FileFormat.BPA) {
-			return new BPAFormat(CoreCommonSpringFactory.getIpssMsgHub());
+			return new BPAFormat(CoreCommonFactory.getIpssMsgHub());
 		} 
 		else if (f == IpssFileAdapter.FileFormat.PWD) {
-			return new PWDFormat(CoreCommonSpringFactory.getIpssMsgHub());
+			return new PWDFormat(CoreCommonFactory.getIpssMsgHub());
 		} 
 		else if (f == IpssFileAdapter.FileFormat.UCTE) {
-			return new UCTEFormat(CoreCommonSpringFactory.getIpssMsgHub());
+			return new UCTEFormat(CoreCommonFactory.getIpssMsgHub());
 		} 
 		else if (f == IpssFileAdapter.FileFormat.IpssInternal) {
-			return new IpssInternalFormat(CoreCommonSpringFactory.getIpssMsgHub());
+			return new IpssInternalFormat(CoreCommonFactory.getIpssMsgHub());
 		} 
 		throw new InterpssException("Error - File adapter format/version not implemented");
 	}	
