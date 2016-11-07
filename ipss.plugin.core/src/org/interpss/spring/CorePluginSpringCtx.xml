@@ -6,6 +6,6 @@
 
 	<import resource="classpath:com/interpss/spring/SimuCtxSpringCtx.xml"/>
 
-	<import resource="classpath:org/interpss/spring/ODMMapperSpringCtx.xml"/>
-	<import resource="classpath:org/interpss/spring/DStabControllerSpringCtx.xml"/>
+	<!-- import resource="classpath:org/interpss/spring/ODMMapperSpringCtx.xml"/ -->
+	<!-- import resource="classpath:org/interpss/spring/DStabControllerSpringCtx.xml"/-->
 </beans>

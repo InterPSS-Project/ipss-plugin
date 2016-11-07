@@ -34,10 +34,10 @@ import org.ieee.odm.adapter.IODMAdapter;
 import org.ieee.odm.common.ODMException;
 import org.ieee.odm.model.IODMModelParser;
 import org.ieee.odm.model.aclf.AclfModelParser;
+import org.interpss.CorePluginFactory;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.mapper.odm.ODMAclfNetMapper;
 import org.interpss.mapper.odm.ODMAclfNetMapper.XfrBranchModel;
-import org.interpss.spring.CorePluginSpringFactory;
 
 import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
@@ -97,7 +97,7 @@ public class IpssFileAdapterBase implements IpssFileAdapter {
 		if (debug)
 			System.out.println(adapter.getModel().toXmlDoc(outfile));
 		
-		if (CorePluginSpringFactory.getOdm2AclfParserMapper(XfrBranchModel.InterPSS)
+		if (CorePluginFactory.getOdm2AclfParserMapper(XfrBranchModel.InterPSS)
 					.map2Model((AclfModelParser)adapter.getModel(), simuCtx)) {
   	  		simuCtx.setName(filepath.substring(filepath.lastIndexOf(File.separatorChar)+1));
   	  		simuCtx.setDesc("This project is created by input file " + filepath);
