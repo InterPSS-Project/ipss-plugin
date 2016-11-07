@@ -29,13 +29,10 @@ import static com.interpss.common.util.IpssLogger.ipssLogger;
 import java.util.logging.Level;
 
 import org.ieee.odm.common.ODMLogger;
-import org.interpss.numeric.sparse.base.ISparseEquation;
-import org.interpss.spring.NumericSpringFactory;
 
-import com.interpss.CoreObjectFactory;
+import com.interpss.CoreCommonFactory;
 import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.common.util.IpssLogger;
-import com.interpss.spring.CoreCommonSpringFactory;
   
 /**
  * Core plugin runtime configuration functioin
@@ -60,46 +57,13 @@ public class IpssCorePlugin {
 	 * initialize core plugin 
 	 * 
 	 * @param paths array of Spring ctx paths
-	 */
-	public static void init(String[] paths) {
-		init(paths, Level.WARNING);
-	}
-
-	/**
-	 * initialize core plugin 
-	 * 
 	 * @param level log level
 	 */
 	public static void init(Level level) {
-		init(new String[] {CtxPath}, level);
-	}
-
-	/**
-	 * initialize core plugin 
-	 * 
-	 * @param paths array of Spring ctx paths
-	 * @param level log level
-	 */
-	public static void init(String[] paths, Level level) {
 		IpssLogger.initLogger();
-		setSpringAppCtx(paths);
 		setLoggerLevel(level);
 	}
 
-	/**
-	 * set sparse eqn solver type. Native sparse eqn solver has been deprecated
-	 * 
-	 * @param solverType solver type
-	 */
-	@Deprecated
-	public static void setSparseEqnSolver(ISparseEquation.SolverType solverType) {
-		if (solverType == ISparseEquation.SolverType.Default ) {
-			NumericSpringFactory.setDefualtSparseEqnSolver();
-		}
-		else if (solverType == ISparseEquation.SolverType.Native ) {
-			NumericSpringFactory.setNativeSparseEqnSolver();
-		}
-	}
 	
 	/**
 	 * get the MsgHub object
@@ -107,7 +71,7 @@ public class IpssCorePlugin {
 	 * @return
 	 */
 	public static IPSSMsgHub getMsgHub() {
-		return CoreCommonSpringFactory.getIpssMsgHub();
+		return CoreCommonFactory.getIpssMsgHub();
 	}
 	
 	/**
@@ -118,9 +82,5 @@ public class IpssCorePlugin {
 	public static void setLoggerLevel(Level level) {
 		ipssLogger.setLevel(level);
 		ODMLogger.getLogger().setLevel(level);
-	}	
-
-	protected static void setSpringAppCtx(String[] paths) {
-		CoreCommonSpringFactory.setAppContext(paths);
 	}	
 }
