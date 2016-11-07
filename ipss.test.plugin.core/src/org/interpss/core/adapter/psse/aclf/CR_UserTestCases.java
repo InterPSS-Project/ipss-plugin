@@ -27,7 +27,7 @@ package org.interpss.core.adapter.psse.aclf;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.CorePluginObjFactory;
+import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.Unit.UnitType;
@@ -43,7 +43,7 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 public class CR_UserTestCases extends CorePluginTestSetup {
 	@Test
 	public void testCase1() throws Exception {
-		AclfNetwork net = CorePluginObjFactory
+		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.PSSE, IpssFileAdapter.Version.PSSE_30)
 				.load("testData/adpter/psse/PSSE_5Bus_Test.raw")
 				.getAclfNet();	
@@ -62,7 +62,7 @@ public class CR_UserTestCases extends CorePluginTestSetup {
 
 	@Test
 	public void testCase2() throws Exception {
-		AclfNetwork net = CorePluginObjFactory
+		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.PSSE)
 				.load("testData/adpter/psse/MXV-1120MW_FNC475_FEC196_FAC212_InterPSS_3d.raw")
 				.getAclfNet();			

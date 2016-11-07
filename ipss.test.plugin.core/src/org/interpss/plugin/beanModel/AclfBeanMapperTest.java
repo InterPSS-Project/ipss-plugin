@@ -30,7 +30,6 @@ import static org.junit.Assert.assertTrue;
 import java.util.logging.Level;
 
 import org.ieee.odm.common.ODMLogger;
-import org.interpss.CorePluginObjFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.IpssCorePlugin;
 import org.interpss.datamodel.bean.BaseBranchBean.BranchCode;
@@ -38,7 +37,6 @@ import org.interpss.datamodel.bean.aclf.AclfBranchResultBean;
 import org.interpss.datamodel.bean.aclf.AclfBusBean;
 import org.interpss.datamodel.bean.aclf.AclfNetBean;
 import org.interpss.datamodel.bean.aclf.AclfNetResultBean;
-import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.mapper.bean.aclf.AclfBean2NetMapper;
 import org.interpss.mapper.bean.aclf.AclfNet2BeanMapper;
 import org.interpss.mapper.bean.aclf.AclfNet2ResultBeanMapper;
@@ -46,8 +44,6 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.pssl.plugin.IpssAdapter;
 import org.interpss.pssl.plugin.IpssAdapter.PsseVersion;
-import org.interpss.pssl.simu.IpssDclf;
-import org.interpss.pssl.simu.IpssDclf.DclfAlgorithmDSL;
 import org.junit.Test;
 
 import com.interpss.CoreObjectFactory;

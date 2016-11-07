@@ -26,7 +26,7 @@ package org.interpss.QA.test.compare;
 
 import static org.junit.Assert.assertTrue;
 
-import org.interpss.CorePluginObjFactory;
+import org.interpss.CorePluginFactory;
 import org.interpss.QA.compare.impl.PSSEResultComparator;
 import org.interpss.QA.rfile.BaseResultFileProcessor;
 import org.interpss.QA.rfile.QAFileReader;
@@ -44,7 +44,7 @@ public class PSSEResultProcessSample extends QATestSetup {
 	@Test
 	public void compareNetModel() throws Exception {
 		// step-1 : load the study case 
-		AclfNetwork net = CorePluginObjFactory
+		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.PSSE, IpssFileAdapter.Version.PSSE_30)
 				.load("testData/psse/PSSETestFromCR.raw")
 				.getAclfNet();	
@@ -79,7 +79,7 @@ public class PSSEResultProcessSample extends QATestSetup {
 	@Test
 	public void compareAclfResuslt() throws Exception {
 		// step-1 : load the study case and run Loadflow 
-		AclfNetwork net = CorePluginObjFactory
+		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.PSSE, IpssFileAdapter.Version.PSSE_30)
 				.load("testData/psse/PSSETestFromCR.raw")
 				.getAclfNet();	

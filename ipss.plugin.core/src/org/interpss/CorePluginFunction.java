@@ -18,7 +18,6 @@ import org.interpss.display.DclfOutFunc;
 import org.interpss.display.impl.AclfOut_BusStyle;
 import org.interpss.display.impl.AclfOut_PSSE;
 import org.interpss.mapper.odm.ODMAclfNetMapper;
-import org.interpss.spring.CorePluginSpringFactory;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.func.Function2Adapter;
@@ -57,7 +56,7 @@ public class CorePluginFunction {
 	public static IFunction2<AclfModelParser, ODMAclfNetMapper.XfrBranchModel, AclfNetwork> AclfParser2AclfNet = 
 		new Function2Adapter<AclfModelParser, ODMAclfNetMapper.XfrBranchModel, AclfNetwork>() {
 			@Override public AclfNetwork fx(AclfModelParser parser, ODMAclfNetMapper.XfrBranchModel xfrBranchModel) throws InterpssException {
-				return CorePluginSpringFactory.getOdm2AclfParserMapper(xfrBranchModel)
+				return CorePluginFactory.getOdm2AclfParserMapper(xfrBranchModel)
 						.map2Model(parser)
 						.getAclfNet();
 		}};
@@ -68,7 +67,7 @@ public class CorePluginFunction {
 	public static IFunction2<LoadflowNetXmlType, ODMAclfNetMapper.XfrBranchModel, AclfNetwork> AclfXmlNet2AclfNet = 
 		new Function2Adapter<LoadflowNetXmlType, ODMAclfNetMapper.XfrBranchModel, AclfNetwork>() {
 			@Override public AclfNetwork fx(LoadflowNetXmlType xmlNet, ODMAclfNetMapper.XfrBranchModel xfrBranchModel) throws InterpssException {
-				return CorePluginSpringFactory.getOdm2AclfNetMapper(xfrBranchModel)
+				return CorePluginFactory.getOdm2AclfNetMapper(xfrBranchModel)
 						.map2Model(xmlNet)
 						.getAclfNet();
 		}};
@@ -81,7 +80,7 @@ public class CorePluginFunction {
 	public static IFunction<AcscModelParser, AcscNetwork> AcscParser2AcscNet = 
 		new FunctionAdapter<AcscModelParser, AcscNetwork>() {
 			@Override public AcscNetwork fx(AcscModelParser parser) throws InterpssException {
-				return CorePluginSpringFactory.getOdm2AcscParserMapper()
+				return CorePluginFactory.getOdm2AcscParserMapper()
 							.map2Model(parser)
 							.getAcscNet();
 		}};
@@ -94,7 +93,7 @@ public class CorePluginFunction {
 	public static IFunction<DStabModelParser, DynamicSimuAlgorithm> DStabParser2DStabAlgo = 
 		new FunctionAdapter<DStabModelParser, DynamicSimuAlgorithm>() {
 			@Override public DynamicSimuAlgorithm fx(DStabModelParser parser) throws InterpssException {
-				return CorePluginSpringFactory.getOdm2DStabParserMapper()
+				return CorePluginFactory.getOdm2DStabParserMapper()
 							.map2Model(parser)
 							.getDynSimuAlgorithm();
 		}};
@@ -104,7 +103,7 @@ public class CorePluginFunction {
 	public static IFunction<DistributionNetXmlType, DistNetwork> DistXmlNet2DistNet = 
 		new FunctionAdapter<DistributionNetXmlType, DistNetwork>() {
 			@Override public DistNetwork fx(DistributionNetXmlType xmlNet) throws InterpssException {
-				return CorePluginSpringFactory.getOdm2DistNetMapper()
+				return CorePluginFactory.getOdm2DistNetMapper()
 								.map2Model(xmlNet);
 		}};	
 	
@@ -113,7 +112,7 @@ public class CorePluginFunction {
 	public static IFunction<DcNetworkXmlType, DcNetwork> DcSysXmlNet2DcSysNet = 
 		new FunctionAdapter<DcNetworkXmlType, DcNetwork>() {
 			@Override public DcNetwork fx(DcNetworkXmlType xmlNet) throws InterpssException {
-				return CorePluginSpringFactory.getOdm2DcSysNetMapper()
+				return CorePluginFactory.getOdm2DcSysNetMapper()
 							.map2Model(xmlNet);
 		}};
 
