@@ -33,6 +33,7 @@ import org.interpss.numeric.util.TestUtilFunc;
 import org.junit.Test;
 
 import com.interpss.CoreObjectFactory;
+import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
@@ -42,16 +43,14 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.algo.SimpleFaultAlgorithm;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.util.sample.SampleCases;
-import com.interpss.spring.CoreSimuSpringFactory;
-import com.interpss.spring.CoreSpringFactory;
 
 public class SimuAppCtxTest extends CorePluginTestSetup {
 	
 	@Test
 	public void testSimuCtxAclf() throws InterpssException {
-		SimuContext simuCtx = CoreSimuSpringFactory.getSimuContextTypeAclf();
+		SimuContext simuCtx = SimuObjectFactory.createSimuCtxTypeAclfNet();
 		SampleCases.load_LF_5BusSystem(simuCtx.getAclfNet());
-		simuCtx.setLoadflowAlgorithm(CoreSpringFactory.getLoadflowAlgorithm());
+		simuCtx.setLoadflowAlgorithm(CoreObjectFactory.createLoadflowAlgorithm());
 		simuCtx.getLoadflowAlgorithm().setNetwork(simuCtx.getAclfNet());
 		//System.out.println(net.net2String());
 
@@ -70,9 +69,9 @@ public class SimuAppCtxTest extends CorePluginTestSetup {
 
 	@Test
 	public void testSimuCtxAcsc() throws InterpssException  {
-		SimuContext simuCtx = CoreSimuSpringFactory.getSimuContextTypeAcscNet();
+		SimuContext simuCtx = SimuObjectFactory.createSimuCtxTypeAcscNet();
 		SampleCases.load_SC_5BusSystem(simuCtx.getAcscNet());
-		simuCtx.setSimpleFaultAlgorithm(CoreSpringFactory.getSimpleFaultAlgorithm());
+		simuCtx.setSimpleFaultAlgorithm(CoreObjectFactory.createSimpleFaultAlgorithm());
 		//System.out.println(simuCtx.getAcscFaultNet().net2String());
 
   		assertTrue((simuCtx.getAcscNet().getBusList().size() == 5 && 
