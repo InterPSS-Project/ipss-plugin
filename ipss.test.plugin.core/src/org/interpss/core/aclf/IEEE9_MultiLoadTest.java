@@ -37,7 +37,7 @@ public class IEEE9_MultiLoadTest extends CorePluginTestSetup{
 				.load()
 				.getImportedObj();
 		
-		System.out.println(net.net2String());
+		//System.out.println(net.net2String());
 		
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
@@ -47,10 +47,10 @@ public class IEEE9_MultiLoadTest extends CorePluginTestSetup{
   	     *------------------------
   	     */
 	  	assertTrue(net.isLfConverged());
- 		System.out.println(AclfOutFunc.loadFlowSummary(net));
+ 		//System.out.println(AclfOutFunc.loadFlowSummary(net));
  		//System.out.println(AclfOut_PSSE.lfResults(net, Format.GUI));
  		Complex gen1_PQ=net.getBus("Bus3").getContributeGenList().get(0).getGen();
- 		System.out.println(gen1_PQ);
+ 		//System.out.println(gen1_PQ);
  		assertTrue(NumericUtil.equals(gen1_PQ,new Complex(0.85, -0.1092),1.0E-4));
  		
  		//Test loadPQ of bus8
@@ -66,7 +66,7 @@ public class IEEE9_MultiLoadTest extends CorePluginTestSetup{
  		algo.loadflow();
  	  	
 	  	assertTrue(net.isLfConverged());
- 		System.out.println(AclfOutFunc.loadFlowSummary(net));
+ 		//System.out.println(AclfOutFunc.loadFlowSummary(net));
  		
  		//test the total load of Bus8
  

@@ -4,7 +4,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.plugin.base"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/EMF"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Spring"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.numeric"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.common"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.core_EMF"/>

@@ -3,7 +3,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/EMF"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Spring"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.common"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.core_EMF"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.dc_EMF"/>

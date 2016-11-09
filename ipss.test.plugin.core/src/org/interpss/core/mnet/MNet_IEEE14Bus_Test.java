@@ -118,7 +118,7 @@ public class MNet_IEEE14Bus_Test extends CorePluginTestSetup {
   		assertTrue(net.isLfConverged());		
  		AclfBus swingBus = (AclfBus)net.getBus("Bus1");
  		AclfSwingBus swing = swingBus.toSwingBus();
-		System.out.println(swing.getGenResults(UnitType.PU));
+		//System.out.println(swing.getGenResults(UnitType.PU));
 		//System.out.println(AclfOutFunc.loadFlowSummary(net));
 		
 		/*
