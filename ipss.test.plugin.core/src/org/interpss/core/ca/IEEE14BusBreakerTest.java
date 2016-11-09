@@ -85,7 +85,7 @@ public class IEEE14BusBreakerTest extends CorePluginTestSetup {
 	
 	  	// there is a zero-z branch loop
 	  	list = net.getBus("Bus7").findZeroZPathBuses(true);
-	  	System.out.println(list);
+	  	//System.out.println(list);
 	  	assertTrue(list.size() == 5);	
 
 	  	list = net.getBus("Bus2").findZeroZPathBuses(false);
