@@ -21,6 +21,7 @@ import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.dstab.DStabilityNetwork;
@@ -120,7 +121,7 @@ public class TestCMPLDWModel {
 			dstabAlgo.setTotalSimuTimeSec(1);
 
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Swing-mach1"));
-			//net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1",net,SimpleFaultCode.GROUND_3P,0.0d,0.05),"3phaseFault@Bus5");
+			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus3",dsNet,SimpleFaultCode.GROUND_3P,0.5d,0.05),"3phaseFault@Bus5");
 	        
 	        
 			
@@ -128,7 +129,7 @@ public class TestCMPLDWModel {
 			//sm.addGeneratorStdMonitor(new String[]{"Swing-mach1"});
 			sm.addBusStdMonitor(new String[]{"Bus1","Bus3","Bus3_lowBus","Bus3_loadBus"});
 			//extended_device_Id = "ACMotor_"+this.getId()+"@"+this.getDStabBus().getId();
-			//sm.addDynDeviceMonitor(DynDeviceType.ACMotor, "ACMotor_1@Bus1");
+			sm.addDynDeviceMonitor(DynDeviceType.ACMotor, "ACMotor_1@Bus3_loadBus");
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(5);
@@ -148,7 +149,7 @@ public class TestCMPLDWModel {
 			}
 			//System.out.println(sm.toCSVString(sm.getMachAngleTable()));
 			System.out.println(sm.toCSVString(sm.getBusVoltTable()));
-		  
+			System.out.println(sm.toCSVString(sm.getAcMotorPTable()));
 		  
 	}
 

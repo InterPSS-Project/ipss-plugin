@@ -167,21 +167,21 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 			dstabAlgo.setSimuStepSec(0.005);
 			dstabAlgo.setTotalSimuTimeSec(10.0);
-			dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
+			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
 			
 
 			StateMonitor sm = new StateMonitor();
 			sm.addBusStdMonitor(new String[]{"Bus17","Bus18","Bus15","Bus16","Bus28"});
-			sm.addGeneratorStdMonitor(new String[]{"Bus30-mach1","Bus31-mach1","Bus34-mach1","Bus39-mach1"});
+			sm.addGeneratorStdMonitor(new String[]{"Bus30-mach1","Bus37-mach1","Bus34-mach1","Bus38-mach1","Bus39-mach1"});
 			
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(5);
+			dstabAlgo.setOutPutPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
 			
 			IpssLogger.getLogger().setLevel(Level.INFO);
 			
-			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus17",dsNet,SimpleFaultCode.GROUND_3P,new Complex(0,0),null,1.0d,0.05),"3phaseFault@Bus17");
+			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus28",dsNet,SimpleFaultCode.GROUND_3P,new Complex(0,0),null,1.0d,0.07),"3phaseFault@Bus17");
 			
 
 			if (dstabAlgo.initialization()) {
@@ -196,8 +196,8 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 			}
 			System.out.println(sm.toCSVString(sm.getMachPeTable()));
 			System.out.println(sm.toCSVString(sm.getBusVoltTable()));
-			//FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//comprehensive_ch7//ieee39_pos_3P@Bus17_GenAngle.csv", sm.toCSVString(sm.getMachAngleTable()));
-			//FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//comprehensive_ch7//ieee39_pos_3P@Bus17_busVolt.csv", sm.toCSVString(sm.getBusVoltTable()));
+			FileUtil.writeText2File("D://ieee39_pos_3P@Bus28_GenAngle.csv", sm.toCSVString(sm.getMachAngleTable()));
+			FileUtil.writeText2File("D://ieee39_pos_3P@Bus28_GenSpd.csv", sm.toCSVString(sm.getMachSpeedTable()));
 	
 		}
 		
