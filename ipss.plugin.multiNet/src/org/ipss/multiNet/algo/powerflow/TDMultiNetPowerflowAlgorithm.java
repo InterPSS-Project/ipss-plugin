@@ -47,7 +47,7 @@ public class TDMultiNetPowerflowAlgorithm {
 	
 	protected boolean pfFlag = true;
 	protected int iterationMax = 30;
-	protected double tolerance = 5.0E-4;
+	protected double tolerance = 1.0E-4;
 	protected LoadflowAlgorithm transLfAlgo = null;
 	
 	private Hashtable<String,Complex3x1> lastStepTransBoundaryBus3SeqVoltages = null;
@@ -277,7 +277,7 @@ public class TDMultiNetPowerflowAlgorithm {
 		    		  distPFAlgo.setInitBusVoltageEnabled(false);
 		    		  
 						if(!distPFAlgo.powerflow()){
-							throw new Error("Distribution system power flow is NOT converged! # "+distNet.getId());
+							throw new Error("Distribution system power flow is NOT converged! # "+distNet.getId()+", "+distNet.getBusList().get(0));
 						}
 						
 					

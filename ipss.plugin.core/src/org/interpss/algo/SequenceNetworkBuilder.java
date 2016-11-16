@@ -1,5 +1,13 @@
 package org.interpss.algo;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import org.apache.commons.math3.complex.Complex;
+import org.interpss.numeric.NumericConstant;
+import org.interpss.numeric.util.Number2String;
+
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGen;
@@ -8,6 +16,8 @@ import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.AcscBus;
 import com.interpss.core.acsc.AcscGen;
 import com.interpss.core.acsc.BaseAcscNetwork;
+import com.interpss.core.acsc.BusGroundCode;
+import com.interpss.core.acsc.BusScCode;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.acsc.XfrConnectCode;
 import com.interpss.core.net.Branch;
@@ -43,8 +53,299 @@ public class SequenceNetworkBuilder {
 			
 	}
 	
+	/**
+	 * generate the negative and zero sequence network data.
+	 * The output file is based on PSS/E v30 sequence data format.
+	 *  0,  30           / PSS(R)E 30 SEQ created by RWSQVERSION  FRI, JUN 21 2013  16:16
+	 0 /End of Positive sequence Generator data, Begin Negative sequence Generator data
+	 0 /End of Negative sequence Generator data, Begin Zero sequence Generator data
+	 0 /End of Zero sequence Generator data, Begin Negative sequence Load data
+	 0 /End of Negative sequence Load data, Begin Zero sequence Load data
+	 0 /End of Zero sequence Load data, Begin Zero sequence Branch data
+	 0 /End of Zero sequence Branch data, Begin Zero sequence Mutual data
+	 0 /End of Zero sequence Mutual data, Begin Zero sequence Transformer data
+	 0 /End of Zero sequence Transformer data, Begin Zero sequence Switched shunt data
+	 0 /END OF ZERO SEQ. SWITCHED SHUNT DATA, BEGIN ZERO SEQ. FIXED SHUNT DATA
+	 0 /END OF ZERO SEQ. FIXED SHUNT DATA
+	 * 
+	 * @param seqFileName
+	 * @return
+	 */
+	public boolean generateSeqNetworkData(String seqFileName){
+		
+		boolean flag = true;
+		StringBuffer  dyrSB= new StringBuffer();
+		String header = "0,  30           / PSS(R)E 30 SEQ";
+		String createdDateTimeInfo = "";
+		String posSeqGenData = "";
+		String negSeqGenData = "";
+		String zeroSeqGenData = "";
+		String negSeqLoadData = "";
+		String zeroSeqLoadData = "";
+		String zeroSeqBranchData = "";
+		String zeroSeqXfrData = ""; // including 2-winding and 3-winding transformers
+		String END_OF_POS_SeqGenData = "0 /End of Positive sequence Generator data, Begin Negative sequence Generator data";
+		String END_OF_NEG_SeqGenData = "0 /End of Negative sequence Generator data, Begin Zero sequence Generator data";
+	    String END_OF_ZERO_SeqGenData = "0 /End of Zero sequence Generator data, Begin Negative sequence Load data";
+	    String END_OF_NEG_SeqLoadData = "0 /End of Negative sequence Load data, Begin Zero sequence Load data";
+	    String END_OF_ZERO_SeqLoadData = "0 /End of Zero sequence Load data, Begin Zero sequence Branch data";
+	    String END_OF_ZERO_SeqBranchData = "0 /End of Zero sequence Branch data, Begin Zero sequence Mutual data";
+	    String END_OF_ZERO_SeqMutualData = "0 /End of Zero sequence Mutual data, Begin Zero sequence Transformer data";
+	    String END_OF_ZERO_SeqTransformerData = "0 /End of Zero sequence Transformer data, Begin Zero sequence Switched shunt data";
+	    String END_OF_ZERO_SeqSwitchedShuntData = "0 /END OF ZERO SEQ. SWITCHED SHUNT DATA, BEGIN ZERO SEQ. FIXED SHUNT DATA";
+	    String END_OF_ZERO_SeqFixedShuntData = "0 /END OF ZERO SEQ. FIXED SHUNT DATA";
+	    
+		/*
+		 *  Format
+		 *  0,  30           / PSS(R)E 30 SEQ created by RWSQVERSION  FRI, JUN 21 2013  16:16
+		     30,'1 ', 0.00000E+00, 2.24000E-01
+		 0 /End of Positive sequence Generator data, Begin Negative sequence Generator data
+		     30,'1 ', 0.00000E+00, 2.24000E-01
+		 0 /End of Negative sequence Generator data, Begin Zero sequence Generator data
+		     30,'1 ', 0.00000E+00, 2.24000E-01
+		 0 /End of Zero sequence Generator data, Begin Negative sequence Load data
+		 0 /End of Negative sequence Load data, Begin Zero sequence Load data
+		 0 /End of Zero sequence Load data, Begin Zero sequence Branch data
+		      1,     2,'1 ', 8.75000E-3, 1.02750E-1,    0.69870, 0.00000E+0, 0.00000E+0, 0.00000E+0, 0.00000E+0
+		 0 /End of Zero sequence Branch data, Begin Zero sequence Mutual data
+		 0 /End of Zero sequence Mutual data, Begin Zero sequence Transformer data
+		      2,    30,     0,'1 ',  2, 0.00000E+0, 0.00000E+0, 0.00000E+0, 1.81000E-2
+		 0 /End of Zero sequence Transformer data, Begin Zero sequence Switched shunt data
+		 0 /END OF ZERO SEQ. SWITCHED SHUNT DATA, BEGIN ZERO SEQ. FIXED SHUNT DATA
+		 0 /END OF ZERO SEQ. FIXED SHUNT DATA
+		 */
+		
+	    
+	    // HEADER
+	    
+	    dyrSB.append(header+"\n");
+	    
+	    // generation sequence data
+	    for(AcscBus scBus: this._net.getBusList()){
+			if(scBus.isGen()){
+				if(scBus.getContributeGenList().size()>0){
+					for(AclfGen gen:scBus.getContributeGenList()){
+						if(gen.isActive()){
+							AcscGen scGen =(AcscGen) gen;
+							long busNum = scBus.getNumber();
+							String id = scGen.getId();
+							if(id.length()==1) id = id+" ";
+							String genZ1Str = Number2String.toStr(scGen.getPosGenZ().getReal())+", "+Number2String.toStr(scGen.getPosGenZ().getImaginary());
+							String genZ2Str = Number2String.toStr(scGen.getNegGenZ().getReal())+", "+Number2String.toStr(scGen.getNegGenZ().getImaginary());
+							String genZ0Str = Number2String.toStr(scGen.getZeroGenZ().getReal())+", "+Number2String.toStr(scGen.getZeroGenZ().getImaginary());
+							
+							
+							posSeqGenData = posSeqGenData +busNum+", "+"'"+id+"', "+ genZ1Str+"\n";
+							negSeqGenData = negSeqGenData +busNum+", "+"'"+id+"', "+ genZ2Str+"\n";
+							zeroSeqGenData = zeroSeqGenData +busNum+", "+"'"+id+"', "+ genZ0Str+"\n";
+							
+						}
+					}
+				}
+			}
+	    }
+		
+	    dyrSB.append(posSeqGenData);
+	    dyrSB.append(END_OF_POS_SeqGenData+"\n");
+	    
+	    dyrSB.append(negSeqGenData);
+	    dyrSB.append(END_OF_NEG_SeqGenData+"\n");
+	    
+	    dyrSB.append(zeroSeqGenData);
+	    dyrSB.append(END_OF_ZERO_SeqGenData+"\n");
+	    
+	    if(negSeqLoadData.length() > 0){
+	    	dyrSB.append(negSeqLoadData); 
+	    }
+	    dyrSB.append(END_OF_NEG_SeqLoadData+"\n");
+	    
+	    
+	    if(zeroSeqLoadData.length() > 0){
+	    	dyrSB.append(zeroSeqLoadData); 
+	    }
+	    dyrSB.append(END_OF_ZERO_SeqLoadData+"\n");	
+	    
+	    
+	    
+	    
+	    // zero seq branch data
+	    for(AcscBranch scBranch: this._net.getBranchList()){
+	    	
+	    	if(scBranch.isLine()){
+	    		// 1,     2,'1 ', 8.75000E-3, 1.02750E-1,    0.69870, 0.00000E+0, 0.00000E+0, 0.00000E+0, 0.00000E+0
+	    		
+	    		long fBusNum = scBranch.getFromAcscBus().getNumber();
+	    		long tBusNum = scBranch.getToAcscBus().getNumber();
+	    		String lineId = scBranch.getCircuitNumber();
+	    		if(lineId.length() ==1) lineId +=" ";
+	    		
+	    		String RXBStr = Number2String.toStr(scBranch.getZ0().getReal())+", "+
+	    				Number2String.toStr(scBranch.getZ0().getImaginary())+", "+
+	    				Number2String.toStr(scBranch.getHB0()*2.0); // PSSE uses total zero sequence branch charging susceptance
+	    	    // zero seq data of shunts connected to both ends of the line
+	    		String zeroSeqGIBIGJBJ = "0.0, 0.0, 0.0, 0.0"; 
+	    	    zeroSeqBranchData += fBusNum+", "+tBusNum+", '"+lineId+"', "+RXBStr+","+zeroSeqGIBIGJBJ+"\n";
+	    	}
+	    	
+	    	
+	    }
+	    
+	    dyrSB.append(zeroSeqBranchData);
+	    dyrSB.append(END_OF_ZERO_SeqBranchData+"\n");
+	    dyrSB.append(END_OF_ZERO_SeqMutualData+"\n");
+	    
+	    
+	    // zero seq transformer data
+	    //I,J,K,ICKT,CZ0,CZG,CC,RG1,XG1,R01,X01,RG2,XG2,R02,X02,RNUTRL,XNUTRL
+		/*
+		 * for two-winding transformers:
+	       I, J, K, ICKT, CC, RG, XG, R1, X1, R2, X2
+	       
+	       for three-winding transformers:
+	       I, J, K, ICKT, CC, RG, XG, R1, X1, R2, X2, R3, X3
+		 * 
+		 * 
+		 * For a two-winding transformer, valid values are 1 through 9. They define the 
+	       following zero sequence connections that are shown in Figure 5-18.
+	        1 series path (e.g., grounded wye-grounded wye)
+	        2 no series path, ground path on winding one side (e.g., grounded wye-delta)
+	        3 no series path, ground path on winding two side (e.g., delta-grounded wye)
+	        4 no series or ground path (e.g., delta-delta)
+	        5 series path, ground path on winding two side (normally only used as part of 
+	          a three-winding transformer) 
+	        6 no series path, ground path on winding one side, earthing transformer on 
+	          winding two side (e.g., grounded wye-delta with an earthing transformer)
+	        7 no series path, earthing transformer on winding one side, ground path on 
+	          winding two side (e.g., delta with an earthing transformer-grounded wye)
+	        8 series path, ground path on each side (e.g., grounded wye-grounded wye 
+	          core-type autotransformer with a grounding resistance)
+	     ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++     
+	         Transformer leakage impedance: R1, X1, R2, X2
+	         Grounding: RG1, XG1, RG2, XG2
+	      RG, XG  Zero sequence grounding impedance for an impedance grounded transformer ZG
+                  For a three-winding transformer, ZG is modeled in the lowest numbered 
+                  winding whose corresponding connection code is 2, 3, 5, 6 or 7    
+	      R1, X1  Zero sequence impedance of a two-winding transformer, or the winding one zero 
+                  sequence impedance of a three-winding transformer,
+          R2, X2  For 2-winding transformer, they are only valid when CC = 8, for specifying the grounding impedance
+                  at the winding 2.
+                  For 3-winding xfr, stands for the winding 2 zero sequence impedance
+          R3, X3  Winding 3 zero sequence impedance 
+	     */
+	    
+	    int cc = 1;
+	    for(AcscBranch scBranch: this._net.getBranchList()){
+	    	
+	    	if(scBranch.isXfr() && !is3WXfrBranch(scBranch)){
+
+	    		long fBusNum = scBranch.getFromAcscBus().getNumber();
+	    		long tBusNum = scBranch.getToAcscBus().getNumber();
+	    		String lineId = scBranch.getCircuitNumber();
+	    		if(lineId.length() ==1) lineId +=" ";
+	    		
+	    		if(scBranch.getXfrFromConnectCode() == XfrConnectCode.WYE_SOLID_GROUNDED){
+	    			if(scBranch.getXfrToConnectCode() == XfrConnectCode.WYE_SOLID_GROUNDED){
+	    				cc =1;
+	    			}
+	    			else if(scBranch.getXfrToConnectCode() == XfrConnectCode.DELTA){
+	    				cc = 2;
+	    			}
+	    			else{
+	    				throw new UnsupportedOperationException("The transformer connection type is not supported yet! Connection @ from, to:"+
+		    					scBranch.getXfrFromConnectCode()+"," +scBranch.getXfrToConnectCode());
+	    			}
+	    		}
+	    		else if(scBranch.getXfrFromConnectCode() == XfrConnectCode.DELTA){
+	                if(scBranch.getXfrToConnectCode() == XfrConnectCode.WYE_SOLID_GROUNDED){
+	    				cc = 3;
+	    			}
+	    			else if(scBranch.getXfrToConnectCode() == XfrConnectCode.DELTA){
+	    				cc = 4;
+	    			}
+	    			else{
+	    				throw new UnsupportedOperationException("The transformer connection type is not supported yet! Connection @ from, to:"+
+		    					scBranch.getXfrFromConnectCode()+"," +scBranch.getXfrToConnectCode());
+	    			}
+	    		}
+	    		else{
+	    			throw new UnsupportedOperationException("The transformer connection type is not supported yet! Connection @ from, to:"+
+	    					scBranch.getXfrFromConnectCode()+"," +scBranch.getXfrToConnectCode());
+	    		}
+	    		
+	    		
+	    	 Complex z0 = scBranch.getZ0();
+	    	 Complex zg1 = scBranch.getXfrFromGroundZ();  // if cc =1 or 2 or 6
+	    	 Complex zg2 = scBranch.getXfrToGroundZ();    // if cc =1 or 3
+	    	 
+	    	 String z0Str =  Number2String.toStr(z0.getReal())+", "+Number2String.toStr(z0.getImaginary());
+	    	 String zg1Str ="0.0, 0.0";
+	    	 String rx2Str ="0.0, 0.0";
+	    	 // I, J, K, ICKT, CC, RG, XG, R1, X1, R2, X2
+	    	 if(cc ==1 || cc ==2 || cc ==6){
+	    		 if(zg1 != null){
+	    			 zg1Str = Number2String.toStr(zg1.getReal())+", "+Number2String.toStr(zg1.getImaginary());
+	    		 }
+	    	 }
+	    	 
+	    	 if(cc ==1 || cc ==3){
+	    		 if(zg2 != null){
+	    			 rx2Str = Number2String.toStr(zg2.getReal())+", "+Number2String.toStr(zg2.getImaginary());
+	    		 }
+	    	 }
+	    	 int thirdBusNum  = 0;
+	    	 // add the the zeroSeqXfrData
+	    	 zeroSeqXfrData += fBusNum+", "+tBusNum+", "+ thirdBusNum+", '"+lineId+"', "+cc+", "+zg1Str+", "+z0Str+", "+rx2Str+"\n";
+	    	}
+	    	
+	    }
+	    
+	    if(zeroSeqXfrData.length()>0){
+	    	dyrSB.append(zeroSeqXfrData);
+	    }
+	    dyrSB.append(END_OF_ZERO_SeqTransformerData+"\n");
+	    
+	    
+	    
+	    // zero sequence fixed shunt data
+	    dyrSB.append(END_OF_ZERO_SeqSwitchedShuntData+"\n");
+	    dyrSB.append(END_OF_ZERO_SeqFixedShuntData+"\n");
+	    
+	    
+	    try {
+			Files.write(Paths.get(seqFileName), dyrSB.toString().getBytes());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return flag = false;
+		}
+	    
+	    IpssLogger.getLogger().info("The Sequence network data is saved to :"+ Paths.get(seqFileName));
+	    
+		return flag;
+	}
+	
+	
+	
+	
 	private boolean setGenSeqData(SequenceCode seq){
 		for(AcscBus scBus: this._net.getBusList()){
+			if(!scBus.isGen()){
+				scBus.setScCode(BusScCode.NON_CONTRI);
+				scBus.setScGenZ(NumericConstant.LargeBusZ, SequenceCode.POSITIVE);
+				scBus.setScGenZ(NumericConstant.LargeBusZ, SequenceCode.NEGATIVE);
+				scBus.setScGenZ(NumericConstant.LargeBusZ, SequenceCode.ZERO);
+				scBus.getGrounding().setCode(BusGroundCode.UNGROUNDED);
+				scBus.getGrounding().setZ(NumericConstant.LargeBusZ);
+				continue;
+			}
+			
+			// generation bus contributes to short circuit;
+			scBus.setScCode(BusScCode.CONTRIBUTE);
+			
+			// grounding information affects the zero sequence
+			scBus.getGrounding().setCode(BusGroundCode.UNGROUNDED);
+			scBus.getGrounding().setZ(NumericConstant.LargeBusZ);
+			
 			if(scBus.getContributeGenList().size()>0){
 				for(AclfGen gen:scBus.getContributeGenList()){
 					if(gen.isActive()){
@@ -120,11 +421,11 @@ public class SequenceNetworkBuilder {
 		for(Branch bra: this._net.getBranchList()){
 			if(bra instanceof AcscBranch){
 				AcscBranch scBranch = (AcscBranch) bra;
-				/*
-				if(bra.getId().equals("Bus19410->3WNDTR_19410_14990_14991_1(1)")){
-					System.out.print("proc Bus19410->3WNDTR_19410_14990_14991_1(1)");
+				
+				if(bra.getId().equals("Bus198->Bus202(1)")){
+					System.out.print("proc Bus198-202");
 				}
-				*/
+				
 			if(scBranch.isXfr() && !is3WXfrBranch(scBranch)){
 				//Line NegZ = PosZ
 				if(seq==SequenceCode.NEGATIVE){
@@ -137,6 +438,10 @@ public class SequenceNetworkBuilder {
 						//zero sequence branch shunt B0 setting, zero by default
 						scBranch.setHB0(0);
 						
+						
+						if(scBranch.getId().equals("Bus7003->Bus3(1)")){
+							System.out.println("processing: Bus7003->Bus3(1)");
+						}
 						/*
 						 * type -1 : ordinary 2 winding transformer, HV/LV :Yg-Yg connection 
 						 * criterion: HV high than 230 kV and not a generator step up transformer
@@ -148,17 +453,20 @@ public class SequenceNetworkBuilder {
 						 * 
 						 * 
 						 */
-						//Type-1: Yg-Yg
-						if((scBranch.getFromAcscBus().getBaseVoltage()>=230000||scBranch.getToAcscBus().getBaseVoltage()>=230000)
-								&& !isGenXfr(scBranch)){
+						//Type-1: EHV Yg-Yg
+						if(getLowVoltageBus(scBranch).getBaseVoltage()>=115000.0){
 							scBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
 							scBranch.setXfrToConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
 							
 						}
-						//type-2 // Delta-Yg
-						else if(getHighVoltageBus(scBranch).getBaseVoltage()<230000
-							&& !isGenXfr(scBranch)){
-							if(scBranch.getFromPhysicalBusId().equals(getHighVoltageBus(scBranch).getId())){
+						//type-2 // Delta-Yg,  mainly for subtransmission step-down transformer
+						else if(getHighVoltageBus(scBranch).getBaseVoltage()<=115000 && getLowVoltageBus(scBranch).getBaseVoltage()<69000.0 
+							&& !isGenXfr(scBranch) && getLowVoltageBus(scBranch).isLoad()){
+							if(scBranch.getFromAcscBus().getBaseVoltage() == scBranch.getToAcscBus().getBaseVoltage()){
+								scBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+								scBranch.setXfrToConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+							}
+							else if(scBranch.getFromPhysicalBusId().equals(getHighVoltageBus(scBranch).getId())){
 							  scBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
 							  scBranch.setXfrToConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
 							}
@@ -168,11 +476,11 @@ public class SequenceNetworkBuilder {
 							}
 								
 						}
-						//type-3
-						else if(isGenXfr(scBranch)){
-							//NOTE: for step up transformer: the delta connection is on low voltage bus side .
+						//type-3  generation step up transformer, high side Yg, low side Delta
+						else if(isGenXfr(scBranch) && getLowVoltageBus(scBranch).getBaseVoltage()<69000.0){
+							//NOTE: for step up transformer: the delta connection is on the generator (low voltage) bus side .
 							//
-							if(scBranch.getFromAcscBus().getBaseVoltage()>=scBranch.getToAcscBus().getBaseVoltage()){
+							if(scBranch.getToAcscBus().isGen()){ 
 							   scBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
 							   scBranch.setXfrToConnectCode(XfrConnectCode.DELTA);
 							}
@@ -183,8 +491,10 @@ public class SequenceNetworkBuilder {
 						}
 						else {
 							// error, unprocessed model
-							IpssLogger.getLogger().severe("Error: transformer is not belong to predefined types"+scBranch.getId());
-						    return false;
+							IpssLogger.getLogger().severe("Error: transformer is not belong to predefined types, set to Yg/Yg connection: "+scBranch.getId());
+							
+							scBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+							scBranch.setXfrToConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
 						}
 						
 					}
@@ -329,9 +639,9 @@ public class SequenceNetworkBuilder {
 	}
 	private boolean isGenXfr(AcscBranch bra){
 		//base voltage less than 35 kV
-		if(bra.getFromAcscBus().getBaseVoltage()<35000 && bra.getFromAcscBus().isGen())
+		if(bra.getFromAcscBus().getBaseVoltage()<35000.0 && bra.getFromAcscBus().isGen())
 			return true;
-		else if(bra.getToAcscBus().getBaseVoltage()<35000 && bra.getToAcscBus().isGen()){
+		else if(bra.getToAcscBus().getBaseVoltage()<35000.0 && bra.getToAcscBus().isGen()){
 			return true;
 		}
 		return false;
@@ -344,11 +654,22 @@ public class SequenceNetworkBuilder {
 		else if(bra.getFromAcscBus().getBaseVoltage()<bra.getToAcscBus().getBaseVoltage())
 			return bra.getToAcscBus();
 		else {
-			IpssLogger.getLogger().info("From bus and to bus base voltage is the same, Xfr:"+bra.getId());
+			IpssLogger.getLogger().info(" The base voltages of from bus and to bus are the same, Xfr:"+bra.getId());
 			return bra.getFromAcscBus();
 		}
 		
 	}
+	
+	private AcscBus getLowVoltageBus(AcscBranch bra){
+		if(bra.getFromAcscBus().getBaseVoltage()>bra.getToAcscBus().getBaseVoltage())
+			return bra.getToAcscBus();
+		else if(bra.getFromAcscBus().getBaseVoltage()<bra.getToAcscBus().getBaseVoltage())
+			return bra.getFromAcscBus();
+		else {
+			IpssLogger.getLogger().info("From bus and to bus base voltage is the same, Xfr:"+bra.getId());
+			return bra.getToAcscBus();
+		}
 		
+	}	
 
 }
