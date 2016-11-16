@@ -261,5 +261,64 @@ public class IEEE9Bus_Acsc_test {
 		
 	}
 	
+	@Test
+	public void testFaultCalc_compare() throws InterpssException{
+		IpssCorePlugin.init();
+		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		assertTrue(adapter.parseInputFile(NetType.AcscNet, new String[]{
+				"testData/adpter/psse/v30/IEEE9Bus/ieee9_newGenBase.raw",
+				"testData/adpter/psse/v30/IEEE9Bus/ieee9_null.seq"
+		}));
+		AcscModelParser acscParser =(AcscModelParser) adapter.getModel();
+		//acscParser.stdout();
+		
+		AcscNetwork net = new ODMAcscParserMapper().map2Model(acscParser).getAcscNet();
+		
+		//set the order in original sequence for better testing
+		for(int i=1;i<=net.getNoBus();i++){
+			net.getBus("Bus"+i).setSortNumber(i-1);
+		}
+		net.setBusNumberArranged(true);
+		
+		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	algo.setLfMethod(AclfMethod.PQ);
+	  	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
+	  	algo.loadflow();
+  	
+  		assertTrue( net.isLfConverged());
+		
+  	  	//*********************************************
+	  	//             Bus4 3P Fault
+	  	//********************************************
+	  	
+  		
+	  	SimpleFaultAlgorithm acscAlgo = CoreObjectFactory.createSimpleFaultAlgorithm(net);
+  		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus4", acscAlgo );
+		fault.setFaultCode(SimpleFaultCode.GROUND_3P);
+		fault.setZLGFault(new Complex(0.0, 0.0));
+		fault.setZLLFault(new Complex(0.0, 0.0));
+		
+		//pre fault profile : solved power flow
+		acscAlgo.setScBusVoltage(ScBusVoltageType.LOADFLOW_VOLT);
+		
+		acscAlgo.calculateBusFault(fault);
+	  	//System.out.println(fault.getFaultResult().getSCCurrent_012());
+	  	//System.out.println(fault.getFaultResult().getBusVoltage_012(net.getAcscBus("Bus1")));
+	  	
+	  	//3p fault @Bus4
+	  	//fault current
+	  	//0.0000 + j0.0000  -1.4243 + j15.62133  0.0000 + j0.0000
+	  	assertTrue(TestUtilFunc.compare(fault.getFaultResult().getSCCurrent_012(), 
+	  			0.0, 0.0, -1.4243, 15.62133, 0.0, 0.0) );
+	  	//voltage @Bus1
+	  	//0.0000 + j0.0000  0.61592 + j0.01616  0.0000 + j0.0000
+	  	assertTrue(TestUtilFunc.compare(fault.getFaultResult().getBusVoltage_012(net.getBus("Bus1")), 
+	  			0.0, 0.0, 0.61592, 0.01616, 0.0, 0.0) );
+	  	
+
+	  
+		
+	}
+	
 
 }
