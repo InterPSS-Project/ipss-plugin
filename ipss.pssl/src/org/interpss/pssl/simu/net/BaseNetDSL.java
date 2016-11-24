@@ -36,16 +36,22 @@ import com.interpss.core.net.Zone;
  * 
  * @author mzhou
  *
- * @param TObj for defining Bus or Branch class
- * @param TNet for defining Network class
- * @param TBaseDSL for defining base DSL class
+ * @param <TObj> for defining Bus or Branch class
+ * @param <TNet> for defining Network class
+ * @param <TBaseDSL> for defining base DSL class
  */
 class BaseNetDSL<TObj extends NetworkedElement,       // for Bus or Branch class 
                     TNet extends Network<?,?>,                // for Network class
                     TBaseDSL> {                          // for base DSL class
-	private TNet net = null;
+	protected TNet net = null;
 	private TObj obj = null;
 		
+	/**
+	 * default constructor
+	 */
+	public BaseNetDSL() {
+	}
+
 	/**
 	 * constructor
 	 * 
