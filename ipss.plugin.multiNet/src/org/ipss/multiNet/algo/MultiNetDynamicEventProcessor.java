@@ -82,7 +82,7 @@ public class MultiNetDynamicEventProcessor extends DynamicEventProcessor {
 						         AcscBusFault fault = dEvent.getBusFault();
 						         AcscBus bus = fault.getBus();
 						         DStabilityNetwork faultSubNet = (DStabilityNetwork) bus.getNetwork();
-						         ISparseEqnComplex ymatrix = faultSubNet.formYMatrix(SequenceCode.POSITIVE, false);
+						         ISparseEqnComplex ymatrix = faultSubNet.formScYMatrix(SequenceCode.POSITIVE, false);
 						         //TODO don't forget to set the ymatrix
 						         faultSubNet.setYMatrix(ymatrix);
 						         faultSubNet.setYMatrixDirty(true);
