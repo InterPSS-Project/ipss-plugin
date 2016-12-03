@@ -26,8 +26,8 @@ package org.interpss;
 
 import org.junit.BeforeClass;
 
+import com.interpss.CoreCommonFactory;
 import com.interpss.common.msg.IPSSMsgHub;
-import com.interpss.spring.CoreCommonSpringFactory;
 
 public class CorePluginTestSetup {
 	protected static IPSSMsgHub msg;
@@ -35,7 +35,7 @@ public class CorePluginTestSetup {
 	@BeforeClass  
 	public static void setSpringAppCtx() {
 		IpssCorePlugin.init();
-		msg = CoreCommonSpringFactory.getIpssMsgHub();
+		msg = CoreCommonFactory.getIpssMsgHub();
 	}
 }
 

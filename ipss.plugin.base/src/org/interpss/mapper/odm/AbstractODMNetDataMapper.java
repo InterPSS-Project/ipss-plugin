@@ -30,7 +30,6 @@ import static org.interpss.mapper.odm.ODMFunction.BusXmlRef2BusId;
 import org.ieee.odm.schema.ApparentPowerUnitType;
 import org.ieee.odm.schema.BaseBranchXmlType;
 import org.ieee.odm.schema.BusXmlType;
-import org.ieee.odm.schema.CimRdfXmlType;
 import org.ieee.odm.schema.NetworkXmlType;
 import org.ieee.odm.schema.VoltageUnitType;
 
@@ -45,7 +44,6 @@ import com.interpss.core.net.Area;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Branch3W;
 import com.interpss.core.net.Bus;
-import com.interpss.core.net.CimRecord;
 import com.interpss.core.net.Network;
 import com.interpss.core.net.Zone;
 
@@ -97,12 +95,14 @@ public abstract class AbstractODMNetDataMapper<Tfrom, Tto> extends AbstractMappe
 			ipssLogger.info("Bus is not active, " + bus.getId());
 		}
 		
+		/*
 		if (busRec.getCimRdfRecords() != null && busRec.getCimRdfRecords().getRdfRec().size() > 0) {
 			for (CimRdfXmlType cimRec : busRec.getCimRdfRecords().getRdfRec()) {
 				CimRecord rec = CoreObjectFactory.createCimRecod(cimRec.getRdfId(), cimRec.getName());
 				bus.getCimRec().add(rec);
 			}
 		}
+		*/
 		
 		bus.setDesc(busRec.getDesc());
 		if (busRec.getAreaNumber() != null) {
@@ -143,7 +143,7 @@ public abstract class AbstractODMNetDataMapper<Tfrom, Tto> extends AbstractMappe
 				((BaseAclfNetwork)net).add3WXfr((Aclf3WBranch)branch, fromBusId, toBusId, tertBusId);
 			}
 			else if(branch instanceof HvdcLine2T)
-				((BaseAclfNetwork)net).addHvdcLine2T((HvdcLine2T) branch, fromBusId, toBusId, (int)branch.getNumber());
+				((BaseAclfNetwork)net).addHvdcLine2T((HvdcLine2T) branch, fromBusId, toBusId, Integer.parseInt(branchRec.getCircuitId()));
 			else
 				net.addBranch(branch, fromBusId, toBusId);
 			

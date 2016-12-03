@@ -14,6 +14,7 @@ import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.interpss.numeric.util.NumericUtil;
 import org.junit.Test;
 
+import com.interpss.CoreCommonFactory;
 import com.interpss.SimuObjectFactory;
 import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.common.util.IpssLogger;
@@ -24,13 +25,12 @@ import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.mach.SalientPoleMachine;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
-import com.interpss.spring.CoreCommonSpringFactory;
 
 public class IEEE9_Dstab_Adapter_Test {
 	@Test
 	public void test_IEEE9Bus_Dstab(){
 		IpssCorePlugin.init();
-		IPSSMsgHub msg = CoreCommonSpringFactory.getIpssMsgHub();
+		IPSSMsgHub msg = CoreCommonFactory.getIpssMsgHub();
 		IpssLogger.getLogger().setLevel(Level.WARNING);
 		
 		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);

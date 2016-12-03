@@ -501,13 +501,16 @@ public class IpssAclfNet extends BaseDSL {
 	
 	public static class AclfBranchBaseDSL<TBra extends Branch, TNet extends Network<?,?>, TAclfDSL> extends BaseNetDSL<TBra, TNet, TAclfDSL>{
 		// for getAclfBranch()
+		public AclfBranchBaseDSL() {
+		}
+		// for getAclfBranch()
 		public AclfBranchBaseDSL(TBra branch, TNet net) throws Exception {
 			super(net);
 			if (branch != null)
 				setObject(branch);
 			else
 				throw new Exception("AclfBranch not found");
-}
+		}
 
 		// for addAclfBranch()
 		public AclfBranchBaseDSL(String fromBusId, String toBusId, String cirId, TBra branch, TNet net) throws InterpssException {

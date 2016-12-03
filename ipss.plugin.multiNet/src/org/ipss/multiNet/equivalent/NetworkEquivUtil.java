@@ -75,7 +75,7 @@ public class NetworkEquivUtil {
 		
 		ISparseEqnComplex ymatrix = net.getYMatrix();
 		if(ymatrix==null){
-			ymatrix = net.formYMatrix(SequenceCode.POSITIVE,false);
+			ymatrix = net.formScYMatrix(SequenceCode.POSITIVE,false);
 			net.setYMatrix(ymatrix);
 			net.setYMatrixDirty(true);
 		}
@@ -270,7 +270,7 @@ public static  NetworkEquivalent cal3PhaseNetworkTheveninEquiv(DStabNetwork3Phas
 			switch (code) {
 			case ZERO:
 				if(net.getZeroSeqYMatrix()==null)
-				    seqYmatrixEqn = net.formYMatrix(SequenceCode.ZERO,true);
+				    seqYmatrixEqn = net.formScYMatrix(SequenceCode.ZERO,true);
 				else
 					seqYmatrixEqn = net.getZeroSeqYMatrix();
 				break;
@@ -279,14 +279,14 @@ public static  NetworkEquivalent cal3PhaseNetworkTheveninEquiv(DStabNetwork3Phas
 				
 				//setBoundaryGenLoadInactive();
 				if(net.getNegSeqYMatrix()==null)
-				     seqYmatrixEqn =net.formYMatrix(SequenceCode.NEGATIVE,true);
+				     seqYmatrixEqn =net.formScYMatrix(SequenceCode.NEGATIVE,true);
 				else
 					 seqYmatrixEqn = net.getNegSeqYMatrix();
 				break;
 				
 			default:
 				     if(net.getYMatrix() == null)
-					    seqYmatrixEqn = net.formYMatrix(SequenceCode.POSITIVE,true);
+					    seqYmatrixEqn = net.formScYMatrix(SequenceCode.POSITIVE,true);
 				     else{
 				    	 seqYmatrixEqn = net.getYMatrix();
 				    	 

@@ -35,6 +35,7 @@ import org.interpss.pssl.simu.BaseDSL;
 import com.interpss.CoreObjectFactory;
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.acsc.AcscBranch;
@@ -154,11 +155,19 @@ public class IpssAcscNet extends BaseDSL {
 	}
 	
 	public static class AcscBranchDSL extends IpssAclfNet.AclfBranchBaseDSL<AcscBranch, BaseAcscNetwork<?,?>, AcscBranchDSL>{
+		public AcscBranchDSL() {
+		}
+		
 		public AcscBranchDSL(String fromBusId, String toBusId, BaseAcscNetwork<?,?> net) throws InterpssException {
 			this(fromBusId, toBusId, "1", net);
 		}
 		public AcscBranchDSL(String fromBusId, String toBusId, String cirId, BaseAcscNetwork<?,?> net) throws InterpssException {
-			super(fromBusId, toBusId, cirId, CoreObjectFactory.createAcscBranch(), net);
+			//super(fromBusId, toBusId, cirId, CoreObjectFactory.createAcscBranch(), net);
+			this.net = net;
+			AcscBranch branch = CoreObjectFactory.createAcscBranch();
+			branch.setCircuitNumber(cirId);
+			setObject(branch);
+			getAcscNet().addBranch(branch, fromBusId, toBusId);
 		}
 		
 		public AcscBranchDSL z0(Complex z, UnitType unit) { return setZ0(z, unit); }

@@ -29,16 +29,15 @@ import static org.junit.Assert.assertTrue;
 import java.io.BufferedReader;
 import java.io.FileReader;
 
-import org.interpss.mapper.odm.ODMAclfNetMapper;
 import org.ieee.odm.ODMFileFormatEnum;
 import org.ieee.odm.ODMObjectFactory;
 import org.ieee.odm.adapter.IODMAdapter;
 import org.ieee.odm.model.aclf.AclfModelParser;
-import org.interpss.CorePluginObjFactory;
+import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
-import org.interpss.spring.CorePluginSpringFactory;
+import org.interpss.mapper.odm.ODMAclfNetMapper;
 import org.junit.Test;
 
 import com.interpss.CoreObjectFactory;
@@ -48,7 +47,7 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 public class PWDIEEE14BusTestCase extends CorePluginTestSetup {
 	//@Test
 	public void odmAdapterTestCase() throws Exception {
-		AclfNetwork net = CorePluginObjFactory
+		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.PWD)
 				.load("testData/adpter/pwd/ieee14.AUX")
 				.getAclfNet();	
@@ -91,7 +90,7 @@ public class PWDIEEE14BusTestCase extends CorePluginTestSetup {
 		//this.log.info("casedata.inputDataFile: " + casedata.inputDataFile);
 		adapter.parseFileContent(everything);		
 		
-		AclfNetwork aclfNet = CorePluginSpringFactory
+		AclfNetwork aclfNet = CorePluginFactory
 				.getOdm2AclfParserMapper(ODMAclfNetMapper.XfrBranchModel.InterPSS)
 				.map2Model((AclfModelParser) adapter.getModel())
 				.getAclfNet();

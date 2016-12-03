@@ -42,7 +42,6 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.contingency.BranchOutageType;
 import com.interpss.core.aclf.contingency.Contingency;
-import com.interpss.core.aclf.contingency.EquivOutageBranch;
 import com.interpss.core.aclf.contingency.MonitoringBranch;
 import com.interpss.core.aclf.contingency.OutageBranch;
 import com.interpss.core.algo.sec.SecAnalysisBranchRatingType;
@@ -177,9 +176,9 @@ public class ContingencyAnalysisHelper {
 						 * calculate all branches for the outage and stored branches with rating violation 
 						 * to the contingency as monitor branch.
 						 */
-						for (AclfBranch branch : this.algoDsl.algo().getActiveBranches()) {
+						for (AclfBranch branch : this.algoDsl.algo().getNetwork().getBranchList()) {
 							// bypass outage branches and island branches, and those monitoring disabled defined in AUX file 
-							if ((branch.getIntFlag() == 0)) {
+							if (branch.isActive() && branch.getIntFlag() == 0) {
 								// calculate single outage contingency for the monitor branch
 								double shiftedFlow = this.singleOutageMonitorBranchFlow(cont, branch, distRefBusList);
 								this.checkViolationSetMaxShiftedFlow(branch, shiftedFlow, cont);
@@ -205,7 +204,7 @@ public class ContingencyAnalysisHelper {
 				algoDsl.setLODFAnalysisType(LODFSenAnalysisType.MULTI_BRANCH);
 
 				//for (AclfBranch outBranch : cont.getOutageBranches()) {
-				for (EquivOutageBranch outBranch : cont.getEquivOutageBranches()) {
+				for (OutageBranch outBranch : cont.getEquivOutageBranches()) {
 					if (outBranch.isActive()) {
 						algoDsl.addOutageBranch(outBranch);
 					}
@@ -216,9 +215,9 @@ public class ContingencyAnalysisHelper {
 					algoDsl.calLineOutageDFactors(cont.getId());
 
 					if (this.findConstraintBranches) {
-						for (AclfBranch branch : this.algoDsl.algo().getActiveBranches()) {
+						for (AclfBranch branch : this.algoDsl.algo().getNetwork().getBranchList()) {
 							// bypass outage branches and island branches, and those monitoring disabled defined in AUX file 
-							if ((branch.getIntFlag() == 0)) {
+							if (branch.isActive() && branch.getIntFlag() == 0) {
 								double shiftedFlow = this.multiOutageMonitorBranchFlow(cont, branch, distRefBusList);
 								this.checkViolationSetMaxShiftedFlow(branch, shiftedFlow, cont);
 							}
@@ -258,16 +257,18 @@ public class ContingencyAnalysisHelper {
 		
 		// in the following calculation, we use branch.intFlag == 0 to indicate that the branch should be included
 		// in the scanning for constraint
-		for (AclfBranch branch : this.algoDsl.algo().getActiveBranches()) {
-			AclfBranchPWDExtension ext = (AclfBranchPWDExtension)branch.getExtensionObject();
-			boolean isMonBranch = this.useCAMonitoringStatus? ext.isCaMonitoring():true;
-			if (isMonBranch) {
-				boolean islandBranch = cont.isIslandBranch(branch);
-				boolean active = branch.isActive() && branch.getFromBus().isActive() && branch.getToBus().isActive();
-				branch.setIntFlag(active && !islandBranch ? 0 : 1);
+		for (AclfBranch branch : this.algoDsl.algo().getNetwork().getBranchList()) {
+			if (branch.isActive()) {
+				AclfBranchPWDExtension ext = (AclfBranchPWDExtension)branch.getExtensionObject();
+				boolean isMonBranch = this.useCAMonitoringStatus? ext.isCaMonitoring():true;
+				if (isMonBranch) {
+					boolean islandBranch = cont.isIslandBranch(branch);
+					boolean active = branch.isActive() && branch.getFromBus().isActive() && branch.getToBus().isActive();
+					branch.setIntFlag(active && !islandBranch ? 0 : 1);
+				}
+				else
+					branch.setIntFlag(1);
 			}
-			else
-				branch.setIntFlag(1);
 		}
 		
 		// mark outage branch to make sure not being processed in the
@@ -275,7 +276,7 @@ public class ContingencyAnalysisHelper {
 		for (OutageBranch bra : cont.getOutageBranches()) 
 			bra.getBranch().setIntFlag(1);		
 
-		for (EquivOutageBranch bra : cont.getEquivOutageBranches()) 
+		for (OutageBranch bra : cont.getEquivOutageBranches()) 
 			bra.getBranch().setIntFlag(1);		
 	}
 	
@@ -473,7 +474,7 @@ public class ContingencyAnalysisHelper {
 		}
 		else {
 			algoDsl.setLODFAnalysisType(LODFSenAnalysisType.MULTI_BRANCH);
-			for (EquivOutageBranch eq : cont.getEquivOutageBranches()) {
+			for (OutageBranch eq : cont.getEquivOutageBranches()) {
 				if (eq.isActive()) 
 					algoDsl.addOutageBranch(eq);
 			}
@@ -530,7 +531,7 @@ public class ContingencyAnalysisHelper {
 		}
 		else {
 			algoDsl.setLODFAnalysisType(LODFSenAnalysisType.MULTI_BRANCH);
-			for (EquivOutageBranch eq : cont.getEquivOutageBranches()) {
+			for (OutageBranch eq : cont.getEquivOutageBranches()) {
 				if (eq.isActive()) 
 					algoDsl.addOutageBranch(eq);
 			}

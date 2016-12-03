@@ -27,7 +27,7 @@ package org.interpss.core.adapter.internal;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.CorePluginObjFactory;
+import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.ComplexFunc;
@@ -57,7 +57,7 @@ public class Bus11856Test extends CorePluginTestSetup {
 //  	        
 //  			AclfNetwork net = simuCtx.getAclfNet();
   			
-  			AclfNetwork net = CorePluginObjFactory
+  			AclfNetwork net = CorePluginFactory
   					.getFileAdapter(IpssFileAdapter.FileFormat.IpssInternal)
   					.load("testData/ipssdata/BUS11856.ipssdat")
   					.getAclfNet();	
@@ -93,7 +93,7 @@ public class Bus11856Test extends CorePluginTestSetup {
 //  		
 //		AclfNetwork net = simuCtx.getAclfNet();
 		
-		AclfNetwork net = CorePluginObjFactory
+		AclfNetwork net = CorePluginFactory
   					.getFileAdapter(IpssFileAdapter.FileFormat.IpssInternal)
   					.load("testData/ipssdata/BUS11856.ipssdat")
   					.getAclfNet();	

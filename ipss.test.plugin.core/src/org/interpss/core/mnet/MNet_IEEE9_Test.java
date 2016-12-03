@@ -3,11 +3,9 @@ package org.interpss.core.mnet;
 import static org.interpss.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.Assert.assertTrue;
 
-import org.interpss.CorePluginObjFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
-import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.pssl.plugin.IpssAdapter;
 import org.interpss.pssl.plugin.IpssAdapter.PsseVersion;
@@ -47,7 +45,7 @@ public class MNet_IEEE9_Test extends CorePluginTestSetup {
  		AclfBus swingBus = (AclfBus)net.getBus("Bus1");
  		AclfSwingBus swing = swingBus.toSwingBus();
 		//System.out.println(swing.getGenResults(UnitType.PU));
-		System.out.println(AclfOutFunc.loadFlowSummary(net));
+		//System.out.println(AclfOutFunc.loadFlowSummary(net));
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-0.7164)<1.0E-4);
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-0.2710)<1.0E-4);
 	}

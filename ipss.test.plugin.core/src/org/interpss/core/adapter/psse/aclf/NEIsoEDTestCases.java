@@ -24,7 +24,7 @@
 
 package org.interpss.core.adapter.psse.aclf;
 
-import org.interpss.CorePluginObjFactory;
+import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.junit.Test;
@@ -44,7 +44,7 @@ public class NEIsoEDTestCases extends CorePluginTestSetup {
 //
 //		AclfNetwork net = simuCtx.getAclfNet();
 		
-		AclfNetwork net = CorePluginObjFactory
+		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.PSSE)
 				.load("testData/adpter/psse/test_model_V30.raw")
 				.getAclfNet();			
