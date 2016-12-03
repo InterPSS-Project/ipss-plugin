@@ -24,7 +24,7 @@
 
 package org.interpss.core.adapter.ucte;
 
-import org.interpss.CorePluginObjFactory;
+import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.junit.Test;
@@ -34,7 +34,7 @@ import com.interpss.core.aclf.AclfNetwork;
 public class UCTEFormatIEEE14BusTest extends CorePluginTestSetup {
 	@Test
 	public void testCase1() throws Exception {
-		AclfNetwork net = CorePluginObjFactory
+		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.UCTE)
 				.load("testData/adpter/ucte/ieee14.uct")
 				.getAclfNet();

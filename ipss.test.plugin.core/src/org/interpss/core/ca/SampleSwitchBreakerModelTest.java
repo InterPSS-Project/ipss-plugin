@@ -64,7 +64,7 @@ public class SampleSwitchBreakerModelTest extends CorePluginTestSetup {
 	  	algo.loadflow();
 	  	
 	  	// output loadflow calculation results
-	  	System.out.println(AclfOutFunc.loadFlowSummary(net));
+	  	//System.out.println(AclfOutFunc.loadFlowSummary(net));
     }	
 
 	@Test 
@@ -90,7 +90,7 @@ public class SampleSwitchBreakerModelTest extends CorePluginTestSetup {
 	  	algo.loadflow();
 	  	
 	  	// output loadflow calculation results
-	  	System.out.println(AclfOutFunc.loadFlowSummary(net));
+	  	//System.out.println(AclfOutFunc.loadFlowSummary(net));
 	  	//System.out.println(net.net2String());
     }	
 

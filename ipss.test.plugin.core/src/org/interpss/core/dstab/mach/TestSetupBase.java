@@ -26,16 +26,16 @@ package org.interpss.core.dstab.mach;
 
 import org.interpss.CorePluginTestSetup;
 
+import com.interpss.CoreCommonFactory;
 import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.dstab.DStabilityNetwork;
-import com.interpss.spring.CoreCommonSpringFactory;
 
 public class TestSetupBase extends CorePluginTestSetup {
 	protected IPSSMsgHub msg;
 	protected DStabilityNetwork net = null;
 
 	public TestSetupBase() { 
-		msg = CoreCommonSpringFactory.getIpssMsgHub();
+		msg = CoreCommonFactory.getIpssMsgHub();
 	}
 }
 

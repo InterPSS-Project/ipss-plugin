@@ -64,11 +64,11 @@ public class IEEE14Bus_SmallZBranch_Test extends CorePluginTestSetup {
 	  	algo.loadflow();
 	  	
 	  	// output loadflow calculation results
-	  	System.out.println(aclfResultBusStyle.apply(net));
+	  	//System.out.println(aclfResultBusStyle.apply(net));
 	  	
 		net.setZeroZBranchThreshold(0.00001);
 	  	// (-0.12495394051074982, 0.08613362908363342)
-	  	System.out.println(net.getBus("Bus14").currentIntoNet());
+	  	//System.out.println(net.getBus("Bus14").currentIntoNet());
 	  	//System.out.println(net.getBus("Bus18").currentIntoNet());
 	  	//System.out.println(net.getBus("Bus17").currentIntoNet());
 	  	
