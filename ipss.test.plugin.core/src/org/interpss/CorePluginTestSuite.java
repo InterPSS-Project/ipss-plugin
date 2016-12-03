@@ -16,7 +16,6 @@ import org.interpss.core.adapter.odm.acsc.Acsc5Bus_ODM_TestCase;
 import org.interpss.core.adapter.odm.dist.DistLF14BusTest;
 import org.interpss.core.adapter.odm.dist.DistLF14Bus_PathLF_Test;
 import org.interpss.core.adapter.odm.dist.DistSample2BusTest;
-import org.interpss.core.adapter.odm.dstab.DStab_2Bus;
 import org.interpss.core.adapter.psse.aclf.CR_UserTestCases;
 import org.interpss.core.adapter.psse.aclf.GuideSample_TestCase;
 import org.interpss.core.adapter.psse.aclf.Mod_SixBus_DclfPsXfr;
@@ -55,11 +54,8 @@ import org.interpss.core.dstab.mach.Eq1MachineCaseTest;
 import org.interpss.core.dstab.mach.MachineSaturationTest;
 import org.interpss.core.dstab.mach.RoundRotorMachineTest;
 import org.interpss.core.dstab.mach.SalientPoleMachineTest;
-import org.interpss.core.mnet.MNet_Aclf5Bus_Child_Test;
-import org.interpss.core.mnet.MNet_IEEE14Bus_Test;
 import org.interpss.core.mnet.TestSubnetworkProcessor;
 import org.interpss.plugin.beanModel.AclfBeanMapperTest;
-import org.interpss.spring.SimuAppCtxTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
@@ -128,9 +124,6 @@ import org.junit.runners.Suite.SuiteClasses;
 	POC_Test2_2.class,
 	POC_Test2_3.class,
 	
-	// Spring 
-	SimuAppCtxTest.class,	
-
 	// core file adapter
 	IEEECommonFormat_CommaTest.class,
 	IEEECommonFormatTest.class,

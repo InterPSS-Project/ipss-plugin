@@ -47,10 +47,10 @@ public class SequenceNetworkSolver {
 		this.net =net;
 		this.monitorBusAry = monitorBusAry;
 		
-		zeroSeqYMatrix = net.formYMatrix(SequenceCode.ZERO,false);
+		zeroSeqYMatrix = net.formScYMatrix(SequenceCode.ZERO,false);
 		zeroYSolver = new CSparseJEqnComplexSolver(zeroSeqYMatrix);
 		
-		negSeqYMatrix =  net.formYMatrix(SequenceCode.NEGATIVE, false);
+		negSeqYMatrix =  net.formScYMatrix(SequenceCode.NEGATIVE, false);
 		negYSolver = new CSparseJEqnComplexSolver(negSeqYMatrix);
 		
 		//LU factorize the YMaxtri, prepare it for calculating Z matrix;

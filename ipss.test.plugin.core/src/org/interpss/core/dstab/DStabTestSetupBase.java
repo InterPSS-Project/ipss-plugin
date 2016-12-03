@@ -30,6 +30,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.NumericConstant;
 
+import com.interpss.CoreCommonFactory;
 import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.common.msg.IPSSMsgHub;
@@ -40,14 +41,13 @@ import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.devent.DynamicEvent;
 import com.interpss.dstab.devent.DynamicEventType;
-import com.interpss.spring.CoreCommonSpringFactory;
 
 public class DStabTestSetupBase extends CorePluginTestSetup {
 	
 	protected IPSSMsgHub msg;
 
 	public DStabTestSetupBase() { 
-		msg = CoreCommonSpringFactory.getIpssMsgHub();
+		msg = CoreCommonFactory.getIpssMsgHub();
 		IpssLogger.getLogger().setLevel(Level.WARNING);
  	}
 /*

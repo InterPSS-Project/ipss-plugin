@@ -26,9 +26,8 @@ package org.interpss.core.mnet;
 
 import static org.junit.Assert.assertTrue;
 
-import org.interpss.CorePluginObjFactory;
+import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.display.AclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.junit.Test;
@@ -39,7 +38,6 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.core.algo.impl.mnet.AclfBusChildNetHelper;
 import com.interpss.core.algo.impl.mnet.DefaultMultiNetLfSolver;
 import com.interpss.core.net.BranchBusSide;
 import com.interpss.core.net.childnet.ChildNetInterfaceBranch;
@@ -51,7 +49,7 @@ public class MNet_IEEE14Bus_Test extends CorePluginTestSetup {
 	@Test 
 	public void bus14testCase() throws Exception {
 		// load the IEEE-14 Bus system
-		AclfNetwork net = CorePluginObjFactory
+		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
 				.load("testdata/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();		
@@ -120,7 +118,7 @@ public class MNet_IEEE14Bus_Test extends CorePluginTestSetup {
   		assertTrue(net.isLfConverged());		
  		AclfBus swingBus = (AclfBus)net.getBus("Bus1");
  		AclfSwingBus swing = swingBus.toSwingBus();
-		System.out.println(swing.getGenResults(UnitType.PU));
+		//System.out.println(swing.getGenResults(UnitType.PU));
 		//System.out.println(AclfOutFunc.loadFlowSummary(net));
 		
 		/*
