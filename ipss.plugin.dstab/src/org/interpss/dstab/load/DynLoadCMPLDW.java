@@ -27,9 +27,9 @@ import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.device.DynamicBusDevice;
 import com.interpss.dstab.device.DynamicBusDeviceType;
-import com.interpss.dstab.dynLoad.DistNetworkEquivalentModel;
+//import com.interpss.dstab.dynLoad.DistNetworkEquivalentModel;
 import com.interpss.dstab.dynLoad.DynLoadModel;
-import com.interpss.dstab.dynLoad.DynLoadVFreqDependentModel;
+//import com.interpss.dstab.dynLoad.DynLoadVFreqDependentModel;
 import com.interpss.dstab.dynLoad.InductionMotor;
 import com.interpss.dstab.dynLoad.LD1PAC;
 import com.interpss.dstab.mach.Machine;
@@ -90,7 +90,7 @@ public interface DynLoadCMPLDW  extends DynamicBusDevice{
 	void setGroupId(String groupId);
 	String getGroupId();
 	
-	DistNetworkEquivalentModel getDistEquivalent();
+//	DistNetworkEquivalentModel getDistEquivalent();
 	
 	InductionMotor getInductionMotorA();
 	
@@ -100,7 +100,7 @@ public interface DynLoadCMPLDW  extends DynamicBusDevice{
 	
 	LD1PAC get1PhaseACMotor();
 	
-	DynLoadVFreqDependentModel getStaticLoadModel();
+//	DynLoadVFreqDependentModel getStaticLoadModel();
 	
 	DStabBus getLowVoltBus();
 	
