@@ -57,10 +57,10 @@ public class TestSubnetworkProcessor {
 	    
 	    proc.splitFullSystemIntoSubsystems(false);
 	    
-	    //the dsNet should size should be 0, after all buses are moved to subnetworks
+	    // now the network and the busList does not have containing relationship
+	    // not true any more : the dsNet should size should be 0, after all buses are moved to subnetworks
 	    System.out.println("net size ="+dsNet.getBusList().size());
-	    assertTrue(dsNet.getBusList().size()==0);
-	    
+	    assertTrue(dsNet.getBusList().size()==9); 
 	    
 	    List<DStabilityNetwork> subNetList = proc.getSubNetworkList();
 	    assertTrue(subNetList.size()==2);
@@ -131,9 +131,10 @@ public class TestSubnetworkProcessor {
 	    
 	    proc.splitFullSystemIntoSubsystems(true);
 	    
-	    //the dsNet should size should be 0, after all buses are moved to subnetworks
+	    // now the network and the busList does not have containing relationship
+	    // not true any more : the dsNet should size should be 0, after all buses are moved to subnetworks
 	    System.out.println("net size ="+dsNet.getBusList().size());
-	    assertTrue(dsNet.getBusList().size()==0);
+	    assertTrue(dsNet.getBusList().size() == 10);   
 	    
 	    
 	    List<DStabilityNetwork> subNetList = proc.getSubNetworkList();
