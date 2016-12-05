@@ -28,7 +28,7 @@ import com.interpss.core.sparse.solver.CSparseJEqnComplexSolver;
  */
 public class SequenceNetworkSolver {
 	
-	private BaseAcscNetwork<? extends AcscBus, ? extends AcscBranch> net = null;
+	private BaseAcscNetwork<?, ?, ? extends AcscBus, ? extends AcscBranch> net = null;
 	private ISparseEqnComplex zeroSeqYMatrix = null; 
 	private ISparseEqnComplex negSeqYMatrix  = null;
 	private Hashtable<String,Complex3x1>  seqVoltTable =null;
@@ -43,7 +43,7 @@ public class SequenceNetworkSolver {
 	 * @param net
 	 * @param monitorBusAry
 	 */
-	public SequenceNetworkSolver(BaseAcscNetwork<? extends AcscBus, ? extends AcscBranch> net,String[] monitorBusAry){
+	public SequenceNetworkSolver(BaseAcscNetwork<?, ?, ? extends AcscBus, ? extends AcscBranch> net,String[] monitorBusAry){
 		this.net =net;
 		this.monitorBusAry = monitorBusAry;
 		

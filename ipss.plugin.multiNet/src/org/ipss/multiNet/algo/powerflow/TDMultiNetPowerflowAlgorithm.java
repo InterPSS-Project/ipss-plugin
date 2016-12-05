@@ -20,6 +20,7 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.AcscBus;
@@ -30,9 +31,9 @@ import com.interpss.core.net.NetworkType;
 
 public class TDMultiNetPowerflowAlgorithm {
 	
-	protected BaseAclfNetwork<? extends AclfBus, ?extends AclfBranch> net = null;
-	protected BaseAclfNetwork<? extends AclfBus, ?extends AclfBranch> transmissionNet = null;
-	protected List<BaseAclfNetwork> distNetList = null;
+	protected BaseAclfNetwork<?, ?, ? extends BaseAclfBus, ?extends AclfBranch> net = null;
+	protected BaseAclfNetwork<?,?, ? extends BaseAclfBus, ?extends AclfBranch> transmissionNet = null;
+	protected List<BaseAclfNetwork<?,?,?,?>> distNetList = null;
 	protected SubNetworkProcessor subNetProcessor = null;
 	protected Hashtable<String,String> distNetId2BoundaryBusTable = null;
 	protected Hashtable<String,Complex3x1> distBoundary3SeqCurInjTable = null;
@@ -52,7 +53,7 @@ public class TDMultiNetPowerflowAlgorithm {
 	private Hashtable<String,Complex3x1> lastStepTransBoundaryBus3SeqVoltages = null;
 	
 	
-	public TDMultiNetPowerflowAlgorithm(BaseAclfNetwork<? extends AclfBus, ?extends AclfBranch> tdNet, 
+	public TDMultiNetPowerflowAlgorithm(BaseAclfNetwork<?, ?, ? extends BaseAclfBus, ?extends AclfBranch> tdNet, 
 			SubNetworkProcessor subNetProc) {
 		this.net = tdNet;
 		subNetProcessor = subNetProc;
@@ -184,7 +185,7 @@ public class TDMultiNetPowerflowAlgorithm {
 			   else
 				   transBoundaryBusId = distBoundaryBusId+"Dummy";
 			   
-			   AclfBus transBoundaryBus = this.transmissionNet.getBus(transBoundaryBusId);
+			   BaseAclfBus transBoundaryBus = this.transmissionNet.getBus(transBoundaryBusId);
 			   
 			   if(transBoundaryBus == null){
 				   throw new Error("The tranmission network boundary bus is not found, ID: "+transBoundaryBusId);
@@ -222,7 +223,7 @@ public class TDMultiNetPowerflowAlgorithm {
 		      
 		      
 		      SequenceNetworkSolver seqNetSolver = new SequenceNetworkSolver(
-		    		  (BaseAcscNetwork<? extends AcscBus, ? extends AcscBranch>) transmissionNet,
+		    		  (BaseAcscNetwork<?, ?, ? extends AcscBus, ? extends AcscBranch>) transmissionNet,
 		    		  transNetworkBoundaryBusIdList.toArray(new String[]{""}));
 		      
 		      
@@ -318,7 +319,7 @@ public class TDMultiNetPowerflowAlgorithm {
 					   else
 						   transBoundaryBusId = distBoundaryBusId+"Dummy";
 					   
-					   AclfBus transBoundaryBus = this.transmissionNet.getBus(transBoundaryBusId);
+					   BaseAclfBus transBoundaryBus = this.transmissionNet.getBus(transBoundaryBusId);
 					   
 					   if(transBoundaryBus == null){
 						   throw new Error("The tranmission network boundary bus is not found, ID: "+transBoundaryBusId);
@@ -453,18 +454,18 @@ public class TDMultiNetPowerflowAlgorithm {
 		return true;
 	}
 	
-	public void setTransmissionNetwork(BaseAclfNetwork<? extends AclfBus, ?extends AclfBranch> net){
+	public void setTransmissionNetwork(BaseAclfNetwork<?, ?, ? extends AclfBus, ?extends AclfBranch> net){
 		this.transmissionNet = net;
 	}
-	public void setDistributionNetworkList(List<BaseAclfNetwork> distributionNetList){
+	public void setDistributionNetworkList(List<BaseAclfNetwork<?,?,?,?>> distributionNetList){
 		this.distNetList = distributionNetList;
 	}
 	
-	public BaseAclfNetwork getTransmissionNetwork(){
+	public BaseAclfNetwork<?,?,?,?> getTransmissionNetwork(){
 		return this.transmissionNet;
 	}
 	
-	public List<BaseAclfNetwork> getDistributionNetworkList(){
+	public List<BaseAclfNetwork<?,?,?,?>> getDistributionNetworkList(){
 		return this.distNetList;
 	}
 	

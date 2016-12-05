@@ -35,16 +35,16 @@ import com.interpss.core.aclf.hvdc.impl.HvdcLineFactoryImpl;
 
 
 public class AclfHvdcDataHelper {
-	private BaseAclfNetwork<?,?>  aclfNet = null;
+	private BaseAclfNetwork<?,?,?,?>  aclfNet = null;
 	private HvdcLine2TCCC hvdc2T = null;
 	private HvdcLine2TVSC vscHvdc2T = null;
 
-	public AclfHvdcDataHelper(BaseAclfNetwork<?,?>  aclfNet, HvdcLine2TCCC hvdc2T){
+	public AclfHvdcDataHelper(BaseAclfNetwork<?,?,?,?>  aclfNet, HvdcLine2TCCC hvdc2T){
 		this.aclfNet = aclfNet;
 		this.hvdc2T = hvdc2T;
 	}
 	
-	public AclfHvdcDataHelper(BaseAclfNetwork<?,?>  aclfNet, HvdcLine2TVSC vscHvdc2T){
+	public AclfHvdcDataHelper(BaseAclfNetwork<?,?,?,?>  aclfNet, HvdcLine2TVSC vscHvdc2T){
 		this.aclfNet = aclfNet;
 		this.vscHvdc2T = vscHvdc2T;
 	}

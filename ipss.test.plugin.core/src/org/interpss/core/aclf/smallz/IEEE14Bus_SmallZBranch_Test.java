@@ -24,8 +24,6 @@
 
 package org.interpss.core.aclf.smallz;
 
-import static org.interpss.CorePluginFunction.aclfResultBusStyle;
-
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.Unit.UnitType;
@@ -37,6 +35,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.net.Branch;
@@ -93,11 +92,11 @@ public class IEEE14Bus_SmallZBranch_Test extends CorePluginTestSetup {
 */  		
     }	
 	
-	public Complex currentIntoNet(AclfBus bus) throws InterpssException {
+	public Complex currentIntoNet(BaseAclfBus bus) throws InterpssException {
 		return currentIntoNet(bus, null);
 	}
 	
-	public Complex currentIntoNet(AclfBus bus, AclfBranch excludeBranch) throws InterpssException {
+	public Complex currentIntoNet(BaseAclfBus bus, AclfBranch excludeBranch) throws InterpssException {
 		Complex sum = bus.getVoltage().multiply(bus.yii());
 		for( Branch b : bus.getBranchList()) {
 			if ( b.isActive() && b instanceof AclfBranch) {
@@ -196,7 +195,7 @@ public class IEEE14Bus_SmallZBranch_Test extends CorePluginTestSetup {
 	 *          p <- |  <- Sum ( non-zeroZ branch power)
 	 *               |  <- Sum ( recursive calculate zero-Z branch power on the opposite side)
 	 */
-	Complex samllZBranchFlow(AclfBranch branch, AclfBus bus) throws InterpssException {
+	Complex samllZBranchFlow(AclfBranch branch, BaseAclfBus bus) throws InterpssException {
 		if (bus.isSwing() || bus.isGenPV())
 			return null; 
 		Complex p = new Complex(0.0,0.0);

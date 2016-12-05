@@ -54,7 +54,7 @@ import com.interpss.core.net.Network;
  *
  */
 public class AcscDslRunner implements IDslRunner {
-	private BaseAcscNetwork<?,?> net;
+	private BaseAcscNetwork<?,?,?,?> net;
 	private AcscRunConfigBean acscBean;
 	
 	/**
@@ -68,13 +68,13 @@ public class AcscDslRunner implements IDslRunner {
 	 * 
 	 * @param net AcscNetwork object
 	 */
-	public AcscDslRunner(BaseAcscNetwork<?,?> net) {
+	public AcscDslRunner(BaseAcscNetwork<?,?,?,?> net) {
 		this.net = net;
 	}
 	
 	@Override
 	public IDslRunner setNetwork(Network<?, ?> net) {
-		this.net = (BaseAcscNetwork<?, ?>) net;
+		this.net = (BaseAcscNetwork<?,?,?, ?>) net;
 		return this;
 	}
 	

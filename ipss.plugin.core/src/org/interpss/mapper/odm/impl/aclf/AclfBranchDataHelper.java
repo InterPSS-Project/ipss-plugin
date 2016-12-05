@@ -84,7 +84,7 @@ import com.interpss.core.net.Branch;
  *
  */
 public class AclfBranchDataHelper {
-	private BaseAclfNetwork<?,?> aclfNet = null;
+	private BaseAclfNetwork<?,?,?,?> aclfNet = null;
 	private Branch branch = null;
 	private ODMAclfNetMapper.XfrBranchModel xfrBranchModel = ODMAclfNetMapper.XfrBranchModel.InterPSS;
 	
@@ -94,7 +94,7 @@ public class AclfBranchDataHelper {
 	 * @param aclfNet
 	 * @param bra
 	 */
-	public AclfBranchDataHelper(BaseAclfNetwork<?,?> aclfNet, Branch bra, ODMAclfNetMapper.XfrBranchModel xfrBranchModel) {
+	public AclfBranchDataHelper(BaseAclfNetwork<?,?,?,?> aclfNet, Branch bra, ODMAclfNetMapper.XfrBranchModel xfrBranchModel) {
 		this.aclfNet = aclfNet;
 		this.branch = bra;
 		this.xfrBranchModel = xfrBranchModel;

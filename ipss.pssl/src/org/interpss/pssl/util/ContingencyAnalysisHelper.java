@@ -38,8 +38,8 @@ import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IDataValidation;
 import com.interpss.core.aclf.AclfBranch;
-import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.contingency.BranchOutageType;
 import com.interpss.core.aclf.contingency.Contingency;
 import com.interpss.core.aclf.contingency.MonitoringBranch;
@@ -425,7 +425,7 @@ public class ContingencyAnalysisHelper {
 		AclfNetwork aclfNet = this.algoDsl.aclfNet();
 		double flowMw = 0.0;
 		
-		for (AclfBus bus : contingency.getIslandBuses()) {
+		for (BaseAclfBus bus : contingency.getIslandBuses()) {
 			if (bus.isActive()) {
 				// use cached result
 				double gen = bus.getDclfInjectP(); // bus.getDclfBusP();

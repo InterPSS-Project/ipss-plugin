@@ -7,7 +7,7 @@ import org.interpss.QA.compare.IDataComparator;
 
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
-import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 
 /**
@@ -16,14 +16,14 @@ import com.interpss.core.aclf.BaseAclfNetwork;
  * @author mzhou
  *
  */
-public class AclfNetModelComparator implements IDataComparator<BaseAclfNetwork<?,?>, BaseAclfNetwork<?,?>> {
+public class AclfNetModelComparator implements IDataComparator<BaseAclfNetwork<?,?,?,?>, BaseAclfNetwork<?,?,?,?>> {
 	// limit max number of output msg size
 	public static int MaxMsgSize = 100;
 	
 	private List<String> msgList = new ArrayList<>();
 	
-	private IDataComparator<BaseAclfNetwork<?,?>, BaseAclfNetwork<?,?>> netComparator;
-	private IDataComparator<AclfBus, AclfBus> busComparator;
+	private IDataComparator<BaseAclfNetwork<?,?,?,?>, BaseAclfNetwork<?,?,?,?>> netComparator;
+	private IDataComparator<BaseAclfBus, BaseAclfBus> busComparator;
 	private IDataComparator<AclfBranch, AclfBranch> branchComparator;
 	
 	/**
@@ -33,8 +33,8 @@ public class AclfNetModelComparator implements IDataComparator<BaseAclfNetwork<?
 	 * @param busComparator
 	 * @param branchComparator
 	 */
-	public AclfNetModelComparator(IDataComparator<BaseAclfNetwork<?,?>, BaseAclfNetwork<?,?>> netComparator, 
-			     IDataComparator<AclfBus, AclfBus> busComparator, 
+	public AclfNetModelComparator(IDataComparator<BaseAclfNetwork<?,?,?,?>, BaseAclfNetwork<?,?,?,?>> netComparator, 
+			     IDataComparator<BaseAclfBus, BaseAclfBus> busComparator, 
 			     IDataComparator<AclfBranch, AclfBranch> branchComparator) {
 		this.netComparator = netComparator;
 		this.busComparator = busComparator;
@@ -51,7 +51,7 @@ public class AclfNetModelComparator implements IDataComparator<BaseAclfNetwork<?
 		this.branchComparator = new AclfBranchDataComparator();
 	}
 	
-	@Override public boolean compare(BaseAclfNetwork<?,?> baseNet, BaseAclfNetwork<?,?> net) {
+	@Override public boolean compare(BaseAclfNetwork<?,?,?,?> baseNet, BaseAclfNetwork<?,?,?,?> net) {
 		boolean status = true;
 		this.msgList.clear();
 		
@@ -60,8 +60,8 @@ public class AclfNetModelComparator implements IDataComparator<BaseAclfNetwork<?
 			this.addMsg(netComparator.getMsg());
 		}		
 
-		for (AclfBus bus : baseNet.getBusList()) {
-			AclfBus bus1 = net.getBus(bus.getId());
+		for (BaseAclfBus bus : baseNet.getBusList()) {
+			BaseAclfBus bus1 = net.getBus(bus.getId());
 			if (bus1 == null) {
 				this.addMsg("Bus cannot be found in the network to be compared: id " + bus.getId());
 			}
