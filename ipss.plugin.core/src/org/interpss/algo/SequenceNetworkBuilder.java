@@ -3,20 +3,22 @@ package org.interpss.algo;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGen;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.acsc.Acsc3WBranch;
 import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.AcscBus;
 import com.interpss.core.acsc.AcscGen;
+import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.core.acsc.BaseAcscNetwork;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.acsc.XfrConnectCode;
 import com.interpss.core.net.Branch;
 
 public class SequenceNetworkBuilder {
-	private BaseAcscNetwork<?,?> _net = null;
+	private BaseAcscNetwork<?,?,?,?> _net = null;
 	private boolean overrideSeqData = false;
 	private double lineZero2PosZRatio = 2.5;
-	public SequenceNetworkBuilder(BaseAcscNetwork<?,?> net, boolean overrideExistingData){
+	public SequenceNetworkBuilder(BaseAcscNetwork<?,?,?,?> net, boolean overrideExistingData){
 		this._net = net;
 		this.overrideSeqData = overrideExistingData;
 	}
@@ -44,7 +46,7 @@ public class SequenceNetworkBuilder {
 	}
 	
 	private boolean setGenSeqData(SequenceCode seq){
-		for(AcscBus scBus: this._net.getBusList()){
+		for(BaseAclfBus<?,?> scBus: this._net.getBusList()){
 			if(scBus.getContributeGenList().size()>0){
 				for(AclfGen gen:scBus.getContributeGenList()){
 					if(gen.isActive()){
@@ -77,7 +79,7 @@ public class SequenceNetworkBuilder {
 	private boolean setLoadSeqData(SequenceCode seq){
 		
 		//AcscBus.initSeqEquivLoad(SequenceCode code) method handles this
-		for(AcscBus scBus: this._net.getBusList()){
+		for(BaseAcscBus<?,?> scBus: this._net.getBusList()){
 			if(scBus.isActive() && scBus.getContributeLoadList().size()>0){
 				if(!scBus.initSeqEquivLoad(seq))
 					return false;

@@ -22,6 +22,7 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.contingency.Contingency;
 import com.interpss.core.aclf.contingency.OutageBranch;
@@ -47,7 +48,7 @@ public class TopologyHelper {
 	private static final String protectedBranchStyle = "defaultEdge;strokeColor=black";
 
 	Hashtable<String, Object> addedBusTable = new Hashtable<String, Object>();
-	BaseAclfNetwork<?,?> net = null;
+	BaseAclfNetwork<?,?,?,?> net = null;
 	Topology top = null;
 	ZeroZBranchProcesor proc = null;
 	List<String> protectedBranches = new ArrayList<String>();
@@ -62,7 +63,7 @@ public class TopologyHelper {
 	boolean displayBaseVolt = false;
 	double voltageLevel = 1.0;
 
-	public TopologyHelper(BaseAclfNetwork<?,?> net) throws InterpssException {
+	public TopologyHelper(BaseAclfNetwork<?,?,?,?> net) throws InterpssException {
 		this.net = net;
 		this.top = new Topology();
 	}
@@ -214,7 +215,7 @@ public class TopologyHelper {
 	private String setBranchToGraph(String processingBus) throws Exception {
 		
 		// get all the branches within the same substation as the processingBus
-		AclfBus bus = net.getBus(processingBus);
+		BaseAclfBus bus = net.getBus(processingBus);
 		String branchId = "";
 		for( Branch branch: bus.getBranchList()){
 			AclfBranch b = (AclfBranch) branch;
@@ -527,7 +528,7 @@ public class TopologyHelper {
 	public boolean getToplogyByArea(String startBusId, double voltageLevel) {
 		sourceBusId = startBusId;
 		mxGraph mg = top.getTopGraph();
-		AclfBus sourceBus = net.getBus(startBusId);
+		BaseAclfBus sourceBus = net.getBus(startBusId);
 		// check the input bus id first
 		if (this.net.getBus(startBusId) == null) {
 			IpssLogger.getLogger().severe(

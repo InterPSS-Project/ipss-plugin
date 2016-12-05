@@ -123,7 +123,7 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 						
 						//TODO need to save the three-sequence bus voltage, such that it can be used for updating the 
 						// Vth in the following step.
-						for(DStabBus bus:dsNet.getBusList()){
+						for(DStabBus<?,?> bus:dsNet.getBusList()){
 							bus.setThreeSeqVoltage(new Complex3x1(new Complex(0,0), bus.getVoltage(), new Complex(0,0)));
 						}
 						
@@ -157,7 +157,7 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 				  
 				  for(DStabilityNetwork dsNet: subNetList){
 					for ( Bus busi : dsNet.getBusList() ) {
-						DStabBus bus = (DStabBus)busi;
+						DStabBus<?,?> bus = (DStabBus<?,?>)busi;
 						if(bus.isActive()){
 							
 							if(i>=4){
@@ -190,7 +190,7 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 			// Solve DEqn for all dynamic bus devices
 				for (Bus b : dsNet.getBusList()) {
 					if(b.isActive()){
-						DStabBus bus = (DStabBus)b;
+						DStabBus<?,?> bus = (DStabBus<?,?>)b;
 						for (DynamicBusDevice device : bus.getDynamicBusDeviceList()) {
 							// solve DEqn for the step. This includes all controller's nextStep() call
 							if(device.isActive()){
@@ -239,7 +239,7 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 		     //  for(DStabilityNetwork dsNet: subNetList){
 			
 				for ( Bus busi : dsNet.getBusList() ) {
-					DStabBus bus = (DStabBus)busi;
+					DStabBus<?,?> bus = (DStabBus<?,?>)busi;
 					if(bus.isActive()){
 						
 						// update dynamic attributes of the dynamic devices connected to the bus
@@ -264,7 +264,7 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 			 // backup the states
 			 for (Bus b :  dsNet.getBusList()) {
 					if(b.isActive()){
-						DStabBus bus = (DStabBus)b;
+						DStabBus<?,?> bus = (DStabBus<?,?>)b;
 						// Solve DEqn for generator 
 						if(bus.getContributeGenList().size()>0){
 							for(AclfGen gen:bus.getContributeGenList()){

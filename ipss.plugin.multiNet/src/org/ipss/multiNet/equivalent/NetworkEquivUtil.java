@@ -14,7 +14,7 @@ import org.ipss.multiNet.algo.SubNetworkProcessor;
 import org.ipss.threePhase.dynamic.DStabNetwork3Phase;
 
 import com.interpss.common.datatype.Constants;
-import com.interpss.core.aclf.AclfBus;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.net.NetCoordinate;
 import com.interpss.core.net.NetEquivType;
@@ -305,7 +305,7 @@ public static  NetworkEquivalent cal3PhaseNetworkTheveninEquiv(DStabNetwork3Phas
 		
 				for(int i = 0;i<dim;i++){
 					String busId =boundaryBusIdList.get(i);
-					AclfBus bus = net.getBus(busId);
+					BaseAclfBus bus = net.getBus(busId);
 					int idx = bus.getSortNumber();
 					seqYmatrixEqn.setB2Unity(idx); //unit current injection at bus of Idx only, the rest are zero
 					try {
@@ -318,7 +318,7 @@ public static  NetworkEquivalent cal3PhaseNetworkTheveninEquiv(DStabNetwork3Phas
 				
 					for(int j=0;j<dim;j++){
 						busId = boundaryBusIdList.get(j);
-						AclfBus busj = net.getBus(busId);
+						BaseAclfBus busj = net.getBus(busId);
 						seqZMatrix[j][i]=seqYmatrixEqn.getX(busj.getSortNumber());
 					}
 						

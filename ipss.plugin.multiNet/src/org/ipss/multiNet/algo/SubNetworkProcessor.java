@@ -14,6 +14,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.BranchBusSide;
@@ -56,7 +57,7 @@ public class SubNetworkProcessor {
 	private int subNetIdx =0;
 	
 	
-	private BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch> net = null;
+	private BaseAclfNetwork<?, ?, ? extends BaseAclfBus<?,?>, ? extends AclfBranch> net = null;
 
 	//TODO There is shortcoming in the existing childNet model, which did not allow the same bus 
 	//to be co-existing in the childNet and parent network;
@@ -64,7 +65,7 @@ public class SubNetworkProcessor {
 	private List<DStabilityNetwork> subNetworkList = null;
 	private List<String> threePhaseSubNetIdList = null; // should be provided after subnetwork creation 
 
-	public SubNetworkProcessor(BaseAclfNetwork<?,?> net ){
+	public SubNetworkProcessor(BaseAclfNetwork<?,?,?,?> net ){
 		this.net = net;
 		this.defInterfaceBranchIdList = new ArrayList();
 		this.boundaryBusIdList = new ArrayList();
@@ -245,7 +246,7 @@ public class SubNetworkProcessor {
 		 
 		 boolean validBusId = false;
 		 boolean isFaultBusLoadOrGen = false;
-		 DStabBus faultBus = transNet.getBus(unbalanceFaultBusId);
+		 DStabBus<?,?> faultBus = transNet.getBus(unbalanceFaultBusId);
 		 // 1. check whether the bus of <unbalanceFaultBusId> is belonging to the transmission network
 		 
 		 if(faultBus ==null){
@@ -328,7 +329,7 @@ public class SubNetworkProcessor {
 			for(ChildNetInterfaceBranch interfaceBra: cutSetList){
 				boolean isFromSide = interfaceBra.getChildNetSide()==BranchBusSide.FROM_SIDE;
 				AclfBranch bra = this.net.getBranch(interfaceBra.getBranchId());
-				AclfBus boundaryBus = isFromSide? bra.getFromAclfBus():bra.getToAclfBus();
+				BaseAclfBus<?,?> boundaryBus = isFromSide? bra.getFromAclfBus():bra.getToAclfBus();
 						
 				    
 					if(!internalboundaryBusIdList.contains(boundaryBus.getId()))
@@ -337,7 +338,7 @@ public class SubNetworkProcessor {
 			         // dummy bus id
 					String dummyBusId =boundaryBus.getId()+"Dummy";
 					
-					DStabBus dummyBus = (DStabBus) this.net.getBus(dummyBusId);
+					DStabBus<?,?> dummyBus = (DStabBus<?,?>) this.net.getBus(dummyBusId);
 					if( dummyBus ==null){
 						
 						if(this.net instanceof DStabNetwork3Phase)
@@ -396,7 +397,7 @@ public class SubNetworkProcessor {
 	 * 
 	 * @return
 	 */
-	private boolean createSubNetworks(BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>  _net,
+	private boolean createSubNetworks(BaseAclfNetwork<?, ?, ?, ?>  _net,
 			List<String> _internalInterfaceBranchIdList, List<String> _boundaryBusIdList){
 		
 
@@ -502,7 +503,7 @@ public class SubNetworkProcessor {
 		return subNetworkSearched=true;
 		
 	}
-	private boolean DFS(BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>  _net,DStabilityNetwork _subNet,
+	private boolean DFS(BaseAclfNetwork<?,?,?,?>  _net, DStabilityNetwork _subNet,
 			List<String> _internalInterfaceBranchIdList,String busId) {
 		boolean isToBus = true;
       
@@ -555,11 +556,11 @@ public class SubNetworkProcessor {
 	}
 	
 
-	public BaseAclfNetwork<?, ?> getNet() {
+	public BaseAclfNetwork<?,?,?,?> getNet() {
 		return net;
 	}
 
-	public void setNet(BaseAclfNetwork<?, ?> net) {
+	public void setNet(BaseAclfNetwork<?,?,?,?> net) {
 		this.net = net;
 	}
 

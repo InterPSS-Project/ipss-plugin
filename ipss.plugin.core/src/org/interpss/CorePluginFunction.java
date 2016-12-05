@@ -28,6 +28,7 @@ import com.interpss.common.func.IFunction2;
 import com.interpss.common.func.IFunction4;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.dclf.DclfAlgorithm;
@@ -149,7 +150,7 @@ public class CorePluginFunction {
 	 *   
 	 *   StringBuffer outText = aclfResultBusStype.apply(aclfNet);
 	 */
-	public static Function<BaseAclfNetwork<?,?>, StringBuffer> aclfResultBusStyle = net -> {
+	public static Function<BaseAclfNetwork<?,?,?,?>, StringBuffer> aclfResultBusStyle = net -> {
 				return AclfOut_BusStyle.lfResultsBusStyle(net, BusIdStyle.BusId_No);
 			};
 
@@ -161,9 +162,9 @@ public class CorePluginFunction {
 	 *   
 	 *   StringBuffer outText = BusLfResultBusStyle.f(aclfNet, bus);
 	 */
-	public static IFunction2<BaseAclfNetwork, AclfBus, StringBuffer> BusLfResultBusStyle = 
-		new Function2Adapter<BaseAclfNetwork, AclfBus, StringBuffer>() {
-			@Override public StringBuffer f(BaseAclfNetwork net, AclfBus bus) {
+	public static IFunction2<BaseAclfNetwork<?,?,?,?>, AclfBus, StringBuffer> BusLfResultBusStyle = 
+		new Function2Adapter<BaseAclfNetwork<?,?,?,?>, AclfBus, StringBuffer>() {
+			@Override public StringBuffer f(BaseAclfNetwork<?,?,?,?> net, AclfBus bus) {
 				return AclfOut_BusStyle.busResult(net, bus);
 			}
 		};
@@ -203,9 +204,9 @@ public class CorePluginFunction {
 	 * function to format bus id for output
 	 * 
 	 */
-	public static IFunction2<AclfBus, OriginalDataFormat, String> OutputBusId = 
-		new Function2Adapter<AclfBus, OriginalDataFormat, String>() {
-			@Override public String f(AclfBus bus, OriginalDataFormat fmt) {
+	public static IFunction2<BaseAclfBus<?,?>, OriginalDataFormat, String> OutputBusId = 
+		new Function2Adapter<BaseAclfBus<?,?>, OriginalDataFormat, String>() {
+			@Override public String f(BaseAclfBus<?,?> bus, OriginalDataFormat fmt) {
 				if (fmt == OriginalDataFormat.CIM)
 					return "Bus" + bus.getNumber();
 				return bus.getId();
