@@ -16,10 +16,10 @@ import com.interpss.core.aclf.JacobianMatrixType;
  * @author mzhou
  *
  */
-public class AclfNetDataComparator extends DataComparatorAdapter<BaseAclfNetwork<?,?>, BaseAclfNetwork<?,?>> {
+public class AclfNetDataComparator extends DataComparatorAdapter<BaseAclfNetwork<?,?,?,?>, BaseAclfNetwork<?,?,?,?>> {
 	boolean compareB1Matrix = false;
 	
-	@Override public boolean compare(BaseAclfNetwork<?,?> baseNet, BaseAclfNetwork<?,?> net) {
+	@Override public boolean compare(BaseAclfNetwork<?,?,?,?> baseNet, BaseAclfNetwork<?,?,?,?> net) {
 		boolean ok = true;
 		if (!NumericUtil.equals(baseNet.getBaseKva(), net.getBaseKva())) {
 			this.msg += "\nnet.baseKva not equal, " + baseNet.getBaseKva() + "(base), " + net.getBaseKva(); ok = false; }
@@ -55,7 +55,7 @@ public class AclfNetDataComparator extends DataComparatorAdapter<BaseAclfNetwork
 		return ok;
 	}			
 	
-	private boolean compareBMatrix(BaseAclfNetwork<?,?> baseNet, BaseAclfNetwork<?,?> net) throws InterpssException {
+	private boolean compareBMatrix(BaseAclfNetwork<?,?,?,?> baseNet, BaseAclfNetwork<?,?,?,?> net) throws InterpssException {
 		boolean ok = true;
 	
 		//baseNet.accept(CoreObjectFactory.createBusNoArrangeVisitor());	  

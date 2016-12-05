@@ -59,7 +59,7 @@ import com.interpss.DStabObjectFactory;
 import com.interpss.common.datatype.Constants;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.acsc.AcscBranch;
-import com.interpss.core.acsc.AcscBus;
+import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.StaticLoadModel;
@@ -230,7 +230,7 @@ public class DStabScenarioHelper {
 				eventObj.setType(DynamicEventType.BUS_FAULT);
 				String faultBusId = busFaultXml.getRefBus().getBusId();
 				AcscBusFault busFault = CoreObjectFactory.createAcscBusFault(Constants.Token_BusFaultId+faultBusId, dstabNet);
-				AcscBus bus = this.dstabNet.getBus(faultBusId);
+				BaseAcscBus bus = this.dstabNet.getBus(faultBusId);
 				busFault.setFaultBus(bus);
 				
 				double baseV=bus.getBaseVoltage();

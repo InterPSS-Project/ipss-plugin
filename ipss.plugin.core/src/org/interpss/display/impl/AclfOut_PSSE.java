@@ -32,7 +32,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
-import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
@@ -55,7 +55,7 @@ public class AclfOut_PSSE {
 	 * @param format
 	 * @return
 	 */
-	public static StringBuffer lfResults(BaseAclfNetwork<?,?> net, Format format) {
+	public static StringBuffer lfResults(BaseAclfNetwork<?,?,?,?> net, Format format) {
 		StringBuffer str = new StringBuffer("");
 		try {
 			double baseKVA = net.getBaseKva();
@@ -135,7 +135,7 @@ public class AclfOut_PSSE {
 		StringBuffer str = new StringBuffer("");
 		
 		boolean onFromSide = fromBus.getId().equals(branch.getFromBus().getId());
-		AclfBus toBus = onFromSide ? branch.getToAclfBus() : branch.getFromAclfBus();
+		BaseAclfBus<?,?> toBus = onFromSide ? branch.getToAclfBus() : branch.getFromAclfBus();
 		
 		String s = braCnt == 0? "" : "                                                                       ";
 		s += String.format("%7s %-12s%6s %3d %2s",
@@ -292,7 +292,7 @@ BUS  10002 GZ-HLZ      220.00 CKT     MW     MVAR     MVA  %I 1.0445PU  -47.34  
  TO  10535 SHENZHE=    500.00  1    624.4    62.2   627.5  24                       1.41   16.95    1 GD              2 XX
  */
 		boolean onFromSide = fromBus.getId().equals(branch.getFromBus().getId());
-		AclfBus toBus = onFromSide ? branch.getToAclfBus() : branch.getFromAclfBus();
+		BaseAclfBus<?,?> toBus = onFromSide ? branch.getToAclfBus() : branch.getFromAclfBus();
 		
 		String s = String.format(" TO %6d %-12s",	toBus.getNumber(), toBus.getName());
 		double vkv = toBus.getBaseVoltage() * 0.001;;
@@ -336,7 +336,7 @@ BUS  10002 GZ-HLZ      220.00 CKT     MW     MVAR     MVA  %I 1.0445PU  -47.34  
 		return str;
 	}
 
-	private static String psseStyleTitle(BaseAclfNetwork net, Format format) {
+	private static String psseStyleTitle(BaseAclfNetwork<?,?,?,?> net, Format format) {
 		String str = "";
 		str += "\n\n                                              Load Flow Results\n\n";
 		str += AclfOutFunc.maxMismatchToString(net,"                    ") + "\n";

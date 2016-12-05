@@ -11,7 +11,7 @@ import org.interpss.numeric.exp.IpssNumericException;
 import org.ipss.threePhase.dynamic.DStabNetwork3Phase;
 
 import com.interpss.common.msg.IpssMessage;
-import com.interpss.core.acsc.AcscBus;
+import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.dstab.DStabilityNetwork;
@@ -69,7 +69,7 @@ public class MultiNet3Ph3SeqDynEventProcessor extends
 						   
 					        if (dEvent.getType() == DynamicEventType.BUS_FAULT) {
 						         AcscBusFault fault = dEvent.getBusFault();
-						         AcscBus bus = fault.getBus();
+						         BaseAcscBus bus = fault.getBus();
 						         DStabilityNetwork faultSubNet = (DStabilityNetwork) bus.getNetwork();
 						         if(faultSubNet instanceof DStabNetwork3Phase && this.threePhaseSubNetIdList.contains(faultSubNet.getId())){
 									try {
@@ -122,7 +122,7 @@ public class MultiNet3Ph3SeqDynEventProcessor extends
 					if (e.isActive()) {
 						if (e.getType() == DynamicEventType.BUS_FAULT) {
 							AcscBusFault fault = e.getBusFault();
-							AcscBus bus = fault.getBus();
+							BaseAcscBus bus = fault.getBus();
 							
 							int i = bus.getSortNumber();
 							

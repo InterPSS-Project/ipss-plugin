@@ -65,6 +65,7 @@ import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfLoadCode;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.adj.PQBusLimit;
 import com.interpss.core.aclf.adj.PVBusLimit;
@@ -75,6 +76,7 @@ import com.interpss.core.aclf.adpter.AclfPQGenBus;
 import com.interpss.core.aclf.adpter.AclfPVGenBus;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
 import com.interpss.core.acsc.AcscBus;
+import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.dstab.DStabBus;
 
 /**
@@ -83,8 +85,8 @@ import com.interpss.dstab.DStabBus;
  * @author mzhou
  *
  */
-public class AclfBusDataHelper<TBus extends AclfBus> {
-	private BaseAclfNetwork<?,?> aclfNet = null;
+public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad, TBus extends BaseAclfBus<TGen,TLoad>> {
+	private BaseAclfNetwork<TGen,TLoad,TBus,?> aclfNet = null;
 	private TBus bus = null;
 	
 	/**
@@ -92,7 +94,7 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 	 * 
 	 * @param aclfNet
 	 */
-	public AclfBusDataHelper(BaseAclfNetwork<?,?> aclfNet) {
+	public AclfBusDataHelper(BaseAclfNetwork<TGen,TLoad,TBus,?> aclfNet) {
 		this.aclfNet = aclfNet;
 	}
 	
@@ -287,7 +289,7 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 				//Map load flow generator data
 				String id = xmlGen.getId()!=null?xmlGen.getId():this.bus.getId()+"-G"+genCnt++;
 				AclfGen gen= this.bus instanceof DStabBus? DStabObjectFactory.createDStabGen(id) :
-								this.bus instanceof AcscBus? CoreObjectFactory.createAcscGen(id) : 
+								this.bus instanceof BaseAcscBus<?,?> ? CoreObjectFactory.createAcscGen(id) : 
 									CoreObjectFactory.createAclfGen(id);
 				
 				gen.setStatus(xmlGen.isOffLine()==null?true:!xmlGen.isOffLine());
@@ -378,11 +380,13 @@ public class AclfBusDataHelper<TBus extends AclfBus> {
 						LoadflowLoadDataXmlType loadElem = elem.getValue();
 						
 						String id = loadElem.getId()!=null?loadElem.getId():this.bus.getId()+"-L"+loadCnt++;
-						AclfLoad load = CoreObjectFactory.createAclfLoad(id);
+						AclfLoad load = bus instanceof AclfBus ? CoreObjectFactory.createAclfLoad(id) :
+												bus instanceof AcscBus ? CoreObjectFactory.createAcscLoad(id) :
+													DStabObjectFactory.createDStabLoad(id);
 						
 						load.setName(loadElem.getName());
 						
-						bus.getContributeLoadList().add(load);
+						bus.getContributeLoadList().add((TLoad)load);
 						//status
 						load.setStatus(loadElem.isOffLine()!=null?!loadElem.isOffLine():true);
 					    // load code		

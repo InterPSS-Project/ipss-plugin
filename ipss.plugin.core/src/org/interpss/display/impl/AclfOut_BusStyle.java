@@ -24,8 +24,8 @@
 
 package org.interpss.display.impl;
 
-import static org.interpss.CorePluginFunction.formatKVStr;
 import static org.interpss.CorePluginFunction.OutputBusId;
+import static org.interpss.CorePluginFunction.formatKVStr;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.display.AclfOutFunc;
@@ -35,7 +35,7 @@ import org.interpss.numeric.util.Number2String;
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
-import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.adpter.AclfCapacitorBus;
 import com.interpss.core.aclf.adpter.AclfGenBusAdapter;
@@ -49,7 +49,7 @@ import com.interpss.core.net.Branch;
  *
  */
 public class AclfOut_BusStyle {
-	public static StringBuffer busResult(BaseAclfNetwork net, AclfBus bus) {
+	public static StringBuffer busResult(BaseAclfNetwork<?,?,?,?> net, AclfBus bus) {
 		StringBuffer str = new StringBuffer("");
 		str.append(title());
 		str.append(lfResultsBusStyle(bus, net, AclfOutFunc.BusIdStyle.BusId_No));
@@ -63,12 +63,12 @@ public class AclfOut_BusStyle {
 	 * @param style
 	 * @return
 	 */
-	public static StringBuffer lfResultsBusStyle(BaseAclfNetwork<?,?> mainNet, AclfOutFunc.BusIdStyle style) {
+	public static StringBuffer lfResultsBusStyle(BaseAclfNetwork<?,?,?,?> mainNet, AclfOutFunc.BusIdStyle style) {
 		StringBuffer str = new StringBuffer("");
 		try {
 			str.append(busStyleTitle(mainNet));
 
-			for (AclfBus bus : mainNet.getBusList()) {
+			for (BaseAclfBus bus : mainNet.getBusList()) {
 				if (bus.isActive()) {
 					str.append(lfResultsBusStyle(bus, mainNet, style));
 				}
@@ -119,7 +119,7 @@ public class AclfOut_BusStyle {
 	}
 	
 
-	private static StringBuffer lfResultsBusStyle(AclfBus bus, BaseAclfNetwork<?,?> net, AclfOutFunc.BusIdStyle style) {
+	private static StringBuffer lfResultsBusStyle(BaseAclfBus<?,?> bus, BaseAclfNetwork<?,?,?,?> net, AclfOutFunc.BusIdStyle style) {
 		double baseKVA = net.getBaseKva();
 		StringBuffer str = new StringBuffer("");
 
@@ -153,7 +153,7 @@ public class AclfOut_BusStyle {
 
 				Complex pq = new Complex(0.0, 0.0);
 				double amp = 0.0, fromRatio = 1.0, toRatio = 1.0, fromAng = 0.0, toAng = 0.0;
-				AclfBus toBus = null;
+				BaseAclfBus<?,?> toBus = null;
 				if (bra.isActive()) {
 					if (bus.getId().equals(bra.getFromAclfBus().getId())) {
 						toBus = bra.getToAclfBus();
@@ -225,7 +225,7 @@ public class AclfOut_BusStyle {
 		return str;
 	}
 	
-	private static StringBuffer busStyleTitle(BaseAclfNetwork<?,?> net) {
+	private static StringBuffer busStyleTitle(BaseAclfNetwork<?,?,?,?> net) {
 		StringBuffer str = new StringBuffer("");
 		
 		if (net.getChildNetList().size() > 0) 

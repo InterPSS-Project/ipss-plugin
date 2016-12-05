@@ -4,7 +4,7 @@ import org.interpss.QA.compare.DataComparatorAdapter;
 import org.interpss.numeric.util.Number2String;
 import org.interpss.numeric.util.NumericUtil;
 
-import com.interpss.core.aclf.AclfBus;
+import com.interpss.core.aclf.BaseAclfBus;
 
 /**
  * AclfBus data comparator
@@ -12,8 +12,8 @@ import com.interpss.core.aclf.AclfBus;
  * @author mzhou
  *
  */
-public class AclfBusDataComparator extends DataComparatorAdapter<AclfBus, AclfBus> {
-	@Override public boolean compare(AclfBus baseBus, AclfBus bus) {
+public class AclfBusDataComparator extends DataComparatorAdapter<BaseAclfBus, BaseAclfBus> {
+	@Override public boolean compare(BaseAclfBus baseBus, BaseAclfBus bus) {
 		this.msg = "";
 		boolean ok = true;
 		

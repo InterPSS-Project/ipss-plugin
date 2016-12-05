@@ -50,7 +50,7 @@ public class IpssAcsc extends BaseDSL {
 	 * @param net
 	 * @return
 	 */
-	public static FaultAlgoDSL createAcscAlgo(BaseAcscNetwork<?,?> net) {
+	public static FaultAlgoDSL createAcscAlgo(BaseAcscNetwork<?,?,?,?> net) {
 		return new FaultAlgoDSL(net);
 	}
 	
@@ -76,7 +76,7 @@ public class IpssAcsc extends BaseDSL {
 		 * 
 		 * @param net
 		 */
-		public FaultAlgoDSL(BaseAcscNetwork<?,?> net) {
+		public FaultAlgoDSL(BaseAcscNetwork<?,?,?,?> net) {
 			this.algo = CoreObjectFactory.createSimpleFaultAlgorithm(net);	 }
 		
 		/**
@@ -84,7 +84,7 @@ public class IpssAcsc extends BaseDSL {
 		 * 
 		 * @return
 		 */
-		public BaseAcscNetwork<?,?> getAcscNet() { return (BaseAcscNetwork<?,?>)this.algo.getNetwork(); }
+		public BaseAcscNetwork<?,?,?,?> getAcscNet() { return (BaseAcscNetwork<?,?,?,?>)this.algo.getNetwork(); }
  		
 		/**
 		 * create a bus fault

@@ -102,12 +102,12 @@ public class IpssAcscNet extends BaseDSL {
 		return new AcscNetworkDSL(id);
 	}
 	
-	public static class AcscNetworkDSL extends IpssAclfNet.AclfBaseNetDSL<BaseAcscNetwork<?,?>> {
+	public static class AcscNetworkDSL extends IpssAclfNet.AclfBaseNetDSL<BaseAcscNetwork<?,?,?,?>> {
 		public AcscNetworkDSL(String id) {
 			super(id, CoreObjectFactory.createAcscNetwork());
 		}
-		public BaseAcscNetwork<?,?> getAcscNet() {return this.net; }
-		public BaseAcscNetwork<?,?> getFaultNet() {return this.net; }
+		public BaseAcscNetwork<?,?,?,?> getAcscNet() {return this.net; }
+		public BaseAcscNetwork<?,?,?,?> getFaultNet() {return this.net; }
 
 		public AcscBusDSL addAcscBus(String busId, String busName) throws InterpssException {
 			return new AcscBusDSL(busId, busName, getAcscNet()); }	
@@ -122,8 +122,8 @@ public class IpssAcscNet extends BaseDSL {
 		return new AcscBusDSL(busId, busName, net);
 	}	
 	
-	public static class AcscBusDSL extends IpssAclfNet.AclfBusBaseDSL<AcscBus, BaseAcscNetwork<?,?>, AcscBusDSL>{
-		public AcscBusDSL(String busId, String busName, BaseAcscNetwork<?,?> net) throws InterpssException {
+	public static class AcscBusDSL extends IpssAclfNet.AclfBusBaseDSL<AcscBus, BaseAcscNetwork<?,?,?,?>, AcscBusDSL>{
+		public AcscBusDSL(String busId, String busName, BaseAcscNetwork<?,?,?,?> net) throws InterpssException {
 			super(busId, busName, CoreObjectFactory.createAcscBus(busId, net), net);
 		}
 
@@ -154,14 +154,14 @@ public class IpssAcscNet extends BaseDSL {
 		return new AcscBranchDSL(fromBusId, toBusId, net);
 	}
 	
-	public static class AcscBranchDSL extends IpssAclfNet.AclfBranchBaseDSL<AcscBranch, BaseAcscNetwork<?,?>, AcscBranchDSL>{
+	public static class AcscBranchDSL extends IpssAclfNet.AclfBranchBaseDSL<AcscBranch, BaseAcscNetwork<?,?,?,?>, AcscBranchDSL>{
 		public AcscBranchDSL() {
 		}
 		
-		public AcscBranchDSL(String fromBusId, String toBusId, BaseAcscNetwork<?,?> net) throws InterpssException {
+		public AcscBranchDSL(String fromBusId, String toBusId, BaseAcscNetwork<?,?,?,?> net) throws InterpssException {
 			this(fromBusId, toBusId, "1", net);
 		}
-		public AcscBranchDSL(String fromBusId, String toBusId, String cirId, BaseAcscNetwork<?,?> net) throws InterpssException {
+		public AcscBranchDSL(String fromBusId, String toBusId, String cirId, BaseAcscNetwork<?,?,?,?> net) throws InterpssException {
 			//super(fromBusId, toBusId, cirId, CoreObjectFactory.createAcscBranch(), net);
 			this.net = net;
 			AcscBranch branch = CoreObjectFactory.createAcscBranch();

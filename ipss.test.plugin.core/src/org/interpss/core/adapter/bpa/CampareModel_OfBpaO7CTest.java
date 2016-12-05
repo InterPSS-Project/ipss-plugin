@@ -15,8 +15,8 @@ import org.junit.Test;
 import com.interpss.SimuObjectFactory;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranch;
-import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.simu.SimuContext;
@@ -71,7 +71,7 @@ public class CampareModel_OfBpaO7CTest extends DStabTestSetupBase {
 
 	IAclfNetComparator netCompRules = new IAclfNetComparator() {
 		@Override
-		public boolean compare(BaseAclfNetwork<?,?> baseNet, BaseAclfNetwork<?,?> net) {
+		public boolean compare(BaseAclfNetwork<?,?,?,?> baseNet, BaseAclfNetwork<?,?,?,?> net) {
 			boolean ok = true;
 			if (baseNet.getNoBus() != net.getNoBus()) {
 				IpssLogger.getLogger().warning("NoOfBus not the same: " + baseNet.getNoBus() + ", " + net.getNoBus());
@@ -87,7 +87,7 @@ public class CampareModel_OfBpaO7CTest extends DStabTestSetupBase {
 	
 	IAclfBusComparator busCompRules = new IAclfBusComparator(){
 		@Override
-		public boolean compare(AclfBus baseBus, AclfBus bus) {
+		public boolean compare(BaseAclfBus baseBus, BaseAclfBus bus) {
 			boolean ok = true;
 			if (bus == null) {
 				IpssLogger.getLogger().warning("AclfBus not found, " + baseBus.getId());

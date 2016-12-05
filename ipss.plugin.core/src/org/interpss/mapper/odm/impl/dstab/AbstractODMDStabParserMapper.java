@@ -29,7 +29,6 @@ import static com.interpss.common.util.IpssLogger.ipssLogger;
 import javax.xml.bind.JAXBElement;
 
 import org.ieee.odm.model.dstab.DStabModelParser;
-import org.ieee.odm.model.dstab.DStabParserHelper;
 import org.ieee.odm.schema.AnalysisCategoryEnumType;
 import org.ieee.odm.schema.BaseBranchXmlType;
 import org.ieee.odm.schema.BranchXmlType;
@@ -40,17 +39,14 @@ import org.ieee.odm.schema.DStabNetXmlType;
 import org.ieee.odm.schema.ExciterModelXmlType;
 import org.ieee.odm.schema.GovernorModelXmlType;
 import org.ieee.odm.schema.IpssStudyScenarioXmlType;
-import org.ieee.odm.schema.LFGenCodeEnumType;
 import org.ieee.odm.schema.LineDStabXmlType;
 import org.ieee.odm.schema.LoadflowGenDataXmlType;
 import org.ieee.odm.schema.MachineModelXmlType;
 import org.ieee.odm.schema.NetworkCategoryEnumType;
 import org.ieee.odm.schema.OriginalDataFormatEnumType;
-import org.ieee.odm.schema.PSXfr3WBranchXmlType;
 import org.ieee.odm.schema.PSXfr3WDStabXmlType;
 import org.ieee.odm.schema.PSXfrDStabXmlType;
 import org.ieee.odm.schema.StabilizerModelXmlType;
-import org.ieee.odm.schema.Xfr3WBranchXmlType;
 import org.ieee.odm.schema.Xfr3WDStabXmlType;
 import org.ieee.odm.schema.XfrDStabXmlType;
 import org.interpss.mapper.odm.ODMAclfNetMapper;
@@ -69,6 +65,7 @@ import com.interpss.dstab.DStab3WBranch;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabGen;
+import com.interpss.dstab.DStabLoad;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.mach.Machine;
@@ -127,7 +124,7 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 				dstabAlgo.setAclfAlgorithm(lfAlgo);
 
 				// map the bus info
-				AclfBusDataHelper<DStabBus> helper = new AclfBusDataHelper<>(dstabNet);
+				AclfBusDataHelper<DStabGen,DStabLoad, DStabBus<DStabGen,DStabLoad>> helper = new AclfBusDataHelper<>(dstabNet);
 				for (JAXBElement<? extends BusXmlType> bus : xmlNet.getBusList().getBus()) {
 					DStabBusXmlType dstabBusXml = (DStabBusXmlType) bus.getValue();
 					

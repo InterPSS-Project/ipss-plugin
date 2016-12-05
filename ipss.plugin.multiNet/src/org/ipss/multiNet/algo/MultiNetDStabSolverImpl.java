@@ -91,7 +91,7 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 			for(DStabilityNetwork dsNet: subNetList){
 				
 				// Solve DEqn for all dynamic bus devices
-				for (DStabBus bus : dsNet.getBusList()) {
+				for (DStabBus<?,?> bus : dsNet.getBusList()) {
 				  //only the measurements of active buses will be output. 
 				   if(bus.isActive())
 				     output(bus, simuTime, true);
@@ -115,7 +115,7 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
             for(DStabilityNetwork dsNet: subNetList){
 				
 				// Solve DEqn for all dynamic bus devices
-			   for (DStabBus bus : dsNet.getBusList()) {
+			   for (DStabBus<?,?> bus : dsNet.getBusList()) {
 				   //only the measurements of active buses will be output. 
 				    if(bus.isActive())
 				         output(bus, simuTime, outCnt >= outPerSteps);
@@ -198,7 +198,7 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 				  
 				  for(DStabilityNetwork dsNet: subNetList){
 					for ( Bus busi : dsNet.getBusList() ) {
-						DStabBus bus = (DStabBus)busi;
+						DStabBus<?,?> bus = (DStabBus<?,?>)busi;
 						if(bus.isActive()){
 							
 							if(i>=1){
@@ -230,7 +230,7 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 			// Solve DEqn for all dynamic bus devices
 				for (Bus b : dsNet.getBusList()) {
 					if(b.isActive()){
-						DStabBus bus = (DStabBus)b;
+						DStabBus<?,?> bus = (DStabBus<?,?>)b;
 						for (DynamicBusDevice device : bus.getDynamicBusDeviceList()) {
 							// solve DEqn for the step. This includes all controller's nextStep() call
 							if(device.isActive()){
@@ -278,7 +278,7 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 		     //  for(DStabilityNetwork dsNet: subNetList){
 			
 				for ( Bus busi : dsNet.getBusList() ) {
-					DStabBus bus = (DStabBus)busi;
+					DStabBus<?,?> bus = (DStabBus<?,?>)busi;
 					if(bus.isActive()){
 						
 						// update dynamic attributes of the dynamic devices connected to the bus
@@ -303,7 +303,7 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 			 // backup the states
 			 for (Bus b :  dsNet.getBusList()) {
 					if(b.isActive()){
-						DStabBus bus = (DStabBus)b;
+						DStabBus<?,?> bus = (DStabBus<?,?>)b;
 						// Solve DEqn for generator 
 						if(bus.getContributeGenList().size()>0){
 							for(AclfGen gen:bus.getContributeGenList()){
@@ -327,7 +327,7 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 			for(DStabilityNetwork dsNet: subNetList){
 				
 				// Solve DEqn for all dynamic bus devices
-				for (DStabBus bus : dsNet.getBusList()) {
+				for (DStabBus<?,?> bus : dsNet.getBusList()) {
 
 					if(bus.isActive()){ // only the active bus will be consider, otherwise errors will occur
 						if (bus.isMachineBus()) {

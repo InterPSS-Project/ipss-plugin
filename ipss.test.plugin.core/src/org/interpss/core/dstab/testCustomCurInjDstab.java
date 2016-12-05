@@ -135,7 +135,7 @@ public class testCustomCurInjDstab {
 	  	// The load of bus 5 is assumed to be modeled by equivalent current injections
 	    //Need to set the load/gen/switchShunt at the boundary bus to be offline
 		  
-		  		DStabBus dsBus = dsNet.getBus("Bus5");
+		  		DStabBus<?,?> dsBus = dsNet.getBus("Bus5");
 		  		for(AclfLoad load: dsBus.getContributeLoadList()){
 		  			load.setStatus(false);
 		  		}
