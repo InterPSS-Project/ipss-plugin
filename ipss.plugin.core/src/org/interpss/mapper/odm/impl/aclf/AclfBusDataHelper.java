@@ -359,7 +359,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad, TBu
 				gen.setMwControlPFactor(xmlGen.getMwControlParticipateFactor()!=null?xmlGen.getMwControlParticipateFactor():1.0);
 				
 				//add the generator to the bus GenList
-				bus.getContributeGenList().add(gen);
+				bus.getContributeGenList().add((TGen)gen);
 			}
 		}
 	}

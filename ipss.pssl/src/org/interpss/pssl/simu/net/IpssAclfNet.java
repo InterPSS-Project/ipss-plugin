@@ -356,7 +356,7 @@ public class IpssAclfNet extends BaseDSL {
 		}
 	}
 	
-	public static class AclfBusBaseDSL<TBus extends Bus, TNet extends Network<?,?>, TAclfDSL> 
+	public static class AclfBusBaseDSL<TBus extends BaseAclfBus<?,?>, TNet extends Network<?,?>, TAclfDSL> 
 							extends BaseNetDSL<TBus, TNet, AclfBusBaseDSL<TBus,TNet, TAclfDSL>>{
 		// for getAclfBus()
 		public AclfBusBaseDSL(TBus bus, TNet net)  throws Exception {
@@ -374,9 +374,9 @@ public class IpssAclfNet extends BaseDSL {
 			bus.setName(busName);
 			setObject(bus);
 			//getAclfNet().addBus(bus);
-			AclfBus aclfBus = ((AclfBus)bus);
-			aclfBus.setGenCode(AclfGenCode.NON_GEN);
-			aclfBus.setLoadCode(AclfLoadCode.NON_LOAD);
+			//AclfBus aclfBus = ((AclfBus)bus);
+			bus.setGenCode(AclfGenCode.NON_GEN);
+			bus.setLoadCode(AclfLoadCode.NON_LOAD);
 		}
 		
 		@SuppressWarnings(value="unchecked")
@@ -445,7 +445,7 @@ public class IpssAclfNet extends BaseDSL {
   		public TAclfDSL setInitVoltage(double vpu, double angRad) {
   							getAclfBus().setVoltage(vpu, angRad);
 							return (TAclfDSL)this; }
-  		public AclfBus getAclfBus() {return (AclfBus)getObject(); }
+  		public TBus getAclfBus() {return (TBus)getObject(); }
   		public AclfNetwork getAclfNet() { return (AclfNetwork)getNet(); }
 	}
 
