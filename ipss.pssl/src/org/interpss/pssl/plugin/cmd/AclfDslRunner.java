@@ -49,7 +49,7 @@ import com.interpss.core.net.Network;
  *
  */
 public class AclfDslRunner implements IDslRunner {
-	private BaseAclfNetwork<?,?,?,?> net;
+	private BaseAclfNetwork<?,?> net;
 	private AclfRunConfigBean aclfBean = null;
 	
 	/**
@@ -60,7 +60,7 @@ public class AclfDslRunner implements IDslRunner {
 	public AclfDslRunner() {
 	}
 	
-	public AclfDslRunner(BaseAclfNetwork<?,?,?,?> net) {
+	public AclfDslRunner(BaseAclfNetwork<?,?> net) {
 		this.net = net;
 	}
 	
@@ -69,7 +69,7 @@ public class AclfDslRunner implements IDslRunner {
 	 */
 	@Override
 	public IDslRunner setNetwork(Network<?,?> net) {
-		this.net = (BaseAclfNetwork<?,?,?,?>) net; return this;
+		this.net = (BaseAclfNetwork<?,?>) net; return this;
 	}
 	
 	@Override

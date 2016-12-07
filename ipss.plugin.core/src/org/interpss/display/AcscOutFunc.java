@@ -60,7 +60,7 @@ public class AcscOutFunc {
 	 * @param algo
 	 * @return
 	 */
-	public static String faultResult2String(BaseAcscNetwork<?,?,?,?> faultNet, SimpleFaultAlgorithm algo) {
+	public static String faultResult2String(BaseAcscNetwork<?,?> faultNet, SimpleFaultAlgorithm algo) {
 		StringBuffer sb = new StringBuffer();
 		ipssLogger.fine(
 				"# of Fault objects = " + algo.getFaultList().size());
@@ -76,7 +76,7 @@ public class AcscOutFunc {
 		return sb.toString();
 	}
 
-	private static String branchFaultInfo(AcscBranchFault bf, BaseAcscNetwork<?,?,?,?> net) {
+	private static String branchFaultInfo(AcscBranchFault bf, BaseAcscNetwork<?, ?> net) {
 		StringBuffer str = new StringBuffer("");
 		try {
 			double baseKVA = net.getBaseKva();
@@ -103,7 +103,7 @@ public class AcscOutFunc {
 		return str.toString();
 	}
 
-	private static String busFaultInfo(AcscBusFault bf, BaseAcscNetwork<?,?,?,?> net) {
+	private static String busFaultInfo(AcscBusFault bf, BaseAcscNetwork<?, ?> net) {
 		StringBuffer str = new StringBuffer("");
 		try {
 			double baseKVA = net.getBaseKva();
@@ -158,7 +158,7 @@ public class AcscOutFunc {
 	}
 	
 	private static String displayBusVoltage(AcscBusFault bf) {
-		BaseAcscNetwork<?,?,?,?> net = bf.getFaultResult().getAcscNet();
+		BaseAcscNetwork<?, ?> net = bf.getFaultResult().getAcscNet();
 		try {
 			bf.getFaultResult().calBranchCurrent();
 			bf.getFaultResult().calContributingCurrent();
@@ -242,7 +242,7 @@ public class AcscOutFunc {
 	}
 
 	private static String displayBranchCurrent(AcscBusFault bf) {
-		BaseAcscNetwork<?,?,?,?> net = bf.getFaultResult().getAcscNet();
+		BaseAcscNetwork<?, ?> net = bf.getFaultResult().getAcscNet();
 		try {
 			bf.getFaultResult().calBranchCurrent();
 		} catch (Exception e) {
