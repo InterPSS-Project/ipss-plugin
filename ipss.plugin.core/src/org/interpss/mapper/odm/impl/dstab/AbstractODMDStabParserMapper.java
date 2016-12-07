@@ -124,7 +124,7 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 				dstabAlgo.setAclfAlgorithm(lfAlgo);
 
 				// map the bus info
-				AclfBusDataHelper<DStabGen,DStabLoad, DStabBus<DStabGen,DStabLoad>> helper = new AclfBusDataHelper<>(dstabNet);
+				AclfBusDataHelper helper = new AclfBusDataHelper(dstabNet);
 				for (JAXBElement<? extends BusXmlType> bus : xmlNet.getBusList().getBus()) {
 					DStabBusXmlType dstabBusXml = (DStabBusXmlType) bus.getValue();
 					

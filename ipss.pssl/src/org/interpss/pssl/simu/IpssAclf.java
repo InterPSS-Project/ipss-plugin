@@ -45,7 +45,7 @@ public class IpssAclf extends BaseDSL {
 	 * @param net AclfNetwork object
 	 * @return
 	 */
-	public static LfAlgoDSL createAclfAlgo(BaseAclfNetwork<?,?,?,?> net) {
+	public static LfAlgoDSL createAclfAlgo(BaseAclfNetwork<?,?> net) {
 		return new LfAlgoDSL(net);
 	}
 	
@@ -59,14 +59,14 @@ public class IpssAclf extends BaseDSL {
 	 */
 	public static class LfAlgoDSL {
 		private LoadflowAlgorithm algo = null;
-		private BaseAclfNetwork<?,?,?,?> net = null;
+		private BaseAclfNetwork<?,?> net = null;
 		
 		/**
 		 * constructor
 		 * 
 		 * @param net AclfNetwork object
 		 */
-		public LfAlgoDSL(BaseAclfNetwork<?,?,?,?> net) {
+		public LfAlgoDSL(BaseAclfNetwork<?,?> net) {
 			this.net = net;
 			this.algo = CoreObjectFactory.createLoadflowAlgorithm(this.net);	 }
 /*

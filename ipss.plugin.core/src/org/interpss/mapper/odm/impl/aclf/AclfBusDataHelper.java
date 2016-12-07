@@ -60,6 +60,7 @@ import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfGenCode;
@@ -85,16 +86,16 @@ import com.interpss.dstab.DStabBus;
  * @author mzhou
  *
  */
-public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad, TBus extends BaseAclfBus<TGen,TLoad>> {
-	private BaseAclfNetwork<TGen,TLoad,TBus,?> aclfNet = null;
-	private TBus bus = null;
+public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
+	private BaseAclfNetwork<?, ?> aclfNet = null;
+	private BaseAclfBus<TGen, TLoad> bus = null;
 	
 	/**
 	 * constructor
 	 * 
 	 * @param aclfNet
 	 */
-	public AclfBusDataHelper(BaseAclfNetwork<TGen,TLoad,TBus,?> aclfNet) {
+	public AclfBusDataHelper(BaseAclfNetwork<?, ?> aclfNet) {
 		this.aclfNet = aclfNet;
 	}
 	
@@ -103,7 +104,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad, TBu
 	 * 
 	 * @param bus
 	 */
-	public void setBus(TBus bus) {
+	public void setBus(BaseAclfBus<TGen,TLoad> bus) {
 		this.bus = bus;
 	}
 	

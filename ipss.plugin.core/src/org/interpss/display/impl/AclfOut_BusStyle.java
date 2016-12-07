@@ -49,7 +49,7 @@ import com.interpss.core.net.Branch;
  *
  */
 public class AclfOut_BusStyle {
-	public static StringBuffer busResult(BaseAclfNetwork<?,?,?,?> net, AclfBus bus) {
+	public static StringBuffer busResult(BaseAclfNetwork<?, ?> net, AclfBus bus) {
 		StringBuffer str = new StringBuffer("");
 		str.append(title());
 		str.append(lfResultsBusStyle(bus, net, AclfOutFunc.BusIdStyle.BusId_No));
@@ -63,7 +63,7 @@ public class AclfOut_BusStyle {
 	 * @param style
 	 * @return
 	 */
-	public static StringBuffer lfResultsBusStyle(BaseAclfNetwork<?,?,?,?> mainNet, AclfOutFunc.BusIdStyle style) {
+	public static StringBuffer lfResultsBusStyle(BaseAclfNetwork<?, ?> mainNet, AclfOutFunc.BusIdStyle style) {
 		StringBuffer str = new StringBuffer("");
 		try {
 			str.append(busStyleTitle(mainNet));
@@ -119,7 +119,7 @@ public class AclfOut_BusStyle {
 	}
 	
 
-	private static StringBuffer lfResultsBusStyle(BaseAclfBus<?,?> bus, BaseAclfNetwork<?,?,?,?> net, AclfOutFunc.BusIdStyle style) {
+	private static StringBuffer lfResultsBusStyle(BaseAclfBus<?,?> bus, BaseAclfNetwork<?, ?> net, AclfOutFunc.BusIdStyle style) {
 		double baseKVA = net.getBaseKva();
 		StringBuffer str = new StringBuffer("");
 
@@ -225,7 +225,7 @@ public class AclfOut_BusStyle {
 		return str;
 	}
 	
-	private static StringBuffer busStyleTitle(BaseAclfNetwork<?,?,?,?> net) {
+	private static StringBuffer busStyleTitle(BaseAclfNetwork<?, ?> net) {
 		StringBuffer str = new StringBuffer("");
 		
 		if (net.getChildNetList().size() > 0) 

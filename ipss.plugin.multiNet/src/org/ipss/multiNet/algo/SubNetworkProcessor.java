@@ -57,7 +57,7 @@ public class SubNetworkProcessor {
 	private int subNetIdx =0;
 	
 	
-	private BaseAclfNetwork<?, ?, ? extends BaseAclfBus<?,?>, ? extends AclfBranch> net = null;
+	private BaseAclfNetwork<? extends BaseAclfBus<?,?>, ? extends AclfBranch> net = null;
 
 	//TODO There is shortcoming in the existing childNet model, which did not allow the same bus 
 	//to be co-existing in the childNet and parent network;
@@ -65,7 +65,7 @@ public class SubNetworkProcessor {
 	private List<DStabilityNetwork> subNetworkList = null;
 	private List<String> threePhaseSubNetIdList = null; // should be provided after subnetwork creation 
 
-	public SubNetworkProcessor(BaseAclfNetwork<?,?,?,?> net ){
+	public SubNetworkProcessor(BaseAclfNetwork<?,?> net ){
 		this.net = net;
 		this.defInterfaceBranchIdList = new ArrayList();
 		this.boundaryBusIdList = new ArrayList();
@@ -397,7 +397,7 @@ public class SubNetworkProcessor {
 	 * 
 	 * @return
 	 */
-	private boolean createSubNetworks(BaseAclfNetwork<?, ?, ?, ?>  _net,
+	private boolean createSubNetworks(BaseAclfNetwork<?, ?>  _net,
 			List<String> _internalInterfaceBranchIdList, List<String> _boundaryBusIdList){
 		
 
@@ -503,7 +503,7 @@ public class SubNetworkProcessor {
 		return subNetworkSearched=true;
 		
 	}
-	private boolean DFS(BaseAclfNetwork<?,?,?,?>  _net, DStabilityNetwork _subNet,
+	private boolean DFS(BaseAclfNetwork<?,?>  _net, DStabilityNetwork _subNet,
 			List<String> _internalInterfaceBranchIdList,String busId) {
 		boolean isToBus = true;
       
@@ -556,11 +556,11 @@ public class SubNetworkProcessor {
 	}
 	
 
-	public BaseAclfNetwork<?,?,?,?> getNet() {
+	public BaseAclfNetwork<?,?> getNet() {
 		return net;
 	}
 
-	public void setNet(BaseAclfNetwork<?,?,?,?> net) {
+	public void setNet(BaseAclfNetwork<?,?> net) {
 		this.net = net;
 	}
 

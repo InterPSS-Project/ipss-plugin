@@ -278,7 +278,7 @@ public class IpssAclfNet extends BaseDSL {
 	 *
 	 * @param <T>
 	 */
-	public static class AclfBaseNetDSL<T extends BaseAclfNetwork<?,?,?,?>> {
+	public static class AclfBaseNetDSL<T extends BaseAclfNetwork<?, ?>> {
 		T net = null;
 		
 		/**
@@ -342,16 +342,16 @@ public class IpssAclfNet extends BaseDSL {
 
 	// ================ private implementation =======================
 
-	public static class AclfBusDSL extends AclfBusBaseDSL<BaseAclfBus<?,?>, BaseAclfNetwork<?,?,?,?>, AclfBusDSL>{
+	public static class AclfBusDSL extends AclfBusBaseDSL<BaseAclfBus<?,?>, BaseAclfNetwork<?, ?>, AclfBusDSL>{
 		// for addAclfBus()
-		public AclfBusDSL(String busId, String busName, BaseAclfNetwork<?,?,?,?> net) throws InterpssException {
+		public AclfBusDSL(String busId, String busName, BaseAclfNetwork<?, ?> net) throws InterpssException {
 			super(busId, busName, CoreObjectFactory.createAclfBus(busId, net), net);
 		}
 		// for getAclfBus()
-		public AclfBusDSL(String busId, BaseAclfNetwork<?,?,?,?> net)  throws Exception {
+		public AclfBusDSL(String busId, BaseAclfNetwork<?, ?> net)  throws Exception {
 			super(net.getBus(busId), net);
 		}
-		public AclfBusDSL(AclfBus bus, BaseAclfNetwork<?,?,?,?> net)  throws Exception {
+		public AclfBusDSL(AclfBus bus, BaseAclfNetwork<?, ?> net)  throws Exception {
 			super(bus, net);
 		}
 	}
@@ -478,24 +478,24 @@ public class IpssAclfNet extends BaseDSL {
 
 	// ================ private implementation =======================
 
-	public static class AclfBranchDSL extends AclfBranchBaseDSL<AclfBranch, BaseAclfNetwork<?,?,?,?>, AclfBranchDSL>{
+	public static class AclfBranchDSL extends AclfBranchBaseDSL<AclfBranch, BaseAclfNetwork<?, ?>, AclfBranchDSL>{
 		// for addAclfBranch()
-		public AclfBranchDSL(AclfBranch branch, BaseAclfNetwork<?,?,?,?> net) throws Exception {
+		public AclfBranchDSL(AclfBranch branch, BaseAclfNetwork<?, ?> net) throws Exception {
 			super(branch, net);
 		}
 		// for addAclfBranch()
-		public AclfBranchDSL(String fromBusId, String toBusId, BaseAclfNetwork<?,?,?,?> net) throws InterpssException {
+		public AclfBranchDSL(String fromBusId, String toBusId, BaseAclfNetwork<?, ?> net) throws InterpssException {
 			this(fromBusId, toBusId, "1", net);
 		}
-		public AclfBranchDSL(String fromBusId, String toBusId, AclfBranch branch, BaseAclfNetwork<?,?,?,?> net) throws InterpssException {
+		public AclfBranchDSL(String fromBusId, String toBusId, AclfBranch branch, BaseAclfNetwork<?, ?> net) throws InterpssException {
 			this(fromBusId, toBusId, "1", branch, net);
 		}
 		// for addAclfBranch()
-		public AclfBranchDSL(String fromBusId, String toBusId, String cirId, BaseAclfNetwork<?,?,?,?> net) throws InterpssException {
+		public AclfBranchDSL(String fromBusId, String toBusId, String cirId, BaseAclfNetwork<?, ?> net) throws InterpssException {
 			super(fromBusId, toBusId, cirId, CoreObjectFactory.createAclfBranch(), net);
 		}
 
-		public AclfBranchDSL(String fromBusId, String toBusId, String cirId, AclfBranch branch, BaseAclfNetwork<?,?,?,?> net) throws InterpssException {
+		public AclfBranchDSL(String fromBusId, String toBusId, String cirId, AclfBranch branch, BaseAclfNetwork<?, ?> net) throws InterpssException {
 			super(fromBusId, toBusId, cirId, branch, net);
 		}
 	}
