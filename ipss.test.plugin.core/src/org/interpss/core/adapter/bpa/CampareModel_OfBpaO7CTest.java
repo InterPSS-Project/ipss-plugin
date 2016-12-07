@@ -71,7 +71,7 @@ public class CampareModel_OfBpaO7CTest extends DStabTestSetupBase {
 
 	IAclfNetComparator netCompRules = new IAclfNetComparator() {
 		@Override
-		public boolean compare(BaseAclfNetwork<?,?,?,?> baseNet, BaseAclfNetwork<?,?,?,?> net) {
+		public boolean compare(BaseAclfNetwork<?,?> baseNet, BaseAclfNetwork<?,?> net) {
 			boolean ok = true;
 			if (baseNet.getNoBus() != net.getNoBus()) {
 				IpssLogger.getLogger().warning("NoOfBus not the same: " + baseNet.getNoBus() + ", " + net.getNoBus());

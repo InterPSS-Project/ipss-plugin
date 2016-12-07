@@ -15,10 +15,10 @@ import com.interpss.core.acsc.XfrConnectCode;
 import com.interpss.core.net.Branch;
 
 public class SequenceNetworkBuilder {
-	private BaseAcscNetwork<?,?,?,?> _net = null;
+	private BaseAcscNetwork<?,?> _net = null;
 	private boolean overrideSeqData = false;
 	private double lineZero2PosZRatio = 2.5;
-	public SequenceNetworkBuilder(BaseAcscNetwork<?,?,?,?> net, boolean overrideExistingData){
+	public SequenceNetworkBuilder(BaseAcscNetwork<?,?> net, boolean overrideExistingData){
 		this._net = net;
 		this.overrideSeqData = overrideExistingData;
 	}

@@ -48,7 +48,7 @@ import com.interpss.core.net.Bus;
  *
  */
 public class TopologyProcesor {
-	private BaseAclfNetwork<?,?,?,?> aclfNet = null;
+	private BaseAclfNetwork<?,?> aclfNet = null;
 	private List<Bus> groupBusList = null;	
 	private Bus refBus = null;	
 	private List<String> islandedBusList = null;
@@ -58,7 +58,7 @@ public class TopologyProcesor {
 	 * 
 	 * @param net
 	 */
-	public TopologyProcesor(BaseAclfNetwork<?,?,?,?> net) {
+	public TopologyProcesor(BaseAclfNetwork<?,?> net) {
 		this.aclfNet = net;
 		// in the findBranchSubStation(), branch.visited status is used for branch search
 		for (Branch branch : net.getBranchList())

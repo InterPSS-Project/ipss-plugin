@@ -67,6 +67,7 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.XfrZTableEntry;
 import com.interpss.core.aclf.flow.FlowInterface;
@@ -131,10 +132,10 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 			aclfNet.setOriginalDataFormat(this.originalFormat);		
 			
 			mapAclfNetworkData(aclfNet, xmlNet);
-			simuCtx.setAclfNet(aclfNet);
+			simuCtx.setAclfNet((AclfNetwork)aclfNet);
 
 			//XformerZTableXmlType xfrZTable = xmlNet.getXfrZTable();
-			AclfBusDataHelper<AclfGen, AclfLoad, AclfBus> busHelper = new AclfBusDataHelper<>(aclfNet);
+			AclfBusDataHelper busHelper = new AclfBusDataHelper(aclfNet);
 			for (JAXBElement<? extends BusXmlType> bus : xmlNet.getBusList().getBus()) {
 				LoadflowBusXmlType busRec = (LoadflowBusXmlType) bus.getValue();
 				AclfBus aclfBus = CoreObjectFactory.createAclfBus(busRec.getId(), aclfNet);
@@ -199,7 +200,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 		return noError;
 	}
 	
-	public static void postAclfNetProcessing(BaseAclfNetwork<?,?,?,?> aclfNet) throws InterpssException {
+	public static void postAclfNetProcessing(BaseAclfNetwork<?,?> aclfNet) throws InterpssException {
 		aclfNet.adjustXfrZ();
 		
 		aclfNet.initContributeGenLoad();
@@ -211,7 +212,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 	 * @param xmlNet
 	 * @return
 	 */
-	public void mapAclfNetworkData(BaseAclfNetwork<?,?,?,?> net, LoadflowNetXmlType xmlNet) throws InterpssException {
+	public void mapAclfNetworkData(BaseAclfNetwork<?,?> net, LoadflowNetXmlType xmlNet) throws InterpssException {
 		mapNetworkData(net, xmlNet);
 		
 		// map Xfr Z Table
@@ -306,7 +307,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 	 * @return
 	 * @throws Exception
 	 */
-	public AclfBus mapAclfBusData(LoadflowBusXmlType xmlBusRec, AclfBus aclfBus, AclfNetwork adjNet, AclfBusDataHelper<AclfGen, AclfLoad, AclfBus> helper) throws InterpssException {
+	public AclfBus mapAclfBusData(LoadflowBusXmlType xmlBusRec, AclfBus aclfBus, AclfNetwork adjNet, AclfBusDataHelper helper) throws InterpssException {
 		if (adjNet.getOriginalDataFormat() == OriginalDataFormat.PWD) {
 			AclfBusPWDExtension ext = new AclfBusPWDExtension();
 			aclfBus.setExtensionObject(ext);
@@ -331,7 +332,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 	 * @param msg
 	 * @throws Exception
 	 */
-	public void mapAclfBranchData(BaseBranchXmlType xmlBranch, Branch branch, BaseAclfNetwork<?,?,?,?> adjNet) throws InterpssException {
+	public void mapAclfBranchData(BaseBranchXmlType xmlBranch, Branch branch, BaseAclfNetwork<?,?> adjNet) throws InterpssException {
 		if (adjNet.getOriginalDataFormat() == OriginalDataFormat.PWD) {
 			AclfBranchPWDExtension ext = new AclfBranchPWDExtension();
 			branch.setExtensionObject(ext);
@@ -384,7 +385,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 	 * @param msg
 	 * @throws Exception
 	 */
-	public void mapAclfHVDC2TData(BaseBranchXmlType xmlBranch, Branch branch, BaseAclfNetwork<?,?,?,?> adjNet) throws InterpssException {
+	public void mapAclfHVDC2TData(BaseBranchXmlType xmlBranch, Branch branch, BaseAclfNetwork<?,?> adjNet) throws InterpssException {
 		//net.addHvdcLine2T(dcLine, fromBusId, toBusId, dcLineNo);
 		//dcLine.setDcLineNumber(dcLineNo);
 		mapBaseBranchRec(xmlBranch, branch, adjNet);	
@@ -404,7 +405,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 	
 	
 	
-	private void setAclfBranchData(BranchXmlType xmlBranchRec, Branch branch, BaseAclfNetwork<?,?,?,?> adjNet) throws InterpssException {
+	private void setAclfBranchData(BranchXmlType xmlBranchRec, Branch branch, BaseAclfNetwork<?,?> adjNet) throws InterpssException {
 		mapBaseBranchRec(xmlBranchRec, branch, adjNet);		
 		if (branch instanceof AclfBranch) {
 			AclfBranch aclfBranch = (AclfBranch)branch;

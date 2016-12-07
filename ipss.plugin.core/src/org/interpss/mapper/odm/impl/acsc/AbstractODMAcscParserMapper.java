@@ -69,8 +69,6 @@ import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.aclf.AclfGen;
-import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.acsc.Acsc3WBranch;
 import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.AcscBus;
@@ -135,7 +133,7 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 				mapAcscNetworkData(acscFaultNet,xmlNet);
 
 				// map the bus info
-				AclfBusDataHelper<AcscGen,AcscLoad, AcscBus> helper = new AclfBusDataHelper<>(acscFaultNet);
+				AclfBusDataHelper helper = new AclfBusDataHelper(acscFaultNet);
 				for (JAXBElement<? extends BusXmlType> busXml : xmlNet.getBusList().getBus()) {
 					ShortCircuitBusXmlType acscBusXml = (ShortCircuitBusXmlType)busXml.getValue();
 					// for short circuit, the bus could be acscBus or acscNoLFBus 
@@ -200,7 +198,7 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 	 * @param xmlNet
 	 * @return
 	 */
-	public void mapAcscNetworkData(BaseAcscNetwork<?,?,?,?> net, ShortCircuitNetXmlType xmlNet) throws InterpssException {
+	public void mapAcscNetworkData(BaseAcscNetwork<?,?> net, ShortCircuitNetXmlType xmlNet) throws InterpssException {
 		new ODMAclfNetMapper().mapAclfNetworkData(net, xmlNet);
 		net.setPositiveSeqDataOnly(xmlNet.isPositiveSeqDataOnly());		
 		net.setLfDataLoaded(xmlNet.isHasLoadflowData());

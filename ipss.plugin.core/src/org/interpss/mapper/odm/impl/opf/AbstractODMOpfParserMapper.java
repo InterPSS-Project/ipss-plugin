@@ -72,9 +72,9 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import com.interpss.OpfObjectFactory;
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfLoad;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.common.curve.CommonCurveFactory;
 import com.interpss.core.common.curve.NumericCurveModel;
 import com.interpss.core.common.curve.PieceWiseCurve;
@@ -138,7 +138,7 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 				simuCtx.setOpfNet(opfNet);
 
 				
-				AclfBusDataHelper<AclfGen,AclfLoad,AclfBus> busHelper = new AclfBusDataHelper<>(opfNet);
+				AclfBusDataHelper busHelper = new AclfBusDataHelper(opfNet);
 				ODMAclfNetMapper aclfNetMapper = new ODMAclfNetMapper();
 				for (JAXBElement<? extends BusXmlType> bus : xmlNet.getBusList().getBus()) {
 					if (bus.getValue() instanceof OpfDclfGenBusXmlType ||

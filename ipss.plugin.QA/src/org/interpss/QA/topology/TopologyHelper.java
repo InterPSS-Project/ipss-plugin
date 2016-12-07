@@ -48,7 +48,7 @@ public class TopologyHelper {
 	private static final String protectedBranchStyle = "defaultEdge;strokeColor=black";
 
 	Hashtable<String, Object> addedBusTable = new Hashtable<String, Object>();
-	BaseAclfNetwork<?,?,?,?> net = null;
+	BaseAclfNetwork<?,?> net = null;
 	Topology top = null;
 	ZeroZBranchProcesor proc = null;
 	List<String> protectedBranches = new ArrayList<String>();
@@ -63,7 +63,7 @@ public class TopologyHelper {
 	boolean displayBaseVolt = false;
 	double voltageLevel = 1.0;
 
-	public TopologyHelper(BaseAclfNetwork<?,?,?,?> net) throws InterpssException {
+	public TopologyHelper(BaseAclfNetwork<?,?> net) throws InterpssException {
 		this.net = net;
 		this.top = new Topology();
 	}

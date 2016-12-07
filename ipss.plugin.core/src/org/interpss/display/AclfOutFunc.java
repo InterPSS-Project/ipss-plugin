@@ -86,7 +86,7 @@ public class AclfOutFunc {
 	 * @param net
 	 * @return
 	 */
-	public static StringBuffer loadFlowSummary(BaseAclfNetwork<?,?,?,?> net) {
+	public static StringBuffer loadFlowSummary(BaseAclfNetwork<?, ?> net) {
 		return loadFlowSummary(net, true);
 	}
 	
@@ -97,7 +97,7 @@ public class AclfOutFunc {
 	 * @param includeAdj
 	 * @return
 	 */
-	public static StringBuffer loadFlowSummary(BaseAclfNetwork<?,?,?,?> net, boolean includeAdj) {
+	public static StringBuffer loadFlowSummary(BaseAclfNetwork<?, ?> net, boolean includeAdj) {
 		StringBuffer str = new StringBuffer(_loadFlowSummary(net));
 
 		try {
@@ -161,7 +161,7 @@ public class AclfOutFunc {
 		return str;
 	}
 
-	private static StringBuffer _loadFlowSummary(BaseAclfNetwork<?,?,?,?> net) {
+	private static StringBuffer _loadFlowSummary(BaseAclfNetwork<?, ?> net) {
 		final StringBuffer str = new StringBuffer("");
 		try {
 			str.append("\n                          Load Flow Summary\n");
@@ -291,7 +291,7 @@ public class AclfOutFunc {
 	 * @param prefix
 	 * @return
 	 */
-	public static String maxMismatchToString(BaseAclfNetwork<?,?,?,?> net, String prefix) {
+	public static String maxMismatchToString(BaseAclfNetwork<?, ?> net, String prefix) {
 		try {
 			double baseKVA = net.getBaseKva();
 			String str = "\n"+prefix+"                         Max Power Mismatches\n"
@@ -369,7 +369,7 @@ public class AclfOutFunc {
 	 * @param net
 	 * @return
 	 */
-	public static StringBuffer branchMvaRatingViolationList(BaseAclfNetwork<?, ?,?,?> net) {
+	public static StringBuffer branchMvaRatingViolationList(BaseAclfNetwork<?,?> net) {
 		StringBuffer str = new StringBuffer("");
 		if (net.hasBranchMavRatingViolation()) {
 			str.append("\n\n");
@@ -391,7 +391,7 @@ public class AclfOutFunc {
 		return str;
 	}
 
-	private static void processBranchMvaRatingViolation(BaseAclfNetwork<?, ?,?,?> net,
+	private static void processBranchMvaRatingViolation(BaseAclfNetwork<?,?> net,
 			StringBuffer str, AclfBranch bra) {
 		if (bra.isActive()) {
 			AclfBranchRating adapter = branchRatingAptr.apply(bra);
@@ -423,7 +423,7 @@ public class AclfOutFunc {
 	 * @return
 	 * @throws Exception
 	 */
-	public static StringBuffer pvBusLimitToString(BaseAclfNetwork<?,?,?,?> net) throws Exception {
+	public static StringBuffer pvBusLimitToString(BaseAclfNetwork<?, ?> net) throws Exception {
 		final StringBuffer str = new StringBuffer("");
 
 		str.append("\n\n");
@@ -465,7 +465,7 @@ public class AclfOutFunc {
 	 * @return
 	 * @throws Exception
 	 */
-	public static StringBuffer pqBusLimitToString(BaseAclfNetwork<?,?,?,?> net) 	throws Exception {
+	public static StringBuffer pqBusLimitToString(BaseAclfNetwork<?, ?> net) 	throws Exception {
 		StringBuffer str = new StringBuffer("");
 
 		str.append("\n\n");
@@ -511,7 +511,7 @@ public class AclfOutFunc {
 	 * @return
 	 * @throws Exception
 	 */
-	public static StringBuffer remoteQBusToString(BaseAclfNetwork<?,?,?,?> net) throws Exception {
+	public static StringBuffer remoteQBusToString(BaseAclfNetwork<?, ?> net) throws Exception {
 		StringBuffer str = new StringBuffer("");
 
 		str.append("\n\n");
@@ -559,7 +559,7 @@ public class AclfOutFunc {
 	 * @return
 	 * @throws Exception
 	 */
-	public static StringBuffer aclfFuncLoadToString(BaseAclfNetwork<?,?,?,?> net) throws Exception {
+	public static StringBuffer aclfFuncLoadToString(BaseAclfNetwork<?, ?> net) throws Exception {
 		StringBuffer str = new StringBuffer("");
 
 		double baseKVA = net.getBaseKva();
@@ -607,7 +607,7 @@ public class AclfOutFunc {
 	 * @return
 	 * @throws Exception
 	 */
-	public static StringBuffer tapVControlToString(BaseAclfNetwork<?,?,?,?> net) throws Exception {
+	public static StringBuffer tapVControlToString(BaseAclfNetwork<?, ?> net) throws Exception {
 		StringBuffer str = new StringBuffer("");
 
 		double baseKva = net.getBaseKva();
@@ -677,7 +677,7 @@ public class AclfOutFunc {
 	 * @return
 	 * @throws Exception
 	 */
-	public static StringBuffer psXfrPControlToString(BaseAclfNetwork<?,?,?,?> net) throws Exception {
+	public static StringBuffer psXfrPControlToString(BaseAclfNetwork<?, ?> net) throws Exception {
 		StringBuffer str = new StringBuffer("");
 
 		double baseKVA = net.getBaseKva();
