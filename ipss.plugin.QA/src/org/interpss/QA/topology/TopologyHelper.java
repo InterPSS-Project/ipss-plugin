@@ -231,7 +231,7 @@ public class TopologyHelper {
 		TopologyProcesor tp = new TopologyProcesor(net);		
 		List<String> branchList = tp.findBranchInSubStation(branchId);
 		
-		ChangeRecorder recorder = net.bookmark(false);
+		//ChangeRecorder recorder = net.bookmark(false);
 		
 		net.accept((INetBVisitor<?, ?>) proc); 	
 		
@@ -239,7 +239,7 @@ public class TopologyHelper {
 		String parentBus = result.getParentBusId();
 		List<String> childBusList = result.getChildBusList();	
 		
-		net.rollback(recorder);
+		//net.rollback(recorder);
 		
 		String type ="Line";
 		String cirId="";

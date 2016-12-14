@@ -160,7 +160,7 @@ public class CAResultVerifier {
 		this.msgList.clear();
 		this.hasIsland = false;
 		
-		ChangeRecorder recorder = aclfNet.bookmark(false);		
+		//ChangeRecorder recorder = aclfNet.bookmark(false);		
 		
 		/*
 		 * calculate actual contingency DCLF by applying the outages
@@ -194,9 +194,9 @@ public class CAResultVerifier {
 			lookupTable.put(branch.getId(), new Double(flow));
 		}
 		
-		algoPost.destroy();
+		//algoPost.destroy();
 		
-		aclfNet.rollback(recorder);
+		//aclfNet.rollback(recorder);
 		
 		/*
 		 * 	calculate contingency DCLF by using sensitivity
@@ -240,7 +240,7 @@ public class CAResultVerifier {
 		System.out.println("Contingency: "+cont.getId()+", CA results " + (identical? "" : "do not") + " match DCLF results." 
 				+ (this.hasIsland? "  Island " : "  ") + "  # of violated branches " + cont.getMonitoringBranches().size());
 		
-		algoCtg.destroy();
+		//algoCtg.destroy();
 		
 		return identical;
 	}
