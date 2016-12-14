@@ -105,7 +105,7 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
 				assertTrue(Math.abs(algo.getMismatch((AclfBus)b)) < 0.00001);
 		}
 		
-		algo.destroy();			
+		//algo.destroy();			
 	}
 	
 	@Test
@@ -134,7 +134,7 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
   		assertTrue(Math.abs(algo.getBusPower(net.getBus("Bus1"))-1.99)<0.0001);
   		assertTrue(Math.abs(Math.toDegrees(algo.getBusAngle("Bus1"))-2.848746)<0.001);
 
-		algo.destroy();			
+		//algo.destroy();			
 	}
 
 	//@Test
@@ -180,7 +180,7 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
 		//System.out.println(DclfOutFunc.dclfResults(algo, false));
   		assertTrue(Math.abs(algo.getBusPower(net.getBus("Bus1"))-3.0723)<0.0001);
 		
-		algo.destroy();	
+		//algo.destroy();	
 	}
 }
 

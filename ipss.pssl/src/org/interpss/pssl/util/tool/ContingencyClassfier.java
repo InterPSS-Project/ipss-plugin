@@ -92,7 +92,7 @@ public class ContingencyClassfier {
 					}						
 				}
 			}			
-			algoCtg.destroy();			
+			//algoCtg.destroy();			
 		}				
 	}
 	

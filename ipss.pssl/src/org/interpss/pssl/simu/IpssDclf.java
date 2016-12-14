@@ -166,13 +166,6 @@ public class IpssDclf extends BaseDSL {
 			this.algo = algo;
 		}
 		
-		/**
-		 * distructor - release resource if native method is used 
-		 */
-		public void destroy() {
-			if (this.algo != null)
-				this.algo.destroy();
-		}
 		
 		/**
 		 * accept the AclfNetwork visitor

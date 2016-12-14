@@ -77,7 +77,7 @@ public class TestAddDummyBus {
 	    
 	    // add the dummy buses
 	    
-	    dsNet.bookmark(true);
+	    //dsNet.bookmark(true);
 	    
 	    DStabBus bus7 = dsNet.getBus("Bus7");
 	    
@@ -123,7 +123,7 @@ public class TestAddDummyBus {
 		
 		
 		assertTrue(dsNet.getBusList().size()==10);
-		dsNet.rollback();
+		//dsNet.rollback();
 		//TODO after rollback, should be the same as the original network
 		assertTrue(dsNet.getBusList().size()==9);
 	    
