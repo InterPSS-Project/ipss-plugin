@@ -8,6 +8,7 @@ import org.interpss.dstab.control.cml.block.GainBlock;
 import org.interpss.dstab.control.cml.block.IntegrationControlBlock;
 import org.interpss.dstab.control.cml.block.WashoutControlBlock;
 
+import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.controller.AnnotateGovernor;
 import com.interpss.dstab.controller.annotate.AnController;
@@ -118,7 +119,7 @@ FilterControlBlock wFilterBlock;
 	     *  @param msg the SessionMsg object
 	     */
 	    @Override
-		public boolean initStates(DStabBus bus, Machine mach) {
+		public boolean initStates(BaseDStabBus<?,?> bus, Machine mach) {
 	        this.tg = getData().getTg();
 	        this.tp = getData().getTp();
 	        this.tr = getData().getTr();

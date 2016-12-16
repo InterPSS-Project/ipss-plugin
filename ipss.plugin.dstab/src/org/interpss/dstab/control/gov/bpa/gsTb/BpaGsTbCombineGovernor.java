@@ -7,7 +7,7 @@ import org.interpss.dstab.control.cml.block.FilterControlBlock;
 import org.interpss.dstab.control.cml.block.GainBlock;
 import org.interpss.dstab.control.cml.block.IntegrationControlBlock;
 
-import com.interpss.dstab.DStabBus;
+import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.controller.AnnotateGovernor;
 import com.interpss.dstab.controller.annotate.AnController;
 import com.interpss.dstab.controller.annotate.AnControllerField;
@@ -165,7 +165,7 @@ public class BpaGsTbCombineGovernor extends AnnotateGovernor {
 	}
 	
 	@Override
-	public boolean initStates(DStabBus bus, Machine mach) {
+	public boolean initStates(BaseDStabBus bus, Machine mach) {
         this.pmax = getData().getGsData().getPmax();
     	this.pmin =getData().getGsData().getPmin();
     	this.r    =getData().getGsData().getR();

@@ -25,7 +25,7 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabGen;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
@@ -38,7 +38,7 @@ public class TestLd1pacModel extends TestSetupBase {
 	
 	@Test
 	public void test_DStab_Ld1pac()  throws InterpssException {
-		DStabilityNetwork net = create2BusSystem();
+		BaseDStabNetwork net = create2BusSystem();
 		assertTrue(net.isLfConverged());
 		
 		DStabBus bus1 = net.getDStabBus("Bus1");
@@ -98,7 +98,7 @@ public class TestLd1pacModel extends TestSetupBase {
 	//@Test
 	public void test_Ld1pac()  throws InterpssException {
 		// create a machine in a two-bus network. The loadflow already converged
-		DStabilityNetwork net = create2BusSystem();
+		BaseDStabNetwork net = create2BusSystem();
 		assertTrue(net.isLfConverged());
 		
 		DStabBus bus1 = net.getDStabBus("Bus1");
@@ -158,9 +158,9 @@ public class TestLd1pacModel extends TestSetupBase {
 	}
 	
 	
-	private DStabilityNetwork create2BusSystem() throws InterpssException{
+	private BaseDStabNetwork create2BusSystem() throws InterpssException{
 		
-		DStabilityNetwork net = DStabObjectFactory.createDStabilityNetwork();
+		BaseDStabNetwork net = DStabObjectFactory.createDStabilityNetwork();
 		net.setFrequency(60.0);
 		
 		// First bus is PQ Gen bus

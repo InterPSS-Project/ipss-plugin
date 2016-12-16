@@ -37,8 +37,8 @@ import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
-import com.interpss.dstab.DStabBus;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.devent.DynamicEvent;
 import com.interpss.dstab.devent.DynamicEventType;
 
@@ -62,14 +62,14 @@ public class DStabTestSetupBase extends CorePluginTestSetup {
 		return algo;
 	}
 */	
-	public void addDynamicEventData(DStabilityNetwork net) {
+	public void addDynamicEventData(BaseDStabNetwork net) {
 		// define a bus fault event
 		DynamicEvent event1 = DStabObjectFactory.createDEvent("BusFault3P@0003", "Bus Fault 3P@0003", 
 				DynamicEventType.BUS_FAULT, net);
 		event1.setStartTimeSec(1.0);
 		event1.setDurationSec(0.1);
 		
-		DStabBus faultBus = net.getDStabBus("0003");
+		BaseDStabBus faultBus = net.getDStabBus("0003");
 		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@0003", net);
   		fault.setBus(faultBus);
 		fault.setFaultCode(SimpleFaultCode.GROUND_3P);

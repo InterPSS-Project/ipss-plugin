@@ -19,7 +19,7 @@ import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.net.NetCoordinate;
 import com.interpss.core.net.NetEquivType;
 import com.interpss.dstab.DStabBus;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabNetwork;
 
 public class NetworkEquivUtil {
 	
@@ -29,7 +29,7 @@ public class NetworkEquivUtil {
 		Hashtable<String,NetworkEquivalent> netEquivTable = new Hashtable<>();
 		
 		
-		for(DStabilityNetwork subNet:subNetProc.getSubNetworkList()){
+		for(BaseDStabNetwork subNet:subNetProc.getSubNetworkList()){
 			NetworkEquivalent equiv = calPosSeqNetworkTheveninEquiv(subNet,subNetProc.getSubNet2BoundaryBusListTable().get(subNet.getId()));
 			netEquivTable.put(subNet.getId(), equiv);
 		}
@@ -44,7 +44,7 @@ public class NetworkEquivUtil {
 		Hashtable<String,NetworkEquivalent> netEquivTable = new Hashtable<>();
 		
 		NetworkEquivalent equiv = null;
-		for(DStabilityNetwork subNet:subNetProc.getSubNetworkList()){
+		for(BaseDStabNetwork subNet:subNetProc.getSubNetworkList()){
 			if(threePhaseSubNetIdList!= null){
 				if(threePhaseSubNetIdList.contains(subNet.getId())){
 					if(subNet instanceof DStabNetwork3Phase){
@@ -71,7 +71,7 @@ public class NetworkEquivUtil {
 	}
 	
 	
-	public static  NetworkEquivalent calPosSeqNetworkTheveninEquiv(DStabilityNetwork net, List<String> boundaryBusIdList){
+	public static  NetworkEquivalent calPosSeqNetworkTheveninEquiv(BaseDStabNetwork net, List<String> boundaryBusIdList){
 		
 		ISparseEqnComplex ymatrix = net.getYMatrix();
 		if(ymatrix==null){
@@ -81,7 +81,7 @@ public class NetworkEquivUtil {
 		}
 		if(net.isYMatrixDirty()){
 			try {
-				ymatrix.luMatrix(1.0E-10);
+				ymatrix.factorization(1.0E-10);
 			} catch (IpssNumericException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -125,7 +125,7 @@ public class NetworkEquivUtil {
 		
 	}
 	
-	public static  NetworkEquivalent cal3SeqNetworkTheveninEquiv(DStabilityNetwork net, List<String> boundaryBusIdList){
+	public static  NetworkEquivalent cal3SeqNetworkTheveninEquiv(BaseDStabNetwork net, List<String> boundaryBusIdList){
 		
 		// calculate three seq thevein equivalent impedance matrices
 			Complex[][] posSeqZMatrix  = calcInterfaceSeqZMatrix( net,SequenceCode.POSITIVE,boundaryBusIdList);
@@ -177,7 +177,7 @@ public static  NetworkEquivalent cal3PhaseNetworkTheveninEquiv(DStabNetwork3Phas
 		
 		if(net.isYMatrixDirty()){
 			try {
-				ymatrix.luMatrix(1.0E-10);
+				ymatrix.factorization(1.0E-10);
 			} catch (IpssNumericException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -255,7 +255,7 @@ public static  NetworkEquivalent cal3PhaseNetworkTheveninEquiv(DStabNetwork3Phas
 	 * @return  a Complex[][] matrix corresponding to the order in the boundaryBusIdAry
 	 * @throws IpssNumericException 
 	 */
-	public  static Complex[][] calcInterfaceSeqZMatrix(DStabilityNetwork net,SequenceCode code,List<String> boundaryBusIdList){
+	public  static Complex[][] calcInterfaceSeqZMatrix(BaseDStabNetwork net,SequenceCode code,List<String> boundaryBusIdList){
 		
 		Complex[][] seqZMatrix = null;
 		ISparseEqnComplex seqYmatrixEqn = null;
@@ -292,7 +292,7 @@ public static  NetworkEquivalent cal3PhaseNetworkTheveninEquiv(DStabNetwork3Phas
 				    	 
 				    	 if(net.isYMatrixDirty()){
 							try {
-								seqYmatrixEqn.luMatrix(Constants.Matrix_LU_Tolerance);
+								seqYmatrixEqn.factorization(Constants.Matrix_LU_Tolerance);
 							} catch (IpssNumericException e) {
 								e.printStackTrace();
 							}
