@@ -105,7 +105,7 @@ public class Bus11856Test extends CorePluginTestSetup {
 				eqn.setA(new Complex(0.0, 1.0e10), busNo, busNo);		
 			}
 		}
-		eqn.luMatrix(1.0e-20);
+		eqn.factorization(1.0e-20);
 		
 		AclfBus bus1 = net.getBus("9a");
 		int busNo = bus1.getSortNumber();
