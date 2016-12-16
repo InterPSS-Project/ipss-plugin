@@ -34,8 +34,8 @@ import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.dstab.DStabBus;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.StaticLoadModel;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -76,7 +76,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		}
 		
 		
-	    DStabilityNetwork dsNet =simuCtx.getDStabilityNet();
+	    BaseDStabNetwork dsNet =simuCtx.getDStabilityNet();
 	    
 	    
 	    // build sequence network
@@ -209,7 +209,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		}
 		
 		
-	    DStabilityNetwork dsNet =simuCtx.getDStabilityNet();
+	    BaseDStabNetwork dsNet =simuCtx.getDStabilityNet();
 
 	    
 	   // System.out.println(dsNet.net2String());
@@ -278,7 +278,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		}
 		
 		
-	    DStabilityNetwork dsNet =simuCtx.getDStabilityNet();
+	    BaseDStabNetwork dsNet =simuCtx.getDStabilityNet();
 	    //System.out.println(dsNet.net2String());
 	    
 	    //TODO Set allow gen without machine
@@ -347,7 +347,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
             }
             
             
-        DStabilityNetwork dsNet =simuCtx.getDStabilityNet();
+        BaseDStabNetwork dsNet =simuCtx.getDStabilityNet();
         //System.out.println(dsNet.net2String());
 
             DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
@@ -391,7 +391,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
                             DStabOutSymbol.OUT_SYMBOL_MACH_Efd) < 0.0001);
     }
 	
-	private DynamicEvent create3PhaseFaultEvent(String faultBusId, DStabilityNetwork net,double startTime, double durationTime){
+	private DynamicEvent create3PhaseFaultEvent(String faultBusId, BaseDStabNetwork net,double startTime, double durationTime){
 	       // define an event, set the event id and event type.
 			DynamicEvent event1 = DStabObjectFactory.createDEvent("BusFault3P@"+faultBusId, "Bus Fault 3P@"+faultBusId, 
 					DynamicEventType.BUS_FAULT, net);
@@ -399,7 +399,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 			event1.setDurationSec(durationTime);
 			
 	      // define a bus fault
-			DStabBus faultBus = net.getDStabBus(faultBusId);
+			BaseDStabBus faultBus = net.getDStabBus(faultBusId);
 			AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@"+faultBusId, net);
 	  		fault.setBus(faultBus);
 			fault.setFaultCode(SimpleFaultCode.GROUND_3P);
@@ -433,7 +433,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		}
 		
 		
-	    DStabilityNetwork dsNet =simuCtx.getDStabilityNet();
+	    BaseDStabNetwork dsNet =simuCtx.getDStabilityNet();
 	    //System.out.println(dsNet.net2String());
 	    
 		DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
@@ -495,7 +495,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		}
 		
 		
-	    DStabilityNetwork dsNet =simuCtx.getDStabilityNet();
+	    BaseDStabNetwork dsNet =simuCtx.getDStabilityNet();
 	   // System.out.println(dsNet.net2String());
 	    
 		DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();

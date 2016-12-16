@@ -12,7 +12,7 @@ import org.interpss.dstab.control.cml.block.FilterControlBlock;
 import org.interpss.dstab.control.cml.block.GainBlock;
 import org.interpss.dstab.control.cml.block.WashoutControlBlock;
 
-import com.interpss.dstab.DStabBus;
+import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.controller.AnnotateExciter;
 import com.interpss.dstab.controller.annotate.AnController;
 import com.interpss.dstab.controller.annotate.AnControllerField;
@@ -88,7 +88,7 @@ public class BpaFjTypeExciter extends AnnotateExciter {
 
 		  private double calLimit(double vlimit) {
 			  	Machine mach = getMachine();
-		      DStabBus dbus = mach.getDStabBus();
+		      BaseDStabBus dbus = mach.getDStabBus();
 		      double vt = mach.getVdq().abs();
 		      //double ifd = mach.calculateIfd(dbus);//based on machine pu system
 		      double ifd_Exc_pu=mach.calculateIfd(MachineIfdBase.EXCITER);
@@ -150,7 +150,7 @@ public class BpaFjTypeExciter extends AnnotateExciter {
      *  @param msg the SessionMsg object
      */
     @Override
-    public boolean initStates(DStabBus bus, Machine mach) {
+    public boolean initStates(BaseDStabBus bus, Machine mach) {
         // pass the plugin data object values to the controller
         this.tc = getData().getTc();
         this.tb = getData().getTb();

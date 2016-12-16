@@ -28,7 +28,7 @@ import java.lang.reflect.Field;
 
 import org.interpss.dstab.control.cml.block.DelayControlBlock;
 
-import com.interpss.dstab.DStabBus;
+import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.controller.AnnotateExciter;
 import com.interpss.dstab.controller.annotate.AnController;
 import com.interpss.dstab.controller.annotate.AnControllerField;
@@ -96,7 +96,7 @@ public class SimpleExciter extends AnnotateExciter {
      *
      *  @param msg the SessionMsg object
      */
-    @Override public boolean initStates(DStabBus bus, Machine mach) {
+    @Override public boolean initStates(BaseDStabBus<?,?> bus, Machine mach) {
     	// init the controller parameters using the data defined in the 
     	// data object
         this.k = getData().getKa();

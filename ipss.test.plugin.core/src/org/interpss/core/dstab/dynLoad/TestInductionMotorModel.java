@@ -23,7 +23,7 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabGen;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
@@ -37,7 +37,7 @@ public class TestInductionMotorModel extends TestSetupBase {
 	
 	@Test
 	public void test_induction_Motor_dynModel()  throws InterpssException {
-		DStabilityNetwork net = create2BusSystem();
+		BaseDStabNetwork net = create2BusSystem();
 		assertTrue(net.isLfConverged());
 		
 		DStabBus bus1 = net.getDStabBus("Bus1");
@@ -116,9 +116,9 @@ public class TestInductionMotorModel extends TestSetupBase {
 		System.out.println(sm.toCSVString(sm.getMotorPTable()));
 	}
 	
-private DStabilityNetwork create2BusSystem() throws InterpssException{
+private BaseDStabNetwork create2BusSystem() throws InterpssException{
 		
-		DStabilityNetwork net = DStabObjectFactory.createDStabilityNetwork();
+		BaseDStabNetwork net = DStabObjectFactory.createDStabilityNetwork();
 		net.setFrequency(60.0);
 		
 		// First bus is PQ Gen bus

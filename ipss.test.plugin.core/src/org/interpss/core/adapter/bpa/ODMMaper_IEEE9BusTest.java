@@ -16,7 +16,7 @@ import org.junit.Test;
 import com.interpss.SimuObjectFactory;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.simu.SimuContext;
@@ -41,7 +41,7 @@ public class ODMMaper_IEEE9BusTest  extends DStabTestSetupBase {
 		}	
 
 		DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
-		DStabilityNetwork dstabNet = simuCtx.getDStabilityNet();
+		BaseDStabNetwork dstabNet = simuCtx.getDStabilityNet();
 
 		LoadflowAlgorithm lfAlgo = dstabAlgo.getAclfAlgorithm();
 		lfAlgo.loadflow();

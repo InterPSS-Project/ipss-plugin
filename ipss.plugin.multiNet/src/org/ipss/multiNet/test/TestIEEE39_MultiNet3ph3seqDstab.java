@@ -31,7 +31,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
@@ -178,7 +178,7 @@ public class TestIEEE39_MultiNet3ph3seqDstab {
 		}
 		
 		
-	    DStabilityNetwork dsNet = simuCtx.getDStabilityNet();
+	    BaseDStabNetwork dsNet = simuCtx.getDStabilityNet();
 	    
 		
 		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);

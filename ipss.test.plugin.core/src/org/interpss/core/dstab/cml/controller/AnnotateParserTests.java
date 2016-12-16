@@ -36,8 +36,8 @@ import org.interpss.dstab.control.cml.block.DelayControlBlock;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.dstab.DStabBus;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.controller.annotate.util.AnControllerHelper;
 import com.interpss.dstab.controller.block.ICMLFunction;
 import com.interpss.dstab.controller.wrapper.ControlBlockFieldAnWrapper;
@@ -53,8 +53,8 @@ public class AnnotateParserTests extends DStabTestSetupBase {
 
 	@Test
 	public void exciterTestCase() throws Exception {
-		DStabilityNetwork net = DStabTestUtilFunc.createTestNetwork();
-		DStabBus bus = net.getDStabBus("BusId");
+		BaseDStabNetwork net = DStabTestUtilFunc.createTestNetwork();
+		BaseDStabBus bus = net.getDStabBus("BusId");
 		Machine machine = bus.getMachine();
 		/*
 			public double k = 50.0, t = 0.05, vmax = 10.0, vmin = 0.0;
@@ -110,8 +110,8 @@ public class AnnotateParserTests extends DStabTestSetupBase {
 
 	@Test
 	public void governorTestCase()  throws InterpssException {
-		DStabilityNetwork net = DStabTestUtilFunc.createTestNetwork();
-		DStabBus bus = net.getDStabBus("BusId");
+		BaseDStabNetwork net = DStabTestUtilFunc.createTestNetwork();
+		BaseDStabBus bus = net.getDStabBus("BusId");
 		Machine machine = bus.getMachine();
 		/*
 		public double ka = 10.0, ta = 0.5;
@@ -148,8 +148,8 @@ public class AnnotateParserTests extends DStabTestSetupBase {
 
 	@Test
 	public void stabilizerTestCase()  throws InterpssException {
-		DStabilityNetwork net = DStabTestUtilFunc.createTestNetwork();
-		DStabBus bus = net.getDStabBus("BusId");
+		BaseDStabNetwork net = DStabTestUtilFunc.createTestNetwork();
+		BaseDStabBus bus = net.getDStabBus("BusId");
 		Machine machine = bus.getMachine();
 		/*
 		public double k1 = 1.0, t1 = 0.05, t2 = 0.5;
@@ -186,8 +186,8 @@ public class AnnotateParserTests extends DStabTestSetupBase {
 
 	@Test
 	public void stabilizerComplexTestCase()  throws InterpssException {
-		DStabilityNetwork net = DStabTestUtilFunc.createTestNetwork();
-		DStabBus bus = net.getDStabBus("BusId");
+		BaseDStabNetwork net = DStabTestUtilFunc.createTestNetwork();
+		BaseDStabBus bus = net.getDStabBus("BusId");
 		Machine machine = bus.getMachine();
 
 		//Machine mach = TestUtil.createMachine();

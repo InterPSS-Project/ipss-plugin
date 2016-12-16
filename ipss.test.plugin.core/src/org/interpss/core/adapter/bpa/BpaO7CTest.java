@@ -31,8 +31,8 @@ import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.net.Bus;
-import com.interpss.dstab.DStabBus;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateVariableRecorder;
@@ -137,7 +137,7 @@ public class BpaO7CTest extends DStabTestSetupBase {
 		
 		DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
 		
-		DStabilityNetwork net=simuCtx.getDStabilityNet();
+		BaseDStabNetwork net=simuCtx.getDStabilityNet();
 		dstabAlgo.setRefMachine(simuCtx.getDStabilityNet().getMachine("Bus78-mach1"));
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.001);
@@ -201,7 +201,7 @@ public class BpaO7CTest extends DStabTestSetupBase {
 				System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
 				return;
 			}
-			DStabilityNetwork net = simuCtx.getDStabilityNet();
+			BaseDStabNetwork net = simuCtx.getDStabilityNet();
 			assertTrue(net.checkData(CoreObjectFactory.createDefultDataCheckConfiguration()));
 			assertTrue(net.getBranchList().size()==308);
 			assertTrue(net.getBusList().size()==141);
@@ -340,7 +340,7 @@ public class BpaO7CTest extends DStabTestSetupBase {
 		}
 	}
 	
-	private void create3PFaultEvent(DStabilityNetwork net, String busId, String busName, double startTime,double duration) {
+	private void create3PFaultEvent(BaseDStabNetwork net, String busId, String busName, double startTime,double duration) {
 		// define a bus fault event
 		DynamicEvent event1 = DStabObjectFactory.createDEvent(
 				"BusFault3P@"+busId, "Bus Fault 3P @"+busName, 
@@ -349,7 +349,7 @@ public class BpaO7CTest extends DStabTestSetupBase {
 		event1.setDurationSec(duration);
 		
 		// define a 3P fault
-		DStabBus faultBus = net.getDStabBus(busId);
+		BaseDStabBus faultBus = net.getDStabBus(busId);
 		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@"+busId, net);
   		fault.setBus(faultBus);
 		fault.setFaultCode(SimpleFaultCode.GROUND_3P);

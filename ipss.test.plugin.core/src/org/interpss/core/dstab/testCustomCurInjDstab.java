@@ -28,7 +28,7 @@ import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.dstab.DStabBus;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.cache.StateVariableRecorder;
 import com.interpss.dstab.cache.StateVariableRecorder.StateRecord;
@@ -69,7 +69,7 @@ public class testCustomCurInjDstab {
 		}
 		
 		
-	    DStabilityNetwork dsNet =simuCtx.getDStabilityNet();
+	    BaseDStabNetwork dsNet =simuCtx.getDStabilityNet();
 
 	    /*
 	     * run load flow to initialize the system
