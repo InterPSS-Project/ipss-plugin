@@ -298,7 +298,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
     		 }
     		
     		 try {
-				ZlMatrix.luMatrixAndSolveEqn(1.0E-9);
+				ZlMatrix.solveEqn(1.0E-9);
 			} catch (IpssNumericException e) {
 				
 				e.printStackTrace();
