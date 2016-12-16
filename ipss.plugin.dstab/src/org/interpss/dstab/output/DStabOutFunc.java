@@ -34,8 +34,8 @@ import com.interpss.common.datatype.Constants;
 import com.interpss.core.aclf.adpter.AclfCapacitorBus;
 import com.interpss.core.aclf.adpter.AclfGenBusAdapter;
 import com.interpss.core.net.Bus;
-import com.interpss.dstab.DStabBus;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.common.DStabOutSymbol;
 import com.interpss.dstab.mach.Machine;
@@ -150,7 +150,7 @@ public class DStabOutFunc {
 	}
 
 	public static String initConditionSummary(DynamicSimuAlgorithm algo) {
-		DStabilityNetwork net = algo.getNetwork();
+		BaseDStabNetwork<?,?> net = algo.getNetwork();
 		StringBuffer str = new StringBuffer("");
 		try {
 			double refAng = 0.0;
@@ -163,7 +163,7 @@ public class DStabOutFunc {
 			str.append("  -------------------------------------------------------------------------------------\n");
 
 			for (Bus b : net.getBusList()) {
-				DStabBus bus = (DStabBus) b;
+				BaseDStabBus<?,?> bus = (BaseDStabBus<?,?>) b;
 				AclfGenBusAdapter genBus = bus.toGenBus();
 				Complex busPQ = genBus.getGenResults(UnitType.PU);
 				busPQ = busPQ.subtract(genBus.getLoadResults(UnitType.PU));

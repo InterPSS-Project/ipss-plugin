@@ -12,7 +12,7 @@ import org.interpss.dstab.control.cml.block.FilterControlBlock;
 import org.interpss.dstab.control.cml.block.FilterNthOrderBlock;
 import org.interpss.dstab.control.cml.block.WashoutControlBlock;
 
-import com.interpss.dstab.DStabBus;
+import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.controller.AnnotateStabilizer;
 import com.interpss.dstab.controller.annotate.AbstractChildAnnotateController;
 import com.interpss.dstab.controller.annotate.AnController;
@@ -243,7 +243,7 @@ class CustomExciter2 extends AbstractChildAnnotateController {
      *  @param msg the SessionMsg object
      */
     @Override
-    public boolean initStates(DStabBus bus, Machine mach) {
+    public boolean initStates(BaseDStabBus bus, Machine mach) {
         // pass the plugin data object values to the controller
         this.trw = getData().getTrw();
         this.t5 = getData().getT5();

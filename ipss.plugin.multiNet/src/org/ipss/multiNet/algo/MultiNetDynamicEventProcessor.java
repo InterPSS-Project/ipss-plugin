@@ -14,7 +14,7 @@ import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.algo.defaultImpl.DynamicEventProcessor;
 import com.interpss.dstab.datatype.DStabSimuTimeEvent;
 import com.interpss.dstab.devent.DynamicEvent;
@@ -23,7 +23,7 @@ import com.interpss.dstab.devent.DynamicEventType;
 public class MultiNetDynamicEventProcessor extends DynamicEventProcessor {
 	
 
-	DStabilityNetwork net = null;
+	BaseDStabNetwork net = null;
 	protected AbstractMultiNetDStabSimuHelper simuHelper = null;
 	
 	
@@ -72,7 +72,7 @@ public class MultiNetDynamicEventProcessor extends DynamicEventProcessor {
 					        if (dEvent.getType() == DynamicEventType.BUS_FAULT) {
 						         AcscBusFault fault = dEvent.getBusFault();
 						         BaseAcscBus bus = fault.getBus();
-						         DStabilityNetwork faultSubNet = (DStabilityNetwork) bus.getNetwork();
+						         BaseDStabNetwork faultSubNet = (BaseDStabNetwork) bus.getNetwork();
 						         ISparseEqnComplex ymatrix = faultSubNet.formScYMatrix(SequenceCode.POSITIVE, false);
 						         //TODO don't forget to set the ymatrix
 						         faultSubNet.setYMatrix(ymatrix);
@@ -154,7 +154,7 @@ public class MultiNetDynamicEventProcessor extends DynamicEventProcessor {
 						
 						if(fault.getFaultCode()==SimpleFaultCode.GROUND_LG){
 							Complex ZfaultEquiv = fault.getZLGFault();
-							((DStabilityNetwork) bus.getNetwork()).getYMatrix().addToA(ZfaultEquiv, i, i);
+							((BaseDStabNetwork) bus.getNetwork()).getYMatrix().addToA(ZfaultEquiv, i, i);
 						}
 						
 						else if(fault.getFaultCode()==SimpleFaultCode.GROUND_LL){
@@ -167,7 +167,7 @@ public class MultiNetDynamicEventProcessor extends DynamicEventProcessor {
 						}
                         else if(fault.getFaultCode()==SimpleFaultCode.GROUND_3P){
       
-                        	((DStabilityNetwork) bus.getNetwork()).getYMatrix().addToA(ylarge, i, i);
+                        	((BaseDStabNetwork) bus.getNetwork()).getYMatrix().addToA(ylarge, i, i);
                         	
                         	
 						}

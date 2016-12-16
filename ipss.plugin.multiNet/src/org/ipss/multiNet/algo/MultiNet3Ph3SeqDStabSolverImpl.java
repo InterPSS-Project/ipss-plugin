@@ -19,7 +19,7 @@ import com.interpss.core.net.Bus;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabGen;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.common.DStabSimuException;
@@ -52,7 +52,7 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 		}
 		
 		// network  initialization: mainly includes load model conversion and dynamic model initialization
-		for(DStabilityNetwork dsNet: this.subNetList){
+		for(BaseDStabNetwork dsNet: this.subNetList){
 			   boolean flag = true;
 			   if(this.threePhaseSubNetIdList!=null && this.threePhaseSubNetIdList.contains(dsNet.getId())){    
 				   flag = dsNet.initDStabNet();
@@ -99,7 +99,7 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 			
 			// The first  step of the multi-subNetwork solution is to solve each subnetwork independently without current injections from the 
 			// connection tie-lines
-			for(DStabilityNetwork dsNet: subNetList){
+			for(BaseDStabNetwork dsNet: subNetList){
 				
 				DStabNetwork3Phase dsNet3Ph = (DStabNetwork3Phase) dsNet;
 				
@@ -155,7 +155,7 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 				  //solve all the SubNetworks With only Boundary Current Injections
 				  this.multiNetSimuHelper.solveSubNetWithBoundaryCurrInjection();
 				  
-				  for(DStabilityNetwork dsNet: subNetList){
+				  for(BaseDStabNetwork dsNet: subNetList){
 					for ( Bus busi : dsNet.getBusList() ) {
 						DStabBus<?,?> bus = (DStabBus<?,?>)busi;
 						if(bus.isActive()){
@@ -186,7 +186,7 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 			  *  x(t+deltaT) = x(t) + dx_dt*deltaT 
 			  */
 			  
-		  for(DStabilityNetwork dsNet: subNetList){  
+		  for(BaseDStabNetwork dsNet: subNetList){  
 			// Solve DEqn for all dynamic bus devices
 				for (Bus b : dsNet.getBusList()) {
 					if(b.isActive()){
@@ -260,7 +260,7 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 			
 			
 		// back up the states	
-			for(DStabilityNetwork dsNet: subNetList){
+			for(BaseDStabNetwork dsNet: subNetList){
 			 // backup the states
 			 for (Bus b :  dsNet.getBusList()) {
 					if(b.isActive()){
@@ -288,7 +288,7 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 					      ((MultiNet3Ph3SeqDStabSimuHelper)this.multiNetSimuHelper).getSubNet3SeqCurrInjTable();
 			
 			
-			for(DStabilityNetwork subNet: subNetList){
+			for(BaseDStabNetwork subNet: subNetList){
 				for(Entry<String,Complex3x1> e: subNetCurInjTable.get(subNet.getId()).entrySet()){
 	   				   Complex3x1 IinjAbc = Complex3x1.z12_to_abc(e.getValue());
 	   				   sb.append("t, "+time+", BusID,"+e.getKey()+",Ia=,"+IinjAbc.a_0.abs()+",Ib=,"+IinjAbc.b_1.abs()+",Ic=,"+IinjAbc.c_2.abs()+"\n");

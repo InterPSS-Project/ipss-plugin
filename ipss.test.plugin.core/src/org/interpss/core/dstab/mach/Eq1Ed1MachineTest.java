@@ -30,8 +30,8 @@ import org.interpss.numeric.datatype.ComplexFunc;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.dstab.DStabBus;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.mach.Eq1Ed1Machine;
 import com.interpss.dstab.util.sample.SampleDStabCase;
@@ -40,7 +40,7 @@ public class Eq1Ed1MachineTest extends TestSetupBase {
 	@Test
 	public void test_Case1()  throws InterpssException {
 		// create a machine in a two-bus network. The loadflow already converged
-		DStabilityNetwork net = SampleDStabCase.createDStabTestNet();
+		BaseDStabNetwork net = SampleDStabCase.createDStabTestNet();
 		System.out.println(net.net2String());
 		Eq1Ed1Machine mach = SampleDStabCase.createEq1Ed1Machine(net);
 		

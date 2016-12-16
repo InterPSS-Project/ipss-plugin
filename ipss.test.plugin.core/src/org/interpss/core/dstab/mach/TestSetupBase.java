@@ -28,11 +28,11 @@ import org.interpss.CorePluginTestSetup;
 
 import com.interpss.CoreCommonFactory;
 import com.interpss.common.msg.IPSSMsgHub;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabNetwork;
 
 public class TestSetupBase extends CorePluginTestSetup {
 	protected IPSSMsgHub msg;
-	protected DStabilityNetwork net = null;
+	protected BaseDStabNetwork net = null;
 
 	public TestSetupBase() { 
 		msg = CoreCommonFactory.getIpssMsgHub();

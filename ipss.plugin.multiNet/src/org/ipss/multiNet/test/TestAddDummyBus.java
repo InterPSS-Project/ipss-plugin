@@ -31,7 +31,7 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.net.Branch;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabBus;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
@@ -68,7 +68,7 @@ public class TestAddDummyBus {
 		}
 		
 		
-	    DStabilityNetwork dsNet =simuCtx.getDStabilityNet();
+	    BaseDStabNetwork dsNet =simuCtx.getDStabilityNet();
 	    
 //	    LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
 //	    
@@ -155,7 +155,7 @@ public class TestAddDummyBus {
 		}
 		
 		
-	    DStabilityNetwork dsNet =simuCtx.getDStabilityNet();
+	    BaseDStabNetwork dsNet =simuCtx.getDStabilityNet();
 	    
 //	    LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
 //	    
@@ -241,7 +241,7 @@ public class TestAddDummyBus {
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.005d);
 		dstabAlgo.setTotalSimuTimeSec(0.5d);
-		for (DStabilityNetwork subNet:proc.getSubNetworkList()){
+		for (BaseDStabNetwork subNet:proc.getSubNetworkList()){
 			subNet.setNetEqnIterationNoEvent(1);
 			subNet.setNetEqnIterationWithEvent(1);
 		
@@ -288,7 +288,7 @@ public class TestAddDummyBus {
 	    
 	}
 	
-	private DynamicEvent create3PhaseFaultEvent(String faultBusId, DStabilityNetwork net,double startTime, double durationTime){
+	private DynamicEvent create3PhaseFaultEvent(String faultBusId, BaseDStabNetwork net,double startTime, double durationTime){
 	    // define an event, set the event id and event type.
 			DynamicEvent event1 = DStabObjectFactory.createDEvent("BusFault3P@"+faultBusId, "Bus Fault 3P@"+faultBusId, 
 					DynamicEventType.BUS_FAULT, net);

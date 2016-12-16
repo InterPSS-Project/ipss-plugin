@@ -48,8 +48,8 @@ import com.interpss.core.acsc.adpter.AcscXformer;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.dstab.DStabBranch;
-import com.interpss.dstab.DStabBus;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
@@ -198,17 +198,17 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 		}
 		
 		
-	    DStabilityNetwork dsNet =simuCtx.getDStabilityNet();
+	    BaseDStabNetwork dsNet =simuCtx.getDStabilityNet();
 	    
 	    // remove the load from bus5
-	    DStabBus bus5 =  dsNet.getBus("Bus5");
+	    BaseDStabBus bus5 =  dsNet.getBus("Bus5");
 	    
 	    bus5.setLoadCode(AclfLoadCode.NON_LOAD);
 	    bus5.getContributeLoadList().remove(0);
 	    
 	    // add 69 kV and below distribution system
 	    
-	    DStabBus bus10 = DStabObjectFactory.createDStabBus("Bus10", dsNet);
+	    BaseDStabBus bus10 = DStabObjectFactory.createDStabBus("Bus10", dsNet);
   		bus10.setAttributes("69kV sub", "");
   		bus10.setBaseVoltage(69000.0);
   		// set the bus to a non-generator bus
@@ -217,7 +217,7 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
   		bus10.setLoadCode(AclfLoadCode.NON_LOAD);
   		
   		
-  		DStabBus bus11 = DStabObjectFactory.createDStabBus("Bus11", dsNet);
+  		BaseDStabBus bus11 = DStabObjectFactory.createDStabBus("Bus11", dsNet);
   		bus11.setAttributes("13.8 kV feeder", "");
   		bus11.setBaseVoltage(13800.0);
   		// set the bus to a non-generator bus
@@ -227,7 +227,7 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
   		
   		bus11.setLoadPQ(new Complex(0.625,-0.05));
   		
-  		DStabBus bus12 = DStabObjectFactory.createDStabBus("Bus12", dsNet);
+  		BaseDStabBus bus12 = DStabObjectFactory.createDStabBus("Bus12", dsNet);
   		bus12.setAttributes("208 V feeder", "");
   		bus12.setBaseVoltage(208.0);
   		// set the bus to a non-generator bus
