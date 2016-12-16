@@ -81,7 +81,7 @@ public class NetworkEquivUtil {
 		}
 		if(net.isYMatrixDirty()){
 			try {
-				ymatrix.luMatrix(1.0E-10);
+				ymatrix.factorization(1.0E-10);
 			} catch (IpssNumericException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -177,7 +177,7 @@ public static  NetworkEquivalent cal3PhaseNetworkTheveninEquiv(DStabNetwork3Phas
 		
 		if(net.isYMatrixDirty()){
 			try {
-				ymatrix.luMatrix(1.0E-10);
+				ymatrix.factorization(1.0E-10);
 			} catch (IpssNumericException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -292,7 +292,7 @@ public static  NetworkEquivalent cal3PhaseNetworkTheveninEquiv(DStabNetwork3Phas
 				    	 
 				    	 if(net.isYMatrixDirty()){
 							try {
-								seqYmatrixEqn.luMatrix(Constants.Matrix_LU_Tolerance);
+								seqYmatrixEqn.factorization(Constants.Matrix_LU_Tolerance);
 							} catch (IpssNumericException e) {
 								e.printStackTrace();
 							}

@@ -11,7 +11,7 @@ import com.interpss.core.acsc.AcscBus;
 import com.interpss.core.acsc.BaseAcscNetwork;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.sparse.impl.SparseEqnComplexImpl;
-import com.interpss.core.sparse.solver.CSparseJEqnComplexSolver;
+import com.interpss.core.sparse.solver.SquareMatrixEqnCSJComplexSolver;
 
 /**
  * Sequence Network Helper is to solve the negative and zeor
@@ -33,8 +33,8 @@ public class SequenceNetworkSolver {
 	private ISparseEqnComplex negSeqYMatrix  = null;
 	private Hashtable<String,Complex3x1>  seqVoltTable =null;
 	
-	private CSparseJEqnComplexSolver zeroYSolver=null;
-	private CSparseJEqnComplexSolver negYSolver=null;
+	private SquareMatrixEqnCSJComplexSolver zeroYSolver=null;
+	private SquareMatrixEqnCSJComplexSolver negYSolver=null;
     
 	private String[] monitorBusAry =null;
 	
@@ -48,15 +48,15 @@ public class SequenceNetworkSolver {
 		this.monitorBusAry = monitorBusAry;
 		
 		zeroSeqYMatrix = net.formScYMatrix(SequenceCode.ZERO,false);
-		zeroYSolver = new CSparseJEqnComplexSolver(zeroSeqYMatrix);
+		zeroYSolver = new SquareMatrixEqnCSJComplexSolver(zeroSeqYMatrix);
 		
 		negSeqYMatrix =  net.formScYMatrix(SequenceCode.NEGATIVE, false);
-		negYSolver = new CSparseJEqnComplexSolver(negSeqYMatrix);
+		negYSolver = new SquareMatrixEqnCSJComplexSolver(negSeqYMatrix);
 		
 		//LU factorize the YMaxtri, prepare it for calculating Z matrix;
 		try {
-			zeroYSolver.luMatrix(1.0e-6);// tolearance is not used actually.
-			negYSolver.luMatrix(1.0e-6);// tolearance is not used actually.
+			zeroYSolver.factorization(1.0e-6);// tolearance is not used actually.
+			negYSolver.factorization(1.0e-6);// tolearance is not used actually.
 		} catch (IpssNumericException e) {
 			
 			e.printStackTrace();
