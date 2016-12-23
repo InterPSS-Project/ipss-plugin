@@ -29,8 +29,8 @@ import com.interpss.common.util.IpssLogger;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.dstab.DStabBus;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateVariableRecorder;
@@ -68,7 +68,7 @@ public class OmibTest extends DStabTestSetupBase{
 		}	
 		
 		DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
-		DStabilityNetwork net = simuCtx.getDStabilityNet();
+		BaseDStabNetwork<?,?> net = simuCtx.getDStabilityNet();
 		//System.out.println(net.getDStabBus("Bus2").getMachine().getExciter().getDataXmlString());
 		// run load flow test case
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
@@ -146,7 +146,7 @@ public class OmibTest extends DStabTestSetupBase{
 					System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
 					return;
 				}
-				DStabilityNetwork net = simuCtx.getDStabilityNet();
+				BaseDStabNetwork<?,?> net = simuCtx.getDStabilityNet();
 				DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
 				
 				// run load flow test case
@@ -202,7 +202,7 @@ public class OmibTest extends DStabTestSetupBase{
 		}		
 		
 	
-	private void create3PFaultEvent(DStabilityNetwork net, String busId, 
+	private void create3PFaultEvent(BaseDStabNetwork<?,?> net, String busId, 
 			String busName, double startTime,double duration) {
 		// define a bus fault event
 		DynamicEvent event1 = DStabObjectFactory.createDEvent(
@@ -212,7 +212,7 @@ public class OmibTest extends DStabTestSetupBase{
 		event1.setDurationSec(duration);
 		
 		// define a 3P fault
-		DStabBus faultBus = net.getDStabBus(busId);
+		BaseDStabBus<?,?> faultBus = net.getDStabBus(busId);
 		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@"+busId, net);
   		fault.setBus(faultBus);
 		fault.setFaultCode(SimpleFaultCode.GROUND_3P);

@@ -4,7 +4,7 @@ import org.interpss.pssl.plugin.cmd.json.DstabRunConfigBean;
 import org.interpss.pssl.simu.IpssDStab;
 
 import com.interpss.core.acsc.AcscNetwork;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.common.IDStabSimuOutputHandler;
@@ -24,7 +24,7 @@ public class DStabDslRunner extends BaseDStabDslRunner{
 	 * 
 	 * @param net DStabilityNetwork object
 	 */
-	public DStabDslRunner(DStabilityNetwork net) {
+	public DStabDslRunner(BaseDStabNetwork net) {
 		this.net = net;
 	}
 	

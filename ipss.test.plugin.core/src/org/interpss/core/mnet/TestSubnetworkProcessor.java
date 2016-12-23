@@ -18,7 +18,7 @@ import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
@@ -49,7 +49,7 @@ public class TestSubnetworkProcessor {
 		}
 		
 		
-	    DStabilityNetwork dsNet =simuCtx.getDStabilityNet();
+	    BaseDStabNetwork dsNet =simuCtx.getDStabilityNet();
 	    
 	    SubNetworkProcessor proc = new SubNetworkProcessor(dsNet);
 	    proc.addSubNetInterfaceBranch("Bus5->Bus7(0)");
@@ -62,7 +62,7 @@ public class TestSubnetworkProcessor {
 	    System.out.println("net size ="+dsNet.getBusList().size());
 	    assertTrue(dsNet.getBusList().size()==9); 
 	    
-	    List<DStabilityNetwork> subNetList = proc.getSubNetworkList();
+	    List<BaseDStabNetwork<?,?>> subNetList = proc.getSubNetworkList();
 	    assertTrue(subNetList.size()==2);
 	    System.out.println("Sub network -1");
 	    for(Bus b:subNetList.get(0).getBusList() ){
@@ -123,7 +123,7 @@ public class TestSubnetworkProcessor {
 		}
 		
 		
-	    DStabilityNetwork dsNet =simuCtx.getDStabilityNet();
+	    BaseDStabNetwork dsNet =simuCtx.getDStabilityNet();
 	    
 	    SubNetworkProcessor proc = new SubNetworkProcessor(dsNet);
 	    proc.addSubNetInterfaceBranch("Bus5->Bus7(0)",false);
@@ -137,7 +137,7 @@ public class TestSubnetworkProcessor {
 	    assertTrue(dsNet.getBusList().size() == 10);   
 	    
 	    
-	    List<DStabilityNetwork> subNetList = proc.getSubNetworkList();
+	    List<BaseDStabNetwork<?,?>> subNetList = proc.getSubNetworkList();
 	    assertTrue(subNetList.size()==2);
 	    System.out.println("Sub network:"+subNetList.get(0).getId());
 	    

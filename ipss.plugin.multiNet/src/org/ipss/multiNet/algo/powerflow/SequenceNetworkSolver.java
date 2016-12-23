@@ -1,13 +1,14 @@
 package org.ipss.multiNet.algo.powerflow;
 
 import java.util.Hashtable;
+
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 
 import com.interpss.core.acsc.AcscBranch;
-import com.interpss.core.acsc.AcscBus;
+import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.core.acsc.BaseAcscNetwork;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.sparse.impl.SparseEqnComplexImpl;
@@ -28,7 +29,7 @@ import com.interpss.core.sparse.solver.SquareMatrixEqnCSJComplexSolver;
  */
 public class SequenceNetworkSolver {
 	
-	private BaseAcscNetwork<? extends AcscBus, ? extends AcscBranch> net = null;
+	private BaseAcscNetwork<? extends BaseAcscBus<?,?>, ? extends AcscBranch> net = null;
 	private ISparseEqnComplex zeroSeqYMatrix = null; 
 	private ISparseEqnComplex negSeqYMatrix  = null;
 	private Hashtable<String,Complex3x1>  seqVoltTable =null;
@@ -43,7 +44,7 @@ public class SequenceNetworkSolver {
 	 * @param net
 	 * @param monitorBusAry
 	 */
-	public SequenceNetworkSolver(BaseAcscNetwork<? extends AcscBus, ? extends AcscBranch> net,String[] monitorBusAry){
+	public SequenceNetworkSolver(BaseAcscNetwork<? extends BaseAcscBus<?,?>, ? extends AcscBranch> net,String[] monitorBusAry){
 		this.net =net;
 		this.monitorBusAry = monitorBusAry;
 		

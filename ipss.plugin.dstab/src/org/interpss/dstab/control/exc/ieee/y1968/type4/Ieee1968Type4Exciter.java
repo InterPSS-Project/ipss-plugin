@@ -32,6 +32,7 @@ import org.interpss.dstab.control.cml.block.IntegrationControlBlock;
 import org.interpss.dstab.control.cml.block.WashoutControlBlock;
 import org.interpss.dstab.control.cml.func.SeFunction;
 
+import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.controller.AnnotateExciter;
 import com.interpss.dstab.controller.annotate.AnController;
@@ -150,7 +151,7 @@ public class Ieee1968Type4Exciter extends AnnotateExciter {
      *  @param msg the SessionMsg object
      */
     @Override
-	public boolean initStates(DStabBus bus, Machine mach) {
+	public boolean initStates(BaseDStabBus<?,?> bus, Machine mach) {
         this.trh = getData().getTrh();
         this.kv = getData().getKv();
         this.vrmax = getData().getVrmax();

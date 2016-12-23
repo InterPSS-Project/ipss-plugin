@@ -10,7 +10,7 @@ import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Vector_xy;
 
 import com.interpss.common.util.IpssLogger;
-import com.interpss.dstab.DStabBus;
+import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.controller.AnnotateExciter;
 import com.interpss.dstab.controller.annotate.AnController;
 import com.interpss.dstab.controller.annotate.AnControllerField;
@@ -305,7 +305,7 @@ public class IEEE2005ST3AExciter  extends AnnotateExciter{
 	     *  @param msg the SessionMsg object
 	     */
 	    @Override
-	    public boolean initStates(DStabBus bus, Machine mach) {
+	    public boolean initStates(BaseDStabBus bus, Machine mach) {
 	        // pass the plugin data object values to the controller
 	    	this.tr = getData().getTr();
 	    	

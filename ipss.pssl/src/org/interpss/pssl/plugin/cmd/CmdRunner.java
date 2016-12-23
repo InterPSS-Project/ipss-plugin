@@ -46,7 +46,7 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.fault.SimpleFaultType;
 import com.interpss.core.datatype.IFaultResult;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.common.IDStabSimuOutputHandler;
 import com.interpss.simu.SimuContext;
@@ -195,7 +195,7 @@ public class CmdRunner {
 			    		 dstabBean.dynamicFileName});
 			
 			// map ODM to InterPSS model object
-			DStabilityNetwork net = inDsl.getImportedObj();	
+			BaseDStabNetwork net = inDsl.getImportedObj();	
 			
 			/*
 			IDStabSimuOutputHandler outputHdler = DslRunnerFactory.createDStabDslRunner()

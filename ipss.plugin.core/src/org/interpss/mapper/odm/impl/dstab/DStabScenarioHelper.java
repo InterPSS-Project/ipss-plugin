@@ -61,7 +61,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.core.acsc.fault.AcscBusFault;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.StaticLoadModel;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -88,7 +88,7 @@ import com.interpss.dstab.mach.MachineControllerType;
  */
 public class DStabScenarioHelper {
 	
-	private DStabilityNetwork dstabNet = null;
+	private BaseDStabNetwork<?,?> dstabNet = null;
 	private DynamicSimuAlgorithm dstabAlgo = null;	
 	
 	/**
@@ -97,7 +97,7 @@ public class DStabScenarioHelper {
 	 * @param dstabNet
 	 * @param algo
 	 */
-	public DStabScenarioHelper(DStabilityNetwork dstabNet, DynamicSimuAlgorithm algo) {
+	public DStabScenarioHelper(BaseDStabNetwork dstabNet, DynamicSimuAlgorithm algo) {
 		this.dstabNet = dstabNet;
 		this.dstabAlgo = algo;
 	}
@@ -230,7 +230,7 @@ public class DStabScenarioHelper {
 				eventObj.setType(DynamicEventType.BUS_FAULT);
 				String faultBusId = busFaultXml.getRefBus().getBusId();
 				AcscBusFault busFault = CoreObjectFactory.createAcscBusFault(Constants.Token_BusFaultId+faultBusId, dstabNet);
-				BaseAcscBus bus = this.dstabNet.getBus(faultBusId);
+				BaseAcscBus<?,?> bus = this.dstabNet.getBus(faultBusId);
 				busFault.setFaultBus(bus);
 				
 				double baseV=bus.getBaseVoltage();

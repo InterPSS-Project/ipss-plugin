@@ -30,8 +30,8 @@ import org.junit.Test;
 
 import com.interpss.common.datatype.Constants;
 import com.interpss.common.exp.InterpssException;
-import com.interpss.dstab.DStabBus;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.mach.Eq1Machine;
 import com.interpss.dstab.util.sample.SampleDStabCase;
@@ -41,11 +41,11 @@ public class Eq1MachineCaseTest extends TestSetupBase {
 	@Test
 	public void test_Case1()  throws InterpssException {
 		// create a machine in a two-bus network. The loadflow already converged
-		DStabilityNetwork net = SampleDStabCase.createDStabTestNet();
+		BaseDStabNetwork net = SampleDStabCase.createDStabTestNet();
 		Eq1Machine mach = SampleDStabCase.createEq1Machine(net);
 		
 		// calculate mach state init values
-		DStabBus bus = net.getDStabBus("Gen");
+		BaseDStabBus bus = net.getDStabBus("Gen");
 		mach.initStates(bus);
 		//System.out.println("Ygen: " + mach.getYgen());
 		//System.out.println("Igen: " + mach.getIgen());

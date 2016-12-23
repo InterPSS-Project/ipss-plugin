@@ -19,9 +19,9 @@ import com.interpss.SimuObjectFactory;
 import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfGenCode;
-import com.interpss.dstab.DStabBus;
+import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabGen;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.mach.SalientPoleMachine;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
@@ -53,7 +53,7 @@ public class IEEE9_Dstab_Adapter_Test {
 		}
 		
 		
-	    DStabilityNetwork dsNet =simuCtx.getDStabilityNet();
+	    BaseDStabNetwork dsNet =simuCtx.getDStabilityNet();
 	    
 	    /*
 	     * check generator data
@@ -118,7 +118,7 @@ public class IEEE9_Dstab_Adapter_Test {
             </dstabBus>
 	     */
 	    
-	    DStabBus bus1 = dsNet.getDStabBus("Bus1");
+	    BaseDStabBus bus1 = dsNet.getDStabBus("Bus1");
 	    assertTrue(bus1.getContributeGenList().size()==1);
 	    
 	    assertTrue(bus1.getContributeGenList().get(0) instanceof DStabGen);

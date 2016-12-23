@@ -5,18 +5,18 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import com.interpss.DStabObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfGenCode;
-import com.interpss.dstab.DStabBus;
+import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabGen;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.mach.Eq1Machine;
 import com.interpss.dstab.mach.MachineType;
 
 public class DStabTestUtilFunc {
-	public static DStabilityNetwork createTestNetwork()  throws InterpssException {
-		DStabilityNetwork net = DStabObjectFactory.createDStabilityNetwork();
+	public static BaseDStabNetwork createTestNetwork()  throws InterpssException {
+		BaseDStabNetwork net = DStabObjectFactory.createDStabilityNetwork();
 		net.setFrequency(60.0);
 
-		DStabBus bus = DStabObjectFactory.createDStabBus("BusId", net);
+		BaseDStabBus bus = DStabObjectFactory.createDStabBus("BusId", net);
 		bus.setName("BusName");
 		bus.setBaseVoltage(1000);
 		bus.setGenCode(AclfGenCode.GEN_PQ);

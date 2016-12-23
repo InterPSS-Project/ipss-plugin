@@ -83,7 +83,7 @@ import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.acsc.XfrConnectCode;
 import com.interpss.core.acsc.adpter.AcscLine;
 import com.interpss.core.acsc.adpter.AcscXformer;
-import com.interpss.dstab.DStabBus;
+import com.interpss.dstab.BaseDStabBus;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
@@ -280,7 +280,7 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 					
 					AcscGen scGen = (AcscGen) acscBus.getContributeGen(scGenXml.getId());
 					if(scGen==null){
-						scGen = acscBus instanceof DStabBus? DStabObjectFactory.createDStabGen() :
+						scGen = acscBus instanceof BaseDStabBus? DStabObjectFactory.createDStabGen() :
 									CoreObjectFactory.createAcscGen();
 						acscBus.getContributeGenList().add(scGen);
 					}
