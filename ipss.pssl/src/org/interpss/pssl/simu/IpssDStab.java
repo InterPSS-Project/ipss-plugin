@@ -35,7 +35,8 @@ import com.interpss.common.util.IpssLogger;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.dstab.DStabBus;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
@@ -52,14 +53,14 @@ import com.interpss.dstab.devent.DynamicEventType;
 public class IpssDStab {
 	
 	private DynamicSimuAlgorithm dstabAlgo = null;
-	private DStabilityNetwork dstabNet = null;
+	private BaseDStabNetwork dstabNet = null;
 	
 	private IDStabSimuOutputHandler outputHdler = new StateMonitor();
 	
 	private DynamicEvent event = null;
 	//private StateMonitor sm = new StateMonitor();
 	
-	public IpssDStab(DStabilityNetwork net){
+	public IpssDStab(BaseDStabNetwork net){
 		this.dstabNet = net;
 		this.dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, CoreCommonFactory.getIpssMsgHub());
 		this.dstabAlgo.setSimuOutputHandler(outputHdler);
@@ -169,7 +170,7 @@ public class IpssDStab {
 			event1.setDurationSec(durationTime);
 			
 	      // define a bus fault
-			DStabBus faultBus = dstabNet.getDStabBus(faultBusId);
+			BaseDStabBus<?,?> faultBus = dstabNet.getDStabBus(faultBusId);
 			AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@"+faultBusId, dstabNet);
 	  		fault.setBus(faultBus);
 			fault.setFaultCode(code);

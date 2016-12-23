@@ -14,7 +14,6 @@ import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.mapper.odm.ODMDStabParserMapper;
-import org.interpss.numeric.datatype.ComplexFunc;
 import org.interpss.numeric.util.Number2String;
 import org.interpss.numeric.util.PerformanceTimer;
 import org.junit.Test;
@@ -25,10 +24,9 @@ import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfLoad;
-import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.dstab.DStabBus;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.cache.StateVariableRecorder;
 import com.interpss.dstab.cache.StateVariableRecorder.StateRecord;
@@ -69,7 +67,7 @@ public class testCustomCurInjDstab {
 		}
 		
 		
-	    DStabilityNetwork dsNet =simuCtx.getDStabilityNet();
+	    BaseDStabNetwork<?,?> dsNet =simuCtx.getDStabilityNet();
 
 	    /*
 	     * run load flow to initialize the system
@@ -135,7 +133,7 @@ public class testCustomCurInjDstab {
 	  	// The load of bus 5 is assumed to be modeled by equivalent current injections
 	    //Need to set the load/gen/switchShunt at the boundary bus to be offline
 		  
-		  		DStabBus<?,?> dsBus = dsNet.getBus("Bus5");
+		  		BaseDStabBus<?,?> dsBus = dsNet.getBus("Bus5");
 		  		for(AclfLoad load: dsBus.getContributeLoadList()){
 		  			load.setStatus(false);
 		  		}
@@ -147,7 +145,7 @@ public class testCustomCurInjDstab {
 	  		 * Bus5 Inj=new Complex(-1.2177100311058122, 0.5874647169492455);
 	  	     */
 	  	
-		   	Hashtable<String, Complex> boundaryBusCurInjTable = new Hashtable();
+		   	Hashtable<String, Complex> boundaryBusCurInjTable = new Hashtable<>();
 		  			
 		   	boundaryBusCurInjTable.put("Bus5", new Complex(-1.2177100311058122, 0.5874647169492455));
 		 

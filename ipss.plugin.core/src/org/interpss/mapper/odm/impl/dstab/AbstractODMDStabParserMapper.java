@@ -63,10 +63,10 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.net.Branch;
 import com.interpss.dstab.DStab3WBranch;
 import com.interpss.dstab.DStabBranch;
-import com.interpss.dstab.DStabBus;
+import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.DStabLoad;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.mach.Machine;
 import com.interpss.simu.SimuContext;
@@ -108,7 +108,7 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 			
 			try {
 				// create a DStabilityNetwork object and map the net info 
-				DStabilityNetwork dstabNet = mapDStabNetworkData(xmlNet);
+				BaseDStabNetwork dstabNet = mapDStabNetworkData(xmlNet);
 				simuCtx.setDStabilityNet(dstabNet);
 				simuCtx.setNetType(SimuCtxType.DSTABILITY_NET);
 				
@@ -128,7 +128,7 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 				for (JAXBElement<? extends BusXmlType> bus : xmlNet.getBusList().getBus()) {
 					DStabBusXmlType dstabBusXml = (DStabBusXmlType) bus.getValue();
 					
-					DStabBus dstabBus = DStabObjectFactory.createDStabBus(dstabBusXml.getId(), dstabNet);
+					BaseDStabBus dstabBus = DStabObjectFactory.createDStabBus(dstabBusXml.getId(), dstabNet);
 						
 					// base the base bus info part
 					mapBaseBusData(dstabBusXml, dstabBus, dstabNet);
@@ -209,15 +209,15 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 		return noError;
 	}
 	
-	private DStabilityNetwork mapDStabNetworkData(DStabNetXmlType xmlNet) throws InterpssException {
-		DStabilityNetwork dstabNet = DStabObjectFactory.createDStabilityNetwork();
+	private BaseDStabNetwork mapDStabNetworkData(DStabNetXmlType xmlNet) throws InterpssException {
+		BaseDStabNetwork dstabNet = DStabObjectFactory.createDStabilityNetwork();
 		mapAcscNetworkData(dstabNet, xmlNet);
 		dstabNet.setSaturatedMachineParameter(xmlNet.isSaturatedMachineParameter());
 		dstabNet.setLfDataLoaded(true);
 		return dstabNet;
 	}	
 	
-	protected void setDStabBusData(DStabBusXmlType dstabBusXml, DStabBus dstabBus)  throws InterpssException {
+	protected void setDStabBusData(DStabBusXmlType dstabBusXml, BaseDStabBus dstabBus)  throws InterpssException {
 		
 		if(dstabBusXml.getGenData().getContributeGen().size() > 0){
 			DStabGenDataXmlType dyGen = null;
@@ -239,7 +239,7 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 	   }	
     }
 
-	protected void setDynGenData(DStabBus dstabBus, 
+	protected void setDynGenData(BaseDStabBus dstabBus, 
 			DStabGenDataXmlType dyGen, DStabGen dyGenObj) throws InterpssException {
 		// create the machine model and added to the parent bus object
 		if(dyGen.getMachineModel() ==null){

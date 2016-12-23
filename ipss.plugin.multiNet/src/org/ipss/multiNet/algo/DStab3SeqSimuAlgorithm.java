@@ -13,14 +13,14 @@ import org.interpss.numeric.sparse.ISparseEqnComplex;
 import com.interpss.DStabObjectFactory;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.acsc.SequenceCode;
-import com.interpss.dstab.DStabBus;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 
 public class DStab3SeqSimuAlgorithm {
 	
 	
-	private DStabilityNetwork net = null;
+	private BaseDStabNetwork<?,?> net = null;
 	
 	private Hashtable<String,Hashtable<Integer,Complex3x1>> threeSeqVoltTable;
 	private Hashtable<String,Complex3x1> threeSeqCurInjTable;
@@ -39,7 +39,7 @@ public class DStab3SeqSimuAlgorithm {
 	private int k = 0;
 	
 	
-	public DStab3SeqSimuAlgorithm(DStabilityNetwork net){
+	public DStab3SeqSimuAlgorithm(BaseDStabNetwork<?,?> net){
 		this.net = net;
 		this.posSeqDstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, IpssCorePlugin.getMsgHub());
 		
@@ -215,7 +215,7 @@ public class DStab3SeqSimuAlgorithm {
 				return null;
 			}
 		   
-		   for(DStabBus b:this.net.getBusList()){
+		   for(BaseDStabBus<?,?> b:this.net.getBusList()){
 			   //superpostition method
 			   //bus voltage V = Vinternal + Vext_injection
 			   b.setVoltage(b.getVoltage().add(posSeqNetY.getX(b.getSortNumber())));
@@ -247,12 +247,12 @@ public class DStab3SeqSimuAlgorithm {
 	
 
 
-	public DStabilityNetwork getNet() {
+	public BaseDStabNetwork<?,?> getNet() {
 		return net;
 	}
 
 
-	public void setNet(DStabilityNetwork net) {
+	public void setNet(BaseDStabNetwork<?,?> net) {
 		this.net = net;
 	}
 

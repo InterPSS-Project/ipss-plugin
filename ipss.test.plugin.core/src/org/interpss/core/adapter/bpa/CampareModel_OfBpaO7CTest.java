@@ -18,7 +18,7 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 import com.interpss.tools.compare.IAclfBranchComparator;
@@ -57,7 +57,7 @@ public class CampareModel_OfBpaO7CTest extends DStabTestSetupBase {
 				return;
 			}
 			
-			DStabilityNetwork dstabNet = simuCtx.getDStabilityNet();
+			BaseDStabNetwork dstabNet = simuCtx.getDStabilityNet();
 			
 			System.out.println("LF Net as the base net for comparison");
 			new NetModelComparator(baseNet)

@@ -9,6 +9,7 @@ import org.interpss.dstab.control.cml.block.IntegrationControlBlock;
 import org.interpss.dstab.control.cml.block.WashoutControlBlock;
 import org.interpss.dstab.control.cml.func.LowValueExpFunction;
 
+import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.controller.AnnotateGovernor;
 import com.interpss.dstab.controller.annotate.AnController;
@@ -133,7 +134,7 @@ DelayControlBlock t3DelayBlock;
 	     *  @param msg the SessionMsg object
 	     */
 	    @Override
-		public boolean initStates(DStabBus bus, Machine mach) {
+		public boolean initStates(BaseDStabBus<?,?> bus, Machine mach) {
 	        this.t1 = getData().getT1();
 	        this.t2 = getData().getT2();
 	        this.t3 = getData().getT3();

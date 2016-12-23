@@ -12,7 +12,7 @@ import org.junit.Test;
 
 import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
@@ -41,14 +41,14 @@ public class Kunder_2area_VSCHVDC_Test  extends DStabTestSetupBase{
 		}
 		
 		
-	    DStabilityNetwork dsNet =simuCtx.getDStabilityNet();
+	    BaseDStabNetwork dsNet =simuCtx.getDStabilityNet();
 	    
 	    
 	    //addVSCHVDC2Net
 	    
 	}
 	
-	private void addVSCHVDC2Net(DStabilityNetwork dsNet, String fromBusId, String toBusId){
+	private void addVSCHVDC2Net(BaseDStabNetwork dsNet, String fromBusId, String toBusId){
 		
 	}
 	

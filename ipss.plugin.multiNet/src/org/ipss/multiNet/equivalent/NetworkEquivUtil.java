@@ -18,8 +18,8 @@ import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.net.NetCoordinate;
 import com.interpss.core.net.NetEquivType;
-import com.interpss.dstab.DStabBus;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.BaseDStabNetwork;
 
 public class NetworkEquivUtil {
 	
@@ -29,7 +29,7 @@ public class NetworkEquivUtil {
 		Hashtable<String,NetworkEquivalent> netEquivTable = new Hashtable<>();
 		
 		
-		for(DStabilityNetwork subNet:subNetProc.getSubNetworkList()){
+		for(BaseDStabNetwork<?,?> subNet:subNetProc.getSubNetworkList()){
 			NetworkEquivalent equiv = calPosSeqNetworkTheveninEquiv(subNet,subNetProc.getSubNet2BoundaryBusListTable().get(subNet.getId()));
 			netEquivTable.put(subNet.getId(), equiv);
 		}
@@ -44,7 +44,7 @@ public class NetworkEquivUtil {
 		Hashtable<String,NetworkEquivalent> netEquivTable = new Hashtable<>();
 		
 		NetworkEquivalent equiv = null;
-		for(DStabilityNetwork subNet:subNetProc.getSubNetworkList()){
+		for(BaseDStabNetwork<?,?> subNet:subNetProc.getSubNetworkList()){
 			if(threePhaseSubNetIdList!= null){
 				if(threePhaseSubNetIdList.contains(subNet.getId())){
 					if(subNet instanceof DStabNetwork3Phase){
@@ -71,7 +71,7 @@ public class NetworkEquivUtil {
 	}
 	
 	
-	public static  NetworkEquivalent calPosSeqNetworkTheveninEquiv(DStabilityNetwork net, List<String> boundaryBusIdList){
+	public static  NetworkEquivalent calPosSeqNetworkTheveninEquiv(BaseDStabNetwork<?,?> net, List<String> boundaryBusIdList){
 		
 		ISparseEqnComplex ymatrix = net.getYMatrix();
 		if(ymatrix==null){
@@ -98,7 +98,7 @@ public class NetworkEquivUtil {
 			//ymatrix.setB2Zero();
 			int i=0;
 			for(String busId:boundaryBusIdList){
-				DStabBus bus = net.getBus(busId);
+				BaseDStabBus<?,?> bus = net.getBus(busId);
 				ymatrix.setB2Unity(bus.getSortNumber());
 				try {
 					ymatrix.solveEqn();
@@ -125,7 +125,7 @@ public class NetworkEquivUtil {
 		
 	}
 	
-	public static  NetworkEquivalent cal3SeqNetworkTheveninEquiv(DStabilityNetwork net, List<String> boundaryBusIdList){
+	public static  NetworkEquivalent cal3SeqNetworkTheveninEquiv(BaseDStabNetwork<?,?> net, List<String> boundaryBusIdList){
 		
 		// calculate three seq thevein equivalent impedance matrices
 			Complex[][] posSeqZMatrix  = calcInterfaceSeqZMatrix( net,SequenceCode.POSITIVE,boundaryBusIdList);
@@ -196,7 +196,7 @@ public static  NetworkEquivalent cal3PhaseNetworkTheveninEquiv(DStabNetwork3Phas
 			
 			int i=0;
 			for(String busId:boundaryBusIdList){
-				DStabBus bus = net.getBus(busId);
+				BaseDStabBus<?,?> bus = net.getBus(busId);
 				//System.out.println(bus.getId()+","+bus.getSortNumber());
 				
 				
@@ -255,7 +255,7 @@ public static  NetworkEquivalent cal3PhaseNetworkTheveninEquiv(DStabNetwork3Phas
 	 * @return  a Complex[][] matrix corresponding to the order in the boundaryBusIdAry
 	 * @throws IpssNumericException 
 	 */
-	public  static Complex[][] calcInterfaceSeqZMatrix(DStabilityNetwork net,SequenceCode code,List<String> boundaryBusIdList){
+	public  static Complex[][] calcInterfaceSeqZMatrix(BaseDStabNetwork<?,?> net,SequenceCode code,List<String> boundaryBusIdList){
 		
 		Complex[][] seqZMatrix = null;
 		ISparseEqnComplex seqYmatrixEqn = null;
@@ -305,7 +305,7 @@ public static  NetworkEquivalent cal3PhaseNetworkTheveninEquiv(DStabNetwork3Phas
 		
 				for(int i = 0;i<dim;i++){
 					String busId =boundaryBusIdList.get(i);
-					BaseAclfBus bus = net.getBus(busId);
+					BaseAclfBus<?,?> bus = net.getBus(busId);
 					int idx = bus.getSortNumber();
 					seqYmatrixEqn.setB2Unity(idx); //unit current injection at bus of Idx only, the rest are zero
 					try {
@@ -318,7 +318,7 @@ public static  NetworkEquivalent cal3PhaseNetworkTheveninEquiv(DStabNetwork3Phas
 				
 					for(int j=0;j<dim;j++){
 						busId = boundaryBusIdList.get(j);
-						BaseAclfBus busj = net.getBus(busId);
+						BaseAclfBus<?,?> busj = net.getBus(busId);
 						seqZMatrix[j][i]=seqYmatrixEqn.getX(busj.getSortNumber());
 					}
 						

@@ -30,6 +30,7 @@ import org.interpss.dstab.control.cml.block.DelayControlBlock;
 import org.interpss.dstab.control.cml.block.FilterControlBlock;
 import org.interpss.dstab.control.cml.block.GainBlock;
 
+import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.controller.AnnotateGovernor;
 import com.interpss.dstab.controller.annotate.AnController;
@@ -114,7 +115,7 @@ public class Ieee1981Type2HydroGovernor extends AnnotateGovernor {
      *  @param msg the SessionMsg object
      */
     @Override
-	public boolean initStates(DStabBus bus, Machine mach) {
+	public boolean initStates(BaseDStabBus<?,?> bus, Machine mach) {
         this.k = getData().getK();
         this.t1 = getData().getT1();
         this.t2 = getData().getT2();
