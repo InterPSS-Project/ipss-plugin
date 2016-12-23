@@ -19,13 +19,13 @@ import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
-import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabGen;
-import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
@@ -38,10 +38,10 @@ public class TestLd1pacModel extends TestSetupBase {
 	
 	@Test
 	public void test_DStab_Ld1pac()  throws InterpssException {
-		DStabilityNetwork net = create2BusSystem();
+		BaseDStabNetwork<?,?> net = create2BusSystem();
 		assertTrue(net.isLfConverged());
 		
-		DStabBus bus1 = net.getDStabBus("Bus1");
+		BaseDStabBus<?,?> bus1 = net.getDStabBus("Bus1");
 		
 		LD1PAC acLoad= DStabObjectFactory.createLD1PAC(bus1,"1");
 		
@@ -98,10 +98,10 @@ public class TestLd1pacModel extends TestSetupBase {
 	//@Test
 	public void test_Ld1pac()  throws InterpssException {
 		// create a machine in a two-bus network. The loadflow already converged
-		DStabilityNetwork net = create2BusSystem();
+		BaseDStabNetwork<?,?> net = create2BusSystem();
 		assertTrue(net.isLfConverged());
 		
-		DStabBus bus1 = net.getDStabBus("Bus1");
+		BaseDStabBus<?,?> bus1 = net.getDStabBus("Bus1");
 		
 		LD1PAC acLoad= DStabObjectFactory.createLD1PAC(bus1,"1");
 		
@@ -158,13 +158,13 @@ public class TestLd1pacModel extends TestSetupBase {
 	}
 	
 	
-	private DStabilityNetwork create2BusSystem() throws InterpssException{
+	private BaseDStabNetwork<?,?> create2BusSystem() throws InterpssException{
 		
-		DStabilityNetwork net = DStabObjectFactory.createDStabilityNetwork();
+		BaseDStabNetwork<?,?> net = DStabObjectFactory.createDStabilityNetwork();
 		net.setFrequency(60.0);
 		
 		// First bus is PQ Gen bus
-		DStabBus bus1 = DStabObjectFactory.createDStabBus("Bus1", net);
+		BaseDStabBus<?,?> bus1 = DStabObjectFactory.createDStabBus("Bus1", net);
 		bus1.setName("Gen Bus");
 		bus1.setBaseVoltage(1000);
 		//bus1.setGenCode(AclfGenCode.GEN_PQ);
@@ -173,7 +173,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		bus1.setLoadPQ( new Complex(0.8,0.6));
 		
 		// Second bus is a Swing bus
-		DStabBus bus2 = DStabObjectFactory.createDStabBus("Swing", net);
+		BaseDStabBus bus2 = DStabObjectFactory.createDStabBus("Swing", net);
 		bus2.setName("Swing Bus");
 		bus2.setBaseVoltage(1000);
 		bus2.setGenCode(AclfGenCode.SWING);

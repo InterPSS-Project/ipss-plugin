@@ -6,6 +6,7 @@ import org.interpss.numeric.datatype.LimitType;
 import com.interpss.common.exp.InterpssRuntimeException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.common.util.XmlBeanUtil;
+import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.controller.AbstractGovernor;
@@ -53,7 +54,7 @@ public class PID_SixCoefficientHydroGovernor extends AbstractGovernor {
 	 *  @param msg the SessionMsg object
 	 */
 	@Override
-	public boolean initStates(DStabBus abus, Machine mach) {
+	public boolean initStates(BaseDStabBus<?,?> abus, Machine mach) {
 		//limit = new LimitType(getData().getPmax(), getData().getPmin());
 		limit = new LimitType(1, 0);
 		statePref = getMachine().getPm();

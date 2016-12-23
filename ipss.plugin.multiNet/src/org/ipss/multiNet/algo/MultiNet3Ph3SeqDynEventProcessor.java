@@ -14,7 +14,7 @@ import com.interpss.common.msg.IpssMessage;
 import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.datatype.DStabSimuTimeEvent;
 import com.interpss.dstab.devent.DynamicEvent;
 import com.interpss.dstab.devent.DynamicEventType;
@@ -69,8 +69,8 @@ public class MultiNet3Ph3SeqDynEventProcessor extends
 						   
 					        if (dEvent.getType() == DynamicEventType.BUS_FAULT) {
 						         AcscBusFault fault = dEvent.getBusFault();
-						         BaseAcscBus bus = fault.getBus();
-						         DStabilityNetwork faultSubNet = (DStabilityNetwork) bus.getNetwork();
+						         BaseAcscBus<?,?> bus = fault.getBus();
+						         BaseDStabNetwork<?,?> faultSubNet = (BaseDStabNetwork<?,?>) bus.getNetwork();
 						         if(faultSubNet instanceof DStabNetwork3Phase && this.threePhaseSubNetIdList.contains(faultSubNet.getId())){
 									try {
 										( (DStabNetwork3Phase)faultSubNet ).formYMatrixABC();

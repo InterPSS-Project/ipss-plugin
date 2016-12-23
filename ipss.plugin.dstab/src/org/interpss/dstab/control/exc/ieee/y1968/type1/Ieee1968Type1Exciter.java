@@ -31,14 +31,13 @@ import org.interpss.dstab.control.cml.block.WashoutControlBlock;
 import org.interpss.dstab.control.cml.func.SeFunction;
 
 import com.interpss.common.util.IpssLogger;
-import com.interpss.dstab.DStabBus;
+import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.controller.AnnotateExciter;
 import com.interpss.dstab.controller.annotate.AnController;
 import com.interpss.dstab.controller.annotate.AnControllerField;
 import com.interpss.dstab.controller.annotate.AnFunctionField;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
-import com.sun.org.apache.xml.internal.resolver.helpers.Debug;
 
 /**
  * 
@@ -158,7 +157,7 @@ public class Ieee1968Type1Exciter extends AnnotateExciter {
      *  @param msg the SessionMsg object
      */
     @Override
-	public boolean initStates(DStabBus bus, Machine mach) {
+	public boolean initStates(BaseDStabBus<?,?> bus, Machine mach) {
     	// init the controller parameters using the data defined in the 
     	// data object
     	this.tr=getData().getTr();

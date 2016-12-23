@@ -78,7 +78,7 @@ import com.interpss.core.aclf.adpter.AclfPVGenBus;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
 import com.interpss.core.acsc.AcscBus;
 import com.interpss.core.acsc.BaseAcscBus;
-import com.interpss.dstab.DStabBus;
+import com.interpss.dstab.BaseDStabBus;
 
 /**
  * Aclf bus data ODM mapping helper functions
@@ -289,7 +289,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 				
 				//Map load flow generator data
 				String id = xmlGen.getId()!=null?xmlGen.getId():this.bus.getId()+"-G"+genCnt++;
-				AclfGen gen= this.bus instanceof DStabBus? DStabObjectFactory.createDStabGen(id) :
+				AclfGen gen= this.bus instanceof BaseDStabBus? DStabObjectFactory.createDStabGen(id) :
 								this.bus instanceof BaseAcscBus<?,?> ? CoreObjectFactory.createAcscGen(id) : 
 									CoreObjectFactory.createAclfGen(id);
 				
