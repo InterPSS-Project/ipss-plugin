@@ -47,7 +47,7 @@ import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.fault.SimpleFaultType;
 import com.interpss.core.datatype.IFaultResult;
 import com.interpss.dstab.BaseDStabNetwork;
-import com.interpss.dstab.cache.StateMonitor;
+import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.common.IDStabSimuOutputHandler;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
@@ -215,7 +215,7 @@ public class CmdRunner {
 			
 			
 			SimuContext dstabSC = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-			dstabSC.setDStabilityNet(net);
+			dstabSC.setDStabilityNet((DStabilityNetwork)net);
 			return dstabSC;
 		}
 		
