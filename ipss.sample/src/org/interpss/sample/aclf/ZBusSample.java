@@ -56,7 +56,7 @@ public class ZBusSample {
 		busNo = bus1.getSortNumber();
 		eqn.setB2Unity(busNo);
 		
-		eqn.luMatrixAndSolveEqn(1.0e-20);
+		eqn.solveEqn(1.0e-20);
 		Complex z = eqn.getX(busNo);
 		System.out.println("Zii: " + ComplexFunc.toString(z));  
 
