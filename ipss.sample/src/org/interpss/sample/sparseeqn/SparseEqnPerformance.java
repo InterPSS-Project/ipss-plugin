@@ -145,7 +145,7 @@ b(17): 0.001294411022165286
 		eqnNew.setB2Unity(10);
 	  	PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
 	  	
-		eqnNew.luMatrix(1.0e-10);
+		eqnNew.factorization(1.0e-10);
 	  	timer.logStd("Time for LU the eqnNew");
 	  	
 	  	timer.start();
