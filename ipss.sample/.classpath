@@ -19,6 +19,5 @@
 	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/sparse/csparsej-1.1.1.jar"/>
 	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/apache/commons-math3-3.5.jar"/>
 	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/apache/commons-logging.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Hazelcast"/>	
 	<classpathentry kind="output" path="runtime"/>
 </classpath>
