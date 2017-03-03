@@ -17,7 +17,7 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.plugin.dc"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ieee.odm.schema"/>
 	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/apache/commons-pool-1.6.jar"/>
-	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/apache/commons-math3-3.5.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/apache/commons-math3-3.6.1.jar"/>
 	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/json/gson-2.2.2.jar"/>
 	<classpathentry kind="output" path="runtime"/>
 </classpath>
