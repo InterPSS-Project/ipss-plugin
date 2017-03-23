@@ -29,6 +29,7 @@ import static com.interpss.common.util.IpssLogger.ipssLogger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 import org.eclipse.emf.common.util.EList;
 import org.ieee.odm.model.IODMModelParser;
@@ -47,6 +48,8 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.contingency.BranchOutageType;
+import com.interpss.core.aclf.contingency.Contingency;
+import com.interpss.core.aclf.contingency.MultiOutageContingency;
 import com.interpss.core.aclf.contingency.OutageBranch;
 import com.interpss.core.aclf.flow.FlowInterface;
 import com.interpss.core.aclf.flow.FlowInterfaceBranch;
@@ -618,7 +621,73 @@ public class IpssDclf extends BaseDSL {
   		public double branchFlow(AclfBranch branch, UnitType unit) {
   			return algo.getBranchFlow(branch, unit); }
   		
-  		// Sensitivity analysis
+  		/*
+  		 * Contingency analysis
+  		 * ====================
+  		 */
+  		public boolean processContingency(Contingency cont, BiConsumer<AclfBranch, Double> resultProcessor) {
+  			AclfNetwork net = getAclfNetwork();
+  			double baseMva = net.getBaseMva();
+
+  			try {
+  			outageBranch(cont.getOutageBranch().getBranch());
+
+  			double outBanchPreFlow = cont.getOutageBranch().getBranch().getDclfFlow()*baseMva;		
+  			for (AclfBranch branch : net.getBranchList()) {
+  				double 	preFlow = branch.getDclfFlow()*baseMva,
+  						LODF = monitorBranch(branch).lineOutageDFactor(),
+  						postFlow = preFlow + LODF * outBanchPreFlow;
+  				resultProcessor.accept(branch, postFlow);
+  			}
+  			} catch (ReferenceBusException | PSSLException e) {
+  				ipssLogger.severe(e.toString());
+  				return false;
+  			}
+  			return true;
+  		} 
+  		
+  		public boolean processMultiOutageContingency(MultiOutageContingency cont, BiConsumer<AclfBranch, Double> resultProcessor) {
+  			setLODFAnalysisType(LODFSenAnalysisType.MULTI_BRANCH);
+  			cont.getOutageBranches().forEach(outBranch -> {
+  				addOutageBranch(outBranch);
+  			});
+
+  			try {
+  	  			AclfNetwork net = getAclfNetwork();
+  	  			double baseMva = net.getBaseMva();
+  	  			
+  	  			calLineOutageDFactors(cont.getId());
+
+  	  			for (AclfBranch branch : net.getBranchList()) {
+  	  				double preFlow = branch.getDclfFlow()*baseMva,
+  	  						postFlow = 0.0;
+
+  	  				double[] factors = monitorBranch(branch)
+  	  				  					  .getLineOutageDFactors();
+  	  				if (factors != null) {  // factors = null if branch is an outage branch
+  	  					double sum = 0.0;
+  	  					int cnt = 0;
+  	  					for (OutageBranch outBranch : outageBranchList()) {
+  	  						double flow = outBranch.getBranch().getDclfFlow();
+  	  						sum += flow * factors[cnt++];
+  	  					}
+  	  					postFlow = sum*baseMva + preFlow;
+  	  				}
+
+  	  				resultProcessor.accept(branch, postFlow);
+  	  			}
+  			} catch (InterpssException | ReferenceBusException | IpssNumericException | OutageConnectivityException e) {
+  				e.printStackTrace();
+  				return false;
+  			}
+  			
+  			return true;
+  		}  		
+  		
+  		/*
+  		 * Sensitivity analysis
+  		 * ====================
+  		 */
   		
   		/**
   		 * calculate bus sensitivity. The result is reference bus location dependent.
