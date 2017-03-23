@@ -24,10 +24,6 @@
 
 package org.interpss.sample.ca;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BiConsumer;
-
 import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.pssl.common.PSSLException;
@@ -36,12 +32,12 @@ import org.interpss.pssl.simu.IpssDclf.DclfAlgorithmDSL;
 
 import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.contingency.BaseContingency;
 import com.interpss.core.aclf.contingency.BranchOutageType;
+import com.interpss.core.aclf.contingency.BusbarOutageContingency;
 import com.interpss.core.aclf.contingency.Contingency;
-import com.interpss.core.aclf.contingency.OutageBranch;
+import com.interpss.core.aclf.contingency.MultiOutageContingency;
+import com.interpss.core.aclf.contingency.Xfr3WOutageContingency;
 import com.interpss.core.dclf.common.ReferenceBusException;
 
 public class Ieee14_CASetSample {
@@ -59,43 +55,46 @@ public class Ieee14_CASetSample {
 		DclfAlgorithmDSL algoDsl = IpssDclf.createDclfAlgorithm(net)
 				.runDclfAnalysis();
 		
-		List<BaseContingency> list = new ArrayList<>();
+		createContingencies(net);
+		algoDsl.setRefBus("Bus14");
 		
-		// set single outage branch
-		Contingency cont = CoreObjectFactory.createContingency("CA1");
-		list.add(cont);
-
-		AclfBranch branch = net.getBranch("Bus5->Bus6(1)");
-		OutageBranch outageBranch = CoreObjectFactory.createOutageBranch(branch, BranchOutageType.OPEN); 
-		cont.setOutageBranch(outageBranch);
-		
-		
-		processContingency(cont, algoDsl, new BiConsumer<AclfBranch, Double>() {
-			@Override public void accept(AclfBranch contBranch, Double postContFlow) {
-				double preFlow = contBranch.getDclfFlow()*baseMva;
-		        System.out.println("branchId, preFlow, postFlow: " + contBranch.getId() + ", " + preFlow + ", " + postContFlow);			}
+		net.getContingencyList().stream().forEach(cont -> {
+			if (cont instanceof Contingency) {
+				algoDsl.processContingency((Contingency)cont, (contBranch, postContFlow) -> {
+					// a function to handle the CA results
+					double preFlow = contBranch.getDclfFlow()*baseMva;
+					// Bus1->Bus2(1), 147.88057464425773, 150.3920508725032
+					if (contBranch.getId().equals("Bus1->Bus2(1)"))
+						System.out.println("preFlow, postFlow: " + preFlow + ", " + postContFlow);			
+				});
+			}
+			else if (cont instanceof MultiOutageContingency) {
+				algoDsl.processMultiOutageContingency((MultiOutageContingency)cont, (contBranch, postContFlow) -> {
+		       		if (contBranch.getId().equals("Bus1->Bus5(1)") ||
+		       				contBranch.getId().equals("Bus3->Bus4(1)")||
+		       				contBranch.getId().equals("Bus6->Bus11(1)"))
+		       			System.out.println("Branch " + contBranch.getId() + " should be 0.0: " + postContFlow);
+		       		else if (contBranch.getId().equals("Bus2->Bus5(1)"))
+		       			System.out.println("Branch " + contBranch.getId() + " should be 69.08805: " + postContFlow);
+		       		else if (contBranch.getId().equals("Bus6->Bus13(1)"))
+		       			System.out.println("Branch " + contBranch.getId() + " should be 17.88058: " + postContFlow);					
+				});
+			}
+			else if (cont instanceof BusbarOutageContingency) {
+				
+			}
+			else if (cont instanceof Xfr3WOutageContingency) {
+				
+			}
 		});
-
-		/*
-		MultiOutageContingency mcont = CoreObjectFactory.createMultiOutageContingency("CA1");
-		list.add(mcont);
-*/		
 	}
 	
-	private static void processContingency(Contingency cont, DclfAlgorithmDSL algoDsl, 
-							BiConsumer<AclfBranch, Double> resultProcessor) throws ReferenceBusException, PSSLException {
-		AclfNetwork net = algoDsl.getAclfNetwork();
-        double baseMva = net.getBaseMva();
-        
-		algoDsl.outageBranch(cont.getOutageBranch().getBranch());
-        
-        double outBanchPreFlow = cont.getOutageBranch().getBranch().getDclfFlow()*baseMva;		
-        for (AclfBranch branch : net.getBranchList()) {
-        	double 	preFlow = branch.getDclfFlow()*baseMva,
-        			LODF = algoDsl.monitorBranch(branch).lineOutageDFactor(),
-           			postFlow = preFlow + LODF * outBanchPreFlow;
-        	resultProcessor.accept(branch, postFlow);
-		}		
+	private static void createContingencies(AclfNetwork net) {
+		CoreObjectFactory.createContingency("CA1", "Bus5->Bus6(1)", BranchOutageType.OPEN, net);
+		CoreObjectFactory.createContingency("CA2", "Bus5->Bus6(1)", BranchOutageType.OPEN, net);
+		
+		CoreObjectFactory.createMultiOutageContingency("MCA1", new String[] {"Bus1->Bus5(1)", "Bus3->Bus4(1)", "Bus6->Bus11(1)"}, 
+				                     BranchOutageType.OPEN, net);
 	}
 }
 
