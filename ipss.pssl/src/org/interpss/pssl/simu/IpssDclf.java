@@ -625,28 +625,43 @@ public class IpssDclf extends BaseDSL {
   		 * Contingency analysis
   		 * ====================
   		 */
-  		public boolean processContingency(Contingency cont, BiConsumer<AclfBranch, Double> resultProcessor) {
+  		
+  		/**
+  		 * perform contingency analysis
+  		 * 
+  		 * @param cont the contingency object
+  		 * @param resultProcessor result processing function
+  		 * @return true if there is not problme
+  		 */
+  		public boolean contingencyAanlysis(Contingency cont, BiConsumer<AclfBranch, Double> resultProcessor) {
   			AclfNetwork net = getAclfNetwork();
   			double baseMva = net.getBaseMva();
 
   			try {
-  			outageBranch(cont.getOutageBranch().getBranch());
+  				outageBranch(cont.getOutageBranch().getBranch());
 
-  			double outBanchPreFlow = cont.getOutageBranch().getBranch().getDclfFlow()*baseMva;		
-  			for (AclfBranch branch : net.getBranchList()) {
-  				double 	preFlow = branch.getDclfFlow()*baseMva,
-  						LODF = monitorBranch(branch).lineOutageDFactor(),
-  						postFlow = preFlow + LODF * outBanchPreFlow;
-  				resultProcessor.accept(branch, postFlow);
-  			}
+  				double outBanchPreFlow = cont.getOutageBranch().getBranch().getDclfFlow()*baseMva;		
+  				for (AclfBranch branch : net.getBranchList()) {
+  					double 	preFlow = branch.getDclfFlow()*baseMva,
+  							LODF = monitorBranch(branch).lineOutageDFactor(),
+  							postFlow = preFlow + LODF * outBanchPreFlow;
+  					resultProcessor.accept(branch, postFlow);
+  				}
   			} catch (ReferenceBusException | PSSLException e) {
   				ipssLogger.severe(e.toString());
   				return false;
   			}
   			return true;
   		} 
-  		
-  		public boolean processMultiOutageContingency(MultiOutageContingency cont, BiConsumer<AclfBranch, Double> resultProcessor) {
+
+  		/**
+  		 * perform multi-outage contingency analysis
+  		 * 
+  		 * @param cont the contingency object
+  		 * @param resultProcessor result processing function
+  		 * @return
+  		 */
+  		public boolean multiOutageContingencyAanlysis(MultiOutageContingency cont, BiConsumer<AclfBranch, Double> resultProcessor) {
   			setLODFAnalysisType(LODFSenAnalysisType.MULTI_BRANCH);
   			cont.getOutageBranches().forEach(outBranch -> {
   				addOutageBranch(outBranch);
@@ -677,7 +692,7 @@ public class IpssDclf extends BaseDSL {
   	  				resultProcessor.accept(branch, postFlow);
   	  			}
   			} catch (InterpssException | ReferenceBusException | IpssNumericException | OutageConnectivityException e) {
-  				e.printStackTrace();
+  				ipssLogger.severe(e.toString());
   				return false;
   			}
   			
