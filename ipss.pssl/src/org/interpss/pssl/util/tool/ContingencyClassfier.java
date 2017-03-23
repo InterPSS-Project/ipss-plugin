@@ -11,12 +11,12 @@ import org.interpss.pssl.util.ContingencyAnalysisHelper;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.contingency.Contingency;
+import com.interpss.core.aclf.contingency.dep.DepContingency;
 import com.interpss.core.dclf.common.ReferenceBusException;
 
 public class ContingencyClassfier {
 	private AclfNetwork aclfNet;
-	private List<Contingency> contList;
+	private List<DepContingency> contList;
 	private double violationThreshold = 1.0;
 	
 	private List<String> singleLineOutNoIslandingContList = new ArrayList<String>();
@@ -29,12 +29,12 @@ public class ContingencyClassfier {
 	private List<String> multiLineOutWithLoadIslandingContList= new ArrayList<String>();
 		
 	
-	public ContingencyClassfier(AclfNetwork aclfNet, List<Contingency> contList){
+	public ContingencyClassfier(AclfNetwork aclfNet, List<DepContingency> contList){
 		this.aclfNet = aclfNet;
 		this.contList = contList;
 	}
 	
-	public ContingencyClassfier(AclfNetwork aclfNet, List<Contingency> contList,
+	public ContingencyClassfier(AclfNetwork aclfNet, List<DepContingency> contList,
 			double violationThreshold){
 		this.aclfNet = aclfNet;
 		this.contList = contList;
@@ -49,7 +49,7 @@ public class ContingencyClassfier {
 		
 	public void classify() throws InterpssException, ReferenceBusException, PSSLException, IpssNumericException {		
 		
-		for (Contingency cont : contList) {
+		for (DepContingency cont : contList) {
 			DclfAlgorithmDSL algoCtg = IpssDclf.createDclfAlgorithm(aclfNet, false)
 					.runDclfAnalysis();
 
