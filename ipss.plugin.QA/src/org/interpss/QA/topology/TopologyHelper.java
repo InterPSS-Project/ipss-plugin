@@ -11,7 +11,6 @@ import java.util.List;
 
 import javax.swing.JFrame;
 
-import org.eclipse.emf.ecore.change.util.ChangeRecorder;
 import org.interpss.algo.TopologyProcesor;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.Number2String;
@@ -24,8 +23,9 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
-import com.interpss.core.aclf.contingency.Contingency;
+import com.interpss.core.aclf.contingency.BaseContingency;
 import com.interpss.core.aclf.contingency.OutageBranch;
+import com.interpss.core.aclf.contingency.dep.DepContingency;
 import com.interpss.core.common.visitor.INetBVisitor;
 import com.interpss.core.funcImpl.ZeroZBranchProcesor;
 import com.interpss.core.funcImpl.ZeroZBranchProcesor.BusBasedSeaerchResult;
@@ -73,9 +73,10 @@ public class TopologyHelper {
 		this.proc = proc;		
 	}
 	
-	public TopologyHelper(AclfNetwork net,ZeroZBranchProcesor proc, List<Contingency> contList) throws InterpssException{
+	public TopologyHelper(AclfNetwork net,ZeroZBranchProcesor proc, List<BaseContingency> contList) throws InterpssException{
 		this(net, proc);
-		for(Contingency cont: contList){
+		for(BaseContingency bcont: contList){
+			DepContingency cont = (DepContingency)bcont;
 			for(OutageBranch outBranch : cont.getOutageBranches())
 				this.protectedBranches.add(outBranch.getBranch().getId());					
 		}

@@ -37,7 +37,7 @@ import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.contingency.OutageBranch;
-import com.interpss.core.aclf.contingency.impl.IslandBusProcesor;
+import com.interpss.core.aclf.contingency.dep.impl.DepIslandBusProcesor;
 import com.interpss.core.funcImpl.ZeroZBranchProcesor;
 
 
@@ -56,7 +56,7 @@ public class IEEE14BusBreaker_islandBus_Test extends CorePluginTestSetup {
 		list.add(CoreObjectFactory.createOutageBranch(net.getBranch("Bus4->Bus9(1)")));
 		list.add(CoreObjectFactory.createOutageBranch(net.getBranch("Bus5->Bus6(1)")));
 		
-		IslandBusProcesor proc = new IslandBusProcesor(net);
+		DepIslandBusProcesor proc = new DepIslandBusProcesor(net);
 		proc.findIslandBus(list, net);
 	  	System.out.println("Original network with islanding");
 	  	System.out.println(proc.getIslandBusIdSet());
@@ -94,7 +94,7 @@ public class IEEE14BusBreaker_islandBus_Test extends CorePluginTestSetup {
 		list.add(CoreObjectFactory.createOutageBranch(net.getBranch("Bus4->Bus9(1)")));
 		list.add(CoreObjectFactory.createOutageBranch(net.getBranch("Bus5->Bus6(1)")));
 		
-		IslandBusProcesor proc = new IslandBusProcesor(net);
+		DepIslandBusProcesor proc = new DepIslandBusProcesor(net);
 		proc.findIslandBus(list, net);
 	  	System.out.println("Consolidated network with islanding");
 	  	System.out.println(proc.getIslandBusIdSet());

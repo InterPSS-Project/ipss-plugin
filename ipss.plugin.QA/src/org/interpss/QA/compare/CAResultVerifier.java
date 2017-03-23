@@ -16,9 +16,9 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.contingency.BranchOutageType;
-import com.interpss.core.aclf.contingency.Contingency;
 import com.interpss.core.aclf.contingency.MonitoringBranch;
 import com.interpss.core.aclf.contingency.OutageBranch;
+import com.interpss.core.aclf.contingency.dep.DepContingency;
 import com.interpss.core.dclf.common.ReferenceBusException;
 import com.interpss.core.funcImpl.AclfNetHelper;
 
@@ -33,7 +33,7 @@ public class CAResultVerifier {
 	private AclfNetwork aclfNet;
 	
 	// contingency object
-	private Contingency cont;
+	private DepContingency cont;
 	
 	// violation threshold 
 	private double violationThreshold = 1.0;
@@ -82,7 +82,7 @@ public class CAResultVerifier {
 	 * @param aclfNet
 	 * @param cont
 	 */
-	public CAResultVerifier(AclfNetwork aclfNet, Contingency cont){
+	public CAResultVerifier(AclfNetwork aclfNet, DepContingency cont){
 		this.aclfNet = aclfNet;
 		this.cont = cont;
 	}
@@ -95,7 +95,7 @@ public class CAResultVerifier {
 	 * @param violationThreshold
 	 * @param tol
 	 */
-	public CAResultVerifier(AclfNetwork aclfNet, Contingency cont,
+	public CAResultVerifier(AclfNetwork aclfNet, DepContingency cont,
 			double violationThreshold, double tol){
 		this.aclfNet = aclfNet;
 		this.cont = cont;
@@ -109,7 +109,7 @@ public class CAResultVerifier {
 	 * @param cont
 	 * @return
 	 */
-	public CAResultVerifier setContingency(Contingency cont) {
+	public CAResultVerifier setContingency(DepContingency cont) {
 		this.cont = cont;
 		return this;
 	}
