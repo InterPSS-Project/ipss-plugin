@@ -17,14 +17,14 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.contingency.Contingency;
 import com.interpss.core.aclf.contingency.MonitoringBranch;
+import com.interpss.core.aclf.contingency.dep.DepContingency;
 import com.interpss.core.dclf.common.ReferenceBusException;
 
 public class CAResultComparator {
 
 	private AclfNetwork net;
-	private List<Contingency> cntgList=null;
+	private List<DepContingency> cntgList=null;
 	private Hashtable<String,ContingencyResult> cntgTable=new Hashtable<String,ContingencyResult>();
 	
 	public CAResultComparator(String ResultFile,AclfNetwork net){
@@ -32,7 +32,7 @@ public class CAResultComparator {
 		this.net= net;
 	}
 	
-	public CAResultComparator(String ResultFile,AclfNetwork net,List<Contingency> contingencyList){
+	public CAResultComparator(String ResultFile,AclfNetwork net,List<DepContingency> contingencyList){
 		loadPWDResult(ResultFile);
 		this.net= net;
 		this.cntgList = contingencyList;
@@ -51,7 +51,7 @@ public class CAResultComparator {
 		contHelper.setViolationThreshold(violationThreshold);
 		boolean identical=true;
 		
-		for (Contingency cont : cntgList) {
+		for (DepContingency cont : cntgList) {
 			contHelper.contAnalysis(cont);
 			ContingencyResult benchMarkCAResult =cntgTable.get(cont.getId());
 			if(benchMarkCAResult!=null){

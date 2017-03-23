@@ -35,8 +35,8 @@ import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfNetwork;
-import com.interpss.core.aclf.contingency.Contingency;
 import com.interpss.core.aclf.contingency.OutageBranch;
+import com.interpss.core.aclf.contingency.dep.DepContingency;
 import com.interpss.core.funcImpl.AclfNetHelper;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
@@ -177,7 +177,7 @@ public class TopologyProcesor {
 	 * @return
 	 */
 	@Deprecated
-	public void findIslandBus(Contingency contingency) throws InterpssException {
+	public void findIslandBus(DepContingency contingency) throws InterpssException {
 		/*
 		// all equivOutageBranch should be active
 		for (EquivOutageBranch bra : contingency.getEquivOutageBranches()) {
@@ -227,7 +227,7 @@ public class TopologyProcesor {
 	 */
 	
 	@Deprecated
-	public void findIslandBusByRegionalSearch(Contingency contingency) throws InterpssException {		
+	public void findIslandBusByRegionalSearch(DepContingency contingency) throws InterpssException {		
 		
 		for (OutageBranch branch : contingency.getOutageBranches()) {
 			if (branch.getBranch().isActive()) {
