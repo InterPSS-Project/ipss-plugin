@@ -367,6 +367,11 @@ public class AclfBranchDataHelper {
 						return;
 					}
 					String vcBusId = BusXmlRef2BusId.fx(xmlAdjData.getAdjVoltageBus());
+					if (vcBusId == null){
+						ipssLogger.warning("xfr tap control remote BusId is null: " + aclfBra.getId());
+						return;
+					}
+					
 					TapControl tap = null;
 					//specify the control type
 					if(xmlAdjData.getMode()==AdjustmentModeEnumType.VALUE_ADJUSTMENT){
@@ -413,7 +418,9 @@ public class AclfBranchDataHelper {
 						tap.setTapSteps(xmlTapAdj.getTapAdjSteps());
 				}
 			} catch (InterpssException e) {
-				ipssLogger.severe("Error in mapping Xfr tap control data, " + e.toString());
+				System.out.println("Error in mapping Xfr tap control data for transformer # "+ aclfBra.getId());
+			
+				ipssLogger.severe("Error in mapping Xfr tap control data for transformer # "+ aclfBra.getId()+", " + e.toString());
 			}
 		}
 
