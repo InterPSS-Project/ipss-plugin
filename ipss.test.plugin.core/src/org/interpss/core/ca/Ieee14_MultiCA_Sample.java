@@ -57,6 +57,7 @@ public class Ieee14_MultiCA_Sample {
 		DclfAlgorithmDSL algoDsl_i = IpssDclf.copyAlgorithm(algo);
 		if (cont instanceof Contingency) {
 			algoDsl_i.contingencyAanlysis((Contingency)cont, (contBranch, postContFlow) -> {
+				// here we define a function to process the contingency analysis results
 				if (points < 100 && contBranch.getId().equals("Bus1->Bus2(1)"))
 					System.out.println("CA: " + cont.getId() + " Branch " + contBranch.getId() + " should be 150.39205, error: " + 
 		       		          Math.abs(postContFlow - 150.3920508725032));	
@@ -67,15 +68,20 @@ public class Ieee14_MultiCA_Sample {
 		 * make sure they are processed before MultiOutageContingency.
 		 */
 		else if (cont instanceof BusbarOutageContingency) {
-			algoDsl_i.busbarOutageContingencyAanlysis((BusbarOutageContingency)cont, (contBranch, postContFlow) -> {});
+			algoDsl_i.busbarOutageContingencyAanlysis((BusbarOutageContingency)cont, (contBranch, postContFlow) -> {
+				// here we define a function to process the contingency analysis results
+			});
 			
 		}
 		else if (cont instanceof Xfr3WOutageContingency) {
-			algoDsl_i.xfr3WOutageContingencyAanlysis((Xfr3WOutageContingency)cont, (contBranch, postContFlow) -> {});
+			algoDsl_i.xfr3WOutageContingencyAanlysis((Xfr3WOutageContingency)cont, (contBranch, postContFlow) -> {
+				// here we define a function to process the contingency analysis results
+			});
 			
 		}
 		else if (cont instanceof MultiOutageContingency) {
 			algoDsl_i.multiOutageContingencyAanlysis((MultiOutageContingency)cont, (contBranch, postContFlow) -> {
+				// here we define a function to process the contingency analysis results
 	       		if (points < 100 && contBranch.getId().equals("Bus2->Bus5(1)"))
 	       			System.out.println("CA: " + cont.getId() + " Branch " + contBranch.getId() + " should be 69.08805, error: " + 
 	       		          Math.abs(postContFlow - 69.08805));
