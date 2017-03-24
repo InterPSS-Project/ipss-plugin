@@ -40,12 +40,15 @@ import org.ieee.odm.schema.AnalysisCategoryEnumType;
 import org.ieee.odm.schema.BaseBranchXmlType;
 import org.ieee.odm.schema.BranchXmlType;
 import org.ieee.odm.schema.BusXmlType;
+import org.ieee.odm.schema.DCLineData2TXmlType;
 import org.ieee.odm.schema.GroundingEnumType;
 import org.ieee.odm.schema.GroundingXmlType;
 import org.ieee.odm.schema.LineShortCircuitXmlType;
 import org.ieee.odm.schema.LoadflowGenDataXmlType;
 import org.ieee.odm.schema.NetworkCategoryEnumType;
 import org.ieee.odm.schema.OriginalDataFormatEnumType;
+import org.ieee.odm.schema.PSXfr3WDStabXmlType;
+import org.ieee.odm.schema.PSXfr3WShortCircuitXmlType;
 import org.ieee.odm.schema.PSXfrShortCircuitXmlType;
 import org.ieee.odm.schema.ShortCircuitBusEnumType;
 import org.ieee.odm.schema.ShortCircuitBusXmlType;
@@ -54,6 +57,8 @@ import org.ieee.odm.schema.ShortCircuitLoadDataXmlType;
 import org.ieee.odm.schema.ShortCircuitNetXmlType;
 import org.ieee.odm.schema.XformerConnectionXmlType;
 import org.ieee.odm.schema.XformrtConnectionEnumType;
+import org.ieee.odm.schema.Xfr3WDStabXmlType;
+import org.ieee.odm.schema.Xfr3WShortCircuitXmlType;
 import org.ieee.odm.schema.XfrShortCircuitXmlType;
 import org.ieee.odm.schema.YXmlType;
 import org.ieee.odm.schema.ZXmlType;
@@ -81,6 +86,7 @@ import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.acsc.XfrConnectCode;
 import com.interpss.core.acsc.adpter.AcscLine;
 import com.interpss.core.acsc.adpter.AcscXformer;
+import com.interpss.core.net.Branch;
 import com.interpss.dstab.DStabBus;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
@@ -163,8 +169,20 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 						aclfNetMapper.mapAclfBranchData(branch.getValue(), acscBranch, acscFaultNet);
 						setAcscBranchData(acscBraXml, acscBranch);
 					}
+					else if(branch.getValue() instanceof Xfr3WShortCircuitXmlType ||
+							branch.getValue() instanceof PSXfr3WShortCircuitXmlType){
+						Branch acscXfr = CoreObjectFactory.createAcsc3WXformer();
+						aclfNetMapper.mapAclfBranchData(branch.getValue(), acscXfr, acscFaultNet);
+						BranchXmlType acscBraXml = (BranchXmlType)branch.getValue();
+						setAcsc3WBranchData( acscBraXml, (Acsc3WBranch) acscXfr);
+					}
+					// skip DCline
+					else if(branch.getValue() instanceof DCLineData2TXmlType){
+						// just skip it
+					}
+					
 					else {
-						ipssLogger.severe( "Error: only acsc<Branch> could be used for SC study");
+						ipssLogger.severe( "Error: only acsc<Branch> could be used for SC study, branch ID: "+branch.getValue().getId());
 						noError = false;
 					}
 				}		
