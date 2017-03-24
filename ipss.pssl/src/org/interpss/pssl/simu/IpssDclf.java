@@ -48,9 +48,11 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.contingency.BranchOutageType;
+import com.interpss.core.aclf.contingency.BusbarOutageContingency;
 import com.interpss.core.aclf.contingency.Contingency;
 import com.interpss.core.aclf.contingency.MultiOutageContingency;
 import com.interpss.core.aclf.contingency.OutageBranch;
+import com.interpss.core.aclf.contingency.Xfr3WOutageContingency;
 import com.interpss.core.aclf.flow.FlowInterface;
 import com.interpss.core.aclf.flow.FlowInterfaceBranch;
 import com.interpss.core.common.visitor.IAclfNetBVisitor;
@@ -120,6 +122,19 @@ public class IpssDclf extends BaseDSL {
 		return new DclfAlgorithmDSL(algo);
 	}
 
+	/**
+	 * constructor - create a DclfAlgorithmDSL object by coping an existing
+	 * DclfAlgo object for parallel processing purpose
+	 * 
+	 * @param algo
+	 * @return
+	 */
+	public static DclfAlgorithmDSL copyAlgorithm(DclfAlgorithm algo) {
+		DclfAlgorithm newAlgo = DclfObjectFactory.createDclfAlgorithm(algo.getNetwork(), false);
+		newAlgo.setDclfSolver(algo.getDclfSolver());
+		newAlgo.setDclfCalculated(algo.isDclfCalculated());
+		return new DclfAlgorithmDSL(newAlgo);
+	}	
 	// ================ DclfAlgorithmDSL implementation =======================
 
 	/**
@@ -698,6 +713,30 @@ public class IpssDclf extends BaseDSL {
   			
   			return true;
   		}  		
+
+  		/**
+  		 * perform busbar -outage contingency analysis
+  		 * 
+  		 * @param cont the contingency object
+  		 * @param resultProcessor result processing function
+  		 * @return
+  		 */
+  		public boolean busbarOutageContingencyAanlysis(BusbarOutageContingency cont, BiConsumer<AclfBranch, Double> resultProcessor) {
+  			// TODO
+  			return true;
+  		}
+
+  		/**
+  		 * perform 3W xformer outage contingency analysis
+  		 * 
+  		 * @param cont the contingency object
+  		 * @param resultProcessor result processing function
+  		 * @return
+  		 */
+  		public boolean xfr3WOutageContingencyAanlysis(Xfr3WOutageContingency cont, BiConsumer<AclfBranch, Double> resultProcessor) {
+  			// TODO
+  			return true;
+  		}
   		
   		/*
   		 * Sensitivity analysis
