@@ -120,7 +120,9 @@ public class Ieee14_MultiCA_Sample {
 			}
 		});
 		
-		System.out.println("Start seq CA ----> ");
+		System.out.println("Total CA: " + points*2);
+		
+		System.out.println("\nStart seq CA ----> ");
 		
 	  	PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());		
 		net.getContingencyList().stream().forEach(cont -> {
@@ -128,7 +130,7 @@ public class Ieee14_MultiCA_Sample {
 		});
 		timer.logStd("Total time: ");
 		
-		System.out.println("\n\nStart paralle CA ----> ");
+		System.out.println("\nStart paralle CA ----> ");
 		
 	  	timer.start();		
 		net.getContingencyList().stream().parallel().forEach(cont -> {
