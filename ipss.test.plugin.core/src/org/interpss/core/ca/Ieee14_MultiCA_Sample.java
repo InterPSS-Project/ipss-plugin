@@ -48,7 +48,7 @@ import com.interpss.core.aclf.contingency.Xfr3WOutageContingency;
 import com.interpss.core.dclf.DclfAlgorithm;
 import com.interpss.core.dclf.common.ReferenceBusException;
 
-public class Ieee14_MultiCATest {
+public class Ieee14_MultiCA_Sample {
 	static int points = 100000;
 	/*
 	 * Define a contingency processing function
@@ -99,7 +99,9 @@ public class Ieee14_MultiCATest {
 		createContingencies(net);
 		algoDsl.setRefBus("Bus14");
 		
-		/*
+		/* To prepare for parallel CA, we need to compute all bus P-Angle sensitivity
+		 * used in the parallel CA, before starting actual CA analysis.
+		 * 
 		 * A this point we compute PAngle sensitivity for all buses except the Ref bus
 		 */
 		algoDsl.getAlgorithm().setCacheSensitivity(true);
