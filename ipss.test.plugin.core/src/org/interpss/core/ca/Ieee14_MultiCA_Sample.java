@@ -49,7 +49,7 @@ import com.interpss.core.dclf.DclfAlgorithm;
 import com.interpss.core.dclf.common.ReferenceBusException;
 
 public class Ieee14_MultiCA_Sample {
-	static int points = 100000;
+	static int points = 10;
 	/*
 	 * Define a contingency processing function
 	 */
@@ -93,6 +93,8 @@ public class Ieee14_MultiCA_Sample {
 		IpssCorePlugin.init();
 		
 		sample();
+		
+		sampleParallel();
 	}
 	
 	public static void sample() throws InterpssException, ReferenceBusException, IpssNumericException, PSSLException  {
@@ -102,25 +104,44 @@ public class Ieee14_MultiCA_Sample {
 		DclfAlgorithmDSL algoDsl = IpssDclf.createDclfAlgorithm(net)
 				.runDclfAnalysis();
 		
-		createContingencies(net);
-		algoDsl.setRefBus("Bus14");
+		createContingencies(net, 10);
+		createMultiOutageContingencies(net, 10);
+		
+		algoDsl.setRefBus("Bus14");  // for the multiple outage analysis case
+		
+		System.out.println("Total CA: " + points*2);
+		
+		net.getContingencyList().forEach(cont -> {
+			funcContProcessor.accept(cont, algoDsl.algo());
+		});
+	}
+
+	public static void sampleParallel() throws InterpssException, ReferenceBusException, IpssNumericException, PSSLException  {
+		AclfNetwork net = getSampleNet();
+        
+		// run Dclf
+		DclfAlgorithmDSL algoDsl = IpssDclf.createDclfAlgorithm(net)
+				.runDclfAnalysis();
+		
+		createContingencies(net, 100000);
 		
 		/* To prepare for parallel CA, we need to compute all bus P-Angle sensitivity
-		 * used in the parallel CA, before starting actual CA analysis.
-		 * 
-		 * A this point we compute PAngle sensitivity for all buses except the Ref bus
+		 * used in the parallel CA, before starting actual CA analysis. We need to make 
+		 * sure that there is no bus id duplication in the bus list, since we compute the
+		 * sensitivity in parallel
 		 */
 		algoDsl.getAlgorithm().setCacheSensitivity(true);
-		net.getBusList().forEach(bus -> {
+		net.getBusList().stream().parallel().forEach(bus -> {
 			try {
 				if (!bus.isRefBus())
 					algoDsl.getAlgorithm().getDclfSolver().getSenPAngle(bus.getId());
+						// the P-Angle sensitivity is cached at this point
 			} catch (InterpssException | IpssNumericException | ReferenceBusException e) {
 				e.printStackTrace();
 			}
 		});
 		
-		System.out.println("Total CA: " + points*2);
+		System.out.println("\nTotal CA: " + points);
 		
 		System.out.println("\nStart seq CA ----> ");
 		
@@ -139,11 +160,15 @@ public class Ieee14_MultiCA_Sample {
 		timer.logStd("Total time: ");		
 	}
 	
-	private static void createContingencies(AclfNetwork net) {
-		for ( int i = 0; i < points; i++)
+	private static void createContingencies(AclfNetwork net, int n) {
+		points = n;
+		for ( int i = 0; i < n; i++)
 			CoreObjectFactory.createContingency("CA"+i, "Bus5->Bus6(1)", BranchOutageType.OPEN, net);
-		
-		for ( int i = 0; i < points; i++)
+	}
+
+	private static void createMultiOutageContingencies(AclfNetwork net, int n) {
+		points = n;
+		for ( int i = 0; i < n; i++)
 			CoreObjectFactory.createMultiOutageContingency("MCA"+i, new String[] {"Bus1->Bus5(1)", "Bus3->Bus4(1)", "Bus6->Bus11(1)"}, 
 				                     BranchOutageType.OPEN, net);
 	}
