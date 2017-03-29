@@ -14,5 +14,6 @@
 	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/apache/commons-logging.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/EMF"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Hazelcast"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/python/py4j-0.10.4.jar"/>
 	<classpathentry kind="output" path="runtime"/>
 </classpath>
