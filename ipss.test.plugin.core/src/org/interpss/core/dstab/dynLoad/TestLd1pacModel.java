@@ -95,7 +95,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		assertTrue(Math.abs(sm.getAcMotorQTable().get("ACMotor_1@Bus1").get(20).value-0.10025)<1.0E-4);
 	}
 	
-	//@Test
+	@Test
 	public void test_Ld1pac()  throws InterpssException {
 		// create a machine in a two-bus network. The loadflow already converged
 		DStabilityNetwork net = create2BusSystem();
@@ -124,36 +124,44 @@ public class TestLd1pacModel extends TestSetupBase {
 		assertTrue( NumericUtil.equals(acLoad.getPosSeqEquivY(),y,1.0E-5));
 		
 		// check the calculated loadPQ
+		System.out.println("ac pq ="+acLoad.getLoadPQ().toString());
 		assertTrue(NumericUtil.equals(acLoad.getLoadPQ(),loadPQ,1.0E-5));
 		
 		 double v = 0.599;
 		 bus1.setVoltageMag(0.599);
 		 //Tstall = 0.033;
 		 acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER);
+		 acLoad.updateAttributes(false);
 		 acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER);
+		 acLoad.updateAttributes(false);
 		 acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER);
+		 acLoad.updateAttributes(false);
 		 acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER);
+		 acLoad.updateAttributes(false);
 		 acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER);
+		 acLoad.updateAttributes(false);
 		 acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER);
-		 acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER);
-		 
+		 acLoad.updateAttributes(false);
+
 		 // check the power before stalling
-		 System.out.println(acLoad.getLoadPQ());
+		 System.out.println("before stalling ac pq ="+acLoad.getLoadPQ());
 		 
 		 // check the current injection compesation under normal running condition
 		 Complex Iinj = acLoad.getLoadPQ().subtract(acLoad.getPosSeqEquivY().multiply(v*v).conjugate());
 		 Iinj = Iinj.divide(bus1.getVoltage()).conjugate().multiply(-1.0);
-		 assertTrue(acLoad.getCompensateCurInj().subtract(Iinj).abs()<1.0E-6);
+		 assertTrue(acLoad.getNortonCurInj().subtract(Iinj).abs()<1.0E-6);
 		 
 		 
 		 acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER);
+		 acLoad.updateAttributes(false);
 		 // check the stall status
-		 assertTrue(acLoad.getStage() ==1);
+		 assertTrue(acLoad.getStage() ==0);
 		 
-		 System.out.println(acLoad.getLoadPQ());
+		 System.out.println("after stalling ac pq ="+acLoad.getLoadPQ());
 		 
 		 // check the current injection compesation under stalling condition
-		 assertTrue(acLoad.getCompensateCurInj().abs()==0.0);
+		 System.out.println("current inject after stall ="+acLoad.getNortonCurInj());
+		 assertTrue(acLoad.getNortonCurInj().abs()<1.0E-8);
 		
 	}
 	
