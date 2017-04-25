@@ -901,15 +901,15 @@ public class IpssDclf extends BaseDSL {
   		 * 
   		 * @return
   		 */
-  		public DblBusValue largestGSF() { return largestGSF(false); }
+  		//public DblBusValue largestGSF() { return largestGSF(e); }
   		/**
   		 * For the defined monitoring branch, find a gen bus with largest shifting factor
   		 * 
   		 * @param senCacheOff true to turn sensitivity cache off
   		 * @return
   		 */
-  		public DblBusValue largestGSF(boolean senCacheOff) {
-		  	List<DblBusValue> list = largestGSFs(1, senCacheOff);
+  		public DblBusValue largestGSF() {
+		  	List<DblBusValue> list = largestGSFs(1);
   			return list.get(0); }
 
   		/**
@@ -918,7 +918,7 @@ public class IpssDclf extends BaseDSL {
   		 * @param size number of largest GSFs
   		 * @return
   		 */
-  		public List<DblBusValue> largestGSFs(int size) { return _largestGSFs(size, false, GSFOptions.LargestGSF); }
+  		//public List<DblBusValue> largestGSFs(int size) { return _largestGSFs(size, GSFOptions.LargestGSF); }
   		/**
   		 * For the monitoring branch, find a set of gen buses with largest shifting factors
   		 * 
@@ -926,7 +926,7 @@ public class IpssDclf extends BaseDSL {
   		 * @param opt
   		 * @return
   		 */
-  		public List<DblBusValue> largestGSFs(int size, GSFOptions opt)   throws ReferenceBusException { return _largestGSFs(size, false, opt); }
+  		public List<DblBusValue> largestGSFs(int size, GSFOptions opt)   throws ReferenceBusException { return _largestGSFs(size, opt); }
   		/**
   		 * For the monitoring branch, find a set of gen buses with largest shifting factors
   		 * 
@@ -934,8 +934,8 @@ public class IpssDclf extends BaseDSL {
   		 * @param senCacheOff
   		 * @return
   		 */
-  		public List<DblBusValue> largestGSFs(int size, boolean senCacheOff) {
-  			return _largestGSFs(size, senCacheOff, GSFOptions.LargestGSF); }
+  		public List<DblBusValue> largestGSFs(int size) {
+  			return _largestGSFs(size, GSFOptions.LargestGSF); }
   		
   		// power transfer analysis results 
   		
@@ -1088,13 +1088,13 @@ public class IpssDclf extends BaseDSL {
   			return list;
   		}
   		
-  		private List<DblBusValue> _largestGSFs(int size, boolean senCacheOff, GSFOptions opt) {
+  		private List<DblBusValue> _largestGSFs(int size, GSFOptions opt) {
   			this.injectionBusType(BusSenAnalysisType.SINGLE_BUS);
   			List<DblBusValue> list = new ArrayList<DblBusValue>();
   			for (int cnt = 0; cnt < size; cnt++)
   				list.add(new DblBusValue(0.0));
-		  	if (senCacheOff)
-		  		this.getAlgorithm().setCacheSensitivity(false);
+		  	//if (senCacheOff)
+		  	//	this.getAlgorithm().setCacheSensitivity(false);
   			for (AclfBus bus : this.getAclfNetwork().getBusList()) {
   				if (bus.isGen()) {
   					try {
@@ -1126,8 +1126,8 @@ public class IpssDclf extends BaseDSL {
   				}
   			}
   			
-		  	if (senCacheOff)
-		  		this.getAlgorithm().setCacheSensitivity(true);
+		  	//if (senCacheOff)
+		  	//	this.getAlgorithm().setCacheSensitivity(true);
 		  	
 		  	while (list.size() > 0 && Math.abs(list.get(list.size()-1).value) < DclfOutFunc.SmallBranchFlowPU)
 		  		list.remove(list.size()-1);

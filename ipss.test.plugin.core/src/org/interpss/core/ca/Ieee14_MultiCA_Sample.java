@@ -130,7 +130,7 @@ public class Ieee14_MultiCA_Sample {
 		 * sure that there is no bus id duplication in the bus list, since we compute the
 		 * sensitivity in parallel
 		 */
-		algoDsl.getAlgorithm().setCacheSensitivity(true);
+		//algoDsl.getAlgorithm().setCacheSensitivity(true);
 		net.getBusList().stream().parallel().forEach(bus -> {
 			try {
 				if (!bus.isRefBus())
