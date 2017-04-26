@@ -653,16 +653,19 @@ public class IpssDclf extends BaseDSL {
   			double baseMva = net.getBaseMva();
 
   			try {
-  				outageBranch(cont.getOutageBranch().getBranch());
+  				AclfBranch outageBranch = cont.getOutageBranch().getBranch();
+  				double[] LODFs = this.algo.lineOutageDFactors(outageBranch);
 
   				double outBanchPreFlow = cont.getOutageBranch().getBranch().getDclfFlow()*baseMva;		
   				for (AclfBranch branch : net.getBranchList()) {
+  					if(branch.isActive()){
   					double 	preFlow = branch.getDclfFlow()*baseMva,
-  							LODF = monitorBranch(branch).lineOutageDFactor(),
+  							LODF = LODFs[branch.getSortNumber()],
   							postFlow = preFlow + LODF * outBanchPreFlow;
   					resultProcessor.accept(branch, postFlow);
+  					}
   				}
-  			} catch (ReferenceBusException | PSSLException e) {
+  			} catch (ReferenceBusException e) {
   				ipssLogger.severe(e.toString());
   				return false;
   			}
