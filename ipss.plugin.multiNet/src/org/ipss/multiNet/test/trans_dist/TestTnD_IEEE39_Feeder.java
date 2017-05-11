@@ -827,7 +827,7 @@ public class TestTnD_IEEE39_Feeder {
 			  
 				dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 				dstabAlgo.setSimuStepSec(0.005d);
-				dstabAlgo.setTotalSimuTimeSec(10.00);
+				dstabAlgo.setTotalSimuTimeSec(3.00);
 				
 
 				//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
@@ -912,7 +912,7 @@ public class TestTnD_IEEE39_Feeder {
 				
 				timer.end();
 				System.out.println("time :"+timer.getDuration());
-				//System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+				System.out.println(sm.toCSVString(sm.getBusVoltTable()));
 				//System.out.println(sm.toCSVString(sm.getBusAngleTable()));
 				//System.out.println(sm.toCSVString(sm.getAcMotorPTable()));
 				//System.out.println(sm.toCSVString(sm.getAcMotorStateTable()));
@@ -950,8 +950,7 @@ public class TestTnD_IEEE39_Feeder {
 //				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//GenPm.csv",
 //						sm.toCSVString(sm.getMachPmTable()));
 		
-				FileUtil.writeText2File("D://IEEE39_TnD_Gen_spd.csv",
-				sm.toCSVString(sm.getMachSpeedTable()));
+//				FileUtil.writeText2File("D://IEEE39_TnD_Gen_spd.csv",sm.toCSVString(sm.getMachSpeedTable()));
 				
 		 }
 	
