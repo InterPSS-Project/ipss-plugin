@@ -50,6 +50,8 @@ public class TDMultiNetPowerflowAlgorithm {
 	protected double tolerance = 1.0E-4;
 	protected LoadflowAlgorithm transLfAlgo = null;
 	
+	protected double distTolerance = 1.0E-4;
+	
 	private Hashtable<String,Complex3x1> lastStepTransBoundaryBus3SeqVoltages = null;
 	
 	
@@ -130,7 +132,7 @@ public class TDMultiNetPowerflowAlgorithm {
 				sourceBus.setVoltage(new Complex(1.0,0));
 				
 				DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(distNet);
-
+				distPFAlgo.setTolerance(this.distTolerance);
 			
 				if(!distPFAlgo.powerflow()){
 					throw new Error("Distribution system power flow is NOT converged! # "+distNet.getId());
@@ -480,5 +482,9 @@ public class TDMultiNetPowerflowAlgorithm {
 	
     public LoadflowAlgorithm getTransLfAlgorithm(){
     	return this.transLfAlgo;
+    }
+    
+    public void setDistLfTolerance(double distTol){
+    	this.distTolerance = distTol;
     }
 }
