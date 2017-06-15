@@ -39,9 +39,11 @@ import org.ieee.odm.adapter.bpa.BPAAdapter;
 import org.ieee.odm.adapter.ge.GePslfAdapter;
 import org.ieee.odm.adapter.ieeecdf.IeeeCDFAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
+import org.ieee.odm.adapter.psse.parser.dynamic.tur_gov.PSSETurGovGASTParser;
 import org.ieee.odm.adapter.psse.v26.PSSEV26Adapter;
 import org.ieee.odm.adapter.pwd.PowerWorldAdapter;
 import org.ieee.odm.adapter.ucte.UCTE_DEFAdapter;
+import org.ieee.odm.common.ODMException;
 import org.ieee.odm.model.IODMModelParser;
 import org.ieee.odm.model.ODMModelParser;
 import org.ieee.odm.model.aclf.AclfModelParser;
@@ -52,6 +54,8 @@ import org.ieee.odm.model.dstab.DStabModelParser;
 import org.ieee.odm.schema.AnalysisCategoryEnumType;
 import org.ieee.odm.schema.NetworkCategoryEnumType;
 import org.interpss.CorePluginFunction;
+import org.interpss.adapter.psasp.odm.PSASPODMAdapter;
+import org.interpss.adapter.psasp.odm.PSASPODMAdapter.Version;
 import org.interpss.mapper.odm.ODMAclfNetMapper;
 import org.interpss.pssl.simu.BaseDSL;
 
@@ -83,7 +87,8 @@ public class IpssAdapter extends BaseDSL {
 			IEEE_ODM, 
 			BPA, 
 			PWD, 
-			Custom };
+			Custom,
+			PSASP};
 	
 	/**
 	 *  PSS/E version number 
@@ -401,6 +406,9 @@ public class IpssAdapter extends BaseDSL {
 						Constructor<?> constructor = klass.getConstructor();
 						adapter = (IODMAdapter)constructor.newInstance();
 					}
+					else if ( this.format == FileFormat.PSASP ) {
+						adapter = new PSASPODMAdapter(file1Name, Version.V6_x);
+					}
 				} catch (Exception e) {
 					psslMsg.sendErrorMsg("Cannot load adapter: " + e.toString());
 				}
@@ -489,6 +497,14 @@ public class IpssAdapter extends BaseDSL {
 						return null;
 					}
 					inStream.close();
+				}
+				else if(this.format == FileFormat.PSASP){
+					try {
+						((PSASPODMAdapter)getAdapter()).parseInputFile();
+					} catch (ODMException e) {
+						e.printStackTrace();
+					}
+					odmParser = adapter.getModel();
 				}
 				else {
 					getAdapter().parseInputFile(this.file1Name);
