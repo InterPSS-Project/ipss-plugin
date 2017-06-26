@@ -37,9 +37,9 @@ import org.ieee.odm.adapter.IODMAdapter;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.bpa.BPAAdapter;
 import org.ieee.odm.adapter.ge.GePslfAdapter;
+import org.ieee.odm.adapter.ge.GePslfAdapter.Version;
 import org.ieee.odm.adapter.ieeecdf.IeeeCDFAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
-import org.ieee.odm.adapter.psse.parser.dynamic.tur_gov.PSSETurGovGASTParser;
 import org.ieee.odm.adapter.psse.v26.PSSEV26Adapter;
 import org.ieee.odm.adapter.pwd.PowerWorldAdapter;
 import org.ieee.odm.adapter.ucte.UCTE_DEFAdapter;
@@ -54,8 +54,6 @@ import org.ieee.odm.model.dstab.DStabModelParser;
 import org.ieee.odm.schema.AnalysisCategoryEnumType;
 import org.ieee.odm.schema.NetworkCategoryEnumType;
 import org.interpss.CorePluginFunction;
-import org.interpss.adapter.psasp.odm.PSASPODMAdapter;
-import org.interpss.adapter.psasp.odm.PSASPODMAdapter.Version;
 import org.interpss.mapper.odm.ODMAclfNetMapper;
 import org.interpss.pssl.simu.BaseDSL;
 
@@ -88,7 +86,8 @@ public class IpssAdapter extends BaseDSL {
 			BPA, 
 			PWD, 
 			Custom,
-			PSASP};
+			// PSASP   it is private now
+			};
 	
 	/**
 	 *  PSS/E version number 
@@ -406,9 +405,11 @@ public class IpssAdapter extends BaseDSL {
 						Constructor<?> constructor = klass.getConstructor();
 						adapter = (IODMAdapter)constructor.newInstance();
 					}
+					/*
 					else if ( this.format == FileFormat.PSASP ) {
 						adapter = new PSASPODMAdapter(file1Name, Version.V6_x);
 					}
+					*/
 				} catch (Exception e) {
 					psslMsg.sendErrorMsg("Cannot load adapter: " + e.toString());
 				}
@@ -498,6 +499,7 @@ public class IpssAdapter extends BaseDSL {
 					}
 					inStream.close();
 				}
+				/* the PSASP adapter becomes private 
 				else if(this.format == FileFormat.PSASP){
 					try {
 						((PSASPODMAdapter)getAdapter()).parseInputFile();
@@ -506,6 +508,7 @@ public class IpssAdapter extends BaseDSL {
 					}
 					odmParser = adapter.getModel();
 				}
+				*/
 				else {
 					getAdapter().parseInputFile(this.file1Name);
 					
