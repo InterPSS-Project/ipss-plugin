@@ -101,7 +101,7 @@ public class TestMotorProtectionModel  extends TestSetupBase {
 			System.out.println("Running DStab simulation ...");
 		    while(dstabAlgo.getSimuTime()<=dstabAlgo.getTotalSimuTimeSec()){
 		    	System.out.println("\n time = "+dstabAlgo.getSimuTime());
-			     dstabAlgo.solveDEqnStep(true);
+			    dstabAlgo.solveDEqnStep(true);
 		    }
 			
 		}
@@ -159,7 +159,7 @@ public class TestMotorProtectionModel  extends TestSetupBase {
 		MotorElectronicRelayProtection eleRelay = new MotorElectronicRelayProtection(indMotor);
 		eleRelay.getTripVoltTimeCurve().getPoints().add(new Point(0.05,0.7));       // x-axis is time, y-axis is voltage
 		
-		eleRelay.getReconnectVoltTimeCurve().getPoints().add(new Point(0.016,1.0)); // x-axis is time, y-axis is voltage
+		eleRelay.getReconnectVoltTimeCurve().getPoints().add(new Point(0.016,0.9)); // x-axis is time, y-axis is voltage
 		indMotor.getProtectionControlList().add(eleRelay);
 
 		
@@ -218,6 +218,9 @@ public class TestMotorProtectionModel  extends TestSetupBase {
 		System.out.println("\n motor Real Power:\n"+sm.toCSVString(sm.getMotorPTable()));
 		System.out.println("\n motor Reactive Power:\n"+sm.toCSVString(sm.getMotorQTable()));
 		
+		
+		assertTrue(eleRelay.getReconnectStatus());
+		
 		MonitorRecord pRec0 = sm.getMotorPTable().get("IndMotor_1@Bus1").get(0);
 		
 		MonitorRecord pRec10 = sm.getMotorPTable().get("IndMotor_1@Bus1").get(10);
@@ -229,9 +232,9 @@ public class TestMotorProtectionModel  extends TestSetupBase {
 		assertTrue(Math.abs(pRec39.value)<1.0E-9);
 		
 		//the fault is cleared at 0.180, after 0.016 (1 cycle) delay, the motor is reconnected, at 0.20 second, the motor P should be > 0.0
-		MonitorRecord pRec42 = sm.getMotorPTable().get("IndMotor_1@Bus1").get(42);
-		// 0.2000,    0.41316,
-		assertTrue(pRec42.value>0.41);
+		MonitorRecord pRec43 = sm.getMotorPTable().get("IndMotor_1@Bus1").get(43);
+		// 0.2050,    0.41316,
+		assertTrue(pRec43.value>0.41);
 		
 	}
 	
@@ -768,7 +771,7 @@ public class TestMotorProtectionModel  extends TestSetupBase {
 		
 	}
 	
-	@Test
+	//@Test
 	public void test_single_induction_Motor_OverLoad_Contractor_EMS_relay_protection()  throws InterpssException {
 		DStabilityNetwork net = create2BusSystem();
 		assertTrue(net.isLfConverged());
@@ -925,6 +928,179 @@ public class TestMotorProtectionModel  extends TestSetupBase {
 		 */
 		assertTrue(pRec36.value-0.81 >0.0);
 		assertTrue(pRec37.value==0.0);
+		
+
+		
+		
+	}
+	
+	/*
+	 *  protections 1,2,4,5
+	 */
+	@Test
+	public void test_single_induction_Motor_Electronic_OverLoad_Contractor_EMS_relay_protection()  throws InterpssException {
+		DStabilityNetwork net = create2BusSystem();
+		assertTrue(net.isLfConverged());
+		
+		
+		EConstMachine mach =(EConstMachine) net.getDStabBus("Swing").getMachine("Mach1");
+		DStabBus bus1 = net.getDStabBus("Bus1");
+		
+		InductionMotor indMotor= DStabObjectFactory.createInductionMotor(bus1,"1");
+		
+
+		indMotor.setXm(3.0);
+		indMotor.setXl(0.07);
+		indMotor.setRa(0.032);
+		indMotor.setXr1(0.2);
+		indMotor.setRr1(0.01);
+		indMotor.setXr2(0.0);
+		indMotor.setRr2(0.0);
+		
+		indMotor.setLoadPercent(50);
+		indMotor.setMVABase(50);
+		indMotor.setH(0.3);
+		
+		// 
+		MotorElectronicRelayProtection eleRelay = new MotorElectronicRelayProtection(indMotor);
+		eleRelay.getTripVoltTimeCurve().getPoints().add(new Point(0.05,0.7));       // x-axis is time, y-axis is voltage
+		
+		eleRelay.getReconnectVoltTimeCurve().getPoints().add(new Point(0.016,0.95)); // x-axis is time, y-axis is voltage
+		indMotor.getProtectionControlList().add(eleRelay);
+
+		// 
+		MotorContactorControl contactor = new MotorContactorControl(indMotor);
+		
+		contactor.getTripVoltTimeCurve().getPoints().add(new Point(0.083,0.55));  // x-axis is time, y-axis is voltage
+
+		contactor.getReconnectVoltTimeCurve().getPoints().add(new Point(0.1,0.7)); // x-axis is time, y-axis is voltage
+		
+		indMotor.getProtectionControlList().add(contactor);
+		
+		///
+		MotorOverLoadProtection olProtection = new MotorOverLoadProtection(indMotor);
+		olProtection.getTripVoltTimeCurve().getPoints().add(new Point(0.33,0.6)); // x-axis is time, y-axis is voltage
+		olProtection.getTripVoltTimeCurve().getPoints().add(new Point(0.5, 0.7)); // x-axis is time, y-axis is voltage
+		olProtection.getTripVoltTimeCurve().getPoints().add(new Point(1.0, 0.8)); // x-axis is time, y-axis is voltage
+		//olProtection.getReconnectVoltTimeCurve().getPoints().add(new Point(0.016,1.0)); // x-axis is time, y-axis is voltage
+		
+		indMotor.getProtectionControlList().add(olProtection);
+		
+		/////
+		MotorEMSControl ems = new MotorEMSControl(indMotor);
+		
+		ems.getTripVoltTimeCurve().getPoints().add(new Point(0.083,0.0));  // x-axis is time, y-axis is voltage
+		ems.getTripVoltTimeCurve().getPoints().add(new Point(0.1,0.4)); // x-axis is time, y-axis is voltage
+		ems.getTripVoltTimeCurve().getPoints().add(new Point(0.166, 0.5)); // x-axis is time, y-axis is voltage
+		ems.getTripVoltTimeCurve().getPoints().add(new Point(0.25, 0.6)); // x-axis is time, y-axis is voltage
+		ems.getTripVoltTimeCurve().getPoints().add(new Point(0.5, 0.7)); // x-axis is time, y-axis is voltage
+	
+
+
+		ems.getReconnectVoltTimeCurve().getPoints().add(new Point(2.0,1.0)); // x-axis is time, y-axis is voltage
+		
+		indMotor.getProtectionControlList().add(ems);
+
+		
+		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
+		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
+		assertTrue(aclfAlgo.loadflow());
+		System.out.println(AclfOutFunc.loadFlowSummary(net));
+		
+		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+		dstabAlgo.setSimuStepSec(0.005d);
+		dstabAlgo.setTotalSimuTimeSec(2.3);
+
+		dstabAlgo.setRefMachine(net.getMachine("Swing-mach1"));
+		//net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1",net,SimpleFaultCode.GROUND_3P,0.1d,0.08),"3phaseFault@Bus1");
+        
+        
+		
+		StateMonitor sm = new StateMonitor();
+		sm.addGeneratorStdMonitor(new String[]{"Swing-mach1"});
+		sm.addBusStdMonitor(new String[]{"Bus1","Swing"});
+		sm.addDynDeviceMonitor(DynDeviceType.InductionMotor, "IndMotor_1@Bus1");
+		
+		// set the output handler
+		dstabAlgo.setSimuOutputHandler(sm);
+		dstabAlgo.setOutPutPerSteps(1);
+		
+		IpssLogger.getLogger().setLevel(Level.FINE);
+		
+		double vsag = 0.5;
+		double startTime = 0.1;
+		double duration = 0.08;
+		double endTime = startTime+duration;
+		if (dstabAlgo.initialization()) {
+			System.out.println(net.getMachineInitCondition());
+			
+			System.out.println("Running DStab simulation ...");
+		    while(dstabAlgo.getSimuTime()<=dstabAlgo.getTotalSimuTimeSec()){
+		    	System.out.println("\n time = "+dstabAlgo.getSimuTime());
+			     dstabAlgo.solveDEqnStep(true);
+			     
+			     
+			     if(dstabAlgo.getSimuTime()>=startTime && dstabAlgo.getSimuTime()<endTime){
+						mach.setE(vsag);
+					}
+				 else if (dstabAlgo.getSimuTime()>=endTime && dstabAlgo.getSimuTime()<endTime+0.1){
+					mach.setE(1.02);
+				 }
+//				 else if(dstabAlgo.getSimuTime()>0.3 && dstabAlgo.getSimuTime()<0.4){
+//					 mach.setE(0.5);
+//				 }
+//				 else if(dstabAlgo.getSimuTime()>=0.4){
+//					 mach.setE(0.5);
+//				 }
+			     
+			     
+		    }
+			
+		}
+		else{
+			System.out.println("Initialization error!");
+		}
+		/*
+		 * slip =0.009072990571330868
+           motor power =(0.7999999997203182, 0.49512907648490423)
+		 */
+		
+		System.out.println("slip ="+indMotor.getSlip());
+		System.out.println("motor power ="+indMotor.getLoadPQ());
+		
+		System.out.println("\n bus volt:\n"+sm.toCSVString(sm.getBusVoltTable()));
+		System.out.println("\n gen Pe:\n"+sm.toCSVString(sm.getMachPeTable()));
+		System.out.println("\n motor slip:\n"+sm.toCSVString(sm.getMotorSlipTable()));
+		System.out.println("\n motor Te:\n"+sm.toCSVString(sm.getMotorTeTable()));
+		//System.out.println("\n motor Tm:\n"+sm.toCSVString(sm.getMotorTmTable()));
+		System.out.println("\n motor Power:\n"+sm.toCSVString(sm.getMotorPTable()));
+		
+		MonitorRecord pRec0 = sm.getMotorPTable().get("IndMotor_1@Bus1").get(0);
+		
+		MonitorRecord pRec10 = sm.getMotorPTable().get("IndMotor_1@Bus1").get(10);
+		MonitorRecord pRec36 = sm.getMotorPTable().get("IndMotor_1@Bus1").get(36);
+		MonitorRecord pRec37 = sm.getMotorPTable().get("IndMotor_1@Bus1").get(37);
+		
+//		MonitorRecord pRec443 = sm.getMotorPTable().get("IndMotor_1@Bus1").get(443);
+//		MonitorRecord pRec444 = sm.getMotorPTable().get("IndMotor_1@Bus1").get(444);
+		
+		assertTrue(Math.abs(pRec0.value-pRec10.value)<1.0E-5);
+		
+		assertTrue(eleRelay.getReconnectStatus());
+		assertTrue(!contactor.getReconnectStatus());
+		assertTrue(!ems.getReconnectStatus());
+		assertTrue(!olProtection.getReconnectStatus());
+		
+		/* withstand the first dip but tripped for the second dip
+		 * time, power
+		 *  0.1800,    0.81210,
+            0.1850,    0.00000,
+         *  
+         *   0.3100,    0.00000,
+             0.3150,    0.41312,
+		 */
+//		assertTrue(pRec36.value-0.81 >0.0);
+//		assertTrue(pRec37.value==0.0);
 		
 
 		

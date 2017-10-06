@@ -16,9 +16,10 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.ipss.multiNet.algo.SubNetworkProcessor;
 import org.ipss.multiNet.algo.powerflow.TDMultiNetPowerflowAlgorithm;
+import org.ipss.multiNet.algo.powerflow.TposSeqD3PhaseMultiNetPowerflowAlgorithm;
 import org.ipss.threePhase.basic.Branch3Phase;
 import org.ipss.threePhase.basic.Bus3Phase;
-import org.ipss.threePhase.data_parser.OpenDSSDataParser;
+import org.ipss.threePhase.dataParser.opendss.OpenDSSDataParser;
 import org.ipss.threePhase.dynamic.DStabNetwork3Phase;
 import org.ipss.threePhase.odm.ODM3PhaseDStabParserMapper;
 import org.ipss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
@@ -46,7 +47,7 @@ import com.interpss.simu.SimuCtxType;
 public class TestTnD_IEEE39_123BusFeeder {
 	
 	@Test
-	public void test_IEEE39_IEEE123Feeder() throws InterpssException{
+	public void test_IEEE39_IEEE123Feeder_T3seq_D3phase_Powerflow() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
 		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
@@ -138,6 +139,119 @@ public class TestTnD_IEEE39_123BusFeeder {
 		    
 			
 		    TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm(dsNet,proc);
+		    
+		   // System.out.println(tdAlgo.getDistributionNetworkList().get(0).net2String());
+				 
+				 //System.out.println(tdAlgo.getTransmissionNetwork().net2String());
+			 LoadflowAlgorithm tAlgo = tdAlgo.getTransLfAlgorithm();
+			 tAlgo.setLfMethod(AclfMethod.NR);
+			 tAlgo.setTolerance(1E-4);
+			
+			 tAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
+			 //tAlgo.setNonDivergent(true);
+			 tAlgo.setInitBusVoltage(true); 
+			 // TODO initBusVoltage can be updated to set init to true for the first iteration, while
+			 // the remaining iterations can reuse last step solution results as the starting point, such that
+			 // simulation time for the transmission part can be reduced.
+			 
+			 tdAlgo.setDistLfTolerance(1.0E-5);
+			 
+			 assertTrue(tdAlgo.powerflow()); 
+	}
+	
+	//@Test
+	public void test_IEEE39_IEEE123Feeder_Tpos_D3phase_Powerflow() throws InterpssException{
+		IpssCorePlugin.init();
+		IpssCorePlugin.setLoggerLevel(Level.INFO);
+		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
+				"testData/IEEE39Bus/IEEE39bus_v30.raw",
+				"testData/IEEE39Bus/IEEE39bus_v30.seq",
+				//"testData/IEEE9Bus/ieee9_dyn_onlyGen_saturation.dyr"
+				"testData/IEEE39Bus/IEEE39bus.dyr"
+		}));
+		DStabModelParser parser =(DStabModelParser) adapter.getModel();
+		
+		//System.out.println(parser.toXmlDoc());
+
+		
+		
+		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
+		if (!new ODM3PhaseDStabParserMapper(IpssCorePlugin.getMsgHub())
+					.map2Model(parser, simuCtx)) {
+			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
+			return;
+		}
+		
+		
+	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
+	    
+	    
+        SubNetworkProcessor proc = new SubNetworkProcessor(dsNet);
+	    
+	    List<String> replaceBusIdList = new ArrayList<>(); 
+		List<String> interfaceBusIdList = new ArrayList<>(); 
+	        // add distribution systems
+		int replacedBusNum = 0;
+		int totalFeederNum = 0;
+		
+		// NOTE: it is not allowed to iterate the buslist and add a new bus to it;
+		// so need to save the Ids of targeted buses to a list first;
+		
+		//LIST: 1,
+		dsNet.getBus("Bus18").getContributeLoadList().get(0).setLoadCP(new Complex(0.15,0.04));
+	   
+		replaceBusIdList.add("Bus18");
+		
+//		for(DStabBus b:dsNet.getBusList()){
+//	        if(b.getArea().getNumber()==1){
+//	        	if(b.isActive() && b.isLoad() && (!b.isGen()) && b.getLoadP()>0.5 && b.getLoadP()<6){//&& 
+//	        		if(!b.getId().equals("Bus526") && !b.getId().equals("Bus562") && !b.getId().equals("Bus70")
+//	        				&& !b.getId().equals("Bus72")&& !b.getId().equals("Bus52")&& !b.getId().equals("Bus53"))
+//	        		replaceBusIdList.add(b.getId());
+//		              
+//	        	}
+//	         }
+//		   }
+		
+		
+
+		for (String id: replaceBusIdList){
+			
+			String[] interfaceIds = replaceLoadByFeeder(dsNet,id);
+            
+            proc.addSubNetInterfaceBranch(interfaceIds[0],false);
+            
+            interfaceBusIdList.add(interfaceIds[1]);
+            
+            replacedBusNum +=1;
+            
+            totalFeederNum+=Integer.valueOf(interfaceIds[2]);
+		}
+		    
+		    
+		System.out.println("replaced load bus num, total feeder num: "+replacedBusNum+","+totalFeederNum);
+				
+				 
+        proc.splitFullSystemIntoSubsystems(true);
+        
+        //proc.set3PhaseSubNetByBusId("Bus3");
+				 
+				 // currently, if a fault at transmission system is to be considered, then it should be set to 3phase
+				// proc.set3PhaseSubNetByBusId("Bus1");
+				//TODO this has to be manually identified
+		    for(String busId: interfaceBusIdList){
+		        proc.set3PhaseSubNetByBusId(busId);
+		    }
+		    
+		    System.out.println("distribution sys num:"+ (proc.getSubNetworkList().size()-1));
+		    // dist pf not converged 
+		    // subnet- Bus562_LVBus
+		    // subnet- 16
+		    // System.out.println("dist Net -34  :"+proc.getSubNetwork("SubNet-34").getBusList().get(0));
+		    
+			
+		    TposSeqD3PhaseMultiNetPowerflowAlgorithm tdAlgo = new TposSeqD3PhaseMultiNetPowerflowAlgorithm(dsNet,proc);
 		    
 		   // System.out.println(tdAlgo.getDistributionNetworkList().get(0).net2String());
 				 

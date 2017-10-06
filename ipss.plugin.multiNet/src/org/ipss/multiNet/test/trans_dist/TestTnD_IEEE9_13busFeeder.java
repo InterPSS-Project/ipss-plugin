@@ -51,6 +51,7 @@ import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
+import com.interpss.dstab.cache.StateMonitor.MonitorRecord;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
@@ -107,7 +108,7 @@ public class TestTnD_IEEE9_13busFeeder {
 		
 		for(DStabBus b:dsNet.getBusList()){
 	        if(b.getArea().getNumber()==1){
-	        	if(b.isActive() && b.isLoad() && (!b.isGen()) && b.getLoadP()>0.1 && b.getLoadP()<6){//&& 
+	        	if(b.isActive() && b.isLoad() && (!b.isGen()) && b.getLoadP()>0.1 && b.getLoadP()<6 ){//&& 
 	        		
 	        		replaceBusIdList.add(b.getId());
 		              
@@ -157,7 +158,7 @@ public class TestTnD_IEEE9_13busFeeder {
 				 //System.out.println(tdAlgo.getTransmissionNetwork().net2String());
 			 LoadflowAlgorithm tAlgo = tdAlgo.getTransLfAlgorithm();
 			 tAlgo.setLfMethod(AclfMethod.NR);
-			 tAlgo.setTolerance(1.0E-6);
+			 tAlgo.setTolerance(1.0E-4);
 			 tAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 			 //tAlgo.setNonDivergent(true);
 			 tAlgo.setInitBusVoltage(true); 
@@ -256,6 +257,24 @@ public class TestTnD_IEEE9_13busFeeder {
 			System.out.println(sm.toCSVString(sm.getBusPhAVoltTable()));
 			System.out.println(sm.toCSVString(sm.getBusPhBVoltTable()));
 			System.out.println(sm.toCSVString(sm.getBusPhCVoltTable()));
+			
+			
+			MonitorRecord volt_rec1 = sm.getBusVoltTable().get("Bus3").get(0);
+		  	MonitorRecord volt_rec51 = sm.getBusVoltTable().get("Bus3").get(50);
+		  	assertTrue(Math.abs(volt_rec1.getValue()-volt_rec51.getValue())<1.0E-3);
+		  	
+		  	
+			MonitorRecord angle_rec1 = sm.getBusAngleTable().get("Bus2").get(0);
+		  	MonitorRecord angle_rec51 = sm.getBusAngleTable().get("Bus2").get(50);
+		  	assertTrue(Math.abs(angle_rec1.getValue()-angle_rec51.getValue())<1.0E-1);
+		  	
+		  	
+			MonitorRecord voltPhA_rec1 = sm.getBusPhAVoltTable().get("Bus5_feeder_1_BusRG60").get(0);
+		  	MonitorRecord voltPhA_rec51 = sm.getBusPhAVoltTable().get("Bus5_feeder_1_BusRG60").get(50);
+		  	assertTrue(Math.abs(voltPhA_rec1.getValue()-voltPhA_rec51.getValue())<1.0E-3);
+		  	
+		  	
+			
 //			FileUtil.writeText2File("output/IEEE9_T_busVoltage.csv",sm.toCSVString(sm.getBusVoltTable()));
 //			FileUtil.writeText2File("output/IEEE9_TD_GenPe.csv",sm.toCSVString(sm.getMachPeTable()));
 //	        FileUtil.writeText2File("output/IEEE9_TD_GenPm.csv",sm.toCSVString(sm.getMachPmTable()));
