@@ -49,6 +49,7 @@ import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.cache.StateMonitor.DynDeviceType;
+import com.interpss.dstab.cache.StateMonitor.MonitorRecord;
 import com.interpss.dstab.dynLoad.InductionMotor;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
@@ -304,13 +305,13 @@ public class TestTnD_IEEE9_6BusFeeder {
 		  
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 			dstabAlgo.setSimuStepSec(0.005d);
-			dstabAlgo.setTotalSimuTimeSec(30.35);
+			dstabAlgo.setTotalSimuTimeSec(2);
 			
 
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 			
 			//applied the event
-			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",proc.getSubNetworkByBusId("Bus5"),SimpleFaultCode.GROUND_3P,new Complex(0.0),null,0.1d,0.07),"3phaseFault@Bus5");
+			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",proc.getSubNetworkByBusId("Bus5"),SimpleFaultCode.GROUND_3P,new Complex(0.0),null,1.0d,0.07),"3phaseFault@Bus5");
 	        
 			
 			StateMonitor sm = new StateMonitor();
@@ -398,38 +399,48 @@ public class TestTnD_IEEE9_6BusFeeder {
 			//System.out.println(sm.toCSVString(sm.getBusAngleTable()));
 			//System.out.println(sm.toCSVString(sm.getAcMotorPTable()));
 			//System.out.println(sm.toCSVString(sm.getAcMotorStateTable()));
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//busVoltage.csv",
-					sm.toCSVString(sm.getBusVoltTable()));
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//busPhAVoltage.csv",
-					sm.toCSVString(sm.getBusPhAVoltTable()));
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//busPhBVoltage.csv",
-					sm.toCSVString(sm.getBusPhBVoltTable()));
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//busPhCVoltage.csv",
-					sm.toCSVString(sm.getBusPhCVoltTable()));
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//busVoltage.csv",
-					sm.toCSVString(sm.getBusVoltTable()));
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//AcMotorState.csv",
-					sm.toCSVString(sm.getAcMotorStateTable()));
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//AcMotorP.csv",
-					sm.toCSVString(sm.getAcMotorPTable()));
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//AcMotorQ.csv",
-					sm.toCSVString(sm.getAcMotorQTable()));
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//IndMotorP.csv",
-					sm.toCSVString(sm.getMotorPTable()));
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//IndMotorSlip.csv",
-					sm.toCSVString(sm.getMotorSlipTable()));
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//IndMotorQ.csv",
-					sm.toCSVString(sm.getMotorQTable()));
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//IndMotorQ.csv",
-					sm.toCSVString(sm.getMotorQTable()));
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//pvGenP.csv",
-					sm.toCSVString(sm.getPvGenPTable()));
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//pvGenQ.csv",
-					sm.toCSVString(sm.getPvGenQTable()));
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//GenPe.csv",
-					sm.toCSVString(sm.getMachPeTable()));
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//GenPm.csv",
-					sm.toCSVString(sm.getMachPmTable()));
+			
+			MonitorRecord volt_rec1 = sm.getBusVoltTable().get("Bus36").get(0);
+		  	MonitorRecord volt_rec51 = sm.getBusVoltTable().get("Bus36").get(50);
+		  	assertTrue(Math.abs(volt_rec1.getValue()-volt_rec51.getValue())<1.0E-3);
+		  	
+		  	
+			MonitorRecord angle_rec1 = sm.getBusAngleTable().get("Bus32").get(0);
+		  	MonitorRecord angle_rec51 = sm.getBusAngleTable().get("Bus32").get(50);
+		  	assertTrue(Math.abs(angle_rec1.getValue()-angle_rec51.getValue())<1.0E-1);
+			
+//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//busVoltage.csv",
+//					sm.toCSVString(sm.getBusVoltTable()));
+//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//busPhAVoltage.csv",
+//					sm.toCSVString(sm.getBusPhAVoltTable()));
+//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//busPhBVoltage.csv",
+//					sm.toCSVString(sm.getBusPhBVoltTable()));
+//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//busPhCVoltage.csv",
+//					sm.toCSVString(sm.getBusPhCVoltTable()));
+//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//busVoltage.csv",
+//					sm.toCSVString(sm.getBusVoltTable()));
+//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//AcMotorState.csv",
+//					sm.toCSVString(sm.getAcMotorStateTable()));
+//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//AcMotorP.csv",
+//					sm.toCSVString(sm.getAcMotorPTable()));
+//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//AcMotorQ.csv",
+//					sm.toCSVString(sm.getAcMotorQTable()));
+//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//IndMotorP.csv",
+//					sm.toCSVString(sm.getMotorPTable()));
+//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//IndMotorSlip.csv",
+//					sm.toCSVString(sm.getMotorSlipTable()));
+//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//IndMotorQ.csv",
+//					sm.toCSVString(sm.getMotorQTable()));
+//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//IndMotorQ.csv",
+//					sm.toCSVString(sm.getMotorQTable()));
+//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//pvGenP.csv",
+//					sm.toCSVString(sm.getPvGenPTable()));
+//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//pvGenQ.csv",
+//					sm.toCSVString(sm.getPvGenQTable()));
+//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//GenPe.csv",
+//					sm.toCSVString(sm.getMachPeTable()));
+//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//GenPm.csv",
+//					sm.toCSVString(sm.getMachPmTable()));
 	}
 
 

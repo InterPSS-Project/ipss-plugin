@@ -17,6 +17,7 @@ import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.ipss.multiNet.algo.SubNetworkProcessor;
 import org.ipss.multiNet.algo.powerflow.TDMultiNetPowerflowAlgorithm;
+import org.ipss.multiNet.algo.powerflow.TposSeqD3PhaseMultiNetPowerflowAlgorithm;
 import org.ipss.threePhase.basic.Branch3Phase;
 import org.ipss.threePhase.basic.Bus3Phase;
 import org.ipss.threePhase.basic.Load3Phase;
@@ -41,8 +42,8 @@ import com.interpss.simu.SimuCtxType;
 
 public class TestTnDCombinedPowerflow {
 	
-	
-	@Test
+	// This test case is for modeling the transmission system in 3-sequence, while representing distribution systems in 3-phase
+//	@Test
 	public void test_TDPowerflow_IEEE9_feeder() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
@@ -105,7 +106,71 @@ public class TestTnDCombinedPowerflow {
 		 
 	}
 	
+	// This test case is for modeling the transmission system in positive-sequence (or single phase), while representing distribution systems in 3 phase
 	@Test
+	public void test_TposSeq_D3Phase_Powerflow_IEEE9_feeder() throws InterpssException{
+		IpssCorePlugin.init();
+		IpssCorePlugin.setLoggerLevel(Level.INFO);
+		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
+				"testData/IEEE9Bus/ieee9.raw",
+				"testData/IEEE9Bus/ieee9.seq",
+				//"testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr"
+				"testData/IEEE9Bus/ieee9_dyn.dyr"
+		}));
+		DStabModelParser parser =(DStabModelParser) adapter.getModel();
+		
+		//System.out.println(parser.toXmlDoc());
+
+		
+		
+		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
+		
+		// The only change to the normal data import is the use of ODM3PhaseDStabParserMapper
+		if (!new ODM3PhaseDStabParserMapper(IpssCorePlugin.getMsgHub())
+					.map2Model(parser, simuCtx)) {
+			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
+			return;
+		}
+		
+		
+	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
+	    
+	    dsNet.getBus("Bus5").getContributeLoadList().remove(0);
+	    dsNet.getBus("Bus5").setLoadCode(AclfLoadCode.NON_LOAD);
+	    
+	    //TODO adding a feeder
+	    
+	    addADistFeeder(dsNet); 
+	    
+	    
+	    //TODO use subnetworkprocessor to split the system
+		 SubNetworkProcessor proc = new SubNetworkProcessor(dsNet);
+		 proc.addSubNetInterfaceBranch("Bus5->Bus11(0)",false);
+		 proc.splitFullSystemIntoSubsystems(true);
+		 
+		 System.out.println("external boundary bus: "+proc.getExternalSubNetBoundaryBusIdList());
+		 
+		 System.out.println("internal boundary bus: "+proc.getInternalSubNetBoundaryBusIdList());
+		 
+	    
+	    
+	    //TODO create TDMultiNetPowerflowAlgo
+	    
+		 TposSeqD3PhaseMultiNetPowerflowAlgorithm tdAlgo = new TposSeqD3PhaseMultiNetPowerflowAlgorithm(dsNet,proc);
+		 
+	    
+		 assertTrue(tdAlgo.powerflow()); 
+		 
+		 //System.out.println(tdAlgo.getTransmissionNetwork().net2String());
+		 
+		 
+		 System.out.println(AclfOutFunc.loadFlowSummary(tdAlgo.getTransmissionNetwork()));
+		 System.out.println(DistPowerFlowOutFunc.powerflowResultSummary(tdAlgo.getDistributionNetworkList().get(0)));
+		 
+	}
+	
+//	@Test
 	public void test_PosSeqPowerflow_IEEE9_feeder() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);

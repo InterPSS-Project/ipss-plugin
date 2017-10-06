@@ -50,13 +50,14 @@ import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.cache.StateMonitor.DynDeviceType;
+import com.interpss.dstab.cache.StateMonitor.MonitorRecord;
 import com.interpss.dstab.dynLoad.InductionMotor;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
 public class TestTnD_IEEE9_8BusFeeder {
 	
-	//@Test
+	@Test
 	public void test_IEEE9_8Busfeeder_powerflow() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.WARNING);
@@ -352,7 +353,7 @@ public class TestTnD_IEEE9_8BusFeeder {
 		  
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 			dstabAlgo.setSimuStepSec(0.005d);
-			dstabAlgo.setTotalSimuTimeSec(5.00);
+			dstabAlgo.setTotalSimuTimeSec(1.50);
 			
 
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
@@ -447,10 +448,21 @@ public class TestTnD_IEEE9_8BusFeeder {
 			}
 			timer.end();
 			System.out.println("total sim time = "+timer.getDuration());
-			//System.out.println(sm.toCSVString(sm.getBusVoltTable()));
-			//System.out.println(sm.toCSVString(sm.getBusAngleTable()));
+			System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+			System.out.println(sm.toCSVString(sm.getBusAngleTable()));
 			//System.out.println(sm.toCSVString(sm.getAcMotorPTable()));
 			//System.out.println(sm.toCSVString(sm.getAcMotorStateTable()));
+			
+			
+			MonitorRecord volt_rec1 = sm.getBusVoltTable().get("Bus38").get(0);
+		  	MonitorRecord volt_rec51 = sm.getBusVoltTable().get("Bus38").get(50);
+		  	assertTrue(Math.abs(volt_rec1.getValue()-volt_rec51.getValue())<1.0E-3);
+		  	
+		  	
+			MonitorRecord angle_rec1 = sm.getBusAngleTable().get("Bus32").get(0);
+		  	MonitorRecord angle_rec51 = sm.getBusAngleTable().get("Bus32").get(50);
+		  	assertTrue(Math.abs(angle_rec1.getValue()-angle_rec51.getValue())<1.0E-1);
+			
 			
 			/*
 			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//busVoltage.csv",
@@ -672,7 +684,7 @@ public class TestTnD_IEEE9_8BusFeeder {
 			
 			StateMonitor sm = new StateMonitor();
 			sm.addGeneratorStdMonitor(new String[]{"Bus1-mach1","Bus2-mach1","Bus3-mach1"});
-			//sm.addBusStdMonitor(new String[]{"Bus38","Bus32","Bus28","Bus24","Bus22","Bus18","Bus14","Bus12","Bus8","Bus6", "Bus5","Bus4","Bus1"});
+			sm.addBusStdMonitor(new String[]{"Bus38","Bus32","Bus28","Bus24","Bus22","Bus18","Bus14","Bus12","Bus8","Bus6", "Bus5","Bus4","Bus1"});
 			sm.add3PhaseBusStdMonitor(new String[]{"Bus2","Bus10","Bus5"});
 			
 			
@@ -729,28 +741,22 @@ public class TestTnD_IEEE9_8BusFeeder {
 			//System.out.println(sm.toCSVString(sm.getAcMotorPTable()));
 			//System.out.println(sm.toCSVString(sm.getAcMotorStateTable()));
 			
+			MonitorRecord volt_rec1 = sm.getBusVoltTable().get("Bus38").get(0);
+		  	MonitorRecord volt_rec51 = sm.getBusVoltTable().get("Bus38").get(50);
+		  	assertTrue(Math.abs(volt_rec1.getValue()-volt_rec51.getValue())<1.0E-3);
+		  	
+		  	
+			MonitorRecord angle_rec1 = sm.getBusAngleTable().get("Bus32").get(0);
+		  	MonitorRecord angle_rec51 = sm.getBusAngleTable().get("Bus32").get(50);
+		  	assertTrue(Math.abs(angle_rec1.getValue()-angle_rec51.getValue())<1.0E-1);
+
 			
-//			FileUtil.writeText2File("D://powerlab MDrive//paper//PhD Project//three_phase_three_seq_for_T&D//ieee9_trans_busVoltage.csv",
-//					sm.toCSVString(sm.getBusVoltTable()));
-//			FileUtil.writeText2File("D://powerlab MDrive//paper//PhD Project//three_phase_three_seq_for_T&D//ieee9_genP.csv",
-//					sm.toCSVString(sm.getMachPeTable()));
-//			FileUtil.writeText2File("D://powerlab MDrive//paper//PhD Project//three_phase_three_seq_for_T&D//ieee9_genQ.csv",
-//					sm.toCSVString(sm.getMachQgenTable()));
-//			FileUtil.writeText2File("D://powerlab MDrive//paper//PhD Project//three_phase_three_seq_for_T&D//ieee9_genSpeed_0803.csv",
-//					sm.toCSVString(sm.getMachSpeedTable()));
-//			FileUtil.writeText2File("D://powerlab MDrive//paper//PhD Project//three_phase_three_seq_for_T&D//ieee9_genAngle_0803.csv",
-//					sm.toCSVString(sm.getMachAngleTable()));
-//			
-			
-//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//busVoltage.csv",
-//					sm.toCSVString(sm.getBusVoltTable()));
-//			
-			FileUtil.writeText2File("D://TnD_paper_dyn_IEEE9_busPhAVoltage.csv",
-					sm.toCSVString(sm.getBusPhAVoltTable()));
-			FileUtil.writeText2File("D://TnD_paper_dyn_IEEE9_busPhBVoltage.csv",
-					sm.toCSVString(sm.getBusPhBVoltTable()));
-			FileUtil.writeText2File("D://TnD_paper_dyn_IEEE9_busPhCVoltage.csv",
-					sm.toCSVString(sm.getBusPhCVoltTable()));
+//			FileUtil.writeText2File("D://TnD_paper_dyn_IEEE9_busPhAVoltage.csv",
+//					sm.toCSVString(sm.getBusPhAVoltTable()));
+//			FileUtil.writeText2File("D://TnD_paper_dyn_IEEE9_busPhBVoltage.csv",
+//					sm.toCSVString(sm.getBusPhBVoltTable()));
+//			FileUtil.writeText2File("D://TnD_paper_dyn_IEEE9_busPhCVoltage.csv",
+//					sm.toCSVString(sm.getBusPhCVoltTable()));
 
 			
 	

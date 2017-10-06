@@ -28,8 +28,8 @@ import com.interpss.dstab.DStabilityNetwork;
  * 
  * MultiNet3Ph3SeqDStabSimuHelper is specially designed for 3-phase/3-seq mulit-subnetwork TS simulation
  * 
- * The fault is limited to be applied within the three-phase modeling
- * subsystem, while all other subsystems are modeled in three-sequence.
+ * The unbalanced faults can only be applied within the three-phase modeling
+ * subsystem.
  * 
  * @author Qiuhua Huang
  *
