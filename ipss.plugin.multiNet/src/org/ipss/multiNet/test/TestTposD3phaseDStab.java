@@ -23,11 +23,13 @@ import org.ipss.threePhase.basic.Branch3Phase;
 import org.ipss.threePhase.basic.Bus3Phase;
 import org.ipss.threePhase.basic.Gen3Phase;
 import org.ipss.threePhase.basic.Load3Phase;
+import org.ipss.threePhase.basic.Phase;
 import org.ipss.threePhase.basic.Transformer3Phase;
 import org.ipss.threePhase.basic.impl.Load3PhaseImpl;
 import org.ipss.threePhase.dynamic.DStabNetwork3Phase;
 import org.ipss.threePhase.dynamic.algo.DynamicEventProcessor3Phase;
 import org.ipss.threePhase.dynamic.impl.DStabNetwork3phaseImpl;
+import org.ipss.threePhase.dynamic.model.impl.SinglePhaseACMotor;
 import org.ipss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.ipss.threePhase.powerflow.impl.DistPowerFlowOutFunc;
 import org.ipss.threePhase.util.ThreePhaseAclfOutFunc;
@@ -53,6 +55,7 @@ import com.interpss.dstab.cache.StateMonitor.DynDeviceType;
 import com.interpss.dstab.cache.StateMonitor.MonitorRecord;
 import com.interpss.dstab.devent.DynamicEvent;
 import com.interpss.dstab.devent.DynamicEventType;
+import com.interpss.dstab.dynLoad.InductionMotor;
 import com.interpss.dstab.mach.EConstMachine;
 import com.interpss.dstab.mach.MachineType;
 import com.interpss.dstab.mach.RoundRotorMachine;
@@ -121,12 +124,53 @@ public class TestTposD3phaseDStab {
 
 	}
 	
-	// test the basic (key) procedures first
-	@Test
-	public void testTransBusVoltDistTotalPower() throws InterpssException{
+	
+	//@Test
+	public void testTransBusVoltDistTotalPower_solve_dist_by_PF() throws InterpssException{
 		IpssCorePlugin.init();
 		 
 		DStabNetwork3Phase dsNet = create3BusSys();
+		
+		
+		
+		Bus3Phase bus1 = (Bus3Phase) dsNet.getDStabBus("Bus1");
+		
+		 SinglePhaseACMotor ac1 = new SinglePhaseACMotor(bus1,"1");
+  		ac1.setLoadPercent(25);
+  		ac1.setPhase(Phase.A);
+  		//ac1.setMVABase(20);
+  		bus1.getPhaseADynLoadList().add(ac1);
+  		
+  		
+  		
+  		SinglePhaseACMotor ac2 = new SinglePhaseACMotor(bus1,"2");
+  		ac2.setLoadPercent(25);
+  		ac2.setPhase(Phase.B);
+  		//ac2.setMVABase(20);
+  		bus1.getPhaseBDynLoadList().add(ac2);
+  		
+
+  		
+  		SinglePhaseACMotor ac3 = new SinglePhaseACMotor(bus1,"3");
+  		ac3.setLoadPercent(25);
+  		ac3.setPhase(Phase.C);
+  		//ac3.setMVABase(0.0);
+  		bus1.getPhaseCDynLoadList().add(ac3);
+		
+		
+//		InductionMotor indMotor= DStabObjectFactory.createInductionMotor("1");
+//		indMotor.setDStabBus(bus1);
+//		indMotor.setLoadPercent(50);
+//
+//		indMotor.setXm(3.0);
+//		indMotor.setXl(0.07);
+//		indMotor.setRa(0.032);
+//		indMotor.setXr1(0.3);
+//		indMotor.setRr1(0.01);
+//		
+//
+//		indMotor.setMVABase(50);
+//		indMotor.setH(1.0);
 		
 //		DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(dsNet);
 //		//distPFAlgo.orderDistributionBuses(true);
@@ -142,7 +186,7 @@ public class TestTposD3phaseDStab {
 		Bus3,1.0,0.0,1.0,4.188790204786391,1.0,2.0943951023931953,1.0000 + j0.0000  -0.5000 + j-0.86603  -0.5000 + j0.86603
 		 */
 		 
-		// TODO caused a bug if the power flow is run first, as BooleanFlag is changed by the power flow solution
+		//!!! NOTE: caused a bug if the power flow is run first, as BooleanFlag is changed by the power flow solution
 		 SubNetworkProcessor proc = new SubNetworkProcessor(dsNet);
 		 proc.addSubNetInterfaceBranch("Bus3->Bus2(0)",false);
 		 proc.splitFullSystemIntoSubsystems(true);
@@ -155,7 +199,7 @@ public class TestTposD3phaseDStab {
 		 
 	    
 	    
-	    //TODO create TDMultiNetPowerflowAlgo
+	    //create TDMultiNetPowerflowAlgo
 	    
 		 TposSeqD3PhaseMultiNetPowerflowAlgorithm tdAlgo = new TposSeqD3PhaseMultiNetPowerflowAlgorithm(dsNet,proc);
 		 
@@ -176,7 +220,7 @@ public class TestTposD3phaseDStab {
 		  
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 			dstabAlgo.setSimuStepSec(0.005d);
-			dstabAlgo.setTotalSimuTimeSec(0.2);
+			dstabAlgo.setTotalSimuTimeSec(5);
 			
 
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
@@ -247,19 +291,341 @@ public class TestTposD3phaseDStab {
 						 sm.addBusPhaseVoltageMonitorRecord( busId,dstabAlgo.getSimuTime(), ((Bus3Phase)proc.getSubNetworkByBusId(busId).getBus(busId)).get3PhaseVotlages());
 					}
 					
+					System.out.println("\n\n===================\nTime = "+dstabAlgo.getSimuTime());
 					dstabAlgo.solveDEqnStep(true);
 				
 					
 				}
 			}
-			System.out.println(sm.toCSVString(sm.getBusVoltTable()));
-			System.out.println(sm.toCSVString(sm.getBusAngleTable()));
-			System.out.println(sm.toCSVString(sm.getMachAngleTable()));
-			System.out.println(sm.toCSVString(sm.getMachSpeedTable()));
-			System.out.println(sm.toCSVString(sm.getBusPhAVoltTable()));
+//			System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+////			System.out.println(sm.toCSVString(sm.getBusAngleTable()));
+////			System.out.println(sm.toCSVString(sm.getMachAngleTable()));
+////			System.out.println(sm.toCSVString(sm.getMachSpeedTable()));
+//			System.out.println(sm.toCSVString(sm.getBusPhAVoltTable()));
 		
 		
 	}
+	
+	
+	//@Test
+	public void testTransTheveninEqvDistTotalPower_solve_dist_by_PF() throws InterpssException{
+		IpssCorePlugin.init();
+		 
+		DStabNetwork3Phase dsNet = create3BusSys();
+		
+		
+		
+		Bus3Phase bus1 = (Bus3Phase) dsNet.getDStabBus("Bus1");
+		
+		 SinglePhaseACMotor ac1 = new SinglePhaseACMotor(bus1,"1");
+  		ac1.setLoadPercent(25);
+  		ac1.setPhase(Phase.A);
+  		//ac1.setMVABase(20);
+  		bus1.getPhaseADynLoadList().add(ac1);
+  		
+  		
+  		
+  		SinglePhaseACMotor ac2 = new SinglePhaseACMotor(bus1,"2");
+  		ac2.setLoadPercent(25);
+  		ac2.setPhase(Phase.B);
+  		//ac2.setMVABase(20);
+  		bus1.getPhaseBDynLoadList().add(ac2);
+  		
+
+  		
+  		SinglePhaseACMotor ac3 = new SinglePhaseACMotor(bus1,"3");
+  		ac3.setLoadPercent(25);
+  		ac3.setPhase(Phase.C);
+  		//ac3.setMVABase(0.0);
+  		bus1.getPhaseCDynLoadList().add(ac3);
+		
+	
+		 
+		// NOTE: caused a bug if the power flow is run first, as BooleanFlag is changed by the power flow solution
+		 SubNetworkProcessor proc = new SubNetworkProcessor(dsNet);
+		 proc.addSubNetInterfaceBranch("Bus3->Bus2(0)",false);
+		 proc.splitFullSystemIntoSubsystems(true);
+		 
+		 proc.set3PhaseSubNetByBusId("Bus1");
+		 
+		 System.out.println("external boundary bus: "+proc.getExternalSubNetBoundaryBusIdList());
+		 
+		 System.out.println("internal boundary bus: "+proc.getInternalSubNetBoundaryBusIdList());
+		 
+	    
+	    
+	    //create TDMultiNetPowerflowAlgo
+	    
+		 TposSeqD3PhaseMultiNetPowerflowAlgorithm tdAlgo = new TposSeqD3PhaseMultiNetPowerflowAlgorithm(dsNet,proc);
+		 
+	    
+		 assertTrue(tdAlgo.powerflow()); 
+		 
+		 //System.out.println(tdAlgo.getTransmissionNetwork().net2String());
+		 
+		 
+		 System.out.println(AclfOutFunc.loadFlowSummary(tdAlgo.getTransmissionNetwork()));
+		 System.out.println(DistPowerFlowOutFunc.powerflowResultSummary(tdAlgo.getDistributionNetworkList().get(0)));
+		 
+		 //
+		 //=============dynamic simulation ===============================
+		 //
+		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+		    
+		  
+			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+			dstabAlgo.setSimuStepSec(0.005d);
+			dstabAlgo.setTotalSimuTimeSec(0.00);
+			
+
+			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
+			
+			//applied the event
+		   dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus2Dummy",proc.getSubNetworkByBusId("Bus2Dummy"),SimpleFaultCode.GROUND_3P,new Complex(0.0),null,0.01d,0.07),"3phaseFault@Bus5");
+	        
+			
+			StateMonitor sm = new StateMonitor();
+			sm.addGeneratorStdMonitor(new String[]{"Bus3-mach1"});
+			sm.addBusStdMonitor(new String[]{"Bus3","Bus2Dummy","Bus2","Bus1"});
+			
+			sm.add3PhaseBusStdMonitor(new String[]{"Bus2","Bus1"});
+//			 String idPrefix = "Bus2_feeder_1_";
+//			   DStabNetwork3Phase distNet_1 = (DStabNetwork3Phase) proc.getSubNetworkByBusId(idPrefix+"BusRG60");
+//			   
+//			  
+//			   
+//			 String[] feederIdAry = new String[13];
+//			 
+//			  int k = 0;
+//			   for(DStabBus dsBus:distNet_1.getBusList()){
+//				   if(dsBus.getId().startsWith(idPrefix)){
+//					   if(k<13){
+//						   feederIdAry[k] = dsBus.getId();
+//						   k++;
+//					   }
+//				   }
+//			   }
+//			   sm.add3PhaseBusStdMonitor(feederIdAry);
+			//1Phase AC motor extended_device_Id = "ACMotor_"+this.getId()+"@"+this.getParentBus().getId()+"_phase"+this.getPhase();
+			
+					
+			
+			// set the output handler
+			dstabAlgo.setSimuOutputHandler(sm);
+			dstabAlgo.setOutPutPerSteps(1);
+			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
+			
+			IpssLogger.getLogger().setLevel(Level.WARNING);
+			
+			PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+			
+	 
+			
+			MultiNet3Ph3SeqDStabSimuHelper  mNetHelper = new MultiNet3Ph3SeqDStabSimuHelper(dsNet,proc);
+			
+			TposseqD3phaseMultiNetDStabSolverImpl sol = new TposseqD3phaseMultiNetDStabSolverImpl(dstabAlgo, mNetHelper);
+			
+			//TODO this is the key setting for this test case
+			sol.setTheveninEquivFlag(true);
+			
+			// This setting is for choosing the algorithm for the distribution system part
+			sol.setDistNetSolvedByPowerflowFlag(true);
+			
+			dstabAlgo.setSolver( sol);
+			
+			dstabAlgo.setDynamicEventHandler(new MultiNet3PhPosSeqDynEventProcessor(mNetHelper));
+			
+			if (dstabAlgo.initialization()) {
+				//System.out.println(ThreePhaseAclfOutFunc.busLfSummary(dsNet));
+				
+				//System.out.println(dsNet.getMachineInitCondition());
+				
+				//System.out.println("Running 3Phase/3sequence DStab co-simulation ...");
+				timer.start();
+				//dstabAlgo.performSimulation();
+				
+				while(dstabAlgo.getSimuTime()<=dstabAlgo.getTotalSimuTimeSec()){
+					
+					for(String busId: sm.getBusPhAVoltTable().keySet()){
+						
+						 sm.addBusPhaseVoltageMonitorRecord( busId,dstabAlgo.getSimuTime(), ((Bus3Phase)proc.getSubNetworkByBusId(busId).getBus(busId)).get3PhaseVotlages());
+					}
+					
+					System.out.println("\n\n===================\nTime = "+dstabAlgo.getSimuTime());
+					dstabAlgo.solveDEqnStep(true);
+				
+					
+				}
+			}
+//			System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+////			System.out.println(sm.toCSVString(sm.getBusAngleTable()));
+////			System.out.println(sm.toCSVString(sm.getMachAngleTable()));
+////			System.out.println(sm.toCSVString(sm.getMachSpeedTable()));
+//			System.out.println(sm.toCSVString(sm.getBusPhAVoltTable()));
+		
+		
+	}
+	
+	@Test
+		public void testTransTheveninEqvDistTotalPower_solve_dist_by_dynSim() throws InterpssException{
+			IpssCorePlugin.init();
+			 
+			DStabNetwork3Phase dsNet = create3BusSys();
+			
+			
+			
+			Bus3Phase bus1 = (Bus3Phase) dsNet.getDStabBus("Bus1");
+			
+			 SinglePhaseACMotor ac1 = new SinglePhaseACMotor(bus1,"1");
+	  		ac1.setLoadPercent(25);
+	  		ac1.setPhase(Phase.A);
+	  		//ac1.setMVABase(20);
+	  		bus1.getPhaseADynLoadList().add(ac1);
+	  		
+	  		
+	  		
+	  		SinglePhaseACMotor ac2 = new SinglePhaseACMotor(bus1,"2");
+	  		ac2.setLoadPercent(25);
+	  		ac2.setPhase(Phase.B);
+	  		//ac2.setMVABase(20);
+	  		bus1.getPhaseBDynLoadList().add(ac2);
+	  		
+
+	  		
+	  		SinglePhaseACMotor ac3 = new SinglePhaseACMotor(bus1,"3");
+	  		ac3.setLoadPercent(25);
+	  		ac3.setPhase(Phase.C);
+	  		//ac3.setMVABase(0.0);
+	  		bus1.getPhaseCDynLoadList().add(ac3);
+			
+		
+			 
+			// NOTE: caused a bug if the power flow is run first, as BooleanFlag is changed by the power flow solution
+			 SubNetworkProcessor proc = new SubNetworkProcessor(dsNet);
+			 proc.addSubNetInterfaceBranch("Bus3->Bus2(0)",false);
+			 proc.splitFullSystemIntoSubsystems(true);
+			 
+			 proc.set3PhaseSubNetByBusId("Bus1");
+			 
+			 System.out.println("external boundary bus: "+proc.getExternalSubNetBoundaryBusIdList());
+			 
+			 System.out.println("internal boundary bus: "+proc.getInternalSubNetBoundaryBusIdList());
+			 
+		    
+		    
+		    //create TDMultiNetPowerflowAlgo
+		    
+			 TposSeqD3PhaseMultiNetPowerflowAlgorithm tdAlgo = new TposSeqD3PhaseMultiNetPowerflowAlgorithm(dsNet,proc);
+			 
+		    
+			 assertTrue(tdAlgo.powerflow()); 
+			 
+			 //System.out.println(tdAlgo.getTransmissionNetwork().net2String());
+			 
+			 
+			 System.out.println(AclfOutFunc.loadFlowSummary(tdAlgo.getTransmissionNetwork()));
+			 System.out.println(DistPowerFlowOutFunc.powerflowResultSummary(tdAlgo.getDistributionNetworkList().get(0)));
+			 
+			 //
+			 //=============dynamic simulation ===============================
+			 //
+			  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+			    
+			  
+				dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+				dstabAlgo.setSimuStepSec(0.005d);
+				dstabAlgo.setTotalSimuTimeSec(1.0);
+				
+
+				//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
+				
+				//applied the event
+			   double faultStartingTime = 0.0;
+			   double faultDuration = 0.07d;
+			   dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus2Dummy",proc.getSubNetworkByBusId("Bus2Dummy"),SimpleFaultCode.GROUND_3P,new Complex(0.0),null,faultStartingTime,faultDuration),"3phaseFault@Bus5");
+		        
+				
+				StateMonitor sm = new StateMonitor();
+				sm.addGeneratorStdMonitor(new String[]{"Bus3-mach1"});
+				sm.addBusStdMonitor(new String[]{"Bus3","Bus2Dummy","Bus2","Bus1"});
+				
+				sm.add3PhaseBusStdMonitor(new String[]{"Bus2","Bus1"});
+//				 String idPrefix = "Bus2_feeder_1_";
+//				   DStabNetwork3Phase distNet_1 = (DStabNetwork3Phase) proc.getSubNetworkByBusId(idPrefix+"BusRG60");
+//				   
+//				  
+//				   
+//				 String[] feederIdAry = new String[13];
+//				 
+//				  int k = 0;
+//				   for(DStabBus dsBus:distNet_1.getBusList()){
+//					   if(dsBus.getId().startsWith(idPrefix)){
+//						   if(k<13){
+//							   feederIdAry[k] = dsBus.getId();
+//							   k++;
+//						   }
+//					   }
+//				   }
+//				   sm.add3PhaseBusStdMonitor(feederIdAry);
+				//1Phase AC motor extended_device_Id = "ACMotor_"+this.getId()+"@"+this.getParentBus().getId()+"_phase"+this.getPhase();
+				
+						
+				
+				// set the output handler
+				dstabAlgo.setSimuOutputHandler(sm);
+				dstabAlgo.setOutPutPerSteps(1);
+				//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
+				
+				IpssLogger.getLogger().setLevel(Level.WARNING);
+				
+				PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+				
+		 
+				
+				MultiNet3Ph3SeqDStabSimuHelper  mNetHelper = new MultiNet3Ph3SeqDStabSimuHelper(dsNet,proc);
+				
+				TposseqD3phaseMultiNetDStabSolverImpl sol = new TposseqD3phaseMultiNetDStabSolverImpl(dstabAlgo, mNetHelper);
+				
+				//TODO this is the key setting for this test case
+				sol.setTheveninEquivFlag(true);
+				
+				// This setting is for choosing the algorithm for the distribution system part
+				sol.setDistNetSolvedByPowerflowFlag(false);
+				
+				dstabAlgo.setSolver( sol);
+				
+				dstabAlgo.setDynamicEventHandler(new MultiNet3PhPosSeqDynEventProcessor(mNetHelper));
+				
+				if (dstabAlgo.initialization()) {
+					//System.out.println(ThreePhaseAclfOutFunc.busLfSummary(dsNet));
+					
+					//System.out.println(dsNet.getMachineInitCondition());
+					
+					//System.out.println("Running 3Phase/3sequence DStab co-simulation ...");
+					timer.start();
+					//dstabAlgo.performSimulation();
+					
+					while(dstabAlgo.getSimuTime()<=dstabAlgo.getTotalSimuTimeSec()){
+						
+						for(String busId: sm.getBusPhAVoltTable().keySet()){
+							
+							 sm.addBusPhaseVoltageMonitorRecord( busId,dstabAlgo.getSimuTime(), ((Bus3Phase)proc.getSubNetworkByBusId(busId).getBus(busId)).get3PhaseVotlages());
+						}
+						
+						System.out.println("\n\n===================\nTime = "+dstabAlgo.getSimuTime());
+						dstabAlgo.solveDEqnStep(true);
+					
+						
+					}
+				}
+//				System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+////				System.out.println(sm.toCSVString(sm.getBusAngleTable()));
+////				System.out.println(sm.toCSVString(sm.getMachAngleTable()));
+////				System.out.println(sm.toCSVString(sm.getMachSpeedTable()));
+				System.out.println("\n\n bus phase A volt:\n"+ sm.toCSVString(sm.getBusPhAVoltTable()));
+				System.out.println("\n\n bus phase B volt:\n"+ sm.toCSVString(sm.getBusPhBVoltTable()));
+				System.out.println("\n\n bus phase C volt:\n"+ sm.toCSVString(sm.getBusPhCVoltTable()));
+		}
 	
 private DStabNetwork3Phase create3BusSys() throws InterpssException{
 		
@@ -283,47 +649,7 @@ private DStabNetwork3Phase create3BusSys() throws InterpssException{
 		load1.set3PhaseLoad(new Complex3x1(new Complex(1,0.1),new Complex(1,0.1),new Complex(1.0,0.1)));
 	
 		bus1.getThreePhaseLoadList().add(load1);
-  		
-  		// adapt the bus object to a swing bus object
-  		
-  		// create contribute generator
-  		// MVABase, power, sourceZ1/2/0
-  		
-//  		Gen3Phase gen1 = ThreePhaseObjectFactory.create3PGenerator("Gen1");
-//  		gen1.setMvaBase(100.0);
-//  		gen1.setDesiredVoltMag(1.04);
-//  		gen1.setGen(new Complex(0.7164,0.2710));
-//  		gen1.setPosGenZ(new Complex(0.003,0.2));
-//  		gen1.setNegGenZ(new Complex(0.003,0.2));
-//  		gen1.setZeroGenZ(new Complex(0,1.0E9));
-//  		
-//  		//add to contributed gen list
-//  		bus1.getContributeGenList().add(gen1);
-//  		bus1.setSortNumber(0);
-//  		
-//  		RoundRotorMachine mach = (RoundRotorMachine)DStabObjectFactory.
-//				createMachine("1", "Mach-1", MachineType.EQ11_ED11_ROUND_ROTOR, net, "Bus1", "Gen1");
-//  		
-//  		mach.setRating(100, UnitType.mVA, net.getBaseKva());
-//		mach.setRatedVoltage(16500.0);
-//		mach.calMultiFactors();
-//		mach.setH(5.0);
-//		mach.setD(0.00);
-//		mach.setRa(0.003);
-//		mach.setXl(0.14);
-//		mach.setXd(1.1);
-//		mach.setXq(1.08);
-//		mach.setXd1(0.23);
-//		mach.setTd01(5.6);
-//		mach.setXq1(0.23);
-//		mach.setTq01(1.5);
-//		mach.setXd11(0.2);
-//		mach.setTq011(0.05);
-//		mach.setXq11(0.2);
-//		mach.setTd011(0.03);
-//		mach.setSliner(2.0);  // no saturation
-//		mach.setSe100(0.0);   // no saturation
-//		mach.setSe120(0.0);		
+  			
   		
   		
   		
@@ -377,9 +703,10 @@ private DStabNetwork3Phase create3BusSys() throws InterpssException{
 		xfr12.setZ( new Complex( 0.0, 0.05 ));
 		xfr12.setZ0( new Complex(0.0, 0.05 ));
 		Transformer3Phase xfr = threePhaseXfrAptr.apply(xfr12);
+		
 		//TODO change for testing
 		xfr.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
-		xfr.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+		xfr.setFromConnectGroundZ(XfrConnectCode.DELTA, new Complex(0.0,0.0), UnitType.PU);
   		
 		
   		Branch3Phase bra23 = ThreePhaseObjectFactory.create3PBranch("Bus3", "Bus2", "0", net);
