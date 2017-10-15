@@ -17,12 +17,15 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
+import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.interpss.numeric.util.NumericUtil;
 import org.ipss.multiNet.equivalent.NetworkEquivalent;
 import org.ipss.threePhase.basic.Branch3Phase;
 import org.ipss.threePhase.basic.Bus3Phase;
+import org.ipss.threePhase.basic.Load3Phase;
+import org.ipss.threePhase.basic.impl.Load3PhaseImpl;
 import org.ipss.threePhase.dynamic.DStabNetwork3Phase;
 import org.ipss.threePhase.dynamic.model.DStabGen3PhaseAdapter;
 import org.ipss.threePhase.dynamic.model.DynLoadModel1Phase;
@@ -33,6 +36,7 @@ import org.ipss.threePhase.util.ThreePhaseObjectFactory;
 import com.interpss.common.datatype.Constants;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfGenCode;
@@ -74,6 +78,9 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 	
 	private boolean isTheveninEquiv = true;
 	private boolean isDistNetSolvedByPowerflow = true;
+	
+	//threshold controlling when constant power loads will be converted to constant impedance loads
+	private double loadModelVminpu = 0.85;
 
 	public TposseqD3phaseMultiNetDStabSolverImpl(DynamicSimuAlgorithm algo, AbstractMultiNetDStabSimuHelper mNetSimuHelper) {
 		super(algo, mNetSimuHelper);
@@ -168,8 +175,12 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 		if(this.isTheveninEquiv){
 		    calculateTransmissionTheveninEquiv();
 		    
-		    //TODO
-		    addTransNetTheveninEquivToDistYABCMatrix();
+		    
+		    if(isDistNetSolvedByPowerflow){
+		    	//TODO
+		    	throw new UnsupportedOperationException();
+		    } else
+		        addTransNetTheveninEquivToDistYABCMatrix();
 		}
 		
 		// prepare the current injection table for the transmission system
@@ -204,10 +215,18 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 		// whenever there is an event, need to update the [Zl] matrix of the boundary subsystem
 		if( hasDynEvent(time)){
 			
-			//TODO
+			
 			if(this.isTheveninEquiv){
+				calculateTransmissionTheveninEquiv();
 			   //step-2 update the distribution systems Y matrix with their transmission system Thevenin equivalents
-			   addTransNetTheveninEquivToDistYABCMatrix();
+			    if(this.isDistNetSolvedByPowerflow){
+			    	//TODO
+			    	//updateDistNetTheveninEquivImpedance();
+			    }
+			    else{
+			    	
+			    	addTransNetTheveninEquivToDistYABCMatrix();
+			    }
 			}
 		}
 	}
@@ -246,6 +265,27 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 		
 		
 		for(int i=0;i<maxIterationTimes;i++){ 
+			
+//			if(this.isTheveninEquiv){
+//				// step-1 calculate the transmission system Thevenin equivalent voltage (the impedance part is already calculated during initialization() or the beforeStep())
+//				updateTransNetTheveninEquivSource();
+//				
+//				// step-2 update the distribution systems current injection table
+//				for(DStabilityNetwork dsNet: this.distNetList){
+//					
+//					DStabNetwork3Phase dsNet3Ph = (DStabNetwork3Phase) dsNet;
+//					
+//					// get source bus Id
+//					List<String> boundaryList = subNetProcessor.getSubNet2BoundaryBusListTable().get(dsNet.getId());
+//					String sourceId = boundaryList.get(0);
+//					
+//				    // update the Norton equivalent current injection at the boundary
+//					
+//					dsNet3Ph.get3phaseCustomCurrInjTable().put(sourceId, this.distNetNortonEquivCurrentTable.get(sourceId));
+//					
+//					
+//				}
+//			}
 					
 				
 			// step-3 solve the distribution system
@@ -256,11 +296,22 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 				DStabNetwork3Phase dsNet3Ph = (DStabNetwork3Phase) dsNet;
 				
 				if(this.isTheveninEquiv){
-				    dsNet3Ph.solveNetEqn();
-				}
+					
+					// two simulation options here: 1) run power flow; 2) run dynamic simulation
+					
+					if(this.isDistNetSolvedByPowerflow)
+						throw new UnsupportedOperationException();
+					
+					else // run dynamic simulation 
+				       dsNet3Ph.solveNetEqn();
+					
+				} 
+				// When T->D passing the boundary bus voltages, only power flow for distribution systems will be considered
 				else{ 
+					
 					// use votlage source as equivalent, which means fixing the distribution source voltage in this step
 					//need to figure out the source bus, the corresponding transmission bus voltage, and update it before solving the network
+					
 					List<String> boundaryList = subNetProcessor.getSubNet2BoundaryBusListTable().get(dsNet3Ph.getId());
 					String sourceId = boundaryList.get(0);
 					
@@ -279,7 +330,11 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 					vabc.b_1 = volt;
 					
 					vabc = vabc.toABC();
-					System.out.println("dist net, source bus volt: "+dsNet.getId()+","+ vabc.toString());
+					
+					if(vabc ==null)
+						throw new Error("dist net, source bus volt is null: "+dsNet.getId());
+					
+					// System.out.println("dist net, source bus volt: "+dsNet.getId()+","+ vabc.toString());
 					
 					// update the distribution source bus voltage
 					Bus3Phase sourceBus3Ph = (Bus3Phase)dsNet3Ph.getBus(sourceId);
@@ -418,6 +473,19 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 				}
 		    	
 		 } // for subNetwork loop
+		  
+		  
+		  //TODO update the distribution bus equivalent loads based on the dynamic load power, 
+		  //if the source bus voltage is used for T&D interfacing
+		  for(DStabilityNetwork dsNet: this.distNetList){
+				
+				DStabNetwork3Phase dsNet3Ph = (DStabNetwork3Phase) dsNet;
+				
+				if(!this.isTheveninEquiv){
+					updateDistNetBusLoads(dsNet3Ph,loadModelVminpu);
+				}
+		  }
+		  
 			
 			
 		// back up the states	
@@ -533,6 +601,11 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 			}
 			
 			Complex zji= ymatrix.getX(bus.getSortNumber());
+			
+			//this is to fix a bug when zji = 0, which will cause issue when calculating the North current injection volt/zth, leading to infinite;
+			if(zji.abs()<1.0E-6)
+				zji = new Complex(0,1.0E-6);
+				
 			netEquiv.getComplexEqn().setAij(zji, 0, 0);  // zji = Vj/Ii
 			
 			Complex[][] zMatrix = new Complex[1][1];
@@ -560,6 +633,8 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 					 
 					 NetworkEquivalent equiv = e.getValue();
 					 Complex z = equiv.getMatrix()[0][0];
+					 System.out.println("----->add Thenvin impedance Z = "+z.toString());
+					 
 					 Complex y = new Complex(1.0).divide(z);
 					 Complex3x3 y3x3= new Complex3x3(y,y,y);
 					 
@@ -573,6 +648,13 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 						   distBoundaryBusId = busId+"Dummy";
 					   
 					  DStabNetwork3Phase distNet = (DStabNetwork3Phase) this.subNetProcessor.getSubNetworkByBusId(distBoundaryBusId);
+					  // need to re-calcuate Yabc before adding the new Z, in case Thevenin impedance has been added before;
+					  try {
+						distNet.formYMatrixABC();
+					} catch (Exception e1) {
+						
+						e1.printStackTrace();
+					} 
 					 // add the Yabc to the YMatrixABC
 					 int sortNum = distNet.getBus(distBoundaryBusId).getSortNumber();
 					 
@@ -594,14 +676,33 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 			 volt3ph.b_1 = volt;
 			 volt3ph = volt3ph.toABC();
 			 
-			 Complex3x1 currInj3ph = this.dist2Trans3PhaseCurInjTable.get(busId);
+			 //TODO the result is null
+//			 Complex3x1 currInj3ph = this.dist2Trans3PhaseCurInjTable.get(busId);
+//			 
+//			 NetworkEquivalent equiv = e.getValue();
+//			 
+//			 Complex z = equiv.getMatrix()[0][0];
+//			 Complex3x3 z3x3= new Complex3x3(z,z,z);
+//			 
+//			 Complex3x1 vth3ph = volt3ph.subtract(z3x3.multiply(currInj3ph));
+//			 
+//			 equiv.getSource3x1()[0] = vth3ph;
+			 
+			 //calculate the positive sequence Thevenin voltage based on positive sequence current injections
+			 
+			 Complex currInj = this.dist2TransEquivCurInjTable.get(busId);
 			 
 			 NetworkEquivalent equiv = e.getValue();
 			 
 			 Complex z = equiv.getMatrix()[0][0];
-			 Complex3x3 z3x3= new Complex3x3(z,z,z);
 			 
-			 Complex3x1 vth3ph = volt3ph.subtract(z3x3.multiply(currInj3ph));
+			 Complex vth_pos = volt.subtract(z.multiply(currInj));
+			 
+			 Complex3x1 vth3ph = new Complex3x1();
+			 
+			 vth3ph.b_1 = vth_pos;
+			 
+			 vth3ph = vth3ph.toABC();
 			 
 			 equiv.getSource3x1()[0] = vth3ph;
 			 
@@ -872,5 +973,198 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 		
 		
 	}
+	
+	// currently it only supports single-phase A/C motor load model, and assume all other loads represented by constant impedance
+	private boolean updateDistNetBusLoads(DStabNetwork3Phase distNet, double loadModelVminpu){
+		
+		//iterate over all dynamic load models, and update them by calling the nextStep() functions
+		
+		//obtain the dynamic load model total load, and update the bus total load accordingly.
+		  // Stotal = Smotor+ (1-Frac_dyn)*initialTotalLoad
+		  // here need to use the Bus3Phase.get3PhaseInitTotalLoad and getInit3PhaseVolages functions
+		
+		for( DStabBus b : distNet.getBusList()) {
+		
+			if(b.isActive()){
+				Bus3Phase bus3p = (Bus3Phase) b;
+				Complex3x1 load3P = new Complex3x1();
+				
+				double phaseADynLoadPercentage = 0.0;
+				double phaseBDynLoadPercentage = 0.0;
+				double phaseCDynLoadPercentage = 0.0;
+				
+				if(bus3p.getPhaseADynLoadList().size()>0){
+					for(DynLoadModel1Phase dynLdPhA: bus3p.getPhaseADynLoadList()){
+						//TODO need to check the unit
+					
+						load3P.a_0 = load3P.a_0.add(dynLdPhA.getLoadPQ());
+						
+						phaseADynLoadPercentage +=dynLdPhA.getLoadPercent();
+					}
+				}
+				
+				if(bus3p.getPhaseBDynLoadList().size()>0){
+					for(DynLoadModel1Phase dynLdPhB: bus3p.getPhaseBDynLoadList()){
+						
+						//TODO need to check the unit
+						load3P.b_1 = load3P.b_1.add(dynLdPhB.getLoadPQ());
+						
+						phaseBDynLoadPercentage +=dynLdPhB.getLoadPercent();
+						
+					}
+					
+				
+									
+				}
+				
+				if(bus3p.getPhaseCDynLoadList().size()>0){
+					for(DynLoadModel1Phase dynLdPhC: bus3p.getPhaseCDynLoadList()){
+											
+						//TODO need to check the unit
+					
+						load3P.c_2 = load3P.c_2.add(dynLdPhC.getLoadPQ());
+						phaseCDynLoadPercentage +=dynLdPhC.getLoadPercent();
+					}
+					
+				}
+				
+				if(bus3p.getThreePhaseDynLoadList().size()>0){
+					for(DynLoadModel3Phase dynLd3Ph: bus3p.getThreePhaseDynLoadList()){
+											
+						//TODO need to check the unit
+					
+						load3P= load3P.add(dynLd3Ph.getPower3Phase(UnitType.PU));
+						
+						phaseADynLoadPercentage +=dynLd3Ph.getLoadPercent();
+						phaseBDynLoadPercentage +=dynLd3Ph.getLoadPercent();
+						phaseCDynLoadPercentage +=dynLd3Ph.getLoadPercent();
+					}
+					
+				}
+				
+				
+				
+				if(bus3p.get3PhaseTotalLoad().absMax()>0.0 && (phaseADynLoadPercentage>0 ||
+						phaseBDynLoadPercentage>0||phaseCDynLoadPercentage>0)){// There are dynamic loads
+				    
+					Complex3x1 initNonDynLoad3P = bus3p.get3PhaseNetLoadResults();
+					
+					bus3p.getThreePhaseLoadList().clear();
+					
+					//TODO here assume all loads are constant power loads
+					bus3p.setLoadCode(AclfLoadCode.CONST_P);
+					
+			  		Load3Phase load1 = new Load3PhaseImpl();
+			  		
+//			  		System.out.println("3phase dyn load = "+load3P.toString());
+			  		
+			  		
+					load1.set3PhaseLoad(load3P.add(initNonDynLoad3P));// the new total load;
+					
+					load1.setVminpu(loadModelVminpu);
+					
+					bus3p.getThreePhaseLoadList().add(load1);
+					
+					
+				}
+				
+			} //end of if-active
+		} // end of for-loop
+		
+		return true;
+		
+	}
+	
+	private void addTheveninEquivImpedanceToDistNet() throws InterpssException {
+		// TODO Auto-generated method stub
+		 for (Entry<String, NetworkEquivalent> e : netEquivTable.entrySet()){
+					 
+					 String busId = e.getKey(); // transmission Boundary Bus Id
+					 
+					 NetworkEquivalent equiv = e.getValue();
+					 Complex z = equiv.getMatrix()[0][0];
+					
+					 Complex3x3 z120= new Complex3x3(z,z,z.multiply(2.5)); // assuming z0 = 2.5z1
+					 
+					 Complex3x3 zabc = z120.ToAbc();
+					 
+					 // find out the corresponding bus and the distribution system
+					 String distBoundaryBusId = "";
+					 
+					   if(busId.contains("Dummy")){
+						   distBoundaryBusId = busId.replace("Dummy", "");
+					   }
+					   else
+						   distBoundaryBusId = busId+"Dummy";
+					  
+					   
+					  DStabNetwork3Phase distNet = (DStabNetwork3Phase) this.subNetProcessor.getSubNetworkByBusId(distBoundaryBusId);
+					  
+					  
+					  DStabBus distBoundaryBus = distNet.getBus(distBoundaryBusId);
+					  
+					  distBoundaryBus.setGenCode(AclfGenCode.NON_GEN); // reset the boundary bus to a non-gen
+					  
+					   // define the Thevenin equivalent bus
+					  String theveinEquivBusId = distBoundaryBusId+"-Thevenin";
+					  
+			
+					  
+				 	  Bus3Phase theveninBus = ThreePhaseObjectFactory.create3PDStabBus(theveinEquivBusId, distNet);
+				  		// set bus name and description attributes
+				 	  theveninBus.setAttributes("Thevein Bus of "+distNet.getId(), "");
+				  		// set bus base voltage 
+				 	  theveninBus.setBaseVoltage(distBoundaryBus.getBaseVoltage());
+				  		// set bus to be a swing bus
+				 	  theveninBus.setGenCode(AclfGenCode.SWING);
+					
+				 	 // add a new branch for representing the Thevenin equivalent
+				 		
+				 		Branch3Phase bra23 = ThreePhaseObjectFactory.create3PBranch(theveinEquivBusId, distBoundaryBusId, "0", distNet);
+						bra23.setBranchCode(AclfBranchCode.LINE);
+						bra23.setZ( z);
+						bra23.setHShuntY(new Complex(0, 0.));
+						bra23.setZ0( z.multiply(2.5));
+						bra23.setHB0(0.0);
+		 }
+
+	}
+	
+	private void updateDistNetTheveninEquivImpedance() {
+		// TODO Auto-generated method stub
+		 for (Entry<String, NetworkEquivalent> e : netEquivTable.entrySet()){
+					 
+					 String busId = e.getKey(); // transmission Boundary Bus Id
+					 
+					 NetworkEquivalent equiv = e.getValue();
+					 Complex z = equiv.getMatrix()[0][0];
+					
+					 Complex3x3 z120= new Complex3x3(z,z,z.multiply(2.5)); // assuming z0 = 2.5z1
+					 
+					 Complex3x3 zabc = z120.ToAbc();
+					 
+					 // find out the corresponding bus and the distribution system
+					 String distBoundaryBusId = "";
+					 
+					   if(busId.contains("Dummy")){
+						   distBoundaryBusId = busId.replace("Dummy", "");
+					   }
+					   else
+						   distBoundaryBusId = busId+"Dummy";
+					  
+					   // define the Thevenin equivalent bus
+					  String theveinEquivBusId = distBoundaryBusId+"-Thevenin";
+					  
+					  //
+					   
+					  DStabNetwork3Phase distNet = (DStabNetwork3Phase) this.subNetProcessor.getSubNetworkByBusId(distBoundaryBusId);
+					  
+			//TODO
+					
+		 }
+	}
+	
+	
+	
 
 }
