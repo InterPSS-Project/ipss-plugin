@@ -12,6 +12,7 @@ import org.ipss.threePhase.dynamic.DStabNetwork3Phase;
 
 import com.interpss.common.msg.IpssMessage;
 import com.interpss.core.acsc.AcscBus;
+import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.dstab.DStabilityNetwork;
@@ -78,6 +79,12 @@ public class MultiNet3Ph3SeqDynEventProcessor extends
 										e.printStackTrace();
 									}
 						         }
+						         else if (faultSubNet instanceof DStabNetwork3Phase && fault.getFaultCode()==SimpleFaultCode.GROUND_3P){
+						        	 faultSubNet.formYMatrix4DStab();
+						        	 faultSubNet.formYMatrix(SequenceCode.NEGATIVE,false);
+						        	 faultSubNet.formYMatrix(SequenceCode.ZERO,false);
+						         }
+						         
 								else{
 						        	 throw new UnsupportedOperationException(" The faulted subnetwork is not a DStabNetwork3Phase type!");
 					              }
@@ -181,6 +188,21 @@ public class MultiNet3Ph3SeqDynEventProcessor extends
 		                        	net.getYMatrixABC().addToA(yfaultABC, i, i);
 		                        	
 								}
+							}
+							// apply the fault to a three-sequence modeling network, only GROUND_3P is allowed.
+							else{ 
+								if(fault.getFaultCode()==SimpleFaultCode.GROUND_3P){
+									net.getYMatrix().addToA(ylarge, i, i);
+									
+									net.getNegSeqYMatrix().addToA(ylarge, i, i);
+									
+									net.getZeroSeqYMatrix().addToA(ylarge, i, i);
+									
+								}
+								else
+									throw new UnsupportedOperationException();
+								
+								
 							}
 							
 						}

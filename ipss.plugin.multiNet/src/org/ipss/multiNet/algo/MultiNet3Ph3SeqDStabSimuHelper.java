@@ -461,7 +461,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 	   }
 	 
 
-	private Hashtable<String, Complex> solveSeqNetwork(DStabilityNetwork subnet, SequenceCode seq,Hashtable<String, Complex> seqCurInjTable){
+	public Hashtable<String, Complex> solveSeqNetwork(DStabilityNetwork subnet, SequenceCode seq,Hashtable<String, Complex> seqCurInjTable){
 		
 		 Hashtable<String, Complex>  busVoltResults = new  Hashtable<>();
 		// solve the Ymatrix
@@ -550,7 +550,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 		return busVoltResults;
 	}
 	
-	private Hashtable<String, Complex> getSeqCurInjTable(Hashtable<String, Complex3x1> curInjTable, SequenceCode seq){
+	public Hashtable<String, Complex> getSeqCurInjTable(Hashtable<String, Complex3x1> curInjTable, SequenceCode seq){
 		
 		Hashtable<String, Complex> seqCurInjTable = new Hashtable<>();
 		  if(curInjTable !=null){

@@ -124,7 +124,12 @@ public class NetworkEquivUtil {
 		return netEquiv;
 		
 	}
-	
+	/**
+	 * Return three seq thevein equivalent impedance matrices stored in "120" sequence
+	 * @param net
+	 * @param boundaryBusIdList
+	 * @return
+	 */
 	public static  NetworkEquivalent cal3SeqNetworkTheveninEquiv(DStabilityNetwork net, List<String> boundaryBusIdList){
 		
 		// calculate three seq thevein equivalent impedance matrices
@@ -286,7 +291,7 @@ public static  NetworkEquivalent cal3PhaseNetworkTheveninEquiv(DStabNetwork3Phas
 				
 			default:
 				     if(net.getYMatrix() == null)
-					    seqYmatrixEqn = net.formYMatrix(SequenceCode.POSITIVE,true);
+					    seqYmatrixEqn = net.formYMatrix4DStab(); // include dynamic load and gen equivalent in the Ymatrix
 				     else{
 				    	 seqYmatrixEqn = net.getYMatrix();
 				    	 
