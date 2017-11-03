@@ -95,6 +95,10 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
 	private String lowBusId = "_lowBus";
 	private String loadBusId = "_loadBus";
 	
+	private double VloadBusMin = 0.95;
+	// if this is true, when volt_loadbbus<0.95 during initializing the model, adjust the xfr tap first before trying to reduce the equivalent feeder impedance
+	// otherwise, adjust the impedance first
+	private boolean initModelAdjustTapFirst = false; 
 	
 	
 	public DynLoadCMPLDWImpl(){
@@ -288,6 +292,8 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
   	     
   	    distXfr.setFromTurnRatio(1.0);
   	    distXfr.setToTurnRatio(tap);
+  	    
+  	    double tap0 = tap;
         
         //4. forward step network solution to obtain the voltage at low and load buses 
   	     
@@ -317,21 +323,148 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
   	     Complex VloadBus = VlowBus.subtract(this.distFdr.getZ().multiply(ItoloadBus));
   	     
   	     // check if the Vload bus larger than 0.95 pu
-  	     if(VloadBus.abs() <0.95){
-  	    	 if(VlowBus.abs()> 0.95){
-  	    		 
-  	    		 while (VloadBus.abs() < 0.95){ // TODO this approach can be updated to find VloadBus = 0.95
-	  	    		Complex newZ = this.distFdr.getZ().multiply(0.5);
-	  	    		VloadBus = VlowBus.subtract(newZ.multiply(ItoloadBus));
-	  	    		this.distFdr.setZ(newZ);
-  	    		 }
-  	    		 
+  	     
+  	     if(VloadBus.abs() <VloadBusMin){
+  	    	 
+  	    	 // this is the default setting, adjusting the equivalent feeder impedance first;
+  	    	 if(!this.initModelAdjustTapFirst){
+	  	    	 VloadBus = reduceZfdrToIncreaseVloadBus(VlowBus, ItoloadBus, VloadBus);
   	    	 }
+  	    	 
+  	        // this is an improved initialization approach, adjusting the Tap first, then adjust the feeder impedance if necessary
   	    	 else{
-  	    		 IpssLogger.ipssLogger.severe("The calculated voltage of load bus connected to " + this.parentBus.getId()+ " is too low (< 0.95, and voltage at the low bus is :"+VlowBus.abs());
+  	    		 if(tap <Tmax){
+  	    			long tapNumMax = Math.round((Tmax-1)/tap_step);
+  	    			
+  	    			tap = 1+tapNumMax*tap_step;
+  	    			
+  	    			distXfr.setToTurnRatio(tap);
+  	    	        
+  	    	        //4. forward step network solution to obtain the voltage at low and load buses 
+  	    	  	     
+  	    	  	     // Vhs - voltage at the high voltage side of the transformer
+  	    	  	     // Vhs = Vlf- i*Xxfr_pu*Tfixhs^2*Ilf_pu
+  	    	  	     Vhs =  VtransBus.subtract(this.distXfr.getZ().multiply(Math.pow(Tfixhs, 2)).multiply(ItransBus));
+  	    	         
+  	    	  	     
+  	    	  	     // VlowBus - voltage at the low voltage side of the transformer
+  	    	  	     
+  	    	  	     VlowBus = Vhs.multiply(Tfixls*tap/Tfixhs);
+  	    	  	    
+  	    	  	     
+  	    	  	     // ITolowBus - current following from the xfr into the low bus
+  	    	  	     
+  	    	  	     ItolowBus = ItransBus.multiply(Tfixhs/tap/Tfixls);
+  	    	  	     
+  	    	  	     // IBss - Bss charging current
+  	    	  	     
+  	    	  	     IBss = VlowBus.multiply(lowBus.getShuntY());
+  	    	  	     
+  	    	  	     // ItoloadBus - current flowing into the load bus
+  	    	  	     
+  	    	  	     ItoloadBus = ItolowBus.subtract(IBss);
+  	    	  	     
+  	    	  	     // VloadBus - voltage at the load bus
+  	    	  	     VloadBus = VlowBus.subtract(this.distFdr.getZ().multiply(ItoloadBus));
+  	    	  	    
+  	    	  	     if(VloadBus.abs()>=VloadBusMin){
+  	    	  	    	 // there are some possibilities to further adjust the Tap
+  	    	  	    	 //long newTapNumUp = tapNumMax;
+  	    	  	    	 long newTapNumLow = Math.round((tap0-1)/tap_step);
+  	    	  	    	 for(long newTapNum =tapNumMax;newTapNum>= newTapNumLow; newTapNum--){
+  	    	  	    		 
+  	    	  	    		
+	  	    	  	    	tap = 1+newTapNum*tap_step;
+	  	  	    			
+	  	  	    			distXfr.setToTurnRatio(tap);
+	  	  	    	        
+	  	  	    	        //4. forward step network solution to obtain the voltage at low and load buses 
+	  	  	    	  	     
+	  	  	    	  	     // Vhs - voltage at the high voltage side of the transformer
+	  	  	    	  	     // Vhs = Vlf- i*Xxfr_pu*Tfixhs^2*Ilf_pu
+	  	  	    	  	     Vhs =  VtransBus.subtract(this.distXfr.getZ().multiply(Math.pow(Tfixhs, 2)).multiply(ItransBus));
+	  	  	    	         
+	  	  	    	  	     
+	  	  	    	  	     // VlowBus - voltage at the low voltage side of the transformer
+	  	  	    	  	     
+	  	  	    	  	     VlowBus = Vhs.multiply(Tfixls*tap/Tfixhs);
+	  	  	    	  	    
+	  	  	    	  	     
+	  	  	    	  	     // ITolowBus - current following from the xfr into the low bus
+	  	  	    	  	     
+	  	  	    	  	     ItolowBus = ItransBus.multiply(Tfixhs/tap/Tfixls);
+	  	  	    	  	     
+	  	  	    	  	     // IBss - Bss charging current
+	  	  	    	  	     
+	  	  	    	  	     IBss = VlowBus.multiply(lowBus.getShuntY());
+	  	  	    	  	     
+	  	  	    	  	     // ItoloadBus - current flowing into the load bus
+	  	  	    	  	     
+	  	  	    	  	     ItoloadBus = ItolowBus.subtract(IBss);
+	  	  	    	  	     
+	  	  	    	  	     // VloadBus - voltage at the load bus
+	  	  	    	  	     VloadBus = VlowBus.subtract(this.distFdr.getZ().multiply(ItoloadBus));
+	  	  	    	  	     
+	  	  	    	  	     // update the upper and lower bounds
+	  	  	    	  	     if(VloadBus.abs()<VloadBusMin){
+	  	  	    	  	            newTapNum = newTapNum+1;
+			  	  	    	  	    tap = 1+newTapNum*tap_step;
+			  	  	    			
+			  	  	    			distXfr.setToTurnRatio(tap);
+			  	  	    	        
+			  	  	    	        //4. forward step network solution to obtain the voltage at low and load buses 
+			  	  	    	  	     
+			  	  	    	  	     // Vhs - voltage at the high voltage side of the transformer
+			  	  	    	  	     // Vhs = Vlf- i*Xxfr_pu*Tfixhs^2*Ilf_pu
+			  	  	    	  	     Vhs =  VtransBus.subtract(this.distXfr.getZ().multiply(Math.pow(Tfixhs, 2)).multiply(ItransBus));
+			  	  	    	         
+			  	  	    	  	     
+			  	  	    	  	     // VlowBus - voltage at the low voltage side of the transformer
+			  	  	    	  	     
+			  	  	    	  	     VlowBus = Vhs.multiply(Tfixls*tap/Tfixhs);
+			  	  	    	  	    
+			  	  	    	  	     
+			  	  	    	  	     // ITolowBus - current following from the xfr into the low bus
+			  	  	    	  	     
+			  	  	    	  	     ItolowBus = ItransBus.multiply(Tfixhs/tap/Tfixls);
+			  	  	    	  	     
+			  	  	    	  	     // IBss - Bss charging current
+			  	  	    	  	     
+			  	  	    	  	     IBss = VlowBus.multiply(lowBus.getShuntY());
+			  	  	    	  	     
+			  	  	    	  	     // ItoloadBus - current flowing into the load bus
+			  	  	    	  	     
+			  	  	    	  	     ItoloadBus = ItolowBus.subtract(IBss);
+			  	  	    	  	     
+			  	  	    	  	     // VloadBus - voltage at the load bus
+			  	  	    	  	     VloadBus = VlowBus.subtract(this.distFdr.getZ().multiply(ItoloadBus));
+	  	  	    	  	            
+			  	  	    	  	     break;
+	  	  	    	  	     }
+	  	  	    	  	    
+	  	  	    	  	    	 
+  	    	  	    		 
+  	    	  	    	 } // end-of-while-loop
+  	    	  	    	 
+  	    	  	        this.lowBus.setVoltage(VlowBus);
+  	    	  	    	 
+  	    	  	     } 
+  	    	  	     
+  	    	  	     else{//Vloadbus<VloadbusMin even when tap at the maximum position, have to reduce the equivalent feeder impedance to increase the load bus voltage
+  	    	  	    	 
+  	    	  	    	VloadBus = reduceZfdrToIncreaseVloadBus(VlowBus, ItoloadBus, VloadBus);
+  	    	  	     }
+  	    	  	    
+  	    			
+  	    		 }
+  	    		 else{ // the tap is already at its maximum point, no further adjustment is available
+  	    			 
+  	    			VloadBus = reduceZfdrToIncreaseVloadBus(VlowBus, ItoloadBus, VloadBus);
+  	    		 }
   	    	 }
   	     }
   	     
+  	    System.out.println("VloadBus = "+VloadBus.abs());
   	    this.loadBus.setVoltage(VloadBus);
   	     
   	    // PQLoadBus - the total load at the load bus
@@ -456,6 +589,36 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
 		return initflag ;
     	
     }
+
+	private Complex reduceZfdrToIncreaseVloadBus(Complex VlowBus, Complex ItoloadBus, Complex VloadBus) {
+		if(VlowBus.abs()>= VloadBusMin){
+			
+			 Complex Zfdr = this.distFdr.getZ();
+			 
+			 double final_ratio =1.0;
+			 for (double ratio = 1.0;ratio>=1.0E-2; ratio-=0.01){
+			
+				Complex newZ =Zfdr.multiply(ratio);
+				VloadBus = VlowBus.subtract(newZ.multiply(ItoloadBus));
+				
+				
+				if(VloadBus.abs()>VloadBusMin){
+					final_ratio =ratio;
+					break;
+				}
+				
+			
+			 }
+			 
+			 
+			 this.distFdr.setZ(Zfdr.multiply(final_ratio));
+			 
+		 }
+		 else{
+			 IpssLogger.ipssLogger.severe("The calculated voltage of load bus connected to " + this.parentBus.getId()+ " is too low (< 0.95, and voltage at the low bus is :"+VlowBus.abs());
+		 }
+		return VloadBus;
+	}
 	
 	// TODO
 	// power electronic 
