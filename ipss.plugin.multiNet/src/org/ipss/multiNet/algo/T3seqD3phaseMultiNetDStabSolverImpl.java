@@ -88,6 +88,8 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 	
 	//threshold controlling when constant power loads will be converted to constant impedance loads
 	private double loadModelVminpu = 0.85;
+	
+	private final static Complex voltSourceImpedance = new Complex(0,0.00001);
 
 	public T3seqD3phaseMultiNetDStabSolverImpl(DynamicSimuAlgorithm algo, AbstractMultiNetDStabSimuHelper mNetSimuHelper) {
 		super(algo, mNetSimuHelper);
@@ -190,7 +192,15 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 		    	//TODO
 		    	throw new UnsupportedOperationException();
 		    } else
-		        addTransNetTheveninEquivToDistYABCMatrix();
+		        addTransNetTheveninEquivToDistYABCMatrix(false);
+		}
+		else{
+			 if(!isDistNetSolvedByPowerflow){
+				 // just to create the netEquivTable, not used it for solution
+				 calculateTransmissionTheveninEquiv();
+				 // use voltage source in the dist system dynamic simulation
+				 addTransNetTheveninEquivToDistYABCMatrix(true);
+			 }
 		}
 		
 		// prepare the current injection table for the transmission system
@@ -251,7 +261,7 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 			    }
 			    else{
 			    	
-			    	addTransNetTheveninEquivToDistYABCMatrix();
+			    	addTransNetTheveninEquivToDistYABCMatrix(false);
 			    }
 			}
 		}
@@ -268,50 +278,75 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 		//If use Thevenin Equivalent to represent Transmission system in distribution system
 		// first update the network equivalent using the last step solution results
 		// Otherwise the following two steps can be skipped
-		if(this.isTheveninEquiv){
-			// step-1 calculate the transmission system Thevenin equivalent voltage (the impedance part is already calculated during initialization() or the beforeStep())
-			updateTransNetTheveninEquivSource();
-			
-			// step-2 update the distribution systems current injection table
-			for(DStabilityNetwork dsNet: this.distNetList){
-				
-				DStabNetwork3Phase dsNet3Ph = (DStabNetwork3Phase) dsNet;
-				
-				// get source bus Id
-				List<String> boundaryList = subNetProcessor.getSubNet2BoundaryBusListTable().get(dsNet.getId());
-				String sourceId = boundaryList.get(0);
-				
-			    // update the Norton equivalent current injection at the boundary
-				
-				dsNet3Ph.get3phaseCustomCurrInjTable().put(sourceId, this.distNetNortonEquivCurrentTable.get(sourceId));
-				
-				
-			}
-		}
+		
+//		if(this.isTheveninEquiv){
+//			
+//			// step-1 calculate the transmission system Thevenin equivalent voltage (the impedance part is already calculated during initialization() or the beforeStep())
+//			updateTransNetTheveninEquivSource(false);
+//			
+//			// step-2 update the distribution systems current injection table
+//			for(DStabilityNetwork dsNet: this.distNetList){
+//				
+//				DStabNetwork3Phase dsNet3Ph = (DStabNetwork3Phase) dsNet;
+//				
+//				// get source bus Id
+//				List<String> boundaryList = subNetProcessor.getSubNet2BoundaryBusListTable().get(dsNet.getId());
+//				String sourceId = boundaryList.get(0);
+//				
+//			    // update the Norton equivalent current injection at the boundary
+//				
+//				dsNet3Ph.get3phaseCustomCurrInjTable().put(sourceId, this.distNetNortonEquivCurrentTable.get(sourceId));
+//				
+//				
+//			}
+//		}
 		
 		
 		for(int i=0;i<maxIterationTimes;i++){ 
 			
-//			if(this.isTheveninEquiv){
-//				// step-1 calculate the transmission system Thevenin equivalent voltage (the impedance part is already calculated during initialization() or the beforeStep())
-//				updateTransNetTheveninEquivSource();
-//				
-//				// step-2 update the distribution systems current injection table
-//				for(DStabilityNetwork dsNet: this.distNetList){
-//					
-//					DStabNetwork3Phase dsNet3Ph = (DStabNetwork3Phase) dsNet;
-//					
-//					// get source bus Id
-//					List<String> boundaryList = subNetProcessor.getSubNet2BoundaryBusListTable().get(dsNet.getId());
-//					String sourceId = boundaryList.get(0);
-//					
-//				    // update the Norton equivalent current injection at the boundary
-//					
-//					dsNet3Ph.get3phaseCustomCurrInjTable().put(sourceId, this.distNetNortonEquivCurrentTable.get(sourceId));
-//					
-//					
-//				}
-//			}
+			if(this.isTheveninEquiv){
+				// step-1 calculate the transmission system Thevenin equivalent voltage (the impedance part is already calculated during initialization() or the beforeStep())
+				updateTransNetTheveninEquivSource(false);
+				
+				// step-2 update the distribution systems current injection table
+				for(DStabilityNetwork dsNet: this.distNetList){
+					
+					DStabNetwork3Phase dsNet3Ph = (DStabNetwork3Phase) dsNet;
+					
+					// get source bus Id
+					List<String> boundaryList = subNetProcessor.getSubNet2BoundaryBusListTable().get(dsNet.getId());
+					String sourceId = boundaryList.get(0);
+					
+				    // update the Norton equivalent current injection at the boundary
+					
+					dsNet3Ph.get3phaseCustomCurrInjTable().put(sourceId, this.distNetNortonEquivCurrentTable.get(sourceId));
+					
+					
+				}
+			}
+			else { // use voltage source
+				if(!this.isDistNetSolvedByPowerflow){ // for dynamic simulation only
+					
+					
+					// step-1 calculate the transmission system Thevenin equivalent voltage (the impedance part is already calculated during initialization() or the beforeStep())
+					updateTransNetTheveninEquivSource(true);
+					
+					// step-2 update the distribution systems current injection table
+					for(DStabilityNetwork dsNet: this.distNetList){
+						
+						DStabNetwork3Phase dsNet3Ph = (DStabNetwork3Phase) dsNet;
+						
+						// get source bus Id
+						List<String> boundaryList = subNetProcessor.getSubNet2BoundaryBusListTable().get(dsNet.getId());
+						String sourceId = boundaryList.get(0);
+						
+					    // update the Norton equivalent current injection at the boundary
+						
+						dsNet3Ph.get3phaseCustomCurrInjTable().put(sourceId, this.distNetNortonEquivCurrentTable.get(sourceId));
+			       }
+				}
+			
+			}
 					
 				
 			// step-3 solve the distribution system
@@ -338,48 +373,55 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 					// use votlage source as equivalent, which means fixing the distribution source voltage in this step
 					//need to figure out the source bus, the corresponding transmission bus voltage, and update it before solving the network
 					
-					List<String> boundaryList = subNetProcessor.getSubNet2BoundaryBusListTable().get(dsNet3Ph.getId());
-					String sourceId = boundaryList.get(0);
+					if(this.isDistNetSolvedByPowerflow){
 					
-					String  transBoundaryBusId = "";
-					
-					if(sourceId.contains("Dummy")){
-						   transBoundaryBusId = sourceId.replace("Dummy", "");
-					   }
-					   else
-						   transBoundaryBusId = sourceId+"Dummy";
-					
-					// get the transmission bus voltage
-					Complex3x1 v012 = this.transmissionNet.getBus(transBoundaryBusId).getThreeSeqVoltage();
-					
-					Complex3x1 vabc = v012.toABC();
-				
-					
-					if(vabc ==null)
-						throw new Error("dist net, source bus volt is null: "+dsNet.getId());
-					
-					System.out.println("\ndist net, source bus volt Vabc: "+dsNet.getId()+","+ vabc.toString());
-					
-					// update the distribution source bus voltage
-					Bus3Phase sourceBus3Ph = (Bus3Phase)dsNet3Ph.getBus(sourceId);
-					
-					sourceBus3Ph.set3PhaseVoltages(vabc);
-				
-					
-					//TODO is iteration needed for this solution step, similar to power flow?
-					//solveDistNetFixedSourceVolt(dsNet3Ph, sourceId);
-					
-					DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(dsNet);
-					
-					// always use the set source bus voltage above as the initial voltage
-					distPFAlgo.setInitBusVoltageEnabled(false);
-
-					Boolean solFlag = distPFAlgo.powerflow();
-					
-					if(!solFlag){
-						throw new DStabSimuException("Error occured, distribution power flow diverged! Distnet Id:"+dsNet.getId());
+							List<String> boundaryList = subNetProcessor.getSubNet2BoundaryBusListTable().get(dsNet3Ph.getId());
+							String sourceId = boundaryList.get(0);
+							
+							String  transBoundaryBusId = "";
+							
+							if(sourceId.contains("Dummy")){
+								   transBoundaryBusId = sourceId.replace("Dummy", "");
+							   }
+							   else
+								   transBoundaryBusId = sourceId+"Dummy";
+							
+							// get the transmission bus voltage
+							Complex3x1 v012 = this.transmissionNet.getBus(transBoundaryBusId).getThreeSeqVoltage();
+							
+							Complex3x1 vabc = v012.toABC();
+						
+							
+							if(vabc ==null)
+								throw new Error("dist net, source bus volt is null: "+dsNet.getId());
+							
+							System.out.println("\ndist net, source bus volt Vabc: "+dsNet.getId()+","+ vabc.toString());
+							
+							// update the distribution source bus voltage
+							Bus3Phase sourceBus3Ph = (Bus3Phase)dsNet3Ph.getBus(sourceId);
+							
+							sourceBus3Ph.set3PhaseVoltages(vabc);
+						
+							
+							//TODO is iteration needed for this solution step, similar to power flow?
+							//solveDistNetFixedSourceVolt(dsNet3Ph, sourceId);
+							
+							DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(dsNet);
+							
+							// always use the set source bus voltage above as the initial voltage
+							distPFAlgo.setInitBusVoltageEnabled(false);
+		
+							Boolean solFlag = distPFAlgo.powerflow();
+							
+							if(!solFlag){
+								throw new DStabSimuException("Error occured, distribution power flow diverged! Distnet Id:"+dsNet.getId());
+							}
 					}
-					
+					// 
+					else{
+						
+						 dsNet3Ph.solveNetEqn();
+					}
 				}
 			
 				
@@ -390,7 +432,8 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 		
 			
 			// update the positive-sequence current injection table
-			System.out.println("D->T positive seq current inj table= "+this.dist2TransPosSeqCurInjTable);
+			
+			//System.out.println("D->T positive seq current inj table= "+this.dist2TransPosSeqCurInjTable);
 			this.transmissionNet.setCustomBusCurrInjHashtable(this.dist2TransPosSeqCurInjTable);
 			
 			// step-5 solve the transmission network network solution
@@ -407,8 +450,10 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 		    }
 			
 			// solve the negative and zero-sequence networks
-			System.out.println("D->T neg seq current inj table= "+this.dist2TransNegSeqCurInjTable);
-			System.out.println("D->T zero positive seq current inj table= "+this.dist2TransZeroSeqCurInjTable);
+			
+			//System.out.println("D->T neg seq current inj table= "+this.dist2TransNegSeqCurInjTable);
+			//System.out.println("D->T zero positive seq current inj table= "+this.dist2TransZeroSeqCurInjTable);
+			
 			solveSeqNetwork(this.transmissionNet, SequenceCode.NEGATIVE,this.dist2TransNegSeqCurInjTable);
 			solveSeqNetwork(this.transmissionNet, SequenceCode.ZERO,this.dist2TransZeroSeqCurInjTable);
 			
@@ -429,7 +474,7 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 			
 			
 			
-		     if(i>0 && netSolConverged) {
+		     if(i>4 && netSolConverged) {
 				  IpssLogger.getLogger().fine(getSimuTime()+","+"multi subNetwork solution in the nextStep() is converged, iteration #"+(i+1));
 				  break;
 			 }
@@ -669,7 +714,7 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 //	}
 	
 
-	private void addTransNetTheveninEquivToDistYABCMatrix() {
+	private void addTransNetTheveninEquivToDistYABCMatrix(boolean isVoltSource) {
 		// TODO Auto-generated method stub
 		 for (Entry<String, NetworkEquivalent> e : netEquivTable.entrySet()){
 					 
@@ -682,7 +727,13 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 					 System.out.println("----->add Thenvin impedance z120 = "+z120.toString());
 					 
 					 
-					 Complex3x3 y3x3= z120.ToAbc().inv();
+					 Complex3x3 y3x3 = z120.ToAbc().inv();
+					 
+					 
+					 if(isVoltSource){
+						 Complex y = new Complex(1,0).divide(voltSourceImpedance);
+						 y3x3 = new Complex3x3(y,y,y);
+					 }
 					 
 					 // find out the corresponding bus and the distribution system
 					 String distBoundaryBusId = "";
@@ -709,7 +760,7 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 				
 	}
 	
-	private void updateTransNetTheveninEquivSource(){
+	private void updateTransNetTheveninEquivSource(boolean isVoltSource){
 	     
 		 for (Entry<String, NetworkEquivalent> e : netEquivTable.entrySet()){
 			 
@@ -738,6 +789,13 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 			 
 
 			 Complex3x1 nortonCurInj3ph = zabc.inv().multiply(vth3ph);
+			 
+			 if(isVoltSource){
+				 Complex y = new Complex(1,0).divide(voltSourceImpedance);
+				 Complex3x3 y3x3 = new Complex3x3(y,y,y);
+				 
+				 nortonCurInj3ph = y3x3.multiply(volt3ph);
+			 }
 			 
 			 
 			 String distBoundaryBusId = "";
@@ -769,20 +827,38 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 				throw new Error(" Only one source bus for a distribution system is supported!");
 			}
 			else{
-				AclfBus sourceBus = (AclfBus) distNet.getBus(boundaryList.get(0));
+				Bus3Phase sourceBus = (Bus3Phase) distNet.getBus(boundaryList.get(0));
+				
+				Complex3x1 vabc_1 = sourceBus.get3PhaseVotlages();
 				
 				Complex3x1 currInj3Phase = new Complex3x1();
 				
+
 				for(Branch bra: sourceBus.getConnectedPhysicalBranchList()){
 					if(bra.isActive()){
 						Branch3Phase acLine = (Branch3Phase) bra;
 						
-						//NOTE the positive sign of branch current flow is fromBus->ToBus  
+						Complex3x1 Isource = null;
+						
 						if(bra.getFromBus().getId().equals(sourceBus.getId())){
-							currInj3Phase = currInj3Phase.add(acLine.getCurrentAbcAtFromSide().multiply(-1));
+							Bus3Phase toBus = (Bus3Phase) bra.getToBus();
+							Complex3x1 vabc_2 = toBus.get3PhaseVotlages();
+							
+							Complex3x3 Yft = acLine.getYftabc();
+							Complex3x3 Yff = acLine.getYffabc();
+							Isource = Yff.multiply(vabc_1).add(Yft.multiply(vabc_2));
+							currInj3Phase = currInj3Phase.subtract(Isource );
 						}
 						else{
-							currInj3Phase = currInj3Phase.add(acLine.getCurrentAbcAtToSide());
+							Bus3Phase fromBus = (Bus3Phase) bra.getFromBus();
+							Complex3x1 vabc_2 = fromBus.get3PhaseVotlages();
+							
+							Complex3x3 Ytf = acLine.getYtfabc();
+							Complex3x3 Ytt = acLine.getYttabc();
+							
+							Isource = Ytt.multiply(vabc_1).add(Ytf.multiply(vabc_2));
+							
+							currInj3Phase = currInj3Phase.subtract(Isource);
 						}
 					}
 				}
@@ -808,7 +884,8 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 				   }
 				   else
 					   transBoundaryBusId = sourceBus.getId()+"Dummy";
-				   
+				
+				
 			    this.dist2Trans3PhaseCurInjTable.put(transBoundaryBusId, currInj3Phase);
 				
 				dist2TransPosSeqCurInjTable.put(transBoundaryBusId, I012.b_1);
@@ -818,7 +895,10 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 				//this.dist2TransTotalPowerTable.put(sourceBus.getId(),totalPower);
 		
 			}
+			
 		}
+		
+		// System.out.println("D->T 3 phase current inj table= "+this.dist2Trans3PhaseCurInjTable);
 	}
 	
 //	private void calculateDist2TransCurInjection(){
@@ -852,173 +932,7 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 //		
 //	}
 	
-	private boolean solveDistNetFixedSourceVolt(DStabNetwork3Phase net, String sourceId){
-		
-      try {
-  			
-  			if(net.isYMatrixDirty()){
-  				net.getYMatrixABC().luMatrix(Constants.Matrix_LU_Tolerance);
-  				net.setYMatrixDirty(false);
-  			}
-  			
-		  	// Calculate and set generator injection current
-			for( Bus b : net.getBusList()) {
-				DStabBus bus = (DStabBus)b;
-
-				if(bus.isActive()){
-					Bus3Phase bus3p = (Bus3Phase) bus;
-					Complex3x1 iInject = new Complex3x1();
-
-					if(bus.getContributeGenList().size()>0){
-						 for(AclfGen gen: bus.getContributeGenList()){
-						      if(gen.isActive() && gen instanceof DStabGen){
-						    	  DStabGen dynGen = (DStabGen)gen;
-						    	  if( dynGen.getDynamicGenDevice()!=null){
-						    		  DStabGen3PhaseAdapter gen3P = threePhaseGenAptr.apply(dynGen);
-						    		  iInject = iInject.add(gen3P.getISource3Phase());
-						    		 
-						    		  //System.out.println("Iinj@Gen-"+dynGen.getId()+", "+iInject.toString());
-						    	  }
-						    	 
-						       }
-						  }
-				    }
-					//TODO 3-phase dynamic load list
-					//if(bus3p.getp)
-					if(bus3p.isLoad()){
-						
-						//// Phase A
-						if(bus3p.getPhaseADynLoadList().size()>0){
-							Complex iPhAInj = new Complex(0,0);
-							
-							for(DynLoadModel1Phase load1p:bus3p.getPhaseADynLoadList()){
-								if(load1p.isActive()){
-							        iPhAInj = iPhAInj.add(load1p.getNortonCurInj());
-							       // System.out.println("Iinj@Load-"+bus3p.getId()+", "+ load1p.getId()+","+load1p.getCompensateCurInj().toString());
-								}
-							}
-							
-							if(iPhAInj.abs()>0.0)
-								iInject.a_0 = iInject.a_0.add(iPhAInj);
-						}
-						
-						// Phase B
-						if(bus3p.getPhaseBDynLoadList().size()>0){
-							Complex iPhBInj = new Complex(0,0);
-							
-							for(DynLoadModel1Phase load1p:bus3p.getPhaseBDynLoadList()){
-								if(load1p.isActive()){
-							        iPhBInj = iPhBInj.add(load1p.getNortonCurInj());
-							       // System.out.println("Iinj@Load-"+bus3p.getId()+", "+ load1p.getId()+","+load1p.getCompensateCurInj().toString());
-								}
-							}
-							
-							if(iPhBInj.abs()>0.0)
-								iInject.b_1 = iInject.b_1.add(iPhBInj);
-						}
-						
-						// Phase C
-						if(bus3p.getPhaseCDynLoadList().size()>0){
-							Complex iPhCInj = new Complex(0,0);
-							
-							for(DynLoadModel1Phase load1p:bus3p.getPhaseCDynLoadList()){
-								if(load1p.isActive()){
-							        iPhCInj = iPhCInj.add(load1p.getNortonCurInj());
-							       // System.out.println("Iinj@Load-"+bus3p.getId()+", "+ load1p.getId()+","+load1p.getCompensateCurInj().toString());
-								}
-							}
-							
-							if(iPhCInj.abs()>0.0)
-								iInject.c_2 = iInject.c_2.add(iPhCInj);
-						}
-						
-						//TODO three-phase dynamic loads
-						
-//						if(bus3p.getThreePhaseDynLoadList().size()>0){
-//							for(DynLoadModel3Phase load3p:bus3p.getThreePhaseDynLoadList()){
-//								if(load3p.isActive()){
-//									iInject = iInject.add(load3p.getISource3Phase());
-//								}
-//							}
-//						}
-						
-						 for(DynamicBusDevice dynDevice: bus.getDynamicBusDeviceList()){
-							    if(dynDevice.isActive()){
-		                        	if(dynDevice instanceof InductionMotor ){
-		                        		DynLoadModel3Phase dynLoad3P = threePhaseInductionMotorAptr.apply((InductionMotor) dynDevice);
-		                        		iInject = iInject.add(dynLoad3P.getISource3Phase());
-		                            	
-		                        	}
-		                        	else if (dynDevice instanceof DynLoadModel3Phase){
-		                        		DynLoadModel3Phase dynLoad3P = (DynLoadModel3Phase) dynDevice;
-		                        		
-		                        		iInject = iInject.add(dynLoad3P.getISource3Phase());
-		                            	
-		                        	}
-							    }
-	                        
-	                         }
-						
-						
-					}
-				  
-				  if(iInject == null){
-					  throw new Error (bus.getId()+" current injection is null");
-				  }
-				  
-				  // add external/customized bus current injection
-				  if(net.get3phaseCustomCurrInjTable()!=null){
-					  if(net.get3phaseCustomCurrInjTable().get(bus.getId())!=null)
-					    iInject = iInject.add(net.get3phaseCustomCurrInjTable().get(bus.getId()));
-				  }
-
-				  net.getYMatrixABC().setBi(iInject, bus.getSortNumber());
-				}
-			}
-			
-			// ISparseEqnComplexMatrix3x3  Yabc = getYMatrixABC();
-			// System.out.println(Yabc.getSparseEqnComplex());
-		   
-			net.getYMatrixABC().solveEqn();
-
-			// update bus voltage and machine Pe
-			for( Bus b : net.getBusList()) {
-				DStabBus bus = (DStabBus)b;
-				if(bus.isActive() && !bus.getId().equals(sourceId)){ // fix source voltage -> not update it during iteration
-					Complex3x1 vabc = net.getYMatrixABC().getX(bus.getSortNumber());
-					//if(bus.getId().equals("Bus12"))
-					//System.out.println("Bus, Vabc:"+b.getId()+","+vabc.toString());
-					
-					if(!vabc.a_0.isNaN()&& !vabc.b_1.isNaN() && !vabc.c_2.isNaN()){
-                    
-						  
-							 Bus3Phase bus3P = (Bus3Phase) bus;
-							 bus3P.set3PhaseVoltages(vabc);
-							 
-							 // update the positive sequence voltage
-							 Complex v = bus3P.getThreeSeqVoltage().b_1;
-							 bus.setVoltage(v);
-							// System.out.println("posV @ bus :"+v.toString()+","+bus.getId());
-							
-                      
-
-					}
-					else
-						 throw new Error (bus.getId()+" solution voltage is NaN");
-				}
-			}
-  			
-  		} 
-  		catch (IpssNumericException e) {
-  			ipssLogger.severe(e.toString());
-  			return false;
-  		}
-  	
-		return true;
-		
-		
-		
-	}
+	
 	
 	// currently it only supports single-phase A/C motor load model, and assume all other loads represented by constant impedance
 	private boolean updateDistNetBusLoads(DStabNetwork3Phase distNet, double loadModelVminpu){

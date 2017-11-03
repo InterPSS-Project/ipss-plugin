@@ -197,7 +197,17 @@ public class MultiNet3PhPosSeqDynEventProcessor extends
 								}
 							}
 							else if(fault.getFaultCode()==SimpleFaultCode.GROUND_3P){
-								net.getYMatrix().addToA(ylarge, i, i);
+								
+								Complex yfault = ylarge;
+								
+								
+								if(fault.getZLGFault()!=null){
+									if(fault.getZLGFault().abs()>1.0E-7){
+										yfault = new Complex(1.0,0).divide(fault.getZLGFault());
+									}
+								}
+								
+								net.getYMatrix().addToA(yfault, i, i);
 							}
 							
 						}
