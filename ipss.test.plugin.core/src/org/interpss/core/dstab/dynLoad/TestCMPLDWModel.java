@@ -76,7 +76,7 @@ public class TestCMPLDWModel {
 	}
 	
 	
-	@Test
+	//@Test
 	public void testCMPLDWPSLFData() throws InterpssException{
 		
 		IpssCorePlugin.init();
@@ -153,4 +153,83 @@ public class TestCMPLDWModel {
 		  
 	}
 
+	@Test
+	public void test_CMPLDW_init_methods() throws InterpssException{
+		
+		IpssCorePlugin.init();
+		IPSSMsgHub msg = CoreCommonSpringFactory.getIpssMsgHub();
+		IpssLogger.getLogger().setLevel(Level.WARNING);
+    		
+          GenericODMAdapter adapter = new GenericODMAdapter(ODMFileFormatEnum.PsseV30,ODMFileFormatEnum.GePSLF);
+		  
+		  adapter.parseInputFile(NetType.DStabNet, new String[]{
+				  "testData/adpter/psse/v30/twoBus_cmpldw.raw",
+				  "testData/adpter/psse/v30/threeBus_cmpldw_vloadbusmin.dyd"
+			//"testData/ge/ieee9_onlyGen_GE.dyd"
+	        });
+		  
+
+		   DStabModelParser parser =(DStabModelParser) adapter.getModel();
+		   
+		   System.out.println(parser.toXmlDoc());
+			
+			SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
+			if (!new ODMDStabParserMapper(msg)
+						.map2Model(parser, simuCtx)) {
+				System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
+				return;
+			}
+			
+			
+		    DStabilityNetwork dsNet =simuCtx.getDStabilityNet();
+		    dsNet.setFrequency(60.0);
+		    
+		    //dsNet.getBus("Bus1").setVoltageMag(0.99);
+		  
+	  		/*
+	  		 *  load 
+	  		 */
+	  		
+	  		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, msg);
+			LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
+			assertTrue(aclfAlgo.loadflow());
+			System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
+			
+			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+			dstabAlgo.setSimuStepSec(0.005d);
+			dstabAlgo.setTotalSimuTimeSec(20);
+
+			//dstabAlgo.setRefMachine(dsNet.getMachine("Swing-mach1"));
+			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus3",dsNet,SimpleFaultCode.GROUND_3P,0.5d,0.05),"3phaseFault@Bus5");
+	        
+	        
+			
+			StateMonitor sm = new StateMonitor();
+			//sm.addGeneratorStdMonitor(new String[]{"Swing-mach1"});
+			sm.addBusStdMonitor(new String[]{"Bus1","Bus3","Bus3_lowBus","Bus3_loadBus"});
+			//extended_device_Id = "ACMotor_"+this.getId()+"@"+this.getDStabBus().getId();
+			sm.addDynDeviceMonitor(DynDeviceType.ACMotor, "ACMotor_1@Bus3_loadBus");
+			// set the output handler
+			dstabAlgo.setSimuOutputHandler(sm);
+			dstabAlgo.setOutPutPerSteps(5);
+			
+			IpssLogger.getLogger().setLevel(Level.FINE);
+			
+			
+			if (dstabAlgo.initialization()) {
+				System.out.println(dsNet.getMachineInitCondition());
+				
+				System.out.println("Running DStab simulation ...");
+			    while(dstabAlgo.getSimuTime()<=dstabAlgo.getTotalSimuTimeSec()){
+				     dstabAlgo.solveDEqnStep(true);
+				
+				}
+		
+			}
+			//System.out.println(sm.toCSVString(sm.getMachAngleTable()));
+			System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+			//System.out.println(sm.toCSVString(sm.getAcMotorPTable()));
+		  
+	}
+	
 }
