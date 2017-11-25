@@ -15,11 +15,10 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.dcSen_EMF"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.simu_EMF"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.pssl"/>
-	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/apache/commons-math3-3.5.jar"/>
-	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/cache/hazelcast-3.6.jar"/>
 	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/apache/commons-logging.jar"/>
 	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/jGraph/mxgraph-all.jar"/>
 	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/jGraph/mxgraph-core.jar"/>
 	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/jGraph/mxgraph-swing.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/apache/commons-math3-3.6.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
