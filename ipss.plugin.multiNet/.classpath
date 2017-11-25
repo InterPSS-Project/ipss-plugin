@@ -10,8 +10,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.plugin.base"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.plugin.core"/>
 	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/apache/commons-logging.jar"/>
-	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/cache/hazelcast-3.6.jar"/>
-	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/apache/commons-math3-3.5.jar"/>
 	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/eclipse/org.eclipse.emf.common.jar"/>
 	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/eclipse/org.eclipse.emf.ecore.change.jar"/>
 	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/eclipse/org.eclipse.emf.ecore.jar"/>
@@ -22,5 +20,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ieee.odm.schema"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.plugin.3phase"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/apache/commons-math3-3.6.1.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/cache/hazelcast-3.8.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
