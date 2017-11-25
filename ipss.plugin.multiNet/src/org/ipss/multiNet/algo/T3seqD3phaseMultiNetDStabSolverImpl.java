@@ -301,7 +301,8 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 //			}
 //		}
 		
-		
+		//TODO for testing only
+		//maxIterationTimes = 1;
 		for(int i=0;i<maxIterationTimes;i++){ 
 			
 			if(this.isTheveninEquiv){
@@ -474,10 +475,11 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 			
 			
 			
-		     if(i>4 && netSolConverged) {
+		     if(i>0 && netSolConverged) {
 				  IpssLogger.getLogger().fine(getSimuTime()+","+"multi subNetwork solution in the nextStep() is converged, iteration #"+(i+1));
 				  break;
 			 }
+		    
 	
 		  } // for maxIterationTimes loop
 			
@@ -724,7 +726,7 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 					 // get Matrix3x3 as an entry
 					 Complex3x3 z120 = equiv.getMatrix3x3()[0][0];
 					 
-					 System.out.println("----->add Thenvin impedance z120 = "+z120.toString());
+					// System.out.println("----->add Thenvin impedance z120 = "+z120.toString());
 					 
 					 
 					 Complex3x3 y3x3 = z120.ToAbc().inv();

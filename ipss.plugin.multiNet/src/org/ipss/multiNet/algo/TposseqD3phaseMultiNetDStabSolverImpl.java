@@ -279,25 +279,11 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 //			}
 //		}
 //		
-		
+		//TODO for testing only
+		// maxIterationTimes = 1;
 		for(int i=0;i<maxIterationTimes;i++){ 
 			
-			
-			 // step-4 calculate the total power transferred from the transmission system into each distribution system
-			this.calculateDist2TransTotalPower();
-			
-			// step-5 convert the total power into current injections, and inject their responding negative values into the transmission system using net.setCustomBusCurrInjHashtable() method
-			this.calculateDist2TransCurInjection();	
-			
-			// step-6 solve the transmission network network solution
-			this.transmissionNet.setCustomBusCurrInjHashtable(this.dist2TransEquivCurInjTable);
-			
-			if(transmissionNet instanceof DStabNetwork3Phase)
-				((DStabNetwork3Phase)this.transmissionNet).solvePosSeqNetEqn();
-			else
-				this.transmissionNet.solveNetEqn();
-			
-			
+		
 			
 			if(this.isTheveninEquiv){
 				// step-1 calculate the transmission system Thevenin equivalent voltage (the impedance part is already calculated during initialization() or the beforeStep())
@@ -418,6 +404,19 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 				
 			}
 			 
+			 // step-4 calculate the total power transferred from the transmission system into each distribution system
+			this.calculateDist2TransTotalPower();
+			
+			// step-5 convert the total power into current injections, and inject their responding negative values into the transmission system using net.setCustomBusCurrInjHashtable() method
+			this.calculateDist2TransCurInjection();	
+			
+			// step-6 solve the transmission network network solution
+			this.transmissionNet.setCustomBusCurrInjHashtable(this.dist2TransEquivCurInjTable);
+			
+			if(transmissionNet instanceof DStabNetwork3Phase)
+				((DStabNetwork3Phase)this.transmissionNet).solvePosSeqNetEqn();
+			else
+				this.transmissionNet.solveNetEqn();
 	       
 			
 			// step-7 check if the transmission network solution results of the last two steps converge wrt the tolerance
@@ -436,7 +435,7 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 			
 			
 			
-		     if(i>4 && netSolConverged) {
+		     if(i>0 && netSolConverged) {
 				  IpssLogger.getLogger().fine(getSimuTime()+","+"multi subNetwork solution in the nextStep() is converged, iteration #"+(i+1));
 				  break;
 			 }
