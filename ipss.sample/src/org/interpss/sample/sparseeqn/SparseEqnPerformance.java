@@ -69,7 +69,7 @@ public class SparseEqnPerformance {
 			if (Math.abs(dAry[21463] - 1.0584315036540653E-5) > 1.0e-10)
 				System.out.println("Error: ");
 		}
-	  	timer.logStd("Time for solving inv[A]");
+	  	timer.logStd("Time for solving inv[A] in Seq");
 	  	
 	  	timer.start();
 	  	IntStream.range(0,n).parallel().forEach(i -> {
@@ -84,7 +84,7 @@ public class SparseEqnPerformance {
 			}
 		});
 	  	
-	  	timer.logStd("Time for solving inv[A]");
+	  	timer.logStd("Time for solving inv[A] In Parallel");
 	}
 	
 	static void test1() throws Exception {
