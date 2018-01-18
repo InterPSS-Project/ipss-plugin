@@ -38,7 +38,7 @@ import com.interpss.core.sparse.SparseEqnDataType;
 import com.interpss.core.sparse.impl.SparseEqnDoubleImpl;
 
 
-public class SparseEqnPerformance {
+public class DoubleSparseEqnPerformance {
 	public static void main(String args[]) throws Exception {
 		for (int i = 0; i < 1; i++)
 			test();
