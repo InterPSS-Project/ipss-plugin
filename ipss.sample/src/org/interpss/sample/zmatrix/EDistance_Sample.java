@@ -35,21 +35,59 @@ import org.interpss.numeric.util.PerformanceTimer;
 import org.interpss.pssl.common.PSSLException;
 import org.interpss.pssl.plugin.IpssAdapter;
 
+import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.dclf.common.ReferenceBusException;
+import com.interpss.simu.util.sample.SampleCases;
 
 import edu.emory.mathcs.csparsej.tdcomplex.DZcs_common.DZcsa;
 
-public class Ieee14_Sample {
+public class EDistance_Sample {
 	public static void main(String args[]) throws Exception {
 		IpssCorePlugin.init();
 		
-		sample();
+		sample_5Bus();
+		
+		sample_ieee14();
+	}
+
+	public static void sample_5Bus() throws InterpssException, ReferenceBusException, IpssNumericException, PSSLException  {
+		AclfNetwork net = CoreObjectFactory.createAclfNetwork();
+		SampleCases.load_LF_5BusSystem(net);
+		//System.out.println(net.net2String());
+		
+		/*
+		1   1   2    0.04    0.25    -0.25
+		2   1   3    0.1     0.35     0.0
+		3   2   3    0.08    0.3     -0.25
+		4   4   2    0.0     0.015    1.05
+		5   5   3    0.0     0.03     1.05
+		
+		z(2,3) = (0.08+j0.3) // [ (0.04+j0.25) + (0.1+j0.35) ]
+		*/
+		Complex z1 = new Complex(0.08,0.3);
+		Complex z2 = new Complex(0.04+0.1, 0.25+0.35);
+		
+		System.out.println("5 Bus z(2-3) // [ z(1-2) + z(1-3) ]: " + ComplexFunc.toStr(z1.multiply(z2).divide(z1.add(z2))));
+		
+		ISparseEqnComplex eqn = net.formYMatrix();
+		
+		int i = net.getBus("2").getSortNumber();
+		int j = net.getBus("3").getSortNumber();
+		
+		eqn.setBi(new Complex(1.0,0.0), i);
+		eqn.setBi(new Complex(-1.0,0.0), j);
+		eqn.solveEqn();
+
+		Complex vi = eqn.getX(i);
+		Complex vj = eqn.getX(j);
+		Complex zij = vi.subtract(vj);
+		System.out.println("5 Bus Z(2,3): " + ComplexFunc.toStr(zij));
 	}
 	
-	public static void sample() throws InterpssException, ReferenceBusException, IpssNumericException, PSSLException  {
+	public static void sample_ieee14() throws InterpssException, ReferenceBusException, IpssNumericException, PSSLException  {
 		AclfNetwork net = getSampleNet();
 		//System.out.println(net.net2String());
 		
@@ -62,8 +100,10 @@ public class Ieee14_Sample {
 		eqn.setBi(new Complex(-1.0,0.0), j);
 		eqn.solveEqn();
 
-		Complex zij = eqn.getX(i).subtract(eqn.getX(j));
-		System.out.println("Zij: " + ComplexFunc.toStr(zij));
+		Complex vi = eqn.getX(i);
+		Complex vj = eqn.getX(j);
+		Complex zij = vi.subtract(vj);
+		System.out.println("14Bus Zij: " + ComplexFunc.toStr(zij));
 		// Zij: 0.10097 + j0.33347
 		
 		int N = 10000;
