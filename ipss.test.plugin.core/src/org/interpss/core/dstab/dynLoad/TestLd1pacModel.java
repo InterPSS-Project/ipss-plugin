@@ -96,6 +96,71 @@ public class TestLd1pacModel extends TestSetupBase {
 	}
 	
 	@Test
+	public void test_DStab_Ld1pac_loadChange()  throws InterpssException {
+		DStabilityNetwork net = create2BusSystem();
+		assertTrue(net.isLfConverged());
+		
+		DStabBus bus1 = net.getDStabBus("Bus1");
+		
+		LD1PAC acLoad= DStabObjectFactory.createLD1PAC(bus1,"1");
+		
+		acLoad.setLoadPercent(50);
+		acLoad.setMVABase(50);
+		
+		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
+		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
+		assertTrue(aclfAlgo.loadflow());
+		System.out.println(AclfOutFunc.loadFlowSummary(net));
+		
+		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+		dstabAlgo.setSimuStepSec(0.005d);
+		dstabAlgo.setTotalSimuTimeSec(1);
+
+		dstabAlgo.setRefMachine(net.getMachine("Swing-mach1"));
+		//net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1",net,SimpleFaultCode.GROUND_3P,0.0d,0.05),"3phaseFault@Bus5");
+        
+        
+		
+		StateMonitor sm = new StateMonitor();
+		sm.addGeneratorStdMonitor(new String[]{"Swing-mach1"});
+		sm.addBusStdMonitor(new String[]{"Bus1"});
+		//extended_device_Id = "ACMotor_"+this.getId()+"@"+this.getDStabBus().getId();
+		sm.addDynDeviceMonitor(DynDeviceType.ACMotor, "ACMotor_1@Bus1");
+		// set the output handler
+		dstabAlgo.setSimuOutputHandler(sm);
+		dstabAlgo.setOutPutPerSteps(1);
+		
+		IpssLogger.getLogger().setLevel(Level.FINE);
+		
+		
+		if (dstabAlgo.initialization()) {
+			System.out.println(net.getMachineInitCondition());
+			
+			System.out.println("Running DStab simulation ...");
+		    while(dstabAlgo.getSimuTime()<=dstabAlgo.getTotalSimuTimeSec()){
+			     dstabAlgo.solveDEqnStep(true);
+		    
+			    if(dstabAlgo.getSimuTime()>=0.101 && dstabAlgo.getSimuTime()<0.11){
+			    	acLoad.changeLoad(-0.1);
+			     }
+			     
+			     if(dstabAlgo.getSimuTime()>=0.149 && dstabAlgo.getSimuTime()<0.151){
+			    	 acLoad.changeLoad(0.2);
+			     }
+			
+			}
+		
+
+		}
+		
+		//System.out.println(sm.toCSVString(sm.getMachAngleTable()));
+		//System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+		System.out.println("\n motor Real Power:\n"+sm.toCSVString(sm.getMachPeTable()));
+		System.out.println("\n motor Real Power:\n"+sm.toCSVString(sm.getAcMotorPTable()));
+		System.out.println("\n motor Reactive Power:\n"+sm.toCSVString(sm.getAcMotorQTable()));
+		
+	}
+	@Test
 	public void test_Ld1pac()  throws InterpssException {
 		// create a machine in a two-bus network. The loadflow already converged
 		DStabilityNetwork net = create2BusSystem();

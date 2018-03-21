@@ -2,6 +2,7 @@ package org.interpss.mapper.odm.impl.dstab;
 
 import org.ieee.odm.schema.DStabLoadDataXmlType;
 import org.ieee.odm.schema.DynamicLoadCMPLDWXmlType;
+import org.ieee.odm.schema.DynamicLoadSinglePhaseACMotorXmlType;
 import org.ieee.odm.schema.LoadCharacteristicTypeEnumType;
 import org.interpss.dstab.load.DynLoadCMPLDW;
 import org.interpss.dstab.load.impl.DynLoadCMPLDWImpl;
@@ -9,6 +10,8 @@ import org.interpss.dstab.load.impl.DynLoadCMPLDWImpl;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.device.DynamicBusDevice;
+import com.interpss.dstab.dynLoad.LD1PAC;
+import com.interpss.dstab.dynLoad.impl.LD1PACImpl;
 
 public class DynLoadDataHelper {
 	
@@ -31,10 +34,117 @@ public class DynLoadDataHelper {
 			if(dynLoad.getLoadXmlType()==LoadCharacteristicTypeEnumType.WECC_COMPOSITE_LOAD){
 				loadModel = createCMPLDWLoadModel(dynLoad.getLoadModel().getCMPLDWLoad(),dstabBus,dynLoad.getId());
 			}
+			else if(dynLoad.getLoadXmlType()==LoadCharacteristicTypeEnumType.SINGLE_PHASE_AC_MOTOR){
+				loadModel = createSinglePhaseACMotorLoadModel(dynLoad.getLoadModel().getACMotor(),dstabBus,dynLoad.getId());
+			}
 		}
 		return loadModel;
 	}
 	
+	private DynamicBusDevice createSinglePhaseACMotorLoadModel(DynamicLoadSinglePhaseACMotorXmlType acMotorXml, DStabBus dstabBus,
+			String id) {
+        this.bus= dstabBus; 
+		
+        LD1PAC acMotor = new LD1PACImpl(id,dstabBus);
+        
+        /*
+         *  CompLF 
+			CompPF 
+			Rstall 
+			Xstall 
+			Vstall 
+			Tstall 
+			LFadj  
+			Kp1    
+			Np1    
+			Kq1    
+			Nq1    
+			Kp2    
+			Np2    
+			Kq2    
+			Nq2    
+			CmpKpf 
+			CmpKqf 
+			Vbrk   
+			Frst   
+			Vrst   
+			Trst   
+			Fuvr   
+			Vtr1   
+			Ttr1   
+			Vtr2   
+			Ttr2   
+			Vc1off 
+			Vc2off 
+			Vc1on  
+			Vc2on  
+			Tth    
+			Th1t   
+			Th2t   
+			Tv     
+			Tf     
+
+         */
+        
+        acMotor.setAcStallTimer(acMotorXml.getTstall());
+        
+        acMotor.setAcRestartTimer(acMotorXml.getTrst());
+        
+        acMotor.setTv(acMotorXml.getTv());
+        
+        //acMotor.setTf(acMotorXml.getTf());
+        
+        acMotor.setLoadFactor(acMotorXml.getCompLF());
+        
+        acMotor.setPowerFactor(acMotorXml.getCompPF());
+        
+        acMotor.setVstall(acMotorXml.getVstall());
+        
+        acMotor.setRstall(acMotorXml.getRstall());
+        
+        acMotor.setXstall(acMotorXml.getXstall());
+        
+        acMotor.setLFadj(acMotorXml.getLFadj());
+        
+        acMotor.setVbrk(acMotorXml.getVbrk());
+        
+        acMotor.setFrst(acMotorXml.getFrst());
+        
+        acMotor.setVrst(acMotorXml.getVrst());
+        
+        acMotor.setTth(acMotorXml.getTth());
+        
+        acMotor.setTh1t(acMotorXml.getTh1t());
+        
+        acMotor.setTh2t(acMotorXml.getTh2t());
+        
+        acMotor.setFuvr(acMotorXml.getFuvr());
+        
+        acMotor.setUVtr1(acMotorXml.getVtr1());
+        acMotor.setTtr1(acMotorXml.getTtr1());
+        
+        acMotor.setUVtr2(acMotorXml.getVtr2());
+        acMotor.setTtr2(acMotorXml.getTtr2());
+        
+        //NOTE: the following parameters are already hard-coded
+        /*  Kp1    
+			Np1    
+			Kq1    
+			Nq1    
+			Kp2    
+			Np2    
+			Kq2    
+			Nq2    
+			CmpKpf 
+			CmpKqf 
+		*/
+        
+        
+        
+		return acMotor;
+	}
+
+
 	private DynLoadCMPLDW createCMPLDWLoadModel(DynamicLoadCMPLDWXmlType cmpldwXml, DStabBus dstabBus, String loadId){
 		
 		this.bus= dstabBus; 

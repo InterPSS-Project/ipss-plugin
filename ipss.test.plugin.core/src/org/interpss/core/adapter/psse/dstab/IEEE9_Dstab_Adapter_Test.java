@@ -21,13 +21,14 @@ import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.dynLoad.LD1PAC;
 import com.interpss.dstab.mach.SalientPoleMachine;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 import com.interpss.spring.CoreCommonSpringFactory;
 
 public class IEEE9_Dstab_Adapter_Test {
-	@Test
+	//@Test
 	public void test_IEEE9Bus_Dstab(){
 		IpssCorePlugin.init();
 		IPSSMsgHub msg = CoreCommonSpringFactory.getIpssMsgHub();
@@ -173,5 +174,37 @@ public class IEEE9_Dstab_Adapter_Test {
 	    /*
 	     * check sequence network data
 	     */
+	}
+	
+	@Test
+	public void test_IEEE9Bus_Dstab_ACMotor(){
+		IpssCorePlugin.init();
+		IPSSMsgHub msg = CoreCommonSpringFactory.getIpssMsgHub();
+		IpssLogger.getLogger().setLevel(Level.WARNING);
+		
+		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
+				"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
+				"testData/adpter/psse/v30/IEEE9Bus/ieee9_dyn_Load_ACMotor.dyr"
+		}));
+		DStabModelParser parser =(DStabModelParser) adapter.getModel();
+		
+		System.out.println(parser.toXmlDoc());
+
+		
+		
+		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
+		if (!new ODMDStabParserMapper(msg)
+					.map2Model(parser, simuCtx)) {
+			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
+			return;
+		}
+		
+		
+	    DStabilityNetwork dsNet =simuCtx.getDStabilityNet();
+	    
+	    LD1PAC acMotor = (LD1PAC) dsNet.getBus("Bus5").getDynLoadModelList().get(0);
+	    
+	    System.out.println(acMotor.toString());
 	}
 }

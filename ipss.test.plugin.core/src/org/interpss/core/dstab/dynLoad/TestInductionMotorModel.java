@@ -125,6 +125,90 @@ public class TestInductionMotorModel extends TestSetupBase {
 	}
 	
 	@Test
+	public void test_induction_Motor_dynModel_single_cage_loadchange()  throws InterpssException {
+			DStabilityNetwork net = create2BusSystem();
+			assertTrue(net.isLfConverged());
+			
+			DStabBus bus1 = net.getDStabBus("Bus1");
+			
+			InductionMotor indMotor= DStabObjectFactory.createInductionMotor(bus1,"1");
+			
+
+			indMotor.setXm(3.0);
+			indMotor.setXl(0.07);
+			indMotor.setRa(0.032);
+			indMotor.setXr1(0.2);
+			indMotor.setRr1(0.01);
+			indMotor.setXr2(0.0);
+			indMotor.setRr2(0.0);
+			
+			indMotor.setLoadPercent(50);
+			indMotor.setMVABase(50);
+			indMotor.setH(1.0);
+			
+			DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
+			LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
+			assertTrue(aclfAlgo.loadflow());
+			System.out.println(AclfOutFunc.loadFlowSummary(net));
+			
+			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+			dstabAlgo.setSimuStepSec(0.005d);
+			dstabAlgo.setTotalSimuTimeSec(1.0);
+
+			dstabAlgo.setRefMachine(net.getMachine("Swing-mach1"));
+			//net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1",net,SimpleFaultCode.GROUND_3P,0.0d,0.05),"3phaseFault@Bus5");
+	        
+	        
+			
+			StateMonitor sm = new StateMonitor();
+			sm.addGeneratorStdMonitor(new String[]{"Swing-mach1"});
+			sm.addBusStdMonitor(new String[]{"Bus1"});
+			sm.addDynDeviceMonitor(DynDeviceType.InductionMotor, "IndMotor_1@Bus1");
+			
+			// set the output handler
+			dstabAlgo.setSimuOutputHandler(sm);
+			dstabAlgo.setOutPutPerSteps(1);
+			
+			IpssLogger.getLogger().setLevel(Level.FINE);
+			
+			
+			if (dstabAlgo.initialization()) {
+				System.out.println(net.getMachineInitCondition());
+				
+				System.out.println("Running DStab simulation ...");
+			    while(dstabAlgo.getSimuTime()<=dstabAlgo.getTotalSimuTimeSec()){
+				     dstabAlgo.solveDEqnStep(true);
+				     if(dstabAlgo.getSimuTime()>=0.101 && dstabAlgo.getSimuTime()<0.11){
+				    	 indMotor.changeLoad(-0.1);
+				     }
+				     
+				     if(dstabAlgo.getSimuTime()>=0.149 && dstabAlgo.getSimuTime()<0.151){
+				    	 indMotor.changeLoad(0.2);
+				     }
+			    }
+				
+			}
+			else{
+				System.out.println("Initialization error!");
+			}
+
+			
+			System.out.println("slip ="+indMotor.getSlip());
+			System.out.println("motor power ="+indMotor.getLoadPQ());
+
+
+			System.out.println("\n bus volt:\n"+sm.toCSVString(sm.getBusVoltTable()));
+			System.out.println("\n gen Pe:\n"+sm.toCSVString(sm.getMachPeTable()));
+			System.out.println("\n motor slip:\n"+sm.toCSVString(sm.getMotorSlipTable()));
+			System.out.println("\n motor Te:\n"+sm.toCSVString(sm.getMotorTeTable()));
+			System.out.println("\n motor Tm:\n"+sm.toCSVString(sm.getMotorTmTable()));
+			System.out.println("\n motor Power:\n"+sm.toCSVString(sm.getMotorPTable()));
+			
+	
+			
+		}
+	
+	//@Test
 	public void test_induction_Motor_dynModel_single_cage_protection()  throws InterpssException {
 		DStabilityNetwork net = create2BusSystem();
 		assertTrue(net.isLfConverged());
