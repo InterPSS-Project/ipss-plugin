@@ -85,6 +85,7 @@ public class DynLoadDataHelper {
 			Tf     
 
          */
+        acMotor.setLoadPercent(acMotorXml.getLoadPercent());
         
         acMotor.setAcStallTimer(acMotorXml.getTstall());
         
