@@ -206,5 +206,18 @@ public class IEEE9_Dstab_Adapter_Test {
 	    LD1PAC acMotor = (LD1PAC) dsNet.getBus("Bus5").getDynLoadModelList().get(0);
 	    
 	    System.out.println(acMotor.toString());
+	    
+	    /*
+	     * id: 1
+     number: 0
+     name: 
+     desc: 
+     status: true (scripts: null) (deviceType: DynamicMachine) (loadPercent: 100.0, MVABase: 0.0, loadPQ: (0.0, 0.0), initLoadPQ: (0.0, 0.0), equivY: null, compensateCurInj: null, compensateShuntY: null, currInj2Net: (0.0, 0.0)) (stage: 0, loadFactor: 1.0, p: 0.0, q: 0.0, p0: 0.0, q0: 0.0, pac: 0.0, qac: 0.0, powerFactor: 0.98, vstall: 0.65, rstall: 0.124, xstall: 0.114, tstall: 0.033, lFadj: 0.3, kp1: 0.0, np1: 1.0, kq1: 6.0, nq1: 2.0, kp2: 12.0, np2: 3.2, kq2: 11.0, nq2: 2.5, vbrk: 0.86, frst: 0.5, vrst: 0.8, trst: 0.4, cmpKpf: 1.0, cmpKqf: -3.3, fuvr: 0.0, uvtr1: 0.5, ttr1: 0.2, uvtr2: 0.9, ttr2: 5.0, vc1off: 0.5, vc2off: 0.4, vc1on: 0.6, vc2on: 0.5, tth: 10.0, th1t: 1.3, th2t: 4.3, uVRelayTimer1: 0.0, uVRelayTimer2: 0.0, acStallTimer: 0.033, acRestartTimer: 0.4)
+
+	     */
+	    assertTrue(acMotor.getLoadPercent()==100.0);
+	    assertTrue(acMotor.getVstall()==0.65);
+	    assertTrue(acMotor.getLFadj()==0.3);
+	  
 	}
 }
