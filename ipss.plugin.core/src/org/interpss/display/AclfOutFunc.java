@@ -176,7 +176,7 @@ public class AclfOutFunc {
 			}
 				 
 			for (Bus b : net.getBusList()) {
-				AclfBus bus = (AclfBus)b;
+				BaseAclfBus<?,?> bus = (BaseAclfBus<?,?>)b;
 				if (bus.isActive()) {
 					if (bus.isParent()) {
 						// parent bus could be the original bus or a newly created
@@ -201,7 +201,7 @@ public class AclfOutFunc {
 		return str;
 	}
 
-	private static String busLfSummary(AclfBus bus) {
+	private static String busLfSummary(BaseAclfBus<?,?> bus) {
 		final StringBuffer str = new StringBuffer("");
 		Complex busPQ = bus.getNetPQResults();
 		if (bus.isActive())
