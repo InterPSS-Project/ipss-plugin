@@ -33,13 +33,13 @@ public class TestAnnotateExciter extends AnnotateExciter {
             input="this.refPoint + pss.vs - mach.vt",
             parameter={"type.Limit", "this.k", "this.t", "this.vmax", "this.vmin"},
             y0="mach.efd"	)
-    DelayControlBlock delayBlock;
+    public DelayControlBlock delayBlock;
     
 	public double e1 = 50.0, se_e1 = 1.0, e2 = 50.0, se_e2 = 1.0;
     @AnFunctionField(
             parameter=	{"this.e1", "this.se_e1", "this.e2", "this.se_e2"},
             input={"this.refPoint", "pss.vs", "mach.vt"})
-    SeFunction seFunc;
+    public SeFunction seFunc;
     
     @AnFunctionField(
             input={"this.refPoint", "pss.vs", "mach.vt"})
