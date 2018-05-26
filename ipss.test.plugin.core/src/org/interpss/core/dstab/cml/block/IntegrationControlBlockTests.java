@@ -28,8 +28,9 @@ import static com.interpss.dstab.controller.block.ICMLStaticBlock.StaticBlockTyp
 import static com.interpss.dstab.controller.block.ICMLStaticBlock.StaticBlockType.NonWindup;
 import static org.junit.Assert.assertTrue;
 
-import org.interpss.dstab.control.cml.block.IntegrationControlBlock;
 import org.junit.Test;
+
+import com.interpss.dstab.controller.cml.block.IntegrationControlBlock;
 
 public class IntegrationControlBlockTests {
 	@Test

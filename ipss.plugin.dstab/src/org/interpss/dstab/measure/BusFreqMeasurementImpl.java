@@ -26,13 +26,12 @@ package org.interpss.dstab.measure;
 
 import java.io.IOException;
 
-import org.interpss.dstab.control.cml.block.DelayControlBlock;
-import org.interpss.dstab.control.cml.block.WashoutControlBlock;
-
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.interpss.common.datatype.Constants;
 import com.interpss.dstab.controller.block.adapt.CMLControlBlock1stOrderAdapter;
+import com.interpss.dstab.controller.cml.block.DelayControlBlock;
+import com.interpss.dstab.controller.cml.block.WashoutControlBlock;
 
 /**
  * An implementation of bus frequency measurement device. This also serves as an

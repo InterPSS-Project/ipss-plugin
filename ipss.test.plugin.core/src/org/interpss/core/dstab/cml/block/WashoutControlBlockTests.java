@@ -26,10 +26,10 @@ package org.interpss.core.dstab.cml.block;
 
 import static org.junit.Assert.assertTrue;
 
-import org.interpss.dstab.control.cml.block.WashoutControlBlock;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssRuntimeException;
+import com.interpss.dstab.controller.cml.block.WashoutControlBlock;
 
 public class WashoutControlBlockTests {
 	@Test

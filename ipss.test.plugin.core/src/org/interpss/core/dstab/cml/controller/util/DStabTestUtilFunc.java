@@ -6,8 +6,8 @@ import com.interpss.DStabObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.dstab.BaseDStabBus;
-import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.BaseDStabNetwork;
+import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.mach.Eq1Machine;
 import com.interpss.dstab.mach.MachineType;
 
