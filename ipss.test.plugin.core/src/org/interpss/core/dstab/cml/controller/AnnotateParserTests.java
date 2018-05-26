@@ -41,9 +41,9 @@ import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.controller.annotate.util.AnControllerHelper;
 import com.interpss.dstab.controller.cml.ICMLFunction;
 import com.interpss.dstab.controller.cml.block.DelayControlBlock;
-import com.interpss.dstab.controller.wrapper.ControlBlockFieldAnWrapper;
-import com.interpss.dstab.controller.wrapper.FunctionFieldAnWrapper;
-import com.interpss.dstab.controller.wrapper.StaticBlockFieldAnWrapper;
+import com.interpss.dstab.controller.cml.wrapper.ControlBlockFieldAnWrapper;
+import com.interpss.dstab.controller.cml.wrapper.FunctionFieldAnWrapper;
+import com.interpss.dstab.controller.cml.wrapper.StaticBlockFieldAnWrapper;
 import com.interpss.dstab.datatype.CMLVarEnum;
 import com.interpss.dstab.mach.Machine;
 
