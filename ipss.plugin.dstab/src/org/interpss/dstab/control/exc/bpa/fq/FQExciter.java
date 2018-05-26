@@ -12,7 +12,7 @@ import com.interpss.dstab.controller.AnnotateExciter;
 import com.interpss.dstab.controller.annotate.AnController;
 import com.interpss.dstab.controller.annotate.AnControllerField;
 import com.interpss.dstab.controller.annotate.AnFunctionField;
-import com.interpss.dstab.controller.block.ICMLStaticBlock;
+import com.interpss.dstab.controller.cml.ICMLStaticBlock;
 import com.interpss.dstab.controller.cml.block.DelayControlBlock;
 import com.interpss.dstab.controller.cml.block.FilterControlBlock;
 import com.interpss.dstab.controller.cml.block.GainBlock;
