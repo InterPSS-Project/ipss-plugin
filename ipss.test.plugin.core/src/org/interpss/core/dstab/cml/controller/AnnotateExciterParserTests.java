@@ -34,7 +34,7 @@ import org.junit.Test;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.controller.annotate.util.AnControllerHelper;
-import com.interpss.dstab.controller.block.ICMLFunction;
+import com.interpss.dstab.controller.cml.ICMLFunction;
 import com.interpss.dstab.controller.cml.block.DelayControlBlock;
 import com.interpss.dstab.controller.wrapper.ControlBlockFieldAnWrapper;
 import com.interpss.dstab.controller.wrapper.FunctionFieldAnWrapper;

@@ -29,7 +29,7 @@ import java.io.IOException;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.interpss.common.datatype.Constants;
-import com.interpss.dstab.controller.block.adapt.CMLControlBlock1stOrderAdapter;
+import com.interpss.dstab.controller.cml.adapt.CMLControlBlock1stOrderAdapter;
 import com.interpss.dstab.controller.cml.block.DelayControlBlock;
 import com.interpss.dstab.controller.cml.block.WashoutControlBlock;
 
