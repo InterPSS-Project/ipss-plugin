@@ -6,6 +6,8 @@ import com.interpss.dstab.controller.AnnotateExciter;
 import com.interpss.dstab.controller.annotate.AnController;
 import com.interpss.dstab.controller.annotate.AnControllerField;
 import com.interpss.dstab.controller.annotate.AnFunctionField;
+import com.interpss.dstab.controller.block.ICMLFunction;
+import com.interpss.dstab.controller.block.adapt.CMLFunctionAdapter;
 import com.interpss.dstab.controller.cml.block.DelayControlBlock;
 import com.interpss.dstab.controller.cml.func.SeFunction;
 import com.interpss.dstab.datatype.CMLFieldEnum;
@@ -20,7 +22,7 @@ import com.interpss.dstab.datatype.CMLFieldEnum;
 // User custom code end
         
 // Your custom class has to extend the AbstractAnnotateController class         
-public class TestAnnotateExciter extends AnnotateExciter {
+public class TestAnnotateExciterCustomFunc extends AnnotateExciter {
 
 	// User custom code begin
 	// Define controller parameters, fields and field annotation here 
@@ -30,13 +32,23 @@ public class TestAnnotateExciter extends AnnotateExciter {
             input="this.refPoint + pss.vs - mach.vt",
             parameter={"type.Limit", "this.k", "this.t", "this.vmax", "this.vmin"},
             y0="mach.efd"	)
-    DelayControlBlock delayBlock;
+    public DelayControlBlock delayBlock;
     
 	public double e1 = 50.0, se_e1 = 1.0, e2 = 50.0, se_e2 = 1.0;
     @AnFunctionField(
             parameter=	{"this.e1", "this.se_e1", "this.e2", "this.se_e2"},
             input={"this.refPoint", "pss.vs", "mach.vt"})
-    SeFunction seFunc;
+    public SeFunction seFunc;
+    
+    @AnFunctionField(
+            input={"this.refPoint", "pss.vs", "mach.vt"})
+    public ICMLFunction seFunc1 = new CMLFunctionAdapter() {
+    	public double eval(double[] dAry)  {
+    		return 0.0;
+    	}
+    };
+
+    // User custom code end
     
 // do not modify any code below this point     
     public AnController getAnController() {

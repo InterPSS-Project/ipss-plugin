@@ -7,18 +7,17 @@ package org.interpss.dstab.control.exc.ieee.y1981.dc1;
 
 import java.lang.reflect.Field;
 
-import org.interpss.dstab.control.cml.block.DelayControlBlock;
-import org.interpss.dstab.control.cml.block.FilterControlBlock;
-import org.interpss.dstab.control.cml.block.IntegrationControlBlock;
-import org.interpss.dstab.control.cml.block.WashoutControlBlock;
-import org.interpss.dstab.control.cml.func.SeFunction;
-
 import com.interpss.common.util.IpssLogger;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.controller.AnnotateExciter;
 import com.interpss.dstab.controller.annotate.AnController;
 import com.interpss.dstab.controller.annotate.AnControllerField;
 import com.interpss.dstab.controller.annotate.AnFunctionField;
+import com.interpss.dstab.controller.cml.block.DelayControlBlock;
+import com.interpss.dstab.controller.cml.block.FilterControlBlock;
+import com.interpss.dstab.controller.cml.block.IntegrationControlBlock;
+import com.interpss.dstab.controller.cml.block.WashoutControlBlock;
+import com.interpss.dstab.controller.cml.func.SeFunction;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
 

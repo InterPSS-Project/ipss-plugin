@@ -32,7 +32,6 @@ import org.interpss.core.dstab.cml.controller.util.TestAnnotateExciter;
 import org.interpss.core.dstab.cml.controller.util.TestAnnotateGovernor;
 import org.interpss.core.dstab.cml.controller.util.TestAnnotateStabilizer;
 import org.interpss.core.dstab.cml.controller.util.TestAnnotateStabilizerComplex;
-import org.interpss.dstab.control.cml.block.DelayControlBlock;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -41,6 +40,7 @@ import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.controller.annotate.util.AnControllerHelper;
 import com.interpss.dstab.controller.block.ICMLFunction;
+import com.interpss.dstab.controller.cml.block.DelayControlBlock;
 import com.interpss.dstab.controller.wrapper.ControlBlockFieldAnWrapper;
 import com.interpss.dstab.controller.wrapper.FunctionFieldAnWrapper;
 import com.interpss.dstab.controller.wrapper.StaticBlockFieldAnWrapper;
