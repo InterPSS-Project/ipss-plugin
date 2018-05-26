@@ -24,12 +24,12 @@
 
 package org.interpss.core.dstab.cml.block;
 
-import org.interpss.dstab.control.cml.block.GainBlock;
 import org.interpss.numeric.datatype.LimitType;
 
 import com.interpss.dstab.controller.annotate.AnController;
 import com.interpss.dstab.controller.annotate.AnControllerField;
 import com.interpss.dstab.controller.block.ICMLStaticBlock;
+import com.interpss.dstab.controller.cml.block.GainBlock;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 
 public class GainBlockExtensionTests {

@@ -2,12 +2,11 @@ package org.interpss.core.dstab.cml.controller.util;
 
 import java.lang.reflect.Field;
 
-import org.interpss.dstab.control.cml.block.FilterControlBlock;
-import org.interpss.dstab.control.cml.block.GainBlock;
-
 import com.interpss.dstab.controller.AnnotateStabilizer;
 import com.interpss.dstab.controller.annotate.AnController;
 import com.interpss.dstab.controller.annotate.AnControllerField;
+import com.interpss.dstab.controller.cml.block.FilterControlBlock;
+import com.interpss.dstab.controller.cml.block.GainBlock;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 
 // User custom code begin 
