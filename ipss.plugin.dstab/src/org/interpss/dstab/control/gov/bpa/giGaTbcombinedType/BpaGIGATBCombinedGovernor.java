@@ -1,7 +1,7 @@
 package org.interpss.dstab.control.gov.bpa.giGaTbcombinedType;
 
 import static com.interpss.common.util.IpssLogger.ipssLogger;
-import static com.interpss.dstab.controller.block.ICMLStaticBlock.StaticBlockType.NonWindup;
+import static com.interpss.dstab.controller.cml.ICMLStaticBlock.StaticBlockType.NonWindup;
 
 import java.lang.reflect.Field;
 
@@ -11,12 +11,12 @@ import com.interpss.dstab.controller.AnnotateGovernor;
 import com.interpss.dstab.controller.annotate.AnController;
 import com.interpss.dstab.controller.annotate.AnControllerField;
 import com.interpss.dstab.controller.annotate.AnFunctionField;
-import com.interpss.dstab.controller.block.ICMLControlBlock;
-import com.interpss.dstab.controller.block.ICMLFunction;
-import com.interpss.dstab.controller.block.ICMLStaticBlock;
-import com.interpss.dstab.controller.block.adapt.CMLControlBlockAdapter;
-import com.interpss.dstab.controller.block.adapt.CMLFunctionAdapter;
-import com.interpss.dstab.controller.block.adapt.CMLStaticBlockAdapter;
+import com.interpss.dstab.controller.cml.ICMLControlBlock;
+import com.interpss.dstab.controller.cml.ICMLFunction;
+import com.interpss.dstab.controller.cml.ICMLStaticBlock;
+import com.interpss.dstab.controller.cml.adapt.CMLControlBlockAdapter;
+import com.interpss.dstab.controller.cml.adapt.CMLFunctionAdapter;
+import com.interpss.dstab.controller.cml.adapt.CMLStaticBlockAdapter;
 import com.interpss.dstab.controller.cml.block.DelayControlBlock;
 import com.interpss.dstab.controller.cml.block.GainBlock;
 import com.interpss.dstab.controller.cml.block.IntegrationControlBlock;

@@ -28,7 +28,7 @@ import org.interpss.numeric.datatype.LimitType;
 
 import com.interpss.dstab.controller.annotate.AnController;
 import com.interpss.dstab.controller.annotate.AnControllerField;
-import com.interpss.dstab.controller.block.ICMLStaticBlock;
+import com.interpss.dstab.controller.cml.ICMLStaticBlock;
 import com.interpss.dstab.controller.cml.block.GainBlock;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 

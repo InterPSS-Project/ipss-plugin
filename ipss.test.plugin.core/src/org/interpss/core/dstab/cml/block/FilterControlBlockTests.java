@@ -24,8 +24,8 @@
 
 package org.interpss.core.dstab.cml.block;
 
-import static com.interpss.dstab.controller.block.ICMLStaticBlock.StaticBlockType.Limit;
-import static com.interpss.dstab.controller.block.ICMLStaticBlock.StaticBlockType.NonWindup;
+import static com.interpss.dstab.controller.cml.ICMLStaticBlock.StaticBlockType.Limit;
+import static com.interpss.dstab.controller.cml.ICMLStaticBlock.StaticBlockType.NonWindup;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
