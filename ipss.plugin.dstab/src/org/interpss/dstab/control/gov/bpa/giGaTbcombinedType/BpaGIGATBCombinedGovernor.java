@@ -1,26 +1,26 @@
 package org.interpss.dstab.control.gov.bpa.giGaTbcombinedType;
 
 import static com.interpss.common.util.IpssLogger.ipssLogger;
-import static com.interpss.dstab.controller.cml.ICMLStaticBlock.StaticBlockType.NonWindup;
+import static com.interpss.dstab.controller.cml.field.ICMLStaticBlock.StaticBlockType.NonWindup;
 
 import java.lang.reflect.Field;
 
 import org.interpss.numeric.datatype.LimitType;
 
-import com.interpss.dstab.controller.AnnotateGovernor;
-import com.interpss.dstab.controller.annotate.AnController;
-import com.interpss.dstab.controller.annotate.AnControllerField;
-import com.interpss.dstab.controller.annotate.AnFunctionField;
-import com.interpss.dstab.controller.cml.ICMLControlBlock;
-import com.interpss.dstab.controller.cml.ICMLFunction;
-import com.interpss.dstab.controller.cml.ICMLStaticBlock;
-import com.interpss.dstab.controller.cml.adapt.CMLControlBlockAdapter;
-import com.interpss.dstab.controller.cml.adapt.CMLFunctionAdapter;
-import com.interpss.dstab.controller.cml.adapt.CMLStaticBlockAdapter;
-import com.interpss.dstab.controller.cml.block.DelayControlBlock;
-import com.interpss.dstab.controller.cml.block.GainBlock;
-import com.interpss.dstab.controller.cml.block.IntegrationControlBlock;
-import com.interpss.dstab.controller.cml.block.WashoutControlBlock;
+import com.interpss.dstab.controller.cml.annotate.AnController;
+import com.interpss.dstab.controller.cml.annotate.AnControllerField;
+import com.interpss.dstab.controller.cml.annotate.AnFunctionField;
+import com.interpss.dstab.controller.cml.annotate.AnnotateGovernor;
+import com.interpss.dstab.controller.cml.field.ICMLControlBlock;
+import com.interpss.dstab.controller.cml.field.ICMLFunction;
+import com.interpss.dstab.controller.cml.field.ICMLStaticBlock;
+import com.interpss.dstab.controller.cml.field.adapt.CMLControlBlockAdapter;
+import com.interpss.dstab.controller.cml.field.adapt.CMLFunctionAdapter;
+import com.interpss.dstab.controller.cml.field.adapt.CMLStaticBlockAdapter;
+import com.interpss.dstab.controller.cml.field.block.DelayControlBlock;
+import com.interpss.dstab.controller.cml.field.block.GainBlock;
+import com.interpss.dstab.controller.cml.field.block.IntegrationControlBlock;
+import com.interpss.dstab.controller.cml.field.block.WashoutControlBlock;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 
 /**
