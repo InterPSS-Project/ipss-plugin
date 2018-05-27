@@ -9,7 +9,7 @@ import com.interpss.common.util.XmlBeanUtil;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
-import com.interpss.dstab.controller.AbstractGovernor;
+import com.interpss.dstab.controller.deqn.AbstractGovernor;
 import com.interpss.dstab.mach.Machine;
 
 
