@@ -26,10 +26,10 @@ package org.interpss.core.dstab.cml.block;
 
 import org.interpss.numeric.datatype.LimitType;
 
-import com.interpss.dstab.controller.annotate.AnController;
-import com.interpss.dstab.controller.annotate.AnControllerField;
-import com.interpss.dstab.controller.cml.ICMLStaticBlock;
-import com.interpss.dstab.controller.cml.block.GainBlock;
+import com.interpss.dstab.controller.cml.annotate.AnController;
+import com.interpss.dstab.controller.cml.annotate.AnControllerField;
+import com.interpss.dstab.controller.cml.field.ICMLStaticBlock;
+import com.interpss.dstab.controller.cml.field.block.GainBlock;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 
 public class GainBlockExtensionTests {
