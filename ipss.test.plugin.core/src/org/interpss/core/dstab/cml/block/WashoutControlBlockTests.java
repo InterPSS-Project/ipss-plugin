@@ -29,7 +29,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssRuntimeException;
-import com.interpss.dstab.controller.cml.block.WashoutControlBlock;
+import com.interpss.dstab.controller.cml.field.block.WashoutControlBlock;
 
 public class WashoutControlBlockTests {
 	@Test

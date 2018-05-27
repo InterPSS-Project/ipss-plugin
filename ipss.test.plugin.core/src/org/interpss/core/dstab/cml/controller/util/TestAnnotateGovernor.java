@@ -2,11 +2,11 @@ package org.interpss.core.dstab.cml.controller.util;
 
 import java.lang.reflect.Field;
 
-import com.interpss.dstab.controller.AnnotateGovernor;
-import com.interpss.dstab.controller.annotate.AnController;
-import com.interpss.dstab.controller.annotate.AnControllerField;
-import com.interpss.dstab.controller.cml.block.DelayControlBlock;
-import com.interpss.dstab.controller.cml.block.GainBlock;
+import com.interpss.dstab.controller.cml.annotate.AnController;
+import com.interpss.dstab.controller.cml.annotate.AnControllerField;
+import com.interpss.dstab.controller.cml.annotate.AnnotateGovernor;
+import com.interpss.dstab.controller.cml.field.block.DelayControlBlock;
+import com.interpss.dstab.controller.cml.field.block.GainBlock;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 
 // User custom code begin 
