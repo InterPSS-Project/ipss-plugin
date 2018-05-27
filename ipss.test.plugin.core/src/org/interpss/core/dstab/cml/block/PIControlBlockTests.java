@@ -28,8 +28,8 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.interpss.dstab.controller.cml.ICMLStaticBlock;
-import com.interpss.dstab.controller.cml.block.PIControlBlock;
+import com.interpss.dstab.controller.cml.field.ICMLStaticBlock;
+import com.interpss.dstab.controller.cml.field.block.PIControlBlock;
 
 public class PIControlBlockTests {
 	@Test

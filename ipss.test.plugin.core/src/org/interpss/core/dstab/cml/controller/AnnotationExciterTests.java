@@ -31,8 +31,8 @@ import java.lang.reflect.Field;
 import org.interpss.core.dstab.cml.controller.util.TestAnnotateExciter;
 import org.junit.Test;
 
-import com.interpss.dstab.controller.annotate.AnControllerField;
-import com.interpss.dstab.controller.annotate.AnFunctionField;
+import com.interpss.dstab.controller.cml.annotate.AnControllerField;
+import com.interpss.dstab.controller.cml.annotate.AnFunctionField;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 
 public class AnnotationExciterTests  {

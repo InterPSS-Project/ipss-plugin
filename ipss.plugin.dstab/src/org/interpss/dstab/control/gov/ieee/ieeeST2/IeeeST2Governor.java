@@ -30,7 +30,7 @@ import com.interpss.common.exp.InterpssRuntimeException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
-import com.interpss.dstab.controller.AbstractGovernor;
+import com.interpss.dstab.controller.deqn.AbstractGovernor;
 import com.interpss.dstab.mach.Machine;
 
 public class IeeeST2Governor extends AbstractGovernor {

@@ -8,14 +8,14 @@ package org.interpss.dstab.control.exc.bpa.ek;
 import java.lang.reflect.Field;
 
 import com.interpss.dstab.BaseDStabBus;
-import com.interpss.dstab.controller.AnnotateExciter;
-import com.interpss.dstab.controller.annotate.AnController;
-import com.interpss.dstab.controller.annotate.AnControllerField;
-import com.interpss.dstab.controller.annotate.AnFunctionField;
-import com.interpss.dstab.controller.cml.block.DelayControlBlock;
-import com.interpss.dstab.controller.cml.block.GainBlock;
-import com.interpss.dstab.controller.cml.block.WashoutControlBlock;
-import com.interpss.dstab.controller.cml.func.SeFunction;
+import com.interpss.dstab.controller.cml.annotate.AnController;
+import com.interpss.dstab.controller.cml.annotate.AnControllerField;
+import com.interpss.dstab.controller.cml.annotate.AnFunctionField;
+import com.interpss.dstab.controller.cml.annotate.AnnotateExciter;
+import com.interpss.dstab.controller.cml.field.block.DelayControlBlock;
+import com.interpss.dstab.controller.cml.field.block.GainBlock;
+import com.interpss.dstab.controller.cml.field.block.WashoutControlBlock;
+import com.interpss.dstab.controller.cml.field.func.SeFunction;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
 

@@ -2,12 +2,14 @@ package org.interpss.core.dstab.cml.controller.util;
 
 import java.lang.reflect.Field;
 
-import com.interpss.dstab.controller.AnnotateExciter;
-import com.interpss.dstab.controller.annotate.AnController;
-import com.interpss.dstab.controller.annotate.AnControllerField;
-import com.interpss.dstab.controller.annotate.AnFunctionField;
-import com.interpss.dstab.controller.cml.block.DelayControlBlock;
-import com.interpss.dstab.controller.cml.func.SeFunction;
+import com.interpss.dstab.controller.cml.annotate.AnController;
+import com.interpss.dstab.controller.cml.annotate.AnControllerField;
+import com.interpss.dstab.controller.cml.annotate.AnFunctionField;
+import com.interpss.dstab.controller.cml.annotate.AnnotateExciter;
+import com.interpss.dstab.controller.cml.field.ICMLFunction;
+import com.interpss.dstab.controller.cml.field.adapt.CMLFunctionAdapter;
+import com.interpss.dstab.controller.cml.field.block.DelayControlBlock;
+import com.interpss.dstab.controller.cml.field.func.SeFunction;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 
 // User custom code begin 
@@ -30,13 +32,21 @@ public class TestAnnotateExciter extends AnnotateExciter {
             input="this.refPoint + pss.vs - mach.vt",
             parameter={"type.Limit", "this.k", "this.t", "this.vmax", "this.vmin"},
             y0="mach.efd"	)
-    DelayControlBlock delayBlock;
+    public DelayControlBlock delayBlock;
     
 	public double e1 = 50.0, se_e1 = 1.0, e2 = 50.0, se_e2 = 1.0;
     @AnFunctionField(
             parameter=	{"this.e1", "this.se_e1", "this.e2", "this.se_e2"},
             input={"this.refPoint", "pss.vs", "mach.vt"})
-    SeFunction seFunc;
+    public SeFunction seFunc;
+    
+    @AnFunctionField(
+            input={"this.refPoint", "pss.vs", "mach.vt"})
+    public ICMLFunction seFunc1 = new CMLFunctionAdapter() {
+    	public double eval(double[] dAry)  {
+    		return 0.0;
+    	}
+    };    
     
 // do not modify any code below this point     
     public AnController getAnController() {
