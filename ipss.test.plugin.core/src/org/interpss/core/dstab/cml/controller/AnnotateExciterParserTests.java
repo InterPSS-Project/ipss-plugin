@@ -33,9 +33,9 @@ import org.junit.Test;
 
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBus;
-import com.interpss.dstab.controller.annotate.util.AnControllerHelper;
-import com.interpss.dstab.controller.cml.ICMLFunction;
-import com.interpss.dstab.controller.cml.block.DelayControlBlock;
+import com.interpss.dstab.controller.cml.annotate.util.AnControllerInitializer;
+import com.interpss.dstab.controller.cml.field.ICMLFunction;
+import com.interpss.dstab.controller.cml.field.block.DelayControlBlock;
 import com.interpss.dstab.controller.cml.wrapper.ControlBlockFieldAnWrapper;
 import com.interpss.dstab.controller.cml.wrapper.FunctionFieldAnWrapper;
 import com.interpss.dstab.controller.cml.wrapper.StaticBlockFieldAnWrapper;
@@ -93,15 +93,15 @@ public class AnnotateExciterParserTests extends DStabTestSetupBase {
 		assertTrue(exc.initStates(bus, machine)); 
 		
 		//System.out.println(exc.toString());
-		assertTrue(AnControllerHelper.getBlockFieldWrapper("delayBlock", exc.getFieldWrapperList()) != null);
+		assertTrue(AnControllerInitializer.getBlockFieldWrapper("delayBlock", exc.getFieldWrapperList()) != null);
 
-		DelayControlBlock block = (DelayControlBlock)(AnControllerHelper.getBlock("delayBlock", exc.getFieldWrapperList()));
+		DelayControlBlock block = (DelayControlBlock)(AnControllerInitializer.getBlock("delayBlock", exc.getFieldWrapperList()));
 		assertTrue(block.getK() == 50.0);
 		assertTrue(block.getT() == 0.05);
 		assertTrue(block.getLimit().getMax() == 10.0);
 		assertTrue(block.getLimit().getMin() == 0.0);
 
-		cfield = (ControlBlockFieldAnWrapper)(AnControllerHelper.getBlockFieldWrapper("delayBlock", exc.getFieldWrapperList()));
+		cfield = (ControlBlockFieldAnWrapper)(AnControllerInitializer.getBlockFieldWrapper("delayBlock", exc.getFieldWrapperList()));
 		assertTrue(cfield.getInitOrder() == 1);
 		assertTrue(cfield.hasInput(CMLVarEnum.ControllerRefPoint));
 		assertTrue(!cfield.hasOutput(CMLVarEnum.ControllerRefPoint));
@@ -115,18 +115,18 @@ public class AnnotateExciterParserTests extends DStabTestSetupBase {
 		assertTrue(cfield.getY0Exp().getRecList().length == 1);
 		assertTrue(cfield.getY0Exp().hasVarType(CMLVarEnum.MachEfd));
 		
-		assertTrue(AnControllerHelper.getBlockFieldWrapper("seFunc", exc.getFieldWrapperList()) != null);
+		assertTrue(AnControllerInitializer.getBlockFieldWrapper("seFunc", exc.getFieldWrapperList()) != null);
 
 //		SeFunction seFunc = (SeFunction)(AnCntlUtilFunc.getBlock("seFunc", exc.getFieldList()));
 //		assertTrue(seFunc.g.getSe1_0() == 50.0);
 //		assertTrue(seFunc.getSe0_75() == 1.0);
 
-		field = (FunctionFieldAnWrapper<ICMLFunction>)(AnControllerHelper.getBlockFieldWrapper("seFunc", exc.getFieldWrapperList()));
+		field = (FunctionFieldAnWrapper<ICMLFunction>)(AnControllerInitializer.getBlockFieldWrapper("seFunc", exc.getFieldWrapperList()));
 		assertTrue(field.getInputs().length == 3);
 		assertTrue(field.getParameters().length == 2);
 
-		assertTrue(AnControllerHelper.getBlockFieldWrapper("seFunc1", exc.getFieldWrapperList()) != null);
-		field = (FunctionFieldAnWrapper<ICMLFunction>)(AnControllerHelper.getBlockFieldWrapper("seFunc1", exc.getFieldWrapperList()));
+		assertTrue(AnControllerInitializer.getBlockFieldWrapper("seFunc1", exc.getFieldWrapperList()) != null);
+		field = (FunctionFieldAnWrapper<ICMLFunction>)(AnControllerInitializer.getBlockFieldWrapper("seFunc1", exc.getFieldWrapperList()));
 		assertTrue(field.getInputs().length == 3);
 	}
 }
