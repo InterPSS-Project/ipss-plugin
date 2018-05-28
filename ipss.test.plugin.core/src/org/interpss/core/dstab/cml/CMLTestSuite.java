@@ -5,6 +5,8 @@ import org.interpss.core.dstab.cml.block.FilterControlBlockTests;
 import org.interpss.core.dstab.cml.block.IntegrationControlBlockTests;
 import org.interpss.core.dstab.cml.block.PIControlBlockTests;
 import org.interpss.core.dstab.cml.block.WashoutControlBlockTests;
+import org.interpss.core.dstab.cml.controller.AnnotateParserTests;
+import org.interpss.core.dstab.cml.controller.AnnotationExciterTests;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
@@ -18,7 +20,8 @@ import org.junit.runners.Suite.SuiteClasses;
 	PIControlBlockTests.class,
 	WashoutControlBlockTests.class,
 	
-	//AnnotateParserTests.class,
+	AnnotateParserTests.class,
+	AnnotationExciterTests.class,
 })
 public class CMLTestSuite {
 }
