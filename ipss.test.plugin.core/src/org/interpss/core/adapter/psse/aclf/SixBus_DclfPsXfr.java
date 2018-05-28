@@ -67,7 +67,7 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
 	  	
   		assertTrue(net.isLfConverged());
   		
-		System.out.println(AclfOutFunc.loadFlowSummary(net));
+		//System.out.println(AclfOutFunc.loadFlowSummary(net));
   		AclfSwingBus swing = net.getBus("Bus1").toSwingBus();
   		Complex p = swing.getGenResults(UnitType.PU);
   		assertTrue(Math.abs(p.getReal()-3.1032)<0.0001);
@@ -85,7 +85,7 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
 					.setPsseVersion(PsseVersion.PSSE_30)
 					.load()
 					.getImportedObj();
-  		System.out.println(net.net2String());
+  		//System.out.println(net.net2String());
 		/*
 		net.accept(CoreObjectFactory.createBusNoArrangeVisitor());
 		for (Bus b : net.getBusList())
@@ -130,7 +130,7 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
 		algo.calculateDclf();
 
 		//System.out.println(DclfOutFunc.dclfResults(algo, false));
-		System.out.println(algo.getBusPower(net.getBus("Bus1")) + ", " + Math.toDegrees(algo.getBusAngle("Bus1")));
+		//System.out.println(algo.getBusPower(net.getBus("Bus1")) + ", " + Math.toDegrees(algo.getBusAngle("Bus1")));
   		assertTrue(Math.abs(algo.getBusPower(net.getBus("Bus1"))-1.99)<0.0001);
   		assertTrue(Math.abs(Math.toDegrees(algo.getBusAngle("Bus1"))-2.848746)<0.001);
 
