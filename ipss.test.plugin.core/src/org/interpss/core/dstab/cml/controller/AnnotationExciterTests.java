@@ -28,14 +28,22 @@ import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Field;
 
+import org.interpss.core.dstab.cml.controller.util.DStabTestUtilFunc;
 import org.interpss.core.dstab.cml.controller.util.TestAnnotateExciter;
 import org.junit.Test;
 
+import com.interpss.dstab.BaseDStabNetwork;
+import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.controller.cml.annotate.AnControllerField;
 import com.interpss.dstab.controller.cml.annotate.AnFunctionField;
 import com.interpss.dstab.datatype.CMLFieldEnum;
+import com.interpss.dstab.mach.Machine;
 
 public class AnnotationExciterTests  {
+	/*
+	 * Part-1 : Testing annotation filed and parameters
+	 * =============================================== 
+	 */
 	@Test
 	public void parameterTest() throws Exception {
 		TestAnnotateExciter exe = new TestAnnotateExciter();
@@ -98,4 +106,60 @@ public class AnnotationExciterTests  {
 		assertTrue("", funcField.input()[0].equals("this.refPoint"));
 		assertTrue("", funcField.input()[1].equals("pss.vs"));
 	}
+	
+	/*
+	 * Part-2 : Testing parsing annotation info
+	 * ======================================== 
+	 */	
+	
+	@Test
+	public void parseControllerAnnotatoinInfoTest() throws Exception {
+		BaseDStabNetwork<?,?> net = DStabTestUtilFunc.createTestNetwork();
+		DStabBus bus = (DStabBus)net.getDStabBus("BusId");
+		Machine machine = bus.getMachine();
+		/*
+		public double k = 50.0, t = 0.05, vmax = 10.0, vmin = 0.0;
+    		@AnControllerField(
+        	type= "type.ControlBlock",
+        	input="this.refPoint + pss.vs - mach.vt",
+        	parameter={"type.Limit", "this.k", "this.t", "this.vmax", "this.vmin"},
+        	y0="mach.efd"	)
+		DelayControlBlock delayBlock;
+		 */
+		TestAnnotateExciter exc = new TestAnnotateExciter();
+		
+    	exc.setMachine(machine);
+    	
+    	
+    	//System.out.println("Annotate Controller Init Called");
+	    exc.parseAnnotation();
+		
+		System.out.println(exc.toString());
+	}
+	
+	//@Test
+	public void parseDelayBlockInfoTest() throws Exception {
+		BaseDStabNetwork<?,?> net = DStabTestUtilFunc.createTestNetwork();
+		DStabBus bus = (DStabBus)net.getDStabBus("BusId");
+		Machine machine = bus.getMachine();
+		/*
+		public double k = 50.0, t = 0.05, vmax = 10.0, vmin = 0.0;
+    		@AnControllerField(
+        	type= "type.ControlBlock",
+        	input="this.refPoint + pss.vs - mach.vt",
+        	parameter={"type.Limit", "this.k", "this.t", "this.vmax", "this.vmin"},
+        	y0="mach.efd"	)
+		DelayControlBlock delayBlock;
+		 */
+		TestAnnotateExciter exc = new TestAnnotateExciter();
+		
+    	exc.setMachine(machine);
+    	
+    	
+    	//System.out.println("Annotate Controller Init Called");
+	    exc.parseAnnotation();
+		
+		System.out.println(exc.toString());
+	}
+	
 }
