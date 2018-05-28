@@ -46,6 +46,8 @@ import org.interpss.core.dstab.cml.block.FilterControlBlockTests;
 import org.interpss.core.dstab.cml.block.IntegrationControlBlockTests;
 import org.interpss.core.dstab.cml.block.PIControlBlockTests;
 import org.interpss.core.dstab.cml.block.WashoutControlBlockTests;
+import org.interpss.core.dstab.cml.controller.AnnotateParserTests;
+import org.interpss.core.dstab.cml.controller.AnnotationExciterTests;
 import org.interpss.core.dstab.dynLoad.TestInductionMotorModel;
 import org.interpss.core.dstab.dynLoad.TestLd1pacModel;
 import org.interpss.core.dstab.mach.EConstMachineTest;
@@ -107,6 +109,17 @@ import org.junit.runners.Suite.SuiteClasses;
 	
 	//DStab PSS/E
 	DStab_IEEE9Bus_Test.class,
+	
+	// CML
+	DelayControlBlockTests.class,
+	FilterControlBlockTests.class,
+	//GainBlockExtensionTests.class,
+	IntegrationControlBlockTests.class,
+	PIControlBlockTests.class,
+	WashoutControlBlockTests.class,
+	
+	AnnotateParserTests.class,
+	AnnotationExciterTests.class,	
 	
 	// Dist
 	DistLF14Bus_PathLF_Test.class,
