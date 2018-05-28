@@ -35,7 +35,6 @@ import org.interpss.core.dstab.cml.controller.util.TestAnnotateStabilizerComplex
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.controller.cml.annotate.util.AnControllerInitializer;
@@ -102,17 +101,17 @@ public class AnnotateParserTests extends DStabTestSetupBase {
 
 		field = (FunctionFieldAnWrapper<ICMLFunction>)(AnControllerInitializer.getBlockFieldWrapper("seFunc", exc.getFieldWrapperList()));
 		assertTrue(field.getInputs().length == 3);
-		assertTrue(field.getParameters().length == 2);
+		assertTrue(field.getParameters().length == 4);
 
 		assertTrue(AnControllerInitializer.getBlockFieldWrapper("seFunc1", exc.getFieldWrapperList()) != null);
 		field = (FunctionFieldAnWrapper<ICMLFunction>)(AnControllerInitializer.getBlockFieldWrapper("seFunc1", exc.getFieldWrapperList()));
 		assertTrue(field.getInputs().length == 3);
 	}
 
-	//@Test
+	@Test
 	public void governorTestCase()  throws InterpssException {
-		BaseDStabNetwork net = DStabTestUtilFunc.createTestNetwork();
-		BaseDStabBus bus = net.getDStabBus("BusId");
+		BaseDStabNetwork<?,?> net = DStabTestUtilFunc.createTestNetwork();
+		DStabBus bus = (DStabBus)net.getDStabBus("BusId");
 		Machine machine = bus.getMachine();
 		/*
 		public double ka = 10.0, ta = 0.5;
@@ -147,10 +146,10 @@ public class AnnotateParserTests extends DStabTestSetupBase {
 		//System.out.println(gov.toString());
 	}
 
-	//@Test
+	@Test
 	public void stabilizerTestCase()  throws InterpssException {
-		BaseDStabNetwork net = DStabTestUtilFunc.createTestNetwork();
-		BaseDStabBus bus = net.getDStabBus("BusId");
+		BaseDStabNetwork<?,?> net = DStabTestUtilFunc.createTestNetwork();
+		DStabBus bus = (DStabBus)net.getDStabBus("BusId");
 		Machine machine = bus.getMachine();
 		/*
 		public double k1 = 1.0, t1 = 0.05, t2 = 0.5;
@@ -185,10 +184,10 @@ public class AnnotateParserTests extends DStabTestSetupBase {
 		//System.out.println(pss.toString());
 	}
 
-	//@Test
+	@Test
 	public void stabilizerComplexTestCase()  throws InterpssException {
-		BaseDStabNetwork net = DStabTestUtilFunc.createTestNetwork();
-		BaseDStabBus bus = net.getDStabBus("BusId");
+		BaseDStabNetwork<?,?> net = DStabTestUtilFunc.createTestNetwork();
+		DStabBus bus = (DStabBus)net.getDStabBus("BusId");
 		Machine machine = bus.getMachine();
 
 		//Machine mach = TestUtil.createMachine();
