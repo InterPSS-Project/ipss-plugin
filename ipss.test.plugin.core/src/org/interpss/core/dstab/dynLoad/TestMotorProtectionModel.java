@@ -1151,7 +1151,7 @@ private DStabilityNetwork create2BusSystem() throws InterpssException{
 		// a line branch connect the two buses
 		DStabBranch branch = DStabObjectFactory.createDStabBranch("Bus1", "Swing", net);
 		branch.setBranchCode(AclfBranchCode.LINE);
-		branch.setZ(new Complex(0.0, 0.05));
+		branch.setZ(new Complex(0.0, 0.02));
 		
 		//set positive info only
 		net.setPositiveSeqDataOnly(true);

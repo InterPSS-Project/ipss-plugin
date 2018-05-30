@@ -35,7 +35,7 @@ public class DynLoadDataHelper {
 				loadModel = createCMPLDWLoadModel(dynLoad.getLoadModel().getCMPLDWLoad(),dstabBus,dynLoad.getId());
 			}
 			else if(dynLoad.getLoadXmlType()==LoadCharacteristicTypeEnumType.SINGLE_PHASE_AC_MOTOR){
-				loadModel = createSinglePhaseACMotorLoadModel(dynLoad.getLoadModel().getACMotor(),dstabBus,dynLoad.getId());
+				loadModel = createSinglePhaseACMotorLoadModel(dynLoad.getLoadModel().getSinglePhaseACMotor(),dstabBus,dynLoad.getId());
 			}
 		}
 		return loadModel;
@@ -85,7 +85,7 @@ public class DynLoadDataHelper {
 			Tf     
 
          */
-        acMotor.setLoadPercent(acMotorXml.getLoadPercent());
+        acMotor.setLoadPercent(acMotorXml.getCompLF()*100.0);// compLF --load factor is within the range of [0, 1]
         
         acMotor.setTstall(acMotorXml.getTstall());
         
@@ -115,9 +115,9 @@ public class DynLoadDataHelper {
         
         acMotor.setTth(acMotorXml.getTth());
         
-        acMotor.setTh1t(acMotorXml.getTh1t());
+        acMotor.setTh1t(acMotorXml.getTh1T());
         
-        acMotor.setTh2t(acMotorXml.getTh2t());
+        acMotor.setTh2t(acMotorXml.getTh2T());
         
         acMotor.setFuvr(acMotorXml.getFuvr());
         
