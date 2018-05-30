@@ -196,6 +196,8 @@ public class LVSHLoadRelayModel extends DynamicBusDeviceImpl implements BusRelay
 					if(this.relaySetPoints.get(i).getValue3()>maxTripFraction){
 						maxTripFraction = this.relaySetPoints.get(i).getValue3();
 					}
+					//reset the timer
+					this.timerAry[i] = 0.0;
 				}
 			}
 			
