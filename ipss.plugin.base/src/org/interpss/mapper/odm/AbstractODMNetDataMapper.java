@@ -97,12 +97,16 @@ public abstract class AbstractODMNetDataMapper<Tfrom, Tto> extends AbstractMappe
 			ipssLogger.info("Bus is not active, " + bus.getId());
 		}
 		
+		
+		/*
 		if (busRec.getCimRdfRecords() != null && busRec.getCimRdfRecords().getRdfRec().size() > 0) {
 			for (CimRdfXmlType cimRec : busRec.getCimRdfRecords().getRdfRec()) {
 				CimRecord rec = CoreObjectFactory.createCimRecod(cimRec.getRdfId(), cimRec.getName());
 				bus.getCimRec().add(rec);
 			}
 		}
+		*/
+		
 		
 		bus.setDesc(busRec.getDesc());
 		if (busRec.getAreaNumber() != null) {
