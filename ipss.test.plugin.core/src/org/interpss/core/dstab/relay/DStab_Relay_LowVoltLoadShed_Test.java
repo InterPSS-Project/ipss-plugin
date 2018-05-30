@@ -88,9 +88,11 @@ public class DStab_Relay_LowVoltLoadShed_Test extends DStabTestSetupBase{
 	    LVSHLoadRelayModel lvsh = new LVSHLoadRelayModel(bus5, "1");
 	    
 	    //Triplet <voltage, time, fraction>
-	    Triplet vtf = new Triplet(0.5, 0.05,0.5);
+	    Triplet vtf1 = new Triplet(0.6, 0.05,0.2);
+	    Triplet vtf2 = new Triplet(0.4, 0.06,0.3);
 	    List<Triplet> settings= new ArrayList<>();
-	    settings.add(vtf);
+	    settings.add(vtf1);
+	    settings.add(vtf2);
 	  
 	    lvsh.setRelaySetPoints(settings);
 	    
