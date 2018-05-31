@@ -28,6 +28,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Field;
 
+import org.interpss.core.dstab.DStabTestSetupBase;
 import org.interpss.core.dstab.cml.controller.util.DStabTestUtilFunc;
 import org.interpss.core.dstab.cml.controller.util.TestAnnotateExciter;
 import org.junit.Test;
@@ -47,7 +48,7 @@ import com.interpss.dstab.datatype.CMLVarEnum;
 import com.interpss.dstab.datatype.ExpCalculator;
 import com.interpss.dstab.mach.Machine;
 
-public class AnnotationExciterTests  {
+public class AnnotationExciterTests extends DStabTestSetupBase {
 	/* 
 	 * Part-0 : Testing annotation filed and parameters
 	 * ================================================ 
@@ -532,4 +533,40 @@ Field name : seFunc
 	    assertTrue("", func.getVarRecList().get(2).getSymbolStr().equals("mach.vt"));
 	    assertTrue("", func.getVarRecList().get(2).getSymbolType() == CMLVarEnum.MachVt);
 	}
+	
+	/*
+	 * Part-3 : init order
+	 * =================== 
+	 */	
+	@Test
+	public void initOrderTest() throws Exception {
+		BaseDStabNetwork<?,?> net = DStabTestUtilFunc.createTestNetwork();
+		DStabBus bus = (DStabBus)net.getDStabBus("BusId");
+		Machine machine = bus.getMachine();
+		/*
+		public double k = 50.0, t = 0.05, vmax = 10.0, vmin = 0.0;
+    		@AnControllerField(
+        	type= "type.ControlBlock",
+        	input="this.refPoint + pss.vs - mach.vt",
+        	parameter={"type.Limit", "this.k", "this.t", "this.vmax", "this.vmin"},
+        	y0="mach.efd"	)
+		DelayControlBlock delayBlock;
+		 */
+		TestAnnotateExciter exc = new TestAnnotateExciter();
+		
+    	exc.setMachine(machine);
+    	
+    	
+    	//System.out.println("Annotate Controller Init Called");
+		exc.initStates(bus, machine); 
+		
+		//System.out.println(exc.toString());
+		/*
+Field name : delayBlock
+   parameters {type.Limit, this.k, this.t, this.vmax, this.vmin, }, 
+init order : 1},  
+		 */
+	    BlockFieldAnWrapper<?> wrapper = (BlockFieldAnWrapper<?>)exc.getFieldWrapperList().get(0);
+	    assertTrue("", wrapper.getInitOrder() == 1);
+	}	
 }
