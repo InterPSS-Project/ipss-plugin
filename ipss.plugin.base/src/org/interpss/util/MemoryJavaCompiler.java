@@ -52,15 +52,15 @@ import javax.tools.ForwardingJavaFileManager;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
+import javax.tools.JavaFileObject.Kind;
 import javax.tools.SimpleJavaFileObject;
 import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
-import javax.tools.JavaFileObject.Kind;
+
+import com.interpss.CoreCommonFactory;
+import com.interpss.common.util.IpssLogger;
 
 import junit.framework.AssertionFailedError;
-
-import com.interpss.common.util.IpssLogger;
-import com.interpss.spring.CoreCommonSpringFactory;
 
 /**
  * In-memory Java file compiler. The code is based test.net.java.privateer on java.net
@@ -235,7 +235,7 @@ public class MemoryJavaCompiler {
 				diagnosticCollector, null, null, compilationUnits).call();
 
 		if (!Boolean.TRUE.equals(result)) {
-			CoreCommonSpringFactory.getIpssMsgHub().sendErrorMsg(
+			CoreCommonFactory.getIpssMsgHub().sendErrorMsg(
 					"Java compile error, "
 							+ diagnosticCollector.getDiagnostics().toString());
 			return null;
@@ -251,7 +251,7 @@ public class MemoryJavaCompiler {
 				Class<?> clazz = Class.forName(classDotName, true, loader);
 				classMap.put(className, clazz);
 			} catch (final ClassNotFoundException e) {
-				CoreCommonSpringFactory.getIpssMsgHub().sendErrorMsg(
+				CoreCommonFactory.getIpssMsgHub().sendErrorMsg(
 						"Class loading error, " + e.toString());
 				return null;
 			}
