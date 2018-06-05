@@ -30,7 +30,6 @@ import static org.interpss.mapper.odm.ODMFunction.BusXmlRef2BusId;
 import org.ieee.odm.schema.ApparentPowerUnitType;
 import org.ieee.odm.schema.BaseBranchXmlType;
 import org.ieee.odm.schema.BusXmlType;
-import org.ieee.odm.schema.CimRdfXmlType;
 import org.ieee.odm.schema.NetworkXmlType;
 import org.ieee.odm.schema.VoltageUnitType;
 
@@ -45,7 +44,6 @@ import com.interpss.core.net.Area;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Branch3W;
 import com.interpss.core.net.Bus;
-import com.interpss.core.net.CimRecord;
 import com.interpss.core.net.Network;
 import com.interpss.core.net.Zone;
 

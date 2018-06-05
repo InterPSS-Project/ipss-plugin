@@ -27,7 +27,7 @@ package org.interpss.dstab.control.gov.custom;
 
 
 
-import com.interpss.dstab.controller.AbstractGovernor;
+import com.interpss.dstab.controller.deqn.AbstractGovernor;
 import com.interpss.dstab.mach.Machine;
 
 /**

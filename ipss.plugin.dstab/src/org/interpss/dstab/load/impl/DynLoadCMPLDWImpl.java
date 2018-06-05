@@ -8,10 +8,13 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfLoadCode;
+import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBranch;
-import com.interpss.dstab.DStabBus;
+//import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
+import com.interpss.dstab.dynLoad.DStabDynamicLoadFactory;
 import com.interpss.dstab.dynLoad.DistNetworkEquivalentModel;
 import com.interpss.dstab.dynLoad.DynLoadVFreqDependentModel;
 import com.interpss.dstab.dynLoad.InductionMotor;
@@ -29,7 +32,7 @@ import com.interpss.dstab.dynLoad.impl.LD1PACImpl;
 		4.	Compute low-side bus voltage with tap = 1.
 		5.	Adjust LTC tap to put compensated voltage at midpoint of Vmin, Vmax
 		6.	Compute low-side and load bus voltages. (If load bus voltage is < 0.95, reduce Rfdr and Xfdr to bring it above 0.95.)
-		7.	Initialize motor models and static load models – obtain total load component Q
+		7.	Initialize motor models and static load models 鈥� obtain total load component Q
 		8.	Set Bf1 [= Fb*Bf] and Bf2 [=(1-Fb)*Bf] to match total load Q
 		9.	If Bf < 0. (inductive), reduce Bss to make Bf = 0.
 		10.	If (Fb > 0. or Bss changed) iterate steps 6,7,8,9 to convergence on load bus voltage.
@@ -61,9 +64,9 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
 	protected  LD1PAC                     ac1PMotor = null;
 	protected  DynLoadVFreqDependentModel staticLoad = null;
 	
-	protected DStabBus lowBus  = null;
-	protected DStabBus loadBus  = null;
-	protected DStabBus parentBus  = null;
+	protected BaseDStabBus<?,?> lowBus  = null;
+	protected BaseDStabBus<?,?> loadBus  = null;
+	protected BaseDStabBus<?,?> parentBus  = null;
 	
 	protected DStabBranch distXfr = null;
 	protected DStabBranch distFdr = null;
@@ -105,14 +108,14 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
 		
 	}
 	
-    public DynLoadCMPLDWImpl(String referenceId,DStabBus abus){
+    public DynLoadCMPLDWImpl(String referenceId, BaseDStabBus<?,?> abus){
 		this.groupId = referenceId;
-		this.distEquiv = new  DistNetworkEquivalentModel();
-		this.indMotorA = new  InductionMotorImpl();
-		this.indMotorB = new  InductionMotorImpl();
-		this.indMotorC = new  InductionMotorImpl();
-		this.ac1PMotor = new  LD1PACImpl();
-		this.staticLoad= new  DynLoadVFreqDependentModelImpl();
+		this.distEquiv = DStabDynamicLoadFactory.eINSTANCE.createDistNetworkEquivalentModel();
+		this.indMotorA = DStabDynamicLoadFactory.eINSTANCE.createInductionMotor();
+		this.indMotorB = DStabDynamicLoadFactory.eINSTANCE.createInductionMotor();
+		this.indMotorC = DStabDynamicLoadFactory.eINSTANCE.createInductionMotor();
+		this.ac1PMotor = DStabDynamicLoadFactory.eINSTANCE.createLD1PAC();
+		this.staticLoad= DStabDynamicLoadFactory.eINSTANCE.createDynLoadVFreqDependentModel();
 		
 		//set parentBus
 		this.parentBus = abus;
@@ -120,7 +123,7 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
 	}
     
     @Override
-    public boolean initStates(DStabBus abus){
+    public boolean initStates(BaseDStabBus<?,?> abus){
     	boolean initflag = true;
     	
     	if(parentBus ==null) parentBus = abus;
@@ -144,7 +147,7 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
 			2) MVABase< 0 means DistEquivMVABase= Abs(NetMW/MVABase)
 			3) MVABase= 0 means DistEquivMVABase= Abs(NetMW/0.8)
 			
-			Note: This is a function of NetMW, so that means MW –DistMWof the distributed generation
+			Note: This is a function of NetMW, so that means MW 鈥揇istMWof the distributed generation
     	 */
     	
     	double netMW = parentBus.getLoadP()*systemMVABase;
@@ -179,7 +182,7 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
 			
 			//add the load bus
 			loadBus  = DStabObjectFactory.createDStabBus(parentBus.getId().concat(loadBusId), 
-                    (DStabilityNetwork) parentBus.getNetwork());
+                    (BaseDStabNetwork)parentBus.getNetwork());
 			
 			loadBus.setBaseVoltage(1.0);
 			
@@ -212,19 +215,19 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
   	    
   	    double  mvaConvFactor = systemMVABase/this.mvaBase;
   	    
-  	    double Xxf = this.getDistEquivalent().getXxf();
+  	    double Xxf = this.getDistEquivalent().getXXf();
   	    
   	    distXfr.setZ(new Complex(0, Xxf*mvaConvFactor));
   	    
-  	    double Tfixls =this.getDistEquivalent().getTfixLS();
-  	    double Tfixhs =this.getDistEquivalent().getTfixHS();
+  	    double Tfixls =this.getDistEquivalent().getTFixLS();
+  	    double Tfixhs =this.getDistEquivalent().getTFixHS();
   	    double tap = 1.0;
   	    double tap_step = this.getDistEquivalent().getStep();
-  	    double Tmin = this.getDistEquivalent().getTmin();
-  	    double Tmax = this.getDistEquivalent().getTmax();
+  	    double Tmin = this.getDistEquivalent().getTMin();
+  	    double Tmax = this.getDistEquivalent().getTMax();
   	    
-  	    double Vmin = this.getDistEquivalent().getVmin();
-	    double Vmax = this.getDistEquivalent().getVmax();
+  	    double Vmin = this.getDistEquivalent().getVMin();
+	    double Vmax = this.getDistEquivalent().getVMax();
 	    
   	
   	  	//map distribution feeder data, need to convert data to system base, if mva_base is not system mva.
@@ -240,12 +243,12 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
   	    //distFdr.setFromBus(lowBus);
   	    //distFdr.setToBus(loadBus);
   	    
-  	    distFdr.setZ(new Complex(this.getDistEquivalent().getRfdr(),this.getDistEquivalent().getXfdr()).multiply(mvaConvFactor));
+  	    distFdr.setZ(new Complex(this.getDistEquivalent().getRFdr(),this.getDistEquivalent().getXFdr()).multiply(mvaConvFactor));
   	    
   	   
   	    
   	    // add Bss as a shunt at low bus
-  	   double Bss = this.getDistEquivalent().getBss()/mvaConvFactor;
+  	   double Bss = this.getDistEquivalent().getBSubStation()/mvaConvFactor;
   	   lowBus.setShuntY(new Complex(0,Bss));
   	    
     	
@@ -673,13 +676,13 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
 	}
 
 	@Override
-	public DStabBus getLowVoltBus() {
+	public BaseDStabBus<?,?> getLowVoltBus() {
 		
 		return this.lowBus;
 	}
 
 	@Override
-	public DStabBus getLoadBus() {
+	public BaseDStabBus<?,?> getLoadBus() {
 		
 		return this.loadBus;
 	}

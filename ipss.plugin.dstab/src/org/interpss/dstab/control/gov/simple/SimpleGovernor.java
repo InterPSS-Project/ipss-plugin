@@ -24,19 +24,15 @@
 
 package org.interpss.dstab.control.gov.simple;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 
-import org.interpss.dstab.control.cml.block.DelayControlBlock;
-import org.interpss.dstab.control.cml.block.GainBlock;
-import org.interpss.dstab.control.exc.simple.SimpleExciterData;
-
-import com.hazelcast.nio.ObjectDataInput;
-import com.hazelcast.nio.ObjectDataOutput;
+import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabBus;
-import com.interpss.dstab.controller.AnnotateGovernor;
-import com.interpss.dstab.controller.annotate.AnController;
-import com.interpss.dstab.controller.annotate.AnControllerField;
+import com.interpss.dstab.controller.cml.annotate.AnController;
+import com.interpss.dstab.controller.cml.annotate.AnControllerField;
+import com.interpss.dstab.controller.cml.annotate.AnnotateGovernor;
+import com.interpss.dstab.controller.cml.field.block.DelayControlBlock;
+import com.interpss.dstab.controller.cml.field.block.GainBlock;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
 
@@ -108,7 +104,7 @@ public class SimpleGovernor extends AnnotateGovernor {
      *
      *  @param msg the SessionMsg object
      */
-    @Override public boolean initStates(DStabBus bus, Machine mach) {
+    @Override public boolean initStates(BaseDStabBus<?,?> bus, Machine mach) {
     	// init the controller parameters using the data defined in the 
     	// data object    	
         this.ka = getData().getK();

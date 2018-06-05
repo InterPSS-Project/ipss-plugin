@@ -15,6 +15,7 @@ import com.interpss.core.acsc.Acsc3WBranch;
 import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.AcscBus;
 import com.interpss.core.acsc.AcscGen;
+import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.core.acsc.BaseAcscNetwork;
 import com.interpss.core.acsc.BusGroundCode;
 import com.interpss.core.acsc.BusScCode;
@@ -121,7 +122,7 @@ public class SequenceNetworkBuilder {
 	    dyrSB.append(header+"\n");
 	    
 	    // generation sequence data
-	    for(AcscBus scBus: this._net.getBusList()){
+	    for(BaseAcscBus<?,?> scBus: this._net.getBusList()){
 			if(scBus.isGen()){
 				if(scBus.getContributeGenList().size()>0){
 					for(AclfGen gen:scBus.getContributeGenList()){
@@ -328,7 +329,7 @@ public class SequenceNetworkBuilder {
 	
 	
 	private boolean setGenSeqData(SequenceCode seq){
-		for(AcscBus scBus: this._net.getBusList()){
+		for(BaseAcscBus<?,?> scBus: this._net.getBusList()){
 			if(!scBus.isGen()){
 				scBus.setScCode(BusScCode.NON_CONTRI);
 				scBus.setScGenZ(NumericConstant.LargeBusZ, SequenceCode.POSITIVE);
@@ -378,7 +379,7 @@ public class SequenceNetworkBuilder {
 	private boolean setLoadSeqData(SequenceCode seq){
 		
 		//AcscBus.initSeqEquivLoad(SequenceCode code) method handles this
-		for(AcscBus scBus: this._net.getBusList()){
+		for(BaseAcscBus<?,?> scBus: this._net.getBusList()){
 			if(scBus.isActive() && scBus.getContributeLoadList().size()>0){
 				if(!scBus.initSeqEquivLoad(seq))
 					return false;

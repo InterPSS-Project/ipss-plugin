@@ -5,7 +5,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/EMF"/>
 	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/apache/commons-logging.jar"/>
-	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/spring/spring-2.5.6.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.pssl"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ieee.odm_pss"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ieee.odm.schema"/>

@@ -39,6 +39,7 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.contingency.BranchOutageType;
 import com.interpss.core.aclf.contingency.Contingency;
 import com.interpss.core.aclf.contingency.OutageBranch;
+import com.interpss.core.aclf.contingency.dep.DepContingency;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
@@ -108,8 +109,8 @@ public class AclfScenarioHelper {
 	 * @param net
 	 * @return
 	 */
-	public static Contingency mapContingency(BranchChangeRecSetXmlType contingency, AclfNetwork net) {
-		Contingency cont = CoreObjectFactory.createContingency(contingency.getId());
+	public static DepContingency mapContingency(BranchChangeRecSetXmlType contingency, AclfNetwork net) {
+		DepContingency cont = CoreObjectFactory.createDepContingency(contingency.getId());
 		for (BranchChangeRecXmlType bra : contingency.getBranchChangeRec()) {
 			AclfBranch branch = net.getBranch(bra.getFromBusId(), bra.getToBusId(), bra.getCircuitId());
 			OutageBranch outageBranch = CoreObjectFactory.createOutageBranch(branch, cont);
@@ -127,8 +128,8 @@ public class AclfScenarioHelper {
 	 * @param net
 	 * @return
 	 */
-	public static Contingency mapContingency(String contId,List<String> outageBranchList, AclfNetwork net) {
-		Contingency cont = CoreObjectFactory.createContingency(contId);
+	public static DepContingency mapContingency(String contId,List<String> outageBranchList, AclfNetwork net) {
+		DepContingency cont = CoreObjectFactory.createDepContingency(contId);
 		for (String id : outageBranchList) {
 			AclfBranch branch = net.getBranch(id);
 			cont.addOutageBranch(CoreObjectFactory.createOutageBranch(branch, cont));

@@ -27,15 +27,15 @@ package org.interpss.dstab.control.pss.ieee.y1992.pss1a;
 
 import java.lang.reflect.Field;
 
-import org.interpss.dstab.control.cml.block.DelayControlBlock;
-import org.interpss.dstab.control.cml.block.FilterControlBlock;
-import org.interpss.dstab.control.cml.block.TFunc2ndOrderBlock;
-import org.interpss.dstab.control.cml.block.WashoutControlBlock;
-
+import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabBus;
-import com.interpss.dstab.controller.AnnotateStabilizer;
-import com.interpss.dstab.controller.annotate.AnController;
-import com.interpss.dstab.controller.annotate.AnControllerField;
+import com.interpss.dstab.controller.cml.annotate.AnController;
+import com.interpss.dstab.controller.cml.annotate.AnControllerField;
+import com.interpss.dstab.controller.cml.annotate.AnnotateStabilizer;
+import com.interpss.dstab.controller.cml.field.block.DelayControlBlock;
+import com.interpss.dstab.controller.cml.field.block.FilterControlBlock;
+import com.interpss.dstab.controller.cml.field.block.TFunc2ndOrderBlock;
+import com.interpss.dstab.controller.cml.field.block.WashoutControlBlock;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
 
@@ -120,7 +120,7 @@ public class Ieee1992PSS1AStabilizer extends AnnotateStabilizer {
 	 *  @param msg the SessionMsg object
 	 */
 	@Override
-	public boolean initStates(DStabBus abus, Machine mach) {
+	public boolean initStates(BaseDStabBus<?,?> abus, Machine mach) {
         this.ks = getData().getKs();
         this.k1 = getData().getKs();
         this.t1 = getData().getT1();

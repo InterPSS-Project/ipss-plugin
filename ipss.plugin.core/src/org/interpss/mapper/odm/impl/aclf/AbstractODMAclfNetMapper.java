@@ -65,6 +65,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.XfrZTableEntry;
 import com.interpss.core.aclf.flow.FlowInterface;
@@ -129,10 +130,10 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 			aclfNet.setOriginalDataFormat(this.originalFormat);		
 			
 			mapAclfNetworkData(aclfNet, xmlNet);
-			simuCtx.setAclfNet(aclfNet);
+			simuCtx.setAclfNet((AclfNetwork)aclfNet);
 
 			//XformerZTableXmlType xfrZTable = xmlNet.getXfrZTable();
-			AclfBusDataHelper<AclfBus> busHelper = new AclfBusDataHelper<>(aclfNet);
+			AclfBusDataHelper busHelper = new AclfBusDataHelper(aclfNet);
 			for (JAXBElement<? extends BusXmlType> bus : xmlNet.getBusList().getBus()) {
 				LoadflowBusXmlType busRec = (LoadflowBusXmlType) bus.getValue();
 				AclfBus aclfBus = CoreObjectFactory.createAclfBus(busRec.getId(), aclfNet);
@@ -304,7 +305,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 	 * @return
 	 * @throws Exception
 	 */
-	public AclfBus mapAclfBusData(LoadflowBusXmlType xmlBusRec, AclfBus aclfBus, AclfNetwork adjNet, AclfBusDataHelper<AclfBus> helper) throws InterpssException {
+	public AclfBus mapAclfBusData(LoadflowBusXmlType xmlBusRec, AclfBus aclfBus, AclfNetwork adjNet, AclfBusDataHelper helper) throws InterpssException {
 		if (adjNet.getOriginalDataFormat() == OriginalDataFormat.PWD) {
 			AclfBusPWDExtension ext = new AclfBusPWDExtension();
 			aclfBus.setExtensionObject(ext);
