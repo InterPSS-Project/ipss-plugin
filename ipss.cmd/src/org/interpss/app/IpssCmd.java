@@ -4,8 +4,8 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.pssl.plugin.cmd.CmdRunner;
 import org.interpss.pssl.simu.BaseDSL;
 
+import com.interpss.CoreCommonFactory;
 import com.interpss.common.exp.InterpssException;
-import com.interpss.spring.CoreCommonSpringFactory;
 
 public class IpssCmd {
 	/**
@@ -29,7 +29,7 @@ public class IpssCmd {
 	public static void main(String[] args) {
 		// init InterPSS runtime env
 		IpssCorePlugin.init();
-		BaseDSL.setMsgHub(CoreCommonSpringFactory.getIpssMsgHub());		
+		BaseDSL.setMsgHub(CoreCommonFactory.getIpssMsgHub());		
 
 		try {
 			parseCmdInput(args);

@@ -25,20 +25,19 @@ package org.interpss.dstab.control.exc.ieee.y1968.type1;
 
 import java.lang.reflect.Field;
 
-import org.interpss.dstab.control.cml.block.DelayControlBlock;
-import org.interpss.dstab.control.cml.block.IntegrationControlBlock;
-import org.interpss.dstab.control.cml.block.WashoutControlBlock;
-import org.interpss.dstab.control.cml.func.SeFunction;
-
 import com.interpss.common.util.IpssLogger;
+import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabBus;
-import com.interpss.dstab.controller.AnnotateExciter;
-import com.interpss.dstab.controller.annotate.AnController;
-import com.interpss.dstab.controller.annotate.AnControllerField;
-import com.interpss.dstab.controller.annotate.AnFunctionField;
+import com.interpss.dstab.controller.cml.annotate.AnController;
+import com.interpss.dstab.controller.cml.annotate.AnControllerField;
+import com.interpss.dstab.controller.cml.annotate.AnFunctionField;
+import com.interpss.dstab.controller.cml.annotate.AnnotateExciter;
+import com.interpss.dstab.controller.cml.field.block.DelayControlBlock;
+import com.interpss.dstab.controller.cml.field.block.IntegrationControlBlock;
+import com.interpss.dstab.controller.cml.field.block.WashoutControlBlock;
+import com.interpss.dstab.controller.cml.field.func.SeFunction;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
-import com.sun.org.apache.xml.internal.resolver.helpers.Debug;
 
 /**
  * 
@@ -158,7 +157,7 @@ public class Ieee1968Type1Exciter extends AnnotateExciter {
      *  @param msg the SessionMsg object
      */
     @Override
-	public boolean initStates(DStabBus bus, Machine mach) {
+	public boolean initStates(BaseDStabBus<?,?> bus, Machine mach) {
     	// init the controller parameters using the data defined in the 
     	// data object
     	this.tr=getData().getTr();
