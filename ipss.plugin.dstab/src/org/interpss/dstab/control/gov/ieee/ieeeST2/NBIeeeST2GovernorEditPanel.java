@@ -30,7 +30,7 @@ import org.interpss.numeric.util.Number2String;
 import org.interpss.ui.ICustomPluginEditor;
 import org.interpss.ui.SwingInputVerifyUtil;
 
-import com.interpss.dstab.controller.AbstractGovernor;
+import com.interpss.dstab.controller.deqn.AbstractGovernor;
 
 
 public class NBIeeeST2GovernorEditPanel extends javax.swing.JPanel implements ICustomPluginEditor {

@@ -295,7 +295,7 @@ public class DclfResultComparator extends NetModelComparator<DclfBusResultBean, 
 		}
 		addErrMsg("Max branch power diff: " + max + " pu");
 		
-		algo.destroy();
+		//algo.destroy();
 		
 		return this.errMsgList.size() == 3;  // there are three status msg
 	}
@@ -326,7 +326,7 @@ public class DclfResultComparator extends NetModelComparator<DclfBusResultBean, 
 			}
 		}
 
-		algo.destroy();
+		//algo.destroy();
 		
 		return buf.toString();
 	}

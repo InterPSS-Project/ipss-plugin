@@ -7,11 +7,12 @@ import org.ieee.odm.schema.LoadCharacteristicTypeEnumType;
 import org.interpss.dstab.load.DynLoadCMPLDW;
 import org.interpss.dstab.load.impl.DynLoadCMPLDWImpl;
 
+import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.device.DynamicBusDevice;
+import com.interpss.dstab.dynLoad.DStabDynamicLoadFactory;
 import com.interpss.dstab.dynLoad.LD1PAC;
-import com.interpss.dstab.dynLoad.impl.LD1PACImpl;
 
 public class DynLoadDataHelper {
 	
@@ -28,7 +29,7 @@ public class DynLoadDataHelper {
 		
 	}
 	
-	public DynamicBusDevice createDynLoadModel(DStabLoadDataXmlType dynLoad, DStabBus dstabBus){
+	public DynamicBusDevice createDynLoadModel(DStabLoadDataXmlType dynLoad, BaseDStabBus<?,?> dstabBus){
 		DynamicBusDevice loadModel = null;
 		if(dynLoad!=null){
 			if(dynLoad.getLoadXmlType()==LoadCharacteristicTypeEnumType.WECC_COMPOSITE_LOAD){
@@ -45,7 +46,9 @@ public class DynLoadDataHelper {
 			String id) {
         this.bus= dstabBus; 
 		
-        LD1PAC acMotor = new LD1PACImpl(id,dstabBus);
+        LD1PAC acMotor = DStabDynamicLoadFactory.eINSTANCE.createLD1PAC();
+        acMotor.setId(id);
+        acMotor.setDStabBus(dstabBus);
         
         /*
          *  CompLF 
@@ -157,41 +160,41 @@ public class DynLoadDataHelper {
 		
 		cmpldw.setMVABase(cmpldwXml.getMva());
 		
-		cmpldw.getDistEquivalent().setBss(cmpldwXml.getBss());
+		cmpldw.getDistEquivalent().setBSubStation(cmpldwXml.getBss());
 		
-		cmpldw.getDistEquivalent().setRfdr(cmpldwXml.getRfdr());
+		cmpldw.getDistEquivalent().setRFdr(cmpldwXml.getRfdr());
 		
-		cmpldw.getDistEquivalent().setXfdr(cmpldwXml.getXfdr());
+		cmpldw.getDistEquivalent().setXFdr(cmpldwXml.getXfdr());
 		
-		cmpldw.getDistEquivalent().setFb(cmpldwXml.getFb());
+		cmpldw.getDistEquivalent().setFB(cmpldwXml.getFb());
 		
-		cmpldw.getDistEquivalent().setXxf(cmpldwXml.getXxf());
+		cmpldw.getDistEquivalent().setXXf(cmpldwXml.getXxf());
 		
-		cmpldw.getDistEquivalent().setTfixHS(cmpldwXml.getTfixHS());
+		cmpldw.getDistEquivalent().setTFixHS(cmpldwXml.getTfixHS());
 		
-		cmpldw.getDistEquivalent().setTfixLS(cmpldwXml.getTfixLS());
+		cmpldw.getDistEquivalent().setTFixLS(cmpldwXml.getTfixLS());
 		
 		cmpldw.getDistEquivalent().setLTC((int) cmpldwXml.getLTC());
 		
-		cmpldw.getDistEquivalent().setTmin(cmpldwXml.getTmin());
+		cmpldw.getDistEquivalent().setTMin(cmpldwXml.getTmin());
 		
-		cmpldw.getDistEquivalent().setTmax(cmpldwXml.getTmax());
+		cmpldw.getDistEquivalent().setTMax(cmpldwXml.getTmax());
 		
 		cmpldw.getDistEquivalent().setStep(cmpldwXml.getStep());
 		
-		cmpldw.getDistEquivalent().setVmin(cmpldwXml.getVmin());
+		cmpldw.getDistEquivalent().setVMin(cmpldwXml.getVmin());
 		
-		cmpldw.getDistEquivalent().setVmax(cmpldwXml.getVmax());
+		cmpldw.getDistEquivalent().setVMax(cmpldwXml.getVmax());
 		
-		cmpldw.getDistEquivalent().setTdelay(cmpldwXml.getTdel());
+		cmpldw.getDistEquivalent().setTDelay(cmpldwXml.getTdel());
 		
-		cmpldw.getDistEquivalent().setTtap(cmpldwXml.getTtap());
+		cmpldw.getDistEquivalent().setTTap(cmpldwXml.getTtap());
 		
-		cmpldw.getDistEquivalent().setTtap(cmpldwXml.getTtap());
+		cmpldw.getDistEquivalent().setTTap(cmpldwXml.getTtap());
 		
-		cmpldw.getDistEquivalent().setRcomp(cmpldwXml.getRcomp());
+		cmpldw.getDistEquivalent().setRComp(cmpldwXml.getRcomp());
 		
-		cmpldw.getDistEquivalent().setXcomp(cmpldwXml.getXcomp());
+		cmpldw.getDistEquivalent().setXComp(cmpldwXml.getXcomp());
 		
 		// load percentages of the dynamic load component
 		
@@ -271,9 +274,9 @@ public class DynLoadDataHelper {
 		cmpldw.get1PhaseACMotor().setVrst(cmpldwXml.getVrst());
 		cmpldw.get1PhaseACMotor().setTrst(cmpldwXml.getTrst());
 		cmpldw.get1PhaseACMotor().setFuvr(cmpldwXml.getFuvr());
-		cmpldw.get1PhaseACMotor().setUVtr1(cmpldwXml.getVtr1());
+		cmpldw.get1PhaseACMotor().setVtr1(cmpldwXml.getVtr1());
 		cmpldw.get1PhaseACMotor().setTtr1(cmpldwXml.getTtr1());
-		cmpldw.get1PhaseACMotor().setUVtr2(cmpldwXml.getVtr2());
+		cmpldw.get1PhaseACMotor().setVtr2(cmpldwXml.getVtr2());
 		cmpldw.get1PhaseACMotor().setTtr2(cmpldwXml.getTtr2());
 		cmpldw.get1PhaseACMotor().setVc1off(cmpldwXml.getVc1Off());
 		cmpldw.get1PhaseACMotor().setVc2off(cmpldwXml.getVc2Off());

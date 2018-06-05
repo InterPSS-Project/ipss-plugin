@@ -16,9 +16,9 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.contingency.BranchOutageType;
-import com.interpss.core.aclf.contingency.Contingency;
 import com.interpss.core.aclf.contingency.MonitoringBranch;
 import com.interpss.core.aclf.contingency.OutageBranch;
+import com.interpss.core.aclf.contingency.dep.DepContingency;
 import com.interpss.core.dclf.common.ReferenceBusException;
 import com.interpss.core.funcImpl.AclfNetHelper;
 
@@ -33,7 +33,7 @@ public class CAResultVerifier {
 	private AclfNetwork aclfNet;
 	
 	// contingency object
-	private Contingency cont;
+	private DepContingency cont;
 	
 	// violation threshold 
 	private double violationThreshold = 1.0;
@@ -82,7 +82,7 @@ public class CAResultVerifier {
 	 * @param aclfNet
 	 * @param cont
 	 */
-	public CAResultVerifier(AclfNetwork aclfNet, Contingency cont){
+	public CAResultVerifier(AclfNetwork aclfNet, DepContingency cont){
 		this.aclfNet = aclfNet;
 		this.cont = cont;
 	}
@@ -95,7 +95,7 @@ public class CAResultVerifier {
 	 * @param violationThreshold
 	 * @param tol
 	 */
-	public CAResultVerifier(AclfNetwork aclfNet, Contingency cont,
+	public CAResultVerifier(AclfNetwork aclfNet, DepContingency cont,
 			double violationThreshold, double tol){
 		this.aclfNet = aclfNet;
 		this.cont = cont;
@@ -109,7 +109,7 @@ public class CAResultVerifier {
 	 * @param cont
 	 * @return
 	 */
-	public CAResultVerifier setContingency(Contingency cont) {
+	public CAResultVerifier setContingency(DepContingency cont) {
 		this.cont = cont;
 		return this;
 	}
@@ -160,7 +160,7 @@ public class CAResultVerifier {
 		this.msgList.clear();
 		this.hasIsland = false;
 		
-		ChangeRecorder recorder = aclfNet.bookmark(false);		
+		//ChangeRecorder recorder = aclfNet.bookmark(false);		
 		
 		/*
 		 * calculate actual contingency DCLF by applying the outages
@@ -194,9 +194,9 @@ public class CAResultVerifier {
 			lookupTable.put(branch.getId(), new Double(flow));
 		}
 		
-		algoPost.destroy();
+		//algoPost.destroy();
 		
-		aclfNet.rollback(recorder);
+		//aclfNet.rollback(recorder);
 		
 		/*
 		 * 	calculate contingency DCLF by using sensitivity
@@ -240,7 +240,7 @@ public class CAResultVerifier {
 		System.out.println("Contingency: "+cont.getId()+", CA results " + (identical? "" : "do not") + " match DCLF results." 
 				+ (this.hasIsland? "  Island " : "  ") + "  # of violated branches " + cont.getMonitoringBranches().size());
 		
-		algoCtg.destroy();
+		//algoCtg.destroy();
 		
 		return identical;
 	}

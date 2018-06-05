@@ -23,7 +23,8 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.net.DataCheckConfiguration;
 import com.interpss.core.net.NameTag;
 import com.interpss.core.net.Network;
-import com.interpss.dstab.DStabBus;
+import com.interpss.dstab.BaseDStabBus;
+//import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.device.DynamicBusDevice;
 import com.interpss.dstab.device.DynamicBusDeviceType;
@@ -127,10 +128,7 @@ public interface DynLoadCMPLDW  extends DynamicBusDevice{
 	
 	DynLoadVFreqDependentModel getStaticLoadModel();
 	
-	DStabBus getLowVoltBus();
+	BaseDStabBus<?,?> getLowVoltBus();
 	
-	DStabBus getLoadBus();
-	
-	
-
+	BaseDStabBus<?,?> getLoadBus();
 }

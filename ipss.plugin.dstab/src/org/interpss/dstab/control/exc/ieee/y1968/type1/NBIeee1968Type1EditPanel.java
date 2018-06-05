@@ -23,12 +23,12 @@
   */
 package org.interpss.dstab.control.exc.ieee.y1968.type1;
 
+import static com.interpss.common.util.IpssLogger.ipssLogger;
+
 import java.util.Vector;
 
 import org.interpss.dstab.control.base.EditHelper;
 import org.interpss.ui.ICustomPluginEditor;
-
-import static com.interpss.common.util.IpssLogger.ipssLogger;
 
 /**
  * Editing screen panel implementation for input data editing for  NBIeee1968Type1 exciter

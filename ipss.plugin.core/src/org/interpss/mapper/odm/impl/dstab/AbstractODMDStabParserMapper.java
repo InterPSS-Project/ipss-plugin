@@ -29,7 +29,6 @@ import static com.interpss.common.util.IpssLogger.ipssLogger;
 import javax.xml.bind.JAXBElement;
 
 import org.ieee.odm.model.dstab.DStabModelParser;
-import org.ieee.odm.model.dstab.DStabParserHelper;
 import org.ieee.odm.schema.AnalysisCategoryEnumType;
 import org.ieee.odm.schema.BaseBranchXmlType;
 import org.ieee.odm.schema.BranchXmlType;
@@ -38,23 +37,18 @@ import org.ieee.odm.schema.DStabBusXmlType;
 import org.ieee.odm.schema.DStabGenDataXmlType;
 import org.ieee.odm.schema.DStabLoadDataXmlType;
 import org.ieee.odm.schema.DStabNetXmlType;
-import org.ieee.odm.schema.DynamicLoadCMPLDWXmlType;
 import org.ieee.odm.schema.ExciterModelXmlType;
 import org.ieee.odm.schema.GovernorModelXmlType;
 import org.ieee.odm.schema.IpssStudyScenarioXmlType;
-import org.ieee.odm.schema.LFGenCodeEnumType;
 import org.ieee.odm.schema.LineDStabXmlType;
-import org.ieee.odm.schema.LoadCharacteristicTypeEnumType;
 import org.ieee.odm.schema.LoadflowGenDataXmlType;
 import org.ieee.odm.schema.LoadflowLoadDataXmlType;
 import org.ieee.odm.schema.MachineModelXmlType;
 import org.ieee.odm.schema.NetworkCategoryEnumType;
 import org.ieee.odm.schema.OriginalDataFormatEnumType;
-import org.ieee.odm.schema.PSXfr3WBranchXmlType;
 import org.ieee.odm.schema.PSXfr3WDStabXmlType;
 import org.ieee.odm.schema.PSXfrDStabXmlType;
 import org.ieee.odm.schema.StabilizerModelXmlType;
-import org.ieee.odm.schema.Xfr3WBranchXmlType;
 import org.ieee.odm.schema.Xfr3WDStabXmlType;
 import org.ieee.odm.schema.XfrDStabXmlType;
 import org.interpss.mapper.odm.ODMAclfNetMapper;
@@ -69,11 +63,11 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.net.Branch;
+import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStab3WBranch;
 import com.interpss.dstab.DStabBranch;
-import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabGen;
-import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.mach.Machine;
 import com.interpss.simu.SimuContext;
@@ -89,6 +83,7 @@ import com.interpss.simu.SimuCtxType;
 public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcscParserMapper<Tfrom> {
 	protected IPSSMsgHub msg = null;
 	protected DynLoadDataHelper loadDataHelper =null;
+
 	
 	/**
 	 * constructor
@@ -116,7 +111,7 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 			
 			try {
 				// create a DStabilityNetwork object and map the net info 
-				DStabilityNetwork dstabNet = mapDStabNetworkData(xmlNet);
+				BaseDStabNetwork<?,?> dstabNet = mapDStabNetworkData(xmlNet);
 				simuCtx.setDStabilityNet(dstabNet);
 				simuCtx.setNetType(SimuCtxType.DSTABILITY_NET);
 				
@@ -132,11 +127,11 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 				dstabAlgo.setAclfAlgorithm(lfAlgo);
 
 				// map the bus info
-				AclfBusDataHelper<DStabBus> helper = new AclfBusDataHelper<>(dstabNet);
+				AclfBusDataHelper helper = new AclfBusDataHelper(dstabNet);
 				for (JAXBElement<? extends BusXmlType> bus : xmlNet.getBusList().getBus()) {
 					DStabBusXmlType dstabBusXml = (DStabBusXmlType) bus.getValue();
 					
-					DStabBus dstabBus = DStabObjectFactory.createDStabBus(dstabBusXml.getId(), dstabNet);
+					BaseDStabBus<?,?> dstabBus = DStabObjectFactory.createDStabBus(dstabBusXml.getId(), dstabNet);
 						
 					// base the base bus info part
 					mapBaseBusData(dstabBusXml, dstabBus, dstabNet);
@@ -217,15 +212,15 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 		return noError;
 	}
 	
-	private DStabilityNetwork mapDStabNetworkData(DStabNetXmlType xmlNet) throws InterpssException {
-		DStabilityNetwork dstabNet = DStabObjectFactory.createDStabilityNetwork();
+	private BaseDStabNetwork<?,?> mapDStabNetworkData(DStabNetXmlType xmlNet) throws InterpssException {
+		BaseDStabNetwork<?,?> dstabNet = DStabObjectFactory.createDStabilityNetwork();
 		mapAcscNetworkData(dstabNet, xmlNet);
 		dstabNet.setSaturatedMachineParameter(xmlNet.isSaturatedMachineParameter());
 		dstabNet.setLfDataLoaded(true);
 		return dstabNet;
 	}	
 	
-	protected void setDStabBusData(DStabBusXmlType dstabBusXml, DStabBus dstabBus)  throws InterpssException {
+	protected void setDStabBusData(DStabBusXmlType dstabBusXml, BaseDStabBus<?,?> dstabBus)  throws InterpssException {
 		
 		// generation model data
 		if(dstabBusXml.getGenData().getContributeGen().size() > 0){
@@ -259,7 +254,7 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 		
     }
 
-	protected void setDynGenData(DStabBus dstabBus, 
+	protected void setDynGenData(BaseDStabBus<?,?> dstabBus, 
 			DStabGenDataXmlType dyGen, DStabGen dyGenObj) throws InterpssException {
 		// create the machine model and added to the parent bus object
 		if(dyGen.getMachineModel() ==null){
@@ -296,12 +291,9 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 		}
 	}
 	
-	
-	protected void setDynLoadData(DStabLoadDataXmlType dynLoad, DStabBus dstabBus){
+	protected void setDynLoadData(DStabLoadDataXmlType dynLoad, BaseDStabBus<?,?> dstabBus){
 		if(loadDataHelper == null) loadDataHelper = new DynLoadDataHelper();
 		
 		loadDataHelper.createDynLoadModel(dynLoad, dstabBus);
-		
-		
-	}
+	}	
 }

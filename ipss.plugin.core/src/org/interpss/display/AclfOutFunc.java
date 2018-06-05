@@ -35,6 +35,7 @@ import com.interpss.common.datatype.Constants;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.adj.AdjControlType;
 import com.interpss.core.aclf.adj.FunctionLoad;
@@ -175,7 +176,7 @@ public class AclfOutFunc {
 			}
 				 
 			for (Bus b : net.getBusList()) {
-				AclfBus bus = (AclfBus)b;
+				BaseAclfBus<?,?> bus = (BaseAclfBus<?,?>)b;
 				if (bus.isActive()) {
 					if (bus.isParent()) {
 						// parent bus could be the original bus or a newly created
@@ -200,7 +201,7 @@ public class AclfOutFunc {
 		return str;
 	}
 
-	private static String busLfSummary(AclfBus bus) {
+	private static String busLfSummary(BaseAclfBus<?,?> bus) {
 		final StringBuffer str = new StringBuffer("");
 		Complex busPQ = bus.getNetPQResults();
 		if (bus.isActive())
@@ -432,7 +433,7 @@ public class AclfOutFunc {
 		str
 				.append("     -------- -------- -------- -------- -------- -------- ------\n");
 
-		for( AclfBus bus : net.getBusList()) {
+		for( BaseAclfBus<?,?> bus : net.getBusList()) {
 			if (bus.isPVBusLimit()) {
 				PVBusLimit pv = bus.getPVBusLimit();
 				AclfGenBusAdapter genBus = pv.getParentBus().toGenBus();
@@ -521,7 +522,7 @@ public class AclfOutFunc {
 				.append("     -------- -------- --------------- -------- -------- -------- -------- -------- ------\n");
 
 		for (Bus b : net.getBusList()) {
-			AclfBus bus = (AclfBus)b;
+			BaseAclfBus<?,?> bus = (AclfBus)b;
 			if (bus.isRemoteQBus()) {
 				RemoteQBus re = bus.getRemoteQBus();
 				AclfGenBusAdapter genBus = re.getParentBus().toGenBus();
