@@ -8,6 +8,7 @@ import org.apache.commons.math3.complex.Complex;
 
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfLoad;
+import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -110,7 +111,7 @@ public class LVSHLoadRelayModel extends DynamicBusDeviceImpl implements BusRelay
 	}
 	
 	@Override
-	public boolean initStates(DStabBus abus){
+	public boolean initStates(BaseDStabBus<?,?> abus){
 		
 		// check the relaySetPoints 
 		if (this.relaySetPoints == null || this.relaySetPoints.isEmpty()){

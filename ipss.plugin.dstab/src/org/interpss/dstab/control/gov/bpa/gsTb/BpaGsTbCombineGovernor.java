@@ -2,15 +2,15 @@ package org.interpss.dstab.control.gov.bpa.gsTb;
 
 import java.lang.reflect.Field;
 
-import org.interpss.dstab.control.cml.block.DelayControlBlock;
-import org.interpss.dstab.control.cml.block.FilterControlBlock;
-import org.interpss.dstab.control.cml.block.GainBlock;
-import org.interpss.dstab.control.cml.block.IntegrationControlBlock;
-
+import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabBus;
-import com.interpss.dstab.controller.AnnotateGovernor;
-import com.interpss.dstab.controller.annotate.AnController;
-import com.interpss.dstab.controller.annotate.AnControllerField;
+import com.interpss.dstab.controller.cml.annotate.AnController;
+import com.interpss.dstab.controller.cml.annotate.AnControllerField;
+import com.interpss.dstab.controller.cml.annotate.AnnotateGovernor;
+import com.interpss.dstab.controller.cml.field.block.DelayControlBlock;
+import com.interpss.dstab.controller.cml.field.block.FilterControlBlock;
+import com.interpss.dstab.controller.cml.field.block.GainBlock;
+import com.interpss.dstab.controller.cml.field.block.IntegrationControlBlock;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
 
@@ -165,7 +165,7 @@ public class BpaGsTbCombineGovernor extends AnnotateGovernor {
 	}
 	
 	@Override
-	public boolean initStates(DStabBus bus, Machine mach) {
+	public boolean initStates(BaseDStabBus<?,?> bus, Machine mach) {
         this.pmax = getData().getGsData().getPmax();
     	this.pmin =getData().getGsData().getPmin();
     	this.r    =getData().getGsData().getR();

@@ -14,9 +14,10 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.dclf.DclfAlgorithm;
+import com.interpss.core.dclf.IDclfSolver;
 import com.interpss.core.dclf.LODFSenAnalysisType;
 import com.interpss.core.dclf.impl.DclfAlgorithmImpl;
-import com.interpss.core.dclf.impl.DclfSolver;
+import com.interpss.core.dclf.solver.DclfSolver;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 
@@ -25,7 +26,7 @@ public class DclfAlgoDebug extends DclfAlgorithmImpl {
 		super();
 	}
 
-	public DclfSolver getDclfSolver() {
+	public IDclfSolver getDclfSolver() {
 		return this.dclfSolver;
 	}
 
@@ -37,7 +38,7 @@ public class DclfAlgoDebug extends DclfAlgorithmImpl {
 	}
 
 	public void initDclfResult(double[] dclfResult) {
-		this.dclfSolver.initDclfResultForDebug(dclfResult);
+		((DclfSolver)this.dclfSolver).initDclfResultForDebug(dclfResult);
 	}
 
 	public void setPSAngleForDebug(DepPWDResultFileProcessor proc, AclfNetwork net) {

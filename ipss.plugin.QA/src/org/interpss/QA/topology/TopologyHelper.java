@@ -11,7 +11,6 @@ import java.util.List;
 
 import javax.swing.JFrame;
 
-import org.eclipse.emf.ecore.change.util.ChangeRecorder;
 import org.interpss.algo.TopologyProcesor;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.Number2String;
@@ -22,9 +21,11 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
-import com.interpss.core.aclf.contingency.Contingency;
+import com.interpss.core.aclf.contingency.BaseContingency;
 import com.interpss.core.aclf.contingency.OutageBranch;
+import com.interpss.core.aclf.contingency.dep.DepContingency;
 import com.interpss.core.common.visitor.INetBVisitor;
 import com.interpss.core.funcImpl.ZeroZBranchProcesor;
 import com.interpss.core.funcImpl.ZeroZBranchProcesor.BusBasedSeaerchResult;
@@ -72,9 +73,10 @@ public class TopologyHelper {
 		this.proc = proc;		
 	}
 	
-	public TopologyHelper(AclfNetwork net,ZeroZBranchProcesor proc, List<Contingency> contList) throws InterpssException{
+	public TopologyHelper(AclfNetwork net,ZeroZBranchProcesor proc, List<BaseContingency> contList) throws InterpssException{
 		this(net, proc);
-		for(Contingency cont: contList){
+		for(BaseContingency bcont: contList){
+			DepContingency cont = (DepContingency)bcont;
 			for(OutageBranch outBranch : cont.getOutageBranches())
 				this.protectedBranches.add(outBranch.getBranch().getId());					
 		}
@@ -214,7 +216,7 @@ public class TopologyHelper {
 	private String setBranchToGraph(String processingBus) throws Exception {
 		
 		// get all the branches within the same substation as the processingBus
-		AclfBus bus = net.getBus(processingBus);
+		BaseAclfBus bus = net.getBus(processingBus);
 		String branchId = "";
 		for( Branch branch: bus.getBranchList()){
 			AclfBranch b = (AclfBranch) branch;
@@ -230,7 +232,7 @@ public class TopologyHelper {
 		TopologyProcesor tp = new TopologyProcesor(net);		
 		List<String> branchList = tp.findBranchInSubStation(branchId);
 		
-		ChangeRecorder recorder = net.bookmark(false);
+		//ChangeRecorder recorder = net.bookmark(false);
 		
 		net.accept((INetBVisitor<?, ?>) proc); 	
 		
@@ -238,7 +240,7 @@ public class TopologyHelper {
 		String parentBus = result.getParentBusId();
 		List<String> childBusList = result.getChildBusList();	
 		
-		net.rollback(recorder);
+		//net.rollback(recorder);
 		
 		String type ="Line";
 		String cirId="";
@@ -527,7 +529,7 @@ public class TopologyHelper {
 	public boolean getToplogyByArea(String startBusId, double voltageLevel) {
 		sourceBusId = startBusId;
 		mxGraph mg = top.getTopGraph();
-		AclfBus sourceBus = net.getBus(startBusId);
+		BaseAclfBus sourceBus = net.getBus(startBusId);
 		// check the input bus id first
 		if (this.net.getBus(startBusId) == null) {
 			IpssLogger.getLogger().severe(

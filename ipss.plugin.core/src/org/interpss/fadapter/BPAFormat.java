@@ -33,8 +33,8 @@ import org.ieee.odm.ODMObjectFactory;
 import org.ieee.odm.adapter.IODMAdapter;
 import org.ieee.odm.common.ODMException;
 import org.ieee.odm.model.dstab.DStabModelParser;
+import org.interpss.CorePluginFactory;
 import org.interpss.fadapter.impl.IpssFileAdapterBase;
-import org.interpss.spring.CorePluginSpringFactory;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.msg.IPSSMsgHub;
@@ -55,7 +55,7 @@ public class BPAFormat extends IpssFileAdapterBase {
 				System.out.println(adapter.getModel().toXmlDoc(outfile));
 
 			String filepath = filepathAry[0];
-			if (CorePluginSpringFactory.getOdm2DStabParserMapper().map2Model((DStabModelParser)adapter.getModel(), simuCtx)) {
+			if (CorePluginFactory.getOdm2DStabParserMapper().map2Model((DStabModelParser)adapter.getModel(), simuCtx)) {
 	  	  		simuCtx.setName(filepath.substring(filepath.lastIndexOf(File.separatorChar)+1));
 	  	  		simuCtx.setDesc("This project is created by input file " + filepath);
 			}
