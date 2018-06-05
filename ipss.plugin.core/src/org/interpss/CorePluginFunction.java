@@ -18,7 +18,6 @@ import org.interpss.display.DclfOutFunc;
 import org.interpss.display.impl.AclfOut_BusStyle;
 import org.interpss.display.impl.AclfOut_PSSE;
 import org.interpss.mapper.odm.ODMAclfNetMapper;
-import org.interpss.spring.CorePluginSpringFactory;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.func.Function2Adapter;
@@ -29,6 +28,7 @@ import com.interpss.common.func.IFunction2;
 import com.interpss.common.func.IFunction4;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.dclf.DclfAlgorithm;
@@ -57,7 +57,7 @@ public class CorePluginFunction {
 	public static IFunction2<AclfModelParser, ODMAclfNetMapper.XfrBranchModel, AclfNetwork> AclfParser2AclfNet = 
 		new Function2Adapter<AclfModelParser, ODMAclfNetMapper.XfrBranchModel, AclfNetwork>() {
 			@Override public AclfNetwork fx(AclfModelParser parser, ODMAclfNetMapper.XfrBranchModel xfrBranchModel) throws InterpssException {
-				return CorePluginSpringFactory.getOdm2AclfParserMapper(xfrBranchModel)
+				return CorePluginFactory.getOdm2AclfParserMapper(xfrBranchModel)
 						.map2Model(parser)
 						.getAclfNet();
 		}};
@@ -68,7 +68,7 @@ public class CorePluginFunction {
 	public static IFunction2<LoadflowNetXmlType, ODMAclfNetMapper.XfrBranchModel, AclfNetwork> AclfXmlNet2AclfNet = 
 		new Function2Adapter<LoadflowNetXmlType, ODMAclfNetMapper.XfrBranchModel, AclfNetwork>() {
 			@Override public AclfNetwork fx(LoadflowNetXmlType xmlNet, ODMAclfNetMapper.XfrBranchModel xfrBranchModel) throws InterpssException {
-				return CorePluginSpringFactory.getOdm2AclfNetMapper(xfrBranchModel)
+				return CorePluginFactory.getOdm2AclfNetMapper(xfrBranchModel)
 						.map2Model(xmlNet)
 						.getAclfNet();
 		}};
@@ -81,7 +81,7 @@ public class CorePluginFunction {
 	public static IFunction<AcscModelParser, AcscNetwork> AcscParser2AcscNet = 
 		new FunctionAdapter<AcscModelParser, AcscNetwork>() {
 			@Override public AcscNetwork fx(AcscModelParser parser) throws InterpssException {
-				return CorePluginSpringFactory.getOdm2AcscParserMapper()
+				return CorePluginFactory.getOdm2AcscParserMapper()
 							.map2Model(parser)
 							.getAcscNet();
 		}};
@@ -94,7 +94,7 @@ public class CorePluginFunction {
 	public static IFunction<DStabModelParser, DynamicSimuAlgorithm> DStabParser2DStabAlgo = 
 		new FunctionAdapter<DStabModelParser, DynamicSimuAlgorithm>() {
 			@Override public DynamicSimuAlgorithm fx(DStabModelParser parser) throws InterpssException {
-				return CorePluginSpringFactory.getOdm2DStabParserMapper()
+				return CorePluginFactory.getOdm2DStabParserMapper()
 							.map2Model(parser)
 							.getDynSimuAlgorithm();
 		}};
@@ -104,7 +104,7 @@ public class CorePluginFunction {
 	public static IFunction<DistributionNetXmlType, DistNetwork> DistXmlNet2DistNet = 
 		new FunctionAdapter<DistributionNetXmlType, DistNetwork>() {
 			@Override public DistNetwork fx(DistributionNetXmlType xmlNet) throws InterpssException {
-				return CorePluginSpringFactory.getOdm2DistNetMapper()
+				return CorePluginFactory.getOdm2DistNetMapper()
 								.map2Model(xmlNet);
 		}};	
 	
@@ -113,7 +113,7 @@ public class CorePluginFunction {
 	public static IFunction<DcNetworkXmlType, DcNetwork> DcSysXmlNet2DcSysNet = 
 		new FunctionAdapter<DcNetworkXmlType, DcNetwork>() {
 			@Override public DcNetwork fx(DcNetworkXmlType xmlNet) throws InterpssException {
-				return CorePluginSpringFactory.getOdm2DcSysNetMapper()
+				return CorePluginFactory.getOdm2DcSysNetMapper()
 							.map2Model(xmlNet);
 		}};
 
@@ -162,9 +162,9 @@ public class CorePluginFunction {
 	 *   
 	 *   StringBuffer outText = BusLfResultBusStyle.f(aclfNet, bus);
 	 */
-	public static IFunction2<BaseAclfNetwork, AclfBus, StringBuffer> BusLfResultBusStyle = 
-		new Function2Adapter<BaseAclfNetwork, AclfBus, StringBuffer>() {
-			@Override public StringBuffer f(BaseAclfNetwork net, AclfBus bus) {
+	public static IFunction2<BaseAclfNetwork<?,?>, AclfBus, StringBuffer> BusLfResultBusStyle = 
+		new Function2Adapter<BaseAclfNetwork<?,?>, AclfBus, StringBuffer>() {
+			@Override public StringBuffer f(BaseAclfNetwork<?,?> net, AclfBus bus) {
 				return AclfOut_BusStyle.busResult(net, bus);
 			}
 		};
@@ -204,9 +204,9 @@ public class CorePluginFunction {
 	 * function to format bus id for output
 	 * 
 	 */
-	public static IFunction2<AclfBus, OriginalDataFormat, String> OutputBusId = 
-		new Function2Adapter<AclfBus, OriginalDataFormat, String>() {
-			@Override public String f(AclfBus bus, OriginalDataFormat fmt) {
+	public static IFunction2<BaseAclfBus<?,?>, OriginalDataFormat, String> OutputBusId = 
+		new Function2Adapter<BaseAclfBus<?,?>, OriginalDataFormat, String>() {
+			@Override public String f(BaseAclfBus<?,?> bus, OriginalDataFormat fmt) {
 				if (fmt == OriginalDataFormat.CIM)
 					return "Bus" + bus.getNumber();
 				return bus.getId();

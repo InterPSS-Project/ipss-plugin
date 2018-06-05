@@ -24,12 +24,6 @@
 
 package org.interpss.dstab.control.gov.simple;
 
-import java.io.IOException;
-
-import com.hazelcast.nio.ObjectDataInput;
-import com.hazelcast.nio.ObjectDataOutput;
-import com.hazelcast.nio.serialization.DataSerializable;
-
 /**
  * A JavaBean to store data for the Simple governor model. It needs to follow
  * JavaBean convention so that the controller data object be serialized/
