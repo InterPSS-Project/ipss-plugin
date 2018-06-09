@@ -179,7 +179,7 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 			dstabAlgo.setOutPutPerSteps(5);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
 			
-			IpssLogger.getLogger().setLevel(Level.INFO);
+			//IpssLogger.getLogger().setLevel(Level.INFO);
 			
 			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus17",dsNet,SimpleFaultCode.GROUND_3P,new Complex(0,0),null,1.0d,0.05),"3phaseFault@Bus17");
 			
@@ -207,7 +207,8 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 			PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
 			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 					"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_v30.raw",
-					"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus.dyr"
+					//"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus.dyr"
+					"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_onlyGen.dyr"
 			}));
 			DStabModelParser parser =(DStabModelParser) adapter.getModel();
 			
