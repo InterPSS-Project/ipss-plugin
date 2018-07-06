@@ -215,7 +215,7 @@ public class DStab3SeqSimuAlgorithm {
 				return null;
 			}
 		   
-		   for(BaesDStabBus<?,?> b:this.net.getBusList()){
+		   for(BaseDStabBus<?,?> b:this.net.getBusList()){
 			   //superpostition method
 			   //bus voltage V = Vinternal + Vext_injection
 			   b.setVoltage(b.getVoltage().add(posSeqNetY.getX(b.getSortNumber())));
