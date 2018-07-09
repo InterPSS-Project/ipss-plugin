@@ -168,7 +168,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethod.PQ);
 	  	algo.loadflow();
-  		System.out.println(net.net2String());
+  		//System.out.println(net.net2String());
 
 	  	AclfBus swingBus = net.getBus("Bus1");
 	  	AclfSwingBus swing = swingBus.toSwingBus();

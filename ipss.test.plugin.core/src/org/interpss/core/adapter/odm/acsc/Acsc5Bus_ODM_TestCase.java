@@ -53,7 +53,7 @@ public class Acsc5Bus_ODM_TestCase extends CorePluginTestSetup {
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();
-		System.out.println(faultNet.net2String());
+		//System.out.println(faultNet.net2String());
 		
 	  	SimpleFaultAlgorithm algo = CoreObjectFactory.createSimpleFaultAlgorithm(faultNet);
   		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus2", algo);
