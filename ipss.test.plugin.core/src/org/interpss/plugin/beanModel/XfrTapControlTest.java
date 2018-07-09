@@ -144,7 +144,7 @@ public class XfrTapControlTest extends CorePluginTestSetup {
 
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
-  		System.out.println(net.net2String());
+  		//System.out.println(net.net2String());
 
   		AclfBus swingBus = (AclfBus)net.getBus("0001");
 		AclfSwingBus swing = swingBus.toSwingBus();

@@ -33,7 +33,7 @@ public class IEEE39Bus_Acsc_Test {
 			
 		
 		AcscNetwork faultNet = new ODMAcscParserMapper().map2Model(acscParser).getAcscNet();
-		System.out.println(faultNet.net2String());
+		//System.out.println(faultNet.net2String());
 		
 //	  	SimpleFaultAlgorithm algo = CoreObjectFactory.createSimpleFaultAlgorithm(faultNet);
 //  		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus2", algo);
