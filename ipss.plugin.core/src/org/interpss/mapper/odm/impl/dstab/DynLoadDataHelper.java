@@ -42,9 +42,9 @@ public class DynLoadDataHelper {
 		return loadModel;
 	}
 	
-	private DynamicBusDevice createSinglePhaseACMotorLoadModel(DynamicLoadSinglePhaseACMotorXmlType acMotorXml, DStabBus dstabBus,
+	private DynamicBusDevice createSinglePhaseACMotorLoadModel(DynamicLoadSinglePhaseACMotorXmlType acMotorXml, BaseDStabBus<?,?> dstabBus,
 			String id) {
-        this.bus= dstabBus; 
+        this.bus= (DStabBus)dstabBus; 
 		
         LD1PAC acMotor = DStabDynamicLoadFactory.eINSTANCE.createLD1PAC();
         acMotor.setId(id);
@@ -124,10 +124,10 @@ public class DynLoadDataHelper {
         
         acMotor.setFuvr(acMotorXml.getFuvr());
         
-        acMotor.setUVtr1(acMotorXml.getVtr1());
+        acMotor.setVtr1(acMotorXml.getVtr1());
         acMotor.setTtr1(acMotorXml.getTtr1());
         
-        acMotor.setUVtr2(acMotorXml.getVtr2());
+        acMotor.setVtr2(acMotorXml.getVtr2());
         acMotor.setTtr2(acMotorXml.getTtr2());
         
         //NOTE: the following parameters are already hard-coded
@@ -149,9 +149,9 @@ public class DynLoadDataHelper {
 	}
 
 
-	private DynLoadCMPLDW createCMPLDWLoadModel(DynamicLoadCMPLDWXmlType cmpldwXml, DStabBus dstabBus, String loadId){
+	private DynLoadCMPLDW createCMPLDWLoadModel(DynamicLoadCMPLDWXmlType cmpldwXml, BaseDStabBus<?,?> dstabBus, String loadId){
 		
-		this.bus= dstabBus; 
+		this.bus= (DStabBus)dstabBus; 
 		
 		DynLoadCMPLDW cmpldw = new DynLoadCMPLDWImpl(loadId,dstabBus);
 		
