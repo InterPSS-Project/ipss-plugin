@@ -4,9 +4,6 @@ import static com.interpss.common.util.IpssLogger.ipssLogger;
 import static com.interpss.dstab.funcImpl.DStabFunction.BuiltBusState;
 import static com.interpss.dstab.funcImpl.DStabFunction.BuiltMachineState;
 import static com.interpss.dstab.funcImpl.DStabFunction.BuiltScriptDynamicBusDeviceState;
-import static org.ipss.threePhase.util.ThreePhaseUtilFunction.threePhaseGenAptr;
-import static org.ipss.threePhase.util.ThreePhaseUtilFunction.threePhaseInductionMotorAptr;
-import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -14,7 +11,6 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
@@ -27,48 +23,43 @@ import org.ipss.threePhase.basic.Bus3Phase;
 import org.ipss.threePhase.basic.Load3Phase;
 import org.ipss.threePhase.basic.impl.Load3PhaseImpl;
 import org.ipss.threePhase.dynamic.DStabNetwork3Phase;
-import org.ipss.threePhase.dynamic.model.DStabGen3PhaseAdapter;
 import org.ipss.threePhase.dynamic.model.DynLoadModel1Phase;
 import org.ipss.threePhase.dynamic.model.DynLoadModel3Phase;
 import org.ipss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.ipss.threePhase.util.ThreePhaseObjectFactory;
 
-import com.interpss.common.datatype.Constants;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranchCode;
-import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
-import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
+import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabGen;
-import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.DStabLoad;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
-import com.interpss.dstab.algo.defaultImpl.DStabSolverImpl;
 import com.interpss.dstab.common.DStabSimuException;
 import com.interpss.dstab.datatype.DStabSimuEvent;
 import com.interpss.dstab.device.DynamicBranchDevice;
 import com.interpss.dstab.device.DynamicBusDevice;
-import com.interpss.dstab.dynLoad.InductionMotor;
 import com.interpss.dstab.mach.Machine;
 
 public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl {
 	
-	private final Complex a = new Complex(-0.5, Math.sqrt(3)/2);
 	
 	private List<String>  threePhaseSubNetIdList = null;
 	private Hashtable<String,Complex3x1> dist2Trans3PhaseCurInjTable =null;
 	private Hashtable<String,Complex> dist2TransEquivCurInjTable =null;
 	private Hashtable<String,Complex> dist2TransTotalPowerTable =null;
-	private DStabilityNetwork transmissionNet = null;
-	protected List<DStabilityNetwork> distNetList = null;
+	private  BaseDStabNetwork<?,?> transmissionNet = null;
+	protected List< BaseDStabNetwork<?,?> > distNetList = null;
 	private SubNetworkProcessor subNetProcessor = null;
 	private Hashtable<String,Complex> lastStepTransBoundaryVoltTable;
 	
@@ -91,7 +82,7 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 		
 		this.subNetProcessor = mNetSimuHelper.getSubNetworkProcessor();
 		
-		this.transmissionNet = this.subNetProcessor.getExternalSubNetwork();
+		this.transmissionNet = (BaseDStabNetwork<?, ?>) this.subNetProcessor.getExternalSubNetwork();
 		
 		try {
 			if(transmissionNet ==null){
@@ -118,7 +109,7 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 		// populate the distribution system list
 		distNetList = new ArrayList<>();
 		
-		for(DStabilityNetwork net: this.subNetList){
+		for(BaseDStabNetwork<?, ?> net: this.subNetList){
 			if(threePhaseSubNetIdList.contains(net.getId()))
 			    this.distNetList.add(net);
 		}
@@ -155,7 +146,7 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 		
 		
 		// network  initialization: mainly includes load model conversion and dynamic model initialization
-		for(DStabilityNetwork dsNet: this.subNetList){
+		for(BaseDStabNetwork<?, ?> dsNet: this.subNetList){
 			   boolean flag = true;
 			   if(this.threePhaseSubNetIdList!=null && this.threePhaseSubNetIdList.contains(dsNet.getId())){    
 				   flag = dsNet.initDStabNet();
@@ -290,7 +281,7 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 				updateTransNetTheveninEquivSource(false);
 				
 				// step-2 update the distribution systems current injection table
-				for(DStabilityNetwork dsNet: this.distNetList){
+				for(BaseDStabNetwork<?, ?> dsNet: this.distNetList){
 					
 					DStabNetwork3Phase dsNet3Ph = (DStabNetwork3Phase) dsNet;
 					
@@ -313,7 +304,7 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 					updateTransNetTheveninEquivSource(true);
 					
 					// step-2 update the distribution systems current injection table
-					for(DStabilityNetwork dsNet: this.distNetList){
+					for(BaseDStabNetwork<?, ?> dsNet: this.distNetList){
 						
 						DStabNetwork3Phase dsNet3Ph = (DStabNetwork3Phase) dsNet;
 						
@@ -332,7 +323,7 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 			// step-3 solve the distribution systems
 			
 			
-			for(DStabilityNetwork dsNet: this.distNetList){
+			for(BaseDStabNetwork<?, ?> dsNet: this.distNetList){
 				
 				DStabNetwork3Phase dsNet3Ph = (DStabNetwork3Phase) dsNet;
 				
@@ -421,7 +412,7 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 			
 			// step-7 check if the transmission network solution results of the last two steps converge wrt the tolerance
 			// if so, exit the loop; otherwise, continue the iteration until the maximum iteration
-			for ( DStabBus busi : transmissionNet.getBusList() ) {
+			for ( BaseDStabBus busi : transmissionNet.getBusList() ) {
 				
 				if(busi.isActive()){
 					
@@ -450,7 +441,7 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 			  *  x(t+deltaT) = x(t) + dx_dt*deltaT 
 			  */
 			  
-		  for(DStabilityNetwork dsNet: subNetList){  
+		  for(BaseDStabNetwork<?, ?> dsNet: subNetList){  
 			// Solve DEqn for all dynamic bus devices
 				for (Bus b : dsNet.getBusList()) {
 					if(b.isActive()){
@@ -524,7 +515,7 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 		  
 		  //TODO update the distribution bus equivalent loads based on the dynamic load power, 
 		  //if the source bus voltage is used for T&D interfacing
-		  for(DStabilityNetwork dsNet: this.distNetList){
+		  for(BaseDStabNetwork<?, ?> dsNet: this.distNetList){
 				
 				DStabNetwork3Phase dsNet3Ph = (DStabNetwork3Phase) dsNet;
 				
@@ -536,7 +527,7 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 			
 			
 		// back up the states	
-			for(DStabilityNetwork dsNet: subNetList){
+			for(BaseDStabNetwork<?, ?> dsNet: subNetList){
 			 // backup the states
 			 for (Bus b :  dsNet.getBusList()) {
 					if(b.isActive()){
@@ -561,10 +552,10 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 	
 	@Override public boolean procInitOutputEvent() {
 		try {
-			for(DStabilityNetwork dsNet: subNetList){
+			for(BaseDStabNetwork<?, ?> dsNet: subNetList){
 				
 				// Solve DEqn for all dynamic bus devices
-				for (DStabBus bus : dsNet.getBusList()) {
+				for (BaseDStabBus<? extends DStabGen, ? extends DStabLoad> bus : dsNet.getBusList()) {
 
 					if(bus.isActive()){ // only the active bus will be consider, otherwise errors will occur
 						if (bus.isMachineBus()) {
@@ -616,13 +607,13 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 		
 		ISparseEqnComplex ymatrix = this.transmissionNet.getYMatrix();
 		if(ymatrix==null){
-			ymatrix = this.transmissionNet.formYMatrix(SequenceCode.POSITIVE,false);
+			ymatrix = this.transmissionNet.formScYMatrix(SequenceCode.POSITIVE,false);
 			this.transmissionNet.setYMatrix(ymatrix);
 			this.transmissionNet.setYMatrixDirty(true);
 		}
 		if(this.transmissionNet.isYMatrixDirty()){
 			try {
-				ymatrix.luMatrix(1.0E-10);
+				ymatrix.factorization(1.0E-10);
 			} catch (IpssNumericException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -634,7 +625,7 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 		
 		NetworkEquivalent netEquiv = null;
 		
-		DStabBus bus =this.transmissionNet.getBus(boundaryId);
+		BaseDStabBus bus =this.transmissionNet.getBus(boundaryId);
 		
 		if(bus!=null){
 			netEquiv = new NetworkEquivalent(dim);
@@ -778,7 +769,7 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 		
 		double transMVABase = this.transmissionNet.getBaseMva();
 	
-		for(DStabilityNetwork distNet:this.distNetList){
+		for(BaseDStabNetwork<?, ?> distNet:this.distNetList){
 			
 		
 			List<String> boundaryList = subNetProcessor.getSubNet2BoundaryBusListTable().get(distNet.getId());
@@ -854,7 +845,7 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 			   else
 				   transBoundaryBusId = distBoundaryBusId+"Dummy";
 			   
-			   AclfBus transBoundaryBus = this.transmissionNet.getBus(transBoundaryBusId);
+			   BaseDStabBus transBoundaryBus = this.transmissionNet.getBus(transBoundaryBusId);
 			   
 			   if(transBoundaryBus == null){
 				   throw new Error("The tranmission network boundary bus is not found, ID: "+transBoundaryBusId);
@@ -884,7 +875,7 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 		  // Stotal = Smotor+ (1-Frac_dyn)*initialTotalLoad
 		  // here need to use the Bus3Phase.get3PhaseInitTotalLoad and getInit3PhaseVolages functions
 		
-		for( DStabBus b : distNet.getBusList()) {
+		for( BaseDStabBus b : distNet.getBusList()) {
 		
 			if(b.isActive()){
 				Bus3Phase bus3p = (Bus3Phase) b;
@@ -962,7 +953,7 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 			  		
 					load1.set3PhaseLoad(load3P.add(initNonDynLoad3P));// the new total load;
 					
-					load1.setVminpu(loadModelVminpu);
+					//load1.setVminpu(loadModelVminpu);
 					
 					bus3p.getThreePhaseLoadList().add(load1);
 					
@@ -1002,7 +993,7 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 					  DStabNetwork3Phase distNet = (DStabNetwork3Phase) this.subNetProcessor.getSubNetworkByBusId(distBoundaryBusId);
 					  
 					  
-					  DStabBus distBoundaryBus = distNet.getBus(distBoundaryBusId);
+					  BaseDStabBus distBoundaryBus = distNet.getBus(distBoundaryBusId);
 					  
 					  distBoundaryBus.setGenCode(AclfGenCode.NON_GEN); // reset the boundary bus to a non-gen
 					  
