@@ -16,9 +16,12 @@ import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
+import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabGen;
+import com.interpss.dstab.DStabLoad;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -32,7 +35,7 @@ import com.interpss.dstab.mach.Machine;
 public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 	
 	protected AbstractMultiNetDStabSimuHelper multiNetSimuHelper = null;
-	protected List<DStabilityNetwork> subNetList = null;
+	protected List<BaseDStabNetwork<?,?>> subNetList = null;
 
 	public MultiNetDStabSolverImpl(DynamicSimuAlgorithm algo, AbstractMultiNetDStabSimuHelper mNetSimuHelper) {
 		super(algo, IpssCorePlugin.getMsgHub());
@@ -52,7 +55,7 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 		}
 		
 		// network initialization, initial bus sc data, transfer machine sc info to bus.
-		for(DStabilityNetwork dsNet: this.subNetList){
+		for(BaseDStabNetwork<?, ?> dsNet: this.subNetList){
 			
 				if (!dsNet.initDStabNet()){
 					  ipssLogger.severe("Error: SubNetwork initialization error:"+dsNet.getId());
@@ -88,10 +91,10 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 			
 		boolean hasEvent = hasDynEvent(simuTime);
 		if(hasDynEvent(simuTime)){
-			for(DStabilityNetwork dsNet: subNetList){
+			for(BaseDStabNetwork<?, ?> dsNet: subNetList){
 				
 				// Solve DEqn for all dynamic bus devices
-				for (DStabBus bus : dsNet.getBusList()) {
+				for (BaseDStabBus bus : dsNet.getBusList()) {
 				  //only the measurements of active buses will be output. 
 				   if(bus.isActive())
 				     output(bus, simuTime, true);
@@ -112,10 +115,10 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 			    
 			// output simulation results
 			++outCnt;
-            for(DStabilityNetwork dsNet: subNetList){
+            for(BaseDStabNetwork<?, ?> dsNet: subNetList){
 				
 				// Solve DEqn for all dynamic bus devices
-			   for (DStabBus bus : dsNet.getBusList()) {
+			   for (BaseDStabBus bus : dsNet.getBusList()) {
 				   //only the measurements of active buses will be output. 
 				    if(bus.isActive())
 				         output(bus, simuTime, outCnt >= outPerSteps);
@@ -163,7 +166,7 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 			 
 			// The first  step of the multi-subNetwork solution is to solve each subnetwork independently without current injections from the 
 			// connection tie-lines
-			for(DStabilityNetwork dsNet: subNetList){
+			for(BaseDStabNetwork<?, ?> dsNet: subNetList){
 				
 				// make sure there is no current injection at the boundary
 				dsNet.setCustomBusCurrInjHashtable(null);
@@ -196,7 +199,7 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 				  //solve all the SubNetworks With only Boundary Current Injections
 				  this.multiNetSimuHelper.solveSubNetWithBoundaryCurrInjection();
 				  
-				  for(DStabilityNetwork dsNet: subNetList){
+				  for(BaseDStabNetwork<?, ?> dsNet: subNetList){
 					for ( Bus busi : dsNet.getBusList() ) {
 						DStabBus bus = (DStabBus)busi;
 						if(bus.isActive()){
@@ -226,7 +229,7 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 			  *  x(t+deltaT) = x(t) + dx_dt*deltaT 
 			  */
 			  
-		  for(DStabilityNetwork dsNet: subNetList){  
+		  for(BaseDStabNetwork<?, ?> dsNet: subNetList){  
 			// Solve DEqn for all dynamic bus devices
 				for (Bus b : dsNet.getBusList()) {
 					if(b.isActive()){
@@ -299,7 +302,7 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 			
 			
 		// back up the states	
-			for(DStabilityNetwork dsNet: subNetList){
+			for(BaseDStabNetwork<?, ?> dsNet: subNetList){
 			 // backup the states
 			 for (Bus b :  dsNet.getBusList()) {
 					if(b.isActive()){
@@ -324,10 +327,10 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 	
 	@Override public boolean procInitOutputEvent() {
 		try {
-			for(DStabilityNetwork dsNet: subNetList){
+			for(BaseDStabNetwork<?, ?> dsNet: subNetList){
 				
 				// Solve DEqn for all dynamic bus devices
-				for (DStabBus bus : dsNet.getBusList()) {
+				for (BaseDStabBus<? extends DStabGen, ? extends DStabLoad> bus : dsNet.getBusList()) {
 
 					if(bus.isActive()){ // only the active bus will be consider, otherwise errors will occur
 						if (bus.isMachineBus()) {

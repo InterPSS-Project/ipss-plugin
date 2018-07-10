@@ -20,6 +20,7 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.AcscBus;
@@ -124,7 +125,7 @@ public class TposSeqD3PhaseMultiNetPowerflowAlgorithm {
 				throw new Error(" Only one source bus for a distribution system is supported!");
 			}
 			else{
-				AclfBus sourceBus = (AclfBus) distNet.getBus(boundaryList.get(0));
+				BaseAclfBus sourceBus =(BaseAclfBus) distNet.getBus(boundaryList.get(0));
 				
 				distNetId2BoundaryBusTable.put(distNet.getId(), sourceBus.getId());
 				
