@@ -27,7 +27,7 @@ package org.interpss.core.aclf;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.CorePluginObjFactory;
+import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.junit.Test;
@@ -41,7 +41,7 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 public class IEEE14_3WXfrTest extends CorePluginTestSetup {
 	@Test 
 	public void bus14testCase() throws Exception {
-		AclfNetwork net = CorePluginObjFactory
+		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
 				.load("testdata/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();		
