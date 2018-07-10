@@ -12,8 +12,10 @@ import org.ipss.threePhase.dynamic.DStabNetwork3Phase;
 
 import com.interpss.common.msg.IpssMessage;
 import com.interpss.core.acsc.AcscBus;
+import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.datatype.DStabSimuTimeEvent;
 import com.interpss.dstab.devent.DynamicEvent;
@@ -23,7 +25,7 @@ public class MultiNet3PhPosSeqDynEventProcessor extends
 		MultiNetDynamicEventProcessor {
    
 	private List<String> threePhaseSubNetIdList =null;
-	private DStabilityNetwork faultSubNet =null;
+	private BaseDStabNetwork<?,?> faultSubNet =null;
 	public MultiNet3PhPosSeqDynEventProcessor(
 			AbstractMultiNetDStabSimuHelper mNetSimuHelper) {
 		super(mNetSimuHelper);
@@ -72,9 +74,9 @@ public class MultiNet3PhPosSeqDynEventProcessor extends
 					        if (dEvent.getType() == DynamicEventType.BUS_FAULT) {
 						         AcscBusFault fault = dEvent.getBusFault();
 						        
-						         AcscBus bus = fault.getBus();
+						         BaseAcscBus bus = fault.getBus();
 						         
-						         faultSubNet = (DStabilityNetwork) bus.getNetwork();
+						         faultSubNet = (BaseDStabNetwork<?, ?>) bus.getNetwork();
 						         
 						         if(faultSubNet instanceof DStabNetwork3Phase && this.threePhaseSubNetIdList.contains(faultSubNet.getId())){
 									try {
@@ -134,13 +136,13 @@ public class MultiNet3PhPosSeqDynEventProcessor extends
 					if (e.isActive()) {
 						if (e.getType() == DynamicEventType.BUS_FAULT) {
 							AcscBusFault fault = e.getBusFault();
-							AcscBus bus = fault.getBus();
+							BaseAcscBus<?, ?> bus = fault.getBus();
 							
 							int i = bus.getSortNumber();
 							
 							Complex ylarge =  NumericConstant.LargeBusZ;
 							
-							 DStabilityNetwork net = (DStabilityNetwork) bus.getNetwork();
+							 BaseDStabNetwork<?,?>  net =  (BaseDStabNetwork<?, ?>) bus.getNetwork();
 							
 							if(this.threePhaseSubNetIdList.contains(net.getId())){
 								
