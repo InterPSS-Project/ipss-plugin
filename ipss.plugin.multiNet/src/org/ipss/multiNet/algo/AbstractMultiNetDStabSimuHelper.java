@@ -11,6 +11,7 @@ import org.ipss.multiNet.equivalent.NetworkEquivUtil;
 import org.ipss.multiNet.equivalent.NetworkEquivalent;
 
 import com.interpss.CoreObjectFactory;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabilityNetwork;
@@ -18,7 +19,7 @@ import com.interpss.dstab.DStabilityNetwork;
 public abstract class AbstractMultiNetDStabSimuHelper {
 	
 
-	protected DStabilityNetwork net = null;
+	protected BaseDStabNetwork<?,?> net = null;
 	protected SubNetworkProcessor subNetProcessor = null;
 	protected Hashtable<String, NetworkEquivalent> subNetEquivTable = null;
 	protected Hashtable<String, Hashtable<String, Complex>> subNetCurrInjTable = null;
@@ -36,7 +37,7 @@ public abstract class AbstractMultiNetDStabSimuHelper {
 	 * @param net
 	 * @param subNetProc
 	 */
-	public  AbstractMultiNetDStabSimuHelper(DStabilityNetwork net, SubNetworkProcessor subNetProc){
+	public  AbstractMultiNetDStabSimuHelper(BaseDStabNetwork<?,?> net, SubNetworkProcessor subNetProc){
 		this.net = net;
 		this.subNetProcessor = subNetProc;
 		
@@ -135,7 +136,7 @@ public abstract class AbstractMultiNetDStabSimuHelper {
 					 */
 			        //From bus side
 			        int fChildNetIdx =  this.subNetProcessor.getBusId2SubNetworkTable().get(fBus.getId());
-			        DStabilityNetwork fChileNet = this.subNetProcessor.getSubNetworkList().get(fChildNetIdx);
+			        BaseDStabNetwork<?,?> fChileNet = this.subNetProcessor.getSubNetworkList().get(fChildNetIdx);
 			        //HasCurrentInejctionTable 
 			        if(fChileNet.getCustomBusCurrInjHashtable()==null){
 			           Hashtable<String, Complex> customBusCurTable = new Hashtable<>();
@@ -156,7 +157,7 @@ public abstract class AbstractMultiNetDStabSimuHelper {
 			        
 			        //To Bus side
 			        int tChildNetIdx =  this.subNetProcessor.getBusId2SubNetworkTable().get(tBus.getId());
-			        DStabilityNetwork tChileNet = this.subNetProcessor.getSubNetworkList().get(tChildNetIdx);
+			        BaseDStabNetwork<?,?> tChileNet = this.subNetProcessor.getSubNetworkList().get(tChildNetIdx);
 			        //HasCurrentInejctionTable 
 			        if(tChileNet.getCustomBusCurrInjHashtable()==null){
 			           Hashtable<String, Complex> customBusCurTable = new Hashtable<>();
@@ -177,13 +178,14 @@ public abstract class AbstractMultiNetDStabSimuHelper {
 			}
 		
 		  // set the power flow convergence status 
-		  for( DStabilityNetwork subNet: this.subNetProcessor.getSubNetworkList()){
+		  for(BaseDStabNetwork<?,?> subNet: this.subNetProcessor.getSubNetworkList()){
 
 				  subNet.setLfConverged(true);
 				  
 				  // this is necessary because bus number is required for forming the Ymatrix
 					if ( !subNet.isBusNumberArranged() ) {
-						subNet.accept(CoreObjectFactory.createBusNoArrangeVisitor());	  		
+						//subNet.accept(CoreObjectFactory.createBusNoArrangeVisitor());
+						subNet.arrangeBusNumber();
 					}	
 		  }
 	   
@@ -273,7 +275,7 @@ public abstract class AbstractMultiNetDStabSimuHelper {
       	this.subNetIncidenceMatrixTable = new Hashtable<>();
       	this.subNetIncidenceAryTable = new Hashtable<>();
       	
-      	 for(DStabilityNetwork subNet: this.subNetProcessor.getSubNetworkList()){
+      	 for(BaseDStabNetwork<?,?> subNet: this.subNetProcessor.getSubNetworkList()){
       		    int m =this.subNetProcessor.getInterfaceBranchIdList().size();
       		    
       		    List<String> busIdList = this.subNetProcessor.getSubNet2BoundaryBusListTable().get(subNet.getId());
