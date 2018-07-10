@@ -12,9 +12,11 @@ import org.ipss.threePhase.dynamic.DStabNetwork3Phase;
 
 import com.interpss.common.msg.IpssMessage;
 import com.interpss.core.acsc.AcscBus;
+import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.datatype.DStabSimuTimeEvent;
 import com.interpss.dstab.devent.DynamicEvent;
@@ -70,8 +72,8 @@ public class MultiNet3Ph3SeqDynEventProcessor extends
 						   
 					        if (dEvent.getType() == DynamicEventType.BUS_FAULT) {
 						         AcscBusFault fault = dEvent.getBusFault();
-						         AcscBus bus = fault.getBus();
-						         DStabilityNetwork faultSubNet = (DStabilityNetwork) bus.getNetwork();
+						         BaseAcscBus bus = fault.getBus();
+						         BaseDStabNetwork<?,?> faultSubNet = (BaseDStabNetwork<?, ?>) bus.getNetwork();
 						         if(faultSubNet instanceof DStabNetwork3Phase && this.threePhaseSubNetIdList.contains(faultSubNet.getId())){
 									try {
 										( (DStabNetwork3Phase)faultSubNet ).formYMatrixABC();
@@ -81,8 +83,8 @@ public class MultiNet3Ph3SeqDynEventProcessor extends
 						         }
 						         else if (faultSubNet instanceof DStabNetwork3Phase && fault.getFaultCode()==SimpleFaultCode.GROUND_3P){
 						        	 faultSubNet.formYMatrix4DStab();
-						        	 faultSubNet.formYMatrix(SequenceCode.NEGATIVE,false);
-						        	 faultSubNet.formYMatrix(SequenceCode.ZERO,false);
+						        	 faultSubNet.formScYMatrix(SequenceCode.NEGATIVE,false);
+						        	 faultSubNet.formScYMatrix(SequenceCode.ZERO,false);
 						         }
 						         
 								else{
@@ -129,7 +131,7 @@ public class MultiNet3Ph3SeqDynEventProcessor extends
 					if (e.isActive()) {
 						if (e.getType() == DynamicEventType.BUS_FAULT) {
 							AcscBusFault fault = e.getBusFault();
-							AcscBus bus = fault.getBus();
+							BaseAcscBus bus = fault.getBus();
 							
 							int i = bus.getSortNumber();
 							

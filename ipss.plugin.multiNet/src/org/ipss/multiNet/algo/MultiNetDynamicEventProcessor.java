@@ -18,9 +18,11 @@ import org.interpss.numeric.sparse.ISparseEqnComplex;
 import com.interpss.common.exp.InterpssRuntimeException;
 import com.interpss.common.msg.IpssMessage;
 import com.interpss.core.acsc.AcscBus;
+import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.defaultImpl.DynamicEventProcessor;
 import com.interpss.dstab.datatype.DStabSimuTimeEvent;
@@ -30,7 +32,7 @@ import com.interpss.dstab.devent.DynamicEventType;
 public class MultiNetDynamicEventProcessor extends DynamicEventProcessor {
 	
 
-	DStabilityNetwork net = null;
+	BaseDStabNetwork<?, ?> net = null;
 	protected AbstractMultiNetDStabSimuHelper simuHelper = null;
 	
 	
@@ -78,9 +80,9 @@ public class MultiNetDynamicEventProcessor extends DynamicEventProcessor {
 						   
 					        if (dEvent.getType() == DynamicEventType.BUS_FAULT) {
 						         AcscBusFault fault = dEvent.getBusFault();
-						         AcscBus bus = fault.getBus();
+						         BaseAcscBus bus = fault.getBus();
 						         DStabilityNetwork faultSubNet = (DStabilityNetwork) bus.getNetwork();
-						         ISparseEqnComplex ymatrix = faultSubNet.formYMatrix(SequenceCode.POSITIVE, false);
+						         ISparseEqnComplex ymatrix = faultSubNet.formScYMatrix(SequenceCode.POSITIVE, false);
 						         //TODO don't forget to set the ymatrix
 						         faultSubNet.setYMatrix(ymatrix);
 						         faultSubNet.setYMatrixDirty(true);
@@ -151,7 +153,7 @@ public class MultiNetDynamicEventProcessor extends DynamicEventProcessor {
 				if (e.isActive()) {
 					if (e.getType() == DynamicEventType.BUS_FAULT) {
 						AcscBusFault fault = e.getBusFault();
-						AcscBus bus = fault.getBus();
+						BaseAcscBus bus = fault.getBus();
 						
 						int i = bus.getSortNumber();
 						
