@@ -41,7 +41,7 @@ public class ODMMaper_IEEE9BusTest  extends DStabTestSetupBase {
 		}	
 
 		DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
-		DStabilityNetwork dstabNet = simuCtx.getDStabilityNet();
+		DStabilityNetwork dstabNet = (DStabilityNetwork) simuCtx.getDStabilityNet();
 
 		LoadflowAlgorithm lfAlgo = dstabAlgo.getAclfAlgorithm();
 		lfAlgo.loadflow();
