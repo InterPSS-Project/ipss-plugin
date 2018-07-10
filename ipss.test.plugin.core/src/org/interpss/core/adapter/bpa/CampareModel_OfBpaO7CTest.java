@@ -17,6 +17,7 @@ import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.simu.SimuContext;
@@ -57,7 +58,7 @@ public class CampareModel_OfBpaO7CTest extends DStabTestSetupBase {
 				return;
 			}
 			
-			DStabilityNetwork dstabNet = simuCtx.getDStabilityNet();
+			DStabilityNetwork dstabNet = (DStabilityNetwork) simuCtx.getDStabilityNet();
 			
 			System.out.println("LF Net as the base net for comparison");
 			new NetModelComparator(baseNet)
@@ -87,7 +88,7 @@ public class CampareModel_OfBpaO7CTest extends DStabTestSetupBase {
 	
 	IAclfBusComparator busCompRules = new IAclfBusComparator(){
 		@Override
-		public boolean compare(AclfBus baseBus, AclfBus bus) {
+		public boolean compare(BaseAclfBus baseBus, BaseAclfBus bus) {
 			boolean ok = true;
 			if (bus == null) {
 				IpssLogger.getLogger().warning("AclfBus not found, " + baseBus.getId());
