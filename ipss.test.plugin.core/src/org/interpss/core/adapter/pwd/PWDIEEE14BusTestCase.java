@@ -52,7 +52,7 @@ public class PWDIEEE14BusTestCase extends CorePluginTestSetup {
 				.load("testData/adpter/pwd/ieee14.AUX")
 				.getAclfNet();	
 		
-		//System.out.println(net.net2String());
+		System.out.println(net.net2String());
 
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();

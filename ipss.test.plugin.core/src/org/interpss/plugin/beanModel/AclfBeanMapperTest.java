@@ -260,7 +260,7 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 		AclfNetBean netBean = new AclfNet2BeanMapper().map2Model(net);
 		
 		/*net.accept(CoreObjectFactory.createLfAlgoVisitor());
-		//System.out.println(net.net2String());*/
+		System.out.println(net.net2String());*/
 
 		// map AclfNetBean back to an AclfNet object
 		AclfNetwork aclfNet = new AclfBean2NetMapper().map2Model(netBean)

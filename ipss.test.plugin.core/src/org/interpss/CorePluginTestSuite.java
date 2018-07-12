@@ -56,6 +56,7 @@ import org.interpss.core.dstab.mach.Eq1MachineCaseTest;
 import org.interpss.core.dstab.mach.MachineSaturationTest;
 import org.interpss.core.dstab.mach.RoundRotorMachineTest;
 import org.interpss.core.dstab.mach.SalientPoleMachineTest;
+import org.interpss.core.mnet.TestSubnetworkProcessor;
 import org.interpss.plugin.beanModel.AclfBeanMapperTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
@@ -166,7 +167,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	AclfBeanMapperTest.class,
 	
 	//multi subnetwork processor
-	//TestSubnetworkProcessor.class,
+	TestSubnetworkProcessor.class,
 	
 	//MNet_IEEE14Bus_Test.class,
 	//MNet_Aclf5Bus_Child_Test.class,
