@@ -53,7 +53,7 @@ public class Kunder_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 	   assertTrue(net.getBus("Bus7").isGenPQ());
 	   assertTrue(net.getBus("Bus9").isGenPV());
 		 
-		//System.out.println(net.net2String());
+		System.out.println(net.net2String());
 		 
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 		algo.getLfAdjAlgo().setApplyAdjustAlgo(false);

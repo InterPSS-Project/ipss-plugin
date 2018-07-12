@@ -79,7 +79,7 @@ public class IEEECommonFormatTest extends CorePluginTestSetup {
 
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
-  		//System.out.println(net.net2String());
+  		System.out.println(net.net2String());
 	  	
   		assertTrue(net.isLfConverged());		
   		AclfBus swingBus = (AclfBus)net.getBus("Bus1");
