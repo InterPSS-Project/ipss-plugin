@@ -61,7 +61,7 @@ public class IEEECommonFormat_CommaTest extends CorePluginTestSetup {
 
 		assertTrue((net.getBusList().size() == 14 && net.getBranchList().size() == 20));
 
-	  	//System.out.println(net.net2String());
+	  	System.out.println(net.net2String());
   		assertTrue(net.isLfConverged());		
   		AclfBus swingBus = (AclfBus)net.getBus("Bus1");
   		AclfSwingBus swing = swingBus.toSwingBus();
