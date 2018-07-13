@@ -39,9 +39,12 @@ import com.interpss.DStabObjectFactory;
 import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
+import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
+import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.acsc.XfrConnectCode;
 import com.interpss.core.acsc.adpter.AcscXformer;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
@@ -106,7 +109,7 @@ public class TestTnD_IEEE9_13busFeeder {
 		
 		//LIST: 1,
 		
-		for(DStabBus b:dsNet.getBusList()){
+		for(Bus3Phase b:dsNet.getBusList()){
 	        if(b.getArea().getNumber()==1){
 	        	if(b.isActive() && b.isLoad() && (!b.isGen()) && b.getLoadP()>0.1 && b.getLoadP()<6 ){//&& 
 	        		
@@ -151,7 +154,7 @@ public class TestTnD_IEEE9_13busFeeder {
 		    // System.out.println("dist Net -34  :"+proc.getSubNetwork("SubNet-34").getBusList().get(0));
 		    
 			
-		    TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm(dsNet,proc);
+		    TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm((BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>) dsNet,proc);
 		    
 		   // System.out.println(tdAlgo.getDistributionNetworkList().get(0).net2String());
 				 
@@ -201,7 +204,7 @@ public class TestTnD_IEEE9_13busFeeder {
 			 String[] feederIdAry = new String[13];
 			 
 			  int k = 0;
-			   for(DStabBus dsBus:distNet_1.getBusList()){
+			   for(Bus3Phase dsBus:distNet_1.getBusList()){
 				   if(dsBus.getId().startsWith(idPrefix)){
 					   if(k<13){
 						   feederIdAry[k] = dsBus.getId();
@@ -395,7 +398,7 @@ public class TestTnD_IEEE9_13busFeeder {
 		
 		
 		
-		private void createFeeder(DStabNetwork3Phase net, DStabBus sourceBus, String transBusId, int feederIdx, double mvaBase ) throws InterpssException{
+		private void createFeeder(DStabNetwork3Phase net, Bus3Phase sourceBus, String transBusId, int feederIdx, double mvaBase ) throws InterpssException{
 			
 			   double ft2mile = 1.0/5280.0;
 			  
