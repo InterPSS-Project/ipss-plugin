@@ -71,7 +71,7 @@ public class SubNetworkProcessor {
 	private List<String> threePhaseSubNetIdList = null; // should be provided after subnetwork creation 
 
 	public SubNetworkProcessor(BaseAclfNetwork<?,?> net ){
-		this.net = (BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>) net;
+		this.net = (BaseAclfNetwork<? extends BaseAclfBus, ? extends AclfBranch>) net;
 		this.defInterfaceBranchIdList = new ArrayList();
 		this.boundaryBusIdList = new ArrayList();
 		this.subNetworkList = new ArrayList();
@@ -459,7 +459,7 @@ public class SubNetworkProcessor {
 			for( String busId:_boundaryBusIdList){
 				
 				
-				BaseAclfBus source = net2.getBus(busId);
+			    BaseAclfBus source = net2.getBus(busId);
 				if(!source.isBooleanFlag()){
 					
 					// for each iteration back to this layer, it means one subnetwork search is finished; subsequently, it is going to start

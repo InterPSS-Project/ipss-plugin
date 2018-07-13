@@ -29,6 +29,7 @@ import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.net.Branch;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabilityNetwork;
@@ -68,7 +69,7 @@ public class TestAddDummyBus {
 		}
 		
 		
-	    DStabilityNetwork dsNet =simuCtx.getDStabilityNet();
+	    DStabilityNetwork dsNet =(DStabilityNetwork) simuCtx.getDStabilityNet();
 	    
 //	    LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
 //	    
@@ -81,7 +82,7 @@ public class TestAddDummyBus {
 	    
 	    DStabBus bus7 = dsNet.getBus("Bus7");
 	    
-	    DStabBus bus7Dummy = DStabObjectFactory.createDStabBus("Bus7Dummy", dsNet);
+	    DStabBus bus7Dummy = (DStabBus) DStabObjectFactory.createDStabBus("Bus7Dummy", dsNet);
 	    //basic copy
 	    bus7Dummy.setBaseVoltage(bus7.getBaseVoltage());
 	    bus7Dummy.setVoltage(bus7.getVoltage());
@@ -155,7 +156,7 @@ public class TestAddDummyBus {
 		}
 		
 		
-	    DStabilityNetwork dsNet =simuCtx.getDStabilityNet();
+	    DStabilityNetwork dsNet =(DStabilityNetwork) simuCtx.getDStabilityNet();
 	    
 //	    LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
 //	    
@@ -166,7 +167,7 @@ public class TestAddDummyBus {
 	    
 	    DStabBus bus7 = dsNet.getBus("Bus7");
 	    
-	    DStabBus bus7Dummy = DStabObjectFactory.createDStabBus("Bus7Dummy", dsNet);
+	    DStabBus bus7Dummy = (DStabBus) DStabObjectFactory.createDStabBus("Bus7Dummy", dsNet);
 	    //basic copy
 	    bus7Dummy.setBaseVoltage(bus7.getBaseVoltage());
 	    bus7Dummy.setVoltage(bus7.getVoltage());
@@ -241,13 +242,8 @@ public class TestAddDummyBus {
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.005d);
 		dstabAlgo.setTotalSimuTimeSec(0.5d);
-		for (DStabilityNetwork subNet:proc.getSubNetworkList()){
-			subNet.setNetEqnIterationNoEvent(1);
-			subNet.setNetEqnIterationWithEvent(1);
-		
-		  // dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
-		}
-		dsNet.addDynamicEvent(create3PhaseFaultEvent("Bus6", proc.getSubNetworkList().get(0),0.1d,0.05),"3phaseFault@Bus6");
+
+		dsNet.addDynamicEvent(create3PhaseFaultEvent("Bus6", (DStabilityNetwork) proc.getSubNetworkList().get(0),0.1d,0.05),"3phaseFault@Bus6");
         
 
 		dstabAlgo.setSolver(new MultiNetDStabSolverImpl(dstabAlgo,multiNetHelper));
@@ -296,7 +292,7 @@ public class TestAddDummyBus {
 			event1.setDurationSec(durationTime);
 			
 	   // define a bus fault
-			DStabBus faultBus = net.getDStabBus(faultBusId);
+			DStabBus faultBus = (DStabBus) net.getDStabBus(faultBusId);
 			AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@"+faultBusId, net);
 			fault.setBus(faultBus);
 			fault.setFaultCode(SimpleFaultCode.GROUND_3P);

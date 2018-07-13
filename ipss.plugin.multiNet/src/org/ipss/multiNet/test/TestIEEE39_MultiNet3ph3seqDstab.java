@@ -178,7 +178,7 @@ public class TestIEEE39_MultiNet3ph3seqDstab {
 		}
 		
 		
-	    DStabilityNetwork dsNet = simuCtx.getDStabilityNet();
+	    DStabilityNetwork dsNet = (DStabilityNetwork) simuCtx.getDStabilityNet();
 	    
 		
 		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);

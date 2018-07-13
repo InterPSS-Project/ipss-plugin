@@ -40,9 +40,12 @@ import com.interpss.DStabObjectFactory;
 import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
+import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
+import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.acsc.XfrConnectCode;
 import com.interpss.core.acsc.adpter.AcscXformer;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
@@ -234,7 +237,7 @@ public class TestTnD_IEEE39_Feeder {
 				 proc.set3PhaseSubNetByBusId("Bus281"); 
 		    
 			
-				 TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm(dsNet,proc);
+				 TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm((BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>) dsNet,proc);
 				 
 				 //System.out.println(tdAlgo.getTransmissionNetwork().net2String());
 				    
@@ -425,7 +428,7 @@ public class TestTnD_IEEE39_Feeder {
 			 proc.set3PhaseSubNetByBusId("Bus281"); 
 	    
 		
-			 TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm(dsNet,proc);
+			 TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm((BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>) dsNet,proc);
 			 
 			 //System.out.println(tdAlgo.getTransmissionNetwork().net2String());
 			    
@@ -807,7 +810,7 @@ public class TestTnD_IEEE39_Feeder {
 			 proc.set3PhaseSubNetByBusId("Bus281"); 
 	    
 		
-			 TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm(dsNet,proc);
+			 TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm((BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>) dsNet,proc);
 			 
 			 //System.out.println(tdAlgo.getTransmissionNetwork().net2String());
 			    
