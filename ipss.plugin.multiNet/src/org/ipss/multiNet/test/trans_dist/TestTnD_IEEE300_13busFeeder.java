@@ -45,9 +45,12 @@ import com.interpss.DStabObjectFactory;
 import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
+import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
+import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.acsc.XfrConnectCode;
 import com.interpss.core.acsc.adpter.AcscXformer;
@@ -129,7 +132,7 @@ public class TestTnD_IEEE300_13busFeeder {
 		
 	   // DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
 	    
-	    DStabilityNetwork dsNet = simuCtx.getDStabilityNet();
+	    DStabilityNetwork dsNet = (DStabilityNetwork) simuCtx.getDStabilityNet();
 	 
 		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
 		aclfAlgo.setLfMethod(AclfMethod.PQ);
@@ -246,7 +249,7 @@ public class TestTnD_IEEE300_13busFeeder {
 		    System.out.println("dist Net Id :"+proc.getSubNetworkByBusId("Bus1_LVBus").getId());
 		    
 			
-		    TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm(dsNet,proc);
+		    TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm((BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>) dsNet,proc);
 		    
 		   // System.out.println(tdAlgo.getDistributionNetworkList().get(0).net2String());
 				 
@@ -313,7 +316,7 @@ public class TestTnD_IEEE300_13busFeeder {
 			
 			//LIST: 1,
 			
-			for(DStabBus b:dsNet.getBusList()){
+			for(Bus3Phase b:dsNet.getBusList()){
 		        if(b.getArea().getNumber()==1){
 		        	if(b.isActive() && b.isLoad() && (!b.isGen()) && b.getLoadP()>0.5 && b.getLoadP()<6){//&& 
 		        		if(!b.getId().equals("Bus526") && !b.getId().equals("Bus562") && !b.getId().equals("Bus70")
@@ -357,7 +360,7 @@ public class TestTnD_IEEE300_13busFeeder {
 			     System.out.println("dist Net -34  :"+proc.getSubNetwork("SubNet-34").getBusList().get(0));
 			    
 				
-			    TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm(dsNet,proc);
+			    TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm((BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>) dsNet,proc);
 			    
 			   // System.out.println(tdAlgo.getDistributionNetworkList().get(0).net2String());
 					 
@@ -386,9 +389,9 @@ public class TestTnD_IEEE300_13busFeeder {
 			   sb.append("BusId   Bus Name    BaseKv   Voltage A(Mag, Ang)      Voltage B(Mag, Ang)      Voltage C(Mag, Ang)  \n");
 			   sb.append("-------------------------------------------------------------------------------------------------\n");
 			   
-			   for(DStabBus dsBus:distNet_1.getBusList()){
+			   for(Bus3Phase dsBus:distNet_1.getBusList()){
 				   if(dsBus.getId().startsWith(idPrefix)){
-					   Bus3Phase bus3p = (Bus3Phase) dsBus;
+					   Bus3Phase bus3p = dsBus;
 					   Complex3x1 vabc = bus3p.get3PhaseVotlages();
 					   double vA = vabc.a_0.abs();
 					   double phA = ComplexFunc.arg(vabc.a_0)*180/Math.PI;
@@ -426,7 +429,7 @@ public class TestTnD_IEEE300_13busFeeder {
 			   sb.append("BusId   Bus Name    BaseKv   Voltage A(Mag, Ang)      Voltage B(Mag, Ang)      Voltage C(Mag, Ang)  \n");
 			   sb.append("-------------------------------------------------------------------------------------------------\n");
 			   
-			   for(DStabBus dsBus:distNet_2.getBusList()){
+			   for(Bus3Phase dsBus:distNet_2.getBusList()){
 				   if(dsBus.getId().startsWith(idPrefix)){
 					   Bus3Phase bus3p = (Bus3Phase) dsBus;
 					   Complex3x1 vabc = bus3p.get3PhaseVotlages();
@@ -552,7 +555,7 @@ public class TestTnD_IEEE300_13busFeeder {
 			    
 			    System.out.println("distribution sys num:"+ (proc.getSubNetworkList().size()-1));
 		
-			    TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm(dsNet,proc);
+			    TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm((BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>) dsNet,proc);
 			    
 			   // System.out.println(tdAlgo.getDistributionNetworkList().get(0).net2String());
 					 
@@ -602,7 +605,7 @@ public class TestTnD_IEEE300_13busFeeder {
 				 String[] feederIdAry = new String[13];
 				 
 				  int k = 0;
-				   for(DStabBus dsBus:distNet_1.getBusList()){
+				   for(Bus3Phase dsBus:distNet_1.getBusList()){
 					   if(dsBus.getId().startsWith(idPrefix)){
 						   if(k<13){
 							   feederIdAry[k] = dsBus.getId();
@@ -736,7 +739,7 @@ public class TestTnD_IEEE300_13busFeeder {
 		
 		//LIST: 1,
 		
-		for(DStabBus b:dsNet.getBusList()){
+		for(Bus3Phase b:dsNet.getBusList()){
 	        if(b.getArea().getNumber()==1){
 	        	if(b.isActive() && b.isLoad() && (!b.isGen()) && b.getLoadP()>0.5 && b.getLoadP()<6){//&& 
 	        		if(!b.getId().equals("Bus526") && !b.getId().equals("Bus562") && !b.getId().equals("Bus70")
@@ -782,7 +785,7 @@ public class TestTnD_IEEE300_13busFeeder {
 		    // System.out.println("dist Net -34  :"+proc.getSubNetwork("SubNet-34").getBusList().get(0));
 		    
 			
-		    TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm(dsNet,proc);
+		    TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm((BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>) dsNet,proc);
 		    
 		   // System.out.println(tdAlgo.getDistributionNetworkList().get(0).net2String());
 				 
@@ -832,7 +835,7 @@ public class TestTnD_IEEE300_13busFeeder {
 			 String[] feederIdAry = new String[13];
 			 
 			  int k = 0;
-			   for(DStabBus dsBus:distNet_1.getBusList()){
+			   for(Bus3Phase dsBus:distNet_1.getBusList()){
 				   if(dsBus.getId().startsWith(idPrefix)){
 					   if(k<13){
 						   feederIdAry[k] = dsBus.getId();
@@ -1005,7 +1008,7 @@ private String[] replaceLoadByFeeder(DStabNetwork3Phase net,String transBusId) t
 	
 	
 	
-	private void createFeeder(DStabNetwork3Phase net, DStabBus sourceBus, String transBusId, int feederIdx, double mvaBase ) throws InterpssException{
+	private void createFeeder(DStabNetwork3Phase net, Bus3Phase sourceBus, String transBusId, int feederIdx, double mvaBase ) throws InterpssException{
 		
 		   double ft2mile = 1.0/5280.0;
 		  

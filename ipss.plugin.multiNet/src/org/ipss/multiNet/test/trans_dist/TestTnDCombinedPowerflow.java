@@ -31,9 +31,12 @@ import org.junit.Test;
 import com.interpss.CoreObjectFactory;
 import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
+import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
+import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.acsc.XfrConnectCode;
 import com.interpss.core.acsc.adpter.AcscXformer;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -93,7 +96,7 @@ public class TestTnDCombinedPowerflow {
 	    
 	    //TODO create TDMultiNetPowerflowAlgo
 	    
-		 TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm(dsNet,proc);
+		 TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm((BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>) dsNet,proc);
 		 
 	    
 		 assertTrue(tdAlgo.powerflow()); 
@@ -157,7 +160,7 @@ public class TestTnDCombinedPowerflow {
 	    
 	    //TODO create TDMultiNetPowerflowAlgo
 	    
-		 TposSeqD3PhaseMultiNetPowerflowAlgorithm tdAlgo = new TposSeqD3PhaseMultiNetPowerflowAlgorithm(dsNet,proc);
+		 TposSeqD3PhaseMultiNetPowerflowAlgorithm tdAlgo = new TposSeqD3PhaseMultiNetPowerflowAlgorithm((BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>) dsNet,proc);
 		 
 	    
 		 assertTrue(tdAlgo.powerflow()); 

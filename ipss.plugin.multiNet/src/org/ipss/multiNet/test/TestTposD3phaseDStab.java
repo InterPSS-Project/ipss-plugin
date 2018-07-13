@@ -43,14 +43,20 @@ import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
+import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
+import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.acsc.XfrConnectCode;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.net.NetworkType;
+import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabBus;
+import com.interpss.dstab.DStabGen;
+import com.interpss.dstab.DStabLoad;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -137,7 +143,7 @@ public class TestTposD3phaseDStab {
 		
 		
 		
-		Bus3Phase bus1 = (Bus3Phase) dsNet.getDStabBus("Bus1");
+		Bus3Phase bus1 =  (Bus3Phase) dsNet.getDStabBus("Bus1");
 		
 		 SinglePhaseACMotor ac1 = new SinglePhaseACMotor(bus1,"1");
   		ac1.setLoadPercent(25);
@@ -205,7 +211,7 @@ public class TestTposD3phaseDStab {
 	    
 	    //create TDMultiNetPowerflowAlgo
 	    
-		 TposSeqD3PhaseMultiNetPowerflowAlgorithm tdAlgo = new TposSeqD3PhaseMultiNetPowerflowAlgorithm(dsNet,proc);
+		 TposSeqD3PhaseMultiNetPowerflowAlgorithm tdAlgo = new TposSeqD3PhaseMultiNetPowerflowAlgorithm((BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>) dsNet,proc);
 		 
 	    
 		 assertTrue(tdAlgo.powerflow()); 
@@ -365,7 +371,7 @@ public class TestTposD3phaseDStab {
 	    
 	    //create TDMultiNetPowerflowAlgo
 	    
-		 TposSeqD3PhaseMultiNetPowerflowAlgorithm tdAlgo = new TposSeqD3PhaseMultiNetPowerflowAlgorithm(dsNet,proc);
+		 TposSeqD3PhaseMultiNetPowerflowAlgorithm tdAlgo = new TposSeqD3PhaseMultiNetPowerflowAlgorithm((BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>) dsNet,proc);
 		 
 	    
 		 assertTrue(tdAlgo.powerflow()); 
@@ -524,7 +530,7 @@ public class TestTposD3phaseDStab {
 		    
 		    //create TDMultiNetPowerflowAlgo
 		    
-			 TposSeqD3PhaseMultiNetPowerflowAlgorithm tdAlgo = new TposSeqD3PhaseMultiNetPowerflowAlgorithm(dsNet,proc);
+			 TposSeqD3PhaseMultiNetPowerflowAlgorithm tdAlgo = new TposSeqD3PhaseMultiNetPowerflowAlgorithm((BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>) dsNet,proc);
 			 
 		    
 			 assertTrue(tdAlgo.powerflow()); 
@@ -689,7 +695,7 @@ public class TestTposD3phaseDStab {
 		    
 		    //create TDMultiNetPowerflowAlgo
 		    
-			 TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm(dsNet,proc);
+			 TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm((BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>) dsNet,proc);
 			 
 		    
 			 assertTrue(tdAlgo.powerflow()); 
@@ -848,7 +854,7 @@ public class TestTposD3phaseDStab {
 	    
 	    //create TDMultiNetPowerflowAlgo
 	    
-		 TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm(dsNet,proc);
+		 TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm((BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>) dsNet,proc);
 		 
 	    
 		 assertTrue(tdAlgo.powerflow()); 
@@ -1008,7 +1014,7 @@ public class TestTposD3phaseDStab {
 	    
 	    //create TDMultiNetPowerflowAlgo
 	    
-		 TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm(dsNet,proc);
+		 TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm((BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>) dsNet,proc);
 		 
 	    
 		 assertTrue(tdAlgo.powerflow()); 
@@ -1238,7 +1244,7 @@ private DStabNetwork3Phase create3BusSys() throws InterpssException{
   		bus1.setLoadCode(AclfLoadCode.CONST_P);
   		Load3Phase load1 = new Load3PhaseImpl();
   		
-  		load1.setVminpu(0.5);
+  		//load1.setVminpu(0.5);
   		
 		load1.set3PhaseLoad(new Complex3x1(new Complex(1,0.1),new Complex(1,0.1),new Complex(1.0,0.1)));
 	
@@ -1343,7 +1349,7 @@ private DStabNetwork3Phase create3BusSys() throws InterpssException{
 			event1.setDurationSec(durationTime);
 			
 	   // define a bus fault
-			DStabBus faultBus = net.getDStabBus(faultBusId);
+			BaseDStabBus faultBus = net.getDStabBus(faultBusId);
 			AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@"+faultBusId, net);
 			fault.setBus(faultBus);
 			fault.setFaultCode(SimpleFaultCode.GROUND_3P);
