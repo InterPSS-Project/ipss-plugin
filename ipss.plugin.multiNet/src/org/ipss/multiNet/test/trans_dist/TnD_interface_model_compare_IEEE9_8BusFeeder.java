@@ -44,9 +44,12 @@ import com.interpss.DStabObjectFactory;
 import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
+import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
+import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.acsc.XfrConnectCode;
 import com.interpss.core.acsc.adpter.AcscXformer;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
@@ -335,7 +338,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 	    
 	    //TODO create TDMultiNetPowerflowAlgo
 	    
-		 TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm(dsNet,proc);
+		 TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm((BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>) dsNet,proc);
 		
 		 System.out.println(tdAlgo.getTransmissionNetwork().net2String());
 	    
@@ -677,7 +680,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 		    
 			  //create TDMultiNetPowerflowAlgo
 			    
-			 TposSeqD3PhaseMultiNetPowerflowAlgorithm tdAlgo = new TposSeqD3PhaseMultiNetPowerflowAlgorithm(dsNet,proc);
+			 TposSeqD3PhaseMultiNetPowerflowAlgorithm tdAlgo = new TposSeqD3PhaseMultiNetPowerflowAlgorithm((BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>) dsNet,proc);
 			 
 		    
 			 assertTrue(tdAlgo.powerflow()); 
@@ -1046,7 +1049,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 		    
 			  //create TDMultiNetPowerflowAlgo
 			    
-			 TposSeqD3PhaseMultiNetPowerflowAlgorithm tdAlgo = new TposSeqD3PhaseMultiNetPowerflowAlgorithm(dsNet,proc);
+			 TposSeqD3PhaseMultiNetPowerflowAlgorithm tdAlgo = new TposSeqD3PhaseMultiNetPowerflowAlgorithm((BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>) dsNet,proc);
 			 
 		    
 			 assertTrue(tdAlgo.powerflow()); 
@@ -1402,7 +1405,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 		    
 		    //create TDMultiNetPowerflowAlgo
 		    
-			 TposSeqD3PhaseMultiNetPowerflowAlgorithm tdAlgo = new TposSeqD3PhaseMultiNetPowerflowAlgorithm(dsNet,proc);
+			 TposSeqD3PhaseMultiNetPowerflowAlgorithm tdAlgo = new TposSeqD3PhaseMultiNetPowerflowAlgorithm((BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>) dsNet,proc);
 			 
 		    
 			 assertTrue(tdAlgo.powerflow()); 
@@ -1746,7 +1749,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
           //NOTE: TD power flow, dstab solver and dyn event processor should be consistent    
 		 
 		 //create TDMultiNetPowerflowAlgo
-		 TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm(dsNet,proc);
+		 TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm((BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>) dsNet,proc);
 		 
 	    
 		 assertTrue(tdAlgo.powerflow()); 
@@ -2088,7 +2091,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
           //NOTE: TD power flow, dstab solver and dyn event processor should be consistent    
 		 
 		 //create TDMultiNetPowerflowAlgo
-		 TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm(dsNet,proc);
+		 TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm((BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>) dsNet,proc);
 		 
 	    
 		 assertTrue(tdAlgo.powerflow()); 
@@ -2440,7 +2443,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 			 
 			    //create TDMultiNetPowerflowAlgo
 			    
-				 TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm(dsNet,proc);
+				 TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm((BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>) dsNet,proc);
 				 
 			    
 				 assertTrue(tdAlgo.powerflow()); 
@@ -2772,7 +2775,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 	    
 	    //TODO create TDMultiNetPowerflowAlgo
 	    
-		 TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm(dsNet,proc);
+		 TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm((BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>) dsNet,proc);
 		
 		 System.out.println(tdAlgo.getTransmissionNetwork().net2String());
 	    
@@ -2927,7 +2930,7 @@ public DStabNetwork3Phase createFeeder(DStabNetwork3Phase net,Bus3Phase sourceBu
 				Load3Phase load1 = new Load3PhaseImpl();
 				Complex3x1 load3Phase = new Complex3x1(new Complex(0.01,0.01*q2pfactor),new Complex(0.01,0.01*q2pfactor).multiply(1-loadUnbalanceFactor),new Complex(0.01,0.01*q2pfactor).multiply(1+loadUnbalanceFactor));
 				load1.set3PhaseLoad(load3Phase.multiply(scaleFactor*loadPercentAry[loadIdx++]));
-				load1.setVminpu(0.50);
+				//load1.setVminpu(0.50);
 				
 				bus.getThreePhaseLoadList().add(load1);
 			}

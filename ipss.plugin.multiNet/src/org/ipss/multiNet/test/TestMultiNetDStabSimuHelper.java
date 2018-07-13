@@ -61,7 +61,7 @@ public class TestMultiNetDStabSimuHelper {
 		}
 		
 		
-	    DStabilityNetwork dsNet = simuCtx.getDStabilityNet();
+	    DStabilityNetwork dsNet = (DStabilityNetwork) simuCtx.getDStabilityNet();
 	    
 		
 		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
