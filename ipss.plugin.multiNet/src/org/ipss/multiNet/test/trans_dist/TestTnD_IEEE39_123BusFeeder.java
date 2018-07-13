@@ -138,7 +138,7 @@ public class TestTnD_IEEE39_123BusFeeder {
 		    // System.out.println("dist Net -34  :"+proc.getSubNetwork("SubNet-34").getBusList().get(0));
 		    
 			
-		    TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm(dsNet,proc);
+		    TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm((BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>) dsNet,proc);
 		    
 		   // System.out.println(tdAlgo.getDistributionNetworkList().get(0).net2String());
 				 
@@ -396,7 +396,8 @@ public class TestTnD_IEEE39_123BusFeeder {
 			   String idPrefix = transBusId+"_feeder_"+feederIdx+"_";
 			   
 
-				
+				//TODO need to merge the parser branch of ipss.plugin.3phase
+			   
 				OpenDSSDataParser parser = new OpenDSSDataParser();
 				parser.setBusIdPrefix(idPrefix);
 				
