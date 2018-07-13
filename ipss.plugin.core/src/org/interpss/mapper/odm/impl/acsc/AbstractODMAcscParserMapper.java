@@ -287,7 +287,7 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 					scGenData.getGrounding());
 	}
 	
-    private void setContributeGenInfo(ShortCircuitBusXmlType busDataXml, BaseAcscBus<?,?> acscBus){
+    private void setContributeGenInfo(ShortCircuitBusXmlType busDataXml, BaseAcscBus acscBus){
     	if(busDataXml.getGenData().getContributeGen()!=null){
 			if(busDataXml.getGenData().getContributeGen().size()>0){
 				for(JAXBElement<? extends LoadflowGenDataXmlType> genElem : busDataXml.getGenData().getContributeGen()){
@@ -295,7 +295,7 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 					
 					AcscGen scGen = (AcscGen) acscBus.getContributeGen(scGenXml.getId());
 					if(scGen==null){
-						scGen = acscBus instanceof BaseDStabBus<?,?>? DStabObjectFactory.createDStabGen() :
+						scGen = acscBus instanceof BaseDStabBus? DStabObjectFactory.createDStabGen() :
 									CoreObjectFactory.createAcscGen();
 						acscBus.getContributeGenList().add(scGen);
 					}
