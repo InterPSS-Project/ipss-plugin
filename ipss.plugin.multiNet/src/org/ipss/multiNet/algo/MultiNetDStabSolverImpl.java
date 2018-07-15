@@ -35,7 +35,7 @@ import com.interpss.dstab.mach.Machine;
 public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 	
 	protected AbstractMultiNetDStabSimuHelper multiNetSimuHelper = null;
-	protected List<BaseDStabNetwork<?,?>> subNetList = null;
+	protected List<BaseDStabNetwork> subNetList = null;
 
 	public MultiNetDStabSolverImpl(DynamicSimuAlgorithm algo, AbstractMultiNetDStabSimuHelper mNetSimuHelper) {
 		super(algo, IpssCorePlugin.getMsgHub());
