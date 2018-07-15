@@ -73,7 +73,7 @@ public class TDMultiNetPowerflowAlgorithm {
 		
 		lastStepTransBoundaryBus3SeqVoltages  = new Hashtable<>();
 		
-		this.transmissionNet = subNetProc.getExternalSubNetwork();
+		this.transmissionNet = (BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>) subNetProc.getExternalSubNetwork();
 		
 		this.distNetList = new  ArrayList<>();
 		for(String id:subNetProc.getInternalSubNetBoundaryBusIdList()){
