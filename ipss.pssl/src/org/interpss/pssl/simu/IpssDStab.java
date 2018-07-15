@@ -27,6 +27,7 @@ package org.interpss.pssl.simu;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.pssl.simu.IpssAclf.LfAlgoDSL;
 
+import com.interpss.CoreCommonFactory;
 import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.common.exp.InterpssException;
@@ -41,7 +42,6 @@ import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.common.IDStabSimuOutputHandler;
 import com.interpss.dstab.devent.DynamicEvent;
 import com.interpss.dstab.devent.DynamicEventType;
-import com.interpss.spring.CoreCommonSpringFactory;
 
 /**
  * DSL (domain specific language) for dynamic stability analysis
@@ -61,7 +61,7 @@ public class IpssDStab {
 	
 	public IpssDStab(DStabilityNetwork net){
 		this.dstabNet = net;
-		this.dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, CoreCommonSpringFactory.getIpssMsgHub());
+		this.dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, CoreCommonFactory.getIpssMsgHub());
 		this.dstabAlgo.setSimuOutputHandler(outputHdler);
 	}
 	
@@ -169,7 +169,7 @@ public class IpssDStab {
 			event1.setDurationSec(durationTime);
 			
 	      // define a bus fault
-			DStabBus faultBus = dstabNet.getDStabBus(faultBusId);
+			DStabBus faultBus = (DStabBus) dstabNet.getDStabBus(faultBusId);
 			AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@"+faultBusId, dstabNet);
 	  		fault.setBus(faultBus);
 			fault.setFaultCode(code);
