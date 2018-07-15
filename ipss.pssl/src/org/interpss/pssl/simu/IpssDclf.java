@@ -166,14 +166,7 @@ public class IpssDclf extends BaseDSL {
 			this.algo = algo;
 		}
 		
-		/**
-		 * distructor - release resource if native method is used 
-		 */
-		public void destroy() {
-			if (this.algo != null)
-				this.algo.destroy();
-		}
-		
+
 		/**
 		 * accept the AclfNetwork visitor
 		 * 
@@ -977,8 +970,8 @@ public class IpssDclf extends BaseDSL {
   			List<DblBusValue> list = new ArrayList<DblBusValue>();
   			for (int cnt = 0; cnt < size; cnt++)
   				list.add(new DblBusValue(0.0));
-		  	if (senCacheOff)
-		  		this.getAlgorithm().setCacheSensitivity(false);
+		  	//if (senCacheOff)
+		  	//	this.getAlgorithm().setCacheSensitivity(false);
   			for (AclfBus bus : this.getAclfNetwork().getBusList()) {
   				if (bus.isGen()) {
   					try {
@@ -1010,8 +1003,8 @@ public class IpssDclf extends BaseDSL {
   				}
   			}
   			
-		  	if (senCacheOff)
-		  		this.getAlgorithm().setCacheSensitivity(true);
+		  	//if (senCacheOff)
+		  	//	this.getAlgorithm().setCacheSensitivity(true);
 		  	
 		  	while (list.size() > 0 && Math.abs(list.get(list.size()-1).value) < DclfOutFunc.SmallBranchFlowPU)
 		  		list.remove(list.size()-1);

@@ -43,6 +43,7 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.adj.AclfAdjustFactory;
 import com.interpss.core.aclf.adj.AdjControlType;
@@ -341,7 +342,7 @@ public class IpssAclfNet extends BaseDSL {
 
 	// ================ private implementation =======================
 
-	public static class AclfBusDSL extends AclfBusBaseDSL<AclfBus, BaseAclfNetwork<?,?>, AclfBusDSL>{
+	public static class AclfBusDSL extends AclfBusBaseDSL<BaseAclfBus<?,?>, BaseAclfNetwork<?,?>, AclfBusDSL>{
 		// for addAclfBus()
 		public AclfBusDSL(String busId, String busName, BaseAclfNetwork<?,?> net) throws InterpssException {
 			super(busId, busName, CoreObjectFactory.createAclfBus(busId, net), net);
