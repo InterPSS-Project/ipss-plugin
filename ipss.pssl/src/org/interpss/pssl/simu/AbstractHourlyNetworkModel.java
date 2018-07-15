@@ -184,6 +184,6 @@ public abstract class AbstractHourlyNetworkModel {
 	 * @param algo
 	 */
 	public void returnDclfAlgo(DclfAlgorithmDSL algo) {
-		algo.destroy();
+		//algo.destroy();
 	}
 }
