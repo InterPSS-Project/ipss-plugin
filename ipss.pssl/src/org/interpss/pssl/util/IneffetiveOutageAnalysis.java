@@ -36,6 +36,7 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.contingency.BranchOutageType;
 import com.interpss.core.aclf.contingency.Contingency;
 import com.interpss.core.aclf.contingency.OutageBranch;
+import com.interpss.core.aclf.contingency.dep.DepContingency;
 import com.interpss.core.funcImpl.AclfFunction;
 import com.interpss.core.funcImpl.ZeroZBranchProcesor;
 import com.interpss.core.net.Branch;
@@ -115,7 +116,7 @@ public class IneffetiveOutageAnalysis {
 	 * @param cont
 	 * @return ineffective outage branch set
 	 */
-	public List<OutageBranch> search(Contingency cont) {
+	public List<OutageBranch> search(DepContingency cont) {
 		List<OutageBranch> branchList = new ArrayList<>();
 		for (OutageBranch outBranch : cont.getOutageBranches()) {
 			if (outBranch.isActive() && 
@@ -138,7 +139,7 @@ public class IneffetiveOutageAnalysis {
 		return branchList;
 	}
 
-	private boolean isBranchInLoop(Branch branch, Contingency cont) {
+	private boolean isBranchInLoop(Branch branch, DepContingency cont) {
 		if (this.debug)
 			System.out.println("Check if outage branch " + branch.getId() + " is in a zero z loop for contingency " + cont.getId());
 		
@@ -168,7 +169,7 @@ public class IneffetiveOutageAnalysis {
 	 * @param cont
 	 * @return
 	 */
-	private boolean isBranchInLoop(Branch refBranch, Bus startBus, Bus endBus, Contingency cont) {
+	private boolean isBranchInLoop(Branch refBranch, Bus startBus, Bus endBus, DepContingency cont) {
 		if (this.debug)
 			System.out.println("Ref branch " + refBranch.getId() + " startBus " + startBus.getId());
 		
