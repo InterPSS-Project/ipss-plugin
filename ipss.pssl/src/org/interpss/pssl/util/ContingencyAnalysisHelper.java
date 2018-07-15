@@ -38,13 +38,12 @@ import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IDataValidation;
 import com.interpss.core.aclf.AclfBranch;
-import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.contingency.BranchOutageType;
-import com.interpss.core.aclf.contingency.Contingency;
-import com.interpss.core.aclf.contingency.EquivOutageBranch;
 import com.interpss.core.aclf.contingency.MonitoringBranch;
 import com.interpss.core.aclf.contingency.OutageBranch;
+import com.interpss.core.aclf.contingency.dep.DepContingency;
 import com.interpss.core.algo.sec.SecAnalysisBranchRatingType;
 import com.interpss.core.dclf.BusSenAnalysisType;
 import com.interpss.core.dclf.LODFSenAnalysisType;
@@ -130,7 +129,7 @@ public class ContingencyAnalysisHelper {
 	 * @throws InterpssException
 	 * @throws PSSLException
 	 */
-	public boolean contAnalysis(Contingency cont) throws InterpssException {
+	public boolean contAnalysis(DepContingency cont) throws InterpssException {
 		return contAnalysis(cont, null);
 	}
 	
@@ -148,7 +147,7 @@ public class ContingencyAnalysisHelper {
 	 * @throws InterpssException
 	 * @throws PSSLException
 	 */
-	public boolean contAnalysis(Contingency cont, IDataValidation<Contingency> validator) throws InterpssException {
+	public boolean contAnalysis(DepContingency cont, IDataValidation<DepContingency> validator) throws InterpssException {
 		prepareContAnalysis(cont, validator);
 
 		// if aclfNet.distGenList defined, they are used as the distributed ref buses
@@ -177,9 +176,9 @@ public class ContingencyAnalysisHelper {
 						 * calculate all branches for the outage and stored branches with rating violation 
 						 * to the contingency as monitor branch.
 						 */
-						for (AclfBranch branch : this.algoDsl.algo().getActiveBranches()) {
+						for (AclfBranch branch : this.algoDsl.algo().getNetwork().getBranchList()) {
 							// bypass outage branches and island branches, and those monitoring disabled defined in AUX file 
-							if ((branch.getIntFlag() == 0)) {
+							if (branch.isActive() && branch.getIntFlag() == 0) {
 								// calculate single outage contingency for the monitor branch
 								double shiftedFlow = this.singleOutageMonitorBranchFlow(cont, branch, distRefBusList);
 								this.checkViolationSetMaxShiftedFlow(branch, shiftedFlow, cont);
@@ -205,7 +204,7 @@ public class ContingencyAnalysisHelper {
 				algoDsl.setLODFAnalysisType(LODFSenAnalysisType.MULTI_BRANCH);
 
 				//for (AclfBranch outBranch : cont.getOutageBranches()) {
-				for (EquivOutageBranch outBranch : cont.getEquivOutageBranches()) {
+				for (OutageBranch outBranch : cont.getEquivOutageBranches()) {
 					if (outBranch.isActive()) {
 						algoDsl.addOutageBranch(outBranch);
 					}
@@ -216,9 +215,9 @@ public class ContingencyAnalysisHelper {
 					algoDsl.calLineOutageDFactors(cont.getId());
 
 					if (this.findConstraintBranches) {
-						for (AclfBranch branch : this.algoDsl.algo().getActiveBranches()) {
+						for (AclfBranch branch : this.algoDsl.algo().getNetwork().getBranchList()) {
 							// bypass outage branches and island branches, and those monitoring disabled defined in AUX file 
-							if ((branch.getIntFlag() == 0)) {
+							if (branch.isActive() && branch.getIntFlag() == 0) {
 								double shiftedFlow = this.multiOutageMonitorBranchFlow(cont, branch, distRefBusList);
 								this.checkViolationSetMaxShiftedFlow(branch, shiftedFlow, cont);
 							}
@@ -239,7 +238,7 @@ public class ContingencyAnalysisHelper {
 		return true;
 	}
 
-	private void prepareContAnalysis(Contingency cont, IDataValidation<Contingency> validator) throws InterpssException {
+	private void prepareContAnalysis(DepContingency cont, IDataValidation<DepContingency> validator) throws InterpssException {
 		if (validator != null)
 			// check and validate the contingency object
 			if (!validator.validate(cont))
@@ -258,16 +257,18 @@ public class ContingencyAnalysisHelper {
 		
 		// in the following calculation, we use branch.intFlag == 0 to indicate that the branch should be included
 		// in the scanning for constraint
-		for (AclfBranch branch : this.algoDsl.algo().getActiveBranches()) {
-			AclfBranchPWDExtension ext = (AclfBranchPWDExtension)branch.getExtensionObject();
-			boolean isMonBranch = this.useCAMonitoringStatus? ext.isCaMonitoring():true;
-			if (isMonBranch) {
-				boolean islandBranch = cont.isIslandBranch(branch);
-				boolean active = branch.isActive() && branch.getFromBus().isActive() && branch.getToBus().isActive();
-				branch.setIntFlag(active && !islandBranch ? 0 : 1);
+		for (AclfBranch branch : this.algoDsl.algo().getNetwork().getBranchList()) {
+			if (branch.isActive()) {
+				AclfBranchPWDExtension ext = (AclfBranchPWDExtension)branch.getExtensionObject();
+				boolean isMonBranch = this.useCAMonitoringStatus? ext.isCaMonitoring():true;
+				if (isMonBranch) {
+					boolean islandBranch = cont.isIslandBranch(branch);
+					boolean active = branch.isActive() && branch.getFromBus().isActive() && branch.getToBus().isActive();
+					branch.setIntFlag(active && !islandBranch ? 0 : 1);
+				}
+				else
+					branch.setIntFlag(1);
 			}
-			else
-				branch.setIntFlag(1);
 		}
 		
 		// mark outage branch to make sure not being processed in the
@@ -275,7 +276,7 @@ public class ContingencyAnalysisHelper {
 		for (OutageBranch bra : cont.getOutageBranches()) 
 			bra.getBranch().setIntFlag(1);		
 
-		for (EquivOutageBranch bra : cont.getEquivOutageBranches()) 
+		for (OutageBranch bra : cont.getEquivOutageBranches()) 
 			bra.getBranch().setIntFlag(1);		
 	}
 	
@@ -287,7 +288,7 @@ public class ContingencyAnalysisHelper {
 	 * @param shiftedFlow
 	 * @param cont
 	 */
-	private void checkViolationSetMaxShiftedFlow(AclfBranch branch, double shiftedFlow, Contingency cont) {
+	private void checkViolationSetMaxShiftedFlow(AclfBranch branch, double shiftedFlow, DepContingency cont) {
 		AclfNetwork aclfNet = this.algoDsl.aclfNet();
 
 		// check monitor branch rating limit violation
@@ -316,7 +317,7 @@ public class ContingencyAnalysisHelper {
 	 * @param monBranch
 	 * @throws ReferenceBusException
 	 */
-	private double singleOutageMonitorBranchFlow(Contingency cont, AclfBranch monBranch, EList<SenAnalysisBus> withdrawBusList) throws ReferenceBusException, InterpssException, PSSLException, IpssNumericException {
+	private double singleOutageMonitorBranchFlow(DepContingency cont, AclfBranch monBranch, EList<SenAnalysisBus> withdrawBusList) throws ReferenceBusException, InterpssException, PSSLException, IpssNumericException {
 		// use equivalent outage branch for the outage branch 
 		OutageBranch outBranch = cont.getActiveEquivOutageBranch();
 
@@ -352,7 +353,7 @@ public class ContingencyAnalysisHelper {
 	 * @throws ReferenceBusException
 	 * @throws InterpssException
 	 */
-	private double multiOutageMonitorBranchFlow(Contingency cont, AclfBranch monBranch, EList<SenAnalysisBus> withdrawBusList) throws ReferenceBusException, InterpssException, PSSLException, IpssNumericException {
+	private double multiOutageMonitorBranchFlow(DepContingency cont, AclfBranch monBranch, EList<SenAnalysisBus> withdrawBusList) throws ReferenceBusException, InterpssException, PSSLException, IpssNumericException {
 		// calculate flow caused by outage of the branches
 		double[] factors = algoDsl.monitorBranch(monBranch)
 							      .getLineOutageDFactors();
@@ -420,11 +421,11 @@ public class ContingencyAnalysisHelper {
 	 * @return
 	 * @throws ReferenceBusException
 	 */
-	private double shiftedFlowIslanding(Contingency contingency, AclfBranch monBranch, EList<SenAnalysisBus> withdrawBusList) throws ReferenceBusException, InterpssException {
+	private double shiftedFlowIslanding(DepContingency contingency, AclfBranch monBranch, EList<SenAnalysisBus> withdrawBusList) throws ReferenceBusException, InterpssException {
 		AclfNetwork aclfNet = this.algoDsl.aclfNet();
 		double flowMw = 0.0;
 		
-		for (AclfBus bus : contingency.getIslandBuses()) {
+		for (BaseAclfBus bus : contingency.getIslandBuses()) {
 			if (bus.isActive()) {
 				// use cached result
 				double gen = bus.getDclfInjectP(); // bus.getDclfBusP();
@@ -461,7 +462,7 @@ public class ContingencyAnalysisHelper {
 	 * @throws ReferenceBusException
 	 * @throws PSSLException
 	 */
-	public double postContingencyPsXfrShiftFactor(AclfBranch branch, AclfBranch monitorBranch, Contingency cont) throws BranchAngleSenException, InterpssException, ReferenceBusException, PSSLException, IpssNumericException  {
+	public double postContingencyPsXfrShiftFactor(AclfBranch branch, AclfBranch monitorBranch, DepContingency cont) throws BranchAngleSenException, InterpssException, ReferenceBusException, PSSLException, IpssNumericException  {
 		double sf = algoDsl.algo().psXfrShiftFactor(branch, monitorBranch);
 		if ( cont.nEquivOutageBranches() == 1) {
 			algoDsl.setLODFAnalysisType(LODFSenAnalysisType.SINGLE_BRANCH);
@@ -473,7 +474,7 @@ public class ContingencyAnalysisHelper {
 		}
 		else {
 			algoDsl.setLODFAnalysisType(LODFSenAnalysisType.MULTI_BRANCH);
-			for (EquivOutageBranch eq : cont.getEquivOutageBranches()) {
+			for (OutageBranch eq : cont.getEquivOutageBranches()) {
 				if (eq.isActive()) 
 					algoDsl.addOutageBranch(eq);
 			}
@@ -511,7 +512,7 @@ public class ContingencyAnalysisHelper {
 	 * @throws ReferenceBusException
 	 * @throws PSSLException
 	 */
-	public double postContingencyGSF(Bus injBus, AclfBranch monitorBranch, Contingency cont) throws InterpssException, ReferenceBusException, PSSLException, IpssNumericException {
+	public double postContingencyGSF(Bus injBus, AclfBranch monitorBranch, DepContingency cont) throws InterpssException, ReferenceBusException, PSSLException, IpssNumericException {
 		double gsf = algoDsl.withdrawBusType(BusSenAnalysisType.REF_BUS)
 							.injectionBusId(injBus.getId())
 							.monitorBranch(monitorBranch)
@@ -530,7 +531,7 @@ public class ContingencyAnalysisHelper {
 		}
 		else {
 			algoDsl.setLODFAnalysisType(LODFSenAnalysisType.MULTI_BRANCH);
-			for (EquivOutageBranch eq : cont.getEquivOutageBranches()) {
+			for (OutageBranch eq : cont.getEquivOutageBranches()) {
 				if (eq.isActive()) 
 					algoDsl.addOutageBranch(eq);
 			}
@@ -564,7 +565,7 @@ public class ContingencyAnalysisHelper {
 	 * 
 	 * @param cont
 	 */
-	public void outResult(Contingency cont) {
+	public void outResult(DepContingency cont) {
 		AclfNetwork aclfNet = this.algoDsl.aclfNet();
 		System.out.println("\n\nContingency : " + cont.getId() 
 				+ ", no of outage branches: " + cont.getOutageBranches().size());
@@ -600,4 +601,3 @@ public class ContingencyAnalysisHelper {
 		}		
 	}
 }
-
