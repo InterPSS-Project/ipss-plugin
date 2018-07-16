@@ -24,7 +24,7 @@
 
 package org.interpss.sample.aclf;
 
-import org.interpss.CorePluginObjFactory;
+import org.interpss.CorePluginFactory;
 import org.interpss.IpssCorePlugin;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.util.PerformanceTimer;
@@ -46,7 +46,7 @@ public class LoadflowPerformance {
 	  	 * time loading data, create ODM and InterPSS Simulation object
 	  	 */
 	  	timer.start();
-		AclfNetwork adjNet = CorePluginObjFactory
+		AclfNetwork adjNet = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
 				.load("testData/UCTE_2000_WinterOffPeak.ieee")
 				.getAclfNet();		  	
@@ -68,13 +68,15 @@ public class LoadflowPerformance {
 	  	algoLF.setLfMethod(AclfMethod.NR_STEP);
 	  	algoLF.loadflow();
 	  	timer.logStd("Time for running one step NR Loadflow: ");
-
+        
+	  	
 	  	/*
 	  	 * time bus number arrangement
-	  	 */
+	  	 *
 	  	timer.start();
 	  	adjNet.setBusNumberArranged(false);
 	  	adjNet.accept(CoreObjectFactory.createBusNoArrangeVisitor());
 	  	timer.logStd("Time for bus arrangement: ");
+	  	*/
 	}	
 }
