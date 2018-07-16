@@ -184,7 +184,6 @@ public class IpssDclf extends BaseDSL {
 			this.algo = algo;
 		}
 		
-		
 		/**
 		 * accept the AclfNetwork visitor
 		 * 

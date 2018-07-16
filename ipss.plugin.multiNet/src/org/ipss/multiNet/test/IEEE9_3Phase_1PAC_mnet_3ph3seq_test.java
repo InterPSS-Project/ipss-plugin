@@ -40,16 +40,20 @@ import com.interpss.DStabObjectFactory;
 import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
+import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
+import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.acsc.XfrConnectCode;
 import com.interpss.core.acsc.adpter.AcscXformer;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.BaseDStabBus;
-import com.interpss.dstab.BaseDStabNetwork;
+import com.interpss.dstab.DStabBranch;
+import com.interpss.dstab.DStabBus;
+import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
@@ -197,8 +201,7 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 			return;
 		}
 		
-		
-	    BaseDStabNetwork<?,?> dsNet =simuCtx.getDStabilityNet();
+	    DStabilityNetwork dsNet =(DStabilityNetwork) simuCtx.getDStabilityNet();
 	    
 	    // remove the load from bus5
 	    BaseDStabBus<?,?> bus5 =  dsNet.getBus("Bus5");
@@ -208,7 +211,7 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 	    
 	    // add 69 kV and below distribution system
 	    
-	    BaseDStabBus<?,?> bus10 = DStabObjectFactory.createDStabBus("Bus10", dsNet);
+	    DStabBus bus10 = (DStabBus) DStabObjectFactory.createDStabBus("Bus10", dsNet);
   		bus10.setAttributes("69kV sub", "");
   		bus10.setBaseVoltage(69000.0);
   		// set the bus to a non-generator bus
@@ -216,8 +219,7 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
   		// set the bus to a constant power load bus
   		bus10.setLoadCode(AclfLoadCode.NON_LOAD);
   		
-  		
-  		BaseDStabBus<?,?> bus11 = DStabObjectFactory.createDStabBus("Bus11", dsNet);
+  		DStabBus bus11 = (DStabBus) DStabObjectFactory.createDStabBus("Bus11", dsNet);
   		bus11.setAttributes("13.8 kV feeder", "");
   		bus11.setBaseVoltage(13800.0);
   		// set the bus to a non-generator bus
@@ -227,7 +229,7 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
   		
   		bus11.setLoadPQ(new Complex(0.625,-0.05));
   		
-  		BaseDStabBus<?,?> bus12 = DStabObjectFactory.createDStabBus("Bus12", dsNet);
+  		DStabBus bus12 = (DStabBus) DStabObjectFactory.createDStabBus("Bus12", dsNet);
   		bus12.setAttributes("208 V feeder", "");
   		bus12.setBaseVoltage(208.0);
   		// set the bus to a non-generator bus
@@ -916,7 +918,7 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 	    
 	    //TODO create TDMultiNetPowerflowAlgo
 	    
-		 TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm(dsNet,proc);
+		 TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm((BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>) dsNet,proc);
 		 
 	    
 		 assertTrue(tdAlgo.powerflow()); 

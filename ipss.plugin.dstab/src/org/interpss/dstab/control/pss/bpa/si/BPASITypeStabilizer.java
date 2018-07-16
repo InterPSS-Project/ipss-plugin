@@ -242,7 +242,7 @@ class CustomExciter2 extends AbstractChildAnnotateController {
      *  @param msg the SessionMsg object
      */
     @Override
-    public boolean initStates(BaseDStabBus bus, Machine mach) {
+    public boolean initStates(BaseDStabBus<?,?> bus, Machine mach) {
         // pass the plugin data object values to the controller
         this.trw = getData().getTrw();
         this.t5 = getData().getT5();

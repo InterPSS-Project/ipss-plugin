@@ -24,7 +24,6 @@
 package org.interpss.dstab.control.exc.ieee.y1968.type4;
 
 import static com.interpss.dstab.controller.cml.field.ICMLStaticBlock.StaticBlockType.Limit;
-
 import java.lang.reflect.Field;
 
 import com.interpss.dstab.BaseDStabBus;
@@ -40,6 +39,7 @@ import com.interpss.dstab.controller.cml.field.block.WashoutControlBlock;
 import com.interpss.dstab.controller.cml.field.func.SeFunction;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
+import static com.interpss.dstab.controller.cml.field.ICMLStaticBlock.StaticBlockType.Limit;
 
 @AnController(
 		   input="this.refPoint - mach.vt + pss.vs - this.washoutBlock.y",

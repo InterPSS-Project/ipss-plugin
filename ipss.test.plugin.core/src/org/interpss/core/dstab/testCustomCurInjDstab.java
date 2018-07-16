@@ -66,7 +66,6 @@ public class testCustomCurInjDstab {
 			return;
 		}
 		
-		
 	    BaseDStabNetwork<?,?> dsNet =simuCtx.getDStabilityNet();
 
 	    /*

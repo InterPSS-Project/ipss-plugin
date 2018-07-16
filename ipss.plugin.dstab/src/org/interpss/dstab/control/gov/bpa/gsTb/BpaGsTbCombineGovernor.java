@@ -164,7 +164,7 @@ public class BpaGsTbCombineGovernor extends AnnotateGovernor {
 	}
 	
 	@Override
-	public boolean initStates(BaseDStabBus bus, Machine mach) {
+	public boolean initStates(BaseDStabBus<?,?> bus, Machine mach) {
         this.pmax = getData().getGsData().getPmax();
     	this.pmin =getData().getGsData().getPmin();
     	this.r    =getData().getGsData().getR();

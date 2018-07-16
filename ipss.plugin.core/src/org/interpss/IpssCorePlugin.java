@@ -64,7 +64,6 @@ public class IpssCorePlugin {
 		setLoggerLevel(level);
 	}
 
-	
 	/**
 	 * get the MsgHub object
 	 * 

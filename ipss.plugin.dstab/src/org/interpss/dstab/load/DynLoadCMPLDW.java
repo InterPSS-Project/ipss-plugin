@@ -90,7 +90,32 @@ public interface DynLoadCMPLDW  extends DynamicBusDevice{
 	void setGroupId(String groupId);
 	String getGroupId();
 	
-//	DistNetworkEquivalentModel getDistEquivalent();
+	double getMVABase();
+	void setMVABase(double mvaBase);
+	
+	DistNetworkEquivalentModel getDistEquivalent();
+	
+	double getFmA();
+	double getFmB();
+	double getFmC();
+	double getFmD();
+	double getFel();
+	
+	void setFmA(double motorAFraction);
+	void setFmB(double motorBFraction);
+	void setFmC(double motorCFraction);
+	void setFmD(double motorDFraction);
+	void setFel(double electronicLoadFraction);
+	
+	int getMotorTypeA();
+	int getMotorTypeB();
+	int getMotorTypeC();
+	int getMotorTypeD();
+	
+	void setMotorTypeA(int motorTypeA);
+	void setMotorTypeB(int motorTypeB);
+	void setMotorTypeC(int motorTypeC);
+	void setMotorTypeD(int motorTypeD);
 	
 	InductionMotor getInductionMotorA();
 	
@@ -102,10 +127,7 @@ public interface DynLoadCMPLDW  extends DynamicBusDevice{
 	
 //	DynLoadVFreqDependentModel getStaticLoadModel();
 	
-	BaseDStabBus getLowVoltBus();
+	BaseDStabBus<?,?> getLowVoltBus();
 	
-	BaseDStabBus getLoadBus();
-	
-	
-
+	BaseDStabBus<?,?> getLoadBus();
 }

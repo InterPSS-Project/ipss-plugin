@@ -16,7 +16,11 @@ public class DStabTestUtilFunc {
 		BaseDStabNetwork net = DStabObjectFactory.createDStabilityNetwork();
 		net.setFrequency(60.0);
 
+<<<<<<< HEAD
 		BaseDStabBus bus = DStabObjectFactory.createDStabBus("BusId", net);
+=======
+		DStabBus bus = (DStabBus) DStabObjectFactory.createDStabBus("BusId", net);
+>>>>>>> refs/remotes/origin/cmpldw_merge_06022018
 		bus.setName("BusName");
 		bus.setBaseVoltage(1000);
 		bus.setGenCode(AclfGenCode.GEN_PQ);

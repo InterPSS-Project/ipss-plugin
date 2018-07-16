@@ -48,7 +48,10 @@ public class TDMultiNetPowerflowAlgorithm {
 	
 	protected boolean pfFlag = true;
 	protected int iterationMax = 30;
-	protected double tolerance = 5.0E-4;
+	protected double tolerance = 1.0E-4;
+	protected LoadflowAlgorithm transLfAlgo = null;
+	
+	protected double distTolerance = 1.0E-4;
 	
 	private Hashtable<String,Complex3x1> lastStepTransBoundaryBus3SeqVoltages = null;
 	
@@ -70,17 +73,19 @@ public class TDMultiNetPowerflowAlgorithm {
 		
 		lastStepTransBoundaryBus3SeqVoltages  = new Hashtable<>();
 		
-		this.transmissionNet = subNetProc.getExternalSubNetwork();
+		this.transmissionNet = (BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>) subNetProc.getExternalSubNetwork();
 		
 		this.distNetList = new  ArrayList<>();
 		for(String id:subNetProc.getInternalSubNetBoundaryBusIdList()){
-			BaseAclfNetwork<?,?> distNet = subNetProc.getSubNetworkByBusId(id);
+		BaseAclfNetwork distNet = subNetProc.getSubNetworkByBusId(id);
 			if(!this.distNetList.contains(distNet))
 			  this.distNetList.add(distNet);
 			  IpssLogger.getLogger().info("Subsystem #"+distNet.getId()+" is set to be Distribution network before performing T&D Loadflow");
 			  distNet.setNetworkType(NetworkType.DISTRIBUTION);
+			  
 		}
 		
+		transLfAlgo = CoreObjectFactory.createLoadflowAlgorithm(transmissionNet);
 		
 	}
 	
@@ -109,14 +114,15 @@ public class TDMultiNetPowerflowAlgorithm {
 		 *  
 		 *  4. obtain the "approximate" power consumption of each distribution system 
 		 */
-		for(BaseAclfNetwork<?,?> distNet:this.distNetList){
+		double transMVABase = this.transmissionNet.getBaseMva();
+		for(BaseAclfNetwork distNet:this.distNetList){
 			List<String> boundaryList = subNetProcessor.getSubNet2BoundaryBusListTable().get(distNet.getId());
 			
 			if(boundaryList.size()!=1){
 				throw new Error(" Only one source bus for a distribution system is supported!");
 			}
 			else{
-				BaseAclfBus<?,?> sourceBus = (BaseAclfBus<?,?>) distNet.getBus(boundaryList.get(0));
+				BaseAclfBus sourceBus = (AclfBus) distNet.getBus(boundaryList.get(0));
 				
 				distNetId2BoundaryBusTable.put(distNet.getId(), sourceBus.getId());
 				
@@ -124,7 +130,7 @@ public class TDMultiNetPowerflowAlgorithm {
 				sourceBus.setVoltage(new Complex(1.0,0));
 				
 				DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(distNet);
-
+				distPFAlgo.setTolerance(this.distTolerance);
 			
 				if(!distPFAlgo.powerflow()){
 					throw new Error("Distribution system power flow is NOT converged! # "+distNet.getId());
@@ -146,10 +152,13 @@ public class TDMultiNetPowerflowAlgorithm {
 					}
 				}
 				
-				// save the three-sequence current injection to the table
-				Complex3x1 currInj3Seq = currInj3Phase.to012();
+				//TODO this needs to be updated if actual values are used in the distribution system
+				double distMVABase = distNet.getBaseMva();
 				
-				System.out.println("3seq current injection"+currInj3Seq.toString());
+				// save the three-sequence current injection to the table
+				Complex3x1 currInj3Seq = currInj3Phase.to012().multiply(distMVABase/transMVABase);
+				
+				System.out.println("3seq current injection: "+currInj3Seq.toString());
 				distBoundary3SeqCurInjTable.put(sourceBus.getId(), currInj3Phase.to012());
 				
 				Bus3Phase sourceBus3Ph = (Bus3Phase) sourceBus; 
@@ -211,7 +220,7 @@ public class TDMultiNetPowerflowAlgorithm {
 		    * 6. Run positive sequence power flow 
 		    */
 		
-		      LoadflowAlgorithm transLfAlgo = CoreObjectFactory.createLoadflowAlgorithm(transmissionNet);
+		      
 		      if(!transLfAlgo.loadflow()){
 		    	  throw new Error(" positive sequence power flow for the transmission system is not converged");
 		      }
@@ -268,7 +277,7 @@ public class TDMultiNetPowerflowAlgorithm {
 		    		  distPFAlgo.setInitBusVoltageEnabled(false);
 		    		  
 						if(!distPFAlgo.powerflow()){
-							throw new Error("Distribution system power flow is NOT converged! # "+distNet.getId());
+							throw new Error("Distribution system power flow is NOT converged! # "+distNet.getId()+", "+distNet.getBusList().get(0));
 						}
 						
 					
@@ -469,5 +478,11 @@ public class TDMultiNetPowerflowAlgorithm {
 		return this.distNetList;
 	}
 	
-
+    public LoadflowAlgorithm getTransLfAlgorithm(){
+    	return this.transLfAlgo;
+    }
+    
+    public void setDistLfTolerance(double distTol){
+    	this.distTolerance = distTol;
+    }
 }

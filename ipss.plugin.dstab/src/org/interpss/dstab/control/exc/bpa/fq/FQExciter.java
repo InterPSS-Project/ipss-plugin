@@ -8,6 +8,7 @@ package org.interpss.dstab.control.exc.bpa.fq;
 import java.lang.reflect.Field;
 
 import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.controller.cml.annotate.AnController;
 import com.interpss.dstab.controller.cml.annotate.AnControllerField;
 import com.interpss.dstab.controller.cml.annotate.AnFunctionField;
@@ -132,7 +133,7 @@ public class FQExciter extends AnnotateExciter {
 			  
 			  private double calculateIn() {
 				  	Machine mach = getMachine();
-			      BaseDStabBus dbus = mach.getDStabBus();
+				  	BaseDStabBus<?,?> dbus = mach.getDStabBus();
 			      double ifd_Exc_pu=mach.calculateIfd(MachineIfdBase.EXCITER);
 			      double ve = this.getU0();
 			      return kc * ifd_Exc_pu / ve;
@@ -230,7 +231,7 @@ public class FQExciter extends AnnotateExciter {
      *  @param msg the SessionMsg object
      */
     @Override
-    public boolean initStates(BaseDStabBus bus, Machine mach) {
+    public boolean initStates(BaseDStabBus<?,?> bus, Machine mach) {
         // pass the plugin data object values to the controller
         this.k = getData().getK();
         this.t1 = getData().getT1();

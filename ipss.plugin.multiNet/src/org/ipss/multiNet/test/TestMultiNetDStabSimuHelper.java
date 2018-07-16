@@ -25,7 +25,7 @@ import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.net.NetCoordinate;
-import com.interpss.dstab.BaseDStabNetwork;
+import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
@@ -61,8 +61,7 @@ public class TestMultiNetDStabSimuHelper {
 		}
 		
 		
-	    BaseDStabNetwork<?,?> dsNet = simuCtx.getDStabilityNet();
-	    
+	    DStabilityNetwork dsNet = (DStabilityNetwork) simuCtx.getDStabilityNet();
 		
 		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
 		assertTrue(aclfAlgo.loadflow());

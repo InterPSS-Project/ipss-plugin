@@ -25,6 +25,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.dstab.BaseDStabNetwork;
+import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
@@ -71,7 +72,7 @@ public class TestNetworkEquivUtil {
 		    
 		    proc.splitFullSystemIntoSubsystems(false);
 		    
-		 BaseDStabNetwork<?,?>  subNet = proc.getSubNetworkList().get(1); // index 1 is the subnetwork with only bus 5;
+		 BaseDStabNetwork<?, ?>  subNet = proc.getSubNetworkList().get(1); // index 1 is the subnetwork with only bus 5;
 		 
 		 System.out.println("subNet size : "+subNet.getBusList().size()); 
 		// System.out.println(subNet.net2String());

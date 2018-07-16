@@ -40,9 +40,7 @@ public class Kunder_2area_VSCHVDC_Test  extends DStabTestSetupBase{
 			return;
 		}
 		
-		
 	    BaseDStabNetwork dsNet =simuCtx.getDStabilityNet();
-	    
 	    
 	    //addVSCHVDC2Net
 	    

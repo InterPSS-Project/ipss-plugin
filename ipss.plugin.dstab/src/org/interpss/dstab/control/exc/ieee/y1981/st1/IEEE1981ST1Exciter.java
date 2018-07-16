@@ -130,7 +130,7 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
 
 		  private double calLimit(double vrlimit) {
 			  	Machine mach = getMachine();
-		      BaseDStabBus dbus = mach.getDStabBus();
+			  	BaseDStabBus<?,?> dbus = mach.getDStabBus();
 		      double vt = dbus.getVoltageMag();
 		     // double ifd = mach.calculateIfd(dbus);
 		      double ifd_Exc_pu=mach.calculateIfd(MachineIfdBase.EXCITER);
@@ -197,7 +197,7 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
      *  @param msg the SessionMsg object
      */
     @Override
-    public boolean initStates(BaseDStabBus bus, Machine mach) {
+    public boolean initStates(BaseDStabBus<?,?> bus, Machine mach) {
         // pass the plugin data object values to the controller
     	this.tr =getData().getTr();
         this.vimax = getData().getVimax();

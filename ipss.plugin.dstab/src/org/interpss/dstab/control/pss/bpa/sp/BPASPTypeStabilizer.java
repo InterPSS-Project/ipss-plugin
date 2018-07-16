@@ -103,7 +103,7 @@ public class BPASPTypeStabilizer extends AnnotateStabilizer {
 		  @Override
 		  public double getY() {
 		  	Machine mach = getMachine();
-		  	BaseDStabBus dbus = mach.getDStabBus();
+		  	BaseDStabBus<?,?> dbus = mach.getDStabBus();
 		    double vt = mach.getVdq().abs();
 				double deltaVt = vt0 - vt;
 		  	//restrict the output
@@ -172,7 +172,7 @@ public class BPASPTypeStabilizer extends AnnotateStabilizer {
      *  @param msg the SessionMsg object
      */
     @Override
-    public boolean initStates(BaseDStabBus bus, Machine mach) {
+    public boolean initStates(BaseDStabBus<?,?> bus, Machine mach) {
         // pass the plugin data object values to the controller
         this.tqs = getData().getTqs();
         this.tq = getData().getTq();
