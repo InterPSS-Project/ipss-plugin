@@ -80,7 +80,7 @@ public class DStab_Relay_LowVoltLoadShed_Test extends DStabTestSetupBase{
 		}
 		
 		
-	    DStabilityNetwork dsNet =simuCtx.getDStabilityNet();
+	    DStabilityNetwork dsNet =(DStabilityNetwork) simuCtx.getDStabilityNet();
 	    
 	    //add the LVSH load shedding model
 	    DStabBus bus5 = dsNet.getBus("Bus5");

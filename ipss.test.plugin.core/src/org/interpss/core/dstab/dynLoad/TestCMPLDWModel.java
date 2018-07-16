@@ -15,6 +15,7 @@ import org.interpss.display.AclfOutFunc;
 import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.junit.Test;
 
+import com.interpss.CoreCommonFactory;
 import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.SimuObjectFactory;
@@ -31,14 +32,13 @@ import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.cache.StateMonitor.DynDeviceType;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
-import com.interpss.spring.CoreCommonSpringFactory;
 
 public class TestCMPLDWModel {
 	
 	//@Test
 	public void testCMPLDWInit() throws InterpssException{
 		IpssCorePlugin.init();
-		IPSSMsgHub msg = CoreCommonSpringFactory.getIpssMsgHub();
+		IPSSMsgHub msg = CoreCommonFactory.getIpssMsgHub();
 		IpssLogger.getLogger().setLevel(Level.WARNING);
 		
 		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
@@ -60,7 +60,7 @@ public class TestCMPLDWModel {
 		}
 		
 		
-	    DStabilityNetwork dsNet =simuCtx.getDStabilityNet();
+	    DStabilityNetwork dsNet =(DStabilityNetwork) simuCtx.getDStabilityNet();
 	    
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
 	  	algo.setLfMethod(AclfMethod.PQ);
@@ -80,7 +80,7 @@ public class TestCMPLDWModel {
 	public void testCMPLDWPSLFData() throws InterpssException{
 		
 		IpssCorePlugin.init();
-		IPSSMsgHub msg = CoreCommonSpringFactory.getIpssMsgHub();
+		IPSSMsgHub msg = CoreCommonFactory.getIpssMsgHub();
 		IpssLogger.getLogger().setLevel(Level.WARNING);
     		
           GenericODMAdapter adapter = new GenericODMAdapter(ODMFileFormatEnum.PsseV30,ODMFileFormatEnum.GePSLF);
@@ -104,7 +104,7 @@ public class TestCMPLDWModel {
 			}
 			
 			
-		    DStabilityNetwork dsNet =simuCtx.getDStabilityNet();
+		    DStabilityNetwork dsNet =(DStabilityNetwork) simuCtx.getDStabilityNet();
 		    dsNet.setFrequency(60.0);
 		  
 	  		/*
@@ -157,7 +157,7 @@ public class TestCMPLDWModel {
 	public void test_CMPLDW_init_methods() throws InterpssException{
 		
 		IpssCorePlugin.init();
-		IPSSMsgHub msg = CoreCommonSpringFactory.getIpssMsgHub();
+		IPSSMsgHub msg = CoreCommonFactory.getIpssMsgHub();
 		IpssLogger.getLogger().setLevel(Level.WARNING);
     		
           GenericODMAdapter adapter = new GenericODMAdapter(ODMFileFormatEnum.PsseV30,ODMFileFormatEnum.GePSLF);
@@ -181,7 +181,7 @@ public class TestCMPLDWModel {
 			}
 			
 			
-		    DStabilityNetwork dsNet =simuCtx.getDStabilityNet();
+		    DStabilityNetwork dsNet =(DStabilityNetwork) simuCtx.getDStabilityNet();
 		    dsNet.setFrequency(60.0);
 		    
 		    //dsNet.getBus("Bus1").setVoltageMag(0.99);

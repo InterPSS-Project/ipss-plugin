@@ -31,7 +31,6 @@ import java.util.logging.Level;
 import org.ieee.odm.common.ODMLogger;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.IpssCorePlugin;
-import org.interpss.numeric.sparse.base.ISparseEquation.SolverType;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.pssl.plugin.IpssAdapter;
 import org.junit.Test;

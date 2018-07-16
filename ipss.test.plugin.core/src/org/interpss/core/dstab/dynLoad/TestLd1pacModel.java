@@ -41,7 +41,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		DStabilityNetwork net = create2BusSystem();
 		assertTrue(net.isLfConverged());
 		
-		DStabBus bus1 = net.getDStabBus("Bus1");
+		DStabBus bus1 = (DStabBus) net.getDStabBus("Bus1");
 		
 		LD1PAC acLoad= DStabObjectFactory.createLD1PAC(bus1,"1");
 		
@@ -100,7 +100,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		DStabilityNetwork net = create2BusSystem();
 		assertTrue(net.isLfConverged());
 		
-		DStabBus bus1 = net.getDStabBus("Bus1");
+		DStabBus bus1 = (DStabBus) net.getDStabBus("Bus1");
 		
 		LD1PAC acLoad= DStabObjectFactory.createLD1PAC(bus1,"1");
 		
@@ -163,7 +163,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		DStabilityNetwork net = create2BusSystem();
 		assertTrue(net.isLfConverged());
 		
-		DStabBus bus1 = net.getDStabBus("Bus1");
+		DStabBus bus1 = (DStabBus) net.getDStabBus("Bus1");
 		
 		LD1PAC acLoad= DStabObjectFactory.createLD1PAC(bus1,"1");
 		
@@ -229,7 +229,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		DStabilityNetwork net = create2BusSystem();
 		assertTrue(net.isLfConverged());
 		
-		DStabBus bus1 = net.getDStabBus("Bus1");
+		DStabBus bus1 = (DStabBus) net.getDStabBus("Bus1");
 		
 		LD1PAC acLoad= DStabObjectFactory.createLD1PAC(bus1,"1");
 		
@@ -300,7 +300,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		net.setFrequency(60.0);
 		
 		// First bus is PQ Gen bus
-		DStabBus bus1 = DStabObjectFactory.createDStabBus("Bus1", net);
+		DStabBus bus1 = (DStabBus) DStabObjectFactory.createDStabBus("Bus1", net);
 		bus1.setName("Gen Bus");
 		bus1.setBaseVoltage(1000);
 		//bus1.setGenCode(AclfGenCode.GEN_PQ);
@@ -309,7 +309,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		bus1.setLoadPQ( new Complex(0.8,0.6));
 		
 		// Second bus is a Swing bus
-		DStabBus bus2 = DStabObjectFactory.createDStabBus("Swing", net);
+		DStabBus bus2 = (DStabBus) DStabObjectFactory.createDStabBus("Swing", net);
 		bus2.setName("Swing Bus");
 		bus2.setBaseVoltage(1000);
 		bus2.setGenCode(AclfGenCode.SWING);

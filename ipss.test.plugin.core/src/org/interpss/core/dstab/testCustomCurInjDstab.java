@@ -14,17 +14,16 @@ import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.mapper.odm.ODMDStabParserMapper;
-import org.interpss.numeric.datatype.ComplexFunc;
 import org.interpss.numeric.util.Number2String;
 import org.interpss.numeric.util.PerformanceTimer;
 import org.junit.Test;
 
+import com.interpss.CoreCommonFactory;
 import com.interpss.SimuObjectFactory;
 import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfLoad;
-import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabilityNetwork;
@@ -35,7 +34,6 @@ import com.interpss.dstab.cache.StateVariableRecorder.StateVarRecType;
 import com.interpss.dstab.common.DStabOutSymbol;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
-import com.interpss.spring.CoreCommonSpringFactory;
 
 
 
@@ -51,7 +49,7 @@ public class testCustomCurInjDstab {
 		 * load transient stability system data set into DynamicStabilityNetwork object
 		 */
 		IpssCorePlugin.init();
-		IPSSMsgHub msg = CoreCommonSpringFactory.getIpssMsgHub();
+		IPSSMsgHub msg = CoreCommonFactory.getIpssMsgHub();
 		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
@@ -69,7 +67,7 @@ public class testCustomCurInjDstab {
 		}
 		
 		
-	    DStabilityNetwork dsNet =simuCtx.getDStabilityNet();
+	    DStabilityNetwork dsNet =(DStabilityNetwork) simuCtx.getDStabilityNet();
 
 	    /*
 	     * run load flow to initialize the system

@@ -26,7 +26,7 @@ package org.interpss.core.adapter.ieee;
 
 import static org.junit.Assert.assertTrue;
 
-import org.interpss.CorePluginObjFactory;
+import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.Unit.UnitType;
@@ -42,7 +42,7 @@ import com.interpss.simu.SimuContext;
 public class IEEECDFTempTest extends CorePluginTestSetup {
 	@Test
 	public void bus39testCase() throws Exception{
-		IpssFileAdapter adapter = CorePluginObjFactory.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF);
+		IpssFileAdapter adapter = CorePluginFactory.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF);
 		SimuContext simuCtx = adapter.load("testData/ieee_format/ieee039.DAT");
 
 		AclfNetwork net = simuCtx.getAclfNet();
