@@ -37,10 +37,6 @@ import org.junit.Test;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBus;
-<<<<<<< HEAD
-=======
-import com.interpss.dstab.algo.IDynamicSimulation;
->>>>>>> refs/remotes/origin/cmpldw_merge_06022018
 import com.interpss.dstab.controller.cml.annotate.util.AnControllerInitializer;
 import com.interpss.dstab.controller.cml.field.ICMLFunction;
 import com.interpss.dstab.controller.cml.field.block.DelayControlBlock;
