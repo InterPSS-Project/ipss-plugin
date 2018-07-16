@@ -61,7 +61,7 @@ public class DStab_2Bus extends DStabTestSetupBase {
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		assertTrue(aclfAlgo.loadflow());
 		System.out.println(AclfOutFunc.loadFlowSummary(dstabAlgo.getNetwork()));
-		DStabilityNetwork dsNet = dstabAlgo.getNetwork();
+		DStabilityNetwork dsNet = (DStabilityNetwork) dstabAlgo.getNetwork();
 		System.out.println(dstabAlgo.getNetwork().net2String());
 		
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);

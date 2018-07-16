@@ -49,6 +49,7 @@ public class DynLoadDataHelper {
         LD1PAC acMotor = DStabDynamicLoadFactory.eINSTANCE.createLD1PAC();
         acMotor.setId(id);
         acMotor.setDStabBus(dstabBus);
+        dstabBus.addDynamicLoadModel(acMotor);
         
         /*
          *  CompLF 

@@ -143,8 +143,9 @@ public class Mod_SixBus_DclfPsXfr extends CorePluginTestSetup {
 
 		System.out.println(DclfOutFunc.dclfResults(algo, false));
   		assertTrue(Math.abs(algo.getBusPower(net.getBus("Bus1"))-3.0723)<0.0001);
-
-		algo.destroy();			
+        
+  	    //TODO compile error, comment out 7/15/2018 
+		//algo.destroy();			
 	}
 
 	@Test
@@ -172,8 +173,9 @@ public class Mod_SixBus_DclfPsXfr extends CorePluginTestSetup {
 
 		System.out.println(DclfOutFunc.dclfResults(algo, false));
   		assertTrue(Math.abs(algo.getBusPower(net.getBus("Bus1"))-3.0723)<0.0001);
-
-		algo.destroy();			
+        
+  		//TODO compile error, comment out 7/15/2018
+		//algo.destroy();			
 	}
 }
 
