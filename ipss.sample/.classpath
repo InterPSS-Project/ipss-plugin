@@ -9,7 +9,6 @@
 	<classpathentry kind="lib" path="/ipss.lib/lib/ieee/ieee.odm.schema.jar"/>
 	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/plugins/custom.plugin.jar"/>
 	<classpathentry kind="lib" path="/ipss.lib/lib/ipss/ipss_plugin.jar"/>
-	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/spring/spring-2.5.6.jar"/>
 	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/eclipse/org.eclipse.emf.common.jar"/>
 	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/eclipse/org.eclipse.emf.ecore.change.jar"/>
 	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/eclipse/org.eclipse.emf.ecore.jar"/>

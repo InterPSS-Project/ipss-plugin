@@ -5,6 +5,8 @@ import org.interpss.numeric.sparse.ISparseEqnComplex;
 
 import com.interpss.core.sparse.ISparseEqnSolver;
 
+import edu.emory.mathcs.csparsej.tdcomplex.DZcs_common.DZcsa;
+
 public class CustomComplexSparseEqnSolver implements ISparseEqnSolver {
 	protected boolean LUed = false;
 	
@@ -18,7 +20,7 @@ public class CustomComplexSparseEqnSolver implements ISparseEqnSolver {
 		this.LUed = false;
 	}
 
-	@Override public boolean luMatrix(double arg0) throws IpssNumericException {
+	@Override public boolean factorization(double arg0) throws IpssNumericException {
 		System.out.println("Call CustomComplexSparseEqnSolver.luMatrix() ...");
 		this.LUed = true;
 		return true;
@@ -26,7 +28,30 @@ public class CustomComplexSparseEqnSolver implements ISparseEqnSolver {
 
 	@Override public void solveEqn() throws IpssNumericException {
 		if (!this.LUed)
-			this.luMatrix(1.0e-10);
+			this.factorization(1.0e-10);
 		System.out.println("Call CustomComplexSparseEqnSolver.solveEqn() ...");
+	}
+
+	@Override
+	public boolean factorization() throws IpssNumericException {
+		System.out.println("Call CustomComplexSparseEqnSolver.luMatrix() ...");
+		this.LUed = true;
+		return true;
+	}
+
+	@Override
+	public double[] solveEqn(double[] arg0) throws IpssNumericException {
+		if (!this.LUed)
+			this.factorization(1.0e-10);
+		System.out.println("Call CustomComplexSparseEqnSolver.solveEqn() ...");
+		return null;
+	}
+
+	@Override
+	public DZcsa solveEqn(DZcsa arg0) throws IpssNumericException {
+		if (!this.LUed)
+			this.factorization(1.0e-10);
+		System.out.println("Call CustomComplexSparseEqnSolver.solveEqn() ...");
+		return null;
 	}
 }
