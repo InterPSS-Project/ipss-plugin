@@ -57,6 +57,7 @@ public class CampareModel_OfBpaO7CTest extends DStabTestSetupBase {
 				return;
 			}
 			
+
 			BaseDStabNetwork dstabNet = simuCtx.getDStabilityNet();
 			
 			System.out.println("LF Net as the base net for comparison");

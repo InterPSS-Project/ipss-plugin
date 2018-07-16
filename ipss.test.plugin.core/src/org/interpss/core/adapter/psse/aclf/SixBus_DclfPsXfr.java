@@ -104,7 +104,6 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
 			if (!((AclfBus)b).isRefBus())
 				assertTrue(Math.abs(algo.getMismatch((AclfBus)b)) < 0.00001);
 		}
-		
 		//algo.destroy();			
 	}
 	
