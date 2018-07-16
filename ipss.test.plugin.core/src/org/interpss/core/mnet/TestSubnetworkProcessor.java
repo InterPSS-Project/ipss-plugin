@@ -65,12 +65,12 @@ public class TestSubnetworkProcessor {
 	    List<BaseDStabNetwork> subNetList = proc.getSubNetworkList();
 	    assertTrue(subNetList.size()==2);
 	    System.out.println("Sub network -1");
-	    for(Bus b:subNetList.get(0).getBusList() ){
-	    	System.out.println("Bus:"+b.getId());
+	    for(Object b:subNetList.get(0).getBusList() ){
+	    	System.out.println("Bus:"+((Bus)b).getId());
 	    }
 	    
-	    for(Branch bra:subNetList.get(0).getBranchList()){
-	    	System.out.println("Branch:"+bra.getId());
+	    for(Object bra:subNetList.get(0).getBranchList()){
+	    	System.out.println("Branch:"+((Branch)bra).getId());
 	    }
 	    assertTrue(subNetList.get(0).getBranchList().size()==6);
 	    
@@ -78,8 +78,8 @@ public class TestSubnetworkProcessor {
 	   // System.out.println(subNetList.get(0).net2String());
 	    
 	    System.out.println("Sub network -2");
-	    for(Bus b:subNetList.get(1).getBusList() ){
-	    	System.out.println("Bus:"+b.getId());
+	    for(Object b:subNetList.get(1).getBusList() ){
+	    	System.out.println("Bus:"+ ((Bus)b).getId());
 	    	
 	    }
 	    assertTrue(subNetList.get(1).getBranchList().size()==1);
@@ -142,13 +142,13 @@ public class TestSubnetworkProcessor {
 	    System.out.println("Sub network:"+subNetList.get(0).getId());
 	    
 	    
-	    for(Bus b:subNetList.get(0).getBusList() ){
-	    	System.out.println("Bus:"+b.getId());
+	    for(Object b:subNetList.get(0).getBusList() ){
+	    	System.out.println("Bus:"+((Bus)b).getId());
 	    }
 	   assertTrue(subNetList.get(0).getBusList().size()==2);
 	    
-	    for(Branch bra:subNetList.get(0).getBranchList()){
-	    	System.out.println("Branch:"+bra.getId());
+	    for(Object bra:subNetList.get(0).getBranchList()){
+	    	System.out.println("Branch:"+((Branch)bra).getId());
 	    }
 	   assertTrue(subNetList.get(0).getBranchList().size()==1);
 	   
@@ -156,8 +156,8 @@ public class TestSubnetworkProcessor {
 	   // System.out.println(subNetList.get(0).net2String());
 	    
 	   System.out.println("Sub network:"+subNetList.get(1).getId());
-	    for(Bus b:subNetList.get(1).getBusList() ){
-	    	System.out.println("Bus:"+b.getId());
+	    for(Object b:subNetList.get(1).getBusList() ){
+	    	System.out.println("Bus:"+((Branch)b).getId());
 	    	
 	    }
 	    assertTrue(subNetList.get(1).getBusList().size()==8);
