@@ -68,6 +68,7 @@ import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStab3WBranch;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabGen;
+import com.interpss.dstab.DStabLoad;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.mach.Machine;
 import com.interpss.simu.SimuContext;
@@ -127,11 +128,11 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 				dstabAlgo.setAclfAlgorithm(lfAlgo);
 
 				// map the bus info
-				AclfBusDataHelper helper = new AclfBusDataHelper(dstabNet);
+				AclfBusDataHelper<? extends DStabGen, ? extends DStabLoad> helper = new AclfBusDataHelper<>(dstabNet);
 				for (JAXBElement<? extends BusXmlType> bus : xmlNet.getBusList().getBus()) {
 					DStabBusXmlType dstabBusXml = (DStabBusXmlType) bus.getValue();
 					
-					BaseDStabBus<?,?> dstabBus = DStabObjectFactory.createDStabBus(dstabBusXml.getId(), dstabNet);
+					BaseDStabBus dstabBus = DStabObjectFactory.createDStabBus(dstabBusXml.getId(), dstabNet);
 						
 					// base the base bus info part
 					mapBaseBusData(dstabBusXml, dstabBus, dstabNet);

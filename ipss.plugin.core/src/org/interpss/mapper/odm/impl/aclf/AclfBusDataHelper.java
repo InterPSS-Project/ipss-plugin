@@ -378,9 +378,10 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 						LoadflowLoadDataXmlType loadElem = elem.getValue();
 						
 						String id = loadElem.getId()!=null?loadElem.getId():this.bus.getId()+"-L"+loadCnt++;
-						AclfLoad load = bus instanceof BaseAclfBus<?,?> ? CoreObjectFactory.createAclfLoad(id) :
+						AclfLoad load = bus instanceof BaseDStabBus<?,?> ? DStabObjectFactory.createDStabLoad(id):
 							bus instanceof BaseAcscBus<?,?> ? CoreObjectFactory.createAcscLoad(id) :
-								DStabObjectFactory.createDStabLoad(id);
+								 CoreObjectFactory.createAclfLoad(id);
+								
 						
 						load.setName(loadElem.getName());
 						
