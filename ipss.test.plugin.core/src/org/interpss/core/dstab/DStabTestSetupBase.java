@@ -30,6 +30,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.NumericConstant;
 
+import com.interpss.CoreCommonFactory;
 import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.common.msg.IPSSMsgHub;
@@ -40,14 +41,13 @@ import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.devent.DynamicEvent;
 import com.interpss.dstab.devent.DynamicEventType;
-import com.interpss.spring.CoreCommonSpringFactory;
 
 public class DStabTestSetupBase extends CorePluginTestSetup {
 	
 	protected IPSSMsgHub msg;
 
 	public DStabTestSetupBase() { 
-		msg = CoreCommonSpringFactory.getIpssMsgHub();
+		msg = CoreCommonFactory.getIpssMsgHub();
 		IpssLogger.getLogger().setLevel(Level.WARNING);
  	}
 /*
@@ -69,7 +69,7 @@ public class DStabTestSetupBase extends CorePluginTestSetup {
 		event1.setStartTimeSec(1.0);
 		event1.setDurationSec(0.1);
 		
-		DStabBus faultBus = net.getDStabBus("0003");
+		DStabBus faultBus = (DStabBus) net.getDStabBus("0003");
 		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@0003", net);
   		fault.setBus(faultBus);
 		fault.setFaultCode(SimpleFaultCode.GROUND_3P);

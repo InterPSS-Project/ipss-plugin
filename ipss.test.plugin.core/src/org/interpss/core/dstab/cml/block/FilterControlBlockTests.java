@@ -24,12 +24,14 @@
 
 package org.interpss.core.dstab.cml.block;
 
-import static com.interpss.dstab.controller.block.ICMLStaticBlock.StaticBlockType.Limit;
-import static com.interpss.dstab.controller.block.ICMLStaticBlock.StaticBlockType.NonWindup;
+import static com.interpss.dstab.controller.cml.field.ICMLStaticBlock.StaticBlockType.Limit;
+import static com.interpss.dstab.controller.cml.field.ICMLStaticBlock.StaticBlockType.NonWindup;
+
 import static org.junit.Assert.assertTrue;
 
-import org.interpss.dstab.control.cml.block.FilterControlBlock;
 import org.junit.Test;
+
+import com.interpss.dstab.controller.cml.field.block.FilterControlBlock;
 
 public class FilterControlBlockTests {
 	@Test
