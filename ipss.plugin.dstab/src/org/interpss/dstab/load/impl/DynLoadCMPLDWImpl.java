@@ -669,9 +669,7 @@ public class DynLoadCMPLDWImpl extends DynamicBusDeviceImpl implements DynLoadCM
 		return this.ac1PMotor;
 	}
 
-	@Override
 	public DynLoadVFreqDependentModel getStaticLoadModel() {
-		
 		return this.staticLoad;
 	}
 
