@@ -27,6 +27,10 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
+import com.interpss.dstab.DStabBus;
+import com.interpss.dstab.DStabGen;
+import com.interpss.dstab.DStabLoad;
+import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
@@ -58,7 +62,7 @@ public class TestSubNetEquiv {
 			}
 			
 			
-		    BaseDStabNetwork<?,?> dsNet =simuCtx.getDStabilityNet();
+		    DStabilityNetwork dsNet =(DStabilityNetwork) simuCtx.getDStabilityNet();
 		    
 			
 			LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
@@ -98,7 +102,7 @@ public class TestSubNetEquiv {
 		    MultiNetDStabSimuHelper multiNetHelper = new  MultiNetDStabSimuHelper(dsNet,proc);
 		   // multiNetHelper.processInterfaceBranchEquiv();
 		    
-		    for(BaseDStabNetwork<?,?> subNet: proc.getSubNetworkList()){
+		    for(BaseDStabNetwork<?, ?> subNet: proc.getSubNetworkList()){
 		    	subNet.initDStabNet();
 		    }
 		    
@@ -190,8 +194,8 @@ public class TestSubNetEquiv {
 				Bus, Vm, Va =Bus7  ,1.0258075418988797  ,3.7555960457865005
 				Bus, Vm, Va =Bus2  ,1.024999053994286  ,9.31568983146796
               */
-             for(BaseDStabNetwork<?,?> subNet: proc.getSubNetworkList()){
- 		    	 for(BaseDStabBus<?,?> b:subNet.getBusList()){
+             for(BaseDStabNetwork<?, ?> subNet: proc.getSubNetworkList()){
+ 		    	 for(BaseDStabBus<? extends DStabGen, ? extends DStabLoad> b:subNet.getBusList()){
  		    		 System.out.println("Bus, Vm, Va ="+b.getId()+"  ,"+b.getVoltageMag()+"  ,"+b.getVoltageAng(UnitType.Deg));
  		    		  if(b.getId().equals("Bus5")){
  		    			 assertTrue(NumericUtil.equals(b.getVoltageMag(),0.99577,1.0E-4));

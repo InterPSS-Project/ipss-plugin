@@ -62,7 +62,7 @@ public class TestSubnetworkProcessor {
 	    System.out.println("net size ="+dsNet.getBusList().size());
 	    assertTrue(dsNet.getBusList().size()==9); 
 	    
-	    List<BaseDStabNetwork<?,?>> subNetList = proc.getSubNetworkList();
+	    List<BaseDStabNetwork> subNetList = proc.getSubNetworkList();
 	    assertTrue(subNetList.size()==2);
 	    System.out.println("Sub network -1");
 	    for(Bus b:subNetList.get(0).getBusList() ){
@@ -137,7 +137,7 @@ public class TestSubnetworkProcessor {
 	    assertTrue(dsNet.getBusList().size() == 10);   
 	    
 	    
-	    List<BaseDStabNetwork<?,?>> subNetList = proc.getSubNetworkList();
+	    List<BaseDStabNetwork> subNetList = proc.getSubNetworkList();
 	    assertTrue(subNetList.size()==2);
 	    System.out.println("Sub network:"+subNetList.get(0).getId());
 	    

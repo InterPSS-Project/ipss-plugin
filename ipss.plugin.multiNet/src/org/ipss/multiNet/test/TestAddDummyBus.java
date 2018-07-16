@@ -33,6 +33,7 @@ import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabBus;
+import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
@@ -68,8 +69,7 @@ public class TestAddDummyBus {
 			return;
 		}
 		
-		
-	    BaseDStabNetwork<?,?> dsNet =simuCtx.getDStabilityNet();
+	    DStabilityNetwork dsNet =(DStabilityNetwork) simuCtx.getDStabilityNet();
 	    
 //	    LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
 //	    
@@ -77,12 +77,11 @@ public class TestAddDummyBus {
 //		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 	    
 	    // add the dummy buses
-	    
 	    //dsNet.bookmark(true);
 	    
 	    BaseDStabBus<?,?> bus7 = dsNet.getBus("Bus7");
 	    
-	    BaseDStabBus<?,?> bus7Dummy = DStabObjectFactory.createDStabBus("Bus7Dummy", dsNet);
+	    DStabBus bus7Dummy = (DStabBus) DStabObjectFactory.createDStabBus("Bus7Dummy", dsNet);
 	    //basic copy
 	    bus7Dummy.setBaseVoltage(bus7.getBaseVoltage());
 	    bus7Dummy.setVoltage(bus7.getVoltage());
@@ -122,12 +121,7 @@ public class TestAddDummyBus {
 		assertTrue(Math.abs(bus7.getVoltageMag()-1.02581)<1.0E-4);
 		assertTrue(Math.abs(bus7Dummy.getVoltageMag()-1.02581)<1.0E-4);
 		
-		
 		assertTrue(dsNet.getBusList().size()==10);
-		//dsNet.rollback();
-		//TODO after rollback, should be the same as the original network
-		assertTrue(dsNet.getBusList().size()==9);
-	    
 	}
 	
 	
@@ -155,8 +149,7 @@ public class TestAddDummyBus {
 			return;
 		}
 		
-		
-	    BaseDStabNetwork<?,?> dsNet =simuCtx.getDStabilityNet();
+	    DStabilityNetwork dsNet =(DStabilityNetwork) simuCtx.getDStabilityNet();
 	    
 //	    LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
 //	    
@@ -167,7 +160,7 @@ public class TestAddDummyBus {
 	    
 	    BaseDStabBus<?,?> bus7 = dsNet.getBus("Bus7");
 	    
-	    BaseDStabBus<?,?> bus7Dummy = DStabObjectFactory.createDStabBus("Bus7Dummy", dsNet);
+	    DStabBus bus7Dummy = (DStabBus) DStabObjectFactory.createDStabBus("Bus7Dummy", dsNet);
 	    //basic copy
 	    bus7Dummy.setBaseVoltage(bus7.getBaseVoltage());
 	    bus7Dummy.setVoltage(bus7.getVoltage());
@@ -242,13 +235,8 @@ public class TestAddDummyBus {
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.005d);
 		dstabAlgo.setTotalSimuTimeSec(0.5d);
-		for (BaseDStabNetwork<?,?> subNet:proc.getSubNetworkList()){
-			subNet.setNetEqnIterationNoEvent(1);
-			subNet.setNetEqnIterationWithEvent(1);
-		
-		  // dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
-		}
-		dsNet.addDynamicEvent(create3PhaseFaultEvent("Bus6", proc.getSubNetworkList().get(0),0.1d,0.05),"3phaseFault@Bus6");
+
+		dsNet.addDynamicEvent(create3PhaseFaultEvent("Bus6", (DStabilityNetwork) proc.getSubNetworkList().get(0),0.1d,0.05),"3phaseFault@Bus6");
         
 
 		dstabAlgo.setSolver(new MultiNetDStabSolverImpl(dstabAlgo,multiNetHelper));
@@ -297,7 +285,8 @@ public class TestAddDummyBus {
 			event1.setDurationSec(durationTime);
 			
 	   // define a bus fault
-			BaseDStabBus<?,?> faultBus = net.getDStabBus(faultBusId);
+			DStabBus faultBus = (DStabBus) net.getDStabBus(faultBusId);
+
 			AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@"+faultBusId, net);
 			fault.setBus(faultBus);
 			fault.setFaultCode(SimpleFaultCode.GROUND_3P);
