@@ -8,6 +8,7 @@ package org.interpss.dstab.control.exc.bpa.ec;
 import java.lang.reflect.Field;
 
 import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.controller.cml.annotate.AnController;
 import com.interpss.dstab.controller.cml.annotate.AnControllerField;
 import com.interpss.dstab.controller.cml.annotate.AnFunctionField;
@@ -143,7 +144,7 @@ public class BpaEcTypeExciter extends AnnotateExciter {
      *  @param msg the SessionMsg object
      */
     @Override
-    public boolean initStates(BaseDStabBus bus, Machine mach) {
+    public boolean initStates(BaseDStabBus<?,?> bus, Machine mach) {
         // pass the plugin data object values to the controller
         this.ka = getData().getKa();
         this.ta = getData().getTa();
