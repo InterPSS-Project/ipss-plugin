@@ -119,7 +119,6 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 
 		System.out.println(DclfOutFunc.dclfResults(algo, false));
   		//assertTrue(Math.abs(algo.getBusPower(net.getAclfBus("Bus1"))-3.0723)<0.0001);
-
 		//algo.destroy();			
 	}
 	

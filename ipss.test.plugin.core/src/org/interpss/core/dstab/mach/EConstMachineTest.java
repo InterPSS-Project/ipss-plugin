@@ -44,6 +44,7 @@ public class EConstMachineTest extends TestSetupBase {
 		
 		// calculate mach state init values
 		BaseDStabBus bus = net.getDStabBus("Gen");
+
 		mach.initStates(bus);
 		/*
 		System.out.println("Angle(deg) " + mach.getAngle()*Constants.RtoD);

@@ -121,4 +121,3 @@ public class AcscSample {
 		return (AcscNetwork)netDsl.getAclfNet();
 	}
 }
-

@@ -14,12 +14,16 @@ import org.ipss.multiNet.algo.SubNetworkProcessor;
 import org.ipss.threePhase.dynamic.DStabNetwork3Phase;
 
 import com.interpss.common.datatype.Constants;
-import com.interpss.core.aclf.BaseAclfBus;
+import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.net.NetCoordinate;
 import com.interpss.core.net.NetEquivType;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
+import com.interpss.dstab.DStabBus;
+import com.interpss.dstab.DStabGen;
+import com.interpss.dstab.DStabLoad;
+import com.interpss.dstab.DStabilityNetwork;
 
 public class NetworkEquivUtil {
 	
@@ -29,7 +33,7 @@ public class NetworkEquivUtil {
 		Hashtable<String,NetworkEquivalent> netEquivTable = new Hashtable<>();
 		
 		
-		for(BaseDStabNetwork<?,?> subNet:subNetProc.getSubNetworkList()){
+		for(BaseDStabNetwork<?, ?> subNet:subNetProc.getSubNetworkList()){
 			NetworkEquivalent equiv = calPosSeqNetworkTheveninEquiv(subNet,subNetProc.getSubNet2BoundaryBusListTable().get(subNet.getId()));
 			netEquivTable.put(subNet.getId(), equiv);
 		}
@@ -71,15 +75,15 @@ public class NetworkEquivUtil {
 	}
 	
 	
-	public static  NetworkEquivalent calPosSeqNetworkTheveninEquiv(BaseDStabNetwork<?,?> net, List<String> boundaryBusIdList){
+	public static  NetworkEquivalent calPosSeqNetworkTheveninEquiv(BaseDStabNetwork<?, ?> subNet, List<String> boundaryBusIdList){
 		
-		ISparseEqnComplex ymatrix = net.getYMatrix();
+		ISparseEqnComplex ymatrix = subNet.getYMatrix();
 		if(ymatrix==null){
-			ymatrix = net.formScYMatrix(SequenceCode.POSITIVE,false);
-			net.setYMatrix(ymatrix);
-			net.setYMatrixDirty(true);
+			ymatrix = subNet.formScYMatrix(SequenceCode.POSITIVE,false);
+			subNet.setYMatrix(ymatrix);
+			subNet.setYMatrixDirty(true);
 		}
-		if(net.isYMatrixDirty()){
+		if(subNet.isYMatrixDirty()){
 			try {
 				ymatrix.factorization(1.0E-10);
 			} catch (IpssNumericException e) {
@@ -98,7 +102,7 @@ public class NetworkEquivUtil {
 			//ymatrix.setB2Zero();
 			int i=0;
 			for(String busId:boundaryBusIdList){
-				BaseDStabBus<?,?> bus = net.getBus(busId);
+				BaseDStabBus bus = subNet.getBus(busId);
 				ymatrix.setB2Unity(bus.getSortNumber());
 				try {
 					ymatrix.solveEqn();
@@ -108,7 +112,7 @@ public class NetworkEquivUtil {
 				}
 				int j=0;
 				for(String busId2:boundaryBusIdList){
-				    Complex zji= ymatrix.getX(net.getBus(busId2).getSortNumber());
+				    Complex zji= ymatrix.getX(subNet.getBus(busId2).getSortNumber());
 				    netEquiv.getComplexEqn().setAij(zji, j, i);  // zji = Vj/Ii
 				    j++;
 				     
@@ -124,7 +128,12 @@ public class NetworkEquivUtil {
 		return netEquiv;
 		
 	}
-	
+	/**
+	 * Return three seq thevein equivalent impedance matrices stored in "120" sequence
+	 * @param net
+	 * @param boundaryBusIdList
+	 * @return
+	 */
 	public static  NetworkEquivalent cal3SeqNetworkTheveninEquiv(BaseDStabNetwork<?,?> net, List<String> boundaryBusIdList){
 		
 		// calculate three seq thevein equivalent impedance matrices
@@ -196,7 +205,7 @@ public static  NetworkEquivalent cal3PhaseNetworkTheveninEquiv(DStabNetwork3Phas
 			
 			int i=0;
 			for(String busId:boundaryBusIdList){
-				BaseDStabBus<?,?> bus = net.getBus(busId);
+				BaseDStabBus bus = net.getBus(busId);
 				//System.out.println(bus.getId()+","+bus.getSortNumber());
 				
 				
@@ -285,8 +294,10 @@ public static  NetworkEquivalent cal3PhaseNetworkTheveninEquiv(DStabNetwork3Phas
 				break;
 				
 			default:
-				     if(net.getYMatrix() == null)
-					    seqYmatrixEqn = net.formScYMatrix(SequenceCode.POSITIVE,true);
+				     if(net.getYMatrix() == null) {
+					    net.formYMatrix4DStab(); // include dynamic load and gen equivalent in the Ymatrix
+				        seqYmatrixEqn = net.getYMatrix();
+				     }
 				     else{
 				    	 seqYmatrixEqn = net.getYMatrix();
 				    	 
@@ -305,7 +316,7 @@ public static  NetworkEquivalent cal3PhaseNetworkTheveninEquiv(DStabNetwork3Phas
 		
 				for(int i = 0;i<dim;i++){
 					String busId =boundaryBusIdList.get(i);
-					BaseAclfBus<?,?> bus = net.getBus(busId);
+					BaseDStabBus bus = net.getBus(busId);
 					int idx = bus.getSortNumber();
 					seqYmatrixEqn.setB2Unity(idx); //unit current injection at bus of Idx only, the rest are zero
 					try {
@@ -318,7 +329,7 @@ public static  NetworkEquivalent cal3PhaseNetworkTheveninEquiv(DStabNetwork3Phas
 				
 					for(int j=0;j<dim;j++){
 						busId = boundaryBusIdList.get(j);
-						BaseAclfBus<?,?> busj = net.getBus(busId);
+						BaseDStabBus busj = net.getBus(busId);
 						seqZMatrix[j][i]=seqYmatrixEqn.getX(busj.getSortNumber());
 					}
 						

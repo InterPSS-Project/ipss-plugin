@@ -68,7 +68,7 @@ public class AclfOut_BusStyle {
 		try {
 			str.append(busStyleTitle(mainNet));
 
-			for (BaseAclfBus bus : mainNet.getBusList()) {
+			for (BaseAclfBus<?,?> bus : mainNet.getBusList()) {
 				if (bus.isActive()) {
 					str.append(lfResultsBusStyle(bus, mainNet, style));
 				}

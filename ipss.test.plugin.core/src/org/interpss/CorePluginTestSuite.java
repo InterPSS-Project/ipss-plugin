@@ -166,8 +166,6 @@ import org.junit.runners.Suite.SuiteClasses;
 	
 	AclfBeanMapperTest.class,
 	
-	//multi subnetwork processor
-	TestSubnetworkProcessor.class,
 	
 	//MNet_IEEE14Bus_Test.class,
 	//MNet_Aclf5Bus_Child_Test.class,
