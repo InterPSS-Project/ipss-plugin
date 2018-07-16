@@ -32,17 +32,18 @@ import org.interpss.core.dstab.cml.controller.util.TestAnnotateExciter;
 import org.interpss.core.dstab.cml.controller.util.TestAnnotateGovernor;
 import org.interpss.core.dstab.cml.controller.util.TestAnnotateStabilizer;
 import org.interpss.core.dstab.cml.controller.util.TestAnnotateStabilizerComplex;
-import org.interpss.dstab.control.cml.block.DelayControlBlock;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBus;
-import com.interpss.dstab.DStabilityNetwork;
-import com.interpss.dstab.controller.annotate.util.AnControllerHelper;
-import com.interpss.dstab.controller.block.ICMLFunction;
-import com.interpss.dstab.controller.wrapper.ControlBlockFieldAnWrapper;
-import com.interpss.dstab.controller.wrapper.FunctionFieldAnWrapper;
-import com.interpss.dstab.controller.wrapper.StaticBlockFieldAnWrapper;
+import com.interpss.dstab.algo.IDynamicSimulation;
+import com.interpss.dstab.controller.cml.annotate.util.AnControllerInitializer;
+import com.interpss.dstab.controller.cml.field.ICMLFunction;
+import com.interpss.dstab.controller.cml.field.block.DelayControlBlock;
+import com.interpss.dstab.controller.cml.wrapper.ControlBlockFieldAnWrapper;
+import com.interpss.dstab.controller.cml.wrapper.FunctionFieldAnWrapper;
+import com.interpss.dstab.controller.cml.wrapper.StaticBlockFieldAnWrapper;
 import com.interpss.dstab.datatype.CMLVarEnum;
 import com.interpss.dstab.mach.Machine;
 
@@ -53,8 +54,8 @@ public class AnnotateParserTests extends DStabTestSetupBase {
 
 	@Test
 	public void exciterTestCase() throws Exception {
-		DStabilityNetwork net = DStabTestUtilFunc.createTestNetwork();
-		DStabBus bus = net.getDStabBus("BusId");
+		BaseDStabNetwork<?,?> net = DStabTestUtilFunc.createTestNetwork();
+		DStabBus bus = (DStabBus)net.getDStabBus("BusId");
 		Machine machine = bus.getMachine();
 		/*
 			public double k = 50.0, t = 0.05, vmax = 10.0, vmin = 0.0;
@@ -71,15 +72,15 @@ public class AnnotateParserTests extends DStabTestSetupBase {
 		assertTrue(exc.initStates(bus, machine)); 
 		
 		//System.out.println(exc.toString());
-		assertTrue(AnControllerHelper.getBlockFieldWrapper("delayBlock", exc.getFieldWrapperList()) != null);
+		assertTrue(AnControllerInitializer.getBlockFieldWrapper("delayBlock", exc.getFieldWrapperList()) != null);
 
-		DelayControlBlock block = (DelayControlBlock)(AnControllerHelper.getBlock("delayBlock", exc.getFieldWrapperList()));
+		DelayControlBlock block = (DelayControlBlock)(AnControllerInitializer.getBlock("delayBlock", exc.getFieldWrapperList()));
 		assertTrue(block.getK() == 50.0);
 		assertTrue(block.getT() == 0.05);
 		assertTrue(block.getLimit().getMax() == 10.0);
 		assertTrue(block.getLimit().getMin() == 0.0);
 
-		cfield = (ControlBlockFieldAnWrapper)(AnControllerHelper.getBlockFieldWrapper("delayBlock", exc.getFieldWrapperList()));
+		cfield = (ControlBlockFieldAnWrapper)(AnControllerInitializer.getBlockFieldWrapper("delayBlock", exc.getFieldWrapperList()));
 		assertTrue(cfield.getInitOrder() == 1);
 		assertTrue(cfield.hasInput(CMLVarEnum.ControllerRefPoint));
 		assertTrue(!cfield.hasOutput(CMLVarEnum.ControllerRefPoint));
@@ -93,25 +94,25 @@ public class AnnotateParserTests extends DStabTestSetupBase {
 		assertTrue(cfield.getY0Exp().getRecList().length == 1);
 		assertTrue(cfield.getY0Exp().hasVarType(CMLVarEnum.MachEfd));
 		
-		assertTrue(AnControllerHelper.getBlockFieldWrapper("seFunc", exc.getFieldWrapperList()) != null);
+		assertTrue(AnControllerInitializer.getBlockFieldWrapper("seFunc", exc.getFieldWrapperList()) != null);
 
 //		SeFunction seFunc = (SeFunction)(AnCntlUtilFunc.getBlock("seFunc", exc.getFieldList()));
 //		assertTrue(seFunc.g.getSe1_0() == 50.0);
 //		assertTrue(seFunc.getSe0_75() == 1.0);
 
-		field = (FunctionFieldAnWrapper<ICMLFunction>)(AnControllerHelper.getBlockFieldWrapper("seFunc", exc.getFieldWrapperList()));
+		field = (FunctionFieldAnWrapper<ICMLFunction>)(AnControllerInitializer.getBlockFieldWrapper("seFunc", exc.getFieldWrapperList()));
 		assertTrue(field.getInputs().length == 3);
-		assertTrue(field.getParameters().length == 2);
+		assertTrue(field.getParameters().length == 4);
 
-		assertTrue(AnControllerHelper.getBlockFieldWrapper("seFunc1", exc.getFieldWrapperList()) != null);
-		field = (FunctionFieldAnWrapper<ICMLFunction>)(AnControllerHelper.getBlockFieldWrapper("seFunc1", exc.getFieldWrapperList()));
+		assertTrue(AnControllerInitializer.getBlockFieldWrapper("seFunc1", exc.getFieldWrapperList()) != null);
+		field = (FunctionFieldAnWrapper<ICMLFunction>)(AnControllerInitializer.getBlockFieldWrapper("seFunc1", exc.getFieldWrapperList()));
 		assertTrue(field.getInputs().length == 3);
 	}
 
 	@Test
 	public void governorTestCase()  throws InterpssException {
-		DStabilityNetwork net = DStabTestUtilFunc.createTestNetwork();
-		DStabBus bus = net.getDStabBus("BusId");
+		BaseDStabNetwork<?,?> net = DStabTestUtilFunc.createTestNetwork();
+		DStabBus bus = (DStabBus)net.getDStabBus("BusId");
 		Machine machine = bus.getMachine();
 		/*
 		public double ka = 10.0, ta = 0.5;
@@ -134,13 +135,13 @@ public class AnnotateParserTests extends DStabTestSetupBase {
 		
 		assertTrue(gov.initStates(bus, machine));
 		
-		assertTrue(AnControllerHelper.getBlockFieldWrapper("delayBlock", gov.getFieldWrapperList()) != null);
-		cfield = (ControlBlockFieldAnWrapper)(AnControllerHelper.getBlockFieldWrapper("delayBlock", gov.getFieldWrapperList()));
+		assertTrue(AnControllerInitializer.getBlockFieldWrapper("delayBlock", gov.getFieldWrapperList()) != null);
+		cfield = (ControlBlockFieldAnWrapper)(AnControllerInitializer.getBlockFieldWrapper("delayBlock", gov.getFieldWrapperList()));
 		assertTrue(cfield.getInitOrder() == -1);
 		assertTrue(cfield.getY0Exp().hasField("gainBlock"));
 
-		assertTrue(AnControllerHelper.getBlockFieldWrapper("gainBlock", gov.getFieldWrapperList()) != null);
-		sfield = (StaticBlockFieldAnWrapper)(AnControllerHelper.getBlockFieldWrapper("gainBlock", gov.getFieldWrapperList()));
+		assertTrue(AnControllerInitializer.getBlockFieldWrapper("gainBlock", gov.getFieldWrapperList()) != null);
+		sfield = (StaticBlockFieldAnWrapper)(AnControllerInitializer.getBlockFieldWrapper("gainBlock", gov.getFieldWrapperList()));
 		assertTrue(sfield.getInitOrder() == 1);
 		assertTrue(sfield.getInputExp().hasField("delayBlock"));
 		//System.out.println(gov.toString());
@@ -148,8 +149,8 @@ public class AnnotateParserTests extends DStabTestSetupBase {
 
 	@Test
 	public void stabilizerTestCase()  throws InterpssException {
-		DStabilityNetwork net = DStabTestUtilFunc.createTestNetwork();
-		DStabBus bus = net.getDStabBus("BusId");
+		BaseDStabNetwork<?,?> net = DStabTestUtilFunc.createTestNetwork();
+		DStabBus bus = (DStabBus)net.getDStabBus("BusId");
 		Machine machine = bus.getMachine();
 		/*
 		public double k1 = 1.0, t1 = 0.05, t2 = 0.5;
@@ -172,13 +173,13 @@ public class AnnotateParserTests extends DStabTestSetupBase {
 
 		assertTrue(pss.initStates(bus, machine));
 
-		assertTrue(AnControllerHelper.getBlockFieldWrapper("filterBlock1", pss.getFieldWrapperList()) != null);
-		cfield = (ControlBlockFieldAnWrapper)(AnControllerHelper.getBlockFieldWrapper("filterBlock1", pss.getFieldWrapperList()));
+		assertTrue(AnControllerInitializer.getBlockFieldWrapper("filterBlock1", pss.getFieldWrapperList()) != null);
+		cfield = (ControlBlockFieldAnWrapper)(AnControllerInitializer.getBlockFieldWrapper("filterBlock1", pss.getFieldWrapperList()));
 		assertTrue(cfield.getInitOrder() == 1);
 		assertTrue(cfield.getY0Exp().hasField("filterBlock2"));
 
-		assertTrue(AnControllerHelper.getBlockFieldWrapper("filterBlock2", pss.getFieldWrapperList()) != null);
-		cfield = (ControlBlockFieldAnWrapper)(AnControllerHelper.getBlockFieldWrapper("filterBlock2", pss.getFieldWrapperList()));
+		assertTrue(AnControllerInitializer.getBlockFieldWrapper("filterBlock2", pss.getFieldWrapperList()) != null);
+		cfield = (ControlBlockFieldAnWrapper)(AnControllerInitializer.getBlockFieldWrapper("filterBlock2", pss.getFieldWrapperList()));
 		assertTrue(cfield.getInitOrder() == 2);
 		assertTrue(cfield.getInputExp().hasField("filterBlock1"));
 		//System.out.println(pss.toString());
@@ -186,8 +187,8 @@ public class AnnotateParserTests extends DStabTestSetupBase {
 
 	@Test
 	public void stabilizerComplexTestCase()  throws InterpssException {
-		DStabilityNetwork net = DStabTestUtilFunc.createTestNetwork();
-		DStabBus bus = net.getDStabBus("BusId");
+		BaseDStabNetwork<?,?> net = DStabTestUtilFunc.createTestNetwork();
+		DStabBus bus = (DStabBus)net.getDStabBus("BusId");
 		Machine machine = bus.getMachine();
 
 		//Machine mach = TestUtil.createMachine();
@@ -195,21 +196,21 @@ public class AnnotateParserTests extends DStabTestSetupBase {
 
 		assertTrue(pss.initStates(bus, machine));
 
-		assertTrue(AnControllerHelper.getBlockFieldWrapper("gainBlock1", pss.getFieldWrapperList()) != null);
-		sfield = (StaticBlockFieldAnWrapper)(AnControllerHelper.getBlockFieldWrapper("gainBlock1", pss.getFieldWrapperList()));
+		assertTrue(AnControllerInitializer.getBlockFieldWrapper("gainBlock1", pss.getFieldWrapperList()) != null);
+		sfield = (StaticBlockFieldAnWrapper)(AnControllerInitializer.getBlockFieldWrapper("gainBlock1", pss.getFieldWrapperList()));
 		assertTrue(sfield.getInitOrder() == -2);
 
-		assertTrue(AnControllerHelper.getBlockFieldWrapper("gainBlock2", pss.getFieldWrapperList()) != null);
-		sfield = (StaticBlockFieldAnWrapper)(AnControllerHelper.getBlockFieldWrapper("gainBlock2", pss.getFieldWrapperList()));
+		assertTrue(AnControllerInitializer.getBlockFieldWrapper("gainBlock2", pss.getFieldWrapperList()) != null);
+		sfield = (StaticBlockFieldAnWrapper)(AnControllerInitializer.getBlockFieldWrapper("gainBlock2", pss.getFieldWrapperList()));
 		assertTrue(sfield.getInitOrder() == -1);
 		
-		assertTrue(AnControllerHelper.getBlockFieldWrapper("filterBlock1", pss.getFieldWrapperList()) != null);
-		cfield = (ControlBlockFieldAnWrapper)(AnControllerHelper.getBlockFieldWrapper("filterBlock1", pss.getFieldWrapperList()));
+		assertTrue(AnControllerInitializer.getBlockFieldWrapper("filterBlock1", pss.getFieldWrapperList()) != null);
+		cfield = (ControlBlockFieldAnWrapper)(AnControllerInitializer.getBlockFieldWrapper("filterBlock1", pss.getFieldWrapperList()));
 		assertTrue(cfield.getInitOrder() == 1);
 		assertTrue(cfield.getY0Exp().hasField("filterBlock2"));
 
-		assertTrue(AnControllerHelper.getBlockFieldWrapper("filterBlock2", pss.getFieldWrapperList()) != null);
-		cfield = (ControlBlockFieldAnWrapper)(AnControllerHelper.getBlockFieldWrapper("filterBlock2", pss.getFieldWrapperList()));
+		assertTrue(AnControllerInitializer.getBlockFieldWrapper("filterBlock2", pss.getFieldWrapperList()) != null);
+		cfield = (ControlBlockFieldAnWrapper)(AnControllerInitializer.getBlockFieldWrapper("filterBlock2", pss.getFieldWrapperList()));
 		assertTrue(cfield.getInitOrder() == 2);
 		assertTrue(cfield.getInputExp().hasField("filterBlock1"));
 		//System.out.println(pss.toString());

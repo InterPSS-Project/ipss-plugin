@@ -27,7 +27,7 @@ package org.interpss.core.adapter.ieee;
 import static org.junit.Assert.assertTrue;
 
 import org.interpss.CorePluginFunction;
-import org.interpss.CorePluginObjFactory;
+import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.Unit.UnitType;
@@ -43,7 +43,7 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 public class IEEECommonFormat_CommaTest extends CorePluginTestSetup {
 	@Test 
 	public void testCase1() throws Exception {
-		AclfNetwork net = CorePluginObjFactory
+		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
 				.load("testdata/adpter/ieee_format/ieee14_comma.ieee")
 				.getAclfNet();	

@@ -2,15 +2,14 @@ package org.interpss.core.dstab.cml.controller.util;
 
 import java.lang.reflect.Field;
 
-import org.interpss.dstab.control.cml.block.DelayControlBlock;
-import org.interpss.dstab.control.cml.func.SeFunction;
-
-import com.interpss.dstab.controller.AnnotateExciter;
-import com.interpss.dstab.controller.annotate.AnController;
-import com.interpss.dstab.controller.annotate.AnControllerField;
-import com.interpss.dstab.controller.annotate.AnFunctionField;
-import com.interpss.dstab.controller.block.ICMLFunction;
-import com.interpss.dstab.controller.block.adapt.CMLFunctionAdapter;
+import com.interpss.dstab.controller.cml.annotate.AnController;
+import com.interpss.dstab.controller.cml.annotate.AnControllerField;
+import com.interpss.dstab.controller.cml.annotate.AnFunctionField;
+import com.interpss.dstab.controller.cml.annotate.AnnotateExciter;
+import com.interpss.dstab.controller.cml.field.ICMLFunction;
+import com.interpss.dstab.controller.cml.field.adapt.CMLFunctionAdapter;
+import com.interpss.dstab.controller.cml.field.block.DelayControlBlock;
+import com.interpss.dstab.controller.cml.field.func.SeFunction;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 
 // User custom code begin 

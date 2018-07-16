@@ -45,7 +45,7 @@ public class Eq1MachineCaseTest extends TestSetupBase {
 		Eq1Machine mach = SampleDStabCase.createEq1Machine(net);
 		
 		// calculate mach state init values
-		DStabBus bus = net.getDStabBus("Gen");
+		DStabBus bus = (DStabBus) net.getDStabBus("Gen");
 		mach.initStates(bus);
 		//System.out.println("Ygen: " + mach.getYgen());
 		//System.out.println("Igen: " + mach.getIgen());

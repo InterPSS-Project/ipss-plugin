@@ -26,10 +26,10 @@ package org.interpss.core.dstab.cml.block;
 
 import static org.junit.Assert.assertTrue;
 
-import org.interpss.dstab.control.cml.block.PIControlBlock;
 import org.junit.Test;
 
-import com.interpss.dstab.controller.block.ICMLStaticBlock;
+import com.interpss.dstab.controller.cml.field.ICMLStaticBlock;
+import com.interpss.dstab.controller.cml.field.block.PIControlBlock;
 
 public class PIControlBlockTests {
 	@Test
