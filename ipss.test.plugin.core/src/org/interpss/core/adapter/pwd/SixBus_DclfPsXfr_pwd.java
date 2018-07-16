@@ -36,7 +36,6 @@ import org.interpss.display.AclfOutFunc;
 import org.interpss.display.DclfOutFunc;
 import org.interpss.mapper.odm.ODMAclfNetMapper;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.numeric.sparse.base.ISparseEquation.SolverType;
 import org.interpss.pssl.plugin.IpssAdapter;
 import org.interpss.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.Test;
@@ -120,8 +119,9 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 
 		System.out.println(DclfOutFunc.dclfResults(algo, false));
   		//assertTrue(Math.abs(algo.getBusPower(net.getAclfBus("Bus1"))-3.0723)<0.0001);
-
-		algo.destroy();			
+		
+		//TODO compile error, comment out 7/15/2018
+		//algo.destroy();			
 	}
 	
 	/*
@@ -147,7 +147,8 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 		System.out.println(DclfOutFunc.dclfResults(algo, false));
   		//assertTrue(Math.abs(algo.getBusPower(net.getAclfBus("Bus1"))-3.0723)<0.0001);
 
-		algo.destroy();			
+		//TODO compile error, comment out 7/15/2018
+		//algo.destroy();			
 	}
 
 	@Test
@@ -168,7 +169,8 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 		System.out.println(DclfOutFunc.dclfResults(algo, false));
   		//assertTrue(Math.abs(algo.getBusPower(net.getAclfBus("Bus1"))-3.0723)<0.0001);
 
-		algo.destroy();			
+		//TODO compile error, comment out 7/15/2018
+		//algo.destroy();			
 	}
 
 	@Test
@@ -194,7 +196,8 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 		System.out.println(DclfOutFunc.dclfResults(algo, false));
   		//assertTrue(Math.abs(algo.getBusPower(net.getAclfBus("Bus1"))-3.0723)<0.0001);
 
-		algo.destroy();			
+		//TODO compile error, comment out 7/15/2018
+		//algo.destroy();			
 	}
 
 	@Test
@@ -220,7 +223,8 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 		System.out.println(DclfOutFunc.dclfResults(algo, false));
   		//assertTrue(Math.abs(algo.getBusPower(net.getAclfBus("Bus1"))-3.0723)<0.0001);
 
-		algo.destroy();			
+		//TODO compile error, comment out 7/15/2018
+		//algo.destroy();			
 	}
 }
 

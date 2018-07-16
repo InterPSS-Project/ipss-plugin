@@ -70,7 +70,7 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 			}
 			
 			
-		    DStabilityNetwork dsNet =simuCtx.getDStabilityNet();
+		    DStabilityNetwork dsNet =(DStabilityNetwork) simuCtx.getDStabilityNet();
 		    
 		    // build sequence network
 //		    SequenceNetworkBuilder seqNetHelper = new SequenceNetworkBuilder(dsNet,true);
@@ -147,7 +147,7 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 			}
 			
 			
-		    DStabilityNetwork dsNet =simuCtx.getDStabilityNet();
+		    DStabilityNetwork dsNet =(DStabilityNetwork) simuCtx.getDStabilityNet();
 		    
 		    // build sequence network
 //		    SequenceNetworkBuilder seqNetHelper = new SequenceNetworkBuilder(dsNet,true);
@@ -221,7 +221,7 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 			}
 			
 			
-		    DStabilityNetwork dsNet =simuCtx.getDStabilityNet();
+		    DStabilityNetwork dsNet =(DStabilityNetwork) simuCtx.getDStabilityNet();
 		    //System.out.println(dsNet.net2String());
 
 		    
@@ -273,7 +273,7 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 				event1.setDurationSec(durationTime);
 				
 		      // define a bus fault
-				DStabBus faultBus = net.getDStabBus(faultBusId);
+				DStabBus faultBus = (DStabBus) net.getDStabBus(faultBusId);
 				AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@"+faultBusId, net);
 		  		fault.setBus(faultBus);
 				fault.setFaultCode(SimpleFaultCode.GROUND_3P);

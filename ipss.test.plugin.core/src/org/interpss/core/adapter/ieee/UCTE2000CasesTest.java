@@ -26,7 +26,7 @@ package org.interpss.core.adapter.ieee;
 
 import static org.junit.Assert.assertTrue;
 
-import org.interpss.CorePluginObjFactory;
+import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.junit.Test;
@@ -40,7 +40,7 @@ import com.interpss.simu.SimuContext;
 public class UCTE2000CasesTest extends CorePluginTestSetup {
 	@Test 
 	public void testCase1() throws Exception {
-		AclfNetwork net = CorePluginObjFactory
+		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
 				.load("testData/ieee_format/UCTE_2000_WinterOffPeak.ieee")
 				.getAclfNet();
@@ -66,7 +66,7 @@ public class UCTE2000CasesTest extends CorePluginTestSetup {
 //
 //		AclfNetwork net = simuCtx.getAclfNet();
 		
-		AclfNetwork net = CorePluginObjFactory
+		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
 				.load("testData/ieee_format/UCTE_2000_WinterPeak.ieee")
 				.getAclfNet();			
