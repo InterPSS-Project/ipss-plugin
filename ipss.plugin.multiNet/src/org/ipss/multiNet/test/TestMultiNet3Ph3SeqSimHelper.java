@@ -22,6 +22,7 @@ import org.ipss.multiNet.algo.MultiNet3Ph3SeqDStabSolverImpl;
 import org.ipss.multiNet.algo.MultiNet3Ph3SeqDynEventProcessor;
 import org.ipss.multiNet.algo.SubNetworkProcessor;
 import org.ipss.multiNet.equivalent.NetworkEquivalent;
+import org.ipss.threePhase.basic.Bus3Phase;
 import org.ipss.threePhase.dynamic.DStabNetwork3Phase;
 import org.ipss.threePhase.dynamic.algo.DynamicEventProcessor3Phase;
 import org.ipss.threePhase.odm.ODM3PhaseDStabParserMapper;
@@ -257,7 +258,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 		assertTrue(aclfAlgo.loadflow());
 		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 		
-		BaseDStabBus<?,?> bus5 = dsNet.getBus("Bus5");
+		Bus3Phase bus5 = dsNet.getBus("Bus5");
 		
 		Complex bus5LoadYeq = bus5.getLoadPQ().conjugate().divide(bus5.getVoltageMag()*bus5.getVoltageMag()) ;
 		

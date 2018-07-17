@@ -41,7 +41,7 @@ public class Eq1Ed1MachineTest extends TestSetupBase {
 	public void test_Case1()  throws InterpssException {
 		// create a machine in a two-bus network. The loadflow already converged
 		BaseDStabNetwork net = SampleDStabCase.createDStabTestNet();
-		System.out.println(net.net2String());
+		//System.out.println(net.net2String());
 		Eq1Ed1Machine mach = SampleDStabCase.createEq1Ed1Machine(net);
 		
 		// calculate mach state init values

@@ -62,6 +62,7 @@ import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.dstab.BaseDStabNetwork;
+import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.StaticLoadModel;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -97,7 +98,7 @@ public class DStabScenarioHelper {
 	 * @param dstabNet
 	 * @param algo
 	 */
-	public DStabScenarioHelper(BaseDStabNetwork dstabNet, DynamicSimuAlgorithm algo) {
+	public DStabScenarioHelper(BaseDStabNetwork<?,?> dstabNet, DynamicSimuAlgorithm algo) {
 		this.dstabNet = dstabNet;
 		this.dstabAlgo = algo;
 	}

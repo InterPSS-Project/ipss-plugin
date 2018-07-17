@@ -66,7 +66,6 @@ public class testCustomCurInjDstab {
 			return;
 		}
 		
-		
 	    BaseDStabNetwork<?,?> dsNet =simuCtx.getDStabilityNet();
 
 	    /*
@@ -75,7 +74,7 @@ public class testCustomCurInjDstab {
 		DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		assertTrue(aclfAlgo.loadflow());
-		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
+		//System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 		
 		
 		//TSA Simulation Time Step, must be the same as the Time step defined in the Socket_Component in the PSCAD side
@@ -149,7 +148,7 @@ public class testCustomCurInjDstab {
 		  			
 		   	boundaryBusCurInjTable.put("Bus5", new Complex(-1.2177100311058122, 0.5874647169492455));
 		 
-		  	 System.out.println(boundaryBusCurInjTable);
+		  	 //System.out.println(boundaryBusCurInjTable);
 		  	
 	  	
 	  	PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger()) ;
@@ -187,12 +186,12 @@ public class testCustomCurInjDstab {
 	  	  
 	 		List<StateRecord> list = ssRecorder.getMachineRecords(
 	 				"Bus3-mach1", MachineState, DStabOutSymbol.OUT_SYMBOL_MACH_ANG);
-	 		System.out.println("\n\n Bus3 Machine Angle");
+	 		//System.out.println("\n\n Bus3 Machine Angle");
 	 		
 	 		
 	 		for (StateRecord rec : list) {
 	 		
-	 			System.out.println(Number2String.toStr(rec.t) + ", " + Number2String.toStr(rec.variableValue));
+	 			//System.out.println(Number2String.toStr(rec.t) + ", " + Number2String.toStr(rec.variableValue));
 	 		}
 	 		
 	 		
@@ -202,7 +201,7 @@ public class testCustomCurInjDstab {
 	 				"Bus2-mach1", MachineState, DStabOutSymbol.OUT_SYMBOL_MACH_ANG);
 	 		System.out.println("\n\n Bus2 Machine Angle");
 	 		for (StateRecord rec : list) {
-	 			System.out.println( Number2String.toStr(rec.variableValue));
+	 			//System.out.println( Number2String.toStr(rec.variableValue));
 	 		}
 	 		
 	 		assertTrue(getSumAbsDiff(list )<1.0E-3);
@@ -211,34 +210,34 @@ public class testCustomCurInjDstab {
 	 				"Bus3-mach1", MachineState, DStabOutSymbol.OUT_SYMBOL_MACH_PM);
 	 		System.out.println("\n\n Bus3 Machine PM");
 	 		for (StateRecord rec : list) {
-	 			System.out.println( Number2String.toStr(rec.variableValue));
+	 			//System.out.println( Number2String.toStr(rec.variableValue));
 	 		}
 	 		
 	 		assertTrue(getSumAbsDiff(list )<1.0E-4);
 	 		
 	 		list = ssRecorder.getMachineRecords(
 	 				"Bus3-mach1", StateVarRecType.MachineState, DStabOutSymbol.OUT_SYMBOL_BUS_VMAG);
-	 		System.out.println("\n\n Bus3 voltage mag");
+	 		//System.out.println("\n\n Bus3 voltage mag");
 	 		for (StateRecord rec : list) {
-	 			System.out.println(Number2String.toStr(rec.variableValue));
+	 			//System.out.println(Number2String.toStr(rec.variableValue));
 	 		}
 	 		
 	 		assertTrue(getSumAbsDiff(list )<1.0E-4);
 	 		
 	 		list = ssRecorder.getMachineRecords(
 	 				"Bus4", StateVarRecType.BusState, DStabOutSymbol.OUT_SYMBOL_BUS_VMAG);
-	 		System.out.println("\n\n Bus4 voltage mag");
+	 		//System.out.println("\n\n Bus4 voltage mag");
 	 		for (StateRecord rec : list) {
-	 			System.out.println(Number2String.toStr(rec.variableValue));
+	 			//System.out.println(Number2String.toStr(rec.variableValue));
 	 		}
 	 		
 	 		assertTrue(getSumAbsDiff(list )<1.0E-4);
 	 		
 	 		list = ssRecorder.getMachineRecords(
 	 				"Bus5", StateVarRecType.BusState, DStabOutSymbol.OUT_SYMBOL_BUS_VANG);
-	 		System.out.println("\n\n Bus5 voltage Angle");
+	 		//System.out.println("\n\n Bus5 voltage Angle");
 	 		for (StateRecord rec : list) {
-	 			System.out.println(Number2String.toStr(rec.variableValue));
+	 			//System.out.println(Number2String.toStr(rec.variableValue));
 	 		}
 	 		
 	 		assertTrue(getSumAbsDiff(list )<1.0E-4);

@@ -52,15 +52,15 @@ import javax.tools.ForwardingJavaFileManager;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
+import javax.tools.JavaFileObject.Kind;
 import javax.tools.SimpleJavaFileObject;
 import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
-import javax.tools.JavaFileObject.Kind;
-
-import junit.framework.AssertionFailedError;
 
 import com.interpss.CoreCommonFactory;
 import com.interpss.common.util.IpssLogger;
+
+import junit.framework.AssertionFailedError;
 
 /**
  * In-memory Java file compiler. The code is based test.net.java.privateer on java.net

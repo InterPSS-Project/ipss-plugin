@@ -17,6 +17,7 @@ public class DStabTestUtilFunc {
 		net.setFrequency(60.0);
 
 		BaseDStabBus bus = DStabObjectFactory.createDStabBus("BusId", net);
+
 		bus.setName("BusName");
 		bus.setBaseVoltage(1000);
 		bus.setGenCode(AclfGenCode.GEN_PQ);

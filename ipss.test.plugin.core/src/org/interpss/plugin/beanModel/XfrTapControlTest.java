@@ -144,7 +144,7 @@ public class XfrTapControlTest extends CorePluginTestSetup {
 
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
-  		System.out.println(net.net2String());
+  		//System.out.println(net.net2String());
 
   		AclfBus swingBus = (AclfBus)net.getBus("0001");
 		AclfSwingBus swing = swingBus.toSwingBus();
@@ -153,13 +153,13 @@ public class XfrTapControlTest extends CorePluginTestSetup {
 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-1.0306)<0.0001);
 
 		assertTrue(Math.abs(branch.getToTurnRatio()-1.06717)<0.0001);
-		System.out.println("branch ratio: "+ branch.getFromTurnRatio()+"; t: "+branch.getToTurnRatio());
+		//System.out.println("branch ratio: "+ branch.getFromTurnRatio()+"; t: "+branch.getToTurnRatio());
 		assertTrue(tap.isActive());
 
 		assertTrue(Math.abs(tap.getVcBus().getVoltageMag()-0.9)<0.0001);
-		System.out.println("tap: "+tap.getVcBus().getVoltageMag());
+		//System.out.println("tap: "+tap.getVcBus().getVoltageMag());
 		assertTrue(Math.abs(net.getBus("0002").getVoltageMag()-0.9)<0.0001);
-		System.out.println("bus2: "+net.getBus("0002").getVoltageMag());
+		//System.out.println("bus2: "+net.getBus("0002").getVoltageMag());
 	}
 }
 

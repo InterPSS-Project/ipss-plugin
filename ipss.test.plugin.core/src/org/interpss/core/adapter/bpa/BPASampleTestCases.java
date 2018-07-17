@@ -81,7 +81,7 @@ public class BPASampleTestCases extends CorePluginTestSetup {
 				.getFileAdapter(IpssFileAdapter.FileFormat.BPA)
 				.load("testData/adpter/bpa/Test009bpa.dat")
 				.getAclfNet();	
-		System.out.println(net.net2String());
+		//System.out.println(net.net2String());
 	}
 	
 }
