@@ -118,7 +118,7 @@ FilterControlBlock wFilterBlock;
 	     *  @param msg the SessionMsg object
 	     */
 	    @Override
-		public boolean initStates(BaseDStabBus bus, Machine mach) {
+		public boolean initStates(BaseDStabBus<?,?> bus, Machine mach) {
 	        this.r = getData().getR();
 	        this.tg = getData().getTg();
 	        this.tp = getData().getTp();

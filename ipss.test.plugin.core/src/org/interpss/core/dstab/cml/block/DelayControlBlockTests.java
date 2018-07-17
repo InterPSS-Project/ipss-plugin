@@ -30,6 +30,8 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import com.interpss.dstab.controller.cml.field.ICMLStaticBlock.StaticBlockType;
+
 import com.interpss.dstab.controller.cml.field.block.DelayControlBlock;
 
 public class DelayControlBlockTests {
@@ -81,7 +83,7 @@ public class DelayControlBlockTests {
 
 	@Test
 	public void limitTestCase() {
-		DelayControlBlock block = new DelayControlBlock(Limit, 1.0, 0.1, 5.0, -5.0);
+		DelayControlBlock block = new DelayControlBlock(StaticBlockType.Limit, 1.0, 0.1, 5.0, -5.0);
 		
 		assertTrue(!block.initStateY0(6.0));
 		assertTrue(!block.initStateY0(-6.0));
@@ -105,7 +107,7 @@ public class DelayControlBlockTests {
 
 	@Test
 	public void nonWindupTestCase() {
-		DelayControlBlock block = new DelayControlBlock(NonWindup, 1.0, 0.1, 5.0, -5.0);
+		DelayControlBlock block = new DelayControlBlock(StaticBlockType.NonWindup, 1.0, 0.1, 5.0, -5.0);
 		
 		assertTrue(!block.initStateY0(6.0));
 		assertTrue(!block.initStateY0(-6.0));

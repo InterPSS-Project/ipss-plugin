@@ -56,8 +56,8 @@ public class SequenceNetworkSolver {
 		
 		//LU factorize the YMaxtri, prepare it for calculating Z matrix;
 		try {
-			zeroYSolver.factorization(1.0e-6);// tolearance is not used actually.
-			negYSolver.factorization(1.0e-6);// tolearance is not used actually.
+			zeroYSolver.factorization();// tolearance is not used actually.
+			negYSolver.factorization();// tolearance is not used actually.
 		} catch (IpssNumericException e) {
 			
 			e.printStackTrace();
