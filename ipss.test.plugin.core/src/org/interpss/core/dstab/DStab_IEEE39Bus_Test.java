@@ -84,7 +84,7 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 			LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 			aclfAlgo.setTolerance(1.0E-6);
 			assertTrue(aclfAlgo.loadflow());
-			System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
+			//System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 			
 			
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
@@ -161,7 +161,7 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 			LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 			aclfAlgo.setTolerance(1.0E-6);
 			assertTrue(aclfAlgo.loadflow());
-			System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
+			//System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 			
 			
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
@@ -228,7 +228,7 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 			DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
 			LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 			assertTrue(aclfAlgo.loadflow());
-			System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
+			//System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 			
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 			dstabAlgo.setSimuStepSec(0.001);

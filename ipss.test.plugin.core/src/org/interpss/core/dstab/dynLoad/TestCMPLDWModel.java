@@ -48,7 +48,7 @@ public class TestCMPLDWModel {
 		}));
 		DStabModelParser parser =(DStabModelParser) adapter.getModel();
 		
-		System.out.println(parser.toXmlDoc());
+		//System.out.println(parser.toXmlDoc());
 
 		
 		
@@ -69,7 +69,7 @@ public class TestCMPLDWModel {
   	
   		assertTrue( dsNet.isLfConverged());
   		
-  		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
+  		//System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
   		
   		
 	    
@@ -94,7 +94,7 @@ public class TestCMPLDWModel {
 
 		   DStabModelParser parser =(DStabModelParser) adapter.getModel();
 		   
-		   System.out.println(parser.toXmlDoc());
+		   //System.out.println(parser.toXmlDoc());
 			
 			SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
 			if (!new ODMDStabParserMapper(msg)
@@ -114,7 +114,7 @@ public class TestCMPLDWModel {
 	  		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, msg);
 			LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 			assertTrue(aclfAlgo.loadflow());
-			System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
+			//System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 			
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 			dstabAlgo.setSimuStepSec(0.005d);
@@ -171,7 +171,7 @@ public class TestCMPLDWModel {
 
 		   DStabModelParser parser =(DStabModelParser) adapter.getModel();
 		   
-		   System.out.println(parser.toXmlDoc());
+		   //System.out.println(parser.toXmlDoc());
 			
 			SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
 			if (!new ODMDStabParserMapper(msg)
@@ -193,7 +193,7 @@ public class TestCMPLDWModel {
 	  		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, msg);
 			LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 			assertTrue(aclfAlgo.loadflow());
-			System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
+			//System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 			
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 			dstabAlgo.setSimuStepSec(0.005d);
