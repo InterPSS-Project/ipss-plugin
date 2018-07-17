@@ -104,7 +104,7 @@ public class MNet_IEEE9_Test extends CorePluginTestSetup {
  		AclfBus swingBus = (AclfBus)net.getBus("Bus1");
  		AclfSwingBus swing = swingBus.toSwingBus();
 		//System.out.println(swing.getGenResults(UnitType.PU));
-		System.out.println(AclfOutFunc.loadFlowSummary(net));
+		//System.out.println(AclfOutFunc.loadFlowSummary(net));
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-0.7164)<1.0E-4);
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-0.2710)<1.0E-4);
 	}

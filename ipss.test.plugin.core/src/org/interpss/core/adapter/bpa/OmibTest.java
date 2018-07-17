@@ -68,7 +68,9 @@ public class OmibTest extends DStabTestSetupBase{
 		}	
 		
 		DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
+
 		BaseDStabNetwork<?,?> net = simuCtx.getDStabilityNet();
+
 		//System.out.println(net.getDStabBus("Bus2").getMachine().getExciter().getDataXmlString());
 		// run load flow test case
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
@@ -146,7 +148,9 @@ public class OmibTest extends DStabTestSetupBase{
 					System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
 					return;
 				}
+
 				BaseDStabNetwork<?,?> net = simuCtx.getDStabilityNet();
+
 				DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
 				
 				// run load flow test case
@@ -212,7 +216,9 @@ public class OmibTest extends DStabTestSetupBase{
 		event1.setDurationSec(duration);
 		
 		// define a 3P fault
+
 		BaseDStabBus<?,?> faultBus = net.getDStabBus(busId);
+
 		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@"+busId, net);
   		fault.setBus(faultBus);
 		fault.setFaultCode(SimpleFaultCode.GROUND_3P);
