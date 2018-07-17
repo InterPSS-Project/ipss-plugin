@@ -64,7 +64,7 @@ public class DStab_2Bus extends DStabTestSetupBase {
 
 		BaseDStabNetwork dsNet = dstabAlgo.getNetwork();
 
-		System.out.println(dstabAlgo.getNetwork().net2String());
+		//System.out.println(dstabAlgo.getNetwork().net2String());
 		
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.001);

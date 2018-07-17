@@ -51,7 +51,7 @@ public class PSSE_Savnw_v33_Test extends CorePluginTestSetup {
 		
 		AclfNetwork net = simuCtx.getAclfNet();
 		
-		System.out.println(net.net2String());
+		//System.out.println(net.net2String());
 		
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 	  	//algo.setLfMethod(AclfMethod.PQ);
