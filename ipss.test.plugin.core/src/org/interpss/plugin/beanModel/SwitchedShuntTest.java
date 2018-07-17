@@ -275,7 +275,7 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 		String swingId = "Bus1";
 		
 		AclfSwingBus swing = aclfNet.getBus(swingId).toSwingBus();
-		System.out.println("AclfNet Model: "+swing.getGenResults(UnitType.PU) );		
+		//System.out.println("AclfNet Model: "+swing.getGenResults(UnitType.PU) );		
 		AclfNetBean netBean1 = new AclfNet2BeanMapper().map2Model(aclfNet);		
 		AclfBusBean bean = netBean1.getBus(swingId);		
 		assertTrue(swing.getGenResults(UnitType.PU).getReal() - bean.lfGenResult.re < 0.0001);

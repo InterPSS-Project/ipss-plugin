@@ -138,6 +138,7 @@ public class BpaO7CTest extends DStabTestSetupBase {
 		DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
 		
 		BaseDStabNetwork net=simuCtx.getDStabilityNet();
+
 		dstabAlgo.setRefMachine(simuCtx.getDStabilityNet().getMachine("Bus78-mach1"));
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.001);
@@ -201,7 +202,9 @@ public class BpaO7CTest extends DStabTestSetupBase {
 				System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
 				return;
 			}
+
 			BaseDStabNetwork net = simuCtx.getDStabilityNet();
+
 			assertTrue(net.checkData(CoreObjectFactory.createDefultDataCheckConfiguration()));
 			assertTrue(net.getBranchList().size()==308);
 			assertTrue(net.getBusList().size()==141);
@@ -349,7 +352,9 @@ public class BpaO7CTest extends DStabTestSetupBase {
 		event1.setDurationSec(duration);
 		
 		// define a 3P fault
+
 		BaseDStabBus faultBus = net.getDStabBus(busId);
+
 		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@"+busId, net);
   		fault.setBus(faultBus);
 		fault.setFaultCode(SimpleFaultCode.GROUND_3P);
