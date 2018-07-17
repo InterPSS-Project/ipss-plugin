@@ -59,32 +59,32 @@ public class TestSubnetworkProcessor {
 	    
 	    // now the network and the busList does not have containing relationship
 	    // not true any more : the dsNet should size should be 0, after all buses are moved to subnetworks
-	    System.out.println("net size ="+dsNet.getBusList().size());
+	    //System.out.println("net size ="+dsNet.getBusList().size());
 	    assertTrue(dsNet.getBusList().size()==9); 
 	    
 	    List<BaseDStabNetwork> subNetList = proc.getSubNetworkList();
 	    assertTrue(subNetList.size()==2);
-	    System.out.println("Sub network -1");
+	    //System.out.println("Sub network -1");
 	    for(Object b:subNetList.get(0).getBusList() ){
-	    	System.out.println("Bus:"+((Bus)b).getId());
+	    	//System.out.println("Bus:"+((Bus)b).getId());
 	    }
 	    
 	    for(Object bra:subNetList.get(0).getBranchList()){
-	    	System.out.println("Branch:"+((Branch)bra).getId());
+	    	//System.out.println("Branch:"+((Branch)bra).getId());
 	    }
 	    assertTrue(subNetList.get(0).getBranchList().size()==6);
 	    
 	    
 	   // System.out.println(subNetList.get(0).net2String());
 	    
-	    System.out.println("Sub network -2");
+	    //System.out.println("Sub network -2");
 	    for(Object b:subNetList.get(1).getBusList() ){
-	    	System.out.println("Bus:"+ ((Bus)b).getId());
+	    	//System.out.println("Bus:"+ ((Bus)b).getId());
 	    	
 	    }
 	    assertTrue(subNetList.get(1).getBranchList().size()==1);
 	    
-	    System.out.println(proc.getBusId2SubNetworkTable().toString());
+	    //System.out.println(proc.getBusId2SubNetworkTable().toString());
 	    
 	    assertTrue(proc.getBusId2SubNetworkTable().get("Bus2")==1);
 	    assertTrue(proc.getBusId2SubNetworkTable().get("Bus7")==1);
