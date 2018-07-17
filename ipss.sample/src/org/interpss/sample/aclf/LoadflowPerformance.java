@@ -68,7 +68,8 @@ public class LoadflowPerformance {
 	  	algoLF.setLfMethod(AclfMethod.NR_STEP);
 	  	algoLF.loadflow();
 	  	timer.logStd("Time for running one step NR Loadflow: ");
-
+        
+	  	
 	  	/*
 	  	 * time bus number arrangement
 	  	 *

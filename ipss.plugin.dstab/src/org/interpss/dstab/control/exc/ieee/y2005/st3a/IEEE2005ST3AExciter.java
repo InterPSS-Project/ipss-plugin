@@ -303,7 +303,7 @@ public class IEEE2005ST3AExciter  extends AnnotateExciter{
 	     *  @param msg the SessionMsg object
 	     */
 	    @Override
-	    public boolean initStates(BaseDStabBus bus, Machine mach) {
+	    public boolean initStates(BaseDStabBus<?,?> bus, Machine mach) {
 	        // pass the plugin data object values to the controller
 	    	this.tr = getData().getTr();
 	    	
