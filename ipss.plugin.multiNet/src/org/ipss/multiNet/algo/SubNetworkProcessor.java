@@ -24,6 +24,7 @@ import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabBus;
+import com.interpss.dstab.DStabilityNetwork;
 
 public class SubNetworkProcessor {
 	
@@ -56,20 +57,19 @@ public class SubNetworkProcessor {
 	private Hashtable<String, List<String>> subNet2BoundaryBusListTable =  null;
 	private int subNetIdx =0;
 	
-	
-	private BaseDStabNetwork<?, ?> net = null;
+	private BaseAclfNetwork<?, ?> net = null;
 
 	//TODO There is shortcoming in the existing childNet model, which did not allow the same bus 
 	//to be co-existing in the childNet and parent network;
 	private BaseDStabNetwork subNet =null;
-	private List<BaseDStabNetwork<?,?>> subNetworkList = null;
+	private List<BaseDStabNetwork> subNetworkList = null;
 	private List<String> threePhaseSubNetIdList = null; // should be provided after subnetwork creation 
 
-	public SubNetworkProcessor(BaseDStabNetwork<?,?> net ){
-		this.net = net;
-		this.defInterfaceBranchIdList = new ArrayList<>();
-		this.boundaryBusIdList = new ArrayList<>();
-		this.subNetworkList = new ArrayList<>();
+	public SubNetworkProcessor(BaseAclfNetwork<?,?> net ){
+		this.net = (BaseAclfNetwork<? extends BaseAclfBus, ? extends AclfBranch>) net;
+		this.defInterfaceBranchIdList = new ArrayList();
+		this.boundaryBusIdList = new ArrayList();
+		this.subNetworkList = new ArrayList();
 		this.busId2SubNetworkTable = new Hashtable<>();
 		this.subNet2BoundaryBusListTable = new Hashtable<>();
 		
@@ -238,6 +238,7 @@ public class SubNetworkProcessor {
 	  */
 	 public boolean splitTransmissionNetwork(String unbalanceFaultBusId){
 		 boolean flag = true;
+
 		 BaseDStabNetwork<?,?> transNet = this.getExternalSubNetwork();
 		 
 		 if(transNet==null)
@@ -246,7 +247,9 @@ public class SubNetworkProcessor {
 		 
 		 boolean validBusId = false;
 		 boolean isFaultBusLoadOrGen = false;
-		 BaseDStabBus<?,?> faultBus = (BaseDStabBus<?,?>)transNet.getBus(unbalanceFaultBusId);
+
+		 BaseDStabBus<?,?> faultBus = transNet.getBus(unbalanceFaultBusId);
+
 		 // 1. check whether the bus of <unbalanceFaultBusId> is belonging to the transmission network
 		 
 		 if(faultBus ==null){
@@ -329,16 +332,17 @@ public class SubNetworkProcessor {
 			for(ChildNetInterfaceBranch interfaceBra: cutSetList){
 				boolean isFromSide = interfaceBra.getChildNetSide()==BranchBusSide.FROM_SIDE;
 				AclfBranch bra = this.net.getBranch(interfaceBra.getBranchId());
-				BaseAclfBus<?,?> boundaryBus = isFromSide? bra.getFromAclfBus():bra.getToAclfBus();
-						
-				    
+
+				BaseAclfBus boundaryBus = isFromSide? bra.getFromAclfBus():bra.getToAclfBus();
+
 					if(!internalboundaryBusIdList.contains(boundaryBus.getId()))
 						internalboundaryBusIdList.add(boundaryBus.getId());
 						
 			         // dummy bus id
 					String dummyBusId =boundaryBus.getId()+"Dummy";
 					
-					BaseDStabBus<?,?> dummyBus = (BaseDStabBus<?,?>) this.net.getBus(dummyBusId);
+					BaseDStabBus<?,?> dummyBus = (DStabBus) this.net.getBus(dummyBusId);
+
 					if( dummyBus ==null){
 						
 						if(this.net instanceof DStabNetwork3Phase)
@@ -354,7 +358,8 @@ public class SubNetworkProcessor {
 					    
 						
 					    // add the zero-impedance line to connect the dummy bus to the original bus
-					    DStabBranch dummyBranch = DStabObjectFactory.createDStabBranch(dummyBusId, boundaryBus.getId(), (BaseDStabNetwork<?,?>) net);
+					    DStabBranch dummyBranch = this.net instanceof DStabNetwork3Phase? ThreePhaseObjectFactory.create3PBranch(dummyBusId, boundaryBus.getId(), "0",(DStabNetwork3Phase) net):
+					    		DStabObjectFactory.createDStabBranch(dummyBusId, boundaryBus.getId(), (DStabilityNetwork) net);
 					    dummyBranch.setZ(new Complex(0,1.0E-4));
 					    
 					    //set the branch status to false in order to isolate the subsystems 
@@ -397,7 +402,9 @@ public class SubNetworkProcessor {
 	 * 
 	 * @return
 	 */
-	private boolean createSubNetworks(BaseDStabNetwork<?, ?>  _net,
+
+	private boolean createSubNetworks(BaseAclfNetwork<?, ?>  _net,
+
 			List<String> _internalInterfaceBranchIdList, List<String> _boundaryBusIdList){
 		
 
@@ -452,24 +459,25 @@ public class SubNetworkProcessor {
 			for( String busId:_boundaryBusIdList){
 				
 				
-				BaseDStabBus<?,?> source = _net.getBus(busId);
+			    BaseAclfBus source = _net.getBus(busId);
 				if(!source.isBooleanFlag()){
 					
 					// for each iteration back to this layer, it means one subnetwork search is finished; subsequently, it is going to start
 					// searching a new subnetwork. Thus, a new subnetwork object needs to be created first.
 					
 					if(_net instanceof DStabNetwork3Phase)
-						this.subNet = ThreePhaseObjectFactory.create3PhaseDStabNetwork();
-					else if(_net instanceof BaseDStabNetwork)
-					     this.subNet = DStabObjectFactory.createDStabilityNetwork(); //(ChildNetwork<DStabBus, DStabBranch>) CoreObjectFactory.createChildNet(net, "childNet-"+(subNetIdx+1));
+						this.subNet = (BaseDStabNetwork) ThreePhaseObjectFactory.create3PhaseDStabNetwork();
+					else if(_net instanceof DStabilityNetwork)
+					     this.subNet = (BaseDStabNetwork) DStabObjectFactory.createDStabilityNetwork(); //(ChildNetwork<DStabBus, DStabBranch>) CoreObjectFactory.createChildNet(net, "childNet-"+(subNetIdx+1));
 					else
 						throw new UnsupportedOperationException("The network should be either  DStabNetwork3Phase or DStabilityNetwork type!");
 					this.subNet.setId("SubNet-"+(subNetIdx+1));
 					
-					subNetworkList.add(subNet);
+					subNetworkList.add((BaseDStabNetwork<?, ?>) subNet);
 					
 					try {
-						this.subNet.addBus(source);
+
+						this.subNet.addBus((BaseDStabBus<?,?>) source);
 						// save the busId 2 subNetwork index mapping
 						this.busId2SubNetworkTable.put(busId, subNetIdx);
 						
@@ -503,8 +511,9 @@ public class SubNetworkProcessor {
 		return subNetworkSearched=true;
 		
 	}
-	private boolean DFS(BaseDStabNetwork  _net, BaseDStabNetwork _subNet,
-			List<String> _internalInterfaceBranchIdList,String busId) {
+
+	private boolean DFS(BaseAclfNetwork _net, BaseDStabNetwork _subNet,
+			            List<String> _internalInterfaceBranchIdList,String busId) {
 		boolean isToBus = true;
       
 		Bus source = _net.getBus(busId);
@@ -524,7 +533,10 @@ public class SubNetworkProcessor {
 				if(_subNet.getBus(nextBusId)==null){
 					
 					try {
-						_subNet.addBus(_net.getBus(nextBusId));
+
+						int nextBusIdx = getBusIdx(_net,nextBusId);
+						_subNet.addBus((BaseDStabBus<?,?>)_net.getBusList().remove(nextBusIdx));
+
 						// save the busId 2 subNetwork index mapping
 						this.busId2SubNetworkTable.put(nextBusId, subNetIdx);
 						
@@ -536,7 +548,9 @@ public class SubNetworkProcessor {
 				if (!bra.isBooleanFlag() ) { // fromBusId-->buId
 					
 					try {
-						_subNet.addBranch(bra, bra.getFromBus().getId(), bra.getToBus().getId() , bra.getCircuitNumber());
+
+						_subNet.addBranch((DStabBranch)bra, bra.getFromBus().getId(), bra.getToBus().getId() , bra.getCircuitNumber());
+
 					} catch (InterpssException e) {
 	
 						e.printStackTrace();
@@ -555,6 +569,17 @@ public class SubNetworkProcessor {
 		return true;
 	}
 	
+
+	private int getBusIdx(BaseAclfNetwork<?, ?> _net, String busId){
+
+		int idx = -1;
+		for(int i = 0; i<_net.getBusList().size(); i++){
+			if(_net.getBusList().get(i).getId().equals(busId)){
+				idx = i;
+			}
+		}
+		return idx;
+	}
 
 	public BaseAclfNetwork<?,?> getNet() {
 		return net;
@@ -579,7 +604,8 @@ public class SubNetworkProcessor {
 		return boundaryBusIdList;
 	}
 	
-	public List<BaseDStabNetwork<?,?>> getSubNetworkList(){
+	public List<BaseDStabNetwork> getSubNetworkList(){
+
 		return this.subNetworkList;
 	}
 	
@@ -617,6 +643,7 @@ public class SubNetworkProcessor {
 	}
 	
 	
+
 	public BaseDStabNetwork<?,?> getSubNetworkByBusId(String busId){
 		Integer index = getBusId2SubNetworkTable().get(busId);
 		if(index == null)
@@ -639,7 +666,7 @@ public class SubNetworkProcessor {
 	public BaseDStabNetwork<?,?> getExternalSubNetwork(){
 		   String busid = this.externalboundaryBusIdList.get(0);
 		   int subNetIdx = busId2SubNetworkTable.get(busid);
-		   return  this.subNetworkList.get(subNetIdx);
+		   return  (BaseDStabNetwork<?, ?>) this.subNetworkList.get(subNetIdx);
 	}
 	
 	public BaseDStabNetwork<?,?> getInternalSubNetwork(){

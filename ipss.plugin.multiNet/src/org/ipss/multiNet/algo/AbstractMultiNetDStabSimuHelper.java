@@ -11,6 +11,7 @@ import org.ipss.multiNet.equivalent.NetworkEquivUtil;
 import org.ipss.multiNet.equivalent.NetworkEquivalent;
 
 import com.interpss.CoreObjectFactory;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
@@ -177,8 +178,7 @@ public abstract class AbstractMultiNetDStabSimuHelper {
 			}
 		
 		  // set the power flow convergence status 
-		  for( BaseDStabNetwork<?,?> subNet: this.subNetProcessor.getSubNetworkList()){
-
+		  for(BaseDStabNetwork<?,?> subNet: this.subNetProcessor.getSubNetworkList()){
 				  subNet.setLfConverged(true);
 				  
 				  // this is necessary because bus number is required for forming the Ymatrix

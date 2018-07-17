@@ -21,6 +21,7 @@ import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabBus;
+import com.interpss.dstab.DStabilityNetwork;
 /**
  * MultiNetDStabSimuHelper is a "helper" class for multi area, positive sequence based Transient Stability simulation. 
  * This is basic multiNetDStabSimuHelper implementation. For  three-phase and/or three-sequence based multi area TS simulation,
@@ -40,7 +41,7 @@ public class MultiNetDStabSimuHelper extends AbstractMultiNetDStabSimuHelper{
 	 * @param net
 	 * @param subNetProc
 	 */
-	public  MultiNetDStabSimuHelper(BaseDStabNetwork<?,?> net, SubNetworkProcessor subNetProc){
+	public  MultiNetDStabSimuHelper(DStabilityNetwork net, SubNetworkProcessor subNetProc){
 		this.net = net;
 		this.subNetProcessor = subNetProc;
 		
@@ -62,7 +63,7 @@ public class MultiNetDStabSimuHelper extends AbstractMultiNetDStabSimuHelper{
     	if(subNetEquivTable ==null)
     	     throw new Error (" The subnetwork equivalent hastable is not prepared yet");
     	
-    	for(BaseDStabNetwork<?,?> subNet: this.subNetProcessor.getSubNetworkList()){
+    	for(BaseDStabNetwork<?, ?> subNet: this.subNetProcessor.getSubNetworkList()){
 		
     	    // In order to obtain the Thevenin voltage source viewed at the boundary 
     	    // there should  be no current injection from the interface tie-lines
@@ -95,7 +96,7 @@ public class MultiNetDStabSimuHelper extends AbstractMultiNetDStabSimuHelper{
     	if(subNetEquivTable ==null)
     	     throw new Error (" The subnetwork equivalent hastable is not prepared yet");
     	
-    	for(BaseDStabNetwork<?,?> subNet: this.subNetProcessor.getSubNetworkList()){
+    	for(BaseDStabNetwork<?, ?> subNet: this.subNetProcessor.getSubNetworkList()){
 		
     	    // the voltages at the boundary buses are the Thevenin voltages 
     		// the busIds are ordered in an ascending manner
@@ -127,7 +128,7 @@ public class MultiNetDStabSimuHelper extends AbstractMultiNetDStabSimuHelper{
      */
     @Override
 	public void updateSubNetworkEquivMatrix(String subNetworkId){
-    	BaseDStabNetwork<?,?> subNet = this.subNetProcessor.getSubNetwork(subNetworkId);
+    	BaseDStabNetwork<?, ?> subNet = this.subNetProcessor.getSubNetwork(subNetworkId);
     	if(subNet!=null){
 	    	NetworkEquivalent equiv = NetworkEquivUtil.calPosSeqNetworkTheveninEquiv(subNet,
 	    			       this.subNetProcessor.getSubNet2BoundaryBusListTable().get(subNetworkId));
@@ -157,7 +158,7 @@ public class MultiNetDStabSimuHelper extends AbstractMultiNetDStabSimuHelper{
     		// use the latest Thevenin equivalent voltage sources
     		FieldVector<Complex> Eth = new ArrayFieldVector<Complex>( ComplexField.getInstance(), this.Zl.getRowDimension());
     	
-    		for(BaseDStabNetwork<?,?> subNet: this.subNetProcessor.getSubNetworkList()){
+    		for(BaseDStabNetwork<?, ?> subNet: this.subNetProcessor.getSubNetworkList()){
     			Complex[] Vth =this.subNetEquivTable.get(subNet.getId()).getComplexEqn().getB();
     			FieldVector<Complex>  Eth_k = new ArrayFieldVector<Complex>(Vth);
     			FieldMatrix<Complex> Pk_T = this.subNetIncidenceMatrixTable.get(subNet.getId());
@@ -170,7 +171,7 @@ public class MultiNetDStabSimuHelper extends AbstractMultiNetDStabSimuHelper{
     		FieldLUDecomposition<Complex> lu = new FieldLUDecomposition<>(this.Zl);
     		FieldVector<Complex> currVector = lu.getSolver().solve(Eth);
     		
-    		for(BaseDStabNetwork<?,?> subNet: this.subNetProcessor.getSubNetworkList()){
+    		for(BaseDStabNetwork<?, ?> subNet: this.subNetProcessor.getSubNetworkList()){
     			// mapping the branch current into the 
     			FieldMatrix<Complex> Pk_T = this.subNetIncidenceMatrixTable.get(subNet.getId());
     			FieldVector<Complex>  boundaryBusCurrInj = Pk_T.transpose().operate(currVector);
@@ -221,7 +222,7 @@ public class MultiNetDStabSimuHelper extends AbstractMultiNetDStabSimuHelper{
     	
     	this.subNetIncidenceMatrixTable = new Hashtable<>();
     	
-    	 for(BaseDStabNetwork<?,?> subNet: this.subNetProcessor.getSubNetworkList()){
+    	 for(BaseDStabNetwork<?, ?> subNet: this.subNetProcessor.getSubNetworkList()){
     		    int m =this.subNetProcessor.getInterfaceBranchIdList().size();
     		    
     		    List<String> busIdList = this.subNetProcessor.getSubNet2BoundaryBusListTable().get(subNet.getId());
@@ -280,7 +281,7 @@ public class MultiNetDStabSimuHelper extends AbstractMultiNetDStabSimuHelper{
     		  	
     		 // Connecting the boundary bus Thevenin equivalent to the interface branches according the
     		  // the interface branch to boundary bus incidence matrix
-    		  	 for(BaseDStabNetwork<?,?> subNet: this.subNetProcessor.getSubNetworkList()){
+    		  	 for(BaseDStabNetwork<?, ?> subNet: this.subNetProcessor.getSubNetworkList()){
     		  		  FieldMatrix<Complex>  Pk_T = this.subNetIncidenceMatrixTable.get(subNet.getId());
     				  FieldMatrix<Complex> Zth_k = new Array2DRowFieldMatrix<>(this.subNetEquivTable.get(subNet.getId()).getComplexEqn().getA());
     	    		  //  Zl_k = Pk_T*Zth_k*Pk
@@ -314,7 +315,7 @@ public class MultiNetDStabSimuHelper extends AbstractMultiNetDStabSimuHelper{
 	public boolean solveSubNetWithBoundaryCurrInjection(){
 	   
 		   // need to first reset all customized current injection to be zero
-		   for(BaseDStabNetwork<?,?> subNet: this.subNetProcessor.getSubNetworkList()){
+		   for(BaseDStabNetwork<?, ?> subNet: this.subNetProcessor.getSubNetworkList()){
 			   subNet.setCustomBusCurrInjHashtable(null);
 			   
 			   ISparseEqnComplex subNetY= subNet.getYMatrix();
@@ -333,7 +334,7 @@ public class MultiNetDStabSimuHelper extends AbstractMultiNetDStabSimuHelper{
 					return false;
 				}
 			   
-			   for(BaseDStabBus<?,?> b:subNet.getBusList()){
+			   for(BaseDStabBus b:subNet.getBusList()){
 				   //superpostition method
 				   //bus voltage V = Vinternal + Vext_injection
 				   b.setVoltage(b.getVoltage().add(subNetY.getX(b.getSortNumber())));

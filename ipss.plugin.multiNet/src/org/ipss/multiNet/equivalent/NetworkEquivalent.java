@@ -17,9 +17,14 @@ public class NetworkEquivalent {
 	private  NetEquivType type = NetEquivType.THEVENIN;
 	
 	private ComplexMatrixEqn complexEqn = null;
-
+    
+	// three-sequence or three-phase
 	private Complex3x1[] source3x1 = null;
 	private Complex3x3[][] matrix3x3 = null;
+	
+	// positive sequence or single-phase
+	private Complex[] source = null;
+	private Complex[][] matrix = null;
 	
 	public NetworkEquivalent(){
 		
@@ -59,18 +64,45 @@ public class NetworkEquivalent {
 		return this.complexEqn;
 	}	
 
+	
 	public Complex3x1[] getSource3x1() {
 		if(this.source3x1 ==null)
 			this.source3x1 = MatrixUtil.createComplex3x1DArray(this.complexEqn.getDimension());
 		return source3x1;
 	}
+	
+	public Complex[] getSource() {
+		if(this.source ==null)
+			this.source = MatrixUtil.createComplex1DArray(this.complexEqn.getDimension());
+		return source;
+	}
+	
 
 	public void setSource3x1(Complex3x1[] source3x1) {
 		this.source3x1 = source3x1;
 	}
+	
+	
+	public void setSource(Complex[] newSource) {
+		this.source = newSource;
+	}
+	
 
 	public Complex3x3[][] getMatrix3x3() {
 		return matrix3x3;
+	}
+	
+	public Complex[][] getMatrix() {
+		if (matrix ==null)
+		     matrix = MatrixUtil.createComplex2DArray(this.complexEqn.getDimension(), this.complexEqn.getDimension());
+		
+		return matrix;
+	}
+	
+	public void setMatrix(Complex[][] newMatrix) {
+		
+		this.matrix = newMatrix;
+		
 	}
 
 	public void setMatrix3x3(Complex3x3[][] matrix3x3) {

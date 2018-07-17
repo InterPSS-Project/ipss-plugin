@@ -33,7 +33,6 @@ import com.interpss.common.util.StringUtil;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
-import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.contingency.OutageBranch;
 import com.interpss.core.aclf.contingency.dep.DepContingency;

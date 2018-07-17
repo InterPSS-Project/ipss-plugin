@@ -41,7 +41,7 @@ public class IEEE9_Dstab_Adapter_Test {
 		}));
 		DStabModelParser parser =(DStabModelParser) adapter.getModel();
 		
-		System.out.println(parser.toXmlDoc());
+		//System.out.println(parser.toXmlDoc());
 
 		
 		

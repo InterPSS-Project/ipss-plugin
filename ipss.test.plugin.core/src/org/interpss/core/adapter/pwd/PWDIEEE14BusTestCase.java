@@ -52,12 +52,12 @@ public class PWDIEEE14BusTestCase extends CorePluginTestSetup {
 				.load("testData/adpter/pwd/ieee14.AUX")
 				.getAclfNet();	
 		
-		System.out.println(net.net2String());
+		//System.out.println(net.net2String());
 
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
 		
-	  	System.out.println(AclfOutFunc.loadFlowSummary(net));
+	  	//System.out.println(AclfOutFunc.loadFlowSummary(net));
 	  	
   		assertTrue(net.isLfConverged());		
   		//AclfBus swingBus = (AclfBus)net.getBus("Bus1");

@@ -45,6 +45,7 @@ public class SalientPoleMachineTest extends TestSetupBase {
 		
 		// calculate mach state init values
 		BaseDStabBus<?,?> bus = net.getDStabBus("Gen");
+
 		mach.initStates(bus);
 		//System.out.println("Ygen: " + mach.getYgen());
 		//System.out.println("Igen: " + mach.getIgen());
