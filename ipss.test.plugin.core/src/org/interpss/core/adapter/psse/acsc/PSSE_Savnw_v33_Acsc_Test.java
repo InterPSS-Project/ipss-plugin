@@ -75,7 +75,7 @@ public class PSSE_Savnw_v33_Acsc_Test extends CorePluginTestSetup {
 //		}
 //		net.setBusNumberArranged(true);
 		
-		System.out.println(net.net2String());
+		//System.out.println(net.net2String());
 		
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethod.PQ);

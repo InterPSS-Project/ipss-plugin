@@ -62,7 +62,7 @@ public class TestInductionMotorModel extends TestSetupBase {
 		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		assertTrue(aclfAlgo.loadflow());
-		System.out.println(AclfOutFunc.loadFlowSummary(net));
+		//System.out.println(AclfOutFunc.loadFlowSummary(net));
 		
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.005d);
@@ -110,12 +110,12 @@ public class TestInductionMotorModel extends TestSetupBase {
 		System.out.println("motor power ="+indMotor.getLoadPQ());
 		//}
 		//System.out.println(sm.toCSVString(sm.getMachAngleTable()));
-		System.out.println("\n bus volt:\n"+sm.toCSVString(sm.getBusVoltTable()));
-		System.out.println("\n gen Pe:\n"+sm.toCSVString(sm.getMachPeTable()));
-		System.out.println("\n motor slip:\n"+sm.toCSVString(sm.getMotorSlipTable()));
-		System.out.println("\n motor Te:\n"+sm.toCSVString(sm.getMotorTeTable()));
-		System.out.println("\n motor Tm:\n"+sm.toCSVString(sm.getMotorTmTable()));
-		System.out.println("\n motor Power:\n"+sm.toCSVString(sm.getMotorPTable()));
+		//System.out.println("\n bus volt:\n"+sm.toCSVString(sm.getBusVoltTable()));
+		//System.out.println("\n gen Pe:\n"+sm.toCSVString(sm.getMachPeTable()));
+		//System.out.println("\n motor slip:\n"+sm.toCSVString(sm.getMotorSlipTable()));
+		//System.out.println("\n motor Te:\n"+sm.toCSVString(sm.getMotorTeTable()));
+		//System.out.println("\n motor Tm:\n"+sm.toCSVString(sm.getMotorTmTable()));
+		//System.out.println("\n motor Power:\n"+sm.toCSVString(sm.getMotorPTable()));
 		
 		MonitorRecord pRec0 = sm.getMotorPTable().get("IndMotor_1@Bus1").get(0);
 		
@@ -149,7 +149,7 @@ public class TestInductionMotorModel extends TestSetupBase {
 			DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
 			LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 			assertTrue(aclfAlgo.loadflow());
-			System.out.println(AclfOutFunc.loadFlowSummary(net));
+			//System.out.println(AclfOutFunc.loadFlowSummary(net));
 			
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 			dstabAlgo.setSimuStepSec(0.005d);
@@ -193,16 +193,16 @@ public class TestInductionMotorModel extends TestSetupBase {
 			}
 
 			
-			System.out.println("slip ="+indMotor.getSlip());
-			System.out.println("motor power ="+indMotor.getLoadPQ());
+			//System.out.println("slip ="+indMotor.getSlip());
+			//System.out.println("motor power ="+indMotor.getLoadPQ());
 
 
-			System.out.println("\n bus volt:\n"+sm.toCSVString(sm.getBusVoltTable()));
-			System.out.println("\n gen Pe:\n"+sm.toCSVString(sm.getMachPeTable()));
-			System.out.println("\n motor slip:\n"+sm.toCSVString(sm.getMotorSlipTable()));
-			System.out.println("\n motor Te:\n"+sm.toCSVString(sm.getMotorTeTable()));
-			System.out.println("\n motor Tm:\n"+sm.toCSVString(sm.getMotorTmTable()));
-			System.out.println("\n motor Power:\n"+sm.toCSVString(sm.getMotorPTable()));
+			//System.out.println("\n bus volt:\n"+sm.toCSVString(sm.getBusVoltTable()));
+			//System.out.println("\n gen Pe:\n"+sm.toCSVString(sm.getMachPeTable()));
+			//System.out.println("\n motor slip:\n"+sm.toCSVString(sm.getMotorSlipTable()));
+			//System.out.println("\n motor Te:\n"+sm.toCSVString(sm.getMotorTeTable()));
+			//System.out.println("\n motor Tm:\n"+sm.toCSVString(sm.getMotorTmTable()));
+			//System.out.println("\n motor Power:\n"+sm.toCSVString(sm.getMotorPTable()));
 			
 	
 			
@@ -238,7 +238,7 @@ public class TestInductionMotorModel extends TestSetupBase {
 		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		assertTrue(aclfAlgo.loadflow());
-		System.out.println(AclfOutFunc.loadFlowSummary(net));
+		//System.out.println(AclfOutFunc.loadFlowSummary(net));
 		
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.005d);
@@ -279,15 +279,15 @@ public class TestInductionMotorModel extends TestSetupBase {
            motor power =(0.7999999997203182, 0.49512907648490423)
 		 */
 		
-		System.out.println("slip ="+indMotor.getSlip());
-		System.out.println("motor power ="+indMotor.getLoadPQ());
+		//System.out.println("slip ="+indMotor.getSlip());
+		//System.out.println("motor power ="+indMotor.getLoadPQ());
 		
-		System.out.println("\n bus volt:\n"+sm.toCSVString(sm.getBusVoltTable()));
-		System.out.println("\n gen Pe:\n"+sm.toCSVString(sm.getMachPeTable()));
-		System.out.println("\n motor slip:\n"+sm.toCSVString(sm.getMotorSlipTable()));
-		System.out.println("\n motor Te:\n"+sm.toCSVString(sm.getMotorTeTable()));
-		System.out.println("\n motor Tm:\n"+sm.toCSVString(sm.getMotorTmTable()));
-		System.out.println("\n motor Power:\n"+sm.toCSVString(sm.getMotorPTable()));
+		//System.out.println("\n bus volt:\n"+sm.toCSVString(sm.getBusVoltTable()));
+		//System.out.println("\n gen Pe:\n"+sm.toCSVString(sm.getMachPeTable()));
+		//System.out.println("\n motor slip:\n"+sm.toCSVString(sm.getMotorSlipTable()));
+		//System.out.println("\n motor Te:\n"+sm.toCSVString(sm.getMotorTeTable()));
+		//System.out.println("\n motor Tm:\n"+sm.toCSVString(sm.getMotorTmTable()));
+		//System.out.println("\n motor Power:\n"+sm.toCSVString(sm.getMotorPTable()));
 		
 		MonitorRecord pRec0 = sm.getMotorPTable().get("IndMotor_1@Bus1").get(0);
 		
@@ -321,7 +321,7 @@ public class TestInductionMotorModel extends TestSetupBase {
 		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		assertTrue(aclfAlgo.loadflow());
-		System.out.println(AclfOutFunc.loadFlowSummary(net));
+		//System.out.println(AclfOutFunc.loadFlowSummary(net));
 		
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.005d);
@@ -365,16 +365,16 @@ public class TestInductionMotorModel extends TestSetupBase {
 //		
 //		assertTrue( Math.abs(bus1.getVoltageMag()-0.99677)<1.0E-5);
 		
-		System.out.println("slip ="+indMotor.getSlip());
-		System.out.println("motor power ="+indMotor.getLoadPQ());
+		//System.out.println("slip ="+indMotor.getSlip());
+		//System.out.println("motor power ="+indMotor.getLoadPQ());
 		//}
 		//System.out.println(sm.toCSVString(sm.getMachAngleTable()));
-		System.out.println(sm.toCSVString(sm.getBusVoltTable()));
-		System.out.println(sm.toCSVString(sm.getMachPeTable()));
-		System.out.println(sm.toCSVString(sm.getMotorSlipTable()));
-		System.out.println(sm.toCSVString(sm.getMotorTeTable()));
-		System.out.println(sm.toCSVString(sm.getMotorTmTable()));
-		System.out.println(sm.toCSVString(sm.getMotorPTable()));
+		//System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+		//System.out.println(sm.toCSVString(sm.getMachPeTable()));
+		//System.out.println(sm.toCSVString(sm.getMotorSlipTable()));
+		//System.out.println(sm.toCSVString(sm.getMotorTeTable()));
+		//System.out.println(sm.toCSVString(sm.getMotorTmTable()));
+		//System.out.println(sm.toCSVString(sm.getMotorPTable()));
 		
 		
 	}

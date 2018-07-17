@@ -104,7 +104,7 @@ public class DStab_Relay_LowVoltLoadShed_Test extends DStabTestSetupBase{
 		DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		assertTrue(aclfAlgo.loadflow());
-		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
+		//System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 		
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.005d);
@@ -142,7 +142,7 @@ public class DStab_Relay_LowVoltLoadShed_Test extends DStabTestSetupBase{
 			//dstabAlgo.performOneStepSimulation();
 
 		//}
-		System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+		//System.out.println(sm.toCSVString(sm.getBusVoltTable()));
 		
 //		System.out.println(sm.toCSVString(sm.getMachPeTable()));
 		

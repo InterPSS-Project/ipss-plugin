@@ -60,7 +60,7 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 //		}
 //		net.setBusNumberArranged(true);
 		
-		System.out.println(net.net2String());
+		//System.out.println(net.net2String());
 		
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethod.PQ);
