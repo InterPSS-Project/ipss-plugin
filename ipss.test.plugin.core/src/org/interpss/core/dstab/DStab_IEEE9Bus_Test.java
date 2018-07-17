@@ -88,7 +88,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		assertTrue(aclfAlgo.loadflow());
-		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
+		//System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 		
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.005d);
@@ -116,9 +116,9 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 			
 
 		if (dstabAlgo.initialization()) {
-			System.out.println(dsNet.getMachineInitCondition());
+			//System.out.println(dsNet.getMachineInitCondition());
 			
-			System.out.println("Running DStab simulation ...");
+			//System.out.println("Running DStab simulation ...");
 			timer.start();
 			dstabAlgo.performSimulation();
 			
@@ -127,9 +127,9 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 			//dstabAlgo.performOneStepSimulation();
 
 		//}
-		System.out.println(sm.toCSVString(sm.getMachAngleTable()));
+		//System.out.println(sm.toCSVString(sm.getMachAngleTable()));
 		
-		System.out.println(sm.toCSVString(sm.getMachPeTable()));
+		//System.out.println(sm.toCSVString(sm.getMachPeTable()));
 		
 //		FileUtil.writeText2File("output/ieee9_bus5_machPe_v5_03172015.csv",sm.toCSVString(sm.getMachPeTable()));
 //		FileUtil.writeText2File("output/ieee9_bus5_machAngle_v5_03172015.csv",sm.toCSVString(sm.getMachAngleTable()));
@@ -463,8 +463,8 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 			//dstabAlgo.performOneStepSimulation();
 		}
 		
-		System.out.println(sm.toCSVString(sm.getMachEfdTable()));
-		System.out.println(sm.toCSVString(sm.getMachQgenTable()));
+		//System.out.println(sm.toCSVString(sm.getMachEfdTable()));
+		//System.out.println(sm.toCSVString(sm.getMachQgenTable()));
 		/*
 		FileUtil.writeText2File("output/ieee9_1981_machEfd_0320_v1.csv",sm.toCSVString(sm.getMachEfdTable()));
 		FileUtil.writeText2File("output/ieee9_1981_machQ_0321.csv",sm.toCSVString(sm.getMachQgenTable()));
@@ -482,7 +482,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		}));
 		DStabModelParser parser =(DStabModelParser) adapter.getModel();
 		
-		System.out.println(parser.toXmlDoc());
+		//System.out.println(parser.toXmlDoc());
 
 		
 		
@@ -527,7 +527,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 
 		}
 		
-		System.out.println(sm.toCSVString(sm.getMachEfdTable()));
+		//System.out.println(sm.toCSVString(sm.getMachEfdTable()));
 		//System.out.println(sm.toCSVString(sm.getMachAngleTable()));
 	}
 

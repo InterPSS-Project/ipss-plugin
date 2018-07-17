@@ -61,7 +61,7 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 	  	net.accept(CoreObjectFactory.createLfAlgoVisitor());
   		//System.out.println(net.net2String());
 		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet));
-  		System.out.println(aclfResultBusStyle.apply(net));
+  		//System.out.println(aclfResultBusStyle.apply(net));
 	}
 	
 	@Test
@@ -123,7 +123,7 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 				assertTrue(NumericUtil.equals(bus.v_ang, 0.0, 0.0001));
 				assertTrue(bus.gen_code == AclfBusBean.GenCode.Swing);
 				//bus.gen;
-				System.out.println(bus.gen.re);
+				//System.out.println(bus.gen.re);
 				assertTrue(NumericUtil.equals(bus.gen.re, 0, 0.0001));
 				assertTrue(NumericUtil.equals(bus.gen.im, 0, 0.0001));
 				assertTrue(bus.load_code == AclfBusBean.LoadCode.NonLoad);

@@ -32,6 +32,6 @@ public class PEESFormatTest {
 	  	
 	  	//System.out.println(LfResultBusStyle2.f(net, AclfOut_PSSE.Format.GUI));
 
-	  	System.out.println(aclfResultBusStyle.apply(net));
+	  	//System.out.println(aclfResultBusStyle.apply(net));
 	}
 }
