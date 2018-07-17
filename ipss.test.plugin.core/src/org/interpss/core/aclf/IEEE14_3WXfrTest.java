@@ -29,6 +29,7 @@ import static org.junit.Assert.assertTrue;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
+import org.interpss.display.AclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.junit.Test;
 
@@ -36,6 +37,7 @@ import com.interpss.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.Aclf3WXformer;
+import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
 public class IEEE14_3WXfrTest extends CorePluginTestSetup {
@@ -59,13 +61,18 @@ public class IEEE14_3WXfrTest extends CorePluginTestSetup {
   		assertTrue(!bus.isRemoteQBus());		
   		//bus.getRemoteQBus();
 		
-		//System.out.println(net.net2String());
+		System.out.println(net.net2String());
 		
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	algo.setInitBusVoltage(true);
+	  	algo.setLfMethod(AclfMethod.NR);
+	  	
+	  	//Note: NR with flat start or PQ method produces converged power flow.
 	  	algo.loadflow();
+	  	
   		//System.out.println(net.net2String());
 	  	
- 		//System.out.println(AclfOutFunc.loadFlowSummary(net));
+ 		System.out.println(AclfOutFunc.loadFlowSummary(net));
 	  	
   		assertTrue(net.isLfConverged());		
 	}
