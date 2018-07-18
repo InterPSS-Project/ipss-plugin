@@ -1,0 +1,13 @@
+{"dynamicFileName":"",
+"dstabOutputFileName":"",
+"acscConfigBean":{"seqFileName":"name","acscOutputFileName":"name","runAclf":false,
+            "runAclfConfig":{"aclfCaseFileName":"","aclfOutputFileName":"","format":"IEEECommonFormat","version":"PSSE_30","lfMethod":"NR","maxIteration":20,"tolerance":1.0E-4,"nonDivergent":false,"initBusVoltage":false,"accFactor":1.0},
+            "type":"BUS_FAULT","category":"GROUND_3P","zLG":{"re":0.0,"im":0.0},"zLL":{"re":0.0,"im":0.0},"faultBusId":"id","faultBranchFromId":"fBusId","faultBranchToId":"tBusId","faultBranchCirId":"cirId","distance":0.0},
+   "method":"MODIFIED_EULER",
+   "totalSimuTime":10.0,
+   "simuTimeStep":0.005,
+   "eventStartTime":1.0,
+   "eventDurationTime":0.01,
+   "monitoringBusAry":["Bus1","Bus2"],
+   "monitoringGenAry":["Bus1-Gen1"]
+   }
