@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pss:pssStudyCase id="sampleStudyCase" xmlns:pss="http://www.ieee.org/odm/Schema/2008" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.ieee.org/odm/Schema/2008 ../../../ieee.odm_pss/schema/StudyCase.xsd ">
+  <pss:schemaVersion>V0.8.2</pss:schemaVersion>
+  <pss:networkCategory>Transmission</pss:networkCategory>
+  <pss:analysisCategory>Loadflow</pss:analysisCategory>
+  <pss:aclfNet id="idvalue0">
+  	<pss:basePower unit="PU" value="0.0" />
+  	<pss:busList></pss:busList>
+  	<pss:branchList></pss:branchList>
+  </pss:aclfNet>
+  <pss:ipssStudyScenario id="scenario">
+  	<pss:analysisCategory>Sensitivity</pss:analysisCategory>
+  	<pss:scenarioList>
+  		<pss:scenario id="idvalue1">
+  			<pss:simuAlgo>
+  				<pss:senAnalysis>
+  					<pss:lineOutageDFactor>
+  						<pss:outageBranch id="Bus4_Bus7_1" fromBusId="Bus4" toBusId="Bus7" circuitId="1">
+  						</pss:outageBranch>
+  						<pss:monitorBranch>
+  							<pss:branch id="Bus4_Bus9_1" fromBusId="Bus4" toBusId="Bus9" circuitId="1">
+  							</pss:branch>
+  						</pss:monitorBranch>
+  						<pss:monitorBranch>
+  							<pss:branch id="Bus5_Bus6_1" fromBusId="Bus5" toBusId="Bus6" circuitId="1">
+  							</pss:branch>
+  						</pss:monitorBranch>
+  					</pss:lineOutageDFactor>
+  					<pss:lineOutageDFactor>
+  						<pss:outageBranch id="Bus6_Bus13_1" fromBusId="Bus6" toBusId="Bus13" circuitId="1">
+  						</pss:outageBranch>
+  						<pss:monitorBranch>
+  							<pss:branch id="Bus9_Bus14_1" fromBusId="Bus9" toBusId="Bus14" circuitId="1">
+  							</pss:branch>
+  						</pss:monitorBranch>
+  						<pss:monitorBranch>
+  							<pss:branch id="Bus12_Bus13_1" fromBusId="Bus12" toBusId="Bus13" circuitId="1">
+  							</pss:branch>
+  						</pss:monitorBranch>
+  					</pss:lineOutageDFactor>
+  				</pss:senAnalysis>
+  			</pss:simuAlgo>
+  		</pss:scenario>
+  	</pss:scenarioList>
+  </pss:ipssStudyScenario>
+</pss:pssStudyCase>

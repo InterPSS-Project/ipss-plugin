@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pss:pssStudyCase id="sampleStudyCase" xmlns:pss="http://www.ieee.org/odm/Schema/2008" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.ieee.org/odm/Schema/2008 ../../../ieee.odm_pss/schema/StudyCase.xsd ">
+  <pss:schemaVersion>V0.8.2</pss:schemaVersion>
+  <pss:networkCategory>Transmission</pss:networkCategory>
+  <pss:analysisCategory>Loadflow</pss:analysisCategory>
+  <pss:aclfNet id="idvalue0">
+  	<pss:basePower unit="PU" value="0.0" />
+  	<pss:busList></pss:busList>
+  	<pss:branchList></pss:branchList>
+  </pss:aclfNet>
+  <pss:ipssStudyScenario id="scenario">
+  	<pss:analysisCategory>Sensitivity</pss:analysisCategory>
+  	<pss:scenarioList>
+  		<pss:scenario id="idvalue1">
+  			<pss:simuAlgo>
+  				<pss:senAnalysis>
+  					<pss:genShiftFactor>
+  						<pss:senType>PAngle</pss:senType>
+  						<pss:injectBusType>SingleBus</pss:injectBusType>
+  						<pss:injectBusList>
+  							<pss:injectBus>
+  								<pss:busId>Bus2</pss:busId>
+  							</pss:injectBus>
+  						</pss:injectBusList>
+  						<pss:withdrawBusType>SingleBus</pss:withdrawBusType>
+  						<pss:withdrawBusList>
+  							<pss:withdrawBus>
+  								<pss:busId>Bus3</pss:busId>
+  							</pss:withdrawBus>
+  						</pss:withdrawBusList>
+  						<pss:branchSFactor>
+  							<pss:branch xsi:type="pss:LineBranchXmlType" id="Bus2_Bus3"  fromBusId="Bus2" toBusId="Bus3"></pss:branch>
+  						</pss:branchSFactor>
+  						<pss:branchSFactor>
+  							<pss:branch xsi:type="pss:LineBranchXmlType" id="Bus4_Bus3" fromBusId="Bus4" toBusId="Bus3"></pss:branch>
+  						</pss:branchSFactor>
+  					</pss:genShiftFactor>
+  					<pss:genShiftFactor>
+  						<pss:senType>PAngle</pss:senType>
+  						<pss:injectBusType>SingleBus</pss:injectBusType>
+  						<pss:injectBusList>
+  							<pss:injectBus>
+  								<pss:busId>Bus2</pss:busId>
+  							</pss:injectBus>
+  						</pss:injectBusList>
+  						<pss:withdrawBusType>MultipleBus</pss:withdrawBusType>
+  						<pss:withdrawBusList>
+  							<pss:withdrawBus>
+  								<pss:busId>Bus13</pss:busId>
+  								<pss:percent>50.0</pss:percent>
+  							</pss:withdrawBus>
+  							<pss:withdrawBus>
+  								<pss:busId>Bus14</pss:busId>
+  								<pss:percent>50.0</pss:percent>
+  							</pss:withdrawBus>
+  						</pss:withdrawBusList>
+  						<pss:branchSFactor>
+  							<pss:branch xsi:type="pss:LineBranchXmlType" id="Bus9_Bus14"  fromBusId="Bus9" toBusId="Bus14"></pss:branch>
+  						</pss:branchSFactor>
+  						<pss:branchSFactor>
+  							<pss:branch xsi:type="pss:LineBranchXmlType" id="Bus6_Bus13" fromBusId="Bus6" toBusId="Bus13"></pss:branch>
+  						</pss:branchSFactor>
+  						<pss:branchSFactor>
+  							<pss:branch xsi:type="pss:LineBranchXmlType" id="Bus12_Bus13" fromBusId="Bus12" toBusId="Bus13"></pss:branch>
+  						</pss:branchSFactor>
+  					</pss:genShiftFactor>
+  					<pss:genShiftFactor>
+  						<pss:senType>PAngle</pss:senType>
+  						<pss:injectBusType>SingleBus</pss:injectBusType>
+  						<pss:injectBusList>
+  							<pss:injectBus>
+  								<pss:busId>Bus2</pss:busId>
+  							</pss:injectBus>
+  						</pss:injectBusList>
+  						<pss:withdrawBusType>LoadDistribution</pss:withdrawBusType>
+  						<pss:minLoadForDistFactor unit="MW" value="5" />
+  						<pss:branchSFactor>
+  							<pss:branch xsi:type="pss:LineBranchXmlType" id="Bus9_Bus14_1"  fromBusId="Bus9" toBusId="Bus14"></pss:branch>
+  						</pss:branchSFactor>
+  						<pss:branchSFactor>
+  							<pss:branch xsi:type="pss:LineBranchXmlType" id="Bus6_Bus13_1" fromBusId="Bus6" toBusId="Bus13"></pss:branch>
+  						</pss:branchSFactor>
+  						<pss:branchSFactor>
+  							<pss:branch xsi:type="pss:LineBranchXmlType" id="Bus12_Bus13_1" fromBusId="Bus12" toBusId="Bus13"></pss:branch>
+  						</pss:branchSFactor>
+  					</pss:genShiftFactor>
+  				</pss:senAnalysis>
+  			</pss:simuAlgo>
+  		</pss:scenario>
+  	</pss:scenarioList>
+  </pss:ipssStudyScenario>
+</pss:pssStudyCase>
