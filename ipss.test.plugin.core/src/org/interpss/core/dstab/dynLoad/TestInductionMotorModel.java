@@ -33,7 +33,7 @@ import com.interpss.dstab.cache.StateMonitor.MonitorRecord;
 import com.interpss.dstab.dynLoad.InductionMotor;
 import com.interpss.dstab.dynLoad.impl.InductionMotorImpl;
 import com.interpss.dstab.mach.EConstMachine;
-import com.interpss.dstab.mach.MachineType;
+import com.interpss.dstab.mach.MachineModelType;
 
 public class TestInductionMotorModel extends TestSetupBase {
 	
@@ -409,7 +409,7 @@ private DStabilityNetwork create2BusSystem() throws InterpssException{
 		gen.setDesiredVoltMag(1.02);
 		
 		EConstMachine mach = (EConstMachine)DStabObjectFactory.
-				createMachine("MachId", "MachName", MachineType.ECONSTANT, net, "Swing", "G1");
+				createMachine("MachId", "MachName", MachineModelType.ECONSTANT, net, "Swing", "G1");
 		//DStabBus bus = net.getDStabBus("Gen");
 		mach.setRating(100000, UnitType.mVA, net.getBaseKva());
 		mach.setRatedVoltage(1000.0);

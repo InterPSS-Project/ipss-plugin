@@ -51,7 +51,7 @@ import com.interpss.dstab.mach.EConstMachine;
 import com.interpss.dstab.mach.Eq1Ed1Machine;
 import com.interpss.dstab.mach.Eq1Machine;
 import com.interpss.dstab.mach.Machine;
-import com.interpss.dstab.mach.MachineType;
+import com.interpss.dstab.mach.MachineModelType;
 import com.interpss.dstab.mach.RoundRotorMachine;
 import com.interpss.dstab.mach.SalientPoleMachine;
 
@@ -93,7 +93,7 @@ public class MachDataHelper {
 			Eq11Ed11MachineXmlType machXml = (Eq11Ed11MachineXmlType)machXmlRec;
 			// create a machine and connect to the bus 
 			RoundRotorMachine mach = (RoundRotorMachine)DStabObjectFactory.
-								createMachine(machId, machXml.getName(), MachineType.EQ11_ED11_ROUND_ROTOR, 
+								createMachine(machId, machXml.getName(), MachineModelType.EQ11_ED11_ROUND_ROTOR, 
 								(BaseDStabNetwork<?,?>)this.dstabBus.getNetwork(), dstabBus.getId(), genId);
 			setEq11Ed11Data(mach, machXml);
 			return mach;
@@ -102,7 +102,7 @@ public class MachDataHelper {
 			Eq11MachineXmlType machXml = (Eq11MachineXmlType)machXmlRec;
 			// create a machine and connect to the bus
 			SalientPoleMachine mach = (SalientPoleMachine)DStabObjectFactory.
-								createMachine(machId, machXml.getName(), MachineType.EQ11_SALIENT_POLE, 
+								createMachine(machId, machXml.getName(), MachineModelType.EQ11_SALIENT_POLE, 
 								(BaseDStabNetwork<?,?>)this.dstabBus.getNetwork(), dstabBus.getId(), genId);
 			setEq11Data(mach, machXml);
 			return mach;
@@ -111,7 +111,7 @@ public class MachDataHelper {
 			Eq1Ed1MachineXmlType machXml = (Eq1Ed1MachineXmlType)machXmlRec;
 			// create a machine and connect to the bus
 			Eq1Ed1Machine mach = (Eq1Ed1Machine)DStabObjectFactory.
-								createMachine(machId, machXml.getName(), MachineType.EQ1_ED1_MODEL, 
+								createMachine(machId, machXml.getName(), MachineModelType.EQ1_ED1_MODEL, 
 								(BaseDStabNetwork<?,?>)this.dstabBus.getNetwork(), dstabBus.getId(), genId);
 			setEq1Ed1Data(mach, machXml);
 			return mach;
@@ -120,7 +120,7 @@ public class MachDataHelper {
 			Eq1MachineXmlType machXml = (Eq1MachineXmlType)machXmlRec;
 			// create a machine and connect to the bus
 			Eq1Machine mach = (Eq1Machine)DStabObjectFactory.
-								createMachine(machId, machXml.getName(), MachineType.EQ1_MODEL, 
+								createMachine(machId, machXml.getName(), MachineModelType.EQ1_MODEL, 
 								(BaseDStabNetwork<?,?>)this.dstabBus.getNetwork(), dstabBus.getId(), genId);
 			setEq1Data(mach, machXml);
 			return mach;
@@ -129,7 +129,7 @@ public class MachDataHelper {
 			ClassicMachineXmlType machXml = (ClassicMachineXmlType)machXmlRec;
 			// create a machine and connect to the bus
 			EConstMachine mach = (EConstMachine)DStabObjectFactory.
-								createMachine(machId, machXml.getName(), MachineType.ECONSTANT, 
+								createMachine(machId, machXml.getName(), MachineModelType.ECONSTANT, 
 								(BaseDStabNetwork<?,?>)this.dstabBus.getNetwork(), dstabBus.getId(), genId);
 			setClassicData(mach, machXml);
 			return mach;

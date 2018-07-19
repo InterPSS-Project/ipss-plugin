@@ -39,7 +39,7 @@ import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.common.DStabOutSymbol;
 import com.interpss.dstab.mach.Machine;
-import com.interpss.dstab.mach.MachineType;
+import com.interpss.dstab.mach.MachineModelType;
 
 public class DStabOutFunc {
 	public static String getStateTitleStr() {
@@ -199,15 +199,15 @@ public class DStabOutFunc {
 	}
 
 	private static String machModelStr(Machine mach) {
-		if (mach.getMachType() == MachineType.ECONSTANT)
+		if (mach.getMachType() == MachineModelType.ECONSTANT)
 			return "     E-Constant";
-		else if (mach.getMachType() == MachineType.EQ1_MODEL)
+		else if (mach.getMachType() == MachineModelType.EQ1_MODEL)
 			return "      Eq1 Model";
-		else if (mach.getMachType() == MachineType.EQ1_ED1_MODEL)
+		else if (mach.getMachType() == MachineModelType.EQ1_ED1_MODEL)
 			return "  Eq1 Ed1 Model";
-		else if (mach.getMachType() == MachineType.EQ11_SALIENT_POLE)
+		else if (mach.getMachType() == MachineModelType.EQ11_SALIENT_POLE)
 			return "E11 SalinetPole";
-		else if (mach.getMachType() == MachineType.EQ11_ED11_ROUND_ROTOR)
+		else if (mach.getMachType() == MachineModelType.EQ11_ED11_ROUND_ROTOR)
 			return " E11 RoundRotor";
 		return "    Not Defined";
 	}
