@@ -9,7 +9,7 @@ import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.mach.Eq1Machine;
-import com.interpss.dstab.mach.MachineType;
+import com.interpss.dstab.mach.MachineModelType;
 
 public class DStabTestUtilFunc {
 	public static BaseDStabNetwork createTestNetwork()  throws InterpssException {
@@ -26,7 +26,7 @@ public class DStabTestUtilFunc {
 		bus.getContributeGenList().add(gen);
 
 		Eq1Machine mach = (Eq1Machine)DStabObjectFactory.
-							createMachine("MachId", "MachName", MachineType.EQ1_MODEL, net, "BusId", "G1");
+							createMachine("MachId", "MachName", MachineModelType.EQ1_MODEL, net, "BusId", "G1");
 		mach.setRating(100, UnitType.mVA, net.getBaseKva());
 		mach.setRatedVoltage(1000.0);
 		mach.calMultiFactors();
