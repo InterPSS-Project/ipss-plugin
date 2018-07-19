@@ -32,7 +32,7 @@ import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.cache.StateMonitor.DynDeviceType;
 import com.interpss.dstab.dynLoad.LD1PAC;
 import com.interpss.dstab.mach.EConstMachine;
-import com.interpss.dstab.mach.MachineType;
+import com.interpss.dstab.mach.MachineModelType;
 
 public class TestLd1pacModel extends TestSetupBase {
 	
@@ -324,7 +324,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		gen.setDesiredVoltMag(1.0285);
 		
 		EConstMachine mach = (EConstMachine)DStabObjectFactory.
-				createMachine("MachId", "MachName", MachineType.ECONSTANT, net, "Swing", "G1");
+				createMachine("MachId", "MachName", MachineModelType.ECONSTANT, net, "Swing", "G1");
 		//DStabBus bus = net.getDStabBus("Gen");
 		mach.setRating(1000, UnitType.mVA, net.getBaseKva());
 		mach.setRatedVoltage(1000.0);
