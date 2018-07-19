@@ -35,7 +35,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.mach.Eq1Ed1Machine;
-import com.interpss.dstab.mach.MachineType;
+import com.interpss.dstab.mach.MachineModelType;
 import com.interpss.dstab.util.sample.SampleDStabCase;
 
 public class MachineSaturationTest extends TestSetupBase {
@@ -46,7 +46,7 @@ public class MachineSaturationTest extends TestSetupBase {
 
 		// create a machine and connect to the bus "Gen"
 		Eq1Ed1Machine mach = (Eq1Ed1Machine)DStabObjectFactory.
-							createMachine("MachId", "MachName", MachineType.EQ1_ED1_MODEL, net, "Gen", "G1");
+							createMachine("MachId", "MachName", MachineModelType.EQ1_ED1_MODEL, net, "Gen", "G1");
 		BaseDStabBus<?,?> bus = net.getDStabBus("Gen");
 
 		// set machine data

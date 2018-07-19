@@ -35,7 +35,6 @@ import org.ipss.threePhase.dynamic.model.impl.SinglePhaseACMotor;
 import org.ipss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.ipss.threePhase.powerflow.impl.DistPowerFlowOutFunc;
 import org.ipss.threePhase.powerflow.impl.DistributionPowerFlowAlgorithmImpl;
-import org.ipss.threePhase.util.ThreePhaseAclfOutFunc;
 import org.ipss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.Test;
 
@@ -54,9 +53,6 @@ import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.net.NetworkType;
 import com.interpss.dstab.BaseDStabBus;
-import com.interpss.dstab.DStabBus;
-import com.interpss.dstab.DStabGen;
-import com.interpss.dstab.DStabLoad;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -65,10 +61,8 @@ import com.interpss.dstab.cache.StateMonitor.DynDeviceType;
 import com.interpss.dstab.cache.StateMonitor.MonitorRecord;
 import com.interpss.dstab.devent.DynamicEvent;
 import com.interpss.dstab.devent.DynamicEventType;
-import com.interpss.dstab.dynLoad.InductionMotor;
 import com.interpss.dstab.mach.EConstMachine;
-import com.interpss.dstab.mach.MachineType;
-import com.interpss.dstab.mach.RoundRotorMachine;
+import com.interpss.dstab.mach.MachineModelType;
 
 public class TestTposD3phaseDStab {
 	
@@ -1295,7 +1289,7 @@ private DStabNetwork3Phase create3BusSys() throws InterpssException{
   		bus3.getContributeGenList().add(gen2);
   		
   		EConstMachine mach2 = (EConstMachine)DStabObjectFactory.
-				createMachine("1", "Mach-1", MachineType.ECONSTANT, net, "Bus3", "Gen1");
+				createMachine("1", "Mach-1", MachineModelType.ECONSTANT, net, "Bus3", "Gen1");
   		
   		mach2.setRating(100, UnitType.mVA, net.getBaseKva());
 		mach2.setRatedVoltage(230000.0);
