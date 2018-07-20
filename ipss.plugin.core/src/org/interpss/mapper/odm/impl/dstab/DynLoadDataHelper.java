@@ -4,15 +4,15 @@ import org.ieee.odm.schema.DStabLoadDataXmlType;
 import org.ieee.odm.schema.DynamicLoadCMPLDWXmlType;
 import org.ieee.odm.schema.DynamicLoadSinglePhaseACMotorXmlType;
 import org.ieee.odm.schema.LoadCharacteristicTypeEnumType;
-import org.interpss.dstab.load.DynLoadCMPLDW;
-import org.interpss.dstab.load.impl.DynLoadCMPLDWImpl;
 
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.device.DynamicBusDevice;
 import com.interpss.dstab.dynLoad.DStabDynamicLoadFactory;
+import com.interpss.dstab.dynLoad.DynLoadCMPLDW;
 import com.interpss.dstab.dynLoad.LD1PAC;
+import com.interpss.dstab.dynLoad.impl.DynLoadCMPLDWImpl;
 
 public class DynLoadDataHelper {
 	
