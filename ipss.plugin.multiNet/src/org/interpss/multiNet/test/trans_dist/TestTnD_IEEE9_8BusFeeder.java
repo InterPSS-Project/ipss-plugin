@@ -31,7 +31,7 @@ import org.interpss.threePhase.dynamic.model.InductionMotor3PhaseAdapter;
 import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
 import org.interpss.threePhase.powerflow.impl.DistPowerFlowOutFunc;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
-import org.ipss.threePhase.dynamic.model.impl.SinglePhaseACMotor;
+import org.interpss.threePhase.dynamic.model.impl.SinglePhaseACMotor;
 import org.junit.Test;
 
 import com.interpss.DStabObjectFactory;
