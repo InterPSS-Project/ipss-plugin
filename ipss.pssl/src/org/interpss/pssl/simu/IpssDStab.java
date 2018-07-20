@@ -77,7 +77,7 @@ public class IpssDStab {
     }
     
     public 	IpssDStab setSimuOutputPerNSteps(int n){
-    	this.dstabAlgo.setOutPutPerSteps(n);
+    	this.dstabAlgo.setOutputPerSteps(n);
     	return this;
     }
 	
