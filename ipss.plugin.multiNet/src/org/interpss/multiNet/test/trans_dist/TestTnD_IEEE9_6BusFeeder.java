@@ -27,11 +27,11 @@ import org.interpss.threePhase.basic.Load3Phase;
 import org.interpss.threePhase.basic.impl.Load3PhaseImpl;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.model.InductionMotor3PhaseAdapter;
+import org.interpss.threePhase.dynamic.model.impl.SinglePhaseACMotor;
 import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
 import org.interpss.threePhase.powerflow.impl.DistPowerFlowOutFunc;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.interpss.util.FileUtil;
-import org.ipss.threePhase.dynamic.model.impl.SinglePhaseACMotor;
 import org.junit.Test;
 
 import com.interpss.DStabObjectFactory;
@@ -501,7 +501,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 				indMotor.setRr1(0.01);
 				
 		
-				indMotor.setMVABase(motorMVA);
+				indMotor.setMvaBase(motorMVA);
 				indMotor.setH(0.3);
 				indMotor.setA(0.0); //Toreque = (a+bw+cw^2)*To;
 				indMotor.setB(0.0); //Toreque = (a+bw+cw^2)*To;
@@ -1015,7 +1015,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 				 SinglePhaseACMotor ac1 = new SinglePhaseACMotor(loadBus,"1");
 			  		ac1.setLoadPercent(ACPercent);
 			  		ac1.setPhase(PhaseCode.A);
-			  		ac1.setMVABase(acMVA);
+			  		ac1.setMvaBase(acMVA);
 			  	
 			  		ac1.setTstall(0.05); // disable ac stalling
 			  		ac1.setVstall(0.65);
@@ -1026,7 +1026,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 			  SinglePhaseACMotor ac2 = new SinglePhaseACMotor(loadBus,"2");
 			  		ac2.setLoadPercent(ACPercent);
 			  		ac2.setPhase(PhaseCode.B);
-			  		ac2.setMVABase(acMVA);
+			  		ac2.setMvaBase(acMVA);
 			  	
 			  		ac2.setTstall(0.05); // disable ac stalling
 			  		ac2.setVstall(0.65);
@@ -1037,7 +1037,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 			  	SinglePhaseACMotor ac3 = new SinglePhaseACMotor(loadBus,"3");
 			  		ac3.setLoadPercent(ACPercent);
 			  		ac3.setPhase(PhaseCode.C);
-			  		ac3.setMVABase(acMVA);
+			  		ac3.setMvaBase(acMVA);
 			  		ac3.setTstall(0.05); // disable ac stalling
 			  		ac3.setVstall(0.65);
 			  		loadBus.getPhaseCDynLoadList().add(ac3);
@@ -1059,7 +1059,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 					indMotor.setB(0.0); //Toreque = (a+bw+cw^2)*To;
 					indMotor.setC(1.0); //Toreque = (a+bw+cw^2)*To;
 					
-					indMotor.setMVABase(motorMVA);
+					indMotor.setMvaBase(motorMVA);
 					
 					InductionMotor3PhaseAdapter indMotor3Phase = new InductionMotor3PhaseAdapter(indMotor);
 					indMotor3Phase.setLoadPercent(indMotorPercent); //0.06 MW
