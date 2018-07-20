@@ -34,7 +34,7 @@ import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.powerflow.impl.DistPowerFlowOutFunc;
 import org.interpss.threePhase.powerflow.impl.DistributionPowerFlowAlgorithmImpl;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
-import org.ipss.threePhase.dynamic.model.impl.SinglePhaseACMotor;
+import org.interpss.threePhase.dynamic.model.impl.SinglePhaseACMotor;
 import org.junit.Test;
 
 import com.interpss.CoreObjectFactory;
