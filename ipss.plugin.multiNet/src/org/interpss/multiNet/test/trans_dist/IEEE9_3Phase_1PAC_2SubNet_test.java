@@ -23,10 +23,10 @@ import org.interpss.numeric.util.PerformanceTimer;
 import org.interpss.threePhase.basic.Branch3Phase;
 import org.interpss.threePhase.basic.Bus3Phase;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
+import org.interpss.threePhase.dynamic.model.impl.SinglePhaseACMotor;
 import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.interpss.util.FileUtil;
-import org.ipss.threePhase.dynamic.model.impl.SinglePhaseACMotor;
 import org.junit.Test;
 
 import com.interpss.DStabObjectFactory;
@@ -319,7 +319,7 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
 	    SinglePhaseACMotor ac1 = new SinglePhaseACMotor(bus12,"1");
   		ac1.setLoadPercent(100);
   		ac1.setPhase(PhaseCode.A);
-  		ac1.setMVABase(25);
+  		ac1.setMvaBase(25);
   		bus12.getPhaseADynLoadList().add(ac1);
   		ac1.setVstall(0.65);
   		ac1.setTstall(0.05);
@@ -327,7 +327,7 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
   		SinglePhaseACMotor ac2 = new SinglePhaseACMotor(bus12,"2");
   		ac2.setLoadPercent(100);
   		ac2.setPhase(PhaseCode.B);
-  		ac2.setMVABase(25);
+  		ac2.setMvaBase(25);
   		bus12.getPhaseBDynLoadList().add(ac2);
   		ac2.setVstall(0.65);
   		ac2.setTstall(0.05);
@@ -336,7 +336,7 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
   		SinglePhaseACMotor ac3 = new SinglePhaseACMotor(bus12,"3");
   		ac3.setLoadPercent(100);
   		ac3.setPhase(PhaseCode.C);
-  		ac3.setMVABase(25);
+  		ac3.setMvaBase(25);
   		bus12.getPhaseCDynLoadList().add(ac3);
   		ac3.setVstall(0.65);
   		ac3.setTstall(0.05);
@@ -605,7 +605,7 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
 		LD1PAC acLoad= DStabObjectFactory.createLD1PAC(bus12,"1");
 		
 		acLoad.setLoadPercent(100);
-		acLoad.setMVABase(75);
+		acLoad.setMvaBase(75);
 		acLoad.setVstall(0.65);
 		acLoad.setTstall(0.05);
 		
