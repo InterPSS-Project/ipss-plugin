@@ -56,7 +56,7 @@ public class TestInductionMotorModel extends TestSetupBase {
 		indMotor.setRr2(0.0);
 		
 		indMotor.setLoadPercent(50);
-		indMotor.setMVABase(50);
+		indMotor.setMvaBase(50);
 		indMotor.setH(1.0);
 		
 		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
@@ -143,7 +143,7 @@ public class TestInductionMotorModel extends TestSetupBase {
 			indMotor.setRr2(0.0);
 			
 			indMotor.setLoadPercent(50);
-			indMotor.setMVABase(50);
+			indMotor.setMvaBase(50);
 			indMotor.setH(1.0);
 			
 			DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
@@ -227,7 +227,7 @@ public class TestInductionMotorModel extends TestSetupBase {
 		indMotor.setRr2(0.0);
 		
 		indMotor.setLoadPercent(50);
-		indMotor.setMVABase(50);
+		indMotor.setMvaBase(50);
 		indMotor.setH(1.0);
 		indMotor.setVtr1(0.7);
 		indMotor.setTtr1(0.02);
@@ -315,7 +315,7 @@ public class TestInductionMotorModel extends TestSetupBase {
 		indMotor.setRr2(0.02);
 		
 		indMotor.setLoadPercent(50);
-		indMotor.setMVABase(50);
+		indMotor.setMvaBase(50);
 		indMotor.setH(1.0);
 		
 		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
