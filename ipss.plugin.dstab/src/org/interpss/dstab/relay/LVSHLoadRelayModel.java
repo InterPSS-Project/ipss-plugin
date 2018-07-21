@@ -5,6 +5,7 @@ import java.util.Hashtable;
 import java.util.List;
 
 import org.apache.commons.math3.complex.Complex;
+import org.interpss.numeric.datatype.Triplet;
 
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfLoad;

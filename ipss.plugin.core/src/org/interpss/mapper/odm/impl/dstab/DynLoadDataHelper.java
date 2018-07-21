@@ -159,7 +159,7 @@ public class DynLoadDataHelper {
 		dstabBus.setInfoOnlyDynModel(cmpldw); // CMPLDW is not a model directly used in simulation, its components are modeled and used in simulation
 	
 		
-		cmpldw.setMVABase(cmpldwXml.getMva());
+		cmpldw.setMvaBase(cmpldwXml.getMva());
 		
 		cmpldw.getDistEquivalent().setBSubStation(cmpldwXml.getBss());
 		
