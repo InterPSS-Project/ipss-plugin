@@ -4,15 +4,15 @@ import org.ieee.odm.schema.DStabLoadDataXmlType;
 import org.ieee.odm.schema.DynamicLoadCMPLDWXmlType;
 import org.ieee.odm.schema.DynamicLoadSinglePhaseACMotorXmlType;
 import org.ieee.odm.schema.LoadCharacteristicTypeEnumType;
+import org.interpss.dstab.dynLoad.DynLoadCMPLDW;
+import org.interpss.dstab.dynLoad.LD1PAC;
+import org.interpss.dstab.dynLoad.impl.DynLoadCMPLDWImpl;
+import org.interpss.dstab.dynLoad.impl.LD1PACImpl;
 
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.device.DynamicBusDevice;
-import com.interpss.dstab.dynLoad.DStabDynamicLoadFactory;
-import com.interpss.dstab.dynLoad.DynLoadCMPLDW;
-import com.interpss.dstab.dynLoad.LD1PAC;
-import com.interpss.dstab.dynLoad.impl.DynLoadCMPLDWImpl;
 
 public class DynLoadDataHelper {
 	
@@ -46,7 +46,7 @@ public class DynLoadDataHelper {
 	private DynamicBusDevice createSinglePhaseACMotorLoadModel(DynamicLoadSinglePhaseACMotorXmlType acMotorXml, BaseDStabBus<?,?> dstabBus, String id) {
         this.bus= (DStabBus)dstabBus; 
 		
-        LD1PAC acMotor = DStabDynamicLoadFactory.eINSTANCE.createLD1PAC();
+        LD1PAC acMotor = new LD1PACImpl();
         acMotor.setId(id);
         acMotor.setDStabBus(dstabBus);
         dstabBus.addDynamicLoadModel(acMotor);
