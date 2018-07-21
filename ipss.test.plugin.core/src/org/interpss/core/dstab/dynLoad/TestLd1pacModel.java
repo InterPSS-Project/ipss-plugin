@@ -6,7 +6,8 @@ import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.core.dstab.mach.TestSetupBase;
-import org.interpss.display.AclfOutFunc;
+import org.interpss.dstab.dynLoad.LD1PAC;
+import org.interpss.dstab.dynLoad.impl.LD1PACImpl;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
 import org.junit.Test;
@@ -30,7 +31,6 @@ import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.cache.StateMonitor.DynDeviceType;
-import com.interpss.dstab.dynLoad.LD1PAC;
 import com.interpss.dstab.mach.EConstMachine;
 import com.interpss.dstab.mach.MachineModelType;
 
@@ -43,7 +43,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		
 		DStabBus bus1 = (DStabBus) net.getDStabBus("Bus1");
 		
-		LD1PAC acLoad= DStabObjectFactory.createLD1PAC(bus1,"1");
+		LD1PAC acLoad= new LD1PACImpl(bus1,"1");
 		
 		acLoad.setLoadPercent(50.0);
 		acLoad.setMvaBase(50);
@@ -102,7 +102,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		
 		DStabBus bus1 = (DStabBus) net.getDStabBus("Bus1");
 		
-		LD1PAC acLoad= DStabObjectFactory.createLD1PAC(bus1,"1");
+		LD1PAC acLoad= new LD1PACImpl(bus1,"1");
 		
 		acLoad.setLoadPercent(100.0);
 		acLoad.setMvaBase(100);
@@ -165,7 +165,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		
 		DStabBus bus1 = (DStabBus) net.getDStabBus("Bus1");
 		
-		LD1PAC acLoad= DStabObjectFactory.createLD1PAC(bus1,"1");
+		LD1PAC acLoad= new LD1PACImpl(bus1,"1");
 		
 		acLoad.setLoadPercent(50);
 		acLoad.setMvaBase(50);
@@ -231,7 +231,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		
 		DStabBus bus1 = (DStabBus) net.getDStabBus("Bus1");
 		
-		LD1PAC acLoad= DStabObjectFactory.createLD1PAC(bus1,"1");
+		LD1PAC acLoad= new LD1PACImpl(bus1,"1");
 		
 		acLoad.setLoadPercent(50);
 		acLoad.setMvaBase(50);

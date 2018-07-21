@@ -18,5 +18,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Hazelcast"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.plugin.3phase"/>
 	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/sparse/csparsej-1.1.1.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ipss.plugin.dstab"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
