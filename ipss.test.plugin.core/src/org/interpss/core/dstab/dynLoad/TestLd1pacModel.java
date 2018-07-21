@@ -46,7 +46,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		LD1PAC acLoad= DStabObjectFactory.createLD1PAC(bus1,"1");
 		
 		acLoad.setLoadPercent(50.0);
-		acLoad.setMVABase(50);
+		acLoad.setMvaBase(50);
 		
 		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
@@ -105,7 +105,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		LD1PAC acLoad= DStabObjectFactory.createLD1PAC(bus1,"1");
 		
 		acLoad.setLoadPercent(100.0);
-		acLoad.setMVABase(100);
+		acLoad.setMvaBase(100);
 		acLoad.setPowerFactor(0.94);
 		
 		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
@@ -168,7 +168,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		LD1PAC acLoad= DStabObjectFactory.createLD1PAC(bus1,"1");
 		
 		acLoad.setLoadPercent(50);
-		acLoad.setMVABase(50);
+		acLoad.setMvaBase(50);
 		
 		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
@@ -234,7 +234,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		LD1PAC acLoad= DStabObjectFactory.createLD1PAC(bus1,"1");
 		
 		acLoad.setLoadPercent(50);
-		acLoad.setMVABase(50);
+		acLoad.setMvaBase(50);
 		
 		
 		net.initDStabNet();
