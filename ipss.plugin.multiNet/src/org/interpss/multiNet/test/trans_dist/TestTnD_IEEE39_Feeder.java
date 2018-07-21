@@ -28,11 +28,11 @@ import org.interpss.threePhase.basic.Load3Phase;
 import org.interpss.threePhase.basic.impl.Load3PhaseImpl;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.model.InductionMotor3PhaseAdapter;
+import org.interpss.threePhase.dynamic.model.impl.SinglePhaseACMotor;
 import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
 import org.interpss.threePhase.powerflow.impl.DistPowerFlowOutFunc;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.interpss.util.FileUtil;
-import org.interpss.threePhase.dynamic.model.impl.SinglePhaseACMotor;
 import org.junit.Test;
 
 import com.interpss.DStabObjectFactory;
@@ -1132,7 +1132,7 @@ public DStabNetwork3Phase createFeeder(DStabNetwork3Phase net,Bus3Phase sourceBu
 				indMotor.setRr1(0.01);
 				
 		        double motorMVA = totalLoadMW*loadPercentAry[k]* IndMotorPercent/100.0/0.8;
-				indMotor.setMVABase(motorMVA);
+				indMotor.setMvaBase(motorMVA);
 				indMotor.setH(0.3);
 				indMotor.setA(0.0); //Toreque = (a+bw+cw^2)*To;
 				indMotor.setB(0.0); //Toreque = (a+bw+cw^2)*To;
