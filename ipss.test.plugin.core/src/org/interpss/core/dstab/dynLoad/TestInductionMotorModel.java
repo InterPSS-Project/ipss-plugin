@@ -6,7 +6,8 @@ import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.core.dstab.mach.TestSetupBase;
-import org.interpss.display.AclfOutFunc;
+import org.interpss.dstab.dynLoad.InductionMotor;
+import org.interpss.dstab.dynLoad.impl.InductionMotorImpl;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.junit.Test;
 
@@ -30,8 +31,6 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.cache.StateMonitor.DynDeviceType;
 import com.interpss.dstab.cache.StateMonitor.MonitorRecord;
-import com.interpss.dstab.dynLoad.InductionMotor;
-import com.interpss.dstab.dynLoad.impl.InductionMotorImpl;
 import com.interpss.dstab.mach.EConstMachine;
 import com.interpss.dstab.mach.MachineModelType;
 
@@ -44,7 +43,7 @@ public class TestInductionMotorModel extends TestSetupBase {
 		
 		DStabBus bus1 = (DStabBus) net.getDStabBus("Bus1");
 		
-		InductionMotor indMotor= DStabObjectFactory.createInductionMotor(bus1,"1");
+		InductionMotor indMotor= new InductionMotorImpl(bus1,"1");
 		
 
 		indMotor.setXm(3.0);
@@ -131,7 +130,7 @@ public class TestInductionMotorModel extends TestSetupBase {
 			
 			DStabBus bus1 = (DStabBus) net.getDStabBus("Bus1");
 			
-			InductionMotor indMotor= DStabObjectFactory.createInductionMotor(bus1,"1");
+			InductionMotor indMotor= new InductionMotorImpl(bus1,"1");
 			
 
 			indMotor.setXm(3.0);
@@ -215,7 +214,7 @@ public class TestInductionMotorModel extends TestSetupBase {
 		
 		DStabBus bus1 = (DStabBus) net.getDStabBus("Bus1");
 		
-		InductionMotor indMotor= DStabObjectFactory.createInductionMotor(bus1,"1");
+		InductionMotor indMotor= new InductionMotorImpl(bus1,"1");
 		
 
 		indMotor.setXm(3.0);
@@ -303,7 +302,7 @@ public class TestInductionMotorModel extends TestSetupBase {
 		
 		DStabBus bus1 = (DStabBus) net.getDStabBus("Bus1");
 		
-		InductionMotor indMotor= DStabObjectFactory.createInductionMotor(bus1,"1");
+		InductionMotor indMotor= new InductionMotorImpl(bus1,"1");
 		
 
 		indMotor.setXm(3.0);
