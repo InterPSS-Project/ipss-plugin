@@ -12,6 +12,7 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
 
 import com.interpss.common.util.IpssLogger;
 import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.common.DStabOutSymbol;
 import com.interpss.dstab.dynLoad.DStabDynamicLoadPackage;
@@ -914,13 +915,15 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 		this.states = new Hashtable<>();
 	}
 	
-	public LD1PACImpl(String id, BaseDStabBus<?,?> dstabBus) {
+	public LD1PACImpl(BaseDStabBus<?,?> dstabBus, String id) {
 		this();
 		this.id = id;
 		
 		this.setDStabBus(dstabBus);
 		dstabBus.getDynLoadModelList().add(this);
 	}
+
+	
 
 	public int getStage() {
 		return stage;

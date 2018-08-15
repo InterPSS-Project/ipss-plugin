@@ -13,6 +13,8 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
 
 import com.interpss.common.util.IpssLogger;
+import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.common.DStabOutSymbol;
 import com.interpss.dstab.dynLoad.DStabDynamicLoadPackage;
@@ -1070,6 +1072,14 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		super();
 		this.states = new Hashtable<>();
 		
+	}
+
+	public InductionMotorImpl(BaseDStabBus bus1, String id) {
+		super();
+		this.states = new Hashtable<>();
+		this.setDStabBus(bus1);
+		bus1.addDynamicLoadModel(this);
+		this.setId(id);
 	}
 
 	public double getRa() {
