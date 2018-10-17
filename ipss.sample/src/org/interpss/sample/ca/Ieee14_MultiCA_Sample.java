@@ -22,7 +22,7 @@
   *
   */
 
-package org.interpss.core.ca;
+package org.interpss.sample.ca;
 
 import java.util.function.BiConsumer;
 
