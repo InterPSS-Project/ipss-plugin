@@ -28,13 +28,22 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.pssl.simu.IpssDclf;
 import org.interpss.pssl.simu.IpssDclf.DclfAlgorithmDSL;
 
+import com.interpss.core.DclfObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.contingency.Contingency;
+import com.interpss.core.dclf.DclfAlgorithm;
 
 public class Ieee14_MultiCA_SequentialSample {
 	
 	public static void main(String args[]) throws Exception {
 		IpssCorePlugin.init();
 		
+		dclfDSLImpl();
+		
+		monadImpl();
+	}
+	
+	public static void dclfDSLImpl() throws Exception {
 		AclfNetwork net = Ieee14_CA_Utils.getSampleNet();
         
 		// run Dclf
@@ -46,10 +55,36 @@ public class Ieee14_MultiCA_SequentialSample {
 		
 		algoDsl.setRefBus("Bus14");  // for the multiple outage analysis case
 		
-		System.out.println("Total CA: " + Ieee14_CA_Utils.points*2);
+		System.out.println("DSLImpl Total CA: " + Ieee14_CA_Utils.points*2);
 		
 		net.getContingencyList().forEach(cont -> {
 			Ieee14_CA_Utils.funcContProcessor.accept(cont, algoDsl.algo());
+		});
+	}
+	 
+	public static void monadImpl() throws Exception {
+		AclfNetwork net = Ieee14_CA_Utils.getSampleNet();
+        
+		// run Dclf
+		DclfAlgorithm dclfAlgo = DclfObjectFactory.createDclfAlgorithm(net);
+		dclfAlgo.calculateDclf();
+		
+		Ieee14_CA_Utils.createSampleContingencies(net, 10);
+		
+		dclfAlgo.setRefBus("Bus14");  // for the multiple outage analysis case
+		
+		System.out.println("Monad Total CA: " + Ieee14_CA_Utils.points);
+		
+		net.getContingencyList().forEach(contingency -> {
+			DclfObjectFactory.createContingencyAnalysis()
+				.of(dclfAlgo, ((Contingency)contingency).getOutageBranch())
+				.ca((contBranch, postFlowMW) -> {
+					if (contBranch.getId().equals("Bus1->Bus2(1)")) {
+						//System.out.println("postContFlow: " + postContFlow);
+			       		System.out.println("CA: " + contingency.getId() + " Branch " + contBranch.getId() + " should be 105.79698, error: " + 
+			       		          Math.abs(postFlowMW - 105.79697726834374));	
+					}
+		       });
 		});
 	}
 }
