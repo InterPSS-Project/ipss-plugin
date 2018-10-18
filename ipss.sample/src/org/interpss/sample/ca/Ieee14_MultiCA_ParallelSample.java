@@ -125,11 +125,11 @@ public class Ieee14_MultiCA_ParallelSample {
 			DclfObjectFactory
 				.createContingencyAnalysis()
 				.of(dclfAlgo, ((Contingency)contingency).getOutageBranch())
+				/*
+				 * Call the ca() method by passing a CA result handling function.
+				 */
 				.ca((contBranch, postFlowMW) -> {
 					if (contBranch.getId().equals("Bus1->Bus2(1)")) {
-						//System.out.println("postContFlow: " + postContFlow);
-						//System.out.println("CA: " + cont.getId() + " Branch " + contBranch.getId() + " should be 105.79698, error: " + 
-						//          Math.abs(postFlowMW - 105.79697726834374));	
 						if (Math.abs(postFlowMW - 105.79697726834374) > 0.000001)
 							System.out.println("CA: " + contingency.getId() + " Branch " + contBranch.getId() + " should be 105.79698, error: " + 
 					       		          Math.abs(postFlowMW - 105.79697726834374));
