@@ -78,6 +78,9 @@ public class Ieee14_MultiCA_SequentialSample {
 		net.getContingencyList().forEach(contingency -> {
 			DclfObjectFactory.createContingencyAnalysis()
 				.of(dclfAlgo, ((Contingency)contingency).getOutageBranch())
+				/*
+				 * Call the ca() method by passing a CA result handling function.
+				 */
 				.ca((contBranch, postFlowMW) -> {
 					if (contBranch.getId().equals("Bus1->Bus2(1)")) {
 						//System.out.println("postContFlow: " + postContFlow);
