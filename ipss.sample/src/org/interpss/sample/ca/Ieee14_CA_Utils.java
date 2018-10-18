@@ -98,9 +98,11 @@ public class Ieee14_CA_Utils {
 		if (cont instanceof Contingency) {
 			algoDsl_i.ca((Contingency)cont, (contBranch, postContFlow) -> {
 				// here we define a function to process the contingency analysis results
-				if (points < 100 && contBranch.getId().equals("Bus1->Bus2(1)"))
-					System.out.println("CA: " + cont.getId() + " Branch " + contBranch.getId() + " should be 150.39205, error: " + 
-		       		          Math.abs(postContFlow - 150.3920508725032));	
+				if (points < 100 && contBranch.getId().equals("Bus1->Bus2(1)")) {
+					//System.out.println("postContFlow: " + postContFlow);
+		       		System.out.println("CA: " + cont.getId() + " Branch " + contBranch.getId() + " should be 105.79698, error: " + 
+		       		          Math.abs(postContFlow - 105.79697726834374));	
+				}
 			});
 		}
 		/*
@@ -122,9 +124,11 @@ public class Ieee14_CA_Utils {
 		else if (cont instanceof MultiOutageContingency) {
 			algoDsl_i.multiOutageContingencyAanlysis((MultiOutageContingency)cont, (contBranch, postContFlow) -> {
 				// here we define a function to process the contingency analysis results
-	       		if (points < 100 && contBranch.getId().equals("Bus2->Bus5(1)"))
-	       			System.out.println("CA: " + cont.getId() + " Branch " + contBranch.getId() + " should be 69.08805, error: " + 
-	       		          Math.abs(postContFlow - 69.08805));
+	       		if (points < 100 && contBranch.getId().equals("Bus2->Bus5(1)")) {
+					//System.out.println("postContFlow: " + postContFlow);
+	       			System.out.println("CA: " + cont.getId() + " Branch " + contBranch.getId() + " should be 32.48676, error: " + 
+	       		          Math.abs(postContFlow - 32.4867589525026));
+	       		}
 			});
 		}
 	};		
