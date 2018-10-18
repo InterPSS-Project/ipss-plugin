@@ -33,7 +33,10 @@ import org.interpss.pssl.simu.IpssDclf.DclfAlgorithmDSL;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.DclfObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.contingency.Contingency;
+import com.interpss.core.dclf.DclfAlgorithm;
 import com.interpss.core.dclf.common.ReferenceBusException;
 
 public class Ieee14_MultiCA_ParallelSample {
@@ -41,57 +44,17 @@ public class Ieee14_MultiCA_ParallelSample {
 	public static void main(String args[]) throws Exception {
 		IpssCorePlugin.init();
 		
-		AclfNetwork net = Ieee14_CA_Utils.getSampleNet();
-        
-		// run Dclf
-		DclfAlgorithmDSL algoDsl = IpssDclf.createDclfAlgorithm(net)
-				.runDclfAnalysis();
+		dclfDSLParallel();
 		
-		Ieee14_CA_Utils.createSampleContingencies(net, 100000);
-		
-		/* To prepare for parallel CA, we need to compute all bus P-Angle sensitivity
-		 * used in the parallel CA, before starting actual CA analysis. We need to make 
-		 * sure that there is no bus id duplication in the bus list, since we compute the
-		 * sensitivity in parallel
-		 */
-		//algoDsl.getAlgorithm().setCacheSensitivity(true);
-		net.getBusList().stream().parallel().forEach(bus -> {
-			try {
-				if (!bus.isRefBus())
-					algoDsl.getAlgorithm().getDclfSolver().getSenPAngle(bus.getId());
-						// the P-Angle sensitivity is cached at this point
-			} catch (InterpssException | IpssNumericException | ReferenceBusException e) {
-				e.printStackTrace();
-			}
-		});
-		
-		System.out.println("\nTotal CA: " + Ieee14_CA_Utils.points);
-		
-		System.out.println("\nStart seq CA ----> ");
-		
-	  	PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());		
-		net.getContingencyList().stream().forEach(cont -> {
-			Ieee14_CA_Utils.funcContProcessor.accept(cont, algoDsl.algo());
-		});
-		timer.logStd("Total time: ");
-		
-		System.out.println("\nStart paralle CA ----> ");
-		
-	  	timer.start();		
-		net.getContingencyList().stream().parallel().forEach(cont -> {
-			Ieee14_CA_Utils.funcContProcessor.accept(cont, algoDsl.algo());
-		});
-		timer.logStd("Total time: ");	
+		monadParallel();
 	}
 
-	public static void sampleParallel() throws InterpssException, ReferenceBusException, IpssNumericException, PSSLException  {
+	public static void dclfDSLParallel() throws InterpssException, ReferenceBusException, IpssNumericException, PSSLException  {
 		AclfNetwork net = Ieee14_CA_Utils.getSampleNet();
         
 		// run Dclf
 		DclfAlgorithmDSL algoDsl = IpssDclf.createDclfAlgorithm(net)
 				.runDclfAnalysis();
-		
-		Ieee14_CA_Utils.createSampleContingencies(net, 100000);
 		
 		/* To prepare for parallel CA, we need to compute all bus P-Angle sensitivity
 		 * used in the parallel CA, before starting actual CA analysis. We need to make 
@@ -109,9 +72,11 @@ public class Ieee14_MultiCA_ParallelSample {
 			}
 		});
 		
-		System.out.println("\nTotal CA: " + Ieee14_CA_Utils.points);
+		Ieee14_CA_Utils.createSampleContingencies(net, 100000);
 		
-		System.out.println("\nStart seq CA ----> ");
+		System.out.println("\nDSL Total CA: " + Ieee14_CA_Utils.points);
+		
+		System.out.println("\nDSL Start seq CA ----> ");
 		
 	  	PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());		
 		net.getContingencyList().stream().forEach(cont -> {
@@ -119,7 +84,7 @@ public class Ieee14_MultiCA_ParallelSample {
 		});
 		timer.logStd("Total time: ");
 		
-		System.out.println("\nStart paralle CA ----> ");
+		System.out.println("\nDSL Start paralle CA ----> ");
 		
 	  	timer.start();		
 		net.getContingencyList().stream().parallel().forEach(cont -> {
@@ -127,5 +92,52 @@ public class Ieee14_MultiCA_ParallelSample {
 		});
 		timer.logStd("Total time: ");		
 	}
+	
+	public static void monadParallel() throws InterpssException, ReferenceBusException, IpssNumericException, PSSLException  {
+		AclfNetwork net = Ieee14_CA_Utils.getSampleNet();
+        
+		// run Dclf
+		DclfAlgorithm dclfAlgo = DclfObjectFactory.createDclfAlgorithm(net);
+		dclfAlgo.calculateDclf();
+		
+		/* To prepare for parallel CA, we need to compute all bus P-Angle sensitivity
+		 * used in the parallel CA, before starting actual CA analysis. We need to make 
+		 * sure that there is no bus id duplication in the bus list, since we compute the
+		 * sensitivity in parallel
+		 */
+		//algoDsl.getAlgorithm().setCacheSensitivity(true);
+		net.getBusList().stream().parallel().forEach(bus -> {
+			try {
+				if (!bus.isRefBus())
+					dclfAlgo.getDclfSolver().getSenPAngle(bus.getId());
+						// the P-Angle sensitivity is cached at this point
+			} catch (InterpssException | IpssNumericException | ReferenceBusException e) {
+				e.printStackTrace();
+			}
+		});
+		
+		Ieee14_CA_Utils.createSampleContingencies(net, 100000);
+		
+		System.out.println("\nMonad Total CA: " + Ieee14_CA_Utils.points);
+		
+		PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());	
+		net.getContingencyList().stream().parallel().forEach(contingency -> {
+			DclfObjectFactory
+				.createContingencyAnalysis()
+				.of(dclfAlgo, ((Contingency)contingency).getOutageBranch())
+				.ca((contBranch, postFlowMW) -> {
+					if (contBranch.getId().equals("Bus1->Bus2(1)")) {
+						//System.out.println("postContFlow: " + postContFlow);
+						//System.out.println("CA: " + cont.getId() + " Branch " + contBranch.getId() + " should be 105.79698, error: " + 
+						//          Math.abs(postFlowMW - 105.79697726834374));	
+						if (Math.abs(postFlowMW - 105.79697726834374) > 0.000001)
+							System.out.println("CA: " + contingency.getId() + " Branch " + contBranch.getId() + " should be 105.79698, error: " + 
+					       		          Math.abs(postFlowMW - 105.79697726834374));
+					}
+				});
+		});
+		timer.logStd("Total time: ");		
+	}
+	
 }
 
