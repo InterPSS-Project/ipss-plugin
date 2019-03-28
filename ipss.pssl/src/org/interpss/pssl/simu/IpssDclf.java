@@ -645,9 +645,9 @@ public class IpssDclf extends BaseDSL {
   		 * 
   		 * @param cont the contingency object
   		 * @param resultProcessor result processing function
-  		 * @return true if there is not problme
+  		 * @return true if there is not problem
   		 */
-  		public boolean contingencyAanlysis(Contingency cont, BiConsumer<AclfBranch, Double> resultProcessor) {
+  		public boolean ca(Contingency cont, BiConsumer<AclfBranch, Double> resultProcessor) {
   			AclfNetwork net = getAclfNetwork();
   			double baseMva = net.getBaseMva();
 
