@@ -49,7 +49,7 @@ import com.interpss.core.net.Branch;
  *
  */
 public class AclfOut_BusStyle {
-	public static StringBuffer busResult(BaseAclfNetwork<?, ?> net, AclfBus bus) {
+	public static StringBuffer busResult(BaseAclfNetwork<?, ?> net, BaseAclfBus<?,?> bus) {
 		StringBuffer str = new StringBuffer("");
 		str.append(title());
 		str.append(lfResultsBusStyle(bus, net, AclfOutFunc.BusIdStyle.BusId_No));
