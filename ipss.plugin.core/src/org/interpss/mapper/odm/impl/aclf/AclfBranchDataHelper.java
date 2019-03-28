@@ -66,6 +66,7 @@ import com.interpss.core.aclf.Aclf3WBranch;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.adj.AdjControlType;
 import com.interpss.core.aclf.adj.PSXfrPControl;
@@ -578,7 +579,7 @@ public class AclfBranchDataHelper {
 			
 			if (xfrData.getStarVMag() != null && xfrData.getStarVAng() != null) {
 				if (xfrData.getStarVMag().getUnit() == VoltageUnitType.PU || xfrData.getStarVAng().getUnit() == AngleUnitType.DEG) {
-					AclfBus starBus = (AclfBus)xfr3W.getBranch().getStarBus();
+					BaseAclfBus starBus = (BaseAclfBus)xfr3W.getBranch().getStarBus();
 					starBus.setVoltage(xfrData.getStarVMag().getValue(),
 					                   Math.toRadians(xfrData.getStarVAng().getValue()));
 					xfr3W.getBranch().setVoltageStarBus(starBus.getVoltage());
