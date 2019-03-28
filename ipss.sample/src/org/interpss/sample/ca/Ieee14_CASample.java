@@ -27,7 +27,6 @@ package org.interpss.sample.ca;
 import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.pssl.common.PSSLException;
-import org.interpss.pssl.plugin.IpssAdapter;
 import org.interpss.pssl.simu.IpssDclf;
 import org.interpss.pssl.simu.IpssDclf.DclfAlgorithmDSL;
 
@@ -49,7 +48,7 @@ public class Ieee14_CASample {
 	}
 	
 	public static void singleOutageSample() throws InterpssException, ReferenceBusException, IpssNumericException, PSSLException  {
-		AclfNetwork net = getSampleNet();
+		AclfNetwork net = Ieee14_CA_Utils.getSampleNet();
         double baseMva = net.getBaseMva();
         
 		// run Dclf
@@ -82,7 +81,7 @@ public class Ieee14_CASample {
 	}
 
 	public static void multipleOutageSample() throws InterpssException, ReferenceBusException, IpssNumericException, OutageConnectivityException  {
-		AclfNetwork net = getSampleNet();
+		AclfNetwork net = Ieee14_CA_Utils.getSampleNet();
 		
 		DclfAlgorithmDSL algoDsl = IpssDclf.createDclfAlgorithm(net)
 				.runDclfAnalysis();
@@ -127,20 +126,6 @@ public class Ieee14_CASample {
        		else if (branch.getId().equals("Bus6->Bus13(1)"))
        			System.out.println("Branch " + branch.getId() + " should be 17.88058: " + postFlow);
 		}
-	}
-	
-	public static AclfNetwork getSampleNet() throws InterpssException {
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/ieee14.ieee")
-				.setFormat(IpssAdapter.FileFormat.IEEECommonFormat)
-				.load()
-				.getImportedObj();		
-		
-		// set branch mva rating, since it is not defined in the input file.
-		for (AclfBranch branch : net.getBranchList()) {
-			branch.setRatingMva1(100.0);
-		}
-		
-		return net;
 	}
 }
 
