@@ -533,6 +533,8 @@ public class AclfBranchDataHelper {
 					toYUnit.apply(fromShuntY.getUnit()), UnitType.PU);
 			branch3W.getFromAclfBranch().setFromShuntY(ypu);
 		}
+		
+		//if(branch3W.getFromBus().getId())
 
 //      <meterLocation>ToSide</meterLocation>
 		
