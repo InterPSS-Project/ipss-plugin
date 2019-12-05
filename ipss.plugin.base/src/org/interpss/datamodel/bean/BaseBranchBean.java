@@ -34,7 +34,7 @@ import org.interpss.numeric.util.NumericUtil;
  * @author mzhou
  *
  */
-public class BaseBranchBean extends BaseJSONBean {
+public abstract class BaseBranchBean extends BaseJSONBean {
 	/**
 	 * branch type code
 	 */
