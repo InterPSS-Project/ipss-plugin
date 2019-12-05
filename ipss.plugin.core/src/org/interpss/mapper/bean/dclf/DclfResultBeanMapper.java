@@ -63,13 +63,13 @@ public class DclfResultBeanMapper extends AbstractMapper<DclfAlgorithm, DclfNetR
 
 		for (AclfBus bus : aclfNet.getBusList()) {
 			DclfBusResultBean bean = new DclfBusResultBean();
-			dclfResult.bus_list.add(bean);
+			dclfResult.addBusBean(bean);
 			mapBaseBus(algo, bus, bean);
 		}
 		
 		for (AclfBranch branch : aclfNet.getBranchList()) {
 			DclfBranchResultBean bean = new DclfBranchResultBean();
-			dclfResult.branch_list.add(bean);
+			dclfResult.addBranchBean(bean);
 			mapBaseBranch(algo,branch, bean);
 		}
 		
