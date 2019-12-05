@@ -3,6 +3,8 @@ package org.interpss.sample.compare;
 import org.interpss.IpssCorePlugin;
 import org.interpss.datamodel.bean.BaseJSONBean;
 import org.interpss.datamodel.bean.aclf.AclfNetBean;
+import org.interpss.datamodel.util.DefaultAclfNetBeanComparator;
+import org.interpss.datamodel.util.INetBeanComparator;
 import org.interpss.mapper.bean.aclf.AclfNet2BeanMapper;
 
 import com.interpss.CoreObjectFactory;
@@ -27,18 +29,8 @@ public class AclfNetCompareSample {
 		 * No difference case
 		 */
 		// compare output msg written to the netBean1.msgList
-		netBean1.setCompareLog(BaseJSONBean.CompareLog.MsgList);
-		netBean1.compareTo(netBean2);
-		System.out.println("Difference: " + netBean1.getMsgList().size());
-		
-		/*
-		 * Has difference case
-		 */
-		// compare output msg written to the netBean1.msgList
-		net2.getBus("1").setVoltageMag(0.95);
-		netBean2 = new AclfNet2BeanMapper().map2Model(net2);
-		netBean1.compareTo(netBean2);
-		System.out.println("Difference: " + netBean1.getMsgList().size());
-		System.out.println(netBean1.getMsgList());
+		INetBeanComparator<AclfNetBean> comp = new DefaultAclfNetBeanComparator(INetBeanComparator.CompareLog.MsgList);
+		comp.compare(netBean1, netBean2);
+		System.out.println("Difference: " + comp.getMsgList().size());
 	}
 }
