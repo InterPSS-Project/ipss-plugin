@@ -114,11 +114,11 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 		aclfNet.setBaseKva(netBean.base_kva);
 		
 		try {
-			for (AclfBusBean busBean : netBean.bus_list) {
+			for (AclfBusBean busBean : netBean.getBusBeanList()) {
 				mapBusBean(busBean, aclfNet);
 			}
 
-			for (AclfBranchBean branchBean : netBean.branch_list) {
+			for (AclfBranchBean branchBean : netBean.getBranchBeanList()) {
 				mapBranchBean(branchBean, aclfNet);
 			}
 		} catch (InterpssException e) {

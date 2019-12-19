@@ -5,8 +5,8 @@ import static org.junit.Assert.assertTrue;
 
 import org.interpss.QA.compare.aclf.AclfNetModelComparator;
 import org.interpss.QA.test.QATestSetup;
-import org.interpss.datamodel.bean.BaseJSONBean;
 import org.interpss.datamodel.bean.aclf.AclfNetBean;
+import org.interpss.datamodel.util.INetBeanComparator;
 import org.interpss.mapper.bean.aclf.AclfNet2BeanMapper;
 import org.junit.Test;
 
@@ -39,7 +39,7 @@ public class AclfNetCompareTest extends QATestSetup {
 		assertTrue(netBean1.compareTo(netBean2) == 0);
 		
 		// compare output msg written to the netBean1.msgList
-		netBean1.setCompareLog(BaseJSONBean.CompareLog.MsgList);
+		netBean1.setCompareLog(INetBeanComparator.CompareLog.MsgList);
 		netBean1.compareTo(netBean2);
 		//System.out.println(netBean1.getMsgList());
 		assertTrue(netBean1.getMsgList().size() == 0);
