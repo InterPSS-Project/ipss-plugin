@@ -125,10 +125,10 @@ public class DynLoadDataHelper {
         
         acMotor.setFuvr(acMotorXml.getFuvr());
         
-        acMotor.setVtr1(acMotorXml.getVtr1());
+        acMotor.setUVtr1(acMotorXml.getVtr1());
         acMotor.setTtr1(acMotorXml.getTtr1());
         
-        acMotor.setVtr2(acMotorXml.getVtr2());
+        acMotor.setUVtr2(acMotorXml.getVtr2());
         acMotor.setTtr2(acMotorXml.getTtr2());
         
         //NOTE: the following parameters are already hard-coded
@@ -276,9 +276,9 @@ public class DynLoadDataHelper {
 		cmpldw.get1PhaseACMotor().setVrst(cmpldwXml.getVrst());
 		cmpldw.get1PhaseACMotor().setTrst(cmpldwXml.getTrst());
 		cmpldw.get1PhaseACMotor().setFuvr(cmpldwXml.getFuvr());
-		cmpldw.get1PhaseACMotor().setVtr1(cmpldwXml.getVtr1());
+		cmpldw.get1PhaseACMotor().setUVtr1(cmpldwXml.getVtr1());
 		cmpldw.get1PhaseACMotor().setTtr1(cmpldwXml.getTtr1());
-		cmpldw.get1PhaseACMotor().setVtr2(cmpldwXml.getVtr2());
+		cmpldw.get1PhaseACMotor().setUVtr2(cmpldwXml.getVtr2());
 		cmpldw.get1PhaseACMotor().setTtr2(cmpldwXml.getTtr2());
 		cmpldw.get1PhaseACMotor().setVc1off(cmpldwXml.getVc1Off());
 		cmpldw.get1PhaseACMotor().setVc2off(cmpldwXml.getVc2Off());
