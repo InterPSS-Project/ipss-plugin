@@ -6,17 +6,12 @@ package org.interpss.dstab.dynLoad.impl;
 import java.util.Hashtable;
 
 import org.apache.commons.math3.complex.Complex;
-import org.eclipse.emf.common.notify.Notification;
-import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.impl.ENotificationImpl;
+import org.interpss.dstab.dynLoad.LD1PAC;
 
 import com.interpss.common.util.IpssLogger;
 import com.interpss.dstab.BaseDStabBus;
-import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.common.DStabOutSymbol;
-import com.interpss.dstab.dynLoad.DStabDynamicLoadPackage;
-import org.interpss.dstab.dynLoad.LD1PAC;
 import com.interpss.dstab.dynLoad.impl.DynLoadModelImpl;
 
 /**
@@ -182,6 +177,27 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 	 * @ordered
 	 */
 	protected double powerFactor = POWER_FACTOR_EDEFAULT;
+	
+	
+	/**
+	 * The default value of the '{@link #getLoadFactor() <em>Load Factor</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getLoadFactor()
+	 * @generated
+	 * @ordered
+	 */
+	protected static final double LOAD_FACTOR_EDEFAULT = 0.85;
+
+	/**
+	 * The cached value of the '{@link #getLoadFactor() <em>Load Factor</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getLoadFactor()
+	 * @generated
+	 * @ordered
+	 */
+	protected double loadFactor = LOAD_FACTOR_EDEFAULT;
 
 	/**
 	 * The default value of the '{@link #getVstall() <em>Vstall</em>}' attribute.
@@ -591,7 +607,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 	 * @generated
 	 * @ordered
 	 */
-	protected static final double VTR1_EDEFAULT = 0.0;
+	protected static final double UVTR1_EDEFAULT = 0.0;
 
 	/**
 	 * The cached value of the '{@link #getVtr1() <em>Vtr1</em>}' attribute.
@@ -601,7 +617,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 	 * @generated
 	 * @ordered
 	 */
-	protected double vtr1 = VTR1_EDEFAULT;
+	protected double uvtr1 = UVTR1_EDEFAULT;
 
 	/**
 	 * The default value of the '{@link #getTtr1() <em>Ttr1</em>}' attribute.
@@ -631,7 +647,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 	 * @generated
 	 * @ordered
 	 */
-	protected static final double VTR2_EDEFAULT = 0.0;
+	protected static final double UVTR2_EDEFAULT = 0.0;
 
 	/**
 	 * The cached value of the '{@link #getVtr2() <em>Vtr2</em>}' attribute.
@@ -641,7 +657,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 	 * @generated
 	 * @ordered
 	 */
-	protected double vtr2 = VTR2_EDEFAULT;
+	protected double uvtr2 = UVTR2_EDEFAULT;
 
 	/**
 	 * The default value of the '{@link #getTtr2() <em>Ttr2</em>}' attribute.
@@ -903,6 +919,46 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 	 */
 	protected double tv = TV_EDEFAULT;
 
+	protected double fcon  = 1.0;  // fraction not tripped by the contractor
+	
+	// the aggregate motor model is represnted as two types of motors, A - non-restartable, B - restartable after voltage recovery
+	
+	protected double fthA = 1.0;  // fraction not tripped by the motor A thermal protection
+	
+	protected double fthB = 1.0;  // fraction not tripped by the motor B thermal protection
+	
+	protected double tempA = 0.0; // Temperature of the motor A
+	
+	protected double tempB = 0.0; // Temperature of the motor B
+	
+	
+	protected double complf = 1.0;
+	
+	private double Gstall = 0.0, Bstall = 0.0;
+	private Complex YStall = null;
+	
+	private Complex equivYpq = null;
+	
+	private Complex PQmotor = null;
+	
+	private double vstallbrk = 0.0;
+	private double 	pac_a = 0.0, qac_a = 0.0, pac_b = 0.0, qac_b = 0.0;
+	private double kuv =1.0, kcon = 1.0, fcon_trip = 0.0;
+	private boolean isContractorActioned = false;
+	private double I_CONV_FACTOR_M2S = 0.0;
+	private double vt_measured = 0.0;
+
+	// thermal protection
+	// the tripping characterisic is modeled as y = thermalEqnCoeff1*x +thermalEqnCoeff2 for x within {Th1t, Th2t}
+	// here x is the internal temperature, y is the output for determining thermal tripping
+	// when x>Th1t, starting trippinng, when x>Th2t, all will be tripped
+	
+	private double thermalEqnCoeff1 = -1.0/3;
+	private double thermalEqnCoeff2 = 1.433;  // default value
+	
+	private int statusA =1, statusB = 1; // the operating status of the part A and B of the motor; 0 - stall, 1- running
+	private double timestep = 0.0;
+	
 	private Hashtable<String, Object> states = null;
 	private static final String OUT_SYMBOL_P ="ACMotorP";
 	private static final String OUT_SYMBOL_Q ="ACMotorQ";
@@ -925,12 +981,657 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 
 	
 
+	@Override
+	public boolean initStates() {
+		boolean flag = true;
+        this.stage = 1; // initialized to running state
+        
+		this.Gstall = this.rstall/(this.rstall*this.rstall + this.xstall*this.xstall);
+		this.Bstall = -this.xstall/(this.rstall*this.rstall + this.xstall*this.xstall);
+		
+		this.YStall = new Complex(this.Gstall, this.Bstall);
+		
+		//TODO the initLoad is the total load at the bus ,include constant Z and I load
+		//In the future, this may need to be update to consider the constant P load only
+        Complex busTotalLoad = this.getDStabBus().getInitLoad();
+        this.pac = busTotalLoad.getReal()*this.loadPercent/100.0d; // pu on system base
+        this.qac = this.pac*Math.tan(Math.acos(this.powerFactor));
+		
+		
+		// pac and qac is the initial power
+		this.setInitLoadPQ(new Complex(pac,qac));
+		this.setLoadPQ(new Complex(pac,qac));
+		
+		// if mva is not defined and loading factor is available
+		if(this.getMvaBase()==0.0){
+			if(this.loadFactor >0 && this.loadFactor<=1.0)
+                    IpssLogger.getLogger().fine("AC motor MVABase will be calculated based on load factor");
+			else 
+				this.loadFactor = 1.0;
+			
+			this.setMvaBase(this.pac*this.getDStabBus().getNetwork().getBaseMva()/this.loadFactor);
+		}
+		
+		this.I_CONV_FACTOR_M2S = this.getMvaBase()/this.getDStabBus().getNetwork().getBaseMva();
+				
+		//Check whether a compensation is needed. If yes, calculate the compensation shuntY
+
+		// if bus.loadQ < ld1pac.q, then compShuntB = ld1pac.q-bus.loadQ
+		double vt = this.getDStabBus().getVoltageMag();
+		
+		this.vt_measured = vt;
+		
+		if(this.qac >busTotalLoad.getImaginary()){
+			
+			 double b = (this.qac - busTotalLoad.getImaginary())/vt/vt;
+			 this.compensateShuntY = new Complex(0,b);
+		}
+		
+		
+		Complex Sac = new Complex (pac, qac);
+		double i_motor = Sac.abs()/vt;
+		
+		this.tempA = i_motor*i_motor*this.rstall;
+		this.tempB = this.tempA;
+		
+		
+		// update the Vstall and Vbrk if necessary
+		this.vstall= this.vstall*(1+this.lFadj*(this.loadFactor-1));
+		this.vbrk = this.vbrk*(1+this.lFadj*(this.loadFactor-1));
+		
+		// motor P and Q on motor mvabase
+		double pac_mbase = this.pac*this.getDStabBus().getNetwork().getBaseMva()/this.getMvaBase();
+		double qac_mbase = this.qac*this.getDStabBus().getNetwork().getBaseMva()/this.getMvaBase();
+		
+		// initialize the parts A and B of the motor
+		this.pac_a = pac_mbase; 
+		this.pac_b = pac_mbase;
+		
+		this.qac_a = qac_mbase; 
+		this.qac_b = qac_mbase;
+		
+		
+	   // Calculate the P0 and Q0 at stage 0
+		this.p0 = pac_mbase - kp1*Math.pow((vt-vbrk),np1);
+		this.q0 = qac_mbase - this.kq1*Math.pow((vt-vbrk),nq1);
+		
+		
+		
+		double pst = 0.0, pac_calc = 0.0;
+		for (double v = 0.4; v<vbrk; v+=0.0001){
+			pst = this.Gstall*v*v;
+			pac_calc = this.p0 + kp1*Math.pow((v-vbrk),np1);
+			
+			if(pac_calc<pst){
+				this.vstallbrk = v;
+				break;
+			}
+			
+		}
+		
+		if(this.vstallbrk>this.vstall){
+			this.vstallbrk = this.vstall;
+		}
+		
+		
+		if(this.th1t >0 && this.th2t>this.th1t){
+			this.thermalEqnCoeff1 = -1/(this.th2t - this.th1t);
+			this.thermalEqnCoeff2 = this.th2t /(this.th2t - this.th1t);
+		}
+		
+//		Complex loadPQFactor = calcLoadCharacterFactor();
+//		
+//		this.p = this.pac/loadPQFactor.getReal();
+//		this.q = this.qac/loadPQFactor.getImaginary();
+		
+		this.PQmotor = new Complex(pac_mbase,qac_mbase);
+		
+		this.equivYpq = this.PQmotor.conjugate().divide(vt*vt);
+		
+		
+		extended_device_Id = "ACMotor_"+this.getId()+"@"+this.getDStabBus().getId();
+		this.states.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID, extended_device_Id);
+		
+		return flag;
+	}
+	
+	/**
+	 * The thermal protection heating increase is modeled as 
+	 * differential equation, thus it must be represented with the nextStep();
+	 * 
+	 * The stall timer as well as the recovery timer are also counted and updated in this method
+	 */
+	@Override
+	public boolean nextStep(double dt, DynamicSimuMethod method) {
+		boolean flag = true;
+		
+		// check the protection actions and update the status of AC motor accordingly
+		timestep = dt;
+		
+		// check whether the ac motor is stalled or not
+		double vmag = this.getDStabBus().getVoltageMag();
+		
+		
+	    // voltage measurements
+		
+		double dv_dt0 = (vmag-this.vt_measured)/this.tv;
+		
+		double vt_measured1 = this.vt_measured+dv_dt0*dt;
+		
+		double dv_dt1 = (vmag-vt_measured1)/this.tv;
+		
+		this.vt_measured = this.vt_measured+ (dv_dt0+dv_dt1)*0.5d*dt;
+		
+		// thermal overload protection
+		/*
+		 * When the motor is stalled, the temperature of the motor is computed by
+			integrating I^2 R through the thermal time constant Tth.  If the temperature reaches Th2t, all of the load is
+			tripped.   If the temperature is between  Th1t and  Th2t, a linear fraction of the load is tripped.   The termperature
+			 of the A and B portions of the load are computed separately.  The fractions of the A
+			and B parts of the load that have not been tripped by the thermal protection is output as fthA and fthB, respectively.	
+		 */
+		
+		Complex vt = this.getDStabBus().getVoltage();
+		
+		Complex ImotorA_pu = new Complex(0.0);
+		Complex ImotorB_pu = new Complex(0.0);
+		
+		if(this.statusA ==0)
+			 ImotorA_pu = vt.multiply(this.YStall);
+		else{
+			if(vmag>this.vstallbrk)
+				ImotorA_pu = new Complex(pac_a, qac_a).divide(vt).conjugate();
+			else
+				ImotorA_pu = vt.multiply(this.YStall);
+		}
+			
+		
+		if(this.statusB ==0)
+			 ImotorB_pu = vt.multiply(this.YStall);
+		else{
+			if(vmag>this.vstallbrk)
+			    ImotorB_pu = new Complex(pac_b, qac_b).divide(vt).conjugate();
+			else
+			    ImotorB_pu = vt.multiply(this.YStall);
+		}
+		
+		double dThA_dt0 = (Math.pow(ImotorA_pu.abs(),2)*this.rstall - this.tempA)/this.tth;
+		
+		double dThB_dt0 = (Math.pow(ImotorB_pu.abs(),2)*this.rstall - this.tempB)/this.tth;
+			
+	    double tempA1 = this.tempA+ dThA_dt0*dt;
+	    double tempB1 = this.tempB+ dThB_dt0*dt;
+	    
+		double dThA_dt1 = (Math.pow(ImotorA_pu.abs(),2)*this.rstall - tempA1)/this.tth;
+		
+		double dThB_dt1 = (Math.pow(ImotorB_pu.abs(),2)*this.rstall - tempB1)/this.tth;
+		
+		this.tempA = this.tempA + (dThA_dt0+dThA_dt1)*0.5d*dt;
+		this.tempB = this.tempB + (dThB_dt0+dThB_dt1)*0.5d*dt;
+		
+		return flag;
+	}
+	
+	/**
+	 *  to check whether AC motor stalls, restarts and the actions of the protections
+      %  this should be perform after the network solution step
+	 */
+	private boolean post_process_step(double dt){
+		boolean flag = true;
+		/*
+		 % UV Relay
+         % Two levels of undervoltage load shedding can be represented: If the voltage drops
+         % below uvtr1 for ttr1 seconds, the fraction ?fuvtr? of the load is tripped; If the voltage drops below uvtr2
+         % for ttr2 seconds, the fraction ?fuvr? of the load is tripped
+		*/
+		
+		if(this.vt_measured <this.getUVtr1() && this.fuvr >0.0){
+			this.uVRelayTimer1 = this.uVRelayTimer1 +dt;
+		}
+		else
+			this.uVRelayTimer1 = 0.0;
+		
+		if(this.vt_measured <this.getUVtr2() && this.fuvr >0.0){
+			this.uVRelayTimer2 = this.uVRelayTimer2 +dt;
+		}
+		else
+			this.uVRelayTimer2 = 0.0;
+		
+		// trip the portion with under voltage relays
+		if(this.uVRelayTimer1> this.ttr1){
+			this.kuv = 1.0 - this.fuvr;
+		}
+		
+		if(this.uVRelayTimer2> this.ttr2){
+			this.kuv = 1.0 - this.fuvr;
+		}
+		
+		/*
+        % contractor
+        %  Contactor -- If the voltage drops to below Vc2off, all of the load is tripped; if the voltage is between
+        % Vc1off and Vc2off, a linear fraction of the load is tripped. If the voltage later recovers to above Vc2on, all
+        % of the motor is reconnected; if the voltage recovers to between Vc2on and Vc1on, a linear fraction of the
+        % load is reconnected.
+        */
+		
+		if(this.vt_measured < this.vc2off){
+			this.kcon  = 0.0;
+			this.fcon_trip = 1.0;
+		}
+		else if(this.vt_measured>=this.vc2off && this.vt_measured <this.vc1off){
+			this.kcon = (this.vt_measured - this.vc2off)/(this.vc1off- this.vc2off);
+			this.fcon_trip = 1.0 - this.kcon;
+			
+		}
+		
+		
+		if(this.vt_measured >=this.vc1on){
+			this.kcon = 1.0;
+		}
+		else if(this.vt_measured < this.vc1on && this.vt_measured >= this.vc2on){
+			double Frecv = (this.vt_measured - this.vc2on)/(this.vc1on- this.vc2on);
+			this.kcon  = 1 - this.fcon_trip*(1-Frecv);
+		}
+		
+		
+		/*
+		 * Thermal protection 
+		 */
+		
+		// update the timer for thermal protection
+		
+		double vmag = this.getDStabBus().getVoltageMag();
+		
+		if (this.statusA ==1){
+			if(vmag < this.vstall){
+				this.acStallTimer = this.acStallTimer+ dt;
+			}
+			else
+				this.acStallTimer = 0.0;
+		}
+		
+		
+		if (this.statusB ==0){
+			if(vmag > this.vrst){
+				this.acRestartTimer = this.acRestartTimer+ dt;
+			}
+			else
+				this.acRestartTimer = 0.0;
+		}
+		
+		/*
+		 *  % update the status of the motor. transition from running to
+            % stalling is the same for the equivalent Motor A and B
+		 */
+		
+		if(this.acStallTimer > this.tstall && this.statusA ==1){
+			this.statusA = 0;
+			this.statusB = 0;
+			this.stage = 0;
+		}
+		
+		// considering AC restarting 
+		if(this.frst >0.0 && this.statusB ==0 && this.acRestartTimer > this.trst){
+			this.statusB = 1;
+			this.stage = 2;
+		}
+		
+		
+		/*
+		  % check whether AC motor will be trip next step, and what will be
+          % the remaining fraction;
+		 */
+		
+		if(this.thermalEqnCoeff1< 0.0){
+			if(this.tempA > this.th1t){
+				if(this.statusA == 0){
+					this.fthA = this.tempA*this.thermalEqnCoeff1 + this.thermalEqnCoeff2;
+					
+					if(this.fthA<0.0)
+						this.fthA = 0.0;
+				}
+			}
+			
+			if(this.tempB > this.th1t){
+				if(this.statusB == 0){
+					this.fthB = this.tempB*this.thermalEqnCoeff1 + this.thermalEqnCoeff2;
+					
+					if(this.fthB<0.0)
+						this.fthB = 0.0;
+				}
+			}
+		}
+		
+		
+		// Calculate the AC motor power
+
+		// call this method to update "this.PQmotor"
+		calculateMotorPower();
+		
+		this.equivYpq = this.PQmotor.conjugate().divide(vmag*vmag); // on motor MVABase
+		
+		return flag;
+	}
+	
+	/**
+	 * calculate the motor power, return value is pu on motor mvabase;
+	 * @return
+	 */
+	private Complex calculateMotorPower(){
+		
+		// Calculate the AC motor power
+		double freq = this.getDStabBus().getFreq();
+		double vmag = this.getDStabBus().getVoltageMag();
+		if(this.statusA == 1){
+			if(vmag >= this.vbrk){
+				this.pac_a  = (p0 +kp1*Math.pow((vmag-vbrk),np1))*(1+this.cmpKpf*(freq-1.0));
+				this.qac_a  = (q0 +kq1*Math.pow((vmag-vbrk),nq1))*(1+this.cmpKqf*(freq-1.0));
+				
+			}
+			else if(vmag <this.vbrk && vmag > this.vstallbrk){
+				this.pac_a = (p0 +kp2*Math.pow((vbrk-vmag),np2))*(1+this.cmpKpf*(freq-1.0));
+				this.qac_a = (q0 +kq2*Math.pow((vbrk-vmag),nq2))*(1+this.cmpKqf*(freq-1.0));
+			}
+			else{
+				this.pac_a =this.Gstall*vmag*vmag;
+				this.qac_a =-this.Bstall*vmag*vmag;
+			}
+			
+		}
+		// stall
+		else {
+			this.pac_a =this.Gstall*vmag*vmag;
+			this.qac_a =-this.Bstall*vmag*vmag;
+		}
+		
+		if(this.frst> 0.0){
+			
+			if(this.statusB == 1){
+				if(vmag >= this.vbrk){
+					this.pac_b  = (p0 +kp1*Math.pow((vmag-vbrk),np1))*(1+this.cmpKpf*(freq-1.0));
+					this.qac_b  = (q0 +kq1*Math.pow((vmag-vbrk),nq1))*(1+this.cmpKqf*(freq-1.0));
+					
+				}
+				else if(vmag <this.vbrk && vmag > this.vstallbrk){
+					this.pac_b = (p0 +kp2*Math.pow((vbrk-vmag),np2))*(1+this.cmpKpf*(freq-1.0));
+					this.qac_b = (q0 +kq2*Math.pow((vbrk-vmag),nq2))*(1+this.cmpKqf*(freq-1.0));
+				}
+				else{
+					this.pac_b =this.Gstall*vmag*vmag;
+					this.qac_b =-this.Bstall*vmag*vmag;
+				}
+				
+			}
+			// stall
+			else {
+				this.pac_b =this.Gstall*vmag*vmag;
+				this.qac_b =-this.Bstall*vmag*vmag;
+			}
+		}
+		
+		// ac motor total power on motor base
+		
+		double Pmotor = this.pac_a*(1-this.frst)*this.fthA+this.pac_b*this.frst*this.fthB;
+		double Qmotor = this.qac_a*(1-this.frst)*this.fthA+this.qac_b*this.frst*this.fthB;
+		
+		// consider the UV Relay,contractor as well as load change
+		
+		Pmotor = this.kuv*this.kcon*( 1.0 + this.accumulatedLoadChangeFactor)*Pmotor;
+		Qmotor = this.kuv*this.kcon*( 1.0 + this.accumulatedLoadChangeFactor)*Qmotor;
+		
+		this.PQmotor = new Complex(Pmotor, Qmotor);
+		
+		this.setLoadPQ(this.PQmotor.multiply(getPowerConvFactorM2S()));
+		
+		this.pac = Pmotor*getPowerConvFactorM2S();       // both are on system base
+		this.qac = Qmotor*getPowerConvFactorM2S();
+		
+		return this.PQmotor;
+	}
+	
+	/**
+	 * calculation the factor for converting current from motor mvabase to system vabase
+	 * @return
+	 */
+	private double getCurrConvFactorM2S(){
+		return this.I_CONV_FACTOR_M2S = this.getMvaBase()/this.getDStabBus().getNetwork().getBaseMva();
+	}
+	
+	/**
+	 * calculation the factor for converting current from motor mvabase to system vabase
+	 * @return
+	 */
+	private double getPowerConvFactorM2S(){
+		return this.getMvaBase()/this.getDStabBus().getNetwork().getBaseMva();
+	}
+	
+	
+	@Override
+	public Complex getPosSeqEquivY() {
+		Complex zstall = new Complex(this.rstall,this.xstall);
+		Complex y = new Complex(1.0,0).divide(zstall);
+		this.equivY = y.multiply(getMvaBase()/this.getDStabBus().getNetwork().getBaseMva());
+		
+		return this.equivY;
+	}
+	
+	@Override
+	public Complex getNortonCurInj() {
+		Complex vt = this.getDStabBus().getVoltage();
+		
+		Complex Imotor_systembase = null;
+		if(vt.abs()>this.vbrk){
+			// call this method to update "this.PQmotor"
+			calculateMotorPower();
+			Imotor_systembase = this.PQmotor.divide(vt).conjugate().multiply(this.I_CONV_FACTOR_M2S);
+		}
+		else
+			Imotor_systembase =  this.equivYpq.multiply(vt).multiply(this.I_CONV_FACTOR_M2S);
+		
+			
+		if(this.equivY==null) getPosSeqEquivY();
+		
+		this.nortonCurInj = this.equivY.multiply(vt).subtract(Imotor_systembase);
+				
+		return this.nortonCurInj;
+	}
+	
+	@Override
+	public Object getOutputObject() {
+	     return this.getNortonCurInj();
+	}
+	
+
+	@Override
+	public boolean updateAttributes(boolean netChange) {
+		return post_process_step(this.timestep);
+	}
+	
+	//The following calculation is  based on the AC motor model specification in PSS/E doc
+	private Complex calcLoadCharacterFactor(){
+		
+		double v = this.getDStabBus().getVoltage().abs();
+		// exponential factor
+
+		double pfactor = 0.0, qfactor = 0.0, pfactorStall = 0.0, qfactorStall = 0.0;
+		
+		if(v>this.vbrk  & stage == 0){
+			pfactor  = p0 +kp1*Math.pow((v-vbrk),np1);
+			qfactor  = q0 +kq1*Math.pow((v-vbrk),nq1);
+	    }
+		//TODO change from "v<Vbrk & v> Vstall & stage == 0 "to  "v<Vbrk & v> Vc1off & stage ==0"
+		else if( v<vbrk & v> vstall & stage == 0){ //
+			pfactor = p0 +kp2*Math.pow((vbrk-v),np2);
+			qfactor = q0 +kq2*Math.pow((vbrk-v),nq2);
+			pfactorStall = pfactor;
+			qfactorStall = qfactor;
+		}
+		// when v<= Vstall and stage = 0, the same pq factor, which is calculated in the last step
+		// before v<Vstall, will be used
+		
+		if(v<=vstall & stage == 0){
+			pfactor = pfactorStall*(v/vstall)*(v/vstall);
+			qfactor = qfactorStall*(v/vstall)*(v/vstall);
+		}
+		
+		// consider the frequency dependence
+		if(pfactor !=0.0 ||qfactor!=0){
+			double dFreq = getDStabBus().getFreq()-1.0;
+			pfactor = pfactor*(1+cmpKpf*dFreq);
+			qfactor = qfactor*(1+cmpKqf*dFreq/Math.sqrt(1-powerFactor*powerFactor));
+		}
+		
+       //System.out.println("Voltage, PQFactor :"+v+","+ pfactor+","+qfactor);
+		
+		return new Complex(pfactor,qfactor);
+	}
+   
+	
+	@Override
+	public Hashtable<String, Object> getStates(Object ref) {
+		states.put(OUT_SYMBOL_P, this.getPac());
+		states.put(OUT_SYMBOL_Q, this.getQac());
+		states.put(OUT_SYMBOL_VT, this.getDStabBus().getVoltage().abs());
+		states.put(OUT_SYMBOL_STATE, stage==1?0:1);
+		return this.states;
+	}
+
+	@Override
+	public String toString() {
+		if (eIsProxy()) return super.toString();
+
+		StringBuilder result = new StringBuilder(super.toString());
+		result.append(" (stage: ");
+		result.append(stage);
+		result.append(", p: ");
+		result.append(p);
+		result.append(", q: ");
+		result.append(q);
+		result.append(", p0: ");
+		result.append(p0);
+		result.append(", q0: ");
+		result.append(q0);
+		result.append(", pac: ");
+		result.append(pac);
+		result.append(", qac: ");
+		result.append(qac);
+		result.append(", powerFactor: ");
+		result.append(powerFactor);
+		result.append(", vstall: ");
+		result.append(vstall);
+		result.append(", rstall: ");
+		result.append(rstall);
+		result.append(", xstall: ");
+		result.append(xstall);
+		result.append(", tstall: ");
+		result.append(tstall);
+		result.append(", lFadj: ");
+		result.append(lFadj);
+		result.append(", kp1: ");
+		result.append(kp1);
+		result.append(", np1: ");
+		result.append(np1);
+		result.append(", kq1: ");
+		result.append(kq1);
+		result.append(", nq1: ");
+		result.append(nq1);
+		result.append(", kp2: ");
+		result.append(kp2);
+		result.append(", np2: ");
+		result.append(np2);
+		result.append(", kq2: ");
+		result.append(kq2);
+		result.append(", nq2: ");
+		result.append(nq2);
+		result.append(", vbrk: ");
+		result.append(vbrk);
+		result.append(", frst: ");
+		result.append(frst);
+		result.append(", vrst: ");
+		result.append(vrst);
+		result.append(", trst: ");
+		result.append(trst);
+		result.append(", cmpKpf: ");
+		result.append(cmpKpf);
+		result.append(", cmpKqf: ");
+		result.append(cmpKqf);
+		result.append(", fuvr: ");
+		result.append(fuvr);
+		result.append(", vtr1: ");
+		result.append(uvtr1);
+		result.append(", ttr1: ");
+		result.append(ttr1);
+		result.append(", vtr2: ");
+		result.append(uvtr2);
+		result.append(", ttr2: ");
+		result.append(ttr2);
+		result.append(", vc1off: ");
+		result.append(vc1off);
+		result.append(", vc2off: ");
+		result.append(vc2off);
+		result.append(", vc1on: ");
+		result.append(vc1on);
+		result.append(", vc2on: ");
+		result.append(vc2on);
+		result.append(", tth: ");
+		result.append(tth);
+		result.append(", th1t: ");
+		result.append(th1t);
+		result.append(", th2t: ");
+		result.append(th2t);
+		result.append(", uVRelayTimer1: ");
+		result.append(uVRelayTimer1);
+		result.append(", uVRelayTimer2: ");
+		result.append(uVRelayTimer2);
+		result.append(", acStallTimer: ");
+		result.append(acStallTimer);
+		result.append(", acRestartTimer: ");
+		result.append(acRestartTimer);
+		result.append(", tv: ");
+		result.append(tv);
+		result.append(')');
+		return result.toString();
+	}
+	
+	@Override
+	public boolean changeLoad(double factor) {
+		if (factor < -1.0){
+			IpssLogger.getLogger().severe(" percentageFactor < -1.0, this change will not be applied");
+			return false;
+		}
+		if (this.accumulatedLoadChangeFactor <= -1.0 &&  factor < 0.0)
+			IpssLogger.getLogger().severe( "this.accumulatedLoadChangeFactor<=-1.0 and percentageFactor < 0.0, this change will not be applied");
+		
+		this.accumulatedLoadChangeFactor = this.accumulatedLoadChangeFactor + factor;
+		
+		if (this.accumulatedLoadChangeFactor < -1.0){
+			IpssLogger.getLogger().severe( "the accumulatedLoadChangeFactor is less than -1.0 after this change, so the accumulatedLoadChangeFactor is reset to -1.0");
+			this.accumulatedLoadChangeFactor = -1.0;
+		}
+		IpssLogger.getLogger().info("accumulated Load Change Factor = "+ this.accumulatedLoadChangeFactor);
+		
+		return true;
+	}
+	
+
+
 	public int getStage() {
 		return stage;
 	}
 
 	public void setStage(int newStage) {
 		stage = newStage;
+	}
+	
+
+	public double getLoadFactor() {
+		return loadFactor;
+	}
+
+
+	public void setLoadFactor(double newLoadFactor) {
+		double oldLoadFactor = loadFactor;
+		loadFactor = newLoadFactor;
 	}
 
 	public double getP() {
@@ -1149,12 +1850,12 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 		fuvr = newFuvr;
 	}
 
-	public double getVtr1() {
-		return vtr1;
+	public double getUVtr1() {
+		return uvtr1;
 	}
 
-	public void setVtr1(double newVtr1) {
-		vtr1 = newVtr1;
+	public void setUVtr1(double newVtr1) {
+		uvtr1 = newVtr1;
 	}
 
 	public double getTtr1() {
@@ -1165,12 +1866,12 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 		ttr1 = newTtr1;
 	}
 
-	public double getVtr2() {
-		return vtr2;
+	public double getUVtr2() {
+		return uvtr2;
 	}
 
-	public void setVtr2(double newVtr2) {
-		vtr2 = newVtr2;
+	public void setUVtr2(double newUVtr2) {
+		uvtr2 = newUVtr2;
 	}
 
 	public double getTtr2() {
@@ -1277,357 +1978,4 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 		tv = newTv;
 	}
 
-	@Override
-	public boolean initStates() {
-       boolean flag = true;
-		
-		//TODO the initLoad is the toal load at the bus ,include constant Z and I load
-		//In the future, this may need to be update to consider the constant P load only
-        Complex busTotalLoad = this.getDStabBus().getInitLoad();
-		pac = busTotalLoad.getReal()*this.loadPercent/100.0d;
-		qac = pac*Math.tan(Math.acos(this.powerFactor));
-		
-		
-		// pac and qac is the initial power
-		this.setInitLoadPQ(new Complex(pac,qac));
-		this.setLoadPQ(new Complex(pac,qac));
-		
-		// if mva is not defined and loading factor is available
-		if(this.getMvaBase()==0.0){
-			if(this.loadFactor >0 && this.loadFactor<=1.0)
-                    IpssLogger.getLogger().fine("AC motor MVABase will be calculated based on load factor");
-			else 
-				this.loadFactor = 1.0;
-			
-			this.setMvaBase(this.pac*this.getDStabBus().getNetwork().getBaseMva()/this.loadFactor);
-		}
-		
-		
-		//Check whether a compensation is needed. If yes, calculate the compensation shuntY
-
-		// if bus.loadQ < ld1pac.q, then compShuntB = ld1pac.q-bus.loadQ
-		if(qac >busTotalLoad.getImaginary()){
-			 double v = this.getDStabBus().getVoltageMag();
-			 double b = (qac - busTotalLoad.getImaginary())/v/v;
-			 this.compensateShuntY = new Complex(0,b);
-		}
-		
-		
-		// update the Vstall and Vbrk if necessary
-		//Vstall(adj) = Vstall*(1+LFadj*(CompLF-1))
-		//Vbrk(adj) = Vbrk*(1+LFadj*(CompLF-1))
-		
-	   // Calcuate the P0 and Q0 at stage 0
-		p0 = 1 - kp1*Math.pow((1-vbrk),np1);
-		q0 = Math.sqrt(1 - this.powerFactor*this.powerFactor)/this.powerFactor - 
-				this.kq1*Math.pow((1.0-vbrk),nq1);
-		
-		Complex loadPQFactor = calcLoadCharacterFactor();
-		p = pac/loadPQFactor.getReal();
-		q = qac/loadPQFactor.getImaginary();
-		
-		extended_device_Id = "ACMotor_"+this.getId()+"@"+this.getDStabBus().getId();
-		this.states.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID, extended_device_Id);
-		
-		return flag;
-	}
-	
-	/**
-	 * The thermal protection heating increase is modeled as 
-	 * differential equation, thus it must be represented with the nextStep();
-	 * 
-	 * The stall timer as well as the recovery timer are also counted and updated in this method
-	 */
-	@Override
-	public boolean nextStep(double dt, DynamicSimuMethod method) {
-		boolean flag = true;
-		
-		// stage update 
-		if(acStallTimer>=tstall){
-			stage = 1;
-		}
-		
-		// switch to restart stage
-		if (stage == 1  && frst>0.0 && acRestartTimer >= trst)
-			stage = 2;
-		
-		// check whether the ac motor is stalled or not
-		double v = this.getDStabBus().getVoltageMag();
-		
-		if(v<=this.vstall){
-			acStallTimer += dt;
-		}
-		else{
-			acStallTimer = 0.0;
-		}
-		
-
-		// update restart counter
-		if(stage == 1 && v>this.vrst && frst>0.0){
-			acRestartTimer +=dt; 
-		}
-		else
-			acRestartTimer = 0.0;
-		
-	
-		
-		// thermal overload protection
-		/*
-		 * When the motor is stalled, the ��temperature�� of the motor is computed by
-			integrating I^2 R through the thermal time constant Tth.  If the temperature reaches Th2t, all of the load is
-			tripped.   If the temperature is between  Th1t and  Th2t, a linear fraction of the load is tripped.   The
-			��termperatures�� of the ��A�� and ��B�� portions of the load are computed separately.  The fractions of the ��A��
-			and ��B�� parts of the load that have not been tripped by the thermal protection is output as �� fthA�� and
-			��fthB��, respectively.	
-		 */
-			
-			
-		// contractor
-		/*
-		 *  Contactor �C If the voltage drops to below Vc2off, all of the load is tripped; if the voltage is between
-			Vc1off and Vc2off, a linear fraction of the load is tripped.  If the voltage later recovers to above Vc2on, all
-			of the motor is reconnected; if the voltage recovers to between Vc2on and Vc1on, a linear fraction of the
-			load is reconnected.  The fraction of the load that has not been tripped by the contactor is output as ��fcon��.
-		 */
-		
-		
-		//TODO the compensation current is only update once in order to solve the convergence issue.
-		
-		calculateCompensateCurInj();
-		
-		return flag;
-	}
-	
-	private void calculateCompensateCurInj() {
-        this.nortonCurInj = new Complex(0.0d,0.0d);
-		
-			// when loadPQFactor = 0, it means the AC is stalled, thus no compensation current
-			if(stage !=1) {
-
-				Complex loadPQFactor = calcLoadCharacterFactor();
-				// p+jq is pu based on system
-				Complex pq = new Complex(p*loadPQFactor.getReal(),q*loadPQFactor.getImaginary());
-				
-				//System.out.println("computed AC power ="+pq.toString());
-				
-				//TODO replace the pos-seq voltage with phase voltage
-				Complex v = this.getDStabBus().getVoltage();
-				double vmag = v.abs();
-				
-				// power needs to be compensated through current injection
-				Complex compPower = pq.subtract(this.equivY.multiply(vmag*vmag).conjugate());
-				
-				// I = -conj( (p+j*q - conj(v^2*this.equivY))/v)
-				
-				// situation where the load bus voltage is very low has been considered in calcLoadCharacterFactor();
-//				if(vmag<0.4)
-//					 this.currInj = new Complex(0.0);
-//				else
-				   this.nortonCurInj= compPower.divide(v).conjugate().multiply(-1.0d);
-			}
-		
-	}
-	
-	@Override
-	public Complex getPosSeqEquivY() {
-		Complex zstall = new Complex(this.rstall,this.xstall);
-		Complex y = new Complex(1.0,0).divide(zstall);
-		this.equivY = y.multiply(getMvaBase()/this.getDStabBus().getNetwork().getBaseMva());
-		
-		return this.equivY;
-	}
-	
-	@Override
-	public Complex getNortonCurInj() {
-		if(this.nortonCurInj == null) 
-			calculateCompensateCurInj();
-		//System.out.println("AC motor -"+this.getId()+"@"+this.getDStabBus().getId()+" dyn current injection: "+this.compensateCurInj);
-		
-		return this.nortonCurInj;
-	}
-	
-	@Override
-	public Object getOutputObject() {
-	     return this.getNortonCurInj();
-	}
-	
-	//The following calculation is  based on the AC motor model specification in PSS/E doc
-	private Complex calcLoadCharacterFactor(){
-		
-		double v = this.getDStabBus().getVoltage().abs();
-		// exponential factor
-
-		double pfactor = 0.0, qfactor = 0.0, pfactorStall = 0.0, qfactorStall = 0.0;
-		
-		if(v>this.vbrk  & stage == 0){
-			pfactor  = p0 +kp1*Math.pow((v-vbrk),np1);
-			qfactor  = q0 +kq1*Math.pow((v-vbrk),nq1);
-	    }
-		//TODO change from "v<Vbrk & v> Vstall & stage == 0 "to  "v<Vbrk & v> Vc1off & stage ==0"
-		else if( v<vbrk & v> vstall & stage == 0){ //
-			pfactor = p0 +kp2*Math.pow((vbrk-v),np2);
-			qfactor = q0 +kq2*Math.pow((vbrk-v),nq2);
-			pfactorStall = pfactor;
-			qfactorStall = qfactor;
-		}
-		// when v<= Vstall and stage = 0, the same pq factor, which is calculated in the last step
-		// before v<Vstall, will be used
-		
-		if(v<=vstall & stage == 0){
-			pfactor = pfactorStall*(v/vstall)*(v/vstall);
-			qfactor = qfactorStall*(v/vstall)*(v/vstall);
-		}
-		
-		// consider the frequency dependence
-		if(pfactor !=0.0 ||qfactor!=0){
-			double dFreq = getDStabBus().getFreq()-1.0;
-			pfactor = pfactor*(1+cmpKpf*dFreq);
-			qfactor = qfactor*(1+cmpKqf*dFreq/Math.sqrt(1-powerFactor*powerFactor));
-		}
-		
-       //System.out.println("Voltage, PQFactor :"+v+","+ pfactor+","+qfactor);
-		
-		return new Complex(pfactor,qfactor);
-	}
-    
-	@Override
-	public Complex getLoadPQ() {
-		Complex loadPQFactor = calcLoadCharacterFactor();
-		double v = this.getDStabBus().getVoltageMag();
-		// when loadPQFactor = 0, it means the AC is stalled, thus no compensation current
-		if(this.stage == 1) 
-			  this.loadPQ =this.getPosSeqEquivY().multiply( v*v).conjugate();
-		else
-			this.loadPQ = new Complex(p*loadPQFactor.getReal(),q*loadPQFactor.getImaginary());
-		
-		return this.loadPQ;
-		
-	}
-	
-	
-	@Override
-	public Hashtable<String, Object> getStates(Object ref) {
-		states.put(OUT_SYMBOL_P, this.getPac());
-		states.put(OUT_SYMBOL_Q, this.getQac());
-		states.put(OUT_SYMBOL_VT, this.getDStabBus().getVoltage().abs());
-		states.put(OUT_SYMBOL_STATE, stage==1?0:1);
-		return this.states;
-	}
-
-	@Override
-	public String toString() {
-		if (eIsProxy()) return super.toString();
-
-		StringBuilder result = new StringBuilder(super.toString());
-		result.append(" (stage: ");
-		result.append(stage);
-		result.append(", p: ");
-		result.append(p);
-		result.append(", q: ");
-		result.append(q);
-		result.append(", p0: ");
-		result.append(p0);
-		result.append(", q0: ");
-		result.append(q0);
-		result.append(", pac: ");
-		result.append(pac);
-		result.append(", qac: ");
-		result.append(qac);
-		result.append(", powerFactor: ");
-		result.append(powerFactor);
-		result.append(", vstall: ");
-		result.append(vstall);
-		result.append(", rstall: ");
-		result.append(rstall);
-		result.append(", xstall: ");
-		result.append(xstall);
-		result.append(", tstall: ");
-		result.append(tstall);
-		result.append(", lFadj: ");
-		result.append(lFadj);
-		result.append(", kp1: ");
-		result.append(kp1);
-		result.append(", np1: ");
-		result.append(np1);
-		result.append(", kq1: ");
-		result.append(kq1);
-		result.append(", nq1: ");
-		result.append(nq1);
-		result.append(", kp2: ");
-		result.append(kp2);
-		result.append(", np2: ");
-		result.append(np2);
-		result.append(", kq2: ");
-		result.append(kq2);
-		result.append(", nq2: ");
-		result.append(nq2);
-		result.append(", vbrk: ");
-		result.append(vbrk);
-		result.append(", frst: ");
-		result.append(frst);
-		result.append(", vrst: ");
-		result.append(vrst);
-		result.append(", trst: ");
-		result.append(trst);
-		result.append(", cmpKpf: ");
-		result.append(cmpKpf);
-		result.append(", cmpKqf: ");
-		result.append(cmpKqf);
-		result.append(", fuvr: ");
-		result.append(fuvr);
-		result.append(", vtr1: ");
-		result.append(vtr1);
-		result.append(", ttr1: ");
-		result.append(ttr1);
-		result.append(", vtr2: ");
-		result.append(vtr2);
-		result.append(", ttr2: ");
-		result.append(ttr2);
-		result.append(", vc1off: ");
-		result.append(vc1off);
-		result.append(", vc2off: ");
-		result.append(vc2off);
-		result.append(", vc1on: ");
-		result.append(vc1on);
-		result.append(", vc2on: ");
-		result.append(vc2on);
-		result.append(", tth: ");
-		result.append(tth);
-		result.append(", th1t: ");
-		result.append(th1t);
-		result.append(", th2t: ");
-		result.append(th2t);
-		result.append(", uVRelayTimer1: ");
-		result.append(uVRelayTimer1);
-		result.append(", uVRelayTimer2: ");
-		result.append(uVRelayTimer2);
-		result.append(", acStallTimer: ");
-		result.append(acStallTimer);
-		result.append(", acRestartTimer: ");
-		result.append(acRestartTimer);
-		result.append(", tv: ");
-		result.append(tv);
-		result.append(')');
-		return result.toString();
-	}
-	
-	@Override
-	public boolean changeLoad(double factor) {
-		if (factor < -1.0){
-			IpssLogger.getLogger().severe(" percentageFactor < -1.0, this change will not be applied");
-			return false;
-		}
-		if (this.accumulatedLoadChangeFactor <= -1.0 &&  factor < 0.0)
-			IpssLogger.getLogger().severe( "this.accumulatedLoadChangeFactor<=-1.0 and percentageFactor < 0.0, this change will not be applied");
-		
-		this.accumulatedLoadChangeFactor = this.accumulatedLoadChangeFactor + factor;
-		
-		if (this.accumulatedLoadChangeFactor < -1.0){
-			IpssLogger.getLogger().severe( "the accumulatedLoadChangeFactor is less than -1.0 after this change, so the accumulatedLoadChangeFactor is reset to -1.0");
-			this.accumulatedLoadChangeFactor = -1.0;
-		}
-		IpssLogger.getLogger().info("accumulated Load Change Factor = "+ this.accumulatedLoadChangeFactor);
-		
-		return true;
-	}
 } //LD1PACImpl

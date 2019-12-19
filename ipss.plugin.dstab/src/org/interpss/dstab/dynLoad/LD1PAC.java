@@ -311,12 +311,12 @@ public interface LD1PAC extends DynLoadModel {
 	 * Returns the value of the '<em><b>Vtr1</b></em>' attribute.
 	 * The default value is <code>"0.0"</code>.
 	 */
-	double getVtr1();
+	double getUVtr1();
 
 	/**
 	 * Sets the value of the '{@link com.interpss.dstab.dynLoad.LD1PAC#getVtr1 <em>Vtr1</em>}' attribute.
 	 */
-	void setVtr1(double value);
+	void setUVtr1(double value);
 
 	/**
 	 * Returns the value of the '<em><b>Ttr1</b></em>' attribute.
@@ -333,12 +333,12 @@ public interface LD1PAC extends DynLoadModel {
 	 * Returns the value of the '<em><b>Vtr2</b></em>' attribute.
 	 * The default value is <code>"0.0"</code>.
 	 */
-	double getVtr2();
+	double getUVtr2();
 
 	/**
 	 * Sets the value of the '{@link com.interpss.dstab.dynLoad.LD1PAC#getVtr2 <em>Vtr2</em>}' attribute.
 	 */
-	void setVtr2(double value);
+	void setUVtr2(double value);
 
 	/**
 	 * Returns the value of the '<em><b>Ttr2</b></em>' attribute.
