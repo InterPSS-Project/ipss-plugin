@@ -25,7 +25,11 @@
 package org.interpss.datamodel.bean;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+
+import org.interpss.datamodel.util.INetBeanComparator;
+import org.interpss.datamodel.util.INetBeanComparator.CompareLog;
 
 import com.google.gson.Gson;
 import com.interpss.common.util.IpssLogger;
@@ -39,7 +43,6 @@ import com.interpss.common.util.IpssLogger;
  *
  */
 public abstract class BaseJSONBean implements Comparable<BaseJSONBean> {
-	public static enum CompareLog { Console, MsgList };
 	
 	/**
 	 * default error tolerance for Bean object comparison for value in PU
@@ -63,14 +66,14 @@ public abstract class BaseJSONBean implements Comparable<BaseJSONBean> {
 		info;                   // extra info
 
 	private static List<String> msgList = new ArrayList<>();
-	private static CompareLog compareLog = CompareLog.Console;
+	private static INetBeanComparator.CompareLog compareLog = CompareLog.Console;
 	
 	/**
 	 * set compare warning msg log method
 	 * 
 	 * @param log
 	 */
-	public void setCompareLog(CompareLog log) {
+	public void setCompareLog(INetBeanComparator.CompareLog log) {
 		compareLog = log;
 		msgList.clear();
 	}
@@ -99,6 +102,18 @@ public abstract class BaseJSONBean implements Comparable<BaseJSONBean> {
 			return 1;
 		}
 	}
+	
+	/**
+	 * compare this object with the bean object using the comparator
+	 * 
+	 * @param bean the bean object to be compared with this object
+	 * @param comparator 
+	 * @return 0 if the two objects are equal, 1 if not equal
+	 */
+	public int compare(BaseJSONBean bean, Comparator<BaseJSONBean> comparator) {
+		return comparator.compare(this, bean);
+	}
+	
 
 	/**
 	 * validate this object

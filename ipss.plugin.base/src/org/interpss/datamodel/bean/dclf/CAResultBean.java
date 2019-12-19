@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.interpss.datamodel.bean.BaseJSONBean;
 
-public class CAResultBean extends BaseJSONBean{
+public class CAResultBean extends BaseJSONBean {
 	
 	public String contId;
 	
