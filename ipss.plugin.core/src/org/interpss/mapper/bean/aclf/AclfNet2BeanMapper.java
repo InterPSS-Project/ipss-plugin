@@ -74,14 +74,14 @@ public class AclfNet2BeanMapper extends BaseAclfNet2BeanMapper<AclfNetBean> {
 		
 		for (AclfBus bus : aclfNet.getBusList()) {
 			AclfBusBean bean = new AclfBusBean();
-			netBean.bus_list.add(bean);
 			mapBaseBus(bus, bean);
+			netBean.addBusBean(bean);
 		}
 		
 		for (AclfBranch branch : aclfNet.getBranchList()) {
 			AclfBranchBean bean = new AclfBranchBean();
-			netBean.branch_list.add(bean);
 			mapBaseBranch(branch, bean);
+			netBean.addBranchBean(bean);
 		}
 
 		return noError;
