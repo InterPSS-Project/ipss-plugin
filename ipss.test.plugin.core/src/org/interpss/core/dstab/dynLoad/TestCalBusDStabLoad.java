@@ -102,7 +102,7 @@ public class TestCalBusDStabLoad extends TestSetupBase {
 		
 		System.out.println(sm.getBusTotalLoadQTable().get("Bus1").get(1).getValue());
 		assertTrue(NumericUtil.equals(sm.getBusTotalLoadPTable().get("Bus1").get(1).getValue(), 0.8,1.0E-6));
-		assertTrue(NumericUtil.equals(sm.getBusTotalLoadQTable().get("Bus1").get(1).getValue(), 0.2,1.0E-6));
+		assertTrue(NumericUtil.equals(sm.getBusTotalLoadQTable().get("Bus1").get(1).getValue(), 0.2,1.0E-5));
 		
 	}
 	
