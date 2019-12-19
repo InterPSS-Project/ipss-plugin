@@ -117,7 +117,7 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 		assertTrue(NumericUtil.equals(aclfResult.loss.re, ((500.0+257.94)-(160.0+200.0+370.0))*0.01, 0.0001));
 		//assertTrue(NumericUtil.equals(aclfResult.loss.im, (80.0+100.0+130.0)*0.01, 0.0001));
 
-		for (AclfBusBean bus : aclfResult.bus_list) {
+		for (AclfBusBean bus : aclfResult.getBusBeanList()) {
 			if (bus.id.equals("5")) {
 				assertTrue(NumericUtil.equals(bus.v_mag, 1.0500, 0.0001));
 				assertTrue(NumericUtil.equals(bus.v_ang, 0.0, 0.0001));
@@ -156,7 +156,7 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 				assertTrue(NumericUtil.equals(bus.load.im, 0.8, 0.0001));			}
 		}
 		
-		for (AclfBranchResultBean bra : aclfResult.branch_list) {
+		for (AclfBranchResultBean bra : aclfResult.getBranchBeanList()) {
 			if (bra.id.equals("1->2(1)")) {
 				assertTrue(bra.bra_code == BranchCode.Line);
 				/*
