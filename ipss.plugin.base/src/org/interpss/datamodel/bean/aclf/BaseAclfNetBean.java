@@ -25,7 +25,9 @@
 package org.interpss.datamodel.bean.aclf;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 
 import org.interpss.datamodel.bean.BaseJSONBean;
 import org.interpss.datamodel.bean.BaseNetBean;
@@ -42,40 +44,61 @@ import com.interpss.common.util.NetUtilFunc;
  */
 public class BaseAclfNetBean<TBus extends AclfBusBean, TBra extends AclfBranchBean> extends BaseNetBean {
 	
-	public List<TBus> 
-		bus_list;					// bus result bean list
-	public List<TBra> 
-		branch_list;                // branch result bean list
+	private List<TBus> bus_list;					// bus result bean list
+	private Map<String,TBus> busIdMapper;
 	
-	public BaseAclfNetBean() { bus_list = new ArrayList<TBus>(); branch_list = new ArrayList<TBra>(); }
+	private List<TBra> branch_list;                // branch result bean list
+	private Map<String,TBra> branchIdMapper;
+	
+	public BaseAclfNetBean() { 
+		bus_list = new ArrayList<TBus>(); 
+		busIdMapper = new Hashtable<>();
+		branch_list = new ArrayList<TBra>(); 
+		branchIdMapper = new Hashtable<>();	
+	}
+	
+	public List<TBus> getBusBeanList() {
+		return bus_list;
+	}
+	
+	public List<TBra> getBranchBeanList() {
+		return branch_list;
+	}
+	
+	public void addBusBean(TBus bus) {
+		this.bus_list.add((TBus)bus);
+		this.busIdMapper.put(bus.id, (TBus)bus);			
+	}
+
+	public void addBranchBean(TBra branch) {
+		this.branch_list.add((TBra)branch);
+		this.branchIdMapper.put(branch.id, (TBra)branch);		
+	}
 	
 	@Override public int compareTo(BaseJSONBean b) {
 		int eql = super.compareTo(b);
 		
-		BaseAclfNetBean<TBus,TBra> bean = (BaseAclfNetBean<TBus,TBra>)b;
+		BaseAclfNetBean<TBus,TBra> netBean = (BaseAclfNetBean<TBus,TBra>)b;
 
 		for (TBus bus : this.bus_list) 
-			if (bus.compareTo(bean.getBus(bus.id)) != 0) eql = 1; 
+			if (bus.compareTo(netBean.getBus(bus.id)) != 0) 
+				eql = 1; 
 		
 		for (TBra bra : this.branch_list)
-			if (bra.compareTo(bean.getBranch(bra.id)) != 0) eql = 1; 
+			if (bra.compareTo(netBean.getBranch(bra.id)) != 0) 
+				eql = 1; 
 
 		return eql;
 	}	
 	
-	public TBus getBus(String id) {
-		for (TBus bus : this.bus_list) {
-			if (bus.id.equals(id))
-				return bus;
-		}
-		//logCompareMsg("Bus " + id + " cannot be found");
-		return null;
+	public TBus getBus(String busId) {
+		return this.busIdMapper.get(busId);
 	}
 	
-	public AclfBusBean createAclfBusBean(String id) {
+	public AclfBusBean createAclfBusBean(String busId) {
 		AclfBusBean bus = new AclfBusBean();
-		bus.id = id;
-		this.bus_list.add((TBus)bus);
+		bus.id = busId;
+		this.addBusBean((TBus)bus);
 		return bus;
 	}
 	
@@ -85,7 +108,7 @@ public class BaseAclfNetBean<TBus extends AclfBusBean, TBra extends AclfBranchBe
 		bra.t_id = toId;
 		bra.cir_id = cirId;
 		bra.id = NetUtilFunc.ToBranchId.f(fromId, toId, cirId);
-		this.branch_list.add((TBra)bra);
+		this.addBranchBean((TBra)bra);
 		return bra;
 	}
 	
@@ -95,26 +118,17 @@ public class BaseAclfNetBean<TBus extends AclfBusBean, TBra extends AclfBranchBe
 		bra.t_id = toId;
 		bra.cir_id = cirId;
 		bra.id = NetUtilFunc.ToBranchId.f(fromId, toId, cirId);
-		this.branch_list.add((TBra)bra);
+		this.addBranchBean((TBra)bra);
 		return bra;
 	}
 	
-	public TBra getBranch(String id) {
-		for (TBra bra : this.branch_list) {
-			if (bra.id.equals(id))
-				return bra;
-		}
-		//logCompareMsg("Branch " + id + " cannot be found");
-		return null;
+	public TBra getBranch(String branchId) {
+		return this.branchIdMapper.get(branchId);
 	}
 	
 	public TBra getBranch(String fId, String tId, String cirId) {
-		for (TBra bra : this.branch_list) {
-			if (bra.f_id.equals(fId) && bra.t_id.equals(tId) && bra.cir_id.equals(cirId))
-				return bra;
-		}
-		//logCompareMsg("Branch " + fId + "->" + tId + "(" + cirId + ") cannot be found");
-		return null;
+		String braId = NetUtilFunc.ToBranchId.f(fId, tId, cirId);
+		return this.branchIdMapper.get(braId);
 	}
 
 	@Override

@@ -34,7 +34,7 @@ import org.interpss.numeric.util.NumericUtil;
  * @author mzhou
  *
  */
-public class BaseBusBean extends BaseJSONBean {
+public abstract class BaseBusBean extends BaseJSONBean {
 		
 	public long 
 	    number;    				// bus number
