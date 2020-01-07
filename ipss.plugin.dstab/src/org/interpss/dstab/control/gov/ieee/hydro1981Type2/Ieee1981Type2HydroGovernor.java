@@ -75,7 +75,7 @@ public class Ieee1981Type2HydroGovernor extends AnnotateGovernor {
     FilterControlBlock wFilterBlock;
 
     // UI Editor panel
-    private static NBIeeeHTurbineEditPanel _editPanel = new NBIeeeHTurbineEditPanel();
+//    private static NBIeeeHTurbineEditPanel _editPanel = new NBIeeeHTurbineEditPanel();
     
     /**
      * Default Constructor
@@ -129,11 +129,11 @@ public class Ieee1981Type2HydroGovernor extends AnnotateGovernor {
      *
      * @return the editor panel object
      */
-    @Override
-	public Object getEditPanel() {
-        _editPanel.init(this);
-        return _editPanel;
-    }
+//    @Override
+//	public Object getEditPanel() {
+//        _editPanel.init(this);
+//        return _editPanel;
+//    }
  
     @Override
 	public AnController getAnController() {

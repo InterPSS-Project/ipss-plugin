@@ -39,7 +39,7 @@ public class IeeeST2Governor extends AbstractGovernor {
 	private LimitType limit = null;
 
 	// UI Editor panel
-	private static final NBIeeeST2GovernorEditPanel _editPanel = new NBIeeeST2GovernorEditPanel();
+//	private static final NBIeeeST2GovernorEditPanel _editPanel = new NBIeeeST2GovernorEditPanel();
 
 	/**
 	 * Default Constructor
@@ -182,11 +182,11 @@ public class IeeeST2Governor extends AbstractGovernor {
 	 * 
 	 * @return the editor panel object
 	 */	
-	@Override
-	public Object getEditPanel() {
-		_editPanel.init(this);
-		return _editPanel;
-	}
+//	@Override
+//	public Object getEditPanel() {
+//		_editPanel.init(this);
+//		return _editPanel;
+//	}
 	
 	@Override
 	public void setRefPoint(double x) {
