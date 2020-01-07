@@ -164,13 +164,13 @@ public class BpaEkTypeExciter extends AnnotateExciter {
      *
      * @return the editor panel object
      */
-    @Override
-    public Object getEditPanel() {
-        _editPanel.init(this);
-        return _editPanel;
-    }
+//    @Override
+//    public Object getEditPanel() {
+//        _editPanel.init(this);
+//        return _editPanel;
+//    }
     // UI Editor panel
-    private static NBBpaEkTypeExciterEditPanel _editPanel = new NBBpaEkTypeExciterEditPanel();
+//    private static NBBpaEkTypeExciterEditPanel _editPanel = new NBBpaEkTypeExciterEditPanel();
 
 /*
  * do not modify the following part
