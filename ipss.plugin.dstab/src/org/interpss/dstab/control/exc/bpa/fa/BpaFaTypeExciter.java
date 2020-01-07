@@ -75,7 +75,7 @@ public class BpaFaTypeExciter extends AnnotateExciter {
 	   WashoutControlBlock washoutBlock;
 
     // UI Editor panel
-    private static NBBpaFaTypeExciterEditPanel _editPanel = new NBBpaFaTypeExciterEditPanel();
+//    private static NBBpaFaTypeExciterEditPanel _editPanel = new NBBpaFaTypeExciterEditPanel();
 
 /*
  * Part-2: Define the contructors
@@ -157,11 +157,11 @@ public class BpaFaTypeExciter extends AnnotateExciter {
      *
      * @return the editor panel object
      */
-    @Override
-    public Object getEditPanel() {
-        _editPanel.init(this);
-        return _editPanel;
-    }
+//    @Override
+//    public Object getEditPanel() {
+//        _editPanel.init(this);
+//        return _editPanel;
+//    }
 
 /*
  * do not modify the following part

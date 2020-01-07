@@ -85,7 +85,7 @@ public class Ieee1992PSS1AStabilizer extends AnnotateStabilizer {
 	    FilterControlBlock filterBlock2;
 
 	// UI Editor panel
-	private static final NBIeee1992PSS1AEditPanel _editPanel = new NBIeee1992PSS1AEditPanel();
+//	private static final NBIeee1992PSS1AEditPanel _editPanel = new NBIeee1992PSS1AEditPanel();
 	
 	public Ieee1992PSS1AStabilizer() {
         this.setName("ieee1992PSS1AStabilizer");
@@ -140,11 +140,11 @@ public class Ieee1992PSS1AStabilizer extends AnnotateStabilizer {
 	 * 
 	 * @return the editor panel object
 	 */	
-	@Override
-	public Object getEditPanel() {
-		_editPanel.init(this);
-		return _editPanel;
-	}
+//	@Override
+//	public Object getEditPanel() {
+//		_editPanel.init(this);
+//		return _editPanel;
+//	}
 	
     @Override
 	public AnController getAnController() {

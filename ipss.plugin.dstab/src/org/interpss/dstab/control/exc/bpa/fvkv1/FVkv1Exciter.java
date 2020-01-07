@@ -123,7 +123,7 @@ public class FVkv1Exciter extends AnnotateExciter {
 	   };
 
     // UI Editor panel
-    private static NBFVkv1ExciterEditPanel _editPanel = new NBFVkv1ExciterEditPanel();
+//    private static NBFVkv1ExciterEditPanel _editPanel = new NBFVkv1ExciterEditPanel();
 
 /*
  * Part-2: Define the contructors
@@ -207,11 +207,11 @@ public class FVkv1Exciter extends AnnotateExciter {
      *
      * @return the editor panel object
      */
-    @Override
-    public Object getEditPanel() {
-        _editPanel.init(this);
-        return _editPanel;
-    }
+//    @Override
+//    public Object getEditPanel() {
+//        _editPanel.init(this);
+//        return _editPanel;
+//    }
 
 /*
  * do not modify the following part

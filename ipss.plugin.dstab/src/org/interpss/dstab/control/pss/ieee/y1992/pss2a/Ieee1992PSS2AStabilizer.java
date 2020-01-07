@@ -135,7 +135,7 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer {
 	}
 	
 	// UI Editor panel
-	private static final NBIeee1992PSS2AEditPanel _editPanel = new NBIeee1992PSS2AEditPanel();
+//	private static final NBIeee1992PSS2AEditPanel _editPanel = new NBIeee1992PSS2AEditPanel();
 	
 	public Ieee1992PSS2AStabilizer() {
         this.setName("ieee1992PSS2AStabilizer");
@@ -198,11 +198,11 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer {
 	 * 
 	 * @return the editor panel object
 	 */	
-	@Override
-	public Object getEditPanel() {
-		_editPanel.init(this);
-		return _editPanel;
-	}
+//	@Override
+//	public Object getEditPanel() {
+//		_editPanel.init(this);
+//		return _editPanel;
+//	}
 	
     @Override
 	public AnController getAnController() {

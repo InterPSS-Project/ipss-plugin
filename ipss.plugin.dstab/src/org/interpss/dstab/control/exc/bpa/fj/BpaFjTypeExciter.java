@@ -97,7 +97,7 @@ public class BpaFjTypeExciter extends AnnotateExciter {
 	   };
 
     // UI Editor panel
-    private static NBBpaFjTypeExciterEditPanel _editPanel = new NBBpaFjTypeExciterEditPanel();
+//    private static NBBpaFjTypeExciterEditPanel _editPanel = new NBBpaFjTypeExciterEditPanel();
 
 /*
  * Part-2: Define the contructors
@@ -177,11 +177,11 @@ public class BpaFjTypeExciter extends AnnotateExciter {
      *
      * @return the editor panel object
      */
-    @Override
-    public Object getEditPanel() {
-        _editPanel.init(this);
-        return _editPanel;
-    }
+//    @Override
+//    public Object getEditPanel() {
+//        _editPanel.init(this);
+//        return _editPanel;
+//    }
 
 /*
  * do not modify the following part

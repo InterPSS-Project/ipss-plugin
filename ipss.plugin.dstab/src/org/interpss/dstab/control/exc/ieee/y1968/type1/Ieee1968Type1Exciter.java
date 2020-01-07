@@ -116,7 +116,7 @@ public class Ieee1968Type1Exciter extends AnnotateExciter {
 	   WashoutControlBlock washoutBlock;
  	
     // UI Editor panel
-    private static NBIeee1968Type1EditPanel _editPanel = new NBIeee1968Type1EditPanel();
+//    private static NBIeee1968Type1EditPanel _editPanel = new NBIeee1968Type1EditPanel();
     
     /**
      * Default Constructor
@@ -196,10 +196,10 @@ public class Ieee1968Type1Exciter extends AnnotateExciter {
      *
      * @return the editor panel object
      */
-    @Override public Object getEditPanel() {
-        _editPanel.init(this);
-        return _editPanel;
-    }
+//    @Override public Object getEditPanel() {
+//        _editPanel.init(this);
+//        return _editPanel;
+//    }
  
     // the following statement must be added to all CML controller
     @Override public AnController getAnController() {
