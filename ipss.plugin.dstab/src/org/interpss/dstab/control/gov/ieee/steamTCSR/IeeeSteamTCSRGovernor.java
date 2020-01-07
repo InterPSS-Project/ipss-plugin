@@ -94,7 +94,7 @@ public class IeeeSteamTCSRGovernor extends AnnotateGovernor {
     DelayControlBlock coDelayBlock;
 
     // UI Editor panel
-    private static NBIeeeSteamTCSREditPanel _editPanel = new NBIeeeSteamTCSREditPanel();
+//    private static NBIeeeSteamTCSREditPanel _editPanel = new NBIeeeSteamTCSREditPanel();
     
     /**
      * Default Constructor
@@ -156,11 +156,11 @@ public class IeeeSteamTCSRGovernor extends AnnotateGovernor {
      *
      * @return the editor panel object
      */
-    @Override
-	public Object getEditPanel() {
-        _editPanel.init(this);
-        return _editPanel;
-    }
+//    @Override
+//	public Object getEditPanel() {
+//        _editPanel.init(this);
+//        return _editPanel;
+//    }
  
     @Override
 	public AnController getAnController() {
