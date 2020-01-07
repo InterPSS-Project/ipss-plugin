@@ -40,6 +40,7 @@ import org.ieee.odm.schema.ApparentPowerUnitType;
 import org.ieee.odm.schema.BusGenDataXmlType;
 import org.ieee.odm.schema.BusLoadDataXmlType;
 import org.ieee.odm.schema.LFGenCodeEnumType;
+import org.ieee.odm.schema.LFLoadCodeEnumType;
 import org.ieee.odm.schema.LoadflowBusXmlType;
 import org.ieee.odm.schema.LoadflowGenDataXmlType;
 import org.ieee.odm.schema.LoadflowLoadDataXmlType;
@@ -375,10 +376,12 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 			if(xmlLoadData.getContributeLoad().size()>0){
 				// we set parent bus load code to constant power
 				bus.setLoadCode(AclfLoadCode.CONST_P);
+				
 				int loadCnt = 1;
 				for(JAXBElement<? extends LoadflowLoadDataXmlType> elem: xmlLoadData.getContributeLoad()){
 					if(elem!=null){
 						LoadflowLoadDataXmlType loadElem = elem.getValue();
+						
 						
 						String id = loadElem.getId()!=null?loadElem.getId():this.bus.getId()+"-L"+loadCnt++;
 						AclfLoad load = bus instanceof AclfBus ? CoreObjectFactory.createAclfLoad(id) :
@@ -390,28 +393,37 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 						bus.getContributeLoadList().add((TLoad)load);
 						//status
 						load.setStatus(loadElem.isOffLine()!=null?!loadElem.isOffLine():true);
-					    // load code		
-						AclfLoadCode code = AclfLoadCode.NON_LOAD;
-						PowerXmlType p = loadElem.getConstPLoad(),
-									 i = loadElem.getConstILoad(),
-									 z = loadElem.getConstZLoad();
 
-						if (p != null) {
-							code = code == AclfLoadCode.NON_LOAD? AclfLoadCode.CONST_P : AclfLoadCode.ZIP;
-							load.setLoadCP(UnitHelper.pConversion( new Complex(p.getRe(),p.getIm()), 
+						// load code		
+						AclfLoadCode code = AclfLoadCode.NON_LOAD;
+						if (loadElem.getCode() == LFLoadCodeEnumType.LOAD_PV) {
+							code = AclfLoadCode.LOAD_PV;
+							PowerXmlType p = loadElem.getConstPLoad();
+							load.setLoadCP(UnitHelper.pConversion( new Complex(p.getRe(),0.0), 
 									baseKva, toApparentPowerUnit.apply(p.getUnit()), UnitType.PU ));
 						}
-						
-						if (i != null) {
-							code = code == AclfLoadCode.NON_LOAD? AclfLoadCode.CONST_I : AclfLoadCode.ZIP;
-							load.setLoadCI(UnitHelper.pConversion( new Complex(i.getRe(),i.getIm()), 
-									baseKva, toApparentPowerUnit.apply(i.getUnit()), UnitType.PU ));
-						}
+						else {
+							PowerXmlType p = loadElem.getConstPLoad(),
+										 i = loadElem.getConstILoad(),
+										 z = loadElem.getConstZLoad();
 
-						if (z != null) {
-							code = code == AclfLoadCode.NON_LOAD? AclfLoadCode.CONST_Z : AclfLoadCode.ZIP;
-							load.setLoadCZ(UnitHelper.pConversion( new Complex(z.getRe(),z.getIm()), 
-									baseKva, toApparentPowerUnit.apply(z.getUnit()), UnitType.PU ));
+							if (p != null) {
+								code = code == AclfLoadCode.NON_LOAD? AclfLoadCode.CONST_P : AclfLoadCode.ZIP;
+								load.setLoadCP(UnitHelper.pConversion( new Complex(p.getRe(),p.getIm()), 
+										baseKva, toApparentPowerUnit.apply(p.getUnit()), UnitType.PU ));
+							}
+							
+							if (i != null) {
+								code = code == AclfLoadCode.NON_LOAD? AclfLoadCode.CONST_I : AclfLoadCode.ZIP;
+								load.setLoadCI(UnitHelper.pConversion( new Complex(i.getRe(),i.getIm()), 
+										baseKva, toApparentPowerUnit.apply(i.getUnit()), UnitType.PU ));
+							}
+
+							if (z != null) {
+								code = code == AclfLoadCode.NON_LOAD? AclfLoadCode.CONST_Z : AclfLoadCode.ZIP;
+								load.setLoadCZ(UnitHelper.pConversion( new Complex(z.getRe(),z.getIm()), 
+										baseKva, toApparentPowerUnit.apply(z.getUnit()), UnitType.PU ));
+							}							
 						}
 
 						load.setCode(code);
