@@ -65,7 +65,7 @@ public class SimpleGovernor extends AnnotateGovernor {
     GainBlock gainBlock;
  	
     // UI Editor panel
-    private static NBSimpleGovernorEditPanel _editPanel = new NBSimpleGovernorEditPanel();
+//    private static NBSimpleGovernorEditPanel _editPanel = new NBSimpleGovernorEditPanel();
     
     /**
      * Default Constructor
@@ -119,10 +119,10 @@ public class SimpleGovernor extends AnnotateGovernor {
      *
      * @return the editor panel object
      */
-    @Override public Object getEditPanel() {
-        _editPanel.init(this);
-        return _editPanel;
-    }
+//    @Override public Object getEditPanel() {
+//        _editPanel.init(this);
+//        return _editPanel;
+//    }
  
     // the following statement must be added to all CML controller
     @Override public AnController getAnController() {

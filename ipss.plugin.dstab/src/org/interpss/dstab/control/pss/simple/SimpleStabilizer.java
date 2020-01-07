@@ -65,7 +65,7 @@ public class SimpleStabilizer extends AnnotateStabilizer {
     FilterControlBlock filterBlock2;
 
 	// UI Editor panel
-	private static final NBSimpleStabilizerEditPanel _editPanel = new NBSimpleStabilizerEditPanel();
+//	private static final NBSimpleStabilizerEditPanel _editPanel = new NBSimpleStabilizerEditPanel();
 	
 	public SimpleStabilizer() {
 		this("id", "name", "caty");
@@ -119,10 +119,10 @@ public class SimpleStabilizer extends AnnotateStabilizer {
 	 * 
 	 * @return the editor panel object
 	 */	
-	@Override public Object getEditPanel() {
-		_editPanel.init(this);
-		return _editPanel;
-	}
+//	@Override public Object getEditPanel() {
+//		_editPanel.init(this);
+//		return _editPanel;
+//	}
 	
     // the following statement must be added to all CML controller
     @Override public AnController getAnController() {
