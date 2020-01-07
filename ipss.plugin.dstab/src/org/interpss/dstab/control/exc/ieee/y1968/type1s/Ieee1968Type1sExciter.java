@@ -57,7 +57,7 @@ public class Ieee1968Type1sExciter extends AnnotateExciter {
 	   WashoutControlBlock washoutBlock;
 
     // UI Editor panel
-    private static NBIeee1968Type1sEditPanel _editPanel = new NBIeee1968Type1sEditPanel();
+//    private static NBIeee1968Type1sEditPanel _editPanel = new NBIeee1968Type1sEditPanel();
     
     /**
      * Default Constructor
@@ -110,11 +110,11 @@ public class Ieee1968Type1sExciter extends AnnotateExciter {
      *
      * @return the editor panel object
      */
-    @Override
-	public Object getEditPanel() {
-        _editPanel.init(this);
-        return _editPanel;
-    }
+//    @Override
+//	public Object getEditPanel() {
+//        _editPanel.init(this);
+//        return _editPanel;
+//    }
  
     @Override
 	public AnController getAnController() {
