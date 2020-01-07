@@ -108,7 +108,7 @@ public class IEEE1981DC1Exciter extends AnnotateExciter {
 	   WashoutControlBlock washoutBlock;
 
 	// UI Editor panel
-	    private static NBIEEE1981DC1ExciterEditPanel _editPanel = new NBIEEE1981DC1ExciterEditPanel();  
+//	    private static NBIEEE1981DC1ExciterEditPanel _editPanel = new NBIEEE1981DC1ExciterEditPanel();  
 
 /*
  * Part-2: Define the contructors
@@ -204,11 +204,11 @@ public class IEEE1981DC1Exciter extends AnnotateExciter {
      *
      * @return the editor panel object
      */
-    @Override
-    public Object getEditPanel() {
-        _editPanel.init(this);
-        return _editPanel;
-    }
+//    @Override
+//    public Object getEditPanel() {
+//        _editPanel.init(this);
+//        return _editPanel;
+//    }
 
 /*
  * do not modify the following part

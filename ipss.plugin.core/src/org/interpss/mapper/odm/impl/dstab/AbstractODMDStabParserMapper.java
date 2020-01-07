@@ -35,12 +35,14 @@ import org.ieee.odm.schema.BranchXmlType;
 import org.ieee.odm.schema.BusXmlType;
 import org.ieee.odm.schema.DStabBusXmlType;
 import org.ieee.odm.schema.DStabGenDataXmlType;
+import org.ieee.odm.schema.DStabLoadDataXmlType;
 import org.ieee.odm.schema.DStabNetXmlType;
 import org.ieee.odm.schema.ExciterModelXmlType;
 import org.ieee.odm.schema.GovernorModelXmlType;
 import org.ieee.odm.schema.IpssStudyScenarioXmlType;
 import org.ieee.odm.schema.LineDStabXmlType;
 import org.ieee.odm.schema.LoadflowGenDataXmlType;
+import org.ieee.odm.schema.LoadflowLoadDataXmlType;
 import org.ieee.odm.schema.MachineModelXmlType;
 import org.ieee.odm.schema.NetworkCategoryEnumType;
 import org.ieee.odm.schema.OriginalDataFormatEnumType;
@@ -63,6 +65,7 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.net.Branch;
 import com.interpss.dstab.DStab3WBranch;
 import com.interpss.dstab.DStabBranch;
+import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.DStabLoad;
@@ -81,7 +84,7 @@ import com.interpss.simu.SimuCtxType;
  */
 public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcscParserMapper<Tfrom> {
 	protected IPSSMsgHub msg = null;
-	
+	protected DynLoadDataHelper loadDataHelper =null;
 	/**
 	 * constructor
 	 */
@@ -219,6 +222,7 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 	
 	protected void setDStabBusData(DStabBusXmlType dstabBusXml, BaseDStabBus dstabBus)  throws InterpssException {
 		
+		//generation model data
 		if(dstabBusXml.getGenData().getContributeGen().size() > 0){
 			DStabGenDataXmlType dyGen = null;
 			for(JAXBElement<? extends LoadflowGenDataXmlType> dyGenElem: dstabBusXml.getGenData().getContributeGen()){
@@ -236,7 +240,18 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
                                         " is NOT of DStabGen type!");
                 }
             }
-	   }	
+	   }
+		
+		// load model
+		
+		if(dstabBusXml.getLoadData().getContributeLoad().size() > 0){
+				for(JAXBElement<? extends LoadflowLoadDataXmlType> dynLoadModel:dstabBusXml.getLoadData().getContributeLoad()){
+					DStabLoadDataXmlType dynLoad =(DStabLoadDataXmlType) dynLoadModel.getValue();
+					if(dynLoad!=null){
+						setDynLoadData(dynLoad, dstabBus);
+					}
+				}
+		}
     }
 
 	protected void setDynGenData(BaseDStabBus dstabBus, 
@@ -274,5 +289,13 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 			GovernorModelXmlType govXml = dyGen.getGovernor().getValue();
 			new GovernorDataHelper(mach).createGovernor(govXml);
 		}
+	}
+	
+	protected void setDynLoadData(DStabLoadDataXmlType dynLoad, BaseDStabBus dstabBus){
+		if(loadDataHelper == null) loadDataHelper = new DynLoadDataHelper();
+		
+		loadDataHelper.createDynLoadModel(dynLoad, dstabBus);
+		
+		
 	}
 }
