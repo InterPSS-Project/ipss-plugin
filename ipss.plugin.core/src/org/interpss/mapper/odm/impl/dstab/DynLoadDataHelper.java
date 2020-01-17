@@ -154,7 +154,9 @@ public class DynLoadDataHelper {
 
 		this.bus= (DStabBus)dstabBus; 
 		
-		DynLoadCMPLDW cmpldw = new DynLoadCMPLDWImpl();
+		String groupId ="";
+		
+		DynLoadCMPLDW cmpldw = new DynLoadCMPLDWImpl(groupId, dstabBus);
 		cmpldw.setId(loadId);
 		
 		dstabBus.setInfoOnlyDynModel(cmpldw); // CMPLDW is not a model directly used in simulation, its components are modeled and used in simulation

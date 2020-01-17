@@ -8,19 +8,25 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfLoadCode;
+import com.interpss.core.net.impl.NameTagImpl;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBranch;
 //import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
 import com.interpss.dstab.dynLoad.DStabDynamicLoadFactory;
 import com.interpss.dstab.dynLoad.DStabDynamicLoadPackage;
 import com.interpss.dstab.dynLoad.DistNetworkEquivalentModel;
+import com.interpss.dstab.dynLoad.DynLoadModel;
+
 import org.interpss.dstab.dynLoad.DynLoadCMPLDW;
 import org.interpss.dstab.dynLoad.DynLoadVFreqDependentModel;
 import org.interpss.dstab.dynLoad.InductionMotor;
 import org.interpss.dstab.dynLoad.LD1PAC;
 import com.interpss.dstab.dynLoad.impl.BaseDynLoadModelImpl;
+import com.interpss.dstab.dynLoad.impl.DistNetworkEquivalentModelImpl;
+import com.interpss.dstab.dynLoad.impl.DynLoadModelImpl;
 
 
 /**
@@ -52,7 +58,7 @@ import com.interpss.dstab.dynLoad.impl.BaseDynLoadModelImpl;
  *
  */
 
-public class DynLoadCMPLDWImpl extends BaseDynLoadModelImpl implements DynLoadCMPLDW {
+public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW {
 	
 	
 	protected  DistNetworkEquivalentModel distEquiv = null;
@@ -64,10 +70,8 @@ public class DynLoadCMPLDWImpl extends BaseDynLoadModelImpl implements DynLoadCM
 	
 	protected BaseDStabBus<?,?> lowBus  = null;
 	protected BaseDStabBus<?,?> loadBus  = null;
-	/*
-	 * DynLoadModel already has parentBus defined
-	 */
-	//protected BaseDStabBus<?,?> parentBus  = null;  
+	
+	protected BaseDStabBus<?,?> parentBus  = null;  
 	
 	protected DStabBranch distXfr = null;
 	protected DStabBranch distFdr = null;
@@ -89,6 +93,8 @@ public class DynLoadCMPLDWImpl extends BaseDynLoadModelImpl implements DynLoadCM
 	
 	protected double Pdg = 0.0;
 	protected double Qdg = 0.0;
+	protected double mvaBase = 0.0;
+
 	
 	/*
 	private int lowBusNumStartIdx =900000; 
@@ -107,11 +113,22 @@ public class DynLoadCMPLDWImpl extends BaseDynLoadModelImpl implements DynLoadCM
 		
 	}
 	
-    @Override
-    public boolean initStates(BaseDStabBus<?,?> abus){
+	public DynLoadCMPLDWImpl(String referenceId, BaseDStabBus abus){
+		this.groupId = referenceId;
+		this.distEquiv = DStabDynamicLoadFactory.eINSTANCE.createDistNetworkEquivalentModel();
+		this.indMotorA = new  InductionMotorImpl();
+		this.indMotorB = new  InductionMotorImpl();
+		this.indMotorC = new  InductionMotorImpl();
+		this.ac1PMotor = new  LD1PACImpl();
+		this.staticLoad= new  DynLoadVFreqDependentModelImpl();
+		
+		this.setDStabBus(abus);
+		
+	}
+	
+  
+    public boolean initStates(){
     	boolean initflag = true;
-    	
-    	if(this.getDStabBus() ==null) this.setDStabBus(abus);
     	
 		this.totalLoad = this.getDStabBus().getLoadPQ(); // or getInitLoad()
 		
@@ -132,10 +149,10 @@ public class DynLoadCMPLDWImpl extends BaseDynLoadModelImpl implements DynLoadCM
 			2) MVABase< 0 means DistEquivMVABase= Abs(NetMW/MVABase)
 			3) MVABase= 0 means DistEquivMVABase= Abs(NetMW/0.8)
 			
-			Note: This is a function of NetMW, so that means MW 鈥揇istMWof the distributed generation
+			Note: This is a function of NetMW, so that means MW of the distributed generation
     	 */
     	
-    	double netMW = this.getDStabBus().getLoadP()*systemMVABase;
+    	double netMW = this.totalLoad.getReal()*systemMVABase;
     	
     	if(this.mvaBase > 0){ // exact mva
     		
@@ -470,6 +487,7 @@ public class DynLoadCMPLDWImpl extends BaseDynLoadModelImpl implements DynLoadCM
     	if(this.fMotorA > 0){
     		if(this.motorAType == 3){
     			this.indMotorA.setDStabBus(loadBus);
+    			this.indMotorA.setId(this.getId()+"_A");
     			loadBus.addDynamicLoadModel(indMotorA);
     			this.indMotorA.setLoadPercent(fMotorA*100.0);
     			//this.indMotorA.setLoadFactor(loadingFactor); should be set during the data input stage
@@ -489,6 +507,7 @@ public class DynLoadCMPLDWImpl extends BaseDynLoadModelImpl implements DynLoadCM
     	if(this.fMotorB > 0){
     		if(this.motorBType == 3){
     			this.indMotorB.setDStabBus(loadBus);
+    			this.indMotorB.setId(this.getId()+"_B");
     			loadBus.addDynamicLoadModel(indMotorB);
     			this.indMotorB.setLoadPercent(fMotorB*100.0);
     			
@@ -509,6 +528,7 @@ public class DynLoadCMPLDWImpl extends BaseDynLoadModelImpl implements DynLoadCM
     	if(this.fMotorC > 0){
     		if(this.motorCType == 3){
     			this.indMotorC.setDStabBus(loadBus);
+    			this.indMotorC.setId(this.getId()+"_C");
     			loadBus.addDynamicLoadModel(indMotorC);
     			this.indMotorC.setLoadPercent(fMotorC*100.0);
     			
@@ -528,6 +548,7 @@ public class DynLoadCMPLDWImpl extends BaseDynLoadModelImpl implements DynLoadCM
     	if(this.fMotorD > 0){
     		if(this.motorDType == 1){
     			this.ac1PMotor.setDStabBus(loadBus);
+    			this.ac1PMotor.setId(this.getId());
     			loadBus.addDynamicLoadModel(ac1PMotor);
     			this.ac1PMotor.setLoadPercent(this.fMotorD*100.0);
     			
@@ -626,7 +647,7 @@ public class DynLoadCMPLDWImpl extends BaseDynLoadModelImpl implements DynLoadCM
 
 	@Override
 	public DistNetworkEquivalentModel getDistEquivalent() {
-		
+			
 		return this.distEquiv;
 	}
 
@@ -638,7 +659,6 @@ public class DynLoadCMPLDWImpl extends BaseDynLoadModelImpl implements DynLoadCM
 
 	@Override
 	public InductionMotor getInductionMotorB() {
-		// TODO Auto-generated method stub
 		return this.indMotorB;
 	}
 
@@ -778,4 +798,18 @@ public class DynLoadCMPLDWImpl extends BaseDynLoadModelImpl implements DynLoadCM
 		this.motorDType = motorTypeD;
 		
 	}
+
+    // override this function to avoid adding the CMPLDW model to the dynamicBusDevice and load list.
+	@Override
+	public void setDStabBus(BaseDStabBus<?, ?> newBus) {
+		this.parentBus = newBus;
+		
+	}
+	
+	@Override
+	public BaseDStabBus<?, ?> getDStabBus() {
+		return this.parentBus;
+	}
+	
+
 }
