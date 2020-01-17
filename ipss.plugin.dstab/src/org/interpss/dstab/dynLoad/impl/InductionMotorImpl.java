@@ -27,8 +27,8 @@ import com.interpss.dstab.dynLoad.impl.DynLoadModelImpl;
  * An implementation of the model object '<em><b>Induction Motor</b></em>'.
   */
 public class InductionMotorImpl extends DynLoadModelImpl implements InductionMotor {
-	public static final double SLIPMIN = 0.002;
-	public static final double SLIPMAX = 0.05;	
+	public static final double SLIPMIN = 0.001;
+	public static final double SLIPMAX = 0.1;	
 	
 	/**
 	 * The default value of the '{@link #getRa() <em>Ra</em>}' attribute.
@@ -997,16 +997,16 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	
 	/*
 	 * Two levels of undervoltage tripping are represented with the following input parameters:
-		Vtr1x 	ï¿? First U/V Trip V (pu)
-		Ttr1x 	ï¿? First U/V Trip delay  time (sec)
-		Ftr1x 	ï¿? First U/V Trip fraction
-		Vrc1x 	ï¿? First U/V reconnection V (pu)
-		Trc1x 	ï¿? First U/V reconnection delay time (sec)
-		Vtr2x 	ï¿? Second U/V Trip V (pu)
-		Ttr2x 	ï¿? Second U/V Trip delay time (sec)
-		Ftr2x 	ï¿? Second U/V Trip fraction
-		Vrc2x 	ï¿? Second U/V reconnection V (pu)
-		Trc2x 	ï¿? Second U/V reconnection delay time (sec)
+		Vtr1x 	ï¿½? First U/V Trip V (pu)
+		Ttr1x 	ï¿½? First U/V Trip delay  time (sec)
+		Ftr1x 	ï¿½? First U/V Trip fraction
+		Vrc1x 	ï¿½? First U/V reconnection V (pu)
+		Trc1x 	ï¿½? First U/V reconnection delay time (sec)
+		Vtr2x 	ï¿½? Second U/V Trip V (pu)
+		Ttr2x 	ï¿½? Second U/V Trip delay time (sec)
+		Ftr2x 	ï¿½? Second U/V Trip fraction
+		Vrc2x 	ï¿½? Second U/V reconnection V (pu)
+		Trc2x 	ï¿½? Second U/V reconnection delay time (sec)
 		
 		***The fractions tripped by each level are cumulative. (both are independent parts)
 
@@ -1556,7 +1556,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		 double w0 = 2*Math.PI*this.getDStabBus().getNetwork().getFrequency();
 		
 		 //consider two ways of parameter input
-		 // 1. physical 
+		 // 1. physical parameters
 		if(xl>0.0 && xm >0.0 && xr1 >0 && rr1>0 && xp==0.0 && tp0==0.0){
 			xs = xl+xm;
 			xp = xl+xm*xr1/(xm+xr1);
@@ -1565,16 +1565,18 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 			if(xr2>0.0 && rr2>0.0){
 				xpp = xl+xr1*xr2*xm/(xr1*xr2+xr1*xm+xr2*xm);
 				tpp0 = (xr2+xr1*xm/(xr1+xm))/w0/rr2;
+				this.twoAxisModel = true;
 			}
 		}
 		
-		//if the input is in the format of performance data, the performance data needs to be converted to physical data
-		if(this.xr1==0.0 && this.xp>0.0){
+		// 2. if the input is in the format of performance data, the performance data needs to be converted to physical data
+		else if(this.xr1==0.0 && this.xp>0.0){
 			//if Xl is not defined, assuming xl = 0.06 pu
-			if(xl ==0.0) xl = 0.06;
-			
-			if(xpp> 0 && xl>xpp){
-				xl = 0.8*xpp;
+			if(xl ==0.0) {
+				xl = 0.8*this.xp;
+				if(xpp> 0 && xl>xpp){
+					xl = 0.8*xpp;
+				}
 			}
 			
 			if(tpp0 ==0.0 || xpp ==0.0 || xpp ==xp){
@@ -1606,8 +1608,6 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		 *  Note: The input R, X parameters of the motor are on the motor MVA base. 
 		 *        Necessary conversion is needed during the calculation
 		 */
-		
-
 		
 		//TODO the initLoad is the total load at the bus ,include constant Z and I load
 		//In the future, this may need to be update to consider the constant P load only
@@ -1692,67 +1692,86 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		else{
 			
 			// for two axis motor, use predict and correction approach to update the slip;
-			slip = 0.005;
-			double slip_upper = 0.05;
-			double slip_lower = 0.001;
+			this.slip = 0.001;
+			double slip_upper = 0.1;
+			double slip_lower = 0.0001;
 			double slip_step = 0.005;
-			double Pcalc_last = 0 ;
+			double Pcalc = 0;
+			
+			Complex Zr1 = (new Complex(rr1/this.slip,xr1));
+			Complex Zr2 = (new Complex(rr2/this.slip,xr2));
+			Complex Yr1 = new Complex(1.0,0).divide(Zr1);
+			Complex Yr2 = new Complex(1.0,0).divide(Zr2);
+			Complex Ym = new Complex(1.0,0).divide(new Complex(0,xm));
+			Complex Yeq1 = Ym.add(Yr1).add(Yr2);
+			Complex Zeq = new Complex(ra,xl).add(new Complex(1.0,0).divide(Yeq1));
+			Complex Yeq = new Complex(1.0,0).divide(Zeq);
+			
 			for(int i =0;i<100;i++){
 			 	
-			  Complex Zr1 = (new Complex(rr1/slip,xr1));
-			  Complex Zr2 = (new Complex(rr2/slip,xr2));
-			  Complex Yr1 = new Complex(1.0,0).divide(Zr1);
-			  Complex Yr2 = new Complex(1.0,0).divide(Zr2);
-			  Complex Ym = new Complex(1.0,0).divide(new Complex(0,xm));
-			  Complex Yeq1 = Ym.add(Yr1).add(Yr2);
-			  Complex Zeq = new Complex(ra,xl).add(new Complex(1.0,0).divide(Yeq1));
-			  Complex Yeq = new Complex(1.0,0).divide(Zeq);
+			  Zr1 = (new Complex(rr1/this.slip,xr1));
+			  Zr2 = (new Complex(rr2/this.slip,xr2));
+			  Yr1 = new Complex(1.0,0).divide(Zr1);
+			  Yr2 = new Complex(1.0,0).divide(Zr2);
+			  Ym = new Complex(1.0,0).divide(new Complex(0,xm));
+			  Yeq1 = Ym.add(Yr1).add(Yr2);
+			  Zeq = new Complex(ra,xl).add(new Complex(1.0,0).divide(Yeq1));
+			  Yeq = new Complex(1.0,0).divide(Zeq);
 			  
 			  //calculate the Pe 
-			  double Pcalc = V*V*Yeq.getReal();
+			  Pcalc = V*V*Yeq.getReal();
 			  
-			  if(Math.abs(Pcalc-P)>1.0E-6){
+			  if(Pcalc > P) {
+				  
+				slip_upper = this.slip;  
+				slip_lower = this.slip -slip_step;
+			    break;
+			    
+			 }
+			  
+			  this.slip = this.slip + slip_step;
+			  
+			}
+			  
+			while(Math.abs(Pcalc-P)>1.0E-6){
 				 
 				 
-				  if (P>Pcalc && slip>slip_lower && slip<slip_upper){   // slip too small
-					  slip_lower = slip;
-					  slip =(slip_lower+slip_upper)/2;
+				  if (P>Pcalc){   // slip too small
+					  slip_lower = this.slip;
+					  this.slip =(slip_lower+slip_upper)/2;
 					  
 				  }
-				  else if(Pcalc>P && slip>slip_lower && slip<slip_upper){ //slip too large
+				  else if(Pcalc>P){ //slip too large
 				     slip_upper = slip;
-				     slip =(slip_lower+slip_upper)/2;
+				     this.slip =(slip_lower+slip_upper)/2;
 				  }
 				  
-				  if(slip>SLIPMAX && Pcalc<P ){ // slip too large
-					  slip = SLIPMAX/2;
-				  }
+				 	
+				  Zr1 = (new Complex(rr1/this.slip,xr1));
+				  Zr2 = (new Complex(rr2/this.slip,xr2));
+				  Yr1 = new Complex(1.0,0).divide(Zr1);
+				  Yr2 = new Complex(1.0,0).divide(Zr2);
+				  Ym = new Complex(1.0,0).divide(new Complex(0,xm));
+				  Yeq1 = Ym.add(Yr1).add(Yr2);
+				  Zeq = new Complex(ra,xl).add(new Complex(1.0,0).divide(Yeq1));
+				  Yeq = new Complex(1.0,0).divide(Zeq);
+				  
+				  //calculate the Pe 
+				  Pcalc = V*V*Yeq.getReal();
 				  
 			  }
-			  else{
-				  // slip is successfully initialized;
-				  equivYMotorBase = Yeq;
-				  this.motorLoadQ = -V*V*Yeq.getImaginary();
+			  
+			 
+			  // slip is successfully initialized;
+			  equivYMotorBase = Yeq;
+			  this.motorLoadQ = -V*V*Yeq.getImaginary();
 				  
-				  break;
-			  }
-			
-			  if(i>=100){
-				  throw new Error("Slip is not properly selected after 100 trials, Motor Id #"+this.id);
-				}
-			}
-			
 		}
 		
-		// check slip range
-		 if(slip<SLIPMIN || slip>SLIPMAX){
-		  
-			IpssLogger.getLogger().warning("The calculated slip is out of normal range [0.01,0.05], please check the data");
-		 }
-		 
+
 		 // motor
-		 this.motorPower = new Complex(this.motorLoadP, this.motorLoadQ );
-		 this.setLoadPQ(this.motorPower);
+		 this.motorPower = new Complex(this.motorLoadP, this.motorLoadQ ); // on motor MVA basis
+		 this.setLoadPQ(this.motorPower); // on motor MVA basis
 		 
 		 // set the init loadPQ in pu on system base
 		 this.setInitLoadPQ(this.motorPower.multiply(this.getMvaBase()/sysMVABase));
@@ -1780,15 +1799,6 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	    
 	    // calculate the the Norton equivalent
 	    if(twoAxisModel){
-	    	//TODO this needs to be verified, refer to PSAT manual
-	    	ep = iMotor.multiply(xs-xp).divide(new Complex(w0*tp0*slip,-1));
-	    	
-//	    	double ir = iMotor.getReal();
-//	    	double im = iMotor.getImaginary();
-//	    	double epr = (w0*tp0*slip*(xs-xp)*ir - (xs-xp)*im)/(1 + Math.pow(w0*tp0*slip, 2));
-//	    	double epm = (w0*tp0*slip*(xs-xp)*im + (xs-xp)*ir)/(1 + Math.pow(w0*tp0*slip, 2));
-//	    	
-//	    	ep = new Complex(epr,epm);
 	    	
 	      	zppMotorBase = new Complex(ra,xpp);
 	        epp = this.getDStabBus().getVoltage().subtract(zppMotorBase.multiply(iMotor));
