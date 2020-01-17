@@ -1,8 +1,11 @@
 package org.interpss.dstab.dynLoad;
 
+import com.interpss.core.net.NameTag;
 import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.device.DynamicBusDevice;
 import com.interpss.dstab.dynLoad.BaseDynLoadModel;
 import com.interpss.dstab.dynLoad.DistNetworkEquivalentModel;
+import com.interpss.dstab.dynLoad.DynLoadModel;
 
 
 /**
@@ -55,7 +58,7 @@ import com.interpss.dstab.dynLoad.DistNetworkEquivalentModel;
  *                                      
  *
  */
-public interface DynLoadCMPLDW  extends BaseDynLoadModel {
+public interface DynLoadCMPLDW  extends DynLoadModel {
 	
 	void setGroupId(String groupId);
 	String getGroupId();
@@ -97,4 +100,6 @@ public interface DynLoadCMPLDW  extends BaseDynLoadModel {
 	BaseDStabBus<?,?> getLowVoltBus();
 	
 	BaseDStabBus<?,?> getLoadBus();
+	
+
 }

@@ -6,6 +6,7 @@ import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.core.dstab.mach.TestSetupBase;
+import org.interpss.display.AclfOutFunc;
 import org.interpss.dstab.dynLoad.InductionMotor;
 import org.interpss.dstab.dynLoad.impl.InductionMotorImpl;
 import org.interpss.numeric.datatype.Unit.UnitType;
@@ -36,7 +37,7 @@ import com.interpss.dstab.mach.MachineModelType;
 
 public class TestInductionMotorModel extends TestSetupBase {
 	
-	//@Test
+	@Test
 	public void test_induction_Motor_dynModel_single_cage()  throws InterpssException {
 		DStabilityNetwork net = create2BusSystem();
 		assertTrue(net.isLfConverged());
@@ -61,7 +62,7 @@ public class TestInductionMotorModel extends TestSetupBase {
 		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		assertTrue(aclfAlgo.loadflow());
-		//System.out.println(AclfOutFunc.loadFlowSummary(net));
+		System.out.println(AclfOutFunc.loadFlowSummary(net));
 		
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.005d);
@@ -95,18 +96,20 @@ public class TestInductionMotorModel extends TestSetupBase {
 		else{
 			System.out.println("Initialization error!");
 		}
-		/*
-		 * slip =0.009072990571330868
-           motor power =(0.7999999997203182, 0.49512907648490423)
-		 */
-		assertTrue(Math.abs(indMotor.getSlip()-0.009072990571330868)<1.0E-5);
-		
-		assertTrue(Math.abs(indMotor.getLoadPQ().getReal()-0.8)<1.0E-5);
-		
-		assertTrue( Math.abs(bus1.getVoltageMag()-0.99677)<1.0E-5);
 		
 		System.out.println("slip ="+indMotor.getSlip());
 		System.out.println("motor power ="+indMotor.getLoadPQ());
+		/*
+		 * slip =0.00881671588619575
+           motor power =(0.7999996196862666, 0.4981598698987694)
+		 */
+		assertTrue(Math.abs(indMotor.getSlip()-0.00881671588619575)<1.0E-5);
+		
+		assertTrue(Math.abs(indMotor.getLoadPQ().getReal()-0.8)<1.0E-5);
+		
+		assertTrue( Math.abs(bus1.getVoltageMag()-1.00932)<1.0E-5);
+		
+		
 		//}
 		//System.out.println(sm.toCSVString(sm.getMachAngleTable()));
 		//System.out.println("\n bus volt:\n"+sm.toCSVString(sm.getBusVoltTable()));
