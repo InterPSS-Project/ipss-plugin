@@ -42,6 +42,7 @@ import org.ieee.odm.schema.BranchFlowDirectionEnumType;
 import org.ieee.odm.schema.FactorUnitType;
 import org.ieee.odm.schema.LineBranchEnumType;
 import org.ieee.odm.schema.LineBranchXmlType;
+import org.ieee.odm.schema.MagnitizingZSideEnumType;
 import org.ieee.odm.schema.MvarFlowAdjustmentDataXmlType;
 import org.ieee.odm.schema.PSXfr3WBranchXmlType;
 import org.ieee.odm.schema.PSXfrBranchXmlType;
@@ -170,12 +171,28 @@ public class AclfBranchDataHelper {
 	private void setXfrData(XfrBranchXmlType xmlXfrBranch, AclfBranch aclfBra, double baseKva) throws InterpssException {
 		setXformerInfoData(xmlXfrBranch, aclfBra);
 
-		YXmlType fromShuntY = xmlXfrBranch.getMagnitizingY();
-		if (fromShuntY != null) {
-			Complex ypu = UnitHelper.yConversion(new Complex(fromShuntY.getRe(),	fromShuntY.getIm()),
+		YXmlType msgY = xmlXfrBranch.getMagnitizingY();
+		if (msgY != null) {
+			Complex ypu = UnitHelper.yConversion(new Complex(msgY.getRe(),	msgY.getIm()),
 					aclfBra.getFromAclfBus().getBaseVoltage(), baseKva,
-					toYUnit.apply(fromShuntY.getUnit()), UnitType.PU);
-			aclfBra.setFromShuntY(ypu);
+					toYUnit.apply(msgY.getUnit()), UnitType.PU);
+			
+			boolean fromSide;
+			if (xmlXfrBranch.getMagnitizingZSide() == null)
+				fromSide = true;
+			else if (xmlXfrBranch.getMagnitizingZSide() == MagnitizingZSideEnumType.HIGH_VOLTAGE) {
+				fromSide = aclfBra.getFromBus().getBaseVoltage() > aclfBra.getToBus().getBaseVoltage() ? true : false; 
+			}
+			else if (xmlXfrBranch.getMagnitizingZSide() == MagnitizingZSideEnumType.FROM_SIDE) {
+				fromSide = true;
+			}
+			else
+				fromSide = false;
+			
+			if (fromSide)
+				aclfBra.setFromShuntY(ypu);
+			else
+				aclfBra.setToShuntY(ypu);
 		}
 	}
 	
