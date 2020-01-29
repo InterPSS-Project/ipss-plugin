@@ -181,6 +181,11 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
 			//set SortNumber
 			lowBus.setSortNumber(this.getDStabBus().getNetwork().getNoBus()-1);
 			
+			//set area and zone info
+			lowBus.setArea(this.getDStabBus().getArea());
+			
+			lowBus.setZone(this.getDStabBus().getZone());
+			
 			
 			//add the load bus
 			loadBus  = DStabObjectFactory.createDStabBus(this.getDStabBus().getId().concat(loadBusId), 
@@ -192,6 +197,11 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
 			
 			//set SortNumber
 			loadBus.setSortNumber(this.getDStabBus().getNetwork().getNoBus()-1);
+			
+			//set area and zone info
+			loadBus.setArea(this.getDStabBus().getArea());
+			
+			loadBus.setZone(this.getDStabBus().getZone());
 			
 		} catch (InterpssException e) {
 			// TODO Auto-generated catch block
