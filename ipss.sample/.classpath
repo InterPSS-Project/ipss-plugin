@@ -3,7 +3,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="lib" path="/ipss.lib/lib/ipss/ipss_core.impl.jar"/>
 	<classpathentry kind="lib" path="/ipss.lib/lib/ipss/ipss_core.jar"/>
 	<classpathentry kind="lib" path="/ipss.lib/lib/ieee/ieee.odm_pss.jar"/>
 	<classpathentry kind="lib" path="/ipss.lib/lib/ieee/ieee.odm.schema.jar"/>
@@ -14,12 +13,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/EMF"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Hazelcast"/>
 	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/python/py4j-0.10.7.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/ipss.plugin.base"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/ipss.plugin.core"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/ipss.plugin.dc"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/ipss.plugin.dstab"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/ipss.plugin.multiNet"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/ipss.plugin.opf"/>	
-	<classpathentry combineaccessrules="false" kind="src" path="/ipss.pssl"/>	
+	<classpathentry kind="lib" path="/ipss.lib/lib/ipss/ipss_plugin.jar" sourcepath="/ipss.plugin.core"/>
 	<classpathentry kind="output" path="runtime"/>
 </classpath>
