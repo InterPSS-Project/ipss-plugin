@@ -3,8 +3,6 @@ package org.interpss.core.dstab;
 import static com.interpss.dstab.cache.StateVariableRecorder.StateVarRecType.MachineState;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Hashtable;
-import java.util.List;
 import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
@@ -13,12 +11,8 @@ import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
-import org.interpss.algo.SequenceNetworkBuilder;
-import org.interpss.display.AclfOutFunc;
 import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.interpss.numeric.NumericConstant;
-import org.interpss.numeric.util.Number2String;
-import org.interpss.util.FileUtil;
 import org.junit.Test;
 
 import com.interpss.CoreObjectFactory;
@@ -26,19 +20,15 @@ import com.interpss.DStabObjectFactory;
 import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
-import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.core.net.Bus;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.cache.StateVariableRecorder;
-import com.interpss.dstab.cache.StateVariableRecorder.StateRecord;
-import com.interpss.dstab.cache.StateVariableRecorder.StateVarRecType;
 import com.interpss.dstab.common.DStabOutSymbol;
 import com.interpss.dstab.devent.DynamicEvent;
 import com.interpss.dstab.devent.DynamicEventType;
@@ -117,16 +107,15 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 				System.out.println("used time="+(t2-t1)/1000.0);
 
 			}
-			//System.out.println(sm.toCSVString(sm.getMachAngleTable()));
+			System.out.println(sm.toCSVString(sm.getMachAngleTable()));
 			//System.out.println(sm.toCSVString(sm.getMachEfdTable()));
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//comprehensive_ch7//ieee39_pos_3P@Bus17_GenAngle.csv", sm.toCSVString(sm.getMachAngleTable()));
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//comprehensive_ch7//ieee39_pos_3P@Bus17_busVolt.csv", sm.toCSVString(sm.getBusVoltTable()));
-	
+			
 		}
 		
 		@Test
 		public void test_IEEE39Bus_Dstab_fullModel() throws InterpssException{
 			IpssCorePlugin.init();
+			
 			PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
 			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 					"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_v30.raw",
@@ -149,13 +138,6 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 			
 		    BaseDStabNetwork dsNet =simuCtx.getDStabilityNet();
 		    
-		    // build sequence network
-//		    SequenceNetworkBuilder seqNetHelper = new SequenceNetworkBuilder(dsNet,true);
-//		    seqNetHelper.buildSequenceNetwork(SequenceCode.NEGATIVE);
-//		    seqNetHelper.buildSequenceNetwork(SequenceCode.ZERO);
-//		    
-//		    System.out.println(dsNet.net2String());
-
 		    
 			DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
 			LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
@@ -176,7 +158,7 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 			
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(1);
+			dstabAlgo.setOutPutPerSteps(10);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
 			
 			//IpssLogger.getLogger().setLevel(Level.INFO);
@@ -196,9 +178,7 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 			}
 			System.out.println(sm.toCSVString(sm.getMachPeTable()));
 			System.out.println(sm.toCSVString(sm.getBusVoltTable()));
-			FileUtil.writeText2File("D://ieee39_pos_3P@Bus28_GenAngle.csv", sm.toCSVString(sm.getMachAngleTable()));
-			FileUtil.writeText2File("D://ieee39_pos_3P@Bus28_GenSpd.csv", sm.toCSVString(sm.getMachSpeedTable()));
-	
+			
 		}
 		
 		@Test
