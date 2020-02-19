@@ -68,7 +68,7 @@ public class SE_IEEE118Test {
 		SEAlgorithm seAlgo = SEObjectFactory.createSEAlgorithm(seNet);
 
 		double qer = seAlgo.se();
-		assertTrue(qer > 0.967);		
+		assertTrue(qer > 0.95);		
 		
 		double maxVResidual = seNet.calMaxResidual();
 		assertTrue(maxVResidual < 0.02);
