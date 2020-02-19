@@ -24,7 +24,7 @@ public class SE_IEEE118Test {
 
 	@Test
 	public void test() throws InterpssException, IpssNumericException, Exception {
-
+		
 		IpssCorePlugin.init();
 		
 		AclfNetwork aclfNet = IpssAdapter.importAclfNet("testData/se/ieee118.ieee").setFormat(IEEECommonFormat).load()
@@ -67,22 +67,15 @@ public class SE_IEEE118Test {
 
 		SEAlgorithm seAlgo = SEObjectFactory.createSEAlgorithm(seNet);
 
-		seAlgo.se();
+		double qer = seAlgo.se();
+		assertTrue(qer > 0.967);		
 		
-		double maxVResidual = calMaxResidual(seNet);
+		double maxVResidual = seNet.calMaxResidual();
 		assertTrue(maxVResidual < 0.02);
 	}
 
 	private double RandomError(double measure, double error) {
 		measure *= error * 2 * Math.random() + 1 - error;
 		return measure;
-	}
-
-	private double calMaxResidual(SENetwork seNet) {
-		double maxVResidual = seNet.getBusList().stream()
-				.mapToDouble(bus -> Math.abs(bus.getVoltSeRec().getResidual()))
-				.max().getAsDouble();
-		System.out.println("Max Residual:" + maxVResidual);
-		return maxVResidual;
 	}
 }
