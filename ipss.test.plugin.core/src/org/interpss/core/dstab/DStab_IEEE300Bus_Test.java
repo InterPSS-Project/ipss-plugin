@@ -2,6 +2,8 @@ package org.interpss.core.dstab;
 
 import static org.junit.Assert.assertTrue;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -44,13 +46,16 @@ import com.interpss.simu.SimuCtxType;
 
 public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 		
-		@Test
+		//@Test
 		public void test_IEEE300_Dstab() throws InterpssException{
 			IpssCorePlugin.init();
 			IpssLogger.getLogger().setLevel(Level.OFF);
 			PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
 			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
-					"testData/adpter/psse/v30/IEEE300/IEEE300Bus_modified_noHVDC.raw",
+					
+					//NOTE: the original IEEE300Bus_modified_noHVDC.raw could result in oscillation for some faults due to capacitor compensation of long distance lines between 120 and 118
+					
+					"testData/adpter/psse/v30/IEEE300/IEEE300Bus_modified_noHVDC_v2.raw",
 					"testData/adpter/psse/v30/IEEE300/IEEE300_dyn_v2.dyr"
 			}));
 			DStabModelParser parser =(DStabModelParser) adapter.getModel();
@@ -97,7 +102,6 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 			dstabAlgo.setOutPutPerSteps(25);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
 			
-			IpssLogger.getLogger().setLevel(Level.INFO);
 			
 			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus10003",dsNet,SimpleFaultCode.GROUND_3P,new Complex(0,0),null,1.0d,0.08),"3phaseFault@Bus17");
 			
@@ -106,15 +110,15 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 				double t1 = System.currentTimeMillis();
 				System.out.println("time1="+t1);
 				System.out.println("Running DStab simulation ...");
-				System.out.println(dsNet.getMachineInitCondition());
+				//System.out.println(dsNet.getMachineInitCondition());
 				dstabAlgo.performSimulation();
 				double t2 = System.currentTimeMillis();
 				System.out.println("used time="+(t2-t1)/1000.0);
 
 			}
-			System.out.println(sm.toCSVString(sm.getMachSpeedTable()));
+//			System.out.println(sm.toCSVString(sm.getMachSpeedTable()));
 //			System.out.println(sm.toCSVString(sm.getMachAngleTable()));
-			System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+//			System.out.println(sm.toCSVString(sm.getBusVoltTable()));
 			
 			assertTrue(sm.getMachSpeedTable().get("Bus10003-mach1").get(0).getValue()-sm.getMachSpeedTable().get("Bus10003-mach1").get(10).getValue()<1.0E-4);
 			assertTrue(sm.getMachSpeedTable().get("Bus10009-mach1").get(0).getValue()-sm.getMachSpeedTable().get("Bus10009-mach1").get(10).getValue()<1.0E-4);
@@ -127,8 +131,125 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 			IpssLogger.getLogger().setLevel(Level.WARNING);
 			PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
 			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
-					"testData/adpter/psse/v30/IEEE300/IEEE300Bus_modified_noHVDC.raw",
-					"testData/adpter/psse/v30/IEEE300/IEEE300_dyn_v2_cmld.dyr"
+					
+					//NOTE: the original "IEEE300Bus_modified_noHVDC.raw" case could result in oscillation for some faults (at buses 4 or 182) due to capacitor compensation of long distance lines between 120 and 118
+					
+					"testData/adpter/psse/v30/IEEE300/IEEE300Bus_modified_noHVDC_v2.raw",
+					//"testData/adpter/psse/v30/IEEE300/IEEE300_dyn_v2.dyr"
+					"testData/adpter/psse/v30/IEEE300/IEEE300_dyn_cmld_zone1.dyr"
+			}));
+			DStabModelParser parser =(DStabModelParser) adapter.getModel();
+			
+			//System.out.println(parser.toXmlDoc());
+            
+			
+			
+			SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
+			if (!new ODMDStabParserMapper(msg)
+						.map2Model(parser, simuCtx)) {
+				System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
+				return;
+			}
+			
+			
+		    BaseDStabNetwork<?, ?> dsNet =simuCtx.getDStabilityNet();
+		    
+		    //dsNet.setBypassDataCheck(true);
+			DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
+			LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
+			
+			aclfAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
+
+			aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
+			aclfAlgo.setTolerance(1.0E-6);
+			assertTrue(aclfAlgo.loadflow());
+			//System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
+			
+			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+			dstabAlgo.setSimuStepSec(0.002);
+			dstabAlgo.setTotalSimuTimeSec(10.0);
+			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus10030-mach1"));
+			
+			List<String> busIdList = new ArrayList<>();
+			for(BaseDStabBus<?, ?> b: dsNet.getBusList()) {
+				busIdList.add(b.getId());
+				
+				if(b.getZone().getNumber()!=1)
+				     b.setInfoOnlyDynModel(null);
+			}
+			
+			
+			
+			
+
+			StateMonitor sm = new StateMonitor();
+			
+			sm.addBusStdMonitor(busIdList.toArray(new String[] {}));
+			
+			//sm.addBusStdMonitor(new String[]{"Bus10000","Bus10001","Bus10015","Bus10016","Bus10028"});
+			//sm.addBusStdMonitor(new String[]{"Bus1_loadBus","Bus33_loadBus","Bus562_loadBus"});
+			
+			sm.addGeneratorStdMonitor(new String[]{"Bus10003-mach1","Bus10005-mach1","Bus10008-mach1","Bus10009-mach1"});
+			
+			sm.addDynDeviceMonitor(DynDeviceType.ACMotor, "ACMotor_1@Bus1_loadBus");
+			sm.addDynDeviceMonitor(DynDeviceType.ACMotor, "ACMotor_1@Bus33_loadBus");
+			sm.addDynDeviceMonitor(DynDeviceType.InductionMotor, "IndMotor_1_A@Bus1_loadBus");
+			
+			// set the output handler
+			dstabAlgo.setSimuOutputHandler(sm);
+			dstabAlgo.setOutPutPerSteps(10);
+			
+			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
+			
+			IpssLogger.getLogger().setLevel(Level.INFO);
+			
+			String faultBusId = "Bus7"; //3, 5, 12 182  157 7 167  135
+			
+			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(faultBusId,dsNet,SimpleFaultCode.GROUND_3P,new Complex(0,0),null,1.0d,0.1),"3phaseFault@"+faultBusId);
+			
+
+			if (dstabAlgo.initialization()) {
+				double t1 = System.currentTimeMillis();
+				System.out.println("time1="+t1);
+				System.out.println("Running DStab simulation ...");
+				System.out.println(dsNet.getMachineInitCondition());
+				dstabAlgo.performSimulation();
+				double t2 = System.currentTimeMillis();
+				System.out.println("used time="+(t2-t1)/1000.0);
+
+			}
+			/*
+			System.out.println(sm.toCSVString(sm.getMachSpeedTable()));
+			System.out.println(sm.toCSVString(sm.getMachAngleTable()));
+			System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+			System.out.println(sm.toCSVString(sm.getMotorPTable()));
+			System.out.println(sm.toCSVString(sm.getAcMotorPTable()));
+			*/
+			
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH-mm");
+			 
+			LocalDateTime today = LocalDateTime.now();
+			 
+			//System.out.println(formatter.format(today));
+			
+			FileUtil.writeText2File(String.format("C:\\Users\\huan289\\Qiuhua\\FY2019_HADREC\\Test data\\IEEE300\\BusVolts_Fault@%s_%s.csv", faultBusId,formatter.format(today)),sm.toCSVString(sm.getBusVoltTable()));
+			
+			assertTrue(sm.getMachSpeedTable().get("Bus10003-mach1").get(0).getValue()-sm.getMachSpeedTable().get("Bus10003-mach1").get(10).getValue()<1.0E-4);
+			assertTrue(sm.getMotorPTable().get("IndMotor_1_A@Bus1_loadBus").get(0).getValue()-sm.getMotorPTable().get("IndMotor_1_A@Bus1_loadBus").get(10).getValue()<1.0E-4);
+			assertTrue(sm.getAcMotorPTable().get("ACMotor_1@Bus1_loadBus").get(0).getValue()-sm.getAcMotorPTable().get("ACMotor_1@Bus1_loadBus").get(10).getValue()<1.0E-4);
+			
+
+		}
+		
+		
+		@Test
+		public void IEEE300_Dstab_compositeLoadModel_generate_results_() throws InterpssException{
+			IpssCorePlugin.init();
+			IpssLogger.getLogger().setLevel(Level.WARNING);
+			PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
+					"testData/adpter/psse/v30/IEEE300/IEEE300Bus_modified_noHVDC_v2.raw",
+					"testData/adpter/psse/v30/IEEE300/IEEE300_dyn_cmld_zone1.dyr"
 			}));
 			DStabModelParser parser =(DStabModelParser) adapter.getModel();
 			
@@ -163,58 +284,101 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus10030-mach1"));
 			
 			List<String> busIdList = new ArrayList<>();
+			List<String> faultBusIdList = new ArrayList<>();
 			for(Bus b: dsNet.getBusList()) {
-				busIdList.add(b.getId());
+				 busIdList.add(b.getId());
+				if(b.getZone().getNumber()==1)
+				         faultBusIdList.add(b.getId());
 			}
 			
+			int i = 0;
 			
+		    // contingency configurations
+			double[] faultDurations= new double[] {0.05,0.1};
+			double[] faultStartTime= new double[] {0.1, 1.0}; 
+			
+			for(String faultBusId: faultBusIdList) {
+				for(double fd:faultDurations) {
+					for(double ft: faultStartTime) {
+						
+//						if (i>2) {
+//							   break;
+//						}
+							
+						adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+						assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
+								"testData/adpter/psse/v30/IEEE300/IEEE300Bus_modified_noHVDC.raw",
+								"testData/adpter/psse/v30/IEEE300/IEEE300_dyn_v2_cmld.dyr"
+						}));
+						parser =(DStabModelParser) adapter.getModel();
+						
+						//System.out.println(parser.toXmlDoc());
+			            
+						
+						
+						simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
+						if (!new ODMDStabParserMapper(msg)
+									.map2Model(parser, simuCtx)) {
+							System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
+							return;
+						}
+						
+						
+					    dsNet =simuCtx.getDStabilityNet();
+					    
+					    //dsNet.setBypassDataCheck(true);
+						dstabAlgo = simuCtx.getDynSimuAlgorithm();
+						aclfAlgo = dstabAlgo.getAclfAlgorithm();
+						
+						aclfAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
 
-			StateMonitor sm = new StateMonitor();
-			
-			sm.addBusStdMonitor(busIdList.toArray(new String[] {}));
-			
-			//sm.addBusStdMonitor(new String[]{"Bus10000","Bus10001","Bus10015","Bus10016","Bus10028"});
-			sm.addBusStdMonitor(new String[]{"Bus1_loadBus","Bus33_loadBus","Bus562_loadBus"});
-			
-			sm.addGeneratorStdMonitor(new String[]{"Bus10003-mach1","Bus10005-mach1","Bus10008-mach1","Bus10009-mach1"});
-			
-			sm.addDynDeviceMonitor(DynDeviceType.ACMotor, "ACMotor_1@Bus1_loadBus");
-			sm.addDynDeviceMonitor(DynDeviceType.ACMotor, "ACMotor_1@Bus33_loadBus");
-			sm.addDynDeviceMonitor(DynDeviceType.InductionMotor, "IndMotor_1_A@Bus1_loadBus");
-			
-			// set the output handler
-			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(10);
-			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
-			
-			IpssLogger.getLogger().setLevel(Level.INFO);
-			
-			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus70",dsNet,SimpleFaultCode.GROUND_3P,new Complex(0,0),null,1.0d,0.08),"3phaseFault@Bus17");
-			
+						aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
+						aclfAlgo.setTolerance(1.0E-6);
+						aclfAlgo.loadflow();
+						
+						
+						//System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
+						
+						dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+						dstabAlgo.setSimuStepSec(0.002);
+						dstabAlgo.setTotalSimuTimeSec(10.0);
 
-			if (dstabAlgo.initialization()) {
-				double t1 = System.currentTimeMillis();
-				System.out.println("time1="+t1);
-				System.out.println("Running DStab simulation ...");
-				System.out.println(dsNet.getMachineInitCondition());
-				dstabAlgo.performSimulation();
-				double t2 = System.currentTimeMillis();
-				System.out.println("used time="+(t2-t1)/1000.0);
-
+						
+						StateMonitor sm = new StateMonitor();
+						
+						sm.addBusStdMonitor(busIdList.toArray(new String[] {}));
+						
+						//sm.addBusStdMonitor(new String[]{"Bus1_loadBus","Bus33_loadBus","Bus562_loadBus"});
+						
+						//sm.addGeneratorStdMonitor(new String[]{"Bus10003-mach1","Bus10005-mach1","Bus10008-mach1","Bus10009-mach1"});
+						
+				
+						// set the output handler
+						dstabAlgo.setSimuOutputHandler(sm);
+						dstabAlgo.setOutPutPerSteps(10);
+						//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
+						
+						IpssLogger.getLogger().setLevel(Level.OFF);
+						
+											
+						dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(faultBusId,dsNet,SimpleFaultCode.GROUND_3P,new Complex(0,0),null,ft,fd),"3phaseFault@"+faultBusId);
+						
+			
+						if (dstabAlgo.initialization()) {
+						
+							dstabAlgo.performSimulation();
+			
+						}
+					
+						
+						FileUtil.writeText2File(String.format("P:\\Task1_DMRL_Algo\\AutoEncoder\\Output\\BusVolts_Fault@%s_%f_%f.csv", faultBusId, ft,fd),sm.toCSVString(sm.getBusVoltTable()));
+						sm = null;
+						i++;
+					}
+				}
 			}
-			System.out.println(sm.toCSVString(sm.getMachSpeedTable()));
-			System.out.println(sm.toCSVString(sm.getMachAngleTable()));
-			//System.out.println(sm.toCSVString(sm.getBusVoltTable()));
-			System.out.println(sm.toCSVString(sm.getMotorPTable()));
-			System.out.println(sm.toCSVString(sm.getAcMotorPTable()));
-			
-			assertTrue(sm.getMachSpeedTable().get("Bus10003-mach1").get(0).getValue()-sm.getMachSpeedTable().get("Bus10003-mach1").get(10).getValue()<1.0E-4);
-			assertTrue(sm.getMotorPTable().get("IndMotor_1_A@Bus1_loadBus").get(0).getValue()-sm.getMotorPTable().get("IndMotor_1_A@Bus1_loadBus").get(10).getValue()<1.0E-4);
-			assertTrue(sm.getAcMotorPTable().get("ACMotor_1@Bus1_loadBus").get(0).getValue()-sm.getAcMotorPTable().get("ACMotor_1@Bus1_loadBus").get(10).getValue()<1.0E-4);
-			
 
 		}
-		
 		
 		
 		private DynamicEvent create3PhaseFaultEvent(String faultBusId, BaseDStabNetwork net,double startTime, double durationTime){
