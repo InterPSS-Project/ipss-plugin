@@ -479,7 +479,7 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
   	    	 }
   	     }
   	     
-  	    System.out.println("VloadBus = "+VloadBus.abs());
+  	    //System.out.println("VloadBus = "+VloadBus.abs());
   	    this.loadBus.setVoltage(VloadBus);
   	     
   	    // PQLoadBus - the total load at the load bus
