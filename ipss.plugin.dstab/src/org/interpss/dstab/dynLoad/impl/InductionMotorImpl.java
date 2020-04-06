@@ -2096,8 +2096,8 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 // 	     this.nortonCurInj = this.nortonCurInj.multiply(this.Fuv).add(iEquivYSysBase.multiply(1-this.Fuv));
  	   
  	   // 3/5/2018 consider the total on-line fraction 
- 	  if(this.Fonline!=1.0)
-  	     this.nortonCurInj = this.nortonCurInj.multiply(this.Fonline).add(iEquivYSysBase.multiply(1-this.Fonline));
+ 	  if(this.Fonline <1.0)
+  	     this.nortonCurInj = this.nortonCurInj.multiply(this.Fonline).add(iEquivYSysBase.multiply(1.0-this.Fonline));
  		  
  	   //System.out.println("Fuv, Inorton = "+this.Fuv+", "+this.nortonCurInj.toString());
 	   
