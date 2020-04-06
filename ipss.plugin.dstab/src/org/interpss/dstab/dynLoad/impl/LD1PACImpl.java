@@ -1240,7 +1240,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 		
 		// update the timer for thermal protection
 		
-		double vmag = this.getDStabBus().getVoltageMag();
+		double vmag = this.getDStabBus().getVoltage().abs();
 		
 		if (this.statusA ==1){
 			if(vmag < this.vstall){
@@ -1308,8 +1308,12 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 		// call this method to update "this.PQmotor"
 		calculateMotorPower();
 		
-		this.equivYpq = this.PQmotor.conjugate().divide(vmag*vmag); // on motor MVABase
-		
+		if(vmag>1.0E-8)
+		    this.equivYpq = this.PQmotor.conjugate().divide(vmag*vmag); // on motor MVABase
+		else {
+			this.equivYpq = new Complex(1.0E4,1.0E4); // a large value
+			
+		}
 		return flag;
 	}
 	
