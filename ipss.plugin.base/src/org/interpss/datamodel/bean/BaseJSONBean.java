@@ -42,7 +42,7 @@ import com.interpss.common.util.IpssLogger;
  * @author mzhou
  *
  */
-public abstract class BaseJSONBean implements Comparable<BaseJSONBean> {
+public abstract class BaseJSONBean extends BaseJSONUtilBean implements Comparable<BaseJSONBean> {
 	
 	/**
 	 * default error tolerance for Bean object comparison for value in PU
@@ -133,10 +133,5 @@ public abstract class BaseJSONBean implements Comparable<BaseJSONBean> {
 			IpssLogger.ipssLogger.warning(msg);
 		else
 			msgList.add(msg);
-	}
-	
-	@Override
-	public String toString() {
-		return new Gson().toJson(this);
 	}
 }
