@@ -7,6 +7,7 @@ import org.interpss.QA.result.QAResultContainer;
 import org.interpss.numeric.datatype.Unit;
 import org.interpss.numeric.util.NumericUtil;
 
+import com.interpss.common.datatype.Constants;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.common.util.StringUtil;
@@ -330,7 +331,7 @@ public class DepPSSECompareFileProcessor extends DepBaseCompareFileProcessor<QAA
 					// TODO
 				}
 				else {
-					AclfBranch branch = (AclfBranch)(net.getBranch(fromId, toId)==null? net.getBranch(toId, fromId): net.getBranch(fromId, toId));
+					AclfBranch branch = (AclfBranch)(net.getBranch(fromId, toId, Constants.Token_DefaultBranchCirNo)==null? net.getBranch(toId, fromId, "1"): net.getBranch(fromId, toId, "1"));
 					if (branch != null)
 						branch.setSortNumber(1);
 					else {
