@@ -35,6 +35,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.pssl.simu.BaseDSL;
 
 import com.interpss.CoreObjectFactory;
+import com.interpss.common.datatype.Constants;
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
@@ -316,7 +317,7 @@ public class IpssAclfNet extends BaseDSL {
 		public AclfBranchDSL addAclfBranch(String fromBusId, String toBusId, String cirId) throws InterpssException {
 			return new AclfBranchDSL(fromBusId, toBusId, cirId, getAclfNet());	}
 		public AclfBranchDSL getAclfBranch(String fromBusId, String toBusId) throws Exception {
-			return new AclfBranchDSL((AclfBranch)getAclfNet().getBranch(fromBusId, toBusId), getAclfNet());	}
+			return new AclfBranchDSL((AclfBranch)getAclfNet().getBranch(fromBusId, toBusId, Constants.Token_DefaultBranchCirNo), getAclfNet());	}
 		public AclfBranchDSL getAclfBranch(String fromBusId, String toBusId, String cirId) throws Exception {
 			return new AclfBranchDSL((AclfBranch)getAclfNet().getBranch(fromBusId, toBusId, cirId), getAclfNet());	}
 	}
@@ -464,7 +465,7 @@ public class IpssAclfNet extends BaseDSL {
 	}
 
 	public static AclfBranchDSL getAclfBranch(String fromBusId, String toBusId, AclfNetwork net) throws Exception {
-		return new AclfBranchDSL((AclfBranch)net.getBranch(fromBusId, toBusId), net);
+		return new AclfBranchDSL((AclfBranch)net.getBranch(fromBusId, toBusId, "1"), net);
 	}
 	
 	public static AclfBranchDSL getAclfBranch(String fromBusId, String toBusId, String cirId, AclfNetwork net) throws Exception {
