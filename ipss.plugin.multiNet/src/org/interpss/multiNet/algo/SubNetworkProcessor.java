@@ -341,7 +341,7 @@ public class SubNetworkProcessor {
 			         // dummy bus id
 					String dummyBusId =boundaryBus.getId()+"Dummy";
 					
-					BaseDStabBus<?,?> dummyBus = (DStabBus) this.net.getBus(dummyBusId);
+					BaseDStabBus<?,?> dummyBus = (BaseDStabBus<?, ?>) this.net.getBus(dummyBusId);
 
 					if( dummyBus ==null){
 						
