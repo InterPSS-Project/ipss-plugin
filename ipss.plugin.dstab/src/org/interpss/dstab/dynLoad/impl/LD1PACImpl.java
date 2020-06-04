@@ -1436,6 +1436,12 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 		if(this.equivY==null) getPosSeqEquivY();
 		
 		this.nortonCurInj = this.equivY.multiply(vt).subtract(Imotor_systembase);
+		
+		 
+	 	  if(this.nortonCurInj.isNaN()) {
+	 		  System.out.println("Vt, Power, load_change_fraction = "+vt.toString()+", "+this.PQmotor.toString()+", "+this.accumulatedLoadChangeFactor);
+	 		  throw new Error("Current injection is NaN @"+extendedDeviceId);
+	 	  }
 				
 		return this.nortonCurInj;
 	}
