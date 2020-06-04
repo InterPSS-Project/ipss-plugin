@@ -19,8 +19,8 @@ import com.interpss.core.net.Bus;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBranch;
-import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabGen;
+import com.interpss.dstab.DStabLoad;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.common.DStabSimuException;
@@ -158,7 +158,7 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 				  
 				  for(BaseDStabNetwork<?, ?> dsNet: subNetList){
 					for ( Bus busi : dsNet.getBusList() ) {
-						DStabBus bus = (DStabBus)busi;
+						BaseDStabBus bus = (BaseDStabBus)busi;
 						if(bus.isActive()){
 							
 							if(i>=4){
@@ -191,7 +191,7 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 			// Solve DEqn for all dynamic bus devices
 				for (Bus b : dsNet.getBusList()) {
 					if(b.isActive()){
-						DStabBus bus = (DStabBus)b;
+						BaseDStabBus<? extends DStabGen, ? extends DStabLoad> bus = (BaseDStabBus)b;
 						for (DynamicBusDevice device : bus.getDynamicBusDeviceList()) {
 							// solve DEqn for the step. This includes all controller's nextStep() call
 							if(device.isActive()){
@@ -240,7 +240,7 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 		     //  for(DStabilityNetwork dsNet: subNetList){
 			
 				for ( Bus busi : dsNet.getBusList() ) {
-					DStabBus bus = (DStabBus)busi;
+					BaseDStabBus bus = (BaseDStabBus)busi;
 					if(bus.isActive()){
 						
 						// update dynamic attributes of the dynamic devices connected to the bus
@@ -265,7 +265,7 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 			 // backup the states
 			 for (Bus b :  dsNet.getBusList()) {
 					if(b.isActive()){
-						DStabBus bus = (DStabBus)b;
+						BaseDStabBus<? extends DStabGen, ? extends DStabLoad> bus = (BaseDStabBus<? extends DStabGen, ? extends DStabLoad>) b;
 						// Solve DEqn for generator 
 						if(bus.getContributeGenList().size()>0){
 							for(AclfGen gen:bus.getContributeGenList()){

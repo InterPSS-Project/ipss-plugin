@@ -877,9 +877,9 @@ public class TestTnD_IEEE300_13busFeeder {
 					
 				}
 				timer.end();
-				System.out.println("simulation time: "+timer.getDuration());
+				System.out.println("simulation time (s): "+timer.getDuration()/1000.0);
 			}
-//			System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+			System.out.println(sm.toCSVString(sm.getBusVoltTable()));
 //			System.out.println(sm.toCSVString(sm.getBusAngleTable()));
 //			System.out.println(sm.toCSVString(sm.getMachAngleTable()));
 //			System.out.println(sm.toCSVString(sm.getMachSpeedTable()));

@@ -1,31 +1,23 @@
 package org.interpss.dstab.dynLoad.impl;
 
 import org.apache.commons.math3.complex.Complex;
-import org.eclipse.emf.ecore.EClass;
+import org.interpss.dstab.dynLoad.DynLoadCMPLDW;
+import org.interpss.dstab.dynLoad.DynLoadVFreqDependentModel;
+import org.interpss.dstab.dynLoad.InductionMotor;
+import org.interpss.dstab.dynLoad.LD1PAC;
 
 import com.interpss.DStabObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfLoadCode;
-import com.interpss.core.net.impl.NameTagImpl;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBranch;
 //import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabilityNetwork;
-import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
 import com.interpss.dstab.dynLoad.DStabDynamicLoadFactory;
-import com.interpss.dstab.dynLoad.DStabDynamicLoadPackage;
 import com.interpss.dstab.dynLoad.DistNetworkEquivalentModel;
-import com.interpss.dstab.dynLoad.DynLoadModel;
-
-import org.interpss.dstab.dynLoad.DynLoadCMPLDW;
-import org.interpss.dstab.dynLoad.DynLoadVFreqDependentModel;
-import org.interpss.dstab.dynLoad.InductionMotor;
-import org.interpss.dstab.dynLoad.LD1PAC;
-import com.interpss.dstab.dynLoad.impl.BaseDynLoadModelImpl;
-import com.interpss.dstab.dynLoad.impl.DistNetworkEquivalentModelImpl;
 import com.interpss.dstab.dynLoad.impl.DynLoadModelImpl;
 
 
@@ -493,7 +485,7 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
     	// NOTE: the load percentages, the loading factor for calculating the mvaBase should be input by the model data mapper
     	
     	
-
+/*
     	if(this.fMotorA > 0){
     		if(this.motorAType == 3){
     			this.indMotorA.setDStabBus(loadBus);
@@ -554,7 +546,7 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
     	else{
     		this.indMotorC = null;
     	}
-    	
+  */  	
     	if(this.fMotorD > 0){
     		if(this.motorDType == 1){
     			this.ac1PMotor.setDStabBus(loadBus);

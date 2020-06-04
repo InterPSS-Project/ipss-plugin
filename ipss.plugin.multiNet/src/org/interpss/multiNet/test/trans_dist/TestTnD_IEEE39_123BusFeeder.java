@@ -22,6 +22,7 @@ import org.interpss.threePhase.basic.Bus3Phase;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
+import org.junit.Test;
 
 import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
@@ -34,12 +35,13 @@ import com.interpss.core.acsc.XfrConnectCode;
 import com.interpss.core.acsc.adpter.AcscXformer;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.dstab.DStabLoad;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
 public class TestTnD_IEEE39_123BusFeeder {
 	
-	//@Test
+	@Test
 	public void test_IEEE39_IEEE123Feeder_T3seq_D3phase_Powerflow() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
@@ -79,8 +81,9 @@ public class TestTnD_IEEE39_123BusFeeder {
 		// so need to save the Ids of targeted buses to a list first;
 		
 		//LIST: 1,
-		dsNet.getBus("Bus18").getContributeLoadList().get(0).setLoadCP(new Complex(0.15,0.04));
-	   
+		DStabLoad load = dsNet.getBus("Bus18").getContributeLoadList().get(0);
+		load.setLoadCP(new Complex(0.15,0.04));
+		   
 		replaceBusIdList.add("Bus18");
 		
 //		for(DStabBus b:dsNet.getBusList()){

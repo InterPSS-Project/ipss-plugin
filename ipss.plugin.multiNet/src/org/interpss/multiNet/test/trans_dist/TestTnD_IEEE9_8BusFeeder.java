@@ -12,6 +12,7 @@ import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
+import org.interpss.dstab.dynLoad.impl.InductionMotorImpl;
 import org.interpss.multiNet.algo.MultiNet3Ph3SeqDStabSimuHelper;
 import org.interpss.multiNet.algo.MultiNet3Ph3SeqDStabSolverImpl;
 import org.interpss.multiNet.algo.MultiNet3Ph3SeqDynEventProcessor;
@@ -53,7 +54,6 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.cache.StateMonitor.DynDeviceType;
 import com.interpss.dstab.cache.StateMonitor.MonitorRecord;
-import com.interpss.dstab.dynLoad.InductionMotor;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
@@ -927,7 +927,7 @@ private void buildFeederDynModel(DStabNetwork3Phase dsNet, int startBusNum, int 
 		
 		// 3 phase motor, 20%
 		
-	  		InductionMotor indMotor= DStabObjectFactory.createInductionMotor("1");
+	  		InductionMotorImpl indMotor= new InductionMotorImpl(loadBus,"1");
 			indMotor.setDStabBus(loadBus);
 
 			indMotor.setXm(3.0);
