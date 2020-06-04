@@ -92,7 +92,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.005d);
-		dstabAlgo.setTotalSimuTimeSec(3);
+		dstabAlgo.setTotalSimuTimeSec(20);
 		dsNet.setNetEqnIterationNoEvent(1);
 		dsNet.setNetEqnIterationWithEvent(1);
 		dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
@@ -206,7 +206,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
 			return;
 		}
-		
+		PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
 	    BaseDStabNetwork dsNet =simuCtx.getDStabilityNet();
 	    
 	   // System.out.println(dsNet.net2String());
@@ -217,8 +217,8 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		
 		//dsNet.setNetEqnIterationNoEvent(20);
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
-		dstabAlgo.setSimuStepSec(0.001);
-		dstabAlgo.setTotalSimuTimeSec(1);
+		dstabAlgo.setSimuStepSec(0.005);
+		dstabAlgo.setTotalSimuTimeSec(20);
 		dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 
 
@@ -243,6 +243,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 			System.out.println("Running DStab simulation ...");
 			assertTrue(dstabAlgo.performSimulation());
 		}
+		timer.logStd("total simu time: ");
 			
 		assertTrue(stateTestRecorder.diffTotal("Bus2-mach1", MachineState, 
 					DStabOutSymbol.OUT_SYMBOL_MACH_PM) < 0.00001);
@@ -252,7 +253,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 				DStabOutSymbol.OUT_SYMBOL_MACH_Efd) < 0.0001);
 	}
 	
-	@Test
+	//@Test
 	public void IEEE9_Dstab_GenWithoutMach() throws InterpssException{
 		IpssCorePlugin.init();
 		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
@@ -313,6 +314,8 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 			System.out.println("Running DStab simulation ...");
 			assertTrue(dstabAlgo.performSimulation());
 		}
+		
+		
 			
 		assertTrue(stateTestRecorder.diffTotal("Bus2-mach1", MachineState, 
 					DStabOutSymbol.OUT_SYMBOL_MACH_PM) < 0.00001);
@@ -321,7 +324,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		assertTrue(stateTestRecorder.diffTotal("Bus2-mach1", MachineState, 
 				DStabOutSymbol.OUT_SYMBOL_MACH_Efd) < 0.00001);
 	}
-	@Test
+	//@Test
     public void IEEE9_Dstab_multiGen_Test() throws InterpssException{
             IpssCorePlugin.init();
             IpssLogger.getLogger().setLevel(Level.INFO);

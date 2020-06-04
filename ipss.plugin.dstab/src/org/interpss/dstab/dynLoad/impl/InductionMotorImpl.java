@@ -2096,11 +2096,17 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 // 	     this.nortonCurInj = this.nortonCurInj.multiply(this.Fuv).add(iEquivYSysBase.multiply(1-this.Fuv));
  	   
  	   // 3/5/2018 consider the total on-line fraction 
- 	  if(this.Fonline <1.0)
+ 	  if(this.Fonline <=1.0 && this.Fonline>0.0)
   	     this.nortonCurInj = this.nortonCurInj.multiply(this.Fonline).add(iEquivYSysBase.multiply(1.0-this.Fonline));
- 		  
+ 	  else if(this.Fonline<=1.0E-8)
+ 		 this.nortonCurInj = iEquivYSysBase;
  	   //System.out.println("Fuv, Inorton = "+this.Fuv+", "+this.nortonCurInj.toString());
-	   
+	  
+ 	  if(this.nortonCurInj.isNaN()) {
+ 		  System.out.println("Vt, Ep, Fuv, Fonline = "+vt.toString()+", "+this.ep.toString()+", "+this.Fuv+", "+this.Fonline);
+ 		  throw new Error("Current injection is NaN @"+extendedDeviceId);
+ 	  }
+ 	  
  	   return this.nortonCurInj;
 		
 		

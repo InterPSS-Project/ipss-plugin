@@ -137,7 +137,7 @@ public class TestTposD3phaseDStab {
 		
 		
 		
-		Bus3Phase bus1 =  (Bus3Phase) dsNet.getDStabBus("Bus1");
+		Bus3Phase bus1 =  (Bus3Phase) dsNet.getBus("Bus1");
 		
 		 SinglePhaseACMotor ac1 = new SinglePhaseACMotor(bus1,"1");
   		ac1.setLoadPercent(25);
@@ -324,7 +324,7 @@ public class TestTposD3phaseDStab {
 		
 		
 		
-		Bus3Phase bus1 = (Bus3Phase) dsNet.getDStabBus("Bus1");
+		Bus3Phase bus1 = (Bus3Phase) dsNet.getBus("Bus1");
 		
 		 SinglePhaseACMotor ac1 = new SinglePhaseACMotor(bus1,"1");
   		ac1.setLoadPercent(25);
@@ -483,9 +483,9 @@ public class TestTposD3phaseDStab {
 			
 			
 			
-			Bus3Phase bus1 = (Bus3Phase) dsNet.getDStabBus("Bus1");
+			Bus3Phase bus1 = dsNet.getBus("Bus1");
 			
-			 SinglePhaseACMotor ac1 = new SinglePhaseACMotor(bus1,"1");
+			SinglePhaseACMotor ac1 = new SinglePhaseACMotor(bus1,"1");
 	  		ac1.setLoadPercent(25);
 	  		ac1.setPhase(PhaseCode.A);
 	  		//ac1.setMVABase(20);
@@ -648,7 +648,7 @@ public class TestTposD3phaseDStab {
 			
 			
 			
-			Bus3Phase bus1 = (Bus3Phase) dsNet.getDStabBus("Bus1");
+			Bus3Phase bus1 = (Bus3Phase) dsNet.getBus("Bus1");
 			
 			 SinglePhaseACMotor ac1 = new SinglePhaseACMotor(bus1,"1");
 	  		ac1.setLoadPercent(25);
@@ -807,7 +807,7 @@ public class TestTposD3phaseDStab {
 		
 		
 		
-		Bus3Phase bus1 = (Bus3Phase) dsNet.getDStabBus("Bus1");
+		Bus3Phase bus1 = (Bus3Phase) dsNet.getBus("Bus1");
 		
 		 SinglePhaseACMotor ac1 = new SinglePhaseACMotor(bus1,"1");
   		ac1.setLoadPercent(25);
@@ -967,7 +967,7 @@ public class TestTposD3phaseDStab {
 		
 		
 		
-		Bus3Phase bus1 = (Bus3Phase) dsNet.getDStabBus("Bus1");
+		Bus3Phase bus1 = (Bus3Phase) dsNet.getBus("Bus1");
 		
 		 SinglePhaseACMotor ac1 = new SinglePhaseACMotor(bus1,"1");
   		ac1.setLoadPercent(25);
@@ -1106,7 +1106,7 @@ public class TestTposD3phaseDStab {
 		//!!! identify this is a distribution network, a must for this test case
 		dsNet.setNetworkType(NetworkType.DISTRIBUTION);
 		
-		Bus3Phase bus1 = (Bus3Phase) dsNet.getDStabBus("Bus1");
+		Bus3Phase bus1 = dsNet.getBus("Bus1");
 		
 		 SinglePhaseACMotor ac1 = new SinglePhaseACMotor(bus1,"1");
   		ac1.setLoadPercent(25);
@@ -1343,7 +1343,7 @@ private DStabNetwork3Phase create3BusSys() throws InterpssException{
 			event1.setDurationSec(durationTime);
 			
 	   // define a bus fault
-			BaseDStabBus faultBus = net.getDStabBus(faultBusId);
+			BaseDStabBus faultBus = net.getBus(faultBusId);
 			AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@"+faultBusId, net);
 			fault.setBus(faultBus);
 			fault.setFaultCode(SimpleFaultCode.GROUND_3P);

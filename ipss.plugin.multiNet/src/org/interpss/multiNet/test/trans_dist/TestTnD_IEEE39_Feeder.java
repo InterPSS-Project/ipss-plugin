@@ -12,6 +12,7 @@ import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
+import org.interpss.dstab.dynLoad.impl.InductionMotorImpl;
 import org.interpss.multiNet.algo.MultiNet3Ph3SeqDStabSimuHelper;
 import org.interpss.multiNet.algo.MultiNet3Ph3SeqDStabSolverImpl;
 import org.interpss.multiNet.algo.MultiNet3Ph3SeqDynEventProcessor;
@@ -49,11 +50,11 @@ import com.interpss.core.acsc.PhaseCode;
 import com.interpss.core.acsc.XfrConnectCode;
 import com.interpss.core.acsc.adpter.AcscXformer;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
+import com.interpss.dstab.DStabLoad;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.cache.StateMonitor.DynDeviceType;
-import com.interpss.dstab.dynLoad.InductionMotor;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
@@ -686,7 +687,9 @@ public class TestTnD_IEEE39_Feeder {
 		/**
 		 * --------------------- Feeders below Bus 15---------------------------- 
 		 */
-		double netTotalLoad15 = dsNet.getBus("Bus15").getContributeLoadList().get(0).getLoadCP().getReal();
+		DStabLoad load = dsNet.getBus("Bus15").getContributeLoadList().get(0);
+				
+		double netTotalLoad15 = load.getLoadCP().getReal();
 	    dsNet.getBus("Bus15").getContributeLoadList().remove(0);
 	    dsNet.getBus("Bus15").setLoadCode(AclfLoadCode.NON_LOAD);
 	    
@@ -703,7 +706,8 @@ public class TestTnD_IEEE39_Feeder {
 		/**
 		 * --------------------- Feeders below Bus 16---------------------------- 
 		 */
-		 double netTotalLoadBus16 = dsNet.getBus("Bus16").getContributeLoadList().get(0).getLoadCP().getReal();
+		 DStabLoad load16 = dsNet.getBus("Bus16").getContributeLoadList().get(0);
+		 double netTotalLoadBus16 = load16.getLoadCP().getReal();
 		 dsNet.getBus("Bus16").getContributeLoadList().remove(0);
 		 dsNet.getBus("Bus16").setLoadCode(AclfLoadCode.NON_LOAD);
 		
@@ -721,9 +725,11 @@ public class TestTnD_IEEE39_Feeder {
 		/**
 		 * --------------------- Feeders below Bus 18---------------------------- 
 		 */
-		double netTotalLoadBus18 =dsNet.getBus("Bus18").getContributeLoadList().get(0).getLoadCP().getReal();
-		 dsNet.getBus("Bus18").getContributeLoadList().remove(0);
-		 dsNet.getBus("Bus18").setLoadCode(AclfLoadCode.NON_LOAD);
+		DStabLoad load18 =dsNet.getBus("Bus18").getContributeLoadList().get(0);
+		double netTotalLoadBus18 = load18.getLoadCP().getReal();
+		
+		dsNet.getBus("Bus18").getContributeLoadList().remove(0);
+		dsNet.getBus("Bus18").setLoadCode(AclfLoadCode.NON_LOAD);
 		 
 		 double totalLoadBus18 = netTotalLoadBus18*(1+PVIncrement)*sysMVABASE;
 		 XfrMVA = totalLoadBus18/0.8;
@@ -738,8 +744,10 @@ public class TestTnD_IEEE39_Feeder {
 		/**
 		 * --------------------- Feeders below Bus 26---------------------------- 
 		 */
-		double netTotalLoadBus26 = dsNet.getBus("Bus26").getContributeLoadList().get(0).getLoadCP().getReal();
-	    dsNet.getBus("Bus26").getContributeLoadList().remove(0);
+		DStabLoad load26 =dsNet.getBus("Bus26").getContributeLoadList().get(0);
+		double netTotalLoadBus26 = load26.getLoadCP().getReal();
+		
+		dsNet.getBus("Bus26").getContributeLoadList().remove(0);
 	    dsNet.getBus("Bus26").setLoadCode(AclfLoadCode.NON_LOAD);
 	    
 		 
@@ -755,7 +763,9 @@ public class TestTnD_IEEE39_Feeder {
 		/**
 		 * --------------------- Feeders below Bus 27---------------------------- 
 		 */
-		 double netTotalLoadBus27 = dsNet.getBus("Bus27").getContributeLoadList().get(0).getLoadCP().getReal();
+		 DStabLoad load27 =dsNet.getBus("Bus27").getContributeLoadList().get(0);
+		 double netTotalLoadBus27 = load27.getLoadCP().getReal();
+		
 		 dsNet.getBus("Bus27").getContributeLoadList().remove(0);
 		 dsNet.getBus("Bus27").setLoadCode(AclfLoadCode.NON_LOAD);
 		
@@ -772,8 +782,9 @@ public class TestTnD_IEEE39_Feeder {
 		/**
 		 * --------------------- Feeders below Bus 28---------------------------- 
 		 */
-		double netTotalLoadBus28 =dsNet.getBus("Bus28").getContributeLoadList().get(0).getLoadCP().getReal();
-		 dsNet.getBus("Bus28").getContributeLoadList().remove(0);
+		DStabLoad load28 =dsNet.getBus("Bus28").getContributeLoadList().get(0);
+		double netTotalLoadBus28 = load28.getLoadCP().getReal();
+		 
 		 dsNet.getBus("Bus28").setLoadCode(AclfLoadCode.NON_LOAD);
 		 
 		 double totalLoadBus28 = netTotalLoadBus28*(1+PVIncrement)*sysMVABASE;
@@ -1122,8 +1133,8 @@ public DStabNetwork3Phase createFeeder(DStabNetwork3Phase net,Bus3Phase sourceBu
 		
 		// 3 phase motor, 20%
 		    if(IndMotorPercent>0.0){
-		  		InductionMotor indMotor= DStabObjectFactory.createInductionMotor("1");
-				indMotor.setDStabBus(loadBus);
+		  		InductionMotorImpl indMotor= new InductionMotorImpl(loadBus,"1");
+				//indMotor.setDStabBus(loadBus);
 	
 				indMotor.setXm(3.0);
 				indMotor.setXl(0.07);
