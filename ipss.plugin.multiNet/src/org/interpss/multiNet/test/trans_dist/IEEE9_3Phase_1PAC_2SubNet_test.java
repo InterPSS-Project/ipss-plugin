@@ -12,6 +12,8 @@ import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
+import org.interpss.dstab.dynLoad.LD1PAC;
+import org.interpss.dstab.dynLoad.impl.LD1PACImpl;
 import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.interpss.multiNet.algo.MultiNet3Ph3SeqDStabSimuHelper;
 import org.interpss.multiNet.algo.MultiNet3Ph3SeqDStabSolverImpl;
@@ -47,9 +49,9 @@ import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.cache.StateMonitor.DynDeviceType;
-import com.interpss.dstab.dynLoad.LD1PAC;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
+import com.sun.xml.internal.ws.encoding.MtomCodec.MtomXMLStreamReaderEx;
 
 
 public class IEEE9_3Phase_1PAC_2SubNet_test {
@@ -188,10 +190,10 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
 		System.out.println(sm.toCSVString(sm.getBusVoltTable()));
 		System.out.println(sb.toString());
 		
-		//FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//comprehensive_ch8_hybrid_switching//full_net_3P@Bus10_GenSpd.csv",sm.toCSVString(sm.getMachSpeedTable()));
-		//FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//comprehensive_ch8_hybrid_switching//full_net_3P@Bus10_busVolts.csv",sm.toCSVString(sm.getBusVoltTable()));
+		//FileUtil.writeText2File("/testData/output/full_net_3P@Bus10_busVolts.csv",sm.toCSVString(sm.getBusVoltTable()));
 		
-//		FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//comprehensive_ch8_hybrid_switching//ac_Results_0.6_0.05.txt",sb.toString());
+		//FileUtil.writeText2File("/testData/output/ac_Results_0.6_0.05.txt",sb.toString());
+
 	}
 	
 	
@@ -472,9 +474,9 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
 		System.out.println(sm.toCSVString(sm.getAcMotorPTable()));
 		System.out.println(sm.toCSVString(sm.getAcMotorQTable()));
 		FileUtil.writeText2File("output//ieee9_equivFeeder_1AC_BusVolt.csv",sm.toCSVString(sm.getBusVoltTable()));
-		//FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//comprehensive_ch8_hybrid_switching//full_net_3P@Bus10_busVolts.csv",sm.toCSVString(sm.getBusVoltTable()));
+		//FileUtil.writeText2File("/testData/output/full_net_3P@Bus10_busVolts.csv",sm.toCSVString(sm.getBusVoltTable()));
 		
-//		FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//comprehensive_ch8_hybrid_switching//ac_Results_0.6_0.05.txt",sb.toString());
+		//FileUtil.writeText2File("/testData/output/ac_Results_0.6_0.05.txt",sb.toString());
 	}
 	
 	private void addSinglePhaseDistSys(DStabilityNetwork dsNet ) throws InterpssException{
@@ -602,7 +604,7 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
 			  		ac1.setVstall(0.65);
 			  		ac1.setTstall(0.05);
 	     */
-		LD1PAC acLoad= DStabObjectFactory.createLD1PAC(bus12,"1");
+		LD1PAC acLoad= new LD1PACImpl(bus12,"1");
 		
 		acLoad.setLoadPercent(100);
 		acLoad.setMvaBase(75);
