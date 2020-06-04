@@ -179,7 +179,7 @@ public class TestTnD_IEEE9_13busFeeder {
 		  
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 			dstabAlgo.setSimuStepSec(0.005d);
-			dstabAlgo.setTotalSimuTimeSec(0.2);
+			dstabAlgo.setTotalSimuTimeSec(0.3);
 			
 
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));

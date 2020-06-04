@@ -12,6 +12,7 @@ import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
+import org.interpss.dstab.dynLoad.impl.LD1PACImpl;
 import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.interpss.multiNet.algo.MultiNet3Ph3SeqDStabSimuHelper;
 import org.interpss.multiNet.algo.MultiNet3Ph3SeqDStabSolverImpl;
@@ -27,12 +28,12 @@ import org.interpss.threePhase.basic.Load3Phase;
 import org.interpss.threePhase.basic.impl.Load3PhaseImpl;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.algo.DynamicEventProcessor3Phase;
+import org.interpss.threePhase.dynamic.model.impl.SinglePhaseACMotor;
 import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
 import org.interpss.threePhase.powerflow.impl.DistPowerFlowOutFunc;
 import org.interpss.threePhase.util.ThreePhaseAclfOutFunc;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.interpss.util.FileUtil;
-import org.interpss.threePhase.dynamic.model.impl.SinglePhaseACMotor;
 import org.junit.Test;
 
 import com.interpss.DStabObjectFactory;
@@ -57,7 +58,6 @@ import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
-import com.interpss.dstab.dynLoad.LD1PAC;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
@@ -280,7 +280,7 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 		
 
 		
-	    LD1PAC ac1 = DStabObjectFactory.createLD1PAC(bus12,"1");
+	    LD1PACImpl ac1 = new LD1PACImpl(bus12,"1");
   		ac1.setLoadPercent(100);
   		ac1.setMvaBase(75);
   		ac1.setVstall(0.65);

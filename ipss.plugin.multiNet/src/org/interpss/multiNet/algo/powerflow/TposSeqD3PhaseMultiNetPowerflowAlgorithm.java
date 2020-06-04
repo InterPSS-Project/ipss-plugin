@@ -28,8 +28,8 @@ import com.interpss.core.net.NetworkType;
 
 public class TposSeqD3PhaseMultiNetPowerflowAlgorithm {
 	
-	protected BaseAclfNetwork<? extends AclfBus, ?extends AclfBranch> net = null;
-	protected BaseAclfNetwork<? extends AclfBus, ?extends AclfBranch> transmissionNet = null;
+	protected BaseAclfNetwork<? extends BaseAclfBus, ?extends AclfBranch> net = null;
+	protected BaseAclfNetwork<? extends BaseAclfBus, ?extends AclfBranch> transmissionNet = null;
 	protected List<BaseAclfNetwork> distNetList = null;
 	protected SubNetworkProcessor subNetProcessor = null;
 	protected Hashtable<String,String> distNetId2BoundaryBusTable = null;
@@ -70,7 +70,7 @@ public class TposSeqD3PhaseMultiNetPowerflowAlgorithm {
 		
 		lastStepTransBoundaryBus3SeqVoltages  = new Hashtable<>();
 		
-		this.transmissionNet = (BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>) subNetProc.getExternalSubNetwork();
+		this.transmissionNet = (BaseAclfNetwork<? extends BaseAclfBus, ? extends AclfBranch>) subNetProc.getExternalSubNetwork();
 		
 		this.distNetList = new  ArrayList<>();
 		for(String id:subNetProc.getInternalSubNetBoundaryBusIdList()){
@@ -195,7 +195,7 @@ public class TposSeqD3PhaseMultiNetPowerflowAlgorithm {
 			   else
 				   transBoundaryBusId = distBoundaryBusId+"Dummy";
 			   
-			   AclfBus transBoundaryBus = this.transmissionNet.getBus(transBoundaryBusId);
+			   BaseAclfBus transBoundaryBus = this.transmissionNet.getBus(transBoundaryBusId);
 			   
 			   if(transBoundaryBus == null){
 				   throw new Error("The tranmission network boundary bus is not found, ID: "+transBoundaryBusId);
@@ -234,7 +234,7 @@ public class TposSeqD3PhaseMultiNetPowerflowAlgorithm {
 		      
 		      for(Entry<String,Complex3x1> e: transBoundaryBus3SeqVoltages .entrySet()){
 				   String transBoundaryBusId = e.getKey();
-				   AclfBus transBoundaryBus = this.transmissionNet.getBus(transBoundaryBusId);
+				   BaseAclfBus transBoundaryBus = this.transmissionNet.getBus(transBoundaryBusId);
 				   e.getValue().b_1 = transBoundaryBus.getVoltage();
 				   
 		      }
@@ -317,7 +317,7 @@ public class TposSeqD3PhaseMultiNetPowerflowAlgorithm {
 					   else
 						   transBoundaryBusId = distBoundaryBusId+"Dummy";
 					   
-					   AclfBus transBoundaryBus = this.transmissionNet.getBus(transBoundaryBusId);
+					   BaseAclfBus transBoundaryBus = this.transmissionNet.getBus(transBoundaryBusId);
 					   
 					   if(transBoundaryBus == null){
 						   throw new Error("The tranmission network boundary bus is not found, ID: "+transBoundaryBusId);
