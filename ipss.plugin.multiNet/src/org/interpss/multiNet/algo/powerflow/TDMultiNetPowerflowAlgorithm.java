@@ -122,7 +122,7 @@ public class TDMultiNetPowerflowAlgorithm {
 				throw new Error(" Only one source bus for a distribution system is supported!");
 			}
 			else{
-				BaseAclfBus sourceBus = (AclfBus) distNet.getBus(boundaryList.get(0));
+				BaseAclfBus sourceBus =  (BaseAclfBus) distNet.getBus(boundaryList.get(0));
 				
 				distNetId2BoundaryBusTable.put(distNet.getId(), sourceBus.getId());
 				
