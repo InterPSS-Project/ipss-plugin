@@ -27,22 +27,28 @@ public class SE_IEEE118Test {
 		
 		IpssCorePlugin.init();
 		
-		AclfNetwork aclfNet = IpssAdapter.importAclfNet("testData/se/ieee118.ieee").setFormat(IEEECommonFormat).load()
+		// Load a Loadflow case
+		AclfNetwork aclfNet = IpssAdapter.importAclfNet("testData/se/ieee118.ieee")
+				.setFormat(IEEECommonFormat)
+				.load()
 				.getImportedObj();
 		
+		// run Loadflow 
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(aclfNet);
 		algo.loadflow();
 		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet));
+		assertTrue("Loadflow should converged! ", aclfNet.isLfConverged());		
 		
 		SENetwork seNet = SENetworkHelper.createSENetwrok(aclfNet);
 		
 		seNet.getBranchList().forEach(branch -> {
 			branch.getFromSideRec().getPSeRec().setMeasure(RandomError(branch.powerFrom2To().getReal(), errorPQ));
 			branch.getFromSideRec().getQSeRec().setMeasure(RandomError(branch.powerFrom2To().getImaginary(), errorPQ));
-			branch.getToSideRec().getPSeRec().setMeasure(RandomError(branch.powerTo2From().getReal(), errorPQ));
-			branch.getToSideRec().getQSeRec().setMeasure(RandomError(branch.powerTo2From().getImaginary(), errorPQ));
 			branch.getFromSideRec().getPSeRec().setQuality(true);
 			branch.getFromSideRec().getQSeRec().setQuality(true);
+			
+			branch.getToSideRec().getPSeRec().setMeasure(RandomError(branch.powerTo2From().getReal(), errorPQ));
+			branch.getToSideRec().getQSeRec().setMeasure(RandomError(branch.powerTo2From().getImaginary(), errorPQ));
 			branch.getToSideRec().getPSeRec().setQuality(true);
 			branch.getToSideRec().getQSeRec().setQuality(true);
 		});
@@ -50,12 +56,14 @@ public class SE_IEEE118Test {
 		seNet.getBusList().forEach(bus -> {
 			bus.getVoltSeRec().setMeasure(RandomError(bus.getVoltageMag(), errorV));
 			bus.getVoltSeRec().setQuality(true);
+
 			bus.getContributeGenList().forEach(gen -> {
 				gen.getPSeRec().setMeasure(RandomError(gen.getGen().getReal(), errorPQ));
 				gen.getPSeRec().setQuality(true);
 				gen.getQSeRec().setMeasure(RandomError(gen.getGen().getImaginary(), errorPQ));
 				gen.getQSeRec().setQuality(true);
 			});
+			
 			bus.getContributeLoadList().forEach(load -> {
 				load.setMvaBase(seNet.getBaseMva());
 				load.getPSeRec().setMeasure(RandomError(load.getLoadCP().getReal(), errorPQ));
@@ -67,11 +75,12 @@ public class SE_IEEE118Test {
 
 		SEAlgorithm seAlgo = SEObjectFactory.createSEAlgorithm(seNet);
 
+		// qer: Qualified Estimation Rate
 		double qer = seAlgo.se();
-		assertTrue(qer > 0.95);		
+		assertTrue("QER should be larger than 95% ", qer > 0.95);		
 		
-		double maxVResidual = seNet.calMaxResidual();
-		assertTrue(maxVResidual < 0.02);
+		double maxResidual = seNet.calMaxResidual();
+		assertTrue("Max residual should be less than 2% ", maxResidual < 0.02);
 	}
 
 	private double RandomError(double measure, double error) {
