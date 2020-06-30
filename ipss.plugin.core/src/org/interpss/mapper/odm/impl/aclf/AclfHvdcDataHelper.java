@@ -21,7 +21,7 @@ import org.interpss.numeric.datatype.LimitType;
 
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.BaseAclfNetwork;
-import com.interpss.core.aclf.hvdc.BaseVSCConverter;
+import com.interpss.core.aclf.hvdc.VSCConverter;
 import com.interpss.core.aclf.hvdc.ConverterAcControlMode;
 import com.interpss.core.aclf.hvdc.ConverterDcControlMode;
 import com.interpss.core.aclf.hvdc.ConverterType;
@@ -310,7 +310,7 @@ public class AclfHvdcDataHelper {
     private boolean setVSCInverterData(VSCConverterXmlType vscConvXml){
     	
     	boolean success = true;
-    	BaseVSCConverter vscInv = (BaseVSCConverter)this.vscHvdc2T.getInvConverter();
+    	VSCConverter vscInv = (VSCConverter)this.vscHvdc2T.getInvConverter();
     	
     	// connection bus
     	BusXmlType busXml = (BusXmlType) vscConvXml.getBusId().getIdRef();
@@ -363,7 +363,7 @@ public class AclfHvdcDataHelper {
     	
 		boolean success = true;
 		
-		BaseVSCConverter vscRec = (BaseVSCConverter)this.vscHvdc2T.getRecConverter();
+		VSCConverter vscRec = (VSCConverter)this.vscHvdc2T.getRecConverter();
 	 	
 	 	// connection bus
 	 	BusXmlType busXml = (BusXmlType) vscConvXml.getBusId().getIdRef();
