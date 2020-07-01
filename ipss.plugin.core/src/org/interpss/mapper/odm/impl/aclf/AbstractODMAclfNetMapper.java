@@ -72,7 +72,7 @@ import com.interpss.core.aclf.flow.FlowInterfaceBranch;
 import com.interpss.core.aclf.flow.FlowInterfaceLimit;
 import com.interpss.core.aclf.flow.FlowInterfaceType;
 import com.interpss.core.aclf.hvdc.HvdcLine2TVSC;
-import com.interpss.core.aclf.hvdc.HvdcLine2TCCC;
+import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.BranchBusSide;
 import com.interpss.core.net.OriginalDataFormat;
@@ -362,7 +362,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 		}
 		else if (xmlBranch instanceof DCLineData2TXmlType){
 			DCLineData2TXmlType branchRec =  (DCLineData2TXmlType) xmlBranch;
-			AclfHvdcDataHelper  hvdcHelper =new AclfHvdcDataHelper(adjNet, (HvdcLine2TCCC) branch);
+			AclfHvdcDataHelper  hvdcHelper =new AclfHvdcDataHelper(adjNet, (HvdcLine2TLCC) branch);
 			hvdcHelper.setHvdc2TData(branchRec);
 		}
 		else if(xmlBranch instanceof VSCHVDC2TXmlType){
@@ -388,7 +388,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 		mapBaseBranchRec(xmlBranch, branch, adjNet);	
 		if (xmlBranch instanceof DCLineData2TXmlType){
 			DCLineData2TXmlType branchRec =  (DCLineData2TXmlType) xmlBranch;
-			AclfHvdcDataHelper  hvdcHelper =new AclfHvdcDataHelper(adjNet, (HvdcLine2TCCC) branch);
+			AclfHvdcDataHelper  hvdcHelper =new AclfHvdcDataHelper(adjNet, (HvdcLine2TLCC) branch);
 			hvdcHelper.setHvdc2TData(branchRec);
 		}
 		else if(xmlBranch instanceof VSCHVDC2TXmlType){
