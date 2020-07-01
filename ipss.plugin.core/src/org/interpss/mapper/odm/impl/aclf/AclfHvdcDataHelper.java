@@ -26,7 +26,7 @@ import com.interpss.core.aclf.hvdc.ConverterAcControlMode;
 import com.interpss.core.aclf.hvdc.ConverterDcControlMode;
 import com.interpss.core.aclf.hvdc.ConverterType;
 import com.interpss.core.aclf.hvdc.HvdcControlMode;
-import com.interpss.core.aclf.hvdc.HvdcLine2TCCC;
+import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
 import com.interpss.core.aclf.hvdc.HvdcOperationMode;
 import com.interpss.core.aclf.hvdc.Inverter;
 import com.interpss.core.aclf.hvdc.Rectifier;
@@ -36,10 +36,10 @@ import com.interpss.core.aclf.hvdc.impl.HvdcLineFactoryImpl;
 
 public class AclfHvdcDataHelper {
 	private BaseAclfNetwork<?, ?>  aclfNet = null;
-	private HvdcLine2TCCC hvdc2T = null;
+	private HvdcLine2TLCC hvdc2T = null;
 	private HvdcLine2TVSC vscHvdc2T = null;
 
-	public AclfHvdcDataHelper(BaseAclfNetwork<?, ?>  aclfNet, HvdcLine2TCCC hvdc2T){
+	public AclfHvdcDataHelper(BaseAclfNetwork<?, ?>  aclfNet, HvdcLine2TLCC hvdc2T){
 		this.aclfNet = aclfNet;
 		this.hvdc2T = hvdc2T;
 	}
