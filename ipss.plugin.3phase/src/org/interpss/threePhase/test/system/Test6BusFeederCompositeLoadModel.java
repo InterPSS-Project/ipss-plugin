@@ -1,4 +1,4 @@
-package org.interpss.threePhase.test;
+package org.interpss.threePhase.test.system;
 
 import static org.junit.Assert.assertTrue;
 
@@ -15,6 +15,7 @@ import org.interpss.threePhase.dynamic.model.PVDistGen3Phase;
 import org.interpss.threePhase.dynamic.model.impl.SinglePhaseACMotor;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.powerflow.impl.DistPowerFlowOutFunc;
+import org.interpss.threePhase.test.TestBase;
 import org.interpss.threePhase.util.ThreePhaseAclfOutFunc;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.Test;
