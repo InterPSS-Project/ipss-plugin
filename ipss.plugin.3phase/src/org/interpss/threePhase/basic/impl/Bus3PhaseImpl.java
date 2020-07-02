@@ -9,11 +9,14 @@ import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.threePhase.basic.Branch3Phase;
 import org.interpss.threePhase.basic.Bus3Phase;
 import org.interpss.threePhase.basic.Gen3Phase;
+import org.interpss.threePhase.basic.Load1Phase;
 import org.interpss.threePhase.basic.Load3Phase;
+import org.interpss.threePhase.basic.LoadConnectionType;
 import org.interpss.threePhase.dynamic.model.DynLoadModel1Phase;
 import org.interpss.threePhase.dynamic.model.DynLoadModel3Phase;
 import org.interpss.threePhase.util.ThreeSeqLoadProcessor;
 
+import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.net.Branch;
 import com.interpss.dstab.impl.BaseDStabBusImpl;
 
@@ -33,6 +36,8 @@ public class Bus3PhaseImpl extends BaseDStabBusImpl<Gen3Phase,Load3Phase> implem
 	private List<DynLoadModel1Phase> phaseCDynLoadList;
 	
 	private List<DynLoadModel3Phase> threePhaseDynLoadList;
+	
+	private List<Load1Phase> singlePhaseLoadList = null;
 	
 	private List<Load3Phase> threePhaseLoadList = null;
 	private List<Gen3Phase> threePhaseGenList = null;
@@ -169,15 +174,40 @@ public class Bus3PhaseImpl extends BaseDStabBusImpl<Gen3Phase,Load3Phase> implem
 			threePhaseLoadList = new ArrayList<>();
 		return threePhaseLoadList;
 	}
+	
+	@Override
+	public List<Load1Phase> getSinglePhaseLoadList() {
+		if(singlePhaseLoadList ==null)
+			singlePhaseLoadList = new ArrayList<>();
+		return singlePhaseLoadList;
+		
+	}
+
 
 	
 	private Complex3x1 calcLoad3PhEquivCurInj() {
 		this.load3PhEquivCurInj = new Complex3x1();
-		if(this.isLoad() && this.getThreePhaseLoadList().size()>0){
-			if (Vabc == null ||Vabc.abs()<1.0E-5) 
-				Vabc = new Complex3x1(new Complex(1,0),new Complex(-Math.sin(Math.PI/6),-Math.cos(Math.PI/6)),new Complex(-Math.sin(Math.PI/6),Math.cos(Math.PI/6)));
+		if (this.Vabc == null) 
+			this.Vabc = new Complex3x1(new Complex(1,0),new Complex(-Math.sin(Math.PI/6),-Math.cos(Math.PI/6)),new Complex(-Math.sin(Math.PI/6),Math.cos(Math.PI/6)));
+		
+		//single-phase loads
+		if(this.getSinglePhaseLoadList().size()>0){
+			for(Load1Phase load1P: this.getSinglePhaseLoadList()){
+				if(load1P.isActive()){
+					this.load3PhEquivCurInj=this.load3PhEquivCurInj.add(load1P.getEquivCurrInj(Vabc));
+				}
+				else{
+					throw new Error("Load instance is not single-phase load! Bus, load = "+this.getId()+","+load1P.getId());
+				}
+			}
+		}
+		
+		//three phase loads
+		if(this.getThreePhaseLoadList().size()>0){
+			
 			for(Load3Phase load:this.getThreePhaseLoadList()){
-				this.load3PhEquivCurInj=this.load3PhEquivCurInj.add(load.getEquivCurrInj(Vabc));
+				if(load.isActive())
+				  this.load3PhEquivCurInj=this.load3PhEquivCurInj.add(load.getEquivCurrInj(Vabc));
 			}
 			
 		}
@@ -189,9 +219,8 @@ public class Bus3PhaseImpl extends BaseDStabBusImpl<Gen3Phase,Load3Phase> implem
    // for power flow purpose
 	@Override
 	public Complex3x1 calc3PhEquivCurInj() {
-		calcLoad3PhEquivCurInj();
 		
-		this.equivCurInj3Phase = this.load3PhEquivCurInj;
+		this.equivCurInj3Phase = calcLoad3PhEquivCurInj();
 		
 		for(Gen3Phase gen:this.getThreePhaseGenList()){
 			this.equivCurInj3Phase = this.equivCurInj3Phase.add(gen.getPowerflowEquivCurrInj());
@@ -263,7 +292,38 @@ public class Bus3PhaseImpl extends BaseDStabBusImpl<Gen3Phase,Load3Phase> implem
 	public Complex3x1 get3PhaseTotalLoad() {
 		this.totalLoad3Phase = new Complex3x1();
 		for(Load3Phase load: this.getThreePhaseLoadList()){
-			this.totalLoad3Phase = this.totalLoad3Phase.add(load.get3PhaseLoad());  
+			if(load.isActive())
+			     this.totalLoad3Phase = this.totalLoad3Phase.add(load.get3PhaseLoad(this.get3PhaseVotlages()));  
+		}
+		//consider single-phase Wye connected load included in the contributeLoadList()
+		// TODO how about delta connected load??
+		for(Load1Phase load1P: this.getSinglePhaseLoadList()){
+			if(load1P.isActive()){
+				if(load1P.getLoadConnectionType()==LoadConnectionType.Single_Phase_Delta){
+					throw new Error (" get3PhaseTotalLoad() does not support LoadConnectionType.Single_Phase_Delta yet! bus, load = "+this.getId()+","+load1P.getId());
+				}
+				else{
+					switch(load1P.getPhaseCode()){
+					   case A:
+						   double vmag = this.get3PhaseVotlages().a_0.abs();
+						   this.totalLoad3Phase.a_0 = this.totalLoad3Phase.a_0.add(load1P.getLoad(vmag));
+					     break;
+					   case B:
+						   vmag = this.get3PhaseVotlages().b_1.abs();
+						   this.totalLoad3Phase.b_1 = this.totalLoad3Phase.b_1.add(load1P.getLoad(vmag));
+						 break;
+					  
+					   case C:
+						   vmag = this.get3PhaseVotlages().c_2.abs();
+						   this.totalLoad3Phase.c_2 = this.totalLoad3Phase.c_2.add(load1P.getLoad(vmag));
+						  break;
+					   default:
+						   throw new Error (" get3PhaseTotalLoad() does not support the phase code of this single load yet! bus, load, phase code = "+this.getId()+","+load1P.getId()+","+load1P.getPhaseCode());
+					
+						
+					}
+				}
+			}
 		}
 		return this.totalLoad3Phase;
 	}
@@ -282,7 +342,37 @@ public class Bus3PhaseImpl extends BaseDStabBusImpl<Gen3Phase,Load3Phase> implem
 	}
 
 	
-
+   @Override
+   public AclfLoad getContributeLoad(String id) {
+	  
+	   if(this.getContributeLoadList()!=null) {
+		   for(AclfLoad load: this.getContributeLoadList()) {
+			   if(load.getId().equals(id)) {
+				   return load;
+			   }
+		   }
+	   }
+	   
+	   if(this.getSinglePhaseLoadList()!=null) {
+		   for(AclfLoad load: this.getSinglePhaseLoadList()) {
+			   if(load.getId().equals(id)) {
+				   return load;
+			   }
+		   }
+	   }
+	   
+	   if(this.getThreePhaseLoadList()!=null) {
+		   for(AclfLoad load: this.getThreePhaseLoadList()) {
+			   if(load.getId().equals(id)) {
+				   return load;
+			   }
+		   }
+	   }
+	   
+	   return null;
+	   
+	   
+   }
 
 
 
