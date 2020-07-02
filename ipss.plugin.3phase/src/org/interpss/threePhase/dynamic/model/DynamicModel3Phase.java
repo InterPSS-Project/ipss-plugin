@@ -189,9 +189,7 @@ public abstract class DynamicModel3Phase extends DynamicBusDeviceImpl implements
 	 * @generated
 	 */
 	public boolean updateAttributes(boolean netChange) {
-		// TODO: implement this method
-		// Ensure that you remove @generated or mark it @generated NOT
-		throw new UnsupportedOperationException();
+		return true;
 	}
 
 }
