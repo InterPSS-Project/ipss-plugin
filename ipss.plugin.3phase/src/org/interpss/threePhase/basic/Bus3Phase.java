@@ -27,6 +27,7 @@ public interface Bus3Phase extends BaseDStabBus<Gen3Phase,Load3Phase> {
     
     public List<DynLoadModel3Phase> getThreePhaseDynLoadList();
     
+    public List<Load1Phase> getSinglePhaseLoadList();
     
     public List<Load3Phase> getThreePhaseLoadList();
     
