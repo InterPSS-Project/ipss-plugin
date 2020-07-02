@@ -2,12 +2,14 @@ package org.interpss.threePhase.dynamic.impl;
 
 import static com.interpss.common.util.IpssLogger.ipssLogger;
 import static org.interpss.threePhase.util.ThreePhaseUtilFunction.threePhaseGenAptr;
+import static org.interpss.threePhase.util.ThreePhaseUtilFunction.threePhaseInductionMotorAptr;
 
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.Queue;
 
 import org.apache.commons.math3.complex.Complex;
+import org.interpss.dstab.dynLoad.InductionMotor;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
@@ -38,6 +40,7 @@ import com.interpss.core.net.NetworkType;
 import com.interpss.core.sparse.impl.SparseEqnComplexMatrix3x3Impl;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabGen;
+import com.interpss.dstab.device.DynamicBusDevice;
 import com.interpss.dstab.dynLoad.DynLoadModel;
 import com.interpss.dstab.impl.BaseDStabNetworkImpl;
 
@@ -251,17 +254,17 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<Bus3Phase, Bran
 					
 				    if(yii.aa.abs()<yiiMinTolerance){
 				    	yii.aa = new Complex(1.0,0);
-				    	IpssLogger.getLogger().info(b.getId()+": abs of Yii.aa of is less than 1.0E-8, changed to 1.0 ");
+				    	IpssLogger.getLogger().info("Bus : "+b.getId()+": abs of Yii.aa of is less than 1.0E-8, changed to 1.0 ");
 				    }
 				    
 				    if(yii.bb.abs()<yiiMinTolerance){
 				    	yii.bb = new Complex(1.0,0);
-				    	IpssLogger.getLogger().info(b.getId()+": abs of Yii.bb of is less than 1.0E-8, changed to 1.0 ");
+				    	IpssLogger.getLogger().info("Bus : "+b.getId()+": abs of Yii.bb of is less than 1.0E-8, changed to 1.0 ");
 				    }
 				    
 				    if(yii.cc.abs()<yiiMinTolerance){
 				    	yii.cc = new Complex(1.0,0);
-				    	IpssLogger.getLogger().info(b.getId()+": abs of Yii.cc of is less than 1.0E-8, changed to 1.0 ");
+				    	IpssLogger.getLogger().info("Bus : "+b.getId()+": abs of Yii.cc of is less than 1.0E-8, changed to 1.0 ");
 				    }
 										
 					yMatrixAbc.setA( yii,i, i);
@@ -288,21 +291,37 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<Bus3Phase, Bran
 		
 		
 		//TODO append the equivalent admittance of dynamic loads to YMatrixABC
-		for ( BaseDStabBus bus : getBusList() ) {
-			if(bus.isActive() && bus.isLoad()){
-				Bus3Phase bus3p = (Bus3Phase) bus;
-				
+		for (Bus3Phase bus3p : getBusList() ) {
+			if(bus3p.isActive() && bus3p.isLoad()){
+
 				Complex3x3 threePhasedynLoadEquivY = new Complex3x3();
 				
 				//TODO process three-phase dynamic loads
-                 if(bus3p.getThreePhaseDynLoadList().size()>0){
-					
-					for(DynLoadModel3Phase load3p:bus3p.getThreePhaseDynLoadList()){
-						if(load3p.isActive()){
-							threePhasedynLoadEquivY = threePhasedynLoadEquivY.add(load3p.getEquivYabc());
-						}
-					}
-                 }
+//                 if(bus3p.getThreePhaseDynLoadList().size()>0){
+//					
+//					for(DynLoadModel3Phase load3p:bus3p.getThreePhaseDynLoadList()){
+//						if(load3p.isActive()){
+//							threePhasedynLoadEquivY = threePhasedynLoadEquivY.add(load3p.getEquivYabc());
+//						}
+//					}
+//                 }
+				
+				for(DynamicBusDevice dynDevice: bus3p.getDynamicBusDeviceList()){
+                	if(dynDevice instanceof InductionMotor ){
+                		DynLoadModel3Phase dynLoad3P = threePhaseInductionMotorAptr.apply((InductionMotor) dynDevice);
+                		if(dynLoad3P.isActive()){
+                    		//dynLoad3P.initStates();
+                    		threePhasedynLoadEquivY = threePhasedynLoadEquivY.add(dynLoad3P.getEquivYabc());
+                    	}
+                	}
+                	else if (dynDevice instanceof DynLoadModel3Phase){
+                		DynLoadModel3Phase dynLoad3P = (DynLoadModel3Phase) dynDevice;
+                		if(dynLoad3P.isActive()){
+                    		//dynLoad3P.initStates();
+                			threePhasedynLoadEquivY = threePhasedynLoadEquivY.add(dynLoad3P.getEquivYabc());
+                    	}
+                	}
+				}
 				
 				//TODO process 1-phase dynamic loads on each phase
 				Complex phaseAdynLoadEquivY = new Complex(0,0);
@@ -347,13 +366,13 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<Bus3Phase, Bran
                 	Complex3x3 y = new Complex3x3(phaseAdynLoadEquivY,phaseBdynLoadEquivY,phaseCdynLoadEquivY) ;
                 	
                 	
-                	yMatrixAbc.addToA(y, bus.getSortNumber(), bus.getSortNumber());
+                	yMatrixAbc.addToA(y, bus3p.getSortNumber(), bus3p.getSortNumber());
                 }
                 
                 
                // Consider the equivalent Y of three-phase dynamic loads
                 if(threePhasedynLoadEquivY.abs()>0){
-                	yMatrixAbc.addToA(threePhasedynLoadEquivY, bus.getSortNumber(), bus.getSortNumber());
+                	yMatrixAbc.addToA(threePhasedynLoadEquivY, bus3p.getSortNumber(), bus3p.getSortNumber());
                 }
                 
                 	
@@ -473,13 +492,31 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<Bus3Phase, Bran
 						
 						//TODO three-phase dynamic loads
 						
-						if(bus3p.getThreePhaseDynLoadList().size()>0){
-							for(DynLoadModel3Phase load3p:bus3p.getThreePhaseDynLoadList()){
-								if(load3p.isActive()){
-									iInject = iInject.add(load3p.getISource3Phase());
-								}
-							}
-						}
+//						if(bus3p.getThreePhaseDynLoadList().size()>0){
+//							for(DynLoadModel3Phase load3p:bus3p.getThreePhaseDynLoadList()){
+//								if(load3p.isActive()){
+//									iInject = iInject.add(load3p.getISource3Phase());
+//								}
+//							}
+//						}
+						
+						 for(DynamicBusDevice dynDevice: bus.getDynamicBusDeviceList()){
+							    if(dynDevice.isActive()){
+		                        	if(dynDevice instanceof InductionMotor ){
+		                        		DynLoadModel3Phase dynLoad3P = threePhaseInductionMotorAptr.apply((InductionMotor) dynDevice);
+		                        		iInject = iInject.add(dynLoad3P.getISource3Phase());
+
+		                        	}
+		                        	else if (dynDevice instanceof DynLoadModel3Phase){
+		                        		DynLoadModel3Phase dynLoad3P = (DynLoadModel3Phase) dynDevice;
+
+		                        		iInject = iInject.add(dynLoad3P.getISource3Phase());
+
+		                        	}
+							    }
+
+	                         }
+
 					}
 				  
 				  if(iInject == null){
@@ -496,8 +533,8 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<Bus3Phase, Bran
 				}
 			}
 			
-			// ISparseEqnComplexMatrix3x3  Yabc = getYMatrixABC();
-			// System.out.println(Yabc.getSparseEqnComplex());
+//			 ISparseEqnComplexMatrix3x3  Yabc = getYMatrixABC();
+//			 System.out.println(Yabc.getSparseEqnComplex().toString());
 		   
 			getYMatrixABC().solveEqn();
 
@@ -509,7 +546,7 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<Bus3Phase, Bran
 					//if(bus.getId().equals("Bus12"))
 					//System.out.println("Bus, Vabc:"+b.getId()+","+vabc.toString());
 					
-					if(!vabc.a_0.isNaN()){
+					if(!vabc.a_0.isNaN() && !vabc.b_1.isNaN() && !vabc.c_2.isNaN()){
                     
 						//if(bus instanceof Bus3Phase){
 							Bus3Phase bus3P = (Bus3Phase) bus;
@@ -681,12 +718,31 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<Bus3Phase, Bran
 						}
                         
                         
-                        for(DynLoadModel3Phase dynLoad3P : bus.getThreePhaseDynLoadList()){
-                        	if(dynLoad3P.isActive()){
-                        		dynLoad3P.initStates();
-                        		total3PhaseDynLoadPQ = total3PhaseDynLoadPQ.add(dynLoad3P.getInitLoadPQ3Phase());
+//                        for(DynLoadModel3Phase dynLoad3P : bus.getThreePhaseDynLoadList()){
+//                        	if(dynLoad3P.isActive()){
+//                        		dynLoad3P.initStates();
+//                        		total3PhaseDynLoadPQ = total3PhaseDynLoadPQ.add(dynLoad3P.getInitLoadPQ3Phase());
+//                        	}
+//                        }
+                        
+                        //TODO comment out the threePhaesDynLoadList above to avoid double counting, as all the dynamic load models are already in the DynamicBusDeviceList()
+                        for(DynamicBusDevice dynDevice: bus.getDynamicBusDeviceList()){
+                        	if(dynDevice instanceof InductionMotor ){
+                        		DynLoadModel3Phase dynLoad3P = threePhaseInductionMotorAptr.apply((InductionMotor) dynDevice);
+                        		if(dynLoad3P.isActive()){
+                            		dynLoad3P.initStates();
+                            		total3PhaseDynLoadPQ = total3PhaseDynLoadPQ.add(dynLoad3P.getInitLoadPQ3Phase());
+                            	}
+                        	}	                        	
+                            else if (dynDevice instanceof DynLoadModel3Phase){
+                        		DynLoadModel3Phase dynLoad3P = (DynLoadModel3Phase) dynDevice;
+                        		if(dynLoad3P.isActive()){
+                            		dynLoad3P.initStates();
+                            		total3PhaseDynLoadPQ = total3PhaseDynLoadPQ.add(dynLoad3P.getInitLoadPQ3Phase());
+                            	}
                         	}
-                        }
+
+                         }                     
                         
                         // sum up the 1-phase and 3-phase dynamic loads
                         total3PhaseDynLoadPQ = total3PhaseDynLoadPQ.add(
@@ -701,7 +757,11 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<Bus3Phase, Bran
 
 							
 						// add the dynamic loads to dynamicBusDeviceList()
-						bus.getDynamicBusDeviceList().addAll(bus.getDynLoadModelList());  //three-sequence based
+                        
+                     // TODO this need to be fixed, as it causes duplication issues for adapter implementation of existing dynamic load models, such as inductionMotor3PhaseLoad
+                     // because DynLoadModel extends from DynamicBusDevice, as the DynLoadModel.setDStabBus() method will create the bus-loadmodel containing relationship. 
+						
+                        bus.getDynamicBusDeviceList().addAll(bus.getDynLoadModelList());  //three-sequence based
 						bus.getDynamicBusDeviceList().addAll(bus.getPhaseADynLoadList()); // single-phase based
 						bus.getDynamicBusDeviceList().addAll(bus.getPhaseBDynLoadList()); // single-phase based
 						bus.getDynamicBusDeviceList().addAll(bus.getPhaseCDynLoadList()); // single-phase based
@@ -751,7 +811,8 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<Bus3Phase, Bran
 
 	@Override
 	public Hashtable<String, Complex3x1> get3phaseCustomCurrInjTable() {
-		
+		if(this.threePhaseCurInjTable ==null)
+			this.threePhaseCurInjTable = new Hashtable<String, Complex3x1>();
 		return this.threePhaseCurInjTable;
 	}
 

@@ -1,4 +1,4 @@
-package org.interpss.threePhase.test;
+package org.interpss.threePhase.test.model;
 
 import static com.interpss.core.funcImpl.AcscFunction.acscXfrAptr;
 import static org.junit.Assert.assertTrue;
@@ -108,7 +108,7 @@ public class TestPVDistGen3Phase {
 		
 	}
 	
-	//@Test
+	@Test
 	public void testPVDistGen3Model() throws InterpssException{
 		
 		IpssCorePlugin.init();
@@ -149,7 +149,7 @@ public class TestPVDistGen3Phase {
 		
 		Complex ipos = pv.getPosSeqIpq();
 		
-		Complex calcPower = vpos.multiply(ipos.conjugate());
+		Complex calcPower = ipos.multiply(vpos.abs());
 		
 		assertTrue(pv.getPosSeqGenPQ().subtract(calcPower).abs()<1.0E-5);
 		
@@ -339,7 +339,7 @@ public class TestPVDistGen3Phase {
 		
 		StateMonitor sm = new StateMonitor();
 		//sm.addGeneratorStdMonitor(new String[]{"Bus1-mach1","Bus2-mach1"});
-		sm.addBusStdMonitor(new String[]{"Bus2","Bus1"});
+		sm.addBusStdMonitor(new String[]{"Bus3","Bus2","Bus1"});
 		
 		sm.addDynDeviceMonitor(DynDeviceType.PVGen, "PVGen3Phase_1@Bus3");
 		
@@ -358,15 +358,26 @@ public class TestPVDistGen3Phase {
 	  	
 	  	//System.out.println(sm.toCSVString(sm.getBusAngleTable()));
 	  	System.out.println(sm.toCSVString(sm.getBusVoltTable()));
-		FileUtil.writeText2File("C:\\results.csv", sm.toCSVString(sm.getBusVoltTable()));
+		//FileUtil.writeText2File("C:\\results.csv", sm.toCSVString(sm.getBusVoltTable()));
 
 	  	MonitorRecord rec1 = sm.getBusVoltTable().get("Bus2").get(1);
 	  	MonitorRecord rec20 = sm.getBusVoltTable().get("Bus2").get(20);
 	  	assertTrue(Math.abs(rec1.getValue()-rec20.getValue())<1.0E-4);
 	  	
 	  	System.out.println(sm.toCSVString(sm.getPvGenPTable()));
+	  
 	  	System.out.println(sm.toCSVString(sm.getPvGenQTable()));
 	  	System.out.println(sm.toCSVString(sm.getPvGenIpTable()));
+	  	
+	  	
+	  	MonitorRecord pvGenP1 = sm.getPvGenPTable().get("PVGen3Phase_1@Bus3").get(1);
+	  	MonitorRecord pvGenP20 = sm.getPvGenPTable().get("PVGen3Phase_1@Bus3").get(20);
+	  	assertTrue(Math.abs(pvGenP1.getValue()-pvGenP20.getValue())<2.0E-4);
+	  	
+	  	MonitorRecord pvGenQ1 = sm.getPvGenQTable().get("PVGen3Phase_1@Bus3").get(1);
+	  	MonitorRecord pvGenQ20 = sm.getPvGenQTable().get("PVGen3Phase_1@Bus3").get(20);
+	  	assertTrue(Math.abs(pvGenQ1.getValue()-pvGenQ20.getValue())<2.0E-4);
+	  	
 	}
 	
 	private DStabNetwork3Phase createDistNetWithDG() throws InterpssException{
