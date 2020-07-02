@@ -10,6 +10,7 @@ import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.threePhase.basic.Branch3Phase;
 import org.interpss.threePhase.basic.Transformer3Phase;
 
+import com.interpss.core.acsc.PhaseCode;
 import com.interpss.dstab.impl.DStabBranchImpl;
 
 public class Branch3PhaseImpl extends DStabBranchImpl implements Branch3Phase{
@@ -29,6 +30,10 @@ public class Branch3PhaseImpl extends DStabBranchImpl implements Branch3Phase{
 	private Complex3x3 toBusIabc2ToBusVabcMatrix = null;
 	
 	private static final double z0_to_z1_ratio = 2.5;
+	
+	private PhaseCode  ph = PhaseCode.ABC;
+	
+	private double baseKVA = 100000; //100 MVA
 	
 	@Override
 	public void setZabc(Complex3x3 Zabc) {
@@ -388,6 +393,30 @@ public class Branch3PhaseImpl extends DStabBranchImpl implements Branch3Phase{
 	@Override
 	public void setCurrentAbcAtToSide(Complex3x1 IabcToBus) {
 		this.currInjAtToBus = IabcToBus;
+		
+	}
+
+	@Override
+	public void setPhaseCode(PhaseCode phCode) {
+		this.ph=phCode;
+		
+	}
+
+	@Override
+	public PhaseCode getPhaseCode() {
+		
+		return this.ph;
+	}
+
+	@Override
+	public void setXfrRatedKVA(double kva1) {
+		this.baseKVA = kva1;
+		
+	}
+	
+	@Override
+	public double getXfrRatedKVA() {
+		return this.baseKVA;
 		
 	}
 

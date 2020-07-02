@@ -10,6 +10,9 @@ import com.interpss.dstab.DStabLoad;
 
 public interface Load3Phase extends DStabLoad {
 	
+	public void setPhaseCode (PhaseCode phCode);
+	
+	public PhaseCode getPhaseCode ();
 	/**
 	 * calcuate the Yabc from Y120
 	 * @param y1  equivalent positive sequence admittance of the load which is not represented by dynamic load
@@ -24,10 +27,16 @@ public interface Load3Phase extends DStabLoad {
 	public Complex3x3 getEquivYabc();
 	
 	/**
+	 * get the initial load at nominal voltage level
+	 * @return
+	 */
+	public Complex3x1 getInit3PhaseLoad();
+	
+	/**
 	 *  get three phase loads in pu
 	 * @return
 	 */
-	public Complex3x1  get3PhaseLoad();
+	public Complex3x1  get3PhaseLoad(Complex3x1 vabc);
 	
 	
 	/**
@@ -53,5 +62,23 @@ public interface Load3Phase extends DStabLoad {
 	 * @return
 	 */
 	public Complex3x1 getEquivCurrInj(Complex3x1 vabc);
+	
+	public LoadConnectionType getLoadConnectionType();
+	
+	public void setLoadConnectionType(LoadConnectionType threePhaseWye);
+	
+	public Complex getInit3PhaseTotalLoad(); 
+	
+	/**
+	 * set the nominal KV level of the load
+	 * @param ratedkV
+	 */
+	public void setNominalKV(double ratedkV);
+	
+	/**
+	 * return the nominal KV level of the load
+	 * @return
+	 */
+	public double getNominalKV();
 
 }
