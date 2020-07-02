@@ -1,4 +1,4 @@
-package org.interpss.threePhase.test;
+package org.interpss.threePhase.test.system;
 
 import static org.interpss.threePhase.util.ThreePhaseUtilFunction.threePhaseXfrAptr;
 import static org.junit.Assert.assertTrue;
@@ -49,7 +49,7 @@ public class TwoBus_3Phase_Test {
 	}
 	
 	
-	//@Test
+	@Test
 	public void testInitBasedOnLF() throws InterpssException{
 		
 		IpssCorePlugin.init();
@@ -273,7 +273,7 @@ public class TwoBus_3Phase_Test {
 		dstabAlgo.setOutPutPerSteps(1);
 				
 	  	if(dstabAlgo.initialization()){
-	  	
+	  	    System.out.print(net.getYMatrixABC().getSparseEqnComplex().toString());
 	  		dstabAlgo.performSimulation();
 	  	}
 	  	System.out.println(sm.toCSVString(sm.getBusAngleTable()));

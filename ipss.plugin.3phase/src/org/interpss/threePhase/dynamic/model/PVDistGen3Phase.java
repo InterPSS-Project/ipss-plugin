@@ -98,6 +98,7 @@ public class PVDistGen3Phase extends DynGenModel3Phase{
 		 
 		 if(this.currLimit>99)
 		     this.currLimit = this.genPQInit.abs()*2.0;
+		
 		 
 		 return true;
 	 }
@@ -179,13 +180,15 @@ public class PVDistGen3Phase extends DynGenModel3Phase{
     	 // |IR|    | cos(Theta)  -sin(Theta)|  |IP|
     	 // |IX|  = | sin(Theta)  cos(Theta) |  |IQ|
     	 
-         posSeqGenPQ = getPosSeqVt().multiply(Ipq_pos.conjugate());
+        
          
     	 double vtAng = ComplexFunc.arg(getPosSeqVt());
     	 double Ir =  Ip_prod*Math.cos(vtAng)-Iq_prod*Math.sin(vtAng);
     	 double Ix =  Ip_prod*Math.sin(vtAng)-Iq_prod*Math.cos(vtAng);
     	 
     	 Complex effectiveCurrInj = new Complex(Ir,Ix);
+    	 
+    	 posSeqGenPQ = getPosSeqVt().multiply(effectiveCurrInj.conjugate());
     	 
     	 Complex compensateCurrent = new Complex(0,0);
     	 //TODO consider the positive sequence power drawn by the equivalent Ypos at the terminal
@@ -203,12 +206,14 @@ public class PVDistGen3Phase extends DynGenModel3Phase{
      
      @Override
 		public Hashtable<String, Object> getStates(Object ref) {
+    	    
+    	 
 			states.put(OUT_SYMBOL_P, this.posSeqGenPQ.getReal());
 			states.put(OUT_SYMBOL_Q, this.posSeqGenPQ.getImaginary());
 			states.put(OUT_SYMBOL_V, this.getPosSeqVt().abs());
-			states.put(OUT_SYMBOL_I, this.Ipq_pos.abs());
-			states.put(OUT_SYMBOL_IP, this.Ipq_pos.getReal());
-			states.put(OUT_SYMBOL_IQ, this.Ipq_pos.getImaginary());
+			states.put(OUT_SYMBOL_I, this.getPosSeqIpq().abs());
+			states.put(OUT_SYMBOL_IP, this.getPosSeqIpq().getReal());
+			states.put(OUT_SYMBOL_IQ, this.getPosSeqIpq().getImaginary());
 			return this.states;
 		}
      

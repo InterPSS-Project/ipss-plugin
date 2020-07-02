@@ -41,6 +41,9 @@ public class InductionMotor3PhaseAdapter extends DynLoadModel3Phase {
     public InductionMotor3PhaseAdapter(InductionMotor motor){
 		this.indMotor = motor;
 		this.parentBus = (Bus3Phase) motor.getDStabBus();
+		
+		this.loadPercent = this.indMotor.getLoadPercent();
+		this.indMotor.setLoadPercent(-100); // such that the load percent is not used, used the initLoadPQ instead
 	}
 	
 	@Override
@@ -87,8 +90,13 @@ public class InductionMotor3PhaseAdapter extends DynLoadModel3Phase {
 	@Override
 	public Complex3x1 getPower3Phase(UnitType unit) {
 		//Power = VABC*conj(equivYABC*VABC - IgenABC)
+
+		Complex3x1 Vabc = ((Bus3Phase)this.indMotor.getDStabBus()).get3PhaseVotlages();
+		Complex3x1 Iabc = getIinj2Network3Phase();
+		Complex3x1 Pabc = Vabc.multiply(Iabc.conjugate());
+
+		return Pabc;
 		
-		return null;
 	}
 
 	@Override
@@ -163,10 +171,21 @@ public class InductionMotor3PhaseAdapter extends DynLoadModel3Phase {
 		  return this.indMotor.getStates(ref);
 	}
 	 
-	//TODO to implement
+
 	@Override
 	public boolean updateAttributes(boolean netChange) {
-		return true;
+		return this.getInductionMotor().updateAttributes(netChange);
+	}
+	
+	@Override public String getExtendedDeviceId(){
+		return this.indMotor.getExtendedDeviceId();
+	}
+
+
+	@Override
+	public double getMVABase(){
+		return this.indMotor.getMvaBase();
+
 	}
 
 }
