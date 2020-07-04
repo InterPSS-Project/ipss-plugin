@@ -143,7 +143,7 @@ public abstract class AbstractODMNetDataMapper<Tfrom, Tto> extends AbstractMappe
 				((BaseAclfNetwork)net).add3WXfr((Aclf3WBranch)branch, fromBusId, toBusId, tertBusId);
 			}
 			else if(branch instanceof HvdcLine2T)
-				((BaseAclfNetwork)net).addHvdcLine2T((HvdcLine2T) branch, fromBusId, toBusId, Integer.parseInt(branchRec.getCircuitId()));
+				((BaseAclfNetwork)net).addHvdcLine2T((HvdcLine2T) branch, fromBusId, toBusId, branchRec.getCircuitId());
 			else
 				net.addBranch(branch, fromBusId, toBusId);
 			
