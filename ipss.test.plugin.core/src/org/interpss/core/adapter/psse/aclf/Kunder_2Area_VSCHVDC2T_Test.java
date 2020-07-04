@@ -43,15 +43,16 @@ public class Kunder_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 		
 		assertTrue(!net.getBus("Bus7").isGen());
 		assertTrue(!net.getBus("Bus9").isGen());
+		
 		HvdcLine2TVSC vscHVDC= (HvdcLine2TVSC) net.getSpecialBranchList().get(0);
 		System.out.println(vscHVDC.getId());
 		System.out.println(vscHVDC.getName());
 		
 		//test vschvdc initPowerFlow function
-		 vscHVDC.initPowerFlow();
+		vscHVDC.initPowerFlow();
 		 
-	   assertTrue(net.getBus("Bus7").isGenPQ());
-	   assertTrue(net.getBus("Bus9").isGenPV());
+	    assertTrue(net.getBus("Bus7").isGenPQ());
+	    assertTrue(net.getBus("Bus9").isGenPV());
 		 
 		//System.out.println(net.net2String());
 		 
@@ -65,10 +66,4 @@ public class Kunder_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
   		System.out.println(AclfOutFunc.loadFlowSummary(net));
 		
 	}
-	
-	
-	
-	
-	
-
 }
