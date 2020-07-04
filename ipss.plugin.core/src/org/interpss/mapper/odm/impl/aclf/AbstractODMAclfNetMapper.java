@@ -72,6 +72,7 @@ import com.interpss.core.aclf.flow.FlowInterfaceBranch;
 import com.interpss.core.aclf.flow.FlowInterfaceLimit;
 import com.interpss.core.aclf.flow.FlowInterfaceType;
 import com.interpss.core.aclf.hvdc.HvdcLine2TVSC;
+import com.interpss.core.aclf.hvdc.HvdcOperationMode;
 import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.BranchBusSide;
@@ -149,7 +150,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 				if (xmlBranch instanceof PSXfr3WBranchXmlType || xmlBranch instanceof Xfr3WBranchXmlType)
 					branch = CoreObjectFactory.createAclf3WXformer();
 				else if(xmlBranch instanceof DCLineData2TXmlType)
-					branch = CoreObjectFactory.createHvdcLine2TCCC();
+					branch = CoreObjectFactory.createHvdcLine2TLCC(HvdcOperationMode.SINGLE);
 				else if(xmlBranch instanceof VSCHVDC2TXmlType)
 					branch = CoreObjectFactory.createVSCHvdc2TVSC();
 				else 
