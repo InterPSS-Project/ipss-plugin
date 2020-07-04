@@ -21,15 +21,14 @@ import org.interpss.numeric.datatype.LimitType;
 
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.BaseAclfNetwork;
-import com.interpss.core.aclf.hvdc.HvdcLine2TVSC;
 import com.interpss.core.aclf.hvdc.ConverterAcControlMode;
 import com.interpss.core.aclf.hvdc.ConverterDcControlMode;
 import com.interpss.core.aclf.hvdc.ConverterType;
 import com.interpss.core.aclf.hvdc.HvdcControlMode;
 import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
+import com.interpss.core.aclf.hvdc.HvdcLine2TVSC;
 import com.interpss.core.aclf.hvdc.HvdcOperationMode;
-import com.interpss.core.aclf.hvdc.Inverter;
-import com.interpss.core.aclf.hvdc.Rectifier;
+import com.interpss.core.aclf.hvdc.ThyConverter;
 import com.interpss.core.aclf.hvdc.VSCConverter;
 import com.interpss.core.aclf.hvdc.impl.HvdcLineFactoryImpl;
 
@@ -124,12 +123,12 @@ public class AclfHvdcDataHelper {
 		
 		//set Rectifier data
 		if (hvdc2TXml.getRectifier() != null) {
-			Rectifier rectifier = HvdcLineFactoryImpl.init().createRectifier();
+			ThyConverter rectifier = HvdcLineFactoryImpl.init().createThyConverter();
 			this.hvdc2T.setRectifier(rectifier);
 			setRectifierData(rectifier, hvdc2TXml.getRectifier(), 1);
 			// double
 			if (hvdc2TXml.getOperationMode() == DcLineOperationModeEnumType.DOUBLE) {
-				Rectifier rectifier2 = HvdcLineFactoryImpl.init().createRectifier();
+				ThyConverter rectifier2 = HvdcLineFactoryImpl.init().createThyConverter();
 				this.hvdc2T.setRectifier2(rectifier2);
 				setRectifierData(rectifier2, hvdc2TXml.getRectifier(), 2);
 			}
@@ -142,12 +141,12 @@ public class AclfHvdcDataHelper {
 		//set Inverter data
 		
 		if (hvdc2TXml.getInverter() != null) {
-			Inverter inverter = HvdcLineFactoryImpl.init().createInverter();
+			ThyConverter inverter = HvdcLineFactoryImpl.init().createThyConverter();
 			this.hvdc2T.setInverter(inverter);
 			setInverterData(inverter, hvdc2TXml.getInverter(), 1);
 			// double
 			if (hvdc2TXml.getOperationMode() == DcLineOperationModeEnumType.DOUBLE) {
-				Inverter inverter2 = HvdcLineFactoryImpl.init().createInverter();
+				ThyConverter inverter2 = HvdcLineFactoryImpl.init().createThyConverter();
 				this.hvdc2T.setInverter2(inverter2);
 				setInverterData(inverter2, hvdc2TXml.getInverter(), 2);
 			}
@@ -196,7 +195,7 @@ public class AclfHvdcDataHelper {
 	}
 	
 	
-	private void setRectifierData(Rectifier rectifier, ThyristorConverterXmlType rectifierXml,int n){
+	private void setRectifierData(ThyConverter rectifier, ThyristorConverterXmlType rectifierXml,int n){
 		
 		
 		//TODO interface bus id
@@ -250,7 +249,7 @@ public class AclfHvdcDataHelper {
 			
 	}
 	
-    private void setInverterData(Inverter inverter, ThyristorConverterXmlType inverterXml,int n){
+    private void setInverterData(ThyConverter inverter, ThyristorConverterXmlType inverterXml,int n){
 	
     	
     	//Num of bridges
