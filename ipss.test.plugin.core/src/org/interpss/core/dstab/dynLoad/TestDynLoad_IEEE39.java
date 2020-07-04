@@ -41,7 +41,7 @@ public class TestDynLoad_IEEE39 {
 		}));
 		DStabModelParser parser =(DStabModelParser) adapter.getModel();
 		
-		System.out.println(parser.toXmlDoc());
+		//System.out.println(parser.toXmlDoc());
         
 		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
 		if (!new ODMDStabParserMapper(msg)

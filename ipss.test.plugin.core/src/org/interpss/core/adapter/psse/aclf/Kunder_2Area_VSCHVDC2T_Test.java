@@ -26,7 +26,7 @@ public class Kunder_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 		assertTrue(adapter.parseInputFile("testdata/adpter/psse/v30/Kunder_2area/Kunder_2area_vschvdc_v30.raw"));
 		
 		AclfModelParser parser = (AclfModelParser)adapter.getModel();
-		parser.stdout();
+		//parser.stdout();
 		
 		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.ACLF_NETWORK);
 		if (!new ODMAclfParserMapper()
