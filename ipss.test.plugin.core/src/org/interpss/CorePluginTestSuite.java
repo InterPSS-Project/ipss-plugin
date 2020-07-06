@@ -18,6 +18,7 @@ import org.interpss.core.adapter.odm.dist.DistLF14Bus_PathLF_Test;
 import org.interpss.core.adapter.odm.dist.DistSample2BusTest;
 import org.interpss.core.adapter.psse.aclf.CR_UserTestCases;
 import org.interpss.core.adapter.psse.aclf.GuideSample_TestCase;
+import org.interpss.core.adapter.psse.aclf.Kunder_2Area_VSCHVDC2T_Test;
 import org.interpss.core.adapter.psse.aclf.Mod_SixBus_DclfPsXfr;
 import org.interpss.core.adapter.psse.aclf.PSSE_5Bus_TestCase;
 import org.interpss.core.adapter.psse.aclf.PSSE_IEEE9Bus_Test;
@@ -111,6 +112,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	
 	//DStab PSS/E
 	DStab_IEEE9Bus_Test.class,
+	Kunder_2Area_VSCHVDC2T_Test.class,
 	
 	// CML
 	DelayControlBlockTests.class,
