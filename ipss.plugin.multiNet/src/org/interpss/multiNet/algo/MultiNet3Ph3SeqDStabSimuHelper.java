@@ -26,10 +26,17 @@ import com.interpss.dstab.DStabBranch;
 
 /**
  * 
- * MultiNet3Ph3SeqDStabSimuHelper is specially designed for 3-phase/3-seq mulit-subnetwork TS simulation
+ * MultiNet3Ph3SeqDStabSimuHelper is the MATE approach implementation specially designed for 3-phase/3-seq mulit-subnetwork TS simulation
  * 
  * The unbalanced faults can only be applied within the three-phase modeling
  * subsystem.
+ * 
+ * Details of the approach can be found in the following paper:
+ * 
+ *   M. A. Tomim, J. Mart´ı, and L. Wang, “Parallel solution of large power system networks using the multi-Area Thevenin equivalents (MATE) algorithm,” 
+ *   Int. J. Electr. Power Energy Syst., vol. 31, no. 9, pp. 497–503,2009
+ *
+ * The functions in this class are corresponding to key steps of implementing the MATE approach. Notations are based on the paper above.
  * 
  * @author Qiuhua Huang
  *
