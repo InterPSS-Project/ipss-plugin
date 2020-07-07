@@ -58,7 +58,7 @@ import com.interpss.simu.SimuCtxType;
 public class TestTnD_IEEE9_13busFeeder {
 	
 	@Test
-	public void test_IEEE300_TD_dynamicSim_multiFeeder() throws InterpssException{
+	public void test_IEEE9_TD_dynamicSim_multiFeeder() throws InterpssException{
 		IpssCorePlugin.init();
 		
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
@@ -158,7 +158,7 @@ public class TestTnD_IEEE9_13busFeeder {
 				 //System.out.println(tdAlgo.getTransmissionNetwork().net2String());
 			 LoadflowAlgorithm tAlgo = tdAlgo.getTransLfAlgorithm();
 			 tAlgo.setLfMethod(AclfMethod.NR);
-			 tAlgo.setTolerance(1.0E-4);
+			 tAlgo.setTolerance(1.0E-5);
 			 tAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 			 //tAlgo.setNonDivergent(true);
 			 tAlgo.setInitBusVoltage(true); 
@@ -282,26 +282,7 @@ public class TestTnD_IEEE9_13busFeeder {
 //	        FileUtil.writeText2File("output/IEEE9_D_busPhAVoltage.csv",sm.toCSVString(sm.getBusPhAVoltTable()));
 //	        FileUtil.writeText2File("output/IEEE9_D_busPhBVoltage.csv",sm.toCSVString(sm.getBusPhBVoltTable()));
 //	        FileUtil.writeText2File("output/IEEE9_D_busPhCVoltage.csv",sm.toCSVString(sm.getBusPhCVoltTable()));
-//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//cmpld_AcMotorState.csv",
-//					sm.toCSVString(sm.getAcMotorStateTable()));
-//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//cmpld_AcMotorP.csv",
-//					sm.toCSVString(sm.getAcMotorPTable()));
-//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//cmpld_AcMotorQ.csv",
-//					sm.toCSVString(sm.getAcMotorQTable()));
-//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//cmpld_IndMotorP.csv",
-//					sm.toCSVString(sm.getMotorPTable()));
-//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//cmpld_IndMotorSlip.csv",
-//					sm.toCSVString(sm.getMotorSlipTable()));
-//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//cmpld_IndMotorQ.csv",
-//					sm.toCSVString(sm.getMotorQTable()));
-//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//cmpld_pvGenP.csv",
-//					sm.toCSVString(sm.getPvGenPTable()));
-//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//cmpld_pvGenQ.csv",
-//					sm.toCSVString(sm.getPvGenQTable()));
-//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//cmpld_pvGenIt.csv",
-//					sm.toCSVString(sm.getPvGenItTable()));
 
-//		
 	
 	}
 	
