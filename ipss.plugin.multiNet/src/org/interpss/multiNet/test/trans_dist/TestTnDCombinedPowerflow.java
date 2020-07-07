@@ -46,7 +46,7 @@ import com.interpss.simu.SimuCtxType;
 public class TestTnDCombinedPowerflow {
 	
 	// This test case is for modeling the transmission system in 3-sequence, while representing distribution systems in 3-phase
-//	@Test
+	@Test
 	public void test_TDPowerflow_IEEE9_feeder() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
