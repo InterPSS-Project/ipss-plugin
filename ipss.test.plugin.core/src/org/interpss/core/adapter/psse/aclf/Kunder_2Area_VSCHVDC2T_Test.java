@@ -7,13 +7,13 @@ import org.ieee.odm.adapter.IODMAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.display.AclfOutFunc;
 import org.interpss.mapper.odm.ODMAclfParserMapper;
 import org.interpss.numeric.util.NumericUtil;
 import org.junit.Test;
 
 import com.interpss.CoreObjectFactory;
 import com.interpss.SimuObjectFactory;
+import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.hvdc.HvdcLine2TVSC;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -46,9 +46,9 @@ public class Kunder_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 		assertTrue(!net.getBus("Bus7").isGen());
 		assertTrue(!net.getBus("Bus9").isGen());
 		
-		HvdcLine2TVSC vscHVDC= (HvdcLine2TVSC) net.getSpecialBranchList().get(0);
-		System.out.println(vscHVDC.getId());
-		System.out.println(vscHVDC.getName());
+		HvdcLine2TVSC<AclfBus> vscHVDC= (HvdcLine2TVSC<AclfBus>) net.getSpecialBranchList().get(0);
+		//System.out.println(vscHVDC.getId());
+		//System.out.println(vscHVDC.getName());
 		
 		//test vschvdc initPowerFlow function
 		vscHVDC.initPowerFlow();
@@ -65,7 +65,7 @@ public class Kunder_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 	  	
   		assertTrue(net.isLfConverged());
   		
-  		System.out.println(AclfOutFunc.loadFlowSummary(net));
+  		//System.out.println(AclfOutFunc.loadFlowSummary(net));
   		
   		/*
   		 * PSS/E power flow results

@@ -150,7 +150,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 				if (xmlBranch instanceof PSXfr3WBranchXmlType || xmlBranch instanceof Xfr3WBranchXmlType)
 					branch = CoreObjectFactory.createAclf3WXformer();
 				else if(xmlBranch instanceof DCLineData2TXmlType)
-					branch = CoreObjectFactory.createHvdcLine2TLCC(HvdcOperationMode.SINGLE);
+					branch = CoreObjectFactory.createHvdcLine2TLCC(HvdcOperationMode.REC1_INV1);
 				else if(xmlBranch instanceof VSCHVDC2TXmlType)
 					branch = CoreObjectFactory.createVSCHvdc2TVSC();
 				else 
