@@ -71,8 +71,8 @@ public class AclfHvdcDataHelper {
 		//TODO No "blocked" enum type
 		this.hvdc2T.setControlMode(mode==DcLineControlModeEnumType.POWER? HvdcControlMode.POWER: 
 			mode==DcLineControlModeEnumType.CURRENT?HvdcControlMode.CURRENT:HvdcControlMode.BLOCKED);
-		this.hvdc2T.setOperationMode(hvdc2TXml.getOperationMode()==DcLineOperationModeEnumType.DOUBLE?HvdcOperationMode.DOUBLE:
-			HvdcOperationMode.SINGLE);
+		this.hvdc2T.setOperationMode(hvdc2TXml.getOperationMode()==DcLineOperationModeEnumType.DOUBLE?HvdcOperationMode.REC1_INV2:
+			HvdcOperationMode.REC1_INV1);
 		//RDC
 		//TODO 
 		//this.hvdc2T.setLineR()
