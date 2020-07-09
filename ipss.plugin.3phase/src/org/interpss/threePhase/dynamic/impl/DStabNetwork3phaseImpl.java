@@ -28,7 +28,7 @@ import org.interpss.threePhase.util.ThreeSeqLoadProcessor;
 import com.interpss.common.datatype.Constants;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
-import com.interpss.core.aclf.AclfBus;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.acsc.AcscBranch;
@@ -208,13 +208,13 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<Bus3Phase, Bran
 									onceVisitedBuses.add((Bus3Phase) findBus);
 									
 									// update the phase voltage
-									Complex vpos = ((AclfBus)findBus).getVoltage();
+									Complex vpos = ((BaseAclfBus)findBus).getVoltage();
 									Complex va = vpos.multiply(phaseShiftCplxFactor(phaseShiftDeg));
 									Complex vb = va.multiply(phaseShiftCplxFactor(-120.0d));
 									Complex vc = va.multiply(phaseShiftCplxFactor(120.0d));
 									
 									((Bus3Phase) findBus).set3PhaseVoltages(new Complex3x1(va,vb,vc));
-									 ((AclfBus)findBus).setVoltage(((Bus3Phase) findBus).getThreeSeqVoltage().b_1);
+									 ((BaseAclfBus)findBus).setVoltage(((Bus3Phase) findBus).getThreeSeqVoltage().b_1);
 								}
 							} catch (InterpssException e) {
 								

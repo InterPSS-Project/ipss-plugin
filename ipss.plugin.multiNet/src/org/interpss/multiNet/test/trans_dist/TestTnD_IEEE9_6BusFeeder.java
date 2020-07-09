@@ -90,8 +90,15 @@ public class TestTnD_IEEE9_6BusFeeder {
 	    
 	    double PVPenetrationLevel = .00;
 	    double PVIncrement = PVPenetrationLevel/(1-PVPenetrationLevel) ;
-	    double ACMotorPercent = 40;
-	    double IndMotorPercent = 5;
+	    
+	    //original setting
+//	    double ACMotorPercent = 40; 
+//	    double IndMotorPercent = 5;
+//	    double ACPhaseUnbalance = 5.0;
+	    
+	    //debug setting
+	    double ACMotorPercent = 40.0; 
+	    double IndMotorPercent = 50;
 	    double ACPhaseUnbalance = 5.0;
 	    
 	    double[] loadPercentAry = new double[]{0.2,0.2,0.2,0.2,0.2} ;
@@ -175,92 +182,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 				ACPhaseUnbalance, motorMVA);
 		
 	    
-//	    for(int i =32;i<=36;i++){
-//			Bus3Phase loadBus = (Bus3Phase) dsNet.getBus("Bus"+i);
-//			
-//			/*
-//			Load3Phase load1 = new Load3PhaseImpl();
-//			load1.set3PhaseLoad(new Complex3x1(new Complex(0.3,0.05),new Complex(0.3,0.05),new Complex(0.3,0.05)));
-//			loadBus.getThreePhaseLoadList().add(load1);
-//			*/
-//				
-//
-//			// AC motor, 50%
-//			
-//			 SinglePhaseACMotor ac1 = new SinglePhaseACMotor(loadBus,"1");
-//		  		ac1.setLoadPercent(50);
-//		  		ac1.setPhase(Phase.A);
-//		  		ac1.setMVABase(acMVA);
-//		  		ac1.setTstall(0.05); // disable ac stalling
-//		  		ac1.setVstall(0.65);
-//		  		loadBus.getPhaseADynLoadList().add(ac1);
-//		  		
-//		  		
-//		  		
-//		  	SinglePhaseACMotor ac2 = new SinglePhaseACMotor(loadBus,"2");
-//		  		ac2.setLoadPercent(50);
-//		  		ac2.setPhase(Phase.B);
-//		  		ac2.setMVABase(acMVA);
-//		  		ac2.setTstall(0.05); // disable ac stalling
-//		  		ac2.setVstall(0.65);
-//		  		loadBus.getPhaseBDynLoadList().add(ac2);
-//		  		
-//
-//		  		
-//		  	SinglePhaseACMotor ac3 = new SinglePhaseACMotor(loadBus,"3");
-//		  		ac3.setLoadPercent(50);
-//		  		ac3.setPhase(Phase.C);
-//		  		ac3.setMVABase(acMVA);
-//		  		ac3.setTstall(0.05); // disable ac stalling
-//		  		ac3.setVstall(0.65);
-//		  		loadBus.getPhaseCDynLoadList().add(ac3);
-//			
-//			
-//			// 3 phase motor, 20%
-//			
-//		  		InductionMotor indMotor= DStabObjectFactory.createInductionMotor("1");
-//				indMotor.setDStabBus(loadBus);
-//
-//				indMotor.setXm(3.0);
-//				indMotor.setXl(0.07);
-//				indMotor.setRa(0.032);
-//				indMotor.setXr1(0.3);
-//				indMotor.setRr1(0.01);
-//				
-//		
-//				indMotor.setMVABase(motorMVA );
-//				indMotor.setH(0.3);
-//				indMotor.setA(0.0); //Toreque = (a+bw+cw^2)*To;
-//				indMotor.setB(0.0); //Toreque = (a+bw+cw^2)*To;
-//				indMotor.setC(1.0); //Toreque = (a+bw+cw^2)*To;
-//				
-//				InductionMotor3PhaseAdapter indMotor3Phase = new InductionMotor3PhaseAdapter(indMotor);
-//				indMotor3Phase.setLoadPercent(IndMotorPercent); //0.06 MW
-//				loadBus.getThreePhaseDynLoadList().add(indMotor3Phase);	
-//			
-//			
-//			// PV generation
-//			
-////				Gen3Phase gen1 = new Gen3PhaseImpl();
-////				gen1.setParentBus(loadBus);
-////				gen1.setId("PV1");
-////				gen1.setGen(new Complex(pvGen,0));  // total gen power, system mva based
-////				
-////				loadBus.getThreePhaseGenList().add(gen1);
-////				
-////				double pvMVABase = pvGen/0.8*100;
-////				gen1.setMvaBase(pvMVABase); // for dynamic simulation only
-////				gen1.setPosGenZ(new Complex(0,1.0E-1));   // assuming open-circuit
-////				gen1.setNegGenZ(new Complex(0,1.0E-1));
-////				gen1.setZeroGenZ(new Complex(0,1.0E-1));
-////				//create the PV Distributed generation model
-////				PVDistGen3Phase pv = new PVDistGen3Phase(gen1);
-////				pv.setId("1");
-////				pv.setUnderVoltTripAll(0.4);
-////				pv.setUnderVoltTripStart(0.8);
-//			
-//			
-//		}
+
 	    
 	    
 	    //======================================================================
@@ -309,7 +231,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 		  
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 			dstabAlgo.setSimuStepSec(0.005d);
-			dstabAlgo.setTotalSimuTimeSec(2);
+			dstabAlgo.setTotalSimuTimeSec(1);
 			
 
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
@@ -404,47 +326,16 @@ public class TestTnD_IEEE9_6BusFeeder {
 			//System.out.println(sm.toCSVString(sm.getAcMotorPTable()));
 			//System.out.println(sm.toCSVString(sm.getAcMotorStateTable()));
 			
-			MonitorRecord volt_rec1 = sm.getBusVoltTable().get("Bus36").get(1);
+			MonitorRecord volt_rec1 = sm.getBusVoltTable().get("Bus36").get(0);
 		  	MonitorRecord volt_rec51 = sm.getBusVoltTable().get("Bus36").get(50);
-		  	assertTrue(Math.abs(volt_rec1.getValue()-volt_rec51.getValue())<1.0E-2);
+		  	assertTrue(Math.abs(volt_rec1.getValue()-volt_rec51.getValue())<1.0E-3);
 		  	
 		  	
-			MonitorRecord angle_rec1 = sm.getBusAngleTable().get("Bus32").get(1);
+			MonitorRecord angle_rec1 = sm.getBusAngleTable().get("Bus32").get(0);
 		  	MonitorRecord angle_rec51 = sm.getBusAngleTable().get("Bus32").get(50);
-		  	//assertTrue(Math.abs(angle_rec1.getValue()-angle_rec51.getValue())<1.0E-1);
+		  	assertTrue(Math.abs(angle_rec1.getValue()-angle_rec51.getValue())<2.0E-1);
 			
-//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//busVoltage.csv",
-//					sm.toCSVString(sm.getBusVoltTable()));
-//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//busPhAVoltage.csv",
-//					sm.toCSVString(sm.getBusPhAVoltTable()));
-//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//busPhBVoltage.csv",
-//					sm.toCSVString(sm.getBusPhBVoltTable()));
-//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//busPhCVoltage.csv",
-//					sm.toCSVString(sm.getBusPhCVoltTable()));
-//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//busVoltage.csv",
-//					sm.toCSVString(sm.getBusVoltTable()));
-//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//AcMotorState.csv",
-//					sm.toCSVString(sm.getAcMotorStateTable()));
-//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//AcMotorP.csv",
-//					sm.toCSVString(sm.getAcMotorPTable()));
-//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//AcMotorQ.csv",
-//					sm.toCSVString(sm.getAcMotorQTable()));
-//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//IndMotorP.csv",
-//					sm.toCSVString(sm.getMotorPTable()));
-//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//IndMotorSlip.csv",
-//					sm.toCSVString(sm.getMotorSlipTable()));
-//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//IndMotorQ.csv",
-//					sm.toCSVString(sm.getMotorQTable()));
-//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//IndMotorQ.csv",
-//					sm.toCSVString(sm.getMotorQTable()));
-//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//pvGenP.csv",
-//					sm.toCSVString(sm.getPvGenPTable()));
-//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//pvGenQ.csv",
-//					sm.toCSVString(sm.getPvGenQTable()));
-//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//GenPe.csv",
-//					sm.toCSVString(sm.getMachPeTable()));
-//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_combined_dyn_sim//GenPm.csv",
-//					sm.toCSVString(sm.getMachPmTable()));
+
 	}
 
 
