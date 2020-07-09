@@ -467,41 +467,9 @@ public class TestTnD_IEEE9_8BusFeeder {
 			
 			
 			/*
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//busVoltage.csv",
-					sm.toCSVString(sm.getBusVoltTable()));
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//busPhAVoltage.csv",
-					sm.toCSVString(sm.getBusPhAVoltTable()));
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//busPhBVoltage.csv",
-					sm.toCSVString(sm.getBusPhBVoltTable()));
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//busPhCVoltage.csv",
-					sm.toCSVString(sm.getBusPhCVoltTable()));
-
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//AcMotorState.csv",
-					sm.toCSVString(sm.getAcMotorStateTable()));
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//AcMotorP.csv",
-					sm.toCSVString(sm.getAcMotorPTable()));
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//AcMotorQ.csv",
-					sm.toCSVString(sm.getAcMotorQTable()));
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IndMotorP.csv",
-					sm.toCSVString(sm.getMotorPTable()));
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IndMotorSlip.csv",
-					sm.toCSVString(sm.getMotorSlipTable()));
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IndMotorQ.csv",
-					sm.toCSVString(sm.getMotorQTable()));
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IndMotorQ.csv",
-					sm.toCSVString(sm.getMotorQTable()));
-//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//pvGenP.csv",
-//					sm.toCSVString(sm.getPvGenPTable()));
-//			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//pvGenQ.csv",
-//					sm.toCSVString(sm.getPvGenQTable()));
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//GenPe.csv",
-					sm.toCSVString(sm.getMachPeTable()));
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//GenQ.csv",
-					sm.toCSVString(sm.getMachQgenTable()));
-			FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//GenPm.csv",
-					sm.toCSVString(sm.getMachPmTable()));
-	  
+			FileUtil.writeText2File("output/busVoltage.csv", sm.toCSVString(sm.getBusVoltTable()));
 			*/
+
 	
 	}
 	
@@ -752,15 +720,6 @@ public class TestTnD_IEEE9_8BusFeeder {
 		  	MonitorRecord angle_rec51 = sm.getBusAngleTable().get("Bus32").get(50);
 		  	assertTrue(Math.abs(angle_rec1.getValue()-angle_rec51.getValue())<1.0E-1);
 
-			
-//			FileUtil.writeText2File("D://TnD_paper_dyn_IEEE9_busPhAVoltage.csv",
-//					sm.toCSVString(sm.getBusPhAVoltTable()));
-//			FileUtil.writeText2File("D://TnD_paper_dyn_IEEE9_busPhBVoltage.csv",
-//					sm.toCSVString(sm.getBusPhBVoltTable()));
-//			FileUtil.writeText2File("D://TnD_paper_dyn_IEEE9_busPhCVoltage.csv",
-//					sm.toCSVString(sm.getBusPhCVoltTable()));
-
-			
 	
 	}
 	
