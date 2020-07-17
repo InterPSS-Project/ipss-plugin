@@ -22,7 +22,7 @@ import com.interpss.simu.SimuCtxType;
 
 public class Kunder_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 	@Test
-	public void test_VSCHVDC_DataInput_Loadflow() throws Exception {
+	public void test_VSCHVDC_Loadflow() throws Exception {
 		
 		IODMAdapter adapter = new PSSEAdapter(PSSEAdapter.PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile("testdata/adpter/psse/v30/Kunder_2area/Kunder_2area_vschvdc_v30.raw"));
@@ -39,23 +39,6 @@ public class Kunder_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 		
 		
 		AclfNetwork net = simuCtx.getAclfNet();
-		//System.out.println(net.net2String());
-		
-		assertTrue(net.getSpecialBranchList().size()==1);
-		
-		assertTrue(!net.getBus("Bus7").isGen());
-		assertTrue(!net.getBus("Bus9").isGen());
-		
-		HvdcLine2TVSC<AclfBus> vscHVDC= (HvdcLine2TVSC<AclfBus>) net.getSpecialBranchList().get(0);
-		//System.out.println(vscHVDC.getId());
-		//System.out.println(vscHVDC.getName());
-		
-		//test vschvdc initPowerFlow function
-		vscHVDC.initPowerFlow();
-		 
-	    assertTrue(net.getBus("Bus7").isGenPQ());
-	    assertTrue(net.getBus("Bus9").isGenPV());
-		 
 		//System.out.println(net.net2String());
 		 
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
@@ -101,6 +84,43 @@ public class Kunder_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
   		assertTrue(NumericUtil.equals(net.getBus("Bus7").getVoltageMag(),0.95946,0.00001));
   		assertTrue(NumericUtil.equals(net.getBus("Bus7").getVoltageAng(),-11.84/(180/Math.PI),0.01));
   		assertTrue(NumericUtil.equals(net.getBus("Bus9").getVoltageMag(),0.98,0.00001));
+	}
+	
+	@Test
+	public void test_VSCHVDC_DataInput() throws Exception {
 		
+		IODMAdapter adapter = new PSSEAdapter(PSSEAdapter.PsseVersion.PSSE_30);
+		assertTrue(adapter.parseInputFile("testdata/adpter/psse/v30/Kunder_2area/Kunder_2area_vschvdc_v30.raw"));
+		
+		AclfModelParser parser = (AclfModelParser)adapter.getModel();
+		//parser.stdout();
+		
+		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.ACLF_NETWORK);
+		if (!new ODMAclfParserMapper()
+					.map2Model(parser, simuCtx)) {
+  	  		System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
+  	  		return;
+		}		
+		
+		
+		AclfNetwork net = simuCtx.getAclfNet();
+		//System.out.println(net.net2String());
+		
+		assertTrue(net.getSpecialBranchList().size()==1);
+		
+		assertTrue(!net.getBus("Bus7").isGen());
+		assertTrue(!net.getBus("Bus9").isGen());
+		
+		HvdcLine2TVSC<AclfBus> vscHVDC= (HvdcLine2TVSC<AclfBus>) net.getSpecialBranchList().get(0);
+		//System.out.println(vscHVDC.getId());
+		//System.out.println(vscHVDC.getName());
+		
+		//test vschvdc initPowerFlow function
+		vscHVDC.initPowerFlow();
+		 
+	    assertTrue(net.getBus("Bus7").isGenPQ());
+	    assertTrue(net.getBus("Bus9").isGenPV());
+		 
+		//System.out.println(net.net2String());
 	}
 }
