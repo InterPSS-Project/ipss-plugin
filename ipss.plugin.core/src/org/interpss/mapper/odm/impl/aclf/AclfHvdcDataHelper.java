@@ -22,7 +22,6 @@ import org.interpss.numeric.datatype.LimitType;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.hvdc.ConverterAcControlMode;
-import com.interpss.core.aclf.hvdc.ConverterDcControlMode;
 import com.interpss.core.aclf.hvdc.ConverterType;
 import com.interpss.core.aclf.hvdc.HvdcControlMode;
 import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
@@ -69,8 +68,8 @@ public class AclfHvdcDataHelper {
 		DcLineControlModeEnumType mode =hvdc2TXml.getControlMode();
 		
 		//TODO No "blocked" enum type
-		this.hvdc2T.setControlMode(mode==DcLineControlModeEnumType.POWER? HvdcControlMode.POWER: 
-			mode==DcLineControlModeEnumType.CURRENT?HvdcControlMode.CURRENT:HvdcControlMode.BLOCKED);
+		this.hvdc2T.setControlMode(mode==DcLineControlModeEnumType.POWER? HvdcControlMode.DC_POWER: 
+			mode==DcLineControlModeEnumType.CURRENT?HvdcControlMode.DC_CURRENT:HvdcControlMode.BLOCKED);
 		this.hvdc2T.setOperationMode(hvdc2TXml.getOperationMode()==DcLineOperationModeEnumType.DOUBLE?HvdcOperationMode.REC1_INV2:
 			HvdcOperationMode.REC1_INV1);
 		//RDC
@@ -78,9 +77,9 @@ public class AclfHvdcDataHelper {
 		//this.hvdc2T.setLineR()
 		this.hvdc2T.setStatus(hvdc2TXml.isOffLine()?false:true);
 		//SETVL
-		if(this.hvdc2T.getControlMode()==HvdcControlMode.CURRENT){
+		if(this.hvdc2T.getControlMode()==HvdcControlMode.DC_CURRENT){
 		//	this.hvdc2T.setCurrentDemand(hvdc2TXml.getCurrentDemand().getValue());
-		}else if(this.hvdc2T.getControlMode()==HvdcControlMode.POWER){
+		}else if(this.hvdc2T.getControlMode()==HvdcControlMode.DC_POWER){
 			this.hvdc2T.setPowerDemand(hvdc2TXml.getPowerDemand().getValue(), toActivePowerUnit.apply(hvdc2TXml.getPowerDemand().getUnit()));
 			if(hvdc2TXml.getOperationMode()==DcLineOperationModeEnumType.DOUBLE){
 				this.hvdc2T.setPowerDemand2(hvdc2TXml.getPowerDemand2().getValue(), toActivePowerUnit.apply(hvdc2TXml.getPowerDemand().getUnit()));
@@ -317,9 +316,9 @@ public class AclfHvdcDataHelper {
     	vscInv.setBus(this.aclfNet.getBus(busXml.getId()));
     	
     	// DC Control mode
-    	ConverterDcControlMode dcMode = 
-    	vscConvXml.getDcControlMode() == VSCDCControlModeEnumType.BLOCKED?ConverterDcControlMode.BLOCKED:
-    		vscConvXml.getDcControlMode() == VSCDCControlModeEnumType.REAL_POWER? ConverterDcControlMode.DC_POWER:ConverterDcControlMode.DC_VOLTAGE;
+    	HvdcControlMode dcMode = 
+    	vscConvXml.getDcControlMode() == VSCDCControlModeEnumType.BLOCKED?HvdcControlMode.BLOCKED:
+    		vscConvXml.getDcControlMode() == VSCDCControlModeEnumType.REAL_POWER? HvdcControlMode.DC_POWER : HvdcControlMode.DC_VOLTAGE;
     	
     	 vscInv.setDcControlMode(dcMode);
     	 
@@ -370,9 +369,9 @@ public class AclfHvdcDataHelper {
 	 	vscRec.setBus(this.aclfNet.getBus(busXml.getId()));
 	 	
 	 	// DC Control mode
-	 	ConverterDcControlMode dcMode = 
-	 	vscConvXml.getDcControlMode() == VSCDCControlModeEnumType.BLOCKED?ConverterDcControlMode.BLOCKED:
-	 		vscConvXml.getDcControlMode() == VSCDCControlModeEnumType.REAL_POWER? ConverterDcControlMode.DC_POWER:ConverterDcControlMode.DC_VOLTAGE;
+	 	HvdcControlMode dcMode = 
+	 	vscConvXml.getDcControlMode() == VSCDCControlModeEnumType.BLOCKED?HvdcControlMode.BLOCKED:
+	 		vscConvXml.getDcControlMode() == VSCDCControlModeEnumType.REAL_POWER? HvdcControlMode.DC_POWER:HvdcControlMode.DC_VOLTAGE;
 	 	
 	 	 vscRec.setDcControlMode(dcMode);
 	 	 
