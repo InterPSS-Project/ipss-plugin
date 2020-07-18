@@ -21,7 +21,7 @@ import org.interpss.numeric.datatype.LimitType;
 
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.BaseAclfNetwork;
-import com.interpss.core.aclf.hvdc.ConverterAcControlMode;
+import com.interpss.core.aclf.hvdc.VSCAcControlMode;
 import com.interpss.core.aclf.hvdc.ConverterType;
 import com.interpss.core.aclf.hvdc.HvdcControlMode;
 import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
@@ -325,9 +325,9 @@ public class AclfHvdcDataHelper {
     	 vscInv.setDcSetPoint(vscConvXml.getDcSetPoint());
     	
     	// AC Control mode
-    	ConverterAcControlMode acMode = 
-    			vscConvXml.getAcControlMode() == VSCACControlModeEnumType.REACTIVE_POWER?ConverterAcControlMode.AC_REACTIVE_POWER:
-    				(vscConvXml.getAcControlMode() == VSCACControlModeEnumType.VOLTAGE)?ConverterAcControlMode.AC_VOLTAGE:ConverterAcControlMode.AC_POWER_FACTOR;
+    	VSCAcControlMode acMode = 
+    			vscConvXml.getAcControlMode() == VSCACControlModeEnumType.REACTIVE_POWER?VSCAcControlMode.AC_REACTIVE_POWER:
+    				(vscConvXml.getAcControlMode() == VSCACControlModeEnumType.VOLTAGE)?VSCAcControlMode.AC_VOLTAGE:VSCAcControlMode.AC_POWER_FACTOR;
     	 vscInv.setAcControlMode(acMode);
     	
     	 vscInv.setAcSetPoint( vscConvXml.getAcSetPoint());
@@ -378,9 +378,9 @@ public class AclfHvdcDataHelper {
 	 	 vscRec.setDcSetPoint(vscConvXml.getDcSetPoint());
 	 	
 	 	// AC Control mode
-	 	ConverterAcControlMode acMode = 
-	 			vscConvXml.getAcControlMode() == VSCACControlModeEnumType.REACTIVE_POWER?ConverterAcControlMode.AC_REACTIVE_POWER:
-	 				(vscConvXml.getAcControlMode() == VSCACControlModeEnumType.VOLTAGE)?ConverterAcControlMode.AC_VOLTAGE:ConverterAcControlMode.AC_POWER_FACTOR;
+	 	VSCAcControlMode acMode = 
+	 			vscConvXml.getAcControlMode() == VSCACControlModeEnumType.REACTIVE_POWER?VSCAcControlMode.AC_REACTIVE_POWER:
+	 				(vscConvXml.getAcControlMode() == VSCACControlModeEnumType.VOLTAGE)?VSCAcControlMode.AC_VOLTAGE:VSCAcControlMode.AC_POWER_FACTOR;
 	 	 vscRec.setAcControlMode(acMode);
 	 	
 	 	 vscRec.setAcSetPoint( vscConvXml.getAcSetPoint());
