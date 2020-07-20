@@ -9,6 +9,7 @@ import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.mapper.odm.ODMAclfParserMapper;
+import org.interpss.numeric.datatype.ComplexFunc;
 import org.interpss.numeric.util.NumericUtil;
 import org.junit.Test;
 
@@ -38,7 +39,6 @@ public class Kunder_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
   	  		return;
 		}		
 		
-		
 		AclfNetwork net = simuCtx.getAclfNet();
 		//System.out.println(net.net2String());
 		 
@@ -49,7 +49,7 @@ public class Kunder_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 	  	
   		assertTrue(net.isLfConverged());
   		
-  		System.out.println(AclfOutFunc.loadFlowSummary(net));
+  		//System.out.println(AclfOutFunc.loadFlowSummary(net));
   		
   		/*
   		 * PSS/E power flow results
@@ -62,7 +62,7 @@ public class Kunder_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 			5	BUS5   AR1	230.0	1	AREA1	1		1		1	1.0061	6.68	1.1000	0.9000	1.1000	0.9000
 			6	BUS6   AR1	230.0	1	AREA1	1		1		1	0.9773	-3.41	1.1000	0.9000	1.1000	0.9000
 			7	BUS7   L	230.0	1	AREA1	1		1		1	0.9595	-11.84	1.1000	0.9000	1.1000	0.9000
-			8	BUS8	230.0	2	AREA2	2		1		1	0.9739	-18.41	1.1000	0.9000	1.1000	0.9000
+			8	BUS8	    230.0	2	AREA2	2		1		1	0.9739	-18.41	1.1000	0.9000	1.1000	0.9000
 			9	BUS9   L	230.0	2	AREA2	2		1		1	0.9800	-24.73	1.1000	0.9000	1.1000	0.9000
 			10	BUS10   AR2	230.0	2	AREA2	2		1		1	0.9886	-16.50	1.1000	0.9000	1.1000	0.9000
 			11	BUS11   AR2	230.0	2	AREA2	2		1		1	1.0107	-6.47	1.1000	0.9000	1.1000	0.9000
@@ -85,6 +85,14 @@ public class Kunder_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
   		assertTrue(NumericUtil.equals(net.getBus("Bus7").getVoltageMag(),0.95946,0.00001));
   		assertTrue(NumericUtil.equals(net.getBus("Bus7").getVoltageAng(),-11.84/(180/Math.PI),0.01));
   		assertTrue(NumericUtil.equals(net.getBus("Bus9").getVoltageMag(),0.98,0.00001));
+  		
+		HvdcLine2TVSC<AclfBus> vscHVDC = (HvdcLine2TVSC<AclfBus>) net.getSpecialBranchList().get(0);
+  		//System.out.println("Rec Power: " + ComplexFunc.toStr(vscHVDC.getRecConverter().powerIntoConverter()));
+  		//System.out.println("Inv Power: " + ComplexFunc.toStr(vscHVDC.getInvConverter().powerIntoConverter()));
+  		//Rec Power: 2.0900   + j 0.68695
+  		//Inv Power: -2.08315 + j 0.62802
+  		assertTrue("", NumericUtil.equals(vscHVDC.getRecConverter().powerIntoConverter(), new Complex(2.0900, 0.68695), 0.00001));
+  		assertTrue("", NumericUtil.equals(vscHVDC.getInvConverter().powerIntoConverter(), new Complex(-2.08315, 0.62802), 0.00001));
 	}
 	
 	@Test
