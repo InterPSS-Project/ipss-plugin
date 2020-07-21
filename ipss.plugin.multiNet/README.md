@@ -1,15 +1,17 @@
 # InterPSS Multi-network Module
 
-This module (together with ipss.plugin.3phase) is maintained by Qiuhua Huang. Should you have any issue with the codes, please create a new issue or refer to existing issues on github. For other questions such as contributing to the code base or collaboration, please send email to: Qiuhua dot Huang at ASU dot edu.
+This module (together with ipss.plugin.3phase) is maintained by Qiuhua Huang. The distribution system related modeling and algorithms are developed under ipss.plugin.3phase project. Should you have any issue with the codes, please create a new issue or refer to existing issues on github. For other questions such as contributing to the code base or collaboration, please send email to: Qiuhua dot Huang at ASU dot edu.
 
 ## 1. Overview 
 
 Main ideas behind the implementation:
 
-- **Subnetwork**: InterPSS supports multiple networks in one simulation model
+- **Multiple (Sub)networks** : InterPSS supports multiple subnetworks in one simulation model
 - **Master-slave splitting** :  A large integrated T&D system is split into transmission (as master) and (several to many) distribution systems (as slaves)for power flow  co-simulation.  The resulted subnetworks are also used for T&D dynamic co-simulation where the power flow results are used for initializing dynamic simulation.
-- **Multi-Area Thevenin Equivalent (MATE)**:  For T&D dynamic co-simulation, Thevenin Equivalents  for each subnetwork are calculated and shared for calculating the boundary conditions (current flows among the subnetwork boundaris). Details can be found in the paper [Integrated transmission and distribution system power flow and dynamic simulation using mixed three-sequence/three-phase modeling](<https://ieeexplore.ieee.org/abstract/document/7782366>). We will refer to it as the *TDCoSim* paper hereafter. 
-
+- **Multi-Area Thevenin Equivalent (MATE)**:  For T&D dynamic co-simulation, Thevenin Equivalents  for each subnetwork are calculated and shared for calculating the boundary conditions (current flows among the subnetwork boundaries). Details of the approach can be found in the following paper:
+  - M. A. Tomim, J. Mart´ı, and L. Wang, “Parallel solution of large power system networks using the multi-Area Thevenin equivalents (MATE) algorithm,” Int. J. Electr. Power Energy Syst., vol. 31, no. 9, pp. 497–503,2009. 
+  - The functions in this class are corresponding to key steps of implementing the MATE approach. Notations are based on the paper above.
+  - Details of its usage for T&D dynamic co-simulation can be found in the paper [Integrated transmission and distribution system power flow and dynamic simulation using mixed three-sequence/three-phase modeling](<https://ieeexplore.ieee.org/abstract/document/7782366>). We will refer to it as the *TDCoSim* paper hereafter. 
 ## 2. Power flow
 
 - **TDMultiNetPowerflowAlgorithm.java**
