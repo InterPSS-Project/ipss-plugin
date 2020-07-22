@@ -63,6 +63,13 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
+import test.piecewise.Acsc5BusTesPiecewiseAlgo;
+import test.piecewise.Acsc5BusTestSubAreaNet;
+import test.piecewise.IEEE14TestAclfNetPiesewise;
+import test.piecewise.IEEE14TestAclfSubNetBuild;
+import test.piecewise.IEEE14TestSubAreaSearch;
+import test.piecewise.IEEE9BusTestDStabSubAreaNet;
+
 @RunWith(Suite.class)
 @SuiteClasses({
 	// aclf
@@ -171,8 +178,15 @@ import org.junit.runners.Suite.SuiteClasses;
 	AclfBeanMapperTest.class,
 	
 	
-	//MNet_IEEE14Bus_Test.class,
-	//MNet_Aclf5Bus_Child_Test.class,
+	// Piecewise Algorithm
+	IEEE14TestSubAreaSearch.class,
+	IEEE14TestAclfNetPiesewise.class,
+	IEEE14TestAclfSubNetBuild.class,
+	
+	Acsc5BusTestSubAreaNet.class,
+	Acsc5BusTesPiecewiseAlgo.class,
+	
+	IEEE9BusTestDStabSubAreaNet.class,
 })
 public class CorePluginTestSuite {
 }
