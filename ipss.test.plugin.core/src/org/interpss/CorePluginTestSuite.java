@@ -59,16 +59,15 @@ import org.interpss.core.dstab.mach.MachineSaturationTest;
 import org.interpss.core.dstab.mach.RoundRotorMachineTest;
 import org.interpss.core.dstab.mach.SalientPoleMachineTest;
 import org.interpss.plugin.beanModel.AclfBeanMapperTest;
+import org.interpss.plugin.piecewise.Acsc5BusTesPiecewiseAlgo;
+import org.interpss.plugin.piecewise.Acsc5BusTestSubAreaNet;
+import org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise;
+import org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild;
+import org.interpss.plugin.piecewise.IEEE14TestSubAreaSearch;
+import org.interpss.plugin.piecewise.IEEE9BusTestDStabSubAreaNet;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
-
-import test.piecewise.Acsc5BusTesPiecewiseAlgo;
-import test.piecewise.Acsc5BusTestSubAreaNet;
-import test.piecewise.IEEE14TestAclfNetPiesewise;
-import test.piecewise.IEEE14TestAclfSubNetBuild;
-import test.piecewise.IEEE14TestSubAreaSearch;
-import test.piecewise.IEEE9BusTestDStabSubAreaNet;
 
 @RunWith(Suite.class)
 @SuiteClasses({
