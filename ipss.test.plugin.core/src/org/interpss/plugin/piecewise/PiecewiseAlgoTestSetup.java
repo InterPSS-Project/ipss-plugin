@@ -22,7 +22,7 @@
   *
   */
 
-package test.piecewise;
+package org.interpss.plugin.piecewise;
 
 import org.interpss.IpssCorePlugin;
 import org.junit.BeforeClass;
