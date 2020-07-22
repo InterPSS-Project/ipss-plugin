@@ -22,7 +22,7 @@
   *
   */
 
-package test.piecewise;
+package org.interpss.plugin.piecewise;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;

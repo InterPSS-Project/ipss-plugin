@@ -23,7 +23,7 @@
   *
   */
 
-package test.piecewise;
+package org.interpss.plugin.piecewise;
 
 import static org.junit.Assert.assertTrue;
 
@@ -501,7 +501,7 @@ public class IEEE14TestAclfNetPiesewise extends PiecewiseAlgoTestSetup {
 		 */
 		AclfNetwork net = CorePluginFactory
 					.getFileAdapter(IpssFileAdapter.FileFormat.IpssInternal)
-					.load("testdata/ieee14.ipssdat")
+					.load("testData/ipssdata/ieee14-1.ipssdat")
 					.getAclfNet();	
 		
   		//System.out.println(net.net2String());
