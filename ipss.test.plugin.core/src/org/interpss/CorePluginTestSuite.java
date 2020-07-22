@@ -59,6 +59,12 @@ import org.interpss.core.dstab.mach.MachineSaturationTest;
 import org.interpss.core.dstab.mach.RoundRotorMachineTest;
 import org.interpss.core.dstab.mach.SalientPoleMachineTest;
 import org.interpss.plugin.beanModel.AclfBeanMapperTest;
+import org.interpss.plugin.piecewise.Acsc5BusTesPiecewiseAlgo;
+import org.interpss.plugin.piecewise.Acsc5BusTestSubAreaNet;
+import org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise;
+import org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild;
+import org.interpss.plugin.piecewise.IEEE14TestSubAreaSearch;
+import org.interpss.plugin.piecewise.IEEE9BusTestDStabSubAreaNet;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
@@ -171,8 +177,15 @@ import org.junit.runners.Suite.SuiteClasses;
 	AclfBeanMapperTest.class,
 	
 	
-	//MNet_IEEE14Bus_Test.class,
-	//MNet_Aclf5Bus_Child_Test.class,
+	// Piecewise Algorithm
+	IEEE14TestSubAreaSearch.class,
+	IEEE14TestAclfNetPiesewise.class,
+	IEEE14TestAclfSubNetBuild.class,
+	
+	Acsc5BusTestSubAreaNet.class,
+	Acsc5BusTesPiecewiseAlgo.class,
+	
+	IEEE9BusTestDStabSubAreaNet.class,
 })
 public class CorePluginTestSuite {
 }
