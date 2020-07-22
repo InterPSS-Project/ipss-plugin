@@ -364,7 +364,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 		else if (xmlBranch instanceof DCLineData2TXmlType){
 			DCLineData2TXmlType branchRec =  (DCLineData2TXmlType) xmlBranch;
 			AclfHvdcDataHelper  hvdcHelper =new AclfHvdcDataHelper(adjNet, (HvdcLine2TLCC) branch);
-			hvdcHelper.setHvdc2TData(branchRec);
+			hvdcHelper.setLCCHvdcData(branchRec);
 		}
 		else if(xmlBranch instanceof VSCHVDC2TXmlType){
 			VSCHVDC2TXmlType   branchRec =   (VSCHVDC2TXmlType) xmlBranch;
@@ -390,7 +390,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 		if (xmlBranch instanceof DCLineData2TXmlType){
 			DCLineData2TXmlType branchRec =  (DCLineData2TXmlType) xmlBranch;
 			AclfHvdcDataHelper  hvdcHelper =new AclfHvdcDataHelper(adjNet, (HvdcLine2TLCC) branch);
-			hvdcHelper.setHvdc2TData(branchRec);
+			hvdcHelper.setLCCHvdcData(branchRec);
 		}
 		else if(xmlBranch instanceof VSCHVDC2TXmlType){
 			VSCHVDC2TXmlType   branchRec =   (VSCHVDC2TXmlType) xmlBranch;
@@ -399,9 +399,6 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 			
 		}
 	}
-	
-	
-	
 	
 	private void setAclfBranchData(BranchXmlType xmlBranchRec, Branch branch, BaseAclfNetwork<?,?> adjNet) throws InterpssException {
 		mapBaseBranchRec(xmlBranchRec, branch, adjNet);		
