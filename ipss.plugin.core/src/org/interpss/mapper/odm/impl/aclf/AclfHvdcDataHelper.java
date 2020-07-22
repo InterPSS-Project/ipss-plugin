@@ -19,79 +19,80 @@ import org.ieee.odm.schema.VSCDCControlModeEnumType;
 import org.ieee.odm.schema.VSCHVDC2TXmlType;
 import org.interpss.numeric.datatype.LimitType;
 
+import com.interpss.CoreObjectFactory;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
-import com.interpss.core.aclf.hvdc.VSCAcControlMode;
 import com.interpss.core.aclf.hvdc.ConverterType;
 import com.interpss.core.aclf.hvdc.HvdcControlMode;
+import com.interpss.core.aclf.hvdc.HvdcLine2T;
 import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
 import com.interpss.core.aclf.hvdc.HvdcLine2TVSC;
 import com.interpss.core.aclf.hvdc.HvdcOperationMode;
 import com.interpss.core.aclf.hvdc.ThyConverter;
+import com.interpss.core.aclf.hvdc.VSCAcControlMode;
 import com.interpss.core.aclf.hvdc.VSCConverter;
 import com.interpss.core.aclf.hvdc.impl.HvdcLineFactoryImpl;
 
 
 public class AclfHvdcDataHelper {
 	private BaseAclfNetwork<?, ?>  aclfNet = null;
-	private HvdcLine2TLCC hvdc2T = null;
-	private HvdcLine2TVSC vscHvdc2T = null;
+	private HvdcLine2T<?> hvdc2T = null;
 
-	public AclfHvdcDataHelper(BaseAclfNetwork<?, ?>  aclfNet, HvdcLine2TLCC hvdc2T){
+	public AclfHvdcDataHelper(BaseAclfNetwork<?, ?>  aclfNet, HvdcLine2T<?> hvdc2T){
 		this.aclfNet = aclfNet;
 		this.hvdc2T = hvdc2T;
 	}
-	
-	public AclfHvdcDataHelper(BaseAclfNetwork<?, ?>  aclfNet, HvdcLine2TVSC vscHvdc2T){
-		this.aclfNet = aclfNet;
-		this.vscHvdc2T = vscHvdc2T;
-	}
+
 	//TODO Define DCLineDataXmlType as a baseModel for two-terminal HVDC and VSC-HVDC
 	// so that in the future, we can handle two kinds of HVDC under the same method here as well
 	// as in the core engine;
+	
 	/*
-	 * 
-	public boolean setHvdcData(DCLineDataXmlType hvdcXml){
-		if(hvdcXml instanceof DCLineData2TXmlType){
-			setHvdc2TData((DCLineData2TXmlType)hvdcXml)
-		}
-		else
-           setVSCHvdcData(DCLineDataVSCXmlType)hvdcXml)
-	}
-	*/
-	public boolean setHvdc2TData(DCLineData2TXmlType hvdc2TXml){
+	 *  LCC Hvdc 2T Mapping part
+	 *  ======================== 
+	 */
+	
+	public boolean setLCCHvdcData(DCLineData2TXmlType hvdc2TXml){
 		boolean success = true;
 		//set DCLine Id
 		//this.hvdc2T.setId(hvdc2TXml.getId());
 		
+		HvdcLine2TLCC<AclfBus> lccHvdc2T = (HvdcLine2TLCC<AclfBus>)hvdc2T; 
+				 
 		//Control Mode
 		DcLineControlModeEnumType mode =hvdc2TXml.getControlMode();
 		
 		//TODO No "blocked" enum type
-		this.hvdc2T.setControlMode(mode==DcLineControlModeEnumType.POWER? HvdcControlMode.DC_POWER: 
-			mode==DcLineControlModeEnumType.CURRENT?HvdcControlMode.DC_CURRENT:HvdcControlMode.BLOCKED);
-		this.hvdc2T.setOperationMode(hvdc2TXml.getOperationMode()==DcLineOperationModeEnumType.DOUBLE?HvdcOperationMode.REC1_INV2:
-			HvdcOperationMode.REC1_INV1);
+		lccHvdc2T.setControlMode(mode==DcLineControlModeEnumType.POWER? 
+									HvdcControlMode.DC_POWER: 
+										mode==DcLineControlModeEnumType.CURRENT?
+												HvdcControlMode.DC_CURRENT:
+													HvdcControlMode.BLOCKED);
+		lccHvdc2T.setOperationMode(hvdc2TXml.getOperationMode()==DcLineOperationModeEnumType.DOUBLE?
+									HvdcOperationMode.REC2_INV2:
+										HvdcOperationMode.REC1_INV1);
 		//RDC
 		//TODO 
 		//this.hvdc2T.setLineR()
-		this.hvdc2T.setStatus(hvdc2TXml.isOffLine()?false:true);
+		lccHvdc2T.setStatus(hvdc2TXml.isOffLine()?false:true);
 		//SETVL
-		if(this.hvdc2T.getControlMode()==HvdcControlMode.DC_CURRENT){
+		if(lccHvdc2T.getControlMode()==HvdcControlMode.DC_CURRENT){
 		//	this.hvdc2T.setCurrentDemand(hvdc2TXml.getCurrentDemand().getValue());
-		}else if(this.hvdc2T.getControlMode()==HvdcControlMode.DC_POWER){
-			this.hvdc2T.setPowerDemand(hvdc2TXml.getPowerDemand().getValue(), toActivePowerUnit.apply(hvdc2TXml.getPowerDemand().getUnit()));
+		}
+		else if(lccHvdc2T.getControlMode()==HvdcControlMode.DC_POWER){
+			lccHvdc2T.setPowerDemand(hvdc2TXml.getPowerDemand().getValue(), toActivePowerUnit.apply(hvdc2TXml.getPowerDemand().getUnit()));
 			if(hvdc2TXml.getOperationMode()==DcLineOperationModeEnumType.DOUBLE){
-				this.hvdc2T.setPowerDemand2(hvdc2TXml.getPowerDemand2().getValue(), toActivePowerUnit.apply(hvdc2TXml.getPowerDemand().getUnit()));
+				lccHvdc2T.setPowerDemand2(hvdc2TXml.getPowerDemand2().getValue(), toActivePowerUnit.apply(hvdc2TXml.getPowerDemand().getUnit()));
 			}
 		}
 		
 		else //HVDC Line is Blocked
-			this.hvdc2T.setStatus(false);
+		lccHvdc2T.setStatus(false);
 		
 		
 		//Scheduled compound dc voltage, kV by default
-		this.hvdc2T.setScheduledDCVoltage(hvdc2TXml.getScheduledDCVoltage().getValue(), toVoltageUnit.apply(hvdc2TXml.getScheduledDCVoltage().getUnit()));
+		lccHvdc2T.setScheduledDCVoltage(hvdc2TXml.getScheduledDCVoltage().getValue(), toVoltageUnit.apply(hvdc2TXml.getScheduledDCVoltage().getUnit()));
 		
 		//TODO VCMOD mode switch dc voltage
 		//this.hvdc2T.setSwitchModeVoltage()
@@ -105,7 +106,7 @@ public class AclfHvdcDataHelper {
 		RCOMP to the appropriate fraction of RDC.
 		*/
 		//this.hvdc2T.setCompondR(hvdc2TXml.getCompoundingR().getR(),toZUnit.apply(hvdc2TXml.getCompoundingR().getUnit()));
-		this.hvdc2T.setLineR(hvdc2TXml.getLineR().getR());
+		lccHvdc2T.setLineR(hvdc2TXml.getLineR().getR());
 		
 		
 		//DELTI  DC power or current margin when ALPHA is at minimum and inverter is controlling line current
@@ -114,7 +115,7 @@ public class AclfHvdcDataHelper {
 		
 		
 		//Meter end
-		this.hvdc2T.setMeterEnd(hvdc2TXml.getMeteredEnd()==DcLineMeteredEndEnumType.RECTIFIER? ConverterType.RECTIFIER:ConverterType.INVERTER);
+		lccHvdc2T.setMeterEnd(hvdc2TXml.getMeteredEnd()==DcLineMeteredEndEnumType.RECTIFIER? ConverterType.RECTIFIER:ConverterType.INVERTER);
 		
 		//DCVMIN - Minimum compounded dc voltage
 		//TODO
@@ -122,14 +123,16 @@ public class AclfHvdcDataHelper {
 		
 		//set Rectifier data
 		if (hvdc2TXml.getRectifier() != null) {
-			ThyConverter rectifier = HvdcLineFactoryImpl.init().createThyConverter();
-			this.hvdc2T.setRectifier(rectifier);
-			setRectifierData(rectifier, hvdc2TXml.getRectifier(), 1);
+			ThyConverter<AclfBus> rectifier = CoreObjectFactory.createThyConverter((AclfBus)this.hvdc2T.getFromBus());
+			
+			lccHvdc2T.setRectifier(rectifier);
+			setThyRectifierData(rectifier, hvdc2TXml.getRectifier(), 1);
+			
 			// double
 			if (hvdc2TXml.getOperationMode() == DcLineOperationModeEnumType.DOUBLE) {
-				ThyConverter rectifier2 = HvdcLineFactoryImpl.init().createThyConverter();
-				this.hvdc2T.setRectifier2(rectifier2);
-				setRectifierData(rectifier2, hvdc2TXml.getRectifier(), 2);
+				ThyConverter<AclfBus> rectifier2 = CoreObjectFactory.createThyConverter((AclfBus)this.hvdc2T.getFromBus());
+				lccHvdc2T.setRectifier2(rectifier2);
+				setThyRectifierData(rectifier2, hvdc2TXml.getRectifier(), 2);
 			}
 		}
 		else{ 
@@ -140,14 +143,14 @@ public class AclfHvdcDataHelper {
 		//set Inverter data
 		
 		if (hvdc2TXml.getInverter() != null) {
-			ThyConverter inverter = HvdcLineFactoryImpl.init().createThyConverter();
-			this.hvdc2T.setInverter(inverter);
-			setInverterData(inverter, hvdc2TXml.getInverter(), 1);
+			ThyConverter<AclfBus> inverter = CoreObjectFactory.createThyConverter((AclfBus)this.hvdc2T.getToBus());
+			lccHvdc2T.setInverter(inverter);
+			setThyInverterData(inverter, hvdc2TXml.getInverter(), 1);
 			// double
 			if (hvdc2TXml.getOperationMode() == DcLineOperationModeEnumType.DOUBLE) {
-				ThyConverter inverter2 = HvdcLineFactoryImpl.init().createThyConverter();
-				this.hvdc2T.setInverter2(inverter2);
-				setInverterData(inverter2, hvdc2TXml.getInverter(), 2);
+				ThyConverter<AclfBus> inverter2 = CoreObjectFactory.createThyConverter((AclfBus)this.hvdc2T.getToBus());
+				lccHvdc2T.setInverter2(inverter2);
+				setThyInverterData(inverter2, hvdc2TXml.getInverter(), 2);
 			}
 		}
 		
@@ -161,42 +164,7 @@ public class AclfHvdcDataHelper {
 		
 	}
 	
-    
-    public boolean setVSCHvdcData(VSCHVDC2TXmlType vschvdc2TXml){
-    	boolean success = false;
-    	
-    	this.vscHvdc2T.setId(vschvdc2TXml.getId());
-    	this.vscHvdc2T.setName(vschvdc2TXml.getName());
-    	
-    	// Rdc and rating
-    	this.vscHvdc2T.setRdc(vschvdc2TXml.getRdc().getR());
-    	
-    	if(vschvdc2TXml.getMVARating()!=null)
-    	      this.vscHvdc2T.setMvaRating(vschvdc2TXml.getMVARating().getValue());
-    	
-    	
-    	// set the vsc converter data
-    	 success = this.setVSCInverterData(vschvdc2TXml.getInverter());
-    	if(!success) {
-    		IpssLogger.getLogger().severe("Error in setting the vsc inverter data");
-    		return success;
-    	}
-    	
-    	 success = this.setVSCRectifierData(vschvdc2TXml.getRectifier());
-    	 if(!success) {
-     		IpssLogger.getLogger().severe("Error in setting the vsc rectifier data");
-     		return success;
-     	}
-    	
-    	return success;
-    	
-		
-	}
-	
-	
-	private void setRectifierData(ThyConverter rectifier, ThyristorConverterXmlType rectifierXml,int n){
-		
-		
+	private void setThyRectifierData(ThyConverter<AclfBus> rectifier, ThyristorConverterXmlType rectifierXml,int n){
 		//TODO interface bus id
 		//rectifier.setRefBusId(BusXmlRef2BusId.fx(rectifierXml.getBusId()));
 		
@@ -248,7 +216,7 @@ public class AclfHvdcDataHelper {
 			
 	}
 	
-    private void setInverterData(ThyConverter inverter, ThyristorConverterXmlType inverterXml,int n){
+    private void setThyInverterData(ThyConverter<AclfBus> inverter, ThyristorConverterXmlType inverterXml,int n){
 	
     	
     	//Num of bridges
@@ -303,12 +271,51 @@ public class AclfHvdcDataHelper {
 		}
 	}
     
-
-    
-    private boolean setVSCInverterData(VSCConverterXmlType vscConvXml){
+	
+	/*
+	 *  VSC Hvdc 2T Mapping part
+	 *  ======================== 
+	 */
+	
+    public boolean setVSCHvdcData(VSCHVDC2TXmlType vschvdc2TXml){
+    	boolean success = false;
     	
+		HvdcLine2TVSC<?> vscHvdc2T = (HvdcLine2TVSC<?>)hvdc2T; 
+		
+    	vscHvdc2T.setId(vschvdc2TXml.getId());
+    	vscHvdc2T.setName(vschvdc2TXml.getName());
+    	
+    	// Rdc and rating
+    	vscHvdc2T.setRdc(vschvdc2TXml.getRdc().getR());
+    	
+    	if(vschvdc2TXml.getMVARating()!=null)
+    	      vscHvdc2T.setMvaRating(vschvdc2TXml.getMVARating().getValue());
+    	
+    	
+    	// set the vsc converter data
+    	 success = this.setVSCInverterData(vschvdc2TXml.getInverter());
+    	if(!success) {
+    		IpssLogger.getLogger().severe("Error in setting the vsc inverter data");
+    		return success;
+    	}
+    	
+    	 success = this.setVSCRectifierData(vschvdc2TXml.getRectifier());
+    	 if(!success) {
+     		IpssLogger.getLogger().severe("Error in setting the vsc rectifier data");
+     		return success;
+     	}
+    	
+    	return success;
+    	
+		
+	}
+	    
+    private boolean setVSCInverterData(VSCConverterXmlType vscConvXml){
     	boolean success = true;
-    	VSCConverter vscInv = (VSCConverter)this.vscHvdc2T.getInvConverter();
+    	
+		HvdcLine2TVSC<?> vscHvdc2T = (HvdcLine2TVSC<?>)hvdc2T; 
+		
+    	VSCConverter vscInv = (VSCConverter)vscHvdc2T.getInvConverter();
     	
     	// connection bus
     	BusXmlType busXml = (BusXmlType) vscConvXml.getBusId().getIdRef();
@@ -317,8 +324,9 @@ public class AclfHvdcDataHelper {
     	
     	// DC Control mode
     	HvdcControlMode dcMode = 
-    	vscConvXml.getDcControlMode() == VSCDCControlModeEnumType.BLOCKED?HvdcControlMode.BLOCKED:
-    		vscConvXml.getDcControlMode() == VSCDCControlModeEnumType.REAL_POWER? HvdcControlMode.DC_POWER : HvdcControlMode.DC_VOLTAGE;
+    	vscConvXml.getDcControlMode() == VSCDCControlModeEnumType.BLOCKED? HvdcControlMode.BLOCKED:
+    			vscConvXml.getDcControlMode() == VSCDCControlModeEnumType.REAL_POWER? 
+    					HvdcControlMode.DC_POWER : HvdcControlMode.DC_VOLTAGE;
     	
     	 vscInv.setDcControlMode(dcMode);
     	 
@@ -327,7 +335,8 @@ public class AclfHvdcDataHelper {
     	// AC Control mode
     	VSCAcControlMode acMode = 
     			vscConvXml.getAcControlMode() == VSCACControlModeEnumType.REACTIVE_POWER?VSCAcControlMode.AC_REACTIVE_POWER:
-    				(vscConvXml.getAcControlMode() == VSCACControlModeEnumType.VOLTAGE)?VSCAcControlMode.AC_VOLTAGE:VSCAcControlMode.AC_POWER_FACTOR;
+    				(vscConvXml.getAcControlMode() == VSCACControlModeEnumType.VOLTAGE)?
+    						VSCAcControlMode.AC_VOLTAGE:VSCAcControlMode.AC_POWER_FACTOR;
     	 vscInv.setAcControlMode(acMode);
     	
     	 vscInv.setAcSetPoint( vscConvXml.getAcSetPoint());
@@ -357,11 +366,13 @@ public class AclfHvdcDataHelper {
     	
     }
     
- private boolean setVSCRectifierData(VSCConverterXmlType vscConvXml){
+    private boolean setVSCRectifierData(VSCConverterXmlType vscConvXml){
     	
 		boolean success = true;
 		
-		VSCConverter vscRec = (VSCConverter)this.vscHvdc2T.getRecConverter();
+		HvdcLine2TVSC<?> vscHvdc2T = (HvdcLine2TVSC<?>)hvdc2T; 
+		
+		VSCConverter vscRec = (VSCConverter)vscHvdc2T.getRecConverter();
 	 	
 	 	// connection bus
 	 	BusXmlType busXml = (BusXmlType) vscConvXml.getBusId().getIdRef();
