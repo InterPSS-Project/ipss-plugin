@@ -1,4 +1,4 @@
-package test.piecewise;
+package org.interpss.plugin.piecewise;
 
 import static org.junit.Assert.assertTrue;
 
