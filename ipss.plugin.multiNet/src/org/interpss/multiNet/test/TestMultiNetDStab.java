@@ -33,8 +33,8 @@ import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
-import com.interpss.dstab.devent.DynamicEvent;
-import com.interpss.dstab.devent.DynamicEventType;
+import com.interpss.dstab.devent.DynamicSimuEvent;
+import com.interpss.dstab.devent.DynamicSimuEventType;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
@@ -327,10 +327,10 @@ public class TestMultiNetDStab {
 	    System.out.println(sm.toCSVString(sm.getBusVoltTable()));
 	}
 	
-	private DynamicEvent create3PhaseFaultEvent(String faultBusId, BaseDStabNetwork<?,?> net,double startTime, double durationTime){
+	private DynamicSimuEvent create3PhaseFaultEvent(String faultBusId, BaseDStabNetwork<?,?> net,double startTime, double durationTime){
 	    // define an event, set the event id and event type.
-			DynamicEvent event1 = DStabObjectFactory.createDEvent("BusFault3P@"+faultBusId, "Bus Fault 3P@"+faultBusId, 
-					DynamicEventType.BUS_FAULT, net);
+			DynamicSimuEvent event1 = DStabObjectFactory.createDEvent("BusFault3P@"+faultBusId, "Bus Fault 3P@"+faultBusId, 
+					DynamicSimuEventType.BUS_FAULT, net);
 			event1.setStartTimeSec(startTime);
 			event1.setDurationSec(durationTime);
 			
