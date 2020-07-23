@@ -39,8 +39,8 @@ import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
-import com.interpss.dstab.devent.DynamicEvent;
-import com.interpss.dstab.devent.DynamicEventType;
+import com.interpss.dstab.devent.DynamicSimuEvent;
+import com.interpss.dstab.devent.DynamicSimuEventType;
 
 public class DStabTestSetupBase extends CorePluginTestSetup {
 	
@@ -64,8 +64,8 @@ public class DStabTestSetupBase extends CorePluginTestSetup {
 */	
 	public void addDynamicEventData(BaseDStabNetwork net) {
 		// define a bus fault event
-		DynamicEvent event1 = DStabObjectFactory.createDEvent("BusFault3P@0003", "Bus Fault 3P@0003", 
-				DynamicEventType.BUS_FAULT, net);
+		DynamicSimuEvent event1 = DStabObjectFactory.createDEvent("BusFault3P@0003", "Bus Fault 3P@0003", 
+				DynamicSimuEventType.BUS_FAULT, net);
 		event1.setStartTimeSec(1.0);
 		event1.setDurationSec(0.1);
 		

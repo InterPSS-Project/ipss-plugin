@@ -37,8 +37,8 @@ import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateVariableRecorder;
 import com.interpss.dstab.common.DStabOutSymbol;
-import com.interpss.dstab.devent.DynamicEvent;
-import com.interpss.dstab.devent.DynamicEventType;
+import com.interpss.dstab.devent.DynamicSimuEvent;
+import com.interpss.dstab.devent.DynamicSimuEventType;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
@@ -345,9 +345,9 @@ public class BpaO7CTest extends DStabTestSetupBase {
 	
 	private void create3PFaultEvent(BaseDStabNetwork net, String busId, String busName, double startTime,double duration) {
 		// define a bus fault event
-		DynamicEvent event1 = DStabObjectFactory.createDEvent(
+		DynamicSimuEvent event1 = DStabObjectFactory.createDEvent(
 				"BusFault3P@"+busId, "Bus Fault 3P @"+busName, 
-				DynamicEventType.BUS_FAULT, net);
+				DynamicSimuEventType.BUS_FAULT, net);
 		event1.setStartTimeSec(startTime);
 		event1.setDurationSec(duration);
 		

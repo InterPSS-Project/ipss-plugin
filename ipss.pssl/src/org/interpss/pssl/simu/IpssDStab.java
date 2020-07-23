@@ -41,8 +41,8 @@ import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.common.IDStabSimuOutputHandler;
-import com.interpss.dstab.devent.DynamicEvent;
-import com.interpss.dstab.devent.DynamicEventType;
+import com.interpss.dstab.devent.DynamicSimuEvent;
+import com.interpss.dstab.devent.DynamicSimuEventType;
 
 /**
  * DSL (domain specific language) for dynamic stability analysis
@@ -57,7 +57,7 @@ public class IpssDStab {
 	
 	private IDStabSimuOutputHandler outputHdler = new StateMonitor();
 	
-	private DynamicEvent event = null;
+	private DynamicSimuEvent event = null;
 	//private StateMonitor sm = new StateMonitor();
 	
 	public IpssDStab(BaseDStabNetwork net){
@@ -106,7 +106,7 @@ public class IpssDStab {
     	return this;
     }
     
-    public IpssDStab addDynamicEvent(DynamicEvent event, String eventId ){
+    public IpssDStab addDynamicEvent(DynamicSimuEvent event, String eventId ){
     	this.event = event;
     	this.dstabNet.addDynamicEvent(event, eventId);
     	return this;
@@ -162,10 +162,10 @@ public class IpssDStab {
     }
     
     
-    public DynamicEvent addBusFaultEvent(String faultBusId, SimpleFaultCode code, double startTime, double durationTime, Complex Zlg, Complex Zll){
+    public DynamicSimuEvent addBusFaultEvent(String faultBusId, SimpleFaultCode code, double startTime, double durationTime, Complex Zlg, Complex Zll){
 	       // define an event, set the event id and event type.
-			DynamicEvent event1 = DStabObjectFactory.createDEvent("BusFault_"+code+"@"+faultBusId, "Bus Fault @"+faultBusId, 
-					DynamicEventType.BUS_FAULT, dstabNet);
+			DynamicSimuEvent event1 = DStabObjectFactory.createDEvent("BusFault_"+code+"@"+faultBusId, "Bus Fault @"+faultBusId, 
+					DynamicSimuEventType.BUS_FAULT, dstabNet);
 			event1.setStartTimeSec(startTime);
 			event1.setDurationSec(durationTime);
 			
