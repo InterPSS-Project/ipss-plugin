@@ -9,6 +9,7 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.plugin.dc"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.plugin.core"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.plugin.QA"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ipss.extendedPiecewiseAlgo"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.common"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.core_EMF"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.numeric"/>
@@ -26,6 +27,5 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Hazelcast"/>
 	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/sparse/csparsej-1.1.1.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.se_EMF"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/ipss.extendedPiecewiseAlgo"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
