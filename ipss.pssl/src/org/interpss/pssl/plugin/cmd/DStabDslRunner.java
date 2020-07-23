@@ -8,7 +8,7 @@ import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.common.IDStabSimuOutputHandler;
-import com.interpss.dstab.devent.DynamicEvent;
+import com.interpss.dstab.devent.DynamicSimuEvent;
 
 public class DStabDslRunner extends BaseDStabDslRunner{
 	

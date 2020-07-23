@@ -15,8 +15,8 @@ import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.dstab.algo.defaultImpl.DynamicEventProcessor;
 import com.interpss.dstab.datatype.DStabSimuTimeEvent;
-import com.interpss.dstab.devent.DynamicEvent;
-import com.interpss.dstab.devent.DynamicEventType;
+import com.interpss.dstab.devent.DynamicSimuEvent;
+import com.interpss.dstab.devent.DynamicSimuEventType;
 
 public class DynamicEventProcessor3Phase extends DynamicEventProcessor {
 	
@@ -46,7 +46,7 @@ public class DynamicEventProcessor3Phase extends DynamicEventProcessor {
 
 					// apply those events which result in changing Y-matrix,
 					// such as turn-off a branch
-					for (DynamicEvent dEvent : net.getDynamicEventList()) {
+					for (DynamicSimuEvent dEvent : net.getDynamicEventList()) {
 						if (dEvent.hasEvent()) {
 							applyDynamicEventBefore(dEvent, t);
 						}
@@ -66,7 +66,7 @@ public class DynamicEventProcessor3Phase extends DynamicEventProcessor {
 
 					// apply those events which result in adding z to Y-matrix,
 					// such as applying fault Z
-					for (DynamicEvent dEvent : net.getDynamicEventList()) {
+					for (DynamicSimuEvent dEvent : net.getDynamicEventList()) {
 						if (dEvent.hasEvent()) {
 							try{
 								applyDynamicEventAfter(dEvent, t);
@@ -103,7 +103,7 @@ public class DynamicEventProcessor3Phase extends DynamicEventProcessor {
 	@Override
 	protected boolean hasAnyEvent(double t) {
 		boolean has = false;
-		for (DynamicEvent dEvent : net.getDynamicEventList()) {
+		for (DynamicSimuEvent dEvent : net.getDynamicEventList()) {
 			if (dEvent.hasEventAt(t)) {
 				has = true;
 			}
@@ -117,18 +117,18 @@ public class DynamicEventProcessor3Phase extends DynamicEventProcessor {
 	
 	// apply event before building the Y-matrix
 	@Override
-	protected void applyDynamicEventBefore(DynamicEvent e, double t) {
+	protected void applyDynamicEventBefore(DynamicSimuEvent e, double t) {
 		
 	}
 	
 	
 	// apply event after after building the Y-matrix
 	@Override
-	protected void applyDynamicEventAfter(DynamicEvent e, double t) throws IpssNumericException {
+	protected void applyDynamicEventAfter(DynamicSimuEvent e, double t) throws IpssNumericException {
 		// active indicates applying the event. We only modify the Y matrix when
 				// applying an event
 				if (e.isActive()) {
-					if (e.getType() == DynamicEventType.BUS_FAULT) {
+					if (e.getType() == DynamicSimuEventType.BUS_FAULT) {
 						AcscBusFault fault = e.getBusFault();
 						BaseAcscBus bus = fault.getBus();
 						
@@ -196,7 +196,7 @@ public class DynamicEventProcessor3Phase extends DynamicEventProcessor {
 					/*
 					 * Apply the branch fault to the Y-matrix
 					 */
-					else if (e.getType() == DynamicEventType.BRANCH_FAULT) {
+					else if (e.getType() == DynamicSimuEventType.BRANCH_FAULT) {
 						 throw new UnsupportedOperationException();
 					}
 					 

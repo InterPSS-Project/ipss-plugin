@@ -17,8 +17,8 @@ import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.datatype.DStabSimuTimeEvent;
-import com.interpss.dstab.devent.DynamicEvent;
-import com.interpss.dstab.devent.DynamicEventType;
+import com.interpss.dstab.devent.DynamicSimuEvent;
+import com.interpss.dstab.devent.DynamicSimuEventType;
 
 public class MultiNet3Ph3SeqDynEventProcessor extends
 		MultiNetDynamicEventProcessor {
@@ -55,7 +55,7 @@ public class MultiNet3Ph3SeqDynEventProcessor extends
 
 					// apply those events which result in changing Y-matrix,
 					// such as turn-off a branch
-					for (DynamicEvent dEvent : net.getDynamicEventList()) {
+					for (DynamicSimuEvent dEvent : net.getDynamicEventList()) {
 						if (dEvent.hasEvent()) {
 							applyDynamicEventBefore(dEvent, t);
 						}
@@ -66,9 +66,9 @@ public class MultiNet3Ph3SeqDynEventProcessor extends
 					//net.setYMatrix(net.formYMatrix(SequenceCode.POSITIVE, false));
 					
 					String  faultSubNetworkId = null;
-					for (DynamicEvent dEvent : net.getDynamicEventList()) {
+					for (DynamicSimuEvent dEvent : net.getDynamicEventList()) {
 						   
-					        if (dEvent.getType() == DynamicEventType.BUS_FAULT) {
+					        if (dEvent.getType() == DynamicSimuEventType.BUS_FAULT) {
 						         AcscBusFault fault = dEvent.getBusFault();
 						         BaseAcscBus bus = fault.getBus();
 						         BaseDStabNetwork<?,?> faultSubNet = (BaseDStabNetwork<?, ?>) bus.getNetwork();
@@ -99,7 +99,7 @@ public class MultiNet3Ph3SeqDynEventProcessor extends
 
 					// apply those events which result in adding z to Y-matrix,
 					// such as applying fault Z
-					for (DynamicEvent dEvent : net.getDynamicEventList()) {
+					for (DynamicSimuEvent dEvent : net.getDynamicEventList()) {
 						if (dEvent.hasEvent()) {
 							try{
 								applyDynamicEventAfter(dEvent, t);
@@ -123,11 +123,11 @@ public class MultiNet3Ph3SeqDynEventProcessor extends
 	
 	// apply event after after building the Y-matrix
 		@Override
-		protected void applyDynamicEventAfter(DynamicEvent e, double t) throws IpssNumericException {
+		protected void applyDynamicEventAfter(DynamicSimuEvent e, double t) throws IpssNumericException {
 			// active indicates applying the event. We only modify the Y matrix when
 					// applying an event
 					if (e.isActive()) {
-						if (e.getType() == DynamicEventType.BUS_FAULT) {
+						if (e.getType() == DynamicSimuEventType.BUS_FAULT) {
 							AcscBusFault fault = e.getBusFault();
 							BaseAcscBus bus = fault.getBus();
 							
@@ -209,7 +209,7 @@ public class MultiNet3Ph3SeqDynEventProcessor extends
 						/*
 						 * Apply the branch fault to the Y-matrix
 						 */
-						else if (e.getType() == DynamicEventType.BRANCH_FAULT) {
+						else if (e.getType() == DynamicSimuEventType.BRANCH_FAULT) {
 							 throw new UnsupportedOperationException();
 						}
 						 
