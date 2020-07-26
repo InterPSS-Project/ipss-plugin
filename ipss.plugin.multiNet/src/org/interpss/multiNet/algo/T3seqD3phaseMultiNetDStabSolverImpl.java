@@ -392,7 +392,7 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 							// update the distribution source bus voltage
 							DStab3PBus sourceBus3Ph = (DStab3PBus)dsNet3Ph.getBus(sourceId);
 							
-							sourceBus3Ph.set3PhaseVoltages(vabc);
+							sourceBus3Ph.set3PhaseVotlages(vabc);
 						
 							
 							//TODO is iteration needed for this solution step, similar to power flow?

@@ -264,7 +264,7 @@ public class TposSeqD3PhaseMultiNetPowerflowAlgorithm {
 		    		  Complex3x1 vabc = this.distBoundaryBus3SeqVoltages.get(sourceBus3Ph.getId()).toABC();
 		    		  
 		    		  System.out.println("updated dist source bus vabc = "+vabc);
-		    		  sourceBus3Ph.set3PhaseVoltages(vabc);
+		    		  sourceBus3Ph.set3PhaseVotlages(vabc);
 		    		  //manually update the positive sequence, since internally it won't be automatically updated.
 		    		  sourceBus3Ph.setVoltage(sourceBus3Ph.getThreeSeqVoltage().b_1);
 		    		  

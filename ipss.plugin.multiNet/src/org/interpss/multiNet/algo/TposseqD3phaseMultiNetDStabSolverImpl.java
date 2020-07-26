@@ -372,7 +372,7 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 						// update the distribution source bus voltage
 						DStab3PBus sourceBus3Ph = (DStab3PBus)dsNet3Ph.getBus(sourceId);
 						
-						sourceBus3Ph.set3PhaseVoltages(vabc);
+						sourceBus3Ph.set3PhaseVotlages(vabc);
 						sourceBus3Ph.setVoltage(volt);
 						
 					
