@@ -15,10 +15,10 @@ import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.sparse.ISparseEqnComplexMatrix3x3;
-import org.interpss.threePhase.basic.DStab3PBranch;
-import org.interpss.threePhase.basic.DStab3PBus;
-import org.interpss.threePhase.basic.Gen3Phase;
-import org.interpss.threePhase.basic.Load3Phase;
+import org.interpss.threePhase.basic.dstab.DStab3PBranch;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PGen;
+import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.model.DStabGen3PhaseAdapter;
 import org.interpss.threePhase.dynamic.model.DynLoadModel1Phase;
@@ -152,8 +152,8 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 			//initialize the 3p power output of generation;
 			if(b.isGen()){
 				for(AclfGen gen: b.getContributeGenList()){
-					if(gen instanceof Gen3Phase){
-						Gen3Phase ph3Gen = (Gen3Phase) gen;
+					if(gen instanceof DStab3PGen){
+						DStab3PGen ph3Gen = (DStab3PGen) gen;
 						Complex phaseGen = gen.getGen();// phase gen and 3-phase gen are of the same value in PU
 						ph3Gen.setPower3Phase(new Complex3x1(phaseGen,phaseGen,phaseGen), UnitType.PU);
 					}
@@ -163,8 +163,8 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 			// initialize the load 3-phase power
 			if(b.isLoad()){
 				for(AclfLoad load: b.getContributeLoadList()){
-					if(load instanceof Load3Phase){
-						Load3Phase ph3Load = (Load3Phase) load; 
+					if(load instanceof DStab3PLoad){
+						DStab3PLoad ph3Load = (DStab3PLoad) load; 
 						Complex phaseLoad = load.getLoad(b.getVoltageMag()); // phase load and 3-phase load are of the same value in PU
 						
 						ph3Load.set3PhaseLoad(new Complex3x1(phaseLoad,phaseLoad,phaseLoad));

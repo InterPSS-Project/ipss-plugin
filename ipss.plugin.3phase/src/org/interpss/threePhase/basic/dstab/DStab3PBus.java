@@ -1,4 +1,4 @@
-package org.interpss.threePhase.basic;
+package org.interpss.threePhase.basic.dstab;
 
 import java.util.List;
 
@@ -9,7 +9,7 @@ import org.interpss.threePhase.dynamic.model.DynLoadModel3Phase;
 
 import com.interpss.dstab.BaseDStabBus;
 
-public interface DStab3PBus extends BaseDStabBus<Gen3Phase,Load3Phase> {
+public interface DStab3PBus extends BaseDStabBus<DStab3PGen,DStab3PLoad> {
 	
 	public Complex3x1 get3PhaseVotlages();
 	
@@ -27,11 +27,11 @@ public interface DStab3PBus extends BaseDStabBus<Gen3Phase,Load3Phase> {
     
     public List<DynLoadModel3Phase> getThreePhaseDynLoadList();
     
-    public List<Load1Phase> getSinglePhaseLoadList();
+    public List<DStab1PLoad> getSinglePhaseLoadList();
     
-    public List<Load3Phase> getThreePhaseLoadList();
+    public List<DStab3PLoad> getThreePhaseLoadList();
     
-    public List<Gen3Phase> getThreePhaseGenList();
+    public List<DStab3PGen> getThreePhaseGenList();
     
     public Complex3x1  calc3PhEquivCurInj();
     
