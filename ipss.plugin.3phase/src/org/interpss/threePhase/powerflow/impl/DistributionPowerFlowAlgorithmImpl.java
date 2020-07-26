@@ -9,7 +9,6 @@ import java.util.Set;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.threePhase.basic.acsc.Acsc3PNetworkTemp;
 import org.interpss.threePhase.basic.acsc.Acsc3PXformer;
 import org.interpss.threePhase.basic.acsc.impl.Acsc3PNetworkTempImpl;
 import org.interpss.threePhase.basic.dstab.DStab3PBranch;
@@ -128,11 +127,11 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 					DStab3PBus bus = (DStab3PBus) b;
 					
 					if(b.isSwing())
-						bus.set3PhaseVoltages(getSwingBusThreePhaseVoltages(b.getVoltageMag(), b.getVoltageAng(UnitType.Deg)));
+						bus.set3PhaseVotlages(getSwingBusThreePhaseVoltages(b.getVoltageMag(), b.getVoltageAng(UnitType.Deg)));
 					else if(b.isGenPV()) 
-						bus.set3PhaseVoltages(getPVBusThreePhaseVoltages(b.getVoltageMag()));
+						bus.set3PhaseVotlages(getPVBusThreePhaseVoltages(b.getVoltageMag()));
 					else
-					    bus.set3PhaseVoltages(getUnitThreePhaseVoltages());
+					    bus.set3PhaseVotlages(getUnitThreePhaseVoltages());
 					
 			}
 
@@ -364,7 +363,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 							upStreamBranch.setCurrentAbcAtToSide(iabc.multiply(-1.0));
 							
 							if(upStreamBus3P.getIntFlag()==0 && !upStreamBus3P.isSwing()){
-							   upStreamBus3P.set3PhaseVoltages(vabc);
+							   upStreamBus3P.set3PhaseVotlages(vabc);
 							   upStreamBus3P.setIntFlag(1);
 							}
 						}
@@ -410,7 +409,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 							
 							
 							if(upStreamBus3P.getIntFlag()==0 && !upStreamBus3P.isSwing()){
-								   upStreamBus3P.set3PhaseVoltages(vabc);
+								   upStreamBus3P.set3PhaseVotlages(vabc);
 								   upStreamBus3P.setIntFlag(1);
 							}
 							
@@ -521,7 +520,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 									}
 								}
 								
-								downStreamBus.set3PhaseVoltages(vabc);
+								downStreamBus.set3PhaseVotlages(vabc);
 								downStreamBus.setIntFlag(2);
 							}
 						}

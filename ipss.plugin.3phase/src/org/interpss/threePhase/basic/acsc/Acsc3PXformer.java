@@ -2,14 +2,14 @@ package org.interpss.threePhase.basic.acsc;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x3;
-import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 
+import com.interpss.core.abc.IBranch3Phase;
 import com.interpss.core.abc.IXformer3Phase;
 import com.interpss.core.acsc.adpter.AcscXformer;
 
 public interface Acsc3PXformer extends IXformer3Phase, AcscXformer{
 	
-	    public void set3PBranch(DStab3PBranch ph3Branch);
+	    public void set3PBranch(IBranch3Phase ph3Branch);
 	    
 	    public void setZabc(Complex3x3 Zabc);
 	    
