@@ -22,8 +22,8 @@ import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.threePhase.basic.Branch3Phase;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.DStab3PBranch;
+import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.basic.IEEEFeederLineCode;
 import org.interpss.threePhase.basic.Load3Phase;
 import org.interpss.threePhase.basic.impl.Load3PhaseImpl;
@@ -122,7 +122,7 @@ public class TestTnD_IEEE39_Feeder {
 			 double totalLoad15 = netTotalLoad15*(1+PVIncrement)*sysMVABASE;
 			 double XfrMVA = totalLoad15/0.8;
 			 int startBusIndex = 150;
-			createFeeder(dsNet, (Bus3Phase) dsNet.getBus("Bus15"), startBusIndex , baseVolt,feederBusNum,totalLoad15,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
+			createFeeder(dsNet, (DStab3PBus) dsNet.getBus("Bus15"), startBusIndex , baseVolt,feederBusNum,totalLoad15,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
 			
 			buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoad15,loadDistribution);
 			
@@ -140,7 +140,7 @@ public class TestTnD_IEEE39_Feeder {
 			 XfrMVA = totalLoadBus16/0.8;
 			 
 			 startBusIndex =160;
-			createFeeder(dsNet, (Bus3Phase) dsNet.getBus("Bus16"), startBusIndex, baseVolt,feederBusNum,totalLoadBus16,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
+			createFeeder(dsNet, (DStab3PBus) dsNet.getBus("Bus16"), startBusIndex, baseVolt,feederBusNum,totalLoadBus16,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
 			
 			
 			buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoadBus16,loadDistribution);
@@ -157,7 +157,7 @@ public class TestTnD_IEEE39_Feeder {
 			 XfrMVA = totalLoadBus18/0.8;
 			 
 			 startBusIndex =180;
-			createFeeder(dsNet, (Bus3Phase) dsNet.getBus("Bus18"), 180, baseVolt,feederBusNum,totalLoadBus18,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
+			createFeeder(dsNet, (DStab3PBus) dsNet.getBus("Bus18"), 180, baseVolt,feederBusNum,totalLoadBus18,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
 			
 			buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoadBus18,loadDistribution);
 			
@@ -175,7 +175,7 @@ public class TestTnD_IEEE39_Feeder {
 			 XfrMVA = totalLoadBus26/0.8;
 			 
 			 startBusIndex =260;
-			createFeeder(dsNet, (Bus3Phase) dsNet.getBus("Bus26"), 260, baseVolt,feederBusNum,totalLoadBus26,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
+			createFeeder(dsNet, (DStab3PBus) dsNet.getBus("Bus26"), 260, baseVolt,feederBusNum,totalLoadBus26,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
 			
 			buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoadBus26,loadDistribution);
 			
@@ -192,7 +192,7 @@ public class TestTnD_IEEE39_Feeder {
 			 XfrMVA = totalLoadBus27/0.8;
 			 
 			 startBusIndex =270;
-			createFeeder(dsNet, (Bus3Phase) dsNet.getBus("Bus27"), 270, baseVolt,feederBusNum,totalLoadBus27,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
+			createFeeder(dsNet, (DStab3PBus) dsNet.getBus("Bus27"), 270, baseVolt,feederBusNum,totalLoadBus27,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
 			
 			buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoadBus27,loadDistribution);
 			
@@ -208,7 +208,7 @@ public class TestTnD_IEEE39_Feeder {
 			 XfrMVA = totalLoadBus28/0.8;
 			 
 			 startBusIndex =280;
-			createFeeder(dsNet, (Bus3Phase) dsNet.getBus("Bus28"), 280, baseVolt,feederBusNum,totalLoadBus28,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
+			createFeeder(dsNet, (DStab3PBus) dsNet.getBus("Bus28"), 280, baseVolt,feederBusNum,totalLoadBus28,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
 			
 			buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoadBus28,loadDistribution);
 			
@@ -313,7 +313,7 @@ public class TestTnD_IEEE39_Feeder {
 		 double totalLoad15 = netTotalLoad15*(1+PVIncrement)*sysMVABASE;
 		 double XfrMVA = totalLoad15/0.8;
 		 int startBusIndex = 150;
-		createFeeder(dsNet, (Bus3Phase) dsNet.getBus("Bus15"), startBusIndex , baseVolt,feederBusNum,totalLoad15,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
+		createFeeder(dsNet, (DStab3PBus) dsNet.getBus("Bus15"), startBusIndex , baseVolt,feederBusNum,totalLoad15,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
 		
 		buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoad15,loadDistribution);
 		
@@ -331,7 +331,7 @@ public class TestTnD_IEEE39_Feeder {
 		 XfrMVA = totalLoadBus16/0.8;
 		 
 		 startBusIndex =160;
-		createFeeder(dsNet, (Bus3Phase) dsNet.getBus("Bus16"), startBusIndex, baseVolt,feederBusNum,totalLoadBus16,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
+		createFeeder(dsNet, (DStab3PBus) dsNet.getBus("Bus16"), startBusIndex, baseVolt,feederBusNum,totalLoadBus16,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
 		
 		
 		buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoadBus16,loadDistribution);
@@ -348,7 +348,7 @@ public class TestTnD_IEEE39_Feeder {
 		 XfrMVA = totalLoadBus18/0.8;
 		 
 		 startBusIndex =180;
-		createFeeder(dsNet, (Bus3Phase) dsNet.getBus("Bus18"), 180, baseVolt,feederBusNum,totalLoadBus18,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
+		createFeeder(dsNet, (DStab3PBus) dsNet.getBus("Bus18"), 180, baseVolt,feederBusNum,totalLoadBus18,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
 		
 		buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoadBus18,loadDistribution);
 		
@@ -366,7 +366,7 @@ public class TestTnD_IEEE39_Feeder {
 		 XfrMVA = totalLoadBus26/0.8;
 		 
 		 startBusIndex =260;
-		createFeeder(dsNet, (Bus3Phase) dsNet.getBus("Bus26"), 260, baseVolt,feederBusNum,totalLoadBus26,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
+		createFeeder(dsNet, (DStab3PBus) dsNet.getBus("Bus26"), 260, baseVolt,feederBusNum,totalLoadBus26,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
 		
 		buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoadBus26,loadDistribution);
 		
@@ -383,7 +383,7 @@ public class TestTnD_IEEE39_Feeder {
 		 XfrMVA = totalLoadBus27/0.8;
 		 
 		 startBusIndex =270;
-		createFeeder(dsNet, (Bus3Phase) dsNet.getBus("Bus27"), 270, baseVolt,feederBusNum,totalLoadBus27,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
+		createFeeder(dsNet, (DStab3PBus) dsNet.getBus("Bus27"), 270, baseVolt,feederBusNum,totalLoadBus27,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
 		
 		buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoadBus27,loadDistribution);
 		
@@ -399,7 +399,7 @@ public class TestTnD_IEEE39_Feeder {
 		 XfrMVA = totalLoadBus28/0.8;
 		 
 		 startBusIndex =280;
-		createFeeder(dsNet, (Bus3Phase) dsNet.getBus("Bus28"), 280, baseVolt,feederBusNum,totalLoadBus28,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
+		createFeeder(dsNet, (DStab3PBus) dsNet.getBus("Bus28"), 280, baseVolt,feederBusNum,totalLoadBus28,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
 		
 		buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoadBus28,loadDistribution);
 		
@@ -583,7 +583,7 @@ public class TestTnD_IEEE39_Feeder {
 						
 						for(String busId: sm.getBusPhAVoltTable().keySet()){
 							
-							 sm.addBusPhaseVoltageMonitorRecord( busId,dstabAlgo.getSimuTime(), ((Bus3Phase)proc.getSubNetworkByBusId(busId).getBus(busId)).get3PhaseVotlages());
+							 sm.addBusPhaseVoltageMonitorRecord( busId,dstabAlgo.getSimuTime(), ((DStab3PBus)proc.getSubNetworkByBusId(busId).getBus(busId)).get3PhaseVotlages());
 						}
 						
 					}
@@ -697,7 +697,7 @@ public class TestTnD_IEEE39_Feeder {
 		 double totalLoad15 = netTotalLoad15*(1+PVIncrement)*sysMVABASE;
 		 double XfrMVA = totalLoad15/0.8;
 		 int startBusIndex = 150;
-		createFeeder(dsNet, (Bus3Phase) dsNet.getBus("Bus15"), startBusIndex , baseVolt,feederBusNum,totalLoad15,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
+		createFeeder(dsNet, (DStab3PBus) dsNet.getBus("Bus15"), startBusIndex , baseVolt,feederBusNum,totalLoad15,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
 		
 		//buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoad15,loadDistribution);
 		
@@ -716,7 +716,7 @@ public class TestTnD_IEEE39_Feeder {
 		 XfrMVA = totalLoadBus16/0.8;
 		 
 		 startBusIndex =160;
-		createFeeder(dsNet, (Bus3Phase) dsNet.getBus("Bus16"), startBusIndex, baseVolt,feederBusNum,totalLoadBus16,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
+		createFeeder(dsNet, (DStab3PBus) dsNet.getBus("Bus16"), startBusIndex, baseVolt,feederBusNum,totalLoadBus16,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
 		
 		
 		//buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoadBus16,loadDistribution);
@@ -735,7 +735,7 @@ public class TestTnD_IEEE39_Feeder {
 		 XfrMVA = totalLoadBus18/0.8;
 		 
 		 startBusIndex =180;
-		createFeeder(dsNet, (Bus3Phase) dsNet.getBus("Bus18"), 180, baseVolt,feederBusNum,totalLoadBus18,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
+		createFeeder(dsNet, (DStab3PBus) dsNet.getBus("Bus18"), 180, baseVolt,feederBusNum,totalLoadBus18,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
 		
 		//buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoadBus18,loadDistribution);
 		
@@ -755,7 +755,7 @@ public class TestTnD_IEEE39_Feeder {
 		 XfrMVA = totalLoadBus26/0.8;
 		 
 		 startBusIndex =260;
-		createFeeder(dsNet, (Bus3Phase) dsNet.getBus("Bus26"), 260, baseVolt,feederBusNum,totalLoadBus26,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
+		createFeeder(dsNet, (DStab3PBus) dsNet.getBus("Bus26"), 260, baseVolt,feederBusNum,totalLoadBus26,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
 		
 		//buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoadBus26,loadDistribution);
 		
@@ -774,7 +774,7 @@ public class TestTnD_IEEE39_Feeder {
 		 XfrMVA = totalLoadBus27/0.8;
 		 
 		 startBusIndex =270;
-		createFeeder(dsNet, (Bus3Phase) dsNet.getBus("Bus27"), 270, baseVolt,feederBusNum,totalLoadBus27,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
+		createFeeder(dsNet, (DStab3PBus) dsNet.getBus("Bus27"), 270, baseVolt,feederBusNum,totalLoadBus27,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
 		
 		//buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoadBus27,loadDistribution);
 		
@@ -791,7 +791,7 @@ public class TestTnD_IEEE39_Feeder {
 		 XfrMVA = totalLoadBus28/0.8;
 		 
 		 startBusIndex =280;
-		createFeeder(dsNet, (Bus3Phase) dsNet.getBus("Bus28"), 280, baseVolt,feederBusNum,totalLoadBus28,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
+		createFeeder(dsNet, (DStab3PBus) dsNet.getBus("Bus28"), 280, baseVolt,feederBusNum,totalLoadBus28,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
 		
 		//buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoadBus28,loadDistribution);
 		
@@ -918,7 +918,7 @@ public class TestTnD_IEEE39_Feeder {
 						
 						for(String busId: sm.getBusPhAVoltTable().keySet()){
 							
-							 sm.addBusPhaseVoltageMonitorRecord( busId,dstabAlgo.getSimuTime(), ((Bus3Phase)proc.getSubNetworkByBusId(busId).getBus(busId)).get3PhaseVotlages());
+							 sm.addBusPhaseVoltageMonitorRecord( busId,dstabAlgo.getSimuTime(), ((DStab3PBus)proc.getSubNetworkByBusId(busId).getBus(busId)).get3PhaseVotlages());
 						}
 						
 					}
@@ -978,7 +978,7 @@ public class TestTnD_IEEE39_Feeder {
 	 * @return
 	 * @throws InterpssException
 	 */
-public DStabNetwork3Phase createFeeder(DStabNetwork3Phase net,Bus3Phase sourceBus, int startBusNum, double baseVolt, int BusNum, double totalMW, double XfrMVA, double loadPF, double[] loadPercentAry, double loadUnbalanceFactor, double[] sectionLength) throws InterpssException{
+public DStabNetwork3Phase createFeeder(DStabNetwork3Phase net,DStab3PBus sourceBus, int startBusNum, double baseVolt, int BusNum, double totalMW, double XfrMVA, double loadPF, double[] loadPercentAry, double loadUnbalanceFactor, double[] sectionLength) throws InterpssException{
 		
 	    double scaleFactor = totalMW;
 	    double zscaleFactor =  totalMW/8.0; 
@@ -987,7 +987,7 @@ public DStabNetwork3Phase createFeeder(DStabNetwork3Phase net,Bus3Phase sourceBu
 		
 		int loadIdx = 0;
 		for(int i =startBusNum;i<startBusNum+BusNum;i++){
-			Bus3Phase bus = ThreePhaseObjectFactory.create3PDStabBus("Bus"+i, net);
+			DStab3PBus bus = ThreePhaseObjectFactory.create3PDStabBus("Bus"+i, net);
 			bus.setAttributes("feeder bus "+i, "");
 			bus.setBaseVoltage(baseVolt);
 			
@@ -1023,7 +1023,7 @@ public DStabNetwork3Phase createFeeder(DStabNetwork3Phase net,Bus3Phase sourceBu
 
 		// add step down transformer between source bus and bus1
 		
-		Branch3Phase xfr1 = ThreePhaseObjectFactory.create3PBranch(sourceBus.getId(), net.getBus("Bus"+startBusNum).getId(), "0", net);
+		DStab3PBranch xfr1 = ThreePhaseObjectFactory.create3PBranch(sourceBus.getId(), net.getBus("Bus"+startBusNum).getId(), "0", net);
 		xfr1.setBranchCode(AclfBranchCode.XFORMER);
 		xfr1.setToTurnRatio(1.02);
 		xfr1.setZ( new Complex( 0.0, 0.08).multiply(100.0/XfrMVA));
@@ -1037,7 +1037,7 @@ public DStabNetwork3Phase createFeeder(DStabNetwork3Phase net,Bus3Phase sourceBu
 		
 		
 		
-	Branch3Phase xfr1_2 = ThreePhaseObjectFactory.create3PBranch(net.getBus("Bus"+startBusNum).getId(), net.getBus("Bus"+(startBusNum+1)).getId(), "0", net);
+	DStab3PBranch xfr1_2 = ThreePhaseObjectFactory.create3PBranch(net.getBus("Bus"+startBusNum).getId(), net.getBus("Bus"+(startBusNum+1)).getId(), "0", net);
 		xfr1_2.setBranchCode(AclfBranchCode.XFORMER);
 		xfr1_2.setToTurnRatio(1.02);
 		xfr1_2.setZ( new Complex( 0.0, 0.06 ).multiply(100.0/XfrMVA));
@@ -1052,7 +1052,7 @@ public DStabNetwork3Phase createFeeder(DStabNetwork3Phase net,Bus3Phase sourceBu
 		int k =0;
 		for(int i =startBusNum+1;i<startBusNum+BusNum-1;i++){
 			
-			Branch3Phase Line2_3 = ThreePhaseObjectFactory.create3PBranch("Bus"+i, "Bus"+(i+1), "0", net);
+			DStab3PBranch Line2_3 = ThreePhaseObjectFactory.create3PBranch("Bus"+i, "Bus"+(i+1), "0", net);
 			Line2_3.setBranchCode(AclfBranchCode.LINE);
 			
 			
@@ -1093,7 +1093,7 @@ public DStabNetwork3Phase createFeeder(DStabNetwork3Phase net,Bus3Phase sourceBu
 	
 	int k = 0;
 	for(int i =startBusNum;i<=endBusNum;i++){
-		Bus3Phase loadBus = (Bus3Phase) dsNet.getBus("Bus"+i);
+		DStab3PBus loadBus = (DStab3PBus) dsNet.getBus("Bus"+i);
 		
 		/*
 		Load3Phase load1 = new Load3PhaseImpl();
