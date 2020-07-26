@@ -125,7 +125,7 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 						Complex va = vpos.multiply(phaseShiftCplxFactor(phaseShiftDeg));
 						Complex vb = va.multiply(phaseShiftCplxFactor(-120));
 						Complex vc = va.multiply(phaseShiftCplxFactor(120));
-						StartingBus.set3PhaseVoltages(new Complex3x1(va,vb,vc));
+						StartingBus.set3PhaseVotlages(new Complex3x1(va,vb,vc));
 						StartingBus.setVoltage(StartingBus.getThreeSeqVoltage().b_1);
 					 
 					 Queue<DStab3PBus> q = new  LinkedList<DStab3PBus>();
@@ -146,7 +146,7 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 					Complex va = vpos;
 					Complex vb = va.multiply(phaseShiftCplxFactor(-120));
 					Complex vc = va.multiply(phaseShiftCplxFactor(120));
-					((DStab3PBus) b).set3PhaseVoltages(new Complex3x1(va,vb,vc));
+					((DStab3PBus) b).set3PhaseVotlages(new Complex3x1(va,vb,vc));
 			}
 				
 			//initialize the 3p power output of generation;
@@ -213,7 +213,7 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 									Complex vb = va.multiply(phaseShiftCplxFactor(-120.0d));
 									Complex vc = va.multiply(phaseShiftCplxFactor(120.0d));
 									
-									((DStab3PBus) findBus).set3PhaseVoltages(new Complex3x1(va,vb,vc));
+									((DStab3PBus) findBus).set3PhaseVotlages(new Complex3x1(va,vb,vc));
 									 ((BaseAclfBus)findBus).setVoltage(((DStab3PBus) findBus).getThreeSeqVoltage().b_1);
 								}
 							} catch (InterpssException e) {
@@ -234,7 +234,7 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 	}
 
 	@Override
-	public ISparseEqnComplexMatrix3x3 formYMatrixABC() throws Exception {
+	public ISparseEqnComplexMatrix3x3 formYMatrixABC() throws IpssNumericException {
 		
 		double yiiMinTolerance = 1.0E-8;
 		
@@ -270,7 +270,7 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 					yMatrixAbc.setA( yii,i, i);
 				}
 				else
-					throw new Exception("The processing bus # "+b.getId()+"  is not a threePhaseBus");
+					throw new IpssNumericException("The processing bus # "+b.getId()+"  is not a threePhaseBus");
 			}
 		}
 		
@@ -284,7 +284,7 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 					yMatrixAbc.addToA( ph3Branch.getYtfabc(), j, i );
 				}
 				else
-					throw new Exception("The processing branch #"+bra.getId()+"  is not a threePhaseBranch");
+					throw new IpssNumericException("The processing branch #"+bra.getId()+"  is not a threePhaseBranch");
 			}
 			
 		}
@@ -550,7 +550,7 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
                     
 						//if(bus instanceof Bus3Phase){
 							DStab3PBus bus3P = (DStab3PBus) bus;
-							 bus3P.set3PhaseVoltages(vabc);
+							 bus3P.set3PhaseVotlages(vabc);
 							 
 							 // update the positive sequence voltage
 							 Complex v = bus3P.getThreeSeqVoltage().b_1;
