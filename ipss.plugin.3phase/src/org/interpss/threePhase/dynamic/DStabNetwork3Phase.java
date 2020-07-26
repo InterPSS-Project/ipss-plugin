@@ -3,13 +3,13 @@ package org.interpss.threePhase.dynamic;
 import java.util.Hashtable;
 
 import org.interpss.numeric.datatype.Complex3x1;
-import org.interpss.threePhase.basic.DStab3PBranch;
-import org.interpss.threePhase.basic.DStab3PBus;
-import org.interpss.threePhase.basic.Network3Phase;
+import org.interpss.threePhase.basic.acsc.Acsc3PNetworkTemp;
+import org.interpss.threePhase.basic.dstab.DStab3PBranch;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
 
 import com.interpss.dstab.BaseDStabNetwork;
 
-public interface DStabNetwork3Phase extends Network3Phase, BaseDStabNetwork<DStab3PBus, DStab3PBranch>{
+public interface DStabNetwork3Phase extends Acsc3PNetworkTemp, BaseDStabNetwork<DStab3PBus, DStab3PBranch>{
 	
 
 	

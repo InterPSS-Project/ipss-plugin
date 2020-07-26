@@ -7,12 +7,12 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.threePhase.basic.DStab3PBranch;
-import org.interpss.threePhase.basic.DStab3PBus;
-import org.interpss.threePhase.basic.Gen3Phase;
 import org.interpss.threePhase.basic.IEEEFeederLineCode;
-import org.interpss.threePhase.basic.Load3Phase;
-import org.interpss.threePhase.basic.impl.Load3PhaseImpl;
+import org.interpss.threePhase.basic.dstab.DStab3PBranch;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PGen;
+import org.interpss.threePhase.basic.dstab.DStab3PLoad;
+import org.interpss.threePhase.basic.dstab.impl.DStab3PLoadImpl;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.algo.DynamicEventProcessor3Phase;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
@@ -122,7 +122,7 @@ public DStabNetwork3Phase createFeeder(double baseVolt, int BusNum, double total
 		bus1.setLoadCode(AclfLoadCode.NON_LOAD);
 		bus1.setVoltage(new Complex(1.02,0));
 		
-		Gen3Phase constantGen = ThreePhaseObjectFactory.create3PGenerator("Source");
+		DStab3PGen constantGen = ThreePhaseObjectFactory.create3PGenerator("Source");
 		constantGen.setMvaBase(100);
 		constantGen.setPosGenZ(new Complex(0.0,0.05));
 		constantGen.setNegGenZ(new Complex(0.0,0.05));
@@ -149,13 +149,13 @@ public DStabNetwork3Phase createFeeder(double baseVolt, int BusNum, double total
 			// set the bus to a constant power load bus
 			bus.setLoadCode(AclfLoadCode.CONST_P);
 			
-			Load3Phase load1 = new Load3PhaseImpl();
+			DStab3PLoad load1 = new DStab3PLoadImpl();
 			Complex3x1 load3Phase = new Complex3x1(new Complex(0.01,0.01*q2pfactor),new Complex(0.01,0.01*q2pfactor).multiply(1-loadUnbalanceFactor),new Complex(0.01,0.01*q2pfactor).multiply(1+loadUnbalanceFactor));
 			load1.set3PhaseLoad(load3Phase.multiply(scaleFactor*loadPercentAry[i-2]));
 			bus.getThreePhaseLoadList().add(load1);
 			
 			if(i ==3 || i == 5 || i==7){
-				Load3Phase Shuntload = new Load3PhaseImpl();
+				DStab3PLoad Shuntload = new DStab3PLoadImpl();
 				Complex3x1 shuntY = new Complex3x1(new Complex(0,-0.0005),new Complex(0.0,-0.0005),new Complex(0.0,-0.0005));
 				Shuntload.set3PhaseLoad(shuntY.multiply(scaleFactor));
 				bus.getThreePhaseLoadList().add(Shuntload);
