@@ -24,7 +24,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.threePhase.basic.Branch3Phase;
 import org.interpss.threePhase.basic.Bus3Phase;
 import org.interpss.threePhase.basic.Load3Phase;
-import org.interpss.threePhase.basic.Phase;
+import org.interpss.threePhase.basic.PhaseType;
 import org.interpss.threePhase.basic.impl.Load3PhaseImpl;
 import org.interpss.threePhase.dataParser.opendss.OpenDSSDataParser;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
