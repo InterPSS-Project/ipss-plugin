@@ -7,8 +7,8 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
-import org.interpss.threePhase.basic.Branch3Phase;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.DStab3PBranch;
+import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.basic.Gen3Phase;
 import org.interpss.threePhase.basic.Load3Phase;
 import org.interpss.threePhase.basic.impl.Load3PhaseImpl;
@@ -58,7 +58,7 @@ public class TestSinglePhaseACMotorModel {
 	     *   create the 1-phase AC model 
 	     */
 		
-		Bus3Phase bus1 = (Bus3Phase) net.getBus("Bus1");
+		DStab3PBus bus1 = (DStab3PBus) net.getBus("Bus1");
 		
 	    SinglePhaseACMotor ac1 = new SinglePhaseACMotor(bus1,"1");
   		ac1.setLoadPercent(25);
@@ -160,7 +160,7 @@ public class TestSinglePhaseACMotorModel {
 	     *   create the 1-phase AC model 
 	     */
 		
-		Bus3Phase bus1 = (Bus3Phase) net.getBus("Bus1");
+		DStab3PBus bus1 = (DStab3PBus) net.getBus("Bus1");
 		
 	    SinglePhaseACMotor ac1 = new SinglePhaseACMotor(bus1,"1");
   		ac1.setLoadPercent(50);
@@ -266,7 +266,7 @@ public class TestSinglePhaseACMotorModel {
 		net.setBaseKva(baseKva);
 	  
 	   //Bus 1
-  		Bus3Phase bus1 = ThreePhaseObjectFactory.create3PDStabBus("Bus1", net);
+		DStab3PBus bus1 = ThreePhaseObjectFactory.create3PDStabBus("Bus1", net);
   		// set bus name and description attributes
   		bus1.setAttributes("Bus 1", "");
   		// set bus base voltage 
@@ -285,7 +285,7 @@ public class TestSinglePhaseACMotorModel {
   		
 
   	  	// Bus 3
-  		Bus3Phase bus3 = ThreePhaseObjectFactory.create3PDStabBus("Bus3", net);
+		DStab3PBus bus3 = ThreePhaseObjectFactory.create3PDStabBus("Bus3", net);
   		// set bus name and description attributes
   		bus3.setAttributes("Bus 3", "");
   		// set bus base voltage 
@@ -318,7 +318,7 @@ public class TestSinglePhaseACMotorModel {
 		mach2.setXd1(0.020);
   				
   		
-  		Branch3Phase bra = ThreePhaseObjectFactory.create3PBranch("Bus1", "Bus3", "0", net);
+  		DStab3PBranch bra = ThreePhaseObjectFactory.create3PBranch("Bus1", "Bus3", "0", net);
 		bra.setBranchCode(AclfBranchCode.LINE);
 		bra.setZ( new Complex(0.000,   0.0500));
 		bra.setHShuntY(new Complex(0, 0.200/2));

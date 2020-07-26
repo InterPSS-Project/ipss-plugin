@@ -25,7 +25,7 @@ import org.interpss.mapper.odm.impl.aclf.AbstractODMAclfNetMapper;
 import org.interpss.mapper.odm.impl.aclf.AclfBusDataHelper;
 import org.interpss.mapper.odm.impl.dstab.AbstractODMDStabParserMapper;
 import org.interpss.mapper.odm.impl.dstab.DStabScenarioHelper;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.basic.Gen3Phase;
 import org.interpss.threePhase.basic.Load3Phase;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
@@ -97,7 +97,7 @@ protected IPSSMsgHub msg = null;
 				for (JAXBElement<? extends BusXmlType> bus : xmlNet.getBusList().getBus()) {
 					DStabBusXmlType dstabBusXml = (DStabBusXmlType) bus.getValue();
 					
-					Bus3Phase dstabBus = ThreePhaseObjectFactory.create3PDStabBus(dstabBusXml.getId(), dstabNet);
+					DStab3PBus dstabBus = ThreePhaseObjectFactory.create3PDStabBus(dstabBusXml.getId(), dstabNet);
 						
 					// base the base bus info part
 					mapBaseBusData(dstabBusXml, dstabBus, dstabNet);

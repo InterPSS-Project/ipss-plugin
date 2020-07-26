@@ -4,11 +4,11 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 
-import com.interpss.core.acsc.AcscBranch;
+import com.interpss.core.abc.IBranch3Phase;
 import com.interpss.core.acsc.PhaseCode;
 import com.interpss.dstab.DStabBranch;
 
-public interface Branch3Phase extends DStabBranch{
+public interface DStab3PBranch extends IBranch3Phase, DStabBranch{
 	
 	// phase code is currently used in the transformer; for lines, Zabc reflects the connection phases
 	public void setPhaseCode(PhaseCode phCode);
