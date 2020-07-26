@@ -22,10 +22,10 @@ import org.interpss.multiNet.algo.powerflow.TDMultiNetPowerflowAlgorithm;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.threePhase.basic.DStab3PBranch;
-import org.interpss.threePhase.basic.DStab3PBus;
-import org.interpss.threePhase.basic.Load3Phase;
-import org.interpss.threePhase.basic.impl.Load3PhaseImpl;
+import org.interpss.threePhase.basic.dstab.DStab3PBranch;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PLoad;
+import org.interpss.threePhase.basic.dstab.impl.DStab3PLoadImpl;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.algo.DynamicEventProcessor3Phase;
 import org.interpss.threePhase.dynamic.model.impl.SinglePhaseACMotor;
@@ -800,7 +800,7 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
   		bus11.setLoadCode(AclfLoadCode.CONST_P);
   		
 
-		Load3Phase load1 = new Load3PhaseImpl();
+		DStab3PLoad load1 = new DStab3PLoadImpl();
 		load1.set3PhaseLoad(new Complex3x1(new Complex(0.625,-0.05),new Complex(0.625,-0.05),new Complex(0.625,-0.05)));
 		bus11.getThreePhaseLoadList().add(load1);
   		
@@ -815,7 +815,7 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
   		
 //  	    bus12.setLoadPQ(new Complex(0.6,0.1));
   		
-  		Load3Phase load2 = new Load3PhaseImpl();
+  		DStab3PLoad load2 = new DStab3PLoadImpl();
 		load2.set3PhaseLoad(new Complex3x1(new Complex(0.6,0.1),new Complex(0.6,0.1),new Complex(0.6,0.1)));
 		bus12.getThreePhaseLoadList().add(load2);
   		

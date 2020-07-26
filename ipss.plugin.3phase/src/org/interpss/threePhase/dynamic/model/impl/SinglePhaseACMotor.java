@@ -4,7 +4,7 @@ import java.util.Hashtable;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
-import org.interpss.threePhase.basic.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.dynamic.model.DynLoadModel1Phase;
 
 import com.interpss.common.util.IpssLogger;

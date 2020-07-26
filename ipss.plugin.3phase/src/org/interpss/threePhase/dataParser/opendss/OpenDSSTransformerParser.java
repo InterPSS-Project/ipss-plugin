@@ -4,7 +4,7 @@ import static com.interpss.core.funcImpl.AcscFunction.acscXfrAptr;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.threePhase.basic.DStab3PBranch;
+import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
 import com.interpss.common.exp.InterpssException;

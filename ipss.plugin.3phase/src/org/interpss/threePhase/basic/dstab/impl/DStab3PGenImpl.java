@@ -1,11 +1,11 @@
-package org.interpss.threePhase.basic.impl;
+package org.interpss.threePhase.basic.dstab.impl;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.threePhase.basic.DStab3PBus;
-import org.interpss.threePhase.basic.Gen3Phase;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PGen;
 
 import com.interpss.dstab.GeneratorType;
 import com.interpss.dstab.impl.DStabGenImpl;
@@ -20,7 +20,7 @@ import com.interpss.dstab.impl.DStabGenImpl;
  * @author Qiuhua
  *
  */
-public class Gen3PhaseImpl extends DStabGenImpl implements Gen3Phase {
+public class DStab3PGenImpl extends DStabGenImpl implements DStab3PGen {
 	
 	private Complex3x3   zAbc = null;
 	private Complex3x3   yAbc = null;

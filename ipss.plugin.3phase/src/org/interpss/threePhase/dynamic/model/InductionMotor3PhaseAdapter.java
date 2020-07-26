@@ -6,7 +6,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.threePhase.basic.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
 
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import org.interpss.dstab.dynLoad.InductionMotor;

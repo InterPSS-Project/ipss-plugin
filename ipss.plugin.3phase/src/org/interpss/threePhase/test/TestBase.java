@@ -6,11 +6,11 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.threePhase.basic.DStab3PBranch;
-import org.interpss.threePhase.basic.DStab3PBus;
-import org.interpss.threePhase.basic.Gen3Phase;
-import org.interpss.threePhase.basic.Load3Phase;
-import org.interpss.threePhase.basic.impl.Load3PhaseImpl;
+import org.interpss.threePhase.basic.dstab.DStab3PBranch;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PGen;
+import org.interpss.threePhase.basic.dstab.DStab3PLoad;
+import org.interpss.threePhase.basic.dstab.impl.DStab3PLoadImpl;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.impl.DStabNetwork3phaseImpl;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
@@ -51,7 +51,7 @@ public class TestBase {
 	  		
 	  		//bus1.setLoadPQ(new Complex(1.0,0.2));
 	  		
-	  		Load3Phase load1 = new Load3PhaseImpl();
+	  		DStab3PLoad load1 = new DStab3PLoadImpl();
 			load1.set3PhaseLoad(new Complex3x1(new Complex(1.0,0.2),new Complex(1.0,0.2),new Complex(1.0,0.2)));
 			bus1.getThreePhaseLoadList().add(load1);
 	  		
@@ -69,7 +69,7 @@ public class TestBase {
 	  		bus3.setSortNumber(1);
 	  		bus3.setVoltage(new Complex(1.025,0));
 	  		
-	  		Gen3Phase gen2 = ThreePhaseObjectFactory.create3PGenerator("Gen2");
+	  		DStab3PGen gen2 = ThreePhaseObjectFactory.create3PGenerator("Gen2");
 	  		gen2.setMvaBase(100.0);
 	  		gen2.setDesiredVoltMag(1.025);
 	  		//gen2.setGen(new Complex(0.7164,0.2710));
@@ -123,7 +123,7 @@ public class TestBase {
 			bus1.setLoadCode(AclfLoadCode.NON_LOAD);
 			bus1.setVoltage(new Complex(1.01,0));
 			
-			Gen3Phase constantGen = ThreePhaseObjectFactory.create3PGenerator("Source");
+			DStab3PGen constantGen = ThreePhaseObjectFactory.create3PGenerator("Source");
 			constantGen.setMvaBase(100);
 			constantGen.setPosGenZ(new Complex(0.0,0.05));
 			constantGen.setNegGenZ(new Complex(0.0,0.05));
@@ -209,7 +209,7 @@ public class TestBase {
 			
 			for(int i =2;i<=6;i++){
 				DStab3PBus loadBus = (DStab3PBus) net.getBus("Bus"+i);
-				Load3Phase load1 = new Load3PhaseImpl();
+				DStab3PLoad load1 = new DStab3PLoadImpl();
 				load1.set3PhaseLoad(new Complex3x1(new Complex(0.3,0.05),new Complex(0.3,0.05),new Complex(0.3,0.05)));
 				loadBus.getThreePhaseLoadList().add(load1);
 				

@@ -4,23 +4,23 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.threePhase.basic.DStab3PBus;
-import org.interpss.threePhase.basic.Gen3Phase;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PGen;
 
 public abstract class DynGenModel3Phase extends DynamicModel3Phase{
 	
 	
-	protected Gen3Phase parentGen = null;
+	protected DStab3PGen parentGen = null;
 	private Complex3x3   zAbc = null;
 	private Complex3x1   puPowerAbc = null;
 	private Complex3x3   yAbc = null;
 	
 	
-	public Gen3Phase getParentGen(){
+	public DStab3PGen getParentGen(){
 		 return this.parentGen;
 	 }
 	 
-	 void setParentGen(Gen3Phase gen){
+	 void setParentGen(DStab3PGen gen){
 		 this.parentGen = gen;
 	 }
 	 
