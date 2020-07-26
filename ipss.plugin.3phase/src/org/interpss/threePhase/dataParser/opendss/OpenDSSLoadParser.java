@@ -5,11 +5,11 @@ import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.threePhase.basic.Bus3Phase;
 import org.interpss.threePhase.basic.Load1Phase;
 import org.interpss.threePhase.basic.Load3Phase;
-import org.interpss.threePhase.basic.LoadConnectionType;
 import org.interpss.threePhase.basic.impl.Load1PhaseImpl;
 import org.interpss.threePhase.basic.impl.Load3PhaseImpl;
 
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.abc.LoadConnectionType;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.acsc.PhaseCode;
 
@@ -178,10 +178,10 @@ public class OpenDSSLoadParser {
 			//load connection type
 			if(phaseNum==3){
 				if(connectionType.equalsIgnoreCase("delta")){
-					load.setLoadConnectionType(LoadConnectionType.Three_Phase_Delta);
+					load.setLoadConnectionType(LoadConnectionType.THREE_PHASE_DELTA);
 				}
 				else if(connectionType.equalsIgnoreCase("wye")){
-					load.setLoadConnectionType(LoadConnectionType.Three_Phase_Wye);
+					load.setLoadConnectionType(LoadConnectionType.THREE_PHASE_WYE);
 				}
 				else{
 					no_error = false;
@@ -195,12 +195,12 @@ public class OpenDSSLoadParser {
 			}
 			else if(phaseNum==1){
 				if(connectionType.equalsIgnoreCase("wye")){
-					load.setLoadConnectionType(LoadConnectionType.Single_Phase_Wye);
+					load.setLoadConnectionType(LoadConnectionType.SINGLE_PHASE_WYE);
 					
 				}
 				else if(connectionType.equalsIgnoreCase("delta")){
 					if(phase1.length()>0 && phase2.length()>0)
-					  load.setLoadConnectionType(LoadConnectionType.Single_Phase_Delta);
+					  load.setLoadConnectionType(LoadConnectionType.SINGLE_PHASE_DELTA);
 					else{
 						no_error = false;
 						throw new Error("Connection phases info is not consistent with the connection type # "+loadStr);

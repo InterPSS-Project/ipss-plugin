@@ -17,11 +17,11 @@ import org.interpss.threePhase.basic.Bus3Phase;
 import org.interpss.threePhase.basic.LineConfiguration;
 import org.interpss.threePhase.basic.Load1Phase;
 import org.interpss.threePhase.basic.Load3Phase;
-import org.interpss.threePhase.basic.LoadConnectionType;
 import org.interpss.threePhase.dataParser.opendss.OpenDSSDataParser;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.junit.Test;
 
+import com.interpss.core.abc.LoadConnectionType;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.acsc.PhaseCode;
 import com.interpss.core.acsc.XfrConnectCode;
@@ -233,7 +233,7 @@ public class TestOpenDSSDataParser {
 		  Bus3Phase bus1 = (Bus3Phase) distNet.getBus("1");
 		  Load1Phase ld_s1a= (Load1Phase) bus1.getContributeLoad("s1a");
 		  assertTrue(ld_s1a.getLoadCP().subtract(new Complex(40,20)).abs()<1.0E-9);
-		  assertTrue(ld_s1a.getLoadConnectionType()==LoadConnectionType.Single_Phase_Wye);
+		  assertTrue(ld_s1a.getLoadConnectionType()==LoadConnectionType.SINGLE_PHASE_WYE);
 		  assertTrue(Math.abs(ld_s1a.getNominalKV()-2.4)<1.0E-9);
 		  assertTrue(ld_s1a.getCode()==AclfLoadCode.CONST_P);
 		  assertTrue(ld_s1a.getPhaseCode()==PhaseCode.A);
@@ -246,7 +246,7 @@ public class TestOpenDSSDataParser {
 		  Bus3Phase bus35 = (Bus3Phase) distNet.getBus("35");
 		  Load1Phase ld_s35a= (Load1Phase) bus35.getContributeLoad("s35a");
 		  assertTrue(ld_s35a.getLoadCP().subtract(new Complex(40,20)).abs()<1.0E-9);
-		  assertTrue(ld_s35a.getLoadConnectionType()==LoadConnectionType.Single_Phase_Delta);
+		  assertTrue(ld_s35a.getLoadConnectionType()==LoadConnectionType.SINGLE_PHASE_DELTA);
 		  assertTrue(Math.abs(ld_s35a.getNominalKV()-4.160)<1.0E-9);
 		  assertTrue(ld_s35a.getCode()==AclfLoadCode.CONST_P);
 		  assertTrue(ld_s35a.getPhaseCode()==PhaseCode.AB);
@@ -260,7 +260,7 @@ public class TestOpenDSSDataParser {
 		  assertTrue(ld_s48.getInit3PhaseLoad().a_0.subtract(new Complex(70.0,50.0)).abs()<1.0E-9);
 		  assertTrue(ld_s48.getInit3PhaseLoad().b_1.subtract(new Complex(70,50)).abs()<1.0E-9);
 		  assertTrue(ld_s48.getInit3PhaseLoad().c_2.subtract(new Complex(70,50)).abs()<1.0E-9);
-		  assertTrue(ld_s48.getLoadConnectionType()==LoadConnectionType.Three_Phase_Wye);
+		  assertTrue(ld_s48.getLoadConnectionType()==LoadConnectionType.THREE_PHASE_WYE);
 		  assertTrue(Math.abs(ld_s48.getNominalKV()-4.160)<1.0E-9);
 		  assertTrue(ld_s48.getCode()==AclfLoadCode.CONST_Z);
 		  assertTrue(ld_s48.getPhaseCode()==PhaseCode.ABC);
@@ -405,7 +405,7 @@ public class TestOpenDSSDataParser {
 		  Bus3Phase bus1 = (Bus3Phase) distNet.getBus("1");
 		  Load1Phase ld_s1a= (Load1Phase) bus1.getContributeLoad("s1a");
 		  assertTrue(ld_s1a.getLoadCP().subtract(new Complex(40,20).divide(baseKVA1P)).abs()<1.0E-9);
-		  assertTrue(ld_s1a.getLoadConnectionType()==LoadConnectionType.Single_Phase_Wye);
+		  assertTrue(ld_s1a.getLoadConnectionType()==LoadConnectionType.SINGLE_PHASE_WYE);
 		  assertTrue(Math.abs(ld_s1a.getNominalKV()-2.4)<1.0E-9);
 		  assertTrue(ld_s1a.getCode()==AclfLoadCode.CONST_P);
 		  assertTrue(ld_s1a.getPhaseCode()==PhaseCode.A);
@@ -418,7 +418,7 @@ public class TestOpenDSSDataParser {
 		  Bus3Phase bus35 = (Bus3Phase) distNet.getBus("35");
 		  Load1Phase ld_s35a= (Load1Phase) bus35.getContributeLoad("s35a");
 		  assertTrue(ld_s35a.getLoadCP().subtract(new Complex(40,20).divide(baseKVA1P)).abs()<1.0E-9);
-		  assertTrue(ld_s35a.getLoadConnectionType()==LoadConnectionType.Single_Phase_Delta);
+		  assertTrue(ld_s35a.getLoadConnectionType()==LoadConnectionType.SINGLE_PHASE_DELTA);
 		  assertTrue(Math.abs(ld_s35a.getNominalKV()-4.160)<1.0E-9);
 		  assertTrue(ld_s35a.getCode()==AclfLoadCode.CONST_P);
 		  assertTrue(ld_s35a.getPhaseCode()==PhaseCode.AB);
@@ -432,7 +432,7 @@ public class TestOpenDSSDataParser {
 		  assertTrue(ld_s48.getInit3PhaseLoad().a_0.subtract(new Complex(70.0,50.0).divide(baseKVA1P)).abs()<1.0E-9);
 		  assertTrue(ld_s48.getInit3PhaseLoad().b_1.subtract(new Complex(70,50).divide(baseKVA1P)).abs()<1.0E-9);
 		  assertTrue(ld_s48.getInit3PhaseLoad().c_2.subtract(new Complex(70,50).divide(baseKVA1P)).abs()<1.0E-9);
-		  assertTrue(ld_s48.getLoadConnectionType()==LoadConnectionType.Three_Phase_Wye);
+		  assertTrue(ld_s48.getLoadConnectionType()==LoadConnectionType.THREE_PHASE_WYE);
 		  assertTrue(Math.abs(ld_s48.getNominalKV()-4.160)<1.0E-9);
 		  assertTrue(ld_s48.getCode()==AclfLoadCode.CONST_Z);
 		  assertTrue(ld_s48.getPhaseCode()==PhaseCode.ABC);
