@@ -409,7 +409,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 				   				   
 								   //superpostition method
 								   //bus voltage V = Vinternal + Vext_injection
-								   bus.set3PhaseVoltages(bus.get3PhaseVotlages().add(subNetYabc.getX(b.getSortNumber())));
+								   bus.set3PhaseVotlages(bus.get3PhaseVotlages().add(subNetYabc.getX(b.getSortNumber())));
 								   
 								   //System.out.println(b.getId()+" Vabc :"+bus.get3PhaseVotlages().toString());
 								   // set the positive sequence voltage
