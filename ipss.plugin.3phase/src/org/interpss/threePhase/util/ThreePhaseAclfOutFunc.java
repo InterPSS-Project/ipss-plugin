@@ -2,7 +2,7 @@ package org.interpss.threePhase.util;
 
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.ComplexFunc;
-import org.interpss.threePhase.basic.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 
 import com.interpss.dstab.BaseDStabBus;

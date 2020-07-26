@@ -16,11 +16,11 @@ import org.ieee.odm.common.ODMException;
 import org.ieee.odm.common.ODMLogger;
 import org.ieee.odm.common.ODMTextFileReader;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.threePhase.basic.DStab3PBranch;
-import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.basic.LineConfiguration;
-import org.interpss.threePhase.basic.Load1Phase;
-import org.interpss.threePhase.basic.Load3Phase;
+import org.interpss.threePhase.basic.dstab.DStab1PLoad;
+import org.interpss.threePhase.basic.dstab.DStab3PBranch;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
@@ -620,8 +620,8 @@ public class OpenDSSDataParser {
          for(DStab3PBus bus3P: this.getDistNetwork().getBusList()){
         	 
         	 if(bus3P.getSinglePhaseLoadList().size()>0){
-        		 for(Load1Phase load:bus3P.getSinglePhaseLoadList()){
-        			 Load1Phase ld1P = (Load1Phase) load;
+        		 for(DStab1PLoad load:bus3P.getSinglePhaseLoadList()){
+        			 DStab1PLoad ld1P = (DStab1PLoad) load;
         			 ld1P.setLoadCP(ld1P.getLoadCP().divide(baseKVA1P)); 
         			 ld1P.setLoadCI(ld1P.getLoadCI().divide(baseKVA1P)); 
         			 ld1P.setLoadCZ(ld1P.getLoadCZ().divide(baseKVA1P)); 
@@ -629,7 +629,7 @@ public class OpenDSSDataParser {
         	 }
         	 
         	 if(bus3P.getThreePhaseLoadList().size()>0){
-        		 for(Load3Phase load3P:bus3P.getThreePhaseLoadList()){
+        		 for(DStab3PLoad load3P:bus3P.getThreePhaseLoadList()){
         			 load3P.set3PhaseLoad(load3P.getInit3PhaseLoad().multiply(1.0/baseKVA1P));
         		 }
         	 }

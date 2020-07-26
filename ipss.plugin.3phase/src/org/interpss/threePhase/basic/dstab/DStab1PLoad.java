@@ -1,13 +1,14 @@
-package org.interpss.threePhase.basic;
+package org.interpss.threePhase.basic.dstab;
 
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 
+import com.interpss.core.abc.ILoad1Phase;
 import com.interpss.core.abc.LoadConnectionType;
 import com.interpss.core.acsc.PhaseCode;
 import com.interpss.dstab.DStabLoad;
 
-public interface Load1Phase extends DStabLoad {
+public interface DStab1PLoad extends ILoad1Phase, DStabLoad {
 	
 	public void setPhaseCode (PhaseCode phCode);
 	

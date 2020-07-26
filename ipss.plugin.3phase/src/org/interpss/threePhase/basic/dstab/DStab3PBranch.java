@@ -1,8 +1,9 @@
-package org.interpss.threePhase.basic;
+package org.interpss.threePhase.basic.dstab;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
+import org.interpss.threePhase.basic.acsc.Acsc3PXformer;
 
 import com.interpss.core.abc.IBranch3Phase;
 import com.interpss.core.acsc.PhaseCode;
@@ -59,7 +60,7 @@ public interface DStab3PBranch extends IBranch3Phase, DStabBranch{
 	 */
 	public void setCurrentAbcAtToSide(Complex3x1 IabcToBus);
 	
-	public Transformer3Phase to3PXformer();
+	public Acsc3PXformer to3PXformer();
 	
 	/**
 	 * The mapping matrix relating Vabc of to bus to the Vabc of from bus

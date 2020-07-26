@@ -11,9 +11,9 @@ import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.sparse.ISparseEqnComplexMatrix3x3;
 import org.interpss.numeric.util.NumericUtil;
-import org.interpss.threePhase.basic.DStab3PBranch;
-import org.interpss.threePhase.basic.DStab3PBus;
-import org.interpss.threePhase.basic.Gen3Phase;
+import org.interpss.threePhase.basic.dstab.DStab3PBranch;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PGen;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.impl.DStabNetwork3phaseImpl;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
@@ -295,7 +295,7 @@ private DStabNetwork3Phase create2BusSys() throws InterpssException{
   		// create contribute generator
   		// MVABase, power, sourceZ1/2/0
   		
-  		Gen3Phase gen1 = ThreePhaseObjectFactory.create3PGenerator("Gen1");
+  		DStab3PGen gen1 = ThreePhaseObjectFactory.create3PGenerator("Gen1");
   		gen1.setMvaBase(100.0);
   		gen1.setDesiredVoltMag(1.04);
   		gen1.setGen(new Complex(0.7164,0.2710));
@@ -343,7 +343,7 @@ private DStabNetwork3Phase create2BusSys() throws InterpssException{
   		
   		bus3.setSortNumber(1);
   		
-  		Gen3Phase gen2 = ThreePhaseObjectFactory.create3PGenerator("Gen2");
+  		DStab3PGen gen2 = ThreePhaseObjectFactory.create3PGenerator("Gen2");
   		gen2.setMvaBase(100.0);
   		gen2.setDesiredVoltMag(1.025);
   		//gen2.setGen(new Complex(0.7164,0.2710));

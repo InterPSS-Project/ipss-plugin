@@ -1,14 +1,15 @@
-package org.interpss.threePhase.basic;
+package org.interpss.threePhase.basic.dstab;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
+import com.interpss.core.abc.IGen3Phase;
 import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.GeneratorType;
 
-public interface Gen3Phase extends DStabGen {
+public interface DStab3PGen extends IGen3Phase, DStabGen {
 	
 	/**
 	 * directly set the generator 3x3 impedance matrix on machine MVA base
