@@ -1,6 +1,6 @@
 package org.interpss.threePhase.basic;
 
-public enum Phase {
+public enum PhaseType {
 	
 	A,B,C
 
