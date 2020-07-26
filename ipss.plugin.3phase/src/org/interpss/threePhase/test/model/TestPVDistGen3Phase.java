@@ -9,9 +9,8 @@ import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.sparse.ISparseEqnComplexMatrix3x3;
-import org.interpss.numeric.util.MatrixOutputUtil;
-import org.interpss.threePhase.basic.Branch3Phase;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.DStab3PBranch;
+import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.basic.Gen3Phase;
 import org.interpss.threePhase.basic.Load3Phase;
 import org.interpss.threePhase.basic.impl.Gen3PhaseImpl;
@@ -23,10 +22,8 @@ import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.powerflow.impl.DistPowerFlowOutFunc;
 import org.interpss.threePhase.util.ThreePhaseAclfOutFunc;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
-import org.interpss.util.FileUtil;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranchCode;
@@ -35,7 +32,6 @@ import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.acsc.XfrConnectCode;
 import com.interpss.core.acsc.adpter.AcscXformer;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
-import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.net.NetworkType;
 import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
@@ -390,7 +386,7 @@ public class TestPVDistGen3Phase {
 		// identify this is a distribution network
 		net.setNetworkType(NetworkType.DISTRIBUTION);
 		
-		Bus3Phase bus1 = ThreePhaseObjectFactory.create3PDStabBus("Bus1", net);
+		DStab3PBus bus1 = ThreePhaseObjectFactory.create3PDStabBus("Bus1", net);
 			bus1.setAttributes("69 kV feeder source", "");
 			bus1.setBaseVoltage(69000.0);
 			// set the bus to a non-generator bus
@@ -416,7 +412,7 @@ public class TestPVDistGen3Phase {
 			mach.setXd1(0.05);
 
 			
-		Bus3Phase bus2 = ThreePhaseObjectFactory.create3PDStabBus("Bus2", net);
+			DStab3PBus bus2 = ThreePhaseObjectFactory.create3PDStabBus("Bus2", net);
 			bus2.setAttributes("13.8 V feeder bus 2", "");
 			bus2.setBaseVoltage(13800.0);
 			// set the bus to a non-generator bus
@@ -430,7 +426,7 @@ public class TestPVDistGen3Phase {
 
 			
 			
-		Bus3Phase bus3 = ThreePhaseObjectFactory.create3PDStabBus("Bus3", net);
+			DStab3PBus bus3 = ThreePhaseObjectFactory.create3PDStabBus("Bus3", net);
 			bus3.setAttributes("13.8 V feeder bus 3", "");
 			bus3.setBaseVoltage(13800.0);
 			// set the bus to a non-generator bus
@@ -458,7 +454,7 @@ public class TestPVDistGen3Phase {
 			
 
 			
-			Branch3Phase xfr1_2 = ThreePhaseObjectFactory.create3PBranch("Bus1", "Bus2", "0", net);
+			DStab3PBranch xfr1_2 = ThreePhaseObjectFactory.create3PBranch("Bus1", "Bus2", "0", net);
 			xfr1_2.setBranchCode(AclfBranchCode.XFORMER);
 			xfr1_2.setToTurnRatio(1.02);
 			xfr1_2.setZ( new Complex( 0.0, 0.04 ));
@@ -474,7 +470,7 @@ public class TestPVDistGen3Phase {
 	//		xfr0.setToConnectGroundZ(XfrConnectCode.DELTA, new Complex(0.0,0.0), UnitType.PU);
 	//		xfr0.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
 			
-			Branch3Phase Line2_3 = ThreePhaseObjectFactory.create3PBranch("Bus2", "Bus3", "0", net);
+			DStab3PBranch Line2_3 = ThreePhaseObjectFactory.create3PBranch("Bus2", "Bus3", "0", net);
 			Line2_3.setBranchCode(AclfBranchCode.LINE);
 			Line2_3.setZ( new Complex( 0.0, 0.04 ));
 			Line2_3.setZ0( new Complex(0.0, 0.08 ));
@@ -494,7 +490,7 @@ private DStabNetwork3Phase createDistNetNoDG() throws InterpssException{
 		// identify this is a distribution network
 		net.setNetworkType(NetworkType.DISTRIBUTION);
 		
-		Bus3Phase bus1 = ThreePhaseObjectFactory.create3PDStabBus("Bus1", net);
+		DStab3PBus bus1 = ThreePhaseObjectFactory.create3PDStabBus("Bus1", net);
 			bus1.setAttributes("69 kV feeder source", "");
 			bus1.setBaseVoltage(69000.0);
 			// set the bus to a non-generator bus
@@ -520,7 +516,7 @@ private DStabNetwork3Phase createDistNetNoDG() throws InterpssException{
 			mach.setXd1(0.05);
 
 			
-		Bus3Phase bus2 = ThreePhaseObjectFactory.create3PDStabBus("Bus2", net);
+			DStab3PBus bus2 = ThreePhaseObjectFactory.create3PDStabBus("Bus2", net);
 			bus2.setAttributes("13.8 V feeder bus 2", "");
 			bus2.setBaseVoltage(13800.0);
 			// set the bus to a non-generator bus
@@ -561,7 +557,7 @@ private DStabNetwork3Phase createDistNetNoDG() throws InterpssException{
 			
 
 			
-			Branch3Phase xfr1_2 = ThreePhaseObjectFactory.create3PBranch("Bus1", "Bus2", "0", net);
+			DStab3PBranch xfr1_2 = ThreePhaseObjectFactory.create3PBranch("Bus1", "Bus2", "0", net);
 			xfr1_2.setBranchCode(AclfBranchCode.XFORMER);
 			xfr1_2.setToTurnRatio(1.02);
 			xfr1_2.setZ( new Complex( 0.0, 0.04 ));

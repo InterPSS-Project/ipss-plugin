@@ -1,6 +1,6 @@
 package org.interpss.threePhase.basic.impl;
 
-import org.interpss.threePhase.basic.Branch3Phase;
+import org.interpss.threePhase.basic.DStab3PBranch;
 import org.interpss.threePhase.basic.Branch3W3Phase;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
@@ -36,7 +36,7 @@ public class Branch3W3PhaseImpl extends DStab3WBranchImpl implements Branch3W3Ph
 			((AclfBus)starBus).setVoltage(this.voltageStarBus);
 		
 		// create the from branch: fromBudId -> starBusId
-		Branch3Phase branch = ThreePhaseObjectFactory.create3PBranch();
+		DStab3PBranch branch = ThreePhaseObjectFactory.create3PBranch();
 		net.addBranch(branch, fromId, starBusId, properties[1]);
 		this.setFromBranch(branch);
 		branch.setBranchCode(branchCode);

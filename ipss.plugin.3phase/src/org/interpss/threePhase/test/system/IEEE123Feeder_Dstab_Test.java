@@ -14,7 +14,7 @@ import org.interpss.dstab.dynLoad.InductionMotor;
 import org.interpss.dstab.dynLoad.impl.InductionMotorImpl;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.basic.Load1Phase;
 import org.interpss.threePhase.basic.Load3Phase;
 import org.interpss.threePhase.dataParser.opendss.OpenDSSDataParser;
@@ -80,7 +80,7 @@ public class IEEE123Feeder_Dstab_Test {
 		
 		System.out.println(DistPowerFlowOutFunc.powerflowResultSummary(distNet));
 		
-		Bus3Phase bus150r = (Bus3Phase) distNet.getBus("150r");
+		DStab3PBus bus150r = (DStab3PBus) distNet.getBus("150r");
 		Complex3x1 vabc_150r = bus150r.get3PhaseVotlages();
 		/*
 		 * 150r,1.0437947512832042,-2.2960030801920628E-4,1.043702121833145,4.188670668153503,1.0437156069184814,2.09417437174131,1.04379 + j-0.00024  -0.52196 + j-0.90381  -0.52166 + j0.9040
@@ -93,7 +93,7 @@ public class IEEE123Feeder_Dstab_Test {
 		assertTrue(Math.abs(vabc_150r.b_1.abs()-1.0438)<1.0E-3); 
 		assertTrue(Math.abs(vabc_150r.c_2.abs()-1.0438)<1.0E-3); 
 		
-		Bus3Phase bus21 = (Bus3Phase) distNet.getBus("21");
+		DStab3PBus bus21 = (DStab3PBus) distNet.getBus("21");
 		Complex3x1 vabc_21 = bus21.get3PhaseVotlages();
 		/*
 		 * 21,0.9976629334520096,-0.039839533149384404,1.0320577255690082,4.166775074256249,1.0114596191804741,2.0742543870511136,0.99687 + j-0.03974  -0.53558 + j-0.88221  -0.48799 + j0.88596
@@ -106,7 +106,7 @@ public class IEEE123Feeder_Dstab_Test {
 //		assertTrue(Math.abs(vabc_21.b_1.abs()-1.0320)<1.0E-3); 
 //		assertTrue(Math.abs(vabc_21.c_2.abs()-1.0111)<1.0E-3); 
 		
-		Bus3Phase bus30 = (Bus3Phase) distNet.getBus("30");
+		DStab3PBus bus30 = (DStab3PBus) distNet.getBus("30");
 		Complex3x1 vabc_30 = bus30.get3PhaseVotlages();
 		
 		/*
@@ -153,7 +153,7 @@ public class IEEE123Feeder_Dstab_Test {
 		assertTrue(distPFAlgo.powerflow());
 		
 		// output three phase total load
-		for(Bus3Phase bus3P: distNet.getBusList()){
+		for(DStab3PBus bus3P: distNet.getBusList()){
 			
 			System.out.println(bus3P.getId()+", total loads, "+ bus3P.get3PhaseTotalLoad().multiply(100.0*1000.0/3).toString());
 		}
@@ -217,7 +217,7 @@ public class IEEE123Feeder_Dstab_Test {
 	  		
 	  		for(String busId: sm.getBusPhAVoltTable().keySet()){
 				
-				 sm.addBusPhaseVoltageMonitorRecord( busId,dstabAlgo.getSimuTime(), ((Bus3Phase)distNet.getBus(busId)).get3PhaseVotlages());
+				 sm.addBusPhaseVoltageMonitorRecord( busId,dstabAlgo.getSimuTime(), ((DStab3PBus)distNet.getBus(busId)).get3PhaseVotlages());
 			}
 	  	    double vsag = 0.4;
 	  		//dstabAlgo.performSimulation();
@@ -227,7 +227,7 @@ public class IEEE123Feeder_Dstab_Test {
 				
 				for(String busId: sm.getBusPhAVoltTable().keySet()){
 					
-					 sm.addBusPhaseVoltageMonitorRecord( busId,dstabAlgo.getSimuTime(), ((Bus3Phase)distNet.getBus(busId)).get3PhaseVotlages());
+					 sm.addBusPhaseVoltageMonitorRecord( busId,dstabAlgo.getSimuTime(), ((DStab3PBus)distNet.getBus(busId)).get3PhaseVotlages());
 				}
 				
 				
@@ -282,9 +282,9 @@ public class IEEE123Feeder_Dstab_Test {
 	  		Hashtable<String, Double> vStallTable = new Hashtable<>();
 			
 			int k = 0;
-			for(Bus3Phase bus: dsNet.getBusList()){
+			for(DStab3PBus bus: dsNet.getBusList()){
 				if(bus.isLoad()){
-				Bus3Phase loadBus = bus;
+				DStab3PBus loadBus = bus;
 				
 				/*
 				Load3Phase load1 = new Load3PhaseImpl();
