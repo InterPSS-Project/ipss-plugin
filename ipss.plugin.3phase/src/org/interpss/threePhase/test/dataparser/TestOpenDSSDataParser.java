@@ -12,8 +12,8 @@ import java.util.logging.Level;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.datatype.Complex3x3;
-import org.interpss.threePhase.basic.Branch3Phase;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.DStab3PBranch;
+import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.basic.LineConfiguration;
 import org.interpss.threePhase.basic.Load1Phase;
 import org.interpss.threePhase.basic.Load3Phase;
@@ -153,7 +153,7 @@ public class TestOpenDSSDataParser {
 		
 		/*New Line.L10    Phases=3 Bus1=8.1.2.3    Bus2=13.1.2.3   LineCode=1    Length=0.3*/
 		//NOTE: all are converted to lowercase
-		 Branch3Phase line3phase = parser.getBranchByName("l10");
+		 DStab3PBranch line3phase = parser.getBranchByName("l10");
 		 
 		 LineConfiguration lc1 = parser.getLineConfigTable().get("1");
 		 assertTrue(line3phase.getZabc().subtract(lc1.getZ3x3Matrix().multiply(0.3)).absMax()<1.0E-6);
@@ -162,7 +162,7 @@ public class TestOpenDSSDataParser {
 		  //1.b  Zabc, Yabc for 1-phase and 2-phase lines
 		 
 		   //New Line.L27    Phases=2 Bus1=26.1.3     Bus2=27.1.3     LineCode=7    Length=0.275
-		  Branch3Phase line2phase = parser.getBranchByName("l27");
+		  DStab3PBranch line2phase = parser.getBranchByName("l27");
 		  System.out.println("L27 Zabc =" +line2phase.getZabc().toString());
 		  double length = 0.275;
 		  
@@ -174,7 +174,7 @@ public class TestOpenDSSDataParser {
 		  assertTrue(line2phase.getZabc().ba.abs()<1.0E-9);
 		  
 		  //New Line.L28    Phases=1 Bus1=26.3       Bus2=31.3       LineCode=11   Length=0.225
-		  Branch3Phase line1phase = parser.getBranchByName("l28");
+		  DStab3PBranch line1phase = parser.getBranchByName("l28");
 		  LineConfiguration lc11 = parser.getLineConfigTable().get("11");
 		  length = 0.225;
 		  
@@ -191,7 +191,7 @@ public class TestOpenDSSDataParser {
 			~ wdg=2 bus=610       conn=Delta kv=0.48    kva=150    %r=0.635
 		   */
 		  
-		  Branch3Phase xfr1 = parser.getBranchByName("xfm1");
+		  DStab3PBranch xfr1 = parser.getBranchByName("xfm1");
 		  assertTrue(xfr1.getZ().subtract(new Complex(0,2.72)).abs()<1.0E-9);
 		  assertTrue(xfr1.getFromBus().getId().equals("61s"));
 		  assertTrue(xfr1.getToBus().getId().equals("610"));
@@ -210,7 +210,7 @@ public class TestOpenDSSDataParser {
 		   * new transformer.reg4a phases=1          windings=2        buses=[160.1 160r.1]   conns=[wye wye]       kvs=[2.402 2.402] kvas=[2000 2000] XHL=.01 %LoadLoss=0.00001 ppm=0.0 
 		   */
 		  
-		  Branch3Phase xfr2 = parser.getBranchByName("reg4a");
+		  DStab3PBranch xfr2 = parser.getBranchByName("reg4a");
 		  assertTrue(xfr2.getZ().subtract(new Complex(0,0.01)).abs()<1.0E-9);
 		  assertTrue(xfr2.getFromBus().getId().equals("160"));
 		  assertTrue(xfr2.getToBus().getId().equals("160r"));
@@ -230,7 +230,7 @@ public class TestOpenDSSDataParser {
 		   /* 1-phase wye
 		    * New Load.S1a   Bus1=1.1    Phases=1 Conn=Wye   Model=1 kV=2.4   kW=40.0  kvar=20.0
 		    */
-		  Bus3Phase bus1 = (Bus3Phase) distNet.getBus("1");
+		  DStab3PBus bus1 = (DStab3PBus) distNet.getBus("1");
 		  Load1Phase ld_s1a= (Load1Phase) bus1.getContributeLoad("s1a");
 		  assertTrue(ld_s1a.getLoadCP().subtract(new Complex(40,20)).abs()<1.0E-9);
 		  assertTrue(ld_s1a.getLoadConnectionType()==LoadConnectionType.SINGLE_PHASE_WYE);
@@ -243,7 +243,7 @@ public class TestOpenDSSDataParser {
 		   * 1-phase delta
 		   * New Load.S35a  Bus1=35.1.2 Phases=1 Conn=Delta Model=1 kV=4.160 kW=40.0  kvar=20.0
 		   */
-		  Bus3Phase bus35 = (Bus3Phase) distNet.getBus("35");
+		  DStab3PBus bus35 = (DStab3PBus) distNet.getBus("35");
 		  Load1Phase ld_s35a= (Load1Phase) bus35.getContributeLoad("s35a");
 		  assertTrue(ld_s35a.getLoadCP().subtract(new Complex(40,20)).abs()<1.0E-9);
 		  assertTrue(ld_s35a.getLoadConnectionType()==LoadConnectionType.SINGLE_PHASE_DELTA);
@@ -254,7 +254,7 @@ public class TestOpenDSSDataParser {
 		  /*
 		   * New Load.S48   Bus1=48     Phases=3 Conn=Wye   Model=2 kV=4.160 kW=210.0 kVAR=150.0
 		   */
-		  Bus3Phase bus48 = (Bus3Phase) distNet.getBus("48");
+		  DStab3PBus bus48 = (DStab3PBus) distNet.getBus("48");
 		  Load3Phase ld_s48= (Load3Phase) bus48.getThreePhaseLoadList().get(0); // only one load
 		  System.out.println("ld_s48 = "+ld_s48.getInit3PhaseLoad().toString());
 		  assertTrue(ld_s48.getInit3PhaseLoad().a_0.subtract(new Complex(70.0,50.0)).abs()<1.0E-9);
@@ -319,7 +319,7 @@ public class TestOpenDSSDataParser {
 		
 		/*New Line.L10    Phases=3 Bus1=8.1.2.3    Bus2=13.1.2.3   LineCode=1    Length=0.3*/
 		//NOTE: all are converted to lowercase
-		 Branch3Phase line3phase = parser.getBranchByName("l10");
+		 DStab3PBranch line3phase = parser.getBranchByName("l10");
 		 double length = 0.3;
 		 double zbase = 4.160*4.160/mvaBase;
 		 
@@ -330,7 +330,7 @@ public class TestOpenDSSDataParser {
 		  //1.b  Zabc, Yabc for 1-phase and 2-phase lines
 		 
 		   //New Line.L27    Phases=2 Bus1=26.1.3     Bus2=27.1.3     LineCode=7    Length=0.275
-		  Branch3Phase line2phase = parser.getBranchByName("l27");
+		  DStab3PBranch line2phase = parser.getBranchByName("l27");
 		  System.out.println("L27 Zabc =" +line2phase.getZabc().toString());
 		  length = 0.275;
 		  
@@ -342,7 +342,7 @@ public class TestOpenDSSDataParser {
 		  assertTrue(line2phase.getZabc().ba.abs()<1.0E-9);
 		  
 		  //New Line.L28    Phases=1 Bus1=26.3       Bus2=31.3       LineCode=11   Length=0.225
-		  Branch3Phase line1phase = parser.getBranchByName("l28");
+		  DStab3PBranch line1phase = parser.getBranchByName("l28");
 		  LineConfiguration lc11 = parser.getLineConfigTable().get("11");
 		  length = 0.225;
 		  
@@ -359,7 +359,7 @@ public class TestOpenDSSDataParser {
 			~ wdg=2 bus=610       conn=Delta kv=0.48    kva=150    %r=0.635
 		   */
 		  
-		  Branch3Phase xfr1 = parser.getBranchByName("xfm1");
+		  DStab3PBranch xfr1 = parser.getBranchByName("xfm1");
 		  assertTrue(xfr1.getZ().subtract(new Complex(0,2.72).multiply(1.0/zbase)).abs()<1.0E-9);
 		  assertTrue(xfr1.getFromBus().getId().equals("61s"));
 		  assertTrue(xfr1.getToBus().getId().equals("610"));
@@ -378,7 +378,7 @@ public class TestOpenDSSDataParser {
 		   * new transformer.reg4a phases=1          windings=2        buses=[160.1 160r.1]   conns=[wye wye]       kvs=[2.402 2.402] kvas=[2000 2000] XHL=.01 %LoadLoss=0.00001 ppm=0.0 
 		   */
 		  
-		  Branch3Phase xfr2 = parser.getBranchByName("reg4a");
+		  DStab3PBranch xfr2 = parser.getBranchByName("reg4a");
 		  assertTrue(xfr2.getZ().subtract(new Complex(0,0.01).multiply(1.0/zbase)).abs()<1.0E-9);
 		  assertTrue(xfr2.getFromBus().getId().equals("160"));
 		  assertTrue(xfr2.getToBus().getId().equals("160r"));
@@ -402,7 +402,7 @@ public class TestOpenDSSDataParser {
 		    * New Load.S1a   Bus1=1.1    Phases=1 Conn=Wye   Model=1 kV=2.4   kW=40.0  kvar=20.0
 		    */
 		  double baseKVA1P = distNet.getBaseKva()/3.0;
-		  Bus3Phase bus1 = (Bus3Phase) distNet.getBus("1");
+		  DStab3PBus bus1 = (DStab3PBus) distNet.getBus("1");
 		  Load1Phase ld_s1a= (Load1Phase) bus1.getContributeLoad("s1a");
 		  assertTrue(ld_s1a.getLoadCP().subtract(new Complex(40,20).divide(baseKVA1P)).abs()<1.0E-9);
 		  assertTrue(ld_s1a.getLoadConnectionType()==LoadConnectionType.SINGLE_PHASE_WYE);
@@ -415,7 +415,7 @@ public class TestOpenDSSDataParser {
 		   * 1-phase delta
 		   * New Load.S35a  Bus1=35.1.2 Phases=1 Conn=Delta Model=1 kV=4.160 kW=40.0  kvar=20.0
 		   */
-		  Bus3Phase bus35 = (Bus3Phase) distNet.getBus("35");
+		  DStab3PBus bus35 = (DStab3PBus) distNet.getBus("35");
 		  Load1Phase ld_s35a= (Load1Phase) bus35.getContributeLoad("s35a");
 		  assertTrue(ld_s35a.getLoadCP().subtract(new Complex(40,20).divide(baseKVA1P)).abs()<1.0E-9);
 		  assertTrue(ld_s35a.getLoadConnectionType()==LoadConnectionType.SINGLE_PHASE_DELTA);
@@ -426,7 +426,7 @@ public class TestOpenDSSDataParser {
 		  /*
 		   * New Load.S48   Bus1=48     Phases=3 Conn=Wye   Model=2 kV=4.160 kW=210.0 kVAR=150.0
 		   */
-		  Bus3Phase bus48 = (Bus3Phase) distNet.getBus("48");
+		  DStab3PBus bus48 = (DStab3PBus) distNet.getBus("48");
 		  Load3Phase ld_s48= (Load3Phase) bus48.getThreePhaseLoadList().get(0); // only one load
 		  System.out.println("ld_s48 = "+ld_s48.getInit3PhaseLoad().toString());
 		  assertTrue(ld_s48.getInit3PhaseLoad().a_0.subtract(new Complex(70.0,50.0).divide(baseKVA1P)).abs()<1.0E-9);

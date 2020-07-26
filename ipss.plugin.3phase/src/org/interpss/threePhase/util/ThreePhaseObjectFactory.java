@@ -1,16 +1,15 @@
 package org.interpss.threePhase.util;
 
 import org.interpss.numeric.NumericConstant;
-import org.interpss.threePhase.basic.Branch3Phase;
 import org.interpss.threePhase.basic.Branch3W3Phase;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.DStab3PBranch;
+import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.basic.Gen3Phase;
 import org.interpss.threePhase.basic.Load3Phase;
-import org.interpss.threePhase.basic.Network3Phase;
 import org.interpss.threePhase.basic.Transformer3Phase;
-import org.interpss.threePhase.basic.impl.Branch3PhaseImpl;
 import org.interpss.threePhase.basic.impl.Branch3W3PhaseImpl;
 import org.interpss.threePhase.basic.impl.Bus3PhaseImpl;
+import org.interpss.threePhase.basic.impl.Dstab3PBranchImpl;
 import org.interpss.threePhase.basic.impl.Gen3PhaseImpl;
 import org.interpss.threePhase.basic.impl.Load3PhaseImpl;
 import org.interpss.threePhase.basic.impl.Transformer3PhaseImpl;
@@ -24,14 +23,12 @@ import org.interpss.threePhase.powerflow.impl.DistributionPowerFlowAlgorithmImpl
 import com.interpss.DStabObjectFactory;
 import com.interpss.common.datatype.Constants;
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.netAdj.AclfNetAdjustment;
 import com.interpss.core.aclf.netAdj.NetAdjustFactory;
 import com.interpss.core.acsc.AcscFactory;
 import com.interpss.core.acsc.BusScCode;
 import com.interpss.core.acsc.BusScGrounding;
-import com.interpss.core.net.Branch;
 import com.interpss.core.net.OriginalDataFormat;
 import com.interpss.dstab.StaticLoadModel;
 
@@ -56,8 +53,8 @@ public class ThreePhaseObjectFactory {
 	   return ph3Xfr;
 	}
 	
-	public static Bus3Phase create3PAclfBus(String busId, BaseAclfNetwork net) throws InterpssException{
-		Bus3Phase bus = new Bus3PhaseImpl();
+	public static DStab3PBus create3PAclfBus(String busId, BaseAclfNetwork net) throws InterpssException{
+		DStab3PBus bus = new Bus3PhaseImpl();
 	  
 		//The following is copied from the DStabObjectFactory
 		bus.setId(busId);
@@ -66,8 +63,8 @@ public class ThreePhaseObjectFactory {
 		return bus;
 	}
 	
-	public static Bus3Phase create3PDStabBus(String busId, DStabNetwork3Phase net) throws InterpssException{
-		Bus3Phase bus = new Bus3PhaseImpl();
+	public static DStab3PBus create3PDStabBus(String busId, DStabNetwork3Phase net) throws InterpssException{
+		DStab3PBus bus = new Bus3PhaseImpl();
 	  
 		//The following is copied from the DStabObjectFactory
 		bus.setId(busId);
@@ -98,8 +95,8 @@ public class ThreePhaseObjectFactory {
 	
 
 	
-	public static Branch3Phase create3PBranch(String fromBusId, String toBusId, String cirId,BaseAclfNetwork net) throws InterpssException{
-		Branch3Phase branch = new Branch3PhaseImpl();
+	public static DStab3PBranch create3PBranch(String fromBusId, String toBusId, String cirId,BaseAclfNetwork net) throws InterpssException{
+		DStab3PBranch branch = new Dstab3PBranchImpl();
 		net.addBranch(branch, fromBusId, toBusId, cirId);
 		return branch;
 	}
@@ -121,8 +118,8 @@ public class ThreePhaseObjectFactory {
 		load.setId(loadId);
 		return load;
 	}
-	public static Branch3Phase create3PBranch() {
-		Branch3Phase branch = new Branch3PhaseImpl();
+	public static DStab3PBranch create3PBranch() {
+		DStab3PBranch branch = new Dstab3PBranchImpl();
 		return branch;
 	}
 	

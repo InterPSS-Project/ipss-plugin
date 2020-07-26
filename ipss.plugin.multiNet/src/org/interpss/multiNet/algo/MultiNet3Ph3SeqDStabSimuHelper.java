@@ -13,7 +13,7 @@ import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.matrix.MatrixUtil;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.interpss.numeric.sparse.ISparseEqnComplexMatrix3x3;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 
 import com.interpss.common.util.IpssLogger;
@@ -33,8 +33,8 @@ import com.interpss.dstab.DStabBranch;
  * 
  * Details of the approach can be found in the following paper:
  * 
- *   M. A. Tomim, J. Mart´ı, and L. Wang, “Parallel solution of large power system networks using the multi-Area Thevenin equivalents (MATE) algorithm,” 
- *   Int. J. Electr. Power Energy Syst., vol. 31, no. 9, pp. 497–503,2009
+ *   M. A. Tomim, J. MartÂ´Ä±, and L. Wang, â€œParallel solution of large power system networks using the multi-Area Thevenin equivalents (MATE) algorithm,â€� 
+ *   Int. J. Electr. Power Energy Syst., vol. 31, no. 9, pp. 497â€“503,2009
  *
  * The functions in this class are corresponding to key steps of implementing the MATE approach. Notations are based on the paper above.
  * 
@@ -405,7 +405,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 				   			
 				   			for(BaseDStabBus b:subNet.getBusList()){
 				   				
-				   				   Bus3Phase bus = (Bus3Phase) b;
+				   				DStab3PBus bus = (DStab3PBus) b;
 				   				   
 								   //superpostition method
 								   //bus voltage V = Vinternal + Vext_injection

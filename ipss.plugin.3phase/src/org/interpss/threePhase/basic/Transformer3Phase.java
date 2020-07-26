@@ -10,7 +10,7 @@ import com.interpss.core.acsc.adpter.AcscXformer;
 
 public interface Transformer3Phase extends AcscXformer{
 	
-	    public void set3PBranch(Branch3Phase ph3Branch);
+	    public void set3PBranch(DStab3PBranch ph3Branch);
 	    
 	    public void setZabc(Complex3x3 Zabc);
 	    
