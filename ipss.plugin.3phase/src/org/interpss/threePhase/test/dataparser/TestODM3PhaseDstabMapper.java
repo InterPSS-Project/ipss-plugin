@@ -15,7 +15,7 @@ import org.interpss.display.AclfOutFunc;
 import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.threePhase.basic.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.algo.DynamicEventProcessor3Phase;
 import org.interpss.threePhase.dynamic.model.DStabGen3PhaseAdapter;

@@ -20,13 +20,13 @@ import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.sparse.ISparseEqnComplexMatrix3x3;
 import org.interpss.numeric.util.NumericUtil;
-import org.interpss.threePhase.basic.DStab3PBranch;
-import org.interpss.threePhase.basic.DStab3PBus;
-import org.interpss.threePhase.basic.Gen3Phase;
 import org.interpss.threePhase.basic.IEEEFeederLineCode;
-import org.interpss.threePhase.basic.Load3Phase;
-import org.interpss.threePhase.basic.Transformer3Phase;
-import org.interpss.threePhase.basic.impl.Load3PhaseImpl;
+import org.interpss.threePhase.basic.acsc.Acsc3PXformer;
+import org.interpss.threePhase.basic.dstab.DStab3PBranch;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PGen;
+import org.interpss.threePhase.basic.dstab.DStab3PLoad;
+import org.interpss.threePhase.basic.dstab.impl.DStab3PLoadImpl;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.algo.DynamicEventProcessor3Phase;
 import org.interpss.threePhase.dynamic.impl.DStabNetwork3phaseImpl;
@@ -95,7 +95,7 @@ public class ThreeBus_3Phase_Test {
 	  	
 	  	BaseDStabBus<?,?> bus1 = net.getBus("Bus1");
 	  	DStab3PBus bus13p = (DStab3PBus) bus1;
-	  	Gen3Phase gen1 = (Gen3Phase) bus1.getContributeGen("Gen1");
+	  	DStab3PGen gen1 = (DStab3PGen) bus1.getContributeGen("Gen1");
 	  	Complex3x3 yg1abc= gen1.getYabc(false);
 	  	
 	  	/*
@@ -173,7 +173,7 @@ public class ThreeBus_3Phase_Test {
 	  	
 	  	BaseDStabBus<?,?> bus3 = net.getBus("Bus3");
 	  	DStab3PBus bus33p = (DStab3PBus) bus3;
-	  	Gen3Phase gen2 = (Gen3Phase) bus3.getContributeGen("Gen2");
+	  	DStab3PGen gen2 = (DStab3PGen) bus3.getContributeGen("Gen2");
 	  	Complex3x3 yg2abc= gen2.getYabc(false);
 	  	
 	  	/*
@@ -514,7 +514,7 @@ public class ThreeBus_3Phase_Test {
 			source.setVoltage(new Complex(1.0,0));
 		    //source.set3PhaseVoltages(new Complex());
 			
-			Gen3Phase constantGen = ThreePhaseObjectFactory.create3PGenerator("1");
+			DStab3PGen constantGen = ThreePhaseObjectFactory.create3PGenerator("1");
 			constantGen.setMvaBase(1.0);
 			constantGen.setPosGenZ(new Complex(0.0,0.05));
 			constantGen.setNegGenZ(new Complex(0.0,0.05));
@@ -630,7 +630,7 @@ public class ThreeBus_3Phase_Test {
 			// set the bus to a constant power load bus
 			bus611.setLoadCode(AclfLoadCode.CONST_P);
 			//New Load.611 Bus1=611.3      Phases=1 Conn=Wye  Model=5 kV=2.4  kW=170   kvar=80 
-			Load3Phase load611 = new Load3PhaseImpl();
+			DStab3PLoad load611 = new DStab3PLoadImpl();
 			load611.set3PhaseLoad(new Complex3x1(new Complex(0),new Complex(0),new Complex(0.170,0.080)).multiply(loadScaleFactor));
 			bus611.getThreePhaseLoadList().add(load611);
 			
@@ -692,7 +692,7 @@ private DStabNetwork3Phase create3BusSys() throws InterpssException{
   		// create contribute generator
   		// MVABase, power, sourceZ1/2/0
   		
-  		Gen3Phase gen1 = ThreePhaseObjectFactory.create3PGenerator("Gen1");
+  		DStab3PGen gen1 = ThreePhaseObjectFactory.create3PGenerator("Gen1");
   		gen1.setMvaBase(100.0);
   		gen1.setDesiredVoltMag(1.04);
   		gen1.setGen(new Complex(0.7164,0.2710));
@@ -761,7 +761,7 @@ private DStabNetwork3Phase create3BusSys() throws InterpssException{
   		
   		bus3.setSortNumber(2);
   		
-  		Gen3Phase gen2 = ThreePhaseObjectFactory.create3PGenerator("Gen2");
+  		DStab3PGen gen2 = ThreePhaseObjectFactory.create3PGenerator("Gen2");
   		gen2.setMvaBase(100.0);
   		gen2.setDesiredVoltMag(1.025);
   		//gen2.setGen(new Complex(0.7164,0.2710));
@@ -791,7 +791,7 @@ private DStabNetwork3Phase create3BusSys() throws InterpssException{
 		xfr12.setBranchCode(AclfBranchCode.XFORMER);
 		xfr12.setZ( new Complex( 0.0, 0.05 ));
 		xfr12.setZ0( new Complex(0.0, 0.05 ));
-		Transformer3Phase xfr = threePhaseXfrAptr.apply(xfr12);
+		Acsc3PXformer xfr = threePhaseXfrAptr.apply(xfr12);
 		//TODO change for testing
 		xfr.setToConnectGroundZ(XfrConnectCode.DELTA, new Complex(0.0,0.0), UnitType.PU);
 		//xfr.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);

@@ -14,9 +14,9 @@ import org.interpss.dstab.dynLoad.InductionMotor;
 import org.interpss.dstab.dynLoad.impl.InductionMotorImpl;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.threePhase.basic.DStab3PBus;
-import org.interpss.threePhase.basic.Load1Phase;
-import org.interpss.threePhase.basic.Load3Phase;
+import org.interpss.threePhase.basic.dstab.DStab1PLoad;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 import org.interpss.threePhase.dataParser.opendss.OpenDSSDataParser;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.algo.DynamicEventProcessor3Phase;
@@ -296,7 +296,7 @@ public class IEEE123Feeder_Dstab_Test {
 				// AC motor, 50%
 				if(loadBus.getSinglePhaseLoadList().size()>0.0){
 					
-				 for(Load1Phase ld1P: loadBus.getSinglePhaseLoadList()){
+				 for(DStab1PLoad ld1P: loadBus.getSinglePhaseLoadList()){
 					 switch (ld1P.getPhaseCode()){
 					 
 					 case A: 
@@ -356,7 +356,7 @@ public class IEEE123Feeder_Dstab_Test {
 				 }
 				}
 				
-				for(Load3Phase ld3P: loadBus.getThreePhaseLoadList()){
+				for(DStab3PLoad ld3P: loadBus.getThreePhaseLoadList()){
 				// 3 phase motor, 20%
 				    if(IndMotorPercent>0.0){
 				  		InductionMotor indMotor= new InductionMotorImpl(loadBus,"1");

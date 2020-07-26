@@ -1,16 +1,16 @@
-package org.interpss.threePhase.basic.impl;
+package org.interpss.threePhase.basic.dstab.impl;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
-import org.interpss.threePhase.basic.DStab3PBus;
-import org.interpss.threePhase.basic.Load3Phase;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 
 import com.interpss.core.abc.LoadConnectionType;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.acsc.PhaseCode;
 
-public class Load3PhaseImpl extends Load1PhaseImpl implements Load3Phase {
+public class DStab3PLoadImpl extends DStab1PLoadImpl implements DStab3PLoad {
 
 	LoadConnectionType loadConnectType = LoadConnectionType.THREE_PHASE_WYE; // by default three-phase wye;
 	double nominalKV = 0;
