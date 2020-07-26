@@ -19,8 +19,8 @@ import org.interpss.dstab.dynLoad.InductionMotor;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.threePhase.basic.Branch3Phase;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.DStab3PBranch;
+import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.basic.Load3Phase;
 import org.interpss.threePhase.basic.impl.Load3PhaseImpl;
 import org.interpss.threePhase.dataParser.opendss.OpenDSSDataParser;
@@ -88,7 +88,7 @@ public class Test_GC_12_47_1_Feeder {
 			Vabc of bus -Bus4,0.98834 + j-0.09907  -0.57997 + j-0.80639  -0.40837 + j0.90546
 		 */
 		
-		for(Bus3Phase bus3P :net.getBusList()){
+		for(DStab3PBus bus3P :net.getBusList()){
 
 			System.out.println("Vabc of bus -"+bus3P.getId()+","+bus3P.get3PhaseVotlages().toString());
 		}
@@ -110,7 +110,7 @@ public class Test_GC_12_47_1_Feeder {
 		
 		// Add the dyanmic machine to the source Bus
 		//TODO The contributeGen has to be enter before running power flow, otherwise it will not be properly initialized
-		BaseDStabBus node_28 = (Bus3Phase) net.getBus("node_28");
+		BaseDStabBus node_28 = (DStab3PBus) net.getBus("node_28");
 		
 		DStabGen constantGen = DStabObjectFactory.createDStabGen();
 		constantGen.setId("Source");
@@ -137,7 +137,7 @@ public class Test_GC_12_47_1_Feeder {
 		assertTrue(distPFAlgo.powerflow());
 		
 
-		for(Bus3Phase bus3P:net.getBusList()){
+		for(DStab3PBus bus3P:net.getBusList()){
 
 			System.out.println("Vabc of bus -"+bus3P.getId()+","+bus3P.get3PhaseVotlages().toString());
 		}
@@ -176,7 +176,7 @@ public class Test_GC_12_47_1_Feeder {
 	  		
 	  		for(String busId: sm.getBusPhAVoltTable().keySet()){
 				
-				 sm.addBusPhaseVoltageMonitorRecord( busId,dstabAlgo.getSimuTime(), ((Bus3Phase)net.getBus(busId)).get3PhaseVotlages());
+				 sm.addBusPhaseVoltageMonitorRecord( busId,dstabAlgo.getSimuTime(), ((DStab3PBus)net.getBus(busId)).get3PhaseVotlages());
 			}
 	  	    double vsag = 0.4;
 	  		//dstabAlgo.performSimulation();
@@ -186,7 +186,7 @@ public class Test_GC_12_47_1_Feeder {
 				
 				for(String busId: sm.getBusPhAVoltTable().keySet()){
 					
-					 sm.addBusPhaseVoltageMonitorRecord( busId,dstabAlgo.getSimuTime(), ((Bus3Phase)net.getBus(busId)).get3PhaseVotlages());
+					 sm.addBusPhaseVoltageMonitorRecord( busId,dstabAlgo.getSimuTime(), ((DStab3PBus)net.getBus(busId)).get3PhaseVotlages());
 				}
 				
 				
@@ -245,7 +245,7 @@ public class Test_GC_12_47_1_Feeder {
 		assertTrue(distPFAlgo.powerflow());
 		
 
-		for(Bus3Phase bus3P :net.getBusList()){
+		for(DStab3PBus bus3P :net.getBusList()){
 			System.out.println("Vabc of bus -"+bus3P.getId()+","+bus3P.get3PhaseVotlages().toString());
 		}
 		
@@ -275,7 +275,7 @@ public class Test_GC_12_47_1_Feeder {
 		Hashtable<String,Double> motorRatingTable = new Hashtable<>();
 		
 		for(int i = 0; i<motorBuses.length;i++){
-			Bus3Phase bus= (Bus3Phase) net.getBus(motorBuses[i]);
+			DStab3PBus bus= (DStab3PBus) net.getBus(motorBuses[i]);
 			
 			for(DynamicBusDevice dynDevice: bus.getDynamicBusDeviceList()){
             	if(dynDevice instanceof InductionMotor ){
@@ -313,7 +313,7 @@ public class Test_GC_12_47_1_Feeder {
 	  		
 	  		for(String busId: sm.getBusPhAVoltTable().keySet()){
 				
-				 sm.addBusPhaseVoltageMonitorRecord( busId,dstabAlgo.getSimuTime(), ((Bus3Phase)net.getBus(busId)).get3PhaseVotlages());
+				 sm.addBusPhaseVoltageMonitorRecord( busId,dstabAlgo.getSimuTime(), ((DStab3PBus)net.getBus(busId)).get3PhaseVotlages());
 			}
 	  	    double vsag = 0.4;
 	  	    boolean delayRecoverFlag = false;
@@ -325,7 +325,7 @@ public class Test_GC_12_47_1_Feeder {
 				
 				for(String busId: sm.getBusPhAVoltTable().keySet()){
 					
-					 sm.addBusPhaseVoltageMonitorRecord( busId,dstabAlgo.getSimuTime(), ((Bus3Phase)net.getBus(busId)).get3PhaseVotlages());
+					 sm.addBusPhaseVoltageMonitorRecord( busId,dstabAlgo.getSimuTime(), ((DStab3PBus)net.getBus(busId)).get3PhaseVotlages());
 				}
 				
 				
@@ -349,7 +349,7 @@ public class Test_GC_12_47_1_Feeder {
 	  	
         StringBuffer sb = new StringBuffer();
     	for(int i = 0; i<motorBuses.length;i++){
-			Bus3Phase bus= (Bus3Phase) net.getBus(motorBuses[i]);
+    		DStab3PBus bus= (DStab3PBus) net.getBus(motorBuses[i]);
 			for(DynamicBusDevice dynDevice: bus.getDynamicBusDeviceList()){
             	if(dynDevice instanceof InductionMotor ){
             		DynLoadModel3Phase dynLoad3P = threePhaseInductionMotorAptr.apply((InductionMotor) dynDevice);
@@ -529,7 +529,7 @@ public class Test_GC_12_47_1_Feeder {
 		
 		
 		for(int i =1;i<=busNum;i++){
-			Bus3Phase bus = ThreePhaseObjectFactory.create3PDStabBus("node_"+i, net);
+			DStab3PBus bus = ThreePhaseObjectFactory.create3PDStabBus("node_"+i, net);
 			bus.setAttributes("feeder bus "+i, "");
 			bus.setBaseVoltage(primaryVolt);
 			// set the bus to a non-generator bus
@@ -575,7 +575,7 @@ public class Test_GC_12_47_1_Feeder {
 		
 		
 		for(int i =1;i<=loadNum;i++){
-			Bus3Phase bus = ThreePhaseObjectFactory.create3PDStabBus("meter_"+i, net);
+			DStab3PBus bus = ThreePhaseObjectFactory.create3PDStabBus("meter_"+i, net);
 			bus.setAttributes("load bus "+i, "");
 			bus.setBaseVoltage(secondaryVolt);
 			// set the bus to a non-generator bus
@@ -637,7 +637,7 @@ public class Test_GC_12_47_1_Feeder {
 		}
 		
 		// the regulator bus
-		Bus3Phase bus = ThreePhaseObjectFactory.create3PDStabBus("meter_"+(loadNum+1), net);
+		DStab3PBus bus = ThreePhaseObjectFactory.create3PDStabBus("meter_"+(loadNum+1), net);
 		bus.setAttributes("meter bus "+(loadNum+1), "");
 		bus.setBaseVoltage(primaryVolt);
 		// set the bus to a non-generator bus
@@ -651,7 +651,7 @@ public class Test_GC_12_47_1_Feeder {
           for(int i =0;i<lineNodes.length;i++){
 			String lineNode = lineNodes[i];
 			String[] nodes = lineNode.split(":");
-			Branch3Phase line = ThreePhaseObjectFactory.create3PBranch(nodes[0], nodes[1], "0", net);
+			DStab3PBranch line = ThreePhaseObjectFactory.create3PBranch(nodes[0], nodes[1], "0", net);
 			
 			line.setBranchCode(AclfBranchCode.LINE);
 			//TODO setZabc
@@ -685,7 +685,7 @@ public class Test_GC_12_47_1_Feeder {
           for(int i =0;i<xfrNodes.length;i++){
 	  			String xfrNode = xfrNodes[i];
 	  			String[] nodes = xfrNode.split(":");
-	  			Branch3Phase xfr = ThreePhaseObjectFactory.create3PBranch(nodes[0], nodes[1], "0", net);
+	  			DStab3PBranch xfr = ThreePhaseObjectFactory.create3PBranch(nodes[0], nodes[1], "0", net);
 	  			
 	  			xfr.setBranchCode(AclfBranchCode.XFORMER);
 	  			

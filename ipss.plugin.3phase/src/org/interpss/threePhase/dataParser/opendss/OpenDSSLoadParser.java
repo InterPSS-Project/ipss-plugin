@@ -2,7 +2,7 @@ package org.interpss.threePhase.dataParser.opendss;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.basic.Load1Phase;
 import org.interpss.threePhase.basic.Load3Phase;
 import org.interpss.threePhase.basic.impl.Load1PhaseImpl;
@@ -132,7 +132,7 @@ public class OpenDSSLoadParser {
 			
 			//get the bus object
 			busName =this.dataParser.getBusIdPrefix()+busName;
-			Bus3Phase bus =  this.dataParser.getDistNetwork().getBus(busName);
+			DStab3PBus bus =  this.dataParser.getDistNetwork().getBus(busName);
 			
 			Load1Phase load= null;
 			if(phaseNum==3)

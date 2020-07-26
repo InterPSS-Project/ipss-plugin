@@ -22,8 +22,8 @@ import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.threePhase.basic.Branch3Phase;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.DStab3PBranch;
+import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.basic.IEEEFeederLineCode;
 import org.interpss.threePhase.basic.Load3Phase;
 import org.interpss.threePhase.basic.impl.Load3PhaseImpl;
@@ -106,7 +106,7 @@ public class TestTnD_IEEE9_13busFeeder {
 		
 		//LIST: 1,
 		
-		for(Bus3Phase b:dsNet.getBusList()){
+		for(DStab3PBus b:dsNet.getBusList()){
 	        if(b.getArea().getNumber()==1){
 	        	if(b.isActive() && b.isLoad() && (!b.isGen()) && b.getLoadP()>0.1 && b.getLoadP()<6 ){//&& 
 	        		
@@ -201,7 +201,7 @@ public class TestTnD_IEEE9_13busFeeder {
 			 String[] feederIdAry = new String[13];
 			 
 			  int k = 0;
-			   for(Bus3Phase dsBus:distNet_1.getBusList()){
+			   for(DStab3PBus dsBus:distNet_1.getBusList()){
 				   if(dsBus.getId().startsWith(idPrefix)){
 					   if(k<13){
 						   feederIdAry[k] = dsBus.getId();
@@ -242,7 +242,7 @@ public class TestTnD_IEEE9_13busFeeder {
 					
 					for(String busId: sm.getBusPhAVoltTable().keySet()){
 						
-						 sm.addBusPhaseVoltageMonitorRecord( busId,dstabAlgo.getSimuTime(), ((Bus3Phase)proc.getSubNetworkByBusId(busId).getBus(busId)).get3PhaseVotlages());
+						 sm.addBusPhaseVoltageMonitorRecord( busId,dstabAlgo.getSimuTime(), ((DStab3PBus)proc.getSubNetworkByBusId(busId).getBus(busId)).get3PhaseVotlages());
 					}
 					
 					dstabAlgo.solveDEqnStep(true);
@@ -298,7 +298,7 @@ public class TestTnD_IEEE9_13busFeeder {
 			
 			double baseVolt4160 = 4160.0;
 			
-			Bus3Phase transBus = (Bus3Phase) net.getBus(transBusId);
+			DStab3PBus transBus = (DStab3PBus) net.getBus(transBusId);
 			
 			Complex loadPQ = transBus.getLoadPQ();
 			
@@ -319,14 +319,14 @@ public class TestTnD_IEEE9_13busFeeder {
 			
 			if(transBus.isActive() && transBus.isLoad() ){
 			
-				Bus3Phase sourceBus = ThreePhaseObjectFactory.create3PDStabBus(transBusId+"_LVBus", net);
+				DStab3PBus sourceBus = ThreePhaseObjectFactory.create3PDStabBus(transBusId+"_LVBus", net);
 				sourceBus.setAttributes("trans LV bus", "");
 				sourceBus.setBaseVoltage(baseVolt4160);
 		
 				sourceBus.setLoadCode(AclfLoadCode.NON_LOAD);
 				sourceBus.setVoltage(transBus.getVoltage());
 				
-				Branch3Phase xfr1_2 = ThreePhaseObjectFactory.create3PBranch(transBusId, transBusId+"_LVBus", "0", net);
+				DStab3PBranch xfr1_2 = ThreePhaseObjectFactory.create3PBranch(transBusId, transBusId+"_LVBus", "0", net);
 				xfr1_2.setBranchCode(AclfBranchCode.XFORMER);
 				xfr1_2.setToTurnRatio(tapRatio);
 				xfr1_2.setZ( new Complex( 0.0, xfrZ ));
@@ -376,7 +376,7 @@ public class TestTnD_IEEE9_13busFeeder {
 		
 		
 		
-		private void createFeeder(DStabNetwork3Phase net, Bus3Phase sourceBus, String transBusId, int feederIdx, double mvaBase ) throws InterpssException{
+		private void createFeeder(DStabNetwork3Phase net, DStab3PBus sourceBus, String transBusId, int feederIdx, double mvaBase ) throws InterpssException{
 			
 			   double ft2mile = 1.0/5280.0;
 			  
@@ -400,11 +400,11 @@ public class TestTnD_IEEE9_13busFeeder {
 				
 				
 
-				Bus3Phase bus650 = (Bus3Phase) sourceBus;
+			   DStab3PBus bus650 = (DStab3PBus) sourceBus;
 
 			
 				// voltage regulator bus RG60
-				Bus3Phase busRG60 = ThreePhaseObjectFactory.create3PDStabBus(idPrefix+"BusRG60", net);
+				DStab3PBus busRG60 = ThreePhaseObjectFactory.create3PDStabBus(idPrefix+"BusRG60", net);
 				busRG60.setAttributes("feeder RG60", "");
 				busRG60.setBaseVoltage(baseVolt4160);
 				// set the bus to a non-generator bus
@@ -413,7 +413,7 @@ public class TestTnD_IEEE9_13busFeeder {
 				busRG60.setLoadCode(AclfLoadCode.NON_LOAD);
 				
 				
-				Bus3Phase bus632 = ThreePhaseObjectFactory.create3PDStabBus(idPrefix+"Bus632", net);
+				DStab3PBus bus632 = ThreePhaseObjectFactory.create3PDStabBus(idPrefix+"Bus632", net);
 				bus632.setAttributes("feeder 632", "");
 				bus632.setBaseVoltage(baseVolt4160);
 				// set the bus to a non-generator bus
@@ -422,7 +422,7 @@ public class TestTnD_IEEE9_13busFeeder {
 				bus632.setLoadCode(AclfLoadCode.NON_LOAD);
 				
 				
-				Bus3Phase bus633 = ThreePhaseObjectFactory.create3PDStabBus(idPrefix+"Bus633", net);
+				DStab3PBus bus633 = ThreePhaseObjectFactory.create3PDStabBus(idPrefix+"Bus633", net);
 				bus633.setAttributes("feeder 633", "");
 				bus633.setBaseVoltage(baseVolt4160);
 
@@ -430,7 +430,7 @@ public class TestTnD_IEEE9_13busFeeder {
 				bus633.setLoadCode(AclfLoadCode.NON_LOAD);
 				
 				
-				Bus3Phase bus634 = ThreePhaseObjectFactory.create3PDStabBus(idPrefix+"Bus634", net);
+				DStab3PBus bus634 = ThreePhaseObjectFactory.create3PDStabBus(idPrefix+"Bus634", net);
 				bus634.setAttributes("feeder 634", "");
 				bus634.setBaseVoltage(baseVolt480);
 				// set the bus to a constant power load bus
@@ -447,7 +447,7 @@ public class TestTnD_IEEE9_13busFeeder {
 				
 				
 				
-				Bus3Phase bus645 = ThreePhaseObjectFactory.create3PDStabBus(idPrefix+"Bus645", net);
+				DStab3PBus bus645 = ThreePhaseObjectFactory.create3PDStabBus(idPrefix+"Bus645", net);
 				bus645.setAttributes("feeder 645", "");
 				bus645.setBaseVoltage(baseVolt4160);
 				// set the bus to a constant power load bus
@@ -461,7 +461,7 @@ public class TestTnD_IEEE9_13busFeeder {
 				
 				
 				
-				Bus3Phase bus646 = ThreePhaseObjectFactory.create3PDStabBus(idPrefix+"Bus646", net);
+				DStab3PBus bus646 = ThreePhaseObjectFactory.create3PDStabBus(idPrefix+"Bus646", net);
 				bus646.setAttributes("feeder 646", "");
 				bus646.setBaseVoltage(baseVolt4160);
 				// set the bus to a constant power load bus
@@ -475,7 +475,7 @@ public class TestTnD_IEEE9_13busFeeder {
 				
 				
 				
-				Bus3Phase bus671 = ThreePhaseObjectFactory.create3PDStabBus(idPrefix+"Bus671", net);
+				DStab3PBus bus671 = ThreePhaseObjectFactory.create3PDStabBus(idPrefix+"Bus671", net);
 				bus671.setAttributes("feeder 671", "");
 				bus671.setBaseVoltage(baseVolt4160);
 				// set the bus to a constant power load bus
@@ -488,14 +488,14 @@ public class TestTnD_IEEE9_13busFeeder {
 				
 				
 				
-				Bus3Phase bus684 = ThreePhaseObjectFactory.create3PDStabBus(idPrefix+"Bus684", net);
+				DStab3PBus bus684 = ThreePhaseObjectFactory.create3PDStabBus(idPrefix+"Bus684", net);
 				bus684.setAttributes("feeder 684", "");
 				bus684.setBaseVoltage(baseVolt4160);
 				// set the bus to a constant power load bus
 				bus684.setLoadCode(AclfLoadCode.NON_LOAD);
 				
 				
-				Bus3Phase bus611 = ThreePhaseObjectFactory.create3PDStabBus(idPrefix+"Bus611", net);
+				DStab3PBus bus611 = ThreePhaseObjectFactory.create3PDStabBus(idPrefix+"Bus611", net);
 				bus611.setAttributes("feeder 611", "");
 				bus611.setBaseVoltage(baseVolt4160);
 				// set the bus to a constant power load bus
@@ -508,7 +508,7 @@ public class TestTnD_IEEE9_13busFeeder {
 				
 				
 				
-				Bus3Phase bus652 = ThreePhaseObjectFactory.create3PDStabBus(idPrefix+"Bus652", net);
+				DStab3PBus bus652 = ThreePhaseObjectFactory.create3PDStabBus(idPrefix+"Bus652", net);
 				bus652.setAttributes("feeder 652", "");
 				bus652.setBaseVoltage(baseVolt4160);
 				// set the bus to a constant power load bus
@@ -519,14 +519,14 @@ public class TestTnD_IEEE9_13busFeeder {
 				bus652.getThreePhaseLoadList().add(load652);
 				
 				
-				Bus3Phase bus680 = ThreePhaseObjectFactory.create3PDStabBus(idPrefix+"Bus680", net);
+				DStab3PBus bus680 = ThreePhaseObjectFactory.create3PDStabBus(idPrefix+"Bus680", net);
 				bus680.setAttributes("feeder 680", "");
 				bus680.setBaseVoltage(baseVolt4160);
 				// set the bus to a constant power load bus
 				bus680.setLoadCode(AclfLoadCode.NON_LOAD);
 				
 				
-				Bus3Phase bus692 = ThreePhaseObjectFactory.create3PDStabBus(idPrefix+"Bus692", net);
+				DStab3PBus bus692 = ThreePhaseObjectFactory.create3PDStabBus(idPrefix+"Bus692", net);
 				bus692.setAttributes("feeder 692", "");
 				bus692.setBaseVoltage(baseVolt4160);
 				// set the bus to a constant power load bus
@@ -538,7 +538,7 @@ public class TestTnD_IEEE9_13busFeeder {
 				
 				
 
-				Bus3Phase bus675 = ThreePhaseObjectFactory.create3PDStabBus(idPrefix+"Bus675", net);
+				DStab3PBus bus675 = ThreePhaseObjectFactory.create3PDStabBus(idPrefix+"Bus675", net);
 				bus675.setAttributes("feeder 675", "");
 				bus675.setBaseVoltage(baseVolt4160);
 				// set the bus to a constant power load bus
@@ -555,7 +555,7 @@ public class TestTnD_IEEE9_13busFeeder {
 				
 				
 				// !Bus 670 is the concentrated point load of the distributed load on line 632 to 671 located at 1/3 the distance from node 632
-				Bus3Phase bus670 = ThreePhaseObjectFactory.create3PDStabBus(idPrefix+"Bus670", net);
+				DStab3PBus bus670 = ThreePhaseObjectFactory.create3PDStabBus(idPrefix+"Bus670", net);
 				bus670.setAttributes("feeder 670", "");
 				bus670.setBaseVoltage(baseVolt4160);
 				// set the bus to a constant power load bus
@@ -602,7 +602,7 @@ public class TestTnD_IEEE9_13busFeeder {
 //				xfr0.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
 
 				
-				Branch3Phase xfr2_3 = ThreePhaseObjectFactory.create3PBranch( bus650.getId(), idPrefix+"BusRG60","0", net);
+				DStab3PBranch xfr2_3 = ThreePhaseObjectFactory.create3PBranch( bus650.getId(), idPrefix+"BusRG60","0", net);
 				xfr2_3.setBranchCode(AclfBranchCode.XFORMER);
 				xfr2_3.setToTurnRatio(1.055);
 				xfr2_3.setZ( new Complex( 0.0, 0.00001 ));
@@ -613,7 +613,7 @@ public class TestTnD_IEEE9_13busFeeder {
 				xfr2.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
 				
 				
-				Branch3Phase xfr633_634 = ThreePhaseObjectFactory.create3PBranch(idPrefix+"Bus633", idPrefix+"Bus634", "0", net);
+				DStab3PBranch xfr633_634 = ThreePhaseObjectFactory.create3PBranch(idPrefix+"Bus633", idPrefix+"Bus634", "0", net);
 				xfr633_634.setBranchCode(AclfBranchCode.XFORMER);
 				xfr633_634.setToTurnRatio(1.0);
 				xfr633_634.setZ( new Complex( 0.0, 0.02 ));
@@ -628,7 +628,7 @@ public class TestTnD_IEEE9_13busFeeder {
 				
 				//!LINE DEFINITIONS 
 				//New Line.650632    Phases=3 Bus1=RG60.1.2.3   Bus2=632.1.2.3  LineCode=mtx601 Length=2000 units=ft 
-				Branch3Phase Line650_632 = ThreePhaseObjectFactory.create3PBranch(idPrefix+"BusRG60", idPrefix+"Bus632", "0", net);
+				DStab3PBranch Line650_632 = ThreePhaseObjectFactory.create3PBranch(idPrefix+"BusRG60", idPrefix+"Bus632", "0", net);
 				Line650_632.setBranchCode(AclfBranchCode.LINE);
 				
 				double length =2000.0*ft2mile; // convert to miles
@@ -637,7 +637,7 @@ public class TestTnD_IEEE9_13busFeeder {
 				
 				//New Line.632670    Phases=3 Bus1=632.1.2.3    Bus2=670.1.2.3  LineCode=mtx601 Length=667  units=ft
 				
-				Branch3Phase Line632_670 = ThreePhaseObjectFactory.create3PBranch(idPrefix+"Bus632", idPrefix+"Bus670", "0", net);
+				DStab3PBranch Line632_670 = ThreePhaseObjectFactory.create3PBranch(idPrefix+"Bus632", idPrefix+"Bus670", "0", net);
 				Line632_670.setBranchCode(AclfBranchCode.LINE);
 				length =667.0*ft2mile; // convert to miles
 				zabc_pu = IEEEFeederLineCode.zMtx601.multiply(length/zBase4160);
@@ -645,7 +645,7 @@ public class TestTnD_IEEE9_13busFeeder {
 				
 				
 				//New Line.670671    Phases=3 Bus1=670.1.2.3    Bus2=671.1.2.3  LineCode=mtx601 Length=1333 units=ft
-				Branch3Phase Line670_671 = ThreePhaseObjectFactory.create3PBranch(idPrefix+"Bus670", idPrefix+"Bus671", "0", net);
+				DStab3PBranch Line670_671 = ThreePhaseObjectFactory.create3PBranch(idPrefix+"Bus670", idPrefix+"Bus671", "0", net);
 				Line670_671.setBranchCode(AclfBranchCode.LINE);
 				length =1333.0*ft2mile; // convert to miles
 				zabc_pu = IEEEFeederLineCode.zMtx601.multiply(length/zBase4160);
@@ -653,7 +653,7 @@ public class TestTnD_IEEE9_13busFeeder {
 				
 				
 				//New Line.671680    Phases=3 Bus1=671.1.2.3    Bus2=680.1.2.3  LineCode=mtx601 Length=1000 units=ft 
-				Branch3Phase Line671_680 = ThreePhaseObjectFactory.create3PBranch(idPrefix+"Bus671", idPrefix+"Bus680", "0", net);
+				DStab3PBranch Line671_680 = ThreePhaseObjectFactory.create3PBranch(idPrefix+"Bus671", idPrefix+"Bus680", "0", net);
 				Line671_680.setBranchCode(AclfBranchCode.LINE);
 				length =1000.0*ft2mile; // convert to miles
 				zabc_pu = IEEEFeederLineCode.zMtx601.multiply(length/zBase4160);
@@ -661,7 +661,7 @@ public class TestTnD_IEEE9_13busFeeder {
 				
 				
 				//New Line.632633    Phases=3 Bus1=632.1.2.3    Bus2=633.1.2.3  LineCode=mtx602 Length=500  units=ft
-				Branch3Phase Line632_633 = ThreePhaseObjectFactory.create3PBranch(idPrefix+"Bus632", idPrefix+"Bus633", "0", net);
+				DStab3PBranch Line632_633 = ThreePhaseObjectFactory.create3PBranch(idPrefix+"Bus632", idPrefix+"Bus633", "0", net);
 				Line632_633.setBranchCode(AclfBranchCode.LINE);
 				length =500.0*ft2mile; // convert to miles
 				zabc_pu = IEEEFeederLineCode.zMtx602.multiply(length/zBase4160);
@@ -671,7 +671,7 @@ public class TestTnD_IEEE9_13busFeeder {
 				
 				//New Line.632645    Phases=2 Bus1=632.3.2      Bus2=645.3.2    LineCode=mtx603 Length=500  units=ft 
 				
-				Branch3Phase Line632_645 = ThreePhaseObjectFactory.create3PBranch(idPrefix+"Bus632", idPrefix+"Bus645", "0", net);
+				DStab3PBranch Line632_645 = ThreePhaseObjectFactory.create3PBranch(idPrefix+"Bus632", idPrefix+"Bus645", "0", net);
 				Line632_645.setBranchCode(AclfBranchCode.LINE);
 				length =500.0*ft2mile; // convert to miles
 				zabc_pu = IEEEFeederLineCode.zMtx603.multiply(length/zBase4160);
@@ -682,7 +682,7 @@ public class TestTnD_IEEE9_13busFeeder {
 				
 				//New Line.645646    Phases=2 Bus1=645.3.2      Bus2=646.3.2    LineCode=mtx603 Length=300  units=ft 
 				
-				Branch3Phase Line645_646 = ThreePhaseObjectFactory.create3PBranch(idPrefix+"Bus645", idPrefix+"Bus646", "0", net);
+				DStab3PBranch Line645_646 = ThreePhaseObjectFactory.create3PBranch(idPrefix+"Bus645", idPrefix+"Bus646", "0", net);
 				Line645_646.setBranchCode(AclfBranchCode.LINE);
 				length = 300.0*ft2mile; // convert to miles
 				zabc_pu = IEEEFeederLineCode.zMtx603.multiply(length/zBase4160);
@@ -692,7 +692,7 @@ public class TestTnD_IEEE9_13busFeeder {
 				
 				//New Line.692675    Phases=3 Bus1=692.1.2.3    Bus2=675.1.2.3  LineCode=mtx606 Length=500  units=ft
 				
-				Branch3Phase Line692_675 = ThreePhaseObjectFactory.create3PBranch(idPrefix+"Bus692", idPrefix+"Bus675", "0", net);
+				DStab3PBranch Line692_675 = ThreePhaseObjectFactory.create3PBranch(idPrefix+"Bus692", idPrefix+"Bus675", "0", net);
 				Line692_675.setBranchCode(AclfBranchCode.LINE);
 				length = 500.0*ft2mile; // convert to miles
 				zabc_pu = IEEEFeederLineCode.zMtx606.multiply(length/zBase4160);
@@ -701,7 +701,7 @@ public class TestTnD_IEEE9_13busFeeder {
 				
 				// New Line.671684    Phases=2 Bus1=671.1.3      Bus2=684.1.3    LineCode=mtx604 Length=300  units=ft
 				
-				Branch3Phase Line671_684 = ThreePhaseObjectFactory.create3PBranch(idPrefix+"Bus671", idPrefix+"Bus684", "0", net);
+				DStab3PBranch Line671_684 = ThreePhaseObjectFactory.create3PBranch(idPrefix+"Bus671", idPrefix+"Bus684", "0", net);
 				Line671_684.setBranchCode(AclfBranchCode.LINE);
 				length = 300.0*ft2mile; // convert to miles
 				zabc_pu = IEEEFeederLineCode.zMtx604.multiply(length/zBase4160);
@@ -711,7 +711,7 @@ public class TestTnD_IEEE9_13busFeeder {
 				
 				// New Line.684611    Phases=1 Bus1=684.3        Bus2=611.3      LineCode=mtx605 Length=300  units=ft 
 				
-				Branch3Phase Line684_611 = ThreePhaseObjectFactory.create3PBranch(idPrefix+"Bus684", idPrefix+"Bus611", "0", net);
+				DStab3PBranch Line684_611 = ThreePhaseObjectFactory.create3PBranch(idPrefix+"Bus684", idPrefix+"Bus611", "0", net);
 				Line684_611.setBranchCode(AclfBranchCode.LINE);
 				length = 300.0*ft2mile; // convert to miles
 				zabc_pu = IEEEFeederLineCode.zMtx605.multiply(length/zBase4160);
@@ -719,7 +719,7 @@ public class TestTnD_IEEE9_13busFeeder {
 				
 				// New Line.684652    Phases=1 Bus1=684.1        Bus2=652.1      LineCode=mtx607 Length=800  units=ft 
 
-				Branch3Phase Line684_652 = ThreePhaseObjectFactory.create3PBranch(idPrefix+"Bus684", idPrefix+"Bus652", "0", net);
+				DStab3PBranch Line684_652 = ThreePhaseObjectFactory.create3PBranch(idPrefix+"Bus684", idPrefix+"Bus652", "0", net);
 				Line684_652.setBranchCode(AclfBranchCode.LINE);
 				length = 800.0*ft2mile; // convert to miles
 				zabc_pu = IEEEFeederLineCode.zMtx607.multiply(length/zBase4160);
@@ -730,7 +730,7 @@ public class TestTnD_IEEE9_13busFeeder {
 				//!SWITCH DEFINITIONS 
 				//New Line.671692    Phases=3 Bus1=671   Bus2=692  Switch=y  r1=1e-4 r0=1e-4 x1=0.000 x0=0.000 c1=0.000 c0=0.000
 				
-				Branch3Phase Line671_692  = ThreePhaseObjectFactory.create3PBranch(idPrefix+"Bus671", idPrefix+"Bus692", "0", net);
+				DStab3PBranch Line671_692  = ThreePhaseObjectFactory.create3PBranch(idPrefix+"Bus671", idPrefix+"Bus692", "0", net);
 				Line671_692.setBranchCode(AclfBranchCode.LINE);
 				zabc_pu = new Complex3x3(new Complex(1.0E-6,0),new Complex(1.0E-6,0),new Complex(1.0e-6,0));
 				Line671_692.setZabc(zabc_pu);            

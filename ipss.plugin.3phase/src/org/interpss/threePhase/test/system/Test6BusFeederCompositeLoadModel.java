@@ -4,8 +4,9 @@ import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
+import org.interpss.dstab.dynLoad.InductionMotor;
 import org.interpss.dstab.dynLoad.impl.InductionMotorImpl;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.basic.Gen3Phase;
 import org.interpss.threePhase.basic.impl.Gen3PhaseImpl;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
@@ -29,7 +30,6 @@ import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.cache.StateMonitor.MonitorRecord;
-import org.interpss.dstab.dynLoad.InductionMotor;
 
 /**
  * This test case serves to test more detailed load modeling at the feeder level
@@ -49,7 +49,7 @@ public class Test6BusFeederCompositeLoadModel extends TestBase {
 		//Add composite load component to each load bus
 		
 		for(int i =2;i<=6;i++){
-			Bus3Phase loadBus = (Bus3Phase) distNet.getBus("Bus"+i);
+			DStab3PBus loadBus = (DStab3PBus) distNet.getBus("Bus"+i);
 			/*
 			Load3Phase load1 = new Load3PhaseImpl();
 			load1.set3PhaseLoad(new Complex3x1(new Complex(0.3,0.05),new Complex(0.3,0.05),new Complex(0.3,0.05)));

@@ -6,8 +6,8 @@ import java.util.List;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
-import org.interpss.threePhase.basic.Branch3Phase;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.DStab3PBranch;
+import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.basic.Gen3Phase;
 import org.interpss.threePhase.basic.Load1Phase;
 import org.interpss.threePhase.basic.Load3Phase;
@@ -22,7 +22,7 @@ import com.interpss.dstab.impl.BaseDStabBusImpl;
 
 
 
-public class Bus3PhaseImpl extends BaseDStabBusImpl<Gen3Phase,Load3Phase> implements Bus3Phase{
+public class Bus3PhaseImpl extends BaseDStabBusImpl<Gen3Phase,Load3Phase> implements DStab3PBus{
 	
 	private Complex3x1 Vabc = null;
 	private Complex3x1 initVabc = null;
@@ -86,8 +86,8 @@ public class Bus3PhaseImpl extends BaseDStabBusImpl<Gen3Phase,Load3Phase> implem
 		// contributions from the connected branches
 		 for(Branch bra:this.getBranchList()) {
 			 if(bra.isActive()){
-				 if(bra instanceof Branch3Phase){
-					 Branch3Phase thrPhBranch = (Branch3Phase) bra; 
+				 if(bra instanceof DStab3PBranch){
+					 DStab3PBranch thrPhBranch = (DStab3PBranch) bra; 
 					 if(this.getId().equals(bra.getFromBus().getId()))
 					    yiiAbc = yiiAbc.add(thrPhBranch.getYffabc());
 					 else

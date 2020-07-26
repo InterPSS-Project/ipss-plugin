@@ -3,8 +3,8 @@ package org.interpss.threePhase.powerflow.impl;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.ComplexFunc;
-import org.interpss.threePhase.basic.Branch3Phase;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.DStab3PBranch;
+import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 
 import com.interpss.core.aclf.AclfBranch;
@@ -18,13 +18,13 @@ public class DistPowerFlowOutFunc {
 	
 	public static String powerflowResultSummary(BaseAclfNetwork<? extends BaseAclfBus,? extends AclfBranch> distNet){
 		StringBuffer sb = new StringBuffer();
-		Bus3Phase swingBus = null;
+		DStab3PBus swingBus = null;
 		
 		sb.append("\n\n==================Distribtuion power flow results============\n\n");
 		
 		sb.append("Bus results: \n");
 		for(BaseAclfBus b:distNet.getBusList()){
-			Bus3Phase bus = (Bus3Phase) b;
+			DStab3PBus bus = (DStab3PBus) b;
 		
 			Complex va = bus.get3PhaseVotlages().a_0;
 			Complex vb = bus.get3PhaseVotlages().b_1;
@@ -42,7 +42,7 @@ public class DistPowerFlowOutFunc {
 		}
 		sb.append("\nBranch results: \n");
 		for(AclfBranch bra:distNet.getBranchList()){
-			Branch3Phase branch3P = (Branch3Phase) bra;
+			DStab3PBranch branch3P = (DStab3PBranch) bra;
 			sb.append(bra.getId()+", Iabc (from) = "+
 			branch3P.getCurrentAbcAtFromSide().toString()+", Iabc (to) = "+ branch3P.getCurrentAbcAtToSide().toString()+"\n");
 			sb.append(bra.getId()+", I012 (from) = "+
@@ -52,7 +52,7 @@ public class DistPowerFlowOutFunc {
 		sb.append("\nSourcebus power (from source to the distribution systems(feeders): \n");
 		Complex3x1 sumOfCurrents = new Complex3x1();
 		for(Branch bra:swingBus.getBranchList()){
-			Branch3Phase branch3P = (Branch3Phase) bra;
+			DStab3PBranch branch3P = (DStab3PBranch) bra;
 			if (bra.isActive()){
 				if(bra.getFromBus().getId().equals(swingBus.getId())){
 					sumOfCurrents = sumOfCurrents.add(branch3P.getCurrentAbcAtFromSide());
@@ -79,9 +79,9 @@ public class DistPowerFlowOutFunc {
 		  sb.append("BusId   Bus Name    BaseKv   Voltage A(Mag, Ang)      Voltage B(Mag, Ang)      Voltage C(Mag, Ang)  \n");
 		  sb.append("-------------------------------------------------------------------------------------------------\n");
 		 for(BaseDStabBus bus: net.getBusList()){
-			  if( bus.isActive() && bus instanceof Bus3Phase){
+			  if( bus.isActive() && bus instanceof DStab3PBus){
 				  
-				  Bus3Phase Bus3P = (Bus3Phase) bus;
+				  DStab3PBus Bus3P = (DStab3PBus) bus;
 				  Complex3x1 vabc= Bus3P.get3PhaseVotlages();
 				 
 				  sb.append(bus.getId()+"   "+bus.getName()+"      "+ String.format("%4.1f    ",(bus.getBaseVoltage()/1000.0))+"    ");

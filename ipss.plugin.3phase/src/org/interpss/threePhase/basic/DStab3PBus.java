@@ -9,7 +9,7 @@ import org.interpss.threePhase.dynamic.model.DynLoadModel3Phase;
 
 import com.interpss.dstab.BaseDStabBus;
 
-public interface Bus3Phase extends BaseDStabBus<Gen3Phase,Load3Phase> {
+public interface DStab3PBus extends BaseDStabBus<Gen3Phase,Load3Phase> {
 	
 	public Complex3x1 get3PhaseVotlages();
 	
@@ -51,10 +51,4 @@ public interface Bus3Phase extends BaseDStabBus<Gen3Phase,Load3Phase> {
 	public void setThreePhaseInitVoltage(Complex3x1 initVoltAbc);
 	
 	public Complex3x1 get3PhaseInitVoltage();
-	
-	
-	
-	
-	
-
 }

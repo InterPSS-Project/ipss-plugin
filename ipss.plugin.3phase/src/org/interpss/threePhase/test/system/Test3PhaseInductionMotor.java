@@ -3,7 +3,9 @@ package org.interpss.threePhase.test.system;
 import static org.junit.Assert.assertTrue;
 
 import org.interpss.IpssCorePlugin;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.dstab.dynLoad.InductionMotor;
+import org.interpss.dstab.dynLoad.impl.InductionMotorImpl;
+import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.model.InductionMotor3PhaseAdapter;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
@@ -19,8 +21,6 @@ import com.interpss.core.net.NetworkType;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
-import org.interpss.dstab.dynLoad.InductionMotor;
-import org.interpss.dstab.dynLoad.impl.InductionMotorImpl;
 
 public class Test3PhaseInductionMotor extends TestBase{
 
@@ -53,7 +53,7 @@ public class Test3PhaseInductionMotor extends TestBase{
 			assertTrue(distPFAlgo.powerflow());
 		
 			for(BaseAclfBus<?,?> bus:net.getBusList()){
-				Bus3Phase bus3P = (Bus3Phase) bus;
+				DStab3PBus bus3P = (DStab3PBus) bus;
 				System.out.println("Vabc of bus -"+bus3P.getId()+","+bus3P.get3PhaseVotlages().toString());
 			}
 			
@@ -63,7 +63,7 @@ public class Test3PhaseInductionMotor extends TestBase{
 		     *   create the 3phase induction motor model 
 		     */
 			
-			Bus3Phase bus1 = (Bus3Phase) net.getBus("Bus1");
+			DStab3PBus bus1 = (DStab3PBus) net.getBus("Bus1");
 			InductionMotor indMotor= new InductionMotorImpl(bus1, "1");
 			indMotor.setDStabBus(bus1);
 

@@ -7,13 +7,13 @@ import static org.interpss.threePhase.util.ThreePhaseUtilFunction.threePhaseXfrA
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
-import org.interpss.threePhase.basic.Branch3Phase;
+import org.interpss.threePhase.basic.DStab3PBranch;
 import org.interpss.threePhase.basic.Transformer3Phase;
 
 import com.interpss.core.acsc.PhaseCode;
 import com.interpss.dstab.impl.DStabBranchImpl;
 
-public class Branch3PhaseImpl extends DStabBranchImpl implements Branch3Phase{
+public class Dstab3PBranchImpl extends DStabBranchImpl implements DStab3PBranch {
    
 	private Complex3x3 Zabc =null;
 	private Complex3x3 Yabc =null;

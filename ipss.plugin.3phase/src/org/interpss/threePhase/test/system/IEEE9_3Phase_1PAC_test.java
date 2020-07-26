@@ -15,8 +15,8 @@ import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.threePhase.basic.Branch3Phase;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.DStab3PBranch;
+import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.algo.DynamicEventProcessor3Phase;
 import org.interpss.threePhase.dynamic.model.impl.SinglePhaseACMotor;
@@ -80,7 +80,7 @@ public class IEEE9_3Phase_1PAC_test {
 	     *   create the 1-phase AC model 
 	     */
 		
-		Bus3Phase bus5 = (Bus3Phase) dsNet.getBus("Bus5");
+		DStab3PBus bus5 = (DStab3PBus) dsNet.getBus("Bus5");
 		
 	    SinglePhaseACMotor ac1 = new SinglePhaseACMotor(bus5,"1");
   		ac1.setLoadPercent(50);
@@ -182,7 +182,7 @@ public class IEEE9_3Phase_1PAC_test {
 		
 	    
 	    
-		Bus3Phase bus5 = (Bus3Phase) dsNet.getBus("Bus5");
+		DStab3PBus bus5 = (DStab3PBus) dsNet.getBus("Bus5");
 		
 //		Load3Phase load1 = new Load3PhaseImpl();
 //		load1.set3PhaseLoad(new Complex3x1(new Complex(1.25,0.5),new Complex(1.25,0.5),new Complex(1.25,0.5)));
@@ -296,14 +296,14 @@ public class IEEE9_3Phase_1PAC_test {
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
 	    
 	    // remove the load from bus5
-	    Bus3Phase bus5 = (Bus3Phase) dsNet.getBus("Bus5");
+	    DStab3PBus bus5 = (DStab3PBus) dsNet.getBus("Bus5");
 	    
 	    bus5.setLoadCode(AclfLoadCode.NON_LOAD);
 	    bus5.getContributeLoadList().remove(0);
 	    
 	    // add 69 kV and below distribution system
 	    
-		Bus3Phase bus10 = ThreePhaseObjectFactory.create3PDStabBus("Bus10", dsNet);
+		DStab3PBus bus10 = ThreePhaseObjectFactory.create3PDStabBus("Bus10", dsNet);
   		bus10.setAttributes("69kV sub", "");
   		bus10.setBaseVoltage(69000.0);
   		// set the bus to a non-generator bus
@@ -312,7 +312,7 @@ public class IEEE9_3Phase_1PAC_test {
   		bus10.setLoadCode(AclfLoadCode.NON_LOAD);
   		
   		
-		Bus3Phase bus11 = ThreePhaseObjectFactory.create3PDStabBus("Bus11", dsNet);
+		DStab3PBus bus11 = ThreePhaseObjectFactory.create3PDStabBus("Bus11", dsNet);
   		bus11.setAttributes("12.47 kV feeder", "");
   		bus11.setBaseVoltage(12470.0);
   		// set the bus to a non-generator bus
@@ -322,7 +322,7 @@ public class IEEE9_3Phase_1PAC_test {
   		
   		bus11.setLoadPQ(new Complex(0.625,-0.05));
   		
-		Bus3Phase bus12 = ThreePhaseObjectFactory.create3PDStabBus("Bus12", dsNet);
+		DStab3PBus bus12 = ThreePhaseObjectFactory.create3PDStabBus("Bus12", dsNet);
   		bus12.setAttributes("208 V feeder", "");
   		bus12.setBaseVoltage(208.0);
   		// set the bus to a non-generator bus
@@ -337,7 +337,7 @@ public class IEEE9_3Phase_1PAC_test {
   		
 		//////////////////transformers///////////////////////////////////////////
   		
-		Branch3Phase xfr5_10 = ThreePhaseObjectFactory.create3PBranch("Bus5", "Bus10", "0", dsNet);
+		DStab3PBranch xfr5_10 = ThreePhaseObjectFactory.create3PBranch("Bus5", "Bus10", "0", dsNet);
 		xfr5_10.setBranchCode(AclfBranchCode.XFORMER);
 		xfr5_10.setZ( new Complex( 0.0, 0.08 ));
 		xfr5_10.setZ0( new Complex(0.0, 0.08 ));
@@ -348,7 +348,7 @@ public class IEEE9_3Phase_1PAC_test {
 		xfr0.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
   		
   		
-		Branch3Phase xfr10_11 = ThreePhaseObjectFactory.create3PBranch("Bus10", "Bus11", "0", dsNet);
+		DStab3PBranch xfr10_11 = ThreePhaseObjectFactory.create3PBranch("Bus10", "Bus11", "0", dsNet);
 		xfr10_11.setBranchCode(AclfBranchCode.XFORMER);
 		xfr10_11.setZ( new Complex( 0.0, 0.06 ));
 		xfr10_11.setZ0( new Complex(0.0, 0.06 ));
@@ -359,7 +359,7 @@ public class IEEE9_3Phase_1PAC_test {
 		
 	    
 		
-		Branch3Phase xfr11_12 = ThreePhaseObjectFactory.create3PBranch("Bus11", "Bus12", "0", dsNet);
+		DStab3PBranch xfr11_12 = ThreePhaseObjectFactory.create3PBranch("Bus11", "Bus12", "0", dsNet);
 		xfr11_12.setBranchCode(AclfBranchCode.XFORMER);
 		xfr11_12.setZ( new Complex( 0.0, 0.025 ));
 		xfr11_12.setZ0( new Complex(0.0, 0.025 ));
