@@ -22,7 +22,7 @@ import com.interpss.dstab.impl.BaseDStabBusImpl;
 
 
 
-public class DStab3PBusImpl extends BaseDStabBusImpl<DStab3PGen,DStab3PLoad> implements DStab3PBus{
+public class DStab3PBusImpl extends BaseDStabBusImpl<DStab3PGen,DStab3PLoad> implements DStab3PBus {
 	
 	private Complex3x1 Vabc = null;
 	private Complex3x1 initVabc = null;
@@ -56,7 +56,7 @@ public class DStab3PBusImpl extends BaseDStabBusImpl<DStab3PGen,DStab3PLoad> imp
 	}
 
 	@Override
-	public void set3PhaseVoltages(Complex3x1 vabc) {
+	public void set3PhaseVotlages(Complex3x1 vabc) {
 		this.Vabc = vabc;
 		super.setThreeSeqVoltage(Complex3x1.abc_to_z12(Vabc));
 		

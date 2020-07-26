@@ -7,15 +7,16 @@ import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.threePhase.dynamic.model.DynLoadModel1Phase;
 import org.interpss.threePhase.dynamic.model.DynLoadModel3Phase;
 
+import com.interpss.core.abc.IBus3Phase;
 import com.interpss.dstab.BaseDStabBus;
 
-public interface DStab3PBus extends BaseDStabBus<DStab3PGen,DStab3PLoad> {
+public interface DStab3PBus extends IBus3Phase, BaseDStabBus<DStab3PGen,DStab3PLoad> {
 	
-	public Complex3x1 get3PhaseVotlages();
+	//public Complex3x1 get3PhaseVotlages();
 	
-    public void set3PhaseVoltages(Complex3x1 vabc);
+    //public void set3PhaseVoltages(Complex3x1 vabc);
     
-    public Complex3x3 getYiiAbc();
+    //public Complex3x3 getYiiAbc();
     
     // TODO in the next phase, put all dynamic models in one array;
     // or we still need to separate the generators and loads;

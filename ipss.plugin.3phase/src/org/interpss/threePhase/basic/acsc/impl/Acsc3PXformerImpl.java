@@ -3,19 +3,21 @@ package org.interpss.threePhase.basic.acsc.impl;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.threePhase.basic.acsc.Acsc3PXformer;
-import org.interpss.threePhase.basic.dstab.DStab3PBranch;
+//import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 
+import com.interpss.core.abc.IBranch3Phase;
+import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.XfrConnectCode;
 import com.interpss.core.acsc.adpter.impl.AcscXformerImpl;
 
-public class Acsc3PXformerImpl extends AcscXformerImpl implements Acsc3PXformer{
+public class Acsc3PXformerImpl extends AcscXformerImpl implements Acsc3PXformer {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private DStab3PBranch ph3Branch= null;
+	private IBranch3Phase ph3Branch= null;
 	
 	private Complex y0 =null;
 	private Complex y1 =null; // transformer primitive leakage admittance of a phase 
@@ -31,7 +33,7 @@ public class Acsc3PXformerImpl extends AcscXformerImpl implements Acsc3PXformer{
 	private Complex3x3 turnRatioMatrix = null;
 	
 	
-	public Acsc3PXformerImpl(DStab3PBranch threePhBranch){
+	public Acsc3PXformerImpl(IBranch3Phase threePhBranch){
 		this.ph3Branch =threePhBranch;
 		
 	}
@@ -42,13 +44,15 @@ public class Acsc3PXformerImpl extends AcscXformerImpl implements Acsc3PXformer{
 	}
     
 	@Override
-	public void set3PBranch(DStab3PBranch ph3Branch) {
+	public void set3PBranch(IBranch3Phase ph3Branch) {
 		this.ph3Branch = ph3Branch;
-		setBranch(ph3Branch);
 		
-		this.y1 = this.ph3Branch.getY();
-		if(this.ph3Branch.getY0()!=null) 
-			y0 = this.ph3Branch.getY0();
+		AcscBranch acscBranch = (AcscBranch)ph3Branch;
+		setBranch(acscBranch);
+		
+		this.y1 = acscBranch.getY();
+		if(acscBranch.getY0()!=null) 
+			y0 = acscBranch.getY0();
 		else
 			y0 = y1;
 		
@@ -57,7 +61,6 @@ public class Acsc3PXformerImpl extends AcscXformerImpl implements Acsc3PXformer{
 	@Override
 	public void setZabc(Complex3x3 Zabc) {
 		this.ph3Branch.setZabc(Zabc);
-		
 	}
 
 	@Override
@@ -91,21 +94,24 @@ public class Acsc3PXformerImpl extends AcscXformerImpl implements Acsc3PXformer{
 	@Override
 	public Complex3x3 getYffabc() {
 	    Complex3x3 yffabc = null;
+	    
+		AcscBranch acscBranch = (AcscBranch)ph3Branch;
+		
 		//Yg
-		if(this.ph3Branch.getXfrFromConnectCode() == XfrConnectCode.WYE_SOLID_GROUNDED){
-			yffabc = getY1().multiply(1/this.ph3Branch.getFromTurnRatio()/this.ph3Branch.getFromTurnRatio());
+		if(acscBranch.getXfrFromConnectCode() == XfrConnectCode.WYE_SOLID_GROUNDED){
+			yffabc = getY1().multiply(1/acscBranch.getFromTurnRatio()/acscBranch.getFromTurnRatio());
 	
 		}
 		
 		//Y
-		else if(this.ph3Branch.getXfrFromConnectCode() == XfrConnectCode.WYE_UNGROUNDED){
-			yffabc = getY2().multiply(1/this.ph3Branch.getFromTurnRatio()/this.ph3Branch.getFromTurnRatio());
+		else if(acscBranch.getXfrFromConnectCode() == XfrConnectCode.WYE_UNGROUNDED){
+			yffabc = getY2().multiply(1/acscBranch.getFromTurnRatio()/acscBranch.getFromTurnRatio());
 			
 		}
 		
 		//D
-        else if(this.ph3Branch.getXfrFromConnectCode() == XfrConnectCode.DELTA|| this.ph3Branch.getXfrFromConnectCode() == XfrConnectCode.DELTA11){
-        	yffabc = getY2().multiply(1/this.ph3Branch.getFromTurnRatio()/this.ph3Branch.getFromTurnRatio());
+        else if(acscBranch.getXfrFromConnectCode() == XfrConnectCode.DELTA|| acscBranch.getXfrFromConnectCode() == XfrConnectCode.DELTA11){
+        	yffabc = getY2().multiply(1/acscBranch.getFromTurnRatio()/acscBranch.getFromTurnRatio());
     		
 		} else
 			try {
@@ -122,21 +128,24 @@ public class Acsc3PXformerImpl extends AcscXformerImpl implements Acsc3PXformer{
 	@Override
 	public Complex3x3 getYttabc() {
 		 Complex3x3 yttabc = null;
+		 
+		 AcscBranch acscBranch = (AcscBranch)ph3Branch;
+		 
 			//Yg
-			if(this.ph3Branch.getXfrToConnectCode() == XfrConnectCode.WYE_SOLID_GROUNDED){
-				yttabc = getY1().multiply(1/this.ph3Branch.getToTurnRatio()/this.ph3Branch.getToTurnRatio());
+			if(acscBranch.getXfrToConnectCode() == XfrConnectCode.WYE_SOLID_GROUNDED){
+				yttabc = getY1().multiply(1/acscBranch.getToTurnRatio()/acscBranch.getToTurnRatio());
 		
 			}
 			
 			//Y
-			else if(this.ph3Branch.getXfrToConnectCode() == XfrConnectCode.WYE_UNGROUNDED){
-				yttabc = getY2().multiply(1/this.ph3Branch.getToTurnRatio()/this.ph3Branch.getToTurnRatio());
+			else if(acscBranch.getXfrToConnectCode() == XfrConnectCode.WYE_UNGROUNDED){
+				yttabc = getY2().multiply(1/acscBranch.getToTurnRatio()/acscBranch.getToTurnRatio());
 				
 			}
 			
 			//D
-	        else if(this.ph3Branch.getXfrToConnectCode() == XfrConnectCode.DELTA || this.ph3Branch.getXfrToConnectCode() == XfrConnectCode.DELTA11){
-	        	yttabc = getY2().multiply(1/this.ph3Branch.getToTurnRatio()/this.ph3Branch.getToTurnRatio());
+	        else if(acscBranch.getXfrToConnectCode() == XfrConnectCode.DELTA || acscBranch.getXfrToConnectCode() == XfrConnectCode.DELTA11){
+	        	yttabc = getY2().multiply(1/acscBranch.getToTurnRatio()/acscBranch.getToTurnRatio());
 	    		
 			} else
 				try {
@@ -154,67 +163,70 @@ public class Acsc3PXformerImpl extends AcscXformerImpl implements Acsc3PXformer{
 	public Complex3x3 getYftabc() {
 		
 		 Complex3x3 yftabc = null;
+		 
+		AcscBranch acscBranch = (AcscBranch)ph3Branch;
+		 
 			//Yg-
-		 if(this.ph3Branch.getXfrFromConnectCode() == XfrConnectCode.WYE_SOLID_GROUNDED){
+		 if(acscBranch.getXfrFromConnectCode() == XfrConnectCode.WYE_SOLID_GROUNDED){
 			  //YgYg
-			    if(this.ph3Branch.getXfrToConnectCode() == XfrConnectCode.WYE_SOLID_GROUNDED)
+			    if(acscBranch.getXfrToConnectCode() == XfrConnectCode.WYE_SOLID_GROUNDED)
 				   yftabc = getY1().multiply(-1/this.getFromTurnRatio()/this.getToTurnRatio());
 			  //YgY
-			    else if (this.ph3Branch.getXfrToConnectCode() == XfrConnectCode.WYE_UNGROUNDED)
+			    else if (acscBranch.getXfrToConnectCode() == XfrConnectCode.WYE_UNGROUNDED)
 			    	yftabc = getY2().multiply(-1/this.getFromTurnRatio()/this.getToTurnRatio());
 			   //YgD1 
-			    else if (this.ph3Branch.getXfrToConnectCode() == XfrConnectCode.DELTA)
+			    else if (acscBranch.getXfrToConnectCode() == XfrConnectCode.DELTA)
 			    	yftabc = getY3().multiply(-1/this.getFromTurnRatio()/this.getToTurnRatio());
 			   //YgD11  
-			    else if (this.ph3Branch.getXfrToConnectCode() == XfrConnectCode.DELTA11)
+			    else if (acscBranch.getXfrToConnectCode() == XfrConnectCode.DELTA11)
 			    	yftabc = getY3().transpose().multiply(-1/this.getFromTurnRatio()/this.getToTurnRatio());
 			}
 			
 			//Y-
-			else if(this.ph3Branch.getXfrFromConnectCode() == XfrConnectCode.WYE_UNGROUNDED ){
+			else if(acscBranch.getXfrFromConnectCode() == XfrConnectCode.WYE_UNGROUNDED ){
 				//Yg or Y
-				if(this.ph3Branch.getXfrToConnectCode() == XfrConnectCode.WYE_SOLID_GROUNDED ||
-						this.ph3Branch.getXfrToConnectCode() == XfrConnectCode.WYE_UNGROUNDED)
+				if(acscBranch.getXfrToConnectCode() == XfrConnectCode.WYE_SOLID_GROUNDED ||
+						acscBranch.getXfrToConnectCode() == XfrConnectCode.WYE_UNGROUNDED)
 					    // note: y2* = y2
 				        yftabc = getY2().multiply(-1/this.getFromTurnRatio()/this.getToTurnRatio());
 				// D1
-				 else if (this.ph3Branch.getXfrToConnectCode() == XfrConnectCode.DELTA)
+				 else if (acscBranch.getXfrToConnectCode() == XfrConnectCode.DELTA)
 				    	yftabc = getY3().multiply(-1/this.getFromTurnRatio()/this.getToTurnRatio());
 			   // D11   
-				 else if (this.ph3Branch.getXfrToConnectCode() == XfrConnectCode.DELTA11)
+				 else if (acscBranch.getXfrToConnectCode() == XfrConnectCode.DELTA11)
 				    	yftabc = getY3().transpose().multiply(-1/this.getFromTurnRatio()/this.getToTurnRatio());
 				
 			}
 			
 			//D
-	        else if(this.ph3Branch.getXfrFromConnectCode() == XfrConnectCode.DELTA){
+	        else if(acscBranch.getXfrFromConnectCode() == XfrConnectCode.DELTA){
 	        	
 	        	//D-Yg or Y
-				if(this.ph3Branch.getXfrToConnectCode() == XfrConnectCode.WYE_SOLID_GROUNDED ||
-						this.ph3Branch.getXfrToConnectCode() == XfrConnectCode.WYE_UNGROUNDED)
+				if(acscBranch.getXfrToConnectCode() == XfrConnectCode.WYE_SOLID_GROUNDED ||
+						acscBranch.getXfrToConnectCode() == XfrConnectCode.WYE_UNGROUNDED)
 	        	    // Delta side lags 30 degrees related to wye side,  that is why transpose() is required
 					// y3 matrix is corresponding to the case where wye on the from side. 
 					yftabc = getY3().transpose().multiply(-1/this.getFromTurnRatio()/this.getToTurnRatio());
 					
 				
-				else if(this.ph3Branch.getXfrToConnectCode() == XfrConnectCode.DELTA)
+				else if(acscBranch.getXfrToConnectCode() == XfrConnectCode.DELTA)
 					 yftabc = getY2().multiply(-1/this.getFromTurnRatio()/this.getToTurnRatio());
 	    		
 			} 
 		 
 			//D11
-	        else if(this.ph3Branch.getXfrFromConnectCode() == XfrConnectCode.DELTA11){
+	        else if(acscBranch.getXfrFromConnectCode() == XfrConnectCode.DELTA11){
 	        	
 	        	//D-Yg or Y
-				if(this.ph3Branch.getXfrToConnectCode() == XfrConnectCode.WYE_SOLID_GROUNDED ||
-						this.ph3Branch.getXfrToConnectCode() == XfrConnectCode.WYE_UNGROUNDED)
+				if(acscBranch.getXfrToConnectCode() == XfrConnectCode.WYE_SOLID_GROUNDED ||
+						acscBranch.getXfrToConnectCode() == XfrConnectCode.WYE_UNGROUNDED)
 	        	    ////TODO original 11/23/2015 
 					//yftabc = getY3().transpose().multiply(-1/this.getFromTurnRatio()/this.getToTurnRatio());
 				  
 					// Delta side leads 30 degrees related to wye side
 					yftabc = getY3().multiply(-1/this.getFromTurnRatio()/this.getToTurnRatio());
 				
-				else if(this.ph3Branch.getXfrToConnectCode() == XfrConnectCode.DELTA || this.ph3Branch.getXfrToConnectCode() == XfrConnectCode.DELTA11)
+				else if(acscBranch.getXfrToConnectCode() == XfrConnectCode.DELTA || acscBranch.getXfrToConnectCode() == XfrConnectCode.DELTA11)
 					 yftabc = getY2().multiply(-1/this.getFromTurnRatio()/this.getToTurnRatio());
 	    		
 			} 
@@ -309,6 +321,7 @@ public class Acsc3PXformerImpl extends AcscXformerImpl implements Acsc3PXformer{
  
 	@Override
 	public Complex3x3 getLVBusVabc2HVBusVabcMatrix() {
+		AcscBranch acscBranch = (AcscBranch)ph3Branch;
 		     //Delta-Delta
 		     if(this.isHVDeltaConnectted() && this.isLVDeltaConnectted()){
 		    	 //                      at = [W][AV][D] = [W][D]*nt
@@ -326,7 +339,7 @@ public class Acsc3PXformerImpl extends AcscXformerImpl implements Acsc3PXformer{
 		     }
 		     else{
 		    	 throw new UnsupportedOperationException("The input transformer connection type is not supported yet! Transformer, fromConnect, toConnect :"+
-		    			 this.ph3Branch.getId()+", "+this.ph3Branch.getXfrFromConnectCode()+", "+this.ph3Branch.getXfrToConnectCode());
+		    			 acscBranch.getId()+", "+acscBranch.getXfrFromConnectCode()+", "+acscBranch.getXfrToConnectCode());
 		     }
 		    	 
 		return this.LVBusVabc2HVBusVabcMatrix;
@@ -493,20 +506,21 @@ public class Acsc3PXformerImpl extends AcscXformerImpl implements Acsc3PXformer{
 	 * @return
 	 */
 	private double getWindingTurnRatioPU(){
+		AcscBranch acscBranch = (AcscBranch)ph3Branch;
 		boolean isHVOnFromBusSide = true;
-		double t = this.ph3Branch.getFromTurnRatio()/this.ph3Branch.getToTurnRatio();
+		double t = acscBranch.getFromTurnRatio()/acscBranch.getToTurnRatio();
 		
 		// t = winding (HV)/ winding(LV)
-		if(this.ph3Branch.getFromAclfBus().getBaseVoltage() < this.ph3Branch.getToAclfBus().getBaseVoltage()){
-			 t = this.ph3Branch.getToTurnRatio()/this.ph3Branch.getFromTurnRatio();
+		if(acscBranch.getFromAclfBus().getBaseVoltage() < acscBranch.getToAclfBus().getBaseVoltage()){
+			 t = acscBranch.getToTurnRatio()/acscBranch.getFromTurnRatio();
 			 isHVOnFromBusSide = false;
 		}
 		
-		if(this.ph3Branch.getXfrFromConnectCode() !=this.ph3Branch.getXfrToConnectCode()){
+		if(acscBranch.getXfrFromConnectCode() !=acscBranch.getXfrToConnectCode()){
 			
 			//Delta Grounded Wye
-			if(this.ph3Branch.getXfrFromConnectCode()==XfrConnectCode.DELTA11 || this.ph3Branch.getXfrFromConnectCode()==XfrConnectCode.DELTA){
-				if(this.ph3Branch.getXfrToConnectCode()==XfrConnectCode.WYE_SOLID_GROUNDED){
+			if(acscBranch.getXfrFromConnectCode()==XfrConnectCode.DELTA11 || acscBranch.getXfrFromConnectCode()==XfrConnectCode.DELTA){
+				if(acscBranch.getXfrToConnectCode()==XfrConnectCode.WYE_SOLID_GROUNDED){
 					if(isHVOnFromBusSide) // Delta Grounded Wye step down
 					  t= t*Math.sqrt(3);
 					else{
@@ -515,8 +529,8 @@ public class Acsc3PXformerImpl extends AcscXformerImpl implements Acsc3PXformer{
 						
 				}
 			}
-			else if(this.ph3Branch.getXfrFromConnectCode()==XfrConnectCode.WYE_SOLID_GROUNDED){
-				if(this.ph3Branch.getXfrToConnectCode()==XfrConnectCode.DELTA11 || this.ph3Branch.getXfrToConnectCode()==XfrConnectCode.DELTA){
+			else if(acscBranch.getXfrFromConnectCode()==XfrConnectCode.WYE_SOLID_GROUNDED){
+				if(acscBranch.getXfrToConnectCode()==XfrConnectCode.DELTA11 || acscBranch.getXfrToConnectCode()==XfrConnectCode.DELTA){
 					if(!isHVOnFromBusSide) // Delta Grounded Wye step down
 					   t= t*Math.sqrt(3);
 					else
@@ -531,45 +545,51 @@ public class Acsc3PXformerImpl extends AcscXformerImpl implements Acsc3PXformer{
 		}
 		return t;
 	}
+	
 	private Complex3x3 getTurnRatioMatrix(){
+		AcscBranch acscBranch = (AcscBranch)ph3Branch;
 		if(turnRatioMatrix ==null){
 			
 			//Yg-Yg
-			if(this.ph3Branch.getXfrToConnectCode() == XfrConnectCode.WYE_SOLID_GROUNDED){
-				if(this.ph3Branch.getXfrFromConnectCode() == XfrConnectCode.WYE_SOLID_GROUNDED){
+			if(acscBranch.getXfrToConnectCode() == XfrConnectCode.WYE_SOLID_GROUNDED){
+				if(acscBranch.getXfrFromConnectCode() == XfrConnectCode.WYE_SOLID_GROUNDED){
 					turnRatioMatrix = Complex3x3.createUnitMatrix().multiply(getWindingTurnRatioPU());
 				}
 			}
 		}
 		return turnRatioMatrix; 
 	}
+	
 	private boolean isHVDeltaConnectted(){
-		if(this.ph3Branch.getFromAclfBus().getBaseVoltage() > this.ph3Branch.getToAclfBus().getBaseVoltage()){
+		AcscBranch acscBranch = (AcscBranch)ph3Branch;
+		if(acscBranch.getFromAclfBus().getBaseVoltage() > acscBranch.getToAclfBus().getBaseVoltage()){
 			//TODO note: the standard conection for the high voltage side is Delta 11
-			if(this.ph3Branch.getXfrFromConnectCode()==XfrConnectCode.DELTA11 ||this.ph3Branch.getXfrFromConnectCode()==XfrConnectCode.DELTA)  
+			if(acscBranch.getXfrFromConnectCode()==XfrConnectCode.DELTA11 ||acscBranch.getXfrFromConnectCode()==XfrConnectCode.DELTA)  
 				return true;
 		}
 		else{
-			if(this.ph3Branch.getXfrToConnectCode()==XfrConnectCode.DELTA11 ||this.ph3Branch.getXfrToConnectCode()==XfrConnectCode.DELTA)
+			if(acscBranch.getXfrToConnectCode()==XfrConnectCode.DELTA11 ||acscBranch.getXfrToConnectCode()==XfrConnectCode.DELTA)
 				return true;
 		}
 		return false;
 	}
 	
     private boolean isLVDeltaConnectted(){
-    	if(this.ph3Branch.getFromAclfBus().getBaseVoltage() < this.ph3Branch.getToAclfBus().getBaseVoltage()){
-			if(this.ph3Branch.getXfrFromConnectCode()==XfrConnectCode.DELTA || this.ph3Branch.getXfrFromConnectCode()==XfrConnectCode.DELTA11)
+    	AcscBranch acscBranch = (AcscBranch)ph3Branch;
+    	if(acscBranch.getFromAclfBus().getBaseVoltage() < acscBranch.getToAclfBus().getBaseVoltage()){
+			if(acscBranch.getXfrFromConnectCode()==XfrConnectCode.DELTA || acscBranch.getXfrFromConnectCode()==XfrConnectCode.DELTA11)
 				return true;
 		}
 		else{
-			if(this.ph3Branch.getXfrToConnectCode()==XfrConnectCode.DELTA||this.ph3Branch.getXfrToConnectCode()==XfrConnectCode.DELTA11)
+			if(acscBranch.getXfrToConnectCode()==XfrConnectCode.DELTA||acscBranch.getXfrToConnectCode()==XfrConnectCode.DELTA11)
 				return true;
 		}
 		return false;
 	}
     
     private boolean isHVWindingOnFromBusSide(){
-    	if(this.ph3Branch.getFromAclfBus().getBaseVoltage() > this.ph3Branch.getToAclfBus().getBaseVoltage())
+		AcscBranch acscBranch = (AcscBranch)ph3Branch;
+    	if(acscBranch.getFromAclfBus().getBaseVoltage() > acscBranch.getToAclfBus().getBaseVoltage())
     		return true;
     	else
     		return false;
