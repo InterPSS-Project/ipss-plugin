@@ -4,9 +4,9 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.threePhase.basic.Bus3Phase;
 import org.interpss.threePhase.basic.Load3Phase;
-import org.interpss.threePhase.basic.LoadConnectionType;
 import org.interpss.threePhase.basic.impl.Load3PhaseImpl;
 
+import com.interpss.core.abc.LoadConnectionType;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.acsc.PhaseCode;
 
@@ -88,7 +88,7 @@ public class OpenDSSCapacitorParser {
 		
 		load.setId(capId);
 		load.setCode(AclfLoadCode.CONST_Z);
-		load.setLoadConnectionType(LoadConnectionType.Three_Phase_Wye);
+		load.setLoadConnectionType(LoadConnectionType.THREE_PHASE_WYE);
 		load.setPhaseCode(PhaseCode.ABC);
 		
 		// single phase and three-phase capacitors are all modeled by three-phase shunts

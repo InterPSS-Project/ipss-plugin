@@ -11,11 +11,11 @@ import org.interpss.threePhase.basic.Bus3Phase;
 import org.interpss.threePhase.basic.Gen3Phase;
 import org.interpss.threePhase.basic.Load1Phase;
 import org.interpss.threePhase.basic.Load3Phase;
-import org.interpss.threePhase.basic.LoadConnectionType;
 import org.interpss.threePhase.dynamic.model.DynLoadModel1Phase;
 import org.interpss.threePhase.dynamic.model.DynLoadModel3Phase;
 import org.interpss.threePhase.util.ThreeSeqLoadProcessor;
 
+import com.interpss.core.abc.LoadConnectionType;
 import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.net.Branch;
 import com.interpss.dstab.impl.BaseDStabBusImpl;
@@ -299,7 +299,7 @@ public class Bus3PhaseImpl extends BaseDStabBusImpl<Gen3Phase,Load3Phase> implem
 		// TODO how about delta connected load??
 		for(Load1Phase load1P: this.getSinglePhaseLoadList()){
 			if(load1P.isActive()){
-				if(load1P.getLoadConnectionType()==LoadConnectionType.Single_Phase_Delta){
+				if(load1P.getLoadConnectionType()==LoadConnectionType.SINGLE_PHASE_DELTA){
 					throw new Error (" get3PhaseTotalLoad() does not support LoadConnectionType.Single_Phase_Delta yet! bus, load = "+this.getId()+","+load1P.getId());
 				}
 				else{
