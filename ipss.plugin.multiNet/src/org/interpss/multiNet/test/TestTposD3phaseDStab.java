@@ -21,12 +21,12 @@ import org.interpss.numeric.NumericConstant;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.threePhase.basic.DStab3PBranch;
-import org.interpss.threePhase.basic.DStab3PBus;
-import org.interpss.threePhase.basic.Gen3Phase;
-import org.interpss.threePhase.basic.Load3Phase;
-import org.interpss.threePhase.basic.Transformer3Phase;
-import org.interpss.threePhase.basic.impl.Load3PhaseImpl;
+import org.interpss.threePhase.basic.acsc.Acsc3PXformer;
+import org.interpss.threePhase.basic.dstab.DStab3PBranch;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PGen;
+import org.interpss.threePhase.basic.dstab.DStab3PLoad;
+import org.interpss.threePhase.basic.dstab.impl.DStab3PLoadImpl;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.algo.DynamicEventProcessor3Phase;
 import org.interpss.threePhase.dynamic.impl.DStabNetwork3phaseImpl;
@@ -1236,7 +1236,7 @@ private DStabNetwork3Phase create3BusSys() throws InterpssException{
   		// set bus to be a swing bus
   		bus1.setGenCode(AclfGenCode.NON_GEN);
   		bus1.setLoadCode(AclfLoadCode.CONST_P);
-  		Load3Phase load1 = new Load3PhaseImpl();
+  		DStab3PLoad load1 = new DStab3PLoadImpl();
   		
   		//load1.setVminpu(0.5);
   		
@@ -1277,7 +1277,7 @@ private DStabNetwork3Phase create3BusSys() throws InterpssException{
   		// set bus to be a swing bus
   		bus3.setGenCode(AclfGenCode.SWING);
   		
-  		Gen3Phase gen2 = ThreePhaseObjectFactory.create3PGenerator("Gen1");
+  		DStab3PGen gen2 = ThreePhaseObjectFactory.create3PGenerator("Gen1");
   		gen2.setMvaBase(100.0);
   		gen2.setDesiredVoltMag(1.0);
   		//gen2.setGen(new Complex(0.7164,0.2710));
@@ -1305,7 +1305,7 @@ private DStabNetwork3Phase create3BusSys() throws InterpssException{
 		xfr12.setBranchCode(AclfBranchCode.XFORMER);
 		xfr12.setZ( new Complex( 0.0, 0.05 ));
 		xfr12.setZ0( new Complex(0.0, 0.05 ));
-		Transformer3Phase xfr = threePhaseXfrAptr.apply(xfr12);
+		Acsc3PXformer xfr = threePhaseXfrAptr.apply(xfr12);
 		
 		//TODO change for testing
 		xfr.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);

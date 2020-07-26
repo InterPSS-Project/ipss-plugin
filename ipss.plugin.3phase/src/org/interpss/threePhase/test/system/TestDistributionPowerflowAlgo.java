@@ -7,14 +7,14 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.threePhase.basic.DStab3PBranch;
-import org.interpss.threePhase.basic.DStab3PBus;
-import org.interpss.threePhase.basic.Gen3Phase;
-import org.interpss.threePhase.basic.Load3Phase;
-import org.interpss.threePhase.basic.Transformer3Phase;
-import org.interpss.threePhase.basic.impl.AclfNetwork3Phase;
-import org.interpss.threePhase.basic.impl.Gen3PhaseImpl;
-import org.interpss.threePhase.basic.impl.Load3PhaseImpl;
+import org.interpss.threePhase.basic.acsc.Acsc3PXformer;
+import org.interpss.threePhase.basic.acsc.impl.Acsc3PNetworkTempImpl;
+import org.interpss.threePhase.basic.dstab.DStab3PBranch;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PGen;
+import org.interpss.threePhase.basic.dstab.DStab3PLoad;
+import org.interpss.threePhase.basic.dstab.impl.DStab3PGenImpl;
+import org.interpss.threePhase.basic.dstab.impl.DStab3PLoadImpl;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.powerflow.impl.DistPowerFlowOutFunc;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
@@ -36,7 +36,7 @@ public class TestDistributionPowerflowAlgo {
 	@Test
 	public void testLineAndXfrGeneralizedMatrices() throws InterpssException {
 		
-		AclfNetwork3Phase net = createDistNetNoDG();
+		Acsc3PNetworkTempImpl net = createDistNetNoDG();
 		
 		//--------------------------------------------------------------------------------------------
 		// 1. Test the distribution line models
@@ -100,7 +100,7 @@ public class TestDistributionPowerflowAlgo {
 		
 		System.out.println("Zabc of xfr1_2 = "+line1_2.getZabc());
 		
-		Transformer3Phase xfr1_2 = line1_2.to3PXformer();
+		Acsc3PXformer xfr1_2 = line1_2.to3PXformer();
 		AcscXformer xfr0 = acscXfrAptr.apply(line1_2);
 		xfr0.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
 		xfr0.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
@@ -258,7 +258,7 @@ public class TestDistributionPowerflowAlgo {
 	
 	//@Test
 	public void testDistBusOrdering() throws InterpssException {
-		AclfNetwork3Phase net = createDistNetNoDG();
+		Acsc3PNetworkTempImpl net = createDistNetNoDG();
 		
 		DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(net);
 		distPFAlgo.orderDistributionBuses(true);
@@ -272,7 +272,7 @@ public class TestDistributionPowerflowAlgo {
 	
 	@Test
 	public void testDistBusPF() throws InterpssException {
-		AclfNetwork3Phase net = createDistNetNoDG();
+		Acsc3PNetworkTempImpl net = createDistNetNoDG();
 		
 		DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(net);
 		//distPFAlgo.orderDistributionBuses(true);
@@ -296,7 +296,7 @@ public class TestDistributionPowerflowAlgo {
 	
 	@Test
 	public void testDistPFWithDG() throws InterpssException {
-		AclfNetwork3Phase net = createDistNetWithDG();
+		Acsc3PNetworkTempImpl net = createDistNetWithDG();
 		
 		DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(net);
 		//distPFAlgo.orderDistributionBuses(true);
@@ -318,12 +318,12 @@ public class TestDistributionPowerflowAlgo {
 		
 	}
 	
-	private AclfNetwork3Phase createDistNetNoDG() throws InterpssException{
+	private Acsc3PNetworkTempImpl createDistNetNoDG() throws InterpssException{
 		// step-1 create the network object
 		
-		BaseAclfNetwork net = new AclfNetwork3Phase();
+		BaseAclfNetwork net = new Acsc3PNetworkTempImpl();
 		// identify this is a distribution network
-		((AclfNetwork3Phase) net).setNetworkType(NetworkType.DISTRIBUTION);
+		((Acsc3PNetworkTempImpl) net).setNetworkType(NetworkType.DISTRIBUTION);
 		
 		
 		// step-2 create all the bus objects
@@ -355,7 +355,7 @@ public class TestDistributionPowerflowAlgo {
   		// set the bus to a constant power load bus
   		bus3.setLoadCode(AclfLoadCode.CONST_P);
   		
-  		Load3Phase load1 = new Load3PhaseImpl();
+  		DStab3PLoad load1 = new DStab3PLoadImpl();
   		load1.set3PhaseLoad(new Complex3x1(new Complex(0.5,0.1),new Complex(0.5,0.1),new Complex(0.5,0.1)));
   		bus3.getThreePhaseLoadList().add(load1);
   		//bus3.setLoadPQ(new Complex(0.5,0.1));
@@ -371,7 +371,7 @@ public class TestDistributionPowerflowAlgo {
 
   		//bus4.setLoadPQ(new Complex(1,0.1));
   		
-  		Load3Phase load2 = new Load3PhaseImpl();
+  		DStab3PLoad load2 = new DStab3PLoadImpl();
   		load2.set3PhaseLoad(new Complex3x1(new Complex(1,0.1),new Complex(1,0.1),new Complex(1,0.1)));
   		bus4.getThreePhaseLoadList().add(load2);
   		
@@ -408,18 +408,18 @@ public class TestDistributionPowerflowAlgo {
   		  		
   		
   		
-	    return (AclfNetwork3Phase) net;
+	    return (Acsc3PNetworkTempImpl) net;
   		
 	}
 	
-	private AclfNetwork3Phase createDistNetWithDG() throws InterpssException{
+	private Acsc3PNetworkTempImpl createDistNetWithDG() throws InterpssException{
 		
 		/**
 		 * create a 3-phase network object
 		 */
-		BaseAclfNetwork net = new AclfNetwork3Phase();
+		BaseAclfNetwork net = new Acsc3PNetworkTempImpl();
 		// identify this is a distribution network
-		((AclfNetwork3Phase) net).setNetworkType(NetworkType.DISTRIBUTION);
+		((Acsc3PNetworkTempImpl) net).setNetworkType(NetworkType.DISTRIBUTION);
 		
 		
 		/**
@@ -455,7 +455,7 @@ public class TestDistributionPowerflowAlgo {
   		// set the bus to a constant power load bus
   		bus3.setLoadCode(AclfLoadCode.CONST_P);
   		
-  		Load3Phase load1 = new Load3PhaseImpl();
+  		DStab3PLoad load1 = new DStab3PLoadImpl();
   		load1.set3PhaseLoad(new Complex3x1(new Complex(0.5,0.1),new Complex(0.3,0.1),new Complex(0.4,0.1)));
   		bus3.getThreePhaseLoadList().add(load1);
 
@@ -471,12 +471,12 @@ public class TestDistributionPowerflowAlgo {
   		bus4.setLoadCode(AclfLoadCode.CONST_P);
 
   		// a three-phase load at bus 4
-  		Load3Phase load2 = new Load3PhaseImpl();
+  		DStab3PLoad load2 = new DStab3PLoadImpl();
   		load2.set3PhaseLoad(new Complex3x1(new Complex(1.5,0.3),new Complex(1.2,0.2),new Complex(1.0,0.1)));
   		bus4.getThreePhaseLoadList().add(load2);
   		
   		// a DG at bus 4
-  		Gen3Phase gen1 = new Gen3PhaseImpl();
+  		DStab3PGen gen1 = new DStab3PGenImpl();
   		gen1.setParentBus(bus4);
   		gen1.setGen(new Complex(0.5,0));  // total gen power, system mva based
   		gen1.setMvaBase(10);
@@ -518,15 +518,15 @@ public class TestDistributionPowerflowAlgo {
   		
   		
   		
-	    return (AclfNetwork3Phase) net;
+	    return (Acsc3PNetworkTempImpl) net;
   		
 	}
 	
 	
-	private AclfNetwork3Phase createNet4PosSeqPF() throws InterpssException{
-		BaseAclfNetwork net = new AclfNetwork3Phase();
+	private Acsc3PNetworkTempImpl createNet4PosSeqPF() throws InterpssException{
+		BaseAclfNetwork net = new Acsc3PNetworkTempImpl();
 		// identify this is a distribution network
-		((AclfNetwork3Phase) net).setNetworkType(NetworkType.DISTRIBUTION);
+		((Acsc3PNetworkTempImpl) net).setNetworkType(NetworkType.DISTRIBUTION);
 		
 		DStab3PBus bus1 = ThreePhaseObjectFactory.create3PAclfBus("Bus1", net);
   		bus1.setAttributes("69 kV feeder source", "");
@@ -629,7 +629,7 @@ public class TestDistributionPowerflowAlgo {
   		
   		
   		
-	    return (AclfNetwork3Phase) net;
+	    return (Acsc3PNetworkTempImpl) net;
   		
 	}
 

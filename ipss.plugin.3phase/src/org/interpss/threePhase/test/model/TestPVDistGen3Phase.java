@@ -9,12 +9,12 @@ import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.sparse.ISparseEqnComplexMatrix3x3;
-import org.interpss.threePhase.basic.DStab3PBranch;
-import org.interpss.threePhase.basic.DStab3PBus;
-import org.interpss.threePhase.basic.Gen3Phase;
-import org.interpss.threePhase.basic.Load3Phase;
-import org.interpss.threePhase.basic.impl.Gen3PhaseImpl;
-import org.interpss.threePhase.basic.impl.Load3PhaseImpl;
+import org.interpss.threePhase.basic.dstab.DStab3PBranch;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PGen;
+import org.interpss.threePhase.basic.dstab.DStab3PLoad;
+import org.interpss.threePhase.basic.dstab.impl.DStab3PGenImpl;
+import org.interpss.threePhase.basic.dstab.impl.DStab3PLoadImpl;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.algo.DynamicEventProcessor3Phase;
 import org.interpss.threePhase.dynamic.model.PVDistGen3Phase;
@@ -395,7 +395,7 @@ public class TestPVDistGen3Phase {
 			bus1.setLoadCode(AclfLoadCode.NON_LOAD);
 			bus1.setVoltage(new Complex(1.01,0));
 			
-			Gen3Phase constantGen = ThreePhaseObjectFactory.create3PGenerator("Source");
+			DStab3PGen constantGen = ThreePhaseObjectFactory.create3PGenerator("Source");
 			constantGen.setMvaBase(100);
 			constantGen.setPosGenZ(new Complex(0.0,0.05));
 			constantGen.setNegGenZ(new Complex(0.0,0.05));
@@ -420,7 +420,7 @@ public class TestPVDistGen3Phase {
 			// set the bus to a constant power load bus
 			bus2.setLoadCode(AclfLoadCode.CONST_P);
 			
-			Load3Phase load1 = new Load3PhaseImpl();
+			DStab3PLoad load1 = new DStab3PLoadImpl();
 			load1.set3PhaseLoad(new Complex3x1(new Complex(1.5,0.1),new Complex(1.5,0.1),new Complex(1.5,0.1)));
 			bus2.getThreePhaseLoadList().add(load1);
 
@@ -435,7 +435,7 @@ public class TestPVDistGen3Phase {
 			bus3.setLoadCode(AclfLoadCode.NON_LOAD);
 			
 			
-			Gen3Phase gen1 = new Gen3PhaseImpl();
+			DStab3PGen gen1 = new DStab3PGenImpl();
 			gen1.setParentBus(bus3);
 			gen1.setId("PVGen");
 			gen1.setGen(new Complex(0.5,0));  // total gen power, system mva based
@@ -499,7 +499,7 @@ private DStabNetwork3Phase createDistNetNoDG() throws InterpssException{
 			bus1.setLoadCode(AclfLoadCode.NON_LOAD);
 			bus1.setVoltage(new Complex(1.01,0));
 			
-			Gen3Phase constantGen = ThreePhaseObjectFactory.create3PGenerator("Source");
+			DStab3PGen constantGen = ThreePhaseObjectFactory.create3PGenerator("Source");
 			constantGen.setMvaBase(100);
 			constantGen.setPosGenZ(new Complex(0.0,0.05));
 			constantGen.setNegGenZ(new Complex(0.0,0.05));
@@ -524,7 +524,7 @@ private DStabNetwork3Phase createDistNetNoDG() throws InterpssException{
 			// set the bus to a constant power load bus
 			bus2.setLoadCode(AclfLoadCode.CONST_P);
 			
-			Load3Phase load1 = new Load3PhaseImpl();
+			DStab3PLoad load1 = new DStab3PLoadImpl();
 			load1.set3PhaseLoad(new Complex3x1(new Complex(1.5,0.1),new Complex(1.5,0.1),new Complex(1.5,0.1)));
 			bus2.getThreePhaseLoadList().add(load1);
 

@@ -1,7 +1,7 @@
-package org.interpss.threePhase.basic.impl;
+package org.interpss.threePhase.basic.dstab.impl;
 
-import org.interpss.threePhase.basic.DStab3PBranch;
-import org.interpss.threePhase.basic.Branch3W3Phase;
+import org.interpss.threePhase.basic.dstab.DStab3PBranch;
+import org.interpss.threePhase.basic.dstab.DStab3W3PBranch;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
@@ -10,7 +10,7 @@ import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.dstab.impl.DStab3WBranchImpl;
 
-public class Branch3W3PhaseImpl extends DStab3WBranchImpl implements Branch3W3Phase{
+public class DStab3W3PBranchImpl extends DStab3WBranchImpl implements DStab3W3PBranch{
 	
 	
 	@Override

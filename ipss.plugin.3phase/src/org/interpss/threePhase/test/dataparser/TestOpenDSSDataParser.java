@@ -12,11 +12,11 @@ import java.util.logging.Level;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.datatype.Complex3x3;
-import org.interpss.threePhase.basic.DStab3PBranch;
-import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.basic.LineConfiguration;
-import org.interpss.threePhase.basic.Load1Phase;
-import org.interpss.threePhase.basic.Load3Phase;
+import org.interpss.threePhase.basic.dstab.DStab1PLoad;
+import org.interpss.threePhase.basic.dstab.DStab3PBranch;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 import org.interpss.threePhase.dataParser.opendss.OpenDSSDataParser;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.junit.Test;
@@ -231,7 +231,7 @@ public class TestOpenDSSDataParser {
 		    * New Load.S1a   Bus1=1.1    Phases=1 Conn=Wye   Model=1 kV=2.4   kW=40.0  kvar=20.0
 		    */
 		  DStab3PBus bus1 = (DStab3PBus) distNet.getBus("1");
-		  Load1Phase ld_s1a= (Load1Phase) bus1.getContributeLoad("s1a");
+		  DStab1PLoad ld_s1a= (DStab1PLoad) bus1.getContributeLoad("s1a");
 		  assertTrue(ld_s1a.getLoadCP().subtract(new Complex(40,20)).abs()<1.0E-9);
 		  assertTrue(ld_s1a.getLoadConnectionType()==LoadConnectionType.SINGLE_PHASE_WYE);
 		  assertTrue(Math.abs(ld_s1a.getNominalKV()-2.4)<1.0E-9);
@@ -244,7 +244,7 @@ public class TestOpenDSSDataParser {
 		   * New Load.S35a  Bus1=35.1.2 Phases=1 Conn=Delta Model=1 kV=4.160 kW=40.0  kvar=20.0
 		   */
 		  DStab3PBus bus35 = (DStab3PBus) distNet.getBus("35");
-		  Load1Phase ld_s35a= (Load1Phase) bus35.getContributeLoad("s35a");
+		  DStab1PLoad ld_s35a= (DStab1PLoad) bus35.getContributeLoad("s35a");
 		  assertTrue(ld_s35a.getLoadCP().subtract(new Complex(40,20)).abs()<1.0E-9);
 		  assertTrue(ld_s35a.getLoadConnectionType()==LoadConnectionType.SINGLE_PHASE_DELTA);
 		  assertTrue(Math.abs(ld_s35a.getNominalKV()-4.160)<1.0E-9);
@@ -255,7 +255,7 @@ public class TestOpenDSSDataParser {
 		   * New Load.S48   Bus1=48     Phases=3 Conn=Wye   Model=2 kV=4.160 kW=210.0 kVAR=150.0
 		   */
 		  DStab3PBus bus48 = (DStab3PBus) distNet.getBus("48");
-		  Load3Phase ld_s48= (Load3Phase) bus48.getThreePhaseLoadList().get(0); // only one load
+		  DStab3PLoad ld_s48= (DStab3PLoad) bus48.getThreePhaseLoadList().get(0); // only one load
 		  System.out.println("ld_s48 = "+ld_s48.getInit3PhaseLoad().toString());
 		  assertTrue(ld_s48.getInit3PhaseLoad().a_0.subtract(new Complex(70.0,50.0)).abs()<1.0E-9);
 		  assertTrue(ld_s48.getInit3PhaseLoad().b_1.subtract(new Complex(70,50)).abs()<1.0E-9);
@@ -403,7 +403,7 @@ public class TestOpenDSSDataParser {
 		    */
 		  double baseKVA1P = distNet.getBaseKva()/3.0;
 		  DStab3PBus bus1 = (DStab3PBus) distNet.getBus("1");
-		  Load1Phase ld_s1a= (Load1Phase) bus1.getContributeLoad("s1a");
+		  DStab1PLoad ld_s1a= (DStab1PLoad) bus1.getContributeLoad("s1a");
 		  assertTrue(ld_s1a.getLoadCP().subtract(new Complex(40,20).divide(baseKVA1P)).abs()<1.0E-9);
 		  assertTrue(ld_s1a.getLoadConnectionType()==LoadConnectionType.SINGLE_PHASE_WYE);
 		  assertTrue(Math.abs(ld_s1a.getNominalKV()-2.4)<1.0E-9);
@@ -416,7 +416,7 @@ public class TestOpenDSSDataParser {
 		   * New Load.S35a  Bus1=35.1.2 Phases=1 Conn=Delta Model=1 kV=4.160 kW=40.0  kvar=20.0
 		   */
 		  DStab3PBus bus35 = (DStab3PBus) distNet.getBus("35");
-		  Load1Phase ld_s35a= (Load1Phase) bus35.getContributeLoad("s35a");
+		  DStab1PLoad ld_s35a= (DStab1PLoad) bus35.getContributeLoad("s35a");
 		  assertTrue(ld_s35a.getLoadCP().subtract(new Complex(40,20).divide(baseKVA1P)).abs()<1.0E-9);
 		  assertTrue(ld_s35a.getLoadConnectionType()==LoadConnectionType.SINGLE_PHASE_DELTA);
 		  assertTrue(Math.abs(ld_s35a.getNominalKV()-4.160)<1.0E-9);
@@ -427,7 +427,7 @@ public class TestOpenDSSDataParser {
 		   * New Load.S48   Bus1=48     Phases=3 Conn=Wye   Model=2 kV=4.160 kW=210.0 kVAR=150.0
 		   */
 		  DStab3PBus bus48 = (DStab3PBus) distNet.getBus("48");
-		  Load3Phase ld_s48= (Load3Phase) bus48.getThreePhaseLoadList().get(0); // only one load
+		  DStab3PLoad ld_s48= (DStab3PLoad) bus48.getThreePhaseLoadList().get(0); // only one load
 		  System.out.println("ld_s48 = "+ld_s48.getInit3PhaseLoad().toString());
 		  assertTrue(ld_s48.getInit3PhaseLoad().a_0.subtract(new Complex(70.0,50.0).divide(baseKVA1P)).abs()<1.0E-9);
 		  assertTrue(ld_s48.getInit3PhaseLoad().b_1.subtract(new Complex(70,50).divide(baseKVA1P)).abs()<1.0E-9);

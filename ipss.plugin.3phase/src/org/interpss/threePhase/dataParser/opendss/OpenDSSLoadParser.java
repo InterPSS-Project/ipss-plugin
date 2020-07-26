@@ -2,11 +2,11 @@ package org.interpss.threePhase.dataParser.opendss;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
-import org.interpss.threePhase.basic.DStab3PBus;
-import org.interpss.threePhase.basic.Load1Phase;
-import org.interpss.threePhase.basic.Load3Phase;
-import org.interpss.threePhase.basic.impl.Load1PhaseImpl;
-import org.interpss.threePhase.basic.impl.Load3PhaseImpl;
+import org.interpss.threePhase.basic.dstab.DStab1PLoad;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PLoad;
+import org.interpss.threePhase.basic.dstab.impl.DStab1PLoadImpl;
+import org.interpss.threePhase.basic.dstab.impl.DStab3PLoadImpl;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.abc.LoadConnectionType;
@@ -134,11 +134,11 @@ public class OpenDSSLoadParser {
 			busName =this.dataParser.getBusIdPrefix()+busName;
 			DStab3PBus bus =  this.dataParser.getDistNetwork().getBus(busName);
 			
-			Load1Phase load= null;
+			DStab1PLoad load= null;
 			if(phaseNum==3)
-			    load= new Load3PhaseImpl();
+			    load= new DStab3PLoadImpl();
 			else
-				load= new Load1PhaseImpl();
+				load= new DStab1PLoadImpl();
 			
 			//load ID
 			load.setId(loadId);
@@ -151,7 +151,7 @@ public class OpenDSSLoadParser {
 				load.setCode(AclfLoadCode.CONST_P);
 				
 				if(phaseNum==3)
-					((Load3Phase)load).set3PhaseLoad(new Complex3x1(loadPQ.divide(3),loadPQ.divide(3),loadPQ.divide(3)));
+					((DStab3PLoad)load).set3PhaseLoad(new Complex3x1(loadPQ.divide(3),loadPQ.divide(3),loadPQ.divide(3)));
 				else
 				   load.setLoadCP(loadPQ);
 			}
@@ -159,14 +159,14 @@ public class OpenDSSLoadParser {
 				load.setCode(AclfLoadCode.CONST_Z);
 				
 				if(phaseNum==3)
-					((Load3Phase)load).set3PhaseLoad(new Complex3x1(loadPQ.divide(3),loadPQ.divide(3),loadPQ.divide(3)));
+					((DStab3PLoad)load).set3PhaseLoad(new Complex3x1(loadPQ.divide(3),loadPQ.divide(3),loadPQ.divide(3)));
 				else
 				    load.setLoadCZ(loadPQ);
 			}
 			else if(modelType==5){
 				load.setCode(AclfLoadCode.CONST_I);
 				if(phaseNum==3)
-					((Load3Phase)load).set3PhaseLoad(new Complex3x1(loadPQ.divide(3),loadPQ.divide(3),loadPQ.divide(3)));
+					((DStab3PLoad)load).set3PhaseLoad(new Complex3x1(loadPQ.divide(3),loadPQ.divide(3),loadPQ.divide(3)));
 				else
 				    load.setLoadCI(loadPQ);
 			}
@@ -250,7 +250,7 @@ public class OpenDSSLoadParser {
 			if(phaseNum==1)
 			  bus.getSinglePhaseLoadList().add(load);
 			else if(phaseNum==3)
-			  bus.getThreePhaseLoadList().add((Load3Phase) load);
+			  bus.getThreePhaseLoadList().add((DStab3PLoad) load);
 			
 			//TODO The following setting does NOT mean all the loads are constP type, it is a known limitation with bus level loadcode setting
 			bus.setLoadCode(AclfLoadCode.CONST_P);

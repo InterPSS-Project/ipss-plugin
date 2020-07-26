@@ -23,10 +23,10 @@ import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.threePhase.basic.DStab3PBranch;
-import org.interpss.threePhase.basic.DStab3PBus;
-import org.interpss.threePhase.basic.Load3Phase;
-import org.interpss.threePhase.basic.impl.Load3PhaseImpl;
+import org.interpss.threePhase.basic.dstab.DStab3PBranch;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PLoad;
+import org.interpss.threePhase.basic.dstab.impl.DStab3PLoadImpl;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.model.InductionMotor3PhaseAdapter;
 import org.interpss.threePhase.dynamic.model.impl.SinglePhaseACMotor;
@@ -750,7 +750,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 			int j = 0;
 			for(int i =startNum+2;i<=6+startNum;i++){
 				DStab3PBus loadBus = (DStab3PBus) net.getBus("Bus"+i);
-				Load3Phase load1 = new Load3PhaseImpl();
+				DStab3PLoad load1 = new DStab3PLoadImpl();
 				load1.set3PhaseLoad(new Complex3x1(new Complex(0.01,0.002*(1-pvIncrement)),new Complex(0.010,0.002*(1-pvIncrement)),new Complex(0.01,0.002*(1-pvIncrement))).multiply(totalMW*loadPercentAry[j++]));
 				if(loadBus == null) throw new Error("i = "+i);
 				loadBus.getThreePhaseLoadList().add(load1);
@@ -855,7 +855,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 			
 			for(int i =startNum+2;i<=2+startNum;i++){
 				DStab3PBus loadBus = (DStab3PBus) net.getBus("Bus"+i);
-				Load3Phase load1 = new Load3PhaseImpl();
+				DStab3PLoad load1 = new DStab3PLoadImpl();
 				load1.set3PhaseLoad(new Complex3x1(new Complex(0.01,0.002*(1-pvIncrement)),new Complex(0.010,0.002*(1-pvIncrement)),new Complex(0.01,0.002*(1-pvIncrement))).multiply(scaleFactor));
 				if(loadBus == null) throw new Error("i = "+i);
 				loadBus.getThreePhaseLoadList().add(load1);

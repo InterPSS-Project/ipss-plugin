@@ -1,12 +1,10 @@
-package org.interpss.threePhase.basic;
+package org.interpss.threePhase.basic.acsc;
 
 import org.interpss.numeric.sparse.ISparseEqnComplexMatrix3x3;
 
-import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.acsc.AcscNetwork;
-import com.interpss.core.acsc.BaseAcscNetwork;
+import com.interpss.core.abc.INetwork3Phase;
 
-public interface Network3Phase {
+public interface Acsc3PNetworkTemp extends INetwork3Phase {
 	
 
 	

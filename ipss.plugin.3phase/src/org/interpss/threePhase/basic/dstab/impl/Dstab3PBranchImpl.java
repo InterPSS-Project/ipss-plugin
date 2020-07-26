@@ -1,4 +1,4 @@
-package org.interpss.threePhase.basic.impl;
+package org.interpss.threePhase.basic.dstab.impl;
 
 
 
@@ -7,8 +7,8 @@ import static org.interpss.threePhase.util.ThreePhaseUtilFunction.threePhaseXfrA
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
-import org.interpss.threePhase.basic.DStab3PBranch;
-import org.interpss.threePhase.basic.Transformer3Phase;
+import org.interpss.threePhase.basic.acsc.Acsc3PXformer;
+import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 
 import com.interpss.core.acsc.PhaseCode;
 import com.interpss.dstab.impl.DStabBranchImpl;
@@ -265,7 +265,7 @@ public class Dstab3PBranchImpl extends DStabBranchImpl implements DStab3PBranch 
 			if(this.getFromShuntYabc()!=null)
 		         yff = yff.add(this.getFromShuntYabc());
 		}else{
-			Transformer3Phase ph3Xformer = this.to3PXformer();
+			Acsc3PXformer ph3Xformer = this.to3PXformer();
 			yff = ph3Xformer.getYffabc();
 		}
 	        
@@ -281,7 +281,7 @@ public class Dstab3PBranchImpl extends DStabBranchImpl implements DStab3PBranch 
 		         ytt = ytt.add(this.getToShuntYabc());
 		}
 		else{
-			Transformer3Phase ph3Xformer = this.to3PXformer();
+			Acsc3PXformer ph3Xformer = this.to3PXformer();
 			ytt = ph3Xformer.getYttabc();
 		}
 	    
@@ -294,7 +294,7 @@ public class Dstab3PBranchImpl extends DStabBranchImpl implements DStab3PBranch 
 		if(!isXfr())
 		    yft = this.getBranchYabc().multiply(-1);
 		else{
-			Transformer3Phase ph3Xformer = this.to3PXformer();
+			Acsc3PXformer ph3Xformer = this.to3PXformer();
 			yft = ph3Xformer.getYftabc();
 		}
 	    
@@ -307,7 +307,7 @@ public class Dstab3PBranchImpl extends DStabBranchImpl implements DStab3PBranch 
 		if(!isXfr())
 		    ytf = this.getBranchYabc().multiply(-1);
 		else{
-			Transformer3Phase ph3Xformer = this.to3PXformer();
+			Acsc3PXformer ph3Xformer = this.to3PXformer();
 			ytf = ph3Xformer.getYtfabc();
 		}
 	    
@@ -327,7 +327,7 @@ public class Dstab3PBranchImpl extends DStabBranchImpl implements DStab3PBranch 
 	}
 
 	@Override
-	public Transformer3Phase to3PXformer() {
+	public Acsc3PXformer to3PXformer() {
 		
 		return threePhaseXfrAptr.apply(this);
 	}

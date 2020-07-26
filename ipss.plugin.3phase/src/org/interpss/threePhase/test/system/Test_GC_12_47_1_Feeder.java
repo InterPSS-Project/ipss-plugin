@@ -19,10 +19,10 @@ import org.interpss.dstab.dynLoad.InductionMotor;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.threePhase.basic.DStab3PBranch;
-import org.interpss.threePhase.basic.DStab3PBus;
-import org.interpss.threePhase.basic.Load3Phase;
-import org.interpss.threePhase.basic.impl.Load3PhaseImpl;
+import org.interpss.threePhase.basic.dstab.DStab3PBranch;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PLoad;
+import org.interpss.threePhase.basic.dstab.impl.DStab3PLoadImpl;
 import org.interpss.threePhase.dataParser.opendss.OpenDSSDataParser;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.algo.DynamicEventProcessor3Phase;
@@ -540,7 +540,7 @@ public class Test_GC_12_47_1_Feeder {
 		
 			//capacitor
 			if(i ==21){
-				Load3Phase Shuntload = new Load3PhaseImpl();
+				DStab3PLoad Shuntload = new DStab3PLoadImpl();
 				
 				Complex3x1 shuntY = new Complex3x1(new Complex(0,-600),new Complex(0.0,-600),new Complex(0.0,-600));
 				Shuntload.set3PhaseLoad(shuntY);
@@ -627,7 +627,7 @@ public class Test_GC_12_47_1_Feeder {
 				} 
 			 */
 			
-			Load3Phase load1 = new Load3PhaseImpl();
+			DStab3PLoad load1 = new DStab3PLoadImpl();
 			Complex3x1 load3Phase = new Complex3x1(new Complex(585277.7504,357997.618),new Complex(596917.157,361239.5414),new Complex(592476.6189,358995.6939)).multiply(0.001);
 			load1.set3PhaseLoad(load3Phase);
 			bus.getThreePhaseLoadList().add(load1);

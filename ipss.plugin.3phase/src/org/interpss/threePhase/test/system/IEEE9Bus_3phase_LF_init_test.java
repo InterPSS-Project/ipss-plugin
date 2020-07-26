@@ -11,10 +11,10 @@ import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.threePhase.basic.DStab3PBranch;
-import org.interpss.threePhase.basic.DStab3PBus;
-import org.interpss.threePhase.basic.Gen3Phase;
-import org.interpss.threePhase.basic.Load3Phase;
+import org.interpss.threePhase.basic.dstab.DStab3PBranch;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PGen;
+import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.algo.DynamicEventProcessor3Phase;
 import org.interpss.threePhase.dynamic.impl.DStabNetwork3phaseImpl;
@@ -138,7 +138,7 @@ Load Flow Summary
 			  System.out.print(bus.getId() +": Vabc =  "+ph3Bus.get3PhaseVotlages());
 			  
 			  if (ph3Bus.isGen()){
-				 Gen3Phase gen = (Gen3Phase) ph3Bus.getContributeGenList().get(0);
+				 DStab3PGen gen = (DStab3PGen) ph3Bus.getContributeGenList().get(0);
 				  System.out.print("\nGenPowerAbc(MW) = "+gen.getPower3Phase(UnitType.mVA)+", \nZabc: "+gen.getZabc(true));
 			  
 				  
@@ -162,7 +162,7 @@ Load Flow Summary
 			  }
 			  
 			  if(bus.isLoad()){
-				  Load3Phase ph3Load = (Load3Phase) ph3Bus.getContributeLoadList().get(0);
+				  DStab3PLoad ph3Load = (DStab3PLoad) ph3Bus.getContributeLoadList().get(0);
 				  
 				    if(bus.getId().equals("Bus5")){
 				    	  
@@ -313,7 +313,7 @@ ca = (0.0, 0.0),cb = (1.734723475976807E-18, -3.469446951953614E-18),cc = (-1.73
 		  		
 		  		// create contribute generator
 		  		// MVABase, power, sourceZ1/2/0
-		  		Gen3Phase gen1 = ThreePhaseObjectFactory.create3PGenerator("Gen1");
+		  		DStab3PGen gen1 = ThreePhaseObjectFactory.create3PGenerator("Gen1");
 		  		gen1.setMvaBase(100.0);
 		  		gen1.setDesiredVoltMag(1.04);
 		  		gen1.setGen(new Complex(0.7164,0.2710));
@@ -340,7 +340,7 @@ ca = (0.0, 0.0),cb = (1.734723475976807E-18, -3.469446951953614E-18),cc = (-1.73
 		  		
 		  	// create contribute generator
 		  		// MVABase, power, sourceZ1/2/0
-		  		Gen3Phase gen2 = ThreePhaseObjectFactory.create3PGenerator("Gen2");
+		  		DStab3PGen gen2 = ThreePhaseObjectFactory.create3PGenerator("Gen2");
 		  		gen2.setMvaBase(100.0);
 		  		gen2.setDesiredVoltMag(1.025);
 		  		gen2.setGen(new Complex(1.6300, 0.0659));
@@ -366,7 +366,7 @@ ca = (0.0, 0.0),cb = (1.734723475976807E-18, -3.469446951953614E-18),cc = (-1.73
 		  		
 		  	// create contribute generator
 		  		// MVABase, power, sourceZ1/2/0
-		  		Gen3Phase gen3 = ThreePhaseObjectFactory.create3PGenerator("Gen3");
+		  		DStab3PGen gen3 = ThreePhaseObjectFactory.create3PGenerator("Gen3");
 		  		gen3.setMvaBase(100.0);
 		  		gen3.setDesiredVoltMag(1.025);
 		  		gen3.setGen(new Complex(0.8500, -0.1092));
@@ -396,7 +396,7 @@ ca = (0.0, 0.0),cb = (1.734723475976807E-18, -3.469446951953614E-18),cc = (-1.73
 		  		// set load to the bus
 		  		//loadBus5.setLoad(new Complex(1.25, 0.5), UnitType.PU);
 		  		
-		  		Load3Phase load = ThreePhaseObjectFactory.create3PLoad("load1");
+		  		DStab3PLoad load = ThreePhaseObjectFactory.create3PLoad("load1");
 		  		load.setLoadCP(new Complex(1.25,0.5));
 		  		bus5.getContributeLoadList().add(load);
 		  		

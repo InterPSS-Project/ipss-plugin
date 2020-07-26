@@ -6,9 +6,9 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.dstab.dynLoad.InductionMotor;
 import org.interpss.dstab.dynLoad.impl.InductionMotorImpl;
-import org.interpss.threePhase.basic.DStab3PBus;
-import org.interpss.threePhase.basic.Gen3Phase;
-import org.interpss.threePhase.basic.impl.Gen3PhaseImpl;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PGen;
+import org.interpss.threePhase.basic.dstab.impl.DStab3PGenImpl;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.algo.DynamicEventProcessor3Phase;
 import org.interpss.threePhase.dynamic.model.InductionMotor3PhaseAdapter;
@@ -110,7 +110,7 @@ public class Test6BusFeederCompositeLoadModel extends TestBase {
 			
 			// PV generation
 			
-				Gen3Phase gen1 = new Gen3PhaseImpl();
+				DStab3PGen gen1 = new DStab3PGenImpl();
 				gen1.setParentBus(loadBus);
 				gen1.setId("PVGen");
 				gen1.setGen(new Complex(0.05,0));  // total gen power, system mva based
