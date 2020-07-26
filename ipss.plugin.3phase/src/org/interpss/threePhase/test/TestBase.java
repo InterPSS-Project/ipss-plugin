@@ -6,8 +6,8 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.threePhase.basic.Branch3Phase;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.DStab3PBranch;
+import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.basic.Gen3Phase;
 import org.interpss.threePhase.basic.Load3Phase;
 import org.interpss.threePhase.basic.impl.Load3PhaseImpl;
@@ -23,7 +23,6 @@ import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.acsc.XfrConnectCode;
 import com.interpss.core.acsc.adpter.AcscXformer;
 import com.interpss.core.net.NetworkType;
-import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.mach.EConstMachine;
 import com.interpss.dstab.mach.MachineModelType;
 
@@ -40,7 +39,7 @@ public class TestBase {
 			net.setBaseKva(baseKva);
 		  
 		   //Bus 1
-	  		Bus3Phase bus1 = ThreePhaseObjectFactory.create3PDStabBus("Bus1", net);
+			DStab3PBus bus1 = ThreePhaseObjectFactory.create3PDStabBus("Bus1", net);
 	  		// set bus name and description attributes
 	  		bus1.setAttributes("Bus 1", "");
 	  		// set bus base voltage 
@@ -59,7 +58,7 @@ public class TestBase {
 			
 
 	  	  	// Bus 3
-	  		Bus3Phase bus3 = ThreePhaseObjectFactory.create3PDStabBus("Bus3", net);
+			DStab3PBus bus3 = ThreePhaseObjectFactory.create3PDStabBus("Bus3", net);
 	  		// set bus name and description attributes
 	  		bus3.setAttributes("Bus 3", "");
 	  		// set bus base voltage 
@@ -94,7 +93,7 @@ public class TestBase {
 	  				
 	  	
 	  		
-	  		Branch3Phase bra = ThreePhaseObjectFactory.create3PBranch("Bus1", "Bus3", "0", net);
+	  		DStab3PBranch bra = ThreePhaseObjectFactory.create3PBranch("Bus1", "Bus3", "0", net);
 			bra.setBranchCode(AclfBranchCode.LINE);
 			bra.setZ( new Complex(0.000,   0.100));
 			bra.setHShuntY(new Complex(0, 0.200/2));
@@ -115,7 +114,7 @@ public class TestBase {
 			// identify this is a distribution network
 			net.setNetworkType(NetworkType.DISTRIBUTION);
 			
-			Bus3Phase bus1 = ThreePhaseObjectFactory.create3PDStabBus("Bus1", net);
+			DStab3PBus bus1 = ThreePhaseObjectFactory.create3PDStabBus("Bus1", net);
 			bus1.setAttributes("69 kV feeder source", "");
 			bus1.setBaseVoltage(69000.0);
 			// set the bus to a non-generator bus
@@ -141,7 +140,7 @@ public class TestBase {
 			mach.setXd1(0.05);
 
 			
-		Bus3Phase bus2 = ThreePhaseObjectFactory.create3PDStabBus("Bus2", net);
+			DStab3PBus bus2 = ThreePhaseObjectFactory.create3PDStabBus("Bus2", net);
 			bus2.setAttributes("feeder bus 2", "");
 			bus2.setBaseVoltage(12500.0);
 			// set the bus to a non-generator bus
@@ -150,7 +149,7 @@ public class TestBase {
 			bus2.setLoadCode(AclfLoadCode.CONST_P);
 			
 			
-		Branch3Phase xfr1_2 = ThreePhaseObjectFactory.create3PBranch("Bus1", "Bus2", "0", net);
+		DStab3PBranch xfr1_2 = ThreePhaseObjectFactory.create3PBranch("Bus1", "Bus2", "0", net);
 			xfr1_2.setBranchCode(AclfBranchCode.XFORMER);
 			xfr1_2.setToTurnRatio(1.02);
 			xfr1_2.setZ( new Complex( 0.0, 0.04 ));
@@ -164,7 +163,7 @@ public class TestBase {
 
 			
 			
-		Bus3Phase bus3 = ThreePhaseObjectFactory.create3PDStabBus("Bus3", net);
+			DStab3PBus bus3 = ThreePhaseObjectFactory.create3PDStabBus("Bus3", net);
 			bus3.setAttributes("feeder bus 3", "");
 			bus3.setBaseVoltage(12500.0);
 			// set the bus to a non-generator bus
@@ -181,7 +180,7 @@ public class TestBase {
 //			bus3.getThreePhaseGenList().add(gen1);
 			
 			
-			Bus3Phase bus4 = ThreePhaseObjectFactory.create3PDStabBus("Bus4", net);
+			DStab3PBus bus4 = ThreePhaseObjectFactory.create3PDStabBus("Bus4", net);
 			bus4.setAttributes("feeder bus 4", "");
 			bus4.setBaseVoltage(12500.0);
 			// set the bus to a non-generator bus
@@ -190,7 +189,7 @@ public class TestBase {
 			bus4.setLoadCode(AclfLoadCode.CONST_P);
 			
 			
-			Bus3Phase bus5 = ThreePhaseObjectFactory.create3PDStabBus("Bus5", net);
+			DStab3PBus bus5 = ThreePhaseObjectFactory.create3PDStabBus("Bus5", net);
 			bus5.setAttributes("feeder bus 5", "");
 			bus5.setBaseVoltage(12500.0);
 			// set the bus to a non-generator bus
@@ -199,7 +198,7 @@ public class TestBase {
 			bus5.setLoadCode(AclfLoadCode.CONST_P);
 			
 			
-			Bus3Phase bus6 = ThreePhaseObjectFactory.create3PDStabBus("Bus6", net);
+			DStab3PBus bus6 = ThreePhaseObjectFactory.create3PDStabBus("Bus6", net);
 			bus6.setAttributes("feeder bus 6", "");
 			bus6.setBaseVoltage(12500.0);
 			// set the bus to a non-generator bus
@@ -209,7 +208,7 @@ public class TestBase {
 			
 			
 			for(int i =2;i<=6;i++){
-				Bus3Phase loadBus = (Bus3Phase) net.getBus("Bus"+i);
+				DStab3PBus loadBus = (DStab3PBus) net.getBus("Bus"+i);
 				Load3Phase load1 = new Load3PhaseImpl();
 				load1.set3PhaseLoad(new Complex3x1(new Complex(0.3,0.05),new Complex(0.3,0.05),new Complex(0.3,0.05)));
 				loadBus.getThreePhaseLoadList().add(load1);
@@ -217,7 +216,7 @@ public class TestBase {
 			}
 			
 			for(int i =2;i<6;i++){
-				Branch3Phase Line2_3 = ThreePhaseObjectFactory.create3PBranch("Bus"+i, "Bus"+(i+1), "0", net);
+				DStab3PBranch Line2_3 = ThreePhaseObjectFactory.create3PBranch("Bus"+i, "Bus"+(i+1), "0", net);
 				Line2_3.setBranchCode(AclfBranchCode.LINE);
 				Complex3x3 zabcActual = this.getFeederZabc601().multiply(5.28).multiply(0.05);
 				Double zbase = net.getBus("Bus"+i).getBaseVoltage()*net.getBus("Bus"+i).getBaseVoltage()/net.getBaseMva()/1.0E6;

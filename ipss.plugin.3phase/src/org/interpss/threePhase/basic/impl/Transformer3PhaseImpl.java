@@ -2,7 +2,7 @@ package org.interpss.threePhase.basic.impl;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x3;
-import org.interpss.threePhase.basic.Branch3Phase;
+import org.interpss.threePhase.basic.DStab3PBranch;
 import org.interpss.threePhase.basic.Transformer3Phase;
 
 import com.interpss.core.acsc.XfrConnectCode;
@@ -15,7 +15,7 @@ public class Transformer3PhaseImpl extends AcscXformerImpl implements Transforme
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private Branch3Phase ph3Branch= null;
+	private DStab3PBranch ph3Branch= null;
 	
 	private Complex y0 =null;
 	private Complex y1 =null; // transformer primitive leakage admittance of a phase 
@@ -31,7 +31,7 @@ public class Transformer3PhaseImpl extends AcscXformerImpl implements Transforme
 	private Complex3x3 turnRatioMatrix = null;
 	
 	
-	public Transformer3PhaseImpl(Branch3Phase threePhBranch){
+	public Transformer3PhaseImpl(DStab3PBranch threePhBranch){
 		this.ph3Branch =threePhBranch;
 		
 	}
@@ -42,7 +42,7 @@ public class Transformer3PhaseImpl extends AcscXformerImpl implements Transforme
 	}
     
 	@Override
-	public void set3PBranch(Branch3Phase ph3Branch) {
+	public void set3PBranch(DStab3PBranch ph3Branch) {
 		this.ph3Branch = ph3Branch;
 		setBranch(ph3Branch);
 		

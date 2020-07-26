@@ -2,7 +2,7 @@ package org.interpss.threePhase.util;
 
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.ComplexFunc;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 
 import com.interpss.dstab.BaseDStabBus;
@@ -19,9 +19,9 @@ public class ThreePhaseAclfOutFunc {
 		  sb.append("BusId   Bus Name    BaseKv   Voltage A(Mag, Ang)      Voltage B(Mag, Ang)      Voltage C(Mag, Ang)  \n");
 		  sb.append("-------------------------------------------------------------------------------------------------\n");
 		 for(BaseDStabBus<?,?> bus: net.getBusList()){
-			  if( bus.isActive() && bus instanceof Bus3Phase){
+			  if( bus.isActive() && bus instanceof DStab3PBus){
 				  
-				  Bus3Phase Bus3P = (Bus3Phase) bus;
+				  DStab3PBus Bus3P = (DStab3PBus) bus;
 				  Complex3x1 vabc= Bus3P.get3PhaseVotlages();
 				 
 				  sb.append(bus.getId()+"   "+bus.getName()+"      "+ String.format("%4.1f    ",(bus.getBaseVoltage()/1000.0))+"    ");

@@ -8,8 +8,8 @@ import java.util.Map.Entry;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.multiNet.algo.SubNetworkProcessor;
 import org.interpss.numeric.datatype.Complex3x1;
-import org.interpss.threePhase.basic.Branch3Phase;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.DStab3PBranch;
+import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
@@ -140,7 +140,7 @@ public class TDMultiNetPowerflowAlgorithm {
 				
 				for(Branch bra: sourceBus.getConnectedPhysicalBranchList()){
 					if(bra.isActive()){
-						Branch3Phase acLine = (Branch3Phase) bra;
+						DStab3PBranch acLine = (DStab3PBranch) bra;
 						
 						//NOTE the positive sign of branch current flow is fromBus->ToBus  
 						if(bra.getFromBus().getId().equals(sourceBus.getId())){
@@ -161,7 +161,7 @@ public class TDMultiNetPowerflowAlgorithm {
 				System.out.println("3seq current injection: "+currInj3Seq.toString());
 				distBoundary3SeqCurInjTable.put(sourceBus.getId(), currInj3Phase.to012());
 				
-				Bus3Phase sourceBus3Ph = (Bus3Phase) sourceBus; 
+				DStab3PBus sourceBus3Ph = (DStab3PBus) sourceBus; 
 				
 				Complex posSeqPower = sourceBus3Ph.getThreeSeqVoltage().b_1.multiply(currInj3Seq.b_1.conjugate());
 				
@@ -262,7 +262,7 @@ public class TDMultiNetPowerflowAlgorithm {
 		    	  updateDistBoundaryBus3SeqVoltTable();
 		    	  
 		    	  for(BaseAclfNetwork<?,?> distNet:this.distNetList){
-		    		  Bus3Phase sourceBus3Ph = (Bus3Phase) distNet.getBus(distNetId2BoundaryBusTable.get(distNet.getId()));
+		    		  DStab3PBus sourceBus3Ph = (DStab3PBus) distNet.getBus(distNetId2BoundaryBusTable.get(distNet.getId()));
 		    		  
 		    		  Complex3x1 vabc = this.distBoundaryBus3SeqVoltages.get(sourceBus3Ph.getId()).toABC();
 		    		  
@@ -285,7 +285,7 @@ public class TDMultiNetPowerflowAlgorithm {
 						
 						for(Branch bra: sourceBus3Ph.getConnectedPhysicalBranchList()){
 							if(bra.isActive()){
-								Branch3Phase acLine = (Branch3Phase) bra;
+								DStab3PBranch acLine = (DStab3PBranch) bra;
 								if(bra.getFromBus().getId().equals(sourceBus3Ph.getId())){
 									currInj3Phase = currInj3Phase.add(acLine.getCurrentAbcAtFromSide().multiply(-1));
 								}

@@ -5,8 +5,8 @@ import java.util.Queue;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.sparse.ISparseEqnComplexMatrix3x3;
-import org.interpss.threePhase.basic.Branch3Phase;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.DStab3PBranch;
+import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.basic.Network3Phase;
 
 import com.interpss.common.exp.InterpssException;
@@ -31,11 +31,11 @@ public class AclfNetwork3Phase extends BaseAcscNetworkImpl<AcscBus, AcscBranch> 
 				code== XfrConnectCode.DELTA11;
 	}
 	
-	private void BFSSubTransmission (double phaseShiftDeg, Queue<Bus3Phase> onceVisitedBuses){
+	private void BFSSubTransmission (double phaseShiftDeg, Queue<DStab3PBus> onceVisitedBuses){
 		
 		//Retrieves and removes the head of this queue, or returns null if this queue is empty.
 	    while(!onceVisitedBuses.isEmpty()){
-			Bus3Phase  startingBus = onceVisitedBuses.poll();
+			DStab3PBus  startingBus = onceVisitedBuses.poll();
 			startingBus.setBooleanFlag(true);
 			startingBus.setIntFlag(2);
 			
@@ -52,7 +52,7 @@ public class AclfNetwork3Phase extends BaseAcscNetworkImpl<AcscBus, AcscBranch> 
 								
 								if(findBus.getIntFlag()==0){
 									findBus.setIntFlag(1);
-									onceVisitedBuses.add((Bus3Phase) findBus);
+									onceVisitedBuses.add((DStab3PBus) findBus);
 									
 									// update the phase voltage
 									Complex vpos = ((AclfBus)findBus).getVoltage();
@@ -60,7 +60,7 @@ public class AclfNetwork3Phase extends BaseAcscNetworkImpl<AcscBus, AcscBranch> 
 									Complex vb = va.multiply(phaseShiftCplxFactor(120.0d));
 									Complex vc = vb.multiply(phaseShiftCplxFactor(120.0d));
 									
-									((Bus3Phase) findBus).set3PhaseVoltages(new Complex3x1(va,vb,vc));
+									((DStab3PBus) findBus).set3PhaseVoltages(new Complex3x1(va,vb,vc));
 								}
 							} catch (InterpssException e) {
 								
@@ -84,9 +84,9 @@ public class AclfNetwork3Phase extends BaseAcscNetworkImpl<AcscBus, AcscBranch> 
 		yMatrixAbc = new SparseEqnComplexMatrix3x3Impl(getNoBus());
 		
 		for(BaseAcscBus<?,?> b:this.getBusList()){
-			if(b instanceof Bus3Phase){
+			if(b instanceof DStab3PBus){
 				int i = b.getSortNumber();
-				Bus3Phase ph3Bus = (Bus3Phase) b;
+				DStab3PBus ph3Bus = (DStab3PBus) b;
 				yMatrixAbc.setA(ph3Bus.getYiiAbc() ,i, i);
 			}
 			else
@@ -95,8 +95,8 @@ public class AclfNetwork3Phase extends BaseAcscNetworkImpl<AcscBus, AcscBranch> 
 		
 		for (AcscBranch bra : this.getBranchList()) {
 			if (bra.isActive()) {
-				if(bra instanceof Branch3Phase){
-					Branch3Phase ph3Branch = (Branch3Phase) bra;
+				if(bra instanceof DStab3PBranch){
+					DStab3PBranch ph3Branch = (DStab3PBranch) bra;
 					int i = bra.getFromBus().getSortNumber(),
 						j = bra.getToBus().getSortNumber();
 					yMatrixAbc.addToA( ph3Branch.getYftabc(), i, j );
@@ -121,9 +121,4 @@ public class AclfNetwork3Phase extends BaseAcscNetworkImpl<AcscBus, AcscBranch> 
 		
 		return this.yMatrixAbc;
 	}
-
-
-
-	
-	
 }

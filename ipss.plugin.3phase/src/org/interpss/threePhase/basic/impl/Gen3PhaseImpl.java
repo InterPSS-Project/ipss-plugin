@@ -4,7 +4,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.basic.Gen3Phase;
 
 import com.interpss.dstab.GeneratorType;
@@ -26,7 +26,7 @@ public class Gen3PhaseImpl extends DStabGenImpl implements Gen3Phase {
 	private Complex3x3   yAbc = null;
 	private Complex3x1   puPowerAbc = null;
 	
-	private Bus3Phase parentBus3P = null;
+	private DStab3PBus parentBus3P = null;
 
 	private Complex3x1 igen3Ph = null;
 	
@@ -120,9 +120,9 @@ public class Gen3PhaseImpl extends DStabGenImpl implements Gen3Phase {
 	}
 	
 
-	public Bus3Phase getParentBus(){
-		if(super.getParentBus() instanceof Bus3Phase)
-		     return (Bus3Phase) super.getParentBus();
+	public DStab3PBus getParentBus(){
+		if(super.getParentBus() instanceof DStab3PBus)
+		     return (DStab3PBus) super.getParentBus();
 		else
 			try {
 				throw new Exception("The parent bus is not a Bus3Phase");

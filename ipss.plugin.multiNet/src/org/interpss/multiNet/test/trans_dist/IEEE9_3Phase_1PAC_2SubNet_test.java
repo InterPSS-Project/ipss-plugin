@@ -22,8 +22,8 @@ import org.interpss.multiNet.algo.SubNetworkProcessor;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.threePhase.basic.Branch3Phase;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.DStab3PBranch;
+import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.model.impl.SinglePhaseACMotor;
 import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
@@ -158,7 +158,7 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
 		
         StringBuffer sb = new StringBuffer();
         
-        Bus3Phase bus12 = ((Bus3Phase)dsNet.getBus("Bus12"));
+        DStab3PBus bus12 = ((DStab3PBus)dsNet.getBus("Bus12"));
         SinglePhaseACMotor ac1 = (SinglePhaseACMotor) bus12.getPhaseADynLoadList().get(0);
         SinglePhaseACMotor ac2 = (SinglePhaseACMotor) bus12.getPhaseBDynLoadList().get(0);
         SinglePhaseACMotor ac3 = (SinglePhaseACMotor) bus12.getPhaseCDynLoadList().get(0);
@@ -200,14 +200,14 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
 	
 	private void addDistSys(DStabNetwork3Phase dsNet ) throws InterpssException{
 		 // remove the load from bus5
-	    Bus3Phase bus5 = (Bus3Phase) dsNet.getBus("Bus5");
+	    DStab3PBus bus5 = (DStab3PBus) dsNet.getBus("Bus5");
 	    
 	    bus5.setLoadCode(AclfLoadCode.NON_LOAD);
 	    bus5.getContributeLoadList().remove(0);
 	    
 	    // add 69 kV and below distribution system
 	    
-		Bus3Phase bus10 = ThreePhaseObjectFactory.create3PDStabBus("Bus10", dsNet);
+		DStab3PBus bus10 = ThreePhaseObjectFactory.create3PDStabBus("Bus10", dsNet);
   		bus10.setAttributes("69kV sub", "");
   		bus10.setBaseVoltage(69000.0);
   		// set the bus to a non-generator bus
@@ -226,7 +226,7 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
   		
   		
   		
-		Bus3Phase bus11 = ThreePhaseObjectFactory.create3PDStabBus("Bus11", dsNet);
+		DStab3PBus bus11 = ThreePhaseObjectFactory.create3PDStabBus("Bus11", dsNet);
   		bus11.setAttributes("13.8 kV feeder starting end", "");
   		bus11.setBaseVoltage(13800.0);
   		// set the bus to a non-generator bus
@@ -236,7 +236,7 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
   		
   		
   		
-		Bus3Phase bus11a = ThreePhaseObjectFactory.create3PDStabBus("Bus11a", dsNet);
+		DStab3PBus bus11a = ThreePhaseObjectFactory.create3PDStabBus("Bus11a", dsNet);
   		bus11a.setAttributes("13.8 kV feeder terminal-end", "");
   		bus11a.setBaseVoltage(13800.0);
   		// set the bus to a non-generator bus
@@ -246,7 +246,7 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
   		bus11a.setLoadPQ(new Complex(0.61,0.1));
   		
   		
-		Bus3Phase bus12 = ThreePhaseObjectFactory.create3PDStabBus("Bus12", dsNet);
+		DStab3PBus bus12 = ThreePhaseObjectFactory.create3PDStabBus("Bus12", dsNet);
   		bus12.setAttributes("230 V feeder", "");
   		bus12.setBaseVoltage(230.0);
   		// set the bus to a non-generator bus
@@ -264,7 +264,7 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
   		
 		//////////////////transformers///////////////////////////////////////////
   		
-		Branch3Phase xfr5_10 = ThreePhaseObjectFactory.create3PBranch("Bus5", "Bus10", "0", dsNet);
+		DStab3PBranch xfr5_10 = ThreePhaseObjectFactory.create3PBranch("Bus5", "Bus10", "0", dsNet);
 		xfr5_10.setBranchCode(AclfBranchCode.XFORMER);
 		xfr5_10.setZ( new Complex( 0.0, 0.0667 )); // 150 MVA ,X = 0.1
 		xfr5_10.setZ0( new Complex(0.0, 0.0667 ));
@@ -283,7 +283,7 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
 //		 bra10_10a.setHB0(0.1);
 		
   		
-		Branch3Phase xfr10_11 = ThreePhaseObjectFactory.create3PBranch("Bus10", "Bus11", "0", dsNet);
+		DStab3PBranch xfr10_11 = ThreePhaseObjectFactory.create3PBranch("Bus10", "Bus11", "0", dsNet);
 		xfr10_11.setBranchCode(AclfBranchCode.XFORMER);
 		xfr10_11.setZ( new Complex( 0.0, 0.0532 )); // 150 MVA ,X = 0.08
 		xfr10_11.setZ0( new Complex(0.0, 0.0532 ));
@@ -294,7 +294,7 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
 		
 	    
 		
-		Branch3Phase xfr11_12 = ThreePhaseObjectFactory.create3PBranch("Bus11a", "Bus12", "0", dsNet);
+		DStab3PBranch xfr11_12 = ThreePhaseObjectFactory.create3PBranch("Bus11a", "Bus12", "0", dsNet);
 		xfr11_12.setBranchCode(AclfBranchCode.XFORMER);
 		xfr11_12.setZ( new Complex( 0.0, 0.025 ));
 		xfr11_12.setZ0( new Complex(0.0, 0.025 ));
@@ -304,7 +304,7 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
 		xfr2.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
 		
 		
-		Branch3Phase feeder = ThreePhaseObjectFactory.create3PBranch("Bus11", "Bus11a", "1", dsNet);
+		DStab3PBranch feeder = ThreePhaseObjectFactory.create3PBranch("Bus11", "Bus11a", "1", dsNet);
 		feeder.setBranchCode(AclfBranchCode.LINE);
 		feeder.setZ( new Complex( 0.01, 0.02 )); // 100 MVA ,X = 0.1
 		feeder.setZ0( new Complex(0.025, 0.05 ));
@@ -545,7 +545,7 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
  		
 		//////////////////transformers///////////////////////////////////////////
  		
-		Branch3Phase xfr5_10 = ThreePhaseObjectFactory.create3PBranch("Bus5", "Bus10", "0", dsNet);
+		DStab3PBranch xfr5_10 = ThreePhaseObjectFactory.create3PBranch("Bus5", "Bus10", "0", dsNet);
 		xfr5_10.setBranchCode(AclfBranchCode.XFORMER);
 		xfr5_10.setZ( new Complex( 0.0, 0.0667 )); // 150 MVA ,X = 0.1
 		xfr5_10.setZ0( new Complex(0.0, 0.0667 ));
@@ -564,7 +564,7 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
 //		 bra10_10a.setHB0(0.1);
 		
  		
-		Branch3Phase xfr10_11 = ThreePhaseObjectFactory.create3PBranch("Bus10", "Bus11", "0", dsNet);
+		DStab3PBranch xfr10_11 = ThreePhaseObjectFactory.create3PBranch("Bus10", "Bus11", "0", dsNet);
 		xfr10_11.setBranchCode(AclfBranchCode.XFORMER);
 		xfr10_11.setZ( new Complex( 0.0, 0.0532 )); // 150 MVA ,X = 0.08
 		xfr10_11.setZ0( new Complex(0.0, 0.0532 ));
@@ -575,7 +575,7 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
 		
 	    
 		
-		Branch3Phase xfr11_12 = ThreePhaseObjectFactory.create3PBranch("Bus11a", "Bus12", "0", dsNet);
+		DStab3PBranch xfr11_12 = ThreePhaseObjectFactory.create3PBranch("Bus11a", "Bus12", "0", dsNet);
 		xfr11_12.setBranchCode(AclfBranchCode.XFORMER);
 		xfr11_12.setZ( new Complex( 0.0, 0.025 ));
 		xfr11_12.setZ0( new Complex(0.0, 0.025 ));
@@ -585,7 +585,7 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
 		xfr2.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
 		
 		
-		Branch3Phase feeder = ThreePhaseObjectFactory.create3PBranch("Bus11", "Bus11a", "1", dsNet);
+		DStab3PBranch feeder = ThreePhaseObjectFactory.create3PBranch("Bus11", "Bus11a", "1", dsNet);
 		feeder.setBranchCode(AclfBranchCode.LINE);
 		feeder.setZ( new Complex( 0.01, 0.02 )); // 100 MVA ,X = 0.1
 		feeder.setZ0( new Complex(0.025, 0.05 ));

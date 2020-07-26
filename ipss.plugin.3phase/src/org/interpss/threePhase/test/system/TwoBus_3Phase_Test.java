@@ -1,6 +1,5 @@
 package org.interpss.threePhase.test.system;
 
-import static org.interpss.threePhase.util.ThreePhaseUtilFunction.threePhaseXfrAptr;
 import static org.junit.Assert.assertTrue;
 
 import java.util.logging.Level;
@@ -11,12 +10,10 @@ import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.sparse.ISparseEqnComplexMatrix3x3;
-import org.interpss.numeric.util.MatrixOutputUtil;
 import org.interpss.numeric.util.NumericUtil;
-import org.interpss.threePhase.basic.Branch3Phase;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.DStab3PBranch;
+import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.basic.Gen3Phase;
-import org.interpss.threePhase.basic.Transformer3Phase;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.impl.DStabNetwork3phaseImpl;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
@@ -28,12 +25,8 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
-import com.interpss.core.acsc.AcscBus;
-import com.interpss.core.acsc.XfrConnectCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.dstab.BaseDStabBus;
-import com.interpss.dstab.DStabBus;
-import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
@@ -78,8 +71,8 @@ public class TwoBus_3Phase_Test {
 		   net.initThreePhaseFromLfResult();
 		   
 			  for(BaseDStabBus<?,?> bus: net.getBusList()){
-				  if(bus instanceof Bus3Phase){
-					  Bus3Phase ph3Bus = (Bus3Phase) bus;
+				  if(bus instanceof DStab3PBus){
+					  DStab3PBus ph3Bus = (DStab3PBus) bus;
 					  
 					  System.out.println(bus.getId() +": Vabc =  "+ph3Bus.get3PhaseVotlages());
 	                  /*
@@ -200,8 +193,8 @@ public class TwoBus_3Phase_Test {
 	  	assertTrue(net.solveNetEqn());
 	  	
 	  	 for(BaseDStabBus<?,?> bus: net.getBusList()){
-			  if(bus instanceof Bus3Phase){
-				  Bus3Phase ph3Bus = (Bus3Phase) bus;
+			  if(bus instanceof DStab3PBus){
+				  DStab3PBus ph3Bus = (DStab3PBus) bus;
 				  
 				 System.out.println(bus.getId() +": Vabc =  "+ph3Bus.get3PhaseVotlages());
                  /*
@@ -290,7 +283,7 @@ private DStabNetwork3Phase create2BusSys() throws InterpssException{
 		net.setBaseKva(baseKva);
 	  
 	   //Bus 1
-  		Bus3Phase bus1 = ThreePhaseObjectFactory.create3PDStabBus("Bus1", net);
+		DStab3PBus bus1 = ThreePhaseObjectFactory.create3PDStabBus("Bus1", net);
   		// set bus name and description attributes
   		bus1.setAttributes("Bus 1", "");
   		// set bus base voltage 
@@ -340,7 +333,7 @@ private DStabNetwork3Phase create2BusSys() throws InterpssException{
   		
 
   	  	// Bus 3
-  		Bus3Phase bus3 = ThreePhaseObjectFactory.create3PDStabBus("Bus3", net);
+		DStab3PBus bus3 = ThreePhaseObjectFactory.create3PDStabBus("Bus3", net);
   		// set bus name and description attributes
   		bus3.setAttributes("Bus 3", "");
   		// set bus base voltage 
@@ -374,7 +367,7 @@ private DStabNetwork3Phase create2BusSys() throws InterpssException{
   				
   	
   		
-  		Branch3Phase bra = ThreePhaseObjectFactory.create3PBranch("Bus1", "Bus3", "0", net);
+  		DStab3PBranch bra = ThreePhaseObjectFactory.create3PBranch("Bus1", "Bus3", "0", net);
 		bra.setBranchCode(AclfBranchCode.LINE);
 		bra.setZ( new Complex(0.000,   0.100));
 		bra.setHShuntY(new Complex(0, 0.200/2));

@@ -2,8 +2,8 @@ package org.interpss.threePhase.dataParser.opendss;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x3;
-import org.interpss.threePhase.basic.Branch3Phase;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.DStab3PBranch;
+import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.basic.LineConfiguration;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
@@ -39,7 +39,7 @@ public class OpenDSSLineParser {
 		
 		DStabNetwork3Phase distNet = this.dataParser.getDistNetwork();
 		
-		Bus3Phase fromBus = null, toBus = null;
+		DStab3PBus fromBus = null, toBus = null;
 	
 		int phaseIdx = -1, lineCodeIdx = -1;
 		
@@ -242,7 +242,7 @@ public class OpenDSSLineParser {
 		if(distNet.getBus(toBusId)==null)
 			toBus = ThreePhaseObjectFactory.create3PDStabBus(toBusId, distNet);
 		
-		Branch3Phase line = ThreePhaseObjectFactory.create3PBranch(fromBusId, toBusId, "1", distNet);
+		DStab3PBranch line = ThreePhaseObjectFactory.create3PBranch(fromBusId, toBusId, "1", distNet);
 		
 		line.setName(this.dataParser.getBusIdPrefix()+lineName);
 	

@@ -1,6 +1,5 @@
 package org.interpss.threePhase.test.system;
 
-import static com.interpss.core.funcImpl.AcscFunction.acscXfrAptr;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
@@ -8,8 +7,8 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.threePhase.basic.Branch3Phase;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.DStab3PBranch;
+import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.basic.Gen3Phase;
 import org.interpss.threePhase.basic.IEEEFeederLineCode;
 import org.interpss.threePhase.basic.Load3Phase;
@@ -25,13 +24,9 @@ import org.junit.Test;
 import com.interpss.DStabObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranchCode;
-import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
-import com.interpss.core.acsc.XfrConnectCode;
-import com.interpss.core.acsc.adpter.AcscXformer;
 import com.interpss.core.net.NetworkType;
-import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
@@ -118,7 +113,7 @@ public DStabNetwork3Phase createFeeder(double baseVolt, int BusNum, double total
 		// identify this is a distribution network
 		net.setNetworkType(NetworkType.DISTRIBUTION);
 		
-		Bus3Phase bus1 = ThreePhaseObjectFactory.create3PDStabBus("Bus1", net);
+		DStab3PBus bus1 = ThreePhaseObjectFactory.create3PDStabBus("Bus1", net);
 		bus1.setAttributes("feeder source", "");
 		bus1.setBaseVoltage(baseVolt);
 		// set the bus to a non-generator bus
@@ -146,7 +141,7 @@ public DStabNetwork3Phase createFeeder(double baseVolt, int BusNum, double total
 		
 		
 		for(int i =2;i<=BusNum;i++){
-			Bus3Phase bus = ThreePhaseObjectFactory.create3PDStabBus("Bus"+i, net);
+			DStab3PBus bus = ThreePhaseObjectFactory.create3PDStabBus("Bus"+i, net);
 			bus.setAttributes("feeder bus "+i, "");
 			bus.setBaseVoltage(baseVolt);
 			// set the bus to a non-generator bus
@@ -171,7 +166,7 @@ public DStabNetwork3Phase createFeeder(double baseVolt, int BusNum, double total
 		int k =0;
 		for(int i =1;i<BusNum;i++){
 			
-			Branch3Phase Line2_3 = ThreePhaseObjectFactory.create3PBranch("Bus"+i, "Bus"+(i+1), "0", net);
+			DStab3PBranch Line2_3 = ThreePhaseObjectFactory.create3PBranch("Bus"+i, "Bus"+(i+1), "0", net);
 			Line2_3.setBranchCode(AclfBranchCode.LINE);
 			
 			
