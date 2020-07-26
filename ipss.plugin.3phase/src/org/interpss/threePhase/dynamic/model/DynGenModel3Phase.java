@@ -4,7 +4,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.basic.Gen3Phase;
 
 public abstract class DynGenModel3Phase extends DynamicModel3Phase{
@@ -73,7 +73,7 @@ public abstract class DynGenModel3Phase extends DynamicModel3Phase{
 			
 			//Power = VABC*conj(IgenABC-YgenABC*VABC)
 			// pu on system mva base
-			Complex3x1 Vabc = ((Bus3Phase)this.parentGen.getParentBus()).get3PhaseVotlages();
+			Complex3x1 Vabc = ((DStab3PBus)this.parentGen.getParentBus()).get3PhaseVotlages();
 			Complex3x1 IinjABC =  getISource3Phase().subtract(getYabc(false).multiply(Vabc)); 
 			this.puPowerAbc.a_0 = Vabc.a_0.multiply(IinjABC.a_0.conjugate());
 			this.puPowerAbc.b_1 = Vabc.b_1.multiply(IinjABC.b_1.conjugate());
@@ -105,7 +105,7 @@ public abstract class DynGenModel3Phase extends DynamicModel3Phase{
 		
 		public Complex3x1 getIinj2Network3Phase(){
 			Complex3x1 iInj =getISource3Phase();
-			Complex3x1 Vabc = ((Bus3Phase)this.parentGen.getParentBus()).get3PhaseVotlages();
+			Complex3x1 Vabc = ((DStab3PBus)this.parentGen.getParentBus()).get3PhaseVotlages();
 			
 			if(getYabc(false)!= null)
 			     iInj = iInj.subtract(getYabc(false).multiply(Vabc));

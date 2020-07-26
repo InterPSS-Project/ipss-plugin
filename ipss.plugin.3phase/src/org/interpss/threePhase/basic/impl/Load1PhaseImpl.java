@@ -3,7 +3,7 @@ package org.interpss.threePhase.basic.impl;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.basic.Load1Phase;
 
 import com.interpss.core.abc.LoadConnectionType;
@@ -71,7 +71,7 @@ public class Load1PhaseImpl extends DStabLoadImpl implements Load1Phase {
 	public Complex3x1 getEquivCurrInj(Complex3x1 vabc) {
 		equivCurInj  = new Complex3x1();
 		
-		Bus3Phase bus = ((Bus3Phase)this.getParentBus());
+		DStab3PBus bus = ((DStab3PBus)this.getParentBus());
 		
 //		if(bus.getId().equals("113")){
 //			System.out.println("Debug bus equiv Current calculation");

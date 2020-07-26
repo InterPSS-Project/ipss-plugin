@@ -2,7 +2,7 @@ package org.interpss.threePhase.dataParser.opendss;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.basic.Load3Phase;
 import org.interpss.threePhase.basic.impl.Load3PhaseImpl;
 
@@ -75,7 +75,7 @@ public class OpenDSSCapacitorParser {
 	
 		//get the bus object
 		busId = this.dataParser.getBusIdPrefix()+busId;
-		Bus3Phase bus = (Bus3Phase) this.dataParser.getDistNetwork().getBus(busId);
+		DStab3PBus bus = (DStab3PBus) this.dataParser.getDistNetwork().getBus(busId);
 		
 		if(bus==null){
 			throw new Error("Bus for a capacitor cannot be found, busId, capId = "+busId+","+capId );

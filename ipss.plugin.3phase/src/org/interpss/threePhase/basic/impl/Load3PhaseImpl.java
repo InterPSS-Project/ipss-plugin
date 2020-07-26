@@ -3,7 +3,7 @@ package org.interpss.threePhase.basic.impl;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.basic.Load3Phase;
 
 import com.interpss.core.abc.LoadConnectionType;
@@ -24,7 +24,7 @@ public class Load3PhaseImpl extends Load1PhaseImpl implements Load3Phase {
 	
 	@Override
 	public Complex3x3 getEquivYabc() {
-		Complex3x1 vabc = ((Bus3Phase)this.getParentBus()).get3PhaseVotlages();
+		Complex3x1 vabc = ((DStab3PBus)this.getParentBus()).get3PhaseVotlages();
 		double va = vabc.a_0.abs();
 		double vb = vabc.b_1.abs();
 		double vc = vabc.c_2.abs();

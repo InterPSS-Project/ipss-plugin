@@ -2,11 +2,9 @@ package org.interpss.threePhase.util;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x3;
-import org.interpss.threePhase.basic.Bus3Phase;
 
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.dstab.BaseDStabBus;
-import com.interpss.dstab.DStabBus;
 
 public class ThreeSeqLoadProcessor {
 	

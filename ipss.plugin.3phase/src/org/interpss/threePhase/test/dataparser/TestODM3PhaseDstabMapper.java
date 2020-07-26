@@ -15,13 +15,12 @@ import org.interpss.display.AclfOutFunc;
 import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.algo.DynamicEventProcessor3Phase;
 import org.interpss.threePhase.dynamic.model.DStabGen3PhaseAdapter;
 import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
 import org.interpss.threePhase.util.ThreePhaseAclfOutFunc;
-import org.interpss.util.FileUtil;
 import org.junit.Test;
 
 import com.interpss.DStabObjectFactory;
@@ -32,8 +31,8 @@ import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.net.Bus;
-import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.BaseDStabNetwork;
+import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
@@ -125,7 +124,7 @@ public class TestODM3PhaseDstabMapper {
 				dstabAlgo.solveDEqnStep(true);
 			
 				for( Bus b : dsNet.getBusList()) {
-					Bus3Phase bus = (Bus3Phase)b;
+					DStab3PBus bus = (DStab3PBus)b;
 
 					if(bus.isActive()){
 						

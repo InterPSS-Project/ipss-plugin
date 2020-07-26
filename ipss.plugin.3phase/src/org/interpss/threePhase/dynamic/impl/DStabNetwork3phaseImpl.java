@@ -15,8 +15,8 @@ import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.sparse.ISparseEqnComplexMatrix3x3;
-import org.interpss.threePhase.basic.Branch3Phase;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.DStab3PBranch;
+import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.basic.Gen3Phase;
 import org.interpss.threePhase.basic.Load3Phase;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
@@ -44,7 +44,7 @@ import com.interpss.dstab.device.DynamicBusDevice;
 import com.interpss.dstab.dynLoad.DynLoadModel;
 import com.interpss.dstab.impl.BaseDStabNetworkImpl;
 
-public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<Bus3Phase, Branch3Phase> implements DStabNetwork3Phase {
+public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DStab3PBranch> implements DStabNetwork3Phase {
     
 	protected ISparseEqnComplexMatrix3x3 yMatrixAbc = null;
 	protected boolean is3PhaseNetworkInitialized = false;
@@ -99,12 +99,12 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<Bus3Phase, Bran
 					 // voltage side, the low voltage side should be shifted - 30 deg.
 					 // 
 					 phaseShiftDeg = -30;
-					 Bus3Phase  StartingBus =null;
+					 DStab3PBus  StartingBus =null;
 					 
 					 //high voltage side leads 30 deg, always starts from the low voltage side
 					 if(bra.getFromAclfBus().getBaseVoltage()>bra.getToAclfBus().getBaseVoltage()){
 						 
-						 StartingBus = (Bus3Phase) bra.getToAclfBus();
+						 StartingBus = (DStab3PBus) bra.getToAclfBus();
 						 
 						 if(isDeltaConnected(bra.getXfrFromConnectCode()))  { // if low voltage side is delta connected, then it is delta11
 							//TODO fix the input xfr connect code issue
@@ -113,7 +113,7 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<Bus3Phase, Bran
 					 }		
 					 else {
 					
-						 StartingBus = (Bus3Phase) bra.getFromAclfBus();
+						 StartingBus = (DStab3PBus) bra.getFromAclfBus();
 						 if(isDeltaConnected(bra.getXfrToConnectCode())) { // if low voltage side is delta connected, then it is delta11
 						
 							 //TODO fix the input xfr connect code issue
@@ -128,7 +128,7 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<Bus3Phase, Bran
 						StartingBus.set3PhaseVoltages(new Complex3x1(va,vb,vc));
 						StartingBus.setVoltage(StartingBus.getThreeSeqVoltage().b_1);
 					 
-					 Queue<Bus3Phase> q = new  LinkedList<Bus3Phase>();
+					 Queue<DStab3PBus> q = new  LinkedList<DStab3PBus>();
 				     q.add(StartingBus);
 				     
 				     BFSSubTransmission(phaseShiftDeg,q);
@@ -146,7 +146,7 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<Bus3Phase, Bran
 					Complex va = vpos;
 					Complex vb = va.multiply(phaseShiftCplxFactor(-120));
 					Complex vc = va.multiply(phaseShiftCplxFactor(120));
-					((Bus3Phase) b).set3PhaseVoltages(new Complex3x1(va,vb,vc));
+					((DStab3PBus) b).set3PhaseVoltages(new Complex3x1(va,vb,vc));
 			}
 				
 			//initialize the 3p power output of generation;
@@ -184,11 +184,11 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<Bus3Phase, Bran
 				code== XfrConnectCode.DELTA11;
 	}
 	
-	private void BFSSubTransmission (double phaseShiftDeg, Queue<Bus3Phase> onceVisitedBuses){
+	private void BFSSubTransmission (double phaseShiftDeg, Queue<DStab3PBus> onceVisitedBuses){
 		
 		//Retrieves and removes the head of this queue, or returns null if this queue is empty.
 	    while(!onceVisitedBuses.isEmpty()){
-			Bus3Phase  startingBus = onceVisitedBuses.poll();
+			DStab3PBus  startingBus = onceVisitedBuses.poll();
 			startingBus.setBooleanFlag(true);
 			startingBus.setIntFlag(2);
 			
@@ -205,7 +205,7 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<Bus3Phase, Bran
 								
 								if(findBus.getIntFlag()==0){
 									findBus.setIntFlag(1);
-									onceVisitedBuses.add((Bus3Phase) findBus);
+									onceVisitedBuses.add((DStab3PBus) findBus);
 									
 									// update the phase voltage
 									Complex vpos = ((BaseAclfBus)findBus).getVoltage();
@@ -213,8 +213,8 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<Bus3Phase, Bran
 									Complex vb = va.multiply(phaseShiftCplxFactor(-120.0d));
 									Complex vc = va.multiply(phaseShiftCplxFactor(120.0d));
 									
-									((Bus3Phase) findBus).set3PhaseVoltages(new Complex3x1(va,vb,vc));
-									 ((BaseAclfBus)findBus).setVoltage(((Bus3Phase) findBus).getThreeSeqVoltage().b_1);
+									((DStab3PBus) findBus).set3PhaseVoltages(new Complex3x1(va,vb,vc));
+									 ((BaseAclfBus)findBus).setVoltage(((DStab3PBus) findBus).getThreeSeqVoltage().b_1);
 								}
 							} catch (InterpssException e) {
 								
@@ -246,9 +246,9 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<Bus3Phase, Bran
 		
 		for(BaseDStabBus b:this.getBusList()){
 			if(b.isActive()){
-				if(b instanceof Bus3Phase){
+				if(b instanceof DStab3PBus){
 					int i = b.getSortNumber();
-					Bus3Phase ph3Bus = (Bus3Phase) b;
+					DStab3PBus ph3Bus = (DStab3PBus) b;
 					Complex3x3 yii = ph3Bus.getYiiAbc();
 					// check if there is any Yii = 0.0 (abs(Yii) <1.0E-8)
 					
@@ -276,8 +276,8 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<Bus3Phase, Bran
 		
 		for (AcscBranch bra : this.getBranchList()) {
 			if (bra.isActive()) {
-				if(bra instanceof Branch3Phase){
-					Branch3Phase ph3Branch = (Branch3Phase) bra;
+				if(bra instanceof DStab3PBranch){
+					DStab3PBranch ph3Branch = (DStab3PBranch) bra;
 					int i = bra.getFromBus().getSortNumber(),
 						j = bra.getToBus().getSortNumber();
 					yMatrixAbc.addToA( ph3Branch.getYftabc(), i, j );
@@ -291,7 +291,7 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<Bus3Phase, Bran
 		
 		
 		//TODO append the equivalent admittance of dynamic loads to YMatrixABC
-		for (Bus3Phase bus3p : getBusList() ) {
+		for (DStab3PBus bus3p : getBusList() ) {
 			if(bus3p.isActive() && bus3p.isLoad()){
 
 				Complex3x3 threePhasedynLoadEquivY = new Complex3x3();
@@ -424,7 +424,7 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<Bus3Phase, Bran
 				BaseDStabBus<?,?> bus = (BaseDStabBus<?,?>)b;
 
 				if(bus.isActive()){
-					Bus3Phase bus3p = (Bus3Phase) bus;
+					DStab3PBus bus3p = (DStab3PBus) bus;
 					Complex3x1 iInject = new Complex3x1();
 
 					if(bus.getContributeGenList().size()>0){
@@ -549,7 +549,7 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<Bus3Phase, Bran
 					if(!vabc.a_0.isNaN() && !vabc.b_1.isNaN() && !vabc.c_2.isNaN()){
                     
 						//if(bus instanceof Bus3Phase){
-							Bus3Phase bus3P = (Bus3Phase) bus;
+							DStab3PBus bus3P = (DStab3PBus) bus;
 							 bus3P.set3PhaseVoltages(vabc);
 							 
 							 // update the positive sequence voltage
@@ -586,8 +586,8 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<Bus3Phase, Bran
 		
 		for ( BaseDStabBus<?,?> b : getBusList() ) {
 
-			if( b instanceof Bus3Phase){
-			    Bus3Phase bus =(Bus3Phase) b;
+			if( b instanceof DStab3PBus){
+			    DStab3PBus bus =(DStab3PBus) b;
 
 			   //only the active buses will be initialized
 				if(b.isActive()){
