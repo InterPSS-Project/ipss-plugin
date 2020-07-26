@@ -25,11 +25,11 @@ import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.ComplexFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.threePhase.basic.DStab3PBranch;
-import org.interpss.threePhase.basic.DStab3PBus;
 import org.interpss.threePhase.basic.IEEEFeederLineCode;
-import org.interpss.threePhase.basic.Load3Phase;
-import org.interpss.threePhase.basic.impl.Load3PhaseImpl;
+import org.interpss.threePhase.basic.dstab.DStab3PBranch;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PLoad;
+import org.interpss.threePhase.basic.dstab.impl.DStab3PLoadImpl;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.algo.DynamicEventProcessor3Phase;
 import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
@@ -1065,7 +1065,7 @@ private String[] replaceLoadByFeeder(DStabNetwork3Phase net,String transBusId) t
              New Load.634b Bus1=634.2     Phases=1 Conn=Wye  Model=1 kV=0.277  kW=120   kvar=90 
              New Load.634c Bus1=634.3     Phases=1 Conn=Wye  Model=1 kV=0.277  kW=120   kvar=90 
 			 */
-			Load3Phase load634 = new Load3PhaseImpl();
+			DStab3PLoad load634 = new DStab3PLoadImpl();
 			load634.set3PhaseLoad( new Complex3x1(new Complex(0.160,0.11),new Complex(0.120,0.09),new Complex(0.120,0.090)).multiply(loadScaleFactor));
 			bus634.getThreePhaseLoadList().add(load634);
 			
@@ -1078,7 +1078,7 @@ private String[] replaceLoadByFeeder(DStabNetwork3Phase net,String transBusId) t
 			// set the bus to a constant power load bus
 			bus645.setLoadCode(AclfLoadCode.CONST_P);
 			//New Load.645 Bus1=645.2       Phases=1 Conn=Wye  Model=1 kV=2.4      kW=170   kvar=125 
-			Load3Phase load645 = new Load3PhaseImpl();
+			DStab3PLoad load645 = new DStab3PLoadImpl();
 			load645.set3PhaseLoad( new Complex3x1(new Complex(0.0),new Complex(0.170,0.125),new Complex(0)).multiply(loadScaleFactor));
 			bus645.getThreePhaseLoadList().add(load645);
 			
@@ -1093,7 +1093,7 @@ private String[] replaceLoadByFeeder(DStabNetwork3Phase net,String transBusId) t
 		
 			bus646.setLoadCode(AclfLoadCode.CONST_P);
 			//New Load.646 Bus1=646.2.3    Phases=1 Conn=Delta Model=2 kV=4.16    kW=230   kvar=132 
-			Load3Phase load646 = new Load3PhaseImpl();
+			DStab3PLoad load646 = new DStab3PLoadImpl();
 			load646.set3PhaseLoad( new Complex3x1(new Complex(0.0),new Complex(0.230/2,0.132/2),new Complex(0.230/2,0.132/2)).multiply(loadScaleFactor));
 			bus646.getThreePhaseLoadList().add(load646);
 			
@@ -1106,7 +1106,7 @@ private String[] replaceLoadByFeeder(DStabNetwork3Phase net,String transBusId) t
 			// set the bus to a constant power load bus
 			bus671.setLoadCode(AclfLoadCode.CONST_P);
 			// New Load.671 Bus1=671.1.2.3  Phases=3 Conn=Delta Model=1 kV=4.16   kW=1155 kvar=660
-			Load3Phase load671 = new Load3PhaseImpl();
+			DStab3PLoad load671 = new DStab3PLoadImpl();
 			load671.set3PhaseLoad(new Complex3x1(new Complex(1.155/3,0.660/3),new Complex(1.155/3,0.660/3),new Complex(1.155/3,0.660/3)).multiply(loadScaleFactor));
 			bus671.getThreePhaseLoadList().add(load671);
 			
@@ -1126,7 +1126,7 @@ private String[] replaceLoadByFeeder(DStabNetwork3Phase net,String transBusId) t
 			// set the bus to a constant power load bus
 			bus611.setLoadCode(AclfLoadCode.CONST_P);
 			//New Load.611 Bus1=611.3      Phases=1 Conn=Wye  Model=5 kV=2.4  kW=170   kvar=80 
-			Load3Phase load611 = new Load3PhaseImpl();
+			DStab3PLoad load611 = new DStab3PLoadImpl();
 			load611.set3PhaseLoad(new Complex3x1(new Complex(0),new Complex(0),new Complex(0.170,0.080)).multiply(loadScaleFactor));
 			bus611.getThreePhaseLoadList().add(load611);
 			
@@ -1139,7 +1139,7 @@ private String[] replaceLoadByFeeder(DStabNetwork3Phase net,String transBusId) t
 			// set the bus to a constant power load bus
 			bus652.setLoadCode(AclfLoadCode.CONST_P);
 			//New Load.652 Bus1=652.1      Phases=1 Conn=Wye  Model=2 kV=2.4  kW=128   kvar=86
-			Load3Phase load652 = new Load3PhaseImpl();
+			DStab3PLoad load652 = new DStab3PLoadImpl();
 			load652.set3PhaseLoad(new Complex3x1(new Complex(0.128,0.086),new Complex(0),new Complex(0.,0.)).multiply(loadScaleFactor));
 			bus652.getThreePhaseLoadList().add(load652);
 			
@@ -1157,7 +1157,7 @@ private String[] replaceLoadByFeeder(DStabNetwork3Phase net,String transBusId) t
 			// set the bus to a constant power load bus
 			bus692.setLoadCode(AclfLoadCode.CONST_P);
 			// New Load.692 Bus1=692.3.1    Phases=1 Conn=Delta Model=5 kV=4.16    kW=170   kvar=151 
-			Load3Phase load692 = new Load3PhaseImpl();
+			DStab3PLoad load692 = new DStab3PLoadImpl();
 			load692.set3PhaseLoad(new Complex3x1(new Complex(0.170/2,0.151/2),new Complex(0),new Complex(0.170/2,0.151/2)).multiply(loadScaleFactor));
 			bus692.getThreePhaseLoadList().add(load692);
 			
@@ -1174,7 +1174,7 @@ private String[] replaceLoadByFeeder(DStabNetwork3Phase net,String transBusId) t
              New Load.675c Bus1=675.3    Phases=1 Conn=Wye  Model=1 kV=2.4  kW=290   kvar=212 
 			 */
 			
-			Load3Phase load675 = new Load3PhaseImpl();
+			DStab3PLoad load675 = new DStab3PLoadImpl();
 			load675.set3PhaseLoad(new Complex3x1(new Complex(0.485,0.190),new Complex(0.068,0.06),new Complex(0.290,0.212)).multiply(loadScaleFactor));
 			bus675.getThreePhaseLoadList().add(load675);
 			
@@ -1190,7 +1190,7 @@ private String[] replaceLoadByFeeder(DStabNetwork3Phase net,String transBusId) t
              New Load.670b Bus1=670.2    Phases=1 Conn=Wye  Model=1 kV=2.4  kW=66    kvar=38 
              New Load.670c Bus1=670.3    Phases=1 Conn=Wye  Model=1 kV=2.4  kW=117  kvar=68 
 			 */
-			Load3Phase load670 = new Load3PhaseImpl();
+			DStab3PLoad load670 = new DStab3PLoadImpl();
 			load670.set3PhaseLoad(new Complex3x1(new Complex(0.017,0.01),new Complex(0.066,0.038),new Complex(0.117,0.068)).multiply(loadScaleFactor));
 			bus670.getThreePhaseLoadList().add(load670);
 			
@@ -1199,17 +1199,17 @@ private String[] replaceLoadByFeeder(DStabNetwork3Phase net,String transBusId) t
 			   New Capacitor.Cap1 Bus1=675 phases=3 kVAR=600 kV=4.16 
 			   New Capacitor.Cap2 Bus1=611.3 phases=1 kVAR=100 kV=2.4 
 			*/
-			Load3Phase shunty675 = new Load3PhaseImpl();
+			DStab3PLoad shunty675 = new DStab3PLoadImpl();
 			shunty675.set3PhaseLoad(new Complex3x1(new Complex(0,-0.2),new Complex(0.0,-0.2),new Complex(0.0,-0.2)).multiply(loadScaleFactor));
 			bus675.getThreePhaseLoadList().add(shunty675);
 			
 			
-			Load3Phase shunty611 = new Load3PhaseImpl();
+			DStab3PLoad shunty611 = new DStab3PLoadImpl();
 			shunty611.set3PhaseLoad(new Complex3x1(new Complex(0.0, 0.0),new Complex(0.0,0.0),new Complex(0.0,-0.1)).multiply(loadScaleFactor));
 			bus611.getThreePhaseLoadList().add(shunty611);
 			
 			//ADDITIONAL SHUNT
-			Load3Phase shunty500kVar = new Load3PhaseImpl();
+			DStab3PLoad shunty500kVar = new DStab3PLoadImpl();
 			shunty500kVar.set3PhaseLoad(new Complex3x1(new Complex(0,-0.2),new Complex(0.0,-0.2),new Complex(0.0,-0.2)).multiply(loadScaleFactor));
 			bus632.getThreePhaseLoadList().add(shunty500kVar);
 			

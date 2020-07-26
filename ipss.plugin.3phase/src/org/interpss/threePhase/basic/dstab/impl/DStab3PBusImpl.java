@@ -1,4 +1,4 @@
-package org.interpss.threePhase.basic.impl;
+package org.interpss.threePhase.basic.dstab.impl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,11 +6,11 @@ import java.util.List;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
-import org.interpss.threePhase.basic.DStab3PBranch;
-import org.interpss.threePhase.basic.DStab3PBus;
-import org.interpss.threePhase.basic.Gen3Phase;
-import org.interpss.threePhase.basic.Load1Phase;
-import org.interpss.threePhase.basic.Load3Phase;
+import org.interpss.threePhase.basic.dstab.DStab1PLoad;
+import org.interpss.threePhase.basic.dstab.DStab3PBranch;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PGen;
+import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 import org.interpss.threePhase.dynamic.model.DynLoadModel1Phase;
 import org.interpss.threePhase.dynamic.model.DynLoadModel3Phase;
 import org.interpss.threePhase.util.ThreeSeqLoadProcessor;
@@ -22,7 +22,7 @@ import com.interpss.dstab.impl.BaseDStabBusImpl;
 
 
 
-public class Bus3PhaseImpl extends BaseDStabBusImpl<Gen3Phase,Load3Phase> implements DStab3PBus{
+public class DStab3PBusImpl extends BaseDStabBusImpl<DStab3PGen,DStab3PLoad> implements DStab3PBus{
 	
 	private Complex3x1 Vabc = null;
 	private Complex3x1 initVabc = null;
@@ -37,10 +37,10 @@ public class Bus3PhaseImpl extends BaseDStabBusImpl<Gen3Phase,Load3Phase> implem
 	
 	private List<DynLoadModel3Phase> threePhaseDynLoadList;
 	
-	private List<Load1Phase> singlePhaseLoadList = null;
+	private List<DStab1PLoad> singlePhaseLoadList = null;
 	
-	private List<Load3Phase> threePhaseLoadList = null;
-	private List<Gen3Phase> threePhaseGenList = null;
+	private List<DStab3PLoad> threePhaseLoadList = null;
+	private List<DStab3PGen> threePhaseGenList = null;
 	
 	private Complex3x1 load3PhEquivCurInj = null;
 	private Complex3x1 equivCurInj3Phase = null;
@@ -162,21 +162,21 @@ public class Bus3PhaseImpl extends BaseDStabBusImpl<Gen3Phase,Load3Phase> implem
 	}
 
 	@Override
-	public List<Gen3Phase> getThreePhaseGenList() {
+	public List<DStab3PGen> getThreePhaseGenList() {
 		if(threePhaseGenList ==null)
 			threePhaseGenList = new ArrayList<>();
 		return threePhaseGenList;
 	}
 
 	@Override
-	public List<Load3Phase> getThreePhaseLoadList() {
+	public List<DStab3PLoad> getThreePhaseLoadList() {
 		if(threePhaseLoadList ==null)
 			threePhaseLoadList = new ArrayList<>();
 		return threePhaseLoadList;
 	}
 	
 	@Override
-	public List<Load1Phase> getSinglePhaseLoadList() {
+	public List<DStab1PLoad> getSinglePhaseLoadList() {
 		if(singlePhaseLoadList ==null)
 			singlePhaseLoadList = new ArrayList<>();
 		return singlePhaseLoadList;
@@ -192,7 +192,7 @@ public class Bus3PhaseImpl extends BaseDStabBusImpl<Gen3Phase,Load3Phase> implem
 		
 		//single-phase loads
 		if(this.getSinglePhaseLoadList().size()>0){
-			for(Load1Phase load1P: this.getSinglePhaseLoadList()){
+			for(DStab1PLoad load1P: this.getSinglePhaseLoadList()){
 				if(load1P.isActive()){
 					this.load3PhEquivCurInj=this.load3PhEquivCurInj.add(load1P.getEquivCurrInj(Vabc));
 				}
@@ -205,7 +205,7 @@ public class Bus3PhaseImpl extends BaseDStabBusImpl<Gen3Phase,Load3Phase> implem
 		//three phase loads
 		if(this.getThreePhaseLoadList().size()>0){
 			
-			for(Load3Phase load:this.getThreePhaseLoadList()){
+			for(DStab3PLoad load:this.getThreePhaseLoadList()){
 				if(load.isActive())
 				  this.load3PhEquivCurInj=this.load3PhEquivCurInj.add(load.getEquivCurrInj(Vabc));
 			}
@@ -222,7 +222,7 @@ public class Bus3PhaseImpl extends BaseDStabBusImpl<Gen3Phase,Load3Phase> implem
 		
 		this.equivCurInj3Phase = calcLoad3PhEquivCurInj();
 		
-		for(Gen3Phase gen:this.getThreePhaseGenList()){
+		for(DStab3PGen gen:this.getThreePhaseGenList()){
 			this.equivCurInj3Phase = this.equivCurInj3Phase.add(gen.getPowerflowEquivCurrInj());
 		}
 		
@@ -291,13 +291,13 @@ public class Bus3PhaseImpl extends BaseDStabBusImpl<Gen3Phase,Load3Phase> implem
 	@Override
 	public Complex3x1 get3PhaseTotalLoad() {
 		this.totalLoad3Phase = new Complex3x1();
-		for(Load3Phase load: this.getThreePhaseLoadList()){
+		for(DStab3PLoad load: this.getThreePhaseLoadList()){
 			if(load.isActive())
 			     this.totalLoad3Phase = this.totalLoad3Phase.add(load.get3PhaseLoad(this.get3PhaseVotlages()));  
 		}
 		//consider single-phase Wye connected load included in the contributeLoadList()
 		// TODO how about delta connected load??
-		for(Load1Phase load1P: this.getSinglePhaseLoadList()){
+		for(DStab1PLoad load1P: this.getSinglePhaseLoadList()){
 			if(load1P.isActive()){
 				if(load1P.getLoadConnectionType()==LoadConnectionType.SINGLE_PHASE_DELTA){
 					throw new Error (" get3PhaseTotalLoad() does not support LoadConnectionType.Single_Phase_Delta yet! bus, load = "+this.getId()+","+load1P.getId());
