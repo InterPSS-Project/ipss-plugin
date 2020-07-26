@@ -5,15 +5,14 @@ import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.threePhase.basic.Bus3Phase;
 import org.interpss.threePhase.basic.Load3Phase;
-import org.interpss.threePhase.basic.LoadConnectionType;
 
+import com.interpss.core.abc.LoadConnectionType;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.acsc.PhaseCode;
-import com.interpss.dstab.impl.DStabLoadImpl;
 
 public class Load3PhaseImpl extends Load1PhaseImpl implements Load3Phase {
 
-	LoadConnectionType loadConnectType = LoadConnectionType.Three_Phase_Wye; // by default three-phase wye;
+	LoadConnectionType loadConnectType = LoadConnectionType.THREE_PHASE_WYE; // by default three-phase wye;
 	double nominalKV = 0;
 	Complex3x1 ph3Load = new Complex3x1();
 	Complex3x3 equivYabc = new Complex3x3();
@@ -74,7 +73,7 @@ public class Load3PhaseImpl extends Load1PhaseImpl implements Load3Phase {
 		}
 		
 		switch (this.loadConnectType){
-		  case Three_Phase_Wye:
+		  case THREE_PHASE_WYE:
 			  if(this.code==AclfLoadCode.CONST_P){
 				  // default 
 			  }
@@ -98,7 +97,7 @@ public class Load3PhaseImpl extends Load1PhaseImpl implements Load3Phase {
 			  break;
 			  
 			  
-		  case Three_Phase_Delta:
+		  case THREE_PHASE_DELTA:
 			  throw new Error("Connection type not supported yet!! Bus, load id,connectType, phases: "
 			          +this.getParentBus().getId()+","+this.getId()+","+this.loadConnectType+","+this.ph);
 			  
@@ -136,7 +135,7 @@ Complex3x1 loadPQ = new Complex3x1();
 			return new Complex3x1();
 		
 		switch (this.loadConnectType){
-		  case Three_Phase_Wye:
+		  case THREE_PHASE_WYE:
 			  if(this.code==AclfLoadCode.CONST_P){
 				  // default 
 				  double va = vabc.a_0.abs();
@@ -183,7 +182,7 @@ Complex3x1 loadPQ = new Complex3x1();
 			  break;
 			  
 			  
-		  case Three_Phase_Delta:
+		  case THREE_PHASE_DELTA:
 			  throw new Error("Connection type not supported yet!! Bus, load id,connectType, phases: "
 			          +this.getParentBus().getId()+","+this.getId()+","+this.loadConnectType+","+this.ph);
 			  

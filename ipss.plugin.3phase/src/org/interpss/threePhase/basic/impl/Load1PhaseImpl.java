@@ -5,8 +5,8 @@ import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.threePhase.basic.Bus3Phase;
 import org.interpss.threePhase.basic.Load1Phase;
-import org.interpss.threePhase.basic.LoadConnectionType;
 
+import com.interpss.core.abc.LoadConnectionType;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.acsc.PhaseCode;
 import com.interpss.dstab.impl.DStabLoadImpl;
@@ -14,7 +14,7 @@ import com.interpss.dstab.impl.DStabLoadImpl;
 public class Load1PhaseImpl extends DStabLoadImpl implements Load1Phase {
 	
 	
-	LoadConnectionType loadConnectType = LoadConnectionType.Single_Phase_Wye; // by default three-phase wye;
+	LoadConnectionType loadConnectType = LoadConnectionType.SINGLE_PHASE_WYE; // by default three-phase wye;
 	double nominalKV = 0; 
 	double Vminpu = 0.85; // pu
 	double Vmaxpu = 1.1; // pu
@@ -83,7 +83,7 @@ public class Load1PhaseImpl extends DStabLoadImpl implements Load1Phase {
 			return equivCurInj;
 		
 		switch (this.loadConnectType){
-		  case Single_Phase_Wye:
+		  case SINGLE_PHASE_WYE:
 			   if(this.ph==PhaseCode.A){
 				   vt = vabc.a_0;
 				   vmag = vt.abs();
@@ -118,7 +118,7 @@ public class Load1PhaseImpl extends DStabLoadImpl implements Load1Phase {
 			    * phase2    |
 			    *   0-------
 			    */
-		  case Single_Phase_Delta:
+		  case SINGLE_PHASE_DELTA:
 			   if(this.ph==PhaseCode.AB){
 				   vt=vabc.a_0.subtract(vabc.b_1);
 				   vmag = vt.abs()/Math.sqrt(3); // the per unit is based on  L-L Volt
