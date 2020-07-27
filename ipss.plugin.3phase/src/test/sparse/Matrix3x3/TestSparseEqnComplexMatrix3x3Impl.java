@@ -1,4 +1,4 @@
-package org.interpss.sparse.Matrix3x3;
+package test.sparse.Matrix3x3;
 
 import static org.junit.Assert.assertTrue;
 
