@@ -1,4 +1,4 @@
-package org.interpss.threePhase.test.dataparser;
+package test.dataparser;
 
 import static com.interpss.core.funcImpl.AcscFunction.acscXfrAptr;
 import static org.junit.Assert.assertTrue;

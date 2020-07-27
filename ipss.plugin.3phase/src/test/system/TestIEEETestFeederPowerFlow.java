@@ -1,4 +1,4 @@
-package org.interpss.threePhase.test.system;
+package test.system;
 
 import static org.junit.Assert.assertTrue;
 
