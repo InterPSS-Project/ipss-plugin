@@ -1,16 +1,15 @@
-package org.interpss.threePhase.basic.acsc.impl;
+package org.interpss.threePhase.basic.static3P.impl;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x3;
-import org.interpss.threePhase.basic.acsc.Acsc3PXformer;
-//import org.interpss.threePhase.basic.dstab.DStab3PBranch;
+import org.interpss.threePhase.basic.static3P.Static3PXformer;
 
 import com.interpss.core.abc.IBranch3Phase;
 import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.XfrConnectCode;
 import com.interpss.core.acsc.adpter.impl.AcscXformerImpl;
 
-public class Acsc3PXformerImpl extends AcscXformerImpl implements Acsc3PXformer {
+public class Static3PXformerImpl extends AcscXformerImpl implements Static3PXformer {
 
 	/**
 	 * 
@@ -33,13 +32,13 @@ public class Acsc3PXformerImpl extends AcscXformerImpl implements Acsc3PXformer 
 	private Complex3x3 turnRatioMatrix = null;
 	
 	
-	public Acsc3PXformerImpl(IBranch3Phase threePhBranch){
+	public Static3PXformerImpl(IBranch3Phase threePhBranch){
 		this.ph3Branch =threePhBranch;
 		
 	}
 	
 	
-	public Acsc3PXformerImpl() {
+	public Static3PXformerImpl() {
 		
 	}
     

@@ -9,10 +9,10 @@ import java.util.Set;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.threePhase.basic.acsc.Acsc3PXformer;
-import org.interpss.threePhase.basic.acsc.impl.Acsc3PNetworkTempImpl;
 import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
+import org.interpss.threePhase.basic.static3P.Static3PXformer;
+import org.interpss.threePhase.basic.static3P.impl.Static3PNetworkTempImpl;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.powerflow.DistributionPFMethod;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
@@ -350,7 +350,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 							
 							// transformer
 							else if (upStreamBranch.isXfr()){
-								Acsc3PXformer xfr3p = upStreamBranch.to3PXformer();
+								Static3PXformer xfr3p = upStreamBranch.to3PXformer();
 								vabc = xfr3p.getLVBusVabc2HVBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).add(
 										xfr3p.getLVBusIabc2HVBusVabcMatrix().multiply(upStreamBranch.getCurrentAbcAtFromSide().multiply(-1)));
 								
@@ -390,7 +390,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 							
 							// transformer
 							else if (upStreamBranch.isXfr()){
-								Acsc3PXformer xfr3p = upStreamBranch.to3PXformer();
+								Static3PXformer xfr3p = upStreamBranch.to3PXformer();
 								
 								vabc =	xfr3p.getLVBusVabc2HVBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).add(
 										xfr3p.getLVBusIabc2HVBusVabcMatrix().multiply(upStreamBranch.getCurrentAbcAtToSide()));
@@ -491,7 +491,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 											bra3Phase.getToBusIabc2ToBusVabcMatrix().multiply(bra3Phase.getCurrentAbcAtToSide())); 
 									}
 									else if (bra3Phase.isXfr()){
-										Acsc3PXformer xfr3p = bra3Phase.to3PXformer();
+										Static3PXformer xfr3p = bra3Phase.to3PXformer();
 										vabc =  xfr3p.getHVBusVabc2LVBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).subtract(
 												xfr3p.getLVBusIabc2LVBusVabcMatrix().multiply(bra3Phase.getCurrentAbcAtToSide()));
 									}
@@ -513,7 +513,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 												bra3Phase.getToBusIabc2ToBusVabcMatrix().multiply(bra3Phase.getCurrentAbcAtFromSide())); 
 									}
 									else if (bra3Phase.isXfr()){
-										Acsc3PXformer xfr3p = bra3Phase.to3PXformer();
+										Static3PXformer xfr3p = bra3Phase.to3PXformer();
 										
 										vabc =  xfr3p.getHVBusVabc2LVBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).add(
 												xfr3p.getLVBusIabc2LVBusVabcMatrix().multiply(bra3Phase.getCurrentAbcAtFromSide())); 

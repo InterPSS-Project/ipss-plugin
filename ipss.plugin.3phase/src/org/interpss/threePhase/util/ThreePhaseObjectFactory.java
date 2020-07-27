@@ -1,8 +1,6 @@
 package org.interpss.threePhase.util;
 
 import org.interpss.numeric.NumericConstant;
-import org.interpss.threePhase.basic.acsc.Acsc3PXformer;
-import org.interpss.threePhase.basic.acsc.impl.Acsc3PXformerImpl;
 import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.basic.dstab.DStab3PGen;
@@ -13,6 +11,8 @@ import org.interpss.threePhase.basic.dstab.impl.DStab3PGenImpl;
 import org.interpss.threePhase.basic.dstab.impl.DStab3PLoadImpl;
 import org.interpss.threePhase.basic.dstab.impl.DStab3W3PBranchImpl;
 import org.interpss.threePhase.basic.dstab.impl.Dstab3PBranchImpl;
+import org.interpss.threePhase.basic.static3P.Static3PXformer;
+import org.interpss.threePhase.basic.static3P.impl.Static3PXformerImpl;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.impl.DStabNetwork3phaseImpl;
 import org.interpss.threePhase.dynamic.model.DStabGen3PhaseAdapter;
@@ -48,8 +48,8 @@ public class ThreePhaseObjectFactory {
 			net.setStaticLoadSwitchDeadZone(Constants.DStabStaticLoadSwithDeadband);
 	      return net;
 	}
-	public static Acsc3PXformer create3PXformer(){
-	   Acsc3PXformer ph3Xfr = new Acsc3PXformerImpl();
+	public static Static3PXformer create3PXformer(){
+	   Static3PXformer ph3Xfr = new Static3PXformerImpl();
 	   return ph3Xfr;
 	}
 	
