@@ -1,4 +1,4 @@
-package org.interpss.threePhase.test.system;
+package test.system;
 
 import static org.junit.Assert.assertTrue;
 
@@ -16,7 +16,6 @@ import org.interpss.threePhase.dynamic.model.PVDistGen3Phase;
 import org.interpss.threePhase.dynamic.model.impl.SinglePhaseACMotor;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.powerflow.impl.DistPowerFlowOutFunc;
-import org.interpss.threePhase.test.TestBase;
 import org.interpss.threePhase.util.ThreePhaseAclfOutFunc;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.Test;
@@ -30,6 +29,8 @@ import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.cache.StateMonitor.MonitorRecord;
+
+import test.TestBase;
 
 /**
  * This test case serves to test more detailed load modeling at the feeder level

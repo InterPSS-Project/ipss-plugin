@@ -1,4 +1,4 @@
-package org.interpss.threePhase.test.system;
+package test.system;
 
 import static org.junit.Assert.assertTrue;
 
@@ -10,7 +10,6 @@ import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.model.InductionMotor3PhaseAdapter;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.powerflow.impl.DistPowerFlowOutFunc;
-import org.interpss.threePhase.test.TestBase;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.Test;
 
@@ -21,6 +20,8 @@ import com.interpss.core.net.NetworkType;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
+
+import test.TestBase;
 
 public class Test3PhaseInductionMotor extends TestBase{
 
