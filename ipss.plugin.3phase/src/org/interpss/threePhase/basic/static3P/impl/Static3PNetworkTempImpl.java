@@ -1,4 +1,4 @@
-package org.interpss.threePhase.basic.acsc.impl;
+package org.interpss.threePhase.basic.static3P.impl;
 
 import java.util.Queue;
 
@@ -21,7 +21,7 @@ import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 import com.interpss.core.sparse.impl.SparseEqnComplexMatrix3x3Impl;
 
-public class Acsc3PNetworkTempImpl extends BaseAcscNetworkImpl<AcscBus, AcscBranch> implements INetwork3Phase {
+public class Static3PNetworkTempImpl extends BaseAcscNetworkImpl<AcscBus, AcscBranch> implements INetwork3Phase {
 	
 	protected ISparseEqnComplexMatrix3x3 yMatrixAbc =null;
 
