@@ -3,9 +3,9 @@ package org.interpss.threePhase.util;
 import java.util.function.Function;
 
 import org.interpss.dstab.dynLoad.InductionMotor;
-import org.interpss.threePhase.basic.acsc.Acsc3PXformer;
 import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.basic.dstab.DStab3PGen;
+import org.interpss.threePhase.basic.static3P.Static3PXformer;
 import org.interpss.threePhase.dynamic.model.DStabGen3PhaseAdapter;
 import org.interpss.threePhase.dynamic.model.InductionMotor3PhaseAdapter;
 
@@ -14,8 +14,8 @@ import com.interpss.dstab.DStabGen;
 public class ThreePhaseUtilFunction {
 	
 	
-	public static Function<DStab3PBranch, Acsc3PXformer> threePhaseXfrAptr = bra -> {
-		Acsc3PXformer adpter = ThreePhaseObjectFactory.create3PXformer();
+	public static Function<DStab3PBranch, Static3PXformer> threePhaseXfrAptr = bra -> {
+		Static3PXformer adpter = ThreePhaseObjectFactory.create3PXformer();
 		adpter.set3PBranch(bra);
 		return adpter;
 	};
