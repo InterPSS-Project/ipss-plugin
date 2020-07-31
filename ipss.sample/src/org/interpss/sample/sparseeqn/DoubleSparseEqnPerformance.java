@@ -34,7 +34,7 @@ import org.interpss.numeric.util.PerformanceTimer;
 
 import com.interpss.NumericObjectFactory;
 import com.interpss.common.util.IpssLogger;
-import com.interpss.core.sparse.SparseEqnDataType;
+import com.interpss.core.sparse.DoubleSEqnRow;
 import com.interpss.core.sparse.impl.SparseEqnDoubleImpl;
 
 
@@ -133,7 +133,7 @@ b(17): 0.001294411022165286
 		ISparseEqnDouble eqnNew = NumericObjectFactory.createSparseEqnDouble(cnt);
 		for (int i = 0; i < n; i++) {
 			if (index[i] >= 0) {
-				SparseEqnDataType.DblAii aii = ((SparseEqnDoubleImpl)eqnOld).getElem(i);
+				DoubleSEqnRow aii = ((SparseEqnDoubleImpl)eqnOld).getElem(i);
 				int i_new = index[i];
 				eqnNew.setAij(aii.aii, i_new, i_new);
 				aii.aijList.forEach(aij -> {
