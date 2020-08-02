@@ -4,7 +4,7 @@ import java.util.Hashtable;
 import java.util.List;
 
 import org.interpss.numeric.datatype.Complex3x3;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.dynamic.IDynamicModel3Phase;
 
 import com.interpss.core.net.Network;
@@ -16,16 +16,16 @@ import com.interpss.dstab.mach.Machine;
 public abstract class DynamicModel3Phase extends DynamicBusDeviceImpl implements
 		IDynamicModel3Phase {
 
-    protected  Bus3Phase parentBus = null;
+    protected  DStab3PBus parentBus = null;
 	protected  Complex3x3 equivYabc = new Complex3x3();
 	
 	
-	public Bus3Phase getParentBus(){
+	public DStab3PBus getParentBus(){
 		if(parentBus != null)
 			return parentBus;
 		else{
-			if(this.getDStabBus() instanceof Bus3Phase)
-		         return parentBus = (Bus3Phase) this.getDStabBus();
+			if(this.getDStabBus() instanceof DStab3PBus)
+		         return parentBus = (DStab3PBus) this.getDStabBus();
 		}
 		return null;
 		
