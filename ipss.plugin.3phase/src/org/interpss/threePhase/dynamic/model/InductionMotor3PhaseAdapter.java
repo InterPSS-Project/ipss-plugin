@@ -6,7 +6,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
 
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import org.interpss.dstab.dynLoad.InductionMotor;
@@ -40,7 +40,7 @@ public class InductionMotor3PhaseAdapter extends DynLoadModel3Phase {
 	
     public InductionMotor3PhaseAdapter(InductionMotor motor){
 		this.indMotor = motor;
-		this.parentBus = (Bus3Phase) motor.getDStabBus();
+		this.parentBus = (DStab3PBus) motor.getDStabBus();
 		
 		this.loadPercent = this.indMotor.getLoadPercent();
 		this.indMotor.setLoadPercent(-100); // such that the load percent is not used, used the initLoadPQ instead
@@ -91,7 +91,7 @@ public class InductionMotor3PhaseAdapter extends DynLoadModel3Phase {
 	public Complex3x1 getPower3Phase(UnitType unit) {
 		//Power = VABC*conj(equivYABC*VABC - IgenABC)
 
-		Complex3x1 Vabc = ((Bus3Phase)this.indMotor.getDStabBus()).get3PhaseVotlages();
+		Complex3x1 Vabc = ((DStab3PBus)this.indMotor.getDStabBus()).get3PhaseVotlages();
 		Complex3x1 Iabc = getIinj2Network3Phase();
 		Complex3x1 Pabc = Vabc.multiply(Iabc.conjugate());
 
@@ -111,7 +111,7 @@ public class InductionMotor3PhaseAdapter extends DynLoadModel3Phase {
 	@Override
 	public Complex3x1 getIinj2Network3Phase() {
 		Complex3x1 iInj =getISource3Phase();
-		Complex3x1 Vabc = ((Bus3Phase)this.indMotor.getDStabBus()).get3PhaseVotlages();
+		Complex3x1 Vabc = ((DStab3PBus)this.indMotor.getDStabBus()).get3PhaseVotlages();
 		
 		iInj = iInj.subtract(getYabc(false).multiply(Vabc));
 		return iInj;

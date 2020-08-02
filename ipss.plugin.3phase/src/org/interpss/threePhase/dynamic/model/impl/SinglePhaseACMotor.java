@@ -4,7 +4,7 @@ import java.util.Hashtable;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.dynamic.model.DynLoadModel1Phase;
 
 import com.interpss.common.util.IpssLogger;
@@ -221,7 +221,7 @@ public class SinglePhaseACMotor extends DynLoadModel1Phase {
 		 * @param bus
 		 * @param Id
 		 */
-		public SinglePhaseACMotor(Bus3Phase bus,String Id){
+		public SinglePhaseACMotor(DStab3PBus bus,String Id){
 			this(Id);
 			this.setDStabBus(bus);
 			

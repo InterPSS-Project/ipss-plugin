@@ -19,10 +19,10 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.interpss.numeric.util.NumericUtil;
-import org.interpss.threePhase.basic.Branch3Phase;
-import org.interpss.threePhase.basic.Bus3Phase;
-import org.interpss.threePhase.basic.Load3Phase;
-import org.interpss.threePhase.basic.impl.Load3PhaseImpl;
+import org.interpss.threePhase.basic.dstab.DStab3PBranch;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PLoad;
+import org.interpss.threePhase.basic.dstab.impl.DStab3PLoadImpl;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.model.DynLoadModel1Phase;
 import org.interpss.threePhase.dynamic.model.DynLoadModel3Phase;
@@ -390,9 +390,9 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 							System.out.println("\ndist net, source bus volt Vabc: "+dsNet.getId()+","+ vabc.toString());
 							
 							// update the distribution source bus voltage
-							Bus3Phase sourceBus3Ph = (Bus3Phase)dsNet3Ph.getBus(sourceId);
+							DStab3PBus sourceBus3Ph = (DStab3PBus)dsNet3Ph.getBus(sourceId);
 							
-							sourceBus3Ph.set3PhaseVoltages(vabc);
+							sourceBus3Ph.set3PhaseVotlages(vabc);
 						
 							
 							//TODO is iteration needed for this solution step, similar to power flow?
@@ -820,7 +820,7 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 				throw new Error(" Only one source bus for a distribution system is supported!");
 			}
 			else{
-				Bus3Phase sourceBus = (Bus3Phase) distNet.getBus(boundaryList.get(0));
+				DStab3PBus sourceBus = (DStab3PBus) distNet.getBus(boundaryList.get(0));
 				
 				Complex3x1 vabc_1 = sourceBus.get3PhaseVotlages();
 				
@@ -829,12 +829,12 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 
 				for(Branch bra: sourceBus.getConnectedPhysicalBranchList()){
 					if(bra.isActive()){
-						Branch3Phase acLine = (Branch3Phase) bra;
+						DStab3PBranch acLine = (DStab3PBranch) bra;
 						
 						Complex3x1 Isource = null;
 						
 						if(bra.getFromBus().getId().equals(sourceBus.getId())){
-							Bus3Phase toBus = (Bus3Phase) bra.getToBus();
+							DStab3PBus toBus = (DStab3PBus) bra.getToBus();
 							Complex3x1 vabc_2 = toBus.get3PhaseVotlages();
 							
 							Complex3x3 Yft = acLine.getYftabc();
@@ -843,7 +843,7 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 							currInj3Phase = currInj3Phase.subtract(Isource );
 						}
 						else{
-							Bus3Phase fromBus = (Bus3Phase) bra.getFromBus();
+							DStab3PBus fromBus = (DStab3PBus) bra.getFromBus();
 							Complex3x1 vabc_2 = fromBus.get3PhaseVotlages();
 							
 							Complex3x3 Ytf = acLine.getYtfabc();
@@ -939,7 +939,7 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 		for( BaseDStabBus b : distNet.getBusList()) {
 		
 			if(b.isActive()){
-				Bus3Phase bus3p = (Bus3Phase) b;
+				DStab3PBus bus3p = (DStab3PBus) b;
 				Complex3x1 load3P = new Complex3x1();
 				
 				double phaseADynLoadPercentage = 0.0;
@@ -1007,7 +1007,7 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 					//TODO here assume all loads are constant power loads
 					bus3p.setLoadCode(AclfLoadCode.CONST_P);
 					
-			  		Load3Phase load1 = new Load3PhaseImpl();
+			  		DStab3PLoad load1 = new DStab3PLoadImpl();
 			  		
 //			  		System.out.println("3phase dyn load = "+load3P.toString());
 			  		
@@ -1063,7 +1063,7 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 					  
 			
 					  
-				 	  Bus3Phase theveninBus = ThreePhaseObjectFactory.create3PDStabBus(theveinEquivBusId, distNet);
+					  DStab3PBus theveninBus = ThreePhaseObjectFactory.create3PDStabBus(theveinEquivBusId, distNet);
 				  		// set bus name and description attributes
 				 	  theveninBus.setAttributes("Thevein Bus of "+distNet.getId(), "");
 				  		// set bus base voltage 
@@ -1073,7 +1073,7 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 					
 				 	 // add a new branch for representing the Thevenin equivalent
 				 		
-				 		Branch3Phase bra23 = ThreePhaseObjectFactory.create3PBranch(theveinEquivBusId, distBoundaryBusId, "0", distNet);
+				 		DStab3PBranch bra23 = ThreePhaseObjectFactory.create3PBranch(theveinEquivBusId, distBoundaryBusId, "0", distNet);
 						bra23.setBranchCode(AclfBranchCode.LINE);
 						bra23.setZ( z);
 						bra23.setHShuntY(new Complex(0, 0.));
@@ -1151,7 +1151,7 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 			    	  
 			    	 
 			    	  if(bus.isActive()){
-							Bus3Phase bus3p = (Bus3Phase) bus;
+			    		  DStab3PBus bus3p = (DStab3PBus) bus;
 							bus3p.getThreeSeqVoltage().b_1 = v1;
 			    	  }
 			   }
@@ -1183,7 +1183,7 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 			    	  busVoltResults.put(bus.getId(), v2);
 			    	 
 			    	  if(bus.isActive()){
-							Bus3Phase bus3p = (Bus3Phase) bus;
+			    		  DStab3PBus bus3p = (DStab3PBus) bus;
 							bus3p.getThreeSeqVoltage().c_2 = v2;
 			    	  }
 			   }
@@ -1215,7 +1215,7 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 			    	  busVoltResults.put(bus.getId(), v0);
 			    	 
 			    	  if(bus.isActive()){
-							Bus3Phase bus3p = (Bus3Phase) bus;
+			    		  DStab3PBus bus3p = (DStab3PBus) bus;
 							bus3p.getThreeSeqVoltage().a_0 = v0;
 			    	  }
 			   }

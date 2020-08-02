@@ -17,8 +17,8 @@ import org.interpss.multiNet.algo.SubNetworkProcessor;
 import org.interpss.multiNet.algo.powerflow.TDMultiNetPowerflowAlgorithm;
 import org.interpss.multiNet.algo.powerflow.TposSeqD3PhaseMultiNetPowerflowAlgorithm;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.threePhase.basic.Branch3Phase;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.dstab.DStab3PBranch;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
@@ -280,7 +280,7 @@ public class TestTnD_IEEE39_123BusFeeder {
 		    double baseVolt69kV = 69000.0;
 			double baseVolt4160 = 4160.0;
 			
-			Bus3Phase transBus = (Bus3Phase) net.getBus(transBusId);
+			DStab3PBus transBus = (DStab3PBus) net.getBus(transBusId);
 			
 			Complex loadPQ = transBus.getLoadPQ();
 			
@@ -311,7 +311,7 @@ public class TestTnD_IEEE39_123BusFeeder {
 				
 				String sourceBusId=transBusId+"_LVBus";
 				
-				Bus3Phase sourceBus = ThreePhaseObjectFactory.create3PDStabBus(sourceBusId, net);
+				DStab3PBus sourceBus = ThreePhaseObjectFactory.create3PDStabBus(sourceBusId, net);
 				sourceBus.setAttributes("trans LV bus", "");
 				sourceBus.setBaseVoltage( baseVolt69kV);
 		
@@ -319,7 +319,7 @@ public class TestTnD_IEEE39_123BusFeeder {
 				sourceBus.setVoltage(transBus.getVoltage());
 				
 				
-				Branch3Phase xfr1_2 = ThreePhaseObjectFactory.create3PBranch(transBusId, sourceBusId, "0", net);
+				DStab3PBranch xfr1_2 = ThreePhaseObjectFactory.create3PBranch(transBusId, sourceBusId, "0", net);
 				xfr1_2.setBranchCode(AclfBranchCode.XFORMER);
 				xfr1_2.setToTurnRatio(tapRatio);
 				xfr1_2.setZ( new Complex( 0.0, xfrZ ));

@@ -23,10 +23,10 @@ import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.threePhase.basic.Branch3Phase;
-import org.interpss.threePhase.basic.Bus3Phase;
-import org.interpss.threePhase.basic.Load3Phase;
-import org.interpss.threePhase.basic.impl.Load3PhaseImpl;
+import org.interpss.threePhase.basic.dstab.DStab3PBranch;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PLoad;
+import org.interpss.threePhase.basic.dstab.impl.DStab3PLoadImpl;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.model.InductionMotor3PhaseAdapter;
 import org.interpss.threePhase.dynamic.model.impl.SinglePhaseACMotor;
@@ -109,7 +109,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 	    double netTotalLoad = 125;
 	    double totalLoad = netTotalLoad*(1+PVIncrement);
 	    
-	    addFeeder2Bus(dsNet,(Bus3Phase) dsNet.getBus("Bus5"),10,netTotalLoad,PVIncrement,loadPercentAry);
+	    addFeeder2Bus(dsNet,(DStab3PBus) dsNet.getBus("Bus5"),10,netTotalLoad,PVIncrement,loadPercentAry);
 	    
 	    
 	    
@@ -138,7 +138,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 	    double netTotalLoadBus6 = 90;
 	    double totalLoadBus6 = netTotalLoadBus6*(1+PVIncrement);
 	    
-	    addFeeder2Bus(dsNet,(Bus3Phase) dsNet.getBus("Bus6"),20,netTotalLoadBus6,PVIncrement,loadPercentAry);
+	    addFeeder2Bus(dsNet,(DStab3PBus) dsNet.getBus("Bus6"),20,netTotalLoadBus6,PVIncrement,loadPercentAry);
 	    
       // add those dynamic load model on the figure
 	    
@@ -164,7 +164,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 	    double netTotalLoadBus8 = 100;
 	    double totalLoadBus8 = netTotalLoadBus8*(1+PVIncrement);
 	    
-	    addFeeder2Bus(dsNet,(Bus3Phase) dsNet.getBus("Bus8"),30,netTotalLoadBus8,PVIncrement,loadPercentAry);
+	    addFeeder2Bus(dsNet,(DStab3PBus) dsNet.getBus("Bus8"),30,netTotalLoadBus8,PVIncrement,loadPercentAry);
 	    
       // add those dynamic load model on the figure
 	    
@@ -316,7 +316,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 					
 					for(String busId: sm.getBusPhAVoltTable().keySet()){
 						
-						 sm.addBusPhaseVoltageMonitorRecord( busId,dstabAlgo.getSimuTime(), ((Bus3Phase)proc.getSubNetworkByBusId(busId).getBus(busId)).get3PhaseVotlages());
+						 sm.addBusPhaseVoltageMonitorRecord( busId,dstabAlgo.getSimuTime(), ((DStab3PBus)proc.getSubNetworkByBusId(busId).getBus(busId)).get3PhaseVotlages());
 					}
 					
 				}
@@ -343,7 +343,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 			double ACMotorPercent, double IndMotorPercent,
 			double ACPhaseUnbalance, double motorMVA) {
 		for(int i =startBusNum;i<=endBusNum;i++){
-			Bus3Phase loadBus = (Bus3Phase) dsNet.getBus("Bus"+i);
+			DStab3PBus loadBus = (DStab3PBus) dsNet.getBus("Bus"+i);
 			
 			/*
 			Load3Phase load1 = new Load3PhaseImpl();
@@ -465,7 +465,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 	    
 	    double totalLoadBus5 = 125;
 	    
-	    addCMPLDW2Bus(dsNet,(Bus3Phase) dsNet.getBus("Bus5"),10,totalLoadBus5,PVPenetration, ACMotorPercent,MotorPercent);
+	    addCMPLDW2Bus(dsNet,(DStab3PBus) dsNet.getBus("Bus5"),10,totalLoadBus5,PVPenetration, ACMotorPercent,MotorPercent);
 	    
 
 	    
@@ -473,7 +473,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 	    dsNet.getBus("Bus6").setLoadCode(AclfLoadCode.NON_LOAD);
         double totalLoadBus6 = 90;
 	    
-	    addCMPLDW2Bus(dsNet,(Bus3Phase) dsNet.getBus("Bus6"),20,totalLoadBus6,PVPenetration,ACMotorPercent,MotorPercent);
+	    addCMPLDW2Bus(dsNet,(DStab3PBus) dsNet.getBus("Bus6"),20,totalLoadBus6,PVPenetration,ACMotorPercent,MotorPercent);
 	   
 	    
 	    
@@ -481,7 +481,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 	    dsNet.getBus("Bus8").setLoadCode(AclfLoadCode.NON_LOAD);
         double totalLoadBus8 = 100;
 	    
-	    addCMPLDW2Bus(dsNet,(Bus3Phase) dsNet.getBus("Bus8"),30,totalLoadBus8,PVPenetration,ACMotorPercent,MotorPercent);
+	    addCMPLDW2Bus(dsNet,(DStab3PBus) dsNet.getBus("Bus8"),30,totalLoadBus8,PVPenetration,ACMotorPercent,MotorPercent);
 	    
 	    
 	   // System.out.println("net ="+dsNet.net2String());
@@ -620,7 +620,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 	
 	}
 	
-	public void addFeeder2Bus(DStabNetwork3Phase net,Bus3Phase sourceBus, int startNum, double netTotalLoad, double pvIncrement,double[] loadPercentAry) throws InterpssException{
+	public void addFeeder2Bus(DStabNetwork3Phase net,DStab3PBus sourceBus, int startNum, double netTotalLoad, double pvIncrement,double[] loadPercentAry) throws InterpssException{
 		
 		   double totalMW = netTotalLoad*(1+pvIncrement);
 		   double scaleFactor = totalMW/5;
@@ -631,7 +631,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 		   
 		   int busIdx = startNum;
 			
-			Bus3Phase bus1 = ThreePhaseObjectFactory.create3PDStabBus("Bus"+(busIdx++), net);
+		   DStab3PBus bus1 = ThreePhaseObjectFactory.create3PDStabBus("Bus"+(busIdx++), net);
 			bus1.setAttributes("69 kV feeder source", "");
 			bus1.setBaseVoltage(69000.0);
 			// set the bus to a non-generator bus
@@ -660,7 +660,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 		
 			// add step down transformer between source bus and bus1
 			
-			Branch3Phase xfr1 = ThreePhaseObjectFactory.create3PBranch(sourceBus.getId(), bus1.getId(), "0", net);
+			DStab3PBranch xfr1 = ThreePhaseObjectFactory.create3PBranch(sourceBus.getId(), bus1.getId(), "0", net);
 			xfr1.setBranchCode(AclfBranchCode.XFORMER);
 			xfr1.setToTurnRatio(1.02);
 			xfr1.setZ( new Complex( 0.0, 0.05 ));
@@ -673,7 +673,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 		
 
 			
-		Bus3Phase bus2 = ThreePhaseObjectFactory.create3PDStabBus("Bus"+(busIdx++), net);
+			DStab3PBus bus2 = ThreePhaseObjectFactory.create3PDStabBus("Bus"+(busIdx++), net);
 			bus2.setAttributes("feeder bus 2", "");
 			bus2.setBaseVoltage(12500.0);
 			// set the bus to a non-generator bus
@@ -682,7 +682,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 			bus2.setLoadCode(AclfLoadCode.CONST_P);
 			
 			
-		Branch3Phase xfr1_2 = ThreePhaseObjectFactory.create3PBranch(bus1.getId(), bus2.getId(), "0", net);
+		DStab3PBranch xfr1_2 = ThreePhaseObjectFactory.create3PBranch(bus1.getId(), bus2.getId(), "0", net);
 			xfr1_2.setBranchCode(AclfBranchCode.XFORMER);
 			xfr1_2.setToTurnRatio(1.02);
 			xfr1_2.setZ( new Complex( 0.0, 0.04 ));
@@ -696,7 +696,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 
 			
 			
-		Bus3Phase bus3 = ThreePhaseObjectFactory.create3PDStabBus("Bus"+(busIdx++), net);
+			DStab3PBus bus3 = ThreePhaseObjectFactory.create3PDStabBus("Bus"+(busIdx++), net);
 			bus3.setAttributes("feeder bus 3", "");
 			bus3.setBaseVoltage(12500.0);
 			// set the bus to a non-generator bus
@@ -713,7 +713,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 //			bus3.getThreePhaseGenList().add(gen1);
 			
 			
-			Bus3Phase bus4 = ThreePhaseObjectFactory.create3PDStabBus("Bus"+(busIdx++), net);
+			DStab3PBus bus4 = ThreePhaseObjectFactory.create3PDStabBus("Bus"+(busIdx++), net);
 			bus4.setAttributes("feeder bus 4", "");
 			bus4.setBaseVoltage(12500.0);
 			// set the bus to a non-generator bus
@@ -722,7 +722,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 			bus4.setLoadCode(AclfLoadCode.CONST_P);
 			
 			
-			Bus3Phase bus5 = ThreePhaseObjectFactory.create3PDStabBus("Bus"+(busIdx++), net);
+			DStab3PBus bus5 = ThreePhaseObjectFactory.create3PDStabBus("Bus"+(busIdx++), net);
 			bus5.setAttributes("feeder bus 5", "");
 			bus5.setBaseVoltage(12500.0);
 			// set the bus to a non-generator bus
@@ -731,7 +731,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 			bus5.setLoadCode(AclfLoadCode.CONST_P);
 			
 			
-			Bus3Phase bus6 = ThreePhaseObjectFactory.create3PDStabBus("Bus"+(busIdx++), net);
+			DStab3PBus bus6 = ThreePhaseObjectFactory.create3PDStabBus("Bus"+(busIdx++), net);
 			bus6.setAttributes("feeder bus 6", "");
 			bus6.setBaseVoltage(12500.0);
 			// set the bus to a non-generator bus
@@ -739,7 +739,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 			// set the bus to a constant power load bus
 			bus6.setLoadCode(AclfLoadCode.CONST_P);
 			
-			Bus3Phase bus7 = ThreePhaseObjectFactory.create3PDStabBus("Bus"+(busIdx++), net);
+			DStab3PBus bus7 = ThreePhaseObjectFactory.create3PDStabBus("Bus"+(busIdx++), net);
 			bus7.setAttributes("feeder bus 7", "");
 			bus7.setBaseVoltage(12500.0);
 			// set the bus to a non-generator bus
@@ -749,8 +749,8 @@ public class TestTnD_IEEE9_6BusFeeder {
 			
 			int j = 0;
 			for(int i =startNum+2;i<=6+startNum;i++){
-				Bus3Phase loadBus = (Bus3Phase) net.getBus("Bus"+i);
-				Load3Phase load1 = new Load3PhaseImpl();
+				DStab3PBus loadBus = (DStab3PBus) net.getBus("Bus"+i);
+				DStab3PLoad load1 = new DStab3PLoadImpl();
 				load1.set3PhaseLoad(new Complex3x1(new Complex(0.01,0.002*(1-pvIncrement)),new Complex(0.010,0.002*(1-pvIncrement)),new Complex(0.01,0.002*(1-pvIncrement))).multiply(totalMW*loadPercentAry[j++]));
 				if(loadBus == null) throw new Error("i = "+i);
 				loadBus.getThreePhaseLoadList().add(load1);
@@ -761,7 +761,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 			
 			
 			for(int i =startNum+1;i<6+startNum;i++){
-				Branch3Phase Line2_3 = ThreePhaseObjectFactory.create3PBranch("Bus"+i, "Bus"+(i+1), "0", net);
+				DStab3PBranch Line2_3 = ThreePhaseObjectFactory.create3PBranch("Bus"+i, "Bus"+(i+1), "0", net);
 				Line2_3.setBranchCode(AclfBranchCode.LINE);
 				
 				// unbalanced feeder
@@ -776,7 +776,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 			}
 		}
 	
-	public void addCMPLDW2Bus(DStabNetwork3Phase net,Bus3Phase sourceBus, int startNum, double netTotalMW, double PVPenetrationLevel, double ACPercent, double indMotorPercent  ) throws InterpssException{
+	public void addCMPLDW2Bus(DStabNetwork3Phase net,DStab3PBus sourceBus, int startNum, double netTotalMW, double PVPenetrationLevel, double ACPercent, double indMotorPercent  ) throws InterpssException{
 		   
 		   double pvIncrement = PVPenetrationLevel/ (1-PVPenetrationLevel);
 		   
@@ -793,7 +793,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 		   
 		   int busIdx = startNum;
 			
-			Bus3Phase bus1 = ThreePhaseObjectFactory.create3PDStabBus("Bus"+(busIdx++), net);
+		   DStab3PBus bus1 = ThreePhaseObjectFactory.create3PDStabBus("Bus"+(busIdx++), net);
 			bus1.setAttributes("69 kV feeder source", "");
 			bus1.setBaseVoltage(69000.0);
 			// set the bus to a non-generator bus
@@ -806,7 +806,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 		
 			// add step down transformer between source bus and bus1
 			
-			Branch3Phase xfr1 = ThreePhaseObjectFactory.create3PBranch(sourceBus.getId(), bus1.getId(), "0", net);
+			DStab3PBranch xfr1 = ThreePhaseObjectFactory.create3PBranch(sourceBus.getId(), bus1.getId(), "0", net);
 			xfr1.setBranchCode(AclfBranchCode.XFORMER);
 			xfr1.setToTurnRatio(1.02);
 			xfr1.setZ( new Complex( 0.0, 0.05 ));
@@ -819,7 +819,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 		
 
 			
-		Bus3Phase bus2 = ThreePhaseObjectFactory.create3PDStabBus("Bus"+(busIdx++), net);
+			DStab3PBus bus2 = ThreePhaseObjectFactory.create3PDStabBus("Bus"+(busIdx++), net);
 			bus2.setAttributes("feeder bus 2", "");
 			bus2.setBaseVoltage(12500.0);
 			// set the bus to a non-generator bus
@@ -828,7 +828,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 			bus2.setLoadCode(AclfLoadCode.NON_LOAD);
 			
 			
-		Branch3Phase xfr1_2 = ThreePhaseObjectFactory.create3PBranch(bus1.getId(), bus2.getId(), "0", net);
+		DStab3PBranch xfr1_2 = ThreePhaseObjectFactory.create3PBranch(bus1.getId(), bus2.getId(), "0", net);
 			xfr1_2.setBranchCode(AclfBranchCode.XFORMER);
 			xfr1_2.setToTurnRatio(1.02);
 			xfr1_2.setZ( new Complex( 0.0, 0.04 ));
@@ -842,7 +842,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 
 			
 			
-		Bus3Phase bus3 = ThreePhaseObjectFactory.create3PDStabBus("Bus"+(busIdx++), net);
+			DStab3PBus bus3 = ThreePhaseObjectFactory.create3PDStabBus("Bus"+(busIdx++), net);
 			bus3.setAttributes("feeder bus 3", "");
 			bus3.setBaseVoltage(12500.0);
 			// set the bus to a non-generator bus
@@ -854,8 +854,8 @@ public class TestTnD_IEEE9_6BusFeeder {
 			
 			
 			for(int i =startNum+2;i<=2+startNum;i++){
-				Bus3Phase loadBus = (Bus3Phase) net.getBus("Bus"+i);
-				Load3Phase load1 = new Load3PhaseImpl();
+				DStab3PBus loadBus = (DStab3PBus) net.getBus("Bus"+i);
+				DStab3PLoad load1 = new DStab3PLoadImpl();
 				load1.set3PhaseLoad(new Complex3x1(new Complex(0.01,0.002*(1-pvIncrement)),new Complex(0.010,0.002*(1-pvIncrement)),new Complex(0.01,0.002*(1-pvIncrement))).multiply(scaleFactor));
 				if(loadBus == null) throw new Error("i = "+i);
 				loadBus.getThreePhaseLoadList().add(load1);
@@ -865,7 +865,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 		
 			
 			for(int i =startNum+1;i<2+startNum;i++){
-				Branch3Phase Line2_3 = ThreePhaseObjectFactory.create3PBranch("Bus"+i, "Bus"+(i+1), "0", net);
+				DStab3PBranch Line2_3 = ThreePhaseObjectFactory.create3PBranch("Bus"+i, "Bus"+(i+1), "0", net);
 				Line2_3.setBranchCode(AclfBranchCode.LINE);
 				
 				// unbalanced feeder
@@ -893,7 +893,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 			double pvGen = netTotalMW*pvPercent/100.0;
 			double motorMVA= loadMVA*indMotorPercent/100.0;
 		    
-			Bus3Phase loadBus = (Bus3Phase) net.getBus("Bus"+(2+startNum));
+			DStab3PBus loadBus = (DStab3PBus) net.getBus("Bus"+(2+startNum));
 				
 				/*
 				Load3Phase load1 = new Load3PhaseImpl();
