@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.dynamic.IDynamicModel1Phase;
 
 import com.interpss.core.acsc.PhaseCode;
@@ -19,11 +19,11 @@ public abstract class DynamicModel1Phase extends DynamicBusDeviceImpl implements
 		IDynamicModel1Phase {
 	
 	protected  PhaseCode     connectPhase = null;
-	protected  Bus3Phase parentBus = null;
+	protected  DStab3PBus parentBus = null;
 	
-    public Bus3Phase getParentBus(){
-    	if(this.getDStabBus() instanceof Bus3Phase)
-    		return (Bus3Phase)this.getDStabBus();
+    public DStab3PBus getParentBus(){
+    	if(this.getDStabBus() instanceof DStab3PBus)
+    		return (DStab3PBus)this.getDStabBus();
     	else
     		throw new Error("The parentBus is not a Bus3Phase type, #"+this.getDStabBus().getId());
     }
@@ -40,7 +40,7 @@ public abstract class DynamicModel1Phase extends DynamicBusDeviceImpl implements
 	}
 	
 	public Complex getBusPhaseVoltage(){
-		Complex3x1 vabc = ((Bus3Phase)this.getDStabBus()).get3PhaseVotlages();
+		Complex3x1 vabc = ((DStab3PBus)this.getDStabBus()).get3PhaseVotlages();
 		
 		switch(this.connectPhase){
 		case A: 

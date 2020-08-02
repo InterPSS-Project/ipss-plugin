@@ -4,7 +4,7 @@ import java.util.Hashtable;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.ComplexFunc;
-import org.interpss.threePhase.basic.Gen3Phase;
+import org.interpss.threePhase.basic.dstab.DStab3PGen;
 
 import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.dstab.BaseDStabBus;
@@ -56,7 +56,7 @@ public class PVDistGen3Phase extends DynGenModel3Phase{
 		states = new Hashtable<>();
 	}
 	
-	public PVDistGen3Phase(Gen3Phase gen) {
+	public PVDistGen3Phase(DStab3PGen gen) {
 		this.parentGen = gen;
 		gen.setDynamicGenDevice(this);
 		

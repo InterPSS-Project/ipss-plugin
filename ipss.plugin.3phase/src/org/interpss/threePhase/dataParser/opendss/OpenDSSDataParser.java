@@ -16,24 +16,22 @@ import org.ieee.odm.common.ODMException;
 import org.ieee.odm.common.ODMLogger;
 import org.ieee.odm.common.ODMTextFileReader;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.threePhase.basic.Branch3Phase;
-import org.interpss.threePhase.basic.Bus3Phase;
 import org.interpss.threePhase.basic.LineConfiguration;
-import org.interpss.threePhase.basic.Load1Phase;
-import org.interpss.threePhase.basic.Load3Phase;
+import org.interpss.threePhase.basic.dstab.DStab1PLoad;
+import org.interpss.threePhase.basic.dstab.DStab3PBranch;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
-import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.acsc.PhaseCode;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 import com.interpss.core.net.NetworkType;
 import com.interpss.dstab.DStabBranch;
-import com.interpss.dstab.DStabBus;
 
 public class OpenDSSDataParser {
 	
@@ -180,7 +178,7 @@ public class OpenDSSDataParser {
     		        				String sourceBusId = "";
     		        				double basekv = 0.0;
     		        				double volt_pu = 1.0;
-    		        				Bus3Phase sourceBus = null;
+    		        				DStab3PBus sourceBus = null;
     		        				
     		        				if(!str.contains("basekv=")){
     		        				  nextLine  = reader.readLine().trim();
@@ -352,7 +350,7 @@ public class OpenDSSDataParser {
     		        				String sourceBusId = "";
     		        				double basekv = 0.0;
     		        				double volt_pu = 1.0;
-    		        				Bus3Phase sourceBus = null;
+    		        				DStab3PBus sourceBus = null;
     		        				
     		        				if(!str.contains("basekv=")){
     		        				  nextLine  = reader.readLine();
@@ -478,10 +476,10 @@ public class OpenDSSDataParser {
      public boolean calcVoltageBases(){
     	 boolean no_error = true;
     	 
-    	 Queue<Bus3Phase> onceVisitedBuses = new  LinkedList<>();
+    	 Queue<DStab3PBus> onceVisitedBuses = new  LinkedList<>();
  		
  		// find the source bus, which is the swing bus for radial feeders;
- 		for(Bus3Phase b: distNet.getBusList()){
+ 		for(DStab3PBus b: distNet.getBusList()){
  				if(b.isActive() && b.isSwing()){
  					onceVisitedBuses.add(b);
  					b.setIntFlag(1);
@@ -506,11 +504,11 @@ public class OpenDSSDataParser {
      }
      
 	
-    private void BFS (Queue<Bus3Phase> onceVisitedBuses){
+    private void BFS (Queue<DStab3PBus> onceVisitedBuses){
  	int orderNumber = 0;
 		//Retrieves and removes the head of this queue, or returns null if this queue is empty.
 	    while(!onceVisitedBuses.isEmpty()){
-			Bus3Phase  startingBus = onceVisitedBuses.poll();
+	    	DStab3PBus  startingBus = onceVisitedBuses.poll();
 			startingBus.setSortNumber(orderNumber++);
 			startingBus.setBooleanFlag(true);
 			startingBus.setIntFlag(2);
@@ -528,7 +526,7 @@ public class OpenDSSDataParser {
 								//for first time visited buses
 								if(findBus.getIntFlag()==0){
 									findBus.setIntFlag(1);
-									onceVisitedBuses.add((Bus3Phase) findBus);
+									onceVisitedBuses.add((DStab3PBus) findBus);
 									
 									//update the L-L basekV
 									if(aclfBra.isLine()){
@@ -581,7 +579,7 @@ public class OpenDSSDataParser {
           double mvabase = this.getDistNetwork().getBaseMva();
           double vBase = 0.0, zBase = 0.0;
           for(DStabBranch bra: this.getDistNetwork().getBranchList()){
-        	  Branch3Phase bra3Phase = (Branch3Phase) bra;
+        	  DStab3PBranch bra3Phase = (DStab3PBranch) bra;
         	  
         	  if(bra3Phase.isLine()){
         		  vBase = bra.getFromBus().getBaseVoltage();
@@ -619,11 +617,11 @@ public class OpenDSSDataParser {
    	     double baseKVA3P = this.getDistNetwork().getBaseKva();
    	     double baseKVA1P = baseKVA3P/3.0;
    	     
-         for(Bus3Phase bus3P: this.getDistNetwork().getBusList()){
+         for(DStab3PBus bus3P: this.getDistNetwork().getBusList()){
         	 
         	 if(bus3P.getSinglePhaseLoadList().size()>0){
-        		 for(Load1Phase load:bus3P.getSinglePhaseLoadList()){
-        			 Load1Phase ld1P = (Load1Phase) load;
+        		 for(DStab1PLoad load:bus3P.getSinglePhaseLoadList()){
+        			 DStab1PLoad ld1P = (DStab1PLoad) load;
         			 ld1P.setLoadCP(ld1P.getLoadCP().divide(baseKVA1P)); 
         			 ld1P.setLoadCI(ld1P.getLoadCI().divide(baseKVA1P)); 
         			 ld1P.setLoadCZ(ld1P.getLoadCZ().divide(baseKVA1P)); 
@@ -631,7 +629,7 @@ public class OpenDSSDataParser {
         	 }
         	 
         	 if(bus3P.getThreePhaseLoadList().size()>0){
-        		 for(Load3Phase load3P:bus3P.getThreePhaseLoadList()){
+        		 for(DStab3PLoad load3P:bus3P.getThreePhaseLoadList()){
         			 load3P.set3PhaseLoad(load3P.getInit3PhaseLoad().multiply(1.0/baseKVA1P));
         		 }
         	 }
@@ -698,10 +696,10 @@ public class OpenDSSDataParser {
     		
      }
      
-     public Branch3Phase getBranchByName(String branchName){
+     public DStab3PBranch getBranchByName(String branchName){
     	 for(Branch bra: this.getDistNetwork().getBranchList()){
     		 if(bra.getName().equals(branchName)){
-    			 return (Branch3Phase) bra;
+    			 return (DStab3PBranch) bra;
     		 }
     	 }
     	 return null;

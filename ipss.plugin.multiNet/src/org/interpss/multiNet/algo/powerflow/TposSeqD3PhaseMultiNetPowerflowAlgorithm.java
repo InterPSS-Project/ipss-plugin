@@ -8,8 +8,8 @@ import java.util.Map.Entry;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.multiNet.algo.SubNetworkProcessor;
 import org.interpss.numeric.datatype.Complex3x1;
-import org.interpss.threePhase.basic.Branch3Phase;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.dstab.DStab3PBranch;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
@@ -141,7 +141,7 @@ public class TposSeqD3PhaseMultiNetPowerflowAlgorithm {
 				
 				for(Branch bra: sourceBus.getConnectedPhysicalBranchList()){
 					if(bra.isActive()){
-						Branch3Phase acLine = (Branch3Phase) bra;
+						DStab3PBranch acLine = (DStab3PBranch) bra;
 						
 						//NOTE the positive sign of branch current flow is fromBus->ToBus  
 						if(bra.getFromBus().getId().equals(sourceBus.getId())){
@@ -162,7 +162,7 @@ public class TposSeqD3PhaseMultiNetPowerflowAlgorithm {
 //				System.out.println("3seq current injection: "+currInj3Seq.toString());
 //				distBoundary3SeqCurInjTable.put(sourceBus.getId(), currInj3Phase.to012());
 //				
-				Bus3Phase sourceBus3Ph = (Bus3Phase) sourceBus; 
+				DStab3PBus sourceBus3Ph = (DStab3PBus) sourceBus; 
 				
 				Complex totalPower = sourceBus3Ph.get3PhaseVotlages().dotProduct(currInj3Phase.conjugate()).divide(3.0).multiply(distMVABase/transMVABase);
 				
@@ -259,12 +259,12 @@ public class TposSeqD3PhaseMultiNetPowerflowAlgorithm {
 		    	  updateDistBoundaryBus3SeqVoltTable();
 		    	  
 		    	  for(BaseAclfNetwork distNet:this.distNetList){
-		    		  Bus3Phase sourceBus3Ph = (Bus3Phase) distNet.getBus(distNetId2BoundaryBusTable.get(distNet.getId()));
+		    		  DStab3PBus sourceBus3Ph = (DStab3PBus) distNet.getBus(distNetId2BoundaryBusTable.get(distNet.getId()));
 		    		  
 		    		  Complex3x1 vabc = this.distBoundaryBus3SeqVoltages.get(sourceBus3Ph.getId()).toABC();
 		    		  
 		    		  System.out.println("updated dist source bus vabc = "+vabc);
-		    		  sourceBus3Ph.set3PhaseVoltages(vabc);
+		    		  sourceBus3Ph.set3PhaseVotlages(vabc);
 		    		  //manually update the positive sequence, since internally it won't be automatically updated.
 		    		  sourceBus3Ph.setVoltage(sourceBus3Ph.getThreeSeqVoltage().b_1);
 		    		  
@@ -282,7 +282,7 @@ public class TposSeqD3PhaseMultiNetPowerflowAlgorithm {
 						
 						for(Branch bra: sourceBus3Ph.getConnectedPhysicalBranchList()){
 							if(bra.isActive()){
-								Branch3Phase acLine = (Branch3Phase) bra;
+								DStab3PBranch acLine = (DStab3PBranch) bra;
 								if(bra.getFromBus().getId().equals(sourceBus3Ph.getId())){
 									currInj3Phase = currInj3Phase.add(acLine.getCurrentAbcAtFromSide().multiply(-1));
 								}

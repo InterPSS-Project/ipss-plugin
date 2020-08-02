@@ -19,7 +19,7 @@ import org.interpss.multiNet.algo.SubNetworkProcessor;
 import org.interpss.multiNet.equivalent.NetworkEquivalent;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.matrix.MatrixUtil;
-import org.interpss.threePhase.basic.Bus3Phase;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
 import org.junit.Test;
@@ -526,7 +526,7 @@ public class investigate_3PHSubNetYabc {
 		assertTrue(aclfAlgo.loadflow());
 		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 		
-		Bus3Phase bus5 = dsNet.getBus("Bus5");
+		DStab3PBus bus5 = dsNet.getBus("Bus5");
 		
 		Complex bus5LoadYeq = bus5.getLoadPQ().conjugate().divide(bus5.getVoltageMag()*bus5.getVoltageMag()) ;
 		

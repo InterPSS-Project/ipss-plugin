@@ -25,9 +25,9 @@ import org.interpss.mapper.odm.impl.aclf.AbstractODMAclfNetMapper;
 import org.interpss.mapper.odm.impl.aclf.AclfBusDataHelper;
 import org.interpss.mapper.odm.impl.dstab.AbstractODMDStabParserMapper;
 import org.interpss.mapper.odm.impl.dstab.DStabScenarioHelper;
-import org.interpss.threePhase.basic.Bus3Phase;
-import org.interpss.threePhase.basic.Gen3Phase;
-import org.interpss.threePhase.basic.Load3Phase;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PGen;
+import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
@@ -93,11 +93,11 @@ protected IPSSMsgHub msg = null;
 				dstabAlgo.setAclfAlgorithm(lfAlgo);
 
 				// map the bus info
-				AclfBusDataHelper<Gen3Phase,Load3Phase> helper = new AclfBusDataHelper<>(dstabNet);
+				AclfBusDataHelper<DStab3PGen,DStab3PLoad> helper = new AclfBusDataHelper<>(dstabNet);
 				for (JAXBElement<? extends BusXmlType> bus : xmlNet.getBusList().getBus()) {
 					DStabBusXmlType dstabBusXml = (DStabBusXmlType) bus.getValue();
 					
-					Bus3Phase dstabBus = ThreePhaseObjectFactory.create3PDStabBus(dstabBusXml.getId(), dstabNet);
+					DStab3PBus dstabBus = ThreePhaseObjectFactory.create3PDStabBus(dstabBusXml.getId(), dstabNet);
 						
 					// base the base bus info part
 					mapBaseBusData(dstabBusXml, dstabBus, dstabNet);
