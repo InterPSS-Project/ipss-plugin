@@ -9,12 +9,12 @@ import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.interpss.numeric.datatype.Complex3x1;
-import org.interpss.piecewise.SubAreaNetProcessor;
-import org.interpss.piecewise.seq012.CuttingBranch012;
-import org.interpss.piecewise.seq012.SubArea012;
-import org.interpss.piecewise.seq012.SubDStabNetwork;
-import org.interpss.piecewise.seq012.impl.SubAreaDStabProcessorImpl;
-import org.interpss.piecewise.seq012.impl.SubNetworkDStabProcessorImpl;
+import org.interpss.piecewise.subAreaNet.SubAreaNetProcessor;
+import org.interpss.piecewise.subAreaNet.seq012.CuttingBranch012;
+import org.interpss.piecewise.subAreaNet.seq012.SubArea012;
+import org.interpss.piecewise.subAreaNet.seq012.SubDStabNetwork;
+import org.interpss.piecewise.subAreaNet.seq012.impl.SubAreaDStabProcessorImpl;
+import org.interpss.piecewise.subAreaNet.seq012.impl.SubNetworkDStabProcessorImpl;
 import org.junit.Test;
 
 import com.interpss.SimuObjectFactory;
