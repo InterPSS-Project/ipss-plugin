@@ -22,7 +22,7 @@
   *
   */
 
-package org.interpss.piecewise.subAreaNet.base.impl;
+package org.interpss.piecewise.subAreaNet.impl;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -332,6 +332,12 @@ public abstract class BaseSubAreaNetProcessorImpl<
   		});
 	}	
 	
+	@Override
+	public void mergeSubNet() throws InterpssException {
+		throw new InterpssException("The method needs to be implemented");
+		
+	}
+
 	/**
 	 * Class holding a pair of buses for SubArea processing. The bus pair are stored in
 	 * such a way that bus1.SubAreaFlag <= bus2.SubAreaFlag. 

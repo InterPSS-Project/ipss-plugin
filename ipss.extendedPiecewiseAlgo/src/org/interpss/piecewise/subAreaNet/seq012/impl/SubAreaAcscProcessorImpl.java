@@ -27,7 +27,7 @@ package org.interpss.piecewise.subAreaNet.seq012.impl;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.piecewise.subAreaNet.base.BaseCuttingBranch;
 import org.interpss.piecewise.subAreaNet.base.BaseSubArea;
-import org.interpss.piecewise.subAreaNet.base.impl.BaseSubAreaNetProcessorImpl;
+import org.interpss.piecewise.subAreaNet.impl.BaseSubAreaNetProcessorImpl;
 import org.interpss.piecewise.subAreaNet.seq012.SubArea012;
 
 import com.interpss.core.acsc.AcscBranch;
