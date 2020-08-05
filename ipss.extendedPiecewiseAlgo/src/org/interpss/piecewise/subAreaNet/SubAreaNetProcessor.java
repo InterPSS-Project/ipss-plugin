@@ -89,4 +89,11 @@ public interface SubAreaNetProcessor <TBus, TBra, TSub, TState> {
 	 * @return the SubArea/Network list
 	 */
 	List<TSub> processSubAreaNet() throws InterpssException;	
+	
+	/**
+	 * After the splitting SubNetwork processing, merge the split sub networks back to the 
+	 * parent network. 
+	 *  
+	 */
+	void mergeSubNet() throws InterpssException;	
 }
