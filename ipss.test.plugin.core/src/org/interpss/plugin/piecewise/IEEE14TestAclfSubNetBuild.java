@@ -27,10 +27,10 @@ package org.interpss.plugin.piecewise;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.piecewise.SubAreaNetProcessor;
-import org.interpss.piecewise.seqPos.CuttingBranchPos;
-import org.interpss.piecewise.seqPos.SubNetworkPos;
-import org.interpss.piecewise.seqPos.impl.SubNetworkPosProcessorImpl;
+import org.interpss.piecewise.subAreaNet.SubAreaNetProcessor;
+import org.interpss.piecewise.subAreaNet.seqPos.CuttingBranchPos;
+import org.interpss.piecewise.subAreaNet.seqPos.SubNetworkPos;
+import org.interpss.piecewise.subAreaNet.seqPos.impl.SubNetworkPosProcessorImpl;
 import org.junit.Test;
 
 import com.interpss.core.aclf.AclfBranch;
