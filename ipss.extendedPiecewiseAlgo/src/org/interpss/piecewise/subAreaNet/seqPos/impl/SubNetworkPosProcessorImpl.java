@@ -29,7 +29,7 @@ import java.util.List;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.piecewise.subAreaNet.base.BaseCuttingBranch;
 import org.interpss.piecewise.subAreaNet.base.BaseSubArea;
-import org.interpss.piecewise.subAreaNet.base.impl.BaseSubAreaNetProcessorImpl;
+import org.interpss.piecewise.subAreaNet.impl.BaseSubAreaNetProcessorImpl;
 import org.interpss.piecewise.subAreaNet.seqPos.SubAreaPos;
 import org.interpss.piecewise.subAreaNet.seqPos.SubNetworkPos;
 

@@ -60,7 +60,7 @@ public class IEEE14BusSubAreaNetSample {
 	static void subAreaProcessing() throws InterpssException {
 		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IpssInternal)
-				.load("testdata/ipssdata/ieee14.ipssdat")
+				.load("testdata/ipssdata/ieee14-1.ipssdat")
 				.getAclfNet();
 				
 		SubAreaNetProcessor<AclfBus, AclfBranch, SubAreaPos, Complex> 
@@ -84,7 +84,7 @@ public class IEEE14BusSubAreaNetSample {
 	static void subNetworkProcessing() throws InterpssException {
 		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IpssInternal)
-				.load("testdata/ipssdata/ieee14.ipssdat")
+				.load("testdata/ipssdata/ieee14-1.ipssdat")
 				.getAclfNet();		
 		
 		SubAreaNetProcessor<AclfBus, AclfBranch, SubNetworkPos, Complex> 
