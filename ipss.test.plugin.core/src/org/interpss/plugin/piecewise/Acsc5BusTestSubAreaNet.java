@@ -30,12 +30,12 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.util.TestUtilFunc;
-import org.interpss.piecewise.SubAreaNetProcessor;
-import org.interpss.piecewise.seq012.CuttingBranch012;
-import org.interpss.piecewise.seq012.SubAcscNetwork;
-import org.interpss.piecewise.seq012.SubArea012;
-import org.interpss.piecewise.seq012.impl.SubNetworkAcscProcessorImpl;
-import org.interpss.piecewise.seq012.impl.SubAreaAcscProcessorImpl;
+import org.interpss.piecewise.subAreaNet.SubAreaNetProcessor;
+import org.interpss.piecewise.subAreaNet.seq012.CuttingBranch012;
+import org.interpss.piecewise.subAreaNet.seq012.SubAcscNetwork;
+import org.interpss.piecewise.subAreaNet.seq012.SubArea012;
+import org.interpss.piecewise.subAreaNet.seq012.impl.SubAreaAcscProcessorImpl;
+import org.interpss.piecewise.subAreaNet.seq012.impl.SubNetworkAcscProcessorImpl;
 import org.junit.Test;
 
 import com.interpss.CoreObjectFactory;
