@@ -27,7 +27,7 @@ package org.interpss.piecewise.subAreaNet.seqPos.impl;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.piecewise.subAreaNet.base.BaseCuttingBranch;
 import org.interpss.piecewise.subAreaNet.base.BaseSubArea;
-import org.interpss.piecewise.subAreaNet.base.impl.BaseSubAreaNetProcessorImpl;
+import org.interpss.piecewise.subAreaNet.impl.BaseSubAreaNetProcessorImpl;
 import org.interpss.piecewise.subAreaNet.seqPos.SubAreaPos;
 
 import com.interpss.core.aclf.AclfBranch;
