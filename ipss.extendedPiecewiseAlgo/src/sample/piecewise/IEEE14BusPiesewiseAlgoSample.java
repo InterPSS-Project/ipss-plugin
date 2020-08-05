@@ -140,7 +140,7 @@ public class IEEE14BusPiesewiseAlgoSample {
 		// Load the sample network
 		AclfNetwork net = CorePluginFactory
 					.getFileAdapter(IpssFileAdapter.FileFormat.IpssInternal)
-					.load("testdata/ieee14.ipssdat")
+					.load("testdata/ipssdata/ieee14.ipssdat")
 					.getAclfNet();	
 		
   		// calculate loadflow
