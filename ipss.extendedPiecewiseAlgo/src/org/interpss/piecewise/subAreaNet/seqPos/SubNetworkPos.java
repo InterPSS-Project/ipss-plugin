@@ -59,12 +59,14 @@ public class SubNetworkPos extends BaseSubNetwork<AclfBus, AclfBranch, AclfNetwo
 		super(flag, ids);
 	}
 	
-	@Override public AclfNetwork createSubNetwork() {
-		return CoreObjectFactory.createAclfNetwork();
+	@Override public AclfNetwork createSubNetwork(int subNetFlag) {
+		AclfNetwork aclfNet =  CoreObjectFactory.createAclfNetwork();
+		aclfNet.setId("SubNet-" + subNetFlag);
+		return aclfNet;
 	};
 	
-	@Override public void buildSubNet(AclfNetwork parentNet) throws InterpssException {
-		super.buildSubNet(parentNet);
+	@Override public void buildSubNet(AclfNetwork parentNet, int subNetFlag) throws InterpssException {
+		super.buildSubNet(parentNet, subNetFlag);
 		
 		// TODO only bus and branch objects are copied to the SubNetwork in the super class. We
 		//      may need to add missing objects
