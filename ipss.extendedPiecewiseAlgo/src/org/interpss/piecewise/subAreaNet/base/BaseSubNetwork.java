@@ -84,10 +84,10 @@ public abstract class BaseSubNetwork<TBus extends Bus,
 	 * 
 	 * @param parentNet
 	 */
-	public void buildSubNet(TNet parentNet) throws InterpssException {
+	public void buildSubNet(TNet parentNet, int subNetFlag) throws InterpssException {
 		//System.out.println("Build SubNetwork for " + this.getFlag());
 		
-		this.subNet = createSubNetwork();
+		this.subNet = createSubNetwork(subNetFlag);
 		
 		for (TBus bus : parentNet.getBusList()) {
 			if (bus.getSubAreaFlag() == this.getFlag()) {
@@ -108,10 +108,17 @@ public abstract class BaseSubNetwork<TBus extends Bus,
 	 * 
 	 * @return the sub-network object
 	 */
-	public abstract TNet createSubNetwork();
+	public abstract TNet createSubNetwork(int subNetFlag);
 	
 	public String toString() {
-		return super.toString() + 
-				this.subNet.net2String();
+		StringBuffer buf = new StringBuffer();
+		buf.append(super.toString() + "\n");
+		this.subNet.getBusList().forEach(bus -> {
+			buf.append("Bus: " + bus.getId() + "\n");
+		});
+		this.subNet.getBranchList().forEach(branch -> {
+			buf.append("Branch: " + branch.getId() + "\n");
+		});
+		return buf.toString();
 	}	
 }	

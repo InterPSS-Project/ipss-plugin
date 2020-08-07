@@ -76,7 +76,7 @@ public class SubNetworkAcscProcessorImpl<TSub extends BaseSubArea<?, ?, Complex3
 		
 		// for each SubNetwork, we build the child/parent relationship.
 		for (TSub subNet : subNetList ) {
-			((SubAcscNetwork)subNet).buildSubNet((AcscNetwork)this.getNetwork());
+			((SubAcscNetwork)subNet).buildSubNet((AcscNetwork)this.getNetwork(), subNet.getFlag());
 		};
 		
 		return subNetList;
