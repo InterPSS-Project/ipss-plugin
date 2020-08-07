@@ -29,6 +29,7 @@ import java.util.List;
 import org.interpss.piecewise.subAreaNet.base.BaseCuttingBranch;
 
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.net.Network;
 
 /**
  * Interface for SubArea or SubNetwork processing. It begins by defining a set of cutting branches.
@@ -48,9 +49,11 @@ import com.interpss.common.exp.InterpssException;
 		
 public interface SubAreaNetProcessor <TBus, TBra, TSub, TState> {
 	/**
-	 * enum for defining indicator for SubArea or SubNetwork based processing
+	 * get the parent network object
+	 * 
+	 * @return the parent network object
 	 */
-	//public static enum SubAreaNetType { SubArea, SubNetwork};
+	Network<?, ?> getNetwork();
 	
 	/**
 	 * return the cutting branch set
