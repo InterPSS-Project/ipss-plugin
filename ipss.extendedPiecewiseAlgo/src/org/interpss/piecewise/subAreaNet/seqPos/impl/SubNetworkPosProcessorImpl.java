@@ -79,7 +79,7 @@ public class SubNetworkPosProcessorImpl<TSub extends BaseSubArea<?, ?, Complex>>
 		
 		// for each SubNetwork, we build the child/parent relationship.
 		for (TSub subNet : subNetList ) {
-			((SubNetworkPos)subNet).buildSubNet((AclfNetwork)this.getNetwork());
+			((SubNetworkPos)subNet).buildSubNet((AclfNetwork)this.getNetwork(), subNet.getFlag());
 		};
 		
 		return subNetList;
