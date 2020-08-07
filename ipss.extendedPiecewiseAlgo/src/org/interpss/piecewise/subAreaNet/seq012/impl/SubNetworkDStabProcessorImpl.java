@@ -80,7 +80,7 @@ public class SubNetworkDStabProcessorImpl<TSub extends BaseSubArea<?, ?, Complex
 		
 		// for each SubNetwork, we build the child/parent relationship.
 		for (TSub subNet : subNetList ) {
-			((SubDStabNetwork)subNet).buildSubNet((BaseDStabNetwork)this.getNetwork());
+			((SubDStabNetwork)subNet).buildSubNet((BaseDStabNetwork)this.getNetwork(), subNet.getFlag());
 		};
 		
 		return subNetList;
