@@ -95,6 +95,9 @@ public class IEEE14BusSubAreaNetSample {
 		
 		proc.processSubAreaNet();
 		
+		//System.out.println("----------------------");
+		//System.out.println(proc.getNetwork().net2String());
+		
 		proc.getSubAreaNetList().forEach(subNet -> {
 			System.out.println("----------------------");
 			System.out.println(subNet);
