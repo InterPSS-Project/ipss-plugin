@@ -55,12 +55,14 @@ public class SubAcscNetwork extends SubNetwork012<AcscBus, AcscBranch, AcscNetwo
 		super(flag, ids);
 	}
 	
-	@Override public AcscNetwork createSubNetwork() {
-		return CoreObjectFactory.createAcscNetwork();
+	@Override public AcscNetwork createSubNetwork(int subNetFlag) {
+		AcscNetwork acscNet = CoreObjectFactory.createAcscNetwork();
+		acscNet.setId("SubNet-" + subNetFlag);
+		return acscNet;
 	};
 	
-	@Override public void buildSubNet(AcscNetwork parentNet) throws InterpssException {
-		super.buildSubNet(parentNet);
+	@Override public void buildSubNet(AcscNetwork parentNet, int subNetFlag) throws InterpssException {
+		super.buildSubNet(parentNet, subNetFlag);
 		
 		// TODO only bus and branch objects are copied to the SubNetwork in the super class. We
 		//      may need to add missing objects
