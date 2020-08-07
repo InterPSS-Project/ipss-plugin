@@ -56,12 +56,14 @@ public class SubDStabNetwork extends SubNetwork012<BaseDStabBus<DStabGen,DStabLo
 		super(flag, ids);
 	}
 	
-	@Override public BaseDStabNetwork createSubNetwork() {
-		return DStabObjectFactory.createDStabilityNetwork();
+	@Override public BaseDStabNetwork createSubNetwork(int subNetFlag) {
+		BaseDStabNetwork dstabNet =  DStabObjectFactory.createDStabilityNetwork();
+		dstabNet.setId("SubNet-" + subNetFlag);
+		return dstabNet;
 	};
 	
-	@Override public void buildSubNet(BaseDStabNetwork parentNet) throws InterpssException {
-		super.buildSubNet(parentNet);
+	@Override public void buildSubNet(BaseDStabNetwork parentNet, int subNetFlag) throws InterpssException {
+		super.buildSubNet(parentNet, subNetFlag);
 		
 		// TODO only bus and branch objects are copied to the SubNetwork in the super class. We
 		//      may need to add missing objects
