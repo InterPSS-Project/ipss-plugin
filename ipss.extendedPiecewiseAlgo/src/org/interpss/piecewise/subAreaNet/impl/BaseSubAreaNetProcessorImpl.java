@@ -99,6 +99,7 @@ public abstract class BaseSubAreaNetProcessorImpl<
 	 * 
 	 * @return the net
 	 */
+	@Override
 	public Network<TBus, TBra> getNetwork() {
 		return parentNet;
 	}
@@ -334,8 +335,25 @@ public abstract class BaseSubAreaNetProcessorImpl<
 	
 	@Override
 	public void mergeSubNet() throws InterpssException {
-		throw new InterpssException("The method needs to be implemented");
+		/*
+		 * The cutting branches were turned off in the subnet splitting process.
+		 * We need to turn them on
+		 */
+		for (int i = 0; i < this.cuttingBranches.length; i++) {
+			BaseCuttingBranch<TState> branch = this.cuttingBranches[i];
+			this.parentNet.getBranch(branch.getBranchId()).setStatus(true);
+		}
 		
+		// reset bus/branch parent network
+		this.parentNet.getBusList().forEach(bus -> {
+			bus.setNetwork(parentNet);
+		});
+		this.parentNet.getBranchList().forEach(branch -> {
+			branch.setNetwork(parentNet);
+		});
+		
+		// removed sub-net objects.
+		this.subAreaNetList.clear();
 	}
 
 	/**
