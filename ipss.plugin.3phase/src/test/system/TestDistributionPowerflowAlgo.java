@@ -13,7 +13,6 @@ import org.interpss.threePhase.basic.dstab.DStab3PGen;
 import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 import org.interpss.threePhase.basic.dstab.impl.DStab3PGenImpl;
 import org.interpss.threePhase.basic.dstab.impl.DStab3PLoadImpl;
-import org.interpss.threePhase.basic.static3P.Static3PXformer;
 import org.interpss.threePhase.basic.static3P.impl.Static3PNetworkTempImpl;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.powerflow.impl.DistPowerFlowOutFunc;
@@ -21,6 +20,7 @@ import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.abc.Static3PXformer;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
