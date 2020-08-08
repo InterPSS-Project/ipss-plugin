@@ -25,7 +25,7 @@ public class Static3PNetworkTempImpl extends BaseAcscNetworkImpl<AcscBus, AcscBr
 	
 	protected ISparseEqnComplexMatrix3x3 yMatrixAbc =null;
 
-	
+/*	
 	private boolean isDeltaConnected(XfrConnectCode code){
 		return code ==XfrConnectCode.DELTA ||
 				code== XfrConnectCode.DELTA11;
@@ -78,7 +78,7 @@ public class Static3PNetworkTempImpl extends BaseAcscNetworkImpl<AcscBus, AcscBr
 	private Complex phaseShiftCplxFactor(double shiftDeg){
 		return new Complex(Math.cos(shiftDeg/180.0d*Math.PI),Math.sin(shiftDeg/180.0d*Math.PI));
 	}
-
+*/
 	@Override
 	public ISparseEqnComplexMatrix3x3 formYMatrixABC() throws IpssNumericException {
 		yMatrixAbc = new SparseEqnComplexMatrix3x3Impl(getNoBus());
