@@ -11,8 +11,6 @@ import org.interpss.threePhase.basic.dstab.impl.DStab3PGenImpl;
 import org.interpss.threePhase.basic.dstab.impl.DStab3PLoadImpl;
 import org.interpss.threePhase.basic.dstab.impl.DStab3W3PBranchImpl;
 import org.interpss.threePhase.basic.dstab.impl.Dstab3PBranchImpl;
-import org.interpss.threePhase.basic.static3P.Static3PXformer;
-import org.interpss.threePhase.basic.static3P.impl.Static3PXformerImpl;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.impl.DStabNetwork3phaseImpl;
 import org.interpss.threePhase.dynamic.model.DStabGen3PhaseAdapter;
@@ -23,6 +21,8 @@ import org.interpss.threePhase.powerflow.impl.DistributionPowerFlowAlgorithmImpl
 import com.interpss.DStabObjectFactory;
 import com.interpss.common.datatype.Constants;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.abc.Static3PXformer;
+import com.interpss.core.abc.impl.Static3PXformerImpl;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.netAdj.AclfNetAdjustment;
 import com.interpss.core.aclf.netAdj.NetAdjustFactory;
@@ -48,10 +48,13 @@ public class ThreePhaseObjectFactory {
 			net.setStaticLoadSwitchDeadZone(Constants.DStabStaticLoadSwithDeadband);
 	      return net;
 	}
+
+	/*
 	public static Static3PXformer create3PXformer(){
 	   Static3PXformer ph3Xfr = new Static3PXformerImpl();
 	   return ph3Xfr;
 	}
+	*/
 	
 	public static DStab3PBus create3PAclfBus(String busId, BaseAclfNetwork net) throws InterpssException{
 		DStab3PBus bus = new DStab3PBusImpl();
