@@ -68,8 +68,12 @@ public class MNet_IEEE14Bus_Test extends CorePluginTestSetup {
 		 *    Bus6->Bus13(1)  @Bus6
 		 *    Bus12->Bus13(1) @Bus12
 		 */
+		// create a child-network in the parent-network
 		ChildNetwork<AclfBus,AclfBranch> childNet = CoreObjectFactory.createChildAclfNet(net, "childNet");
 		
+		/*
+		 * define three interfacing branches.
+		 */
 		//AclfBranch branch = net.getBranch("Bus9->Bus14(1)");
 		ChildNetInterfaceBranch intBranch = ChildNetworkFactory.eINSTANCE.createChildNetInterfaceBranch();
 		intBranch.setBranchId("Bus9->Bus14(1)");
@@ -91,6 +95,7 @@ public class MNet_IEEE14Bus_Test extends CorePluginTestSetup {
 		intBranch.setChildNetSide(BranchBusSide.TO_SIDE);
 		childNet.getInterfaceBranches().add(intBranch);		
 
+		// split the parent/child network
 		new ChildNetworkProcessor(net).processChildNet();
 		//System.out.println(net.net2String());
 		
@@ -111,6 +116,9 @@ public class MNet_IEEE14Bus_Test extends CorePluginTestSetup {
 		
 		//System.out.println(net.net2String());
 		
+		/*
+		 * Run multi-network Loadflow
+		 */
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 		algo.setMultiNetSolver(new DefaultMultiNetLfSolver(algo));
 	  	algo.loadflow();

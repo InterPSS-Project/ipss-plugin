@@ -23,7 +23,7 @@ import com.interpss.core.net.childnet.ChildNetInterfaceBranch;
 import com.interpss.core.net.childnet.ChildNetwork;
 import com.interpss.core.net.childnet.impl.ChildNetworkProcessor;
 
-public class MNet_IEEE9_Test extends CorePluginTestSetup {
+public class MNet_IEEE9_PSSE_Test extends CorePluginTestSetup {
 	
 	@Test
 	public void testFullNetLF() throws Exception{
@@ -64,6 +64,9 @@ public class MNet_IEEE9_Test extends CorePluginTestSetup {
 		//Create childNet
         ChildNetwork<AclfBus,AclfBranch> childNet = CoreObjectFactory.createChildAclfNet(net, "childNet");
 		
+		/*
+		 * define three interfacing branches.
+		 */
 		ChildNetInterfaceBranch intBranch_7_8 = CoreObjectFactory.createChildNetInerfaceBranch(childNet);	
 		intBranch_7_8.setBranchId("Bus7->Bus8(0)");
 		intBranch_7_8.setInterfaceBusSide(BranchBusSide.FROM_SIDE);		
@@ -76,9 +79,9 @@ public class MNet_IEEE9_Test extends CorePluginTestSetup {
 		intBranch_4_5.setChildNetSide(BranchBusSide.TO_SIDE);
 		childNet.getInterfaceBranches().add(intBranch_4_5);	
 		
+		// split the parent/child network
 		new ChildNetworkProcessor(net).processChildNet();
-		
-		
+				
 		assertTrue((net.getBusList().size() == 8 && net.getBranchList().size() == 7));
 		assertTrue(net.getChildNetList().size() > 0);
 		
@@ -93,12 +96,12 @@ public class MNet_IEEE9_Test extends CorePluginTestSetup {
 			assertTrue(childAclfNet.getBus(cbranch.getInterfaceBusIdChildNet()).isSwing());
 		}
 		
-		
+		/*
+		 * Run multi-network Loadflow
+		 */
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 		algo.setMultiNetSolver(new DefaultMultiNetLfSolver(algo));
 	  	algo.loadflow();
-
-	  	//open issue-1 load at the boundary bus
 	  	
   		assertTrue(net.isLfConverged());		
  		AclfBus swingBus = (AclfBus)net.getBus("Bus1");
@@ -108,8 +111,6 @@ public class MNet_IEEE9_Test extends CorePluginTestSetup {
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-0.7164)<1.0E-4);
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-0.2710)<1.0E-4);
 	}
-	
-	
 }
 
 
