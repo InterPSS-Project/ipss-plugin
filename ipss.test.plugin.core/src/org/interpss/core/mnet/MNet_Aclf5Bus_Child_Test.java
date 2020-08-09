@@ -37,6 +37,11 @@ import com.interpss.core.net.childnet.ChildNetInterfaceBranch;
 import com.interpss.dist.DistNetwork;
 
 public class MNet_Aclf5Bus_Child_Test extends CorePluginTestSetup {
+	/*
+	 *  Please Note: the parent/child relationship has already been built in the 
+	 *  case xml file. 
+	 */
+	
 	@Test 
 	public void aclfChildNetTest() throws  InterpssException {
 		// Create an AclfNetwork object
