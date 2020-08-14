@@ -13,14 +13,15 @@ import org.interpss.threePhase.basic.dstab.DStab3PGen;
 import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 import org.interpss.threePhase.basic.dstab.impl.DStab3PGenImpl;
 import org.interpss.threePhase.basic.dstab.impl.DStab3PLoadImpl;
-import org.interpss.threePhase.basic.static3P.Static3PXformer;
-import org.interpss.threePhase.basic.static3P.impl.Static3PNetworkTempImpl;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.powerflow.impl.DistPowerFlowOutFunc;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.abc.Static3PNetwork;
+import com.interpss.core.abc.Static3PXformer;
+import com.interpss.core.abc.Static3PhaseFactory;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
@@ -36,7 +37,7 @@ public class TestDistributionPowerflowAlgo {
 	@Test
 	public void testLineAndXfrGeneralizedMatrices() throws InterpssException {
 		
-		Static3PNetworkTempImpl net = createDistNetNoDG();
+		Static3PNetwork net = createDistNetNoDG();
 		
 		//--------------------------------------------------------------------------------------------
 		// 1. Test the distribution line models
@@ -258,7 +259,7 @@ public class TestDistributionPowerflowAlgo {
 	
 	//@Test
 	public void testDistBusOrdering() throws InterpssException {
-		Static3PNetworkTempImpl net = createDistNetNoDG();
+		Static3PNetwork net = createDistNetNoDG();
 		
 		DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(net);
 		distPFAlgo.orderDistributionBuses(true);
@@ -272,7 +273,7 @@ public class TestDistributionPowerflowAlgo {
 	
 	@Test
 	public void testDistBusPF() throws InterpssException {
-		Static3PNetworkTempImpl net = createDistNetNoDG();
+		Static3PNetwork net = createDistNetNoDG();
 		
 		DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(net);
 		//distPFAlgo.orderDistributionBuses(true);
@@ -296,7 +297,7 @@ public class TestDistributionPowerflowAlgo {
 	
 	@Test
 	public void testDistPFWithDG() throws InterpssException {
-		Static3PNetworkTempImpl net = createDistNetWithDG();
+		Static3PNetwork net = createDistNetWithDG();
 		
 		DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(net);
 		//distPFAlgo.orderDistributionBuses(true);
@@ -318,12 +319,12 @@ public class TestDistributionPowerflowAlgo {
 		
 	}
 	
-	private Static3PNetworkTempImpl createDistNetNoDG() throws InterpssException{
+	private Static3PNetwork createDistNetNoDG() throws InterpssException{
 		// step-1 create the network object
 		
-		BaseAclfNetwork net = new Static3PNetworkTempImpl();
+		Static3PNetwork net = Static3PhaseFactory.eINSTANCE.createStatic3PNetwork();
 		// identify this is a distribution network
-		((Static3PNetworkTempImpl) net).setNetworkType(NetworkType.DISTRIBUTION);
+		net.setNetworkType(NetworkType.DISTRIBUTION);
 		
 		
 		// step-2 create all the bus objects
@@ -408,18 +409,18 @@ public class TestDistributionPowerflowAlgo {
   		  		
   		
   		
-	    return (Static3PNetworkTempImpl) net;
+	    return net;
   		
 	}
 	
-	private Static3PNetworkTempImpl createDistNetWithDG() throws InterpssException{
+	private Static3PNetwork createDistNetWithDG() throws InterpssException{
 		
 		/**
 		 * create a 3-phase network object
 		 */
-		BaseAclfNetwork net = new Static3PNetworkTempImpl();
+		Static3PNetwork net = Static3PhaseFactory.eINSTANCE.createStatic3PNetwork();
 		// identify this is a distribution network
-		((Static3PNetworkTempImpl) net).setNetworkType(NetworkType.DISTRIBUTION);
+		net.setNetworkType(NetworkType.DISTRIBUTION);
 		
 		
 		/**
@@ -518,15 +519,15 @@ public class TestDistributionPowerflowAlgo {
   		
   		
   		
-	    return (Static3PNetworkTempImpl) net;
+	    return net;
   		
 	}
 	
 	
-	private Static3PNetworkTempImpl createNet4PosSeqPF() throws InterpssException{
-		BaseAclfNetwork net = new Static3PNetworkTempImpl();
+	private Static3PNetwork createNet4PosSeqPF() throws InterpssException{
+		Static3PNetwork net = Static3PhaseFactory.eINSTANCE.createStatic3PNetwork();
 		// identify this is a distribution network
-		((Static3PNetworkTempImpl) net).setNetworkType(NetworkType.DISTRIBUTION);
+		net.setNetworkType(NetworkType.DISTRIBUTION);
 		
 		DStab3PBus bus1 = ThreePhaseObjectFactory.create3PAclfBus("Bus1", net);
   		bus1.setAttributes("69 kV feeder source", "");
@@ -625,12 +626,6 @@ public class TestDistributionPowerflowAlgo {
 //		AcscXformer xfr2 = acscXfrAptr.apply(xfr11_12);
 //		xfr2.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
 //		xfr2.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
-
-  		
-  		
-  		
-	    return (Static3PNetworkTempImpl) net;
-  		
+	    return net;
 	}
-
 }
