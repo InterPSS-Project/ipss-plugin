@@ -72,6 +72,7 @@ import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.common.exp.InterpssRuntimeException;
 import com.interpss.core.acsc.Acsc3WBranch;
 import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.AcscBus;
@@ -194,7 +195,6 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 				AbstractODMAclfNetMapper.postAclfNetProcessing(acscFaultNet);
 			} catch (InterpssException e) {
 				ipssLogger.severe(e.toString());
-				e.printStackTrace();
 				noError = false;
 			}
 		} 
@@ -366,8 +366,7 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 			try {
 				throw new UnsupportedDataTypeException("ZIP function load is not supported for converting to positive sequence shunt load");
 			} catch (UnsupportedDataTypeException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw new InterpssRuntimeException(e.toString());
 			}
 		}
 		
@@ -401,8 +400,7 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 				try {
 					throw new UnsupportedDataTypeException("ZIP function load is not supported for converting to negative sequence shunt load");
 				} catch (UnsupportedDataTypeException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					throw new InterpssRuntimeException(e.toString());
 				}
 			}
 			
