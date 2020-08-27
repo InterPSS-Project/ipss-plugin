@@ -43,6 +43,7 @@ import org.interpss.numeric.datatype.LimitType;
 import com.interpss.CoreObjectFactory;
 import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.common.exp.InterpssRuntimeException;
 import com.interpss.common.mapper.AbstractMapper;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranch;
@@ -208,8 +209,7 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 							bus, RemoteQControlType.BUS_VOLTAGE, remoteBusId);
 					reQBus.setAccFactor(0.5);
 				} catch (InterpssException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					throw new InterpssRuntimeException(e.toString());
 				}
 				
 			}
@@ -252,8 +252,7 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 				}				
 				ss.setRemoteBus(aclfNet.getBus(ssb.remoteBusId));
 			} catch (InterpssException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw new InterpssRuntimeException(e.toString());
 			}
 			
 		}
