@@ -111,7 +111,6 @@ public abstract class AbstractODMDistNetMapper<T> extends AbstractODMNetDataMapp
 					noError = false;
 			}			
 		} catch (InterpssException e) {
-			e.printStackTrace();
 			ipssLogger.severe(e.toString());
 			noError = false;
 		}

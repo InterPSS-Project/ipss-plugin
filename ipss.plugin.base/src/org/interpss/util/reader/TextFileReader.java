@@ -99,7 +99,6 @@ public class TextFileReader {
 			}
 		} catch (Exception e) {
 			ipssLogger.severe(e.toString());
-			e.printStackTrace();
 		}
 	}
 	

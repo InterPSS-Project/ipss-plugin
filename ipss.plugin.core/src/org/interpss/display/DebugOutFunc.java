@@ -25,6 +25,7 @@
 package org.interpss.display;
 
 import com.interpss.common.exp.InterpssException;
+import com.interpss.common.exp.InterpssRuntimeException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.net.Branch;
@@ -77,7 +78,7 @@ public class DebugOutFunc {
 				try {
 					buf.append(busConnectivityInfo((AclfBus)branch.getOppositeBus(bus), level-1, offSet + OffSet_Space));
 				} catch (InterpssException e) {
-					e.printStackTrace();
+					throw new InterpssRuntimeException(e.toString());
 				}
 		}
 
