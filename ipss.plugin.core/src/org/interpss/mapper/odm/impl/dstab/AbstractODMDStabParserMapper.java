@@ -198,7 +198,6 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 				AbstractODMAclfNetMapper.postAclfNetProcessing(dstabNet);
 			} catch (InterpssException e) {
 				ipssLogger.severe(e.toString());
-				e.printStackTrace();
 				noError = false;
 			}
 		} 

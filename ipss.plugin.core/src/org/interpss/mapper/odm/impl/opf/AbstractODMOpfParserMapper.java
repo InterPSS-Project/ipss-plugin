@@ -185,7 +185,6 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 					}
 				}
 			} catch (InterpssException e) {
-				e.printStackTrace();
 				ipssLogger.severe(e.toString());
 				noError = false;
 			}
