@@ -148,7 +148,7 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 			applyDynamicEvent(time);
 		}
 		
-		// when every there is an event, need to update the [Zl] matrix of the boundary subsystem
+		// whenever there is an event, need to update the [Zl] matrix of the boundary subsystem
 		if( hasDynEvent(time)){
 			
 			this.multiNetSimuHelper.prepareBoundarySubSystemMatrix();
