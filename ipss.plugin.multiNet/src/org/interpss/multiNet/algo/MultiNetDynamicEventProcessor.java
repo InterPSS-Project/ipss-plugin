@@ -133,6 +133,8 @@ public class MultiNetDynamicEventProcessor extends DynamicEventProcessor {
 	// apply event before building the Y-matrix
 	@Override
 	protected void applyDynamicEventBefore(DynamicSimuEvent e, double t) {
+		//reuse the DynamicEventProcessor implementation
+		super.applyDynamicEventBefore(e, t);
 		
 	}
 	

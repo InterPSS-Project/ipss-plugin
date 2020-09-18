@@ -59,7 +59,7 @@ import com.interpss.simu.SimuCtxType;
 
 public class TestTnD_IEEE9_8BusFeeder {
 	
-	@Test
+	//@Test
 	public void test_IEEE9_8Busfeeder_powerflow() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.WARNING);
@@ -355,14 +355,18 @@ public class TestTnD_IEEE9_8BusFeeder {
 		  
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 			dstabAlgo.setSimuStepSec(0.005d);
-			dstabAlgo.setTotalSimuTimeSec(1.50);
+			dstabAlgo.setTotalSimuTimeSec(2.2);
 			
 
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 			
 			//applied the event
-			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus10",proc.getSubNetworkByBusId("Bus10"),SimpleFaultCode.GROUND_LG,new Complex(0.0),new Complex(0.0),1.0d,0.07),"3phaseFault@Bus5");
+//			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus10",proc.getSubNetworkByBusId("Bus10"),SimpleFaultCode.GROUND_LG,new Complex(0.0),new Complex(0.0),1.0d,0.07),"3phaseFault@Bus5");
 	        
+			dsNet.addDynamicEvent(
+					DStabObjectFactory.createBusFaultEvent("Bus10", proc.getSubNetworkByBusId("Bus10"),
+							SimpleFaultCode.GROUND_LG, new Complex(0.0), new Complex(0.0), 2, 0.05),
+					"3phaseFault@Bus10");
 			
 			StateMonitor sm = new StateMonitor();
 			sm.addGeneratorStdMonitor(new String[]{"Bus1-mach1","Bus2-mach1","Bus3-mach1"});
@@ -415,7 +419,7 @@ public class TestTnD_IEEE9_8BusFeeder {
 			
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(1);
+			dstabAlgo.setOutPutPerSteps(5);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 			
 			IpssLogger.getLogger().setLevel(Level.WARNING);
@@ -450,8 +454,8 @@ public class TestTnD_IEEE9_8BusFeeder {
 			}
 			timer.end();
 			System.out.println("total sim time = "+timer.getDuration());
-			System.out.println(sm.toCSVString(sm.getBusVoltTable()));
-			System.out.println(sm.toCSVString(sm.getBusAngleTable()));
+//			System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+			System.out.println(sm.toCSVString(sm.getBusPhAVoltTable()));
 			//System.out.println(sm.toCSVString(sm.getAcMotorPTable()));
 			//System.out.println(sm.toCSVString(sm.getAcMotorStateTable()));
 			
@@ -473,7 +477,7 @@ public class TestTnD_IEEE9_8BusFeeder {
 	
 	}
 	
-	@Test
+	//@Test
 	public void test_IEEE9_8Busfeeder_constZload_dynSim() throws InterpssException{
 		IpssCorePlugin.init();
 		

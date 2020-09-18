@@ -54,7 +54,7 @@ import com.interpss.simu.SimuCtxType;
 public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	
 
-	//@Test
+	@Test
 	public void test_IEEE9Bus_Dstab() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
@@ -199,7 +199,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	}
 	
 	
-	//@Test
+	@Test
 	public void test_IEEE9Bus_Dstab_Load_Change() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
@@ -294,7 +294,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 
 	}
 	
-	//@Test
+	@Test
 	public void test_IEEE9Bus_Dstab_Generator_Trip() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
@@ -405,7 +405,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
 		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
-				"testData/adpter/psse/v30/IEEE9Bus/ieee9_multiGen.raw",
+				"testData/adpter/psse/v30/IEEE9Bus/ieee9_multiGen_v2.raw",
                 //"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq",
                 "testData/adpter/psse/v30/IEEE9Bus/ieee9_dyn_multiGen.dyr"
 			
@@ -466,7 +466,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		
 		//for(int i =1; i<20;i++){
 			
-			
+		assertTrue(!dsNet.getMachine("Bus3-mach2").isActive());
 
 		if (dstabAlgo.initialization()) {
 			//System.out.println(dsNet.getMachineInitCondition());
@@ -490,10 +490,13 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 //		
 //		System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
 		
-		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(0).value, 0.71639,1.0E-4));
-		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(15).value, 0.71639,1.0E-4));
-		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(42).value, 0.0,1.0E-4));
-		assertTrue(!dsNet.getMachine("Bus1-mach1").isActive());
+		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(0).value, 1.13090,1.0E-4));
+		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(40).value, 1.13090,1.0E-4));
+		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus3-mach2").get(0).value, 0.0,1.0E-4));
+		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus3-mach2").get(40).value, 0.0,1.0E-4));
+		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus3-mach2").get(42).value, 0.61517,1.0E-4));
+		
+	
 		
 	
 		/*
@@ -505,7 +508,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 
 	}
 	
-	//@Test
+	@Test
 	public void IEEE9_Dstab_benchMark() throws InterpssException{
 		IpssCorePlugin.init();
 		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
@@ -573,7 +576,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 				DStabOutSymbol.OUT_SYMBOL_MACH_Efd) < 0.0001);
 	}
 	
-	//@Test
+	@Test
 	public void IEEE9_Dstab_GenWithoutMach() throws InterpssException{
 		IpssCorePlugin.init();
 		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
@@ -644,7 +647,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		assertTrue(stateTestRecorder.diffTotal("Bus2-mach1", MachineState, 
 				DStabOutSymbol.OUT_SYMBOL_MACH_Efd) < 0.00001);
 	}
-	//@Test
+	@Test
     public void IEEE9_Dstab_multiGen_Test() throws InterpssException{
             IpssCorePlugin.init();
             IpssLogger.getLogger().setLevel(Level.INFO);
