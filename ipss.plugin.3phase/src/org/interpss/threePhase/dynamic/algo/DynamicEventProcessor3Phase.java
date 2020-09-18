@@ -11,12 +11,15 @@ import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import com.interpss.common.exp.InterpssRuntimeException;
 import com.interpss.common.msg.IpssMessage;
 import com.interpss.core.acsc.BaseAcscBus;
+import com.interpss.core.acsc.fault.AcscBranchFault;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.dstab.algo.defaultImpl.DynamicEventProcessor;
 import com.interpss.dstab.datatype.DStabSimuTimeEvent;
 import com.interpss.dstab.devent.DynamicSimuEvent;
 import com.interpss.dstab.devent.DynamicSimuEventType;
+import com.interpss.dstab.devent.GenerationEnergizationEvent;
+import com.interpss.dstab.devent.GenerationTripEvent;
 
 public class DynamicEventProcessor3Phase extends DynamicEventProcessor {
 	
@@ -119,6 +122,41 @@ public class DynamicEventProcessor3Phase extends DynamicEventProcessor {
 	@Override
 	protected void applyDynamicEventBefore(DynamicSimuEvent e, double t) {
 		
+		// for branch fault, we first take the branch at the fault point
+		// it may put back in service if there is a reclosure.
+		if (e.getType() == DynamicSimuEventType.BRANCH_FAULT) {
+			// The fault branch will not participate in the calculation
+			AcscBranchFault fault = e.getBranchFault();
+			fault.getFaultBranch().setStatus(false);
+		} else if (e.getType() == DynamicSimuEventType.BRANCH_OUTAGE) {
+			// The fault branch will not participate in the calculation
+			e.getBranchDynamicEvent().getBranch().setStatus(false);
+		}
+		else if(e.getType() == DynamicSimuEventType.GENERATION_TRIP) {
+			GenerationTripEvent tripEvent = (GenerationTripEvent) e.getBusDeviceDynamicEvent();
+			tripEvent.getBus().getContributeGen(tripEvent.getGenDeviceId()).setStatus(false);
+			tripEvent.getDynamicBusDevice().setStatus(false);
+			tripEvent.getBus().resetSeqEquivLoad();
+		
+		}
+		
+		else if(e.getType() == DynamicSimuEventType.GENERATION_ENERGIZATION) {
+			
+			
+			GenerationEnergizationEvent connectEvent = (GenerationEnergizationEvent) e.getBusDeviceDynamicEvent();
+			connectEvent.getBus().getContributeGen(connectEvent.getGenDeviceId()).setStatus(true);
+			connectEvent.getDynamicBusDevice().setStatus(true);
+			connectEvent.getDynamicBusDevice().initStates();
+			
+		}
+
+		if (e.isActive()) {
+			
+			if (e.getType() == DynamicSimuEventType.BRANCH_RECLOSURE) {
+				AcscBranchFault fault = e.getBranchFault();
+				fault.getFaultBranch().setStatus(true);
+			}
+		}
 	}
 	
 	

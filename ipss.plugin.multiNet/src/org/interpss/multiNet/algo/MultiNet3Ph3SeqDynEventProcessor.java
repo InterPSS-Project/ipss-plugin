@@ -121,6 +121,14 @@ public class MultiNet3Ph3SeqDynEventProcessor extends
 		return true;
 	}
 	
+	// apply event before building the Y-matrix
+		@Override
+		protected void applyDynamicEventBefore(DynamicSimuEvent e, double t) {
+			//reuse the DynamicEventProcessor implementation
+			super.applyDynamicEventBefore(e, t);
+			
+		}
+	
 	// apply event after after building the Y-matrix
 		@Override
 		protected void applyDynamicEventAfter(DynamicSimuEvent e, double t) throws IpssNumericException {
