@@ -86,7 +86,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 //	    seqNetHelper.buildSequenceNetwork(SequenceCode.NEGATIVE);
 //	    seqNetHelper.buildSequenceNetwork(SequenceCode.ZERO);
 //	    
-//	    System.out.println(dsNet.net2String());
+
 	    
 		DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
@@ -199,7 +199,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	}
 	
 	
-	@Test
+	//@Test
 	public void test_IEEE9Bus_Dstab_Load_Change() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
@@ -291,53 +291,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		//assertTrue(!dsNet.getMachine("Bus1-mach1").isActive());
 		
 	
-		/*
-		FileUtil.writeText2File("output/ieee9_bus5_machPe_v4_sat_03042015.csv",sm.toCSVString(sm.getMachPeTable()));
-		FileUtil.writeText2File("output/ieee9_bus5_machAngle_v4_sat_03042015.csv",sm.toCSVString(sm.getMachAngleTable()));
-		FileUtil.writeText2File("output/ieee9_bus5_machSpd_v4_sat_03042015.csv",sm.toCSVString(sm.getMachSpeedTable()));
-		FileUtil.writeText2File("output/ieee9_bus5_busVolt_v3_sat_03042015.csv",sm.toCSVString(sm.getBusVoltTable()));
-        */
-		/*
-		 *  Bus2 Machine Anagle
-				0.0000, 57.56288
-				0.0010, 57.56288
-				0.0020, 57.56288
-				0.0030, 57.56288
-				0.0040, 57.56288
-				0.0050, 57.56288
-				0.0060, 57.56288
-				0.0070, 57.56288
-				0.0080, 57.56288
-				0.0090, 57.56288
-		 */
-		
-		/*
-		 *  Bus2 Machine PM
-			0.0000, 1.6300
-			0.0010, 1.6300
-			0.0020, 1.6300
-			0.0030, 1.6300
-			0.0040, 1.6300
-			0.0050, 1.6300
-			0.0060, 1.6300
-			0.0070, 1.6300
-			0.0080, 1.6300
-			0.0090, 1.6300
-		 */
-		
-		/*
-		 *  Bus2 Machine Efd
-			0.0000, 1.78898
-			0.0010, 1.78898
-			0.0020, 1.78898
-			0.0030, 1.78898
-			0.0040, 1.78898
-			0.0050, 1.78898
-			0.0060, 1.78898
-			0.0070, 1.78898
-			0.0080, 1.78898
-			0.0090, 1.78898
-		 */
+
 	}
 	
 	//@Test
@@ -442,47 +396,113 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		FileUtil.writeText2File("output/ieee9_bus5_machSpd_v4_sat_03042015.csv",sm.toCSVString(sm.getMachSpeedTable()));
 		FileUtil.writeText2File("output/ieee9_bus5_busVolt_v3_sat_03042015.csv",sm.toCSVString(sm.getBusVoltTable()));
         */
-		/*
-		 *  Bus2 Machine Anagle
-				0.0000, 57.56288
-				0.0010, 57.56288
-				0.0020, 57.56288
-				0.0030, 57.56288
-				0.0040, 57.56288
-				0.0050, 57.56288
-				0.0060, 57.56288
-				0.0070, 57.56288
-				0.0080, 57.56288
-				0.0090, 57.56288
-		 */
+
+	}
+	
+	@Test
+	public void test_IEEE9Bus_Dstab_Generator_Energization() throws InterpssException{
+		IpssCorePlugin.init();
+		IpssCorePlugin.setLoggerLevel(Level.INFO);
+		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
+				"testData/adpter/psse/v30/IEEE9Bus/ieee9_multiGen.raw",
+                //"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq",
+                "testData/adpter/psse/v30/IEEE9Bus/ieee9_dyn_multiGen.dyr"
+			
+		}));
+		DStabModelParser parser =(DStabModelParser) adapter.getModel();
 		
-		/*
-		 *  Bus2 Machine PM
-			0.0000, 1.6300
-			0.0010, 1.6300
-			0.0020, 1.6300
-			0.0030, 1.6300
-			0.0040, 1.6300
-			0.0050, 1.6300
-			0.0060, 1.6300
-			0.0070, 1.6300
-			0.0080, 1.6300
-			0.0090, 1.6300
-		 */
+		//System.out.println(parser.toXmlDoc());
+
 		
+		
+		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
+		if (!new ODMDStabParserMapper(msg)
+					.map2Model(parser, simuCtx)) {
+			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
+			return;
+		}
+		
+		
+	    BaseDStabNetwork dsNet =simuCtx.getDStabilityNet();
+	    
+	    // build sequence network
+//	    SequenceNetworkBuilder seqNetHelper = new SequenceNetworkBuilder(dsNet,true);
+//	    seqNetHelper.buildSequenceNetwork(SequenceCode.NEGATIVE);
+//	    seqNetHelper.buildSequenceNetwork(SequenceCode.ZERO);
+//	    
+//	    System.out.println(dsNet.net2String());
+	    
+		DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
+		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
+		assertTrue(aclfAlgo.loadflow());
+		//System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
+		
+		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+		dstabAlgo.setSimuStepSec(0.005d);
+		dstabAlgo.setTotalSimuTimeSec(15);
+
+		dstabAlgo.setRefMachine(dsNet.getMachine("Bus2-mach1"));
+		
+		//Bus fault
+		//dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",dsNet,SimpleFaultCode.GROUND_LG,new Complex(0.0),null,1.0d,0.05),"3phaseFault@Bus5");
+        
+		
+        
+ 	    dsNet.addDynamicEvent(DStabObjectFactory.createGeneratorEnergizationEvent("Bus3", "2", dsNet, 1),"Bus3_Mach2_connect_1.1sec");
+        
+        
+		StateMonitor sm = new StateMonitor();
+		sm.addGeneratorStdMonitor(new String[]{"Bus1-mach1","Bus2-mach1","Bus3-mach1","Bus3-mach2"});
+		sm.addBusStdMonitor(new String[]{"Bus5","Bus4","Bus1"});
+		
+		// set the output handler
+		dstabAlgo.setSimuOutputHandler(sm);
+		dstabAlgo.setOutPutPerSteps(5);
+		
+		IpssLogger.getLogger().setLevel(Level.FINE);
+		
+		PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+		
+		//for(int i =1; i<20;i++){
+			
+			
+
+		if (dstabAlgo.initialization()) {
+			//System.out.println(dsNet.getMachineInitCondition());
+			
+			//System.out.println("Running DStab simulation ...");
+			timer.start();
+			dstabAlgo.performSimulation();
+			
+			timer.logStd("total simu time: ");
+			}
+			//dstabAlgo.performOneStepSimulation();
+
+		//}
+		System.out.println("Mach Angles (deg):\n"+sm.toCSVString(sm.getMachAngleTable()));
+		
+		System.out.println("Mach Pe (pu) :\n"+sm.toCSVString(sm.getMachPeTable()));
+//		
+//		System.out.println("Volages Mag (pu):\n"+sm.toCSVString(sm.getBusVoltTable()));
+		
+//		System.out.println("Volages Angle (Deg):\n"+sm.toCSVString(sm.getBusAngleTable()));
+//		
+//		System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
+		
+		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(0).value, 0.71639,1.0E-4));
+		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(15).value, 0.71639,1.0E-4));
+		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(42).value, 0.0,1.0E-4));
+		assertTrue(!dsNet.getMachine("Bus1-mach1").isActive());
+		
+	
 		/*
-		 *  Bus2 Machine Efd
-			0.0000, 1.78898
-			0.0010, 1.78898
-			0.0020, 1.78898
-			0.0030, 1.78898
-			0.0040, 1.78898
-			0.0050, 1.78898
-			0.0060, 1.78898
-			0.0070, 1.78898
-			0.0080, 1.78898
-			0.0090, 1.78898
-		 */
+		FileUtil.writeText2File("output/ieee9_bus5_machPe_v4_sat_03042015.csv",sm.toCSVString(sm.getMachPeTable()));
+		FileUtil.writeText2File("output/ieee9_bus5_machAngle_v4_sat_03042015.csv",sm.toCSVString(sm.getMachAngleTable()));
+		FileUtil.writeText2File("output/ieee9_bus5_machSpd_v4_sat_03042015.csv",sm.toCSVString(sm.getMachSpeedTable()));
+		FileUtil.writeText2File("output/ieee9_bus5_busVolt_v3_sat_03042015.csv",sm.toCSVString(sm.getBusVoltTable()));
+        */
+
 	}
 	
 	//@Test
