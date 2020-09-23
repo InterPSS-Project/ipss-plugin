@@ -38,6 +38,8 @@ public interface DStab3PBus extends IBus3Phase, BaseDStabBus<DStab3PGen,DStab3PL
     
     public Complex3x1 get3PhaseTotalLoad();
     
+    public Complex3x1 calcLoad3PhEquivCurInj();
+    
     
     
 	/**
