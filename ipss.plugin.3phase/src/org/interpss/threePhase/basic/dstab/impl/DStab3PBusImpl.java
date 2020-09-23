@@ -185,7 +185,7 @@ public class DStab3PBusImpl extends BaseDStabBusImpl<DStab3PGen,DStab3PLoad> imp
 
 
 	
-	private Complex3x1 calcLoad3PhEquivCurInj() {
+	public Complex3x1 calcLoad3PhEquivCurInj() {
 		this.load3PhEquivCurInj = new Complex3x1();
 		if (this.Vabc == null) 
 			this.Vabc = new Complex3x1(new Complex(1,0),new Complex(-Math.sin(Math.PI/6),-Math.cos(Math.PI/6)),new Complex(-Math.sin(Math.PI/6),Math.cos(Math.PI/6)));

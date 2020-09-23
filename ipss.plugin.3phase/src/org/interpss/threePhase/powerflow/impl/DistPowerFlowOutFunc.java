@@ -25,6 +25,8 @@ public class DistPowerFlowOutFunc {
 		sb.append("Bus results: \n");
 		for(BaseAclfBus b:distNet.getBusList()){
 			DStab3PBus bus = (DStab3PBus) b;
+			if(!bus.isActive())
+				bus.set3PhaseVotlages(new Complex3x1());
 		
 			Complex va = bus.get3PhaseVotlages().a_0;
 			Complex vb = bus.get3PhaseVotlages().b_1;
@@ -42,30 +44,47 @@ public class DistPowerFlowOutFunc {
 		}
 		sb.append("\nBranch results: \n");
 		for(AclfBranch bra:distNet.getBranchList()){
-			DStab3PBranch branch3P = (DStab3PBranch) bra;
-			sb.append(bra.getId()+", Iabc (from) = "+
-			branch3P.getCurrentAbcAtFromSide().toString()+", Iabc (to) = "+ branch3P.getCurrentAbcAtToSide().toString()+"\n");
-			sb.append(bra.getId()+", I012 (from) = "+
-					branch3P.getCurrentAbcAtFromSide().to012().toString()+", I012 (to) = "+ branch3P.getCurrentAbcAtToSide().to012().toString()+"\n\n");
-		}
+			   if(bra.isActive()) {
+					DStab3PBranch branch3P = (DStab3PBranch) bra;
+					sb.append(bra.getId()+", Iabc (from) = "+
+					branch3P.getCurrentAbcAtFromSide().toString()+", Iabc (to) = "+ branch3P.getCurrentAbcAtToSide().toString()+"\n");
+					sb.append(bra.getId()+", I012 (from) = "+
+							branch3P.getCurrentAbcAtFromSide().to012().toString()+", I012 (to) = "+ branch3P.getCurrentAbcAtToSide().to012().toString()+"\n\n");
+				}
+			   else {
+				   sb.append(bra.getId()+", Iabc (from) = "+
+							new Complex3x1().toString()+", Iabc (to) = "+ new Complex3x1().toString()+"\n");
+							sb.append(bra.getId()+", I012 (from) = "+
+									new Complex3x1().toString()+", I012 (to) = "+ new Complex3x1().toString()+"\n\n");
+			   }
+			}
 		
 		sb.append("\nSourcebus power (from source to the distribution systems(feeders): \n");
-		Complex3x1 sumOfCurrents = new Complex3x1();
-		for(Branch bra:swingBus.getBranchList()){
-			DStab3PBranch branch3P = (DStab3PBranch) bra;
-			if (bra.isActive()){
-				if(bra.getFromBus().getId().equals(swingBus.getId())){
-					sumOfCurrents = sumOfCurrents.add(branch3P.getCurrentAbcAtFromSide());
-				}
-				else{
-					sumOfCurrents = sumOfCurrents.subtract(branch3P.getCurrentAbcAtToSide()); // the branch current direction is defined as "from->to" as positive at both ends
-				}
+		
+		for(BaseAclfBus b:distNet.getBusList()){
+			if(b.isActive() && b.isSwing()) {
+				DStab3PBus bus3Phase = (DStab3PBus) b;
+				Complex3x1 sumOfCurrents = bus3Phase.calcLoad3PhEquivCurInj().multiply(-1);
+				for(Branch bra:b.getBranchList()){
+					DStab3PBranch branch3P = (DStab3PBranch) bra;
+					if (bra.isActive()){
+						if(bra.getFromBus().getId().equals(bus3Phase.getId())){
+							sumOfCurrents = sumOfCurrents.add(branch3P.getCurrentAbcAtFromSide());
+						}
+						else{
+							sumOfCurrents = sumOfCurrents.subtract(branch3P.getCurrentAbcAtToSide()); // the branch current direction is defined as "from->to" as positive at both ends
+						}
+					}
+			  }
+			
+			
+			Complex3x1 power = bus3Phase.get3PhaseVotlages().multiply(sumOfCurrents.conjugate());
+			sb.append("Swing/source bus: "+bus3Phase.getId()+"\n");
+			sb.append("power(ABC) on 1-phase MVA base: "+power.toString()+"\n");
+			sb.append("three-phase total power on three-phase MVA base: " + power.a_0.add(power.b_1).add(power.c_2).divide(3.0).toString()+"\n\n");
+		
 			}
 		}
-		
-		Complex3x1 power = swingBus.get3PhaseVotlages().multiply(sumOfCurrents.conjugate());
-		sb.append("power(ABC) on 1-phase MVA base: "+power.toString()+"\n");
-		sb.append("three-phase total power on three-phase MVA base: " + power.a_0.add(power.b_1).add(power.c_2).divide(3.0).toString()+"\n");
 		
 		return sb.toString();
 	}
