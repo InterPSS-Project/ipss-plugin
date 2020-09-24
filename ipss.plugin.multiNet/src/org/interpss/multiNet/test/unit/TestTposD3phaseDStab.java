@@ -1,4 +1,4 @@
-package org.interpss.multiNet.test;
+package org.interpss.multiNet.test.unit;
 
 import static org.interpss.threePhase.util.ThreePhaseUtilFunction.threePhaseXfrAptr;
 import static org.junit.Assert.assertTrue;

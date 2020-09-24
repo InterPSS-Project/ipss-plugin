@@ -1,5 +1,6 @@
 package test.system;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
@@ -27,6 +28,8 @@ import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.net.NetworkType;
+import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
@@ -36,8 +39,8 @@ import com.interpss.dstab.mach.MachineModelType;
 
 public class Test8BusFeeder {
 	
-	@Test
-	public void testPowerFlow() throws InterpssException{
+	//@Test
+	public void test_PowerFlow() throws InterpssException{
 		 IpssCorePlugin.init();
 		double baseVolt = 12470;
 		int feederBusNum = 8;
@@ -56,6 +59,119 @@ public class Test8BusFeeder {
 		
 		
 		System.out.println(DistPowerFlowOutFunc.powerflowResultSummary(net));
+		
+		
+	  	System.out.println(ThreePhaseAclfOutFunc.busLfSummary(net));
+	 
+	  	assertEquals(net.getBus("Bus2").get3PhaseVotlages().a_0.abs(),1.008,1.0E-3);
+	  	assertEquals(net.getBus("Bus2").get3PhaseVotlages().b_1.abs(),1.012,1.0E-3);
+	  	assertEquals(net.getBus("Bus2").get3PhaseVotlages().c_2.abs(),1.008,1.0E-3);
+	}
+	
+	//@Test
+	public void test_DStab_Simu() throws InterpssException{
+		 IpssCorePlugin.init();
+		double baseVolt = 12470;
+		int feederBusNum = 8;
+		double totalLoad = 100;
+		double loadPF = 0.90;
+		double loadUnbalanceFactor = 0.0;
+		double [] loadDistribution = new double[]{0.25,0.20,0.15,0.15,0.1,0.1,0.05};
+		double [] feederSectionLenghth = new double[]{0.5,0.5,1.0,1.0,1.5,2,2}; // unit in mile
+		//double [] feederSectionLenghth = new double[]{0.5,0.5,1.0,1.5,0.5,0.5, 1}; // unit in mile
+		DStabNetwork3Phase net = createFeeder(baseVolt,feederBusNum,totalLoad,loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
+		
+		DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(net);
+		//distPFAlgo.orderDistributionBuses(true);
+		
+		assertTrue(distPFAlgo.powerflow());
+		
+		
+		System.out.println(DistPowerFlowOutFunc.powerflowResultSummary(net));
+		
+		
+		DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
+				net, IpssCorePlugin.getMsgHub());
+			
+	
+	  	
+	  	dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+		dstabAlgo.setSimuStepSec(0.005d);
+		dstabAlgo.setTotalSimuTimeSec(0.5);
+	    //dstabAlgo.setRefMachine(net.getMachine("Bus3-mach1"));
+		//distNet.addDynamicEvent(create3PhaseFaultEvent("Bus2",distNet,0.2,0.05),"3phaseFault@Bus2");
+        
+		
+		StateMonitor sm = new StateMonitor();
+		//sm.addGeneratorStdMonitor(new String[]{"Bus1-mach1","Bus2-mach1"});
+		sm.addBusStdMonitor(new String[]{"Bus2","Bus1"});
+		// set the output handler
+		dstabAlgo.setSimuOutputHandler(sm);
+		dstabAlgo.setOutPutPerSteps(1);
+		
+		dstabAlgo.setDynamicEventHandler(new DynamicEventProcessor3Phase());
+				
+	  	if(dstabAlgo.initialization()){
+	  		System.out.println(ThreePhaseAclfOutFunc.busLfSummary(net));
+	  		System.out.println(net.getMachineInitCondition());
+	  	
+	  		dstabAlgo.performSimulation();
+	  	}
+	  	System.out.println(sm.toCSVString(sm.getBusAngleTable()));
+	  	System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+	  	MonitorRecord rec1 = sm.getBusVoltTable().get("Bus2").get(1);
+	  	MonitorRecord rec20 = sm.getBusVoltTable().get("Bus2").get(20);
+	  	assertTrue(Math.abs(rec1.getValue()-rec20.getValue())<1.0E-4);
+	}
+	
+	
+	@Test
+	public void testPowerFlow_multi_islands() throws InterpssException{
+		 IpssCorePlugin.init();
+		double baseVolt = 12470;
+		int feederBusNum = 8;
+		double totalLoad = 100;
+		double loadPF = 0.90;
+		double loadUnbalanceFactor = 0.0;
+		double [] loadDistribution = new double[]{0.25,0.20,0.15,0.0,0.1,0.1,0.2};
+		double [] feederSectionLenghth = new double[]{0.5,0.5,1.0,1.0,1.5,2,2}; // unit in mile
+		//double [] feederSectionLenghth = new double[]{0.5,0.5,1.0,1.5,0.5,0.5, 1}; // unit in mile
+		DStabNetwork3Phase net = createFeeder(baseVolt,feederBusNum,totalLoad,loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
+		
+		
+		
+		BaseDStabBus bus5= net.getBus("Bus5");
+		
+		DStab3PGen constantGen = ThreePhaseObjectFactory.create3PGenerator("Gen@Bus5");
+		
+		constantGen.setGen(new Complex(0.4, 0.2));
+		constantGen.setMvaBase(100);
+		constantGen.setPosGenZ(new Complex(0.0,0.05));
+		constantGen.setNegGenZ(new Complex(0.0,0.05));
+		constantGen.setZeroGenZ(new Complex(0.0,0.05));
+		bus5.getContributeGenList().add(constantGen);
+		
+		
+		EConstMachine mach = (EConstMachine)DStabObjectFactory.
+				createMachine("MachId", "MachName", MachineModelType.ECONSTANT, net, "Bus5", "Gen@Bus5");
+	
+		mach.setRating(100, UnitType.mVA, net.getBaseKva());
+		mach.setRatedVoltage(baseVolt);
+		mach.setH(50000.0);
+		mach.setXd1(0.05);
+		
+		//turn off line between bus 4 and 5
+		net.getBranch("Bus4", "Bus5", "0").setStatus(false);
+		net.getBranch("Bus7", "Bus8", "0").setStatus(false);
+		
+		DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(net);
+		//distPFAlgo.orderDistributionBuses(true);
+		
+		assertTrue(distPFAlgo.powerflow());
+		
+		
+		System.out.println(DistPowerFlowOutFunc.powerflowResultSummary(net));
+		System.out.println(ThreePhaseAclfOutFunc.busLfSummary(net));
 		
 		
 		DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
