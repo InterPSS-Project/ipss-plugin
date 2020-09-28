@@ -662,8 +662,11 @@ public class SinglePhaseACMotor extends DynLoadModel1Phase {
 			double Qmotor = this.qac_a*(1-this.Frst)*this.fthA+this.qac_b*this.Frst*this.fthB;
 			
 			// consider the UR Relay and contractor status
-			Pmotor = this.kuv*this.kcon*Pmotor;
-			Qmotor = this.kuv*this.kcon*Qmotor;
+			//Pmotor = this.kuv*this.kcon*Pmotor;
+			//Qmotor = this.kuv*this.kcon*Qmotor;
+			
+			Pmotor = this.kuv*this.kcon*( 1.0 + this.accumulatedLoadChangeFactor)*Pmotor;
+			Qmotor = this.kuv*this.kcon*( 1.0 + this.accumulatedLoadChangeFactor)*Qmotor;
 			
 			this.PQmotor = new Complex(Pmotor, Qmotor); // on motor base
 			
@@ -709,8 +712,26 @@ public class SinglePhaseACMotor extends DynLoadModel1Phase {
 			
 		}
 		
-		
-		
+		@Override
+		public boolean changeLoad(double factor) {
+			if (factor < -1.0){
+				IpssLogger.getLogger().severe(" percentageFactor < -1.0, this change will not be applied");
+				return false;
+			}
+			if (this.accumulatedLoadChangeFactor <= -1.0 &&  factor < 0.0)
+				IpssLogger.getLogger().severe( "this.accumulatedLoadChangeFactor<=-1.0 and percentageFactor < 0.0, this change will not be applied");
+			
+			this.accumulatedLoadChangeFactor = this.accumulatedLoadChangeFactor + factor;
+			
+			if (this.accumulatedLoadChangeFactor < -1.0){
+				IpssLogger.getLogger().severe( "the accumulatedLoadChangeFactor is less than -1.0 after this change, so the accumulatedLoadChangeFactor is reset to -1.0");
+				this.accumulatedLoadChangeFactor = -1.0;
+			}
+			IpssLogger.getLogger().info("accumulated Load Change Factor = "+ this.accumulatedLoadChangeFactor);
+			
+			return true;
+		}
+
 		@Override
 		public Object getOutputObject() {
 			
@@ -1071,22 +1092,7 @@ public class SinglePhaseACMotor extends DynLoadModel1Phase {
 	    	this.disableInternalStallControl = disableStallControl;
 	    }
 
-		@Override
-		public boolean changeLoad(double percentageFactor) {
-			throw new UnsupportedOperationException();
-		}
 
-		@Override
-		public double getAccumulatedLoadChangeFactor() {
-			// TODO Auto-generated method stub
-			return 0;
-		}
-
-		@Override
-		public void setAccumulatedLoadChangeFactor(double value) {
-			// TODO Auto-generated method stub
-			
-		}
 
 
 	

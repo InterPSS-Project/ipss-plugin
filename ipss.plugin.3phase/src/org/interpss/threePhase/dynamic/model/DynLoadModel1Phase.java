@@ -25,6 +25,8 @@ public abstract class DynLoadModel1Phase extends DynamicModel1Phase implements D
 	protected Complex loadPQ;
 	protected Complex compensateShuntY;
 	
+	protected double accumulatedLoadChangeFactor =0.0;
+	
 	
 	public double getLoadPercent() {
 		
@@ -138,5 +140,16 @@ public abstract class DynLoadModel1Phase extends DynamicModel1Phase implements D
 		this.nortonCurrInj = compCurrent;
 	}
 	
+	@Override
+	public double getAccumulatedLoadChangeFactor() {
+		
+		return this.accumulatedLoadChangeFactor;
+	}
+
+	@Override
+	public void setAccumulatedLoadChangeFactor(double value) {
+		this.accumulatedLoadChangeFactor =value;
+		
+	}
 
 }
