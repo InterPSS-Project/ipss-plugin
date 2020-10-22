@@ -235,7 +235,7 @@ public class ThreeBus_3Phase_Test {
 	  	
 	  
 	  	assertTrue(algo.loadflow())	;
-	
+	  
 	  	
 	  	dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.005d);
@@ -275,6 +275,12 @@ public class ThreeBus_3Phase_Test {
 		
 		assertTrue(distPFAlgo.powerflow());
 		
+		Complex3x1 iabc = net.getBranch("Bus650", "Bus611", "0").calc3PhaseCurrentFrom2To();
+	  	System.out.println("Iabc bus(Bus650, Bus611) = "+net.getBranch("Bus650", "Bus611", "0").calc3PhaseCurrentFrom2To());
+		assertTrue(iabc.a_0.abs()==0.0);
+		assertTrue(iabc.b_1.abs()==0.0);
+		assertTrue(iabc.c_2.subtract(new Complex(-0.03531,0.57015)).abs()<1.0E-5);
+		
 		for(BaseDStabBus<?,?> bus: net.getBusList()){
 			System.out.println("id, sortNum: "+bus.getId()+","+bus.getSortNumber());
 		}
@@ -285,7 +291,7 @@ public class ThreeBus_3Phase_Test {
         for(DStabBranch bra: net.getBranchList()){
 			
 			DStab3PBranch bra3p = (DStab3PBranch) bra;
-			System.out.println(bra.getId()+"锛� "+bra3p.getBranchYabc().toString());
+			System.out.println(bra.getId()+"Yabc= "+bra3p.getBranchYabc().toString());
 		}
 		
 		DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
