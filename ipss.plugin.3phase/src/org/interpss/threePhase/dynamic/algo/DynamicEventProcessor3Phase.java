@@ -9,6 +9,7 @@ import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
+import org.interpss.threePhase.dynamic.model.DynLoadModel3Phase;
 
 import com.interpss.common.exp.InterpssRuntimeException;
 import com.interpss.common.msg.IpssMessage;
@@ -260,9 +261,15 @@ public class DynamicEventProcessor3Phase extends DynamicEventProcessor {
 			
 				    	    if(bus.getDynamicBusDeviceList()!=null && !bus.getDynamicBusDeviceList().isEmpty()){
 				    		   for(DynamicBusDevice dynDevice: bus.getDynamicBusDeviceList()){
-				    			   if(dynDevice instanceof DynLoadModel && dynDevice.isActive()){
+				    			   if(dynDevice instanceof DynLoadModel  && dynDevice.isActive()){
 				    				  
 				    				   ((DynLoadModel)dynDevice).changeLoad(factor);
+				    				   
+				    			   }
+				    			   
+				    			   if(dynDevice instanceof DynLoadModel3Phase  && dynDevice.isActive()){
+					    				  
+				    				   ((DynLoadModel3Phase)dynDevice).changeLoad(factor);
 				    				   
 				    			   }
 				    		   }
