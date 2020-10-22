@@ -239,7 +239,7 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 		double yiiMinTolerance = 1.0E-8;
 		
 		// check if load model is converted
-		if(!this.isLoadModelConverted )
+		if(!this.isLoadModelConverted && this.isStaticLoadIncludedInYMatrix())
 			    convertLoadModel();
 		
 		yMatrixAbc = new SparseEqnComplexMatrix3x3Impl(getNoBus());
@@ -822,6 +822,17 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 		this.threePhaseCurInjTable = new3PhaseCurInjTable;
 		
 	}
+	
+	@Override
+	public void setLoadModelConverted(boolean status) {
+		this.isLoadModelConverted = status;
+		
+	}
+	@Override
+	public boolean isLoadModelConverted() {
+		return this.isLoadModelConverted;
+	}
+
 
 
 
