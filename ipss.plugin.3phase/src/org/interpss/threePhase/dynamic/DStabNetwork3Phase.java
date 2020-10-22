@@ -35,5 +35,10 @@ public interface DStabNetwork3Phase extends INetwork3Phase, BaseDStabNetwork<DSt
 	public Hashtable<String, Complex3x1> get3phaseCustomCurrInjTable();
 	
 	public void set3phaseCustomCurrInjTable(Hashtable<String, Complex3x1> new3PhaseCurInjTable);
+	
+	public void setLoadModelConverted(boolean status);
+	
+	public boolean isLoadModelConverted();
+
 
 }
