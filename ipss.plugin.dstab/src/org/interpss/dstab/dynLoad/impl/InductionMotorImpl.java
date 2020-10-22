@@ -1613,7 +1613,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		//In the future, this may need to be update to consider the constant P load only
 		
 		// if assigned initial loadPQ directly
-		if(this.getLoadPercent()<=0 && this.getInitLoadPQ().getReal()>0){
+		if(this.getInitLoadPQ()!=null){
 			this.motorLoadP = this.getInitLoadPQ().getReal();
 			this.motorTotalLoad = this.getInitLoadPQ();
 		}	
@@ -2088,16 +2088,16 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
  	    
  	  
  	    
- 	   // consider the tripping by protection
+ 	   // consider consider the total on-line fraction after the load change, and tripping by protection
+ 	   
  	   //NOTE: To avoid update the Ymatrix, the motor equivalent Norton admittance remains <equivYSysBase>, 
  	   // The norton Current injection needs to compensate for this.
- 	   
-// 	   if(this.Fuv<1.0)
-// 	     this.nortonCurInj = this.nortonCurInj.multiply(this.Fuv).add(iEquivYSysBase.multiply(1-this.Fuv));
- 	   
- 	   // 3/5/2018 consider the total on-line fraction 
- 	  if(this.Fonline <=1.0 && this.Fonline>0.0)
-  	     this.nortonCurInj = this.nortonCurInj.multiply(this.Fonline).add(iEquivYSysBase.multiply(1.0-this.Fonline));
+
+ 	 
+ 	  if(this.Fonline>1.0E-8) {
+ 			 this.nortonCurInj = this.nortonCurInj.multiply(this.Fonline).add(iEquivYSysBase.multiply(1.0-this.Fonline));
+ 	
+ 	  }
  	  else if(this.Fonline<=1.0E-8)
  		 this.nortonCurInj = iEquivYSysBase;
  	   //System.out.println("Fuv, Inorton = "+this.Fuv+", "+this.nortonCurInj.toString());
