@@ -1102,8 +1102,8 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 	 * The stall timer as well as the recovery timer are also counted and updated in this method
 	 */
 	@Override
-	public boolean nextStep(double dt, DynamicSimuMethod method) {
-		boolean flag = true;
+	public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
+		boolean boolFlag = true;
 		
 		// check the protection actions and update the status of AC motor accordingly
 		timestep = dt;
@@ -1169,7 +1169,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 		this.tempA = this.tempA + (dThA_dt0+dThA_dt1)*0.5d*dt;
 		this.tempB = this.tempB + (dThB_dt0+dThB_dt1)*0.5d*dt;
 		
-		return flag;
+		return boolFlag;
 	}
 	
 	/**

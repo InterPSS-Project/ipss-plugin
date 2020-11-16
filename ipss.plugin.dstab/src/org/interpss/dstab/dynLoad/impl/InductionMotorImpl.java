@@ -349,6 +349,8 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	 * @ordered
 	 */
 	protected double slip = SLIP_EDEFAULT;
+	
+	protected double slip_old = SLIP_EDEFAULT;
 
 	/**
 	 * The default value of the '{@link #getW() <em>W</em>}' attribute.
@@ -1055,6 +1057,10 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	protected double Fonline = 1.0; // the total on line fraction ( reference to initial Power) after considering change by  internal protective devices  and/or external load shedding relay models and/or load change events
 	
 	private double timestep = 0.0;
+	
+	//integration step 
+	private Complex dEp_dt1 = null; 
+	private Complex dEp_dt2 = null; 
 	
 	private List<MotorProtectionControl> motorProtectionList = null;
 	
@@ -1889,18 +1895,32 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		
 	}
 	@Override
-	public boolean nextStep(double dt, DynamicSimuMethod method) {
+	public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
 		// if the motor is out-of-service or tripped
 		if(this.Fuv<=0.0 || this.Fonline <=0.0){
 			this.ep = new Complex(0.0);
 			this.epp = new Complex(0.0);
 			this.te = 0.0;
 			
+		
+			
 			w =1-slip;
 		    this.tm = (a + b*w + c*w*w)*tm0;
 		    
-		    double dSLIP_dt = (tm-te)/(2*this.h);
-		    slip += dSLIP_dt*dt;
+		    double dSLIP_dt = 0;
+			if(method==DynamicSimuMethod.MODIFIED_EULER) {
+				if(flag == 0) {
+				    this.slip_old = slip;
+					dSLIP_dt = (tm-te)/(2*this.h);
+				    slip += dSLIP_dt*dt;
+			    
+				}
+				else if(flag == 1) {
+					double dSLIP_dt_1 = (tm-te)/(2*this.h);
+					slip = this.slip_old + 0.5*(dSLIP_dt_1+dSLIP_dt)*dt;
+				}
+		    
+		    }
 		    
 		    if(this.slip >= 1.0)
 		    	this.slip = 1.0;
@@ -1945,11 +1965,12 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
  	     
  	    
  	    if(!enableSubStepIntegration){
- 	       integrationSubStep(dt, w0, Ir, Im);
+ 	       integrationSubStep(dt, w0, Ir, Im, flag);
  	    }
  	    else{
  	    	for(int i=0; i<subStepN;i++){
- 	    		 integrationSubStep(tstep, w0, Ir, Im);
+ 	    		//TODO to implement sub step integration with predictor-corrector style
+ 	    		 integrationSubStep(tstep, w0, Ir, Im, flag);
  	    	}
  	    }
 
@@ -1957,51 +1978,53 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		return true;
 	}
 	
-	private void integrationSubStep(double dt, double w0, double Ir, double Im) {
+	private void integrationSubStep(double dt, double w0, double Ir, double Im, int flag) {
 		double Epr = ep.getReal();
 	    double Epm = ep.getImaginary();
 	    
-	    Complex dEp_dt1 = calc_Ep_predict_step( w0, Epr, Epm, Im, Ir);
+	 
 	    
-	    Complex dEp1 = dEp_dt1.multiply(dt);
-	    double dEpr1 = dEp1.getReal();
-	    double dEpm1 = dEp1.getImaginary();
+	    if (flag ==0) {
+	    	
+	    	dEp_dt1 =calc_Ep_predict_step( w0, Epr, Epm, Im, Ir);
+	    	
+	    	ep = ep.add(dEp_dt1.multiply(dt));
+	    }
+	    else if (flag ==1) {
 	    
+		    //TODO need to renew IMotor?????/
+		   
+	        dEp_dt2 = calc_Ep_corrective_step( w0, Epr, Epm, Im, Ir);
+	        
+		    Complex dEp =dEp_dt1.add(dEp_dt2).multiply(dt/2.0);
+		    
+		    //need to recover to the old value first, before adding dEp
+		    ep = ep.subtract(dEp_dt1.multiply(dt)).add(dEp);
 	    
-	    
-	    //TODO need to renew IMotor?????/
-	    
-        Complex dEp_dt2 = calc_Ep_corrective_step( w0, Epr+dEpr1, Epm+dEpm1, Im, Ir);
-        
-        
-	    Complex dEp =dEp_dt1.add(dEp_dt2).multiply(dt/2.0);
-	    
-	    ep = ep.add(dEp);
-	    
-	    
+	    }
 	    
 	    if(twoAxisModel){
 	    
-	 	     
-	 	    double Eppr = epp.getReal();
-		    double Eppm = epp.getImaginary();
-		    
-		    double dEpr = w0*slip*Epm-(Epr+(xs-xp)*Im)/tp0;
-	 	    double dEpm = -w0*slip*Epr-(Epm-(xs-xp)*Ir)/tp0;
-	    	
-	 	    Complex dEpp_dt1 = calc_Epp_predict_step(w0, Epr, Epm, Eppr, Eppm, dEpr, dEpm, Im, Ir);
-	 	    Complex dEpp1 = dEpp_dt1.multiply(dt);
-	 	   
-	 	    double dEppr1 = dEpp1.getReal();
-		    double dEppm1 = dEpp1.getImaginary();
-		    
-		    Complex dEpp_dt2 = calc_Epp_corrective_step(w0, Epr+dEpr1, Epm+dEpm1, Eppr+dEppr1, Eppm+dEppm1, dEpr1, dEpm1, Im, Ir);
-		    
-		    Complex dEpp =dEpp_dt1.add(dEpp_dt2).multiply(dt/2.0);
-		    
-		    epp = epp.add(dEpp);
-		    // Re{E''I*}
-		    te = epp.multiply(new Complex(Ir,-Im)).getReal();
+	 	     throw new UnsupportedOperationException("induction motor twoAxisModel is not supported yet");
+//	 	    double Eppr = epp.getReal();
+//		    double Eppm = epp.getImaginary();
+//		    
+//		    double dEpr = w0*slip*Epm-(Epr+(xs-xp)*Im)/tp0;
+//	 	    double dEpm = -w0*slip*Epr-(Epm-(xs-xp)*Ir)/tp0;
+//	    	
+//	 	    Complex dEpp_dt1 = calc_Epp_predict_step(w0, Epr, Epm, Eppr, Eppm, dEpr, dEpm, Im, Ir);
+//	 	    Complex dEpp1 = dEpp_dt1.multiply(dt);
+//	 	   
+//	 	    double dEppr1 = dEpp1.getReal();
+//		    double dEppm1 = dEpp1.getImaginary();
+//		    
+//		    Complex dEpp_dt2 = calc_Epp_corrective_step(w0, Epr+dEpr1, Epm+dEpm1, Eppr+dEppr1, Eppm+dEppm1, dEpr1, dEpm1, Im, Ir);
+//		    
+//		    Complex dEpp =dEpp_dt1.add(dEpp_dt2).multiply(dt/2.0);
+//		    
+//		    epp = epp.add(dEpp);
+//		    // Re{E''I*}
+//		    te = epp.multiply(new Complex(Ir,-Im)).getReal();
 		    
 	    }
 	    else{

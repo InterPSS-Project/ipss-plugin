@@ -69,8 +69,9 @@ public class SalientPoleMachineTest extends TestSetupBase {
 		assertTrue(Math.abs(mach.getPm()-0.803) < 0.00001);
 		
 		// Move forward one step
-		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER);
-
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER,0);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER,1);
+		
 		// again, the following values to compare to are by long-hand calculation. There
 		// should be no change
 		//System.out.println("Angle, Eq1, Ed11, Eq11, Efd, Pe: " + mach.getAngle()*Constants.RtoD + ", " + mach.getEq1() + ", " + mach.getEd11() +  ", " + mach.getEq11() + ", " + mach.getEfd()+ ", " + mach.getPe());
@@ -83,11 +84,12 @@ public class SalientPoleMachineTest extends TestSetupBase {
 		assertTrue(Math.abs(mach.getPm()-0.803) < 0.00001);
 		
 		// Move forward more steps, we should have the same value, since there is no disturbance
-		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER);
-		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER);
-		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER);
-		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER);
-		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, 0);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, 1);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, 0);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, 1);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, 0);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, 1);
 		assertTrue(Math.abs(mach.getAngle()-0.48142) < 0.00001);
 		assertTrue(Math.abs(mach.getEq1()-1.09514) < 0.00001);
 		assertTrue(Math.abs(mach.getEd11()+0.40106) < 0.00001);
@@ -98,7 +100,8 @@ public class SalientPoleMachineTest extends TestSetupBase {
 		
 		// create an event by changing Pm from 2.0 to 1.0
 		mach.setPm(1.0);  
-		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, 0);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, 1);
 
 		// again, the following values to compare to are by long-hand calculation
 		
