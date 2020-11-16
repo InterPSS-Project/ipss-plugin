@@ -150,7 +150,7 @@ public class LVSHLoadRelayModel extends DynamicBusDeviceImpl implements BusRelay
 	}
 	
 	@Override
-	public boolean nextStep(double dt, DynamicSimuMethod method){
+	public boolean nextStep(double dt, DynamicSimuMethod method, int flag){
 		
 	    double vmag = this.getDStabBus().getVoltage().abs();
 	    
