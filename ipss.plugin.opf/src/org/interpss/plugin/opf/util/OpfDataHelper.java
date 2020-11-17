@@ -19,8 +19,8 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
-import com.interpss.opf.BaseOpfNetwork;
-import com.interpss.opf.OpfNetwork;
+import com.interpss.opf.dep.BaseOpfNetwork;
+import com.interpss.opf.dep.OpfNetwork;
 
 public class OpfDataHelper {
 
