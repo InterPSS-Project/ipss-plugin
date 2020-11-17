@@ -79,14 +79,14 @@ import com.interpss.core.common.curve.CommonCurveFactory;
 import com.interpss.core.common.curve.NumericCurveModel;
 import com.interpss.core.common.curve.PieceWiseCurve;
 import com.interpss.core.common.curve.QuadraticCurve;
+import com.interpss.opf.IncrementalCost;
+import com.interpss.opf.OpfGenOperatingMode;
+import com.interpss.opf.cst.OpfConstraint;
 import com.interpss.opf.dep.BaseOpfNetwork;
-import com.interpss.opf.dep.Constraint;
-import com.interpss.opf.dep.IncrementalCost;
 import com.interpss.opf.dep.OpfBranch;
 import com.interpss.opf.dep.OpfBus;
 import com.interpss.opf.dep.OpfFactory;
 import com.interpss.opf.dep.OpfGenBus;
-import com.interpss.opf.dep.OpfGenOperatingMode;
 import com.interpss.opf.dep.OpfNetwork;
 import com.interpss.opf.dep.dclf.DclfOpfBranch;
 import com.interpss.opf.dep.dclf.DclfOpfBus;
@@ -329,7 +329,7 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 		// set constraints
 		if(busRec.getConstraints()!=null){
 			ConstraintsXmlType ctrtXml = busRec.getConstraints();		
-			Constraint ctrtIpss = OpfFactory.eINSTANCE.createConstraint();			
+			OpfConstraint ctrtIpss = OpfFactory.eINSTANCE.createConstraint();			
 			
 			double baseKva = net.getBaseKva();
 			double factor = net.getBaseKva()*0.001;

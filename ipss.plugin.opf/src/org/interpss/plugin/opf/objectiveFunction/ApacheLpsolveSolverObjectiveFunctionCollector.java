@@ -1,6 +1,5 @@
 package org.interpss.plugin.opf.objectiveFunction;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.math3.linear.OpenMapRealVector;
@@ -9,21 +8,20 @@ import org.interpss.plugin.opf.common.OPFLogger;
 import org.interpss.plugin.opf.constraint.OpfConstraint;
 import org.interpss.plugin.opf.constraint.OpfConstraint.cstType;
 
-import cern.colt.list.DoubleArrayList;
-import cern.colt.list.IntArrayList;
-
 import com.interpss.core.common.curve.NumericCurveModel;
 import com.interpss.core.common.curve.PieceWiseCurve;
 import com.interpss.core.net.Bus;
 import com.interpss.opf.dep.BaseOpfNetwork;
 import com.interpss.opf.dep.OpfGenBus;
-import com.interpss.opf.dep.OpfNetwork;
+
+import cern.colt.list.DoubleArrayList;
+import cern.colt.list.IntArrayList;
 
 public class ApacheLpsolveSolverObjectiveFunctionCollector extends BaseObjectiveFunctionCollector{
 	
 	public ApacheLpsolveSolverObjectiveFunctionCollector(BaseOpfNetwork opfNet){
 		super(opfNet);
-		this.opfNet = (OpfNetwork)opfNet;	
+		this.opfNet = (BaseOpfNetwork)opfNet;	
 	}
 	
 	

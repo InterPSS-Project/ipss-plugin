@@ -15,13 +15,13 @@ import org.interpss.plugin.opf.objectiveFunction.GIQPObjectiveFunctionCollector;
 import org.interpss.plugin.opf.solver.AbstractOpfSolver;
 import org.interpss.plugin.opf.util.OpfDataHelper;
 
+import com.interpss.core.net.Bus;
+import com.interpss.opf.dep.BaseOpfBus;
+import com.interpss.opf.dep.BaseOpfNetwork;
+
 import cern.colt.matrix.impl.SparseDoubleMatrix1D;
 import cern.colt.matrix.impl.SparseDoubleMatrix2D;
 import cern.colt.matrix.linalg.Algebra;
-
-import com.interpss.core.net.Bus;
-import com.interpss.opf.dep.OpfBus;
-import com.interpss.opf.dep.OpfNetwork;
 
 public class GIQPSolver extends AbstractOpfSolver {
 	
@@ -34,7 +34,7 @@ public class GIQPSolver extends AbstractOpfSolver {
 	private SparseDoubleMatrix1D biq = null;
 	
 	//Constructor
-	public GIQPSolver(OpfNetwork opfNet, constraintHandleType constType) {
+	public GIQPSolver(BaseOpfNetwork opfNet, constraintHandleType constType) {
 		super(opfNet, constType);		
 		this.numOfVar = numOfGen + numOfBus;
 		}
@@ -215,7 +215,7 @@ public class GIQPSolver extends AbstractOpfSolver {
 		int cnt = 0;
 		double baseMVA=opfNet.getBaseKva()/1000.0;
 		for(Bus b: opfNet.getBusList()){				
-			OpfBus bus1=(OpfBus) b;
+			BaseOpfBus bus1=(BaseOpfBus) b;
 			bus1.setLMP(getEqMultipliers()[cnt++]/baseMVA);
 		}		
 	}	

@@ -1,8 +1,5 @@
 package org.interpss.plugin.opf.objectiveFunction;
 
-import lpsolve.LpSolve;
-import lpsolve.LpSolveException;
-
 import org.interpss.numeric.datatype.Point;
 import org.interpss.plugin.opf.common.OPFLogger;
 
@@ -11,13 +8,15 @@ import com.interpss.core.common.curve.PieceWiseCurve;
 import com.interpss.core.net.Bus;
 import com.interpss.opf.dep.BaseOpfNetwork;
 import com.interpss.opf.dep.OpfGenBus;
-import com.interpss.opf.dep.OpfNetwork;
+
+import lpsolve.LpSolve;
+import lpsolve.LpSolveException;
 
 public class LpsolveSolverObjectiveFunctionCollector extends BaseObjectiveFunctionCollector{
 	
 	public LpsolveSolverObjectiveFunctionCollector(BaseOpfNetwork opfNet){
 		super(opfNet);
-		this.opfNet = (OpfNetwork)opfNet;	
+		this.opfNet = (BaseOpfNetwork)opfNet;	
 	}
 	
 	/*public void genCostFunctionRefinement(LpSolve lpsolver, int refineNum) throws LpSolveException{
