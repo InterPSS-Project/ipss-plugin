@@ -15,9 +15,9 @@ import cern.colt.list.IntArrayList;
 import com.interpss.core.common.curve.NumericCurveModel;
 import com.interpss.core.common.curve.PieceWiseCurve;
 import com.interpss.core.net.Bus;
-import com.interpss.opf.BaseOpfNetwork;
-import com.interpss.opf.OpfGenBus;
-import com.interpss.opf.OpfNetwork;
+import com.interpss.opf.dep.BaseOpfNetwork;
+import com.interpss.opf.dep.OpfGenBus;
+import com.interpss.opf.dep.OpfNetwork;
 
 public class ApacheLpsolveSolverObjectiveFunctionCollector extends BaseObjectiveFunctionCollector{
 	
