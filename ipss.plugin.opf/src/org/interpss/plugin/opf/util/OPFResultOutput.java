@@ -5,11 +5,11 @@ import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 import com.interpss.opf.dep.BaseOpfBranch;
 import com.interpss.opf.dep.BaseOpfBus;
+import com.interpss.opf.dep.BaseOpfNetwork;
 import com.interpss.opf.dep.OpfGenBus;
-import com.interpss.opf.dep.OpfNetwork;
 
 public class OPFResultOutput {
-	public static String opfResultSummary(OpfNetwork opfnet) {
+	public static String opfResultSummary(BaseOpfNetwork opfnet) {
 		OutputHelper helper = new OutputHelper(opfnet);
 
 		double baseKva = opfnet.getBaseKva() / 1000;

@@ -6,14 +6,13 @@ import org.interpss.plugin.opf.constraint.BaseConstraintCollector;
 import org.interpss.plugin.opf.constraint.OpfConstraint;
 import org.interpss.plugin.opf.constraint.OpfConstraint.cstType;
 
-import cern.colt.list.DoubleArrayList;
-import cern.colt.list.IntArrayList;
-
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.net.Bus;
 import com.interpss.opf.dep.BaseOpfNetwork;
-import com.interpss.opf.dep.Constraint;
 import com.interpss.opf.dep.OpfGenBus;
+
+import cern.colt.list.DoubleArrayList;
+import cern.colt.list.IntArrayList;
 
 public class GenMwOutputConstraintCollector extends BaseConstraintCollector{	
 	
@@ -34,7 +33,7 @@ public class GenMwOutputConstraintCollector extends BaseConstraintCollector{
 				DoubleArrayList val = new DoubleArrayList();
 				OpfConstraint cst = new OpfConstraint();
 				OpfGenBus genOPF = (OpfGenBus) bus;	
-	    		Constraint con = genOPF.getConstraints();
+	    		OpfConstraint con = genOPF.getConstraints();
 	    		
 				double ul = con.getPLimit().getMax();
 				double ll = con.getPLimit().getMin();				

@@ -12,14 +12,14 @@ import org.interpss.plugin.opf.util.OpfDataHelper;
 
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.net.Bus;
+import com.interpss.opf.dep.BaseOpfNetwork;
 import com.interpss.opf.dep.OpfGenBus;
-import com.interpss.opf.dep.OpfNetwork;
 
 public abstract class AbstractOpfSolver implements IOpfSolver {
 
 	public final static LimitType BusAngleLimit = new LimitType(300, -300); 
 	
-	protected OpfNetwork opfNet = null;
+	protected BaseOpfNetwork opfNet = null;
 	protected double[] optimX = null;
 	protected OpfDataHelper helper = null;
 	protected IOpfSolver.constraintHandleType constType = null;
@@ -32,7 +32,7 @@ public abstract class AbstractOpfSolver implements IOpfSolver {
 	protected int numOfGen = 0;
 	
 
-	public AbstractOpfSolver(OpfNetwork opfNet,
+	public AbstractOpfSolver(BaseOpfNetwork opfNet,
 			IOpfSolver.constraintHandleType constType) {
 		this.opfNet = opfNet;
 		this.helper = new OpfDataHelper();
