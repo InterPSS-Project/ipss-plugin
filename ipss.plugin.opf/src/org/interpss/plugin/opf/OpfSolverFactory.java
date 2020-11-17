@@ -6,7 +6,7 @@ import org.interpss.plugin.opf.solver.apache.lp.ApacheLPSolver;
 import org.interpss.plugin.opf.solver.giqpsolve.GIQPSolver;
 import org.interpss.plugin.opf.solver.lpsolve.LpsolveSolver;
 
-import com.interpss.opf.OpfNetwork;
+import com.interpss.opf.dep.OpfNetwork;
 
 public class OpfSolverFactory {
 	public static OpfSolverFactory opfSolverFactory =null;

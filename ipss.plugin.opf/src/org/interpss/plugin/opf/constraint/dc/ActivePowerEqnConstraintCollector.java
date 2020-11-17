@@ -14,7 +14,7 @@ import cern.colt.matrix.impl.SparseDoubleMatrix2D;
 
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.net.Bus;
-import com.interpss.opf.BaseOpfNetwork;
+import com.interpss.opf.dep.BaseOpfNetwork;
 
 public class ActivePowerEqnConstraintCollector extends BaseConstraintCollector{	
 	
