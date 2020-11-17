@@ -5,13 +5,13 @@ import java.util.ArrayList;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
+import com.interpss.opf.dep.BaseOpfBranch;
 import com.interpss.opf.dep.BaseOpfBus;
-import com.interpss.opf.dep.OpfBranch;
+import com.interpss.opf.dep.BaseOpfNetwork;
 import com.interpss.opf.dep.OpfGenBus;
-import com.interpss.opf.dep.OpfNetwork;
 
 public class OutputHelper {
-	private OpfNetwork net = null;
+	private BaseOpfNetwork net = null;
 	private double totalGenCap = 0.0;
 	private double totalOnlineGen = 0.0;
 	private double totalActualGen = 0;
@@ -34,7 +34,7 @@ public class OutputHelper {
 	
 	private ArrayList<AclfBranch> bindingBranchList = new ArrayList<AclfBranch>();
 	
-	public OutputHelper(OpfNetwork net){
+	public OutputHelper(BaseOpfNetwork net){
 		this.net = net;
 		this.walkThroughNetwork();
 	}
@@ -85,7 +85,7 @@ public class OutputHelper {
 			if (branch.isPSXfr()){
 				numOfPS ++;
 			}
-			OpfBranch opfBra = (OpfBranch) branch;
+			BaseOpfBranch opfBra = (BaseOpfBranch) branch;
 			double rating = opfBra.getRatingMw1();
 			double flow = opfBra.DcPowerFrom2To();
 			if( Math.abs(Math.abs(flow) - Math.abs(rating)) < 0.001 ){
