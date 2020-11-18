@@ -2,14 +2,14 @@ package org.interpss.plugin.opf.objectiveFunction;
 
 import org.interpss.plugin.opf.common.OPFLogger;
 
-import cern.colt.matrix.impl.SparseDoubleMatrix1D;
-import cern.colt.matrix.impl.SparseDoubleMatrix2D;
-
 import com.interpss.core.common.curve.NumericCurveModel;
 import com.interpss.core.common.curve.QuadraticCurve;
 import com.interpss.core.net.Bus;
 import com.interpss.opf.dep.BaseOpfNetwork;
 import com.interpss.opf.dep.OpfGenBus;
+
+import cern.colt.matrix.impl.SparseDoubleMatrix1D;
+import cern.colt.matrix.impl.SparseDoubleMatrix2D;
 
 public class GIQPObjectiveFunctionCollector extends BaseObjectiveFunctionCollector{	
 	SparseDoubleMatrix2D G = null;
