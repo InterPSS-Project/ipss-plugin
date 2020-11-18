@@ -11,9 +11,9 @@ import cern.colt.list.IntArrayList;
 
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.net.Bus;
-import com.interpss.opf.BaseOpfNetwork;
-import com.interpss.opf.Constraint;
-import com.interpss.opf.OpfGenBus;
+import com.interpss.opf.dep.BaseOpfNetwork;
+import com.interpss.opf.dep.Constraint;
+import com.interpss.opf.dep.OpfGenBus;
 
 public class GenMwOutputConstraintCollector extends BaseConstraintCollector{	
 	

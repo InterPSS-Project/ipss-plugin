@@ -8,8 +8,8 @@ import cern.colt.matrix.impl.SparseDoubleMatrix2D;
 import com.interpss.core.common.curve.NumericCurveModel;
 import com.interpss.core.common.curve.QuadraticCurve;
 import com.interpss.core.net.Bus;
-import com.interpss.opf.BaseOpfNetwork;
-import com.interpss.opf.OpfGenBus;
+import com.interpss.opf.dep.BaseOpfNetwork;
+import com.interpss.opf.dep.OpfGenBus;
 
 public class GIQPObjectiveFunctionCollector extends BaseObjectiveFunctionCollector{	
 	SparseDoubleMatrix2D G = null;

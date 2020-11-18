@@ -3,10 +3,10 @@ package org.interpss.plugin.opf.util;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
-import com.interpss.opf.BaseOpfBranch;
-import com.interpss.opf.BaseOpfBus;
-import com.interpss.opf.OpfGenBus;
-import com.interpss.opf.OpfNetwork;
+import com.interpss.opf.dep.BaseOpfBranch;
+import com.interpss.opf.dep.BaseOpfBus;
+import com.interpss.opf.dep.OpfGenBus;
+import com.interpss.opf.dep.OpfNetwork;
 
 public class OPFResultOutput {
 	public static String opfResultSummary(OpfNetwork opfnet) {
