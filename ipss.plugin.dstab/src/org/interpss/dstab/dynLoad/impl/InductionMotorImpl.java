@@ -1054,7 +1054,11 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	
 	protected double Fonline = 1.0; // the total on line fraction ( reference to initial Power) after considering change by  internal protective devices  and/or external load shedding relay models and/or load change events
 	
+	protected boolean isOutputPowerSysMVABase = false;
+	
 	private double timestep = 0.0;
+	
+	private double sysMVABase =100;
 	
 	private List<MotorProtectionControl> motorProtectionList = null;
 	
@@ -1627,7 +1631,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		}
 		
 		
-		double sysMVABase = this.getDStabBus().getNetwork().getBaseMva();
+		sysMVABase = this.getDStabBus().getNetwork().getBaseMva();
 		
 		if(this.getMvaBase() ==0.0){
 			this.setMvaBase( this.motorLoadP*sysMVABase/this.getLoadFactor());
@@ -2243,8 +2247,13 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	
 	@Override
 	public Hashtable<String, Object> getStates(Object ref) {
-		this.states.put(this.OUT_SYMBOL_P, this.motorPower.getReal());
-		this.states.put(this.OUT_SYMBOL_Q, this.motorPower.getImaginary());
+		
+		double factor = 1;
+		if (isOutputPowerSysMVABase) 
+			factor = this.mvaBase/this.sysMVABase;
+		
+		this.states.put(this.OUT_SYMBOL_P, this.motorPower.getReal()*factor);
+		this.states.put(this.OUT_SYMBOL_Q, this.motorPower.getImaginary()*factor);
 		this.states.put(this.OUT_SYMBOL_V, this.getDStabBus().getVoltageMag());
 		this.states.put(this.OUT_SYMBOL_I, this.iMotor.abs());
 		this.states.put(this.OUT_SYMBOL_SLIP,this.slip);
@@ -2429,6 +2438,23 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		if(this.extendedDeviceId == null || this.extendedDeviceId.equals("")) // extended Id;
 			extendedDeviceId= "IndMotor_"+this.getId()+"@"+this.getDStabBus().getId();
 		return this.extendedDeviceId;
+	}
+
+	@Override
+	public double getFonline() {
+		
+		return this.Fonline;
+	}
+
+	@Override
+	public void setFonline(double newFonLine) {
+		this.Fonline = newFonLine;
+		
+	}
+
+	@Override
+	public void setOutputPowerMVABase(boolean isSysMVAase) {
+		isOutputPowerSysMVABase = isSysMVAase;
 	}
 
     

@@ -548,6 +548,12 @@ public interface InductionMotor extends DynLoadModel {
 	 */
 	double getFuv();
 	
+	double getFonline();
+	
+	void setFonline(double newFonLine);
+	
+	void setOutputPowerMVABase(boolean isSysMVAase);
+	
 	List<MotorProtectionControl> getProtectionControlList();
 
 
