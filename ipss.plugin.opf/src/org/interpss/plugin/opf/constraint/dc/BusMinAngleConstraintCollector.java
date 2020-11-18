@@ -11,7 +11,7 @@ import cern.colt.list.DoubleArrayList;
 import cern.colt.list.IntArrayList;
 
 import com.interpss.core.net.Bus;
-import com.interpss.opf.BaseOpfNetwork;
+import com.interpss.opf.dep.BaseOpfNetwork;
 
 public class BusMinAngleConstraintCollector extends BaseConstraintCollector{	
 	private LimitType angleLimit = null;

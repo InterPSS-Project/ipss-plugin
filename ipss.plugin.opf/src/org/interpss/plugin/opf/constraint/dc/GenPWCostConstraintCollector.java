@@ -16,8 +16,8 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.common.curve.NumericCurveModel;
 import com.interpss.core.common.curve.PieceWiseCurve;
 import com.interpss.core.net.Bus;
-import com.interpss.opf.BaseOpfNetwork;
-import com.interpss.opf.OpfGenBus;
+import com.interpss.opf.dep.BaseOpfNetwork;
+import com.interpss.opf.dep.OpfGenBus;
 
 public class GenPWCostConstraintCollector extends BaseConstraintCollector{
 	
