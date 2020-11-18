@@ -5,10 +5,10 @@ import java.util.ArrayList;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
-import com.interpss.opf.BaseOpfBus;
-import com.interpss.opf.OpfBranch;
-import com.interpss.opf.OpfGenBus;
-import com.interpss.opf.OpfNetwork;
+import com.interpss.opf.dep.BaseOpfBus;
+import com.interpss.opf.dep.OpfBranch;
+import com.interpss.opf.dep.OpfGenBus;
+import com.interpss.opf.dep.OpfNetwork;
 
 public class OutputHelper {
 	private OpfNetwork net = null;

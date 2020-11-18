@@ -12,8 +12,8 @@ import cern.colt.list.IntArrayList;
 
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.net.Branch;
-import com.interpss.opf.BaseOpfBranch;
-import com.interpss.opf.BaseOpfNetwork;
+import com.interpss.opf.dep.BaseOpfBranch;
+import com.interpss.opf.dep.BaseOpfNetwork;
 
 public class LineMwFlowConstraintCollector extends BaseConstraintCollector {
 
