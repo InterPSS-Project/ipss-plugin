@@ -72,22 +72,19 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import com.interpss.OpfObjectFactory;
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.aclf.AclfGen;
-import com.interpss.core.aclf.AclfLoad;
-import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.common.curve.CommonCurveFactory;
 import com.interpss.core.common.curve.NumericCurveModel;
 import com.interpss.core.common.curve.PieceWiseCurve;
 import com.interpss.core.common.curve.QuadraticCurve;
 import com.interpss.opf.IncrementalCost;
+import com.interpss.opf.OpfFactory;
 import com.interpss.opf.OpfGenOperatingMode;
-import com.interpss.opf.cst.OpfConstraint;
+import com.interpss.opf.cst.ConstraintFactory;
+import com.interpss.opf.cst.OpfBusLimits;
+import com.interpss.opf.dep.BaseOpfBranch;
+import com.interpss.opf.dep.BaseOpfBus;
 import com.interpss.opf.dep.BaseOpfNetwork;
-import com.interpss.opf.dep.OpfBranch;
-import com.interpss.opf.dep.OpfBus;
-import com.interpss.opf.dep.OpfFactory;
 import com.interpss.opf.dep.OpfGenBus;
-import com.interpss.opf.dep.OpfNetwork;
 import com.interpss.opf.dep.dclf.DclfOpfBranch;
 import com.interpss.opf.dep.dclf.DclfOpfBus;
 import com.interpss.opf.dep.dclf.DclfOpfGenBus;
@@ -149,7 +146,7 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 						}
 						else {
 							OpfGenBusXmlType opfGen = (OpfGenBusXmlType) bus.getValue();
-							mapOpfGenBusData(opfGen, (OpfNetwork)opfNet);
+							mapOpfGenBusData(opfGen, (BaseOpfNetwork)opfNet);
 						}
 					} 
 					else {
@@ -159,7 +156,7 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 							aclfNetMapper.mapAclfBusData(busRec, opfDclfBus, opfNet, busHelper);
 						}
 						else {
-							OpfBus opfBus = OpfObjectFactory.createOpfBus(busRec.getId(), (OpfNetwork)opfNet);
+							BaseOpfBus opfBus = OpfObjectFactory.createOpfBus(busRec.getId(), (BaseOpfNetwork)opfNet);
 							aclfNetMapper.mapAclfBusData(busRec, opfBus, opfNet, busHelper);
 						}
 					}
@@ -171,7 +168,7 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 						aclfNetMapper.mapAclfBranchData(b.getValue(), opfDclfBranch, opfNet);
 					}
 					else {
-						OpfBranch opfBranch = OpfObjectFactory.createOpfBranch();
+						BaseOpfBranch opfBranch = OpfObjectFactory.createOpfBranch();
 						aclfNetMapper.mapAclfBranchData(b.getValue(), opfBranch, opfNet);
 						// map MW rating
 						BranchXmlType branchXml = (BranchXmlType)b.getValue();
@@ -209,8 +206,8 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 	 *    OPF model mapper
 	 *    ================
 	 */
-	private OpfNetwork mapOpfNetData(OpfNetworkXmlType xmlNet) throws InterpssException {
-		OpfNetwork opfNet = OpfObjectFactory.createOpfNetwork();
+	private BaseOpfNetwork mapOpfNetData(OpfNetworkXmlType xmlNet) throws InterpssException {
+		BaseOpfNetwork opfNet = OpfObjectFactory.createOpfNetwork();
 		new ODMAclfNetMapper().mapAclfNetworkData(opfNet, xmlNet);
 		
 		// mapping details
@@ -227,7 +224,7 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 	 * @return
 	 * @throws InterpssException
 	 */
-	public OpfGenBus mapOpfGenBusData(OpfGenBusXmlType busRec, OpfNetwork net) throws InterpssException {
+	public OpfGenBus mapOpfGenBusData(OpfGenBusXmlType busRec, BaseOpfNetwork net) throws InterpssException {
 		OpfGenBus opfGenBus = OpfObjectFactory.createOpfGenBus(busRec.getId(), net);
 		mapBaseBusData(busRec, opfGenBus, net);
 
@@ -329,7 +326,7 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 		// set constraints
 		if(busRec.getConstraints()!=null){
 			ConstraintsXmlType ctrtXml = busRec.getConstraints();		
-			OpfConstraint ctrtIpss = OpfFactory.eINSTANCE.createConstraint();			
+			OpfBusLimits ctrtIpss = ConstraintFactory.eINSTANCE.createOpfBusLimits();			
 			
 			double baseKva = net.getBaseKva();
 			double factor = net.getBaseKva()*0.001;
