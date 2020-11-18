@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.interpss.plugin.opf.util.OpfDataHelper;
 
-import com.interpss.opf.BaseOpfNetwork;
+import com.interpss.opf.dep.BaseOpfNetwork;
 
 public abstract class BaseConstraintCollector implements IConstraintCollector {
 	protected BaseOpfNetwork opfNet = null;		

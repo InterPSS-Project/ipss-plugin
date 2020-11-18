@@ -12,8 +12,8 @@ import org.interpss.plugin.opf.util.OpfDataHelper;
 
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.net.Bus;
-import com.interpss.opf.OpfGenBus;
-import com.interpss.opf.OpfNetwork;
+import com.interpss.opf.dep.OpfGenBus;
+import com.interpss.opf.dep.OpfNetwork;
 
 public abstract class AbstractOpfSolver implements IOpfSolver {
 
