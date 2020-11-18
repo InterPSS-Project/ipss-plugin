@@ -3,21 +3,22 @@ package org.interpss.plugin.opf.constraint.dc;
 import java.util.ArrayList;
 
 import org.interpss.numeric.datatype.Point;
+import org.interpss.plugin.opf.OpfSolverFactory;
 import org.interpss.plugin.opf.common.OPFLogger;
 import org.interpss.plugin.opf.constraint.BaseConstraintCollector;
 import org.interpss.plugin.opf.constraint.OpfConstraint;
-import org.interpss.plugin.opf.constraint.OpfConstraint.cstType;
 
-import cern.colt.list.DoubleArrayList;
-import cern.colt.list.IntArrayList;
-
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.common.curve.NumericCurveModel;
 import com.interpss.core.common.curve.PieceWiseCurve;
 import com.interpss.core.net.Bus;
+import com.interpss.opf.cst.ConstraintFactory;
+import com.interpss.opf.cst.OpfConstraintType;
 import com.interpss.opf.dep.BaseOpfNetwork;
 import com.interpss.opf.dep.OpfGenBus;
+
+import cern.colt.list.DoubleArrayList;
+import cern.colt.list.IntArrayList;
 
 public class GenPWCostConstraintCollector extends BaseConstraintCollector{
 	
@@ -56,7 +57,7 @@ public class GenPWCostConstraintCollector extends BaseConstraintCollector{
 					double[] slope = new double[np-1];					
 					double rh = 0;
 					for (int i=1; i<np;i++){						
-						OpfConstraint cst = new OpfConstraint();
+						OpfConstraint cst = new OpfConstraint();	
 						slope[i-1] = (price[i]- price[i-1])/(mw[i]-mw[i-1]);		
 						rh = -slope[i-1]*mw[i] + price[i]; // cj- mj*xj
 						
@@ -67,7 +68,7 @@ public class GenPWCostConstraintCollector extends BaseConstraintCollector{
 						val.add(1);					
 						
 						int id = cstContainer.size();
-						cst = cst.setConstraint(id, des, 0, rh, cstType.largerThan, colNo, val);
+						cst = OpfSolverFactory.createOpfConstraint(id, des, 0, rh, OpfConstraintType.LARGER_THAN, colNo, val);
 						cstContainer.add(cst);					
 					}					
 					genIndex++;
