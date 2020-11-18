@@ -2,18 +2,20 @@ package org.interpss.plugin.opf.constraint.dc;
 
 import java.util.List;
 
+import org.interpss.plugin.opf.OpfSolverFactory;
 import org.interpss.plugin.opf.constraint.BaseConstraintCollector;
 import org.interpss.plugin.opf.constraint.OpfConstraint;
-import org.interpss.plugin.opf.constraint.OpfConstraint.cstType;
 import org.interpss.plugin.opf.util.OpfDataHelper;
-
-import cern.colt.list.DoubleArrayList;
-import cern.colt.list.IntArrayList;
 
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.net.Branch;
+import com.interpss.opf.cst.ConstraintFactory;
+import com.interpss.opf.cst.OpfConstraintType;
 import com.interpss.opf.dep.BaseOpfBranch;
 import com.interpss.opf.dep.BaseOpfNetwork;
+
+import cern.colt.list.DoubleArrayList;
+import cern.colt.list.IntArrayList;
 
 public class LineMwFlowConstraintCollector extends BaseConstraintCollector {
 
@@ -30,7 +32,7 @@ public class LineMwFlowConstraintCollector extends BaseConstraintCollector {
 			IntArrayList colNo = new IntArrayList();
 			DoubleArrayList val = new DoubleArrayList();
 			
-			OpfConstraint cst = new OpfConstraint();
+			OpfConstraint cst = new OpfConstraint();	
 			//if (bra.isAclfBranch()) {
 				
 				AclfBranch aclfBra = (AclfBranch) bra;
@@ -60,11 +62,11 @@ public class LineMwFlowConstraintCollector extends BaseConstraintCollector {
 				String des = "Branch MW flow limit: " + bra.getFromPhysicalBusId()
 						+ "-" + bra.getToPhysicalBusId() + "-" + bra.getCircuitNumber();
 
-				cst = cst.setConstraint(id, des, ul, ll, cstType.lessThan,
+				cst = OpfSolverFactory.createOpfConstraint(id, des, ul, ll, OpfConstraintType.LESS_THAN,
 						colNo, val);
 				cstContainer.add(cst);
 				
-				cst = cst.setConstraint(id, des, ul, ll, cstType.largerThan,
+				cst = OpfSolverFactory.createOpfConstraint(id, des, ul, ll, OpfConstraintType.LARGER_THAN,
 						colNo, val);
 				cstContainer.add(cst);	
 				

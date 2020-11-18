@@ -2,19 +2,21 @@ package org.interpss.plugin.opf.constraint.dc;
 
 import java.util.List;
 
+import org.interpss.plugin.opf.OpfSolverFactory;
 import org.interpss.plugin.opf.constraint.BaseConstraintCollector;
 import org.interpss.plugin.opf.constraint.OpfConstraint;
-import org.interpss.plugin.opf.constraint.OpfConstraint.cstType;
 import org.interpss.plugin.opf.util.OpfDataHelper;
+
+import com.interpss.core.aclf.AclfBus;
+import com.interpss.core.net.Bus;
+import com.interpss.opf.cst.ConstraintFactory;
+import com.interpss.opf.cst.OpfConstraintType;
+import com.interpss.opf.dep.BaseOpfNetwork;
 
 import cern.colt.list.DoubleArrayList;
 import cern.colt.list.IntArrayList;
 import cern.colt.matrix.impl.SparseDoubleMatrix1D;
 import cern.colt.matrix.impl.SparseDoubleMatrix2D;
-
-import com.interpss.core.aclf.AclfBus;
-import com.interpss.core.net.Bus;
-import com.interpss.opf.dep.BaseOpfNetwork;
 
 public class ActivePowerEqnConstraintCollector extends BaseConstraintCollector{	
 	
@@ -23,7 +25,7 @@ public class ActivePowerEqnConstraintCollector extends BaseConstraintCollector{
 	public ActivePowerEqnConstraintCollector(BaseOpfNetwork opfNet,
 			List<OpfConstraint> cstContainer) {
 		super(opfNet, cstContainer);		
-		Y =  helper.getBusAdmittance(opfNet);
+		Y =  OpfDataHelper.getBusAdmittance(opfNet);
 	}			
 	
 	@Override
@@ -64,7 +66,7 @@ public class ActivePowerEqnConstraintCollector extends BaseConstraintCollector{
 			double UpperLimit = pl;
 			double LowerLimit = pl;			
 			
-			cst = cst.setConstraint(id, des, UpperLimit, LowerLimit, cstType.equality, colNo, val);
+			cst = OpfSolverFactory.createOpfConstraint(id, des, UpperLimit, LowerLimit, OpfConstraintType.EQUALITY, colNo, val);
 			cstContainer.add(cst);			
 		}			
 	}

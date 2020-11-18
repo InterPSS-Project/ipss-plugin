@@ -3,16 +3,10 @@ package org.interpss.plugin.opf.util;
 import java.io.BufferedWriter;
 import java.io.IOException;
 
-import lpsolve.LpSolve;
-import lpsolve.LpSolveException;
-
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealVector;
 import org.interpss.plugin.opf.common.OPFLogger;
-
-import cern.colt.matrix.impl.SparseDoubleMatrix1D;
-import cern.colt.matrix.impl.SparseDoubleMatrix2D;
 
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
@@ -20,11 +14,15 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 import com.interpss.opf.dep.BaseOpfNetwork;
-import com.interpss.opf.dep.OpfNetwork;
+
+import cern.colt.matrix.impl.SparseDoubleMatrix1D;
+import cern.colt.matrix.impl.SparseDoubleMatrix2D;
+import lpsolve.LpSolve;
+import lpsolve.LpSolveException;
 
 public class OpfDataHelper {
 
-	public int getNoOfGen(AclfNetwork net) {
+	public static int getNoOfGen(AclfNetwork net) {
 		int numOfGen = 0;
 		for (Bus b : net.getBusList()) {
 			AclfBus acbus = (AclfBus) b;
@@ -44,7 +42,7 @@ public class OpfDataHelper {
 	    return (double) tmp / factor;
 	}	
 	
-	public SparseDoubleMatrix2D getBusAdmittance(BaseOpfNetwork opfNet) {
+	public static SparseDoubleMatrix2D getBusAdmittance(BaseOpfNetwork opfNet) {
 		int numOfBus = opfNet.getNoActiveBus();
 		SparseDoubleMatrix2D busAdm = new SparseDoubleMatrix2D(numOfBus,
 				numOfBus);
@@ -68,13 +66,13 @@ public class OpfDataHelper {
 		return busAdm;
 	}
 	
-	public double getYij(Array2DRowRealMatrix Y, int i, int j){
+	public static double getYij(Array2DRowRealMatrix Y, int i, int j){
 		double yij = Y.getEntry(i, j);
 		return yij;		
 	}
 	
 
-	private int[] getNonSwingBusRows(OpfNetwork opfNet) {
+	private static int[] getNonSwingBusRows(BaseOpfNetwork opfNet) {
 		int[] NonSwingBusRows = new int[opfNet.getNoActiveBus() - 1];
 		int idx = 0;
 		for (int busIndex = 0; busIndex < opfNet.getNoActiveBus(); busIndex++) {
@@ -89,7 +87,7 @@ public class OpfDataHelper {
 		return NonSwingBusRows;
 	}
 	
-	public ArrayRealVector combineVector(ArrayRealVector vec1, ArrayRealVector vec2){
+	public static ArrayRealVector combineVector(ArrayRealVector vec1, ArrayRealVector vec2){
 		int size1 = vec1.getDimension();
 		int size2 = vec2.getDimension();
 		ArrayRealVector vec = new ArrayRealVector(2*size1+size2);
@@ -99,7 +97,7 @@ public class OpfDataHelper {
 		return vec;
 	}
 	
-	public Array2DRowRealMatrix FormCiq(Array2DRowRealMatrix mat_lfc,
+	public static Array2DRowRealMatrix FormCiq(Array2DRowRealMatrix mat_lfc,
 			Array2DRowRealMatrix mat_genc){
 		int rowLfc = mat_lfc.getRowDimension();
 		int colLfc = mat_lfc.getColumnDimension();
@@ -117,7 +115,7 @@ public class OpfDataHelper {
 	}
 	
 
-	public int getSwingBusIndex(AclfNetwork aclfNet) {
+	public static int getSwingBusIndex(AclfNetwork aclfNet) {
 		// assume there is one swing bus in the system
 		for (Bus b : aclfNet.getBusList()) {
 			if (((AclfBus) b).isSwing()) {
@@ -129,7 +127,7 @@ public class OpfDataHelper {
 	}
 
 	// angel difference weight matrix
-	public Array2DRowRealMatrix formAngleDiffWeightMatrix(OpfNetwork opfNet) {
+	public static Array2DRowRealMatrix formAngleDiffWeightMatrix(BaseOpfNetwork opfNet) {
 		int numOfBus = opfNet.getNoActiveBus();
 		Array2DRowRealMatrix angleDiffWeight = new Array2DRowRealMatrix(
 				numOfBus, numOfBus);
@@ -153,10 +151,10 @@ public class OpfDataHelper {
 				.getAnglePenaltyFactor());
 	}
 
-	public Array2DRowRealMatrix formReducedADWMatrix(OpfNetwork opfNet) {
+	public static Array2DRowRealMatrix formReducedADWMatrix(BaseOpfNetwork opfNet) {
 		Array2DRowRealMatrix angleDiffWeight = formAngleDiffWeightMatrix(opfNet);
 		try {
-			int[] selectedRows = this.getNonSwingBusRows(opfNet);
+			int[] selectedRows = getNonSwingBusRows(opfNet);
 			return (Array2DRowRealMatrix) angleDiffWeight.getSubMatrix(
 					selectedRows, selectedRows);
 		} catch (Exception e) {			
@@ -166,7 +164,7 @@ public class OpfDataHelper {
 		return null;
 	}
 	
-	public void addLpConstraint(LpSolve lpsolver,Array2DRowRealMatrix Ceq, ArrayRealVector beq, int type){
+	public static void addLpConstraint(LpSolve lpsolver,Array2DRowRealMatrix Ceq, ArrayRealVector beq, int type){
 		int colCeq = Ceq.getColumnDimension();
 		int rowCeq = Ceq.getRowDimension();
 		int j = 0;
@@ -192,7 +190,7 @@ public class OpfDataHelper {
 		}
 	}
 	
-	public void writeMatrix(BufferedWriter out, Array2DRowRealMatrix mat,String title) throws Exception, IOException{
+	public static void writeMatrix(BufferedWriter out, Array2DRowRealMatrix mat,String title) throws Exception, IOException{
 		out.write(title);
 		for (int i= 0; i< mat.getRowDimension();i++){
 			for(int j=0; j<mat.getColumnDimension();j++){
@@ -206,7 +204,7 @@ public class OpfDataHelper {
 		
 	}
 	
-	public void writeMatrix(BufferedWriter out, SparseDoubleMatrix2D mat,String title) throws Exception, IOException{
+	public static void writeMatrix(BufferedWriter out, SparseDoubleMatrix2D mat,String title) throws Exception, IOException{
 		out.write(title);
 		for (int i= 0; i< mat.rows();i++){
 			for(int j=0; j<mat.columns();j++){
@@ -220,7 +218,7 @@ public class OpfDataHelper {
 		
 	}
 	
-	public void writeVector(BufferedWriter out, ArrayRealVector vec,String title) throws Exception, IOException{
+	public static void writeVector(BufferedWriter out, ArrayRealVector vec,String title) throws Exception, IOException{
 		out.write(title);
 		for (int i= 0; i< vec.getDimension();i++){
 			out.append(Double.toString(vec.getEntry(i)));
@@ -230,7 +228,7 @@ public class OpfDataHelper {
 		out.append("\n");		
 	}
 	
-	public void writeVector(BufferedWriter out, RealVector vec,String title) throws Exception, IOException{
+	public static void writeVector(BufferedWriter out, RealVector vec,String title) throws Exception, IOException{
 		out.write(title);
 		for (int i= 0; i< vec.getDimension();i++){
 			out.append(Double.toString(vec.getEntry(i)));
@@ -248,6 +246,4 @@ public class OpfDataHelper {
 		out.append("];");
 		out.append("\n");		
 	}
-	
-
 }
