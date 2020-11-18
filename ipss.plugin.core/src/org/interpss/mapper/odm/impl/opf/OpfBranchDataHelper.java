@@ -25,6 +25,7 @@
 package org.interpss.mapper.odm.impl.opf;
 
 import static org.interpss.mapper.odm.ODMUnitHelper.toActivePowerUnit;
+
 import org.ieee.odm.schema.ActivePowerRatingXmlType;
 import org.ieee.odm.schema.ActivePowerUnitType;
 import org.ieee.odm.schema.BaseBranchXmlType;
@@ -32,7 +33,7 @@ import org.ieee.odm.schema.BranchXmlType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.common.datatype.UnitHelper;
-import com.interpss.opf.dep.OpfBranch;
+import com.interpss.opf.dep.BaseOpfBranch;
 
 /**
  * OPF ODM branch data helper
@@ -42,7 +43,7 @@ import com.interpss.opf.dep.OpfBranch;
  */
 public class OpfBranchDataHelper {
 	
-	private OpfBranch opfBranch = null;
+	private BaseOpfBranch opfBranch = null;
 	private BaseBranchXmlType braXml = null;
 	
 	/**
@@ -51,7 +52,7 @@ public class OpfBranchDataHelper {
 	 * @param opfBranch
 	 * @param opfBranch
 	 */
-	public OpfBranchDataHelper(OpfBranch opfBranch, BaseBranchXmlType braXml) {
+	public OpfBranchDataHelper(BaseOpfBranch opfBranch, BaseBranchXmlType braXml) {
 		this.opfBranch = opfBranch;
 		this.braXml = braXml;
 	}

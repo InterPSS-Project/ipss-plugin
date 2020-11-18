@@ -13,16 +13,16 @@ public abstract class BaseConstraintCollector implements IConstraintCollector {
 	protected int numOfBus = 0;
 	protected int numOfBranch = 0;
 	protected int numOfGen = 0;	
-	protected OpfDataHelper helper = null;
+	//protected OpfDataHelper helper = null;
 	protected List<OpfConstraint> cstContainer;	
 	
 	
 	public BaseConstraintCollector(BaseOpfNetwork opfNet, List<OpfConstraint> cstContainer){
 		this.opfNet = opfNet;
 		this.cstContainer = cstContainer;		
-		this.helper = new OpfDataHelper();
+		//this.helper = new OpfDataHelper();
 		this.numOfBus = this.opfNet.getNoActiveBus();
-		this.numOfGen = helper.getNoOfGen(this.opfNet);
+		this.numOfGen = OpfDataHelper.getNoOfGen(this.opfNet);
 		this.numOfBranch = this.opfNet.getNoActiveBranch();		
 		this.numOfVar = numOfGen + numOfBus;
 	}		
