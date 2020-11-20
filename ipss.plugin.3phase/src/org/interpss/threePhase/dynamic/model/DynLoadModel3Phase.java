@@ -45,6 +45,10 @@ public abstract class DynLoadModel3Phase extends DynamicModel3Phase{
 		
 		this.initLoadPQ3phase = initLoad3Phase;
 	}
+
+	public void changeLoad(double factor) {
+		throw new UnsupportedOperationException();
+	}
 	
 
 }

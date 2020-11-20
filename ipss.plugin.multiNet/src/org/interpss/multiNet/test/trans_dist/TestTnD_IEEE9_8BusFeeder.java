@@ -305,10 +305,10 @@ public class TestTnD_IEEE9_8BusFeeder {
 		 */
 		  
 	    SubNetworkProcessor proc = new SubNetworkProcessor(dsNet);
-		// proc.addSubNetInterfaceBranch("Bus5->Bus10(0)",false);
+		 proc.addSubNetInterfaceBranch("Bus5->Bus10(0)",false);
 		 
-	     proc.addSubNetInterfaceBranch("Bus4->Bus5(0)",false);
-	     proc.addSubNetInterfaceBranch("Bus5->Bus7(0)",true);
+//	     proc.addSubNetInterfaceBranch("Bus4->Bus5(0)",false);
+//	     proc.addSubNetInterfaceBranch("Bus5->Bus7(0)",true);
 	    
 		 proc.addSubNetInterfaceBranch("Bus6->Bus20(0)",false);
 		 proc.addSubNetInterfaceBranch("Bus8->Bus30(0)",false);
@@ -374,6 +374,9 @@ public class TestTnD_IEEE9_8BusFeeder {
 			sm.add3PhaseBusStdMonitor(new String[]{"Bus38","Bus34","Bus32","Bus28","Bus24","Bus22","Bus18","Bus15","Bus14","Bus12","Bus11","Bus10"});
 			//String[] seqVotBusAry = new String[]{"Bus5","Bus4","Bus7"};
 			//sm.add3PhaseBusStdMonitor(seqVotBusAry);
+			
+			sm.addBranchStdMonitor("Bus5->Bus10Dummy(1)");
+			sm.addBranchStdMonitor("Bus5->Bus7(1)");
 			
 			//1Phase AC motor extended_device_Id = "ACMotor_"+this.getId()+"@"+this.getParentBus().getId()+"_phase"+this.getPhase();
 			
@@ -458,6 +461,7 @@ public class TestTnD_IEEE9_8BusFeeder {
 			System.out.println(sm.toCSVString(sm.getBusPhAVoltTable()));
 			//System.out.println(sm.toCSVString(sm.getAcMotorPTable()));
 			//System.out.println(sm.toCSVString(sm.getAcMotorStateTable()));
+			System.out.println("Branch flow p ="+sm.toCSVString(sm.getBranchFlowPTable()));
 			
 			
 			MonitorRecord volt_rec1 = sm.getBusVoltTable().get("Bus38").get(0);
