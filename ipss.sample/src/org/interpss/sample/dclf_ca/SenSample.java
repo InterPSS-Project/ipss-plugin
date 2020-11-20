@@ -1,7 +1,7 @@
  /*
-  * @(#)Ieee14_CASample.java   
+  * @(#) SenSample.java   
   *
-  * Copyright (C) 2006-2015 www.interpss.org
+  * Copyright (C) 2006-2020 www.interpss.org
   *
   * This program is free software; you can redistribute it and/or
   * modify it under the terms of the GNU LESSER GENERAL PUBLIC LICENSE
@@ -15,7 +15,7 @@
   *
   * @Author Mike Zhou
   * @Version 1.0
-  * @Date 03/15/2015
+  * @Date 11/20/2020
   * 
   *   Revision History
   *   ================
@@ -24,10 +24,7 @@
 
 package org.interpss.sample.dclf_ca;
 
-import static org.junit.Assert.assertTrue;
-
 import org.interpss.IpssCorePlugin;
-import org.interpss.numeric.util.NumericUtil;
 
 import com.interpss.CoreObjectFactory;
 import com.interpss.core.DclfObjectFactory;
