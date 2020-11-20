@@ -8,6 +8,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.threePhase.basic.dstab.DStab3PBranch;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
 
 import com.interpss.core.abc.Static3PXformer;
 import com.interpss.core.acsc.PhaseCode;
@@ -418,6 +419,26 @@ public class Dstab3PBranchImpl extends DStabBranchImpl implements DStab3PBranch 
 	public double getXfrRatedKVA() {
 		return this.baseKVA;
 		
+	}
+
+	
+	@Override
+	public Complex3x1 calc3PhaseCurrentFrom2To() {
+		Complex3x1 vabc_f = ((DStab3PBus)this.getFromBus()).get3PhaseVotlages();
+		Complex3x1 vabc_t = ((DStab3PBus)this.getToBus()).get3PhaseVotlages();
+		
+		Complex3x1 Iabc = this.getYffabc().multiply(vabc_f).add(this.getYftabc().multiply(vabc_t));
+		
+		return  Iabc;
+	}
+	
+	@Override
+	public Complex3x1 calc3PhaseCurrentTo2From() {
+		Complex3x1 vabc_f = ((DStab3PBus)this.getFromBus()).get3PhaseVotlages();
+		Complex3x1 vabc_t = ((DStab3PBus)this.getToBus()).get3PhaseVotlages();
+		
+		Complex3x1 Iabc = this.getYttabc().multiply(vabc_t).add(this.getYtfabc().multiply(vabc_f));
+		return  Iabc;
 	}
 
 }

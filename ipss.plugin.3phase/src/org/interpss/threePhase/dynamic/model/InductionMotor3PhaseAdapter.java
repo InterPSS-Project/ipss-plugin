@@ -43,7 +43,7 @@ public class InductionMotor3PhaseAdapter extends DynLoadModel3Phase {
 		this.parentBus = (DStab3PBus) motor.getDStabBus();
 		
 		this.loadPercent = this.indMotor.getLoadPercent();
-		this.indMotor.setLoadPercent(-100); // such that the load percent is not used, used the initLoadPQ instead
+		
 	}
 	
 	@Override
