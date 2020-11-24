@@ -23,6 +23,9 @@ public class ComplexSparseMatrix {
 		
 		System.out.println("\n\nSample 4 output: ");
 		sample4();
+
+		System.out.println("\n\nSample 4-1 output: ");
+		sample4_1();
 		
 		System.out.println("\n\nSample 5 output: ");
 		sample5();
@@ -118,6 +121,29 @@ public class ComplexSparseMatrix {
 		//System.out.println("\n\nSample 4 output: ");		
 		System.out.println(eqn);
 	}
+	
+	public static void sample4_1() throws IpssNumericException {
+		ISparseEqnComplex eqn = new SparseEqnComplexImpl(2);
+		
+		Complex  a11 = new Complex( 1.0, 1.1 ),
+			     a12 = new Complex( 3.1, 4.1 ),
+			     a21 = new Complex( 2.1, 1.9 ),
+			     a22 = new Complex( 3.0, 4.0 );
+		eqn.setA( a11, 0, 0 );
+		eqn.setA( a12, 0, 1 );
+		eqn.setA( a21, 1, 0 );
+		eqn.setA( a22, 1, 1 );
+		
+		Complex[] bVector = { new Complex( 1.0, 2.0 ),
+			                  new Complex( 3.0, 4.0 ) };
+
+		eqn.setBVector(bVector);
+		
+		eqn.solveEqn(1.0e-20);
+		
+		//System.out.println("\n\nSample 4 output: ");		
+		System.out.println(eqn);
+	}	
 	
 	public static void sample5() throws IpssNumericException {
 		ISparseEqnComplex eqn = new SparseEqnComplexImpl(2, 3);
