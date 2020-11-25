@@ -76,19 +76,18 @@ import com.interpss.core.common.curve.CommonCurveFactory;
 import com.interpss.core.common.curve.NumericCurveModel;
 import com.interpss.core.common.curve.PieceWiseCurve;
 import com.interpss.core.common.curve.QuadraticCurve;
+import com.interpss.opf.BaseOpfBranch;
+import com.interpss.opf.BaseOpfBus;
+import com.interpss.opf.BaseOpfNetwork;
 import com.interpss.opf.IncrementalCost;
 import com.interpss.opf.OpfFactory;
 import com.interpss.opf.OpfGenOperatingMode;
 import com.interpss.opf.cst.ConstraintFactory;
 import com.interpss.opf.cst.OpfBusLimits;
-import com.interpss.opf.dep.BaseOpfBranch;
-import com.interpss.opf.dep.BaseOpfBus;
-import com.interpss.opf.dep.BaseOpfNetwork;
-import com.interpss.opf.dep.OpfGenBus;
-import com.interpss.opf.dep.dclf.DclfOpfBranch;
-import com.interpss.opf.dep.dclf.DclfOpfBus;
-import com.interpss.opf.dep.dclf.DclfOpfGenBus;
-import com.interpss.opf.dep.dclf.DclfOpfNetwork;
+import com.interpss.opf.dclfOpf.DclfOpfBranch;
+import com.interpss.opf.dclfOpf.DclfOpfBus;
+import com.interpss.opf.dclfOpf.DclfOpfGen;
+import com.interpss.opf.dclfOpf.DclfOpfNetwork;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
@@ -382,8 +381,8 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 	 * @return
 	 * @throws Exception
 	 */
-	public DclfOpfGenBus mapDclfOpfGenBusData(OpfDclfGenBusXmlType busRec, DclfOpfNetwork net) throws InterpssException {
-		DclfOpfGenBus opfGenBus = OpfObjectFactory.createDclfOpfGenBus(busRec.getId(), net);
+	public DclfOpfGen mapDclfOpfGenBusData(OpfDclfGenBusXmlType busRec, DclfOpfNetwork net) throws InterpssException {
+		DclfOpfGen opfGenBus = OpfObjectFactory.createDclfOpfGenBus(busRec.getId(), net);
 		mapBaseBusData(busRec, opfGenBus, net);
 
 		AclfBusDataHelper helper = new AclfBusDataHelper(net);
