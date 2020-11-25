@@ -22,7 +22,7 @@
   *
   */
 
-package org.interpss.sample.ca;
+package org.interpss.sample.dclf_ca;
 
 import org.interpss.IpssCorePlugin;
 import org.interpss.pssl.simu.IpssDclf;
