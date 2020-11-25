@@ -34,6 +34,7 @@ import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.cache.StateMonitor.MonitorRecord;
+import com.interpss.dstab.devent.LoadChangeEventType;
 import com.interpss.dstab.mach.EConstMachine;
 import com.interpss.dstab.mach.MachineModelType;
 
@@ -68,7 +69,7 @@ public class Test8BusFeeder {
 	  	assertEquals(net.getBus("Bus2").get3PhaseVotlages().c_2.abs(),1.008,1.0E-3);
 	}
 	
-	//@Test
+	@Test
 	public void test_DStab_Simu() throws InterpssException{
 		 IpssCorePlugin.init();
 		double baseVolt = 12470;
@@ -101,6 +102,9 @@ public class Test8BusFeeder {
 	    //dstabAlgo.setRefMachine(net.getMachine("Bus3-mach1"));
 		//distNet.addDynamicEvent(create3PhaseFaultEvent("Bus2",distNet,0.2,0.05),"3phaseFault@Bus2");
         
+		net.addDynamicEvent(DStabObjectFactory.createLoadChangeEvent("Bus8",
+				net, LoadChangeEventType.FIXED_TIME, -0.2, .2),
+				"LoadReduce20%@Bus8");
 		
 		StateMonitor sm = new StateMonitor();
 		//sm.addGeneratorStdMonitor(new String[]{"Bus1-mach1","Bus2-mach1"});
@@ -125,7 +129,7 @@ public class Test8BusFeeder {
 	}
 	
 	
-	@Test
+	//@Test
 	public void testPowerFlow_multi_islands() throws InterpssException{
 		 IpssCorePlugin.init();
 		double baseVolt = 12470;

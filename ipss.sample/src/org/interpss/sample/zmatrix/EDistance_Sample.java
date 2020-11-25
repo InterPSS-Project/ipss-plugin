@@ -132,7 +132,7 @@ public class EDistance_Sample {
 				b.set(i, 1.0, 0.0);
 				b.set(j, -1.0, 0.0);
 				
-				DZcsa x = eqn.solveEqn(b);
+				DZcsa x = eqn.solveLUedEqn(b);
 				Complex z = new Complex(x.get(i)[0],x.get(i)[1]).subtract(new Complex(x.get(j)[0],x.get(j)[1]));
 				//System.out.println("Zij: " + ComplexFunc.toStr(z));
 				if (Math.abs(z.getReal() - 0.10097) > 1.0e-5 || Math.abs(z.getImaginary() - 0.33347) > 1.0e-5)

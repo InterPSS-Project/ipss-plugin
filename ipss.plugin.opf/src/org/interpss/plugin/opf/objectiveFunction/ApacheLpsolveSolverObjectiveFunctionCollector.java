@@ -11,9 +11,8 @@ import org.interpss.plugin.opf.constraint.OpfConstraint;
 import com.interpss.core.common.curve.NumericCurveModel;
 import com.interpss.core.common.curve.PieceWiseCurve;
 import com.interpss.core.net.Bus;
-import com.interpss.opf.cst.ConstraintFactory;
+import com.interpss.opf.BaseOpfNetwork;
 import com.interpss.opf.cst.OpfConstraintType;
-import com.interpss.opf.dep.BaseOpfNetwork;
 import com.interpss.opf.dep.OpfGenBus;
 
 import cern.colt.list.DoubleArrayList;

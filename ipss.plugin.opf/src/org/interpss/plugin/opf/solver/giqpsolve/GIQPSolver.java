@@ -16,8 +16,9 @@ import org.interpss.plugin.opf.solver.AbstractOpfSolver;
 import org.interpss.plugin.opf.util.OpfDataHelper;
 
 import com.interpss.core.net.Bus;
-import com.interpss.opf.dep.BaseOpfBus;
-import com.interpss.opf.dep.BaseOpfNetwork;
+import com.interpss.opf.BaseOpfBranch;
+import com.interpss.opf.BaseOpfBus;
+import com.interpss.opf.BaseOpfNetwork;
 
 import cern.colt.matrix.impl.SparseDoubleMatrix1D;
 import cern.colt.matrix.impl.SparseDoubleMatrix2D;
@@ -34,7 +35,7 @@ public class GIQPSolver extends AbstractOpfSolver {
 	private SparseDoubleMatrix1D biq = null;
 	
 	//Constructor
-	public GIQPSolver(BaseOpfNetwork opfNet, constraintHandleType constType) {
+	public GIQPSolver(BaseOpfNetwork<BaseOpfBus<?>, BaseOpfBranch> opfNet, constraintHandleType constType) {
 		super(opfNet, constType);		
 		this.numOfVar = numOfGen + numOfBus;
 		}
