@@ -9,16 +9,16 @@ import org.interpss.plugin.opf.util.OpfDataHelper;
 
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.net.Branch;
-import com.interpss.opf.cst.ConstraintFactory;
+import com.interpss.opf.BaseOpfBranch;
+import com.interpss.opf.BaseOpfNetwork;
 import com.interpss.opf.cst.OpfConstraintType;
-import com.interpss.opf.dep.BaseOpfBranch;
-import com.interpss.opf.dep.BaseOpfNetwork;
 
 import cern.colt.list.DoubleArrayList;
 import cern.colt.list.IntArrayList;
 
 public class LineMwFlowConstraintCollector extends BaseConstraintCollector {
-
+	public final static double DEFAULT_BIJ = 10000; 
+	
 	public LineMwFlowConstraintCollector(BaseOpfNetwork opfNet,
 			List<OpfConstraint> cstContainer) {
 		super(opfNet, cstContainer);

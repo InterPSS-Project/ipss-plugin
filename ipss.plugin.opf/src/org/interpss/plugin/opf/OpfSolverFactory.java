@@ -7,8 +7,8 @@ import org.interpss.plugin.opf.solver.apache.lp.ApacheLPSolver;
 import org.interpss.plugin.opf.solver.giqpsolve.GIQPSolver;
 import org.interpss.plugin.opf.solver.lpsolve.LpsolveSolver;
 
+import com.interpss.opf.BaseOpfNetwork;
 import com.interpss.opf.cst.OpfConstraintType;
-import com.interpss.opf.dep.BaseOpfNetwork;
 
 import cern.colt.list.DoubleArrayList;
 import cern.colt.list.IntArrayList;
