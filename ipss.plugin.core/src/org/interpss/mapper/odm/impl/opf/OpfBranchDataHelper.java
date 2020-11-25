@@ -33,7 +33,7 @@ import org.ieee.odm.schema.BranchXmlType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.common.datatype.UnitHelper;
-import com.interpss.opf.dep.BaseOpfBranch;
+import com.interpss.opf.BaseOpfBranch;
 
 /**
  * OPF ODM branch data helper

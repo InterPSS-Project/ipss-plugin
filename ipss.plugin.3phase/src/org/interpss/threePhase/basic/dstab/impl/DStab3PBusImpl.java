@@ -1,9 +1,13 @@
 package org.interpss.threePhase.basic.dstab.impl;
 
+import static org.interpss.threePhase.util.ThreePhaseUtilFunction.threePhaseGenAptr;
+import static org.interpss.threePhase.util.ThreePhaseUtilFunction.threePhaseInductionMotorAptr;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.math3.complex.Complex;
+import org.interpss.dstab.dynLoad.InductionMotor;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.threePhase.basic.dstab.DStab1PLoad;
@@ -11,13 +15,18 @@ import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.basic.dstab.DStab3PGen;
 import org.interpss.threePhase.basic.dstab.DStab3PLoad;
+import org.interpss.threePhase.dynamic.model.DStabGen3PhaseAdapter;
 import org.interpss.threePhase.dynamic.model.DynLoadModel1Phase;
 import org.interpss.threePhase.dynamic.model.DynLoadModel3Phase;
 import org.interpss.threePhase.util.ThreeSeqLoadProcessor;
 
 import com.interpss.core.abc.LoadConnectionType;
+import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.net.Branch;
+import com.interpss.dstab.BaseDStabNetwork;
+import com.interpss.dstab.DStabGen;
+import com.interpss.dstab.device.DynamicBusDevice;
 import com.interpss.dstab.impl.BaseDStabBusImpl;
 
 
@@ -48,6 +57,8 @@ public class DStab3PBusImpl extends BaseDStabBusImpl<DStab3PGen,DStab3PLoad> imp
 	private Complex3x1 netTotalLoad3Phase = null;
 	
 	private Complex3x1 totalLoad3Phase = null;
+	
+	private Complex3x1 staticTotalLoad3Phase = null;
 
 	@Override
 	public Complex3x1 get3PhaseVotlages() {
@@ -373,6 +384,194 @@ public class DStab3PBusImpl extends BaseDStabBusImpl<DStab3PGen,DStab3PLoad> imp
 	   
 	   
    }
+   
+   public Complex3x1 injCurDynamic3Phase() {
+	    Complex3x1 iInject = new Complex3x1();
+	    
+	    // generations
+		if(this.getContributeGenList().size()>0){
+			 for(AclfGen gen: this.getContributeGenList()){
+			      if(gen.isActive() && gen instanceof DStabGen){
+			    	  DStabGen dynGen = (DStabGen)gen;
+			    	  if( dynGen.getDynamicGenDevice()!=null){
+			    		  DStabGen3PhaseAdapter gen3P = threePhaseGenAptr.apply(dynGen);
+			    		  iInject = iInject.add(gen3P.getISource3Phase());
+			    		 
+			    		  //System.out.println("Iinj@Gen-"+dynGen.getId()+", "+iInject.toString());
+			    	  }
+			    	 
+			       }
+			  }
+	    }
+		
+		//loads
+		if(this.isLoad()){
+			
+			//// Phase A
+			if(this.getPhaseADynLoadList().size()>0){
+				Complex iPhAInj = new Complex(0,0);
+				
+				for(DynLoadModel1Phase load1p:this.getPhaseADynLoadList()){
+					if(load1p.isActive()){
+				        iPhAInj = iPhAInj.add(load1p.getNortonCurInj());
+				       // System.out.println("Iinj@Load-"+bus3p.getId()+", "+ load1p.getId()+","+load1p.getCompensateCurInj().toString());
+					}
+				}
+				
+				if(iPhAInj.abs()>0.0)
+					iInject.a_0 = iInject.a_0.add(iPhAInj);
+			}
+			
+			// Phase B
+			if(this.getPhaseBDynLoadList().size()>0){
+				Complex iPhBInj = new Complex(0,0);
+				
+				for(DynLoadModel1Phase load1p:this.getPhaseBDynLoadList()){
+					if(load1p.isActive()){
+				        iPhBInj = iPhBInj.add(load1p.getNortonCurInj());
+				       // System.out.println("Iinj@Load-"+bus3p.getId()+", "+ load1p.getId()+","+load1p.getCompensateCurInj().toString());
+					}
+				}
+				
+				if(iPhBInj.abs()>0.0)
+					iInject.b_1 = iInject.b_1.add(iPhBInj);
+			}
+			
+			// Phase C
+			if(this.getPhaseCDynLoadList().size()>0){
+				Complex iPhCInj = new Complex(0,0);
+				
+				for(DynLoadModel1Phase load1p:this.getPhaseCDynLoadList()){
+					if(load1p.isActive()){
+				        iPhCInj = iPhCInj.add(load1p.getNortonCurInj());
+				       // System.out.println("Iinj@Load-"+bus3p.getId()+", "+ load1p.getId()+","+load1p.getCompensateCurInj().toString());
+					}
+				}
+				
+				if(iPhCInj.abs()>0.0)
+					iInject.c_2 = iInject.c_2.add(iPhCInj);
+			}
+			
+			// three-phase dynamic loads
+
+			 for(DynamicBusDevice dynDevice: this.getDynamicBusDeviceList()){
+				    if(dynDevice.isActive()){
+		               	if(dynDevice instanceof InductionMotor ){
+		               		DynLoadModel3Phase dynLoad3P = threePhaseInductionMotorAptr.apply((InductionMotor) dynDevice);
+		               		iInject = iInject.add(dynLoad3P.getISource3Phase());
+		
+		               	}
+		               	else if (dynDevice instanceof DynLoadModel3Phase){
+		               		DynLoadModel3Phase dynLoad3P = (DynLoadModel3Phase) dynDevice;
+		
+		               		iInject = iInject.add(dynLoad3P.getISource3Phase());
+		
+		               	}
+				    }
+	
+	         }
+	
+			 // add static load equivalent current injection 
+			 if(!((BaseDStabNetwork)this.getNetwork()).isStaticLoadIncludedInYMatrix()) {
+				 iInject = iInject.add(calc3PhaseStaticLoadInjCur());
+			 }
+		} // end of isLoad()
+		
+	
+	 
+	 if(iInject == null){
+		  throw new Error (this.getId()+" current injection is null");
+	 }
+	 
+	 return iInject;
+  }
+
+   private Complex3x1 calc3PhaseStaticLoadInjCur() {
+		
+		Complex3x1 staticLoadCurInj= new Complex3x1();
+		
+		Complex3x1 vabc = this.get3PhaseVotlages();
+		
+		if(vabc.abs()>1.0E-4) {
+			if(vabc.a_0.abs()>1.0E-4 && vabc.b_1.abs()>1.0E-4 && vabc.c_2.abs()>1.0E-4) {
+				 staticLoadCurInj = cal3PhaseStaticLoad().divide(vabc).conjugate().multiply(-1); // multiplying -1  because current injection into the network is positive
+			}
+			else {
+				if(vabc.a_0.abs()>1.0E-4){
+					 staticLoadCurInj.a_0 = cal3PhaseStaticLoad().a_0.divide(vabc.a_0);
+				}
+				if(vabc.b_1.abs()>1.0E-4){
+					 staticLoadCurInj.b_1 = cal3PhaseStaticLoad().b_1.divide(vabc.b_1);
+				}
+				if(vabc.c_2.abs()>1.0E-4){
+					 staticLoadCurInj.c_2 = cal3PhaseStaticLoad().c_2.divide(vabc.c_2);
+				}
+				staticLoadCurInj = staticLoadCurInj.conjugate().multiply(-1);
+			}
+		}
+	
+		//System.out.println("bus volt ="+vabc.toString());
+	    //System.out.println("calc staticLoadCurInj ="+staticLoadCurInj.toString());
+		
+		return staticLoadCurInj;
+		
+	}
+   
+   public Complex3x1 cal3PhaseStaticLoad() {
+   	
+   	
+   	this.staticTotalLoad3Phase = new Complex3x1();
+   	
+   	if(this.get3PhaseNetLoadResults() != null && this.get3PhaseNetLoadResults().abs()>0) {
+   		
+   		Complex3x1 vabc = this.get3PhaseVotlages();
+       	
+       	Complex3x1 vabc_init = this.get3PhaseInitVoltage();
+       	
+
+   		double va = vabc.a_0.abs();
+   		double vb = vabc.b_1.abs();
+   		double vc = vabc.c_2.abs();
+   		 
+   		double va0 = vabc_init.a_0.abs();
+   		double vb0 = vabc_init.b_1.abs();
+   		double vc0 = vabc_init.c_2.abs();
+       	
+   		//calculate the three phase power voltage dependent coefficients
+   		//assuming three-phase are Y connected and they are independent in terms of voltage impact
+   		double cza = va*va/va0/va0;
+   		double czb = vb*vb/vb0/vb0;
+   		double czc = vc*vc/vc0/vc0;
+   		
+   		//TODO
+   		//Tentatively, we assume the static loads are modeled as constant impedances 
+   		this.staticTotalLoad3Phase = this.get3PhaseNetLoadResults().multiply(new Complex3x1 (new Complex(cza),new Complex(czb),new Complex(czc)));
+   	}
+   	
+   	// considering load shedding or load changes
+   	this.staticTotalLoad3Phase = this.staticTotalLoad3Phase.multiply(1+this.getAccumulatedLoadChangeFactor());
+   	
+   	//System.out.println("calc staticLoad ="+	this.staticTotalLoad3Phase.toString());
+   	
+   	return this.staticTotalLoad3Phase;
+   }
+   
+	@Override
+	public Complex3x1 calcNetPowerIntoNetwork() {
+		Complex3x1 netPower = new Complex3x1();
+		
+		for(Branch bra:this.getFromBranchList()) {
+			netPower = netPower.add(((DStab3PBranch)bra).calc3PhaseCurrentFrom2To());
+		}
+		
+	    for(Branch bra:this.getToBranchList()) {
+	    	netPower = netPower.add(((DStab3PBranch)bra).calc3PhaseCurrentTo2From());
+		}
+	    
+	    netPower = this.get3PhaseVotlages().multiply(netPower.conjugate());
+		
+		return netPower;
+	}
 
 
 

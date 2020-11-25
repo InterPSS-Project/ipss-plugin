@@ -3,13 +3,12 @@ package org.interpss.plugin.opf.util;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
-import com.interpss.opf.dep.BaseOpfBranch;
-import com.interpss.opf.dep.BaseOpfBus;
-import com.interpss.opf.dep.BaseOpfNetwork;
-import com.interpss.opf.dep.OpfGenBus;
+import com.interpss.opf.BaseOpfBranch;
+import com.interpss.opf.BaseOpfBus;
+import com.interpss.opf.BaseOpfNetwork;
 
 public class OPFResultOutput {
-	public static String opfResultSummary(BaseOpfNetwork opfnet) {
+	public static String opfResultSummary(BaseOpfNetwork<BaseOpfBus<?>, BaseOpfBranch> opfnet) {
 		OutputHelper helper = new OutputHelper(opfnet);
 
 		double baseKva = opfnet.getBaseKva() / 1000;

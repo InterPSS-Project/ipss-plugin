@@ -9,8 +9,8 @@ import org.interpss.plugin.opf.constraint.OpfConstraint;
 import org.interpss.plugin.opf.util.OpfDataHelper;
 
 import com.interpss.core.net.Bus;
+import com.interpss.opf.BaseOpfNetwork;
 import com.interpss.opf.cst.OpfConstraintType;
-import com.interpss.opf.dep.BaseOpfNetwork;
 
 import cern.colt.list.DoubleArrayList;
 import cern.colt.list.IntArrayList;

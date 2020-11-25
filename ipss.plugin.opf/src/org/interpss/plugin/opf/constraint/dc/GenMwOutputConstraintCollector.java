@@ -8,10 +8,9 @@ import org.interpss.plugin.opf.constraint.OpfConstraint;
 
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.net.Bus;
-import com.interpss.opf.cst.ConstraintFactory;
+import com.interpss.opf.BaseOpfNetwork;
 import com.interpss.opf.cst.OpfBusLimits;
 import com.interpss.opf.cst.OpfConstraintType;
-import com.interpss.opf.dep.BaseOpfNetwork;
 import com.interpss.opf.dep.OpfGenBus;
 
 import cern.colt.list.DoubleArrayList;

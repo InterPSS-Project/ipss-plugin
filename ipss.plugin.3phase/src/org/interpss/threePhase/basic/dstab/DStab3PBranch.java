@@ -101,5 +101,9 @@ public interface DStab3PBranch extends IBranch3Phase, DStabBranch{
 	public void setXfrRatedKVA(double kva1);
 	
 	public double getXfrRatedKVA();
+	
+	public Complex3x1 calc3PhaseCurrentFrom2To();
+	
+	public Complex3x1 calc3PhaseCurrentTo2From();
 
 }

@@ -3,28 +3,28 @@ package org.interpss.plugin.opf.constraint.dc;
 import java.util.List;
 
 import org.interpss.plugin.opf.OpfSolverFactory;
-import org.interpss.plugin.opf.constraint.BaseConstraintCollector;
 import org.interpss.plugin.opf.constraint.OpfConstraint;
 import org.interpss.plugin.opf.util.OpfDataHelper;
 
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.net.Bus;
-import com.interpss.opf.cst.ConstraintFactory;
+import com.interpss.opf.BaseOpfBranch;
+import com.interpss.opf.BaseOpfBus;
+import com.interpss.opf.BaseOpfNetwork;
 import com.interpss.opf.cst.OpfConstraintType;
-import com.interpss.opf.dep.BaseOpfNetwork;
+import com.interpss.opf.cst.impl.BaseOpfConstraintContainerImpl;
 
 import cern.colt.list.DoubleArrayList;
 import cern.colt.list.IntArrayList;
 import cern.colt.matrix.impl.SparseDoubleMatrix1D;
 import cern.colt.matrix.impl.SparseDoubleMatrix2D;
 
-public class ActivePowerEqnConstraintCollector extends BaseConstraintCollector{	
+public class ActivePowerEqnConstraintCollector extends BaseOpfConstraintContainerImpl {	
 	
 	SparseDoubleMatrix2D Y = null;		
 	
-	public ActivePowerEqnConstraintCollector(BaseOpfNetwork opfNet,
-			List<OpfConstraint> cstContainer) {
-		super(opfNet, cstContainer);		
+	public ActivePowerEqnConstraintCollector(BaseOpfNetwork<?, ?> opfNet) {
+		this.setNetwork(opfNet);	
 		Y =  OpfDataHelper.getBusAdmittance(opfNet);
 	}			
 	

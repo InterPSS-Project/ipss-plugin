@@ -5,7 +5,7 @@ import org.interpss.plugin.opf.common.OPFLogger;
 import com.interpss.core.common.curve.NumericCurveModel;
 import com.interpss.core.common.curve.QuadraticCurve;
 import com.interpss.core.net.Bus;
-import com.interpss.opf.dep.BaseOpfNetwork;
+import com.interpss.opf.BaseOpfNetwork;
 import com.interpss.opf.dep.OpfGenBus;
 
 import cern.colt.matrix.impl.SparseDoubleMatrix1D;

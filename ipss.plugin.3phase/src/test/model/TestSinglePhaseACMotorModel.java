@@ -172,13 +172,11 @@ public class TestSinglePhaseACMotorModel {
   		bus1.getPhaseADynLoadList().add(ac1);
   		
   		
-  		
   		SinglePhaseACMotor ac2 = new SinglePhaseACMotor(bus1,"2");
   		ac2.setLoadPercent(30);
   		ac2.setPhase(PhaseCode.B);
   		ac2.setMvaBase(30);
   		bus1.getPhaseBDynLoadList().add(ac2);
-  		
 
   		
   		SinglePhaseACMotor ac3 = new SinglePhaseACMotor(bus1,"3");
