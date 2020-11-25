@@ -59,6 +59,10 @@ public class TestInductionMotorModel extends TestSetupBase {
 		indMotor.setMvaBase(50);
 		indMotor.setH(1.0);
 		
+		//for testing on system MVA base
+		boolean isSysMVABase = true;
+		indMotor.setOutputPowerMVABase(isSysMVABase);
+		
 		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		assertTrue(aclfAlgo.loadflow());
@@ -117,13 +121,19 @@ public class TestInductionMotorModel extends TestSetupBase {
 		//System.out.println("\n motor slip:\n"+sm.toCSVString(sm.getMotorSlipTable()));
 		//System.out.println("\n motor Te:\n"+sm.toCSVString(sm.getMotorTeTable()));
 		//System.out.println("\n motor Tm:\n"+sm.toCSVString(sm.getMotorTmTable()));
-		//System.out.println("\n motor Power:\n"+sm.toCSVString(sm.getMotorPTable()));
+		System.out.println("\n motor Power:\n"+sm.toCSVString(sm.getMotorPTable()));
 		
 		MonitorRecord pRec0 = sm.getMotorPTable().get("IndMotor_1@Bus1").get(0);
 		
 		MonitorRecord pRec10 = sm.getMotorPTable().get("IndMotor_1@Bus1").get(10);
 		
 		assertTrue(Math.abs(pRec0.value-pRec10.value)<1.0E-5);
+		
+		if (isSysMVABase)
+			assertTrue(pRec0.value==0.4);
+		else {
+			assertTrue(pRec0.value==0.8);
+		}
 	}
 	
 	@Test

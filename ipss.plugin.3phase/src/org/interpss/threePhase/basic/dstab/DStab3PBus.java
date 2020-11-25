@@ -40,7 +40,9 @@ public interface DStab3PBus extends IBus3Phase, BaseDStabBus<DStab3PGen,DStab3PL
     
     public Complex3x1 calcLoad3PhEquivCurInj();
     
-    
+	public Complex3x1 cal3PhaseStaticLoad();
+
+	public Complex3x1 injCurDynamic3Phase();
     
 	/**
 	 * Get the 3-phase net loads (in power) by subtracting the dynamic phase-oriented (including single-phase and three-phase) loads 
@@ -54,4 +56,6 @@ public interface DStab3PBus extends IBus3Phase, BaseDStabBus<DStab3PGen,DStab3PL
 	public void setThreePhaseInitVoltage(Complex3x1 initVoltAbc);
 	
 	public Complex3x1 get3PhaseInitVoltage();
+	
+	public Complex3x1 calcNetPowerIntoNetwork();
 }

@@ -2,7 +2,7 @@ package org.interpss.plugin.opf.objectiveFunction;
 
 import org.interpss.plugin.opf.util.OpfDataHelper;
 
-import com.interpss.opf.dep.BaseOpfNetwork;
+import com.interpss.opf.BaseOpfNetwork;
 
 public class BaseObjectiveFunctionCollector {
 	

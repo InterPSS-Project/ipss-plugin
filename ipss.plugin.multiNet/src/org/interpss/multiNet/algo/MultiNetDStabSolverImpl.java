@@ -122,6 +122,11 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 				    if(bus.isActive())
 				         output(bus, simuTime, outCnt >= outPerSteps);
 			   }
+			   
+			   for (DStabBranch bra : dsNet.getBranchList()) {
+					 if(bra.isActive())
+					      output(bra, simuTime, outCnt >= outPerSteps);
+				}
 			}
 
 				// increase simulation time
