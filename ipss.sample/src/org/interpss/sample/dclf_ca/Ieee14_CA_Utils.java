@@ -22,7 +22,7 @@
   *
   */
 
-package org.interpss.sample.ca;
+package org.interpss.sample.dclf_ca;
 
 import java.util.function.BiConsumer;
 
