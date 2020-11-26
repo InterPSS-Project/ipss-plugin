@@ -5,12 +5,13 @@ import java.util.ArrayList;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
-import com.interpss.opf.BaseOpfBranch;
-import com.interpss.opf.BaseOpfBus;
-import com.interpss.opf.BaseOpfNetwork;
+import com.interpss.opf.OpfBranch;
+import com.interpss.opf.OpfBus;
+import com.interpss.opf.OpfGen;
+import com.interpss.opf.OpfNetwork;
 
 public class OutputHelper {
-	private BaseOpfNetwork<BaseOpfBus<?>, BaseOpfBranch> net = null;
+	private OpfNetwork net = null;
 	private double totalGenCap = 0.0;
 	private double totalOnlineGen = 0.0;
 	private double totalActualGen = 0;
@@ -33,7 +34,7 @@ public class OutputHelper {
 	
 	private ArrayList<AclfBranch> bindingBranchList = new ArrayList<AclfBranch>();
 	
-	public OutputHelper(BaseOpfNetwork<BaseOpfBus<?>, BaseOpfBranch> net){
+	public OutputHelper(OpfNetwork net){
 		this.net = net;
 		this.walkThroughNetwork();
 	}
@@ -41,7 +42,7 @@ public class OutputHelper {
 	public void walkThroughNetwork(){
 		numOfArea = net.getAreaList().size();
 		for (Bus b: net.getBusList()){			
-			BaseOpfBus bus = (BaseOpfBus)b;
+			OpfBus bus = (OpfBus)b;
 			double lmp = bus.getLMP();
 			if(lmp > maxLMP){
 				maxLMP = lmp;
@@ -61,12 +62,12 @@ public class OutputHelper {
 				minAngleBus = bus.getId();
 			}
 			
-			if(bus.isGen()){
+			if(bus.isOpfGen()){
 				numOfGen++;
-				OpfGenBus opfGenbus = (OpfGenBus) b;
-				double pmax = opfGenbus.getConstraints().getPLimit().getMax();
+				OpfGen opfGen = bus.getOpfGen();
+				double pmax = opfGen.getOpfLimits().getPLimit().getMax();
 				totalGenCap = totalGenCap + pmax;
-				double p = opfGenbus.getGenP();
+				double p = bus.getGenP();
 				totalActualGen = totalActualGen + p;
 			}
 			
@@ -84,9 +85,10 @@ public class OutputHelper {
 			if (branch.isPSXfr()){
 				numOfPS ++;
 			}
-			BaseOpfBranch opfBra = (BaseOpfBranch) branch;
+			OpfBranch opfBra = (OpfBranch) branch;
 			double rating = opfBra.getRatingMw1();
-			double flow = opfBra.DcPowerFrom2To();
+			// TODO: direction ?
+			double flow = opfBra.getDclfFlow();
 			if( Math.abs(Math.abs(flow) - Math.abs(rating)) < 0.001 ){
 				bindingBranchList.add(branch);
 			}

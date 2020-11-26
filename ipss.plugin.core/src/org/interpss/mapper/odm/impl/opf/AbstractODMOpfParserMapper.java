@@ -76,12 +76,13 @@ import com.interpss.core.common.curve.CommonCurveFactory;
 import com.interpss.core.common.curve.NumericCurveModel;
 import com.interpss.core.common.curve.PieceWiseCurve;
 import com.interpss.core.common.curve.QuadraticCurve;
-import com.interpss.opf.BaseOpfBranch;
-import com.interpss.opf.BaseOpfBus;
-import com.interpss.opf.BaseOpfNetwork;
 import com.interpss.opf.IncrementalCost;
+import com.interpss.opf.OpfBranch;
+import com.interpss.opf.OpfBus;
 import com.interpss.opf.OpfFactory;
+import com.interpss.opf.OpfGen;
 import com.interpss.opf.OpfGenOperatingMode;
+import com.interpss.opf.OpfNetwork;
 import com.interpss.opf.cst.ConstraintFactory;
 import com.interpss.opf.cst.OpfBusLimits;
 import com.interpss.opf.dclfOpf.DclfOpfBranch;
@@ -126,7 +127,7 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 			//XformerZTableXmlType xfrZTable = xmlNet.getXfrZTable();
 			
 			try {
-				BaseOpfNetwork opfNet = null;
+				OpfNetwork opfNet = null;
 				if (xmlNet.getOpfNetType() == OpfNetworkEnumType.SIMPLE_DCLF) 
 					opfNet = mapDclfOpfNetData((OpfDclfNetworkXmlType)xmlNet);
 				else 
@@ -145,7 +146,7 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 						}
 						else {
 							OpfGenBusXmlType opfGen = (OpfGenBusXmlType) bus.getValue();
-							mapOpfGenBusData(opfGen, (BaseOpfNetwork)opfNet);
+							mapOpfGenBusData(opfGen, (OpfNetwork)opfNet);
 						}
 					} 
 					else {
@@ -155,7 +156,7 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 							aclfNetMapper.mapAclfBusData(busRec, opfDclfBus, opfNet, busHelper);
 						}
 						else {
-							BaseOpfBus opfBus = OpfObjectFactory.createOpfBus(busRec.getId(), (BaseOpfNetwork)opfNet);
+							OpfBus opfBus = OpfObjectFactory.createOpfBus(busRec.getId(), (OpfNetwork)opfNet);
 							aclfNetMapper.mapAclfBusData(busRec, opfBus, opfNet, busHelper);
 						}
 					}
@@ -167,7 +168,7 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 						aclfNetMapper.mapAclfBranchData(b.getValue(), opfDclfBranch, opfNet);
 					}
 					else {
-						BaseOpfBranch opfBranch = OpfObjectFactory.createOpfBranch();
+						OpfBranch opfBranch = OpfObjectFactory.createOpfBranch();
 						aclfNetMapper.mapAclfBranchData(b.getValue(), opfBranch, opfNet);
 						// map MW rating
 						BranchXmlType branchXml = (BranchXmlType)b.getValue();
@@ -205,8 +206,8 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 	 *    OPF model mapper
 	 *    ================
 	 */
-	private BaseOpfNetwork mapOpfNetData(OpfNetworkXmlType xmlNet) throws InterpssException {
-		BaseOpfNetwork opfNet = OpfObjectFactory.createOpfNetwork();
+	private OpfNetwork mapOpfNetData(OpfNetworkXmlType xmlNet) throws InterpssException {
+		OpfNetwork opfNet = OpfObjectFactory.createOpfNetwork();
 		new ODMAclfNetMapper().mapAclfNetworkData(opfNet, xmlNet);
 		
 		// mapping details
@@ -223,12 +224,12 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 	 * @return
 	 * @throws InterpssException
 	 */
-	public OpfGenBus mapOpfGenBusData(OpfGenBusXmlType busRec, BaseOpfNetwork net) throws InterpssException {
-		OpfGenBus opfGenBus = OpfObjectFactory.createOpfGenBus(busRec.getId(), net);
+	public OpfGen mapOpfGenBusData(OpfGenBusXmlType busRec, OpfNetwork net) throws InterpssException {
+		OpfGen opfGenBus = OpfObjectFactory.createOpfGen(busRec.getId(), net);
 		mapBaseBusData(busRec, opfGenBus, net);
 
 		AclfBusDataHelper helper = new AclfBusDataHelper(net);
-		helper.setBus(opfGenBus);
+		helper.setBus(opfGen);
 		helper.setAclfBusData(busRec);
 		
 

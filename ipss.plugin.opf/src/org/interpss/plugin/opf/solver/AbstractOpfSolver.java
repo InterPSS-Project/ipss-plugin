@@ -12,15 +12,15 @@ import org.interpss.plugin.opf.util.OpfDataHelper;
 
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.net.Bus;
-import com.interpss.opf.BaseOpfBranch;
-import com.interpss.opf.BaseOpfBus;
-import com.interpss.opf.BaseOpfNetwork;
+import com.interpss.opf.OpfBus;
+import com.interpss.opf.OpfGen;
+import com.interpss.opf.OpfNetwork;
 
 public abstract class AbstractOpfSolver implements IOpfSolver {
 
 	public final static LimitType BusAngleLimit = new LimitType(300, -300); 
 	
-	protected BaseOpfNetwork<BaseOpfBus<?>, BaseOpfBranch> opfNet = null;
+	protected OpfNetwork opfNet = null;
 	protected double[] optimX = null;
 	protected OpfDataHelper helper = null;
 	protected IOpfSolver.constraintHandleType constType = null;
@@ -33,7 +33,7 @@ public abstract class AbstractOpfSolver implements IOpfSolver {
 	protected int numOfGen = 0;
 	
 
-	public AbstractOpfSolver(BaseOpfNetwork<BaseOpfBus<?>, BaseOpfBranch> opfNet,
+	public AbstractOpfSolver(OpfNetwork opfNet,
 			IOpfSolver.constraintHandleType constType) {
 		this.opfNet = opfNet;
 		this.helper = new OpfDataHelper();
@@ -81,8 +81,9 @@ public abstract class AbstractOpfSolver implements IOpfSolver {
 		// set gen P to opfNet bus object
 		int genIndex = 0;
 		for (Bus b : opfNet.getBusList()) {
-			if (opfNet.isOpfGenBus(b)) {
-				((OpfGenBus) b).setGenP(optimX[genIndex]);
+			OpfBus bus = (OpfBus)b;
+			if (bus.isOpfGen()) {
+				bus.setGenP(optimX[genIndex]);
 				genIndex++;
 			}
 		}

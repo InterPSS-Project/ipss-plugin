@@ -33,7 +33,7 @@ import org.ieee.odm.schema.BranchXmlType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.common.datatype.UnitHelper;
-import com.interpss.opf.BaseOpfBranch;
+import com.interpss.opf.OpfBranch;
 
 /**
  * OPF ODM branch data helper
@@ -43,7 +43,7 @@ import com.interpss.opf.BaseOpfBranch;
  */
 public class OpfBranchDataHelper {
 	
-	private BaseOpfBranch opfBranch = null;
+	private OpfBranch opfBranch = null;
 	private BaseBranchXmlType braXml = null;
 	
 	/**
@@ -52,7 +52,7 @@ public class OpfBranchDataHelper {
 	 * @param opfBranch
 	 * @param opfBranch
 	 */
-	public OpfBranchDataHelper(BaseOpfBranch opfBranch, BaseBranchXmlType braXml) {
+	public OpfBranchDataHelper(OpfBranch opfBranch, BaseBranchXmlType braXml) {
 		this.opfBranch = opfBranch;
 		this.braXml = braXml;
 	}
