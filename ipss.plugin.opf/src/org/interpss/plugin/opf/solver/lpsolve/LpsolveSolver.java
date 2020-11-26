@@ -18,8 +18,8 @@ import org.interpss.plugin.opf.solver.AbstractOpfSolver;
 import org.interpss.plugin.opf.util.OpfDataHelper;
 
 import com.interpss.core.net.Bus;
-import com.interpss.opf.dep.BaseOpfBus;
-import com.interpss.opf.dep.BaseOpfNetwork;
+import com.interpss.opf.OpfBus;
+import com.interpss.opf.OpfNetwork;
 
 import lpsolve.LpSolve;
 import lpsolve.LpSolveException;
@@ -28,7 +28,7 @@ public class LpsolveSolver extends AbstractOpfSolver {
 
 	private LpSolve lpsolver;
 
-	public LpsolveSolver(BaseOpfNetwork opfNet, constraintHandleType constType) {
+	public LpsolveSolver(OpfNetwork opfNet, constraintHandleType constType) {
 		super(opfNet, constType);
 		this.numOfVar = numOfGen + numOfBus;
 		try {
@@ -140,7 +140,7 @@ public class LpsolveSolver extends AbstractOpfSolver {
 		double baseMVA = opfNet.getBaseKva() / 1000.0;
 		double lmp = 0;
 		for (Bus b : opfNet.getBusList()) {
-			BaseOpfBus bus1 = (BaseOpfBus) b;
+			OpfBus bus1 = (OpfBus) b;
 			lmp = Math.abs(shadowPrice[cnt++]);
 			bus1.setLMP(lmp/baseMVA );
 		}
@@ -218,8 +218,9 @@ public class LpsolveSolver extends AbstractOpfSolver {
 		int genIndex = 1;
 		try {
 			for (Bus b : opfNet.getBusList()) {
+				OpfBus bus = (OpfBus)b;
 				lpsolver.setColName( busIdx + this.numOfGen, "x" + (b.getSortNumber() + 1));
-				if(opfNet.isOpfGenBus(b)){
+				if(bus.isOpfGen()){
 					lpsolver.setColName(genIndex, "Pg" + (b.getSortNumber()+1));
 					lpsolver.setColName(genIndex + this.numOfVar, "y" + (b.getSortNumber()+1));
 					genIndex++;
