@@ -28,14 +28,14 @@ import org.interpss.plugin.opf.constraint.dc.LineMwFlowConstraintCollector;
 import org.interpss.plugin.opf.objectiveFunction.ApacheLpsolveSolverObjectiveFunctionCollector;
 import org.interpss.plugin.opf.solver.AbstractOpfSolver;
 
-import com.interpss.opf.BaseOpfNetwork;
+import com.interpss.opf.OpfNetwork;
 
 public class ApacheLPSolver extends AbstractOpfSolver{
 
 	private Collection<LinearConstraint> constraintCollection = null;
 	private LinearObjectiveFunction objFunc = null;
 	private SimplexSolver solver = null;
-	public ApacheLPSolver(BaseOpfNetwork opfNet, constraintHandleType constType) {
+	public ApacheLPSolver(OpfNetwork opfNet, constraintHandleType constType) {
 		super(opfNet, constType);
 		this.constraintCollection = new ArrayList<LinearConstraint>();
 		this.numOfVar = numOfGen + numOfBus;
