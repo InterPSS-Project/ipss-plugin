@@ -7,7 +7,7 @@ import org.interpss.plugin.opf.solver.apache.lp.ApacheLPSolver;
 import org.interpss.plugin.opf.solver.giqpsolve.GIQPSolver;
 import org.interpss.plugin.opf.solver.lpsolve.LpsolveSolver;
 
-import com.interpss.opf.BaseOpfNetwork;
+import com.interpss.opf.OpfNetwork;
 import com.interpss.opf.cst.OpfConstraintType;
 
 import cern.colt.list.DoubleArrayList;
@@ -19,16 +19,16 @@ public class OpfSolverFactory {
 		opfSolverFactory = new OpfSolverFactory();
 	}
 	
-	public static LpsolveSolver createLpsolveLPSolver(BaseOpfNetwork opfnet,IOpfSolver.constraintHandleType type){
+	public static LpsolveSolver createLpsolveLPSolver(OpfNetwork opfnet,IOpfSolver.constraintHandleType type){
 		LpsolveSolver solver = new LpsolveSolver(opfnet, type);
 		return solver;
 	}
-	public static GIQPSolver createGIQPSolver(BaseOpfNetwork opfnet,IOpfSolver.constraintHandleType type){
+	public static GIQPSolver createGIQPSolver(OpfNetwork opfnet,IOpfSolver.constraintHandleType type){
 		GIQPSolver solver = new GIQPSolver(opfnet, type);
 		return solver;
 	}
 	
-	public static ApacheLPSolver createApacheLPSolver(BaseOpfNetwork opfnet,IOpfSolver.constraintHandleType type){
+	public static ApacheLPSolver createApacheLPSolver(OpfNetwork opfnet,IOpfSolver.constraintHandleType type){
 		ApacheLPSolver solver = new ApacheLPSolver(opfnet, type);
 		return solver;
 	}
@@ -46,7 +46,7 @@ public class OpfSolverFactory {
 		return cst;
 	}
 	
-	public static IOpfSolver createOPFSolver(OPFSolverEnum solver,BaseOpfNetwork opfnet,
+	public static IOpfSolver createOPFSolver(OPFSolverEnum solver,OpfNetwork opfnet,
 			IOpfSolver.constraintHandleType type) throws OPFException {
 		if ( solver == OPFSolverEnum.LpsolveLPSolver ) 
 			return new LpsolveSolver(opfnet, type);

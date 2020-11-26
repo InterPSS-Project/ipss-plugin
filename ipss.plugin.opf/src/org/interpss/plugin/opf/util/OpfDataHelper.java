@@ -13,9 +13,9 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
-import com.interpss.opf.BaseOpfBranch;
-import com.interpss.opf.BaseOpfBus;
-import com.interpss.opf.BaseOpfNetwork;
+import com.interpss.opf.OpfBranch;
+import com.interpss.opf.OpfBus;
+import com.interpss.opf.OpfNetwork;
 
 import cern.colt.matrix.impl.SparseDoubleMatrix1D;
 import cern.colt.matrix.impl.SparseDoubleMatrix2D;
@@ -24,7 +24,7 @@ import lpsolve.LpSolveException;
 
 public class OpfDataHelper {
 
-	public static int getNoOfGen(BaseOpfNetwork<BaseOpfBus<?>, BaseOpfBranch> net) {
+	public static int getNoOfGen(OpfNetwork net) {
 		int numOfGen = 0;
 		for (Bus b : net.getBusList()) {
 			AclfBus acbus = (AclfBus) b;
@@ -44,7 +44,7 @@ public class OpfDataHelper {
 	    return (double) tmp / factor;
 	}	
 	
-	public static SparseDoubleMatrix2D getBusAdmittance(BaseOpfNetwork<BaseOpfBus<?>, BaseOpfBranch> opfNet) {
+	public static SparseDoubleMatrix2D getBusAdmittance(OpfNetwork opfNet) {
 		int numOfBus = opfNet.getNoActiveBus();
 		SparseDoubleMatrix2D busAdm = new SparseDoubleMatrix2D(numOfBus,
 				numOfBus);
@@ -74,7 +74,7 @@ public class OpfDataHelper {
 	}
 	
 
-	private static int[] getNonSwingBusRows(BaseOpfNetwork<BaseOpfBus<?>, BaseOpfBranch> opfNet) {
+	private static int[] getNonSwingBusRows(OpfNetwork opfNet) {
 		int[] NonSwingBusRows = new int[opfNet.getNoActiveBus() - 1];
 		int idx = 0;
 		for (int busIndex = 0; busIndex < opfNet.getNoActiveBus(); busIndex++) {
@@ -117,10 +117,10 @@ public class OpfDataHelper {
 	}
 	
 
-	public static int getSwingBusIndex(AclfNetwork aclfNet) {
+	public static int getSwingBusIndex(OpfNetwork aclfNet) {
 		// assume there is one swing bus in the system
 		for (Bus b : aclfNet.getBusList()) {
-			if (((AclfBus) b).isSwing()) {
+			if (((OpfBus) b).isSwing()) {
 				return b.getSortNumber();
 			}
 		}
@@ -129,7 +129,7 @@ public class OpfDataHelper {
 	}
 
 	// angel difference weight matrix
-	public static Array2DRowRealMatrix formAngleDiffWeightMatrix(BaseOpfNetwork<BaseOpfBus<?>, BaseOpfBranch> opfNet) {
+	public static Array2DRowRealMatrix formAngleDiffWeightMatrix(OpfNetwork opfNet) {
 		int numOfBus = opfNet.getNoActiveBus();
 		Array2DRowRealMatrix angleDiffWeight = new Array2DRowRealMatrix(
 				numOfBus, numOfBus);
@@ -153,7 +153,7 @@ public class OpfDataHelper {
 				.getAnglePenaltyFactor());
 	}
 
-	public static Array2DRowRealMatrix formReducedADWMatrix(BaseOpfNetwork opfNet) {
+	public static Array2DRowRealMatrix formReducedADWMatrix(OpfNetwork opfNet) {
 		Array2DRowRealMatrix angleDiffWeight = formAngleDiffWeightMatrix(opfNet);
 		try {
 			int[] selectedRows = getNonSwingBusRows(opfNet);

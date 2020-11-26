@@ -11,18 +11,18 @@ import org.interpss.plugin.opf.constraint.OpfConstraint;
 import com.interpss.core.common.curve.NumericCurveModel;
 import com.interpss.core.common.curve.PieceWiseCurve;
 import com.interpss.core.net.Bus;
-import com.interpss.opf.BaseOpfNetwork;
+import com.interpss.opf.OpfBus;
+import com.interpss.opf.OpfGen;
+import com.interpss.opf.OpfNetwork;
 import com.interpss.opf.cst.OpfConstraintType;
-import com.interpss.opf.dep.OpfGenBus;
 
 import cern.colt.list.DoubleArrayList;
 import cern.colt.list.IntArrayList;
 
 public class ApacheLpsolveSolverObjectiveFunctionCollector extends BaseObjectiveFunctionCollector{
 	
-	public ApacheLpsolveSolverObjectiveFunctionCollector(BaseOpfNetwork opfNet){
+	public ApacheLpsolveSolverObjectiveFunctionCollector(OpfNetwork opfNet){
 		super(opfNet);
-		this.opfNet = (BaseOpfNetwork)opfNet;	
 	}
 	
 	
@@ -31,16 +31,17 @@ public class ApacheLpsolveSolverObjectiveFunctionCollector extends BaseObjective
 		int totalVar = numOfVar;
 		int totalVarIdx = numOfVar;		
 		try {
-			for (Bus b: opfNet.getBusList()){					
-				if(opfNet.isOpfGenBus(b)){
-					NumericCurveModel incType = ((OpfGenBus)b).getIncCost().getCostModel();
+			for (Bus b: opfNet.getBusList()){	
+				OpfBus bus = (OpfBus)b;
+				if(bus.isOpfGen()){
+					NumericCurveModel incType = ((OpfGen)b).getIncCost().getCostModel();
 					if(!incType.equals(NumericCurveModel.PIECE_WISE)||
-							((OpfGenBus)b).getIncCost().getPieceWiseCurve()==null){
+							((OpfGen)b).getIncCost().getPieceWiseCurve()==null){
 						OPFLogger.getLogger().severe("LP solver requires piecewise linear gen cost funtion for generator at bus: "
 								+b.getNumber());						
 					}else{
 						//lpsolver.setColName(genIndex, "Pg" + (b.getSortNumber()+1));
-						PieceWiseCurve pw = ((OpfGenBus)b).getIncCost().getPieceWiseCurve();
+						PieceWiseCurve pw = ((OpfGen)b).getIncCost().getPieceWiseCurve();
 						int np = pw.getPoints().size();
 						double[] mw = new double[np];
 						double[] price = new double[np];
@@ -92,7 +93,7 @@ public class ApacheLpsolveSolverObjectiveFunctionCollector extends BaseObjective
 	private void createNewConstraint(List<OpfConstraint> cstContainer, int genIndex,
 			int totalVarIdx, double slope, double xj, double cj, String des) {
 		
-		OpfConstraint cst = new OpfConstraint();		
+		//OpfConstraint cst = new OpfConstraint();		
 		int id = cstContainer.size();		
 		double rh = slope * xj - cj;		
 		IntArrayList colNo = new IntArrayList();
@@ -101,7 +102,7 @@ public class ApacheLpsolveSolverObjectiveFunctionCollector extends BaseObjective
 		val.add(slope);
 		colNo.add(totalVarIdx);
 		val.add(-1);
-		cst = OpfSolverFactory.createOpfConstraint(id, des, rh, 0, OpfConstraintType.LESS_THAN, colNo, val);
+		OpfConstraint cst = OpfSolverFactory.createOpfConstraint(id, des, rh, 0, OpfConstraintType.LESS_THAN, colNo, val);
 		cstContainer.add(cst);
 	}
 	
@@ -113,9 +114,4 @@ public class ApacheLpsolveSolverObjectiveFunctionCollector extends BaseObjective
 		}		
 		return vec;
 	}
-	
-	
-	
-	
-
 }
