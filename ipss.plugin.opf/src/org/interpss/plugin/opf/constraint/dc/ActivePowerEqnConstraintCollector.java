@@ -3,28 +3,27 @@ package org.interpss.plugin.opf.constraint.dc;
 import java.util.List;
 
 import org.interpss.plugin.opf.OpfSolverFactory;
+import org.interpss.plugin.opf.constraint.BaseConstraintCollector;
 import org.interpss.plugin.opf.constraint.OpfConstraint;
 import org.interpss.plugin.opf.util.OpfDataHelper;
 
-import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.net.Bus;
-import com.interpss.opf.BaseOpfBranch;
-import com.interpss.opf.BaseOpfBus;
-import com.interpss.opf.BaseOpfNetwork;
+import com.interpss.opf.OpfBus;
+import com.interpss.opf.OpfNetwork;
 import com.interpss.opf.cst.OpfConstraintType;
-import com.interpss.opf.cst.impl.BaseOpfConstraintContainerImpl;
 
 import cern.colt.list.DoubleArrayList;
 import cern.colt.list.IntArrayList;
 import cern.colt.matrix.impl.SparseDoubleMatrix1D;
 import cern.colt.matrix.impl.SparseDoubleMatrix2D;
 
-public class ActivePowerEqnConstraintCollector extends BaseOpfConstraintContainerImpl {	
+public class ActivePowerEqnConstraintCollector extends BaseConstraintCollector{	
 	
 	SparseDoubleMatrix2D Y = null;		
 	
-	public ActivePowerEqnConstraintCollector(BaseOpfNetwork<?, ?> opfNet) {
-		this.setNetwork(opfNet);	
+	public ActivePowerEqnConstraintCollector(OpfNetwork opfNet,
+			List<OpfConstraint> cstContainer) {
+		super(opfNet, cstContainer);		
 		Y =  OpfDataHelper.getBusAdmittance(opfNet);
 	}			
 	
@@ -34,7 +33,6 @@ public class ActivePowerEqnConstraintCollector extends BaseOpfConstraintContaine
 		int genIdx = 0;
 		for (Bus b : opfNet.getBusList()) {	
 			
-			OpfConstraint cst = new OpfConstraint();				
 			SparseDoubleMatrix1D yrow =  (SparseDoubleMatrix1D) Y.viewRow(bracnt++);
 			IntArrayList col_0 = new IntArrayList();
 			DoubleArrayList val_0 = new DoubleArrayList();
@@ -45,8 +43,8 @@ public class ActivePowerEqnConstraintCollector extends BaseOpfConstraintContaine
 			DoubleArrayList val = new DoubleArrayList();
 			
 			double pl = 0;	
-			AclfBus bus = (AclfBus)b;
-			if (opfNet.isOpfGenBus(b)) {
+			OpfBus bus = (OpfBus)b;
+			if (bus.isOpfGen()) {
 				//colNo.add(b.getSortNumber());
 				colNo.add(genIdx++);
 				val.add(1);				
@@ -66,10 +64,8 @@ public class ActivePowerEqnConstraintCollector extends BaseOpfConstraintContaine
 			double UpperLimit = pl;
 			double LowerLimit = pl;			
 			
-			cst = OpfSolverFactory.createOpfConstraint(id, des, UpperLimit, LowerLimit, OpfConstraintType.EQUALITY, colNo, val);
+			OpfConstraint cst = OpfSolverFactory.createOpfConstraint(id, des, UpperLimit, LowerLimit, OpfConstraintType.EQUALITY, colNo, val);
 			cstContainer.add(cst);			
 		}			
 	}
-	
-
 }

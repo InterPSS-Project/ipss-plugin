@@ -6,17 +6,17 @@ import org.interpss.plugin.opf.common.OPFLogger;
 import com.interpss.core.common.curve.NumericCurveModel;
 import com.interpss.core.common.curve.PieceWiseCurve;
 import com.interpss.core.net.Bus;
-import com.interpss.opf.BaseOpfNetwork;
-import com.interpss.opf.dep.OpfGenBus;
+import com.interpss.opf.OpfBus;
+import com.interpss.opf.OpfGen;
+import com.interpss.opf.OpfNetwork;
 
 import lpsolve.LpSolve;
 import lpsolve.LpSolveException;
 
 public class LpsolveSolverObjectiveFunctionCollector extends BaseObjectiveFunctionCollector{
 	
-	public LpsolveSolverObjectiveFunctionCollector(BaseOpfNetwork opfNet){
+	public LpsolveSolverObjectiveFunctionCollector(OpfNetwork opfNet){
 		super(opfNet);
-		this.opfNet = (BaseOpfNetwork)opfNet;	
 	}
 	
 	/*public void genCostFunctionRefinement(LpSolve lpsolver, int refineNum) throws LpSolveException{
@@ -94,16 +94,17 @@ public class LpsolveSolverObjectiveFunctionCollector extends BaseObjectiveFuncti
 		int totalVar = numOfVar;
 		int totalVarIdx = numOfVar+1;		
 		try {
-			for (Bus b: opfNet.getBusList()){					
-				if(opfNet.isOpfGenBus(b)){
-					NumericCurveModel incType = ((OpfGenBus)b).getIncCost().getCostModel();
+			for (Bus b: opfNet.getBusList()){
+				OpfBus bus = (OpfBus)b;
+				if(bus.isOpfGen()){
+					NumericCurveModel incType = ((OpfGen)b).getIncCost().getCostModel();
 					if(!incType.equals(NumericCurveModel.PIECE_WISE)||
-							((OpfGenBus)b).getIncCost().getPieceWiseCurve()==null){
+							((OpfGen)b).getIncCost().getPieceWiseCurve()==null){
 						OPFLogger.getLogger().severe("LP solver requires piecewise linear gen cost funtion for generator at bus: "
 								+b.getNumber());						
 					}else{
 						//lpsolver.setColName(genIndex, "Pg" + (b.getSortNumber()+1));
-						PieceWiseCurve pw = ((OpfGenBus)b).getIncCost().getPieceWiseCurve();
+						PieceWiseCurve pw = ((OpfGen)b).getIncCost().getPieceWiseCurve();
 						int np = pw.getPoints().size();
 						double[] mw = new double[np];
 						double[] price = new double[np];

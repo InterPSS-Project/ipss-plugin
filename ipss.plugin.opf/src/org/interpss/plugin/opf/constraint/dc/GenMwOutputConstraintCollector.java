@@ -6,22 +6,21 @@ import org.interpss.plugin.opf.OpfSolverFactory;
 import org.interpss.plugin.opf.constraint.BaseConstraintCollector;
 import org.interpss.plugin.opf.constraint.OpfConstraint;
 
-import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.net.Bus;
-import com.interpss.opf.BaseOpfNetwork;
+import com.interpss.opf.OpfBus;
+import com.interpss.opf.OpfGen;
+import com.interpss.opf.OpfNetwork;
 import com.interpss.opf.cst.OpfBusLimits;
 import com.interpss.opf.cst.OpfConstraintType;
-import com.interpss.opf.dep.OpfGenBus;
 
 import cern.colt.list.DoubleArrayList;
 import cern.colt.list.IntArrayList;
 
 public class GenMwOutputConstraintCollector extends BaseConstraintCollector{	
 	
-	public GenMwOutputConstraintCollector(BaseOpfNetwork opfNet, List<OpfConstraint> cstContainer) {
+	public GenMwOutputConstraintCollector(OpfNetwork opfNet, List<OpfConstraint> cstContainer) {
 		super(opfNet,cstContainer);		
 	}
-
 
 	@Override
 	public void collectConstraint() {		
@@ -29,25 +28,25 @@ public class GenMwOutputConstraintCollector extends BaseConstraintCollector{
 		int genIndex = 0;
 		for (Bus bus : opfNet.getBusList()) {
 			
-			AclfBus b = (AclfBus)bus;
-			if (b.isGen()) {
+			OpfBus opfBus = (OpfBus)bus;
+			if (opfBus.isOpfGen()) {
 				IntArrayList colNo = new IntArrayList();
 				DoubleArrayList val = new DoubleArrayList();
-				OpfConstraint cst = new OpfConstraint();	
-				OpfGenBus genOPF = (OpfGenBus) bus;	
-	    		OpfBusLimits con = genOPF.getConstraints();
+				// OpfConstraint cst = new OpfConstraint();
+				OpfGen genOPF = opfBus.getOpfGen();	
+	    		OpfBusLimits limits = genOPF.getOpfLimits();
 	    		
-				double ul = con.getPLimit().getMax();
-				double ll = con.getPLimit().getMin();				
+				double ul = limits.getPLimit().getMax();
+				double ll = limits.getPLimit().getMin();				
 				
 				int id = cstContainer.size();
-				String des = "Gen MW upper limit @"+ b.getId();	
+				String des = "Gen MW upper limit @"+ opfBus.getId();	
 				colNo.add(genIndex);
 				val.add(1);				
-				cst = OpfSolverFactory.createOpfConstraint(id, des, ul, ll, OpfConstraintType.LESS_THAN, colNo, val);
+				OpfConstraint cst = OpfSolverFactory.createOpfConstraint(id, des, ul, ll, OpfConstraintType.LESS_THAN, colNo, val);
 				cstContainer.add(cst);
 				
-				des = "Gen MW upper limit @"+ b.getId();
+				des = "Gen MW upper limit @"+ opfBus.getId();
 				cst = OpfSolverFactory.createOpfConstraint(id+1, des, ul, ll, OpfConstraintType.LARGER_THAN, colNo, val);
 				cstContainer.add(cst);					
 				
@@ -55,10 +54,4 @@ public class GenMwOutputConstraintCollector extends BaseConstraintCollector{
 			}
 		}		
 	}
-	
-
-
-	
-
-	
 }
