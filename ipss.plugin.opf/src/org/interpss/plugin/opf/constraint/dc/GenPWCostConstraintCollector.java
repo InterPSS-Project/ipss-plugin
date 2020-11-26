@@ -12,16 +12,16 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.common.curve.NumericCurveModel;
 import com.interpss.core.common.curve.PieceWiseCurve;
 import com.interpss.core.net.Bus;
-import com.interpss.opf.BaseOpfNetwork;
+import com.interpss.opf.OpfGen;
+import com.interpss.opf.OpfNetwork;
 import com.interpss.opf.cst.OpfConstraintType;
-import com.interpss.opf.dep.OpfGenBus;
 
 import cern.colt.list.DoubleArrayList;
 import cern.colt.list.IntArrayList;
 
 public class GenPWCostConstraintCollector extends BaseConstraintCollector{
 	
-	public GenPWCostConstraintCollector(BaseOpfNetwork opfNet,ArrayList<OpfConstraint> cstContainer) {
+	public GenPWCostConstraintCollector(OpfNetwork opfNet,ArrayList<OpfConstraint> cstContainer) {
 		super(opfNet,cstContainer);			
 	}
 
@@ -35,13 +35,13 @@ public class GenPWCostConstraintCollector extends BaseConstraintCollector{
 			if (b.isGen()) {
 				IntArrayList colNo = new IntArrayList();
 				DoubleArrayList val = new DoubleArrayList();
-				NumericCurveModel incType = ((OpfGenBus)b).getIncCost().getCostModel();
+				NumericCurveModel incType = ((OpfGen)b).getIncCost().getCostModel();
 				if (incType.equals(NumericCurveModel.QUADRATIC)){
 					OPFLogger.getLogger().severe("Solver requires piecewise linear gen cost funtion" +
 							" for generator at bus: "
 								+b.getNumber());
 				}else{					
-					PieceWiseCurve pw = ((OpfGenBus)b).getIncCost().getPieceWiseCurve();
+					PieceWiseCurve pw = ((OpfGen)b).getIncCost().getPieceWiseCurve();
 					int np = pw.getPoints().size();
 					double[] mw = new double[np];
 					double[] price = new double[np];
@@ -56,7 +56,7 @@ public class GenPWCostConstraintCollector extends BaseConstraintCollector{
 					double[] slope = new double[np-1];					
 					double rh = 0;
 					for (int i=1; i<np;i++){						
-						OpfConstraint cst = new OpfConstraint();	
+						//OpfConstraint cst = new OpfConstraint();
 						slope[i-1] = (price[i]- price[i-1])/(mw[i]-mw[i-1]);		
 						rh = -slope[i-1]*mw[i] + price[i]; // cj- mj*xj
 						
@@ -67,7 +67,7 @@ public class GenPWCostConstraintCollector extends BaseConstraintCollector{
 						val.add(1);					
 						
 						int id = cstContainer.size();
-						cst = OpfSolverFactory.createOpfConstraint(id, des, 0, rh, OpfConstraintType.LARGER_THAN, colNo, val);
+						OpfConstraint cst = OpfSolverFactory.createOpfConstraint(id, des, 0, rh, OpfConstraintType.LARGER_THAN, colNo, val);
 						cstContainer.add(cst);					
 					}					
 					genIndex++;

@@ -3,12 +3,13 @@ package org.interpss.plugin.opf.util;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
-import com.interpss.opf.BaseOpfBranch;
-import com.interpss.opf.BaseOpfBus;
-import com.interpss.opf.BaseOpfNetwork;
+import com.interpss.opf.OpfBranch;
+import com.interpss.opf.OpfBus;
+import com.interpss.opf.OpfGen;
+import com.interpss.opf.OpfNetwork;
 
 public class OPFResultOutput {
-	public static String opfResultSummary(BaseOpfNetwork<BaseOpfBus<?>, BaseOpfBranch> opfnet) {
+	public static String opfResultSummary(OpfNetwork opfnet) {
 		OutputHelper helper = new OutputHelper(opfnet);
 
 		double baseKva = opfnet.getBaseKva() / 1000;
@@ -72,9 +73,9 @@ public class OPFResultOutput {
 
 		for (Bus b : opfnet.getBusList()) {
 			str.append(String.format("%4s", b.getId()));
-			BaseOpfBus bus = (BaseOpfBus) b;
-			if (opfnet.isOpfGenBus(b)) {
-				OpfGenBus opfBus = (OpfGenBus) b;
+			OpfBus bus = (OpfBus) b;
+			if (bus.isOpfGen()) {
+				OpfGen opfBus = bus.getOpfGen();
 				str.append(String.format("%8s", "True"));
 			} else {
 				str.append(String.format("%8s", "False"));
@@ -108,8 +109,8 @@ public class OPFResultOutput {
 			String fbus = bra.getFromPhysicalBusId();
 			String tbus = bra.getToPhysicalBusId();
 			String cirId = bra.getCircuitNumber();
-			double flow = ((BaseOpfBranch) bra).DcPowerFrom2To()*baseKva;
-			double rating = ((BaseOpfBranch) bra).getRatingMw1()*baseKva;	
+			double flow = ((OpfBranch) bra).DcPowerFrom2To()*baseKva;
+			double rating = ((OpfBranch) bra).getRatingMw1()*baseKva;	
 			double dflow = Math.abs(Math.abs(flow)-rating);
 			str.append(String.format("%4d", braNum));
 			if (dflow < 0.001){				
