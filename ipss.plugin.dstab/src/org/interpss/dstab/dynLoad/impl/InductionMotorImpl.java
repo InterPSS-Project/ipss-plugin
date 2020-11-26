@@ -1062,6 +1062,9 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	private Complex dEp_dt1 = null; 
 	private Complex dEp_dt2 = null; 
 	
+	private Complex ep_old = null;
+	private Complex epp_old = null;
+	
 	private List<MotorProtectionControl> motorProtectionList = null;
 	
 	private static final String OUT_SYMBOL_P ="IndMotorP";
@@ -1803,11 +1806,15 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	    
 	    ep = this.getDStabBus().getVoltage().subtract(zpMotorBase.multiply(iMotor));
 	    
+	    this.ep_old = ep;
+	    
 	    // calculate the the Norton equivalent
 	    if(twoAxisModel){
 	    	
 	      	zppMotorBase = new Complex(ra,xpp);
 	        epp = this.getDStabBus().getVoltage().subtract(zppMotorBase.multiply(iMotor));
+	        
+	        this.epp_old = epp;
 	    	
 	    	Complex ZppSysBase = new Complex(ra,xpp).multiply(this.zMultiFactor);
 	    	this.equivYSysBase = new Complex(1.0,0).divide(ZppSysBase);
@@ -1897,6 +1904,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	@Override
 	public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
 		// if the motor is out-of-service or tripped
+		
 		if(this.Fuv<=0.0 || this.Fonline <=0.0){
 			this.ep = new Complex(0.0);
 			this.epp = new Complex(0.0);
@@ -1988,18 +1996,17 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	    	
 	    	dEp_dt1 =calc_Ep_predict_step( w0, Epr, Epm, Im, Ir);
 	    	
-	    	ep = ep.add(dEp_dt1.multiply(dt));
+	    	ep = ep_old.add(dEp_dt1.multiply(dt));
 	    }
 	    else if (flag ==1) {
-	    
-		    //TODO need to renew IMotor?????/
+	
 		   
 	        dEp_dt2 = calc_Ep_corrective_step( w0, Epr, Epm, Im, Ir);
 	        
-		    Complex dEp =dEp_dt1.add(dEp_dt2).multiply(dt/2.0);
-		    
 		    //need to recover to the old value first, before adding dEp
-		    ep = ep.subtract(dEp_dt1.multiply(dt)).add(dEp);
+		    ep = ep_old.add(dEp_dt1.add(dEp_dt2).multiply(dt/2.0));
+		    
+		    ep_old = ep;
 	    
 	    }
 	    
