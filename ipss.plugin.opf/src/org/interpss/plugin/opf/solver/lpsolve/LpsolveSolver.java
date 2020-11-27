@@ -46,16 +46,16 @@ public class LpsolveSolver extends AbstractOpfSolver {
 	@Override
 	public void build(List<OpfConstraint> cstContainer) {		
 
-		new ActivePowerEqnConstraintCollector(opfNet, cstContainer)
+		new ActivePowerEqnConstraintCollector(this.getNetwork(), cstContainer)
 				.collectConstraint();
 
-		new LineMwFlowConstraintCollector(opfNet, cstContainer)
+		new LineMwFlowConstraintCollector(this.getNetwork(), cstContainer)
 				.collectConstraint();
 
-		new GenMwOutputConstraintCollector(opfNet, cstContainer)
+		new GenMwOutputConstraintCollector(this.getNetwork(), cstContainer)
 				.collectConstraint();
 
-		new BusMinAngleConstraintCollector(opfNet, cstContainer, BusAngleLimit)
+		new BusMinAngleConstraintCollector(this.getNetwork(), cstContainer, BusAngleLimit)
 				.collectConstraint();
 
 		lpsolver.setAddRowmode(true);
@@ -64,7 +64,7 @@ public class LpsolveSolver extends AbstractOpfSolver {
 				.buildInput(lpsolver);
 
 		LpsolveSolverObjectiveFunctionCollector objBuilder = new LpsolveSolverObjectiveFunctionCollector(
-				opfNet);
+				this.getNetwork());
 		try {
 			objBuilder.processGenCostFunction(lpsolver);
 			//int refineNum = 2;
@@ -137,12 +137,12 @@ public class LpsolveSolver extends AbstractOpfSolver {
 			OPFLogger.getLogger().severe(e.toString());
 		}
 		
-		double baseMVA = opfNet.getBaseKva() / 1000.0;
+		double baseMVA = this.getNetwork().getBaseKva() / 1000.0;
 		double lmp = 0;
-		for (Bus b : opfNet.getBusList()) {
-			OpfBus bus1 = (OpfBus) b;
+		for (OpfBus bus : this.getNetwork().getBusList()) {
+			//OpfBus bus1 = (OpfBus) b;
 			lmp = Math.abs(shadowPrice[cnt++]);
-			bus1.setLMP(lmp/baseMVA );
+			bus.setLMP(lmp/baseMVA );
 		}
 	}
 
@@ -217,12 +217,12 @@ public class LpsolveSolver extends AbstractOpfSolver {
 		int busIdx = 1;
 		int genIndex = 1;
 		try {
-			for (Bus b : opfNet.getBusList()) {
-				OpfBus bus = (OpfBus)b;
-				lpsolver.setColName( busIdx + this.numOfGen, "x" + (b.getSortNumber() + 1));
+			for (OpfBus bus : this.getNetwork().getBusList()) {
+				//OpfBus bus = (OpfBus)b;
+				lpsolver.setColName( busIdx + this.numOfGen, "x" + (bus.getSortNumber() + 1));
 				if(bus.isOpfGen()){
-					lpsolver.setColName(genIndex, "Pg" + (b.getSortNumber()+1));
-					lpsolver.setColName(genIndex + this.numOfVar, "y" + (b.getSortNumber()+1));
+					lpsolver.setColName(genIndex, "Pg" + (bus.getSortNumber()+1));
+					lpsolver.setColName(genIndex + this.numOfVar, "y" + (bus.getSortNumber()+1));
 					genIndex++;
 				}				
 				busIdx++;

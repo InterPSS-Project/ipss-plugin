@@ -12,7 +12,7 @@ import com.interpss.core.common.curve.NumericCurveModel;
 import com.interpss.core.common.curve.PieceWiseCurve;
 import com.interpss.opf.OpfBus;
 import com.interpss.opf.OpfNetwork;
-import com.interpss.opf.cst.OpfConstraintType;
+import com.interpss.opf.datatype.OpfConstraintType;
 
 import cern.colt.list.DoubleArrayList;
 import cern.colt.list.IntArrayList;
