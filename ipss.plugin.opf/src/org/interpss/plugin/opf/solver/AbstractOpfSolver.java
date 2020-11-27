@@ -41,7 +41,7 @@ public abstract class AbstractOpfSolver implements IOpfSolver {
 		this.formBusIndexTable();
 		this.cstContainer = new ArrayList<OpfConstraint>();
 		this.numOfBus = this.opfNet.getNoActiveBus();
-		this.numOfGen = helper.getNoOfGen(this.opfNet);
+		this.numOfGen = this.opfNet.getNoOpfGen();
 		this.numOfBranch = this.opfNet.getNoActiveBranch();	
 		
 	}
@@ -73,7 +73,7 @@ public abstract class AbstractOpfSolver implements IOpfSolver {
 		opfNet.setMinF(minF);
 		// extract the angle value
 		busAngle = new double[opfNet.getNoActiveBus()];
-		int noOfGen = helper.getNoOfGen(opfNet);
+		int noOfGen = opfNet.getNoOpfGen();
 		for (int k = noOfGen; k < noOfGen + opfNet.getNoActiveBus() ; k++) {
 			busAngle[k - noOfGen] = this.optimX[k]; // voltAngle in radians
 		}

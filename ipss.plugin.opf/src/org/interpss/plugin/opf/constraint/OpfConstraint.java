@@ -1,6 +1,5 @@
 package org.interpss.plugin.opf.constraint;
 
-import com.interpss.opf.cst.OpfConstraintType;
 import com.interpss.opf.cst.impl.BaseOpfConstraintImpl;
 
 import cern.colt.list.DoubleArrayList;

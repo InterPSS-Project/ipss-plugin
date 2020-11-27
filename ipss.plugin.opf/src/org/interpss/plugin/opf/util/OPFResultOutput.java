@@ -71,11 +71,11 @@ public class OPFResultOutput {
 		str.append("busID  OPFGen  Angle(RAD)  Generation(MW)    Load(MW)   LMP($/MWh)      \n");
 		str.append("      -----------------------------------------------------------------\n");
 
-		for (Bus b : opfnet.getBusList()) {
-			str.append(String.format("%4s", b.getId()));
-			OpfBus bus = (OpfBus) b;
+		for (OpfBus bus : opfnet.getBusList()) {
+			str.append(String.format("%4s", bus.getId()));
+			//OpfBus bus = (OpfBus) bus;
 			if (bus.isOpfGen()) {
-				OpfGen opfBus = bus.getOpfGen();
+				OpfGen opfGen = bus.getOpfGen();
 				str.append(String.format("%8s", "True"));
 			} else {
 				str.append(String.format("%8s", "False"));
@@ -102,15 +102,15 @@ public class OPFResultOutput {
 		/*ArrayList<AclfBranch> constrainedBranchList = helper.getConstrainedBranchList();
 		int size = constrainedBranchList.size();*/
 		int braNum =0 ;
-		for (Branch branch: opfnet.getBranchList()){
-			AclfBranch bra = (AclfBranch) branch;
+		for (OpfBranch branch: opfnet.getBranchList()){
+			//AclfBranch bra = (AclfBranch) branch;
 			/*int braNum =  bra.getSortNumber()+1;*/
 			braNum =  braNum+ 1;
-			String fbus = bra.getFromPhysicalBusId();
-			String tbus = bra.getToPhysicalBusId();
-			String cirId = bra.getCircuitNumber();
-			double flow = ((OpfBranch) bra).DcPowerFrom2To()*baseKva;
-			double rating = ((OpfBranch) bra).getRatingMw1()*baseKva;	
+			String fbus = branch.getFromPhysicalBusId();
+			String tbus = branch.getToPhysicalBusId();
+			String cirId = branch.getCircuitNumber();
+			double flow = branch.dcPowerFrom2To()*baseKva;
+			double rating = branch.getRatingMw1()*baseKva;	
 			double dflow = Math.abs(Math.abs(flow)-rating);
 			str.append(String.format("%4d", braNum));
 			if (dflow < 0.001){				
