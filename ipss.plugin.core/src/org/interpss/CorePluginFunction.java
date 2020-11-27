@@ -31,7 +31,7 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.acsc.AcscNetwork;
-import com.interpss.core.dclf.DclfAlgorithm;
+import com.interpss.core.dclf.SenAnalysisAlgorithm;
 import com.interpss.core.net.OriginalDataFormat;
 import com.interpss.dc.DcNetwork;
 import com.interpss.dist.DistNetwork;
@@ -249,9 +249,9 @@ public class CorePluginFunction {
 	 *   
 	 *   StringBuffer outText = dclfResult.apply(dclfAlgo, true/false);
 	 */
-	public static IFunction2<DclfAlgorithm, Boolean, StringBuffer> DclfResult = 
-		new Function2Adapter<DclfAlgorithm, Boolean, StringBuffer>() {
-			@Override public StringBuffer f(DclfAlgorithm algo, Boolean branchVioaltion) {
+	public static IFunction2<SenAnalysisAlgorithm, Boolean, StringBuffer> DclfResult = 
+		new Function2Adapter<SenAnalysisAlgorithm, Boolean, StringBuffer>() {
+			@Override public StringBuffer f(SenAnalysisAlgorithm algo, Boolean branchVioaltion) {
 				return DclfOutFunc.dclfResults(algo, branchVioaltion);
 			}};
 

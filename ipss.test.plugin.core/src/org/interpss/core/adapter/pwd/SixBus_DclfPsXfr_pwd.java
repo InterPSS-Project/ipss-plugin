@@ -45,7 +45,7 @@ import com.interpss.core.DclfObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
-import com.interpss.core.dclf.DclfAlgorithm;
+import com.interpss.core.dclf.SenAnalysisAlgorithm;
 import com.interpss.core.net.Branch;
 
 public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
@@ -114,7 +114,7 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 		}
 
 		
-		DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net);
+		SenAnalysisAlgorithm algo = DclfObjectFactory.createSenAnalysisAlgorithm(net);
 		algo.calculateDclf();
 
 		System.out.println(DclfOutFunc.dclfResults(algo, false));
@@ -139,7 +139,7 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 					.load()
 					.getImportedObj();
 
-		DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net);
+		SenAnalysisAlgorithm algo = DclfObjectFactory.createSenAnalysisAlgorithm(net);
 		algo.calculateDclf();
 
 		System.out.println(DclfOutFunc.dclfResults(algo, false));
@@ -160,7 +160,7 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 					.load()
 					.getImportedObj();
 		
-		DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net);
+		SenAnalysisAlgorithm algo = DclfObjectFactory.createSenAnalysisAlgorithm(net);
 		algo.calculateDclf();
 
 		System.out.println(DclfOutFunc.dclfResults(algo, false));
@@ -186,7 +186,7 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 			branch.setZ(new Complex(0.0, branch.getZ().getImaginary()));
 		}
 		
-		DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net);
+		SenAnalysisAlgorithm algo = DclfObjectFactory.createSenAnalysisAlgorithm(net);
 		algo.calculateDclf();
 
 		System.out.println(DclfOutFunc.dclfResults(algo, false));
@@ -212,7 +212,7 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 			branch.setZ(new Complex(0.0, branch.getZ().getImaginary()));
 		}
 		
-		DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net);
+		SenAnalysisAlgorithm algo = DclfObjectFactory.createSenAnalysisAlgorithm(net);
 		algo.calculateDclf();
 
 		System.out.println(DclfOutFunc.dclfResults(algo, false));

@@ -35,7 +35,6 @@ import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.contingency.OutageBranch;
-import com.interpss.core.aclf.contingency.dep.DepContingency;
 import com.interpss.core.funcImpl.AclfNetHelper;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
@@ -175,157 +174,11 @@ public class TopologyProcesor {
 	 * @param contingency
 	 * @return
 	 */
-	@Deprecated
-	public void findIslandBus(DepContingency contingency) throws InterpssException {
-		/*
-		// all equivOutageBranch should be active
-		for (EquivOutageBranch bra : contingency.getEquivOutageBranches()) {
-			AclfBranch equivOutageBranch = bra.getAclfBranch();
-			if (!equivOutageBranch.isActive())
-				throw new InterpssException("Equivalent outage branch is inactive, " + 
-							equivOutageBranch.getId() + "[" + equivOutageBranch.getBranchCode() + "]");
-		}		
-		*/
-
-		for (OutageBranch branch : contingency.getOutageBranches()) {
-			if (branch.getBranch().isActive()) {
-				branch.getBranch().setIntFlag(1);
-				branch.getBranch().setStatus(false);
-			}
-			else
-				branch.getBranch().setIntFlag(0);
-		}		
-
-		List<String> list = new AclfNetHelper(aclfNet).checkRefBus(); 
-		if (list.size() > 0) 
-			; //System.out.println("There are island buses: " + list.toString() + " for contingency " + contingency.getId());
-		
-		for (OutageBranch branch : contingency.getOutageBranches()) {
-			if (branch.getBranch().getIntFlag() == 1)
-				branch.getBranch().setStatus(true);
-		}		
-
-		contingency.getIslandBuses().clear();
-		if (list.size() > 0) {
-			for (String id : list) {
-				// add island bus to the list
-				contingency.addIslandBus(aclfNet.getBus(id));
-			}
-		}		
-	}
 	
 	private int distance = 7;
 
 	private boolean byzone = false;
 	private boolean byArea = false;	
-	/**
-	 * find islanding buses for the contingency by a regional searching algorithm
-	 * 
-	 * @param contingency
-	 * @return
-	 */
-	
-	@Deprecated
-	public void findIslandBusByRegionalSearch(DepContingency contingency) throws InterpssException {		
-		
-		for (OutageBranch branch : contingency.getOutageBranches()) {
-			if (branch.getBranch().isActive()) {
-				branch.getBranch().setIntFlag(1);
-				branch.setStatus(false);
-			}
-			else
-				branch.getBranch().setIntFlag(0);
-		}		
-		
-		// Make a judgment of whether to check connectivity by zone or by area
-		// If all outage branches are within one zone -> search within this zone
-		// If all outage branches are whitin one area -> search within this area
-		// else -> search the entire network
-		List<Long> zoneNoList = new ArrayList<Long>(); 
-		List<Long> areaNoList = new ArrayList<Long>(); 
-		boolean byZone = true;
-		boolean byArea = false;
-		for (OutageBranch b : contingency.getOutageBranches()) {	
-			AclfBranch bra = b.getBranch();
-			Long fZoneNum = bra.getFromBus().getZone().getNumber();
-			Long tZoneNum = bra.getToBus().getZone().getNumber();
-			Long fAreaNum = bra.getFromBus().getArea().getNumber();
-			Long tAreaNum = bra.getToBus().getArea().getNumber();
-			/*System.out.print("outagebranches:"+ bra.getId()+": fBus Zone number: "+fZoneNum+";tBus Zone Number: "+tZoneNum);
-			System.out.println();*/
-			
-			if(fZoneNum != tZoneNum){
-				byZone = false;
-				byArea = true;
-			}
-			
-			if(fAreaNum != tAreaNum)
-				byArea = false;
-			
-			if(!this.distanceToNeighbourLargerThanDis(bra, distance, byZone, byArea)){
-				if(byZone){
-					byZone = false;
-					byArea = true;
-				}else
-					byArea = false;
-			}
-			
-			if (!zoneNoList.contains(fZoneNum))
-			     zoneNoList.add(fZoneNum);
-			
-			if (!areaNoList.contains(fAreaNum))
-				areaNoList.add(fAreaNum);			
-		}
-		if ( zoneNoList.size() >=2){
-			byZone = false;
-			byArea = true;
-		}
-		if ( areaNoList.size() >=2){
-			byArea = false;
-		}		
-		
-		/*byArea = true;
-		byZone = false;*/		
-		//List<Long> searchList = new ArrayList<Long>(); 
-		Long searchRegionNum = (long) 0;
-		if (byZone ){
-			searchRegionNum = zoneNoList.get(0);
-			//System.out.println("byzone");
-		}
-		else if (byArea){			
-			searchRegionNum = areaNoList.get(0);
-			//System.out.println("byarea");
-		}
-
-			//System.out.println("byNetwork");
-				
-		TopologyProcesor proc = new TopologyProcesor(aclfNet);
-		List<String> list = new ArrayList<String>();
-		if (byZone || byArea){
-			if(!proc.checkConnectivity(searchRegionNum,byZone, byArea))
-			    list = proc.getslandedBuses();
-		}else
-			list = new AclfNetHelper(aclfNet).checkRefBus(); 
-		
-				
-		if (list.size() > 0) {
-			ipssLogger.info("There are island buses: " + list.toString() + " for contingency " + contingency.getId());			
-		}
-			
-		
-		for (OutageBranch branch : contingency.getOutageBranches()) {
-			if (branch.getBranch().getIntFlag() == 1)
-				branch.getBranch().setStatus(true);
-		}			
-
-		contingency.getIslandBuses().clear();
-		if (list.size() > 0) {
-			for (String id : list) {
-				// add island bus to the list
-				contingency.addIslandBus(aclfNet.getBus(id));
-			}
-		}		
-	}
 	
 	private boolean distanceToNeighbourLargerThanDis(AclfBranch bra, int dis, boolean byZone, boolean byArea	) throws InterpssException{
 		long zoneNum = 0;
