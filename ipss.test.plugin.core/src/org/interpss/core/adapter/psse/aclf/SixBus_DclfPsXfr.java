@@ -43,7 +43,7 @@ import com.interpss.core.DclfObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
-import com.interpss.core.dclf.DclfAlgorithm;
+import com.interpss.core.dclf.SenAnalysisAlgorithm;
 import com.interpss.core.net.Bus;
 import com.interpss.core.net.RefBusType;
 
@@ -93,7 +93,7 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
  		System.out.println(net.formB1Matrix());
 		*/
 		
-		DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net);
+		SenAnalysisAlgorithm algo = DclfObjectFactory.createSenAnalysisAlgorithm(net);
 		algo.calculateDclf();
 
 		//System.out.println(DclfOutFunc.dclfResults(algo, false));
@@ -119,7 +119,7 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
 					.load()
 					.getImportedObj();
 
-		DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net);
+		SenAnalysisAlgorithm algo = DclfObjectFactory.createSenAnalysisAlgorithm(net);
 		
 		net.setRefBusId("Bus3");
 		net.setRefBusType(RefBusType.USER_DEFINED);
@@ -173,7 +173,7 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
 					.load()
 					.getImportedObj();
 
-		DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net);
+		SenAnalysisAlgorithm algo = DclfObjectFactory.createSenAnalysisAlgorithm(net);
 		algo.calculateDclf();
 		
 		//System.out.println(DclfOutFunc.dclfResults(algo, false));

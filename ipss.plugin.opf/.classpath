@@ -4,6 +4,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/EMF"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Hazelcast"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ieee.odm_pss"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ieee.odm.schema"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.common"/>
