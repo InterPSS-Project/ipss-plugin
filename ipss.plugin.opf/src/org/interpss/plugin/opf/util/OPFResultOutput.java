@@ -3,10 +3,10 @@ package org.interpss.plugin.opf.util;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
-import com.interpss.opf.dep.BaseOpfBranch;
-import com.interpss.opf.dep.BaseOpfBus;
-import com.interpss.opf.dep.OpfGenBus;
-import com.interpss.opf.dep.OpfNetwork;
+import com.interpss.opf.OpfBranch;
+import com.interpss.opf.OpfBus;
+import com.interpss.opf.OpfGen;
+import com.interpss.opf.OpfNetwork;
 
 public class OPFResultOutput {
 	public static String opfResultSummary(OpfNetwork opfnet) {
@@ -71,11 +71,11 @@ public class OPFResultOutput {
 		str.append("busID  OPFGen  Angle(RAD)  Generation(MW)    Load(MW)   LMP($/MWh)      \n");
 		str.append("      -----------------------------------------------------------------\n");
 
-		for (Bus b : opfnet.getBusList()) {
-			str.append(String.format("%4s", b.getId()));
-			BaseOpfBus bus = (BaseOpfBus) b;
-			if (opfnet.isOpfGenBus(b)) {
-				OpfGenBus opfBus = (OpfGenBus) b;
+		for (OpfBus bus : opfnet.getBusList()) {
+			str.append(String.format("%4s", bus.getId()));
+			//OpfBus bus = (OpfBus) bus;
+			if (bus.isOpfGen()) {
+				OpfGen opfGen = bus.getOpfGen();
 				str.append(String.format("%8s", "True"));
 			} else {
 				str.append(String.format("%8s", "False"));
@@ -102,15 +102,15 @@ public class OPFResultOutput {
 		/*ArrayList<AclfBranch> constrainedBranchList = helper.getConstrainedBranchList();
 		int size = constrainedBranchList.size();*/
 		int braNum =0 ;
-		for (Branch branch: opfnet.getBranchList()){
-			AclfBranch bra = (AclfBranch) branch;
+		for (OpfBranch branch: opfnet.getBranchList()){
+			//AclfBranch bra = (AclfBranch) branch;
 			/*int braNum =  bra.getSortNumber()+1;*/
 			braNum =  braNum+ 1;
-			String fbus = bra.getFromPhysicalBusId();
-			String tbus = bra.getToPhysicalBusId();
-			String cirId = bra.getCircuitNumber();
-			double flow = ((BaseOpfBranch) bra).DcPowerFrom2To()*baseKva;
-			double rating = ((BaseOpfBranch) bra).getRatingMw1()*baseKva;	
+			String fbus = branch.getFromPhysicalBusId();
+			String tbus = branch.getToPhysicalBusId();
+			String cirId = branch.getCircuitNumber();
+			double flow = branch.dcPowerFrom2To()*baseKva;
+			double rating = branch.getRatingMw1()*baseKva;	
 			double dflow = Math.abs(Math.abs(flow)-rating);
 			str.append(String.format("%4d", braNum));
 			if (dflow < 0.001){				
