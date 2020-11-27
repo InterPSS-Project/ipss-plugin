@@ -13,15 +13,15 @@ import org.interpss.QA.result.QAResultContainer;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.dclf.DclfAlgorithm;
+import com.interpss.core.dclf.SenAnalysisAlgorithm;
 import com.interpss.core.dclf.IDclfSolver;
 import com.interpss.core.dclf.LODFSenAnalysisType;
-import com.interpss.core.dclf.impl.DclfAlgorithmImpl;
+import com.interpss.core.dclf.impl.SenAnalysisAlgorithmImpl;
 import com.interpss.core.dclf.solver.DclfSolver;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 
-public class DclfAlgoDebug extends DclfAlgorithmImpl {
+public class DclfAlgoDebug extends SenAnalysisAlgorithmImpl {
 	public DclfAlgoDebug() {
 		super();
 	}
@@ -97,7 +97,7 @@ public class DclfAlgoDebug extends DclfAlgorithmImpl {
 
 	}
 	
-	public void setBusAngleForDebug(DclfAlgorithm algoPre, AclfNetwork net) {			
+	public void setBusAngleForDebug(SenAnalysisAlgorithm algoPre, AclfNetwork net) {			
 		for (Bus b : net.getBusList()) {
 			if (b.isActive()) {				
 				AclfBus bus = (AclfBus) b;				

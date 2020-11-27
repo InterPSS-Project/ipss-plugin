@@ -57,7 +57,7 @@ import com.interpss.core.aclf.flow.FlowInterface;
 import com.interpss.core.aclf.flow.FlowInterfaceBranch;
 import com.interpss.core.common.visitor.IAclfNetBVisitor;
 import com.interpss.core.dclf.BusSenAnalysisType;
-import com.interpss.core.dclf.DclfAlgorithm;
+import com.interpss.core.dclf.SenAnalysisAlgorithm;
 import com.interpss.core.dclf.DclfFactory;
 import com.interpss.core.dclf.LODFSenAnalysisType;
 import com.interpss.core.dclf.SFactorMonitorType;
@@ -118,7 +118,7 @@ public class IpssDclf extends BaseDSL {
 	 * @param algo
 	 * @return
 	 */
-	public static DclfAlgorithmDSL wrapAlgorithm(DclfAlgorithm algo) {
+	public static DclfAlgorithmDSL wrapAlgorithm(SenAnalysisAlgorithm algo) {
 		return new DclfAlgorithmDSL(algo);
 	}
 
@@ -129,8 +129,8 @@ public class IpssDclf extends BaseDSL {
 	 * @param algo
 	 * @return
 	 */
-	public static DclfAlgorithmDSL copyAlgorithm(DclfAlgorithm algo) {
-		DclfAlgorithm newAlgo = DclfObjectFactory.createDclfAlgorithm(algo.getNetwork(), false);
+	public static DclfAlgorithmDSL copyAlgorithm(SenAnalysisAlgorithm algo) {
+		SenAnalysisAlgorithm newAlgo = DclfObjectFactory.createSenAnalysisAlgorithm(algo.getNetwork(), false);
 		newAlgo.setDclfSolver(algo.getDclfSolver());
 		newAlgo.setDclfCalculated(algo.isDclfCalculated());
 		return new DclfAlgorithmDSL(newAlgo);
@@ -141,7 +141,7 @@ public class IpssDclf extends BaseDSL {
 	 * DclfAlgorithmDSL dclf algorithm DSL
 	 */
 	public static class DclfAlgorithmDSL {
-		private DclfAlgorithm algo = null;
+		private SenAnalysisAlgorithm algo = null;
 		
 		private SenAnalysisType type = SenAnalysisType.PANGLE;
 		private String injectBusId = null, 
@@ -170,7 +170,7 @@ public class IpssDclf extends BaseDSL {
 		 * constructor
 		 */
 		public DclfAlgorithmDSL(AclfNetwork net, boolean applyAdjust) {
-			this.algo = DclfObjectFactory.createDclfAlgorithm(net, applyAdjust);
+			this.algo = DclfObjectFactory.createSenAnalysisAlgorithm(net, applyAdjust);
 			this.algo.setInjectBusType(BusSenAnalysisType.NOT_DEFINED);
 			this.algo.setWithdrawBusType(BusSenAnalysisType.NOT_DEFINED);
 		}
@@ -180,7 +180,7 @@ public class IpssDclf extends BaseDSL {
 		 * 
 		 * @param algo
 		 */
-		public DclfAlgorithmDSL(DclfAlgorithm algo) {
+		public DclfAlgorithmDSL(SenAnalysisAlgorithm algo) {
 			this.algo = algo;
 		}
 		
@@ -204,11 +204,11 @@ public class IpssDclf extends BaseDSL {
 		/**
 		 * get the Dclf algo object
 		 */
-  		public DclfAlgorithm algo() { return this.algo; }
+  		public SenAnalysisAlgorithm algo() { return this.algo; }
 		/**
 		 * get the Dclf algo object
 		 */
-  		public DclfAlgorithm getAlgorithm() { return this.algo(); }
+  		public SenAnalysisAlgorithm getAlgorithm() { return this.algo(); }
 
   		/**
   		 * get the AclfNet object
