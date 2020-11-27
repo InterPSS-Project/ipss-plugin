@@ -5,7 +5,7 @@ import java.util.List;
 import org.interpss.plugin.opf.common.OPFLogger;
 import org.interpss.plugin.opf.constraint.OpfConstraint;
 
-import com.interpss.opf.cst.OpfConstraintType;
+import com.interpss.opf.datatype.OpfConstraintType;
 
 import cern.colt.list.DoubleArrayList;
 import cern.colt.list.IntArrayList;

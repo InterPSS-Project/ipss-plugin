@@ -35,7 +35,7 @@ import org.junit.Test;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.DclfObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.dclf.DclfAlgorithm;
+import com.interpss.core.dclf.SenAnalysisAlgorithm;
 import com.interpss.core.dclf.common.ReferenceBusException;
 import com.interpss.core.funcImpl.ZeroZBranchProcesor;
 
@@ -50,7 +50,7 @@ public class IEEE14BusBreaker_dclf_Test extends CorePluginTestSetup {
 				.getImportedObj();
 	  	//System.out.println(net.net2String());
 
-		DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net);
+		SenAnalysisAlgorithm algo = DclfObjectFactory.createSenAnalysisAlgorithm(net);
 		algo.calculateDclf();
 
 		//System.out.println(DclfOutFunc.dclfResults(algo, false));
@@ -71,7 +71,7 @@ public class IEEE14BusBreaker_dclf_Test extends CorePluginTestSetup {
 	  	net.accept(new ZeroZBranchProcesor(true));
 	  	assertTrue(net.isZeroZBranchProcessed());
 
-		DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net);
+		SenAnalysisAlgorithm algo = DclfObjectFactory.createSenAnalysisAlgorithm(net);
 		algo.calculateDclf();
 
 		//System.out.println(DclfOutFunc.dclfResults(algo, false));
@@ -94,7 +94,7 @@ public class IEEE14BusBreaker_dclf_Test extends CorePluginTestSetup {
 	  	net.accept(new ZeroZBranchProcesor(true));
 	  	assertTrue(net.isZeroZBranchProcessed());
 
-		DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net);
+		SenAnalysisAlgorithm algo = DclfObjectFactory.createSenAnalysisAlgorithm(net);
 		algo.calculateDclf();
 
 		//System.out.println(DclfOutFunc.dclfResults(algo, false));

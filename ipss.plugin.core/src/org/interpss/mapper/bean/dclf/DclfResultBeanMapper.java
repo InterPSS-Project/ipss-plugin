@@ -16,10 +16,10 @@ import com.interpss.common.mapper.AbstractMapper;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.dclf.DclfAlgorithm;
+import com.interpss.core.dclf.SenAnalysisAlgorithm;
 
 
-public class DclfResultBeanMapper extends AbstractMapper<DclfAlgorithm, DclfNetResultBean> {
+public class DclfResultBeanMapper extends AbstractMapper<SenAnalysisAlgorithm, DclfNetResultBean> {
 	    
 	/**
 	 * constructor
@@ -36,7 +36,7 @@ public class DclfResultBeanMapper extends AbstractMapper<DclfAlgorithm, DclfNetR
 	 * @return DclfNetResultBean object
 	 */
 	@Override
-	public DclfNetResultBean map2Model(DclfAlgorithm algo) throws InterpssException {		
+	public DclfNetResultBean map2Model(SenAnalysisAlgorithm algo) throws InterpssException {		
 		DclfNetResultBean dclfResult = new DclfNetResultBean();
 
 		if (map2Model(algo, dclfResult))
@@ -53,7 +53,7 @@ public class DclfResultBeanMapper extends AbstractMapper<DclfAlgorithm, DclfNetR
 	 * @param dclfResult
 	 */
 	@Override
-	public boolean map2Model(DclfAlgorithm algo, DclfNetResultBean dclfResult) {
+	public boolean map2Model(SenAnalysisAlgorithm algo, DclfNetResultBean dclfResult) {
 
 		AclfNetwork aclfNet = algo.getNetwork();
 
@@ -76,7 +76,7 @@ public class DclfResultBeanMapper extends AbstractMapper<DclfAlgorithm, DclfNetR
 		return noError;
 	}	
 	
-	private void mapBaseBus(DclfAlgorithm algo, AclfBus bus, DclfBusResultBean bean) {
+	private void mapBaseBus(SenAnalysisAlgorithm algo, AclfBus bus, DclfBusResultBean bean) {
 		// map bus parameters
 		BaseAclfNet2BeanMapper.mapBaseBus(bus, bean);
 		
@@ -96,7 +96,7 @@ public class DclfResultBeanMapper extends AbstractMapper<DclfAlgorithm, DclfNetR
 		bean.load = new ComplexBean(format(load));
 	}
 	
-	private void mapBaseBranch(DclfAlgorithm algo,AclfBranch branch, DclfBranchResultBean bean) {
+	private void mapBaseBranch(SenAnalysisAlgorithm algo,AclfBranch branch, DclfBranchResultBean bean) {
 		// map branch parameters
 		BaseAclfNet2BeanMapper.mapBaseBranch(branch, bean);
 		

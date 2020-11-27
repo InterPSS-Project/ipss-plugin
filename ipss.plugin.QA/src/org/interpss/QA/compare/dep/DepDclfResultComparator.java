@@ -13,7 +13,7 @@ import com.interpss.core.DclfObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.dclf.DclfAlgorithm;
+import com.interpss.core.dclf.SenAnalysisAlgorithm;
 import com.interpss.core.dclf.common.ReferenceBusException;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
@@ -30,7 +30,7 @@ import com.interpss.core.net.Bus;
  */
 @Deprecated
 public class DepDclfResultComparator	extends DepNetModelComparator<QAAclfBusRec, QAAclfBranchRec> {
-	private DclfAlgorithm algo = null;
+	private SenAnalysisAlgorithm algo = null;
 	
 	public DepDclfResultComparator() {
 		this.qaResultSet = new  QAResultContainer<QAAclfBusRec, QAAclfBranchRec>(100.0);
@@ -45,7 +45,7 @@ public class DepDclfResultComparator	extends DepNetModelComparator<QAAclfBusRec,
 	 * 
 	 * @param algo
 	 */
-	public void setDclfAlgo( DclfAlgorithm algo) {
+	public void setDclfAlgo( SenAnalysisAlgorithm algo) {
 		this.algo = algo;
 		this.net = algo.getNetwork();
 	}
@@ -55,7 +55,7 @@ public class DepDclfResultComparator	extends DepNetModelComparator<QAAclfBusRec,
 	 * 
 	 * @param algo
 	 */
-	public DepDclfResultComparator setBaseResult(DclfAlgorithm algo) {
+	public DepDclfResultComparator setBaseResult(SenAnalysisAlgorithm algo) {
 		AclfNetwork net = algo.getNetwork();
 		
 		for (AclfBus bus : net.getBusList())
@@ -232,7 +232,7 @@ public class DepDclfResultComparator	extends DepNetModelComparator<QAAclfBusRec,
 		this.errMsgList.clear();
 
 		if (this.algo == null) {
-			this.algo = DclfObjectFactory.createDclfAlgorithm(net, applyAdjust);
+			this.algo = DclfObjectFactory.createSenAnalysisAlgorithm(net, applyAdjust);
 			//DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net, false);
 			try {
 				algo.calculateDclf();
@@ -331,7 +331,7 @@ public class DepDclfResultComparator	extends DepNetModelComparator<QAAclfBusRec,
 	}
 
 	public String outDclfResult(double angOffset) throws InterpssException, ReferenceBusException, IpssNumericException {
-		DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net);
+		SenAnalysisAlgorithm algo = DclfObjectFactory.createSenAnalysisAlgorithm(net);
 		algo.calculateDclf();
 		
 		StringBuffer buf = new StringBuffer();
