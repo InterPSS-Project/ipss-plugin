@@ -6,7 +6,6 @@ import org.interpss.plugin.opf.OpfSolverFactory;
 import org.interpss.plugin.opf.constraint.BaseConstraintCollector;
 import org.interpss.plugin.opf.constraint.OpfConstraint;
 
-import com.interpss.core.net.Bus;
 import com.interpss.opf.OpfBus;
 import com.interpss.opf.OpfGen;
 import com.interpss.opf.OpfNetwork;
@@ -26,9 +25,8 @@ public class GenMwOutputConstraintCollector extends BaseConstraintCollector{
 	public void collectConstraint() {		
 		
 		int genIndex = 0;
-		for (Bus bus : opfNet.getBusList()) {
-			
-			OpfBus opfBus = (OpfBus)bus;
+		for (OpfBus opfBus : opfNet.getBusList()) {
+			//OpfBus opfBus = (OpfBus)bus;
 			if (opfBus.isOpfGen()) {
 				IntArrayList colNo = new IntArrayList();
 				DoubleArrayList val = new DoubleArrayList();

@@ -7,8 +7,6 @@ import org.interpss.plugin.opf.constraint.BaseConstraintCollector;
 import org.interpss.plugin.opf.constraint.OpfConstraint;
 import org.interpss.plugin.opf.util.OpfDataHelper;
 
-import com.interpss.core.aclf.AclfBranch;
-import com.interpss.core.net.Branch;
 import com.interpss.opf.OpfBranch;
 import com.interpss.opf.OpfNetwork;
 import com.interpss.opf.cst.OpfConstraintType;
@@ -27,15 +25,15 @@ public class LineMwFlowConstraintCollector extends BaseConstraintCollector {
 	public void collectConstraint() {
 		double bij = DEFAULT_BIJ;		
 		
-		for (Branch bra : opfNet.getBranchList()) {
+		for (OpfBranch bra : opfNet.getBranchList()) {
 			IntArrayList colNo = new IntArrayList();
 			DoubleArrayList val = new DoubleArrayList();
 			
 			//OpfConstraint cst = new OpfConstraint();
 			//if (bra.isAclfBranch()) {
 				
-			AclfBranch aclfBra = (AclfBranch) bra;
-			bij = (aclfBra.getZ().getImaginary() > 0.00001) ? 1 / aclfBra
+			//AclfBranch aclfBra = (AclfBranch) bra;
+			bij = (bra.getZ().getImaginary() > 0.00001) ? 1 / bra
 					.getZ().getImaginary() : DEFAULT_BIJ; // in case x=0;
 					
 			

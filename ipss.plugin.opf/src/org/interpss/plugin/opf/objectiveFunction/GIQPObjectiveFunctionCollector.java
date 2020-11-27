@@ -4,9 +4,7 @@ import org.interpss.plugin.opf.common.OPFLogger;
 
 import com.interpss.core.common.curve.NumericCurveModel;
 import com.interpss.core.common.curve.QuadraticCurve;
-import com.interpss.core.net.Bus;
 import com.interpss.opf.OpfBus;
-import com.interpss.opf.OpfGen;
 import com.interpss.opf.OpfNetwork;
 
 import cern.colt.matrix.impl.SparseDoubleMatrix1D;
@@ -37,16 +35,16 @@ public class GIQPObjectiveFunctionCollector extends BaseObjectiveFunctionCollect
 		//double baseMVA=opfNet.getBaseKva()/1000.0;		
 		int genIndex=0;
 		try {
-			for (Bus b: opfNet.getBusList()){
-				OpfBus bus = (OpfBus)b;
+			for (OpfBus bus: opfNet.getBusList()){
+				//OpfBus bus = (OpfBus)b;
 				if(bus.isOpfGen()){
-					NumericCurveModel incType = ((OpfGen)b).getIncCost().getCostModel();
+					NumericCurveModel incType = bus.getOpfGen().getIncCost().getCostModel();
 					if(!incType.equals(NumericCurveModel.QUADRATIC)||
-							((OpfGen)b).getIncCost().getQuadraticCurve()==null){
+							bus.getOpfGen().getIncCost().getQuadraticCurve()==null){
 						OPFLogger.getLogger().severe("QP solver requires quadratic gen cost funtion for generator at bus: "
-								+b.getNumber());						
+								+bus.getNumber());						
 					}else{
-						QuadraticCurve quaCur = ((OpfGen)b).getIncCost().getQuadraticCurve();
+						QuadraticCurve quaCur = bus.getOpfGen().getIncCost().getQuadraticCurve();
 						double constSq = quaCur.getA(); // para for square item
 						double constLn = quaCur.getB(); // para for linear item						
 						
