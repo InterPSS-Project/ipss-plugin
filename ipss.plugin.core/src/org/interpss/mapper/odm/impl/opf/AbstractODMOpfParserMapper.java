@@ -77,15 +77,14 @@ import com.interpss.core.common.curve.CommonCurveFactory;
 import com.interpss.core.common.curve.NumericCurveModel;
 import com.interpss.core.common.curve.PieceWiseCurve;
 import com.interpss.core.common.curve.QuadraticCurve;
-import com.interpss.opf.IncrementalCost;
 import com.interpss.opf.OpfBranch;
 import com.interpss.opf.OpfBus;
-import com.interpss.opf.OpfFactory;
 import com.interpss.opf.OpfGen;
 import com.interpss.opf.OpfGenOperatingMode;
 import com.interpss.opf.OpfNetwork;
-import com.interpss.opf.cst.ConstraintFactory;
-import com.interpss.opf.cst.OpfBusLimits;
+import com.interpss.opf.datatype.OpfDatatypeFactory;
+import com.interpss.opf.datatype.IncrementalCost;
+import com.interpss.opf.datatype.OpfBusLimits;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
@@ -254,7 +253,7 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 		// set gen incremental cost model
 		IncCostXmlType incCostRec = busRec.getIncCost();
 		CostModelEnumType costModelRec = incCostRec.getCostModel();
-		IncrementalCost inc = OpfFactory.eINSTANCE.createIncrementalCost();
+		IncrementalCost inc = OpfDatatypeFactory.eINSTANCE.createIncrementalCost();
 		if (costModelRec.equals(CostModelEnumType.PIECE_WISE_LINEAR_MODEL)){
 			inc.setCostModel(NumericCurveModel.PIECE_WISE);
 			if (busRec.getIncCost().getPieceWiseLinearModel()!=null){
@@ -330,7 +329,7 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 		// set constraints
 		if(busRec.getConstraints()!=null){
 			ConstraintsXmlType ctrtXml = busRec.getConstraints();		
-			OpfBusLimits ctrtIpss = ConstraintFactory.eINSTANCE.createOpfBusLimits();			
+			OpfBusLimits ctrtIpss = OpfDatatypeFactory.eINSTANCE.createOpfBusLimits();			
 			
 			double baseKva = net.getBaseKva();
 			double factor = net.getBaseKva()*0.001;
