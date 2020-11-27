@@ -7,7 +7,6 @@ import org.interpss.plugin.opf.constraint.BaseConstraintCollector;
 import org.interpss.plugin.opf.constraint.OpfConstraint;
 import org.interpss.plugin.opf.util.OpfDataHelper;
 
-import com.interpss.core.net.Bus;
 import com.interpss.opf.OpfBus;
 import com.interpss.opf.OpfNetwork;
 import com.interpss.opf.cst.OpfConstraintType;
@@ -31,7 +30,7 @@ public class ActivePowerEqnConstraintCollector extends BaseConstraintCollector{
 	public void collectConstraint() {		
 		int bracnt = 0;		
 		int genIdx = 0;
-		for (Bus b : opfNet.getBusList()) {	
+		for (OpfBus bus: opfNet.getBusList()) {	
 			
 			SparseDoubleMatrix1D yrow =  (SparseDoubleMatrix1D) Y.viewRow(bracnt++);
 			IntArrayList col_0 = new IntArrayList();
@@ -43,7 +42,6 @@ public class ActivePowerEqnConstraintCollector extends BaseConstraintCollector{
 			DoubleArrayList val = new DoubleArrayList();
 			
 			double pl = 0;	
-			OpfBus bus = (OpfBus)b;
 			if (bus.isOpfGen()) {
 				//colNo.add(b.getSortNumber());
 				colNo.add(genIdx++);
@@ -60,7 +58,7 @@ public class ActivePowerEqnConstraintCollector extends BaseConstraintCollector{
 			}			
 			
 			int id = cstContainer.size();
-			String des = "PBalance@"+ b.getId();
+			String des = "PBalance@"+ bus.getId();
 			double UpperLimit = pl;
 			double LowerLimit = pl;			
 			

@@ -1,7 +1,5 @@
 package org.interpss.plugin.opf.objectiveFunction;
 
-import org.interpss.plugin.opf.util.OpfDataHelper;
-
 import com.interpss.opf.OpfNetwork;
 
 public class BaseObjectiveFunctionCollector {
@@ -13,7 +11,7 @@ public class BaseObjectiveFunctionCollector {
 	
 	public BaseObjectiveFunctionCollector(OpfNetwork opfNet){
 		this.opfNet = opfNet;		
-		this.numOfGen = OpfDataHelper.getNoOfGen(this.opfNet);	
+		this.numOfGen = this.opfNet.getNoOpfGen();	
 		numOfBus = opfNet.getNoActiveBus();
 		this.numOfVar = numOfGen + numOfBus;
 		

@@ -8,11 +8,9 @@ import org.interpss.plugin.opf.common.OPFLogger;
 import org.interpss.plugin.opf.constraint.BaseConstraintCollector;
 import org.interpss.plugin.opf.constraint.OpfConstraint;
 
-import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.common.curve.NumericCurveModel;
 import com.interpss.core.common.curve.PieceWiseCurve;
-import com.interpss.core.net.Bus;
-import com.interpss.opf.OpfGen;
+import com.interpss.opf.OpfBus;
 import com.interpss.opf.OpfNetwork;
 import com.interpss.opf.cst.OpfConstraintType;
 
@@ -30,18 +28,18 @@ public class GenPWCostConstraintCollector extends BaseConstraintCollector{
 	public void collectConstraint() {		
 		
 		int genIndex = 0;
-		for (Bus bus : opfNet.getBusList()) {
-			AclfBus b = (AclfBus)bus;
-			if (b.isGen()) {
+		for (OpfBus bus : opfNet.getBusList()) {
+			//AclfBus b = (AclfBus)bus;
+			if (bus.isGen()) {
 				IntArrayList colNo = new IntArrayList();
 				DoubleArrayList val = new DoubleArrayList();
-				NumericCurveModel incType = ((OpfGen)b).getIncCost().getCostModel();
+				NumericCurveModel incType = bus.getOpfGen().getIncCost().getCostModel();
 				if (incType.equals(NumericCurveModel.QUADRATIC)){
 					OPFLogger.getLogger().severe("Solver requires piecewise linear gen cost funtion" +
 							" for generator at bus: "
-								+b.getNumber());
+								+bus.getNumber());
 				}else{					
-					PieceWiseCurve pw = ((OpfGen)b).getIncCost().getPieceWiseCurve();
+					PieceWiseCurve pw = bus.getOpfGen().getIncCost().getPieceWiseCurve();
 					int np = pw.getPoints().size();
 					double[] mw = new double[np];
 					double[] price = new double[np];
@@ -52,7 +50,7 @@ public class GenPWCostConstraintCollector extends BaseConstraintCollector{
 						pcnt++;
 					}					
 					
-					String des = "Gen piecewise cost function additional constraint @"+ b.getId();	
+					String des = "Gen piecewise cost function additional constraint @"+ bus.getId();	
 					double[] slope = new double[np-1];					
 					double rh = 0;
 					for (int i=1; i<np;i++){						
@@ -76,7 +74,4 @@ public class GenPWCostConstraintCollector extends BaseConstraintCollector{
 			}
 		}		
 	}
-	
-
-
 }

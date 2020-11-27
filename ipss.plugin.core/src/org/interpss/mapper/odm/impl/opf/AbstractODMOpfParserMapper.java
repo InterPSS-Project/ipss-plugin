@@ -85,10 +85,6 @@ import com.interpss.opf.OpfGenOperatingMode;
 import com.interpss.opf.OpfNetwork;
 import com.interpss.opf.cst.ConstraintFactory;
 import com.interpss.opf.cst.OpfBusLimits;
-import com.interpss.opf.dclfOpf.DclfOpfBranch;
-import com.interpss.opf.dclfOpf.DclfOpfBus;
-import com.interpss.opf.dclfOpf.DclfOpfGen;
-import com.interpss.opf.dclfOpf.DclfOpfNetwork;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
@@ -382,8 +378,8 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 	 * @return
 	 * @throws Exception
 	 */
-	public DclfOpfGen mapDclfOpfGenBusData(OpfDclfGenBusXmlType busRec, DclfOpfNetwork net) throws InterpssException {
-		DclfOpfGen opfGenBus = OpfObjectFactory.createDclfOpfGenBus(busRec.getId(), net);
+	public OpfGen mapDclfOpfGenBusData(OpfDclfGenBusXmlType busRec, OpfNetwork net) throws InterpssException {
+		OpfGen opfGenBus = OpfObjectFactory.createOpfGen(busRec.getId(), net);
 		mapBaseBusData(busRec, opfGenBus, net);
 
 		AclfBusDataHelper helper = new AclfBusDataHelper(net);

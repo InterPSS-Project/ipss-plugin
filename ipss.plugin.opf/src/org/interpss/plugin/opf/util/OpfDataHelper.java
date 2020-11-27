@@ -23,18 +23,18 @@ import lpsolve.LpSolve;
 import lpsolve.LpSolveException;
 
 public class OpfDataHelper {
-
+/*
 	public static int getNoOfGen(OpfNetwork net) {
 		int numOfGen = 0;
-		for (Bus b : net.getBusList()) {
-			AclfBus acbus = (AclfBus) b;
-			if (acbus.isGen()) {
+		for (OpfBus bus : net.getBusList()) {
+			//AclfBus acbus = (AclfBus) b;
+			if (bus.isGen()) {
 				numOfGen++;
 			}
 		}
 		return numOfGen;
 	}
-
+*/
 	public static double round(double value, int places) {
 	    if (places < 0) throw new IllegalArgumentException();
 
@@ -48,13 +48,13 @@ public class OpfDataHelper {
 		int numOfBus = opfNet.getNoActiveBus();
 		SparseDoubleMatrix2D busAdm = new SparseDoubleMatrix2D(numOfBus,
 				numOfBus);
-		for (Bus b : opfNet.getBusList()) {
-			int i = b.getSortNumber();
+		for (OpfBus bus : opfNet.getBusList()) {
+			int i = bus.getSortNumber();
 			double Bii = 0;
-			for (Branch bra : b.getBranchList()) {
+			for (Branch bra : bus.getBranchList()) {
 				//if (bra.isAclfBranch()) {
 					AclfBranch aclfBranch = (AclfBranch) bra;
-					Bus busj = bra.getToBus().getId().equals(b.getId()) ? bra
+					Bus busj = bra.getToBus().getId().equals(bus.getId()) ? bra
 							.getFromBus() : bra.getToBus();
 					int j = busj.getSortNumber();
 					double Bij = 1.0 / aclfBranch.getZ().getImaginary();// aclfBranch.b1ft();
@@ -78,8 +78,8 @@ public class OpfDataHelper {
 		int[] NonSwingBusRows = new int[opfNet.getNoActiveBus() - 1];
 		int idx = 0;
 		for (int busIndex = 0; busIndex < opfNet.getNoActiveBus(); busIndex++) {
-			Bus b = opfNet.getBusList().get(busIndex);
-			AclfBus bus = (AclfBus) b;
+			OpfBus bus = opfNet.getBusList().get(busIndex);
+			//AclfBus bus = (AclfBus) b;
 			if (!bus.isSwing()) {
 				// swingSortNum=bus.getSortNumber();
 				NonSwingBusRows[idx] = busIndex;
@@ -119,9 +119,9 @@ public class OpfDataHelper {
 
 	public static int getSwingBusIndex(OpfNetwork aclfNet) {
 		// assume there is one swing bus in the system
-		for (Bus b : aclfNet.getBusList()) {
-			if (((OpfBus) b).isSwing()) {
-				return b.getSortNumber();
+		for (OpfBus bus : aclfNet.getBusList()) {
+			if (bus.isSwing()) {
+				return bus.getSortNumber();
 			}
 		}
 		OPFLogger.getLogger().severe("No swing bus found in the system");
@@ -134,7 +134,7 @@ public class OpfDataHelper {
 		Array2DRowRealMatrix angleDiffWeight = new Array2DRowRealMatrix(
 				numOfBus, numOfBus);
 
-		for (Bus busi : opfNet.getBusList()) {
+		for (OpfBus busi : opfNet.getBusList()) {
 			// double ADWij = 0;
 			// double ADWii = 0;
 			int i = busi.getSortNumber();

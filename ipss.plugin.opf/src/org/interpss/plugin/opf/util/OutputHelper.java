@@ -88,7 +88,7 @@ public class OutputHelper {
 			OpfBranch opfBra = (OpfBranch) branch;
 			double rating = opfBra.getRatingMw1();
 			// TODO: direction ?
-			double flow = opfBra.getDclfFlow();
+			double flow = opfBra.dcPowerFrom2To();
 			if( Math.abs(Math.abs(flow) - Math.abs(rating)) < 0.001 ){
 				bindingBranchList.add(branch);
 			}
