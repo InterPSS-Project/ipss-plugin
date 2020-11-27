@@ -35,7 +35,6 @@ import org.interpss.pssl.common.PSSLException;
 import org.interpss.pssl.plugin.IpssAdapter;
 import org.interpss.pssl.simu.IpssDclf;
 import org.interpss.pssl.simu.IpssDclf.DclfAlgorithmDSL;
-import org.interpss.pssl.util.ContingencyAnalysisHelper;
 import org.junit.Test;
 
 import com.interpss.CoreObjectFactory;
@@ -45,7 +44,6 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.contingency.MonitoringBranch;
 import com.interpss.core.aclf.contingency.OutageBranch;
-import com.interpss.core.aclf.contingency.dep.DepContingency;
 import com.interpss.core.dclf.LODFSenAnalysisType;
 import com.interpss.core.dclf.common.OutageConnectivityException;
 import com.interpss.core.dclf.common.ReferenceBusException;
@@ -199,86 +197,6 @@ Cont 1, Bus6->Bus13(1), 17.03369, 17.88058, 100.0000, 17.88058
         	);
 */        	
 		}
-	}
-	
-	//@Test
-	public void multipleOutageTestFail() throws InterpssException, ReferenceBusException, IpssNumericException  {
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/aclf/ieee14.ieee")
-				.setFormat(IpssAdapter.FileFormat.IEEECommonFormat)
-				.load()
-				.getImportedObj();		
-		
-		// set branch mva rating, since it is not defined in the input file.
-		for (AclfBranch branch : net.getBranchList()) {
-			branch.setRatingMva1(100.0);
-		}
-		
-		DclfAlgorithmDSL algoDsl = IpssDclf.createDclfAlgorithm(net)
-				.runDclfAnalysis();
-
-		String contId = "Cont 1";
-		List<String> outageBranchList = new ArrayList<String>();
-		outageBranchList.add("Bus1->Bus5(1)");
-		outageBranchList.add("Bus3->Bus4(1)");
-		outageBranchList.add("Bus6->Bus11(1)");
-		
-		DepContingency cont = AclfScenarioHelper.mapContingency(contId,
-				outageBranchList, net);
-		
-		algoDsl.setRefBus("Bus14");
-		
-		for (AclfBranch branch : net.getBranchList()) {
-			//if (branch.isActive() && !outageBranchList.contains(branch.getId())) {
-			if (branch.isActive()) {
-				MonitoringBranch monBranch = CoreObjectFactory
-						.createMonitoringBranch(net, branch);
-				cont.addMonitoringBranch(monBranch);
-			}
-		}
-		
-		ContingencyAnalysisHelper contHelper = new ContingencyAnalysisHelper(
-				algoDsl, false);		
-		
-		
-		contHelper.setViolationThreshold(1.0);		
-		
-		
-		boolean status = contHelper.contAnalysis(cont);
-		
-
-        System.out.println("Contingency, Monitoring Branch, Pre Contingency Flow (MW), Post Contingency Flow (MW), Limit (MW), Loading (%)");	
-        
-        double baseMva = net.getBaseMva();        
-		
-
-//		for (AclfBranch branch : net.getBranchList()) {
-//        	double preFlow = branch.getDclfFlow()*baseMva,
-//        		   postFlow = 0.0;
-//        	try {
-//        		double[] factors = algoDsl.monitorBranch(branch)
-//  				  					  .getLineOutageDFactors();
-//        		if (factors != null) {  // factors = null if branch is an outage branch
-//            		double sum = 0.0;
-//            		int cnt = 0;
-//        			for (OutageBranch outBranch : algoDsl.outageBranchList()) {
-//        				double flow = outBranch.getAclfBranch().getDclfFlow();
-//        				sum += flow * factors[cnt++];
-//        			}
-//        			postFlow = sum*baseMva + preFlow;
-//        		}
-//        	} catch (IpssNumericException | ReferenceBusException e) {
-//    			IpssLogger.ipssLogger.severe(e.toString());
-//        	}
-//        	
-//        	System.out.println(
-//        			contId + ", " + 
-//        			branch.getId() + ", " +
-//        			Number2String.toStr(preFlow) + ", " +
-//        			Number2String.toStr(postFlow) + ", " +
-//        			Number2String.toStr(branch.getRatingMva1()) + ", " +
-//        			Number2String.toStr(branch.getRatingMva1() == 0? 0.0 : 100.0*Math.abs(postFlow)/branch.getRatingMva1())
-//        	);
-//		}
 	}
 }
 
