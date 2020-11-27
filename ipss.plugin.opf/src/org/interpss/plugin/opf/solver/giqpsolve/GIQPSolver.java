@@ -42,17 +42,17 @@ public class GIQPSolver extends AbstractOpfSolver {
 	// build order: Equality -> Inequality 
 	@Override
 	public void build(List<OpfConstraint> cstContainer) {		
-		new ActivePowerEqnConstraintCollector(opfNet,cstContainer)
+		new ActivePowerEqnConstraintCollector(this.getNetwork(),cstContainer)
 					.collectConstraint();
 		
-		new LineMwFlowConstraintCollector(opfNet,cstContainer)
+		new LineMwFlowConstraintCollector(this.getNetwork(),cstContainer)
 					.collectConstraint();
 		
-		new GenMwOutputConstraintCollector(opfNet,cstContainer)
+		new GenMwOutputConstraintCollector(this.getNetwork(),cstContainer)
 					.collectConstraint();
 		
 		
-		new BusMinAngleConstraintCollector(opfNet,cstContainer,	BusAngleLimit)
+		new BusMinAngleConstraintCollector(this.getNetwork(),cstContainer,	BusAngleLimit)
 					.collectConstraint();	
 					
 		GIQPSolverInputMatrixBuilder inputBuilder = new GIQPSolverInputMatrixBuilder(this.cstContainer);
@@ -72,7 +72,7 @@ public class GIQPSolver extends AbstractOpfSolver {
 		biq = new SparseDoubleMatrix1D(size);
 		inputBuilder.buildCiqAndBiq(Ciq, biq, startIdx, endIdx);	
 		
-		GIQPObjectiveFunctionCollector objBuilder = new GIQPObjectiveFunctionCollector(opfNet);
+		GIQPObjectiveFunctionCollector objBuilder = new GIQPObjectiveFunctionCollector(this.getNetwork());
 		G = objBuilder.buildG();
 		a = objBuilder.buildA();	
 		
@@ -145,7 +145,7 @@ public class GIQPSolver extends AbstractOpfSolver {
 	   * @return double
 	   */
 	public double getObjectiveFunctionValue(){
-		return solver.getMinF() + opfNet.getTotalFixedCost();
+		return solver.getMinF() + this.getNetwork().getTotalFixedCost();
 	}
 	  /**
 	   * Computes and returns qx1 Lagrangian multiplier vector (u)
@@ -213,10 +213,10 @@ public class GIQPSolver extends AbstractOpfSolver {
 	public void calLMP() {		
 		// set  LMP to opfNet bus object				
 		int cnt = 0;
-		double baseMVA=opfNet.getBaseKva()/1000.0;
-		for(Bus b: opfNet.getBusList()){				
-			OpfBus bus1=(OpfBus) b;
-			bus1.setLMP(getEqMultipliers()[cnt++]/baseMVA);
+		double baseMVA=this.getNetwork().getBaseKva()/1000.0;
+		for(OpfBus bus: this.getNetwork().getBusList()){				
+			//OpfBus bus1=(OpfBus) b;
+			bus.setLMP(getEqMultipliers()[cnt++]/baseMVA);
 		}		
 	}	
 	@Override

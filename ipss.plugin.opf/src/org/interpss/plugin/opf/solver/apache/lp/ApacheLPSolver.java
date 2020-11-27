@@ -44,20 +44,20 @@ public class ApacheLPSolver extends AbstractOpfSolver{
 
 	@Override
 	public void build(List<OpfConstraint> cstContainer) {
-		new ActivePowerEqnConstraintCollector(opfNet, cstContainer)
+		new ActivePowerEqnConstraintCollector(this.getNetwork(), cstContainer)
 					.collectConstraint();
 
-		new LineMwFlowConstraintCollector(opfNet, cstContainer)
+		new LineMwFlowConstraintCollector(this.getNetwork(), cstContainer)
 					.collectConstraint();
 
-		new GenMwOutputConstraintCollector(opfNet, cstContainer)
+		new GenMwOutputConstraintCollector(this.getNetwork(), cstContainer)
 					.collectConstraint();
 
-		new BusMinAngleConstraintCollector(opfNet, cstContainer, BusAngleLimit)
+		new BusMinAngleConstraintCollector(this.getNetwork(), cstContainer, BusAngleLimit)
 					.collectConstraint();
 
 		ApacheLpsolveSolverObjectiveFunctionCollector objBuilder = new ApacheLpsolveSolverObjectiveFunctionCollector(
-				opfNet);
+				this.getNetwork());
 		SparseRealVector objVec = objBuilder.processGenCostFunction();
 		
 		objFunc =  new LinearObjectiveFunction(objVec, 0);
