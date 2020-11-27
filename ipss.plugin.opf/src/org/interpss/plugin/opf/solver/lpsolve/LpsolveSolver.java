@@ -5,9 +5,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
-import lpsolve.LpSolve;
-import lpsolve.LpSolveException;
-
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.interpss.plugin.opf.common.OPFLogger;
@@ -21,8 +18,11 @@ import org.interpss.plugin.opf.solver.AbstractOpfSolver;
 import org.interpss.plugin.opf.util.OpfDataHelper;
 
 import com.interpss.core.net.Bus;
-import com.interpss.opf.dep.OpfBus;
-import com.interpss.opf.dep.OpfNetwork;
+import com.interpss.opf.OpfBus;
+import com.interpss.opf.OpfNetwork;
+
+import lpsolve.LpSolve;
+import lpsolve.LpSolveException;
 
 public class LpsolveSolver extends AbstractOpfSolver {
 
@@ -218,8 +218,9 @@ public class LpsolveSolver extends AbstractOpfSolver {
 		int genIndex = 1;
 		try {
 			for (Bus b : opfNet.getBusList()) {
+				OpfBus bus = (OpfBus)b;
 				lpsolver.setColName( busIdx + this.numOfGen, "x" + (b.getSortNumber() + 1));
-				if(opfNet.isOpfGenBus(b)){
+				if(bus.isOpfGen()){
 					lpsolver.setColName(genIndex, "Pg" + (b.getSortNumber()+1));
 					lpsolver.setColName(genIndex + this.numOfVar, "y" + (b.getSortNumber()+1));
 					genIndex++;

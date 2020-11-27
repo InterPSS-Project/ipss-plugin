@@ -1,12 +1,17 @@
 package org.interpss.plugin.opf;
 
 import org.interpss.plugin.opf.common.OPFException;
+import org.interpss.plugin.opf.constraint.OpfConstraint;
 import org.interpss.plugin.opf.solver.IOpfSolver;
 import org.interpss.plugin.opf.solver.apache.lp.ApacheLPSolver;
 import org.interpss.plugin.opf.solver.giqpsolve.GIQPSolver;
 import org.interpss.plugin.opf.solver.lpsolve.LpsolveSolver;
 
-import com.interpss.opf.dep.OpfNetwork;
+import com.interpss.opf.OpfNetwork;
+import com.interpss.opf.cst.OpfConstraintType;
+
+import cern.colt.list.DoubleArrayList;
+import cern.colt.list.IntArrayList;
 
 public class OpfSolverFactory {
 	public static OpfSolverFactory opfSolverFactory =null;
@@ -26,6 +31,19 @@ public class OpfSolverFactory {
 	public static ApacheLPSolver createApacheLPSolver(OpfNetwork opfnet,IOpfSolver.constraintHandleType type){
 		ApacheLPSolver solver = new ApacheLPSolver(opfnet, type);
 		return solver;
+	}
+	
+	public static OpfConstraint createOpfConstraint(int id, String des, double ul, double ll, 
+			OpfConstraintType type, IntArrayList colNo, DoubleArrayList val){
+		OpfConstraint cst = new OpfConstraint();	
+		cst.setDesc(des);
+		cst.setId(id);
+		cst.setLowerLimit(ll);
+		cst.setUpperLimit(ul);
+		cst.setColNo(colNo);
+		cst.setVal(val);
+	    cst.setCstType(type);
+		return cst;
 	}
 	
 	public static IOpfSolver createOPFSolver(OPFSolverEnum solver,OpfNetwork opfnet,
