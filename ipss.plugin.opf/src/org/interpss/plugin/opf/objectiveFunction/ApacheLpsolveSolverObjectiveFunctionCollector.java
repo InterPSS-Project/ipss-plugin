@@ -10,9 +10,7 @@ import org.interpss.plugin.opf.constraint.OpfConstraint;
 
 import com.interpss.core.common.curve.NumericCurveModel;
 import com.interpss.core.common.curve.PieceWiseCurve;
-import com.interpss.core.net.Bus;
 import com.interpss.opf.OpfBus;
-import com.interpss.opf.OpfGen;
 import com.interpss.opf.OpfNetwork;
 import com.interpss.opf.cst.OpfConstraintType;
 
@@ -31,17 +29,17 @@ public class ApacheLpsolveSolverObjectiveFunctionCollector extends BaseObjective
 		int totalVar = numOfVar;
 		int totalVarIdx = numOfVar;		
 		try {
-			for (Bus b: opfNet.getBusList()){	
-				OpfBus bus = (OpfBus)b;
+			for (OpfBus bus: opfNet.getBusList()){	
+				//OpfBus bus = (OpfBus)b;
 				if(bus.isOpfGen()){
-					NumericCurveModel incType = ((OpfGen)b).getIncCost().getCostModel();
+					NumericCurveModel incType = bus.getOpfGen().getIncCost().getCostModel();
 					if(!incType.equals(NumericCurveModel.PIECE_WISE)||
-							((OpfGen)b).getIncCost().getPieceWiseCurve()==null){
+							bus.getOpfGen().getIncCost().getPieceWiseCurve()==null){
 						OPFLogger.getLogger().severe("LP solver requires piecewise linear gen cost funtion for generator at bus: "
-								+b.getNumber());						
+								+bus.getNumber());						
 					}else{
 						//lpsolver.setColName(genIndex, "Pg" + (b.getSortNumber()+1));
-						PieceWiseCurve pw = ((OpfGen)b).getIncCost().getPieceWiseCurve();
+						PieceWiseCurve pw = bus.getOpfGen().getIncCost().getPieceWiseCurve();
 						int np = pw.getPoints().size();
 						double[] mw = new double[np];
 						double[] price = new double[np];
@@ -56,7 +54,7 @@ public class ApacheLpsolveSolverObjectiveFunctionCollector extends BaseObjective
 						 * the following inequality constraint will be added for each segment
 						slope*x-y<= slope*xj_1 - cj_1;
 						*/
-						String des = "Gen piecewise cost function additional constraint @"+ b.getId();
+						String des = "Gen piecewise cost function additional constraint @"+ bus.getId();
 						double[] slope = new double[np];
 						double[] xj = new double[np];
 						double[] cj = new double[np];
