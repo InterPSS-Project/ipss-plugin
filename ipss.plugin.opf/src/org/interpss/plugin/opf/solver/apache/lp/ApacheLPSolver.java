@@ -28,7 +28,7 @@ import org.interpss.plugin.opf.constraint.dc.LineMwFlowConstraintCollector;
 import org.interpss.plugin.opf.objectiveFunction.ApacheLpsolveSolverObjectiveFunctionCollector;
 import org.interpss.plugin.opf.solver.AbstractOpfSolver;
 
-import com.interpss.opf.dep.OpfNetwork;
+import com.interpss.opf.OpfNetwork;
 
 public class ApacheLPSolver extends AbstractOpfSolver{
 

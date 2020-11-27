@@ -1,29 +1,26 @@
 package org.interpss.plugin.opf.objectiveFunction;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.math3.linear.OpenMapRealVector;
 import org.interpss.numeric.datatype.Point;
+import org.interpss.plugin.opf.OpfSolverFactory;
 import org.interpss.plugin.opf.common.OPFLogger;
 import org.interpss.plugin.opf.constraint.OpfConstraint;
-import org.interpss.plugin.opf.constraint.OpfConstraint.cstType;
+
+import com.interpss.core.common.curve.NumericCurveModel;
+import com.interpss.core.common.curve.PieceWiseCurve;
+import com.interpss.opf.OpfBus;
+import com.interpss.opf.OpfNetwork;
+import com.interpss.opf.cst.OpfConstraintType;
 
 import cern.colt.list.DoubleArrayList;
 import cern.colt.list.IntArrayList;
 
-import com.interpss.core.common.curve.NumericCurveModel;
-import com.interpss.core.common.curve.PieceWiseCurve;
-import com.interpss.core.net.Bus;
-import com.interpss.opf.dep.BaseOpfNetwork;
-import com.interpss.opf.dep.OpfGenBus;
-import com.interpss.opf.dep.OpfNetwork;
-
 public class ApacheLpsolveSolverObjectiveFunctionCollector extends BaseObjectiveFunctionCollector{
 	
-	public ApacheLpsolveSolverObjectiveFunctionCollector(BaseOpfNetwork opfNet){
+	public ApacheLpsolveSolverObjectiveFunctionCollector(OpfNetwork opfNet){
 		super(opfNet);
-		this.opfNet = (OpfNetwork)opfNet;	
 	}
 	
 	
@@ -32,16 +29,17 @@ public class ApacheLpsolveSolverObjectiveFunctionCollector extends BaseObjective
 		int totalVar = numOfVar;
 		int totalVarIdx = numOfVar;		
 		try {
-			for (Bus b: opfNet.getBusList()){					
-				if(opfNet.isOpfGenBus(b)){
-					NumericCurveModel incType = ((OpfGenBus)b).getIncCost().getCostModel();
+			for (OpfBus bus: opfNet.getBusList()){	
+				//OpfBus bus = (OpfBus)b;
+				if(bus.isOpfGen()){
+					NumericCurveModel incType = bus.getOpfGen().getIncCost().getCostModel();
 					if(!incType.equals(NumericCurveModel.PIECE_WISE)||
-							((OpfGenBus)b).getIncCost().getPieceWiseCurve()==null){
+							bus.getOpfGen().getIncCost().getPieceWiseCurve()==null){
 						OPFLogger.getLogger().severe("LP solver requires piecewise linear gen cost funtion for generator at bus: "
-								+b.getNumber());						
+								+bus.getNumber());						
 					}else{
 						//lpsolver.setColName(genIndex, "Pg" + (b.getSortNumber()+1));
-						PieceWiseCurve pw = ((OpfGenBus)b).getIncCost().getPieceWiseCurve();
+						PieceWiseCurve pw = bus.getOpfGen().getIncCost().getPieceWiseCurve();
 						int np = pw.getPoints().size();
 						double[] mw = new double[np];
 						double[] price = new double[np];
@@ -56,7 +54,7 @@ public class ApacheLpsolveSolverObjectiveFunctionCollector extends BaseObjective
 						 * the following inequality constraint will be added for each segment
 						slope*x-y<= slope*xj_1 - cj_1;
 						*/
-						String des = "Gen piecewise cost function additional constraint @"+ b.getId();
+						String des = "Gen piecewise cost function additional constraint @"+ bus.getId();
 						double[] slope = new double[np];
 						double[] xj = new double[np];
 						double[] cj = new double[np];
@@ -93,7 +91,7 @@ public class ApacheLpsolveSolverObjectiveFunctionCollector extends BaseObjective
 	private void createNewConstraint(List<OpfConstraint> cstContainer, int genIndex,
 			int totalVarIdx, double slope, double xj, double cj, String des) {
 		
-		OpfConstraint cst = new OpfConstraint();		
+		//OpfConstraint cst = new OpfConstraint();		
 		int id = cstContainer.size();		
 		double rh = slope * xj - cj;		
 		IntArrayList colNo = new IntArrayList();
@@ -102,7 +100,7 @@ public class ApacheLpsolveSolverObjectiveFunctionCollector extends BaseObjective
 		val.add(slope);
 		colNo.add(totalVarIdx);
 		val.add(-1);
-		cst = cst.setConstraint(id, des, rh, 0, cstType.lessThan, colNo, val);
+		OpfConstraint cst = OpfSolverFactory.createOpfConstraint(id, des, rh, 0, OpfConstraintType.LESS_THAN, colNo, val);
 		cstContainer.add(cst);
 	}
 	
@@ -114,9 +112,4 @@ public class ApacheLpsolveSolverObjectiveFunctionCollector extends BaseObjective
 		}		
 		return vec;
 	}
-	
-	
-	
-	
-
 }
