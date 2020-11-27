@@ -15,13 +15,13 @@ import org.interpss.plugin.opf.objectiveFunction.GIQPObjectiveFunctionCollector;
 import org.interpss.plugin.opf.solver.AbstractOpfSolver;
 import org.interpss.plugin.opf.util.OpfDataHelper;
 
+import com.interpss.core.net.Bus;
+import com.interpss.opf.OpfBus;
+import com.interpss.opf.OpfNetwork;
+
 import cern.colt.matrix.impl.SparseDoubleMatrix1D;
 import cern.colt.matrix.impl.SparseDoubleMatrix2D;
 import cern.colt.matrix.linalg.Algebra;
-
-import com.interpss.core.net.Bus;
-import com.interpss.opf.dep.OpfBus;
-import com.interpss.opf.dep.OpfNetwork;
 
 public class GIQPSolver extends AbstractOpfSolver {
 	
