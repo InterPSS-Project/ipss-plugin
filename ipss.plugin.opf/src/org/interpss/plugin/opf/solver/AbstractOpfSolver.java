@@ -12,8 +12,9 @@ import org.interpss.plugin.opf.util.OpfDataHelper;
 
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.net.Bus;
-import com.interpss.opf.dep.OpfGenBus;
-import com.interpss.opf.dep.OpfNetwork;
+import com.interpss.opf.OpfBus;
+import com.interpss.opf.OpfGen;
+import com.interpss.opf.OpfNetwork;
 
 public abstract class AbstractOpfSolver implements IOpfSolver {
 
@@ -40,7 +41,7 @@ public abstract class AbstractOpfSolver implements IOpfSolver {
 		this.formBusIndexTable();
 		this.cstContainer = new ArrayList<OpfConstraint>();
 		this.numOfBus = this.opfNet.getNoActiveBus();
-		this.numOfGen = helper.getNoOfGen(this.opfNet);
+		this.numOfGen = this.opfNet.getNoOpfGen();
 		this.numOfBranch = this.opfNet.getNoActiveBranch();	
 		
 	}
@@ -72,7 +73,7 @@ public abstract class AbstractOpfSolver implements IOpfSolver {
 		opfNet.setMinF(minF);
 		// extract the angle value
 		busAngle = new double[opfNet.getNoActiveBus()];
-		int noOfGen = helper.getNoOfGen(opfNet);
+		int noOfGen = opfNet.getNoOpfGen();
 		for (int k = noOfGen; k < noOfGen + opfNet.getNoActiveBus() ; k++) {
 			busAngle[k - noOfGen] = this.optimX[k]; // voltAngle in radians
 		}
@@ -80,8 +81,9 @@ public abstract class AbstractOpfSolver implements IOpfSolver {
 		// set gen P to opfNet bus object
 		int genIndex = 0;
 		for (Bus b : opfNet.getBusList()) {
-			if (opfNet.isOpfGenBus(b)) {
-				((OpfGenBus) b).setGenP(optimX[genIndex]);
+			OpfBus bus = (OpfBus)b;
+			if (bus.isOpfGen()) {
+				bus.setGenP(optimX[genIndex]);
 				genIndex++;
 			}
 		}
