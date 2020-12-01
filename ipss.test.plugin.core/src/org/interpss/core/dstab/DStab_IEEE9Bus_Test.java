@@ -285,7 +285,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		
 	    System.out.println("after being tripped static load at bus 5 = "+load5.toString());
 	    
-	    assertTrue(NumericUtil.equals(load5, new Complex(1.027036500526697, 0.41081460021067884), 1.0E-6)); 
+	    assertTrue(NumericUtil.equals(load5, new Complex(1.0298252490657749, 0.41193009962631), 1.0E-6)); 
 		
 		System.out.println("Mach Pe (pu) :\n"+sm.toCSVString(sm.getMachPeTable()));
 //		
@@ -748,13 +748,13 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		
 //		System.out.println("Volages Angle (Deg):\n"+sm.toCSVString(sm.getBusAngleTable()));
 //		
-//		System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
+		System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
 		
 		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(0).value, 1.13090,1.0E-4));
 		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(40).value, 1.13090,1.0E-4));
 		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus3-mach2").get(0).value, 0.0,1.0E-4));
 		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus3-mach2").get(40).value, 0.0,1.0E-4));
-		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus3-mach2").get(42).value, 0.61517,1.0E-4));
+		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus3-mach2").get(42).value, 0.60418,1.0E-4));
 		
 	
 		

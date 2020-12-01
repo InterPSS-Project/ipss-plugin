@@ -955,7 +955,6 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 	private double tempB_old = 0.0;
 	
 	private double dv_dt0 = 0.0; 
-	private double vt_measured1 = 0.0;
 	private double dv_dt1 = 0.0;
 
 	private double dThA_dt0 = 0.0;
