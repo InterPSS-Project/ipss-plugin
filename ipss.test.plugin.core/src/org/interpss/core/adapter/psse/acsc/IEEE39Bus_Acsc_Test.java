@@ -17,7 +17,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
-import com.interpss.core.algo.SimpleFaultAlgorithm;
+import com.interpss.core.algo.sc.SimpleFaultAlgorithm;
 
 public class IEEE39Bus_Acsc_Test {
 	
