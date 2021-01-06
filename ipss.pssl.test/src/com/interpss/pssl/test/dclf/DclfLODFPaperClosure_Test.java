@@ -38,9 +38,9 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.contingency.BranchOutageType;
 import com.interpss.core.aclf.contingency.OutageBranch;
-import com.interpss.core.dclf.LODFSenAnalysisType;
-import com.interpss.core.dclf.common.OutageConnectivityException;
-import com.interpss.core.dclf.common.ReferenceBusException;
+import com.interpss.core.algo.dclf.LODFSenAnalysisType;
+import com.interpss.core.common.OutageConnectivityException;
+import com.interpss.core.common.ReferenceBusException;
 import com.interpss.pssl.test.BaseTestSetup;
 
 public class DclfLODFPaperClosure_Test extends BaseTestSetup {

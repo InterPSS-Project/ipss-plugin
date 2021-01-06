@@ -31,7 +31,7 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.acsc.AcscNetwork;
-import com.interpss.core.dclf.SenAnalysisAlgorithm;
+import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
 import com.interpss.core.net.OriginalDataFormat;
 import com.interpss.dc.DcNetwork;
 import com.interpss.dist.DistNetwork;
