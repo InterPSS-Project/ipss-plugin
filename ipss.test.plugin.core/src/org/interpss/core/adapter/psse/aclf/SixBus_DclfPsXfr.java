@@ -39,11 +39,11 @@ import org.interpss.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.Test;
 
 import com.interpss.CoreObjectFactory;
-import com.interpss.core.DclfObjectFactory;
+import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
-import com.interpss.core.dclf.SenAnalysisAlgorithm;
+import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
 import com.interpss.core.net.Bus;
 import com.interpss.core.net.RefBusType;
 
@@ -93,7 +93,7 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
  		System.out.println(net.formB1Matrix());
 		*/
 		
-		SenAnalysisAlgorithm algo = DclfObjectFactory.createSenAnalysisAlgorithm(net);
+		SenAnalysisAlgorithm algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
 		algo.calculateDclf();
 
 		//System.out.println(DclfOutFunc.dclfResults(algo, false));
@@ -119,7 +119,7 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
 					.load()
 					.getImportedObj();
 
-		SenAnalysisAlgorithm algo = DclfObjectFactory.createSenAnalysisAlgorithm(net);
+		SenAnalysisAlgorithm algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
 		
 		net.setRefBusId("Bus3");
 		net.setRefBusType(RefBusType.USER_DEFINED);
@@ -173,7 +173,7 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
 					.load()
 					.getImportedObj();
 
-		SenAnalysisAlgorithm algo = DclfObjectFactory.createSenAnalysisAlgorithm(net);
+		SenAnalysisAlgorithm algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
 		algo.calculateDclf();
 		
 		//System.out.println(DclfOutFunc.dclfResults(algo, false));

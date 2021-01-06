@@ -35,9 +35,9 @@ import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.dclf.LODFSenAnalysisType;
-import com.interpss.core.dclf.common.OutageConnectivityException;
-import com.interpss.core.dclf.common.ReferenceBusException;
+import com.interpss.core.algo.dclf.LODFSenAnalysisType;
+import com.interpss.core.common.OutageConnectivityException;
+import com.interpss.core.common.ReferenceBusException;
 import com.interpss.pssl.test.BaseTestSetup;
 
 public class DclfLODFPaper_OutageBranchDup extends BaseTestSetup {
