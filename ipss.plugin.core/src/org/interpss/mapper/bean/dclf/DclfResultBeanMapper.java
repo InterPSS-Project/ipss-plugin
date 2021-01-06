@@ -16,7 +16,7 @@ import com.interpss.common.mapper.AbstractMapper;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.dclf.SenAnalysisAlgorithm;
+import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
 
 
 public class DclfResultBeanMapper extends AbstractMapper<SenAnalysisAlgorithm, DclfNetResultBean> {

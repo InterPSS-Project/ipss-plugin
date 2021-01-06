@@ -33,10 +33,10 @@ import org.interpss.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.DclfObjectFactory;
+import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.dclf.SenAnalysisAlgorithm;
-import com.interpss.core.dclf.common.ReferenceBusException;
+import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
+import com.interpss.core.common.ReferenceBusException;
 import com.interpss.core.funcImpl.ZeroZBranchProcesor;
 
 
@@ -50,7 +50,7 @@ public class IEEE14BusBreaker_dclf_Test extends CorePluginTestSetup {
 				.getImportedObj();
 	  	//System.out.println(net.net2String());
 
-		SenAnalysisAlgorithm algo = DclfObjectFactory.createSenAnalysisAlgorithm(net);
+		SenAnalysisAlgorithm algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
 		algo.calculateDclf();
 
 		//System.out.println(DclfOutFunc.dclfResults(algo, false));
@@ -71,7 +71,7 @@ public class IEEE14BusBreaker_dclf_Test extends CorePluginTestSetup {
 	  	net.accept(new ZeroZBranchProcesor(true));
 	  	assertTrue(net.isZeroZBranchProcessed());
 
-		SenAnalysisAlgorithm algo = DclfObjectFactory.createSenAnalysisAlgorithm(net);
+		SenAnalysisAlgorithm algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
 		algo.calculateDclf();
 
 		//System.out.println(DclfOutFunc.dclfResults(algo, false));
@@ -94,7 +94,7 @@ public class IEEE14BusBreaker_dclf_Test extends CorePluginTestSetup {
 	  	net.accept(new ZeroZBranchProcesor(true));
 	  	assertTrue(net.isZeroZBranchProcessed());
 
-		SenAnalysisAlgorithm algo = DclfObjectFactory.createSenAnalysisAlgorithm(net);
+		SenAnalysisAlgorithm algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
 		algo.calculateDclf();
 
 		//System.out.println(DclfOutFunc.dclfResults(algo, false));

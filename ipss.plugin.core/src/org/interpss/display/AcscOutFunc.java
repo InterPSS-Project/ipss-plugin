@@ -43,7 +43,7 @@ import com.interpss.core.acsc.BaseAcscNetwork;
 import com.interpss.core.acsc.fault.AcscBranchFault;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
-import com.interpss.core.algo.SimpleFaultAlgorithm;
+import com.interpss.core.algo.sc.SimpleFaultAlgorithm;
 import com.interpss.core.net.Bus;
 
 /**

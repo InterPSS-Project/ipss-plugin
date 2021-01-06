@@ -18,7 +18,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.dist_EMF"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.dstab_EMF"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.simu_EMF"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/ipss.dcSen_EMF"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.pssl"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.dc_EMF"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.opf_EMF"/>	
