@@ -43,7 +43,7 @@ import org.interpss.pssl.common.PSSLException;
 
 import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.DclfObjectFactory;
+import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
@@ -55,16 +55,16 @@ import com.interpss.core.aclf.contingency.OutageBranch;
 import com.interpss.core.aclf.contingency.Xfr3WOutageContingency;
 import com.interpss.core.aclf.flow.FlowInterface;
 import com.interpss.core.aclf.flow.FlowInterfaceBranch;
+import com.interpss.core.algo.dclf.BusSenAnalysisType;
+import com.interpss.core.algo.dclf.DclfAlgorithmFactory;
+import com.interpss.core.algo.dclf.LODFSenAnalysisType;
+import com.interpss.core.algo.dclf.SFactorMonitorType;
+import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
+import com.interpss.core.algo.dclf.SenAnalysisBus;
+import com.interpss.core.algo.dclf.SenAnalysisType;
+import com.interpss.core.common.OutageConnectivityException;
+import com.interpss.core.common.ReferenceBusException;
 import com.interpss.core.common.visitor.IAclfNetBVisitor;
-import com.interpss.core.dclf.BusSenAnalysisType;
-import com.interpss.core.dclf.SenAnalysisAlgorithm;
-import com.interpss.core.dclf.DclfFactory;
-import com.interpss.core.dclf.LODFSenAnalysisType;
-import com.interpss.core.dclf.SFactorMonitorType;
-import com.interpss.core.dclf.SenAnalysisBus;
-import com.interpss.core.dclf.SenAnalysisType;
-import com.interpss.core.dclf.common.OutageConnectivityException;
-import com.interpss.core.dclf.common.ReferenceBusException;
 import com.interpss.core.net.Area;
 import com.interpss.core.net.Branch;
 
@@ -130,7 +130,7 @@ public class IpssDclf extends BaseDSL {
 	 * @return
 	 */
 	public static DclfAlgorithmDSL copyAlgorithm(SenAnalysisAlgorithm algo) {
-		SenAnalysisAlgorithm newAlgo = DclfObjectFactory.createSenAnalysisAlgorithm(algo.getNetwork(), false);
+		SenAnalysisAlgorithm newAlgo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(algo.getNetwork(), false);
 		newAlgo.setDclfSolver(algo.getDclfSolver());
 		newAlgo.setDclfCalculated(algo.isDclfCalculated());
 		return new DclfAlgorithmDSL(newAlgo);
@@ -170,7 +170,7 @@ public class IpssDclf extends BaseDSL {
 		 * constructor
 		 */
 		public DclfAlgorithmDSL(AclfNetwork net, boolean applyAdjust) {
-			this.algo = DclfObjectFactory.createSenAnalysisAlgorithm(net, applyAdjust);
+			this.algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net, applyAdjust);
 			this.algo.setInjectBusType(BusSenAnalysisType.NOT_DEFINED);
 			this.algo.setWithdrawBusType(BusSenAnalysisType.NOT_DEFINED);
 		}
@@ -1034,7 +1034,7 @@ public class IpssDclf extends BaseDSL {
   		 * @param percent
   		 */
   		private void addBus(EList<SenAnalysisBus> list, String busId, double percent) {
-  			SenAnalysisBus bus = DclfFactory.eINSTANCE.createSenAnalysisBus();
+  			SenAnalysisBus bus = DclfAlgorithmFactory.eINSTANCE.createSenAnalysisBus();
   			bus.setBusId(busId);
   			bus.setPercent(percent);
   			list.add(bus);
