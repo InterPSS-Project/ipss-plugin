@@ -43,7 +43,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
-import com.interpss.core.algo.SimpleFaultAlgorithm;
+import com.interpss.core.algo.sc.SimpleFaultAlgorithm;
 import com.interpss.core.datatype.IFaultResult;
 import com.interpss.pssl.test.BaseTestSetup;
 import com.interpss.simu.util.sample.SampleCases;

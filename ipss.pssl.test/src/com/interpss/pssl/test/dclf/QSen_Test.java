@@ -37,8 +37,8 @@ import org.junit.Test;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethod;
-import com.interpss.core.dclf.SenAnalysisType;
-import com.interpss.core.dclf.common.ReferenceBusException;
+import com.interpss.core.algo.dclf.SenAnalysisType;
+import com.interpss.core.common.ReferenceBusException;
 import com.interpss.pssl.test.BaseTestSetup;
 
 public class QSen_Test extends BaseTestSetup {

@@ -40,7 +40,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethod;
-import com.interpss.core.dclf.common.ReferenceBusException;
+import com.interpss.core.common.ReferenceBusException;
 import com.interpss.core.net.Bus;
 import com.interpss.pssl.test.BaseTestSetup;
 

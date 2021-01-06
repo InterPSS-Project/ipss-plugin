@@ -9,12 +9,12 @@ import org.interpss.numeric.util.Number2String;
 import org.interpss.numeric.util.NumericUtil;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.DclfObjectFactory;
+import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.dclf.SenAnalysisAlgorithm;
-import com.interpss.core.dclf.common.ReferenceBusException;
+import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
+import com.interpss.core.common.ReferenceBusException;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 
@@ -232,7 +232,7 @@ public class DepDclfResultComparator	extends DepNetModelComparator<QAAclfBusRec,
 		this.errMsgList.clear();
 
 		if (this.algo == null) {
-			this.algo = DclfObjectFactory.createSenAnalysisAlgorithm(net, applyAdjust);
+			this.algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net, applyAdjust);
 			//DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net, false);
 			try {
 				algo.calculateDclf();
@@ -331,7 +331,7 @@ public class DepDclfResultComparator	extends DepNetModelComparator<QAAclfBusRec,
 	}
 
 	public String outDclfResult(double angOffset) throws InterpssException, ReferenceBusException, IpssNumericException {
-		SenAnalysisAlgorithm algo = DclfObjectFactory.createSenAnalysisAlgorithm(net);
+		SenAnalysisAlgorithm algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
 		algo.calculateDclf();
 		
 		StringBuffer buf = new StringBuffer();
