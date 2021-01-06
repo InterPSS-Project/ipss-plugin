@@ -13,11 +13,11 @@ import org.interpss.QA.result.QAResultContainer;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.dclf.SenAnalysisAlgorithm;
-import com.interpss.core.dclf.IDclfSolver;
-import com.interpss.core.dclf.LODFSenAnalysisType;
-import com.interpss.core.dclf.impl.SenAnalysisAlgorithmImpl;
-import com.interpss.core.dclf.solver.DclfSolver;
+import com.interpss.core.algo.dclf.LODFSenAnalysisType;
+import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
+import com.interpss.core.algo.dclf.impl.SenAnalysisAlgorithmImpl;
+import com.interpss.core.algo.dclf.solver.DclfSolver;
+import com.interpss.core.algo.dclf.solver.IDclfSolver;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 
