@@ -14,6 +14,7 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
+import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 import com.interpss.core.common.ReferenceBusException;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
@@ -26,7 +27,7 @@ import com.interpss.core.net.Bus;
  *  3) Compare dclf result by running dclf or stored in the dclfAlgo object
  * 
  * @author mzhou
- *
+ * 
  */
 @Deprecated
 public class DepDclfResultComparator	extends DepNetModelComparator<QAAclfBusRec, QAAclfBranchRec> {
@@ -232,7 +233,7 @@ public class DepDclfResultComparator	extends DepNetModelComparator<QAAclfBusRec,
 		this.errMsgList.clear();
 
 		if (this.algo == null) {
-			this.algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net, applyAdjust);
+			this.algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net, CacheType.SenNotCached, applyAdjust);
 			//DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net, false);
 			try {
 				algo.calculateDclf();
