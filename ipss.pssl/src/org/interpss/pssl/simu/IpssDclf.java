@@ -62,6 +62,7 @@ import com.interpss.core.algo.dclf.SFactorMonitorType;
 import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.SenAnalysisBus;
 import com.interpss.core.algo.dclf.SenAnalysisType;
+import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 import com.interpss.core.common.OutageConnectivityException;
 import com.interpss.core.common.ReferenceBusException;
 import com.interpss.core.common.visitor.IAclfNetBVisitor;
@@ -130,7 +131,7 @@ public class IpssDclf extends BaseDSL {
 	 * @return
 	 */
 	public static DclfAlgorithmDSL copyAlgorithm(SenAnalysisAlgorithm algo) {
-		SenAnalysisAlgorithm newAlgo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(algo.getNetwork(), false);
+		SenAnalysisAlgorithm newAlgo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(algo.getNetwork(), CacheType.SenNotCached, false);
 		newAlgo.setDclfSolver(algo.getDclfSolver());
 		newAlgo.setDclfCalculated(algo.isDclfCalculated());
 		return new DclfAlgorithmDSL(newAlgo);
@@ -170,7 +171,7 @@ public class IpssDclf extends BaseDSL {
 		 * constructor
 		 */
 		public DclfAlgorithmDSL(AclfNetwork net, boolean applyAdjust) {
-			this.algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net, applyAdjust);
+			this.algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net, CacheType.SenNotCached, applyAdjust);
 			this.algo.setInjectBusType(BusSenAnalysisType.NOT_DEFINED);
 			this.algo.setWithdrawBusType(BusSenAnalysisType.NOT_DEFINED);
 		}
