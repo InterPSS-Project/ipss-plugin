@@ -215,14 +215,14 @@ public class DclfLODFPaperClosure_Test extends BaseTestSetup {
 		//algoDsl.destroy();
 	}
 
-	private void printResult(DclfAlgorithmDSL algoDsl, double[] factors) throws InterpssException {
+	private void printResult(DclfAlgorithmDSL algoDsl, double[] factors) throws InterpssException, ReferenceBusException, IpssNumericException {
 		double sum = 0.0;
 		int cnt = 0;
 		for (OutageBranch bra : algoDsl.outageBranchList()) {
 			AclfBranch aclfBra = bra.getBranch();
 			double flow = 0.0;
 			if (bra.getOutageType() == BranchOutageType.CLOSE)
-				flow = algoDsl.algo().getBranchClosureEquivPreFlow(aclfBra);
+				flow = algoDsl.algo().calBranchClosureFlow(aclfBra);
 			else
 				flow = aclfBra.getDclfFlow();
 			sum += flow * factors[cnt++];
