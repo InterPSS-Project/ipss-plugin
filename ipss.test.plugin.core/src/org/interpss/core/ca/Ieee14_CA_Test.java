@@ -25,23 +25,21 @@
 package org.interpss.core.ca;
 
 import static org.junit.Assert.assertTrue;
+import static org.interpss.CorePluginFunction.DclfResult;
 
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.exp.IpssNumericException;
-import org.interpss.pssl.simu.IpssDclf;
-import org.interpss.pssl.simu.IpssDclf.DclfAlgorithmDSL;
 import org.junit.Test;
 
 import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.contingency.BranchOutageType;
 import com.interpss.core.aclf.contingency.OutageBranch;
-import com.interpss.core.algo.dclf.LODFSenAnalysisType;
 import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
 import com.interpss.core.common.OutageConnectivityException;
 import com.interpss.core.common.ReferenceBusException;
@@ -63,18 +61,50 @@ public class Ieee14_CA_Test extends CorePluginTestSetup {
         double outBanchPreFlow = outageBranch.getDclfFlow();
         
         double sum = 0.0;  // Bus4->Bus7(1), Bus4->Bus9(1), Bus5->Bus6(1) interface diff before and after the outage
-        for (AclfBranch branch : net.getBranchList()) {
-       		double f = dclfAlgo.lineOutageDFactor(outageBranch, branch);
-           	double postFlow = branch.getDclfFlow() + f * outBanchPreFlow;
+        for (AclfBranch monitorBranch : net.getBranchList()) {
+       		double f = dclfAlgo.lineOutageDFactor(outageBranch, monitorBranch);
+           	double postFlow = monitorBranch.getDclfFlow() + f * outBanchPreFlow;
            	
            	// check CA results 
-       		if (branch.getId().equals("Bus4->Bus7(1)") ||
-       				branch.getId().equals("Bus4->Bus9(1)"))
-       			sum += postFlow - branch.getDclfFlow();
-       		else if (branch.getId().equals("Bus5->Bus6(1)"))
-       			sum -= branch.getDclfFlow();
+       		if (monitorBranch.getId().equals("Bus4->Bus7(1)") ||
+       				monitorBranch.getId().equals("Bus4->Bus9(1)"))
+       			sum += postFlow - monitorBranch.getDclfFlow();
+       		else if (monitorBranch.getId().equals("Bus5->Bus6(1)"))
+       			sum -= monitorBranch.getDclfFlow();
 		}
         assertTrue(Math.abs(sum) < 0.00001);
+	}
+
+	//@Test
+	public void singleClosureTest() throws InterpssException, ReferenceBusException, IpssNumericException  {
+		AclfNetwork net = CorePluginFactory
+				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
+				.load("testData/adpter/ieee_format/ieee14.ieee")
+				.getAclfNet();
+		AclfBranch closureBranch = net.getBranch("Bus4->Bus5(1)");
+		closureBranch.setStatus(false);
+
+		// run Dclf
+		SenAnalysisAlgorithm dclfAlgo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
+		dclfAlgo.calculateDclf();
+		System.out.println("Before closure");			
+		System.out.println(DclfResult.f(dclfAlgo, false));		
+		
+  		//double f1 = dclfAlgo.getBranchClosureEquivPreFlow(closureBranch);
+  		//double f2 = dclfAlgo.getBranchClosurePTDFactor(closureBranch);
+  		double f3 = dclfAlgo.calBranchClosureFlow(closureBranch);
+   		double f4 = dclfAlgo.lineOutageDFactor(closureBranch, net.getBranch("Bus5->Bus6(1)"));
+		System.out.println("Branch Closure Flow " + f3 + ", " + f4);	
+		
+		double y = 56.70 + ( f4 * -62.34);
+		System.out.println("y " + y);	
+
+		net.getBranch("Bus4->Bus5(1)").setStatus(true);
+		dclfAlgo.getDclfSolver().setBMatrixDirty();
+		dclfAlgo.calculateDclf();
+		System.out.println("After closure");			
+		System.out.println(DclfResult.f(dclfAlgo, false).toString());		
+ 		
 	}
 
 	@Test
@@ -91,11 +121,11 @@ public class Ieee14_CA_Test extends CorePluginTestSetup {
 		// define outage branches
 		dclfAlgo.getOutageBranchList().clear();
 		dclfAlgo.getOutageBranchList().add(
-					CoreObjectFactory.createOutageBranch(net.getBranch("Bus1", "Bus5", "1")));
+					CoreObjectFactory.createOutageBranch(net.getBranch("Bus1", "Bus5", "1"), BranchOutageType.OPEN));
 		dclfAlgo.getOutageBranchList().add(
-				CoreObjectFactory.createOutageBranch(net.getBranch("Bus3", "Bus4", "1")));
+				CoreObjectFactory.createOutageBranch(net.getBranch("Bus3", "Bus4", "1"), BranchOutageType.OPEN));
 		dclfAlgo.getOutageBranchList().add(
-				CoreObjectFactory.createOutageBranch(net.getBranch("Bus6", "Bus11", "1")));
+				CoreObjectFactory.createOutageBranch(net.getBranch("Bus6", "Bus11", "1"), BranchOutageType.OPEN));
 
 		// define reference bus for the multi-outage calculation. Since Bus1 is connected to an outage branch, we
 		// to choice a different ref bus.
