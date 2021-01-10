@@ -40,7 +40,7 @@ import com.interpss.core.aclf.contingency.BusbarOutageContingency;
 import com.interpss.core.aclf.contingency.Contingency;
 import com.interpss.core.aclf.contingency.MultiOutageContingency;
 import com.interpss.core.aclf.contingency.Xfr3WOutageContingency;
-import com.interpss.core.dclf.DclfAlgorithm;
+import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
 
 public class Ieee14_CA_Utils {
 	static int points = 10;
@@ -89,7 +89,7 @@ public class Ieee14_CA_Utils {
 	/*
 	 * Define a contingency processing function
 	 */
-	static BiConsumer<BaseContingency, DclfAlgorithm>	funcContProcessor = (cont, algo) -> {
+	static BiConsumer<BaseContingency, SenAnalysisAlgorithm>	funcContProcessor = (cont, algo) -> {
 		/*
 		 * create a wrapper (Monad) of the DclfAlgo for analysis of the contingency 
 		 */
