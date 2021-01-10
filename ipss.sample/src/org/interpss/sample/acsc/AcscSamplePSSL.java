@@ -14,7 +14,6 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
-import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.BusScCode;
 import com.interpss.core.acsc.SequenceCode;
@@ -22,8 +21,8 @@ import com.interpss.core.acsc.XfrConnectCode;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.AclfMethod;
-import com.interpss.core.algo.ScBusVoltageType;
-import com.interpss.core.algo.SimpleFaultAlgorithm;
+import com.interpss.core.algo.sc.ScBusVoltageType;
+import com.interpss.core.algo.sc.SimpleFaultAlgorithm;
 
 public class AcscSamplePSSL {
 
