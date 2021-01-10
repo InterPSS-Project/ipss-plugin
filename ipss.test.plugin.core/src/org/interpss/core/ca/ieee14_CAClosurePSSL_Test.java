@@ -58,7 +58,7 @@ public class ieee14_CAClosurePSSL_Test extends CorePluginTestSetup {
 		DclfAlgorithmDSL algoDsl = IpssDclf.createDclfAlgorithm(net);
 		algoDsl.runDclfAnalysis();
 		//System.out.println("Base Case");			
-		System.out.println(DclfResult.f(algoDsl.algo(), false).toString());		
+		//System.out.println(DclfResult.f(algoDsl.algo(), false).toString());		
 		double pBeforeOutage = net.getBranch("Bus4->Bus5(1)").getDclfFlow();
 
 		algoDsl.setLODFAnalysisType(LODFSenAnalysisType.MULTI_BRANCH)
@@ -108,8 +108,8 @@ Shifted power flow:               27.13
 
 		DclfAlgorithmDSL algoDsl = IpssDclf.createDclfAlgorithm(net);
 		algoDsl.runDclfAnalysis();
-		System.out.println("Base Case");			
-		System.out.println(DclfResult.f(algoDsl.algo(), false).toString());
+		//System.out.println("Base Case");			
+		//System.out.println(DclfResult.f(algoDsl.algo(), false).toString());
 		double pBeforeOutage = net.getBranch("Bus4->Bus5(1)").getDclfFlow();
 		
 		algoDsl.setLODFAnalysisType(LODFSenAnalysisType.MULTI_BRANCH)
@@ -126,14 +126,17 @@ Shifted power flow:               27.13
 		
 		net.getBranch("Bus6->Bus11(1)").setStatus(true);
 		
-		algoDsl = IpssDclf.createDclfAlgorithm(net)
-				.runDclfAnalysis();
+		algoDsl = IpssDclf.createDclfAlgorithm(net);
+		algoDsl.getAlgorithm().getDclfSolver().setBMatrixDirty();
+		algoDsl.runDclfAnalysis();
 		double pAfterOutage = net.getBranch("Bus4->Bus5(1)").getDclfFlow();
-		System.out.println("Open a branches");
-		System.out.println(DclfResult.f(algoDsl.algo(), false).toString());	
+		//System.out.println("Open a branches");
+		//System.out.println(DclfResult.f(algoDsl.algo(), false).toString());	
 /*		
-        Bus4->Bus5(1)       -65.50         
-        Bus4->Bus5(1)       -32.34         
+        Bus4->Bus5(1)       -65.50     
+            
+        Bus4->Bus5(1)       -62.34
+        Bus6->Bus11(1)        6.30         
 Shifted power flow:          31.59 
 */
 		assertTrue(Math.abs(pAfterOutage - (pBeforeOutage + pShifted)) < 0.00001);

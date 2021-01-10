@@ -75,37 +75,51 @@ public class Ieee14_CA_Test extends CorePluginTestSetup {
         assertTrue(Math.abs(sum) < 0.00001);
 	}
 
-	//@Test
+	@Test
 	public void singleClosureTest() throws InterpssException, ReferenceBusException, IpssNumericException  {
 		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
 				.load("testData/adpter/ieee_format/ieee14.ieee")
 				.getAclfNet();
+		
+		/*
+		 *     Branch closure "Bus4->Bus5(1)", 
+		 *            Before closure     0.0
+		 *                Bus4          -14.47         0.00    47.80     0.00 
+                          Bus5           -6.76         0.00     7.60     0.00 
+		 *            After closure    -62.34
+                          Bus4          -10.59         0.00    47.80     0.00 
+                          Bus5           -9.09         0.00     7.60     0.00 		 *            
+		 *     
+		 *     Monitoring branch "Bus5->Bus6(1)"
+		 *            Before closure    56.70
+		 *            After closure     42.08
+		 */
+		
 		AclfBranch closureBranch = net.getBranch("Bus4->Bus5(1)");
 		closureBranch.setStatus(false);
 
 		// run Dclf
 		SenAnalysisAlgorithm dclfAlgo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
 		dclfAlgo.calculateDclf();
-		System.out.println("Before closure");			
-		System.out.println(DclfResult.f(dclfAlgo, false));		
+		//System.out.println("Before closure");			
+		//System.out.println(DclfResult.f(dclfAlgo, false));		
 		
-  		//double f1 = dclfAlgo.getBranchClosureEquivPreFlow(closureBranch);
-  		//double f2 = dclfAlgo.getBranchClosurePTDFactor(closureBranch);
-  		double f3 = dclfAlgo.calBranchClosureFlow(closureBranch);
-   		double f4 = dclfAlgo.lineOutageDFactor(closureBranch, net.getBranch("Bus5->Bus6(1)"));
-		System.out.println("Branch Closure Flow " + f3 + ", " + f4);	
+  		double closureFlow = dclfAlgo.calBranchClosureFlow(closureBranch);
+		//System.out.println("Branch Flow After closure: " + f3);
+		assertTrue(Math.abs(closureFlow + 0.623398) < 0.00001);
 		
-		double y = 56.70 + ( f4 * -62.34);
-		System.out.println("y " + y);	
-
-		net.getBranch("Bus4->Bus5(1)").setStatus(true);
-		dclfAlgo.getDclfSolver().setBMatrixDirty();
-		dclfAlgo.calculateDclf();
-		System.out.println("After closure");			
-		System.out.println(DclfResult.f(dclfAlgo, false).toString());		
- 		
-	}
+		AclfBranch monitorBranch = net.getBranch("Bus5->Bus6(1)");
+   		double f = dclfAlgo.lineOutageDFactor(closureBranch, monitorBranch, BranchOutageType.CLOSE);
+       	double postFlow = monitorBranch.getDclfFlow() + f * closureFlow;
+		System.out.println("Branch Flow After closure: " + postFlow);
+		assertTrue(Math.abs(postFlow - 0.4208) < 0.001);
+		
+		//closureBranch.setStatus(true);
+		//dclfAlgo.calculateDclf(true);
+		//System.out.println("After closure");			
+		//System.out.println(DclfResult.f(dclfAlgo, false).toString());		
+ 	}
 
 	@Test
 	public void multipleOutageTest() throws InterpssException, ReferenceBusException, IpssNumericException, OutageConnectivityException  {
