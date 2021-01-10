@@ -27,10 +27,10 @@ package org.interpss.sample.dclf_ca;
 import org.interpss.IpssCorePlugin;
 
 import com.interpss.CoreObjectFactory;
-import com.interpss.core.DclfObjectFactory;
+import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.dclf.DcLoadflow;
+import com.interpss.core.algo.dclf.DclfAlgorithm;
 import com.interpss.simu.util.sample.SampleCases;
 
 public class DclfSample {
@@ -41,7 +41,7 @@ public class DclfSample {
 		SampleCases.load_LF_5BusSystem(net);
 		//System.out.println(net.net2String());
 
-		DcLoadflow algo = DclfObjectFactory.createDclfAlgorithm(net);
+		DclfAlgorithm algo = DclfAlgoObjectFactory.createDclfAlgorithm(net);
 		
 		// perform DCLF calculation
 		algo.calculateDclf();
