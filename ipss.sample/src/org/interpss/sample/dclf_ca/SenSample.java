@@ -27,9 +27,9 @@ package org.interpss.sample.dclf_ca;
 import org.interpss.IpssCorePlugin;
 
 import com.interpss.CoreObjectFactory;
-import com.interpss.core.DclfObjectFactory;
+import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.dclf.DclfAlgorithm;
+import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
 import com.interpss.simu.util.sample.SampleCases;
 
 public class SenSample {
@@ -40,7 +40,7 @@ public class SenSample {
 		SampleCases.load_LF_5BusSystem(net);
 		//System.out.println(net.net2String());
 
-		DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net);
+		SenAnalysisAlgorithm algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
 		
 		/*
 		 * GFS samples

@@ -39,7 +39,7 @@ import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.dclf.common.ReferenceBusException;
+import com.interpss.core.common.ReferenceBusException;
 import com.interpss.simu.util.sample.SampleCases;
 
 import edu.emory.mathcs.csparsej.tdcomplex.DZcs_common.DZcsa;

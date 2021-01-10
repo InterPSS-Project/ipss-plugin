@@ -28,10 +28,10 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.pssl.simu.IpssDclf;
 import org.interpss.pssl.simu.IpssDclf.DclfAlgorithmDSL;
 
-import com.interpss.core.DclfObjectFactory;
+import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.contingency.Contingency;
-import com.interpss.core.dclf.DclfAlgorithm;
+import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
 
 public class Ieee14_MultiCA_SequentialSample {
 	
@@ -66,7 +66,7 @@ public class Ieee14_MultiCA_SequentialSample {
 		AclfNetwork net = Ieee14_CA_Utils.getSampleNet();
         
 		// run Dclf
-		DclfAlgorithm dclfAlgo = DclfObjectFactory.createDclfAlgorithm(net);
+		SenAnalysisAlgorithm dclfAlgo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
 		dclfAlgo.calculateDclf();
 		
 		Ieee14_CA_Utils.createSampleContingencies(net, 10);
@@ -76,7 +76,7 @@ public class Ieee14_MultiCA_SequentialSample {
 		System.out.println("Monad Total CA: " + Ieee14_CA_Utils.points);
 		
 		net.getContingencyList().forEach(contingency -> {
-			DclfObjectFactory.createContingencyAnalysis()
+			DclfAlgoObjectFactory.createContingencyAnalysis()
 				.of(dclfAlgo, ((Contingency)contingency).getOutageBranch())
 				/*
 				 * Call the ca() method by passing a CA result handling function.

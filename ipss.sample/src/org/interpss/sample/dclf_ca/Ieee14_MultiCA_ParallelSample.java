@@ -33,11 +33,11 @@ import org.interpss.pssl.simu.IpssDclf.DclfAlgorithmDSL;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
-import com.interpss.core.DclfObjectFactory;
+import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.contingency.Contingency;
-import com.interpss.core.dclf.DclfAlgorithm;
-import com.interpss.core.dclf.common.ReferenceBusException;
+import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
+import com.interpss.core.common.ReferenceBusException;
 
 public class Ieee14_MultiCA_ParallelSample {
 	
@@ -97,7 +97,7 @@ public class Ieee14_MultiCA_ParallelSample {
 		AclfNetwork net = Ieee14_CA_Utils.getSampleNet();
         
 		// run Dclf
-		DclfAlgorithm dclfAlgo = DclfObjectFactory.createDclfAlgorithm(net);
+		SenAnalysisAlgorithm dclfAlgo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
 		dclfAlgo.calculateDclf();
 		
 		/* To prepare for parallel CA, we need to compute all bus P-Angle sensitivity
@@ -122,7 +122,7 @@ public class Ieee14_MultiCA_ParallelSample {
 		
 		PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());	
 		net.getContingencyList().stream().parallel().forEach(contingency -> {
-			DclfObjectFactory
+			DclfAlgoObjectFactory
 				.createContingencyAnalysis()
 				.of(dclfAlgo, ((Contingency)contingency).getOutageBranch())
 				/*
