@@ -267,7 +267,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		
 	    dsNet.setStaticLoadIncludedInYMatrix(false);
 		
-	    dsNet.setActiveStaticLoadModel(StaticLoadModel.CONST_Z);
+	    dsNet.setStaticLoadModel(StaticLoadModel.CONST_Z);
 	    dsNet.setReactiveStaticLoadModel(StaticLoadModel.CONST_Z);
 		
 
@@ -515,7 +515,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		
 	    dsNet.setStaticLoadIncludedInYMatrix(false);
 		
-	    dsNet.setActiveStaticLoadModel(StaticLoadModel.CONST_Z);
+	    dsNet.setStaticLoadModel(StaticLoadModel.CONST_Z);
 	    dsNet.setReactiveStaticLoadModel(StaticLoadModel.CONST_Z);
 		
 
