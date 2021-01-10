@@ -91,9 +91,9 @@ public class Ieee14_CA_Test extends CorePluginTestSetup {
                           Bus4          -10.59         0.00    47.80     0.00 
                           Bus5           -9.09         0.00     7.60     0.00 		 *            
 		 *     
-		 *     Monitoring branch "Bus5->Bus6(1)"
-		 *            Before closure    56.70
-		 *            After closure     42.08
+		 *     Monitoring branch "Bus->Bus11(1)"
+		 *            Before closure    15.10
+		 *            After closure      6.30
 		 */
 		
 		AclfBranch closureBranch = net.getBranch("Bus4->Bus5(1)");
@@ -109,16 +109,18 @@ public class Ieee14_CA_Test extends CorePluginTestSetup {
 		//System.out.println("Branch Flow After closure: " + f3);
 		assertTrue(Math.abs(closureFlow + 0.623398) < 0.00001);
 		
-		AclfBranch monitorBranch = net.getBranch("Bus5->Bus6(1)");
+		AclfBranch monitorBranch = net.getBranch("Bus6->Bus11(1)");
    		double f = dclfAlgo.lineOutageDFactor(closureBranch, monitorBranch, BranchOutageType.CLOSE);
        	double postFlow = monitorBranch.getDclfFlow() + f * closureFlow;
 		System.out.println("Branch Flow After closure: " + postFlow);
-		assertTrue(Math.abs(postFlow - 0.4208) < 0.001);
-		
-		//closureBranch.setStatus(true);
-		//dclfAlgo.calculateDclf(true);
-		//System.out.println("After closure");			
-		//System.out.println(DclfResult.f(dclfAlgo, false).toString());		
+		assertTrue(Math.abs(postFlow - 0.0630) < 0.001);
+
+		/*
+		closureBranch.setStatus(true);
+		dclfAlgo.calculateDclf(true);
+		System.out.println("After closure");			
+		System.out.println(DclfResult.f(dclfAlgo, false).toString());		
+		*/
  	}
 
 	@Test
