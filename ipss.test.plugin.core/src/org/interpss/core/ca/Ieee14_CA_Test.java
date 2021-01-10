@@ -85,12 +85,7 @@ public class Ieee14_CA_Test extends CorePluginTestSetup {
 		/*
 		 *     Branch closure "Bus4->Bus5(1)", 
 		 *            Before closure     0.0
-		 *                Bus4          -14.47         0.00    47.80     0.00 
-                          Bus5           -6.76         0.00     7.60     0.00 
 		 *            After closure    -62.34
-                          Bus4          -10.59         0.00    47.80     0.00 
-                          Bus5           -9.09         0.00     7.60     0.00 		 *            
-		 *     
 		 *     Monitoring branch "Bus->Bus11(1)"
 		 *            Before closure    15.10
 		 *            After closure      6.30
