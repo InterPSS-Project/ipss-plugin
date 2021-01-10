@@ -43,7 +43,7 @@ public class ThreePhaseObjectFactory {
 			netAdj.setAclfNet(net);
 			net.setId("undefined");
 			net.setOriginalDataFormat(OriginalDataFormat.IPSS_API);
-			net.setActiveStaticLoadModel(StaticLoadModel.CONST_Z);
+			net.setStaticLoadModel(StaticLoadModel.CONST_Z);
 			net.setStaticLoadSwitchVolt(Constants.DStabStaticLoadSwithVolt);
 			net.setStaticLoadSwitchDeadZone(Constants.DStabStaticLoadSwithDeadband);
 	      return net;

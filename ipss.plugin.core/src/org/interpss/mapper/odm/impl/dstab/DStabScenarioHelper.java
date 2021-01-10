@@ -420,12 +420,12 @@ public class DStabScenarioHelper {
         
         StaticLoadModelXmlType statLoad = settings.getStaticLoadModel();
         if(statLoad.getStaticLoadType() == DStabStaticLoadModelEnumType.CONSTANT_Z){
-        	dstabNet.setActiveStaticLoadModel(StaticLoadModel.CONST_Z);
+        	dstabNet.setStaticLoadModel(StaticLoadModel.CONST_Z);
         	dstabNet.setReactiveStaticLoadModel(StaticLoadModel.CONST_Z);
         }
         else {
         	// set switch vol and dead zone for constant-P static load
-        	dstabNet.setActiveStaticLoadModel(StaticLoadModel.CONST_P);
+        	dstabNet.setStaticLoadModel(StaticLoadModel.CONST_P);
         	dstabNet.setReactiveStaticLoadModel(StaticLoadModel.CONST_P);
         
         	if (settings.getStaticLoadModel().getSwitchDeadZone() != null) {
