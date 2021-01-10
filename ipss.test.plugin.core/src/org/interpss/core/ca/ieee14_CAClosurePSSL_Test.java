@@ -96,52 +96,7 @@ Shifted power flow:               27.13
 		assertTrue(Math.abs(pAfterOutage - (pBeforeOutage + pShifted)) < 0.00001);
 		//algoDsl.destroy();
 	}
-
-	//@Test 
-	public void lodfTest_BranchClosure0()  throws ReferenceBusException, OutageConnectivityException, InterpssException, IpssNumericException   {
-		AclfNetwork net = CorePluginFactory
-				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testData/adpter/ieee_format/ieee14.ieee")
-				.getAclfNet();
-		
-		net.getBranch("Bus6->Bus11(1)").setStatus(false);
-
-		DclfAlgorithmDSL algoDsl = IpssDclf.createDclfAlgorithm(net);
-		algoDsl.runDclfAnalysis();
-		//System.out.println("Base Case");			
-		//System.out.println(DclfResult.f(algoDsl.algo(), false).toString());
-		double pBeforeOutage = net.getBranch("Bus4->Bus5(1)").getDclfFlow();
-		
-		algoDsl.setLODFAnalysisType(LODFSenAnalysisType.MULTI_BRANCH)
-				.addOutageBranch("Bus6", "Bus11", "1", BranchOutageType.CLOSE);
-		
-		algoDsl.calLineOutageDFactors("ContId");
-		
-		double[] factors = algoDsl.monitorBranch("Bus4", "Bus5", "1")
-				  .getLineOutageDFactors();
-		double pShifted = calShiftedPower(algoDsl, factors);
-		printResult(algoDsl, factors);
-		
-		//algoDsl.destroy();
-		
-		net.getBranch("Bus6->Bus11(1)").setStatus(true);
-		
-		algoDsl = IpssDclf.createDclfAlgorithm(net);
-		algoDsl.getAlgorithm().getDclfSolver().setBMatrixDirty();
-		algoDsl.runDclfAnalysis();
-		double pAfterOutage = net.getBranch("Bus4->Bus5(1)").getDclfFlow();
-		//System.out.println("Open a branches");
-		//System.out.println(DclfResult.f(algoDsl.algo(), false).toString());	
-/*		
-        Bus4->Bus5(1)       -65.50     
-            
-        Bus4->Bus5(1)       -62.34
-        Bus6->Bus11(1)        6.30         
-Shifted power flow:          31.59 
-*/
-		assertTrue(Math.abs(pAfterOutage - (pBeforeOutage + pShifted)) < 0.00001);
-	}
-
+	
 	//@Test 
 	public void lodfTest_BranchClosure1()  throws ReferenceBusException, OutageConnectivityException, InterpssException, IpssNumericException   {
 		AclfNetwork net = CorePluginFactory

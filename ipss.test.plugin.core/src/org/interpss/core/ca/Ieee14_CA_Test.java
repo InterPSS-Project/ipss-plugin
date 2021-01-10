@@ -114,13 +114,6 @@ public class Ieee14_CA_Test extends CorePluginTestSetup {
        	double postFlow = monitorBranch.getDclfFlow() + f * closureFlow;
 		System.out.println("Branch Flow After closure: " + postFlow);
 		assertTrue(Math.abs(postFlow - 0.0630) < 0.001);
-
-		/*
-		closureBranch.setStatus(true);
-		dclfAlgo.calculateDclf(true);
-		System.out.println("After closure");			
-		System.out.println(DclfResult.f(dclfAlgo, false).toString());		
-		*/
  	}
 
 	@Test
