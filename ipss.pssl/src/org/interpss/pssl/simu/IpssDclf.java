@@ -787,13 +787,13 @@ public class IpssDclf extends BaseDSL {
   		*/
   		public double lineOutageDFactor()   throws ReferenceBusException {
   			if (this.sfMonitorType == SFactorMonitorType.BRANCH)
-  	  			return algo.lineOutageDFactor(this.outageBranch.getBranch(), this.getMontorBranch());	
+  	  			return algo.lineOutageDFactor(this.outageBranch, this.getMontorBranch());	
   			else {
   				// LODF for flow interface
   				double sum = 0.0;
   				for (FlowInterfaceBranch b : this.flowInterface.getInterfaceBranches()) {
   					this.monitorBranch(b.getBranch());
-  	  	  			double sf = algo.lineOutageDFactor(this.outageBranch.getBranch(), this.getMontorBranch());	
+  	  	  			double sf = algo.lineOutageDFactor(this.outageBranch, this.getMontorBranch());	
   					sum += (b.isBranchDir()? 1.0 : -1.0) * b.getWeight() * sf;
   				}
   				return sum; 
@@ -1076,7 +1076,7 @@ public class IpssDclf extends BaseDSL {
   				AclfBranch branch = (AclfBranch)b;
   				if (!branch.getId().equals(this.outageBranch.getId())) {
   					try {
-  						double f = algo.lineOutageDFactor(this.outageBranch.getBranch(), branch);
+  						double f = algo.lineOutageDFactor(this.outageBranch, branch);
   	  					DblBranchValue v = list.get(size-1);
   	  					if (Math.abs(f) > Math.abs(v.value)) {
   	  	  					v.value = f;

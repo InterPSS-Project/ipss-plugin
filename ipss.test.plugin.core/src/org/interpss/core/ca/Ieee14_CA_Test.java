@@ -57,8 +57,8 @@ public class Ieee14_CA_Test extends CorePluginTestSetup {
 		dclfAlgo.calculateDclf();
 		
 		// set single outage branch
-		AclfBranch outageBranch = net.getBranch("Bus5->Bus6(1)");
-        double outBanchPreFlow = outageBranch.getDclfFlow();
+		OutageBranch outageBranch = CoreObjectFactory.createOutageBranch(net.getBranch("Bus5->Bus6(1)"), BranchOutageType.OPEN);
+        double outBanchPreFlow = outageBranch.getBranch().getDclfFlow();
         
         double sum = 0.0;  // Bus4->Bus7(1), Bus4->Bus9(1), Bus5->Bus6(1) interface diff before and after the outage
         for (AclfBranch monitorBranch : net.getBranchList()) {
@@ -91,8 +91,8 @@ public class Ieee14_CA_Test extends CorePluginTestSetup {
 		 *            After closure      6.30
 		 */
 		
-		AclfBranch closureBranch = net.getBranch("Bus4->Bus5(1)");
-		closureBranch.setStatus(false);
+		OutageBranch closureBranch = CoreObjectFactory.createOutageBranch(net.getBranch("Bus4->Bus5(1)"), BranchOutageType.CLOSE);
+		closureBranch.getBranch().setStatus(false);
 
 		// run Dclf
 		SenAnalysisAlgorithm dclfAlgo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
@@ -105,7 +105,7 @@ public class Ieee14_CA_Test extends CorePluginTestSetup {
 		assertTrue(Math.abs(closureFlow + 0.623398) < 0.00001);
 		
 		AclfBranch monitorBranch = net.getBranch("Bus6->Bus11(1)");
-   		double f = dclfAlgo.lineOutageDFactor(closureBranch, monitorBranch, BranchOutageType.CLOSE);
+   		double f = dclfAlgo.lineOutageDFactor(closureBranch, monitorBranch);
        	double postFlow = monitorBranch.getDclfFlow() + f * closureFlow;
 		System.out.println("Branch Flow After closure: " + postFlow);
 		assertTrue(Math.abs(postFlow - 0.0630) < 0.001);
