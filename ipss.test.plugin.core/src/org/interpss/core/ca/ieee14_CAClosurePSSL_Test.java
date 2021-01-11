@@ -35,15 +35,13 @@ import org.interpss.pssl.simu.IpssDclf;
 import org.interpss.pssl.simu.IpssDclf.DclfAlgorithmDSL;
 import org.junit.Test;
 
+import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
-import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.contingency.BranchOutageType;
 import com.interpss.core.aclf.contingency.OutageBranch;
 import com.interpss.core.algo.dclf.LODFSenAnalysisType;
-import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
 import com.interpss.core.common.OutageConnectivityException;
 import com.interpss.core.common.ReferenceBusException;
 
@@ -236,9 +234,11 @@ Shifted power flow:          31.59
 		for (OutageBranch bra : algoDsl.outageBranchList()) {
 			AclfBranch aclfBra = bra.getBranch();
 			double flow = 0.0;
-			if (bra.getOutageType() == BranchOutageType.CLOSE)
+			if (bra.getOutageType() == BranchOutageType.CLOSE) {
 				//flow = algoDsl.algo().getBranchClosureEquivPreFlow(aclfBra);
-				flow = algoDsl.algo().calBranchClosureFlow(aclfBra);
+				OutageBranch outBranch = CoreObjectFactory.createOutageBranch(aclfBra, BranchOutageType.CLOSE);
+				flow = algoDsl.algo().calBranchClosureFlow(outBranch);
+			}
 			else
 				flow = aclfBra.getDclfFlow();
 			sum += flow * factors[cnt++];
