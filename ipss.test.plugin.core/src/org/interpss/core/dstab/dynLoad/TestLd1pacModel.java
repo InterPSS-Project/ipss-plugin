@@ -83,16 +83,18 @@ public class TestLd1pacModel extends TestSetupBase {
 
 		// }
 		// System.out.println(sm.toCSVString(sm.getMachAngleTable()));
-		System.out.println(sm.toCSVString(sm.getBusVoltTable()));
-		System.out.println(sm.toCSVString(sm.getMachPeTable()));
-		System.out.println(sm.toCSVString(sm.getAcMotorPTable()));
-		System.out.println(sm.toCSVString(sm.getAcMotorQTable()));
+		//System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+		//System.out.println(sm.toCSVString(sm.getMachPeTable()));
+		//System.out.println(sm.toCSVString(sm.getAcMotorPTable()));
+		//System.out.println(sm.toCSVString(sm.getAcMotorQTable()));
 		// Total load = 0.8 pu on system base, AC motor 50% ->0.4 pu
 		assertTrue(Math.abs(sm.getAcMotorPTable().get("ACMotor_1@Bus1").get(20).value - 0.400) < 1.0E-4);
 		assertTrue(Math.abs(sm.getAcMotorQTable().get("ACMotor_1@Bus1").get(20).value - 0.10025) < 1.0E-4);
 		
 		// Total load = 0.8 pu on system base, AC motor 50%
 		// After fault, stalled motor PQ = 2.20281 +j*2.02517 (system base)
+		System.out.println(sm.getAcMotorPTable().get("ACMotor_1@Bus1").get(30).value);
+		System.out.println(sm.getAcMotorQTable().get("ACMotor_1@Bus1").get(30).value);
 		assertTrue(Math.abs(sm.getAcMotorPTable().get("ACMotor_1@Bus1").get(30).value - 2.20281) < 1.0E-4);
 		assertTrue(Math.abs(sm.getAcMotorQTable().get("ACMotor_1@Bus1").get(30).value - 2.02517) < 1.0E-4);
 	}
