@@ -634,7 +634,7 @@ public class IpssDclf extends BaseDSL {
   		 * @return
   		 */
   		public double branchFlow(AclfBranch branch, UnitType unit) {
-  			return algo.getBranchFlow(branch, unit); }
+  			return algo.calBranchFlow(branch, unit); }
   		
   		/*
   		 * Contingency analysis
