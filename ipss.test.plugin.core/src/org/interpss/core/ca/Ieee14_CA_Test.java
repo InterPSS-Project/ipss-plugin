@@ -136,7 +136,7 @@ public class Ieee14_CA_Test extends CorePluginTestSetup {
 		dclfAlgo.setRefBus("Bus14");
 		
 		// calculate multi-outage LODF and return inv[I-PTDF]
-		Object invE_PTDF = dclfAlgo.calLineOutageDFactors("ContId");
+		Object invE_PTDF = dclfAlgo.calMultiOutageLODFs("ContId");
 
         double baseMva = net.getBaseMva();
 		for (AclfBranch branch : net.getBranchList()) {
@@ -144,7 +144,7 @@ public class Ieee14_CA_Test extends CorePluginTestSetup {
         		   postFlow = 0.0;
         	// calculate the LODF factors for the monitoring branch
         	// LODF factors are arranged in the OutageBranchList sequence
-        	double[] factors = dclfAlgo.getLineOutageDFactors(branch, invE_PTDF);
+        	double[] factors = dclfAlgo.getMultiOutageLODFs(branch, invE_PTDF);
         	if (factors != null) {  // factors = null if branch is an outage branch
             	double sum = 0.0;
             	int cnt = 0;
