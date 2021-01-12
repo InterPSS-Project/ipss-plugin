@@ -98,7 +98,7 @@ public class Ieee14_CA_Test extends CorePluginTestSetup {
 		SenAnalysisAlgorithm dclfAlgo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
 		dclfAlgo.calculateDclf();
 		//System.out.println("Before closure");			
-		//System.out.println(DclfResult.f(dclfAlgo, false));		
+		System.out.println(DclfResult.f(dclfAlgo, false));		
 		
   		double closureFlow = dclfAlgo.calBranchClosureFlow(closureBranch);
 		//System.out.println("Branch Flow After closure: " + f3);

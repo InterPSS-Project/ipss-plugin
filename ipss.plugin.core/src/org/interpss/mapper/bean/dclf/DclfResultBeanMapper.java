@@ -101,7 +101,7 @@ public class DclfResultBeanMapper extends AbstractMapper<SenAnalysisAlgorithm, D
 		BaseAclfNet2BeanMapper.mapBaseBranch(branch, bean);
 		
 		// map Dclf result
-		double mwFlow = algo.getBranchFlow(branch, UnitType.PU);		
+		double mwFlow = algo.calBranchFlow(branch, UnitType.PU);		
 		Complex flow = new Complex(mwFlow, 0);		
 		bean.flow_f2t = new ComplexBean(format(flow));
 
