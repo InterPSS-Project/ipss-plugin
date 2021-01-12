@@ -46,7 +46,7 @@ import com.interpss.core.common.OutageConnectivityException;
 import com.interpss.core.common.ReferenceBusException;
 
 public class ieee14_CAClosurePSSL_Test extends CorePluginTestSetup {
-	//@Test 
+	@Test 
 	public void lodfTest_BaseCase()  throws ReferenceBusException, OutageConnectivityException, InterpssException, IpssNumericException   {
 		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
@@ -95,7 +95,7 @@ Shifted power flow:               27.13
 		//algoDsl.destroy();
 	}
 	
-	@Test 
+	//@Test 
 	public void lodfTest_BranchClosure1()  throws ReferenceBusException, OutageConnectivityException, InterpssException, IpssNumericException   {
 		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
