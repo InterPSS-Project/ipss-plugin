@@ -653,8 +653,8 @@ public class IpssDclf extends BaseDSL {
   			double baseMva = net.getBaseMva();
 
   			try {
-  				AclfBranch outageBranch = cont.getOutageBranch().getBranch();
-  				double[] LODFs = this.algo.lineOutageDFactors(outageBranch);
+  				//AclfBranch outageBranch = cont.getOutageBranch().getBranch();
+  				double[] LODFs = this.algo.lineOutageDFactors(cont.getOutageBranch());
 
   				double outBanchPreFlow = cont.getOutageBranch().getBranch().getDclfFlow()*baseMva;		
   				for (AclfBranch branch : net.getBranchList()) {
@@ -841,7 +841,7 @@ public class IpssDclf extends BaseDSL {
   		 * @throws InterpssException 
   		 */
   		public void calLineOutageDFactors(String contId)   throws ReferenceBusException, OutageConnectivityException, IpssNumericException, InterpssException  {
-  			this.invE_PTDF = algo.calLineOutageDFactors(contId);	}
+  			this.invE_PTDF = algo.calMultiOutageLODFs(contId);	}
   		private Object invE_PTDF = null;
 
   		/**
@@ -852,12 +852,12 @@ public class IpssDclf extends BaseDSL {
   		 */
   		public double[] getLineOutageDFactors() throws ReferenceBusException, IpssNumericException {
   			if (this.sfMonitorType == SFactorMonitorType.BRANCH)
-  				return algo.getLineOutageDFactors(this.getMontorBranch(), this.invE_PTDF);
+  				return algo.getMultiOutageLODFs(this.getMontorBranch(), this.invE_PTDF);
   			else {
   				double[] sumAry = null;
   				for (FlowInterfaceBranch b : this.flowInterface.getInterfaceBranches()) {
   					this.monitorBranch(b.getBranch());
-  	  				double[] xAry = algo.getLineOutageDFactors(this.getMontorBranch(), this.invE_PTDF);
+  	  				double[] xAry = algo.getMultiOutageLODFs(this.getMontorBranch(), this.invE_PTDF);
   	  				if (sumAry == null)
   	  					sumAry = new double[xAry.length];
   					double f = (b.isBranchDir()? 1.0 : -1.0) * b.getWeight();
