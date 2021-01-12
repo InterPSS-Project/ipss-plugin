@@ -71,7 +71,7 @@ public class DclfOutFunc {
 		for (Branch bra : algo.getNetwork().getBranchList()) {
 			if (bra.isActive()) {
 				AclfBranch aclfBra = (AclfBranch)bra;
-				double mwFlow = algo.getBranchFlow(aclfBra, UnitType.mW);
+				double mwFlow = algo.calBranchFlow(aclfBra, UnitType.mW);
 				String id = aclfBra.getId();
 				double limitMva = aclfBra.getRatingMva1();
 				double loading = Math.abs(100*(mwFlow)/limitMva);
@@ -148,7 +148,7 @@ public class DclfOutFunc {
 	 */
 	public static String lineOutageAnalysisBranchFlow(AclfBranch aclfBra, SenAnalysisAlgorithm algo, double mw, double f) {
 		String str = "";
-		double mwFlow = algo.getBranchFlow(aclfBra, UnitType.mW);
+		double mwFlow = algo.calBranchFlow(aclfBra, UnitType.mW);
 		
 		double limitMva = aclfBra.getRatingMva1();
 		double deratedLimit = limitMva - mw*f;
@@ -193,7 +193,7 @@ public class DclfOutFunc {
 	public static String tradeAnalysisBranchFlow(AclfBranch aclfBra, SenAnalysisAlgorithm algo, 
 							double mw, double f, double dfactor) {
 		String str = "";
-		double mwFlow = algo.getBranchFlow(aclfBra, UnitType.mW);
+		double mwFlow = algo.calBranchFlow(aclfBra, UnitType.mW);
 		
 		double newMva = mwFlow + mw * f;
 		double limitMva = aclfBra.getRatingMva1() * dfactor;
