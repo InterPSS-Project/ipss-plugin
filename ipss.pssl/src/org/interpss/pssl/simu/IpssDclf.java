@@ -56,6 +56,7 @@ import com.interpss.core.aclf.contingency.Xfr3WOutageContingency;
 import com.interpss.core.aclf.flow.FlowInterface;
 import com.interpss.core.aclf.flow.FlowInterfaceBranch;
 import com.interpss.core.algo.dclf.BusSenAnalysisType;
+import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfAlgorithmFactory;
 import com.interpss.core.algo.dclf.LODFSenAnalysisType;
 import com.interpss.core.algo.dclf.SFactorMonitorType;
@@ -119,7 +120,7 @@ public class IpssDclf extends BaseDSL {
 	 * @param algo
 	 * @return
 	 */
-	public static DclfAlgorithmDSL wrapAlgorithm(SenAnalysisAlgorithm algo) {
+	public static DclfAlgorithmDSL wrapAlgorithm(ContingencyAnalysisAlgorithm algo) {
 		return new DclfAlgorithmDSL(algo);
 	}
 
@@ -131,7 +132,7 @@ public class IpssDclf extends BaseDSL {
 	 * @return
 	 */
 	public static DclfAlgorithmDSL copyAlgorithm(SenAnalysisAlgorithm algo) {
-		SenAnalysisAlgorithm newAlgo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(algo.getNetwork(), CacheType.SenNotCached, false);
+		ContingencyAnalysisAlgorithm newAlgo = DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm(algo.getNetwork(), CacheType.SenNotCached, false);
 		newAlgo.setDclfSolver(algo.getDclfSolver());
 		newAlgo.setDclfCalculated(algo.isDclfCalculated());
 		return new DclfAlgorithmDSL(newAlgo);
@@ -142,7 +143,7 @@ public class IpssDclf extends BaseDSL {
 	 * DclfAlgorithmDSL dclf algorithm DSL
 	 */
 	public static class DclfAlgorithmDSL {
-		private SenAnalysisAlgorithm algo = null;
+		private ContingencyAnalysisAlgorithm algo = null;
 		
 		private SenAnalysisType type = SenAnalysisType.PANGLE;
 		private String injectBusId = null, 
@@ -171,7 +172,7 @@ public class IpssDclf extends BaseDSL {
 		 * constructor
 		 */
 		public DclfAlgorithmDSL(AclfNetwork net, boolean applyAdjust) {
-			this.algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net, CacheType.SenNotCached, applyAdjust);
+			this.algo = DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm(net, CacheType.SenNotCached, applyAdjust);
 			this.algo.setInjectBusType(BusSenAnalysisType.NOT_DEFINED);
 			this.algo.setWithdrawBusType(BusSenAnalysisType.NOT_DEFINED);
 		}
@@ -181,7 +182,7 @@ public class IpssDclf extends BaseDSL {
 		 * 
 		 * @param algo
 		 */
-		public DclfAlgorithmDSL(SenAnalysisAlgorithm algo) {
+		public DclfAlgorithmDSL(ContingencyAnalysisAlgorithm algo) {
 			this.algo = algo;
 		}
 		
@@ -205,11 +206,11 @@ public class IpssDclf extends BaseDSL {
 		/**
 		 * get the Dclf algo object
 		 */
-  		public SenAnalysisAlgorithm algo() { return this.algo; }
+  		public ContingencyAnalysisAlgorithm algo() { return this.algo; }
 		/**
 		 * get the Dclf algo object
 		 */
-  		public SenAnalysisAlgorithm getAlgorithm() { return this.algo(); }
+  		public ContingencyAnalysisAlgorithm getAlgorithm() { return this.algo(); }
 
   		/**
   		 * get the AclfNet object
