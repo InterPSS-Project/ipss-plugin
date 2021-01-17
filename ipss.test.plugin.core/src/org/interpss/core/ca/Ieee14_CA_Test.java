@@ -24,8 +24,8 @@
 
 package org.interpss.core.ca;
 
-import static org.junit.Assert.assertTrue;
 import static org.interpss.CorePluginFunction.DclfResult;
+import static org.junit.Assert.assertTrue;
 
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
@@ -40,6 +40,7 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.contingency.BranchOutageType;
 import com.interpss.core.aclf.contingency.OutageBranch;
+import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
 import com.interpss.core.common.OutageConnectivityException;
 import com.interpss.core.common.ReferenceBusException;
@@ -95,7 +96,7 @@ public class Ieee14_CA_Test extends CorePluginTestSetup {
 		closureBranch.getBranch().setStatus(false);
 
 		// run Dclf
-		SenAnalysisAlgorithm dclfAlgo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
+		ContingencyAnalysisAlgorithm dclfAlgo = DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm(net);
 		dclfAlgo.calculateDclf();
 		//System.out.println("Before closure");			
 		System.out.println(DclfResult.f(dclfAlgo, false));		
@@ -119,7 +120,7 @@ public class Ieee14_CA_Test extends CorePluginTestSetup {
 				.getAclfNet();
 		
 		// run Dclf
-		SenAnalysisAlgorithm dclfAlgo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
+		ContingencyAnalysisAlgorithm dclfAlgo = DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm(net);
 		dclfAlgo.calculateDclf();
 
 		// define outage branches
