@@ -85,7 +85,7 @@ public class DepDclfResultComparator	extends DepNetModelComparator<QAAclfBusRec,
 							( (branch.isPSXfr()||branch.isPSXfr()) ? QAAclfBranchRec.BranchType.Xformer : QAAclfBranchRec.BranchType.Breaker);   
 			double flow = 0.0;
 			if (branch.isActive())
-				flow = algo.calBranchFlow(branch);
+				flow = algo.getBranchFlow(branch);
 		
 			rec.from_p = flow;
 		}
@@ -304,7 +304,7 @@ public class DepDclfResultComparator	extends DepNetModelComparator<QAAclfBusRec,
 		for (Branch bra : algo.getNetwork().getBranchList()) {
 			if (bra.isActive()) {
 				AclfBranch aclfBra = (AclfBranch)bra;				
-				double pflow = algo.calBranchFlow(aclfBra);
+				double pflow = algo.getBranchFlow(aclfBra);
 				
 				
 				// compare pflow
