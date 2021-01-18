@@ -274,7 +274,7 @@ public class DclfResultComparator extends NetModelComparator<DclfBusResultBean, 
 		for (Branch bra : algo.getNetwork().getBranchList()) {
 			if (bra.isActive()) {
 				AclfBranch aclfBra = (AclfBranch)bra;				
-				double pflow = algo.calBranchFlow(aclfBra);
+				double pflow = algo.getBranchFlow(aclfBra);
 				
 				
 				// compare pflow

@@ -25,6 +25,7 @@
 package org.interpss.sample.dclf_ca;
 
 import org.interpss.IpssCorePlugin;
+import org.interpss.display.DclfOutFunc;
 
 import com.interpss.CoreObjectFactory;
 import com.interpss.core.DclfAlgoObjectFactory;
@@ -45,6 +46,8 @@ public class DclfSample {
 		
 		// perform DCLF calculation
 		algo.calculateDclf();
+		
+		DclfOutFunc.dclfResults(algo, false /*branchViolation*/);
 		
 		AclfBus bus = net.getBus("1");
 		System.out.println("Bus-1 P: " + algo.getBusPower(bus));
