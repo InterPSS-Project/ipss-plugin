@@ -625,7 +625,7 @@ public class IpssDclf extends BaseDSL {
   		 * @return
   		 */
   		public double branchFlow(String fromBusId, String toBusId, String cirId, UnitType unit) {
-  			return algo.calBranchFlow(fromBusId, toBusId, cirId, unit);	}
+  			return algo.getBranchFlow(fromBusId, toBusId, cirId, unit);	}
   		
   		/**
   		 * get branch Dclf flow after the Dclf calculation
@@ -635,7 +635,7 @@ public class IpssDclf extends BaseDSL {
   		 * @return
   		 */
   		public double branchFlow(AclfBranch branch, UnitType unit) {
-  			return algo.calBranchFlow(branch, unit); }
+  			return algo.getBranchFlow(branch, unit); }
   		
   		/*
   		 * Contingency analysis
