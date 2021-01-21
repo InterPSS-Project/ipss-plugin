@@ -40,7 +40,7 @@ import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.mapper.odm.ODMAclfNetMapper;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
