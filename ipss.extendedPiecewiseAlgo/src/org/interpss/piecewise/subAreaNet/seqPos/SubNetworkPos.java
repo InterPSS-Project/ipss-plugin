@@ -29,8 +29,8 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.interpss.piecewise.subAreaNet.base.BaseSubNetwork;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;

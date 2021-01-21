@@ -28,11 +28,11 @@ import org.interpss.threePhase.dynamic.algo.DynamicEventProcessor3Phase;
 import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.net.NetCoordinate;

@@ -32,8 +32,8 @@ import org.interpss.pssl.simu.IpssDclf;
 import org.interpss.pssl.simu.IpssDclf.DclfAlgorithmDSL;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;

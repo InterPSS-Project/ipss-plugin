@@ -35,11 +35,11 @@ import org.interpss.threePhase.util.ThreePhaseAclfOutFunc;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.abc.Static3PXformer;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;

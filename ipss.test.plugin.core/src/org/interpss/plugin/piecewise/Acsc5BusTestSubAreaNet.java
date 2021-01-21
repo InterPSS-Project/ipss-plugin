@@ -38,8 +38,8 @@ import org.interpss.piecewise.subAreaNet.seq012.impl.SubAreaAcscProcessorImpl;
 import org.interpss.piecewise.subAreaNet.seq012.impl.SubNetworkAcscProcessorImpl;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.AcscBus;
 import com.interpss.core.acsc.AcscNetwork;

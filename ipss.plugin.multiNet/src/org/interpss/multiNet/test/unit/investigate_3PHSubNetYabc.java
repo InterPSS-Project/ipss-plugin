@@ -24,11 +24,11 @@ import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.net.NetCoordinate;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;

@@ -26,7 +26,7 @@ package org.interpss.sample.dclf_ca;
 
 import org.interpss.IpssCorePlugin;
 
-import com.interpss.CoreObjectFactory;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;

@@ -21,9 +21,9 @@ import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.interpss.numeric.NumericConstant;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.SimuObjectFactory;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;

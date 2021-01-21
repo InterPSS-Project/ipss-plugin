@@ -4,8 +4,8 @@ import org.interpss.QA.compare.DataComparatorAdapter;
 import org.interpss.numeric.sparse.ISparseEqnDouble;
 import org.interpss.numeric.util.NumericUtil;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.JacobianMatrixType;

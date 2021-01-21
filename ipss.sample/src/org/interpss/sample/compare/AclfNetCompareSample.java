@@ -1,14 +1,13 @@
 package org.interpss.sample.compare;
 
 import org.interpss.IpssCorePlugin;
-import org.interpss.datamodel.bean.BaseJSONBean;
 import org.interpss.datamodel.bean.aclf.AclfNetBean;
 import org.interpss.datamodel.util.DefaultAclfNetBeanComparator;
 import org.interpss.datamodel.util.INetBeanComparator;
 import org.interpss.mapper.bean.aclf.AclfNet2BeanMapper;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.simu.util.sample.SampleCases;
 

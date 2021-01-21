@@ -36,9 +36,9 @@ import org.ieee.odm.schema.LoadflowNetXmlType;
 import org.ieee.odm.schema.NetworkXmlType;
 import org.interpss.mapper.odm.ODMAclfNetMapper;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.DistObjectFactory;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;

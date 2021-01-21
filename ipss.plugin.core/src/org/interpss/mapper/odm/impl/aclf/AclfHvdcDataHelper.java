@@ -19,8 +19,8 @@ import org.ieee.odm.schema.VSCDCControlModeEnumType;
 import org.ieee.odm.schema.VSCHVDC2TXmlType;
 import org.interpss.numeric.datatype.LimitType;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.hvdc.ConverterType;
