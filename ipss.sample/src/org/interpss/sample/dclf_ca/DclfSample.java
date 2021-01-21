@@ -27,7 +27,7 @@ package org.interpss.sample.dclf_ca;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.DclfOutFunc;
 
-import com.interpss.CoreObjectFactory;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;

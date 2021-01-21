@@ -28,9 +28,9 @@ import org.ieee.odm.schema.ContingencyAnalysisEnumType;
 import org.ieee.odm.schema.ContingencyAnalysisXmlType;
 import org.interpss.display.ContingencyOutFunc;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.simu.SimuCtxType;

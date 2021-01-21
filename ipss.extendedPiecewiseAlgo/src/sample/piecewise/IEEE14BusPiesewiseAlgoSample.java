@@ -40,7 +40,7 @@ import org.interpss.piecewise.subAreaNet.seqPos.SubNetworkPos;
 import org.interpss.piecewise.subAreaNet.seqPos.impl.SubAreaPosProcessorImpl;
 import org.interpss.piecewise.subAreaNet.seqPos.impl.SubNetworkPosProcessorImpl;
 
-import com.interpss.CoreObjectFactory;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;

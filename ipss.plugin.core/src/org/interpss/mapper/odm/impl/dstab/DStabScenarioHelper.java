@@ -54,10 +54,10 @@ import org.ieee.odm.schema.TimePeriodXmlType;
 import org.interpss.mapper.odm.impl.aclf.AclfScenarioHelper;
 import org.interpss.mapper.odm.impl.acsc.AcscScenarioHelper;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.common.datatype.Constants;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.core.acsc.fault.AcscBusFault;

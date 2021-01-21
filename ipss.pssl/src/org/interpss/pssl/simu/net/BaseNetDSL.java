@@ -23,7 +23,7 @@
   */
 package org.interpss.pssl.simu.net;
 
-import com.interpss.CoreObjectFactory;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.net.Area;
 import com.interpss.core.net.Network;
 import com.interpss.core.net.NetworkedElement;

@@ -34,9 +34,9 @@ import org.interpss.numeric.util.PerformanceTimer;
 import org.interpss.pssl.simu.IpssAclf;
 import org.interpss.pssl.simu.net.IpssAclfNet;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.msg.IPSSMsgHub;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;

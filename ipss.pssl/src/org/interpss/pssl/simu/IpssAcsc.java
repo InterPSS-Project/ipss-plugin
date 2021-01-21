@@ -28,8 +28,8 @@ import static com.interpss.common.util.NetUtilFunc.ToBranchId;
 
 import org.apache.commons.math3.complex.Complex;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.acsc.BaseAcscNetwork;
 import com.interpss.core.acsc.fault.AcscBranchFault;
 import com.interpss.core.acsc.fault.AcscBusFault;

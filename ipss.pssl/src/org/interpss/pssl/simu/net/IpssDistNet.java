@@ -26,9 +26,9 @@ package org.interpss.pssl.simu.net;
 
 import org.interpss.numeric.datatype.Unit.UnitType;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.DistObjectFactory;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;

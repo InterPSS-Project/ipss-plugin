@@ -34,8 +34,8 @@ import org.interpss.pssl.simu.net.IpssAcscNet.AcscNetworkDSL;
 import org.interpss.pssl.util.AcscSample;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;

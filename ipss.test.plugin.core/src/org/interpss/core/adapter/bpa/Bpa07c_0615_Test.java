@@ -10,8 +10,8 @@ import org.interpss.core.dstab.DStabTestSetupBase;
 import org.interpss.mapper.odm.ODMAclfParserMapper;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.SimuObjectFactory;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.simu.SimuContext;
