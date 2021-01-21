@@ -33,9 +33,9 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.pssl.simu.net.IpssAclfNet;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.msg.IPSSMsgHub;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;

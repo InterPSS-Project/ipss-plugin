@@ -33,10 +33,10 @@ import org.ieee.odm.schema.BusXmlType;
 import org.ieee.odm.schema.NetworkXmlType;
 import org.ieee.odm.schema.VoltageUnitType;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.common.datatype.Constants;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.mapper.AbstractMapper;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.Aclf3WBranch;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.hvdc.HvdcLine2T;
