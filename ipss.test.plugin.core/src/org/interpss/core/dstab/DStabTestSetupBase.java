@@ -31,10 +31,10 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.NumericConstant;
 
 import com.interpss.CoreCommonFactory;
-import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.dstab.BaseDStabBus;

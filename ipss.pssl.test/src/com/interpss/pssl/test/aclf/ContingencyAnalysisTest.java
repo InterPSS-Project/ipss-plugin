@@ -41,9 +41,9 @@ import org.interpss.pssl.plugin.IpssAdapter;
 import org.interpss.pssl.plugin.cmd.ContingencyDslRunner;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.pssl.test.BaseTestSetup;

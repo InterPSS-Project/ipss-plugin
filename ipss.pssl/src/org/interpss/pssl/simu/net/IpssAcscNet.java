@@ -32,9 +32,9 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.pssl.simu.BaseDSL;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.BaseAclfNetwork;

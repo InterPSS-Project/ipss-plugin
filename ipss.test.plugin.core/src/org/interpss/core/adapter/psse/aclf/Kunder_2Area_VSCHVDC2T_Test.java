@@ -13,8 +13,8 @@ import org.interpss.numeric.datatype.ComplexFunc;
 import org.interpss.numeric.util.NumericUtil;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.SimuObjectFactory;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.hvdc.HvdcLine2TVSC;

@@ -36,7 +36,7 @@ import org.interpss.pssl.plugin.IpssAdapter;
 import org.interpss.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBus;

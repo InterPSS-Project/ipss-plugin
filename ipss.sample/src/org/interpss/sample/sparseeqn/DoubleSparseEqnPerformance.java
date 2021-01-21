@@ -32,8 +32,8 @@ import java.util.stream.Stream;
 import org.interpss.numeric.sparse.ISparseEqnDouble;
 import org.interpss.numeric.util.PerformanceTimer;
 
-import com.interpss.NumericObjectFactory;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.NumericObjectFactory;
 import com.interpss.core.sparse.DoubleSEqnRow;
 import com.interpss.core.sparse.impl.SparseEqnDoubleImpl;
 

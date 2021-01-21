@@ -37,8 +37,8 @@ import org.interpss.mapper.odm.ODMAclfParserMapper;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.SimuObjectFactory;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBus;

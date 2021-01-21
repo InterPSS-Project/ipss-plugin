@@ -35,7 +35,7 @@ import org.interpss.QA.test.QATestSetup;
 import org.interpss.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 

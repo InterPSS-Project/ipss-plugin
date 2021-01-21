@@ -35,7 +35,7 @@ import org.interpss.QA.test.QATestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;

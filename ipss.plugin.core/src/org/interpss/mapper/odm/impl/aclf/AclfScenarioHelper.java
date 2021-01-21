@@ -33,7 +33,7 @@ import org.ieee.odm.schema.BranchChangeRecXmlType;
 import org.ieee.odm.schema.BranchOutageEnumType;
 import org.ieee.odm.schema.LfMethodEnumType;
 
-import com.interpss.CoreObjectFactory;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.contingency.BranchOutageType;

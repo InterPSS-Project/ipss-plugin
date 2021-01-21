@@ -10,8 +10,8 @@ import org.interpss.datamodel.util.INetBeanComparator;
 import org.interpss.mapper.bean.aclf.AclfNet2BeanMapper;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.simu.util.sample.SampleCases;
 
