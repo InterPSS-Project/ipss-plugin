@@ -35,9 +35,9 @@ import org.interpss.numeric.util.PerformanceTimer;
 import org.interpss.pssl.common.PSSLException;
 import org.interpss.pssl.plugin.IpssAdapter;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.common.ReferenceBusException;
 import com.interpss.simu.util.sample.SampleCases;

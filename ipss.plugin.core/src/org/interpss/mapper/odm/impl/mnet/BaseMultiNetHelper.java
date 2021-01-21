@@ -29,7 +29,7 @@ import org.ieee.odm.schema.BranchBusSideEnumType;
 import org.ieee.odm.schema.ChildNetInterfaceBranchXmlType;
 import org.ieee.odm.schema.ChildNetworkDefXmlType;
 
-import com.interpss.CoreObjectFactory;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.net.BranchBusSide;
 import com.interpss.core.net.childnet.ChildNetInterfaceBranch;
 import com.interpss.core.net.childnet.ChildNetwork;
