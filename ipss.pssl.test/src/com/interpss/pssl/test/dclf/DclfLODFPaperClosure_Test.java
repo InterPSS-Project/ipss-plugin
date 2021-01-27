@@ -33,7 +33,7 @@ import org.interpss.pssl.simu.IpssDclf.DclfAlgorithmDSL;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
@@ -223,7 +223,7 @@ public class DclfLODFPaperClosure_Test extends BaseTestSetup {
 			AclfBranch aclfBra = bra.getBranch();
 			double flow = 0.0;
 			if (bra.getOutageType() == BranchOutageType.CLOSE) {
-				OutageBranch outBranch = CoreObjectFactory.createOutageBranch(aclfBra, BranchOutageType.CLOSE);
+				OutageBranch outBranch = DclfAlgoObjectFactory.createOutageBranch(aclfBra, BranchOutageType.CLOSE);
 				flow = algoDsl.algo().calBranchClosureFlow(outBranch);
 			}
 			else

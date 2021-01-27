@@ -346,9 +346,9 @@ public class IpssDclf extends BaseDSL {
   		 * @param contriPercent contribution factor in %
   		 * @return
   		 */
-		public DclfAlgorithmDSL addInjectionBus(String id, double contriPercent) { 
+		public DclfAlgorithmDSL addInjectionBus(AclfBus bus, double contriPercent) { 
   			if (this.algo.getInjectBusType() == BusSenAnalysisType.MULTIPLE_BUS) {
-  				addBus(this.algo.getInjectBusList(), id, contriPercent);
+  				addBus(this.algo.getInjectBusList(), bus, contriPercent);
   			} else 
   				ipssLogger.warning("addInjectionBus() can only be used when BusType = MULTIPLE_BUS");
   			return this; 
@@ -361,7 +361,8 @@ public class IpssDclf extends BaseDSL {
   		 * @return
   		 */
 		public DclfAlgorithmDSL addInjectionBus(int n, double contriPercent) { 
-			return addInjectionBus(IODMModelParser.BusIdPreFix+n, contriPercent);} 
+			//return addInjectionBus(IODMModelParser.BusIdPreFix+n, contriPercent);}
+			return null;} 
   		
   		/**
   		 *  add withdraw bus info for multiple bus analysis scenario, with contribution factor
@@ -370,9 +371,9 @@ public class IpssDclf extends BaseDSL {
   		 * @param contriPercent contribution factor in %
   		 * @return
   		 */
-		public DclfAlgorithmDSL addWithdrawBus(String id, double contriPercent) { 
+		public DclfAlgorithmDSL addWithdrawBus(AclfBus bus, double contriPercent) { 
   			if (this.algo.getWithdrawBusType() == BusSenAnalysisType.MULTIPLE_BUS) {
-  				addBus(this.algo.getWithdrawBusList(), id, contriPercent);
+  				addBus(this.algo.getWithdrawBusList(), bus, contriPercent);
   			} else 
   				ipssLogger.warning("addWithdrawBus() can only be used when BusType = MULTIPLE_BUS");
   			return this; } 
@@ -384,7 +385,8 @@ public class IpssDclf extends BaseDSL {
   		 * @return
   		 */
 		public DclfAlgorithmDSL addWithdrawBus(int n, double contriPercent) { 
-			return addWithdrawBus(IODMModelParser.BusIdPreFix+n, contriPercent);} 
+			//return addWithdrawBus(IODMModelParser.BusIdPreFix+n, contriPercent);} 
+			return null;} 
 
 		/**
 		 * set withdraw buses. Bus genPartFactor is used for contribution percent
@@ -396,7 +398,7 @@ public class IpssDclf extends BaseDSL {
 			setWithdrawBusType(BusSenAnalysisType.MULTIPLE_BUS);
 			// this.algo.getWithdrawBusList().clear(); - the list is cleared in the setWithdrawType() method
 			for (AclfBus bus : busList) {
-				addWithdrawBus(bus.getId(), bus.getGenPartFactor()*100.0);
+				addWithdrawBus(bus, bus.getGenPartFactor()*100.0);
 			}
 			return this;
 		} 
@@ -519,10 +521,10 @@ public class IpssDclf extends BaseDSL {
   		 * @throws PSSLException
   		 */
   		public DclfAlgorithmDSL outageBranch(AclfBranch branch)  throws PSSLException {
-  			this.outageBranch = CoreObjectFactory.createOutageBranch(branch, BranchOutageType.OPEN); 
+  			this.outageBranch = DclfAlgoObjectFactory.createOutageBranch(branch, BranchOutageType.OPEN); 
   			return this; } 
   		public DclfAlgorithmDSL outageBranch(AclfBranch branch, BranchOutageType type)  throws PSSLException {
-  			this.outageBranch = CoreObjectFactory.createOutageBranch(branch, type); 
+  			this.outageBranch = DclfAlgoObjectFactory.createOutageBranch(branch, type); 
   			return this; } 
   		public OutageBranch outageBranch() { return this.outageBranch; } 
 
@@ -537,14 +539,14 @@ public class IpssDclf extends BaseDSL {
   		public DclfAlgorithmDSL addOutageBranch(String fromId, String toId, String cirId) {
   			AclfBranch branch = this.getAclfNetwork().getBranch(fromId, toId, cirId);
   			if (branch != null)
-  				addOutageBranch(CoreObjectFactory.createOutageBranch(branch)); 
+  				addOutageBranch(DclfAlgoObjectFactory.createOutageBranch(branch)); 
   			else
   				ipssLogger.warning("Branch not found in the network " + fromId+"->"+toId+"("+cirId+")");
   			return this; } 
   		public DclfAlgorithmDSL addOutageBranch(String fromId, String toId, String cirId, BranchOutageType type) {
   			AclfBranch branch = this.getAclfNetwork().getBranch(fromId, toId, cirId);
   			if (branch != null)
-  				addOutageBranch(CoreObjectFactory.createOutageBranch(branch, type)); 
+  				addOutageBranch(DclfAlgoObjectFactory.createOutageBranch(branch, type)); 
   			else
   				ipssLogger.warning("Branch not found in the network " + fromId+"->"+toId+"("+cirId+")");
   			return this; } 
@@ -666,7 +668,7 @@ public class IpssDclf extends BaseDSL {
   					resultProcessor.accept(branch, postFlow);
   					}
   				}
-  			} catch (ReferenceBusException e) {
+  			} catch (InterpssException e) {
   				ipssLogger.severe(e.toString());
   				return false;
   			}
@@ -754,7 +756,7 @@ public class IpssDclf extends BaseDSL {
   		 * @param injectBusId inject bus id
   		 * @param busId bus id where sensitivity is measured
   		 */
-  		public double busSensitivity(SenAnalysisType type, String injectBusId, String busId)  throws ReferenceBusException {
+  		public double busSensitivity(SenAnalysisType type, String injectBusId, String busId)  throws InterpssException {
   			return algo.calBusSensitivity(type, injectBusId, busId); }
 
   		/**
@@ -775,8 +777,8 @@ public class IpssDclf extends BaseDSL {
   		* @param outageBranch
   		* @param monitorBranch    
   		*/
-  		public double lineOutageDFactor(AclfBranch outageBranch, AclfBranch monitorBranch)   throws ReferenceBusException {
-  			this.outageBranch = CoreObjectFactory.createOutageBranch(outageBranch);
+  		public double lineOutageDFactor(AclfBranch outageBranch, AclfBranch monitorBranch)   throws InterpssException {
+  			this.outageBranch = DclfAlgoObjectFactory.createOutageBranch(outageBranch);
   			this.monitorBranch(monitorBranch); 
   			this.sfMonitorType = SFactorMonitorType.BRANCH;
   			return this.lineOutageDFactor(); 
@@ -786,7 +788,7 @@ public class IpssDclf extends BaseDSL {
   		 * line outage distribution factor for single outage line case 
   		*
   		*/
-  		public double lineOutageDFactor()   throws ReferenceBusException {
+  		public double lineOutageDFactor()   throws InterpssException {
   			if (this.sfMonitorType == SFactorMonitorType.BRANCH)
   	  			return algo.lineOutageDFactor(this.outageBranch, this.getMontorBranch());	
   			else {
@@ -851,7 +853,7 @@ public class IpssDclf extends BaseDSL {
   		 * 
   		 * @return
   		 */
-  		public double[] getLineOutageDFactors() throws ReferenceBusException, IpssNumericException {
+  		public double[] getLineOutageDFactors() throws InterpssException {
   			if (this.sfMonitorType == SFactorMonitorType.BRANCH)
   				return algo.calMultiOutageLODFs(this.getMontorBranch(), this.invE_PTDF);
   			else {
@@ -875,7 +877,7 @@ public class IpssDclf extends BaseDSL {
   		/**
   		 * for the defined injection bus and monitoring branch or interface, calculate gsf
   		 */
-  		public double genShiftFactor()  throws ReferenceBusException  {
+  		public double genShiftFactor()  throws InterpssException  {
   			if (this.sfMonitorType == SFactorMonitorType.BRANCH)
   				return calBranchGSF(); 
   			else {
@@ -889,7 +891,7 @@ public class IpssDclf extends BaseDSL {
   			}
   		}
   		
-  		private double calBranchGSF() throws ReferenceBusException {
+  		private double calBranchGSF() throws InterpssException {
   			if (this.algo.getInjectBusType() == BusSenAnalysisType.SINGLE_BUS) { 
   	  			if (this.algo.getWithdrawBusType() == BusSenAnalysisType.REF_BUS)
   	  				return this.algo.calGenShiftFactor(injectBusId, this.getMontorBranch());   				
@@ -947,20 +949,20 @@ public class IpssDclf extends BaseDSL {
   		 * calculate power transfer factor for the defined injection bus, withdraw bus(es) 
   		 * and the monitor branch
   		 */
-  		public double pTransferDFactor()   throws ReferenceBusException { 
+  		public double pTransferDFactor()   throws InterpssException { 
   			if (this.algo.getWithdrawBusType() == BusSenAnalysisType.SINGLE_BUS) 
   				return this.algo.pTransferDistFactor(this.injectBusId, this.withdrawBusId, this.monitoringBranch);
   			else
-  				return this.algo.pTransferDistFactor(this.injectBusId, this.monitoringBranch);  // withdraw buses are defined by the withdraw bus list 
+  				return this.algo.genTransferDistFactor(this.injectBusId, this.monitoringBranch);  // withdraw buses are defined by the withdraw bus list 
   		}
 
   		/**
   		 * calculate power transfer factor for the monitor branch for multiple injection
   		 * buses
   		 */
-  		public double multiBusTransferFactor()  throws ReferenceBusException  { 
+  		public double multiBusTransferFactor()  throws InterpssException  { 
   			if (this.algo.getInjectBusType() == BusSenAnalysisType.MULTIPLE_BUS)
-  				return this.algo.getAreaTransferFactor(this.monitoringBranch);
+  				return this.algo.genTransferDistFactor(this.monitoringBranch);
   			else {
 				ipssLogger.warning("Wrong BusSenAnalysis type, " + this.algo.getInjectBusType()
 								+ ", " + this.algo.getWithdrawBusType());
@@ -1035,11 +1037,10 @@ public class IpssDclf extends BaseDSL {
   		 * @param busId
   		 * @param percent
   		 */
-  		private void addBus(EList<SenAnalysisBus> list, String busId, double percent) {
-  			SenAnalysisBus bus = DclfAlgorithmFactory.eINSTANCE.createSenAnalysisBus();
-  			bus.setBusId(busId);
-  			bus.setPercent(percent);
-  			list.add(bus);
+  		private void addBus(EList<SenAnalysisBus> list, AclfBus bus, double df) {
+  			SenAnalysisBus sbus = DclfAlgoObjectFactory.createSenAnalysisBus(bus);
+  			sbus.setDFactor(df);
+  			list.add(sbus);
   		}
 
   		@Override public String toString() {
@@ -1064,7 +1065,7 @@ public class IpssDclf extends BaseDSL {
 			this.setWithdrawBusType(BusSenAnalysisType.MULTIPLE_BUS);
 			for (AclfBus bus : this.aclfNet().getBusList()){
 				if (bus.isLoad() && bus.getLoadDistFactor() > 0.0)
-					addWithdrawBus(bus.getId(), bus.getLoadDistFactor()*100.0);
+					addWithdrawBus(bus, bus.getLoadDistFactor()*100.0);
 			}
 			return this;
 		} 
@@ -1084,7 +1085,7 @@ public class IpssDclf extends BaseDSL {
   	  	  					v.branch = branch;
   	  	  					Collections.sort(list, DblBranchValue.getAbsComparator());
   	  	  				}
-  					} catch ( ReferenceBusException e ) {
+  					} catch ( InterpssException e ) {
   						ipssLogger.severe(e.toString());
   					}
   				}
@@ -1124,7 +1125,7 @@ public class IpssDclf extends BaseDSL {
   	  	  	  					Collections.sort(list, DblBusValue.getAbsComparator());
   	  	  	  				}
   	  					}
-  					} catch ( ReferenceBusException e ) {
+  					} catch ( InterpssException e ) {
   						ipssLogger.severe(e.toString());
   					}
   				}

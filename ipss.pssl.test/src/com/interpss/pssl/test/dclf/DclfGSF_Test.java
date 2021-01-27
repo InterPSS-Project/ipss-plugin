@@ -68,8 +68,8 @@ public class DclfGSF_Test extends BaseTestSetup {
 		algoDsl = IpssDclf.createDclfAlgorithm(net);
 		algoDsl.injectionBusId("Bus2")
 			   .setWithdrawBusType(BusSenAnalysisType.MULTIPLE_BUS)
-			   .addWithdrawBus("Bus14", 50.0)
-			   .addWithdrawBus("Bus13", 50.0);
+			   .addWithdrawBus(net.getBus("Bus14"), 50.0)
+			   .addWithdrawBus(net.getBus("Bus13"), 50.0);
 		//System.out.println("\nInj - Bus2, withdraw - Bus14 50%, Bus13 50%");
 		
 		f = algoDsl.monitorBranch("Bus9", "Bus14")
@@ -93,8 +93,8 @@ public class DclfGSF_Test extends BaseTestSetup {
 		algoDsl = IpssDclf.createDclfAlgorithm(net);
 		algoDsl.injectionBusId("Bus2")
 			   .setWithdrawBusType(BusSenAnalysisType.MULTIPLE_BUS)
-			   .addWithdrawBus("Bus14", 90.0)
-			   .addWithdrawBus("Bus13", 10.0);
+			   .addWithdrawBus(net.getBus("Bus14"), 90.0)
+			   .addWithdrawBus(net.getBus("Bus13"), 10.0);
 		System.out.println("\nInj - Bus2, withdraw - Bus14 90%, Bus13 10%");
 		
 		f = algoDsl.monitorBranch("Bus9", "Bus14")
