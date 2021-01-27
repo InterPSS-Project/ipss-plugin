@@ -208,8 +208,7 @@ public class DclfResultComparator extends NetModelComparator<DclfBusResultBean, 
 			//DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net, false);
 			try {
 				algo.calculateDclf();
-			} catch (InterpssException | ReferenceBusException
-					| IpssNumericException e) {
+			} catch (InterpssException e) {
 				e.printStackTrace();
 			}	
 		}

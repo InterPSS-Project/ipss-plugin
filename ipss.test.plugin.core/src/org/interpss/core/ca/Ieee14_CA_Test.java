@@ -58,7 +58,7 @@ public class Ieee14_CA_Test extends CorePluginTestSetup {
 		dclfAlgo.calculateDclf();
 		
 		// set single outage branch
-		OutageBranch outageBranch = CoreObjectFactory.createOutageBranch(net.getBranch("Bus5->Bus6(1)"), BranchOutageType.OPEN);
+		OutageBranch outageBranch = DclfAlgoObjectFactory.createOutageBranch(net.getBranch("Bus5->Bus6(1)"), BranchOutageType.OPEN);
         double outBanchPreFlow = outageBranch.getBranch().getDclfFlow();
         
         double sum = 0.0;  // Bus4->Bus7(1), Bus4->Bus9(1), Bus5->Bus6(1) interface diff before and after the outage
@@ -92,7 +92,7 @@ public class Ieee14_CA_Test extends CorePluginTestSetup {
 		 *            After closure      6.30
 		 */
 		
-		OutageBranch closureBranch = CoreObjectFactory.createOutageBranch(net.getBranch("Bus4->Bus5(1)"), BranchOutageType.CLOSE);
+		OutageBranch closureBranch = DclfAlgoObjectFactory.createOutageBranch(net.getBranch("Bus4->Bus5(1)"), BranchOutageType.CLOSE);
 		closureBranch.getBranch().setStatus(false);
 
 		// run Dclf
@@ -126,11 +126,11 @@ public class Ieee14_CA_Test extends CorePluginTestSetup {
 		// define outage branches
 		dclfAlgo.getOutageBranchList().clear();
 		dclfAlgo.getOutageBranchList().add(
-					CoreObjectFactory.createOutageBranch(net.getBranch("Bus1", "Bus5", "1"), BranchOutageType.OPEN));
+				DclfAlgoObjectFactory.createOutageBranch(net.getBranch("Bus1", "Bus5", "1"), BranchOutageType.OPEN));
 		dclfAlgo.getOutageBranchList().add(
-				CoreObjectFactory.createOutageBranch(net.getBranch("Bus3", "Bus4", "1"), BranchOutageType.OPEN));
+				DclfAlgoObjectFactory.createOutageBranch(net.getBranch("Bus3", "Bus4", "1"), BranchOutageType.OPEN));
 		dclfAlgo.getOutageBranchList().add(
-				CoreObjectFactory.createOutageBranch(net.getBranch("Bus6", "Bus11", "1"), BranchOutageType.OPEN));
+				DclfAlgoObjectFactory.createOutageBranch(net.getBranch("Bus6", "Bus11", "1"), BranchOutageType.OPEN));
 
 		// define reference bus for the multi-outage calculation. Since Bus1 is connected to an outage branch, we
 		// to choice a different ref bus.

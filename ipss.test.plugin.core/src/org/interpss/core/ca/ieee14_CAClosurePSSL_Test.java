@@ -36,7 +36,7 @@ import org.interpss.pssl.simu.IpssDclf.DclfAlgorithmDSL;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.contingency.BranchOutageType;
@@ -238,7 +238,7 @@ Shifted power flow:          31.59
 			double flow = 0.0;
 			if (bra.getOutageType() == BranchOutageType.CLOSE) {
 				//flow = algoDsl.algo().getBranchClosureEquivPreFlow(aclfBra);
-				OutageBranch outBranch = CoreObjectFactory.createOutageBranch(aclfBra, BranchOutageType.CLOSE);
+				OutageBranch outBranch = DclfAlgoObjectFactory.createOutageBranch(aclfBra, BranchOutageType.CLOSE);
 				flow = algoDsl.algo().calBranchClosureFlow(outBranch);
 			}
 			else
