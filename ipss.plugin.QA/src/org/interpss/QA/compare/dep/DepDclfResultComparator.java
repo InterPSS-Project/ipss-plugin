@@ -237,8 +237,7 @@ public class DepDclfResultComparator	extends DepNetModelComparator<QAAclfBusRec,
 			//DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net, false);
 			try {
 				algo.calculateDclf();
-			} catch (InterpssException | ReferenceBusException
-					| IpssNumericException e) {
+			} catch (InterpssException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}	

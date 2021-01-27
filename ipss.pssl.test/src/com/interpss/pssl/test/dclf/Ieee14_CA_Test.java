@@ -87,7 +87,7 @@ public class Ieee14_CA_Test extends BaseTestSetup {
        		try {
        			double f = algoDsl.monitorBranch(branch).lineOutageDFactor();
            		postFlow = preFlow + f * outBanchPreFlow;
-           	} catch (ReferenceBusException e) {
+           	} catch (InterpssException e) {
        			IpssLogger.ipssLogger.severe(e.toString());
        		}
 
@@ -165,7 +165,7 @@ Cont 1, Bus5->Bus6(1), 42.0836, 0.0000, 100.0000, 0.0000
         			}
         			postFlow = sum*baseMva + preFlow;
         		}
-        	} catch (IpssNumericException | ReferenceBusException e) {
+        	} catch (InterpssException e) {
     			IpssLogger.ipssLogger.severe(e.toString());
         	}
       
