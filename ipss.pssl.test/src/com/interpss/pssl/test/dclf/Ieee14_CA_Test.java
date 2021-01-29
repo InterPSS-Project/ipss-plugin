@@ -26,10 +26,6 @@ package com.interpss.pssl.test.dclf;
 
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.interpss.mapper.odm.impl.aclf.AclfScenarioHelper;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.pssl.common.PSSLException;
 import org.interpss.pssl.plugin.IpssAdapter;
@@ -39,12 +35,9 @@ import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
-import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.contingency.MonitoringBranch;
 import com.interpss.core.aclf.contingency.OutageBranch;
-import com.interpss.core.algo.dclf.LODFSenAnalysisType;
 import com.interpss.core.common.OutageConnectivityException;
 import com.interpss.core.common.ReferenceBusException;
 import com.interpss.pssl.test.BaseTestSetup;
@@ -133,8 +126,7 @@ Cont 1, Bus5->Bus6(1), 42.0836, 0.0000, 100.0000, 0.0000
 		DclfAlgorithmDSL algoDsl = IpssDclf.createDclfAlgorithm(net)
 				.runDclfAnalysis();
 
-		algoDsl.setLODFAnalysisType(LODFSenAnalysisType.MULTI_BRANCH)
-				.addOutageBranch("Bus1", "Bus5", "1")
+		algoDsl.addOutageBranch("Bus1", "Bus5", "1")
 				.addOutageBranch("Bus3", "Bus4", "1")
 				.addOutageBranch("Bus6", "Bus11", "1");
 		algoDsl.setRefBus("Bus14");

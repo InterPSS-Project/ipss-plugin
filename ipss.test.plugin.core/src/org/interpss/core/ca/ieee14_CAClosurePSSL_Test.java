@@ -41,7 +41,6 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.contingency.BranchOutageType;
 import com.interpss.core.aclf.contingency.OutageBranch;
-import com.interpss.core.algo.dclf.LODFSenAnalysisType;
 import com.interpss.core.common.OutageConnectivityException;
 import com.interpss.core.common.ReferenceBusException;
 
@@ -59,8 +58,7 @@ public class ieee14_CAClosurePSSL_Test extends CorePluginTestSetup {
 		//System.out.println(DclfResult.f(algoDsl.algo(), false).toString());		
 		double pBeforeOutage = net.getBranch("Bus4->Bus5(1)").getDclfFlow();
 
-		algoDsl.setLODFAnalysisType(LODFSenAnalysisType.MULTI_BRANCH)
-				.addOutageBranch("Bus2", "Bus5", "1", BranchOutageType.OPEN)
+		algoDsl.addOutageBranch("Bus2", "Bus5", "1", BranchOutageType.OPEN)
 				.addOutageBranch("Bus3", "Bus4", "1", BranchOutageType.OPEN)
 				.addOutageBranch("Bus6", "Bus11", "1", BranchOutageType.OPEN);
 
@@ -110,8 +108,7 @@ Shifted power flow:               27.13
 		//System.out.println(DclfResult.f(algoDsl.algo(), false).toString());
 		double pBeforeOutage = net.getBranch("Bus4->Bus5(1)").getDclfFlow();
 		
-		algoDsl.setLODFAnalysisType(LODFSenAnalysisType.MULTI_BRANCH)
-				.addOutageBranch("Bus2", "Bus5", "1", BranchOutageType.OPEN)
+		algoDsl.addOutageBranch("Bus2", "Bus5", "1", BranchOutageType.OPEN)
 				.addOutageBranch("Bus3", "Bus4", "1", BranchOutageType.OPEN)
 				.addOutageBranch("Bus6", "Bus11", "1", BranchOutageType.CLOSE);
 		
@@ -159,8 +156,7 @@ Shifted power flow:          31.59
 		//System.out.println(DclfResult.f(algoDsl.algo(), false).toString());		
 		double pBeforeOutage = net.getBranch("Bus4->Bus5(1)").getDclfFlow();
 		
-		algoDsl.setLODFAnalysisType(LODFSenAnalysisType.MULTI_BRANCH)
-				.addOutageBranch("Bus2", "Bus5", "1", BranchOutageType.OPEN)
+		algoDsl.addOutageBranch("Bus2", "Bus5", "1", BranchOutageType.OPEN)
 				.addOutageBranch("Bus3", "Bus4", "1", BranchOutageType.CLOSE)
 				.addOutageBranch("Bus6", "Bus11", "1", BranchOutageType.CLOSE);
 
@@ -204,8 +200,7 @@ Shifted power flow:          31.59
 		//System.out.println(DclfResult.f(algoDsl.algo(), false).toString());		
 		double pBeforeOutage = net.getBranch("Bus4->Bus5(1)").getDclfFlow();		
 		
-		algoDsl.setLODFAnalysisType(LODFSenAnalysisType.MULTI_BRANCH)
-				.addOutageBranch("Bus2", "Bus5", "1", BranchOutageType.CLOSE)
+		algoDsl.addOutageBranch("Bus2", "Bus5", "1", BranchOutageType.CLOSE)
 				.addOutageBranch("Bus3", "Bus4", "1", BranchOutageType.CLOSE)
 				.addOutageBranch("Bus6", "Bus11", "1", BranchOutageType.CLOSE);
 

@@ -35,7 +35,6 @@ import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.algo.dclf.LODFSenAnalysisType;
 import com.interpss.core.common.OutageConnectivityException;
 import com.interpss.core.common.ReferenceBusException;
 import com.interpss.pssl.test.BaseTestSetup;
@@ -53,8 +52,7 @@ public class DclfLODFPaper_OutageBranchDup extends BaseTestSetup {
 		DclfAlgorithmDSL algoDsl = IpssDclf.createDclfAlgorithm(net)
 										.runDclfAnalysis();
 		
-		algoDsl.setLODFAnalysisType(LODFSenAnalysisType.MULTI_BRANCH)
-				.addOutageBranch("Bus1", "Bus5", "1")
+		algoDsl.addOutageBranch("Bus1", "Bus5", "1")
 				.addOutageBranch("Bus3", "Bus4", "1")
 				.addOutageBranch("Bus6", "Bus11", "1")
 				.addOutageBranch("Bus10", "Bus11", "1")     // Bus10->Bus11(1)
