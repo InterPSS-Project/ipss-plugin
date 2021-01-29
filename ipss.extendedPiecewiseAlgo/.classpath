@@ -17,6 +17,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.numeric"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.plugin.base"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.plugin.core"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/ipss.pssl"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ipss.pssl"/>	
 	<classpathentry kind="output" path="bin"/>
 </classpath>
