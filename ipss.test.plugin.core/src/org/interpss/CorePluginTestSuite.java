@@ -84,7 +84,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	IEEE14BusBreaker_dclf_Test.class,
 	IEEE14BusBreaker_equivCABranch_Test.class,
 	Ieee14_CA_Test.class,
-	ieee14_CAClosurePSSL_Test.class,
+	//ieee14_CAClosurePSSL_Test.class,
 	Ieee14_GSF_Test.class,
 	
 	// small Z branch

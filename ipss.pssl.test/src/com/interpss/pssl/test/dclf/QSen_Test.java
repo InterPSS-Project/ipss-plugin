@@ -29,8 +29,8 @@ import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.pssl.plugin.IpssAdapter;
 import org.interpss.pssl.simu.IpssAclf;
-import org.interpss.pssl.simu.IpssDclf;
 import org.interpss.pssl.simu.IpssAclf.LfAlgoDSL;
+import org.interpss.pssl.simu.IpssDclf;
 import org.interpss.pssl.simu.IpssDclf.DclfAlgorithmDSL;
 import org.junit.Test;
 

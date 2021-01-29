@@ -13,7 +13,6 @@ import org.interpss.QA.result.QAResultContainer;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.algo.dclf.LODFSenAnalysisType;
 import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.impl.SenAnalysisAlgorithmImpl;
 import com.interpss.core.algo.dclf.solver.DclfSolver;
@@ -32,7 +31,6 @@ public class DclfAlgoDebug extends SenAnalysisAlgorithmImpl {
 
 	public static DclfAlgoDebug createDclfAlgoDebug(AclfNetwork aclfNet) {
 		DclfAlgoDebug algo = new DclfAlgoDebug();
-		algo.setLodfAnalysisType(LODFSenAnalysisType.SINGLE_BRANCH);
 		algo.setNetwork(aclfNet);
 		return algo;
 	}
