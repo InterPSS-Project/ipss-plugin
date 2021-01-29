@@ -24,20 +24,10 @@
 
 package org.interpss.mapper.odm.impl.aclf;
 
-import java.util.List;
-
 import org.ieee.odm.schema.AclfAlgorithmXmlType;
 import org.ieee.odm.schema.ApparentPowerXmlType;
-import org.ieee.odm.schema.BranchChangeRecSetXmlType;
-import org.ieee.odm.schema.BranchChangeRecXmlType;
-import org.ieee.odm.schema.BranchOutageEnumType;
 import org.ieee.odm.schema.LfMethodEnumType;
 
-import com.interpss.core.CoreObjectFactory;
-import com.interpss.core.aclf.AclfBranch;
-import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.contingency.BranchOutageType;
-import com.interpss.core.aclf.contingency.OutageBranch;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
