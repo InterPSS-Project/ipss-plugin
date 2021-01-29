@@ -24,7 +24,6 @@
 
 package org.interpss.plugin.beanModel;
 
-import static org.interpss.CorePluginFunction.aclfResultBusStyle;
 import static org.junit.Assert.assertTrue;
 
 import java.util.logging.Level;
@@ -249,7 +248,7 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 		IpssCorePlugin.init();
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
 		ODMLogger.getLogger().setLevel(Level.WARNING);
-
+ 
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/SixBus_2WPsXfr.raw")
 					.setFormat(IpssAdapter.FileFormat.PSSE)
 					.setPsseVersion(PsseVersion.PSSE_30)
