@@ -34,7 +34,6 @@ import org.interpss.core.ca.IEEE14BusBreaker_lf_Test;
 import org.interpss.core.ca.Ieee14_CA_Test;
 import org.interpss.core.ca.Ieee14_GSF_Test;
 import org.interpss.core.ca.SampleSwitchBreakerModelTest;
-import org.interpss.core.ca.ieee14_CAClosurePSSL_Test;
 import org.interpss.core.dcsys.DcSample_2BusTest;
 import org.interpss.core.dcsys.Inverter_2BusTest;
 import org.interpss.core.dcsys.POC_Test1;
