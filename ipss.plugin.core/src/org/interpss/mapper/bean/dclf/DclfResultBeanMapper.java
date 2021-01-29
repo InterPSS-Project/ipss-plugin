@@ -16,6 +16,7 @@ import com.interpss.common.mapper.AbstractMapper;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.algo.dclf.DclfAlgoBus;
 import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
 
 
@@ -86,7 +87,8 @@ public class DclfResultBeanMapper extends AbstractMapper<SenAnalysisAlgorithm, D
 		bean.v_ang = format(algo.getNetwork().isRefBus(bus) ? 0.0 : Math
 				.toDegrees(algo.getBusAngle(n)));
 		
-		double pgen = (bus.isRefBus() ? algo.getBusPower(bus) : bus
+		DclfAlgoBus dclfBus = algo.getDclfAlgoBus(bus.getId());
+		double pgen = (bus.isRefBus() ? algo.getBusPower(dclfBus) : bus
 				.getGenP());
 		Complex gen = new Complex(pgen,0);
 		bean.gen = new ComplexBean(format(gen));
