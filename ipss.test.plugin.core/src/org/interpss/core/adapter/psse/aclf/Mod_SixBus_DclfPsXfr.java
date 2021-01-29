@@ -142,7 +142,7 @@ public class Mod_SixBus_DclfPsXfr extends CorePluginTestSetup {
 		algo.calculateDclf();
 
 		//System.out.println(DclfOutFunc.dclfResults(algo, false));
-  		assertTrue(Math.abs(algo.getBusPower(net.getBus("Bus1"))-3.0723)<0.0001);
+  		assertTrue(Math.abs(algo.getBusPower(algo.getDclfAlgoBus("Bus1"))-3.0723)<0.0001);
 
 		//algo.destroy();			
 	}
@@ -171,7 +171,7 @@ public class Mod_SixBus_DclfPsXfr extends CorePluginTestSetup {
 		algo.calculateDclf();
 
 		//System.out.println(DclfOutFunc.dclfResults(algo, false));
-  		assertTrue(Math.abs(algo.getBusPower(net.getBus("Bus1"))-3.0723)<0.0001);
+  		assertTrue(Math.abs(algo.getBusPower(algo.getDclfAlgoBus("Bus1"))-3.0723)<0.0001);
 
 		//algo.destroy();			
 	}
