@@ -42,8 +42,8 @@ import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
-import com.interpss.core.algo.dclf.DclfAlgoBus;
 import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
+import com.interpss.core.algo.dclf.adapter.DclfAlgoBus;
 import com.interpss.core.net.RefBusType;
 
 public class SixBus_DclfPsXfr extends CorePluginTestSetup {

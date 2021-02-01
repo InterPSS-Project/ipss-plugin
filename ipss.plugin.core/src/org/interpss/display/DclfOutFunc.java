@@ -33,9 +33,9 @@ import org.interpss.numeric.util.Number2String;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.algo.dclf.DclfAlgoBus;
 import com.interpss.core.algo.dclf.DclfAlgorithm;
 import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
+import com.interpss.core.algo.dclf.adapter.DclfAlgoBus;
 import com.interpss.core.net.Branch;
 
 /**
