@@ -35,7 +35,7 @@ import org.junit.Test;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.algo.dclf.GenAdjustAlgorithm;
+import com.interpss.core.algo.dclf.NetGenAdjustAlgorithm;
 import com.interpss.core.common.ReferenceBusException;
 
 public class Ieee14_GSF_Test extends CorePluginTestSetup {
@@ -47,7 +47,7 @@ public class Ieee14_GSF_Test extends CorePluginTestSetup {
 				.load("testData/adpter/ieee_format/ieee14.ieee")
 				.getAclfNet();	
 		
-		GenAdjustAlgorithm algo = DclfAlgoObjectFactory.createGenAdjustAlgorithm(net);
+		NetGenAdjustAlgorithm algo = DclfAlgoObjectFactory.createGenAdjustAlgorithm(net);
 		algo.addInjectBus(net.getBus("Bus2"), 1.0);
 		algo.addWithdrawBus(net.getBus("Bus3"), 1.0);
 		
