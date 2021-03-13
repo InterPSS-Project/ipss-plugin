@@ -150,7 +150,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 					System.out.println("xxxxxxxxxx");
 				}
 				BaseBranchXmlType xmlBranch = b.getValue();
-				System.out.println(xmlBranch.getName() + ", " + xmlBranch.getId() + ", " + cnt++);
+				//System.out.println(xmlBranch.getName() + ", " + xmlBranch.getId() + ", " + cnt++);
 				Branch branch = null;
 				if (xmlBranch instanceof PSXfr3WBranchXmlType || xmlBranch instanceof Xfr3WBranchXmlType)
 					branch = CoreObjectFactory.createAclf3WXformer();
