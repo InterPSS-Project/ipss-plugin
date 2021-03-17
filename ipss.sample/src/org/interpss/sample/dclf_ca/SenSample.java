@@ -30,6 +30,7 @@ import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
+import com.interpss.core.algo.dclf.SenAnalysisType;
 import com.interpss.simu.util.sample.SampleCases;
 
 public class SenSample {
@@ -56,6 +57,18 @@ public class SenSample {
 		
 		x = algo.pTransferDistFactor("1", "3", net.getBranch("2->3(1)"));
 		System.out.println("PTDF Inject@Bus-1 Withdraw@Bus-3 on Branch 2->3(1): " + x);
+		
+		/*
+		 * 	 calculate bus sensitivity dAngle(busId)/dP(injectBus).
+		 */
+		x = algo.calBusSensitivity(SenAnalysisType.PANGLE, "4"/* injectBusId */, "1"/* busId */);
+		System.out.println("dAng('1')/dP('4'): " + x);
+		
+		/*
+		 * 	 calculate bus sensitivity dV(busId)/dQ(injectBus).
+		 */
+		x = algo.calBusSensitivity(SenAnalysisType.QVOLTAGE, "3"/* injectBusId */, "1"/* busId */);
+		System.out.println("dV('1')/dQ('3'): " + x);
 	}	
 }
 
