@@ -49,8 +49,11 @@ public class IEEE14BusSubAreaNetSample {
 		// initialize InterPSS plugin
 		IpssCorePlugin.init();
 		
-		System.out.println("======================SubArea processing ==================");
+		System.out.println("======================SubArea processing (2 areas) ==================");
 		subAreaProcessing();
+
+		System.out.println("======================SubArea processing (3 areas) ==================");
+		subAreaProcessing1();
 		
 		System.out.println("======================SubNetwork processing ==================");
 		subNetworkProcessing();	
@@ -79,6 +82,34 @@ public class IEEE14BusSubAreaNetSample {
 			System.out.println("----------------------");
 			System.out.println(subArea);
 		});		
+	}
+	
+	static void subAreaProcessing1() throws InterpssException {
+		AclfNetwork net = CorePluginFactory
+				.getFileAdapter(IpssFileAdapter.FileFormat.IpssInternal)
+				.load("testdata/ipssdata/ieee14-1.ipssdat")
+				.getAclfNet();
+				
+		SubAreaNetProcessor<AclfBus, AclfBranch, SubAreaPos, Complex> 
+			proc = new SubAreaPosProcessorImpl<>(net, new CuttingBranchPos[] { 
+						new CuttingBranchPos("7->8(1)", BranchBusSide.FROM_SIDE),
+						new CuttingBranchPos("9->14(1)", BranchBusSide.FROM_SIDE),
+						new CuttingBranchPos("14->13(1)", BranchBusSide.FROM_SIDE)});	
+		
+		proc.processSubAreaNet();
+		
+		Arrays.asList(proc.getCuttingBranches()).forEach(branch -> {
+			System.out.println("Interface: " + branch.toString());
+		});
+		
+		proc.getSubAreaNetList().forEach(subArea -> {
+			System.out.println("----------------------");
+			System.out.println(subArea);
+		});		
+		
+		net.getBusList().forEach(bus -> {
+			System.out.println(bus.getId() + " " + bus.getSubAreaFlag());
+		});	
 	}
 	
 	static void subNetworkProcessing() throws InterpssException {
