@@ -242,10 +242,12 @@ public abstract class BaseSubAreaNetProcessorImpl<
 		});		
 		
 		// update network bus SubArea flag
-		parentNet.getBusList().forEach(bus -> {
-			BusPair p = busPairSet.get(BusPair.createKey(bus.getSubAreaFlag()));
-			bus.setSubAreaFlag(p.subAreaFlag);
-		});
+		parentNet.getBusList().stream()
+			.filter(bus -> bus.isActive())
+			.forEach(bus -> {
+				BusPair p = busPairSet.get(BusPair.createKey(bus.getSubAreaFlag()));
+				bus.setSubAreaFlag(p.subAreaFlag);
+			});
 		
 		// consolidate the subarea number
 		//  At this point the subarea number might not be continuous, for example, 1, 2, 7 ...
@@ -263,9 +265,11 @@ public abstract class BaseSubAreaNetProcessorImpl<
 		});
 		
 		// update network bus SubArea flag
-		parentNet.getBusList().forEach(bus -> {
-			BusPair p = busPairSet.get(BusPair.createKey(bus.getSubAreaFlag()));
-			bus.setSubAreaFlag(lookup.get(p.subAreaFlag));
+		parentNet.getBusList().stream()
+			.filter(bus -> bus.isActive())
+			.forEach(bus -> {
+				BusPair p = busPairSet.get(BusPair.createKey(bus.getSubAreaFlag()));
+				bus.setSubAreaFlag(lookup.get(p.subAreaFlag));
 		});
 		
 		// update cutting branch from/toBus subarea flag
