@@ -151,7 +151,7 @@ public abstract class BaseSubAreaNetProcessorImpl<
 	 */
 	private void initialization() {
 		// init bus SubAreaFlag
-		parentNet.getBusList().forEach(bus -> { bus.setSubAreaFlag(BaseCuttingBranch.DefaultFlag);});
+		parentNet.getBusList().forEach(bus -> bus.setSubAreaFlag(BaseCuttingBranch.DefaultFlag));
 		
 		// init cutting branch set
   		int flag = 0;
