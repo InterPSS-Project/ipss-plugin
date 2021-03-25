@@ -302,7 +302,8 @@ public abstract class BaseSubAreaNetProcessorImpl<
 		// 5_5=["61",  "61",  5], 6_6=["9",  "9",  5], 2_2=["71",  "71",  2]
 		// if "71" and "9" are connected, when set 6_6 flag to 2, 5_5 flag should be set also (recursively)
 		
-		if (++SetSubAreaFlagCnt > SetSubAreaFlagMaxCnt) {
+		++SetSubAreaFlagCnt;
+		if (SetSubAreaFlagCnt > SetSubAreaFlagMaxCnt) {
 			IpssLogger.getLogger().severe("SubArea Analysis Step Cnt > " + SetSubAreaFlagMaxCnt + 
 								", startBusPair: " + SubAreaStartBusPair);
 			return;
