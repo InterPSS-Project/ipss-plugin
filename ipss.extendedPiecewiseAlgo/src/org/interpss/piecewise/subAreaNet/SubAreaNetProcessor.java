@@ -48,6 +48,8 @@ import com.interpss.core.net.Network;
  */
 		
 public interface SubAreaNetProcessor <TBus, TBra, TSub, TState> {
+	public static int SetSubAreaFlagMaxCnt = 50; 
+			
 	/**
 	 * get the parent network object
 	 * 
