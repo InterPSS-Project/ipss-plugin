@@ -208,7 +208,13 @@ public abstract class BaseSubAreaNetProcessorImpl<
 			
 			SetSubAreaFlagCnt = 0;
 			SubAreaStartBusPair = pair;
-			//System.out.println(key + " " + pair);
+			
+			/*
+			// [3 "湖南.永州A2厂.220.7426",  53 "湖南.谷源站.220.2480",  -1]
+			if (pair.bus1.getId().equals("湖南.永州A2厂.220.7426") && pair.bus2.getId().equals("湖南.谷源站.220.2480")) {
+				System.out.println(key + " " + pair);
+			}
+			*/
 			
 			// bus1 and bus2 are in the same SubArea and make sure only process Type1 record 
 			if (!pair.bus1.getId().equals(pair.bus2.getId())) {
