@@ -33,9 +33,7 @@ import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.piecewise.subAreaNet.SubAreaNetProcessor;
 import org.interpss.piecewise.subAreaNet.seqPos.CuttingBranchPos;
 import org.interpss.piecewise.subAreaNet.seqPos.SubAreaPos;
-import org.interpss.piecewise.subAreaNet.seqPos.SubNetworkPos;
 import org.interpss.piecewise.subAreaNet.seqPos.impl.SubAreaPosProcessorImpl;
-import org.interpss.piecewise.subAreaNet.seqPos.impl.SubNetworkPosProcessorImpl;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
@@ -43,7 +41,7 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.net.BranchBusSide;
 
-public class IEEE14BusSubAreaNetSample {
+public class IEEE14BusSubAreaSample {
 	
 	public static void main(String args[]) throws Exception {
 		// initialize InterPSS plugin
@@ -54,10 +52,6 @@ public class IEEE14BusSubAreaNetSample {
 
 		System.out.println("======================SubArea processing (3 areas) ==================");
 		subAreaProcessing1();
-		
-		System.out.println("======================SubNetwork processing ==================");
-		subNetworkProcessing();	
-		
 	}
 	
 	static void subAreaProcessing() throws InterpssException {
@@ -110,28 +104,5 @@ public class IEEE14BusSubAreaNetSample {
 		net.getBusList().forEach(bus -> {
 			System.out.println(bus.getId() + " " + bus.getSubAreaFlag());
 		});	
-	}
-	
-	static void subNetworkProcessing() throws InterpssException {
-		AclfNetwork net = CorePluginFactory
-				.getFileAdapter(IpssFileAdapter.FileFormat.IpssInternal)
-				.load("testdata/ipssdata/ieee14-1.ipssdat")
-				.getAclfNet();		
-		
-		SubAreaNetProcessor<AclfBus, AclfBranch, SubNetworkPos, Complex> 
-				proc = new SubNetworkPosProcessorImpl<>(net, new CuttingBranchPos[] { 
-							new CuttingBranchPos("4->71(1)"),
-							new CuttingBranchPos("4->91(1)"),
-							new CuttingBranchPos("5->61(1)")});	
-		
-		proc.processSubAreaNet();
-		
-		//System.out.println("----------------------");
-		//System.out.println(proc.getNetwork().net2String());
-		
-		proc.getSubAreaNetList().forEach(subNet -> {
-			System.out.println("----------------------");
-			System.out.println(subNet);
-		});		
 	}
 }
