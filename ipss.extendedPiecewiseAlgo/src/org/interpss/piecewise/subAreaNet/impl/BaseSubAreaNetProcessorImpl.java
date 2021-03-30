@@ -37,6 +37,7 @@ import com.interpss.common.util.IpssLogger;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 import com.interpss.core.net.Network;
+import com.interpss.core.net.BranchBusSide;
 
 /**
  * Base Class for SubArea processing. It begins by defining a set of cutting branches.
@@ -149,7 +150,7 @@ public abstract class BaseSubAreaNetProcessorImpl<
 	 * Initialization for SubArea/Network processing 
 	 * 
 	 */
-	private void initialization() {
+	private void initialization(boolean singleSide) {
 		// init bus SubAreaFlag
 		parentNet.getBusList().forEach(bus -> bus.setSubAreaFlag(BaseCuttingBranch.DefaultFlag));
 		
@@ -159,22 +160,30 @@ public abstract class BaseSubAreaNetProcessorImpl<
   			Branch branch = parentNet.getBranch(cutBranch.getBranchId());
   			branch.setStatus(false);
   			
-  			if (branch.getFromBus().getSubAreaFlag() == BaseCuttingBranch.DefaultFlag) {
-  				cutBranch.setFromSubAreaFlag(++flag);
-  				branch.getFromBus().setSubAreaFlag(cutBranch.getFromSubAreaFlag());
-  				//System.out.println("Bus " + branch.getFromBus().getId() + " assigned Bus Flag: " + flag);
+  			if (!singleSide || cutBranch.getSplitSide() == BranchBusSide.TO_SIDE) {
+  				if (branch.getFromBus().getSubAreaFlag() == BaseCuttingBranch.DefaultFlag) {
+  					cutBranch.setFromSubAreaFlag(++flag);
+  					branch.getFromBus().setSubAreaFlag(cutBranch.getFromSubAreaFlag());
+  					//System.out.println("Bus " + branch.getFromBus().getId() + " assigned Bus Flag: " + flag);
+  				}
   			}
 
-  			if (branch.getToBus().getSubAreaFlag() == BaseCuttingBranch.DefaultFlag) {
-  				cutBranch.setToSubAreaFlag(++flag);
-  				branch.getToBus().setSubAreaFlag(cutBranch.getToSubAreaFlag());
-  				//System.out.println("Bus " + branch.getToBus().getId() + " assigned Bus Flag: " + flag);
+  			if (!singleSide || cutBranch.getSplitSide() == BranchBusSide.FROM_SIDE) {
+  	  			if (branch.getToBus().getSubAreaFlag() == BaseCuttingBranch.DefaultFlag) {
+  	  				cutBranch.setToSubAreaFlag(++flag);
+  	  				branch.getToBus().setSubAreaFlag(cutBranch.getToSubAreaFlag());
+  	  				//System.out.println("Bus " + branch.getToBus().getId() + " assigned Bus Flag: " + flag);
+  	  			}  				
   			}
   		}		
 	}
 	
 	@Override public List<TSub> processSubAreaNet() throws InterpssException {
-		initialization();
+		return processSubAreaNet(false);
+	}
+	
+	@Override public List<TSub> processSubAreaNet(boolean singleSide) throws InterpssException {
+		initialization(singleSide);
 		
 		Hashtable<String, BusPair> busPairSet = new Hashtable<>();
 			// There are two types of BusPair record in the busPairSet Hashtable
@@ -182,24 +191,28 @@ public abstract class BaseSubAreaNetProcessorImpl<
 			// Type2 ["61",  "61",  5] - the interface Bus current SubArea flag is 5, which needs to be 
 			//                           consolidated to the smallest Bus.SubAreaFlag in the SubArea
 		
-  		for (BaseCuttingBranch<TState> cbra : cuttingBranches) {
-  			Branch branch = parentNet.getBranch(cbra.getBranchId());
+  		for (BaseCuttingBranch<TState> cutBranch : cuttingBranches) {
+  			Branch branch = parentNet.getBranch(cutBranch.getBranchId());
 
   			// starting from the fromBus, recursively set the branch opposite 
   			// bus SubAreaFlag for SubArea processing 
-  			BusPair pair = new BusPair(branch.getFromBus());
-  			if (busPairSet.get(pair.getKey()) == null) {
-					busPairSet.put(pair.getKey(), pair);
-				}
-  			setConnectedBusFlag(branch.getFromBus(), busPairSet);
+  			if (!singleSide || cutBranch.getSplitSide() == BranchBusSide.TO_SIDE) {
+  	  			BusPair pair = new BusPair(branch.getFromBus());
+  	  			if (busPairSet.get(pair.getKey()) == null) {
+  						busPairSet.put(pair.getKey(), pair);
+  					}
+  	  			setConnectedBusFlag(branch.getFromBus(), busPairSet);  				
+  			}
   			
   			// starting from the toBus, recursively set the branch opposite 
   			// bus SubAreaFlag for SubArea processing 
-  			pair = new BusPair(branch.getToBus());
-  			if (busPairSet.get(pair.getKey()) == null) {
-					busPairSet.put(pair.getKey(), pair);
-				}
-  			setConnectedBusFlag(branch.getToBus(), busPairSet);
+  			if (!singleSide || cutBranch.getSplitSide() == BranchBusSide.FROM_SIDE) {
+  				BusPair pair = new BusPair(branch.getToBus());
+  	  			if (busPairSet.get(pair.getKey()) == null) {
+  						busPairSet.put(pair.getKey(), pair);
+  					}
+  	  			setConnectedBusFlag(branch.getToBus(), busPairSet);  				
+  			}
   		}	
 		//System.out.println(this.busPairSet);
 		
@@ -257,7 +270,8 @@ public abstract class BaseSubAreaNetProcessorImpl<
 			.filter(bus -> bus.isActive())
 			.forEach(bus -> {
 				BusPair p = busPairSet.get(BusPair.createKey(bus.getSubAreaFlag()));
-				bus.setSubAreaFlag(p.subAreaFlag);
+				if (p != null)
+					bus.setSubAreaFlag(p.subAreaFlag);
 			});
 		
 		// consolidate the subarea number
@@ -280,15 +294,20 @@ public abstract class BaseSubAreaNetProcessorImpl<
 			.filter(bus -> bus.isActive())
 			.forEach(bus -> {
 				BusPair p = busPairSet.get(BusPair.createKey(bus.getSubAreaFlag()));
-				bus.setSubAreaFlag(lookup.get(p.subAreaFlag));
+				if (p != null)
+					bus.setSubAreaFlag(lookup.get(p.subAreaFlag));
 		});
 		
 		// update cutting branch from/toBus subarea flag
 		for (int i = 0; i < this.cuttingBranches.length; i++) {
-			BaseCuttingBranch<TState> branch = this.cuttingBranches[i];
-			Branch aclfBranch = parentNet.getBranch(branch.getBranchId());
-			branch.setFromSubAreaFlag(aclfBranch.getFromBus().getSubAreaFlag());
-			branch.setToSubAreaFlag(aclfBranch.getToBus().getSubAreaFlag());
+			BaseCuttingBranch<TState> cutBranch = this.cuttingBranches[i];
+			Branch aclfBranch = parentNet.getBranch(cutBranch.getBranchId());
+  			
+			if (!singleSide || cutBranch.getSplitSide() == BranchBusSide.TO_SIDE) 
+  				cutBranch.setFromSubAreaFlag(aclfBranch.getFromBus().getSubAreaFlag());
+  			
+			if (!singleSide || cutBranch.getSplitSide() == BranchBusSide.FROM_SIDE) 
+	  			cutBranch.setToSubAreaFlag(aclfBranch.getToBus().getSubAreaFlag());
 		}
 		
 		return this.subAreaNetList;
