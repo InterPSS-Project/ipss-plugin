@@ -33,6 +33,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	IEEE14TestSubAreaSearch.class,
 	IEEE14TestAclfNetPiesewise.class,
 	IEEE14TestAclfSubNetBuild.class,
+	IEEE14TestAclfSubAreaBuild.class,
 	
 	Acsc5BusTestSubAreaNet.class,
 	Acsc5BusTesPiecewiseAlgo.class,
