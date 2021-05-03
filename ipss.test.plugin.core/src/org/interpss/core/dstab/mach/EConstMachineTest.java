@@ -28,6 +28,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import com.interpss.common.datatype.Constants;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
@@ -81,14 +82,14 @@ public class EConstMachineTest extends TestSetupBase {
 		mach.setPm(1.0);  
 		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER,0);
 		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER,1);
-		/*
-		System.out.println("Angle(deg) " + mach.getAngle()*Constants.RtoD);
+	
+		System.out.println("Angle(deg) " + mach.getAngle()*180/Math.PI);
 		System.out.println("Speed " + mach.getSpeed());
 		System.out.println("E " + mach.getE());
 		System.out.println("Pe " + mach.getPe());
 		System.out.println("Pm " + mach.getPm());
-		*/
-		assertTrue(Math.abs(Math.toDegrees(mach.getAngle())-11.51456) < 0.00001);
+		
+		assertTrue(Math.abs(Math.toDegrees(mach.getAngle())-11.51816301758578) < 0.00001);
 		assertTrue(Math.abs(mach.getSpeed()-1.0002) < 0.00001);
 		assertTrue(Math.abs(mach.getE()-1.20416) < 0.00001);
 		assertTrue(Math.abs(mach.getPe()-0.8) < 0.00001);

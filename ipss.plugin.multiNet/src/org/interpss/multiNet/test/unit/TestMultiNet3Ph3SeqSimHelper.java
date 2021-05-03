@@ -36,6 +36,7 @@ import com.interpss.common.util.IpssLogger;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.net.NetCoordinate;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
@@ -270,6 +271,10 @@ public class TestMultiNet3Ph3SeqSimHelper {
 		  //NOTE: network partitioning by adding a dummy bus
 		    proc.splitFullSystemIntoSubsystems(true);
 		    
+			 for(BaseDStabNetwork subnet: proc.getSubNetworkList()) {
+				 subnet.setStaticLoadIncludedInYMatrix(true);
+			 }
+		    
 		    //TODO now one needs to set the three-phase modeling subnetwork by one of the bus the subnetwork contains
 		    // this must be set before initializing MultiNet3Ph3SeqDStabSimuHelper
 		    proc.set3PhaseSubNetByBusId("Bus5");
@@ -374,6 +379,10 @@ public class TestMultiNet3Ph3SeqSimHelper {
 		
 		    
 		    proc.splitFullSystemIntoSubsystems(false);
+		    
+			 for(BaseDStabNetwork subnet: proc.getSubNetworkList()) {
+				 subnet.setStaticLoadIncludedInYMatrix(true);
+			 }
 		    
 		    //TODO now one needs to set the three-phase modeling subnetwork by one of the bus the subnetwork contains
 		    proc.set3PhaseSubNetByBusId("Bus5");
@@ -610,6 +619,10 @@ public class TestMultiNet3Ph3SeqSimHelper {
 		    
 		    proc.splitFullSystemIntoSubsystems(true);
 		    
+			 for(BaseDStabNetwork subnet: proc.getSubNetworkList()) {
+				 subnet.setStaticLoadIncludedInYMatrix(true);
+			 }
+		    
 		    //TODO now one needs to set the three-phase modeling subnetwork by one of the bus the subnetwork contains
 		    proc.set3PhaseSubNetByBusId("Bus5");
 		    
@@ -735,6 +748,10 @@ public class TestMultiNet3Ph3SeqSimHelper {
 		
 		    
 		 proc.splitFullSystemIntoSubsystems(false);
+		 
+		 for(BaseDStabNetwork subnet: proc.getSubNetworkList()) {
+			 subnet.setStaticLoadIncludedInYMatrix(true);
+		 }
 		    
 		    //TODO now one needs to set the three-phase modeling subnetwork by one of the bus the subnetwork contains
 		 proc.set3PhaseSubNetByBusId("Bus5");
@@ -1022,7 +1039,10 @@ public class TestMultiNet3Ph3SeqSimHelper {
 		    //TODO now one needs to set the three-phase modeling subnetwork by one of the bus the subnetwork contains
 		 proc.set3PhaseSubNetByBusId("Bus5");
 		    
-		    
+		 for(BaseDStabNetwork subnet: proc.getSubNetworkList()) {
+			 subnet.setStaticLoadIncludedInYMatrix(true);
+		 }   
+		 
 		    DStabNetwork3Phase subNet_1 =  (DStabNetwork3Phase) proc.getSubNetwork("SubNet-1");
 		    
 		  //  System.out.println(subNet_1.net2String());

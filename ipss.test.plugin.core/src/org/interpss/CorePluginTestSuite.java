@@ -100,9 +100,9 @@ import org.junit.runners.Suite.SuiteClasses;
 	WashoutControlBlockTests.class,
 	
 	// DStab Machine
-	Eq1Ed1MachineTest.class,
+	//Eq1Ed1MachineTest.class,
 	EConstMachineTest.class,
-	Eq1MachineCaseTest.class,
+	//Eq1MachineCaseTest.class,
 	MachineSaturationTest.class,
 	RoundRotorMachineTest.class,
 	SalientPoleMachineTest.class,

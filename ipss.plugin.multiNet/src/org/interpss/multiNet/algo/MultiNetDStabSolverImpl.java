@@ -254,6 +254,7 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 		return true;
 	}
 	
+	@Override
 	public void diffEqnIntegrationStep(double t, double dt, DynamicSimuMethod method, int flag) throws DStabSimuException{
 		
 		 /*
@@ -266,7 +267,7 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 		// Solve DEqn for all dynamic bus devices
 			for (Bus b : dsNet.getBusList()) {
 				if(b.isActive()){
-					DStabBus bus = (DStabBus)b;
+					BaseDStabBus<? extends DStabGen, ? extends DStabLoad> bus = (BaseDStabBus<? extends DStabGen, ? extends DStabLoad>) b;
 					
 					// calculate bus frequency
 					if (!bus.nextStep(dt, method, flag)) {
@@ -284,7 +285,7 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 					
 					// Solve DEqn for generator 
 					if(bus.getContributeGenList().size()>0){
-						for(AclfGen gen:bus.getContributeGenList()){
+						for(DStabGen gen:bus.getContributeGenList()){
 							if(gen.isActive()){
 								/*
 								Machine mach = ((DStabGen)gen).getMach();
@@ -295,7 +296,7 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 								   }
 								}
 								*/
-								DynamicDevice device = ((DStabGen)gen).getDynamicGenDevice();
+								DynamicDevice device = gen.getDynamicGenDevice();
 								
 								if(device.isActive()){
 									if (!device.nextStep(dt, method, flag)) {
@@ -328,7 +329,7 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 	
 		   if (flag ==1) {
 				for ( Bus busi : dsNet.getBusList() ) {
-					DStabBus bus = (DStabBus)busi;
+					BaseDStabBus bus = (BaseDStabBus)busi;
 					if(bus.isActive()){
 						
 						// update dynamic attributes of the dynamic devices connected to the bus
