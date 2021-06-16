@@ -27,19 +27,17 @@ package org.interpss.sample.dclf_ca;
 import java.util.function.BiConsumer;
 
 import org.interpss.pssl.plugin.IpssAdapter;
-import org.interpss.pssl.simu.IpssDclf;
-import org.interpss.pssl.simu.IpssDclf.DclfAlgorithmDSL;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.contingency.BaseContingency;
-import com.interpss.core.aclf.contingency.BranchOutageType;
 import com.interpss.core.aclf.contingency.BusbarOutageContingency;
 import com.interpss.core.aclf.contingency.Contingency;
 import com.interpss.core.aclf.contingency.MultiOutageContingency;
 import com.interpss.core.aclf.contingency.Xfr3WOutageContingency;
+import com.interpss.core.algo.dclf.BranchOutageType;
 import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
 
 public class Ieee14_CA_Utils {
