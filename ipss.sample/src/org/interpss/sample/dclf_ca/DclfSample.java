@@ -47,7 +47,7 @@ public class DclfSample {
 		// perform DCLF calculation
 		algo.calculateDclf();
 		
-		DclfOutFunc.dclfResults(algo, false /*branchViolation*/);
+		System.out.println(DclfOutFunc.dclfResults(algo, false /*branchViolation*/));
 		
 		System.out.println("\nBase Case\n==========");
 		
