@@ -28,8 +28,6 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.util.PerformanceTimer;
 import org.interpss.pssl.common.PSSLException;
-import org.interpss.pssl.simu.IpssDclf;
-import org.interpss.pssl.simu.IpssDclf.DclfAlgorithmDSL;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
