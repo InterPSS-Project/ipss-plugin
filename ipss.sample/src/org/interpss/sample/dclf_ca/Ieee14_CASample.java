@@ -27,14 +27,11 @@ package org.interpss.sample.dclf_ca;
 import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.pssl.common.PSSLException;
-import org.interpss.pssl.simu.IpssDclf;
-import org.interpss.pssl.simu.IpssDclf.DclfAlgorithmDSL;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.contingency.OutageBranch;
-import com.interpss.core.algo.dclf.LODFSenAnalysisType;
+import com.interpss.core.algo.dclf.OutageBranch;
 import com.interpss.core.common.OutageConnectivityException;
 import com.interpss.core.common.ReferenceBusException;
 
