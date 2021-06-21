@@ -97,7 +97,7 @@ public class AcscScenarioHelper {
 			
 			// algo.multiFactor in PU and acscData.getMFactor in %
 			if (scAnalysisXml.getPreFaultBusVoltage() != null)
-				this.acscAglo.setScBusVoltage(scAnalysisXml.getPreFaultBusVoltage() == 
+				this.acscAglo.setScBusVoltageType(scAnalysisXml.getPreFaultBusVoltage() == 
 					PreFaultBusVoltageEnumType.UNIT_VOLT ? 
 									ScBusVoltageType.UNIT_VOLT : ScBusVoltageType.LOADFLOW_VOLT); // UnitV | LFVolt
 			

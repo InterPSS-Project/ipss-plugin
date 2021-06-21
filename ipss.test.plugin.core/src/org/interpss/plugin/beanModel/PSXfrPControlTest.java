@@ -40,13 +40,13 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.simu.util.sample.SampleCases;
+import com.interpss.simu.util.sample.SampleTestingCases;
 
 public class PSXfrPControlTest extends CorePluginTestSetup {
 	
 	@Test
 	public void baseCaseNoControlTest() throws InterpssException {
-		AclfNetwork aclfNet = SampleCases.sample3BusPSXfr();
+		AclfNetwork aclfNet = SampleTestingCases.sample3BusPSXfr();
 		//System.out.println(aclfNet.net2String());
 		
 		// map AclfNet to AclfNetBean
@@ -76,7 +76,7 @@ public class PSXfrPControlTest extends CorePluginTestSetup {
 
 	@Test
 	public void baseCaseBeanModelVerification() throws Exception {
-		AclfNetwork net = SampleCases.sample3BusPSXfr();		
+		AclfNetwork net = SampleTestingCases.sample3BusPSXfr();		
 		
 		// map AclfNet to AclfNetBean
 		AclfNetBean netBean = new AclfNet2BeanMapper().map2Model(net);
@@ -101,7 +101,7 @@ public class PSXfrPControlTest extends CorePluginTestSetup {
 	@Test	
 	public void fromSideCaseTest_Bean() throws Exception {				
 		
-		AclfNetwork aclfNet = SampleCases.sample3BusPSXfrPControl();
+		AclfNetwork aclfNet = SampleTestingCases.sample3BusPSXfrPControl();
 		//System.out.println(aclfNet.net2String());
 		// map AclfNet to AclfNetBean
 		AclfNetBean netBean = new AclfNet2BeanMapper().map2Model(aclfNet);
@@ -134,7 +134,7 @@ public class PSXfrPControlTest extends CorePluginTestSetup {
 	
 	@Test
 	public void fromSideCaseTestBeanModelVerification() throws Exception {
-		AclfNetwork net = SampleCases.sample3BusPSXfrPControl();	
+		AclfNetwork net = SampleTestingCases.sample3BusPSXfrPControl();	
 		
 		// map AclfNet to AclfNetBean
 		AclfNetBean netBean = new AclfNet2BeanMapper().map2Model(net);

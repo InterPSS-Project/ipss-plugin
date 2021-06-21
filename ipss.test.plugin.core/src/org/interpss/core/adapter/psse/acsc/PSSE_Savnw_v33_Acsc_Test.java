@@ -95,7 +95,7 @@ public class PSSE_Savnw_v33_Acsc_Test extends CorePluginTestSetup {
 		fault.setZLLFault(new Complex(0.0, 0.0));
 		
 		//pre fault profile : solved power flow
-		acscAlgo.setScBusVoltage(ScBusVoltageType.LOADFLOW_VOLT);
+		acscAlgo.setScBusVoltageType(ScBusVoltageType.LOADFLOW_VOLT);
 		
 		acscAlgo.calculateBusFault(fault);
 	  	System.out.println(fault.getFaultResult().getSCCurrent_012());
@@ -465,7 +465,7 @@ Contributing Gen:
 						fault.setZLLFault(new Complex(0.0, 0.0));
 						
 						//pre fault profile : solved power flow
-						acscAlgo.setScBusVoltage(ScBusVoltageType.LOADFLOW_VOLT);
+						acscAlgo.setScBusVoltageType(ScBusVoltageType.LOADFLOW_VOLT);
 						
 						try {
 							acscAlgo.calculateBusFault(fault);
