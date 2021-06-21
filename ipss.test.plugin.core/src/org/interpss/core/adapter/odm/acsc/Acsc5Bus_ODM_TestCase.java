@@ -44,7 +44,7 @@ import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.sc.ScBusVoltageType;
 import com.interpss.core.algo.sc.SimpleFaultAlgorithm;
-import com.interpss.simu.util.sample.SampleCases;
+import com.interpss.simu.util.sample.SampleTestingCases;
 
 public class Acsc5Bus_ODM_TestCase extends CorePluginTestSetup {
 	@Test
