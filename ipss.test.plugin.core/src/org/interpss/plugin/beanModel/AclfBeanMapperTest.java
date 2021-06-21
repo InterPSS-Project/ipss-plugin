@@ -49,13 +49,13 @@ import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
-import com.interpss.simu.util.sample.SampleCases;
+import com.interpss.simu.util.sample.SampleTestingCases;
 
 public class AclfBeanMapperTest extends CorePluginTestSetup {
 	//@Test
 	public void testCase() throws Exception {
   		AclfNetwork net = CoreObjectFactory.createAclfNetwork();
-		SampleCases.load_LF_5BusSystem(net);
+		SampleTestingCases.load_LF_5BusSystem(net);
 		
 	  	net.accept(CoreObjectFactory.createLfAlgoVisitor());
   		//System.out.println(net.net2String());
@@ -66,7 +66,7 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 	@Test
 	public void testCase1() throws Exception {
   		AclfNetwork net = CoreObjectFactory.createAclfNetwork();
-		SampleCases.load_LF_5BusSystem(net);
+		SampleTestingCases.load_LF_5BusSystem(net);
 		
 		// map AclfNet to AclfNetBean
 		AclfNetBean netBean = new AclfNet2BeanMapper().map2Model(net);		
@@ -188,7 +188,7 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 	@Test
 	public void testCase2() throws Exception {
   		AclfNetwork net = CoreObjectFactory.createAclfNetwork();
-		SampleCases.load_LF_5BusSystem(net);
+		SampleTestingCases.load_LF_5BusSystem(net);
 		
 		// map AclfNet to AclfNetBean
 		AclfNetBean netBean = new AclfNet2BeanMapper().map2Model(net);	

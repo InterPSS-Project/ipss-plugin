@@ -45,7 +45,7 @@ import com.interpss.common.util.StringUtil;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.fault.SimpleFaultType;
-import com.interpss.core.datatype.IFaultResult;
+import com.interpss.core.algo.sc.result.IFaultResult;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.common.IDStabSimuOutputHandler;
