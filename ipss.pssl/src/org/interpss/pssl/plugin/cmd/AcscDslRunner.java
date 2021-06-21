@@ -44,7 +44,7 @@ import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.BaseAcscNetwork;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.acsc.fault.SimpleFaultType;
-import com.interpss.core.datatype.IFaultResult;
+import com.interpss.core.algo.sc.result.IFaultResult;
 import com.interpss.core.net.Network;
 
 /**
