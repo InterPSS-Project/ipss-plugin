@@ -404,7 +404,7 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 						fault.setZLLFault(new Complex(0.0, 0.0));
 						
 						//pre fault profile : solved power flow
-						acscAlgo.setScBusVoltage(ScBusVoltageType.LOADFLOW_VOLT);
+						acscAlgo.setScBusVoltageType(ScBusVoltageType.LOADFLOW_VOLT);
 						
 						try {
 							acscAlgo.calculateBusFault(fault);
