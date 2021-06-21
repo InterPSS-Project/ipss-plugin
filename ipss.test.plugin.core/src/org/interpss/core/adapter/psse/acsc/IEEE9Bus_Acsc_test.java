@@ -38,7 +38,7 @@ public class IEEE9Bus_Acsc_test {
 					"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq"
 			}));
 			AcscModelParser acscParser =(AcscModelParser) adapter.getModel();
-			acscParser.stdout();
+			//acscParser.stdout();
 			
 			AcscNetwork net = new ODMAcscParserMapper().map2Model(acscParser).getAcscNet();
 			
@@ -184,7 +184,7 @@ public class IEEE9Bus_Acsc_test {
 		fault.setZLLFault(new Complex(0.0, 0.0));
 		
 		//pre fault profile : solved power flow
-		acscAlgo.setScBusVoltage(ScBusVoltageType.LOADFLOW_VOLT);
+		acscAlgo.setScBusVoltageType(ScBusVoltageType.LOADFLOW_VOLT);
 		
 		acscAlgo.calculateBusFault(fault);
 	  	//System.out.println(fault.getFaultResult().getSCCurrent_012());
@@ -213,7 +213,7 @@ public class IEEE9Bus_Acsc_test {
 		fault.setZLLFault(new Complex(0.0, 0.0));
 		
 		//pre fault profile : solved power flow
-		acscAlgo.setScBusVoltage(ScBusVoltageType.LOADFLOW_VOLT);
+		acscAlgo.setScBusVoltageType(ScBusVoltageType.LOADFLOW_VOLT);
 		
 		acscAlgo.calculateBusFault(fault);
 	  	//System.out.println(fault.getFaultResult().getSCCurrent_012());
@@ -247,7 +247,7 @@ public class IEEE9Bus_Acsc_test {
 		fault.setZLLFault(new Complex(0.0, 0.0));
 		
 		//pre fault profile : solved power flow
-		acscAlgo.setScBusVoltage(ScBusVoltageType.LOADFLOW_VOLT);
+		acscAlgo.setScBusVoltageType(ScBusVoltageType.LOADFLOW_VOLT);
 		
 		acscAlgo.calculateBusFault(fault);
 	  	//System.out.println(fault.getFaultResult().getSCCurrent_012());
@@ -299,7 +299,7 @@ public class IEEE9Bus_Acsc_test {
 		fault.setZLLFault(new Complex(0.0, 0.0));
 		
 		//pre fault profile : solved power flow
-		acscAlgo.setScBusVoltage(ScBusVoltageType.LOADFLOW_VOLT);
+		acscAlgo.setScBusVoltageType(ScBusVoltageType.LOADFLOW_VOLT);
 		
 		acscAlgo.calculateBusFault(fault);
 	  	//System.out.println(fault.getFaultResult().getSCCurrent_012());
