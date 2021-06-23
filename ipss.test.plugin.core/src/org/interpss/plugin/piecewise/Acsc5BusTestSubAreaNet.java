@@ -126,7 +126,7 @@ public class Acsc5BusTestSubAreaNet {
 		fault.setZLGFault(new Complex(0.0, 0.0));
 		fault.setZLLFault(new Complex(0.0, 0.0));
 		
-	  	algo.calculateBusFault(fault);
+	  	algo.calBusFault(fault);
   		//System.out.println(fault.toString(faultBus.getBaseVoltage(), faultNet.getBaseKva()));
 		/*
 		 fault amps(1): (  0.0000 + j 32.57143) pu
