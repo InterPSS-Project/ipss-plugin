@@ -158,9 +158,9 @@ public class IpssAcsc extends BaseDSL {
 		 */
 		public void calculateFault() throws InterpssException {
 			if (this.faultType == FaultType.BusFault)
-				this.algo.calculateBusFault(fault);
+				this.algo.calBusFault(fault);
 			else if (this.faultType == FaultType.BranchFault)
-				this.algo.calculateBranchFault((AcscBranchFault)fault);
+				this.algo.calBranchFault((AcscBranchFault)fault);
 		}
 		
 		/**
