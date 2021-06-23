@@ -61,7 +61,7 @@ public class Acsc5Bus_ODM_TestCase extends CorePluginTestSetup {
 		fault.setZLGFault(new Complex(0.0, 0.0));
 		fault.setZLLFault(new Complex(0.0, 0.0));
 		
-	  	algo.calculateBusFault(fault);
+	  	algo.calBusFault(fault);
   		//System.out.println(fault.getFaultResult().getSCCurrent_012());
   		// 0.0000 + j0.0000  -0.7531 + j29.05407  0.0000 + j0.0000
 	  	assertTrue(TestUtilFunc.compare(fault.getFaultResult().getSCCurrent_012(), 
