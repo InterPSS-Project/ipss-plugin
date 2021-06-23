@@ -407,7 +407,7 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 						acscAlgo.setScBusVoltageType(ScBusVoltageType.LOADFLOW_VOLT);
 						
 						try {
-							acscAlgo.calculateBusFault(fault);
+							acscAlgo.calBusFault(fault);
 						} catch (InterpssException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
