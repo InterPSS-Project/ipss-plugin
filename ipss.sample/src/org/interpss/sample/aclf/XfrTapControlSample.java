@@ -44,14 +44,14 @@ import com.interpss.core.aclf.adpter.AclfLoadBusAdapter;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
 import com.interpss.core.aclf.adpter.AclfXformer;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.simu.util.sample.SampleCases;
+import com.interpss.simu.util.sample.SampleTestingCases;
 
 
 public class XfrTapControlSample {
 	public static void main(String args[]) throws IpssNumericException, InterpssException {
 		IpssCorePlugin.init();
 		
-		AclfNetwork net = SampleCases.sample2BusXfr();
+		AclfNetwork net = SampleTestingCases.sample2BusXfr();
 		
 		// xfr tap could be used to control voltage or mvar flow. In this
 		// example, it is used to control voltage

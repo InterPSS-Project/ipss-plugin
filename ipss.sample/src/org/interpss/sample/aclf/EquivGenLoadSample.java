@@ -1,5 +1,5 @@
  /*
-  * @(#)SampleLoadflow.java   
+  * @(#)EquivGenLoadSample.java   
   *
   * Copyright (C) 2006 www.interpss.org
   *
@@ -35,10 +35,11 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
+import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.simu.util.sample.SampleCases;
+import com.interpss.simu.util.sample.SampleTestingCases;
 
 
 public class EquivGenLoadSample {
@@ -46,7 +47,7 @@ public class EquivGenLoadSample {
 		IpssCorePlugin.init();
 		
   		AclfNetwork net = CoreObjectFactory.createAclfNetwork();
-		SampleCases.load_LF_5BusSystem(net);
+  		SampleTestingCases.load_LF_5BusSystem(net);
 		//System.out.println(net.net2String());
 
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
@@ -57,7 +58,8 @@ public class EquivGenLoadSample {
   		//System.out.println(net.net2String());
 	  	
   		assertTrue(net.isLfConverged());
-
+		System.out.println("Largest mismatch-1 " + net.maxMismatch(AclfMethod.NR)); 
+		
   		// init Equiv Gen/Load configuration
 		net.setHasEquivGenLoad(true);
 		net.setEquivGenLoadCache(new Hashtable<>());
@@ -72,7 +74,8 @@ public class EquivGenLoadSample {
   		
   		branch.setStatus(false);
   		
-  		net.getBusList().forEach(bus -> {
+  		Complex maxMismatch = new Complex(0.0, 0.0);
+  		for (AclfBus bus : net.getBusList()) {
 			Complex mismatch = bus.mismatch(AclfMethod.NR);
 			// adjust the bus mismatch using the Equiv Gen/Load
 			Complex equivGenLoad = (Complex)net.getEquivGenLoadCache().get(bus.getId());
@@ -81,6 +84,11 @@ public class EquivGenLoadSample {
 			
 			if ( mismatch.abs() > 0.0001)
 				System.out.println("Bus with large mismatch, " + bus.getId()); 
-  		});
+			
+			if (mismatch.abs() > maxMismatch.abs())
+				maxMismatch = mismatch;
+  		};
+  		
+		System.out.println("Largest mismatch-2 " + maxMismatch); 
 	}	
 }

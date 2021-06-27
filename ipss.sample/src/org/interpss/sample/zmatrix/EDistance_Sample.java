@@ -40,7 +40,7 @@ import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.common.ReferenceBusException;
-import com.interpss.simu.util.sample.SampleCases;
+import com.interpss.simu.util.sample.SampleTestingCases;
 
 import edu.emory.mathcs.csparsej.tdcomplex.DZcs_common.DZcsa;
 
@@ -55,7 +55,7 @@ public class EDistance_Sample {
 
 	public static void sample_5Bus() throws InterpssException, ReferenceBusException, IpssNumericException, PSSLException  {
 		AclfNetwork net = CoreObjectFactory.createAclfNetwork();
-		SampleCases.load_LF_5BusSystem(net);
+		SampleTestingCases.load_LF_5BusSystem(net);
 		//System.out.println(net.net2String());
 		
 		/*

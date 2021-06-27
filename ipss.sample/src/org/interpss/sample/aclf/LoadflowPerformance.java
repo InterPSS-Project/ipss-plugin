@@ -68,15 +68,5 @@ public class LoadflowPerformance {
 	  	algoLF.setLfMethod(AclfMethod.NR_STEP);
 	  	algoLF.loadflow();
 	  	timer.logStd("Time for running one step NR Loadflow: ");
-        
-	  	
-	  	/*
-	  	 * time bus number arrangement
-	  	 *
-	  	timer.start();
-	  	adjNet.setBusNumberArranged(false);
-	  	adjNet.accept(CoreObjectFactory.createBusNoArrangeVisitor());
-	  	timer.logStd("Time for bus arrangement: ");
-	  	*/
 	}	
 }
