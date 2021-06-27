@@ -31,14 +31,14 @@ import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.SenAnalysisType;
-import com.interpss.simu.util.sample.SampleCases;
+import com.interpss.simu.util.sample.SampleTestingCases;
 
 public class SenSample {
 	public static void main(String args[]) throws Exception {
 		IpssCorePlugin.init();
 		
 		AclfNetwork net = CoreObjectFactory.createAclfNetwork();
-		SampleCases.load_LF_5BusSystem(net);
+		SampleTestingCases.load_LF_5BusSystem(net);
 		//System.out.println(net.net2String());
 
 		SenAnalysisAlgorithm algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
