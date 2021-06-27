@@ -32,14 +32,14 @@ import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.DclfAlgorithm;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBus;
-import com.interpss.simu.util.sample.SampleCases;
+import com.interpss.simu.util.sample.SampleTestingCases;
 
 public class DclfSample {
 	public static void main(String args[]) throws Exception {
 		IpssCorePlugin.init();
 		
 		AclfNetwork net = CoreObjectFactory.createAclfNetwork();
-		SampleCases.load_LF_5BusSystem(net);
+		SampleTestingCases.load_LF_5BusSystem(net);
 		//System.out.println(net.net2String());
 
 		DclfAlgorithm algo = DclfAlgoObjectFactory.createDclfAlgorithm(net);

@@ -42,7 +42,7 @@ import com.interpss.core.aclf.adpter.AclfPQGenBus;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.simu.util.sample.SampleCases;
+import com.interpss.simu.util.sample.SampleTestingCases;
 
 
 public class PQVoltageLimitControlSample {
@@ -50,7 +50,7 @@ public class PQVoltageLimitControlSample {
 		IpssCorePlugin.init();
 		
   		AclfNetwork net = CoreObjectFactory.createAclfNetwork();
-		SampleCases.load_LF_5BusSystem(net);
+  		SampleTestingCases.load_LF_5BusSystem(net);
 		//System.out.println(net.net2String());
 
 		net.getBus("1").setLoadCode(AclfLoadCode.CONST_Z);
@@ -74,9 +74,9 @@ public class PQVoltageLimitControlSample {
   		//System.out.println(net.net2String());
 	  	
   		assertTrue(net.isLfConverged());
-  		
+
   		AclfBus swingBus = (AclfBus)net.getBus("5");
 		AclfSwingBus swing = swingBus.toSwingBus();
-  		System.out.println(swing.getGenResults(UnitType.PU));
+  		System.out.println("Swing bus P, Q: " + swing.getGenResults(UnitType.PU));
 	}	
 }
