@@ -171,7 +171,7 @@ public class IpssDStab {
 			
 	      // define a bus fault
 			BaseDStabBus<?,?> faultBus = dstabNet.getDStabBus(faultBusId);
-			AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@"+faultBusId, dstabNet);
+			AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@"+faultBusId, dstabNet, true /* cacheBusScVolt */);
 	  		fault.setBus(faultBus);
 			fault.setFaultCode(code);
 			fault.setZLGFault(Zlg);
