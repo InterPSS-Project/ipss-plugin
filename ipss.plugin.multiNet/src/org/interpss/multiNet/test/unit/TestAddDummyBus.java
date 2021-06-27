@@ -287,7 +287,7 @@ public class TestAddDummyBus {
 	   // define a bus fault
 			DStabBus faultBus = (DStabBus) net.getDStabBus(faultBusId);
 
-			AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@"+faultBusId, net);
+			AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@"+faultBusId, net, true /* cacheBusScVolt */);
 			fault.setBus(faultBus);
 			fault.setFaultCode(SimpleFaultCode.GROUND_3P);
 			fault.setZLGFault(NumericConstant.SmallScZ);

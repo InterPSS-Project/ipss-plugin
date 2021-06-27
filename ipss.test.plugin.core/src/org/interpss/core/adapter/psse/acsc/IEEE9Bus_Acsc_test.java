@@ -178,7 +178,7 @@ public class IEEE9Bus_Acsc_test {
 	  	
   		
 	  	SimpleFaultAlgorithm acscAlgo = CoreObjectFactory.createSimpleFaultAlgorithm(net);
-  		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus4", acscAlgo );
+  		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus4", acscAlgo, true /* cacheBusScVolt */ );
 		fault.setFaultCode(SimpleFaultCode.GROUND_3P);
 		fault.setZLGFault(new Complex(0.0, 0.0));
 		fault.setZLLFault(new Complex(0.0, 0.0));
@@ -207,7 +207,7 @@ public class IEEE9Bus_Acsc_test {
 	  	//             Bus1 L-L Fault
 	  	//********************************************
 	  	
-	  	fault = CoreObjectFactory.createAcscBusFault("Bus1", acscAlgo );
+	  	fault = CoreObjectFactory.createAcscBusFault("Bus1", acscAlgo, true /* cacheBusScVolt */ );
 		fault.setFaultCode(SimpleFaultCode.GROUND_LL);
 		fault.setZLGFault(new Complex(0.0, 0.0));
 		fault.setZLLFault(new Complex(0.0, 0.0));
@@ -241,7 +241,7 @@ public class IEEE9Bus_Acsc_test {
 	  	//*********************************************
 	  	//             Bus4 LG Fault
 	  	//********************************************
-	  	fault = CoreObjectFactory.createAcscBusFault("Bus4", acscAlgo );
+	  	fault = CoreObjectFactory.createAcscBusFault("Bus4", acscAlgo, true /* cacheBusScVolt */ );
 		fault.setFaultCode(SimpleFaultCode.GROUND_LG);
 		fault.setZLGFault(new Complex(0.0, 0.0));
 		fault.setZLLFault(new Complex(0.0, 0.0));
@@ -293,7 +293,7 @@ public class IEEE9Bus_Acsc_test {
 	  	
   		
 	  	SimpleFaultAlgorithm acscAlgo = CoreObjectFactory.createSimpleFaultAlgorithm(net);
-  		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus4", acscAlgo );
+  		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus4", acscAlgo, true /* cacheBusScVolt */ );
 		fault.setFaultCode(SimpleFaultCode.GROUND_3P);
 		fault.setZLGFault(new Complex(0.0, 0.0));
 		fault.setZLLFault(new Complex(0.0, 0.0));

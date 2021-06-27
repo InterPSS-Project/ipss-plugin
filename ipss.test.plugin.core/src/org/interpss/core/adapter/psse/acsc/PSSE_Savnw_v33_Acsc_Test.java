@@ -89,7 +89,7 @@ public class PSSE_Savnw_v33_Acsc_Test extends CorePluginTestSetup {
 		
 		
 	  	SimpleFaultAlgorithm acscAlgo = CoreObjectFactory.createSimpleFaultAlgorithm(net);
-  		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus202", acscAlgo );
+  		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus202", acscAlgo, true /* cacheBusScVolt */ );
 		fault.setFaultCode(SimpleFaultCode.GROUND_3P);
 		fault.setZLGFault(new Complex(0.0, 0.0));
 		fault.setZLLFault(new Complex(0.0, 0.0));
@@ -459,7 +459,7 @@ Contributing Gen:
 				    	
 				    	System.out.println("Remote fault bus:"+twoBusAwayBus.getId());
 				
-				    	AcscBusFault fault = CoreObjectFactory.createAcscBusFault(twoBusAwayBus.getId(), acscAlgo );
+				    	AcscBusFault fault = CoreObjectFactory.createAcscBusFault(twoBusAwayBus.getId(), acscAlgo, true /* cacheBusScVolt */ );
 						fault.setFaultCode(SimpleFaultCode.GROUND_3P);
 						fault.setZLGFault(new Complex(0.0, 0.0));
 						fault.setZLLFault(new Complex(0.0, 0.0));

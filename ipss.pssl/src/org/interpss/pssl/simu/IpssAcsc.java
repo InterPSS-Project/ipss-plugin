@@ -93,7 +93,7 @@ public class IpssAcsc extends BaseDSL {
 		 * @return
 		 */
 		public FaultAlgoDSL createBusFault(String busId) {
-	  		this.fault = CoreObjectFactory.createAcscBusFault(busId, this.algo);
+	  		this.fault = CoreObjectFactory.createAcscBusFault(busId, this.algo, true /* cacheBusScVolt */);
 	  		this.faultType = FaultType.BusFault;
   			return this; }
 
@@ -107,7 +107,7 @@ public class IpssAcsc extends BaseDSL {
 		 */
 		public FaultAlgoDSL createBranchFault(String fromBusId, String toBusId, String cirId) {
 			String braId = ToBranchId.f(fromBusId, toBusId, cirId);
-	  		this.fault = CoreObjectFactory.createAcscBranchFault(braId, this.algo);
+	  		this.fault = CoreObjectFactory.createAcscBranchFault(braId, this.algo, true /* cacheBusScVolt */);
 	  		this.faultType = FaultType.BranchFault;
   			return this; }
 		
