@@ -256,7 +256,7 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 		      // define a bus fault
 				BaseDStabBus faultBus = net.getDStabBus(faultBusId);
 
-				AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@"+faultBusId, net);
+				AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@"+faultBusId, net, true /* cacheBusScVolt */);
 		  		fault.setBus(faultBus);
 				fault.setFaultCode(SimpleFaultCode.GROUND_3P);
 				fault.setZLGFault(NumericConstant.SmallScZ);
