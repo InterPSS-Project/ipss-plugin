@@ -230,7 +230,7 @@ public class DStabScenarioHelper {
 				AcscBusFaultXmlType busFaultXml = (AcscBusFaultXmlType)faultXml;
 				eventObj.setType(DynamicSimuEventType.BUS_FAULT);
 				String faultBusId = busFaultXml.getRefBus().getBusId();
-				AcscBusFault busFault = CoreObjectFactory.createAcscBusFault(Constants.Token_BusFaultId+faultBusId, dstabNet);
+				AcscBusFault busFault = CoreObjectFactory.createAcscBusFault(Constants.Token_BusFaultId+faultBusId, dstabNet, true /* cacheBusScVolt */);
 				BaseAcscBus<?,?> bus = this.dstabNet.getBus(faultBusId);
 				busFault.setFaultBus(bus);
 				
