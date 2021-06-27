@@ -121,7 +121,7 @@ public class Acsc5BusTestSubAreaNet {
   		assertTrue((faultNet.getBusList().size() == 5 && faultNet.getBranchList().size() == 5));
   		
 	  	SimpleFaultAlgorithm algo = CoreObjectFactory.createSimpleFaultAlgorithm(faultNet);
-  		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("2", algo);
+  		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("2", algo, false /* cacheBusScVolt */);
 		fault.setFaultCode(SimpleFaultCode.GROUND_3P);
 		fault.setZLGFault(new Complex(0.0, 0.0));
 		fault.setZLLFault(new Complex(0.0, 0.0));

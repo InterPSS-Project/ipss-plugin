@@ -71,7 +71,7 @@ public class DStabTestSetupBase extends CorePluginTestSetup {
 		
 		BaseDStabBus faultBus = net.getDStabBus("0003");
 
-		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@0003", net);
+		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@0003", net, true /* cacheBusScVolt */);
   		fault.setBus(faultBus);
 		fault.setFaultCode(SimpleFaultCode.GROUND_3P);
 		fault.setZLGFault(NumericConstant.SmallScZ);
