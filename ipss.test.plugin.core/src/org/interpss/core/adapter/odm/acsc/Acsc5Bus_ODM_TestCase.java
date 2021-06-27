@@ -56,7 +56,7 @@ public class Acsc5Bus_ODM_TestCase extends CorePluginTestSetup {
 		//System.out.println(faultNet.net2String());
 		
 	  	SimpleFaultAlgorithm algo = CoreObjectFactory.createSimpleFaultAlgorithm(faultNet);
-  		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus2", algo);
+  		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus2", algo, true /* cacheBusScVolt */);
 		fault.setFaultCode(SimpleFaultCode.GROUND_3P);
 		fault.setZLGFault(new Complex(0.0, 0.0));
 		fault.setZLLFault(new Complex(0.0, 0.0));
