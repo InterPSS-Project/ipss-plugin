@@ -184,7 +184,7 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 
 			StateMonitor sm = new StateMonitor();
 			
-			sm.addBusStdMonitor(busIdList.toArray(new String[] {}));
+			sm.addBusStdMonitor(busIdList.toArray(new String[0]));
 			
 			//sm.addBusStdMonitor(new String[]{"Bus10000","Bus10001","Bus10015","Bus10016","Bus10028"});
 			//sm.addBusStdMonitor(new String[]{"Bus1_loadBus","Bus33_loadBus","Bus562_loadBus"});
@@ -346,7 +346,7 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 						
 						StateMonitor sm = new StateMonitor();
 						
-						sm.addBusStdMonitor(busIdList.toArray(new String[] {}));
+						sm.addBusStdMonitor(busIdList.toArray(new String[0]));
 						
 						//sm.addBusStdMonitor(new String[]{"Bus1_loadBus","Bus33_loadBus","Bus562_loadBus"});
 						

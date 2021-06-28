@@ -75,7 +75,7 @@ public class PQVoltageLimitControlSample {
 	  	
   		assertTrue(net.isLfConverged());
 
-  		AclfBus swingBus = (AclfBus)net.getBus("5");
+  		AclfBus swingBus = net.getBus("5");
 		AclfSwingBus swing = swingBus.toSwingBus();
   		System.out.println("Swing bus P, Q: " + swing.getGenResults(UnitType.PU));
 	}	
