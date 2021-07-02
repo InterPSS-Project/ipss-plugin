@@ -58,6 +58,7 @@ import com.interpss.core.acsc.BusScCode;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.acsc.XfrConnectCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.algo.sc.ScBusModelType;
 
 public class Acsc5BusTesPiecewiseAlgo {
 	/*
@@ -241,7 +242,7 @@ a(6,6,'5'): 0.0000 + j-0.0000
 Bus '2' injection current [(0.0001,0.0), (1.0,0.0),  (0.05,0.0)]
 Bus '3' injection current [(-0.0001,0.0), (-1.0,0.0), (-0.05,0.0)]
 */
-  		ISparseEqnComplex y1 = net.formScYMatrix(SequenceCode.POSITIVE, false);
+  		ISparseEqnComplex y1 = net.formScYMatrix(SequenceCode.POSITIVE, ScBusModelType.LF_VOLT_EQUIV_LOAD, false);
   		y1.setBi(new Complex(1.0,0.0), 1);
   		y1.setBi(new Complex(-1.0,0.0), 4);
   		y1.solveEqn();
@@ -267,7 +268,7 @@ b(5): 0.00147 + j0.01437
 b(6): -0.00291 + j-0.01343 		
  */
   		
-  		ISparseEqnComplex y2 = net.formScYMatrix(SequenceCode.NEGATIVE, false);
+  		ISparseEqnComplex y2 = net.formScYMatrix(SequenceCode.NEGATIVE, ScBusModelType.LF_VOLT_EQUIV_LOAD, false);
   		y2.setBi(new Complex(0.05,0.0), 1);
   		y2.setBi(new Complex(-0.05,0.0), 4);
   		y2.solveEqn();
@@ -291,7 +292,7 @@ b(4): -0.00038 + j-0.00176
 b(5): 0.00007 + j0.00072
 b(6): -0.00015 + j-0.00067 		
  */
-  		ISparseEqnComplex y0 = net.formScYMatrix(SequenceCode.ZERO, false);
+  		ISparseEqnComplex y0 = net.formScYMatrix(SequenceCode.ZERO, ScBusModelType.LF_VOLT_EQUIV_LOAD, false);
   		y0.setBi(new Complex(0.01,0.0), 1);
   		y0.setBi(new Complex(-0.01,0.0), 4);
   		y0.solveEqn();
