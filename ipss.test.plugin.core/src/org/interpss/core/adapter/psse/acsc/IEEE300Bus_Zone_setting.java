@@ -34,7 +34,7 @@ import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.core.algo.sc.ScBusVoltageType;
+import com.interpss.core.algo.sc.ScBusModelType;
 import com.interpss.core.algo.sc.SimpleFaultAlgorithm;
 import com.interpss.core.net.Branch;
 
@@ -404,7 +404,7 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 						fault.setZLLFault(new Complex(0.0, 0.0));
 						
 						//pre fault profile : solved power flow
-						acscAlgo.setScBusVoltageType(ScBusVoltageType.LOADFLOW_VOLT);
+						acscAlgo.setScBusModelType(ScBusModelType.LOADFLOW_VOLT);
 						
 						try {
 							acscAlgo.calBusFault(fault);
