@@ -42,7 +42,7 @@ import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.AclfMethod;
-import com.interpss.core.algo.sc.ScBusVoltageType;
+import com.interpss.core.algo.sc.ScBusModelType;
 import com.interpss.core.algo.sc.SimpleFaultAlgorithm;
 import com.interpss.simu.util.sample.SampleTestingCases;
 

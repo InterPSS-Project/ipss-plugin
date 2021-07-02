@@ -209,7 +209,7 @@ public class SinglePhaseACMotor extends DynLoadModel1Phase {
 		public SinglePhaseACMotor(){
 			states = new Hashtable<>();
 		
-		}
+		} 
 		
 		public SinglePhaseACMotor(String Id){
 			this();
