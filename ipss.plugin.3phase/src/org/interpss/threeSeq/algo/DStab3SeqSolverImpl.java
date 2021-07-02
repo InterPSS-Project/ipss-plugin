@@ -15,6 +15,7 @@ import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.acsc.SequenceCode;
+import com.interpss.core.algo.sc.ScBusModelType;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 import com.interpss.dstab.DStabBranch;
@@ -49,9 +50,9 @@ public class DStab3SeqSolverImpl extends DStabSolverImpl {
 			return false;
 		}
 		//build the negative and zero sequence Y matrix
-		this.net.formScYMatrix(SequenceCode.NEGATIVE, true);
+		this.net.formScYMatrix(SequenceCode.NEGATIVE, ScBusModelType.DSTAB_SIMU, true);
 		
-		this.net.formScYMatrix(SequenceCode.ZERO, true);
+		this.net.formScYMatrix(SequenceCode.ZERO, ScBusModelType.DSTAB_SIMU, true);
 		
 	
 		return flag;

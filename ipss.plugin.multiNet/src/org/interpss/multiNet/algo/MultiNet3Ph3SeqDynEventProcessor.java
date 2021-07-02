@@ -15,6 +15,7 @@ import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
+import com.interpss.core.algo.sc.ScBusModelType;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.datatype.DStabSimuTimeEvent;
 import com.interpss.dstab.devent.DynamicSimuEvent;
@@ -81,8 +82,8 @@ public class MultiNet3Ph3SeqDynEventProcessor extends
 						         }
 						         else if (faultSubNet instanceof DStabNetwork3Phase && fault.getFaultCode()==SimpleFaultCode.GROUND_3P){
 						        	 faultSubNet.formYMatrix4DStab();
-						        	 faultSubNet.formScYMatrix(SequenceCode.NEGATIVE,false);
-						        	 faultSubNet.formScYMatrix(SequenceCode.ZERO,false);
+						        	 faultSubNet.formScYMatrix(SequenceCode.NEGATIVE, ScBusModelType.LF_VOLT_EQUIV_LOAD, false);
+						        	 faultSubNet.formScYMatrix(SequenceCode.ZERO, ScBusModelType.LF_VOLT_EQUIV_LOAD, false);
 						         }
 						         
 								else{
