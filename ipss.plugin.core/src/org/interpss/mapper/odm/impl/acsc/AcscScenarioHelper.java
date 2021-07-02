@@ -52,7 +52,7 @@ import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.fault.AcscBranchFault;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
-import com.interpss.core.algo.sc.ScBusVoltageType;
+import com.interpss.core.algo.sc.ScBusModelType;
 import com.interpss.core.algo.sc.SimpleFaultAlgorithm;
 
 /**
@@ -97,9 +97,9 @@ public class AcscScenarioHelper {
 			
 			// algo.multiFactor in PU and acscData.getMFactor in %
 			if (scAnalysisXml.getPreFaultBusVoltage() != null)
-				this.acscAglo.setScBusVoltageType(scAnalysisXml.getPreFaultBusVoltage() == 
+				this.acscAglo.setScBusModelType(scAnalysisXml.getPreFaultBusVoltage() == 
 					PreFaultBusVoltageEnumType.UNIT_VOLT ? 
-									ScBusVoltageType.UNIT_VOLT : ScBusVoltageType.LOADFLOW_VOLT); // UnitV | LFVolt
+									ScBusModelType.UNIT_VOLT : ScBusModelType.LOADFLOW_VOLT); // UnitV | LFVolt
 			
 /* not tested yet			
 			IpssScenarioXmlType scenario = sScenarioXml.getScenarioList().getScenario().get(0);
