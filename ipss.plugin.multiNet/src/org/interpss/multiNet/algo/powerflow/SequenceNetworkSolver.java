@@ -11,6 +11,7 @@ import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.core.acsc.BaseAcscNetwork;
 import com.interpss.core.acsc.SequenceCode;
+import com.interpss.core.algo.sc.ScBusModelType;
 import com.interpss.core.sparse.impl.SparseEqnComplexImpl;
 import com.interpss.core.sparse.solver.SquareMatrixEqnCSJComplexSolver;
 
@@ -48,10 +49,10 @@ public class SequenceNetworkSolver {
 		this.net =net;
 		this.monitorBusAry = monitorBusAry;
 		
-		zeroSeqYMatrix = net.formScYMatrix(SequenceCode.ZERO,false);
+		zeroSeqYMatrix = net.formScYMatrix(SequenceCode.ZERO, ScBusModelType.LF_VOLT_EQUIV_LOAD, false);
 		zeroYSolver = new SquareMatrixEqnCSJComplexSolver(zeroSeqYMatrix);
 		
-		negSeqYMatrix =  net.formScYMatrix(SequenceCode.NEGATIVE, false);
+		negSeqYMatrix =  net.formScYMatrix(SequenceCode.NEGATIVE, ScBusModelType.LF_VOLT_EQUIV_LOAD, false);
 		negYSolver = new SquareMatrixEqnCSJComplexSolver(negSeqYMatrix);
 		
 		//LU factorize the YMaxtri, prepare it for calculating Z matrix;
