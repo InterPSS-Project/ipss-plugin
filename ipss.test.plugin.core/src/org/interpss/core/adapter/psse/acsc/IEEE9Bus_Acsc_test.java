@@ -63,7 +63,7 @@ public class IEEE9Bus_Acsc_test {
 	  		 * 
 	  		 */
 	  		
-	        ISparseEqnComplex posYMatrix = net.formScYMatrix(SequenceCode.POSITIVE, ScBusModelType.LF_VOLT_EQUIV_LOAD, false);
+	        ISparseEqnComplex posYMatrix = net.formScYMatrix(SequenceCode.POSITIVE, ScBusModelType.LOADFLOW_VOLT, false);
 	        
 	        //Gen Bus: Bus 1
 	        //Yii: 0.0 + (-42.63668430335097i)
@@ -95,7 +95,7 @@ public class IEEE9Bus_Acsc_test {
 	  		 * 
 	  		 */
 	        
-       ISparseEqnComplex negYMatrix = net.formScYMatrix(SequenceCode.NEGATIVE, ScBusModelType.LF_VOLT_EQUIV_LOAD, false);
+       ISparseEqnComplex negYMatrix = net.formScYMatrix(SequenceCode.NEGATIVE, ScBusModelType.LOADFLOW_VOLT, false);
 	        
 	        //Gen Bus: Bus 1
 	        //Yii: 0.0 + (-42.63668430335097i)
@@ -127,7 +127,7 @@ public class IEEE9Bus_Acsc_test {
 	  		 * 
 	  		 */
 	        
-	        ISparseEqnComplex zeroYMatrix = net.formScYMatrix(SequenceCode.ZERO, ScBusModelType.LF_VOLT_EQUIV_LOAD, false);
+	        ISparseEqnComplex zeroYMatrix = net.formScYMatrix(SequenceCode.ZERO, ScBusModelType.LOADFLOW_VOLT, false);
 	      //Load Bus: Bus 5
 	        //Yii: 1.0211168370406916 + (-6.79069203867941i)
 	        assertTrue(Math.abs(zeroYMatrix.getA(4, 4).getReal()-1.02)<1.0E-2);
@@ -273,6 +273,7 @@ public class IEEE9Bus_Acsc_test {
 		//acscParser.stdout();
 		
 		AcscNetwork net = new ODMAcscParserMapper().map2Model(acscParser).getAcscNet();
+		net.initialization(ScBusModelType.LOADFLOW_VOLT);
 		
 		//set the order in original sequence for better testing
 		for(int i=1;i<=net.getNoBus();i++){
@@ -290,16 +291,15 @@ public class IEEE9Bus_Acsc_test {
   	  	//*********************************************
 	  	//             Bus4 3P Fault
 	  	//********************************************
-	  	
   		
 	  	SimpleFaultAlgorithm acscAlgo = CoreObjectFactory.createSimpleFaultAlgorithm(net);
+		//pre fault profile : solved power flow
+		acscAlgo.setScBusModelType(ScBusModelType.LOADFLOW_VOLT);
+	  	
   		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus4", acscAlgo, true /* cacheBusScVolt */ );
 		fault.setFaultCode(SimpleFaultCode.GROUND_3P);
 		fault.setZLGFault(new Complex(0.0, 0.0));
 		fault.setZLLFault(new Complex(0.0, 0.0));
-		
-		//pre fault profile : solved power flow
-		acscAlgo.setScBusModelType(ScBusModelType.LOADFLOW_VOLT);
 		
 		acscAlgo.calBusFault(fault);
 	  	//System.out.println(fault.getFaultResult().getSCCurrent_012());
@@ -314,11 +314,5 @@ public class IEEE9Bus_Acsc_test {
 	  	//0.0000 + j0.0000  0.61592 + j0.01616  0.0000 + j0.0000
 	  	assertTrue(TestUtilFunc.compare(fault.getFaultResult().getBusVoltage_012(net.getBus("Bus1")), 
 	  			0.0, 0.0, 0.61592, 0.01616, 0.0, 0.0) );
-	  	
-
-	  
-		
 	}
-	
-
 }

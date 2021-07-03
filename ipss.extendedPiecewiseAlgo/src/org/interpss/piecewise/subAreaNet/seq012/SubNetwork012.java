@@ -69,8 +69,8 @@ public abstract class SubNetwork012<TBus extends BaseAcscBus<? extends AcscGen, 
 	 */
 	public void formYMatrix() {
 		this.setYSparseEqn(new ISparseEqnComplex[] { 
-				this.subNet.formScYMatrix(SequenceCode.POSITIVE, ScBusModelType.LF_VOLT_EQUIV_LOAD, false),
-				this.subNet.formScYMatrix(SequenceCode.NEGATIVE, ScBusModelType.LF_VOLT_EQUIV_LOAD, false),
-				this.subNet.formScYMatrix(SequenceCode.ZERO, ScBusModelType.LF_VOLT_EQUIV_LOAD, false)});
+				this.subNet.formScYMatrix(SequenceCode.POSITIVE, ScBusModelType.LOADFLOW_VOLT, false),
+				this.subNet.formScYMatrix(SequenceCode.NEGATIVE, ScBusModelType.LOADFLOW_VOLT, false),
+				this.subNet.formScYMatrix(SequenceCode.ZERO, ScBusModelType.LOADFLOW_VOLT, false)});
 	}	
 }	
