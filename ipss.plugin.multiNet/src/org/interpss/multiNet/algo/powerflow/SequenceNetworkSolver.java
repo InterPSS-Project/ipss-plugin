@@ -49,10 +49,10 @@ public class SequenceNetworkSolver {
 		this.net =net;
 		this.monitorBusAry = monitorBusAry;
 		
-		zeroSeqYMatrix = net.formScYMatrix(SequenceCode.ZERO, ScBusModelType.LF_VOLT_EQUIV_LOAD, false);
+		zeroSeqYMatrix = net.formScYMatrix(SequenceCode.ZERO, ScBusModelType.LOADFLOW_VOLT, false);
 		zeroYSolver = new SquareMatrixEqnCSJComplexSolver(zeroSeqYMatrix);
 		
-		negSeqYMatrix =  net.formScYMatrix(SequenceCode.NEGATIVE, ScBusModelType.LF_VOLT_EQUIV_LOAD, false);
+		negSeqYMatrix =  net.formScYMatrix(SequenceCode.NEGATIVE, ScBusModelType.LOADFLOW_VOLT, false);
 		negYSolver = new SquareMatrixEqnCSJComplexSolver(negSeqYMatrix);
 		
 		//LU factorize the YMaxtri, prepare it for calculating Z matrix;

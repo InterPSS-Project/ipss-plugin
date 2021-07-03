@@ -608,7 +608,7 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 		
 		ISparseEqnComplex ymatrix = this.transmissionNet.getYMatrix();
 		if(ymatrix==null){
-			ymatrix = this.transmissionNet.formScYMatrix(SequenceCode.POSITIVE, ScBusModelType.LF_VOLT_EQUIV_LOAD, false);
+			ymatrix = this.transmissionNet.formScYMatrix(SequenceCode.POSITIVE, ScBusModelType.LOADFLOW_VOLT, false);
 			this.transmissionNet.setYMatrix(ymatrix);
 			this.transmissionNet.setYMatrixDirty(true);
 		}

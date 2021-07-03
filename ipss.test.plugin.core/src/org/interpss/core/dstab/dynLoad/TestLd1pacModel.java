@@ -23,6 +23,7 @@ import com.interpss.core.aclf.adpter.AclfSwingBus;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.algo.sc.ScBusModelType;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabGen;
@@ -39,6 +40,8 @@ public class TestLd1pacModel extends TestSetupBase {
 	@Test
 	public void test_DStab_Ld1pac() throws InterpssException {
 		DStabilityNetwork net = create2BusSystem();
+		net.initialization(ScBusModelType.DSTAB_SIMU);
+		
 		assertTrue(net.isLfConverged());
 
 		DStabBus bus1 = (DStabBus) net.getDStabBus("Bus1");
@@ -102,6 +105,8 @@ public class TestLd1pacModel extends TestSetupBase {
 	// @Test
 	public void compare_DStab_Ld1pac_with_PSCAD_Model() throws InterpssException {
 		DStabilityNetwork net = create2BusSystem();
+		net.initialization(ScBusModelType.DSTAB_SIMU);
+		
 		assertTrue(net.isLfConverged());
 
 		DStabBus bus1 = (DStabBus) net.getDStabBus("Bus1");
@@ -161,6 +166,8 @@ public class TestLd1pacModel extends TestSetupBase {
 	@Test
 	public void test_DStab_Ld1pac_loadChange() throws InterpssException {
 		DStabilityNetwork net = create2BusSystem();
+		net.initialization(ScBusModelType.DSTAB_SIMU);
+		
 		assertTrue(net.isLfConverged());
 
 		DStabBus bus1 = (DStabBus) net.getDStabBus("Bus1");
