@@ -30,9 +30,11 @@ public class AclfBusDataComparator extends DataComparatorAdapter<BaseAclfBus, Ba
 		if (baseBus.getBranchList().size() != bus.getBranchList().size()) {
 			this.msg += "\nbus.branchList.size not equal: " + baseBus.getId() + ", " + baseBus.getBranchList().size() + "(base), " + bus.getBranchList().size(); ok = false; }
 
+		/*
 		if (baseBus.getBusSecList().size() != bus.getBusSecList().size()) {
 			this.msg += "\nbus.busSecList.size not equal: " + baseBus.getId() + ", " + baseBus.getBusSecList().size() + "(base), " + bus.getBusSecList().size(); ok = false; }
-
+		*/
+		
 		if (baseBus.getGenCode() != bus.getGenCode()) {
 			this.msg += "\nbus.genCode not equal: " + baseBus.getId() + ", " + baseBus.getGenCode() + "(base), " + bus.getGenCode(); ok = false; }
 

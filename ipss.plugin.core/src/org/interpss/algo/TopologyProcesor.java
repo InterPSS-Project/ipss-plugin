@@ -105,11 +105,13 @@ public class TopologyProcesor {
 			Branch bra = this.aclfNet.getBranch(id);
 			bra.setBooleanFlag(false);
 			bra.getFromBus().setBooleanFlag(true);
+			/*
 			for (Bus bus : bra.getFromBus().getBusSecList())
 				bus.setBooleanFlag(true);
 			bra.getToBus().setBooleanFlag(true);
 			for (Bus bus : bra.getToBus().getBusSecList())
 				bus.setBooleanFlag(true);
+			*/	
 		}		
 		return branchIdList;
 	}

@@ -81,16 +81,16 @@ import org.junit.runners.Suite.SuiteClasses;
 	// Dclf
 	Mod_SixBus_DclfPsXfr.class,
 	SixBus_DclfPsXfr.class,
-	IEEE14BusBreaker_dclf_Test.class,
+	//IEEE14BusBreaker_dclf_Test.class,
 	IEEE14BusBreaker_equivCABranch_Test.class,
 	Ieee14_CA_Test.class,
 	//ieee14_CAClosurePSSL_Test.class,
 	Ieee14_GSF_Test.class,
 	
 	// small Z branch
-	SampleSwitchBreakerModelTest.class,
-	IEEE14BusBreaker_lf_Test.class,
-	IEEE14BusBreakerTest.class,
+	//SampleSwitchBreakerModelTest.class,
+	//IEEE14BusBreaker_lf_Test.class,
+	//IEEE14BusBreakerTest.class,
 	
 	// Ascsc ODM
 	Acsc5Bus_ODM_TestCase.class,
