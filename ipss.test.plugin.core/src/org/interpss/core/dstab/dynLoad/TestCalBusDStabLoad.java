@@ -22,6 +22,7 @@ import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.algo.sc.ScBusModelType;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabGen;
@@ -38,6 +39,8 @@ public class TestCalBusDStabLoad extends TestSetupBase {
 	@Test
 	public void test_cal_half_indMotor()  throws InterpssException {
 		DStabilityNetwork net = create2BusSystem();
+		net.initialization(ScBusModelType.DSTAB_SIMU);
+		
 		assertTrue(net.isLfConverged());
 		
 		DStabBus bus1 = (DStabBus) net.getDStabBus("Bus1");

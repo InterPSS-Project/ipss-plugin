@@ -38,6 +38,7 @@ import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.algo.sc.ScBusModelType;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBus;
@@ -685,6 +686,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		
 		
 	    BaseDStabNetwork dsNet =simuCtx.getDStabilityNet();
+        dsNet.initialization(ScBusModelType.DSTAB_SIMU);
 	    
 	    // build sequence network
 //	    SequenceNetworkBuilder seqNetHelper = new SequenceNetworkBuilder(dsNet,true);
@@ -930,9 +932,9 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
                     return;
             }
             
-        BaseDStabNetwork dsNet =simuCtx.getDStabilityNet();
-
-        //System.out.println(dsNet.net2String());
+            BaseDStabNetwork dsNet =simuCtx.getDStabilityNet();
+            //System.out.println(dsNet.net2String());
+            dsNet.initialization(ScBusModelType.DSTAB_SIMU);
 
             DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
             LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();

@@ -23,6 +23,7 @@ import com.interpss.core.aclf.adpter.AclfSwingBus;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.algo.sc.ScBusModelType;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabGen;
@@ -40,6 +41,8 @@ public class TestInductionMotorModel extends TestSetupBase {
 	@Test
 	public void test_induction_Motor_dynModel_single_cage()  throws InterpssException {
 		DStabilityNetwork net = create2BusSystem();
+		net.initialization(ScBusModelType.DSTAB_SIMU);
+		
 		assertTrue(net.isLfConverged());
 		
 		DStabBus bus1 = (DStabBus) net.getDStabBus("Bus1");
@@ -139,6 +142,8 @@ public class TestInductionMotorModel extends TestSetupBase {
 	@Test
 	public void test_induction_Motor_dynModel_single_cage_loadchange()  throws InterpssException {
 			DStabilityNetwork net = create2BusSystem();
+			net.initialization(ScBusModelType.DSTAB_SIMU);
+			
 			assertTrue(net.isLfConverged());
 			
 			DStabBus bus1 = (DStabBus) net.getDStabBus("Bus1");
