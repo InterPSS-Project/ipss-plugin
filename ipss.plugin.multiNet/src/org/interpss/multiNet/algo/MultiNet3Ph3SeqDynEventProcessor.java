@@ -82,8 +82,8 @@ public class MultiNet3Ph3SeqDynEventProcessor extends
 						         }
 						         else if (faultSubNet instanceof DStabNetwork3Phase && fault.getFaultCode()==SimpleFaultCode.GROUND_3P){
 						        	 faultSubNet.formYMatrix4DStab();
-						        	 faultSubNet.formScYMatrix(SequenceCode.NEGATIVE, ScBusModelType.LF_VOLT_EQUIV_LOAD, false);
-						        	 faultSubNet.formScYMatrix(SequenceCode.ZERO, ScBusModelType.LF_VOLT_EQUIV_LOAD, false);
+						        	 faultSubNet.formScYMatrix(SequenceCode.NEGATIVE, ScBusModelType.LOADFLOW_VOLT, false);
+						        	 faultSubNet.formScYMatrix(SequenceCode.ZERO, ScBusModelType.LOADFLOW_VOLT, false);
 						         }
 						         
 								else{
