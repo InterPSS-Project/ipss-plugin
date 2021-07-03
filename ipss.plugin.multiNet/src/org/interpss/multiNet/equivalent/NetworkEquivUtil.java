@@ -75,7 +75,7 @@ public class NetworkEquivUtil {
 		
 		ISparseEqnComplex ymatrix = subNet.getYMatrix();
 		if(ymatrix==null){
-			ymatrix = subNet.formScYMatrix(SequenceCode.POSITIVE, ScBusModelType.LF_VOLT_EQUIV_LOAD, false);
+			ymatrix = subNet.formScYMatrix(SequenceCode.POSITIVE, ScBusModelType.LOADFLOW_VOLT, false);
 			subNet.setYMatrix(ymatrix);
 			subNet.setYMatrixDirty(true);
 		}
@@ -275,7 +275,7 @@ public static  NetworkEquivalent cal3PhaseNetworkTheveninEquiv(DStabNetwork3Phas
 			switch (code) {
 			case ZERO:
 				if(net.getZeroSeqYMatrix()==null)
-				    seqYmatrixEqn = net.formScYMatrix(SequenceCode.ZERO, ScBusModelType.LF_VOLT_EQUIV_LOAD, true);
+				    seqYmatrixEqn = net.formScYMatrix(SequenceCode.ZERO, ScBusModelType.LOADFLOW_VOLT, true);
 				else
 					seqYmatrixEqn = net.getZeroSeqYMatrix();
 				break;
@@ -284,7 +284,7 @@ public static  NetworkEquivalent cal3PhaseNetworkTheveninEquiv(DStabNetwork3Phas
 				
 				//setBoundaryGenLoadInactive();
 				if(net.getNegSeqYMatrix()==null)
-				     seqYmatrixEqn =net.formScYMatrix(SequenceCode.NEGATIVE, ScBusModelType.LF_VOLT_EQUIV_LOAD, true);
+				     seqYmatrixEqn =net.formScYMatrix(SequenceCode.NEGATIVE, ScBusModelType.LOADFLOW_VOLT, true);
 				else
 					 seqYmatrixEqn = net.getNegSeqYMatrix();
 				break;

@@ -77,7 +77,6 @@ import com.interpss.core.acsc.Acsc3WBranch;
 import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.AcscBus;
 import com.interpss.core.acsc.AcscGen;
-import com.interpss.core.acsc.AcscLoad;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.core.acsc.BaseAcscNetwork;
@@ -87,6 +86,7 @@ import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.acsc.XfrConnectCode;
 import com.interpss.core.acsc.adpter.AcscLine;
 import com.interpss.core.acsc.adpter.AcscXformer;
+import com.interpss.core.funcImpl.AcscFunction;
 import com.interpss.core.net.Branch;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.simu.SimuContext;
@@ -332,8 +332,6 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 						*/
 						scGen.setZeroGenZ(new Complex(z0.getRe(), z0.getIm()));
 					}
-					
-					
 				}
 			}
 		}
