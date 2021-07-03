@@ -442,6 +442,7 @@ private DStabilityNetwork create2BusSystem() throws InterpssException{
 		
 		//set positive info only
 		net.setPositiveSeqDataOnly(true);
+		net.setLfDataLoaded(true);
 
 	  	net.initContributeGenLoad();
 
