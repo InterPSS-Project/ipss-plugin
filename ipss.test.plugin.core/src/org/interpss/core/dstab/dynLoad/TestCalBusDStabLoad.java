@@ -155,6 +155,7 @@ public class TestCalBusDStabLoad extends TestSetupBase {
 			
 			//set positive info only
 			net.setPositiveSeqDataOnly(true);
+			net.setLfDataLoaded(true);
 
 		  	net.initContributeGenLoad();
 
