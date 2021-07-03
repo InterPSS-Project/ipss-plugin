@@ -178,18 +178,22 @@ public class AclfOutFunc {
 			for (Bus b : net.getBusList()) {
 				BaseAclfBus<?,?> bus = (BaseAclfBus<?,?>)b;
 				if (bus.isActive()) {
+					/*
 					if (bus.isParent()) {
 						// parent bus could be the original bus or a newly created
 						// holding bus. The created bus id starts with the token
 						if (!bus.getId().startsWith(Constants.Token_ParentBusPrefix))
 							str.append(busLfSummary(bus));
+						/*
 						for (Bus sec : bus.getBusSecList()) {
 							AclfBus busSec = (AclfBus)sec;
 							str.append(busLfSummary(busSec));
 						}
+						
 					}
 					else
-						str.append(busLfSummary(bus));
+					*/	
+					str.append(busLfSummary(bus));
 				}
 			}
 		} catch (Exception emsg) {
