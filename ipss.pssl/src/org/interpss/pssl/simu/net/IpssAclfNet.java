@@ -389,11 +389,13 @@ public class IpssAclfNet extends BaseDSL {
 		@SuppressWarnings(value="unchecked")
   		public TAclfDSL baseVoltage(double v, UnitType unit) { getAclfBus().setBaseVoltage(v, unit); return (TAclfDSL)this; }
 
+		/*
 		@SuppressWarnings(value="unchecked")
   		public TAclfDSL setSectionNumber(int n) { getAclfBus().setSecNo(n); return (TAclfDSL)this; }
 		@SuppressWarnings(value="unchecked")
   		public TAclfDSL sectionNumber(int n) { getAclfBus().setSecNo(n); return (TAclfDSL)this; }
-  		
+  		*/
+		
 		@SuppressWarnings(value="unchecked")
   		public TAclfDSL setGenCode(AclfGenCode code ) { getAclfBus().setGenCode(code); return (TAclfDSL)this; }
 		@SuppressWarnings(value="unchecked")
