@@ -124,9 +124,9 @@ public class PiecewiseAlgo012Impl<TBus extends BaseAcscBus<? extends AcscGen, ? 
   				((SubNetwork012)subArea).formYMatrix();
   			else	
   				subArea.setYSparseEqn( new ISparseEqnComplex[] {
-  						parentNet.formScYMatrix(SequenceCode.ZERO, ScBusModelType.LF_VOLT_EQUIV_LOAD, subArea.getFlag()),
-  						parentNet.formScYMatrix(SequenceCode.POSITIVE, ScBusModelType.LF_VOLT_EQUIV_LOAD, subArea.getFlag()),		
-  						parentNet.formScYMatrix(SequenceCode.NEGATIVE, ScBusModelType.LF_VOLT_EQUIV_LOAD, subArea.getFlag())
+  						parentNet.formScYMatrix(SequenceCode.ZERO, ScBusModelType.LOADFLOW_VOLT, subArea.getFlag()),
+  						parentNet.formScYMatrix(SequenceCode.POSITIVE, ScBusModelType.LOADFLOW_VOLT, subArea.getFlag()),		
+  						parentNet.formScYMatrix(SequenceCode.NEGATIVE, ScBusModelType.LOADFLOW_VOLT, subArea.getFlag())
   					});
   			
   	  		for ( ISparseEqnComplex eqn : subArea.getYSparseEqn())

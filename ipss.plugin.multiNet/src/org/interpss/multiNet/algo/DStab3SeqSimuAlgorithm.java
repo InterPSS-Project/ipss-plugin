@@ -77,8 +77,8 @@ public class DStab3SeqSimuAlgorithm {
 		flag = posSeqDstabAlgo.initialization();
 		
 		//Step-2 form the negative and zero sequence Y matrices of the network
-		this.negSeqYMatrix  = this.net.formScYMatrix(SequenceCode.NEGATIVE, ScBusModelType.LF_VOLT_EQUIV_LOAD, true);
-		this.zeroSeqYMatrix =  this.net.formScYMatrix(SequenceCode.ZERO, ScBusModelType.LF_VOLT_EQUIV_LOAD, true);
+		this.negSeqYMatrix  = this.net.formScYMatrix(SequenceCode.NEGATIVE, ScBusModelType.LOADFLOW_VOLT, true);
+		this.zeroSeqYMatrix =  this.net.formScYMatrix(SequenceCode.ZERO, ScBusModelType.LOADFLOW_VOLT, true);
 		
 		//Step-3 initialize monitoring result table
 		if(this.monitoringBusAry!=null){
