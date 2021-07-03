@@ -56,6 +56,9 @@ public class IEEE9Bus_Acsc_test {
 	  		assertTrue( net.isLfConverged());
 	  		//System.out.println(AclfOutFunc.loadFlowSummary(net));
 	  		//System.out.println(net.net2String());
+	  		
+	  		net.initialization(ScBusModelType.LOADFLOW_VOLT);
+	  		
 	  		/*
 	  		 * ***********************************
 	  		 *       Positive sequence
@@ -171,6 +174,8 @@ public class IEEE9Bus_Acsc_test {
 	  	algo.loadflow();
   	
   		assertTrue( net.isLfConverged());
+  		
+  		net.initialization(ScBusModelType.LOADFLOW_VOLT);
 		
   	  	//*********************************************
 	  	//             Bus4 3P Fault
