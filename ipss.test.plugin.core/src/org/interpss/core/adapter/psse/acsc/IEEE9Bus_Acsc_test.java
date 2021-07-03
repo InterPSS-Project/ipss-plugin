@@ -273,6 +273,9 @@ public class IEEE9Bus_Acsc_test {
 		//acscParser.stdout();
 		
 		AcscNetwork net = new ODMAcscParserMapper().map2Model(acscParser).getAcscNet();
+		net.setLfDataLoaded(true);
+		net.setPositiveSeqDataOnly(true);
+
 		net.initialization(ScBusModelType.LOADFLOW_VOLT);
 		
 		//set the order in original sequence for better testing
@@ -307,9 +310,9 @@ public class IEEE9Bus_Acsc_test {
 	  	
 	  	//3p fault @Bus4
 	  	//fault current
-	  	//0.0000 + j0.0000  -1.4243 + j15.62133  0.0000 + j0.0000
+	  	//0.0000 + j0.0000  -1.42636 + j15.62254  0.0000 + j0.0000
 	  	assertTrue(TestUtilFunc.compare(fault.getFaultResult().getSCCurrent_012(), 
-	  			0.0, 0.0, -1.4243, 15.62133, 0.0, 0.0) );
+	  			0.0, 0.0, -1.42636, 15.62254, 0.0, 0.0) );
 	  	//voltage @Bus1
 	  	//0.0000 + j0.0000  0.61592 + j0.01616  0.0000 + j0.0000
 	  	assertTrue(TestUtilFunc.compare(fault.getFaultResult().getBusVoltage_012(net.getBus("Bus1")), 
