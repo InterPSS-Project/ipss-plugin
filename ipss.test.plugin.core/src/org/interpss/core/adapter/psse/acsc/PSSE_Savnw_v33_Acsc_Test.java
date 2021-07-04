@@ -446,7 +446,7 @@ Contributing Gen:
 				    remoteBranchList.add((AcscBranch)bra);
 				    AcscBus twoBusAwayBus = null;
 				    try {
-				    	twoBusAwayBus = (AcscBus) bra.getConnectedPhysicalOppositeBus(relayRemoteBus);
+				    	twoBusAwayBus = (AcscBus) bra.getOppositeBus(relayRemoteBus);
 					} catch (InterpssException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
