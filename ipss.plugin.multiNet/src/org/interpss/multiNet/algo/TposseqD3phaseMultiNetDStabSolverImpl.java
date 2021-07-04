@@ -787,7 +787,7 @@ public class TposseqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverIm
 				
 				
 				
-				for(Branch bra: sourceBus.getConnectedPhysicalBranchList()){
+				for(Branch bra: sourceBus.getBranchList()){
 					if(bra.isActive()){
 						DStab3PBranch acLine = (DStab3PBranch) bra;
 						
