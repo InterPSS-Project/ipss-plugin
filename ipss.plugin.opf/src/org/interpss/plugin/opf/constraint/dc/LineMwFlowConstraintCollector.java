@@ -56,8 +56,8 @@ public class LineMwFlowConstraintCollector extends BaseConstraintCollector {
 			val.add(-bij);
 
 			int id = cstContainer.size();
-			String des = "Branch MW flow limit: " + bra.getFromPhysicalBusId()
-					+ "-" + bra.getToPhysicalBusId() + "-" + bra.getCircuitNumber();
+			String des = "Branch MW flow limit: " + bra.getFromBusId()
+					+ "-" + bra.getToBusId() + "-" + bra.getCircuitNumber();
 
 			OpfConstraint cst = OpfSolverFactory.createOpfConstraint(id, des, ul, ll, OpfConstraintType.LESS_THAN, colNo, val);
 			cstContainer.add(cst);
