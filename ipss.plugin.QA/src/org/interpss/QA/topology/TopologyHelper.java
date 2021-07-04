@@ -256,8 +256,7 @@ public class TopologyHelper {
 			double r = this.roundSixDecimals(acBra.getZ().abs());
 			
 			//considering consolidation
-			AclfBus fromBus = (AclfBus) (bra.getFromBus().isActive()?bra.getFromBus():
-                bra.getFromBus().getParent());
+			AclfBus fromBus = (AclfBus)bra.getFromBus();
 			String fromBusId = fromBus.getId();
 			String fromBusStyle= this.setBusStyle(fromBusId, processingBus, parentBus, childBusList);	
 			
@@ -269,8 +268,7 @@ public class TopologyHelper {
 							
 			fromBusId = fromBusId+genCode;
 			
-			AclfBus toBus = (AclfBus) (bra.getToBus().isActive()?bra.getToBus():
-	               bra.getToBus().getParent());
+			AclfBus toBus = (AclfBus) bra.getToBus();
 			String toBusId = toBus.getId();
 			String toBusStyle=this.setBusStyle(toBusId, processingBus, parentBus, childBusList);
 			
@@ -368,12 +366,10 @@ public class TopologyHelper {
 			 */
 
 			// considering consolidation
-			String fromBusId = bra.getFromBus().isActive() ? bra.getFromBus()
-					.getId() : bra.getFromBus().getParent().getId();
+			String fromBusId = bra.getFromBus().getId();
 			// fromBusId =
 			// fromBusId+"["+bra.getFromBus().getZone().getNumber()+"]";
-			String toBusId = bra.getToBus().isActive() ? bra.getToBus().getId()
-					: bra.getToBus().getParent().getId();
+			String toBusId = bra.getToBus().getId();
 			// toBusId = toBusId +"["+ bra.getToBus().getZone().getId()+"]";
 			if (!addedBusTable.containsKey(fromBusId)) {
 				double x = Math.random();
@@ -419,16 +415,14 @@ public class TopologyHelper {
 			type = getBranchType(acBra);
 
 			// considering consolidation
-			String fromBusId = bra.getFromBus().isActive() ? bra.getFromBus()
-					.getId() : bra.getFromBus().getParent().getId();
+			String fromBusId = bra.getFromBus().getId();
 			String fromBusStyle = islandBusList.contains(fromBusId) ? islandBusStyle
 					: defaultVertexStyle;
 
 			// fromBusId =
 			// fromBusId+"["+bra.getFromBus().getZone().getNumber()+"]";
 
-			String toBusId = bra.getToBus().isActive() ? bra.getToBus().getId()
-					: bra.getToBus().getParent().getId();
+			String toBusId = bra.getToBus().getId();
 			String toBusStyle = islandBusList.contains(toBusId) ? islandBusStyle
 					: defaultVertexStyle;
 
