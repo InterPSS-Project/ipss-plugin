@@ -100,7 +100,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			startingBus.setIntFlag(2);
 			
 			if(startingBus!=null){
-				  for(Branch connectedBra: startingBus.getConnectedPhysicalBranchList()){
+				  for(Branch connectedBra: startingBus.getBranchList()){
 						if(connectedBra.isActive() && !connectedBra.isBooleanFlag()){
 							try {
 								Bus findBus = connectedBra.getOppositeBus(startingBus);
@@ -622,7 +622,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 					// update the bus state, with intFlag =2 meaning this bus voltage has been updated 
 					bus.setIntFlag(2);
 					DStab3PBus bus3P = (DStab3PBus) bus;
-					for(Branch bra:bus.getConnectedPhysicalBranchList()){
+					for(Branch bra:bus.getBranchList()){
 						
 						if(bra.isActive()){
 							DStab3PBranch bra3Phase = (DStab3PBranch) bra;
