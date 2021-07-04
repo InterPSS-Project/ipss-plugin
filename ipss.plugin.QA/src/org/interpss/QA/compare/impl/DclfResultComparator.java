@@ -249,8 +249,8 @@ public class DclfResultComparator extends NetModelComparator<DclfBusResultBean, 
 					
 				// compare angle
 				double angDeg = Math.toDegrees(algo.getBusAngle(fn) - algo.getBusAngle(tn));
-				AclfBusBean frec = this.qaResultSet.getBus(bra.getFromPhysicalBusId());
-				AclfBusBean trec = this.qaResultSet.getBus(bra.getToPhysicalBusId());
+				AclfBusBean frec = this.qaResultSet.getBus(bra.getFromBusId());
+				AclfBusBean trec = this.qaResultSet.getBus(bra.getToBusId());
 				double rangDeg = frec.v_ang - trec.v_ang;
 				if (Math.abs(rangDeg-angDeg) > max )
 					max = Math.abs(rangDeg-angDeg);
@@ -289,8 +289,8 @@ public class DclfResultComparator extends NetModelComparator<DclfBusResultBean, 
 					//IpssLogger.getLogger().warning(msg);
 					addErrMsg(msg);
 				}
-				branchResult.append(String.format("%s, %s, %s, %5.4f\n", bra.getFromPhysicalBusId(), 
-						bra.getToPhysicalBusId(), bra.getCircuitNumber(), pflow * baseMva));
+				branchResult.append(String.format("%s, %s, %s, %5.4f\n", bra.getFromBusId(), 
+						bra.getToBusId(), bra.getCircuitNumber(), pflow * baseMva));
 			}
 		}
 		addErrMsg("Max branch power diff: " + max + " pu");

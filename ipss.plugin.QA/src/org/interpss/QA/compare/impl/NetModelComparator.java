@@ -154,7 +154,7 @@ public class NetModelComparator<TBus extends AclfBusBean, TBra extends AclfBranc
 			}
 			if (branch.isActive() && rec == null) {
 				addErrMsg("Active Branch not found in the result file, " + branch.getId());
-				String id = ToBranchId.f(branch.getToPhysicalBusId(), branch.getFromPhysicalBusId(), branch.getCircuitNumber());
+				String id = ToBranchId.f(branch.getToBusId(), branch.getFromBusId(), branch.getCircuitNumber());
 				if (this.qaResultSet.getBranch(id) != null)
 					addErrMsg("Branch in reverse direction found:  " + branch.getId());
 				if (branch.getFromBus().isActive() || branch.getToBus().isActive()) {

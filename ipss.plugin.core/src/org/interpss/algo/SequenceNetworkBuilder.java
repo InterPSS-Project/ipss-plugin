@@ -467,7 +467,7 @@ public class SequenceNetworkBuilder {
 								scBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
 								scBranch.setXfrToConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
 							}
-							else if(scBranch.getFromPhysicalBusId().equals(getHighVoltageBus(scBranch).getId())){
+							else if(scBranch.getFromBusId().equals(getHighVoltageBus(scBranch).getId())){
 							  scBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
 							  scBranch.setXfrToConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
 							}
