@@ -45,7 +45,7 @@ import com.interpss.core.acsc.BaseAcscNetwork;
 import com.interpss.core.acsc.BusScCode;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.acsc.XfrConnectCode;
-import com.interpss.core.acsc.adpter.AcscXformer;
+import com.interpss.core.acsc.adpter.AcscXformerAdapter;
 
 /**
  * a wrapper of AcscNetwork for defining network parameters
@@ -185,11 +185,11 @@ public class IpssAcscNet extends BaseDSL {
 			getAcscBranch().setZ0( UnitHelper.zConversion(z, baseV,
 						getAcscNet().getBaseKva(), unit, UnitType.PU)); return this; };
 		public AcscBranchDSL setFromGrounding(XfrConnectCode code, Complex z, UnitType unit) { 
-								AcscXformer xfr = acscXfrAptr.apply(getAcscBranch());
+								AcscXformerAdapter xfr = acscXfrAptr.apply(getAcscBranch());
 								xfr.setFromConnectGroundZ(code, z, unit);
 								return this; };
 		public AcscBranchDSL setToGrounding(XfrConnectCode code, Complex z, UnitType unit) { 
-								AcscXformer xfr = acscPSXfrAptr.apply(getAcscBranch());
+								AcscXformerAdapter xfr = acscPSXfrAptr.apply(getAcscBranch());
 								xfr.setToConnectGroundZ(code, z, unit);
 								return this; };
 								

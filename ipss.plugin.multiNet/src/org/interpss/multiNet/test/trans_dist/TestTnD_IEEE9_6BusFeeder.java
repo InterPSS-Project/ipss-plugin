@@ -48,7 +48,7 @@ import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.acsc.PhaseCode;
 import com.interpss.core.acsc.XfrConnectCode;
-import com.interpss.core.acsc.adpter.AcscXformer;
+import com.interpss.core.acsc.adpter.AcscXformerAdapter;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -667,7 +667,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 			//xfr1_2.setZabc(Complex3x3.createUnitMatrix().multiply(new Complex( 0.0, 0.04 )));
 			//xfr1_2.setZ0( new Complex(0.0, 0.4 ));
 			
-			AcscXformer xfr01 = acscXfrAptr.apply(xfr1);
+			AcscXformerAdapter xfr01 = acscXfrAptr.apply(xfr1);
 			xfr01.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
 			xfr01.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
 		
@@ -690,7 +690,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 			//xfr1_2.setZ0( new Complex(0.0, 0.4 ));
 		
 		
-		AcscXformer xfr0 = acscXfrAptr.apply(xfr1_2);
+		AcscXformerAdapter xfr0 = acscXfrAptr.apply(xfr1_2);
 			xfr0.setFromConnectGroundZ(XfrConnectCode.DELTA11, new Complex(0.0,0.0), UnitType.PU);
 			xfr0.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
 
@@ -813,7 +813,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 			//xfr1_2.setZabc(Complex3x3.createUnitMatrix().multiply(new Complex( 0.0, 0.04 )));
 			//xfr1_2.setZ0( new Complex(0.0, 0.4 ));
 			
-			AcscXformer xfr01 = acscXfrAptr.apply(xfr1);
+			AcscXformerAdapter xfr01 = acscXfrAptr.apply(xfr1);
 			xfr01.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
 			xfr01.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
 		
@@ -836,7 +836,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 			//xfr1_2.setZ0( new Complex(0.0, 0.4 ));
 		
 		
-		AcscXformer xfr0 = acscXfrAptr.apply(xfr1_2);
+		AcscXformerAdapter xfr0 = acscXfrAptr.apply(xfr1_2);
 			xfr0.setFromConnectGroundZ(XfrConnectCode.DELTA11, new Complex(0.0,0.0), UnitType.PU);
 			xfr0.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
 
