@@ -23,7 +23,7 @@ import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
-import com.interpss.core.algo.AclfMethod;
+import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
@@ -63,7 +63,7 @@ public class TestCMPLDWModel {
 	    DStabilityNetwork dsNet =(DStabilityNetwork) simuCtx.getDStabilityNet();
 	    
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
-	  	algo.setLfMethod(AclfMethod.PQ);
+	  	algo.setLfMethod(AclfMethodType.PQ);
 	  	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 	  	algo.loadflow();
   	

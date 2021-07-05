@@ -33,7 +33,7 @@ import org.junit.Test;
 
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.algo.AclfMethod;
+import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
 public class Bus6384Test extends CorePluginTestSetup {
@@ -58,7 +58,7 @@ public class Bus6384Test extends CorePluginTestSetup {
 
         long starttime = System.currentTimeMillis() ;
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
-	  	algo.setLfMethod(AclfMethod.NR);
+	  	algo.setLfMethod(AclfMethodType.NR);
 	  	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());

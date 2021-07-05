@@ -31,7 +31,7 @@ import org.junit.Test;
 
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.algo.AclfMethod;
+import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
 public class NEIsoEDTestCases extends CorePluginTestSetup {
@@ -51,7 +51,7 @@ public class NEIsoEDTestCases extends CorePluginTestSetup {
 		
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setNonDivergent(true);
-	  	algo.setLfMethod(AclfMethod.NR);
+	  	algo.setLfMethod(AclfMethodType.NR);
 	  	net.setBypassDataCheck(true);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
