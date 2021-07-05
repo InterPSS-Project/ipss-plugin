@@ -39,7 +39,7 @@ import org.interpss.pssl.simu.IpssAclf.LfAlgoDSL;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfNetwork;
-import com.interpss.core.algo.AclfMethod;
+import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.net.Network;
 
 /**
@@ -88,10 +88,10 @@ public class AclfDslRunner implements IDslRunner {
 	public boolean runAclf(IpssAclfAlgorithmXmlType algoXml) throws InterpssException {
 		LfAlgoDSL algoDsl = IpssAclf.createAclfAlgo(net);
 		
-		algoDsl.lfMethod(algoXml.getLfMethod() == LfMethodEnumType.NR ? AclfMethod.NR
-					: (algoXml.getLfMethod() == LfMethodEnumType.PQ ? AclfMethod.PQ
-							: (algoXml.getLfMethod() == LfMethodEnumType.CUSTOM ? AclfMethod.CUSTOM 
-									: AclfMethod.GS)));
+		algoDsl.lfMethod(algoXml.getLfMethod() == LfMethodEnumType.NR ? AclfMethodType.NR
+					: (algoXml.getLfMethod() == LfMethodEnumType.PQ ? AclfMethodType.PQ
+							: (algoXml.getLfMethod() == LfMethodEnumType.CUSTOM ? AclfMethodType.CUSTOM 
+									: AclfMethodType.GS)));
 		
 		if (algoXml.getMaxIterations() > 0)
 			algoDsl.setMaxIterations(algoXml.getMaxIterations());

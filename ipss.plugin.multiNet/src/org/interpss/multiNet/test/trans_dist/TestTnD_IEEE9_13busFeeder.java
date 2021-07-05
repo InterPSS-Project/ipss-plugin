@@ -46,7 +46,7 @@ import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.acsc.XfrConnectCode;
 import com.interpss.core.acsc.adpter.AcscXformerAdapter;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
-import com.interpss.core.algo.AclfMethod;
+import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -157,7 +157,7 @@ public class TestTnD_IEEE9_13busFeeder {
 				 
 				 //System.out.println(tdAlgo.getTransmissionNetwork().net2String());
 			 LoadflowAlgorithm tAlgo = tdAlgo.getTransLfAlgorithm();
-			 tAlgo.setLfMethod(AclfMethod.NR);
+			 tAlgo.setLfMethod(AclfMethodType.NR);
 			 tAlgo.setTolerance(1.0E-5);
 			 tAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 			 //tAlgo.setNonDivergent(true);
