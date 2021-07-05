@@ -44,7 +44,7 @@ import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.acsc.XfrConnectCode;
-import com.interpss.core.acsc.adpter.AcscXformer;
+import com.interpss.core.acsc.adpter.AcscXformerAdapter;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -332,7 +332,7 @@ public class TestTnD_IEEE9_13busFeeder {
 				xfr1_2.setZ( new Complex( 0.0, xfrZ ));
 				
 			
-			    AcscXformer xfr0 = acscXfrAptr.apply(xfr1_2);
+			    AcscXformerAdapter xfr0 = acscXfrAptr.apply(xfr1_2);
 				xfr0.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
 				xfr0.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
 				
@@ -608,7 +608,7 @@ public class TestTnD_IEEE9_13busFeeder {
 				xfr2_3.setZ( new Complex( 0.0, 0.00001 ));
 				
 			
-			    AcscXformer xfr2 = acscXfrAptr.apply(xfr2_3);
+			    AcscXformerAdapter xfr2 = acscXfrAptr.apply(xfr2_3);
 				xfr2.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
 				xfr2.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
 				
@@ -619,7 +619,7 @@ public class TestTnD_IEEE9_13busFeeder {
 				xfr633_634.setZ( new Complex( 0.0, 0.02 ));
 				
 			
-			    AcscXformer xfr3 = acscXfrAptr.apply(xfr633_634);
+			    AcscXformerAdapter xfr3 = acscXfrAptr.apply(xfr633_634);
 				xfr3.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
 				xfr3.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
 				
