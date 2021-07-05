@@ -3,7 +3,7 @@ package org.interpss.pssl.plugin.cmd.json;
 import org.ieee.odm.schema.LfMethodEnumType;
 import org.interpss.pssl.plugin.IpssAdapter;
 
-import com.interpss.core.algo.AclfMethod;
+import com.interpss.core.algo.AclfMethodType;
 
 /**
  * Aclf Cmd run configuration file
@@ -43,7 +43,7 @@ public class AclfRunConfigBean extends BaseJSONBean {
 	/**
 	 * Loadflow method
 	 */
-	public AclfMethod lfMethod = AclfMethod.NR;
+	public AclfMethodType lfMethod = AclfMethodType.NR;
 	
 	/**
 	 * max iterations for Loadflow
