@@ -31,7 +31,7 @@ import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.core.acsc.XfrConnectCode;
-import com.interpss.core.acsc.adpter.AcscXformer;
+import com.interpss.core.acsc.adpter.AcscXformerAdapter;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.net.NetworkType;
@@ -502,7 +502,7 @@ ca = (0.0, 0.0),cb = (1.734723475976807E-18, -3.469446951953614E-18),cc = (-1.73
 				xfr14.setBranchCode(AclfBranchCode.XFORMER);
 				xfr14.setZ( new Complex( 0.0, 0.0567 ));
 				xfr14.setZ0( new Complex(0.0, 0.0567 ));
-				AcscXformer xfr = acscXfrAptr.apply(xfr14);
+				AcscXformerAdapter xfr = acscXfrAptr.apply(xfr14);
 				xfr.setFromConnectGroundZ(XfrConnectCode.DELTA, new Complex(0.0,0.0), UnitType.PU);
 				xfr.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
 				
