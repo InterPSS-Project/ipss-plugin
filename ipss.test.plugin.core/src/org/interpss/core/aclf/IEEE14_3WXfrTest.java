@@ -36,7 +36,7 @@ import org.junit.Test;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.adpter.Aclf3WXformer;
+import com.interpss.core.aclf.adpter.Aclf3WXformerAdapter;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
@@ -52,7 +52,7 @@ public class IEEE14_3WXfrTest extends CorePluginTestSetup {
 		net.removeBranch("Bus4->Bus9(1)");
 		net.removeBranch("Bus7->Bus9(1)");
 		
-		Aclf3WXformer xfr3W = CoreObjectFactory.createAclf3WXfr("Bus4", "Bus7", "Bus9", net);
+		Aclf3WXformerAdapter xfr3W = CoreObjectFactory.createAclf3WXfr("Bus4", "Bus7", "Bus9", net);
 		
 		xfr3W.setZ(new Complex(0.0, 0.01), new Complex(0.0, 0.03), new Complex(0.0, 0.01));
 		

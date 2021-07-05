@@ -12,7 +12,7 @@ import org.junit.Test;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.adpter.AclfSwingBus;
+import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.aclf.impl.NetInjectionHelper;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
@@ -33,7 +33,7 @@ public class IEEE009Bus_Test extends CorePluginTestSetup{
 	  	
   		assertTrue(net.isLfConverged());		
  		AclfBus swingBus = (AclfBus)net.getBus("Bus1");
- 		AclfSwingBus swing = swingBus.toSwingBus();
+ 		AclfSwingBusAdapter swing = swingBus.toSwingBus();
 		//System.out.println(swing.getGenResults(UnitType.PU));
 		//System.out.println(AclfOutFunc.loadFlowSummary(net));
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-0.7164098)<1.0E-5);

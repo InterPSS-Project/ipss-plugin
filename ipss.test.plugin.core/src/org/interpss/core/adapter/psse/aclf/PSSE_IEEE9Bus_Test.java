@@ -39,7 +39,7 @@ import org.junit.Test;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.adpter.AclfSwingBus;
+import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
@@ -171,7 +171,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
   		//System.out.println(net.net2String());
 
 	  	AclfBus swingBus = net.getBus("Bus1");
-	  	AclfSwingBus swing = swingBus.toSwingBus();
+	  	AclfSwingBusAdapter swing = swingBus.toSwingBus();
   		Complex p = swing.getGenResults(UnitType.PU);
   		assertTrue(Math.abs(p.getReal()-0.71646)<0.00001);
   		assertTrue(Math.abs(p.getImaginary()-0.27107)<0.00001);

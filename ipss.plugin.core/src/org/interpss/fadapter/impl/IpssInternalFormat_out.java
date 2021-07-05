@@ -33,7 +33,7 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adj.PVBusLimit;
-import com.interpss.core.aclf.adpter.AclfCapacitorBus;
+import com.interpss.core.aclf.adpter.AclfCapacitorBusAdapter;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 import com.interpss.simu.SimuContext;
@@ -103,7 +103,7 @@ public class IpssInternalFormat_out {
 		for (Bus b : net.getBusList()) {
 			AclfBus bus = (AclfBus) b;
 			if (bus.isCapacitor()) {
-				AclfCapacitorBus cap = bus.toCapacitorBus();
+				AclfCapacitorBusAdapter cap = bus.toCapacitorBus();
 				out.write(String.format("%8s %7.2f %n", bus.getId(), cap.getQ())); // capacitor Q in pu
 			}
 		}

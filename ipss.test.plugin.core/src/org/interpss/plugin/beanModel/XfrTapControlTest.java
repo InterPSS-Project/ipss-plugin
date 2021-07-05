@@ -40,7 +40,7 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adj.AdjControlType;
 import com.interpss.core.aclf.adj.TapControl;
-import com.interpss.core.aclf.adpter.AclfSwingBus;
+import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.simu.util.sample.SampleTestingCases;
 
@@ -74,7 +74,7 @@ public class XfrTapControlTest extends CorePluginTestSetup {
   		//System.out.println(net.net2String());
 
   		AclfBus swingBus = (AclfBus)aclfNet.getBus("0001");
-		AclfSwingBus swing = swingBus.toSwingBus();
+		AclfSwingBusAdapter swing = swingBus.toSwingBus();
 		//      gen       : 1.12 + 1.03i pu   111,529.19 + 103,059.25i kva
 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-1.1153)<0.0001);
 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-1.0306)<0.0001);
@@ -147,7 +147,7 @@ public class XfrTapControlTest extends CorePluginTestSetup {
   		//System.out.println(net.net2String());
 
   		AclfBus swingBus = (AclfBus)net.getBus("0001");
-		AclfSwingBus swing = swingBus.toSwingBus();
+		AclfSwingBusAdapter swing = swingBus.toSwingBus();
 		//      gen       : 1.12 + 1.03i pu   111,529.19 + 103,059.25i kva
 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-1.1153)<0.0001);
 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-1.0306)<0.0001);
