@@ -60,8 +60,8 @@ import com.interpss.core.aclf.adj.RemoteQControlType;
 import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.adj.VarCompensationMode;
-import com.interpss.core.aclf.adpter.AclfPVGenBus;
-import com.interpss.core.aclf.adpter.AclfSwingBus;
+import com.interpss.core.aclf.adpter.AclfPVGenBusAdapter;
+import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.net.Area;
 import com.interpss.core.net.Bus;
 import com.interpss.core.net.Zone;
@@ -177,7 +177,7 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 			}
 			else if (busBean.gen_code==AclfBusBean.GenCode.PV) {
 				bus.setGenCode(AclfGenCode.GEN_PV);
-				AclfPVGenBus pvBus = bus.toPVBus();
+				AclfPVGenBusAdapter pvBus = bus.toPVBus();
 				/*if(busBean.gen != null)
 				      pvBus.setGenP(busBean.gen.re);*/
 				
@@ -185,7 +185,7 @@ public class AclfBean2NetMapper extends AbstractMapper<AclfNetBean, SimuContext>
 			}
 			else if (busBean.gen_code==AclfBusBean.GenCode.Swing) {
 				bus.setGenCode(AclfGenCode.SWING);
-				AclfSwingBus swingBus = bus.toSwingBus();
+				AclfSwingBusAdapter swingBus = bus.toSwingBus();
 				swingBus.setDesiredVoltMag(busBean.vDesired_mag);
 				swingBus.setDesiredVoltAngDeg(Math.toRadians(busBean.vDesired_ang));
 			}

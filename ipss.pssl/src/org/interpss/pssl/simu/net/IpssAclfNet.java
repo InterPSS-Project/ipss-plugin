@@ -56,14 +56,14 @@ import com.interpss.core.aclf.adj.RemoteQBus;
 import com.interpss.core.aclf.adj.RemoteQControlType;
 import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.adj.XfrTapControlType;
-import com.interpss.core.aclf.adpter.AclfCapacitorBus;
-import com.interpss.core.aclf.adpter.AclfLine;
+import com.interpss.core.aclf.adpter.AclfCapacitorBusAdapter;
+import com.interpss.core.aclf.adpter.AclfLineAdapter;
 import com.interpss.core.aclf.adpter.AclfLoadBusAdapter;
-import com.interpss.core.aclf.adpter.AclfPQGenBus;
-import com.interpss.core.aclf.adpter.AclfPSXformer;
-import com.interpss.core.aclf.adpter.AclfPVGenBus;
-import com.interpss.core.aclf.adpter.AclfSwingBus;
-import com.interpss.core.aclf.adpter.AclfXformer;
+import com.interpss.core.aclf.adpter.AclfPQGenBusAdapter;
+import com.interpss.core.aclf.adpter.AclfPSXformerAdapter;
+import com.interpss.core.aclf.adpter.AclfPVGenBusAdapter;
+import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
+import com.interpss.core.aclf.adpter.AclfXformerAdapter;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 import com.interpss.core.net.Network;
@@ -404,27 +404,27 @@ public class IpssAclfNet extends BaseDSL {
 		@SuppressWarnings(value="unchecked")
   		public TAclfDSL setVoltageSpec(double vmsg, UnitType magUnit, double vang, UnitType degUnit) {
   	  						if (getAclfBus().getGenCode() == AclfGenCode.SWING) {
-  	  							AclfSwingBus swingBus = swingBusAptr.apply(getAclfBus());
+  	  							AclfSwingBusAdapter swingBus = swingBusAptr.apply(getAclfBus());
   	  							swingBus.setDesiredVoltMag(vmsg, magUnit);	swingBus.setDesiredVoltAng(vang, degUnit);	
   	  						} return (TAclfDSL)this;	}
   		public TAclfDSL genP_vMag(double p, UnitType punit, double v, UnitType vunit) { return setGenP_VMag(p, punit, v, vunit); }
 		@SuppressWarnings(value="unchecked")
   		public TAclfDSL setGenP_VMag(double p, UnitType punit, double v, UnitType vunit) {
   	  						if (getAclfBus().getGenCode() == AclfGenCode.GEN_PV) {
-  	  							AclfPVGenBus pv = getAclfBus().toPVBus();
+  	  							AclfPVGenBusAdapter pv = getAclfBus().toPVBus();
   	  							pv.setGenP(p, punit);
   	  							pv.setDesiredVoltMag( v, vunit );
   	  						} return (TAclfDSL)this;		}
   		public TAclfDSL gen(Complex gen, UnitType unit) { return setGen(gen, unit); }
 		@SuppressWarnings(value="unchecked")
   		public TAclfDSL setGen(Complex gen, UnitType unit) { 
-  							AclfPQGenBus pq = getAclfBus().toPQBus();
+  							AclfPQGenBusAdapter pq = getAclfBus().toPQBus();
   							pq.setGen(gen, unit );
   							return (TAclfDSL)this;  		}
   		public TAclfDSL capacitorQ(double q, UnitType unit) { return setCapacitorQ(q, unit); } 
 		@SuppressWarnings(value="unchecked")
   		public TAclfDSL setCapacitorQ(double q, UnitType unit) { 
-					  	  	AclfCapacitorBus capBus = getAclfBus().toCapacitorBus();
+					  	  	AclfCapacitorBusAdapter capBus = getAclfBus().toCapacitorBus();
 					  	  	capBus.setQ(q, unit);
 							return (TAclfDSL)this;  		}
   		
@@ -534,12 +534,12 @@ public class IpssAclfNet extends BaseDSL {
 		@SuppressWarnings(value="unchecked")
   		public TAclfDSL setZ(Complex z, UnitType unit) { 
 								if (getAclfBranch().getBranchCode() == AclfBranchCode.LINE) {
-									AclfLine lineBranch = getAclfBranch().toLine();
+									AclfLineAdapter lineBranch = getAclfBranch().toLine();
 									lineBranch.setZ(z, unit, getAclfBranch().getFromAclfBus().getBaseVoltage());
 								} 
 								else if (getAclfBranch().getBranchCode() == AclfBranchCode.XFORMER || 
 										 getAclfBranch().getBranchCode() == AclfBranchCode.PS_XFORMER) {
-									AclfXformer xfr = getAclfBranch().toXfr();;
+									AclfXformerAdapter xfr = getAclfBranch().toXfr();;
 									double baseV = getAclfBranch().getFromAclfBus().getBaseVoltage() > getAclfBranch().getToAclfBus().getBaseVoltage() ?
 											getAclfBranch().getFromAclfBus().getBaseVoltage() : getAclfBranch().getToAclfBus().getBaseVoltage();
 									xfr.setZ(z, unit, baseV);
@@ -551,7 +551,7 @@ public class IpssAclfNet extends BaseDSL {
 		@SuppressWarnings(value="unchecked")
  		public TAclfDSL setShuntY(Complex y, UnitType unit) { 
 								if (getAclfBranch().isLine()) {
-									AclfLine lineBranch = getAclfBranch().toLine();
+									AclfLineAdapter lineBranch = getAclfBranch().toLine();
 									lineBranch.setHShuntY(ComplexFunc.mul(0.5,y), unit, getAclfBranch().getFromAclfBus().getBaseVoltage());
 								} return (TAclfDSL)this; }		
 		public TAclfDSL turnRatio(double fromTurnRatio, double toTurnRatio, UnitType unit) { return setTap(fromTurnRatio, toTurnRatio, unit); }
@@ -559,7 +559,7 @@ public class IpssAclfNet extends BaseDSL {
 		public TAclfDSL setTap(double fromTap, double toTap, UnitType unit) { 
 								if (getAclfBranch().getBranchCode() == AclfBranchCode.XFORMER || 
 										getAclfBranch().getBranchCode() == AclfBranchCode.PS_XFORMER) {
-									AclfXformer xfr = getAclfBranch().toXfr();;
+									AclfXformerAdapter xfr = getAclfBranch().toXfr();;
 									xfr.setFromTurnRatio(fromTap, unit);
 									xfr.setToTurnRatio(toTap, unit);
 								} return (TAclfDSL)this; }		
@@ -567,7 +567,7 @@ public class IpssAclfNet extends BaseDSL {
 		@SuppressWarnings(value="unchecked")
  		public TAclfDSL setShiftAngle(double fromAng, double toAng, UnitType unit) { 
 								if (getAclfBranch().getBranchCode() == AclfBranchCode.PS_XFORMER) {
-									AclfPSXformer xfr = getAclfBranch().toPSXfr();
+									AclfPSXformerAdapter xfr = getAclfBranch().toPSXfr();
 									xfr.setFromAngle(fromAng, unit);
 									xfr.setToAngle(toAng, unit);
 								} return (TAclfDSL)this; }	
@@ -575,14 +575,14 @@ public class IpssAclfNet extends BaseDSL {
 		@SuppressWarnings(value="unchecked")
  		public TAclfDSL setFromShiftAngle(double ang, UnitType unit) { 
 								if (getAclfBranch().getBranchCode() == AclfBranchCode.PS_XFORMER) {
-									AclfPSXformer xfr = getAclfBranch().toPSXfr();
+									AclfPSXformerAdapter xfr = getAclfBranch().toPSXfr();
 									xfr.setFromAngle(ang, unit);
 								} return (TAclfDSL)this; }	
 		public TAclfDSL toShiftAngle(double ang, UnitType unit) { return setToShiftAngle(ang, unit); } 
 		@SuppressWarnings(value="unchecked")
 		public TAclfDSL setToShiftAngle(double ang, UnitType unit) { 
 								if (getAclfBranch().getBranchCode() == AclfBranchCode.PS_XFORMER) {
-									AclfPSXformer xfr = getAclfBranch().toPSXfr();
+									AclfPSXformerAdapter xfr = getAclfBranch().toPSXfr();
 									xfr.setToAngle(ang, unit);
 								} return (TAclfDSL)this; }	
 

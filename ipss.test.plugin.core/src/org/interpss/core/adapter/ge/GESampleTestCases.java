@@ -35,7 +35,7 @@ import org.junit.Test;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.adpter.AclfSwingBus;
+import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
 public class GESampleTestCases extends CorePluginTestSetup {
@@ -63,7 +63,7 @@ public class GESampleTestCases extends CorePluginTestSetup {
 	  	
   		assertTrue(net.isLfConverged());		
   		AclfBus swingBus = (AclfBus)net.getBus("Bus101");
-  		AclfSwingBus swing = swingBus.toSwingBus();
+  		AclfSwingBusAdapter swing = swingBus.toSwingBus();
 		System.out.println(swingBus.toString(net.getBaseKva()));
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-5.234)<0.01);
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-1.108)<0.01);
