@@ -50,7 +50,7 @@ import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.acsc.XfrConnectCode;
 import com.interpss.core.acsc.adpter.AcscXformerAdapter;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
-import com.interpss.core.algo.AclfMethod;
+import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
@@ -90,7 +90,7 @@ public class TestTnD_IEEE300_13busFeeder {
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
 	 
 		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
-		aclfAlgo.setLfMethod(AclfMethod.PQ);
+		aclfAlgo.setLfMethod(AclfMethodType.PQ);
 		aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 		aclfAlgo.setTolerance(1.0E-6);
 		assertTrue(aclfAlgo.loadflow());
@@ -128,7 +128,7 @@ public class TestTnD_IEEE300_13busFeeder {
 	    DStabilityNetwork dsNet = (DStabilityNetwork) simuCtx.getDStabilityNet();
 	 
 		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
-		aclfAlgo.setLfMethod(AclfMethod.PQ);
+		aclfAlgo.setLfMethod(AclfMethodType.PQ);
 		aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 		aclfAlgo.setTolerance(1.0E-6);
 		assertTrue(aclfAlgo.loadflow());
@@ -202,7 +202,7 @@ public class TestTnD_IEEE300_13busFeeder {
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
 	 
 		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
-		aclfAlgo.setLfMethod(AclfMethod.PQ);
+		aclfAlgo.setLfMethod(AclfMethodType.PQ);
 		aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 		aclfAlgo.setTolerance(1.0E-6);
 		assertTrue(aclfAlgo.loadflow());
@@ -248,7 +248,7 @@ public class TestTnD_IEEE300_13busFeeder {
 				 
 				 //System.out.println(tdAlgo.getTransmissionNetwork().net2String());
 			 LoadflowAlgorithm tAlgo = tdAlgo.getTransLfAlgorithm();
-			 tAlgo.setLfMethod(AclfMethod.NR);
+			 tAlgo.setLfMethod(AclfMethodType.NR);
 			 tAlgo.setTolerance(1.0E-6);
 			 tAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 			 assertTrue(tdAlgo.powerflow()); 
@@ -359,7 +359,7 @@ public class TestTnD_IEEE300_13busFeeder {
 					 
 					 //System.out.println(tdAlgo.getTransmissionNetwork().net2String());
 				 LoadflowAlgorithm tAlgo = tdAlgo.getTransLfAlgorithm();
-				 tAlgo.setLfMethod(AclfMethod.NR);
+				 tAlgo.setLfMethod(AclfMethodType.NR);
 				 tAlgo.setTolerance(1.0E-6);
 				 tAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 				 //tAlgo.setNonDivergent(true);
@@ -554,7 +554,7 @@ public class TestTnD_IEEE300_13busFeeder {
 					 
 					 //System.out.println(tdAlgo.getTransmissionNetwork().net2String());
 				 LoadflowAlgorithm tAlgo = tdAlgo.getTransLfAlgorithm();
-				 tAlgo.setLfMethod(AclfMethod.NR);
+				 tAlgo.setLfMethod(AclfMethodType.NR);
 				 tAlgo.setTolerance(1.0E-6);
 				 tAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 				 //tAlgo.setNonDivergent(true);
@@ -784,7 +784,7 @@ public class TestTnD_IEEE300_13busFeeder {
 				 
 				 //System.out.println(tdAlgo.getTransmissionNetwork().net2String());
 			 LoadflowAlgorithm tAlgo = tdAlgo.getTransLfAlgorithm();
-			 tAlgo.setLfMethod(AclfMethod.NR);
+			 tAlgo.setLfMethod(AclfMethodType.NR);
 			 tAlgo.setTolerance(1.0E-6);
 			 tAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 			 //tAlgo.setNonDivergent(true);

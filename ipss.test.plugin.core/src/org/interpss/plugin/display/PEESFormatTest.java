@@ -12,7 +12,7 @@ import org.junit.Test;
 
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.algo.AclfMethod;
+import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
 public class PEESFormatTest {
@@ -27,7 +27,7 @@ public class PEESFormatTest {
 				.getAclfNet();	
 		
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
-	  	algo.setLfMethod(AclfMethod.PQ);
+	  	algo.setLfMethod(AclfMethodType.PQ);
 	  	algo.loadflow();
 	  	
 	  	//System.out.println(LfResultBusStyle2.f(net, AclfOut_PSSE.Format.GUI));

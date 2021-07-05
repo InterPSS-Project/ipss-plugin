@@ -28,7 +28,7 @@ import org.ieee.odm.schema.AclfAlgorithmXmlType;
 import org.ieee.odm.schema.ApparentPowerXmlType;
 import org.ieee.odm.schema.LfMethodEnumType;
 
-import com.interpss.core.algo.AclfMethod;
+import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
 /**
@@ -68,12 +68,12 @@ public class AclfScenarioHelper {
 		// set lf method
 		LfMethodEnumType lfMethod = xmlLfInit.getLfMethod();
 		if(lfMethod == LfMethodEnumType.PQ){
-			aclfAlgo.setLfMethod(AclfMethod.PQ);			
+			aclfAlgo.setLfMethod(AclfMethodType.PQ);			
 		}else if(lfMethod == LfMethodEnumType.GS){
-			aclfAlgo.setLfMethod(AclfMethod.GS);			
+			aclfAlgo.setLfMethod(AclfMethodType.GS);			
 		}
 		else 
-			aclfAlgo.setLfMethod(AclfMethod.NR);			
+			aclfAlgo.setLfMethod(AclfMethodType.NR);			
 
 		int maxInt =xmlLfInit.getMaxIterations();
 		aclfAlgo.setMaxIterations(maxInt);
