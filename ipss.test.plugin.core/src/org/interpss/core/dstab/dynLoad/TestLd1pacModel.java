@@ -21,7 +21,7 @@ import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
-import com.interpss.core.algo.AclfMethod;
+import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.algo.sc.ScBusModelType;
 import com.interpss.dstab.DStabBranch;
@@ -354,7 +354,7 @@ public class TestLd1pacModel extends TestSetupBase {
 
 		// run load flow
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
-		algo.setLfMethod(AclfMethod.NR);
+		algo.setLfMethod(AclfMethodType.NR);
 		algo.loadflow();
 
 		// uncommet this line to see the net object states

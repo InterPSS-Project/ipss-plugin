@@ -48,7 +48,7 @@ import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.adj.XfrTapControlType;
 import com.interpss.core.aclf.adpter.AclfGenBusAdapter;
 import com.interpss.core.aclf.adpter.AclfPSXformerAdapter;
-import com.interpss.core.algo.AclfMethod;
+import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.path.NetPathWalkDirectionEnum;
 import com.interpss.core.algo.sec.AclfBranchRating;
 import com.interpss.core.algo.sec.SecAnalysisViolationType;
@@ -301,7 +301,7 @@ public class AclfOutFunc {
 			String str = "\n"+prefix+"                         Max Power Mismatches\n"
 					+ prefix+"             Bus              dPmax       Bus              dQmax\n"
 					+ prefix+"            -------------------------------------------------------\n";
-			Mismatch mis = net.maxMismatch(AclfMethod.NR);
+			Mismatch mis = net.maxMismatch(AclfMethodType.NR);
 			str += prefix+Number2String.toStr(12, " ");
 			str += String.format("%-12s ", OutputBusId.f(mis.maxPBus, net.getOriginalDataFormat()));
 			str += String.format("%12.6f  ", mis.maxMis.getReal());

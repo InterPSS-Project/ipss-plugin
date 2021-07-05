@@ -40,7 +40,7 @@ import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
-import com.interpss.core.algo.AclfMethod;
+import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
 public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup { 
@@ -166,7 +166,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 	
 	private void testVAclf(AclfNetwork net) throws Exception {
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
-	  	algo.setLfMethod(AclfMethod.PQ);
+	  	algo.setLfMethod(AclfMethodType.PQ);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 

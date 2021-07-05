@@ -36,7 +36,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.algo.AclfMethod;
+import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.datatype.Mismatch;
 
 /**
@@ -78,7 +78,7 @@ public class AclfNet2ResultBeanMapper extends BaseAclfNet2BeanMapper<AclfNetResu
 		aclfResult.lf_converge = aclfNet.isLfConverged();
 		
 		MismatchResultBean misBean = new MismatchResultBean();
-		Mismatch mis = aclfNet.maxMismatch(AclfMethod.NR);
+		Mismatch mis = aclfNet.maxMismatch(AclfMethodType.NR);
 		aclfResult.max_mis = misBean;
 		misBean.err = new ComplexBean(format(mis.maxMis.getReal()), format(mis.maxMis.getImaginary()));
 		misBean.p_bus_id = mis.maxPBus.getId(); 

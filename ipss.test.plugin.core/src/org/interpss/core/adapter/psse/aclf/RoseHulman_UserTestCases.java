@@ -40,7 +40,7 @@ import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
-import com.interpss.core.algo.AclfMethod;
+import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
 public class RoseHulman_UserTestCases extends CorePluginTestSetup {
@@ -55,7 +55,7 @@ public class RoseHulman_UserTestCases extends CorePluginTestSetup {
 				.getAclfNet();		
 		
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
-	  	algo.setLfMethod(AclfMethod.PQ);
+	  	algo.setLfMethod(AclfMethodType.PQ);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 	  	

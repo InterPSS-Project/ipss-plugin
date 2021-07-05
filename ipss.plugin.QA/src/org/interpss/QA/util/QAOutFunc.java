@@ -8,7 +8,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.algo.AclfMethod;
+import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.net.Branch;
 
 
@@ -16,7 +16,7 @@ public abstract class QAOutFunc {
 	public static StringBuffer busInfo(String busId, AclfNetwork net) {
 		StringBuffer buf = new StringBuffer();
 		AclfBus bus = net.getBus(busId);
-		Complex  mis = bus.mismatch(AclfMethod.NR);		
+		Complex  mis = bus.mismatch(AclfMethodType.NR);		
 		buf.append("largest mismatch: " + mis.abs() + 
 				"  @" + bus.getId() + "\n" + 
 		                    "\nBus LF info: \n\n" + BusLfResultBusStyle.f(net, bus));

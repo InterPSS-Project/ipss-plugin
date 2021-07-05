@@ -37,7 +37,7 @@ import org.junit.Test;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.algo.AclfMethod;
+import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.AclfNetHelper;
 
@@ -72,7 +72,7 @@ public class Bus11856Test extends CorePluginTestSetup {
   	  		System.out.println("time for swing bus check : " + (System.currentTimeMillis() - starttime)*0.001);
 	  	
   			starttime = System.currentTimeMillis() ;
-  			algo.setLfMethod(AclfMethod.PQ);
+  			algo.setLfMethod(AclfMethodType.PQ);
   		  	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
   			algo.loadflow();
   			//	System.out.println(net.net2String());

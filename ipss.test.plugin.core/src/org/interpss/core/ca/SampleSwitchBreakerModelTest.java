@@ -40,7 +40,7 @@ import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.algo.AclfMethod;
+import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.ZeroZBranchProcesor;
 
@@ -60,7 +60,7 @@ public class SampleSwitchBreakerModelTest extends CorePluginTestSetup {
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 
 	  	// use the loadflow algorithm to perform loadflow calculation
-	  	algo.setLfMethod(AclfMethod.PQ);
+	  	algo.setLfMethod(AclfMethodType.PQ);
 	  	algo.loadflow();
 	  	
 	  	// output loadflow calculation results
@@ -86,7 +86,7 @@ public class SampleSwitchBreakerModelTest extends CorePluginTestSetup {
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 
 	  	// use the loadflow algorithm to perform loadflow calculation
-	  	algo.setLfMethod(AclfMethod.PQ);
+	  	algo.setLfMethod(AclfMethodType.PQ);
 	  	algo.loadflow();
 	  	
 	  	// output loadflow calculation results

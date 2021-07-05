@@ -33,7 +33,7 @@ import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.acsc.XfrConnectCode;
 import com.interpss.core.acsc.adpter.AcscXformerAdapter;
-import com.interpss.core.algo.AclfMethod;
+import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.dstab.DStabLoad;
 import com.interpss.simu.SimuContext;
@@ -140,7 +140,7 @@ public class TestTnD_IEEE39_123BusFeeder {
 				 
 				 //System.out.println(tdAlgo.getTransmissionNetwork().net2String());
 			 LoadflowAlgorithm tAlgo = tdAlgo.getTransLfAlgorithm();
-			 tAlgo.setLfMethod(AclfMethod.NR);
+			 tAlgo.setLfMethod(AclfMethodType.NR);
 			 tAlgo.setTolerance(1E-4);
 			
 			 tAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
@@ -253,7 +253,7 @@ public class TestTnD_IEEE39_123BusFeeder {
 				 
 				 //System.out.println(tdAlgo.getTransmissionNetwork().net2String());
 			 LoadflowAlgorithm tAlgo = tdAlgo.getTransLfAlgorithm();
-			 tAlgo.setLfMethod(AclfMethod.NR);
+			 tAlgo.setLfMethod(AclfMethodType.NR);
 			 tAlgo.setTolerance(1E-4);
 			
 			 tAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);

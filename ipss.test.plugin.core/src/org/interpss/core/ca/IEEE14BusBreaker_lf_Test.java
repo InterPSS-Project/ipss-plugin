@@ -42,7 +42,7 @@ import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
-import com.interpss.core.algo.AclfMethod;
+import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.ZeroZBranchProcesor;
 
@@ -61,7 +61,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 
 	  	// use the loadflow algorithm to perform loadflow calculation
-	  	algo.setLfMethod(AclfMethod.PQ);
+	  	algo.setLfMethod(AclfMethodType.PQ);
 	  	algo.loadflow();
 	  	
 	  	// output loadflow calculation results
@@ -98,7 +98,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 
 	  	// use the loadflow algorithm to perform loadflow calculation
-	  	algo.setLfMethod(AclfMethod.PQ);
+	  	algo.setLfMethod(AclfMethodType.PQ);
 	  	algo.loadflow();
 	  	
 	  	// output loadflow calculation results
@@ -134,7 +134,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 
 	  	// use the loadflow algorithm to perform loadflow calculation
-	  	algo.setLfMethod(AclfMethod.PQ);
+	  	algo.setLfMethod(AclfMethodType.PQ);
 	  	algo.loadflow();
 	  	
 	  	// output loadflow calculation results
@@ -177,7 +177,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 
 	  	// use the loadflow algorithm to perform loadflow calculation
-	  	algo.setLfMethod(AclfMethod.PQ);
+	  	algo.setLfMethod(AclfMethodType.PQ);
 	  	algo.loadflow();
 	  	
 	  	// output loadflow calculation results
@@ -213,7 +213,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 
 	  	// use the loadflow algorithm to perform loadflow calculation
-	  	algo.setLfMethod(AclfMethod.PQ);
+	  	algo.setLfMethod(AclfMethodType.PQ);
 	  	algo.loadflow();
 	  	
 	  	// output loadflow calculation results
