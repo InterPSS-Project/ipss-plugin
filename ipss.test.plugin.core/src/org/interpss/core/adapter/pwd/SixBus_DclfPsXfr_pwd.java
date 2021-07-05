@@ -44,7 +44,7 @@ import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.adpter.AclfSwingBus;
+import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
 import com.interpss.core.net.Branch;
 
@@ -67,7 +67,7 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
   		assertTrue(net.isLfConverged());
   		
 		System.out.println(AclfOutFunc.loadFlowSummary(net));
-  		AclfSwingBus swing = net.getBus("Bus1").toSwingBus();
+  		AclfSwingBusAdapter swing = net.getBus("Bus1").toSwingBus();
   		Complex p = swing.getGenResults(UnitType.PU);
   		assertTrue(Math.abs(p.getReal()-3.1032)<0.0001);
   		assertTrue(Math.abs(p.getImaginary()-0.5212)<0.0001);	   		
