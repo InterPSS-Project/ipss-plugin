@@ -28,7 +28,7 @@ import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.acsc.XfrConnectCode;
-import com.interpss.core.acsc.adpter.AcscXformer;
+import com.interpss.core.acsc.adpter.AcscXformerAdapter;
 import com.interpss.core.net.Bus;
 import com.interpss.core.net.NetworkType;
 
@@ -102,7 +102,7 @@ public class TestDistributionPowerflowAlgo {
 		System.out.println("Zabc of xfr1_2 = "+line1_2.getZabc());
 		
 		Static3PXformer xfr1_2 = line1_2.to3PXformer();
-		AcscXformer xfr0 = acscXfrAptr.apply(line1_2);
+		AcscXformerAdapter xfr0 = acscXfrAptr.apply(line1_2);
 		xfr0.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
 		xfr0.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
 		
@@ -388,7 +388,7 @@ public class TestDistributionPowerflowAlgo {
   		//xfr1_2.setZ0( new Complex(0.0, 0.4 ));
 		
 		
-		AcscXformer xfr0 = acscXfrAptr.apply(xfr1_2);
+		AcscXformerAdapter xfr0 = acscXfrAptr.apply(xfr1_2);
 		xfr0.setFromConnectGroundZ(XfrConnectCode.DELTA11, new Complex(0.0,0.0), UnitType.PU);
 		xfr0.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
 		
@@ -497,7 +497,7 @@ public class TestDistributionPowerflowAlgo {
   		xfr1_2.setZabc(Complex3x3.createUnitMatrix().multiply(new Complex( 0.0, 0.04 )));
   	
 		//set the transformer connection type
-		AcscXformer xfr0 = acscXfrAptr.apply(xfr1_2);
+		AcscXformerAdapter xfr0 = acscXfrAptr.apply(xfr1_2);
 		
 		// Step down transformer, high voltage side delta, low voltage side grounded wye
 		xfr0.setFromConnectGroundZ(XfrConnectCode.DELTA11, new Complex(0.0,0.0), UnitType.PU);

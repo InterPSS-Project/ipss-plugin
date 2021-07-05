@@ -38,7 +38,7 @@ import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.acsc.XfrConnectCode;
-import com.interpss.core.acsc.adpter.AcscXformer;
+import com.interpss.core.acsc.adpter.AcscXformerAdapter;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
@@ -275,7 +275,7 @@ public class TestTnDCombinedPowerflow {
   		xfr5_11.setZ0( new Complex(0.0, 0.08 ));
   		
   		
-  		AcscXformer xfr1 = acscXfrAptr.apply(xfr5_11);
+  		AcscXformerAdapter xfr1 = acscXfrAptr.apply(xfr5_11);
 		xfr1.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
 		xfr1.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
   		
@@ -289,7 +289,7 @@ public class TestTnDCombinedPowerflow {
   		//xfr1_2.setZ0( new Complex(0.0, 0.4 ));
 		
 		
-		AcscXformer xfr0 = acscXfrAptr.apply(xfr1_2);
+		AcscXformerAdapter xfr0 = acscXfrAptr.apply(xfr1_2);
 		xfr0.setFromConnectGroundZ(XfrConnectCode.DELTA, new Complex(0.0,0.0), UnitType.PU);
 		xfr0.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
 		

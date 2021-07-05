@@ -11,7 +11,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.acsc.PhaseCode;
 import com.interpss.core.acsc.XfrConnectCode;
-import com.interpss.core.acsc.adpter.AcscXformer;
+import com.interpss.core.acsc.adpter.AcscXformerAdapter;
 
 public class OpenDSSTransformerParser {
 	
@@ -137,7 +137,7 @@ public class OpenDSSTransformerParser {
 		//TODO to add the phase info to the Branch3Phase
 		
 	    
-	    AcscXformer xfr0 = acscXfrAptr.apply(xfrBranch);
+	    AcscXformerAdapter xfr0 = acscXfrAptr.apply(xfrBranch);
 	    
 	    if(fromConnection.equalsIgnoreCase("Delta")){
 	    	if(toConnection.equalsIgnoreCase("Delta"))
@@ -321,7 +321,7 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 			if(kva2==0.0){
 				kva2 = likeBranch.getXfrRatedKVA();
 			}
-			AcscXformer likexfr = acscXfrAptr.apply(likeBranch);
+			AcscXformerAdapter likexfr = acscXfrAptr.apply(likeBranch);
 			
 			if(fromConnection.equals("")){
 				if(likexfr.getFromConnect().equals(XfrConnectCode.DELTA)||likexfr.getFromConnect().equals(XfrConnectCode.DELTA11)){
@@ -371,7 +371,7 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 		xfrBranch.setXfrRatedKVA(kva1);
 		
 	    
-	    AcscXformer xfr0 = acscXfrAptr.apply(xfrBranch);
+	    AcscXformerAdapter xfr0 = acscXfrAptr.apply(xfrBranch);
 	    
 	    if(fromConnection.equalsIgnoreCase("Delta")){
 	    	if(toConnection.equalsIgnoreCase("Delta"))

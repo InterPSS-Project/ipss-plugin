@@ -84,8 +84,8 @@ import com.interpss.core.acsc.BusGroundCode;
 import com.interpss.core.acsc.BusScCode;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.acsc.XfrConnectCode;
-import com.interpss.core.acsc.adpter.AcscLine;
-import com.interpss.core.acsc.adpter.AcscXformer;
+import com.interpss.core.acsc.adpter.AcscLineAdapter;
+import com.interpss.core.acsc.adpter.AcscXformerAdapter;
 import com.interpss.core.funcImpl.AcscFunction;
 import com.interpss.core.net.Branch;
 import com.interpss.dstab.BaseDStabBus;
@@ -459,7 +459,7 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 
 	private void setAcscLineFormInfo(LineShortCircuitXmlType braXml, AcscBranch acscBra) {
 		double baseV = acscBra.getFromAclfBus().getBaseVoltage();
-		AcscLine line = acscLineAptr.apply(acscBra);
+		AcscLineAdapter line = acscLineAptr.apply(acscBra);
 		ZXmlType z0 = braXml.getZ0();
 		if (z0 != null)
 			line.setZ0(new Complex(z0.getRe(), z0.getIm()),	toZUnit.apply(z0.getUnit()), baseV);
@@ -473,7 +473,7 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 		double baseV = acscBra.getFromAclfBus().getBaseVoltage() > acscBra
 		.getToAclfBus().getBaseVoltage() ? acscBra.getFromAclfBus()
 				.getBaseVoltage() : acscBra.getToAclfBus().getBaseVoltage();
-				AcscXformer xfr = acscXfrAptr.apply(acscBra);
+				AcscXformerAdapter xfr = acscXfrAptr.apply(acscBra);
 				ZXmlType z0 = braXml.getZ0();
 				if (z0 != null)
 					xfr.setZ0(new Complex(z0.getRe(), z0.getIm()), toZUnit.apply(z0.getUnit()), baseV);
@@ -507,7 +507,7 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 		double baseV = acscBra.getFromAclfBus().getBaseVoltage() > acscBra
 		.getToAclfBus().getBaseVoltage() ? acscBra.getFromAclfBus()
 				.getBaseVoltage() : acscBra.getToAclfBus().getBaseVoltage();
-				AcscXformer xfr = acscXfrAptr.apply(acscBra);
+				AcscXformerAdapter xfr = acscXfrAptr.apply(acscBra);
 				ZXmlType z0 = braXml.getZ0();
 				if (z0 != null)
 					xfr.setZ0(new Complex(z0.getRe(), z0.getIm()), toZUnit.apply(z0.getUnit()), baseV);
