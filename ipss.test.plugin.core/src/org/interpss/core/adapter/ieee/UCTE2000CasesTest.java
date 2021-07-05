@@ -33,7 +33,7 @@ import org.junit.Test;
 
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.algo.AclfMethod;
+import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
 public class UCTE2000CasesTest extends CorePluginTestSetup {
@@ -72,7 +72,7 @@ public class UCTE2000CasesTest extends CorePluginTestSetup {
   		//assertTrue((net.getBusList().size() == 14 && net.getBranchList().size() == 20));
 
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
-	  	algo.setLfMethod(AclfMethod.PQ);
+	  	algo.setLfMethod(AclfMethodType.PQ);
 	  	algo.setNonDivergent(true);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());

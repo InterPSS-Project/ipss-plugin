@@ -18,7 +18,7 @@ import org.junit.Test;
 import com.interpss.SimuObjectFactory;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.algo.AclfMethod;
+import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
@@ -56,7 +56,7 @@ public class PSSE_Savnw_v33_Test extends CorePluginTestSetup {
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 	  	//algo.setLfMethod(AclfMethod.PQ);
 		algo.setNonDivergent(true);
-	  	algo.setLfMethod(AclfMethod.NR);
+	  	algo.setLfMethod(AclfMethodType.NR);
 	  	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 	  	
 	  	algo.loadflow();

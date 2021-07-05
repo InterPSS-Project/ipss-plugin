@@ -37,7 +37,7 @@ import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.Aclf3WXformerAdapter;
-import com.interpss.core.algo.AclfMethod;
+import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
 public class IEEE14_3WXfrTest extends CorePluginTestSetup {
@@ -65,7 +65,7 @@ public class IEEE14_3WXfrTest extends CorePluginTestSetup {
 		
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setInitBusVoltage(true);
-	  	algo.setLfMethod(AclfMethod.NR);
+	  	algo.setLfMethod(AclfMethodType.NR);
 	  	
 	  	//Note: NR with flat start or PQ method produces converged power flow.
 	  	algo.loadflow();

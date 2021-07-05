@@ -14,7 +14,7 @@ import com.interpss.core.aclf.Aclf3WBranch;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.algo.AclfMethod;
+import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.net.Branch;
 
 /**
@@ -51,7 +51,7 @@ public class ModelChecker {
 		// step 3: build mismatch table
 		Hashtable<String, Double> mismatchTable = new Hashtable<>();
 		for (AclfBus bus : net.getBusList()) {
-			Complex mis = bus.mismatch(AclfMethod.NR);
+			Complex mis = bus.mismatch(AclfMethodType.NR);
 			if (bus.isActive() && mis.abs() > mismatchThre) {
 				mismatchTable.put(bus.getId(), mis.abs());				
 			}
@@ -73,7 +73,7 @@ public class ModelChecker {
 			String id = (String) sorted.get(i).getKey();
 			AclfBus bus = net.getBus(id);
 			this.sortedMismatchBus.add(bus);
-			Complex mis = bus.mismatch(AclfMethod.NR);	
+			Complex mis = bus.mismatch(AclfMethodType.NR);	
 			mis = formatComplex(mis);
 			System.out.println(bus.getId() + ", mismatch = "
 					+ mis.toString());
