@@ -48,7 +48,7 @@ import org.junit.Test;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.adpter.AclfSwingBus;
+import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.simu.util.sample.SampleTestingCases;
 
 public class AclfBeanMapperTest extends CorePluginTestSetup {
@@ -81,7 +81,7 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
   		assertTrue(aclfNet.isLfConverged());	
   		
   		AclfBus swingBus = aclfNet.getBus("5");
-		AclfSwingBus swing = swingBus.toSwingBus();
+		AclfSwingBusAdapter swing = swingBus.toSwingBus();
   		//System.out.println(swing.getGenResults(UnitType.PU, net.getBaseKva()));
 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.57943)<0.0001);
 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-2.2994)<0.0001);

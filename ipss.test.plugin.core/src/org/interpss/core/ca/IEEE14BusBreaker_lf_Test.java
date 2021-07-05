@@ -41,7 +41,7 @@ import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.adpter.AclfSwingBus;
+import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.ZeroZBranchProcesor;
@@ -72,7 +72,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 	  	assertTrue(net.getNoActiveBranch() == 30);
 	  	
   		AclfBus swingBus = (AclfBus)net.getBus("Bus1");
-  		AclfSwingBus swing = swingBus.toSwingBus();
+  		AclfSwingBusAdapter swing = swingBus.toSwingBus();
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.3240)<0.0001);
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.1655)<0.0001);
     }	
@@ -109,7 +109,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 	  	assertTrue(net.getNoActiveBranch() == 20);
 
   		AclfBus swingBus = (AclfBus)net.getBus("Bus1");
-  		AclfSwingBus swing = swingBus.toSwingBus();
+  		AclfSwingBusAdapter swing = swingBus.toSwingBus();
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.3239)<0.0001);
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.1655)<0.0001);
 	}	
@@ -145,7 +145,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 	  	assertTrue(net.getNoActiveBranch() == 20);
 
   		AclfBus swingBus = (AclfBus)net.getBus("Bus1");
-  		AclfSwingBus swing = swingBus.toSwingBus();
+  		AclfSwingBusAdapter swing = swingBus.toSwingBus();
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.3239)<0.0001);
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.1655)<0.0001);
 	}	
@@ -188,7 +188,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 	  	assertTrue(net.getNoActiveBranch() == 21);
 
   		AclfBus swingBus = (AclfBus)net.getBus("Bus1");
-  		AclfSwingBus swing = swingBus.toSwingBus();
+  		AclfSwingBusAdapter swing = swingBus.toSwingBus();
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.3239)<0.0001);
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.1655)<0.0001);
 	}
@@ -224,7 +224,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 	  	assertTrue(net.getNoActiveBranch() == 20);
 
   		AclfBus swingBus = (AclfBus)net.getBus("Bus1");
-  		AclfSwingBus swing = swingBus.toSwingBus();
+  		AclfSwingBusAdapter swing = swingBus.toSwingBus();
 	  	System.out.println("----> " + swing.getGenResults(UnitType.PU).getReal() + ", " + swing.getGenResults(UnitType.PU).getImaginary());
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.3239)<0.0001);
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.1655)<0.0001);

@@ -60,7 +60,7 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.adj.VarCompensationMode;
-import com.interpss.core.aclf.adpter.AclfSwingBus;
+import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.simu.SimuContext;
@@ -101,7 +101,7 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
   		assertTrue(net.isLfConverged());		
 		
   		AclfBus swingBus = (AclfBus)net.getBus("5");
-		AclfSwingBus swing = swingBus.toSwingBus();
+		AclfSwingBusAdapter swing = swingBus.toSwingBus();
   		//System.out.println(swing.getGenResults(UnitType.PU));
 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.547578)<0.0001);
 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-2.097536)<0.0001);
@@ -274,7 +274,7 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 
 		String swingId = "Bus1";
 		
-		AclfSwingBus swing = aclfNet.getBus(swingId).toSwingBus();
+		AclfSwingBusAdapter swing = aclfNet.getBus(swingId).toSwingBus();
 		//System.out.println("AclfNet Model: "+swing.getGenResults(UnitType.PU) );		
 		AclfNetBean netBean1 = new AclfNet2BeanMapper().map2Model(aclfNet);		
 		AclfBusBean bean = netBean1.getBus(swingId);		

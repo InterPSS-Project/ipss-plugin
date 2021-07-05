@@ -47,7 +47,7 @@ import com.interpss.core.aclf.adj.RemoteQControlType;
 import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.adj.XfrTapControlType;
 import com.interpss.core.aclf.adpter.AclfGenBusAdapter;
-import com.interpss.core.aclf.adpter.AclfPSXformer;
+import com.interpss.core.aclf.adpter.AclfPSXformerAdapter;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.path.NetPathWalkDirectionEnum;
 import com.interpss.core.algo.sec.AclfBranchRating;
@@ -713,7 +713,7 @@ public class AclfOutFunc {
 				else
 					str.append(x.getControlRange() + " ");
 
-				AclfPSXformer psXfr = x.getParentBranch().toPSXfr();
+				AclfPSXformerAdapter psXfr = x.getParentBranch().toPSXfr();
 				str.append(Number2String.toStr("#0.00", psXfr
 						.getFromAngle(UnitType.Deg))
 						+ " ");

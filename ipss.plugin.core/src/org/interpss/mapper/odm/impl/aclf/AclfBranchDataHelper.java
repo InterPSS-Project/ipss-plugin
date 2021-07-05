@@ -72,11 +72,11 @@ import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.adj.AdjControlType;
 import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.adj.TapControl;
-import com.interpss.core.aclf.adpter.Aclf3WPSXformer;
-import com.interpss.core.aclf.adpter.Aclf3WXformer;
-import com.interpss.core.aclf.adpter.AclfLine;
-import com.interpss.core.aclf.adpter.AclfPSXformer;
-import com.interpss.core.aclf.adpter.AclfXformer;
+import com.interpss.core.aclf.adpter.Aclf3WPSXformerAdapter;
+import com.interpss.core.aclf.adpter.Aclf3WXformerAdapter;
+import com.interpss.core.aclf.adpter.AclfLineAdapter;
+import com.interpss.core.aclf.adpter.AclfPSXformerAdapter;
+import com.interpss.core.aclf.adpter.AclfXformerAdapter;
 import com.interpss.core.net.Branch;
 
 /**
@@ -120,7 +120,7 @@ public class AclfBranchDataHelper {
 			aclfBra.setBranchCode(AclfBranchCode.LINE);
 
 		//System.out.println(braXmlData.getLineData().getZ().getIm());
-		AclfLine line = aclfBra.toLine();
+		AclfLineAdapter line = aclfBra.toLine();
 		if (xmlLineBranch.getZ() == null) {
 		throw new InterpssException("Line data error, Z == null, branch id: " + xmlLineBranch.getId());
 		}
@@ -209,7 +209,7 @@ public class AclfBranchDataHelper {
 		
 		setXfrData(xmlPsXfrBranch, aclfBra, baseKva);
 		
-		AclfPSXformer psXfr = aclfBra.toPSXfr();
+		AclfPSXformerAdapter psXfr = aclfBra.toPSXfr();
 		if(xmlPsXfrBranch.getFromAngle() != null)
 			psXfr.setFromAngle(xmlPsXfrBranch.getFromAngle().getValue(), 
 					toAngleUnit.apply(xmlPsXfrBranch.getFromAngle().getUnit()));
@@ -340,7 +340,7 @@ public class AclfBranchDataHelper {
 			}
 		}
 		
-		AclfXformer xfr = aclfBra.toXfr();
+		AclfXformerAdapter xfr = aclfBra.toXfr();
 
 		double fTap = xmlXfrBranch.getFromTurnRatio().getValue()
 				* (fromRatedV != fromBaseV ? fromTapratio : 1.0);
@@ -493,7 +493,7 @@ public class AclfBranchDataHelper {
 		branch3W.getTertAclfBranch().setStatus(!xml3WXfr.isOffLine() && !xml3WXfr.isWind3OffLine());
 		
 		// create a 3W xfr wrapper (adapter) for processing 3W data
-		Aclf3WXformer xfr3W = branch3W.to3WXfr();
+		Aclf3WXformerAdapter xfr3W = branch3W.to3WXfr();
 		
 		setXfr3WData(xml3WXfr, xfr3W);
 	}
@@ -516,7 +516,7 @@ public class AclfBranchDataHelper {
 		branch3W.getToAclfBranch().setStatus(!xmlPsXfr3W.isWind2OffLine());
 		branch3W.getTertAclfBranch().setStatus(!xmlPsXfr3W.isWind3OffLine());
 
-		Aclf3WPSXformer psXfr3W = branch3W.toPS3WXfr();
+		Aclf3WPSXformerAdapter psXfr3W = branch3W.toPS3WXfr();
 		
 		setXfr3WData(xmlPsXfr3W, psXfr3W);
 /*
@@ -538,7 +538,7 @@ public class AclfBranchDataHelper {
 		}
 	}
 
-	private void setXfr3WData(Xfr3WBranchXmlType xml3WXfr, Aclf3WXformer xfr3W) throws InterpssException {
+	private void setXfr3WData(Xfr3WBranchXmlType xml3WXfr, Aclf3WXformerAdapter xfr3W) throws InterpssException {
 		Aclf3WBranch branch3W = (Aclf3WBranch)this.branch;
 		double baseKva = aclfNet.getBaseKva();
 		

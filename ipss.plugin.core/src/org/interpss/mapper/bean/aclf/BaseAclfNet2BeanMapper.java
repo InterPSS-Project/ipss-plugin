@@ -54,8 +54,8 @@ import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.adj.VarCompensationMode;
 import com.interpss.core.aclf.adj.XfrTapControlType;
-import com.interpss.core.aclf.adpter.AclfPSXformer;
-import com.interpss.core.aclf.adpter.AclfXformer;
+import com.interpss.core.aclf.adpter.AclfPSXformerAdapter;
+import com.interpss.core.aclf.adpter.AclfXformerAdapter;
 
 /**
  * base mapper functions for mapping AclfNetwork object to BaseNetBean (AclfNetBean and AclfNetResultBean)
@@ -191,7 +191,7 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 				
 		}
 		else if (branch.getBranchCode() == AclfBranchCode.XFORMER ){
-			AclfXformer xfr = branch.toXfr();			
+			AclfXformerAdapter xfr = branch.toXfr();			
 			bean.ratio.f = xfr.getFromTurnRatio();
 			bean.ratio.t = xfr.getToTurnRatio();	
 			bean.shunt_y = new ComplexBean(format(new Complex(branch.getFromShuntY().getReal()*2,
@@ -203,7 +203,7 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 				mapXfrData(tap, tapBean);
 			}
 		}else if (	branch.getBranchCode() == AclfBranchCode.PS_XFORMER){
-			AclfPSXformer xfr = branch.toPSXfr();			
+			AclfPSXformerAdapter xfr = branch.toPSXfr();			
 			bean.ratio.f = xfr.getFromTurnRatio();
 			bean.ratio.t = xfr.getToTurnRatio();	
 			bean.shunt_y = new ComplexBean(format(new Complex(branch.getFromShuntY().getReal()*2,
