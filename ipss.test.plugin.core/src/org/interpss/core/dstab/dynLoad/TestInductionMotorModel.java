@@ -19,7 +19,7 @@ import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
-import com.interpss.core.aclf.adpter.AclfSwingBus;
+import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -415,7 +415,7 @@ private DStabilityNetwork create2BusSystem() throws InterpssException{
 		bus2.setName("Swing Bus");
 		bus2.setBaseVoltage(1000);
 		bus2.setGenCode(AclfGenCode.SWING);
-		AclfSwingBus swing = bus2.toSwingBus();
+		AclfSwingBusAdapter swing = bus2.toSwingBus();
 		//swing.setDesiredVoltMag(1.06, UnitType.PU);
 		//swing.setDesiredVoltAng(0, UnitType.Deg);
 		

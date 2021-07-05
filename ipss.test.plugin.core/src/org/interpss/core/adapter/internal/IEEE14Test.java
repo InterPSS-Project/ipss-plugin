@@ -35,7 +35,7 @@ import org.junit.Test;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.adpter.AclfSwingBus;
+import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
@@ -78,7 +78,7 @@ public class IEEE14Test extends CorePluginTestSetup {
   		 * Bus (id="1") is a swing bus. Make sure the P and Q results are with the expected values
   		 */
   		AclfBus swingBus = (AclfBus)net.getBus("1");
-  		AclfSwingBus swing = swingBus.toSwingBus();
+  		AclfSwingBusAdapter swing = swingBus.toSwingBus();
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.32386)<0.0001);
   		assertTrue( Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.16889)<0.0001);
 	}
@@ -123,7 +123,7 @@ public class IEEE14Test extends CorePluginTestSetup {
   		 * Bus (id="1") is a swing bus. Make sure the P and Q results are with the expected values
   		 */
   		AclfBus swingBus = (AclfBus)net.getBus("1");
-  		AclfSwingBus swing = swingBus.toSwingBus();
+  		AclfSwingBusAdapter swing = swingBus.toSwingBus();
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.32386)<0.0001);
   		assertTrue( Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.16889)<0.0001);
 	}

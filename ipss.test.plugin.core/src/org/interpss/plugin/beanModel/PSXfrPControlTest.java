@@ -38,7 +38,7 @@ import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adj.PSXfrPControl;
-import com.interpss.core.aclf.adpter.AclfSwingBus;
+import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.simu.util.sample.SampleTestingCases;
 
@@ -63,13 +63,13 @@ public class PSXfrPControlTest extends CorePluginTestSetup {
   		//System.out.println(net.net2String());
 
   		AclfBus swingBus = (AclfBus)net.getBus("0001");
-		AclfSwingBus swing = swingBus.toSwingBus();
+		AclfSwingBusAdapter swing = swingBus.toSwingBus();
 		//     gen       : 0.2 + 0.61i pu   20,230.59 + 61,421.94i kva
 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-0.20230)<0.0001);
 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-0.61421)<0.0001);
 
 		AclfBus swingBus2 = (AclfBus)net.getBus("0003");
-		AclfSwingBus swing2 = swingBus2.toSwingBus();
+		AclfSwingBusAdapter swing2 = swingBus2.toSwingBus();
 		//     gen       : 0.86 + 0.31i pu   86,047.05 + 31,133.37i kva
 		assertTrue(Math.abs(swing2.getGenResults(UnitType.PU).getImaginary()-0.31133)<0.0001);
 	}
@@ -119,7 +119,7 @@ public class PSXfrPControlTest extends CorePluginTestSetup {
   		//System.out.println(net.net2String());
 
   		AclfBus swingBus = (AclfBus)net.getBus("0001");
-		AclfSwingBus swing = swingBus.toSwingBus();
+		AclfSwingBusAdapter swing = swingBus.toSwingBus();
 //		//     gen       : 0.4 + 0.51i pu   39,997.07 + 50,711.88i kva
 		//System.out.println(swing.getGenResults(UnitType.PU).getReal());
 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()- 0.40026)<0.0001);

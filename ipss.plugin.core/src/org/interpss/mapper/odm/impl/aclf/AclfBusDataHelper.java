@@ -73,9 +73,9 @@ import com.interpss.core.aclf.adj.PVBusLimit;
 import com.interpss.core.aclf.adj.QBank;
 import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.adj.VarCompensationMode;
-import com.interpss.core.aclf.adpter.AclfPQGenBus;
-import com.interpss.core.aclf.adpter.AclfPVGenBus;
-import com.interpss.core.aclf.adpter.AclfSwingBus;
+import com.interpss.core.aclf.adpter.AclfPQGenBusAdapter;
+import com.interpss.core.aclf.adpter.AclfPVGenBusAdapter;
+import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.acsc.AcscBus;
 import com.interpss.core.acsc.AcscGen;
 import com.interpss.core.acsc.AcscLoad;
@@ -201,7 +201,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 		VoltageXmlType vXml = xmlDefaultGen.getDesiredVoltage();
 		if (xmlGenData.getCode() == LFGenCodeEnumType.PQ) {
 			bus.setGenCode(AclfGenCode.GEN_PQ);
-			AclfPQGenBus pqBus = bus.toPQBus();
+			AclfPQGenBusAdapter pqBus = bus.toPQBus();
 			double p = xmlDefaultGen.getPower().getRe(), 
 	               q = xmlDefaultGen.getPower().getIm();
 			if (xmlDefaultGen.getPower() != null)
@@ -222,7 +222,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 				xmlDefaultGen != null) {
 			if (xmlDefaultGen.getRemoteVoltageControlBus() == null) {
 				bus.setGenCode(AclfGenCode.GEN_PV);
-				AclfPVGenBus pvBus = bus.toPVBus();
+				AclfPVGenBusAdapter pvBus = bus.toPVBus();
 				//if (xmlEquivGenData == null)
 				//	System.out.print(busXmlData);
 				if (xmlDefaultGen.getPower() != null) {
@@ -250,7 +250,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 			}
 		} else if (xmlGenData.getCode() == LFGenCodeEnumType.SWING) {
 			bus.setGenCode(AclfGenCode.SWING);
-			AclfSwingBus swing = bus.toSwingBus();
+			AclfSwingBusAdapter swing = bus.toSwingBus();
 			double vpu = UnitHelper.vConversion(vXml.getValue(),
 					bus.getBaseVoltage(), toVoltageUnit.apply(vXml.getUnit()), UnitType.PU);
 			//TODO The desired bus angle is provided at bus level, not generator.
