@@ -308,7 +308,8 @@ public class IpssAclfNet extends BaseDSL {
 		public T getAclfNet() {return this.net; }
 
 		public AclfBusDSL addAclfBus(String busId, String busName) throws InterpssException{
-			return new AclfBusDSL(busId, busName, getAclfNet()); }
+			return null; //new AclfBusDSL(busId, busName, getAclfNet()); 
+			}
 		public AclfBusDSL getAclfBus(String busId) throws Exception {
 			return new AclfBusDSL(busId, getAclfNet());	}
 		
@@ -345,7 +346,7 @@ public class IpssAclfNet extends BaseDSL {
 
 	public static class AclfBusDSL extends AclfBusBaseDSL<BaseAclfBus<?,?>, BaseAclfNetwork<?,?>, AclfBusDSL>{
 		// for addAclfBus()
-		public AclfBusDSL(String busId, String busName, BaseAclfNetwork<?, ?> net) throws InterpssException {
+		public AclfBusDSL(String busId, String busName, BaseAclfNetwork<AclfBus, AclfBranch> net) throws InterpssException {
 			super(busId, busName, CoreObjectFactory.createAclfBus(busId, net), net);
 		}
 		// for getAclfBus()
