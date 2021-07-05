@@ -25,7 +25,7 @@ import com.interpss.core.abc.LoadConnectionType;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.acsc.PhaseCode;
 import com.interpss.core.acsc.XfrConnectCode;
-import com.interpss.core.acsc.adpter.AcscXformer;
+import com.interpss.core.acsc.adpter.AcscXformerAdapter;
 import com.interpss.core.net.Bus;
 
 public class TestOpenDSSDataParser {
@@ -202,7 +202,7 @@ public class TestOpenDSSDataParser {
 		  
 		  assertTrue(Math.abs(xfr1.getXfrRatedKVA()-150)<1.0E-6);
 		  
-		  AcscXformer xfr10 = acscXfrAptr.apply(xfr1);
+		  AcscXformerAdapter xfr10 = acscXfrAptr.apply(xfr1);
 		  assertTrue(xfr10.getFromConnect()==XfrConnectCode.DELTA);
 		  assertTrue(xfr10.getToConnect()==XfrConnectCode.DELTA);
 		  
@@ -221,7 +221,7 @@ public class TestOpenDSSDataParser {
 		  
 		  assertTrue(Math.abs(xfr2.getXfrRatedKVA()-2000)<1.0E-6);
 		  
-		  AcscXformer xfr20 = acscXfrAptr.apply(xfr2);
+		  AcscXformerAdapter xfr20 = acscXfrAptr.apply(xfr2);
 		  assertTrue(xfr20.getFromConnect()==XfrConnectCode.WYE_SOLID_GROUNDED);
 		  assertTrue(xfr20.getToConnect()==XfrConnectCode.WYE_SOLID_GROUNDED);
 		  
@@ -370,7 +370,7 @@ public class TestOpenDSSDataParser {
 		  
 		  assertTrue(Math.abs(xfr1.getXfrRatedKVA()-150)<1.0E-6);
 		  
-		  AcscXformer xfr10 = acscXfrAptr.apply(xfr1);
+		  AcscXformerAdapter xfr10 = acscXfrAptr.apply(xfr1);
 		  assertTrue(xfr10.getFromConnect()==XfrConnectCode.DELTA);
 		  assertTrue(xfr10.getToConnect()==XfrConnectCode.DELTA);
 		  
@@ -392,7 +392,7 @@ public class TestOpenDSSDataParser {
 		  
 		  assertTrue(Math.abs(xfr2.getXfrRatedKVA()-2000)<1.0E-6);
 		  
-		  AcscXformer xfr20 = acscXfrAptr.apply(xfr2);
+		  AcscXformerAdapter xfr20 = acscXfrAptr.apply(xfr2);
 		  assertTrue(xfr20.getFromConnect()==XfrConnectCode.WYE_SOLID_GROUNDED);
 		  assertTrue(xfr20.getToConnect()==XfrConnectCode.WYE_SOLID_GROUNDED);
 		  
