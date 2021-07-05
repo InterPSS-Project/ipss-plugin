@@ -18,7 +18,7 @@ import com.interpss.core.aclf.Aclf3WBranch;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.algo.AclfMethod;
+import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 
@@ -191,7 +191,7 @@ public class NetModelComparator<TBus extends AclfBusBean, TBra extends AclfBranc
 		for (Bus b : net.getBusList()) {
 			AclfBus bus = (AclfBus)b;
 			if (!bus.connect2ZeroZBranch()) {
-				Complex  mis = bus.mismatch(AclfMethod.NR);
+				Complex  mis = bus.mismatch(AclfMethodType.NR);
 				if (mis.abs() > err) {
 					busList.add(bus);
 				}
@@ -222,7 +222,7 @@ public class NetModelComparator<TBus extends AclfBusBean, TBra extends AclfBranc
 		double max = 0.0;
 		for (Bus b : net.getBusList()) {
 			AclfBus bus = (AclfBus)b;
-			Complex  mis = bus.mismatch(AclfMethod.NR);
+			Complex  mis = bus.mismatch(AclfMethodType.NR);
 			if (mis.abs() > max && !bus.connect2ZeroZBranch()) {
 				max = mis.abs();
 				misbus = bus;
@@ -282,7 +282,7 @@ public class NetModelComparator<TBus extends AclfBusBean, TBra extends AclfBranc
 	 */
 	public StringBuffer busInfo(AclfBus bus) {
 		StringBuffer buf = new StringBuffer();
-		Complex  mis = bus.mismatch(AclfMethod.NR);		
+		Complex  mis = bus.mismatch(AclfMethodType.NR);		
 		buf.append("largest mismatch: " + mis.abs() + 
 				"  @" + bus.getId() + "\n" + 
 		                    "\nBus LF info: \n\n" + BusLfResultBusStyle.f(net, bus));
