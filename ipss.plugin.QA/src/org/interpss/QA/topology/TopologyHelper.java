@@ -24,7 +24,7 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.contingency.BaseContingency;
-import com.interpss.core.algo.dclf.OutageBranch;
+import com.interpss.core.algo.dclf.CaOutageBranch;
 import com.interpss.core.common.visitor.INetBVisitor;
 import com.interpss.core.funcImpl.ZeroZBranchProcesor;
 import com.interpss.core.funcImpl.ZeroZBranchProcesor.BusBasedSeaerchResult;
