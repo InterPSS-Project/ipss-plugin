@@ -39,7 +39,7 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.CaBranchOutageType;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
-import com.interpss.core.algo.dclf.OutageBranch;
+import com.interpss.core.algo.dclf.CaOutageBranch;
 import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 import com.interpss.core.common.OutageConnectivityException;
@@ -59,7 +59,7 @@ public class Ieee14_CA_Test extends CorePluginTestSetup {
 		
 		// set single outage branch
 		DclfAlgoBranch dclfBranch1 = dclfAlgo.getDclfAlgoBranch("Bus5->Bus6(1)");
-		OutageBranch outageBranch = DclfAlgoObjectFactory.createOutageBranch(dclfBranch1, CaBranchOutageType.OPEN);
+		CaOutageBranch outageBranch = DclfAlgoObjectFactory.createCaOutageBranch(dclfBranch1, CaBranchOutageType.OPEN);
         double outBanchPreFlow = outageBranch.getDclfFlow();
         
         double sum = 0.0;  // Bus4->Bus7(1), Bus4->Bus9(1), Bus5->Bus6(1) interface diff before and after the outage
@@ -101,7 +101,7 @@ public class Ieee14_CA_Test extends CorePluginTestSetup {
 		//System.out.println("Before closure");			
 		//System.out.println(DclfResult.f(dclfAlgo, false));	
 		
-		OutageBranch closureBranch = DclfAlgoObjectFactory.createOutageBranch(
+		CaOutageBranch closureBranch = DclfAlgoObjectFactory.createCaOutageBranch(
 				dclfAlgo.getDclfAlgoBranch("Bus4->Bus5(1)"), CaBranchOutageType.CLOSE);
 		
   		double closureFlow = dclfAlgo.calBranchClosureFlow(closureBranch);
@@ -129,13 +129,13 @@ public class Ieee14_CA_Test extends CorePluginTestSetup {
 		// define outage branches
 		dclfAlgo.getOutageBranchList().clear();
 		dclfAlgo.getOutageBranchList().add(
-				DclfAlgoObjectFactory.createOutageBranch(
+				DclfAlgoObjectFactory.createCaOutageBranch(
 						dclfAlgo.getDclfAlgoBranch("Bus1->Bus5(1)"), CaBranchOutageType.OPEN));
 		dclfAlgo.getOutageBranchList().add(
-				DclfAlgoObjectFactory.createOutageBranch(
+				DclfAlgoObjectFactory.createCaOutageBranch(
 						dclfAlgo.getDclfAlgoBranch("Bus3->Bus4(1)"), CaBranchOutageType.OPEN));
 		dclfAlgo.getOutageBranchList().add(
-				DclfAlgoObjectFactory.createOutageBranch(
+				DclfAlgoObjectFactory.createCaOutageBranch(
 						dclfAlgo.getDclfAlgoBranch("Bus6->Bus11(1)"), CaBranchOutageType.OPEN));
 
 		// define reference bus for the multi-outage calculation. Since Bus1 is connected to an outage branch, we
@@ -155,7 +155,7 @@ public class Ieee14_CA_Test extends CorePluginTestSetup {
         	if (factors != null) {  // factors = null if branch is an outage branch
             	double sum = 0.0;
             	int cnt = 0;
-        		for (OutageBranch outBranch : dclfAlgo.getOutageBranchList()) {
+        		for (CaOutageBranch outBranch : dclfAlgo.getOutageBranchList()) {
         			double flow = outBranch.getDclfFlow();
         			sum += flow * factors[cnt++];
         		}
