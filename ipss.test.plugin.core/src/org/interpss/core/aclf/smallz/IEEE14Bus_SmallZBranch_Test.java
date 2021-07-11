@@ -112,11 +112,11 @@ public class IEEE14Bus_SmallZBranch_Test extends CorePluginTestSetup {
 									bra.getToAclfBus().getVoltage() : bra.getFromAclfBus().getVoltage() );
 						if ( this.equals(bra.getFromBus()) ) {
 							sum = sum.add( bra.yft().multiply(vj) );
-							sum = sum.add( bra.currentIntoNetFromSide());
+							//sum = sum.add( bra.currentIntoNetFromSide());
 						}
 						else {
 							sum = sum.add( bra.ytf().multiply(vj) );
-							sum = sum.add( bra.currentIntoNetToSide());
+							//sum = sum.add( bra.currentIntoNetToSide());
 						}
 					}
 				}
