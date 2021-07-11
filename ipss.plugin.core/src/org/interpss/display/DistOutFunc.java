@@ -28,6 +28,7 @@ import com.interpss.core.net.Bus;
 import com.interpss.dist.DistBus;
 import com.interpss.dist.DistNetwork;
 import com.interpss.dist.adpter.DistBusAdapter;
+import com.interpss.dist.funcImpl.DistFunction;
 
 /**
  * Distribution system output functions
@@ -54,8 +55,7 @@ public class DistOutFunc {
 			distNet.setPointAclfNetData(i);
 			for (Bus b : distNet.getBusList()) {
 				DistBus distBus = (DistBus) b;
-				DistBusAdapter aBusApt = (DistBusAdapter) distBus
-						.getAdapter(DistBusAdapter.class);
+				DistBusAdapter aBusApt = DistFunction.distBusAptr.apply(distBus);
 				distBus.getBus().setVoltage(aBusApt.getPointVoltage(i));
 			}
 
