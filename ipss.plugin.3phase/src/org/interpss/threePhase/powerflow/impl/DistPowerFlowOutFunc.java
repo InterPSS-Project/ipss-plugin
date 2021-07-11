@@ -16,7 +16,7 @@ import com.interpss.dstab.BaseDStabBus;
 
 public class DistPowerFlowOutFunc {
 	
-	public static String powerflowResultSummary(BaseAclfNetwork<? extends BaseAclfBus,? extends AclfBranch> distNet){
+	public static String powerflowResultSummary(BaseAclfNetwork<?,?> distNet){
 		StringBuffer sb = new StringBuffer();
 		DStab3PBus swingBus = null;
 		
