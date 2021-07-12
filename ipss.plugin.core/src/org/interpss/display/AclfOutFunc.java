@@ -243,7 +243,7 @@ public class AclfOutFunc {
 		
 		
 		for (AclfBus bus : net.getBusList()) {
-			if ( bus.getLossPFactor(NetPathWalkDirectionEnum.ALONG_PATH, lossPU) > 0.0 && 
+			if ( bus.calLossPFactor(NetPathWalkDirectionEnum.ALONG_PATH, lossPU) > 0.0 && 
 						(bus.isLoad() || bus.isSwing())) { 
 				str.append(lossString(bus, NetPathWalkDirectionEnum.ALONG_PATH, lossMW, lossPU));
 			}
@@ -268,7 +268,7 @@ public class AclfOutFunc {
 		str.append("  ------------------------------------------------------------------------\n");
 		for (Bus bus : net.getBusList()) {
 			AclfBus aclfBus = (AclfBus)bus;
-			if (aclfBus.isGen() && aclfBus.getLossPFactor(NetPathWalkDirectionEnum.OPPOSITE_PATH, lossPU) > 0.0) { 
+			if (aclfBus.isGen() && aclfBus.calLossPFactor(NetPathWalkDirectionEnum.OPPOSITE_PATH, lossPU) > 0.0) { 
 				str.append(lossString(aclfBus, NetPathWalkDirectionEnum.OPPOSITE_PATH, lossMW, lossPU));
 			}
   		}		
@@ -281,9 +281,9 @@ public class AclfOutFunc {
 		str.append(Number2String.toStr(12, " "));
 		str.append(Number2String.toStr(-12, aclfBus.getId()) + "  ");
 		str.append(Number2String.toStr(2, " "));
-		str.append(Number2String.toStr("####0.000", aclfBus.getLossPFactor(direction, lossPU)));
+		str.append(Number2String.toStr("####0.000", aclfBus.calLossPFactor(direction, lossPU)));
 		str.append(Number2String.toStr(17, " "));
-		str.append(Number2String.toStr("####0.00", aclfBus.getLossPFactor(direction, lossPU)*lossMW));
+		str.append(Number2String.toStr("####0.00", aclfBus.calLossPFactor(direction, lossPU)*lossMW));
 		str.append("\n");
 		return str;
 	}
