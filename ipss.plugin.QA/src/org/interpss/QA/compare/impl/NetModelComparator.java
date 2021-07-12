@@ -190,7 +190,7 @@ public class NetModelComparator<TBus extends AclfBusBean, TBra extends AclfBranc
 		double max = 0.0;
 		for (Bus b : net.getBusList()) {
 			AclfBus bus = (AclfBus)b;
-			if (!bus.connect2ZeroZBranch()) {
+			if (!bus.isConnect2ZeroZBranch()) {
 				Complex  mis = bus.mismatch(AclfMethodType.NR);
 				if (mis.abs() > err) {
 					busList.add(bus);
@@ -223,7 +223,7 @@ public class NetModelComparator<TBus extends AclfBusBean, TBra extends AclfBranc
 		for (Bus b : net.getBusList()) {
 			AclfBus bus = (AclfBus)b;
 			Complex  mis = bus.mismatch(AclfMethodType.NR);
-			if (mis.abs() > max && !bus.connect2ZeroZBranch()) {
+			if (mis.abs() > max && !bus.isConnect2ZeroZBranch()) {
 				max = mis.abs();
 				misbus = bus;
 			}
