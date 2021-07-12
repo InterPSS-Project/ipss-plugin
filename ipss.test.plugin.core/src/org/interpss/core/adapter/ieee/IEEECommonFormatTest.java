@@ -37,8 +37,8 @@ import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
-import com.interpss.core.aclf.impl.NetInjectionHelper;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.funcImpl.ZeroZBranchNetHelper;
 import com.interpss.simu.SimuContext;
 
 public class IEEECommonFormatTest extends CorePluginTestSetup {
@@ -63,8 +63,8 @@ public class IEEECommonFormatTest extends CorePluginTestSetup {
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.16549)<0.0001);
   		
   		for (AclfBus bus : net.getBusList()) 
-  			if (!NumericUtil.equals(NetInjectionHelper.powerIntoNet(bus), bus.powerIntoNet(), 0.0002))
-  				System.out.println(bus.getId() + " : " + NetInjectionHelper.powerIntoNet(bus) + ", " + bus.powerIntoNet()); 		
+  			if (!NumericUtil.equals(ZeroZBranchNetHelper.powerIntoNet(bus), bus.powerIntoNet(), 0.0002))
+  				System.out.println(bus.getId() + " : " + ZeroZBranchNetHelper.powerIntoNet(bus) + ", " + bus.powerIntoNet()); 		
 	}
 
 	@Test 
