@@ -41,8 +41,8 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adj.AdjControlType;
 import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.adpter.AclfLoadBusAdapter;
-import com.interpss.core.aclf.adpter.AclfSwingBus;
-import com.interpss.core.aclf.adpter.AclfXformer;
+import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
+import com.interpss.core.aclf.adpter.AclfXformerAdapter;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.simu.util.sample.SampleTestingCases;
 
@@ -89,7 +89,7 @@ public class XfrTapControlSample {
   		bus1.setAttributes("Bus 1", "");
   		bus1.setBaseVoltage(10000.0);
   		bus1.setGenCode(AclfGenCode.SWING);
-  		AclfSwingBus swingBus = bus1.toSwingBus();
+  		AclfSwingBusAdapter swingBus = bus1.toSwingBus();
   		swingBus.setDesiredVoltMag(1.0, UnitType.PU);
   		swingBus.setDesiredVoltAng(0.0, UnitType.Deg);
   		
@@ -106,7 +106,7 @@ public class XfrTapControlSample {
   		net.addBranch(branch, "0001", "0002");
   		branch.setAttributes("Branch 1", "", "1");
   		branch.setBranchCode(AclfBranchCode.XFORMER);
-		AclfXformer xfr = branch.toXfr();
+		AclfXformerAdapter xfr = branch.toXfr();
 		xfr.setZ(new Complex(0.05, 0.1), UnitType.PU, 4000.0);
 	  	xfr.setFromTurnRatio(1.0);
 	  	
