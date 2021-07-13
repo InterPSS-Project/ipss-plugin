@@ -37,7 +37,7 @@ import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.algo.AclfMethod;
+import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.simu.util.sample.SampleTestingCases;
 
@@ -51,14 +51,14 @@ public class EquivGenLoadSample {
 		//System.out.println(net.net2String());
 
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
-	  	algo.setLfMethod(AclfMethod.NR);
+	  	algo.setLfMethod(AclfMethodType.NR);
 	  	algo.setMaxIterations(20);
 	  	algo.setTolerance(0.0001, UnitType.PU, net.getBaseKva());
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 	  	
   		assertTrue(net.isLfConverged());
-		System.out.println("Largest mismatch-1 " + net.maxMismatch(AclfMethod.NR)); 
+		System.out.println("Largest mismatch-1 " + net.maxMismatch(AclfMethodType.NR)); 
 		
   		// init Equiv Gen/Load configuration
 		net.setHasEquivGenLoad(true);
@@ -76,7 +76,7 @@ public class EquivGenLoadSample {
   		
   		Complex maxMismatch = new Complex(0.0, 0.0);
   		for (AclfBus bus : net.getBusList()) {
-			Complex mismatch = bus.mismatch(AclfMethod.NR);
+			Complex mismatch = bus.mismatch(AclfMethodType.NR);
 			// adjust the bus mismatch using the Equiv Gen/Load
 			Complex equivGenLoad = (Complex)net.getEquivGenLoadCache().get(bus.getId());
 			if (equivGenLoad != null)

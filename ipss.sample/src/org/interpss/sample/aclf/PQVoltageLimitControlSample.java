@@ -38,9 +38,9 @@ import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adj.PQBusLimit;
-import com.interpss.core.aclf.adpter.AclfPQGenBus;
-import com.interpss.core.aclf.adpter.AclfSwingBus;
-import com.interpss.core.algo.AclfMethod;
+import com.interpss.core.aclf.adpter.AclfPQGenBusAdapter;
+import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
+import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.simu.util.sample.SampleTestingCases;
 
@@ -58,7 +58,7 @@ public class PQVoltageLimitControlSample {
 		// change Bus-4 from PV bus to PQ bus
 		AclfBus bus = net.getBus("4");
 		bus.setGenCode(AclfGenCode.GEN_PQ);
-		AclfPQGenBus pq = bus.toPQBus();
+		AclfPQGenBusAdapter pq = bus.toPQBus();
 		pq.setGenQ(1.6);
 		
 		// for the base case, Bus4 : 5 + 1.6, V : 1.06108
@@ -67,7 +67,7 @@ public class PQVoltageLimitControlSample {
 		pqLimit.setVLimit(new LimitType(1.05, 0.95), UnitType.PU);
 		
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
-	  	algo.setLfMethod(AclfMethod.NR);
+	  	algo.setLfMethod(AclfMethodType.NR);
 	  	algo.setMaxIterations(20);
 	  	algo.setTolerance(0.0001, UnitType.PU, net.getBaseKva());
 	  	algo.loadflow();
@@ -76,7 +76,7 @@ public class PQVoltageLimitControlSample {
   		assertTrue(net.isLfConverged());
 
   		AclfBus swingBus = net.getBus("5");
-		AclfSwingBus swing = swingBus.toSwingBus();
+		AclfSwingBusAdapter swing = swingBus.toSwingBus();
   		System.out.println("Swing bus P, Q: " + swing.getGenResults(UnitType.PU));
 	}	
 }

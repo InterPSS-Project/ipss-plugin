@@ -27,12 +27,12 @@ public class AcscSample {
 		//System.out.println(faultNet.net2String());
 		
 	  	SimpleFaultAlgorithm algo = CoreObjectFactory.createSimpleFaultAlgorithm(faultNet);
-  		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("2", algo);
+  		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("2", algo, true /* cacheBusScVolt */);
 		fault.setFaultCode(SimpleFaultCode.GROUND_3P);
 		fault.setZLGFault(new Complex(0.0, 0.0));
 		fault.setZLLFault(new Complex(0.0, 0.0));
 		
-	  	algo.calBusFault(fault, true /* cacheBusScVolt */ );
+	  	algo.calBusFault(fault);
 		System.out.println("//////////////////////////////////////////////////////");		
 		System.out.println("----------- Fault using UnitVolt ---------------------");		
 		System.out.println(AcscOutFunc.faultResult2String(faultNet, algo));		
