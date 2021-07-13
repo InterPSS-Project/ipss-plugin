@@ -26,8 +26,8 @@ package org.interpss.sample.dclf_ca;
 
 import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
-import static com.interpss.core.DclfAlgoObjectFactory.createMonitoringBranch;
-import static com.interpss.core.DclfAlgoObjectFactory.createOutageBranch;
+import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
+import static com.interpss.core.DclfAlgoObjectFactory.createCaMonitoringBranch;
 
 import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.exp.IpssNumericException;
@@ -38,12 +38,13 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.contingency.Contingency;
-import com.interpss.core.algo.dclf.BranchOutageType;
+import com.interpss.core.algo.dclf.CaBranchOutageType;
+import com.interpss.core.algo.dclf.CaOutageBranch;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
-import com.interpss.core.algo.dclf.OutageBranch;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 import com.interpss.core.common.OutageConnectivityException;
 import com.interpss.core.common.ReferenceBusException;
+import com.interpss.dstab.devent.BranchOutageType;
 
 public class Ieee14_CASample {
 	public static void main(String args[]) throws Exception {
@@ -74,11 +75,11 @@ public class Ieee14_CASample {
 		Contingency cont = createContingency("contId");
 		
 		// define an outage branch
-		cont.setOutageBranch(createOutageBranch(algo.getDclfAlgoBranch("Bus5->Bus6(1)"), BranchOutageType.OPEN));
+		cont.setOutageBranch(createCaOutageBranch(algo.getDclfAlgoBranch("Bus5->Bus6(1)"), CaBranchOutageType.OPEN));
 
 		// define monitoring branches
-		cont.addMonitoringBranch(createMonitoringBranch(algo.getDclfAlgoBranch("Bus4->Bus7(1)")));
-		cont.addMonitoringBranch(createMonitoringBranch(algo.getDclfAlgoBranch("Bus4->Bus9(1)")));
+		cont.addMonitoringBranch(createCaMonitoringBranch(algo.getDclfAlgoBranch("Bus4->Bus7(1)")));
+		cont.addMonitoringBranch(createCaMonitoringBranch(algo.getDclfAlgoBranch("Bus4->Bus9(1)")));
 
 		// perform CA analysis
 		algo.ca(cont);
@@ -104,10 +105,10 @@ public class Ieee14_CASample {
 
 		algo.setRefBus("Bus14");
 		
-		algo.multiOpenOutgageAnalysis(new OutageBranch[] {
-				createOutageBranch(algo.getDclfAlgoBranch("Bus1->Bus5(1)"), BranchOutageType.OPEN),
-				createOutageBranch(algo.getDclfAlgoBranch("Bus3->Bus4(1)"), BranchOutageType.OPEN),
-				createOutageBranch(algo.getDclfAlgoBranch("Bus6->Bus11(1)"), BranchOutageType.OPEN)
+		algo.multiOpenOutgageAnalysis(new CaOutageBranch[] {
+				createCaOutageBranch(algo.getDclfAlgoBranch("Bus1->Bus5(1)"), CaBranchOutageType.OPEN),
+				createCaOutageBranch(algo.getDclfAlgoBranch("Bus3->Bus4(1)"), CaBranchOutageType.OPEN),
+				createCaOutageBranch(algo.getDclfAlgoBranch("Bus6->Bus11(1)"), CaBranchOutageType.OPEN)
 			});
 	      
    		/*
