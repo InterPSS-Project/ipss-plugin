@@ -37,8 +37,8 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adj.PVBusLimit;
-import com.interpss.core.aclf.adpter.AclfSwingBus;
-import com.interpss.core.algo.AclfMethod;
+import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
+import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.simu.util.sample.SampleTestingCases;
 
@@ -58,7 +58,7 @@ public class PVGenQLimitControlSample {
 		pvLimit.setQLimit(new LimitType(1.4, 0.0));
 		
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
-	  	algo.setLfMethod(AclfMethod.NR);
+	  	algo.setLfMethod(AclfMethodType.NR);
 	  	algo.setMaxIterations(20);
 	  	algo.setTolerance(0.0001, UnitType.PU, net.getBaseKva());
 	  	algo.loadflow();
@@ -67,7 +67,7 @@ public class PVGenQLimitControlSample {
   		assertTrue(net.isLfConverged());
   		
   		AclfBus swingBus = net.getBus("5");
-		AclfSwingBus swing = swingBus.toSwingBus();
+		AclfSwingBusAdapter swing = swingBus.toSwingBus();
   		System.out.println("Swing bus P, Q: " + swing.getGenResults(UnitType.PU));
 	}
 }

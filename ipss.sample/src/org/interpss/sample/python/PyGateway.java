@@ -9,7 +9,7 @@ import org.interpss.pssl.simu.IpssAclf;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.algo.AclfMethod;
+import com.interpss.core.algo.AclfMethodType;
 
 import py4j.GatewayServer;
 
@@ -28,7 +28,7 @@ public class PyGateway {
 					.getImportedObj();
 			
 		  	IpssAclf.createAclfAlgo(net)
-  					.lfMethod(AclfMethod.NR)
+  					.lfMethod(AclfMethodType.NR)
   					.nonDivergent(true)
   					.runLoadflow();	
 		  	
