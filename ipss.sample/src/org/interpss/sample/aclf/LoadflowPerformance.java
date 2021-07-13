@@ -32,7 +32,7 @@ import org.interpss.numeric.util.PerformanceTimer;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.algo.AclfMethod;
+import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
 
@@ -57,7 +57,7 @@ public class LoadflowPerformance {
 		 */
 		timer.start();
 	  	LoadflowAlgorithm algoLF = CoreObjectFactory.createLoadflowAlgorithm(adjNet);
-	  	algoLF.setLfMethod(AclfMethod.NR);
+	  	algoLF.setLfMethod(AclfMethodType.NR);
 	  	algoLF.loadflow();
 	  	timer.logStd("Time for running Loadflow: ");
 
@@ -65,7 +65,7 @@ public class LoadflowPerformance {
 	  	 * time running a step of NR method
 	  	 */
 		timer.start();
-	  	algoLF.setLfMethod(AclfMethod.NR_STEP);
+	  	algoLF.setLfMethod(AclfMethodType.NR_STEP);
 	  	algoLF.loadflow();
 	  	timer.logStd("Time for running one step NR Loadflow: ");
 	}	
