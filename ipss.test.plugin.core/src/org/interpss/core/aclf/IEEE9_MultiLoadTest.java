@@ -51,7 +51,7 @@ public class IEEE9_MultiLoadTest extends CorePluginTestSetup{
  		//System.out.println(AclfOut_PSSE.lfResults(net, Format.GUI));
  		Complex gen1_PQ=net.getBus("Bus3").getContributeGenList().get(0).getGen();
  		//System.out.println(gen1_PQ);
- 		assertTrue(NumericUtil.equals(gen1_PQ,new Complex(0.85, -0.1092),1.0E-4));
+ 		assertTrue(NumericUtil.equals(gen1_PQ,new Complex(0.85, -0.1092), 1.0E-4));
  		
  		//Test loadPQ of bus8
  		assertTrue(NumericUtil.equals(net.getBus("Bus8").getLoadPQ(),new Complex(1.0, 0.35),1.0E-4));
