@@ -748,7 +748,8 @@ private DStabNetwork3Phase create3BusSys() throws InterpssException{
   		
   		//TODO Three-sequence load
   		//AclfLoad load = CoreObjectFactory.createAclfLoad("1");
-  		bus2.setLoadPQ(new Complex(1.0,0.20));
+  		bus2.setLoadP(1.0);
+  		bus2.setLoadQ(0.20);
   		
   		
   		bus2.setSortNumber(1);

@@ -243,8 +243,8 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
   		bus11a.setGenCode(AclfGenCode.NON_GEN);
   		// set the bus to a constant power load bus
   		bus11a.setLoadCode(AclfLoadCode.CONST_P);
-  		bus11a.setLoadPQ(new Complex(0.61,0.1));
-  		
+  		bus11a.setLoadP(0.61);
+  		bus11a.setLoadQ(0.1);
   		
 		DStab3PBus bus12 = ThreePhaseObjectFactory.create3PDStabBus("Bus12", dsNet);
   		bus12.setAttributes("230 V feeder", "");
@@ -256,7 +256,8 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
   		
   		bus12.setLoadCode(AclfLoadCode.CONST_P);
   		
-  		bus12.setLoadPQ(new Complex(0.61,0.1));
+  		bus12.setLoadP(0.61);
+  		bus12.setLoadQ(0.1);
   		
   		
 
@@ -524,7 +525,8 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
  		bus11a.setGenCode(AclfGenCode.NON_GEN);
  		// set the bus to a constant power load bus
  		bus11a.setLoadCode(AclfLoadCode.CONST_P);
- 		bus11a.setLoadPQ(new Complex(0.61,0.1));
+ 		bus11a.setLoadP(0.61);
+ 		bus11a.setLoadQ(0.1);
  		
  		
  		DStabBus bus12 = (DStabBus) DStabObjectFactory.createDStabBus("Bus12", dsNet);
@@ -537,7 +539,8 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
  		
  		bus12.setLoadCode(AclfLoadCode.CONST_P);
  		
- 		bus12.setLoadPQ(new Complex(0.61,0.1));
+ 		bus12.setLoadP(0.61);
+ 		bus12.setLoadQ(0.1);
  		
  		
 

@@ -259,7 +259,8 @@ public class TestMultiNet3Ph3SeqSimHelper {
 		
 		DStab3PBus bus5 = dsNet.getBus("Bus5");
 		
-		Complex bus5LoadYeq = bus5.getLoadPQ().conjugate().divide(bus5.getVoltageMag()*bus5.getVoltageMag()) ;
+		Complex bus5LoadYeq = new Complex(bus5.getLoadP(),bus5.getLoadQ())
+					.conjugate().divide(bus5.getVoltageMag()*bus5.getVoltageMag()) ;
 		
 		System.out.println("bus5LoadYeq = "+bus5LoadYeq);
 		

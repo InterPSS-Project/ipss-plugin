@@ -54,7 +54,8 @@ public class IEEE9_MultiLoadTest extends CorePluginTestSetup{
  		assertTrue(NumericUtil.equals(gen1_PQ,new Complex(0.85, -0.1092), 1.0E-4));
  		
  		//Test loadPQ of bus8
- 		assertTrue(NumericUtil.equals(net.getBus("Bus8").getLoadPQ(),new Complex(1.0, 0.35),1.0E-4));
+ 		assertTrue(NumericUtil.equals(net.getBus("Bus8").getLoadP(), 1.0, 1.0E-4));
+ 		assertTrue(NumericUtil.equals(net.getBus("Bus8").getLoadQ(), 0.35, 1.0E-4));
 	  	
  		
  		/*------------------------------------
@@ -70,7 +71,8 @@ public class IEEE9_MultiLoadTest extends CorePluginTestSetup{
  		
  		//test the total load of Bus8
  
- 		assertTrue(NumericUtil.equals(net.getBus("Bus8").getLoadPQ(),new Complex(0.5, 0.05),1.0E-4));
+ 		assertTrue(NumericUtil.equals(net.getBus("Bus8").getLoadP(), 0.5, 1.0E-4));
+ 		assertTrue(NumericUtil.equals(net.getBus("Bus8").getLoadQ(), 0.05, 1.0E-4));
 	}
 
 }
