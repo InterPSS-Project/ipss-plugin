@@ -408,7 +408,8 @@ private DStabilityNetwork create2BusSystem() throws InterpssException{
 		//bus1.setGenCode(AclfGenCode.GEN_PQ);
 		bus1.setLoadCode(AclfLoadCode.CONST_P);
 
-		bus1.setLoadPQ( new Complex(0.8,0.2));
+		bus1.setLoadP(0.8);
+		bus1.setLoadQ(0.2);
 		
 		// Second bus is a Swing bus
 		DStabBus bus2 = (DStabBus) DStabObjectFactory.createDStabBus("Swing", net);

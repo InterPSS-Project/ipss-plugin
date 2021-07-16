@@ -122,11 +122,12 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
     public boolean initStates(){
     	boolean initflag = true;
     	
-		this.totalLoad = this.getDStabBus().getLoadPQ(); // or getInitLoad()
+		this.totalLoad = new Complex(this.getDStabBus().getLoadP(), this.getDStabBus().getLoadQ()); // or getInitLoad()
 		
 		// set parentBus to nonLoad, and remove all the loads
 		this.getDStabBus().setLoadCode(AclfLoadCode.NON_LOAD);
-		this.getDStabBus().setLoadPQ(new Complex (0,0));
+		this.getDStabBus().setLoadP(0.0);
+		this.getDStabBus().setLoadQ(0.0);
 		if(this.getDStabBus().getContributeLoadList().size()>0){
 			this.getDStabBus().getContributeLoadList().clear();
 		}
@@ -477,7 +478,8 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
   	    // PQLoadBus - the total load at the load bus
   	    Complex PQLoadBus = VloadBus.multiply(ItoloadBus.conjugate());
   	    
-  	    this.loadBus.setLoadPQ(PQLoadBus);
+  	    this.loadBus.setLoadP(PQLoadBus.getReal());
+  	    this.loadBus.setLoadQ(PQLoadBus.getImaginary());
   	    this.loadBus.setInitLoad(PQLoadBus);
     	
     	//5. connect dynamic load models to the load bus

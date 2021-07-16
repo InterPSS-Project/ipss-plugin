@@ -568,7 +568,8 @@ public class TestDistributionPowerflowAlgo {
   		// set the bus to a constant power load bus
   		bus4.setLoadCode(AclfLoadCode.CONST_P);
 
-  		bus4.setLoadPQ(new Complex(1,0.1));
+  		bus4.setLoadP(1);
+  		bus4.setLoadQ(0.1);
   		
 //  		Load3Phase load2 = new Load3PhaseImpl();
 //  		load2.set3PhaseLoad(new Complex3x1(new Complex(1,0.1),new Complex(1,0.1),new Complex(1,0.1)));
