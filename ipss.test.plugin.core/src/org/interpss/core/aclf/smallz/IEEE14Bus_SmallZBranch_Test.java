@@ -131,9 +131,9 @@ public class IEEE14Bus_SmallZBranch_Test extends CorePluginTestSetup {
 				if (bus.isGenPQ())
 					p = p.subtract(bus.getGenPQ());
 				if (bus.isConstPLoad())
-					p = p.add(bus.getLoadPQ().multiply(bus.getVoltageMag()));
+					p = p.add(new Complex(bus.getLoadP(),bus.getLoadQ()).multiply(bus.getVoltageMag()));
 				else if (bus.isConstILoad())
-					p = p.add(bus.getLoadPQ());
+					p = p.add(new Complex(bus.getLoadP(),bus.getLoadQ()));
 				sum = sum.add(p.divide(bus.getVoltage()).conjugate());
 			}
 			else {
