@@ -204,12 +204,13 @@ public class TposSeqD3PhaseMultiNetPowerflowAlgorithm {
 				   
 				   
 				   //TODO assuming there is no loads at the boundary bus
-				   if(transBoundaryBus.getLoadPQ().abs()>0.0){
+				   if(new Complex(transBoundaryBus.getLoadP(),transBoundaryBus.getLoadQ()).abs()>0.0){
 					   throw new Error("The  boundary bus in the tranmission network cannot be a load bus: "+transBoundaryBusId);
 				   }
 				   
 				   // represent the power flow into the boundary bus as "negative" load
-				   transBoundaryBus.setLoadPQ(e.getValue().multiply(-1.0));
+				   transBoundaryBus.setLoadP(-e.getValue().getReal());
+				   transBoundaryBus.setLoadQ(-e.getValue().getImaginary());
 				   transBoundaryBus.setLoadCode(AclfLoadCode.CONST_P);
 				   
 				   transNetworkBoundaryBusIdList.add(transBoundaryBusId);
@@ -325,9 +326,10 @@ public class TposSeqD3PhaseMultiNetPowerflowAlgorithm {
 					   else{
 						   
 						   // UPDATE THE EQUIVALENT LOAD VALUE
-						   transBoundaryBus.setLoadPQ(e.getValue().multiply(-1));
+						   transBoundaryBus.setLoadP(-e.getValue().getReal());
+						   transBoundaryBus.setLoadQ(-e.getValue().getImaginary());
 						   
-						   System.out.println(" trans bounary bus equiv load = "+transBoundaryBus.getLoadPQ().toString());
+						   //System.out.println(" trans bounary bus equiv load = "+transBoundaryBus.getLoadPQ().toString());
 						  
 					   }
 					   
@@ -381,7 +383,8 @@ public class TposSeqD3PhaseMultiNetPowerflowAlgorithm {
 				    	  // remove the equivalent load from the boundary buses by setting bus as NON_LOAD bus
 				    	  for(String boundaryId: transNetworkBoundaryBusIdList){
 				    		  this.transmissionNet.getBus(boundaryId).setLoadCode(AclfLoadCode.NON_LOAD);
-				    		  this.transmissionNet.getBus(boundaryId).setLoadPQ(new Complex(0.0));
+				    		  this.transmissionNet.getBus(boundaryId).setLoadP(0.0);
+				    		  this.transmissionNet.getBus(boundaryId).setLoadQ(0.0);
 				    	  }
 				    	  
 				    	  for(BaseAclfNetwork distNet: this.distNetList){

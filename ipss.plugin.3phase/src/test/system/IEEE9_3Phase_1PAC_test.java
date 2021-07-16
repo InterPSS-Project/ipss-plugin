@@ -320,7 +320,8 @@ public class IEEE9_3Phase_1PAC_test {
   		// set the bus to a constant power load bus
   		bus11.setLoadCode(AclfLoadCode.CONST_P);
   		
-  		bus11.setLoadPQ(new Complex(0.625,-0.05));
+  		bus11.setLoadP(0.625);
+  		bus11.setLoadQ(-0.05);
   		
 		DStab3PBus bus12 = ThreePhaseObjectFactory.create3PDStabBus("Bus12", dsNet);
   		bus12.setAttributes("208 V feeder", "");
@@ -332,7 +333,8 @@ public class IEEE9_3Phase_1PAC_test {
   		
   		bus12.setLoadCode(AclfLoadCode.CONST_P);
   		
-  		bus12.setLoadPQ(new Complex(0.6,0.1));
+  		bus12.setLoadP(0.6);
+  		bus12.setLoadQ(0.1);
   		
   		
 		//////////////////transformers///////////////////////////////////////////

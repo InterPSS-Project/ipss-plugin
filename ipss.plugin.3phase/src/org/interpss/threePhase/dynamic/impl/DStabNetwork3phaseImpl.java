@@ -592,7 +592,7 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 			   //only the active buses will be initialized
 				if(b.isActive()){
 					// set bus initial vaule 
-					bus.setInitLoad(bus.getLoadPQ());
+					bus.setInitLoad(new Complex(bus.getLoadP(),bus.getLoadQ()));
 					bus.setInitVoltMag(bus.getVoltageMag());
 					bus.setVoltage(bus.getThreeSeqVoltage().b_1); // make sure the positive sequence voltage is set up;
 					
