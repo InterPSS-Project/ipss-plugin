@@ -248,7 +248,8 @@ public class TestTnDCombinedPowerflow {
   		DStab3PLoad load1 = new DStab3PLoadImpl();
   		load1.set3PhaseLoad(new Complex3x1(new Complex(0.5,-0.1),new Complex(0.5,-0.1),new Complex(0.5,-0.1)));
   		bus3.getThreePhaseLoadList().add(load1);
-  		bus3.setLoadPQ(new Complex(0.5,-0.1));
+  		bus3.setLoadP(0.5);
+  		bus3.setLoadQ(-0.1);
   		
   		
   		DStab3PBus bus4 = ThreePhaseObjectFactory.create3PAclfBus("Bus14", net);
@@ -259,7 +260,8 @@ public class TestTnDCombinedPowerflow {
   		// set the bus to a constant power load bus
   		bus4.setLoadCode(AclfLoadCode.CONST_P);
 
-  		bus4.setLoadPQ(new Complex(1,0.1));
+  		bus4.setLoadP(1);
+  		bus4.setLoadQ(0.1);
   		
   		DStab3PLoad load2 = new DStab3PLoadImpl();
   		load2.set3PhaseLoad(new Complex3x1(new Complex(1,0.1),new Complex(1,0.1),new Complex(1,0.1)));

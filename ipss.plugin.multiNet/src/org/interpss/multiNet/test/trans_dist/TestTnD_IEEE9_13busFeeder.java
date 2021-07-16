@@ -300,7 +300,7 @@ public class TestTnD_IEEE9_13busFeeder {
 			
 			DStab3PBus transBus = (DStab3PBus) net.getBus(transBusId);
 			
-			Complex loadPQ = transBus.getLoadPQ();
+			Complex loadPQ = new Complex(transBus.getLoadP(), transBus.getLoadQ());
 			
 			String[] interfaceIds = new String[3];
 			
@@ -365,7 +365,8 @@ public class TestTnD_IEEE9_13busFeeder {
 				// total Var at the transmission bus is equal to total feeder Q plus step-down transformer Var consumption
 				double dQ = loadPQ.getImaginary()-distTotalLoadPQ.getImaginary()-(distTotalLoadPQ.abs()*xfr1_2.getZ().getImaginary());
 				
-				transBus.setLoadPQ(new Complex(dP,dQ));
+				transBus.setLoadP(dP);
+				transBus.setLoadQ(dQ);
 				//transBus.setLoadPQ(new Complex(0,0));
 				
 			}
