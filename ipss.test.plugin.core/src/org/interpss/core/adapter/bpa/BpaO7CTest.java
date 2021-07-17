@@ -103,7 +103,7 @@ public class BpaO7CTest extends DStabTestSetupBase {
 		for(AclfBus bus:net.getBusList()){
 			//AclfBus bus=(AclfBus) b;
 			if(bus.isGen()){
-				System.out.println(bus.getName()+", "+bus.getId()+" ,p= "+bus.getNetGenResults().getReal()+",q= "+bus.getNetGenResults().getImaginary());
+				System.out.println(bus.getName()+", "+bus.getId()+" ,p= "+bus.calNetGenResults().getReal()+",q= "+bus.calNetGenResults().getImaginary());
 			}
 		}
 
