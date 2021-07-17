@@ -219,11 +219,11 @@ public class LVSHLoadRelayModel extends DynamicBusDeviceImpl implements BusRelay
 		
 		        // process static loads, represented by netLoadResults. Need to change the system Ymatrix by updating Yii of the corresponding bus
 		    	   
-		    	   if(this.getDStabBus().getNetLoadResults().abs()>0){
+		    	   if(this.getDStabBus().calNetLoadResults().abs()>0){
 		    		   double initVoltMag = this.getDStabBus().getInitVoltMag();
 		    		   
 		    		
-		    		   Complex deltaPQ = this.getDStabBus().getNetLoadResults().multiply(-maxTripFraction); // add "minus" for load shedding;
+		    		   Complex deltaPQ = this.getDStabBus().calNetLoadResults().multiply(-maxTripFraction); // add "minus" for load shedding;
 		    		   Complex deltaYii = deltaPQ.conjugate().divide(initVoltMag*initVoltMag);
 		    		   
 		    		   int sortNum = this.getDStabBus().getSortNumber();

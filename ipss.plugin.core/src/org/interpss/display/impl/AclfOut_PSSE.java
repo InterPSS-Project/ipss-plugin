@@ -93,7 +93,7 @@ public class AclfOut_PSSE {
 		double qgen = 0.0, qload = 0.0, qshunt = 0.0;
 		char qchar = ' ';
 		if (bus.isGen()) {
-			Complex c = bus.getNetGenResults();
+			Complex c = bus.calNetGenResults();
 			pgen = pu2Mva * c.getReal();
 			qgen = pu2Mva * c.getImaginary();
 			// R = regulating, L = low limit, H = high limit
@@ -101,7 +101,7 @@ public class AclfOut_PSSE {
 				qchar = 'R';  //TODO
 		}
 		if (bus.isLoad()) {
-			Complex c = bus.getNetLoadResults();
+			Complex c = bus.calNetLoadResults();
 			pload = pu2Mva * c.getReal();
 			qload = pu2Mva * c.getImaginary();
 		}
@@ -208,7 +208,7 @@ BUS  10002 GZ-HLZ      220.00 CKT     MW     MVAR     MVA  %I 1.0445PU  -47.34  
  FROM GENERATION                    600.0    34.4R  601.0 601 19.095KV               MW     MVAR    1 GD             19 50
  */
 		if (bus.isGen() && !bus.isCapacitor()) {
-			Complex pq = bus.getNetGenResults();
+			Complex pq = bus.calNetGenResults();
 			s += formatBusLoad("FROM GENERATION", pq.getReal()*factor, pq.getImaginary()*factor, pq.abs()*factor);
 			
 			//double iper = 986;
@@ -258,7 +258,7 @@ BUS  10002 GZ-HLZ      220.00 CKT     MW     MVAR     MVA  %I 1.0445PU  -47.34  
  TO LOAD-PQ                           0.0  -104.0   104.0
  */
 		if (bus.isLoad()) {
-			Complex pq = bus.getNetLoadResults();
+			Complex pq = bus.calNetLoadResults();
 			s += formatBusLoad("TO LOAD-PQ", pq.getReal()*factor, pq.getImaginary()*factor, pq.abs()*factor) + "\n";
 		}
 		

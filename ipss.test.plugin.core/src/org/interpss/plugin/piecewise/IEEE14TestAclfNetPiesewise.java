@@ -63,7 +63,7 @@ public class IEEE14TestAclfNetPiesewise extends PiecewiseAlgoTestSetup {
 			// The bus injection current is based on gen bus load flow results.
 		if (bus.isGen()) {
 			//System.out.println("Inj cur -- id, sortNumber, cur: " + bus.getId() + ", " + bus.getSortNumber() + ", " + ComplexFunc.toStr(i));
-			return bus.getNetGenResults().divide(bus.getVoltage());
+			return bus.calNetGenResults().divide(bus.getVoltage());
 		}
 		else 
 			return new Complex(0.0, 0.0);
