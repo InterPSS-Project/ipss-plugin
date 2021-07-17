@@ -673,7 +673,7 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 							
 						}
 						
-						Complex orginalLoadPQ  = bus.getNetLoadResults();
+						Complex orginalLoadPQ  = bus.calNetLoadResults();
 						bus.setNetLoadResults(orginalLoadPQ.subtract(totalPosSeqDynLoadPQ));
 						
 						

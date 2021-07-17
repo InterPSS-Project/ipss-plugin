@@ -278,10 +278,10 @@ public class DynamicEventProcessor3Phase extends DynamicEventProcessor {
 				
 				        // process static loads, represented by netLoadResults. Need to change the system Ymatrix by updating Yii of the corresponding bus
 				    	   
-				    	   if(bus.getNetLoadResults().abs()>0){
+				    	   if(bus.calNetLoadResults().abs()>0){
 				    		   double initVoltMag = bus.getInitVoltMag();
 				    		   
-				    		   Complex deltaPQ = bus.getNetLoadResults().multiply(factor);
+				    		   Complex deltaPQ = bus.calNetLoadResults().multiply(factor);
 				    		   Complex deltaLoadEquivY1 = deltaPQ.conjugate().divide(initVoltMag*initVoltMag);
 				    		   
 				    		   Complex deltaLoadEquivY2 =deltaLoadEquivY1; //assuming Y1 = Y2;

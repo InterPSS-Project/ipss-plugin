@@ -207,7 +207,7 @@ public class AclfOutFunc {
 
 	private static String busLfSummary(BaseAclfBus<?,?> bus) {
 		final StringBuffer str = new StringBuffer("");
-		Complex busPQ = bus.getNetPQResults();
+		Complex busPQ = bus.calNetPQResults();
 		if (bus.isActive())
 			str.append("  ");
 		else
