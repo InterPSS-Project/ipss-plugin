@@ -81,7 +81,8 @@ public class Kunder_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 		  TO      8 BUS8        230.00  2     95.6   -25.4    99.0                           1.13   11.26    2 AREA2           2
 
   		 */
-  		assertTrue(NumericUtil.equals(net.getBus("Bus7").getGenPQ(), new Complex(-2.09,-0.687),0.001));
+  		assertTrue(NumericUtil.equals(net.getBus("Bus7").getGenP(), -2.09, 0.001));
+  		assertTrue(NumericUtil.equals(net.getBus("Bus7").getGenQ(), -0.687,0.001));
   		assertTrue(NumericUtil.equals(net.getBus("Bus7").getVoltageMag(),0.95946,0.00001));
   		assertTrue(NumericUtil.equals(net.getBus("Bus7").getVoltageAng(),-11.84/(180/Math.PI),0.01));
   		assertTrue(NumericUtil.equals(net.getBus("Bus9").getVoltageMag(),0.98,0.00001));
