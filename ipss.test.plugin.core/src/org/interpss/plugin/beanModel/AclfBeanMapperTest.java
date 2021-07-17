@@ -272,8 +272,8 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 		//System.out.println(aclfNet.net2String());
 		AclfBus bus = aclfNet.getBus("Bus1");
 		//System.out.println(bus.getNetGenResults().getReal() +"," + bus.getNetGenResults().getImaginary());
-		assertTrue(bus.getNetGenResults().getReal() - 3.10322 < 0.0001);
-		assertTrue(bus.getNetGenResults().getImaginary() - 0.52117 < 0.0001);
+		assertTrue(bus.calNetGenResults().getReal() - 3.10322 < 0.0001);
+		assertTrue(bus.calNetGenResults().getImaginary() - 0.52117 < 0.0001);
 	}	
 	
 }

@@ -204,7 +204,7 @@ public class IEEE14Bus_SmallZBranch_Test extends CorePluginTestSetup {
 		else if (bus.isCapacitor())
 			p = p.add(new Complex(0.0, bus.toCapacitorBus().getQResults(UnitType.PU)));
 		if (bus.isLoad())
-			p = p.subtract(bus.getNetLoadResults());
+			p = p.subtract(bus.calNetLoadResults());
 		
 		for( Branch b : bus.getBranchList()) {
 			if ( !b.getId().equals(branch.getId()) && b.isActive() && b instanceof AclfBranch) {

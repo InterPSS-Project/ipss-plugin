@@ -256,7 +256,7 @@ public class TestLd1pacModel extends TestSetupBase {
 
 		// check only 50% load left as static load
 		Complex remainLoadPQ = new Complex(0.8, 0.6).subtract(loadPQ);
-		assertTrue(NumericUtil.equals(bus1.getNetLoadResults(), remainLoadPQ, 1.0E-5));
+		assertTrue(NumericUtil.equals(bus1.calNetLoadResults(), remainLoadPQ, 1.0E-5));
 
 		// correct equivY = 1/(0.124+j0.114)
 		Complex y = new Complex(0.5, 0).divide(new Complex(0.124, 0.114));
