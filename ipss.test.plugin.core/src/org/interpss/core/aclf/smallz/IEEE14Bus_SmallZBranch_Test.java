@@ -129,7 +129,7 @@ public class IEEE14Bus_SmallZBranch_Test extends CorePluginTestSetup {
 				// cur = conjugate( p / v )
 				Complex p = new Complex(0.0,0.0);
 				if (bus.isGenPQ())
-					p = p.subtract(bus.getGenPQ());
+					p = p.subtract(new Complex(bus.getGenP(),bus.getGenQ()));
 				if (bus.isConstPLoad())
 					p = p.add(new Complex(bus.getLoadP(),bus.getLoadQ()).multiply(bus.getVoltageMag()));
 				else if (bus.isConstILoad())
@@ -200,7 +200,7 @@ public class IEEE14Bus_SmallZBranch_Test extends CorePluginTestSetup {
 			return null; 
 		Complex p = new Complex(0.0,0.0);
 		if (bus.isGenPQ())
-			p = p.add(bus.getGenPQ());
+			p = p.add(new Complex(bus.getGenP(),bus.getGenQ()));
 		else if (bus.isCapacitor())
 			p = p.add(new Complex(0.0, bus.toCapacitorBus().getQResults(UnitType.PU)));
 		if (bus.isLoad())
