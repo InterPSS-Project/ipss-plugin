@@ -51,7 +51,7 @@ public class IEEE14BusPiesewiseAlgoSample {
 	static Function<AclfBus,Complex> injCurrentFunc = bus -> {   // this function calculates bus injection current
 			// The bus injection current is based on gen bus load flow results.
   			return bus.isGen()? 
-  						bus.getNetGenResults().divide(bus.getVoltage()) : 
+  						bus.calNetGenResults().divide(bus.getVoltage()) : 
   						new Complex(0.0, 0.0);
   		};
 	
