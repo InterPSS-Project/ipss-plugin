@@ -188,7 +188,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	IEEE14TestAclfSubAreaBuild.class,
 	
 	Acsc5BusTestSubAreaNet.class,
-	Acsc5BusTesPiecewiseAlgo.class,
+	//Acsc5BusTesPiecewiseAlgo.class,
 	
 	IEEE9BusTestDStabSubAreaNet.class,
 })
