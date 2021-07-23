@@ -17,6 +17,8 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.PerformanceTimer;
 import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PLoad;
+import org.interpss.threePhase.basic.dstab.impl.DStab3PLoadImpl;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.algo.DynamicEventProcessor3Phase;
 import org.interpss.threePhase.dynamic.model.impl.SinglePhaseACMotor;
@@ -180,37 +182,37 @@ public class IEEE9_3Phase_1PAC_test {
 	     */
 	   
 		
-	    
+	    /*
 	    
 		DStab3PBus bus5 = (DStab3PBus) dsNet.getBus("Bus5");
 		
-//		Load3Phase load1 = new Load3PhaseImpl();
-//		load1.set3PhaseLoad(new Complex3x1(new Complex(1.25,0.5),new Complex(1.25,0.5),new Complex(1.25,0.5)));
-//		bus5.getThreePhaseLoadList().add(load1);
-//		
-//	    SinglePhaseACMotor ac1 = new SinglePhaseACMotor(bus5,"1");
-//  		ac1.setLoadPercent(50);
-//  		ac1.setPhase(Phase.A);
-//  		ac1.setMVABase(25);
-//  		bus5.getPhaseADynLoadList().add(ac1);
-//  		
-//  		
-//  		
-//  		SinglePhaseACMotor ac2 = new SinglePhaseACMotor(bus5,"2");
-//  		ac2.setLoadPercent(50);
-//  		ac2.setPhase(Phase.B);
-//  		ac2.setMVABase(25);
-//  		bus5.getPhaseBDynLoadList().add(ac2);
-//  		
-//
-//  		
-//  		SinglePhaseACMotor ac3 = new SinglePhaseACMotor(bus5,"3");
-//  		ac3.setLoadPercent(50);
-//  		ac3.setPhase(Phase.C);
-//  		ac3.setMVABase(25);
-//  		bus5.getPhaseCDynLoadList().add(ac3);
+		DStab3PLoad load1 = new DStab3PLoadImpl();
+		load1.set3PhaseLoad(new Complex3x1(new Complex(1.25,0.5),new Complex(1.25,0.5),new Complex(1.25,0.5)));
+		bus5.getThreePhaseLoadList().add(load1);
+		
+	    SinglePhaseACMotor ac1 = new SinglePhaseACMotor(bus5,"1");
+  		ac1.setLoadPercent(50);
+  		ac1.setPhase(PhaseCode.A);
+  		ac1.setMvaBase(25);
+  		bus5.getPhaseADynLoadList().add(ac1);
+  		
+  		
+  		
+  		SinglePhaseACMotor ac2 = new SinglePhaseACMotor(bus5,"2");
+  		ac2.setLoadPercent(50);
+  		ac2.setPhase(PhaseCode.B);
+  		ac2.setMvaBase(25);
+  		bus5.getPhaseBDynLoadList().add(ac2);
+  		
+
+  		
+  		SinglePhaseACMotor ac3 = new SinglePhaseACMotor(bus5,"3");
+  		ac3.setLoadPercent(50);
+  		ac3.setPhase(PhaseCode.C);
+  		ac3.setMvaBase(25);
+  		bus5.getPhaseCDynLoadList().add(ac3);
 	    
-	    
+	    */
 	    
 		DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
@@ -261,6 +263,7 @@ public class IEEE9_3Phase_1PAC_test {
 		
 		System.out.println(sm.toCSVString(sm.getBusAngleTable()));
 		System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+		System.out.println(sm.toCSVString(sm.getBusFreqTable()));
 		
 	}
 	

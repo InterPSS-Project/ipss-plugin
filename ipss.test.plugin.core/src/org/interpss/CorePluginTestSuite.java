@@ -58,6 +58,7 @@ import org.interpss.core.dstab.mach.Eq1Ed1MachineTest;
 import org.interpss.core.dstab.mach.Eq1MachineCaseTest;
 import org.interpss.core.dstab.mach.MachineSaturationTest;
 import org.interpss.core.dstab.mach.RoundRotorMachineTest;
+import org.interpss.core.dstab.mach.SMIB_Gen_Test;
 import org.interpss.core.dstab.mach.SalientPoleMachineTest;
 import org.interpss.plugin.beanModel.AclfBeanMapperTest;
 import org.interpss.plugin.piecewise.Acsc5BusTesPiecewiseAlgo;
@@ -103,12 +104,13 @@ import org.junit.runners.Suite.SuiteClasses;
 	WashoutControlBlockTests.class,
 	
 	// DStab Machine
-	Eq1Ed1MachineTest.class,
+	//Eq1Ed1MachineTest.class,
 	EConstMachineTest.class,
-	Eq1MachineCaseTest.class,
+	//Eq1MachineCaseTest.class,
 	MachineSaturationTest.class,
 	RoundRotorMachineTest.class,
 	SalientPoleMachineTest.class,
+	SMIB_Gen_Test.class,
 	
 	//DStab dynamic devic model
 	TestInductionMotorModel.class,

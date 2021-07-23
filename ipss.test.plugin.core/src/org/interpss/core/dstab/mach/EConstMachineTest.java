@@ -28,6 +28,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import com.interpss.common.datatype.Constants;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
@@ -58,18 +59,20 @@ public class EConstMachineTest extends TestSetupBase {
 		assertTrue(Math.abs(mach.getPm()-0.8) < 0.00001);
 		
 		// Move forward one step
-		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, 0);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, 1);
 		assertTrue(Math.abs(Math.toDegrees(mach.getAngle())-11.49656) < 0.00001);
 		assertTrue(Math.abs(mach.getE()-1.20416) < 0.00001);
 		assertTrue(Math.abs(mach.getPe()-0.8) < 0.00001);
 		assertTrue(Math.abs(mach.getPm()-0.8) < 0.00001);
 		
 		// Move forward more steps, we should have the same value, since there is no disturbance
-		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER);
-		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER);
-		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER);
-		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER);
-		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, 0);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, 1);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, 0);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, 1);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, 0);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, 1);
 		assertTrue(Math.abs(Math.toDegrees(mach.getAngle())-11.49656) < 0.00001);
 		assertTrue(Math.abs(mach.getE()-1.20416) < 0.00001);
 		assertTrue(Math.abs(mach.getPe()-0.8) < 0.00001);
@@ -77,15 +80,16 @@ public class EConstMachineTest extends TestSetupBase {
 
 		// create an event by changing Pm from 2.0 to 1.0
 		mach.setPm(1.0);  
-		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER);
-		/*
-		System.out.println("Angle(deg) " + mach.getAngle()*Constants.RtoD);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER,0);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER,1);
+	
+		System.out.println("Angle(deg) " + mach.getAngle()*180/Math.PI);
 		System.out.println("Speed " + mach.getSpeed());
 		System.out.println("E " + mach.getE());
 		System.out.println("Pe " + mach.getPe());
 		System.out.println("Pm " + mach.getPm());
-		*/
-		assertTrue(Math.abs(Math.toDegrees(mach.getAngle())-11.51456) < 0.00001);
+		
+		assertTrue(Math.abs(Math.toDegrees(mach.getAngle())-11.51816301758578) < 0.00001);
 		assertTrue(Math.abs(mach.getSpeed()-1.0002) < 0.00001);
 		assertTrue(Math.abs(mach.getE()-1.20416) < 0.00001);
 		assertTrue(Math.abs(mach.getPe()-0.8) < 0.00001);

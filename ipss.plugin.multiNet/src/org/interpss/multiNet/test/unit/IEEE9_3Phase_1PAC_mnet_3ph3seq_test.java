@@ -52,6 +52,7 @@ import com.interpss.core.acsc.adpter.AcscXformerAdapter;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabilityNetwork;
@@ -689,6 +690,10 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 		
 		    
 		 proc.splitFullSystemIntoSubsystems(false);
+		 
+		 for(BaseDStabNetwork subnet: proc.getSubNetworkList()) {
+			 subnet.setStaticLoadIncludedInYMatrix(true);
+		 }
 		    
 		    //TODO now one needs to set the three-phase modeling subnetwork by one of the bus the subnetwork contains
 		 proc.set3PhaseSubNetByBusId("Bus10");

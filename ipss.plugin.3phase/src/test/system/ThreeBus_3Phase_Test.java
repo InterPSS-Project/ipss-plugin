@@ -418,6 +418,8 @@ public class ThreeBus_3Phase_Test {
 		
 		DStabNetwork3Phase net = create3BusSys();
 		
+		//net.setNetworkType(NetworkType.TRANSMISSION);
+		
 	
 		// initGenLoad-- summarize the effects of contributive Gen/Load to make equivGen/load for power flow calculation	
 		net.initContributeGenLoad();
@@ -469,7 +471,7 @@ public class ThreeBus_3Phase_Test {
          Bus, Igen:Bus1,-1.46152 + j-5.11514  -3.69908 + j3.82329  5.1606 + j1.29185   ->>Same mag, phase shifted 30 deg
          Bus, Igen:Bus3,-0.1915 + j-4.87234  -4.12382 + j2.60201  4.31532 + j2.27032
 	   */
-	  
+	    net.setStaticLoadIncludedInYMatrix(true);
 	    net.solveNetEqn();
 	    
 		System.out.println(ThreePhaseAclfOutFunc.busLfSummary(net));
@@ -800,8 +802,8 @@ private DStabNetwork3Phase create3BusSys() throws InterpssException{
 		xfr12.setZ0( new Complex(0.0, 0.05 ));
 		Static3PXformer xfr = threePhaseXfrAptr.apply(xfr12);
 		//TODO change for testing
-		xfr.setToConnectGroundZ(XfrConnectCode.DELTA, new Complex(0.0,0.0), UnitType.PU);
-		//xfr.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+		//xfr.setToConnectGroundZ(XfrConnectCode.DELTA, new Complex(0.0,0.0), UnitType.PU);
+		xfr.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
 		xfr.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
   		
 		

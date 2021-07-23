@@ -112,7 +112,7 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
 		this.indMotorB = new  InductionMotorImpl();
 		this.indMotorC = new  InductionMotorImpl();
 		this.ac1PMotor = new  LD1PACImpl();
-		this.staticLoad= new  DynLoadVFreqDependentModelImpl();
+		//this.staticLoad= new  DynLoadVFreqDependentModelImpl();
 		
 		this.setDStabBus(abus);
 		
@@ -487,7 +487,7 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
     	// NOTE: the load percentages, the loading factor for calculating the mvaBase should be input by the model data mapper
     	
     	
-/*
+
     	if(this.fMotorA > 0){
     		if(this.motorAType == 3){
     			this.indMotorA.setDStabBus(loadBus);
@@ -548,7 +548,7 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
     	else{
     		this.indMotorC = null;
     	}
-  */  	
+   	
     	if(this.fMotorD > 0){
     		if(this.motorDType == 1){
     			this.ac1PMotor.setDStabBus(loadBus);

@@ -53,6 +53,7 @@ public class SequenceNetworkSolver {
 		zeroYSolver = new SquareMatrixEqnCSJComplexSolver(zeroSeqYMatrix);
 		
 		negSeqYMatrix =  net.formScYMatrix(SequenceCode.NEGATIVE, ScBusModelType.LOADFLOW_VOLT, false);
+
 		negYSolver = new SquareMatrixEqnCSJComplexSolver(negSeqYMatrix);
 		
 		//LU factorize the YMaxtri, prepare it for calculating Z matrix;
