@@ -59,9 +59,9 @@ import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Point;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
@@ -144,8 +144,13 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 			// process remote bus reference. Remote reference bus of a bus might be located behind 
 			// the bus date record
 			
+			int cnt = 0;
 			for (JAXBElement<? extends BaseBranchXmlType> b : xmlNet.getBranchList().getBranch()) {
+				if (b == null) {
+					System.out.println("xxxxxxxxxx");
+				}
 				BaseBranchXmlType xmlBranch = b.getValue();
+				//System.out.println(xmlBranch.getName() + ", " + xmlBranch.getId() + ", " + cnt++);
 				Branch branch = null;
 				if (xmlBranch instanceof PSXfr3WBranchXmlType || xmlBranch instanceof Xfr3WBranchXmlType)
 					branch = CoreObjectFactory.createAclf3WXformer();

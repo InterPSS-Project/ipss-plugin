@@ -38,12 +38,12 @@ import org.interpss.numeric.util.TestUtilFunc;
 import org.interpss.pssl.plugin.cmd.AcscDslRunner;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
-import com.interpss.core.algo.SimpleFaultAlgorithm;
+import com.interpss.core.algo.sc.SimpleFaultAlgorithm;
 import com.interpss.core.datatype.IFaultResult;
 import com.interpss.pssl.test.BaseTestSetup;
 import com.interpss.simu.util.sample.SampleCases;

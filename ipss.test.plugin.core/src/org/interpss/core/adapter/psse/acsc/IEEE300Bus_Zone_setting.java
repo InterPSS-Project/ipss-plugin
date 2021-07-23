@@ -24,9 +24,9 @@ import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.ComplexFunc;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.AcscBus;
 import com.interpss.core.acsc.AcscNetwork;
@@ -34,8 +34,8 @@ import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.core.algo.ScBusVoltageType;
-import com.interpss.core.algo.SimpleFaultAlgorithm;
+import com.interpss.core.algo.sc.ScBusModelType;
+import com.interpss.core.algo.sc.SimpleFaultAlgorithm;
 import com.interpss.core.net.Branch;
 
 public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
@@ -398,16 +398,16 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 				    	
 				    	System.out.println("Remote fault bus:"+twoBusAwayBus.getId());
 				
-				    	AcscBusFault fault = CoreObjectFactory.createAcscBusFault(twoBusAwayBus.getId(), acscAlgo );
+				    	AcscBusFault fault = CoreObjectFactory.createAcscBusFault(twoBusAwayBus.getId(), acscAlgo, true /* cacheBusScVolt */ );
 						fault.setFaultCode(SimpleFaultCode.GROUND_3P);
 						fault.setZLGFault(new Complex(0.0, 0.0));
 						fault.setZLLFault(new Complex(0.0, 0.0));
 						
 						//pre fault profile : solved power flow
-						acscAlgo.setScBusVoltage(ScBusVoltageType.LOADFLOW_VOLT);
+						acscAlgo.setScBusModelType(ScBusModelType.LOADFLOW_VOLT);
 						
 						try {
-							acscAlgo.calculateBusFault(fault);
+							acscAlgo.calBusFault(fault);
 						} catch (InterpssException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();

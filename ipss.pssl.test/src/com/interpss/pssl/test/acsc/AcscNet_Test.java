@@ -34,8 +34,8 @@ import org.interpss.pssl.simu.net.IpssAcscNet.AcscNetworkDSL;
 import org.interpss.pssl.util.AcscSample;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
@@ -46,8 +46,8 @@ import com.interpss.core.acsc.XfrConnectCode;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.AclfMethod;
-import com.interpss.core.algo.ScBusVoltageType;
-import com.interpss.core.algo.SimpleFaultAlgorithm;
+import com.interpss.core.algo.sc.ScBusVoltageType;
+import com.interpss.core.algo.sc.SimpleFaultAlgorithm;
 import com.interpss.pssl.test.BaseTestSetup;
 
 public class AcscNet_Test extends BaseTestSetup {

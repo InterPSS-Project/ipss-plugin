@@ -22,10 +22,10 @@ import org.interpss.numeric.NumericConstant;
 import org.interpss.numeric.util.Number2String;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.SimuObjectFactory;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -219,7 +219,7 @@ public class OmibTest extends DStabTestSetupBase{
 
 		BaseDStabBus<?,?> faultBus = net.getDStabBus(busId);
 
-		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@"+busId, net);
+		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@"+busId, net, true /* cacheBusScVolt */);
   		fault.setBus(faultBus);
 		fault.setFaultCode(SimpleFaultCode.GROUND_3P);
 		fault.setZLGFault(NumericConstant.SmallScZ);

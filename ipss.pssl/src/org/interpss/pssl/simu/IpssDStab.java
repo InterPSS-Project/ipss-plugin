@@ -28,10 +28,10 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.pssl.simu.IpssAclf.LfAlgoDSL;
 
 import com.interpss.CoreCommonFactory;
-import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.dstab.DStabBus;
@@ -171,7 +171,7 @@ public class IpssDStab {
 			
 	      // define a bus fault
 			BaseDStabBus<?,?> faultBus = dstabNet.getDStabBus(faultBusId);
-			AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@"+faultBusId, dstabNet);
+			AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@"+faultBusId, dstabNet, true /* cacheBusScVolt */);
 	  		fault.setBus(faultBus);
 			fault.setFaultCode(code);
 			fault.setZLGFault(Zlg);

@@ -24,7 +24,6 @@
 
 package com.interpss.pssl.test.dclf;
 
-import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.pssl.common.PSSLException;
 import org.interpss.pssl.plugin.IpssAdapter;
 import org.interpss.pssl.simu.IpssDclf;
@@ -33,9 +32,7 @@ import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.dclf.LODFSenAnalysisType;
-import com.interpss.core.dclf.common.OutageConnectivityException;
-import com.interpss.core.dclf.common.ReferenceBusException;
+import com.interpss.core.common.ReferenceBusException;
 import com.interpss.pssl.test.BaseTestSetup;
 
 public class DclfGSF_GuiTest extends BaseTestSetup {

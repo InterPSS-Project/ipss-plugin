@@ -44,16 +44,16 @@ import org.ieee.odm.schema.IpssStudyScenarioXmlType;
 import org.ieee.odm.schema.PreFaultBusVoltageEnumType;
 import org.ieee.odm.schema.ZXmlType;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.AcscBus;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.fault.AcscBranchFault;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
-import com.interpss.core.algo.ScBusVoltageType;
-import com.interpss.core.algo.SimpleFaultAlgorithm;
+import com.interpss.core.algo.sc.ScBusModelType;
+import com.interpss.core.algo.sc.SimpleFaultAlgorithm;
 
 /**
  * Acsc scenario helper functions
@@ -97,9 +97,9 @@ public class AcscScenarioHelper {
 			
 			// algo.multiFactor in PU and acscData.getMFactor in %
 			if (scAnalysisXml.getPreFaultBusVoltage() != null)
-				this.acscAglo.setScBusVoltage(scAnalysisXml.getPreFaultBusVoltage() == 
+				this.acscAglo.setScBusModelType(scAnalysisXml.getPreFaultBusVoltage() == 
 					PreFaultBusVoltageEnumType.UNIT_VOLT ? 
-									ScBusVoltageType.UNIT_VOLT : ScBusVoltageType.LOADFLOW_VOLT); // UnitV | LFVolt
+									ScBusModelType.UNIT_VOLT : ScBusModelType.LOADFLOW_VOLT); // UnitV | LFVolt
 			
 /* not tested yet			
 			IpssScenarioXmlType scenario = sScenarioXml.getScenarioList().getScenario().get(0);
@@ -136,7 +136,7 @@ public class AcscScenarioHelper {
 		if(faultXml.getFaultType() == AcscFaultTypeEnumType.BUS_FAULT){			
 			AcscBusFaultXmlType busFaultXml = (AcscBusFaultXmlType)faultXml;
 			String faultBusId = busFaultXml.getRefBus().getBusId();
-			AcscBusFault acscBusFault = CoreObjectFactory.createAcscBusFault(faultBusId, acscFaultNet);
+			AcscBusFault acscBusFault = CoreObjectFactory.createAcscBusFault(faultBusId, acscFaultNet, true /* cacheBusScVolt */);
 			acscAglo.addBusFault(faultBusId, idStr, acscBusFault);
 
 			AcscBus bus = acscFaultNet.getBus(faultBusId);
@@ -148,7 +148,7 @@ public class AcscScenarioHelper {
 		else if(faultXml.getFaultType()== AcscFaultTypeEnumType.BRANCH_FAULT){
 			AcscBranchFaultXmlType braFaultXml = (AcscBranchFaultXmlType)faultXml;
 			String faultBranchId = braFaultXml.getRefBranch().getBranchId();
-			AcscBranchFault acscBraFault = CoreObjectFactory.createAcscBranchFault(faultBranchId, acscFaultNet);
+			AcscBranchFault acscBraFault = CoreObjectFactory.createAcscBranchFault(faultBranchId, acscFaultNet, true /* cacheBusScVolt */);
 			acscAglo.addBranchFault(faultBranchId, idStr, acscBraFault);
 
 			AcscBranch acscBra = acscFaultNet.getBranch(faultBranchId);

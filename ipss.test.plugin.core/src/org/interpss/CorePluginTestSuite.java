@@ -30,8 +30,9 @@ import org.interpss.core.adapter.ucte.UCTEFormatAusPowerTest;
 import org.interpss.core.ca.IEEE14BusBreakerTest;
 import org.interpss.core.ca.IEEE14BusBreaker_dclf_Test;
 import org.interpss.core.ca.IEEE14BusBreaker_equivCABranch_Test;
-import org.interpss.core.ca.IEEE14BusBreaker_islandBus_Test;
 import org.interpss.core.ca.IEEE14BusBreaker_lf_Test;
+import org.interpss.core.ca.Ieee14_CA_Test;
+import org.interpss.core.ca.Ieee14_GSF_Test;
 import org.interpss.core.ca.SampleSwitchBreakerModelTest;
 import org.interpss.core.dcsys.DcSample_2BusTest;
 import org.interpss.core.dcsys.Inverter_2BusTest;
@@ -63,6 +64,7 @@ import org.interpss.plugin.beanModel.AclfBeanMapperTest;
 import org.interpss.plugin.piecewise.Acsc5BusTesPiecewiseAlgo;
 import org.interpss.plugin.piecewise.Acsc5BusTestSubAreaNet;
 import org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise;
+import org.interpss.plugin.piecewise.IEEE14TestAclfSubAreaBuild;
 import org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild;
 import org.interpss.plugin.piecewise.IEEE14TestSubAreaSearch;
 import org.interpss.plugin.piecewise.IEEE9BusTestDStabSubAreaNet;
@@ -82,7 +84,9 @@ import org.junit.runners.Suite.SuiteClasses;
 	SixBus_DclfPsXfr.class,
 	IEEE14BusBreaker_dclf_Test.class,
 	IEEE14BusBreaker_equivCABranch_Test.class,
-	IEEE14BusBreaker_islandBus_Test.class,
+	Ieee14_CA_Test.class,
+	//ieee14_CAClosurePSSL_Test.class,
+	Ieee14_GSF_Test.class,
 	
 	// small Z branch
 	SampleSwitchBreakerModelTest.class,
@@ -183,6 +187,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	IEEE14TestSubAreaSearch.class,
 	IEEE14TestAclfNetPiesewise.class,
 	IEEE14TestAclfSubNetBuild.class,
+	IEEE14TestAclfSubAreaBuild.class,
 	
 	Acsc5BusTestSubAreaNet.class,
 	Acsc5BusTesPiecewiseAlgo.class,

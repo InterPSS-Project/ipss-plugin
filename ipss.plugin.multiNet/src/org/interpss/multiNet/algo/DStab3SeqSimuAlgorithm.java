@@ -13,6 +13,7 @@ import org.interpss.numeric.sparse.ISparseEqnComplex;
 import com.interpss.DStabObjectFactory;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.acsc.SequenceCode;
+import com.interpss.core.algo.sc.ScBusModelType;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
@@ -76,8 +77,8 @@ public class DStab3SeqSimuAlgorithm {
 		flag = posSeqDstabAlgo.initialization();
 		
 		//Step-2 form the negative and zero sequence Y matrices of the network
-		this.negSeqYMatrix  = this.net.formScYMatrix(SequenceCode.NEGATIVE, true);
-		this.zeroSeqYMatrix =  this.net.formScYMatrix(SequenceCode.ZERO, true);
+		this.negSeqYMatrix  = this.net.formScYMatrix(SequenceCode.NEGATIVE, ScBusModelType.LOADFLOW_VOLT, true);
+		this.zeroSeqYMatrix =  this.net.formScYMatrix(SequenceCode.ZERO, ScBusModelType.LOADFLOW_VOLT, true);
 		
 		//Step-3 initialize monitoring result table
 		if(this.monitoringBusAry!=null){

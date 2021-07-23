@@ -32,8 +32,8 @@ import java.util.stream.Stream;
 import org.interpss.numeric.sparse.ISparseEqnDouble;
 import org.interpss.numeric.util.PerformanceTimer;
 
-import com.interpss.NumericObjectFactory;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.NumericObjectFactory;
 import com.interpss.core.sparse.DoubleSEqnRow;
 import com.interpss.core.sparse.impl.SparseEqnDoubleImpl;
 
@@ -64,7 +64,7 @@ public class DoubleSparseEqnPerformance {
 		for(int i = 0; i < n; i++) {
 			double[] dAry = new double[n];
 			dAry[10] = 1.0;
-			dAry = eqn.solveEqn(dAry);
+			dAry = eqn.solveLUedEqn(dAry);
 			// b(21463): 1.0584315036540653E-5
 			if (Math.abs(dAry[21463] - 1.0584315036540653E-5) > 1.0e-10)
 				System.out.println("Error: ");
@@ -76,7 +76,7 @@ public class DoubleSparseEqnPerformance {
 			double[] dAry = new double[n];
 			dAry[10] = 1.0;
 			try {
-				dAry = eqn.solveEqn(dAry);
+				dAry = eqn.solveLUedEqn(dAry);
 				if (Math.abs(dAry[21463] - 1.0584315036540653E-5) > 1.0e-10)
 					System.out.println("Error: ");
 				} catch (Exception e) {

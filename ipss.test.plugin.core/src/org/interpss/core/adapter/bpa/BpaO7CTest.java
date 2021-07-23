@@ -21,9 +21,9 @@ import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.interpss.numeric.NumericConstant;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.SimuObjectFactory;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
@@ -100,8 +100,8 @@ public class BpaO7CTest extends DStabTestSetupBase {
 
 		//get the genResult
 		
-		for(Bus b:net.getBusList()){
-			AclfBus bus=(AclfBus) b;
+		for(AclfBus bus:net.getBusList()){
+			//AclfBus bus=(AclfBus) b;
 			if(bus.isGen()){
 				System.out.println(bus.getName()+", "+bus.getId()+" ,p= "+bus.getNetGenResults().getReal()+",q= "+bus.getNetGenResults().getImaginary());
 			}
@@ -355,7 +355,7 @@ public class BpaO7CTest extends DStabTestSetupBase {
 
 		BaseDStabBus faultBus = net.getDStabBus(busId);
 
-		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@"+busId, net);
+		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@"+busId, net, true /* cacheBusScVolt */);
   		fault.setBus(faultBus);
 		fault.setFaultCode(SimpleFaultCode.GROUND_3P);
 		fault.setZLGFault(NumericConstant.SmallScZ);

@@ -50,10 +50,10 @@ import org.interpss.pssl.plugin.IpssAdapter;
 import org.interpss.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
@@ -65,13 +65,13 @@ import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
-import com.interpss.simu.util.sample.SampleCases;
+import com.interpss.simu.util.sample.SampleTestingCases;
 
 public class SwitchedShuntTest extends CorePluginTestSetup {
 	@Test
 	public void fixedModeTest() throws InterpssException {
   		AclfNetwork aclfNet = CoreObjectFactory.createAclfNetwork();
-		SampleCases.load_LF_5BusSystem(aclfNet);
+		SampleTestingCases.load_LF_5BusSystem(aclfNet);
 		//System.out.println(net.net2String());
 	
 		/*
@@ -113,7 +113,7 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 	@Test
 	public void contiModeTest() throws InterpssException {
   		AclfNetwork aclfNet = CoreObjectFactory.createAclfNetwork();
-		SampleCases.load_LF_5BusSystem(aclfNet);
+		SampleTestingCases.load_LF_5BusSystem(aclfNet);
 		//System.out.println(net.net2String());
 	
 		/*
@@ -160,7 +160,7 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 	@Test
 	public void contiModeRemoteBusTest() throws InterpssException {
   		AclfNetwork aclfNet = CoreObjectFactory.createAclfNetwork();
-		SampleCases.load_LF_5BusSystem(aclfNet);
+		SampleTestingCases.load_LF_5BusSystem(aclfNet);
 		//System.out.println(net.net2String());
 	
 		/*
@@ -215,7 +215,7 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 	public void beanModelVerification() throws Exception {
 		//AclfNetwork net = SampleCases.sample3BusPSXfrPControl();	
 		AclfNetwork net = CoreObjectFactory.createAclfNetwork();
-		SampleCases.load_LF_5BusSystem(net);
+		SampleTestingCases.load_LF_5BusSystem(net);
 		//System.out.println(net.net2String());
 	
 		/*

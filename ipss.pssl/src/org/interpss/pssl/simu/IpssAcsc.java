@@ -28,14 +28,14 @@ import static com.interpss.common.util.NetUtilFunc.ToBranchId;
 
 import org.apache.commons.math3.complex.Complex;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.acsc.BaseAcscNetwork;
 import com.interpss.core.acsc.fault.AcscBranchFault;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
-import com.interpss.core.algo.SimpleFaultAlgorithm;
-import com.interpss.core.datatype.IFaultResult;
+import com.interpss.core.algo.sc.SimpleFaultAlgorithm;
+import com.interpss.core.algo.sc.result.IFaultResult;
 
 /**
  * DSL (domain specific language) for AC Short Circuit calculation
@@ -93,7 +93,7 @@ public class IpssAcsc extends BaseDSL {
 		 * @return
 		 */
 		public FaultAlgoDSL createBusFault(String busId) {
-	  		this.fault = CoreObjectFactory.createAcscBusFault(busId, this.algo);
+	  		this.fault = CoreObjectFactory.createAcscBusFault(busId, this.algo, true /* cacheBusScVolt */);
 	  		this.faultType = FaultType.BusFault;
   			return this; }
 
@@ -107,7 +107,7 @@ public class IpssAcsc extends BaseDSL {
 		 */
 		public FaultAlgoDSL createBranchFault(String fromBusId, String toBusId, String cirId) {
 			String braId = ToBranchId.f(fromBusId, toBusId, cirId);
-	  		this.fault = CoreObjectFactory.createAcscBranchFault(braId, this.algo);
+	  		this.fault = CoreObjectFactory.createAcscBranchFault(braId, this.algo, true /* cacheBusScVolt */);
 	  		this.faultType = FaultType.BranchFault;
   			return this; }
 		
@@ -158,9 +158,9 @@ public class IpssAcsc extends BaseDSL {
 		 */
 		public void calculateFault() throws InterpssException {
 			if (this.faultType == FaultType.BusFault)
-				this.algo.calculateBusFault(fault);
+				this.algo.calBusFault(fault);
 			else if (this.faultType == FaultType.BranchFault)
-				this.algo.calculateBranchFault((AcscBranchFault)fault);
+				this.algo.calBranchFault((AcscBranchFault)fault);
 		}
 		
 		/**

@@ -33,14 +33,14 @@ import org.interpss.pssl.simu.IpssDclf.DclfAlgorithmDSL;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.contingency.BranchOutageType;
 import com.interpss.core.aclf.contingency.OutageBranch;
-import com.interpss.core.dclf.LODFSenAnalysisType;
-import com.interpss.core.dclf.common.OutageConnectivityException;
-import com.interpss.core.dclf.common.ReferenceBusException;
+import com.interpss.core.common.OutageConnectivityException;
+import com.interpss.core.common.ReferenceBusException;
 import com.interpss.pssl.test.BaseTestSetup;
 
 public class DclfLODFPaperClosure_Test extends BaseTestSetup {
@@ -55,8 +55,7 @@ public class DclfLODFPaperClosure_Test extends BaseTestSetup {
 										.runDclfAnalysis();
 		System.out.println(DclfResult.f(algoDsl.algo(), false).toString());			
 
-		algoDsl.setLODFAnalysisType(LODFSenAnalysisType.MULTI_BRANCH)
-				.addOutageBranch("Bus2", "Bus5", "1", BranchOutageType.OPEN)
+		algoDsl.addOutageBranch("Bus2", "Bus5", "1", BranchOutageType.OPEN)
 				.addOutageBranch("Bus3", "Bus4", "1", BranchOutageType.OPEN)
 				.addOutageBranch("Bus6", "Bus11", "1", BranchOutageType.OPEN);
 
@@ -93,8 +92,7 @@ public class DclfLODFPaperClosure_Test extends BaseTestSetup {
 		DclfAlgorithmDSL algoDsl = IpssDclf.createDclfAlgorithm(net)
 										.runDclfAnalysis();
 
-		algoDsl.setLODFAnalysisType(LODFSenAnalysisType.MULTI_BRANCH)
-				.addOutageBranch("Bus2", "Bus5", "1", BranchOutageType.OPEN)
+		algoDsl.addOutageBranch("Bus2", "Bus5", "1", BranchOutageType.OPEN)
 				.addOutageBranch("Bus3", "Bus4", "1", BranchOutageType.OPEN)
 				.addOutageBranch("Bus6", "Bus11", "1", BranchOutageType.CLOSE);
 		
@@ -145,8 +143,7 @@ public class DclfLODFPaperClosure_Test extends BaseTestSetup {
 		DclfAlgorithmDSL algoDsl = IpssDclf.createDclfAlgorithm(net)
 										.runDclfAnalysis();
 
-		algoDsl.setLODFAnalysisType(LODFSenAnalysisType.MULTI_BRANCH)
-				.addOutageBranch("Bus2", "Bus5", "1", BranchOutageType.OPEN)
+		algoDsl.addOutageBranch("Bus2", "Bus5", "1", BranchOutageType.OPEN)
 				.addOutageBranch("Bus3", "Bus4", "1", BranchOutageType.CLOSE)
 				.addOutageBranch("Bus6", "Bus11", "1", BranchOutageType.CLOSE);
 
@@ -189,8 +186,7 @@ public class DclfLODFPaperClosure_Test extends BaseTestSetup {
 										.runDclfAnalysis();
 		System.out.println(DclfResult.f(algoDsl.algo(), false).toString());			
 
-		algoDsl.setLODFAnalysisType(LODFSenAnalysisType.MULTI_BRANCH)
-				.addOutageBranch("Bus2", "Bus5", "1", BranchOutageType.CLOSE)
+		algoDsl.addOutageBranch("Bus2", "Bus5", "1", BranchOutageType.CLOSE)
 				.addOutageBranch("Bus3", "Bus4", "1", BranchOutageType.CLOSE)
 				.addOutageBranch("Bus6", "Bus11", "1", BranchOutageType.CLOSE);
 
@@ -215,14 +211,16 @@ public class DclfLODFPaperClosure_Test extends BaseTestSetup {
 		//algoDsl.destroy();
 	}
 
-	private void printResult(DclfAlgorithmDSL algoDsl, double[] factors) throws InterpssException {
+	private void printResult(DclfAlgorithmDSL algoDsl, double[] factors) throws InterpssException, ReferenceBusException, IpssNumericException {
 		double sum = 0.0;
 		int cnt = 0;
 		for (OutageBranch bra : algoDsl.outageBranchList()) {
 			AclfBranch aclfBra = bra.getBranch();
 			double flow = 0.0;
-			if (bra.getOutageType() == BranchOutageType.CLOSE)
-				flow = algoDsl.algo().getBranchClosureEquivPreFlow(aclfBra);
+			if (bra.getOutageType() == BranchOutageType.CLOSE) {
+				OutageBranch outBranch = DclfAlgoObjectFactory.createOutageBranch(aclfBra, BranchOutageType.CLOSE);
+				flow = algoDsl.algo().calBranchClosureFlow(outBranch);
+			}
 			else
 				flow = aclfBra.getDclfFlow();
 			sum += flow * factors[cnt++];

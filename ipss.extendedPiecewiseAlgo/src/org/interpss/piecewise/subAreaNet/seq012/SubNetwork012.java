@@ -33,6 +33,7 @@ import com.interpss.core.acsc.AcscLoad;
 import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.core.acsc.BaseAcscNetwork;
 import com.interpss.core.acsc.SequenceCode;
+import com.interpss.core.algo.sc.ScBusModelType;
 
 /**
  * Class for modeling the SubNetwork concept for representing 012 un-symmetric sub-network. 
@@ -68,8 +69,8 @@ public abstract class SubNetwork012<TBus extends BaseAcscBus<? extends AcscGen, 
 	 */
 	public void formYMatrix() {
 		this.setYSparseEqn(new ISparseEqnComplex[] { 
-				this.subNet.formScYMatrix(SequenceCode.POSITIVE, false),
-				this.subNet.formScYMatrix(SequenceCode.NEGATIVE, false),
-				this.subNet.formScYMatrix(SequenceCode.ZERO, false)});
+				this.subNet.formScYMatrix(SequenceCode.POSITIVE, ScBusModelType.LOADFLOW_VOLT, false),
+				this.subNet.formScYMatrix(SequenceCode.NEGATIVE, ScBusModelType.LOADFLOW_VOLT, false),
+				this.subNet.formScYMatrix(SequenceCode.ZERO, ScBusModelType.LOADFLOW_VOLT, false)});
 	}	
 }	

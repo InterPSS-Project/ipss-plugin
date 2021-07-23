@@ -22,7 +22,7 @@
   *
   */
 
-package org.interpss.sample.aclf;
+package org.interpss.sample.acsc;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
@@ -30,10 +30,10 @@ import org.interpss.numeric.datatype.ComplexFunc;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 
-import com.interpss.CoreObjectFactory;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.simu.util.sample.SampleCases;
+import com.interpss.simu.util.sample.SampleTestingCases;
 
 
 public class ZBusSample {
@@ -41,7 +41,7 @@ public class ZBusSample {
 		IpssCorePlugin.init();
 		
   		AclfNetwork net = CoreObjectFactory.createAclfNetwork();
-		SampleCases.load_LF_5BusSystem(net);
+  		SampleTestingCases.load_LF_5BusSystem(net);
 
 		// bus number is arranged during the process to minimize the fill-ins 
 		ISparseEqnComplex eqn = net.formYMatrix();

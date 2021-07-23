@@ -20,11 +20,11 @@ import org.interpss.numeric.NumericConstant;
 import org.interpss.util.FileUtil;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -184,7 +184,7 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 
 			StateMonitor sm = new StateMonitor();
 			
-			sm.addBusStdMonitor(busIdList.toArray(new String[] {}));
+			sm.addBusStdMonitor(busIdList.toArray(new String[0]));
 			
 			//sm.addBusStdMonitor(new String[]{"Bus10000","Bus10001","Bus10015","Bus10016","Bus10028"});
 			//sm.addBusStdMonitor(new String[]{"Bus1_loadBus","Bus33_loadBus","Bus562_loadBus"});
@@ -346,7 +346,7 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 						
 						StateMonitor sm = new StateMonitor();
 						
-						sm.addBusStdMonitor(busIdList.toArray(new String[] {}));
+						sm.addBusStdMonitor(busIdList.toArray(new String[0]));
 						
 						//sm.addBusStdMonitor(new String[]{"Bus1_loadBus","Bus33_loadBus","Bus562_loadBus"});
 						
@@ -391,7 +391,7 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 		      // define a bus fault
 				BaseDStabBus faultBus = net.getDStabBus(faultBusId);
 
-				AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@"+faultBusId, net);
+				AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@"+faultBusId, net, true /* cacheBusScVolt */);
 		  		fault.setBus(faultBus);
 				fault.setFaultCode(SimpleFaultCode.GROUND_3P);
 				fault.setZLGFault(NumericConstant.SmallScZ);

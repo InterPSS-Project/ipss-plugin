@@ -3,7 +3,8 @@ package org.interpss.plugin.opf.solver.giqpsolve;
 import java.util.List;
 
 import org.interpss.plugin.opf.constraint.OpfConstraint;
-import org.interpss.plugin.opf.constraint.OpfConstraint.cstType;
+
+import com.interpss.opf.datatype.OpfConstraintType;
 
 import cern.colt.list.DoubleArrayList;
 import cern.colt.list.IntArrayList;
@@ -43,15 +44,15 @@ public class GIQPSolverInputMatrixBuilder {
 			IntArrayList idx = con.getColNo(); 
 			DoubleArrayList val = con.getVal();
 			
-			cstType type = con.getCstType();
-			if(type.equals(cstType.largerThan)){
+			OpfConstraintType type = con.getCstType();
+			if(type.equals(OpfConstraintType.LARGER_THAN)){
 				for (int j=0; j<idx.size();j++){
 					Ciq.set(cnt, idx.get(j), val.get(j));
 				}
 				double rh = con.getLowerLimit();
 				biq.set(cnt, rh);
 				cnt++;
-			}else if(type.equals(cstType.lessThan)){
+			}else if(type.equals(OpfConstraintType.LESS_THAN)){
 				for (int j=0; j<idx.size();j++){					
 					Ciq.set(cnt, idx.get(j), -val.get(j));
 				}

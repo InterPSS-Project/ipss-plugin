@@ -388,6 +388,7 @@ public class SequenceNetworkBuilder {
 		return true;
 		
 	}
+	
 	/**
 	 * 
 	 * Setting the line sequence impedance. By default, the negative Z is same as the positive Z, while the 

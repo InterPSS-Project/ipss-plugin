@@ -25,6 +25,7 @@
 package org.interpss.mapper.odm.impl.opf;
 
 import static org.interpss.mapper.odm.ODMUnitHelper.toActivePowerUnit;
+
 import org.ieee.odm.schema.ActivePowerRatingXmlType;
 import org.ieee.odm.schema.ActivePowerUnitType;
 import org.ieee.odm.schema.BaseBranchXmlType;

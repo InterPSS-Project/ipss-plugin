@@ -12,16 +12,17 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.algo.sc.ScBusModelType;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabGen;
@@ -38,6 +39,8 @@ public class TestCalBusDStabLoad extends TestSetupBase {
 	@Test
 	public void test_cal_half_indMotor()  throws InterpssException {
 		DStabilityNetwork net = create2BusSystem();
+		net.initialization(ScBusModelType.DSTAB_SIMU);
+		
 		assertTrue(net.isLfConverged());
 		
 		DStabBus bus1 = (DStabBus) net.getDStabBus("Bus1");
@@ -152,6 +155,7 @@ public class TestCalBusDStabLoad extends TestSetupBase {
 			
 			//set positive info only
 			net.setPositiveSeqDataOnly(true);
+			net.setLfDataLoaded(true);
 
 		  	net.initContributeGenLoad();
 

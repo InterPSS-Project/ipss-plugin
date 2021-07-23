@@ -4,12 +4,13 @@ import java.util.List;
 
 import org.interpss.plugin.opf.common.OPFLogger;
 import org.interpss.plugin.opf.constraint.OpfConstraint;
-import org.interpss.plugin.opf.constraint.OpfConstraint.cstType;
 
-import lpsolve.LpSolve;
-import lpsolve.LpSolveException;
+import com.interpss.opf.datatype.OpfConstraintType;
+
 import cern.colt.list.DoubleArrayList;
 import cern.colt.list.IntArrayList;
+import lpsolve.LpSolve;
+import lpsolve.LpSolveException;
 
 public class LpsolveSolverInputBuilder {
 
@@ -32,11 +33,11 @@ public class LpsolveSolverInputBuilder {
 			}
 			
 			try{
-				cstType type = con.getCstType();
-				if(type.equals(cstType.equality)){	
+				OpfConstraintType type = con.getCstType();
+				if(type.equals(OpfConstraintType.EQUALITY)){	
 					double rh = con.getLowerLimit();					
 					lpsolver.addConstraintex( idx.size(), val.elements(), inIdx, LpSolve.EQ, rh);
-				}else if(type.equals(cstType.largerThan)){
+				}else if(type.equals(OpfConstraintType.LARGER_THAN)){
 					double[] valRow = val.elements();					
 					double rh = con.getLowerLimit();
 					if(idx.size()==1 && valRow[0]==1){
@@ -49,7 +50,7 @@ public class LpsolveSolverInputBuilder {
 						lpsolver.addConstraintex( idx.size(), valRow_r, inIdx, LpSolve.LE, -rh);
 						//lpsolver.addConstraintex( idx.size(), valRow, inIdx, LpSolve.GE, rh);
 					}					
-				}else if(type.equals(cstType.lessThan)){
+				}else if(type.equals(OpfConstraintType.LESS_THAN)){
 					double[] valRow = val.elements();	
 					double rh = con.getUpperLimit();
 					if(idx.size()==1 && valRow[0]==1){

@@ -48,6 +48,8 @@ import com.interpss.core.net.Network;
  */
 		
 public interface SubAreaNetProcessor <TBus, TBra, TSub, TState> {
+	public static int SetSubAreaFlagMaxCnt = 50; 
+			
 	/**
 	 * get the parent network object
 	 * 
@@ -92,6 +94,17 @@ public interface SubAreaNetProcessor <TBus, TBra, TSub, TState> {
 	 * @return the SubArea/Network list
 	 */
 	List<TSub> processSubAreaNet() throws InterpssException;	
+	
+	/**
+	 *                SingleSide
+	 *         
+	 *          o --------x-----------o     
+	 *      SplitBus              SubArea side
+	 *        
+	 * @param sigleSide 
+	 * @return the SubArea/Network list
+	 */
+	List<TSub> processSubAreaNet(boolean sigleSide) throws InterpssException;		
 	
 	/**
 	 * After the splitting SubNetwork processing, merge the split sub networks back to the 

@@ -33,9 +33,10 @@ import org.interpss.numeric.util.Number2String;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.dclf.DclfAlgorithm;
+import com.interpss.core.algo.dclf.DclfAlgorithm;
+import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
+import com.interpss.core.algo.dclf.adapter.DclfAlgoBus;
 import com.interpss.core.net.Branch;
-import com.interpss.core.net.Bus;
 
 /**
  * Dclf output functions
@@ -101,15 +102,15 @@ public class DclfOutFunc {
 		str.append("   Bud Id       VoltAng(deg)     Gen     Load    ShuntG\n");
 		str.append("=========================================================\n");
 		double baseMva = algo.getNetwork().getBaseKva() * 0.001;
-		for (Bus bus : algo.getNetwork().getBusList()) {
+		for (DclfAlgoBus dclfBus : algo.getDclfAlgoBusList()) {
+			AclfBus bus = dclfBus.getBus();
 			if (bus.isActive()) {
-				AclfBus aclfBus = (AclfBus)bus; 
 				int n = bus.getSortNumber();
 				double angle = algo.getNetwork().isRefBus(bus)?
 						0.0 : Math.toDegrees(algo.getBusAngle(n));
-				double pgen =  (aclfBus.isRefBus()? algo.getBusPower(aclfBus) : aclfBus.getGenP()) * baseMva; 
-				double pload =  aclfBus.getLoadP() * baseMva; 
-				double pshunt = aclfBus.getShuntY().getReal() * baseMva; 
+				double pgen =  (bus.isRefBus()? algo.getBusPower(dclfBus) : bus.getGenP()) * baseMva; 
+				double pload =  bus.getLoadP() * baseMva; 
+				double pshunt = bus.getShuntY().getReal() * baseMva; 
 				str.append(Number2String.toFixLengthStr(8, bus.getId()) + "        "
 						+ String.format("%8.2f     %8.2f %8.2f %8.2f \n", angle, pgen, pload, pshunt));
 			}
@@ -146,7 +147,7 @@ public class DclfOutFunc {
 	 * @param dfactor derating factor
 	 * @return
 	 */
-	public static String lineOutageAnalysisBranchFlow(AclfBranch aclfBra, DclfAlgorithm algo, double mw, double f) {
+	public static String lineOutageAnalysisBranchFlow(AclfBranch aclfBra, SenAnalysisAlgorithm algo, double mw, double f) {
 		String str = "";
 		double mwFlow = algo.getBranchFlow(aclfBra, UnitType.mW);
 		
@@ -190,7 +191,7 @@ public class DclfOutFunc {
 	 * @param dfactor derating factor
 	 * @return
 	 */
-	public static String tradeAnalysisBranchFlow(AclfBranch aclfBra, DclfAlgorithm algo, 
+	public static String tradeAnalysisBranchFlow(AclfBranch aclfBra, SenAnalysisAlgorithm algo, 
 							double mw, double f, double dfactor) {
 		String str = "";
 		double mwFlow = algo.getBranchFlow(aclfBra, UnitType.mW);

@@ -29,16 +29,16 @@ import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.pssl.plugin.IpssAdapter;
 import org.interpss.pssl.simu.IpssAclf;
-import org.interpss.pssl.simu.IpssDclf;
 import org.interpss.pssl.simu.IpssAclf.LfAlgoDSL;
+import org.interpss.pssl.simu.IpssDclf;
 import org.interpss.pssl.simu.IpssDclf.DclfAlgorithmDSL;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethod;
-import com.interpss.core.dclf.SenAnalysisType;
-import com.interpss.core.dclf.common.ReferenceBusException;
+import com.interpss.core.algo.dclf.SenAnalysisType;
+import com.interpss.core.common.ReferenceBusException;
 import com.interpss.pssl.test.BaseTestSetup;
 
 public class QSen_Test extends BaseTestSetup {

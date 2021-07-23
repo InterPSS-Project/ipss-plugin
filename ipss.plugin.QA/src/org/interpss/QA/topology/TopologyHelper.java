@@ -24,8 +24,7 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.contingency.BaseContingency;
-import com.interpss.core.aclf.contingency.OutageBranch;
-import com.interpss.core.aclf.contingency.dep.DepContingency;
+import com.interpss.core.algo.dclf.OutageBranch;
 import com.interpss.core.common.visitor.INetBVisitor;
 import com.interpss.core.funcImpl.ZeroZBranchProcesor;
 import com.interpss.core.funcImpl.ZeroZBranchProcesor.BusBasedSeaerchResult;
@@ -75,11 +74,13 @@ public class TopologyHelper {
 	
 	public TopologyHelper(AclfNetwork net,ZeroZBranchProcesor proc, List<BaseContingency> contList) throws InterpssException{
 		this(net, proc);
+		/*
 		for(BaseContingency bcont: contList){
 			DepContingency cont = (DepContingency)bcont;
 			for(OutageBranch outBranch : cont.getOutageBranches())
 				this.protectedBranches.add(outBranch.getBranch().getId());					
 		}
+		*/
 				
 	}
 	

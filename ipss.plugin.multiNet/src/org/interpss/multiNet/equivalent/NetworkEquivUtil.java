@@ -15,6 +15,7 @@ import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 
 import com.interpss.common.datatype.Constants;
 import com.interpss.core.acsc.SequenceCode;
+import com.interpss.core.algo.sc.ScBusModelType;
 import com.interpss.core.net.NetCoordinate;
 import com.interpss.core.net.NetEquivType;
 import com.interpss.dstab.BaseDStabBus;
@@ -74,7 +75,7 @@ public class NetworkEquivUtil {
 		
 		ISparseEqnComplex ymatrix = subNet.getYMatrix();
 		if(ymatrix==null){
-			ymatrix = subNet.formScYMatrix(SequenceCode.POSITIVE,false);
+			ymatrix = subNet.formScYMatrix(SequenceCode.POSITIVE, ScBusModelType.LOADFLOW_VOLT, false);
 			subNet.setYMatrix(ymatrix);
 			subNet.setYMatrixDirty(true);
 		}
@@ -274,7 +275,7 @@ public static  NetworkEquivalent cal3PhaseNetworkTheveninEquiv(DStabNetwork3Phas
 			switch (code) {
 			case ZERO:
 				if(net.getZeroSeqYMatrix()==null)
-				    seqYmatrixEqn = net.formScYMatrix(SequenceCode.ZERO,true);
+				    seqYmatrixEqn = net.formScYMatrix(SequenceCode.ZERO, ScBusModelType.LOADFLOW_VOLT, true);
 				else
 					seqYmatrixEqn = net.getZeroSeqYMatrix();
 				break;
@@ -283,7 +284,7 @@ public static  NetworkEquivalent cal3PhaseNetworkTheveninEquiv(DStabNetwork3Phas
 				
 				//setBoundaryGenLoadInactive();
 				if(net.getNegSeqYMatrix()==null)
-				     seqYmatrixEqn =net.formScYMatrix(SequenceCode.NEGATIVE,true);
+				     seqYmatrixEqn =net.formScYMatrix(SequenceCode.NEGATIVE, ScBusModelType.LOADFLOW_VOLT, true);
 				else
 					 seqYmatrixEqn = net.getNegSeqYMatrix();
 				break;

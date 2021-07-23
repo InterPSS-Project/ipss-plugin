@@ -24,26 +24,19 @@
 
 package org.interpss.sample.aclf;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
-
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.pssl.simu.IpssAclf;
-import org.interpss.pssl.simu.net.IpssAclfNet;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.msg.IPSSMsgHub;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.adj.FunctionLoad;
 import com.interpss.core.aclf.adpter.AclfLine;
 import com.interpss.core.aclf.adpter.AclfLoadBusAdapter;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
@@ -55,16 +48,16 @@ public class SampleLoadflow {
 		IpssCorePlugin.init();
 		
 		// set session message to Warning level
-		IPSSMsgHub msg = IpssAclf.psslMsg;
+		//IPSSMsgHub msg = IpssAclf.psslMsg;
 		
-		simpleLoadflow(msg);
+		simpleLoadflow();
 
-		simpleLoadflowPSSL(msg);
+		//simpleLoadflowPSSL(msg);
 
-		loadflowWithAdjustment(msg);
+		//loadflowWithAdjustment(msg);
 	}	
 
-	public static void simpleLoadflow(IPSSMsgHub msg) throws InterpssException {
+	public static void simpleLoadflow() throws InterpssException {
 		// Create an AclfNetwork object
 		AclfNetwork net = CoreObjectFactory.createAclfNetwork();
 
@@ -124,7 +117,7 @@ public class SampleLoadflow {
 	  	// output loadflow calculation results
 	  	System.out.println(AclfOutFunc.loadFlowSummary(net));
     }	
-
+/*
 	public static void simpleLoadflowPSSL(IPSSMsgHub msg) throws InterpssException {
 		// Create an AclfNetwork object
 		AclfNetwork net = IpssAclfNet.createAclfNetwork("Net")
@@ -201,4 +194,5 @@ public class SampleLoadflow {
 	  	// output net object info for debug purpose 
 	  	System.out.println(net.net2String());
     }
+*/    
 }
