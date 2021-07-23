@@ -11,6 +11,7 @@ import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
+import org.interpss.display.AclfOutFunc;
 import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.interpss.numeric.NumericConstant;
 import org.junit.Test;
@@ -37,13 +38,13 @@ import com.interpss.simu.SimuCtxType;
 
 public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 		
-		//@Test
+		@Test
 		public void test_IEEE39Bus_Dstab_OnlyGen() throws InterpssException{
 			IpssCorePlugin.init();
 			PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
 			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 					"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_v30.raw",
-					"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_v30.seq",
+					//"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_v30.seq",
 					"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_onlyGen.dyr"
 			}));
 			DStabModelParser parser =(DStabModelParser) adapter.getModel();
@@ -74,7 +75,7 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 			LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 			aclfAlgo.setTolerance(1.0E-6);
 			assertTrue(aclfAlgo.loadflow());
-			//System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
+			System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 			
 			
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
@@ -89,7 +90,7 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 			
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(1);
+			dstabAlgo.setOutPutPerSteps(5);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
 			
 			IpssLogger.getLogger().setLevel(Level.INFO);
@@ -101,7 +102,7 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 				double t1 = System.currentTimeMillis();
 				System.out.println("time1="+t1);
 				System.out.println("Running DStab simulation ...");
-				//System.out.println(dsNet.getMachineInitCondition());
+				System.out.println(dsNet.getMachineInitCondition());
 				dstabAlgo.performSimulation();
 				double t2 = System.currentTimeMillis();
 				System.out.println("used time="+(t2-t1)/1000.0);
@@ -112,7 +113,7 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 			
 		}
 		
-		@Test
+		//@Test
 		public void test_IEEE39Bus_Dstab_fullModel() throws InterpssException{
 			IpssCorePlugin.init();
 			
@@ -181,7 +182,7 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 			
 		}
 		
-		@Test
+		//@Test
 		public void IEEE39_Dstab_benchMark() throws InterpssException{
 			IpssCorePlugin.init();
 			PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);

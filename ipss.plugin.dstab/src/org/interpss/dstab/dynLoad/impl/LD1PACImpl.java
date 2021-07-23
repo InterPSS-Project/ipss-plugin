@@ -946,7 +946,21 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 	private double kuv =1.0, kcon = 1.0, fcon_trip = 0.0;
 	private boolean isContractorActioned = false;
 	private double I_CONV_FACTOR_M2S = 0.0;
+	
+	// internal variables for integration
 	private double vt_measured = 0.0;
+	private double vt_measured_old = 0.0;
+	
+	private double tempA_old = 0.0;
+	private double tempB_old = 0.0;
+	
+	private double dv_dt0 = 0.0; 
+	private double dv_dt1 = 0.0;
+
+	private double dThA_dt0 = 0.0;
+	private double dThB_dt0 = 0.0;
+	private double dThA_dt1 = 0.0;
+	private double dThB_dt1 = 0.0;
 
 	// thermal protection
 	// the tripping characterisic is modeled as y = thermalEqnCoeff1*x +thermalEqnCoeff2 for x within {Th1t, Th2t}
@@ -1021,6 +1035,8 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 		
 		this.vt_measured = vt;
 		
+		this.vt_measured_old = vt;
+		
 		if(this.qac >busTotalLoad.getImaginary()){
 			
 			 double b = (this.qac - busTotalLoad.getImaginary())/vt/vt;
@@ -1034,6 +1050,8 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 		this.tempA = i_motor*i_motor*this.rstall;
 		this.tempB = this.tempA;
 		
+		this.tempA_old = this.tempA;
+		this.tempB_old = this.tempB;
 		
 		// update the Vstall and Vbrk if necessary
 		this.vstall= this.vstall*(1+this.lFadj*(this.loadFactor-1));
@@ -1102,25 +1120,14 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 	 * The stall timer as well as the recovery timer are also counted and updated in this method
 	 */
 	@Override
-	public boolean nextStep(double dt, DynamicSimuMethod method) {
-		boolean flag = true;
+	public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
+		boolean boolFlag = true;
 		
 		// check the protection actions and update the status of AC motor accordingly
 		timestep = dt;
 		
 		// check whether the ac motor is stalled or not
 		double vmag = this.getDStabBus().getVoltageMag();
-		
-		
-	    // voltage measurements
-		
-		double dv_dt0 = (vmag-this.vt_measured)/this.tv;
-		
-		double vt_measured1 = this.vt_measured+dv_dt0*dt;
-		
-		double dv_dt1 = (vmag-vt_measured1)/this.tv;
-		
-		this.vt_measured = this.vt_measured+ (dv_dt0+dv_dt1)*0.5d*dt;
 		
 		// thermal overload protection
 		/*
@@ -1155,21 +1162,49 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 			    ImotorB_pu = vt.multiply(this.YStall);
 		}
 		
-		double dThA_dt0 = (Math.pow(ImotorA_pu.abs(),2)*this.rstall - this.tempA)/this.tth;
-		
-		double dThB_dt0 = (Math.pow(ImotorB_pu.abs(),2)*this.rstall - this.tempB)/this.tth;
+		if(method==DynamicSimuMethod.MODIFIED_EULER) {
 			
-	    double tempA1 = this.tempA+ dThA_dt0*dt;
-	    double tempB1 = this.tempB+ dThB_dt0*dt;
-	    
-		double dThA_dt1 = (Math.pow(ImotorA_pu.abs(),2)*this.rstall - tempA1)/this.tth;
+			if(flag == 0) {
+		       // voltage measurements
+			
+				dv_dt0 = (vmag-this.vt_measured_old)/this.tv;
+				
+				this.vt_measured = this.vt_measured_old+ dv_dt0*dt;
+				
+				// temperature
+				
+			    dThA_dt0 = (Math.pow(ImotorA_pu.abs(),2)*this.rstall - this.tempA)/this.tth;
+				
+				dThB_dt0 = (Math.pow(ImotorB_pu.abs(),2)*this.rstall - this.tempB)/this.tth;
+					
+				this.tempA = this.tempA_old+ dThA_dt0*dt;
+				this.tempB = this.tempB_old+ dThB_dt0*dt;
+			}
+			else if (flag ==1) {
+				
+			   dv_dt1 = (vmag-vt_measured)/this.tv;
+			   
+			   this.vt_measured = this.vt_measured_old + (dv_dt0 + dv_dt1)*0.5*dt;
+			   
+			   dThA_dt1 = (Math.pow(ImotorA_pu.abs(),2)*this.rstall - this.tempA)/this.tth;
+				
+			   dThB_dt1 = (Math.pow(ImotorB_pu.abs(),2)*this.rstall - this.tempB)/this.tth;
+			   
+			   this.tempA = this.tempA_old + (dThA_dt0+dThA_dt1)*0.5*dt;
+			   this.tempB = this.tempB_old + (dThB_dt0+dThB_dt1)*0.5*dt;
+			   
+			   this.vt_measured_old = this.vt_measured;
+			   
+			   this.tempA_old = this.tempA;
+			   this.tempB_old = this.tempB;
+			}
 		
-		double dThB_dt1 = (Math.pow(ImotorB_pu.abs(),2)*this.rstall - tempB1)/this.tth;
+		}
+		else {
+			throw new Error("Only the Modified Euler method is supported. ");
+		}
 		
-		this.tempA = this.tempA + (dThA_dt0+dThA_dt1)*0.5d*dt;
-		this.tempB = this.tempB + (dThB_dt0+dThB_dt1)*0.5d*dt;
-		
-		return flag;
+		return boolFlag;
 	}
 	
 	/**
@@ -1424,6 +1459,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 		Complex vt = this.getDStabBus().getVoltage();
 		
 		Complex Imotor_systembase = null;
+		
 		if(vt.abs()>this.vbrk){
 			// call this method to update "this.PQmotor"
 			calculateMotorPower();

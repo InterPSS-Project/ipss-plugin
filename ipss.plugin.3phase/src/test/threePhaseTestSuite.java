@@ -11,6 +11,7 @@ import test.model.TestSinglePhaseACMotorModel;
 import test.system.IEEE123Feeder_Dstab_Test;
 import test.system.IEEE9Bus_3phase_LF_init_test;
 import test.system.IEEE9_3Phase_1PAC_test;
+import test.system.IEEE_13BusFeeder_Test;
 import test.system.Test3PhaseInductionMotor;
 import test.system.Test6BusFeeder;
 import test.system.TestDistributionPowerflowAlgo;
@@ -49,6 +50,7 @@ import test.system.TwoBus_3Phase_Test;
     
     //dynamic simulation
     Test6BusFeeder.class,
+    IEEE_13BusFeeder_Test.class,
     IEEE123Feeder_Dstab_Test.class,
 })
 public class threePhaseTestSuite {

@@ -123,23 +123,27 @@ public class DStab3PBusImpl extends BaseDStabBusImpl<DStab3PGen,DStab3PLoad> imp
 		 //EquivLoadYabc does not limit to load buses, otherwise buses with sequence shuntY cannot be correctly modeled
 		 //ALSO NOTE: The contribution from the generators has been considered in the  <EquivLoadYabc> above   		    
 		  
-		 yiiAbc= yiiAbc.add(ThreeSeqLoadProcessor.getEquivLoadYabc(this));
+		 Complex3x3 equivLoadYabc = ThreeSeqLoadProcessor.getEquivLoadYabc(this);
+		// System.out.println(this.getId()+"equivLoadYabc = \n"+equivLoadYabc.toString());
+		 
+		 yiiAbc= yiiAbc.add(equivLoadYabc);
 		 
 		
 		     
 		//TODO 11/19/2015 work on three-phase and single-phase loads
 		//ONly consider the net Load after excluding the effects of dynamic loads
-		  
-		 if(this.get3PhaseNetLoadResults() != null && this.get3PhaseNetLoadResults().abs() >0.0){
-			 Complex3x1 initVoltABC = this.get3PhaseInitVoltage();
-			 double va = initVoltABC.a_0.abs();
-			 double vb = initVoltABC.b_1.abs();
-			 double vc = initVoltABC.c_2.abs();
-			 Complex ya = this.get3PhaseNetLoadResults().a_0.conjugate().divide(va*va);
-			 Complex yb = this.get3PhaseNetLoadResults().b_1.conjugate().divide(vb*vb);
-			 Complex yc = this.get3PhaseNetLoadResults().c_2.conjugate().divide(vc*vc);
-			 
-			 yiiAbc = yiiAbc.add(new Complex3x3(ya,yb,yc));
+		 if(((BaseDStabNetwork)this.getNetwork()).isStaticLoadIncludedInYMatrix()) {
+			 if(this.get3PhaseNetLoadResults() != null && this.get3PhaseNetLoadResults().abs() >0.0){
+				 Complex3x1 initVoltABC = this.get3PhaseInitVoltage();
+				 double va = initVoltABC.a_0.abs();
+				 double vb = initVoltABC.b_1.abs();
+				 double vc = initVoltABC.c_2.abs();
+				 Complex ya = this.get3PhaseNetLoadResults().a_0.conjugate().divide(va*va);
+				 Complex yb = this.get3PhaseNetLoadResults().b_1.conjugate().divide(vb*vb);
+				 Complex yc = this.get3PhaseNetLoadResults().c_2.conjugate().divide(vc*vc);
+				 
+				 yiiAbc = yiiAbc.add(new Complex3x3(ya,yb,yc));
+			 }
 		 }
 
 
@@ -492,26 +496,29 @@ public class DStab3PBusImpl extends BaseDStabBusImpl<DStab3PGen,DStab3PLoad> imp
 		
 		Complex3x1 vabc = this.get3PhaseVotlages();
 		
+		Complex3x1 staticLoad = cal3PhaseStaticLoad();
+		
 		if(vabc.abs()>1.0E-4) {
 			if(vabc.a_0.abs()>1.0E-4 && vabc.b_1.abs()>1.0E-4 && vabc.c_2.abs()>1.0E-4) {
-				 staticLoadCurInj = cal3PhaseStaticLoad().divide(vabc).conjugate().multiply(-1); // multiplying -1  because current injection into the network is positive
+				 staticLoadCurInj = staticLoad.divide(vabc).conjugate().multiply(-1); // multiplying -1  because current injection into the network is positive
 			}
 			else {
 				if(vabc.a_0.abs()>1.0E-4){
-					 staticLoadCurInj.a_0 = cal3PhaseStaticLoad().a_0.divide(vabc.a_0);
+					 staticLoadCurInj.a_0 = staticLoad.a_0.divide(vabc.a_0).conjugate().multiply(-1);
 				}
 				if(vabc.b_1.abs()>1.0E-4){
-					 staticLoadCurInj.b_1 = cal3PhaseStaticLoad().b_1.divide(vabc.b_1);
+					 staticLoadCurInj.b_1 = staticLoad.b_1.divide(vabc.b_1).conjugate().multiply(-1);
 				}
 				if(vabc.c_2.abs()>1.0E-4){
-					 staticLoadCurInj.c_2 = cal3PhaseStaticLoad().c_2.divide(vabc.c_2);
+					 staticLoadCurInj.c_2 = staticLoad.c_2.divide(vabc.c_2).conjugate().multiply(-1);
 				}
-				staticLoadCurInj = staticLoadCurInj.conjugate().multiply(-1);
+				//staticLoadCurInj = staticLoadCurInj.conjugate().multiply(-1);
 			}
 		}
 	
-		//System.out.println("bus volt ="+vabc.toString());
-	    //System.out.println("calc staticLoadCurInj ="+staticLoadCurInj.toString());
+//		System.out.println("bus volt ="+vabc.toString());
+//	    System.out.println("calc staticLoadCurInj ="+staticLoadCurInj.toString());
+//	    System.out.println("calc staticLoad ="+vabc.multiply(staticLoadCurInj.conjugate()));
 		
 		return staticLoadCurInj;
 		
@@ -551,7 +558,9 @@ public class DStab3PBusImpl extends BaseDStabBusImpl<DStab3PGen,DStab3PLoad> imp
    	// considering load shedding or load changes
    	this.staticTotalLoad3Phase = this.staticTotalLoad3Phase.multiply(1+this.getAccumulatedLoadChangeFactor());
    	
-   	//System.out.println("calc staticLoad ="+	this.staticTotalLoad3Phase.toString());
+//	System.out.println("\n\n"+this.getId()+", total load ="+	this.get3PhaseTotalLoad().toString());
+//	System.out.println(this.getId()+", net load ="+	this.get3PhaseNetLoadResults().toString());
+//   	System.out.println(this.getId()+", calc staticLoad ="+	this.staticTotalLoad3Phase.toString());
    	
    	return this.staticTotalLoad3Phase;
    }

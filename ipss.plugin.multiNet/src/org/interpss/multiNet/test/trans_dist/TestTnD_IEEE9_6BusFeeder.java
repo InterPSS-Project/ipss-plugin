@@ -50,6 +50,7 @@ import com.interpss.core.acsc.PhaseCode;
 import com.interpss.core.acsc.XfrConnectCode;
 import com.interpss.core.acsc.adpter.AcscXformer;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
@@ -67,8 +68,8 @@ public class TestTnD_IEEE9_6BusFeeder {
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/IEEE9Bus/ieee9.raw",
 				"testData/IEEE9Bus/ieee9.seq",
-				//"testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr"
-				"testData/IEEE9Bus/ieee9_dyn.dyr"
+				"testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr"
+				//"testData/IEEE9Bus/ieee9_dyn.dyr"
 		}));
 		DStabModelParser parser =(DStabModelParser) adapter.getModel();
 		
@@ -97,9 +98,9 @@ public class TestTnD_IEEE9_6BusFeeder {
 //	    double ACPhaseUnbalance = 5.0;
 	    
 	    //debug setting
-	    double ACMotorPercent = 40.0; 
-	    double IndMotorPercent = 50;
-	    double ACPhaseUnbalance = 5.0;
+	    double ACMotorPercent = 0.0; 
+	    double IndMotorPercent = 0 ;
+	    double ACPhaseUnbalance = .0;
 	    
 	    double[] loadPercentAry = new double[]{0.2,0.2,0.2,0.2,0.2} ;
 	    
@@ -194,6 +195,10 @@ public class TestTnD_IEEE9_6BusFeeder {
 		proc.addSubNetInterfaceBranch("Bus8->Bus30(0)",false);
 		 
 		 proc.splitFullSystemIntoSubsystems(true);
+		 
+		 for(BaseDStabNetwork subnet: proc.getSubNetworkList()) {
+			 subnet.setStaticLoadIncludedInYMatrix(true);
+		 }
 		 
 		 // currently, if a fault at transmission system is to be considered, then it should be set to 3phase
 		 proc.set3PhaseSubNetByBusId("Bus5");
@@ -353,7 +358,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 				
 
 			// AC motor, 50%
-			
+			if(ACMotorPercent>0.0) {
 			 SinglePhaseACMotor ac1 = new SinglePhaseACMotor(loadBus,"1");
 		  		ac1.setLoadPercent(ACMotorPercent-ACPhaseUnbalance);
 		  		ac1.setPhase(PhaseCode.A);
@@ -379,10 +384,10 @@ public class TestTnD_IEEE9_6BusFeeder {
 		  		ac3.setTstall(0.05); // disable ac stalling
 		  		ac3.setVstall(0.65);
 		  		loadBus.getPhaseCDynLoadList().add(ac3);
-			
+			}
 			
 			// 3 phase motor, 20%
-			
+			if(IndMotorPercent>0) {
 		  		InductionMotor indMotor= new InductionMotorImpl(loadBus,"1");
 				//indMotor.setDStabBus(loadBus);
 
@@ -401,7 +406,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 				InductionMotor3PhaseAdapter indMotor3Phase = new InductionMotor3PhaseAdapter(indMotor);
 				indMotor3Phase.setLoadPercent(IndMotorPercent); //0.06 MW
 				loadBus.getThreePhaseDynLoadList().add(indMotor3Phase);	
-			
+			}
 			
 			// PV generation
 			

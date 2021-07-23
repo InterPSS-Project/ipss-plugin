@@ -733,9 +733,12 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 					
 			    }
 				
+				System.out.println("Source node 3 sequence current into network: "+sumOfBranchCurrents.to012());
+				
 				Complex posGenPQ = bus3p.getThreeSeqVoltage().b_1.multiply(sumOfBranchCurrents.to012().b_1.conjugate());
 				if(bus.getContributeGenList().size()>0){
 				   bus.getContributeGenList().get(0).setGen(posGenPQ);
+				   System.out.println("Source node positive sequence power into network: "+posGenPQ.toString());
 				
 				}
 			}

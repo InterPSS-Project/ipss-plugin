@@ -355,7 +355,7 @@ public class TestTnD_IEEE9_8BusFeeder {
 		  
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 			dstabAlgo.setSimuStepSec(0.005d);
-			dstabAlgo.setTotalSimuTimeSec(2.2);
+			dstabAlgo.setTotalSimuTimeSec(1.5);
 			
 
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
@@ -365,7 +365,7 @@ public class TestTnD_IEEE9_8BusFeeder {
 	        
 			dsNet.addDynamicEvent(
 					DStabObjectFactory.createBusFaultEvent("Bus10", proc.getSubNetworkByBusId("Bus10"),
-							SimpleFaultCode.GROUND_LG, new Complex(0.0), new Complex(0.0), 2, 0.05),
+							SimpleFaultCode.GROUND_LG, new Complex(0.0), new Complex(0.0), 1, 0.05),
 					"3phaseFault@Bus10");
 			
 			StateMonitor sm = new StateMonitor();

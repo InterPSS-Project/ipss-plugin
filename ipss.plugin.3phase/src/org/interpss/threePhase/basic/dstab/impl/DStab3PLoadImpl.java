@@ -125,7 +125,8 @@ public class DStab3PLoadImpl extends DStab1PLoadImpl implements DStab3PLoad {
 
 	@Override
 	public Complex3x1 getEquivCurrInj(Complex3x1 vabc) {
-Complex3x1 loadPQ = new Complex3x1();
+		
+		Complex3x1 loadPQ = new Complex3x1();
 		
 		if(this.code ==AclfLoadCode.NON_LOAD){
 			code = AclfLoadCode.CONST_P; // by default constant PQ

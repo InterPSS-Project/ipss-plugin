@@ -1,6 +1,7 @@
 package org.interpss.pssl.plugin.cmd.json;
 
 import com.interpss.dstab.algo.DynamicSimuMethod;
+import com.interpss.dstab.devent.DynamicSimuEventType;
 
 public class DstabRunConfigBean extends BaseJSONBean{
 	
@@ -19,6 +20,12 @@ public class DstabRunConfigBean extends BaseJSONBean{
 	public double totalSimuTimeSec = 10.0;
 	
 	public double simuTimeStepSec = 0.005;
+	
+	public DynamicSimuEventType eventType = null;
+	
+	public String eventLocation ="";
+	
+	public double eventValue = 0.0;
 	
 	public double eventStartTimeSec = 1.0;
 	

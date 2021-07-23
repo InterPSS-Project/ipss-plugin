@@ -39,12 +39,13 @@ import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.cache.StateMonitor.MonitorRecord;
 import com.interpss.dstab.mach.EConstMachine;
 import com.interpss.dstab.mach.MachineModelType;
+import com.interpss.dstab.mach.SalientPoleMachine;
 
 public class IEEE_13BusFeeder_Test {
 	
 	private final double ft2mile = 1.0/5280.0;
 	
-	@Test
+	//@Test
 	public void test_ieee13feeder_powerflow() throws InterpssException{
 		
 		IpssCorePlugin.init();
@@ -73,11 +74,96 @@ public class IEEE_13BusFeeder_Test {
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
 		
        DStabNetwork3Phase net = createIEEE13BusFeeder4DStab();
+       
+       net.setStaticLoadIncludedInYMatrix(true);
+       
 		
 		DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(net);
 		//distPFAlgo.orderDistributionBuses(true);
 		
 		assertTrue(distPFAlgo.powerflow());
+	
+		
+		System.out.println(DistPowerFlowOutFunc.powerflowResultSummary(net));
+		System.out.println(DistPowerFlowOutFunc.busLfSummary(net));
+		
+		// check Yabc of branches
+		for(DStabBranch bra: net.getBranchList()){
+			
+			DStab3PBranch bra3p = (DStab3PBranch) bra;
+			System.out.println(bra.getId()+"Branch Yabc = "+bra3p.getBranchYabc().toString());
+		}
+		
+		
+		DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
+				net, IpssCorePlugin.getMsgHub());
+			
+	
+	  	
+	  	dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+		dstabAlgo.setSimuStepSec(0.005d);
+		dstabAlgo.setTotalSimuTimeSec(1.0);
+	    //dstabAlgo.setRefMachine(net.getMachine("Bus3-mach1"));
+		//distNet.addDynamicEvent(create3PhaseFaultEvent("Bus2",distNet,0.2,0.05),"3phaseFault@Bus2");
+        
+		
+		StateMonitor sm = new StateMonitor();
+		sm.addGeneratorStdMonitor(new String[]{"SubBus-mach1"});
+		//sm.addBusStdMonitor(new String[]{"Bus684","Bus652"});
+		sm.add3PhaseBusStdMonitor(new String[]{"Bus684","Bus652"});
+		// set the output handler
+		dstabAlgo.setSimuOutputHandler(sm);
+		dstabAlgo.setOutPutPerSteps(1);
+		
+		dstabAlgo.setDynamicEventHandler(new DynamicEventProcessor3Phase());
+		
+		
+				
+	  	if(dstabAlgo.initialization()){
+	  		//System.out.println(ThreePhaseAclfOutFunc.busLfSummary(net));
+	  		System.out.println(net.getMachineInitCondition());
+	  	    while(dstabAlgo.getSimuTime()<dstabAlgo.getTotalSimuTimeSec()) {
+	  		  
+	  		  for(DStab3PBus bus: net.getBusList()){
+	  			  sm.addBusPhaseVoltageMonitorRecord(bus.getId(), dstabAlgo.getSimuTime(), bus.get3PhaseVotlages());
+	  		  }
+	  		 dstabAlgo.solveDEqnStep(true);
+	  	    }
+	  	}
+	  	
+	  	//System.out.println(sm.toCSVString(sm.getMachPeTable()));
+	  	//System.out.println(sm.toCSVString(sm.getBusAngleTable()));
+	  	System.out.println(sm.toCSVString(sm.getBusPhAVoltTable()));
+	  	
+
+	  	MonitorRecord rec1 = sm.getBusPhAVoltTable().get("Bus684").get(0);
+	  	MonitorRecord rec20 = sm.getBusPhAVoltTable().get("Bus684").get(20);
+	  	assertTrue(Math.abs(rec1.getValue()-rec20.getValue())<1.0E-4);
+
+
+	  	MonitorRecord rec0 = sm.getBusPhAVoltTable().get("Bus652").get(0);
+	  	MonitorRecord rec50 = sm.getBusPhAVoltTable().get("Bus652").get(50);
+	  	assertTrue(Math.abs(rec0.getValue()-rec50.getValue())<1.0E-4);
+		
+	}
+	
+	@Test
+	public void test_2busfeeder_dstab() throws InterpssException{
+		
+		IpssCorePlugin.init();
+		IpssCorePlugin.setLoggerLevel(Level.INFO);
+		
+       DStabNetwork3Phase net = create2BusFeeder4DStab();
+       
+//       net.setStaticLoadIncludedInYMatrix(false);
+       
+
+		
+		DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(net);
+		//distPFAlgo.orderDistributionBuses(true);
+		
+		assertTrue(distPFAlgo.powerflow());
+	
 		
 		for(BaseDStabBus<?,?> bus: net.getBusList()){
 			System.out.println("id, sortNum: "+bus.getId()+","+bus.getSortNumber());
@@ -90,7 +176,7 @@ public class IEEE_13BusFeeder_Test {
 		for(DStabBranch bra: net.getBranchList()){
 			
 			DStab3PBranch bra3p = (DStab3PBranch) bra;
-			System.out.println(bra.getId()+"锛� "+bra3p.getBranchYabc().toString());
+			System.out.println(bra.getId()+"Branch Yabc = "+bra3p.getBranchYabc().toString());
 		}
 		
 		
@@ -101,14 +187,15 @@ public class IEEE_13BusFeeder_Test {
 	  	
 	  	dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.005d);
-		dstabAlgo.setTotalSimuTimeSec(0.5);
+		dstabAlgo.setTotalSimuTimeSec(1.0);
 	    //dstabAlgo.setRefMachine(net.getMachine("Bus3-mach1"));
 		//distNet.addDynamicEvent(create3PhaseFaultEvent("Bus2",distNet,0.2,0.05),"3phaseFault@Bus2");
         
 		
 		StateMonitor sm = new StateMonitor();
-		//sm.addGeneratorStdMonitor(new String[]{"Bus1-mach1","Bus2-mach1"});
-		sm.addBusStdMonitor(new String[]{"Bus684","Bus652"});
+		sm.addGeneratorStdMonitor(new String[]{"SubBus-mach1"});
+		//sm.addBusStdMonitor(new String[]{"Bus684","Bus652"});
+		sm.add3PhaseBusStdMonitor(new String[]{"SubBus","Bus650"});
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
@@ -120,21 +207,26 @@ public class IEEE_13BusFeeder_Test {
 	  	if(dstabAlgo.initialization()){
 	  		//System.out.println(ThreePhaseAclfOutFunc.busLfSummary(net));
 	  		System.out.println(net.getMachineInitCondition());
-	  	
-	  		dstabAlgo.performSimulation();
+	  		
+	  		System.out.println("Yabc= \n"+net.getYMatrixABC().toString());
+	  	    while(dstabAlgo.getSimuTime()<dstabAlgo.getTotalSimuTimeSec()) {
+	  		  
+	  		  for(DStab3PBus bus: net.getBusList()){
+	  			  sm.addBusPhaseVoltageMonitorRecord(bus.getId(), dstabAlgo.getSimuTime(), bus.get3PhaseVotlages());
+	  		  }
+	  		 dstabAlgo.solveDEqnStep(true);
+	  	    }
 	  	}
-	  	System.out.println(sm.toCSVString(sm.getBusAngleTable()));
-	  	System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+	  	
+	  	//System.out.println(sm.toCSVString(sm.getMachPeTable()));
+	  	//System.out.println(sm.toCSVString(sm.getBusAngleTable()));
+	  	System.out.println(sm.toCSVString(sm.getBusPhAVoltTable()));
 	  	
 
-	  	MonitorRecord rec1 = sm.getBusVoltTable().get("Bus684").get(0);
-	  	MonitorRecord rec20 = sm.getBusVoltTable().get("Bus684").get(20);
+	  	MonitorRecord rec1 = sm.getBusPhAVoltTable().get("Bus650").get(0);
+	  	MonitorRecord rec20 = sm.getBusPhAVoltTable().get("Bus650").get(20);
 	  	assertTrue(Math.abs(rec1.getValue()-rec20.getValue())<1.0E-4);
 
-
-	  	MonitorRecord rec0 = sm.getBusVoltTable().get("Bus652").get(0);
-	  	MonitorRecord rec50 = sm.getBusVoltTable().get("Bus652").get(50);
-	  	assertTrue(Math.abs(rec0.getValue()-rec50.getValue())<1.0E-4);
 		
 	}
 	
@@ -169,20 +261,46 @@ public class IEEE_13BusFeeder_Test {
 			
 			DStab3PGen constantGen = ThreePhaseObjectFactory.create3PGenerator("Source");
 			constantGen.setMvaBase(1.0);
-			constantGen.setPosGenZ(new Complex(0.0,0.05));
-			constantGen.setNegGenZ(new Complex(0.0,0.05));
-			constantGen.setZeroGenZ(new Complex(0.0,0.05));
+			double z = 1.0E-8;
+			constantGen.setPosGenZ(new Complex(0.0,z));
+			constantGen.setNegGenZ(new Complex(0.0,z));
+			constantGen.setZeroGenZ(new Complex(0.0,z));
 			source.getContributeGenList().add(constantGen);
 			
 			
 			EConstMachine mach = (EConstMachine)DStabObjectFactory.
-					createMachine("MachId", "MachName", MachineModelType.ECONSTANT, net, "SubBus", "Source");
+					createMachine("1", "MachName", MachineModelType.ECONSTANT, net, "SubBus", "Source");
 		
 			mach.setRating(1, UnitType.mVA, net.getBaseKva());
 			mach.setRatedVoltage(baseVolt115kV);
 			mach.setH(50000.0);
-			mach.setXd1(0.05);
+			mach.setXd1(z);
 			
+//			// create a machine and connect to the bus "Gen"
+//			SalientPoleMachine mach = (SalientPoleMachine)DStabObjectFactory.
+//								createMachine("MachId", "MachName", MachineModelType.EQ11_SALIENT_POLE, net, "SubBus", "Source");
+//			//DStabBus bus = net.getDStabBus("Gen");		
+//			// set machine data
+//			mach.setRating(1, UnitType.mVA, net.getBaseKva());
+//			mach.setRatedVoltage(baseVolt115kV);
+//			mach.calMultiFactors();
+//			mach.setH(5.0);
+//			mach.setD(0.01);
+//			mach.setX0(0.1);
+//			mach.setX2(0.2);
+//			mach.setRa(0.003);
+//			mach.setXl(0.04);
+//			mach.setXd(1.1);
+//			mach.setXq(1.08);
+//			mach.setXd1(0.23);
+//			mach.setTd01(5.6);
+//			mach.setXd11(0.05);
+//			mach.setTq011(0.05);
+//			mach.setXq11(0.05); // xq11 = xd11
+//			mach.setTd011(0.03);
+//			mach.setSliner(2.0);  // no saturation
+//			mach.setSe100(0.0);  // no saturation
+//			mach.setSe120(0.0);		
 			
 			
 			DStab3PBus bus650 = ThreePhaseObjectFactory.create3PDStabBus("Bus650", net);
@@ -387,7 +505,8 @@ public class IEEE_13BusFeeder_Test {
 			
 			DStab3PBranch xfr2_3 = ThreePhaseObjectFactory.create3PBranch( "Bus650", "BusRG60","0", net);
 			xfr2_3.setBranchCode(AclfBranchCode.XFORMER);
-			xfr2_3.setToTurnRatio(1.055);
+			//xfr2_3.setToTurnRatio(1.055);
+			xfr2_3.setToTurnRatio(1.0);
 			xfr2_3.setZ( new Complex( 0.0, 0.00001 ));
 			
 		
@@ -517,6 +636,118 @@ public class IEEE_13BusFeeder_Test {
 			Line671_692.setBranchCode(AclfBranchCode.LINE);
 			zabc_pu = new Complex3x3(new Complex(1.0E-6,0),new Complex(1.0E-6,0),new Complex(1.0e-6,0));
 			Line671_692.setZabc(zabc_pu);            
+			
+			return net;
+		    
+	}
+	
+	public DStabNetwork3Phase create2BusFeeder4DStab() throws InterpssException{
+		
+		   double baseVolt115kV = 115000.0;
+		   double baseVolt4160 = 4160.0; //4.16 kV
+		   double baseVolt480 = 480.0;
+		   double vabase = 1.0E6; // 1MW
+		   double kvabase = 1000.0;
+		   
+		   double zBase4160 = baseVolt4160*baseVolt4160/vabase;
+		   double zBase480  = baseVolt480*baseVolt480/vabase;
+		   
+		   double loadScaleFactor =3;
+		   
+		   DStabNetwork3Phase net = ThreePhaseObjectFactory.create3PhaseDStabNetwork();
+			
+			net.setBaseKva(kvabase);
+			// identify this is a distribution network
+			net.setNetworkType(NetworkType.DISTRIBUTION);
+			
+			DStab3PBus source = ThreePhaseObjectFactory.create3PDStabBus("SubBus", net);
+			source.setAttributes("subsation bus", "");
+			source.setBaseVoltage(baseVolt115kV);
+			// set the bus to a non-generator bus
+			source.setGenCode(AclfGenCode.SWING);
+			// set the bus to a constant power load bus
+			source.setLoadCode(AclfLoadCode.NON_LOAD);
+			source.setVoltage(new Complex(1.0,0));
+		    //source.set3PhaseVoltages(new Complex());
+			
+			DStab3PGen constantGen = ThreePhaseObjectFactory.create3PGenerator("Source");
+			constantGen.setMvaBase(1.0);
+			double z = 1.0E-8;
+			constantGen.setPosGenZ(new Complex(0.0,z));
+			constantGen.setNegGenZ(new Complex(0.0,z));
+			constantGen.setZeroGenZ(new Complex(0.0,z));
+			source.getContributeGenList().add(constantGen);
+			
+			
+			EConstMachine mach = (EConstMachine)DStabObjectFactory.
+					createMachine("1", "MachName", MachineModelType.ECONSTANT, net, "SubBus", "Source");
+		
+			mach.setRating(1, UnitType.mVA, net.getBaseKva());
+			mach.setRatedVoltage(baseVolt115kV);
+			mach.setH(50000.0);
+			mach.setXd1(z);
+			
+//			// create a machine and connect to the bus "Gen"
+//			SalientPoleMachine mach = (SalientPoleMachine)DStabObjectFactory.
+//								createMachine("MachId", "MachName", MachineModelType.EQ11_SALIENT_POLE, net, "SubBus", "Source");
+//			//DStabBus bus = net.getDStabBus("Gen");		
+//			// set machine data
+//			mach.setRating(1, UnitType.mVA, net.getBaseKva());
+//			mach.setRatedVoltage(baseVolt115kV);
+//			mach.calMultiFactors();
+//			mach.setH(5.0);
+//			mach.setD(0.01);
+//			mach.setX0(0.1);
+//			mach.setX2(0.2);
+//			mach.setRa(0.003);
+//			mach.setXl(0.04);
+//			mach.setXd(1.1);
+//			mach.setXq(1.08);
+//			mach.setXd1(0.23);
+//			mach.setTd01(5.6);
+//			mach.setXd11(0.05);
+//			mach.setTq011(0.05);
+//			mach.setXq11(0.05); // xq11 = xd11
+//			mach.setTd011(0.03);
+//			mach.setSliner(2.0);  // no saturation
+//			mach.setSe100(0.0);  // no saturation
+//			mach.setSe120(0.0);		
+			
+			
+			DStab3PBus bus650 = ThreePhaseObjectFactory.create3PDStabBus("Bus650", net);
+			bus650.setAttributes("feeder 650", "");
+			bus650.setBaseVoltage(baseVolt4160);
+			// set the bus to a non-generator bus
+			bus650.setGenCode(AclfGenCode.NON_GEN);
+			// set the bus to a constant power load bus
+		
+			
+			bus650.setLoadCode(AclfLoadCode.CONST_P);
+			/*
+			 * New Load.634a Bus1=634.1     Phases=1 Conn=Wye  Model=1 kV=0.277  kW=160   kvar=110 
+            New Load.634b Bus1=634.2     Phases=1 Conn=Wye  Model=1 kV=0.277  kW=120   kvar=90 
+            New Load.634c Bus1=634.3     Phases=1 Conn=Wye  Model=1 kV=0.277  kW=120   kvar=90 
+			 */
+			DStab3PLoad load634 = new DStab3PLoadImpl();
+			load634.set3PhaseLoad( new Complex3x1(new Complex(0.100,0.09),new Complex(0.120,0.09),new Complex(0.120,0.090)).multiply(loadScaleFactor));
+			bus650.getThreePhaseLoadList().add(load634);
+			
+			
+		
+			
+			////////////////////////////////// transformers ////////////////////////////////////////////////////////
+			
+			DStab3PBranch xfr1_2 = ThreePhaseObjectFactory.create3PBranch("SubBus", "Bus650", "0", net);
+			xfr1_2.setBranchCode(AclfBranchCode.XFORMER);
+			xfr1_2.setToTurnRatio(1.0);
+			xfr1_2.setZ( new Complex( 0.0, 0.0001 ));
+			
+		
+		    AcscXformer xfr0 = acscXfrAptr.apply(xfr1_2);
+			xfr0.setFromConnectGroundZ(XfrConnectCode.DELTA11, new Complex(0.0,0.0), UnitType.PU);
+			xfr0.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+
+			          
 			
 			return net;
 		    

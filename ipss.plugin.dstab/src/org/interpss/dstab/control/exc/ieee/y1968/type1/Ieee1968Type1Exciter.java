@@ -25,6 +25,7 @@ package org.interpss.dstab.control.exc.ieee.y1968.type1;
 
 import java.lang.reflect.Field;
 
+import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.controller.cml.annotate.AnController;
@@ -71,7 +72,8 @@ public class Ieee1968Type1Exciter extends AnnotateExciter {
 	      input="this.refPoint + pss.vs - this.washoutBlock.y - this.krDelayBlock.y",
 	      parameter={"type.NonWindup", "this.ka", "this.ta", "this.vrmax", "this.vrmin"},
 	      y0="this.teIntBlock.u0 + this.seFunc.y*this.teIntBlock.y + this.ke*this.teIntBlock.y"  
-	      //initOrderNumber=2 //,debug=true
+	      //initOrderNumber=2 
+	      //,debug=true
 	   )
 	   DelayControlBlock kaDelayBlock;
        
@@ -92,7 +94,7 @@ public class Ieee1968Type1Exciter extends AnnotateExciter {
 	      input="this.kaDelayBlock.y - this.seFunc.y*this.teIntBlock.y-this.ke*this.teIntBlock.y",
 	      parameter={"type.NoLimit", "this.kint"},
 	      y0="mach.efd"//,
-	      //debug = true
+	      //,debug = true
 	      )
 	   IntegrationControlBlock teIntBlock;
 	   
@@ -101,7 +103,8 @@ public class Ieee1968Type1Exciter extends AnnotateExciter {
 	   // define a CML Se block
 	   public double e1 = 3.1, seE1 = 0.33, e2 = 2.3, seE2 = 0.1;
 	   @AnFunctionField(
-	      input= {"mach.efd"},
+	      //input= {"mach.efd"},
+		  input= {"this.teIntBlock.y"},
 	      parameter={"this.e1", "this.seE1", "this.e2", "this.seE2"}	)
 	   SeFunction seFunc;
 
@@ -111,7 +114,8 @@ public class Ieee1968Type1Exciter extends AnnotateExciter {
 	      type= CMLFieldEnum.ControlBlock,
 	      input="this.teIntBlock.y",
 	      parameter={"type.NoLimit", "this.k", "this.tf"},
-	      feedback = true   //,debug=true
+	      feedback = true   
+	      //,debug=true
 	   )
 	   WashoutControlBlock washoutBlock;
  	
@@ -187,6 +191,33 @@ public class Ieee1968Type1Exciter extends AnnotateExciter {
 			return false;
 		}
 		this.kint = 1/te;
+		
+        /*
+         * Value of KE equal zero indicates code should set KE:
+         * 
+         * Two options to determine how Ke is determined, 
+         * 1) either using the GE approach [setting Vr=0] by selecting Vr = Zero Approach, 
+         * 2) or the PSSE approach (of equal to Vrmax/10 by selecting Vr > Zero Approach.
+         * 
+         */
+
+		
+		if(this.ke==0.0) {
+			
+			double vr_target = 0.0;
+			if (this.vrmax > 0.0)
+				vr_target = this.vrmax/10;
+			
+			try {
+				this.seFunc = new SeFunction(e1, seE1, e2, seE2);
+			} catch (InterpssException e) {
+				e.printStackTrace();
+			}
+			double se= this.seFunc.eval(new double[] {mach.getEfd()});
+			
+			this.ke = (vr_target-se*mach.getEfd())/mach.getEfd();
+		}
+		
 		// call the super method to init CML field/controller states
         return super.initStates(bus, mach);
     }
