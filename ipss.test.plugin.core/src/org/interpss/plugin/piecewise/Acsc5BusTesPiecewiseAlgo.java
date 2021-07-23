@@ -46,8 +46,8 @@ import org.interpss.pssl.simu.net.IpssAcscNet;
 import org.interpss.pssl.simu.net.IpssAcscNet.AcscNetworkDSL;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
@@ -58,6 +58,7 @@ import com.interpss.core.acsc.BusScCode;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.acsc.XfrConnectCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.algo.sc.ScBusModelType;
 
 public class Acsc5BusTesPiecewiseAlgo {
 	/*
@@ -96,26 +97,16 @@ public class Acsc5BusTesPiecewiseAlgo {
   		/*//////////////////////////////////
   		 * Step-1: Solve for the open-circuit voltage
   		 *//////////////////////////////////
-  		
-
 
   		pieceWiseAlgo.buildNortonEquivNet(injCurFunc);
-  		//System.out.println("Open Circuit Voltage\n" + pieceWiseAlgo.getNetVoltage().toString());
-/*
-5=-0.0000 + j-0.0021  -0.00419 + j-0.01832  -0.00021 + j-0.00092, 
-4=-0.0000 + j0.0021  0.0013 + j0.02024  0.00007 + j0.00101, 
-3=-0.0000 + j-0.00254  -0.0110 + j-0.0481  -0.00055 + j-0.0024, 
-22=-0.0000 + j-0.00254  -0.02139 + j-0.02564  -0.00107 + j-0.00128, 
-21=-0.0000 + j-0.00254  -0.01301 + j-0.05171  -0.00065 + j-0.00259}
-2=0.0000 + j0.00254  0.00239 + j0.03719  0.00012 + j0.00186, 
-1=-0.0000 + j-0.00254  -0.0198 + j-0.02425  -0.00099 + j-0.00121, 
- */
-		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(2).get("3").a_0, 
+  		//System.out.println("Open Circuit Voltage\n" + pieceWiseAlgo.getBusVoltage(2).toString());
+
+		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(2).get("3").a_0,   // -0.0000 + j-0.00254
 				     	new Complex(-0.0000, -0.00254), 1.0e-5));
-		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(2).get("3").b_1, 
-			     		new Complex(-0.0110, -0.0481), 1.0e-5));
-		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(2).get("3").c_2, 
-			     		new Complex(-0.00055, -0.0024), 1.0e-5));
+		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(2).get("3").b_1,   // -0.00017 + j-0.05885
+			     		new Complex(-0.00017, -0.05885), 1.0e-5));
+		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(2).get("3").c_2,   // -0.00001 + j-0.00294
+			     		new Complex(-0.00001, -0.00294), 1.0e-5));
   		
   		/*/////////////////////////////
   		 * Step-2: calculate cutting branch current
@@ -125,37 +116,26 @@ public class Acsc5BusTesPiecewiseAlgo {
     	for (BaseCuttingBranch<Complex3x1> cbra : proc.getCuttingBranches()) {
   			//System.out.println(cbra.getBranchId() + ": " + cbra.getCurrent());
   		}
-/*
-2->21(1): 0.00342 + j0.0000  0.19328 + j0.01941  0.00966 + j0.00097
-2->22(1): 0.00151 + j0.0000  0.09527 + j0.00752  0.00476 + j0.00038
- */
-		assertTrue(NumericUtil.equals(proc.getCuttingBranches()[0].getCurrent().a_0, 
+
+		assertTrue(NumericUtil.equals(proc.getCuttingBranches()[0].getCurrent().a_0,  // 0.00342 + j0.0000
 		     	new Complex(0.00342, 0.0000), 1.0e-5));
-		assertTrue(NumericUtil.equals(proc.getCuttingBranches()[0].getCurrent().b_1, 
-		     	new Complex(0.19328, 0.01941), 1.0e-5));
-		assertTrue(NumericUtil.equals(proc.getCuttingBranches()[0].getCurrent().c_2, 
-		     	new Complex(0.00966, 0.00097), 1.0e-5));
+		assertTrue(NumericUtil.equals(proc.getCuttingBranches()[0].getCurrent().b_1,  // 0.20069 + j0.03858 
+		     	new Complex(0.20069, 0.03858), 1.0e-5));
+		assertTrue(NumericUtil.equals(proc.getCuttingBranches()[0].getCurrent().c_2,  //  0.01003 + j0.00193
+		     	new Complex(0.01003, 0.00193), 1.0e-5));
 		
   		/*//////////////////////////////////////////
   		 * Step-3
   		 *//////////////////////////////////////////
 		pieceWiseAlgo.calcuateSubAreaNetVoltage(proc.getCuttingBranches());  		
-  		//System.out.println("Closed Circuit Voltage\n" + pieceWiseAlgo.getNetVoltage().toString());
-/*
-5= -0.0000 + j-0.00106  -0.00291 + j-0.01343  -0.00015 + j-0.00067, 
-4= -0.0000 + j0.00106    0.00147 + j0.01437    0.00007 + j0.00072, 
-3= -0.0000 + j-0.00128  -0.00765 + j-0.03524  -0.00038 + j-0.00176, 
-22=-0.0000 + j0.00128    0.00271 + j0.0263     0.00014 + j0.00132, 
-21=-0.0000 + j0.00128    0.00272 + j0.0262     0.00014 + j0.00131}
-2=  0.0000 + j0.00128    0.0027 + j0.0264      0.00014 + j0.00132, 
-1= -0.0000 + j0.00023    0.00035 + j0.00057    0.00002 + j0.00003, 
- */
-		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(2).get("3").a_0, 
+  		//System.out.println("Closed Circuit Voltage\n" + pieceWiseAlgo.getBusVoltage(2).toString());
+
+		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(2).get("3").a_0,   // -0.0000 + j-0.00128
 			     	new Complex(-0.0000, -0.00128), 1.0e-5));
-		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(2).get("3").b_1, 
-					new Complex(-0.00765, -0.03524), 1.0e-5));
-		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(2).get("3").c_2, 
-					new Complex(-0.00038, -0.00176), 1.0e-5));		
+		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(2).get("3").b_1,   // -0.00301 + j-0.03842
+					new Complex(-0.00301, -0.03842), 1.0e-5));
+		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(2).get("3").c_2,   // -0.00015 + j-0.00192
+					new Complex(-0.00015, -0.00192), 1.0e-5));		
 	}
 
 	@Test
@@ -183,13 +163,13 @@ public class Acsc5BusTesPiecewiseAlgo {
   		 * Step-1: Solve for the open-circuit voltage
   		 *//////////////////////////////////
    		pieceWiseAlgo.buildNortonEquivNet(injCurFunc);
-  		//System.out.println("Open Circuit Voltage\n" + pieceWiseAlgo.getNetVoltage().toString());
-		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(2).get("3").a_0, 
+  		//System.out.println("Open Circuit Voltage\n" + pieceWiseAlgo.getBusVoltage(2).toString());
+		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(2).get("3").a_0,  // -0.0000 + j-0.00254
 		     	new Complex(-0.0000, -0.00254), 1.0e-5));
-		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(2).get("3").b_1, 
-	     		new Complex(-0.0110, -0.0481), 1.0e-5));
-		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(2).get("3").c_2, 
-	     		new Complex(-0.00055, -0.0024), 1.0e-5));
+		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(2).get("3").b_1,  // -0.00017 + j-0.05885
+	     		new Complex(-0.00017, -0.05885), 1.0e-5));
+		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(2).get("3").c_2,  // -0.00001 + j-0.00294
+	     		new Complex(-0.00001, -0.00294), 1.0e-5));
 
   		/*/////////////////////////////
   		 * Step-2: calculate cutting branch current
@@ -199,25 +179,25 @@ public class Acsc5BusTesPiecewiseAlgo {
     	for (BaseCuttingBranch<Complex3x1> cbra : proc.getCuttingBranches()) {
   			//System.out.println(cbra.getBranchId() + ": " + cbra.getCurrent());
   		}
-		assertTrue(NumericUtil.equals(proc.getCuttingBranches()[0].getCurrent().a_0, 
+		assertTrue(NumericUtil.equals(proc.getCuttingBranches()[0].getCurrent().a_0,    // 0.00342 + j0.0000
 		     	new Complex(0.00342, 0.0000), 1.0e-5));
-		assertTrue(NumericUtil.equals(proc.getCuttingBranches()[0].getCurrent().b_1, 
-		     	new Complex(0.19328, 0.01941), 1.0e-5));
-		assertTrue(NumericUtil.equals(proc.getCuttingBranches()[0].getCurrent().c_2, 
-		     	new Complex(0.00966, 0.00097), 1.0e-5));
+		assertTrue(NumericUtil.equals(proc.getCuttingBranches()[0].getCurrent().b_1,    // 0.20069 + j0.03858
+		     	new Complex(0.20069, 0.03858), 1.0e-5));
+		assertTrue(NumericUtil.equals(proc.getCuttingBranches()[0].getCurrent().c_2,    // 0.01003 + j0.00193
+		     	new Complex(0.01003, 0.00193), 1.0e-5));
 		
   		/*//////////////////////////////////////////
   		 * Step-3
   		 *//////////////////////////////////////////
 		
 		pieceWiseAlgo.calcuateSubAreaNetVoltage(proc.getCuttingBranches());  		
-  		//System.out.println("Closed Circuit Voltage\n" + pieceWiseAlgo.getNetVoltage().toString());
-		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(2).get("3").a_0, 
+  		//System.out.println("Closed Circuit Voltage\n" + pieceWiseAlgo.getBusVoltage(2).toString());
+		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(2).get("3").a_0,   // -0.0000 + j-0.00128
 		     	new Complex(-0.0000, -0.00128), 1.0e-5));
-		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(2).get("3").b_1, 
-				new Complex(-0.00765, -0.03524), 1.0e-5));
-		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(2).get("3").c_2, 
-				new Complex(-0.00038, -0.00176), 1.0e-5));
+		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(2).get("3").b_1,   // -0.00301 + j-0.03842
+				new Complex(-0.00301, -0.03842), 1.0e-5));
+		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(2).get("3").c_2,   // -0.00015 + j-0.00192
+				new Complex(-0.00015, -0.00192), 1.0e-5));
 
 	}
 	
@@ -241,7 +221,7 @@ a(6,6,'5'): 0.0000 + j-0.0000
 Bus '2' injection current [(0.0001,0.0), (1.0,0.0),  (0.05,0.0)]
 Bus '3' injection current [(-0.0001,0.0), (-1.0,0.0), (-0.05,0.0)]
 */
-  		ISparseEqnComplex y1 = net.formScYMatrix(SequenceCode.POSITIVE, false);
+  		ISparseEqnComplex y1 = net.formScYMatrix(SequenceCode.POSITIVE, ScBusModelType.LOADFLOW_VOLT, false);
   		y1.setBi(new Complex(1.0,0.0), 1);
   		y1.setBi(new Complex(-1.0,0.0), 4);
   		y1.solveEqn();
@@ -267,7 +247,7 @@ b(5): 0.00147 + j0.01437
 b(6): -0.00291 + j-0.01343 		
  */
   		
-  		ISparseEqnComplex y2 = net.formScYMatrix(SequenceCode.NEGATIVE, false);
+  		ISparseEqnComplex y2 = net.formScYMatrix(SequenceCode.NEGATIVE, ScBusModelType.LOADFLOW_VOLT, false);
   		y2.setBi(new Complex(0.05,0.0), 1);
   		y2.setBi(new Complex(-0.05,0.0), 4);
   		y2.solveEqn();
@@ -291,7 +271,7 @@ b(4): -0.00038 + j-0.00176
 b(5): 0.00007 + j0.00072
 b(6): -0.00015 + j-0.00067 		
  */
-  		ISparseEqnComplex y0 = net.formScYMatrix(SequenceCode.ZERO, false);
+  		ISparseEqnComplex y0 = net.formScYMatrix(SequenceCode.ZERO, ScBusModelType.LOADFLOW_VOLT, false);
   		y0.setBi(new Complex(0.01,0.0), 1);
   		y0.setBi(new Complex(-0.01,0.0), 4);
   		y0.solveEqn();
@@ -327,6 +307,8 @@ b(6): -0.0000 + j-0.00106
   		//System.out.println(net.net2String());
 	  	
   		assertTrue(net.isLfConverged());  	
+  		
+  		net.initialization(ScBusModelType.LOADFLOW_VOLT);
   		
   		return net;
 	}

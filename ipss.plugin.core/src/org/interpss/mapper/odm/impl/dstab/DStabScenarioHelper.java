@@ -54,10 +54,10 @@ import org.ieee.odm.schema.TimePeriodXmlType;
 import org.interpss.mapper.odm.impl.aclf.AclfScenarioHelper;
 import org.interpss.mapper.odm.impl.acsc.AcscScenarioHelper;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.common.datatype.Constants;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.core.acsc.fault.AcscBusFault;
@@ -230,7 +230,7 @@ public class DStabScenarioHelper {
 				AcscBusFaultXmlType busFaultXml = (AcscBusFaultXmlType)faultXml;
 				eventObj.setType(DynamicSimuEventType.BUS_FAULT);
 				String faultBusId = busFaultXml.getRefBus().getBusId();
-				AcscBusFault busFault = CoreObjectFactory.createAcscBusFault(Constants.Token_BusFaultId+faultBusId, dstabNet);
+				AcscBusFault busFault = CoreObjectFactory.createAcscBusFault(Constants.Token_BusFaultId+faultBusId, dstabNet, true /* cacheBusScVolt */);
 				BaseAcscBus<?,?> bus = this.dstabNet.getBus(faultBusId);
 				busFault.setFaultBus(bus);
 				
@@ -420,6 +420,7 @@ public class DStabScenarioHelper {
         
         StaticLoadModelXmlType statLoad = settings.getStaticLoadModel();
         if(statLoad.getStaticLoadType() == DStabStaticLoadModelEnumType.CONSTANT_Z){
+
         	dstabNet.setActiveStaticLoadModel(StaticLoadModel.CONST_Z);
         	dstabNet.setReactiveStaticLoadModel(StaticLoadModel.CONST_Z);
         }

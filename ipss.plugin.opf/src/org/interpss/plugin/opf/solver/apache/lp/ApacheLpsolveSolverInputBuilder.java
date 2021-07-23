@@ -8,7 +8,8 @@ import org.apache.commons.math3.optimization.linear.LinearConstraint;
 import org.apache.commons.math3.optimization.linear.Relationship;
 import org.interpss.plugin.opf.common.OPFLogger;
 import org.interpss.plugin.opf.constraint.OpfConstraint;
-import org.interpss.plugin.opf.constraint.OpfConstraint.cstType;
+
+import com.interpss.opf.datatype.OpfConstraintType;
 
 import cern.colt.list.DoubleArrayList;
 import cern.colt.list.IntArrayList;
@@ -34,9 +35,9 @@ public class ApacheLpsolveSolverInputBuilder {
 			// output constraint to constraint collection
 			OpenMapRealVector vec =  new OpenMapRealVector(numOfVar);	
 			LinearConstraint con = null;
-			cstType type = conIn.getCstType();
+			OpfConstraintType type = conIn.getCstType();
 			try{
-				if(type.equals(cstType.equality)){	
+				if(type.equals(OpfConstraintType.EQUALITY)){	
 					double rh = conIn.getLowerLimit();	
 					for (int j = 0; j<idx.size(); j++){
 						int colIdx = idx.elements()[j];
@@ -45,7 +46,7 @@ public class ApacheLpsolveSolverInputBuilder {
 					}
 					con = new LinearConstraint(vec, Relationship.EQ, rh);
 					
-				}else if(type.equals(cstType.largerThan)){
+				}else if(type.equals(OpfConstraintType.LARGER_THAN)){
 					double[] valRow = val.elements();					
 					double rh = conIn.getLowerLimit();
 					
@@ -58,7 +59,7 @@ public class ApacheLpsolveSolverInputBuilder {
 					}
 					con = new LinearConstraint(vec, Relationship.LEQ, -rh);					
 							
-				}else if(type.equals(cstType.lessThan)){
+				}else if(type.equals(OpfConstraintType.LESS_THAN)){
 					double[] valRow = val.elements();	
 					double rh = conIn.getUpperLimit();
 					for (int j = 0; j<idx.size(); j++){
@@ -70,7 +71,7 @@ public class ApacheLpsolveSolverInputBuilder {
 				}
 				constCol.add(con);
 			}catch (Exception e){
-				OPFLogger.getLogger().severe(e.toString()+ " at constraint: "+conIn.getDescription());
+				OPFLogger.getLogger().severe(e.toString()+ " at constraint: "+conIn.getDesc());
 				//e.printStackTrace();
 			}		
 		}		

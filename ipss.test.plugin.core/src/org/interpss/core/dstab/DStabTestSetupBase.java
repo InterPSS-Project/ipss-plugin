@@ -31,10 +31,10 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.NumericConstant;
 
 import com.interpss.CoreCommonFactory;
-import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.dstab.BaseDStabBus;
@@ -71,7 +71,7 @@ public class DStabTestSetupBase extends CorePluginTestSetup {
 		
 		BaseDStabBus faultBus = net.getDStabBus("0003");
 
-		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@0003", net);
+		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@0003", net, true /* cacheBusScVolt */);
   		fault.setBus(faultBus);
 		fault.setFaultCode(SimpleFaultCode.GROUND_3P);
 		fault.setZLGFault(NumericConstant.SmallScZ);

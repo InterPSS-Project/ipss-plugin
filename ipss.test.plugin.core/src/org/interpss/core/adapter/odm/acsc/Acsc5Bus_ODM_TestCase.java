@@ -36,15 +36,15 @@ import org.interpss.pssl.plugin.IpssAdapter;
 import org.interpss.pssl.simu.IpssAclf;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.AclfMethod;
-import com.interpss.core.algo.ScBusVoltageType;
-import com.interpss.core.algo.SimpleFaultAlgorithm;
-import com.interpss.simu.util.sample.SampleCases;
+import com.interpss.core.algo.sc.ScBusModelType;
+import com.interpss.core.algo.sc.SimpleFaultAlgorithm;
+import com.interpss.simu.util.sample.SampleTestingCases;
 
 public class Acsc5Bus_ODM_TestCase extends CorePluginTestSetup {
 	@Test
@@ -56,12 +56,12 @@ public class Acsc5Bus_ODM_TestCase extends CorePluginTestSetup {
 		//System.out.println(faultNet.net2String());
 		
 	  	SimpleFaultAlgorithm algo = CoreObjectFactory.createSimpleFaultAlgorithm(faultNet);
-  		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus2", algo);
+  		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus2", algo, true /* cacheBusScVolt */);
 		fault.setFaultCode(SimpleFaultCode.GROUND_3P);
 		fault.setZLGFault(new Complex(0.0, 0.0));
 		fault.setZLLFault(new Complex(0.0, 0.0));
 		
-	  	algo.calculateBusFault(fault);
+	  	algo.calBusFault(fault);
   		//System.out.println(fault.getFaultResult().getSCCurrent_012());
   		// 0.0000 + j0.0000  -0.7531 + j29.05407  0.0000 + j0.0000
 	  	assertTrue(TestUtilFunc.compare(fault.getFaultResult().getSCCurrent_012(), 

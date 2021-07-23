@@ -29,8 +29,8 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.util.PerformanceTimer;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -68,15 +68,5 @@ public class LoadflowPerformance {
 	  	algoLF.setLfMethod(AclfMethod.NR_STEP);
 	  	algoLF.loadflow();
 	  	timer.logStd("Time for running one step NR Loadflow: ");
-        
-	  	
-	  	/*
-	  	 * time bus number arrangement
-	  	 *
-	  	timer.start();
-	  	adjNet.setBusNumberArranged(false);
-	  	adjNet.accept(CoreObjectFactory.createBusNoArrangeVisitor());
-	  	timer.logStd("Time for bus arrangement: ");
-	  	*/
 	}	
 }

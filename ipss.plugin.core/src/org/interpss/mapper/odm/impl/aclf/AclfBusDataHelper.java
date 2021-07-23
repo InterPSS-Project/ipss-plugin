@@ -57,11 +57,10 @@ import org.ieee.odm.schema.YXmlType;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.aclf.AclfBranch;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfGenCode;
@@ -78,6 +77,8 @@ import com.interpss.core.aclf.adpter.AclfPQGenBus;
 import com.interpss.core.aclf.adpter.AclfPVGenBus;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
 import com.interpss.core.acsc.AcscBus;
+import com.interpss.core.acsc.AcscGen;
+import com.interpss.core.acsc.AcscLoad;
 import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.dstab.BaseDStabBus;
 
@@ -293,6 +294,9 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 				AclfGen gen= this.bus instanceof BaseDStabBus? DStabObjectFactory.createDStabGen(id) :
 								this.bus instanceof BaseAcscBus<?,?> ? CoreObjectFactory.createAcscGen(id) : 
 									CoreObjectFactory.createAclfGen(id);
+	
+				//add the generator to the bus GenList. Please note: for AcscBus, gen is already added.
+				bus.getContributeGenList().add((TGen)gen);
 				
 				gen.setStatus(xmlGen.isOffLine()==null?true:!xmlGen.isOffLine());
 				/*
@@ -361,7 +365,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 				gen.setMwControlPFactor(xmlGen.getMwControlParticipateFactor()!=null?xmlGen.getMwControlParticipateFactor():1.0);
 				
 				//add the generator to the bus GenList
-				bus.getContributeGenList().add((TGen)gen);
+				//bus.getContributeGenList().add((TGen)gen);
 			}
 		}
 	}

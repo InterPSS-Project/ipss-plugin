@@ -72,26 +72,19 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import com.interpss.OpfObjectFactory;
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.aclf.AclfGen;
-import com.interpss.core.aclf.AclfLoad;
-import com.interpss.core.aclf.BaseAclfBus;
+import com.interpss.common.exp.InterpssRuntimeException;
 import com.interpss.core.common.curve.CommonCurveFactory;
 import com.interpss.core.common.curve.NumericCurveModel;
 import com.interpss.core.common.curve.PieceWiseCurve;
 import com.interpss.core.common.curve.QuadraticCurve;
-import com.interpss.opf.BaseOpfNetwork;
-import com.interpss.opf.Constraint;
-import com.interpss.opf.IncrementalCost;
 import com.interpss.opf.OpfBranch;
 import com.interpss.opf.OpfBus;
-import com.interpss.opf.OpfFactory;
-import com.interpss.opf.OpfGenBus;
+import com.interpss.opf.OpfGen;
 import com.interpss.opf.OpfGenOperatingMode;
 import com.interpss.opf.OpfNetwork;
-import com.interpss.opf.dclf.DclfOpfBranch;
-import com.interpss.opf.dclf.DclfOpfBus;
-import com.interpss.opf.dclf.DclfOpfGenBus;
-import com.interpss.opf.dclf.DclfOpfNetwork;
+import com.interpss.opf.datatype.OpfDatatypeFactory;
+import com.interpss.opf.datatype.IncrementalCost;
+import com.interpss.opf.datatype.OpfBusLimits;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
@@ -130,7 +123,7 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 			//XformerZTableXmlType xfrZTable = xmlNet.getXfrZTable();
 			
 			try {
-				BaseOpfNetwork opfNet = null;
+				OpfNetwork opfNet = null;
 				if (xmlNet.getOpfNetType() == OpfNetworkEnumType.SIMPLE_DCLF) 
 					opfNet = mapDclfOpfNetData((OpfDclfNetworkXmlType)xmlNet);
 				else 
@@ -145,7 +138,7 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 							bus.getValue() instanceof OpfGenBusXmlType) {
 						if (xmlNet.getOpfNetType() == OpfNetworkEnumType.SIMPLE_DCLF) {
 							OpfDclfGenBusXmlType opfDclfGen = (OpfDclfGenBusXmlType) bus.getValue();
-							mapDclfOpfGenBusData(opfDclfGen, (DclfOpfNetwork)opfNet);
+							mapDclfOpfGenBusData(opfDclfGen, (OpfNetwork)opfNet);
 						}
 						else {
 							OpfGenBusXmlType opfGen = (OpfGenBusXmlType) bus.getValue();
@@ -155,19 +148,25 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 					else {
 						LoadflowBusXmlType busRec = (LoadflowBusXmlType) bus.getValue();
 						if (xmlNet.getOpfNetType() == OpfNetworkEnumType.SIMPLE_DCLF) {
-							DclfOpfBus opfDclfBus = OpfObjectFactory.createDclfOpfBus(busRec.getId(), (DclfOpfNetwork)opfNet);
+							OpfBus opfDclfBus = OpfObjectFactory.createOpfBus(busRec.getId(), opfNet);
+							throw new InterpssRuntimeException("Fix the compile error, AbstractODMOpfParserMapper");
+							/* TODO
 							aclfNetMapper.mapAclfBusData(busRec, opfDclfBus, opfNet, busHelper);
+							*/
 						}
 						else {
 							OpfBus opfBus = OpfObjectFactory.createOpfBus(busRec.getId(), (OpfNetwork)opfNet);
+							throw new InterpssRuntimeException("Fix the compile error, AbstractODMOpfParserMapper");
+							/* TODO
 							aclfNetMapper.mapAclfBusData(busRec, opfBus, opfNet, busHelper);
+							*/
 						}
 					}
 				}
 
 				for (JAXBElement<? extends BaseBranchXmlType> b : xmlNet.getBranchList().getBranch()) {
 					if (xmlNet.getOpfNetType() == OpfNetworkEnumType.SIMPLE_DCLF) {
-						DclfOpfBranch opfDclfBranch = OpfObjectFactory.createDclfOpfBranch();
+						OpfBranch opfDclfBranch = OpfObjectFactory.createOpfBranch();
 						aclfNetMapper.mapAclfBranchData(b.getValue(), opfDclfBranch, opfNet);
 					}
 					else {
@@ -227,8 +226,8 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 	 * @return
 	 * @throws InterpssException
 	 */
-	public OpfGenBus mapOpfGenBusData(OpfGenBusXmlType busRec, OpfNetwork net) throws InterpssException {
-		OpfGenBus opfGenBus = OpfObjectFactory.createOpfGenBus(busRec.getId(), net);
+	public OpfGen mapOpfGenBusData(OpfGenBusXmlType busRec, OpfNetwork net) throws InterpssException {
+		OpfBus opfGenBus = OpfObjectFactory.createOpfGenBus(busRec.getId(), net);
 		mapBaseBusData(busRec, opfGenBus, net);
 
 		AclfBusDataHelper helper = new AclfBusDataHelper(net);
@@ -237,23 +236,24 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 		
 
 		OpfGenOperatingModeEnumType genMode = busRec.getOperatingMode();
+		OpfGen opfGen = opfGenBus.getOpfGen();
 		if (genMode.equals(OpfGenOperatingModeEnumType.PV_GENERATOR)){
-			opfGenBus.setOperatingMode(OpfGenOperatingMode.PV_GENERATOR);
+			opfGen.setOperatingMode(OpfGenOperatingMode.PV_GENERATOR);
 			
 		}else if(genMode.equals(OpfGenOperatingModeEnumType.PUMPING)) {
-			opfGenBus.setOperatingMode(OpfGenOperatingMode.PUMPING);
+			opfGen.setOperatingMode(OpfGenOperatingMode.PUMPING);
 			
 		}else if(genMode.equals(OpfGenOperatingModeEnumType.PQ_GENERATOR)) {
-			opfGenBus.setOperatingMode(OpfGenOperatingMode.PQ_GENERATOR);
+			opfGen.setOperatingMode(OpfGenOperatingMode.PQ_GENERATOR);
 		}else {
 			// synchronized condensor
-			opfGenBus.setOperatingMode(OpfGenOperatingMode.SYCHRONOUS_COMPENSATOR);
+			opfGen.setOperatingMode(OpfGenOperatingMode.SYCHRONOUS_COMPENSATOR);
 		}
 		
 		// set gen incremental cost model
 		IncCostXmlType incCostRec = busRec.getIncCost();
 		CostModelEnumType costModelRec = incCostRec.getCostModel();
-		IncrementalCost inc = OpfFactory.eINSTANCE.createIncrementalCost();
+		IncrementalCost inc = OpfDatatypeFactory.eINSTANCE.createIncrementalCost();
 		if (costModelRec.equals(CostModelEnumType.PIECE_WISE_LINEAR_MODEL)){
 			inc.setCostModel(NumericCurveModel.PIECE_WISE);
 			if (busRec.getIncCost().getPieceWiseLinearModel()!=null){
@@ -324,12 +324,12 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 				ipssLogger.severe("Can not find a quadratic cost model for bus: "+ opfGenBus.getId());
 			}			
 		}
-		opfGenBus.setIncCost(inc);
+		opfGen.setIncCost(inc);
 		
 		// set constraints
 		if(busRec.getConstraints()!=null){
 			ConstraintsXmlType ctrtXml = busRec.getConstraints();		
-			Constraint ctrtIpss = OpfFactory.eINSTANCE.createConstraint();			
+			OpfBusLimits ctrtIpss = OpfDatatypeFactory.eINSTANCE.createOpfBusLimits();			
 			
 			double baseKva = net.getBaseKva();
 			double factor = net.getBaseKva()*0.001;
@@ -359,10 +359,10 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 				LimitType limit = UnitHelper.pConversion(new LimitType(vmax, vmin), baseKva, ipssUnit, UnitType.PU);
 				ctrtIpss.setVLimit(limit);						
 			}			
-			opfGenBus.setConstraints(ctrtIpss);
+			opfGen.setOpfLimits(ctrtIpss);
 			
 		}
-		return opfGenBus;
+		return opfGen;
 	}
 	
 	/*
@@ -370,8 +370,8 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 	 *    =====================
 	 */
 	
-	private DclfOpfNetwork mapDclfOpfNetData(OpfDclfNetworkXmlType xmlNet) throws InterpssException {
-		DclfOpfNetwork opfNet = OpfObjectFactory.createDclfOpfNetwork();
+	private OpfNetwork mapDclfOpfNetData(OpfDclfNetworkXmlType xmlNet) throws InterpssException {
+		OpfNetwork opfNet = OpfObjectFactory.createOpfNetwork();
 		new ODMAclfNetMapper().mapAclfNetworkData(opfNet, xmlNet);
 		opfNet.setAnglePenaltyFactor(xmlNet.getAnglePenaltyFactor());	
 		return opfNet;
@@ -385,8 +385,8 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 	 * @return
 	 * @throws Exception
 	 */
-	public DclfOpfGenBus mapDclfOpfGenBusData(OpfDclfGenBusXmlType busRec, DclfOpfNetwork net) throws InterpssException {
-		DclfOpfGenBus opfGenBus = OpfObjectFactory.createDclfOpfGenBus(busRec.getId(), net);
+	public OpfGen mapDclfOpfGenBusData(OpfDclfGenBusXmlType busRec, OpfNetwork net) throws InterpssException {
+		OpfBus opfGenBus = OpfObjectFactory.createOpfGenBus(busRec.getId(), net);
 		mapBaseBusData(busRec, opfGenBus, net);
 
 		AclfBusDataHelper helper = new AclfBusDataHelper(net);
@@ -399,19 +399,19 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
     		<pss:capacityLimit max="0.2" min="0.05" unit="PU"></pss:capacityLimit>
     		<pss:fixedCost>118.821</pss:fixedCost>  
     	*/
-		opfGenBus.setCoeffA(busRec.getCoeffA());
-		opfGenBus.setCoeffB(busRec.getCoeffB());
-		opfGenBus.setFixedCost(busRec.getFixedCost());
+		opfGenBus.getOpfGen().setCoeffA(busRec.getCoeffA());
+		opfGenBus.getOpfGen().setCoeffB(busRec.getCoeffB());
+		opfGenBus.getOpfGen().setFixedCost(busRec.getFixedCost());
 		String unit=busRec.getCapacityLimit().getUnit().value();
 		if(unit.equalsIgnoreCase("PU")) {// model mappering consistence, all are converted to MVA unit;
 			double factor=net.getBaseKva()*0.001;
-		    opfGenBus.setCapacityLimit(new LimitType(busRec.getCapacityLimit().getMax()*factor, 
+		    opfGenBus.getOpfGen().setCapacityLimit(new LimitType(busRec.getCapacityLimit().getMax()*factor, 
 				              busRec.getCapacityLimit().getMin()*factor));
 		}
 		else {   //the default unit is MVA
-			opfGenBus.setCapacityLimit(new LimitType(busRec.getCapacityLimit().getMax(), busRec.getCapacityLimit().getMin()));
+			opfGenBus.getOpfGen().setCapacityLimit(new LimitType(busRec.getCapacityLimit().getMax(), busRec.getCapacityLimit().getMin()));
 		}
-		return opfGenBus;
+		return opfGenBus.getOpfGen();
 	}
 	
 	private boolean checkConvex(PieceWiseLinearModelXmlType pw){

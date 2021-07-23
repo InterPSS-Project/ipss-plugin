@@ -10,10 +10,10 @@ import org.interpss.datamodel.util.INetBeanComparator;
 import org.interpss.mapper.bean.aclf.AclfNet2BeanMapper;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.simu.util.sample.SampleCases;
+import com.interpss.simu.util.sample.SampleTestingCases;
 
 /**
  * There are two way two ways to compare AclfNetwork. The approach in 
@@ -27,11 +27,11 @@ public class AclfNetCompareTest extends QATestSetup {
 	@Test    // recommended approach
 	public void test() throws InterpssException {
   		AclfNetwork net1 = CoreObjectFactory.createAclfNetwork();
-		SampleCases.load_LF_5BusSystem(net1);
+		SampleTestingCases.load_LF_5BusSystem(net1);
 		AclfNetBean netBean1 = new AclfNet2BeanMapper().map2Model(net1);
 		
 		AclfNetwork net2 = CoreObjectFactory.createAclfNetwork();
-		SampleCases.load_LF_5BusSystem(net2);
+		SampleTestingCases.load_LF_5BusSystem(net2);
 		//net2.getBus("1").setVoltageMag(0.95);
 		AclfNetBean netBean2 = new AclfNet2BeanMapper().map2Model(net2);
 		
@@ -48,10 +48,10 @@ public class AclfNetCompareTest extends QATestSetup {
 	@Test
 	public void test1() {
   		AclfNetwork net1 = CoreObjectFactory.createAclfNetwork();
-		SampleCases.load_LF_5BusSystem(net1);
+		SampleTestingCases.load_LF_5BusSystem(net1);
 
 		AclfNetwork net2 = CoreObjectFactory.createAclfNetwork();
-		SampleCases.load_LF_5BusSystem(net2);
+		SampleTestingCases.load_LF_5BusSystem(net2);
 		
 		AclfNetModelComparator comparator = new AclfNetModelComparator();
 	

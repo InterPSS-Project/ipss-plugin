@@ -30,7 +30,7 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.algo.path.NetPathWalkAlgorithm;
 import com.interpss.core.algo.path.NetPathWalkDirectionEnum;
 import com.interpss.core.net.Branch;

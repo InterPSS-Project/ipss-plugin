@@ -34,7 +34,7 @@ import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
@@ -42,13 +42,13 @@ import com.interpss.core.aclf.adj.AdjControlType;
 import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.simu.util.sample.SampleCases;
+import com.interpss.simu.util.sample.SampleTestingCases;
 
 public class XfrTapControlTest extends CorePluginTestSetup {
 	
 	@Test
 	public void testCase1() throws Exception {
-		AclfNetwork net = SampleCases.sample2BusXfr();
+		AclfNetwork net = SampleTestingCases.sample2BusXfr();
 
 		AclfBranch branch = net.getBranch("0001->0002(1)");
 		TapControl tap = CoreObjectFactory.createTapVControlBusVoltage(branch, 
@@ -90,7 +90,7 @@ public class XfrTapControlTest extends CorePluginTestSetup {
 	
 	@Test
 	public void testCase2() throws Exception {
-		AclfNetwork net = SampleCases.sample2BusXfr();
+		AclfNetwork net = SampleTestingCases.sample2BusXfr();
 
 		AclfBranch branch = net.getBranch("0001->0002(1)");
 		TapControl tap = CoreObjectFactory.createTapVControlBusVoltage(branch, 
@@ -127,7 +127,7 @@ public class XfrTapControlTest extends CorePluginTestSetup {
 	
 	@Test
 	public void testCase3() throws Exception {
-		AclfNetwork net = SampleCases.sample2BusXfr();
+		AclfNetwork net = SampleTestingCases.sample2BusXfr();
 
 		AclfBranch branch = net.getBranch("0001->0002(1)");
 		TapControl tap = CoreObjectFactory.createTapVControlBusVoltage(branch, 

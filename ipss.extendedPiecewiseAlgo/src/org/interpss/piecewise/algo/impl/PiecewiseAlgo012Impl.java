@@ -43,6 +43,7 @@ import com.interpss.core.acsc.AcscLoad;
 import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.core.acsc.BaseAcscNetwork;
 import com.interpss.core.acsc.SequenceCode;
+import com.interpss.core.algo.sc.ScBusModelType;
 
 /**
  * Piecewise algorithm implementation for 012 sequence network. We use
@@ -123,9 +124,9 @@ public class PiecewiseAlgo012Impl<TBus extends BaseAcscBus<? extends AcscGen, ? 
   				((SubNetwork012)subArea).formYMatrix();
   			else	
   				subArea.setYSparseEqn( new ISparseEqnComplex[] {
-  						parentNet.formScYMatrix(SequenceCode.ZERO, subArea.getFlag()),
-  						parentNet.formScYMatrix(SequenceCode.POSITIVE, subArea.getFlag()),		
-  						parentNet.formScYMatrix(SequenceCode.NEGATIVE, subArea.getFlag())
+  						parentNet.formScYMatrix(SequenceCode.ZERO, ScBusModelType.LOADFLOW_VOLT, subArea.getFlag()),
+  						parentNet.formScYMatrix(SequenceCode.POSITIVE, ScBusModelType.LOADFLOW_VOLT, subArea.getFlag()),		
+  						parentNet.formScYMatrix(SequenceCode.NEGATIVE, ScBusModelType.LOADFLOW_VOLT, subArea.getFlag())
   					});
   			
   	  		for ( ISparseEqnComplex eqn : subArea.getYSparseEqn())

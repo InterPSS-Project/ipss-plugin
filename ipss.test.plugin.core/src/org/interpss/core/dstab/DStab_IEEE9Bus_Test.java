@@ -28,16 +28,17 @@ import org.interpss.numeric.util.PerformanceTimer;
 import org.interpss.util.FileUtil;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.algo.sc.ScBusModelType;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBus;
@@ -272,7 +273,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		
 	    dsNet.setStaticLoadIncludedInYMatrix(false);
 		
-	    dsNet.setActiveStaticLoadModel(StaticLoadModel.CONST_Z);
+	    dsNet.setStaticLoadModel(StaticLoadModel.CONST_Z);
 	    dsNet.setReactiveStaticLoadModel(StaticLoadModel.CONST_Z);
 		
 
@@ -522,7 +523,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		
 	    dsNet.setStaticLoadIncludedInYMatrix(false);
 		
-	    dsNet.setActiveStaticLoadModel(StaticLoadModel.CONST_Z);
+	    dsNet.setStaticLoadModel(StaticLoadModel.CONST_Z);
 	    dsNet.setReactiveStaticLoadModel(StaticLoadModel.CONST_Z);
 		
 
@@ -693,6 +694,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		
 		
 	    BaseDStabNetwork dsNet =simuCtx.getDStabilityNet();
+        dsNet.initialization(ScBusModelType.DSTAB_SIMU);
 	    
 	    // build sequence network
 //	    SequenceNetworkBuilder seqNetHelper = new SequenceNetworkBuilder(dsNet,true);
@@ -938,9 +940,9 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
                     return;
             }
             
-        BaseDStabNetwork dsNet =simuCtx.getDStabilityNet();
-
-        //System.out.println(dsNet.net2String());
+            BaseDStabNetwork dsNet =simuCtx.getDStabilityNet();
+            //System.out.println(dsNet.net2String());
+            dsNet.initialization(ScBusModelType.DSTAB_SIMU);
 
             DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
             LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
@@ -1067,7 +1069,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	      // define a bus fault
 			BaseDStabBus faultBus = net.getDStabBus(faultBusId);
 
-			AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@"+faultBusId, net);
+			AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@"+faultBusId, net, true /* cacheBusScVolt */);
 	  		fault.setBus(faultBus);
 			fault.setFaultCode(SimpleFaultCode.GROUND_3P);
 			fault.setZLGFault(NumericConstant.SmallScZ);

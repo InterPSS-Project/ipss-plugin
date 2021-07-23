@@ -34,10 +34,10 @@ import org.interpss.numeric.datatype.ComplexFunc;
 import org.interpss.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.AcscBus;
@@ -46,8 +46,8 @@ import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.core.algo.ScBusVoltageType;
-import com.interpss.core.algo.SimpleFaultAlgorithm;
+import com.interpss.core.algo.sc.ScBusModelType;
+import com.interpss.core.algo.sc.SimpleFaultAlgorithm;
 import com.interpss.core.net.Branch;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
@@ -89,15 +89,15 @@ public class PSSE_Savnw_v33_Acsc_Test extends CorePluginTestSetup {
 		
 		
 	  	SimpleFaultAlgorithm acscAlgo = CoreObjectFactory.createSimpleFaultAlgorithm(net);
-  		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus202", acscAlgo );
+  		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus202", acscAlgo, true /* cacheBusScVolt */ );
 		fault.setFaultCode(SimpleFaultCode.GROUND_3P);
 		fault.setZLGFault(new Complex(0.0, 0.0));
 		fault.setZLLFault(new Complex(0.0, 0.0));
 		
 		//pre fault profile : solved power flow
-		acscAlgo.setScBusVoltage(ScBusVoltageType.LOADFLOW_VOLT);
+		acscAlgo.setScBusModelType(ScBusModelType.LOADFLOW_VOLT);
 		
-		acscAlgo.calculateBusFault(fault);
+		acscAlgo.calBusFault(fault);
 	  	System.out.println(fault.getFaultResult().getSCCurrent_012());
 	  	
 	  	System.out.println(AcscOutFunc.faultResult2String(net,acscAlgo));
@@ -459,16 +459,16 @@ Contributing Gen:
 				    	
 				    	System.out.println("Remote fault bus:"+twoBusAwayBus.getId());
 				
-				    	AcscBusFault fault = CoreObjectFactory.createAcscBusFault(twoBusAwayBus.getId(), acscAlgo );
+				    	AcscBusFault fault = CoreObjectFactory.createAcscBusFault(twoBusAwayBus.getId(), acscAlgo, true /* cacheBusScVolt */ );
 						fault.setFaultCode(SimpleFaultCode.GROUND_3P);
 						fault.setZLGFault(new Complex(0.0, 0.0));
 						fault.setZLLFault(new Complex(0.0, 0.0));
 						
 						//pre fault profile : solved power flow
-						acscAlgo.setScBusVoltage(ScBusVoltageType.LOADFLOW_VOLT);
+						acscAlgo.setScBusModelType(ScBusModelType.LOADFLOW_VOLT);
 						
 						try {
-							acscAlgo.calculateBusFault(fault);
+							acscAlgo.calBusFault(fault);
 						} catch (InterpssException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();

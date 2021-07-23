@@ -35,12 +35,12 @@ import org.interpss.numeric.util.PerformanceTimer;
 import org.interpss.pssl.common.PSSLException;
 import org.interpss.pssl.plugin.IpssAdapter;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.dclf.common.ReferenceBusException;
-import com.interpss.simu.util.sample.SampleCases;
+import com.interpss.core.common.ReferenceBusException;
+import com.interpss.simu.util.sample.SampleTestingCases;
 
 import edu.emory.mathcs.csparsej.tdcomplex.DZcs_common.DZcsa;
 
@@ -55,7 +55,7 @@ public class EDistance_Sample {
 
 	public static void sample_5Bus() throws InterpssException, ReferenceBusException, IpssNumericException, PSSLException  {
 		AclfNetwork net = CoreObjectFactory.createAclfNetwork();
-		SampleCases.load_LF_5BusSystem(net);
+		SampleTestingCases.load_LF_5BusSystem(net);
 		//System.out.println(net.net2String());
 		
 		/*
@@ -132,7 +132,7 @@ public class EDistance_Sample {
 				b.set(i, 1.0, 0.0);
 				b.set(j, -1.0, 0.0);
 				
-				DZcsa x = eqn.solveEqn(b);
+				DZcsa x = eqn.solveLUedEqn(b);
 				Complex z = new Complex(x.get(i)[0],x.get(i)[1]).subtract(new Complex(x.get(j)[0],x.get(j)[1]));
 				//System.out.println("Zij: " + ComplexFunc.toStr(z));
 				if (Math.abs(z.getReal() - 0.10097) > 1.0e-5 || Math.abs(z.getImaginary() - 0.33347) > 1.0e-5)

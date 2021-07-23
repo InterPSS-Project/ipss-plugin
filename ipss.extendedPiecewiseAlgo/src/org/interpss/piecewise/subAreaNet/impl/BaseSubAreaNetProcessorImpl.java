@@ -37,6 +37,7 @@ import com.interpss.common.util.IpssLogger;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 import com.interpss.core.net.Network;
+import com.interpss.core.net.BranchBusSide;
 
 /**
  * Base Class for SubArea processing. It begins by defining a set of cutting branches.
@@ -149,62 +150,85 @@ public abstract class BaseSubAreaNetProcessorImpl<
 	 * Initialization for SubArea/Network processing 
 	 * 
 	 */
-	private void initialization() {
+	private void initialization(boolean singleSide) {
 		// init bus SubAreaFlag
-		parentNet.getBusList().forEach(bus -> { bus.setSubAreaFlag(BaseCuttingBranch.DefaultFlag);});
+		parentNet.getBusList().forEach(bus -> bus.setSubAreaFlag(BaseCuttingBranch.DefaultFlag));
 		
 		// init cutting branch set
   		int flag = 0;
-  		for (BaseCuttingBranch<TState> cbra : cuttingBranches) {
-  			Branch branch = parentNet.getBranch(cbra.getBranchId());
+  		for (BaseCuttingBranch<TState> cutBranch : cuttingBranches) {
+  			Branch branch = parentNet.getBranch(cutBranch.getBranchId());
   			branch.setStatus(false);
   			
-  			if (branch.getFromBus().getSubAreaFlag() == BaseCuttingBranch.DefaultFlag) {
-  				cbra.setFromSubAreaFlag(++flag);
-  				branch.getFromBus().setSubAreaFlag(cbra.getFromSubAreaFlag());
-  				//System.out.println("Bus " + branch.getFromBus().getId() + " assigned Bus Flag: " + flag);
+  			if (!singleSide || cutBranch.getSplitSide() == BranchBusSide.TO_SIDE) {
+  				if (branch.getFromBus().getSubAreaFlag() == BaseCuttingBranch.DefaultFlag) {
+  					cutBranch.setFromSubAreaFlag(++flag);
+  					branch.getFromBus().setSubAreaFlag(cutBranch.getFromSubAreaFlag());
+  					//System.out.println("Bus " + branch.getFromBus().getId() + " assigned Bus Flag: " + flag);
+  				}
   			}
 
-  			if (branch.getToBus().getSubAreaFlag() == BaseCuttingBranch.DefaultFlag) {
-  				cbra.setToSubAreaFlag(++flag);
-  				branch.getToBus().setSubAreaFlag(cbra.getToSubAreaFlag());
-  				//System.out.println("Bus " + branch.getToBus().getId() + " assigned Bus Flag: " + flag);
+  			if (!singleSide || cutBranch.getSplitSide() == BranchBusSide.FROM_SIDE) {
+  	  			if (branch.getToBus().getSubAreaFlag() == BaseCuttingBranch.DefaultFlag) {
+  	  				cutBranch.setToSubAreaFlag(++flag);
+  	  				branch.getToBus().setSubAreaFlag(cutBranch.getToSubAreaFlag());
+  	  				//System.out.println("Bus " + branch.getToBus().getId() + " assigned Bus Flag: " + flag);
+  	  			}  				
   			}
   		}		
 	}
 	
 	@Override public List<TSub> processSubAreaNet() throws InterpssException {
-		initialization();
+		return processSubAreaNet(false);
+	}
+	
+	@Override public List<TSub> processSubAreaNet(boolean singleSide) throws InterpssException {
+		initialization(singleSide);
 		
 		Hashtable<String, BusPair> busPairSet = new Hashtable<>();
 			// There are two types of BusPair record in the busPairSet Hashtable
 			// Type1 ["10",  "9",  -1] - indicating Bus "10" and Bus "9" are in the same SubArea 
 			// Type2 ["61",  "61",  5] - the interface Bus current SubArea flag is 5, which needs to be 
-			//                           consolidated to the smallest Bus.SubAreaFlag in the SubAre
+			//                           consolidated to the smallest Bus.SubAreaFlag in the SubArea
 		
-  		for (BaseCuttingBranch<TState> cbra : cuttingBranches) {
-  			Branch branch = parentNet.getBranch(cbra.getBranchId());
+  		for (BaseCuttingBranch<TState> cutBranch : cuttingBranches) {
+  			Branch branch = parentNet.getBranch(cutBranch.getBranchId());
 
   			// starting from the fromBus, recursively set the branch opposite 
   			// bus SubAreaFlag for SubArea processing 
-  			BusPair pair = new BusPair(branch.getFromBus());
-  			if (busPairSet.get(pair.getKey()) == null) {
-					busPairSet.put(pair.getKey(), pair);
-				}
-  			setConnectedBusFlag(branch.getFromBus(), busPairSet);
+  			if (!singleSide || cutBranch.getSplitSide() == BranchBusSide.TO_SIDE) {
+  	  			BusPair pair = new BusPair(branch.getFromBus());
+  	  			if (busPairSet.get(pair.getKey()) == null) {
+  						busPairSet.put(pair.getKey(), pair);
+  					}
+  	  			setConnectedBusFlag(branch.getFromBus(), busPairSet);  				
+  			}
   			
   			// starting from the toBus, recursively set the branch opposite 
   			// bus SubAreaFlag for SubArea processing 
-  			pair = new BusPair(branch.getToBus());
-  			if (busPairSet.get(pair.getKey()) == null) {
-					busPairSet.put(pair.getKey(), pair);
-				}
-  			setConnectedBusFlag(branch.getToBus(), busPairSet);
+  			if (!singleSide || cutBranch.getSplitSide() == BranchBusSide.FROM_SIDE) {
+  				BusPair pair = new BusPair(branch.getToBus());
+  	  			if (busPairSet.get(pair.getKey()) == null) {
+  						busPairSet.put(pair.getKey(), pair);
+  					}
+  	  			setConnectedBusFlag(branch.getToBus(), busPairSet);  				
+  			}
   		}	
 		//System.out.println(this.busPairSet);
 		
   		// consolidate bus.SubAreaFlag and create SubArea flag
 		busPairSet.forEach((key, pair) -> {
+			
+			SetSubAreaFlagCnt = 0;
+			SubAreaStartBusPair = pair;
+			
+			/*
+			// [3 "湖南.永州A2厂.220.7426",  53 "湖南.谷源站.220.2480",  -1]
+			if (pair.bus1.getId().equals("湖南.永州A2厂.220.7426") && pair.bus2.getId().equals("湖南.谷源站.220.2480")) {
+				System.out.println(key + " " + pair);
+			}
+			*/
+			
 			// bus1 and bus2 are in the same SubArea and make sure only process Type1 record 
 			if (!pair.bus1.getId().equals(pair.bus2.getId())) {
 				// get Type2 records corresponding to bus1 and bus2
@@ -242,10 +266,13 @@ public abstract class BaseSubAreaNetProcessorImpl<
 		});		
 		
 		// update network bus SubArea flag
-		parentNet.getBusList().forEach(bus -> {
-			BusPair p = busPairSet.get(BusPair.createKey(bus.getSubAreaFlag()));
-			bus.setSubAreaFlag(p.subAreaFlag);
-		});
+		parentNet.getBusList().stream()
+			.filter(bus -> bus.isActive())
+			.forEach(bus -> {
+				BusPair p = busPairSet.get(BusPair.createKey(bus.getSubAreaFlag()));
+				if (p != null)
+					bus.setSubAreaFlag(p.subAreaFlag);
+			});
 		
 		// consolidate the subarea number
 		//  At this point the subarea number might not be continuous, for example, 1, 2, 7 ...
@@ -263,17 +290,24 @@ public abstract class BaseSubAreaNetProcessorImpl<
 		});
 		
 		// update network bus SubArea flag
-		parentNet.getBusList().forEach(bus -> {
-			BusPair p = busPairSet.get(BusPair.createKey(bus.getSubAreaFlag()));
-			bus.setSubAreaFlag(lookup.get(p.subAreaFlag));
+		parentNet.getBusList().stream()
+			.filter(bus -> bus.isActive())
+			.forEach(bus -> {
+				BusPair p = busPairSet.get(BusPair.createKey(bus.getSubAreaFlag()));
+				if (p != null)
+					bus.setSubAreaFlag(lookup.get(p.subAreaFlag));
 		});
 		
 		// update cutting branch from/toBus subarea flag
 		for (int i = 0; i < this.cuttingBranches.length; i++) {
-			BaseCuttingBranch<TState> branch = this.cuttingBranches[i];
-			Branch aclfBranch = parentNet.getBranch(branch.getBranchId());
-			branch.setFromSubAreaFlag(aclfBranch.getFromBus().getSubAreaFlag());
-			branch.setToSubAreaFlag(aclfBranch.getToBus().getSubAreaFlag());
+			BaseCuttingBranch<TState> cutBranch = this.cuttingBranches[i];
+			Branch aclfBranch = parentNet.getBranch(cutBranch.getBranchId());
+  			
+			if (!singleSide || cutBranch.getSplitSide() == BranchBusSide.TO_SIDE) 
+  				cutBranch.setFromSubAreaFlag(aclfBranch.getFromBus().getSubAreaFlag());
+  			
+			if (!singleSide || cutBranch.getSplitSide() == BranchBusSide.FROM_SIDE) 
+	  			cutBranch.setToSubAreaFlag(aclfBranch.getToBus().getSubAreaFlag());
 		}
 		
 		return this.subAreaNetList;
@@ -286,9 +320,20 @@ public abstract class BaseSubAreaNetProcessorImpl<
 	 * @param flag SubArea flag
 	 * @param busPairSet
 	 */
+	private static int SetSubAreaFlagCnt = 0;
+	private static BusPair SubAreaStartBusPair = null;
+	
 	private void setSubAreaFlag(BusPair startPair, int flag, Hashtable<String, BusPair> busPairSet) {
 		// 5_5=["61",  "61",  5], 6_6=["9",  "9",  5], 2_2=["71",  "71",  2]
 		// if "71" and "9" are connected, when set 6_6 flag to 2, 5_5 flag should be set also (recursively)
+		
+		++SetSubAreaFlagCnt;
+		if (SetSubAreaFlagCnt > SetSubAreaFlagMaxCnt) {
+			IpssLogger.getLogger().severe("SubArea Analysis Step Cnt > " + SetSubAreaFlagMaxCnt + 
+								", startBusPair: " + SubAreaStartBusPair);
+			return;
+		}
+		
 		if (startPair.bus1.getSubAreaFlag() != startPair.subAreaFlag) {
 			BusPair nextPair = busPairSet.get(BusPair.createKey(startPair.subAreaFlag));
 			setSubAreaFlag(nextPair, flag, busPairSet);

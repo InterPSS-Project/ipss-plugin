@@ -40,12 +40,12 @@ import org.interpss.pssl.plugin.IpssAdapter;
 import org.interpss.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
-import com.interpss.core.DclfObjectFactory;
+import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
-import com.interpss.core.dclf.DclfAlgorithm;
+import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
 import com.interpss.core.net.Branch;
 
 /*
@@ -138,11 +138,11 @@ public class Mod_SixBus_DclfPsXfr extends CorePluginTestSetup {
 			}
 		} 
 		
-		DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net);
+		SenAnalysisAlgorithm algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
 		algo.calculateDclf();
 
 		//System.out.println(DclfOutFunc.dclfResults(algo, false));
-  		assertTrue(Math.abs(algo.getBusPower(net.getBus("Bus1"))-3.0723)<0.0001);
+  		assertTrue(Math.abs(algo.getBusPower(algo.getDclfAlgoBus("Bus1"))-3.0723)<0.0001);
 
 		//algo.destroy();			
 	}
@@ -167,11 +167,11 @@ public class Mod_SixBus_DclfPsXfr extends CorePluginTestSetup {
  		System.out.println(net.formB1Matrix());
 		*/
 		
-		DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net);
+		SenAnalysisAlgorithm algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
 		algo.calculateDclf();
 
 		//System.out.println(DclfOutFunc.dclfResults(algo, false));
-  		assertTrue(Math.abs(algo.getBusPower(net.getBus("Bus1"))-3.0723)<0.0001);
+  		assertTrue(Math.abs(algo.getBusPower(algo.getDclfAlgoBus("Bus1"))-3.0723)<0.0001);
 
 		//algo.destroy();			
 	}

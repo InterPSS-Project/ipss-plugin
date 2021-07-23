@@ -12,10 +12,10 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
@@ -23,6 +23,7 @@ import com.interpss.core.aclf.adpter.AclfSwingBus;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.algo.sc.ScBusModelType;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabGen;
@@ -39,6 +40,8 @@ public class TestLd1pacModel extends TestSetupBase {
 	@Test
 	public void test_DStab_Ld1pac() throws InterpssException {
 		DStabilityNetwork net = create2BusSystem();
+		net.initialization(ScBusModelType.DSTAB_SIMU);
+		
 		assertTrue(net.isLfConverged());
 
 		DStabBus bus1 = (DStabBus) net.getDStabBus("Bus1");
@@ -83,16 +86,18 @@ public class TestLd1pacModel extends TestSetupBase {
 
 		// }
 		// System.out.println(sm.toCSVString(sm.getMachAngleTable()));
-		System.out.println(sm.toCSVString(sm.getBusVoltTable()));
-		System.out.println(sm.toCSVString(sm.getMachPeTable()));
-		System.out.println(sm.toCSVString(sm.getAcMotorPTable()));
-		System.out.println(sm.toCSVString(sm.getAcMotorQTable()));
+		//System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+		//System.out.println(sm.toCSVString(sm.getMachPeTable()));
+		//System.out.println(sm.toCSVString(sm.getAcMotorPTable()));
+		//System.out.println(sm.toCSVString(sm.getAcMotorQTable()));
 		// Total load = 0.8 pu on system base, AC motor 50% ->0.4 pu
 		assertTrue(Math.abs(sm.getAcMotorPTable().get("ACMotor_1@Bus1").get(20).value - 0.400) < 1.0E-4);
 		assertTrue(Math.abs(sm.getAcMotorQTable().get("ACMotor_1@Bus1").get(20).value - 0.10025) < 1.0E-4);
 		
 		// Total load = 0.8 pu on system base, AC motor 50%
 		// After fault, stalled motor PQ = 2.20281 +j*2.02517 (system base)
+		System.out.println(sm.getAcMotorPTable().get("ACMotor_1@Bus1").get(30).value);
+		System.out.println(sm.getAcMotorQTable().get("ACMotor_1@Bus1").get(30).value);
 		assertTrue(Math.abs(sm.getAcMotorPTable().get("ACMotor_1@Bus1").get(30).value - 2.20281) < 1.0E-4);
 		assertTrue(Math.abs(sm.getAcMotorQTable().get("ACMotor_1@Bus1").get(30).value - 2.02517) < 1.0E-4);
 	}
@@ -100,6 +105,8 @@ public class TestLd1pacModel extends TestSetupBase {
 	// @Test
 	public void compare_DStab_Ld1pac_with_PSCAD_Model() throws InterpssException {
 		DStabilityNetwork net = create2BusSystem();
+		net.initialization(ScBusModelType.DSTAB_SIMU);
+		
 		assertTrue(net.isLfConverged());
 
 		DStabBus bus1 = (DStabBus) net.getDStabBus("Bus1");
@@ -159,6 +166,8 @@ public class TestLd1pacModel extends TestSetupBase {
 	@Test
 	public void test_DStab_Ld1pac_loadChange() throws InterpssException {
 		DStabilityNetwork net = create2BusSystem();
+		net.initialization(ScBusModelType.DSTAB_SIMU);
+		
 		assertTrue(net.isLfConverged());
 
 		DStabBus bus1 = (DStabBus) net.getDStabBus("Bus1");

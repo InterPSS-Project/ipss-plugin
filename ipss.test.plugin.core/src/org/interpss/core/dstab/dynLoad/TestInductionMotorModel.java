@@ -12,10 +12,10 @@ import org.interpss.dstab.dynLoad.impl.InductionMotorImpl;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
@@ -23,6 +23,7 @@ import com.interpss.core.aclf.adpter.AclfSwingBus;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.algo.sc.ScBusModelType;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabGen;
@@ -40,6 +41,8 @@ public class TestInductionMotorModel extends TestSetupBase {
 	@Test
 	public void test_induction_Motor_dynModel_single_cage()  throws InterpssException {
 		DStabilityNetwork net = create2BusSystem();
+		net.initialization(ScBusModelType.DSTAB_SIMU);
+		
 		assertTrue(net.isLfConverged());
 		
 		DStabBus bus1 = (DStabBus) net.getDStabBus("Bus1");
@@ -58,6 +61,10 @@ public class TestInductionMotorModel extends TestSetupBase {
 		indMotor.setLoadPercent(50);
 		indMotor.setMvaBase(50);
 		indMotor.setH(1.0);
+		
+		//for testing on system MVA base
+		boolean isSysMVABase = true;
+		indMotor.setOutputPowerMVABase(isSysMVABase);
 		
 		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
@@ -117,18 +124,26 @@ public class TestInductionMotorModel extends TestSetupBase {
 		//System.out.println("\n motor slip:\n"+sm.toCSVString(sm.getMotorSlipTable()));
 		//System.out.println("\n motor Te:\n"+sm.toCSVString(sm.getMotorTeTable()));
 		//System.out.println("\n motor Tm:\n"+sm.toCSVString(sm.getMotorTmTable()));
-		//System.out.println("\n motor Power:\n"+sm.toCSVString(sm.getMotorPTable()));
+		System.out.println("\n motor Power:\n"+sm.toCSVString(sm.getMotorPTable()));
 		
 		MonitorRecord pRec0 = sm.getMotorPTable().get("IndMotor_1@Bus1").get(0);
 		
 		MonitorRecord pRec10 = sm.getMotorPTable().get("IndMotor_1@Bus1").get(10);
 		
 		assertTrue(Math.abs(pRec0.value-pRec10.value)<1.0E-5);
+		
+		if (isSysMVABase)
+			assertTrue(pRec0.value==0.4);
+		else {
+			assertTrue(pRec0.value==0.8);
+		}
 	}
 	
 	@Test
 	public void test_induction_Motor_dynModel_single_cage_loadchange()  throws InterpssException {
 			DStabilityNetwork net = create2BusSystem();
+			net.initialization(ScBusModelType.DSTAB_SIMU);
+			
 			assertTrue(net.isLfConverged());
 			
 			DStabBus bus1 = (DStabBus) net.getDStabBus("Bus1");
@@ -427,6 +442,7 @@ private DStabilityNetwork create2BusSystem() throws InterpssException{
 		
 		//set positive info only
 		net.setPositiveSeqDataOnly(true);
+		net.setLfDataLoaded(true);
 
 	  	net.initContributeGenLoad();
 

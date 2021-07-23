@@ -38,15 +38,15 @@ import org.interpss.piecewise.subAreaNet.seq012.impl.SubAreaAcscProcessorImpl;
 import org.interpss.piecewise.subAreaNet.seq012.impl.SubNetworkAcscProcessorImpl;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.AcscBus;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
-import com.interpss.core.algo.SimpleFaultAlgorithm;
-import com.interpss.simu.util.sample.SampleCases;
+import com.interpss.core.algo.sc.SimpleFaultAlgorithm;
+import com.interpss.simu.util.sample.SampleTestingCases;
 
 public class Acsc5BusTestSubAreaNet {
 	@Test
@@ -54,7 +54,7 @@ public class Acsc5BusTestSubAreaNet {
 		IpssCorePlugin.init();
 		
   		AcscNetwork net = CoreObjectFactory.createAcscNetwork();
-		SampleCases.load_SC_5BusSystem(net);
+		SampleTestingCases.load_SC_5BusSystem(net);
 		//System.out.println(net.net2String());
 		
 		SubAreaNetProcessor<AcscBus, AcscBranch, SubArea012, Complex3x1> proc = 
@@ -80,7 +80,7 @@ public class Acsc5BusTestSubAreaNet {
 		IpssCorePlugin.init();
 		
   		AcscNetwork net = CoreObjectFactory.createAcscNetwork();
-		SampleCases.load_SC_5BusSystem(net);
+		SampleTestingCases.load_SC_5BusSystem(net);
 		//System.out.println(net.net2String());
 		
 		SubAreaNetProcessor<AcscBus, AcscBranch, SubAcscNetwork, Complex3x1> proc = 
@@ -115,18 +115,18 @@ public class Acsc5BusTestSubAreaNet {
 		IpssCorePlugin.init();
 		
   		AcscNetwork faultNet = CoreObjectFactory.createAcscNetwork();
-		SampleCases.load_SC_5BusSystem(faultNet);
+		SampleTestingCases.load_SC_5BusSystem(faultNet);
 		//System.out.println(faultNet.net2String());
 
   		assertTrue((faultNet.getBusList().size() == 5 && faultNet.getBranchList().size() == 5));
   		
 	  	SimpleFaultAlgorithm algo = CoreObjectFactory.createSimpleFaultAlgorithm(faultNet);
-  		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("2", algo);
+  		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("2", algo, false /* cacheBusScVolt */);
 		fault.setFaultCode(SimpleFaultCode.GROUND_3P);
 		fault.setZLGFault(new Complex(0.0, 0.0));
 		fault.setZLLFault(new Complex(0.0, 0.0));
 		
-	  	algo.calculateBusFault(fault);
+	  	algo.calBusFault(fault);
   		//System.out.println(fault.toString(faultBus.getBaseVoltage(), faultNet.getBaseKva()));
 		/*
 		 fault amps(1): (  0.0000 + j 32.57143) pu

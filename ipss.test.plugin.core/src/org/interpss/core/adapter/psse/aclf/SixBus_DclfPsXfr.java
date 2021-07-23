@@ -32,19 +32,18 @@ import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.common.ODMLogger;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.IpssCorePlugin;
-import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.pssl.plugin.IpssAdapter;
 import org.interpss.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.Test;
 
-import com.interpss.CoreObjectFactory;
-import com.interpss.core.DclfObjectFactory;
+import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBus;
-import com.interpss.core.dclf.DclfAlgorithm;
-import com.interpss.core.net.Bus;
+import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
+import com.interpss.core.algo.dclf.adapter.DclfAlgoBus;
 import com.interpss.core.net.RefBusType;
 
 public class SixBus_DclfPsXfr extends CorePluginTestSetup {
@@ -93,16 +92,16 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
  		System.out.println(net.formB1Matrix());
 		*/
 		
-		DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net);
+		SenAnalysisAlgorithm algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
 		algo.calculateDclf();
 
 		//System.out.println(DclfOutFunc.dclfResults(algo, false));
-  		assertTrue(Math.abs(algo.getBusPower(net.getBus("Bus1"))-3.0723)<0.0001);
+  		assertTrue(Math.abs(algo.getBusPower(algo.getDclfAlgoBus("Bus1"))-3.0723)<0.0001);
   		
-		for (Bus b : net.getBusList()) {
+		for (DclfAlgoBus dclfBus : algo.getDclfAlgoBusList()) {
 			//System.out.println(b.getId() + " mismatch " + algo.getMismatch((AclfBus)b));
-			if (!((AclfBus)b).isRefBus())
-				assertTrue(Math.abs(algo.getMismatch((AclfBus)b)) < 0.00001);
+			if (!(dclfBus.getBus()).isRefBus())
+				assertTrue(Math.abs(algo.getMismatch(dclfBus)) < 0.00001);
 		}
 		//algo.destroy();			
 	}
@@ -119,7 +118,7 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
 					.load()
 					.getImportedObj();
 
-		DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net);
+		SenAnalysisAlgorithm algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
 		
 		net.setRefBusId("Bus3");
 		net.setRefBusType(RefBusType.USER_DEFINED);
@@ -130,7 +129,7 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
 
 		//System.out.println(DclfOutFunc.dclfResults(algo, false));
 		//System.out.println(algo.getBusPower(net.getBus("Bus1")) + ", " + Math.toDegrees(algo.getBusAngle("Bus1")));
-  		assertTrue(Math.abs(algo.getBusPower(net.getBus("Bus1"))-1.99)<0.0001);
+  		assertTrue(Math.abs(algo.getBusPower(algo.getDclfAlgoBus("Bus1"))-1.99)<0.0001);
   		assertTrue(Math.abs(Math.toDegrees(algo.getBusAngle("Bus1"))-2.848746)<0.001);
 
 		//algo.destroy();			
@@ -173,11 +172,11 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
 					.load()
 					.getImportedObj();
 
-		DclfAlgorithm algo = DclfObjectFactory.createDclfAlgorithm(net);
+		SenAnalysisAlgorithm algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
 		algo.calculateDclf();
 		
 		//System.out.println(DclfOutFunc.dclfResults(algo, false));
-  		assertTrue(Math.abs(algo.getBusPower(net.getBus("Bus1"))-3.0723)<0.0001);
+  		assertTrue(Math.abs(algo.getBusPower(algo.getDclfAlgoBus("Bus1"))-3.0723)<0.0001);
 		
 		//algo.destroy();	
 	}
