@@ -28,6 +28,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
+import org.interpss.display.AclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
@@ -55,6 +56,8 @@ public class IEEECommonFormatTest extends CorePluginTestSetup {
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
+	  	
+		System.out.println(AclfOutFunc.loadFlowSummary(net));
 	  	
   		assertTrue(net.isLfConverged());		
   		AclfBus swingBus = (AclfBus)net.getBus("Bus1");
