@@ -31,6 +31,7 @@ import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 
+import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.schema.ApparentPowerUnitType;
 import org.ieee.odm.schema.BaseBranchXmlType;
 import org.ieee.odm.schema.BranchBusSideEnumType;
@@ -64,6 +65,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
+import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.XfrZTableEntry;
@@ -146,9 +148,12 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 			
 			int cnt = 0;
 			for (JAXBElement<? extends BaseBranchXmlType> b : xmlNet.getBranchList().getBranch()) {
+				/*
 				if (b == null) {
 					System.out.println("xxxxxxxxxx");
 				}
+				*/
+				
 				BaseBranchXmlType xmlBranch = b.getValue();
 				//System.out.println(xmlBranch.getName() + ", " + xmlBranch.getId() + ", " + cnt++);
 				Branch branch = null;
@@ -167,7 +172,14 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 			    else 
 				   mapAclfBranchData(xmlBranch, branch, aclfNet);
 				
-			
+				if (this.originalFormat == OriginalDataFormat.IEEECDF) {
+					aclfNet.getBusList().forEach(bus -> {
+						if (bus.isGenPQ() && 
+								new Complex(bus.getGenP(), bus.getGenQ()).abs() == 0.0 &&
+								bus.getContributeGenList().size() == 0)
+							bus.setGenCode(AclfGenCode.NON_GEN);
+					});					
+				}
 				
 				//System.out.println("map branch " + branch.getId());
 			}
