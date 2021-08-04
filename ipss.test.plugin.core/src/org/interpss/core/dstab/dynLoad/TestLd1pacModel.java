@@ -86,10 +86,10 @@ public class TestLd1pacModel extends TestSetupBase {
 
 		// }
 		// System.out.println(sm.toCSVString(sm.getMachAngleTable()));
-		//System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+		System.out.println(sm.toCSVString(sm.getBusVoltTable()));
 		//System.out.println(sm.toCSVString(sm.getMachPeTable()));
-		//System.out.println(sm.toCSVString(sm.getAcMotorPTable()));
-		//System.out.println(sm.toCSVString(sm.getAcMotorQTable()));
+		System.out.println(sm.toCSVString(sm.getAcMotorPTable()));
+		System.out.println(sm.toCSVString(sm.getAcMotorQTable()));
 		// Total load = 0.8 pu on system base, AC motor 50% ->0.4 pu
 		assertTrue(Math.abs(sm.getAcMotorPTable().get("ACMotor_1@Bus1").get(20).value - 0.400) < 1.0E-4);
 		assertTrue(Math.abs(sm.getAcMotorQTable().get("ACMotor_1@Bus1").get(20).value - 0.10025) < 1.0E-4);

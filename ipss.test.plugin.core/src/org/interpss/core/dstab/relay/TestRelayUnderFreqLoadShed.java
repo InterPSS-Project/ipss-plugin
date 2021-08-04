@@ -13,7 +13,8 @@ import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.DStabTestSetupBase;
-import org.interpss.dstab.relay.LVSHLoadRelayModel;
+import org.interpss.dstab.relay.impl.LoadUFShedRelayModel;
+import org.interpss.dstab.relay.impl.LoadUVShedRelayModel;
 import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.interpss.numeric.datatype.Triplet;
 import org.interpss.numeric.util.PerformanceTimer;
@@ -30,10 +31,11 @@ import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
+import com.interpss.dstab.devent.LoadChangeEventType;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
-public class DStab_Relay_LowVoltLoadShed_Test extends DStabTestSetupBase{
+public class TestRelayUnderFreqLoadShed extends DStabTestSetupBase{
 	
 	@Test
 	public void test_IEEE9Bus_Dstab() throws InterpssException{
@@ -64,18 +66,18 @@ public class DStab_Relay_LowVoltLoadShed_Test extends DStabTestSetupBase{
 	    //add the LVSH load shedding model
 	    DStabBus bus5 = dsNet.getBus("Bus5");
 	    
-	    LVSHLoadRelayModel lvsh = new LVSHLoadRelayModel(bus5, "1");
+	    LoadUFShedRelayModel ufls = new LoadUFShedRelayModel(bus5, "1");
 	    
 	    //Triplet <voltage, time, fraction>
-	    Triplet vtf1 = new Triplet(0.6, 0.05,0.2);
-	    Triplet vtf2 = new Triplet(0.4, 0.06,0.3);
+	    Triplet vtf1 = new Triplet(0.995, 0.05,0.5);
+	    Triplet vtf2 = new Triplet(0.98, 0.05,0.3);
 	    List<Triplet> settings= new ArrayList<>();
 	    settings.add(vtf1);
 	    settings.add(vtf2);
 	  
-	    lvsh.setRelaySetPoints(settings);
+	    ufls.setRelaySetPoints(settings);
 	    
-	    dsNet.getRelayModelList().add(lvsh);
+	    //dsNet.getRelayModelList().add(lvsh);
 
 
 //	    System.out.println(dsNet.net2String());
@@ -90,25 +92,31 @@ public class DStab_Relay_LowVoltLoadShed_Test extends DStabTestSetupBase{
 		dstabAlgo.setTotalSimuTimeSec(10);
 		
 		dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
-		dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",dsNet,SimpleFaultCode.GROUND_3P,new Complex(0.0),null,1.0d,0.08),"3phaseFault@Bus5");
-        
-        
+//		dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",dsNet,SimpleFaultCode.GROUND_3P,new Complex(0.0),null,1.0d,0.1),"3phaseFault@Bus5");
+//        
+//		dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",dsNet,SimpleFaultCode.GROUND_3P,new Complex(0.0),null,1.5d,0.1),"3phaseFault@Bus5");
+//        
 		
+		
+		dsNet.addDynamicEvent(DStabObjectFactory.createLoadChangeEvent("Bus8", dsNet,LoadChangeEventType.FIXED_TIME, 0.5, 1.0),"LoadReduce20%@Bus5");
+		        
+        
 		StateMonitor sm = new StateMonitor();
 		sm.addGeneratorStdMonitor(new String[]{"Bus1-mach1","Bus2-mach1","Bus3-mach1"});
 		sm.addBusStdMonitor(new String[]{"Bus5","Bus4","Bus1"});
 		// set the output handler
 				dstabAlgo.setSimuOutputHandler(sm);
-				dstabAlgo.setOutPutPerSteps(5);
+				dstabAlgo.setOutPutPerSteps(25);
 		
 		IpssLogger.getLogger().setLevel(Level.INFO);
 		
 		PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
 		
 		//for(int i =1; i<20;i++){
+		
+		System.out.println(bus5.getDynamicBusDeviceList().get(0).getExtendedDeviceId());
 			
-			
-
+		System.out.println("Init Bus 5 load = "+bus5.calStaticLoad().toString());
 		if (dstabAlgo.initialization()) {
 			System.out.println(dsNet.getMachineInitCondition());
 			
@@ -117,13 +125,16 @@ public class DStab_Relay_LowVoltLoadShed_Test extends DStabTestSetupBase{
 			dstabAlgo.performSimulation();
 			
 			timer.logStd("total simu time: ");
-			}
+		}
 			//dstabAlgo.performOneStepSimulation();
 
 		//}
-		//System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+		System.out.println(sm.toCSVString(sm.getBusVoltTable()));
 		
-//		System.out.println(sm.toCSVString(sm.getMachPeTable()));
+		System.out.println("Bus 5 load = "+bus5.calStaticLoad().toString());
+		System.out.println(sm.toCSVString(sm.getBusFreqTable()));
+		
+		assertTrue(ufls.getTrippedFraction()==0.5);
 		
 //		FileUtil.writeText2File("output/ieee9_bus5_machPe_v5_03172015.csv",sm.toCSVString(sm.getMachPeTable()));
 

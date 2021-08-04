@@ -85,6 +85,7 @@ import com.interpss.simu.SimuCtxType;
 public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcscParserMapper<Tfrom> {
 	protected IPSSMsgHub msg = null;
 	protected DynLoadDataHelper loadDataHelper =null;
+	protected DynRelayDataHelper relayDataHelper =null;
 	/**
 	 * constructor
 	 */
@@ -288,6 +289,11 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 			GovernorModelXmlType govXml = dyGen.getGovernor().getValue();
 			new GovernorDataHelper(mach).createGovernor(govXml);
 		}
+		
+		//process generator relay models
+		if(this.relayDataHelper==null)
+			this.relayDataHelper = new DynRelayDataHelper();
+		this.relayDataHelper.createDynGenRelayModel(dyGen, dstabBus,dyGenObj.getId());
 	}
 	
 	protected void setDynLoadData(DStabLoadDataXmlType dynLoad, BaseDStabBus dstabBus){
@@ -295,6 +301,8 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 		
 		loadDataHelper.createDynLoadModel(dynLoad, dstabBus);
 		
-		
+		loadDataHelper.createDynLoadRelayModel(dynLoad, dstabBus, dynLoad.getId());
 	}
+	
+
 }

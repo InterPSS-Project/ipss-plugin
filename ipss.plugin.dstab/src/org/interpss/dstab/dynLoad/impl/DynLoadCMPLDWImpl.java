@@ -108,10 +108,10 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
 	public DynLoadCMPLDWImpl(String referenceId, BaseDStabBus abus){
 		this.groupId = referenceId;
 		this.distEquiv = DStabDynamicLoadFactory.eINSTANCE.createDistNetworkEquivalentModel();
-		this.indMotorA = new  InductionMotorImpl();
-		this.indMotorB = new  InductionMotorImpl();
-		this.indMotorC = new  InductionMotorImpl();
-		this.ac1PMotor = new  LD1PACImpl();
+		this.indMotorA = new InductionMotorImpl();
+		this.indMotorB = new InductionMotorImpl();
+		this.indMotorC = new InductionMotorImpl();
+		this.ac1PMotor = new LD1PACImpl();
 		//this.staticLoad= new  DynLoadVFreqDependentModelImpl();
 		
 		this.setDStabBus(abus);
@@ -484,8 +484,9 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
     	// initialize the dynamic models, obtain the reactive power Qi after initialization
     	// NOTE: the load percentages, the loading factor for calculating the mvaBase should be input by the model data mapper
     	
-    	
-
+  	  
+        //TODO temporarily disable the 3-phase induction motor
+        //this.fMotorA = 0;  this.fMotorB = 0; this.fMotorC = 0; 
     	if(this.fMotorA > 0){
     		if(this.motorAType == 3){
     			this.indMotorA.setDStabBus(loadBus);
@@ -546,7 +547,7 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
     	else{
     		this.indMotorC = null;
     	}
-   	
+       
     	if(this.fMotorD > 0){
     		if(this.motorDType == 1){
     			this.ac1PMotor.setDStabBus(loadBus);

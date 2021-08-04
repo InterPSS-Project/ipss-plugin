@@ -1,121 +1,66 @@
-package org.interpss.dstab.relay;
+package org.interpss.dstab.relay.impl;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.List;
 
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.numeric.datatype.Triplet;
 
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfLoad;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabilityNetwork;
-import com.interpss.dstab.algo.DynamicSimuMethod;
-import com.interpss.dstab.common.DStabOutSymbol;
-import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
 import com.interpss.dstab.dynLoad.DynLoadModel;
 
-public class LVSHLoadRelayModel extends DynamicBusDeviceImpl implements BusRelayModel {
+public class BusLoadRelayModel extends BusRelayModel {
 
-	private static final String OUT_SYMBOL_STATUS = "RelayStatus";
-	// Triplet <voltage, time, fraction>
-	protected List<Triplet> relaySetPoints = null;
-	protected List<Boolean> relaySectionActionStatus = null;
-	protected double[] timerAry = null;
-	
+
 	protected boolean isAllBusLoad = false;
-	protected boolean isRelayTripped = false;
-	
+
 	protected String loadId = "";
 	
-	private Complex initLoadPQ = null;
-	
-	private String extended_id = "";
-	
-	private Hashtable<String, Object> states = null;
-	
-	
+	protected Complex initLoadPQ = null;
 
 	
-	public LVSHLoadRelayModel(DStabBus bus, String loadId){
-		this.setDStabBus(bus);
-		this.loadId = loadId;
+	public BusLoadRelayModel() {
+		
+	}
+	
+	public BusLoadRelayModel(BaseDStabBus bus, String loadId){
+        this.setDStabBus(bus);
 		
 		this.relaySetPoints = new ArrayList<>();
 		this.relaySectionActionStatus = new ArrayList<>();
+		this.relayTrippedStatus = new ArrayList<>();
+		
+		this.loadId = loadId;
 		
 		//check the loadId, use PSS/E naming convention
 		if(loadId.equals("*")){
 			this.isAllBusLoad = true;
 		}
 		
-		//add it to the associated bus dynamic device list
 		bus.getDynamicBusDeviceList().add(this);
-		
-		this.extended_id = "LVSHRelay_"+bus.getId()+"_"+loadId;
-		
-		this.states = new Hashtable<>();
-		
-		this.states.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID, this.extended_id);
 	}
-	@Override
-	public List<Triplet> getRelaySetPoints() {
-		
-		return this.relaySetPoints;
-	}
-
-	@Override
-	public void setRelaySetPoints(List<Triplet> setPointList) {
-		this.relaySetPoints = setPointList;
-		
-		
-	}
-
+	
 	@Override
 	public boolean action(double time) {
 		if(isActionTime(time)){ 
 		    applyLoadSheddingAction();
-		    IpssLogger.getLogger().info("LVSH load relay at time = "+time);
-		    this.isRelayTripped = false;
+		    IpssLogger.getLogger().info(String.format("UVLS load relay %s is activated at time = %f ",this.extendedDeviceId, time));
+		    this.isRelayTripped = true;
+		    
+		    return true;
 		}
-		return true;
+		return false;
 	}
 	
-	@Override
-	public boolean reset() {
-		
-		//initialize the timers
-		this.timerAry = new double[this.relaySetPoints.size()];
-		for(int i = 0; i<this.relaySetPoints.size();i++){
-			timerAry[i] = 0.0;
-			this.relaySectionActionStatus.set(i, false);
-		}
-		return true;
-	}
-	
-	
-	
-	@Override
-	public boolean isActionTime(double time) {
-		// Triplet <voltage, time, fraction>
-		for(int i = 0; i<this.relaySetPoints.size();i++){
-			if(this.relaySetPoints.get(i).getValue2()<timerAry[i]){
-				this.isRelayTripped = true;
-				this.relaySectionActionStatus.set(i, true);
-				
-			}
-		}
-		
-		return this.isRelayTripped;
-	}
 	
 	@Override
 	public boolean initStates(BaseDStabBus<?,?> abus){
 		
 		// check the relaySetPoints 
-		if (this.relaySetPoints == null || this.relaySetPoints.isEmpty()){
+		if (this.relaySetPoints.size()==0){
 			IpssLogger.getLogger().severe("No relay SetPoint is defined");
 			return false;
 		}
@@ -144,64 +89,39 @@ public class LVSHLoadRelayModel extends DynamicBusDeviceImpl implements BusRelay
 		for(int i = 0; i<this.relaySetPoints.size();i++){
 			timerAry[i] = 0.0;
 			this.relaySectionActionStatus.add(false);
+			this.relayTrippedStatus.add(false);
 		}
 		
+		this.internalTimer = 0.0;
+		
 		return true;
 	}
 	
-	@Override
-	public boolean nextStep(double dt, DynamicSimuMethod method, int flag){
-		
-	    double vmag = this.getDStabBus().getVoltage().abs();
-	    
-		for(int i = 0; i<this.relaySetPoints.size();i++){
-			
-			// Triplet <voltage, time, fraction>
-			if(this.relaySetPoints.get(i).getValue1()<vmag){
-				//reset timer
-				timerAry[i] = 0.0;
-			}
-			else{
-				//update the timer
-				timerAry[i] = timerAry[i] +dt;
-			}
-		}
-		
 	
-		return true;
-	}
 	
-	// no contribution to the bus
-	@Override
-	public Object getOutputObject() {
-		
-		return new Complex(0);
-		
-	}
-	
-	@Override
-	public boolean updateAttributes(boolean netChange) {
-		return true;
-	}
 	
 	public Hashtable<String, Object> getStates(Object ref) {
 		states.put(OUT_SYMBOL_STATUS, this.isRelayTripped);
 		return states;
 	}
 	
-	private void applyLoadSheddingAction() {
+	protected void applyLoadSheddingAction() {
 		
 			double maxTripFraction = 0.0;
 			for(int i = 0; i<this.relaySetPoints.size();i++){
-				if(this.relaySectionActionStatus.get(i)){ // check the trip action status
+				if(this.relaySectionActionStatus.get(i) && !this.relayTrippedStatus.get(i)){ // check the trip action status
 					// Triplet <voltage, time, fraction>
 					if(this.relaySetPoints.get(i).getValue3()>maxTripFraction){
 						maxTripFraction = this.relaySetPoints.get(i).getValue3();
+						this.relayTrippedStatus.set(i,true);
 					}
-					//reset the timer
-					this.timerAry[i] = 0.0;
+				
 				}
 			}
+			
+			this.trippedFraction = maxTripFraction;
+			
+			this.getDStabBus().setAccumulatedLoadChangeFactor(this.getDStabBus().getAccumulatedLoadChangeFactor()-maxTripFraction);
 			
 			if(this.isAllBusLoad){
 				 // check if there is any dynamic load model
@@ -269,7 +189,4 @@ public class LVSHLoadRelayModel extends DynamicBusDeviceImpl implements BusRelay
 		
 	}
 
-	
-
-	
 }

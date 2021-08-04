@@ -184,7 +184,7 @@ public class AclfOutFunc {
 						if (!bus.getId().startsWith(Constants.Token_ParentBusPrefix))
 							str.append(busLfSummary(bus));
 						for (Bus sec : bus.getBusSecList()) {
-							AclfBus busSec = (AclfBus)sec;
+							BaseAclfBus busSec = (BaseAclfBus)sec;
 							str.append(busLfSummary(busSec));
 						}
 					}
