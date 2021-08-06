@@ -1,6 +1,7 @@
 package org.interpss;
 
 import org.interpss.core.aclf.IEEE14_3WXfrTest;
+import org.interpss.core.aclf.IEEE14_YMatrixSetTest;
 import org.interpss.core.aclf.IEEE9_MultiGenTest;
 import org.interpss.core.aclf.IEEE9_MultiLoadTest;
 import org.interpss.core.adapter.bpa.BPASampleTestCases;
@@ -34,6 +35,7 @@ import org.interpss.core.ca.IEEE14BusBreaker_lf_Test;
 import org.interpss.core.ca.Ieee14_CA_Test;
 import org.interpss.core.ca.Ieee14_GSF_Test;
 import org.interpss.core.ca.SampleSwitchBreakerModelTest;
+import org.interpss.core.dclf.IEEE14_EDclf_Test;
 import org.interpss.core.dcsys.DcSample_2BusTest;
 import org.interpss.core.dcsys.Inverter_2BusTest;
 import org.interpss.core.dcsys.POC_Test1;
@@ -77,6 +79,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	IEEE14_3WXfrTest.class,
 	IEEE9_MultiGenTest.class,
 	IEEE9_MultiLoadTest.class,
+	IEEE14_YMatrixSetTest.class,
 	
 	// Dclf
 	Mod_SixBus_DclfPsXfr.class,
@@ -86,6 +89,9 @@ import org.junit.runners.Suite.SuiteClasses;
 	Ieee14_CA_Test.class,
 	//ieee14_CAClosurePSSL_Test.class,
 	Ieee14_GSF_Test.class,
+	
+	// EDclf
+	IEEE14_EDclf_Test.class,
 	
 	// small Z branch
 	//SampleSwitchBreakerModelTest.class,
