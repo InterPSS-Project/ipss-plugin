@@ -32,6 +32,7 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
+import org.interpss.numeric.sparse.base.ISparseEquation.IndexType;
 import org.interpss.numeric.util.NumericUtil;
 import org.junit.Test;
 
@@ -45,7 +46,7 @@ import com.interpss.core.funcImpl.AclfNetHelper;
 
 public class IEEE14_YMatrixSetTest extends CorePluginTestSetup {
 	@Test 
-	public void bus14testCase() throws Exception {
+	public void bus14TestCase() throws Exception {
 		AclfNetwork aclfNet = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
 				.load("testdata/adpter/ieee_format/Ieee14Bus.ieee")
@@ -121,5 +122,30 @@ public class IEEE14_YMatrixSetTest extends CorePluginTestSetup {
 		assertTrue("", NumericUtil.equals(ynm.getA(1-1, 2-1), new Complex(-1.6860,  5.1158), 0.001));
 		assertTrue("", NumericUtil.equals(ynm.getA(2-1, 2-1), new Complex(-1.7011,  5.1939), 0.001));
 	}
+	
+	@Test 
+	public void inactiveBusTestCase() throws Exception {
+		AclfNetwork aclfNet = CorePluginFactory
+				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
+				.load("testdata/adpter/ieee_format/Ieee14Bus.ieee")
+				.getAclfNet();	
+		
+		aclfNet.getBus("Bus14").setStatus(false);
+		aclfNet.getBranch("Bus9->Bus14(1)").setStatus(false);
+		aclfNet.getBranch("Bus13->Bus14(1)").setStatus(false);
+		
+		ISparseEqnComplex[] ySet = new AclfNetHelper(aclfNet)
+				.formYMatrixSet(true, /* mPartOnly */ 
+						        bus -> !(bus.isGenPV() || bus.isSwing()));
+		ISparseEqnComplex ynn = ySet[0];
+		//System.out.println(ynn);
+		assertTrue("", ynn.getDimension() == 8);
+		
+		ISparseEqnComplex ynm = ySet[1];
+		//System.out.println(ynm);
+		assertTrue("", ynm.getDimension(IndexType.Row) == 8);
+		assertTrue("", ynm.getDimension(IndexType.Col) == 5);
+	}
+	
 }
 
