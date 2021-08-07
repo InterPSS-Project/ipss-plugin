@@ -86,9 +86,19 @@ public class AclfOutFunc {
 	 * @param net
 	 * @return
 	 */
-	public static StringBuffer loadFlowSummary(BaseAclfNetwork<?, ?> net) {
-		return loadFlowSummary(net, true);
+	public static StringBuffer loadFlowSummary(BaseAclfNetwork<?, ?> net, boolean incldMismatch) {
+		return loadFlowSummary(net, true, incldMismatch);
 	}
+	
+	/**
+	 * output LF results in the summary foramt
+	 * 
+	 * @param net
+	 * @return
+	 */
+	public static StringBuffer loadFlowSummary(BaseAclfNetwork<?, ?> net) {
+		return loadFlowSummary(net, true, false);
+	}	
 	
 	/**
 	 * output LF resutls in the summary format
@@ -97,8 +107,8 @@ public class AclfOutFunc {
 	 * @param includeAdj
 	 * @return
 	 */
-	public static StringBuffer loadFlowSummary(BaseAclfNetwork<?, ?> net, boolean includeAdj) {
-		StringBuffer str = new StringBuffer(_loadFlowSummary(net));
+	public static StringBuffer loadFlowSummary(BaseAclfNetwork<?, ?> net, boolean includeAdj, boolean incldMismatch) {
+		StringBuffer str = new StringBuffer(_loadFlowSummary(net, incldMismatch));
 
 		try {
 			if (includeAdj) {
@@ -161,7 +171,7 @@ public class AclfOutFunc {
 		return str;
 	}
 
-	private static StringBuffer _loadFlowSummary(BaseAclfNetwork<?, ?> net) {
+	private static StringBuffer _loadFlowSummary(BaseAclfNetwork<?, ?> net, boolean incldMismatch) {
 		final StringBuffer str = new StringBuffer("");
 		try {
 			str.append("\n                          Load Flow Summary\n");
@@ -169,6 +179,10 @@ public class AclfOutFunc {
 			if (net.getOriginalDataFormat() == OriginalDataFormat.CIM) {
 				str.append("     BusID          Code             Volt(pu)   Angle(deg)     P(pu)     Q(pu)                RdfId\n");
 				str.append("  ------------------------------------------------------------------------------------------------------------------\n");
+			}
+			else if (incldMismatch){
+				str.append("     BusID          Code           Volt(pu)   Angle(deg)       P(pu)     Q(pu)    dP(pu)    dQ(pu)    Bus Name   \n");
+				str.append("  ---------------------------------------------------------------------------------------------------------------\n");
 			}
 			else {
 				str.append("     BusID          Code           Volt(pu)   Angle(deg)     P(pu)     Q(pu)      Bus Name   \n");
@@ -193,7 +207,7 @@ public class AclfOutFunc {
 					}
 					else
 					*/	
-					str.append(busLfSummary(bus));
+					str.append(busLfSummary(bus, incldMismatch));
 				}
 			}
 		} catch (Exception emsg) {
@@ -205,7 +219,7 @@ public class AclfOutFunc {
 		return str;
 	}
 
-	private static String busLfSummary(BaseAclfBus<?,?> bus) {
+	private static String busLfSummary(BaseAclfBus<?,?> bus, boolean incldMismatch) {
 		final StringBuffer str = new StringBuffer("");
 		Complex busPQ = bus.calNetPQResults();
 		if (bus.isActive())
@@ -218,6 +232,11 @@ public class AclfOutFunc {
 		str.append(String.format("%9.2f   ", bus.getVoltageAng(UnitType.Deg)));
 		str.append(String.format("%10.4f", busPQ.getReal()));
 		str.append(String.format("%10.4f", busPQ.getImaginary()));
+		if (incldMismatch) {
+			Complex mis = bus.mismatch(AclfMethodType.NR);
+			str.append(String.format("%10.4f", mis.getReal()));
+			str.append(String.format("%10.4f", mis.getImaginary()));			
+		}
 		str.append(String.format("   %-10s ", bus.getName()));
 		if (bus.getNetwork().getOriginalDataFormat() == OriginalDataFormat.CIM) 
 			str.append(String.format("   %s", bus.getId()));
