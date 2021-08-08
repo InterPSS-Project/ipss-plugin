@@ -28,14 +28,12 @@ import org.interpss.core.adapter.psse.acsc.IEEE9Bus_Acsc_test;
 import org.interpss.core.adapter.psse.dstab.IEEE9_Dstab_Adapter_Test;
 import org.interpss.core.adapter.pwd.PWDIEEE14BusTestCase;
 import org.interpss.core.adapter.ucte.UCTEFormatAusPowerTest;
-import org.interpss.core.ca.IEEE14BusBreakerTest;
-import org.interpss.core.ca.IEEE14BusBreaker_dclf_Test;
 import org.interpss.core.ca.IEEE14BusBreaker_equivCABranch_Test;
-import org.interpss.core.ca.IEEE14BusBreaker_lf_Test;
 import org.interpss.core.ca.Ieee14_CA_Test;
 import org.interpss.core.ca.Ieee14_GSF_Test;
-import org.interpss.core.ca.SampleSwitchBreakerModelTest;
+import org.interpss.core.dclf.IEEE118_EDclf_Test;
 import org.interpss.core.dclf.IEEE14_EDclf_Test;
+import org.interpss.core.dclf.IEEE39_EDclf_Test;
 import org.interpss.core.dcsys.DcSample_2BusTest;
 import org.interpss.core.dcsys.Inverter_2BusTest;
 import org.interpss.core.dcsys.POC_Test1;
@@ -62,7 +60,6 @@ import org.interpss.core.dstab.mach.MachineSaturationTest;
 import org.interpss.core.dstab.mach.RoundRotorMachineTest;
 import org.interpss.core.dstab.mach.SalientPoleMachineTest;
 import org.interpss.plugin.beanModel.AclfBeanMapperTest;
-import org.interpss.plugin.piecewise.Acsc5BusTesPiecewiseAlgo;
 import org.interpss.plugin.piecewise.Acsc5BusTestSubAreaNet;
 import org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise;
 import org.interpss.plugin.piecewise.IEEE14TestAclfSubAreaBuild;
@@ -92,6 +89,8 @@ import org.junit.runners.Suite.SuiteClasses;
 	
 	// EDclf
 	IEEE14_EDclf_Test.class,
+	IEEE39_EDclf_Test.class,
+	IEEE118_EDclf_Test.class,
 	
 	// small Z branch
 	//SampleSwitchBreakerModelTest.class,
