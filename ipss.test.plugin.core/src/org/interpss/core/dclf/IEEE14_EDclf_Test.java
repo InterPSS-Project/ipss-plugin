@@ -30,6 +30,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
+import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.interpss.numeric.util.NumericUtil;
 import org.junit.Test;
 
@@ -37,8 +38,10 @@ import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.dclf.EDclfAlgorithm;
-import com.interpss.core.algo.dclf.solver.IEDclfSolver;
+import static com.interpss.core.algo.dclf.solver.IConnectBusProcessor.predicateConnectBus;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
+import com.interpss.core.algo.dclf.solver.IEDclfSolver;
+import com.interpss.core.funcImpl.AclfNetHelper;
 
 public class IEEE14_EDclf_Test extends CorePluginTestSetup {
 	@Test 
@@ -92,7 +95,26 @@ public class IEEE14_EDclf_Test extends CorePluginTestSetup {
 		assertTrue("", NumericUtil.equals(aclfNet.getBus("Bus14").getVoltageMag(), 1.03458, 0.0001));	
 		
 		System.out.println("Mismatch: " + aclfNet.maxMismatch(AclfMethodType.NR));
+		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet, true));
 	}
 	
+	@Test 
+	public void connectionBusTest() throws Exception {
+		AclfNetwork aclfNet = CorePluginFactory
+				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
+				.load("testdata/adpter/ieee_format/Ieee14Bus.ieee")
+				.getAclfNet();	
+		
+		//aclfNet.initContributeGenLoad();
+		
+		assertTrue("", predicateConnectBus.test(aclfNet.getBus("Bus7")) == true);
+		assertTrue("", predicateConnectBus.test(aclfNet.getBus("Bus14")) == false);
+		
+		ISparseEqnComplex[] ySet = new AclfNetHelper(aclfNet)
+				.formYMatrixSet(false, predicateConnectBus);
+		
+		assertTrue("", ySet[0].getDimension() == 1);
+		assertTrue("", ySet[3].getDimension() == 13);
+	}	
 }
 
