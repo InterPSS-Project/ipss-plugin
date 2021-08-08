@@ -32,6 +32,7 @@ import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
+import org.interpss.numeric.datatype.Counter;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.interpss.numeric.util.NumericUtil;
 import org.junit.Test;
@@ -40,8 +41,10 @@ import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.dclf.EDclfAlgorithm;
+import com.interpss.core.algo.dclf.solver.IConnectBusProcessor;
 import com.interpss.core.algo.dclf.solver.IEDclfSolver;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
+import com.interpss.core.datatype.Mismatch;
 import com.interpss.core.funcImpl.AclfNetHelper;
 
 public class IEEE118_EDclf_Test extends CorePluginTestSetup {
@@ -57,6 +60,25 @@ public class IEEE118_EDclf_Test extends CorePluginTestSetup {
 		
 		System.out.println("Mismatch: " + aclfNet.maxMismatch(AclfMethodType.NR));
 		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet, true));
+		
+		IConnectBusProcessor processor = DclfAlgoObjectFactory.createConnectBusProcessor(aclfNet);
+		Complex[] newConVolt = processor.calConnectBusVoltage();
+		
+		Counter mCnt = new Counter();
+		aclfNet.getBusList().stream()
+			.filter(bus -> bus.isActive())
+			.forEach(bus -> {
+				if (predicateConnectBus.test(bus)) {
+					int i = mCnt.getCountThenIncrement();
+					bus.setVoltage(newConVolt[i]);
+				}
+			});
+		
+		Mismatch mis = aclfNet.maxMismatch(AclfMethodType.NR, predicateConnectBus);
+		System.out.println("ConnectBus VAdjustment Mismatch: " + mis);
+		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet, true));
+		
+		assertTrue("", mis.maxMis.abs() < 0.0001);
 	}
 	
 	@Test 
