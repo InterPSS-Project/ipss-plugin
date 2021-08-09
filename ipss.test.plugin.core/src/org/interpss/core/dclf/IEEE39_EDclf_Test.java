@@ -60,8 +60,8 @@ public class IEEE39_EDclf_Test extends CorePluginTestSetup {
 		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet, true));
 		
 		IConnectBusProcessor processor = DclfAlgoObjectFactory.createConnectBusProcessor(aclfNet);
-		Complex[] newConVolt = processor.calConnectBusVoltage();
-		
+		Complex[] newConVolt = processor.updateConnectBusVoltage();
+		/*
 		Counter mCnt = new Counter();
 		aclfNet.getBusList().stream()
 			.filter(bus -> bus.isActive())
@@ -71,7 +71,7 @@ public class IEEE39_EDclf_Test extends CorePluginTestSetup {
 					bus.setVoltage(newConVolt[i]);
 				}
 			});
-		
+		*/
 		Mismatch mis = aclfNet.maxMismatch(AclfMethodType.NR, predicateConnectBus);
 		System.out.println("ConnectBus VAdjustment Mismatch: " + mis);
 		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet, true));
