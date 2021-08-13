@@ -30,11 +30,8 @@ import static org.junit.Assert.assertTrue;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.display.AclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
-import org.interpss.numeric.datatype.Counter;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
-import org.interpss.numeric.util.NumericUtil;
 import org.junit.Test;
 
 import com.interpss.core.DclfAlgoObjectFactory;
@@ -42,10 +39,9 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.dclf.EDclfAlgorithm;
 import com.interpss.core.algo.dclf.solver.IConnectBusProcessor;
-import com.interpss.core.algo.dclf.solver.IEDclfSolver;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
+import com.interpss.core.algo.impl.solver.YMatrixSolver;
 import com.interpss.core.datatype.Mismatch;
-import com.interpss.core.funcImpl.AclfNetHelper;
 
 public class IEEE118_EDclf_Test extends CorePluginTestSetup {
 	@Test 
@@ -92,7 +88,7 @@ public class IEEE118_EDclf_Test extends CorePluginTestSetup {
 		
 		//aclfNet.initContributeGenLoad();
 		
-		ISparseEqnComplex[] ySet = new AclfNetHelper(aclfNet)
+		ISparseEqnComplex[] ySet = new YMatrixSolver(aclfNet)
 				.formYMatrixSet(false, predicateConnectBus);
 		
 		assertTrue("", ySet[0].getDimension() == 10);
