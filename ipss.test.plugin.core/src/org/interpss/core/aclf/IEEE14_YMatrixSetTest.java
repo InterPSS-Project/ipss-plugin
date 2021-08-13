@@ -29,19 +29,14 @@ import static org.junit.Assert.assertTrue;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.display.AclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.interpss.numeric.sparse.base.ISparseEquation.IndexType;
 import org.interpss.numeric.util.NumericUtil;
 import org.junit.Test;
 
-import com.interpss.core.CoreObjectFactory;
-import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.adpter.Aclf3WXformerAdapter;
-import com.interpss.core.algo.AclfMethodType;
-import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.algo.impl.solver.YMatrixSolver;
 import com.interpss.core.funcImpl.AclfNetHelper;
 
 public class IEEE14_YMatrixSetTest extends CorePluginTestSetup {
@@ -52,7 +47,7 @@ public class IEEE14_YMatrixSetTest extends CorePluginTestSetup {
 				.load("testdata/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();	
 		
-		ISparseEqnComplex[] ySet = new AclfNetHelper(aclfNet)
+		ISparseEqnComplex[] ySet = new YMatrixSolver(aclfNet)
 				.formYMatrixSet(true, /* mPartOnly */ 
 						        bus -> !(bus.isGenPV() || bus.isSwing()));
 		ISparseEqnComplex ynn = ySet[0];
@@ -134,7 +129,7 @@ public class IEEE14_YMatrixSetTest extends CorePluginTestSetup {
 		aclfNet.getBranch("Bus9->Bus14(1)").setStatus(false);
 		aclfNet.getBranch("Bus13->Bus14(1)").setStatus(false);
 		
-		ISparseEqnComplex[] ySet = new AclfNetHelper(aclfNet)
+		ISparseEqnComplex[] ySet = new YMatrixSolver(aclfNet)
 				.formYMatrixSet(true, /* mPartOnly */ 
 						        bus -> !(bus.isGenPV() || bus.isSwing()));
 		ISparseEqnComplex ynn = ySet[0];

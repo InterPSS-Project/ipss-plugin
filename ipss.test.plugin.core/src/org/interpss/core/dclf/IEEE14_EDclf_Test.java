@@ -24,6 +24,7 @@
 
 package org.interpss.core.dclf;
 
+import static com.interpss.core.algo.dclf.solver.IConnectBusProcessor.predicateConnectBus;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
@@ -38,10 +39,9 @@ import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.dclf.EDclfAlgorithm;
-import static com.interpss.core.algo.dclf.solver.IConnectBusProcessor.predicateConnectBus;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 import com.interpss.core.algo.dclf.solver.IEDclfSolver;
-import com.interpss.core.funcImpl.AclfNetHelper;
+import com.interpss.core.algo.impl.solver.YMatrixSolver;
 
 public class IEEE14_EDclf_Test extends CorePluginTestSetup {
 	@Test 
@@ -110,7 +110,7 @@ public class IEEE14_EDclf_Test extends CorePluginTestSetup {
 		assertTrue("", predicateConnectBus.test(aclfNet.getBus("Bus7")) == true);
 		assertTrue("", predicateConnectBus.test(aclfNet.getBus("Bus14")) == false);
 		
-		ISparseEqnComplex[] ySet = new AclfNetHelper(aclfNet)
+		ISparseEqnComplex[] ySet = new YMatrixSolver(aclfNet)
 				.formYMatrixSet(false, predicateConnectBus);
 		
 		assertTrue("", ySet[0].getDimension() == 1);
