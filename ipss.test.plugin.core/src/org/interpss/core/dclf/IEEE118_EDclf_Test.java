@@ -60,18 +60,6 @@ public class IEEE118_EDclf_Test extends CorePluginTestSetup {
 		IConnectBusProcessor processor = DclfAlgoObjectFactory.createConnectBusProcessor(aclfNet);
 		Complex[] newConVolt = processor.updateConnectBusVoltage();
 		
-		/*
-		Counter mCnt = new Counter();
-		aclfNet.getBusList().stream()
-			.filter(bus -> bus.isActive())
-			.forEach(bus -> {
-				if (predicateConnectBus.test(bus)) {
-					int i = mCnt.getCountThenIncrement();
-					bus.setVoltage(newConVolt[i]);
-				}
-			});
-		*/
-		
 		Mismatch mis = aclfNet.maxMismatch(AclfMethodType.NR, predicateConnectBus);
 		System.out.println("ConnectBus VAdjustment Mismatch: " + mis);
 		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet, true));
