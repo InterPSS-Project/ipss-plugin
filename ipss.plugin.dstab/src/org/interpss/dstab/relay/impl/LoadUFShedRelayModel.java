@@ -48,9 +48,11 @@ public class LoadUFShedRelayModel extends BusLoadRelayModel {
 	
 	@Override
 	public boolean updateAttributes(boolean netChange) {
-
+		
+		double freq = 1.0;
+		double baseFreq = this.getDStabBus().getNetwork().getFrequency();
 		if(this.step_flag ==1) {
-		    double freq = this.getDStabBus().getFreq();
+		   freq = this.getDStabBus().getFreq()*baseFreq;
 		    
 			for(int i = 0; i<this.relaySetPoints.size();i++){
 				

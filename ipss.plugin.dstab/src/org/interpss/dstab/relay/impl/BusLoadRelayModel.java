@@ -61,7 +61,7 @@ public class BusLoadRelayModel extends BusRelayModel {
 		
 		// check the relaySetPoints 
 		if (this.relaySetPoints.size()==0){
-			IpssLogger.getLogger().severe("No relay SetPoint is defined");
+			IpssLogger.getLogger().severe("No relay SetPoint is defined for relay #"+this.extendedDeviceId);
 			return false;
 		}
 		

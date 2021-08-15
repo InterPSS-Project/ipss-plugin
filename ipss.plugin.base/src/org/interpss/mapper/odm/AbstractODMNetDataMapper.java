@@ -30,6 +30,7 @@ import static org.interpss.mapper.odm.ODMFunction.BusXmlRef2BusId;
 import org.ieee.odm.schema.ApparentPowerUnitType;
 import org.ieee.odm.schema.BaseBranchXmlType;
 import org.ieee.odm.schema.BusXmlType;
+import org.ieee.odm.schema.FrequencyUnitType;
 import org.ieee.odm.schema.NetworkXmlType;
 import org.ieee.odm.schema.VoltageUnitType;
 
@@ -76,6 +77,7 @@ public abstract class AbstractODMNetDataMapper<Tfrom, Tto> extends AbstractMappe
 				(xmlNet.getBasePower().getUnit()==ApparentPowerUnitType.MVA?1000.0:1.0));
 				// BasePowerUnit [ MVA, KVA]
 		//net.setAllowParallelBranch(true);
+		net.setFrequency(xmlNet.getFrequency().getValue()*(xmlNet.getFrequency().getUnit()==FrequencyUnitType.HZ?1.0:60.0));
 	}
 	
 	/**

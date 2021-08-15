@@ -28,6 +28,7 @@ import org.ieee.odm.schema.GovBPAGsTbCombinedModelXmlType;
 import org.ieee.odm.schema.GovBPAHydroTurbineGHXmlType;
 import org.ieee.odm.schema.GovHydroTurbineXmlType;
 import org.ieee.odm.schema.GovIEEE1981Type1XmlType;
+import org.ieee.odm.schema.GovIEEE1981Type3XmlType;
 import org.ieee.odm.schema.GovPSSEGASTModelXmlType;
 import org.ieee.odm.schema.GovPSSEIEESGOModelXmlType;
 import org.ieee.odm.schema.GovPSSETGOV1ModelXmlType;
@@ -42,6 +43,7 @@ import org.interpss.dstab.control.gov.GovernorObjectFactory;
 import org.interpss.dstab.control.gov.bpa.gsTb.BpaGsTbCombineGovernor;
 import org.interpss.dstab.control.gov.bpa.hydro.BpaGHTypeHydroGovernor;
 import org.interpss.dstab.control.gov.ieee.hydro1981Type2.Ieee1981Type2HydroGovernor;
+import org.interpss.dstab.control.gov.ieee.hydro1981Type3.Ieee1981Type3HydroGovernor;
 import org.interpss.dstab.control.gov.ieee.steamNR.IeeeSteamNRGovernor;
 import org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor;
 import org.interpss.dstab.control.gov.ieee.steamTCSR.IeeeSteamTCSRGovernor;
@@ -278,6 +280,30 @@ public class GovernorDataHelper {
         	gov.getData().setT4(govXml.getT4().getValue());
         	gov.getData().setT5(govXml.getT5().getValue());
         	gov.getData().setT6(govXml.getT6().getValue());
+        	
+        	
+		}
+		
+		//IEESGO
+        else if(govXmlRec instanceof GovIEEE1981Type3XmlType){
+        	GovIEEE1981Type3XmlType govXml = (GovIEEE1981Type3XmlType)govXmlRec;
+        	Ieee1981Type3HydroGovernor gov = GovernorObjectFactory.createIeee1981Type3HydroGovernor(mach.getId()+"_Gov", govXml.getName(), mach);
+        	gov.getData().setTg(govXml.getTG().getValue());
+        	gov.getData().setTp(govXml.getTP().getValue());
+        	gov.getData().setVelOpen(govXml.getVOpen());
+        	gov.getData().setVelClose(govXml.getVClose());
+        	
+        	gov.getData().setPmax(govXml.getPMAX());
+        	gov.getData().setPmin(govXml.getPMIN());
+        	
+        	gov.getData().setSigma(govXml.getSIGMA());
+        	gov.getData().setDelta(govXml.getDELTA());
+        	gov.getData().setTr(govXml.getTR().getValue());
+        	gov.getData().setTw(govXml.getTW().getValue());
+        	gov.getData().setA11(govXml.getA11());
+        	gov.getData().setA13(govXml.getA13());
+        	gov.getData().setA21(govXml.getA21());
+        	gov.getData().setA23(govXml.getA23());
         	
         	
 		}

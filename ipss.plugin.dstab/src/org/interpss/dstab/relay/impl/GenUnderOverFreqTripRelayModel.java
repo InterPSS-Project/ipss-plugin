@@ -105,6 +105,7 @@ public class GenUnderOverFreqTripRelayModel extends BusRelayModel {
 	public boolean updateAttributes(boolean netChange) {
 		
 		double freq = 1.0;
+		double baseFreq = this.getDStabBus().getNetwork().getFrequency();
 		if(this.step_flag ==1) {
 			
 			   if(this.freqMonitorBus!=null) 
@@ -112,6 +113,7 @@ public class GenUnderOverFreqTripRelayModel extends BusRelayModel {
 			   else
 				   freq = this.getDStabBus().getFreq();
 			
+			   freq = freq*baseFreq;
 				 
 					for(int i = 0; i<this.relaySetPoints.size();i++){
 						

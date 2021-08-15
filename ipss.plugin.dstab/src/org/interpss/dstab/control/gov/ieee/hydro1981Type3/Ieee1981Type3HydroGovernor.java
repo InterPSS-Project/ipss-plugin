@@ -24,6 +24,7 @@ import com.interpss.dstab.mach.Machine;
 		   input="mach.speed-1.0",
 		   output="this.wFilterBlock.y",
 		   refPoint="this.delayBlock.u0 + this.sigmaGainBlock.y + this.washoutBlock.y + this.gainBlock.y",
+		   //refPoint="this.delayBlock.u0 + this.sigma*this.intBlock.y + this.washoutBlock.y + this.gainBlock.y",
 		   display= {})
 public class Ieee1981Type3HydroGovernor extends AnnotateGovernor{
 	public double pmin = 0.0;
@@ -37,6 +38,7 @@ public class Ieee1981Type3HydroGovernor extends AnnotateGovernor{
         input="mach.speed - 1.0",
         parameter={"type.NoLimit", "this.k1"},
         y0="this.refPoint - this.delayBlock.u0 - this.sigmaGainBlock.y - this.washoutBlock.y"	)
+        //y0="this.refPoint - this.delayBlock.u0 - this.sigma*this.intBlock.y - this.washoutBlock.y"	)
 GainBlock gainBlock;
 
 	//1.2 delayBlock
@@ -44,6 +46,7 @@ GainBlock gainBlock;
 		@AnControllerField(
         type= CMLFieldEnum.ControlBlock,
         input="this.refPoint - this.sigmaGainBlock.y - this.washoutBlock.y - this.gainBlock.y",
+        //input="this.refPoint - this.sigma*this.intBlock.y  - this.washoutBlock.y - this.gainBlock.y",
         parameter={"type.NonWindup", "this.k_tg", "this.tp","this.velOpen","this.velClose"},
         y0="this.intBlock.u0"	)
 DelayControlBlock delayBlock;
@@ -65,6 +68,15 @@ IntegrationControlBlock intBlock;
         parameter={"type.NoLimit", "this.sigma", "this.t"},
         feedback=true)
 DelayControlBlock sigmaGainBlock;
+	
+
+//	@AnControllerField(
+//        type= CMLFieldEnum.StaticBlock,
+//        input="this.intBlock.y",
+//        parameter={"type.NoLimit", "this.sigma"}
+//        //feedback=true
+//        )
+//        GainBlock sigmaGainBlock;
 
 //1.5 washoutBlock
 public double delta = 0.5, tr =5.0;
