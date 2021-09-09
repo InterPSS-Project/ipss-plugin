@@ -26,8 +26,10 @@ package org.interpss.core.adapter.internal;
 
 import static org.junit.Assert.assertTrue;
 
+import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
+import org.interpss.display.AclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.junit.Test;
@@ -128,16 +130,29 @@ public class IEEE14Test extends CorePluginTestSetup {
   		assertTrue( Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.16889)<0.0001);
 	}
 
-//	@Test
-//	public void testCase2() throws Exception {
-//  		/*
-//  		 * Load the loadflow datafile into the application
-//  		 */
-//		IpssFileAdapter adapter = PluginSpringFactory.getCustomFileAdapter("ipssdat");
-//		SimuContext simuCtx = adapter.load("testData/ipssdata/ieee14.ipssdat");
-//		assertTrue(adapter.save("ieee14.ipssout", simuCtx));
-//
-//		simuCtx = adapter.load("ieee14.ipssout");
-//	}
+	@Test
+	public void testCaseInactiveus() throws Exception {
+		AclfNetwork net = CorePluginFactory
+					.getFileAdapter(IpssFileAdapter.FileFormat.IpssInternal)
+					.load("testData/ipssdata/ieee14.ipssdat")
+					.getAclfNet();	
+
+		net.getBus("14").setStatus(false);
+		net.getBranch("13->14(1)").setStatus(false);
+		net.getBranch("9->14(1)").setStatus(false);
+		
+	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	algo.loadflow();
+  		//System.out.println(net.net2String());
+	  	
+	  	/*
+	  	 * Check if loadflow has converged
+	  	 */
+  		assertTrue(net.isLfConverged());
+  		
+  		//System.out.println(AclfOutFunc.loadFlowSummary(net, true));
+  		//System.out.println(AclfOutFunc.busSummaryCommaDelimited(net, true));
+  		assertTrue("", net.getBus("14").calNetPQResults().abs() == 0.0);
+	}
 }
 
