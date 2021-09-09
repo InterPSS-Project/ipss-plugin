@@ -27,9 +27,9 @@ package org.interpss.core.dclf;
 import static com.interpss.core.algo.dclf.solver.IConnectBusProcessor.predicateConnectBus;
 import static org.junit.Assert.assertTrue;
 
-import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
+import org.interpss.display.AclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.junit.Test;
@@ -38,7 +38,6 @@ import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.dclf.EDclfAlgorithm;
-import com.interpss.core.algo.dclf.solver.IConnectBusProcessor;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 import com.interpss.core.algo.impl.solver.YMatrixSolver;
 import com.interpss.core.datatype.Mismatch;
@@ -55,17 +54,33 @@ public class IEEE39_EDclf_Test extends CorePluginTestSetup {
 		edclfAlgo.calculateEDclf();
 		
 		System.out.println("EDclf Mismatch: " + aclfNet.maxMismatch(AclfMethodType.NR));
-		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet, true));
+		System.out.println(AclfOutFunc.busSummaryCommaDelimited(aclfNet, true));
+	}
+	
+	@Test 
+	public void edclfVCorrectionTest() throws Exception {
+		AclfNetwork aclfNet = CorePluginFactory
+				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
+				.load("testdata/adpter/ieee_format/Ieee039.DAT")
+				.getAclfNet();	
 		
-		IConnectBusProcessor processor = DclfAlgoObjectFactory.createConnectBusProcessor(aclfNet);
-		Complex[] newConVolt = processor.updateConnectBusVoltage();
-
+		EDclfAlgorithm edclfAlgo = DclfAlgoObjectFactory.createEDclfAlgorithm(aclfNet, CacheType.SenNotCached);
+		edclfAlgo.calculateEDclf();
+		
+		System.out.println("EDclf Mismatch: " + aclfNet.maxMismatch(AclfMethodType.NR));
+		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet, true));
 		Mismatch mis = aclfNet.maxMismatch(AclfMethodType.NR, predicateConnectBus);
 		System.out.println("ConnectBus VAdjustment Mismatch: " + mis);
-		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet, true));
 		
+		DclfAlgoObjectFactory.createConnectBusProcessor(aclfNet)
+		                     .updateConnectBusVoltage();
+
+		System.out.println("EDclf/VCorrection Mismatch: " + aclfNet.maxMismatch(AclfMethodType.NR));
+		mis = aclfNet.maxMismatch(AclfMethodType.NR, predicateConnectBus);
+		System.out.println("ConnectBus VAdjustment Mismatch: " + mis);
 		assertTrue("", mis.maxMis.abs() < 0.0001);
-	}
+		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet, true));
+	}	
 	
 	@Test 
 	public void connectionBusTest() throws Exception {
