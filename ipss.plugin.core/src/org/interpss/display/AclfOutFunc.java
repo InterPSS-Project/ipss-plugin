@@ -244,6 +244,43 @@ public class AclfOutFunc {
 		return str.toString();
 	}
 	
+	public static String busSummaryCommaDelimited(BaseAclfNetwork<?, ?> net, boolean incldMismatch) {
+		final StringBuffer str = new StringBuffer("");
+		
+		if (incldMismatch){
+			str.append("On, BusID, Code, Volt(pu), Angle(deg), P(pu), Q(pu), dP(pu), dQ(pu), Bus Name\n");
+		}
+		else {
+			str.append("On, BusID, Code, Volt(pu), Angle(deg), P(pu), Q(pu), Bus Name\n");
+		}
+
+		for (Object obj : net.getBusList()) {
+			AclfBus bus = (AclfBus)obj;
+			Complex busPQ = bus.calNetPQResults();
+			if (bus.isActive())
+				str.append("y, ");
+			else
+				str.append("n, ");
+			str.append(String.format("%s, ", OutputBusId.f(bus, bus.getNetwork().getOriginalDataFormat())));
+			str.append(String.format("%s, ", bus.code2String()));
+			str.append(String.format("%10.5f, ", bus.getVoltageMag(UnitType.PU)));
+			str.append(String.format("%9.2f, ", bus.getVoltageAng(UnitType.Deg)));
+			str.append(String.format("%10.4f, ", busPQ.getReal()));
+			str.append(String.format("%10.4f, ", busPQ.getImaginary()));
+			if (incldMismatch) {
+				Complex mis = bus.mismatch(AclfMethodType.NR);
+				str.append(String.format("%10.4f, ", mis.getReal()));
+				str.append(String.format("%10.4f, ", mis.getImaginary()));			
+			}
+			str.append(String.format("%s, ", bus.getName()));
+			if (bus.getNetwork().getOriginalDataFormat() == OriginalDataFormat.CIM) 
+				str.append(String.format("%s", bus.getId()));
+			str.append("\n");
+		}
+		return str.toString();
+	}
+	
+	
 	/**
 	 * output load Loss allocation result
 	 * 
