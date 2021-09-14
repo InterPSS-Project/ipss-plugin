@@ -29,28 +29,16 @@ import static org.junit.Assert.assertTrue;
 import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.adapter.IODMAdapter;
-import org.ieee.odm.adapter.psse.PSSEAdapter;
-import org.ieee.odm.common.ODMLogger;
-import org.ieee.odm.model.aclf.AclfModelParser;
-import org.interpss.CorePluginFunction;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.IpssCorePlugin;
 import org.interpss.datamodel.bean.aclf.AclfBusBean;
 import org.interpss.datamodel.bean.aclf.AclfNetBean;
-import org.interpss.datamodel.bean.aclf.AclfNetResultBean;
-import org.interpss.mapper.bean.aclf.AclfBean2NetMapper;
-import org.interpss.mapper.bean.aclf.AclfNet2BeanMapper;
-import org.interpss.mapper.bean.aclf.AclfNet2ResultBeanMapper;
-import org.interpss.mapper.odm.ODMAclfNetMapper;
-import org.interpss.mapper.odm.ODMAclfParserMapper;
+import org.interpss.datamodel.mapper.aclf.AclfBean2AclfNetMapper;
+import org.interpss.datamodel.mapper.aclf.AclfNet2AclfBeanMapper;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.pssl.plugin.IpssAdapter;
-import org.interpss.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.Test;
 
-import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
@@ -61,10 +49,7 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.adj.VarCompensationMode;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
-import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
 import com.interpss.simu.util.sample.SampleTestingCases;
 
 public class SwitchedShuntTest extends CorePluginTestSetup {
@@ -87,10 +72,10 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 		
 		// map back and forth through the bean model
 		// map AclfNet to AclfNetBean
-		AclfNetBean netBean = new AclfNet2BeanMapper().map2Model(aclfNet);
+		AclfNetBean netBean = new AclfNet2AclfBeanMapper().map2Model(aclfNet);
 
 		// map AclfNetBean back to an AclfNet object
-		AclfNetwork net = new AclfBean2NetMapper().map2Model(netBean)
+		AclfNetwork net = new AclfBean2AclfNetMapper().map2Model(netBean)
 				.getAclfNet();
 		
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm();
@@ -133,10 +118,10 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 		//System.out.println(aclfNet.net2String());
 		// map back and forth through the bean model
 		// map AclfNet to AclfNetBean
-		AclfNetBean netBean = new AclfNet2BeanMapper().map2Model(aclfNet);
+		AclfNetBean netBean = new AclfNet2AclfBeanMapper().map2Model(aclfNet);
 
 		// map AclfNetBean back to an AclfNet object
-		AclfNetwork net = new AclfBean2NetMapper().map2Model(netBean)
+		AclfNetwork net = new AclfBean2AclfNetMapper().map2Model(netBean)
 				.getAclfNet();
 		
 		//System.out.println(net.net2String());
@@ -187,10 +172,10 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 		
 		// map back and forth through the bean model
 		// map AclfNet to AclfNetBean
-		AclfNetBean netBean = new AclfNet2BeanMapper().map2Model(aclfNet);
+		AclfNetBean netBean = new AclfNet2AclfBeanMapper().map2Model(aclfNet);
 
 		// map AclfNetBean back to an AclfNet object
-		AclfNetwork net = new AclfBean2NetMapper().map2Model(netBean)
+		AclfNetwork net = new AclfBean2AclfNetMapper().map2Model(netBean)
 				.getAclfNet();
 		
 		//System.out.println(net.net2String());		
@@ -231,14 +216,14 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 		svc.setQLimit(new LimitType(1.0, 0.0));
 		
 		// map AclfNet to AclfNetBean
-		AclfNetBean netBean = new AclfNet2BeanMapper().map2Model(net);
+		AclfNetBean netBean = new AclfNet2AclfBeanMapper().map2Model(net);
 
 		// map AclfNetBean back to an AclfNet object
-		AclfNetwork aclfNet = new AclfBean2NetMapper().map2Model(netBean)
+		AclfNetwork aclfNet = new AclfBean2AclfNetMapper().map2Model(netBean)
 				.getAclfNet();
 
 		// map AclfNet to AclfNetBean
-		AclfNetBean netBean1 = new AclfNet2BeanMapper().map2Model(aclfNet);
+		AclfNetBean netBean1 = new AclfNet2AclfBeanMapper().map2Model(aclfNet);
 
 		/*
 		 * compare two AclfNetBean objects
@@ -261,10 +246,10 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 				.getImportedObj();
 
 		// map AclfNet to AclfNetBean
-		AclfNetBean netBean = new AclfNet2BeanMapper().map2Model(net);
+		AclfNetBean netBean = new AclfNet2AclfBeanMapper().map2Model(net);
 
 		// map AclfNetBean back to an AclfNet object
-		AclfNetwork aclfNet = new AclfBean2NetMapper().map2Model(netBean)
+		AclfNetwork aclfNet = new AclfBean2AclfNetMapper().map2Model(netBean)
 				.getAclfNet();
 		
 		LoadflowAlgorithm algo = CoreObjectFactory
@@ -276,7 +261,7 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 		
 		AclfSwingBusAdapter swing = aclfNet.getBus(swingId).toSwingBus();
 		//System.out.println("AclfNet Model: "+swing.getGenResults(UnitType.PU) );		
-		AclfNetBean netBean1 = new AclfNet2BeanMapper().map2Model(aclfNet);		
+		AclfNetBean netBean1 = new AclfNet2AclfBeanMapper().map2Model(aclfNet);		
 		AclfBusBean bean = netBean1.getBus(swingId);		
 		assertTrue(swing.getGenResults(UnitType.PU).getReal() - bean.lfGenResult.re < 0.0001);
 		assertTrue(swing.getGenResults(UnitType.PU).getImaginary() - bean.lfGenResult.im < 0.0001);
