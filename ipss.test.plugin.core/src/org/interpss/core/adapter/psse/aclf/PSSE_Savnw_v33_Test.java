@@ -8,8 +8,8 @@ import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.datamodel.bean.aclf.AclfNetBean;
+import org.interpss.datamodel.mapper.aclf.AclfNet2AclfBeanMapper;
 import org.interpss.display.AclfOutFunc;
-import org.interpss.mapper.bean.aclf.AclfNet2BeanMapper;
 import org.interpss.mapper.odm.ODMAclfParserMapper;
 import org.interpss.pssl.plugin.IpssAdapter;
 import org.interpss.pssl.plugin.IpssAdapter.PsseVersion;
@@ -75,7 +75,7 @@ public class PSSE_Savnw_v33_Test extends CorePluginTestSetup {
 				.setPsseVersion(PsseVersion.PSSE_30)
 				.load()
 				.getImportedObj();
-		AclfNetBean netBean30 = new AclfNet2BeanMapper().map2Model(net30);
+		AclfNetBean netBean30 = new AclfNet2AclfBeanMapper().map2Model(net30);
 		
 		
 
@@ -86,7 +86,7 @@ public class PSSE_Savnw_v33_Test extends CorePluginTestSetup {
 				.setPsseVersion(PsseVersion.PSSE_33)
 				.load()
 				.getImportedObj();
-		AclfNetBean netBean33 = new AclfNet2BeanMapper().map2Model(net33);
+		AclfNetBean netBean33 = new AclfNet2AclfBeanMapper().map2Model(net33);
 		
 		// compare the data model with V30
 		netBean30.compareTo(netBean33);		
