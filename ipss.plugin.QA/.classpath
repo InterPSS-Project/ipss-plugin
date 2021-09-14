@@ -18,5 +18,6 @@
 	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/jGraph/mxgraph-all.jar"/>
 	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/jGraph/mxgraph-core.jar"/>
 	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/jGraph/mxgraph-swing.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ipss.adapter.json"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

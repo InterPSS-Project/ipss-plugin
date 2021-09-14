@@ -5,7 +5,7 @@ import org.interpss.datamodel.bean.aclf.AclfBusBean;
 import org.interpss.datamodel.bean.dclf.DclfBranchResultBean;
 import org.interpss.datamodel.bean.dclf.DclfBusResultBean;
 import org.interpss.datamodel.bean.dclf.DclfNetResultBean;
-import org.interpss.mapper.bean.dclf.DclfResultBeanMapper;
+import org.interpss.datamodel.mapper.dclf.DclfResultBeanMapper;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.util.Number2String;
 import org.interpss.numeric.util.NumericUtil;

@@ -30,7 +30,7 @@ import static org.junit.Assert.assertTrue;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.datamodel.bean.aclf.AclfNetBean;
-import org.interpss.mapper.bean.aclf.AclfNet2BeanMapper;
+import org.interpss.datamodel.mapper.aclf.AclfNet2AclfBeanMapper;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.pssl.plugin.IpssAdapter;
 import org.interpss.pssl.plugin.IpssAdapter.PsseVersion;
@@ -62,7 +62,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 				.setPsseVersion(PsseVersion.PSSE_30)
 				.load()
 				.getImportedObj();
-		AclfNetBean netBean30 = new AclfNet2BeanMapper().map2Model(net30);
+		AclfNetBean netBean30 = new AclfNet2AclfBeanMapper().map2Model(net30);
 		
 		// load the test data V29
 		AclfNetwork net29 = IpssAdapter.importAclfNet("testdata/adpter/psse/v29/ieee9_v29.raw")
@@ -70,7 +70,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 				.setPsseVersion(PsseVersion.PSSE_29)
 				.load()
 				.getImportedObj();
-		AclfNetBean netBean29 = new AclfNet2BeanMapper().map2Model(net29);
+		AclfNetBean netBean29 = new AclfNet2AclfBeanMapper().map2Model(net29);
 		
 		// compare the data model with V30
 		netBean30.compareTo(netBean29);
@@ -81,7 +81,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 				.setPsseVersion(PsseVersion.PSSE_31)
 				.load()
 				.getImportedObj();
-		AclfNetBean netBean31 = new AclfNet2BeanMapper().map2Model(net31);
+		AclfNetBean netBean31 = new AclfNet2AclfBeanMapper().map2Model(net31);
 		
 		// compare the data model  with V30
 		netBean30.compareTo(netBean31);
@@ -92,7 +92,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 				.setPsseVersion(PsseVersion.PSSE_32)
 				.load()
 				.getImportedObj();
-		AclfNetBean netBean32 = new AclfNet2BeanMapper().map2Model(net32);
+		AclfNetBean netBean32 = new AclfNet2AclfBeanMapper().map2Model(net32);
 		
 		// compare the data model  with V30
 		netBean30.compareTo(netBean32);
@@ -103,7 +103,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 				.setPsseVersion(PsseVersion.PSSE_33)
 				.load()
 				.getImportedObj();
-		AclfNetBean netBean33 = new AclfNet2BeanMapper().map2Model(net33);
+		AclfNetBean netBean33 = new AclfNet2AclfBeanMapper().map2Model(net33);
 		
 		// compare the data model with V30
 		netBean30.compareTo(netBean33);		
