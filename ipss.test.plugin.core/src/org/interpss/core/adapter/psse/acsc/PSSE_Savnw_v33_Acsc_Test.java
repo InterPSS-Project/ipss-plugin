@@ -1,15 +1,10 @@
 package org.interpss.core.adapter.psse.acsc;
 
-import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
 import static org.junit.Assert.assertTrue;
 
-import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -17,28 +12,20 @@ import java.util.Hashtable;
 import java.util.List;
 
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.adapter.IODMAdapter;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
-import org.ieee.odm.model.aclf.AclfModelParser;
+import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
 import org.ieee.odm.model.acsc.AcscModelParser;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.datamodel.bean.aclf.AclfNetBean;
-import org.interpss.display.AclfOutFunc;
 import org.interpss.display.AcscOutFunc;
-import org.interpss.mapper.bean.aclf.AclfNet2BeanMapper;
-import org.interpss.mapper.odm.ODMAclfParserMapper;
 import org.interpss.mapper.odm.ODMAcscParserMapper;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.ComplexFunc;
-import org.interpss.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
-import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
-import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.AcscBus;
 import com.interpss.core.acsc.AcscNetwork;
@@ -49,8 +36,6 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.algo.sc.ScBusModelType;
 import com.interpss.core.algo.sc.SimpleFaultAlgorithm;
 import com.interpss.core.net.Branch;
-import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
 
 public class PSSE_Savnw_v33_Acsc_Test extends CorePluginTestSetup {
 	@Test
