@@ -6,8 +6,8 @@ import static org.junit.Assert.assertTrue;
 import org.interpss.QA.compare.aclf.AclfNetModelComparator;
 import org.interpss.QA.test.QATestSetup;
 import org.interpss.datamodel.bean.aclf.AclfNetBean;
+import org.interpss.datamodel.mapper.aclf.AclfNet2AclfBeanMapper;
 import org.interpss.datamodel.util.INetBeanComparator;
-import org.interpss.mapper.bean.aclf.AclfNet2BeanMapper;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -28,12 +28,12 @@ public class AclfNetCompareTest extends QATestSetup {
 	public void test() throws InterpssException {
   		AclfNetwork net1 = CoreObjectFactory.createAclfNetwork();
 		SampleTestingCases.load_LF_5BusSystem(net1);
-		AclfNetBean netBean1 = new AclfNet2BeanMapper().map2Model(net1);
+		AclfNetBean netBean1 = new AclfNet2AclfBeanMapper().map2Model(net1);
 		
 		AclfNetwork net2 = CoreObjectFactory.createAclfNetwork();
 		SampleTestingCases.load_LF_5BusSystem(net2);
 		//net2.getBus("1").setVoltageMag(0.95);
-		AclfNetBean netBean2 = new AclfNet2BeanMapper().map2Model(net2);
+		AclfNetBean netBean2 = new AclfNet2AclfBeanMapper().map2Model(net2);
 		
 		// compare output msg written to the console
 		assertTrue(netBean1.compareTo(netBean2) == 0);

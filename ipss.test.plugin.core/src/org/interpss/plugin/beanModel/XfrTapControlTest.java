@@ -28,8 +28,8 @@ import static org.junit.Assert.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.datamodel.bean.aclf.AclfNetBean;
-import org.interpss.mapper.bean.aclf.AclfBean2NetMapper;
-import org.interpss.mapper.bean.aclf.AclfNet2BeanMapper;
+import org.interpss.datamodel.mapper.aclf.AclfBean2AclfNetMapper;
+import org.interpss.datamodel.mapper.aclf.AclfNet2AclfBeanMapper;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.junit.Test;
@@ -63,10 +63,10 @@ public class XfrTapControlTest extends CorePluginTestSetup {
 		assertTrue(Math.abs(branch.getToTurnRatio()-1.0)<0.0001);
 		
 		// map AclfNet to AclfNetBean
-		AclfNetBean netBean = new AclfNet2BeanMapper().map2Model(net);
+		AclfNetBean netBean = new AclfNet2AclfBeanMapper().map2Model(net);
 
 		// map AclfNetBean back to an AclfNet object
-		AclfNetwork aclfNet = new AclfBean2NetMapper().map2Model(netBean)
+		AclfNetwork aclfNet = new AclfBean2AclfNetMapper().map2Model(netBean)
 				.getAclfNet();
 
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(aclfNet);
@@ -105,14 +105,14 @@ public class XfrTapControlTest extends CorePluginTestSetup {
 		assertTrue(Math.abs(branch.getToTurnRatio()-1.0)<0.0001);
 		
 		// map AclfNet to AclfNetBean
-		AclfNetBean netBean = new AclfNet2BeanMapper().map2Model(net);
+		AclfNetBean netBean = new AclfNet2AclfBeanMapper().map2Model(net);
 
 		// map AclfNetBean back to an AclfNet object
-		AclfNetwork aclfNet = new AclfBean2NetMapper().map2Model(netBean)
+		AclfNetwork aclfNet = new AclfBean2AclfNetMapper().map2Model(netBean)
 				.getAclfNet();
 
 		// map AclfNet to AclfNetBean
-		AclfNetBean netBean1 = new AclfNet2BeanMapper().map2Model(aclfNet);
+		AclfNetBean netBean1 = new AclfNet2AclfBeanMapper().map2Model(aclfNet);
 
 		/*
 		 * compare two AclfNetBean objects
