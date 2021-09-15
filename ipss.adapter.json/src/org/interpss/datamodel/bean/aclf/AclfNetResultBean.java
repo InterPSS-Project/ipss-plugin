@@ -26,6 +26,7 @@ package org.interpss.datamodel.bean.aclf;
 
 import org.interpss.datamodel.bean.BaseJSONBean;
 import org.interpss.datamodel.bean.BaseJSONUtilBean;
+import org.interpss.datamodel.bean.DefaultExtBean;
 import org.interpss.datamodel.bean.datatype.ComplexValueBean;
 import org.interpss.datamodel.bean.datatype.MismatchResultBean;
 
@@ -35,7 +36,7 @@ import org.interpss.datamodel.bean.datatype.MismatchResultBean;
  * @author mzhou
  *
  */
-public class AclfNetResultBean<TExt extends BaseJSONUtilBean> extends BaseAclfNetBean<AclfBusResultBean<TExt>, AclfBranchResultBean<TExt>, TExt> {
+public class AclfNetResultBean<TBusExt extends BaseJSONUtilBean, TBraExt extends BaseJSONUtilBean> extends BaseAclfNetBean<AclfBusResultBean<TBusExt>, AclfBranchResultBean<TBraExt>, TBusExt, TBraExt> {
 	public boolean
 		lf_converge;				// AC loadflow convergence
 	
@@ -49,10 +50,10 @@ public class AclfNetResultBean<TExt extends BaseJSONUtilBean> extends BaseAclfNe
 	
 	public AclfNetResultBean() { super(); }
 	
-	@Override public int compareTo(BaseJSONBean b) {
+	@Override public int compareTo(BaseJSONBean<DefaultExtBean> b) {
 		int eql = super.compareTo(b);
 		
-		AclfNetResultBean bean = (AclfNetResultBean)b;
+		AclfNetResultBean<TBusExt, TBraExt> bean = (AclfNetResultBean<TBusExt, TBraExt>)b;
 		
 		String str = "ID: " + this.id + " AclfNetResultBean.";
 
