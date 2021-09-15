@@ -6,10 +6,12 @@ import static com.interpss.common.util.NetUtilFunc.ToBranchId;
 import org.interpss.QA.rfile.BaseResultFileProcessor;
 import org.interpss.QA.rfile.QAFileReader;
 import org.interpss.datamodel.bean.BaseBranchBean;
+import org.interpss.datamodel.bean.DefaultExtBean;
+import org.interpss.datamodel.bean.aclf.AclfBranchBean;
 import org.interpss.datamodel.bean.aclf.AclfBranchResultBean;
 import org.interpss.datamodel.bean.aclf.AclfBusBean;
 import org.interpss.datamodel.bean.aclf.AclfNetResultBean;
-import org.interpss.datamodel.bean.datatype.ComplexBean;
+import org.interpss.datamodel.bean.datatype.ComplexValueBean;
 
 import com.interpss.common.exp.InterpssException;
 
@@ -26,7 +28,7 @@ public class PWDResultFileProcessor extends BaseResultFileProcessor {
 	}
 	
 	public PWDResultFileProcessor() {
-		this.qaResultSet = new AclfNetResultBean();
+		this.qaResultSet = new AclfNetResultBean<DefaultExtBean>();
 		this.qaResultSet.base_kva = 100000.0;
 	}
 	
@@ -73,7 +75,7 @@ Transformer,   ORRINGTN_345_A, A,             31,          ORRINGTN_345_4, 61,  
 			String shiftAng = sAry[11];
 
 			String braId = ToBranchId.f(fromId, toId, cirId);
-			AclfBranchResultBean rec = this.qaResultSet.getBranch(braId);
+			AclfBranchBean<DefaultExtBean> rec = this.qaResultSet.getBranch(braId);
 			if (rec == null)
 				throw new InterpssException("Xfr rec not found, " + braId);
 			
@@ -165,9 +167,9 @@ Number,Name,              Area Name,  Nom kV,  Angle (Deg), Load MW, Gen MW, Act
 			// set the line field to the rec
 			rec.v_mag = vMag;
 			rec.v_ang = vAngDeg;
-			rec.gen = new ComplexBean(genP_pu, 0.0);
-			rec.load = new ComplexBean(loadP_pu, 0.0);
-			rec.shunt = new ComplexBean(shuntG_pu, 0.0);
+			rec.gen = new ComplexValueBean(genP_pu, 0.0);
+			rec.load = new ComplexValueBean(loadP_pu, 0.0);
+			rec.shunt = new ComplexValueBean(shuntG_pu, 0.0);
 			rec.info = "BusInfo:    " + lineStr;
 		}
 
@@ -208,8 +210,8 @@ Number,Name,             Area Name, Nom kV,  PU Volt,  Volt (kV),  Angle (Deg), 
 			// set the line field to the rec
 			rec.v_mag = vMagPu;
 			rec.v_ang = vAngDeg;
-			rec.gen = new ComplexBean(genP_pu, genQ_pu);
-			rec.load = new ComplexBean(loadP_pu, loadQ_pu);
+			rec.gen = new ComplexValueBean(genP_pu, genQ_pu);
+			rec.load = new ComplexValueBean(loadP_pu, loadQ_pu);
 			rec.info = "BusInfo:    " + lineStr;
 		}
 	}
@@ -251,7 +253,7 @@ From Number, From Name,      To Number, To Name,           Circuit,  Status,  Br
 			double p = getDbl(frommw) / baseMva; 
 			double q = getDbl(frommvar) / baseMva; 
 			
-			rec.flow_f2t = new ComplexBean(p, q);
+			rec.flow_f2t = new ComplexValueBean(p, q);
 			rec.info = lineStr;
 			
 			// also add to the fromBus and toBus

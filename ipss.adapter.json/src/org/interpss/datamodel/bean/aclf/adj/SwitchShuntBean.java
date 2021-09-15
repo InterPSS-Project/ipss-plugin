@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.interpss.datamodel.bean.BaseJSONBean;
+import org.interpss.datamodel.bean.BaseJSONUtilBean;
 import org.interpss.numeric.util.NumericUtil;
 
 /**
@@ -12,7 +13,7 @@ import org.interpss.numeric.util.NumericUtil;
  * @author sHou
  *
  */
-public class SwitchShuntBean extends BaseJSONBean {
+public class SwitchShuntBean<TExt extends BaseJSONUtilBean> extends BaseJSONBean<TExt> {
 	
 	/**
 	 * switch shunt control type  
@@ -33,16 +34,16 @@ public class SwitchShuntBean extends BaseJSONBean {
 	public double vSpecified; //
 	public double bInit;									// initial b value
 	
-	public ArrayList<QBankBean> varBankList;				// var bank list
+	public ArrayList<QBankBean<TExt>> varBankList;				// var bank list
 	
 	public SwitchShuntBean(){
-		varBankList = new ArrayList<QBankBean>();
+		varBankList = new ArrayList<QBankBean<TExt>>();
 	}
 
-	@Override public int compareTo(BaseJSONBean b) {
+	@Override public int compareTo(BaseJSONBean<TExt> b) {
 		int eql = super.compareTo(b);
 		
-		SwitchShuntBean bean = (SwitchShuntBean)b;
+		SwitchShuntBean<TExt> bean = (SwitchShuntBean<TExt>)b;
 
 		String str = "ID: " + this.id + " SwitchShuntBean.";
 		

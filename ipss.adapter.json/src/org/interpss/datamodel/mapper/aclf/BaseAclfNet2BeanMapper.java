@@ -36,7 +36,7 @@ import org.interpss.datamodel.bean.aclf.adj.SwitchShuntBean;
 import org.interpss.datamodel.bean.aclf.adj.XfrTapControlBean;
 import org.interpss.datamodel.bean.aclf.adj.SwitchShuntBean.VarCompensatorControlModeBean;
 import org.interpss.datamodel.bean.datatype.BranchValueBean;
-import org.interpss.datamodel.bean.datatype.ComplexBean;
+import org.interpss.datamodel.bean.datatype.ComplexValueBean;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.Number2String;
 
@@ -94,11 +94,11 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 					AclfBusBean.GenCode.NonGen));
 				
 		Complex gen = bus.calNetGenResults();
-		bean.lfGenResult = new ComplexBean(format(gen));
+		bean.lfGenResult = new ComplexValueBean(format(gen));
 		
 		double genp = bus.getGenP();
 		double genq = bus.getGenQ();
-		bean.gen = new ComplexBean(format(new Complex(genp, genq)));		
+		bean.gen = new ComplexValueBean(format(new Complex(genp, genq)));		
 		
 		if(bus.getPGenLimit() != null){
 			bean.pmax = bus.getPGenLimit().getMax();
@@ -122,14 +122,14 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 					AclfBusBean.LoadCode.NonLoad));
 
 		Complex load = bus.calNetLoadResults();
-		bean.lfLoadResult = new ComplexBean(format(load));
+		bean.lfLoadResult = new ComplexValueBean(format(load));
 		
 		double loadp = bus.getLoadP();
 		double loadq = bus.getLoadQ();
-		bean.load = new ComplexBean(format(new Complex(loadp, loadq)));
+		bean.load = new ComplexValueBean(format(new Complex(loadp, loadq)));
 				
 		Complex sh = bus.getShuntY();
-		bean.shunt = new ComplexBean(format(sh));
+		bean.shunt = new ComplexValueBean(format(sh));
 		
 		bean.area = 1;
 		bean.zone = 1;
@@ -180,13 +180,13 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 					BaseBranchBean.BranchCode.ZBR ));
 		
 		Complex z = branch.getZ();
-		bean.z = new ComplexBean(z);
-		bean.shunt_y = new ComplexBean(format(new Complex(0, 0)));	
+		bean.z = new ComplexValueBean(z);
+		bean.shunt_y = new ComplexValueBean(format(new Complex(0, 0)));	
 		bean.ratio = new BranchValueBean(1.0,1.0);		
 		if (branch.getBranchCode() == AclfBranchCode.LINE ||
 				branch.getBranchCode() == AclfBranchCode.ZBR) {
 			if (branch.getHShuntY() != null)				
-				bean.shunt_y = new ComplexBean(format(new Complex(branch.getHShuntY().getReal()*2,
+				bean.shunt_y = new ComplexValueBean(format(new Complex(branch.getHShuntY().getReal()*2,
 						branch.getHShuntY().getImaginary()*2)));				
 				
 		}
@@ -194,7 +194,7 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 			AclfXformerAdapter xfr = branch.toXfr();			
 			bean.ratio.f = xfr.getFromTurnRatio();
 			bean.ratio.t = xfr.getToTurnRatio();	
-			bean.shunt_y = new ComplexBean(format(new Complex(branch.getFromShuntY().getReal()*2,
+			bean.shunt_y = new ComplexValueBean(format(new Complex(branch.getFromShuntY().getReal()*2,
 					branch.getFromShuntY().getImaginary()*2)));
 			XfrTapControlBean tapBean = new XfrTapControlBean();
 			bean.xfrTapControl = tapBean;
@@ -206,7 +206,7 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 			AclfPSXformerAdapter xfr = branch.toPSXfr();			
 			bean.ratio.f = xfr.getFromTurnRatio();
 			bean.ratio.t = xfr.getToTurnRatio();	
-			bean.shunt_y = new ComplexBean(format(new Complex(branch.getFromShuntY().getReal()*2,
+			bean.shunt_y = new ComplexValueBean(format(new Complex(branch.getFromShuntY().getReal()*2,
 					branch.getFromShuntY().getImaginary()*2)));
 			bean.ang.f = branch.getFromPSXfrAngle();
 			bean.ang.t = branch.getToPSXfrAngle();

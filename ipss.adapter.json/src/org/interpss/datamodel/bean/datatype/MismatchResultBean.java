@@ -33,7 +33,7 @@ import com.interpss.common.util.IpssLogger;
  *
  */
 public class MismatchResultBean implements Comparable<MismatchResultBean> {
-	public ComplexBean
+	public ComplexValueBean
 		err;				// real/reactive power mismatch
 	
 	public String

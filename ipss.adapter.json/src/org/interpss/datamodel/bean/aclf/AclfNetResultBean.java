@@ -25,7 +25,8 @@
 package org.interpss.datamodel.bean.aclf;
 
 import org.interpss.datamodel.bean.BaseJSONBean;
-import org.interpss.datamodel.bean.datatype.ComplexBean;
+import org.interpss.datamodel.bean.BaseJSONUtilBean;
+import org.interpss.datamodel.bean.datatype.ComplexValueBean;
 import org.interpss.datamodel.bean.datatype.MismatchResultBean;
 
 /**
@@ -34,11 +35,11 @@ import org.interpss.datamodel.bean.datatype.MismatchResultBean;
  * @author mzhou
  *
  */
-public class AclfNetResultBean extends BaseAclfNetBean<AclfBusBean, AclfBranchResultBean> {
+public class AclfNetResultBean<TExt extends BaseJSONUtilBean> extends BaseAclfNetBean<AclfBusResultBean<TExt>, AclfBranchResultBean<TExt>, TExt> {
 	public boolean
 		lf_converge;				// AC loadflow convergence
 	
-	public ComplexBean
+	public ComplexValueBean
 		gen,						// total gen power
 		load,						// total load power
 		loss;						// total network power loss

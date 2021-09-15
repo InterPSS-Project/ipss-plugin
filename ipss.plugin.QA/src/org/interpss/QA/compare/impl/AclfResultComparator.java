@@ -1,11 +1,13 @@
 package org.interpss.QA.compare.impl;
 
 import org.apache.commons.math3.complex.Complex;
+import org.interpss.datamodel.bean.BaseJSONUtilBean;
 import org.interpss.datamodel.bean.BaseBranchBean.BranchCode;
 import org.interpss.datamodel.bean.aclf.AclfBranchResultBean;
 import org.interpss.datamodel.bean.aclf.AclfBusBean;
+import org.interpss.datamodel.bean.aclf.AclfBusResultBean;
 import org.interpss.datamodel.bean.aclf.AclfNetResultBean;
-import org.interpss.datamodel.bean.datatype.ComplexBean;
+import org.interpss.datamodel.bean.datatype.ComplexValueBean;
 import org.interpss.numeric.datatype.Unit;
 import org.interpss.numeric.util.NumericUtil;
 
@@ -21,10 +23,10 @@ import com.interpss.core.net.Bus;
  * @author mzhou
  *
  */
-public class AclfResultComparator extends NetModelComparator<AclfBusBean, AclfBranchResultBean> {
+public class AclfResultComparator<TExt extends BaseJSONUtilBean> extends NetModelComparator<AclfBusResultBean<TExt>, AclfBranchResultBean<TExt>, TExt> {
 	public AclfResultComparator() { super(); }
 	
-	public AclfResultComparator(AclfNetwork net, AclfNetResultBean qaResultSet) {
+	public AclfResultComparator(AclfNetwork net, AclfNetResultBean<TExt> qaResultSet) {
 		super(net, qaResultSet);
 	}
 	
@@ -46,7 +48,7 @@ public class AclfResultComparator extends NetModelComparator<AclfBusBean, AclfBr
 		for (Bus b : net.getBusList()) {
 			AclfBus bus = (AclfBus)b;
 			if (bus.isActive()) {
-				AclfBusBean rec = this.qaResultSet.getBus(b.getId());
+				AclfBusBean<TExt> rec = this.qaResultSet.getBus(b.getId());
 				if (CompareBus)
 					compareBusAclfResult(bus, rec);
 			}
@@ -55,14 +57,14 @@ public class AclfResultComparator extends NetModelComparator<AclfBusBean, AclfBr
 		for (Branch b : net.getBranchList()) {
 			AclfBranch branch = (AclfBranch)b;
 			if (branch.isActive()) {
-				AclfBranchResultBean rec = this.qaResultSet.getBranch(branch.getId());
+				AclfBranchResultBean<TExt> rec = this.qaResultSet.getBranch(branch.getId());
 				if (CompareBranch)
 					compareBranchAclfResult(branch, rec);
 			}
 		}		
 	}
 	
-	private void compareBusAclfResult(AclfBus bus, AclfBusBean rec) {
+	private void compareBusAclfResult(AclfBus bus, AclfBusBean<TExt> rec) {
 		/*
 		 * Compare voltage
 		 */
@@ -148,7 +150,7 @@ public class AclfResultComparator extends NetModelComparator<AclfBusBean, AclfBr
 			 */
 			if (bus.getShuntY() != null && bus.getShuntY().abs() > 0.0) {
 				if (rec.shunt == null) 
-					rec.shunt = new ComplexBean();
+					rec.shunt = new ComplexValueBean();
 				double q = -bus.getShuntY().getImaginary();
 				q *= bus.getVoltageMag() * bus.getVoltageMag();				
 				if (!NumericUtil.equals(rec.shunt.im, q, PQErr)) {
@@ -176,7 +178,7 @@ public class AclfResultComparator extends NetModelComparator<AclfBusBean, AclfBr
 		}
 	}
 
-	private void compareBranchAclfResult(AclfBranch branch, AclfBranchResultBean rec) {
+	private void compareBranchAclfResult(AclfBranch branch, AclfBranchResultBean<TExt> rec) {
 		/*
 		 * compare branch type
 		 */
