@@ -2,6 +2,7 @@ package sample;
 
 import org.interpss.CorePluginFactory;
 import org.interpss.IpssCorePlugin;
+import org.interpss.datamodel.bean.BaseJSONUtilBean;
 import org.interpss.datamodel.bean.DefaultExtBean;
 import org.interpss.datamodel.bean.aclf.AclfNetBean;
 import org.interpss.datamodel.mapper.aclf.AclfBean2AclfNetMapper;
@@ -15,6 +16,13 @@ import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
 public class Ieee14BusSample {
+	public static class BusExtBean extends BaseJSONUtilBean {
+		public BusExtBean() {}
+	}
+	
+	public static class BranchExtBean extends BaseJSONUtilBean {
+		public BranchExtBean() {}
+	}
 
 	public static void main(String[] args) throws InterpssException {
 		IpssCorePlugin.init();
@@ -25,11 +33,11 @@ public class Ieee14BusSample {
 				.getAclfNet();	
 		
 		// map AclfNet to AclfNetBean
-		AclfNetBean<DefaultExtBean> netBean = new AclfNet2AclfBeanMapper<DefaultExtBean>().map2Model(aclfNet);	
+		AclfNetBean<BusExtBean, BranchExtBean> netBean = new AclfNet2AclfBeanMapper<BusExtBean, BranchExtBean>().map2Model(aclfNet);	
 		System.out.println(netBean.toString());
 		
 		// map AclfNetBean back to an AclfNet object
-		aclfNet = new AclfBean2AclfNetMapper<DefaultExtBean>()
+		aclfNet = new AclfBean2AclfNetMapper<BusExtBean, BranchExtBean>()
 			.map2Model(netBean)
 			.getAclfNet();
 		

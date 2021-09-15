@@ -45,7 +45,7 @@ import com.interpss.core.datatype.Mismatch;
  * 
  * @author mzhou
  */
-public class AclfNet2ResultBeanMapper<TExt extends BaseJSONUtilBean> extends BaseAclfNet2BeanMapper<AclfNetResultBean<TExt>> {
+public class AclfNet2ResultBeanMapper<TBusExt extends BaseJSONUtilBean, TBraExt extends BaseJSONUtilBean> extends BaseAclfNet2BeanMapper<AclfNetResultBean<TBusExt,TBraExt>> {
 	/**
 	 * constructor
 	 */
@@ -58,8 +58,8 @@ public class AclfNet2ResultBeanMapper<TExt extends BaseJSONUtilBean> extends Bas
 	 * @param aclfNet AclfNetwork object
 	 * @return AclfNetResultBean object
 	 */
-	@Override public AclfNetResultBean<TExt> map2Model(AclfNetwork aclfNet) throws InterpssException {
-		AclfNetResultBean<TExt> aclfResult = new AclfNetResultBean<>();
+	@Override public AclfNetResultBean<TBusExt,TBraExt> map2Model(AclfNetwork aclfNet) throws InterpssException {
+		AclfNetResultBean<TBusExt,TBraExt> aclfResult = new AclfNetResultBean<>();
 
 		if (map2Model(aclfNet, aclfResult))
 			return aclfResult;
@@ -73,7 +73,7 @@ public class AclfNet2ResultBeanMapper<TExt extends BaseJSONUtilBean> extends Bas
 	 * @param netBean an AclfNetBean object, representing a aclf base network
 	 * @param aclfResult
 	 */
-	@Override public boolean map2Model(AclfNetwork aclfNet, AclfNetResultBean<TExt> aclfResult) {
+	@Override public boolean map2Model(AclfNetwork aclfNet, AclfNetResultBean<TBusExt,TBraExt> aclfResult) {
 		boolean noError = true;
 		
 		aclfResult.lf_converge = aclfNet.isLfConverged();
@@ -95,13 +95,13 @@ public class AclfNet2ResultBeanMapper<TExt extends BaseJSONUtilBean> extends Bas
 		aclfResult.base_kva = aclfNet.getBaseKva();			
 		
 		for (AclfBus bus : aclfNet.getBusList()) {
-			AclfBusResultBean<TExt> bean = new AclfBusResultBean<>();
+			AclfBusResultBean<TBusExt> bean = new AclfBusResultBean<>();
 			aclfResult.addBusBean(bean);
 			mapBaseBus(bus, bean);
 		}
 		
 		for (AclfBranch branch : aclfNet.getBranchList()) {
-			AclfBranchResultBean<TExt> bean = new AclfBranchResultBean<>();
+			AclfBranchResultBean<TBraExt> bean = new AclfBranchResultBean<>();
 			aclfResult.addBranchBean(bean);
 			mapBaseBranch(branch, bean);
 		}
@@ -109,7 +109,7 @@ public class AclfNet2ResultBeanMapper<TExt extends BaseJSONUtilBean> extends Bas
 		return noError;
 	}	
 	
-	protected void mapBaseBranch(AclfBranch branch, AclfBranchResultBean<TExt> bean) {
+	protected void mapBaseBranch(AclfBranch branch, AclfBranchResultBean<TBraExt> bean) {
 		super.mapBaseBranch(branch, bean);
 		
 		Complex flow = branch.powerFrom2To();

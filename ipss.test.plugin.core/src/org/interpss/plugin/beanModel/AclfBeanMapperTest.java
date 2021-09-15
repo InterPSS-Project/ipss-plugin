@@ -70,10 +70,10 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 		SampleTestingCases.load_LF_5BusSystem(net);
 		
 		// map AclfNet to AclfNetBean
-		AclfNetBean<DefaultExtBean> netBean = new AclfNet2AclfBeanMapper<DefaultExtBean>().map2Model(net);		
+		AclfNetBean<DefaultExtBean,DefaultExtBean> netBean = new AclfNet2AclfBeanMapper<DefaultExtBean,DefaultExtBean>().map2Model(net);		
 		
 		// map AclfNetBean back to an AclfNet object
-		AclfNetwork aclfNet = new AclfBean2AclfNetMapper<DefaultExtBean>()
+		AclfNetwork aclfNet = new AclfBean2AclfNetMapper<DefaultExtBean,DefaultExtBean>()
 			.map2Model(netBean)
 			.getAclfNet();
 		
@@ -87,7 +87,7 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.57943)<0.0001);
 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-2.2994)<0.0001);
 		
-		AclfNetResultBean<DefaultExtBean> aclfResult = new AclfNet2ResultBeanMapper<DefaultExtBean>()
+		AclfNetResultBean<DefaultExtBean,DefaultExtBean> aclfResult = new AclfNet2ResultBeanMapper<DefaultExtBean,DefaultExtBean>()
 				.map2Model(aclfNet);
 		//System.out.println(new Gson().toJson(aclfResult));
 		

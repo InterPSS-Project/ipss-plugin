@@ -23,10 +23,10 @@ import com.interpss.core.net.Bus;
  * @author mzhou
  *
  */
-public class AclfResultComparator<TExt extends BaseJSONUtilBean> extends NetModelComparator<AclfBusResultBean<TExt>, AclfBranchResultBean<TExt>, TExt> {
+public class AclfResultComparator<TBusExt extends BaseJSONUtilBean, TBraExt extends BaseJSONUtilBean> extends NetModelComparator<AclfBusResultBean<TBusExt>, AclfBranchResultBean<TBraExt>, TBusExt, TBraExt> {
 	public AclfResultComparator() { super(); }
 	
-	public AclfResultComparator(AclfNetwork net, AclfNetResultBean<TExt> qaResultSet) {
+	public AclfResultComparator(AclfNetwork net, AclfNetResultBean<TBusExt,TBraExt> qaResultSet) {
 		super(net, qaResultSet);
 	}
 	
@@ -48,7 +48,7 @@ public class AclfResultComparator<TExt extends BaseJSONUtilBean> extends NetMode
 		for (Bus b : net.getBusList()) {
 			AclfBus bus = (AclfBus)b;
 			if (bus.isActive()) {
-				AclfBusBean<TExt> rec = this.qaResultSet.getBus(b.getId());
+				AclfBusBean<TBusExt> rec = this.qaResultSet.getBus(b.getId());
 				if (CompareBus)
 					compareBusAclfResult(bus, rec);
 			}
@@ -57,14 +57,14 @@ public class AclfResultComparator<TExt extends BaseJSONUtilBean> extends NetMode
 		for (Branch b : net.getBranchList()) {
 			AclfBranch branch = (AclfBranch)b;
 			if (branch.isActive()) {
-				AclfBranchResultBean<TExt> rec = this.qaResultSet.getBranch(branch.getId());
+				AclfBranchResultBean<TBraExt> rec = this.qaResultSet.getBranch(branch.getId());
 				if (CompareBranch)
 					compareBranchAclfResult(branch, rec);
 			}
 		}		
 	}
 	
-	private void compareBusAclfResult(AclfBus bus, AclfBusBean<TExt> rec) {
+	private void compareBusAclfResult(AclfBus bus, AclfBusBean<TBusExt> rec) {
 		/*
 		 * Compare voltage
 		 */
@@ -178,7 +178,7 @@ public class AclfResultComparator<TExt extends BaseJSONUtilBean> extends NetMode
 		}
 	}
 
-	private void compareBranchAclfResult(AclfBranch branch, AclfBranchResultBean<TExt> rec) {
+	private void compareBranchAclfResult(AclfBranch branch, AclfBranchResultBean<TBraExt> rec) {
 		/*
 		 * compare branch type
 		 */

@@ -65,6 +65,8 @@ public abstract class BaseJSONBean<TExt extends BaseJSONUtilBean> extends BaseJS
 		desc,    				// net, bus, branch description, optional
 		info;                   // extra info
 
+	public TExt extension;      // for bean extension
+	
 	private static List<String> msgList = new ArrayList<>();
 	private static INetBeanComparator.CompareLog compareLog = CompareLog.Console;
 	
