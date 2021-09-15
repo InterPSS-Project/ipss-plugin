@@ -25,7 +25,7 @@ package org.interpss.datamodel.bean;
 
 import java.util.List;
 
-import org.interpss.datamodel.bean.datatype.ComplexBean;
+import org.interpss.datamodel.bean.datatype.ComplexValueBean;
 import org.interpss.numeric.util.NumericUtil;
 
 /**
@@ -34,7 +34,7 @@ import org.interpss.numeric.util.NumericUtil;
  * @author mzhou
  *
  */
-public abstract class BaseBranchBean extends BaseJSONBean {
+public abstract class BaseBranchBean<TExt extends BaseJSONUtilBean> extends BaseJSONBean<TExt> {
 	/**
 	 * branch type code
 	 */
@@ -61,7 +61,7 @@ public abstract class BaseBranchBean extends BaseJSONBean {
 
 	public int status = 1;		// branch in-service status, 1 in service; 0 out of service
 
-	public ComplexBean 
+	public ComplexValueBean 
 	    	z,					// branch z
 	    	shunt_y ;     		// branch total shunt y
 	
@@ -75,10 +75,10 @@ public abstract class BaseBranchBean extends BaseJSONBean {
 	public BaseBranchBean() {
 	}
 
-	@Override public int compareTo(BaseJSONBean b) {
+	@Override public int compareTo(BaseJSONBean<TExt> b) {
 		int eql = super.compareTo(b);
 		
-		BaseBranchBean bean = (BaseBranchBean)b;
+		BaseBranchBean<TExt> bean = (BaseBranchBean<TExt>)b;
 
 		String str = "ID: " + this.id + " BaseBranchBean.";
 		

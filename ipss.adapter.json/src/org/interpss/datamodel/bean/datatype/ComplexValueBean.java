@@ -36,14 +36,14 @@ import com.interpss.common.util.IpssLogger;
  * @author mzhou
  *
  */
-public class ComplexBean  implements Comparable<ComplexBean> {
+public class ComplexValueBean  implements Comparable<ComplexValueBean> {
 	public double
 		re,				// real part
 		im;				// imaginary part
 	
-	public ComplexBean() { }
-	public ComplexBean(double re, double im) {this.re = re; this.im = im; }
-	public ComplexBean(Complex c) {this.re = c.getReal(); this.im = c.getImaginary(); }
+	public ComplexValueBean() { }
+	public ComplexValueBean(double re, double im) {this.re = re; this.im = im; }
+	public ComplexValueBean(Complex c) {this.re = c.getReal(); this.im = c.getImaginary(); }
 
 	public Complex toComplex() { return new Complex(this.re, this.im); }
 	
@@ -53,7 +53,7 @@ public class ComplexBean  implements Comparable<ComplexBean> {
 	 * @param bean the bean object to be compared with this object
 	 * @return 0 if the two objects are equal, 1 if not equal
 	 */
-	@Override public int compareTo(ComplexBean bean) {
+	@Override public int compareTo(ComplexValueBean bean) {
 		int eql = 0;
 		
 		if (!NumericUtil.equals(this.re, bean.re, BaseJSONBean.PU_ERR)) {

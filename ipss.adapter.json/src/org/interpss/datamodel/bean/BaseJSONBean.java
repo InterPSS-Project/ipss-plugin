@@ -42,7 +42,7 @@ import com.interpss.common.util.IpssLogger;
  * @author mzhou
  *
  */
-public abstract class BaseJSONBean extends BaseJSONUtilBean implements Comparable<BaseJSONBean> {
+public abstract class BaseJSONBean<TExt extends BaseJSONUtilBean> extends BaseJSONUtilBean implements Comparable<BaseJSONBean<TExt>> {
 	
 	/**
 	 * default error tolerance for Bean object comparison for value in PU
@@ -93,7 +93,7 @@ public abstract class BaseJSONBean extends BaseJSONUtilBean implements Comparabl
 	 * @param bean the bean object to be compared with this object
 	 * @return 0 if the two objects are equal, 1 if not equal
 	 */
-	@Override public int compareTo(BaseJSONBean bean) {
+	@Override public int compareTo(BaseJSONBean<TExt> bean) {
 		if (this.id.equals(bean.id))
 			// some times bean.id is not defined
 			return 0;
@@ -110,7 +110,7 @@ public abstract class BaseJSONBean extends BaseJSONUtilBean implements Comparabl
 	 * @param comparator 
 	 * @return 0 if the two objects are equal, 1 if not equal
 	 */
-	public int compare(BaseJSONBean bean, Comparator<BaseJSONBean> comparator) {
+	public int compare(BaseJSONBean<TExt> bean, Comparator<BaseJSONBean<TExt>> comparator) {
 		return comparator.compare(this, bean);
 	}
 	
