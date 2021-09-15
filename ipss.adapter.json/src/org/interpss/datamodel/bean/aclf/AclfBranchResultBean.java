@@ -25,7 +25,8 @@
 package org.interpss.datamodel.bean.aclf;
 
 import org.interpss.datamodel.bean.BaseJSONBean;
-import org.interpss.datamodel.bean.datatype.ComplexBean;
+import org.interpss.datamodel.bean.BaseJSONUtilBean;
+import org.interpss.datamodel.bean.datatype.ComplexValueBean;
 import org.interpss.numeric.util.NumericUtil;
 
 /**
@@ -34,9 +35,9 @@ import org.interpss.numeric.util.NumericUtil;
  * @author mzhou
  *
  */
-public class AclfBranchResultBean extends AclfBranchBean {
+public class AclfBranchResultBean<TExt extends BaseJSONUtilBean> extends AclfBranchBean<TExt> {
 
-	public ComplexBean 
+	public ComplexValueBean 
 		flow_f2t,		// branch power flow from->to
 	    flow_t2f,		// branch power flow to->from
 	    loss;			// branch power loss
@@ -46,7 +47,7 @@ public class AclfBranchResultBean extends AclfBranchBean {
 	
 	public AclfBranchResultBean() { }
 	
-	@Override public int compareTo(BaseJSONBean b) {
+	@Override public int compareTo(BaseJSONBean<TExt> b) {
 		int eql = super.compareTo(b);
 		
 		AclfBranchResultBean bean = (AclfBranchResultBean)b;

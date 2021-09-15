@@ -1,5 +1,5 @@
 /*
- * @(#)AclfNetBean.java   
+ * @(#)AclfBusResultBean.java   
  *
  * Copyright (C) 2008-2013 www.interpss.org
  *
@@ -28,21 +28,17 @@ import org.interpss.datamodel.bean.BaseJSONBean;
 import org.interpss.datamodel.bean.BaseJSONUtilBean;
 
 /**
- * Bean class for stoing AclfNetwork object info
+ * Bean class for storing AclfBus result info
  * 
  * @author mzhou
  *
  */
-public class AclfNetBean<TExt extends BaseJSONUtilBean> extends BaseAclfNetBean<AclfBusBean<TExt>, AclfBranchBean<TExt>, TExt> {
-	public AclfNetBean() { super(); }
+public class AclfBusResultBean<TExt extends BaseJSONUtilBean> extends AclfBusBean<TExt> {
 	
-	@Override public int compareTo(BaseJSONBean b) {
+	public AclfBusResultBean() { }
+	
+	@Override public int compareTo(BaseJSONBean<TExt> b) {
 		int eql = super.compareTo(b);
-		
-		//AclfNetBean bean = (AclfNetBean)b;
-
-		// do nothing
-		
 		return eql;
-	}		
+	}	
 }
