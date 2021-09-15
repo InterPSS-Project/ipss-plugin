@@ -3,7 +3,7 @@
 package org.interpss.datamodel.mapper.dclf;
 
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.datamodel.bean.datatype.ComplexBean;
+import org.interpss.datamodel.bean.datatype.ComplexValueBean;
 import org.interpss.datamodel.bean.dclf.DclfBranchResultBean;
 import org.interpss.datamodel.bean.dclf.DclfBusResultBean;
 import org.interpss.datamodel.bean.dclf.DclfNetResultBean;
@@ -91,11 +91,11 @@ public class DclfResultBeanMapper extends AbstractMapper<SenAnalysisAlgorithm, D
 		double pgen = (bus.isRefBus() ? algo.getBusPower(dclfBus) : bus
 				.getGenP());
 		Complex gen = new Complex(pgen,0);
-		bean.gen = new ComplexBean(format(gen));
+		bean.gen = new ComplexValueBean(format(gen));
 
 		double pload = bus.getLoadP();
 		Complex load = new Complex(pload,0);
-		bean.load = new ComplexBean(format(load));
+		bean.load = new ComplexValueBean(format(load));
 	}
 	
 	private void mapBaseBranch(SenAnalysisAlgorithm algo,AclfBranch branch, DclfBranchResultBean bean) {
@@ -105,13 +105,13 @@ public class DclfResultBeanMapper extends AbstractMapper<SenAnalysisAlgorithm, D
 		// map Dclf result
 		double mwFlow = algo.getBranchFlow(branch, UnitType.PU);		
 		Complex flow = new Complex(mwFlow, 0);		
-		bean.flow_f2t = new ComplexBean(format(flow));
+		bean.flow_f2t = new ComplexValueBean(format(flow));
 
 		//assuming lossless network
-		bean.flow_t2f = new ComplexBean(format(flow));
+		bean.flow_t2f = new ComplexValueBean(format(flow));
 		
 		Complex loss =new Complex(0,0);
-		bean.loss = new ComplexBean(format(loss));
+		bean.loss = new ComplexValueBean(format(loss));
 		
 		bean.cur = 0;
 	}	

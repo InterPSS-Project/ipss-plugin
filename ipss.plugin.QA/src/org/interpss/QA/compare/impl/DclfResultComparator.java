@@ -1,5 +1,6 @@
 package org.interpss.QA.compare.impl;
 
+import org.interpss.datamodel.bean.DefaultExtBean;
 import org.interpss.datamodel.bean.aclf.AclfBranchResultBean;
 import org.interpss.datamodel.bean.aclf.AclfBusBean;
 import org.interpss.datamodel.bean.dclf.DclfBranchResultBean;
@@ -31,15 +32,15 @@ import com.interpss.core.net.Bus;
  * @author mzhou
  *
  */
-public class DclfResultComparator extends NetModelComparator<DclfBusResultBean, DclfBranchResultBean> {
+public class DclfResultComparator extends NetModelComparator<DclfBusResultBean<DefaultExtBean>, DclfBranchResultBean<DefaultExtBean>, DefaultExtBean> {
 	private SenAnalysisAlgorithm algo = null;
 	
 	public DclfResultComparator() {
-		this.qaResultSet = new  DclfNetResultBean();
+		this.qaResultSet = new  DclfNetResultBean<DefaultExtBean>();
 		this.qaResultSet.base_kva = 100000.0;
 	}
 	
-	public DclfResultComparator(AclfNetwork net, DclfNetResultBean qaResultSet) {
+	public DclfResultComparator(AclfNetwork net, DclfNetResultBean<DefaultExtBean> qaResultSet) {
 		super(net, qaResultSet);
 	}
 	
@@ -59,7 +60,7 @@ public class DclfResultComparator extends NetModelComparator<DclfBusResultBean, 
 	 * @param algo
 	 */
 	public DclfResultComparator setBaseResult(SenAnalysisAlgorithm algo) {
-		new DclfResultBeanMapper().map2Model(algo, (DclfNetResultBean)this.qaResultSet);
+		new DclfResultBeanMapper().map2Model(algo, (DclfNetResultBean<DefaultExtBean>)this.qaResultSet);
 		
 		return this;
 	}	
@@ -77,7 +78,7 @@ public class DclfResultComparator extends NetModelComparator<DclfBusResultBean, 
 				AclfBranch branch = (AclfBranch)bra;
 				if (branch.isPSXfr()) {
 					cnt++;
-					AclfBranchResultBean rec = this.qaResultSet.getBranch(bra.getId());
+					AclfBranchResultBean<DefaultExtBean> rec = this.qaResultSet.getBranch(bra.getId());
 					double ang = branch.toPSXfr().getFromAngle();
 					if (!NumericUtil.equals(rec.ang.f, ang, VAngErr)) {
 						String msg = "PsXfr shift ang mismatch: Branch -" + bra.getId() + ", " + 
@@ -109,7 +110,7 @@ public class DclfResultComparator extends NetModelComparator<DclfBusResultBean, 
 		for (Bus bus : this.net.getBusList()) {
 			if (bus.isActive()) {
 				AclfBus aclfBus = (AclfBus)bus; 
-				AclfBusBean rec = this.qaResultSet.getBus(bus.getId());
+				AclfBusBean<DefaultExtBean> rec = this.qaResultSet.getBus(bus.getId());
 
 				// compare base voltage against the NomVolt in the result file
 				double v = aclfBus.getBaseVoltage();
@@ -222,7 +223,7 @@ public class DclfResultComparator extends NetModelComparator<DclfBusResultBean, 
 				AclfBus bus = (AclfBus)b;
 				int n = bus.getSortNumber();
 				double angDeg = Math.toDegrees(algo.getBusAngle(n)) + refBusAng;
-				AclfBusBean rec = this.qaResultSet.getBus(bus.getId());
+				AclfBusBean<DefaultExtBean> rec = this.qaResultSet.getBus(bus.getId());
 				double rangDeg = rec.v_ang;
 				if (Math.abs(rangDeg-angDeg) > max )
 					max = Math.abs(rangDeg-angDeg);
@@ -249,8 +250,8 @@ public class DclfResultComparator extends NetModelComparator<DclfBusResultBean, 
 					
 				// compare angle
 				double angDeg = Math.toDegrees(algo.getBusAngle(fn) - algo.getBusAngle(tn));
-				AclfBusBean frec = this.qaResultSet.getBus(bra.getFromBusId());
-				AclfBusBean trec = this.qaResultSet.getBus(bra.getToBusId());
+				AclfBusBean<DefaultExtBean> frec = this.qaResultSet.getBus(bra.getFromBusId());
+				AclfBusBean<DefaultExtBean> trec = this.qaResultSet.getBus(bra.getToBusId());
 				double rangDeg = frec.v_ang - trec.v_ang;
 				if (Math.abs(rangDeg-angDeg) > max )
 					max = Math.abs(rangDeg-angDeg);
@@ -277,7 +278,7 @@ public class DclfResultComparator extends NetModelComparator<DclfBusResultBean, 
 				
 				
 				// compare pflow
-				AclfBranchResultBean rec = this.qaResultSet.getBranch(bra.getId());
+				AclfBranchResultBean<DefaultExtBean> rec = this.qaResultSet.getBranch(bra.getId());
 
 				if (Math.abs(rec.flow_f2t.re-pflow) > max )
 					max = Math.abs(rec.flow_f2t.re-pflow);
@@ -316,7 +317,7 @@ public class DclfResultComparator extends NetModelComparator<DclfBusResultBean, 
 				double angDeg = Math.toDegrees(algo.getBusAngle(n)) - angOffset;
 				double pPu = (aclfBus.getGenP() - aclfBus.getLoadP()); 
 				
-				AclfBusBean busRec = this.qaResultSet.getBus(bus.getId());
+				AclfBusBean<DefaultExtBean> busRec = this.qaResultSet.getBus(bus.getId());
 				
 				buf.append(Number2String.toFixLengthStr(8, bus.getId()) + "        "
 						+ String.format("%8.2f", angDeg) + "         "

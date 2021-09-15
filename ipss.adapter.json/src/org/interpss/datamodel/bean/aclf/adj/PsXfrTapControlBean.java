@@ -3,9 +3,10 @@ package org.interpss.datamodel.bean.aclf.adj;
 import java.util.List;
 
 import org.interpss.datamodel.bean.BaseJSONBean;
+import org.interpss.datamodel.bean.BaseJSONUtilBean;
 import org.interpss.numeric.util.NumericUtil;
 
-public class PsXfrTapControlBean extends BaseTapControlBean{
+public class PsXfrTapControlBean<TExt extends BaseJSONUtilBean> extends BaseTapControlBean <TExt>{
 
 	public double 
 		maxAngle = 0.0,					// max angle
@@ -17,11 +18,11 @@ public class PsXfrTapControlBean extends BaseTapControlBean{
 	
 	public PsXfrTapControlBean(){}
 	
-	@Override public int compareTo(BaseJSONBean b) {
+	@Override public int compareTo(BaseJSONBean<TExt> b) {
 		
 		int eql = super.compareTo(b);
 		
-		PsXfrTapControlBean bean = (PsXfrTapControlBean)b;
+		PsXfrTapControlBean<TExt> bean = (PsXfrTapControlBean<TExt>)b;
 
 		String str = "ID: " + this.id + " PsXfrTapControlBean.";				
 		

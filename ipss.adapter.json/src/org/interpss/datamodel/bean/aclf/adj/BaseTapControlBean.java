@@ -26,6 +26,7 @@ package org.interpss.datamodel.bean.aclf.adj;
 import java.util.List;
 
 import org.interpss.datamodel.bean.BaseJSONBean;
+import org.interpss.datamodel.bean.BaseJSONUtilBean;
 import org.interpss.numeric.util.NumericUtil;
 
 /**
@@ -34,7 +35,7 @@ import org.interpss.numeric.util.NumericUtil;
  * @author sHou
  *
  */
-public class BaseTapControlBean extends BaseJSONBean {	
+public class BaseTapControlBean<TExt extends BaseJSONUtilBean> extends BaseJSONBean<TExt> {	
 	 
 	public static enum TapControlTypeBean {Point_Control, Range_Control,No_Control};
 	public static enum TapControlModeBean {Bus_Voltage, Mva_Flow, MW_Flow, No_Control};
@@ -61,10 +62,10 @@ public class BaseTapControlBean extends BaseJSONBean {
 	
 	public BaseTapControlBean() {}
 	
-	@Override public int compareTo(BaseJSONBean b) {
+	@Override public int compareTo(BaseJSONBean<TExt> b) {
 		int eql = super.compareTo(b);
 		
-		BaseTapControlBean bean = (BaseTapControlBean)b;
+		BaseTapControlBean<TExt> bean = (BaseTapControlBean<TExt>)b;
 
 		String str = "ID: " + this.id + " BaseTapControlBean.";		
 		

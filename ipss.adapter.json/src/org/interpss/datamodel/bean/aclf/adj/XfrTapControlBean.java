@@ -26,6 +26,7 @@ package org.interpss.datamodel.bean.aclf.adj;
 import java.util.List;
 
 import org.interpss.datamodel.bean.BaseJSONBean;
+import org.interpss.datamodel.bean.BaseJSONUtilBean;
 
 /**
  * Bean class for storing Aclf two winding branch object info
@@ -33,7 +34,7 @@ import org.interpss.datamodel.bean.BaseJSONBean;
  * @author sHou
  *
  */
-public class XfrTapControlBean extends BaseTapControlBean {
+public class XfrTapControlBean<TExt extends BaseJSONUtilBean> extends BaseTapControlBean<TExt> {
 		
 	//public TapControlModeBean controlMode = TapControlModeBean.Bus_Voltage;	// control mode		
 	
@@ -41,7 +42,7 @@ public class XfrTapControlBean extends BaseTapControlBean {
 	
 	public XfrTapControlBean() {}
 	
-	@Override public int compareTo(BaseJSONBean b) {
+	@Override public int compareTo(BaseJSONBean<TExt> b) {
 		
 		int eql = super.compareTo(b);
 		
