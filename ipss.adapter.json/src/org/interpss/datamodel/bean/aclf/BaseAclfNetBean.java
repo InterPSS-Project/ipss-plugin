@@ -32,6 +32,7 @@ import java.util.Map;
 import org.interpss.datamodel.bean.BaseJSONBean;
 import org.interpss.datamodel.bean.BaseJSONUtilBean;
 import org.interpss.datamodel.bean.BaseNetBean;
+import org.interpss.datamodel.bean.DefaultExtBean;
 
 import com.interpss.common.util.NetUtilFunc;
 
@@ -43,13 +44,13 @@ import com.interpss.common.util.NetUtilFunc;
  * @param <TBus> template for AclfBusBean
  * @param <TBra> template for AclfBranchBean
  */
-public class BaseAclfNetBean<TBus extends AclfBusBean<TExt>, TBra extends AclfBranchBean<TExt>, TExt extends BaseJSONUtilBean> extends BaseNetBean<TExt> {
+public class BaseAclfNetBean<TBus extends AclfBusBean<TBusExt>, TBra extends AclfBranchBean<TBraExt>, TBusExt extends BaseJSONUtilBean, TBraExt extends BaseJSONUtilBean> extends BaseNetBean {
 	
 	private List<TBus> bus_list;					// bus result bean list
-	private Map<String,TBus> busIdMapper;
+	private transient Map<String,TBus> busIdMapper;
 	
 	private List<TBra> branch_list;                // branch result bean list
-	private Map<String,TBra> branchIdMapper;
+	private transient Map<String,TBra> branchIdMapper;
 	
 	public BaseAclfNetBean() { 
 		bus_list = new ArrayList<TBus>(); 
@@ -76,10 +77,10 @@ public class BaseAclfNetBean<TBus extends AclfBusBean<TExt>, TBra extends AclfBr
 		this.branchIdMapper.put(branch.id, (TBra)branch);		
 	}
 	
-	@Override public int compareTo(BaseJSONBean<TExt> b) {
+	@Override public int compareTo(BaseJSONBean<DefaultExtBean> b) {
 		int eql = super.compareTo(b);
 		
-		BaseAclfNetBean<TBus,TBra,TExt> netBean = (BaseAclfNetBean<TBus,TBra, TExt>)b;
+		BaseAclfNetBean<TBus,TBra,TBusExt,TBraExt> netBean = (BaseAclfNetBean<TBus,TBra, TBusExt, TBraExt>)b;
 
 		for (TBus bus : this.bus_list) 
 			if (bus.compareTo(netBean.getBus(bus.id)) != 0) 
@@ -96,15 +97,22 @@ public class BaseAclfNetBean<TBus extends AclfBusBean<TExt>, TBra extends AclfBr
 		return this.busIdMapper.get(busId);
 	}
 	
-	public AclfBusBean<TExt> createAclfBusBean(String busId) {
-		AclfBusBean<TExt> bus = new AclfBusBean<>();
+	public AclfBusBean<TBusExt> createAclfBusBean(String busId) {
+		AclfBusBean<TBusExt> bus = new AclfBusBean<>();
 		bus.id = busId;
 		this.addBusBean((TBus)bus);
 		return bus;
 	}
 	
-	public AclfBranchBean<TExt> createAclfBranchBean(String fromId, String toId, String cirId) {
-		AclfBranchBean<TExt> bra = new AclfBranchBean<>();
+	public AclfBusResultBean<TBusExt> createAclfBBusResultBean(String busId) {
+		AclfBusResultBean<TBusExt> bus = new AclfBusResultBean<>();
+		bus.id = busId;
+		this.addBusBean((TBus)bus);
+		return bus;
+	}
+	
+	public AclfBranchBean<TBraExt> createAclfBranchBean(String fromId, String toId, String cirId) {
+		AclfBranchBean<TBraExt> bra = new AclfBranchBean<>();
 		bra.f_id = fromId;
 		bra.t_id = toId;
 		bra.cir_id = cirId;
@@ -113,8 +121,8 @@ public class BaseAclfNetBean<TBus extends AclfBusBean<TExt>, TBra extends AclfBr
 		return bra;
 	}
 	
-	public AclfBranchResultBean<TExt> createAclfBranchResultBean(String fromId, String toId, String cirId) {
-		AclfBranchResultBean<TExt> bra = new AclfBranchResultBean<>();
+	public AclfBranchResultBean<TBraExt> createAclfBranchResultBean(String fromId, String toId, String cirId) {
+		AclfBranchResultBean<TBraExt> bra = new AclfBranchResultBean<>();
 		bra.f_id = fromId;
 		bra.t_id = toId;
 		bra.cir_id = cirId;

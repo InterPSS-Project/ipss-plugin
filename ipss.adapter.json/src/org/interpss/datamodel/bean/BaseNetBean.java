@@ -34,7 +34,7 @@ import org.interpss.numeric.util.NumericUtil;
  * @author mzhou
  *
  */
-public abstract class BaseNetBean<TExt extends BaseJSONUtilBean> extends BaseJSONBean<TExt> {
+public abstract class BaseNetBean extends BaseJSONBean<DefaultExtBean> {
 	public double base_kva; // network base kva
 
 	/**
@@ -50,10 +50,10 @@ public abstract class BaseNetBean<TExt extends BaseJSONUtilBean> extends BaseJSO
 	
 	public BaseNetBean() {  }
 	
-	@Override public int compareTo(BaseJSONBean<TExt> b) {
+	@Override public int compareTo(BaseJSONBean<DefaultExtBean> b) {
 		int eql = super.compareTo(b);
 		
-		BaseNetBean<TExt> bean = (BaseNetBean<TExt>)b;
+		BaseNetBean bean = (BaseNetBean)b;
 
 		String str = "ID: " + this.id + " BaseNetBean.";
 		
