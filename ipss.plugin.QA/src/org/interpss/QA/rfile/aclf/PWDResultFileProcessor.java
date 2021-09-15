@@ -28,7 +28,7 @@ public class PWDResultFileProcessor extends BaseResultFileProcessor {
 	}
 	
 	public PWDResultFileProcessor() {
-		this.qaResultSet = new AclfNetResultBean<DefaultExtBean>();
+		this.qaResultSet = new AclfNetResultBean<DefaultExtBean, DefaultExtBean>();
 		this.qaResultSet.base_kva = 100000.0;
 	}
 	
