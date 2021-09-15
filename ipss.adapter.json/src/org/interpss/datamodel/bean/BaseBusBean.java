@@ -25,7 +25,7 @@ package org.interpss.datamodel.bean;
 
 import java.util.List;
 
-import org.interpss.datamodel.bean.datatype.ComplexBean;
+import org.interpss.datamodel.bean.datatype.ComplexValueBean;
 import org.interpss.numeric.util.NumericUtil;
 
 /**
@@ -34,7 +34,7 @@ import org.interpss.numeric.util.NumericUtil;
  * @author mzhou
  *
  */
-public abstract class BaseBusBean extends BaseJSONBean {
+public abstract class BaseBusBean<TExt extends BaseJSONUtilBean> extends BaseJSONBean<TExt> {
 		
 	public long 
 	    number;    				// bus number
@@ -48,7 +48,7 @@ public abstract class BaseBusBean extends BaseJSONBean {
 	    vmax = 1.1,				// bus voltage upper limit
 	    vmin = 0.9;				// bus voltage lower limit
 		
-	public ComplexBean
+	public ComplexValueBean
 	    gen, 					// bus generation
 	    load, 					// bus load
 	    shunt;					// bus shunt Y
@@ -63,10 +63,10 @@ public abstract class BaseBusBean extends BaseJSONBean {
 		
 	public BaseBusBean() {}
 	
-	@Override public int compareTo(BaseJSONBean b) {
+	@Override public int compareTo(BaseJSONBean<TExt> b) {
 		int eql = super.compareTo(b);
 		
-		BaseBusBean bean = (BaseBusBean)b;
+		BaseBusBean<TExt> bean = (BaseBusBean<TExt>)b;
 
 		String str = "ID: " + this.id + " BaseBusBean.";
 		

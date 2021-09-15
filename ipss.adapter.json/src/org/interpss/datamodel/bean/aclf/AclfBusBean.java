@@ -27,8 +27,9 @@ import java.util.List;
 
 import org.interpss.datamodel.bean.BaseBusBean;
 import org.interpss.datamodel.bean.BaseJSONBean;
+import org.interpss.datamodel.bean.BaseJSONUtilBean;
 import org.interpss.datamodel.bean.aclf.adj.SwitchShuntBean;
-import org.interpss.datamodel.bean.datatype.ComplexBean;
+import org.interpss.datamodel.bean.datatype.ComplexValueBean;
 import org.interpss.numeric.util.NumericUtil;
 
 /**
@@ -37,7 +38,7 @@ import org.interpss.numeric.util.NumericUtil;
  * @author mzhou
  *
  */
-public class AclfBusBean  extends BaseBusBean {	
+public class AclfBusBean<TExt extends BaseJSONUtilBean>  extends BaseBusBean<TExt> {	
 
 	/**
 	 * bus generator type code 
@@ -56,7 +57,7 @@ public class AclfBusBean  extends BaseBusBean {
 	public LoadCode 
 		load_code = LoadCode.NonLoad;				// bus load code	
 	
-	public ComplexBean
+	public ComplexValueBean
     	lfGenResult, 					// bus load flow generation result
     	lfLoadResult; 					// bus load flow load result
     
@@ -73,16 +74,16 @@ public class AclfBusBean  extends BaseBusBean {
 	public String remoteVControlBusId = "";  // remote control bus id	
 	
 	
-	public SwitchShuntBean switchShunt; // switch shunt bean connected to the bus
+	public SwitchShuntBean<TExt> switchShunt; // switch shunt bean connected to the bus
 	
 		
 	public AclfBusBean() {}	
 		
 	
-	@Override public int compareTo(BaseJSONBean b) {
+	@Override public int compareTo(BaseJSONBean<TExt> b) {
 		int eql = super.compareTo(b);
 		
-		AclfBusBean bean = (AclfBusBean)b;
+		AclfBusBean<TExt> bean = (AclfBusBean<TExt>)b;
 		
 		String str = "ID: " + this.id + " AclfBusBean.";
 

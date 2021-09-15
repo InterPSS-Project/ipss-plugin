@@ -3,6 +3,7 @@ package org.interpss.datamodel.bean.aclf.adj;
 import java.util.List;
 
 import org.interpss.datamodel.bean.BaseJSONBean;
+import org.interpss.datamodel.bean.BaseJSONUtilBean;
 
 /**
  * bean class for storing qbank info
@@ -10,16 +11,16 @@ import org.interpss.datamodel.bean.BaseJSONBean;
  * @author sHou
  *
  */
-public class QBankBean extends BaseJSONBean {
+public class QBankBean<TExt extends BaseJSONUtilBean> extends BaseJSONBean<TExt> {
 	
 	public int step;
 	
 	public double UnitQMvar;
 
-	@Override public int compareTo(BaseJSONBean b) {
+	@Override public int compareTo(BaseJSONBean<TExt> b) {
 		int eql = super.compareTo(b);
 		
-		QBankBean bean = (QBankBean)b;
+		QBankBean<TExt> bean = (QBankBean<TExt>)b;
 		
 		String str = "ID: " + this.id + " QBankBean.";
 		

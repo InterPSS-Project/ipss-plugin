@@ -32,6 +32,7 @@ import org.ieee.odm.common.ODMLogger;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.IpssCorePlugin;
 import org.interpss.datamodel.bean.BaseBranchBean.BranchCode;
+import org.interpss.datamodel.bean.DefaultExtBean;
 import org.interpss.datamodel.bean.aclf.AclfBranchResultBean;
 import org.interpss.datamodel.bean.aclf.AclfBusBean;
 import org.interpss.datamodel.bean.aclf.AclfNetBean;
@@ -69,10 +70,10 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 		SampleTestingCases.load_LF_5BusSystem(net);
 		
 		// map AclfNet to AclfNetBean
-		AclfNetBean netBean = new AclfNet2AclfBeanMapper().map2Model(net);		
+		AclfNetBean<DefaultExtBean> netBean = new AclfNet2AclfBeanMapper<DefaultExtBean>().map2Model(net);		
 		
 		// map AclfNetBean back to an AclfNet object
-		AclfNetwork aclfNet = new AclfBean2AclfNetMapper()
+		AclfNetwork aclfNet = new AclfBean2AclfNetMapper<DefaultExtBean>()
 			.map2Model(netBean)
 			.getAclfNet();
 		
@@ -86,7 +87,7 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.57943)<0.0001);
 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-2.2994)<0.0001);
 		
-		AclfNetResultBean aclfResult = new AclfNet2ResultBeanMapper()
+		AclfNetResultBean<DefaultExtBean> aclfResult = new AclfNet2ResultBeanMapper<DefaultExtBean>()
 				.map2Model(aclfNet);
 		//System.out.println(new Gson().toJson(aclfResult));
 		

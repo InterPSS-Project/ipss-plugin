@@ -3,8 +3,9 @@ package org.interpss.datamodel.bean.dclf;
 import java.util.List;
 
 import org.interpss.datamodel.bean.BaseJSONBean;
+import org.interpss.datamodel.bean.BaseJSONUtilBean;
 
-public class CAResultBean extends BaseJSONBean {
+public class CAResultBean<TExt extends BaseJSONUtilBean> extends BaseJSONBean<TExt> {
 	
 	public String contId;
 	

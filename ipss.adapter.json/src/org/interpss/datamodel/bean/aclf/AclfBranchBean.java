@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.interpss.datamodel.bean.BaseBranchBean;
 import org.interpss.datamodel.bean.BaseJSONBean;
+import org.interpss.datamodel.bean.BaseJSONUtilBean;
 import org.interpss.datamodel.bean.aclf.adj.PsXfrTapControlBean;
 import org.interpss.datamodel.bean.aclf.adj.XfrTapControlBean;
 import org.interpss.datamodel.bean.datatype.BranchValueBean;
@@ -37,22 +38,22 @@ import org.interpss.datamodel.bean.datatype.BranchValueBean;
  * @author mzhou
  *
  */
-public class AclfBranchBean extends BaseBranchBean {
+public class AclfBranchBean<TExt extends BaseJSONUtilBean> extends BaseBranchBean<TExt> {
 	
 	public BranchValueBean 
 			ratio = new BranchValueBean(1.0,1.0),			// xfr branch turn ratio, it is assumed on the from bus side per PSSE
 			ang = new BranchValueBean(0.0,0.0);				// PsXfr shifting angle, in rad, it is assumed on the from bus side per PSSE
 	
-	public XfrTapControlBean xfrTapControl;					// control bean for xfr
+	public XfrTapControlBean<TExt> xfrTapControl;					// control bean for xfr
 	
-	public PsXfrTapControlBean psXfrTapControl;				// control bean for phase shiter control
+	public PsXfrTapControlBean<TExt> psXfrTapControl;				// control bean for phase shiter control
 	
 	public AclfBranchBean() { }
 	
-	@Override public int compareTo(BaseJSONBean b) {
+	@Override public int compareTo(BaseJSONBean<TExt> b) {
 		int eql = super.compareTo(b);
 		
-		AclfBranchBean bean = (AclfBranchBean)b;
+		AclfBranchBean<TExt> bean = (AclfBranchBean<TExt>)b;
 
 		String str = "ID: " + this.id + " AclfBranchBean.";
 		

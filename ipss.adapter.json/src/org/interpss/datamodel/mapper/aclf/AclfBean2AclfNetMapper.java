@@ -28,6 +28,7 @@ import static com.interpss.common.util.IpssLogger.ipssLogger;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.datamodel.bean.BaseBranchBean;
+import org.interpss.datamodel.bean.BaseJSONUtilBean;
 import org.interpss.datamodel.bean.aclf.AclfBranchBean;
 import org.interpss.datamodel.bean.aclf.AclfBusBean;
 import org.interpss.datamodel.bean.aclf.AclfNetBean;
@@ -75,7 +76,7 @@ import com.interpss.simu.SimuCtxType;
  * @author mzhou
  *
  */
-public class AclfBean2AclfNetMapper extends AbstractMapper<AclfNetBean, SimuContext> {
+public class AclfBean2AclfNetMapper<TExt extends BaseJSONUtilBean> extends AbstractMapper<AclfNetBean<TExt>, SimuContext> {
 	/**
 	 * constructor
 	 */
@@ -88,7 +89,7 @@ public class AclfBean2AclfNetMapper extends AbstractMapper<AclfNetBean, SimuCont
 	 * @param netBean AclfNetBean object
 	 * @return SimuContext object
 	 */
-	@Override public SimuContext map2Model(AclfNetBean netBean) throws InterpssException {
+	@Override public SimuContext map2Model(AclfNetBean<TExt> netBean) throws InterpssException {
 		final SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.NOT_DEFINED);
 		if (this.map2Model(netBean, simuCtx)) {
   	  		simuCtx.setId("InterPSS_SimuCtx");
@@ -105,7 +106,7 @@ public class AclfBean2AclfNetMapper extends AbstractMapper<AclfNetBean, SimuCont
 	 * @param netBean an AclfNetBean object, representing a aclf base network
 	 * @param simuCtx
 	 */
-	@Override public boolean map2Model(AclfNetBean netBean, SimuContext simuCtx) {
+	@Override public boolean map2Model(AclfNetBean<TExt> netBean, SimuContext simuCtx) {
 		boolean noError = true;
 		simuCtx.setNetType(SimuCtxType.ACLF_NETWORK);
 		AclfNetwork aclfNet = CoreObjectFactory.createAclfNetwork();
@@ -115,11 +116,11 @@ public class AclfBean2AclfNetMapper extends AbstractMapper<AclfNetBean, SimuCont
 		aclfNet.setBaseKva(netBean.base_kva);
 		
 		try {
-			for (AclfBusBean busBean : netBean.getBusBeanList()) {
+			for (AclfBusBean<TExt> busBean : netBean.getBusBeanList()) {
 				mapBusBean(busBean, aclfNet);
 			}
 
-			for (AclfBranchBean branchBean : netBean.getBranchBeanList()) {
+			for (AclfBranchBean<TExt> branchBean : netBean.getBranchBeanList()) {
 				mapBranchBean(branchBean, aclfNet);
 			}
 		} catch (InterpssException e) {
@@ -137,7 +138,7 @@ public class AclfBean2AclfNetMapper extends AbstractMapper<AclfNetBean, SimuCont
 	 * @param busBean AclfBusBean object to be mapped
 	 * @param aclfNet AclfNetwork object
 	 */
-	private void mapBusBean(AclfBusBean busBean, AclfNetwork aclfNet) throws InterpssException {
+	private void mapBusBean(AclfBusBean<TExt> busBean, AclfNetwork aclfNet) throws InterpssException {
 		AclfBus bus = CoreObjectFactory.createAclfBus(busBean.id, aclfNet);
 		bus.setNumber(busBean.number);
 		
@@ -235,7 +236,7 @@ public class AclfBean2AclfNetMapper extends AbstractMapper<AclfNetBean, SimuCont
 		// switch shunt
 		
 		if (busBean.switchShunt != null){
-			SwitchShuntBean ssb = busBean.switchShunt;
+			SwitchShuntBean<TExt> ssb = busBean.switchShunt;
 			
 			try {
 				SwitchedShunt ss = CoreObjectFactory.createSwitchedShunt(bus);
@@ -247,7 +248,7 @@ public class AclfBean2AclfNetMapper extends AbstractMapper<AclfNetBean, SimuCont
 				ss.setControlMode(mode);
 				ss.setDesiredVoltageRange(new LimitType(ssb.vmax, ssb.vmin));
 				ss.setQLimit(new LimitType(ssb.qmax, ssb.qmin));
-				for(QBankBean qbb: ssb.varBankList){
+				for(QBankBean<TExt> qbb: ssb.varBankList){
 					QBank qb = CoreObjectFactory.createQBank(ss);
 					qb.setSteps(qbb.step);
 					qb.setUnitQMvar(qbb.UnitQMvar);
@@ -267,7 +268,7 @@ public class AclfBean2AclfNetMapper extends AbstractMapper<AclfNetBean, SimuCont
 	 * @param branchBean AclfBranchBean object to be mapped
 	 * @param aclfNet AclfNetwork object
 	 */
-	private void mapBranchBean(AclfBranchBean branchBean, AclfNetwork aclfNet) throws InterpssException {
+	private void mapBranchBean(AclfBranchBean<TExt> branchBean, AclfNetwork aclfNet) throws InterpssException {
 		AclfBranch branch = CoreObjectFactory.createAclfBranch();
 		branch.setId(branchBean.id);
 		branch.setName(branchBean.name);
@@ -312,10 +313,10 @@ public class AclfBean2AclfNetMapper extends AbstractMapper<AclfNetBean, SimuCont
 		branch.setRatingMva3(branchBean.mvaRatingC);
 	}	
 	
-	private void setXfrData(AclfBranchBean branchBean, AclfBranch branch,AclfNetwork aclfNet){		
+	private void setXfrData(AclfBranchBean<TExt> branchBean, AclfBranch branch,AclfNetwork aclfNet){		
 		// control/adjustment
 		if(branchBean.xfrTapControl != null){
-			XfrTapControlBean tcb = branchBean.xfrTapControl;
+			XfrTapControlBean<TExt> tcb = branchBean.xfrTapControl;
 			try{
 				if(tcb.controlMode == TapControlModeBean.Bus_Voltage){					
 					TapControl tap = null;
@@ -354,10 +355,10 @@ public class AclfBean2AclfNetMapper extends AbstractMapper<AclfNetBean, SimuCont
 		}
 	}
 	
-	private void setPsXfrData(AclfBranchBean branchBean, AclfBranch branch,AclfNetwork aclfNet){		
+	private void setPsXfrData(AclfBranchBean<TExt> branchBean, AclfBranch branch,AclfNetwork aclfNet){		
 		// control/adjustment
 		if(branchBean.psXfrTapControl != null){
-			PsXfrTapControlBean tcb = branchBean.psXfrTapControl;			
+			PsXfrTapControlBean<TExt> tcb = branchBean.psXfrTapControl;			
 			try{				
 				if(tcb.controlType == TapControlTypeBean.Point_Control){
 					PSXfrPControl psxfr = CoreObjectFactory.createPSXfrPControl(branch, AdjControlType.POINT_CONTROL);

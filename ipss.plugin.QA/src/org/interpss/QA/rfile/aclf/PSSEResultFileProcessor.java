@@ -2,10 +2,11 @@ package org.interpss.QA.rfile.aclf;
 
 import org.interpss.QA.rfile.BaseResultFileProcessor;
 import org.interpss.datamodel.bean.BaseBranchBean.BranchCode;
-import org.interpss.datamodel.bean.aclf.AclfBranchResultBean;
+import org.interpss.datamodel.bean.DefaultExtBean;
+import org.interpss.datamodel.bean.aclf.AclfBranchBean;
 import org.interpss.datamodel.bean.aclf.AclfBusBean;
 import org.interpss.datamodel.bean.aclf.AclfNetResultBean;
-import org.interpss.datamodel.bean.datatype.ComplexBean;
+import org.interpss.datamodel.bean.datatype.ComplexValueBean;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
@@ -188,7 +189,7 @@ xTO  12015 CEBOLLA     69.000  1     -4.8    -0.2     4.8  15                   
 			double busP = this.mva2pu * new Double(lineStr.substring(BusP_Begin, BusP_End)).doubleValue();  // Load as positive direction
 			double busQ = this.mva2pu * new Double(lineStr.substring(BusQ_Begin, BusQ_End)).doubleValue();
 				
-			curRec.gen = new ComplexBean(busP, busQ);
+			curRec.gen = new ComplexValueBean(busP, busQ);
 
 			curRec.info += lineStr + "\n";
 		}
@@ -201,7 +202,7 @@ xTO  12015 CEBOLLA     69.000  1     -4.8    -0.2     4.8  15                   
 			double busP = this.mva2pu * new Double(strAry[2]).doubleValue();  // Load as positive direction
 			double busQ = this.mva2pu * new Double(strAry[3]).doubleValue();
 				
-			curRec.load = new ComplexBean(busP, busQ); 
+			curRec.load = new ComplexValueBean(busP, busQ); 
 
 			curRec.info += lineStr + "\n";
 		}
@@ -213,7 +214,7 @@ xTO  12015 CEBOLLA     69.000  1     -4.8    -0.2     4.8  15                   
 			// TO SHUNT                             0.0   114.7   114.7
 			double shuntQ = new Double(lineStr.substring(43, 51)).doubleValue();
 				
-			curRec.shunt = new ComplexBean(0.0, shuntQ); 
+			curRec.shunt = new ComplexValueBean(0.0, shuntQ); 
 
 			curRec.info += lineStr + "\n";
 		}
@@ -246,7 +247,7 @@ xTO  12015 CEBOLLA     69.000  1     -4.8    -0.2     4.8  15                   
 			
 			String braId = NetUtilFunc.ToBranchId.f(fromId, toId, cirId);
 			boolean existingBranch = this.qaResultSet.getBranch(braId) != null;
-			AclfBranchResultBean braRec = existingBranch ? this.qaResultSet.getBranch(braId) :
+			AclfBranchBean<DefaultExtBean> braRec = existingBranch ? this.qaResultSet.getBranch(braId) :
 											this.qaResultSet.createAclfBranchResultBean(fromId, toId, cirId);
 
 			String tapStr1 = lineStr.substring(Tap_Begin, Tap_End);
