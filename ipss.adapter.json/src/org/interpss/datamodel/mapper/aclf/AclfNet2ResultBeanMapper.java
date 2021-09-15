@@ -25,10 +25,11 @@
 package org.interpss.datamodel.mapper.aclf;
 
 import org.apache.commons.math3.complex.Complex;
+import org.interpss.datamodel.bean.BaseJSONUtilBean;
 import org.interpss.datamodel.bean.aclf.AclfBranchResultBean;
-import org.interpss.datamodel.bean.aclf.AclfBusBean;
+import org.interpss.datamodel.bean.aclf.AclfBusResultBean;
 import org.interpss.datamodel.bean.aclf.AclfNetResultBean;
-import org.interpss.datamodel.bean.datatype.ComplexBean;
+import org.interpss.datamodel.bean.datatype.ComplexValueBean;
 import org.interpss.datamodel.bean.datatype.MismatchResultBean;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
@@ -44,7 +45,7 @@ import com.interpss.core.datatype.Mismatch;
  * 
  * @author mzhou
  */
-public class AclfNet2ResultBeanMapper extends BaseAclfNet2BeanMapper<AclfNetResultBean> {
+public class AclfNet2ResultBeanMapper<TExt extends BaseJSONUtilBean> extends BaseAclfNet2BeanMapper<AclfNetResultBean<TExt>> {
 	/**
 	 * constructor
 	 */
@@ -57,8 +58,8 @@ public class AclfNet2ResultBeanMapper extends BaseAclfNet2BeanMapper<AclfNetResu
 	 * @param aclfNet AclfNetwork object
 	 * @return AclfNetResultBean object
 	 */
-	@Override public AclfNetResultBean map2Model(AclfNetwork aclfNet) throws InterpssException {
-		AclfNetResultBean aclfResult = new AclfNetResultBean();
+	@Override public AclfNetResultBean<TExt> map2Model(AclfNetwork aclfNet) throws InterpssException {
+		AclfNetResultBean<TExt> aclfResult = new AclfNetResultBean<>();
 
 		if (map2Model(aclfNet, aclfResult))
 			return aclfResult;
@@ -72,7 +73,7 @@ public class AclfNet2ResultBeanMapper extends BaseAclfNet2BeanMapper<AclfNetResu
 	 * @param netBean an AclfNetBean object, representing a aclf base network
 	 * @param aclfResult
 	 */
-	@Override public boolean map2Model(AclfNetwork aclfNet, AclfNetResultBean aclfResult) {
+	@Override public boolean map2Model(AclfNetwork aclfNet, AclfNetResultBean<TExt> aclfResult) {
 		boolean noError = true;
 		
 		aclfResult.lf_converge = aclfNet.isLfConverged();
@@ -80,27 +81,27 @@ public class AclfNet2ResultBeanMapper extends BaseAclfNet2BeanMapper<AclfNetResu
 		MismatchResultBean misBean = new MismatchResultBean();
 		Mismatch mis = aclfNet.maxMismatch(AclfMethodType.NR);
 		aclfResult.max_mis = misBean;
-		misBean.err = new ComplexBean(format(mis.maxMis.getReal()), format(mis.maxMis.getImaginary()));
+		misBean.err = new ComplexValueBean(format(mis.maxMis.getReal()), format(mis.maxMis.getImaginary()));
 		misBean.p_bus_id = mis.maxPBus.getId(); 
 		misBean.q_bus_id = mis.maxQBus.getId();
 		
 		Complex gen = aclfNet.totalGeneration(UnitType.PU);
 		Complex load = aclfNet.totalLoad(UnitType.PU);
 		Complex loss = aclfNet.totalLoss(UnitType.PU);
-		aclfResult.gen = new ComplexBean(format(gen));
-		aclfResult.load = new ComplexBean(format(load));
-		aclfResult.loss = new ComplexBean(format(loss));
+		aclfResult.gen = new ComplexValueBean(format(gen));
+		aclfResult.load = new ComplexValueBean(format(load));
+		aclfResult.loss = new ComplexValueBean(format(loss));
 		
 		aclfResult.base_kva = aclfNet.getBaseKva();			
 		
 		for (AclfBus bus : aclfNet.getBusList()) {
-			AclfBusBean bean = new AclfBusBean();
+			AclfBusResultBean<TExt> bean = new AclfBusResultBean<>();
 			aclfResult.addBusBean(bean);
 			mapBaseBus(bus, bean);
 		}
 		
 		for (AclfBranch branch : aclfNet.getBranchList()) {
-			AclfBranchResultBean bean = new AclfBranchResultBean();
+			AclfBranchResultBean<TExt> bean = new AclfBranchResultBean<>();
 			aclfResult.addBranchBean(bean);
 			mapBaseBranch(branch, bean);
 		}
@@ -108,17 +109,17 @@ public class AclfNet2ResultBeanMapper extends BaseAclfNet2BeanMapper<AclfNetResu
 		return noError;
 	}	
 	
-	protected void mapBaseBranch(AclfBranch branch, AclfBranchResultBean bean) {
+	protected void mapBaseBranch(AclfBranch branch, AclfBranchResultBean<TExt> bean) {
 		super.mapBaseBranch(branch, bean);
 		
 		Complex flow = branch.powerFrom2To();
-		bean.flow_f2t = new ComplexBean(format(flow));
+		bean.flow_f2t = new ComplexValueBean(format(flow));
 
 		flow = branch.powerTo2From();
-		bean.flow_t2f = new ComplexBean(format(flow));
+		bean.flow_t2f = new ComplexValueBean(format(flow));
 		
 		Complex loss = branch.loss();
-		bean.loss = new ComplexBean(format(loss));
+		bean.loss = new ComplexValueBean(format(loss));
 		
 		bean.cur = format2(branch.current(UnitType.Amp));
 	}	
