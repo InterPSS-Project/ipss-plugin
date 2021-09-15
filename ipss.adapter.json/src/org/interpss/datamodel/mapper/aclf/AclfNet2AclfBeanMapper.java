@@ -39,7 +39,7 @@ import com.interpss.core.aclf.AclfNetwork;
  * 
  * 
  */
-public class AclfNet2AclfBeanMapper<TExt extends BaseJSONUtilBean> extends BaseAclfNet2BeanMapper<AclfNetBean<TExt>> {
+public class AclfNet2AclfBeanMapper<TBusExt extends BaseJSONUtilBean, TBraExt extends BaseJSONUtilBean> extends BaseAclfNet2BeanMapper<AclfNetBean<TBusExt,TBraExt>> {
 	/**
 	 * constructor
 	 */
@@ -52,8 +52,8 @@ public class AclfNet2AclfBeanMapper<TExt extends BaseJSONUtilBean> extends BaseA
 	 * @param aclfNet AclfNetwork object
 	 * @return AclfNetBean object
 	 */
-	@Override public AclfNetBean<TExt> map2Model(AclfNetwork aclfNet) throws InterpssException {
-		AclfNetBean<TExt> aclfResult = new AclfNetBean<>();
+	@Override public AclfNetBean<TBusExt,TBraExt> map2Model(AclfNetwork aclfNet) throws InterpssException {
+		AclfNetBean<TBusExt,TBraExt> aclfResult = new AclfNetBean<>();
 
 		if (map2Model(aclfNet, aclfResult))
 			return aclfResult;
@@ -68,19 +68,19 @@ public class AclfNet2AclfBeanMapper<TExt extends BaseJSONUtilBean> extends BaseA
 	 * @param AclfNetBean object
 	 * @return false if there is any issue during the mapping process
 	 */
-	@Override public boolean map2Model(AclfNetwork aclfNet, AclfNetBean<TExt> netBean) {
+	@Override public boolean map2Model(AclfNetwork aclfNet, AclfNetBean<TBusExt,TBraExt> netBean) {
 		boolean noError = true;
 		
 		netBean.base_kva = aclfNet.getBaseKva();			
 		
 		for (AclfBus bus : aclfNet.getBusList()) {
-			AclfBusBean<TExt> bean = new AclfBusBean<>();
+			AclfBusBean<TBusExt> bean = new AclfBusBean<>();
 			mapBaseBus(bus, bean);
 			netBean.addBusBean(bean);
 		}
 		
 		for (AclfBranch branch : aclfNet.getBranchList()) {
-			AclfBranchBean<TExt> bean = new AclfBranchBean<>();
+			AclfBranchBean<TBraExt> bean = new AclfBranchBean<>();
 			mapBaseBranch(branch, bean);
 			netBean.addBranchBean(bean);
 		}
