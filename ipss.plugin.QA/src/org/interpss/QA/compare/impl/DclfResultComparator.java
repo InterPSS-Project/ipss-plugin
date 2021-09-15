@@ -32,15 +32,15 @@ import com.interpss.core.net.Bus;
  * @author mzhou
  *
  */
-public class DclfResultComparator extends NetModelComparator<DclfBusResultBean<DefaultExtBean>, DclfBranchResultBean<DefaultExtBean>, DefaultExtBean> {
+public class DclfResultComparator extends NetModelComparator<DclfBusResultBean<DefaultExtBean>, DclfBranchResultBean<DefaultExtBean>, DefaultExtBean, DefaultExtBean> {
 	private SenAnalysisAlgorithm algo = null;
 	
 	public DclfResultComparator() {
-		this.qaResultSet = new  DclfNetResultBean<DefaultExtBean>();
+		this.qaResultSet = new  DclfNetResultBean<DefaultExtBean, DefaultExtBean>();
 		this.qaResultSet.base_kva = 100000.0;
 	}
 	
-	public DclfResultComparator(AclfNetwork net, DclfNetResultBean<DefaultExtBean> qaResultSet) {
+	public DclfResultComparator(AclfNetwork net, DclfNetResultBean<DefaultExtBean, DefaultExtBean> qaResultSet) {
 		super(net, qaResultSet);
 	}
 	
@@ -60,7 +60,7 @@ public class DclfResultComparator extends NetModelComparator<DclfBusResultBean<D
 	 * @param algo
 	 */
 	public DclfResultComparator setBaseResult(SenAnalysisAlgorithm algo) {
-		new DclfResultBeanMapper().map2Model(algo, (DclfNetResultBean<DefaultExtBean>)this.qaResultSet);
+		new DclfResultBeanMapper().map2Model(algo, (DclfNetResultBean<DefaultExtBean,DefaultExtBean>)this.qaResultSet);
 		
 		return this;
 	}	

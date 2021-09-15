@@ -31,7 +31,7 @@ import com.interpss.core.net.Bus;
  * @param <TBusRec>
  * @param <TBranchRec>
  */
-public class NetModelComparator<TBus extends AclfBusBean<TExt>, TBra extends AclfBranchBean<TExt>, TExt extends BaseJSONUtilBean> {
+public class NetModelComparator<TBus extends AclfBusBean<TBusExt>, TBra extends AclfBranchBean<TBraExt>, TBusExt extends BaseJSONUtilBean, TBraExt extends BaseJSONUtilBean> {
 	public static boolean CompareBus = true;
 	public static boolean CompareBusVolt = true;
 	public static boolean CompareBusPower = true;
@@ -51,7 +51,7 @@ public class NetModelComparator<TBus extends AclfBusBean<TExt>, TBra extends Acl
 	
 	protected ResultFileType resultType;
 	
-	protected BaseAclfNetBean<TBus, TBra, TExt> qaResultSet = null;
+	protected BaseAclfNetBean<TBus, TBra, TBusExt, TBraExt> qaResultSet = null;
 	/*
 	private Hashtable<String,String> busLookupTable = new Hashtable<>();
 	public void setBusLookupTable(Hashtable<String,String> table) { this.busLookupTable = table; }
@@ -68,7 +68,7 @@ public class NetModelComparator<TBus extends AclfBusBean<TExt>, TBra extends Acl
 		this.net = net;
 	}
 
-	public NetModelComparator(AclfNetwork net, BaseAclfNetBean<TBus, TBra, TExt> qaResultSet) {
+	public NetModelComparator(AclfNetwork net, BaseAclfNetBean<TBus, TBra, TBusExt, TBraExt> qaResultSet) {
 		this.net = net;
 		this.qaResultSet = qaResultSet;
 	}
@@ -115,7 +115,7 @@ public class NetModelComparator<TBus extends AclfBusBean<TExt>, TBra extends Acl
 		//  bus info should match
 		for (AclfBus bus : net.getBusList()) {
 			if (!bypassBus(bus.getId())) {
-				AclfBusBean<TExt> rec = this.qaResultSet.getBus(bus.getId());
+				AclfBusBean<TBusExt> rec = this.qaResultSet.getBus(bus.getId());
 				if (bus.isActive() && rec == null)
 					addErrMsg("Active Bus not found in the result file, " + bus.getId());
 				else {
@@ -238,7 +238,7 @@ public class NetModelComparator<TBus extends AclfBusBean<TExt>, TBra extends Acl
 	private void setBusVoltage() {
 		for (Bus b : net.getBusList()) {
 			AclfBus bus = (AclfBus)b;
-			AclfBusBean<TExt> rec = this.qaResultSet.getBus(b.getId());
+			AclfBusBean<TBusExt> rec = this.qaResultSet.getBus(b.getId());
 			if (rec == null) {
 				if (b.isActive() && !is3WXfrStarBus(b.getId())) 
 					IpssLogger.getLogger().warning("Active AclfNet Bus not found in QAResult, " + b.getId() + " # of connected active branches " + b.nActiveBranchConnected());
