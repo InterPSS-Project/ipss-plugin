@@ -2,8 +2,8 @@ package org.interpss.datamodel.bean.dclf;
 
 import java.util.List;
 
-import org.interpss.datamodel.bean.BaseJSONBean;
-import org.interpss.datamodel.bean.BaseJSONUtilBean;
+import org.interpss.datamodel.bean.base.BaseJSONBean;
+import org.interpss.datamodel.bean.base.BaseJSONUtilBean;
 
 public class GSFResultBean<TExt extends BaseJSONUtilBean> extends BaseJSONBean<TExt> {
 	

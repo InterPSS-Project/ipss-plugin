@@ -25,11 +25,10 @@ package org.interpss.datamodel.bean.aclf;
 
 import java.util.List;
 
-import org.interpss.datamodel.bean.BaseBusBean;
-import org.interpss.datamodel.bean.BaseJSONBean;
-import org.interpss.datamodel.bean.BaseJSONUtilBean;
 import org.interpss.datamodel.bean.aclf.adj.SwitchShuntBean;
-import org.interpss.datamodel.bean.datatype.ComplexValueBean;
+import org.interpss.datamodel.bean.base.BaseBusBean;
+import org.interpss.datamodel.bean.base.BaseJSONBean;
+import org.interpss.datamodel.bean.base.BaseJSONUtilBean;
 import org.interpss.numeric.util.NumericUtil;
 
 /**
@@ -56,10 +55,6 @@ public class AclfBusBean<TExt extends BaseJSONUtilBean>  extends BaseBusBean<TEx
 	
 	public LoadCode 
 		load_code = LoadCode.NonLoad;				// bus load code	
-	
-	public ComplexValueBean
-    	lfGenResult, 					// bus load flow generation result
-    	lfLoadResult; 					// bus load flow load result
     
 	public double
 		vDesired_mag= 1.0,          	// desired bus voltage in pu		
@@ -115,11 +110,6 @@ public class AclfBusBean<TExt extends BaseJSONUtilBean>  extends BaseBusBean<TEx
 		
 		if(this.switchShunt != null && bean.switchShunt != null)		
 			if(this.switchShunt.compareTo(bean.switchShunt) != 0 ) eql = 1;
-		
-		if (this.lfGenResult.compareTo(bean.lfGenResult) != 0) {
-			logCompareMsg(str + "lfGenResult is not equal"); eql = 1; }
-		if (this.lfLoadResult.compareTo(bean.lfLoadResult) != 0) {
-			logCompareMsg(str + "lfLoadResult is not equal"); eql = 1; }
 
 		return eql;
 	}	

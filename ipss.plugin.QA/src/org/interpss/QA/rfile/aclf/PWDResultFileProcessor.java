@@ -5,12 +5,12 @@ import static com.interpss.common.util.NetUtilFunc.ToBranchId;
 
 import org.interpss.QA.rfile.BaseResultFileProcessor;
 import org.interpss.QA.rfile.QAFileReader;
-import org.interpss.datamodel.bean.BaseBranchBean;
-import org.interpss.datamodel.bean.DefaultExtBean;
 import org.interpss.datamodel.bean.aclf.AclfBranchBean;
-import org.interpss.datamodel.bean.aclf.AclfBranchResultBean;
 import org.interpss.datamodel.bean.aclf.AclfBusBean;
-import org.interpss.datamodel.bean.aclf.AclfNetResultBean;
+import org.interpss.datamodel.bean.aclf.ext.AclfBranchResultBean;
+import org.interpss.datamodel.bean.aclf.ext.AclfNetResultBean;
+import org.interpss.datamodel.bean.base.BaseBranchBean;
+import org.interpss.datamodel.bean.base.DefaultExtBean;
 import org.interpss.datamodel.bean.datatype.ComplexValueBean;
 
 import com.interpss.common.exp.InterpssException;

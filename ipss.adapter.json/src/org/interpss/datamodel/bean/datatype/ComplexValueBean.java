@@ -25,7 +25,7 @@
 package org.interpss.datamodel.bean.datatype;
 
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.datamodel.bean.BaseJSONBean;
+import org.interpss.datamodel.bean.base.BaseJSONBean;
 import org.interpss.numeric.util.NumericUtil;
 
 import com.interpss.common.util.IpssLogger;

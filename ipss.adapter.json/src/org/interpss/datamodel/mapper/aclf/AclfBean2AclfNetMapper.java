@@ -27,8 +27,6 @@ package org.interpss.datamodel.mapper.aclf;
 import static com.interpss.common.util.IpssLogger.ipssLogger;
 
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.datamodel.bean.BaseBranchBean;
-import org.interpss.datamodel.bean.BaseJSONUtilBean;
 import org.interpss.datamodel.bean.aclf.AclfBranchBean;
 import org.interpss.datamodel.bean.aclf.AclfBusBean;
 import org.interpss.datamodel.bean.aclf.AclfNetBean;
@@ -38,6 +36,8 @@ import org.interpss.datamodel.bean.aclf.adj.PsXfrTapControlBean;
 import org.interpss.datamodel.bean.aclf.adj.QBankBean;
 import org.interpss.datamodel.bean.aclf.adj.SwitchShuntBean;
 import org.interpss.datamodel.bean.aclf.adj.SwitchShuntBean.VarCompensatorControlModeBean;
+import org.interpss.datamodel.bean.base.BaseBranchBean;
+import org.interpss.datamodel.bean.base.BaseJSONUtilBean;
 import org.interpss.datamodel.bean.aclf.adj.XfrTapControlBean;
 import org.interpss.numeric.datatype.LimitType;
 
@@ -76,7 +76,10 @@ import com.interpss.simu.SimuCtxType;
  * @author mzhou
  *
  */
-public class AclfBean2AclfNetMapper<TBusExt extends BaseJSONUtilBean, TBraExt extends BaseJSONUtilBean> extends AbstractMapper<AclfNetBean<TBusExt, TBraExt>, SimuContext> {
+public class AclfBean2AclfNetMapper<TBusExt extends BaseJSONUtilBean, 
+                                    TBraExt extends BaseJSONUtilBean,
+                                    TNetExt extends BaseJSONUtilBean> 
+                                            extends AbstractMapper<AclfNetBean<TBusExt, TBraExt, TNetExt>, SimuContext> {
 	/**
 	 * constructor
 	 */
@@ -89,7 +92,7 @@ public class AclfBean2AclfNetMapper<TBusExt extends BaseJSONUtilBean, TBraExt ex
 	 * @param netBean AclfNetBean object
 	 * @return SimuContext object
 	 */
-	@Override public SimuContext map2Model(AclfNetBean<TBusExt, TBraExt> netBean) throws InterpssException {
+	@Override public SimuContext map2Model(AclfNetBean<TBusExt, TBraExt, TNetExt> netBean) throws InterpssException {
 		final SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.NOT_DEFINED);
 		if (this.map2Model(netBean, simuCtx)) {
   	  		simuCtx.setId("InterPSS_SimuCtx");
@@ -106,7 +109,7 @@ public class AclfBean2AclfNetMapper<TBusExt extends BaseJSONUtilBean, TBraExt ex
 	 * @param netBean an AclfNetBean object, representing a aclf base network
 	 * @param simuCtx
 	 */
-	@Override public boolean map2Model(AclfNetBean<TBusExt, TBraExt> netBean, SimuContext simuCtx) {
+	@Override public boolean map2Model(AclfNetBean<TBusExt, TBraExt, TNetExt> netBean, SimuContext simuCtx) {
 		boolean noError = true;
 		simuCtx.setNetType(SimuCtxType.ACLF_NETWORK);
 		AclfNetwork aclfNet = CoreObjectFactory.createAclfNetwork();

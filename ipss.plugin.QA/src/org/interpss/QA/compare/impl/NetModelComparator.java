@@ -7,10 +7,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.datamodel.bean.BaseJSONUtilBean;
 import org.interpss.datamodel.bean.aclf.AclfBranchBean;
 import org.interpss.datamodel.bean.aclf.AclfBusBean;
 import org.interpss.datamodel.bean.aclf.BaseAclfNetBean;
+import org.interpss.datamodel.bean.base.BaseJSONUtilBean;
 import org.interpss.numeric.util.NumericUtil;
 
 import com.interpss.common.exp.InterpssException;

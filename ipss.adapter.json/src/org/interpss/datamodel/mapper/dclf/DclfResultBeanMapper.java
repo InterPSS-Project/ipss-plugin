@@ -7,7 +7,7 @@ import org.interpss.datamodel.bean.datatype.ComplexValueBean;
 import org.interpss.datamodel.bean.dclf.DclfBranchResultBean;
 import org.interpss.datamodel.bean.dclf.DclfBusResultBean;
 import org.interpss.datamodel.bean.dclf.DclfNetResultBean;
-import org.interpss.datamodel.mapper.aclf.BaseAclfNet2BeanMapper;
+import org.interpss.datamodel.mapper.aclf.AclfNet2BeanUtilFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.Number2String;
 
@@ -79,7 +79,7 @@ public class DclfResultBeanMapper extends AbstractMapper<SenAnalysisAlgorithm, D
 	
 	private void mapBaseBus(SenAnalysisAlgorithm algo, AclfBus bus, DclfBusResultBean bean) {
 		// map bus parameters
-		BaseAclfNet2BeanMapper.mapBaseBus(bus, bean);
+		AclfNet2BeanUtilFunc.mapAclfBus(bus, bean);
 		
 		// map Dclf result
 		bean.v_mag = 1.0;
@@ -100,7 +100,7 @@ public class DclfResultBeanMapper extends AbstractMapper<SenAnalysisAlgorithm, D
 	
 	private void mapBaseBranch(SenAnalysisAlgorithm algo,AclfBranch branch, DclfBranchResultBean bean) {
 		// map branch parameters
-		BaseAclfNet2BeanMapper.mapBaseBranch(branch, bean);
+		AclfNet2BeanUtilFunc.mapBaseBranch(branch, bean);
 		
 		// map Dclf result
 		double mwFlow = algo.getBranchFlow(branch, UnitType.PU);		

@@ -1,5 +1,5 @@
 /*
- * @(#)AclfNetBean.java   
+ * @(#)AclfNetResultBean.java   
  *
  * Copyright (C) 2008-2013 www.interpss.org
  *
@@ -22,33 +22,32 @@
  *
  */
 
-package org.interpss.datamodel.bean.aclf;
+package org.interpss.datamodel.bean.aclf.ext;
 
+import org.interpss.datamodel.bean.aclf.BaseAclfNetBean;
 import org.interpss.datamodel.bean.base.BaseJSONBean;
 import org.interpss.datamodel.bean.base.BaseJSONUtilBean;
+import org.interpss.datamodel.bean.base.DefaultExtBean;
+import org.interpss.datamodel.bean.datatype.ComplexValueBean;
+import org.interpss.datamodel.bean.datatype.MismatchResultBean;
 
 /**
- * Bean class for stoing AclfNetwork object info
+ * Bean class for storing AclfNetwork result info
  * 
  * @author mzhou
  *
  */
-public class AclfNetBean<TBusExt extends BaseJSONUtilBean, 
-                         TBraExt extends BaseJSONUtilBean,
-                         TNetExt extends BaseJSONUtilBean> 
-                               extends BaseAclfNetBean<AclfBusBean<TBusExt>, 
-                                                       AclfBranchBean<TBraExt>, 
-                                                       TBusExt, TBraExt, TNetExt> {
-	public AclfNetBean() { 
-		super(); }
+public class AclfNetResultBean extends BaseJSONUtilBean {
+	public boolean
+		lf_converge;				// AC loadflow convergence
 	
-	@Override public int compareTo(BaseJSONBean<TNetExt> b) {
-		int eql = super.compareTo(b);
-		
-		//AclfNetBean bean = (AclfNetBean)b;
-
-		// do nothing
-		
-		return eql;
-	}		
+	public ComplexValueBean
+		gen,						// total gen power
+		load,						// total load power
+		loss;						// total network power loss
+	
+	public MismatchResultBean
+		max_mis;					// max mismatch
+	
+	public AclfNetResultBean() { super(); }
 }

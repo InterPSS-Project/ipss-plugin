@@ -24,6 +24,7 @@
 package org.interpss.datamodel.util;
 
 import org.interpss.datamodel.bean.aclf.AclfNetBean;
+import org.interpss.datamodel.bean.base.DefaultExtBean;
 
 /**
  * Default AclfNet comparator implementation.
@@ -31,13 +32,13 @@ import org.interpss.datamodel.bean.aclf.AclfNetBean;
  * @author mzhou
  *
  */
-public class DefaultAclfNetBeanComparator extends BaseNetBeanComparator<AclfNetBean> {
+public class DefaultAclfNetBeanComparator extends BaseNetBeanComparator<AclfNetBean<DefaultExtBean,DefaultExtBean,DefaultExtBean>> {
 	
 	public DefaultAclfNetBeanComparator(CompareLog opt) {
 		super(opt);
 	}
 	
-	@Override public int compare(AclfNetBean net1, AclfNetBean net2) {
+	@Override public int compare(AclfNetBean<DefaultExtBean,DefaultExtBean,DefaultExtBean> net1, AclfNetBean<DefaultExtBean,DefaultExtBean,DefaultExtBean> net2) {
 		super.compare(net1, net2);
 		
 		return net1.compareTo(net2);

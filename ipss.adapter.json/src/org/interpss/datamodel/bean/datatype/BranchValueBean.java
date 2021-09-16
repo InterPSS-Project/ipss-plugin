@@ -24,7 +24,7 @@
 
 package org.interpss.datamodel.bean.datatype;
 
-import org.interpss.datamodel.bean.BaseJSONBean;
+import org.interpss.datamodel.bean.base.BaseJSONBean;
 import org.interpss.numeric.util.NumericUtil;
 
 import com.interpss.common.util.IpssLogger;
