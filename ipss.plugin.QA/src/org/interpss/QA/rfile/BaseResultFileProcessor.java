@@ -1,5 +1,6 @@
 package org.interpss.QA.rfile;
 
+import org.interpss.datamodel.bean.aclf.AclfNetBean;
 import org.interpss.datamodel.bean.aclf.ext.AclfNetResultBean;
 import org.interpss.util.ITextFileProcessor;
 
@@ -19,10 +20,10 @@ public abstract class BaseResultFileProcessor implements ITextFileProcessor {
 
 	protected Version version;
 	
-	protected AclfNetResultBean qaResultSet = null;
+	protected AclfNetBean qaSet = null;
 
-	public AclfNetResultBean getQAResultSet() {
-		return this.qaResultSet;
+	public AclfNetBean getQAResultSet() {
+		return this.qaSet;
 	}
 	
 	protected double getDbl(String str) {
