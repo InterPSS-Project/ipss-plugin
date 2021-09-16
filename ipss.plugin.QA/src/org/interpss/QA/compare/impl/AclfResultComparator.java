@@ -1,12 +1,12 @@
 package org.interpss.QA.compare.impl;
 
 import org.apache.commons.math3.complex.Complex;
+import org.interpss.datamodel.bean.aclf.AclfBranchBean;
 import org.interpss.datamodel.bean.aclf.AclfBusBean;
+import org.interpss.datamodel.bean.aclf.BaseAclfNetBean;
 import org.interpss.datamodel.bean.aclf.ext.AclfBranchResultBean;
-import org.interpss.datamodel.bean.aclf.ext.AclfBusResultBean;
-import org.interpss.datamodel.bean.aclf.ext.AclfNetResultBean;
-import org.interpss.datamodel.bean.base.BaseJSONUtilBean;
 import org.interpss.datamodel.bean.base.BaseBranchBean.BranchCode;
+import org.interpss.datamodel.bean.base.BaseJSONUtilBean;
 import org.interpss.datamodel.bean.datatype.ComplexValueBean;
 import org.interpss.numeric.datatype.Unit;
 import org.interpss.numeric.util.NumericUtil;
@@ -23,10 +23,15 @@ import com.interpss.core.net.Bus;
  * @author mzhou
  *
  */
-public class AclfResultComparator<TBusExt extends BaseJSONUtilBean, TBraExt extends BaseJSONUtilBean> extends NetModelComparator<AclfBusResultBean<TBusExt>, AclfBranchResultBean<TBraExt>, TBusExt, TBraExt> {
+public class AclfResultComparator<TBusExt extends BaseJSONUtilBean, 
+                                  TBraExt extends BaseJSONUtilBean,
+                                  TNetExt extends BaseJSONUtilBean> extends NetModelComparator<
+                                         AclfBusBean<TBusExt>, 
+                                         AclfBranchBean<TBraExt>, 
+                                         TBusExt, TBraExt, TNetExt> {
 	public AclfResultComparator() { super(); }
 	
-	public AclfResultComparator(AclfNetwork net, AclfNetResultBean<TBusExt,TBraExt> qaResultSet) {
+	public AclfResultComparator(AclfNetwork net, BaseAclfNetBean<AclfBusBean<TBusExt>,AclfBranchBean<TBraExt>,TBusExt,TBraExt,TNetExt> qaResultSet) {
 		super(net, qaResultSet);
 	}
 	
@@ -57,7 +62,7 @@ public class AclfResultComparator<TBusExt extends BaseJSONUtilBean, TBraExt exte
 		for (Branch b : net.getBranchList()) {
 			AclfBranch branch = (AclfBranch)b;
 			if (branch.isActive()) {
-				AclfBranchResultBean<TBraExt> rec = this.qaResultSet.getBranch(branch.getId());
+				AclfBranchBean<TBraExt> rec = this.qaResultSet.getBranch(branch.getId());
 				if (CompareBranch)
 					compareBranchAclfResult(branch, rec);
 			}
@@ -178,7 +183,7 @@ public class AclfResultComparator<TBusExt extends BaseJSONUtilBean, TBraExt exte
 		}
 	}
 
-	private void compareBranchAclfResult(AclfBranch branch, AclfBranchResultBean<TBraExt> rec) {
+	private void compareBranchAclfResult(AclfBranch branch, AclfBranchBean<TBraExt> rec) {
 		/*
 		 * compare branch type
 		 */

@@ -98,7 +98,7 @@ public class PSSEResultProcessSample extends QATestSetup {
 		// Step-3 : Compare LF result
 		
 		PSSEResultComparator comp = new PSSEResultComparator(net, proc.getQAResultSet());
-		comp.compAclfResult();
+		comp.compAclfResult(); 
 		if (comp.getErrMsgList().size() > 0) {
 			System.out.println(comp.getErrMsgList().toString());
 			//FileUtil.writeText2File("output/neiso/out.txt", comp.getErrMsgList().toString());

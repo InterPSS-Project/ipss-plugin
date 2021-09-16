@@ -80,8 +80,8 @@ import com.interpss.simu.SimuCtxType;
 public abstract class BaseAclfBean2AclfNetMapper<
                      TBusExt extends BaseJSONUtilBean, 
                      TBraExt extends BaseJSONUtilBean,
-                     TNetExt extends BaseJSONUtilBean> 
-                         extends AbstractMapper<BaseAclfNetBean<AclfBusBean<TBusExt>, 
+                     TNetExt extends BaseJSONUtilBean> extends AbstractMapper<
+                                                BaseAclfNetBean<AclfBusBean<TBusExt>, 
                                                                 AclfBranchBean<TBraExt>, 
                                                                 TBusExt, TBraExt, TNetExt>, 
                                                 SimuContext> {
