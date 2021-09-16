@@ -22,10 +22,10 @@
  *
  */
 
-package org.interpss.datamodel.bean.aclf;
+package org.interpss.datamodel.bean.aclf.ext;
 
-import org.interpss.datamodel.bean.BaseJSONBean;
-import org.interpss.datamodel.bean.BaseJSONUtilBean;
+import org.interpss.datamodel.bean.base.BaseJSONUtilBean;
+import org.interpss.datamodel.bean.datatype.ComplexValueBean;
 
 /**
  * Bean class for storing AclfBus result info
@@ -33,12 +33,10 @@ import org.interpss.datamodel.bean.BaseJSONUtilBean;
  * @author mzhou
  *
  */
-public class AclfBusResultBean<TExt extends BaseJSONUtilBean> extends AclfBusBean<TExt> {
+public class AclfBusResultBean extends BaseJSONUtilBean {
+	public ComplexValueBean
+			lfGenResult, 					// bus load flow generation result
+			lfLoadResult; 					// bus load flow load result
 	
 	public AclfBusResultBean() { }
-	
-	@Override public int compareTo(BaseJSONBean<TExt> b) {
-		int eql = super.compareTo(b);
-		return eql;
-	}	
 }

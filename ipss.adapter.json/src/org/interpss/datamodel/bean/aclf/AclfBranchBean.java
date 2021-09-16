@@ -25,11 +25,11 @@ package org.interpss.datamodel.bean.aclf;
 
 import java.util.List;
 
-import org.interpss.datamodel.bean.BaseBranchBean;
-import org.interpss.datamodel.bean.BaseJSONBean;
-import org.interpss.datamodel.bean.BaseJSONUtilBean;
 import org.interpss.datamodel.bean.aclf.adj.PsXfrTapControlBean;
 import org.interpss.datamodel.bean.aclf.adj.XfrTapControlBean;
+import org.interpss.datamodel.bean.base.BaseBranchBean;
+import org.interpss.datamodel.bean.base.BaseJSONBean;
+import org.interpss.datamodel.bean.base.BaseJSONUtilBean;
 import org.interpss.datamodel.bean.datatype.BranchValueBean;
 
 /**
