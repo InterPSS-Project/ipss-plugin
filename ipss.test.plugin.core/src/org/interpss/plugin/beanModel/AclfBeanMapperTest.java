@@ -31,12 +31,14 @@ import java.util.logging.Level;
 import org.ieee.odm.common.ODMLogger;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.IpssCorePlugin;
+import org.interpss.datamodel.bean.aclf.AclfBranchBean;
 import org.interpss.datamodel.bean.aclf.AclfBusBean;
 import org.interpss.datamodel.bean.aclf.AclfNetBean;
 import org.interpss.datamodel.bean.aclf.ext.AclfBranchResultBean;
 import org.interpss.datamodel.bean.aclf.ext.AclfNetResultBean;
-import org.interpss.datamodel.bean.base.DefaultExtBean;
 import org.interpss.datamodel.bean.base.BaseBranchBean.BranchCode;
+import org.interpss.datamodel.mapper.aclf.AclfBean2AclfNetMapper;
+import org.interpss.datamodel.mapper.aclf.AclfNet2AclfBeanMapper;
 import org.interpss.datamodel.mapper.aclf.AclfNet2ResultBeanMapper;
 import org.interpss.datamodel.mapper.base.BaseAclfBean2AclfNetMapper;
 import org.interpss.datamodel.mapper.base.BaseAclfNet2AclfBeanMapper;
@@ -70,11 +72,10 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 		SampleTestingCases.load_LF_5BusSystem(net);
 		
 		// map AclfNet to AclfNetBean
-		AclfNetBean<DefaultExtBean,DefaultExtBean,DefaultExtBean> netBean = 
-				        new BaseAclfNet2AclfBeanMapper<DefaultExtBean,DefaultExtBean,DefaultExtBean>().map2Model(net);		
+		AclfNetBean netBean = new AclfNet2AclfBeanMapper().map2Model(net);		
 		
 		// map AclfNetBean back to an AclfNet object
-		AclfNetwork aclfNet = new BaseAclfBean2AclfNetMapper<DefaultExtBean,DefaultExtBean,DefaultExtBean>()
+		AclfNetwork aclfNet = new AclfBean2AclfNetMapper()
 			.map2Model(netBean)
 			.getAclfNet();
 		
@@ -88,9 +89,10 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.57943)<0.0001);
 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-2.2994)<0.0001);
 		
-		AclfNetResultBean<DefaultExtBean,DefaultExtBean,DefaultExtBean> aclfResult = 
-				    new AclfNet2ResultBeanMapper<DefaultExtBean,DefaultExtBean,DefaultExtBean>()
+		AclfNetBean aclfBean = 
+				    new AclfNet2ResultBeanMapper()
 				    		.map2Model(aclfNet);
+		AclfNetResultBean aclfResult = aclfBean.extension;
 		//System.out.println(new Gson().toJson(aclfResult));
 		
 /*		
@@ -119,7 +121,7 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 		assertTrue(NumericUtil.equals(aclfResult.loss.re, ((500.0+257.94)-(160.0+200.0+370.0))*0.01, 0.0001));
 		//assertTrue(NumericUtil.equals(aclfResult.loss.im, (80.0+100.0+130.0)*0.01, 0.0001));
 
-		for (AclfBusBean bus : aclfResult.getBusBeanList()) {
+		for (AclfBusBean bus : aclfBean.getBusBeanList()) {
 			if (bus.id.equals("5")) {
 				assertTrue(NumericUtil.equals(bus.v_mag, 1.0500, 0.0001));
 				assertTrue(NumericUtil.equals(bus.v_ang, 0.0, 0.0001));
@@ -158,7 +160,7 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 				assertTrue(NumericUtil.equals(bus.load.im, 0.8, 0.0001));			}
 		}
 		
-		for (AclfBranchResultBean bra : aclfResult.getBranchBeanList()) {
+		for (AclfBranchBean<AclfBranchResultBean> bra : aclfBean.getBranchBeanList()) {
 			if (bra.id.equals("1->2(1)")) {
 				assertTrue(bra.bra_code == BranchCode.Line);
 				/*
@@ -166,11 +168,12 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 				bra.flow_t2f;   158.45    67.26   7.387
 				bra.cur;
 				*/
-				assertTrue(NumericUtil.equals(bra.flow_f2t.re, -1.4662, 0.0001));
-				assertTrue(NumericUtil.equals(bra.flow_f2t.im, -0.4091, 0.0001));
-				assertTrue(NumericUtil.equals(bra.flow_t2f.re,  1.5845, 0.0001));
-				assertTrue(NumericUtil.equals(bra.flow_t2f.im,  0.6726, 0.0001));
-				assertTrue(NumericUtil.equals(bra.cur,  7387, 1.0));
+				AclfBranchResultBean braResult = bra.extension;
+				assertTrue(NumericUtil.equals(braResult.flow_f2t.re, -1.4662, 0.0001));
+				assertTrue(NumericUtil.equals(braResult.flow_f2t.im, -0.4091, 0.0001));
+				assertTrue(NumericUtil.equals(braResult.flow_t2f.re,  1.5845, 0.0001));
+				assertTrue(NumericUtil.equals(braResult.flow_t2f.im,  0.6726, 0.0001));
+				assertTrue(NumericUtil.equals(braResult.cur,  7387, 1.0));
 			}
 			else if (bra.id.equals("4->2(1)")) {
 				assertTrue(bra.bra_code == BranchCode.Xfr);
@@ -179,11 +182,12 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 				bra.flow_t2f;  -500.00  -142.82  20.183
 				bra.cur;
 				*/
-				assertTrue(NumericUtil.equals(bra.flow_f2t.re,  5.0, 0.0001));
-				assertTrue(NumericUtil.equals(bra.flow_f2t.im,  1.8131, 0.0001));
-				assertTrue(NumericUtil.equals(bra.flow_t2f.re,  -5.0, 0.0001));
-				assertTrue(NumericUtil.equals(bra.flow_t2f.im,  -1.4282, 0.0001));
-				assertTrue(NumericUtil.equals(bra.cur,  20183, 1.0));
+				AclfBranchResultBean braResult = bra.extension;
+				assertTrue(NumericUtil.equals(braResult.flow_f2t.re,  5.0, 0.0001));
+				assertTrue(NumericUtil.equals(braResult.flow_f2t.im,  1.8131, 0.0001));
+				assertTrue(NumericUtil.equals(braResult.flow_t2f.re,  -5.0, 0.0001));
+				assertTrue(NumericUtil.equals(braResult.flow_t2f.im,  -1.4282, 0.0001));
+				assertTrue(NumericUtil.equals(braResult.cur,  20183, 1.0));
 			}
 		}
 	}
@@ -194,15 +198,15 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 		SampleTestingCases.load_LF_5BusSystem(net);
 		
 		// map AclfNet to AclfNetBean
-		AclfNetBean netBean = new BaseAclfNet2AclfBeanMapper().map2Model(net);	
+		AclfNetBean netBean = new AclfNet2AclfBeanMapper().map2Model(net);	
 		
 		// map AclfNetBean back to an AclfNet object
-		AclfNetwork aclfNet = new BaseAclfBean2AclfNetMapper()
+		AclfNetwork aclfNet = new AclfBean2AclfNetMapper()
 			.map2Model(netBean)
 			.getAclfNet();		
 		
 		// map AclfNet to AclfNetBean
-		AclfNetBean netBean1 = new BaseAclfNet2AclfBeanMapper().map2Model(aclfNet);		
+		AclfNetBean netBean1 = new AclfNet2AclfBeanMapper().map2Model(aclfNet);		
 			
 		/*
 		 * compare two AclfNetBean objects
@@ -227,15 +231,15 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
   		
 		
 		// map AclfNet to AclfNetBean
-		AclfNetBean netBean = new BaseAclfNet2AclfBeanMapper().map2Model(net);	
+		AclfNetBean netBean = new AclfNet2AclfBeanMapper().map2Model(net);	
 		
 		// map AclfNetBean back to an AclfNet object
-		AclfNetwork aclfNet = new BaseAclfBean2AclfNetMapper()
+		AclfNetwork aclfNet = new AclfBean2AclfNetMapper()
 			.map2Model(netBean)
 			.getAclfNet();		
 		
 		// map AclfNet to AclfNetBean
-		AclfNetBean netBean1 = new BaseAclfNet2AclfBeanMapper().map2Model(aclfNet);		
+		AclfNetBean netBean1 = new AclfNet2AclfBeanMapper().map2Model(aclfNet);		
 			
 		/*
 		 * compare two AclfNetBean objects
@@ -259,13 +263,13 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 					.getImportedObj();
   		
 		// map AclfNet to AclfNetBean
-		AclfNetBean netBean = new BaseAclfNet2AclfBeanMapper().map2Model(net);
+		AclfNetBean netBean = new AclfNet2AclfBeanMapper().map2Model(net);
 		
 		/*net.accept(CoreObjectFactory.createLfAlgoVisitor());
 		System.out.println(net.net2String());*/
 
 		// map AclfNetBean back to an AclfNet object
-		AclfNetwork aclfNet = new BaseAclfBean2AclfNetMapper().map2Model(netBean)
+		AclfNetwork aclfNet = new AclfBean2AclfNetMapper().map2Model(netBean)
 				.getAclfNet();
 				
 		aclfNet.accept(CoreObjectFactory.createLfAlgoVisitor());  

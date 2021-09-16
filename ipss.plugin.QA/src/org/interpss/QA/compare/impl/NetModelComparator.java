@@ -31,7 +31,11 @@ import com.interpss.core.net.Bus;
  * @param <TBusRec>
  * @param <TBranchRec>
  */
-public class NetModelComparator<TBus extends AclfBusBean<TBusExt>, TBra extends AclfBranchBean<TBraExt>, TBusExt extends BaseJSONUtilBean, TBraExt extends BaseJSONUtilBean> {
+public class NetModelComparator<TBus extends AclfBusBean<TBusExt>, 
+                                TBra extends AclfBranchBean<TBraExt>, 
+                                TBusExt extends BaseJSONUtilBean, 
+                                TBraExt extends BaseJSONUtilBean,
+                                TNetExt extends BaseJSONUtilBean> {
 	public static boolean CompareBus = true;
 	public static boolean CompareBusVolt = true;
 	public static boolean CompareBusPower = true;
@@ -51,7 +55,7 @@ public class NetModelComparator<TBus extends AclfBusBean<TBusExt>, TBra extends 
 	
 	protected ResultFileType resultType;
 	
-	protected BaseAclfNetBean<TBus, TBra, TBusExt, TBraExt> qaResultSet = null;
+	protected BaseAclfNetBean<TBus, TBra, TBusExt, TBraExt, TNetExt> qaResultSet = null;
 	/*
 	private Hashtable<String,String> busLookupTable = new Hashtable<>();
 	public void setBusLookupTable(Hashtable<String,String> table) { this.busLookupTable = table; }
@@ -68,7 +72,7 @@ public class NetModelComparator<TBus extends AclfBusBean<TBusExt>, TBra extends 
 		this.net = net;
 	}
 
-	public NetModelComparator(AclfNetwork net, BaseAclfNetBean<TBus, TBra, TBusExt, TBraExt> qaResultSet) {
+	public NetModelComparator(AclfNetwork net, BaseAclfNetBean<TBus, TBra, TBusExt, TBraExt, TNetExt> qaResultSet) {
 		this.net = net;
 		this.qaResultSet = qaResultSet;
 	}
