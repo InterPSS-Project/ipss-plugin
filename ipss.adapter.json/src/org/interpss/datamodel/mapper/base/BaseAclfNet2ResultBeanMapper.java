@@ -27,13 +27,13 @@ package org.interpss.datamodel.mapper.base;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.datamodel.bean.aclf.AclfBranchBean;
 import org.interpss.datamodel.bean.aclf.AclfBusBean;
-import org.interpss.datamodel.bean.aclf.AclfNetBean;
 import org.interpss.datamodel.bean.aclf.BaseAclfNetBean;
+import org.interpss.datamodel.bean.aclf.ext.AclfBranchResultBean;
+import org.interpss.datamodel.bean.aclf.ext.AclfBusResultBean;
 import org.interpss.datamodel.bean.aclf.ext.AclfNetResultBean;
 import org.interpss.datamodel.bean.base.BaseJSONUtilBean;
 import org.interpss.datamodel.bean.datatype.ComplexValueBean;
 import org.interpss.datamodel.bean.datatype.MismatchResultBean;
-import org.interpss.datamodel.mapper.base.AclfNet2BeanUtilFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.common.exp.InterpssException;
@@ -84,12 +84,15 @@ public abstract class BaseAclfNet2ResultBeanMapper<
 	 * @param netBean an AclfNetBean object, representing a aclf base network
 	 * @param aclfResult
 	 */
+	@SuppressWarnings("unchecked")
 	@Override public boolean map2Model(AclfNetwork aclfNet, BaseAclfNetBean<AclfBusBean<TBusExt>,AclfBranchBean<TBraExt>,TBusExt,TBraExt,TNetExt> aclfBean) {
 		boolean noError = true;
 		
-		super.map2Model(aclfNet, aclfBean);
+		BaseAclfNet2AclfBeanMapper<TBusExt,TBraExt,TNetExt> mapper = new BaseAclfNet2AclfBeanMapper<>();
+		mapper.map2Model(aclfNet, aclfBean);
 		
-		AclfNetResultBean aclfResult = (AclfNetResultBean)aclfBean.extension;
+		AclfNetResultBean aclfResult = new AclfNetResultBean();
+		aclfBean.extension = (TNetExt)aclfResult;
 		
 		aclfResult.lf_converge = aclfNet.isLfConverged();
 		
@@ -109,11 +112,15 @@ public abstract class BaseAclfNet2ResultBeanMapper<
 		
 		for (AclfBus bus : aclfNet.getBusList()) {
 			AclfBusBean<TBusExt> bean = aclfBean.getBus(bus.getId());
+			AclfBusResultBean busResult = new AclfBusResultBean();
+			bean.extension = (TBusExt)busResult;
 			AclfNet2BeanUtilFunc.mapAclfBusResult(bus, bean);
 		}
 		
 		for (AclfBranch branch : aclfNet.getBranchList()) {
 			AclfBranchBean<TBraExt> bean = aclfBean.getBranch(branch.getId());
+			AclfBranchResultBean braResult = new AclfBranchResultBean();
+			bean.extension = (TBraExt)braResult;
 			AclfNet2BeanUtilFunc.mapAclfBranchResult(branch, bean);
 		}
 
