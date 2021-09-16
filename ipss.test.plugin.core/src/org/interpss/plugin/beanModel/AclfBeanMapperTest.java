@@ -37,9 +37,9 @@ import org.interpss.datamodel.bean.aclf.ext.AclfBranchResultBean;
 import org.interpss.datamodel.bean.aclf.ext.AclfNetResultBean;
 import org.interpss.datamodel.bean.base.DefaultExtBean;
 import org.interpss.datamodel.bean.base.BaseBranchBean.BranchCode;
-import org.interpss.datamodel.mapper.aclf.AclfBean2AclfNetMapper;
-import org.interpss.datamodel.mapper.aclf.AclfNet2AclfBeanMapper;
 import org.interpss.datamodel.mapper.aclf.AclfNet2ResultBeanMapper;
+import org.interpss.datamodel.mapper.base.BaseAclfBean2AclfNetMapper;
+import org.interpss.datamodel.mapper.base.BaseAclfNet2AclfBeanMapper;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.pssl.plugin.IpssAdapter;
@@ -71,10 +71,10 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 		
 		// map AclfNet to AclfNetBean
 		AclfNetBean<DefaultExtBean,DefaultExtBean,DefaultExtBean> netBean = 
-				        new AclfNet2AclfBeanMapper<DefaultExtBean,DefaultExtBean,DefaultExtBean>().map2Model(net);		
+				        new BaseAclfNet2AclfBeanMapper<DefaultExtBean,DefaultExtBean,DefaultExtBean>().map2Model(net);		
 		
 		// map AclfNetBean back to an AclfNet object
-		AclfNetwork aclfNet = new AclfBean2AclfNetMapper<DefaultExtBean,DefaultExtBean,DefaultExtBean>()
+		AclfNetwork aclfNet = new BaseAclfBean2AclfNetMapper<DefaultExtBean,DefaultExtBean,DefaultExtBean>()
 			.map2Model(netBean)
 			.getAclfNet();
 		
@@ -194,15 +194,15 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 		SampleTestingCases.load_LF_5BusSystem(net);
 		
 		// map AclfNet to AclfNetBean
-		AclfNetBean netBean = new AclfNet2AclfBeanMapper().map2Model(net);	
+		AclfNetBean netBean = new BaseAclfNet2AclfBeanMapper().map2Model(net);	
 		
 		// map AclfNetBean back to an AclfNet object
-		AclfNetwork aclfNet = new AclfBean2AclfNetMapper()
+		AclfNetwork aclfNet = new BaseAclfBean2AclfNetMapper()
 			.map2Model(netBean)
 			.getAclfNet();		
 		
 		// map AclfNet to AclfNetBean
-		AclfNetBean netBean1 = new AclfNet2AclfBeanMapper().map2Model(aclfNet);		
+		AclfNetBean netBean1 = new BaseAclfNet2AclfBeanMapper().map2Model(aclfNet);		
 			
 		/*
 		 * compare two AclfNetBean objects
@@ -227,15 +227,15 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
   		
 		
 		// map AclfNet to AclfNetBean
-		AclfNetBean netBean = new AclfNet2AclfBeanMapper().map2Model(net);	
+		AclfNetBean netBean = new BaseAclfNet2AclfBeanMapper().map2Model(net);	
 		
 		// map AclfNetBean back to an AclfNet object
-		AclfNetwork aclfNet = new AclfBean2AclfNetMapper()
+		AclfNetwork aclfNet = new BaseAclfBean2AclfNetMapper()
 			.map2Model(netBean)
 			.getAclfNet();		
 		
 		// map AclfNet to AclfNetBean
-		AclfNetBean netBean1 = new AclfNet2AclfBeanMapper().map2Model(aclfNet);		
+		AclfNetBean netBean1 = new BaseAclfNet2AclfBeanMapper().map2Model(aclfNet);		
 			
 		/*
 		 * compare two AclfNetBean objects
@@ -259,13 +259,13 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 					.getImportedObj();
   		
 		// map AclfNet to AclfNetBean
-		AclfNetBean netBean = new AclfNet2AclfBeanMapper().map2Model(net);
+		AclfNetBean netBean = new BaseAclfNet2AclfBeanMapper().map2Model(net);
 		
 		/*net.accept(CoreObjectFactory.createLfAlgoVisitor());
 		System.out.println(net.net2String());*/
 
 		// map AclfNetBean back to an AclfNet object
-		AclfNetwork aclfNet = new AclfBean2AclfNetMapper().map2Model(netBean)
+		AclfNetwork aclfNet = new BaseAclfBean2AclfNetMapper().map2Model(netBean)
 				.getAclfNet();
 				
 		aclfNet.accept(CoreObjectFactory.createLfAlgoVisitor());  
