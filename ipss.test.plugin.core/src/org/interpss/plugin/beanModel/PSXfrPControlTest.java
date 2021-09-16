@@ -30,6 +30,8 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.datamodel.bean.aclf.AclfNetBean;
 import org.interpss.datamodel.mapper.aclf.AclfBean2AclfNetMapper;
 import org.interpss.datamodel.mapper.aclf.AclfNet2AclfBeanMapper;
+import org.interpss.datamodel.mapper.base.BaseAclfBean2AclfNetMapper;
+import org.interpss.datamodel.mapper.base.BaseAclfNet2AclfBeanMapper;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.junit.Test;
 

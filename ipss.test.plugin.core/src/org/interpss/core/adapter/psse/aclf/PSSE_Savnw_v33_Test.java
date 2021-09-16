@@ -77,9 +77,6 @@ public class PSSE_Savnw_v33_Test extends CorePluginTestSetup {
 				.getImportedObj();
 		AclfNetBean netBean30 = new AclfNet2AclfBeanMapper().map2Model(net30);
 		
-		
-
-		
 		// load the test data V33
 		AclfNetwork net33 = IpssAdapter.importAclfNet("testdata/adpter/psse/v33/savnw.raw")
 				.setFormat(PSSE)
