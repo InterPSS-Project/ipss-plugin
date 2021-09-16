@@ -29,12 +29,9 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
-import org.interpss.datamodel.bean.aclf.ext.AclfBranchResultBean;
-import org.interpss.datamodel.bean.aclf.ext.AclfBusResultBean;
 import org.interpss.datamodel.bean.base.BaseJSONBean;
 import org.interpss.datamodel.bean.base.BaseJSONUtilBean;
 import org.interpss.datamodel.bean.base.BaseNetBean;
-import org.interpss.datamodel.bean.base.DefaultExtBean;
 
 import com.interpss.common.util.NetUtilFunc;
 
