@@ -35,14 +35,15 @@ import org.interpss.datamodel.bean.datatype.BranchValueBean;
 /**
  * Bean class for storing AclfBranch object info
  * 
- * @author mzhou
+ * @author mzhou 
+ * @param <TExt> template for extension info 
  *
  */
 public class AclfBranchBean<TExt extends BaseJSONUtilBean> extends BaseBranchBean<TExt> {
 	
 	public BranchValueBean 
-			ratio = new BranchValueBean(1.0,1.0),			// xfr branch turn ratio, it is assumed on the from bus side per PSSE
-			ang = new BranchValueBean(0.0,0.0);				// PsXfr shifting angle, in rad, it is assumed on the from bus side per PSSE
+			turnRatio = new BranchValueBean(1.0,1.0),			    // xfr branch turn ratio, it is assumed on the from bus side per PSSE
+			shiftAng = new BranchValueBean(0.0,0.0);				// PsXfr shifting angle, in rad, it is assumed on the from bus side per PSSE
 	
 	public XfrTapControlBean<TExt> xfrTapControl;					// control bean for xfr
 	
@@ -57,10 +58,10 @@ public class AclfBranchBean<TExt extends BaseJSONUtilBean> extends BaseBranchBea
 
 		String str = "ID: " + this.id + " AclfBranchBean.";
 		
-		if (this.ratio.compareTo(bean.ratio) != 0) {
+		if (this.turnRatio.compareTo(bean.turnRatio) != 0) {
 			logCompareMsg(str + "ratio is not equal");	eql = 1; }
 
-		if (this.ang.compareTo(bean.ang) != 0) {
+		if (this.shiftAng.compareTo(bean.shiftAng) != 0) {
 			logCompareMsg(str + "ang is not equal");	eql = 1; }
 		
 		if (this.xfrTapControl != null && bean.xfrTapControl == null)

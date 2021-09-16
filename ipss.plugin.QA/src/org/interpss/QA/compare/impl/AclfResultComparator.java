@@ -196,11 +196,11 @@ public class AclfResultComparator<TBusExt extends BaseJSONUtilBean,
 		 * Compare Xfr taps
 		 */
 		if (branch.isXfr()) {
-			if (!NumericUtil.equals(branch.getFromTurnRatio(), rec.ratio.f, TapErr) ||
-					!NumericUtil.equals(branch.getToTurnRatio(), rec.ratio.t, TapErr)) {
+			if (!NumericUtil.equals(branch.getFromTurnRatio(), rec.turnRatio.f, TapErr) ||
+					!NumericUtil.equals(branch.getToTurnRatio(), rec.turnRatio.t, TapErr)) {
 				String msg = "Xfr tap mismatch: Branch-" + rec.id + ", " + 
 						 String.format("%5.4f, %5.4f  :  %5.4f, %5.4f", branch.getFromTurnRatio(), branch.getToTurnRatio(),
-								 rec.ratio.f, rec.ratio.t);
+								 rec.turnRatio.f, rec.turnRatio.t);
 				//IpssLogger.getLogger().warning(msg);
 				addErrMsg(msg);
 			}

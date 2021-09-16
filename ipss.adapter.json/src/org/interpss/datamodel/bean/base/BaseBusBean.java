@@ -32,12 +32,12 @@ import org.interpss.numeric.util.NumericUtil;
  * Base Bus Bean class
  * 
  * @author mzhou
+ * @param <TExt> template for extension info 
  *
  */
 public abstract class BaseBusBean<TExt extends BaseJSONUtilBean> extends BaseJSONBean<TExt> {
 		
-	public long 
-	    number;    				// bus number
+	public long number;    				// bus number
 	
 	public int status;			// bus in-service status
 	
