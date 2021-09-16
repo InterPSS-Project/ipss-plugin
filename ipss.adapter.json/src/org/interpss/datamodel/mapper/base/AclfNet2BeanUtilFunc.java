@@ -22,7 +22,7 @@
  *
  */
 
-package org.interpss.datamodel.mapper.aclf;
+package org.interpss.datamodel.mapper.base;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.datamodel.bean.aclf.AclfBranchBean;
@@ -33,10 +33,11 @@ import org.interpss.datamodel.bean.aclf.adj.PsXfrTapControlBean;
 import org.interpss.datamodel.bean.aclf.adj.QBankBean;
 import org.interpss.datamodel.bean.aclf.adj.SwitchShuntBean;
 import org.interpss.datamodel.bean.aclf.adj.SwitchShuntBean.VarCompensatorControlModeBean;
+import org.interpss.datamodel.bean.aclf.adj.XfrTapControlBean;
+import org.interpss.datamodel.bean.aclf.ext.AclfBranchResultBean;
 import org.interpss.datamodel.bean.aclf.ext.AclfBusResultBean;
 import org.interpss.datamodel.bean.base.BaseBranchBean;
 import org.interpss.datamodel.bean.base.BaseJSONUtilBean;
-import org.interpss.datamodel.bean.aclf.adj.XfrTapControlBean;
 import org.interpss.datamodel.bean.datatype.BranchValueBean;
 import org.interpss.datamodel.bean.datatype.ComplexValueBean;
 import org.interpss.numeric.datatype.Unit.UnitType;
@@ -67,14 +68,14 @@ public class AclfNet2BeanUtilFunc {
 	 * @param bus
 	 * @param bean
 	 */
-	public static void mapAclfBusResult(AclfBus bus, AclfBusResultBean<? extends BaseJSONUtilBean> bean) {
-		mapAclfBus(bus, bean);
+	public static void mapAclfBusResult(AclfBus bus, AclfBusBean<? extends BaseJSONUtilBean> bean) {
+		AclfBusResultBean rbean = (AclfBusResultBean)bean.extension;
 		
 		Complex gen = bus.calNetGenResults();
-		bean.lfGenResult = new ComplexValueBean(format(gen));
+		rbean.lfGenResult = new ComplexValueBean(format(gen));
 		
 		Complex load = bus.calNetLoadResults();
-		bean.lfLoadResult = new ComplexValueBean(format(load));
+		rbean.lfLoadResult = new ComplexValueBean(format(load));
 	}
 	
 	/**
@@ -175,7 +176,7 @@ public class AclfNet2BeanUtilFunc {
 	 * @param branch
 	 * @param bean
 	 */
-	public static void mapBaseBranch(AclfBranch branch, AclfBranchBean<? extends BaseJSONUtilBean> bean) {
+	public static void mapAclfBranch(AclfBranch branch, AclfBranchBean<? extends BaseJSONUtilBean> bean) {
 		bean.id = branch.getId();
 		bean.name = branch.getName();
 		bean.f_id = branch.getFromBus().getId();
@@ -235,6 +236,21 @@ public class AclfNet2BeanUtilFunc {
 		bean.mvaRatingA = branch.getRatingMva1();
 		bean.mvaRatingB = branch.getRatingMva2();
 		bean.mvaRatingC = branch.getRatingMva3();			
+	}	
+	
+	public static void mapAclfBranchResult(AclfBranch branch, AclfBranchBean<? extends BaseJSONUtilBean> bean) {
+		AclfBranchResultBean rbean = (AclfBranchResultBean)bean.extension;
+		
+		Complex flow = branch.powerFrom2To();
+		rbean.flow_f2t = new ComplexValueBean(AclfNet2BeanUtilFunc.format(flow));
+
+		flow = branch.powerTo2From();
+		rbean.flow_t2f = new ComplexValueBean(AclfNet2BeanUtilFunc.format(flow));
+		
+		Complex loss = branch.loss();
+		rbean.loss = new ComplexValueBean(AclfNet2BeanUtilFunc.format(loss));
+		
+		rbean.cur = AclfNet2BeanUtilFunc.format2(branch.current(UnitType.Amp));
 	}	
 	
 	private static void mapSwitchShuntData(SwitchedShunt ss, SwitchShuntBean<? extends BaseJSONUtilBean> ssb) {
