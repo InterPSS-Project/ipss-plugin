@@ -25,7 +25,6 @@
 package org.interpss.datamodel.mapper.aclf;
 
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.datamodel.bean.BaseBranchBean;
 import org.interpss.datamodel.bean.aclf.AclfBranchBean;
 import org.interpss.datamodel.bean.aclf.AclfBusBean;
 import org.interpss.datamodel.bean.aclf.adj.BaseTapControlBean.TapControlModeBean;
@@ -33,20 +32,19 @@ import org.interpss.datamodel.bean.aclf.adj.BaseTapControlBean.TapControlTypeBea
 import org.interpss.datamodel.bean.aclf.adj.PsXfrTapControlBean;
 import org.interpss.datamodel.bean.aclf.adj.QBankBean;
 import org.interpss.datamodel.bean.aclf.adj.SwitchShuntBean;
-import org.interpss.datamodel.bean.aclf.adj.XfrTapControlBean;
 import org.interpss.datamodel.bean.aclf.adj.SwitchShuntBean.VarCompensatorControlModeBean;
+import org.interpss.datamodel.bean.aclf.ext.AclfBusResultBean;
+import org.interpss.datamodel.bean.base.BaseBranchBean;
+import org.interpss.datamodel.bean.base.BaseJSONUtilBean;
+import org.interpss.datamodel.bean.aclf.adj.XfrTapControlBean;
 import org.interpss.datamodel.bean.datatype.BranchValueBean;
 import org.interpss.datamodel.bean.datatype.ComplexValueBean;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.Number2String;
 
-import com.interpss.common.mapper.AbstractMapper;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
-import com.interpss.core.aclf.AclfGen;
-import com.interpss.core.aclf.AclfLoad;
-import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adj.AdjControlType;
 import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.adj.QBank;
@@ -58,18 +56,34 @@ import com.interpss.core.aclf.adpter.AclfPSXformerAdapter;
 import com.interpss.core.aclf.adpter.AclfXformerAdapter;
 
 /**
- * base mapper functions for mapping AclfNetwork object to BaseNetBean (AclfNetBean and AclfNetResultBean)
+ * Util functions for mapping AclfNetwork object to BaseNetBean (AclfNetBean and AclfNetResultBean)
  * 
  * 
  */
-public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfNetwork, TBean> {
+public class AclfNet2BeanUtilFunc {
+	/**
+	 * map an AclfBus object to an AclfNet2BeanHelper. 
+	 * 
+	 * @param bus
+	 * @param bean
+	 */
+	public static void mapAclfBusResult(AclfBus bus, AclfBusResultBean<? extends BaseJSONUtilBean> bean) {
+		mapAclfBus(bus, bean);
+		
+		Complex gen = bus.calNetGenResults();
+		bean.lfGenResult = new ComplexValueBean(format(gen));
+		
+		Complex load = bus.calNetLoadResults();
+		bean.lfLoadResult = new ComplexValueBean(format(load));
+	}
+	
 	/**
 	 * map an AclfBus object to an AclfBusBean 
 	 * 
 	 * @param bus
 	 * @param bean
 	 */
-	public static void mapBaseBus(AclfBus bus, AclfBusBean bean) {
+	public static void mapAclfBus(AclfBus bus, AclfBusBean<? extends BaseJSONUtilBean> bean) {
 		bean.number = bus.getNumber();
 		bean.id = bus.getId();
 		bean.name = bus.getName();
@@ -92,10 +106,10 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 			(bus.isGenPV() ? AclfBusBean.GenCode.PV : 
 				(bus.isSwing()? AclfBusBean.GenCode.Swing : 
 					AclfBusBean.GenCode.NonGen));
-				
+		/*		
 		Complex gen = bus.calNetGenResults();
 		bean.lfGenResult = new ComplexValueBean(format(gen));
-		
+		*/
 		double genp = bus.getGenP();
 		double genq = bus.getGenQ();
 		bean.gen = new ComplexValueBean(format(new Complex(genp, genq)));		
@@ -120,10 +134,10 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 			(bus.isConstZLoad() ? AclfBusBean.LoadCode.ConstZ : 
 				(bus.isConstILoad() ? AclfBusBean.LoadCode.ConstI : 
 					AclfBusBean.LoadCode.NonLoad));
-
+		/*
 		Complex load = bus.calNetLoadResults();
 		bean.lfLoadResult = new ComplexValueBean(format(load));
-		
+		*/
 		double loadp = bus.getLoadP();
 		double loadq = bus.getLoadQ();
 		bean.load = new ComplexValueBean(format(new Complex(loadp, loadq)));
@@ -161,7 +175,7 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 	 * @param branch
 	 * @param bean
 	 */
-	public static void mapBaseBranch(AclfBranch branch, AclfBranchBean bean) {
+	public static void mapBaseBranch(AclfBranch branch, AclfBranchBean<? extends BaseJSONUtilBean> bean) {
 		bean.id = branch.getId();
 		bean.name = branch.getName();
 		bean.f_id = branch.getFromBus().getId();
@@ -223,7 +237,7 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 		bean.mvaRatingC = branch.getRatingMva3();			
 	}	
 	
-	private static void mapSwitchShuntData(SwitchedShunt ss, SwitchShuntBean ssb) {
+	private static void mapSwitchShuntData(SwitchedShunt ss, SwitchShuntBean<? extends BaseJSONUtilBean> ssb) {
 		ssb.bInit = ss.getBInit();
 		ssb.controlMode = ss.getControlMode() == VarCompensationMode.CONTINUOUS? VarCompensatorControlModeBean.Continuous:
 			ss.getControlMode() == VarCompensationMode.DISCRETE? VarCompensatorControlModeBean.Discrete:
@@ -250,7 +264,7 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 	}	
 
 	
-	private static void mapPsXfrData(PSXfrPControl tap, PsXfrTapControlBean tb) {
+	private static void mapPsXfrData(PSXfrPControl tap, PsXfrTapControlBean<? extends BaseJSONUtilBean> tb) {
 		tb.controlOnFromSide = tap.isControlOnFromSide();
 		tb.controlType = tap.getFlowControlType()==AdjControlType.POINT_CONTROL? TapControlTypeBean.Point_Control:
 			TapControlTypeBean.Range_Control;
@@ -272,7 +286,7 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 		tb.status = tap.isStatus() == true? 1: 0;		
 	}
 
-	private static void mapXfrData(TapControl tap, XfrTapControlBean tapBean) {
+	private static void mapXfrData(TapControl tap, XfrTapControlBean<? extends BaseJSONUtilBean> tapBean) {
 		tapBean.controlledBusId = tap.getVcBus().getId();
 		if(tap.getControlType() == XfrTapControlType.BUS_VOLTAGE){
 			tapBean.controlMode = TapControlModeBean.Bus_Voltage;
@@ -301,16 +315,16 @@ public abstract class BaseAclfNet2BeanMapper<TBean> extends AbstractMapper<AclfN
 	}
 	
 
-	protected static Complex format(Complex x) {
+	public static Complex format(Complex x) {
 		return new Complex(new Double(Number2String.toStr(x.getReal())).doubleValue(), 
 				           new Double(Number2String.toStr(x.getImaginary())).doubleValue());
 	}
 
-	protected static double format(double x) {
+	public static double format(double x) {
 		return new Double(Number2String.toStr(x)).doubleValue();
 	}
 
-	protected static double format2(double x) {
+	public static double format2(double x) {
 		return new Double(Number2String.toStr(x, "#0.0#")).doubleValue();
 	}	
 }

@@ -25,8 +25,8 @@ package org.interpss.datamodel.bean.aclf.adj;
 
 import java.util.List;
 
-import org.interpss.datamodel.bean.BaseJSONBean;
-import org.interpss.datamodel.bean.BaseJSONUtilBean;
+import org.interpss.datamodel.bean.base.BaseJSONBean;
+import org.interpss.datamodel.bean.base.BaseJSONUtilBean;
 
 /**
  * Bean class for storing Aclf two winding branch object info
@@ -46,7 +46,7 @@ public class XfrTapControlBean<TExt extends BaseJSONUtilBean> extends BaseTapCon
 		
 		int eql = super.compareTo(b);
 		
-		XfrTapControlBean bean = (XfrTapControlBean)b;
+		XfrTapControlBean<TExt> bean = (XfrTapControlBean<TExt>)b;
 
 		String str = "ID: " + this.id + " XfrTapControlBean.";				
 		

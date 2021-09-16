@@ -25,7 +25,7 @@ package org.interpss.datamodel.util;
 
 import java.util.List;
 
-import org.interpss.datamodel.bean.BaseNetBean;
+import org.interpss.datamodel.bean.base.BaseNetBean;
 
 /**
  * Base NetBean comparator implementation.
