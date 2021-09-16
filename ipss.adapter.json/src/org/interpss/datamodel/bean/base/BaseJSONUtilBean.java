@@ -22,7 +22,13 @@
  *
  */
 
-package org.interpss.datamodel.bean;
+package org.interpss.datamodel.bean.base;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.interpss.datamodel.util.INetBeanComparator;
+import org.interpss.datamodel.util.INetBeanComparator.CompareLog;
 
 import com.google.gson.Gson;
 
@@ -32,6 +38,28 @@ import com.google.gson.Gson;
  *
  */
 public abstract class BaseJSONUtilBean {
+	private static List<String> msgList = new ArrayList<>();
+	protected static INetBeanComparator.CompareLog compareLog = CompareLog.Console;
+	
+	/**
+	 * set compare warning msg log method
+	 * 
+	 * @param log
+	 */
+	public static void setCompareLog(INetBeanComparator.CompareLog log) {
+		compareLog = log;
+		msgList.clear();
+	}
+
+	/**
+	 * get the Msg List
+	 * 
+	 * @return
+	 */
+	public static List<String> getMsgList() {
+		return msgList;
+	}
+	
 	@Override
 	public String toString() {
 		return new Gson().toJson(this);

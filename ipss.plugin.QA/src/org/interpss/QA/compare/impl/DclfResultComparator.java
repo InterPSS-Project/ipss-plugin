@@ -1,8 +1,8 @@
 package org.interpss.QA.compare.impl;
 
-import org.interpss.datamodel.bean.DefaultExtBean;
-import org.interpss.datamodel.bean.aclf.AclfBranchResultBean;
 import org.interpss.datamodel.bean.aclf.AclfBusBean;
+import org.interpss.datamodel.bean.aclf.ext.AclfBranchResultBean;
+import org.interpss.datamodel.bean.base.DefaultExtBean;
 import org.interpss.datamodel.bean.dclf.DclfBranchResultBean;
 import org.interpss.datamodel.bean.dclf.DclfBusResultBean;
 import org.interpss.datamodel.bean.dclf.DclfNetResultBean;
