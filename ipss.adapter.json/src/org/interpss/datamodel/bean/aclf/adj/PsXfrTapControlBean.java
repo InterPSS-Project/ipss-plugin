@@ -6,6 +6,13 @@ import org.interpss.datamodel.bean.base.BaseJSONBean;
 import org.interpss.datamodel.bean.base.BaseJSONUtilBean;
 import org.interpss.numeric.util.NumericUtil;
 
+/**
+ * 
+ * 
+ * @author mikez
+ *
+ * @param <TExt> template for extension info 
+ */
 public class PsXfrTapControlBean<TExt extends BaseJSONUtilBean> extends BaseTapControlBean <TExt>{
 
 	public double 

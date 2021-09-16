@@ -1,5 +1,5 @@
 /*
- * @(#)BaseJSONBean.java   
+ * @(#)BaseTapControlBean.java   
  *
  * Copyright (C) 2008-2013 www.interpss.org
  *
@@ -13,7 +13,6 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * @Author Mike Zhou
  * @Version 1.0
  * @Date 01/10/2013
  * 
@@ -30,15 +29,24 @@ import org.interpss.datamodel.bean.base.BaseJSONUtilBean;
 import org.interpss.numeric.util.NumericUtil;
 
 /**
- * Bean class for storing Aclf two winding branch object info
- * 
+ * Base Xfr tap control data Bean
+ * * 
  * @author sHou
+ * @param <TExt> template for extension info 
  *
  */
 public class BaseTapControlBean<TExt extends BaseJSONUtilBean> extends BaseJSONBean<TExt> {	
 	 
-	public static enum TapControlTypeBean {Point_Control, Range_Control,No_Control};
-	public static enum TapControlModeBean {Bus_Voltage, Mva_Flow, MW_Flow, No_Control};
+	public static enum TapControlTypeBean {
+				Point_Control, 
+				Range_Control,
+				No_Control};
+				
+	public static enum TapControlModeBean {
+				Bus_Voltage, 
+				Mva_Flow, 
+				MW_Flow, 
+				No_Control};
 	
 	public TapControlTypeBean controlType = TapControlTypeBean.No_Control; // control type
 	
@@ -51,8 +59,8 @@ public class BaseTapControlBean<TExt extends BaseJSONUtilBean> extends BaseJSONB
 		minTap = 0.9,					// min tap
 		upperLimit = 1.1,				// tap control target upper limit (range control)
 		lowerLimit = 0.9,				// tap control target lower limit (range control)
-		desiredControlTarget = 1.0,	// tap control targeted value (point control)
-		stepSize = 1.0;				// tap control step size	
+		desiredControlTarget = 1.0,	    // tap control targeted value (point control)
+		stepSize = 1.0;				    // tap control step size	
 	
 	public boolean 
 		measuredOnFromSide = true,		// mvar flow is measured on from side

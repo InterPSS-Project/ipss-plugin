@@ -25,6 +25,7 @@ package org.interpss.datamodel.util;
 
 import java.util.List;
 
+import org.interpss.datamodel.bean.aclf.AclfNetBean;
 import org.interpss.datamodel.bean.base.BaseNetBean;
 
 /**
@@ -33,7 +34,7 @@ import org.interpss.datamodel.bean.base.BaseNetBean;
  * @author mzhou
  *
  */
-public abstract class BaseNetBeanComparator<TNet extends BaseNetBean> implements INetBeanComparator<TNet> {
+public abstract class BaseNetBeanComparator<TNet extends AclfNetBean> implements INetBeanComparator<TNet> {
 	// comparison log option
 	private CompareLog logOpt;
 	
@@ -49,7 +50,7 @@ public abstract class BaseNetBeanComparator<TNet extends BaseNetBean> implements
 		this.logOpt = opt;
 	}
 	
-	@Override public int compare(BaseNetBean net1, BaseNetBean net2) {
+	@Override public int compare(AclfNetBean net1, AclfNetBean net2) {
 		net1.setCompareLog(this.logOpt);
 		this.logMsgList = net1.getMsgList();
 		

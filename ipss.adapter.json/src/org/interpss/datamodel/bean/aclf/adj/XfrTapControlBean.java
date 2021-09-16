@@ -29,9 +29,10 @@ import org.interpss.datamodel.bean.base.BaseJSONBean;
 import org.interpss.datamodel.bean.base.BaseJSONUtilBean;
 
 /**
- * Bean class for storing Aclf two winding branch object info
+ * Base Xfr tap control data Bean
  * 
- * @author sHou
+ * @author sHou 
+ * @param <TExt> template for extension info 
  *
  */
 public class XfrTapControlBean<TExt extends BaseJSONUtilBean> extends BaseTapControlBean<TExt> {

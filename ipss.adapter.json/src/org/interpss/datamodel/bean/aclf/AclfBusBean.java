@@ -34,7 +34,8 @@ import org.interpss.numeric.util.NumericUtil;
 /**
  * Bean class for storing AclfBus info
  * 
- * @author mzhou
+ * @author mzhou 
+ * @param <TExt> template for extension info 
  *
  */
 public class AclfBusBean<TExt extends BaseJSONUtilBean>  extends BaseBusBean<TExt> {	
@@ -42,12 +43,20 @@ public class AclfBusBean<TExt extends BaseJSONUtilBean>  extends BaseBusBean<TEx
 	/**
 	 * bus generator type code 
 	 */
-	public static enum GenCode {Swing, PV, PQ, NonGen};
+	public static enum GenCode {
+			Swing, 
+			PV, 
+			PQ, 
+			NonGen};
 	
 	/**
 	 * bus load type code 
 	 */
-	public static enum LoadCode {ConstP, ConstI, ConstZ, NonLoad};	
+	public static enum LoadCode {
+			ConstP, 
+			ConstI, 
+			ConstZ, 
+			NonLoad};	
 	
 	
 	public GenCode 

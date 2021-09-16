@@ -9,7 +9,8 @@ import org.interpss.datamodel.bean.base.BaseJSONUtilBean;
  * bean class for storing qbank info
  * 
  * @author sHou
- *
+ * 
+ * @param <TExt> template for extension info 
  */
 public class QBankBean<TExt extends BaseJSONUtilBean> extends BaseJSONBean<TExt> {
 	

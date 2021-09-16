@@ -24,7 +24,6 @@
 package org.interpss.datamodel.util;
 
 import org.interpss.datamodel.bean.aclf.AclfNetBean;
-import org.interpss.datamodel.bean.base.DefaultExtBean;
 
 /**
  * Default AclfNet comparator implementation.

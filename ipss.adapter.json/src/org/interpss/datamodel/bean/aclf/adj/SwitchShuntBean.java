@@ -10,8 +10,8 @@ import org.interpss.numeric.util.NumericUtil;
 /**
  * bean class for storing switch shunt info
  * 
- * @author sHou
- *
+ * @author sHou 
+ * @param <TExt> template for extension info 
  */
 public class SwitchShuntBean<TExt extends BaseJSONUtilBean> extends BaseJSONBean<TExt> {
 	
@@ -22,7 +22,7 @@ public class SwitchShuntBean<TExt extends BaseJSONUtilBean> extends BaseJSONBean
 	
 	public VarCompensatorControlModeBean controlMode;		// control mode
 	
-	public String remoteBusId;							// remote control bus id
+	public String remoteBusId;							    // remote control bus id
 	
 	public double 											// control voltage limit
 		vmax,

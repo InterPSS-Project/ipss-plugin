@@ -32,6 +32,7 @@ import org.interpss.numeric.util.NumericUtil;
  * Base Branch Bean class
  * 
  * @author mzhou
+ * @param <TExt> template for extension info 
  *
  */
 public abstract class BaseBranchBean<TExt extends BaseJSONUtilBean> extends BaseJSONBean<TExt> {
