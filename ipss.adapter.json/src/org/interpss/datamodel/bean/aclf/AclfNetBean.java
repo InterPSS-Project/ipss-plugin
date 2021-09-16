@@ -24,8 +24,10 @@
 
 package org.interpss.datamodel.bean.aclf;
 
+import org.interpss.datamodel.bean.aclf.ext.AclfBranchResultBean;
+import org.interpss.datamodel.bean.aclf.ext.AclfBusResultBean;
+import org.interpss.datamodel.bean.aclf.ext.AclfNetResultBean;
 import org.interpss.datamodel.bean.base.BaseJSONBean;
-import org.interpss.datamodel.bean.base.BaseJSONUtilBean;
 
 /**
  * Bean class for stoing AclfNetwork object info
@@ -33,16 +35,13 @@ import org.interpss.datamodel.bean.base.BaseJSONUtilBean;
  * @author mzhou
  *
  */
-public class AclfNetBean<TBusExt extends BaseJSONUtilBean, 
-                         TBraExt extends BaseJSONUtilBean,
-                         TNetExt extends BaseJSONUtilBean> 
-                               extends BaseAclfNetBean<AclfBusBean<TBusExt>, 
-                                                       AclfBranchBean<TBraExt>, 
-                                                       TBusExt, TBraExt, TNetExt> {
+public class AclfNetBean extends BaseAclfNetBean<AclfBusBean<AclfBusResultBean>, 
+                                                 AclfBranchBean<AclfBranchResultBean>, 
+                                                 AclfBusResultBean, AclfBranchResultBean, AclfNetResultBean> {
 	public AclfNetBean() { 
 		super(); }
 	
-	@Override public int compareTo(BaseJSONBean<TNetExt> b) {
+	@Override public int compareTo(BaseJSONBean<AclfNetResultBean> b) {
 		int eql = super.compareTo(b);
 		
 		//AclfNetBean bean = (AclfNetBean)b;
