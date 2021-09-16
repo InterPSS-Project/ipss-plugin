@@ -32,7 +32,6 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.datamodel.bean.aclf.AclfNetBean;
 import org.interpss.datamodel.bean.aclf.ext.AclfBusResultBean;
-import org.interpss.datamodel.bean.aclf.ext.AclfNetResultBean;
 import org.interpss.datamodel.mapper.aclf.AclfBean2AclfNetMapper;
 import org.interpss.datamodel.mapper.aclf.AclfNet2AclfBeanMapper;
 import org.interpss.datamodel.mapper.aclf.AclfNet2ResultBeanMapper;
@@ -263,8 +262,8 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 		
 		AclfSwingBusAdapter swing = aclfNet.getBus(swingId).toSwingBus();
 		//System.out.println("AclfNet Model: "+swing.getGenResults(UnitType.PU) );		
-		AclfNetResultBean netBean1 = new AclfNet2ResultBeanMapper().map2Model(aclfNet);		
-		AclfBusResultBean bean = netBean1.getBus(swingId);		
+		AclfNetBean netBean1 = new AclfNet2ResultBeanMapper().map2Model(aclfNet);		
+		AclfBusResultBean bean = netBean1.getBus(swingId).extension;		
 		assertTrue(swing.getGenResults(UnitType.PU).getReal() - bean.lfGenResult.re < 0.0001);
 		assertTrue(swing.getGenResults(UnitType.PU).getImaginary() - bean.lfGenResult.im < 0.0001);
 	}
