@@ -4,7 +4,6 @@ import org.interpss.QA.rfile.BaseResultFileProcessor;
 import org.interpss.datamodel.bean.aclf.AclfBranchBean;
 import org.interpss.datamodel.bean.aclf.AclfBusBean;
 import org.interpss.datamodel.bean.aclf.ext.AclfNetResultBean;
-import org.interpss.datamodel.bean.base.DefaultExtBean;
 import org.interpss.datamodel.bean.base.BaseBranchBean.BranchCode;
 import org.interpss.datamodel.bean.datatype.ComplexValueBean;
 
@@ -76,8 +75,8 @@ BUS      1 EQN-U1      13.800 CKT     MW     MVAR     MVA   % 1.0000PU    0.00  
 			this.Int_offset = -1;
 			
 		initTKN();
-		this.qaResultSet = new AclfNetResultBean();
-		this.qaResultSet.base_kva = 100000.0;
+		this.qaSet = new AclfNetResultBean();
+		this.qaSet.base_kva = 100000.0;
 	}
 
 	private void initTKN() {
@@ -126,7 +125,7 @@ xTO  12015 CEBOLLA     69.000  1     -4.8    -0.2     4.8  15                   
 				this.mva2pu = 1.0 / baseMva;
 				IpssLogger.getLogger().info("BaseMva: " + baseMva);
 				baseKvaProcessed = true;
-				this.qaResultSet.base_kva = baseMva * 1000.0;
+				this.qaSet.base_kva = baseMva * 1000.0;
 			}
 		}
 
@@ -174,7 +173,7 @@ xTO  12015 CEBOLLA     69.000  1     -4.8    -0.2     4.8  15                   
 		//System.out.println(this.busNo + ", " + this.busVoltage + ", " + this.busAngle);
 		
 		String busId = BusPrefix+fromBusNo;
-		curRec = this.qaResultSet.createAclfBusBean(busId);
+		curRec = this.qaSet.createAclfBusBean(busId);
 
 		curRec.v_mag = busVoltage;
 		curRec.v_ang = busAngle;
@@ -246,9 +245,9 @@ xTO  12015 CEBOLLA     69.000  1     -4.8    -0.2     4.8  15                   
 			}
 			
 			String braId = NetUtilFunc.ToBranchId.f(fromId, toId, cirId);
-			boolean existingBranch = this.qaResultSet.getBranch(braId) != null;
-			AclfBranchBean<DefaultExtBean> braRec = existingBranch ? this.qaResultSet.getBranch(braId) :
-											this.qaResultSet.createAclfBranchResultBean(fromId, toId, cirId);
+			boolean existingBranch = this.qaSet.getBranch(braId) != null;
+			AclfBranchBean<DefaultExtBean> braRec = existingBranch ? this.qaSet.getBranch(braId) :
+											this.qaSet.createAclfBranchResultBean(fromId, toId, cirId);
 
 			String tapStr1 = lineStr.substring(Tap_Begin, Tap_End);
 			String tapStr2 = lineStr.substring(Tap_End, Tap_End+2); 
@@ -260,19 +259,19 @@ xTO  12015 CEBOLLA     69.000  1     -4.8    -0.2     4.8  15                   
 				// TODO detect PsXfr branch
 				if (existingBranch) {
 					if (tapStr2.equals("UN")) {
-						braRec.ratio.f = new Double(tapStr1).doubleValue();
+						braRec.turnRatio.f = new Double(tapStr1).doubleValue();
 					}
 					else {
-						braRec.ratio.t = new Double(tapStr1).doubleValue();
+						braRec.turnRatio.t = new Double(tapStr1).doubleValue();
 					}					
 				}
 				else {
 					braRec.bra_code = BranchCode.Xfr;
 					if (!tapStr2.equals("UN")) {
-						braRec.ratio.f = new Double(tapStr1).doubleValue();
+						braRec.turnRatio.f = new Double(tapStr1).doubleValue();
 					}
 					else {
-						braRec.ratio.t = new Double(tapStr1).doubleValue();
+						braRec.turnRatio.t = new Double(tapStr1).doubleValue();
 					}
 				}
 			}

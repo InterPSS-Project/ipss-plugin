@@ -26,7 +26,6 @@ package org.interpss.datamodel.mapper.base;
 
 import org.interpss.datamodel.bean.aclf.AclfBranchBean;
 import org.interpss.datamodel.bean.aclf.AclfBusBean;
-import org.interpss.datamodel.bean.aclf.AclfNetBean;
 import org.interpss.datamodel.bean.aclf.BaseAclfNetBean;
 import org.interpss.datamodel.bean.base.BaseJSONUtilBean;
 
@@ -41,7 +40,7 @@ import com.interpss.core.aclf.AclfNetwork;
  * 
  * 
  */
-public abstract class BaseAclfNet2AclfBeanMapper<
+public class BaseAclfNet2AclfBeanMapper<
 					TBusExt extends BaseJSONUtilBean, 
                     TBraExt extends BaseJSONUtilBean,
                     TNetExt extends BaseJSONUtilBean> extends AbstractMapper<
