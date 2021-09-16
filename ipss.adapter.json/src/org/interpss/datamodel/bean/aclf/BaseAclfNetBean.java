@@ -42,13 +42,15 @@ import com.interpss.common.util.NetUtilFunc;
  *
  * @param <TBus> template for AclfBusBean
  * @param <TBra> template for AclfBranchBean
+ * @param <TBusExt> template for AclfBusBeanBean extension info
+ * @param <TBraExt> template for AclfBranchBeanBean extension info
+ * @param <TNetExt> template for AclfNetBean extension info
  */
 public class BaseAclfNetBean<TBus extends AclfBusBean<TBusExt>, 
                              TBra extends AclfBranchBean<TBraExt>, 
                              TBusExt extends BaseJSONUtilBean, 
                              TBraExt extends BaseJSONUtilBean,
-                             TNetExt extends BaseJSONUtilBean> 
-									extends BaseNetBean<TNetExt> {
+                             TNetExt extends BaseJSONUtilBean> extends BaseNetBean<TNetExt> {
 	
 	private List<TBus> bus_list;					// bus result bean list
 	private transient Map<String,TBus> busIdMapper;

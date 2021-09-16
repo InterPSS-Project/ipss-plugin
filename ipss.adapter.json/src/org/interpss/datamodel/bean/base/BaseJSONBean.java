@@ -37,6 +37,7 @@ import com.interpss.common.util.IpssLogger;
  * design while preserve readability.
  * 
  * @author mzhou
+ * @param <TExt> template for extension info 
  *
  */
 public abstract class BaseJSONBean<TExt extends BaseJSONUtilBean> extends BaseJSONUtilBean implements Comparable<BaseJSONBean<TExt>> {

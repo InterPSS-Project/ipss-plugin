@@ -197,7 +197,7 @@ public class AclfNet2BeanUtilFunc {
 		Complex z = branch.getZ();
 		bean.z = new ComplexValueBean(z);
 		bean.shunt_y = new ComplexValueBean(format(new Complex(0, 0)));	
-		bean.ratio = new BranchValueBean(1.0,1.0);		
+		bean.turnRatio = new BranchValueBean(1.0,1.0);		
 		if (branch.getBranchCode() == AclfBranchCode.LINE ||
 				branch.getBranchCode() == AclfBranchCode.ZBR) {
 			if (branch.getHShuntY() != null)				
@@ -207,8 +207,8 @@ public class AclfNet2BeanUtilFunc {
 		}
 		else if (branch.getBranchCode() == AclfBranchCode.XFORMER ){
 			AclfXformerAdapter xfr = branch.toXfr();			
-			bean.ratio.f = xfr.getFromTurnRatio();
-			bean.ratio.t = xfr.getToTurnRatio();	
+			bean.turnRatio.f = xfr.getFromTurnRatio();
+			bean.turnRatio.t = xfr.getToTurnRatio();	
 			bean.shunt_y = new ComplexValueBean(format(new Complex(branch.getFromShuntY().getReal()*2,
 					branch.getFromShuntY().getImaginary()*2)));
 			XfrTapControlBean tapBean = new XfrTapControlBean();
@@ -219,12 +219,12 @@ public class AclfNet2BeanUtilFunc {
 			}
 		}else if (	branch.getBranchCode() == AclfBranchCode.PS_XFORMER){
 			AclfPSXformerAdapter xfr = branch.toPSXfr();			
-			bean.ratio.f = xfr.getFromTurnRatio();
-			bean.ratio.t = xfr.getToTurnRatio();	
+			bean.turnRatio.f = xfr.getFromTurnRatio();
+			bean.turnRatio.t = xfr.getToTurnRatio();	
 			bean.shunt_y = new ComplexValueBean(format(new Complex(branch.getFromShuntY().getReal()*2,
 					branch.getFromShuntY().getImaginary()*2)));
-			bean.ang.f = branch.getFromPSXfrAngle();
-			bean.ang.t = branch.getToPSXfrAngle();
+			bean.shiftAng.f = branch.getFromPSXfrAngle();
+			bean.shiftAng.t = branch.getToPSXfrAngle();
 			PsXfrTapControlBean tb = new PsXfrTapControlBean();
 			bean.psXfrTapControl = tb;
 			if(branch.getPSXfrPControl() != null){
