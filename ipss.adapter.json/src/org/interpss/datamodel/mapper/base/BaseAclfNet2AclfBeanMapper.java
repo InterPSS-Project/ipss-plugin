@@ -44,8 +44,8 @@ import com.interpss.core.aclf.AclfNetwork;
 public abstract class BaseAclfNet2AclfBeanMapper<
 					TBusExt extends BaseJSONUtilBean, 
                     TBraExt extends BaseJSONUtilBean,
-                    TNetExt extends BaseJSONUtilBean> 
-                         extends AbstractMapper<AclfNetwork,
+                    TNetExt extends BaseJSONUtilBean> extends AbstractMapper<
+                                                AclfNetwork,
                                                 BaseAclfNetBean<AclfBusBean<TBusExt>, 
                                                                 AclfBranchBean<TBraExt>,
                                                                 TBusExt,TBraExt,TNetExt>> {
