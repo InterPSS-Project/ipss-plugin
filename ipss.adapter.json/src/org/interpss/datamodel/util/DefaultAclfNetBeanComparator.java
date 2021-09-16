@@ -32,13 +32,13 @@ import org.interpss.datamodel.bean.base.DefaultExtBean;
  * @author mzhou
  *
  */
-public class DefaultAclfNetBeanComparator extends BaseNetBeanComparator<AclfNetBean<DefaultExtBean,DefaultExtBean,DefaultExtBean>> {
+public class DefaultAclfNetBeanComparator extends BaseNetBeanComparator<AclfNetBean> {
 	
 	public DefaultAclfNetBeanComparator(CompareLog opt) {
 		super(opt);
 	}
 	
-	@Override public int compare(AclfNetBean<DefaultExtBean,DefaultExtBean,DefaultExtBean> net1, AclfNetBean<DefaultExtBean,DefaultExtBean,DefaultExtBean> net2) {
+	@Override public int compare(AclfNetBean net1, AclfNetBean net2) {
 		super.compare(net1, net2);
 		
 		return net1.compareTo(net2);
