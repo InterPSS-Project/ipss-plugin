@@ -21,7 +21,7 @@
  *   ================
  *
  */
-package org.interpss.datamodel.bean;
+package org.interpss.datamodel.bean.base;
 
 import java.util.List;
 
