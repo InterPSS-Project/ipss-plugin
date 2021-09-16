@@ -25,15 +25,16 @@
 package org.interpss.datamodel.mapper.aclf;
 
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.datamodel.bean.BaseJSONUtilBean;
-import org.interpss.datamodel.bean.aclf.AclfBranchResultBean;
-import org.interpss.datamodel.bean.aclf.AclfBusResultBean;
-import org.interpss.datamodel.bean.aclf.AclfNetResultBean;
+import org.interpss.datamodel.bean.aclf.ext.AclfBranchResultBean;
+import org.interpss.datamodel.bean.aclf.ext.AclfBusResultBean;
+import org.interpss.datamodel.bean.aclf.ext.AclfNetResultBean;
+import org.interpss.datamodel.bean.base.BaseJSONUtilBean;
 import org.interpss.datamodel.bean.datatype.ComplexValueBean;
 import org.interpss.datamodel.bean.datatype.MismatchResultBean;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.common.exp.InterpssException;
+import com.interpss.common.mapper.AbstractMapper;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
@@ -45,7 +46,10 @@ import com.interpss.core.datatype.Mismatch;
  * 
  * @author mzhou
  */
-public class AclfNet2ResultBeanMapper<TBusExt extends BaseJSONUtilBean, TBraExt extends BaseJSONUtilBean> extends BaseAclfNet2BeanMapper<AclfNetResultBean<TBusExt,TBraExt>> {
+public class AclfNet2ResultBeanMapper<TBusExt extends BaseJSONUtilBean, 
+                                      TBraExt extends BaseJSONUtilBean,
+                                      TNetExt extends BaseJSONUtilBean> 
+                                          extends AbstractMapper<AclfNetwork, AclfNetResultBean<TBusExt,TBraExt,TNetExt>> {
 	/**
 	 * constructor
 	 */
@@ -58,8 +62,8 @@ public class AclfNet2ResultBeanMapper<TBusExt extends BaseJSONUtilBean, TBraExt 
 	 * @param aclfNet AclfNetwork object
 	 * @return AclfNetResultBean object
 	 */
-	@Override public AclfNetResultBean<TBusExt,TBraExt> map2Model(AclfNetwork aclfNet) throws InterpssException {
-		AclfNetResultBean<TBusExt,TBraExt> aclfResult = new AclfNetResultBean<>();
+	@Override public AclfNetResultBean<TBusExt,TBraExt,TNetExt> map2Model(AclfNetwork aclfNet) throws InterpssException {
+		AclfNetResultBean<TBusExt,TBraExt,TNetExt> aclfResult = new AclfNetResultBean<>();
 
 		if (map2Model(aclfNet, aclfResult))
 			return aclfResult;
@@ -73,7 +77,7 @@ public class AclfNet2ResultBeanMapper<TBusExt extends BaseJSONUtilBean, TBraExt 
 	 * @param netBean an AclfNetBean object, representing a aclf base network
 	 * @param aclfResult
 	 */
-	@Override public boolean map2Model(AclfNetwork aclfNet, AclfNetResultBean<TBusExt,TBraExt> aclfResult) {
+	@Override public boolean map2Model(AclfNetwork aclfNet, AclfNetResultBean<TBusExt,TBraExt,TNetExt> aclfResult) {
 		boolean noError = true;
 		
 		aclfResult.lf_converge = aclfNet.isLfConverged();
@@ -81,23 +85,23 @@ public class AclfNet2ResultBeanMapper<TBusExt extends BaseJSONUtilBean, TBraExt 
 		MismatchResultBean misBean = new MismatchResultBean();
 		Mismatch mis = aclfNet.maxMismatch(AclfMethodType.NR);
 		aclfResult.max_mis = misBean;
-		misBean.err = new ComplexValueBean(format(mis.maxMis.getReal()), format(mis.maxMis.getImaginary()));
+		misBean.err = new ComplexValueBean(AclfNet2BeanUtilFunc.format(mis.maxMis.getReal()), AclfNet2BeanUtilFunc.format(mis.maxMis.getImaginary()));
 		misBean.p_bus_id = mis.maxPBus.getId(); 
 		misBean.q_bus_id = mis.maxQBus.getId();
 		
 		Complex gen = aclfNet.totalGeneration(UnitType.PU);
 		Complex load = aclfNet.totalLoad(UnitType.PU);
 		Complex loss = aclfNet.totalLoss(UnitType.PU);
-		aclfResult.gen = new ComplexValueBean(format(gen));
-		aclfResult.load = new ComplexValueBean(format(load));
-		aclfResult.loss = new ComplexValueBean(format(loss));
+		aclfResult.gen = new ComplexValueBean(AclfNet2BeanUtilFunc.format(gen));
+		aclfResult.load = new ComplexValueBean(AclfNet2BeanUtilFunc.format(load));
+		aclfResult.loss = new ComplexValueBean(AclfNet2BeanUtilFunc.format(loss));
 		
 		aclfResult.base_kva = aclfNet.getBaseKva();			
 		
 		for (AclfBus bus : aclfNet.getBusList()) {
 			AclfBusResultBean<TBusExt> bean = new AclfBusResultBean<>();
 			aclfResult.addBusBean(bean);
-			mapBaseBus(bus, bean);
+			AclfNet2BeanUtilFunc.mapAclfBusResult(bus, bean);
 		}
 		
 		for (AclfBranch branch : aclfNet.getBranchList()) {
@@ -110,17 +114,17 @@ public class AclfNet2ResultBeanMapper<TBusExt extends BaseJSONUtilBean, TBraExt 
 	}	
 	
 	protected void mapBaseBranch(AclfBranch branch, AclfBranchResultBean<TBraExt> bean) {
-		super.mapBaseBranch(branch, bean);
+		AclfNet2BeanUtilFunc.mapBaseBranch(branch, bean);
 		
 		Complex flow = branch.powerFrom2To();
-		bean.flow_f2t = new ComplexValueBean(format(flow));
+		bean.flow_f2t = new ComplexValueBean(AclfNet2BeanUtilFunc.format(flow));
 
 		flow = branch.powerTo2From();
-		bean.flow_t2f = new ComplexValueBean(format(flow));
+		bean.flow_t2f = new ComplexValueBean(AclfNet2BeanUtilFunc.format(flow));
 		
 		Complex loss = branch.loss();
-		bean.loss = new ComplexValueBean(format(loss));
+		bean.loss = new ComplexValueBean(AclfNet2BeanUtilFunc.format(loss));
 		
-		bean.cur = format2(branch.current(UnitType.Amp));
+		bean.cur = AclfNet2BeanUtilFunc.format2(branch.current(UnitType.Amp));
 	}	
 }

@@ -22,10 +22,11 @@
  *
  */
 
-package org.interpss.datamodel.bean.aclf;
+package org.interpss.datamodel.bean.aclf.ext;
 
-import org.interpss.datamodel.bean.BaseJSONBean;
-import org.interpss.datamodel.bean.BaseJSONUtilBean;
+import org.interpss.datamodel.bean.aclf.AclfBranchBean;
+import org.interpss.datamodel.bean.base.BaseJSONBean;
+import org.interpss.datamodel.bean.base.BaseJSONUtilBean;
 import org.interpss.datamodel.bean.datatype.ComplexValueBean;
 import org.interpss.numeric.util.NumericUtil;
 
@@ -35,7 +36,7 @@ import org.interpss.numeric.util.NumericUtil;
  * @author mzhou
  *
  */
-public class AclfBranchResultBean<TExt extends BaseJSONUtilBean> extends AclfBranchBean<TExt> {
+public class AclfBranchResultBean extends BaseJSONUtilBean {
 
 	public ComplexValueBean 
 		flow_f2t,		// branch power flow from->to
@@ -46,24 +47,4 @@ public class AclfBranchResultBean<TExt extends BaseJSONUtilBean> extends AclfBra
 		cur;			// branch current in amps, for Xfr, it is at the high voltage side
 	
 	public AclfBranchResultBean() { }
-	
-	@Override public int compareTo(BaseJSONBean<TExt> b) {
-		int eql = super.compareTo(b);
-		
-		AclfBranchResultBean bean = (AclfBranchResultBean)b;
-		
-		String str = "ID: " + this.id + " AclfBranchResultBean.";
-
-		if (this.flow_f2t.compareTo(bean.flow_f2t) != 0) {
-			logCompareMsg(str + "flow_f2t is not equal"); eql = 1; }
-		if (this.flow_t2f.compareTo(bean.flow_t2f) != 0) {
-			logCompareMsg(str + "flow_t2f is not equal"); eql = 1; }
-		if (this.loss.compareTo(bean.loss) != 0) {
-			logCompareMsg(str + "loss is not equal"); eql = 1; }
-		
-		if (!NumericUtil.equals(this.cur, bean.cur, BaseJSONBean.CUR_ERR)) {  // in amps
-			logCompareMsg(str + "cur is not equal, " + this.cur + ", " + bean.cur); eql = 1; }
-
-		return eql;
-	}	
 }

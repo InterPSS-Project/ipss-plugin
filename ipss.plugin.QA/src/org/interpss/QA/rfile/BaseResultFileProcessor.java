@@ -1,6 +1,6 @@
 package org.interpss.QA.rfile;
 
-import org.interpss.datamodel.bean.aclf.AclfNetResultBean;
+import org.interpss.datamodel.bean.aclf.ext.AclfNetResultBean;
 import org.interpss.util.ITextFileProcessor;
 
 /**

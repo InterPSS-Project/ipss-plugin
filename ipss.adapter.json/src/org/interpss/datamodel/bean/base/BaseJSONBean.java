@@ -22,16 +22,13 @@
  *
  */
 
-package org.interpss.datamodel.bean;
+package org.interpss.datamodel.bean.base;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import org.interpss.datamodel.util.INetBeanComparator;
 import org.interpss.datamodel.util.INetBeanComparator.CompareLog;
 
-import com.google.gson.Gson;
 import com.interpss.common.util.IpssLogger;
 
 /**
@@ -66,28 +63,6 @@ public abstract class BaseJSONBean<TExt extends BaseJSONUtilBean> extends BaseJS
 		info;                   // extra info
 
 	public TExt extension;      // for bean extension
-	
-	private static List<String> msgList = new ArrayList<>();
-	private static INetBeanComparator.CompareLog compareLog = CompareLog.Console;
-	
-	/**
-	 * set compare warning msg log method
-	 * 
-	 * @param log
-	 */
-	public void setCompareLog(INetBeanComparator.CompareLog log) {
-		compareLog = log;
-		msgList.clear();
-	}
-
-	/**
-	 * get the Msg List
-	 * 
-	 * @return
-	 */
-	public List<String> getMsgList() {
-		return msgList;
-	}
 	
 	/**
 	 * compare this object with the bean object
@@ -134,6 +109,6 @@ public abstract class BaseJSONBean<TExt extends BaseJSONUtilBean> extends BaseJS
 		if (compareLog == CompareLog.Console)
 			IpssLogger.ipssLogger.warning(msg);
 		else
-			msgList.add(msg);
+			getMsgList().add(msg);
 	}
 }
