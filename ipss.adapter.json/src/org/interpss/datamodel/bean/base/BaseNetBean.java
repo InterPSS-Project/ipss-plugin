@@ -21,7 +21,7 @@
  *   ================
  *
  */
-package org.interpss.datamodel.bean;
+package org.interpss.datamodel.bean.base;
 
 import java.util.List;
 
@@ -34,7 +34,7 @@ import org.interpss.numeric.util.NumericUtil;
  * @author mzhou
  *
  */
-public abstract class BaseNetBean extends BaseJSONBean<DefaultExtBean> {
+public abstract class BaseNetBean<TNetExt extends BaseJSONUtilBean> extends BaseJSONBean<TNetExt> {
 	public double base_kva; // network base kva
 
 	/**
@@ -50,10 +50,10 @@ public abstract class BaseNetBean extends BaseJSONBean<DefaultExtBean> {
 	
 	public BaseNetBean() {  }
 	
-	@Override public int compareTo(BaseJSONBean<DefaultExtBean> b) {
+	@Override public int compareTo(BaseJSONBean<TNetExt> b) {
 		int eql = super.compareTo(b);
 		
-		BaseNetBean bean = (BaseNetBean)b;
+		BaseNetBean<TNetExt> bean = (BaseNetBean<TNetExt>)b;
 
 		String str = "ID: " + this.id + " BaseNetBean.";
 		
