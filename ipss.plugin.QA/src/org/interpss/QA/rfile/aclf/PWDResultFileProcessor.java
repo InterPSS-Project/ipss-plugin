@@ -7,10 +7,9 @@ import org.interpss.QA.rfile.BaseResultFileProcessor;
 import org.interpss.QA.rfile.QAFileReader;
 import org.interpss.datamodel.bean.aclf.AclfBranchBean;
 import org.interpss.datamodel.bean.aclf.AclfBusBean;
+import org.interpss.datamodel.bean.aclf.AclfNetBean;
 import org.interpss.datamodel.bean.aclf.ext.AclfBranchResultBean;
-import org.interpss.datamodel.bean.aclf.ext.AclfNetResultBean;
 import org.interpss.datamodel.bean.base.BaseBranchBean;
-import org.interpss.datamodel.bean.base.DefaultExtBean;
 import org.interpss.datamodel.bean.datatype.ComplexValueBean;
 
 import com.interpss.common.exp.InterpssException;
@@ -28,8 +27,8 @@ public class PWDResultFileProcessor extends BaseResultFileProcessor {
 	}
 	
 	public PWDResultFileProcessor() {
-		this.qaResultSet = new AclfNetResultBean<DefaultExtBean, DefaultExtBean>();
-		this.qaResultSet.base_kva = 100000.0;
+		this.qaSet = new AclfNetBean();
+		this.qaSet.base_kva = 100000.0;
 	}
 	
 	public void load(String busFile, String branchFile) {
@@ -75,11 +74,11 @@ Transformer,   ORRINGTN_345_A, A,             31,          ORRINGTN_345_4, 61,  
 			String shiftAng = sAry[11];
 
 			String braId = ToBranchId.f(fromId, toId, cirId);
-			AclfBranchBean<DefaultExtBean> rec = this.qaResultSet.getBranch(braId);
+			AclfBranchBean<DefaultExtBean> rec = this.qaSet.getBranch(braId);
 			if (rec == null)
 				throw new InterpssException("Xfr rec not found, " + braId);
 			
-			rec.ang.f = Math.toRadians(getDbl(shiftAng));
+			rec.shiftAng.f = Math.toRadians(getDbl(shiftAng));
 		}
 	}
 	
@@ -113,7 +112,7 @@ Line Records
 			String frommw = sAry[8];
 */
 			String braId = ToBranchId.f(fromId, toId, cirId);
-			AclfBranchResultBean rec = this.qaResultSet.createAclfBranchResultBean(fromId, toId, cirId);
+			AclfBranchResultBean rec = this.qaSet.createAclfBranchResultBean(fromId, toId, cirId);
 
 			rec.id = braId;
 			if (status.toLowerCase().endsWith("open"))
@@ -126,7 +125,7 @@ Line Records
 								BaseBranchBean.BranchCode.Xfr);   
 			}
 			
-			double baseMva = this.qaResultSet.base_kva * 0.001;
+			double baseMva = this.qaSet.base_kva * 0.001;
 
 			double p = getDbl(frommw) / baseMva; 
 			
@@ -150,9 +149,9 @@ Number,Name,              Area Name,  Nom kV,  Angle (Deg), Load MW, Gen MW, Act
 			String genp = sAry[6];
 			String shuntg = sAry[7];
 			
-			AclfBusBean rec = this.qaResultSet.createAclfBusBean(busId);
+			AclfBusBean rec = this.qaSet.createAclfBusBean(busId);
 			
-			double baseMva = this.qaResultSet.base_kva * 0.001;
+			double baseMva = this.qaSet.base_kva * 0.001;
 			
 			// parse the line field
 			double vMag = new Double(vmag).doubleValue();
@@ -192,9 +191,9 @@ Number,Name,             Area Name, Nom kV,  PU Volt,  Volt (kV),  Angle (Deg), 
 			String genp = sAry[9];
 			String genq = sAry[10];
 			
-			AclfBusBean rec = this.qaResultSet.createAclfBusBean(busId);
+			AclfBusBean rec = this.qaSet.createAclfBusBean(busId);
 			
-			double baseMva = this.qaResultSet.base_kva * 0.001;
+			double baseMva = this.qaSet.base_kva * 0.001;
 			
 			// parse the line field
 			double vMagPu = new Double(vmag).doubleValue();
@@ -235,7 +234,7 @@ From Number, From Name,      To Number, To Name,           Circuit,  Status,  Br
 			String frommvar = sAry[9];
 			
 			String braId = ToBranchId.f(fromId, toId, cirId);
-			AclfBranchResultBean rec = this.qaResultSet.createAclfBranchResultBean(fromId, toId, cirId);
+			AclfBranchResultBean rec = this.qaSet.createAclfBranchResultBean(fromId, toId, cirId);
 
 			rec.id = braId;
 			if (status.toLowerCase().endsWith("open"))
@@ -248,7 +247,7 @@ From Number, From Name,      To Number, To Name,           Circuit,  Status,  Br
 								BaseBranchBean.BranchCode.Xfr);   
 			}
 			
-			double baseMva = this.qaResultSet.base_kva * 0.001;
+			double baseMva = this.qaSet.base_kva * 0.001;
 
 			double p = getDbl(frommw) / baseMva; 
 			double q = getDbl(frommvar) / baseMva; 
@@ -257,10 +256,10 @@ From Number, From Name,      To Number, To Name,           Circuit,  Status,  Br
 			rec.info = lineStr;
 			
 			// also add to the fromBus and toBus
-			AclfBusBean fromBus = this.qaResultSet.getBus(fromId);
+			AclfBusBean fromBus = this.qaSet.getBus(fromId);
 			if (fromBus != null)
 				fromBus.info += "\nBranchInfo: " + lineStr;
-			AclfBusBean toBus = this.qaResultSet.getBus(toId);
+			AclfBusBean toBus = this.qaSet.getBus(toId);
 			if (toBus != null)
 				toBus.info += "\nBranchInfo: " + lineStr;
 		}		
