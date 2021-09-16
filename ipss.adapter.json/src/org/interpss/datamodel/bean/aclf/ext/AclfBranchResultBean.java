@@ -24,11 +24,8 @@
 
 package org.interpss.datamodel.bean.aclf.ext;
 
-import org.interpss.datamodel.bean.aclf.AclfBranchBean;
-import org.interpss.datamodel.bean.base.BaseJSONBean;
 import org.interpss.datamodel.bean.base.BaseJSONUtilBean;
 import org.interpss.datamodel.bean.datatype.ComplexValueBean;
-import org.interpss.numeric.util.NumericUtil;
 
 /**
  * Bean class for storing AclfBranch result info
