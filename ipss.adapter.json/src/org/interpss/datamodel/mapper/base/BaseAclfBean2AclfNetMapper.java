@@ -296,13 +296,13 @@ public abstract class BaseAclfBean2AclfNetMapper<
 			branch.setZ(branchBean.z.toComplex());
 		if (branchBean.shunt_y != null)
 			branch.setHShuntY(new Complex(branchBean.shunt_y.re*0.5, branchBean.shunt_y.im*0.5));
-		if (branchBean.ratio != null) {
-			branch.setFromTurnRatio(branchBean.ratio.f);
-			branch.setToTurnRatio(branchBean.ratio.t);
+		if (branchBean.turnRatio != null) {
+			branch.setFromTurnRatio(branchBean.turnRatio.f);
+			branch.setToTurnRatio(branchBean.turnRatio.t);
 		}
-		if (branchBean.ang != null){
-			branch.setFromPSXfrAngle(branchBean.ang.f);
-			branch.setToPSXfrAngle(branchBean.ang.t);
+		if (branchBean.shiftAng != null){
+			branch.setFromPSXfrAngle(branchBean.shiftAng.f);
+			branch.setToPSXfrAngle(branchBean.shiftAng.t);
 		}
 		if (branch.getBranchCode() == AclfBranchCode.XFORMER ) {
 			if (branchBean.shunt_y != null)
