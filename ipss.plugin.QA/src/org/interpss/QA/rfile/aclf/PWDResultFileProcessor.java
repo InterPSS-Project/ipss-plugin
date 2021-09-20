@@ -74,7 +74,7 @@ Transformer,   ORRINGTN_345_A, A,             31,          ORRINGTN_345_4, 61,  
 			String shiftAng = sAry[11];
 
 			String braId = ToBranchId.f(fromId, toId, cirId);
-			AclfBranchBean<DefaultExtBean> rec = this.qaSet.getBranch(braId);
+			AclfBranchBean<AclfBranchResultBean> rec = this.qaSet.getBranch(braId);
 			if (rec == null)
 				throw new InterpssException("Xfr rec not found, " + braId);
 			
@@ -112,7 +112,7 @@ Line Records
 			String frommw = sAry[8];
 */
 			String braId = ToBranchId.f(fromId, toId, cirId);
-			AclfBranchResultBean rec = this.qaSet.createAclfBranchResultBean(fromId, toId, cirId);
+			AclfBranchBean<AclfBranchResultBean> rec = this.qaSet.createAclfBranchBean(fromId, toId, cirId);
 
 			rec.id = braId;
 			if (status.toLowerCase().endsWith("open"))
@@ -129,7 +129,7 @@ Line Records
 
 			double p = getDbl(frommw) / baseMva; 
 			
-			rec.flow_f2t.re = p;
+			rec.extension.flow_f2t.re = p;
 			rec.info = lineStr;
 		}		
 	}	
@@ -234,7 +234,7 @@ From Number, From Name,      To Number, To Name,           Circuit,  Status,  Br
 			String frommvar = sAry[9];
 			
 			String braId = ToBranchId.f(fromId, toId, cirId);
-			AclfBranchResultBean rec = this.qaSet.createAclfBranchResultBean(fromId, toId, cirId);
+			AclfBranchBean<AclfBranchResultBean> rec = this.qaSet.createAclfBranchBean(fromId, toId, cirId);
 
 			rec.id = braId;
 			if (status.toLowerCase().endsWith("open"))
@@ -252,7 +252,7 @@ From Number, From Name,      To Number, To Name,           Circuit,  Status,  Br
 			double p = getDbl(frommw) / baseMva; 
 			double q = getDbl(frommvar) / baseMva; 
 			
-			rec.flow_f2t = new ComplexValueBean(p, q);
+			rec.extension.flow_f2t = new ComplexValueBean(p, q);
 			rec.info = lineStr;
 			
 			// also add to the fromBus and toBus
