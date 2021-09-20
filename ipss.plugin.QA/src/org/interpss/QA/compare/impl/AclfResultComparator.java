@@ -171,7 +171,7 @@ public class AclfResultComparator<TBusExt extends BaseJSONUtilBean,
 			 * Compare switched shuntQ
 			 */
 			if (bus.isSwitchedShunt()) {
-				double q = bus.getCapacitorB() * bus.getVoltageMag() * bus.getVoltageMag();				
+				double q = bus.toCapacitorBus().getQResults();				
 				if (!NumericUtil.equals(rec.shunt.im, q, PQErr)) {
 					String msg = "Bus Switched ShuntQ mismatch:     Bus-" + rec.id + ", " + 
 								String.format("%5.3f(r), %5.3f(m), %4.3f", rec.shunt.im, q,  

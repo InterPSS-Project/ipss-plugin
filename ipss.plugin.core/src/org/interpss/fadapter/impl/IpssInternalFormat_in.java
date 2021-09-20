@@ -314,7 +314,7 @@ public class IpssInternalFormat_in {
       	AclfBus bus = adjNet.getBus(id);
     	if (bus != null) {
 			final AclfCapacitorBusAdapter cap = bus.toCapacitorBus();
-			cap.setQ(b, UnitType.PU);
+			cap.setQ(b);
     	} else {
 			throw new InterpssRuntimeException("AclfDataFile.loadCapacitorBusInfo_2, Capacitor bus:" + id + " is not in the system" );
 		}
