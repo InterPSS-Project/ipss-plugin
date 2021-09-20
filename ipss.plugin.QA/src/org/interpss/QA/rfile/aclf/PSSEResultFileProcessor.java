@@ -3,7 +3,8 @@ package org.interpss.QA.rfile.aclf;
 import org.interpss.QA.rfile.BaseResultFileProcessor;
 import org.interpss.datamodel.bean.aclf.AclfBranchBean;
 import org.interpss.datamodel.bean.aclf.AclfBusBean;
-import org.interpss.datamodel.bean.aclf.ext.AclfNetResultBean;
+import org.interpss.datamodel.bean.aclf.AclfNetBean;
+import org.interpss.datamodel.bean.aclf.ext.AclfBranchResultBean;
 import org.interpss.datamodel.bean.base.BaseBranchBean.BranchCode;
 import org.interpss.datamodel.bean.datatype.ComplexValueBean;
 
@@ -75,7 +76,7 @@ BUS      1 EQN-U1      13.800 CKT     MW     MVAR     MVA   % 1.0000PU    0.00  
 			this.Int_offset = -1;
 			
 		initTKN();
-		this.qaSet = new AclfNetResultBean();
+		this.qaSet = new AclfNetBean();
 		this.qaSet.base_kva = 100000.0;
 	}
 
@@ -246,8 +247,8 @@ xTO  12015 CEBOLLA     69.000  1     -4.8    -0.2     4.8  15                   
 			
 			String braId = NetUtilFunc.ToBranchId.f(fromId, toId, cirId);
 			boolean existingBranch = this.qaSet.getBranch(braId) != null;
-			AclfBranchBean<DefaultExtBean> braRec = existingBranch ? this.qaSet.getBranch(braId) :
-											this.qaSet.createAclfBranchResultBean(fromId, toId, cirId);
+			AclfBranchBean<AclfBranchResultBean> braRec = existingBranch ? this.qaSet.getBranch(braId) :
+											this.qaSet.createAclfBranchBean(fromId, toId, cirId);
 
 			String tapStr1 = lineStr.substring(Tap_Begin, Tap_End);
 			String tapStr2 = lineStr.substring(Tap_End, Tap_End+2); 
