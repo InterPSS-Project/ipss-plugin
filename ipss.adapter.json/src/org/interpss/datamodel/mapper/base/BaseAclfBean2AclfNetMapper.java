@@ -54,7 +54,7 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.QBank;
+import com.interpss.core.aclf.ShuntCompensator;
 import com.interpss.core.aclf.adj.AdjControlType;
 import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.adj.RemoteQBus;
@@ -255,7 +255,7 @@ public abstract class BaseAclfBean2AclfNetMapper<
 				ss.setDesiredVoltageRange(new LimitType(ssb.vmax, ssb.vmin));
 				ss.setQLimit(new LimitType(ssb.qmax, ssb.qmin));
 				for(QBankBean<TBusExt> qbb: ssb.varBankList){
-					QBank qb = CoreObjectFactory.createQBank(ss);
+					ShuntCompensator qb = CoreObjectFactory.createShuntCompensator(ss);
 					qb.setSteps(qbb.step);
 					qb.setUnitQMvar(qbb.UnitQMvar);
 				}				

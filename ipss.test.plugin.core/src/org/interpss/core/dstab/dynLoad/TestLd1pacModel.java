@@ -37,7 +37,7 @@ import com.interpss.dstab.mach.MachineModelType;
 
 public class TestLd1pacModel extends TestSetupBase {
 
-	@Test
+	//@Test
 	public void test_DStab_Ld1pac() throws InterpssException {
 		DStabilityNetwork net = create2BusSystem();
 		net.initialization(ScBusModelType.DSTAB_SIMU);
@@ -235,7 +235,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		assertTrue(Math.abs(sm.getAcMotorQTable().get("ACMotor_1@Bus1").get(35).value-0.11015)<1.0E-4);
 	}
 
-	 @Test
+	@Test
 	public void test_Ld1pac() throws InterpssException {
 		// create a machine in a two-bus network. The loadflow already converged
 		DStabilityNetwork net = create2BusSystem();
