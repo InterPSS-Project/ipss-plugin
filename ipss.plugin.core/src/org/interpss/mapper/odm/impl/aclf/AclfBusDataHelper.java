@@ -68,7 +68,7 @@ import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
-import com.interpss.core.aclf.QBank;
+import com.interpss.core.aclf.ShuntCompensator;
 import com.interpss.core.aclf.adj.PQBusLimit;
 import com.interpss.core.aclf.adj.PVBusLimit;
 import com.interpss.core.aclf.adj.SwitchedShunt;
@@ -468,8 +468,8 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 			//TODO vLimit is missing
 			//swchShunt.set
 			for(SwitchedShuntBlockXmlType varBankXml:xmlSwitchedShuntData.getBlock()){
-				QBank varBank= CoreObjectFactory.createQBank("QBank");
-				swchShunt.getVarBankArray().add(varBank);
+				ShuntCompensator varBank= CoreObjectFactory.createShuntCompensator("QBank");
+				swchShunt.getShuntCompensatorList().add(varBank);
 				
 				varBank.setSteps(varBankXml.getSteps());
 				ReactivePowerXmlType unitVarXml = varBankXml.getIncrementB();
