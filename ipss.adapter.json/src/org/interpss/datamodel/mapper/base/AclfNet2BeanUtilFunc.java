@@ -46,7 +46,7 @@ import org.interpss.numeric.util.Number2String;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
-import com.interpss.core.aclf.QBank;
+import com.interpss.core.aclf.ShuntCompensator;
 import com.interpss.core.aclf.adj.AdjControlType;
 import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.adj.SwitchedShunt;
@@ -269,7 +269,7 @@ public class AclfNet2BeanUtilFunc {
 			ssb.qmax = ss.getQLimit().getMax();
 			ssb.qmin = ss.getQLimit().getMin();
 		}
-		for(QBank qb: ss.getVarBankArray()){
+		for(ShuntCompensator qb: ss.getShuntCompensatorList()){
 			QBankBean qbb =  new QBankBean();
 			qbb.step = qb.getSteps();
 			qbb.UnitQMvar = qb.getUnitQMvar();
