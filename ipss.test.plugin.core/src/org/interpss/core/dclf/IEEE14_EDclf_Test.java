@@ -134,7 +134,7 @@ public class IEEE14_EDclf_Test extends CorePluginTestSetup {
 		
 		IEDclfSolver solver = DclfAlgoObjectFactory.createEDclfSolver(edclfAlgo);
 		
-		Complex[] voltAry = solver.calPQBudVoltMag();
+		Complex[] voltAry = solver.calPQBusVoltMag();
 		/*
                V_N
 		  1.0167 + 0.0009i      (1.016377760628728, -2.7904232436892773E-4)
