@@ -41,6 +41,7 @@ public interface IpssFileAdapter extends IpssCustomAdapter {
 			IpssInternal, Custom };
 	public static enum Version { 
 			NotDefined, 
+			IEEECDF, IEEECDFCustom1, 
 			PSSE_30, PSSE_29, PSSE_26 };
 	
 	/**
