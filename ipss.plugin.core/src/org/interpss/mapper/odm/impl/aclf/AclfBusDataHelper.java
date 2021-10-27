@@ -132,7 +132,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 		//System.out.println(bus.getId() + "  " + Number2String.toStr(bus.getVoltage()));
 
 		if (xmlBusData.getVLimit() != null) {
-			double factor = 10;
+			double factor = 1.0;
 			if (xmlBusData.getVLimit().getUnit() == VoltageUnitType.KV)
 				factor = 1000.0 / bus.getBaseVoltage();
 			else if (xmlBusData.getVLimit().getUnit() == VoltageUnitType.VOLT)
