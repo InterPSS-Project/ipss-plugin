@@ -150,7 +150,7 @@ public class CorePluginFactory extends CoreCommonFactory {
 	public static IpssFileAdapter getFileAdapter(IpssFileAdapter.FileFormat f, IpssFileAdapter.Version v)
 					throws InterpssException {
 		if (f == IpssFileAdapter.FileFormat.IEEECDF) {
-			return new IeeeCDFFormat(CoreCommonFactory.getIpssMsgHub());
+			return new IeeeCDFFormat(CoreCommonFactory.getIpssMsgHub(), v);
 		}
 		else if (f == IpssFileAdapter.FileFormat.GE_PSLF) {
 			return new GEFormat(CoreCommonFactory.getIpssMsgHub());
