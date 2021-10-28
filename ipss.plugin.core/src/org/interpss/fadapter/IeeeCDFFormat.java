@@ -41,6 +41,6 @@ public class IeeeCDFFormat extends IpssFileAdapterBase {
 	}
 	
 	public IeeeCDFFormat(IPSSMsgHub msgHub, IpssFileAdapter.Version v) {
-		super(msgHub, v == IpssFileAdapter.Version.IEEECDF? ODMFileFormatEnum.IeeeCDF : ODMFileFormatEnum.IeeeCDFCustom1);
+		super(msgHub, v == IpssFileAdapter.Version.IEEECDF? ODMFileFormatEnum.IeeeCDF : ODMFileFormatEnum.IeeeCDFExt1);
 	}
 }
