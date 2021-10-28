@@ -136,7 +136,10 @@ public class CorePluginFactory extends CoreCommonFactory {
 	 * @throws InterpssException
 	 */
 	public static IpssFileAdapter getFileAdapter(IpssFileAdapter.FileFormat f) throws InterpssException {
-		return getFileAdapter(f, IpssFileAdapter.Version.NotDefined);
+		IpssFileAdapter.Version version = 
+				f == IpssFileAdapter.FileFormat.IEEECDF? IpssFileAdapter.Version.IEEECDF : 
+						IpssFileAdapter.Version.NotDefined;
+		return getFileAdapter(f, version);
 	}
 	
 	/**
