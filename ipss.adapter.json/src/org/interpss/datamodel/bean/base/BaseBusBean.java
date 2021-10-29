@@ -43,7 +43,7 @@ public abstract class BaseBusBean<TExt extends BaseJSONUtilBean> extends BaseJSO
 	public int status;			// bus in-service status
 	
 	public double
-		base_v,					// bus base voltage
+		base_v,					// bus base voltage in kv
 		v_mag= 1.0,          	// bus voltage in pu		
 		v_ang = 0.0;			// bus voltage angle in deg
 	public LimitValueBean
