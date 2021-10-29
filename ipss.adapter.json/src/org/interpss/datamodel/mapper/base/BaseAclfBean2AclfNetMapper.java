@@ -158,7 +158,7 @@ public abstract class BaseAclfBean2AclfNetMapper<
 		else
 			bus.setStatus(true);
 		
-		bus.setVLimit(new LimitType(busBean.vmax, busBean.vmin));
+		bus.setVLimit(new LimitType(busBean.vLimit.max, busBean.vLimit.min));
 		
 		Area area = CoreObjectFactory.createArea(busBean.area, aclfNet);
 		area.setName(busBean.areaName);
@@ -207,8 +207,8 @@ public abstract class BaseAclfBean2AclfNetMapper<
 			//bus.setDesiredVoltMag(busBean.vDesired_mag);
 			//bus.setDesiredVoltAng(busBean.vDesired_ang);
 			
-			bus.setPGenLimit(new LimitType(busBean.pmax,busBean.pmin));
-			bus.setQGenLimit(new LimitType(busBean.qmax,busBean.qmin));
+			bus.setPGenLimit(new LimitType(busBean.pLimit.max,busBean.pLimit.min));
+			bus.setQGenLimit(new LimitType(busBean.qLimit.max,busBean.qLimit.min));
 			
 			String remoteBusId = busBean.remoteVControlBusId;
 			if( !remoteBusId.equals("")){
