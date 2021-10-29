@@ -71,8 +71,8 @@ public class AclfBusBean<TExt extends BaseJSONUtilBean>  extends BaseBusBean<TEx
 		vDesired_ang = 0.0;				// desired bus voltage angle in deg	
 	
 	public LimitValueBean 	
-		pLimit,  // in MW output
-		qLimit;  // in MVAR output
+		pLimit,  // p limit in MW output
+		qLimit;  // q limit in MVAR output
 
 	public String remoteVControlBusId = "";  // remote control bus id	
 	
