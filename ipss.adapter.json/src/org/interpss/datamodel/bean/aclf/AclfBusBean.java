@@ -29,6 +29,7 @@ import org.interpss.datamodel.bean.aclf.adj.SwitchShuntBean;
 import org.interpss.datamodel.bean.base.BaseBusBean;
 import org.interpss.datamodel.bean.base.BaseJSONBean;
 import org.interpss.datamodel.bean.base.BaseJSONUtilBean;
+import org.interpss.datamodel.bean.datatype.LimitValueBean;
 import org.interpss.numeric.util.NumericUtil;
 
 /**
@@ -69,11 +70,9 @@ public class AclfBusBean<TExt extends BaseJSONUtilBean>  extends BaseBusBean<TEx
 		vDesired_mag= 1.0,          	// desired bus voltage in pu		
 		vDesired_ang = 0.0;				// desired bus voltage angle in deg	
 	
-	public double 	
-		pmax, // max MW output
-		pmin, // min MW output
-		qmax, // max MVAR output
-		qmin; // min MVAR output	
+	public LimitValueBean 	
+		pLimit,  // in MW output
+		qLimit;  // in MVAR output
 
 	public String remoteVControlBusId = "";  // remote control bus id	
 	
@@ -101,15 +100,15 @@ public class AclfBusBean<TExt extends BaseJSONUtilBean>  extends BaseBusBean<TEx
 		if (!NumericUtil.equals(this.vDesired_ang, bean.vDesired_ang, PU_ERR)) {
 			logCompareMsg(str + "vDesired_ang is not equal, " + this.vDesired_ang + ", " + bean.vDesired_ang); eql = 1;	}
 		
-		if (!NumericUtil.equals(this.pmax, bean.pmax, PU_ERR)) {
-			logCompareMsg(str + "pmax is not equal, " + this.pmax + ", " + bean.pmax); eql = 1; }
-		if (!NumericUtil.equals(this.qmax, bean.qmax, PU_ERR)) {
-			logCompareMsg(str + "qmax is not equal, " + this.qmax + ", " + bean.qmax); eql = 1;	}
+		if (!NumericUtil.equals(this.pLimit.max, bean.pLimit.max, PU_ERR)) {
+			logCompareMsg(str + "pmax is not equal, " + this.pLimit.max + ", " + bean.pLimit.max); eql = 1; }
+		if (!NumericUtil.equals(this.qLimit.max, bean.qLimit.max, PU_ERR)) {
+			logCompareMsg(str + "qmax is not equal, " + this.qLimit.max + ", " + bean.qLimit.max); eql = 1;	}
 		
-		if (!NumericUtil.equals(this.pmin, bean.pmin, PU_ERR)) {
-			logCompareMsg(str + "pmin is not equal, " + this.pmin + ", " + bean.pmin); eql = 1; }
-		if (!NumericUtil.equals(this.qmin, bean.qmin, PU_ERR)) {
-			logCompareMsg(str + "qmin is not equal, " + this.qmin + ", " + bean.qmin); eql = 1;	}
+		if (!NumericUtil.equals(this.pLimit.min, bean.pLimit.min, PU_ERR)) {
+			logCompareMsg(str + "pmin is not equal, " + this.pLimit.min + ", " + bean.pLimit.min); eql = 1; }
+		if (!NumericUtil.equals(this.qLimit.min, bean.qLimit.min, PU_ERR)) {
+			logCompareMsg(str + "qmin is not equal, " + this.qLimit.min + ", " + bean.qLimit.min); eql = 1;	}
 				
 		if(this.switchShunt == null && bean.switchShunt != null)
 			eql = 1;

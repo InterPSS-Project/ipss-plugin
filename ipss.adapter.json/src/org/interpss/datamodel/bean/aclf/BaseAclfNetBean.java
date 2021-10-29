@@ -52,34 +52,34 @@ public class BaseAclfNetBean<TBus extends AclfBusBean<TBusExt>,
                              TBraExt extends BaseJSONUtilBean,
                              TNetExt extends BaseJSONUtilBean> extends BaseNetBean<TNetExt> {
 	
-	private List<TBus> bus_list;					// bus result bean list
+	private List<TBus> busBeanList;					// bus result bean list
 	private transient Map<String,TBus> busIdMapper;
 	
-	private List<TBra> branch_list;                // branch result bean list
+	private List<TBra> branchBeanList;                // branch result bean list
 	private transient Map<String,TBra> branchIdMapper;
 	
 	public BaseAclfNetBean() { 
-		bus_list = new ArrayList<TBus>(); 
+		busBeanList = new ArrayList<TBus>(); 
 		busIdMapper = new Hashtable<>();
-		branch_list = new ArrayList<TBra>(); 
+		branchBeanList = new ArrayList<TBra>(); 
 		branchIdMapper = new Hashtable<>();	
 	}
 	
 	public List<TBus> getBusBeanList() {
-		return bus_list;
+		return busBeanList;
 	}
 	
 	public List<TBra> getBranchBeanList() {
-		return branch_list;
+		return branchBeanList;
 	}
 	
 	public void addBusBean(TBus bus) {
-		this.bus_list.add((TBus)bus);
+		this.busBeanList.add((TBus)bus);
 		this.busIdMapper.put(bus.id, (TBus)bus);			
 	}
 
 	public void addBranchBean(TBra branch) {
-		this.branch_list.add((TBra)branch);
+		this.branchBeanList.add((TBra)branch);
 		this.branchIdMapper.put(branch.id, (TBra)branch);		
 	}
 	
@@ -88,11 +88,11 @@ public class BaseAclfNetBean<TBus extends AclfBusBean<TBusExt>,
 		
 		BaseAclfNetBean<TBus,TBra,TBusExt,TBraExt,TNetExt> netBean = (BaseAclfNetBean<TBus,TBra, TBusExt, TBraExt, TNetExt>)b;
 
-		for (TBus bus : this.bus_list) 
+		for (TBus bus : this.busBeanList) 
 			if (bus.compareTo(netBean.getBus(bus.id)) != 0) 
 				eql = 1; 
 		
-		for (TBra bra : this.branch_list)
+		for (TBra bra : this.branchBeanList)
 			if (bra.compareTo(netBean.getBranch(bra.id)) != 0) 
 				eql = 1; 
 
@@ -133,10 +133,10 @@ public class BaseAclfNetBean<TBus extends AclfBusBean<TBusExt>,
 	public boolean validate(List<String> msgList) {
 		boolean noErr = super.validate(msgList);
 		
-		for (TBus bean : this.bus_list) 
+		for (TBus bean : this.busBeanList) 
 			if (!bean.validate(msgList))
 				noErr = false;
-		for (TBra bean : this.branch_list) 
+		for (TBra bean : this.branchBeanList) 
 			if (!bean.validate(msgList))
 				noErr = false;
 		return noErr; 
