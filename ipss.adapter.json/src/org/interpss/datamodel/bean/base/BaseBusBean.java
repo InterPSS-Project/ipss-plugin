@@ -26,6 +26,7 @@ package org.interpss.datamodel.bean.base;
 import java.util.List;
 
 import org.interpss.datamodel.bean.datatype.ComplexValueBean;
+import org.interpss.datamodel.bean.datatype.LimitValueBean;
 import org.interpss.numeric.util.NumericUtil;
 
 /**
@@ -44,9 +45,9 @@ public abstract class BaseBusBean<TExt extends BaseJSONUtilBean> extends BaseJSO
 	public double
 		base_v,					// bus base voltage
 		v_mag= 1.0,          	// bus voltage in pu		
-		v_ang = 0.0,			// bus voltage angle in deg
-	    vmax = 1.1,				// bus voltage upper limit
-	    vmin = 0.9;				// bus voltage lower limit
+		v_ang = 0.0;			// bus voltage angle in deg
+	public LimitValueBean
+	    vLimit = new LimitValueBean(1.1, 0.9);	  	// bus voltage limit
 		
 	public ComplexValueBean
 	    gen, 					// bus generation
@@ -79,10 +80,10 @@ public abstract class BaseBusBean<TExt extends BaseJSONUtilBean> extends BaseJSO
 			logCompareMsg(str + "v_mag is not equal, " + this.v_mag + ", " + bean.v_mag); eql = 1;	}
 		if (!NumericUtil.equals(this.v_ang, bean.v_ang, ANG_ERR)) {
 			logCompareMsg(str + "v_ang is not equal, " + this.v_ang + ", " + bean.v_ang); eql = 1; }
-		if (!NumericUtil.equals(this.vmax, bean.vmax, PU_ERR)) {
-			logCompareMsg(str + "vmax is not equal, " + this.vmax + ", " + bean.vmax); eql = 1; }
-		if (!NumericUtil.equals(this.vmin, bean.vmin, PU_ERR)) {
-			logCompareMsg(str + "vmin is not equal, " + this.vmin + ", " + bean.vmin); eql = 1; }
+		if (!NumericUtil.equals(this.vLimit.max, bean.vLimit.max, PU_ERR)) {
+			logCompareMsg(str + "vmax is not equal, " + this.vLimit.max + ", " + bean.vLimit.max); eql = 1; }
+		if (!NumericUtil.equals(this.vLimit.min, bean.vLimit.min, PU_ERR)) {
+			logCompareMsg(str + "vmin is not equal, " + this.vLimit.min + ", " + bean.vLimit.min); eql = 1; }
 
 		if (this.gen.compareTo(bean.gen) != 0) {
 			logCompareMsg(str + "gen is not equal"); eql = 1; }

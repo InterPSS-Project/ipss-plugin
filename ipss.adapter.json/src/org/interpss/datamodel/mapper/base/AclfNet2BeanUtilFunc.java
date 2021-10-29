@@ -40,6 +40,7 @@ import org.interpss.datamodel.bean.base.BaseBranchBean;
 import org.interpss.datamodel.bean.base.BaseJSONUtilBean;
 import org.interpss.datamodel.bean.datatype.BranchValueBean;
 import org.interpss.datamodel.bean.datatype.ComplexValueBean;
+import org.interpss.datamodel.bean.datatype.LimitValueBean;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.Number2String;
 
@@ -100,8 +101,7 @@ public class AclfNet2BeanUtilFunc {
 		//bean.vmax = format(bus.getVLimit().getMax()) == 0? bean.vmax : format(bus.getVLimit().getMax());
 		//bean.vmin = format(bus.getVLimit().getMin()) == 0? bean.vmin : format(bus.getVLimit().getMin());
 		
-		bean.vmax = format(bus.getVLimit().getMax());
-		bean.vmin = format(bus.getVLimit().getMin());
+		bean.vLimit = new LimitValueBean(format(bus.getVLimit().getMax()), format(bus.getVLimit().getMin()));
 
 		bean.gen_code = bus.isGenPQ()? AclfBusBean.GenCode.PQ :
 			(bus.isGenPV() ? AclfBusBean.GenCode.PV : 
@@ -116,12 +116,10 @@ public class AclfNet2BeanUtilFunc {
 		bean.gen = new ComplexValueBean(format(new Complex(genp, genq)));		
 		
 		if(bus.getPGenLimit() != null){
-			bean.pmax = bus.getPGenLimit().getMax();
-			bean.pmin = bus.getPGenLimit().getMin();
+			bean.pLimit = new LimitValueBean(bus.getPGenLimit().getMax(), bus.getPGenLimit().getMin());
 		}		
 		if(bus.getQGenLimit() != null){
-			bean.qmax = bus.getQGenLimit().getMax();
-			bean.qmin = bus.getQGenLimit().getMin();
+			bean.qLimit = new LimitValueBean(bus.getQGenLimit().getMax(), bus.getQGenLimit().getMin());
 		}
 		if (bus.isRemoteQBus()){
 			if (bus.getRemoteQBus() != null)
