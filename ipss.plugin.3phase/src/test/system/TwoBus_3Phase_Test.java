@@ -50,7 +50,7 @@ public class TwoBus_3Phase_Test {
 		DStabNetwork3Phase net = create2BusSys();
 	
 		// initGenLoad-- summarize the effects of contributive Gen/Load to make equivGen/load for power flow calculation	
-		net.initContributeGenLoad();
+		net.initContributeGenLoad(false);
 			
 		//create a load flow algorithm object
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
@@ -100,7 +100,7 @@ public class TwoBus_3Phase_Test {
 		
 	
 		// initGenLoad-- summarize the effects of contributive Gen/Load to make equivGen/load for power flow calculation	
-		net.initContributeGenLoad();
+		net.initContributeGenLoad(false);
 			
 //		//create a load flow algorithm object
 //	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
@@ -168,7 +168,7 @@ public class TwoBus_3Phase_Test {
 		
 	
 		// initGenLoad-- summarize the effects of contributive Gen/Load to make equivGen/load for power flow calculation	
-		net.initContributeGenLoad();
+		net.initContributeGenLoad(false);
 		
 		DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
 				net, IpssCorePlugin.getMsgHub());
@@ -238,7 +238,7 @@ public class TwoBus_3Phase_Test {
 		
 	
 		// initGenLoad-- summarize the effects of contributive Gen/Load to make equivGen/load for power flow calculation	
-		net.initContributeGenLoad();
+		net.initContributeGenLoad(false);
 		
 		DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
 				net, IpssCorePlugin.getMsgHub());

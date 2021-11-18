@@ -49,7 +49,7 @@ public class IEEE9Bus_3phase_LF_init_test {
 		DStabNetwork3Phase net = createIEEE9Bus();
 	
 	// initGenLoad-- summarize the effects of contributive Gen/Load to make equivGen/load for power flow calculation	
-	net.initContributeGenLoad();
+	net.initContributeGenLoad(false);
 		
 	//create a load flow algorithm object
   	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
@@ -96,7 +96,7 @@ Load Flow Summary
 		
 		
 		// initGenLoad-- summarize the effects of contributive Gen/Load to make equivGen/load for power flow calculation	
-		net.initContributeGenLoad();
+		net.initContributeGenLoad(false);
 			
 		//create a load flow algorithm object
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
