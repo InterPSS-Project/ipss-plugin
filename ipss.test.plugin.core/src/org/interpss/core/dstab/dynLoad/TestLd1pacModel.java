@@ -351,7 +351,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		// set positive info only
 		net.setPositiveSeqDataOnly(true);
 
-		net.initContributeGenLoad();
+		net.initContributeGenLoad(false);
 
 		// run load flow
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
