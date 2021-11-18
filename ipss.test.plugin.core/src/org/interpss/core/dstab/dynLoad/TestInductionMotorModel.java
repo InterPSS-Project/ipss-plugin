@@ -445,7 +445,7 @@ private DStabilityNetwork create2BusSystem() throws InterpssException{
 		net.setPositiveSeqDataOnly(true);
 		net.setLfDataLoaded(true);
 
-	  	net.initContributeGenLoad();
+	  	net.initContributeGenLoad(false);
 
 		// run load flow
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
