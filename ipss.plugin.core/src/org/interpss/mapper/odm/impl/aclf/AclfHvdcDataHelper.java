@@ -349,8 +349,7 @@ public class AclfHvdcDataHelper {
     	 
     	 
     	 // Q limit
-    	 vscInv.setQMaxMvar(vscConvXml.getQMax().getValue());
-    	 vscInv.setQMinMvar(vscConvXml.getQMin().getValue());
+    	 vscInv.setQMvarLimit(new LimitType(vscConvXml.getQMax().getValue(), vscConvXml.getQMin().getValue()));
     	 
     	 // remote Voltage control
     	
@@ -404,8 +403,7 @@ public class AclfHvdcDataHelper {
 	 	 
 	 	 
 	 	 // Q limit
-	 	 vscRec.setQMaxMvar(vscConvXml.getQMax().getValue());
-	 	 vscRec.setQMinMvar(vscConvXml.getQMin().getValue());
+	 	 vscRec.setQMvarLimit(new LimitType(vscConvXml.getQMax().getValue(), vscConvXml.getQMin().getValue()));
 	 	 
 	 	 // remote Voltage control
 	 
