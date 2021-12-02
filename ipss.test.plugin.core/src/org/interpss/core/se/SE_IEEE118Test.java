@@ -25,7 +25,7 @@ import com.interpss.state.se.SEBusState;
 import com.interpss.state.se.SENetworkState;
 
 public class SE_IEEE118Test extends CorePluginTestSetup {
-	double errorPQ = 0.1;
+	double errorPQ = 0.05;
 	double errorV = 0.01;
 	
 	@Test
@@ -41,6 +41,7 @@ public class SE_IEEE118Test extends CorePluginTestSetup {
 		//System.out.println(seNet.getBranch("Bus2->Bus1(1)"));
 		//System.out.println(braCopy);
 		
+		// copy through Hz
 		SENetwork seNetCopy = seNet.deepCopy();
 		
 		assertTrue("", seNet.diffState(seNetCopy));
@@ -59,7 +60,8 @@ public class SE_IEEE118Test extends CorePluginTestSetup {
 		SEBranch braCopy = SEBranchState.create(new SEBranchState(branch));
 		//System.out.println(seNet.getBranch("Bus2->Bus1(1)"));
 		//System.out.println(braCopy);
-		
+	
+		// copy through JSon serialization/deserialization
 		SENetwork seNetCopy = SENetworkState.create(new SENetworkState(seNet));
 		
 		assertTrue("", seNet.diffState(seNetCopy));
