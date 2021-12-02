@@ -3,29 +3,83 @@ package org.interpss.core.se;
 import static org.interpss.pssl.plugin.IpssAdapter.FileFormat.IEEECommonFormat;
 import static org.junit.Assert.assertTrue;
 
-import org.interpss.IpssCorePlugin;
+import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
+import com.hazelcast.internal.serialization.SerializationService;
+import com.hazelcast.internal.serialization.impl.DefaultSerializationServiceBuilder;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.se.SEBranch;
+import com.interpss.se.SEBus;
 import com.interpss.se.SENetwork;
 import com.interpss.se.SENetworkHelper;
 import com.interpss.se.SEObjectFactory;
 import com.interpss.se.algo.SEAlgorithm;
+import com.interpss.state.se.SEBranchState;
+import com.interpss.state.se.SEBusState;
+import com.interpss.state.se.SENetworkState;
 
-public class SE_IEEE118Test {
+public class SE_IEEE118Test extends CorePluginTestSetup {
 	double errorPQ = 0.1;
 	double errorV = 0.01;
-
+	
 	@Test
-	public void test() throws InterpssException, IpssNumericException, Exception {
+	public void testDeepCopy() throws InterpssException, IpssNumericException, Exception {
+		SENetwork seNet = createTestCase();
 		
-		IpssCorePlugin.init();
+		SerializationService serializeService = new DefaultSerializationServiceBuilder().build();  
+		SEBus busCopy = seNet.getBus("Bus1").deepCopy(serializeService);
+		//System.out.println(seNet.getBus("Bus1"));
+		//System.out.println(busCopy);
 		
+		SEBranch braCopy = seNet.getBranch("Bus2->Bus1(1)").deepCopy(serializeService);
+		//System.out.println(seNet.getBranch("Bus2->Bus1(1)"));
+		//System.out.println(braCopy);
+		
+		SENetwork seNetCopy = seNet.deepCopy();
+		
+		assertTrue("", seNet.diffState(seNetCopy));
+	}
+	
+	@Test
+	public void testJsonCopy() throws InterpssException, IpssNumericException, Exception {
+		SENetwork seNet = createTestCase();
+		
+		SEBus bus = seNet.getBus("Bus1");
+		SEBus busCopy = SEBusState.create(new SEBusState(bus));
+		//System.out.println(seNet.getBus("Bus1"));
+		//System.out.println(busCopy);
+		
+		SEBranch branch = seNet.getBranch("Bus2->Bus1(1)");
+		SEBranch braCopy = SEBranchState.create(new SEBranchState(branch));
+		//System.out.println(seNet.getBranch("Bus2->Bus1(1)"));
+		//System.out.println(braCopy);
+		
+		SENetwork seNetCopy = SENetworkState.create(new SENetworkState(seNet));
+		
+		assertTrue("", seNet.diffState(seNetCopy));
+	}	
+	
+	@Test
+	public void testSEAlgo() throws InterpssException, IpssNumericException, Exception {
+		SENetwork seNet = createTestCase();
+
+		SEAlgorithm seAlgo = SEObjectFactory.createSEAlgorithm(seNet);
+
+		// qer: Qualified Estimation Rate
+		double qer = seAlgo.se();
+		assertTrue("QER should be larger than 95% ", qer > 0.95);		
+		
+		double maxResidual = seNet.calMaxResidual();
+		assertTrue("Max residual should be less than 2% ", maxResidual < 0.02);
+	}
+	
+	private SENetwork createTestCase() throws InterpssException {
 		// Load a Loadflow case
 		AclfNetwork aclfNet = IpssAdapter.importAclfNet("testData/se/ieee118.ieee")
 				.setFormat(IEEECommonFormat)
@@ -39,6 +93,7 @@ public class SE_IEEE118Test {
 		assertTrue("Loadflow should converged! ", aclfNet.isLfConverged());		
 		
 		SENetwork seNet = SENetworkHelper.createSENetwrok(aclfNet);
+		seNet.setId("SE Test Net");
 		
 		seNet.getBranchList().forEach(branch -> {
 			branch.getFromSideRec().getPSeRec().setMeasure(RandomError(branch.powerFrom2To().getReal(), errorPQ));
@@ -71,15 +126,8 @@ public class SE_IEEE118Test {
 				load.getQSeRec().setQuality(true);
 			});
 		});
-
-		SEAlgorithm seAlgo = SEObjectFactory.createSEAlgorithm(seNet);
-
-		// qer: Qualified Estimation Rate
-		double qer = seAlgo.se();
-		assertTrue("QER should be larger than 95% ", qer > 0.95);		
 		
-		double maxResidual = seNet.calMaxResidual();
-		assertTrue("Max residual should be less than 2% ", maxResidual < 0.02);
+		return seNet;
 	}
 
 	private double RandomError(double measure, double error) {
