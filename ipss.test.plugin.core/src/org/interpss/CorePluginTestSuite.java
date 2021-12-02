@@ -59,6 +59,7 @@ import org.interpss.core.dstab.mach.Eq1MachineCaseTest;
 import org.interpss.core.dstab.mach.MachineSaturationTest;
 import org.interpss.core.dstab.mach.RoundRotorMachineTest;
 import org.interpss.core.dstab.mach.SalientPoleMachineTest;
+import org.interpss.core.se.SE_IEEE118Test;
 import org.interpss.plugin.beanModel.AclfBeanMapperTest;
 import org.interpss.plugin.piecewise.Acsc5BusTestSubAreaNet;
 import org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise;
@@ -100,6 +101,9 @@ import org.junit.runners.Suite.SuiteClasses;
 	// Ascsc ODM
 	Acsc5Bus_ODM_TestCase.class,
 
+	// SE
+	SE_IEEE118Test.class,
+	
 	// DStab controller building blocks
 	DelayControlBlockTests.class,
 	FilterControlBlockTests.class,
