@@ -4,22 +4,21 @@ import static org.interpss.pssl.plugin.IpssAdapter.FileFormat.IEEECommonFormat;
 import static org.junit.Assert.assertTrue;
 
 import org.interpss.IpssCorePlugin;
-import org.interpss.SENetworkHelper;
-import org.interpss.SEObjectFactory;
-import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.pssl.plugin.IpssAdapter;
-import org.interpss.se.SENetwork;
-import org.interpss.se.algo.SEAlgorithm;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.se.SENetwork;
+import com.interpss.se.SENetworkHelper;
+import com.interpss.se.SEObjectFactory;
+import com.interpss.se.algo.SEAlgorithm;
 
 public class SE_IEEE118Test {
-	double errorPQ = 0.1;
+	double errorPQ = 0.05;
 	double errorV = 0.01;
 
 	@Test
