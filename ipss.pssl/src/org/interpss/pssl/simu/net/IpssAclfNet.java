@@ -426,7 +426,7 @@ public class IpssAclfNet extends BaseDSL {
 		@SuppressWarnings(value="unchecked")
   		public TAclfDSL setCapacitorQ(double q, UnitType unit) { 
 					  	  	AclfCapacitorBusAdapter capBus = getAclfBus().toCapacitorBus();
-					  	  	capBus.setQ(q, unit);
+					  	  	capBus.setQ(q);
 							return (TAclfDSL)this;  		}
   		
 		@SuppressWarnings(value="unchecked")
