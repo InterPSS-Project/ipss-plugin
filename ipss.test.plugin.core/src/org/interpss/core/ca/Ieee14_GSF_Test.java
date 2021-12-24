@@ -36,12 +36,31 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.NetGenAdjustAlgorithm;
+import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
 import com.interpss.core.common.ReferenceBusException;
 
 public class Ieee14_GSF_Test extends CorePluginTestSetup {
+	@Test
+	public void gsfInjOnlyTest()  throws ReferenceBusException, InterpssException   {
+		AclfNetwork net = CorePluginFactory
+				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
+				.load("testData/adpter/ieee_format/ieee14.ieee")
+				.getAclfNet();	
+		
+		SenAnalysisAlgorithm algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
+		
+		double x1 = algo.calGenShiftFactor("Bus8", net.getBranch("Bus1->Bus2(1)"));
+		double x2 = algo.calGenShiftFactor("Bus8", net.getBranch("Bus1->Bus5(1)"));
+		assertTrue(NumericUtil.equals(x1+x2, -1.0, 0.0001));
+
+		x1 = algo.calGenShiftFactor("Bus8", net.getBranch("Bus5->Bus6(1)"));
+		x2 = algo.calGenShiftFactor("Bus8", net.getBranch("Bus4->Bus7(1)"));
+		double x3 = algo.calGenShiftFactor("Bus8", net.getBranch("Bus4->Bus9(1)"));
+		assertTrue(NumericUtil.equals(x1+x2+x3, -1.0, 0.0001));
+	}
 	
 	@Test
-	public void gsfTest()  throws ReferenceBusException, InterpssException   {
+	public void gsfInjWithTest()  throws ReferenceBusException, InterpssException   {
 		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
 				.load("testData/adpter/ieee_format/ieee14.ieee")
