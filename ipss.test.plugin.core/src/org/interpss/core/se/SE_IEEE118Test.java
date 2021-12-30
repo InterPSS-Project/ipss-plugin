@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.pssl.plugin.IpssAdapter;
+import org.interpss.util.FileUtil;
 import org.junit.Test;
 
 import com.hazelcast.internal.serialization.SerializationService;
@@ -78,6 +79,42 @@ public class SE_IEEE118Test extends CorePluginTestSetup {
 		assertTrue("QER should be larger than 95% ", qer > 0.95);		
 		
 		double maxResidual = seNet.calMaxResidual();
+		assertTrue("Max residual should be less than 2% ", maxResidual < 0.02);
+	}
+	
+	@Test
+	public void testDeepCopySEAlgo() throws InterpssException, IpssNumericException, Exception {
+		SENetwork seNet = createTestCase();
+		SENetworkState seNetBean = new SENetworkState(seNet);
+		FileUtil.writeText2File("output/temp1.json",seNetBean.toString());
+		
+		SENetwork seNetCopy = seNet.deepCopy();
+		SENetworkState seNetCopyBean = new SENetworkState(seNetCopy);
+		FileUtil.writeText2File("output/temp2.json",seNetCopyBean.toString());
+		
+		SEAlgorithm seAlgo = SEObjectFactory.createSEAlgorithm(seNetCopy);
+
+		// qer: Qualified Estimation Rate
+		double qer = seAlgo.se();
+		assertTrue("QER should be larger than 95% ", qer > 0.95);		
+		
+		double maxResidual = seNetCopy.calMaxResidual();
+		assertTrue("Max residual should be less than 2% ", maxResidual < 0.02);
+	}
+	
+	@Test
+	public void testJSonCopySEAlgo() throws InterpssException, IpssNumericException, Exception {
+		SENetwork seNet = createTestCase();
+		
+		SENetwork seNetCopy = SENetworkState.create(new SENetworkState(seNet));
+
+		SEAlgorithm seAlgo = SEObjectFactory.createSEAlgorithm(seNetCopy);
+
+		// qer: Qualified Estimation Rate
+		double qer = seAlgo.se();
+		assertTrue("QER should be larger than 95% ", qer > 0.95);		
+		
+		double maxResidual = seNetCopy.calMaxResidual();
 		assertTrue("Max residual should be less than 2% ", maxResidual < 0.02);
 	}
 	
