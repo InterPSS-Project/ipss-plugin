@@ -1,0 +1,588 @@
+{
+	"hasEquivGenLoad": false,
+	"flowInterfaceLoaded": false,
+	"networkType": "TRANSMISSION",
+	"sensitivityCalculated": false,
+	"lfDataLoaded": true,
+	"lfConverged": false,
+	"zeroZBranchThreshold": 1.0E-5,
+	"xfrZAdjustSide": "FROM_SIDE",
+	"defaultVoltageLimit": {
+		"max": 1.15,
+		"min": 0.85
+	},
+	"zeroZBranchProcessed": false,
+	"hvdcLine2TLCCAry": [
+	],
+	"hvdcLine2TVSCAry": [
+	],
+	"baseKva": 100000.0,
+	"frequency": 50.0,
+	"busNumberArranged": false,
+	"dataChecked": false,
+	"bypassDataCheck": false,
+	"allowGroundBranch": false,
+	"originalDataFormat": "IPSS_API",
+	"refBusType": "SWING",
+	"refBusId": "false",
+	"zoneAry": [
+		{
+			"id": "no_1",
+			"name": "Zone name",
+			"desc": "Zone description",
+			"status": true,
+			"number": 1
+		}
+	],
+	"areaAry": [
+		{
+			"ratedKv": 0.0,
+			"interExpPower": 0.0,
+			"interErr": 0.0,
+			"id": "no_1",
+			"name": "Area name",
+			"desc": "Area description",
+			"status": true,
+			"number": 1
+		},
+		{
+			"ratedKv": 0.0,
+			"interExpPower": 0.0,
+			"interErr": 0.0,
+			"id": "no_2",
+			"name": "Area name",
+			"desc": "Area description",
+			"status": true,
+			"number": 2
+		}
+	],
+	"ownerAry": [
+		{
+			"ownerId": "1",
+			"id": "1",
+			"name": "Owner name",
+			"desc": "Owner descripion",
+			"status": true,
+			"number": 0
+		}
+	],
+	"busAry": [
+		{
+			"genCode": "NON_GEN",
+			"loadCode": "CONST_P",
+			"voltageMag": 1.0,
+			"voltageAng": 0.0,
+			"desiredVoltMag": 1.0,
+			"desiredVoltAng": 0.0,
+			"genP": 0.0,
+			"genQ": 0.0,
+			"loadP": 1.6,
+			"loadQ": 0.8,
+			"shuntY": {
+				"re": 0.0,
+				"im": 0.0
+			},
+			"expLoadP": 0.0,
+			"expLoadQ": 0.0,
+			"qGenLimit": {
+				"max": 0.0,
+				"min": 0.0
+			},
+			"pGenLimit": {
+				"max": 0.0,
+				"min": 0.0
+			},
+			"vLimit": {
+				"max": 0.0,
+				"min": 0.0
+			},
+			"busControlType": "NotDefined",
+			"genAry": [
+			],
+			"loadAry": [
+			],
+			"shuntCompensatorAry": [
+			],
+			"baseVoltage": 13800.0,
+			"subAreaFlag": -1,
+			"booleanFlag": false,
+			"weight": {
+				"re": 0.0,
+				"im": 0.0
+			},
+			"intFlag": 0,
+			"sortNumber": 0,
+			"areaNo": 1,
+			"zoneNo": 1,
+			"ownerId": "1",
+			"id": "1",
+			"name": "",
+			"desc": "",
+			"status": true,
+			"number": 0
+		},
+		{
+			"genCode": "NON_GEN",
+			"loadCode": "CONST_P",
+			"voltageMag": 1.0,
+			"voltageAng": 0.0,
+			"desiredVoltMag": 1.0,
+			"desiredVoltAng": 0.0,
+			"genP": 0.0,
+			"genQ": 0.0,
+			"loadP": 2.0,
+			"loadQ": 1.0,
+			"shuntY": {
+				"re": 0.0,
+				"im": 0.0
+			},
+			"expLoadP": 0.0,
+			"expLoadQ": 0.0,
+			"qGenLimit": {
+				"max": 0.0,
+				"min": 0.0
+			},
+			"pGenLimit": {
+				"max": 0.0,
+				"min": 0.0
+			},
+			"vLimit": {
+				"max": 0.0,
+				"min": 0.0
+			},
+			"busControlType": "NotDefined",
+			"genAry": [
+			],
+			"loadAry": [
+			],
+			"shuntCompensatorAry": [
+			],
+			"baseVoltage": 13800.0,
+			"subAreaFlag": -1,
+			"booleanFlag": false,
+			"weight": {
+				"re": 0.0,
+				"im": 0.0
+			},
+			"intFlag": 0,
+			"sortNumber": 0,
+			"areaNo": 1,
+			"zoneNo": 1,
+			"ownerId": "1",
+			"id": "2",
+			"name": "",
+			"desc": "",
+			"status": true,
+			"number": 0
+		},
+		{
+			"genCode": "NON_GEN",
+			"loadCode": "CONST_P",
+			"voltageMag": 1.0,
+			"voltageAng": 0.0,
+			"desiredVoltMag": 1.0,
+			"desiredVoltAng": 0.0,
+			"genP": 0.0,
+			"genQ": 0.0,
+			"loadP": 3.7,
+			"loadQ": 1.3,
+			"shuntY": {
+				"re": 0.0,
+				"im": 0.0
+			},
+			"expLoadP": 0.0,
+			"expLoadQ": 0.0,
+			"qGenLimit": {
+				"max": 0.0,
+				"min": 0.0
+			},
+			"pGenLimit": {
+				"max": 0.0,
+				"min": 0.0
+			},
+			"vLimit": {
+				"max": 0.0,
+				"min": 0.0
+			},
+			"busControlType": "NotDefined",
+			"genAry": [
+			],
+			"loadAry": [
+			],
+			"shuntCompensatorAry": [
+			],
+			"baseVoltage": 13800.0,
+			"subAreaFlag": -1,
+			"booleanFlag": false,
+			"weight": {
+				"re": 0.0,
+				"im": 0.0
+			},
+			"intFlag": 0,
+			"sortNumber": 0,
+			"areaNo": 2,
+			"zoneNo": 1,
+			"ownerId": "1",
+			"id": "3",
+			"name": "",
+			"desc": "",
+			"status": true,
+			"number": 0
+		},
+		{
+			"genCode": "GEN_PV",
+			"loadCode": "NON_LOAD",
+			"voltageMag": 1.0,
+			"voltageAng": 0.0,
+			"desiredVoltMag": 1.05,
+			"desiredVoltAng": 0.0,
+			"genP": 5.0,
+			"genQ": 0.0,
+			"loadP": 0.0,
+			"loadQ": 0.0,
+			"shuntY": {
+				"re": 0.0,
+				"im": 0.0
+			},
+			"expLoadP": 0.0,
+			"expLoadQ": 0.0,
+			"qGenLimit": {
+				"max": 0.0,
+				"min": 0.0
+			},
+			"pGenLimit": {
+				"max": 0.0,
+				"min": 0.0
+			},
+			"vLimit": {
+				"max": 0.0,
+				"min": 0.0
+			},
+			"busControlType": "NotDefined",
+			"genAry": [
+			],
+			"loadAry": [
+			],
+			"shuntCompensatorAry": [
+			],
+			"baseVoltage": 1000.0,
+			"subAreaFlag": -1,
+			"booleanFlag": false,
+			"weight": {
+				"re": 0.0,
+				"im": 0.0
+			},
+			"intFlag": 0,
+			"sortNumber": 0,
+			"areaNo": 1,
+			"zoneNo": 1,
+			"ownerId": "1",
+			"id": "4",
+			"name": "",
+			"desc": "",
+			"status": true,
+			"number": 0
+		},
+		{
+			"genCode": "SWING",
+			"loadCode": "NON_LOAD",
+			"voltageMag": 1.05,
+			"voltageAng": 0.0,
+			"desiredVoltMag": 1.05,
+			"desiredVoltAng": 0.0,
+			"genP": 0.0,
+			"genQ": 0.0,
+			"loadP": 0.0,
+			"loadQ": 0.0,
+			"shuntY": {
+				"re": 0.0,
+				"im": 0.0
+			},
+			"expLoadP": 0.0,
+			"expLoadQ": 0.0,
+			"qGenLimit": {
+				"max": 0.0,
+				"min": 0.0
+			},
+			"pGenLimit": {
+				"max": 0.0,
+				"min": 0.0
+			},
+			"vLimit": {
+				"max": 0.0,
+				"min": 0.0
+			},
+			"busControlType": "NotDefined",
+			"genAry": [
+			],
+			"loadAry": [
+			],
+			"shuntCompensatorAry": [
+			],
+			"baseVoltage": 4000.0,
+			"subAreaFlag": -1,
+			"booleanFlag": false,
+			"weight": {
+				"re": 0.0,
+				"im": 0.0
+			},
+			"intFlag": 0,
+			"sortNumber": 0,
+			"areaNo": 2,
+			"zoneNo": 1,
+			"ownerId": "1",
+			"id": "5",
+			"name": "",
+			"desc": "",
+			"status": true,
+			"number": 0
+		}
+	],
+	"branchAry": [
+		{
+			"branchCode": "LINE",
+			"z": {
+				"re": 0.04,
+				"im": 0.25
+			},
+			"zMultiplyFactor": 1.0,
+			"xfrZTableNumber": 0,
+			"hShuntY": {
+				"re": 0.0,
+				"im": 0.25
+			},
+			"fromTurnRatio": 1.0,
+			"toTurnRatio": 1.0,
+			"fromShuntY": {
+				"re": 0.0,
+				"im": 0.0
+			},
+			"toShuntY": {
+				"re": 0.0,
+				"im": 0.0
+			},
+			"fromPSXfrAngle": 0.0,
+			"toPSXfrAngle": 0.0,
+			"ratingMva1": 0.0,
+			"ratingMva2": 0.0,
+			"ratingMva3": 0.0,
+			"ratingAmps": 0.0,
+			"lossFactor": 1.0,
+			"flowControlType": "NotDefined",
+			"circuitNumber": "1",
+			"fromSideMetered": true,
+			"booleanFlag": false,
+			"weight": {
+				"re": 0.0,
+				"im": 0.0
+			},
+			"intFlag": 0,
+			"sortNumber": 0,
+			"areaNo": 0,
+			"zoneNo": 0,
+			"ownerId": "",
+			"id": "1-\u003e2(1)",
+			"name": "",
+			"desc": "",
+			"status": true,
+			"number": 0
+		},
+		{
+			"branchCode": "LINE",
+			"z": {
+				"re": 0.1,
+				"im": 0.35
+			},
+			"zMultiplyFactor": 1.0,
+			"xfrZTableNumber": 0,
+			"hShuntY": {
+				"re": 0.0,
+				"im": 0.0
+			},
+			"fromTurnRatio": 1.0,
+			"toTurnRatio": 1.0,
+			"fromShuntY": {
+				"re": 0.0,
+				"im": 0.0
+			},
+			"toShuntY": {
+				"re": 0.0,
+				"im": 0.0
+			},
+			"fromPSXfrAngle": 0.0,
+			"toPSXfrAngle": 0.0,
+			"ratingMva1": 0.0,
+			"ratingMva2": 0.0,
+			"ratingMva3": 0.0,
+			"ratingAmps": 0.0,
+			"lossFactor": 1.0,
+			"flowControlType": "NotDefined",
+			"circuitNumber": "1",
+			"fromSideMetered": true,
+			"booleanFlag": false,
+			"weight": {
+				"re": 0.0,
+				"im": 0.0
+			},
+			"intFlag": 0,
+			"sortNumber": 0,
+			"areaNo": 0,
+			"zoneNo": 0,
+			"ownerId": "",
+			"id": "1-\u003e3(1)",
+			"name": "",
+			"desc": "",
+			"status": true,
+			"number": 0
+		},
+		{
+			"branchCode": "LINE",
+			"z": {
+				"re": 0.08,
+				"im": 0.3
+			},
+			"zMultiplyFactor": 1.0,
+			"xfrZTableNumber": 0,
+			"hShuntY": {
+				"re": 0.0,
+				"im": 0.25
+			},
+			"fromTurnRatio": 1.0,
+			"toTurnRatio": 1.0,
+			"fromShuntY": {
+				"re": 0.0,
+				"im": 0.0
+			},
+			"toShuntY": {
+				"re": 0.0,
+				"im": 0.0
+			},
+			"fromPSXfrAngle": 0.0,
+			"toPSXfrAngle": 0.0,
+			"ratingMva1": 0.0,
+			"ratingMva2": 0.0,
+			"ratingMva3": 0.0,
+			"ratingAmps": 0.0,
+			"lossFactor": 1.0,
+			"flowControlType": "NotDefined",
+			"circuitNumber": "1",
+			"fromSideMetered": true,
+			"booleanFlag": false,
+			"weight": {
+				"re": 0.0,
+				"im": 0.0
+			},
+			"intFlag": 0,
+			"sortNumber": 0,
+			"areaNo": 0,
+			"zoneNo": 0,
+			"ownerId": "",
+			"id": "2-\u003e3(1)",
+			"name": "",
+			"desc": "",
+			"status": true,
+			"number": 0
+		},
+		{
+			"branchCode": "XFORMER",
+			"z": {
+				"re": 0.0,
+				"im": 0.015
+			},
+			"zMultiplyFactor": 1.0,
+			"xfrZTableNumber": 0,
+			"hShuntY": {
+				"re": 0.0,
+				"im": 0.0
+			},
+			"fromTurnRatio": 1.0,
+			"toTurnRatio": 1.05,
+			"fromShuntY": {
+				"re": 0.0,
+				"im": 0.0
+			},
+			"toShuntY": {
+				"re": 0.0,
+				"im": 0.0
+			},
+			"fromPSXfrAngle": 0.0,
+			"toPSXfrAngle": 0.0,
+			"ratingMva1": 0.0,
+			"ratingMva2": 0.0,
+			"ratingMva3": 0.0,
+			"ratingAmps": 0.0,
+			"lossFactor": 1.0,
+			"flowControlType": "NotDefined",
+			"circuitNumber": "1",
+			"fromSideMetered": true,
+			"booleanFlag": false,
+			"weight": {
+				"re": 0.0,
+				"im": 0.0
+			},
+			"intFlag": 0,
+			"sortNumber": 0,
+			"areaNo": 0,
+			"zoneNo": 0,
+			"ownerId": "",
+			"id": "4-\u003e2(1)",
+			"name": "",
+			"desc": "",
+			"status": true,
+			"number": 0
+		},
+		{
+			"branchCode": "XFORMER",
+			"z": {
+				"re": 0.0,
+				"im": 0.03
+			},
+			"zMultiplyFactor": 1.0,
+			"xfrZTableNumber": 0,
+			"hShuntY": {
+				"re": 0.0,
+				"im": 0.0
+			},
+			"fromTurnRatio": 1.0,
+			"toTurnRatio": 1.05,
+			"fromShuntY": {
+				"re": 0.0,
+				"im": 0.0
+			},
+			"toShuntY": {
+				"re": 0.0,
+				"im": 0.0
+			},
+			"fromPSXfrAngle": 0.0,
+			"toPSXfrAngle": 0.0,
+			"ratingMva1": 0.0,
+			"ratingMva2": 0.0,
+			"ratingMva3": 0.0,
+			"ratingAmps": 0.0,
+			"lossFactor": 1.0,
+			"flowControlType": "NotDefined",
+			"circuitNumber": "1",
+			"fromSideMetered": true,
+			"booleanFlag": false,
+			"weight": {
+				"re": 0.0,
+				"im": 0.0
+			},
+			"intFlag": 0,
+			"sortNumber": 0,
+			"areaNo": 0,
+			"zoneNo": 0,
+			"ownerId": "",
+			"id": "5-\u003e3(1)",
+			"name": "",
+			"desc": "",
+			"status": true,
+			"number": 0
+		}
+	],
+	"id": "ACLF 5-bus test system",
+	"name": "",
+	"desc": "",
+	"status": true,
+	"number": 0
+}
