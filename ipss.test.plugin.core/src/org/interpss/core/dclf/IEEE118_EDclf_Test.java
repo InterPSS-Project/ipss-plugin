@@ -37,6 +37,7 @@ import org.junit.Test;
 import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
+import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.EDclfAlgorithm;
 import com.interpss.core.algo.dclf.solver.IConnectBusProcessor;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
@@ -52,11 +53,28 @@ public class IEEE118_EDclf_Test extends CorePluginTestSetup {
 				.getAclfNet();	
 		
 		EDclfAlgorithm edclfAlgo = DclfAlgoObjectFactory.createEDclfAlgorithm(aclfNet, CacheType.SenNotCached);
-		edclfAlgo.calculateEDclf();
+		edclfAlgo.calculateEDclf(DclfMethod.STD);
 		
 		System.out.println("EDclf Mismatch: " + aclfNet.maxMismatch(AclfMethodType.NR));
 		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet, true));
+		// "Bus69" 5.13442
+		System.out.println("Swing Bus P(5.13442): " + edclfAlgo.getBusPower(edclfAlgo.getDclfAlgoBus("Bus69")));
 	}
+	
+	@Test 
+	public void edclfLossTest() throws Exception {
+		AclfNetwork aclfNet = CorePluginFactory
+				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
+				.load("testdata/adpter/ieee_format/Ieee118.ieee")
+				.getAclfNet();	
+		
+		EDclfAlgorithm edclfAlgo = DclfAlgoObjectFactory.createEDclfAlgorithm(aclfNet, CacheType.SenNotCached);
+		edclfAlgo.calculateEDclf();
+		
+		System.out.println("EDclf/Loss Mismatch: " + aclfNet.maxMismatch(AclfMethodType.NR));
+		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet, true));
+		System.out.println("Swing Bus P(5.13442): " + edclfAlgo.getBusPower(edclfAlgo.getDclfAlgoBus("Bus69")));		
+	}	
 	
 	@Test 
 	public void edclfVCorrectionTest() throws Exception {
@@ -66,7 +84,7 @@ public class IEEE118_EDclf_Test extends CorePluginTestSetup {
 				.getAclfNet();	
 		
 		EDclfAlgorithm edclfAlgo = DclfAlgoObjectFactory.createEDclfAlgorithm(aclfNet, CacheType.SenNotCached);
-		edclfAlgo.calculateEDclf();
+		edclfAlgo.calculateEDclf(DclfMethod.STD);
 		
 		System.out.println("EDclf Mismatch: " + aclfNet.maxMismatch(AclfMethodType.NR));
 		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet, true));

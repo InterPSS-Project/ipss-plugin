@@ -39,6 +39,7 @@ import org.junit.Test;
 import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
+import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.EDclfAlgorithm;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 import com.interpss.core.algo.dclf.solver.IConnectBusProcessor;
@@ -55,7 +56,7 @@ public class IEEE14_EDclf_Test extends CorePluginTestSetup {
 				.getAclfNet();	
 		
 		EDclfAlgorithm edclfAlgo = DclfAlgoObjectFactory.createEDclfAlgorithm(aclfNet, CacheType.SenNotCached);
-		edclfAlgo.calculateEDclf();
+		edclfAlgo.calculateEDclf(DclfMethod.STD);
 		/*
                 V_N
 		  1.0167 + 0.0009i      (1.016377760628728, -2.7904232436892773E-4)    Bus4
@@ -68,7 +69,23 @@ public class IEEE14_EDclf_Test extends CorePluginTestSetup {
 		
 		System.out.println("EDclf Mismatch: " + aclfNet.maxMismatch(AclfMethodType.NR));
 		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet, true));
+		System.out.println("Swing Bus P(2.32393): " + edclfAlgo.getBusPower(edclfAlgo.getDclfAlgoBus("Bus1")));
 	}
+	
+	@Test 
+	public void edclfLossTest() throws Exception {
+		AclfNetwork aclfNet = CorePluginFactory
+				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
+				.load("testdata/adpter/ieee_format/Ieee14Bus.ieee")
+				.getAclfNet();	
+		
+		EDclfAlgorithm edclfAlgo = DclfAlgoObjectFactory.createEDclfAlgorithm(aclfNet, CacheType.SenNotCached);
+		edclfAlgo.calculateEDclf();
+		
+		System.out.println("EDclf/Loss Mismatch: " + aclfNet.maxMismatch(AclfMethodType.NR));
+		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet, true));
+		System.out.println("Swing Bus P(2.32393): " + edclfAlgo.getBusPower(edclfAlgo.getDclfAlgoBus("Bus1")));
+	}	
 	
 	@Test 
 	public void edclfVCorrectionTest() throws Exception {
@@ -105,7 +122,7 @@ public class IEEE14_EDclf_Test extends CorePluginTestSetup {
 		aclfNet.getBranch("Bus9->Bus14(1)").setStatus(false);
 		
 		EDclfAlgorithm edclfAlgo = DclfAlgoObjectFactory.createEDclfAlgorithm(aclfNet, CacheType.SenNotCached);
-		edclfAlgo.calculateEDclf();
+		edclfAlgo.calculateEDclf(DclfMethod.STD);
 		System.out.println("EDclf Mismatch: " + aclfNet.maxMismatch(AclfMethodType.NR));
 		Mismatch mis = aclfNet.maxMismatch(AclfMethodType.NR, predicateConnectBus);
 		System.out.println("ConnectBus VAdjustment Mismatch: " + mis);
@@ -117,7 +134,7 @@ public class IEEE14_EDclf_Test extends CorePluginTestSetup {
 		mis = aclfNet.maxMismatch(AclfMethodType.NR, predicateConnectBus);
 		System.out.println("ConnectBus VAdjustment Mismatch: " + mis);
 		
-		System.out.println(AclfOutFunc.loadFlowSummary(aclfNet, true));
+		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet, true));
 	}	
 
 

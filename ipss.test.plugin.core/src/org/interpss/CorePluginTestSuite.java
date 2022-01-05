@@ -32,6 +32,7 @@ import org.interpss.core.ca.IEEE14BusBreaker_equivCABranch_Test;
 import org.interpss.core.ca.Ieee14_CA_Test;
 import org.interpss.core.ca.Ieee14_GSF_Test;
 import org.interpss.core.dclf.IEEE118_EDclf_Test;
+import org.interpss.core.dclf.IEEE14_Dclf_Test;
 import org.interpss.core.dclf.IEEE14_EDclf_Test;
 import org.interpss.core.dclf.IEEE39_EDclf_Test;
 import org.interpss.core.dcsys.DcSample_2BusTest;
@@ -89,6 +90,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	Ieee14_GSF_Test.class,
 	
 	// EDclf
+	IEEE14_Dclf_Test.class,
 	IEEE14_EDclf_Test.class,
 	IEEE39_EDclf_Test.class,
 	IEEE118_EDclf_Test.class,
