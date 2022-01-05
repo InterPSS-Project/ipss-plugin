@@ -31,12 +31,15 @@ import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
+import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.junit.Test;
 
 import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.AclfMethodType;
+import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.EDclfAlgorithm;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 import com.interpss.core.algo.impl.solver.YMatrixSolver;
@@ -51,10 +54,27 @@ public class IEEE39_EDclf_Test extends CorePluginTestSetup {
 				.getAclfNet();	
 		
 		EDclfAlgorithm edclfAlgo = DclfAlgoObjectFactory.createEDclfAlgorithm(aclfNet, CacheType.SenNotCached);
-		edclfAlgo.calculateEDclf();
+		edclfAlgo.calculateEDclf(DclfMethod.STD);
 		
 		System.out.println("EDclf Mismatch: " + aclfNet.maxMismatch(AclfMethodType.NR));
-		System.out.println(AclfOutFunc.busSummaryCommaDelimited(aclfNet, true));
+		//System.out.println(AclfOutFunc.busSummaryCommaDelimited(aclfNet, true));
+		// "Bus31", 5.7286653
+		System.out.println("Swing Bus P(5.7286653): " + edclfAlgo.getBusPower(edclfAlgo.getDclfAlgoBus("Bus31")));
+	}
+
+	@Test 
+	public void edclfLossTest() throws Exception {
+		AclfNetwork aclfNet = CorePluginFactory
+				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
+				.load("testdata/adpter/ieee_format/Ieee039.DAT")
+				.getAclfNet();	
+		
+		EDclfAlgorithm edclfAlgo = DclfAlgoObjectFactory.createEDclfAlgorithm(aclfNet, CacheType.SenNotCached);
+		edclfAlgo.calculateEDclf();
+		
+		System.out.println("EDclf/Loss Mismatch: " + aclfNet.maxMismatch(AclfMethodType.NR));
+		//System.out.println(AclfOutFunc.busSummaryCommaDelimited(aclfNet, true));
+		System.out.println("Swing Bus P(5.7286653): " + edclfAlgo.getBusPower(edclfAlgo.getDclfAlgoBus("Bus31")));
 	}
 	
 	@Test 
@@ -65,7 +85,7 @@ public class IEEE39_EDclf_Test extends CorePluginTestSetup {
 				.getAclfNet();	
 		
 		EDclfAlgorithm edclfAlgo = DclfAlgoObjectFactory.createEDclfAlgorithm(aclfNet, CacheType.SenNotCached);
-		edclfAlgo.calculateEDclf();
+		edclfAlgo.calculateEDclf(DclfMethod.STD);
 		
 		System.out.println("EDclf Mismatch: " + aclfNet.maxMismatch(AclfMethodType.NR));
 		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet, true));
