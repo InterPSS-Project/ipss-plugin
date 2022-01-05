@@ -38,6 +38,7 @@ import org.junit.Test;
 import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
+import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.EDclfAlgorithm;
 import com.interpss.core.algo.dclf.solver.IEDclfSolver;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
@@ -52,9 +53,23 @@ public class UCTE2000WinterPeak_EDclf_Test extends CorePluginTestSetup {
 				.getAclfNet();	
 		
 		EDclfAlgorithm edclfAlgo = DclfAlgoObjectFactory.createEDclfAlgorithm(aclfNet, CacheType.SenNotCached);
-		edclfAlgo.calculateEDclf();
+		edclfAlgo.calculateEDclf(DclfMethod.STD);
 		
 		System.out.println("EDclf Mismatch: " + aclfNet.maxMismatch(AclfMethodType.NR));
+		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet, true));
+	}
+	
+	@Test 
+	public void edclfLossTest() throws Exception {
+		AclfNetwork aclfNet = CorePluginFactory
+				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
+				.load("testdata/adpter/ieee_format/UCTE_2000_WinterPeak.ieee")
+				.getAclfNet();	
+		
+		EDclfAlgorithm edclfAlgo = DclfAlgoObjectFactory.createEDclfAlgorithm(aclfNet, CacheType.SenNotCached);
+		edclfAlgo.calculateEDclf();
+		
+		System.out.println("EDclf/Loss Mismatch: " + aclfNet.maxMismatch(AclfMethodType.NR));
 		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet, true));
 	}
 	
@@ -66,7 +81,7 @@ public class UCTE2000WinterPeak_EDclf_Test extends CorePluginTestSetup {
 				.getAclfNet();	
 		
 		EDclfAlgorithm edclfAlgo = DclfAlgoObjectFactory.createEDclfAlgorithm(aclfNet, CacheType.SenNotCached);
-		edclfAlgo.calculateEDclf();
+		edclfAlgo.calculateEDclf(DclfMethod.STD);
 		
 		System.out.println("EDclf Mismatch: " + aclfNet.maxMismatch(AclfMethodType.NR));
 		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet, true));

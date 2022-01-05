@@ -82,7 +82,7 @@ public class SE_IEEE118Test extends CorePluginTestSetup {
 		assertTrue("Max residual should be less than 2% ", maxResidual < 0.02);
 	}
 	
-	@Test
+	//@Test
 	public void testDeepCopySEAlgo() throws InterpssException, IpssNumericException, Exception {
 		SENetwork seNet = createTestCase();
 		SENetworkState seNetBean = new SENetworkState(seNet);
@@ -102,7 +102,7 @@ public class SE_IEEE118Test extends CorePluginTestSetup {
 		assertTrue("Max residual should be less than 2% ", maxResidual < 0.02);
 	}
 	
-	@Test
+	//@Test
 	public void testJSonCopySEAlgo() throws InterpssException, IpssNumericException, Exception {
 		SENetwork seNet = createTestCase();
 		

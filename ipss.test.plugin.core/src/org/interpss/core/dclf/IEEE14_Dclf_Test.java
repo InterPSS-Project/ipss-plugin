@@ -31,14 +31,17 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.display.DclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
+import org.interpss.numeric.util.NumericUtil;
 import org.junit.Test;
 
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.DclfAlgoObjectFactory;
+import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.algo.dclf.DclfAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
+import com.interpss.core.algo.dclf.adapter.DclfAlgoBus;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 
 public class IEEE14_Dclf_Test extends CorePluginTestSetup {
@@ -52,7 +55,26 @@ public class IEEE14_Dclf_Test extends CorePluginTestSetup {
 		DclfAlgorithm dclfAlgo = DclfAlgoObjectFactory.createDclfAlgorithm(aclfNet, CacheType.SenNotCached);
 		dclfAlgo.calculateDclf(DclfMethod.INC_LOSS);
 
-		System.out.println(DclfOutFunc.dclfResults(dclfAlgo, false));
+		//System.out.println(DclfOutFunc.dclfResults(dclfAlgo, false));
+		/*
+		   Bud Id       VoltAng(deg)     Gen     Load    ShuntG
+		=========================================================
+		    Bus1           0.000       225.43     0.00     0.00 
+		    Bus2          -0.092        40.00    21.70     0.00 
+		    Bus3          -0.233         0.00    94.20     0.00 		
+		 */
+
+		DclfAlgoBus dclfBus1 = dclfAlgo.getDclfAlgoBus("Bus1");
+		AclfBus bus1 = dclfBus1.getBus();
+		int n1 = bus1.getSortNumber();
+		double pgen = dclfAlgo.getBusPower(dclfBus1) * aclfNet.getBaseMva(); 
+		assertTrue("", NumericUtil.equals(pgen, 225.43, 0.01));
+
+		DclfAlgoBus dclfBus2 = dclfAlgo.getDclfAlgoBus("Bus2");
+		AclfBus bus2 = dclfBus2.getBus();
+		int n2 = bus2.getSortNumber();
+		double angle = dclfAlgo.getBusAngle(n2);
+		assertTrue("", NumericUtil.equals(angle, -0.092, 0.001));		
 	}
 
 	@Test 
@@ -65,10 +87,28 @@ public class IEEE14_Dclf_Test extends CorePluginTestSetup {
 		DclfAlgorithm dclfAlgo = DclfAlgoObjectFactory.createDclfAlgorithm(aclfNet, CacheType.SenNotCached);
 		dclfAlgo.calculateDclf();
 
-		System.out.println(DclfOutFunc.dclfResults(dclfAlgo, false));
+		//System.out.println(DclfOutFunc.dclfResults(dclfAlgo, false));
+		/*
+			   Bud Id       VoltAng(deg)     Gen     Load    ShuntG
+			=========================================================
+			    Bus1           0.000       219.00     0.00     0.00 
+			    Bus2          -0.088        40.00    21.70     0.00 
+			    Bus3          -0.226         0.00    94.20     0.00 
+		 */
+		DclfAlgoBus dclfBus1 = dclfAlgo.getDclfAlgoBus("Bus1");
+		AclfBus bus1 = dclfBus1.getBus();
+		int n1 = bus1.getSortNumber();
+		double pgen = dclfAlgo.getBusPower(dclfBus1) * aclfNet.getBaseMva(); 
+		assertTrue("", NumericUtil.equals(pgen, 219.00, 0.01));
+
+		DclfAlgoBus dclfBus2 = dclfAlgo.getDclfAlgoBus("Bus2");
+		AclfBus bus2 = dclfBus2.getBus();
+		int n2 = bus2.getSortNumber();
+		double angle = dclfAlgo.getBusAngle(n2);
+		assertTrue("", NumericUtil.equals(angle, -0.088, 0.001));			
 	}
 	
-	@Test 
+	//@Test 
 	public void aclfTestCase() throws Exception {
 		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
@@ -77,7 +117,7 @@ public class IEEE14_Dclf_Test extends CorePluginTestSetup {
 
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
-  		System.out.println(net.net2String());
+  		//System.out.println(net.net2String());
 	  	
 		System.out.println(AclfOutFunc.loadFlowSummary(net));
 	}
