@@ -27,18 +27,17 @@ package org.interpss.piecewise.subAreaNet.seq012.impl;
 import java.util.List;
 
 import org.interpss.numeric.datatype.Complex3x1;
-import org.interpss.piecewise.subAreaNet.base.BaseCuttingBranch;
-import org.interpss.piecewise.subAreaNet.base.BaseSubArea;
-import org.interpss.piecewise.subAreaNet.impl.BaseSubAreaNetProcessorImpl;
 import org.interpss.piecewise.subAreaNet.seq012.SubDStabNetwork;
 
+import com.interpss.algo.subAreaNet.base.BaseCuttingBranch;
+import com.interpss.algo.subAreaNet.base.BaseSubArea;
+import com.interpss.algo.subAreaNet.impl.BaseSubAreaNetProcessorImpl;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.DStabLoad;
-import com.interpss.dstab.DStabilityNetwork;
 
 /**
  * Class for DStability SubNetwork processing. It begins by defining a set of cutting branches.
