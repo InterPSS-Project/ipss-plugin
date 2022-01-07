@@ -31,9 +31,9 @@ import java.util.function.Function;
 
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.piecewise.algo.PiecewiseAlgorithm;
-import org.interpss.piecewise.subAreaNet.base.BaseCuttingBranch;
-import org.interpss.piecewise.subAreaNet.base.BaseSubArea;
 
+import com.interpss.algo.subAreaNet.base.BaseCuttingBranch;
+import com.interpss.algo.subAreaNet.base.BaseSubArea;
 import com.interpss.common.exp.InterpssException;
 
 /**

@@ -24,7 +24,6 @@
 
 package sample.piecewise;
 
-import java.util.Hashtable;
 import java.util.List;
 import java.util.function.Function;
 
@@ -34,12 +33,12 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.ComplexFunc;
 import org.interpss.piecewise.algo.impl.PiecewiseAlgoPosImpl;
-import org.interpss.piecewise.subAreaNet.seqPos.CuttingBranchPos;
-import org.interpss.piecewise.subAreaNet.seqPos.SubAreaPos;
-import org.interpss.piecewise.subAreaNet.seqPos.SubNetworkPos;
-import org.interpss.piecewise.subAreaNet.seqPos.impl.SubAreaPosProcessorImpl;
-import org.interpss.piecewise.subAreaNet.seqPos.impl.SubNetworkPosProcessorImpl;
 
+import com.interpss.algo.subAreaNet.seqPos.CuttingBranchPos;
+import com.interpss.algo.subAreaNet.seqPos.SubAreaPos;
+import com.interpss.algo.subAreaNet.seqPos.SubNetworkPos;
+import com.interpss.algo.subAreaNet.seqPos.impl.SubAreaPosProcessorImpl;
+import com.interpss.algo.subAreaNet.seqPos.impl.SubNetworkPosProcessorImpl;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfLoadCode;
