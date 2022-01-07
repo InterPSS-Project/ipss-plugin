@@ -25,11 +25,11 @@
 package org.interpss.piecewise.subAreaNet.seq012.impl;
 
 import org.interpss.numeric.datatype.Complex3x1;
-import org.interpss.piecewise.subAreaNet.base.BaseCuttingBranch;
-import org.interpss.piecewise.subAreaNet.base.BaseSubArea;
-import org.interpss.piecewise.subAreaNet.impl.BaseSubAreaNetProcessorImpl;
-import org.interpss.piecewise.subAreaNet.seq012.SubArea012;
 
+import com.interpss.algo.subAreaNet.base.BaseCuttingBranch;
+import com.interpss.algo.subAreaNet.base.BaseSubArea;
+import com.interpss.algo.subAreaNet.impl.BaseSubAreaNetProcessorImpl;
+import com.interpss.algo.subAreaNet.seq012.SubArea012;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBranch;
