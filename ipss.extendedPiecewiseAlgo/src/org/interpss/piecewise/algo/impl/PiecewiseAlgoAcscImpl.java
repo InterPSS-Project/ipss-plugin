@@ -28,8 +28,8 @@ import java.util.List;
 
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
-import org.interpss.piecewise.subAreaNet.base.BaseSubArea;
 
+import com.interpss.algo.subAreaNet.base.BaseSubArea;
 import com.interpss.core.acsc.AcscBus;
 import com.interpss.core.acsc.AcscGen;
 import com.interpss.core.acsc.AcscLoad;
