@@ -24,6 +24,7 @@
 package org.interpss.piecewise.subAreaNet.seq012;
 
 import com.interpss.DStabObjectFactory;
+import com.interpss.algo.subAreaNet.seq012.SubNetwork012;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;

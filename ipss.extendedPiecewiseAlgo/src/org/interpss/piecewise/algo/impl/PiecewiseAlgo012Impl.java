@@ -33,10 +33,10 @@ import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.matrix.ComplexMatrixEqn;
 import org.interpss.numeric.matrix.MatrixUtil;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
-import org.interpss.piecewise.subAreaNet.base.BaseCuttingBranch;
-import org.interpss.piecewise.subAreaNet.base.BaseSubArea;
-import org.interpss.piecewise.subAreaNet.seq012.SubNetwork012;
 
+import com.interpss.algo.subAreaNet.base.BaseCuttingBranch;
+import com.interpss.algo.subAreaNet.base.BaseSubArea;
+import com.interpss.algo.subAreaNet.seq012.SubNetwork012;
 import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.AcscGen;
 import com.interpss.core.acsc.AcscLoad;

@@ -28,8 +28,8 @@ import java.util.List;
 
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
-import org.interpss.piecewise.subAreaNet.base.BaseSubArea;
 
+import com.interpss.algo.subAreaNet.base.BaseSubArea;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBranch;

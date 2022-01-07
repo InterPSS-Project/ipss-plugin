@@ -29,12 +29,12 @@ import static org.junit.Assert.assertTrue;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginFactory;
 import org.interpss.fadapter.IpssFileAdapter;
-import org.interpss.piecewise.subAreaNet.SubAreaNetProcessor;
-import org.interpss.piecewise.subAreaNet.seqPos.CuttingBranchPos;
-import org.interpss.piecewise.subAreaNet.seqPos.SubAreaPos;
-import org.interpss.piecewise.subAreaNet.seqPos.impl.SubAreaPosProcessorImpl;
 import org.junit.Test;
 
+import com.interpss.algo.subAreaNet.SubAreaNetProcessor;
+import com.interpss.algo.subAreaNet.seqPos.CuttingBranchPos;
+import com.interpss.algo.subAreaNet.seqPos.SubAreaPos;
+import com.interpss.algo.subAreaNet.seqPos.impl.SubAreaPosProcessorImpl;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;

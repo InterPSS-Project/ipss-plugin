@@ -26,16 +26,13 @@ package org.interpss.plugin.piecewise;
 
 import static org.junit.Assert.assertTrue;
 
-import java.util.logging.Level;
-
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.piecewise.subAreaNet.SubAreaNetProcessor;
-import org.interpss.piecewise.subAreaNet.seqPos.CuttingBranchPos;
-import org.interpss.piecewise.subAreaNet.seqPos.SubNetworkPos;
-import org.interpss.piecewise.subAreaNet.seqPos.impl.SubNetworkPosProcessorImpl;
 import org.junit.Test;
 
-import com.interpss.common.util.IpssLogger;
+import com.interpss.algo.subAreaNet.SubAreaNetProcessor;
+import com.interpss.algo.subAreaNet.seqPos.CuttingBranchPos;
+import com.interpss.algo.subAreaNet.seqPos.SubNetworkPos;
+import com.interpss.algo.subAreaNet.seqPos.impl.SubNetworkPosProcessorImpl;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;

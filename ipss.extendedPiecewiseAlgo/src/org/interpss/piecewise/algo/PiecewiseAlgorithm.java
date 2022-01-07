@@ -29,8 +29,8 @@ import java.util.List;
 import java.util.function.Function;
 
 import org.interpss.numeric.exp.IpssNumericException;
-import org.interpss.piecewise.subAreaNet.base.BaseCuttingBranch;
 
+import com.interpss.algo.subAreaNet.base.BaseCuttingBranch;
 import com.interpss.common.exp.InterpssException;
 
 /**
