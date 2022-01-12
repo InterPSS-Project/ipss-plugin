@@ -32,6 +32,7 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.ComplexFunc;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
+import org.interpss.numeric.util.PerformanceTimer;
 import org.junit.Test;
 
 import com.interpss.core.CoreObjectFactory;
@@ -40,8 +41,25 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.AclfNetHelper;
+import com.interpss.state.aclf.AclfNetworkState;
 
 public class Bus11856Test extends CorePluginTestSetup {
+	@Test
+	public void testDeepCopy() throws Exception {
+		AclfNetwork net = CorePluginFactory
+  					.getFileAdapter(IpssFileAdapter.FileFormat.IpssInternal)
+  					.load("testData/ipssdata/BUS11856.ipssdat")
+  					.getAclfNet();	
+		
+		PerformanceTimer timer = new PerformanceTimer();
+		net.deepCopy();
+		timer.log("DeepCopy ");
+		
+		timer.start();
+		net.jsonCopy();
+		timer.log("JSonCopy ");
+	}
+	
 	@Test
 	public void testCase1() throws Exception {
         long starttime = System.currentTimeMillis() ;
