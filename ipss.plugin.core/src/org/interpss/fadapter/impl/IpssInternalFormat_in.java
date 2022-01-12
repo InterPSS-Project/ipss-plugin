@@ -51,7 +51,7 @@ import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 public class IpssInternalFormat_in {
     public static AclfNetwork loadFile(final java.io.BufferedReader din, final IPSSMsgHub msg) throws Exception {
     	// create a AclfAdjNetwork object to hold the loadflow data
-    	final AclfNetwork  adjNet = CoreObjectFactory.createAclfNetwork();
+    	final AclfNetwork  aclfNet = CoreObjectFactory.createAclfNetwork();
     	//adjNet.setAllowParallelBranch(true);
     	
     	// process loadflow data line-by-line
@@ -70,25 +70,31 @@ public class IpssInternalFormat_in {
               		do {
                 		str = din.readLine();
                 		if (!str.startsWith("end")) {
-							loadBusInfoNoBaseV(str, adjNet);
-                		//msgHub.sendInfoMsg("Bus Loaded: " + String.valueOf(++cnt));
+							loadBusInfoNoBaseV(str, aclfNet);
+							//msgHub.sendInfoMsg("Bus Loaded: " + String.valueOf(++cnt));
 						}
+                		else {
+                			aclfNet.cachedBuses2Net();
+                		}
               		} while (!str.startsWith("end"));
             	}
             	else if (str.startsWith("BusInfo")) {
               		do {
                 		str = din.readLine();
                 		if (!str.startsWith("end")) {
-							loadBusInfo(str, adjNet);
-                		//msgHub.sendInfoMsg("Bus Loaded: " + String.valueOf(++cnt));
+							loadBusInfo(str, aclfNet);
+							//msgHub.sendInfoMsg("Bus Loaded: " + String.valueOf(++cnt));
 						}
+                		else {
+                			aclfNet.cachedBuses2Net();
+                		}
               		} while (!str.startsWith("end"));
             	}
             	else if (str.startsWith("SwingBusInfo")) {
               		do {
                 		str = din.readLine();
                 		if (!str.startsWith("end")) {
-							loadSwingBusInfo(str, adjNet);
+							loadSwingBusInfo(str, aclfNet);
                 		//msgHub.sendInfoMsg("SwingBus Loaded: " + String.valueOf(++cnt));
 						}
               		} while (!str.startsWith("end"));
@@ -97,7 +103,7 @@ public class IpssInternalFormat_in {
               		do {
                 		str = din.readLine();
                 		if (!str.startsWith("end")) {
-							loadPVBusInfo(str, adjNet);
+							loadPVBusInfo(str, aclfNet);
                 		//msgHub.sendInfoMsg("PVBus Loaded: " + String.valueOf(++cnt));
 						}
               		} while (!str.startsWith("end"));
@@ -106,7 +112,7 @@ public class IpssInternalFormat_in {
               		do {
                 		str = din.readLine();
                 		if (!str.startsWith("end")) {
-							loadPQBusInfo(str, adjNet);
+							loadPQBusInfo(str, aclfNet);
                 		//msgHub.sendInfoMsg("PQBus Loaded: " + String.valueOf(++cnt));
 						}
               		} while (!str.startsWith("end"));
@@ -115,7 +121,7 @@ public class IpssInternalFormat_in {
               		do {
                 		str = din.readLine();
                 		if (!str.startsWith("end")) {
-							loadCapacitorBusInfo(str, adjNet);
+							loadCapacitorBusInfo(str, aclfNet);
                 		//msgHub.sendInfoMsg("Capacitor Loaded: " + String.valueOf(++cnt));
 						}
               		} while (!str.startsWith("end"));
@@ -124,23 +130,26 @@ public class IpssInternalFormat_in {
               		do {
                 		str = din.readLine();
                 		if (!str.startsWith("end")) {
-							loadBranchInfo(str, adjNet, msg);
+							loadBranchInfo(str, aclfNet, msg);
                 		//msgHub.sendInfoMsg("Branch Loaded: " + String.valueOf(++cnt));
 						}
+                		else {
+                			aclfNet.cachedBranches2Net();
+                		}
               		} while (!str.startsWith("end"));
             	}
             	else if (str.startsWith("XformerInfo")){
               		do {
                 		str = din.readLine();
                 		if (!str.startsWith("end")) {
-							loadXformerInfo(str, adjNet);
+							loadXformerInfo(str, aclfNet);
                 		//msgHub.sendInfoMsg("Xfr Loaded: " + String.valueOf(++cnt));
 						}
               		} while (!str.startsWith("end"));
             	}
            	  }
         	} while (str != null && !str.startsWith("EndOfFile"));
-      	return adjNet;
+      	return aclfNet;
     }
 
     public static void loadBusInfo(final String str, final AclfNetwork net) throws InterpssException {
@@ -167,9 +176,12 @@ public class IpssInternalFormat_in {
 			}
       	}
 
-      	final AclfBus bus = CoreObjectFactory.createAclfBus(id, net);
+      	final AclfBus bus = CoreObjectFactory.createAclfBus();
+      	bus.setId(id);
+      	net.addBus2Cache(bus);
       	//net.addBus(bus);
-    	bus.setBaseVoltage(vBase, UnitType.Volt);
+    	
+      	bus.setBaseVoltage(vBase, UnitType.Volt);
     	bus.setVoltage(vAct, ang);
     	if ( ( pg != 0.0 ) || ( qg != 0.0 ) ) {
     		 bus.setGenCode(AclfGenCode.GEN_PQ);
@@ -214,8 +226,11 @@ public class IpssInternalFormat_in {
 			}
       	}
 
-      	final AclfBus bus = CoreObjectFactory.createAclfBus(id, net);
+      	final AclfBus bus = CoreObjectFactory.createAclfBus();
+      	bus.setId(id);
     	//net.addBus(bus);
+      	net.addBus2Cache(bus);
+      	
      	bus.setBaseVoltage(vBase, UnitType.Volt);
      	bus.setVoltage(vAct, ang);
      	if ( ( pg != 0.0 ) || ( qg != 0.0 ) ) {
@@ -339,7 +354,9 @@ public class IpssInternalFormat_in {
       	}
 
       	AclfBranch bra = CoreObjectFactory.createAclfBranch();
-      	net.addBranch(bra, fid, tid);
+      	//net.addBranch(bra, fid, tid);
+      	net.addBranch2Cache(bra, fid, tid);
+      	
     	bra.setBranchCode(AclfBranchCode.LINE);
 		AclfLineAdapter line = bra.toLine();
     	
