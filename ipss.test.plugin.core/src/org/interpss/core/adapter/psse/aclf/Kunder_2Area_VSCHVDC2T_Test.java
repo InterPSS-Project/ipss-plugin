@@ -37,7 +37,7 @@ public class Kunder_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 	public void test_VSCHVDC_JSonCopy() throws Exception {
 		AclfNetwork net = createTestCase();
 		
-		AclfNetwork netCopy = AclfNetworkState.create(new AclfNetworkState(net));
+		AclfNetwork netCopy = net.jsonCopy();
 		
 		assertTrue("", net.diffState(netCopy));
 		

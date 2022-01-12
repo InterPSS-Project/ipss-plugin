@@ -104,7 +104,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	Acsc5Bus_ODM_TestCase.class,
 
 	// SE
-	SE_IEEE118Test.class,
+	//SE_IEEE118Test.class,
 	
 	// DStab controller building blocks
 	DelayControlBlockTests.class,
