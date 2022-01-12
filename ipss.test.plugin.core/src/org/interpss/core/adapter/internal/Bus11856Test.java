@@ -61,8 +61,7 @@ public class Bus11856Test extends CorePluginTestSetup {
 	}
 	
 	@Test
-	public void testCase1() throws Exception {
-        long starttime = System.currentTimeMillis() ;
+	public void testLoadCase() throws Exception {
   		System.out.println("Start loading data ...");
   		
   		
@@ -74,29 +73,30 @@ public class Bus11856Test extends CorePluginTestSetup {
 //  	  		System.out.println("time for loading data : " + (System.currentTimeMillis() - starttime)*0.001);
 //  	        
 //  			AclfNetwork net = simuCtx.getAclfNet();
-  			
-  			AclfNetwork net = CorePluginFactory
+  		PerformanceTimer timer = new PerformanceTimer();	
+  		AclfNetwork net = CorePluginFactory
   					.getFileAdapter(IpssFileAdapter.FileFormat.IpssInternal)
   					.load("testData/ipssdata/BUS11856.ipssdat")
   					.getAclfNet();	
-  			
+  		timer.log("Load data ");
+  		
   	  		//System.out.println(net.net2String());
-  	  		assertTrue((net.getBusList().size() == 11856));
+  		assertTrue((net.getBusList().size() == 11856));
 
-  		  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
-  	  		starttime = System.currentTimeMillis() ;
-			AclfNetHelper helper = new AclfNetHelper(net);
-  	  		assertTrue(helper.checkSwingBus());
-  	  		System.out.println("time for swing bus check : " + (System.currentTimeMillis() - starttime)*0.001);
+  		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+  		timer.start();
+  		AclfNetHelper helper = new AclfNetHelper(net);
+  		assertTrue(helper.checkSwingBus());
+  		timer.log("time for swing bus check");
 	  	
-  			starttime = System.currentTimeMillis() ;
-  			algo.setLfMethod(AclfMethodType.PQ);
-  		  	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
-  			algo.loadflow();
+  		timer.start();
+  		algo.setLfMethod(AclfMethodType.PQ);
+  		algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
+  		algo.loadflow();
   			//	System.out.println(net.net2String());
-  			System.out.println("time for loadflow calculation : " + (System.currentTimeMillis() - starttime)*0.001);
+  		timer.log("time for loadflow calculation");
   			
-  			assertTrue(net.isLfConverged());		
+  		assertTrue(net.isLfConverged());		
 //  		}
   	}
 	
