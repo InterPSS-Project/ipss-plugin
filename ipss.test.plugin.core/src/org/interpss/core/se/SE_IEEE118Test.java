@@ -63,7 +63,7 @@ public class SE_IEEE118Test extends CorePluginTestSetup {
 		//System.out.println(braCopy);
 	
 		// copy through JSon serialization/deserialization
-		SENetwork seNetCopy = SENetworkState.create(new SENetworkState(seNet));
+		SENetwork seNetCopy = seNet.jsonCopy();
 		
 		assertTrue("", seNet.diffState(seNetCopy));
 	}	
