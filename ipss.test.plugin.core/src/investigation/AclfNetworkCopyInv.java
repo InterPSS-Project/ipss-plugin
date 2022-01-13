@@ -19,7 +19,7 @@ public class AclfNetworkCopyInv {
 		AclfNetworkState netBean = new AclfNetworkState(net);
 		FileUtil.writeText2File("temp/aclfnet.json",netBean.toString());
 		
-		AclfNetwork netCopy = net.deepCopy();
+		AclfNetwork netCopy = net.hzCopy();
 		AclfNetworkState netCopyBean = new AclfNetworkState(netCopy);
 		FileUtil.writeText2File("temp/aclfnetcopy.json", netCopyBean.toString());
 	}
