@@ -26,7 +26,7 @@ public class Kunder_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 	public void test_VSCHVDC_DeepCopy() throws Exception {
 		AclfNetwork net = createTestCase();
 		
-		AclfNetwork netCopy = net.deepCopy();
+		AclfNetwork netCopy = net.hzCopy();
 		
 		assertTrue("", net.diffState(netCopy));
 		

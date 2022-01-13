@@ -43,7 +43,7 @@ public class SE_IEEE118Test extends CorePluginTestSetup {
 		//System.out.println(braCopy);
 		
 		// copy through Hz
-		SENetwork seNetCopy = seNet.deepCopy();
+		SENetwork seNetCopy = seNet.hzCopy();
 		
 		assertTrue("", seNet.diffState(seNetCopy));
 	}
@@ -88,7 +88,7 @@ public class SE_IEEE118Test extends CorePluginTestSetup {
 		SENetworkState seNetBean = new SENetworkState(seNet);
 		FileUtil.writeText2File("output/temp1.json",seNetBean.toString());
 		
-		SENetwork seNetCopy = seNet.deepCopy();
+		SENetwork seNetCopy = seNet.hzCopy();
 		SENetworkState seNetCopyBean = new SENetworkState(seNetCopy);
 		FileUtil.writeText2File("output/temp2.json",seNetCopyBean.toString());
 		
