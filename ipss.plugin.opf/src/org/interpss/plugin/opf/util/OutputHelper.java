@@ -40,7 +40,7 @@ public class OutputHelper {
 	}
 	
 	public void walkThroughNetwork(){
-		numOfArea = net.getAreaList().size();
+		numOfArea = net.getAreaMap().size();
 		for (Bus b: net.getBusList()){			
 			OpfBus bus = (OpfBus)b;
 			double lmp = bus.getLMP();
