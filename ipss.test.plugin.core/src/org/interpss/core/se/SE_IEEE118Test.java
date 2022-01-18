@@ -34,11 +34,11 @@ public class SE_IEEE118Test extends CorePluginTestSetup {
 		SENetwork seNet = createTestCase();
 		
 		SerializationService serializeService = new DefaultSerializationServiceBuilder().build();  
-		SEBus busCopy = seNet.getBus("Bus1").deepCopy(serializeService);
+		SEBus busCopy = seNet.getBus("Bus1").hzCopy(serializeService);
 		//System.out.println(seNet.getBus("Bus1"));
 		//System.out.println(busCopy);
 		
-		SEBranch braCopy = seNet.getBranch("Bus2->Bus1(1)").deepCopy(serializeService);
+		SEBranch braCopy = seNet.getBranch("Bus2->Bus1(1)").hzCopy(serializeService);
 		//System.out.println(seNet.getBranch("Bus2->Bus1(1)"));
 		//System.out.println(braCopy);
 		
