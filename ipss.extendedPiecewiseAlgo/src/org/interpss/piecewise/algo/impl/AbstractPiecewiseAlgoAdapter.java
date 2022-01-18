@@ -25,8 +25,8 @@
 package org.interpss.piecewise.algo.impl;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 import org.interpss.numeric.exp.IpssNumericException;
@@ -83,7 +83,7 @@ public abstract class AbstractPiecewiseAlgoAdapter<TBus, TNet, TState, TSub exte
 		this.netYmatrixDirty = netYmatrixDirty;
 	}
 
-	@Override public Hashtable<String, TState> getBusVoltage(int areaFlag) {
+	@Override public Map<String, TState> getBusVoltage(int areaFlag) {
 		return this.getSubArea(areaFlag).getBusVoltage();
 	}
 

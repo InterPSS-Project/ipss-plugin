@@ -24,8 +24,8 @@
 
 package org.interpss.piecewise.algo;
 
-import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 import org.interpss.numeric.exp.IpssNumericException;
@@ -68,7 +68,7 @@ public interface PiecewiseAlgorithm<TBus, TState, TSub> {
 	 * @param areaFlag SubArea/Network flag
 	 * @return the netVoltage
 	 */
-	Hashtable<String, TState> getBusVoltage(int areaFlag);
+	Map<String, TState> getBusVoltage(int areaFlag);
 
 	/**
 	 * get the SubArea/Network list
