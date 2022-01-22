@@ -185,8 +185,8 @@ public class AclfOutFunc {
 				str.append("  ---------------------------------------------------------------------------------------------------------------\n");
 			}
 			else {
-				str.append("     BusID          Code           Volt(pu)   Angle(deg)     P(pu)     Q(pu)      Bus Name   \n");
-				str.append("  -------------------------------------------------------------------------------------------\n");
+				str.append("     BusID          Code           Volt(pu)   Angle(deg)      Pg(pu)    Qg(pu)    Pl(pu)    Ql(pu)    Bus Name   \n");
+				str.append("  ----------------------------------------------------------------------------------------------------------------\n");
 			}
 				 
 			for (Bus b : net.getBusList()) {
@@ -221,7 +221,9 @@ public class AclfOutFunc {
 
 	private static String busLfSummary(BaseAclfBus<?,?> bus, boolean incldMismatch) {
 		final StringBuffer str = new StringBuffer("");
-		Complex busPQ = bus.calNetPQResults();
+		//Complex busPQ = bus.calNetPQResults();
+		Complex gen = bus.calNetGenResults();
+		Complex load = bus.calNetLoadResults();
 		if (bus.isActive())
 			str.append("  ");
 		else
@@ -230,8 +232,10 @@ public class AclfOutFunc {
 		str.append(String.format("%-17s ", bus.code2String()));
 		str.append(String.format("%10.5f   ", bus.getVoltageMag(UnitType.PU)));
 		str.append(String.format("%9.2f   ", bus.getVoltageAng(UnitType.Deg)));
-		str.append(String.format("%10.4f", busPQ.getReal()));
-		str.append(String.format("%10.4f", busPQ.getImaginary()));
+		str.append(String.format("%10.4f", gen.getReal()));
+		str.append(String.format("%10.4f", gen.getImaginary()));
+		str.append(String.format("%10.4f", load.getReal()));
+		str.append(String.format("%10.4f", load.getImaginary()));
 		if (incldMismatch) {
 			Complex mis = bus.mismatch(AclfMethodType.NR);
 			str.append(String.format("%10.4f", mis.getReal()));
