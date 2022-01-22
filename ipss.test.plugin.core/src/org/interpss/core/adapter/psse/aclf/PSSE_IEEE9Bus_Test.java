@@ -131,7 +131,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		testVAclf(net);
 	}
 
-	@Test
+	//@Test
 	public void testV31() throws Exception {
 		AclfNetwork net = IpssAdapter.importAclfNet("testdata/adpter/psse/v31/ieee9_v31.raw")
 				.setFormat(PSSE)
@@ -142,7 +142,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		testVAclf(net);
 	}
 	
-	@Test
+	//@Test
 	public void testV32() throws Exception {
 		AclfNetwork net = IpssAdapter.importAclfNet("testdata/adpter/psse/v32/ieee9_v32.raw")
 				.setFormat(PSSE)
@@ -153,7 +153,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		testVAclf(net);
 	}
 	
-	@Test
+	//@Test
 	public void testV33() throws Exception {
 		AclfNetwork net = IpssAdapter.importAclfNet("testdata/adpter/psse/v33/ieee9_v33.raw")
 				.setFormat(PSSE)
