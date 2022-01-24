@@ -39,7 +39,6 @@ import org.junit.Test;
 
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.DclfAlgoObjectFactory;
-import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
@@ -62,7 +61,8 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
 		//	bus.initMultiGen();
   		//System.out.println(net.net2String());
 
-	  	net.accept(CoreObjectFactory.createLfAlgoVisitor());
+	  	CoreObjectFactory.createLoadflowAlgorithm(net)
+			 			 .loadflow();
 	  	
   		assertTrue(net.isLfConverged());
   		
@@ -148,7 +148,8 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
 					.getImportedObj();
   		//System.out.println(net.net2String());
 
-	  	net.accept(CoreObjectFactory.createLfAlgoVisitor());
+	  	CoreObjectFactory.createLoadflowAlgorithm(net)
+			 			 .loadflow();
 	  	
   		assertTrue(net.isLfConverged());
   		

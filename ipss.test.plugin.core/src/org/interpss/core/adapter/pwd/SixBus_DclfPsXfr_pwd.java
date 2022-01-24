@@ -62,7 +62,8 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 					.getImportedObj();
   		//System.out.println(net.net2String());
 
-	  	net.accept(CoreObjectFactory.createLfAlgoVisitor());
+	  	CoreObjectFactory.createLoadflowAlgorithm(net)
+			 			 .loadflow();
 	  	
   		assertTrue(net.isLfConverged());
   		

@@ -56,8 +56,27 @@ public class Bus11856Test extends CorePluginTestSetup {
 		timer.log("DeepCopy ");
 		
 		timer.start();
+		for (int i = 0; i < 10; i++) {
+			net.hzCopy();
+		}
+		timer.log("10 DeepCopy ");
+		
+		timer.start();
 		net.jsonCopy();
 		timer.log("JSonCopy ");
+
+		timer.start();
+		for (int i = 0; i < 10; i++) {
+			net.jsonCopy();
+		}
+		timer.log("10 JSonCopy ");
+	
+		timer.start();
+		AclfNetworkState bean = new AclfNetworkState(net);
+		for (int i = 0; i < 10; i++) {
+			AclfNetworkState.create(bean);
+		}
+		timer.log("10 JSonCopy 1 ");
 	}
 	
 	@Test
