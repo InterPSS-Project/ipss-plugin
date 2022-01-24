@@ -60,7 +60,8 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
   		AclfNetwork net = CoreObjectFactory.createAclfNetwork();
 		SampleTestingCases.load_LF_5BusSystem(net);
 		
-	  	net.accept(CoreObjectFactory.createLfAlgoVisitor());
+	  	CoreObjectFactory.createLoadflowAlgorithm(net)
+			 		     .loadflow();
   		//System.out.println(net.net2String());
 		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet));
   		//System.out.println(aclfResultBusStyle.apply(net));
@@ -79,7 +80,8 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 			.map2Model(netBean)
 			.getAclfNet();
 		
-	  	aclfNet.accept(CoreObjectFactory.createLfAlgoVisitor());  
+	  	CoreObjectFactory.createLoadflowAlgorithm(aclfNet)
+			 			 .loadflow();
 		
   		assertTrue(aclfNet.isLfConverged());	
   		
@@ -272,7 +274,8 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 		AclfNetwork aclfNet = new AclfBean2AclfNetMapper().map2Model(netBean)
 				.getAclfNet();
 				
-		aclfNet.accept(CoreObjectFactory.createLfAlgoVisitor());  
+	  	CoreObjectFactory.createLoadflowAlgorithm(aclfNet)
+			 			 .loadflow(); 
 		
   		assertTrue(aclfNet.isLfConverged());
   		
