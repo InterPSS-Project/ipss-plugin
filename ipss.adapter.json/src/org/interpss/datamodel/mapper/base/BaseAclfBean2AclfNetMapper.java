@@ -147,7 +147,7 @@ public abstract class BaseAclfBean2AclfNetMapper<
 	 * @param aclfNet AclfNetwork object
 	 */
 	private void mapBusBean(AclfBusBean<TBusExt> busBean, AclfNetwork aclfNet) throws InterpssException {
-		AclfBus bus = CoreObjectFactory.createAclfBus(busBean.id, aclfNet);
+		AclfBus bus = CoreObjectFactory.createAclfBus(busBean.id, aclfNet).get();
 		bus.setNumber(busBean.number);
 		
 		bus.setName(busBean.name);
@@ -212,15 +212,9 @@ public abstract class BaseAclfBean2AclfNetMapper<
 			
 			String remoteBusId = busBean.remoteVControlBusId;
 			if( !remoteBusId.equals("")){
-				RemoteQBus reQBus;
-				try {
-					reQBus = CoreObjectFactory.createRemoteQBus(
-							bus, RemoteQControlType.BUS_VOLTAGE, remoteBusId);
-					reQBus.setAccFactor(0.5);
-				} catch (InterpssException e) {
-					throw new InterpssRuntimeException(e.toString());
-				}
-				
+				RemoteQBus reQBus = CoreObjectFactory.createRemoteQBus(
+							bus, RemoteQControlType.BUS_VOLTAGE, remoteBusId).get();
+				reQBus.setAccFactor(0.5);
 			}
 		}
 		

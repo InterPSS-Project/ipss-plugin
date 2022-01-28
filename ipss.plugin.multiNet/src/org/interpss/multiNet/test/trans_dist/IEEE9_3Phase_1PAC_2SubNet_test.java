@@ -489,7 +489,7 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
 	    
 	    // add 69 kV and below distribution system
 	    
-		DStabBus bus10 = (DStabBus) DStabObjectFactory.createDStabBus("Bus10", dsNet);
+		DStabBus bus10 = (DStabBus) DStabObjectFactory.createDStabBus("Bus10", dsNet).get();
  		bus10.setAttributes("69kV sub", "");
  		bus10.setBaseVoltage(69000.0);
  		// set the bus to a non-generator bus
@@ -508,7 +508,7 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
  		
  		
  		
- 		DStabBus bus11 = (DStabBus) DStabObjectFactory.createDStabBus("Bus11", dsNet);
+ 		DStabBus bus11 = (DStabBus) DStabObjectFactory.createDStabBus("Bus11", dsNet).get();
  		bus11.setAttributes("13.8 kV feeder starting end", "");
  		bus11.setBaseVoltage(13800.0);
  		// set the bus to a non-generator bus
@@ -518,7 +518,7 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
  		
  		
  		
- 		DStabBus bus11a = (DStabBus) DStabObjectFactory.createDStabBus("Bus11a", dsNet);
+ 		DStabBus bus11a = (DStabBus) DStabObjectFactory.createDStabBus("Bus11a", dsNet).get();
  		bus11a.setAttributes("13.8 kV feeder terminal-end", "");
  		bus11a.setBaseVoltage(13800.0);
  		// set the bus to a non-generator bus
@@ -529,7 +529,7 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
  		bus11a.setLoadQ(0.1);
  		
  		
- 		DStabBus bus12 = (DStabBus) DStabObjectFactory.createDStabBus("Bus12", dsNet);
+ 		DStabBus bus12 = (DStabBus) DStabObjectFactory.createDStabBus("Bus12", dsNet).get();
  		bus12.setAttributes("230 V feeder", "");
  		bus12.setBaseVoltage(230.0);
  		// set the bus to a non-generator bus

@@ -347,7 +347,7 @@ public class IpssAclfNet extends BaseDSL {
 	public static class AclfBusDSL extends AclfBusBaseDSL<BaseAclfBus<?,?>, BaseAclfNetwork<?,?>, AclfBusDSL>{
 		// for addAclfBus()
 		public AclfBusDSL(String busId, String busName, BaseAclfNetwork<AclfBus, AclfBranch> net) throws InterpssException {
-			super(busId, busName, CoreObjectFactory.createAclfBus(busId, net), net);
+			super(busId, busName, CoreObjectFactory.createAclfBus(busId, net).get(), net);
 		}
 		// for getAclfBus()
 		public AclfBusDSL(String busId, BaseAclfNetwork<?, ?> net)  throws Exception {
@@ -647,7 +647,7 @@ public class IpssAclfNet extends BaseDSL {
 		public FunctionLoadDSL(String busId, AclfNetwork net) throws InterpssException  {
 			super(net);
 			AclfBus bus = net.getBus(busId);
-			setObject(CoreObjectFactory.createFunctionLoad(bus));
+			setObject(CoreObjectFactory.createFunctionLoad(bus).get());
 		}
   		public FunctionLoadDSL setInitLoad(Complex load0, UnitType unit) { 
   								getObject().getP().setLoad0(load0.getReal(), unit, getAclfAdjNet().getBaseKva());
@@ -683,7 +683,7 @@ public class IpssAclfNet extends BaseDSL {
 		public PQBusLimitDSL(String busId, AclfNetwork net) throws InterpssException {
 			super(net);
 			AclfBus bus = net.getBus(busId);
-			setObject(CoreObjectFactory.createPQBusLimit(bus));
+			setObject(CoreObjectFactory.createPQBusLimit(bus).get());
 		}
   		public PQBusLimitDSL setQSpecified(double qSpec, UnitType unit) { 
   								getObject().setQSpecified(qSpec, unit);
