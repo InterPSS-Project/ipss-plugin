@@ -240,7 +240,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 			net.setXfrZAdjustSide(xfrZTable.getAdjustSide() == BranchBusSideEnumType.FROM_SIDE?
 					         BranchBusSide.FROM_SIDE : BranchBusSide.TO_SIDE);
 			for (XformerZTableXmlType.XformerZTableItem item : xfrZTable.getXformerZTableItem()) {
-				XfrZTableEntry elem = CoreObjectFactory.createXfrZTableEntry(item.getNumber(), net);
+				XfrZTableEntry elem = CoreObjectFactory.createXfrZTableEntry(item.getNumber(), net).get();
 				for (XformerZTableXmlType.XformerZTableItem.Lookup point : item.getLookup()) {
 					elem.getPointSet().getPoints().add(new Point(point.getTurnRatioShiftAngle(), point.getScaleFactor()));
 				}
