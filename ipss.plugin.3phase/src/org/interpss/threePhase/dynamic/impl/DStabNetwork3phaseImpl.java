@@ -195,8 +195,7 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 			if(startingBus!=null){
 				  for(Branch connectedBra: startingBus.getBranchList()){
 						if(connectedBra.isActive() && !connectedBra.isBooleanFlag()){
-							try {
-								Bus findBus = connectedBra.getOppositeBus(startingBus);
+								Bus findBus = connectedBra.getOppositeBus(startingBus).get();
 								
 								//update status
 								connectedBra.setBooleanFlag(true);
@@ -216,11 +215,6 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 									((DStab3PBus) findBus).set3PhaseVotlages(new Complex3x1(va,vb,vc));
 									 ((BaseAclfBus)findBus).setVoltage(((DStab3PBus) findBus).getThreeSeqVoltage().b_1);
 								}
-							} catch (InterpssException e) {
-								
-								e.printStackTrace();
-							}
-							
 						}
 				 }
 			 
