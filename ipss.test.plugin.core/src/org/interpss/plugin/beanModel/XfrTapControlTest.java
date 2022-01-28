@@ -55,7 +55,7 @@ public class XfrTapControlTest extends CorePluginTestSetup {
 
 		AclfBranch branch = net.getBranch("0001->0002(1)");
 		TapControl tap = CoreObjectFactory.createTapVControlBusVoltage(branch, 
-							AdjControlType.POINT_CONTROL, net, "0002");
+							AdjControlType.POINT_CONTROL, net, "0002").get();
 		tap.setControlLimit(new LimitType(1.10, 0.9));
 		tap.setControlOnFromSide(false);
 		//tap.setTapOnFromSide(false);
@@ -97,7 +97,7 @@ public class XfrTapControlTest extends CorePluginTestSetup {
 
 		AclfBranch branch = net.getBranch("0001->0002(1)");
 		TapControl tap = CoreObjectFactory.createTapVControlBusVoltage(branch, 
-							AdjControlType.POINT_CONTROL, net, "0002");
+							AdjControlType.POINT_CONTROL, net, "0002").get();
 		tap.setControlLimit(new LimitType(1.10, 0.9));
 		tap.setControlOnFromSide(false);
 		//tap.setTapOnFromSide(false);
@@ -134,7 +134,7 @@ public class XfrTapControlTest extends CorePluginTestSetup {
 
 		AclfBranch branch = net.getBranch("0001->0002(1)");
 		TapControl tap = CoreObjectFactory.createTapVControlBusVoltage(branch, 
-							AdjControlType.POINT_CONTROL, net, "0002");
+							AdjControlType.POINT_CONTROL, net, "0002").get();
 		tap.setControlLimit(new LimitType(1.10, 0.9));
 		tap.setControlOnFromSide(false);
 		//tap.setTapOnFromSide(false);
