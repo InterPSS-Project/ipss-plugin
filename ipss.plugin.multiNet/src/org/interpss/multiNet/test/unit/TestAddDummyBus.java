@@ -81,7 +81,7 @@ public class TestAddDummyBus {
 	    
 	    BaseDStabBus<?,?> bus7 = dsNet.getBus("Bus7");
 	    
-	    DStabBus bus7Dummy = (DStabBus) DStabObjectFactory.createDStabBus("Bus7Dummy", dsNet);
+	    DStabBus bus7Dummy = (DStabBus) DStabObjectFactory.createDStabBus("Bus7Dummy", dsNet).get();
 	    //basic copy
 	    bus7Dummy.setBaseVoltage(bus7.getBaseVoltage());
 	    bus7Dummy.setVoltage(bus7.getVoltage());
@@ -160,7 +160,7 @@ public class TestAddDummyBus {
 	    
 	    BaseDStabBus<?,?> bus7 = dsNet.getBus("Bus7");
 	    
-	    DStabBus bus7Dummy = (DStabBus) DStabObjectFactory.createDStabBus("Bus7Dummy", dsNet);
+	    DStabBus bus7Dummy = (DStabBus) DStabObjectFactory.createDStabBus("Bus7Dummy", dsNet).get();
 	    //basic copy
 	    bus7Dummy.setBaseVoltage(bus7.getBaseVoltage());
 	    bus7Dummy.setVoltage(bus7.getVoltage());

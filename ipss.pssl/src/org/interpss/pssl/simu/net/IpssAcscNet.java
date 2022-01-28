@@ -124,7 +124,7 @@ public class IpssAcscNet extends BaseDSL {
 	
 	public static class AcscBusDSL extends IpssAclfNet.AclfBusBaseDSL<AcscBus, BaseAcscNetwork<?, ?>, AcscBusDSL>{
 		public AcscBusDSL(String busId, String busName, BaseAcscNetwork<?, ?> net) throws InterpssException {
-			super(busId, busName, CoreObjectFactory.createAcscBus(busId, null), net);
+			super(busId, busName, CoreObjectFactory.createAcscBus(busId, null).get(), net);
 		}
 
   		public AcscBusDSL setScCode(BusScCode code) { 

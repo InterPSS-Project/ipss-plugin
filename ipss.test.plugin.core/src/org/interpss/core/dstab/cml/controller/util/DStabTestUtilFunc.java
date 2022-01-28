@@ -16,7 +16,7 @@ public class DStabTestUtilFunc {
 		BaseDStabNetwork net = DStabObjectFactory.createDStabilityNetwork();
 		net.setFrequency(60.0);
 
-		BaseDStabBus bus = DStabObjectFactory.createDStabBus("BusId", net);
+		BaseDStabBus bus = DStabObjectFactory.createDStabBus("BusId", net).get();
 
 		bus.setName("BusName");
 		bus.setBaseVoltage(1000);

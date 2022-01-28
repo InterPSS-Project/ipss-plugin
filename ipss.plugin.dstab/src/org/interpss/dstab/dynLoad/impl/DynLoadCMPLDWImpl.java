@@ -162,11 +162,9 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
     	//1. create the low-voltage bus and the load bus
   
     	
-    	try {
-    		
     		//add the bus connected to the low voltage side of the distribution transformer
 			lowBus  = DStabObjectFactory.createDStabBus(this.getDStabBus().getId().concat(lowBusId), 
-					                                        (DStabilityNetwork) this.getDStabBus().getNetwork());
+					                                        (DStabilityNetwork) this.getDStabBus().getNetwork()).get();
 			
 			lowBus.setBaseVoltage(1.0); // affacts dynamic model u/i/z multiplier calculation
 			
@@ -182,7 +180,7 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
 			
 			//add the load bus
 			loadBus  = DStabObjectFactory.createDStabBus(this.getDStabBus().getId().concat(loadBusId), 
-                    (BaseDStabNetwork)this.getDStabBus().getNetwork());
+                    (BaseDStabNetwork)this.getDStabBus().getNetwork()).get();
 			
 			loadBus.setBaseVoltage(1.0);
 			
@@ -195,12 +193,6 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
 			loadBus.setArea(this.getDStabBus().getArea());
 			
 			loadBus.setZone(this.getDStabBus().getZone());
-			
-		} catch (InterpssException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	
     	
     	//2. create the xfr and feeder
     	

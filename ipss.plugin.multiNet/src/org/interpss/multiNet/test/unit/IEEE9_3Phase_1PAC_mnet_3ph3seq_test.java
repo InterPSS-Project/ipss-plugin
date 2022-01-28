@@ -211,7 +211,7 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 	    
 	    // add 69 kV and below distribution system
 	    
-	    DStabBus bus10 = (DStabBus) DStabObjectFactory.createDStabBus("Bus10", dsNet);
+	    DStabBus bus10 = (DStabBus) DStabObjectFactory.createDStabBus("Bus10", dsNet).get();
   		bus10.setAttributes("69kV sub", "");
   		bus10.setBaseVoltage(69000.0);
   		// set the bus to a non-generator bus
@@ -219,7 +219,7 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
   		// set the bus to a constant power load bus
   		bus10.setLoadCode(AclfLoadCode.NON_LOAD);
   		
-  		DStabBus bus11 = (DStabBus) DStabObjectFactory.createDStabBus("Bus11", dsNet);
+  		DStabBus bus11 = (DStabBus) DStabObjectFactory.createDStabBus("Bus11", dsNet).get();
   		bus11.setAttributes("13.8 kV feeder", "");
   		bus11.setBaseVoltage(13800.0);
   		// set the bus to a non-generator bus
@@ -230,7 +230,7 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
   		bus11.setLoadP(0.625);
   		bus11.setLoadQ(-0.05);
   		
-  		DStabBus bus12 = (DStabBus) DStabObjectFactory.createDStabBus("Bus12", dsNet);
+  		DStabBus bus12 = (DStabBus) DStabObjectFactory.createDStabBus("Bus12", dsNet).get();
   		bus12.setAttributes("208 V feeder", "");
   		bus12.setBaseVoltage(208.0);
   		// set the bus to a non-generator bus

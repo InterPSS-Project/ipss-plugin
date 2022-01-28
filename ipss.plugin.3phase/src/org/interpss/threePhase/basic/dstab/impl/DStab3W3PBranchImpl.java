@@ -14,7 +14,7 @@ public class DStab3W3PBranchImpl extends DStab3WBranchImpl implements DStab3W3PB
 	
 	
 	@Override
-	public void create2WBranches(AclfBranchCode branchCode, String[] properties) throws InterpssException {
+	public boolean create2WBranches(AclfBranchCode branchCode, String[] properties) {
 	     
 		DStabNetwork3Phase net = (DStabNetwork3Phase) this.getFromBus().getNetwork();
 
@@ -55,7 +55,7 @@ public class DStab3W3PBranchImpl extends DStab3WBranchImpl implements DStab3W3PB
 		this.setTertiaryBranch(branch);
 		branch.setStatus(this.isActive());
 		branch.setBranchCode(branchCode);
-		
+		return true;
 	}
 
 }
