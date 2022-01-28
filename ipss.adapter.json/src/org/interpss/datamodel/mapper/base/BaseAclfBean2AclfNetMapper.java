@@ -238,26 +238,21 @@ public abstract class BaseAclfBean2AclfNetMapper<
 		if (busBean.switchShunt != null){
 			SwitchShuntBean<TBusExt> ssb = busBean.switchShunt;
 			
-			try {
-				SwitchedShunt ss = CoreObjectFactory.createSwitchedShunt(bus);
-				ss.setVSpecified(ssb.vSpecified);
-				ss.setBInit(ssb.bInit);
-				VarCompensationMode mode = ssb.controlMode == VarCompensatorControlModeBean.Continuous?VarCompensationMode.CONTINUOUS:
+			SwitchedShunt ss = CoreObjectFactory.createSwitchedShunt(bus);
+			ss.setVSpecified(ssb.vSpecified);
+			ss.setBInit(ssb.bInit);
+			VarCompensationMode mode = ssb.controlMode == VarCompensatorControlModeBean.Continuous?VarCompensationMode.CONTINUOUS:
 					ssb.controlMode == VarCompensatorControlModeBean.Discrete?VarCompensationMode.DISCRETE:
 						VarCompensationMode.FIXED;
-				ss.setControlMode(mode);
-				ss.setDesiredVoltageRange(new LimitType(ssb.vmax, ssb.vmin));
-				ss.setQLimit(new LimitType(ssb.qmax, ssb.qmin));
-				for(QBankBean<TBusExt> qbb: ssb.varBankList){
-					ShuntCompensator qb = CoreObjectFactory.createShuntCompensator(ss);
-					qb.setSteps(qbb.step);
-					qb.setUnitQMvar(qbb.UnitQMvar);
-				}				
-				ss.setRemoteBus(aclfNet.getBus(ssb.remoteBusId));
-			} catch (InterpssException e) {
-				throw new InterpssRuntimeException(e.toString());
-			}
-			
+			ss.setControlMode(mode);
+			ss.setDesiredVoltageRange(new LimitType(ssb.vmax, ssb.vmin));
+			ss.setQLimit(new LimitType(ssb.qmax, ssb.qmin));
+			for(QBankBean<TBusExt> qbb: ssb.varBankList){
+				ShuntCompensator qb = CoreObjectFactory.createShuntCompensator(ss);
+				qb.setSteps(qbb.step);
+				qb.setUnitQMvar(qbb.UnitQMvar);
+			}				
+			ss.setRemoteBus(aclfNet.getBus(ssb.remoteBusId));
 		}
 	}
 	
@@ -317,16 +312,15 @@ public abstract class BaseAclfBean2AclfNetMapper<
 		// control/adjustment
 		if(branchBean.xfrTapControl != null){
 			XfrTapControlBean<TBraExt> tcb = branchBean.xfrTapControl;
-			try{
 				if(tcb.controlMode == TapControlModeBean.Bus_Voltage){					
 					TapControl tap = null;
 					if(tcb.controlType == TapControlTypeBean.Point_Control){
 						tap = CoreObjectFactory.createTapVControlBusVoltage(branch, 
-					            AdjControlType.POINT_CONTROL, aclfNet, tcb.controlledBusId);
+					            AdjControlType.POINT_CONTROL, aclfNet, tcb.controlledBusId).get();
 						tap.setVSpecified(tcb.desiredControlTarget);
 					}else{ // range control
 						tap=CoreObjectFactory.createTapVControlBusVoltage(branch, 
-					            AdjControlType.RANGE_CONTROL, aclfNet, tcb.controlledBusId);
+					            AdjControlType.RANGE_CONTROL, aclfNet, tcb.controlledBusId).get();
 							tap.setControlRange(new LimitType(tcb.upperLimit, tcb.lowerLimit));
 					}
 					tap.setStatus(tcb.status == 1? true : false);
@@ -340,7 +334,7 @@ public abstract class BaseAclfBean2AclfNetMapper<
 				}else if(tcb.controlMode == TapControlModeBean.Mva_Flow){					
 					//TODO add Range Control
 					TapControl tap = CoreObjectFactory.createTapVControlMvarFlow(branch, 
-							            AdjControlType.POINT_CONTROL);
+							            AdjControlType.POINT_CONTROL).get();
 					tap.setMeteredOnFromSide(tcb.measuredOnFromSide);
 					tap.setMvarSpecified(tcb.desiredControlTarget);
 					tap.setTurnRatioLimit(new LimitType(tcb.maxTap, tcb.minTap));
@@ -348,10 +342,6 @@ public abstract class BaseAclfBean2AclfNetMapper<
 					tap.setTapSteps(tcb.steps);
 					tap.setTapStepSize(tcb.stepSize);
 				}
-			} catch (InterpssException e) {
-				ipssLogger.severe("Error in mapping Xfr tap control data, " + e.toString());
-			}
-			
 		}
 	}
 	
@@ -359,9 +349,8 @@ public abstract class BaseAclfBean2AclfNetMapper<
 		// control/adjustment
 		if(branchBean.psXfrTapControl != null){
 			PsXfrTapControlBean<TBraExt> tcb = branchBean.psXfrTapControl;			
-			try{				
 				if(tcb.controlType == TapControlTypeBean.Point_Control){
-					PSXfrPControl psxfr = CoreObjectFactory.createPSXfrPControl(branch, AdjControlType.POINT_CONTROL);
+					PSXfrPControl psxfr = CoreObjectFactory.createPSXfrPControl(branch, AdjControlType.POINT_CONTROL).get();
 					psxfr.setStatus(tcb.status == 1? true : false);
 					psxfr.setPSpecified(tcb.desiredControlTarget);
 					psxfr.setAngLimit(new LimitType(Math.toRadians(tcb.maxAngle), Math.toRadians(tcb.minAngle)));
@@ -370,7 +359,7 @@ public abstract class BaseAclfBean2AclfNetMapper<
 					psxfr.setFlowFrom2To(tcb.flowFrom2To);
 					
 				}else if (tcb.controlType == TapControlTypeBean.Range_Control ){ // range control
-					PSXfrPControl psxfr = CoreObjectFactory.createPSXfrPControl(branch, AdjControlType.RANGE_CONTROL);
+					PSXfrPControl psxfr = CoreObjectFactory.createPSXfrPControl(branch, AdjControlType.RANGE_CONTROL).get();
 					psxfr.setStatus(tcb.status == 1? true : false);
 					psxfr.setControlRange(new LimitType(tcb.upperLimit, tcb.lowerLimit));
 					psxfr.setPSpecified(tcb.desiredControlTarget);
@@ -379,10 +368,6 @@ public abstract class BaseAclfBean2AclfNetMapper<
 					psxfr.setMeteredOnFromSide(tcb.measuredOnFromSide);
 					psxfr.setFlowFrom2To(tcb.flowFrom2To);
 				}
-			} catch (InterpssException e) {
-				ipssLogger.severe("Error in mapping PsXfr tap control data, " + e.toString());
-			}
-			
 		}
 	}
 }
