@@ -23,7 +23,6 @@ import com.interpss.core.net.childnet.ChildNetworkFactory;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBranch;
-import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabilityNetwork;
 
 public class SubNetworkProcessor {
@@ -475,16 +474,9 @@ public class SubNetworkProcessor {
 					
 					subNetworkList.add((BaseDStabNetwork<?, ?>) subNet);
 					
-					try {
-
-						this.subNet.addBus((BaseDStabBus<?,?>) source);
-						// save the busId 2 subNetwork index mapping
-						this.busId2SubNetworkTable.put(busId, subNetIdx);
-						
-					} catch (InterpssException e) {
-						e.printStackTrace();
-					}
-					
+					this.subNet.addBus((BaseDStabBus<?,?>) source);
+					// save the busId 2 subNetwork index mapping
+					this.busId2SubNetworkTable.put(busId, subNetIdx);
 					
 					DFS(_net, this.subNet,_internalInterfaceBranchIdList,busId);
 					subNetIdx++;
@@ -531,31 +523,15 @@ public class SubNetworkProcessor {
 				String nextBusId = isToBus ? bra.getToBus().getId() : bra.getFromBus().getId();
 				
 				if(_subNet.getBus(nextBusId)==null){
-					
-					try {
+					int nextBusIdx = getBusIdx(_net,nextBusId);
+					_subNet.addBus((BaseDStabBus<?,?>)_net.getBusList().remove(nextBusIdx));
 
-						int nextBusIdx = getBusIdx(_net,nextBusId);
-						_subNet.addBus((BaseDStabBus<?,?>)_net.getBusList().remove(nextBusIdx));
-
-						// save the busId 2 subNetwork index mapping
-						this.busId2SubNetworkTable.put(nextBusId, subNetIdx);
-						
-					} catch (InterpssException e) {
-						e.printStackTrace();
-					}
+					// save the busId 2 subNetwork index mapping
+					this.busId2SubNetworkTable.put(nextBusId, subNetIdx);
 				}
 
 				if (!bra.isBooleanFlag() ) { // fromBusId-->buId
-					
-					try {
-
-						_subNet.addBranch((DStabBranch)bra, bra.getFromBus().getId(), bra.getToBus().getId() , bra.getCircuitNumber());
-
-					} catch (InterpssException e) {
-	
-						e.printStackTrace();
-					}
-					
+					_subNet.addBranch((DStabBranch)bra, bra.getFromBus().getId(), bra.getToBus().getId() , bra.getCircuitNumber());
 					
 					bra.setBooleanFlag(true);
 					
