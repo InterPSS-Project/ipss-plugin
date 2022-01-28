@@ -212,7 +212,7 @@ public class IEEE14Bus_SmallZBranch_Test extends CorePluginTestSetup {
 				if (bra.isZeroZBranch()) {
 					// since the branch is a small Z branch, we need to use the opposite side to 
 					// recursively continue the calculation
-					Complex x = samllZBranchFlow(bra, (AclfBus)bra.getOppositeBus(bus));
+					Complex x = samllZBranchFlow(bra, (AclfBus)bra.getOppositeBus(bus).get());
 					if (x == null)
 						return null;
 					p = p.add(x);
