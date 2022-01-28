@@ -138,7 +138,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 			AclfBusDataHelper busHelper = new AclfBusDataHelper(aclfNet);
 			for (JAXBElement<? extends BusXmlType> bus : xmlNet.getBusList().getBus()) {
 				LoadflowBusXmlType busRec = (LoadflowBusXmlType) bus.getValue();
-				AclfBus aclfBus = CoreObjectFactory.createAclfBus(busRec.getId(), aclfNet);
+				AclfBus aclfBus = CoreObjectFactory.createAclfBus(busRec.getId(), aclfNet).get();
 				mapAclfBusData(busRec, aclfBus, aclfNet, busHelper);
 				//System.out.println("map bus " + aclfBus.getId());
 			}

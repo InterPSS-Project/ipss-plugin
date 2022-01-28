@@ -348,7 +348,7 @@ public class SubNetworkProcessor {
 							dummyBus = ThreePhaseObjectFactory.create3PDStabBus(dummyBusId, (DStabNetwork3Phase) this.net);
 							
 					    else if(this.net instanceof BaseDStabNetwork)
-						    dummyBus = DStabObjectFactory.createDStabBus(dummyBusId, (BaseDStabNetwork<?,?>) this.net);
+						    dummyBus = DStabObjectFactory.createDStabBus(dummyBusId, (BaseDStabNetwork<?,?>) this.net).get();
 						
 						
 					    //basic info copy

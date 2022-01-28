@@ -142,7 +142,7 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 				for (JAXBElement<? extends BusXmlType> busXml : xmlNet.getBusList().getBus()) {
 					ShortCircuitBusXmlType acscBusXml = (ShortCircuitBusXmlType)busXml.getValue();
 					// for short circuit, the bus could be acscBus or acscNoLFBus 
-					AcscBus acscBus = CoreObjectFactory.createAcscBus(acscBusXml.getId(), acscFaultNet);		
+					AcscBus acscBus = CoreObjectFactory.createAcscBus(acscBusXml.getId(), acscFaultNet).get();		
 					// add the acscBus object into acscNet and build bus <-> net relationship
 					//acscNet.addBus(acscBus);
 
