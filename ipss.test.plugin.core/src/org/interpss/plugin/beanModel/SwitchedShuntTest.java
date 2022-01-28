@@ -156,7 +156,7 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 		*/
 		AclfBus bus1 = aclfNet.getBus("1");
 
-		AclfBus bus6 = CoreObjectFactory.createAclfBus("6", aclfNet);
+		AclfBus bus6 = CoreObjectFactory.createAclfBus("6", aclfNet).get();
 		bus6.setBaseVoltage(bus1.getBaseVoltage());
 		
 		AclfBranch branch = CoreObjectFactory.createAclfBranch();

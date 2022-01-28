@@ -402,7 +402,7 @@ private DStabilityNetwork create2BusSystem() throws InterpssException{
 		net.setFrequency(60.0);
 		
 		// First bus is PQ Gen bus
-		DStabBus bus1 = (DStabBus) DStabObjectFactory.createDStabBus("Bus1", net);
+		DStabBus bus1 = (DStabBus) DStabObjectFactory.createDStabBus("Bus1", net).get();
 		bus1.setName("Gen Bus");
 		bus1.setBaseVoltage(1000);
 		//bus1.setGenCode(AclfGenCode.GEN_PQ);
@@ -412,7 +412,7 @@ private DStabilityNetwork create2BusSystem() throws InterpssException{
 		bus1.setLoadQ(0.2);
 		
 		// Second bus is a Swing bus
-		DStabBus bus2 = (DStabBus) DStabObjectFactory.createDStabBus("Swing", net);
+		DStabBus bus2 = (DStabBus) DStabObjectFactory.createDStabBus("Swing", net).get();
 		bus2.setName("Swing Bus");
 		bus2.setBaseVoltage(1000);
 		bus2.setGenCode(AclfGenCode.SWING);

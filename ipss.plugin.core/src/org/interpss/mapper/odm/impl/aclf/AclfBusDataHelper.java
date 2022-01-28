@@ -208,7 +208,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 				pqBus.setGen(new Complex(p, q), toApparentPowerUnit.apply(xmlDefaultGen.getPower().getUnit()));
 			if (p != 0.0 || q != 0.0) {
 				if (xmlDefaultGen.getVoltageLimit() != null) {
-			  		final PQBusLimit pqLimit = CoreObjectFactory.createPQBusLimit(bus);
+			  		final PQBusLimit pqLimit = CoreObjectFactory.createPQBusLimit(bus).get();
 			  		pqLimit.setVLimit(new LimitType(xmlDefaultGen.getVoltageLimit().getMax(), 
 			  										xmlDefaultGen.getVoltageLimit().getMin()), 
 			  										toVoltageUnit.apply(xmlDefaultGen.getVoltageLimit().getUnit()));						
