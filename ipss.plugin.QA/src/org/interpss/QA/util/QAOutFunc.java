@@ -25,11 +25,7 @@ public abstract class QAOutFunc {
 		buf.append("\nBus/Branch debug info: \n\n" + bus.toString(net.getBaseKva()));
 		for (Branch b : bus.getBranchList()) {
 			AclfBranch bra = (AclfBranch)b;
-			try {
-				buf.append("\n\n" + bra.getOppositeBus(bus).toString(net.getBaseKva()));
-			} catch (InterpssException e) {
-				e.printStackTrace();
-			}
+			buf.append("\n\n" + bra.getOppositeBus(bus).get().toString(net.getBaseKva()));
 			buf.append("\n\n" + bra.toString(net.getBaseKva()));
 		}
 
