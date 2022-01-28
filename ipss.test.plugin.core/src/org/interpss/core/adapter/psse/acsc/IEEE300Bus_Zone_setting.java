@@ -384,12 +384,7 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 				if(!bra.getId().equals(relayBranch.getId())){
 				    remoteBranchList.add((AcscBranch)bra);
 				    AcscBus twoBusAwayBus = null;
-				    try {
-				    	twoBusAwayBus = (AcscBus) bra.getOppositeBus(relayRemoteBus);
-					} catch (InterpssException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+				    twoBusAwayBus = (AcscBus) bra.getOppositeBus(relayRemoteBus).get();
 				    // take into account of lines parallel to the relay branch
 				    if(twoBusAwayBus !=null && !twoBusAwayBus.getId().equals(relayBus.getId())) {
 				    	remoteBusList.add(twoBusAwayBus);

@@ -102,8 +102,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			if(startingBus!=null){
 				  for(Branch connectedBra: startingBus.getBranchList()){
 						if(connectedBra.isActive() && !connectedBra.isBooleanFlag()){
-							try {
-								Bus findBus = connectedBra.getOppositeBus(startingBus);
+								Bus findBus = connectedBra.getOppositeBus(startingBus).get();
 								
 								//update status
 								connectedBra.setBooleanFlag(true);
@@ -114,11 +113,6 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 									onceVisitedBuses.add((DStab3PBus) findBus);
 									
 								}
-							} catch (InterpssException e) {
-								
-								e.printStackTrace();
-							}
-							
 						}
 				 }
 			 
@@ -247,15 +241,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				
 				subNetList.add(subNet);
 				
-				try {
-
-					subNet.addBus((BaseDStabBus<?,?>) source);
-				
-					
-				} catch (InterpssException e) {
-					e.printStackTrace();
-				}
-				
+				subNet.addBus((BaseDStabBus<?,?>) source);
 				
 				DFS(parentNetwork, subNet,busId);
 				subNetIdx++;
@@ -282,27 +268,12 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			String nextBusId = isToBus ? bra.getToBus().getId() : bra.getFromBus().getId();
 			
 			if(_subNet.getBus(nextBusId)==null){
-				
-				try {
-					 BaseAclfBus bus = (BaseAclfBus) _net.getBus(nextBusId);
-					_subNet.addBus(bus);
-					
-				} catch (InterpssException e) {
-					e.printStackTrace();
-				}
+				BaseAclfBus bus = (BaseAclfBus) _net.getBus(nextBusId);
+				_subNet.addBus(bus);
 			}
 		
 			if (!bra.isBooleanFlag() ) { // fromBusId-->buId
-				
-				try {
-		
-					_subNet.addBranch((DStabBranch)bra, bra.getFromBus().getId(), bra.getToBus().getId() , bra.getCircuitNumber());
-		
-				} catch (InterpssException e) {
-		
-					e.printStackTrace();
-				}
-				
+				_subNet.addBranch((DStabBranch)bra, bra.getFromBus().getId(), bra.getToBus().getId() , bra.getCircuitNumber());
 				
 				bra.setBooleanFlag(true);
 				
@@ -628,11 +599,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 							DStab3PBranch bra3Phase = (DStab3PBranch) bra;
 							
 							DStab3PBus downStreamBus = null;
-							try {
-								downStreamBus = (DStab3PBus) bra.getOppositeBus(bus);
-							} catch (InterpssException e) {
-								e.printStackTrace();
-							}
+							downStreamBus = (DStab3PBus) bra.getOppositeBus(bus).get();
 							
 							if(downStreamBus.getIntFlag()<2){
 								Complex3x1 vabc = null;
