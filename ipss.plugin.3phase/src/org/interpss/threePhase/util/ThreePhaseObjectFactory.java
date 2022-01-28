@@ -66,7 +66,7 @@ public class ThreePhaseObjectFactory {
 		return bus;
 	}
 	
-	public static DStab3PBus create3PDStabBus(String busId, DStabNetwork3Phase net) throws InterpssException{
+	public static DStab3PBus create3PDStabBus(String busId, DStabNetwork3Phase net) {
 		DStab3PBus bus = new DStab3PBusImpl();
 	  
 		//The following is copied from the DStabObjectFactory
