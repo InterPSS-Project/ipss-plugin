@@ -742,7 +742,7 @@ public class IpssAclfNet extends BaseDSL {
 			super(net);
 			String branchId = ToBranchId.f(fromBusId, toBusId, cirId);
 			AclfBranch branch = net.getBranch(branchId);
-			setObject(CoreObjectFactory.createPSXfrPControl(branch, AdjControlType.POINT_CONTROL));
+			setObject(CoreObjectFactory.createPSXfrPControl(branch, AdjControlType.POINT_CONTROL).get());
 		}
   		public PSXfrPControlDSL setFlowControlType(AdjControlType type) { 
 								getObject().setFlowControlType(type);
