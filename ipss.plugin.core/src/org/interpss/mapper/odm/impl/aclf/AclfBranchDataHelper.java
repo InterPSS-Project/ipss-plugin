@@ -33,12 +33,13 @@ import static org.interpss.mapper.odm.ODMUnitHelper.toVoltageUnit;
 import static org.interpss.mapper.odm.ODMUnitHelper.toYUnit;
 import static org.interpss.mapper.odm.ODMUnitHelper.toZUnit;
 
+import java.util.Optional;
+
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.schema.AdjustmentModeEnumType;
 import org.ieee.odm.schema.AngleAdjustmentXmlType;
 import org.ieee.odm.schema.AngleUnitType;
 import org.ieee.odm.schema.ApparentPowerUnitType;
-import org.ieee.odm.schema.BranchFlowDirectionEnumType;
 import org.ieee.odm.schema.FactorUnitType;
 import org.ieee.odm.schema.LineBranchEnumType;
 import org.ieee.odm.schema.LineBranchXmlType;
@@ -66,7 +67,6 @@ import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.Aclf3WBranch;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
-import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.adj.AdjControlType;
@@ -388,28 +388,36 @@ public class AclfBranchDataHelper {
 					TapControl tap = null;
 					//specify the control type
 					if(xmlAdjData.getMode()==AdjustmentModeEnumType.VALUE_ADJUSTMENT){
-						tap=CoreObjectFactory.createTapVControlBusVoltage(aclfBra, 
-							            AdjControlType.POINT_CONTROL, aclfNet, vcBusId).get();
-						tap.setVSpecified(xmlAdjData.getDesiredValue(), toVoltageUnit.apply(xmlAdjData.getDesiredVoltageUnit()));
+						Optional<TapControl> tapOpt = CoreObjectFactory.createTapVControlBusVoltage(aclfBra, 
+							            AdjControlType.POINT_CONTROL, aclfNet, vcBusId);
+						if (tapOpt.isPresent()) {
+							tap = tapOpt.get();
+							tap.setVSpecified(xmlAdjData.getDesiredValue(), toVoltageUnit.apply(xmlAdjData.getDesiredVoltageUnit()));
+						}
 					}
 
 					else {
-						tap=CoreObjectFactory.createTapVControlBusVoltage(aclfBra, 
-				            AdjControlType.RANGE_CONTROL, aclfNet, vcBusId).get();
-						tap.setControlRange(new LimitType(xmlAdjData.getRange().getMax(),xmlAdjData.getRange().getMin()));
-						
+						Optional<TapControl> tapOpt = CoreObjectFactory.createTapVControlBusVoltage(aclfBra, 
+				            AdjControlType.RANGE_CONTROL, aclfNet, vcBusId);
+						if (tapOpt.isPresent()) {
+							tap = tapOpt.get();
+							tap.setControlRange(new LimitType(xmlAdjData.getRange().getMax(),xmlAdjData.getRange().getMin()));
+						}
 					}
-					//set control status
-					tap.setStatus(!xmlTapAdj.isOffLine());
 					
-					double factor = xmlTapAdj.getTapLimit().getUnit() == FactorUnitType.PERCENT? 0.01 : 1.0;
-					tap.setVcBusOnFromSide(xmlAdjData.getAdjBusLocation() == TapAdjustBusLocationEnumType.FROM_BUS);
-					tap.setTurnRatioLimit(new LimitType(xmlTapAdj.getTapLimit().getMax()*factor, xmlTapAdj.getTapLimit().getMin()*factor));
-					tap.setControlOnFromSide(xmlTapAdj.isTapAdjOnFromSide());
-					if (xmlTapAdj.getTapAdjStepSize() != null)
-						tap.setTapStepSize(xmlTapAdj.getTapAdjStepSize());
-					if (xmlTapAdj.getTapAdjSteps() != null)
-						tap.setTapSteps(xmlTapAdj.getTapAdjSteps());
+					if (tap != null) {
+						//set control status
+						tap.setStatus(!xmlTapAdj.isOffLine());
+						
+						double factor = xmlTapAdj.getTapLimit().getUnit() == FactorUnitType.PERCENT? 0.01 : 1.0;
+						tap.setVcBusOnFromSide(xmlAdjData.getAdjBusLocation() == TapAdjustBusLocationEnumType.FROM_BUS);
+						tap.setTurnRatioLimit(new LimitType(xmlTapAdj.getTapLimit().getMax()*factor, xmlTapAdj.getTapLimit().getMin()*factor));
+						tap.setControlOnFromSide(xmlTapAdj.isTapAdjOnFromSide());
+						if (xmlTapAdj.getTapAdjStepSize() != null)
+							tap.setTapStepSize(xmlTapAdj.getTapAdjStepSize());
+						if (xmlTapAdj.getTapAdjSteps() != null)
+							tap.setTapSteps(xmlTapAdj.getTapAdjSteps());
+					}
 				}
 				else if (xmlTapAdj.getAdjustmentType() == TapAdjustmentEnumType.M_VAR_FLOW) {
 					MvarFlowAdjustmentDataXmlType xmlAdjData = xmlTapAdj.getMvarFlowAdjData();
@@ -418,17 +426,20 @@ public class AclfBranchDataHelper {
 						return;
 					}
 					//TODO add Range Control
-					TapControl tap = CoreObjectFactory.createTapVControlMvarFlow(aclfBra, 
-							            AdjControlType.POINT_CONTROL).get();
-					double factor = xmlTapAdj.getTapLimit().getUnit() == FactorUnitType.PERCENT? 0.01 : 1.0;
-					tap.setMeteredOnFromSide(xmlAdjData.isMvarMeasuredOnFormSide());
-					tap.setMvarSpecified(xmlAdjData.getDesiredValue(), toReactivePowerUnit.apply(xmlAdjData.getDesiredMvarFlowUnit()), aclfNet.getBaseKva());
-					tap.setTurnRatioLimit(new LimitType(xmlTapAdj.getTapLimit().getMax()*factor, xmlTapAdj.getTapLimit().getMin()*factor));
-					tap.setControlOnFromSide(xmlTapAdj.isTapAdjOnFromSide());
-					if (xmlTapAdj.getTapAdjStepSize() != null)
-						tap.setTapStepSize(xmlTapAdj.getTapAdjStepSize());
-					if (xmlTapAdj.getTapAdjSteps() != null)
-						tap.setTapSteps(xmlTapAdj.getTapAdjSteps());
+					Optional<TapControl> tapOpt = CoreObjectFactory.createTapVControlMvarFlow(aclfBra, 
+							            AdjControlType.POINT_CONTROL);
+					if (tapOpt.isPresent()) {
+						TapControl tap = tapOpt.get(); 
+						double factor = xmlTapAdj.getTapLimit().getUnit() == FactorUnitType.PERCENT? 0.01 : 1.0;
+						tap.setMeteredOnFromSide(xmlAdjData.isMvarMeasuredOnFormSide());
+						tap.setMvarSpecified(xmlAdjData.getDesiredValue(), toReactivePowerUnit.apply(xmlAdjData.getDesiredMvarFlowUnit()), aclfNet.getBaseKva());
+						tap.setTurnRatioLimit(new LimitType(xmlTapAdj.getTapLimit().getMax()*factor, xmlTapAdj.getTapLimit().getMin()*factor));
+						tap.setControlOnFromSide(xmlTapAdj.isTapAdjOnFromSide());
+						if (xmlTapAdj.getTapAdjStepSize() != null)
+							tap.setTapStepSize(xmlTapAdj.getTapAdjStepSize());
+						if (xmlTapAdj.getTapAdjSteps() != null)
+							tap.setTapSteps(xmlTapAdj.getTapAdjSteps());
+					}
 				}
 			} catch (InterpssException e) {
 				ipssLogger.severe("Error in mapping Xfr tap control data, " + e.toString());
