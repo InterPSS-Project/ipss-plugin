@@ -32,8 +32,9 @@
 	</dependency>	
 	<dependency>
     	<groupId>com.hazelcast</groupId>
-    	<artifactId>hazelcast-all</artifactId>
-    	<version>4.1.1</version>
+	    <artifactId>hazelcast-distribution</artifactId>
+	    <version>5.0.2</version>
+	    <type>pom</type>
 	</dependency>
 		<dependency>
 	    <groupId>org.apache.logging.log4j</groupId>
