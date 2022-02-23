@@ -63,7 +63,7 @@ public class PQVoltageLimitControlSample {
 		
 		// for the base case, Bus4 : 5 + 1.6, V : 1.06108
 		// use bus-4 PQLimit to control bus voltage to 1.05
-		PQBusLimit pqLimit = CoreObjectFactory.createPQBusLimit(bus);
+		PQBusLimit pqLimit = CoreObjectFactory.createPQBusLimit(bus).get();
 		pqLimit.setVLimit(new LimitType(1.05, 0.95), UnitType.PU);
 		
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
