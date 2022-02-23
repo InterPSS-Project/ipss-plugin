@@ -57,7 +57,7 @@ public class XfrTapControlSample {
 		// example, it is used to control voltage
 		AclfBranch branch = net.getBranch("0001->0002(1)");
 		TapControl tap = CoreObjectFactory.createTapVControlBusVoltage(branch, 
-							AdjControlType.POINT_CONTROL, net, "0002");
+							AdjControlType.POINT_CONTROL, net, "0002").get();
 		// tap limit
 		tap.setControlLimit(new LimitType(1.10, 0.9));
 		// control voltage on the toside
@@ -84,7 +84,7 @@ public class XfrTapControlSample {
 		AclfNetwork net = CoreObjectFactory.createAclfNetwork();
 		net.setBaseKva(100000.0);
 	  	
-  		AclfBus bus1 = CoreObjectFactory.createAclfBus("0001", net);
+  		AclfBus bus1 = CoreObjectFactory.createAclfBus("0001", net).get();
   		//net.addBus(bus1);
   		bus1.setAttributes("Bus 1", "");
   		bus1.setBaseVoltage(10000.0);
@@ -93,7 +93,7 @@ public class XfrTapControlSample {
   		swingBus.setDesiredVoltMag(1.0, UnitType.PU);
   		swingBus.setDesiredVoltAng(0.0, UnitType.Deg);
   		
-  		AclfBus bus2 = CoreObjectFactory.createAclfBus("0002", net);
+  		AclfBus bus2 = CoreObjectFactory.createAclfBus("0002", net).get();
   		//net.addBus(bus2);
   		bus2.setAttributes("Bus 2", "");
   		bus2.setBaseVoltage(4000.0);
