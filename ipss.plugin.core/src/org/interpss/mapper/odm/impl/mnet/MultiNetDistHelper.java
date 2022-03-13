@@ -35,7 +35,7 @@ import org.ieee.odm.schema.NetworkXmlType;
 
 import com.interpss.DistObjectFactory;
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.net.childnet.ChildNetwork;
+import com.interpss.core.net.childnet.ChildNetworkWrapper;
 import com.interpss.dc.DcBranch;
 import com.interpss.dc.DcBus;
 import com.interpss.dc.DcNetwork;
@@ -79,7 +79,7 @@ public class MultiNetDistHelper extends BaseMultiNetHelper {
 
 	private void mapDcSysChildNet(DistNetwork parentDistNet, ChildNetworkDefXmlType xmlChildDef) throws InterpssException {
 		NetworkXmlType xmlChildNet = (NetworkXmlType)xmlChildDef.getChildNetRef().getIdRef();
-		ChildNetwork<DcBus,DcBranch> childNetContainer = DistObjectFactory.createChildDcSysNet(parentDistNet, xmlChildNet.getId());
+		ChildNetworkWrapper<DcBus,DcBranch> childNetContainer = DistObjectFactory.createChildDcSysNet(parentDistNet, xmlChildNet.getId());
 		DcNetwork childDcSysNet = DcSysXmlNet2DcSysNet.fx((DcNetworkXmlType)xmlChildNet);
 		childNetContainer.setNetwork(childDcSysNet);	
 		

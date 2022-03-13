@@ -211,7 +211,7 @@ public class SinglePhaseACMotor extends DynLoadModel1Phase {
 		
 		} 
 		
-		public SinglePhaseACMotor(String Id){
+		public SinglePhaseACMotor(String Id){ 
 			this();
 			this.id = Id;
 		}
