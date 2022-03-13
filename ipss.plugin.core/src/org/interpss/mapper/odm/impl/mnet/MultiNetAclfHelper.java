@@ -42,7 +42,7 @@ import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.net.childnet.ChildNetwork;
+import com.interpss.core.net.childnet.ChildNetworkWrapper;
 import com.interpss.dist.DistBranch;
 import com.interpss.dist.DistBus;
 import com.interpss.dist.DistNetwork;
@@ -88,7 +88,7 @@ public class MultiNetAclfHelper extends BaseMultiNetHelper {
 	
 	private void mapAclfChildNet(AclfNetwork parentAclfNet, ChildNetworkDefXmlType xmlChildDef, ODMAclfNetMapper.XfrBranchModel xfrBranchModel) throws InterpssException {
 		NetworkXmlType xmlChildNet = (NetworkXmlType)xmlChildDef.getChildNetRef().getIdRef();
-		ChildNetwork<AclfBus,AclfBranch> childNetContainer = CoreObjectFactory.createChildAclfNet(parentAclfNet, xmlChildNet.getId());
+		ChildNetworkWrapper<AclfBus,AclfBranch> childNetContainer = CoreObjectFactory.createChildAclfNet(parentAclfNet, xmlChildNet.getId());
 		AclfNetwork childAclfNet = AclfXmlNet2AclfNet.fx((LoadflowNetXmlType)xmlChildNet, xfrBranchModel);
 		childNetContainer.setNetwork(childAclfNet);	
 		
@@ -97,7 +97,7 @@ public class MultiNetAclfHelper extends BaseMultiNetHelper {
 	
 	private void mapDistChildNet(AclfNetwork parentAclfNet, ChildNetworkDefXmlType xmlChildDef) throws InterpssException {
 		NetworkXmlType xmlChildNet = (NetworkXmlType)xmlChildDef.getChildNetRef().getIdRef();
-		ChildNetwork<DistBus,DistBranch> childNetContainer = DistObjectFactory.createChildDistNet(parentAclfNet, xmlChildNet.getId());
+		ChildNetworkWrapper<DistBus,DistBranch> childNetContainer = DistObjectFactory.createChildDistNet(parentAclfNet, xmlChildNet.getId());
 		DistNetwork childDistNet = DistXmlNet2DistNet.fx((DistributionNetXmlType)xmlChildNet);
 		childNetContainer.setNetwork(childDistNet);	
 		
