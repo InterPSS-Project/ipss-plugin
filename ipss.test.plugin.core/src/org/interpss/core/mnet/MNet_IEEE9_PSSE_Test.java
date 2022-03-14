@@ -22,6 +22,7 @@ import com.interpss.core.net.childnet.ChildNetInterfaceBranch;
 import com.interpss.core.net.childnet.ChildNetworkWrapper;
 import com.interpss.core.net.childnet.solver.ChildNetworkProcessor;
 
+@Deprecated
 public class MNet_IEEE9_PSSE_Test extends CorePluginTestSetup {
 	
 	@Test
@@ -82,10 +83,10 @@ public class MNet_IEEE9_PSSE_Test extends CorePluginTestSetup {
 		new ChildNetworkProcessor(net).processChildNet();
 				
 		assertTrue((net.getBusList().size() == 8 && net.getBranchList().size() == 7));
-		assertTrue(net.getChildNetList().size() > 0);
+		assertTrue(net.getChildNetWrapperList().size() > 0);
 		
 		// check the created child network
-		AclfNetwork childAclfNet = (AclfNetwork)net.getChildNet("childNet").getNetwork();
+		AclfNetwork childAclfNet = (AclfNetwork)net.getChildNetWrapper("childNet").getNetwork();
 		assertTrue((childAclfNet.getBusList().size() == 3 && childAclfNet.getBranchList().size() == 2));
 		
 		for (ChildNetInterfaceBranch cbranch : childNet.getInterfaceBranches()) {

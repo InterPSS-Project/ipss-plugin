@@ -134,7 +134,7 @@ public class AclfOutFunc {
 			str.append(emsg.toString());
 		}
 		
-		if (net.getChildNetList().size() > 0) {
+		if (net.getChildNetWrapperList().size() > 0) {
 			/*
 		  	for (Network n : net.getChildNetworks()) {
 	  			AclfNetwork aclfNet = null;
