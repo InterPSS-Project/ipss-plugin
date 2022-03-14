@@ -78,7 +78,7 @@ public class AclfOut_BusStyle {
 			str.append(emsg.toString());
 		}
 		
-		if (mainNet.getChildNetList().size() > 0) {
+		if (mainNet.getChildNetWrapperList().size() > 0) {
 			/*
 		  	for (Network n : mainNet.getChildNetworks()) {
 	  			AclfNetwork childNet = null;
@@ -228,7 +228,7 @@ public class AclfOut_BusStyle {
 	private static StringBuffer busStyleTitle(BaseAclfNetwork<?, ?> net) {
 		StringBuffer str = new StringBuffer("");
 		
-		if (net.getChildNetList().size() > 0) 
+		if (net.getChildNetWrapperList().size() > 0) 
 			str.append("\n Main network: " + net.getId() + "\n");
 		
 		str.append("\n\n                                              Load Flow Results\n\n");
