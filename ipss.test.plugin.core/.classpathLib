@@ -10,7 +10,8 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.plugin.core"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.plugin.QA"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.extendedPiecewiseAlgo"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/ipss.pssl"/>	
+	<classpathentry combineaccessrules="false" kind="src" path="/ipss.pssl"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ipss.adapter.json"/>		
 	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/json/gson-2.8.6.jar"/>
 	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/apache/commons-logging.jar"/>
 	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/apache/commons-math3-3.6.1.jar"/>
