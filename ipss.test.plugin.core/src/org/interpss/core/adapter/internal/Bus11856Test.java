@@ -105,7 +105,7 @@ public class Bus11856Test extends CorePluginTestSetup {
   		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
   		timer.start();
   		AclfNetHelper helper = new AclfNetHelper(net);
-  		assertTrue(helper.checkSwingBus());
+  		assertTrue(helper.checkSwingRefBus());
   		timer.log("time for swing bus check");
 	  	
   		timer.start();

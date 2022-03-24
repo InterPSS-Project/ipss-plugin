@@ -167,7 +167,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		//step-1. check if there is any island in the system
 		 AclfNetHelper helper = new AclfNetHelper(getNetwork());
 		 List<String> islandBusList = new ArrayList<String>();
-		 helper.checkRefBus(islandBusList);
+		 helper.calIslandBuses(islandBusList);
 		 
 		 // turn off single islanded bus
 		 for(String busId: islandBusList) {
@@ -191,8 +191,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				 
 				    // check swing generator, if not assign one
 				    helper = new AclfNetHelper(subnet);
-					if (!helper.checkSwingBus())
-						helper.assignSwingBus();
+					if (!helper.checkSwingRefBus())
+						helper.assignSwingBusTurnOffIslandBus();
 				 
 				    // run power flow for each single island (as a subnetwork)
 					if(!powerflow_singleNet(subnet)) {
