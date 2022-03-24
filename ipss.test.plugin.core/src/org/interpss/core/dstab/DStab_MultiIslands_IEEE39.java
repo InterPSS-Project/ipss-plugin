@@ -63,7 +63,7 @@ public class DStab_MultiIslands_IEEE39 extends DStabTestSetupBase{
 	    dsNet.getBranch("Bus16", "Bus17", "1",false).setStatus(false);
 	    
 	    
-	    List<String> list = new AclfNetHelper(dsNet).checkRefBus(); 
+	    List<String> list = new AclfNetHelper(dsNet).calIslandBuses(); 
 		if (list.size() > 0) 
 			 System.out.println("There are island buses: " + list.toString());
 			
