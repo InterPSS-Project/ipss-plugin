@@ -26,6 +26,8 @@ package org.interpss.plugin.piecewise;
 
 import static org.junit.Assert.assertTrue;
 
+import java.util.List;
+
 import org.apache.commons.math3.complex.Complex;
 import org.junit.Test;
 
@@ -67,7 +69,7 @@ public class IEEE14TestAclfSubAreaBuild extends PiecewiseAlgoTestSetup {
 	}
 	
 	@Test
-	public void splitNetworkTest1_1() throws Exception {
+	public void splitNetworkTest_FromSide() throws Exception {
 		AclfNetwork net = IEEE14TestSubAreaSearch.getTestNet();
 				
 		SubAreaNetProcessor<AclfBus, AclfBranch, SubAreaPos, Complex> 
@@ -76,14 +78,34 @@ public class IEEE14TestAclfSubAreaBuild extends PiecewiseAlgoTestSetup {
 							new CuttingBranchPos("4->91(1)", BranchBusSide.FROM_SIDE),
 							new CuttingBranchPos("5->61(1)", BranchBusSide.FROM_SIDE)});	
   		
-  		proc.processSubAreaNet(true);  // SingleSide SubArea case.
+  		List<SubAreaPos> subAreaList = proc.processSubAreaNet(true);  // SingleSide SubArea case.
   		
   		assertTrue("We should have 1 sub-network objects", proc.getSubAreaNetList().size() == 1);
+  		assertTrue("We should have 1 sub-network objects", subAreaList.size() == 1);
   		//System.out.println(proc.getSubAreaList().toString());
   		
   		assertTrue(net.getBus("14").getSubAreaFlag() == 1);
 	}
 
+	@Test
+	public void splitNetworkTest_ToSide() throws Exception {
+		AclfNetwork net = IEEE14TestSubAreaSearch.getTestNet();
+				
+		SubAreaNetProcessor<AclfBus, AclfBranch, SubAreaPos, Complex> 
+				proc = new SubNetworkPosProcessorImpl<>(net, new CuttingBranchPos[] { 
+							new CuttingBranchPos("4->71(1)", BranchBusSide.TO_SIDE),
+							new CuttingBranchPos("4->91(1)", BranchBusSide.TO_SIDE),
+							new CuttingBranchPos("5->61(1)", BranchBusSide.TO_SIDE)});	
+  		
+		List<SubAreaPos> subAreaList = proc.processSubAreaNet(true);  // SingleSide SubArea case.
+  		
+  		assertTrue("We should have 1 sub-network objects", proc.getSubAreaNetList().size() == 1);
+  		assertTrue("We should have 1 sub-network objects", subAreaList.size() == 1);
+  		//System.out.println(proc.getSubAreaList().toString());
+  		
+  		assertTrue(net.getBus("4").getSubAreaFlag() == 1);
+	}
+	
 	@Test
 	public void splitNetworkTest2() throws Exception {
 		AclfNetwork net = IEEE14TestSubAreaSearch.getTestNet();
