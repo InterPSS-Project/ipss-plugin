@@ -66,7 +66,7 @@ public class IEEE14TestAclfSubNetBuild extends PiecewiseAlgoTestSetup {
 
   		assertTrue("SubNetwork 1 should have 5 buses", proc.getSubAreaNet(1).getSubNet().getBusList().size() == 5);
 	
-  		assertTrue("SubNetwork 2 should have 12 buses", proc.getSubAreaNet(2).getSubNet().getBusList().size() == 12);
+  		assertTrue("SubNetwork 2 should have 14 buses", proc.getSubAreaNet(2).getSubNet().getBusList().size() == 14);
 	}
 
 	@Test
@@ -87,8 +87,8 @@ public class IEEE14TestAclfSubNetBuild extends PiecewiseAlgoTestSetup {
   		assertTrue("we should have three sub-network objects", proc.getSubAreaNetList().size() == 3);
 
   		assertTrue("SubNetwork 1 should have 5 buses", proc.getSubAreaNet(1).getSubNet().getBusList().size() == 5);
-  		assertTrue("SubNetwork 2 should have 11 buses", proc.getSubAreaNet(2).getSubNet().getBusList().size() == 11);
-  		assertTrue("SubNetwork 3 should have 1 buses", proc.getSubAreaNet(3).getSubNet().getBusList().size() == 1);
+  		assertTrue("SubNetwork 2 should have 14 buses", proc.getSubAreaNet(2).getSubNet().getBusList().size() == 14);
+  		assertTrue("SubNetwork 3 should have 1 buses", proc.getSubAreaNet(3).getSubNet().getBusList().size() == 2);
 
   		//System.out.println("Bus-1 subarea flag: " + net.getBus("1").getIntFlag());
   		//System.out.println("Bus-14 subarea flag: " + net.getBus("14").getIntFlag());
@@ -127,7 +127,7 @@ public class IEEE14TestAclfSubNetBuild extends PiecewiseAlgoTestSetup {
   		//System.out.println(net.getBranch("1->2(1)").getNetwork().getId());
   		//System.out.println(net.getBranch("5->61(1)").getNetwork().getId());
   		assertTrue("Branch 1->2(1) should be in SubNet-1", net.getBranch("1->2(1)").getNetwork().getId().equals("SubNet-1"));
-  		assertTrue("Branch 5->61(1) should be in Parent Net", net.getBranch("5->61(1)").getNetwork().getId().equals("Parenet Net"));
+  		assertTrue("Branch 5->61(1) should be in SubNet-2", net.getBranch("5->61(1)").getNetwork().getId().equals("SubNet-2"));
   		
   		proc.mergeSubNet();
   	
