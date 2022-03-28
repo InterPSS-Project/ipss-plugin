@@ -51,6 +51,7 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.net.BranchBusSide;
 
 /*
  * This test case is for testing piecewise algorithm implementation
@@ -302,13 +303,15 @@ public class IEEE14TestAclfNetPiesewise extends PiecewiseAlgoTestSetup {
 	public void testCase2_2() throws Exception {
 		AclfNetwork net = getTestNet();
   		
-		SubAreaNetProcessor<AclfBus, AclfBranch, SubNetworkPos, Complex> proc = 
+		SubNetworkPosProcessorImpl<SubNetworkPos> proc = 
 						new SubNetworkPosProcessorImpl<>(net, new CuttingBranchPos[] { 
-				new CuttingBranchPos("4->71(1)"),
-  				new CuttingBranchPos("4->91(1)"),
-  				new CuttingBranchPos("5->61(1)")});	
+				new CuttingBranchPos("4->71(1)", BranchBusSide.TO_SIDE),
+  				new CuttingBranchPos("4->91(1)", BranchBusSide.TO_SIDE),
+  				new CuttingBranchPos("5->61(1)", BranchBusSide.TO_SIDE)});	
 		
+		proc.setIncludeCutBranchInSubNet(false);
 		proc.processSubAreaNet();
+		
   		/*
   		 * Solve [Y][I] = [V] using the piecewise method
   		 * =============================================
