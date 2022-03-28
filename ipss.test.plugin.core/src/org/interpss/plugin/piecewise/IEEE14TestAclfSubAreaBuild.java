@@ -160,7 +160,7 @@ public class IEEE14TestAclfSubAreaBuild extends PiecewiseAlgoTestSetup {
   		//System.out.println(net.getBranch("1->2(1)").getNetwork().getId());
   		//System.out.println(net.getBranch("5->61(1)").getNetwork().getId());
   		assertTrue("Branch 1->2(1) should be in SubNet-1", net.getBranch("1->2(1)").getNetwork().getId().equals("SubNet-1"));
-  		assertTrue("Branch 5->61(1) should be in Parent Net", net.getBranch("5->61(1)").getNetwork().getId().equals("Parenet Net"));
+  		assertTrue("Branch 5->61(1) should be in SubNet-2", net.getBranch("5->61(1)").getNetwork().getId().equals("SubNet-2"));
 	}
 	
 	@Test
