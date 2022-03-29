@@ -35,6 +35,7 @@ import org.junit.Test;
 import com.interpss.dist.DistBus;
 import com.interpss.dist.DistNetwork;
 
+//DistNet
 public class DistSample2BusTest  extends CorePluginTestSetup { 
 	@Test
 	public void simple2BusTest() throws Exception {
