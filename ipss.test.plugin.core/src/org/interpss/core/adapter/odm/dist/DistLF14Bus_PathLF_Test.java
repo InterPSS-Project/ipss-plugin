@@ -41,6 +41,7 @@ import com.interpss.dist.algo.path.DistPathBusWalker;
 import com.interpss.dist.algo.path.DistPathLfAlgorithm;
 import com.interpss.dist.algo.path.DistPathNetInitinizer;
 
+//DistNet
 public class DistLF14Bus_PathLF_Test  extends CorePluginTestSetup {
 	@Test
 	public void bus14_lf1_Test() throws Exception {
