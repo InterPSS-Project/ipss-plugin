@@ -31,6 +31,7 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.display.DclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
+import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
 import org.junit.Test;
 
@@ -38,6 +39,7 @@ import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.algo.dclf.DclfAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
@@ -68,7 +70,7 @@ public class IEEE14_Dclf_Test extends CorePluginTestSetup {
 		AclfBus bus1 = dclfBus1.getBus();
 		int n1 = bus1.getSortNumber();
 		double pgen = dclfAlgo.getBusPower(dclfBus1) * aclfNet.getBaseMva(); 
-		assertTrue("", NumericUtil.equals(pgen, 225.43, 0.01));
+		assertTrue("Aclf 232.393", NumericUtil.equals(pgen, 225.43, 0.01));
 
 		DclfAlgoBus dclfBus2 = dclfAlgo.getDclfAlgoBus("Bus2");
 		AclfBus bus2 = dclfBus2.getBus();
@@ -99,7 +101,7 @@ public class IEEE14_Dclf_Test extends CorePluginTestSetup {
 		AclfBus bus1 = dclfBus1.getBus();
 		int n1 = bus1.getSortNumber();
 		double pgen = dclfAlgo.getBusPower(dclfBus1) * aclfNet.getBaseMva(); 
-		assertTrue("", NumericUtil.equals(pgen, 219.00, 0.01));
+		assertTrue("Aclf 232.393", NumericUtil.equals(pgen, 219.00, 0.01));
 
 		DclfAlgoBus dclfBus2 = dclfAlgo.getDclfAlgoBus("Bus2");
 		AclfBus bus2 = dclfBus2.getBus();
@@ -119,7 +121,12 @@ public class IEEE14_Dclf_Test extends CorePluginTestSetup {
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 	  	
-		System.out.println(AclfOutFunc.loadFlowSummary(net));
+		//System.out.println(AclfOutFunc.loadFlowSummary(net));
+  		assertTrue(net.isLfConverged());		
+  		AclfBus swingBus = (AclfBus)net.getBus("Bus1");
+  		AclfSwingBusAdapter swing = swingBus.toSwingBus();
+  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.32393)<0.0001);
+  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.16549)<0.0001);
 	}
 }
 
