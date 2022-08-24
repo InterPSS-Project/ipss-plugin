@@ -106,7 +106,7 @@ public class AclfHvdcDataHelper {
 		RCOMP to the appropriate fraction of RDC.
 		*/
 		//this.hvdc2T.setCompondR(hvdc2TXml.getCompoundingR().getR(),toZUnit.apply(hvdc2TXml.getCompoundingR().getUnit()));
-		lccHvdc2T.setLineR(hvdc2TXml.getLineR().getR());
+		lccHvdc2T.setRdc(hvdc2TXml.getLineR().getR());
 		
 		
 		//DELTI  DC power or current margin when ALPHA is at minimum and inverter is controlling line current
