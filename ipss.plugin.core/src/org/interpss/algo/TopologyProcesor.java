@@ -23,8 +23,6 @@
   */
 package org.interpss.algo;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,22 +32,23 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
-import com.interpss.core.algo.dclf.CaOutageBranch;
-import com.interpss.core.funcImpl.AclfNetHelper;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 
 /**
- * Class for Network topology processing functions
+ * Class for Network topology processing functions. Use SimuNetTopologyProcessor instead
  * 
  * @author mzhou
  *
  */
+@Deprecated
 public class TopologyProcesor {
 	private BaseAclfNetwork<?,?> aclfNet = null;
 	private List<Bus> groupBusList = null;	
 	private Bus refBus = null;	
 	private List<String> islandedBusList = null;
+	private boolean byzone = false;
+	private boolean byArea = false;	
 	
 	/**
 	 * constructor
@@ -166,10 +165,7 @@ public class TopologyProcesor {
 	
 	/*
 	 *  ====================================================
-	 *  ====================================================	
 	 */
-	
-	
 	/**
 	 * find islanding buses for the contingency, only used for QA purpose
 	 * 
@@ -179,9 +175,6 @@ public class TopologyProcesor {
 	
 	private int distance = 7;
 
-	private boolean byzone = false;
-	private boolean byArea = false;	
-	
 	private boolean distanceToNeighbourLargerThanDis(AclfBranch bra, int dis, boolean byZone, boolean byArea	) throws InterpssException{
 		long zoneNum = 0;
 		long areaNum = 0;
@@ -237,7 +230,7 @@ public class TopologyProcesor {
 	 * @param byArea search within a area
 	 * @throws InterpssException 
 	 */
-		
+	// TAG : NetworkTopologyAnalysis	
 	public boolean checkConnectivity( Long num, boolean byZone, boolean byArea) throws InterpssException{
 		this.groupBusList = new ArrayList<Bus>();		
 		this.byArea = byArea;
@@ -314,7 +307,7 @@ public class TopologyProcesor {
 		if (islandedBusList.isEmpty())
 			return true;
 		else {
-			// recersively check the connectivity while the size of the group of buses being searched is
+			// recursively check the connectivity while the size of the group of buses being searched is
 			// reduced
 			this.groupBusList = islandedBusList;
 			while (findRefBus(num) == true){				
