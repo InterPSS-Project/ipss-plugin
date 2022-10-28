@@ -51,8 +51,6 @@ import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.cache.StateMonitor.DynDeviceType;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
-import com.sun.xml.internal.ws.encoding.MtomCodec.MtomXMLStreamReaderEx;
-
 
 public class IEEE9_3Phase_1PAC_2SubNet_test {
 	
