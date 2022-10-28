@@ -30,7 +30,6 @@ import static com.interpss.core.funcImpl.AcscFunction.acscXfrAptr;
 import static org.interpss.mapper.odm.ODMUnitHelper.toYUnit;
 import static org.interpss.mapper.odm.ODMUnitHelper.toZUnit;
 
-import javax.activation.UnsupportedDataTypeException;
 import javax.xml.bind.JAXBElement;
 
 import org.apache.commons.math3.complex.Complex;
@@ -361,11 +360,7 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 			//acscBus.setScLoadShuntY1(eqivShuntY1);
 		}
 		else if(acscBus.isFunctionLoad()){
-			try {
-				throw new UnsupportedDataTypeException("ZIP function load is not supported for converting to positive sequence shunt load");
-			} catch (UnsupportedDataTypeException e) {
-				throw new InterpssRuntimeException(e.toString());
-			}
+			throw new InterpssRuntimeException("ZIP function load is not supported for converting to positive sequence shunt load");
 		}
 		
 		//2) Negative part
@@ -395,11 +390,7 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 				//acscBus.setScLoadShuntY2(eqivShuntY2);
 			}
 			else if(acscBus.isFunctionLoad()){
-				try {
-					throw new UnsupportedDataTypeException("ZIP function load is not supported for converting to negative sequence shunt load");
-				} catch (UnsupportedDataTypeException e) {
-					throw new InterpssRuntimeException(e.toString());
-				}
+				throw new InterpssRuntimeException("ZIP function load is not supported for converting to negative sequence shunt load");
 			}
 			
 		}
