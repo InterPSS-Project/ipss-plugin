@@ -36,7 +36,7 @@ import com.interpss.dc.DcNetwork;
 import com.interpss.dc.common.IDcNetEVisitor;
 
 public class Inverter_2BusTest  extends CorePluginTestSetup { 
-	@Test
+	//@Test
 	public void simple2BusPSourceCase() throws Exception {
 		//DcNetwork dcNet = CorePluginObjFactory.createDcNetwork("testData/odm/dcsys/simple2BusInverter.xml");
 		DcNetwork dcNet = IpssAdapter.importAclfNet("testData/odm/dcsys/simple2BusInverter.xml")

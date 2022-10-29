@@ -36,7 +36,7 @@ import com.interpss.dc.DcNetwork;
 import com.interpss.dc.algo.DcPowerFlowAlgorithm;
 
 public class POC_Test2_3  extends CorePluginTestSetup { 
-	@Test
+	//@Test
 	public void mpptTest() throws Exception {
 		//DcNetwork dcNet = CorePluginObjFactory.createDcNetwork("testData/odm/dcsys/poc/Test2_3_odm.xml");
 		DcNetwork dcNet = IpssAdapter.importAclfNet("testData/odm/dcsys/poc/Test2_3_odm.xml")
