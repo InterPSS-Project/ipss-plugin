@@ -36,7 +36,7 @@ import com.interpss.core.funcImpl.ZeroZBranchProcesor;
 
 
 public class IEEE14BusBreaker_equivCABranch_Test extends CorePluginTestSetup {
-	@Test 
+	//@Test 
 	public void case1_smallZ() throws  InterpssException {
 		// Create an AclfNetwork object
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/ieee14Bus_breaker.xml")
@@ -66,7 +66,7 @@ public class IEEE14BusBreaker_equivCABranch_Test extends CorePluginTestSetup {
 	  	//assertTrue(net.getBranch("Bus15-1->Bus15(1)").getEquivCABranchId().equals("Bus15->Bus2(1)"));
 	}	
 	
-	@Test 
+	//@Test 
 	public void case1_smallZ_1() throws  InterpssException {
 		// test casa with a small-Z brach loop at Bus-14
 		
