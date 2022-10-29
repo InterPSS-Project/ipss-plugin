@@ -37,7 +37,7 @@ import com.interpss.dist.DistNetwork;
 
 //DistNet
 public class DistSample2BusTest  extends CorePluginTestSetup { 
-	@Test
+	//@Test
 	public void simple2BusTest() throws Exception {
 		DistNetwork distNet = IpssAdapter.importAclfNet("testData/odm/dist/Sample2Bus.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
@@ -55,7 +55,7 @@ public class DistSample2BusTest  extends CorePluginTestSetup {
 	  	assertTrue(Math.abs(bus.getBus().calNetGenResults().getImaginary() + 0.0349) < 0.0001);
 	}
 
-	@Test
+	//@Test
 	public void simple2BusDSLTest() throws Exception {
 		DistNetwork distNet = IpssAdapter.importAclfNet("testData/odm/dist/Sample2Bus.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
@@ -73,7 +73,7 @@ public class DistSample2BusTest  extends CorePluginTestSetup {
 	  	assertTrue(Math.abs(bus.getBus().calNetGenResults().getImaginary() + 0.0349) < 0.0001);
 	}
 
-	@Test
+	//@Test
 	public void simple2BusDSL_MixedLoad_Test() throws Exception {
 		DistNetwork distNet = IpssAdapter.importAclfNet("testData/odm/dist/Sample2BusMixedLoad.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)

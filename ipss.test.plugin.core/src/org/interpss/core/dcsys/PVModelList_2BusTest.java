@@ -37,7 +37,7 @@ import com.interpss.dc.DcNetwork;
 import com.interpss.dc.common.IDcNetEVisitor;
 
 public class PVModelList_2BusTest  extends CorePluginTestSetup { 
-	@Test
+	//@Test
 	public void pvModel2BusCase() throws Exception {
 		//DcNetwork dcNet = CorePluginObjFactory.createDcNetwork("testData/odm/dcsys/PVModelList2Bus.xml");
 		DcNetwork dcNet = IpssAdapter.importAclfNet("testData/odm/dcsys/PVModelList2Bus.xml")

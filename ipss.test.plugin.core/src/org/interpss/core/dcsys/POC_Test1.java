@@ -38,7 +38,7 @@ import com.interpss.dc.algo.DcPowerFlowAlgorithm;
 import com.interpss.dc.algo.DcPowerFlowMethod;
 
 public class POC_Test1  extends CorePluginTestSetup { 
-	@Test
+	//@Test
 	public void baseTest() throws Exception {
 		//DcNetwork dcNet = CorePluginObjFactory.createDcNetwork("testData/odm/dcsys/poc/Test1_odm.xml");
 		DcNetwork dcNet = IpssAdapter.importAclfNet("testData/odm/dcsys/poc/Test1_odm.xml")
@@ -59,7 +59,7 @@ public class POC_Test1  extends CorePluginTestSetup {
 		System.out.println(CorePluginFunction.OutputSolarNet.fx(dcNet));
 	}
 
-	@Test
+	//@Test
 	public void base1Test() throws Exception {
 //		DcNetwork dcNet = CorePluginObjFactory.createDcNetwork("testData/odm/dcsys/poc/Test1_odm.xml");
 		DcNetwork dcNet = IpssAdapter.importAclfNet("testData/odm/dcsys/poc/Test1_odm.xml")
@@ -80,7 +80,7 @@ public class POC_Test1  extends CorePluginTestSetup {
 		System.out.println(CorePluginFunction.OutputSolarNet.fx(dcNet));
 	}
 
-	@Test
+	//@Test
 	public void mpptTest() throws Exception {
 		//DcNetwork dcNet = CorePluginObjFactory.createDcNetwork("testData/odm/dcsys/poc/Test1_odm.xml");
 		DcNetwork dcNet = IpssAdapter.importAclfNet("testData/odm/dcsys/poc/Test1_odm.xml")
