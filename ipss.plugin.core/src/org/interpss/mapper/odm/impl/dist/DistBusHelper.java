@@ -113,7 +113,7 @@ public class DistBusHelper {
 	
 	public static void setGroundingData(GroundingXmlType xmlGrounding, BusScGrounding objGrounding, Bus bus) {
 		BusGroundCode code = ODMHelper.toBusGroundCode(xmlGrounding.getGroundingConnection());
-		objGrounding.setCode(code);
+		objGrounding.setGroundCode(code);
 		if (xmlGrounding.getGroundingZ() != null) {
 			Complex zg = new Complex(xmlGrounding.getGroundingZ().getRe(), xmlGrounding.getGroundingZ().getIm());
 			UnitType zgunit = toZUnit.apply(xmlGrounding.getGroundingZ().getUnit());
