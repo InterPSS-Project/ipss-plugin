@@ -262,7 +262,7 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 		acscBus.setScGenZ(NumericConstant.LargeBusZ, SequenceCode.POSITIVE);
 		acscBus.setScGenZ(NumericConstant.LargeBusZ, SequenceCode.NEGATIVE);
 		acscBus.setScGenZ(NumericConstant.LargeBusZ, SequenceCode.ZERO);
-		acscBus.getGrounding().setCode(BusGroundCode.UNGROUNDED);
+		acscBus.getGrounding().setGroundCode(BusGroundCode.UNGROUNDED);
 		acscBus.getGrounding().setZ(NumericConstant.LargeBusZ);
 	}
 
@@ -280,7 +280,7 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 					scGenData.getZeroZ());
 		*/
 		if(scGenData.getGrounding()==null){//no grounding provided, supposed to be ungrounded
-			acscBus.getGrounding().setCode(BusGroundCode.UNGROUNDED);
+			acscBus.getGrounding().setGroundCode(BusGroundCode.UNGROUNDED);
 		}
 		else
 			setBusScZg(acscBus, acscBus.getBaseVoltage(), acscBus.getNetwork().getBaseKva(), 
@@ -416,7 +416,7 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 	}
 
 	private void setBusScZg(BaseAcscBus bus, double baseV, double baseKVA, GroundingXmlType g) {
-		bus.getGrounding().setCode(ODMHelper.toBusGroundCode(g.getGroundingConnection()));
+		bus.getGrounding().setGroundCode(ODMHelper.toBusGroundCode(g.getGroundingConnection()));
 		ZXmlType z = g.getGroundingZ();
 		if(z != null){
 			UnitType zgUnit = toZUnit.apply(z.getUnit());			

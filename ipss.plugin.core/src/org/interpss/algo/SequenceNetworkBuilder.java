@@ -334,7 +334,7 @@ public class SequenceNetworkBuilder {
 				scBus.setScGenZ(NumericConstant.LargeBusZ, SequenceCode.POSITIVE);
 				scBus.setScGenZ(NumericConstant.LargeBusZ, SequenceCode.NEGATIVE);
 				scBus.setScGenZ(NumericConstant.LargeBusZ, SequenceCode.ZERO);
-				scBus.getGrounding().setCode(BusGroundCode.UNGROUNDED);
+				scBus.getGrounding().setGroundCode(BusGroundCode.UNGROUNDED);
 				scBus.getGrounding().setZ(NumericConstant.LargeBusZ);
 				continue;
 			}
@@ -343,7 +343,7 @@ public class SequenceNetworkBuilder {
 			scBus.setScCode(BusScCode.CONTRIBUTE);
 			
 			// grounding information affects the zero sequence
-			scBus.getGrounding().setCode(BusGroundCode.UNGROUNDED);
+			scBus.getGrounding().setGroundCode(BusGroundCode.UNGROUNDED);
 			scBus.getGrounding().setZ(NumericConstant.LargeBusZ);
 			
 			if(scBus.getContributeGenList().size()>0){

@@ -135,7 +135,7 @@ public class IpssAcscNet extends BaseDSL {
   								getAcscBus().setScGenZ(new Complex(0.0, 1.0e10), SequenceCode.ZERO);  								
   							} return this;}
   		public AcscBusDSL setZ(Complex z, SequenceCode seq, UnitType unit) { getAcscBus().setScGenZ(z, seq, unit); return this;}
-  		public AcscBusDSL setGroundCode(String code) { getAcscBus().getGrounding().setCode(str2ScGroundCode.apply(code)); return this;}
+  		public AcscBusDSL setGroundCode(String code) { getAcscBus().getGrounding().setGroundCode(str2ScGroundCode.apply(code)); return this;}
   		public AcscBusDSL setGroundZ(Complex z, UnitType unit) { getAcscBus().getGrounding().setZ(z, unit, getAcscBus().getBaseVoltage(), getAcscNet().getBaseKva()); return this;}
 
   		public AcscBusDSL scCode(BusScCode code) { return setScCode(code); } 
