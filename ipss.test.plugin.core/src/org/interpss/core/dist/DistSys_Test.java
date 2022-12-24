@@ -66,7 +66,7 @@ public class DistSys_Test extends CorePluginTestSetup {
 		xfr.setZ(new Complex(0.0, 7.0), new Complex(0.0, 7.0), UnitType.Percent);
 		xfr.setTurnRatio(1.0, 1.0, UnitType.PU);
 		xfr.setConnect(XFormerConnectCode.WYE, XFormerConnectCode.DELTA);
-		xfr.getPrimaryGrounding().setCode(BusGroundCode.UNGROUNDED);
+		xfr.getPrimaryGrounding().setGroundCode(BusGroundCode.UNGROUNDED);
 		
 		distNet.loadflow();
 		//System.out.println(distNet.getAclfNetwork().net2String());
