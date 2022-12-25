@@ -28,7 +28,8 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
-import com.interpss.core.acsc.XfrConnectCode;
+import com.interpss.core.acsc.BusGroundCode;
+import com.interpss.core.acsc.XFormerConnectCode;
 import com.interpss.core.acsc.adpter.AcscXformerAdapter;
 import com.interpss.core.net.NetworkType;
 import com.interpss.dstab.BaseDStabBus;
@@ -381,8 +382,8 @@ public class IEEE_13BusFeeder_Test {
 			
 		
 		    AcscXformerAdapter xfr0 = acscXfrAptr.apply(xfr1_2);
-			xfr0.setFromConnectGroundZ(XfrConnectCode.DELTA11, new Complex(0.0,0.0), UnitType.PU);
-			xfr0.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+			xfr0.setFromGrounding(BusGroundCode.UNGROUNDED, XFormerConnectCode.DELTA11, new Complex(0.0,0.0), UnitType.PU);
+			xfr0.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 
 			
 			DStab3PBranch xfr2_3 = ThreePhaseObjectFactory.create3PBranch( "Bus650", "BusRG60","0", net);
@@ -392,8 +393,8 @@ public class IEEE_13BusFeeder_Test {
 			
 		
 		    AcscXformerAdapter xfr2 = acscXfrAptr.apply(xfr2_3);
-			xfr2.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
-			xfr2.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+			xfr2.setFromGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
+			xfr2.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 			
 			
 			DStab3PBranch xfr633_634 = ThreePhaseObjectFactory.create3PBranch("Bus633", "Bus634", "0", net);
@@ -403,8 +404,8 @@ public class IEEE_13BusFeeder_Test {
 			
 		
 		    AcscXformerAdapter xfr3 = acscXfrAptr.apply(xfr633_634);
-			xfr3.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
-			xfr3.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+			xfr3.setFromGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
+			xfr3.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 			
 			
 			///////////////////////////////////////////////////////// LINES ////////////////////////////////////////

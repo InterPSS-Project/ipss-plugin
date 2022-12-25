@@ -9,8 +9,9 @@ import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranchCode;
+import com.interpss.core.acsc.BusGroundCode;
 import com.interpss.core.acsc.PhaseCode;
-import com.interpss.core.acsc.XfrConnectCode;
+import com.interpss.core.acsc.XFormerConnectCode;
 import com.interpss.core.acsc.adpter.AcscXformerAdapter;
 
 public class OpenDSSTransformerParser {
@@ -141,12 +142,12 @@ public class OpenDSSTransformerParser {
 	    
 	    if(fromConnection.equalsIgnoreCase("Delta")){
 	    	if(toConnection.equalsIgnoreCase("Delta"))
-		        xfr0.setFromConnectGroundZ(XfrConnectCode.DELTA, new Complex(0.0,0.0), UnitType.PU);
+		        xfr0.setFromGrounding(BusGroundCode.UNGROUNDED, XFormerConnectCode.DELTA, new Complex(0.0,0.0), UnitType.PU);
 	    	else
-	    		xfr0.setFromConnectGroundZ(XfrConnectCode.DELTA11, new Complex(0.0,0.0), UnitType.PU);
+	    		xfr0.setFromGrounding(BusGroundCode.UNGROUNDED, XFormerConnectCode.DELTA11, new Complex(0.0,0.0), UnitType.PU);
 	    }
 	    else if(fromConnection.equalsIgnoreCase("Wye")){
-	    	xfr0.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+	    	xfr0.setFromGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 	    }
 	    else{
 	    	throw new Error("Transformer connection type at winding 1 is not supported yet #"+fromConnection);
@@ -154,12 +155,12 @@ public class OpenDSSTransformerParser {
 	    
 	    if(toConnection.equalsIgnoreCase("Delta")){
 	    	if(fromConnection.equalsIgnoreCase("Wye"))
-		        xfr0.setToConnectGroundZ(XfrConnectCode.DELTA11, new Complex(0.0,0.0), UnitType.PU);
+		        xfr0.setToGrounding(BusGroundCode.UNGROUNDED, XFormerConnectCode.DELTA11, new Complex(0.0,0.0), UnitType.PU);
 	    	else
-	    		xfr0.setToConnectGroundZ(XfrConnectCode.DELTA, new Complex(0.0,0.0), UnitType.PU);
+	    		xfr0.setToGrounding(BusGroundCode.UNGROUNDED, XFormerConnectCode.DELTA, new Complex(0.0,0.0), UnitType.PU);
 	    }
 	    else if(toConnection.equalsIgnoreCase("Wye")){
-	    	xfr0.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+	    	xfr0.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 	    }
 	    else{
 	    	throw new Error("Transformer connection type at winding 2 is not supported yet #"+toConnection);
@@ -324,7 +325,8 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 			AcscXformerAdapter likexfr = acscXfrAptr.apply(likeBranch);
 			
 			if(fromConnection.equals("")){
-				if(likexfr.getFromConnect().equals(XfrConnectCode.DELTA)||likexfr.getFromConnect().equals(XfrConnectCode.DELTA11)){
+				if(likexfr.getFromGrounding().getXfrConnectCode() == XFormerConnectCode.DELTA ||
+						likexfr.getFromGrounding().getXfrConnectCode() == XFormerConnectCode.DELTA11){
 					fromConnection ="delta";
 				}
 				else{
@@ -332,7 +334,8 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 				}
 			}
             if(toConnection.equals("")){
-            	if(likexfr.getToConnect().equals(XfrConnectCode.DELTA)||likexfr.getToConnect().equals(XfrConnectCode.DELTA11)){
+            	if(likexfr.getToGrounding().getXfrConnectCode() == XFormerConnectCode.DELTA ||
+            			likexfr.getToGrounding().getXfrConnectCode() == XFormerConnectCode.DELTA11){
 					toConnection ="delta";
 				}
 				else{
@@ -375,12 +378,12 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 	    
 	    if(fromConnection.equalsIgnoreCase("Delta")){
 	    	if(toConnection.equalsIgnoreCase("Delta"))
-		        xfr0.setFromConnectGroundZ(XfrConnectCode.DELTA, new Complex(0.0,0.0), UnitType.PU);
+		        xfr0.setFromGrounding(BusGroundCode.UNGROUNDED, XFormerConnectCode.DELTA, new Complex(0.0,0.0), UnitType.PU);
 	    	else
-	    		xfr0.setFromConnectGroundZ(XfrConnectCode.DELTA11, new Complex(0.0,0.0), UnitType.PU);
+	    		xfr0.setFromGrounding(BusGroundCode.UNGROUNDED, XFormerConnectCode.DELTA11, new Complex(0.0,0.0), UnitType.PU);
 	    }
 	    else if(fromConnection.equalsIgnoreCase("Wye")){
-	    	xfr0.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+	    	xfr0.setFromGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 	    }
 	    else{
 	    	throw new Error("Transformer connection type at winding 1 is not supported yet #"+fromConnection);
@@ -388,12 +391,12 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 	    
 	    if(toConnection.equalsIgnoreCase("Delta")){
 	    	if(fromConnection.equalsIgnoreCase("Wye"))
-		        xfr0.setToConnectGroundZ(XfrConnectCode.DELTA11, new Complex(0.0,0.0), UnitType.PU);
+		        xfr0.setToGrounding(BusGroundCode.UNGROUNDED, XFormerConnectCode.DELTA11, new Complex(0.0,0.0), UnitType.PU);
 	    	else
-	    		xfr0.setToConnectGroundZ(XfrConnectCode.DELTA, new Complex(0.0,0.0), UnitType.PU);
+	    		xfr0.setToGrounding(BusGroundCode.UNGROUNDED, XFormerConnectCode.DELTA, new Complex(0.0,0.0), UnitType.PU);
 	    }
 	    else if(toConnection.equalsIgnoreCase("Wye")){
-	    	xfr0.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+	    	xfr0.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 	    }
 	    else{
 	    	throw new Error("Transformer connection type at winding 2 is not supported yet #"+toConnection);

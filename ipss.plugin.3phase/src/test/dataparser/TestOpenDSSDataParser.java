@@ -24,7 +24,7 @@ import org.junit.Test;
 import com.interpss.core.abc.LoadConnectionType;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.acsc.PhaseCode;
-import com.interpss.core.acsc.XfrConnectCode;
+import com.interpss.core.acsc.XFormerConnectCode;
 import com.interpss.core.acsc.adpter.AcscXformerAdapter;
 import com.interpss.core.net.Bus;
 
@@ -203,8 +203,8 @@ public class TestOpenDSSDataParser {
 		  assertTrue(Math.abs(xfr1.getXfrRatedKVA()-150)<1.0E-6);
 		  
 		  AcscXformerAdapter xfr10 = acscXfrAptr.apply(xfr1);
-		  assertTrue(xfr10.getFromConnect()==XfrConnectCode.DELTA);
-		  assertTrue(xfr10.getToConnect()==XfrConnectCode.DELTA);
+		  assertTrue(xfr10.getFromGrounding().getXfrConnectCode()==XFormerConnectCode.DELTA);
+		  assertTrue(xfr10.getToGrounding().getXfrConnectCode()==XFormerConnectCode.DELTA);
 		  
 		  /*
 		   * new transformer.reg4a phases=1          windings=2        buses=[160.1 160r.1]   conns=[wye wye]       kvs=[2.402 2.402] kvas=[2000 2000] XHL=.01 %LoadLoss=0.00001 ppm=0.0 
@@ -222,8 +222,8 @@ public class TestOpenDSSDataParser {
 		  assertTrue(Math.abs(xfr2.getXfrRatedKVA()-2000)<1.0E-6);
 		  
 		  AcscXformerAdapter xfr20 = acscXfrAptr.apply(xfr2);
-		  assertTrue(xfr20.getFromConnect()==XfrConnectCode.WYE_SOLID_GROUNDED);
-		  assertTrue(xfr20.getToConnect()==XfrConnectCode.WYE_SOLID_GROUNDED);
+		  assertTrue(xfr20.getFromGrounding().getXfrConnectCode()==XFormerConnectCode.WYE);
+		  assertTrue(xfr20.getToGrounding().getXfrConnectCode()==XFormerConnectCode.WYE);
 		  
 		//3. test load parser
 		   
@@ -371,8 +371,8 @@ public class TestOpenDSSDataParser {
 		  assertTrue(Math.abs(xfr1.getXfrRatedKVA()-150)<1.0E-6);
 		  
 		  AcscXformerAdapter xfr10 = acscXfrAptr.apply(xfr1);
-		  assertTrue(xfr10.getFromConnect()==XfrConnectCode.DELTA);
-		  assertTrue(xfr10.getToConnect()==XfrConnectCode.DELTA);
+		  assertTrue(xfr10.getFromGrounding().getXfrConnectCode()==XFormerConnectCode.DELTA);
+		  assertTrue(xfr10.getToGrounding().getXfrConnectCode()==XFormerConnectCode.DELTA);
 		  
 		  /*
 		   * new transformer.reg4a phases=1          windings=2        buses=[160.1 160r.1]   conns=[wye wye]       kvs=[2.402 2.402] kvas=[2000 2000] XHL=.01 %LoadLoss=0.00001 ppm=0.0 
@@ -393,8 +393,8 @@ public class TestOpenDSSDataParser {
 		  assertTrue(Math.abs(xfr2.getXfrRatedKVA()-2000)<1.0E-6);
 		  
 		  AcscXformerAdapter xfr20 = acscXfrAptr.apply(xfr2);
-		  assertTrue(xfr20.getFromConnect()==XfrConnectCode.WYE_SOLID_GROUNDED);
-		  assertTrue(xfr20.getToConnect()==XfrConnectCode.WYE_SOLID_GROUNDED);
+		  assertTrue(xfr20.getFromGrounding().getXfrConnectCode()==XFormerConnectCode.WYE);
+		  assertTrue(xfr20.getToGrounding().getXfrConnectCode()==XFormerConnectCode.WYE);
 		  
 		//3. test load parser
 		   

@@ -43,7 +43,8 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
-import com.interpss.core.acsc.XfrConnectCode;
+import com.interpss.core.acsc.BusGroundCode;
+import com.interpss.core.acsc.XFormerConnectCode;
 import com.interpss.core.acsc.adpter.AcscXformerAdapter;
 import com.interpss.core.net.NetworkType;
 import com.interpss.dstab.BaseDStabBus;
@@ -703,8 +704,8 @@ public class Test_GC_12_47_1_Feeder {
 	  				xfr.setXfrRatedKVA(3000.0);
 	  				
 	  				AcscXformerAdapter xfr0 = acscXfrAptr.apply(xfr);
-	  				xfr0.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
-	  				xfr0.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+	  				xfr0.setFromGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
+	  				xfr0.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 	  			}
 	  			else{
 	  				// step-down transformers for connecting loads
@@ -722,8 +723,8 @@ public class Test_GC_12_47_1_Feeder {
 	  				xfr.setXfrRatedKVA(3000.0);
 	  				
 	  				AcscXformerAdapter xfr0 = acscXfrAptr.apply(xfr);
-	  				xfr0.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
-	  				xfr0.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+	  				xfr0.setFromGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
+	  				xfr0.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 	  				
 	  				
 	  			}
