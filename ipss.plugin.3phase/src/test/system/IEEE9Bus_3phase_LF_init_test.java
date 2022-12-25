@@ -30,7 +30,8 @@ import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.acsc.BaseAcscBus;
-import com.interpss.core.acsc.XfrConnectCode;
+import com.interpss.core.acsc.BusGroundCode;
+import com.interpss.core.acsc.XFormerConnectCode;
 import com.interpss.core.acsc.adpter.AcscXformerAdapter;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -503,8 +504,8 @@ ca = (0.0, 0.0),cb = (1.734723475976807E-18, -3.469446951953614E-18),cc = (-1.73
 				xfr14.setZ( new Complex( 0.0, 0.0567 ));
 				xfr14.setZ0( new Complex(0.0, 0.0567 ));
 				AcscXformerAdapter xfr = acscXfrAptr.apply(xfr14);
-				xfr.setFromConnectGroundZ(XfrConnectCode.DELTA, new Complex(0.0,0.0), UnitType.PU);
-				xfr.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+				xfr.setFromGrounding(BusGroundCode.UNGROUNDED, XFormerConnectCode.DELTA, new Complex(0.0,0.0), UnitType.PU);
+				xfr.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 				
 				
 				DStab3PBranch xfr27 = ThreePhaseObjectFactory.create3PBranch("Bus2", "Bus7", "0", net);
@@ -512,8 +513,8 @@ ca = (0.0, 0.0),cb = (1.734723475976807E-18, -3.469446951953614E-18),cc = (-1.73
 				xfr27.setZ( new Complex( 0.0, 0.0625 ));
 				xfr27.setZ0( new Complex(0.0, 0.0625 ));
 				xfr = acscXfrAptr.apply(xfr27);
-				xfr.setFromConnectGroundZ(XfrConnectCode.DELTA, new Complex(0.0,0.0), UnitType.PU);
-				xfr.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+				xfr.setFromGrounding(BusGroundCode.UNGROUNDED, XFormerConnectCode.DELTA, new Complex(0.0,0.0), UnitType.PU);
+				xfr.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 				
 				
 				DStab3PBranch xfr39 = ThreePhaseObjectFactory.create3PBranch("Bus3", "Bus9", "0", net);
@@ -521,8 +522,8 @@ ca = (0.0, 0.0),cb = (1.734723475976807E-18, -3.469446951953614E-18),cc = (-1.73
 				xfr39.setZ( new Complex( 0.0, 0.0586 ));
 				xfr39.setZ0( new Complex(0.0, 0.0586 ));
 				xfr = acscXfrAptr.apply(xfr39);
-				xfr.setFromConnectGroundZ(XfrConnectCode.DELTA, new Complex(0.0,0.0), UnitType.PU);
-				xfr.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+				xfr.setFromGrounding(BusGroundCode.UNGROUNDED, XFormerConnectCode.DELTA, new Complex(0.0,0.0), UnitType.PU);
+				xfr.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 
 		return net;
 	}
