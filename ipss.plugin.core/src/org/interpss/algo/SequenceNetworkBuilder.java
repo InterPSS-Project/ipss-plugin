@@ -11,7 +11,6 @@ import org.interpss.numeric.util.Number2String;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGen;
-import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.acsc.Acsc3WBranch;
 import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.AcscBus;
@@ -21,7 +20,7 @@ import com.interpss.core.acsc.BaseAcscNetwork;
 import com.interpss.core.acsc.BusGroundCode;
 import com.interpss.core.acsc.BusScCode;
 import com.interpss.core.acsc.SequenceCode;
-import com.interpss.core.acsc.XfrConnectCode;
+import com.interpss.core.acsc.XFormerConnectCode;
 import com.interpss.core.net.Branch;
 
 public class SequenceNetworkBuilder {
@@ -245,39 +244,42 @@ public class SequenceNetworkBuilder {
 	    		String lineId = scBranch.getCircuitNumber();
 	    		if(lineId.length() ==1) lineId +=" ";
 	    		
-	    		if(scBranch.getXfrFromConnectCode() == XfrConnectCode.WYE_SOLID_GROUNDED){
-	    			if(scBranch.getXfrToConnectCode() == XfrConnectCode.WYE_SOLID_GROUNDED){
+	    		if(scBranch.getFromGrounding().getXfrConnectCode() == XFormerConnectCode.WYE &&
+	    				scBranch.getFromGrounding().getGroundCode() == BusGroundCode.SOLID_GROUNDED){
+	    			if(scBranch.getToGrounding().getXfrConnectCode() == XFormerConnectCode.WYE &&
+		    				scBranch.getToGrounding().getGroundCode() == BusGroundCode.SOLID_GROUNDED){
 	    				cc =1;
 	    			}
-	    			else if(scBranch.getXfrToConnectCode() == XfrConnectCode.DELTA){
+	    			else if(scBranch.getToGrounding().getXfrConnectCode() == XFormerConnectCode.DELTA){
 	    				cc = 2;
 	    			}
 	    			else{
 	    				throw new UnsupportedOperationException("The transformer connection type is not supported yet! Connection @ from, to:"+
-		    					scBranch.getXfrFromConnectCode()+"," +scBranch.getXfrToConnectCode());
+	    						scBranch.getFromGrounding()+"," +scBranch.getToGrounding());
 	    			}
 	    		}
-	    		else if(scBranch.getXfrFromConnectCode() == XfrConnectCode.DELTA){
-	                if(scBranch.getXfrToConnectCode() == XfrConnectCode.WYE_SOLID_GROUNDED){
+	    		else if(scBranch.getFromGrounding().getXfrConnectCode() == XFormerConnectCode.DELTA){
+	                if(scBranch.getToGrounding().getXfrConnectCode() == XFormerConnectCode.WYE &&
+		    				scBranch.getToGrounding().getGroundCode() == BusGroundCode.SOLID_GROUNDED){
 	    				cc = 3;
 	    			}
-	    			else if(scBranch.getXfrToConnectCode() == XfrConnectCode.DELTA){
+	    			else if(scBranch.getToGrounding().getXfrConnectCode() == XFormerConnectCode.DELTA){
 	    				cc = 4;
 	    			}
 	    			else{
 	    				throw new UnsupportedOperationException("The transformer connection type is not supported yet! Connection @ from, to:"+
-		    					scBranch.getXfrFromConnectCode()+"," +scBranch.getXfrToConnectCode());
+	    						scBranch.getFromGrounding()+"," +scBranch.getToGrounding());
 	    			}
 	    		}
 	    		else{
 	    			throw new UnsupportedOperationException("The transformer connection type is not supported yet! Connection @ from, to:"+
-	    					scBranch.getXfrFromConnectCode()+"," +scBranch.getXfrToConnectCode());
+	    					scBranch.getFromGrounding()+"," +scBranch.getToGrounding());
 	    		}
 	    		
 	    		
 	    	 Complex z0 = scBranch.getZ0();
-	    	 Complex zg1 = scBranch.getXfrFromGroundZ();  // if cc =1 or 2 or 6
-	    	 Complex zg2 = scBranch.getXfrToGroundZ();    // if cc =1 or 3
+	    	 Complex zg1 = scBranch.getFromGrounding().getZ();  // if cc =1 or 2 or 6
+	    	 Complex zg2 = scBranch.getToGrounding().getZ();    // if cc =1 or 3
 	    	 
 	    	 String z0Str =  Number2String.toStr(z0.getReal())+", "+Number2String.toStr(z0.getImaginary());
 	    	 String zg1Str ="0.0, 0.0";
@@ -456,24 +458,40 @@ public class SequenceNetworkBuilder {
 						 */
 						//Type-1: EHV Yg-Yg
 						if(getLowVoltageBus(scBranch).getBaseVoltage()>=115000.0){
-							scBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
-							scBranch.setXfrToConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
-							
+							//scBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+							//scBranch.setXfrToConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+							scBranch.getFromGrounding().setXfrConnectCode(XFormerConnectCode.WYE);
+							scBranch.getFromGrounding().setGroundCode(BusGroundCode.SOLID_GROUNDED);
+							scBranch.getToGrounding().setXfrConnectCode(XFormerConnectCode.WYE);
+							scBranch.getToGrounding().setGroundCode(BusGroundCode.SOLID_GROUNDED);
 						}
 						//type-2 // Delta-Yg,  mainly for subtransmission step-down transformer
 						else if(getHighVoltageBus(scBranch).getBaseVoltage()<=115000 && getLowVoltageBus(scBranch).getBaseVoltage()<69000.0 
 							&& !isGenXfr(scBranch) && getLowVoltageBus(scBranch).isLoad()){
 							if(scBranch.getFromAcscBus().getBaseVoltage() == scBranch.getToAcscBus().getBaseVoltage()){
-								scBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
-								scBranch.setXfrToConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+								//scBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+								//scBranch.setXfrToConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+								scBranch.getFromGrounding().setXfrConnectCode(XFormerConnectCode.WYE);
+								scBranch.getFromGrounding().setGroundCode(BusGroundCode.SOLID_GROUNDED);
+								scBranch.getToGrounding().setXfrConnectCode(XFormerConnectCode.WYE);
+								scBranch.getToGrounding().setGroundCode(BusGroundCode.SOLID_GROUNDED);
 							}
 							else if(scBranch.getFromBusId().equals(getHighVoltageBus(scBranch).getId())){
-							  scBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
-							  scBranch.setXfrToConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+								//scBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
+								//scBranch.setXfrToConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+								scBranch.getFromGrounding().setXfrConnectCode(XFormerConnectCode.DELTA);
+								scBranch.getFromGrounding().setGroundCode(BusGroundCode.UNGROUNDED);
+								scBranch.getToGrounding().setXfrConnectCode(XFormerConnectCode.WYE);
+								scBranch.getToGrounding().setGroundCode(BusGroundCode.SOLID_GROUNDED);
+	
 							}
 							else{
-								scBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
-								scBranch.setXfrToConnectCode(XfrConnectCode.DELTA);
+								//scBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+								//scBranch.setXfrToConnectCode(XfrConnectCode.DELTA);
+								scBranch.getFromGrounding().setXfrConnectCode(XFormerConnectCode.WYE);
+								scBranch.getFromGrounding().setGroundCode(BusGroundCode.SOLID_GROUNDED);
+								scBranch.getToGrounding().setXfrConnectCode(XFormerConnectCode.DELTA);
+								scBranch.getToGrounding().setGroundCode(BusGroundCode.UNGROUNDED);
 							}
 								
 						}
@@ -482,22 +500,32 @@ public class SequenceNetworkBuilder {
 							//NOTE: for step up transformer: the delta connection is on the generator (low voltage) bus side .
 							//
 							if(scBranch.getToAcscBus().isGen()){ 
-							   scBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
-							   scBranch.setXfrToConnectCode(XfrConnectCode.DELTA);
+							   //scBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+							   //scBranch.setXfrToConnectCode(XfrConnectCode.DELTA);
+								scBranch.getFromGrounding().setXfrConnectCode(XFormerConnectCode.WYE);
+								scBranch.getFromGrounding().setGroundCode(BusGroundCode.SOLID_GROUNDED);
+								scBranch.getToGrounding().setXfrConnectCode(XFormerConnectCode.DELTA);
+								scBranch.getToGrounding().setGroundCode(BusGroundCode.UNGROUNDED);	
 							}
 							else{
-							   scBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
-							   scBranch.setXfrToConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+							   //scBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
+							   //scBranch.setXfrToConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+								scBranch.getFromGrounding().setXfrConnectCode(XFormerConnectCode.DELTA);
+								scBranch.getFromGrounding().setGroundCode(BusGroundCode.UNGROUNDED);
+								scBranch.getToGrounding().setXfrConnectCode(XFormerConnectCode.WYE);
+								scBranch.getToGrounding().setGroundCode(BusGroundCode.SOLID_GROUNDED);
 							}
 						}
 						else {
 							// error, unprocessed model
 							IpssLogger.getLogger().severe("Error: transformer is not belong to predefined types, set to Yg/Yg connection: "+scBranch.getId());
-							
-							scBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
-							scBranch.setXfrToConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+							//scBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+							//scBranch.setXfrToConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+							scBranch.getFromGrounding().setXfrConnectCode(XFormerConnectCode.WYE);
+							scBranch.getFromGrounding().setGroundCode(BusGroundCode.SOLID_GROUNDED);
+							scBranch.getToGrounding().setXfrConnectCode(XFormerConnectCode.WYE);
+							scBranch.getToGrounding().setGroundCode(BusGroundCode.SOLID_GROUNDED);	
 						}
-						
 					}
 				}
 			}
@@ -525,19 +553,30 @@ public class SequenceNetworkBuilder {
 					AcscBranch toBranch =(AcscBranch) bra3w.getToBranch();
 					AcscBranch terBranch =(AcscBranch) bra3w.getTertiaryBranch();
 					
-					fromBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
-					fromBranch.setXfrToConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+					//fromBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+					//fromBranch.setXfrToConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+					fromBranch.getFromGrounding().setXfrConnectCode(XFormerConnectCode.WYE);
+					fromBranch.getFromGrounding().setGroundCode(BusGroundCode.SOLID_GROUNDED);
+					fromBranch.getToGrounding().setXfrConnectCode(XFormerConnectCode.WYE);
+					fromBranch.getToGrounding().setGroundCode(BusGroundCode.SOLID_GROUNDED);	
 					fromBranch.setZ0(fromBranch.getZ());
 					fromBranch.setHB0(0);
 					
-					toBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
-					toBranch.setXfrToConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+					//toBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+					//toBranch.setXfrToConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+					toBranch.getFromGrounding().setXfrConnectCode(XFormerConnectCode.WYE);
+					toBranch.getFromGrounding().setGroundCode(BusGroundCode.SOLID_GROUNDED);
+					toBranch.getToGrounding().setXfrConnectCode(XFormerConnectCode.WYE);
+					toBranch.getToGrounding().setGroundCode(BusGroundCode.SOLID_GROUNDED);	
 					toBranch.setZ0(toBranch.getZ());
 					toBranch.setHB0(0);
 					
-					
-					terBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
-					terBranch.setXfrToConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+					//terBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
+					//terBranch.setXfrToConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+					terBranch.getFromGrounding().setXfrConnectCode(XFormerConnectCode.DELTA);
+					terBranch.getFromGrounding().setGroundCode(BusGroundCode.UNGROUNDED);
+					terBranch.getToGrounding().setXfrConnectCode(XFormerConnectCode.WYE);
+					terBranch.getToGrounding().setGroundCode(BusGroundCode.SOLID_GROUNDED);	
 					terBranch.setZ0(terBranch.getZ());
 					terBranch.setHB0(0);
 					
@@ -570,50 +609,70 @@ public class SequenceNetworkBuilder {
 					switch(highVoltSide){
 					case 1:
 						if(bra3w.getToBus().getBaseVoltage()<bra3w.getTertiaryBus().getBaseVoltage()){
-							terBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
-							toBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
+							//terBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+							//toBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
+							terBranch.getFromGrounding().setXfrConnectCode(XFormerConnectCode.WYE);
+							terBranch.getFromGrounding().setGroundCode(BusGroundCode.SOLID_GROUNDED);
+							toBranch.getFromGrounding().setXfrConnectCode(XFormerConnectCode.DELTA);
+							toBranch.getFromGrounding().setGroundCode(BusGroundCode.UNGROUNDED);
 						}
 						// fromBus is HV, toBus and terBus are generator bus, thus both are Delta connection
 					   else if(bra3w.getToBus().getBaseVoltage()<35000.0 && bra3w.getToBus().getBaseVoltage()==bra3w.getTertiaryBus().getBaseVoltage()
 						&& ((AclfBus)bra3w.getToBus()).isGen() && ((AclfBus)bra3w.getTertiaryBus()).isGen()){
-							
-							toBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
+							//toBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
+							toBranch.getFromGrounding().setXfrConnectCode(XFormerConnectCode.DELTA);
+							toBranch.getFromGrounding().setGroundCode(BusGroundCode.UNGROUNDED);
 						}
 						break;
 					case 2:
 						if(bra3w.getFromBus().getBaseVoltage()<bra3w.getTertiaryBus().getBaseVoltage()){
-								terBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
-								fromBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
-								
+							//terBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+							//fromBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
+							terBranch.getFromGrounding().setXfrConnectCode(XFormerConnectCode.WYE);
+							terBranch.getFromGrounding().setGroundCode(BusGroundCode.SOLID_GROUNDED);
+							fromBranch.getFromGrounding().setXfrConnectCode(XFormerConnectCode.DELTA);
+							fromBranch.getFromGrounding().setGroundCode(BusGroundCode.UNGROUNDED);
 						 }
 						// ToBus is HV, fromBus and terBus are generator bus, thus both are Delta connection
 						else if(bra3w.getFromBus().getBaseVoltage()<35000.0 && bra3w.getFromBus().getBaseVoltage()==bra3w.getTertiaryBus().getBaseVoltage()
 								&& ((AclfBus)bra3w.getFromBus()).isGen() && ((AclfBus)bra3w.getTertiaryBus()).isGen()){
-							
-							fromBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
-	
+							//fromBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
+							fromBranch.getFromGrounding().setXfrConnectCode(XFormerConnectCode.DELTA);
+							fromBranch.getFromGrounding().setGroundCode(BusGroundCode.UNGROUNDED);
 						}
 						break;
 					case 3: //terBus is the HV
-						terBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+						//terBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+						terBranch.getFromGrounding().setXfrConnectCode(XFormerConnectCode.WYE);
+						terBranch.getFromGrounding().setGroundCode(BusGroundCode.SOLID_GROUNDED);
 						
-						if(bra3w.getFromBus().getBaseVoltage()>bra3w.getToBus().getBaseVoltage())
-							toBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
+						if(bra3w.getFromBus().getBaseVoltage()>bra3w.getToBus().getBaseVoltage()) {
+							//toBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
+							toBranch.getFromGrounding().setXfrConnectCode(XFormerConnectCode.DELTA);
+							toBranch.getFromGrounding().setGroundCode(BusGroundCode.UNGROUNDED);
+						}
 							
-						else if(bra3w.getFromBus().getBaseVoltage()<bra3w.getToBus().getBaseVoltage())
-							fromBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
+						else if(bra3w.getFromBus().getBaseVoltage()<bra3w.getToBus().getBaseVoltage()) {
+							//fromBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
+							fromBranch.getFromGrounding().setXfrConnectCode(XFormerConnectCode.DELTA);
+							fromBranch.getFromGrounding().setGroundCode(BusGroundCode.UNGROUNDED);
+						}	
 						
 						// TerBus is HV, fromBus and toBus are generator bus, thus both are Delta connection
 						else if(bra3w.getToBus().getBaseVoltage()<35000.0 && bra3w.getFromBus().getBaseVoltage()==bra3w.getToBus().getBaseVoltage()
 								&& ((AclfBus)bra3w.getFromBus()).isGen() && ((AclfBus)bra3w.getToBus()).isGen()){
-							fromBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
-							toBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
-							terBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+							//fromBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
+							//toBranch.setXfrFromConnectCode(XfrConnectCode.DELTA);
+							//terBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
+							fromBranch.getFromGrounding().setXfrConnectCode(XFormerConnectCode.DELTA);
+							fromBranch.getFromGrounding().setGroundCode(BusGroundCode.UNGROUNDED);
+							toBranch.getFromGrounding().setXfrConnectCode(XFormerConnectCode.DELTA);
+							toBranch.getFromGrounding().setGroundCode(BusGroundCode.UNGROUNDED);
+							terBranch.getFromGrounding().setXfrConnectCode(XFormerConnectCode.WYE);
+							terBranch.getFromGrounding().setGroundCode(BusGroundCode.SOLID_GROUNDED);
 						}
 						break;
 					}
-					
-					
 				}
 			}
 			

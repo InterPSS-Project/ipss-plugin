@@ -25,7 +25,8 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
-import com.interpss.core.acsc.XfrConnectCode;
+import com.interpss.core.acsc.BusGroundCode;
+import com.interpss.core.acsc.XFormerConnectCode;
 import com.interpss.core.acsc.adpter.AcscXformerAdapter;
 import com.interpss.core.net.NetworkType;
 import com.interpss.dstab.BaseDStabBus;
@@ -300,8 +301,8 @@ public class Test_oneSource_multiFeeder {
 			
 		
 		    AcscXformerAdapter xfr2 = acscXfrAptr.apply(xfr2_3);
-			xfr2.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
-			xfr2.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+			xfr2.setFromGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
+			xfr2.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 			
 			
 			DStab3PBranch xfr633_634 = ThreePhaseObjectFactory.create3PBranch(idPrefix+"Bus633", idPrefix+"Bus634", "0", net);
@@ -311,8 +312,8 @@ public class Test_oneSource_multiFeeder {
 			
 		
 		    AcscXformerAdapter xfr3 = acscXfrAptr.apply(xfr633_634);
-			xfr3.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
-			xfr3.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+			xfr3.setFromGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
+			xfr3.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 			
 			
 			///////////////////////////////////////////////////////// LINES ////////////////////////////////////////

@@ -56,7 +56,6 @@ import com.interpss.core.acsc.AcscBus;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.BusScCode;
 import com.interpss.core.acsc.SequenceCode;
-import com.interpss.core.acsc.XfrConnectCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.algo.sc.ScBusModelType;
 
@@ -396,17 +395,17 @@ b(6): -0.0000 + j-0.00106
 					.branchCode(AclfBranchCode.XFORMER)
 					.z(new Complex(0.0, 0.015), UnitType.PU)
 					.turnRatio(1.0,  1.05, UnitType.PU)
-					.z0( new Complex(0.0, 0.03), UnitType.PU)
-					.fromGrounding(XfrConnectCode.WYE_SOLID_GROUNDED)
-					.toGrounding(XfrConnectCode.WYE_SOLID_GROUNDED);
+					.z0( new Complex(0.0, 0.03), UnitType.PU);
+					//.fromGrounding(XfrConnectCode.WYE_SOLID_GROUNDED)
+					//.toGrounding(XfrConnectCode.WYE_SOLID_GROUNDED);
 		
 		netDsl.addAcscBranch("5", "3")
 					.branchCode(AclfBranchCode.XFORMER)
 					.z(new Complex(0.0, 0.03), UnitType.PU)
 					.turnRatio(1.0,  1.05, UnitType.PU)
-					.z0(new Complex(0.0, 0.03), UnitType.PU)
-					.fromGrounding(XfrConnectCode.WYE_SOLID_GROUNDED)
-					.toGrounding(XfrConnectCode.WYE_SOLID_GROUNDED);
+					.z0(new Complex(0.0, 0.03), UnitType.PU);
+					//.fromGrounding(XfrConnectCode.WYE_SOLID_GROUNDED)
+					//.toGrounding(XfrConnectCode.WYE_SOLID_GROUNDED);
 
 		//System.out.println(netDsl.getAcscNet().net2String());
 		return (AcscNetwork)netDsl.getAclfNet();

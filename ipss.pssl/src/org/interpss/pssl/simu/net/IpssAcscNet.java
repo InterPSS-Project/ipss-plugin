@@ -24,8 +24,6 @@
 
 package org.interpss.pssl.simu.net;
 
-import static com.interpss.core.funcImpl.AcscFunction.acscPSXfrAptr;
-import static com.interpss.core.funcImpl.AcscFunction.acscXfrAptr;
 import static com.interpss.core.funcImpl.AcscFunction.str2ScGroundCode;
 
 import org.apache.commons.math3.complex.Complex;
@@ -35,17 +33,13 @@ import org.interpss.pssl.simu.BaseDSL;
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;
-import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
-import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.AcscBus;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.BaseAcscNetwork;
 import com.interpss.core.acsc.BusScCode;
 import com.interpss.core.acsc.SequenceCode;
-import com.interpss.core.acsc.XfrConnectCode;
-import com.interpss.core.acsc.adpter.AcscXformerAdapter;
 
 /**
  * a wrapper of AcscNetwork for defining network parameters
@@ -171,10 +165,10 @@ public class IpssAcscNet extends BaseDSL {
 		}
 		
 		public AcscBranchDSL z0(Complex z, UnitType unit) { return setZ0(z, unit); }
-		public AcscBranchDSL fromGrounding(XfrConnectCode code, Complex z, UnitType unit) { return setFromGrounding(code, z, unit); }
-		public AcscBranchDSL fromGrounding(XfrConnectCode code) { return setFromGrounding(code, new Complex(0.0,0.0), UnitType.PU); }
-		public AcscBranchDSL toGrounding(XfrConnectCode code, Complex z, UnitType unit) { return setToGrounding(code, z, unit); }
-		public AcscBranchDSL toGrounding(XfrConnectCode code) { return setToGrounding(code, new Complex(0.0,0.0), UnitType.PU); }
+		//public AcscBranchDSL fromGrounding(XfrConnectCode code, Complex z, UnitType unit) { return setFromGrounding(code, z, unit); }
+		//public AcscBranchDSL fromGrounding(XfrConnectCode code) { return setFromGrounding(code, new Complex(0.0,0.0), UnitType.PU); }
+		//public AcscBranchDSL toGrounding(XfrConnectCode code, Complex z, UnitType unit) { return setToGrounding(code, z, unit); }
+		//public AcscBranchDSL toGrounding(XfrConnectCode code) { return setToGrounding(code, new Complex(0.0,0.0), UnitType.PU); }
 
 		public AcscBranchDSL setZ0(Complex z, UnitType unit) {
 			double baseV = getAcscBranch().getFromBus().getBaseVoltage(); 
@@ -184,15 +178,20 @@ public class IpssAcscNet extends BaseDSL {
 						getAclfBranch().getFromAclfBus().getBaseVoltage() : getAclfBranch().getToAclfBus().getBaseVoltage();
 			getAcscBranch().setZ0( UnitHelper.zConversion(z, baseV,
 						getAcscNet().getBaseKva(), unit, UnitType.PU)); return this; };
+		/*
 		public AcscBranchDSL setFromGrounding(XfrConnectCode code, Complex z, UnitType unit) { 
 								AcscXformerAdapter xfr = acscXfrAptr.apply(getAcscBranch());
+								/*
 								xfr.setFromConnectGroundZ(code, z, unit);
+								*
 								return this; };
 		public AcscBranchDSL setToGrounding(XfrConnectCode code, Complex z, UnitType unit) { 
 								AcscXformerAdapter xfr = acscPSXfrAptr.apply(getAcscBranch());
+								/*
 								xfr.setToConnectGroundZ(code, z, unit);
+								*
 								return this; };
-								
+		*/						
 		public AcscBranch getAcscBranch() { return (AcscBranch)getObject(); }
   		public AcscNetwork getAcscNet() { return (AcscNetwork)getNet(); }
 	}

@@ -47,7 +47,8 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.BaseAclfNetwork;
-import com.interpss.core.acsc.XfrConnectCode;
+import com.interpss.core.acsc.BusGroundCode;
+import com.interpss.core.acsc.XFormerConnectCode;
 import com.interpss.core.acsc.adpter.AcscXformerAdapter;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.AclfMethodType;
@@ -958,8 +959,8 @@ private String[] replaceLoadByFeeder(DStabNetwork3Phase net,String transBusId) t
 			
 		
 		    AcscXformerAdapter xfr0 = acscXfrAptr.apply(xfr1_2);
-			xfr0.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
-			xfr0.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+			xfr0.setFromGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
+			xfr0.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 			
 			interfaceIds[0]  =xfr1_2.getId();
 			interfaceIds[1]  =sourceBus.getId();
@@ -1235,8 +1236,8 @@ private String[] replaceLoadByFeeder(DStabNetwork3Phase net,String transBusId) t
 			
 		
 		    AcscXformerAdapter xfr2 = acscXfrAptr.apply(xfr2_3);
-			xfr2.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
-			xfr2.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+			xfr2.setFromGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
+			xfr2.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 			
 			
 			DStab3PBranch xfr633_634 = ThreePhaseObjectFactory.create3PBranch(idPrefix+"Bus633", idPrefix+"Bus634", "0", net);
@@ -1246,8 +1247,8 @@ private String[] replaceLoadByFeeder(DStabNetwork3Phase net,String transBusId) t
 			
 		
 		    AcscXformerAdapter xfr3 = acscXfrAptr.apply(xfr633_634);
-			xfr3.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
-			xfr3.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+			xfr3.setFromGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
+			xfr3.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 			
 			
 			///////////////////////////////////////////////////////// LINES ////////////////////////////////////////
