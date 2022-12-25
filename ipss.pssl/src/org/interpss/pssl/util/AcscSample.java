@@ -36,7 +36,6 @@ import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.BusScCode;
 import com.interpss.core.acsc.SequenceCode;
-import com.interpss.core.acsc.XfrConnectCode;
 
 public class AcscSample {
 	public static AcscNetwork create5BusSampleNet() throws InterpssException {
@@ -105,17 +104,17 @@ public class AcscSample {
 					.branchCode(AclfBranchCode.XFORMER)
 					.z(new Complex(0.0, 0.015), UnitType.PU)
 					.turnRatio(1.0,  1.05, UnitType.PU)
-					.z0( new Complex(0.0, 0.03), UnitType.PU)
-					.fromGrounding(XfrConnectCode.WYE_UNGROUNDED)
-					.toGrounding(XfrConnectCode.DELTA);
+					.z0( new Complex(0.0, 0.03), UnitType.PU);
+					//.fromGrounding(XfrConnectCode.WYE_UNGROUNDED)
+					//.toGrounding(XfrConnectCode.DELTA);
 		
 		netDsl.addAcscBranch("5", "3")
 					.branchCode(AclfBranchCode.XFORMER)
 					.z(new Complex(0.0, 0.03), UnitType.PU)
 					.turnRatio(1.0,  1.05, UnitType.PU)
-					.z0(new Complex(0.0, 0.03), UnitType.PU)
-					.fromGrounding(XfrConnectCode.WYE_UNGROUNDED)
-					.toGrounding(XfrConnectCode.DELTA);
+					.z0(new Complex(0.0, 0.03), UnitType.PU);
+					//.fromGrounding(XfrConnectCode.WYE_UNGROUNDED)
+					//.toGrounding(XfrConnectCode.DELTA);
 
 		//System.out.println(netDsl.getAcscNet().net2String());
 		return (AcscNetwork)netDsl.getAclfNet();

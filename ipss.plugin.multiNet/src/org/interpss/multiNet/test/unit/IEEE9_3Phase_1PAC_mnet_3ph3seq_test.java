@@ -46,8 +46,9 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.BaseAclfNetwork;
+import com.interpss.core.acsc.BusGroundCode;
 import com.interpss.core.acsc.PhaseCode;
-import com.interpss.core.acsc.XfrConnectCode;
+import com.interpss.core.acsc.XFormerConnectCode;
 import com.interpss.core.acsc.adpter.AcscXformerAdapter;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -251,8 +252,8 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 		
 		
 		AcscXformerAdapter xfr0 = acscXfrAptr.apply(xfr5_10);
-		xfr0.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
-		xfr0.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+		xfr0.setFromGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
+		xfr0.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
   		
   		
 		DStabBranch xfr10_11 = DStabObjectFactory.createDStabBranch("Bus10", "Bus11", dsNet);
@@ -261,8 +262,8 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 		xfr10_11.setZ0( new Complex(0.0, 0.06 ));
 		
 		AcscXformerAdapter xfr1 = acscXfrAptr.apply(xfr10_11);
-		xfr1.setFromConnectGroundZ(XfrConnectCode.DELTA, new Complex(0.0,0.0), UnitType.PU);
-		xfr1.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+		xfr1.setFromGrounding(BusGroundCode.UNGROUNDED, XFormerConnectCode.DELTA, new Complex(0.0,0.0), UnitType.PU);
+		xfr1.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 		
 	    
 		
@@ -272,8 +273,8 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 		xfr11_12.setZ0( new Complex(0.0, 0.025 ));
 		xfr11_12.setToTurnRatio(1.01);
 		AcscXformerAdapter xfr2 = acscXfrAptr.apply(xfr11_12);
-		xfr2.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
-		xfr2.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+		xfr2.setFromGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
+		xfr2.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 		
 	    
 	    /*
@@ -425,8 +426,8 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 		
 		
 		AcscXformerAdapter xfr0 = acscXfrAptr.apply(xfr5_10);
-		xfr0.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
-		xfr0.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+		xfr0.setFromGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
+		xfr0.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
   		
   		
 		DStab3PBranch xfr10_11 = ThreePhaseObjectFactory.create3PBranch("Bus10", "Bus11", "0", dsNet);
@@ -435,8 +436,8 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 		xfr10_11.setZ0( new Complex(0.0, 0.06 ));
 		
 		AcscXformerAdapter xfr1 = acscXfrAptr.apply(xfr10_11);
-		xfr1.setFromConnectGroundZ(XfrConnectCode.DELTA, new Complex(0.0,0.0), UnitType.PU);
-		xfr1.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+		xfr1.setFromGrounding(BusGroundCode.UNGROUNDED, XFormerConnectCode.DELTA, new Complex(0.0,0.0), UnitType.PU);
+		xfr1.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 		
 	    
 		
@@ -446,8 +447,8 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 		xfr11_12.setZ0( new Complex(0.0, 0.025 ));
 		xfr11_12.setToTurnRatio(1.01);
 		AcscXformerAdapter xfr2 = acscXfrAptr.apply(xfr11_12);
-		xfr2.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
-		xfr2.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+		xfr2.setFromGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
+		xfr2.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 		
 	    
 	    /*
@@ -646,8 +647,8 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 		
 		
 		AcscXformerAdapter xfr0 = acscXfrAptr.apply(xfr5_10);
-		xfr0.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
-		xfr0.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+		xfr0.setFromGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
+		xfr0.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
   		
   		
 		DStab3PBranch xfr10_11 = ThreePhaseObjectFactory.create3PBranch("Bus10", "Bus11", "0", dsNet);
@@ -656,8 +657,8 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 		xfr10_11.setZ0( new Complex(0.0, 0.06 ));
 		
 		AcscXformerAdapter xfr1 = acscXfrAptr.apply(xfr10_11);
-		xfr1.setFromConnectGroundZ(XfrConnectCode.DELTA, new Complex(0.0,0.0), UnitType.PU);
-		xfr1.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+		xfr1.setFromGrounding(BusGroundCode.UNGROUNDED, XFormerConnectCode.DELTA, new Complex(0.0,0.0), UnitType.PU);
+		xfr1.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 		
 	    
 		
@@ -667,8 +668,8 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 		xfr11_12.setZ0( new Complex(0.0, 0.025 ));
 		xfr11_12.setToTurnRatio(1.01);
 		AcscXformerAdapter xfr2 = acscXfrAptr.apply(xfr11_12);
-		xfr2.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
-		xfr2.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+		xfr2.setFromGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
+		xfr2.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 		
 	    
 		DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
@@ -836,8 +837,8 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 		
 		
 		AcscXformerAdapter xfr0 = acscXfrAptr.apply(xfr5_10);
-		xfr0.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
-		xfr0.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+		xfr0.setFromGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
+		xfr0.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
   		
   		
 		DStab3PBranch xfr10_11 = ThreePhaseObjectFactory.create3PBranch("Bus10", "Bus11", "0", dsNet);
@@ -846,8 +847,8 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 		xfr10_11.setZ0( new Complex(0.0, 0.06 ));
 		
 		AcscXformerAdapter xfr1 = acscXfrAptr.apply(xfr10_11);
-		xfr1.setFromConnectGroundZ(XfrConnectCode.DELTA11, new Complex(0.0,0.0), UnitType.PU);
-		xfr1.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+		xfr1.setFromGrounding(BusGroundCode.UNGROUNDED, XFormerConnectCode.DELTA11, new Complex(0.0,0.0), UnitType.PU);
+		xfr1.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 		
 	    
 		
@@ -857,8 +858,8 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 		xfr11_12.setZ0( new Complex(0.0, 0.025 ));
 		xfr11_12.setToTurnRatio(1.01);
 		AcscXformerAdapter xfr2 = acscXfrAptr.apply(xfr11_12);
-		xfr2.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
-		xfr2.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+		xfr2.setFromGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
+		xfr2.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 		
 	    
 	    /*

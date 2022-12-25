@@ -26,14 +26,13 @@ import org.interpss.threePhase.dynamic.model.DynLoadModel3Phase;
 import org.interpss.threePhase.util.ThreeSeqLoadProcessor;
 
 import com.interpss.common.datatype.Constants;
-import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
-import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfLoad;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.BaseAcscBus;
-import com.interpss.core.acsc.XfrConnectCode;
+import com.interpss.core.acsc.XFormerConnectCode;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 import com.interpss.core.net.NetworkType;
@@ -85,12 +84,12 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 		
 		for(AcscBranch bra: this.getBranchList()){
 			if(bra.isActive() && bra.isXfr()){
-				if((isDeltaConnected(bra.getXfrFromConnectCode()) && 
-						!isDeltaConnected(bra.getXfrToConnectCode()))
+				if((isDeltaConnected(bra.getFromGrounding().getXfrConnectCode()) && 
+						!isDeltaConnected(bra.getToGrounding().getXfrConnectCode()))
 						
 						||
-						(!isDeltaConnected(bra.getXfrFromConnectCode()) &&
-						    isDeltaConnected(bra.getXfrToConnectCode()))){
+						(!isDeltaConnected(bra.getFromGrounding().getXfrConnectCode()) &&
+						    isDeltaConnected(bra.getToGrounding().getXfrConnectCode()))){
 					
 					 bra.setBooleanFlag(true);
 					 
@@ -106,18 +105,18 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 						 
 						 StartingBus = (DStab3PBus) bra.getToAclfBus();
 						 
-						 if(isDeltaConnected(bra.getXfrFromConnectCode()))  { // if low voltage side is delta connected, then it is delta11
+						 if(isDeltaConnected(bra.getFromGrounding().getXfrConnectCode()))  { // if low voltage side is delta connected, then it is delta11
 							//TODO fix the input xfr connect code issue
-							 bra.setXfrFromConnectCode(XfrConnectCode.DELTA11);
+							 bra.getFromGrounding().setXfrConnectCode(XFormerConnectCode.DELTA11);
 						 }
 					 }		
 					 else {
 					
 						 StartingBus = (DStab3PBus) bra.getFromAclfBus();
-						 if(isDeltaConnected(bra.getXfrToConnectCode())) { // if low voltage side is delta connected, then it is delta11
+						 if(isDeltaConnected(bra.getFromGrounding().getXfrConnectCode())) { // if low voltage side is delta connected, then it is delta11
 						
 							 //TODO fix the input xfr connect code issue
-							 bra.setXfrToConnectCode(XfrConnectCode.DELTA11);
+							 bra.getToGrounding().setXfrConnectCode(XFormerConnectCode.DELTA11);
 						 }
 					 }
 					 
@@ -179,9 +178,9 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 		return is3PhaseNetworkInitialized= true;
 	}
 	
-	private boolean isDeltaConnected(XfrConnectCode code){
-		return code ==XfrConnectCode.DELTA ||
-				code== XfrConnectCode.DELTA11;
+	private boolean isDeltaConnected(XFormerConnectCode code){
+		return code ==XFormerConnectCode.DELTA ||
+				code== XFormerConnectCode.DELTA11;
 	}
 	
 	private void BFSSubTransmission (double phaseShiftDeg, Queue<DStab3PBus> onceVisitedBuses){
