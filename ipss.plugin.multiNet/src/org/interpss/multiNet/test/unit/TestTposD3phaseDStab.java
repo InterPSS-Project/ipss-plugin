@@ -47,8 +47,9 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.BaseAclfNetwork;
+import com.interpss.core.acsc.BusGroundCode;
 import com.interpss.core.acsc.PhaseCode;
-import com.interpss.core.acsc.XfrConnectCode;
+import com.interpss.core.acsc.XFormerConnectCode;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.net.NetworkType;
@@ -1308,8 +1309,8 @@ private DStabNetwork3Phase create3BusSys() throws InterpssException{
 		Static3PXformer xfr = threePhaseXfrAptr.apply(xfr12);
 		
 		//TODO change for testing
-		xfr.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
-		xfr.setFromConnectGroundZ(XfrConnectCode.DELTA, new Complex(0.0,0.0), UnitType.PU);
+		xfr.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
+		xfr.setFromGrounding(BusGroundCode.UNGROUNDED, XFormerConnectCode.DELTA, new Complex(0.0,0.0), UnitType.PU);
   		
 		
   		DStab3PBranch bra23 = ThreePhaseObjectFactory.create3PBranch("Bus3", "Bus2", "0", net);

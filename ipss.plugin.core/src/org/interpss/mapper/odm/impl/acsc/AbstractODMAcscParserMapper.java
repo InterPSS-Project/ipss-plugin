@@ -82,10 +82,9 @@ import com.interpss.core.acsc.BaseAcscNetwork;
 import com.interpss.core.acsc.BusGroundCode;
 import com.interpss.core.acsc.BusScCode;
 import com.interpss.core.acsc.SequenceCode;
-import com.interpss.core.acsc.XfrConnectCode;
+import com.interpss.core.acsc.XFormerConnectCode;
 import com.interpss.core.acsc.adpter.AcscLineAdapter;
 import com.interpss.core.acsc.adpter.AcscXformerAdapter;
-import com.interpss.core.funcImpl.AcscFunction;
 import com.interpss.core.net.Branch;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.simu.SimuContext;
@@ -471,24 +470,24 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 
 				XformerConnectionXmlType connect = braXml.getFromSideConnection();
 				if(connect != null){
-					XfrConnectCode conCode=calXfrConnectCode(connect);
-					acscBra.setXfrFromConnectCode(conCode);
+					//XfrConnectCode conCode=calXfrConnectCode(connect);
+					//acscBra.setXfrFromConnectCode(conCode);
 					if(connect.getGrounding() != null){
 						ZXmlType z = connect.getGrounding().getGroundingZ();
 						if (z != null) 
-							xfr.setFromConnectGroundZ(calXfrConnectCode(connect), new Complex(z.getRe(), z.getIm()),
+							xfr.setFromGrounding(calXfrGround(connect), calXfrConnect(connect), new Complex(z.getRe(), z.getIm()),
 									toZUnit.apply(z.getUnit()));
 					}
 				}				
 
 				connect = braXml.getToSideConnection();
 				if(connect != null){
-					XfrConnectCode conCode=calXfrConnectCode(connect);
-					acscBra.setXfrToConnectCode(conCode);
+					//XfrConnectCode conCode=calXfrConnectCode(connect);
+					//acscBra.setXfrToConnectCode(conCode);
 					if(connect.getGrounding() != null){
 						ZXmlType z = connect.getGrounding().getGroundingZ();
 						if (z != null) 
-							xfr.setFromConnectGroundZ(calXfrConnectCode(connect), new Complex(z.getRe(), z.getIm()),
+							xfr.setFromGrounding(calXfrGround(connect), calXfrConnect(connect), new Complex(z.getRe(), z.getIm()),
 									toZUnit.apply(z.getUnit()));
 					}
 				}	
@@ -505,29 +504,29 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 
 				XformerConnectionXmlType connect = braXml.getFromSideConnection();
 				if(connect != null){
-					XfrConnectCode conCode=calXfrConnectCode(connect);
-					acscBra.setXfrFromConnectCode(conCode);
+					//XfrConnectCode conCode=calXfrConnectCode(connect);
+					//acscBra.setXfrFromConnectCode(conCode);
 					if(connect.getGrounding() != null){
 						ZXmlType z = connect.getGrounding().getGroundingZ();
 						if (z != null) 
-							xfr.setFromConnectGroundZ(calXfrConnectCode(connect), new Complex(z.getRe(), z.getIm()),
+							xfr.setFromGrounding(calXfrGround(connect), calXfrConnect(connect), new Complex(z.getRe(), z.getIm()),
 									toZUnit.apply(z.getUnit()));
 					}
 				}				
 
 				connect = braXml.getToSideConnection();
 				if(connect != null){
-					XfrConnectCode conCode=calXfrConnectCode(connect);
-					acscBra.setXfrToConnectCode(conCode);
+					//XfrConnectCode conCode=calXfrConnectCode(connect);
+					//acscBra.setXfrToConnectCode(conCode);
 					if(connect.getGrounding() != null){
 						ZXmlType z = connect.getGrounding().getGroundingZ();
 						if (z != null) 
-							xfr.setFromConnectGroundZ(calXfrConnectCode(connect), new Complex(z.getRe(), z.getIm()),
+							xfr.setFromGrounding(calXfrGround(connect), calXfrConnect(connect), new Complex(z.getRe(), z.getIm()),
 									toZUnit.apply(z.getUnit()));
 					}
 				}	
 	}
-
+    /*
 	private XfrConnectCode calXfrConnectCode(XformerConnectionXmlType connect) {
 		// connectCode : [Delta | Wye]
 		// groundCode : [SolidGrounded | ZGrounded | Ungrounded ]
@@ -540,6 +539,32 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 				return XfrConnectCode.WYE_ZGROUNDED;
 			else 
 				return XfrConnectCode.WYE_UNGROUNDED;
+		}
+	}
+	*/
+	
+	private XFormerConnectCode calXfrConnect(XformerConnectionXmlType connect) {
+		// connectCode : [Delta | Wye]
+		// groundCode : [SolidGrounded | ZGrounded | Ungrounded ]
+		if (connect.getXfrConnection() == XformrtConnectionEnumType.DELTA)
+			return XFormerConnectCode.DELTA;
+		else {  // Wye connection
+			return XFormerConnectCode.WYE;
+		}
+	}
+	
+	private BusGroundCode calXfrGround(XformerConnectionXmlType connect) {
+		// connectCode : [Delta | Wye]
+		// groundCode : [SolidGrounded | ZGrounded | Ungrounded ]
+		if (connect.getXfrConnection() == XformrtConnectionEnumType.DELTA)
+			return BusGroundCode.UNGROUNDED;
+		else {  // Wye connection
+			if (connect.getGrounding().getGroundingConnection() == GroundingEnumType.SOLID_GROUNDED)
+				return BusGroundCode.SOLID_GROUNDED;
+			else if (connect.getGrounding().getGroundingConnection() == GroundingEnumType.Z_GROUNDED)
+				return BusGroundCode.ZGROUNDED;
+			else 
+				return BusGroundCode.UNGROUNDED;
 		}
 	}
 }
