@@ -26,8 +26,8 @@ import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.BaseAclfBus;
-import com.interpss.core.aclf.BaseAclfNetwork;
-import com.interpss.core.acsc.XfrConnectCode;
+import com.interpss.core.acsc.BusGroundCode;
+import com.interpss.core.acsc.XFormerConnectCode;
 import com.interpss.core.acsc.adpter.AcscXformerAdapter;
 import com.interpss.core.net.Bus;
 import com.interpss.core.net.NetworkType;
@@ -103,8 +103,8 @@ public class TestDistributionPowerflowAlgo {
 		
 		Static3PXformer xfr1_2 = line1_2.to3PXformer();
 		AcscXformerAdapter xfr0 = acscXfrAptr.apply(line1_2);
-		xfr0.setFromConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
-		xfr0.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+		xfr0.setFromGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
+		xfr0.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 		
 		System.out.println("------------Grounded Wye- Grounded Wye------------");
 		/*
@@ -164,8 +164,8 @@ public class TestDistributionPowerflowAlgo {
 		// Delta-Grounded Wye
 		//
 		xfr0 = acscXfrAptr.apply(line1_2);
-		xfr0.setFromConnectGroundZ(XfrConnectCode.DELTA, new Complex(0.0,0.0), UnitType.PU);
-		xfr0.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+		xfr0.setFromGrounding(BusGroundCode.UNGROUNDED, XFormerConnectCode.DELTA, new Complex(0.0,0.0), UnitType.PU);
+		xfr0.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 		
 		System.out.println("-----------Delta-Grounded Wye Step-down------------");
 		/*
@@ -389,8 +389,8 @@ public class TestDistributionPowerflowAlgo {
 		
 		
 		AcscXformerAdapter xfr0 = acscXfrAptr.apply(xfr1_2);
-		xfr0.setFromConnectGroundZ(XfrConnectCode.DELTA11, new Complex(0.0,0.0), UnitType.PU);
-		xfr0.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+		xfr0.setFromGrounding(BusGroundCode.UNGROUNDED, XFormerConnectCode.DELTA11, new Complex(0.0,0.0), UnitType.PU);
+		xfr0.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 		
 		// for testing connection and from-to relationship only
 //		xfr0.setToConnectGroundZ(XfrConnectCode.DELTA, new Complex(0.0,0.0), UnitType.PU);
@@ -500,8 +500,8 @@ public class TestDistributionPowerflowAlgo {
 		AcscXformerAdapter xfr0 = acscXfrAptr.apply(xfr1_2);
 		
 		// Step down transformer, high voltage side delta, low voltage side grounded wye
-		xfr0.setFromConnectGroundZ(XfrConnectCode.DELTA11, new Complex(0.0,0.0), UnitType.PU);
-		xfr0.setToConnectGroundZ(XfrConnectCode.WYE_SOLID_GROUNDED, new Complex(0.0,0.0), UnitType.PU);
+		xfr0.setFromGrounding(BusGroundCode.UNGROUNDED, XFormerConnectCode.DELTA11, new Complex(0.0,0.0), UnitType.PU);
+		xfr0.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 		
 		
 		
