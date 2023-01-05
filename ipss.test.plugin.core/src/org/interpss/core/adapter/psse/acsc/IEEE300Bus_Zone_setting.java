@@ -18,7 +18,6 @@ import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
 import org.ieee.odm.model.acsc.AcscModelParser;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.display.AclfOutFunc;
-import org.interpss.display.AcscOutFunc;
 import org.interpss.mapper.odm.ODMAcscParserMapper;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.ComplexFunc;
@@ -31,6 +30,8 @@ import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.AcscBus;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.fault.AcscBusFault;
+import com.interpss.core.acsc.fault.IBranchScCurrent;
+import com.interpss.core.acsc.fault.IBusScVoltage;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -409,12 +410,12 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 						}
 						
 						// get the measured current and voltage at the relay point
-						Complex3x1 relayBranchCurrent = relayAtFromSide?fault.getFaultResult().calBranchScAmpFrom2To(relayBranch):
-							              fault.getFaultResult().calBranchScAmpTo2From(relayBranch);
+						IBranchScCurrent branchResult = (IBranchScCurrent)fault.getFaultResult();
+						Complex3x1 relayBranchCurrent = relayAtFromSide?branchResult.calBranchScAmpFrom2To(relayBranch):
+							branchResult.calBranchScAmpTo2From(relayBranch);
 						
-						
-						
-						Complex3x1 relayBusVoltage = fault.getFaultResult().getBusVoltage_012(relayBus);
+						IBusScVoltage busResult = (IBusScVoltage)fault.getFaultResult();
+						Complex3x1 relayBusVoltage = busResult.getBusVoltage_012(relayBus);
 						
 						System.out.println("Relay bus V and I:"+relayBusVoltage.b_1.toString()+","+relayBranchCurrent.b_1.toString());
 								
