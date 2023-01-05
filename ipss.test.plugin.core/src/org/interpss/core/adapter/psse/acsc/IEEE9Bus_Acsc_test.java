@@ -20,6 +20,7 @@ import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.acsc.fault.AcscBusFault;
+import com.interpss.core.acsc.fault.IBusScVoltage;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -203,7 +204,8 @@ public class IEEE9Bus_Acsc_test {
 	  			0.0, 0.0, -1.4243, 15.62133, 0.0, 0.0) );
 	  	//voltage @Bus1
 	  	//0.0000 + j0.0000  0.61592 + j0.01616  0.0000 + j0.0000
-	  	assertTrue(TestUtilFunc.compare(fault.getFaultResult().getBusVoltage_012(net.getBus("Bus1")), 
+	  	IBusScVoltage busResult = (IBusScVoltage)fault.getFaultResult();
+	  	assertTrue(TestUtilFunc.compare(busResult.getBusVoltage_012(net.getBus("Bus1")), 
 	  			0.0, 0.0, 0.61592, 0.01616, 0.0, 0.0) );
 	  	
 
@@ -223,7 +225,7 @@ public class IEEE9Bus_Acsc_test {
 		
 		acscAlgo.calBusFault(fault);
 	  	//System.out.println(fault.getFaultResult().getSCCurrent_012());
-	  	System.out.println(fault.getFaultResult().getBusVoltage_012(net.getBus("Bus4")));
+	  	System.out.println(busResult.getBusVoltage_012(net.getBus("Bus4")));
 	  	
 	    //seq voltage @Bus4
 	  	//0.0000 + j0.0000  0.61996 + j-0.00357  0.40527 + j-0.0355
@@ -235,7 +237,7 @@ public class IEEE9Bus_Acsc_test {
 	  	 Seq. Volt +	 Seq. Volt -
 	  	      0.61997	      0.40682
          */
-	  	assertTrue(TestUtilFunc.compare(fault.getFaultResult().getBusVoltage_012(net.getBus("Bus4")), 
+	  	assertTrue(TestUtilFunc.compare(busResult.getBusVoltage_012(net.getBus("Bus4")), 
 	  			0.0, 0.0, 0.61996, -0.00357, 0.40527, -0.0355) );
 	  	
 	  	//output fault analysis result
@@ -322,7 +324,8 @@ public class IEEE9Bus_Acsc_test {
 	  			0.0, 0.0, -1.42636, 15.62254, 0.0, 0.0) );
 	  	//voltage @Bus1
 	  	//0.0000 + j0.0000  0.61592 + j0.01616  0.0000 + j0.0000
-	  	assertTrue(TestUtilFunc.compare(fault.getFaultResult().getBusVoltage_012(net.getBus("Bus1")), 
+	  	IBusScVoltage busResult = (IBusScVoltage)fault.getFaultResult();
+	  	assertTrue(TestUtilFunc.compare(busResult.getBusVoltage_012(net.getBus("Bus1")), 
 	  			0.0, 0.0, 0.61592, 0.01616, 0.0, 0.0) );
 	}
 }
