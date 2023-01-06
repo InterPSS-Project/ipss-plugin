@@ -410,9 +410,9 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 						}
 						
 						// get the measured current and voltage at the relay point
-						IBranchScCurrent branchResult = (IBranchScCurrent)fault.getFaultResult();
-						Complex3x1 relayBranchCurrent = relayAtFromSide?branchResult.calBranchScAmpFrom2To(relayBranch):
-							branchResult.calBranchScAmpTo2From(relayBranch);
+						//IBranchScCurrent branchResult = (IBranchScCurrent)fault.getFaultResult();
+						Complex3x1 relayBranchCurrent = relayAtFromSide?fault.getFaultResult().calBranchScAmpFrom2To(relayBranch):
+							fault.getFaultResult().calBranchScAmpTo2From(relayBranch);
 						
 						IBusScVoltage busResult = (IBusScVoltage)fault.getFaultResult();
 						Complex3x1 relayBusVoltage = busResult.getBusVoltage_012(relayBus);
