@@ -12,9 +12,9 @@ import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.core.acsc.BaseAcscNetwork;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.algo.sc.ScBusModelType;
-import com.interpss.core.sparse.ISparseEqnSolver;
 import com.interpss.core.sparse.SparseEqnSolverFactory;
 import com.interpss.core.sparse.impl.SparseEqnComplexImpl;
+import com.interpss.core.sparse.solver.ISparseCSJEqnSolver;
 
 /**
  * Sequence Network Helper is to solve the negative and zeor
@@ -36,8 +36,8 @@ public class SequenceNetworkSolver {
 	private ISparseEqnComplex negSeqYMatrix  = null;
 	private Hashtable<String,Complex3x1>  seqVoltTable =null;
 	
-	private ISparseEqnSolver zeroYSolver=null;
-	private ISparseEqnSolver negYSolver=null;
+	private ISparseCSJEqnSolver zeroYSolver=null;
+	private ISparseCSJEqnSolver negYSolver=null;
     
 	private String[] monitorBusAry =null;
 	
