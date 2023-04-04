@@ -3,11 +3,11 @@ package org.interpss.sample.sparseeqn;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 
-import com.interpss.core.sparse.ISparseEqnSolver;
+import com.interpss.core.sparse.solver.ISparseCSJEqnSolver;
 
 import edu.emory.mathcs.csparsej.tdcomplex.DZcs_common.DZcsa;
 
-public class CustomComplexSparseEqnSolver implements ISparseEqnSolver {
+public class CustomComplexSparseEqnSolver implements ISparseCSJEqnSolver {
 	protected boolean LUed = false;
 	
 	private ISparseEqnComplex sparseEqn;
