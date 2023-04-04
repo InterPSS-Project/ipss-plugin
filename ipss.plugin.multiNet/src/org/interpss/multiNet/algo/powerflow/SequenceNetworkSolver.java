@@ -12,9 +12,9 @@ import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.core.acsc.BaseAcscNetwork;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.algo.sc.ScBusModelType;
-import com.interpss.core.sparse.SparseEqnSolverFactory;
 import com.interpss.core.sparse.impl.csj.CSJSparseEqnComplexImpl;
-import com.interpss.core.sparse.solver.csj.ICSJSparseEqnSolver;
+import com.interpss.core.sparse.solver.ISparseEqnSolver;
+import com.interpss.core.sparse.solver.SparseEqnSolverFactory;
 
 /**
  * Sequence Network Helper is to solve the negative and zeor
@@ -36,8 +36,8 @@ public class SequenceNetworkSolver {
 	private ISparseEqnComplex negSeqYMatrix  = null;
 	private Hashtable<String,Complex3x1>  seqVoltTable =null;
 	
-	private ICSJSparseEqnSolver zeroYSolver=null;
-	private ICSJSparseEqnSolver negYSolver=null;
+	private ISparseEqnSolver zeroYSolver=null;
+	private ISparseEqnSolver negYSolver=null;
     
 	private String[] monitorBusAry =null;
 	
@@ -137,6 +137,7 @@ public class SequenceNetworkSolver {
 	public Hashtable<String, Complex> calcZeroSeqVolt(Hashtable<String, Complex> zeroSeqCurInjTable){
 		
 		Hashtable<String, Complex> zeroSeqVoltHashtable = new Hashtable<>();
+
 		((CSJSparseEqnComplexImpl)zeroSeqYMatrix).setB2Zero();
 		
 		for(String busId: zeroSeqCurInjTable.keySet()){
@@ -165,6 +166,7 @@ public class SequenceNetworkSolver {
 		
 		Hashtable<String, Complex> negSeqVoltHashtable = new Hashtable<>();
 		((CSJSparseEqnComplexImpl)negSeqYMatrix).setB2Zero();
+
 		for(String busId: negSeqCurInjTable.keySet()){
 			int sortNum = net.getBus(busId).getSortNumber();
 			Complex i2 =negSeqCurInjTable.get(busId);
