@@ -33,9 +33,9 @@ import org.interpss.numeric.sparse.ISparseEqnDouble;
 import org.interpss.numeric.util.PerformanceTimer;
 
 import com.interpss.common.util.IpssLogger;
-import com.interpss.core.NumericObjectFactory;
 import com.interpss.core.sparse.DoubleSEqnRow;
-import com.interpss.core.sparse.impl.SparseEqnDoubleImpl;
+import com.interpss.core.sparse.SparseEqnObjectFactory;
+import com.interpss.core.sparse.impl.csj.CSJSparseEqnDoubleImpl;
 
 
 public class DoubleSparseEqnPerformance {
@@ -123,17 +123,17 @@ b(17): 0.001294411022165286
 		int cnt = 0;
 		int[] index = new int[n];
 		for (int i = 0; i < n; i++) {
-			if (((SparseEqnDoubleImpl)eqnOld).getElem(i).aijList.size() > 0)
+			if (((CSJSparseEqnDoubleImpl)eqnOld).getElem(i).aijList.size() > 0)
 				index[i] = cnt++;
 			else
 				index[i] = -1;
 		}
 		System.out.println("Cnt: " + cnt);
 
-		ISparseEqnDouble eqnNew = NumericObjectFactory.createSparseEqnDouble(cnt);
+		ISparseEqnDouble eqnNew = new SparseEqnObjectFactory().createSparseEqnDouble(cnt);
 		for (int i = 0; i < n; i++) {
 			if (index[i] >= 0) {
-				DoubleSEqnRow aii = ((SparseEqnDoubleImpl)eqnOld).getElem(i);
+				DoubleSEqnRow aii = ((CSJSparseEqnDoubleImpl)eqnOld).getElem(i);
 				int i_new = index[i];
 				eqnNew.setAij(aii.aii, i_new, i_new);
 				aii.aijList.forEach(aij -> {
@@ -162,7 +162,7 @@ b(17): 0.001294411022165286
 	}
 	
 	static ISparseEqnDouble buildEqnNewFormat(String fileName, int n)  throws Exception {
-		ISparseEqnDouble eqn = NumericObjectFactory.createSparseEqnDouble(n);
+		ISparseEqnDouble eqn = new SparseEqnObjectFactory().createSparseEqnDouble(n);
 		
 		Stream<String> stream = Files.lines(Paths.get(fileName));
 		stream.forEach(line -> {
@@ -182,7 +182,7 @@ b(17): 0.001294411022165286
 	}
 	
 	static ISparseEqnDouble buildEqnOriginalFormat(String fileName, int n)  throws Exception {
-		ISparseEqnDouble eqn = NumericObjectFactory.createSparseEqnDouble(n);
+		ISparseEqnDouble eqn = new SparseEqnObjectFactory().createSparseEqnDouble(n);
 		
 		Stream<String> stream = Files.lines(Paths.get(fileName));
 		stream.forEach(line -> {

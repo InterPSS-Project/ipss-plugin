@@ -15,6 +15,7 @@ public class TestSparseEqnComplexMatrix3x3Impl {
 	
 	@Test
 	public void testReal(){
+
 	CSJSparseEqnComplexMatrix3x3Impl matrix3x3 = new CSJSparseEqnComplexMatrix3x3Impl(1);
 	
 	Complex3x3 y = new Complex3x3();
