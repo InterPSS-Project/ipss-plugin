@@ -6,7 +6,7 @@ import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.interpss.numeric.util.SpraseEqnUtil;
 
-import com.interpss.core.sparse.impl.csj.SparseCSJEqnComplexImpl;
+import com.interpss.core.sparse.impl.csj.CSJSparseEqnComplexImpl;
 
 import edu.emory.mathcs.csparsej.tdcomplex.DZcs_common.DZcsa;
 
@@ -32,7 +32,7 @@ public class ComplexSparseMatrix {
 	}	
 	
 	public static void sample1() {
-		ISparseEqnComplex m = new SparseCSJEqnComplexImpl(2,3) ;
+		ISparseEqnComplex m = new CSJSparseEqnComplexImpl(2,3) ;
 		
 		m.setA(new Complex(1.0,1.0), 0, 0);
 		m.setA(new Complex(2.0,2.0), 1, 1);
@@ -45,7 +45,7 @@ public class ComplexSparseMatrix {
 	}
 	
 	public static void sample2() {
-		ISparseEqnComplex m = new SparseCSJEqnComplexImpl(2, 2);
+		ISparseEqnComplex m = new CSJSparseEqnComplexImpl(2, 2);
 		
 		Complex  a11 = new Complex( 1.0, 1.1 ),
 			     a12 = new Complex( 3.1, 4.1 ),
@@ -70,7 +70,7 @@ public class ComplexSparseMatrix {
 	}
 	
 	public static void sample3() {
-		ISparseEqnComplex m = new SparseCSJEqnComplexImpl(2, 2);
+		ISparseEqnComplex m = new CSJSparseEqnComplexImpl(2, 2);
 		
 		Complex  a11 = new Complex( 1.0, 1.1 ),
 			     a12 = new Complex( 3.1, 4.1 ),
@@ -99,7 +99,7 @@ public class ComplexSparseMatrix {
 	}	
 	
 	public static void sample4() throws IpssNumericException {
-		ISparseEqnComplex eqn = new SparseCSJEqnComplexImpl(2);
+		ISparseEqnComplex eqn = new CSJSparseEqnComplexImpl(2);
 		
 		Complex  a11 = new Complex( 1.0, 1.1 ),
 			     a12 = new Complex( 3.1, 4.1 ),
@@ -123,7 +123,7 @@ public class ComplexSparseMatrix {
 	}
 	
 	public static void sample4_1() throws IpssNumericException {
-		ISparseEqnComplex eqn = new SparseCSJEqnComplexImpl(2);
+		ISparseEqnComplex eqn = new CSJSparseEqnComplexImpl(2);
 		
 		Complex  a11 = new Complex( 1.0, 1.1 ),
 			     a12 = new Complex( 3.1, 4.1 ),
@@ -146,7 +146,7 @@ public class ComplexSparseMatrix {
 	}	
 	
 	public static void sample5() throws IpssNumericException {
-		ISparseEqnComplex eqn = new SparseCSJEqnComplexImpl(2, 3);
+		ISparseEqnComplex eqn = new CSJSparseEqnComplexImpl(2, 3);
 		eqn.setToZero();
 	}	
 }
