@@ -36,7 +36,7 @@ import com.interpss.core.acsc.XFormerConnectCode;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 import com.interpss.core.net.NetworkType;
-import com.interpss.core.sparse.impl.SparseEqnComplexMatrix3x3Impl;
+import com.interpss.core.sparse.impl.csj.CSJSparseEqnComplexMatrix3x3Impl;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.device.DynamicBusDevice;
@@ -235,7 +235,7 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 		if(!this.isLoadModelConverted && this.isStaticLoadIncludedInYMatrix())
 			    convertLoadModel();
 		
-		yMatrixAbc = new SparseEqnComplexMatrix3x3Impl(getNoBus());
+		yMatrixAbc = new CSJSparseEqnComplexMatrix3x3Impl(getNoBus());
 		
 		for(BaseDStabBus b:this.getBusList()){
 			if(b.isActive()){
