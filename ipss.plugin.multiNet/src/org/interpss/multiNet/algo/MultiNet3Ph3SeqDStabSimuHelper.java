@@ -19,7 +19,7 @@ import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.net.NetCoordinate;
-import com.interpss.core.sparse.impl.SparseEqnComplexMatrix3x3Impl;
+import com.interpss.core.sparse.impl.csj.SparseCSJEqnComplexMatrix3x3Impl;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBranch;
@@ -288,7 +288,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
     		
     		//create SparseMatrix3x3 with the ZlAry;
     		
-    		 ISparseEqnComplexMatrix3x3 ZlMatrix = new SparseEqnComplexMatrix3x3Impl(dim);
+    		 ISparseEqnComplexMatrix3x3 ZlMatrix = new SparseCSJEqnComplexMatrix3x3Impl(dim);
     		 
     		 for(int i=0; i<dim;i++){
     			 for(int j=0;j<dim;j++){
