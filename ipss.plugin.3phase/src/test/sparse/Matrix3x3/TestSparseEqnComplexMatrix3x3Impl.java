@@ -8,14 +8,14 @@ import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.junit.Test;
 
-import com.interpss.core.sparse.impl.SparseEqnComplexMatrix3x3Impl;
+import com.interpss.core.sparse.impl.csj.CSJSparseEqnComplexMatrix3x3Impl;
 
 public class TestSparseEqnComplexMatrix3x3Impl {
 	
 	
 	@Test
 	public void testReal(){
-	SparseEqnComplexMatrix3x3Impl matrix3x3 = new SparseEqnComplexMatrix3x3Impl(1);
+	CSJSparseEqnComplexMatrix3x3Impl matrix3x3 = new CSJSparseEqnComplexMatrix3x3Impl(1);
 	
 	Complex3x3 y = new Complex3x3();
 	y.aa = new Complex(1,0);
@@ -57,7 +57,7 @@ public class TestSparseEqnComplexMatrix3x3Impl {
 	
 	@Test
 	public void testComplex(){
-	SparseEqnComplexMatrix3x3Impl matrix3x3 = new SparseEqnComplexMatrix3x3Impl(1);
+	CSJSparseEqnComplexMatrix3x3Impl matrix3x3 = new CSJSparseEqnComplexMatrix3x3Impl(1);
 	
 	Complex3x3 y = new Complex3x3();
 	y.aa = new Complex(1,0.5);
