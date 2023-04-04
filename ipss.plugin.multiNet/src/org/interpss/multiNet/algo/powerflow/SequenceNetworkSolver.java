@@ -12,8 +12,9 @@ import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.core.acsc.BaseAcscNetwork;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.algo.sc.ScBusModelType;
+import com.interpss.core.sparse.ISparseEqnSolver;
+import com.interpss.core.sparse.SparseEqnSolverFactory;
 import com.interpss.core.sparse.impl.SparseEqnComplexImpl;
-import com.interpss.core.sparse.solver.SquareMatrixEqnCSJComplexSolver;
 
 /**
  * Sequence Network Helper is to solve the negative and zeor
@@ -35,8 +36,8 @@ public class SequenceNetworkSolver {
 	private ISparseEqnComplex negSeqYMatrix  = null;
 	private Hashtable<String,Complex3x1>  seqVoltTable =null;
 	
-	private SquareMatrixEqnCSJComplexSolver zeroYSolver=null;
-	private SquareMatrixEqnCSJComplexSolver negYSolver=null;
+	private ISparseEqnSolver zeroYSolver=null;
+	private ISparseEqnSolver negYSolver=null;
     
 	private String[] monitorBusAry =null;
 	
@@ -49,11 +50,13 @@ public class SequenceNetworkSolver {
 		this.net =net;
 		this.monitorBusAry = monitorBusAry;
 		
+		SparseEqnSolverFactory factory = new SparseEqnSolverFactory();
+		
 		zeroSeqYMatrix = net.formScYMatrix(SequenceCode.ZERO, ScBusModelType.LOADFLOW_VOLT, false);
-		zeroYSolver = new SquareMatrixEqnCSJComplexSolver(zeroSeqYMatrix);
+		zeroYSolver = factory.createSparseEqnComplexSolver(zeroSeqYMatrix);
 		
 		negSeqYMatrix =  net.formScYMatrix(SequenceCode.NEGATIVE, ScBusModelType.LOADFLOW_VOLT, false);
-		negYSolver = new SquareMatrixEqnCSJComplexSolver(negSeqYMatrix);
+		negYSolver = factory.createSparseEqnComplexSolver(negSeqYMatrix);
 		
 		//LU factorize the YMaxtri, prepare it for calculating Z matrix;
 		try {
