@@ -20,7 +20,6 @@ import org.interpss.numeric.matrix.MatrixUtil;
 import org.interpss.numeric.util.NumericUtil;
 import org.junit.Test;
 
-import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -28,6 +27,7 @@ import com.interpss.core.net.NetCoordinate;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
+import com.interpss.simu.SimuObjectFactory;
 
 public class TestMultiNetDStabSimuHelper {
 	

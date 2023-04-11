@@ -36,7 +36,6 @@ import org.ieee.odm.schema.LoadflowNetXmlType;
 import org.ieee.odm.schema.NetworkXmlType;
 import org.interpss.mapper.odm.ODMAclfNetMapper;
 
-import com.interpss.DistObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
@@ -46,6 +45,7 @@ import com.interpss.core.net.childnet.ChildNetworkWrapper;
 import com.interpss.dist.DistBranch;
 import com.interpss.dist.DistBus;
 import com.interpss.dist.DistNetwork;
+import com.interpss.dist.DistObjectFactory;
 
 /**
  * AclfNet parent net Supported child net types: 1) AclfNet; 2) DistNet 

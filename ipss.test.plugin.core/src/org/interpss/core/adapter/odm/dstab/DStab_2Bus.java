@@ -38,7 +38,6 @@ import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.interpss.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
-import com.interpss.SimuObjectFactory;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
@@ -47,6 +46,7 @@ import com.interpss.dstab.cache.StateVariableRecorder;
 import com.interpss.dstab.common.DStabOutSymbol;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
+import com.interpss.simu.SimuObjectFactory;
 
 public class DStab_2Bus extends DStabTestSetupBase {
 	

@@ -56,12 +56,12 @@ import org.interpss.numeric.NumericConstant;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.datatype.Vector_xy;
 
-import com.interpss.DcSysObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.dc.DcBranch;
 import com.interpss.dc.DcBus;
 import com.interpss.dc.DcBusCode;
 import com.interpss.dc.DcNetwork;
+import com.interpss.dc.DcSysObjectFactory;
 import com.interpss.dc.common.IpssDcSysException;
 import com.interpss.dc.inverter.DcAcInverter;
 import com.interpss.dc.inverter.InverterLossDataType;
