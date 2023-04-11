@@ -15,7 +15,6 @@ import org.interpss.numeric.util.NumericUtil;
 import org.junit.Test;
 
 import com.interpss.CoreCommonFactory;
-import com.interpss.SimuObjectFactory;
 import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfGenCode;
@@ -25,6 +24,7 @@ import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.mach.SalientPoleMachine;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
+import com.interpss.simu.SimuObjectFactory;
 
 public class IEEE9_Dstab_Adapter_Test {
 	@Test

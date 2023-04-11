@@ -32,10 +32,10 @@ import org.interpss.mapper.odm.AbstractODMNetDataMapper;
 import org.interpss.mapper.odm.ODMDistNetMapper;
 import org.interpss.mapper.odm.impl.mnet.MultiNetDistHelper;
 
-import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
+import com.interpss.simu.SimuObjectFactory;
 
 public abstract class AbstractODMDistParserMapper<T> extends AbstractODMNetDataMapper<T, SimuContext> {
 	public AbstractODMDistParserMapper() {
