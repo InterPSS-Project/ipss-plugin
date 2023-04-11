@@ -30,7 +30,7 @@ import java.util.logging.Level;
 
 import org.ieee.odm.common.ODMLogger;
 
-import com.interpss.CoreCommonFactory;
+import com.interpss.common.CoreCommonFactory;
 import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.common.util.IpssLogger;
   
