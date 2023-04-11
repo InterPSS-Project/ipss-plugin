@@ -8,7 +8,7 @@ import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.mapper.odm.ODMAclfParserMapper;
 
-import com.interpss.SimuObjectFactory;
+import com.interpss.simu.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
