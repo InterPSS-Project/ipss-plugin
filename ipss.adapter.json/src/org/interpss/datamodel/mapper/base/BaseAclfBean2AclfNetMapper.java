@@ -42,7 +42,6 @@ import org.interpss.datamodel.bean.base.BaseBranchBean;
 import org.interpss.datamodel.bean.base.BaseJSONUtilBean;
 import org.interpss.numeric.datatype.LimitType;
 
-import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.exp.InterpssRuntimeException;
 import com.interpss.common.mapper.AbstractMapper;
@@ -69,6 +68,7 @@ import com.interpss.core.net.Bus;
 import com.interpss.core.net.Zone;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
+import com.interpss.simu.SimuObjectFactory;
 
 
 /**
