@@ -57,7 +57,7 @@ import javax.tools.SimpleJavaFileObject;
 import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
 
-import com.interpss.CoreCommonFactory;
+import com.interpss.common.CoreCommonFactory;
 import com.interpss.common.util.IpssLogger;
 
 import junit.framework.AssertionFailedError;

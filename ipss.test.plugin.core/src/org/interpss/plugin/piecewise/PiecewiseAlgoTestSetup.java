@@ -27,7 +27,7 @@ package org.interpss.plugin.piecewise;
 import org.interpss.IpssCorePlugin;
 import org.junit.BeforeClass;
 
-import com.interpss.CoreCommonFactory;
+import com.interpss.common.CoreCommonFactory;
 import com.interpss.common.msg.IPSSMsgHub;
 
 public class PiecewiseAlgoTestSetup {

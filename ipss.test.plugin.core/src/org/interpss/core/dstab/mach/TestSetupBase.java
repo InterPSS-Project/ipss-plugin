@@ -26,7 +26,7 @@ package org.interpss.core.dstab.mach;
 
 import org.interpss.CorePluginTestSetup;
 
-import com.interpss.CoreCommonFactory;
+import com.interpss.common.CoreCommonFactory;
 import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.dstab.BaseDStabNetwork;
 
