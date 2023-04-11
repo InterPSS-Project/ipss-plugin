@@ -24,10 +24,10 @@
 
 package org.interpss.mapper.odm;
 
-import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
+import com.interpss.simu.SimuObjectFactory;
 
 /**
  * Base class for implementing mapper from ODM model to SimuContext object 
