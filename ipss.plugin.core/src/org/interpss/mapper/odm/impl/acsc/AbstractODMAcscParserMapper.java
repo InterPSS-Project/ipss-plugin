@@ -67,7 +67,6 @@ import org.interpss.mapper.odm.impl.aclf.AclfBusDataHelper;
 import org.interpss.numeric.NumericConstant;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
-import com.interpss.DStabObjectFactory;
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.exp.InterpssRuntimeException;
@@ -87,6 +86,7 @@ import com.interpss.core.acsc.adpter.AcscLineAdapter;
 import com.interpss.core.acsc.adpter.AcscXformerAdapter;
 import com.interpss.core.net.Branch;
 import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 

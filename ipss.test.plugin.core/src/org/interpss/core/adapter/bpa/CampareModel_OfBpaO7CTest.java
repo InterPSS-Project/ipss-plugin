@@ -12,7 +12,6 @@ import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.interpss.numeric.util.NumericUtil;
 import org.junit.Test;
 
-import com.interpss.SimuObjectFactory;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
@@ -21,6 +20,8 @@ import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
+import com.interpss.simu.SimuObjectFactory;
+
 import org.interpss.QA.compare.IAclfBranchComparator;
 import org.interpss.QA.compare.IAclfBusComparator;
 import org.interpss.QA.compare.IAclfNetComparator;

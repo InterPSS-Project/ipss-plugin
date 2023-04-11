@@ -19,7 +19,6 @@ import org.interpss.numeric.util.PerformanceTimer;
 import org.junit.Test;
 
 import com.interpss.CoreCommonFactory;
-import com.interpss.SimuObjectFactory;
 import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfGen;
@@ -34,6 +33,7 @@ import com.interpss.dstab.cache.StateVariableRecorder.StateVarRecType;
 import com.interpss.dstab.common.DStabOutSymbol;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
+import com.interpss.simu.SimuObjectFactory;
 
 
 

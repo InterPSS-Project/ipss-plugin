@@ -31,9 +31,9 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
-import com.interpss.DcSysObjectFactory;
 import com.interpss.dc.DcBus;
 import com.interpss.dc.DcNetwork;
+import com.interpss.dc.DcSysObjectFactory;
 import com.interpss.dc.algo.DcPowerFlowAlgorithm;
 import com.interpss.dc.algo.DcPowerFlowMethod;
 
