@@ -5,11 +5,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/EMF"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.common"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.core_EMF"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/ipss.dc_EMF"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/ipss.dist_EMF"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/ipss.dstab_EMF"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.numeric"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/ipss.simu_EMF"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ieee.odm_pss"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.plugin.core"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.plugin.base"/>

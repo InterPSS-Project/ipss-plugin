@@ -37,7 +37,6 @@ import org.interpss.mapper.odm.ODMAclfParserMapper;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.junit.Test;
 
-import com.interpss.SimuObjectFactory;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
@@ -46,6 +45,7 @@ import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
+import com.interpss.simu.SimuObjectFactory;
 
 public class GuideSample_TestCase extends CorePluginTestSetup {
 	@Test

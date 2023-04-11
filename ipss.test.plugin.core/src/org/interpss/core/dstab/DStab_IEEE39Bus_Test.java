@@ -15,8 +15,6 @@ import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.interpss.numeric.NumericConstant;
 import org.junit.Test;
 
-import com.interpss.DStabObjectFactory;
-import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
@@ -25,6 +23,7 @@ import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
+import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
@@ -34,6 +33,7 @@ import com.interpss.dstab.devent.DynamicSimuEvent;
 import com.interpss.dstab.devent.DynamicSimuEventType;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
+import com.interpss.simu.SimuObjectFactory;
 
 public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 		
