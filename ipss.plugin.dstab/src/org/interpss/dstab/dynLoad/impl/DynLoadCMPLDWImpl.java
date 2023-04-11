@@ -6,7 +6,6 @@ import org.interpss.dstab.dynLoad.DynLoadVFreqDependentModel;
 import org.interpss.dstab.dynLoad.InductionMotor;
 import org.interpss.dstab.dynLoad.LD1PAC;
 
-import com.interpss.DStabObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranchCode;
@@ -14,6 +13,7 @@ import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBranch;
+import com.interpss.dstab.DStabObjectFactory;
 //import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.dynLoad.DStabDynamicLoadFactory;

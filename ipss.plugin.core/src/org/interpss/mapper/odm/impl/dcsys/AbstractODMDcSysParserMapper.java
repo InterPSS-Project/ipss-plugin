@@ -32,10 +32,10 @@ import org.ieee.odm.schema.NetworkCategoryEnumType;
 import org.interpss.mapper.odm.AbstractODMNetDataMapper;
 import org.interpss.mapper.odm.ODMDcSysNetMapper;
 
-import com.interpss.SimuObjectFactory;
 import com.interpss.dc.common.IpssDcSysException;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
+import com.interpss.simu.SimuObjectFactory;
 
 public abstract class AbstractODMDcSysParserMapper<T> extends AbstractODMNetDataMapper<T, SimuContext> {
 	public AbstractODMDcSysParserMapper() {

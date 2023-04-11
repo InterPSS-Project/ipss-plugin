@@ -11,7 +11,6 @@ import org.interpss.mapper.odm.ODMAclfParserMapper;
 import org.interpss.numeric.util.NumericUtil;
 import org.junit.Test;
 
-import com.interpss.SimuObjectFactory;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
@@ -19,6 +18,7 @@ import com.interpss.core.aclf.hvdc.HvdcLine2TVSC;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
+import com.interpss.simu.SimuObjectFactory;
 import com.interpss.state.aclf.AclfNetworkState;
 
 public class Kunder_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {

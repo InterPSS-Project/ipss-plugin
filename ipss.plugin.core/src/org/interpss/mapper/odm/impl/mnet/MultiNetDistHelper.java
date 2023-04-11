@@ -33,13 +33,13 @@ import org.ieee.odm.schema.ChildNetworkDefXmlType;
 import org.ieee.odm.schema.DcNetworkXmlType;
 import org.ieee.odm.schema.NetworkXmlType;
 
-import com.interpss.DistObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.net.childnet.ChildNetworkWrapper;
 import com.interpss.dc.DcBranch;
 import com.interpss.dc.DcBus;
 import com.interpss.dc.DcNetwork;
 import com.interpss.dist.DistNetwork;
+import com.interpss.dist.DistObjectFactory;
 
 /**
  * for processing DistNet parent net. Supported child net types : 1) DcSysNet
