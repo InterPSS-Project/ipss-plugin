@@ -42,7 +42,7 @@ import org.interpss.mapper.odm.ODMDistNetMapper;
 import org.interpss.mapper.odm.ODMDistParserMapper;
 import org.interpss.mapper.odm.ODMOpfParserMapper;
 
-import com.interpss.CoreCommonFactory;
+import com.interpss.common.CoreCommonFactory;
 import com.interpss.common.exp.InterpssException;
 
 /**

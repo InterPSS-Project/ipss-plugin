@@ -14,7 +14,7 @@ import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.interpss.numeric.util.NumericUtil;
 import org.junit.Test;
 
-import com.interpss.CoreCommonFactory;
+import com.interpss.common.CoreCommonFactory;
 import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfGenCode;

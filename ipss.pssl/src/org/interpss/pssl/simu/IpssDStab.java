@@ -27,7 +27,7 @@ package org.interpss.pssl.simu;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.pssl.simu.IpssAclf.LfAlgoDSL;
 
-import com.interpss.CoreCommonFactory;
+import com.interpss.common.CoreCommonFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
