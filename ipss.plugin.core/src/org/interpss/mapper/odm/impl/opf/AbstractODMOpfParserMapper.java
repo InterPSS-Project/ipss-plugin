@@ -69,7 +69,6 @@ import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Point;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
-import com.interpss.OpfObjectFactory;
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.exp.InterpssRuntimeException;
@@ -82,6 +81,7 @@ import com.interpss.opf.OpfBus;
 import com.interpss.opf.OpfGen;
 import com.interpss.opf.OpfGenOperatingMode;
 import com.interpss.opf.OpfNetwork;
+import com.interpss.opf.OpfObjectFactory;
 import com.interpss.opf.datatype.OpfDatatypeFactory;
 import com.interpss.opf.datatype.IncrementalCost;
 import com.interpss.opf.datatype.OpfBusLimits;

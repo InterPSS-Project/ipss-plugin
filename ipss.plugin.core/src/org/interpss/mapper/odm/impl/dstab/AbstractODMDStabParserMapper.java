@@ -57,7 +57,6 @@ import org.interpss.mapper.odm.impl.aclf.AbstractODMAclfNetMapper;
 import org.interpss.mapper.odm.impl.aclf.AclfBusDataHelper;
 import org.interpss.mapper.odm.impl.acsc.AbstractODMAcscParserMapper;
 
-import com.interpss.DStabObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.core.CoreObjectFactory;
@@ -69,6 +68,7 @@ import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.DStabLoad;
+import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.mach.Machine;

@@ -24,7 +24,6 @@ import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.Test;
 
-import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
@@ -39,6 +38,7 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.dstab.DStabLoad;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
+import com.interpss.simu.SimuObjectFactory;
 
 public class TestTnD_IEEE39_123BusFeeder {
 	

@@ -15,7 +15,6 @@ import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.impl.DStabNetwork3phaseImpl;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
-import com.interpss.DStabObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
@@ -24,6 +23,7 @@ import com.interpss.core.acsc.BusGroundCode;
 import com.interpss.core.acsc.XFormerConnectCode;
 import com.interpss.core.acsc.adpter.AcscXformerAdapter;
 import com.interpss.core.net.NetworkType;
+import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.mach.EConstMachine;
 import com.interpss.dstab.mach.MachineModelType;
 

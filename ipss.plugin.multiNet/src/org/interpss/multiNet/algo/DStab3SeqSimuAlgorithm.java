@@ -10,12 +10,12 @@ import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 
-import com.interpss.DStabObjectFactory;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.algo.sc.ScBusModelType;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
+import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 
 public class DStab3SeqSimuAlgorithm {

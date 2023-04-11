@@ -26,7 +26,6 @@ package org.interpss.pssl.simu.net;
 
 import org.interpss.numeric.datatype.Unit.UnitType;
 
-import com.interpss.DistObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
@@ -39,6 +38,7 @@ import com.interpss.dist.DistBranchCode;
 import com.interpss.dist.DistBus;
 import com.interpss.dist.DistBusCode;
 import com.interpss.dist.DistNetwork;
+import com.interpss.dist.DistObjectFactory;
 import com.interpss.dist.adpter.DistBreaker;
 import com.interpss.dist.adpter.DistFeeder;
 import com.interpss.dist.adpter.DistGenerator;

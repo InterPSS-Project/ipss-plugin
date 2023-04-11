@@ -14,7 +14,6 @@ import org.interpss.piecewise.subAreaNet.seq012.impl.SubAreaDStabProcessorImpl;
 import org.interpss.piecewise.subAreaNet.seq012.impl.SubNetworkDStabProcessorImpl;
 import org.junit.Test;
 
-import com.interpss.SimuObjectFactory;
 import com.interpss.algo.subAreaNet.SubAreaNetProcessor;
 import com.interpss.algo.subAreaNet.seq012.CuttingBranch012;
 import com.interpss.algo.subAreaNet.seq012.SubArea012;
@@ -26,6 +25,7 @@ import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.DStabLoad;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
+import com.interpss.simu.SimuObjectFactory;
 
 public class IEEE9BusTestDStabSubAreaNet {
 	

@@ -10,11 +10,11 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.junit.Test;
 
-import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
+import com.interpss.simu.SimuObjectFactory;
 
 public class Kunder_2area_VSCHVDC_Test  extends DStabTestSetupBase{
 	

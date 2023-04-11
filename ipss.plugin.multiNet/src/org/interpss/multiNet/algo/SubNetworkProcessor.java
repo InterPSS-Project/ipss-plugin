@@ -9,7 +9,6 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
-import com.interpss.DStabObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranch;
@@ -23,6 +22,7 @@ import com.interpss.core.net.childnet.ChildNetworkFactory;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBranch;
+import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.DStabilityNetwork;
 
 public class SubNetworkProcessor {
