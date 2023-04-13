@@ -10,7 +10,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/EMF"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.plugin.base"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.plugin.dstab"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/ipss.plugin.dc"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.plugin.core"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.extendedPiecewiseAlgo"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.core_EMF"/>
