@@ -24,10 +24,14 @@
 
 package org.interpss;
 
+import java.util.logging.Level;
+
+import org.ieee.odm.common.ODMLogger;
 import org.junit.BeforeClass;
 
 import com.interpss.common.CoreCommonFactory;
 import com.interpss.common.msg.IPSSMsgHub;
+import com.interpss.common.util.IpssLogger;
 
 public class CorePluginTestSetup {
 	protected static IPSSMsgHub msg;
@@ -36,6 +40,8 @@ public class CorePluginTestSetup {
 	public static void setSpringAppCtx() {
 		IpssCorePlugin.init();
 		msg = CoreCommonFactory.getIpssMsgHub();
+		IpssLogger.getLogger().setLevel(Level.WARNING);
+		ODMLogger.getLogger().setLevel(Level.WARNING);
 	}
 }
 
