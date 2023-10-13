@@ -65,6 +65,7 @@ import com.interpss.core.net.OriginalDataFormat;
  *
  */
 public class AclfOutFunc {
+	public static boolean commaDelimited = false;
 	/**
 	 *  Loadflow output format 
 	 */
@@ -249,22 +250,42 @@ public class AclfOutFunc {
 	}
 	
 	public static String busSummaryCommaDelimited(BaseAclfNetwork<?, ?> net, boolean incldMismatch) {
+		return busSummaryCommaDelimited(net, incldMismatch, true);
+	}
+	
+	public static String busSummaryCommaDelimited(BaseAclfNetwork<?, ?> net, boolean incldMismatch, boolean activeOnly) {
 		final StringBuffer str = new StringBuffer("");
 		
-		if (incldMismatch){
-			str.append("On, BusID, Code, Volt(pu), Angle(deg), P(pu), Q(pu), dP(pu), dQ(pu), Bus Name\n");
+		if (activeOnly) {
+			if (incldMismatch){
+				str.append("BusID, Code, Volt(pu), Angle(deg), P(pu), Q(pu), dP(pu), dQ(pu), Bus Name\n");
+			}
+			else {
+				str.append("BusID, Code, Volt(pu), Angle(deg), P(pu), Q(pu), Bus Name\n");
+			}
 		}
 		else {
-			str.append("On, BusID, Code, Volt(pu), Angle(deg), P(pu), Q(pu), Bus Name\n");
+			if (incldMismatch){
+				str.append("On, BusID, Code, Volt(pu), Angle(deg), P(pu), Q(pu), dP(pu), dQ(pu), Bus Name\n");
+			}
+			else {
+				str.append("On, BusID, Code, Volt(pu), Angle(deg), P(pu), Q(pu), Bus Name\n");
+			}
 		}
 
 		for (Object obj : net.getBusList()) {
 			AclfBus bus = (AclfBus)obj;
 			Complex busPQ = bus.calNetPQResults();
-			if (bus.isActive())
-				str.append("y, ");
-			else
-				str.append("n, ");
+			
+			if (activeOnly && !bus.isActive())
+				continue;
+			
+			if (!activeOnly) {
+				if (bus.isActive())
+					str.append("y, ");
+				else
+					str.append("n, ");
+			}
 			str.append(String.format("%s, ", OutputBusId.f(bus, bus.getNetwork().getOriginalDataFormat())));
 			str.append(String.format("%s, ", bus.code2String()));
 			str.append(String.format("%10.5f, ", bus.getVoltageMag(UnitType.PU)));
