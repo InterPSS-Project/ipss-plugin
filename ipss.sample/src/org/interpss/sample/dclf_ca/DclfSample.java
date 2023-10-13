@@ -47,6 +47,7 @@ public class DclfSample {
 		// perform DCLF calculation
 		dclfAlgo.calculateDclf();
 		
+		DclfOutFunc.commaDelimited = true;
 		System.out.println(DclfOutFunc.dclfResults(dclfAlgo, false /*branchViolation*/));
 		
 		System.out.println("\nBase Case\n==========");
