@@ -153,7 +153,9 @@ public class IEEE14Test extends CorePluginTestSetup {
   		assertTrue(net.isLfConverged());
   		
   		//System.out.println(AclfOutFunc.loadFlowSummary(net, true));
-  		//System.out.println(AclfOutFunc.busSummaryCommaDelimited(net, true));
+  		
+  		System.out.println(AclfOutFunc.busSummaryCommaDelimited(net, true, false));
+  		
   		assertTrue("", net.getBus("14").calNetPQResults().abs() == 0.0);
 	}
 }
