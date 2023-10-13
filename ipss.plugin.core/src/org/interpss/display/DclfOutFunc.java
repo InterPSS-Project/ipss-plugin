@@ -45,6 +45,7 @@ import com.interpss.core.net.Branch;
  *
  */
 public class DclfOutFunc {
+	public static boolean commaDelimited = false;
 	public static double SmallBranchFlowPU = 0.0001;
 	
 	/**
@@ -99,8 +100,12 @@ public class DclfOutFunc {
 	public static StringBuffer dclfResults(DclfAlgorithm algo, boolean branchViolation) {
 		StringBuffer str = new StringBuffer("\n\n");
 		str.append("      DC Loadflow Results\n\n");
-		str.append("   Bud Id       VoltAng(deg)     Gen     Load    ShuntG\n");
-		str.append("=========================================================\n");
+		if (commaDelimited)
+			str.append("Bud Id,VoltAng(deg),Gen,Load,ShuntG\n");
+		else {	
+			str.append("   Bud Id       VoltAng(deg)     Gen     Load    ShuntG\n");
+			str.append("=========================================================\n");
+		}
 		double baseMva = algo.getNetwork().getBaseKva() * 0.001;
 		for (DclfAlgoBus dclfBus : algo.getDclfAlgoBusList()) {
 			AclfBus bus = dclfBus.getBus();
@@ -111,7 +116,11 @@ public class DclfOutFunc {
 				double pgen =  (bus.isRefBus()? algo.getBusPower(dclfBus) : bus.getGenP()) * baseMva; 
 				double pload =  bus.getLoadP() * baseMva; 
 				double pshunt = bus.getShuntY().getReal() * baseMva; 
-				str.append(Number2String.toFixLengthStr(8, bus.getId()) + "        "
+				if (commaDelimited)
+					str.append(Number2String.toFixLengthStr(8, bus.getId()) + ","
+							+ String.format("%8.2f,%8.2f,%8.2f,%8.2f \n", angle, pgen, pload, pshunt));
+				else	
+					str.append(Number2String.toFixLengthStr(8, bus.getId()) + "        "
 						+ String.format("%8.2f     %8.2f %8.2f %8.2f \n", angle, pgen, pload, pshunt));
 			}
 		}
