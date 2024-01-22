@@ -120,7 +120,8 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
 
 		SenAnalysisAlgorithm algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
 		
-		net.setRefBusId("Bus3");
+		net.getRefBusIdSet().clear();
+		net.getRefBusIdSet().add("Bus3");
 		net.setRefBusType(RefBusType.USER_DEFINED);
 		
 //		net.getBus("Bus1").setGenP(3.0723);
