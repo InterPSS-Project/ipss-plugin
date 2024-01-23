@@ -54,7 +54,7 @@ public class IEEE14_Dclf_Test extends CorePluginTestSetup {
 				.load("testdata/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();	
 		
-		DclfAlgorithm dclfAlgo = DclfAlgoObjectFactory.createDclfAlgorithm(aclfNet, CacheType.SenNotCached);
+		DclfAlgorithm dclfAlgo = DclfAlgoObjectFactory.createDclfAlgorithm(aclfNet, CacheType.SenNotCached, true);
 		dclfAlgo.calculateDclf(DclfMethod.INC_LOSS);
 
 		//System.out.println(DclfOutFunc.dclfResults(dclfAlgo, false));
@@ -86,7 +86,7 @@ public class IEEE14_Dclf_Test extends CorePluginTestSetup {
 				.load("testdata/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();	
 		
-		DclfAlgorithm dclfAlgo = DclfAlgoObjectFactory.createDclfAlgorithm(aclfNet, CacheType.SenNotCached);
+		DclfAlgorithm dclfAlgo = DclfAlgoObjectFactory.createDclfAlgorithm(aclfNet, CacheType.SenNotCached, true);
 		dclfAlgo.calculateDclf();
 
 		//System.out.println(DclfOutFunc.dclfResults(dclfAlgo, false));
