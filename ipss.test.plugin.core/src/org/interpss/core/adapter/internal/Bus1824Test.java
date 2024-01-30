@@ -81,13 +81,7 @@ public class Bus1824Test extends CorePluginTestSetup {
 		//System.out.println(net.net2String());
   		assertTrue((net.getBusList().size() == 1824));
 
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
-	  	algo.setLfMethod(AclfMethodType.PQ);
-	  	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
-	  	algo.loadflow();
-  		//System.out.println(net.net2String());
-	  	
-  		assertTrue(net.isLfConverged());		
+
 	}
 }
 

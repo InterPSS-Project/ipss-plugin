@@ -4,6 +4,7 @@ import org.interpss.core.aclf.IEEE14_3WXfrTest;
 import org.interpss.core.aclf.IEEE14_YMatrixSetTest;
 import org.interpss.core.aclf.IEEE9_MultiGenTest;
 import org.interpss.core.aclf.IEEE9_MultiLoadTest;
+import org.interpss.core.aclf.SwingBusSubAreaTest;
 import org.interpss.core.adapter.bpa.BPASampleTestCases;
 import org.interpss.core.adapter.ge.GESampleTestCases;
 import org.interpss.core.adapter.ieee.IEEE009Bus_Test;
@@ -68,6 +69,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	IEEE9_MultiGenTest.class,
 	IEEE9_MultiLoadTest.class,
 	IEEE14_YMatrixSetTest.class,
+	SwingBusSubAreaTest.class,
 	
 	// Dclf
 	Mod_SixBus_DclfPsXfr.class,
