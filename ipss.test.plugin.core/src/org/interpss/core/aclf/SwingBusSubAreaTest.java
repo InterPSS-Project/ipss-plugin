@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
+import org.interpss.display.AclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.junit.Test;
 
@@ -40,7 +41,6 @@ import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.AclfNetHelper;
 import com.interpss.core.funcImpl.CoreCopyFunc;
-import com.interpss.simu.util.sample.SampleTestingCases;
 
 public class SwingBusSubAreaTest extends CorePluginTestSetup {
 	@Test
@@ -60,7 +60,8 @@ public class SwingBusSubAreaTest extends CorePluginTestSetup {
 		busSet = helper.calConnectedSubArea("1z");
 	  	assertTrue("", busSet.size() == 57);
 	  	
-	  	AclfNetwork subNet = CoreCopyFunc.creteSubAclfNet(net, busSet);
+	  	AclfNetwork subNet = net.createSubNet(busSet);
+	  	assertTrue("", subNet.getNoBus() == 57);
 	  	
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(subNet);
 	  	algo.setLfMethod(AclfMethodType.NR);
@@ -68,7 +69,9 @@ public class SwingBusSubAreaTest extends CorePluginTestSetup {
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 	  	
-  		assertTrue(net.isLfConverged());	
+  		//System.out.println(AclfOutFunc.loadFlowSummary(subNet, true));
+	  	
+  		assertTrue(subNet.isLfConverged());	
 	}
 }
 
