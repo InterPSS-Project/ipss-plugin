@@ -2,5 +2,5 @@
 <<<<<<<=HEAD
 >>>>>>>=refs/heads/master
 eclipse.preferences.version=1
-encoding//src/org/interpss/threePhase/dynamic/model/impl/SinglePhaseACMotor.java=UTF-8
+encoding//src/main/java/org/interpss/threePhase/dynamic/model/impl/SinglePhaseACMotor.java=UTF-8
 encoding//src/org/interpss/threePhase/test/IEEE_13BusFeeder_Test.java=UTF-8
