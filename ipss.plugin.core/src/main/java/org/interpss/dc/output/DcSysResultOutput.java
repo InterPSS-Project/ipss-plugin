@@ -31,11 +31,10 @@ import com.interpss.common.util.IpssLogger;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 import com.interpss.dc.DcBranch;
-import com.interpss.dc.DcBus;
 import com.interpss.dc.DcBusCode;
 import com.interpss.dc.DcNetwork;
-import com.interpss.dc.common.IDcNetEVisitor;
 import com.interpss.dc.common.IpssDcSysException;
+import com.interpss.dc.pv.PVDcBus;
 
 /**
  * Output DcSytem analysis results
@@ -43,7 +42,7 @@ import com.interpss.dc.common.IpssDcSysException;
  * @author mzhou
  *
  */
-public class DcSysResultOutput implements IDcNetEVisitor {
+public class DcSysResultOutput {
 	private StringBuffer buffer = null;
 	private String filename = null;
 	
@@ -58,7 +57,7 @@ public class DcSysResultOutput implements IDcNetEVisitor {
 		this.filename = filename;
 	}
 
-	@Override public void visit(DcNetwork dcNet) throws InterpssException {
+	public void visit(DcNetwork dcNet) throws InterpssException {
 		if (this.buffer != null)
 			this.buffer.append(solarAnalysisReuslt(dcNet));
 		else if (this.filename != null)
@@ -78,7 +77,7 @@ public class DcSysResultOutput implements IDcNetEVisitor {
 		buffer.append(str);
 		
 		for (Bus b : dcNet.getBusList()) {
-			DcBus bus = (DcBus)b;
+			PVDcBus bus = (PVDcBus)b;
 			str = String.format("     %-12s    %8.2f    %10.2f", bus.getId(),
 						bus.getVoltage(UnitType.Volt), 
 						bus.powerInjection(UnitType.Watt));
