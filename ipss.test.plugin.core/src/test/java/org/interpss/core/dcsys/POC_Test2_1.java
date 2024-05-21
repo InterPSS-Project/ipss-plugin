@@ -29,18 +29,17 @@ import static org.junit.Assert.assertTrue;
 import org.interpss.CorePluginFunction;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.pssl.plugin.IpssAdapter;
-import org.junit.Test;
 
 import com.interpss.dc.DcBus;
-import com.interpss.dc.DcNetwork;
 import com.interpss.dc.DcSysObjectFactory;
 import com.interpss.dc.algo.DcPowerFlowAlgorithm;
+import com.interpss.dc.pv.PVDcNetwork;
 
 public class POC_Test2_1  extends CorePluginTestSetup { 
 	//@Test
 	public void mpptTest() throws Exception {
 		//DcNetwork dcNet = CorePluginObjFactory.createDcNetwork("testData/odm/dcsys/poc/Test2_1_odm.xml");
-		DcNetwork dcNet = IpssAdapter.importAclfNet("testData/odm/dcsys/poc/Test2_1_odm.xml")
+		PVDcNetwork dcNet = IpssAdapter.importAclfNet("testData/odm/dcsys/poc/Test2_1_odm.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();		
@@ -53,7 +52,7 @@ public class POC_Test2_1  extends CorePluginTestSetup {
 		DcBus mpptBus = dcNet.getInverterBus();
 		DcPowerFlowAlgorithm algo = DcSysObjectFactory.createDcPowerFlowMppt(mpptBus);
 		
-        dcNet.accept(algo);
+		algo.calLoadflow(dcNet);
 		assertTrue(dcNet.isLfConverged());		
 		System.out.println(CorePluginFunction.OutputSolarNet.fx(dcNet));
 	}

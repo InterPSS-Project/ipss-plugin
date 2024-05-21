@@ -53,7 +53,7 @@ public class POC_Test1  extends CorePluginTestSetup {
 		DcPowerFlowAlgorithm algo = DcSysObjectFactory.createDcPowerFlowAlgorithm();
 		algo.setMethod(DcPowerFlowMethod.PATH);
 		
-        dcNet.accept(algo);
+		algo.calLoadflow(dcNet);
 		assertTrue(dcNet.isLfConverged());		
 		//System.out.println(net.net2String());
 		System.out.println(CorePluginFunction.OutputSolarNet.fx(dcNet));
@@ -74,7 +74,7 @@ public class POC_Test1  extends CorePluginTestSetup {
 		DcPowerFlowAlgorithm algo = DcSysObjectFactory.createDcPowerFlowAlgorithm();
 		algo.setMethod(DcPowerFlowMethod.PATH);
 		
-        dcNet.accept(algo);
+		algo.calLoadflow(dcNet);
 		assertTrue(dcNet.isLfConverged());		
 		//System.out.println(net.net2String());
 		System.out.println(CorePluginFunction.OutputSolarNet.fx(dcNet));
@@ -91,7 +91,7 @@ public class POC_Test1  extends CorePluginTestSetup {
 		
 		DcPowerFlowAlgorithm algo = DcSysObjectFactory.createDcPowerFlowMppt(dcNet.getDcBus("Inverter"));
 		
-        dcNet.accept(algo);
+		algo.calLoadflow(dcNet);
 		assertTrue(dcNet.isLfConverged());		
 		//System.out.println(net.net2String());
 		System.out.println(CorePluginFunction.OutputSolarNet.fx(dcNet));
