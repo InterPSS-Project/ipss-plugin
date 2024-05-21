@@ -29,7 +29,7 @@ import org.ieee.odm.schema.BranchBusSideEnumType;
 import org.ieee.odm.schema.ChildNetInterfaceBranchXmlType;
 import org.ieee.odm.schema.ChildNetworkDefXmlType;
 
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.ChildNetObjectFactory;
 import com.interpss.core.net.BranchBusSide;
 import com.interpss.core.net.childnet.ChildNetInterfaceBranch;
 import com.interpss.core.net.childnet.ChildNetworkWrapper;
@@ -43,7 +43,7 @@ import com.interpss.core.net.childnet.ChildNetworkWrapper;
 public class BaseMultiNetHelper {
 	protected void mapInterfaceBranch(ChildNetworkWrapper<?,?> childNetContainer, ChildNetworkDefXmlType xmlChildDef) {
 		for (ChildNetInterfaceBranchXmlType xmlInterBranch : xmlChildDef.getInterfaceBranch()) {
-			ChildNetInterfaceBranch intBranch = CoreObjectFactory.createChildNetInerfaceBranch(childNetContainer);
+			ChildNetInterfaceBranch intBranch = ChildNetObjectFactory.createChildNetInerfaceBranch(childNetContainer);
 			intBranch.setBranchId(BaseJaxbHelper.getRecId(xmlInterBranch.getBranch()));
 			intBranch.setInterfaceBusSide(xmlInterBranch.getInterfaceBusSide() == BranchBusSideEnumType.FROM_SIDE?
 					BranchBusSide.FROM_SIDE : BranchBusSide.TO_SIDE);		
