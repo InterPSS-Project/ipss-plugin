@@ -47,7 +47,7 @@ public class POC_Test2_3  extends CorePluginTestSetup {
 	
 		DcPowerFlowAlgorithm algo = DcSysObjectFactory.createDcPowerFlowMppt(dcNet.getDcBus("Inverter"));
 		
-        dcNet.accept(algo);
+		algo.calLoadflow(dcNet);
 		assertTrue(dcNet.isLfConverged());		
 		//System.out.println(net.net2String());
 		System.out.println(CorePluginFunction.OutputSolarNet.fx(dcNet));
