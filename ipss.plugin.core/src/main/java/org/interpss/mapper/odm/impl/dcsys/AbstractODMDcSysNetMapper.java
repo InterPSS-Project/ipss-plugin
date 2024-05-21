@@ -140,7 +140,7 @@ public abstract class AbstractODMDcSysNetMapper<T> extends AbstractODMNetDataMap
 	 * @param xmlNet
 	 * @return
 	 */
-	private void mapDcNetworkData(DcNetwork dcNet, DcNetworkXmlType xmlNet) throws IpssDcSysException {
+	private void mapDcNetworkData(PVDcNetwork dcNet, DcNetworkXmlType xmlNet) throws IpssDcSysException {
 		super.mapNetworkData(dcNet, xmlNet);
 		
 		if (xmlNet.getRatedVoltage().getUnit() != VoltageUnitType.VOLT)
@@ -201,7 +201,7 @@ public abstract class AbstractODMDcSysNetMapper<T> extends AbstractODMNetDataMap
 		// create DcBus object, bus.baseVoltage initialized with net.RatedVoltage
 		PVDcBus bus = null;
 		try {
-			bus = DcSysObjectFactory.createDcBus(busRec.getId(), dcNet);
+			bus = DcSysObjectFactory.createPVDcBus(busRec.getId(), dcNet);
 		} catch (InterpssException e) {
 			throw new IpssDcSysException(e.toString());
 		}

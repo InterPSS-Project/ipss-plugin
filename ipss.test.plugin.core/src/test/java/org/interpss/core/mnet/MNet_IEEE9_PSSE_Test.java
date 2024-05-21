@@ -10,6 +10,7 @@ import org.interpss.pssl.plugin.IpssAdapter;
 import org.interpss.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.Test;
 
+import com.interpss.core.ChildNetObjectFactory;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
@@ -18,6 +19,7 @@ import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.algo.impl.solver.DefaultMultiNetLfSolver;
 import com.interpss.core.net.BranchBusSide;
+import com.interpss.core.net.childnet.ChildNetInterface;
 import com.interpss.core.net.childnet.ChildNetInterfaceBranch;
 import com.interpss.core.net.childnet.ChildNetworkWrapper;
 import com.interpss.core.net.childnet.solver.ChildNetworkProcessor;
@@ -62,22 +64,22 @@ public class MNet_IEEE9_PSSE_Test extends CorePluginTestSetup {
 		                            .getImportedObj();	
 
 		//Create childNet
-        ChildNetworkWrapper<AclfBus,AclfBranch> childNet = CoreObjectFactory.createChildAclfNet(net, "childNet");
+        ChildNetworkWrapper<AclfBus,AclfBranch> childNet = ChildNetObjectFactory.createChildAclfNet(net, "childNet");
 		
 		/*
 		 * define three interfacing branches.
 		 */
-		ChildNetInterfaceBranch intBranch_7_8 = CoreObjectFactory.createChildNetInerfaceBranch(childNet);	
+		ChildNetInterfaceBranch intBranch_7_8 = ChildNetObjectFactory.createChildNetInerfaceBranch(childNet);	
 		intBranch_7_8.setBranchId("Bus7->Bus8(0)");
 		intBranch_7_8.setInterfaceBusSide(BranchBusSide.FROM_SIDE);		
 		intBranch_7_8.setChildNetSide(BranchBusSide.FROM_SIDE);
-		childNet.getInterfaceBranches().add(intBranch_7_8);	
+		childNet.getChildNetInterfaces().add(intBranch_7_8);	
 
-		ChildNetInterfaceBranch intBranch_4_5 = CoreObjectFactory.createChildNetInerfaceBranch(childNet);	
+		ChildNetInterfaceBranch intBranch_4_5 = ChildNetObjectFactory.createChildNetInerfaceBranch(childNet);	
 		intBranch_4_5.setBranchId("Bus4->Bus5(0)");
 		intBranch_4_5.setInterfaceBusSide(BranchBusSide.TO_SIDE);		
 		intBranch_4_5.setChildNetSide(BranchBusSide.TO_SIDE);
-		childNet.getInterfaceBranches().add(intBranch_4_5);	
+		childNet.getChildNetInterfaces().add(intBranch_4_5);	
 		
 		// split the parent/child network
 		new ChildNetworkProcessor(net).processChildNet();
@@ -89,7 +91,7 @@ public class MNet_IEEE9_PSSE_Test extends CorePluginTestSetup {
 		AclfNetwork childAclfNet = (AclfNetwork)net.getChildNetWrapper("childNet").getNetwork();
 		assertTrue((childAclfNet.getBusList().size() == 3 && childAclfNet.getBranchList().size() == 2));
 		
-		for (ChildNetInterfaceBranch cbranch : childNet.getInterfaceBranches()) {
+		for (ChildNetInterface cbranch : childNet.getChildNetInterfaces()) {
 			// interface bus should still be in the parent net
 			assertTrue(net.getBus(cbranch.getInterfaceBusParentNet().getId()) != null);
 			// interface bus should be defined as Swing bus in the child net

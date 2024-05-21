@@ -37,7 +37,7 @@ import org.ieee.odm.schema.NetworkXmlType;
 import org.interpss.mapper.odm.ODMAclfNetMapper;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.ChildNetObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
@@ -88,7 +88,7 @@ public class MultiNetAclfHelper extends BaseMultiNetHelper {
 	
 	private void mapAclfChildNet(AclfNetwork parentAclfNet, ChildNetworkDefXmlType xmlChildDef, ODMAclfNetMapper.XfrBranchModel xfrBranchModel) throws InterpssException {
 		NetworkXmlType xmlChildNet = (NetworkXmlType)xmlChildDef.getChildNetRef().getIdRef();
-		ChildNetworkWrapper<AclfBus,AclfBranch> childNetContainer = CoreObjectFactory.createChildAclfNet(parentAclfNet, xmlChildNet.getId());
+		ChildNetworkWrapper<AclfBus,AclfBranch> childNetContainer = ChildNetObjectFactory.createChildAclfNet(parentAclfNet, xmlChildNet.getId());
 		AclfNetwork childAclfNet = AclfXmlNet2AclfNet.fx((LoadflowNetXmlType)xmlChildNet, xfrBranchModel);
 		childNetContainer.setNetwork(childAclfNet);	
 		

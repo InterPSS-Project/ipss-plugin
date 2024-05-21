@@ -28,29 +28,28 @@ import static org.junit.Assert.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.pssl.plugin.IpssAdapter;
-import org.junit.Test;
 
-import com.interpss.dc.DcBus;
-import com.interpss.dc.DcNetwork;
 import com.interpss.dc.DcSysObjectFactory;
-import com.interpss.dc.common.IDcNetEVisitor;
+import com.interpss.dc.algo.DcPowerFlowAlgorithm;
+import com.interpss.dc.pv.PVDcBus;
+import com.interpss.dc.pv.PVDcNetwork;
 
 public class Inverter_2BusTest  extends CorePluginTestSetup { 
 	//@Test
 	public void simple2BusPSourceCase() throws Exception {
 		//DcNetwork dcNet = CorePluginObjFactory.createDcNetwork("testData/odm/dcsys/simple2BusInverter.xml");
-		DcNetwork dcNet = IpssAdapter.importAclfNet("testData/odm/dcsys/simple2BusInverter.xml")
+		PVDcNetwork dcNet = IpssAdapter.importAclfNet("testData/odm/dcsys/simple2BusInverter.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();			
 		//System.out.println(dcNet.net2String());
 		
-		IDcNetEVisitor algo = DcSysObjectFactory.createDcPowerFlowAlgorithm();
-		dcNet.accept(algo);
+		DcPowerFlowAlgorithm algo = DcSysObjectFactory.createDcPowerFlowAlgorithm();
+		algo.calLoadflow(dcNet);
 		assertTrue(dcNet.isLfConverged());
 		//System.out.println(dcNet.net2String());
 		
-		DcBus bus = dcNet.getDcBus("Bus1");
+		PVDcBus bus = dcNet.getPvDcBus("Bus1");
 		//System.out.println(bus.powerInjection());
 		assertTrue(Math.abs(bus.powerInjection() + 3.45408) < 0.001);
 		
