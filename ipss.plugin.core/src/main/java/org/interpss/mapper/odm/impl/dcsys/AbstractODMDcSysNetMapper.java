@@ -58,22 +58,23 @@ import org.interpss.numeric.datatype.Vector_xy;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.dc.DcBranch;
-import com.interpss.dc.DcBus;
 import com.interpss.dc.DcBusCode;
 import com.interpss.dc.DcNetwork;
 import com.interpss.dc.DcSysObjectFactory;
 import com.interpss.dc.common.IpssDcSysException;
-import com.interpss.dc.inverter.DcAcInverter;
-import com.interpss.dc.inverter.InverterLossDataType;
-import com.interpss.dc.inverter.LossEqnParamItem;
-import com.interpss.dc.pv.PVModel;
-import com.interpss.dc.pv.PVModelIVCurveType;
-import com.interpss.dc.pv.PVModelIVFunction;
-import com.interpss.dc.pv.PVModule;
-import com.interpss.dc.pv.PVModuleItem;
-import com.interpss.dc.pv.impl.PVModelHelper;
+import com.interpss.dc.pv.PVDcBus;
+import com.interpss.dc.pv.PVDcNetwork;
+import com.interpss.dc.pv.inverter.DcAcInverter;
+import com.interpss.dc.pv.inverter.InverterLossDataType;
+import com.interpss.dc.pv.inverter.LossEqnParamItem;
+import com.interpss.dc.pv.module.PVModel;
+import com.interpss.dc.pv.module.PVModelIVCurveType;
+import com.interpss.dc.pv.module.PVModelIVFunction;
+import com.interpss.dc.pv.module.PVModule;
+import com.interpss.dc.pv.module.PVModuleItem;
+import com.interpss.dc.pv.module.impl.PVModelHelper;
 
-public abstract class AbstractODMDcSysNetMapper<T> extends AbstractODMNetDataMapper<T, DcNetwork> {
+public abstract class AbstractODMDcSysNetMapper<T> extends AbstractODMNetDataMapper<T, PVDcNetwork> {
 	public AbstractODMDcSysNetMapper() {
 	}
 	
@@ -84,12 +85,12 @@ public abstract class AbstractODMDcSysNetMapper<T> extends AbstractODMNetDataMap
 	 * @return DcNetwork object
 	 */
 	@Override
-	public DcNetwork map2Model(T p) throws IpssDcSysException {
+	public PVDcNetwork map2Model(T p) throws IpssDcSysException {
 //		if (!License.getInstance().isValid()) {
 //			throw new IpssDcSysException("Invalid license");
 //		}
 		
-		DcNetwork dcNet = DcSysObjectFactory.createDcNetwork();
+		PVDcNetwork dcNet = DcSysObjectFactory.createPVDcNetwork();
 		if (map2Model(p, dcNet))
 			return dcNet;
 		else
@@ -104,7 +105,7 @@ public abstract class AbstractODMDcSysNetMapper<T> extends AbstractODMNetDataMap
 	 * @return
 	 */
 	@Override
-	public boolean map2Model(T from, DcNetwork dcNet) {
+	public boolean map2Model(T from, PVDcNetwork dcNet) {
 		DcNetworkXmlType xmlNet = (DcNetworkXmlType)from;
 		boolean noError = true;
 		
@@ -196,9 +197,9 @@ public abstract class AbstractODMDcSysNetMapper<T> extends AbstractODMNetDataMap
 	 * @return
 	 * @throws Exception
 	 */
-	private void mapDcBusData(DcBusXmlType busRec, DcNetwork dcNet) throws IpssDcSysException {
+	private void mapDcBusData(DcBusXmlType busRec, PVDcNetwork dcNet) throws IpssDcSysException {
 		// create DcBus object, bus.baseVoltage initialized with net.RatedVoltage
-		DcBus bus = null;
+		PVDcBus bus = null;
 		try {
 			bus = DcSysObjectFactory.createDcBus(busRec.getId(), dcNet);
 		} catch (InterpssException e) {

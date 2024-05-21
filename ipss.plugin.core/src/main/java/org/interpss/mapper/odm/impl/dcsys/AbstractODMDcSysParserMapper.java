@@ -33,6 +33,7 @@ import org.interpss.mapper.odm.AbstractODMNetDataMapper;
 import org.interpss.mapper.odm.ODMDcSysNetMapper;
 
 import com.interpss.dc.common.IpssDcSysException;
+import com.interpss.dc.pv.PVDcNetwork;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 import com.interpss.simu.SimuObjectFactory;
@@ -76,7 +77,7 @@ public abstract class AbstractODMDcSysParserMapper<T> extends AbstractODMNetData
 		
 		if (parser.getStudyCase().getNetworkCategory() == NetworkCategoryEnumType.DC_SYSTEM ) {
 			DcNetworkXmlType xmlNet = parser.getDcNet();
-			noError = new ODMDcSysNetMapper().map2Model(xmlNet, simuCtx.getDcSysNet());
+			noError = new ODMDcSysNetMapper().map2Model(xmlNet, (PVDcNetwork)simuCtx.getDcSysNet());
 			
 			/*
 			 * a parent dc sys net cannot contain any child network 
