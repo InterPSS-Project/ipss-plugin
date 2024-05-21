@@ -29,12 +29,11 @@ import static org.junit.Assert.assertTrue;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.pssl.plugin.IpssAdapter;
-import org.junit.Test;
 
 import com.interpss.dc.DcBus;
 import com.interpss.dc.DcNetwork;
 import com.interpss.dc.DcSysObjectFactory;
-import com.interpss.dc.common.IDcNetEVisitor;
+import com.interpss.dc.algo.DcPowerFlowAlgorithm;
 
 public class PVModelList_2BusTest  extends CorePluginTestSetup { 
 	//@Test
@@ -46,8 +45,8 @@ public class PVModelList_2BusTest  extends CorePluginTestSetup {
 				.getImportedObj();		
 		//System.out.println(dcNet.net2String());
 		
-		IDcNetEVisitor algo = DcSysObjectFactory.createDcPowerFlowAlgorithm();
-		dcNet.accept(algo);
+		DcPowerFlowAlgorithm algo = DcSysObjectFactory.createDcPowerFlowAlgorithm();
+		algo.calLoadflow(dcNet);
 		assertTrue(dcNet.isLfConverged());
 		//System.out.println(dcNet.net2String());
 		
