@@ -21,6 +21,7 @@ import com.interpss.core.algo.impl.solver.DefaultMultiNetLfSolver;
 import com.interpss.core.net.BranchBusSide;
 import com.interpss.core.net.childnet.ChildNetInterface;
 import com.interpss.core.net.childnet.ChildNetInterfaceBranch;
+import com.interpss.core.net.childnet.ChildNetInterfaceType;
 import com.interpss.core.net.childnet.ChildNetworkWrapper;
 import com.interpss.core.net.childnet.solver.ChildNetworkProcessor;
 
@@ -64,7 +65,7 @@ public class MNet_IEEE9_PSSE_Test extends CorePluginTestSetup {
 		                            .getImportedObj();	
 
 		//Create childNet
-        ChildNetworkWrapper<AclfBus,AclfBranch> childNet = ChildNetObjectFactory.createChildAclfNet(net, "childNet");
+        ChildNetworkWrapper<AclfBus,AclfBranch> childNet = ChildNetObjectFactory.createChildAclfNet(net, "childNet", ChildNetInterfaceType.BRANCH_INTERFACE);
 		
 		/*
 		 * define three interfacing branches.
