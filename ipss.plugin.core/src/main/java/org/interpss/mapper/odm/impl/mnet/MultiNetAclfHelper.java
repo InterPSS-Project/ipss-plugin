@@ -41,6 +41,7 @@ import com.interpss.core.ChildNetObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.net.childnet.ChildNetInterfaceType;
 import com.interpss.core.net.childnet.ChildNetworkWrapper;
 import com.interpss.dist.DistBranch;
 import com.interpss.dist.DistBus;
@@ -88,7 +89,7 @@ public class MultiNetAclfHelper extends BaseMultiNetHelper {
 	
 	private void mapAclfChildNet(AclfNetwork parentAclfNet, ChildNetworkDefXmlType xmlChildDef, ODMAclfNetMapper.XfrBranchModel xfrBranchModel) throws InterpssException {
 		NetworkXmlType xmlChildNet = (NetworkXmlType)xmlChildDef.getChildNetRef().getIdRef();
-		ChildNetworkWrapper<AclfBus,AclfBranch> childNetContainer = ChildNetObjectFactory.createChildAclfNet(parentAclfNet, xmlChildNet.getId());
+		ChildNetworkWrapper<AclfBus,AclfBranch> childNetContainer = ChildNetObjectFactory.createChildAclfNet(parentAclfNet, xmlChildNet.getId(), ChildNetInterfaceType.BRANCH_INTERFACE);
 		AclfNetwork childAclfNet = AclfXmlNet2AclfNet.fx((LoadflowNetXmlType)xmlChildNet, xfrBranchModel);
 		childNetContainer.setNetwork(childAclfNet);	
 		
