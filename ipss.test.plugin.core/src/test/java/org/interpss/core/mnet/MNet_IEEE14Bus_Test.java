@@ -111,7 +111,8 @@ public class MNet_IEEE14Bus_Test extends CorePluginTestSetup {
 		AclfNetwork childAclfNet = (AclfNetwork)net.getChildNetWrapper("childNet").getNetwork();
 		assertTrue((childAclfNet.getBusList().size() == 5 && childAclfNet.getBranchList().size() == 4));
 		
-		for (ChildNetInterface cbranch : childNet.getChildNetInterfaces()) {
+		for (ChildNetInterface branch : childNet.getChildNetInterfaces()) {
+			ChildNetInterfaceBranch cbranch = (ChildNetInterfaceBranch)branch;
 			// interface bus should still be in the parent net
 			assertTrue(net.getBus(cbranch.getInterfaceBusParentNet().getId()) != null);
 			// interface bus should be defined as Swing bus in the child net
