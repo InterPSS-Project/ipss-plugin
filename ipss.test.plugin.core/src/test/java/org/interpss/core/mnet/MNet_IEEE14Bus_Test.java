@@ -43,6 +43,7 @@ import com.interpss.core.algo.impl.solver.DefaultMultiNetLfSolver;
 import com.interpss.core.net.BranchBusSide;
 import com.interpss.core.net.childnet.ChildNetInterface;
 import com.interpss.core.net.childnet.ChildNetInterfaceBranch;
+import com.interpss.core.net.childnet.ChildNetInterfaceType;
 import com.interpss.core.net.childnet.ChildNetworkFactory;
 import com.interpss.core.net.childnet.ChildNetworkWrapper;
 import com.interpss.core.net.childnet.solver.ChildNetworkProcessor;
@@ -72,7 +73,7 @@ public class MNet_IEEE14Bus_Test extends CorePluginTestSetup {
 		 *    Bus12->Bus13(1) @Bus12
 		 */
 		// create a child-network in the parent-network
-		ChildNetworkWrapper<AclfBus,AclfBranch> childNet = ChildNetObjectFactory.createChildAclfNet(net, "childNet");
+		ChildNetworkWrapper<AclfBus,AclfBranch> childNet = ChildNetObjectFactory.createChildAclfNet(net, "childNet", ChildNetInterfaceType.BRANCH_INTERFACE);
 		
 		/*
 		 * define three interfacing branches.
