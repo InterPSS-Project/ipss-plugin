@@ -51,6 +51,7 @@ import org.interpss.core.dstab.mach.Eq1MachineCaseTest;
 import org.interpss.core.dstab.mach.MachineSaturationTest;
 import org.interpss.core.dstab.mach.RoundRotorMachineTest;
 import org.interpss.core.dstab.mach.SalientPoleMachineTest;
+import org.interpss.core.mvel.MvelExprEval_Test;
 import org.interpss.plugin.beanModel.AclfBeanMapperTest;
 import org.interpss.plugin.piecewise.Acsc5BusTestSubAreaNet;
 import org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise;
@@ -194,6 +195,9 @@ import org.junit.runners.Suite.SuiteClasses;
 	//Acsc5BusTesPiecewiseAlgo.class,
 	
 	IEEE9BusTestDStabSubAreaNet.class,
+	
+	// Mvel Expression
+	MvelExprEval_Test.class,
 })
 public class CorePluginTestSuite {
 }
