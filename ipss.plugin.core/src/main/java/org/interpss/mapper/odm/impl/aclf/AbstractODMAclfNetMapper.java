@@ -130,6 +130,9 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 		try {
 			AclfNetwork aclfNet = CoreObjectFactory.createAclfNetwork();
 			aclfNet.setOriginalDataFormat(this.originalFormat);		
+			if (this.originalFormat == OriginalDataFormat.IEEECDF) {
+				aclfNet.setContributeGenLoadModel(true);
+			}
 			
 			mapAclfNetworkData(aclfNet, xmlNet);
 			simuCtx.setAclfNet((AclfNetwork)aclfNet);
