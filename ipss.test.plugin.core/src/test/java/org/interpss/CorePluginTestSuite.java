@@ -72,6 +72,9 @@ import org.junit.runners.Suite.SuiteClasses;
 	IEEE14_YMatrixSetTest.class,
 	SwingBusSubAreaTest.class,
 	
+	// acsc
+	IEEE9Bus_Acsc_test.class,
+	
 	// Dclf
 	Mod_SixBus_DclfPsXfr.class,
 	SixBus_DclfPsXfr.class,
