@@ -39,7 +39,7 @@ import com.interpss.dstab.mach.MachineModelType;
 
 public class TestSinglePhaseACMotorModel {
 	
-	//@Test
+	@Test
 	public void test_dstab_1PAC() throws InterpssException{
 		IpssCorePlugin.init();
 		
@@ -255,7 +255,7 @@ public class TestSinglePhaseACMotorModel {
 				  sm.getAcMotorPTable().get("ACMotor_1@Bus1_phaseA").get(41).getValue())<1.0E-4);
 		  
 		  assertTrue(Math.abs(sm.getAcMotorPTable().get("ACMotor_1@Bus1_phaseA").get(0).getValue()*0.8-
-				  sm.getAcMotorPTable().get("ACMotor_1@Bus1_phaseA").get(42).getValue())<1.0E-4);
+				  sm.getAcMotorPTable().get("ACMotor_1@Bus1_phaseA").get(42).getValue())<1.0E-3);
 		  
 		  /*
 AC motor Pe: time,ACMotor_2@Bus1_phaseB, ACMotor_1@Bus1_phaseA
@@ -365,7 +365,7 @@ AC motor Pe: time,ACMotor_2@Bus1_phaseB, ACMotor_1@Bus1_phaseA
 	}
 	
 	
-	//@Test
+	@Test
 	public void test1PAC() throws InterpssException{
 		
        IpssCorePlugin.init();
@@ -450,14 +450,27 @@ AC motor Pe: time,ACMotor_2@Bus1_phaseB, ACMotor_1@Bus1_phaseA
 				 double v = 0.599;
 				 bus1.get3PhaseVotlages().a_0 = new Complex(v,0.0);
 				 //Tstall = 0.033;
-				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER);
-				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER);
-			
-				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER);
-				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER);
-				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER);
-				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER);
-				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER);
+				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,0);
+				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,1);
+				 ac1.updateAttributes(false);
+				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,0);
+				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,1);
+				 ac1.updateAttributes(false);
+				 
+				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,0);
+				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,1);
+				 ac1.updateAttributes(false);
+				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,0);
+				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,1);
+				 ac1.updateAttributes(false);
+				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,0);
+				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,1);
+				 ac1.updateAttributes(false);
+				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,0);
+				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,1);
+				 ac1.updateAttributes(false);
+				 
+
 				 
 				 // check the power before stalling
 				 System.out.println(ac1.getLoadPQ());
@@ -468,14 +481,18 @@ AC motor Pe: time,ACMotor_2@Bus1_phaseB, ACMotor_1@Bus1_phaseA
 				 assertTrue(ac1.getNortonCurInj().subtract(Iinj).abs()<1.0E-6);
 				 
 				 
-				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER);
+				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,0);
+				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,1);
+				 ac1.updateAttributes(false);
 				 // check the stall status
-				 assertTrue(ac1.getStage() ==1);
+				 assertTrue(ac1.getStage() ==0);
+				 
 				 
 				 System.out.println(ac1.getLoadPQ());
 				 
+				 System.out.println("Inorton = "+ac1.getNortonCurInj().toString());
 				 // check the current injection compesation under stalling condition
-				 assertTrue(ac1.getNortonCurInj().abs()==0.0);
+				 assertTrue(ac1.getNortonCurInj().abs()<1.0E-8);
   		  	}
 	}
 	

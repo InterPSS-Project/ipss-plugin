@@ -137,8 +137,8 @@ public class InductionMotor3PhaseAdapter extends DynLoadModel3Phase {
 	
 	
 	@Override
-	public boolean nextStep(double dt, DynamicSimuMethod method) {
-		return this.getInductionMotor().nextStep( dt, method);
+	public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
+		return this.getInductionMotor().nextStep( dt, method, flag);
 	}
 	
 	@Override

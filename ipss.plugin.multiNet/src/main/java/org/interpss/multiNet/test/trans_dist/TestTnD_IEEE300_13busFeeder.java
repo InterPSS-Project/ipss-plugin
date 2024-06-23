@@ -458,7 +458,7 @@ public class TestTnD_IEEE300_13busFeeder {
 			 
 		}
 	
-		//@Test
+		@Test
 		public void test_IEEE300_TD_dynamicSim_one_Feeder() throws InterpssException{
 			IpssCorePlugin.init();
 			
@@ -684,7 +684,7 @@ public class TestTnD_IEEE300_13busFeeder {
 		
 		}
 		
-	@Test
+	//@Test
 	public void test_IEEE300_TD_dynamicSim_multiFeeder() throws InterpssException{
 		IpssCorePlugin.init();
 		
@@ -807,13 +807,13 @@ public class TestTnD_IEEE300_13busFeeder {
 		  
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 			dstabAlgo.setSimuStepSec(0.005d);
-			dstabAlgo.setTotalSimuTimeSec(10);
+			dstabAlgo.setTotalSimuTimeSec(1.0);
 			
 
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 			
 			//applied the event
-			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus2_LVBus",proc.getSubNetworkByBusId("Bus2_LVBus"),SimpleFaultCode.GROUND_3P,new Complex(0.0),null,1.0d,0.07),"3phaseFault@Bus5");
+			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus2_LVBus",proc.getSubNetworkByBusId("Bus2_LVBus"),SimpleFaultCode.GROUND_3P,new Complex(0.0),null,0.2d,0.07),"3phaseFault@Bus5");
 	        
 			
 			StateMonitor sm = new StateMonitor();

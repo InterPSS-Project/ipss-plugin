@@ -21,6 +21,7 @@ import com.interpss.dstab.mach.Machine;
 public class PID_SixCoefficientHydroGovernor extends AbstractGovernor {
 	
 	private double statePm = 0.0, statePref = 0.0, stateX1 = 0.0, stateX2 = 0.0, stateX3 = 0.0, stateX4 = 0.0, stateX5 = 0.0, stateX6 = 0.0;
+	private double stateX1_old = 0.0, stateX2_old = 0.0, stateX3_old = 0.0, stateX4_old = 0.0, stateX5_old = 0.0, stateX6_old = 0.0;
 	private LimitType limit = null;
 	
 	//private LimitType limit_1 = null;
@@ -68,6 +69,8 @@ public class PID_SixCoefficientHydroGovernor extends AbstractGovernor {
 		stateX4 = stateX3;
 		stateX5 = stateX4;
 		stateX6 = stateX5;
+		
+		
 		IpssLogger.getLogger().fine("Governor Limit:      " + limit);
 		return true;
 	}
@@ -82,12 +85,13 @@ public class PID_SixCoefficientHydroGovernor extends AbstractGovernor {
 	 *  @param msg the SessionMsg object
 	 */	
 	@Override
-	public boolean nextStep(final double dt, final DynamicSimuMethod method, Machine mach) {
+	public boolean nextStep(final double dt, final DynamicSimuMethod method, Machine mach, int flag) {
 	   
 		if (method == DynamicSimuMethod.MODIFIED_EULER) {
+			
+			//TODO to implement predictor and corrector steps  10/26/2020 
 			/*
 			 *     Step-1 : x(1) = x(0) + dx_dt(1) * dt
-			 *     Step-2 : x(2) = x(0) + 0.5 * (dx_dt(2) + dx_dt(1)) * dt
 			 */
 			final double dX1_dt = cal_dX1_dt(stateX3);
 			final double dX2_dt = cal_dX2_dt(stateX2, stateX3);
@@ -102,6 +106,10 @@ public class PID_SixCoefficientHydroGovernor extends AbstractGovernor {
 			final double X4_1 = stateX4 + dX4_dt * dt;
 			final double X5_1 = limit.limit(stateX5 + dX5_dt * dt);
 			final double X6_1 = stateX6 + dX6_dt * dt;
+			
+			/*
+			 *     Step-2 : x(2) = x(0) + 0.5 * (dx_dt(2) + dx_dt(1)) * dt
+			 */
 			//stateX1 = stateX1 + 0.5 * (cal_dX1_dt(X1_1) + dX1_dt) * dt;
 			stateX1 = stateX1 + 0.5 * (cal_dX1_dt(X3_1) + dX1_dt) * dt;
 			stateX2 = stateX2 + 0.5 * (cal_dX2_dt(X2_1,X3_1) + dX2_dt) * dt;

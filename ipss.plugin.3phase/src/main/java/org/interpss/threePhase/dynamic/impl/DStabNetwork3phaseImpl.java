@@ -413,108 +413,12 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
   			}
   			
 		  	// Calculate and set generator injection current
-			for( Bus b : getBusList()) {
-				BaseDStabBus<?,?> bus = (BaseDStabBus<?,?>)b;
+			for(DStab3PBus bus : getBusList()) {
 
 				if(bus.isActive()){
-					DStab3PBus bus3p = (DStab3PBus) bus;
-					Complex3x1 iInject = new Complex3x1();
-
-					if(bus.getContributeGenList().size()>0){
-						 for(AclfGen gen: bus.getContributeGenList()){
-						      if(gen.isActive() && gen instanceof DStabGen){
-						    	  DStabGen dynGen = (DStabGen)gen;
-						    	  if( dynGen.getDynamicGenDevice()!=null){
-						    		  DStabGen3PhaseAdapter gen3P = threePhaseGenAptr.apply(dynGen);
-						    		  iInject = iInject.add(gen3P.getISource3Phase());
-						    		 
-						    		  //System.out.println("Iinj@Gen-"+dynGen.getId()+", "+iInject.toString());
-						    	  }
-						    	 
-						       }
-						  }
-				    }
-					//TODO 3-phase dynamic load list
-					//if(bus3p.getp)
-					if(bus3p.isLoad()){
-						
-						//// Phase A
-						if(bus3p.getPhaseADynLoadList().size()>0){
-							Complex iPhAInj = new Complex(0,0);
-							
-							for(DynLoadModel1Phase load1p:bus3p.getPhaseADynLoadList()){
-								if(load1p.isActive()){
-							        iPhAInj = iPhAInj.add(load1p.getNortonCurInj());
-							       // System.out.println("Iinj@Load-"+bus3p.getId()+", "+ load1p.getId()+","+load1p.getCompensateCurInj().toString());
-								}
-							}
-							
-							if(iPhAInj.abs()>0.0)
-								iInject.a_0 = iInject.a_0.add(iPhAInj);
-						}
-						
-						// Phase B
-						if(bus3p.getPhaseBDynLoadList().size()>0){
-							Complex iPhBInj = new Complex(0,0);
-							
-							for(DynLoadModel1Phase load1p:bus3p.getPhaseBDynLoadList()){
-								if(load1p.isActive()){
-							        iPhBInj = iPhBInj.add(load1p.getNortonCurInj());
-							       // System.out.println("Iinj@Load-"+bus3p.getId()+", "+ load1p.getId()+","+load1p.getCompensateCurInj().toString());
-								}
-							}
-							
-							if(iPhBInj.abs()>0.0)
-								iInject.b_1 = iInject.b_1.add(iPhBInj);
-						}
-						
-						// Phase C
-						if(bus3p.getPhaseCDynLoadList().size()>0){
-							Complex iPhCInj = new Complex(0,0);
-							
-							for(DynLoadModel1Phase load1p:bus3p.getPhaseCDynLoadList()){
-								if(load1p.isActive()){
-							        iPhCInj = iPhCInj.add(load1p.getNortonCurInj());
-							       // System.out.println("Iinj@Load-"+bus3p.getId()+", "+ load1p.getId()+","+load1p.getCompensateCurInj().toString());
-								}
-							}
-							
-							if(iPhCInj.abs()>0.0)
-								iInject.c_2 = iInject.c_2.add(iPhCInj);
-						}
-						
-						//TODO three-phase dynamic loads
-						
-//						if(bus3p.getThreePhaseDynLoadList().size()>0){
-//							for(DynLoadModel3Phase load3p:bus3p.getThreePhaseDynLoadList()){
-//								if(load3p.isActive()){
-//									iInject = iInject.add(load3p.getISource3Phase());
-//								}
-//							}
-//						}
-						
-						 for(DynamicBusDevice dynDevice: bus.getDynamicBusDeviceList()){
-							    if(dynDevice.isActive()){
-		                        	if(dynDevice instanceof InductionMotor ){
-		                        		DynLoadModel3Phase dynLoad3P = threePhaseInductionMotorAptr.apply((InductionMotor) dynDevice);
-		                        		iInject = iInject.add(dynLoad3P.getISource3Phase());
-
-		                        	}
-		                        	else if (dynDevice instanceof DynLoadModel3Phase){
-		                        		DynLoadModel3Phase dynLoad3P = (DynLoadModel3Phase) dynDevice;
-
-		                        		iInject = iInject.add(dynLoad3P.getISource3Phase());
-
-		                        	}
-							    }
-
-	                         }
-
-					}
-				  
-				  if(iInject == null){
-					  throw new Error (bus.getId()+" current injection is null");
-				  }
+				
+					// get the bus current injections, including those from generators and loads connected to the bus.
+					Complex3x1 iInject = bus.injCurDynamic3Phase();
 				  
 				  // add external/customized bus current injection
 				  if(this.get3phaseCustomCurrInjTable()!=null){
@@ -531,22 +435,25 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 		   
 			getYMatrixABC().solveEqn();
 
-			// update bus voltage and machine Pe
-			for( Bus b : getBusList()) {
-				BaseDStabBus bus = (BaseDStabBus)b;
+			// update bus voltage 
+			for(DStab3PBus bus: getBusList()) {
+	
 				if(bus.isActive()){
+					//System.out.println("Bus, sortNumber:"+bus.getSortNumber());
+					
 					Complex3x1 vabc = getYMatrixABC().getX(bus.getSortNumber());
-					//if(bus.getId().equals("Bus12"))
-					//System.out.println("Bus, Vabc:"+b.getId()+","+vabc.toString());
+					
+					//System.out.println("Bus, Vabc(old):"+bus.getId()+","+bus.get3PhaseVotlages().toString());
+					//System.out.println("Bus, Vabc(new):"+bus.getId()+","+vabc.toString());
 					
 					if(!vabc.a_0.isNaN() && !vabc.b_1.isNaN() && !vabc.c_2.isNaN()){
                     
 						//if(bus instanceof Bus3Phase){
-							DStab3PBus bus3P = (DStab3PBus) bus;
-							 bus3P.set3PhaseVotlages(vabc);
+						
+							 bus.set3PhaseVotlages(vabc);
 							 
 							 // update the positive sequence voltage
-							 Complex v = bus3P.getThreeSeqVoltage().b_1;
+							 Complex v = bus.getThreeSeqVoltage().b_1;
 							 bus.setVoltage(v);
 							// System.out.println("posV @ bus :"+v.toString()+","+bus.getId());
 							
@@ -605,15 +512,7 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 						AclfGen gen = (AclfGen)obj;
 						if(gen.isActive() && gen instanceof DStabGen){
 							DStabGen dynGen = (DStabGen) gen;
-							//TODO 11/19/2015 consider generic generation models
-							/*
-							if(dynGen.getMach()!=null){
-								dynGen.getMach().calMultiFactors();
-							    if(!dynGen.getMach().initStates(bus))
-								   initFlag = false;
-							}
-							*/
-							
+	
 							if(dynGen.getDynamicGenDevice()!=null){
 							    if(!dynGen.getDynamicGenDevice().initStates(bus))
 								   initFlag = false;

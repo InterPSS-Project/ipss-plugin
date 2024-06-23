@@ -29,6 +29,7 @@ import com.interpss.dstab.common.DStabSimuException;
 import com.interpss.dstab.datatype.DStabSimuEvent;
 import com.interpss.dstab.device.DynamicBranchDevice;
 import com.interpss.dstab.device.DynamicBusDevice;
+import com.interpss.dstab.device.DynamicDevice;
 import com.interpss.dstab.mach.Machine;
 
 public class MultiNetDStabSolverImpl extends DStabSolverImpl {
@@ -159,13 +160,38 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 			this.multiNetSimuHelper.prepareBoundarySubSystemMatrix();
 		}
 	}
-   
 	
+	@Override public void afterStep(double simutime)  throws DStabSimuException {
+		super.afterStep(simutime);
+		
+		// back up the states	
+		for(BaseDStabNetwork<?, ?> dsNet: subNetList){
+		 // backup the states
+		 for (Bus b :  dsNet.getBusList()) {
+				if(b.isActive()){
+					BaseDStabBus<?extends AclfGen,?> bus = (BaseDStabBus)b;
+					// Solve DEqn for generator 
+					if(bus.getContributeGenList().size()>0){
+						for(AclfGen gen:bus.getContributeGenList()){
+							if(gen.isActive()){
+								Machine mach = ((DStabGen)gen).getMach();
+								if(mach!=null && mach.isActive()){
+								  mach.backUpStates();
+								}
+							}
+						}
+					}
+					
+				}
+		  }
+		}
+		
+	}
+   
 	@Override 
-	public void nextStep(double time, double dt, DynamicSimuMethod method)  throws DStabSimuException {
-		 
+	public boolean networkSolutionStep() throws DStabSimuException {
+		
 		boolean netSolConverged = true;
-		//maxIterationTimes =1;
 		for(int i=0;i<maxIterationTimes;i++){ 
 			 
 			// The first  step of the multi-subNetwork solution is to solve each subnetwork independently without current injections from the 
@@ -224,68 +250,86 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 			  }
 	
 		  } // for maxIterationTimes loop
-			
-			
-			
-			 /*
-			  * Third step : with the network solved, the bus voltage and current injections are determined, it is time to solve the dynamic devices using 
-			  * integration methods
-			  *  x(t+deltaT) = x(t) + dx_dt*deltaT 
-			  */
-			  
-		  for(BaseDStabNetwork<?, ?> dsNet: subNetList){  
-			// Solve DEqn for all dynamic bus devices
-				for (Bus b : dsNet.getBusList()) {
-					if(b.isActive()){
-						DStabBus bus = (DStabBus)b;
-						for (DynamicBusDevice device : bus.getDynamicBusDeviceList()) {
-							// solve DEqn for the step. This includes all controller's nextStep() call
-							if(device.isActive()){
-								if (!device.nextStep(dt, method)) {
-									throw new DStabSimuException("Error occured, Simulation will be stopped");
-								}
+		
+		return true;
+	}
+	
+	@Override
+	public void diffEqnIntegrationStep(double t, double dt, DynamicSimuMethod method, int flag) throws DStabSimuException{
+		
+		 /*
+		  * Third step : with the network solved, the bus voltage and current injections are determined, it is time to solve the dynamic devices using 
+		  * integration methods
+		  *  x(t+deltaT) = x(t) + dx_dt*deltaT 
+		  */
+		  
+	  for(BaseDStabNetwork<?, ?> dsNet: subNetList){  
+		// Solve DEqn for all dynamic bus devices
+			for (Bus b : dsNet.getBusList()) {
+				if(b.isActive()){
+					BaseDStabBus<? extends DStabGen, ? extends DStabLoad> bus = (BaseDStabBus<? extends DStabGen, ? extends DStabLoad>) b;
+					
+					// calculate bus frequency
+					if (!bus.nextStep(dt, method, flag)) {
+							throw new DStabSimuException("Error occured, Simulation will be stopped");
+					}
+					 
+					for (DynamicBusDevice device : bus.getDynamicBusDeviceList()) {
+						// solve DEqn for the step. This includes all controller's nextStep() call
+						if(device.isActive()){
+							if (!device.nextStep(dt, method, flag)) {
+								throw new DStabSimuException("Error occured, Simulation will be stopped");
 							}
 						}
-						
-						// Solve DEqn for generator 
-						if(bus.getContributeGenList().size()>0){
-							for(AclfGen gen:bus.getContributeGenList()){
-								if(gen.isActive()){
-									Machine mach = ((DStabGen)gen).getMach();
-									if(mach!=null && mach.isActive()){
-									   if (!mach.nextStep(dt, method)) {
-										  throw new DStabSimuException("Error occured when solving nextStep for mach #"+ mach.getId()+ "@ bus - "
+					}
+					
+					// Solve DEqn for generator 
+					if(bus.getContributeGenList().size()>0){
+						for(DStabGen gen:bus.getContributeGenList()){
+							if(gen.isActive()){
+								/*
+								Machine mach = ((DStabGen)gen).getMach();
+								if(mach!=null && mach.isActive()){
+								   if (!mach.nextStep(dt, method, flag)) {
+									  throw new DStabSimuException("Error occured when solving nextStep for mach #"+ mach.getId()+ "@ bus - "
+								                   +bus.getId()+", Simulation will be stopped!");
+								   }
+								}
+								*/
+								DynamicDevice device = gen.getDynamicGenDevice();
+								
+								if(device.isActive()){
+									if (!device.nextStep(dt, method, flag)) {
+										  throw new DStabSimuException("Error occured when solving nextStep for dynamic device #"+ device.getId()+ "@ bus - "
 									                   +bus.getId()+", Simulation will be stopped!");
-									   }
+								
 									}
 								}
 							}
 						}
-						
-						//TODO Solve DEqn for dynamic load, e.g. induction motor
 					}
-				}// bus-loop
+					
+				}
+			}// bus-loop
 
-				// Solve DEqn for all dynamic branch devices
-				for (Branch b : dsNet.getBranchList()) {
-					DStabBranch branch = (DStabBranch)b;
-					for (DynamicBranchDevice device : branch.getDynamicBranchDeviceList()) {
-						// solve DEqn for the step. This includes all controller's nextStep() call
-						if (!device.nextStep(dt, method)) {
-							throw new DStabSimuException("Error occured, Simulation will be stopped");
-						}
+			// Solve DEqn for all dynamic branch devices
+			for (Branch b : dsNet.getBranchList()) {
+				DStabBranch branch = (DStabBranch)b;
+				for (DynamicBranchDevice device : branch.getDynamicBranchDeviceList()) {
+					// solve DEqn for the step. This includes all controller's nextStep() call
+					if (!device.nextStep(dt, method, flag)) {
+						throw new DStabSimuException("Error occured, Simulation will be stopped");
 					}
-				} 
-			  
-				
-			  // The network solution and integration steps ends here, the following is mainly to record or update some intermediate variables
-			  
-			  
-			  // update the dynamic attributes and calculate the bus frequency
-		     //  for(DStabilityNetwork dsNet: subNetList){
+				}
+			} 
+		  
 			
+		  // The network solution and integration steps ends here, the following is mainly to record or update some intermediate variables
+		 
+	
+		   if (flag ==1) {
 				for ( Bus busi : dsNet.getBusList() ) {
-					DStabBus bus = (DStabBus)busi;
+					BaseDStabBus bus = (BaseDStabBus)busi;
 					if(bus.isActive()){
 						
 						// update dynamic attributes of the dynamic devices connected to the bus
@@ -295,39 +339,193 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 						
 							e.printStackTrace();
 						}
-						 // calculate bus frequency
-						 if (!bus.nextStep(dt, method)) {
-								throw new DStabSimuException("Error occured, Simulation will be stopped");
-							}
 					}
 				}
-		    	
-		 } // for subNetwork loop
-			
-			
-		// back up the states	
-			for(BaseDStabNetwork<?, ?> dsNet: subNetList){
-			 // backup the states
-			 for (Bus b :  dsNet.getBusList()) {
-					if(b.isActive()){
-						DStabBus bus = (DStabBus)b;
-						// Solve DEqn for generator 
-						if(bus.getContributeGenList().size()>0){
-							for(AclfGen gen:bus.getContributeGenList()){
-								if(gen.isActive()){
-									Machine mach = ((DStabGen)gen).getMach();
-									if(mach!=null && mach.isActive()){
-									  mach.backUpStates();
-									}
-								}
-							}
-						}
-						
-					}
-			  }
-		}
-	
+				
+
+		   }
+	    	
+	 } // for subNetwork loop
+		
+		
+		
 	}
+	
+//	@Override 
+//	public void nextStep(double time, double dt, DynamicSimuMethod method)  throws DStabSimuException {
+//		 
+//		boolean netSolConverged = true;
+//		//maxIterationTimes =1;
+//		for(int i=0;i<maxIterationTimes;i++){ 
+//			 
+//			// The first  step of the multi-subNetwork solution is to solve each subnetwork independently without current injections from the 
+//			// connection tie-lines
+//			for(BaseDStabNetwork<?, ?> dsNet: subNetList){
+//				
+//				// make sure there is no current injection at the boundary
+//				dsNet.setCustomBusCurrInjHashtable(null);
+//				
+//				// solve net equation
+//				if (!dsNet.solveNetEqn())
+//					throw new DStabSimuException("Exception in dstabNet.solveNetEqn()");
+//				
+//			}  //end for-subnetwork loop
+//			
+//		
+//			 /*
+//			  *  In the 2nd step, first  solve the boundary tie-line subsystem to determine the current flows
+//			  *  in the tie-lines. Subsequently, feed the tie-line current back to the subsystems and 
+//			  *  perform the subsystem network solution again. Last, summing up the bus voltages calculated
+//			  *  in these two steps to determine the final bus voltages, based on the superposition theory.
+//			  *  
+//			  *  V = Vinternal = Vexternal
+//			  */
+//			
+//				  
+//				  // fetch the boundary bus voltages and form the Thevenin equivalent source arrays
+//				 
+//				  this.multiNetSimuHelper.updateSubNetworkEquivSource();
+//	
+//				  
+//				  // solve the tie-line subsystems, to determine the currents flowing through the tie-lines.
+//				  this.multiNetSimuHelper.solveBoundarySubSystem();
+//				  
+//				  //solve all the SubNetworks With only Boundary Current Injections
+//				  this.multiNetSimuHelper.solveSubNetWithBoundaryCurrInjection();
+//				  
+//				  for(BaseDStabNetwork<?, ?> dsNet: subNetList){
+//					for ( Bus busi : dsNet.getBusList() ) {
+//						DStabBus bus = (DStabBus)busi;
+//						if(bus.isActive()){
+//							
+//							if(i>=1){
+//								if(!NumericUtil.equals(bus.getVoltage(),voltageRecTable.get(bus.getId()),this.converge_tol))
+//									netSolConverged =false;
+//							}
+//							voltageRecTable.put(bus.getId(), bus.getVoltage());
+//						}
+//					}
+//				  }
+//				  
+//			
+//			  if(i>0 && netSolConverged) {
+//				  IpssLogger.getLogger().fine(getSimuTime()+","+"multi subNetwork solution in the nextStep() is converged, iteration #"+(i+1));
+//				  break;
+//			  }
+//	
+//		  } // for maxIterationTimes loop
+//			
+//			
+//			
+//			 /*
+//			  * Third step : with the network solved, the bus voltage and current injections are determined, it is time to solve the dynamic devices using 
+//			  * integration methods
+//			  *  x(t+deltaT) = x(t) + dx_dt*deltaT 
+//			  */
+//		
+//		  int flag = 1;
+//			  
+//		  for(BaseDStabNetwork<?, ?> dsNet: subNetList){  
+//			// Solve DEqn for all dynamic bus devices
+//				for (Bus b : dsNet.getBusList()) {
+//					if(b.isActive()){
+//						DStabBus bus = (DStabBus)b;
+//						
+//						 // calculate bus frequency
+//						 if (!bus.nextStep(dt, method, flag)) {
+//								throw new DStabSimuException("Error occured, Simulation will be stopped");
+//							}
+//						 
+//						for (DynamicBusDevice device : bus.getDynamicBusDeviceList()) {
+//							// solve DEqn for the step. This includes all controller's nextStep() call
+//							if(device.isActive()){
+//								if (!device.nextStep(dt, method, flag)) {
+//									throw new DStabSimuException("Error occured, Simulation will be stopped");
+//								}
+//							}
+//						}
+//						
+//						// Solve DEqn for generator 
+//						if(bus.getContributeGenList().size()>0){
+//							for(AclfGen gen:bus.getContributeGenList()){
+//								if(gen.isActive()){
+//									Machine mach = ((DStabGen)gen).getMach();
+//									if(mach!=null && mach.isActive()){
+//									   if (!mach.nextStep(dt, method, flag)) {
+//										  throw new DStabSimuException("Error occured when solving nextStep for mach #"+ mach.getId()+ "@ bus - "
+//									                   +bus.getId()+", Simulation will be stopped!");
+//									   }
+//									}
+//								}
+//							}
+//						}
+//						
+//						//TODO Solve DEqn for dynamic load, e.g. induction motor
+//					}
+//				}// bus-loop
+//
+//				// Solve DEqn for all dynamic branch devices
+//				for (Branch b : dsNet.getBranchList()) {
+//					DStabBranch branch = (DStabBranch)b;
+//					for (DynamicBranchDevice device : branch.getDynamicBranchDeviceList()) {
+//						// solve DEqn for the step. This includes all controller's nextStep() call
+//						if (!device.nextStep(dt, method, flag)) {
+//							throw new DStabSimuException("Error occured, Simulation will be stopped");
+//						}
+//					}
+//				} 
+//			  
+//				
+//			  // The network solution and integration steps ends here, the following is mainly to record or update some intermediate variables
+//			  
+//			  
+//			  // update the dynamic attributes and calculate the bus frequency
+//		     //  for(DStabilityNetwork dsNet: subNetList){
+//			
+//				for ( Bus busi : dsNet.getBusList() ) {
+//					DStabBus bus = (DStabBus)busi;
+//					if(bus.isActive()){
+//						
+//						// update dynamic attributes of the dynamic devices connected to the bus
+//						 try {
+//							bus.updateDynamicAttributes(false);
+//						} catch (InterpssException e) {
+//						
+//							e.printStackTrace();
+//						}
+//						 // calculate bus frequency
+//						 if (!bus.nextStep(dt, method, flag)) {
+//								throw new DStabSimuException("Error occured, Simulation will be stopped");
+//							}
+//					}
+//				}
+//		    	
+//		 } // for subNetwork loop
+//			
+//			
+//		// back up the states	
+//			for(BaseDStabNetwork<?, ?> dsNet: subNetList){
+//			 // backup the states
+//			 for (Bus b :  dsNet.getBusList()) {
+//					if(b.isActive()){
+//						DStabBus bus = (DStabBus)b;
+//						// Solve DEqn for generator 
+//						if(bus.getContributeGenList().size()>0){
+//							for(AclfGen gen:bus.getContributeGenList()){
+//								if(gen.isActive()){
+//									Machine mach = ((DStabGen)gen).getMach();
+//									if(mach!=null && mach.isActive()){
+//									  mach.backUpStates();
+//									}
+//								}
+//							}
+//						}
+//						
+//					}
+//			  }
+//		}
+//	
+//	}
 	
 	@Override public boolean procInitOutputEvent() {
 		try {

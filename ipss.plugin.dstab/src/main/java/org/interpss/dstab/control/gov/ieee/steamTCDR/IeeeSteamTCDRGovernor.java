@@ -1,5 +1,7 @@
  /*
-  * @(#)IeeeSteamTDSRGovernor.java   
+  * @(#)IeeeSteamTDSRGovernor.java
+  * 
+  * Generally referred to as IEEEG1. IEEE 1981 Type 1 Speed-Governing Model
   *
   * Copyright (C) 2006 www.interpss.org
   *
