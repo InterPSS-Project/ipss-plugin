@@ -176,9 +176,6 @@ public class SinglePhaseACMotor extends DynLoadModel1Phase {
 		//Timers for stalling and recovery 
 		private double acStallTimer = 0.0;
 		private double acRestartTimer = 0.0;
-
-		
-		private double vt_measured = 0.0;
 		
 		private double timestep = 0.0;
 		
@@ -189,6 +186,20 @@ public class SinglePhaseACMotor extends DynLoadModel1Phase {
 		private double I_CONV_FACTOR_M2S = 0.0;
 		
 		
+		// internal variables for integration
+		private double vt_measured = 0.0;
+		private double vt_measured_old = 0.0;
+		
+		private double tempA_old = 0.0;
+		private double tempB_old = 0.0;
+		
+		private double dv_dt0 = 0.0; 
+		private double dv_dt1 = 0.0;
+
+		private double dThA_dt0 = 0.0;
+		private double dThB_dt0 = 0.0;
+		private double dThA_dt1 = 0.0;
+		private double dThB_dt1 = 0.0;
 		
 		
 		
@@ -255,7 +266,7 @@ public class SinglePhaseACMotor extends DynLoadModel1Phase {
 	        
 	        }
 	        
-	        this.stage = 1; // initialized to running state
+	        this.stage = 1; // initialized to running state, 0 means stall
 	        
 			this.Gstall = this.Rstall/(this.Rstall*this.Rstall + this.Xstall*this.Xstall);
 			this.Bstall = -this.Xstall/(this.Rstall*this.Rstall + this.Xstall*this.Xstall);
@@ -290,6 +301,7 @@ public class SinglePhaseACMotor extends DynLoadModel1Phase {
 			
 			double vt = this.getBusPhaseVoltage().abs();
 			this.vt_measured = vt;
+			this.vt_measured_old = vt;
 
 			//Check whether a compensation is needed. If yes, calculate the compensation shuntY
 			// if bus.loadQ < ld1pac.q, then compShuntB = ld1pac.q-bus.loadQ
@@ -315,6 +327,9 @@ public class SinglePhaseACMotor extends DynLoadModel1Phase {
 			
 			this.tempA = i_motor*i_motor*this.Rstall;
 			this.tempB = this.tempA;
+			
+			this.tempA_old = tempA;
+			this.tempB_old = tempB;
 			
 			// initialize the parts A and B of the motor
 			this.pac_a = pac_mbase; 
@@ -379,8 +394,8 @@ public class SinglePhaseACMotor extends DynLoadModel1Phase {
 		 * The stall timer as well as the recovery timer are also counted and updated in this method
 		 */
 		@Override
-		public boolean nextStep(double dt, DynamicSimuMethod method) {
-			boolean flag = true;
+		public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
+			boolean boolFlag = true;
 			
 			// check the protection actions and update the status of AC motor accordingly
 			timestep = dt;
@@ -388,17 +403,7 @@ public class SinglePhaseACMotor extends DynLoadModel1Phase {
 			Complex vt = this.getBusPhaseVoltage();
 			double vmag = vt.abs();
 			
-			
-			
-		    // voltage measurements
-			
-			double dv_dt0 = (vmag-this.vt_measured)/this.tv;
-			
-			double vt_measured1 = this.vt_measured+dv_dt0*dt;
-			
-			double dv_dt1 = (vmag-vt_measured1)/this.tv;
-			
-			this.vt_measured = this.vt_measured+ (dv_dt0+dv_dt1)*0.5d*dt;
+		
 			
 			// thermal overload protection
 			/*
@@ -433,24 +438,49 @@ public class SinglePhaseACMotor extends DynLoadModel1Phase {
 				   ImotorB_pu = vt.multiply(this.Ystall);
 			}
 			
-			double dThA_dt0 = (Math.pow(ImotorA_pu.abs(),2)*this.Rstall - this.tempA)/this.Tth;
 			
-			double dThB_dt0 = (Math.pow(ImotorB_pu.abs(),2)*this.Rstall - this.tempB)/this.Tth;
+			if(method==DynamicSimuMethod.MODIFIED_EULER) {
 				
-		    double tempA1 = this.tempA+ dThA_dt0*dt;
-		    double tempB1 = this.tempB+ dThB_dt0*dt;
-		    
-			double dThA_dt1 = (Math.pow(ImotorA_pu.abs(),2)*this.Rstall - tempA1)/this.Tth;
+				if(flag == 0) {
+			       // voltage measurements
+				
+					dv_dt0 = (vmag-this.vt_measured_old)/this.tv;
+					
+					this.vt_measured = this.vt_measured_old+ dv_dt0*dt;
+					
+					// temperature
+					
+				    dThA_dt0 = (Math.pow(ImotorA_pu.abs(),2)*this.Rstall - this.tempA)/this.Tth;
+					
+					dThB_dt0 = (Math.pow(ImotorB_pu.abs(),2)*this.Rstall - this.tempB)/this.Tth;
+						
+					this.tempA = this.tempA_old+ dThA_dt0*dt;
+					this.tempB = this.tempB_old+ dThB_dt0*dt;
+				}
+				else if (flag ==1) {
+					
+				   dv_dt1 = (vmag-vt_measured)/this.tv;
+				   
+				   this.vt_measured = this.vt_measured_old + (dv_dt0 + dv_dt1)*0.5*dt;
+				   
+				   dThA_dt1 = (Math.pow(ImotorA_pu.abs(),2)*this.Rstall - this.tempA)/this.Tth;
+					
+				   dThB_dt1 = (Math.pow(ImotorB_pu.abs(),2)*this.Rstall - this.tempB)/this.Tth;
+				   
+				   this.tempA = this.tempA_old + (dThA_dt0+dThA_dt1)*0.5*dt;
+				   this.tempB = this.tempB_old + (dThB_dt0+dThB_dt1)*0.5*dt;
+				   
+				   this.vt_measured_old = this.vt_measured;
+				   
+				   this.tempA_old = this.tempA;
+				   this.tempB_old = this.tempB;
+				}
 			
-			double dThB_dt1 = (Math.pow(ImotorB_pu.abs(),2)*this.Rstall - tempB1)/this.Tth;
-			
-			this.tempA = this.tempA + (dThA_dt0+dThA_dt1)*0.5d*dt;
-			this.tempB = this.tempB + (dThB_dt0+dThB_dt1)*0.5d*dt;
-			
-			if(debugMode)
-			  System.out.println("next step:" +extendedDeviceId+" vt ="+vmag+", tempA = "+this.tempA);
-			
-			return flag;
+			}
+			else {
+				throw new Error("Only the Modified Euler method is supported. ");
+			}
+			return boolFlag;
 		}
 		
 		/**

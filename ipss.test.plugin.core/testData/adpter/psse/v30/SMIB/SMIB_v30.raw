@@ -1,0 +1,26 @@
+0,   100.00, 30, 0, 1,  60.00     / PSS(R)E 30 RAW created by rawd30  THU, NOV 19 2020  22:30
+TEST SYSTEM
+
+     1,'GENERATOR   ', 100.0000,2,     0.000,     0.000,   1,   1,1.0,  -0.1144,   1
+     2,'LOAD        ', 100.0000,3,     0.000,     0.000,   1,   1,1.0,  -3.03,   1
+ 0 /End of Bus data, Begin Load data
+     2,'1 ',1,   1,   1,   100.000,    50.000,     0.000,     0.000,     0.000,     0.000,   1
+ 0 /End of Load data, Begin Generator data
+     1,'1 ',    50.001,     1.092,   100.000,  -100.000,1.00000,     0,   100.000,   0.00000,   0.08900,   0.00000,   0.00000,1.00000,1,  100.0,   100.000,  -100.000,   1,1.0000
+     2,'1 ',    49.999,    51.411,  9999.000, -9999.000,1.00000,     0,   100.000,   0.00000,   0.05000,   0.00000,   0.00000,1.00000,1,  100.0,  9999.000, -9999.000,   1,1.0000
+ 0 /End of Generator data, Begin Branch data
+     1,      2,'1 ',   0.00000,   0.20000,   0.00000,    0.00,    0.00,    0.00,  0.00000,  0.00000,  0.00000,  0.00000,1,   0.00,   1,1.0000
+     1,      2,'2 ',   0.00000,   0.20000,   0.00000,    0.00,    0.00,    0.00,  0.00000,  0.00000,  0.00000,  0.00000,1,   0.00,   1,1.0000
+ 0 /End of Branch data, Begin Transformer data
+ 0 /End of Transformer data, Begin Area interchange data
+ 0 /End of Area interchange data, Begin Two-terminal dc line data
+ 0 /End of Two-terminal dc line data, Begin VSC dc line data
+ 0 /End of VSC dc line data, Begin Switched shunt data
+ 0 /End of Switched shunt data, Begin Impedance correction table data
+ 0 /End of Impedance correction table data, Begin Multi-terminal dc line data
+ 0 /End of Multi-terminal dc line data, Begin Multi-section line data
+ 0 /End of Multi-section line data, Begin Zone data
+ 0 /End of Zone data, Begin Inter-area transfer data
+ 0 /End of Inter-area transfer data, Begin Owner data
+ 0 /End of Owner data, Begin FACTS device data
+ 0 /End of FACTS device data

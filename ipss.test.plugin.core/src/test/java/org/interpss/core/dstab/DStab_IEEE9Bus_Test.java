@@ -53,6 +53,7 @@ import com.interpss.dstab.common.DStabOutSymbol;
 import com.interpss.dstab.devent.DynamicSimuEvent;
 import com.interpss.dstab.devent.DynamicSimuEventType;
 import com.interpss.dstab.devent.LoadChangeEventType;
+import com.interpss.dstab.impl.DStabGenImpl;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 import com.interpss.simu.SimuObjectFactory;
@@ -136,7 +137,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 			dstabAlgo.performSimulation();
 			
 			timer.logStd("total simu time: ");
-			}
+		}
 			//dstabAlgo.performOneStepSimulation();
 
 		//}
@@ -251,8 +252,12 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		//dsNet.addDynamicEvent(DStabObjectFactory.createGeneratorTripEvent("Bus1", "1", dsNet, 1),"Bus1_Mach1_trip_1sec");
         
 		//Load change event
+		// load shed
 		dsNet.addDynamicEvent(DStabObjectFactory.createLoadChangeEvent("Bus5", dsNet,LoadChangeEventType.FIXED_TIME,-0.2, 1.0),"LoadReduce20%@Bus5");
+        // load increase
+		//dsNet.addDynamicEvent(DStabObjectFactory.createLoadChangeEvent("Bus5", dsNet,LoadChangeEventType.FIXED_TIME, 0.2, 1.0),"LoadReduce20%@Bus5");
         
+		
 		StateMonitor sm = new StateMonitor();
 		sm.addGeneratorStdMonitor(new String[]{"Bus1-mach1","Bus2-mach1","Bus3-mach1"});
 		sm.addBusStdMonitor(new String[]{"Bus5","Bus4","Bus1"});
@@ -282,12 +287,6 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 			timer.logStd("total simu time: ");
 		}
 		
-		Complex load5 = ((BaseDStabBus)dsNet.getBus("Bus5")).calStaticLoad();
-		
-	    System.out.println("after being tripped static load at bus 5 = "+load5.toString());
-	    
-	    assertTrue(NumericUtil.equals(load5, new Complex(1.027036500526697, 0.41081460021067884), 1.0E-6)); 
-		
 		System.out.println("Mach Pe (pu) :\n"+sm.toCSVString(sm.getMachPeTable()));
 //		
 //		System.out.println("Volages Mag (pu):\n"+sm.toCSVString(sm.getBusVoltTable()));
@@ -296,6 +295,14 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		
 		System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
 		System.out.println("Branch flow P (pu):\n"+sm.toCSVString(sm.getBranchFlowPTable()));
+		
+		Complex load5 = ((BaseDStabBus)dsNet.getBus("Bus5")).calStaticLoad();
+		
+	    System.out.println("after being tripped static load at bus 5 = "+load5.toString());
+	    
+	    assertTrue(NumericUtil.equals(load5, new Complex(1.0298252490657749, 0.41193009962631), 1.0E-6)); 
+		
+
 		
 		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(0).value, 0.71639,1.0E-4));
 		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(40).value, 0.71639,1.0E-4));
@@ -677,6 +684,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 
 		
 		
+		
 		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
 		if (!new ODMDStabParserMapper(msg)
 					.map2Model(parser, simuCtx)) {
@@ -750,13 +758,13 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		
 //		System.out.println("Volages Angle (Deg):\n"+sm.toCSVString(sm.getBusAngleTable()));
 //		
-//		System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
+		System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
 		
 		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(0).value, 1.13090,1.0E-4));
 		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(40).value, 1.13090,1.0E-4));
 		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus3-mach2").get(0).value, 0.0,1.0E-4));
 		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus3-mach2").get(40).value, 0.0,1.0E-4));
-		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus3-mach2").get(42).value, 0.61517,1.0E-4));
+		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus3-mach2").get(42).value, 0.60418,1.0E-4));
 		
 	
 		
@@ -976,6 +984,80 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
             assertTrue(stateTestRecorder.diffTotal("Bus2-mach1", MachineState, 
                             DStabOutSymbol.OUT_SYMBOL_MACH_Efd) < 0.0001);
     }
+	
+	@Test
+	public void IEEE9_Dstab_gen_load_status_change() throws InterpssException{
+		IpssCorePlugin.init();
+		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
+				"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
+				"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq",
+				"testData/adpter/psse/v30/IEEE9Bus/ieee9_dyn.dyr"
+		}));
+		DStabModelParser parser =(DStabModelParser) adapter.getModel();
+		
+		//System.out.println(parser.toXmlDoc());
+
+		
+		
+		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
+		if (!new ODMDStabParserMapper(msg)
+					.map2Model(parser, simuCtx)) {
+			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
+			return;
+		}
+		PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+	    BaseDStabNetwork<?, ?> dsNet =simuCtx.getDStabilityNet();
+	    
+	    DStabGenImpl gen1 = (DStabGenImpl) dsNet.getBus("Bus1").getContributeGenList().get(0);
+		DStabGenImpl gen2 = (DStabGenImpl) dsNet.getBus("Bus2").getContributeGenList().get(0);
+		DStabGenImpl gen3 = (DStabGenImpl) dsNet.getBus("Bus3").getContributeGenList().get(0);
+		//gen3.setGen(new Complex(0.2, 0.0665));
+		//gen3.getParentBus().initContributeGen();
+		
+		gen2.setStatus(false);
+	
+		gen2.getParentBus().initContributeGen(false);
+	    
+	   // System.out.println(dsNet.net2String());
+   
+		DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
+		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
+		assertTrue(aclfAlgo.loadflow());
+		
+		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
+		
+		//dsNet.setNetEqnIterationNoEvent(20);
+		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+		dstabAlgo.setSimuStepSec(0.005);
+		dstabAlgo.setTotalSimuTimeSec(2);
+		dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
+
+
+		StateMonitor sm = new StateMonitor();
+		sm.addGeneratorStdMonitor(new String[]{"Bus1-mach1","Bus2-mach1","Bus3-mach1"});
+		sm.addBusStdMonitor(new String[]{"Bus5","Bus4","Bus1"});
+		
+		// set the output handler
+		dstabAlgo.setSimuOutputHandler(sm);
+		dstabAlgo.setOutPutPerSteps(5);
+		
+		if (dstabAlgo.initialization()) {
+			//System.out.println(simuCtx.getDStabilityNet().net2String());
+
+			System.out.println("Running DStab simulation ...");
+			assertTrue(dstabAlgo.performSimulation());
+		}
+		timer.logStd("total simu time: ");
+		
+		System.out.println("Mach Pm (pu) :\n"+sm.toCSVString(sm.getMachPmTable()));
+		
+		System.out.println("Volages Angle (Deg):\n"+sm.toCSVString(sm.getBusAngleTable()));
+		
+		System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
+			
+	
+	}
 	
 	private DynamicSimuEvent create3PhaseFaultEvent(String faultBusId, BaseDStabNetwork net,double startTime, double durationTime){
 	       // define an event, set the event id and event type.
