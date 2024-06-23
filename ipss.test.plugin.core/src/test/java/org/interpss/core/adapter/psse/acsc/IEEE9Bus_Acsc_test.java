@@ -1,5 +1,6 @@
 package org.interpss.core.adapter.psse.acsc;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
@@ -17,8 +18,11 @@ import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.AcscNetwork;
+import com.interpss.core.acsc.BusGroundCode;
 import com.interpss.core.acsc.SequenceCode;
+import com.interpss.core.acsc.XFormerConnectCode;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.IBusScVoltage;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
@@ -57,6 +61,37 @@ public class IEEE9Bus_Acsc_test {
 	  		assertTrue( net.isLfConverged());
 	  		//System.out.println(AclfOutFunc.loadFlowSummary(net));
 	  		//System.out.println(net.net2String());
+	  		
+	  		//check the transformer type and SC grounding info
+	  		/*com.interpss.core.acsc.impl.AcscBranchImpl@5ac86ba5 (id: Bus2->Bus7(1), name: Gen2_to_Bus2_cirId_1, desc: , number: 0, status: true) (booleanFlag: false, intFlag: 0, weight: (0.0, 0.0), sortNumber: 0, areaId: 1, zoneId: 1, ownerId: , statusChangeInfo: NoChange) (extensionObject: null)
+			     circuitNumber: 1
+			     branchCode:    XFormer
+			     z:          0.0000 + j0.0625
+			    Ratio  :   from side 1.0000   to side  1.0000 pu
+			    Z multiplying factor: 1.0000    Z Adj Table number: 0
+			     fromShuntY: 0.0000 + j0.0000 pu
+			     toShuntY:   0.0000 + j0.0000 pu
+			     mvaRating1,mvaRating2,mvaRating3:   0.0000, 0.0000, 0.0000
+			   LF results 
+			      p+jq(f->t) : 1.63002 + j0.06594 pu   163002.46414 + j6593.60204 kva
+			      p+jq(t->f) : -1.63002 + j0.09238 pu   -163002.46414 + j9238.21171 kva
+			      current    : -1.57971 + j-0.19395 pu    399.51847 Amps
+			
+			  SC Info:
+			     z0:      0.0000 + j0.0625
+			     From Connection:      Delta
+			     From Grounding:      Ungrounded
+			     To Connection:      Wye
+			     To Grounding:      SolidGrounded
+			     */
+	  		AcscBranch xfr_2_7= net.getBranch("Bus2->Bus7(1)");
+	  		assertEquals(xfr_2_7.getZ0().getReal(), 0, 1.0E-4);
+	  		assertEquals(xfr_2_7.getZ0().getImaginary(), 0.0625, 1.0E-4);
+	  		assertTrue(xfr_2_7.getFromGrounding().getXfrConnectCode()==XFormerConnectCode.DELTA);
+	  		assertTrue(xfr_2_7.getFromGrounding().getGroundCode()==BusGroundCode.UNGROUNDED);
+	  		
+	  		assertTrue(xfr_2_7.getToGrounding().getXfrConnectCode()==XFormerConnectCode.WYE);
+	  		assertTrue(xfr_2_7.getToGrounding().getGroundCode()==BusGroundCode.SOLID_GROUNDED);
 	  		
 	  		net.initialization(ScBusModelType.LOADFLOW_VOLT);
 	  		
