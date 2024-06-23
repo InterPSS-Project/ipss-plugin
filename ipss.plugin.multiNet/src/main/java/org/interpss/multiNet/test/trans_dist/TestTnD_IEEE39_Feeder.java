@@ -594,11 +594,12 @@ public class TestTnD_IEEE39_Feeder {
 				//System.out.println(sm.toCSVString(sm.getAcMotorPTable()));
 				//System.out.println(sm.toCSVString(sm.getAcMotorStateTable()));
 				
+				
+				/*
 				//tie-line current results
 				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//subNetCurInjResults_Ld_Comp_basecase.csv",
 						solver.getRecordResults());
 				
-				//
 				
 				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//busVoltage.csv",
 						sm.toCSVString(sm.getBusVoltTable()));
@@ -615,6 +616,7 @@ public class TestTnD_IEEE39_Feeder {
 						sm.toCSVString(sm.getAcMotorPTable()));
 				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//AcMotorQ.csv",
 						sm.toCSVString(sm.getAcMotorQTable()));
+				*/
 //				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//IndMotorP.csv",
 //						sm.toCSVString(sm.getMotorPTable()));
 //				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//IndMotorSlip.csv",
@@ -626,10 +628,10 @@ public class TestTnD_IEEE39_Feeder {
 //						sm.toCSVString(sm.getPvGenPTable()));
 //				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//pvGenQ.csv",
 //						sm.toCSVString(sm.getPvGenQTable()));
-				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//GenPe.csv",
-						sm.toCSVString(sm.getMachPeTable()));
-				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//GenPm.csv",
-						sm.toCSVString(sm.getMachPmTable()));
+//				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//GenPe.csv",
+//						sm.toCSVString(sm.getMachPeTable()));
+//				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//GenPm.csv",
+//						sm.toCSVString(sm.getMachPmTable()));
 		
 		 }
 	
@@ -666,7 +668,7 @@ public class TestTnD_IEEE39_Feeder {
 	    
 	    double PVPenetrationLevel = .0;
 	    double PVIncrement = PVPenetrationLevel/(1-PVPenetrationLevel) ;
-	    double ACMotorPercent = 50;
+	    double ACMotorPercent = 0;
 	    double IndMotorPercent = 0;
 	    double ACPhaseUnbalance = 0;
 	   
@@ -855,7 +857,7 @@ public class TestTnD_IEEE39_Feeder {
 				
 				StateMonitor sm = new StateMonitor();
 				sm.addGeneratorStdMonitor(new String[]{"Bus30-mach1","Bus37-mach1","Bus38-mach1"});
-				sm.addBusStdMonitor(new String[]{"Bus28","Bus27","Bus26","Bus24","Bus22","Bus18","Bus16","Bus15"});
+				sm.addBusStdMonitor(new String[]{"Bus28","Bus27","Bus26","Bus24","Bus22","Bus18","Bus16","Bus15","Bus5","Bus2"});
 				sm.add3PhaseBusStdMonitor(new String[]{"Bus28","Bus38"});
 				//String[] seqVotBusAry = new String[]{"Bus28","Bus27","Bus26","Bus24","Bus22","Bus18","Bus16","Bus15"};
 				//sm.add3PhaseBusStdMonitor(seqVotBusAry);
@@ -888,7 +890,7 @@ public class TestTnD_IEEE39_Feeder {
 				
 				// set the output handler
 				dstabAlgo.setSimuOutputHandler(sm);
-				dstabAlgo.setOutPutPerSteps(1);
+				dstabAlgo.setOutPutPerSteps(5);
 				//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 				
 				IpssLogger.getLogger().setLevel(Level.WARNING);
@@ -928,45 +930,28 @@ public class TestTnD_IEEE39_Feeder {
 				timer.end();
 				System.out.println("time :"+timer.getDuration());
 				System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+				System.out.println(sm.toCSVString(sm.getBusFreqTable()));
 				//System.out.println(sm.toCSVString(sm.getBusAngleTable()));
 				//System.out.println(sm.toCSVString(sm.getAcMotorPTable()));
 				//System.out.println(sm.toCSVString(sm.getAcMotorStateTable()));
 				
 				//tie-line current results
-//				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//subNetCurInjResults_Ld_Comp_basecase.csv",
+//				FileUtil.writeText2File("TnD_paper_dyn_sim//IEEE39_TnD//subNetCurInjResults_Ld_Comp_basecase.csv",
 //						solver.getRecordResults());
 				
 				//
 				
 				/*
-				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//busVoltage.csv",
+				FileUtil.writeText2File("TnD_paper_dyn_sim//IEEE39_TnD//busVoltage.csv",
 						sm.toCSVString(sm.getBusVoltTable()));
-				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//busPhAVoltage.csv",
+				FileUtil.writeText2File("TnD_paper_dyn_sim//IEEE39_TnD//busPhAVoltage.csv",
 						sm.toCSVString(sm.getBusPhAVoltTable()));
-				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//busPhBVoltage.csv",
+				FileUtil.writeText2File("TnD_paper_dyn_sim//IEEE39_TnD//busPhBVoltage.csv",
 						sm.toCSVString(sm.getBusPhBVoltTable()));
-				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//busPhCVoltage.csv",
+				FileUtil.writeText2File("TnD_paper_dyn_sim//IEEE39_TnD//busPhCVoltage.csv",
 						sm.toCSVString(sm.getBusPhCVoltTable()));
-				
-                */
-//				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//IndMotorP.csv",
-//						sm.toCSVString(sm.getMotorPTable()));
-//				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//IndMotorSlip.csv",
-//						sm.toCSVString(sm.getMotorSlipTable()));
-//				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//IndMotorQ.csv",
-//						sm.toCSVString(sm.getMotorQTable()));
-				
-//				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//pvGenP.csv",
-//						sm.toCSVString(sm.getPvGenPTable()));
-//				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//pvGenQ.csv",
-//						sm.toCSVString(sm.getPvGenQTable()));
-//				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//GenPe.csv",
-//						sm.toCSVString(sm.getMachPeTable()));
-//				FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//TnD_paper_dyn_sim//IEEE39_TnD//GenPm.csv",
-//						sm.toCSVString(sm.getMachPmTable()));
-		
-//				FileUtil.writeText2File("D://IEEE39_TnD_Gen_spd.csv",sm.toCSVString(sm.getMachSpeedTable()));
-				
+				  */
+   
 		 }
 	
 	

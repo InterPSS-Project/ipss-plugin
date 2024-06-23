@@ -342,3 +342,4 @@ public class AclfNet2BeanUtilFunc {
 		return new Double(Number2String.toStr(x, "#0.0#")).doubleValue();
 	}	
 }
+

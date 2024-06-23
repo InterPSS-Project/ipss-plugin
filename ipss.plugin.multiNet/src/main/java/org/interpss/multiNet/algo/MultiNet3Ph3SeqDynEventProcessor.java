@@ -6,9 +6,12 @@ import java.util.List;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.NumericConstant;
+import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.exp.IpssNumericException;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
+import org.interpss.threePhase.dynamic.model.DynLoadModel3Phase;
 
 import com.interpss.common.msg.IpssMessage;
 import com.interpss.core.acsc.BaseAcscBus;
@@ -20,6 +23,9 @@ import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.datatype.DStabSimuTimeEvent;
 import com.interpss.dstab.devent.DynamicSimuEvent;
 import com.interpss.dstab.devent.DynamicSimuEventType;
+import com.interpss.dstab.devent.LoadChangeEvent;
+import com.interpss.dstab.device.DynamicBusDevice;
+import com.interpss.dstab.dynLoad.DynLoadModel;
 
 public class MultiNet3Ph3SeqDynEventProcessor extends
 		MultiNetDynamicEventProcessor {
@@ -221,6 +227,123 @@ public class MultiNet3Ph3SeqDynEventProcessor extends
 						else if (e.getType() == DynamicSimuEventType.BRANCH_FAULT) {
 							 throw new UnsupportedOperationException();
 						}
+						
+						else if (e.getType() == DynamicSimuEventType.LOAD_CHANGE) {
+							// For load change, adjust the bus z using the new load value
+							LoadChangeEvent eLoad = (LoadChangeEvent) e
+									.getBusDynamicEvent();
+							
+							double factor = eLoad.getChangeFactor();
+							DStab3PBus bus = (DStab3PBus) eLoad.getBus();
+							
+							if(factor < 0) {
+								factor = Math.max(factor, -1.0-bus.getAccumulatedLoadChangeFactor());
+							}
+							
+							if(Math.abs(factor)>1.0E-4) {
+							
+								DStabNetwork3Phase _net = (DStabNetwork3Phase) bus.getNetwork();
+								
+								//NOTE: the load change implemetnation is different depending on if the sub-network is 3-phase modeling or 3-sequence modeling
+								if(this.threePhaseSubNetIdList.contains(_net.getId())){ // 3phase modeling network
+							
+										
+							    	    if(bus.getDynamicBusDeviceList()!=null && !bus.getDynamicBusDeviceList().isEmpty()){
+								    		   for(DynamicBusDevice dynDevice: bus.getDynamicBusDeviceList()){
+								    			   if(dynDevice instanceof DynLoadModel  && dynDevice.isActive()){
+								    				  
+								    				   ((DynLoadModel)dynDevice).changeLoad(factor);
+								    				   
+								    			   }
+								    			   
+								    			   if(dynDevice instanceof DynLoadModel3Phase  && dynDevice.isActive()){
+									    				  
+								    				   ((DynLoadModel3Phase)dynDevice).changeLoad(factor);
+								    				   
+								    			   }
+								    		   }
+							    	     }
+							       
+						
+							        // process static loads, represented by netLoadResults. Need to change the system Ymatrix by updating Yii of the corresponding bus
+							    	   
+							    	   if(bus.calNetLoadResults().abs()>0){
+							    		   double initVoltMag = bus.getInitVoltMag();
+							    		   
+							    		   Complex deltaPQ = bus.calNetLoadResults().multiply(factor);
+							    		   Complex deltaLoadEquivY1 = deltaPQ.conjugate().divide(initVoltMag*initVoltMag);
+							    		   
+							    		   Complex deltaLoadEquivY2 =deltaLoadEquivY1; //assuming Y1 = Y2;
+							    		   
+							    		   Complex deltaLoadEquivY0 = new Complex(0.0); // assuming delta connection, ZO = inf, Y0 = 0;
+							    		   
+							    		   int sortNum = bus.getSortNumber();
+							    		   
+							    		   Complex3x3 deltaEquivYabc = Complex3x3.z12_to_abc( new Complex3x3(deltaLoadEquivY1,deltaLoadEquivY2,deltaLoadEquivY0));
+							    		   
+							    		   _net.getYMatrixABC().addToA(deltaEquivYabc, sortNum, sortNum);	
+							    		   //System.out.println("Change Ymatrix for load shedding");
+							    	   }
+							    	    
+							    	    if(bus.get3PhaseNetLoadResults() != null && bus.get3PhaseNetLoadResults().abs() >0.0){
+							    	    
+							    	    	 int sortNum = bus.getSortNumber();
+								   			 Complex3x1 initVoltABC = bus.get3PhaseInitVoltage();
+								   			 double va = initVoltABC.a_0.abs();
+								   			 double vb = initVoltABC.b_1.abs();
+								   			 double vc = initVoltABC.c_2.abs();
+								   			 
+								   			 Complex ya = bus.get3PhaseNetLoadResults().a_0.conjugate().divide(va*va);
+								   			 Complex yb = bus.get3PhaseNetLoadResults().b_1.conjugate().divide(vb*vb);
+								   			 Complex yc = bus.get3PhaseNetLoadResults().c_2.conjugate().divide(vc*vc);
+							   			 
+							   			     _net.getYMatrixABC().addToA(new Complex3x3(ya,yb,yc).multiply(factor), sortNum, sortNum);	
+							   			    
+							    	    }
+								   }
+						    	   else { //The subnetwork is a three-sequence transmission system
+						    		   
+						    	    	double newFactor = bus.getAccumulatedLoadChangeFactor() +eLoad.getChangeFactor();
+						    			
+										bus.setAccumulatedLoadChangeFactor(newFactor);
+						
+									    if(bus.getDynamicBusDeviceList()!=null && !bus.getDynamicBusDeviceList().isEmpty()){
+								    		   for(DynamicBusDevice dynDevice: bus.getDynamicBusDeviceList()){
+								    			   if(dynDevice instanceof DynLoadModel && dynDevice.isActive()){
+								    				  
+								    				   ((DynLoadModel)dynDevice).changeLoad(factor);
+								    				   
+								    			   }
+								    		   }
+								    	   }
+							       
+							
+							        // process static loads, represented by netLoadResults. Need to change the system Ymatrix by updating Yii of the corresponding bus
+							    	   
+							    	   if(bus.calNetLoadResults().abs()>0){
+							    		 
+							    		   if(_net.isStaticLoadIncludedInYMatrix()) {
+								    		   double initVoltMag = bus.getInitVoltMag();
+								    		   
+								    		   Complex deltaPQ = bus.calNetLoadResults().multiply(eLoad.getChangeFactor());
+								    		   Complex deltaYii = deltaPQ.conjugate().divide(initVoltMag*initVoltMag);
+								    		   
+								    		   int sortNum = bus.getSortNumber();
+								    		   
+								    		   _net.getYMatrix().addToA(deltaYii, sortNum, sortNum);
+								    		   _net.setYMatrixDirty(true);
+								    		   
+								    		   
+								    		   //System.out.println("Change Ymatrix for load shedding");
+							    		   }
+							    		  
+							    		  
+							    	   }
+						    	  }					    		
+						   }
+
+						
+						}//end of load change
 						 
 				} // if event is active
 		}

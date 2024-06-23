@@ -120,7 +120,7 @@ public class IEEE123Feeder_Dstab_Test {
 //		assertTrue(Math.abs(vabc_30.c_2.abs()-1.0078)<1.0E-3);
 	}
 	
-	//@Test
+	@Test
 	public void testIEEE123BusDstabSim() throws InterpssException{
 		
 		IpssCorePlugin.init();
@@ -260,11 +260,11 @@ public class IEEE123Feeder_Dstab_Test {
 	  	assertTrue(Math.abs(rec0_21.getValue()-rec1_21.getValue())<1.0E-2);
 	  	assertTrue(Math.abs(rec1_21.getValue()-rec50_21.getValue())<1.0E-4);
 	  	
-		FileUtil.writeText2File("output//IEEE123//AcMotorState.csv",
+		FileUtil.writeText2File("output\\IEEE123\\AcMotorState.csv",
 				sm.toCSVString(sm.getAcMotorStateTable()));
-		FileUtil.writeText2File("output//IEEE123////AcMotorP.csv",
+		FileUtil.writeText2File("output\\IEEE123\\AcMotorP.csv",
 				sm.toCSVString(sm.getAcMotorPTable()));
-		FileUtil.writeText2File("output//IEEE123//AcMotorQ.csv",
+		FileUtil.writeText2File("output\\IEEE123\\AcMotorQ.csv",
 				sm.toCSVString(sm.getAcMotorQTable()));
 
 	}
