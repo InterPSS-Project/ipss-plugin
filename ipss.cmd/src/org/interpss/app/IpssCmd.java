@@ -4,7 +4,7 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.pssl.plugin.cmd.CmdRunner;
 import org.interpss.pssl.simu.BaseDSL;
 
-import com.interpss.CoreCommonFactory;
+import com.interpss.common.CoreCommonFactory;
 import com.interpss.common.exp.InterpssException;
 
 public class IpssCmd {
