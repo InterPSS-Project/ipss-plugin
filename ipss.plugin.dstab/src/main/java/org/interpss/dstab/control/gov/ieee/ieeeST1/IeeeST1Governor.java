@@ -112,8 +112,10 @@ public class IeeeST1Governor extends AbstractGovernor {
 	 *  @param msg the SessionMsg object
 	 */	
 	@Override
-	public boolean nextStep(final double dt, final DynamicSimuMethod method, Machine mach) {
+	public boolean nextStep(final double dt, final DynamicSimuMethod method, Machine mach, int flag) {
 		if (method == DynamicSimuMethod.MODIFIED_EULER) {
+			
+			//TODO to implement predictor and corrector steps  10/26/2020
 			/*
 			 *     Step-1 : x(1) = x(0) + dx_dt(1) * dt
 			 *     Step-2 : x(2) = x(0) + 0.5 * (dx_dt(2) + dx_dt(1)) * dt
@@ -130,6 +132,7 @@ public class IeeeST1Governor extends AbstractGovernor {
 			final double x2_1 = limit.limit(stateX2 + dX2_dt * dt);
 			final double x3_1 = stateX3 + dX3_dt * dt;
 			final double x4_1 = stateX4 + dX4_dt * dt;
+			
 			stateX1 = stateX1 + 0.5 * (cal_dX1_dt(x1_1) + dX1_dt) * dt;
 			stateX2 = limit.limit(stateX2 + 0.5 * (cal_dX2_dt(x1_1,x2_1) + dX2_dt) * dt);
 			stateX3 = stateX3 + 0.5 * (cal_dX3_dt(x2_1,x3_1) + dX3_dt) * dt;
