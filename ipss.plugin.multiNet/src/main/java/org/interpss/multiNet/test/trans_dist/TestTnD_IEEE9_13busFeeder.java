@@ -48,6 +48,7 @@ import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.dstab.DStabObjectFactory;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
@@ -68,7 +69,7 @@ public class TestTnD_IEEE9_13busFeeder {
 				"testData/IEEE9Bus/ieee9.raw",
 				"testData/IEEE9Bus/ieee9.seq",
 				//"testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr"
-				"testData/IEEE9Bus/ieee9_dyn.dyr"
+				"testData/IEEE9Bus/ieee9_dyn_fullModel_v33.dyr"
 		}));
 		DStabModelParser parser =(DStabModelParser) adapter.getModel();
 		
@@ -109,7 +110,7 @@ public class TestTnD_IEEE9_13busFeeder {
 		
 		for(DStab3PBus b:dsNet.getBusList()){
 	        if(b.getArea().getNumber()==1){
-	        	if(b.isActive() && b.isLoad() && (!b.isGen()) && b.getLoadP()>0.1 && b.getLoadP()<6 ){//&& 
+	        	if(b.isActive() && b.isLoad() && (!b.isGen()) && b.getLoadP()>1.0 && b.getLoadP()<6 ){//&& 
 	        		
 	        		replaceBusIdList.add(b.getId());
 		              
@@ -136,7 +137,11 @@ public class TestTnD_IEEE9_13busFeeder {
 				 
         proc.splitFullSystemIntoSubsystems(true);
         
-        proc.set3PhaseSubNetByBusId("Bus3");
+		 for(BaseDStabNetwork subnet: proc.getSubNetworkList()) {
+			 subnet.setStaticLoadIncludedInYMatrix(true);
+		 }
+        
+       // proc.set3PhaseSubNetByBusId("Bus3");
 				 
 				 // currently, if a fault at transmission system is to be considered, then it should be set to 3phase
 				// proc.set3PhaseSubNetByBusId("Bus1");
