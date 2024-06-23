@@ -24,6 +24,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.net.NetCoordinate;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
@@ -73,6 +74,10 @@ public class TestMultiNetDStabSimuHelper {
 		 proc.addSubNetInterfaceBranch("Bus7->Bus8(0)");
 		    
 		 proc.splitFullSystemIntoSubsystems(false);
+		 
+		 for(BaseDStabNetwork subnet: proc.getSubNetworkList()) {
+			 subnet.setStaticLoadIncludedInYMatrix(true);
+		 }
 		    
 		    //TODO now one needs to set the three-phase modeling subnetwork by one of the bus the subnetwork contains
 		    // this must be set before initializing MultiNet3Ph3SeqDStabSimuHelper

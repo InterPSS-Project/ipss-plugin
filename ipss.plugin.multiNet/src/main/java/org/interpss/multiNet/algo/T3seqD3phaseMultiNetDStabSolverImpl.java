@@ -217,8 +217,8 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 	
 	
 
-
-	@Override public void beforeStep(double time)  throws DStabSimuException {
+	@Override 
+	public void beforeStep(double time)  throws DStabSimuException {
 		// Process dynamic events
 		if (!dstabAlgo.isDisableDynamicEvent()) {
 			applyDynamicEvent(time);
@@ -258,41 +258,39 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 		}
 	}
    
+	@Override
+	public void afterStep(double simutime) throws DStabSimuException {
+		// TODO Auto-generated method stub
+		super.afterStep(simutime);
+		
+		// back up the states	
+		for(BaseDStabNetwork<?, ?> dsNet: subNetList){
+		 // backup the states
+		 for (Bus b :  dsNet.getBusList()) {
+				if(b.isActive()){
+					DStabBus bus = (DStabBus)b;
+					// Solve DEqn for generator 
+					if(bus.getContributeGenList().size()>0){
+						for(AclfGen gen:bus.getContributeGenList()){
+							if(gen.isActive()){
+								Machine mach = ((DStabGen)gen).getMach();
+								if(mach!=null && mach.isActive()){
+								  mach.backUpStates();
+								}
+							}
+						}
+					}
+					
+				}
+		  }
+	   }
+	}
 	
-
 	@Override 
-	public void nextStep(double time, double dt, DynamicSimuMethod method)  throws DStabSimuException {
-		 
+	public boolean networkSolutionStep() throws DStabSimuException {
+		
 		boolean netSolConverged = true;
-		
-		
-		//If use Thevenin Equivalent to represent Transmission system in distribution system
-		// first update the network equivalent using the last step solution results
-		// Otherwise the following two steps can be skipped
-		
-//		if(this.isTheveninEquiv){
-//			
-//			// step-1 calculate the transmission system Thevenin equivalent voltage (the impedance part is already calculated during initialization() or the beforeStep())
-//			updateTransNetTheveninEquivSource(false);
-//			
-//			// step-2 update the distribution systems current injection table
-//			for(DStabilityNetwork dsNet: this.distNetList){
-//				
-//				DStabNetwork3Phase dsNet3Ph = (DStabNetwork3Phase) dsNet;
-//				
-//				// get source bus Id
-//				List<String> boundaryList = subNetProcessor.getSubNet2BoundaryBusListTable().get(dsNet.getId());
-//				String sourceId = boundaryList.get(0);
-//				
-//			    // update the Norton equivalent current injection at the boundary
-//				
-//				dsNet3Ph.get3phaseCustomCurrInjTable().put(sourceId, this.distNetNortonEquivCurrentTable.get(sourceId));
-//				
-//				
-//			}
-//		}
-		
-		//TODO for testing only
+		//NOTE: for testing only
 		//maxIterationTimes = 1;
 		for(int i=0;i<maxIterationTimes;i++){ 
 			
@@ -474,85 +472,13 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 	
 		  } // for maxIterationTimes loop
 			
-			
-			
-			 /*
-			  * Third step : with the network solved, the bus voltage and current injections are determined, it is time to solve the dynamic devices using 
-			  * integration methods
-			  *  x(t+deltaT) = x(t) + dx_dt*deltaT 
-			  */
-			  
-		  for(BaseDStabNetwork<?, ?> dsNet: subNetList){  
-			// Solve DEqn for all dynamic bus devices
-				for (Bus b : dsNet.getBusList()) {
-					if(b.isActive()){
-						DStabBus bus = (DStabBus)b;
-						for (DynamicBusDevice device : bus.getDynamicBusDeviceList()) {
-							// solve DEqn for the step. This includes all controller's nextStep() call
-							if(device.isActive()){
-								if (!device.nextStep(dt, method)) {
-									throw new DStabSimuException("Error occured, Simulation will be stopped");
-								}
-							}
-						}
-						
-						// Solve DEqn for generator 
-						if(bus.getContributeGenList().size()>0){
-							for(AclfGen gen:bus.getContributeGenList()){
-								if(gen.isActive()){
-									Machine mach = ((DStabGen)gen).getMach();
-									if(mach!=null && mach.isActive()){
-									   if (!mach.nextStep(dt, method)) {
-										  throw new DStabSimuException("Error occured when solving nextStep for mach #"+ mach.getId()+ "@ bus - "
-									                   +bus.getId()+", Simulation will be stopped!");
-									   }
-									}
-								}
-							}
-						}
-						
-						//TODO Solve DEqn for dynamic load, e.g. induction motor
-					}
-				}// bus-loop
+		return netSolConverged;
+	}
+	
+	public void diffEqnIntegrationStep(double t, double dt, DynamicSimuMethod method, int flag) throws DStabSimuException{
 
-				// Solve DEqn for all dynamic branch devices
-				for (Branch b : dsNet.getBranchList()) {
-					DStabBranch branch = (DStabBranch)b;
-					for (DynamicBranchDevice device : branch.getDynamicBranchDeviceList()) {
-						// solve DEqn for the step. This includes all controller's nextStep() call
-						if (!device.nextStep(dt, method)) {
-							throw new DStabSimuException("Error occured, Simulation will be stopped");
-						}
-					}
-				} 
-			  
-				
-			  // The network solution and integration steps ends here, the following is mainly to record or update some intermediate variables
-			  
-			  
-			  // update the dynamic attributes and calculate the bus frequency
-		     //  for(DStabilityNetwork dsNet: subNetList){
-			
-				for ( Bus busi : dsNet.getBusList() ) {
-					DStabBus bus = (DStabBus)busi;
-					if(bus.isActive()){
-						
-						// update dynamic attributes of the dynamic devices connected to the bus
-						 try {
-							bus.updateDynamicAttributes(false);
-						} catch (InterpssException e) {
-						
-							e.printStackTrace();
-						}
-						 // calculate bus frequency
-						 if (!bus.nextStep(dt, method)) {
-								throw new DStabSimuException("Error occured, Simulation will be stopped");
-							}
-					}
-				}
-		    	
-		 } // for subNetwork loop
-		  
+
+		 super.diffEqnIntegrationStep(t, dt, method, flag);
 		  
 		  //TODO update the distribution bus equivalent loads based on the dynamic load power, 
 		  //if the source bus voltage is used for T&D interfacing
@@ -564,33 +490,341 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 					updateDistNetBusLoads(dsNet3Ph,loadModelVminpu);
 				}
 		  }
-		  
-			
-			
-		// back up the states	
-			for(BaseDStabNetwork<?, ?> dsNet: subNetList){
-			 // backup the states
-			 for (Bus b :  dsNet.getBusList()) {
-					if(b.isActive()){
-						DStabBus bus = (DStabBus)b;
-						// Solve DEqn for generator 
-						if(bus.getContributeGenList().size()>0){
-							for(AclfGen gen:bus.getContributeGenList()){
-								if(gen.isActive()){
-									Machine mach = ((DStabGen)gen).getMach();
-									if(mach!=null && mach.isActive()){
-									  mach.backUpStates();
-									}
-								}
-							}
-						}
-						
-					}
-			  }
-		}
-	
+	  
+		
 	}
-	
+
+//	@Override 
+//	public void nextStep(double time, double dt, DynamicSimuMethod method)  throws DStabSimuException {
+//		 
+//		boolean netSolConverged = true;
+//		
+//		
+//		//If use Thevenin Equivalent to represent Transmission system in distribution system
+//		// first update the network equivalent using the last step solution results
+//		// Otherwise the following two steps can be skipped
+//		
+////		if(this.isTheveninEquiv){
+////			
+////			// step-1 calculate the transmission system Thevenin equivalent voltage (the impedance part is already calculated during initialization() or the beforeStep())
+////			updateTransNetTheveninEquivSource(false);
+////			
+////			// step-2 update the distribution systems current injection table
+////			for(DStabilityNetwork dsNet: this.distNetList){
+////				
+////				DStabNetwork3Phase dsNet3Ph = (DStabNetwork3Phase) dsNet;
+////				
+////				// get source bus Id
+////				List<String> boundaryList = subNetProcessor.getSubNet2BoundaryBusListTable().get(dsNet.getId());
+////				String sourceId = boundaryList.get(0);
+////				
+////			    // update the Norton equivalent current injection at the boundary
+////				
+////				dsNet3Ph.get3phaseCustomCurrInjTable().put(sourceId, this.distNetNortonEquivCurrentTable.get(sourceId));
+////				
+////				
+////			}
+////		}
+//		
+//		//TODO for testing only
+//		//maxIterationTimes = 1;
+//		for(int i=0;i<maxIterationTimes;i++){ 
+//			
+//			if(this.isTheveninEquiv){
+//				// step-1 calculate the transmission system Thevenin equivalent voltage (the impedance part is already calculated during initialization() or the beforeStep())
+//				updateTransNetTheveninEquivSource(false);
+//				
+//				// step-2 update the distribution systems current injection table
+//				for(BaseDStabNetwork<?, ?> dsNet: this.distNetList){
+//					
+//					DStabNetwork3Phase dsNet3Ph = (DStabNetwork3Phase) dsNet;
+//					
+//					// get source bus Id
+//					List<String> boundaryList = subNetProcessor.getSubNet2BoundaryBusListTable().get(dsNet.getId());
+//					String sourceId = boundaryList.get(0);
+//					
+//				    // update the Norton equivalent current injection at the boundary
+//					
+//					dsNet3Ph.get3phaseCustomCurrInjTable().put(sourceId, this.distNetNortonEquivCurrentTable.get(sourceId));
+//					
+//					
+//				}
+//			}
+//			else { // use voltage source
+//				if(!this.isDistNetSolvedByPowerflow){ // for dynamic simulation only
+//					
+//					
+//					// step-1 calculate the transmission system Thevenin equivalent voltage (the impedance part is already calculated during initialization() or the beforeStep())
+//					updateTransNetTheveninEquivSource(true);
+//					
+//					// step-2 update the distribution systems current injection table
+//					for(BaseDStabNetwork<?, ?> dsNet: this.distNetList){
+//						
+//						DStabNetwork3Phase dsNet3Ph = (DStabNetwork3Phase) dsNet;
+//						
+//						// get source bus Id
+//						List<String> boundaryList = subNetProcessor.getSubNet2BoundaryBusListTable().get(dsNet.getId());
+//						String sourceId = boundaryList.get(0);
+//						
+//					    // update the Norton equivalent current injection at the boundary
+//						
+//						dsNet3Ph.get3phaseCustomCurrInjTable().put(sourceId, this.distNetNortonEquivCurrentTable.get(sourceId));
+//			       }
+//				}
+//			
+//			}
+//					
+//				
+//			// step-3 solve the distribution system
+//			
+//			
+//			for(BaseDStabNetwork<?, ?> dsNet: this.distNetList){
+//				
+//				DStabNetwork3Phase dsNet3Ph = (DStabNetwork3Phase) dsNet;
+//				
+//				if(this.isTheveninEquiv){
+//					
+//					// two simulation options here: 1) run power flow; 2) run dynamic simulation
+//					
+//					if(this.isDistNetSolvedByPowerflow)
+//						throw new UnsupportedOperationException();
+//					
+//					else // run dynamic simulation 
+//				       dsNet3Ph.solveNetEqn();
+//					
+//				} 
+//				// When T->D passing the boundary bus voltages, only power flow for distribution systems will be considered
+//				else{ 
+//					
+//					// use votlage source as equivalent, which means fixing the distribution source voltage in this step
+//					//need to figure out the source bus, the corresponding transmission bus voltage, and update it before solving the network
+//					
+//					if(this.isDistNetSolvedByPowerflow){
+//					
+//							List<String> boundaryList = subNetProcessor.getSubNet2BoundaryBusListTable().get(dsNet3Ph.getId());
+//							String sourceId = boundaryList.get(0);
+//							
+//							String  transBoundaryBusId = "";
+//							
+//							if(sourceId.contains("Dummy")){
+//								   transBoundaryBusId = sourceId.replace("Dummy", "");
+//							   }
+//							   else
+//								   transBoundaryBusId = sourceId+"Dummy";
+//							
+//							// get the transmission bus voltage
+//							Complex3x1 v012 = this.transmissionNet.getBus(transBoundaryBusId).getThreeSeqVoltage();
+//							
+//							Complex3x1 vabc = v012.toABC();
+//						
+//							
+//							if(vabc ==null)
+//								throw new Error("dist net, source bus volt is null: "+dsNet.getId());
+//							
+//							System.out.println("\ndist net, source bus volt Vabc: "+dsNet.getId()+","+ vabc.toString());
+//							
+//							// update the distribution source bus voltage
+//							DStab3PBus sourceBus3Ph = (DStab3PBus)dsNet3Ph.getBus(sourceId);
+//							
+//							sourceBus3Ph.set3PhaseVotlages(vabc);
+//						
+//							
+//							//TODO is iteration needed for this solution step, similar to power flow?
+//							//solveDistNetFixedSourceVolt(dsNet3Ph, sourceId);
+//							
+//							DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(dsNet);
+//							
+//							// always use the set source bus voltage above as the initial voltage
+//							distPFAlgo.setInitBusVoltageEnabled(false);
+//		
+//							Boolean solFlag = distPFAlgo.powerflow();
+//							
+//							if(!solFlag){
+//								throw new DStabSimuException("Error occured, distribution power flow diverged! Distnet Id:"+dsNet.getId());
+//							}
+//					}
+//					// 
+//					else{
+//						
+//						 dsNet3Ph.solveNetEqn();
+//					}
+//				}
+//			
+//				
+//			}
+//			 
+//	        // step-4 calculate the current injected from each distribution system into the transmission system
+//			this.calculateDist2Trans3SeqCurInjections();
+//		
+//			
+//			// update the positive-sequence current injection table
+//			
+//			//System.out.println("D->T positive seq current inj table= "+this.dist2TransPosSeqCurInjTable);
+//			this.transmissionNet.setCustomBusCurrInjHashtable(this.dist2TransPosSeqCurInjTable);
+//			
+//			// step-5 solve the transmission network network solution
+//			if(transmissionNet instanceof DStabNetwork3Phase)
+//				((DStabNetwork3Phase)this.transmissionNet).solvePosSeqNetEqn();
+//			else
+//				this.transmissionNet.solveNetEqn();
+//			
+//			//update the positive sequence voltage, as they are not updated to threeSeqVoltage by default
+//			for (BaseDStabBus bus : this.transmissionNet.getBusList()) {
+//				   //only the measurements of active buses will be output. 
+//				    if(bus.isActive())
+//				         bus.getThreeSeqVoltage().b_1 = bus.getVoltage();
+//		    }
+//			
+//			// solve the negative and zero-sequence networks
+//			
+//			//System.out.println("D->T neg seq current inj table= "+this.dist2TransNegSeqCurInjTable);
+//			//System.out.println("D->T zero positive seq current inj table= "+this.dist2TransZeroSeqCurInjTable);
+//			
+//			solveSeqNetwork(this.transmissionNet, SequenceCode.NEGATIVE,this.dist2TransNegSeqCurInjTable);
+//			solveSeqNetwork(this.transmissionNet, SequenceCode.ZERO,this.dist2TransZeroSeqCurInjTable);
+//			
+//			
+//			// step-6 check if the transmission network solution results of the last two steps converge wrt the tolerance
+//			// if so, exit the loop; otherwise, continue the iteration until the maximum iteration
+//			for ( BaseDStabBus busi : transmissionNet.getBusList() ) {
+//				
+//				if(busi.isActive()){
+//					
+//					if(i>=1){
+//						if(!NumericUtil.equals(busi.getVoltage(),lastStepTransBoundaryVoltTable.get(busi.getId()),this.converge_tol))
+//							netSolConverged =false;
+//					}
+//					lastStepTransBoundaryVoltTable.put(busi.getId(), busi.getVoltage());
+//				}
+//			 }
+//			
+//			
+//			
+//		     if(i>0 && netSolConverged) {
+//				  IpssLogger.getLogger().fine(getSimuTime()+","+"multi subNetwork solution in the nextStep() is converged, iteration #"+(i+1));
+//				  break;
+//			 }
+//		    
+//	
+//		  } // for maxIterationTimes loop
+//			
+//			
+//			
+//			 /*
+//			  * Third step : with the network solved, the bus voltage and current injections are determined, it is time to solve the dynamic devices using 
+//			  * integration methods
+//			  *  x(t+deltaT) = x(t) + dx_dt*deltaT 
+//			  */
+//		  int flag = 0;  
+//		  for(BaseDStabNetwork<?, ?> dsNet: subNetList){  
+//			// Solve DEqn for all dynamic bus devices
+//				for (Bus b : dsNet.getBusList()) {
+//					if(b.isActive()){
+//						DStabBus bus = (DStabBus)b;
+//						for (DynamicBusDevice device : bus.getDynamicBusDeviceList()) {
+//							// solve DEqn for the step. This includes all controller's nextStep() call
+//							if(device.isActive()){
+//								if (!device.nextStep(dt, method, flag)) {
+//									throw new DStabSimuException("Error occured, Simulation will be stopped");
+//								}
+//							}
+//						}
+//						
+//						// Solve DEqn for generator 
+//						if(bus.getContributeGenList().size()>0){
+//							for(AclfGen gen:bus.getContributeGenList()){
+//								if(gen.isActive()){
+//									Machine mach = ((DStabGen)gen).getMach();
+//									if(mach!=null && mach.isActive()){
+//									   if (!mach.nextStep(dt, method)) {
+//										  throw new DStabSimuException("Error occured when solving nextStep for mach #"+ mach.getId()+ "@ bus - "
+//									                   +bus.getId()+", Simulation will be stopped!");
+//									   }
+//									}
+//								}
+//							}
+//						}
+//						
+//						//TODO Solve DEqn for dynamic load, e.g. induction motor
+//					}
+//				}// bus-loop
+//
+//				// Solve DEqn for all dynamic branch devices
+//				for (Branch b : dsNet.getBranchList()) {
+//					DStabBranch branch = (DStabBranch)b;
+//					for (DynamicBranchDevice device : branch.getDynamicBranchDeviceList()) {
+//						// solve DEqn for the step. This includes all controller's nextStep() call
+//						if (!device.nextStep(dt, method)) {
+//							throw new DStabSimuException("Error occured, Simulation will be stopped");
+//						}
+//					}
+//				} 
+//			  
+//				
+//			  // The network solution and integration steps ends here, the following is mainly to record or update some intermediate variables
+//			  
+//			  
+//			  // update the dynamic attributes and calculate the bus frequency
+//		     //  for(DStabilityNetwork dsNet: subNetList){
+//			
+//				for ( Bus busi : dsNet.getBusList() ) {
+//					DStabBus bus = (DStabBus)busi;
+//					if(bus.isActive()){
+//						
+//						// update dynamic attributes of the dynamic devices connected to the bus
+//						 try {
+//							bus.updateDynamicAttributes(false);
+//						} catch (InterpssException e) {
+//						
+//							e.printStackTrace();
+//						}
+//						 // calculate bus frequency
+//						 if (!bus.nextStep(dt, method)) {
+//								throw new DStabSimuException("Error occured, Simulation will be stopped");
+//							}
+//					}
+//				}
+//		    	
+//		 } // for subNetwork loop
+//		  
+//		  
+//		  //TODO update the distribution bus equivalent loads based on the dynamic load power, 
+//		  //if the source bus voltage is used for T&D interfacing
+//		  for(BaseDStabNetwork<?, ?> dsNet: this.distNetList){
+//				
+//				DStabNetwork3Phase dsNet3Ph = (DStabNetwork3Phase) dsNet;
+//				
+//				if(!this.isTheveninEquiv){
+//					updateDistNetBusLoads(dsNet3Ph,loadModelVminpu);
+//				}
+//		  }
+//		  
+//			
+//			
+//		// back up the states	
+//			for(BaseDStabNetwork<?, ?> dsNet: subNetList){
+//			 // backup the states
+//			 for (Bus b :  dsNet.getBusList()) {
+//					if(b.isActive()){
+//						DStabBus bus = (DStabBus)b;
+//						// Solve DEqn for generator 
+//						if(bus.getContributeGenList().size()>0){
+//							for(AclfGen gen:bus.getContributeGenList()){
+//								if(gen.isActive()){
+//									Machine mach = ((DStabGen)gen).getMach();
+//									if(mach!=null && mach.isActive()){
+//									  mach.backUpStates();
+//									}
+//								}
+//							}
+//						}
+//						
+//					}
+//			  }
+//		}
+//	
+//	}
+//	
 	@Override public boolean procInitOutputEvent() {
 		try {
 			for(BaseDStabNetwork<?, ?> dsNet: subNetList){

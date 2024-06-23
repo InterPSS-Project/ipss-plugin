@@ -52,6 +52,8 @@ public class PVDistGen3Phase extends DynGenModel3Phase{
 	private static final String OUT_SYMBOL_IQ ="PVGenIq";
 	private  String extended_device_Id= "";
 	
+	private double dVtm_dt = 0, dVtm_dt_1 = 0;
+	
 	public PVDistGen3Phase(){
 		states = new Hashtable<>();
 	}
@@ -108,15 +110,25 @@ public class PVDistGen3Phase extends DynGenModel3Phase{
 	 }
 	 
 	 // for dynamic simulation, in the nextStep, update the this.vtmeasured
-     public boolean nextStep(double dt, DynamicSimuMethod method){
+     public boolean nextStep(double dt, DynamicSimuMethod method, int flag){
     	 //TODO for the simplified inverter-based PV generation, the only dynamic components is the terminal voltage measurement
     	 
-    	 double dVtm_dt = (getPosSeqVt().abs()-this.vtmeasured)/this.TR;
-    	 
-    	 this.vtmeasured = this.vtmeasured + dVtm_dt*dt;
+    	
     	 
     	if(method==DynamicSimuMethod.MODIFIED_EULER) {
-    		//TODO
+    		if(flag ==0) {
+    			 dVtm_dt = (getPosSeqVt().abs()-this.vtmeasured)/this.TR;
+    	    	 
+    	    	 this.vtmeasured = this.vtmeasured + dVtm_dt*dt;
+    		}
+    		else if (flag ==1) {
+    			dVtm_dt_1 = (getPosSeqVt().abs()-this.vtmeasured)/this.TR;
+    			
+    			this.vtmeasured += 0.5 *(dVtm_dt_1-dVtm_dt)*dt;
+    		}
+    	}
+    	else {
+    		throw new Error("Only the Modified Euler method is supported. ");
     	}
     	 return true;
      }
