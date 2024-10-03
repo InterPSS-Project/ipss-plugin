@@ -1,6 +1,6 @@
 package org.interpss.ext;
 
-import java.util.Hashtable;
+import java.util.HashMap;
 
 /**
  *  AclfBus extension 
@@ -8,7 +8,7 @@ import java.util.Hashtable;
  * @author mzhou
  *
  */
-public class AclfBusExtension extends Hashtable<String,String> {
+public class AclfBusExtension extends HashMap<String,String> {
 	private static final long serialVersionUID = 1L;
 	
 	/**
