@@ -24,7 +24,8 @@
 
 package org.interpss.mapper.odm.impl.aclf;
 
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.ieee.odm.schema.LimitSetXmlType;
 import org.ieee.odm.schema.PWDNetworkExtXmlType;
@@ -38,7 +39,7 @@ import com.interpss.common.exp.InterpssException;
  *
  */
 public class LimitSetHelper {
-	private Hashtable<String,Boolean> lookupTable = null;
+	private Map<String,Boolean> lookupTable = null;
 	
 	/**
 	 * constructor
@@ -46,7 +47,7 @@ public class LimitSetHelper {
 	 * @param limitSets
 	 */
 	public LimitSetHelper(PWDNetworkExtXmlType.LimitSets limitSets) {
-		this.lookupTable = new Hashtable<>();
+		this.lookupTable = new HashMap<>();
 		for (LimitSetXmlType lset : limitSets.getLimitSet()) {
 			this.lookupTable.put(lset.getName(), lset.isLsDiabled());
 		}

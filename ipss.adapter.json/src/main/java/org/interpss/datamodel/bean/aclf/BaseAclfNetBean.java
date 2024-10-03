@@ -25,7 +25,7 @@
 package org.interpss.datamodel.bean.aclf;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -60,9 +60,9 @@ public class BaseAclfNetBean<TBus extends AclfBusBean<TBusExt>,
 	
 	public BaseAclfNetBean() { 
 		busBeanList = new ArrayList<TBus>(); 
-		busIdMapper = new Hashtable<>();
+		busIdMapper = new HashMap<>();
 		branchBeanList = new ArrayList<TBra>(); 
-		branchIdMapper = new Hashtable<>();	
+		branchIdMapper = new HashMap<>();	
 	}
 	
 	public List<TBus> getBusBeanList() {
