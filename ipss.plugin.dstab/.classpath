@@ -7,7 +7,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/EMF"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/ipss.numeric"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ipss.core_EMF"/>
 	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/report/jdt-compiler.jar"/>
 	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/swing/swing-layout-1.0.3.jar"/>
