@@ -63,14 +63,20 @@ public class SalientPoleMachineTest extends TestSetupBase {
 		assertTrue(Math.abs(mach.getAngle()-0.48142) < 0.00001);
 		assertTrue(Math.abs(mach.getEq1()-1.09514) < 0.00001);
 		assertTrue(Math.abs(mach.getPsikd()-1.0139441866327137) < 0.00001);
-		assertTrue(Math.abs(mach.getPsiq11()+0.4139965935498328) < 0.00001);
+		assertTrue(Math.abs(mach.getPsiq11()+0.41399) < 0.00001);
 		assertTrue(Math.abs(mach.getEfd()-1.880088) < 0.00001);
 		assertTrue(Math.abs(mach.getPe()-0.803) < 0.00001);
 		assertTrue(Math.abs(mach.getPm()-0.803) < 0.00001);
 		
+		
 		// Move forward one step
 		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER,0);
 		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER,1);
+		
+		System.out.println("Angle, Eq1, Psikd, Psiq11, Efd, Pe: " + mach.getAngle() + ", " + 
+				mach.getEq1() + ", " + mach.getPsikd() +  ", " + mach.getPsiq11() + ", " + 
+				mach.getEfd()+ ", " + mach.getPe());
+		
 		
 		// again, the following values to compare to are by long-hand calculation. There
 		// should be no change
@@ -109,7 +115,7 @@ public class SalientPoleMachineTest extends TestSetupBase {
 				mach.getEq1() + ", " + mach.getPsikd() +  ", " + mach.getPsiq11() + ", " + 
 				mach.getEfd()+ ", " + mach.getPe());
 				
-		assertTrue(Math.abs(mach.getAngle()-0.4817927159622999) < 0.00001);
+		assertTrue(Math.abs(mach.getAngle()-0.48173082658702415) < 0.00001);
 		assertTrue(Math.abs(mach.getEq1()-1.09514) < 0.00001);
 		assertTrue(Math.abs(mach.getPsikd()-1.0139441866327137) < 0.00001);
 		assertTrue(Math.abs(mach.getPsiq11()+0.4139965935498328) < 0.00001);

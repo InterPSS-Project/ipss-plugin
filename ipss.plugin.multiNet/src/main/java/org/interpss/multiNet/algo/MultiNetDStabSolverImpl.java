@@ -164,28 +164,6 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 	@Override public void afterStep(double simutime)  throws DStabSimuException {
 		super.afterStep(simutime);
 		
-		// back up the states	
-		for(BaseDStabNetwork<?, ?> dsNet: subNetList){
-		 // backup the states
-		 for (Bus b :  dsNet.getBusList()) {
-				if(b.isActive()){
-					BaseDStabBus<?extends AclfGen,?> bus = (BaseDStabBus)b;
-					// Solve DEqn for generator 
-					if(bus.getContributeGenList().size()>0){
-						for(AclfGen gen:bus.getContributeGenList()){
-							if(gen.isActive()){
-								Machine mach = ((DStabGen)gen).getMach();
-								if(mach!=null && mach.isActive()){
-								  mach.backUpStates();
-								}
-							}
-						}
-					}
-					
-				}
-		  }
-		}
-		
 	}
    
 	@Override 

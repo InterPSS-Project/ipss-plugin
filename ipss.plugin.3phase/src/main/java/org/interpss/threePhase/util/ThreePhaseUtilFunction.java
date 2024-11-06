@@ -12,26 +12,26 @@ import com.interpss.core.abc.Static3PhaseFactory;
 import com.interpss.dstab.DStabGen;
 
 public class ThreePhaseUtilFunction {
-	
-	
+
+
 	public static Function<DStab3PBranch, Static3PXformer> threePhaseXfrAptr = bra -> {
 		Static3PXformer adpter = Static3PhaseFactory.eINSTANCE.createStatic3PXformer();
 		adpter.setBranch3P(bra);
 		return adpter;
 	};
-	
+
 	public static Function<DStabGen, DStabGen3PhaseAdapter> threePhaseGenAptr = gen -> {
 		DStabGen3PhaseAdapter adpter = ThreePhaseObjectFactory.create3PDynGenerator(gen.getId());
 		adpter.setGen(gen);
 		return adpter;
 	};
-	
+
 	public static Function<InductionMotor, InductionMotor3PhaseAdapter> threePhaseInductionMotorAptr = indMotor -> {
 		InductionMotor3PhaseAdapter adpter = new InductionMotor3PhaseAdapter(indMotor);
-		
+
 		return adpter;
 	};
-	
-	
+
+
 
 }
