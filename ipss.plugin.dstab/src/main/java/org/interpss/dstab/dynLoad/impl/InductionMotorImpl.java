@@ -1110,8 +1110,8 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	}
 
 	public void setXl(double newXl) {
-		xl = newX
-
+		xl = newXl;
+	}
 	public double getXm() {
 		return xm;
 	}
