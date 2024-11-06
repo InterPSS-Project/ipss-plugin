@@ -260,30 +260,8 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
    
 	@Override
 	public void afterStep(double simutime) throws DStabSimuException {
-		// TODO Auto-generated method stub
-		super.afterStep(simutime);
 		
-		// back up the states	
-		for(BaseDStabNetwork<?, ?> dsNet: subNetList){
-		 // backup the states
-		 for (Bus b :  dsNet.getBusList()) {
-				if(b.isActive()){
-					DStabBus bus = (DStabBus)b;
-					// Solve DEqn for generator 
-					if(bus.getContributeGenList().size()>0){
-						for(AclfGen gen:bus.getContributeGenList()){
-							if(gen.isActive()){
-								Machine mach = ((DStabGen)gen).getMach();
-								if(mach!=null && mach.isActive()){
-								  mach.backUpStates();
-								}
-							}
-						}
-					}
-					
-				}
-		  }
-	   }
+		super.afterStep(simutime);
 	}
 	
 	@Override 
