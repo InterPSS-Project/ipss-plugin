@@ -399,7 +399,7 @@ public class SMIB_Gen_Test extends TestSetupBase{
 		//dstabAlgo.setRefMachine(dsNet.getMachine("Bus2-mach1"));
 		
 		//Bus fault
-		dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus2",dsNet,SimpleFaultCode.GROUND_3P,new Complex(0.0,5.0E-9),null,0.1d,0.05),"3phaseFault@Bus2");
+		dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus2",dsNet,SimpleFaultCode.GROUND_3P,new Complex(0.0,5.0E-9),null,1.0d,0.05),"3phaseFault@Bus2");
         
 		//generator tripping event 
 		//dsNet.addDynamicEvent(DStabObjectFactory.createGeneratorTripEvent("Bus1", "1", dsNet, 1),"Bus1_Mach1_trip_1sec");
@@ -441,7 +441,8 @@ public class SMIB_Gen_Test extends TestSetupBase{
 //		System.out.println("Mach Speed (pu):\n"+sm.toCSVString(sm.getMachSpeedTable()));
 //		System.out.println("Mach Angles (deg):\n"+sm.toCSVString(sm.getMachAngleTable()));
 //		
-//		System.out.println("Mach Pe (pu) :\n"+sm.toCSVString(sm.getMachPeTable()));
+		System.out.println("Mach Pe (pu) :\n"+sm.toCSVString(sm.getMachPeTable()));
+//		System.out.println("Mach EFD(pu) :\n"+sm.toCSVString(sm.getMachEfdTable()));
 //		
 		System.out.println("Volages (pu):\n"+sm.toCSVString(sm.getBusVoltTable()));
 //		

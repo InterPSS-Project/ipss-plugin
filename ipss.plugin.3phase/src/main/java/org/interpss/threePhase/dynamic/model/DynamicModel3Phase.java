@@ -18,31 +18,35 @@ public abstract class DynamicModel3Phase extends DynamicBusDeviceImpl implements
 
     protected  DStab3PBus parentBus = null;
 	protected  Complex3x3 equivYabc = new Complex3x3();
-	
-	
+
+
 	public DStab3PBus getParentBus(){
-		if(parentBus != null)
+		if(parentBus != null) {
 			return parentBus;
-		else{
-			if(this.getDStabBus() instanceof DStab3PBus)
-		         return parentBus = (DStab3PBus) this.getDStabBus();
+		} else{
+			if(this.getDStabBus() instanceof DStab3PBus) {
+				return parentBus = (DStab3PBus) this.getDStabBus();
+			}
 		}
 		return null;
-		
+
 	}
-	
+
 	@Override
 	public Complex3x3 getEquivYabc(){
 		 equivYabc = getYabc(false);
-		if(equivYabc ==null)  equivYabc = new Complex3x3();
+		if(equivYabc ==null) {
+			equivYabc = new Complex3x3();
+		}
 		return equivYabc;
 	}
-	
+
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public boolean initStates() {
 		// TODO: implement this method
 		// Ensure that you remove @generated or mark it @generated NOT
@@ -54,6 +58,7 @@ public abstract class DynamicModel3Phase extends DynamicBusDeviceImpl implements
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public boolean initStates(BaseDStabBus abus) {
 		// TODO: implement this method
 		// Ensure that you remove @generated or mark it @generated NOT
@@ -65,6 +70,7 @@ public abstract class DynamicModel3Phase extends DynamicBusDeviceImpl implements
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public boolean initStates(BaseDStabBus abus, Machine mach) {
 		// TODO: implement this method
 		// Ensure that you remove @generated or mark it @generated NOT
@@ -76,7 +82,8 @@ public abstract class DynamicModel3Phase extends DynamicBusDeviceImpl implements
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public boolean nextStep(double dt, DynamicSimuMethod method) {
+	@Override
+	public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
 		// TODO: implement this method
 		// Ensure that you remove @generated or mark it @generated NOT
 		throw new UnsupportedOperationException();
@@ -87,7 +94,8 @@ public abstract class DynamicModel3Phase extends DynamicBusDeviceImpl implements
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public boolean nextStep(double dt, DynamicSimuMethod method, Machine mach) {
+	@Override
+	public boolean nextStep(double dt, DynamicSimuMethod method, Machine mach, int flag) {
 		// TODO: implement this method
 		// Ensure that you remove @generated or mark it @generated NOT
 		throw new UnsupportedOperationException();
@@ -98,7 +106,8 @@ public abstract class DynamicModel3Phase extends DynamicBusDeviceImpl implements
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public boolean nextStepMechanical(double dt, DynamicSimuMethod method, Network net) {
+	@Override
+	public boolean nextStepMechanical(double dt, DynamicSimuMethod method, Network net, int flag) {
 		// TODO: implement this method
 		// Ensure that you remove @generated or mark it @generated NOT
 		throw new UnsupportedOperationException();
@@ -109,7 +118,8 @@ public abstract class DynamicModel3Phase extends DynamicBusDeviceImpl implements
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public boolean nextStepElectrical(double dt, DynamicSimuMethod method, Network net) {
+	@Override
+	public boolean nextStepElectrical(double dt, DynamicSimuMethod method, Network net, int flag) {
 		// TODO: implement this method
 		// Ensure that you remove @generated or mark it @generated NOT
 		throw new UnsupportedOperationException();
@@ -120,6 +130,7 @@ public abstract class DynamicModel3Phase extends DynamicBusDeviceImpl implements
 	 * <!-- end-user-doc -->
 	 * @generated NOT
 	 */
+	@Override
 	public Hashtable<String, Object> getStates(Object ref) {
 		// TODO: implement this method
 		// Ensure that you remove @generated or mark it @generated NOT
@@ -131,6 +142,7 @@ public abstract class DynamicModel3Phase extends DynamicBusDeviceImpl implements
 	 * <!-- end-user-doc -->
 	 * @generated NOT
 	 */
+	@Override
 	public Hashtable<String, Object> getStates(Machine mach, Object ref) {
 		// TODO: implement this method
 		// Ensure that you remove @generated or mark it @generated NOT
@@ -142,6 +154,7 @@ public abstract class DynamicModel3Phase extends DynamicBusDeviceImpl implements
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public double getOutput() {
 		// TODO: implement this method
 		// Ensure that you remove @generated or mark it @generated NOT
@@ -153,19 +166,21 @@ public abstract class DynamicModel3Phase extends DynamicBusDeviceImpl implements
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public double getOutput(Machine mach) {
 		// TODO: implement this method
 		// Ensure that you remove @generated or mark it @generated NOT
 		throw new UnsupportedOperationException();
 	}
 
-	
-	
+
+
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public Object getOutputObject() {
 		// TODO: implement this method
 		// Ensure that you remove @generated or mark it @generated NOT
@@ -177,6 +192,7 @@ public abstract class DynamicModel3Phase extends DynamicBusDeviceImpl implements
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public List<?> getOutputList() {
 		// TODO: implement this method
 		// Ensure that you remove @generated or mark it @generated NOT
@@ -188,6 +204,7 @@ public abstract class DynamicModel3Phase extends DynamicBusDeviceImpl implements
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public boolean updateAttributes(boolean netChange) {
 		return true;
 	}

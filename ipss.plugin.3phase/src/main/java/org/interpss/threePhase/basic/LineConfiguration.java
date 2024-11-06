@@ -3,25 +3,25 @@ package org.interpss.threePhase.basic;
 import org.interpss.numeric.datatype.Complex3x3;
 
 public class LineConfiguration {
-	
-	enum InputType { Physical, ZYMatrix, LineCode} 
+
+	enum InputType { Physical, ZYMatrix, LineCode}
 	enum LengthUnit {Feet, Mile, Meter, kM}
-	
-	
+
+
 	private String id = "";
 	private int nphases = 1;
 	private int baseFreq = 60;
 	private InputType type =null;
-    
+
 	//TODO units
 
 	private Complex3x3 zMtx = null;
-	
+
 	private Complex3x3 shuntYMtx = null;
-	
+
 	//physical parameters
-	
-	
+
+
 	public String getId() {
 		return id;
 	}
@@ -69,12 +69,13 @@ public class LineConfiguration {
 	public void setShuntY3x3Matrix(Complex3x3 shuntYMtx) {
 		this.shuntYMtx = shuntYMtx;
 	}
-	
-	
+
+
 	public boolean calculateZYMatrixWithPhyiscalConfiguration(){
 		return true;
 	}
-	
+
+	@Override
 	public String toString(){
 		StringBuffer sb = new StringBuffer();
 		sb.append("Line Configuration:\n");
@@ -84,11 +85,11 @@ public class LineConfiguration {
 		sb.append("baseFreq: "+baseFreq+"\n");
 		sb.append("zmatrix: "+this.zMtx.toString()+"\n");
 		sb.append("ymatrix: "+ (this.shuntYMtx==null? "":this.shuntYMtx.toString())+"\n");
-		
+
 		return sb.toString();
 	}
-	
-	
-	
+
+
+
 
 }

@@ -26,6 +26,7 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.common.DStabSimuException;
 import com.interpss.dstab.device.DynamicBranchDevice;
 import com.interpss.dstab.device.DynamicBusDevice;
+import com.interpss.dstab.device.DynamicDevice;
 import com.interpss.dstab.mach.Machine;
 
 public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
@@ -215,21 +216,22 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 					
 					// Solve DEqn for generator 
 					if(bus.getContributeGenList().size()>0){
-						for(AclfGen gen:bus.getContributeGenList()){
+						for(DStabGen gen:bus.getContributeGenList()){
 							if(gen.isActive()){
-								Machine mach = ((DStabGen)gen).getMach();
-								if(mach!=null && mach.isActive()){
-								   if (!mach.nextStep(dt, method, flag)) {
-									  throw new DStabSimuException("Error occured when solving nextStep for mach #"+ mach.getId()+ "@ bus - "
-								                   +bus.getId()+", Simulation will be stopped!");
-								   }
-								}
+								if(gen.getDynamicGenDevice()!=null){
+									DynamicDevice dd = gen.getDynamicGenDevice();
+									if(dd!=null && dd.isActive()){
+									   if (!dd.nextStep(dt, method, flag)) {
+										  throw new DStabSimuException("Error occured when solving nextStep for dynamic device #"+ gen.getId()+ "@ bus - "
+									                   +bus.getId()+", Simulation will be stopped!");
+									   }
+									}
 							}
 						}
 					}
-				
 				}
-			}// bus-loop
+			  }
+		    }// bus-loop
 
 			// Solve DEqn for all dynamic branch devices
 			for (Branch b : dsNet.getBranchList()) {

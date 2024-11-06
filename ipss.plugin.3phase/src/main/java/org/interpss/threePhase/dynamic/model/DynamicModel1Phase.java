@@ -17,17 +17,18 @@ import com.interpss.dstab.mach.Machine;
 
 public abstract class DynamicModel1Phase extends DynamicBusDeviceImpl implements
 		IDynamicModel1Phase {
-	
+
 	protected  PhaseCode     connectPhase = null;
 	protected  DStab3PBus parentBus = null;
-	
+
     public DStab3PBus getParentBus(){
-    	if(this.getDStabBus() instanceof DStab3PBus)
-    		return (DStab3PBus)this.getDStabBus();
-    	else
-    		throw new Error("The parentBus is not a Bus3Phase type, #"+this.getDStabBus().getId());
+    	if(this.getDStabBus() instanceof DStab3PBus) {
+			return (DStab3PBus)this.getDStabBus();
+		} else {
+			throw new Error("The parentBus is not a Bus3Phase type, #"+this.getDStabBus().getId());
+		}
     }
-	
+
 	@Override
 	public PhaseCode getPhase() {
 		return this.connectPhase;
@@ -38,26 +39,27 @@ public abstract class DynamicModel1Phase extends DynamicBusDeviceImpl implements
 		this.connectPhase = p;
 
 	}
-	
+
 	public Complex getBusPhaseVoltage(){
 		Complex3x1 vabc = ((DStab3PBus)this.getDStabBus()).get3PhaseVotlages();
-		
+
 		switch(this.connectPhase){
-		case A: 
+		case A:
 			return vabc.a_0;
 		case B:
 			return vabc.b_1;
 		default:
 			return vabc.c_2;
 		}
-		
+
 	}
-	
+
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public boolean initStates() {
 		// TODO: implement this method
 		// Ensure that you remove @generated or mark it @generated NOT
@@ -69,6 +71,7 @@ public abstract class DynamicModel1Phase extends DynamicBusDeviceImpl implements
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public boolean initStates(BaseDStabBus abus) {
 		// TODO: implement this method
 		// Ensure that you remove @generated or mark it @generated NOT
@@ -80,6 +83,7 @@ public abstract class DynamicModel1Phase extends DynamicBusDeviceImpl implements
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public boolean initStates(BaseDStabBus abus, Machine mach) {
 		// TODO: implement this method
 		// Ensure that you remove @generated or mark it @generated NOT
@@ -91,7 +95,8 @@ public abstract class DynamicModel1Phase extends DynamicBusDeviceImpl implements
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public boolean nextStep(double dt, DynamicSimuMethod method) {
+	@Override
+	public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
 		// TODO: implement this method
 		// Ensure that you remove @generated or mark it @generated NOT
 		throw new UnsupportedOperationException();
@@ -102,7 +107,8 @@ public abstract class DynamicModel1Phase extends DynamicBusDeviceImpl implements
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public boolean nextStep(double dt, DynamicSimuMethod method, Machine mach) {
+	@Override
+	public boolean nextStep(double dt, DynamicSimuMethod method, Machine mach,int flag) {
 		// TODO: implement this method
 		// Ensure that you remove @generated or mark it @generated NOT
 		throw new UnsupportedOperationException();
@@ -113,7 +119,8 @@ public abstract class DynamicModel1Phase extends DynamicBusDeviceImpl implements
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public boolean nextStepMechanical(double dt, DynamicSimuMethod method, Network net) {
+	@Override
+	public boolean nextStepMechanical(double dt, DynamicSimuMethod method, Network net, int flag) {
 		// TODO: implement this method
 		// Ensure that you remove @generated or mark it @generated NOT
 		throw new UnsupportedOperationException();
@@ -124,7 +131,8 @@ public abstract class DynamicModel1Phase extends DynamicBusDeviceImpl implements
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public boolean nextStepElectrical(double dt, DynamicSimuMethod method, Network net) {
+	@Override
+	public boolean nextStepElectrical(double dt, DynamicSimuMethod method, Network net, int flag) {
 		// TODO: implement this method
 		// Ensure that you remove @generated or mark it @generated NOT
 		throw new UnsupportedOperationException();
@@ -135,6 +143,7 @@ public abstract class DynamicModel1Phase extends DynamicBusDeviceImpl implements
 	 * <!-- end-user-doc -->
 	 * @generated NOT
 	 */
+	@Override
 	public Hashtable<String, Object> getStates(Object ref) {
 		// TODO: implement this method
 		// Ensure that you remove @generated or mark it @generated NOT
@@ -146,6 +155,7 @@ public abstract class DynamicModel1Phase extends DynamicBusDeviceImpl implements
 	 * <!-- end-user-doc -->
 	 * @generated NOT
 	 */
+	@Override
 	public Hashtable<String, Object> getStates(Machine mach, Object ref) {
 		// TODO: implement this method
 		// Ensure that you remove @generated or mark it @generated NOT
@@ -157,6 +167,7 @@ public abstract class DynamicModel1Phase extends DynamicBusDeviceImpl implements
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public double getOutput() {
 		// TODO: implement this method
 		// Ensure that you remove @generated or mark it @generated NOT
@@ -168,6 +179,7 @@ public abstract class DynamicModel1Phase extends DynamicBusDeviceImpl implements
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public double getOutput(Machine mach) {
 		// TODO: implement this method
 		// Ensure that you remove @generated or mark it @generated NOT
@@ -179,6 +191,7 @@ public abstract class DynamicModel1Phase extends DynamicBusDeviceImpl implements
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public Object getOutputObject() {
 		// TODO: implement this method
 		// Ensure that you remove @generated or mark it @generated NOT
@@ -190,6 +203,7 @@ public abstract class DynamicModel1Phase extends DynamicBusDeviceImpl implements
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public List<?> getOutputList() {
 		// TODO: implement this method
 		// Ensure that you remove @generated or mark it @generated NOT
@@ -201,6 +215,7 @@ public abstract class DynamicModel1Phase extends DynamicBusDeviceImpl implements
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public boolean updateAttributes(boolean netChange) {
 		// TODO: implement this method
 		// Ensure that you remove @generated or mark it @generated NOT

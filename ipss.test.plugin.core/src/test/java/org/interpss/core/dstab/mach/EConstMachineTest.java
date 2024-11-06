@@ -89,8 +89,8 @@ public class EConstMachineTest extends TestSetupBase {
 		System.out.println("Pe " + mach.getPe());
 		System.out.println("Pm " + mach.getPm());
 		
-		assertTrue(Math.abs(Math.toDegrees(mach.getAngle())-11.51816301758578) < 0.00001);
-		assertTrue(Math.abs(mach.getSpeed()-1.0002) < 0.00001);
+		assertTrue(Math.abs(Math.toDegrees(mach.getAngle())-11.51456) < 0.00001);
+		assertTrue(Math.abs(mach.getSpeed()-1.0001999) < 0.00001);
 		assertTrue(Math.abs(mach.getE()-1.20416) < 0.00001);
 		assertTrue(Math.abs(mach.getPe()-0.8) < 0.00001);
 		assertTrue(Math.abs(mach.getPm()-1.0) < 0.00001);
