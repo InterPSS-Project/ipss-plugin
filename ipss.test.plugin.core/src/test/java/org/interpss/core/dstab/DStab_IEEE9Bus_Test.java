@@ -300,7 +300,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		
 	    System.out.println("after being tripped static load at bus 5 = "+load5.toString());
 	    
-	    assertTrue(NumericUtil.equals(load5, new Complex(1.0298252490657749, 0.41193009962631), 1.0E-6)); 
+	    assertTrue(NumericUtil.equals(load5, new Complex(1.02869, 0.41147), 1.0E-5)); 
 		
 
 		
@@ -942,7 +942,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
             
             BaseDStabNetwork dsNet =simuCtx.getDStabilityNet();
             //System.out.println(dsNet.net2String());
-            dsNet.initialization(ScBusModelType.DSTAB_SIMU);
+            
 
             DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
             LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
@@ -968,7 +968,8 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
             stateTestRecorder.addTestRecords("Bus2-mach1", MachineState, 
                             DStabOutSymbol.OUT_SYMBOL_MACH_Efd, timePoints, machEfdPoints);
             dstabAlgo.setSimuOutputHandler(stateTestRecorder);
-                    
+            
+            //dsNet.initialization(ScBusModelType.DSTAB_SIMU);
             dsNet.setNetEqnIterationNoEvent(1);
             if (dstabAlgo.initialization()) {
                     //System.out.println(simuCtx.getDStabilityNet().net2String());

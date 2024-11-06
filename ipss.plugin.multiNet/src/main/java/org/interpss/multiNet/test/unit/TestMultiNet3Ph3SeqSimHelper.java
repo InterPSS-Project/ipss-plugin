@@ -1035,7 +1035,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 		 proc.addSubNetInterfaceBranch("Bus7->Bus8(0)");
 		
 		    
-		 proc.splitFullSystemIntoSubsystems(false);
+		 proc.splitFullSystemIntoSubsystems(true);
 		    
 		    //TODO now one needs to set the three-phase modeling subnetwork by one of the bus the subnetwork contains
 		 proc.set3PhaseSubNetByBusId("Bus5");
