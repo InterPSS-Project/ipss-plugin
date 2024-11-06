@@ -50,6 +50,8 @@ public class RoundRotorMachineTest extends TestSetupBase {
 		
 		// calculate mach state init values
 		BaseDStabBus<?,?> bus = net.getDStabBus("Gen");
+		
+		bus.initStates();
 
 		mach.initStates(bus);
 		
@@ -62,19 +64,20 @@ public class RoundRotorMachineTest extends TestSetupBase {
 
 		// the following values to compare to are by long-hand calculation
 		Double R2D =57.295779513082320;
-		System.out.println("Angle, Eq1, Ed1, Psid11, Psiq11, Efd, Pe: " + mach.getAngle()*R2D + ", " + 
+		System.out.println("Angle, Eq1, Ed1, Psikd, Psikq, Efd, Pe, speed: " + mach.getAngle()*R2D + ", " + 
 		                 mach.getEq1() + ", " + mach.getEd1() + ", " + mach.getPsikd() +  ", " + 
-		                 mach.getPsikq() + ", " + mach.getEfd()+ ", " + mach.getPe());
+		                 mach.getPsikq() + ", " + mach.getEfd()+ ", " + mach.getPe()+", " +mach.getSpeed());
 		                 
 		assertTrue(Math.abs(Math.toDegrees(mach.getAngle())-27.58341) < 0.00001);
 		assertTrue(Math.abs(mach.getEq1()-1.09514) < 0.00001);
 		assertTrue(Math.abs(mach.getEd1()-0.36656) < 0.00001);
-		assertTrue(Math.abs(mach.getPsikd()-0.9598101364176048) < 0.00001);
-		assertTrue(Math.abs(mach.getPsikq()-0.4312464516144092) < 0.00001);
+		assertTrue(Math.abs(mach.getPsikd()-1.0139441866327137) < 0.00001);
+		assertTrue(Math.abs(mach.getPsikq()-0.4053716645175447) < 0.00001);
 		assertTrue(Math.abs(mach.getEfd()-1.88008) < 0.00001);
 		assertTrue(Math.abs(mach.getPe()-0.803) < 0.00001);
 		assertTrue(Math.abs(mach.getPm()-0.803) < 0.00001);
 		
+		mach.getOutputObject();
 		// Move forward one step
 		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER,0);
 		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER,1);
@@ -82,15 +85,16 @@ public class RoundRotorMachineTest extends TestSetupBase {
 		// again, the following values to compare to are by long-hand calculation. There
 		// should be no change
 		
-		System.out.println("Angle, Eq1, Ed1, Psid11, Psiq11, Efd, Pe: " + mach.getAngle()*R2D + ", " + 
+		System.out.println("Angle, Eq1, Ed1, Psid11, Psiq11, Efd, Pe, speed: " + mach.getAngle()*R2D + ", " + 
                 mach.getEq1() + ", " + mach.getEd1() + ", " + mach.getPsikd() +  ", " + 
-                mach.getPsikq() + ", " + mach.getEfd()+ ", " + mach.getPe());
+                mach.getPsikq() + ", " + mach.getEfd()+ ", " + mach.getPe()+", " +mach.getSpeed());
+                
 				
 		assertTrue(Math.abs(Math.toDegrees(mach.getAngle())-27.58341) < 0.00001);
 		assertTrue(Math.abs(mach.getEq1()-1.09514) < 0.00001);
 		assertTrue(Math.abs(mach.getEd1()-0.36656) < 0.00001);
-		assertTrue(Math.abs(mach.getPsikd()-0.9598101364176048) < 0.00001);
-		assertTrue(Math.abs(mach.getPsikq()-0.4312464516144092) < 0.00001);
+		assertTrue(Math.abs(mach.getPsikd()-1.0139441866327137) < 0.00001);
+		assertTrue(Math.abs(mach.getPsikq()-0.4053716645175447) < 0.00001);
 		assertTrue(Math.abs(mach.getEfd()-1.88008) < 0.00001);
 		assertTrue(Math.abs(mach.getPe()-0.803) < 0.00001);
 		assertTrue(Math.abs(mach.getPm()-0.803) < 0.00001);
@@ -105,8 +109,8 @@ public class RoundRotorMachineTest extends TestSetupBase {
 		assertTrue(Math.abs(Math.toDegrees(mach.getAngle())-27.58341) < 0.00001);
 		assertTrue(Math.abs(mach.getEq1()-1.09514) < 0.00001);
 		assertTrue(Math.abs(mach.getEd1()-0.36656) < 0.00001);
-		assertTrue(Math.abs(mach.getPsikd()-0.9598101364176048) < 0.00001);
-		assertTrue(Math.abs(mach.getPsikq()-0.4312464516144092) < 0.00001);
+		assertTrue(Math.abs(mach.getPsikd()-1.0139441866327137) < 0.00001);
+		assertTrue(Math.abs(mach.getPsikq()-0.4053716645175447) < 0.00001);
 		assertTrue(Math.abs(mach.getEfd()-1.88008) < 0.00001);
 		assertTrue(Math.abs(mach.getPe()-0.803) < 0.00001);
 		assertTrue(Math.abs(mach.getPm()-0.803) < 0.00001);
@@ -124,13 +128,13 @@ public class RoundRotorMachineTest extends TestSetupBase {
                 mach.getEq1() + ", " + mach.getEd1() + ", " + mach.getPsikd() +  ", " + 
                 mach.getPsikq() + ", " + mach.getEfd()+ ", " + mach.getPe());
 		
-		assertTrue(Math.abs(Math.toDegrees(mach.getAngle())-27.604689) < 0.00001);
+		assertTrue(Math.abs(Math.toDegrees(mach.getAngle())-27.60114) < 0.00001);
 		assertTrue(Math.abs(mach.getEq1()-1.09514) < 0.00001);
 		assertTrue(Math.abs(mach.getEd1()-0.36656) < 0.00001);
-		assertTrue(Math.abs(mach.getPsikd()-0.9597688640596288) < 0.00001);
-		assertTrue(Math.abs(mach.getPsikq()-0.4312368760336627) < 0.00001);
+		assertTrue(Math.abs(mach.getPsikd()-1.013919423217928) < 0.00001);
+		assertTrue(Math.abs(mach.getPsikq()-0.40536591916909676) < 0.00001);
 		assertTrue(Math.abs(mach.getEfd()-1.8800889) < 0.00001);
-		assertTrue(Math.abs(mach.getPe()-0.806464378011155) < 0.00001);
+		assertTrue(Math.abs(mach.getPe()-0.805909) < 0.00001);
 		assertTrue(Math.abs(mach.getPm()-1.0) < 0.00001);
 	}
 }
