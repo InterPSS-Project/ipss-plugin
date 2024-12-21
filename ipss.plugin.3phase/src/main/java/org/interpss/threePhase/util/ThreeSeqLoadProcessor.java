@@ -7,7 +7,7 @@ import com.interpss.core.acsc.SequenceCode;
 import com.interpss.dstab.BaseDStabBus;
 
 public class ThreeSeqLoadProcessor {
-	
+
 	public static Complex3x3 getEquivLoadYabc(BaseDStabBus<?,?> bus){
 
 		Complex loadEquivY1 =  new Complex(1.0,0).divide(bus.getEquivZ1());
@@ -16,7 +16,7 @@ public class ThreeSeqLoadProcessor {
 
 		return Complex3x3.z12_to_abc( new Complex3x3(loadEquivY1,loadEquivY2,loadEquivY0));
 	}
-	
+
 	public static void initEquivLoadY120(BaseDStabBus<?,?> bus){
 	    bus.initSeqEquivLoad(SequenceCode.POSITIVE);
 	    bus.initSeqEquivLoad(SequenceCode.NEGATIVE);
