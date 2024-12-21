@@ -269,17 +269,28 @@ public class TestLd1pacModel extends TestSetupBase {
 		double v = 0.599;
 		bus1.setVoltageMag(0.599);
 		// Tstall = 0.033;
-		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER);
+		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,0);
+		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,1);
 		acLoad.updateAttributes(false);
-		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER);
+		
+		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,0);
+		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,1);
 		acLoad.updateAttributes(false);
-		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER);
+		
+		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER, 0);
+		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER, 1);
 		acLoad.updateAttributes(false);
-		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER);
+		
+		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,0);
+		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,1);
 		acLoad.updateAttributes(false);
-		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER);
+		
+		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,0);
+		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,1);
 		acLoad.updateAttributes(false);
-		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER);
+		
+		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,0);
+		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,1);
 		acLoad.updateAttributes(false);
 
 		// check the power before stalling
@@ -290,7 +301,8 @@ public class TestLd1pacModel extends TestSetupBase {
 		Iinj = Iinj.divide(bus1.getVoltage()).conjugate().multiply(-1.0);
 		assertTrue(acLoad.getNortonCurInj().subtract(Iinj).abs() < 1.0E-6);
 
-		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER);
+		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,0);
+		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,1);
 		acLoad.updateAttributes(false);
 		// check the stall status
 		assertTrue(acLoad.getStage() == 0);

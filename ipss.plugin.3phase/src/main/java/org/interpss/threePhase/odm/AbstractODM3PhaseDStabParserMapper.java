@@ -45,46 +45,46 @@ import com.interpss.simu.SimuCtxType;
 
 public class AbstractODM3PhaseDStabParserMapper<Tfrom>  extends
 		AbstractODMDStabParserMapper<Tfrom> {
-	
+
 protected IPSSMsgHub msg = null;
-	
+
 	/**
 	 * constructor
 	 */
 	public AbstractODM3PhaseDStabParserMapper() {
 	}
-		
+
 	/**
 	 * transfer info stored in the parser object into simuCtx object
-	 * 
+	 *
 	 * @param p an ODM parser object, representing an ODM xml file.
 	 * @param simuCtx
 	 * @return
 	 */
 	@Override public boolean map2Model(Tfrom p, SimuContext simuCtx) {
 		boolean noError = true;
-		
+
 		DStabModelParser parser = (DStabModelParser) p;
 		if (parser.getStudyCase().getNetworkCategory() == NetworkCategoryEnumType.TRANSMISSION
 				&& parser.getStudyCase().getAnalysisCategory() == AnalysisCategoryEnumType.TRANSIENT_STABILITY) {
 			// get the base net xml record from the parser object
 			DStabNetXmlType xmlNet = parser.getDStabNet();
-			
+
 			//XformerZTableXmlType xfrZTable = xmlNet.getXfrZTable();
-			
+
 			try {
-				// create a DStabilityNetwork object and map the net info 
+				// create a DStabilityNetwork object and map the net info
 //				if(xmlNet.isPositiveSeqDataOnly()){
 //					throw new Exception("The negative and zero sequence data must be provided so as to create three-phase network");
 //				}
 				DStabNetwork3Phase dstabNet = mapDStabNetworkData(xmlNet);
 				simuCtx.setDStabilityNet(dstabNet);
 				simuCtx.setNetType(SimuCtxType.DSTABILITY_NET);
-				
-/*				
+
+/*
 				DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
 						dstabNet, new DatabaseSimuOutputHandler(), this.msg);
-*/						
+*/
 				DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
 						dstabNet, this.msg);
 				simuCtx.setDynSimuAlgorithm(dstabAlgo);
@@ -96,16 +96,16 @@ protected IPSSMsgHub msg = null;
 				AclfBusDataHelper<DStab3PGen,DStab3PLoad> helper = new AclfBusDataHelper<>(dstabNet);
 				for (JAXBElement<? extends BusXmlType> bus : xmlNet.getBusList().getBus()) {
 					DStabBusXmlType dstabBusXml = (DStabBusXmlType) bus.getValue();
-					
+
 					DStab3PBus dstabBus = ThreePhaseObjectFactory.create3PDStabBus(dstabBusXml.getId(), dstabNet);
-						
+
 					// base the base bus info part
 					mapBaseBusData(dstabBusXml, dstabBus, dstabNet);
-						
+
 					// map the Aclf info part
 					helper.setBus(dstabBus);
 					helper.setAclfBusData(dstabBusXml);
-						
+
 					// if the record includes Acsc bus info, do the mapping
 					if (xmlNet.isHasShortCircuitData()) {
 						setAcscBusData(dstabBusXml, dstabBus);
@@ -123,13 +123,13 @@ protected IPSSMsgHub msg = null;
 							branch instanceof PSXfr3WDStabXmlType){
 						dstabBranch = ThreePhaseObjectFactory.createBranch3W3Phase();
 					}
-					else if (branch instanceof LineDStabXmlType || 
+					else if (branch instanceof LineDStabXmlType ||
 							branch instanceof XfrDStabXmlType ||
 								branch instanceof PSXfrDStabXmlType) {
 						//dstabBranch = DStabObjectFactory.createDStabBranch();
 						dstabBranch = ThreePhaseObjectFactory.create3PBranch();
 					}
-					
+
 					if(dstabBranch != null){
 						aclfNetMapper.mapAclfBranchData(branch, dstabBranch, dstabNet);
 
@@ -139,9 +139,9 @@ protected IPSSMsgHub msg = null;
 							if(branch instanceof Xfr3WDStabXmlType ||
 									branch instanceof PSXfr3WDStabXmlType){
 								setAcsc3WBranchData(acscBraXml, (DStab3WBranch)dstabBranch);
+							} else {
+								setAcscBranchData(acscBraXml, (DStabBranch)dstabBranch);
 							}
-							else
-							   setAcscBranchData(acscBraXml, (DStabBranch)dstabBranch);
 						}
 					}
 					else {
@@ -150,18 +150,18 @@ protected IPSSMsgHub msg = null;
 						noError = false;
 					}
 				}
-				
+
 				/*
-				 * a parent dstab net cannot contain any child network 
+				 * a parent dstab net cannot contain any child network
 				 */
-				
+
 				// map the dynamic simulation settings information
 				if(parser.getStudyCase().getStudyScenario() !=null){
 					IpssStudyScenarioXmlType s = (IpssStudyScenarioXmlType)parser.getStudyCase().getStudyScenario().getValue();
 					new DStabScenarioHelper(dstabNet,dstabAlgo).
 								mapOneFaultScenario(s);
 				}
-				
+
 				AbstractODMAclfNetMapper.postAclfNetProcessing(dstabNet);
 			} catch (InterpssException e) {
 				ipssLogger.severe(e.toString());
@@ -171,23 +171,23 @@ protected IPSSMsgHub msg = null;
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		} 
+		}
 		else {
 			ipssLogger.severe( "Error: wrong Transmission NetworkType and/or ApplicationType");
 			return false;
 		}
-		
+
 		OriginalDataFormatEnumType ofmt = parser.getStudyCase().getContentInfo().getOriginalDataFormat();
-		simuCtx.getNetwork().setOriginalDataFormat(ODMHelper.map(ofmt));		
+		simuCtx.getNetwork().setOriginalDataFormat(ODMHelper.map(ofmt));
 		return noError;
 	}
-	
+
 	private DStabNetwork3Phase mapDStabNetworkData(DStabNetXmlType xmlNet) throws InterpssException {
 		DStabNetwork3Phase dstabNet = ThreePhaseObjectFactory.create3PhaseDStabNetwork();
 		mapAcscNetworkData(dstabNet, xmlNet);
 		dstabNet.setSaturatedMachineParameter(xmlNet.isSaturatedMachineParameter());
 		dstabNet.setLfDataLoaded(true);
 		return dstabNet;
-	}	
-	
+	}
+
 }
