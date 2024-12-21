@@ -1,0 +1,20 @@
+
+DStabilityNetwork Info:
+
+AcscNetwork Info:
+     id:           undefined
+     name:         
+     desc: 
+     BaseKva:      100000.0000 kva
+     Frequency:    50.0000 Hz
+     lfDataLoaded: No
+     lfConverged:  No
+     potiveSeqDataOnly:  false
+     scDataLoaded: No
+
+Total Area : 0
+
+
+AcscBus Info
+
+AcscBranch Info

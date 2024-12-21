@@ -110,6 +110,8 @@ public class TestCMPLDWModel {
 	  		/*
 	  		 *  load 
 	  		 */
+		  
+		    System.out.println(dsNet.getBus("Bus3").getInfoOnlyDynModel());
 	  		
 	  		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, msg);
 			LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
@@ -147,6 +149,9 @@ public class TestCMPLDWModel {
 				}
 		
 			}
+		    System.out.println(dsNet.getBus("Bus1").getDynamicBusDeviceList());
+		    System.out.println(dsNet.getBus("Bus3").getDynamicBusDeviceList());
+		    
 			//System.out.println(sm.toCSVString(sm.getMachAngleTable()));
 			System.out.println(sm.toCSVString(sm.getBusVoltTable()));
 			System.out.println(sm.toCSVString(sm.getAcMotorPTable()));
@@ -265,8 +270,7 @@ public class TestCMPLDWModel {
 			
 			
 			if (dstabAlgo.initialization()) {
-				System.out.println(dsNet.getMachineInitCondition());
-				
+				System.out.println(dsNet.getMachineInitCondition());				
 				System.out.println("Running DStab simulation ...");
 			    while(dstabAlgo.getSimuTime()<=dstabAlgo.getTotalSimuTimeSec()){
 				     dstabAlgo.solveDEqnStep(true);
