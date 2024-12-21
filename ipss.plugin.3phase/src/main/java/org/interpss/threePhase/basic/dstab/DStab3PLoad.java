@@ -10,9 +10,9 @@ import com.interpss.core.acsc.PhaseCode;
 import com.interpss.dstab.DStabLoad;
 
 public interface DStab3PLoad extends ILoad3Phase, DStabLoad {
-	
+
 	public void setPhaseCode (PhaseCode phCode);
-	
+
 	public PhaseCode getPhaseCode ();
 	/**
 	 * calcuate the Yabc from Y120
@@ -26,56 +26,56 @@ public interface DStab3PLoad extends ILoad3Phase, DStabLoad {
 	 * @return
 	 */
 	public Complex3x3 getEquivYabc();
-	
+
 	/**
 	 * get the initial load at nominal voltage level
 	 * @return
 	 */
 	public Complex3x1 getInit3PhaseLoad();
-	
+
 	/**
 	 *  get three phase loads in pu
 	 * @return
 	 */
 	public Complex3x1  get3PhaseLoad(Complex3x1 vabc);
-	
-	
+
+
 	/**
-	 * 
+	 *
 	 * @param threePhaseLoad  three phase loads in pu
 	 * @return
 	 */
 	public void  set3PhaseLoad(Complex3x1 threePhaseLoad);
-	
-	
+
+
 	/**
-	 * 
+	 *
 	 * @param phase
 	 * @return
 	 */
 	public Complex   getPhaseLoad(PhaseCode phase);
-	
+
 	public void  setPhaseLoad(Complex phaseLoad, PhaseCode phase);
-	
+
 	/**
 	 * calculate the equivalent current injection of the load, used in power flow solution
 	 * @param vabc
 	 * @return
 	 */
 	public Complex3x1 getEquivCurrInj(Complex3x1 vabc);
-	
+
 	public LoadConnectionType getLoadConnectionType();
-	
+
 	public void setLoadConnectionType(LoadConnectionType threePhaseWye);
-	
-	public Complex getInit3PhaseTotalLoad(); 
-	
+
+	public Complex getInit3PhaseTotalLoad();
+
 	/**
 	 * set the nominal KV level of the load
 	 * @param ratedkV
 	 */
 	public void setNominalKV(double ratedkV);
-	
+
 	/**
 	 * return the nominal KV level of the load
 	 * @return

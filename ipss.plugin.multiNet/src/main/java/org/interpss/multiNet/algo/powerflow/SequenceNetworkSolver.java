@@ -17,7 +17,7 @@ import com.interpss.core.sparse.solver.ISparseEqnSolver;
 import com.interpss.core.sparse.solver.SparseEqnSolverFactory;
 
 /**
- * Sequence Network Helper is to solve the negative and zeor
+ * Sequence Network Helper is to solve the negative and zero
  * sequence networks, which, together with the traditional positive
  * sequence transient stability simulation, realizes the three-sequence
  * transient stability simulation. 

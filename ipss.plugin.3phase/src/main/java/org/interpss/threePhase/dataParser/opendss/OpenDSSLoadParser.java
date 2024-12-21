@@ -14,9 +14,9 @@ import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.acsc.PhaseCode;
 
 public class OpenDSSLoadParser {
-	
+
 	/*
-	 *  load model code: 
+	 *  load model code:
 	 *  1:Standard constant P+jQ load. (Default)
 		2:Constant impedance load.
 		3:Const P, Quadratic Q (like a motor).
@@ -26,7 +26,7 @@ public class OpenDSSLoadParser {
 		7:Const P, Fixed Impedance Q
 		8:ZIPV (7 values)
 	 */
-	
+
 	/*
 	 *  !
 		! LOAD DEFINITIONS
@@ -38,19 +38,19 @@ public class OpenDSSLoadParser {
 		! as three 1-phase loads.
 	 */
 	    private OpenDSSDataParser dataParser = null;
-		
+
 		public OpenDSSLoadParser(OpenDSSDataParser parser){
 			this.dataParser = parser;
 		}
-		
+
 		public boolean parseLoadData(String loadStr) throws InterpssException{
 			boolean no_error = true;
-			
+
 			/*
-			 * New Load.S1a   Bus1=1.1    Phases=1 Conn=Wye   Model=1 kV=2.4   kW=40.0  kvar=20.0 
-			 * 
+			 * New Load.S1a   Bus1=1.1    Phases=1 Conn=Wye   Model=1 kV=2.4   kW=40.0  kvar=20.0
+			 *
 			 * NOTE:
-			 * 1) if kvar is not used, need to use PF 
+			 * 1) if kvar is not used, need to use PF
 			 * 2) for loads connected between two phases, Bus1=BusName.1.2, Phases=1
 			 * To model loads connected between phases, use a pair of <-Iload, Iload> for the two phases.
 			 * For the load modeling, need to add connection type, phase1, phase2 attributes
@@ -59,7 +59,7 @@ public class OpenDSSLoadParser {
 			String loadId ="";
 			String loadId_phases ="";
 			String busName ="";
-			String phase1 =""; 
+			String phase1 ="";
 			String phase2 ="";
 			String phase3 ="";
 			String connectionType = "";
@@ -68,41 +68,41 @@ public class OpenDSSLoadParser {
 			double nominalKV = 0;
 			double loadP = 0.0, loadQ  = 0.0;
 			double powerfactor = 0.0;
-			
+
 			String[] loadStrAry = loadStr.toLowerCase().trim().split("\\s+");
-			
-			for(int i = 0; i <loadStrAry.length;i++){
-				if(loadStrAry[i].startsWith("Load.")||loadStrAry[i].startsWith("load.")){
-					loadId =loadStrAry[i].substring(5); 
+
+			for (String element : loadStrAry) {
+				if(element.startsWith("Load.")||element.startsWith("load.")){
+					loadId =element.substring(5);
 				}
-				else if(loadStrAry[i].startsWith("Bus1=")||loadStrAry[i].startsWith("bus1=")){
-					loadId_phases =loadStrAry[i].substring(5);
+				else if(element.startsWith("Bus1=")||element.startsWith("bus1=")){
+					loadId_phases =element.substring(5);
 				}
-				else if(loadStrAry[i].startsWith("Phases=")||loadStrAry[i].startsWith("phases=")){
-					phaseNum = Integer.valueOf(loadStrAry[i].substring(7));
+				else if(element.startsWith("Phases=")||element.startsWith("phases=")){
+					phaseNum = Integer.valueOf(element.substring(7));
 				}
-				else if(loadStrAry[i].startsWith("Conn=")||loadStrAry[i].startsWith("conn=")){
-					connectionType =loadStrAry[i].substring(5);
+				else if(element.startsWith("Conn=")||element.startsWith("conn=")){
+					connectionType =element.substring(5);
 				}
-				else if(loadStrAry[i].startsWith("Model=")||loadStrAry[i].startsWith("model=")){
-					 modelType =Integer.valueOf(loadStrAry[i].substring(6));
+				else if(element.startsWith("Model=")||element.startsWith("model=")){
+					 modelType =Integer.valueOf(element.substring(6));
 				}
-				else if(loadStrAry[i].startsWith("kW=")||loadStrAry[i].startsWith("kw=")){
-					 loadP=Double.valueOf(loadStrAry[i].substring(3));
+				else if(element.startsWith("kW=")||element.startsWith("kw=")){
+					 loadP=Double.valueOf(element.substring(3));
 				}
-				else if(loadStrAry[i].startsWith("kVar=")||loadStrAry[i].startsWith("kvar=")){
-					 loadQ=Double.valueOf(loadStrAry[i].substring(5));
+				else if(element.startsWith("kVar=")||element.startsWith("kvar=")){
+					 loadQ=Double.valueOf(element.substring(5));
 				}
-				else if(loadStrAry[i].startsWith("PF=")||loadStrAry[i].startsWith("pf=")){
-					 powerfactor=Double.valueOf(loadStrAry[i].substring(3));
+				else if(element.startsWith("PF=")||element.startsWith("pf=")){
+					 powerfactor=Double.valueOf(element.substring(3));
 				}
-				else if(loadStrAry[i].startsWith("kv=")){
-					nominalKV = Double.valueOf(loadStrAry[i].substring(3));
+				else if(element.startsWith("kv=")){
+					nominalKV = Double.valueOf(element.substring(3));
 				}
-				
-				
+
+
 			}
-			
+
 			if(loadId_phases.contains(DOT)){
 				String[] idPhasesAry = loadId_phases.split("\\.");
 				busName = idPhasesAry[0];
@@ -115,7 +115,7 @@ public class OpenDSSLoadParser {
 				if(idPhasesAry.length>3){
 					phase3 = idPhasesAry[3];
 				}
-				
+
 			}
 			else{
 				busName = loadId_phases;
@@ -123,58 +123,62 @@ public class OpenDSSLoadParser {
 					//TODO need to set phase1,2,3???
 				}
 			}
-			
+
 			if(powerfactor!=0.0 && loadQ==0.0){
 				loadQ = loadP*Math.tan(Math.acos(powerfactor));
 			}
-			
+
 			Complex loadPQ = new Complex(loadP,loadQ);
-			
+
 			//get the bus object
 			busName =this.dataParser.getBusIdPrefix()+busName;
 			DStab3PBus bus =  this.dataParser.getDistNetwork().getBus(busName);
-			
+
 			DStab1PLoad load= null;
-			if(phaseNum==3)
-			    load= new DStab3PLoadImpl();
-			else
+			if(phaseNum==3) {
+				load= new DStab3PLoadImpl();
+			} else {
 				load= new DStab1PLoadImpl();
-			
+			}
+
 			//load ID
 			load.setId(loadId);
 			// rated KV
 			load.setNominalKV(nominalKV);
-			
+
 			//load model type
 			if(modelType==1){
 				//TODO extend AclfLoadCode instead of introducing a new load model type
 				load.setCode(AclfLoadCode.CONST_P);
-				
-				if(phaseNum==3)
+
+				if(phaseNum==3) {
 					((DStab3PLoad)load).set3PhaseLoad(new Complex3x1(loadPQ.divide(3),loadPQ.divide(3),loadPQ.divide(3)));
-				else
-				   load.setLoadCP(loadPQ);
+				} else {
+					load.setLoadCP(loadPQ);
+				}
 			}
 			else if(modelType==2){
 				load.setCode(AclfLoadCode.CONST_Z);
-				
-				if(phaseNum==3)
+
+				if(phaseNum==3) {
 					((DStab3PLoad)load).set3PhaseLoad(new Complex3x1(loadPQ.divide(3),loadPQ.divide(3),loadPQ.divide(3)));
-				else
-				    load.setLoadCZ(loadPQ);
+				} else {
+					load.setLoadCZ(loadPQ);
+				}
 			}
 			else if(modelType==5){
 				load.setCode(AclfLoadCode.CONST_I);
-				if(phaseNum==3)
+				if(phaseNum==3) {
 					((DStab3PLoad)load).set3PhaseLoad(new Complex3x1(loadPQ.divide(3),loadPQ.divide(3),loadPQ.divide(3)));
-				else
-				    load.setLoadCI(loadPQ);
+				} else {
+					load.setLoadCI(loadPQ);
+				}
 			}
 			else{
 				no_error = false;
 				throw new Error("Load model type is not supported yet! # "+loadStr);
 			}
-				
+
 			//load connection type
 			if(phaseNum==3){
 				if(connectionType.equalsIgnoreCase("delta")){
@@ -191,17 +195,17 @@ public class OpenDSSLoadParser {
 			else if(phaseNum==2){
 				no_error = false;
 			    throw new Error("Load connection type for two phases is not supported yet! # "+connectionType);
-				
+
 			}
 			else if(phaseNum==1){
 				if(connectionType.equalsIgnoreCase("wye")){
 					load.setLoadConnectionType(LoadConnectionType.SINGLE_PHASE_WYE);
-					
+
 				}
 				else if(connectionType.equalsIgnoreCase("delta")){
-					if(phase1.length()>0 && phase2.length()>0)
-					  load.setLoadConnectionType(LoadConnectionType.SINGLE_PHASE_DELTA);
-					else{
+					if(phase1.length()>0 && phase2.length()>0) {
+						load.setLoadConnectionType(LoadConnectionType.SINGLE_PHASE_DELTA);
+					} else{
 						no_error = false;
 						throw new Error("Connection phases info is not consistent with the connection type # "+loadStr);
 					}
@@ -211,13 +215,13 @@ public class OpenDSSLoadParser {
 					throw new Error("Load connection type not supported yet! # "+connectionType);
 				}
 			}
-			
-			
+
+
 			// process phase code
-			
-			if(phaseNum==3)
+
+			if(phaseNum==3) {
 				load.setPhaseCode(PhaseCode.ABC);
-			else if(phaseNum==1){
+			} else if(phaseNum==1){
 				if(phase2.equals("")){
 					if(phase1.equals("1")){
 						load.setPhaseCode(PhaseCode.A);
@@ -226,7 +230,7 @@ public class OpenDSSLoadParser {
 						load.setPhaseCode(PhaseCode.B);
 					}
 					else if(phase1.equals("3")){
-						load.setPhaseCode(PhaseCode.C);				
+						load.setPhaseCode(PhaseCode.C);
 					}
 					else{
 						no_error = false;
@@ -234,28 +238,29 @@ public class OpenDSSLoadParser {
 					}
 				}
 				else{
-					if((phase1.equals("1") && phase2.equals("2"))  || (phase1.equals("2") && phase2.equals("1")))
+					if((phase1.equals("1") && phase2.equals("2"))  || (phase1.equals("2") && phase2.equals("1"))) {
 						load.setPhaseCode(PhaseCode.AB);
-					else if((phase1.equals("1") && phase2.equals("3"))||(phase1.equals("3") && phase2.equals("1")))
+					} else if((phase1.equals("1") && phase2.equals("3"))||(phase1.equals("3") && phase2.equals("1"))) {
 						load.setPhaseCode(PhaseCode.AC);
-					else if((phase1.equals("2") && phase2.equals("3"))||(phase1.equals("3") && phase2.equals("2")))
+					} else if((phase1.equals("2") && phase2.equals("3"))||(phase1.equals("3") && phase2.equals("2"))) {
 						load.setPhaseCode(PhaseCode.BC);
-					else{
+					} else{
 						no_error = false;
 						throw new Error("Connection phases not supported yet!  phase1, 2 = "+ phase1+","+ phase2);
 					}
 				}
 			}
-		 
-			if(phaseNum==1)
-			  bus.getSinglePhaseLoadList().add(load);
-			else if(phaseNum==3)
-			  bus.getThreePhaseLoadList().add((DStab3PLoad) load);
-			
+
+			if(phaseNum==1) {
+				bus.getSinglePhaseLoadList().add(load);
+			} else if(phaseNum==3) {
+				bus.getThreePhaseLoadList().add((DStab3PLoad) load);
+			}
+
 			//TODO The following setting does NOT mean all the loads are constP type, it is a known limitation with bus level loadcode setting
 			bus.setLoadCode(AclfLoadCode.CONST_P);
-			
+
 			return no_error;
-			
+
 		}
 }

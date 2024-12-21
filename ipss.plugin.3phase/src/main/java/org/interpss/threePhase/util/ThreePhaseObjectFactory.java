@@ -20,8 +20,6 @@ import org.interpss.threePhase.powerflow.impl.DistributionPowerFlowAlgorithmImpl
 
 import com.interpss.common.datatype.Constants;
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.abc.Static3PXformer;
-import com.interpss.core.abc.impl.Static3PXformerImpl;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.netAdj.AclfNetAdjustment;
 import com.interpss.core.aclf.netAdj.NetAdjustFactory;
@@ -33,10 +31,10 @@ import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.StaticLoadModel;
 
 public class ThreePhaseObjectFactory {
-	
+
 	public static  DStabNetwork3Phase create3PhaseDStabNetwork() {
 	       DStabNetwork3Phase net = new DStabNetwork3phaseImpl();
-	        
+
 	       //The following is copied from the DStabObjectFactory
 	        AclfNetAdjustment netAdj = NetAdjustFactory.eINSTANCE.createAclfNetAdjustment();
 			net.setAclfNetAdjust(netAdj);
@@ -55,20 +53,20 @@ public class ThreePhaseObjectFactory {
 	   return ph3Xfr;
 	}
 	*/
-	
+
 	public static DStab3PBus create3PAclfBus(String busId, BaseAclfNetwork net) throws InterpssException{
 		DStab3PBus bus = new DStab3PBusImpl();
-	  
+
 		//The following is copied from the DStabObjectFactory
 		bus.setId(busId);
 		net.addBus(bus);
-		
+
 		return bus;
 	}
-	
+
 	public static DStab3PBus create3PDStabBus(String busId, DStabNetwork3Phase net) {
 		DStab3PBus bus = new DStab3PBusImpl();
-	  
+
 		//The following is copied from the DStabObjectFactory
 		bus.setId(busId);
 		BusScGrounding g = AcscFactory.eINSTANCE.createBusScGrounding();
@@ -79,9 +77,9 @@ public class ThreePhaseObjectFactory {
   		bus.setScGenZ2(NumericConstant.LargeBusZ);
   		bus.setGrounding(g);
 		bus.setBusFreqMeasureBlock(DStabObjectFactory.createBusFreqMeasurement());
-		
+
 		net.addBus(bus);
-		
+
 		return bus;
 	}
 
@@ -89,33 +87,33 @@ public class ThreePhaseObjectFactory {
 		DStab3W3PBranch branch = new DStab3W3PBranchImpl();
 		return branch;
 	}
-	
+
 	public static DStab3W3PBranch createBranch3W3Phase(String fromBusId, String toBusId, String cirId,BaseAclfNetwork net) throws InterpssException{
 		DStab3W3PBranch branch = new DStab3W3PBranchImpl();
 		net.addBranch(branch, fromBusId, toBusId, cirId);
 		return branch;
 	}
-	
 
-	
+
+
 	public static DStab3PBranch create3PBranch(String fromBusId, String toBusId, String cirId,BaseAclfNetwork net) throws InterpssException{
 		DStab3PBranch branch = new Dstab3PBranchImpl();
 		net.addBranch(branch, fromBusId, toBusId, cirId);
 		return branch;
 	}
-	
+
 	public static DStab3PGen  create3PGenerator(String genId){
 		DStab3PGen gen = new DStab3PGenImpl();
 		gen.setId(genId);
 		return gen;
 	}
-	
+
 	public static DStabGen3PhaseAdapter  create3PDynGenerator(String genId){
 		DStabGen3PhaseAdapter gen = new DStabGen3PhaseAdapterImpl();
 		gen.setId(genId);
 		return gen;
 	}
-	
+
 	public static DStab3PLoad create3PLoad(String loadId){
 		DStab3PLoad load = new DStab3PLoadImpl();
 		load.setId(loadId);
@@ -125,10 +123,10 @@ public class ThreePhaseObjectFactory {
 		DStab3PBranch branch = new Dstab3PBranchImpl();
 		return branch;
 	}
-	
+
 	public static DistributionPowerFlowAlgorithm createDistPowerFlowAlgorithm(BaseAclfNetwork net){
 		DistributionPowerFlowAlgorithmImpl algo = new DistributionPowerFlowAlgorithmImpl(net);
-		
+
 		return algo;
 	}
 

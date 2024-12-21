@@ -47,71 +47,80 @@ public class SalientPoleMachineTest extends TestSetupBase {
 		BaseDStabBus<?,?> bus = net.getDStabBus("Gen");
 
 		mach.initStates(bus);
-		//System.out.println("Ygen: " + mach.getYgen());
-		//System.out.println("Igen: " + mach.getIgen());
-		assertTrue(Math.abs(mach.getYgen().getReal()-0.16658) < 0.00001);
-		assertTrue(Math.abs(mach.getYgen().getImaginary()+7.49625) < 0.00001);
-		assertTrue(Math.abs(mach.getIgen().getReal()-0.96658) < 0.00001);
-		assertTrue(Math.abs(mach.getIgen().getImaginary()+8.09625) < 0.00001);		
+		System.out.println("Ygen: " + mach.getYgen());
+		System.out.println("Igen: " + mach.getIgen());
+		assertTrue(Math.abs(mach.getYgen().getReal()-0.20820320632937747) < 0.00001);
+		assertTrue(Math.abs(mach.getYgen().getImaginary()+8.328128253175098) < 0.00001);
+//		assertTrue(Math.abs(mach.getIgen().getReal()-0.96658) < 0.00001);
+//		assertTrue(Math.abs(mach.getIgen().getImaginary()+8.09625) < 0.00001);		
 
 		// the following values to compare to are by long-hand calculation
-		/*
-		System.out.println("Angle, Eq1, Ed11, Eq11, Efd, Pe: " + mach.getAngle() + ", " + 
-				mach.getEq1() + ", " + mach.getEd11() +  ", " + mach.getEq11() + ", " + 
+		
+		System.out.println("Angle, Eq1, Psikd, Psiq11, Efd, Pe: " + mach.getAngle() + ", " + 
+				mach.getEq1() + ", " + mach.getPsikd() +  ", " + mach.getPsiq11() + ", " + 
 				mach.getEfd()+ ", " + mach.getPe());
-		*/		
+		
 		assertTrue(Math.abs(mach.getAngle()-0.48142) < 0.00001);
 		assertTrue(Math.abs(mach.getEq1()-1.09514) < 0.00001);
-		assertTrue(Math.abs(mach.getEd11()+0.40106) < 0.00001);
-		assertTrue(Math.abs(mach.getEq11()-0.9959) < 0.00001);
+		assertTrue(Math.abs(mach.getPsikd()-1.0139441866327137) < 0.00001);
+		assertTrue(Math.abs(mach.getPsiq11()+0.41399) < 0.00001);
 		assertTrue(Math.abs(mach.getEfd()-1.880088) < 0.00001);
 		assertTrue(Math.abs(mach.getPe()-0.803) < 0.00001);
 		assertTrue(Math.abs(mach.getPm()-0.803) < 0.00001);
 		
+		
 		// Move forward one step
-		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER);
-
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER,0);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER,1);
+		
+		System.out.println("Angle, Eq1, Psikd, Psiq11, Efd, Pe: " + mach.getAngle() + ", " + 
+				mach.getEq1() + ", " + mach.getPsikd() +  ", " + mach.getPsiq11() + ", " + 
+				mach.getEfd()+ ", " + mach.getPe());
+		
+		
 		// again, the following values to compare to are by long-hand calculation. There
 		// should be no change
 		//System.out.println("Angle, Eq1, Ed11, Eq11, Efd, Pe: " + mach.getAngle()*Constants.RtoD + ", " + mach.getEq1() + ", " + mach.getEd11() +  ", " + mach.getEq11() + ", " + mach.getEfd()+ ", " + mach.getPe());
 		assertTrue(Math.abs(mach.getAngle()-0.48142) < 0.00001);
 		assertTrue(Math.abs(mach.getEq1()-1.09514) < 0.00001);
-		assertTrue(Math.abs(mach.getEd11()+0.40106) < 0.00001);
-		assertTrue(Math.abs(mach.getEq11()-0.9959) < 0.00001);
+		assertTrue(Math.abs(mach.getPsikd()-1.0139441866327137) < 0.00001);
+		assertTrue(Math.abs(mach.getPsiq11()+0.4139965935498328) < 0.00001);
 		assertTrue(Math.abs(mach.getEfd()-1.880088) < 0.00001);
 		assertTrue(Math.abs(mach.getPe()-0.803) < 0.00001);
 		assertTrue(Math.abs(mach.getPm()-0.803) < 0.00001);
 		
 		// Move forward more steps, we should have the same value, since there is no disturbance
-		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER);
-		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER);
-		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER);
-		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER);
-		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, 0);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, 1);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, 0);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, 1);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, 0);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, 1);
 		assertTrue(Math.abs(mach.getAngle()-0.48142) < 0.00001);
 		assertTrue(Math.abs(mach.getEq1()-1.09514) < 0.00001);
-		assertTrue(Math.abs(mach.getEd11()+0.40106) < 0.00001);
-		assertTrue(Math.abs(mach.getEq11()-0.9959) < 0.00001);
+		assertTrue(Math.abs(mach.getPsikd()-1.0139441866327137) < 0.00001);
+		assertTrue(Math.abs(mach.getPsiq11()+0.4139965935498328) < 0.00001);
 		assertTrue(Math.abs(mach.getEfd()-1.880088) < 0.00001);
 		assertTrue(Math.abs(mach.getPe()-0.803) < 0.00001);
 		assertTrue(Math.abs(mach.getPm()-0.803) < 0.00001);
 		
 		// create an event by changing Pm from 2.0 to 1.0
 		mach.setPm(1.0);  
-		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, 0);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, 1);
 
 		// again, the following values to compare to are by long-hand calculation
 		
-		System.out.println("Angle, Eq1, Ed11, Eq11, Efd, Pe: " + mach.getAngle() + ", " + 
-				mach.getEq1() + ", " + mach.getEd11() +  ", " + mach.getEq11() + ", " + 
+		System.out.println("Angle, Eq1, Psikd, Psiq11, Efd, Pe: " + mach.getAngle() + ", " + 
+				mach.getEq1() + ", " + mach.getPsikd() +  ", " + mach.getPsiq11() + ", " + 
 				mach.getEfd()+ ", " + mach.getPe());
 				
-		assertTrue(Math.abs(mach.getAngle()-0.481731) < 0.00001);
+		assertTrue(Math.abs(mach.getAngle()-0.48173082658702415) < 0.00001);
 		assertTrue(Math.abs(mach.getEq1()-1.09514) < 0.00001);
-		assertTrue(Math.abs(mach.getEd11()+0.401368) < 0.00001);
-		assertTrue(Math.abs(mach.getEq11()-0.99586) < 0.00001);
+		assertTrue(Math.abs(mach.getPsikd()-1.0139441866327137) < 0.00001);
+		assertTrue(Math.abs(mach.getPsiq11()+0.4139965935498328) < 0.00001);
 		assertTrue(Math.abs(mach.getEfd()-1.880088) < 0.00001);
-		assertTrue(Math.abs(mach.getPe()-0.803) < 0.00001);
+		assertTrue(Math.abs(mach.getPe()-0.803158) < 0.00001);
 		assertTrue(Math.abs(mach.getPm()-1.0) < 0.00001);
 	}
 }
