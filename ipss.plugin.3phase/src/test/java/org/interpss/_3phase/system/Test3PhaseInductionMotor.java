@@ -26,44 +26,44 @@ public class Test3PhaseInductionMotor extends TestBase {
 
 	@Test
 	public void testIndMotor() throws InterpssException{
-		
+
 	       IpssCorePlugin.init();
-			
+
 			DStabNetwork3Phase net = create2BusSys();
 		    net.setNetworkType(NetworkType.DISTRIBUTION);
-		    
-//			// initGenLoad-- summarize the effects of contributive Gen/Load to make equivGen/load for power flow calculation	
+
+//			// initGenLoad-- summarize the effects of contributive Gen/Load to make equivGen/load for power flow calculation
 //			net.initContributeGenLoad();
-//				
+//
 //			//create a load flow algorithm object
 //		  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 //		  	//run load flow using default setting
-//		  	
+//
 //			// run power flow
 //		  	assertTrue(algo.loadflow())	;
-//	 
-//		  	
+//
+//
 //			System.out.println(AclfOutFunc.loadFlowSummary(net));
-//			
+//
 //			net.initThreePhaseFromLfResult();
-			
+
 			DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(net);
 			//distPFAlgo.orderDistributionBuses(true);
-			
+
 			assertTrue(distPFAlgo.powerflow());
-		
+
 			for(BaseAclfBus<?,?> bus:net.getBusList()){
 				DStab3PBus bus3P = (DStab3PBus) bus;
 				System.out.println("Vabc of bus -"+bus3P.getId()+","+bus3P.get3PhaseVotlages().toString());
 			}
-			
+
 			System.out.println(DistPowerFlowOutFunc.powerflowResultSummary(net));
-			
+
 		    /*
-		     *   create the 3phase induction motor model 
+		     *   create the 3phase induction motor model
 		     */
-			
-			DStab3PBus bus1 = (DStab3PBus) net.getBus("Bus1");
+
+			DStab3PBus bus1 = net.getBus("Bus1");
 			InductionMotor indMotor= new InductionMotorImpl(bus1, "1");
 			indMotor.setDStabBus(bus1);
 
@@ -72,58 +72,58 @@ public class Test3PhaseInductionMotor extends TestBase {
 			indMotor.setRa(0.032);
 			indMotor.setXr1(0.3);
 			indMotor.setRr1(0.01);
-			
-	
+
+
 			indMotor.setMvaBase(50);
 			indMotor.setH(1.0);
-			
+
 			InductionMotor3PhaseAdapter indMotor3Phase = new InductionMotor3PhaseAdapter(indMotor);
 			indMotor3Phase.setLoadPercent(50);
 			bus1.getThreePhaseDynLoadList().add(indMotor3Phase);
-			
-			
-	  		
+
+
+
 	  		// run dstab to test 1-phase ac model
 	       	// initGenLoad-- summarize the effects of contributive Gen/Load to make equivGen/load for power flow calculation	//	net.initContributeGenLoad();
-	  			
+
 	  			DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
 	  					net, IpssCorePlugin.getMsgHub());
-	  				
-	  		
+
+
 	  		  	dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 	  			dstabAlgo.setSimuStepSec(0.005d);
 	  			dstabAlgo.setTotalSimuTimeSec(1);
-	  			
+
 	  			StateMonitor sm = new StateMonitor();
 	  			sm.addGeneratorStdMonitor(new String[]{"Bus3-mach1"});
 	  			sm.addBusStdMonitor(new String[]{"Bus3","Bus1"});
-	  			
+
 	  			// set the output handler
 	  			dstabAlgo.setSimuOutputHandler(sm);
 	  			dstabAlgo.setOutPutPerSteps(1);
 	  		  	if(dstabAlgo.initialization()){
 	  		  		// check induction motor initialization;
 	  		  	    //slip
-	  		  		
-	  		  		
+
+
 	  		  		//init power
-	  		  		
+
 	  		  		//Positive EquivY
-	  		  		
-	  		  		
+
+
 	  		  		//Positive sequence Current Inj
-	  		  		
-	  		  		
+
+
 	  		  		//3phase equivY
-	  		  		
-	  		  		
+
+
 	  		  		System.out.println(indMotor3Phase.getInitLoadPQ3Phase().toString());
-	  		  	   
+
 	  		  	   dstabAlgo.performSimulation();
-	  		  	    
-	  		  	    
+
+
 	  		  	}
-	  		  	
+
 	  		 	System.out.println(sm.toCSVString(sm.getBusAngleTable()));
 	  		  	System.out.println(sm.toCSVString(sm.getBusVoltTable()));
 	}

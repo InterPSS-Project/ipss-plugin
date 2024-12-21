@@ -69,8 +69,8 @@ public class Eq1MachineCaseTest extends TestSetupBase {
 		assertTrue(Math.abs(mach.getPm()-0.803) < 0.00001);
 		
 		// Move forward one step
-		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER);
-
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER,0);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER,1);
 		// again, the following values to compare to are by long-hand calculation. There
 		// should be no change
 		assertTrue(Math.abs(mach.getSpeed()-1.0) < 0.00001);
@@ -81,11 +81,12 @@ public class Eq1MachineCaseTest extends TestSetupBase {
 		assertTrue(Math.abs(mach.getPm()-0.803) < 0.00001);
 		
 		// Move forward more steps, we should have the same value, since there is no disturbance
-		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER);
-		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER);
-		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER);
-		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER);
-		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER,0);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER,1);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER,0);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER,1);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER,0);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER,1);
 		assertTrue(Math.abs(mach.getSpeed()-1.0) < 0.00001);
 		assertTrue(Math.abs(Math.toDegrees(mach.getAngle())-27.58341) < 0.00001);
 		assertTrue(Math.abs(mach.getEq1()-1.09514) < 0.00001);
@@ -95,8 +96,8 @@ public class Eq1MachineCaseTest extends TestSetupBase {
 		
 		// create an event by changing Pm from 2.0 to 1.0
 		mach.setPm(1.0);  
-		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER);
-		
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER,0);
+		mach.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER,1);
 		/*
 		System.out.println("Angle(deg) " + mach.getAngle()*Constants.RtoD);
 		System.out.println("Speed " + mach.getSpeed());
