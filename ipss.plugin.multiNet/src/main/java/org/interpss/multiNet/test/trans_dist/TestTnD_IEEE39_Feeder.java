@@ -9,6 +9,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
+import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
@@ -33,7 +34,6 @@ import org.interpss.threePhase.dynamic.model.impl.SinglePhaseACMotor;
 import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
 import org.interpss.threePhase.powerflow.impl.DistPowerFlowOutFunc;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
-import org.interpss.util.FileUtil;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -65,7 +65,7 @@ public class TestTnD_IEEE39_Feeder {
 		public void test_3phase3Seq_IEEE39Bus_Feeder_powerflow() throws InterpssException{
 			IpssCorePlugin.init();
 			IpssCorePlugin.setLoggerLevel(Level.INFO);
-			PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+			PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 					"testData/IEEE39Bus/IEEE39bus_v30.raw",
 					"testData/IEEE39Bus/IEEE39bus_v30.seq",
@@ -256,7 +256,7 @@ public class TestTnD_IEEE39_Feeder {
 	public void test_3phase3Seq_IEEE39Bus_Feeder() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/IEEE39Bus/IEEE39bus_v30.raw",
 				"testData/IEEE39Bus/IEEE39bus_v30.seq",
@@ -640,7 +640,7 @@ public class TestTnD_IEEE39_Feeder {
 	public void test_3phase3Seq_IEEE39Bus_Feeder_constZLoad() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/IEEE39Bus/IEEE39bus_v30.raw",
 				"testData/IEEE39Bus/IEEE39bus_v30.seq",
