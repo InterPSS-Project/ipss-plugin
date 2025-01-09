@@ -29,7 +29,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
-import com.interpss.core.algo.IMultiNetLfSolver;
+import com.interpss.core.algo.IChildNetLfSolver;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
 /**
@@ -186,14 +186,14 @@ public class IpssAclf extends BaseDSL {
   		 * @param x
   		 * @return
   		 */
-  		public LfAlgoDSL setMultiNetLfSolver(IMultiNetLfSolver x) { this.algo.setMultiNetSolver(x); return this; } 		
+  		public LfAlgoDSL setMultiNetLfSolver(IChildNetLfSolver x) { this.algo.setChildNetSolver(x); return this; } 		
   		/**
   		 * set multi-network load solver
   		 * 
   		 * @param x
   		 * @return
   		 */
-  		public LfAlgoDSL multiNetLfSolver(IMultiNetLfSolver x) { return setMultiNetLfSolver(x); } 		
+  		public LfAlgoDSL multiNetLfSolver(IChildNetLfSolver x) { return setMultiNetLfSolver(x); } 		
 
   		/**
   		 * run Aclf Loadlow

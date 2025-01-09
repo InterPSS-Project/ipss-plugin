@@ -15,6 +15,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
+import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.acsc.AcscModelParser;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.display.AclfOutFunc;
@@ -30,7 +31,6 @@ import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.AcscBus;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.fault.AcscBusFault;
-import com.interpss.core.acsc.fault.IBranchScCurrent;
 import com.interpss.core.acsc.fault.IBusScVoltage;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.AclfMethodType;
@@ -44,7 +44,7 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 	//@Test
 	public void testDataInputAndACSC() throws Exception {
 		
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.AcscNet, new String[]{
 				"testData/adpter/psse/v30/IEEE300/IEEE300Bus_modified_noHVDC.raw",
 				"testData/adpter/psse/v30/IEEE300/IEEE300.seq"
@@ -95,7 +95,7 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 	public void calcZone3Setting() throws Exception {
 		   
 		
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.AcscNet, new String[]{
 				"testData/adpter/psse/v30/IEEE300/IEEE300Bus_modified_noHVDC.raw",
 				"testData/adpter/psse/v30/IEEE300/IEEE300.seq"

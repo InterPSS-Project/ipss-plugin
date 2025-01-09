@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
+import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.mapper.odm.ODMDStabParserMapper;
@@ -99,7 +100,7 @@ public class IEEE9BusTestDStabSubAreaNet {
 	}
 	
 	private BaseDStabNetwork getTestNet() {
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/psse/v30/IEEE9Bus/ieee9.raw",
 				"testData/psse/v30/IEEE9Bus/ieee9.seq",
