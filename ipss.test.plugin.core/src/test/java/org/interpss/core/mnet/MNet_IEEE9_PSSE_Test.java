@@ -17,7 +17,7 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.core.algo.impl.solver.DefaultMultiNetLfSolver;
+import com.interpss.core.algo.impl.solver.DefaultChildNetLfSolver;
 import com.interpss.core.net.BranchBusSide;
 import com.interpss.core.net.childnet.ChildNetInterface;
 import com.interpss.core.net.childnet.ChildNetInterfaceBranch;
@@ -104,7 +104,7 @@ public class MNet_IEEE9_PSSE_Test extends CorePluginTestSetup {
 		 * Run multi-network Loadflow
 		 */
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
-		algo.setMultiNetSolver(new DefaultMultiNetLfSolver(algo));
+		algo.setChildNetSolver(new DefaultChildNetLfSolver(algo));
 	  	algo.loadflow();
 	  	
   		assertTrue(net.isLfConverged());		
