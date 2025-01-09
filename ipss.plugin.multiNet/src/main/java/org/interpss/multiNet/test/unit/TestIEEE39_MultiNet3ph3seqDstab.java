@@ -8,6 +8,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
+import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
@@ -50,7 +51,7 @@ public class TestIEEE39_MultiNet3ph3seqDstab {
 	public void test_3phase3SeqMultiSubNetTS_IEEE39Bus() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/IEEE39Bus/IEEE39bus_v30.raw",
 				"testData/IEEE39Bus/IEEE39bus_v30.seq",
@@ -158,7 +159,7 @@ public class TestIEEE39_MultiNet3ph3seqDstab {
 	public void test_IEEE39Bus_pos_SeqMultiSubNetTS() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/IEEE39Bus/IEEE39bus_v30.raw",
 				"testData/IEEE39Bus/IEEE39bus_v30.seq",

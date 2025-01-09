@@ -10,11 +10,10 @@ import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
+import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
-import org.interpss.display.AclfOutFunc;
 import org.interpss.mapper.odm.ODMDStabParserMapper;
-import org.interpss.numeric.util.Number2String;
 import org.interpss.numeric.util.PerformanceTimer;
 import org.junit.Test;
 
@@ -50,7 +49,7 @@ public class testCustomCurInjDstab {
 		 */
 		IpssCorePlugin.init();
 		IPSSMsgHub msg = CoreCommonFactory.getIpssMsgHub();
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
 				//"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq",
