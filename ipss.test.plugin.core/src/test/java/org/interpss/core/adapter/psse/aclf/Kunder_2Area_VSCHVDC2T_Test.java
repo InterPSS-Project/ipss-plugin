@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
+import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.mapper.odm.ODMAclfParserMapper;
@@ -19,7 +20,6 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 import com.interpss.simu.SimuObjectFactory;
-import com.interpss.state.aclf.AclfNetworkState;
 
 public class Kunder_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 	@Test
@@ -129,7 +129,7 @@ public class Kunder_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 	}
 	
 	private AclfNetwork createTestCase() {
-		IODMAdapter adapter = new PSSEAdapter(PSSEAdapter.PsseVersion.PSSE_30);
+		IODMAdapter adapter = new PSSERawAdapter(PSSEAdapter.PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile("testdata/adpter/psse/v30/Kunder_2area/Kunder_2area_vschvdc_v30.raw"));
 		
 		AclfModelParser parser = (AclfModelParser)adapter.getModel();

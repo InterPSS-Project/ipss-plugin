@@ -11,6 +11,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
+import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.multiNet.algo.MultiNet3Ph3SeqDStabSimuHelper;
@@ -47,8 +48,8 @@ import com.interpss.core.acsc.adpter.AcscXformerAdapter;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.BaseDStabNetwork;
+import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
@@ -64,7 +65,7 @@ public class TestTnD_IEEE9_13busFeeder {
 		IpssCorePlugin.init();
 		
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/IEEE9Bus/ieee9.raw",
 				"testData/IEEE9Bus/ieee9.seq",
