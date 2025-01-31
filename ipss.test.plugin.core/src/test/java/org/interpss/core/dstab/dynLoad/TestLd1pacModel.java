@@ -271,27 +271,37 @@ public class TestLd1pacModel extends TestSetupBase {
 		// Tstall = 0.033;
 		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,0);
 		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,1);
+		acLoad.afterStep(0.005);
 		acLoad.updateAttributes(false);
+		
 		
 		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,0);
 		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,1);
+		acLoad.afterStep(0.005);
 		acLoad.updateAttributes(false);
 		
 		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER, 0);
 		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER, 1);
+		acLoad.afterStep(0.005);
 		acLoad.updateAttributes(false);
 		
 		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,0);
 		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,1);
+		acLoad.afterStep(0.005);
 		acLoad.updateAttributes(false);
 		
 		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,0);
 		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,1);
+		acLoad.afterStep(0.005);
 		acLoad.updateAttributes(false);
 		
 		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,0);
 		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,1);
+		acLoad.afterStep(0.005);
 		acLoad.updateAttributes(false);
+		
+		// check the stall status
+		assertTrue(acLoad.getStage() == 1);
 
 		// check the power before stalling
 		System.out.println("before stalling ac pq =" + acLoad.getLoadPQ());
@@ -303,6 +313,7 @@ public class TestLd1pacModel extends TestSetupBase {
 
 		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,0);
 		acLoad.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,1);
+		acLoad.afterStep(0.005);
 		acLoad.updateAttributes(false);
 		// check the stall status
 		assertTrue(acLoad.getStage() == 0);

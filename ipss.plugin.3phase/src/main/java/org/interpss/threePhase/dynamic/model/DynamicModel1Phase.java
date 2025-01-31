@@ -18,7 +18,7 @@ import com.interpss.dstab.mach.Machine;
 public abstract class DynamicModel1Phase extends DynamicBusDeviceImpl implements
 		IDynamicModel1Phase {
 
-	protected  PhaseCode     connectPhase = null;
+	protected  PhaseCode  connectPhase = null;
 	protected  DStab3PBus parentBus = null;
 
     public DStab3PBus getParentBus(){
