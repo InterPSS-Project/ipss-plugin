@@ -24,7 +24,7 @@
 
 package org.interpss.mapper.odm;
 
-import org.ieee.odm.model.aclf.AclfModelParser;
+import org.ieee.odm.model.opf.OpfModelParser;
 import org.interpss.mapper.odm.impl.opf.AbstractODMOpfParserMapper;
 
 /**
@@ -33,5 +33,5 @@ import org.interpss.mapper.odm.impl.opf.AbstractODMOpfParserMapper;
  * @author mzhou
  *
  */
-public class ODMOpfParserMapper extends AbstractODMOpfParserMapper<AclfModelParser> {
+public class ODMOpfParserMapper extends AbstractODMOpfParserMapper<OpfModelParser> {
 }
