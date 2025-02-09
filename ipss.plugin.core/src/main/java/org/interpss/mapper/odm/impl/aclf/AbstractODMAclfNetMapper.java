@@ -67,6 +67,7 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.XfrZTableEntry;
 import com.interpss.core.aclf.flow.FlowInterface;
@@ -329,7 +330,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 	 * @return
 	 * @throws Exception
 	 */
-	public AclfBus mapAclfBusData(LoadflowBusXmlType xmlBusRec, AclfBus aclfBus, AclfNetwork adjNet, AclfBusDataHelper helper) throws InterpssException {
+	public BaseAclfBus mapAclfBusData(LoadflowBusXmlType xmlBusRec, BaseAclfBus aclfBus, BaseAclfNetwork adjNet, AclfBusDataHelper helper) throws InterpssException {
 		if (adjNet.getOriginalDataFormat() == OriginalDataFormat.PWD) {
 			AclfBusPWDExtension ext = new AclfBusPWDExtension();
 			aclfBus.setExtensionObject(ext);
