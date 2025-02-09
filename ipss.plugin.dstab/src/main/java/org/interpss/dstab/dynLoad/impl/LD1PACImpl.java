@@ -39,86 +39,6 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 	protected int stage = STAGE_EDEFAULT;
 
 	/**
-	 * The default value of the '{@link #getP() <em>P</em>}' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @see #getP()
-	 * @generated
-	 * @ordered
-	 */
-	protected static final double P_EDEFAULT = 0.0;
-
-	/**
-	 * The cached value of the '{@link #getP() <em>P</em>}' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @see #getP()
-	 * @generated
-	 * @ordered
-	 */
-	protected double p = P_EDEFAULT;
-
-	/**
-	 * The default value of the '{@link #getQ() <em>Q</em>}' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @see #getQ()
-	 * @generated
-	 * @ordered
-	 */
-	protected static final double Q_EDEFAULT = 0.0;
-
-	/**
-	 * The cached value of the '{@link #getQ() <em>Q</em>}' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @see #getQ()
-	 * @generated
-	 * @ordered
-	 */
-	protected double q = Q_EDEFAULT;
-
-	/**
-	 * The default value of the '{@link #getP0() <em>P0</em>}' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @see #getP0()
-	 * @generated
-	 * @ordered
-	 */
-	protected static final double P0_EDEFAULT = 0.0;
-
-	/**
-	 * The cached value of the '{@link #getP0() <em>P0</em>}' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @see #getP0()
-	 * @generated
-	 * @ordered
-	 */
-	protected double p0 = P0_EDEFAULT;
-
-	/**
-	 * The default value of the '{@link #getQ0() <em>Q0</em>}' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @see #getQ0()
-	 * @generated
-	 * @ordered
-	 */
-	protected static final double Q0_EDEFAULT = 0.0;
-
-	/**
-	 * The cached value of the '{@link #getQ0() <em>Q0</em>}' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @see #getQ0()
-	 * @generated
-	 * @ordered
-	 */
-	protected double q0 = Q0_EDEFAULT;
-
-	/**
 	 * The default value of the '{@link #getPac() <em>Pac</em>}' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -943,6 +863,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 	
 	private double vstallbrk = 0.0;
 	private double 	pac_a = 0.0, qac_a = 0.0, pac_b = 0.0, qac_b = 0.0;
+	private double p0=0, q0=0;
 	private double kuv =1.0, kcon = 1.0, fcon_trip = 0.0;
 	private boolean isContractorActioned = false;
 	private double I_CONV_FACTOR_M2S = 0.0;
@@ -979,6 +900,8 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 	private static final String OUT_SYMBOL_VT ="ACMotorVt";
 	private static final String OUT_SYMBOL_STATE ="ACMotorState";
 	private String extended_device_Id = "";
+	
+	double timeCounter= 0;
 
 	public LD1PACImpl() {
 		super();
@@ -1109,6 +1032,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 		
 		extended_device_Id = "ACMotor_"+this.getId()+"@"+this.getDStabBus().getId();
 		this.states.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID, extended_device_Id);
+		this.setExtendedDeviceId(extended_device_Id);
 		
 		return flag;
 	}
@@ -1197,6 +1121,8 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 			   
 			   this.tempA_old = this.tempA;
 			   this.tempB_old = this.tempB;
+			   
+			   timeCounter+=dt;
 			}
 		
 		}
@@ -1211,146 +1137,146 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 	 *  to check whether AC motor stalls, restarts and the actions of the protections
       %  this should be perform after the network solution step
 	 */
-	private boolean post_process_step(double dt){
-		boolean flag = true;
-		/*
-		 % UV Relay
-         % Two levels of undervoltage load shedding can be represented: If the voltage drops
-         % below uvtr1 for ttr1 seconds, the fraction ?fuvtr? of the load is tripped; If the voltage drops below uvtr2
-         % for ttr2 seconds, the fraction ?fuvr? of the load is tripped
-		*/
-		
-		if(this.vt_measured <this.getUVtr1() && this.fuvr >0.0){
-			this.uVRelayTimer1 = this.uVRelayTimer1 +dt;
-		}
-		else
-			this.uVRelayTimer1 = 0.0;
-		
-		if(this.vt_measured <this.getUVtr2() && this.fuvr >0.0){
-			this.uVRelayTimer2 = this.uVRelayTimer2 +dt;
-		}
-		else
-			this.uVRelayTimer2 = 0.0;
-		
-		// trip the portion with under voltage relays
-		if(this.uVRelayTimer1> this.ttr1){
-			this.kuv = 1.0 - this.fuvr;
-		}
-		
-		if(this.uVRelayTimer2> this.ttr2){
-			this.kuv = 1.0 - this.fuvr;
-		}
-		
-		/*
-        % contractor
-        %  Contactor -- If the voltage drops to below Vc2off, all of the load is tripped; if the voltage is between
-        % Vc1off and Vc2off, a linear fraction of the load is tripped. If the voltage later recovers to above Vc2on, all
-        % of the motor is reconnected; if the voltage recovers to between Vc2on and Vc1on, a linear fraction of the
-        % load is reconnected.
-        */
-		
-		if(this.vt_measured < this.vc2off){
-			this.kcon  = 0.0;
-			this.fcon_trip = 1.0;
-		}
-		else if(this.vt_measured>=this.vc2off && this.vt_measured <this.vc1off){
-			this.kcon = (this.vt_measured - this.vc2off)/(this.vc1off- this.vc2off);
-			this.fcon_trip = 1.0 - this.kcon;
-			
-		}
-		
-		
-		if(this.vt_measured >=this.vc1on){
-			this.kcon = 1.0;
-		}
-		else if(this.vt_measured < this.vc1on && this.vt_measured >= this.vc2on){
-			double Frecv = (this.vt_measured - this.vc2on)/(this.vc1on- this.vc2on);
-			this.kcon  = 1 - this.fcon_trip*(1-Frecv);
-		}
-		
-		
-		/*
-		 * Thermal protection 
-		 */
-		
-		// update the timer for thermal protection
-		
-		double vmag = this.getDStabBus().getVoltage().abs();
-		
-		if (this.statusA ==1){
-			if(vmag < this.vstall){
-				this.acStallTimer = this.acStallTimer+ dt;
-			}
-			else
-				this.acStallTimer = 0.0;
-		}
-		
-		
-		if (this.statusB ==0){
-			if(vmag > this.vrst){
-				this.acRestartTimer = this.acRestartTimer+ dt;
-			}
-			else
-				this.acRestartTimer = 0.0;
-		}
-		
-		/*
-		 *  % update the status of the motor. transition from running to
-            % stalling is the same for the equivalent Motor A and B
-		 */
-		
-		if(this.acStallTimer > this.tstall && this.statusA ==1){
-			this.statusA = 0;
-			this.statusB = 0;
-			this.stage = 0;
-		}
-		
-		// considering AC restarting 
-		if(this.frst >0.0 && this.statusB ==0 && this.acRestartTimer > this.trst){
-			this.statusB = 1;
-			this.stage = 2;
-		}
-		
-		
-		/*
-		  % check whether AC motor will be trip next step, and what will be
-          % the remaining fraction;
-		 */
-		
-		if(this.thermalEqnCoeff1< 0.0){
-			if(this.tempA > this.th1t){
-				if(this.statusA == 0){
-					this.fthA = this.tempA*this.thermalEqnCoeff1 + this.thermalEqnCoeff2;
-					
-					if(this.fthA<0.0)
-						this.fthA = 0.0;
-				}
-			}
-			
-			if(this.tempB > this.th1t){
-				if(this.statusB == 0){
-					this.fthB = this.tempB*this.thermalEqnCoeff1 + this.thermalEqnCoeff2;
-					
-					if(this.fthB<0.0)
-						this.fthB = 0.0;
-				}
-			}
-		}
-		
-		
-		// Calculate the AC motor power
-
-		// call this method to update "this.PQmotor"
-		calculateMotorPower();
-		
-		if(vmag>1.0E-8)
-		    this.equivYpq = this.PQmotor.conjugate().divide(vmag*vmag); // on motor MVABase
-		else {
-			this.equivYpq = new Complex(1.0E4,1.0E4); // a large value
-			
-		}
-		return flag;
-	}
+//	private boolean postProcessStep(double dt){
+//		boolean flag = true;
+//		/*
+//		 % UV Relay
+//         % Two levels of undervoltage load shedding can be represented: If the voltage drops
+//         % below uvtr1 for ttr1 seconds, the fraction ?fuvtr? of the load is tripped; If the voltage drops below uvtr2
+//         % for ttr2 seconds, the fraction ?fuvr? of the load is tripped
+//		*/
+//		
+//		if(this.vt_measured <this.getUVtr1() && this.fuvr >0.0){
+//			this.uVRelayTimer1 = this.uVRelayTimer1 +dt;
+//		}
+//		else
+//			this.uVRelayTimer1 = 0.0;
+//		
+//		if(this.vt_measured <this.getUVtr2() && this.fuvr >0.0){
+//			this.uVRelayTimer2 = this.uVRelayTimer2 +dt;
+//		}
+//		else
+//			this.uVRelayTimer2 = 0.0;
+//		
+//		// trip the portion with under voltage relays
+//		if(this.uVRelayTimer1> this.ttr1){
+//			this.kuv = 1.0 - this.fuvr;
+//		}
+//		
+//		if(this.uVRelayTimer2> this.ttr2){
+//			this.kuv = 1.0 - this.fuvr;
+//		}
+//		
+//		/*
+//        % contractor
+//        %  Contactor -- If the voltage drops to below Vc2off, all of the load is tripped; if the voltage is between
+//        % Vc1off and Vc2off, a linear fraction of the load is tripped. If the voltage later recovers to above Vc2on, all
+//        % of the motor is reconnected; if the voltage recovers to between Vc2on and Vc1on, a linear fraction of the
+//        % load is reconnected.
+//        */
+//		
+//		if(this.vt_measured < this.vc2off){
+//			this.kcon  = 0.0;
+//			this.fcon_trip = 1.0;
+//		}
+//		else if(this.vt_measured>=this.vc2off && this.vt_measured <this.vc1off){
+//			this.kcon = (this.vt_measured - this.vc2off)/(this.vc1off- this.vc2off);
+//			this.fcon_trip = 1.0 - this.kcon;
+//			
+//		}
+//		
+//		
+//		if(this.vt_measured >=this.vc1on){
+//			this.kcon = 1.0;
+//		}
+//		else if(this.vt_measured < this.vc1on && this.vt_measured >= this.vc2on){
+//			double Frecv = (this.vt_measured - this.vc2on)/(this.vc1on- this.vc2on);
+//			this.kcon  = 1 - this.fcon_trip*(1-Frecv);
+//		}
+//		
+//		
+//		/*
+//		 * Thermal protection 
+//		 */
+//		
+//		// update the timer for thermal protection
+//		
+//		double vmag = this.getDStabBus().getVoltage().abs();
+//		
+//		if (this.statusA ==1){
+//			if(vmag < this.vstall){
+//				this.acStallTimer = this.acStallTimer+ dt;
+//			}
+//			else
+//				this.acStallTimer = 0.0;
+//		}
+//		
+//		
+//		if (this.statusB ==0){
+//			if(vmag > this.vrst){
+//				this.acRestartTimer = this.acRestartTimer+ dt;
+//			}
+//			else
+//				this.acRestartTimer = 0.0;
+//		}
+//		
+//		/*
+//		 *  % update the status of the motor. transition from running to
+//            % stalling is the same for the equivalent Motor A and B
+//		 */
+//		
+//		if(this.acStallTimer > this.tstall && this.statusA ==1){
+//			this.statusA = 0;
+//			this.statusB = 0;
+//			this.stage = 0;
+//		}
+//		
+//		// considering AC restarting 
+//		if(this.frst >0.0 && this.statusB ==0 && this.acRestartTimer > this.trst){
+//			this.statusB = 1;
+//			this.stage = 2;
+//		}
+//		
+//		
+//		/*
+//		  % check whether AC motor will be trip next step, and what will be
+//          % the remaining fraction;
+//		 */
+//		
+//		if(this.thermalEqnCoeff1< 0.0){
+//			if(this.tempA > this.th1t){
+//				if(this.statusA == 0){
+//					this.fthA = this.tempA*this.thermalEqnCoeff1 + this.thermalEqnCoeff2;
+//					
+//					if(this.fthA<0.0)
+//						this.fthA = 0.0;
+//				}
+//			}
+//			
+//			if(this.tempB > this.th1t){
+//				if(this.statusB == 0){
+//					this.fthB = this.tempB*this.thermalEqnCoeff1 + this.thermalEqnCoeff2;
+//					
+//					if(this.fthB<0.0)
+//						this.fthB = 0.0;
+//				}
+//			}
+//		}
+//		
+//		
+//		// Calculate the AC motor power
+//
+//		// call this method to update "this.PQmotor"
+//		calculateMotorPower();
+//		
+//		if(vmag>1.0E-8)
+//		    this.equivYpq = this.PQmotor.conjugate().divide(vmag*vmag); // on motor MVABase
+//		else {
+//			this.equivYpq = new Complex(1.0E4,1.0E4); // a large value
+//			
+//		}
+//		return flag;
+//	}
 	
 	/**
 	 * calculate the motor power, return value is pu on motor mvabase;
@@ -1490,7 +1416,156 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 
 	@Override
 	public boolean updateAttributes(boolean netChange) {
-		return post_process_step(this.timestep);
+		System.out.println("Time counter = "+timeCounter+","+this.extended_device_Id);
+		return true;
+	}
+	
+	@Override
+	public boolean afterStep(double dt) {
+		/**
+		 *  to check whether AC motor stalls, restarts and the actions of the protections
+	      %  this should be perform after the network solution step
+		 */
+			
+		
+			boolean flag = true;
+			/*
+			 % UV Relay
+	         % Two levels of undervoltage load shedding can be represented: If the voltage drops
+	         % below uvtr1 for ttr1 seconds, the fraction ?fuvtr? of the load is tripped; If the voltage drops below uvtr2
+	         % for ttr2 seconds, the fraction ?fuvr? of the load is tripped
+			*/
+			
+			if(this.vt_measured <this.getUVtr1() && this.fuvr >0.0){
+				this.uVRelayTimer1 = this.uVRelayTimer1 +dt;
+			}
+			else
+				this.uVRelayTimer1 = 0.0;
+			
+			if(this.vt_measured <this.getUVtr2() && this.fuvr >0.0){
+				this.uVRelayTimer2 = this.uVRelayTimer2 +dt;
+			}
+			else
+				this.uVRelayTimer2 = 0.0;
+			
+			// trip the portion with under voltage relays
+			if(this.uVRelayTimer1> this.ttr1){
+				this.kuv = 1.0 - this.fuvr;
+			}
+			
+			if(this.uVRelayTimer2> this.ttr2){
+				this.kuv = 1.0 - this.fuvr;
+			}
+			
+			/*
+	        % contractor
+	        %  Contactor -- If the voltage drops to below Vc2off, all of the load is tripped; if the voltage is between
+	        % Vc1off and Vc2off, a linear fraction of the load is tripped. If the voltage later recovers to above Vc2on, all
+	        % of the motor is reconnected; if the voltage recovers to between Vc2on and Vc1on, a linear fraction of the
+	        % load is reconnected.
+	        */
+			
+			if(this.vt_measured < this.vc2off){
+				this.kcon  = 0.0;
+				this.fcon_trip = 1.0;
+			}
+			else if(this.vt_measured>=this.vc2off && this.vt_measured <this.vc1off){
+				this.kcon = (this.vt_measured - this.vc2off)/(this.vc1off- this.vc2off);
+				this.fcon_trip = 1.0 - this.kcon;
+				
+			}
+			
+			
+			if(this.vt_measured >=this.vc1on){
+				this.kcon = 1.0;
+			}
+			else if(this.vt_measured < this.vc1on && this.vt_measured >= this.vc2on){
+				double Frecv = (this.vt_measured - this.vc2on)/(this.vc1on- this.vc2on);
+				this.kcon  = 1 - this.fcon_trip*(1-Frecv);
+			}
+			
+			
+			/*
+			 * Thermal protection 
+			 */
+			
+			// update the timer for thermal protection
+			
+			double vmag = this.getDStabBus().getVoltage().abs();
+			
+			if (this.statusA ==1){
+				if(vmag < this.vstall){
+					this.acStallTimer = this.acStallTimer+ dt;
+				}
+				else
+					this.acStallTimer = 0.0;
+			}
+			
+			
+			if (this.statusB ==0){
+				if(vmag > this.vrst){
+					this.acRestartTimer = this.acRestartTimer+ dt;
+				}
+				else
+					this.acRestartTimer = 0.0;
+			}
+			
+			/*
+			 *  % update the status of the motor. transition from running to
+	            % stalling is the same for the equivalent Motor A and B
+			 */
+			
+			if(this.acStallTimer > this.tstall && this.statusA ==1){
+				this.statusA = 0;
+				this.statusB = 0;
+				this.stage = 0;
+			}
+			
+			// considering AC restarting 
+			if(this.frst >0.0 && this.statusB ==0 && this.acRestartTimer > this.trst){
+				this.statusB = 1;
+				this.stage = 2;
+			}
+			
+			
+			/*
+			  % check whether AC motor will be trip next step, and what will be
+	          % the remaining fraction;
+			 */
+			
+			if(this.thermalEqnCoeff1< 0.0){
+				if(this.tempA > this.th1t){
+					if(this.statusA == 0){
+						this.fthA = this.tempA*this.thermalEqnCoeff1 + this.thermalEqnCoeff2;
+						
+						if(this.fthA<0.0)
+							this.fthA = 0.0;
+					}
+				}
+				
+				if(this.tempB > this.th1t){
+					if(this.statusB == 0){
+						this.fthB = this.tempB*this.thermalEqnCoeff1 + this.thermalEqnCoeff2;
+						
+						if(this.fthB<0.0)
+							this.fthB = 0.0;
+					}
+				}
+			}
+			
+			
+			// Calculate the AC motor power
+
+			// call this method to update "this.PQmotor"
+			calculateMotorPower();
+			
+			if(vmag>1.0E-8)
+			    this.equivYpq = this.PQmotor.conjugate().divide(vmag*vmag); // on motor MVABase
+			else {
+				this.equivYpq = new Complex(1.0E4,1.0E4); // a large value
+				
+			}
+			return flag;
 	}
 	
 	//The following calculation is  based on the AC motor model specification in PSS/E doc
@@ -1549,10 +1624,6 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 		StringBuilder result = new StringBuilder(super.toString());
 		result.append(" (stage: ");
 		result.append(stage);
-		result.append(", p: ");
-		result.append(p);
-		result.append(", q: ");
-		result.append(q);
 		result.append(", p0: ");
 		result.append(p0);
 		result.append(", q0: ");
@@ -1669,48 +1740,6 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 		stage = newStage;
 	}
 	
-
-	public double getLoadFactor() {
-		return loadFactor;
-	}
-
-
-	public void setLoadFactor(double newLoadFactor) {
-		double oldLoadFactor = loadFactor;
-		loadFactor = newLoadFactor;
-	}
-
-	public double getP() {
-		return p;
-	}
-
-	public void setP(double newP) {
-		p = newP;
-	}
-
-	public double getQ() {
-		return q;
-	}
-
-	public void setQ(double newQ) {
-		q = newQ;
-	}
-
-	public double getP0() {
-		return p0;
-	}
-
-	public void setP0(double newP0) {
-		p0 = newP0;
-	}
-
-	public double getQ0() {
-		return q0;
-	}
-
-	public void setQ0(double newQ0) {
-		q0 = newQ0;
-	}
 
 	public double getPac() {
 		return pac;
