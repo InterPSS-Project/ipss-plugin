@@ -2148,10 +2148,10 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	}
 	
 	/**
-	 * Mainly for check the 
+	 * Mainly for check the protection actions
 	 * @return
 	 */
-	private boolean post_solution_step_process(){
+	private boolean postSolutionStepProcess(double dt){
 		boolean flag = true;
 		
 		double vt = this.getDStabBus().getVoltage().abs();
@@ -2179,7 +2179,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		}
 		
 		if(vt<this.Vtr1 && !this.lvProtection1Applied ){
-			this.lvProtectionTimer1 += this.timestep;
+			this.lvProtectionTimer1 += dt;
 		}
 		else if (vt>=this.Vtr1){
 			this.lvProtectionTimer1 = 0.0;
@@ -2188,7 +2188,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		
 			
 		if(vt<this.Vtr2 && !this.lvProtection2Applied){
-			this.lvProtectionTimer2 += this.timestep;
+			this.lvProtectionTimer2 += dt;
 		}
 		else if (vt>this.Vtr2){
 			this.lvProtectionTimer2 = 0.0;
@@ -2197,7 +2197,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		
 		
 		if(vt>this.Vrc1){
-			this.lvReconnectTimer1 +=this.timestep;
+			this.lvReconnectTimer1 +=dt;
 		}
 		else{
 			this.lvReconnectTimer1 = 0.0;
@@ -2205,7 +2205,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 			
 		
 		if(vt>this.Vrc2){
-			this.lvReconnectTimer2 +=this.timestep;
+			this.lvReconnectTimer2 +=dt;
 		}
 		else
 			this.lvReconnectTimer2 = 0.0;
@@ -2218,7 +2218,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		
 		if(this.getProtectionControlList().size()>0){
 			for(MotorProtectionControl mpc: this.getProtectionControlList()){
-				mpc.checkTripAndReconnectAction(vt, this.timestep);
+				mpc.checkTripAndReconnectAction(vt, dt);
 				
 				// if any protection or control trip the motor, then it is totally tripped
 				if(mpc.isTripStatus()){
@@ -2253,7 +2253,8 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	
 	@Override
 	public boolean updateAttributes(boolean netChange) {
-		post_solution_step_process();
+		//TODO move to afterStep() after 1/28/2025
+		//post_solution_step_process();
 		
 		if(this.Fonline>0.0){
 			Complex vt = this.getDStabBus().getVoltage();
@@ -2273,6 +2274,12 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		
 		//TODO update the attributes
 		
+		return true;
+	}
+	
+	@Override
+	public boolean afterStep(double dt) {
+		postSolutionStepProcess(dt);
 		return true;
 	}
 	
