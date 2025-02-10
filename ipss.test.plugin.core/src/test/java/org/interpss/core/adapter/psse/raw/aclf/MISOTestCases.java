@@ -22,7 +22,7 @@
   *
   */
 
-package org.interpss.core.adapter.psse.aclf;
+package org.interpss.core.adapter.psse.raw.aclf;
 
 import org.interpss.CorePluginTestSetup;
 import org.junit.Test;

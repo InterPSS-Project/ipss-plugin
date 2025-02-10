@@ -1,4 +1,4 @@
-package org.interpss.core.adapter.psse.acsc;
+package org.interpss.core.adapter.psse.raw.acsc;
 
 import static org.junit.Assert.assertTrue;
 
@@ -18,7 +18,7 @@ import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
 import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.acsc.AcscModelParser;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.display.AclfOutFunc;
+import org.interpss.display.AcscOutFunc;
 import org.interpss.mapper.odm.ODMAcscParserMapper;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.ComplexFunc;
@@ -31,7 +31,6 @@ import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.AcscBus;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.fault.AcscBusFault;
-import com.interpss.core.acsc.fault.IBusScVoltage;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -39,19 +38,20 @@ import com.interpss.core.algo.sc.ScBusModelType;
 import com.interpss.core.algo.sc.SimpleFaultAlgorithm;
 import com.interpss.core.net.Branch;
 
-public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
-	
-	//@Test
+public class PSSE_Savnw_v33_Acsc_Test extends CorePluginTestSetup {
+	@Test
 	public void testDataInputAndACSC() throws Exception {
 		
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_33);
 		assertTrue(adapter.parseInputFile(NetType.AcscNet, new String[]{
-				"testData/adpter/psse/v30/IEEE300/IEEE300Bus_modified_noHVDC.raw",
-				"testData/adpter/psse/v30/IEEE300/IEEE300.seq"
+				"testData/adpter/psse/v33/savnw.raw",
+				"testData/adpter/psse/v33/savnw.seq"
+				
 		}));
 		AcscModelParser acscParser =(AcscModelParser) adapter.getModel();
 		
-		//acscParser.stdout();
+		
+		acscParser.stdout();
 		
 		AcscNetwork net = new ODMAcscParserMapper().map2Model(acscParser).getAcscNet();
 		
@@ -71,34 +71,120 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
   		assertTrue( net.isLfConverged());
 
 		
-		System.out.println(AclfOutFunc.loadFlowSummary(net));
+		//System.out.println(AclfOutFunc.loadFlowSummary(net));
 		
 		
-//	  	SimpleFaultAlgorithm acscAlgo = CoreObjectFactory.createSimpleFaultAlgorithm(net);
-//  		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus202", acscAlgo );
-//		fault.setFaultCode(SimpleFaultCode.GROUND_3P);
-//		fault.setZLGFault(new Complex(0.0, 0.0));
-//		fault.setZLLFault(new Complex(0.0, 0.0));
-//		
-//		//pre fault profile : solved power flow
-//		acscAlgo.setScBusVoltage(ScBusVoltageType.LOADFLOW_VOLT);
-//		
-//		acscAlgo.calculateBusFault(fault);
-//	  	System.out.println(fault.getFaultResult().getSCCurrent_012());
-//	  	
-//	  	System.out.println(AcscOutFunc.faultResult2String(net,acscAlgo));
-//	  	
-//	  	
+	  	SimpleFaultAlgorithm acscAlgo = CoreObjectFactory.createSimpleFaultAlgorithm(net);
+  		AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus202", acscAlgo, true /* cacheBusScVolt */ );
+		fault.setFaultCode(SimpleFaultCode.GROUND_3P);
+		fault.setZLGFault(new Complex(0.0, 0.0));
+		fault.setZLLFault(new Complex(0.0, 0.0));
+		
+		//pre fault profile : solved power flow
+		acscAlgo.setScBusModelType(ScBusModelType.LOADFLOW_VOLT);
+		
+		acscAlgo.calBusFault(fault);
+	  	System.out.println(fault.getFaultResult().getSCCurrent_012());
+	  	
+	  	System.out.println(AcscOutFunc.faultResult2String(net,acscAlgo));
+	  	
+	  	/*
+	  	 *  08/03/2016 benchmarked with Powerworld, using powerflow based voltage
+	  	 *  
+	  	 * 0.0000 + j0.0000  -18.9950 + j64.09628  0.0000 + j0.0000
+
+
+              Bus Fault Info
+              ==============
+
+          Fault Id:      Bus201_Ground_3P_
+          Bus name:      HYDRO       
+          Fault type:    Ground_3P
+          Fault current: 66.85165 (106.5) pu    7719.36 amps
+
+      BusID     BusName   BasekV             FaultVoltage            ContribAmps
+                                         (pu)          (volts)      (pu)       (amps)
+     --------   --------- -------    ---------------   --------   --------   ----------
+     Bus101       NUC-A           21.6   0.59744 (25.5)    12904.7          0            0
+     Bus102       NUC-B           21.6   0.59744 (25.5)    12904.7          0            0
+     Bus151       NUCPANT          500   0.40241 (20.8)   201205.4          0            0
+     Bus152       MID500           500   0.40288 (0.4)    201441.6          0            0
+     Bus153       MID230           230   0.41703 (-1.9)      95916          0            0
+     Bus154       DOWNTN           230   0.4441 (-9.3)    102142.4          0            0
+     Bus201       HYDRO            500   0.0000 (0)              0          0            0
+     Bus202       EAST500          500   0.31863 (-2.8)     159313          0            0
+     Bus203       EAST230          230   0.38516 (-7.5)    88586.4          0            0
+     Bus204       SUB500           500   0.30755 (-10.2)  153774.7          0            0
+     Bus205       SUB230           230   0.45451 (-8.7)   104536.3          0            0
+     Bus206       URBGEN            18   0.70454 (0.3)     12681.8          0            0
+     Bus211       HYDRO_G           20   0.39976 (24.2)     7995.3          0            0
+     Bus3001      MINE             230   0.72055 (0.2)      165726          0            0
+     Bus3002      E. MINE          500   0.67905 (-0.4)   339524.7          0            0
+     Bus3003      S. MINE          230   0.67963 (-0.8)   156314.2          0            0
+     Bus3004      WEST             500   0.52547 (-2.1)   262736.1          0            0
+     Bus3005      WEST             230   0.53623 (-3.6)   123331.9          0            0
+     Bus3006      UPTOWN           230   0.45125 (-2.3)   103786.6          0            0
+     Bus3007      RURAL            230   0.51294 (-7)     117975.6          0            0
+     Bus3008      CATDOG           230   0.50351 (-7.5)   115807.5          0            0
+     Bus3011      MINE_G          13.8   0.80003 (1.6)     11040.4          0            0
+     Bus3018      CATDOG_G        13.8   0.67941 (-0.5)     9375.9          0            0
+	  	 */
+	  	
+		//System.out.println(fault.getFaultResult().getBusVoltage_012().get);
+	  	
+	  	
+	  	// TODO check the Zgen in ACSC processing
+	  	
+	  	
+	  	/*
+	  	 *  id: Bus206
+     number: 206
+     name: URBGEN      
+     desc: null
+     status: true (booleanFlag: false, weight: (0.0, 0.0), intFlag: 0, sortNumber: 0) (extensionObject: null)
+     area(number): 2(2)
+     zone(number): 2(2)
+     baseVoltage: 18000.0
+     genCode: GenPQ
+     loadCode: NonLoad
+     Desired voltageMag: 1.0
+     Desired voltageAng: 0.0
+     voltageMag: 1.02362
+     voltageAng: -0.05183453345497959
+     gen:        8.0000 + j6.0000
+     capacitor:  0.0000
+     load:       0.0000 + j0.0000
+     shuntY:     0.0000 + j0.0000
+     distFactor: 0.0000
+     vLimit:     ( 0.0, 0.0 )
+   LF Results : 
+      voltage   : 1.02362 pu   18425.1600 v
+      angle     : -2.9699 deg
+      gen       : 8.0000 + j6.0000 pu   800000.0000 + j600000.0000 kva
+      load      : 0.0000 + j0.0000 pu   0.0000 + j0.0000 kva
+
+Contributing Gen:
+, status: true, gen: 8.0000 + j6.0000, desiredVoltMag: 0.9800, remoteVControlBusId: Bus205)
+
+
+  SC Info:  
+     scCode:  NonContri
+     z1:      0.0100 + j0.2500
+     z2:      0.0000 + j10000000000.0000
+     z0:      0.0000 + j10000000000.0000
+     groundCode: Ungrounded
+     groundZpu: 0.0000 + j10000000000.0000
+	  	 */
 	}
 	
 	@Test
 	public void calcZone3Setting() throws Exception {
 		   
 		
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_33);
 		assertTrue(adapter.parseInputFile(NetType.AcscNet, new String[]{
-				"testData/adpter/psse/v30/IEEE300/IEEE300Bus_modified_noHVDC.raw",
-				"testData/adpter/psse/v30/IEEE300/IEEE300.seq"
+				"testData/adpter/psse/v33/savnw.raw",
+				"testData/adpter/psse/v33/savnw.seq"
 				
 		}));
 		AcscModelParser acscParser =(AcscModelParser) adapter.getModel();
@@ -108,47 +194,15 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 		
 		//System.out.println(net.net2String());
 		
-//		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
-//	  	algo.setLfMethod(AclfMethod.PQ);
-//	  	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
-//	  	algo.loadflow();
-		net.setLfConverged(true);
+		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	algo.setLfMethod(AclfMethodType.PQ);
+	  	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
+	  	algo.loadflow();
   	
   		assertTrue( net.isLfConverged());
   		
-
-  		String dyrFileName = "IEEE300Bus_345kV_zone123_setting.dyr";
-  		StringBuffer sb = new StringBuffer();
-  		
-        for(AcscBranch bra:net.getBranchList()){
-        	if(bra.isActive()&&bra.isLine() && Math.abs(bra.getFromBus().getBaseVoltage()-345000.0)<0.1){
-        		
-        		
-          		
-          		int relayBusNum = (int) bra.getFromBus().getNumber();
-          		int relayRemoteBusNum = (int) bra.getToBus().getNumber();
-          		String circuitID =bra.getCircuitNumber();
-          		
-          		double[] zone3Setting = calcBranchZone3Settings(relayBusNum, relayRemoteBusNum, circuitID, net);
-          		
-          		if(zone3Setting !=null){
-          		
-	          		double[] zone12Setting = calcBranchZone12Settings(relayBusNum, relayRemoteBusNum,circuitID, net);
-	          		
-	          		System.out.println("Reach, centerline angle = "+ zone3Setting[1]+","+zone3Setting[2]);
-	          		
-	          		
-	          		String zoneProtectDyrString = getZoneProtectionDyrString(relayBusNum, relayRemoteBusNum, circuitID, zone12Setting,zone3Setting);
-	          		sb.append(zoneProtectDyrString);
-          		}
-          		
-          		
-        	}
-        }
-  		
-        /*
-  		int relayBusNum = 195;
-  		int relayRemoteBusNum = 219;
+  		int relayBusNum = 151;
+  		int relayRemoteBusNum = 152;
   		String circuitID ="1";
   		
   		double[] zone3Setting = calcBranchZone3Settings(relayBusNum, relayRemoteBusNum, circuitID, net);
@@ -158,17 +212,15 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
   		
   		String dyrFileName = "Bus"+relayBusNum+"_zone3_setting.dyr";
   		
-  		String zoneProtectDyrString = getZoneProtectionDyrString(relayBusNum, relayRemoteBusNum, circuitID, zone12Setting,zone3Setting);
-  		*/
-  		
-  		outputPSSEDyrFile(sb.toString(), dyrFileName); 
+  		outputPSSEDyrFile(relayBusNum, relayRemoteBusNum, circuitID, zone12Setting,zone3Setting, dyrFileName); 
 		
 	}
 	
 	
 	
-	private String getZoneProtectionDyrString(int relayBusNum, int relayRemoteBusNum, String circuitID,double[] zone12Settings, double[] zone3Settings) 
-	{
+	private boolean outputPSSEDyrFile(int relayBusNum, int relayRemoteBusNum, String circuitID, 
+			double[] zone12Settings,double[] zone3Settings, String dyrFileName) 
+					throws UnsupportedEncodingException, FileNotFoundException, IOException{
 		/*
 		 * Format:
 		 * IBUS, 'DISTR1',JBUS, ID, RS, ICON(M) to ICON(M+10), CON(J) to CON(J+23)
@@ -275,17 +327,11 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 		sb.append(", "+ 0);
 		sb.append(", "+ 0);
 		sb.append("  /\n");
-		return sb.toString();
-	}
-
-	private boolean outputPSSEDyrFile(String zoneSettings, String dyrFileName) 
-					throws UnsupportedEncodingException, FileNotFoundException, IOException{
-		
 		
 		//open file and write the data to file
 		
 		try {
-		    Files.write(Paths.get(dyrFileName), zoneSettings.getBytes());
+		    Files.write(Paths.get(dyrFileName), sb.toString().getBytes());
 		    
 		    IpssLogger.getLogger().info("The zone 1/2/3 protection data is saved to :"+ dyrFileName);
 		    System.out.println("The zone 1/2/3 protection data is saved to :"+ dyrFileName);
@@ -353,7 +399,7 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 			relayBranch = net.getBranch(relayRemoteBusId,relayBusId,circuitID);
 			
 			if(relayBranch==null){
-				IpssLogger.getLogger().severe("No line is found for the input bus numbers and ID:"+relayBusNum+","+relayRemoteBusNum+","+circuitID);
+				IpssLogger.getLogger().severe("No line is found for the input bus numbers:"+relayBusNum+","+relayRemoteBusNum);
 			    return null;
 			}
 			else
@@ -414,8 +460,9 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 						Complex3x1 relayBranchCurrent = relayAtFromSide?fault.getFaultResult().calBranchScAmpFrom2To(relayBranch):
 							fault.getFaultResult().calBranchScAmpTo2From(relayBranch);
 						
-						IBusScVoltage busResult = (IBusScVoltage)fault.getFaultResult();
-						Complex3x1 relayBusVoltage = busResult.getBusVoltage_012(relayBus);
+						
+						//IBusScVoltage busResult = (IBusScVoltage)fault.getFaultResult();
+						Complex3x1 relayBusVoltage = fault.getFaultResult().getBusVoltage_012(relayBus);
 						
 						System.out.println("Relay bus V and I:"+relayBusVoltage.b_1.toString()+","+relayBranchCurrent.b_1.toString());
 								
@@ -431,16 +478,11 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 			}
 			
 			// compare all the apparent impedances, the maximum value will be used
-			// take the direction into account, only if abs{angle(Zpp)-angle(Zbranch)}<90 will be considered
+			
 			for (Complex Zapp: apparentImpedanceTable.values()){
-				  if(Math.abs(ComplexFunc.arg(Zapp)*180/Math.PI - zAngle)<90.0){
-				      if(Zapp.abs() > maxZapp) maxZapp = Zapp.abs();
-				  }
+				  if(Zapp.abs() > maxZapp) maxZapp = Zapp.abs();
 			}
-			if(maxZapp<=relayBranch.getZ().abs()){
-				IpssLogger.getLogger().severe("No proper zone 3 setting can be found, relayBus, remoteBus: "+relayBusId+","+relayRemoteBusId);
-			    return null;
-			}
+			
 			 System.out.println("Apparent impedances:"+apparentImpedanceTable.toString());
 		}
 		
@@ -459,8 +501,8 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 			d.Zblind_i = (0.85/d.Irated_i/1.15)*(cos(30*pi/180) - sin(30*pi/180)/tan(d.Zang_i*pi/180));
 
 		 */
-		// ADD 10% margin, so maxZpp is multiplied by 1.1
-		return new double[]{zone3_pickup_time,maxZapp*1.1,zAngle,0.55*maxZapp,blinder1_type,blinder1_intercept,blinder1_rotation,blinder2_type,blinder2_intercept,blinder2_rotation };
+		
+		return new double[]{zone3_pickup_time,maxZapp,zAngle,0.5*maxZapp,blinder1_type,blinder1_intercept,blinder1_rotation,blinder2_type,blinder2_intercept,blinder2_rotation };
 		
 		
 	}
@@ -543,5 +585,8 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 	     
 		
 	}
+		
+		
+	
 
 }
