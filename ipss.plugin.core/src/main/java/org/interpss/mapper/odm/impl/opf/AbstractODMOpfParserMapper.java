@@ -156,10 +156,10 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 						}
 						else {
 							OpfBus opfBus = OpfObjectFactory.createOpfBus(busRec.getId(), (OpfNetwork)opfNet);
-							throw new InterpssRuntimeException("Fix the compile error, AbstractODMOpfParserMapper");
-							/* TODO
+							//throw new InterpssRuntimeException("Fix the compile error, AbstractODMOpfParserMapper");
+							
 							aclfNetMapper.mapAclfBusData(busRec, opfBus, opfNet, busHelper);
-							*/
+							
 						}
 					}
 				}
@@ -326,6 +326,7 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 		}
 		opfGen.setIncCost(inc);
 		
+		
 		// set constraints
 		if(busRec.getConstraints()!=null){
 			ConstraintsXmlType ctrtXml = busRec.getConstraints();		
@@ -358,7 +359,8 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 				UnitType ipssUnit = toVoltageUnit.apply(unit);
 				LimitType limit = UnitHelper.pConversion(new LimitType(vmax, vmin), baseKva, ipssUnit, UnitType.PU);
 				ctrtIpss.setVLimit(limit);						
-			}			
+			}
+			
 			opfGen.setOpfLimits(ctrtIpss);
 			
 		}
