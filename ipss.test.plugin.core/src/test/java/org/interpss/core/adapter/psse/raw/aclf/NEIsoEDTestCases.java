@@ -1,5 +1,5 @@
  /*
-  * @(#)CR_UserTestCases.java   
+  * @(#)NEIsoEDTestCases.java   
   *
   * Copyright (C) 2008 www.interpss.org
   *
@@ -22,7 +22,7 @@
   *
   */
 
-package org.interpss.core.adapter.psse.aclf;
+package org.interpss.core.adapter.psse.raw.aclf;
 
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
@@ -34,23 +34,25 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
-public class MMWG_2007series_2008S_Test extends CorePluginTestSetup {
+public class NEIsoEDTestCases extends CorePluginTestSetup {
 	@Test
 	public void testCase1() throws Exception {
 //		IpssFileAdapter adapter = CorePluginObjFactory.getCustomFileAdapter("psse");
-//		SimuContext simuCtx = adapter.load("testData/psse/MMWG_2007series_2008S_Final.raw");
-////  		System.out.println(simuCtx.getAclfNet().net2String());
-
+//		//SimuContext simuCtx = adapter.load("testData/psse/test_model_V29.raw", SpringAppContext.getIpssMsgHub());
+//		SimuContext simuCtx = adapter.load("testData/psse/test_model_V30.raw");
+//  		//System.out.println(simuCtx.getAclfNet().net2String());
+//
 //		AclfNetwork net = simuCtx.getAclfNet();
 		
 		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.PSSE)
-				.load("testData/adpter/psse/MMWG_2007series_2008S_Final.raw")
+				.load("testData/adpter/psse/test_model_V30.raw")
 				.getAclfNet();			
 		
-
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
-	  	algo.setLfMethod(AclfMethodType.PQ);
+	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	algo.setNonDivergent(true);
+	  	algo.setLfMethod(AclfMethodType.NR);
+	  	net.setBypassDataCheck(true);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 	}
