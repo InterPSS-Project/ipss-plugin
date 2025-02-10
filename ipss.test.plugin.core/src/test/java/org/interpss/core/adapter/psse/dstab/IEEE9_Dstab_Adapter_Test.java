@@ -8,6 +8,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
+import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.mapper.odm.ODMDStabParserMapper;
@@ -19,8 +20,8 @@ import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.dstab.BaseDStabBus;
-import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.BaseDStabNetwork;
+import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.mach.SalientPoleMachine;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
@@ -33,7 +34,7 @@ public class IEEE9_Dstab_Adapter_Test {
 		IPSSMsgHub msg = CoreCommonFactory.getIpssMsgHub();
 		IpssLogger.getLogger().setLevel(Level.WARNING);
 		
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq",
