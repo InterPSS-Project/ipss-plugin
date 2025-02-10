@@ -10,6 +10,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
+import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.DStabTestSetupBase;
@@ -39,7 +40,7 @@ public class DStab_Relay_LowVoltLoadShed_Test extends DStabTestSetupBase{
 	public void test_IEEE9Bus_Dstab() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
 				//"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq",

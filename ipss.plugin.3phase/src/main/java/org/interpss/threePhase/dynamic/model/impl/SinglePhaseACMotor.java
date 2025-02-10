@@ -521,7 +521,7 @@ public class SinglePhaseACMotor extends DynLoadModel1Phase {
 			}
 
 			/*
-	        % contractor
+	        %  contractor
 	        %  Contactor – If the voltage drops to below Vc2off, all of the load is tripped; if the voltage is between
 	        % Vc1off and Vc2off, a linear fraction of the load is tripped. If the voltage later recovers to above Vc2on, all
 	        % of the motor is reconnected; if the voltage recovers to between Vc2on and Vc1on, a linear fraction of the

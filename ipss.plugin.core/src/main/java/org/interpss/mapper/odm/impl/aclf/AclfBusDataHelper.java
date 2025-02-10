@@ -81,6 +81,8 @@ import com.interpss.core.acsc.AcscLoad;
 import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabObjectFactory;
+import com.interpss.opf.OpfBus;
+import com.interpss.opf.OpfObjectFactory;
 
 /**
  * Aclf bus data ODM mapping helper functions
@@ -293,6 +295,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 				String id = xmlGen.getId()!=null?xmlGen.getId():this.bus.getId()+"-G"+genCnt++;
 				AclfGen gen= this.bus instanceof BaseDStabBus? DStabObjectFactory.createDStabGen(id) :
 								this.bus instanceof BaseAcscBus<?,?> ? CoreObjectFactory.createAcscGen(id) : 
+									this.bus instanceof OpfBus ? OpfObjectFactory.createOpfGen(id):
 									CoreObjectFactory.createAclfGen(id);
 	
 				//add the generator to the bus GenList. Please note: for AcscBus, gen is already added.

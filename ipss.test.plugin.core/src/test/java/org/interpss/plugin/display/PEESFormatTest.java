@@ -1,10 +1,10 @@
 package org.interpss.plugin.display;
 
-import static org.interpss.CorePluginFunction.aclfResultBusStyle;
 import static org.junit.Assert.assertTrue;
 
 import org.ieee.odm.adapter.IODMAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
+import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.CorePluginFactory;
 import org.interpss.mapper.odm.ODMAclfNetMapper;
@@ -18,7 +18,7 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 public class PEESFormatTest {
 	@Test
 	public void testCase1() throws Exception {
-		IODMAdapter adapter = new PSSEAdapter(PSSEAdapter.PsseVersion.PSSE_30);
+		IODMAdapter adapter = new PSSERawAdapter(PSSEAdapter.PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile("testData/adpter/psse/PSSE_5Bus_Test.raw"));		
 		
 		AclfNetwork net = CorePluginFactory
