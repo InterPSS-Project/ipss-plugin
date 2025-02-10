@@ -32,6 +32,7 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.pssl.plugin.IpssAdapter;
 import org.interpss.pssl.plugin.IpssAdapter.PsseVersion;
+import org.junit.Test;
 
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
@@ -40,12 +41,12 @@ import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
-public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup { 
-	//@Test
-	public void testV33() throws Exception {
-		AclfNetwork net = IpssAdapter.importAclfNet("testdata/adpter/psse/v33/ieee9_v33.raw")
+public class PSSEJSon_IEEE9Bus_Test extends CorePluginTestSetup { 
+	@Test
+	public void testJSon() throws Exception {
+		AclfNetwork net = IpssAdapter.importAclfNet("testdata/adpter/psse/json/ieee9.rawx")
 				.setFormat(PSSE)
-				.setPsseVersion(PsseVersion.PSSE_33)
+				.setPsseVersion(PsseVersion.PSSE_JSON)
 				.load()
 				.getImportedObj();
 
