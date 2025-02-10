@@ -1,4 +1,4 @@
-package org.interpss.core.adapter.psse.acsc;
+package org.interpss.core.adapter.psse.raw.acsc;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
