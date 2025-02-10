@@ -1,0 +1,222 @@
+{
+    "general":{"version":"36.1"}, 
+    "network":{
+        "caseid":{
+            "fields":["ic", "sbase", "rev", "xfrrat", "nxfrat", "basfrq", "title1", "title2"], 
+            "data":[0, 100.0000, 36, 0, 1, 50.00000, "00/00/01                      100.0  0    0", "0"]
+        }, 
+        "general":{
+            "fields":["thrshz", "pqbrak", "blowup", "maxisollvls", "camaxreptsln", "chkdupcntlbl"], 
+            "data":[0.1000000E-03, 0.7000000, 5.000000, 4, 20, 0]
+        }, 
+        "gauss":{
+            "fields":["itmx", "accp", "accq", "accm", "tol"], 
+            "data":[100, 1.600000, 1.600000, 1.000000, 0.1000000E-03]
+        }, 
+        "newton":{
+            "fields":["itmxn", "accn", "toln", "vctolq", "vctolv", "dvlim", "ndvfct"], 
+            "data":[20, 1.000000, 0.1000000, 0.1000000, 0.1000000E-04, 0.9900000, 0.9900000]
+        }, 
+        "adjust":{
+            "fields":["adjthr", "acctap", "taplim", "swvbnd", "mxtpss", "mxswim"], 
+            "data":[0.5000000E-02, 1.000000, 0, 100.0000, 99, 10]
+        }, 
+        "tysl":{
+            "fields":["itmxty", "accty", "tolty"], 
+            "data":[20, 1.000000, 0.1000000E-04]
+        }, 
+        "rating":{
+            "fields":["irate", "name", "desc"], 
+            "data":[
+                [1, "RATE1", "RATING SET 1"], 
+                [2, "RATE2", "RATING SET 2"], 
+                [3, "RATE3", "RATING SET 3"], 
+                [4, "RATE4", "RATING SET 4"], 
+                [5, "RATE5", "RATING SET 5"], 
+                [6, "RATE6", "RATING SET 6"], 
+                [7, "RATE7", "RATING SET 7"], 
+                [8, "RATE8", "RATING SET 8"], 
+                [9, "RATE9", "RATING SET 9"], 
+                [10, "RATE10", "RATING SET 10"], 
+                [11, "RATE11", "RATING SET 11"], 
+                [12, "RATE12", "RATING SET 12"]
+            ]
+        }, 
+        "swdratnam":{
+            "fields":["irate", "rnam", "rtyp", "unit", "desc"], 
+            "data":[
+                [1, "RATE1", 0, "MVA", "SWD RATING SET 1"], 
+                [2, "RATE2", 0, "MVA", "SWD RATING SET 2"], 
+                [3, "RATE3", 0, "MVA", "SWD RATING SET 3"], 
+                [4, "RATE4", 0, "MVA", "SWD RATING SET 4"], 
+                [5, "RATE5", 0, "MVA", "SWD RATING SET 5"], 
+                [6, "RATE6", 0, "MVA", "SWD RATING SET 6"], 
+                [7, "RATE7", 0, "MVA", "SWD RATING SET 7"], 
+                [8, "RATE8", 0, "MVA", "SWD RATING SET 8"], 
+                [9, "RATE9", 0, "MVA", "SWD RATING SET 9"], 
+                [10, "RATE10", 0, "MVA", "SWD RATING SET 10"], 
+                [11, "RATE11", 0, "MVA", "SWD RATING SET 11"], 
+                [12, "RATE12", 0, "MVA", "SWD RATING SET 12"]
+            ]
+        }, 
+        "bus":{
+            "fields":["ibus", "name", "baskv", "ide", "area", "zone", "owner", "vm", "va", "nvhi", "nvlo", "evhi", "evlo"], 
+            "data":[
+                [1, "BUS-1", 16.50000, 3, 1, 1, 1, 1.040000, 0.000000, 1.100000, 0.9000000, 1.100000, 0.9000000], 
+                [2, "BUS-2", 18.00000, 2, 1, 1, 1, 1.025000, 9.280000, 1.100000, 0.9000000, 1.100000, 0.9000000], 
+                [3, "BUS-3", 13.80000, 2, 1, 1, 1, 1.025000, 4.660000, 1.100000, 0.9000000, 1.100000, 0.9000000], 
+                [4, "BUS-4", 230.0000, 1, 1, 1, 1, 1.025000, -2.220000, 1.100000, 0.9000000, 1.100000, 0.9000000], 
+                [5, "BUS-5", 230.0000, 1, 1, 1, 1, 0.9950000, -3.990000, 1.100000, 0.9000000, 1.100000, 0.9000000], 
+                [6, "BUS-6", 230.0000, 1, 1, 1, 1, 1.012000, -3.690000, 1.100000, 0.9000000, 1.100000, 0.9000000], 
+                [7, "BUS-7", 230.0000, 1, 1, 1, 1, 1.025000, 3.720000, 1.100000, 0.9000000, 1.100000, 0.9000000], 
+                [8, "BUS-8", 230.0000, 1, 1, 1, 1, 1.015000, 0.7300000, 1.100000, 0.9000000, 1.100000, 0.9000000], 
+                [9, "BUS-9", 230.0000, 1, 1, 1, 1, 1.032000, 1.970000, 1.100000, 0.9000000, 1.100000, 0.9000000]
+            ]
+        }, 
+        "load":{
+            "fields":["ibus", "loadid", "stat", "area", "zone", "pl", "ql", "ip", "iq", "yp", "yq", "owner", "scale", "intrpt", "dgenp", "dgenq", "dgenm", "loadtype", "name"], 
+            "data":[
+                [5, "1", 1, 1, 1, 125.0000, 50.00000, 0.000000, 0.000000, 0.000000, 0.000000, 1, 1, 0, 0.000000, 0.000000, 0, "", ""], 
+                [6, "1", 1, 1, 1, 90.00000, 30.00000, 0.000000, 0.000000, 0.000000, 0.000000, 1, 1, 0, 0.000000, 0.000000, 0, "", ""], 
+                [8, "1", 1, 1, 1, 100.0000, 35.00000, 0.000000, 0.000000, 0.000000, 0.000000, 1, 1, 0, 0.000000, 0.000000, 0, "", ""]
+            ]
+        }, 
+        "fixshunt":{
+            "fields":["ibus", "shntid", "stat", "gl", "bl", "name"], 
+            "data":[]
+        }, 
+        "voltagedroop":{
+            "fields":["name", "status", "regbus", "qdb", "qmin", "qmax", "vdblow", "vdbhigh", "vlow", "vhigh"], 
+            "data":[]
+        }, 
+        "generator":{
+            "fields":["ibus", "machid", "pg", "qg", "qt", "qb", "vs", "ireg", "nreg", "mbase", "zr", "zx", "rt", "xt", "gtap", "stat", "rmpct", "pt", "pb", "baslod", "o1", "f1", "o2", "f2", "o3", "f3", "o4", "f4", "wmod", "wpf", "droopname", "name"], 
+            "data":[
+                [1, "1", 71.64000, 27.05000, 9999.000, -9999.000, 1.040000, 1, 0, 100.0000, 0.000000, 0.4000000E-01, 0.000000, 0.000000, 1.000000, 1, 100.0000, 9999.000, -9999.000, 0, 1, 1.000000, null, null, null, null, null, null, null, null, null, null], 
+                [2, "1", 163.0000, 6.650000, 9999.000, -9999.000, 1.025000, 2, 0, 100.0000, 0.000000, 0.8900000E-01, 0.000000, 0.000000, 1.000000, 1, 100.0000, 9999.000, -9999.000, 0, 1, 1.000000, null, null, null, null, null, null, null, null, null, null], 
+                [3, "1", 85.00000, -10.86000, 99990.00, -99990.00, 1.025000, 3, 0, 100.0000, 0.000000, 0.1070000, 0.000000, 0.000000, 1.000000, 1, 100.0000, 9999.000, -9999.000, 0, 1, 1.000000, null, null, null, null, null, null, null, null, null, null]
+            ]
+        }, 
+        "swdratset":{
+            "fields":["rsetnam", "desc", "rate1", "rate2", "rate3", "rate4", "rate5", "rate6", "rate7", "rate8", "rate9", "rate10", "rate11", "rate12"], 
+            "data":[]
+        }, 
+        "acline":{
+            "fields":["ibus", "jbus", "ckt", "rpu", "xpu", "bpu", "name", "rate1", "rate2", "rate3", "rate4", "rate5", "rate6", "rate7", "rate8", "rate9", "rate10", "rate11", "rate12", "gi", "bi", "gj", "bj", "stat", "bp", "met", "len", "o1", "f1", "o2", "f2", "o3", "f3", "o4", "f4"], 
+            "data":[
+                [4, 5, "0", 0.1000000E-01, 0.8500000E-01, 0.1760000, "", 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1, 0, 2, 0.000000, 1, 1.000000, null, null, null, null, null, null], 
+                [4, 6, "0", 0.1700000E-01, 0.9200000E-01, 0.1580000, "", 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1, 0, 2, 0.000000, 1, 1.000000, null, null, null, null, null, null], 
+                [5, 7, "0", 0.3200000E-01, 0.1610000, 0.3060000, "", 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1, 0, 2, 0.000000, 1, 1.000000, null, null, null, null, null, null], 
+                [6, 9, "0", 0.3900000E-01, 0.1700000, 0.3580000, "", 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1, 0, 2, 0.000000, 1, 1.000000, null, null, null, null, null, null], 
+                [7, 8, "0", 0.8500000E-02, 0.7200000E-01, 0.1490000, "", 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1, 0, 1, 0.000000, 1, 1.000000, null, null, null, null, null, null], 
+                [8, 9, "0", 0.1190000E-01, 0.1008000, 0.2090000, "", 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1, 0, 2, 0.000000, 1, 1.000000, null, null, null, null, null, null]
+            ]
+        }, 
+        "sysswd":{
+            "fields":["ibus", "jbus", "ckt", "xpu", "rsetnam", "stat", "nstat", "met", "stype", "name"], 
+            "data":[]
+        }, 
+        "transformer":{
+            "fields":["ibus", "jbus", "kbus", "ckt", "cw", "cz", "cm", "mag1", "mag2", "nmet", "name", "stat", "o1", "f1", "o2", "f2", "o3", "f3", "o4", "f4", "vecgrp", "zcod", "r1_2", "x1_2", "sbase1_2", "r2_3", "x2_3", "sbase2_3", "r3_1", "x3_1", "sbase3_1", "vmstar", "anstar", "windv1", "nomv1", "ang1", "wdg1rate1", "wdg1rate2", "wdg1rate3", "wdg1rate4", "wdg1rate5", "wdg1rate6", "wdg1rate7", "wdg1rate8", "wdg1rate9", "wdg1rate10", "wdg1rate11", "wdg1rate12", "cod1", "cont1", "node1", "rma1", "rmi1", "vma1", "vmi1", "ntp1", "tab1", "cr1", "cx1", "cnxa1", "windv2", "nomv2", "ang2", "wdg2rate1", "wdg2rate2", "wdg2rate3", "wdg2rate4", "wdg2rate5", "wdg2rate6", "wdg2rate7", "wdg2rate8", "wdg2rate9", "wdg2rate10", "wdg2rate11", "wdg2rate12", "cod2", "cont2", "node2", "rma2", "rmi2", "vma2", "vmi2", "ntp2", "tab2", "cr2", "cx2", "cnxa2", "windv3", "nomv3", "ang3", "wdg3rate1", "wdg3rate2", "wdg3rate3", "wdg3rate4", "wdg3rate5", "wdg3rate6", "wdg3rate7", "wdg3rate8", "wdg3rate9", "wdg3rate10", "wdg3rate11", "wdg3rate12", "cod3", "cont3", "node3", "rma3", "rmi3", "vma3", "vmi3", "ntp3", "tab3", "cr3", "cx3", "cnxa3"], 
+            "data":[
+                [1, 4, 0, "1", 1, 1, 1, 0.000000, 0.000000, 2, "GEN1_TO_BUS1_CIRID_1", 1, 1, 1.000000, 0, 1.000000, 0, 1.000000, 0, 1.000000, "", null, 0.000000, 0.5670000E-01, 100.0000, null, null, null, null, null, null, null, null, 1.000000, 16.50000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0, 0, 0, 1.100000, 0.9000000, 1.100000, 0.9000000, 33, 0, 0.000000, 0.000000, 0.000000, 1.000000, 230.0000, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], 
+                [2, 7, 0, "1", 1, 1, 1, 0.000000, 0.000000, 2, "GEN2_TO_BUS2_CIRID_1", 1, 1, 1.000000, 0, 1.000000, 0, 1.000000, 0, 1.000000, "", null, 0.000000, 0.6250000E-01, 100.0000, null, null, null, null, null, null, null, null, 1.000000, 18.00000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0, 0, 0, 1.100000, 0.9000000, 1.100000, 0.9000000, 33, 0, 0.000000, 0.000000, 0.000000, 1.000000, 230.0000, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], 
+                [3, 9, 0, "1", 1, 1, 1, 0.000000, 0.000000, 2, "GEN3_TO_BUS3_CIRID_1", 1, 1, 1.000000, 0, 1.000000, 0, 1.000000, 0, 1.000000, "", null, 0.000000, 0.5860000E-01, 100.0000, null, null, null, null, null, null, null, null, 1.000000, 13.80000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0, 0, 0, 1.100000, 0.9000000, 1.100000, 0.9000000, 33, 0, 0.000000, 0.000000, 0.000000, 1.000000, 230.0000, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null]
+            ]
+        }, 
+        "area":{
+            "fields":["iarea", "isw", "pdes", "ptol", "arname"], 
+            "data":[]
+        }, 
+        "twotermdc":{
+            "fields":["name", "mdc", "rdc", "setvl", "vschd", "vcmod", "rcomp", "delti", "met", "dcvmin", "cccitmx", "cccacc", "ipr", "nbr", "anmxr", "anmnr", "rcr", "xcr", "ebasr", "trr", "tapr", "tmxr", "tmnr", "stpr", "icr", "ndr", "ifr", "itr", "idr", "xcapr", "ipi", "nbi", "anmxi", "anmni", "rci", "xci", "ebasi", "tri", "tapi", "tmxi", "tmni", "stpi", "ici", "ndi", "ifi", "iti", "idi", "xcapi"], 
+            "data":[]
+        }, 
+        "vscdc":{
+            "fields":["name", "mdc", "rdc", "o1", "f1", "o2", "f2", "o3", "f3", "o4", "f4", "ibus1", "type1", "mode1", "dcset1", "acset1", "aloss1", "bloss1", "minloss1", "smax1", "imax1", "pwf1", "maxq1", "minq1", "vsreg1", "nreg1", "rmpct1", "ibus2", "type2", "mode2", "dcset2", "acset2", "aloss2", "bloss2", "minloss2", "smax2", "imax2", "pwf2", "maxq2", "minq2", "vsreg2", "nreg2", "rmpct2"], 
+            "data":[]
+        }, 
+        "impcor":{
+            "fields":["itable", "tap", "refact", "imfact"], 
+            "data":[]
+        }, 
+        "ntermdc":{
+            "fields":["name", "nconv", "ndcbs", "ndcln", "mdc", "vconv", "vcmod", "vconvn"], 
+            "data":[]
+        }, 
+        "ntermdcconv":{
+            "fields":["name", "ib", "nbrdg", "angmx", "angmn", "rc", "xc", "ebas", "tr", "tap", "tpmx", "tpmn", "tstp", "setvl", "dcpf", "marg", "cnvcod"], 
+            "data":[]
+        }, 
+        "ntermdcbus":{
+            "fields":["name", "idc", "ib", "area", "zone", "dcname", "idc2", "rgrnd", "owner"], 
+            "data":[]
+        }, 
+        "ntermdclink":{
+            "fields":["name", "idc", "jdc", "dcckt", "met", "rdc", "ldc"], 
+            "data":[]
+        }, 
+        "msline":{
+            "fields":["ibus", "jbus", "mslid", "met", "dum1", "dum2", "dum3", "dum4", "dum5", "dum6", "dum7", "dum8", "dum9"], 
+            "data":[]
+        }, 
+        "zone":{
+            "fields":["izone", "zoname"], 
+            "data":[]
+        }, 
+        "iatrans":{
+            "fields":["arfrom", "arto", "trid", "ptran"], 
+            "data":[]
+        }, 
+        "owner":{
+            "fields":["iowner", "owname"], 
+            "data":[]
+        }, 
+        "facts":{
+            "fields":["name", "ibus", "jbus", "mode", "pdes", "qdes", "vset", "shmx", "trmx", "vtmn", "vtmx", "vsmx", "imx", "linx", "rmpct", "owner", "set1", "set2", "vsref", "fcreg", "nreg", "mname"], 
+            "data":[]
+        }, 
+        "swshunt":{
+            "fields":["ibus", "shntid", "modsw", "adjm", "stat", "vswhi", "vswlo", "swreg", "nreg", "rmpct", "rmidnt", "binit", "name", "s1", "n1", "b1", "s2", "n2", "b2", "s3", "n3", "b3", "s4", "n4", "b4", "s5", "n5", "b5", "s6", "n6", "b6", "s7", "n7", "b7", "s8", "n8", "b8"], 
+            "data":[]
+        }, 
+        "gne":{
+            "fields":["name", "model", "nterm", "bus1", "bus2", "nreal", "nintg", "nchar", "stat", "owner", "nmet", "real1", "real2", "real3", "real4", "real5", "real6", "real7", "real8", "real9", "real10", "intg1", "intg2", "intg3", "intg4", "intg5", "intg6", "intg7", "intg8", "intg9", "intg10", "char1", "char2", "char3", "char4", "char5", "char6", "char7", "char8", "char9", "char10"], 
+            "data":[]
+        }, 
+        "indmach":{
+            "fields":["ibus", "imid", "stat", "sc", "dc", "area", "zone", "owner", "name", "tc", "bc", "mbase", "ratekv", "pcode", "pset", "hconst", "aconst", "bconst", "dconst", "econst", "ra", "xa", "xm", "r1", "x1", "r2", "x2", "x3", "e1", "se1", "e2", "se2", "ia1", "ia2", "xamult"], 
+            "data":[]
+        }, 
+        "loadtype":{
+            "fields":["name", "desc"], 
+            "data":[]
+        }, 
+        "interface":{
+            "fields":["name", "inum", "type", "ratmax1", "ratmax2", "ratmax3", "ratmax4", "ratmax5", "ratmax6", "ratmax7", "ratmax8", "ratmax9", "ratmax10", "ratmax11", "ratmax12", "ratmin1", "ratmin2", "ratmin3", "ratmin4", "ratmin5", "ratmin6", "ratmin7", "ratmin8", "ratmin9", "ratmin10", "ratmin11", "ratmin12"], 
+            "data":[]
+        }, 
+        "itfelmt":{
+            "fields":["name", "type", "inum", "jnum", "knum", "namid", "dirctn", "imet", "weight"], 
+            "data":[]
+        }, 
+        "sub":{
+            "fields":["isub", "name", "lati", "long", "srg"], 
+            "data":[]
+        }, 
+        "subnode":{
+            "fields":["isub", "inode", "name", "ibus", "stat", "vm", "va"], 
+            "data":[]
+        }, 
+        "subswd":{
+            "fields":["isub", "inode", "jnode", "swdid", "name", "type", "stat", "nstat", "xpu", "rsetnam"], 
+            "data":[]
+        }, 
+        "subterm":{
+            "fields":["isub", "inode", "type", "eqid", "ibus", "jbus", "kbus"], 
+            "data":[]
+        }
+    }, 
+    "timeseries":{}, 
+    "harmonics":{}
+}

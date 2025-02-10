@@ -427,7 +427,9 @@ public class IpssAdapter extends BaseDSL {
 		 * @return
 		 */
 		private PSSEAdapter.PsseVersion getPsseAptVer() throws InterpssException {
-			if (this.psseVersion == PsseVersion.PSSE_26)
+			if (this.psseVersion == PsseVersion.PSSE_JSON)
+				return PSSEAdapter.PsseVersion.PSSE_JSON;
+			else if (this.psseVersion == PsseVersion.PSSE_26)
 				return PSSEAdapter.PsseVersion.PSSE_26;
 			else if (this.psseVersion == PsseVersion.PSSE_29)
 				return PSSEAdapter.PsseVersion.PSSE_29;
