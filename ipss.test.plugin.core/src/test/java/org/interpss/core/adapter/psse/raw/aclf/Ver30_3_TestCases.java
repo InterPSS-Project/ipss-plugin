@@ -1,5 +1,5 @@
  /*
-  * @(#)NEIsoEDTestCases.java   
+  * @(#)CR_UserTestCases.java   
   *
   * Copyright (C) 2008 www.interpss.org
   *
@@ -22,39 +22,31 @@
   *
   */
 
-package org.interpss.core.adapter.psse.aclf;
+package org.interpss.core.adapter.psse.raw.aclf;
 
-import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.fadapter.IpssFileAdapter;
 import org.junit.Test;
 
-import com.interpss.core.CoreObjectFactory;
-import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.algo.AclfMethodType;
-import com.interpss.core.algo.LoadflowAlgorithm;
-
-public class NEIsoEDTestCases extends CorePluginTestSetup {
+public class Ver30_3_TestCases extends CorePluginTestSetup {
 	@Test
 	public void testCase1() throws Exception {
 //		IpssFileAdapter adapter = CorePluginObjFactory.getCustomFileAdapter("psse");
-//		//SimuContext simuCtx = adapter.load("testData/psse/test_model_V29.raw", SpringAppContext.getIpssMsgHub());
-//		SimuContext simuCtx = adapter.load("testData/psse/test_model_V30.raw");
-//  		//System.out.println(simuCtx.getAclfNet().net2String());
-//
-//		AclfNetwork net = simuCtx.getAclfNet();
-		
-		AclfNetwork net = CorePluginFactory
-				.getFileAdapter(IpssFileAdapter.FileFormat.PSSE)
-				.load("testData/adpter/psse/test_model_V30.raw")
-				.getAclfNet();			
-		
+//		SimuContext simuCtx = adapter.load("testData/psse/HEonly_with_loads_added_for_interconnects.raw");
+//  		System.out.println(simuCtx.getAclfNet().net2String());
+/*
+		AclfAdjNetwork net = simuCtx.getAclfAdjNet();
+
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
-	  	algo.setNonDivergent(true);
-	  	algo.setLfMethod(AclfMethodType.NR);
-	  	net.setBypassDataCheck(true);
-	  	algo.loadflow();
+	  	algo.setLfMethod(AclfMethod.PQ);
+	  	algo.loadflow(SpringAppContext.getIpssMsgHub());
   		//System.out.println(net.net2String());
+	  	
+  		AclfBus swingBus = simuCtx.getAclfNet().getAclfBus("1");
+		SwingBusAdapter swing = (SwingBusAdapter)swingBus.getAdapter(SwingBusAdapter.class);
+  		Complex p = swing.getGenResults(UnitType.mW, simuCtx.getAclfNet().getBaseKva());
+  		assertTrue(Math.abs(p.getReal()-22.547)<0.01);
+  		assertTrue(Math.abs(p.getImaginary()-15.852)<0.01);
+  		*/	  	
 	}
 }
 
