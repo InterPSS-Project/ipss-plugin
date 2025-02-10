@@ -19,45 +19,7 @@ public interface LD1PAC extends DynLoadModel {
 	 */
 	void setStage(int value);
 
-	/**
-	 * Returns the value of the '<em><b>P</b></em>' attribute.
-	 */
-	double getP();
-
-	/**
-	 * Sets the value of the '{@link com.interpss.dstab.dynLoad.LD1PAC#getP <em>P</em>}' attribute.
-	 */
-	void setP(double value);
-
-	/**
-	 * Returns the value of the '<em><b>Q</b></em>' attribute.
-	 */
-	double getQ();
-
-	/**
-	 * Sets the value of the '{@link com.interpss.dstab.dynLoad.LD1PAC#getQ <em>Q</em>}' attribute.
-	 */
-	void setQ(double value);
-
-	/**
-	 * Returns the value of the '<em><b>P0</b></em>' attribute.
-	 */
-	double getP0();
-
-	/**
-	 * Sets the value of the '{@link com.interpss.dstab.dynLoad.LD1PAC#getP0 <em>P0</em>}' attribute.
-	 */
-	void setP0(double value);
-
-	/**
-	 * Returns the value of the '<em><b>Q0</b></em>' attribute.
-	 */
-	double getQ0();
-
-	/**
-	 * Sets the value of the '{@link com.interpss.dstab.dynLoad.LD1PAC#getQ0 <em>Q0</em>}' attribute.
-	 */
-	void setQ0(double value);
+	
 
 	/**
 	 * Returns the value of the '<em><b>Pac</b></em>' attribute.
