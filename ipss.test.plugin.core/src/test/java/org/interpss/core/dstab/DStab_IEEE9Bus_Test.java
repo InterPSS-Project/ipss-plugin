@@ -4,42 +4,33 @@ import static com.interpss.dstab.cache.StateVariableRecorder.StateVarRecType.Mac
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.util.List;
 import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
-import org.ieee.odm.model.acsc.AcscModelParser;
+import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
-import org.interpss.algo.SequenceNetworkBuilder;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.dstab.dynLoad.InductionMotor;
 import org.interpss.dstab.dynLoad.impl.InductionMotorImpl;
-import org.interpss.mapper.odm.ODMAcscParserMapper;
 import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.interpss.numeric.NumericConstant;
-import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.numeric.util.Number2String;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.util.FileUtil;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
-import com.interpss.core.acsc.AcscNetwork;
-import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.algo.sc.ScBusModelType;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
-import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.StaticLoadModel;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
@@ -47,8 +38,6 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.cache.StateMonitor.DynDeviceType;
 import com.interpss.dstab.cache.StateVariableRecorder;
-import com.interpss.dstab.cache.StateVariableRecorder.StateRecord;
-import com.interpss.dstab.cache.StateVariableRecorder.StateVarRecType;
 import com.interpss.dstab.common.DStabOutSymbol;
 import com.interpss.dstab.devent.DynamicSimuEvent;
 import com.interpss.dstab.devent.DynamicSimuEventType;
@@ -65,7 +54,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	public void test_IEEE9Bus_Dstab() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq",
@@ -210,7 +199,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	public void test_IEEE9Bus_Dstab_Load_Change_staticLoad() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.WARNING);
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq",
@@ -444,7 +433,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	public void test_IEEE9Bus_Dstab_Load_Change_dynamicLoad() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.WARNING);
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq",
@@ -565,7 +554,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	public void test_IEEE9Bus_Dstab_Generator_Trip() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq",
@@ -671,7 +660,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	public void test_IEEE9Bus_Dstab_Generator_Energization() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9_multiGen_v2.raw",
                 //"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq",
@@ -781,7 +770,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	@Test
 	public void IEEE9_Dstab_benchMark() throws InterpssException{
 		IpssCorePlugin.init();
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq",
@@ -849,7 +838,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	@Test
 	public void IEEE9_Dstab_GenWithoutMach() throws InterpssException{
 		IpssCorePlugin.init();
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq",
@@ -921,7 +910,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
     public void IEEE9_Dstab_multiGen_Test() throws InterpssException{
             IpssCorePlugin.init();
             IpssLogger.getLogger().setLevel(Level.INFO);
-            PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+            PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
             assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
                             "testData/adpter/psse/v30/IEEE9Bus/ieee9_multiGen.raw",
                             //"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq",
@@ -989,7 +978,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	@Test
 	public void IEEE9_Dstab_gen_load_status_change() throws InterpssException{
 		IpssCorePlugin.init();
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq",
@@ -1084,7 +1073,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	//@Test
 	public void test_ieee_1981_exciter() throws InterpssException{
 		IpssCorePlugin.init();
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9_dyn_Model_1981Exc.dyr"
@@ -1146,7 +1135,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	//@Test
 	public void test_ieee_2005_exciter() throws InterpssException{
 		IpssCorePlugin.init();
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9_dyn_Model_2005Exc.dyr"

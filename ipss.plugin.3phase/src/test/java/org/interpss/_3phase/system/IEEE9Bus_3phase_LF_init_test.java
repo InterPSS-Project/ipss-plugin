@@ -9,6 +9,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
+import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
@@ -304,7 +305,7 @@ ca = (0.0, 0.0),cb = (1.734723475976807E-18, -3.469446951953614E-18),cc = (-1.73
 		public void test_IEEE9_gen_load_update() throws InterpssException {
 			IpssCorePlugin.init();
 			IpssCorePlugin.setLoggerLevel(Level.INFO);
-			PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+			PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 			assertTrue(adapter.parseInputFile(NetType.DStabNet,
 					new String[] { "testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq",
 							"testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr" }));
