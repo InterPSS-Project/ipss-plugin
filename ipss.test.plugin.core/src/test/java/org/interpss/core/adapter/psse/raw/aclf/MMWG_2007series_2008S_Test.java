@@ -22,9 +22,7 @@
   *
   */
 
-package org.interpss.core.adapter.psse.aclf;
-
-import static org.junit.Assert.assertTrue;
+package org.interpss.core.adapter.psse.raw.aclf;
 
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
@@ -33,36 +31,28 @@ import org.junit.Test;
 
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
-public class Bus42_3winding extends CorePluginTestSetup {
+public class MMWG_2007series_2008S_Test extends CorePluginTestSetup {
 	@Test
-	public void testCaseNoDC() throws Exception {
-		AclfNetwork net = CorePluginFactory
-				.getFileAdapter(IpssFileAdapter.FileFormat.PSSE, IpssFileAdapter.Version.PSSE_30)
-				.load("testData/adpter/psse/v30/42bus_3winding_from_PSSE_V30_NoDC.raw")
-				.getAclfNet();	
-
-		//IpssLogger.getLogger().setLevel(Level.INFO);
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
-	  	algo.loadflow();
-  		//System.out.println(net.net2String());
-	  	
-  		assertTrue(net.isLfConverged());	
-	}
-
-	//@Test
 	public void testCase1() throws Exception {
+//		IpssFileAdapter adapter = CorePluginObjFactory.getCustomFileAdapter("psse");
+//		SimuContext simuCtx = adapter.load("testData/psse/MMWG_2007series_2008S_Final.raw");
+////  		System.out.println(simuCtx.getAclfNet().net2String());
+
+//		AclfNetwork net = simuCtx.getAclfNet();
+		
 		AclfNetwork net = CorePluginFactory
-				.getFileAdapter(IpssFileAdapter.FileFormat.PSSE, IpssFileAdapter.Version.PSSE_30)
-				.load("testData/adpter/psse/v30/42bus_3winding_from_PSSE_V30.raw")
-				.getAclfNet();	
+				.getFileAdapter(IpssFileAdapter.FileFormat.PSSE)
+				.load("testData/adpter/psse/MMWG_2007series_2008S_Final.raw")
+				.getAclfNet();			
+		
 
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	algo.setLfMethod(AclfMethodType.PQ);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
-	  	
-  		//assertTrue(net.isLfConverged());	
 	}
 }
 
