@@ -386,7 +386,9 @@ public class IpssAdapter extends BaseDSL {
 						adapter = new IeeeCDFAdapter();
 					}
 					else if ( this.format == FileFormat.PSSE ) {
-						if (this.psseVersion == PsseVersion.PSSE_26)
+						if (this.psseVersion == PsseVersion.PSSE_JSON)
+							adapter = new PSSEJSonAdapter();
+						else if (this.psseVersion == PsseVersion.PSSE_26)
 							adapter = new PSSEV26Adapter();
 						else if (this.psseVersion == PsseVersion.PSSE_JSON)
 							adapter = new PSSEJSonAdapter();
@@ -429,7 +431,9 @@ public class IpssAdapter extends BaseDSL {
 		 * @return
 		 */
 		private PSSEAdapter.PsseVersion getPsseAptVer() throws InterpssException {
-			if (this.psseVersion == PsseVersion.PSSE_26)
+			if (this.psseVersion == PsseVersion.PSSE_JSON)
+				return PSSEAdapter.PsseVersion.PSSE_JSON;
+			else if (this.psseVersion == PsseVersion.PSSE_26)
 				return PSSEAdapter.PsseVersion.PSSE_26;
 			else if (this.psseVersion == PsseVersion.PSSE_29)
 				return PSSEAdapter.PsseVersion.PSSE_29;
