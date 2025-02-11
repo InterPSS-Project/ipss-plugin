@@ -31,6 +31,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.datamodel.bean.aclf.AclfNetBean;
 import org.interpss.datamodel.mapper.aclf.AclfNet2AclfBeanMapper;
+import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.pssl.plugin.IpssAdapter;
 import org.interpss.pssl.plugin.IpssAdapter.PsseVersion;
@@ -131,7 +132,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		testVAclf(net);
 	}
 
-	//@Test
+	@Test
 	public void testV31() throws Exception {
 		AclfNetwork net = IpssAdapter.importAclfNet("testdata/adpter/psse/v31/ieee9_v31.raw")
 				.setFormat(PSSE)
@@ -153,7 +154,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		testVAclf(net);
 	}
 	
-	//@Test
+	@Test
 	public void testV33() throws Exception {
 		AclfNetwork net = IpssAdapter.importAclfNet("testdata/adpter/psse/v33/ieee9_v33.raw")
 				.setFormat(PSSE)
@@ -162,6 +163,30 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 				.getImportedObj();
 
 		testVAclf(net);
+		//System.out.println(AclfOutFunc.loadFlowSummary(net));
+	}
+	
+	@Test
+	public void testRAWXJson() throws Exception {
+		AclfNetwork net = IpssAdapter.importAclfNet("testdata/adpter/psse/json/ieee9.rawx")
+				.setFormat(PSSE)
+				.setPsseVersion(PsseVersion.PSSE_JSON)
+				.load()
+				.getImportedObj();
+
+		testVAclf(net);
+		
+//		System.out.println(net.net2String());
+//		
+//		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+//	  	algo.setLfMethod(AclfMethodType.NR);
+//	  	algo.loadflow();
+//	  	System.out.println(AclfOutFunc.loadFlowSummary(net));
+//		AclfBus swingBus = net.getBus("Bus1");
+//	  	AclfSwingBusAdapter swing = swingBus.toSwingBus();
+//  		Complex p = swing.getGenResults(UnitType.PU);
+//  		assertTrue(Math.abs(p.getReal()-0.71646)<0.0001);
+//  		assertTrue(Math.abs(p.getImaginary()-0.2687)<0.01);
 	}
 	
 	private void testVAclf(AclfNetwork net) throws Exception {
