@@ -39,6 +39,7 @@ import org.ieee.odm.adapter.bpa.BPAAdapter;
 import org.ieee.odm.adapter.ge.GePslfAdapter;
 import org.ieee.odm.adapter.ieeecdf.IeeeCDFAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
+import org.ieee.odm.adapter.psse.json.PSSEJSonAdapter;
 import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.adapter.psse.raw.v26.PSSEV26Adapter;
 import org.ieee.odm.adapter.pwd.PowerWorldAdapter;
@@ -93,6 +94,9 @@ public class IpssAdapter extends BaseDSL {
 	 *
 	 */
 	public static enum PsseVersion {
+		    PSSE_JSON,
+		    PSSE_36,
+		    PSSE_35,
 		    PSSE_33, 
 			PSSE_32, 
 			PSSE_31, 
@@ -384,6 +388,8 @@ public class IpssAdapter extends BaseDSL {
 					else if ( this.format == FileFormat.PSSE ) {
 						if (this.psseVersion == PsseVersion.PSSE_26)
 							adapter = new PSSEV26Adapter();
+						else if (this.psseVersion == PsseVersion.PSSE_JSON)
+							adapter = new PSSEJSonAdapter();
 						else
 							adapter = new PSSERawAdapter(getPsseAptVer());
 					}
