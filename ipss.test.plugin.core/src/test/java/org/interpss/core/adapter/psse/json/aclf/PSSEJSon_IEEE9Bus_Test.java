@@ -1,5 +1,5 @@
  /*
-  * @(#)WECC_10212010_TestCase.java   
+  * @(#)IEEE9Bus_Test.java   
   *
   * Copyright (C) 2008 www.interpss.org
   *
@@ -22,18 +22,16 @@
   *
   */
 
-package org.interpss.core.adapter.psse.aclf;
-
+package org.interpss.core.adapter.psse.json.aclf;
+ 
+import static org.interpss.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.adapter.IODMAdapter;
-import org.ieee.odm.adapter.psse.PSSEAdapter;
-import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
-import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.mapper.odm.ODMAclfParserMapper;
 import org.interpss.numeric.datatype.Unit.UnitType;
+import org.interpss.pssl.plugin.IpssAdapter;
+import org.interpss.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.Test;
 
 import com.interpss.core.CoreObjectFactory;
@@ -42,29 +40,20 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
-import com.interpss.simu.SimuObjectFactory;
 
-public class PSSE_5Bus_TestCase extends CorePluginTestSetup { 
+public class PSSEJSon_IEEE9Bus_Test extends CorePluginTestSetup { 
 	@Test
-	public void testCase1() throws Exception {
-		IODMAdapter adapter = new PSSERawAdapter(PSSEAdapter.PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile("testdata/adpter/psse/PSSE_5Bus_Test.raw"));
-		
-		AclfModelParser parser = (AclfModelParser)adapter.getModel();
-		//parser.stdout();
-		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.ACLF_NETWORK);
-		if (!new ODMAclfParserMapper()
-					.map2Model(parser, simuCtx)) {
-  	  		System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-  	  		return;
-		}		
-		
-		//System.out.println(simuCtx.getAclfNet().net2String());
-		
-		AclfNetwork net = simuCtx.getAclfNet();
+	public void testJSon() throws Exception {
+		AclfNetwork net = IpssAdapter.importAclfNet("testdata/adpter/psse/json/ieee9.rawx")
+				.setFormat(PSSE)
+				.setPsseVersion(PsseVersion.PSSE_JSON)
+				.load()
+				.getImportedObj();
+
+		testVAclf(net);
+	}
+	
+	private void testVAclf(AclfNetwork net) throws Exception {
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.PQ);
 	  	algo.loadflow();
@@ -72,11 +61,10 @@ public class PSSE_5Bus_TestCase extends CorePluginTestSetup {
 
 	  	AclfBus swingBus = net.getBus("Bus1");
 	  	AclfSwingBusAdapter swing = swingBus.toSwingBus();
-  		Complex p = swing.getGenResults(UnitType.mW);
-  		//System.out.println(p.getReal() + "  " + p.getImaginary());
-  		assertTrue(Math.abs(p.getReal()-22.546)<0.01);
-  		assertTrue(Math.abs(p.getImaginary()-15.853)<0.01);	  			
-	}
+  		Complex p = swing.getGenResults(UnitType.PU);
+  		assertTrue(Math.abs(p.getReal()-0.71638)<0.00001);
+  		assertTrue(Math.abs(p.getImaginary()-0.268727)<0.00001);
+	}	
 }
 
 

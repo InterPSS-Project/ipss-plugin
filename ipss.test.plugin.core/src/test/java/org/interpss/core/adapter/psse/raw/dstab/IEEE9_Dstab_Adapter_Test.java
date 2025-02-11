@@ -1,4 +1,4 @@
-package org.interpss.core.adapter.psse.dstab;
+package org.interpss.core.adapter.psse.raw.dstab;
 
 import static org.junit.Assert.assertTrue;
 
