@@ -49,9 +49,7 @@ public class PSSE_Savnw_v33_Acsc_Test extends CorePluginTestSetup {
 				
 		}));
 		AcscModelParser acscParser =(AcscModelParser) adapter.getModel();
-		
-		
-		acscParser.stdout();
+		//acscParser.stdout();
 		
 		AcscNetwork net = new ODMAcscParserMapper().map2Model(acscParser).getAcscNet();
 		
