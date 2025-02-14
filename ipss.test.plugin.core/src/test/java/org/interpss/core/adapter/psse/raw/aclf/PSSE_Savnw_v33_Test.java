@@ -40,7 +40,7 @@ public class PSSE_Savnw_v33_Test extends CorePluginTestSetup {
 		
 		
 		AclfModelParser parser = (AclfModelParser)adapter.getModel();
-		parser.stdout();
+		//parser.stdout();
 		
 		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.ACLF_NETWORK);
 		if (!new ODMAclfParserMapper()
