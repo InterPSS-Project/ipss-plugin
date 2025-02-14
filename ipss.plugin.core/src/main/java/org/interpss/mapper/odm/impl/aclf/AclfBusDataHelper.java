@@ -222,7 +222,9 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 //			}
 		} else if (xmlGenData.getCode() == LFGenCodeEnumType.PV &&
 				xmlDefaultGen != null) {
-			if (xmlDefaultGen.getRemoteVoltageControlBus() == null) {
+			if (xmlDefaultGen.getRemoteVoltageControlBus() == null ||
+				    xmlDefaultGen.getRemoteVoltageControlBus().getIdRef() == null ||
+				    ((LoadflowBusXmlType) xmlDefaultGen.getRemoteVoltageControlBus().getIdRef()).getId().equals(bus.getId())) {
 				bus.setGenCode(AclfGenCode.GEN_PV);
 				AclfPVGenBusAdapter pvBus = bus.toPVBus();
 				//if (xmlEquivGenData == null)
@@ -236,7 +238,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 					double vpu = UnitHelper.vConversion(vXml.getValue(),
 						bus.getBaseVoltage(), toVoltageUnit.apply(vXml.getUnit()), UnitType.PU);
 				    //TODO comment out for WECC System QA, to use the input voltage as the PV bus voltage
-					//pvBus.setDesiredVoltMag(vpu, UnitType.PU);
+					pvBus.setDesiredVoltMag(vpu, UnitType.PU);
 					
 					if (xmlDefaultGen.getQLimit() != null) {
   			  			final PVBusLimit pvLimit = CoreObjectFactory.createPVBusLimit(bus);

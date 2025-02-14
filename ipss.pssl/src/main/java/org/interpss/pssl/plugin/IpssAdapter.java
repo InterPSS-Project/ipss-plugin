@@ -93,7 +93,9 @@ public class IpssAdapter extends BaseDSL {
 	 *
 	 */
 	public static enum PsseVersion {
-			PSSE_JSON,
+		    PSSE_JSON,
+		    PSSE_36,
+		    PSSE_35,
 		    PSSE_33, 
 			PSSE_32, 
 			PSSE_31, 
