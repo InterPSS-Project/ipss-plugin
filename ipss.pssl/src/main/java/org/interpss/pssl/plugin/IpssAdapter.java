@@ -93,7 +93,9 @@ public class IpssAdapter extends BaseDSL {
 	 *
 	 */
 	public static enum PsseVersion {
-			PSSE_JSON,
+		    PSSE_JSON,
+		    PSSE_36,
+		    PSSE_35,
 		    PSSE_33, 
 			PSSE_32, 
 			PSSE_31, 
@@ -387,6 +389,8 @@ public class IpssAdapter extends BaseDSL {
 							adapter = new PSSEJSonAdapter();
 						//else if (this.psseVersion == PsseVersion.PSSE_26)
 						//	adapter = new PSSEV26Adapter();
+						else if (this.psseVersion == PsseVersion.PSSE_JSON)
+							adapter = new PSSEJSonAdapter();
 						else
 							adapter = new PSSERawAdapter(getPsseAptVer());
 					}
