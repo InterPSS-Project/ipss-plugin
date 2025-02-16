@@ -41,7 +41,6 @@ import org.ieee.odm.adapter.ieeecdf.IeeeCDFAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.json.PSSEJSonAdapter;
 import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
-//import org.ieee.odm.adapter.psse.raw.v26.PSSEV26Adapter;
 import org.ieee.odm.adapter.pwd.PowerWorldAdapter;
 import org.ieee.odm.adapter.ucte.UCTE_DEFAdapter;
 import org.ieee.odm.model.IODMModelParser;
@@ -431,8 +430,8 @@ public class IpssAdapter extends BaseDSL {
 		private PSSEAdapter.PsseVersion getPsseAptVer() throws InterpssException {
 			if (this.psseVersion == PsseVersion.PSSE_JSON)
 				return PSSEAdapter.PsseVersion.PSSE_JSON;
-//			else if (this.psseVersion == PsseVersion.PSSE_26)
-//				return PSSEAdapter.PsseVersion.PSSE_26;
+			//else if (this.psseVersion == PsseVersion.PSSE_26)
+			//	return PSSEAdapter.PsseVersion.PSSE_26;
 			else if (this.psseVersion == PsseVersion.PSSE_29)
 				return PSSEAdapter.PsseVersion.PSSE_29;
 			else if (this.psseVersion == PsseVersion.PSSE_30)
