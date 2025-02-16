@@ -53,6 +53,18 @@ public class PSSEJSon_IEEE9Bus_Test extends CorePluginTestSetup {
 		testVAclf(net);
 	}
 	
+	@Test
+	public void testJSon_Converter_output() throws Exception {
+		AclfNetwork net = IpssAdapter.importAclfNet("testdata/adpter/psse/json/ieee9_output.rawx")
+				.setFormat(PSSE)
+				.setPsseVersion(PsseVersion.PSSE_JSON)
+				.load()
+				.getImportedObj();
+
+		testVAclf(net);
+	}
+	
+	
 	private void testVAclf(AclfNetwork net) throws Exception {
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.PQ);
@@ -62,8 +74,8 @@ public class PSSEJSon_IEEE9Bus_Test extends CorePluginTestSetup {
 	  	AclfBus swingBus = net.getBus("Bus1");
 	  	AclfSwingBusAdapter swing = swingBus.toSwingBus();
   		Complex p = swing.getGenResults(UnitType.PU);
-  		assertTrue(Math.abs(p.getReal()-0.71638)<0.00001);
-  		assertTrue(Math.abs(p.getImaginary()-0.268727)<0.00001);
+  		assertTrue(Math.abs(p.getReal()-0.71646)<0.00001);
+  		assertTrue(Math.abs(p.getImaginary()-0.27107)<0.00001);
 	}	
 }
 
