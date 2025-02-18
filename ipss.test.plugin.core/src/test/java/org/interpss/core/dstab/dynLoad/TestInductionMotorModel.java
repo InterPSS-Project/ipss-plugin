@@ -132,6 +132,10 @@ public class TestInductionMotorModel extends TestSetupBase {
 		
 		assertTrue(Math.abs(pRec0.value-pRec10.value)<1.0E-5);
 		
+		// bus1.setLoadP(0.8);
+		// bus1.setLoadQ(0.2); 
+		// motor loadpercentage = 50% ==> motor power = 40MW or 0.4 pu on system base
+		
 		if (isSysMVABase)
 			assertTrue(pRec0.value==0.4);
 		else {
