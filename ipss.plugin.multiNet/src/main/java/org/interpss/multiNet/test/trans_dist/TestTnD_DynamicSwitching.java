@@ -12,6 +12,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
+import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
@@ -44,8 +45,6 @@ import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.interpss.util.FileUtil;
 import org.junit.Test;
 
-import com.interpss.dstab.DStabObjectFactory;
-import com.interpss.simu.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranch;
@@ -63,18 +62,19 @@ import com.interpss.core.net.NetworkType;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabGen;
+import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.cache.StateMonitor.DynDeviceType;
 import com.interpss.dstab.cache.StateMonitor.MonitorRecord;
-import com.interpss.dstab.devent.LoadChangeEventType;
 import com.interpss.dstab.device.DynamicBusDevice;
 import com.interpss.dstab.impl.DStabGenImpl;
 import com.interpss.dstab.mach.EConstMachine;
 import com.interpss.dstab.mach.MachineModelType;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
+import com.interpss.simu.SimuObjectFactory;
 
 public class TestTnD_DynamicSwitching {
 
@@ -82,7 +82,7 @@ public class TestTnD_DynamicSwitching {
 	public void test_IEEE9_8Busfeeder_powerflow() throws InterpssException {
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.WARNING);
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet,
 				new String[] { "testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq",
 						// "testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr"
@@ -202,7 +202,7 @@ public class TestTnD_DynamicSwitching {
 		 * ----------------------------------------------------------
 		 */
 
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[] { 
 				"testData/IEEE9Bus/ieee9.raw",
 				"testData/IEEE9Bus/ieee9.seq", 
