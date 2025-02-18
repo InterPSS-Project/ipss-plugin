@@ -9,6 +9,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
+import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
@@ -64,7 +65,7 @@ public class TestTnD_IEEE9_8BusFeeder {
 	public void test_IEEE9_8Busfeeder_powerflow() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.WARNING);
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/IEEE9Bus/ieee9.raw",
 				"testData/IEEE9Bus/ieee9.seq",
@@ -202,7 +203,7 @@ public class TestTnD_IEEE9_8BusFeeder {
 		 */
 		
 		
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/IEEE9Bus/ieee9.raw",
 				"testData/IEEE9Bus/ieee9.seq",
@@ -496,7 +497,7 @@ public class TestTnD_IEEE9_8BusFeeder {
 		 */
 		
 		
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/IEEE9Bus/ieee9.raw",
 				"testData/IEEE9Bus/ieee9.seq",

@@ -1,10 +1,11 @@
-package org.interpss.core.adapter.psse.aclf;
+package org.interpss.core.adapter.psse.raw.aclf;
 
 import static org.interpss.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.Assert.assertTrue;
 
 import org.ieee.odm.adapter.IODMAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
+import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.datamodel.bean.aclf.AclfNetBean;
@@ -34,12 +35,12 @@ public class PSSE_Savnw_v33_Test extends CorePluginTestSetup {
 //		IODMAdapter adapter = new PSSEAdapter(PSSEAdapter.PsseVersion.PSSE_30);
 //		assertTrue(adapter.parseInputFile("testdata/adpter/psse/v30/savnw_v30.raw"));
 //		
-		IODMAdapter adapter = new PSSEAdapter(PSSEAdapter.PsseVersion.PSSE_33);
+		IODMAdapter adapter = new PSSERawAdapter(PSSEAdapter.PsseVersion.PSSE_33);
 		assertTrue(adapter.parseInputFile("testdata/adpter/psse/v33/savnw.raw"));
 		
 		
 		AclfModelParser parser = (AclfModelParser)adapter.getModel();
-		parser.stdout();
+		//parser.stdout();
 		
 		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.ACLF_NETWORK);
 		if (!new ODMAclfParserMapper()

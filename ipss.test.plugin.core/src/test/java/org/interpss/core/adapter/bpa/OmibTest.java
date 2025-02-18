@@ -52,7 +52,7 @@ public class OmibTest extends DStabTestSetupBase{
 		
 		DStabModelParser parser=(DStabModelParser) adapter.getModel();
 
-		parser.stdout();
+		//parser.stdout();
 		/*
 		String xml=parser.toXmlDoc(false);
 		FileOutputStream out=new FileOutputStream(new File("testdata/ieee_odm/EQG007_OMIB.xml"));

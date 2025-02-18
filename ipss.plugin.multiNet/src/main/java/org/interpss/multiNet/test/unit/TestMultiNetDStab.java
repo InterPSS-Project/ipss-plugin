@@ -7,6 +7,7 @@ import java.util.logging.Level;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
+import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
@@ -44,7 +45,7 @@ public class TestMultiNetDStab {
 	public void test_IEEE9Bus_subNet_Dstab() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/IEEE9Bus/ieee9.raw",
 				"testData/IEEE9Bus/ieee9.seq",
@@ -134,7 +135,7 @@ public class TestMultiNetDStab {
 	public void test_IEEE9Bus_MultiSubNet_Dstab_1port() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/IEEE9Bus/ieee9.raw",
 				"testData/IEEE9Bus/ieee9.seq",
@@ -235,7 +236,7 @@ public class TestMultiNetDStab {
 	public void test_IEEE9Bus_MultiSubNet_Dstab_2port() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/IEEE9Bus/ieee9.raw",
 				"testData/IEEE9Bus/ieee9.seq",
@@ -352,7 +353,7 @@ public class TestMultiNetDStab {
 	public void test_IEEE9Bus_Dstab() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/IEEE9Bus/ieee9.raw",
 				"testData/IEEE9Bus/ieee9.seq",
