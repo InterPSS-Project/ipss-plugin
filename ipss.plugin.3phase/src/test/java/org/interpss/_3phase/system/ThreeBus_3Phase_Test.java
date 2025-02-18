@@ -444,6 +444,7 @@ public class ThreeBus_3Phase_Test {
 				  System.out.println(bus.getId() +": Vabc =  "+ph3Bus.get3PhaseVotlages());
 			  }
 		  }
+		  assertTrue(NumericUtil.equals(net.getBus("Bus1").get3PhaseVotlages().a_0, new Complex(0.90406,-0.51407 ),1.0E-4));
 		/*
 		 * Bus1: Vabc =  0.90406 + j-0.51407  -0.89723 + j-0.52591  -0.00683 + j1.03998
 		Bus2: Vabc =  1.03109 + j-0.02767  -0.53951 + j-0.87912  -0.49159 + j0.90679
