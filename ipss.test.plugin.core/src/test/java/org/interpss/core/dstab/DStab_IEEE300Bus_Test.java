@@ -12,6 +12,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
+import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
@@ -29,10 +30,6 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.net.Bus;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
-import com.interpss.dstab.DStabBranch;
-import com.interpss.dstab.DStabBus;
-import com.interpss.dstab.DStabGen;
-import com.interpss.dstab.DStabLoad;
 import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -50,7 +47,7 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 		public void test_IEEE300_Dstab() throws InterpssException{
 			IpssCorePlugin.init();
 			IpssLogger.getLogger().setLevel(Level.OFF);
-			PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+			PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 					
 					//NOTE: the original IEEE300Bus_modified_noHVDC.raw could result in oscillation for some faults due to capacitor compensation of long distance lines between 120 and 118
@@ -129,7 +126,7 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 		public void test_IEEE300_Dstab_compositeLoadModel() throws InterpssException{
 			IpssCorePlugin.init();
 			IpssLogger.getLogger().setLevel(Level.WARNING);
-			PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+			PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 					
 					//NOTE: the original "IEEE300Bus_modified_noHVDC.raw" case could result in oscillation for some faults (at buses 4 or 182) due to capacitor compensation of long distance lines between 120 and 118
@@ -246,7 +243,7 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 		public void IEEE300_Dstab_compositeLoadModel_generate_results_() throws InterpssException{
 			IpssCorePlugin.init();
 			IpssLogger.getLogger().setLevel(Level.WARNING);
-			PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+			PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 					"testData/adpter/psse/v30/IEEE300/IEEE300Bus_modified_noHVDC_v2.raw",
 					"testData/adpter/psse/v30/IEEE300/IEEE300_dyn_cmld_zone1.dyr"
@@ -305,7 +302,7 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 //							   break;
 //						}
 							
-						adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+						adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 						assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 								"testData/adpter/psse/v30/IEEE300/IEEE300Bus_modified_noHVDC.raw",
 								"testData/adpter/psse/v30/IEEE300/IEEE300_dyn_v2_cmld.dyr"

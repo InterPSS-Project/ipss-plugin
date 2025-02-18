@@ -13,14 +13,13 @@ import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
+import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.interpss.util.FileUtil;
 import org.junit.Test;
 
-import com.interpss.dstab.DStabObjectFactory;
-import com.interpss.simu.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
@@ -29,12 +28,14 @@ import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.DStabLoad;
+import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.cache.StateMonitor.DynDeviceType;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
+import com.interpss.simu.SimuObjectFactory;
 
 public class DStab_ACTIVSg2000Bus_Test  extends DStabTestSetupBase{
 		
@@ -42,7 +43,7 @@ public class DStab_ACTIVSg2000Bus_Test  extends DStabTestSetupBase{
 		public void test_ACTIVSg2000_Dstab() throws InterpssException{
 			IpssCorePlugin.init();
 			IpssLogger.getLogger().setLevel(Level.WARNING);
-			PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_33);
+			PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_33);
 			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 					
 					//NOTE: the original IEEE300Bus_modified_noHVDC.raw could result in oscillation for some faults due to capacitor compensation of long distance lines between 120 and 118
@@ -224,7 +225,7 @@ public class DStab_ACTIVSg2000Bus_Test  extends DStabTestSetupBase{
 		public void test_ACTIVSg2000_Dstab_compositeLoadModel() throws InterpssException{
 			IpssCorePlugin.init();
 			IpssLogger.getLogger().setLevel(Level.WARNING);
-			PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+			PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 					
 					//NOTE: the original "IEEE300Bus_modified_noHVDC.raw" case could result in oscillation for some faults (at buses 4 or 182) due to capacitor compensation of long distance lines between 120 and 118

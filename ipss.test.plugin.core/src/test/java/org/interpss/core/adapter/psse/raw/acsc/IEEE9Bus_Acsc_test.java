@@ -1,4 +1,4 @@
-package org.interpss.core.adapter.psse.acsc;
+package org.interpss.core.adapter.psse.raw.acsc;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -7,6 +7,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
+import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.acsc.AcscModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AcscOutFunc;
@@ -24,7 +25,6 @@ import com.interpss.core.acsc.BusGroundCode;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.acsc.XFormerConnectCode;
 import com.interpss.core.acsc.fault.AcscBusFault;
-import com.interpss.core.acsc.fault.IBusScVoltage;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -37,7 +37,7 @@ public class IEEE9Bus_Acsc_test {
 	@Test
 	public void testIeee9SeqY() throws InterpssException, IpssNumericException{
 			IpssCorePlugin.init();
-			PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+			PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 			assertTrue(adapter.parseInputFile(NetType.AcscNet, new String[]{
 					"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
 					"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq"
@@ -189,7 +189,7 @@ public class IEEE9Bus_Acsc_test {
 	@Test
 	public void testFaultCalc() throws InterpssException{
 		IpssCorePlugin.init();
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.AcscNet, new String[]{
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq"
@@ -308,7 +308,7 @@ public class IEEE9Bus_Acsc_test {
 	@Test
 	public void testFaultCalc_compare() throws InterpssException{
 		IpssCorePlugin.init();
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.AcscNet, new String[]{
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9_newGenBase.raw",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9_null.seq"

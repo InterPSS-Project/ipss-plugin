@@ -1,4 +1,4 @@
-package org.interpss.core.adapter.psse.acsc;
+package org.interpss.core.adapter.psse.raw.acsc;
 
 import static org.junit.Assert.assertTrue;
 
@@ -15,6 +15,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
+import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.acsc.AcscModelParser;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.display.AcscOutFunc;
@@ -30,8 +31,6 @@ import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.AcscBus;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.fault.AcscBusFault;
-import com.interpss.core.acsc.fault.IBranchScCurrent;
-import com.interpss.core.acsc.fault.IBusScVoltage;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -43,16 +42,14 @@ public class PSSE_Savnw_v33_Acsc_Test extends CorePluginTestSetup {
 	@Test
 	public void testDataInputAndACSC() throws Exception {
 		
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_33);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_33);
 		assertTrue(adapter.parseInputFile(NetType.AcscNet, new String[]{
 				"testData/adpter/psse/v33/savnw.raw",
 				"testData/adpter/psse/v33/savnw.seq"
 				
 		}));
 		AcscModelParser acscParser =(AcscModelParser) adapter.getModel();
-		
-		
-		acscParser.stdout();
+		//acscParser.stdout();
 		
 		AcscNetwork net = new ODMAcscParserMapper().map2Model(acscParser).getAcscNet();
 		
@@ -182,7 +179,7 @@ Contributing Gen:
 	public void calcZone3Setting() throws Exception {
 		   
 		
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_33);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_33);
 		assertTrue(adapter.parseInputFile(NetType.AcscNet, new String[]{
 				"testData/adpter/psse/v33/savnw.raw",
 				"testData/adpter/psse/v33/savnw.seq"

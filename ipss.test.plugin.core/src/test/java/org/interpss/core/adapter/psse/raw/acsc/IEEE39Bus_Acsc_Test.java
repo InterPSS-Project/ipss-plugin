@@ -1,30 +1,24 @@
-package org.interpss.core.adapter.psse.acsc;
+package org.interpss.core.adapter.psse.raw.acsc;
 
 import static org.junit.Assert.assertTrue;
 
-import java.io.FileInputStream;
-
-import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
+import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.acsc.AcscModelParser;
 import org.interpss.mapper.odm.ODMAcscParserMapper;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.acsc.AcscNetwork;
-import com.interpss.core.acsc.fault.AcscBusFault;
-import com.interpss.core.acsc.fault.SimpleFaultCode;
-import com.interpss.core.algo.sc.SimpleFaultAlgorithm;
 
 public class IEEE39Bus_Acsc_Test {
 	
 	@Test
 	public void acsc_test() throws InterpssException{
 		
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.AcscNet, new String[]{
 				"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_v30.raw",
 				"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_v30.seq"

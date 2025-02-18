@@ -6,11 +6,11 @@ import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
+import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.dstab.dynLoad.LD1PAC;
 import org.interpss.mapper.odm.ODMDStabParserMapper;
-import org.interpss.util.FileUtil;
 import org.junit.Test;
 
 import com.interpss.common.CoreCommonFactory;
@@ -36,7 +36,7 @@ public class TestDynLoad_IEEE39 {
 	public void test_IEEE39Bus_DynLoad_ACMotor() throws InterpssException{
 		IpssCorePlugin.init();
 		IPSSMsgHub msg = CoreCommonFactory.getIpssMsgHub();
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_multiloads_xfmr4_smallX_v30.raw",
 				"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_v30.seq",
