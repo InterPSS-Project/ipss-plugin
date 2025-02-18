@@ -37,13 +37,12 @@ import org.ieee.odm.adapter.IODMAdapter;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.bpa.BPAAdapter;
 import org.ieee.odm.adapter.ge.GePslfAdapter;
-import org.ieee.odm.adapter.ge.GePslfAdapter.Version;
 import org.ieee.odm.adapter.ieeecdf.IeeeCDFAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
-import org.ieee.odm.adapter.psse.v26.PSSEV26Adapter;
+import org.ieee.odm.adapter.psse.json.PSSEJSonAdapter;
+import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.adapter.pwd.PowerWorldAdapter;
 import org.ieee.odm.adapter.ucte.UCTE_DEFAdapter;
-import org.ieee.odm.common.ODMException;
 import org.ieee.odm.model.IODMModelParser;
 import org.ieee.odm.model.ODMModelParser;
 import org.ieee.odm.model.aclf.AclfModelParser;
@@ -94,6 +93,9 @@ public class IpssAdapter extends BaseDSL {
 	 *
 	 */
 	public static enum PsseVersion {
+		    PSSE_JSON,
+		    PSSE_36,
+		    PSSE_35,
 		    PSSE_33, 
 			PSSE_32, 
 			PSSE_31, 
@@ -383,10 +385,12 @@ public class IpssAdapter extends BaseDSL {
 						adapter = new IeeeCDFAdapter();
 					}
 					else if ( this.format == FileFormat.PSSE ) {
-						if (this.psseVersion == PsseVersion.PSSE_26)
-							adapter = new PSSEV26Adapter();
+						if (this.psseVersion == PsseVersion.PSSE_JSON)
+							adapter = new PSSEJSonAdapter();
+//						else if (this.psseVersion == PsseVersion.PSSE_26)
+//							adapter = new PSSEV26Adapter();
 						else
-							adapter = new PSSEAdapter(getPsseAptVer());
+							adapter = new PSSERawAdapter(getPsseAptVer());
 					}
 					else if ( this.format == FileFormat.GE_PSLF ) {
 						adapter = new GePslfAdapter(GePslfAdapter.Version.PSLF15);
@@ -424,8 +428,10 @@ public class IpssAdapter extends BaseDSL {
 		 * @return
 		 */
 		private PSSEAdapter.PsseVersion getPsseAptVer() throws InterpssException {
-			if (this.psseVersion == PsseVersion.PSSE_26)
-				return PSSEAdapter.PsseVersion.PSSE_26;
+			if (this.psseVersion == PsseVersion.PSSE_JSON)
+				return PSSEAdapter.PsseVersion.PSSE_JSON;
+			//else if (this.psseVersion == PsseVersion.PSSE_26)
+			//	return PSSEAdapter.PsseVersion.PSSE_26;
 			else if (this.psseVersion == PsseVersion.PSSE_29)
 				return PSSEAdapter.PsseVersion.PSSE_29;
 			else if (this.psseVersion == PsseVersion.PSSE_30)

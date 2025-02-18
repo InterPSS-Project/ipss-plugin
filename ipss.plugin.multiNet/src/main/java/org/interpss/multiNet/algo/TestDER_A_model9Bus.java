@@ -3,52 +3,29 @@ package org.interpss.multiNet.algo;
 import static com.interpss.core.funcImpl.AcscFunction.acscXfrAptr;
 import static org.junit.Assert.assertTrue;
 
-import java.awt.datatransfer.SystemFlavorMap;
-import java.awt.font.TextHitInfo;
-import java.awt.print.Printable;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
-import org.apache.commons.math3.ml.neuralnet.twod.util.HitHistogram;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
+import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
-import org.interpss.dstab.dynLoad.impl.InductionMotorImpl;
-import org.interpss.multiNet.algo.MultiNet3Ph3SeqDStabSimuHelper;
-import org.interpss.multiNet.algo.MultiNet3Ph3SeqDStabSolverImpl;
-import org.interpss.multiNet.algo.MultiNet3Ph3SeqDynEventProcessor;
-import org.interpss.multiNet.algo.SubNetworkProcessor;
 import org.interpss.multiNet.algo.powerflow.TDMultiNetPowerflowAlgorithm;
-import org.interpss.multiNet.test.unit.investigate_3PHSubNetYabc;
-import org.interpss.numeric.datatype.Complex3x1;
-import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.threePhase.basic.IEEEFeederLineCode;
 import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.basic.dstab.DStab3PGen;
-import org.interpss.threePhase.basic.dstab.DStab3PLoad;
-import org.interpss.threePhase.basic.dstab.impl.DStab3PGenImpl;
-import org.interpss.threePhase.basic.dstab.impl.DStab3PLoadImpl;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
-import org.interpss.threePhase.dynamic.model.DynGenModel3Phase;
-import org.interpss.threePhase.dynamic.model.InductionMotor3PhaseAdapter;
-import org.interpss.threePhase.dynamic.model.PVDistGen3Phase;
 import org.interpss.threePhase.dynamic.model.PVDistGen3Phase_DER_A;
-import org.interpss.threePhase.dynamic.model.impl.SinglePhaseACMotor;
 import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
-import org.interpss.threePhase.powerflow.impl.DistPowerFlowOutFunc;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.interpss.util.FileUtil;
 import org.junit.Test;
 
-import com.hazelcast.spi.impl.executionservice.impl.DelegatingTaskScheduler;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranch;
@@ -58,13 +35,11 @@ import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.acsc.BusGroundCode;
-import com.interpss.core.acsc.PhaseCode;
 import com.interpss.core.acsc.XFormerConnectCode;
 import com.interpss.core.acsc.adpter.AcscXformerAdapter;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.dstab.DStabLoad;
 import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -74,25 +49,13 @@ import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 import com.interpss.simu.SimuObjectFactory;
 
-import java.util.Hashtable;
-
-import org.apache.commons.math3.complex.Complex;
-import org.interpss.numeric.datatype.ComplexFunc;
-import org.interpss.numeric.datatype.LimitType;
-import org.interpss.threePhase.basic.dstab.DStab3PGen;
-
-import com.interpss.core.acsc.BaseAcscBus;
-import com.interpss.dstab.BaseDStabBus;
-import com.interpss.dstab.algo.DynamicSimuMethod;
-import com.interpss.dstab.common.DStabOutSymbol;
-
 public class TestDER_A_model9Bus {
 	@Test
 	public void TestTnD_IEEE9_Feeder_constZLoad_SimulateFaultsAllBuses() throws InterpssException {
 			
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				
 				"testData/IEEE9Bus/ieee9.raw",
