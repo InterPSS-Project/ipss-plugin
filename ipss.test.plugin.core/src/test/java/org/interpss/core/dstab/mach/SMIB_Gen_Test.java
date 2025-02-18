@@ -9,6 +9,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
+import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
@@ -18,19 +19,19 @@ import org.interpss.numeric.util.PerformanceTimer;
 import org.interpss.util.FileUtil;
 import org.junit.Test;
 
-import com.interpss.dstab.DStabObjectFactory;
-import com.interpss.simu.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.dstab.BaseDStabNetwork;
+import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.cache.StateMonitor.MonitorRecord;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
+import com.interpss.simu.SimuObjectFactory;
 
 public class SMIB_Gen_Test extends TestSetupBase{
 	
@@ -38,7 +39,7 @@ public class SMIB_Gen_Test extends TestSetupBase{
 	public void test_GENROU() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/adpter/psse/v30/SMIB/SMIB_v30.raw",
 				"testData/adpter/psse/v30/SMIB/SMIB_v30_genrou.dyr"
@@ -148,7 +149,7 @@ public class SMIB_Gen_Test extends TestSetupBase{
 	public void test_GENROU_Saturation() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/adpter/psse/v30/SMIB/SMIB_v30.raw",
 				"testData/adpter/psse/v30/SMIB/SMIB_v30_genrou_sat.dyr"
@@ -258,7 +259,7 @@ public class SMIB_Gen_Test extends TestSetupBase{
 	public void test_GENROU_IEEEG1() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/adpter/psse/v30/SMIB/SMIB_v30.raw",
 				"testData/adpter/psse/v30/SMIB/SMIB_v30_genrou_IEEEG1.dyr"
@@ -358,7 +359,7 @@ public class SMIB_Gen_Test extends TestSetupBase{
 	public void test_GENROU_IEEET1() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/adpter/psse/v30/SMIB/SMIB_v30.raw",
 				"testData/adpter/psse/v30/SMIB/SMIB_v30_genrou_IEEET1.dyr"
@@ -472,7 +473,7 @@ public class SMIB_Gen_Test extends TestSetupBase{
 	public void test_GENSAL() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/adpter/psse/v30/SMIB/SMIB_v30.raw",
 				"testData/adpter/psse/v30/SMIB/SMIB_v30_gensal.dyr"

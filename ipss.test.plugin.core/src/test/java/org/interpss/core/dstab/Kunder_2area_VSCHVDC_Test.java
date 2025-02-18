@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
+import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.mapper.odm.ODMDStabParserMapper;
@@ -22,7 +23,7 @@ public class Kunder_2area_VSCHVDC_Test  extends DStabTestSetupBase{
 	@Test
 	public void test_Kunder_VSCHVDC_Dstab() throws InterpssException{
 		IpssCorePlugin.init();
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testdata/adpter/psse/v30/Kunder_2area/Kunder_2area_v30.raw",
 				"testData/adpter/psse/v30/Kunder_2area/Kunder_2area.dyr"
