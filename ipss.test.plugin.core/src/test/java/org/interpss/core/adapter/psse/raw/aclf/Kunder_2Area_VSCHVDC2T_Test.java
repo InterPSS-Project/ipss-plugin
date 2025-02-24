@@ -1,5 +1,6 @@
 package org.interpss.core.adapter.psse.raw.aclf;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
@@ -9,6 +10,7 @@ import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.mapper.odm.ODMAclfParserMapper;
+import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
 import org.junit.Test;
 
@@ -57,6 +59,8 @@ public class Kunder_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
   		assertTrue(net.isLfConverged());
   		
   		//System.out.println(AclfOutFunc.loadFlowSummary(net));
+  		AclfBus bus1 = net.getBus("Bus1");
+  		assertEquals(bus1.getVoltageAng(UnitType.Deg),13.15,0.01);
   		
   		/*
   		 * PSS/E power flow results
