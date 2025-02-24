@@ -58,15 +58,33 @@ public class IEEE9_MultiGenTest extends CorePluginTestSetup{
   	     *------------------------------------
  		 */
  		net.getBus("Bus3").getContributeGenList().get(0).setStatus(false);
+ 		
+ 		 // we need re-initialize bus P and Q again.
  		net.getBus("Bus3").initContributeGen(false);
- 		     // we need re-initialize bus P and Q again.
- 		algo.loadflow();
+ 		 // we set initNetwork to false below to check if the initContributeGen() above is sufficient to update the network for power flow   
+ 		algo.loadflow(false);
  	  	
 	  	assertTrue(net.isLfConverged());
  		//System.out.println(AclfOutFunc.loadFlowSummary(net));
  		
  		//test the getGenP
  		assertTrue(net.getBus("Bus3").getGenP()==0.425); 
+ 		
+ 		/*------------------------------------
+  	     *       case -3 : Gen-1 at bus3 is back to service
+  	     *------------------------------------
+ 		 */
+ 		net.getBus("Bus3").getContributeGenList().get(0).setStatus(true);
+ 		
+ 	     // loadflow(true) will re-initialize the network
+ 		
+ 		algo.loadflow(true);
+ 	  	
+	  	assertTrue(net.isLfConverged());
+ 		//System.out.println(AclfOutFunc.loadFlowSummary(net));
+ 		
+ 		//test the getGenP
+ 		assertTrue(net.getBus("Bus3").getGenP()==0.85); 
  		
 	}
 
