@@ -159,7 +159,7 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 
 			// initialize the load 3-phase power
 			if(b.isLoad()){
-				
+
 				for(AclfLoad load: b.getContributeLoadList()){
 					if(load instanceof DStab3PLoad){
 						DStab3PLoad ph3Load = (DStab3PLoad) load;
@@ -511,7 +511,7 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 					bus.getContributeGenList().addAll(bus.getThreePhaseGenList());
 
 					for(DStabGen dynGen: bus.getContributeGenList()){
-					
+
 							if(dynGen.getDynamicGenDevice()!=null){
 							    if(!dynGen.getDynamicGenDevice().initStates(bus)) {
 									initFlag = false;

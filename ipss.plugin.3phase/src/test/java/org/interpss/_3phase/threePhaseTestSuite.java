@@ -27,14 +27,14 @@ import org.junit.runners.Suite.SuiteClasses;
 	//ODM
 	TestODM3PhaseDstabMapper.class,
 	TestOpenDSSDataParser.class,
-	
+
 	//maxtrix3x3
 	TestSparseEqnComplexMatrix3x3Impl.class,
 
 	// basic modeling
 	TwoBus_3Phase_Test.class,
 	ThreeBus_3Phase_Test.class,
-	
+
 
 	//OpenDSS data adapter
 	TestOpenDSSDataParser.class,
@@ -59,10 +59,10 @@ import org.junit.runners.Suite.SuiteClasses;
     Test6BusFeeder.class,
     IEEE_13BusFeeder_Test.class,
     IEEE123Feeder_Dstab_Test.class,
-    
+
     //dynamic simulation of transmission systems
-    
-    
+
+
 })
 public class threePhaseTestSuite {
 
