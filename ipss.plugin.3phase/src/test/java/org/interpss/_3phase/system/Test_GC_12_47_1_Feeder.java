@@ -14,6 +14,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.math3.complex.Complex;
+
 import org.interpss.IpssCorePlugin;
 import org.interpss.dstab.dynLoad.InductionMotor;
 import org.interpss.numeric.datatype.Complex3x1;
@@ -374,21 +375,13 @@ public class Test_GC_12_47_1_Feeder {
 //			 sb.append(entry.getKey()+","+entry.getValue()+"\n");
 //		}
 
-//		FileUtil.writeText2File("C://Qiuhua//FY2016_Project_CompositeLoad//protection//GC_Feeders//motor_rating.csv",sb.toString());
-
 	  	System.out.println("\n"+sm.toCSVString(sm.getBusPhAVoltTable()));
 	  	//System.out.println(sm.toCSVString(sm.getBusPhBVoltTable()));
 	  	//System.out.println(sm.toCSVString(sm.getBusPhCVoltTable()));
 	  	System.out.println(sm.toCSVString(sm.getMotorPTable()));
 	  	System.out.println(sm.toCSVString(sm.getMotorFuvTable()));
 	  	System.out.println(sm.toCSVString(sm.getMotorSlipTable()));
-	  	FileUtil.writeText2File("C://Qiuhua//FY2016_Project_CompositeLoad//protection//GC_Feeders//vsag_0.4_5cycles_normal_recov_phAVolt.csv", sm.toCSVString(sm.getBusPhAVoltTable()));
-
-//	  	FileUtil.writeText2File("C://Qiuhua//FY2016_Project_CompositeLoad//protection//GC_Feeders//vsag_0.4_5cycles_normal_recov_motorP.csv", sm.toCSVString(sm.getMotorPTable()));
-//	  	FileUtil.writeText2File("C://Qiuhua//FY2016_Project_CompositeLoad//protection//GC_Feeders//vsag_0.4_5cycles_normal_recov_motorFuv.csv", sm.toCSVString(sm.getMotorFuvTable()));
-//
-//	 	FileUtil.writeText2File("C://Qiuhua//FY2016_Project_CompositeLoad//protection//GC_Feeders//vsag_0.4_0.1s_delayed_recov_motorP.csv", sm.toCSVString(sm.getMotorPTable()));
-//	  	FileUtil.writeText2File("C://Qiuhua//FY2016_Project_CompositeLoad//protection//GC_Feeders//vsag_0.4_0.1s_delayed_recov_motorFuv.csv", sm.toCSVString(sm.getMotorFuvTable()));
+	  	FileUtil.writeText2File("output/vsag_0.4_5cycles_normal_recov_phAVolt.csv", sm.toCSVString(sm.getBusPhAVoltTable()));
 
 
 	}
