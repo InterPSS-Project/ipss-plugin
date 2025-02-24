@@ -3,7 +3,6 @@ package org.interpss.threePhase.dynamic.model;
 import java.util.Hashtable;
 
 import org.apache.commons.math3.complex.Complex;
-import org.apache.hadoop.fs.azurebfs.contracts.annotations.ConfigurationValidationAnnotations.BooleanConfigurationValidatorAnnotation;
 import org.interpss.dstab.dynLoad.InductionMotor;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
@@ -142,8 +141,8 @@ public class InductionMotor3PhaseAdapter extends DynLoadModel3Phase {
 	public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
 		return this.getInductionMotor().nextStep( dt, method, flag);
 	}
-	
-	@Override 
+
+	@Override
 	public boolean afterStep(double dt) {
 		return this.getInductionMotor().afterStep(dt);
 	}
@@ -169,7 +168,7 @@ public class InductionMotor3PhaseAdapter extends DynLoadModel3Phase {
 	@Override
 	public void setLoadPercent(double LdPercent){
 		this.loadPercent = LdPercent;
-		this.indMotor.setLoadPercent(LdPercent); 
+		this.indMotor.setLoadPercent(LdPercent);
 	}
 
 	  @Override
