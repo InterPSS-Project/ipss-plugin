@@ -2,8 +2,10 @@ package org.interpss._3phase;
 
 import org.interpss._3phase.dataparser.TestODM3PhaseDstabMapper;
 import org.interpss._3phase.dataparser.TestOpenDSSDataParser;
+import org.interpss._3phase.model.Test3PhaseInductionMotor;
 import org.interpss._3phase.model.TestPVDistGen3Phase;
 import org.interpss._3phase.model.TestSinglePhaseACMotorModel;
+import org.interpss._3phase.sparse.Matrix3x3.TestSparseEqnComplexMatrix3x3Impl;
 import org.interpss._3phase.system.IEEE123Feeder_Dstab_Test;
 import org.interpss._3phase.system.IEEE9Bus_3phase_LF_init_test;
 import org.interpss._3phase.system.IEEE9_3Phase_1PAC_test;
@@ -24,10 +26,15 @@ import org.junit.runners.Suite.SuiteClasses;
 
 	//ODM
 	TestODM3PhaseDstabMapper.class,
+	TestOpenDSSDataParser.class,
+
+	//maxtrix3x3
+	TestSparseEqnComplexMatrix3x3Impl.class,
 
 	// basic modeling
 	TwoBus_3Phase_Test.class,
 	ThreeBus_3Phase_Test.class,
+
 
 	//OpenDSS data adapter
 	TestOpenDSSDataParser.class,
@@ -44,13 +51,18 @@ import org.junit.runners.Suite.SuiteClasses;
 	TestSinglePhaseACMotorModel.class,
 	IEEE9_3Phase_1PAC_test.class,
     TestPVDistGen3Phase.class,
-    //Test3PhaseInductionMotor.class,
+    TestSinglePhaseACMotorModel.class,
+    Test3PhaseInductionMotor.class,
 
 
-    //dynamic simulation
+    //dynamic simulation of distribution feeders
     Test6BusFeeder.class,
     IEEE_13BusFeeder_Test.class,
     IEEE123Feeder_Dstab_Test.class,
+
+    //dynamic simulation of transmission systems
+
+
 })
 public class threePhaseTestSuite {
 
