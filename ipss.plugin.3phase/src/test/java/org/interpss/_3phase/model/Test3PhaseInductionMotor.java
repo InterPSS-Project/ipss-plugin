@@ -1,4 +1,4 @@
-package org.interpss._3phase.system;
+package org.interpss._3phase.model;
 
 import static org.junit.Assert.assertTrue;
 
@@ -8,7 +8,6 @@ import org.interpss.dstab.dynLoad.InductionMotor;
 import org.interpss.dstab.dynLoad.impl.InductionMotorImpl;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
-import org.interpss.threePhase.dynamic.model.InductionMotor3PhaseAdapter;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.powerflow.impl.DistPowerFlowOutFunc;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
@@ -67,19 +66,23 @@ public class Test3PhaseInductionMotor extends TestBase {
 			InductionMotor indMotor= new InductionMotorImpl(bus1, "1");
 			indMotor.setDStabBus(bus1);
 
+
 			indMotor.setXm(3.0);
 			indMotor.setXl(0.07);
 			indMotor.setRa(0.032);
-			indMotor.setXr1(0.3);
+			indMotor.setXr1(0.2);
 			indMotor.setRr1(0.01);
+			indMotor.setXr2(0.0);
+			indMotor.setRr2(0.0);
 
 
 			indMotor.setMvaBase(50);
 			indMotor.setH(1.0);
+			indMotor.setLoadPercent(50);
 
-			InductionMotor3PhaseAdapter indMotor3Phase = new InductionMotor3PhaseAdapter(indMotor);
-			indMotor3Phase.setLoadPercent(50);
-			bus1.getThreePhaseDynLoadList().add(indMotor3Phase);
+//			InductionMotor3PhaseAdapter indMotor3Phase = new InductionMotor3PhaseAdapter(indMotor);
+//			indMotor3Phase.setLoadPercent(50);
+//			bus1.getThreePhaseDynLoadList().add(indMotor3Phase);
 
 
 
@@ -116,8 +119,6 @@ public class Test3PhaseInductionMotor extends TestBase {
 
 	  		  		//3phase equivY
 
-
-	  		  		System.out.println(indMotor3Phase.getInitLoadPQ3Phase().toString());
 
 	  		  	   dstabAlgo.performSimulation();
 
