@@ -33,8 +33,8 @@ import com.interpss.dstab.DStabBranch;
  * 
  * Details of the approach can be found in the following paper:
  * 
- *   M. A. Tomim, J. MartÂ´Ä±, and L. Wang, â€œParallel solution of large power system networks using the multi-Area Thevenin equivalents (MATE) algorithm,â€� 
- *   Int. J. Electr. Power Energy Syst., vol. 31, no. 9, pp. 497â€“503,2009
+ *   M. A. Tomim, J. Marti, and L. Wang, Parallel solution of large power system networks using the multi-Area Thevenin equivalents (MATE) algorithm,
+ *   Int. J. Electr. Power Energy Syst., vol. 31, no. 9, pp. 497-503,2009
  *
  * The functions in this class are corresponding to key steps of implementing the MATE approach. Notations are based on the paper above.
  * 
