@@ -165,7 +165,7 @@ public class TwoBus_3Phase_Test {
 		IpssCorePlugin.init();
 		IpssLogger.getLogger().setLevel(Level.INFO);
 		DStabNetwork3Phase net = create2BusSys();
-		
+
 		//net.initBusVoltage();
 
 		// initGenLoad-- summarize the effects of contributive Gen/Load to make equivGen/load for power flow calculation
@@ -181,7 +181,7 @@ public class TwoBus_3Phase_Test {
 
 
 	  	assertTrue(algo.loadflow())	;
-	  	
+
 	  	System.out.println(AclfOutFunc.loadFlowSummary(net));
 
 		StateMonitor sm = new StateMonitor();
@@ -275,9 +275,9 @@ public class TwoBus_3Phase_Test {
 	  	}
 	  	System.out.println(sm.toCSVString(sm.getBusAngleTable()));
 	  	System.out.println(sm.toCSVString(sm.getBusVoltTable()));
-	  	
+
 	  	//assertTrue(sm.getBusAngleTable().get(")
-	  	
+
 	}
 
 private DStabNetwork3Phase create2BusSys() throws InterpssException{
@@ -298,7 +298,7 @@ private DStabNetwork3Phase create2BusSys() throws InterpssException{
   		// set bus to be a swing bus
   		bus1.setGenCode(AclfGenCode.GEN_PV);
   		// adapt the bus object to a swing bus object
-  		
+
   		bus1.setDesiredVoltMag(1.04);
   		bus1.setGenP(0.7164);
 
@@ -350,7 +350,7 @@ private DStabNetwork3Phase create2BusSys() throws InterpssException{
   		bus2.setBaseVoltage(230000.0);
   		// set bus to be a swing bus
   		bus2.setGenCode(AclfGenCode.SWING);
-  		
+
   		bus2.setDesiredVoltMag(1.025);
 
   		bus2.setSortNumber(1);

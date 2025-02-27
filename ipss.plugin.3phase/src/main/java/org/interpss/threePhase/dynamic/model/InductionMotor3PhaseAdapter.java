@@ -143,6 +143,11 @@ public class InductionMotor3PhaseAdapter extends DynLoadModel3Phase {
 	}
 
 	@Override
+	public boolean afterStep(double dt) {
+		return this.getInductionMotor().afterStep(dt);
+	}
+
+	@Override
 	public Object getOutputObject() {
 
 		return getISource3Phase() ;
@@ -163,7 +168,7 @@ public class InductionMotor3PhaseAdapter extends DynLoadModel3Phase {
 	@Override
 	public void setLoadPercent(double LdPercent){
 		this.loadPercent = LdPercent;
-		this.indMotor.setLoadPercent(-100); // such that the load percent is not used, used the initLoadPQ instead
+		this.indMotor.setLoadPercent(LdPercent);
 	}
 
 	  @Override

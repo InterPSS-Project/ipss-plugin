@@ -420,7 +420,7 @@ public class ThreeBus_3Phase_Test {
 
 		DStabNetwork3Phase net = create3BusSys();
 
-		
+
 
 
 		// initGenLoad-- summarize the effects of contributive Gen/Load to make equivGen/load for power flow calculation
@@ -445,12 +445,13 @@ public class ThreeBus_3Phase_Test {
 				  System.out.println(bus.getId() +": Vabc =  "+ph3Bus.get3PhaseVotlages());
 			  }
 		  }
+		  assertTrue(NumericUtil.equals(net.getBus("Bus1").get3PhaseVotlages().a_0, new Complex(0.90406,-0.51407 ),1.0E-4));
 		/*
 		 * Bus1: Vabc =  0.90406 + j-0.51407  -0.89723 + j-0.52591  -0.00683 + j1.03998
 		Bus2: Vabc =  1.03109 + j-0.02767  -0.53951 + j-0.87912  -0.49159 + j0.90679
 		Bus3: Vabc =  1.0250 + j0.0000  -0.5125 + j-0.88768  -0.5125 + j0.88768
 		 */
-		  
+
 	  //	ISparseEqnComplexMatrix3x3  Yabc = net.getYMatrixABC();
 	   //	System.out.println(Yabc.getSparseEqnComplex());
 	   // MatrixOutputUtil.matrixToMatlabMFile("output/ThreeBusYabc.m", Yabc.getSparseEqnComplex());
@@ -467,7 +468,7 @@ public class ThreeBus_3Phase_Test {
          Bus, Igen:Bus3,-0.1915 + j-4.87234  -4.12382 + j2.60201  4.31532 + j2.27032
 	   */
 	    net.setStaticLoadIncludedInYMatrix(true);
-		
+
 	    net.solveNetEqn();
 
 		System.out.println(ThreePhaseAclfOutFunc.busLfSummary(net));
@@ -677,7 +678,7 @@ public class ThreeBus_3Phase_Test {
 private DStabNetwork3Phase create3BusSys() throws InterpssException{
 
 		DStabNetwork3Phase net = new DStabNetwork3phaseImpl();
-		
+
 		net.setNetworkType(NetworkType.TRANSMISSION);
 
 		double baseKva = 100000.0;
@@ -748,12 +749,12 @@ private DStabNetwork3Phase create3BusSys() throws InterpssException{
   		//TODO Three-sequence load
   		//AclfLoad load = CoreObjectFactory.createAclfLoad("1");
   		DStab3PLoad load = new DStab3PLoadImpl();
-  		
+
   		load.setLoadCP(new Complex (1.0, 0.2));
   		//load.set3PhaseLoad(new Complex3x1(phaseLoad,phaseLoad,phaseLoad));
   		load.setCode(AclfLoadCode.CONST_P);
   		bus2.getContributeLoadList().add(load);
-  	
+
 
 
   		bus2.setSortNumber(1);
