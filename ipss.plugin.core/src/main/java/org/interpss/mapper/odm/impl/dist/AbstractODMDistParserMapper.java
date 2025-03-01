@@ -28,8 +28,8 @@ import static com.interpss.common.util.IpssLogger.ipssLogger;
 import org.ieee.odm.model.dist.DistModelParser;
 import org.ieee.odm.schema.DistributionNetXmlType;
 import org.ieee.odm.schema.NetworkCategoryEnumType;
-import org.interpss.mapper.odm.AbstractODMNetDataMapper;
 import org.interpss.mapper.odm.ODMDistNetMapper;
+import org.interpss.mapper.odm.base.AbstractODMNetDataMapper;
 import org.interpss.mapper.odm.impl.mnet.MultiNetDistHelper;
 
 import com.interpss.common.exp.InterpssException;

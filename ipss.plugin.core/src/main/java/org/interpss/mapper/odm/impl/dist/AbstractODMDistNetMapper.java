@@ -44,9 +44,7 @@ import org.ieee.odm.schema.ScAnalysisStdEnumType;
 import org.ieee.odm.schema.SynchronousMotorDistBusXmlType;
 import org.ieee.odm.schema.UtilityDistBusXmlType;
 import org.ieee.odm.schema.XFormerDistBranchXmlType;
-import org.interpss.mapper.odm.AbstractODMNetDataMapper;
-import org.interpss.mapper.odm.impl.dist.DistBranchHelper;
-import org.interpss.mapper.odm.impl.dist.DistBusHelper;
+import org.interpss.mapper.odm.base.AbstractODMNetDataMapper;
 import org.interpss.mapper.odm.impl.mnet.MultiNetDistHelper;
 
 import com.interpss.common.exp.InterpssException;
