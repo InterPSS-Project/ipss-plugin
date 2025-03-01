@@ -27,8 +27,8 @@ package org.interpss.mapper.odm.impl.acsc;
 import static com.interpss.common.util.IpssLogger.ipssLogger;
 import static com.interpss.core.funcImpl.AcscFunction.acscLineAptr;
 import static com.interpss.core.funcImpl.AcscFunction.acscXfrAptr;
-import static org.interpss.mapper.odm.ODMUnitHelper.toYUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.toZUnit;
+import static org.interpss.mapper.odm.base.ODMUnitHelper.toYUnit;
+import static org.interpss.mapper.odm.base.ODMUnitHelper.toZUnit;
 
 import javax.xml.bind.JAXBElement;
 
@@ -60,7 +60,7 @@ import org.ieee.odm.schema.XfrShortCircuitXmlType;
 import org.ieee.odm.schema.YXmlType;
 import org.ieee.odm.schema.ZXmlType;
 import org.interpss.mapper.odm.ODMAclfNetMapper;
-import org.interpss.mapper.odm.ODMHelper;
+import org.interpss.mapper.odm.base.ODMHelper;
 import org.interpss.mapper.odm.impl.aclf.AbstractODMAclfNetMapper;
 import org.interpss.mapper.odm.impl.aclf.AbstractODMAclfParserMapper;
 import org.interpss.mapper.odm.impl.aclf.AclfBusDataHelper;

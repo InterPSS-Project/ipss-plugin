@@ -24,13 +24,13 @@
 
 package org.interpss.mapper.odm.impl.aclf;
 
-import static org.interpss.mapper.odm.ODMFunction.BusXmlRef2BusId;
-import static org.interpss.mapper.odm.ODMUnitHelper.toActivePowerUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.toAngleUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.toApparentPowerUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.toReactivePowerUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.toVoltageUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.toYUnit;
+import static org.interpss.mapper.odm.base.ODMFunction.BusXmlRef2BusId;
+import static org.interpss.mapper.odm.base.ODMUnitHelper.toActivePowerUnit;
+import static org.interpss.mapper.odm.base.ODMUnitHelper.toAngleUnit;
+import static org.interpss.mapper.odm.base.ODMUnitHelper.toApparentPowerUnit;
+import static org.interpss.mapper.odm.base.ODMUnitHelper.toReactivePowerUnit;
+import static org.interpss.mapper.odm.base.ODMUnitHelper.toVoltageUnit;
+import static org.interpss.mapper.odm.base.ODMUnitHelper.toYUnit;
 
 import javax.xml.bind.JAXBElement;
 
@@ -76,8 +76,6 @@ import com.interpss.core.aclf.adpter.AclfPQGenBusAdapter;
 import com.interpss.core.aclf.adpter.AclfPVGenBusAdapter;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.acsc.AcscBus;
-import com.interpss.core.acsc.AcscGen;
-import com.interpss.core.acsc.AcscLoad;
 import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabObjectFactory;

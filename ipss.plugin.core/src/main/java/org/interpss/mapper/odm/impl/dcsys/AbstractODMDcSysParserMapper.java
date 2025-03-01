@@ -29,8 +29,8 @@ import static com.interpss.common.util.IpssLogger.ipssLogger;
 import org.ieee.odm.model.dc.DcSystemModelParser;
 import org.ieee.odm.schema.DcNetworkXmlType;
 import org.ieee.odm.schema.NetworkCategoryEnumType;
-import org.interpss.mapper.odm.AbstractODMNetDataMapper;
 import org.interpss.mapper.odm.ODMDcSysNetMapper;
+import org.interpss.mapper.odm.base.AbstractODMNetDataMapper;
 
 import com.interpss.dc.common.IpssDcSysException;
 import com.interpss.dc.pv.PVDcNetwork;

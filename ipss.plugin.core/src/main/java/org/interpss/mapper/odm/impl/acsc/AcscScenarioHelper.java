@@ -29,7 +29,7 @@ Key concepts:
 
 package org.interpss.mapper.odm.impl.acsc;
 
-import static org.interpss.mapper.odm.ODMUnitHelper.toZUnit;
+import static org.interpss.mapper.odm.base.ODMUnitHelper.toZUnit;
 
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.model.ext.ipss.IpssScenarioHelper;

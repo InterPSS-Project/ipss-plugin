@@ -5,9 +5,13 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-   <groupId>com.interpss</groupId>
+  <parent>
+      <groupId>com.interpss</groupId>
+      <artifactId>ipss.plugin</artifactId>
+      <version>1.0</version>
+  </parent>
+ 
    <artifactId>ipss.plugin.core</artifactId>
-   <version>1.0</version>
   
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
@@ -15,32 +19,66 @@
   </properties>
 
   <dependencies>
+     <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.10.1</version>
+    </dependency>
 	<dependency>
-	    <groupId>org.apache.commons</groupId>
-	    <artifactId>commons-math3</artifactId>
-	    <version>3.6.1</version>
-	</dependency>	
+	    <groupId>org.apache.logging.log4j</groupId>
+	    <artifactId>log4j-api</artifactId>
+	    <version>2.17.1</version>
+	</dependency>
 	<dependency>
-	    <groupId>net.sourceforge.csparsej</groupId>
-	    <artifactId>csparsej</artifactId>
-	    <version>1.1.1</version>
-	</dependency>		
+	    <groupId>org.apache.logging.log4j</groupId>
+	    <artifactId>log4j-core</artifactId>
+	    <version>2.17.1</version>
+	</dependency>
 	<dependency>
-	    <groupId>org.eclipse.emf</groupId>
-	    <artifactId>org.eclipse.emf.ecore</artifactId>
-	    <version>2.27.0</version>
-	</dependency>	
-	<dependency>
-    	<groupId>com.hazelcast</groupId>
-	    <artifactId>hazelcast-distribution</artifactId>
-	    <version>5.0.2</version>
-	    <type>pom</type>
-	</dependency>	
+	    <groupId>org.apache.logging.log4j</groupId>
+	    <artifactId>log4j-slf4j-impl</artifactId>
+	    <version>2.17.1</version>
+	</dependency> 
 	<dependency>
 	    <groupId>org.mvel</groupId>
 	    <artifactId>mvel2</artifactId>
 	    <version>2.5.2.Final</version>
 	</dependency>
+ 	<dependency>
+	        <groupId>javax.xml.bind</groupId>
+	        <artifactId>jaxb-api</artifactId>
+	        <version>2.3.1</version>
+	    </dependency>	
+	<dependency>
+	    <groupId>org.apache.poi</groupId>
+	    <artifactId>poi</artifactId>
+	    <version>5.4.0</version>
+	</dependency>
+	<dependency>
+	    <groupId>org.apache.poi</groupId>
+	    <artifactId>poi-ooxml</artifactId>
+	    <version>5.4.0</version>
+	</dependency>	
+	<!-- https://mvnrepository.com/artifact/org.swinglabs/swing-layout -->
+	<dependency>
+	    <groupId>org.swinglabs</groupId>
+	    <artifactId>swing-layout</artifactId>
+	    <version>1.0.3</version>
+	</dependency>	
+	
+	<!-- https://mvnrepository.com/artifact/colt/colt -->
+	<dependency>
+	    <groupId>colt</groupId>
+	    <artifactId>colt</artifactId>
+	    <version>1.2.0</version>
+	</dependency>	
+	
+	<!-- https://mvnrepository.com/artifact/com.datumbox/lpsolve -->
+	<dependency>
+	    <groupId>com.datumbox</groupId>
+	    <artifactId>lpsolve</artifactId>
+	    <version>5.5.2.0</version>
+	</dependency>	
   </dependencies>
 
   <build>
