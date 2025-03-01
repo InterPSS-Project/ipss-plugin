@@ -26,7 +26,6 @@ import com.interpss.common.func.FunctionAdapter;
 import com.interpss.common.func.IFunction;
 import com.interpss.common.func.IFunction2;
 import com.interpss.common.func.IFunction4;
-import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;

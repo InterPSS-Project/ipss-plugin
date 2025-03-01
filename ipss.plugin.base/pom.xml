@@ -5,9 +5,13 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.interpss</groupId>
+ <parent>
+      <groupId>com.interpss</groupId>
+      <artifactId>ipss.plugin</artifactId>
+      <version>1.0</version>
+  </parent>
+ 
   <artifactId>ipss.plugin.base</artifactId>
-  <version>1.0</version>
 
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
@@ -15,7 +19,16 @@
   </properties>
 
   <dependencies>
-	
+	<dependency>
+	    <groupId>org.apache.poi</groupId>
+	    <artifactId>poi</artifactId>
+	    <version>5.4.0</version>
+	</dependency>
+	<dependency>
+	    <groupId>org.apache.poi</groupId>
+	    <artifactId>poi-ooxml</artifactId>
+	    <version>5.4.0</version>
+	</dependency>
   </dependencies>
 
   <build>
