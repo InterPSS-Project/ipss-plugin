@@ -24,20 +24,20 @@
 
 package org.interpss.mapper.odm.impl.dist;
 
-import static org.interpss.mapper.odm.ODMUnitHelper.toApparentPowerUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.toCurrentUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.toFactorUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.toLengthUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.toVoltageUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.toYUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.toZUnit;
+import static org.interpss.mapper.odm.base.ODMUnitHelper.toApparentPowerUnit;
+import static org.interpss.mapper.odm.base.ODMUnitHelper.toCurrentUnit;
+import static org.interpss.mapper.odm.base.ODMUnitHelper.toFactorUnit;
+import static org.interpss.mapper.odm.base.ODMUnitHelper.toLengthUnit;
+import static org.interpss.mapper.odm.base.ODMUnitHelper.toVoltageUnit;
+import static org.interpss.mapper.odm.base.ODMUnitHelper.toYUnit;
+import static org.interpss.mapper.odm.base.ODMUnitHelper.toZUnit;
 
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.schema.BreakerDistBranchXmlType;
 import org.ieee.odm.schema.FeederDistBranchXmlType;
 import org.ieee.odm.schema.ReactorDistBranchXmlType;
 import org.ieee.odm.schema.XFormerDistBranchXmlType;
-import org.interpss.mapper.odm.ODMHelper;
+import org.interpss.mapper.odm.base.ODMHelper;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.core.acsc.XFormerConnectCode;
