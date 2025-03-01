@@ -25,9 +25,9 @@
 package org.interpss.mapper.odm.impl.dcsys;
 
 import static com.interpss.common.util.IpssLogger.ipssLogger;
-import static org.interpss.mapper.odm.ODMUnitHelper.toActivePowerUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.toVoltageUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.toZUnit;
+import static org.interpss.mapper.odm.base.ODMUnitHelper.toActivePowerUnit;
+import static org.interpss.mapper.odm.base.ODMUnitHelper.toVoltageUnit;
+import static org.interpss.mapper.odm.base.ODMUnitHelper.toZUnit;
 
 import javax.xml.bind.JAXBElement;
 
@@ -51,7 +51,7 @@ import org.ieee.odm.schema.PVModelPointXmlType;
 import org.ieee.odm.schema.PVModuleDataEnumType;
 import org.ieee.odm.schema.PVModuleItemXmlType;
 import org.ieee.odm.schema.VoltageUnitType;
-import org.interpss.mapper.odm.AbstractODMNetDataMapper;
+import org.interpss.mapper.odm.base.AbstractODMNetDataMapper;
 import org.interpss.numeric.NumericConstant;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.datatype.Vector_xy;
