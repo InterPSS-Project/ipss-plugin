@@ -1,0 +1,6 @@
+1) moved ipss.plugin.base/main/java to ipss.plugin.core	
+2) moved  ipss.adapter.json/main/java to ipss.plugin.core	
+3) moved  ipss.plugin.dstab/main/java to ipss.plugin.core
+4) moved ipss.plugin.opf/main/java to ipss.plugin.core
+5) moved ipss.pssl/main/java to ipss.plugin.core	   
+6) moved ipss.extendedPiecewiseAlgo/main/java to ipss.plugin.core	

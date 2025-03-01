@@ -1,8 +1,8 @@
 package org.interpss.mapper.odm.impl.aclf;
 
-import static org.interpss.mapper.odm.ODMUnitHelper.toActivePowerUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.toAngleUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.toVoltageUnit;
+import static org.interpss.mapper.odm.base.ODMUnitHelper.toActivePowerUnit;
+import static org.interpss.mapper.odm.base.ODMUnitHelper.toAngleUnit;
+import static org.interpss.mapper.odm.base.ODMUnitHelper.toVoltageUnit;
 
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.common.ODMLogger;
@@ -32,7 +32,6 @@ import com.interpss.core.aclf.hvdc.HvdcOperationMode;
 import com.interpss.core.aclf.hvdc.ThyConverter;
 import com.interpss.core.aclf.hvdc.VSCAcControlMode;
 import com.interpss.core.aclf.hvdc.VSCConverter;
-import com.interpss.core.aclf.hvdc.impl.HvdcLineFactoryImpl;
 
 
 public class AclfHvdcDataHelper {
