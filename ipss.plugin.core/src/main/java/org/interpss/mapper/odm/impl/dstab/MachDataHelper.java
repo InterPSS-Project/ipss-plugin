@@ -24,8 +24,8 @@
 
 package org.interpss.mapper.odm.impl.dstab;
 
-import static org.interpss.mapper.odm.ODMUnitHelper.toApparentPowerUnit;
-import static org.interpss.mapper.odm.ODMUnitHelper.toVoltageUnit;
+import static org.interpss.mapper.odm.base.ODMUnitHelper.toApparentPowerUnit;
+import static org.interpss.mapper.odm.base.ODMUnitHelper.toVoltageUnit;
 
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.schema.ApparentPowerXmlType;
@@ -43,10 +43,9 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.funcImpl.CoreUtilFunc;
-import com.interpss.dstab.DStabBus;
-import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
+import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.mach.EConstMachine;
 import com.interpss.dstab.mach.Eq1Ed1Machine;
 import com.interpss.dstab.mach.Eq1Machine;

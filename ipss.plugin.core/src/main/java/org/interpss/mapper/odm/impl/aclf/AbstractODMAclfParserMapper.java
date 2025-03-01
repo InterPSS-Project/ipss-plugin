@@ -31,9 +31,9 @@ import org.ieee.odm.model.acsc.AcscModelParser;
 import org.ieee.odm.schema.LoadflowNetXmlType;
 import org.ieee.odm.schema.NetworkCategoryEnumType;
 import org.ieee.odm.schema.OriginalDataFormatEnumType;
-import org.interpss.mapper.odm.AbstractODMSimuCtxDataMapper;
 import org.interpss.mapper.odm.ODMAclfNetMapper;
-import org.interpss.mapper.odm.ODMHelper;
+import org.interpss.mapper.odm.base.AbstractODMSimuCtxDataMapper;
+import org.interpss.mapper.odm.base.ODMHelper;
 import org.interpss.mapper.odm.impl.mnet.MultiNetAclfHelper;
 
 import com.interpss.common.exp.InterpssException;
