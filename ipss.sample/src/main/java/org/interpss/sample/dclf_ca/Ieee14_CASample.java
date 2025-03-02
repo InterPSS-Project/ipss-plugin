@@ -24,15 +24,15 @@
 
 package org.interpss.sample.dclf_ca;
 
+import static com.interpss.core.DclfAlgoObjectFactory.createCaMonitoringBranch;
+import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
-import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
-import static com.interpss.core.DclfAlgoObjectFactory.createCaMonitoringBranch;
 
 import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.exp.IpssNumericException;
-import org.interpss.pssl.common.PSSLException;
-import org.interpss.pssl.plugin.IpssAdapter;
+import org.interpss.plugin.pssl.common.PSSLException;
+import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
@@ -44,7 +44,6 @@ import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 import com.interpss.core.common.OutageConnectivityException;
 import com.interpss.core.common.ReferenceBusException;
-import com.interpss.dstab.devent.BranchOutageType;
 
 public class Ieee14_CASample {
 	public static void main(String args[]) throws Exception {
