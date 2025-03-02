@@ -12,6 +12,7 @@
     
      <modules>
         <module>ipss.plugin.core</module>
+        <module>ipss.plugin.3phase</module>
     </modules>
   
   <properties>
