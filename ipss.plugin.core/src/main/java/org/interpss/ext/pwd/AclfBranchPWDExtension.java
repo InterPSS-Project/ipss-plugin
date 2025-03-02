@@ -23,8 +23,8 @@ public class AclfBranchPWDExtension extends AclfBranchExtension {
 	public void setCaMonitoring(boolean caMonitoring) { this.caMonitoring = caMonitoring; }
 
 	/**
-	 * Defined as "EquipmentType_SubstationName_EquipmentName”. Take Transformer_Sub1_T12 for example, 
-	 * it refers to the transformer connected to substation Sub1 (where the “fromBus” is located) 
+	 * Defined as "EquipmentType_SubstationName_EquipmentName. Take Transformer_Sub1_T12 for example, 
+	 * it refers to the transformer connected to substation Sub1 (where the romBus is located) 
 	 * with the equipment name of T12. 
 	 * 
 	 * @return

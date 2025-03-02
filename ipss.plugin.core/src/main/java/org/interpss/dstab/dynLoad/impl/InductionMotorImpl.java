@@ -999,16 +999,16 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	
 	/*
 	 * Two levels of undervoltage tripping are represented with the following input parameters:
-		Vtr1x 	�? First U/V Trip V (pu)
-		Ttr1x 	�? First U/V Trip delay  time (sec)
-		Ftr1x 	�? First U/V Trip fraction
-		Vrc1x 	�? First U/V reconnection V (pu)
-		Trc1x 	�? First U/V reconnection delay time (sec)
-		Vtr2x 	�? Second U/V Trip V (pu)
-		Ttr2x 	�? Second U/V Trip delay time (sec)
-		Ftr2x 	�? Second U/V Trip fraction
-		Vrc2x 	�? Second U/V reconnection V (pu)
-		Trc2x 	�? Second U/V reconnection delay time (sec)
+		Vtr1x 	First U/V Trip V (pu)
+		Ttr1x 	First U/V Trip delay  time (sec)
+		Ftr1x 	First U/V Trip fraction
+		Vrc1x 	First U/V reconnection V (pu)
+		Trc1x 	First U/V reconnection delay time (sec)
+		Vtr2x 	Second U/V Trip V (pu)
+		Ttr2x 	Second U/V Trip delay time (sec)
+		Ftr2x 	Second U/V Trip fraction
+		Vrc2x 	Second U/V reconnection V (pu)
+		Trc2x 	Second U/V reconnection delay time (sec)
 		
 		***The fractions tripped by each level are cumulative. (both are independent parts)
 

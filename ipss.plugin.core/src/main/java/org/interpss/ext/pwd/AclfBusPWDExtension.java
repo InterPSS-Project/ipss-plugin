@@ -24,7 +24,7 @@ public class AclfBusPWDExtension extends AclfBusExtension {
 	
 	
 	/**
-	 * “SubstationName_EquipmentName”. EquipmentName = Gen_CustomString:1
+	 * SubstationName_EquipmentName. EquipmentName = Gen_CustomString:1
 	 * 
 	 * @return
 	 */
