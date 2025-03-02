@@ -1,13 +1,13 @@
 package org.interpss.core.mnet;
 
-import static org.interpss.pssl.plugin.IpssAdapter.FileFormat.PSSE;
+import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.Assert.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.pssl.plugin.IpssAdapter;
-import org.interpss.pssl.plugin.IpssAdapter.PsseVersion;
+import org.interpss.plugin.pssl.plugin.IpssAdapter;
+import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.Test;
 
 import com.interpss.core.ChildNetObjectFactory;

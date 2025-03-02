@@ -40,12 +40,10 @@ import org.interpss.datamodel.bean.base.BaseBranchBean.BranchCode;
 import org.interpss.datamodel.mapper.aclf.AclfBean2AclfNetMapper;
 import org.interpss.datamodel.mapper.aclf.AclfNet2AclfBeanMapper;
 import org.interpss.datamodel.mapper.aclf.AclfNet2ResultBeanMapper;
-import org.interpss.datamodel.mapper.base.BaseAclfBean2AclfNetMapper;
-import org.interpss.datamodel.mapper.base.BaseAclfNet2AclfBeanMapper;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
-import org.interpss.pssl.plugin.IpssAdapter;
-import org.interpss.pssl.plugin.IpssAdapter.PsseVersion;
+import org.interpss.plugin.pssl.plugin.IpssAdapter;
+import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.Test;
 
 import com.interpss.core.CoreObjectFactory;

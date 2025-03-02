@@ -27,7 +27,7 @@ package org.interpss.core.dcsys;
 import static org.junit.Assert.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.pssl.plugin.IpssAdapter;
+import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.dc.DcSysObjectFactory;
 import com.interpss.dc.algo.DcPowerFlowAlgorithm;

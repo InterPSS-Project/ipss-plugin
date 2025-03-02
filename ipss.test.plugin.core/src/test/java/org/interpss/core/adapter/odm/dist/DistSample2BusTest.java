@@ -27,10 +27,9 @@ package org.interpss.core.adapter.odm.dist;
 import static org.junit.Assert.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.pssl.plugin.IpssAdapter;
-import org.interpss.pssl.simu.IpssDist;
-import org.interpss.pssl.simu.net.IpssDistNet.DistNetDSL;
-import org.junit.Test;
+import org.interpss.plugin.pssl.plugin.IpssAdapter;
+import org.interpss.plugin.pssl.simu.IpssDist;
+import org.interpss.plugin.pssl.simu.net.IpssDistNet.DistNetDSL;
 
 import com.interpss.dist.DistBus;
 import com.interpss.dist.DistNetwork;
