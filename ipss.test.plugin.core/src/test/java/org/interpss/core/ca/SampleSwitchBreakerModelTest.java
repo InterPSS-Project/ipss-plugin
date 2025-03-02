@@ -28,9 +28,8 @@ import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.pssl.simu.net.IpssAclfNet;
+import org.interpss.plugin.pssl.simu.net.IpssAclfNet;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;

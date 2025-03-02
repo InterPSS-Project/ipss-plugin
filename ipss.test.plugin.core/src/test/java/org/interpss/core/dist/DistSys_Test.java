@@ -29,8 +29,8 @@ import static org.junit.Assert.assertTrue;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.pssl.simu.IpssDist;
-import org.interpss.pssl.simu.net.IpssDistNet.DistNetDSL;
+import org.interpss.plugin.pssl.simu.IpssDist;
+import org.interpss.plugin.pssl.simu.net.IpssDistNet.DistNetDSL;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;

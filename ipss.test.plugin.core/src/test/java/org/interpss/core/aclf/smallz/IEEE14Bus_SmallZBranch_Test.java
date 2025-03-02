@@ -27,7 +27,7 @@ package org.interpss.core.aclf.smallz;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.pssl.plugin.IpssAdapter;
+import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;

@@ -29,22 +29,14 @@ import static org.junit.Assert.assertTrue;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.display.AcscOutFunc;
-//import org.interpss.QA.compare.aclf.AclfNetModelComparator;
-import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.TestUtilFunc;
-import org.interpss.pssl.plugin.IpssAdapter;
-import org.interpss.pssl.simu.IpssAclf;
-import org.junit.Test;
+import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.core.CoreObjectFactory;
-import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
-import com.interpss.core.algo.AclfMethodType;
-import com.interpss.core.algo.sc.ScBusModelType;
 import com.interpss.core.algo.sc.SimpleFaultAlgorithm;
-import com.interpss.simu.util.sample.SampleTestingCases;
 
 public class Acsc5Bus_ODM_TestCase extends CorePluginTestSetup {
 	//@Test

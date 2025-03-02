@@ -1,11 +1,11 @@
 package org.interpss.core.se;
 
-import static org.interpss.pssl.plugin.IpssAdapter.FileFormat.IEEECommonFormat;
+import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.IEEECommonFormat;
 import static org.junit.Assert.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.exp.IpssNumericException;
-import org.interpss.pssl.plugin.IpssAdapter;
+import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.util.FileUtil;
 import org.junit.Test;
 
