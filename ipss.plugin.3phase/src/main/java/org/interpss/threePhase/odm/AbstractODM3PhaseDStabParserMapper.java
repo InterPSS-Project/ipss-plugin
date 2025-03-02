@@ -20,7 +20,7 @@ import org.ieee.odm.schema.PSXfrDStabXmlType;
 import org.ieee.odm.schema.Xfr3WDStabXmlType;
 import org.ieee.odm.schema.XfrDStabXmlType;
 import org.interpss.mapper.odm.ODMAclfNetMapper;
-import org.interpss.mapper.odm.ODMHelper;
+import org.interpss.mapper.odm.base.ODMHelper;
 import org.interpss.mapper.odm.impl.aclf.AbstractODMAclfNetMapper;
 import org.interpss.mapper.odm.impl.aclf.AclfBusDataHelper;
 import org.interpss.mapper.odm.impl.dstab.AbstractODMDStabParserMapper;

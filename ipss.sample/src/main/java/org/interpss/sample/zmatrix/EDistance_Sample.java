@@ -32,8 +32,8 @@ import org.interpss.numeric.datatype.ComplexFunc;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.pssl.common.PSSLException;
-import org.interpss.pssl.plugin.IpssAdapter;
+import org.interpss.plugin.pssl.common.PSSLException;
+import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
