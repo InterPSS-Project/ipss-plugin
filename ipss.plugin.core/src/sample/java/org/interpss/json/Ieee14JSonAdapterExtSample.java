@@ -2,19 +2,12 @@ package org.interpss.json;
 
 import org.interpss.CorePluginFactory;
 import org.interpss.IpssCorePlugin;
-import org.interpss.datamodel.bean.aclf.AclfBranchBean;
-import org.interpss.datamodel.bean.aclf.AclfBusBean;
-import org.interpss.datamodel.bean.aclf.AclfNetBean;
-import org.interpss.datamodel.bean.aclf.BaseAclfNetBean;
-import org.interpss.datamodel.bean.aclf.ext.AclfBranchResultBean;
-import org.interpss.datamodel.bean.aclf.ext.AclfBusResultBean;
-import org.interpss.datamodel.bean.aclf.ext.AclfNetResultBean;
-import org.interpss.datamodel.bean.base.BaseJSONBean;
-import org.interpss.datamodel.bean.base.BaseJSONUtilBean;
-import org.interpss.datamodel.mapper.aclf.AclfBean2AclfNetMapper;
-import org.interpss.datamodel.mapper.aclf.AclfNet2AclfBeanMapper;
-import org.interpss.datamodel.mapper.base.BaseAclfBean2AclfNetMapper;
-import org.interpss.datamodel.mapper.base.BaseAclfNet2AclfBeanMapper;
+import org.interpss.dep.datamodel.bean.aclf.AclfBranchBean;
+import org.interpss.dep.datamodel.bean.aclf.AclfBusBean;
+import org.interpss.dep.datamodel.bean.aclf.BaseAclfNetBean;
+import org.interpss.dep.datamodel.bean.base.BaseJSONUtilBean;
+import org.interpss.dep.datamodel.mapper.base.BaseAclfBean2AclfNetMapper;
+import org.interpss.dep.datamodel.mapper.base.BaseAclfNet2AclfBeanMapper;
 import org.interpss.fadapter.IpssFileAdapter;
 
 import com.interpss.common.exp.InterpssException;

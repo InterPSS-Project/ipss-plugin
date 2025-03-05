@@ -1,13 +1,13 @@
 package org.interpss.QA.compare.impl;
 
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.datamodel.bean.aclf.AclfBranchBean;
-import org.interpss.datamodel.bean.aclf.AclfBusBean;
-import org.interpss.datamodel.bean.aclf.BaseAclfNetBean;
-import org.interpss.datamodel.bean.aclf.ext.AclfBranchResultBean;
-import org.interpss.datamodel.bean.base.BaseBranchBean.BranchCode;
-import org.interpss.datamodel.bean.base.BaseJSONUtilBean;
-import org.interpss.datamodel.bean.datatype.ComplexValueBean;
+import org.interpss.dep.datamodel.bean.aclf.AclfBranchBean;
+import org.interpss.dep.datamodel.bean.aclf.AclfBusBean;
+import org.interpss.dep.datamodel.bean.aclf.BaseAclfNetBean;
+import org.interpss.dep.datamodel.bean.aclf.ext.AclfBranchResultBean;
+import org.interpss.dep.datamodel.bean.base.BaseJSONUtilBean;
+import org.interpss.dep.datamodel.bean.base.BaseBranchBean.BranchCode;
+import org.interpss.dep.datamodel.bean.datatype.ComplexValueBean;
 import org.interpss.numeric.datatype.Unit;
 import org.interpss.numeric.util.NumericUtil;
 
