@@ -2,10 +2,10 @@ package org.interpss.json;
 
 import org.interpss.CorePluginFactory;
 import org.interpss.IpssCorePlugin;
-import org.interpss.datamodel.bean.aclf.AclfNetBean;
-import org.interpss.datamodel.bean.base.BaseJSONUtilBean;
-import org.interpss.datamodel.mapper.aclf.AclfBean2AclfNetMapper;
-import org.interpss.datamodel.mapper.aclf.AclfNet2AclfBeanMapper;
+import org.interpss.dep.datamodel.bean.aclf.AclfNetBean;
+import org.interpss.dep.datamodel.bean.base.BaseJSONUtilBean;
+import org.interpss.dep.datamodel.mapper.aclf.AclfBean2AclfNetMapper;
+import org.interpss.dep.datamodel.mapper.aclf.AclfNet2AclfBeanMapper;
 import org.interpss.fadapter.IpssFileAdapter;
 
 import com.interpss.common.exp.InterpssException;

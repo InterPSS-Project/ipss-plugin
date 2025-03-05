@@ -29,8 +29,8 @@ import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.datamodel.bean.aclf.AclfNetBean;
-import org.interpss.datamodel.mapper.aclf.AclfNet2AclfBeanMapper;
+import org.interpss.dep.datamodel.bean.aclf.AclfNetBean;
+import org.interpss.dep.datamodel.mapper.aclf.AclfNet2AclfBeanMapper;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
