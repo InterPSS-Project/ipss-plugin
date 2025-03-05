@@ -1,12 +1,12 @@
 package org.interpss.QA.rfile.aclf;
 
 import org.interpss.QA.rfile.BaseResultFileProcessor;
-import org.interpss.datamodel.bean.aclf.AclfBranchBean;
-import org.interpss.datamodel.bean.aclf.AclfBusBean;
-import org.interpss.datamodel.bean.aclf.AclfNetBean;
-import org.interpss.datamodel.bean.aclf.ext.AclfBranchResultBean;
-import org.interpss.datamodel.bean.base.BaseBranchBean.BranchCode;
-import org.interpss.datamodel.bean.datatype.ComplexValueBean;
+import org.interpss.dep.datamodel.bean.aclf.AclfBranchBean;
+import org.interpss.dep.datamodel.bean.aclf.AclfBusBean;
+import org.interpss.dep.datamodel.bean.aclf.AclfNetBean;
+import org.interpss.dep.datamodel.bean.aclf.ext.AclfBranchResultBean;
+import org.interpss.dep.datamodel.bean.base.BaseBranchBean.BranchCode;
+import org.interpss.dep.datamodel.bean.datatype.ComplexValueBean;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
