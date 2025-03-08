@@ -13,9 +13,9 @@ package org.interpss.dstab.control.exc.bpa.fvkv0;
 
 import java.util.Vector;
 
+import org.interpss.dstab.ui.ICustomPluginEditor;
+import org.interpss.dstab.ui.SwingInputVerifyUtil;
 import org.interpss.numeric.util.Number2String;
-import org.interpss.ui.ICustomPluginEditor;
-import org.interpss.ui.SwingInputVerifyUtil;
 
 public class NBFVkv0ExciterEditPanel extends javax.swing.JPanel implements ICustomPluginEditor {
 	private static final long serialVersionUID = 1;
