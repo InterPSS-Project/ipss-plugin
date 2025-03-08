@@ -26,9 +26,9 @@ package org.interpss.dstab.control.exc.simple;
 
 import java.util.Vector;
 
+import org.interpss.dstab.ui.ICustomPluginEditor;
+import org.interpss.dstab.ui.SwingInputVerifyUtil;
 import org.interpss.numeric.util.Number2String;
-import org.interpss.ui.ICustomPluginEditor;
-import org.interpss.ui.SwingInputVerifyUtil;
 
 /**
  * 
