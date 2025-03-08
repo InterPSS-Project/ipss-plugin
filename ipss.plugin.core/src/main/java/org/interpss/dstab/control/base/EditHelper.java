@@ -32,8 +32,8 @@ import java.util.Vector;
 
 import javax.swing.JTextField;
 
+import org.interpss.dstab.ui.SwingInputVerifyUtil;
 import org.interpss.numeric.util.Number2String;
-import org.interpss.ui.SwingInputVerifyUtil;
 
 public class EditHelper {
 	/**

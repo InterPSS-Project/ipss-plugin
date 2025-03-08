@@ -53,7 +53,7 @@ import org.ieee.odm.model.dstab.DStabModelParser;
 import org.ieee.odm.schema.AnalysisCategoryEnumType;
 import org.ieee.odm.schema.NetworkCategoryEnumType;
 import org.interpss.CorePluginFunction;
-import org.interpss.mapper.odm.ODMAclfNetMapper;
+import org.interpss.odm.mapper.ODMAclfNetMapper;
 import org.interpss.plugin.pssl.simu.BaseDSL;
 
 import com.interpss.common.exp.InterpssException;

@@ -11,7 +11,7 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.dep.datamodel.bean.aclf.AclfNetBean;
 import org.interpss.dep.datamodel.mapper.aclf.AclfNet2AclfBeanMapper;
 import org.interpss.display.AclfOutFunc;
-import org.interpss.mapper.odm.ODMAclfParserMapper;
+import org.interpss.odm.mapper.ODMAclfParserMapper;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.Test;

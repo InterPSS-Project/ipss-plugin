@@ -17,7 +17,7 @@ import org.interpss.display.AclfOutFunc.BusIdStyle;
 import org.interpss.display.DclfOutFunc;
 import org.interpss.display.impl.AclfOut_BusStyle;
 import org.interpss.display.impl.AclfOut_PSSE;
-import org.interpss.mapper.odm.ODMAclfNetMapper;
+import org.interpss.odm.mapper.ODMAclfNetMapper;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.func.Function2Adapter;

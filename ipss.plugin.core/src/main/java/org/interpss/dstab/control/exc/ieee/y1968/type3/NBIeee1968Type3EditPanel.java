@@ -28,7 +28,7 @@ package org.interpss.dstab.control.exc.ieee.y1968.type3;
 import java.util.Vector;
 
 import org.interpss.dstab.control.base.EditHelper;
-import org.interpss.ui.ICustomPluginEditor;
+import org.interpss.dstab.ui.ICustomPluginEditor;
 
 public class NBIeee1968Type3EditPanel extends javax.swing.JPanel implements ICustomPluginEditor {
 	private static final long serialVersionUID = 1;

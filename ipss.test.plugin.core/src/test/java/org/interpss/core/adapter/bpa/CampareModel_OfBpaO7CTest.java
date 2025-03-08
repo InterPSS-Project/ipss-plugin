@@ -7,9 +7,13 @@ import org.ieee.odm.ODMObjectFactory;
 import org.ieee.odm.model.aclf.AclfModelParser;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.core.dstab.DStabTestSetupBase;
-import org.interpss.mapper.odm.ODMAclfParserMapper;
-import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.interpss.numeric.util.NumericUtil;
+import org.interpss.odm.mapper.ODMAclfParserMapper;
+import org.interpss.odm.mapper.ODMDStabParserMapper;
+import org.interpss.plugin.QA.compare.IAclfBranchComparator;
+import org.interpss.plugin.QA.compare.IAclfBusComparator;
+import org.interpss.plugin.QA.compare.IAclfNetComparator;
+import org.interpss.plugin.QA.compare.NetModelComparator;
 import org.junit.Test;
 
 import com.interpss.common.util.IpssLogger;
@@ -21,11 +25,6 @@ import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 import com.interpss.simu.SimuObjectFactory;
-
-import org.interpss.QA.compare.IAclfBranchComparator;
-import org.interpss.QA.compare.IAclfBusComparator;
-import org.interpss.QA.compare.IAclfNetComparator;
-import org.interpss.QA.compare.NetModelComparator;
 
 public class CampareModel_OfBpaO7CTest extends DStabTestSetupBase {
 	@Test
