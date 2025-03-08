@@ -6,7 +6,7 @@ import org.ieee.odm.adapter.IODMAdapter;
 import org.ieee.odm.adapter.bpa.BPAAdapter;
 import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.IpssCorePlugin;
-import org.interpss.mapper.odm.ODMAclfParserMapper;
+import org.interpss.odm.mapper.ODMAclfParserMapper;
 
 import com.interpss.simu.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;

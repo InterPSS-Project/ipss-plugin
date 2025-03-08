@@ -28,7 +28,7 @@ import static com.interpss.common.util.IpssLogger.ipssLogger;
 import java.util.Vector;
 
 import org.interpss.dstab.control.base.EditHelper;
-import org.interpss.ui.ICustomPluginEditor;
+import org.interpss.dstab.ui.ICustomPluginEditor;
 
 /**
  * Editing screen panel implementation for input data editing for  NBIeee1968Type1 exciter

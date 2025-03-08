@@ -27,7 +27,7 @@ package org.interpss.dstab.control.gov.ieee.steamTCDR;
 import java.util.Vector;
 
 import org.interpss.dstab.control.base.EditHelper;
-import org.interpss.ui.ICustomPluginEditor;
+import org.interpss.dstab.ui.ICustomPluginEditor;
 
 public class NBIeeeSteamTCDREditPanel extends javax.swing.JPanel implements ICustomPluginEditor {
 	private static final long serialVersionUID = 1;

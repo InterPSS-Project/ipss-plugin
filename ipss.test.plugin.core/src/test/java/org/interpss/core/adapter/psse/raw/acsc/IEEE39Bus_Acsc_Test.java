@@ -7,7 +7,7 @@ import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
 import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.acsc.AcscModelParser;
-import org.interpss.mapper.odm.ODMAcscParserMapper;
+import org.interpss.odm.mapper.ODMAcscParserMapper;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
