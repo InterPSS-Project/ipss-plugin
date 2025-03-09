@@ -25,14 +25,12 @@
 package org.interpss.display;
 
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 
 import com.interpss.simu.multicase.StudyCase;
 import com.interpss.simu.multicase.aclf.AclfStudyCase;
 import com.interpss.simu.multicase.aclf.ContingencyAnalysis;
 import com.interpss.simu.multicase.result.AclfBranchResultRec;
-import com.interpss.simu.multicase.result.AclfBusResultRec;
 
 /**
  * Contingency analysis output functions

@@ -24,8 +24,6 @@
 
 package org.interpss.display;
 
-import com.interpss.common.exp.InterpssException;
-import com.interpss.common.exp.InterpssRuntimeException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.net.Branch;
