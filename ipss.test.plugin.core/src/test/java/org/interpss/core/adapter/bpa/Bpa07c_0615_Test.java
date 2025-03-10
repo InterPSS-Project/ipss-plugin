@@ -7,7 +7,7 @@ import org.ieee.odm.adapter.IODMAdapter;
 import org.ieee.odm.adapter.bpa.BPAAdapter;
 import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.core.dstab.DStabTestSetupBase;
-import org.interpss.mapper.odm.ODMAclfParserMapper;
+import org.interpss.odm.mapper.ODMAclfParserMapper;
 import org.junit.Test;
 
 import com.interpss.core.CoreObjectFactory;
