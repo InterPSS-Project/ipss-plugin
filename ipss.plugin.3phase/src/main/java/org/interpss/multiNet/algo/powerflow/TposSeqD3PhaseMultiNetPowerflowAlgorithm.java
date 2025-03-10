@@ -17,7 +17,6 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
-import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.BaseAclfBus;
@@ -53,7 +52,7 @@ public class TposSeqD3PhaseMultiNetPowerflowAlgorithm {
 	private Hashtable<String,Complex3x1> lastStepTransBoundaryBus3SeqVoltages = null;
 	
 	
-	public TposSeqD3PhaseMultiNetPowerflowAlgorithm(BaseAclfNetwork<? extends AclfBus, ?extends AclfBranch> tdNet, 
+	public TposSeqD3PhaseMultiNetPowerflowAlgorithm(BaseAclfNetwork<? extends BaseAclfBus, ?extends AclfBranch> tdNet, 
 			SubNetworkProcessor subNetProc) {
 		this.net = tdNet;
 		subNetProcessor = subNetProc;
@@ -451,7 +450,7 @@ public class TposSeqD3PhaseMultiNetPowerflowAlgorithm {
 //		return true;
 //	}
 //	
-	public void setTransmissionNetwork(BaseAclfNetwork<? extends AclfBus, ?extends AclfBranch> net){
+	public void setTransmissionNetwork(BaseAclfNetwork<? extends BaseAclfBus, ?extends AclfBranch> net){
 		this.transmissionNet = net;
 	}
 	public void setDistributionNetworkList(List<BaseAclfNetwork> distributionNetList){
