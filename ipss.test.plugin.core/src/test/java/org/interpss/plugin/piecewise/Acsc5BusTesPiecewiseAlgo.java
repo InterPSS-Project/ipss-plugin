@@ -36,8 +36,8 @@ import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.piecewise.algo.PiecewiseAlgorithm;
 import org.interpss.piecewise.algo.impl.PiecewiseAlgoAcscImpl;
-import org.interpss.pssl.simu.net.IpssAcscNet;
-import org.interpss.pssl.simu.net.IpssAcscNet.AcscNetworkDSL;
+import org.interpss.plugin.pssl.simu.net.IpssAcscNet;
+import org.interpss.plugin.pssl.simu.net.IpssAcscNet.AcscNetworkDSL;
 import org.junit.Test;
 
 import com.interpss.algo.subAreaNet.SubAreaNetProcessor;

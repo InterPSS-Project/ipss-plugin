@@ -11,7 +11,7 @@ import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
-import org.interpss.mapper.odm.ODMAclfParserMapper;
+import org.interpss.odm.mapper.ODMAclfParserMapper;
 import org.junit.Test;
 
 import com.interpss.simu.SimuObjectFactory;

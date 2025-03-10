@@ -5,9 +5,13 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.interpss</groupId>
+  <parent>
+      <groupId>com.interpss</groupId>
+      <artifactId>ipss.plugin</artifactId>
+      <version>1.0</version>
+  </parent>
+  
   <artifactId>ipss.sample</artifactId>
-  <version>1.0</version>
    
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
@@ -20,27 +24,21 @@
 	    <artifactId>mvel2</artifactId>
 	    <version>2.5.2.Final</version>
 	</dependency>	 
+
+	<!-- https://mvnrepository.com/artifact/net.sf.py4j/py4j -->
 	<dependency>
-	    <groupId>org.apache.commons</groupId>
-	    <artifactId>commons-math3</artifactId>
-	    <version>3.6.1</version>
-	</dependency>	
+	    <groupId>net.sf.py4j</groupId>
+	    <artifactId>py4j</artifactId>
+	    <version>0.10.9.3</version>
+	</dependency>
+
+	
 	<dependency>
-	    <groupId>net.sourceforge.csparsej</groupId>
-	    <artifactId>csparsej</artifactId>
-	    <version>1.1.1</version>
-	</dependency>		
-	<dependency>
-	    <groupId>org.eclipse.emf</groupId>
-	    <artifactId>org.eclipse.emf.ecore</artifactId>
-	    <version>2.27.0</version>
-	</dependency>	
-	<dependency>
-    	<groupId>com.hazelcast</groupId>
-	    <artifactId>hazelcast-distribution</artifactId>
-	    <version>5.0.2</version>
-	    <type>pom</type>
-	</dependency>			
+          <groupId>com.interpss</groupId>
+          <artifactId>ipss.plugin.core</artifactId>
+          <version>1.0</version>
+    </dependency>
+	
   </dependencies>
 
   <build>

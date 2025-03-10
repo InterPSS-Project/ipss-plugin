@@ -16,8 +16,8 @@ import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
-import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.interpss.numeric.NumericConstant;
+import org.interpss.odm.mapper.ODMDStabParserMapper;
 import org.interpss.util.FileUtil;
 import org.junit.Test;
 

@@ -15,9 +15,9 @@ import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.DStabTestSetupBase;
 import org.interpss.dstab.relay.LVSHLoadRelayModel;
-import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.interpss.numeric.datatype.Triplet;
 import org.interpss.numeric.util.PerformanceTimer;
+import org.interpss.odm.mapper.ODMDStabParserMapper;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
