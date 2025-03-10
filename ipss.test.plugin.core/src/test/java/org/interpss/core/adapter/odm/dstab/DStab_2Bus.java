@@ -27,15 +27,9 @@ package org.interpss.core.adapter.odm.dstab;
 import static com.interpss.dstab.cache.StateVariableRecorder.StateVarRecType.MachineState;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-import java.io.FileInputStream;
-
-import org.ieee.odm.ODMObjectFactory;
-import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.core.dstab.DStabTestSetupBase;
 import org.interpss.display.AclfOutFunc;
-import org.interpss.mapper.odm.ODMDStabParserMapper;
-import org.interpss.pssl.plugin.IpssAdapter;
+import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -44,9 +38,6 @@ import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateVariableRecorder;
 import com.interpss.dstab.common.DStabOutSymbol;
-import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
-import com.interpss.simu.SimuObjectFactory;
 
 public class DStab_2Bus extends DStabTestSetupBase {
 	

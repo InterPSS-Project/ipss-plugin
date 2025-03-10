@@ -36,8 +36,7 @@ import org.ieee.odm.model.IODMModelParser;
 import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.CorePluginFactory;
 import org.interpss.fadapter.IpssFileAdapter;
-import org.interpss.mapper.odm.ODMAclfNetMapper;
-import org.interpss.mapper.odm.ODMAclfNetMapper.XfrBranchModel;
+import org.interpss.odm.mapper.ODMAclfNetMapper.XfrBranchModel;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.exp.InterpssRuntimeException;
@@ -50,7 +49,7 @@ import com.interpss.simu.SimuObjectFactory;
 public class IpssFileAdapterBase implements IpssFileAdapter {
 	protected IPSSMsgHub msgHub;
 	private ODMFileFormatEnum format;
-	private ODMAclfNetMapper.XfrBranchModel xfrBranchModel = ODMAclfNetMapper.XfrBranchModel.InterPSS;
+	//private ODMAclfNetMapper.XfrBranchModel xfrBranchModel = ODMAclfNetMapper.XfrBranchModel.InterPSS;
 
 	private String name;
 	private String[] versionList = null;

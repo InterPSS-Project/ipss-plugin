@@ -9,8 +9,8 @@ import org.ieee.odm.adapter.bpa.BPAAdapter;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.core.dstab.DStabTestSetupBase;
 import org.interpss.dstab.output.TextSimuOutputHandler;
-import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.interpss.numeric.datatype.Unit.UnitType;
+import org.interpss.odm.mapper.ODMDStabParserMapper;
 import org.junit.Test;
 
 import com.interpss.common.util.IpssLogger;

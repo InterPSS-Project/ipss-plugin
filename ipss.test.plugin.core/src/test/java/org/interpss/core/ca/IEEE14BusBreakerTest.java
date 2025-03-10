@@ -29,7 +29,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.pssl.plugin.IpssAdapter;
+import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
