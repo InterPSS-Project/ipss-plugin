@@ -29,7 +29,7 @@ import java.util.Map;
 
 import org.interpss.IpssCorePlugin;
 import org.interpss.mvel.AclfNetMvelExprEvaluator;
-import org.interpss.pssl.plugin.IpssAdapter;
+import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;

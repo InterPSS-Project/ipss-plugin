@@ -27,9 +27,8 @@ package org.interpss.core.ca;
 import static org.junit.Assert.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.display.DclfOutFunc;
 import org.interpss.numeric.exp.IpssNumericException;
-import org.interpss.pssl.plugin.IpssAdapter;
+import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;

@@ -30,14 +30,14 @@ import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.datamodel.bean.aclf.AclfNetBean;
-import org.interpss.datamodel.bean.aclf.ext.AclfBusResultBean;
-import org.interpss.datamodel.mapper.aclf.AclfBean2AclfNetMapper;
-import org.interpss.datamodel.mapper.aclf.AclfNet2AclfBeanMapper;
-import org.interpss.datamodel.mapper.aclf.AclfNet2ResultBeanMapper;
+import org.interpss.dep.datamodel.bean.aclf.AclfNetBean;
+import org.interpss.dep.datamodel.bean.aclf.ext.AclfBusResultBean;
+import org.interpss.dep.datamodel.mapper.aclf.AclfBean2AclfNetMapper;
+import org.interpss.dep.datamodel.mapper.aclf.AclfNet2AclfBeanMapper;
+import org.interpss.dep.datamodel.mapper.aclf.AclfNet2ResultBeanMapper;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.pssl.plugin.IpssAdapter;
+import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
