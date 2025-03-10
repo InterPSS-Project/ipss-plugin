@@ -28,8 +28,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.interpss.CorePluginFunction;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.pssl.plugin.IpssAdapter;
-import org.junit.Test;
+import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.dc.DcNetwork;
 import com.interpss.dc.DcSysObjectFactory;
