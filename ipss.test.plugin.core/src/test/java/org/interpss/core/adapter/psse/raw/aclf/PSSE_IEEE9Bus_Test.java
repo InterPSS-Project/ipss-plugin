@@ -24,17 +24,16 @@
 
 package org.interpss.core.adapter.psse.raw.aclf;
  
-import static org.interpss.pssl.plugin.IpssAdapter.FileFormat.PSSE;
+import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.datamodel.bean.aclf.AclfNetBean;
-import org.interpss.datamodel.mapper.aclf.AclfNet2AclfBeanMapper;
-import org.interpss.display.AclfOutFunc;
+import org.interpss.dep.datamodel.bean.aclf.AclfNetBean;
+import org.interpss.dep.datamodel.mapper.aclf.AclfNet2AclfBeanMapper;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.pssl.plugin.IpssAdapter;
-import org.interpss.pssl.plugin.IpssAdapter.PsseVersion;
+import org.interpss.plugin.pssl.plugin.IpssAdapter;
+import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.Test;
 
 import com.interpss.core.CoreObjectFactory;

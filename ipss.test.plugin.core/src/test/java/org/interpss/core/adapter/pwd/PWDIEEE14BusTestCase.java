@@ -37,7 +37,7 @@ import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
-import org.interpss.mapper.odm.ODMAclfNetMapper;
+import org.interpss.odm.mapper.ODMAclfNetMapper;
 import org.junit.Test;
 
 import com.interpss.core.CoreObjectFactory;

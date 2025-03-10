@@ -1,11 +1,11 @@
 package org.interpss.sample.python;
 
-import static org.interpss.pssl.plugin.IpssAdapter.FileFormat.IEEECommonFormat;
+import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.IEEECommonFormat;
 
 import org.interpss.CorePluginFunction;
 import org.interpss.IpssCorePlugin;
-import org.interpss.pssl.plugin.IpssAdapter;
-import org.interpss.pssl.simu.IpssAclf;
+import org.interpss.plugin.pssl.plugin.IpssAdapter;
+import org.interpss.plugin.pssl.simu.IpssAclf;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;
