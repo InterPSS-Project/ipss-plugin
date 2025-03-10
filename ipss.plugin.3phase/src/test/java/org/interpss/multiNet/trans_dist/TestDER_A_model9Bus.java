@@ -1,6 +1,7 @@
-package org.interpss.multiNet.algo;
+package org.interpss.multiNet.trans_dist;
 
 import static com.interpss.core.funcImpl.AcscFunction.acscXfrAptr;
+
 import static org.junit.Assert.assertTrue;
 
 import java.util.logging.Level;
@@ -13,6 +14,10 @@ import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
+import org.interpss.multiNet.algo.SubNetworkProcessor;
+import org.interpss.multiNet.algo.MultiNet3Ph3SeqDStabSimuHelper;
+import org.interpss.multiNet.algo.MultiNet3Ph3SeqDStabSolverImpl;
+import org.interpss.multiNet.algo.MultiNet3Ph3SeqDynEventProcessor;
 import org.interpss.multiNet.algo.powerflow.TDMultiNetPowerflowAlgorithm;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.PerformanceTimer;
@@ -30,9 +35,9 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
-import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.acsc.BusGroundCode;
 import com.interpss.core.acsc.XFormerConnectCode;
@@ -89,7 +94,8 @@ public class TestDER_A_model9Bus {
 		proc.set3PhaseSubNetByBusId("Bus10");
 
 	
-		TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm((BaseAclfNetwork<? extends AclfBus, ? extends AclfBranch>) dsNet,proc);
+
+		TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm((BaseAclfNetwork<? extends BaseAclfBus<?,?>, ? extends AclfBranch>) dsNet,proc);
 		 
 		//System.out.println(tdAlgo.getTransmissionNetwork().net2String());
 		//dsNet.initBusVoltage();
