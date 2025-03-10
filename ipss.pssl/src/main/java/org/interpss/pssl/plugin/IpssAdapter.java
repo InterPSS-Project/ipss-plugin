@@ -96,12 +96,12 @@ public class IpssAdapter extends BaseDSL {
 		    PSSE_JSON,
 		    PSSE_36,
 		    PSSE_35,
+		    PSSE_34,
 		    PSSE_33, 
 			PSSE_32, 
 			PSSE_31, 
 			PSSE_30, 
-			PSSE_29, 
-			PSSE_26 };
+			PSSE_29 };
 			
 	/**
 	 * create an ImportAclfNetDSL object
@@ -442,6 +442,12 @@ public class IpssAdapter extends BaseDSL {
 				return PSSEAdapter.PsseVersion.PSSE_32;
 			else if (this.psseVersion == PsseVersion.PSSE_33)
 				return PSSEAdapter.PsseVersion.PSSE_33;
+			else if (this.psseVersion == PsseVersion.PSSE_34)
+				return PSSEAdapter.PsseVersion.PSSE_34;
+			else if (this.psseVersion == PsseVersion.PSSE_35)
+				return PSSEAdapter.PsseVersion.PSSE_35;
+			else if (this.psseVersion == PsseVersion.PSSE_36)
+				return PSSEAdapter.PsseVersion.PSSE_36;
 			else			
 				throw new InterpssException("Wrong PSS/E version number " + this.psseVersion);			
 		}
