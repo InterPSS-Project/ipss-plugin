@@ -495,8 +495,8 @@ public class SinglePhaseACMotor extends DynLoadModel1Phase {
 			/*
 			 % UV Relay
 	         % Two levels of undervoltage load shedding can be represented: If the voltage drops
-	         % below uvtr1 for ttr1 seconds, the fraction “fuvtr” of the load is tripped; If the voltage drops below uvtr2
-	         % for ttr2 seconds, the fraction “fuvr” of the load is tripped
+	         % below uvtr1 for ttr1 seconds, the fraction "fuvtr" of the load is tripped; If the voltage drops below uvtr2
+	         % for ttr2 seconds, the fraction "fuvr" of the load is tripped
 			*/
 
 			if(this.vt_measured <this.getUVtr1() && this.Fuvr >0.0){

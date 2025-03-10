@@ -1,28 +1,18 @@
 package investigation;
 
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
-import static org.junit.Assert.assertTrue;
 
 import org.interpss.CorePluginFactory;
 import org.interpss.IpssCorePlugin;
 import org.interpss.fadapter.IpssFileAdapter;
-import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.numeric.util.NumericUtil;
-import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.DclfAlgoObjectFactory;
-import com.interpss.core.aclf.AclfBranch;
-import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
-import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.algo.dclf.CaBranchOutageType;
 import com.interpss.core.algo.dclf.CaOutageBranch;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
-import com.interpss.core.funcImpl.ZeroZBranchNetHelper;
 
 
 public class Case1354Investigation {
@@ -31,7 +21,7 @@ public class Case1354Investigation {
 
 		AclfNetwork aclfNet = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF, IpssFileAdapter.Version.IeeeCDFExt1)
-				.load("testData/adpter/ieee_format/case1354π ’œ«∞.ieee")
+				.load("testData/adpter/ieee_format/case1354_prefault.ieee")
 				.getAclfNet();	
 		
 		aclfNet.createAclfBranchNameLookupTable(false);
