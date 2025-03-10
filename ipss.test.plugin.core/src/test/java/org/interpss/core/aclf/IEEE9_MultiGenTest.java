@@ -1,16 +1,13 @@
 package org.interpss.core.aclf;
 
-import static org.interpss.pssl.plugin.IpssAdapter.FileFormat.PSSE;
+import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.display.AclfOutFunc;
-import org.interpss.display.impl.AclfOut_PSSE;
-import org.interpss.display.impl.AclfOut_PSSE.Format;
 import org.interpss.numeric.util.NumericUtil;
-import org.interpss.pssl.plugin.IpssAdapter;
-import org.interpss.pssl.plugin.IpssAdapter.PsseVersion;
+import org.interpss.plugin.pssl.plugin.IpssAdapter;
+import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
