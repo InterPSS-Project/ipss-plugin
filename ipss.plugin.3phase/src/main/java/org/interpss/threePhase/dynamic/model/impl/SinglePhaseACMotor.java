@@ -777,7 +777,21 @@ public class SinglePhaseACMotor extends DynLoadModel1Phase {
 		// This must be overrided to implement the post processing step after network solution converges at each time step
 		@Override
 		public boolean updateAttributes(boolean netChange) {
-			return post_process_step(this.timestep);
+			double vmag = this.getBusPhaseVoltage().abs();
+			// call this method to update "this.PQmotor"
+			calculateMotorPower();
+
+			// update the equivalent admittance for calculating AC power
+			this.equivYpq = this.PQmotor.conjugate().divide(vmag*vmag); // on motor MVABase
+			
+			return true;
+		}
+
+		@Override
+		public boolean afterStep(double dt) {
+			// check the protection actions and update the status of AC motor accordingly
+			post_process_step(dt);
+			return true;
 		}
 
 		@Override

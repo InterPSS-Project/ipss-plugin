@@ -1,4 +1,4 @@
-package org.interpss._3phase.model;
+package org.interpss.threePhase.model;
 
 import static com.interpss.core.funcImpl.AcscFunction.acscXfrAptr;
 import static org.junit.Assert.assertTrue;
@@ -15,7 +15,8 @@ import org.interpss.threePhase.basic.dstab.impl.DStab3PGenImpl;
 import org.interpss.threePhase.basic.dstab.impl.DStab3PLoadImpl;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.algo.DynamicEventProcessor3Phase;
-import org.interpss.threePhase.dynamic.model.PVDistGen3Phase_DER_A;
+import org.interpss.threePhase.dynamic.model.PVDistGen3Phase;
+import org.interpss.threePhase.dynamic.model.impl.MachModel_DER_A_v4;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.powerflow.impl.DistPowerFlowOutFunc;
 import org.interpss.threePhase.util.ThreePhaseAclfOutFunc;
@@ -37,6 +38,8 @@ import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.cache.StateMonitor.DynDeviceType;
+import com.interpss.dstab.cache.StateMonitor.MonitorRecord;
+import com.interpss.dstab.mach.EConstMachine;
 import com.interpss.dstab.mach.MachineModelType;
 import com.interpss.dstab.mach.RoundRotorMachine;
 
@@ -63,7 +66,7 @@ public class TestDER_A_model {
 
 	  	dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.005d);
-		dstabAlgo.setTotalSimuTimeSec(0.35);
+		dstabAlgo.setTotalSimuTimeSec(0.5);
 	    //dstabAlgo.setRefMachine(net.getMachine("Bus3-mach1"));
 		distNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus4",distNet, SimpleFaultCode.GROUND_3P, new Complex(0,0), null, 0.1, 0.05),"fault@bus4");
 
@@ -90,28 +93,24 @@ public class TestDER_A_model {
 
 	  	//System.out.println(sm.toCSVString(sm.getBusAngleTable()));
 	  	System.out.println(sm.toCSVString(sm.getBusVoltTable()));
-	  	//System.out.println(sm.toCSVString(sm.getPvGenPTable()));
+	  	System.out.println(sm.toCSVString(sm.getPvGenPTable()));
 	  	//System.out.println(sm.toCSVString(sm.getPvGenQTable()));
 	  	//System.out.println(sm.toCSVString(sm.getPvGenIpTable()));
 	  	//System.out.println(sm.toCSVString(sm.getPvGenIqTable()));
-		FileUtil.writeText2File("/Users/ocornmesser/Desktop/Research/Graduate/Thesis/results_raw/test_DERA_voltTable.csv",
-				sm.toCSVString(sm.getBusVoltTable()));
-		FileUtil.writeText2File("/Users/ocornmesser/Desktop/Research/Graduate/Thesis/results_raw/test_DERA_freqTable.csv",
-				sm.toCSVString(sm.getBusFreqTable()));
-		FileUtil.writeText2File("/Users/ocornmesser/Desktop/Research/Graduate/Thesis/results_raw/test_DERA_angleTable.csv",
-				sm.toCSVString(sm.getBusAngleTable()));
-		FileUtil.writeText2File("/Users/ocornmesser/Desktop/Research/Graduate/Thesis/results_raw/test_DERA_branchFlowTable.csv",
-				sm.toCSVString(sm.getBranchFlowPTable()));
-//		FileUtil.writeText2File("/Users/ocornmesser/Desktop/Research/Graduate/Thesis/results_raw/test_PVD1_IqTable.csv",
-//				sm.toCSVString(sm.getPvGenIqTable()));
-//		FileUtil.writeText2File("/Users/ocornmesser/Desktop/Research/Graduate/Thesis/results_raw/test_PVD1_IpTable.csv",
-//				sm.toCSVString(sm.getPvGenIpTable()));
-//		FileUtil.writeText2File("/Users/ocornmesser/Desktop/Research/Graduate/Thesis/results_raw/test_PVD1_PTable.csv",
-//				sm.toCSVString(sm.getPvGenPTable()));
-//		FileUtil.writeText2File("/Users/ocornmesser/Desktop/Research/Graduate/Thesis/results_raw/test_PVD1_QTable.csv",
-//				sm.toCSVString(sm.getPvGenQTable()));
 
+		MonitorRecord rec1 = sm.getBusVoltTable().get("Bus2").get(1);
+	  	MonitorRecord rec18 = sm.getBusVoltTable().get("Bus2").get(18);
+	  	assertTrue(Math.abs(rec1.getValue()-rec18.getValue())<1.0E-4);
 
+		MonitorRecord rec98 = sm.getBusVoltTable().get("Bus2").get(98);
+		assertTrue(Math.abs(rec98.getValue()-rec18.getValue())<1.0E-4);
+		
+		MonitorRecord pvgenp_1 = sm.getPvGenPTable().get("PVGen3Phase_1@Bus3").get(1);
+		MonitorRecord pvgenp_18 = sm.getPvGenPTable().get("PVGen3Phase_1@Bus3").get(18);
+		assertTrue(Math.abs(pvgenp_1.getValue()-pvgenp_18.getValue())<1.0E-4);
+
+		MonitorRecord pvgenp_98 = sm.getPvGenPTable().get("PVGen3Phase_1@Bus3").get(98);
+		assertTrue(Math.abs(pvgenp_98.getValue()-pvgenp_18.getValue())<1.0E-3);
 	}
 
 	private DStabNetwork3Phase createDistNetWithDG() throws InterpssException{
@@ -200,40 +199,36 @@ public class TestDER_A_model {
 		constantGen.setZeroGenZ(new Complex(0.0,0.05));
 		bus1.getContributeGenList().add(constantGen);
 
-		//EConstMachine mach = (EConstMachine)DStabObjectFactory.
-				//createMachine("MachId", "MachName", MachineModelType.ECONSTANT, net, "Bus1", "Source");
-		RoundRotorMachine mach = (RoundRotorMachine)DStabObjectFactory.
-				createMachine("MachId", "MachName", MachineModelType.EQ11_ED11_ROUND_ROTOR, net, "Bus1", "Source");
-
-//		mach.setRating(100, UnitType.mVA, net.getBaseKva());
-//		mach.setRatedVoltage(69000.0);
-//		mach.setH(50000.0);
-//		mach.setXd1(0.05);
+		EConstMachine mach = (EConstMachine)DStabObjectFactory.
+				createMachine("MachId", "MachName", MachineModelType.ECONSTANT, net, "Bus1", "Source");
 
 
-		//RoundRotorMachine mach = (RoundRotorMachine)DStabObjectFactory.
-				//createMachine("MachId", "MachName", MachineModelType.EQ11_ED11_ROUND_ROTOR, net, "Bus1", "Source");
-		//DStabBus bus = net.getDStabBus("Gen");
-		// set machine data
 		mach.setRating(100, UnitType.mVA, net.getBaseKva());
 		mach.setRatedVoltage(69000.0);
-		mach.calMultiFactors();
 		mach.setH(50000.0);
-		mach.setD(0.00);
-		mach.setRa(0.000);
-		mach.setXd(2.1);
-		mach.setXq(0.05); // match with set gen Z
-		mach.setXd1(0.05); // match with set gen Z
-		mach.setXq1(0.05); // cHANGED
-		mach.setXd11(0.05); // match with set gen Z
-		mach.setXl(0.03);
-		mach.setTd01(5.6);
-		mach.setTq01(0.75);
-		mach.setTd011(0.03);
-		mach.setTq011(0.05);
-		mach.setSe100(0.0);   // no saturation
-		mach.setSe120(0.0);
-		mach.setXq11(0.05); // match with set gen Z
+		mach.setXd1(0.05);
+
+		// RoundRotorMachine mach = (RoundRotorMachine)DStabObjectFactory.
+		// createMachine("MachId", "MachName", MachineModelType.EQ11_ED11_ROUND_ROTOR, net, "Bus1", "Source");
+		// mach.setRating(100, UnitType.mVA, net.getBaseKva());
+		// mach.setRatedVoltage(69000.0);
+		// mach.calMultiFactors();
+		// mach.setH(50000.0);
+		// mach.setD(0.00);
+		// mach.setRa(0.000);
+		// mach.setXd(2.1);
+		// mach.setXq(0.05); // match with set gen Z
+		// mach.setXd1(0.05); // match with set gen Z
+		// mach.setXq1(0.05); // cHANGED
+		// mach.setXd11(0.05); // match with set gen Z
+		// mach.setXl(0.03);
+		// mach.setTd01(5.6);
+		// mach.setTq01(0.75);
+		// mach.setTd011(0.03);
+		// mach.setTq011(0.05);
+		// mach.setSe100(0.0);   // no saturation
+		// mach.setSe120(0.0);
+		// mach.setXq11(0.05); // match with set gen Z
 		//mach.setSliner(2.0);  // no saturation
 
 
@@ -250,12 +245,17 @@ public class TestDER_A_model {
 		gen1.setNegGenZ(new Complex(0,2.5E-1));
 		gen1.setZeroGenZ(new Complex(0,2.5E-1));
 
-		PVDistGen3Phase_DER_A pv = new PVDistGen3Phase_DER_A(gen1);
+		MachModel_DER_A_v4 pv = new MachModel_DER_A_v4(gen1);
 		pv.setId("1");
 		pv.initStates(bus3);
 		pv.enableVoltControl();
 		pv.enablePowerFreqControl();
 		pv.isNotMultiNetMode();
+		//pv.setDebugMode(true);
+
+		// //create the PV Distributed gen model using PVD1
+		// PVDistGen3Phase pv = new PVDistGen3Phase(gen1);
+		// pv.setId("1");
 
 
 	    return  net;
