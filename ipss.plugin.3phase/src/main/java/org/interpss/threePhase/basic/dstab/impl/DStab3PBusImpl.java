@@ -16,6 +16,7 @@ import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.basic.dstab.DStab3PGen;
 import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 import org.interpss.threePhase.dynamic.model.DStabGen3PhaseAdapter;
+import org.interpss.threePhase.dynamic.model.DynGenModel3Phase;
 import org.interpss.threePhase.dynamic.model.DynLoadModel1Phase;
 import org.interpss.threePhase.dynamic.model.DynLoadModel3Phase;
 import org.interpss.threePhase.util.ThreeSeqLoadProcessor;
@@ -412,8 +413,14 @@ public Complex3x1 injCurDynamic3Phase() {
 			      if(gen.isActive() && gen instanceof DStabGen){
 			    	  DStabGen dynGen = (DStabGen)gen;
 			    	  if( dynGen.getDynamicGenDevice()!=null){
+						if(dynGen.getDynamicGenDevice() instanceof DynGenModel3Phase){
+							DynGenModel3Phase dynGen3P = (DynGenModel3Phase) dynGen.getDynamicGenDevice();
+							iInject = iInject.add(dynGen3P.getISource3Phase());
+
+						}else{
 			    		  DStabGen3PhaseAdapter gen3P = threePhaseGenAptr.apply(dynGen);
 			    		  iInject = iInject.add(gen3P.getISource3Phase());
+						}
 
 			    		  //System.out.println("Iinj@Gen-"+dynGen.getId()+", "+iInject.toString());
 			    	  }

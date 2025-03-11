@@ -1,4 +1,4 @@
-package org.interpss._3phase.dataparser;
+package org.interpss.threePhase.dataparser;
 
 import static org.interpss.threePhase.util.ThreePhaseUtilFunction.threePhaseGenAptr;
 import static org.junit.Assert.assertTrue;
