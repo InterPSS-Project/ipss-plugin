@@ -1,12 +1,12 @@
-package org.interpss._3phase.system;
+package org.interpss.threePhase.system;
 
 import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss._3phase.TestBase;
 import org.interpss.dstab.dynLoad.InductionMotor;
 import org.interpss.dstab.dynLoad.impl.InductionMotorImpl;
+import org.interpss.threePhase.TestBase;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.basic.dstab.DStab3PGen;
 import org.interpss.threePhase.basic.dstab.impl.DStab3PGenImpl;
