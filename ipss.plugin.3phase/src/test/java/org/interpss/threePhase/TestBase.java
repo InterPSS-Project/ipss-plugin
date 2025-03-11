@@ -1,4 +1,4 @@
-package org.interpss._3phase;
+package org.interpss.threePhase;
 
 import static com.interpss.core.funcImpl.AcscFunction.acscXfrAptr;
 

@@ -25,7 +25,7 @@ import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.basic.dstab.DStab3PGen;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
-import org.interpss.threePhase.dynamic.model.PVDistGen3Phase_DER_A;
+import org.interpss.threePhase.dynamic.model.impl.MachModel_DER_A_v4;
 import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.interpss.util.FileUtil;
@@ -286,7 +286,7 @@ public class TestDER_A_model9Bus {
 		gen1.setNegGenZ(new Complex(0,2.5E-1));
 		gen1.setZeroGenZ(new Complex(0,2.5E-1));
 		//create the PV Distributed generation model
-		PVDistGen3Phase_DER_A pv = new PVDistGen3Phase_DER_A(gen1);
+		MachModel_DER_A_v4 pv = new MachModel_DER_A_v4(gen1);
 		pv.setId("1");
 		pv.enableVoltControl();
 		pv.enablePowerFreqControl();

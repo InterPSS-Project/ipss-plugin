@@ -1,4 +1,4 @@
-package org.interpss._3phase.system;
+package org.interpss.threePhase.system;
 
 import static com.interpss.core.funcImpl.AcscFunction.acscXfrAptr;
 import static org.junit.Assert.assertTrue;

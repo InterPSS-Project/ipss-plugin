@@ -136,6 +136,11 @@ public class PVDistGen3Phase extends DynGenModel3Phase{
     	 return true;
      }
 
+	 @Override
+	 public boolean afterStep(double dt){
+		 return true;
+	 }
+
      private Complex getPosSeqVt(){
     	 Complex vt = ((BaseAcscBus)this.getParentGen().getParentBus()).getThreeSeqVoltage().b_1;
     	 return vt;

@@ -1,11 +1,11 @@
-package org.interpss._3phase.model;
+package org.interpss.threePhase.model;
 
 import static org.junit.Assert.assertTrue;
 
 import org.interpss.IpssCorePlugin;
-import org.interpss._3phase.TestBase;
 import org.interpss.dstab.dynLoad.InductionMotor;
 import org.interpss.dstab.dynLoad.impl.InductionMotorImpl;
+import org.interpss.threePhase.TestBase;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
