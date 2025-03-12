@@ -71,10 +71,9 @@ public class AclfHvdcDataHelper {
 		lccHvdc2T.setOperationMode(hvdc2TXml.getOperationMode()==DcLineOperationModeEnumType.DOUBLE?
 									HvdcOperationMode.REC2_INV2:
 										HvdcOperationMode.REC1_INV1);
-		//RDC
-		//TODO 
-		//this.hvdc2T.setLineR()
+
 		lccHvdc2T.setStatus(hvdc2TXml.isOffLine()?false:true);
+		
 		//SETVL
 		if(lccHvdc2T.getControlMode()==HvdcControlMode.DC_CURRENT){
 		//	this.hvdc2T.setCurrentDemand(hvdc2TXml.getCurrentDemand().getValue());
@@ -207,9 +206,9 @@ public class AclfHvdcDataHelper {
 		
 		//XCAPR , =0 by default
 		rectifier.setCommutingCapacitor(rectifierXml.getCommutatingCapacitor());
-		if(n==1){
+		if(n==1 && rectifierXml.getFiringAngle()!=null){
 		    rectifier.setFiringAng(rectifierXml.getFiringAngle().getValue());
-		}else if(n==2){
+		}else if(n==2 && rectifierXml.getFiringAngle2()!=null){
 			rectifier.setFiringAng(rectifierXml.getFiringAngle2().getValue());
 		}
 			
@@ -263,9 +262,9 @@ public class AclfHvdcDataHelper {
 
 		// XCAPR , =0 by default
 		inverter.setCommutingCapacitor(inverterXml.getCommutatingCapacitor());
-		if(n==1){
+		if(n==1 && inverterXml.getFiringAngle()!=null){
 		    inverter.setFiringAng(inverterXml.getFiringAngle().getValue());
-		}else if(n==2){
+		}else if(n==2 && inverterXml.getFiringAngle2()!=null){
 			inverter.setFiringAng(inverterXml.getFiringAngle2().getValue());
 		}
 	}
