@@ -1,12 +1,12 @@
 package org.interpss.core.adapter.psse.raw.aclf;
 
+import static org.junit.Assert.assertTrue;
+
 import org.interpss.CorePluginTestSetup;
 import org.interpss.display.AclfOutFunc;
-import org.interpss.pssl.plugin.IpssAdapter;
-import org.interpss.pssl.plugin.IpssAdapter.FileFormat;
-import org.interpss.pssl.plugin.IpssAdapter.PsseVersion;
-
-import static org.junit.Assert.assertTrue;
+import org.interpss.plugin.pssl.plugin.IpssAdapter;
+import org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat;
+import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.Test;
 
 import com.interpss.core.CoreObjectFactory;
