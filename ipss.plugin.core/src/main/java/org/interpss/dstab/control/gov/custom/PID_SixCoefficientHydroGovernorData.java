@@ -62,7 +62,6 @@ public class PID_SixCoefficientHydroGovernorData {
 	private String id = "1";
 	private String name = "PID_SixCoefficientGovernor";
 	
-	/*******缁欐ā鍨嬪彉閲忚祴鍊�********/
 	
 	/*
 	public void addgov(Machine machine){
