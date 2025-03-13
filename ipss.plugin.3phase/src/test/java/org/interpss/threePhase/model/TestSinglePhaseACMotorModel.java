@@ -450,27 +450,38 @@ AC motor Pe: time,ACMotor_2@Bus1_phaseB, ACMotor_1@Bus1_phaseA
 				 double v = 0.599;
 				 bus1.get3PhaseVotlages().a_0 = new Complex(v,0.0);
 				 //Tstall = 0.033;
+				 double dt = 0.005;
 				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,0);
 				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,1);
 				 ac1.updateAttributes(false);
+				 ac1.afterStep(dt);
 				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,0);
 				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,1);
 				 ac1.updateAttributes(false);
+				 ac1.afterStep(dt);
 
 				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,0);
 				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,1);
 				 ac1.updateAttributes(false);
-				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,0);
-				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,1);
-				 ac1.updateAttributes(false);
-				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,0);
-				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,1);
-				 ac1.updateAttributes(false);
-				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,0);
-				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,1);
-				 ac1.updateAttributes(false);
+				 ac1.afterStep(dt);
 
+				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,0);
+				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,1);
+				 ac1.updateAttributes(false);
+				 ac1.afterStep(dt);
 
+				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,0);
+				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,1);
+				 ac1.updateAttributes(false);
+				 ac1.afterStep(dt);
+
+				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,0);
+				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,1);
+				 ac1.updateAttributes(false);
+				 ac1.afterStep(dt);
+
+				// check the stall status, should be running
+				 assertTrue(ac1.getStage() ==1);
 
 				 // check the power before stalling
 				 System.out.println(ac1.getLoadPQ());
@@ -484,6 +495,7 @@ AC motor Pe: time,ACMotor_2@Bus1_phaseB, ACMotor_1@Bus1_phaseA
 				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,0);
 				 ac1.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER,1);
 				 ac1.updateAttributes(false);
+				 ac1.afterStep(dt);
 				 // check the stall status
 				 assertTrue(ac1.getStage() ==0);
 

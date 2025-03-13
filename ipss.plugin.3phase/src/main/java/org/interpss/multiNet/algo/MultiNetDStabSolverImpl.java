@@ -1,10 +1,5 @@
 package org.interpss.multiNet.algo;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
-import static com.interpss.dstab.funcImpl.DStabFunction.BuiltBusState;
-import static com.interpss.dstab.funcImpl.DStabFunction.BuiltMachineState;
-import static com.interpss.dstab.funcImpl.DStabFunction.BuiltScriptDynamicBusDeviceState;
-
 import java.util.Hashtable;
 import java.util.List;
 
@@ -13,7 +8,9 @@ import org.interpss.numeric.util.NumericUtil;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
+import static com.interpss.common.util.IpssLogger.ipssLogger;
 import com.interpss.core.aclf.AclfGen;
+import com.interpss.core.acsc.fault.AcscBranchFault;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 import com.interpss.dstab.BaseDStabBus;
@@ -27,9 +24,14 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.algo.defaultImpl.DStabSolverImpl;
 import com.interpss.dstab.common.DStabSimuException;
 import com.interpss.dstab.datatype.DStabSimuEvent;
+import com.interpss.dstab.devent.DynamicSimuEvent;
+import com.interpss.dstab.devent.DynamicSimuEventType;
 import com.interpss.dstab.device.DynamicBranchDevice;
 import com.interpss.dstab.device.DynamicBusDevice;
 import com.interpss.dstab.device.DynamicDevice;
+import static com.interpss.dstab.funcImpl.DStabFunction.BuiltBusState;
+import static com.interpss.dstab.funcImpl.DStabFunction.BuiltMachineState;
+import static com.interpss.dstab.funcImpl.DStabFunction.BuiltScriptDynamicBusDeviceState;
 import com.interpss.dstab.mach.Machine;
 
 public class MultiNetDStabSolverImpl extends DStabSolverImpl {
@@ -140,6 +142,7 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 		}
 		// performing actions after solving QEqn
 		afterStep(simuTime);
+
 		}catch(Exception e){
 			e.printStackTrace();
 			return false;
@@ -162,7 +165,76 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 	}
 	
 	@Override public void afterStep(double simutime)  throws DStabSimuException {
-		super.afterStep(simutime);
+		for(BaseDStabNetwork<?, ?> dsNet: subNetList){
+			afterStepForSubNet(dsNet);
+		}
+		
+	}
+
+	private void afterStepForSubNet(BaseDStabNetwork<?, ?> dsNet) throws DStabSimuException{
+		// run afterStep() for all dynamic bus devices
+				for (Bus b : dsNet.getBusList()) {
+					if(b.isActive()){
+						BaseDStabBus<?,?> bus = (BaseDStabBus<?,?>)b;
+						
+						//TODO Solve DEqn for dynamic models (except generators)connected to the bus, such as induction motor
+						for (DynamicBusDevice device : bus.getDynamicBusDeviceList()) {
+							// solve DEqn for the step. This includes all controller's nextStep() call
+							if(device.isActive()){
+								if (!device.afterStep(this.timestep)) {
+									throw new DStabSimuException("Error occured in solving nextStep of "+device.getId()+"@"+bus.getId()+", Simulation will be stopped");
+								}
+							}
+						}
+						// Solve DEqn for generator 
+						if(bus.getContributeGenList().size()>0){
+							for(AclfGen gen:bus.getContributeGenList()){
+								if(gen.isActive()){
+								
+									DynamicDevice device = ((DStabGen)gen).getDynamicGenDevice();
+									
+									if(device.isActive()){
+										if (!device.afterStep(this.timestep)) {
+											  throw new DStabSimuException("Error occured when solving nextStep for dynamic device #"+ device.getId()+ "@ bus - "
+										                   +bus.getId()+", Simulation will be stopped!");
+									
+										}
+									}
+									
+								}
+							}
+						}
+						
+						
+					}
+				}
+
+				//  all dynamic branch devices
+				for (DStabBranch branch : dsNet.getBranchList()) {
+					
+					for (DynamicBranchDevice device : branch.getDynamicBranchDeviceList()) {
+						// solve DEqn for the step. This includes all controller's nextStep() call
+						if (!device.afterStep(this.timestep)) {
+							throw new DStabSimuException("Error occured, Simulation will be stopped");
+						}
+					}
+				}
+		
+		// fault is simulated by modify the Y matrix for each simulation
+		// step, no permanent network change is made. 
+		// Therefore at the end of each simulation step, we need resume the
+		// network to its original state.
+		for( DynamicSimuEvent event : dsNet.getDynamicEventList()) {
+			if (event.getType() == DynamicSimuEventType.BRANCH_FAULT) {
+				// The fault branch will not participate in the calculation
+				AcscBranchFault fault = event.getBranchFault();
+				fault.getFaultBranch().setStatus(true);
+			}
+		}
+		
+		// singling end of a simulation step. For example, output could 
+		// add "\n"
+        procOutputEvent(DStabSimuEvent.EndOfSimuStep, null);
 		
 	}
    
