@@ -1,9 +1,5 @@
 package org.interpss.mapper.odm.impl.aclf;
 
-import static org.interpss.mapper.odm.base.ODMUnitHelper.toActivePowerUnit;
-import static org.interpss.mapper.odm.base.ODMUnitHelper.toAngleUnit;
-import static org.interpss.mapper.odm.base.ODMUnitHelper.toVoltageUnit;
-
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.common.ODMLogger;
 import org.ieee.odm.schema.BusIDRefXmlType;
@@ -17,6 +13,10 @@ import org.ieee.odm.schema.VSCACControlModeEnumType;
 import org.ieee.odm.schema.VSCConverterXmlType;
 import org.ieee.odm.schema.VSCDCControlModeEnumType;
 import org.ieee.odm.schema.VSCHVDC2TXmlType;
+import static org.interpss.mapper.odm.base.ODMUnitHelper.toActivePowerUnit;
+import static org.interpss.mapper.odm.base.ODMUnitHelper.toAngleUnit;
+import static org.interpss.mapper.odm.base.ODMUnitHelper.toVoltageUnit;
+import static org.interpss.mapper.odm.base.ODMUnitHelper.toZUnit;
 import org.interpss.numeric.datatype.LimitType;
 
 import com.interpss.common.util.IpssLogger;
@@ -72,12 +72,12 @@ public class AclfHvdcDataHelper {
 									HvdcOperationMode.REC2_INV2:
 										HvdcOperationMode.REC1_INV1);
 		//RDC
-		//TODO 
-		//this.hvdc2T.setLineR()
+		lccHvdc2T.setRdc(hvdc2TXml.getLineR().getR()); // Rdc in ohm
+
 		lccHvdc2T.setStatus(hvdc2TXml.isOffLine()?false:true);
 		//SETVL
 		if(lccHvdc2T.getControlMode()==HvdcControlMode.DC_CURRENT){
-		//	this.hvdc2T.setCurrentDemand(hvdc2TXml.getCurrentDemand().getValue());
+		// // 	lccHvdc2T.setd(hvdc2TXml.getCurrentDemand().getValue());
 		}
 		else if(lccHvdc2T.getControlMode()==HvdcControlMode.DC_POWER){
 			lccHvdc2T.setPowerDemand(hvdc2TXml.getPowerDemand().getValue(), toActivePowerUnit.apply(hvdc2TXml.getPowerDemand().getUnit()));
@@ -104,8 +104,8 @@ public class AclfHvdcDataHelper {
 		end dc voltage VDCR, set RCOMP to the dc line resistance, RDC; otherwise, set 
 		RCOMP to the appropriate fraction of RDC.
 		*/
-		//this.hvdc2T.setCompondR(hvdc2TXml.getCompoundingR().getR(),toZUnit.apply(hvdc2TXml.getCompoundingR().getUnit()));
-		lccHvdc2T.setRdc(hvdc2TXml.getLineR().getR());
+		lccHvdc2T.setCompondR(hvdc2TXml.getCompoundingR().getR(),toZUnit.apply(hvdc2TXml.getCompoundingR().getUnit()));
+		
 		
 		
 		//DELTI  DC power or current margin when ALPHA is at minimum and inverter is controlling line current
@@ -184,17 +184,18 @@ public class AclfHvdcDataHelper {
 		rectifier.setXformerRatio(rectifierXml.getXformerTurnRatio());
 		
 		//TAPR tap setting 
-		//rectifier.setXformerTapSetting(rectifierXml.getXformerTapSetting().getValue());
+		rectifier.setXformerTapSetting(rectifierXml.getXformerTapSetting().getValue());
 		
 		// TAP Setting limit
 		rectifier.setXformerTapLimit(new LimitType(rectifierXml.getXformerTapLimit().getMax(),
 				                           rectifierXml.getXformerTapLimit().getMin()));
 		
 		//STPR tap step; must be positive. STPR = 0.00625 by default.
-		//rectifier.setXformerTapStepSize(rectifierXml.getXformerTapStepSize());
+		rectifier.setXformerTapStepSize(rectifierXml.getXformerTapStepSize());
 		
-		//IFR, ITR,IDR for specifying a two winding transformer to control a converter to keep 
-		//ALPHA/GARMER within limit
+		//IFR, ITR,IDR for specifying a two winding transformer to control a converter to keep ALPHA/GARMER within limit,
+		//if no transformer is used, set IFR=ITR=0 and IDR=1.0, TAPR tap setting is adjusted to control 
+		//the Alpa/GAMMA within limit.
 		
 		// IFR = ITR=0, IDR =1.0 by default
 		//if(rectifierXml.getRefXfrFromBusId()!=null && rectifierXml.getRefXfrToBusId()!=null)
@@ -207,10 +208,14 @@ public class AclfHvdcDataHelper {
 		
 		//XCAPR , =0 by default
 		rectifier.setCommutingCapacitor(rectifierXml.getCommutatingCapacitor());
-		if(n==1){
+		
+		//Firing angle
+		// NOTE PSS/E data do not provie the fire angle
+		if(n==1 && rectifierXml.getFiringAngle() != null){
 		    rectifier.setFiringAng(rectifierXml.getFiringAngle().getValue());
-		}else if(n==2){
-			rectifier.setFiringAng(rectifierXml.getFiringAngle2().getValue());
+		}else if(n==2 && rectifierXml.getFiringAngle2() != null){
+			//rectifier.setFiringAng(rectifierXml.getFiringAngle2().getValue());
+			throw new IllegalArgumentException("Firing angle 2 is not supported in the current model");
 		}
 			
 	}
@@ -238,7 +243,8 @@ public class AclfHvdcDataHelper {
 		inverter.setXformerRatio(inverterXml.getXformerTurnRatio());
 
 		// TAPR tap setting
-		//inverter.setXformerTapSetting(inverterXml.getXformerTapSetting().getValue());
+		if (inverterXml.getXformerTapSetting()!=null)
+			inverter.setXformerTapSetting(inverterXml.getXformerTapSetting().getValue());
 
 		// TAP Setting limit
 		inverter.setXformerTapLimit(new LimitType(inverterXml
@@ -246,7 +252,7 @@ public class AclfHvdcDataHelper {
 				.getXformerTapLimit().getMin()));
 
 		// STPR tap step; must be positive. STPR = 0.00625 by default.
-		//inverter.setXformerTapStepSize(inverterXml.getXformerTapStepSize());
+		inverter.setXformerTapStepSize(inverterXml.getXformerTapStepSize());
 
 		// IFR, ITR,IDR for specifying a two winding transformer to control a
 		// converter to keep
@@ -263,10 +269,11 @@ public class AclfHvdcDataHelper {
 
 		// XCAPR , =0 by default
 		inverter.setCommutingCapacitor(inverterXml.getCommutatingCapacitor());
-		if(n==1){
+		if(n==1 && inverterXml.getFiringAngle() != null){
 		    inverter.setFiringAng(inverterXml.getFiringAngle().getValue());
-		}else if(n==2){
-			inverter.setFiringAng(inverterXml.getFiringAngle2().getValue());
+		}else if(n==2 && inverterXml.getFiringAngle2() != null	){
+			//inverter.setFiringAng2(inverterXml.getFiringAngle2().getValue());
+			throw new IllegalArgumentException("Firing angle 2 is not supported in the current model");
 		}
 	}
     
