@@ -24,9 +24,6 @@
 
 package org.interpss.mapper.odm.impl.aclf;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
-import static org.interpss.mapper.odm.base.ODMUnitHelper.toActivePowerUnit;
-
 import java.util.List;
 
 import javax.xml.bind.JAXBElement;
@@ -56,12 +53,14 @@ import org.interpss.ext.pwd.AclfBranchPWDExtension;
 import org.interpss.ext.pwd.AclfBusPWDExtension;
 import org.interpss.mapper.odm.ODMAclfNetMapper;
 import org.interpss.mapper.odm.base.AbstractODMSimuCtxDataMapper;
+import static org.interpss.mapper.odm.base.ODMUnitHelper.toActivePowerUnit;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Point;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
+import static com.interpss.common.util.IpssLogger.ipssLogger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
@@ -164,7 +163,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 				if (xmlBranch instanceof PSXfr3WBranchXmlType || xmlBranch instanceof Xfr3WBranchXmlType)
 					branch = CoreObjectFactory.createAclf3WXformer();
 				else if(xmlBranch instanceof DCLineData2TXmlType) {
-					PSXfr3WBranchXmlType dcLineXml  = (PSXfr3WBranchXmlType)xmlBranch;
+					DCLineData2TXmlType dcLineXml  = (DCLineData2TXmlType)xmlBranch;
 					branch = CoreObjectFactory.createHvdcLine2TLCC(HvdcOperationMode.REC1_INV1, 
 								dcLineXml.getId(), 
 								dcLineXml.getFromBus().getIdRef().toString(), 
