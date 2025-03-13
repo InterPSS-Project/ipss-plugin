@@ -26,7 +26,7 @@ import com.interpss.dstab.DStabilityNetwork;
  * MultiNetDStabSimuHelper is a "helper" class for multi-area/subnetwork, positive sequence based Transient Stability(TS) simulation. 
  * This is basic Multi-Area Thevenin Equivalent(MATE) approach implementation. Details of the approach can be found in the following paper:
  * 
- *   M. A. Tomim, J. Mart´ı, and L. Wang, “Parallel solution of large power system networks using the multi-Area Thevenin equivalents (MATE) algorithm,” 
+ *   M. A. Tomim, J. Marti, and L. Wang, "Parallel solution of large power system networks using the multi-Area Thevenin equivalents (MATE) algorithm," 
  *   Int. J. Electr. Power Energy Syst., vol. 31, no. 9, pp. 497–503,2009
  *
  * The functions in this class are corresponding to key steps of implementing the MATE approach. Notations are based on the paper above.

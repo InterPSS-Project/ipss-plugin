@@ -19,22 +19,43 @@
   </properties>
 
   <dependencies>
-	<dependency>
-	    <groupId>org.mvel</groupId>
-	    <artifactId>mvel2</artifactId>
-	    <version>2.5.2.Final</version>
-	</dependency>
+    <dependency>
+        <groupId>com.interpss</groupId>
+        <artifactId>ipss.plugin.core</artifactId>
+        <version>1.0</version>
+    </dependency>
+    <dependency>
+        <groupId>org.mvel</groupId>
+        <artifactId>mvel2</artifactId>
+        <version>2.5.2.Final</version>
+    </dependency>
 	
-		<dependency>
-          <groupId>com.interpss</groupId>
-          <artifactId>ipss.plugin.core</artifactId>
-          <version>1.0</version>
+    <dependency>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+          <version>4.13.2</version>
+          <scope>test</scope>
+    </dependency>
+    <dependency>
+          <groupId>org.hamcrest</groupId>
+          <artifactId>hamcrest</artifactId>
+          <version>2.2</version>
+          <scope>test</scope>
     </dependency>
   </dependencies>
 
   <build>
     <plugins>
-
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.8.1</version>
+        <configuration>
+          <excludes>
+            <exclude>**/investigation/*.java</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 

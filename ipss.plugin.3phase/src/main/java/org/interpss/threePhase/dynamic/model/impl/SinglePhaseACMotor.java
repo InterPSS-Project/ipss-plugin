@@ -495,8 +495,8 @@ public class SinglePhaseACMotor extends DynLoadModel1Phase {
 			/*
 			 % UV Relay
 	         % Two levels of undervoltage load shedding can be represented: If the voltage drops
-	         % below uvtr1 for ttr1 seconds, the fraction “fuvtr” of the load is tripped; If the voltage drops below uvtr2
-	         % for ttr2 seconds, the fraction “fuvr” of the load is tripped
+	         % below uvtr1 for ttr1 seconds, the fraction "fuvtr" of the load is tripped; If the voltage drops below uvtr2
+	         % for ttr2 seconds, the fraction "fuvr" of the load is tripped
 			*/
 
 			if(this.vt_measured <this.getUVtr1() && this.Fuvr >0.0){
@@ -777,7 +777,21 @@ public class SinglePhaseACMotor extends DynLoadModel1Phase {
 		// This must be overrided to implement the post processing step after network solution converges at each time step
 		@Override
 		public boolean updateAttributes(boolean netChange) {
-			return post_process_step(this.timestep);
+			double vmag = this.getBusPhaseVoltage().abs();
+			// call this method to update "this.PQmotor"
+			calculateMotorPower();
+
+			// update the equivalent admittance for calculating AC power
+			this.equivYpq = this.PQmotor.conjugate().divide(vmag*vmag); // on motor MVABase
+			
+			return true;
+		}
+
+		@Override
+		public boolean afterStep(double dt) {
+			// check the protection actions and update the status of AC motor accordingly
+			post_process_step(dt);
+			return true;
 		}
 
 		@Override

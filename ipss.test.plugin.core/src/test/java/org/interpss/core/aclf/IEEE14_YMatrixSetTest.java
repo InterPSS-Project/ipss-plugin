@@ -53,7 +53,7 @@ public class IEEE14_YMatrixSetTest extends CorePluginTestSetup {
 		ISparseEqnComplex ynn = ySet[0];
 		//System.out.println(ynn);
 /*
-		Y分块：Y_NN
+		Y_NN
 		   (1,1)     10.5130 -38.6542i
 		   (2,1)     -6.8410 +21.5786i
 		   (3,1)      0.0000 + 4.8895i
@@ -89,14 +89,14 @@ public class IEEE14_YMatrixSetTest extends CorePluginTestSetup {
 		//System.out.println(ynm);
 
 		/*
-		 * M：PQ节点和平衡节点集合 (1~n)
+		 * M (1~n)
 				2
 				3
 				6
 				8
 				1
 
-		Y分块：Y_NM
+		Y_NM
 		   (1,1)     -1.6860 + 5.1158i
 		   (2,1)     -1.7011 + 5.1939i
 		   (1,2)     -1.9860 + 5.0688i
