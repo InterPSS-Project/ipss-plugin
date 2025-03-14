@@ -1,8 +1,5 @@
 package org.interpss.multiNet.trans_dist;
 
-import static com.interpss.core.funcImpl.AcscFunction.acscXfrAptr;
-import static org.junit.Assert.assertTrue;
-
 import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
@@ -34,6 +31,7 @@ import org.interpss.threePhase.dynamic.model.impl.SinglePhaseACMotor;
 import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
 import org.interpss.threePhase.powerflow.impl.DistPowerFlowOutFunc;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -49,6 +47,7 @@ import com.interpss.core.acsc.PhaseCode;
 import com.interpss.core.acsc.XFormerConnectCode;
 import com.interpss.core.acsc.adpter.AcscXformerAdapter;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
+import static com.interpss.core.funcImpl.AcscFunction.acscXfrAptr;
 import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -226,7 +225,7 @@ public class TestTnD_IEEE9_8BusFeeder {
 	    
 	    double PVPenetrationLevel = .00;
 	    double PVIncrement = PVPenetrationLevel/(1-PVPenetrationLevel) ;
-	    double ACMotorPercent = 50;
+	    double ACMotorPercent = 10;
 	    double IndMotorPercent = 0;
 	    double ACPhaseUnbalance = 0.0;
 	   
@@ -263,7 +262,7 @@ public class TestTnD_IEEE9_8BusFeeder {
 		int startBusIndex = 10;
 		createFeeder(dsNet, (DStab3PBus) dsNet.getBus("Bus5"), startBusIndex, baseVolt,feederBusNum,totalLoad,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
 		
-		//buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoad,loadDistribution);
+		buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoad,loadDistribution);
 		
 	
 		/**
@@ -280,7 +279,7 @@ public class TestTnD_IEEE9_8BusFeeder {
 		 startBusIndex = 20;
 		createFeeder(dsNet, (DStab3PBus) dsNet.getBus("Bus6"), startBusIndex, baseVolt,feederBusNum,totalLoadBus6,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
 		
-		//buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoadBus6,loadDistribution);
+		buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoadBus6,loadDistribution);
 		
 		
 		
@@ -297,7 +296,7 @@ public class TestTnD_IEEE9_8BusFeeder {
 		 startBusIndex = 30;
 		createFeeder(dsNet, (DStab3PBus) dsNet.getBus("Bus8"), startBusIndex, baseVolt,feederBusNum,totalLoadBus8,XfrMVA, loadPF,loadDistribution,loadUnbalanceFactor,feederSectionLenghth);
 		
-		//buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoadBus8,loadDistribution);
+		buildFeederDynModel(dsNet, startBusIndex+2, startBusIndex+feederBusNum-1,ACMotorPercent, IndMotorPercent,ACPhaseUnbalance, totalLoadBus8,loadDistribution);
 		
 		
 		/**
@@ -335,7 +334,7 @@ public class TestTnD_IEEE9_8BusFeeder {
 	    
 		 TDMultiNetPowerflowAlgorithm tdAlgo = new TDMultiNetPowerflowAlgorithm((BaseAclfNetwork<? extends BaseAclfBus<?,?>, ? extends AclfBranch>) dsNet,proc);
 		
-		 System.out.println(tdAlgo.getTransmissionNetwork().net2String());
+		 //System.out.println(tdAlgo.getTransmissionNetwork().net2String());
 	    
 		 assertTrue(tdAlgo.powerflow()); 
 		 
@@ -367,7 +366,7 @@ public class TestTnD_IEEE9_8BusFeeder {
 	        
 			dsNet.addDynamicEvent(
 					DStabObjectFactory.createBusFaultEvent("Bus10", proc.getSubNetworkByBusId("Bus10"),
-							SimpleFaultCode.GROUND_LG, new Complex(0.0), new Complex(0.0), 1, 0.05),
+							SimpleFaultCode.GROUND_3P, new Complex(0.0), new Complex(0.0), 0.5, 0.1),
 					"3phaseFault@Bus10");
 			
 			StateMonitor sm = new StateMonitor();
@@ -462,8 +461,8 @@ public class TestTnD_IEEE9_8BusFeeder {
 //			System.out.println(sm.toCSVString(sm.getBusVoltTable()));
 			System.out.println(sm.toCSVString(sm.getBusPhAVoltTable()));
 			//System.out.println(sm.toCSVString(sm.getAcMotorPTable()));
-			//System.out.println(sm.toCSVString(sm.getAcMotorStateTable()));
-			System.out.println("Branch flow p ="+sm.toCSVString(sm.getBranchFlowPTable()));
+			System.out.println(sm.toCSVString(sm.getAcMotorStateTable()));
+			//System.out.println("Branch flow p ="+sm.toCSVString(sm.getBranchFlowPTable()));
 			
 			
 			MonitorRecord volt_rec1 = sm.getBusVoltTable().get("Bus38").get(0);
@@ -866,36 +865,36 @@ private void buildFeederDynModel(DStabNetwork3Phase dsNet, int startBusNum, int 
 			
 
 		// AC motor, 50%
-		
-		 SinglePhaseACMotor ac1 = new SinglePhaseACMotor(loadBus,"1");
-	  		ac1.setLoadPercent(ACMotorPercent-ACPhaseUnbalance);
-	  		ac1.setPhase(PhaseCode.A);
-	  	
-	  		ac1.setTstall(0.05); // disable ac stalling
-	  		ac1.setVstall(0.65);
-	  		loadBus.getPhaseADynLoadList().add(ac1);
-	  		
-	  		
-	  		
-	  	SinglePhaseACMotor ac2 = new SinglePhaseACMotor(loadBus,"2");
-	  		ac2.setLoadPercent(ACMotorPercent);
-	  		ac2.setPhase(PhaseCode.B);
-	  		ac2.setTstall(0.05); // disable ac stalling
-	  		ac2.setVstall(0.65);
-	  		loadBus.getPhaseBDynLoadList().add(ac2);
-	  		
+		if(ACMotorPercent>0){
+				SinglePhaseACMotor ac1 = new SinglePhaseACMotor(loadBus,"1");
+					ac1.setLoadPercent(ACMotorPercent-ACPhaseUnbalance);
+					ac1.setPhase(PhaseCode.A);
+				
+					ac1.setTstall(0.05); // disable ac stalling
+					ac1.setVstall(0.65);
+					loadBus.getPhaseADynLoadList().add(ac1);
+					
+					
+					
+				SinglePhaseACMotor ac2 = new SinglePhaseACMotor(loadBus,"2");
+					ac2.setLoadPercent(ACMotorPercent);
+					ac2.setPhase(PhaseCode.B);
+					ac2.setTstall(0.05); // disable ac stalling
+					ac2.setVstall(0.65);
+					loadBus.getPhaseBDynLoadList().add(ac2);
+					
 
-	  		
-	  	SinglePhaseACMotor ac3 = new SinglePhaseACMotor(loadBus,"3");
-	  		ac3.setLoadPercent(ACMotorPercent+ACPhaseUnbalance);
-	  		ac3.setPhase(PhaseCode.C);
-	  		ac3.setTstall(0.05); // disable ac stalling
-	  		ac3.setVstall(0.65);
-	  		loadBus.getPhaseCDynLoadList().add(ac3);
+					
+				SinglePhaseACMotor ac3 = new SinglePhaseACMotor(loadBus,"3");
+					ac3.setLoadPercent(ACMotorPercent+ACPhaseUnbalance);
+					ac3.setPhase(PhaseCode.C);
+					ac3.setTstall(0.05); // disable ac stalling
+					ac3.setVstall(0.65);
+					loadBus.getPhaseCDynLoadList().add(ac3);
 		
-		
+		}
 		// 3 phase motor, 20%
-		
+		if(IndMotorPercent>0){
 	  		InductionMotorImpl indMotor= new InductionMotorImpl(loadBus,"1");
 			indMotor.setDStabBus(loadBus);
 
@@ -915,7 +914,7 @@ private void buildFeederDynModel(DStabNetwork3Phase dsNet, int startBusNum, int 
 			indMotor3Phase.setLoadPercent(IndMotorPercent); //0.06 MW
 			loadBus.getThreePhaseDynLoadList().add(indMotor3Phase);	
 		
-		
+		}
 		// PV generation
 		
 //			Gen3Phase gen1 = new Gen3PhaseImpl();

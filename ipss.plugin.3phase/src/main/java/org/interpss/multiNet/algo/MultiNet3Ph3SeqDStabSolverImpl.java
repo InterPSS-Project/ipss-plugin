@@ -1,10 +1,6 @@
 package org.interpss.multiNet.algo;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
-
-import java.util.Hashtable;
 import java.util.List;
-import java.util.Map.Entry;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
@@ -13,7 +9,7 @@ import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
-import com.interpss.core.aclf.AclfGen;
+import static com.interpss.common.util.IpssLogger.ipssLogger;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 import com.interpss.dstab.BaseDStabBus;
@@ -27,7 +23,6 @@ import com.interpss.dstab.common.DStabSimuException;
 import com.interpss.dstab.device.DynamicBranchDevice;
 import com.interpss.dstab.device.DynamicBusDevice;
 import com.interpss.dstab.device.DynamicDevice;
-import com.interpss.dstab.mach.Machine;
 
 public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 	

@@ -1,7 +1,5 @@
 package org.interpss.multiNet.unit;
 
-import static org.junit.Assert.assertTrue;
-
 import java.util.Hashtable;
 import java.util.logging.Level;
 
@@ -14,12 +12,13 @@ import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
-import org.interpss.odm.mapper.ODMDStabParserMapper;
 import org.interpss.multiNet.algo.MultiNetDStabSimuHelper;
 import org.interpss.multiNet.algo.SubNetworkProcessor;
 import org.interpss.multiNet.equivalent.NetworkEquivalent;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
+import org.interpss.odm.mapper.ODMDStabParserMapper;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
