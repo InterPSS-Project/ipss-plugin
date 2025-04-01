@@ -74,14 +74,15 @@ public class AclfHvdcDataHelper {
 										HvdcOperationMode.REC1_INV1);
 
 		//RDC
-		lccHvdc2T.setRdc(hvdc2TXml.getLineR().getR()); // Rdc in ohm
+		lccHvdc2T.setRdc(hvdc2TXml.getLineR().getR(), toZUnit.apply(hvdc2TXml.getLineR().getUnit())); // Rdc in ohm
 
 
 		lccHvdc2T.setStatus(hvdc2TXml.isOffLine()?false:true);
 		
 		//SETVL
 		if(lccHvdc2T.getControlMode()==HvdcControlMode.DC_CURRENT){
-		// // 	lccHvdc2T.setd(hvdc2TXml.getCurrentDemand().getValue());
+			throw new IllegalArgumentException("DC Current Control Mode is not supported in the current model");
+		 	//lccHvdc2T.setd(hvdc2TXml.getCurrentDemand().getValue());
 		}
 		else if(lccHvdc2T.getControlMode()==HvdcControlMode.DC_POWER){
 			lccHvdc2T.setPowerDemand(hvdc2TXml.getPowerDemand().getValue(), toActivePowerUnit.apply(hvdc2TXml.getPowerDemand().getUnit()));
@@ -90,15 +91,15 @@ public class AclfHvdcDataHelper {
 			}
 		}
 		
-		else //HVDC Line is Blocked
-		lccHvdc2T.setStatus(false);
-		
+		else{ //HVDC Line is Blocked
+			lccHvdc2T.setStatus(false);
+		}
 		
 		//Scheduled compound dc voltage, kV by default
 		lccHvdc2T.setScheduledDCVoltage(hvdc2TXml.getScheduledDCVoltage().getValue(), toVoltageUnit.apply(hvdc2TXml.getScheduledDCVoltage().getUnit()));
 		
 		//TODO VCMOD mode switch dc voltage
-		//this.hvdc2T.setSwitchModeVoltage()
+		//this.hvdc2T.setSwitchModeVoltage(hvdc2TXml.getModeSwitchDCVoltage().getValue(), toVoltageUnit.apply(hvdc2TXml.getModeSwitchDCVoltage().getUnit()));
 		
 		
 		//RCOMP
@@ -297,7 +298,7 @@ public class AclfHvdcDataHelper {
     	vscHvdc2T.setName(vschvdc2TXml.getName());
     	
     	// Rdc and rating
-    	vscHvdc2T.setRdc(vschvdc2TXml.getRdc().getR());
+    	vscHvdc2T.setRdc(vschvdc2TXml.getRdc().getR(),toZUnit.apply(vschvdc2TXml.getRdc().getUnit()));
     	
     	if(vschvdc2TXml.getMVARating()!=null)
     	      vscHvdc2T.setMvaRating(vschvdc2TXml.getMVARating().getValue());
