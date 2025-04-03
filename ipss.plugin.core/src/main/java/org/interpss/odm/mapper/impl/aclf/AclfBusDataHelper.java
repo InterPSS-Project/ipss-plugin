@@ -176,6 +176,9 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 				for(LoadflowShuntYDataXmlType elem :xmlBusData.getShuntYData().getContributeShuntY()){
 		
 					YXmlType shuntY = elem.getY();
+					//if shuntY is null, throw exception with detailed bus info
+					if(shuntY == null)
+						throw new InterpssException("Shunt Y data is not defined for bus: " + bus.getId());
 		
 					UnitType unit = toYUnit.apply(shuntY.getUnit());
 					Complex ypu = UnitHelper.yConversion(new Complex(shuntY.getRe(), shuntY.getIm()),
