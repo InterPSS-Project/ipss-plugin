@@ -6,7 +6,9 @@ import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.CorePluginTestSetup;
+import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.datatype.ComplexFunc;
+import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
@@ -17,6 +19,7 @@ import org.junit.Test;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.hvdc.ConverterControlMode;
 import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.simu.SimuContext;
@@ -50,6 +53,9 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 	public void test_LCCHVDC_Loadflow() throws Exception {
 		AclfNetwork net = createTestCase();
 		//System.out.println(net.net2String());
+
+		HvdcLine2TLCC<AclfBus> lccHVDC = (HvdcLine2TLCC<AclfBus>) net.getSpecialBranchList().get(0);
+		lccHVDC.setPUBasedPowerFlowAlgoFlag(false);
 		 
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 		algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
@@ -58,9 +64,10 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 	  	
   		assertTrue(net.isLfConverged());
   		
-  		//System.out.println(AclfOutFunc.loadFlowSummary(net));
+  		System.out.println(AclfOutFunc.loadFlowSummary(net));
   		AclfBus bus1 = net.getBus("Bus1");
   		assertEquals(bus1.getVoltageAng(UnitType.Deg),69.43,0.01);
+
   		
   		/*
   		 * PSS/E power flow results
@@ -121,17 +128,115 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 			TO     10     BUS10   AR2 230.00  1    773.3   103.8   780.2                          15.09  150.86    2                 2
 
   		 */
-  		assertTrue(NumericUtil.equals(net.getBus("Bus7").getVoltageMag(),0.9595,0.00001));
+  		assertTrue(NumericUtil.equals(net.getBus("Bus7").getVoltageMag(),0.9595,0.0001));
   		assertTrue(NumericUtil.equals(net.getBus("Bus7").getVoltageAng(),48.75/(180/Math.PI),0.01));
-  		assertTrue(NumericUtil.equals(net.getBus("Bus9").getVoltageMag(),0.9647,0.00001));
+  		assertTrue(NumericUtil.equals(net.getBus("Bus9").getVoltageMag(),0.9647,0.0001));
+
+
+  		//System.out.println("Rec Power: " + ComplexFunc.toStr(lccHVDC.getRectifier().powerIntoConverter()));
+  		//System.out.println("Inv Power: " + ComplexFunc.toStr(lccHVDC.getInverter().powerIntoConverter()));
+
+  		//Rec Power: 5.0000 + j2.9871
+  		//Inv Power: -4.95098 + j2.84946
+  		assertTrue("", NumericUtil.equals(lccHVDC.getRectifier().powerIntoConverter(), new Complex(5.0000, 2.9871), 0.0001));
+  		assertTrue("", NumericUtil.equals(lccHVDC.getInverter().powerIntoConverter(), new Complex(-4.95098, 2.84946), 0.0001));
+
+		
+		// firing angle
+		//System.out.println("rec firing angle:" + lccHVDC.getRectifier().getFiringAng());
+		//System.out.println("inv firing angle:" + lccHVDC.getInverter().getFiringAng());
+		//rec firing angle:25.69999086949784
+        //inv firing angle:24.60609281132968
+		assertEquals(lccHVDC.getRectifier().getFiringAng(), 25.69, 0.01);
+		assertEquals(lccHVDC.getInverter().getFiringAng(), 24.60, 0.01);
+
+		//Tap ratio 
+		//System.out.println("Tap ratio:" + lccHVDC.getRectifier().getXformerTapSetting());
+		assertEquals(lccHVDC.getRectifier().getXformerTapSetting(), 0.93750, 0.0001);
+		assertEquals(lccHVDC.getInverter().getXformerTapSetting(), 0.94375, 0.0001);
+	
+
+  
+
+	}
+
+	@Test
+	public void test_LCCHVDC_Loadflow_FireAngleLimit() throws Exception {
+		AclfNetwork net = createTestCase();
+		//System.out.println(net.net2String());
 
 		HvdcLine2TLCC<AclfBus> lccHVDC = (HvdcLine2TLCC<AclfBus>) net.getSpecialBranchList().get(0);
-  		System.out.println("Rec Power: " + ComplexFunc.toStr(lccHVDC.getRectifier().powerIntoConverter()));
-  		System.out.println("Inv Power: " + ComplexFunc.toStr(lccHVDC.getInverter().powerIntoConverter()));
-  		//Rec Power: 2.0900   + j 0.68695
-  		//Inv Power: -2.08315 + j 0.62802
-  		assertTrue("", NumericUtil.equals(lccHVDC.getRectifier().powerIntoConverter(), new Complex(2.0900, 0.68695), 0.00001));
-  		assertTrue("", NumericUtil.equals(lccHVDC.getRectifier().powerIntoConverter(), new Complex(-2.08315, 0.62802), 0.00001));
+		// change limits
+		lccHVDC.getRectifier().setFiringAngLimit(new LimitType(22,15));
+		lccHVDC.getInverter().setFiringAngLimit(new LimitType(22,15));
+
+		lccHVDC.setPUBasedPowerFlowAlgoFlag(false);
+	
+		 
+		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
+	  	algo.loadflow();
+  		//System.out.println(net.net2String());
+	  	
+  		assertTrue(net.isLfConverged());
+  		
+  		System.out.println(AclfOutFunc.loadFlowSummary(net));
+  		AclfBus bus1 = net.getBus("Bus1");
+  		assertEquals(bus1.getVoltageAng(UnitType.Deg),69.43,0.01);
+
+  		
+  		/*
+  		 * The similar below is similar to Powerworld results, but the taps position are different PSS/E
+								Max Power Mismatches
+					Bus              dPmax       Bus              dQmax
+					-------------------------------------------------------
+					Bus9             0.000000  Bus9             0.000093 (pu)
+									0.0001450                   9.315502 (kva)
+
+			BusID          Code           Volt(pu)   Angle(deg)      Pg(pu)    Qg(pu)    Pl(pu)    Ql(pu)    Bus Name   
+		----------------------------------------------------------------------------------------------------------------
+		Bus1         Swing                1.03000       69.43       5.5018    1.1638    0.0000    0.0000   BUS1   AR1 
+		Bus2         PV                   1.01000       63.73       7.4100    1.4516    0.0000    0.0000   BUS2   AR1 
+		Bus3         Swing                1.03000       -6.80       7.7361    1.7508    0.0000    0.0000   BUS3   AR2 
+		Bus4         PV                   1.01000      -17.63       7.6600    1.7509    0.0000    0.0000   BUS4   AR2 
+		Bus5                              1.01508       64.40       0.0000    0.0000    0.0000    0.0000   BUS5   AR1 
+		Bus6                              0.99360       56.66       0.0000    0.0000    0.0000    0.0000   BUS6   AR1 
+		Bus7                ConstP        0.98416       49.14       0.0000    0.0000    7.6700    1.0000   BUS7   L   
+		Bus9                ConstP        0.98518      -33.97       0.0000    0.0000   19.6700    1.0000   BUS9   L   
+		Bus10                             0.98922      -24.98       0.0000    0.0000    0.0000    0.0000   BUS10   AR2 
+		Bus11                             1.00946      -13.92       0.0000    0.0000    0.0000    0.0000   BUS11   AR2 
+  		 */
+  		assertTrue(NumericUtil.equals(net.getBus("Bus7").getVoltageMag(),0.9842,0.0001));
+  		assertTrue(NumericUtil.equals(net.getBus("Bus7").getVoltageAng(),48.95/(180/Math.PI),0.01));
+  		assertTrue(NumericUtil.equals(net.getBus("Bus9").getVoltageMag(),0.98518,0.0001));
+
+
+  		//System.out.println("Rec Power: " + ComplexFunc.toStr(lccHVDC.getRectifier().powerIntoConverter()));
+  		//System.out.println("Inv Power: " + ComplexFunc.toStr(lccHVDC.getInverter().powerIntoConverter()));
+
+  		//Rec Power: 5.0000 + j2.18932
+  		//Inv Power: -4.95098 + j2.2382
+  		assertTrue("", NumericUtil.equals(lccHVDC.getRectifier().powerIntoConverter(), new Complex(5.0000, 2.18932), 0.0001));
+  		assertTrue("", NumericUtil.equals(lccHVDC.getInverter().powerIntoConverter(), new Complex(-4.95098, 2.2382), 0.0001));
+
+		
+		// firing angle
+		//System.out.println("rec firing angle:" + lccHVDC.getRectifier().getFiringAng());
+		//System.out.println("inv firing angle:" + lccHVDC.getInverter().getFiringAng());
+		// rec firing angle:16.16720905335377
+        // inv firing angle:17.235974633813527
+		assertEquals(lccHVDC.getRectifier().getFiringAng(), 16.16, 0.01);
+		assertEquals(lccHVDC.getInverter().getFiringAng(), 17.23, 0.01);
+
+		//Tap ratio 
+		//System.out.println("Tap ratio:" + lccHVDC.getRectifier().getXformerTapSetting());
+		//System.out.println("Tap ratio:" + lccHVDC.getInverter().getXformerTapSetting());
+		assertEquals(lccHVDC.getRectifier().getXformerTapSetting(), 1.025, 0.0001);
+		assertEquals(lccHVDC.getInverter().getXformerTapSetting(), 1.0125, 0.0001);
+	
+
+  
+
 	}
 	
 	@Test
@@ -149,13 +254,37 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 		HvdcLine2TLCC<AclfBus> lccHVDC = (HvdcLine2TLCC<AclfBus>) net.getSpecialBranchList().get(0);
 		//System.out.println(vscHVDC.getId());
 		//System.out.println(vscHVDC.getName());
-		assertTrue(lccHVDC.getRdc()==5.0);
+		assertTrue(lccHVDC.getRdc(UnitType.Ohm)==5.0);
+
 		
 	    assertTrue(lccHVDC.getRectifier() != null);
 	    assertTrue(lccHVDC.getInverter() != null);
 
+		assertEquals(lccHVDC.getRectifier().getCommutingZ().getReal(), 0.0, 0.0001);
+		assertEquals(lccHVDC.getRectifier().getCommutingZ().getImaginary(),  13.594, 0.001);
+
+		assertEquals(lccHVDC.getInverter().getCommutingZ().getReal(), 0.0, 0.0001);
+		assertEquals(lccHVDC.getInverter().getCommutingZ().getImaginary(),   13.317, 0.001);
+
+		//check fire angle limits on both rectifier and inverter
+		assertEquals(lccHVDC.getRectifier().getFiringAngLimit().getMin(), 15.0, 0.0001);
+		assertEquals(lccHVDC.getRectifier().getFiringAngLimit().getMax(), 90.0, 0.0001);
+
+		assertEquals(lccHVDC.getInverter().getFiringAngLimit().getMin(), 15.0, 0.0001);
+		assertEquals(lccHVDC.getInverter().getFiringAngLimit().getMax(), 90.0, 0.0001);
+
+		
+		assertEquals(lccHVDC.getRectifier().getXformerTapSetting(), 0.93750, 0.0001);
+		assertEquals(lccHVDC.getInverter().getXformerTapSetting(), 0.94375, 0.0001);
+
 	    //assertTrue(lccHVDC.getRectifier().getParentHvdc() != null);
 	    //assertTrue(lccHVDC.getInverter().getParentHvdc() != null);
+
+		
+	    // System.out.println("Rectifier Control Mode: " + lccHVDC.getRectifierControlMode());
+		// System.out.println("Inverter Control Mode: " + lccHVDC.getInverterControlMode());
+		assertTrue(lccHVDC.getRectifierControlMode() == ConverterControlMode.DC_CURRENT);
+		assertTrue(lccHVDC.getInverterControlMode() == ConverterControlMode.DC_VOLTAGE);
 		 
 		//System.out.println(net.net2String());
 	}
