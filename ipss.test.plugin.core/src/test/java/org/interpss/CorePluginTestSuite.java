@@ -15,12 +15,12 @@ import org.interpss.core.adapter.internal.Bus11856Test;
 import org.interpss.core.adapter.internal.Bus1824Test;
 import org.interpss.core.adapter.internal.Bus6384Test;
 import org.interpss.core.adapter.internal.IEEE14Test;
-import org.interpss.core.adapter.odm.acsc.Acsc5Bus_ODM_TestCase;
 import org.interpss.core.adapter.psse.raw.aclf.CR_UserTestCases;
 import org.interpss.core.adapter.psse.raw.aclf.GuideSample_TestCase;
 import org.interpss.core.adapter.psse.raw.aclf.Kundur_2Area_VSCHVDC2T_Test;
 import org.interpss.core.adapter.psse.raw.aclf.Mod_SixBus_DclfPsXfr;
 import org.interpss.core.adapter.psse.raw.aclf.PSSE_5Bus_TestCase;
+import org.interpss.core.adapter.psse.raw.aclf.PSSE_ACTIVSg2000Bus_Test;
 import org.interpss.core.adapter.psse.raw.aclf.PSSE_IEEE9Bus_Test;
 import org.interpss.core.adapter.psse.raw.aclf.SixBus_DclfPsXfr;
 import org.interpss.core.adapter.psse.raw.acsc.IEEE9Bus_Acsc_test;
@@ -46,8 +46,6 @@ import org.interpss.core.dstab.dynLoad.TestCalBusDStabLoad;
 import org.interpss.core.dstab.dynLoad.TestInductionMotorModel;
 import org.interpss.core.dstab.dynLoad.TestLd1pacModel;
 import org.interpss.core.dstab.mach.EConstMachineTest;
-import org.interpss.core.dstab.mach.Eq1Ed1MachineTest;
-import org.interpss.core.dstab.mach.Eq1MachineCaseTest;
 import org.interpss.core.dstab.mach.MachineSaturationTest;
 import org.interpss.core.dstab.mach.RoundRotorMachineTest;
 import org.interpss.core.dstab.mach.SMIB_Gen_Test;
@@ -72,6 +70,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	IEEE9_MultiLoadTest.class,
 	IEEE14_YMatrixSetTest.class,
 	SwingBusSubAreaTest.class,
+	PSSE_ACTIVSg2000Bus_Test.class,
 	
 	// acsc
 	IEEE9Bus_Acsc_test.class,
