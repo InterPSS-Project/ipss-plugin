@@ -31,13 +31,6 @@
 	    <artifactId>py4j</artifactId>
 	    <version>0.10.9.3</version>
 	</dependency>
-
-	
-	<dependency>
-          <groupId>com.interpss</groupId>
-          <artifactId>ipss.plugin.core</artifactId>
-          <version>1.0</version>
-    </dependency>
 	
   </dependencies>
 
