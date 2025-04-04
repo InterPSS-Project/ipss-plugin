@@ -1,6 +1,11 @@
 package org.interpss.odm.mapper.impl.aclf;
 
 
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toActivePowerUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toAngleUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toVoltageUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toZUnit;
+
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.common.ODMLogger;
 import org.ieee.odm.schema.BusIDRefXmlType;
@@ -15,10 +20,6 @@ import org.ieee.odm.schema.VSCConverterXmlType;
 import org.ieee.odm.schema.VSCDCControlModeEnumType;
 import org.ieee.odm.schema.VSCHVDC2TXmlType;
 import org.interpss.numeric.datatype.LimitType;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toActivePowerUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toAngleUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toVoltageUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toZUnit;
 
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
@@ -26,6 +27,7 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.hvdc.ConverterType;
 import com.interpss.core.aclf.hvdc.HvdcControlMode;
+import com.interpss.core.aclf.hvdc.HvdcControlSide;
 import com.interpss.core.aclf.hvdc.HvdcLine2T;
 import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
 import com.interpss.core.aclf.hvdc.HvdcLine2TVSC;
@@ -63,8 +65,10 @@ public class AclfHvdcDataHelper {
 		//Control Mode
 		DcLineControlModeEnumType mode =hvdc2TXml.getControlMode();
 		
+		lccHvdc2T.setControlSide(HvdcControlSide.RECTIFIER);
+		
 		//TODO No "blocked" enum type
-		lccHvdc2T.setControlMode(mode==DcLineControlModeEnumType.POWER? 
+		lccHvdc2T.setRectifierControlMode(mode==DcLineControlModeEnumType.POWER? 
 									HvdcControlMode.DC_POWER: 
 										mode==DcLineControlModeEnumType.CURRENT?
 												HvdcControlMode.DC_CURRENT:
@@ -80,11 +84,11 @@ public class AclfHvdcDataHelper {
 		lccHvdc2T.setStatus(hvdc2TXml.isOffLine()?false:true);
 		
 		//SETVL
-		if(lccHvdc2T.getControlMode()==HvdcControlMode.DC_CURRENT){
+		if(lccHvdc2T.getRectifierControlMode()==HvdcControlMode.DC_CURRENT){
 			throw new IllegalArgumentException("DC Current Control Mode is not supported in the current model");
 		 	//lccHvdc2T.setd(hvdc2TXml.getCurrentDemand().getValue());
 		}
-		else if(lccHvdc2T.getControlMode()==HvdcControlMode.DC_POWER){
+		else if(lccHvdc2T.getRectifierControlMode()==HvdcControlMode.DC_POWER){
 			lccHvdc2T.setPowerDemand(hvdc2TXml.getPowerDemand().getValue(), toActivePowerUnit.apply(hvdc2TXml.getPowerDemand().getUnit()));
 			if(hvdc2TXml.getOperationMode()==DcLineOperationModeEnumType.DOUBLE){
 				lccHvdc2T.setPowerDemand2(hvdc2TXml.getPowerDemand2().getValue(), toActivePowerUnit.apply(hvdc2TXml.getPowerDemand().getUnit()));
