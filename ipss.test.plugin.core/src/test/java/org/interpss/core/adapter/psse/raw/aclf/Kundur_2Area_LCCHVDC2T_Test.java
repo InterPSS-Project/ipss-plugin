@@ -1,5 +1,8 @@
 package org.interpss.core.adapter.psse.raw.aclf;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
@@ -7,19 +10,16 @@ import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.display.AclfOutFunc;
-import org.interpss.numeric.datatype.ComplexFunc;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.hvdc.ConverterControlMode;
+import com.interpss.core.aclf.hvdc.HvdcControlMode;
 import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.simu.SimuContext;
@@ -55,7 +55,7 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 		//System.out.println(net.net2String());
 
 		HvdcLine2TLCC<AclfBus> lccHVDC = (HvdcLine2TLCC<AclfBus>) net.getSpecialBranchList().get(0);
-		lccHVDC.setPUBasedPowerFlowAlgoFlag(false);
+		lccHVDC.setPuBasedPowerFlowAlgo(false);
 		 
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 		algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
@@ -170,7 +170,7 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 		lccHVDC.getRectifier().setFiringAngLimit(new LimitType(22,15));
 		lccHVDC.getInverter().setFiringAngLimit(new LimitType(22,15));
 
-		lccHVDC.setPUBasedPowerFlowAlgoFlag(false);
+		lccHVDC.setPuBasedPowerFlowAlgo(false);
 	
 		 
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
@@ -283,8 +283,8 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 		
 	    // System.out.println("Rectifier Control Mode: " + lccHVDC.getRectifierControlMode());
 		// System.out.println("Inverter Control Mode: " + lccHVDC.getInverterControlMode());
-		assertTrue(lccHVDC.getRectifierControlMode() == ConverterControlMode.DC_CURRENT);
-		assertTrue(lccHVDC.getInverterControlMode() == ConverterControlMode.DC_VOLTAGE);
+		assertTrue(lccHVDC.getRectifierControlMode() == HvdcControlMode.DC_CURRENT);
+		assertTrue(lccHVDC.getInverterControlMode() == HvdcControlMode.DC_VOLTAGE);
 		 
 		//System.out.println(net.net2String());
 	}
