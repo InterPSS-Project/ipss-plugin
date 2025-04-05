@@ -169,6 +169,16 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 								dcLineXml.getId(), 
 								dcLineXml.getFromBus().getIdRef().toString(), 
 								dcLineXml.getToBus().getIdRef().toString());
+					
+					//set the hvdc power flow model based on the input data source
+					if (this.originalFormat != OriginalDataFormat.IPSS_API) {
+						((HvdcLine2TLCC)branch).setPuBasedPowerFlowAlgo(false);
+					}
+					else {
+						((HvdcLine2TLCC)branch).setPuBasedPowerFlowAlgo(true);
+					}
+					
+					
 				}
 				else if(xmlBranch instanceof VSCHVDC2TXmlType)
 					branch = CoreObjectFactory.createHvdc2TVSC();
