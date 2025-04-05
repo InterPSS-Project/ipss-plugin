@@ -55,7 +55,8 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 		//System.out.println(net.net2String());
 
 		HvdcLine2TLCC<AclfBus> lccHVDC = (HvdcLine2TLCC<AclfBus>) net.getSpecialBranchList().get(0);
-		lccHVDC.setPuBasedPowerFlowAlgo(false);
+		//Note: this is now handled in the odm mapper level, so no need to set it here
+		//lccHVDC.setPuBasedPowerFlowAlgo(false);
 		 
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 		algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
