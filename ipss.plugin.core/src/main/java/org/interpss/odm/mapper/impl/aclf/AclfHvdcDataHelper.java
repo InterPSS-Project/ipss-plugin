@@ -1,11 +1,6 @@
 package org.interpss.odm.mapper.impl.aclf;
 
 
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toActivePowerUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toAngleUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toVoltageUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toZUnit;
-
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.common.ODMLogger;
 import org.ieee.odm.schema.BusIDRefXmlType;
@@ -20,6 +15,10 @@ import org.ieee.odm.schema.VSCConverterXmlType;
 import org.ieee.odm.schema.VSCDCControlModeEnumType;
 import org.ieee.odm.schema.VSCHVDC2TXmlType;
 import org.interpss.numeric.datatype.LimitType;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toActivePowerUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toAngleUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toVoltageUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toZUnit;
 
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
@@ -65,10 +64,8 @@ public class AclfHvdcDataHelper {
 		//Control Mode
 		DcLineControlModeEnumType mode =hvdc2TXml.getControlMode();
 		
-		lccHvdc2T.setControlSide(HvdcControlSide.RECTIFIER);
-		
 		//TODO No "blocked" enum type
-		lccHvdc2T.setRectifierControlMode(mode==DcLineControlModeEnumType.POWER? 
+		lccHvdc2T.setDCLineControlMode(mode==DcLineControlModeEnumType.POWER? 
 									HvdcControlMode.DC_POWER: 
 										mode==DcLineControlModeEnumType.CURRENT?
 												HvdcControlMode.DC_CURRENT:
@@ -84,20 +81,25 @@ public class AclfHvdcDataHelper {
 		lccHvdc2T.setStatus(hvdc2TXml.isOffLine()?false:true);
 		
 		//SETVL
-		if(lccHvdc2T.getRectifierControlMode()==HvdcControlMode.DC_CURRENT){
-			throw new IllegalArgumentException("DC Current Control Mode is not supported in the current model");
-		 	//lccHvdc2T.setd(hvdc2TXml.getCurrentDemand().getValue());
+		if(lccHvdc2T.getDCLineControlMode()==HvdcControlMode.DC_CURRENT){
+			lccHvdc2T.setCurrentDemand(hvdc2TXml.getCurrentDemand().getValue()); // Set current demand
 		}
-		else if(lccHvdc2T.getRectifierControlMode()==HvdcControlMode.DC_POWER){
-			lccHvdc2T.setPowerDemand(hvdc2TXml.getPowerDemand().getValue(), toActivePowerUnit.apply(hvdc2TXml.getPowerDemand().getUnit()));
+		else if(lccHvdc2T.getDCLineControlMode()==HvdcControlMode.DC_POWER){
+			double powerDemand = hvdc2TXml.getPowerDemand().getValue();
+			// if the value is negative, it means the control side is inverter side, otherwise, it is rectifier side
+			lccHvdc2T.setControlSide(powerDemand>0?HvdcControlSide.RECTIFIER:HvdcControlSide.INVERTER);
+			lccHvdc2T.setPowerDemand(Math.abs(powerDemand), toActivePowerUnit.apply(hvdc2TXml.getPowerDemand().getUnit()));
 			if(hvdc2TXml.getOperationMode()==DcLineOperationModeEnumType.DOUBLE){
-				lccHvdc2T.setPowerDemand2(hvdc2TXml.getPowerDemand2().getValue(), toActivePowerUnit.apply(hvdc2TXml.getPowerDemand().getUnit()));
+				lccHvdc2T.setPowerDemand2(hvdc2TXml.getPowerDemand2().getValue(), toActivePowerUnit.apply(hvdc2TXml.getPowerDemand2().getUnit()));
 			}
 		}
-		
 		else{ //HVDC Line is Blocked
 			lccHvdc2T.setStatus(false);
 		}
+
+		//set default RectifierControlMode and InverterControlMode based on PSS/E default settings
+		lccHvdc2T.setRectifierControlMode(HvdcControlMode.DC_CURRENT);
+		lccHvdc2T.setInverterControlMode(HvdcControlMode.DC_VOLTAGE);
 		
 		//Scheduled compound dc voltage, kV by default
 		lccHvdc2T.setScheduledDCVoltage(hvdc2TXml.getScheduledDCVoltage().getValue(), toVoltageUnit.apply(hvdc2TXml.getScheduledDCVoltage().getUnit()));
@@ -118,8 +120,8 @@ public class AclfHvdcDataHelper {
 		
 		
 		//DELTI  DC power or current margin when ALPHA is at minimum and inverter is controlling line current
-		//TODO
-		//this.hvdc2T.setPowerCurrentMargin();
+		double deltaI = hvdc2TXml.getPowerOrCurrentMarginPU();
+		lccHvdc2T.setPowerCurrentMargin(deltaI);
 		
 		
 		//Meter end
