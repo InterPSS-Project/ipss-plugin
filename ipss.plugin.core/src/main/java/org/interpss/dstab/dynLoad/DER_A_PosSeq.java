@@ -1,101 +1,64 @@
 package org.interpss.dstab.dynLoad;
 
-
-import java.util.Hashtable;
-
 import org.apache.commons.math3.complex.Complex;
-
-import com.interpss.dstab.BaseDStabBus;
-import com.interpss.dstab.DStabGen;
-import com.interpss.dstab.algo.DynamicSimuMethod;
-import com.interpss.dstab.device.DynamicBusDevice;
+import com.interpss.dstab.device.DynamicGenDevice;
 
 /**
  * A representation of the model object '<em><b>DER_A</b></em>' in positive sequence.
  */
-public interface DER_A_PosSeq extends DynamicBusDevice {
-	
-	public boolean initStates(BaseDStabBus<?,?> bus);
-	
-	public boolean calcIpIq(int flag);
-	
-	public boolean updateInternalVoltage();
-	
-	public boolean calcNortonEquivalent();
-	
-	public void freqTripLogic();
-	
-	public void voltageTripLogic();
-	
-	public double firstOrderTF(double inputVal, double previousOutput, double time_const, double deltaTime);
+public interface DER_A_PosSeq extends DynamicGenDevice {
 
-	public double finddYdX(double input, double currOut, double time_const);
+
+	boolean calcIpIq(int flag);
+
+	public void setPosSeqGenPQ(Complex gen);
 	
-	public double deadband(double inputVal, double deadband_low, double deadband_high);
-	
-	public double rate_limiter(double inputVal, double previousOutput, double dmax, double dmin, double deltaTime);
-	
-	public void updateIdIqMax();
-	
-	@Override
-	public Hashtable<String, Object> getStates(Object ref);
-	
-	public void enableVoltVarControl();
-	
-	public void disableVoltVarControl();
-	
-	public void enablePowerFreqControl();
-	
-	public void disablePowerFreqControl();
-	
-	@Override 
- 	public Object getOutputObject();
-	
-	@Override
-	public boolean nextStep(double dt, DynamicSimuMethod method, int flag);
-	
-	@Override
-    public boolean updateAttributes(boolean netChange);
-	
-	public void update_rrpwr(double Ip);
-	
-	public void incrementCurrSimuTime(double deltaTime);
-	
-	public Complex getPosSeqIpq();
-	
-	public Complex  getPosSeqNortonCurSource();
-	
-	public void setPosSeqNortonCurSource(Complex Igen);
-	
-	public void setNortonCurSource(Complex Igen);
-	
-	public Complex getNortonCurSource();
-	
-	public void setPosSeqIpq(Complex ipq_pos);
-	
-	public Complex getPosSeqVt();
-	
-	public double getCurrSimuTime();
-	
-	public void setPosSeqGenPQ(Complex genPQ);
-	
-	public Complex getPosSeqGenPQ();
-	
-	public void setPowerFactor(double pf);
-	
-	public void setDebugMode(boolean set);
-	
-	public void setPQFlag(int flag);
-	
-	public void setGenToDebug(String busName);
-	
-	public double getPowerFactor();
-	
-	public Complex getInitGenPQ();
-	
-	public void setXe(double Xe);
-	
-	public void setVoltageRecoveryFrac(double frac);
-	
-	public void writeToCSV(boolean set);
-} 
+	    
+	    public Complex getPosSeqIpq();
+	     
+	     public Complex  getPosSeqnortonCurSource();
+	    
+	     public void    setPosSeqNortonCurSource( Complex Igen);
+	     public void setNortonCurSource(Complex Igen);
+	     
+	     public Complex getNortonCurSource();
+
+	 	 public void setPosSeqIpq(Complex ipq_pos);
+	 	 
+			 
+			public Complex getPosSeqGenPQ();
+			public void setPowerFactor(double pf);
+			
+			public void setDebugMode(boolean set) ;
+			
+			public double getPowerFactor();
+			
+			public Complex getInitGenPQ();
+			
+			public void setVoltageRecoveryFrac(double frac);
+			
+			public void setCallAfterStepManually(boolean bool);
+			
+			public void setVh0(double vh0);
+			
+			public void setVh1(double vh1) ;
+			
+			public void setVl0(double vl0);
+			
+			public void setVl1(double vl1) ;
+			
+			public void setTvl0(double time);
+			
+			public void setTvl1(double time);
+			//public static void writeCsv(String fileName, String[] headers, boolean append, double[] dataRow);
+			
+			public void writeDataToFile(boolean tf);
+			
+			public void outputInternalStatesDuringSim(boolean tf);
+			public void setFreqFlag(int flag);
+			public void setFreqTripFlag(int flag);
+			public void enableVoltageTripping(boolean tf);
+			
+			public void setOutputCSVFilename(String filename);
+
+}

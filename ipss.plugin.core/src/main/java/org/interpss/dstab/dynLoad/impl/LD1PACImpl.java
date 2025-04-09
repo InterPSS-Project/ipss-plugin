@@ -1416,7 +1416,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 
 	@Override
 	public boolean updateAttributes(boolean netChange) {
-		System.out.println("Time counter = "+timeCounter+","+this.extended_device_Id);
+		//System.out.println("Time counter = "+timeCounter+","+this.extended_device_Id);
 		return true;
 	}
 	

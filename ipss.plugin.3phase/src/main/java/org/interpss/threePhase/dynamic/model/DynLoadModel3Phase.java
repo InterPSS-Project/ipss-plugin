@@ -2,6 +2,8 @@ package org.interpss.threePhase.dynamic.model;
 
 import org.interpss.numeric.datatype.Complex3x1;
 
+import com.interpss.dstab.device.DynamicBusDeviceType;
+
 /**
  * There are many aspects that are different from the dynLoadModel, which is mainly defined for positive sequence and 1-phase scenarios.
  *
@@ -48,6 +50,11 @@ public abstract class DynLoadModel3Phase extends DynamicModel3Phase{
 
 	public void changeLoad(double factor) {
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public DynamicBusDeviceType getDeviceType() {
+		return deviceType = DynamicBusDeviceType.DYNAMIC_LOAD;
 	}
 
 
