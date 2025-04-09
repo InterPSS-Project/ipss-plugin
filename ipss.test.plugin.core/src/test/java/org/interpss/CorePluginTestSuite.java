@@ -42,7 +42,10 @@ import org.interpss.core.dstab.cml.block.PIControlBlockTests;
 import org.interpss.core.dstab.cml.block.WashoutControlBlockTests;
 import org.interpss.core.dstab.cml.controller.AnnotateParserTests;
 import org.interpss.core.dstab.cml.controller.AnnotationExciterTests;
+import org.interpss.core.dstab.dynLoad.TestCMPLDWGModel;
+import org.interpss.core.dstab.dynLoad.TestCMPLDWModel;
 import org.interpss.core.dstab.dynLoad.TestCalBusDStabLoad;
+import org.interpss.core.dstab.dynLoad.TestDER_AModel;
 import org.interpss.core.dstab.dynLoad.TestInductionMotorModel;
 import org.interpss.core.dstab.dynLoad.TestLd1pacModel;
 import org.interpss.core.dstab.mach.EConstMachineTest;
@@ -120,8 +123,12 @@ import org.junit.runners.Suite.SuiteClasses;
 	//DStab dynamic devic model
 	TestInductionMotorModel.class,
 	TestLd1pacModel.class,
+	TestDER_AModel.class,
+	TestCMPLDWModel.class,
+	TestCMPLDWGModel.class,
 	
 	TestCalBusDStabLoad.class,
+
 
 	// DStab ODM
 	//TODO ODM file missing Gen sourceZ or genPosZ
