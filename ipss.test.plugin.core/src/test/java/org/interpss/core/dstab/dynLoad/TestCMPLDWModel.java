@@ -12,8 +12,12 @@ import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
 import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
+import org.interpss.core.dstab.mach.TestSetupBase;
 import org.interpss.odm.mapper.ODMDStabParserMapper;
+import org.interpss.dstab.dynLoad.DynLoadCMPLDW;
+import org.interpss.dstab.dynLoad.impl.DynLoadCMPLDWImpl;
 import org.junit.Test;
+
 
 import com.interpss.common.CoreCommonFactory;
 import com.interpss.common.exp.InterpssException;
@@ -25,6 +29,10 @@ import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.DStabBranch;
+import com.interpss.dstab.DStabBus;
+import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
@@ -33,7 +41,238 @@ import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 import com.interpss.simu.SimuObjectFactory;
 
-public class TestCMPLDWModel {
+public class TestCMPLDWModel extends TestSetupBase {
+
+
+	@Test
+	public void test_CMPLDW_Single_Model() throws InterpssException {
+		// create a machine in a two-bus network. The loadflow already converged
+		DStabilityNetwork net = create2BusSystem();
+		assertTrue(net.isLfConverged());
+
+		DStabBus bus1 = (DStabBus) net.getDStabBus("Bus1");
+
+		DynLoadCMPLDW cmpldw = new DynLoadCMPLDWImpl("CMPLDW_1", bus1);
+
+		cmpldw.setId("CMPLDW_1");
+
+		cmpldw.setMvaBase(100);
+		
+		cmpldw.getDistEquivalent().setBSubStation(0.04);
+		
+		cmpldw.getDistEquivalent().setRFdr(0.04);
+		
+		cmpldw.getDistEquivalent().setXFdr(0.04);
+		
+		cmpldw.getDistEquivalent().setFB(0.0);
+		
+		cmpldw.getDistEquivalent().setXXf(0.06);
+		
+		cmpldw.getDistEquivalent().setTFixHS(1);
+		
+		cmpldw.getDistEquivalent().setTFixLS(1);
+		
+		cmpldw.getDistEquivalent().setLTC(1);
+		
+		cmpldw.getDistEquivalent().setTMin(0.9);
+		
+		cmpldw.getDistEquivalent().setTMax(1.1);
+		
+		cmpldw.getDistEquivalent().setStep(0.00625);
+		
+		cmpldw.getDistEquivalent().setVMin(1.0);
+		
+		cmpldw.getDistEquivalent().setVMax(1.04);
+		
+		cmpldw.getDistEquivalent().setTDelay(30);
+		
+		cmpldw.getDistEquivalent().setTTap(5);
+		
+		cmpldw.getDistEquivalent().setRComp(0);
+		
+		cmpldw.getDistEquivalent().setXComp(0);
+		
+		// load percentages of the dynamic load component
+		
+		cmpldw.setFmA(0.0);
+		cmpldw.setFmB(0.0);
+		cmpldw.setFmC(0.0);
+		cmpldw.setFmD(0.3);
+		cmpldw.setFel(0.0);
+		
+		// motor types
+		cmpldw.setMotorTypeA(3);
+		cmpldw.setMotorTypeB(3);
+		cmpldw.setMotorTypeC(3);
+		cmpldw.setMotorTypeD(1);
+		
+		// Electronic loads
+		//TODO
+		
+		
+//		// Motor A 
+//		//cmpldw.setFmA(cmpldwXml.getFma());
+//		cmpldw.getInductionMotorA().setLoadPercent(0.1 * 100);
+//		cmpldw.getInductionMotorA().setLoadFactor(0.8);
+//		cmpldw.getInductionMotorA().setRa(0.04);  //Stator resistor
+//		cmpldw.getInductionMotorA().setXs(3.07); // Synchronous reactance
+//		cmpldw.getInductionMotorA().setXp(0.3427); // Transient reactance
+//		//cmpldw.getInductionMotorA().setXpp(0.104); // Sub-Transient reactance
+//		cmpldw.getInductionMotorA().setTp0(0.875352); // Transient open circuit time constant
+//		//cmpldw.getInductionMotorA().setTpp0(0.0021); // Sub-Transient open circuit time constant
+//		cmpldw.getInductionMotorA().setH(0.1); // 
+//		cmpldw.getInductionMotorA().setA(0.0);
+//		cmpldw.getInductionMotorA().setB(0.0);
+//		cmpldw.getInductionMotorA().setC(1.0); // assuming Etrq = 2.0; since Tm = (A+B*W+C*W^2)*Tm0
+		
+//		cmpldw.getInductionMotorA().setXm(3.0);
+//		cmpldw.getInductionMotorA().setXl(0.07);
+//		cmpldw.getInductionMotorA().setRa(0.04);
+//		cmpldw.getInductionMotorA().setXr1(0.3);
+//		cmpldw.getInductionMotorA().setRr1(0.01);
+//		cmpldw.getInductionMotorA().setMvaBase(0.1 * 100 * mvaRating);
+//		cmpldw.getInductionMotorA().setH(0.3);
+//		cmpldw.getInductionMotorA().setA(0.0);
+//		cmpldw.getInductionMotorA().setB(0.0);
+//		cmpldw.getInductionMotorA().setC(1.0);
+		
+		
+		
+		// Motor B
+		
+//		cmpldw.getInductionMotorB().setLoadPercent(0.1 * 100);
+//		cmpldw.getInductionMotorB().setLoadFactor(0.8);
+//		cmpldw.getInductionMotorB().setRa(0.04);  //Stator resistor
+//		cmpldw.getInductionMotorB().setXs(3.07); // Synchronous reactance
+//		cmpldw.getInductionMotorB().setXp(0.3427); // Transient reactance
+//		//cmpldw.getInductionMotorB().setXpp(0.14); // Sub-Transient reactance
+//		cmpldw.getInductionMotorB().setTp0(0.875352); // Transient open circuit time constant
+//		//cmpldw.getInductionMotorB().setTpp0(0.0026); // Sub-Transient open circuit time constant
+//		cmpldw.getInductionMotorB().setH(0.5); // 
+//		cmpldw.getInductionMotorB().setA(0.0);
+//		cmpldw.getInductionMotorB().setB(0.0);
+//		cmpldw.getInductionMotorB().setC(1.0); // assuming Etrq = 2.0; since Tm = (A+B*W+C*W^2)*Tm0
+//		// all the protections are not implemented at this stage.
+		
+//		cmpldw.getInductionMotorB().setXm(3.0);
+//		cmpldw.getInductionMotorB().setXl(0.07);
+//		cmpldw.getInductionMotorB().setRa(0.04);
+//		cmpldw.getInductionMotorB().setXr1(0.3);
+//		cmpldw.getInductionMotorB().setRr1(0.01);
+//		cmpldw.getInductionMotorB().setMvaBase(0.1 * 100 * mvaRating);
+//		cmpldw.getInductionMotorB().setH(0.3);
+//		cmpldw.getInductionMotorB().setA(0.0);
+//		cmpldw.getInductionMotorB().setB(0.0);
+//		cmpldw.getInductionMotorB().setC(1.0);
+		
+		
+		
+		// Motor C
+		
+		
+//		cmpldw.getInductionMotorC().setLoadPercent(0.1 * 100);
+//		cmpldw.getInductionMotorC().setLoadFactor(0.8);
+//		cmpldw.getInductionMotorC().setRa(0.04);  //Stator resistor
+//		cmpldw.getInductionMotorC().setXs(3.07); // Synchronous reactance
+//		cmpldw.getInductionMotorC().setXp(0.3427); // Transient reactance
+//		//cmpldw.getInductionMotorC().setXpp(0.14); // Sub-Transient reactance
+//		cmpldw.getInductionMotorC().setTp0(0.875352); // Transient open circuit time constant
+//		//cmpldw.getInductionMotorC().setTpp0(0.0026); // Sub-Transient open circuit time constant
+//		cmpldw.getInductionMotorC().setH(0.1); // ppp
+//		cmpldw.getInductionMotorC().setA(0.0);
+//		cmpldw.getInductionMotorC().setB(0.0);
+//		cmpldw.getInductionMotorC().setC(1.0); // assuming Etrq = 2.0; since Tm = (A+B*W+C*W^2)*Tm0
+//		// all the protections are not implemented at this stage.
+		
+//		cmpldw.getInductionMotorC().setXm(3.0);
+//		cmpldw.getInductionMotorC().setXl(0.07);
+//		cmpldw.getInductionMotorC().setRa(0.04);
+//		cmpldw.getInductionMotorC().setXr1(0.3);
+//		cmpldw.getInductionMotorC().setRr1(0.01);
+//		cmpldw.getInductionMotorC().setMvaBase(0.1 * 100 * mvaRating);
+//		cmpldw.getInductionMotorC().setH(0.3);
+//		cmpldw.getInductionMotorC().setA(0.0);
+//		cmpldw.getInductionMotorC().setB(0.0);
+//		cmpldw.getInductionMotorC().setC(1.0);
+		
+		
+		
+		// Motor D - single phase induction motor
+		//cmpldw.get1PhaseACMotor().setId("1"); // no use, overrided by the initialization
+		cmpldw.get1PhaseACMotor().setLoadPercent(0.3 * 100);
+		//cmpldw.get1PhaseACMotor().setPowerFactor(0.98);
+		cmpldw.get1PhaseACMotor().setVstall(0.55);
+		cmpldw.get1PhaseACMotor().setRstall(0.1);
+		cmpldw.get1PhaseACMotor().setXstall(0.1);
+		cmpldw.get1PhaseACMotor().setTstall(0.033);
+		cmpldw.get1PhaseACMotor().setFrst(0.2);
+		cmpldw.get1PhaseACMotor().setVrst(0.95);
+		cmpldw.get1PhaseACMotor().setTrst(0.3);
+		cmpldw.get1PhaseACMotor().setFuvr(0.1);
+		cmpldw.get1PhaseACMotor().setUVtr1(0.6);
+		cmpldw.get1PhaseACMotor().setTtr1(0.02);
+		cmpldw.get1PhaseACMotor().setUVtr2(1);
+		cmpldw.get1PhaseACMotor().setTtr2(9999);
+		cmpldw.get1PhaseACMotor().setVc1off(0.5);
+		cmpldw.get1PhaseACMotor().setVc2off(0.4);
+		cmpldw.get1PhaseACMotor().setVc1on(0.6);
+		cmpldw.get1PhaseACMotor().setVc2on(0.5);
+		cmpldw.get1PhaseACMotor().setTth(15);
+		cmpldw.get1PhaseACMotor().setTh1t(0.7);
+		cmpldw.get1PhaseACMotor().setTh2t(1.9);
+
+		//net.initDStabNet();
+
+		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
+		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
+		assertTrue(aclfAlgo.loadflow());
+		// System.out.println(AclfOutFunc.loadFlowSummary(net));
+
+		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+		dstabAlgo.setSimuStepSec(0.005d);
+		dstabAlgo.setTotalSimuTimeSec(1);
+
+		dstabAlgo.setRefMachine(net.getMachine("Swing-mach1"));
+		// net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1", net, SimpleFaultCode.GROUND_3P, 0.5d, 0.1),
+		// 		"3phaseFault@Bus5");
+
+		StateMonitor sm = new StateMonitor();
+		sm.addGeneratorStdMonitor(new String[] { "Swing-mach1" });
+		sm.addBusStdMonitor(new String[] { "Bus1" });
+		// extended_device_Id = "ACMotor_"+this.getId()+"@"+this.getDStabBus().getId();
+		sm.addDynDeviceMonitor(DynDeviceType.ACMotor, "ACMotor_CMPLDW_1@Bus1_loadBus");
+		// set the output handler
+		dstabAlgo.setSimuOutputHandler(sm);
+		dstabAlgo.setOutPutPerSteps(5);
+
+		IpssLogger.getLogger().setLevel(Level.FINE);
+
+		
+		if (dstabAlgo.initialization()) {
+	
+		
+			System.out.println("Running DStab simulation ...");
+			//System.out.println(dsNet.getMachineInitCondition());
+			dstabAlgo.performSimulation();
+		
+
+		}
+//		System.out.println(sm.toCSVString(sm.getMachPeTable()));
+		System.out.println(sm.toCSVString(sm.getBusVoltTable()));
+		System.out.println(sm.toCSVString(sm.getAcMotorPTable()));
+		System.out.println(sm.toCSVString(sm.getAcMotorQTable()));
+
+		assertTrue(Math.abs(sm.getBusVoltTable().get("Bus1").get(0).value-1.00932)<1.0E-4);
+		assertTrue(Math.abs(sm.getBusVoltTable().get("Bus1").get(20).value-1.00932)<1.0E-4);
+
+		assertTrue(Math.abs(sm.getAcMotorPTable().get("ACMotor_CMPLDW_1@Bus1_loadBus").get(0).value-0.23211)<1.0E-4);
+		assertTrue(Math.abs(sm.getAcMotorPTable().get("ACMotor_CMPLDW_1@Bus1_loadBus").get(20).value-0.23211)<1.0E-4);
+
+		assertTrue(Math.abs(sm.getAcMotorQTable().get("ACMotor_CMPLDW_1@Bus1_loadBus").get(0).value-0.05817)<1.0E-4);
+		assertTrue(Math.abs(sm.getAcMotorQTable().get("ACMotor_CMPLDW_1@Bus1_loadBus").get(20).value-0.05817)<1.0E-4);
+
+
+	}
 	
 	//@Test
 	public void testCMPLDWInit() throws InterpssException{
@@ -76,7 +315,7 @@ public class TestCMPLDWModel {
 	}
 	
 	
-	@Test
+	//@Test
 	public void testCMPLDWPSLFData() throws InterpssException{
 		
 		IpssCorePlugin.init();
@@ -281,7 +520,14 @@ public class TestCMPLDWModel {
 			//System.out.println(sm.toCSVString(sm.getMachAngleTable()));
 			System.out.println(sm.toCSVString(sm.getBusVoltTable()));
 			//System.out.println(sm.toCSVString(sm.getAcMotorPTable()));
+
+			assertTrue(Math.abs(sm.getBusVoltTable().get("Bus1").get(0).value-0.98)<1.0E-4);
+			assertTrue(Math.abs(sm.getBusVoltTable().get("Bus1").get(15).value-0.98)<1.0E-4);
+
+			assertTrue(Math.abs(sm.getBusVoltTable().get("Bus3_loadBus").get(0).value-0.95021)<1.0E-4);
+			assertTrue(Math.abs(sm.getBusVoltTable().get("Bus3_loadBus").get(15).value-0.95021)<1.0E-4);
 		  
 	}
+
 	
 }

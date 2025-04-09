@@ -29,7 +29,7 @@ import com.interpss.dstab.dynLoad.impl.DynLoadModelImpl;
 		4.	Compute low-side bus voltage with tap = 1.
 		5.	Adjust LTC tap to put compensated voltage at midpoint of Vmin, Vmax
 		6.	Compute low-side and load bus voltages. (If load bus voltage is < 0.95, reduce Rfdr and Xfdr to bring it above 0.95.)
-		7.	Initialize motor models and static load models 鈥� obtain total load component Q
+		7.	Initialize motor models and static load models to obtain total load component Q
 		8.	Set Bf1 [= Fb*Bf] and Bf2 [=(1-Fb)*Bf] to match total load Q
 		9.	If Bf < 0. (inductive), reduce Bss to make Bf = 0.
 		10.	If (Fb > 0. or Bss changed) iterate steps 6,7,8,9 to convergence on load bus voltage.
@@ -105,16 +105,20 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
 		
 	}
 	
-	public DynLoadCMPLDWImpl(String referenceId, BaseDStabBus abus){
+	public DynLoadCMPLDWImpl(String referenceId, BaseDStabBus bus){
 		this.groupId = referenceId;
 		this.distEquiv = DStabDynamicLoadFactory.eINSTANCE.createDistNetworkEquivalentModel();
 		this.indMotorA = new  InductionMotorImpl();
 		this.indMotorB = new  InductionMotorImpl();
 		this.indMotorC = new  InductionMotorImpl();
-		this.ac1PMotor = new  LD1PACImpl();
+		this.ac1PMotor = new  LD1PACImpl(bus,"1");
 		//this.staticLoad= new  DynLoadVFreqDependentModelImpl();
 		
-		this.setDStabBus(abus);
+		this.setDStabBus(bus);
+		
+		//This is required to allow the simulation engine properly process the CMPLDW model and initialzie it
+		bus.setInfoOnlyDynModel(this); // CMPLDW is a "container of dynami models" and not a model directly used in simulation, its components are modeled and used in simulation instead.
+	
 		
 	}
 	
