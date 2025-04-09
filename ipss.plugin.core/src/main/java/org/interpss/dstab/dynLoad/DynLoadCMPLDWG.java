@@ -1,6 +1,12 @@
 package org.interpss.dstab.dynLoad;
 
+import org.interpss.dstab.dynLoad.InductionMotor;
+import org.interpss.dstab.dynLoad.LD1PAC;
+
+import com.interpss.core.net.NameTag;
 import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.device.DynamicBusDevice;
+import com.interpss.dstab.dynLoad.BaseDynLoadModel;
 import com.interpss.dstab.dynLoad.DistNetworkEquivalentModel;
 import com.interpss.dstab.dynLoad.DynLoadModel;
 
@@ -55,7 +61,7 @@ import com.interpss.dstab.dynLoad.DynLoadModel;
  *                                      
  *
  */
-public interface DynLoadCMPLDW  extends DynLoadModel {
+public interface DynLoadCMPLDWG  extends DynLoadModel {
 	
 	void setGroupId(String groupId);
 	String getGroupId();
@@ -67,12 +73,14 @@ public interface DynLoadCMPLDW  extends DynLoadModel {
 	double getFmC();
 	double getFmD();
 	double getFel();
+	double getFDER();
 	
 	void setFmA(double motorAFraction);
 	void setFmB(double motorBFraction);
 	void setFmC(double motorCFraction);
 	void setFmD(double motorDFraction);
 	void setFel(double electronicLoadFraction);
+	void setFDER(double DERFraction);
 	
 	int getMotorTypeA();
 	int getMotorTypeB();
@@ -91,6 +99,8 @@ public interface DynLoadCMPLDW  extends DynLoadModel {
 	InductionMotor getInductionMotorC();
 	
 	LD1PAC get1PhaseACMotor();
+	
+	DER_A_PosSeq getDER();
 	
 //	DynLoadVFreqDependentModel getStaticLoadModel();
 	
