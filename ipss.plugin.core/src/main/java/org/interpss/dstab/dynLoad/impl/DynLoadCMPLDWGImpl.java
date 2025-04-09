@@ -1,21 +1,22 @@
 package org.interpss.dstab.dynLoad.impl;
 
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.dstab.dynLoad.DynLoadCMPLDW;
+import org.interpss.dstab.dynLoad.DER_A_PosSeq;
+import org.interpss.dstab.dynLoad.DynLoadCMPLDWG;
 import org.interpss.dstab.dynLoad.DynLoadVFreqDependentModel;
 import org.interpss.dstab.dynLoad.InductionMotor;
 import org.interpss.dstab.dynLoad.LD1PAC;
-
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranchCode;
+import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBranch;
+import com.interpss.dstab.DStabGen;
+import com.interpss.dstab.DStabLoad;
 import com.interpss.dstab.DStabObjectFactory;
-//import com.interpss.dstab.DStabBus;
-import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.dynLoad.DStabDynamicLoadFactory;
 import com.interpss.dstab.dynLoad.DistNetworkEquivalentModel;
 import com.interpss.dstab.dynLoad.impl.DynLoadModelImpl;
@@ -50,7 +51,7 @@ import com.interpss.dstab.dynLoad.impl.DynLoadModelImpl;
  *
  */
 
-public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW {
+public class DynLoadCMPLDWGImpl extends DynLoadModelImpl implements DynLoadCMPLDWG {
 	
 	
 	protected  DistNetworkEquivalentModel distEquiv = null;
@@ -58,10 +59,11 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
 	protected  InductionMotor             indMotorB = null;
 	protected  InductionMotor             indMotorC = null;
 	protected  LD1PAC                     ac1PMotor = null;
+	protected  DER_A_PosSeq               DER = null;
 	protected  DynLoadVFreqDependentModel staticLoad = null;
 	
 	protected BaseDStabBus<?,?> lowBus  = null;
-	protected BaseDStabBus<?,?> loadBus  = null;
+	protected BaseDStabBus<DStabGen,DStabLoad> loadBus  = null;
 	
 	protected BaseDStabBus<?,?> parentBus  = null;  
 	
@@ -77,6 +79,7 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
 	protected double fMotorC = 0.0;
 	protected double fMotorD = 0.0;
 	protected double fEle = 0.0;
+	protected double fDER = 0.0;
 	
 	protected int motorAType = 0;
 	protected int motorBType = 0;
@@ -99,27 +102,41 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
 	// if this is true, when volt_loadbbus<0.95 during initializing the model, adjust the xfr tap first before trying to reduce the equivalent feeder impedance
 	// otherwise, adjust the impedance first
 	private boolean initModelAdjustTapFirst = false; 
+
+	private Complex derPQ = null;
 	
 	
-	public DynLoadCMPLDWImpl(){
+	public DynLoadCMPLDWGImpl(){
 		
 	}
-	
-	public DynLoadCMPLDWImpl(String referenceId, BaseDStabBus bus){
+	/**
+	 * 
+	 * @param referenceId
+	 * @param bus
+	 * @param derPowerPU  
+	 */
+	public DynLoadCMPLDWGImpl(String referenceId, BaseDStabBus bus, Complex derPowerPU){
 		this.groupId = referenceId;
 		this.distEquiv = DStabDynamicLoadFactory.eINSTANCE.createDistNetworkEquivalentModel();
 		this.indMotorA = new  InductionMotorImpl();
 		this.indMotorB = new  InductionMotorImpl();
 		this.indMotorC = new  InductionMotorImpl();
-		this.ac1PMotor = new  LD1PACImpl(bus,"1");
+		this.ac1PMotor = new  LD1PACImpl();
+		this.DER 	   = new  DER_A_PosSeqImpl();
 		//this.staticLoad= new  DynLoadVFreqDependentModelImpl();
+
+		this.derPQ = derPowerPU;
+		if(this.derPQ.getImaginary()!=0.0){
+			IpssLogger.getLogger().severe(referenceId+" DER power should be real power only, imaginary part is ignored");
+			this.derPQ = new Complex(this.derPQ.getReal(), 0.0);	
+		}
+	
 		
 		this.setDStabBus(bus);
-		
+
 		//This is required to allow the simulation engine properly process the CMPLDW model and initialzie it
 		bus.setInfoOnlyDynModel(this); // CMPLDW is a "container of dynami models" and not a model directly used in simulation, its components are modeled and used in simulation instead.
 	
-		
 	}
 	
   
@@ -146,9 +163,9 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
 			2) MVABase< 0 means DistEquivMVABase= Abs(NetMW/MVABase)
 			3) MVABase= 0 means DistEquivMVABase= Abs(NetMW/0.8)
 			
-			Note: This is a function of NetMW, so that means MW of the distributed generation
+			Note: This is a function of NetMW, so that means MW of the distributed generation is already netted.
     	 */
-    	
+    
     	double netMW = this.totalLoad.getReal()*systemMVABase;
     	
     	if(this.mvaBase > 0){ // exact mva
@@ -168,7 +185,7 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
     	
     		//add the bus connected to the low voltage side of the distribution transformer
 			lowBus  = DStabObjectFactory.createDStabBus(this.getDStabBus().getId().concat(lowBusId), 
-					                                        (DStabilityNetwork) this.getDStabBus().getNetwork()).get();
+					(BaseDStabNetwork)this.getDStabBus().getNetwork()).get();
 			
 			lowBus.setBaseVoltage(1.0); // affacts dynamic model u/i/z multiplier calculation
 			
@@ -183,7 +200,7 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
 			
 			
 			//add the load bus
-			loadBus  = DStabObjectFactory.createDStabBus(this.getDStabBus().getId().concat(loadBusId), 
+			loadBus  = (BaseDStabBus<DStabGen, DStabLoad>) DStabObjectFactory.createDStabBus(this.getDStabBus().getId().concat(loadBusId), 
                     (BaseDStabNetwork)this.getDStabBus().getNetwork()).get();
 			
 			loadBus.setBaseVoltage(1.0);
@@ -204,7 +221,7 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
     	
     	
   	    try {
-			distXfr = DStabObjectFactory.createDStabBranch(this.getDStabBus().getId(), lowBus.getId(), (DStabilityNetwork) this.getDStabBus().getNetwork());
+			distXfr = DStabObjectFactory.createDStabBranch(this.getDStabBus().getId(), lowBus.getId(), (BaseDStabNetwork)this.getDStabBus().getNetwork());
 			distXfr.setBranchCode(AclfBranchCode.XFORMER);
 		} catch (InterpssException e) {
 			// TODO Auto-generated catch block
@@ -234,7 +251,7 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
   	  	//map distribution feeder data, need to convert data to system base, if mva_base is not system mva.
     	
     	try {
-			distFdr = DStabObjectFactory.createDStabBranch(lowBus.getId(), loadBus.getId(), (DStabilityNetwork) this.getDStabBus().getNetwork());
+			distFdr = DStabObjectFactory.createDStabBranch(lowBus.getId(), loadBus.getId(), (BaseDStabNetwork)this.getDStabBus().getNetwork());
 		} catch (InterpssException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -471,12 +488,15 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
   	    //System.out.println("VloadBus = "+VloadBus.abs());
   	    this.loadBus.setVoltage(VloadBus);
   	     
-  	    // PQLoadBus - the total load at the load bus
+  	    // PQLoadBus - the total net load at the load bus 
   	    Complex PQLoadBus = VloadBus.multiply(ItoloadBus.conjugate());
+
+		// The total load is the sum of net load and the DER power
+		Complex totalLoadPQ = PQLoadBus.add(this.derPQ);
   	    
-  	    this.loadBus.setLoadP(PQLoadBus.getReal());
-  	    this.loadBus.setLoadQ(PQLoadBus.getImaginary());
-  	    this.loadBus.setInitLoad(PQLoadBus);
+  	    this.loadBus.setLoadP(totalLoadPQ.getReal());
+  	    this.loadBus.setLoadQ(totalLoadPQ.getImaginary());
+  	    this.loadBus.setInitLoad(totalLoadPQ);
     	
     	//5. connect dynamic load models to the load bus
     	// initialize the dynamic models, obtain the reactive power Qi after initialization
@@ -563,6 +583,36 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
     	}
     	else{
     		this.ac1PMotor = null;
+    	}
+    	
+    	if(this.derPQ.getReal() > 0){ // 
+    		
+    		//double puGen = this.totalLoad.getReal() * this.fDER;
+    		DStabGen gen1 = new DStabObjectFactory().createDStabGen("DER_A"); // create generator instance
+    	    gen1.setParentBus(loadBus);
+    	    gen1.setId("1");
+    	    gen1.setGen(this.derPQ);
+    	    gen1.setMvaBase(this.derPQ.getReal()* this.mvaBase*1.1); // 10% extra
+    	    gen1.setSourceZ(new Complex(0,0.25));
+    	    gen1.setPosGenZ(new Complex(0,0.25));
+    	    gen1.setNegGenZ(new Complex(0,0.25));
+    	    gen1.setZeroGenZ(new Complex(0,0.25));
+    	    
+    	    loadBus.getContributeGenList().add(gen1);
+			loadBus.setGenCode(AclfGenCode.GEN_PQ);
+    	    gen1.setDynamicGenDevice(this.DER);
+
+    	    this.DER = new DER_A_PosSeqImpl(gen1,loadBus, "1");
+
+			//TODO: need to verify using setDStabBus() or setDynamicGenDevice()
+			this.DER.setDStabBus(loadBus); 
+    	    //loadBus.addDynamicBusDevice(this.DER);
+    	    
+    	    //this.DER.setDebugMode(true);
+    	    //this.DER.outputInternalStatesDuringSim(true);
+    	    
+    	} else {
+    		this.DER = null;
     	}
     	
     	//7. calculate the reactive power deficiency, dQ = Qint - sum{Qi}.
@@ -672,6 +722,10 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
 	public LD1PAC get1PhaseACMotor() {
 		
 		return this.ac1PMotor;
+	}
+	
+	public DER_A_PosSeq getDER() {
+		return this.DER;
 	}
 
 	public DynLoadVFreqDependentModel getStaticLoadModel() {
@@ -809,6 +863,17 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
 	@Override
 	public BaseDStabBus<?, ?> getDStabBus() {
 		return this.parentBus;
+	}
+
+	@Override
+	public double getFDER() {
+		return this.fDER;
+	}
+
+	@Override
+	public void setFDER(double DERFraction) {
+		this.fDER = DERFraction;
+		
 	}
 	
 

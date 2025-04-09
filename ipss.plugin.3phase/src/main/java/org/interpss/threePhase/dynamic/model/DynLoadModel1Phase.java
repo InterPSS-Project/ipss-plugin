@@ -3,6 +3,7 @@ package org.interpss.threePhase.dynamic.model;
 import org.apache.commons.math3.complex.Complex;
 
 import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.device.DynamicBusDeviceType;
 import com.interpss.dstab.dynLoad.DynLoadModel;
 
 public abstract class DynLoadModel1Phase extends DynamicModel1Phase implements DynLoadModel{
@@ -154,6 +155,11 @@ public abstract class DynLoadModel1Phase extends DynamicModel1Phase implements D
 	public void setAccumulatedLoadChangeFactor(double value) {
 		this.accumulatedLoadChangeFactor =value;
 
+	}
+
+	@Override
+	public DynamicBusDeviceType getDeviceType() {
+		return deviceType = DynamicBusDeviceType.DYNAMIC_LOAD;
 	}
 
 }

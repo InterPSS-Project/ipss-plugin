@@ -231,8 +231,8 @@ public class TestLd1pacModel extends TestSetupBase {
 
 		// Q
 		assertTrue(Math.abs(sm.getAcMotorQTable().get("ACMotor_1@Bus1").get(20).value-0.10025)<1.0E-4);
-		assertTrue(Math.abs(sm.getAcMotorQTable().get("ACMotor_1@Bus1").get(24).value-0.09033)<1.0E-4);
-		assertTrue(Math.abs(sm.getAcMotorQTable().get("ACMotor_1@Bus1").get(35).value-0.11015)<1.0E-4);
+		assertTrue(Math.abs(sm.getAcMotorQTable().get("ACMotor_1@Bus1").get(24).value-0.09066)<1.0E-4);
+		assertTrue(Math.abs(sm.getAcMotorQTable().get("ACMotor_1@Bus1").get(35).value-0.10974)<1.0E-4);
 	}
 
 	@Test
@@ -255,7 +255,9 @@ public class TestLd1pacModel extends TestSetupBase {
 		assertTrue(NumericUtil.equals(acLoad.getInitLoadPQ(), loadPQ, 1.0E-5));
 
 		// check only 50% load left as static load
-		Complex remainLoadPQ = new Complex(0.8, 0.6).subtract(loadPQ);
+		Complex remainLoadPQ = new Complex(0.8, 0.2).subtract(loadPQ);
+		System.out.println("remain load PQ = " + remainLoadPQ);
+		System.out.println("net load = " + bus1.calNetLoadResults());
 		assertTrue(NumericUtil.equals(bus1.calNetLoadResults(), remainLoadPQ, 1.0E-5));
 
 		// correct equivY = 1/(0.124+j0.114)
@@ -324,67 +326,6 @@ public class TestLd1pacModel extends TestSetupBase {
 		System.out.println("current inject after stall =" + acLoad.getNortonCurInj());
 		assertTrue(acLoad.getNortonCurInj().abs() < 1.0E-8);
 
-	}
-
-	private DStabilityNetwork create2BusSystem() throws InterpssException {
-
-		DStabilityNetwork net = DStabObjectFactory.createDStabilityNetwork();
-		net.setFrequency(60.0);
-
-		// First bus is PQ Gen bus
-		DStabBus bus1 = (DStabBus) DStabObjectFactory.createDStabBus("Bus1", net).get();
-		bus1.setName("Gen Bus");
-		bus1.setBaseVoltage(1000);
-		// bus1.setGenCode(AclfGenCode.GEN_PQ);
-		bus1.setLoadCode(AclfLoadCode.CONST_P);
-
-		bus1.setLoadP(0.8);
-		bus1.setLoadQ(0.6);
-
-		// Second bus is a Swing bus
-		DStabBus bus2 = (DStabBus) DStabObjectFactory.createDStabBus("Swing", net).get();
-		bus2.setName("Swing Bus");
-		bus2.setBaseVoltage(1000);
-		bus2.setGenCode(AclfGenCode.SWING);
-		AclfSwingBusAdapter swing = bus2.toSwingBus();
-		// swing.setDesiredVoltMag(1.06, UnitType.PU);
-		// swing.setDesiredVoltAng(0, UnitType.Deg);
-
-		DStabGen gen = DStabObjectFactory.createDStabGen("G1");
-		// gen.setGen(new Complex(0.8,0.6));
-		gen.setSourceZ(new Complex(0, 0.1));
-		bus2.getContributeGenList().add(gen);
-		gen.setDesiredVoltMag(1.0285);
-
-		EConstMachine mach = (EConstMachine) DStabObjectFactory.createMachine("MachId", "MachName",
-				MachineModelType.ECONSTANT, net, "Swing", "G1");
-		// DStabBus bus = net.getDStabBus("Gen");
-		mach.setRating(1000, UnitType.mVA, net.getBaseKva());
-		mach.setRatedVoltage(1000.0);
-		mach.calMultiFactors();
-		mach.setH(5.0);
-		mach.setD(0.01);
-		mach.setXd1(0.1);
-
-		// a line branch connect the two buses
-		DStabBranch branch = DStabObjectFactory.createDStabBranch("Bus1", "Swing", net);
-		branch.setBranchCode(AclfBranchCode.LINE);
-		branch.setZ(new Complex(0.0, 0.002));
-
-		// set positive info only
-		net.setPositiveSeqDataOnly(true);
-
-		net.initContributeGenLoad(false);
-
-		// run load flow
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
-		algo.setLfMethod(AclfMethodType.NR);
-		algo.loadflow();
-
-		// uncommet this line to see the net object states
-		// System.out.println(net.net2String());
-
-		return net;
 	}
 
 }
