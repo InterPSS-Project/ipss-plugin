@@ -24,26 +24,23 @@
 
 package org.interpss.dep.datamodel.mapper.base;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
-
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.dep.datamodel.bean.aclf.AclfBranchBean;
 import org.interpss.dep.datamodel.bean.aclf.AclfBusBean;
-import org.interpss.dep.datamodel.bean.aclf.AclfNetBean;
 import org.interpss.dep.datamodel.bean.aclf.BaseAclfNetBean;
+import org.interpss.dep.datamodel.bean.aclf.adj.BaseTapControlBean.TapControlModeBean;
+import org.interpss.dep.datamodel.bean.aclf.adj.BaseTapControlBean.TapControlTypeBean;
 import org.interpss.dep.datamodel.bean.aclf.adj.PsXfrTapControlBean;
 import org.interpss.dep.datamodel.bean.aclf.adj.QBankBean;
 import org.interpss.dep.datamodel.bean.aclf.adj.SwitchShuntBean;
-import org.interpss.dep.datamodel.bean.aclf.adj.XfrTapControlBean;
-import org.interpss.dep.datamodel.bean.aclf.adj.BaseTapControlBean.TapControlModeBean;
-import org.interpss.dep.datamodel.bean.aclf.adj.BaseTapControlBean.TapControlTypeBean;
 import org.interpss.dep.datamodel.bean.aclf.adj.SwitchShuntBean.VarCompensatorControlModeBean;
+import org.interpss.dep.datamodel.bean.aclf.adj.XfrTapControlBean;
 import org.interpss.dep.datamodel.bean.base.BaseBranchBean;
 import org.interpss.dep.datamodel.bean.base.BaseJSONUtilBean;
 import org.interpss.numeric.datatype.LimitType;
+import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.exp.InterpssRuntimeException;
 import com.interpss.common.mapper.AbstractMapper;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
@@ -321,7 +318,7 @@ public abstract class BaseAclfBean2AclfNetMapper<
 					}else{ // range control
 						tap=CoreObjectFactory.createTapVControlBusVoltage(branch, 
 					            AdjControlType.RANGE_CONTROL, aclfNet, tcb.controlledBusId).get();
-							tap.setControlRange(new LimitType(tcb.upperLimit, tcb.lowerLimit));
+							tap.setControlRange(new LimitType(tcb.upperLimit, tcb.lowerLimit), UnitType.PU);
 					}
 					tap.setStatus(tcb.status == 1? true : false);
 					AclfBus vcBus = aclfNet.getBus(tcb.controlledBusId);				
@@ -361,7 +358,7 @@ public abstract class BaseAclfBean2AclfNetMapper<
 				}else if (tcb.controlType == TapControlTypeBean.Range_Control ){ // range control
 					PSXfrPControl psxfr = CoreObjectFactory.createPSXfrPControl(branch, AdjControlType.RANGE_CONTROL).get();
 					psxfr.setStatus(tcb.status == 1? true : false);
-					psxfr.setControlRange(new LimitType(tcb.upperLimit, tcb.lowerLimit));
+					psxfr.setControlRange(new LimitType(tcb.upperLimit, tcb.lowerLimit), UnitType.PU);
 					psxfr.setPSpecified(tcb.desiredControlTarget);
 					psxfr.setAngLimit(new LimitType(Math.toRadians(tcb.maxAngle), Math.toRadians(tcb.minAngle)));
 					psxfr.setControlOnFromSide(tcb.controlOnFromSide);
