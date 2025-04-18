@@ -65,7 +65,7 @@ public class AclfHvdcDataHelper {
 		DcLineControlModeEnumType mode =hvdc2TXml.getControlMode();
 		
 		//TODO No "blocked" enum type
-		lccHvdc2T.setDCLineControlMode(mode==DcLineControlModeEnumType.POWER? 
+		lccHvdc2T.setDcLineControlMode(mode==DcLineControlModeEnumType.POWER? 
 									HvdcControlMode.DC_POWER: 
 										mode==DcLineControlModeEnumType.CURRENT?
 												HvdcControlMode.DC_CURRENT:
@@ -81,10 +81,10 @@ public class AclfHvdcDataHelper {
 		lccHvdc2T.setStatus(hvdc2TXml.isOffLine()?false:true);
 		
 		//SETVL
-		if(lccHvdc2T.getDCLineControlMode()==HvdcControlMode.DC_CURRENT){
+		if(lccHvdc2T.getDcLineControlMode()==HvdcControlMode.DC_CURRENT){
 			lccHvdc2T.setCurrentDemand(hvdc2TXml.getCurrentDemand().getValue()); // Set current demand
 		}
-		else if(lccHvdc2T.getDCLineControlMode()==HvdcControlMode.DC_POWER){
+		else if(lccHvdc2T.getDcLineControlMode()==HvdcControlMode.DC_POWER){
 			double powerDemand = hvdc2TXml.getPowerDemand().getValue();
 			// if the value is negative, it means the control side is inverter side, otherwise, it is rectifier side
 			lccHvdc2T.setControlSide(powerDemand>0?HvdcControlSide.RECTIFIER:HvdcControlSide.INVERTER);
