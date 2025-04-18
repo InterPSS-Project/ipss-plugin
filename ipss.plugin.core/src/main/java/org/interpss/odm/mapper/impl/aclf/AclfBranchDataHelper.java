@@ -256,7 +256,7 @@ public class AclfBranchDataHelper {
 				PSXfrPControl psxfr = CoreObjectFactory.createPSXfrPControl(aclfBra, AdjControlType.RANGE_CONTROL).get();
 				psxfr.setStatus(!xmlAngAdj.isOffLine());
 				psxfr.setControlRange(UnitHelper.pConversion(new LimitType(xmlAngAdj.getRange().getMax(),xmlAngAdj.getRange().getMin()),
-						    baseKva, toActivePowerUnit.apply(xmlAngAdj.getDesiredActivePowerUnit()), UnitType.PU),UnitType.PU);
+						    baseKva, toActivePowerUnit.apply(xmlAngAdj.getDesiredActivePowerUnit()), UnitType.PU));
 				psxfr.setPSpecified(xmlAngAdj.getDesiredValue(), toActivePowerUnit.apply(xmlAngAdj.getDesiredActivePowerUnit()), baseKva);
 				psxfr.setAngLimit(new LimitType(xmlAngAdj.getAngleLimit().getMax(), xmlAngAdj.getAngleLimit().getMin()), toAngleUnit.apply(xmlAngAdj.getAngleLimit().getUnit()));
 				psxfr.setControlOnFromSide(xmlAngAdj.isAngleAdjOnFromSide());
@@ -404,7 +404,7 @@ public class AclfBranchDataHelper {
 								tap = tapOpt.get();
 								//TODO: add the unit conversion for the control range, but it is missing currently in the ODM data, so we skip it for now,
 								// it is desirable to change xmlAdjData.getDesiredVoltageUnit() to getVoltageUnit() so that it can be used for both cases
-								tap.setControlRange(new LimitType(xmlAdjData.getRange().getMax(),xmlAdjData.getRange().getMin()), UnitType.PU);
+								tap.setControlRange(new LimitType(xmlAdjData.getRange().getMax(),xmlAdjData.getRange().getMin()));
 							}
 						}
 						
@@ -444,8 +444,7 @@ public class AclfBranchDataHelper {
 								tap = tapOpt.get(); 
 
 								//TODO: add the unit conversion for the control range, but it is missing currently in the ODM data, so we skip it for now,
-								tap.setControlRange(new LimitType(xmlAdjData.getRange().getMax(),xmlAdjData.getRange().getMin()), 
-										toReactivePowerUnit.apply(xmlAdjData.getDesiredMvarFlowUnit()));
+								tap.setControlRange(new LimitType(xmlAdjData.getRange().getMax(),xmlAdjData.getRange().getMin()));
 							}
 						}
 						if (tap!=null) {
