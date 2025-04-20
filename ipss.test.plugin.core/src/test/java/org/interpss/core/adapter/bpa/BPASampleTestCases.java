@@ -24,12 +24,11 @@
 
 package org.interpss.core.adapter.bpa;
 
-import static org.junit.Assert.assertTrue;
-
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.Unit.UnitType;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.core.CoreObjectFactory;
@@ -62,7 +61,7 @@ public class BPASampleTestCases extends CorePluginTestSetup {
 	public void odmAdapterTestCase1() throws Exception {
 		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.BPA)
-				.load("testData/adpter/bpa/Test009bpa.dat")
+				.load("testData/adpter/bpa/Test009bpa.DAT")
 				.getAclfNet();	
 		
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);

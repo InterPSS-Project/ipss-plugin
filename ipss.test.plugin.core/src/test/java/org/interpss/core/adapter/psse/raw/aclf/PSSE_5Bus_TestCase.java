@@ -24,8 +24,6 @@
 
 package org.interpss.core.adapter.psse.raw.aclf;
 
-import static org.junit.Assert.assertTrue;
-
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
@@ -34,6 +32,7 @@ import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.core.CoreObjectFactory;
@@ -50,7 +49,7 @@ public class PSSE_5Bus_TestCase extends CorePluginTestSetup {
 	@Test
 	public void testCase1() throws Exception {
 		IODMAdapter adapter = new PSSERawAdapter(PSSEAdapter.PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile("testdata/adpter/psse/PSSE_5Bus_Test.raw"));
+		assertTrue(adapter.parseInputFile("testData/adpter/psse/PSSE_5Bus_Test.raw"));
 		
 		AclfModelParser parser = (AclfModelParser)adapter.getModel();
 		//parser.stdout();
