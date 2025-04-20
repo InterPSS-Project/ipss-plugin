@@ -1,8 +1,5 @@
 package org.interpss.multiNet.trans_dist;
 
-import static com.interpss.core.funcImpl.AcscFunction.acscXfrAptr;
-import static org.junit.Assert.assertTrue;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -32,6 +29,7 @@ import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.algo.DynamicEventProcessor3Phase;
 import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -48,6 +46,7 @@ import com.interpss.core.acsc.adpter.AcscXformerAdapter;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import static com.interpss.core.funcImpl.AcscFunction.acscXfrAptr;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
@@ -69,8 +68,8 @@ public class TestTnD_IEEE9_13busFeeder {
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 				"testData/IEEE9Bus/ieee9.raw",
 				"testData/IEEE9Bus/ieee9.seq",
-				//"testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr"
-				"testData/IEEE9Bus/ieee9_dyn_fullModel_v33.dyr"
+				"testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr"
+				//"testData/IEEE9Bus/ieee9_dyn_fullModel_v33.dyr"
 		}));
 		DStabModelParser parser =(DStabModelParser) adapter.getModel();
 		

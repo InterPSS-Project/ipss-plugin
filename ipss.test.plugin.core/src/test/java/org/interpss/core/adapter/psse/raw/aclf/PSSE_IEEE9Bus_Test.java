@@ -24,16 +24,15 @@
 
 package org.interpss.core.adapter.psse.raw.aclf;
  
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
-import static org.junit.Assert.assertTrue;
-
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dep.datamodel.bean.aclf.AclfNetBean;
 import org.interpss.dep.datamodel.mapper.aclf.AclfNet2AclfBeanMapper;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
+import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.core.CoreObjectFactory;
@@ -98,7 +97,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		netBean30.compareTo(netBean32);
 		
 		// load the test data V33
-		AclfNetwork net33 = IpssAdapter.importAclfNet("testdata/adpter/psse/v33/ieee9_v33.raw")
+		AclfNetwork net33 = IpssAdapter.importAclfNet("testdata/adpter/psse/V33/ieee9_v33.raw")
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_33)
 				.load()
@@ -111,7 +110,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 	
 	@Test
 	public void testV30() throws Exception {
-		AclfNetwork net = IpssAdapter.importAclfNet("testdata/adpter/psse/v30/IEEE9Bus/ieee9.raw")
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/IEEE9Bus/ieee9.raw")
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_30)
 				.load()
@@ -122,7 +121,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testV29() throws Exception {
-		AclfNetwork net = IpssAdapter.importAclfNet("testdata/adpter/psse/v29/ieee9_v29.raw")
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v29/ieee9_v29.raw")
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_29)
 				.load()
@@ -133,7 +132,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testV31() throws Exception {
-		AclfNetwork net = IpssAdapter.importAclfNet("testdata/adpter/psse/v31/ieee9_v31.raw")
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v31/ieee9_v31.raw")
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_31)
 				.load()
@@ -144,7 +143,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 	
 	@Test
 	public void testV32() throws Exception {
-		AclfNetwork net = IpssAdapter.importAclfNet("testdata/adpter/psse/v32/ieee9_v32.raw")
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v32/ieee9_v32.raw")
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_32)
 				.load()
@@ -155,7 +154,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 	
 	@Test
 	public void testV33() throws Exception {
-		AclfNetwork net = IpssAdapter.importAclfNet("testdata/adpter/psse/v33/ieee9_v33.raw")
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v33/ieee9_v33.raw")
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_33)
 				.load()
@@ -167,7 +166,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 	
 	@Test
 	public void testRAWXJson() throws Exception {
-		AclfNetwork net = IpssAdapter.importAclfNet("testdata/adpter/psse/json/ieee9.rawx")
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/json/ieee9.rawx")
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_JSON)
 				.load()
