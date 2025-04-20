@@ -24,11 +24,10 @@
 
 package org.interpss.plugin.piecewise;
 
-import static org.junit.Assert.assertTrue;
-
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginFactory;
 import org.interpss.fadapter.IpssFileAdapter;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.algo.subAreaNet.SubAreaNetProcessor;
@@ -157,7 +156,7 @@ public class IEEE14TestSubAreaSearch extends PiecewiseAlgoTestSetup {
 		 */
 		AclfNetwork net = CorePluginFactory
 					.getFileAdapter(IpssFileAdapter.FileFormat.IpssInternal)
-					.load("testData/ipssdata/ieee14-1.ipssdat")
+					.load("testData/ipssdata/Ieee14-1.ipssdat")
 					.getAclfNet();	
 		
   		//System.out.println(net.net2String());
