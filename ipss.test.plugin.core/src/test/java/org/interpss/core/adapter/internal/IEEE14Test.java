@@ -24,14 +24,12 @@
 
 package org.interpss.core.adapter.internal;
 
-import static org.junit.Assert.assertTrue;
-
-import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.Unit.UnitType;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.core.CoreObjectFactory;
@@ -57,7 +55,7 @@ public class IEEE14Test extends CorePluginTestSetup {
 		
 		AclfNetwork net = CorePluginFactory
 					.getFileAdapter(IpssFileAdapter.FileFormat.IpssInternal)
-					.load("testData/ipssdata/ieee14.ipssdat")
+					.load("testData/ipssdata/Ieee14.ipssdat")
 					.getAclfNet();	
 		
   		//System.out.println(net.net2String());
@@ -136,7 +134,7 @@ public class IEEE14Test extends CorePluginTestSetup {
 	public void testCaseInactiveus() throws Exception {
 		AclfNetwork net = CorePluginFactory
 					.getFileAdapter(IpssFileAdapter.FileFormat.IpssInternal)
-					.load("testData/ipssdata/ieee14.ipssdat")
+					.load("testData/ipssdata/Ieee14.ipssdat")
 					.getAclfNet();	
 
 		net.getBus("14").setStatus(false);

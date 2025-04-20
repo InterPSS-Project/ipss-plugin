@@ -10,8 +10,8 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -31,7 +31,7 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 		IpssLogger.getLogger().setLevel(Level.WARNING);
 		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(
-				"testData/psse/v30/Texas2k/Texas2k_series24_case1_2016summerPeak_v30.raw"));
+				"testData/psse/v30/Texas2k/Texas2k_series24_case1_2016summerPeak_v30.RAW"));
 		AclfModelParser parser =(AclfModelParser) adapter.getModel();
 		
 		
@@ -79,7 +79,7 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 		IpssLogger.getLogger().setLevel(Level.WARNING);
 		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_34);
 		assertTrue(adapter.parseInputFile(
-				"testData/psse/v34/Texas2k/Texas2k_series24_case1_2016summerPeak_noSub_v34.raw"));
+				"testData/psse/v34/Texas2k/Texas2k_series24_case1_2016summerPeak_noSub_v34.RAW"));
 		AclfModelParser parser =(AclfModelParser) adapter.getModel();
 		
 		
@@ -126,7 +126,7 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 		IpssLogger.getLogger().setLevel(Level.WARNING);
 		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_35);
 		assertTrue(adapter.parseInputFile(
-				"testData/psse/v35/Texas2k/Texas2k_series24_case1_2016summerPeak_v35.raw"));
+				"testData/psse/v35/Texas2k/Texas2k_series24_case1_2016summerPeak_v35.RAW"));
 		AclfModelParser parser =(AclfModelParser) adapter.getModel();
 		
 		
@@ -175,7 +175,7 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 		IpssLogger.getLogger().setLevel(Level.WARNING);
 		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_36);
 		assertTrue(adapter.parseInputFile(
-				"testData/psse/v36/Texas2k/Texas2k_series24_case1_2016summerPeak_v36.raw"));
+				"testData/psse/v36/Texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW"));
 		AclfModelParser parser =(AclfModelParser) adapter.getModel();
 		
 		

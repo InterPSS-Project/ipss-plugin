@@ -24,16 +24,13 @@
 
 package org.interpss.core.dclf;
 
-import static com.interpss.core.algo.dclf.solver.IConnectBusProcessor.predicateConnectBus;
-import static org.junit.Assert.assertTrue;
-
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.display.AclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.interpss.numeric.util.NumericUtil;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.core.DclfAlgoObjectFactory;
@@ -41,8 +38,8 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.EDclfAlgorithm;
+import static com.interpss.core.algo.dclf.solver.IConnectBusProcessor.predicateConnectBus;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
-import com.interpss.core.algo.dclf.solver.IConnectBusProcessor;
 import com.interpss.core.algo.dclf.solver.IEDclfSolver;
 import com.interpss.core.algo.impl.solver.YMatrixSolver;
 import com.interpss.core.datatype.Mismatch;
@@ -52,7 +49,7 @@ public class IEEE14_EDclf_Test extends CorePluginTestSetup {
 	public void edclfTest() throws Exception {
 		AclfNetwork aclfNet = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testdata/adpter/ieee_format/Ieee14Bus.ieee")
+				.load("testData/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();	
 		
 		EDclfAlgorithm edclfAlgo = DclfAlgoObjectFactory.createEDclfAlgorithm(aclfNet, CacheType.SenNotCached);
@@ -76,7 +73,7 @@ public class IEEE14_EDclf_Test extends CorePluginTestSetup {
 	public void edclfLossTest() throws Exception {
 		AclfNetwork aclfNet = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testdata/adpter/ieee_format/Ieee14Bus.ieee")
+				.load("testData/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();	
 		
 		EDclfAlgorithm edclfAlgo = DclfAlgoObjectFactory.createEDclfAlgorithm(aclfNet, CacheType.SenNotCached);
@@ -91,7 +88,7 @@ public class IEEE14_EDclf_Test extends CorePluginTestSetup {
 	public void edclfVCorrectionTest() throws Exception {
 		AclfNetwork aclfNet = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testdata/adpter/ieee_format/Ieee14Bus.ieee")
+				.load("testData/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();	
 		
 		EDclfAlgorithm edclfAlgo = DclfAlgoObjectFactory.createEDclfAlgorithm(aclfNet, CacheType.SenNotCached);
@@ -114,7 +111,7 @@ public class IEEE14_EDclf_Test extends CorePluginTestSetup {
 	public void edclfVCorInactiveBusTest() throws Exception {
 		AclfNetwork aclfNet = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testdata/adpter/ieee_format/Ieee14Bus.ieee")
+				.load("testData/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();	
 		
 		aclfNet.getBus("Bus14").setStatus(false);
@@ -142,7 +139,7 @@ public class IEEE14_EDclf_Test extends CorePluginTestSetup {
 	public void checkVoltageTest() throws Exception {
 		AclfNetwork aclfNet = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testdata/adpter/ieee_format/Ieee14Bus.ieee")
+				.load("testData/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();	
 		
 		EDclfAlgorithm edclfAlgo = DclfAlgoObjectFactory.createEDclfAlgorithm(aclfNet, CacheType.SenNotCached);
@@ -173,7 +170,7 @@ public class IEEE14_EDclf_Test extends CorePluginTestSetup {
 	public void connectionBusTest() throws Exception {
 		AclfNetwork aclfNet = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testdata/adpter/ieee_format/Ieee14Bus.ieee")
+				.load("testData/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();	
 		
 		//aclfNet.initContributeGenLoad();
