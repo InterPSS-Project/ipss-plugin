@@ -24,8 +24,6 @@
 
 package org.interpss.core.aclf;
 
-import static org.junit.Assert.assertTrue;
-
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
@@ -33,18 +31,18 @@ import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.interpss.numeric.sparse.base.ISparseEquation.IndexType;
 import org.interpss.numeric.util.NumericUtil;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.impl.solver.YMatrixSolver;
-import com.interpss.core.funcImpl.AclfNetHelper;
 
 public class IEEE14_YMatrixSetTest extends CorePluginTestSetup {
 	@Test 
 	public void bus14TestCase() throws Exception {
 		AclfNetwork aclfNet = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testdata/adpter/ieee_format/Ieee14Bus.ieee")
+				.load("testData/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();	
 		
 		ISparseEqnComplex[] ySet = new YMatrixSolver(aclfNet)
@@ -122,7 +120,7 @@ public class IEEE14_YMatrixSetTest extends CorePluginTestSetup {
 	public void inactiveBusTestCase() throws Exception {
 		AclfNetwork aclfNet = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testdata/adpter/ieee_format/Ieee14Bus.ieee")
+				.load("testData/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();	
 		
 		aclfNet.getBus("Bus14").setStatus(false);
