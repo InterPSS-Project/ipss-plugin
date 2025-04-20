@@ -24,25 +24,22 @@
 
 package org.interpss.core.mvel;
 
-import static org.junit.Assert.assertTrue;
-
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.display.AclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.mvel.AclfNetMvelExprEvaluator;
 import org.interpss.numeric.datatype.ComplexFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
 public class MvelExprEval_Test extends CorePluginTestSetup {
@@ -51,7 +48,7 @@ public class MvelExprEval_Test extends CorePluginTestSetup {
 		// load the IEEE-14 Bus system
 		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testdata/adpter/ieee_format/Ieee14Bus.ieee")
+				.load("testData/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();	
 		
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
@@ -89,7 +86,7 @@ public class MvelExprEval_Test extends CorePluginTestSetup {
 		// load the IEEE-14 Bus system
 		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testdata/adpter/ieee_format/Ieee14Bus.ieee")
+				.load("testData/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();		
 		
 		AclfNetMvelExprEvaluator eval = new AclfNetMvelExprEvaluator(net);

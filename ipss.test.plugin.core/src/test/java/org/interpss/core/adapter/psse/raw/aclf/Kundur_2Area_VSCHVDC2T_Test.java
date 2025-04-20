@@ -133,7 +133,7 @@ public class Kundur_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 	
 	private AclfNetwork createTestCase() {
 		IODMAdapter adapter = new PSSERawAdapter(PSSEAdapter.PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile("testdata/adpter/psse/v30/Kunder_2area/Kunder_2area_vschvdc_v30.raw"));
+		assertTrue(adapter.parseInputFile("testData/adpter/psse/v30/Kundur_2area/Kundur_2area_vschvdc_v30.raw"));
 		
 		AclfModelParser parser = (AclfModelParser)adapter.getModel();
 		//parser.stdout();

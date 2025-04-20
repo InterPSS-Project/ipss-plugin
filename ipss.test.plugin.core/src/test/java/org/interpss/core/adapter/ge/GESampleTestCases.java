@@ -24,12 +24,10 @@
 
 package org.interpss.core.adapter.ge;
 
-import static org.junit.Assert.assertTrue;
-
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
-import org.interpss.numeric.datatype.Unit.UnitType;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.core.CoreObjectFactory;
@@ -43,7 +41,7 @@ public class GESampleTestCases extends CorePluginTestSetup {
 	public void odmAdapterTestCase() throws Exception {
 		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.GE_PSLF)
-				.load("testdata/adpter/ge/Sample18Bus.epc")
+				.load("testData/adpter/ge/Sample18Bus.epc")
 				.getAclfNet();	
 		
 //		IODMAdapter adapter = ODMObjectFactory.createODMAdapter(ODMFileFormatEnum.GePSLF);

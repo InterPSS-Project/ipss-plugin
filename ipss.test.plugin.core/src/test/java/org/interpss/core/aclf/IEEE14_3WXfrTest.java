@@ -24,13 +24,12 @@
 
 package org.interpss.core.aclf;
 
-import static org.junit.Assert.assertTrue;
-
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.core.CoreObjectFactory;
@@ -45,7 +44,7 @@ public class IEEE14_3WXfrTest extends CorePluginTestSetup {
 	public void bus14testCase() throws Exception {
 		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testdata/adpter/ieee_format/Ieee14Bus.ieee")
+				.load("testData/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();		
 		
 		net.removeBranch("Bus4->Bus7(1)");

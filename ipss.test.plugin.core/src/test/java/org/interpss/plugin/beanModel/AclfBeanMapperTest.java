@@ -24,8 +24,6 @@
 
 package org.interpss.plugin.beanModel;
 
-import static org.junit.Assert.assertTrue;
-
 import java.util.logging.Level;
 
 import org.ieee.odm.common.ODMLogger;
@@ -44,6 +42,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.core.CoreObjectFactory;
