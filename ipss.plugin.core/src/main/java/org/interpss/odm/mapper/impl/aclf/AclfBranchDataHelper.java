@@ -592,15 +592,15 @@ public class AclfBranchDataHelper {
 		
 		double fromBaseV = branch3W.getFromBus().getBaseVoltage(), 
 	       		toBaseV = branch3W.getToBus().getBaseVoltage(),
-	       		tertBaseV = branch3W.getToBus().getBaseVoltage();
+	       		tertBaseV = branch3W.getTertiaryBus().getBaseVoltage();
 		// turn ratio is based on xfr rated voltage
 		// voltage units should be same for both side 
 		double fromRatedV = fromBaseV;
 		double toRatedV = toBaseV;
 		double tertRatedV = tertBaseV;
 
-		double zratio = 1.0;
-		double tapratio = 1.0;
+		double zratio12 = 1.0; double zratio23 = 1.0;double zratio31 = 1.0;
+		double tapratio12 = 1.0, tapratio23 = 1.0, tapratio31 = 1.0;
 		
 		Transformer3WInfoXmlType xfrData = (Transformer3WInfoXmlType)xml3WXfr.getXfrInfo();
 		/*
@@ -621,15 +621,32 @@ public class AclfBranchDataHelper {
 			if (xfrData.getTertRatedVoltage() != null)
 				tertRatedV = xfrData.getTertRatedVoltage().getValue();
 
-			if (!xfrData.isDataOnSystemBase() &&
-					xfrData.getRatedPower() != null && 
-					xfrData.getRatedPower().getValue() > 0.0) 
-				zratio = xfrData.getRatedPower().getUnit() == ApparentPowerUnitType.KVA?
-						baseKva / xfrData.getRatedPower().getValue() :
+			if (!xfrData.isDataOnSystemBase()){
+					if(xfrData.getRatedPower() != null && 
+					    xfrData.getRatedPower().getValue() > 0.0) {
+						zratio12 = xfrData.getRatedPower().getUnit() == ApparentPowerUnitType.KVA?
+							baseKva / xfrData.getRatedPower().getValue() :
 							0.001 * baseKva / xfrData.getRatedPower().getValue();
+					}
+					if(xfrData.getRatedPower23() != null && 
+					    xfrData.getRatedPower23().getValue() > 0.0) {
+						zratio23 = xfrData.getRatedPower23().getUnit() == ApparentPowerUnitType.KVA?
+							baseKva / xfrData.getRatedPower23().getValue() :
+							0.001 * baseKva / xfrData.getRatedPower23().getValue();
+					}
+					if(xfrData.getRatedPower31() != null && 
+					    xfrData.getRatedPower31().getValue() > 0.0) {
+						zratio31 = xfrData.getRatedPower31().getUnit() == ApparentPowerUnitType.KVA?
+							baseKva / xfrData.getRatedPower31().getValue() :
+							0.001 * baseKva / xfrData.getRatedPower31().getValue();
+					}
 
-			if (!xfrData.isDataOnSystemBase())
-				tapratio = (fromRatedV/fromBaseV) / (toRatedV/toBaseV) ;
+					tapratio12 = (fromRatedV/fromBaseV) / (toRatedV/toBaseV) ;
+					tapratio23 = (toRatedV/toBaseV)/(tertRatedV/tertBaseV) ;
+					tapratio31 = (tertRatedV/tertBaseV) / (fromRatedV/fromBaseV) ;
+			}
+			
+				
 			
 			if (xfrData.getStarVMag() != null && xfrData.getStarVAng() != null) {
 				if (xfrData.getStarVMag().getUnit() == VoltageUnitType.PU || xfrData.getStarVAng().getUnit() == AngleUnitType.DEG) {
@@ -654,16 +671,16 @@ public class AclfBranchDataHelper {
 */
 		double baseV = fromBaseV > toBaseV ? fromBaseV : toBaseV;
 		baseV = baseV > tertBaseV ? baseV : tertBaseV;
-		Complex z12 = new Complex(xml3WXfr.getZ().getRe()*zratio, xml3WXfr.getZ().getIm()*zratio);
-		Complex z23 = new Complex(xml3WXfr.getZ23().getRe()*zratio, xml3WXfr.getZ23().getIm()*zratio);
-		Complex z31 = new Complex(xml3WXfr.getZ31().getRe()*zratio, xml3WXfr.getZ31().getIm()*zratio);
+		Complex z12 = new Complex(xml3WXfr.getZ().getRe()*zratio12, xml3WXfr.getZ().getIm()*zratio12);
+		Complex z23 = new Complex(xml3WXfr.getZ23().getRe()*zratio23, xml3WXfr.getZ23().getIm()*zratio23);
+		Complex z31 = new Complex(xml3WXfr.getZ31().getRe()*zratio31, xml3WXfr.getZ31().getIm()*zratio31);
 		UnitType unit = toZUnit.apply(xml3WXfr.getZ().getUnit());
 		// set 3W xfr branch z to the three 2W xfr branches
 		xfr3W.setZ(z12, z31, z23, unit, baseV);
 
-		double fromRatio = xml3WXfr.getFromTurnRatio().getValue()*tapratio;
-		double toRatio = xml3WXfr.getToTurnRatio().getValue()*tapratio;
-		double tertRatio = xml3WXfr.getTertTurnRatio().getValue()*tapratio;
+		double fromRatio = xml3WXfr.getFromTurnRatio().getValue()*tapratio12;
+		double toRatio = xml3WXfr.getToTurnRatio().getValue()*tapratio23;
+		double tertRatio = xml3WXfr.getTertTurnRatio().getValue()*tapratio31;
 		
 		xfr3W.setFromTurnRatio(fromRatio == 0.0 ? 1.0 : fromRatio);
 		xfr3W.setToTurnRatio(toRatio == 0.0 ? 1.0 : toRatio);
