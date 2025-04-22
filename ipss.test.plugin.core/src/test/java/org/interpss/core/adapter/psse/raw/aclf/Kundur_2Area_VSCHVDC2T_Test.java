@@ -17,6 +17,7 @@ import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.hvdc.HvdcLine2TVSC;
+import com.interpss.core.aclf.hvdc.VSCConverter;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
@@ -25,7 +26,7 @@ import com.interpss.simu.SimuObjectFactory;
 public class Kundur_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 	@Test
 	public void test_VSCHVDC_DeepCopy() throws Exception {
-		AclfNetwork net = createTestCase();
+		AclfNetwork net = createTestCaseV30();
 		
 		AclfNetwork netCopy = net.hzCopy();
 		
@@ -36,7 +37,7 @@ public class Kundur_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 	
 	@Test
 	public void test_VSCHVDC_JSonCopy() throws Exception {
-		AclfNetwork net = createTestCase();
+		AclfNetwork net = createTestCaseV30();
 		
 		AclfNetwork netCopy = net.jsonCopy();
 		
@@ -47,7 +48,7 @@ public class Kundur_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 	
 	@Test
 	public void test_VSCHVDC_Loadflow() throws Exception {
-		AclfNetwork net = createTestCase();
+		AclfNetwork net = createTestCaseV30(); // Updated to use createTestCaseV30()
 		//System.out.println(net.net2String());
 		 
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
@@ -108,8 +109,32 @@ public class Kundur_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 	
 	@Test
 	public void test_VSCHVDC_DataInput() throws Exception {
-		AclfNetwork net = createTestCase();
+		AclfNetwork net = createTestCaseV30();
 		test_VSCHVDC_Data(net);
+	}
+
+	@Test
+	public void test_VSCHVDC_DataInput_RemoteBus() throws Exception {
+		AclfNetwork net = createTestCaseV35();
+		assertTrue(net.getSpecialBranchList().size()==1);
+		
+		assertTrue(!net.getBus("Bus7").isGen());
+		assertTrue(!net.getBus("Bus9").isGen());
+		
+		HvdcLine2TVSC<AclfBus> vscHVDC = (HvdcLine2TVSC<AclfBus>) net.getSpecialBranchList().get(0);
+		//System.out.println(vscHVDC.getId());
+		//System.out.println(vscHVDC.getName());
+		
+	    assertTrue(vscHVDC.getRecConverter() != null);
+	    assertTrue(vscHVDC.getInvConverter() != null);
+
+		VSCConverter<AclfBus> vscInv = vscHVDC.getInvConverter();
+
+		// check the remote bus id
+		assertTrue(vscInv.getRemoteControlBusId().equals("Bus10"));
+		assertTrue(vscInv.getRemoteControlPercent() == 100.0);
+		assertTrue(NumericUtil.equals(vscInv.getAcSetPoint(), 0.99, 0.0001));
+
 	}
 	
 	private void test_VSCHVDC_Data(AclfNetwork net) {
@@ -131,9 +156,36 @@ public class Kundur_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 		//System.out.println(net.net2String());
 	}
 	
-	private AclfNetwork createTestCase() {
+	private AclfNetwork createTestCaseV30() {
 		IODMAdapter adapter = new PSSERawAdapter(PSSEAdapter.PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile("testData/adpter/psse/v30/Kundur_2area/Kundur_2area_vschvdc_v30.raw"));
+		
+		AclfModelParser parser = (AclfModelParser)adapter.getModel();
+		//parser.stdout();
+		
+		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.ACLF_NETWORK);
+		if (!new ODMAclfParserMapper()
+					.map2Model(parser, simuCtx)) {
+  	  		System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
+  	  		return null;
+		}		
+		
+		AclfNetwork net = simuCtx.getAclfNet();
+		//System.out.println(net.net2String());		
+
+		HvdcLine2TVSC<AclfBus> vscHVDC = (HvdcLine2TVSC<AclfBus>) net.getSpecialBranchList().get(0);
+		vscHVDC.setId("Bus7->Bus9(cirId)");
+		
+		vscHVDC.getInvConverter().setId("Inv");
+		
+		vscHVDC.getRecConverter().setId("Rec");
+		
+		return net;
+	}
+
+	private AclfNetwork createTestCaseV35() {
+		IODMAdapter adapter = new PSSERawAdapter(PSSEAdapter.PsseVersion.PSSE_35);
+		assertTrue(adapter.parseInputFile("testData/psse/v35/Kundur_2area_vschvdc_remotebus_v35.raw"));
 		
 		AclfModelParser parser = (AclfModelParser)adapter.getModel();
 		//parser.stdout();
