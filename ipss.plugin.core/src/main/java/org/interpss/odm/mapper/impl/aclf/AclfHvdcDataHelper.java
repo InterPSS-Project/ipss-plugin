@@ -209,7 +209,9 @@ public class AclfHvdcDataHelper {
 		//the Alpa/GAMMA within limit.
 		
 		// IFR = ITR=0, IDR =1.0 by default
-		//if(rectifierXml.getRefXfrFromBusId()!=null && rectifierXml.getRefXfrToBusId()!=null)
+		if(rectifierXml.getRefXfrFromBusId()!=null && rectifierXml.getRefXfrToBusId()!=null){
+			IpssLogger.getLogger().severe("IFR, ITR for specifying a two winding transformer to control a converter is not supported in the LCC HVDC rectifier: "+ rectifier.getId());
+		}
 		//BusIDRefXmlType fbRef=((BusIDRefXmlType)rectifierXml.getRefXfrFromBusId());
 		
 		//TODO to add the following methods
@@ -270,8 +272,9 @@ public class AclfHvdcDataHelper {
 		// ALPHA/GARMER within limit
 
 		// IFR = ITR=0, IDR =1.0 by default
-		BusIDRefXmlType fbRef = ((BusIDRefXmlType) inverterXml
-				.getRefXfrFromBusId());
+		if(inverterXml.getRefXfrFromBusId()!=null && inverterXml.getRefXfrToBusId()!=null){
+			IpssLogger.getLogger().severe("IFR, ITR for specifying a two winding transformer to control a converter is not supported in the LCC HVDC inverter: " + inverter.getId());
+		}
 
 		// TODO
 		// inverter.setXfrFromBus()
@@ -373,7 +376,7 @@ public class AclfHvdcDataHelper {
     	
     	 
     	 if(vscConvXml.getRemoteCtrlBusId()!=null){
-    	         vscInv.setRemoteControlBusId((String) vscConvXml.getRemoteCtrlBusId().getIdRef());
+    	         vscInv.setRemoteControlBusId(((BusXmlType)vscConvXml.getRemoteCtrlBusId().getIdRef()).getId());
     	         // only when there is a remote control bus, this value is useful
     	         vscInv.setRemoteControlPercent(vscConvXml.getRemoteCtrlPercent());
     	 }
@@ -427,7 +430,7 @@ public class AclfHvdcDataHelper {
 	 
 	 	 
 	 	if(vscConvXml.getRemoteCtrlBusId()!=null){
-	         vscRec.setRemoteControlBusId((String) vscConvXml.getRemoteCtrlBusId().getIdRef());
+	         vscRec.setRemoteControlBusId(((BusXmlType) vscConvXml.getRemoteCtrlBusId().getIdRef()).getId());
 	    	 vscRec.setRemoteControlPercent(vscConvXml.getRemoteCtrlPercent());
 	 	}
 	 	 
