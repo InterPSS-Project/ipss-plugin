@@ -559,8 +559,7 @@ public class AclfOutFunc {
 		str
 				.append("     -------- -------- -------- -------- -------- -------- ------\n");
 
-		for (Bus b : net.getBusList()) {
-			AclfBus bus = (AclfBus)b;
+		for (BaseAclfBus<?,?> bus : net.getBusList()) {
 			if (bus.isPQBusLimit()) {
 				PQBusLimit pq = bus.getPQBusLimit();
 				AclfGenBusAdapter genBus = pq.getParentBus().toGenBus();
@@ -606,7 +605,7 @@ public class AclfOutFunc {
 				.append("     -------- -------- --------------- -------- -------- -------- -------- -------- ------\n");
 
 		for (Bus b : net.getBusList()) {
-			BaseAclfBus<?,?> bus = (AclfBus)b;
+			BaseAclfBus<?,?> bus = (BaseAclfBus<?,?>)b;
 			if (bus.isRemoteQBus()) {
 				RemoteQBus re = bus.getRemoteQBus();
 				AclfGenBusAdapter genBus = re.getParentBus().toGenBus();
@@ -656,7 +655,7 @@ public class AclfOutFunc {
 				.append("     -------- -------- -------- -------- -------- -------- ------\n");
 
 		for (Bus b : net.getBusList()) {
-			AclfBus bus = (AclfBus)b;
+			BaseAclfBus<?,?> bus = (BaseAclfBus<?,?>)b;
 			if (bus.getFunctionLoad() != null) {
 				FunctionLoad x = bus.getFunctionLoad();
 				str.append(Number2String.toStr(5, " "));
@@ -705,6 +704,7 @@ public class AclfOutFunc {
 				.append("     ----------------- -------- -------- -------------- ----- ----- -----   -----  ------\n");
 
 		for (Branch b : net.getBranchList()) {
+			if (!(b instanceof AclfBranch)) continue;
 			AclfBranch branch = (AclfBranch)b;
 			if (branch.isTapControl()) {
 				TapControl x = branch.getTapControl();
@@ -774,8 +774,9 @@ public class AclfOutFunc {
 				.append("     ----------------- -------- -------------- ----- ----- ----- ------\n");
 
 		for (Branch b : net.getBranchList()) {
+			if (!(b instanceof AclfBranch)) continue;
 			AclfBranch branch = (AclfBranch)b;
-			if (branch.isTapControl()) {
+			if (branch.isPSXfrPControl()) {
 				PSXfrPControl x = branch.getPSXfrPControl();
 				str.append(Number2String.toStr(5, " "));
 				str.append(Number2String.toStr(-17, x.getParentBranch().getId())
