@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Directory containing the IEEE ODM JAR files
-IEEE_LIB_DIR="ipss-common/ipss.lib/lib/ieee"
+IEEE_LIB_DIR="../ipss-common/ipss.lib/lib/ieee"
 
 # Loop through all JAR files in the directory
 for JAR_FILE in "$IEEE_LIB_DIR"/*.jar; do
@@ -24,7 +24,7 @@ for JAR_FILE in "$IEEE_LIB_DIR"/*.jar; do
 done
 
 # install the ipss.core.lib jar file
-IPSS_LIB_DIR="ipss-common/ipss.lib/lib/ipss"
+IPSS_LIB_DIR="../ipss-common/ipss.lib/lib/ipss"
 JAR_FILE="$IPSS_LIB_DIR"/ipss.core.lib-1.0.jar; 
 ARTIFACTID="com.interpss"
 GROUPID="ipss.core.lib"  
