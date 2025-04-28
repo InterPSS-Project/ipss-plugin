@@ -604,8 +604,7 @@ public class AclfOutFunc {
 		str
 				.append("     -------- -------- --------------- -------- -------- -------- -------- -------- ------\n");
 
-		for (Bus b : net.getBusList()) {
-			BaseAclfBus<?,?> bus = (BaseAclfBus<?,?>)b;
+		for (BaseAclfBus<?,?> bus: net.getBusList()) {
 			if (bus.isRemoteQBus()) {
 				RemoteQBus re = bus.getRemoteQBus();
 				AclfGenBusAdapter genBus = re.getParentBus().toGenBus();
