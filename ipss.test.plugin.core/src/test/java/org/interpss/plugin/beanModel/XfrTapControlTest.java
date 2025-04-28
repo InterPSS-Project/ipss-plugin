@@ -44,7 +44,7 @@ import com.interpss.core.aclf.adj.AdjControlType;
 import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.core.funcImpl.AclfFunction;
+import com.interpss.core.funcImpl.AclfAdptFunction;
 import com.interpss.simu.util.sample.SampleTestingCases;
 
 public class XfrTapControlTest extends CorePluginTestSetup {
@@ -61,7 +61,7 @@ public class XfrTapControlTest extends CorePluginTestSetup {
 		//tap.setTapOnFromSide(false);
 		tap.setControlSpec(0.90);
 
-		assertTrue("", AclfFunction.nOfTapControl.apply(net) == 1);
+		assertTrue("", AclfAdptFunction.nOfTapControl.apply(net) == 1);
 		
 		assertTrue(Math.abs(branch.getToTurnRatio()-1.0)<0.0001);
 		
@@ -103,7 +103,7 @@ public class XfrTapControlTest extends CorePluginTestSetup {
 		//tap.setTapOnFromSide(false);
 		tap.setControlSpec(0.90);
 
-		assertTrue("", AclfFunction.nOfTapControl.apply(net) == 1);
+		assertTrue("", AclfAdptFunction.nOfTapControl.apply(net) == 1);
 		
 		assertTrue(Math.abs(branch.getToTurnRatio()-1.0)<0.0001);
 		
@@ -141,7 +141,7 @@ public class XfrTapControlTest extends CorePluginTestSetup {
 		tap.setControlSpec(0.90);
 		tap.setStatus(true);
 
-		assertTrue("", AclfFunction.nOfTapControl.apply(net) == 1);
+		assertTrue("", AclfAdptFunction.nOfTapControl.apply(net) == 1);
 		
 		assertTrue(Math.abs(branch.getToTurnRatio()-1.0)<0.0001);
 
