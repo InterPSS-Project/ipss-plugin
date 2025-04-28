@@ -7,7 +7,9 @@ IEEE_LIB_DIR="../ipss-common/ipss.lib/lib/ieee"
 for JAR_FILE in "$IEEE_LIB_DIR"/*.jar; do
   if [ -f "$JAR_FILE" ]; then
 
-    ARTIFACTID="ieee.odm"
+     FILENAME=$(basename "$JAR_FILE")
+    # Extract artifactId based on filename
+    ARTIFACTID="${FILENAME%.*}"  # Remove extension
     GROUPID="org.ieee.odm"  
     VERSION="1.0"           
 
@@ -19,15 +21,16 @@ for JAR_FILE in "$IEEE_LIB_DIR"/*.jar; do
                              -Dpackaging=jar \
                              -DgeneratePom=true
 
-    echo "Installed $JAR_FILE"
+    echo "Installed $JAR_FILE" with artifactId: $ARTIFACTID"
   fi
 done
 
-# install the ipss.core.lib jar file
+#install the ipss.core.lib jar file
+
 IPSS_LIB_DIR="../ipss-common/ipss.lib/lib/ipss"
 JAR_FILE="$IPSS_LIB_DIR"/ipss.core.lib-1.0.jar; 
-ARTIFACTID="com.interpss"
-GROUPID="ipss.core.lib"  
+ARTIFACTID="ipss.core.lib"
+GROUPID="com.interpss"
 VERSION="1.0"           
 
 # Install the JAR file into the local Maven repository
@@ -38,7 +41,7 @@ mvn install:install-file -Dfile="$JAR_FILE" \
                             -Dpackaging=jar \
                              -DgeneratePom=true
 
-echo "Installed $JAR_FILE"
+echo "Installed $JAR_FILE" with artifactId: $ARTIFACTID"
 
 
 mvn clean install -DskipTests
