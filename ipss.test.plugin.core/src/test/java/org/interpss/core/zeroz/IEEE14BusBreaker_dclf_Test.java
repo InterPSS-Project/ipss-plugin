@@ -22,7 +22,7 @@
   *
   */
 
-package org.interpss.core.ca;
+package org.interpss.core.zeroz;
 
 import static org.junit.Assert.assertTrue;
 

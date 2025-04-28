@@ -54,6 +54,7 @@ import org.interpss.core.dstab.mach.RoundRotorMachineTest;
 import org.interpss.core.dstab.mach.SMIB_Gen_Test;
 import org.interpss.core.dstab.mach.SalientPoleMachineTest;
 import org.interpss.core.mvel.MvelExprEval_Test;
+import org.interpss.core.zeroz.ZeroZBranchFuncTest;
 import org.interpss.plugin.beanModel.AclfBeanMapperTest;
 import org.interpss.plugin.piecewise.Acsc5BusTestSubAreaNet;
 import org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise;
@@ -74,6 +75,9 @@ import org.junit.runners.Suite.SuiteClasses;
 	IEEE14_YMatrixSetTest.class,
 	SwingBusSubAreaTest.class,
 	PSSE_ACTIVSg2000Bus_Test.class,
+	
+	// ZeroZ branch
+	ZeroZBranchFuncTest.class,
 	
 	// acsc
 	IEEE9Bus_Acsc_test.class,
