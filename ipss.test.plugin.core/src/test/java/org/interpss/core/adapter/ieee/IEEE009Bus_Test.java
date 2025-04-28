@@ -39,8 +39,9 @@ public class IEEE009Bus_Test extends CorePluginTestSetup{
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-0.7164098)<1.0E-5);
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-0.2704474)<1.0E-5);
   		
+  		ZeroZBranchNetHelper helper = new ZeroZBranchNetHelper(true);
   		for (AclfBus bus : net.getBusList()) 
-  			if (!NumericUtil.equals(ZeroZBranchNetHelper.powerIntoNet(bus), bus.powerIntoNet(), 0.0002))
-  				System.out.println(bus.getId() + " : " + ZeroZBranchNetHelper.powerIntoNet(bus) + ", " + bus.powerIntoNet());
+  			if (!NumericUtil.equals(helper.powerIntoNet(bus), bus.powerIntoNet(), 0.0002))
+  				System.out.println("Large mismatch: " + bus.getId() + " : " + helper.powerIntoNet(bus) + ", " + bus.powerIntoNet());
 	}
 }

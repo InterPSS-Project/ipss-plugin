@@ -63,9 +63,10 @@ public class IEEECommonFormatTest extends CorePluginTestSetup {
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.32393)<0.0001);
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.16549)<0.0001);
   		
+  		ZeroZBranchNetHelper helper = new ZeroZBranchNetHelper(true);
   		for (AclfBus bus : net.getBusList()) 
-  			if (!NumericUtil.equals(ZeroZBranchNetHelper.powerIntoNet(bus), bus.powerIntoNet(), 0.0002))
-  				System.out.println(bus.getId() + " : " + ZeroZBranchNetHelper.powerIntoNet(bus) + ", " + bus.powerIntoNet()); 		
+  			if (!NumericUtil.equals(helper.powerIntoNet(bus), bus.powerIntoNet(), 0.0002))
+  				System.out.println("Large mismatch: " + bus.getId() + " : " + helper.powerIntoNet(bus) + ", " + bus.powerIntoNet()); 		
 	}
 
 	@Test 

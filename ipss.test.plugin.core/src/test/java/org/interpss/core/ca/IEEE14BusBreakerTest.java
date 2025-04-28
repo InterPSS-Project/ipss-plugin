@@ -59,7 +59,7 @@ public class IEEE14BusBreakerTest extends CorePluginTestSetup {
 	  	for (Bus b : net.getBusList())
 	  		assertTrue(b.isBooleanFlag());
 	  	for (Branch b : net.getBranchList())
-	  		if (((AclfBranch)b).getBranchCode() == AclfBranchCode.ZERO_IMPEDENCE)
+	  		if (((AclfBranch)b).isZeroZBranch())
 	  			assertTrue(b.isBooleanFlag());
 	}	
 	
