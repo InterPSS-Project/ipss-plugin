@@ -25,8 +25,8 @@ package org.interpss.plugin.pssl.simu.net;
 
 import static com.interpss.common.util.IpssLogger.ipssLogger;
 import static com.interpss.common.util.NetUtilFunc.ToBranchId;
-import static com.interpss.core.funcImpl.AclfFunction.loadBusAptr;
-import static com.interpss.core.funcImpl.AclfFunction.swingBusAptr;
+import static com.interpss.core.funcImpl.AclfAdptFunction.loadBusAptr;
+import static com.interpss.core.funcImpl.AclfAdptFunction.swingBusAptr;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.ComplexFunc;
