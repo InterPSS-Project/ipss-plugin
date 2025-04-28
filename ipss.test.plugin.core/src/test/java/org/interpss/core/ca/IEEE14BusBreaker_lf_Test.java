@@ -91,7 +91,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 	  	net.setZeroZBranchThreshold(0.00001);
 	  	net.accept(new ZeroZBranchProcesor(true));
 	  	//net.accept(new ZeroZBranchProcesor(true));
-	  	assertTrue(net.isZeroZBranchProcessed());
+	  	assertTrue(net.isZeroZBranchModel());
 	  	//System.out.println(net.net2String());
 
 	  	// create the default loadflow algorithm
@@ -127,7 +127,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 	  	// process zero impedance branches in the network
 		net.setZeroZBranchThreshold(0.00001);
 	  	net.accept(new ZeroZBranchProcesor(true));
-	  	assertTrue(net.isZeroZBranchProcessed());
+	  	assertTrue(net.isZeroZBranchModel());
 	  	//System.out.println(net.net2String());
 
 	  	// create the default loadflow algorithm
@@ -170,7 +170,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 	  	proc.setProtectedBranchIdList(proList);
 	  	
 	  	net.accept(proc);
-	  	assertTrue(net.isZeroZBranchProcessed());
+	  	assertTrue(net.isZeroZBranchModel());
 	  	//System.out.println(net.net2String());
 
 	  	// create the default loadflow algorithm
@@ -206,7 +206,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 	  	// process zero impedance branches in the network
 		net.setZeroZBranchThreshold(0.00001);
 	  	net.accept(new ZeroZBranchProcesor(true));
-	  	assertTrue(net.isZeroZBranchProcessed());
+	  	assertTrue(net.isZeroZBranchModel());
 	  	//System.out.println(net.net2String());
 
 	  	// create the default loadflow algorithm
