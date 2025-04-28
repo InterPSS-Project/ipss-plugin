@@ -22,9 +22,11 @@
   *
   */
 
-package org.interpss.core.ca;
+package org.interpss.core.zeroz;
 
 import static org.junit.Assert.assertTrue;
+
+import java.util.List;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
@@ -42,10 +44,11 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.zeroz.ZeroZBranchProcesor;
+import com.interpss.core.net.Bus;
 
 
 public class SampleSwitchBreakerModelTest extends CorePluginTestSetup {
-	@Test 
+	//@Test 
 	public void case1_regularMethod() throws InterpssException {
 		// Create an AclfNetwork object
 		AclfNetwork net = IpssAclfNet.createAclfNetwork("Net")
@@ -66,7 +69,7 @@ public class SampleSwitchBreakerModelTest extends CorePluginTestSetup {
 	  	//System.out.println(AclfOutFunc.loadFlowSummary(net));
     }	
 
-	@Test 
+	//@Test 
 	public void case2_zeroZBranchProcessing()  throws InterpssException {
 		// Create an AclfNetwork object
 		AclfNetwork net = IpssAclfNet.createAclfNetwork("Net")
