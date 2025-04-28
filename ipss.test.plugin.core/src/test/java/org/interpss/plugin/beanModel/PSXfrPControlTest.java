@@ -42,7 +42,7 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.core.funcImpl.AclfFunction;
+import com.interpss.core.funcImpl.AclfAdptFunction;
 import com.interpss.simu.util.sample.SampleTestingCases;
 
 public class PSXfrPControlTest extends CorePluginTestSetup {
@@ -115,7 +115,7 @@ public class PSXfrPControlTest extends CorePluginTestSetup {
 				
 		//System.out.println(net.net2String());		
 				
-		assertTrue("", AclfFunction.nOfPSXfrPControl.apply(net) == 1);
+		assertTrue("", AclfAdptFunction.nOfPSXfrPControl.apply(net) == 1);
 		
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
