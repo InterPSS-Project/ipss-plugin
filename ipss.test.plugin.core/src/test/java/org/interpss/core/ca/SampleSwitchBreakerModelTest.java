@@ -79,7 +79,7 @@ public class SampleSwitchBreakerModelTest extends CorePluginTestSetup {
 	  	// process zero impedance branches in the network
 	  	net.setZeroZBranchThreshold(0.00001);
 	  	net.accept(new ZeroZBranchProcesor());
-	  	assertTrue(net.isZeroZBranchProcessed());
+	  	assertTrue(net.isZeroZBranchModel());
 
 	  	// create the default loadflow algorithm
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
