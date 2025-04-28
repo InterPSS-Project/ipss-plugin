@@ -37,7 +37,7 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.core.funcImpl.ZeroZBranchNetHelper;
+import com.interpss.core.funcImpl.zeroz.ZeroZBranchNetHelper;
 import com.interpss.simu.SimuContext;
 
 public class IEEECommonFormatTest extends CorePluginTestSetup {
