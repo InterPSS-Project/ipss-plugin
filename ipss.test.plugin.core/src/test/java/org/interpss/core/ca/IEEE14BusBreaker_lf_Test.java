@@ -44,7 +44,7 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.core.funcImpl.ZeroZBranchProcesor;
+import com.interpss.core.funcImpl.zeroz.ZeroZBranchProcesor;
 
 
 public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {

@@ -41,7 +41,7 @@ import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.core.funcImpl.ZeroZBranchProcesor;
+import com.interpss.core.funcImpl.zeroz.ZeroZBranchProcesor;
 
 
 public class SampleSwitchBreakerModelTest extends CorePluginTestSetup {
