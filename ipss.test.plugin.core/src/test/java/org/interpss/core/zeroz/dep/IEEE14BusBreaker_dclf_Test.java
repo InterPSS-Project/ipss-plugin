@@ -22,7 +22,7 @@
   *
   */
 
-package org.interpss.core.zeroz;
+package org.interpss.core.zeroz.dep;
 
 import static org.junit.Assert.assertTrue;
 
@@ -38,7 +38,7 @@ import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
 import com.interpss.core.common.ReferenceBusException;
 import com.interpss.core.funcImpl.zeroz.ZeroZBranchProcesor;
 
-
+@Deprecated
 public class IEEE14BusBreaker_dclf_Test extends CorePluginTestSetup {
 	@Test 
 	public void case1_regularMethod() throws  InterpssException, ReferenceBusException, IpssNumericException {
