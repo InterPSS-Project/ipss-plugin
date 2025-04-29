@@ -47,8 +47,8 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.zeroz.ZeroZBranchProcesor;
 
 
-public class ZeroZBranchCheckDataIEEE14Test extends CorePluginTestSetup {
-	//@Test there is a loop in the system. 
+public class IEEE14ZeroZBranchCheckDataTest extends CorePluginTestSetup {
+	@Test 
 	public void case1_regularMethod() throws  InterpssException {
 		// Create an AclfNetwork object
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/ieee14Bus_breaker.xml")
@@ -57,6 +57,6 @@ public class ZeroZBranchCheckDataIEEE14Test extends CorePluginTestSetup {
 				.getImportedObj();
 	  	//System.out.println(net.net2String());
 
-		net.checkData();
+		net.checkData(); 
     }	
 }
