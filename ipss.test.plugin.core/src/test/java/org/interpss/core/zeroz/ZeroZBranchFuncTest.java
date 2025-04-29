@@ -65,14 +65,19 @@ public class ZeroZBranchFuncTest extends CorePluginTestSetup {
 	  	assertTrue("", net.getBus("Bus2").isConnect2ZeroZBranch());
 	  	assertTrue("", net.getBus("Bus3").isConnect2ZeroZBranch());
 	  	
-	  	List<Bus> zeroZBusList = net.getBus("Bus2").findZeroZPathBuses(false);
-	  	System.out.println("Bus2: " + zeroZBusList.size());
+		net.getBusList().forEach(bus -> {
+			if (bus.isConnect2ZeroZBranch()) {
+				System.out.println("\nBus: " + bus.getId() + " is connected to a zeroZ branch");
+				List<Bus> busList = bus.findZeroZPathBuses();
+				System.out.println(busList.size() + " zeroZ path buses");
+				for (Bus b : busList) {
+					System.out.println("Bus: " + b.getId());
+				}
+			}
+		});
 	  	
-	  	List<Bus> zeroZBusList1 = net.getBus("Bus3").findZeroZPathBuses(false);
-	  	System.out.println("Bus3: " + zeroZBusList1.size());
-	  	
-	  	assertTrue("", net.getBus("Bus2").findZeroZPathBuses(false).size() == 2);
-	  	assertTrue("", net.getBus("Bus3").findZeroZPathBuses(false).size() == 2);
+	  	assertTrue("", net.getBus("Bus2").findZeroZPathBuses().size() == 2);
+	  	assertTrue("", net.getBus("Bus3").findZeroZPathBuses().size() == 2);
 	}
 
 	private void set2BusNetworkData(AclfNetwork net, IPSSMsgHub msg) throws InterpssException {

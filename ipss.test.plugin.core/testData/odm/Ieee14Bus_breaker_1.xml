@@ -13,7 +13,10 @@
     <!--  
        net diagram: https://drive.google.com/a/interpss.org/?tab=mo#folders/0BzjeDvtdQBeyVFBZRnN1WGFzUXc
        
-       There is a breaker loop at Bus-14 
+       There is a breaker loop at Bus-7
+       
+           (7)  -> (72) -> (74)
+                  ->  (71) -> (74)
     -->
     <aclfNet id="Base_Case_from_IEEECDF_format">
         <nvPair>

@@ -22,7 +22,7 @@
   *
   */
 
-package org.interpss.core.zeroz;
+package org.interpss.core.zeroz.dep;
 
 import static org.junit.Assert.assertTrue;
 
@@ -46,8 +46,8 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.zeroz.ZeroZBranchProcesor;
 import com.interpss.core.net.Bus;
 
-
-public class SampleSwitchBreakerModelTest extends CorePluginTestSetup {
+@Deprecated
+public class SampleZeroZBranchModelTest extends CorePluginTestSetup {
 	//@Test 
 	public void case1_regularMethod() throws InterpssException {
 		// Create an AclfNetwork object

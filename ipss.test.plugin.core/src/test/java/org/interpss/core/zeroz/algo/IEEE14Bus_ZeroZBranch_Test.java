@@ -22,7 +22,7 @@
   *
   */
 
-package org.interpss.core.zeroz;
+package org.interpss.core.zeroz.algo;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
