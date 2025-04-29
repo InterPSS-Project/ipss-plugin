@@ -69,5 +69,13 @@ public class IEEE14ZeroZBranchFuncTest extends CorePluginTestSetup {
 	  	assertTrue("", net.getBus("Bus7").findZeroZPathBuses().stream().filter(bus -> 
 	  		bus.getId().equals("Bus7") || bus.getId().equals("Bus71") || bus.getId().equals("Bus72") ||
 	  		bus.getId().equals("Bus73") || bus.getId().equals("Bus74")).count() == 5);
+	  	
+	  	assertTrue("", net.getBus("Bus71").findZeroZPathBuses().stream().filter(bus -> 
+	  		bus.getId().equals("Bus7") || bus.getId().equals("Bus71") || bus.getId().equals("Bus72") ||
+	  		bus.getId().equals("Bus73") || bus.getId().equals("Bus74")).count() == 5);
+	  	
+	  	assertTrue("", net.getBus("Bus72").findZeroZPathBuses().stream().filter(bus -> 
+  			bus.getId().equals("Bus7") || bus.getId().equals("Bus71") || bus.getId().equals("Bus72") ||
+  			bus.getId().equals("Bus73") || bus.getId().equals("Bus74")).count() == 5);
     }	
 }
