@@ -79,6 +79,16 @@ public class ZeroZBranchFuncTest extends CorePluginTestSetup {
 	  	assertTrue("", net.getBus("Bus2").findZeroZPathBuses().size() == 2);
 	  	assertTrue("", net.getBus("Bus3").findZeroZPathBuses().size() == 2);
 	}
+	
+	private void netBusMerge(AclfNetwork net, List<Bus> busList) throws InterpssException {
+		// merge the buses
+
+		// 1) create a new bus base on the busList
+		
+		// 2) reconnect the branches to the new bus
+		
+		// 3) rebuild the network cache lookup table
+	}
 
 	private void set2BusNetworkData(AclfNetwork net, IPSSMsgHub msg) throws InterpssException {
 		IpssAclfNet.addAclfBus("Bus1", "Bus 1", net)
