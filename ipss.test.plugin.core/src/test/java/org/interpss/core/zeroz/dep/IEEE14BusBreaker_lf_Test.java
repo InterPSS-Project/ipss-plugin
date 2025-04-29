@@ -22,7 +22,7 @@
   *
   */
 
-package org.interpss.core.zeroz;
+package org.interpss.core.zeroz.dep;
 
 import static org.junit.Assert.assertTrue;
 
@@ -46,7 +46,7 @@ import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.zeroz.ZeroZBranchProcesor;
 
-
+@Deprecated
 public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 	//@Test there is a loop in the system. 
 	public void case1_regularMethod() throws  InterpssException {
