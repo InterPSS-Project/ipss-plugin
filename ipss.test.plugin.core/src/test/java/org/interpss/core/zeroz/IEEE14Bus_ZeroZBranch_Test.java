@@ -22,7 +22,7 @@
   *
   */
 
-package org.interpss.core.aclf.smallz;
+package org.interpss.core.zeroz;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
@@ -42,7 +42,7 @@ import com.interpss.core.net.Branch;
 import com.interpss.core.net.BranchFlowDirection;
 
 
-public class IEEE14Bus_SmallZBranch_Test extends CorePluginTestSetup {
+public class IEEE14Bus_ZeroZBranch_Test extends CorePluginTestSetup {
 	@Test 
 	public void regularMethod() throws  InterpssException {
 		// Create an AclfNetwork object
