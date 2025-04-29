@@ -26,25 +26,14 @@ package org.interpss.core.zeroz;
 
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
-
-import org.interpss.CorePluginFunction;
+import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.numeric.datatype.Unit.UnitType;
+import org.interpss.numeric.util.NumericUtil;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
-import com.interpss.core.CoreObjectFactory;
-import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
-import com.interpss.core.algo.AclfMethodType;
-import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.core.funcImpl.zeroz.ZeroZBranchProcesor;
 
 
 public class IEEE14ZeroZBranchCheckDataTest extends CorePluginTestSetup {
@@ -57,6 +46,14 @@ public class IEEE14ZeroZBranchCheckDataTest extends CorePluginTestSetup {
 				.getImportedObj();
 	  	//System.out.println(net.net2String());
 
+		// by default, auto set the zeroZ branch threshold (1E-6) is turned on
 		net.checkData(); 
+		
+		net.getBranchList().forEach(branch -> {
+			if (branch.isZeroZBranch()) {
+				//System.out.println("\nBranch: " + branch.getId() + " is a zeroZ branch");
+				assertTrue("", NumericUtil.equals(branch.getZ(), new Complex(0.0, net.getZeroZBranchThreshold()), 1E-6));
+			}
+		});
     }	
 }
