@@ -33,7 +33,7 @@ import org.junit.Test;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.funcImpl.AclfNetTopoChangeHelper;
+import com.interpss.core.funcImpl.AclfNetZeroZBranchHelper;
 
 
 public class IEEE14ZeroZBranchFuncLoopTest extends CorePluginTestSetup {
@@ -46,6 +46,9 @@ public class IEEE14ZeroZBranchFuncLoopTest extends CorePluginTestSetup {
 				.getImportedObj();
 	  	//System.out.println(net.net2String());
 
+	  	System.out.println("Active Bus & Branch: " + net.getNoActiveBus() + " " + net.getNoActiveBranch());
+  		assertTrue((net.getNoActiveBus() == 23 && net.getNoActiveBranch() == 30));
+  		
 		/*
 		net.getBusList().forEach(bus -> {
 			if (bus.isConnect2ZeroZBranch()) {
@@ -73,11 +76,14 @@ public class IEEE14ZeroZBranchFuncLoopTest extends CorePluginTestSetup {
 	  		bus.getId().equals("Bus7") || bus.getId().equals("Bus71") || bus.getId().equals("Bus72") ||
 	  		bus.getId().equals("Bus73") || bus.getId().equals("Bus74")).count() == 5);
 	  	
-		AclfNetTopoChangeHelper helper = new AclfNetTopoChangeHelper(net);
-	  	helper.zeroZBranchBusMerge("Bus1");
-	  	helper.zeroZBranchBusMerge("Bus7");
-	  	helper.zeroZBranchBusMerge("Bus14");
+		AclfNetZeroZBranchHelper helper = new AclfNetZeroZBranchHelper(net);
+		net.getBusList().forEach(bus -> {
+			if (bus.isConnect2ZeroZBranch()) 
+				helper.zeroZBranchBusMerge(bus.getId());
+		});
 	  	
+  		assertTrue((net.getNoActiveBus() == 14 && net.getNoActiveBranch() == 20));
+  		
 		net.getBusList().forEach(bus -> {
 			assertTrue("Bus should be not connected any zero Z branch: "+bus.getId(), 
 						bus.isConnect2ZeroZBranch() == false);
