@@ -41,7 +41,7 @@ public class IEEE14ZeroZBranchFuncTest extends CorePluginTestSetup {
 	@Test 
 	public void case1_regularMethod() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/ieee14Bus_breaker.xml")
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/Ieee14Bus_breaker.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();

@@ -7,11 +7,12 @@ IEEE_LIB_DIR="../ipss-common/ipss.lib/lib/ieee"
 for JAR_FILE in "$IEEE_LIB_DIR"/*.jar; do
   if [ -f "$JAR_FILE" ]; then
 
-     FILENAME=$(basename "$JAR_FILE")
-    # Extract artifactId based on filename
-    ARTIFACTID="${FILENAME%.*}"  # Remove extension
+    FILENAME=$(basename "$JAR_FILE")
+    # Use sed to extract artifactId by removing any version pattern and extension
+    ARTIFACTID=$(echo "$FILENAME" | sed -E 's/-[0-9]+(\.[0-9]+)*(-SNAPSHOT)?\.jar$//')
+
     GROUPID="org.ieee.odm"  
-    VERSION="1.0"           
+    VERSION="${FILENAME##*-}"  # Extract version from filename
 
     # Install the JAR file into the local Maven repository
     mvn install:install-file -Dfile="$JAR_FILE" \
