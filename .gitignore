@@ -3,3 +3,4 @@
 *.csv
 *.dat
 *.prefs
+/.classpath
