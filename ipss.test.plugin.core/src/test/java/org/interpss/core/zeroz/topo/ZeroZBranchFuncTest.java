@@ -22,7 +22,7 @@
   *
   */
 
-package org.interpss.core.zeroz;
+package org.interpss.core.zeroz.topo;
 
 import static org.junit.Assert.assertTrue;
 
@@ -36,10 +36,14 @@ import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.msg.IPSSMsgHub;
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
+import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.funcImpl.AclfNetZeroZBranchHelper;
+import com.interpss.core.net.BranchBusSide;
 import com.interpss.core.net.Bus;
 
 
@@ -78,16 +82,25 @@ public class ZeroZBranchFuncTest extends CorePluginTestSetup {
 	  	
 	  	assertTrue("", net.getBus("Bus2").findZeroZPathBuses().size() == 2);
 	  	assertTrue("", net.getBus("Bus3").findZeroZPathBuses().size() == 2);
-	}
-	
-	private void netBusMerge(AclfNetwork net, List<Bus> busList) throws InterpssException {
-		// merge the buses
-
-		// 1) create a new bus base on the busList
-		
-		// 2) reconnect the branches to the new bus
-		
-		// 3) rebuild the network cache lookup table
+	  	
+	  	// before the merge
+	  	assertTrue("", net.getNoActiveBus() == 3);
+	  	assertTrue("", net.getNoActiveBranch() == 2);
+	  	
+	  	assertTrue("", net.getBranch("Bus1->Bus2(Branch 1)").isActive());
+	  	assertTrue("", net.getBranch("Bus2->Bus3(Branch 1)").isActive());
+	  	
+		// select a bus as the focus bus.
+		AclfNetZeroZBranchHelper helper = new AclfNetZeroZBranchHelper(net);
+	  	helper.zeroZBranchBusMerge("Bus3");
+	  	
+	  	// after the merge
+	  	assertTrue("", net.getNoActiveBus() == 2);
+	  	assertTrue("", net.getNoActiveBranch() == 1);
+	  	
+	  	// the branch it reconnected to the Bus3
+	  	assertTrue("", net.getBranch("Bus1->Bus3(Branch 1)").isActive());
+	  	assertTrue("", !net.getBranch("Bus2->Bus3(Branch 1)").isActive());
 	}
 
 	private void set2BusNetworkData(AclfNetwork net, IPSSMsgHub msg) throws InterpssException {

@@ -22,7 +22,7 @@
   *
   */
 
-package org.interpss.core.zeroz;
+package org.interpss.core.zeroz.topo;
 
 import static org.junit.Assert.assertTrue;
 
@@ -33,21 +33,26 @@ import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.funcImpl.AclfNetZeroZBranchHelper;
 import com.interpss.core.net.Bus;
 
 
 public class IEEE14ZeroZBranchFuncTest extends CorePluginTestSetup {
 	@Test 
-	public void case1_regularMethod() throws  InterpssException {
+	public void test() throws  InterpssException {
 		// Create an AclfNetwork object
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/Ieee14Bus_breaker.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();
 	  	//System.out.println(net.net2String());
-
-		/*
+		
+	  	System.out.println("Active Bus & Branch: " + net.getNoActiveBus() + " " + net.getNoActiveBranch());
+  		assertTrue((net.getNoActiveBus() == 23 && net.getNoActiveBranch() == 30));
+  		
+	  	/*
 		net.getBusList().forEach(bus -> {
 			if (bus.isConnect2ZeroZBranch()) {
 				System.out.println("\nBus: " + bus.getId() + " is connected to a zeroZ branch");
@@ -77,5 +82,27 @@ public class IEEE14ZeroZBranchFuncTest extends CorePluginTestSetup {
 	  	assertTrue("", net.getBus("Bus72").findZeroZPathBuses().stream().filter(bus -> 
   			bus.getId().equals("Bus7") || bus.getId().equals("Bus71") || bus.getId().equals("Bus72") ||
   			bus.getId().equals("Bus73") || bus.getId().equals("Bus74")).count() == 5);
+	  	
+		AclfNetZeroZBranchHelper helper = new AclfNetZeroZBranchHelper(net);
+		net.getBusList().forEach(bus -> {
+			if (bus.isConnect2ZeroZBranch()) 
+				helper.zeroZBranchBusMerge(bus.getId());
+		});
+	  	
+	  	//System.out.println("Active Bus & Branch: " + net.getNoActiveBus() + " " + net.getNoActiveBranch());
+  		assertTrue((net.getNoActiveBus() == 14 && net.getNoActiveBranch() == 20));
+	  	
+		net.getBusList().forEach(bus -> {
+			//System.out.println("Bus: " + bus.getId() + ", " + bus.isActive());
+			assertTrue("Bus should be not connected any zero Z branch: "+bus.getId(), 
+						bus.isConnect2ZeroZBranch() == false);
+		});
+		
+		net.getBranchList().forEach(bra -> {
+			AclfBranch aclfBra = (AclfBranch)bra;
+			//System.out.println("Branch: " + aclfBra.getId() + ", " + aclfBra.isActive() + " is a zeroZ branch: " + aclfBra.isZeroZBranch());
+			assertTrue("There should be no active zero Z branch "+aclfBra.getId(), 
+						!(aclfBra.isActive() && aclfBra.isZeroZBranch()));
+		});
     }	
 }
