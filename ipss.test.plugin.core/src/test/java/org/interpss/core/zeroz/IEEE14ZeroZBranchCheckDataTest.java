@@ -38,7 +38,7 @@ import com.interpss.core.aclf.AclfNetwork;
 
 public class IEEE14ZeroZBranchCheckDataTest extends CorePluginTestSetup {
 	@Test 
-	public void case1_regularMethod() throws  InterpssException {
+	public void test() throws  InterpssException {
 		// Create an AclfNetwork object
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/ieee14Bus_breaker.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
