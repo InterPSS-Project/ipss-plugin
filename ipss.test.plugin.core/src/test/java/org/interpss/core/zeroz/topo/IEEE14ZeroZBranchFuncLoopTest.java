@@ -22,26 +22,25 @@
   *
   */
 
-package org.interpss.core.zeroz;
+package org.interpss.core.zeroz.topo;
 
 import static org.junit.Assert.assertTrue;
-
-import java.util.List;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.net.Bus;
+import com.interpss.core.funcImpl.AclfNetTopoChangeHelper;
 
 
-public class IEEE14ZeroZBranchFuncTest extends CorePluginTestSetup {
+public class IEEE14ZeroZBranchFuncLoopTest extends CorePluginTestSetup {
 	@Test 
-	public void case1_regularMethod() throws  InterpssException {
+	public void test() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/ieee14Bus_breaker.xml")
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/ieee14Bus_breaker_1.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();
@@ -58,7 +57,7 @@ public class IEEE14ZeroZBranchFuncTest extends CorePluginTestSetup {
 				}
 			}
 		});
-		*/
+		*/	
 		
 	  	assertTrue("", net.getBus("Bus7").findZeroZPathBuses().size() == 5);
 	  	assertTrue("", net.getBus("Bus71").findZeroZPathBuses().size() == 5);
@@ -69,13 +68,26 @@ public class IEEE14ZeroZBranchFuncTest extends CorePluginTestSetup {
 	  	assertTrue("", net.getBus("Bus7").findZeroZPathBuses().stream().filter(bus -> 
 	  		bus.getId().equals("Bus7") || bus.getId().equals("Bus71") || bus.getId().equals("Bus72") ||
 	  		bus.getId().equals("Bus73") || bus.getId().equals("Bus74")).count() == 5);
-	  	
+
 	  	assertTrue("", net.getBus("Bus71").findZeroZPathBuses().stream().filter(bus -> 
 	  		bus.getId().equals("Bus7") || bus.getId().equals("Bus71") || bus.getId().equals("Bus72") ||
 	  		bus.getId().equals("Bus73") || bus.getId().equals("Bus74")).count() == 5);
 	  	
-	  	assertTrue("", net.getBus("Bus72").findZeroZPathBuses().stream().filter(bus -> 
-  			bus.getId().equals("Bus7") || bus.getId().equals("Bus71") || bus.getId().equals("Bus72") ||
-  			bus.getId().equals("Bus73") || bus.getId().equals("Bus74")).count() == 5);
+		AclfNetTopoChangeHelper helper = new AclfNetTopoChangeHelper(net);
+	  	helper.zeroZBranchBusMerge("Bus1");
+	  	helper.zeroZBranchBusMerge("Bus7");
+	  	helper.zeroZBranchBusMerge("Bus14");
+	  	
+		net.getBusList().forEach(bus -> {
+			assertTrue("Bus should be not connected any zero Z branch: "+bus.getId(), 
+						bus.isConnect2ZeroZBranch() == false);
+		});
+		
+		net.getBranchList().forEach(bra -> {
+			AclfBranch aclfBra = (AclfBranch)bra;
+			//System.out.println("Branch: " + aclfBra.getId() + ", " + aclfBra.isActive() + " is a zeroZ branch: " + aclfBra.isZeroZBranch());
+			assertTrue("There should be no active zero Z branch "+aclfBra.getId(), 
+						!(aclfBra.isActive() && aclfBra.isZeroZBranch()));
+		});	  	
     }	
 }
