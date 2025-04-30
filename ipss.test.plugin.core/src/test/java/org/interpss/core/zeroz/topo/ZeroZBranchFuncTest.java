@@ -42,7 +42,7 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.funcImpl.AclfNetTopoChangeHelper;
+import com.interpss.core.funcImpl.AclfNetZeroZBranchHelper;
 import com.interpss.core.net.BranchBusSide;
 import com.interpss.core.net.Bus;
 
@@ -91,7 +91,7 @@ public class ZeroZBranchFuncTest extends CorePluginTestSetup {
 	  	assertTrue("", net.getBranch("Bus2->Bus3(Branch 1)").isActive());
 	  	
 		// select a bus as the focus bus.
-		AclfNetTopoChangeHelper helper = new AclfNetTopoChangeHelper(net);
+		AclfNetZeroZBranchHelper helper = new AclfNetZeroZBranchHelper(net);
 	  	helper.zeroZBranchBusMerge("Bus3");
 	  	
 	  	// after the merge
