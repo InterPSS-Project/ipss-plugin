@@ -22,7 +22,7 @@ for JAR_FILE in "$IEEE_LIB_DIR"/*.jar; do
                              -Dpackaging=jar \
                              -DgeneratePom=true
 
-    echo "Installed $JAR_FILE" with artifactId: $ARTIFACTID"
+    echo "Installed $JAR_FILE" with artifactId: $ARTIFACTID
   fi
 done
 
@@ -42,7 +42,7 @@ mvn install:install-file -Dfile="$JAR_FILE" \
                             -Dpackaging=jar \
                              -DgeneratePom=true
 
-echo "Installed $JAR_FILE" with artifactId: $ARTIFACTID"
+echo "Installed $JAR_FILE" with artifactId: $ARTIFACTID
 
 
 mvn clean install -DskipTests
