@@ -91,9 +91,9 @@ public abstract class AbstractODMNetDataMapper<Tfrom, Tto> extends AbstractMappe
 		bus.setName(busRec.getName() == null? "Bus" : busRec.getName());
 		bus.setDesc(busRec.getDesc() == null? "Bus Desc" : busRec.getDesc());
 		bus.setStatus(busRec.isOffLine() != null? !busRec.isOffLine() : true);
-		// if (!bus.isActive()) {
-		// 	ipssLogger.info("Bus is not active, " + bus.getId());
-		// }
+		if (!bus.isActive()) {
+			ipssLogger.info("Bus is not active, " + bus.getId());
+		}
 		
 		/*
 		if (busRec.getCimRdfRecords() != null && busRec.getCimRdfRecords().getRdfRec().size() > 0) {
@@ -156,9 +156,9 @@ public abstract class AbstractODMNetDataMapper<Tfrom, Tto> extends AbstractMappe
 		branch.setName(branchRec.getName() == null ? "" : branchRec.getName());
 		branch.setDesc(branchRec.getDesc() == null ? "" : branchRec.getDesc());
 		branch.setStatus(branchRec.isOffLine() != null ? !branchRec.isOffLine() : true);
-		// if (!branch.isActive()) {
-		// 	ipssLogger.info("Branch is not active, " + branch.getId());
-		// }
+		if (!branch.isActive()) {
+			ipssLogger.info("Branch is not active, " + branch.getId());
+		}
 		if (branchRec.getAreaNumber() != null) {
 			Area area = CoreObjectFactory.createArea(branchRec.getAreaNumber(), net);
 			branch.setArea(area);
