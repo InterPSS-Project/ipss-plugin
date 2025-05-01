@@ -185,6 +185,14 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 				else 
 					branch = CoreObjectFactory.createAclfBranch();
 				
+				// TODO: fix the following error:
+				/*
+				 * Exception in thread "main" java.lang.NullPointerException: Cannot invoke "com.interpss.core.net.Network.getOriginalDataFormat()" 
+				 * because the return value of "com.interpss.core.aclf.Aclf3WBranch.getNetwork()" is null
+				 */
+				//set the parent network of the branch object
+				branch.setNetwork(aclfNet);
+				
 				if(	xmlBranch instanceof DCLineData2TXmlType || xmlBranch instanceof VSCHVDC2TXmlType)
 					mapAclfHVDC2TData(xmlBranch, branch, aclfNet);
 					
