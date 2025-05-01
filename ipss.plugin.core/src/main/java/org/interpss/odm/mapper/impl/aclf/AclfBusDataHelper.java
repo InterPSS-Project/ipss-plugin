@@ -162,11 +162,9 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 		if (xmlBusData.getShuntYData() != null ){
 			if(xmlBusData.getShuntYData().getEquivY() != null) {
 				YXmlType shuntY = xmlBusData.getShuntYData().getEquivY();
-	//			byte unit = shuntY.getUnit() == YUnitType.MVAR? UnitType.mVar : UnitType.PU;
 				UnitType unit = toYUnit.apply(shuntY.getUnit());
 				Complex ypu = UnitHelper.yConversion(new Complex(shuntY.getRe(), shuntY.getIm()),
 						bus.getBaseVoltage(), aclfNet.getBaseKva(), unit, UnitType.PU);
-				//System.out.println("----------->" + shuntY.getIm() + ", " + shuntY.getUnit() + ", " + ypu.getImaginary());
 				bus.setShuntY(ypu);
 			}
 			// NOTE either equivY or contributeShuntY is allowed for input.
@@ -174,7 +172,10 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 				int genCnt = 1;
 				Complex totalYpu = new Complex (0,0);
 				for(LoadflowShuntYDataXmlType elem :xmlBusData.getShuntYData().getContributeShuntY()){
-		
+					// check the status of the shuntY
+					if(elem.isOffLine() != null && elem.isOffLine()){
+						continue;
+					}
 					YXmlType shuntY = elem.getY();
 					//if shuntY is null, throw exception with detailed bus info
 					if(shuntY == null)
@@ -448,6 +449,8 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 		SwitchedShunt swchShunt = CoreObjectFactory.createSwitchedShunt();
 		//TODO how the switched shunt should be modeled, controlBus or shuntDevice?
 		//swithced shunt is a also a AclfControlBus
+		//set status
+		swchShunt.setStatus(!xmlSwitchedShuntData.isOffLine());
 		
 		//this.bus.setBusControl(swchShunt);
 		this.bus.setSwitchedShuntDevice(swchShunt);
