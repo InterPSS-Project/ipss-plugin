@@ -31,7 +31,7 @@ import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.funcImpl.zeroz.ZeroZBranchProcesor;
+import com.interpss.core.funcImpl.zeroz.dep.ZeroZBranchProcesor;
 
 
 public class IEEE14BusBreaker_equivCABranch_Test extends CorePluginTestSetup {
