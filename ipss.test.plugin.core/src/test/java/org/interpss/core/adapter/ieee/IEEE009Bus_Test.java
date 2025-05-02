@@ -14,7 +14,7 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.core.funcImpl.zeroz.ZeroZBranchNetHelper;
+import com.interpss.core.funcImpl.zeroz.dep.ZeroZBranchNetHelper;
 
 
 public class IEEE009Bus_Test extends CorePluginTestSetup{

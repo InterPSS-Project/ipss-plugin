@@ -33,7 +33,7 @@ import org.junit.Test;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.funcImpl.AclfNetZeroZBranchHelper;
+import com.interpss.core.funcImpl.zeroz.AclfNetZeroZBranchHelper;
 
 
 public class IEEE14ZeroZBranchFuncLoopTest extends CorePluginTestSetup {

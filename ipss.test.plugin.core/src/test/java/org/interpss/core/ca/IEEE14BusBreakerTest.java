@@ -36,8 +36,8 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.funcImpl.zeroz.ZeroZBranchFunction;
-import com.interpss.core.funcImpl.zeroz.ZeroZBranchProcesor;
+import com.interpss.core.funcImpl.zeroz.dep.ZeroZBranchFunction;
+import com.interpss.core.funcImpl.zeroz.dep.ZeroZBranchProcesor;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 
