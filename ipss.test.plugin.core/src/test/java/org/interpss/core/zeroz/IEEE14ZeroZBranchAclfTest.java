@@ -52,12 +52,13 @@ public class IEEE14ZeroZBranchAclfTest extends CorePluginTestSetup {
 				.getImportedObj();
 	  	//System.out.println(net.net2String());
 
-		// by default, auto set the zeroZ branch threshold (1E-6) is turned on
+		// by default, auto set the zeroZ branch to the threshold (1E-6) is turned on
 		net.checkData(); 
 		
 		net.getBranchList().forEach(branch -> {
 			if (branch.isZeroZBranch()) {
 				//System.out.println("\nBranch: " + branch.getId() + " is a zeroZ branch");
+				// for zeroZ branch, the Z value should be set to the threshold
 				assertTrue("", NumericUtil.equals(branch.getZ(), new Complex(0.0, net.getZeroZBranchThreshold()), 1E-6));
 			}
 		});
