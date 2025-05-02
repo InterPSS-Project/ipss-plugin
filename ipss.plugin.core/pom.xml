@@ -75,6 +75,12 @@
 	    <version>1.2.0</version>
 	</dependency>	
 	
+	<dependency>
+	    <groupId>org.ojalgo</groupId>
+	    <artifactId>ojalgo</artifactId>
+	    <version>55.2.0</version>
+	</dependency>
+	
 	<!-- https://mvnrepository.com/artifact/com.datumbox/lpsolve -->
 	<dependency>
 	    <groupId>com.datumbox</groupId>
