@@ -9,8 +9,8 @@ import org.interpss.core.adapter.bpa.BPASampleTestCases;
 import org.interpss.core.adapter.ge.GESampleTestCases;
 import org.interpss.core.adapter.ieee.IEEE009Bus_Test;
 import org.interpss.core.adapter.ieee.IEEE118Bus_Test;
-import org.interpss.core.adapter.ieee.IEEECommonFormatTest;
 import org.interpss.core.adapter.ieee.IEEECommonFormat_CommaTest;
+import org.interpss.core.adapter.ieee.dep.IEEECommonFormatTest;
 import org.interpss.core.adapter.internal.Bus11856Test;
 import org.interpss.core.adapter.internal.Bus1824Test;
 import org.interpss.core.adapter.internal.Bus6384Test;
@@ -181,7 +181,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	
 	// core file adapter
 	IEEECommonFormat_CommaTest.class,
-	IEEECommonFormatTest.class,
+	//IEEECommonFormatTest.class,
 	IEEE009Bus_Test.class,
 	IEEE118Bus_Test.class,
 	BPASampleTestCases.class,
