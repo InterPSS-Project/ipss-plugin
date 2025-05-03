@@ -40,7 +40,7 @@ import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 
 public class IEEE14_OptAdj_Basecase_Test extends CorePluginTestSetup {
 	@Test
-	public void seqTest() throws InterpssException {
+	public void test() throws InterpssException {
 		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
 				.load("testData/adpter/ieee_format/ieee14.ieee")
