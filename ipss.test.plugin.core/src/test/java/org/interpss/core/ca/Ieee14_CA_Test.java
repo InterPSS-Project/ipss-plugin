@@ -24,7 +24,6 @@
 
 package org.interpss.core.ca;
 
-import static org.interpss.CorePluginFunction.DclfResult;
 import static org.junit.Assert.assertTrue;
 
 import org.interpss.CorePluginFactory;
@@ -38,8 +37,8 @@ import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.CaBranchOutageType;
-import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.CaOutageBranch;
+import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 import com.interpss.core.common.OutageConnectivityException;
