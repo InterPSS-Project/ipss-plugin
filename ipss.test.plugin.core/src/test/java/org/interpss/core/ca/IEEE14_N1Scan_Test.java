@@ -35,6 +35,8 @@ import java.util.List;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
+import org.interpss.numeric.datatype.AtomicCounter;
+import org.interpss.numeric.datatype.Counter;
 import org.interpss.numeric.util.NumericUtil;
 import org.junit.Test;
 
@@ -49,11 +51,18 @@ import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 
 public class IEEE14_N1Scan_Test extends CorePluginTestSetup {
 	@Test
-	public void seqTest() throws InterpssException {
+	public void test() throws InterpssException {
 		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
 				.load("testData/adpter/ieee_format/ieee14.ieee")
 				.getAclfNet();
+		
+		// set the branch rating.
+		net.getBranchList().stream()
+			.forEach(branch -> {
+				AclfBranch aclfBranch = (AclfBranch) branch;
+				aclfBranch.setRatingMva1(120.0);
+			});
 		
 		// define an caAlgo object and perform DCLF 
 		ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(net);
@@ -73,6 +82,7 @@ public class IEEE14_N1Scan_Test extends CorePluginTestSetup {
 				contList.add(cont);
 			});
 		
+		AtomicCounter cnt = new AtomicCounter();
 		contList.parallelStream()
 			.forEach(contingency -> {
 				ContingencyAnalysisMonad.of(dclfAlgo, contingency)
@@ -86,8 +96,18 @@ public class IEEE14_N1Scan_Test extends CorePluginTestSetup {
 						else if (resultRec.aclfBranch.getId().equals("resultRec.aclfBranch.getId()") &&
 								resultRec.contingency.getId().equals("contBranch:Bus3->Bus4(1)"))
 							assertTrue("", NumericUtil.equals(resultRec.getPostFlowMW(), 152.90, 0.01));
+						
+						if (resultRec.calLoadingPercent() >= 100.0) {
+							cnt.increment();
+							System.out.println(resultRec.aclfBranch.getId() + 
+									", contBranch:" + resultRec.contingency.getId() +
+									" postContFlow: " + resultRec.getPostFlowMW() +
+									" loading: " + resultRec.calLoadingPercent());
+						}
 					});
 		});
+		
+		assertTrue("Total number of branches with loading > 100%: " + cnt.getCount(), cnt.getCount() == 18);
 	}
 }
 /*
