@@ -22,7 +22,7 @@
   *
   */
 
-package org.interpss.core.ca;
+package org.interpss.core.ca.dep;
 
 import static org.junit.Assert.assertTrue;
 
@@ -36,12 +36,12 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.funcImpl.zeroz.ZeroZBranchFunction;
-import com.interpss.core.funcImpl.zeroz.ZeroZBranchProcesor;
+import com.interpss.core.funcImpl.zeroz.dep.ZeroZBranchFunction;
+import com.interpss.core.funcImpl.zeroz.dep.ZeroZBranchProcesor;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 
-
+@Deprecated
 public class IEEE14BusBreakerTest extends CorePluginTestSetup {
 	@Test 
 	public void processZeroZBranch() throws  InterpssException {

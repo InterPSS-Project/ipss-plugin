@@ -367,7 +367,8 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 				
 				
 				gen.setMvarControlPFactor(xmlGen.getMvarVControlParticipateFactor()!=null?xmlGen.getMvarVControlParticipateFactor():1.0);
-				gen.setName(xmlGen.getName());
+				if (xmlGen.getName() != null)
+					gen.setName(xmlGen.getName());
 				//MW pf is optional
 				gen.setMwControlPFactor(xmlGen.getMwControlParticipateFactor()!=null?xmlGen.getMwControlParticipateFactor():1.0);
 				
@@ -398,8 +399,8 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 						AclfLoad load = bus instanceof AclfBus ? CoreObjectFactory.createAclfLoad(id) :
 												bus instanceof AcscBus ? CoreObjectFactory.createAcscLoad(id) :
 													DStabObjectFactory.createDStabLoad(id);
-						
-						load.setName(loadElem.getName());
+						if (loadElem.getName() != null)
+							load.setName(loadElem.getName());
 						
 						bus.getContributeLoadList().add((TLoad)load);
 						//status
