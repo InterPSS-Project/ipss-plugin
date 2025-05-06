@@ -12,7 +12,11 @@ for JAR_FILE in "$IEEE_LIB_DIR"/*.jar; do
     ARTIFACTID=$(echo "$FILENAME" | sed -E 's/-[0-9]+(\.[0-9]+)*(-SNAPSHOT)?\.jar$//')
 
     GROUPID="org.ieee.odm"  
-    VERSION="${FILENAME##*-}"  # Extract version from filename
+    VERSION=$(echo "$FILENAME" | grep -oE '[0-9]+(\.[0-9]+)*(-SNAPSHOT)?' | head -1)
+    
+    if [ -z "$VERSION" ]; then
+      VERSION="1.0"  # Default version if not found
+    fi
 
     # Install the JAR file into the local Maven repository
     mvn install:install-file -Dfile="$JAR_FILE" \
@@ -22,7 +26,7 @@ for JAR_FILE in "$IEEE_LIB_DIR"/*.jar; do
                              -Dpackaging=jar \
                              -DgeneratePom=true
 
-    echo "Installed $JAR_FILE" with artifactId: $ARTIFACTID
+    echo "Installed $JAR_FILE" with artifactId: $ARTIFACTID with version: $VERSION
   fi
 done
 
