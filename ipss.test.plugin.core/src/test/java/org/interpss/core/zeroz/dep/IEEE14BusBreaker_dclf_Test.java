@@ -36,7 +36,7 @@ import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
 import com.interpss.core.common.ReferenceBusException;
-import com.interpss.core.funcImpl.zeroz.ZeroZBranchProcesor;
+import com.interpss.core.funcImpl.zeroz.dep.ZeroZBranchProcesor;
 
 @Deprecated
 public class IEEE14BusBreaker_dclf_Test extends CorePluginTestSetup {

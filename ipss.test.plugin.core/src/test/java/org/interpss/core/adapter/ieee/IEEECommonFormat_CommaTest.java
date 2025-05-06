@@ -45,6 +45,17 @@ public class IEEECommonFormat_CommaTest extends CorePluginTestSetup {
 				.load("testData/adpter/ieee_format/ieee14_comma.ieee")
 				.getAclfNet();	
 		
+		assertTrue((net.getBusList().size() == 14 && net.getBranchList().size() == 20));
+
+		assertTrue("", net.getBus("Bus1").getId().equals("Bus1"));
+		assertTrue("", net.getBus("Bus1").getContributeGen("Bus1-G1") != null);
+		assertTrue("", net.getBus("Bus1").getContributeGen("Bus1-G1").getName().equals("Bus1-G1"));
+		
+		assertTrue("", net.getBus("Bus2").getContributeGen("Bus2-G1") != null);
+		assertTrue("", net.getBus("Bus2").getContributeGen("Bus2-G1").getName().equals("Bus2-G1"));
+		assertTrue("", net.getBus("Bus2").getContributeLoad("Bus2-L1") != null);
+		assertTrue("", net.getBus("Bus2").getContributeLoad("Bus2-L1").getName().equals("Bus2-L1"));
+		
 //		IODMAdapter adapter = new IeeeCDFAdapter(IpssLogger.getLogger());
 //		adapter.parseInputFile("testdata/ieee_format/ieee14_comma.ieee");
 //		
@@ -57,8 +68,6 @@ public class IEEECommonFormat_CommaTest extends CorePluginTestSetup {
 		
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
-
-		assertTrue((net.getBusList().size() == 14 && net.getBranchList().size() == 20));
 
 	  	//System.out.println(net.net2String());
   		assertTrue(net.isLfConverged());		
