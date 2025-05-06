@@ -22,7 +22,7 @@
   *
   */
 
-package org.interpss.core.adapter.ieee;
+package org.interpss.core.adapter.ieee.dep;
 
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
@@ -37,9 +37,10 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.core.funcImpl.zeroz.ZeroZBranchNetHelper;
+import com.interpss.core.funcImpl.zeroz.dep.ZeroZBranchNetHelper;
 import com.interpss.simu.SimuContext;
 
+@Deprecated
 public class IEEECommonFormatTest extends CorePluginTestSetup {
 	@Test 
 	public void bus14testCase() throws Exception {

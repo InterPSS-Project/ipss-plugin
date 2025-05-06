@@ -1,7 +1,7 @@
 package org.interpss.core.adapter;
 
-import org.interpss.core.adapter.ieee.IEEECommonFormatTest;
 import org.interpss.core.adapter.ieee.IEEECommonFormat_CommaTest;
+import org.interpss.core.adapter.ieee.dep.IEEECommonFormatTest;
 import org.interpss.core.adapter.internal.Bus1824Test;
 import org.interpss.core.adapter.internal.IEEE14Test;
 import org.junit.runner.RunWith;
