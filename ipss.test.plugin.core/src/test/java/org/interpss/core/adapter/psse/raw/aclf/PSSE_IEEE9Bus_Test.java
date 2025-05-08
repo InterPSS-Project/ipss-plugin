@@ -177,6 +177,50 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		
 
 	}
+
+	@Test
+	public void testAclfSpeicalXfrData() throws Exception {
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v35/ieee9_qa_v35.raw")
+				.setFormat(PSSE)
+				.setPsseVersion(PsseVersion.PSSE_35)
+				.load()
+				.getImportedObj();
+
+		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		algo.setLfMethod(AclfMethodType.NR);
+		algo.loadflow();
+
+		/*
+		 *    BusID          Code           Volt(pu)   Angle(deg)      Pg(pu)    Qg(pu)    Pl(pu)    Ql(pu)    Bus Name   
+  ----------------------------------------------------------------------------------------------------------------
+  Bus1         Swing                1.04000        0.00       0.7198    0.3803    0.0000    0.0000   BUS-1      
+  Bus2         PV                   1.02500        5.38       1.6300   -0.1312    0.0000    0.0000   BUS-2      
+  Bus3         PV                   1.02500        6.41       0.8500   -0.2607    0.0000    0.0000   BUS-3      
+  Bus4                              1.05844       -0.58       0.0000    0.0000    0.0000    0.0000   BUS-4      
+  Bus5                ConstP        1.02435       -2.20       0.0000    0.0000    1.2500    0.5000   BUS-5      
+  Bus6                ConstP        1.03802       -1.91       0.0000    0.0000    0.9000    0.3000   BUS-6      
+  Bus7                              1.04235        5.34       0.0000    0.0000    0.0000    0.0000   BUS-7      
+  Bus8                ConstP        1.02958        2.47       0.0000    0.0000    1.0000    0.3500   BUS-8      
+  Bus9                              1.04104        3.73       0.0000    0.0000    0.0000    0.0000   BUS-9    
+		 */
+
+		AclfBus swingBus = net.getBus("Bus1");
+	  	AclfSwingBusAdapter swing = swingBus.toSwingBus();
+  		Complex p = swing.getGenResults(UnitType.PU);
+  		assertTrue(Math.abs(p.getReal()-0.7198)<0.0001);
+  		assertTrue(Math.abs(p.getImaginary()-0.3803)<0.0001);
+
+		AclfBus bus4 = net.getBus("Bus4");
+		double voltageMag = bus4.getVoltageMag();
+		assertTrue(Math.abs(voltageMag - 1.05844) < 0.0001);
+
+
+		AclfBus bus7 = net.getBus("Bus7");
+		double voltageMagBus7 = bus7.getVoltageMag();
+		assertTrue(Math.abs(voltageMagBus7 - 1.04235) < 0.0001);
+		
+
+	}
 	
 	private void testVAclf(AclfNetwork net) throws Exception {
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
