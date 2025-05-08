@@ -135,14 +135,14 @@ public class AclfHvdcDataHelper {
 		if (hvdc2TXml.getRectifier() != null) {
 			ThyConverter<AclfBus> rectifier = CoreObjectFactory.createThyConverter((AclfBus)this.hvdc2T.getFromBus());
 			//TODO: It is better to rename the setRectifier method to setConverterType or something like that
-			rectifier.setRectifier(true);
+			rectifier.setConverterType(ConverterType.RECTIFIER);
 			lccHvdc2T.setRectifier(rectifier);
 			setThyRectifierData(rectifier, hvdc2TXml.getRectifier(), 1);
 			
 			// double
 			if (hvdc2TXml.getOperationMode() == DcLineOperationModeEnumType.DOUBLE) {
 				ThyConverter<AclfBus> rectifier2 = CoreObjectFactory.createThyConverter((AclfBus)this.hvdc2T.getFromBus());
-				rectifier2.setRectifier(true);
+				rectifier2.setConverterType(ConverterType.RECTIFIER);
 				lccHvdc2T.setRectifier2(rectifier2);
 				setThyRectifierData(rectifier2, hvdc2TXml.getRectifier(), 2);
 			}
@@ -157,14 +157,14 @@ public class AclfHvdcDataHelper {
 		if (hvdc2TXml.getInverter() != null) {
 			ThyConverter<AclfBus> inverter = CoreObjectFactory.createThyConverter((AclfBus)this.hvdc2T.getToBus());
 			lccHvdc2T.setInverter(inverter);
-			//TODO: It is better to rename the setInverter method to setConverterType or something like that
-			inverter.setRectifier(false);
+			//It is better to rename the setInverter method to setConverterType or something like that 
+			inverter.setConverterType(ConverterType.INVERTER);
 			setThyInverterData(inverter, hvdc2TXml.getInverter(), 1);
 			// double
 			if (hvdc2TXml.getOperationMode() == DcLineOperationModeEnumType.DOUBLE) {
 				ThyConverter<AclfBus> inverter2 = CoreObjectFactory.createThyConverter((AclfBus)this.hvdc2T.getToBus());
 				lccHvdc2T.setInverter2(inverter2);
-				inverter2.setRectifier(false);
+				inverter2.setConverterType(ConverterType.INVERTER);
 				setThyInverterData(inverter2, hvdc2TXml.getInverter(), 2);
 			}
 		}
