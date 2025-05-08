@@ -31,7 +31,7 @@ import com.interpss.core.algo.sc.ScBusModelType;
 import com.interpss.core.algo.sc.SimpleFaultAlgorithm;
 
 
-public class IEEE9Bus_Acsc_test {
+public class IEEE9Bus_Acsc_Test {
 	
 	@Test
 	public void testIeee9SeqY() throws InterpssException, IpssNumericException{
