@@ -28,6 +28,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dep.datamodel.bean.aclf.AclfNetBean;
 import org.interpss.dep.datamodel.mapper.aclf.AclfNet2AclfBeanMapper;
+import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
@@ -179,7 +180,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 	}
 
 	@Test
-	public void testAclfSpeicalXfrData() throws Exception {
+	public void testAclfSpeical2WXfrData() throws Exception {
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v35/ieee9_qa_v35.raw")
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_35)
@@ -220,6 +221,57 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		assertTrue(Math.abs(voltageMagBus7 - 1.04235) < 0.0001);
 		
 
+	}
+
+	@Test
+	public void testAclfSpeical3WXfrData() throws Exception {
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v35/ieee9_qa_3wxfr_v35.raw")
+				.setFormat(PSSE)
+				.setPsseVersion(PsseVersion.PSSE_35)
+				.load()
+				.getImportedObj();
+
+		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		algo.setLfMethod(AclfMethodType.NR);
+		algo.setNonDivergent(true);
+		algo.loadflow();
+		System.out.println(AclfOutFunc.loadFlowSummary(net));
+
+		/*
+				BusID          Code           Volt(pu)   Angle(deg)      Pg(pu)    Qg(pu)    Pl(pu)    Ql(pu)    Bus Name   
+			----------------------------------------------------------------------------------------------------------------
+			Bus1         Swing                1.04000        0.00       0.7226    0.3570    0.0000    0.0000   BUS-1      
+			Bus2         PV                   1.02500        5.34       1.6300   -0.1688    0.0000    0.0000   BUS-2      
+			Bus3         PV                   1.02500        9.17       0.8500   -0.1667    0.0000    0.0000   BUS-3      
+			Bus4                              1.05878       -0.58       0.0000    0.0000    0.0000    0.0000   BUS-4      
+			Bus5                ConstP        1.02463       -2.21       0.0000    0.0000    1.2500    0.5000   BUS-5      
+			Bus6                ConstP        1.04045       -1.93       0.0000    0.0000    0.9000    0.3000   BUS-6      
+			Bus7                              1.04237        5.30       0.0000    0.0000    0.0000    0.0000   BUS-7      
+			Bus8                ConstP        1.03210        2.41       0.0000    0.0000    1.0000    0.3500   BUS-8      
+			Bus9                              1.04690        3.62       0.0000    0.0000    0.0000    0.0000   BUS-9      
+			Bus10                             1.03514        6.28       0.0000    0.0000    0.0000    0.0000   BUS-10     
+			3WNDTR_10_9_3_1                      1.03516        6.28       0.0000    0.0000    0.0000    0.0000   3W Xfr Star Bus  
+		 */
+
+		AclfBus swingBus = net.getBus("Bus1");
+	  	AclfSwingBusAdapter swing = swingBus.toSwingBus();
+  		Complex p = swing.getGenResults(UnitType.PU);
+  		assertTrue(Math.abs(p.getReal()-0.7226)<0.0001);
+  		assertTrue(Math.abs(p.getImaginary()-0.3570)<0.0001);
+
+		AclfBus bus4 = net.getBus("Bus4");
+		double voltageMag = bus4.getVoltageMag();
+		assertTrue(Math.abs(voltageMag - 1.05878) < 0.0001);
+
+
+		AclfBus bus7 = net.getBus("Bus7");
+		double voltageMagBus7 = bus7.getVoltageMag();
+		assertTrue(Math.abs(voltageMagBus7 - 1.04237) < 0.0001);
+		
+
+		AclfBus bus10 = net.getBus("Bus10");
+		double voltageMagBus10 = bus10.getVoltageMag();
+		assertTrue(Math.abs(voltageMagBus10 - 1.03514) < 0.0001);
 	}
 	
 	private void testVAclf(AclfNetwork net) throws Exception {
