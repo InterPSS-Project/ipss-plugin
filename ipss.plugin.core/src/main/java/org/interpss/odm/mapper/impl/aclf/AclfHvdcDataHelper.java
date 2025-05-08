@@ -86,8 +86,8 @@ public class AclfHvdcDataHelper {
 		}
 		else if(lccHvdc2T.getDcLineControlMode()==HvdcControlMode.DC_POWER){
 			double powerDemand = hvdc2TXml.getPowerDemand().getValue();
-			// if the value is negative, it means the control side is inverter side, otherwise, it is rectifier side
-			lccHvdc2T.setControlSide(powerDemand>0?HvdcControlSide.RECTIFIER:HvdcControlSide.INVERTER);
+			//TODO: we move the specific of control side to the adapter level, so this becomes more generic for different formats
+			lccHvdc2T.setControlSide(hvdc2TXml.isControlOnRectifierSide()?HvdcControlSide.RECTIFIER:HvdcControlSide.INVERTER);
 			lccHvdc2T.setPowerDemand(Math.abs(powerDemand), toActivePowerUnit.apply(hvdc2TXml.getPowerDemand().getUnit()));
 			if(hvdc2TXml.getOperationMode()==DcLineOperationModeEnumType.DOUBLE){
 				lccHvdc2T.setPowerDemand2(hvdc2TXml.getPowerDemand2().getValue(), toActivePowerUnit.apply(hvdc2TXml.getPowerDemand2().getUnit()));
@@ -134,13 +134,15 @@ public class AclfHvdcDataHelper {
 		//set Rectifier data
 		if (hvdc2TXml.getRectifier() != null) {
 			ThyConverter<AclfBus> rectifier = CoreObjectFactory.createThyConverter((AclfBus)this.hvdc2T.getFromBus());
-			
+			//TODO: It is better to rename the setRectifier method to setConverterType or something like that
+			rectifier.setRectifier(true);
 			lccHvdc2T.setRectifier(rectifier);
 			setThyRectifierData(rectifier, hvdc2TXml.getRectifier(), 1);
 			
 			// double
 			if (hvdc2TXml.getOperationMode() == DcLineOperationModeEnumType.DOUBLE) {
 				ThyConverter<AclfBus> rectifier2 = CoreObjectFactory.createThyConverter((AclfBus)this.hvdc2T.getFromBus());
+				rectifier2.setRectifier(true);
 				lccHvdc2T.setRectifier2(rectifier2);
 				setThyRectifierData(rectifier2, hvdc2TXml.getRectifier(), 2);
 			}
@@ -155,11 +157,14 @@ public class AclfHvdcDataHelper {
 		if (hvdc2TXml.getInverter() != null) {
 			ThyConverter<AclfBus> inverter = CoreObjectFactory.createThyConverter((AclfBus)this.hvdc2T.getToBus());
 			lccHvdc2T.setInverter(inverter);
+			//TODO: It is better to rename the setInverter method to setConverterType or something like that
+			inverter.setRectifier(false);
 			setThyInverterData(inverter, hvdc2TXml.getInverter(), 1);
 			// double
 			if (hvdc2TXml.getOperationMode() == DcLineOperationModeEnumType.DOUBLE) {
 				ThyConverter<AclfBus> inverter2 = CoreObjectFactory.createThyConverter((AclfBus)this.hvdc2T.getToBus());
 				lccHvdc2T.setInverter2(inverter2);
+				inverter2.setRectifier(false);
 				setThyInverterData(inverter2, hvdc2TXml.getInverter(), 2);
 			}
 		}
