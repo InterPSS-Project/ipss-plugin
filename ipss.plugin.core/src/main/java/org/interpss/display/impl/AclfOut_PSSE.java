@@ -123,8 +123,8 @@ public class AclfOut_PSSE {
 		
 		int cnt = 0;
 		for (Branch b : bus.getBranchList()) {
-			AclfBranch bra = (AclfBranch) b;
-			if (bra.isActive()) {
+			if (b.isActive() && b instanceof AclfBranch) {
+				AclfBranch bra = (AclfBranch) b;
 				s += branchGUIForat(bra, cnt++, bus, baseKVA);
 			}
 		}		
