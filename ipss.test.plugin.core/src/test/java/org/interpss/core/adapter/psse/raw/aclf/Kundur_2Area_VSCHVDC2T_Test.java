@@ -60,6 +60,7 @@ public class Kundur_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
   		
   		//System.out.println(AclfOutFunc.loadFlowSummary(net));
   		AclfBus bus1 = net.getBus("Bus1");
+  		// TODO test failed after the ThyConverter.converterType change
   		assertEquals(bus1.getVoltageAng(UnitType.Deg),13.15,0.01);
   		
   		/*
