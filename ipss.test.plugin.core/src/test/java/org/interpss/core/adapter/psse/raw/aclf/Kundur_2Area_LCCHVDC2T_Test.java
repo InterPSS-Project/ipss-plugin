@@ -3,6 +3,8 @@ package org.interpss.core.adapter.psse.raw.aclf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.logging.Level;
+
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
@@ -16,6 +18,7 @@ import org.interpss.numeric.util.NumericUtil;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
 import org.junit.Test;
 
+import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
@@ -289,7 +292,71 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 		 
 		//System.out.println(net.net2String());
 	}
-	
+
+	@Test
+	public void test_LCCHVDC_PsetZero_Loadflow() throws Exception {
+
+		IpssLogger.getLogger().setLevel(Level.INFO);
+		IODMAdapter adapter = new PSSERawAdapter(PSSEAdapter.PsseVersion.PSSE_33);
+		assertTrue(adapter.parseInputFile("testData/psse/v33/Kundur_2area_LCC_HVDC_PsetZero.raw"));
+		
+		AclfModelParser parser = (AclfModelParser)adapter.getModel();
+		//parser.stdout();
+		
+		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.ACLF_NETWORK);
+		if (!new ODMAclfParserMapper()
+					.map2Model(parser, simuCtx)) {
+  	  		System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
+		}		
+		
+		AclfNetwork net = simuCtx.getAclfNet();
+
+		HvdcLine2TLCC<AclfBus> lccHVDC = (HvdcLine2TLCC<AclfBus>) net.getSpecialBranchList().get(0);
+		assertTrue(!lccHVDC.isActive());
+
+		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
+		algo.setInitBusVoltage(true);
+	  	algo.loadflow();
+  		//System.out.println(net.net2String());
+	  	
+  		assertTrue(net.isLfConverged());
+  		
+  		System.out.println(AclfOutFunc.loadFlowSummary(net));
+  		
+		/*
+					*     BusID          Code           Volt(pu)   Angle(deg)      Pg(pu)    Qg(pu)    Pl(pu)    Ql(pu)    Bus Name   
+			----------------------------------------------------------------------------------------------------------------
+			Bus1         Swing                1.03000        0.00       2.6225   -0.2418    0.0000    0.0000   BUS1   AR1 
+			Bus2         PV                   1.01000        0.87       7.4100   -1.2796    0.0000    0.0000   BUS2   AR1 
+			Bus3         PV                   1.03000       -1.51      10.8000    2.8911    0.0000    0.0000   BUS3   AR2 
+			Bus4         PV                   1.01000      -20.01       7.6600    2.0093    0.0000    0.0000   BUS4   AR2 
+			Bus5                              1.03478       -2.35       0.0000    0.0000    0.0000    0.0000   BUS5   AR1 
+			Bus6                              1.03834       -5.89       0.0000    0.0000    0.0000    0.0000   BUS6   AR1 
+			Bus7                ConstP        1.05896      -11.26       0.0000    0.0000    7.6700    1.0000   BUS7   L   
+			Bus8                              1.00908      -24.32       0.0000    0.0000    0.0000    0.0000   BUS8       
+			Bus9                ConstP        0.99397      -38.13       0.0000    0.0000   19.6700    1.0000   BUS9   L   
+			Bus10                             0.98499      -27.38       0.0000    0.0000    0.0000    0.0000   BUS10   AR2 
+			Bus11                             0.99863      -11.59       0.0000    0.0000    0.0000    0.0000   BUS11   AR2 
+		 */
+		AclfBus bus1 = net.getBus("Bus1");
+  		assertEquals(bus1.getVoltageAng(UnitType.Deg),0,0.01);
+  		assertEquals(bus1.getVoltageMag(UnitType.PU), 1.03, 0.0001);
+  		assertEquals(net.getBus("Bus2").getVoltageMag(UnitType.PU) , 1.0100, 0.0001);
+  		assertEquals(net.getBus("Bus3").getVoltageMag(UnitType.PU) , 1.0300, 0.0001);
+		assertEquals(net.getBus("Bus4").getVoltageMag(UnitType.PU) , 1.0100, 0.0001);
+		assertEquals(net.getBus("Bus5").getVoltageMag(UnitType.PU) , 1.03478, 0.0001);
+		assertEquals(net.getBus("Bus6").getVoltageMag(UnitType.PU) , 1.03834, 0.0001);
+		assertEquals(net.getBus("Bus7").getVoltageMag(UnitType.PU) , 1.05896, 0.0001);
+		assertEquals(net.getBus("Bus9").getVoltageMag(UnitType.PU) , 0.99397, 0.0001);
+		assertEquals(net.getBus("Bus10").getVoltageMag(UnitType.PU) , 0.98499, 0.0001);
+		assertEquals(net.getBus("Bus11").getVoltageMag(UnitType.PU) , 0.99863, 0.0001);
+
+
+
+
+	}
+
 	private AclfNetwork createTestCase() {
 		IODMAdapter adapter = new PSSERawAdapter(PSSEAdapter.PsseVersion.PSSE_33);
 		assertTrue(adapter.parseInputFile("testData/adpter/psse/v33/Kundur_2area_LCC_HVDC.raw"));
