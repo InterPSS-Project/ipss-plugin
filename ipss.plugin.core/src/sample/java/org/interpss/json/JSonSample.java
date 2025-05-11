@@ -1,6 +1,6 @@
 package org.interpss.json;
 
-import org.interpss.util.NetJsonComparator;
+import org.interpss.util.AclfNetJsonComparator;
 
 public class JSonSample {
 	static String str1 = "{\r\n"
@@ -28,7 +28,7 @@ public class JSonSample {
 			+ "}";
 	
 	public static void main(String[] args) {
-		NetJsonComparator.compareJson(str1, str2);
+		new AclfNetJsonComparator("").compareJson(str1, str2);
 
 	}
 
