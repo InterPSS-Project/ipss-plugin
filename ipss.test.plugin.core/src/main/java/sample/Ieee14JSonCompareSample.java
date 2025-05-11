@@ -3,11 +3,13 @@ package sample;
 import org.interpss.CorePluginFactory;
 import org.interpss.IpssCorePlugin;
 import org.interpss.fadapter.IpssFileAdapter;
-import org.interpss.util.NetJsonComparator;
+import org.interpss.util.AclfNetJsonComparator;
+import org.interpss.util.FileUtil;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.state.aclf.AclfNetworkState;
 
 public class Ieee14JSonCompareSample {
 	public static void main(String[] args) throws InterpssException {
@@ -23,10 +25,13 @@ public class Ieee14JSonCompareSample {
 				.load("testdata/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();	
 
+		FileUtil.writeText2File("testdata/json/ieee14Bus.json", new AclfNetworkState(aclfNet1).toString());
+
+		new AclfNetJsonComparator("Case1").compareJson(aclfNet1, aclfNet2);
 		
 		aclfNet2.getBus("Bus1").setBaseVoltage(132001.0);
 		aclfNet2.getBranch("Bus1->Bus2(1)").setBranchCode(AclfBranchCode.BREAKER);
 		
-		NetJsonComparator.compareJson(aclfNet1, aclfNet2);
+		new AclfNetJsonComparator("Case2").compareJson(aclfNet1, aclfNet2);
 	}
 }
