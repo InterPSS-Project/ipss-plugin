@@ -78,7 +78,7 @@ public class AclfNetJsonComparator {
         JsonElement obj1 = JsonParser.parseString(str1);
         JsonElement obj2 = JsonParser.parseString(str2);
         
-        System.out.println("Comparing JSON objects:");
+        System.out.println(this.desc + " comparing JSON objects:");
         comparePrettyPrint("", obj1, obj2);
         
         return !isDifferent;
@@ -98,7 +98,7 @@ public class AclfNetJsonComparator {
     	 JsonElement obj1 = JsonParser.parseString(new AclfNetworkState(aclfNet).toString());
     	 JsonElement obj2 = JsonParser.parseReader(new FileReader(file2));
 		 
-		 System.out.println("Comparing JSON objects: " + aclfNet.getName() + " vs " + file2.getPath());
+		 System.out.println(this.desc + " comparing JSON objects: " + aclfNet.getName() + " vs " + file2.getPath());
 		 comparePrettyPrint("", obj1, obj2);
 		 
 		 return !isDifferent;
@@ -118,7 +118,7 @@ public class AclfNetJsonComparator {
     	 JsonElement obj1 = JsonParser.parseReader(new FileReader(file1));
     	 JsonElement obj2 = JsonParser.parseReader(new FileReader(file2));
 		 
-		 System.out.println("Comparing JSON objects: " + file1.getPath() + " vs " + file2.getPath());
+		 System.out.println(this.desc + " comparing JSON objects: " + file1.getPath() + " vs " + file2.getPath());
 		 comparePrettyPrint("", obj1, obj2);
 		 
 		 return !isDifferent;
