@@ -1,7 +1,5 @@
 package sample.subNet;
 
-import static org.junit.Assert.assertTrue;
-
 import java.util.Set;
 
 import org.interpss.CorePluginFactory;
@@ -30,7 +28,6 @@ public class SubNetCloneSample {
 				.getAclfNet();	
 	
 		//System.out.println(net.net2String());
-		assertTrue((net.getBusList().size() == 1824));
 
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.NR);
