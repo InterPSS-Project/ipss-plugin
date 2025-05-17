@@ -25,6 +25,9 @@
 package org.interpss.odm.mapper.impl.aclf;
 
 
+import static com.interpss.common.util.IpssLogger.ipssLogger;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toActivePowerUnit;
+
 import java.util.List;
 
 import javax.xml.bind.JAXBElement;
@@ -51,17 +54,15 @@ import org.ieee.odm.schema.XformerZTableXmlType;
 import org.ieee.odm.schema.Xfr3WBranchXmlType;
 import org.ieee.odm.schema.XfrBranchXmlType;
 import org.interpss.numeric.datatype.LimitType;
-import org.interpss.numeric.datatype.Point;
 import org.interpss.numeric.datatype.Unit.UnitType;
+import org.interpss.numeric.datatype.XfrZCorrection;
 import org.interpss.odm.ext.pwd.AclfBranchPWDExtension;
 import org.interpss.odm.ext.pwd.AclfBusPWDExtension;
 import org.interpss.odm.mapper.ODMAclfNetMapper;
 import org.interpss.odm.mapper.base.AbstractODMSimuCtxDataMapper;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toActivePowerUnit;
 
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
-import static com.interpss.common.util.IpssLogger.ipssLogger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
@@ -264,7 +265,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 			for (XformerZTableXmlType.XformerZTableItem item : xfrZTable.getXformerZTableItem()) {
 				XfrZTableEntry elem = CoreObjectFactory.createXfrZTableEntry(item.getNumber(), net).get();
 				for (XformerZTableXmlType.XformerZTableItem.Lookup point : item.getLookup()) {
-					elem.getPointSet().getPoints().add(new Point(point.getTurnRatioShiftAngle(), point.getScaleFactor()));
+					elem.getPointSet().getPoints().add(new XfrZCorrection(point.getTurnRatioShiftAngle(), point.getScaleFactor()));
 				}
 			}	
 		}
