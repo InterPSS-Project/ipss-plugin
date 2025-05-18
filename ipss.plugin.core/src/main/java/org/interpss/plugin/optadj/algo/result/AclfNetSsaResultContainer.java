@@ -5,6 +5,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.interpss.datatype.base.BaseJSONBean;
 
+import com.interpss.algo.parallel.BranchCAResultRec;
+import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
+
 
 /** 
 
@@ -17,31 +20,33 @@ import org.interpss.datatype.base.BaseJSONBean;
 */
 public class AclfNetSsaResultContainer extends BaseJSONBean{
 	
-	List<SsaBranchOverLimitInfo> baseOverLimitInfo;
+	List<DclfAlgoBranch> baseOverLimitInfo;
 	
-	List<SsaBranchOverLimitInfo> caOverLimitInfo;
+	List<BranchCAResultRec> caOverLimitInfo;
 
 	public AclfNetSsaResultContainer() {
 		super();
-		baseOverLimitInfo = new CopyOnWriteArrayList<SsaBranchOverLimitInfo>();
-		caOverLimitInfo = new CopyOnWriteArrayList<SsaBranchOverLimitInfo>();
+		baseOverLimitInfo = new CopyOnWriteArrayList<DclfAlgoBranch>();
+		caOverLimitInfo = new CopyOnWriteArrayList<BranchCAResultRec>();
 	}
 
-	public List<SsaBranchOverLimitInfo> getBaseOverLimitInfo() {
+	public List<DclfAlgoBranch> getBaseOverLimitInfo() {
 		return baseOverLimitInfo;
 	}
 
-	public void setBaseOverLimitInfo(List<SsaBranchOverLimitInfo> baseOverLimitInfo) {
+	public void setBaseOverLimitInfo(List<DclfAlgoBranch> baseOverLimitInfo) {
 		this.baseOverLimitInfo = baseOverLimitInfo;
 	}
 
-	public List<SsaBranchOverLimitInfo> getCaOverLimitInfo() {
+	public List<BranchCAResultRec> getCaOverLimitInfo() {
 		return caOverLimitInfo;
 	}
 
-	public void setCaOverLimitInfo(List<SsaBranchOverLimitInfo> caOverLimitInfo) {
+	public void setCaOverLimitInfo(List<BranchCAResultRec> caOverLimitInfo) {
 		this.caOverLimitInfo = caOverLimitInfo;
 	}
+
+
 	
 	
 }

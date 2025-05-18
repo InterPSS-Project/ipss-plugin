@@ -1,7 +1,6 @@
 package org.interpss.plugin.optadj.algo;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.math3.optim.linear.Relationship;
@@ -27,8 +26,6 @@ import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
  * 
  */
 public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
-
-	List<String> outageNameList;
 
 	@Override
 	protected void buildSectionConstrain(ContingencyAnalysisAlgorithm dclfAlgo, float[][] senMatrix,

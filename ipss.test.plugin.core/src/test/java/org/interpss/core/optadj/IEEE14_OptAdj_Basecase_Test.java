@@ -25,17 +25,18 @@
 package org.interpss.core.optadj;
 
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
-import static com.interpss.core.funcImpl.AclfAdptFunction.branchRatingAptr;
 
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
+import org.interpss.numeric.datatype.LimitType;
+import org.interpss.plugin.optadj.algo.AclfNetLoadFlowOptimizer;
+import org.interpss.plugin.optadj.algo.result.AclfNetSsaResultContainer;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.contingency.AclfBranchRating;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 
 public class IEEE14_OptAdj_Basecase_Test extends CorePluginTestSetup {
@@ -56,20 +57,43 @@ public class IEEE14_OptAdj_Basecase_Test extends CorePluginTestSetup {
 		// define an caAlgo object and perform DCLF 
 		ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(net);
 		dclfAlgo.calculateDclf();
-
+		
 		double baseMVA = net.getBaseMva();
+		
+		
+//		AclfNetSsaResultContainer container = new AclfNetSsaResultContainer();
 		dclfAlgo.getDclfAlgoBranchList().stream()
 			.forEach(dclfBranch -> {
-				double flowMw = dclfBranch.getDclfFlow() * baseMVA;
-				AclfBranchRating adapter = branchRatingAptr.apply(dclfBranch.getBranch());
-				double loading = adapter.mvaLoadingPercent(net.getBaseKva());
+					double flowMw = dclfBranch.getDclfFlow() * baseMVA;
+					double loading = Math.abs(flowMw / dclfBranch.getBranch().getRatingMva1())*100;
 				if (loading > 100.0) {
 					System.out.println("Branch: " + dclfBranch.getId() + "  " + flowMw +
 							" rating: " + dclfBranch.getBranch().getRatingMva1() +
 							" loading: " + loading);
+//						container.getBaseOverLimitInfo().add(dclfBranch);
+					}
+				});
+
+		net.createAclfGenNameLookupTable(false).forEach((k, gen) -> {
+			if (gen.getPGenLimit() == null) {
+				gen.setPGenLimit(new LimitType(5, 0));
+			}
+		});
+		
+		AclfNetLoadFlowOptimizer optimizer = new AclfNetLoadFlowOptimizer();
+		optimizer.optimize(dclfAlgo, null, 100);
+		dclfAlgo.calculateDclf();
+		dclfAlgo.getDclfAlgoBranchList().stream()
+		.forEach(dclfBranch -> {
+			double flowMw = dclfBranch.getDclfFlow() * baseMVA;
+			double loading = Math.abs(flowMw / dclfBranch.getBranch().getRatingMva1())*100;
+			if (loading > 90) {
+				System.out.println("Branch: " + dclfBranch.getId() + "  " + flowMw +
+						" rating: " + dclfBranch.getBranch().getRatingMva1() +
+						" loading: " + loading);
+					
 				}
 			});
-		
 		// TODO: add optimization adjustment code here
 	}
 }
