@@ -10,6 +10,7 @@ import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 
 
 /** 
+* A container class for storing the results of the AclfNetwork SSA algorithm.
 
 * @author  Donghao.F 
 
@@ -19,9 +20,9 @@ import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 
 */
 public class AclfNetSsaResultContainer extends BaseJSONBean{
-	
+	// a list of branches that are over the limit in the base case
 	List<DclfAlgoBranch> baseOverLimitInfo;
-	
+	// a list of branches that are over the limit in the contingency situation	
 	List<BranchCAResultRec> caOverLimitInfo;
 
 	public AclfNetSsaResultContainer() {
@@ -45,8 +46,4 @@ public class AclfNetSsaResultContainer extends BaseJSONBean{
 	public void setCaOverLimitInfo(List<BranchCAResultRec> caOverLimitInfo) {
 		this.caOverLimitInfo = caOverLimitInfo;
 	}
-
-
-	
-	
 }
