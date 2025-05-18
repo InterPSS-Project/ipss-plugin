@@ -27,25 +27,21 @@ package org.interpss.core.optadj;
 import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
-import static com.interpss.core.funcImpl.AclfAdptFunction.branchRatingAptr;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertTrue;
-
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
-import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.numeric.util.NumericUtil;
+import org.interpss.numeric.datatype.LimitType;
+import org.interpss.plugin.optadj.algo.AclfNetContigencyOptimizer;
 import org.junit.Test;
 
 import com.interpss.algo.parallel.ContingencyAnalysisMonad;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.contingency.AclfBranchRating;
 import com.interpss.core.aclf.contingency.Contingency;
 import com.interpss.core.algo.dclf.CaBranchOutageType;
 import com.interpss.core.algo.dclf.CaOutageBranch;
@@ -83,7 +79,6 @@ public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
 				cont.setOutageBranch(outage);
 				contList.add(cont);
 			});
-		
 		contList.parallelStream()
 			.forEach(contingency -> {
 				ContingencyAnalysisMonad.of(dclfAlgo, contingency)
@@ -91,17 +86,45 @@ public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
 						//System.out.println(resultRec.aclfBranch.getId() + 
 						//		", " + resultRec.contingency.getId() +
 						//		" postContFlow: " + resultRec.getPostFlowMW());
-						double loading = resultRec.calLoadingPercent();
-						if (loading > 100.0) {
-							System.out.println("Branch: " + resultRec.aclfBranch.getId() + 
-									" outage: " + resultRec.contingency.getId() +
-									" postFlow: " + resultRec.preFlowMW +
-									" rating: " + resultRec.aclfBranch.getRatingMva1() +
-									" loading: " + loading);
-						}
+								double loading = resultRec.calLoadingPercent();
+								if (loading > 100.0) {
+									System.out.println("Branch: " + resultRec.aclfBranch.getId() + " outage: "
+											+ resultRec.contingency.getId() + " postFlow: " + resultRec.getPostFlowMW()
+											+ " rating: " + resultRec.aclfBranch.getRatingMva1() + " loading: "
+											+ loading);
+								}
 					});
 		});
 		
 		// TODO: add optimization adjustment code here
+
+		net.createAclfGenNameLookupTable(false).forEach((k, gen) -> {
+			System.out.println(gen);
+			if (gen.getPGenLimit() == null) {
+				gen.setPGenLimit(new LimitType(5, 0));
+			}
+		});
+		
+		AclfNetContigencyOptimizer optimizer = new AclfNetContigencyOptimizer();
+		optimizer.optimize(dclfAlgo, null, 100);
+		dclfAlgo.calculateDclf();
+		
+		contList.parallelStream()
+		.forEach(contingency -> {
+			ContingencyAnalysisMonad.of(dclfAlgo, contingency)
+				.ca(resultRec -> {
+					//System.out.println(resultRec.aclfBranch.getId() + 
+					//		", " + resultRec.contingency.getId() +
+					//		" postContFlow: " + resultRec.getPostFlowMW());
+					double loading = resultRec.calLoadingPercent();
+					if (loading > 100.0) {
+						System.out.println("Branch: " + resultRec.aclfBranch.getId() + 
+								" outage: " + resultRec.contingency.getId() +
+								" postFlow: " + resultRec.getPostFlowMW() +
+								" rating: " + resultRec.aclfBranch.getRatingMva1() +
+								" loading: " + resultRec.calLoadingPercent());
+					}
+				});
+	});
 	}
 }

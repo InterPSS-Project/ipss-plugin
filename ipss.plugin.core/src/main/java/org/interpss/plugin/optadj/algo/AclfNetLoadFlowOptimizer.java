@@ -73,19 +73,19 @@ public class AclfNetLoadFlowOptimizer {
 			AclfNetSsaResultContainer result) {
 		Set<AclfGen> genSet = new LinkedHashSet<AclfGen>();
 		result.getBaseOverLimitInfo().forEach(info -> {
-			processGenSet(net, senMatrix, genSet, info.getOverLimitBranchId());
+			processGenSet(net, senMatrix, genSet, info.getBranch().getId());
 
 		});
 
 		result.getCaOverLimitInfo().forEach(info -> {
-			processGenSet(net, senMatrix, genSet, info.getOverLimitBranchId());
-			processGenSet(net, senMatrix, genSet, info.getOutageBranchId());
+			processGenSet(net, senMatrix, genSet, info.aclfBranch.getId());
+			processGenSet(net, senMatrix, genSet, info.contingency.getOutageBranch().getBranch().getId());
 		});
 		return genSet;
 	}
 
-	private void processGenSet(AclfNetwork net, float[][] senMatrix, Set<AclfGen> genSet, String branchName) {
-		AclfBranch branch = net.getAclfBranchNameLookupTable().get(branchName);
+	private void processGenSet(AclfNetwork net, float[][] senMatrix, Set<AclfGen> genSet, String branchId) {
+		AclfBranch branch = net.getBranch(branchId);
 		int branchNo = (int) (branch.getNumber() - 1);
 		net.getAclfGenNameLookupTable().forEach((name, gen) -> {
 			if (gen.isActive()) {
