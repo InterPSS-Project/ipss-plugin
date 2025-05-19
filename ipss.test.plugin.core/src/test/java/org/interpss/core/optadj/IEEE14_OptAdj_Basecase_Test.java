@@ -25,11 +25,12 @@
 package org.interpss.core.optadj;
 
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
+import static org.junit.Assert.assertTrue;
 
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
-import org.interpss.numeric.datatype.Counter;
+import org.interpss.numeric.datatype.AtomicCounter;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.plugin.optadj.algo.AclfNetLoadFlowOptimizer;
 import org.junit.Test;
@@ -60,7 +61,7 @@ public class IEEE14_OptAdj_Basecase_Test extends CorePluginTestSetup {
 		
 		// check the branch loading
 		double baseMVA = net.getBaseMva();
-		Counter cnt = new Counter();
+		AtomicCounter cnt = new AtomicCounter();
 		dclfAlgo.getDclfAlgoBranchList().stream()
 			.forEach(dclfBranch -> {
 					double flowMw = dclfBranch.getDclfFlow() * baseMVA;
@@ -74,6 +75,7 @@ public class IEEE14_OptAdj_Basecase_Test extends CorePluginTestSetup {
 					}
 				});
 		System.out.println("Total number of branches over limit before OptAdj: " + cnt.getCount());
+		assertTrue(cnt.getCount() == 1);
 
 		// set the generator Pgen limit
 		net.createAclfGenNameLookupTable(false).forEach((k, gen) -> {
@@ -84,24 +86,25 @@ public class IEEE14_OptAdj_Basecase_Test extends CorePluginTestSetup {
 		});
 		
 		// perform the Optimization adjustment
-		AclfNetLoadFlowOptimizer optimizer = new AclfNetLoadFlowOptimizer();
-		optimizer.optimize(dclfAlgo, null, 100);
+		AclfNetLoadFlowOptimizer optimizer = new AclfNetLoadFlowOptimizer(dclfAlgo);
+		optimizer.optimize(100);
 		dclfAlgo.calculateDclf();
 		
 		// check the branch loading after the optimization adjustment
-		cnt.reset();
+		AtomicCounter cnt1 = new AtomicCounter();
 		dclfAlgo.getDclfAlgoBranchList().stream()
 			.forEach(dclfBranch -> {
 				double flowMw = dclfBranch.getDclfFlow() * baseMVA;
 				double loading = Math.abs(flowMw / dclfBranch.getBranch().getRatingMva1())*100;
 				if (loading > 90) {
-					cnt.increment();
+					cnt1.increment();
 					System.out.println("Branch: " + dclfBranch.getId() + "  " + flowMw +
 							" rating: " + dclfBranch.getBranch().getRatingMva1() +
 							" loading: " + loading);
 						
 					}
 				});
-		System.out.println("Total number of branches over limit (90%) after OptAdj: " + cnt.getCount());
+		System.out.println("Total number of branches over limit (90%) after OptAdj: " + cnt1.getCount());
+		assertTrue(cnt1.getCount() == 1);
 	}
 }
