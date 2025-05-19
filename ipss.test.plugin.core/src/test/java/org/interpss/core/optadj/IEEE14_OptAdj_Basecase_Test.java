@@ -29,9 +29,9 @@ import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisA
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
+import org.interpss.numeric.datatype.Counter;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.plugin.optadj.algo.AclfNetLoadFlowOptimizer;
-import org.interpss.plugin.optadj.algo.result.AclfNetSsaResultContainer;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -58,41 +58,50 @@ public class IEEE14_OptAdj_Basecase_Test extends CorePluginTestSetup {
 		ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(net);
 		dclfAlgo.calculateDclf();
 		
+		// check the branch loading
 		double baseMVA = net.getBaseMva();
-		
-		
-//		AclfNetSsaResultContainer container = new AclfNetSsaResultContainer();
+		Counter cnt = new Counter();
 		dclfAlgo.getDclfAlgoBranchList().stream()
 			.forEach(dclfBranch -> {
 					double flowMw = dclfBranch.getDclfFlow() * baseMVA;
 					double loading = Math.abs(flowMw / dclfBranch.getBranch().getRatingMva1())*100;
 				if (loading > 100.0) {
-					System.out.println("Branch: " + dclfBranch.getId() + "  " + flowMw +
+					cnt.increment();
+					System.out.println("Over Limit Branch: " + dclfBranch.getId() + "  " + flowMw +
 							" rating: " + dclfBranch.getBranch().getRatingMva1() +
 							" loading: " + loading);
 //						container.getBaseOverLimitInfo().add(dclfBranch);
 					}
 				});
+		System.out.println("Total number of branches over limit before OptAdj: " + cnt.getCount());
 
+		// set the generator Pgen limit
 		net.createAclfGenNameLookupTable(false).forEach((k, gen) -> {
+			System.out.println("Adj Gen: " + gen.getName());
 			if (gen.getPGenLimit() == null) {
 				gen.setPGenLimit(new LimitType(5, 0));
 			}
 		});
 		
+		// perform the Optimization adjustment
 		AclfNetLoadFlowOptimizer optimizer = new AclfNetLoadFlowOptimizer();
 		optimizer.optimize(dclfAlgo, null, 100);
 		dclfAlgo.calculateDclf();
+		
+		// check the branch loading after the optimization adjustment
+		cnt.reset();
 		dclfAlgo.getDclfAlgoBranchList().stream()
 			.forEach(dclfBranch -> {
 				double flowMw = dclfBranch.getDclfFlow() * baseMVA;
 				double loading = Math.abs(flowMw / dclfBranch.getBranch().getRatingMva1())*100;
 				if (loading > 90) {
+					cnt.increment();
 					System.out.println("Branch: " + dclfBranch.getId() + "  " + flowMw +
 							" rating: " + dclfBranch.getBranch().getRatingMva1() +
 							" loading: " + loading);
 						
 					}
 				});
+		System.out.println("Total number of branches over limit (90%) after OptAdj: " + cnt.getCount());
 	}
 }
