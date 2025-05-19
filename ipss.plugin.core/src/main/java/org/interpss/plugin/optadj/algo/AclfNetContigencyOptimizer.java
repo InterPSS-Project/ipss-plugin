@@ -26,13 +26,22 @@ import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
  * 
  */
 public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
-
+	/**
+	 * Constructor
+	 * 
+	 * @param dclfAlgo
+	 */
+	public AclfNetContigencyOptimizer(ContingencyAnalysisAlgorithm dclfAlgo) {
+		super(dclfAlgo);
+	}
+	
 	@Override
-	protected void buildSectionConstrain(ContingencyAnalysisAlgorithm dclfAlgo, float[][] senMatrix,
+	protected void buildSectionConstrain(float[][] senMatrix,
 			Map<Integer, AclfGen> controlGenMap, GenStateOptimizer opt, double threshold) {
-		super.buildSectionConstrain(dclfAlgo, senMatrix, controlGenMap, opt, threshold);
-		AclfNetwork net = (AclfNetwork) dclfAlgo.getNetwork();
-		net.getBranchList().stream().filter(branch -> branch.isActive()).forEach(outBranch -> {
+		super.buildSectionConstrain(senMatrix, controlGenMap, opt, threshold);
+		AclfNetwork aclfNet = (AclfNetwork) dclfAlgo.getNetwork();
+		double baseMva = aclfNet.getBaseMva();
+		aclfNet.getBranchList().stream().filter(branch -> branch.isActive()).forEach(outBranch -> {
 			int outBranchNo = (int) (outBranch.getNumber() - 1);
 			double[] genSenArray = new double[controlGenMap.size()];
 			DclfAlgoBranch outDclfBranch = dclfAlgo.getDclfAlgoBranch(outBranch.getId());
@@ -49,7 +58,7 @@ public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
 				// lodf
 				try {
 					double[] lodf = dclfAlgo.lineOutageDFactors(caOutBranch);
-					net.getBranchList().stream().filter(branch -> branch.isActive()).forEach(branch -> {
+					aclfNet.getBranchList().stream().filter(branch -> branch.isActive()).forEach(branch -> {
 						int branchNo = (int) (branch.getNumber() - 1);
 						if (Arrays.stream(genSenArray)
 								.anyMatch(sen -> Math.abs(sen * lodf[branch.getSortNumber()]) > SEN_THRESHOLD)) {
@@ -65,7 +74,7 @@ public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
 								genSenArray[no] = postFlow > 0 ? sen : -sen;
 							});
 							double limit = dclfBranch.getBranch().getRatingMva1() * threshold / 100;
-							double postFlowMw = Math.abs(postFlow * 100) ;
+							double postFlowMw = Math.abs(postFlow * baseMva); ;
 							opt.adConstraint(new SectionConstrainData(postFlowMw, Relationship.LEQ, limit, genSenArray));
 						}
 					});
@@ -73,7 +82,6 @@ public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-
 			}
 		});
 	}
