@@ -79,6 +79,7 @@ public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
 				cont.setOutageBranch(outage);
 				contList.add(cont);
 			});
+		
 		contList.parallelStream()
 			.forEach(contingency -> {
 				ContingencyAnalysisMonad.of(dclfAlgo, contingency)
@@ -86,17 +87,15 @@ public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
 						//System.out.println(resultRec.aclfBranch.getId() + 
 						//		", " + resultRec.contingency.getId() +
 						//		" postContFlow: " + resultRec.getPostFlowMW());
-								double loading = resultRec.calLoadingPercent();
-								if (loading > 100.0) {
-									System.out.println("Branch: " + resultRec.aclfBranch.getId() + " outage: "
+						double loading = resultRec.calLoadingPercent();
+						if (loading > 100.0) {
+							System.out.println("Branch: " + resultRec.aclfBranch.getId() + " outage: "
 											+ resultRec.contingency.getId() + " postFlow: " + resultRec.getPostFlowMW()
 											+ " rating: " + resultRec.aclfBranch.getRatingMva1() + " loading: "
 											+ loading);
-								}
+						}
 					});
-		});
-		
-		// TODO: add optimization adjustment code here
+			});
 
 		net.createAclfGenNameLookupTable(false).forEach((k, gen) -> {
 			System.out.println(gen);
@@ -110,21 +109,21 @@ public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
 		dclfAlgo.calculateDclf();
 		
 		contList.parallelStream()
-		.forEach(contingency -> {
-			ContingencyAnalysisMonad.of(dclfAlgo, contingency)
-				.ca(resultRec -> {
-					//System.out.println(resultRec.aclfBranch.getId() + 
-					//		", " + resultRec.contingency.getId() +
-					//		" postContFlow: " + resultRec.getPostFlowMW());
-					double loading = resultRec.calLoadingPercent();
-					if (loading > 100.0) {
-						System.out.println("Branch: " + resultRec.aclfBranch.getId() + 
-								" outage: " + resultRec.contingency.getId() +
-								" postFlow: " + resultRec.getPostFlowMW() +
-								" rating: " + resultRec.aclfBranch.getRatingMva1() +
-								" loading: " + resultRec.calLoadingPercent());
-					}
-				});
-	});
+			.forEach(contingency -> {
+				ContingencyAnalysisMonad.of(dclfAlgo, contingency)
+					.ca(resultRec -> {
+						//System.out.println(resultRec.aclfBranch.getId() + 
+						//		", " + resultRec.contingency.getId() +
+						//		" postContFlow: " + resultRec.getPostFlowMW());
+						double loading = resultRec.calLoadingPercent();
+						if (loading > 100.0) {
+							System.out.println("Branch: " + resultRec.aclfBranch.getId() + 
+									" outage: " + resultRec.contingency.getId() +
+									" postFlow: " + resultRec.getPostFlowMW() +
+									" rating: " + resultRec.aclfBranch.getRatingMva1() +
+									" loading: " + resultRec.calLoadingPercent());
+						}
+					});
+			});
 	}
 }
