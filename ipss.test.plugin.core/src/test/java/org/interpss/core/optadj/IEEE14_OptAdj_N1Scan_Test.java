@@ -34,6 +34,7 @@ import java.util.List;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
+import org.interpss.numeric.datatype.Counter;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.plugin.optadj.algo.AclfNetContigencyOptimizer;
 import org.junit.Test;
@@ -80,6 +81,7 @@ public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
 				contList.add(cont);
 			});
 		
+		Counter cnt = new Counter();
 		contList.parallelStream()
 			.forEach(contingency -> {
 				ContingencyAnalysisMonad.of(dclfAlgo, contingency)
@@ -89,16 +91,18 @@ public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
 						//		" postContFlow: " + resultRec.getPostFlowMW());
 						double loading = resultRec.calLoadingPercent();
 						if (loading > 100.0) {
-							System.out.println("Branch: " + resultRec.aclfBranch.getId() + " outage: "
+							cnt.increment();
+							System.out.println("OverLimit Branch: " + resultRec.aclfBranch.getId() + " outage: "
 											+ resultRec.contingency.getId() + " postFlow: " + resultRec.getPostFlowMW()
 											+ " rating: " + resultRec.aclfBranch.getRatingMva1() + " loading: "
 											+ loading);
 						}
 					});
 			});
+		System.out.println("Total number of branches over limit before OptAdj: " + cnt.getCount());
 
 		net.createAclfGenNameLookupTable(false).forEach((k, gen) -> {
-			System.out.println(gen);
+			System.out.println("Adj Gen: " + gen.getName());
 			if (gen.getPGenLimit() == null) {
 				gen.setPGenLimit(new LimitType(5, 0));
 			}
@@ -108,6 +112,7 @@ public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
 		optimizer.optimize(dclfAlgo, null, 100);
 		dclfAlgo.calculateDclf();
 		
+		cnt.reset();
 		contList.parallelStream()
 			.forEach(contingency -> {
 				ContingencyAnalysisMonad.of(dclfAlgo, contingency)
@@ -117,6 +122,7 @@ public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
 						//		" postContFlow: " + resultRec.getPostFlowMW());
 						double loading = resultRec.calLoadingPercent();
 						if (loading > 100.0) {
+							cnt.increment();
 							System.out.println("Branch: " + resultRec.aclfBranch.getId() + 
 									" outage: " + resultRec.contingency.getId() +
 									" postFlow: " + resultRec.getPostFlowMW() +
@@ -125,5 +131,6 @@ public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
 						}
 					});
 			});
+		System.out.println("Total number of branches over limit after OptAdj: " + cnt.getCount());
 	}
 }
