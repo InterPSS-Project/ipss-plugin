@@ -84,16 +84,15 @@ public class IEEE14_OptAdj_Basecase_Test extends CorePluginTestSetup {
 		optimizer.optimize(dclfAlgo, null, 100);
 		dclfAlgo.calculateDclf();
 		dclfAlgo.getDclfAlgoBranchList().stream()
-		.forEach(dclfBranch -> {
-			double flowMw = dclfBranch.getDclfFlow() * baseMVA;
-			double loading = Math.abs(flowMw / dclfBranch.getBranch().getRatingMva1())*100;
-			if (loading > 90) {
-				System.out.println("Branch: " + dclfBranch.getId() + "  " + flowMw +
-						" rating: " + dclfBranch.getBranch().getRatingMva1() +
-						" loading: " + loading);
-					
-				}
-			});
-		// TODO: add optimization adjustment code here
+			.forEach(dclfBranch -> {
+				double flowMw = dclfBranch.getDclfFlow() * baseMVA;
+				double loading = Math.abs(flowMw / dclfBranch.getBranch().getRatingMva1())*100;
+				if (loading > 90) {
+					System.out.println("Branch: " + dclfBranch.getId() + "  " + flowMw +
+							" rating: " + dclfBranch.getBranch().getRatingMva1() +
+							" loading: " + loading);
+						
+					}
+				});
 	}
 }
