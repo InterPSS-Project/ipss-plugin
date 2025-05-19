@@ -37,6 +37,8 @@ public class AclfNetLoadFlowOptimizer {
 	// a contingency analysis algorithm object based on which the optimization is performed
 	protected ContingencyAnalysisAlgorithm dclfAlgo;
 	
+	protected GenStateOptimizer genOptimizer;
+	
 	/**
 	 * Constructor
 	 * 
@@ -45,6 +47,17 @@ public class AclfNetLoadFlowOptimizer {
 	public AclfNetLoadFlowOptimizer(ContingencyAnalysisAlgorithm dclfAlgo) {
 		this.dclfAlgo = dclfAlgo;
 	}
+	
+	/**
+	 * Get the GenState optimizer object
+	 * 
+	 * @return the GenState optimizer object
+	 */
+	public GenStateOptimizer getGenOptimizer() {
+		return genOptimizer;
+	}
+
+
 
 	/**
 	 * Optimize the generator state of the network
@@ -62,6 +75,8 @@ public class AclfNetLoadFlowOptimizer {
 	 * @param threshold over limit threshold in percentage
 	 */
 	public void optimize(AclfNetSsaResultContainer result, double threshold) {
+		this.genOptimizer = new GenStateOptimizer();
+		
 		AclfNetwork aclfNet = dclfAlgo.getAclfNet();
 
 		AclfNetSensHelper helper = new AclfNetSensHelper(aclfNet);
@@ -75,15 +90,13 @@ public class AclfNetLoadFlowOptimizer {
 			controlGenMap = arrangeIndex(buildControlGenSet(senMatrix, result));
 		}
 		
-		GenStateOptimizer opt = new GenStateOptimizer();
-		
-		buildSectionConstrain(senMatrix, controlGenMap, opt, threshold);
+		buildSectionConstrain(senMatrix, controlGenMap, threshold);
 
-		buildGenConstrain(controlGenMap, opt);
+		buildGenConstrain(controlGenMap);
 
-		opt.optimize();
+		genOptimizer.optimize();
 
-		updatedDclfalgo(controlGenMap, opt);
+		updatedDclfalgo(controlGenMap);
 	}
 
 	private static Map<Integer, AclfGen> arrangeIndex(Set<AclfGen> controlGenSet) {
@@ -125,21 +138,21 @@ public class AclfNetLoadFlowOptimizer {
 		});
 	}
 
-	protected void updatedDclfalgo(Map<Integer, AclfGen> genMap, GenStateOptimizer opt) {
+	protected void updatedDclfalgo(Map<Integer, AclfGen> genMap) {
 		double baseMva = dclfAlgo.getNetwork().getBaseMva();
 		for (int i = 0; i < genMap.size(); i++) {
-			if (Math.abs(opt.getPoint()[i]) > 1) {
+			if (Math.abs(genOptimizer.getPoint()[i]) > 1) {
 				AclfGen gen = genMap.get(i);
 				// TODO output the result
-				System.out.println(gen.getName() + "," + opt.getPoint()[i] + " mw");
+				System.out.println(gen.getName() + "," + genOptimizer.getPoint()[i] + " mw");
 				dclfAlgo.getDclfAlgoBus(gen.getParentBus().getId()).getGen(gen.getName()).get()
-						.setAdjust(opt.getPoint()[i] / baseMva);
+						.setAdjust(genOptimizer.getPoint()[i] / baseMva);
 			}
 		}
 	}
 
 	protected void buildSectionConstrain(float[][] senMatrix,
-			Map<Integer, AclfGen> controlGenMap, GenStateOptimizer opt, double threshold) {
+			Map<Integer, AclfGen> controlGenMap, double threshold) {
 		AclfNetwork net = dclfAlgo.getAclfNet();
 		double baseMva = net.getBaseMva();
 		net.getBranchList().stream().filter(branch -> branch.isActive()).forEach(branch -> {
@@ -155,19 +168,19 @@ public class AclfNetLoadFlowOptimizer {
 			if (Arrays.stream(genSenArray).anyMatch(sen -> Math.abs(sen) > SEN_THRESHOLD)) {
 				double limit = dclfBranch.getBranch().getRatingMva1() * threshold / 100;
 				double flowMw = Math.abs(dclfBranch.getDclfFlow() * baseMva);
-				opt.adConstraint(new SectionConstrainData(flowMw, Relationship.LEQ, limit, genSenArray));
+				genOptimizer.addConstraint(new SectionConstrainData(flowMw, Relationship.LEQ, limit, genSenArray));
 			}
 		});
 	}
 
-	protected void buildGenConstrain(Map<Integer, AclfGen> genMap, GenStateOptimizer opt) {
+	protected void buildGenConstrain(Map<Integer, AclfGen> genMap) {
 		AclfNetwork net = dclfAlgo.getAclfNet();
 		double baseMva = net.getBaseMva();
 		genMap.forEach((no, gen) -> {
 			LimitType genLimit = gen.getPGenLimit();
-			opt.adConstraint(
+			genOptimizer.addConstraint(
 					new GenConstrainData(gen.getGen().getReal() * baseMva, Relationship.LEQ, genLimit.getMax() * 100, no));
-			opt.adConstraint(
+			genOptimizer.addConstraint(
 					new GenConstrainData(gen.getGen().getReal() * baseMva, Relationship.GEQ, genLimit.getMin() * 100, no));
 		});
 	}

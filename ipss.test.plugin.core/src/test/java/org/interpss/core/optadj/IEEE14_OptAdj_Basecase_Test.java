@@ -49,7 +49,7 @@ public class IEEE14_OptAdj_Basecase_Test extends CorePluginTestSetup {
 				.getAclfNet();
 		
 		// set the branch rating.
-		net.getBranchList().stream()
+		net.getBranchList().stream() 
 			.forEach(branch -> {
 				AclfBranch aclfBranch = (AclfBranch) branch;
 				aclfBranch.setRatingMva1(120.0);
@@ -71,7 +71,6 @@ public class IEEE14_OptAdj_Basecase_Test extends CorePluginTestSetup {
 					System.out.println("Over Limit Branch: " + dclfBranch.getId() + "  " + flowMw +
 							" rating: " + dclfBranch.getBranch().getRatingMva1() +
 							" loading: " + loading);
-//						container.getBaseOverLimitInfo().add(dclfBranch);
 					}
 				});
 		System.out.println("Total number of branches over limit before OptAdj: " + cnt.getCount());
@@ -88,6 +87,13 @@ public class IEEE14_OptAdj_Basecase_Test extends CorePluginTestSetup {
 		// perform the Optimization adjustment
 		AclfNetLoadFlowOptimizer optimizer = new AclfNetLoadFlowOptimizer(dclfAlgo);
 		optimizer.optimize(100);
+		System.out.println("Optimization gen size." + optimizer.getGenOptimizer().getGenSize());
+		System.out.println("Optimization gen constrain size." + optimizer.getGenOptimizer().getGenConstrainDataList().size());
+		System.out.println("Optimization sec constrian size." + optimizer.getGenOptimizer().getSecConstrainDataList().size());
+		assertTrue(optimizer.getGenOptimizer().getGenSize() == 14);
+		assertTrue(optimizer.getGenOptimizer().getGenConstrainDataList().size() == 28);
+		assertTrue(optimizer.getGenOptimizer().getSecConstrainDataList().size() == 20);
+		
 		dclfAlgo.calculateDclf();
 		
 		// check the branch loading after the optimization adjustment

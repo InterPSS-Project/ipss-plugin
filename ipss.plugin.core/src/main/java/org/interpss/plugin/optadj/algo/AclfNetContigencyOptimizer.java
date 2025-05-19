@@ -37,8 +37,8 @@ public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
 	
 	@Override
 	protected void buildSectionConstrain(float[][] senMatrix,
-			Map<Integer, AclfGen> controlGenMap, GenStateOptimizer opt, double threshold) {
-		super.buildSectionConstrain(senMatrix, controlGenMap, opt, threshold);
+			Map<Integer, AclfGen> controlGenMap, double threshold) {
+		super.buildSectionConstrain(senMatrix, controlGenMap, threshold);
 		AclfNetwork aclfNet = (AclfNetwork) dclfAlgo.getNetwork();
 		double baseMva = aclfNet.getBaseMva();
 		aclfNet.getBranchList().stream().filter(branch -> branch.isActive()).forEach(outBranch -> {
@@ -75,7 +75,7 @@ public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
 							});
 							double limit = dclfBranch.getBranch().getRatingMva1() * threshold / 100;
 							double postFlowMw = Math.abs(postFlow * baseMva); ;
-							opt.adConstraint(new SectionConstrainData(postFlowMw, Relationship.LEQ, limit, genSenArray));
+							genOptimizer.addConstraint(new SectionConstrainData(postFlowMw, Relationship.LEQ, limit, genSenArray));
 						}
 					});
 				} catch (InterpssException e) {

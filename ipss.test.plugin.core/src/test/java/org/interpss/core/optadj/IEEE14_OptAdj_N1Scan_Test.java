@@ -107,11 +107,18 @@ public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
 			System.out.println("Adj Gen: " + gen.getName());
 			if (gen.getPGenLimit() == null) {
 				gen.setPGenLimit(new LimitType(5, 0));
-			}
+			} 
 		});
-		
+		 
 		AclfNetContigencyOptimizer optimizer = new AclfNetContigencyOptimizer(dclfAlgo);
 		optimizer.optimize(100);
+		System.out.println("Optimization gen size." + optimizer.getGenOptimizer().getGenSize());
+		System.out.println("Optimization gen constrain size." + optimizer.getGenOptimizer().getGenConstrainDataList().size());
+		System.out.println("Optimization sec constrian size." + optimizer.getGenOptimizer().getSecConstrainDataList().size());
+		assertTrue(optimizer.getGenOptimizer().getGenSize() == 14);
+		assertTrue(optimizer.getGenOptimizer().getGenConstrainDataList().size() == 28);
+		assertTrue(optimizer.getGenOptimizer().getSecConstrainDataList().size() == 150);
+		
 		dclfAlgo.calculateDclf();
 		
 		AtomicCounter cnt1 = new AtomicCounter();

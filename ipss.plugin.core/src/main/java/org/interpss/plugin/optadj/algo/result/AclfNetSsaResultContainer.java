@@ -21,9 +21,9 @@ import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 */
 public class AclfNetSsaResultContainer extends BaseJSONBean{
 	// a list of branches that are over the limit in the base case
-	List<DclfAlgoBranch> baseOverLimitInfo;
+	private List<DclfAlgoBranch> baseOverLimitInfo;
 	// a list of branches that are over the limit in the contingency situation	
-	List<BranchCAResultRec> caOverLimitInfo;
+	private List<BranchCAResultRec> caOverLimitInfo;
 
 	public AclfNetSsaResultContainer() {
 		super();
