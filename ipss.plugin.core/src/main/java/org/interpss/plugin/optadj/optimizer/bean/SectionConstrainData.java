@@ -16,7 +16,7 @@ import org.apache.commons.math3.optim.linear.Relationship;
 */
 public class SectionConstrainData extends BaseConstrainData {
 
-	double[] senArray;
+	private double[] senArray;
 
 	public double[] getSenArray() {
 		return senArray;
