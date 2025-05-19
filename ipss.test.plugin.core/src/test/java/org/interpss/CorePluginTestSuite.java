@@ -57,7 +57,9 @@ import org.interpss.core.dstab.mach.RoundRotorMachineTest;
 import org.interpss.core.dstab.mach.SMIB_Gen_Test;
 import org.interpss.core.dstab.mach.SalientPoleMachineTest;
 import org.interpss.core.mvel.MvelExprEval_Test;
+import org.interpss.core.optadj.IEEE14_OptAdj_BasecaseSSAResult_Test;
 import org.interpss.core.optadj.IEEE14_OptAdj_Basecase_Test;
+import org.interpss.core.optadj.IEEE14_OptAdj_N1ScanSSAResult_Test;
 import org.interpss.core.optadj.IEEE14_OptAdj_N1Scan_Test;
 import org.interpss.core.zeroz.IEEE14ZeroZBranchAclfTest;
 import org.interpss.core.zeroz.topo.IEEE14ZeroZBranchFuncLoopTest;
@@ -118,6 +120,8 @@ import org.junit.runners.Suite.SuiteClasses;
 	// Optimization adjustment
 	IEEE14_OptAdj_Basecase_Test.class,
 	IEEE14_OptAdj_N1Scan_Test.class,
+	IEEE14_OptAdj_BasecaseSSAResult_Test.class,
+	IEEE14_OptAdj_N1ScanSSAResult_Test.class,
 	
 	// small Z branch
 	//SampleSwitchBreakerModelTest.class,
