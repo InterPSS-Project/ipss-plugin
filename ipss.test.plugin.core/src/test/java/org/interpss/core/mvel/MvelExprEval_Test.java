@@ -105,5 +105,18 @@ public class MvelExprEval_Test extends CorePluginTestSetup {
 		id = eval.evalMvelExpression("aclfnet.id");
 		//System.out.println("Net id1: " + id);
  		assertTrue("", id.equals("New Id1"));
+ 		
+ 		/*
+ 		 * Please note: Where access or modify Bus or Branch objects, we need to do it
+ 		 *              in two steps.
+ 		 */
+		double loadP = eval.evalMvelExpression("bus = aclfnet.getBus('Bus14'); bus.loadP;");
+		System.out.println("Bus14 LoadP: " + loadP);
+ 		assertTrue("", loadP == 0.149);		
+ 		
+		eval.evalMvelExpression("bus = aclfnet.getBus('Bus14'); bus.loadP = 0.18;");
+		loadP = eval.evalMvelExpression("bus = aclfnet.getBus('Bus14'); bus.loadP;");
+		System.out.println("Bus14 LoadP: " + loadP);
+ 		assertTrue("", loadP == 0.18);		
 	}
 }
