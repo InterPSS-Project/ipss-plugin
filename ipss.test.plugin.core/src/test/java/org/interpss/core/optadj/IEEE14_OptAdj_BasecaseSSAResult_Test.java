@@ -33,6 +33,7 @@ import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.AtomicCounter;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.plugin.optadj.algo.AclfNetLoadFlowOptimizer;
+import org.interpss.plugin.optadj.algo.result.AclfNetSsaResultContainer;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -40,7 +41,7 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 
-public class IEEE14_OptAdj_Basecase_Test extends CorePluginTestSetup {
+public class IEEE14_OptAdj_BasecaseSSAResult_Test extends CorePluginTestSetup {
 	@Test
 	public void test() throws InterpssException {
 		AclfNetwork net = CorePluginFactory
@@ -49,7 +50,7 @@ public class IEEE14_OptAdj_Basecase_Test extends CorePluginTestSetup {
 				.getAclfNet();
 		
 		// set the branch rating.
-		net.getBranchList().stream() 
+		net.getBranchList().stream()
 			.forEach(branch -> {
 				AclfBranch aclfBranch = (AclfBranch) branch;
 				aclfBranch.setRatingMva1(120.0);
@@ -59,18 +60,25 @@ public class IEEE14_OptAdj_Basecase_Test extends CorePluginTestSetup {
 		ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(net);
 		dclfAlgo.calculateDclf();
 		
+
+		// defined a SSA result container
+		AclfNetSsaResultContainer ssaResults = new AclfNetSsaResultContainer();
+		
 		// check the branch loading
 		double baseMVA = net.getBaseMva();
 		AtomicCounter cnt = new AtomicCounter();
-		dclfAlgo.getDclfAlgoBranchList().stream()
+		dclfAlgo.getDclfAlgoBranchList().stream() 
 			.forEach(dclfBranch -> {
 					double flowMw = dclfBranch.getDclfFlow() * baseMVA;
 					double loading = Math.abs(flowMw / dclfBranch.getBranch().getRatingMva1())*100;
 				if (loading > 100.0) {
 					cnt.increment();
+					// add the over limit branch to the SSA result container
+					ssaResults.getBaseOverLimitInfo().add(dclfBranch);
 					System.out.println("Over Limit Branch: " + dclfBranch.getId() + "  " + flowMw +
 							" rating: " + dclfBranch.getBranch().getRatingMva1() +
 							" loading: " + loading);
+//						container.getBaseOverLimitInfo().add(dclfBranch);
 					}
 				});
 		System.out.println("Total number of branches over limit before OptAdj: " + cnt.getCount());
@@ -86,12 +94,12 @@ public class IEEE14_OptAdj_Basecase_Test extends CorePluginTestSetup {
 		
 		// perform the Optimization adjustment
 		AclfNetLoadFlowOptimizer optimizer = new AclfNetLoadFlowOptimizer(dclfAlgo);
-		optimizer.optimize(100);
+		optimizer.optimize(ssaResults, 100);
 		System.out.println("Optimization gen size." + optimizer.getGenOptimizer().getGenSize());
 		System.out.println("Optimization gen constrain size." + optimizer.getGenOptimizer().getGenConstrainDataList().size());
 		System.out.println("Optimization sec constrian size." + optimizer.getGenOptimizer().getSecConstrainDataList().size());
-		assertTrue(optimizer.getGenOptimizer().getGenSize() == 14);
-		assertTrue(optimizer.getGenOptimizer().getGenConstrainDataList().size() == 28);
+		assertTrue(optimizer.getGenOptimizer().getGenSize() == 13);
+		assertTrue(optimizer.getGenOptimizer().getGenConstrainDataList().size() == 26);
 		assertTrue(optimizer.getGenOptimizer().getSecConstrainDataList().size() == 20);
 		
 		dclfAlgo.calculateDclf();
