@@ -13,11 +13,11 @@ import org.apache.commons.math3.optim.linear.Relationship;
 */
 public class BaseConstrainData {
 	
-	double value;
+	private double value;
 
-	Relationship relationship;
+	private Relationship relationship;
 	
-	double limit;
+	private double limit;
 	
 
 	public BaseConstrainData(double value, Relationship relationship, double limit) {

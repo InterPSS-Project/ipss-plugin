@@ -10,15 +10,15 @@ package org.interpss.plugin.optadj.config;
 */
 public class OPtAdjControlLimit {
 
-	String genName;
+	private String genName;
 	
-	int index;
+	private int index;
 	
-	double origin;
+	private double origin;
 	
-	double pMax;
+	private double pMax;
 	
-	double pMin;
+	private double pMin;
 
 	public OPtAdjControlLimit(String genName, double origin, double pMax, double pMin) {
 		super();
@@ -63,8 +63,4 @@ public class OPtAdjControlLimit {
 	public double getOrigin() {
 		return origin;
 	}
-	
-	
-	
-	
 }

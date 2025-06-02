@@ -27,26 +27,38 @@ import org.ojalgo.optimisation.Optimisation;
  */
 public class GenStateOptimizer {
 
-	Set<LinearConstraint> linearConstraintHashSet = new HashSet<LinearConstraint>();
+	private Set<LinearConstraint> linearConstraintHashSet = new HashSet<LinearConstraint>();
 
-	List<GenConstrainData> genConstrainDataList = new ArrayList<GenConstrainData>();
+	private List<GenConstrainData> genConstrainDataList = new ArrayList<GenConstrainData>();
 	
-	List<SectionConstrainData> secConstrainDataList = new ArrayList<SectionConstrainData>();
+	private List<SectionConstrainData> secConstrainDataList = new ArrayList<SectionConstrainData>();
 	
-	double senLimit = 0.05;
+	private double senLimit = 0.05;
 
-	int genSize;
+	private int genSize;
 	
-	Optimisation.Result result;
+	private Optimisation.Result result;
 	
-	ExpressionsBasedModel model;
+	private ExpressionsBasedModel model;
 
 	public GenStateOptimizer() {
 		 model = new ExpressionsBasedModel();
 		
 	}
 
-	public void adConstraint(BaseConstrainData data) {
+	public List<GenConstrainData> getGenConstrainDataList() {
+		return genConstrainDataList;
+	}
+	
+	public List<SectionConstrainData> getSecConstrainDataList() {
+		return secConstrainDataList;
+	}
+
+	public int getGenSize() {
+		return genSize;
+	}
+
+	public void addConstraint(BaseConstrainData data) {
 		if (data instanceof GenConstrainData) {
 			genConstrainDataList.add((GenConstrainData) data);
 		} else {
@@ -55,8 +67,8 @@ public class GenStateOptimizer {
 	}
 
 	public void optimize() {
-		System.out.println("gen size:" + this.genConstrainDataList.size() + "," + "section size:"
-				+ this.secConstrainDataList.size());
+		System.out.println("gen constrain size:" + this.genConstrainDataList.size() + ", " + 
+							"section constrain size:"	+ this.secConstrainDataList.size());
 		 // Determine genSize
         genConstrainDataList.forEach(data -> {
             if (data.getIndex() + 1 > genSize) {
@@ -192,11 +204,11 @@ public class GenStateOptimizer {
 	public void addConfigure(OptAdjConfigureInfo info) {
 		info.getOptimizedUnitControlLimits().forEach(limit -> {
 			if (limit.getPMax() != -1) {
-				this.adConstraint(
+				this.addConstraint(
 						new GenConstrainData(limit.getOrigin(), Relationship.LEQ, limit.getPMax(), limit.getIndex()));
 			}
 			if (limit.getPMin() != -1) {
-				this.adConstraint(
+				this.addConstraint(
 						new GenConstrainData(limit.getOrigin(), Relationship.GEQ, limit.getPMin(), limit.getIndex()));
 			}
 		});
