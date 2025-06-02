@@ -13,7 +13,7 @@ import org.apache.commons.math3.optim.linear.Relationship;
 */
 public class GenConstrainData extends BaseConstrainData {
 
-	int index;
+	private int index;
 
 	public int getIndex() {
 		return index;
