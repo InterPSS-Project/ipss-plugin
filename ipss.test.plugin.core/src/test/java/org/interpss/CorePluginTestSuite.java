@@ -4,19 +4,17 @@ import org.interpss.core.aclf.IEEE14_3WXfrTest;
 import org.interpss.core.aclf.IEEE14_YMatrixSetTest;
 import org.interpss.core.aclf.IEEE9_MultiGenTest;
 import org.interpss.core.aclf.IEEE9_MultiLoadTest;
-import org.interpss.core.aclf.SwingBusSubAreaTest;
 import org.interpss.core.aclf.Kundur_2Area_LCCHVDC2T_Aclf_Test;
+import org.interpss.core.aclf.SwingBusSubAreaTest;
 import org.interpss.core.adapter.bpa.BPASampleTestCases;
 import org.interpss.core.adapter.ge.GESampleTestCases;
 import org.interpss.core.adapter.ieee.IEEE009Bus_Test;
 import org.interpss.core.adapter.ieee.IEEE118Bus_Test;
 import org.interpss.core.adapter.ieee.IEEECommonFormat_CommaTest;
-import org.interpss.core.adapter.ieee.dep.IEEECommonFormatTest;
 import org.interpss.core.adapter.internal.Bus11856Test;
 import org.interpss.core.adapter.internal.Bus1824Test;
 import org.interpss.core.adapter.internal.Bus6384Test;
 import org.interpss.core.adapter.internal.IEEE14Test;
-import org.interpss.core.adapter.psse.raw.aclf.Bus42_3winding;
 import org.interpss.core.adapter.psse.raw.aclf.CR_UserTestCases;
 import org.interpss.core.adapter.psse.raw.aclf.GuideSample_TestCase;
 import org.interpss.core.adapter.psse.raw.aclf.Kundur_2Area_LCCHVDC2T_Test;
@@ -40,7 +38,6 @@ import org.interpss.core.dclf.IEEE14_EDclf_Test;
 import org.interpss.core.dclf.IEEE39_EDclf_Test;
 import org.interpss.core.dist.DistSys_Test;
 import org.interpss.core.dstab.DStab_IEEE9Bus_Test;
-import org.interpss.core.dstab.Kunder_2area_VSCHVDC_Test;
 import org.interpss.core.dstab.cml.block.DelayControlBlockTests;
 import org.interpss.core.dstab.cml.block.FilterControlBlockTests;
 import org.interpss.core.dstab.cml.block.IntegrationControlBlockTests;
@@ -60,6 +57,10 @@ import org.interpss.core.dstab.mach.RoundRotorMachineTest;
 import org.interpss.core.dstab.mach.SMIB_Gen_Test;
 import org.interpss.core.dstab.mach.SalientPoleMachineTest;
 import org.interpss.core.mvel.MvelExprEval_Test;
+import org.interpss.core.optadj.IEEE14_OptAdj_BasecaseSSAResult_Test;
+import org.interpss.core.optadj.IEEE14_OptAdj_Basecase_Test;
+import org.interpss.core.optadj.IEEE14_OptAdj_N1ScanSSAResult_Test;
+import org.interpss.core.optadj.IEEE14_OptAdj_N1Scan_Test;
 import org.interpss.core.zeroz.IEEE14ZeroZBranchAclfTest;
 import org.interpss.core.zeroz.topo.IEEE14ZeroZBranchFuncLoopTest;
 import org.interpss.core.zeroz.topo.IEEE14ZeroZBranchFuncTest;
@@ -115,6 +116,12 @@ import org.junit.runners.Suite.SuiteClasses;
 	IEEE14_EDclf_Test.class,
 	IEEE39_EDclf_Test.class,
 	IEEE118_EDclf_Test.class,
+	
+	// Optimization adjustment
+	IEEE14_OptAdj_Basecase_Test.class,
+	IEEE14_OptAdj_N1Scan_Test.class,
+	IEEE14_OptAdj_BasecaseSSAResult_Test.class,
+	IEEE14_OptAdj_N1ScanSSAResult_Test.class,
 	
 	// small Z branch
 	//SampleSwitchBreakerModelTest.class,

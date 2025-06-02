@@ -25,17 +25,19 @@
 package org.interpss.core.optadj;
 
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
-import static com.interpss.core.funcImpl.AclfAdptFunction.branchRatingAptr;
+import static org.junit.Assert.assertTrue;
 
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
+import org.interpss.numeric.datatype.AtomicCounter;
+import org.interpss.numeric.datatype.LimitType;
+import org.interpss.plugin.optadj.algo.AclfNetLoadFlowOptimizer;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.contingency.AclfBranchRating;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 
 public class IEEE14_OptAdj_Basecase_Test extends CorePluginTestSetup {
@@ -47,7 +49,7 @@ public class IEEE14_OptAdj_Basecase_Test extends CorePluginTestSetup {
 				.getAclfNet();
 		
 		// set the branch rating.
-		net.getBranchList().stream()
+		net.getBranchList().stream() 
 			.forEach(branch -> {
 				AclfBranch aclfBranch = (AclfBranch) branch;
 				aclfBranch.setRatingMva1(120.0);
@@ -56,20 +58,59 @@ public class IEEE14_OptAdj_Basecase_Test extends CorePluginTestSetup {
 		// define an caAlgo object and perform DCLF 
 		ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(net);
 		dclfAlgo.calculateDclf();
-
+		
+		// check the branch loading
 		double baseMVA = net.getBaseMva();
+		AtomicCounter cnt = new AtomicCounter();
+		dclfAlgo.getDclfAlgoBranchList().stream()
+			.forEach(dclfBranch -> {
+					double flowMw = dclfBranch.getDclfFlow() * baseMVA;
+					double loading = Math.abs(flowMw / dclfBranch.getBranch().getRatingMva1())*100;
+				if (loading > 100.0) {
+					cnt.increment();
+					System.out.println("Over Limit Branch: " + dclfBranch.getId() + "  " + flowMw +
+							" rating: " + dclfBranch.getBranch().getRatingMva1() +
+							" loading: " + loading);
+					}
+				});
+		System.out.println("Total number of branches over limit before OptAdj: " + cnt.getCount());
+		assertTrue(cnt.getCount() == 1);
+
+		// set the generator Pgen limit
+		net.createAclfGenNameLookupTable(false).forEach((k, gen) -> {
+			System.out.println("Adj Gen: " + gen.getName());
+			if (gen.getPGenLimit() == null) {
+				gen.setPGenLimit(new LimitType(5, 0));
+			}
+		});
+		
+		// perform the Optimization adjustment
+		AclfNetLoadFlowOptimizer optimizer = new AclfNetLoadFlowOptimizer(dclfAlgo);
+		optimizer.optimize(100);
+		System.out.println("Optimization gen size." + optimizer.getGenOptimizer().getGenSize());
+		System.out.println("Optimization gen constrain size." + optimizer.getGenOptimizer().getGenConstrainDataList().size());
+		System.out.println("Optimization sec constrian size." + optimizer.getGenOptimizer().getSecConstrainDataList().size());
+		assertTrue(optimizer.getGenOptimizer().getGenSize() == 14);
+		assertTrue(optimizer.getGenOptimizer().getGenConstrainDataList().size() == 28);
+		assertTrue(optimizer.getGenOptimizer().getSecConstrainDataList().size() == 20);
+		
+		dclfAlgo.calculateDclf();
+		
+		// check the branch loading after the optimization adjustment
+		AtomicCounter cnt1 = new AtomicCounter();
 		dclfAlgo.getDclfAlgoBranchList().stream()
 			.forEach(dclfBranch -> {
 				double flowMw = dclfBranch.getDclfFlow() * baseMVA;
-				AclfBranchRating adapter = branchRatingAptr.apply(dclfBranch.getBranch());
-				double loading = adapter.mvaLoadingPercent(net.getBaseKva());
-				if (loading > 100.0) {
+				double loading = Math.abs(flowMw / dclfBranch.getBranch().getRatingMva1())*100;
+				if (loading > 90) {
+					cnt1.increment();
 					System.out.println("Branch: " + dclfBranch.getId() + "  " + flowMw +
 							" rating: " + dclfBranch.getBranch().getRatingMva1() +
 							" loading: " + loading);
-				}
-			});
-		
-		// TODO: add optimization adjustment code here
+						
+					}
+				});
+		System.out.println("Total number of branches over limit (90%) after OptAdj: " + cnt1.getCount());
+		assertTrue(cnt1.getCount() == 1);
 	}
 }

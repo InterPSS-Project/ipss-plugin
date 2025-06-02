@@ -15,7 +15,7 @@ import java.util.Map;
 */
 public class OptAdjConfigureInfo {
 
-	List<OPtAdjControlLimit> optimizedUnitControlLimits;
+	private List<OPtAdjControlLimit> optimizedUnitControlLimits;
 	
 	public OptAdjConfigureInfo() {
 		super();
