@@ -24,27 +24,16 @@
 
 package org.interpss.core.adapter.internal;
 
-import org.interpss.CorePluginFactory;
-import org.interpss.CorePluginTestSetup;
-import org.interpss.display.AclfOutFunc;
-import org.interpss.fadapter.IpssFileAdapter;
-import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.util.AclfNetJsonComparator;
-import org.interpss.util.FileUtil;
-
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 
+import org.interpss.CorePluginFactory;
+import org.interpss.CorePluginTestSetup;
+import org.interpss.fadapter.IpssFileAdapter;
+import org.interpss.util.AclfNetJsonComparator;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
-import com.interpss.core.CoreObjectFactory;
-import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
-import com.interpss.core.algo.AclfMethodType;
-import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.state.aclf.AclfNetworkState;
 
 public class IEEE14JsonCompareTest extends CorePluginTestSetup {
 	@Test
@@ -54,7 +43,7 @@ public class IEEE14JsonCompareTest extends CorePluginTestSetup {
 					.load("testData/ipssdata/Ieee14.ipssdat")
 					.getAclfNet();	
 		
-		String jsonFile = "testdata/json/inter_format/ieee14Bus.json";
+		String jsonFile = "testData/json/inter_format/ieee14Bus.json";
 		
 		// output aclfNet state to json file
 		//FileUtil.writeText2File(jsonFile, new AclfNetworkState(aclfNet).toString());
