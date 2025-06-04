@@ -1,4 +1,4 @@
-package org.interpss.mvel;
+package org.interpss.script.mvel;
 
 import com.interpss.core.aclf.AclfNetwork;
 
