@@ -19,15 +19,11 @@ public abstract class BaseGvyScriptProcessor {
 	}
 	
 	/**
-	 * Get the GroovyShell instance.
+	 * Evaluate the given Groovy code with added imports.
 	 * 
-	 * @return the GroovyShell instance
-	 *
-	public GroovyShell getShell() {
-		return this.shell;
-	}
+	 * @param groovyCode the Groovy code to evaluate
+	 * @return the result of the evaluation
 	 */
-	
 	public Object evaluate(String groovyCode) {
 		return this.shell.evaluate(GVY_IMPORTS + groovyCode);
 	}
