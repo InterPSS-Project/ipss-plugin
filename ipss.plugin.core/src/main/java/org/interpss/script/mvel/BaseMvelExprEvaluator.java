@@ -1,4 +1,4 @@
-package org.interpss.mvel;
+package org.interpss.script.mvel;
 
 import java.util.HashMap;
 import java.util.Map;
