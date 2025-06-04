@@ -22,7 +22,7 @@
   *
   */
 
-package org.interpss.core.mvel;
+package org.interpss.core.script.mvel;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,10 +31,11 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
-import org.interpss.mvel.AclfNetMvelExprEvaluator;
 import org.interpss.numeric.datatype.ComplexFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
+import org.interpss.script.mvel.AclfNetMvelExprEvaluator;
+
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
