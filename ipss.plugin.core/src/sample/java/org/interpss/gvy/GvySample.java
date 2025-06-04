@@ -4,6 +4,7 @@ import org.interpss.CorePluginFactory;
 import org.interpss.IpssCorePlugin;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.script.gvy.AclfNetGvyScriptProcessor;
+import org.interpss.script.gvy.BaseGvyScriptProcessor;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;
@@ -31,9 +32,22 @@ public class GvySample {
 	  	algo.loadflow();
 	  	
 	  	AclfNetGvyScriptProcessor gvyProcessor = new AclfNetGvyScriptProcessor(net);
-    	groovyCode = "aclfnet.id = 'Modified'; aclfnet.getBus('Bus14').loadP = 0.18;" +
-    				 "return 'Net name: ' + aclfnet.id + ', ' + aclfnet.getBus('Bus14').loadP; ";
-    	result = gvyProcessor.getShell().evaluate(groovyCode);
+    	groovyCode = "aclfnet.id = 'Modified';" +
+    				 "return 'Net name: ' + aclfnet.id; ";
+    	result = gvyProcessor.evaluate(groovyCode);
     	System.out.println("Result: " + result);
+    	
+    	groovyCode = "aclfnet.getBus('Bus14').loadP = 0.18;" +
+				 	 "return 'Bus load: ' + aclfnet.getBus('Bus14').loadP; ";
+		result = gvyProcessor.evaluate(groovyCode);
+		System.out.println("Result: " + result);
+		
+    	groovyCode = //BaseGvyScriptProcessor.GVY_IMPORTS +
+    				 "bus = aclfnet.getBus('Bus14');" +
+    				 "load = bus.getContributeLoad('Bus14-L1');" +
+    				 "load.loadCP = new Complex(0.18, 0.07);" +
+				 	 "return 'Bus contribute load: ' + aclfnet.getBus('Bus14').getContributeLoad('Bus14-L1').loadCP; ";
+		result = gvyProcessor.evaluate(groovyCode);
+		System.out.println("Result: " + result);
     }
 }
