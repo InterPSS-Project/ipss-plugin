@@ -89,6 +89,8 @@ public class MvelExprEval_Test extends CorePluginTestSetup {
 				.load("testData/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();		
 		
+ 		assertTrue("", net.isContributeGenLoadModel());
+ 		
 		AclfNetMvelExprEvaluator eval = new AclfNetMvelExprEvaluator(net);
 		String id = eval.evalMvelExpression("aclfnet.id");
 		//System.out.println("Net id: " + id);
@@ -105,5 +107,23 @@ public class MvelExprEval_Test extends CorePluginTestSetup {
 		id = eval.evalMvelExpression("aclfnet.id");
 		//System.out.println("Net id1: " + id);
  		assertTrue("", id.equals("New Id1"));
+ 		
+ 		/*
+ 		 * Please note: Where access or modify Bus or Branch objects, we need to do it
+ 		 *              in two steps.
+ 		 */
+		double loadP = eval.evalMvelExpression("bus = aclfnet.getBus('Bus14'); bus.loadP;");
+		System.out.println("Bus14 LoadP: " + loadP);
+ 		assertTrue("", loadP == 0.149);		
+ 		
+		eval.evalMvelExpression("bus = aclfnet.getBus('Bus14'); bus.loadP = 0.18;");
+		loadP = eval.evalMvelExpression("bus = aclfnet.getBus('Bus14'); bus.loadP;");
+		System.out.println("Bus14 LoadP: " + loadP);
+ 		assertTrue("", loadP == 0.18);		
+ 		
+ 		System.out.println(net.getBus("Bus14").getContributeLoad("Bus14-L1"));
+		eval.evalMvelExpression("bus = aclfnet.getBus('Bus14'); load = bus.getContributeLoad('Bus14-L1'); load.loadCP = new org.apache.commons.math3.complex.Complex(0.18, 0.07)");
+		Complex loadCP = eval.evalMvelExpression("bus = aclfnet.getBus('Bus14'); load = bus.getContributeLoad('Bus14-L1'); load.loadCP;");
+		System.out.println("Bus14 LoadCP: " + loadCP);
 	}
 }
