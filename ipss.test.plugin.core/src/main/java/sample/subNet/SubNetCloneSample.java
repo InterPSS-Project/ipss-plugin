@@ -24,7 +24,7 @@ public class SubNetCloneSample {
 		 */
 		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IpssInternal)
-				.load("testData/ipssdata/BUS1824.ipssdat")
+				.load("ipss-plugin/ipss.test.plugin.core/testData/ipssdata/BUS1824.ipssdat")
 				.getAclfNet();	
 	
 		//System.out.println(net.net2String());
