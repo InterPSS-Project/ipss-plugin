@@ -1,4 +1,4 @@
- /*
+/*
   * @(#)PTIFormat.java   
   *
   * Copyright (C) 2006 www.interpss.org
@@ -35,7 +35,21 @@ public class PTIFormat extends IpssFileAdapterBase {
 	}
 
 	public PTIFormat(IpssFileAdapter.Version v, IPSSMsgHub msgHub) {
-		super(msgHub, v == IpssFileAdapter.Version.PSSE_26? 
-				ODMFileFormatEnum.PsseV26 : ODMFileFormatEnum.PsseV30);
+		super(msgHub, mapVersionToFormat(v));
+	}
+	
+	private static ODMFileFormatEnum mapVersionToFormat(IpssFileAdapter.Version v) {
+		switch(v) {
+			case PSSE_26: return ODMFileFormatEnum.PsseV26;
+			case PSSE_29: return ODMFileFormatEnum.PsseV29;
+			case PSSE_30: return ODMFileFormatEnum.PsseV30;
+			case PSSE_31: return ODMFileFormatEnum.PsseV31;
+			case PSSE_32: return ODMFileFormatEnum.PsseV32;
+			case PSSE_33: return ODMFileFormatEnum.PsseV33;
+			case PSSE_34: return ODMFileFormatEnum.PsseV34;
+			case PSSE_35: return ODMFileFormatEnum.PsseV35;
+			case PSSE_36: return ODMFileFormatEnum.PsseV36;
+			default: return ODMFileFormatEnum.PsseV30; // Default to V30 if version not recognized
+		}
 	}
 }
