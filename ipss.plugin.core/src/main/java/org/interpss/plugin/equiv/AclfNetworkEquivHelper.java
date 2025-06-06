@@ -26,7 +26,7 @@ public class AclfNetworkEquivHelper {
 
     private AclfNetwork baseNetwork = null;
     private Set<String> boundaryBusSet = null;
-    private Set<BaseCuttingBranch> boundaryBranchSet = null;
+    private Set<BaseCuttingBranch<Complex>> boundaryBranchSet = null;
     private Set<String> keptBusSet = null;
     private Set<String> keptBranchSet = null;
     private AclfNetwork equivNet = null;
@@ -57,7 +57,7 @@ public class AclfNetworkEquivHelper {
                 if(keptAreas.contains(branch.getFromAclfBus().getArea().getId())){
                     if(!keptAreas.contains(branch.getToAclfBus().getArea().getId())){
                         this.boundaryBusSet.add(branch.getFromBusId());
-                        this.boundaryBranchSet.add(new BaseCuttingBranch(branch.getId(), 1, 0, BranchBusSide.FROM_SIDE));
+                        this.boundaryBranchSet.add(new BaseCuttingBranch<Complex>(branch.getId(), 1, 0, BranchBusSide.FROM_SIDE));
 
                     }
                     else{//the branch are within the kept areas 
@@ -69,7 +69,7 @@ public class AclfNetworkEquivHelper {
                     if(keptAreas.contains(branch.getToAclfBus().getArea().getId())){
 
                         this.boundaryBusSet.add(branch.getToBusId());
-                        this.boundaryBranchSet.add(new BaseCuttingBranch(branch.getId(), 0, 1, BranchBusSide.TO_SIDE));
+                        this.boundaryBranchSet.add(new BaseCuttingBranch<Complex>(branch.getId(), 0, 1, BranchBusSide.TO_SIDE));
 
                     }
 
@@ -81,11 +81,12 @@ public class AclfNetworkEquivHelper {
         if(this.baseNetwork.getSpecialBranchList()!=null){
             for(Branch bra: this.baseNetwork.getSpecialBranchList()){
                 if(bra != null && bra.isActive() && bra instanceof HvdcLine2T){
-                    HvdcLine2T branch = (HvdcLine2T) bra;
+                    @SuppressWarnings("unchecked")
+					HvdcLine2T<AclfBus> branch = (HvdcLine2T<AclfBus>) bra;
                     if(keptAreas.contains(branch.getFromBus().getArea().getId())){
                         if(!keptAreas.contains(branch.getToBus().getArea().getId())){
                                 this.boundaryBusSet.add(branch.getFromBusId());
-                                this.boundaryBranchSet.add(new BaseCuttingBranch(branch.getId(), 1, 0, BranchBusSide.FROM_SIDE));
+                                this.boundaryBranchSet.add(new BaseCuttingBranch<Complex>(branch.getId(), 1, 0, BranchBusSide.FROM_SIDE));
 
                         }
                         else{//the branch are within the kept areas
@@ -97,7 +98,7 @@ public class AclfNetworkEquivHelper {
                         if(keptAreas.contains(branch.getToBus().getArea().getId())){
 
                             this.boundaryBusSet.add(branch.getToBusId());
-                            this.boundaryBranchSet.add(new BaseCuttingBranch(branch.getId(), 0, 1, BranchBusSide.TO_SIDE));
+                            this.boundaryBranchSet.add(new BaseCuttingBranch<Complex>(branch.getId(), 0, 1, BranchBusSide.TO_SIDE));
 
                         }
 
@@ -127,7 +128,7 @@ public class AclfNetworkEquivHelper {
         }
         
         // post-process the equivalent network to equivalent loads at the boundary buses based on the power flow of the boundary branches
-        for(BaseCuttingBranch cuttingBranch: this.boundaryBranchSet){
+        for(BaseCuttingBranch<Complex> cuttingBranch: this.boundaryBranchSet){
             AclfBranch branch = this.baseNetwork.getBranch(cuttingBranch.getBranchId());
             if(branch != null&& branch.isActive()){
                 //check if the branch is a zero impedance branch, if so, this could lead to large power mismatch at the boundary bus
@@ -184,7 +185,8 @@ public class AclfNetworkEquivHelper {
             if(this.baseNetwork.getSpecialBranchList()!=null){
                 for(Branch bra: this.baseNetwork.getSpecialBranchList()){
                     if(bra != null && bra.isActive() && bra instanceof HvdcLine2T){
-                        HvdcLine2T hvdcBranch = (HvdcLine2T) bra;
+                        @SuppressWarnings("unchecked")
+						HvdcLine2T<AclfBus> hvdcBranch = (HvdcLine2T<AclfBus>) bra;
                         if(hvdcBranch.getId().equals(cuttingBranch.getBranchId())){
                             // handle HVDC branch
                                 if(cuttingBranch.getSplitSide() == BranchBusSide.FROM_SIDE){
@@ -280,12 +282,11 @@ public class AclfNetworkEquivHelper {
         return null;
     }
 
-
-    public Set<BaseCuttingBranch> getBoundaryBranches(){
+    public Set<BaseCuttingBranch<Complex>> getBoundaryBranches(){
         return this.boundaryBranchSet;
     }
+    
     public Set<String> getBoundaryBuses(){
         return this.boundaryBusSet;
     }
-
 }
