@@ -13,6 +13,7 @@ import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.funcImpl.AclfNetObjectComparator;
 
 public class SubNetEquivHelperSample {
 
@@ -21,7 +22,7 @@ public class SubNetEquivHelperSample {
 		
 		AclfNetwork aclfNet = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.PSSE)
-				.load("ipss-plugin/ipss.test.plugin.core/testData/adpter/psse/v30/Kundur_2area/Kundur_2area_v30.raw")
+				.load("testData/adpter/psse/v30/Kundur_2area/Kundur_2area_v30.raw")
 				.getAclfNet();
 
         LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(aclfNet);
@@ -29,7 +30,7 @@ public class SubNetEquivHelperSample {
         algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 	  	algo.loadflow();
 
-        System.out.println(aclfNet.net2String());
+        //System.out.println(aclfNet.net2String());
 
         // Create an instance of AclfNetworkEquivHelper
         AclfNetworkEquivHelper equivHelper = new AclfNetworkEquivHelper(aclfNet);
@@ -47,9 +48,17 @@ public class SubNetEquivHelperSample {
         algo2.getLfAdjAlgo().setApplyAdjustAlgo(false);
 	  	algo2.loadflow();
 
-        System.out.println(equivNet.net2String());
+        //System.out.println(equivNet.net2String());
 
-
+	  	AclfNetObjectComparator comparator = new AclfNetObjectComparator(aclfNet, equivNet);
+	  	
+        String busId = "Bus9";
+        comparator.compareBus(busId);
+        
+        String braId = "Bus3->Bus11(1)";
+        //String braId = "Bus4->Bus10(1)";
+        comparator.compareBranch(braId);  
+        
+        System.out.println("Comparison results " + comparator.getDiffMsgList());
     }
-
 }
