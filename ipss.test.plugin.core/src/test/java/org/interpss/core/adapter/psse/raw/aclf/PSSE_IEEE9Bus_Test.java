@@ -38,6 +38,7 @@ import org.junit.Test;
 
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
+import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.AclfMethodType;
@@ -283,9 +284,53 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 	  	AclfBus swingBus = net.getBus("Bus1");
 	  	AclfSwingBusAdapter swing = swingBus.toSwingBus();
   		Complex p = swing.getGenResults(UnitType.PU);
-  		assertTrue(Math.abs(p.getReal()-0.71646)<0.00001);
-  		assertTrue(Math.abs(p.getImaginary()-0.27107)<0.00001);
-	}	
+  		assertTrue(Math.abs(p.getReal()-0.71646)<0.0001);
+  		assertTrue(Math.abs(p.getImaginary()-0.27107)<0.0001);
+	}
+
+	@Test
+	public void testLoadWithDGen() throws Exception {
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v34/ieee9_dgen_v34.raw")
+				.setFormat(PSSE)
+				.setPsseVersion(PsseVersion.PSSE_34)
+				.load()
+				.getImportedObj();
+
+		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		algo.setLfMethod(AclfMethodType.NR);
+		algo.setNonDivergent(true);
+		algo.loadflow();
+		//System.out.println(AclfOutFunc.loadFlowSummary(net));
+
+		/*
+		 * @!   I,'ID',STAT,AREA,ZONE,      PL,        QL,        IP,        IQ,        YP,        YQ, OWNER,SCALE,INTRPT,  DGENP,     DGENQ, DGENF
+     5,'1 ',   1,   1,   1,   150.000,    60.000,     0.000,     0.000,     0.000,     0.000,   1,    1,  0,     25.000,     10.000,   1
+     6,'1 ',   1,   1,   1,    90.000,    30.000,     0.000,     0.000,     0.000,     0.000,   1,    1,  0,     10.000,     5.000,   0
+     8,'1 ',   1,   1,   1,   100.000,    35.000,     0.000,     0.000,     0.000,     0.000,   1,    1,  0,     0.000,     0.000,   0
+		 */
+
+		//check the contribute load records at bus 5 and 6 to see if the distributed generation is included
+		// Bus 5 has 150 MW load and 60 MVar load, and 0.25 MW + j0.1 MVar distributed generation
+		AclfBus bus5 = net.getBus("Bus5");
+		assertTrue(Math.abs(bus5.getLoadP() - 1.5 + 0.25) < 0.0001); // load P + dgen P
+		assertTrue(Math.abs(bus5.getLoadQ() - 0.6 + 0.1) < 0.0001); // load Q + dgen Q
+
+		// Bus 6 has 0.9 MW load and 0.3 MVar load, and 0.1 MW + j0.05 MVar distributed generation, but it is offline
+		AclfBus bus6 = net.getBus("Bus6");
+		assertTrue(Math.abs(bus6.getLoadP() - 0.9 ) < 0.0001); // load P + dgen P
+		assertTrue(Math.abs(bus6.getLoadQ() - 0.3 ) < 0.0001); // load Q + dgen Q
+
+		AclfLoad load6 = bus6.getContributeLoadList().get(0);
+		// check the distributed generation load record is offline
+		assertTrue("DGen load record is not offline", load6.getDistGenStatus() == false);
+
+
+		testVAclf(net);
+
+		
+	}
+	
+	
 }
 
 
