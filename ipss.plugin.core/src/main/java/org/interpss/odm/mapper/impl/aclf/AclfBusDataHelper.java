@@ -82,6 +82,8 @@ import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.opf.OpfBus;
 import com.interpss.opf.OpfObjectFactory;
 
+import jdk.internal.loader.Loader;
+
 /**
  * Aclf bus data ODM mapping helper functions
  * 
@@ -439,6 +441,14 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 						}
 
 						load.setCode(code);
+
+						// process the distributed generation available at the load since psse v34
+						if(loadElem.getDGenPower()!=null){
+							PowerXmlType dgenP = loadElem.getDGenPower();
+							load.setDistGenPower(UnitHelper.pConversion(new Complex(dgenP.getRe(),dgenP.getIm()), baseKva, 
+									toApparentPowerUnit.apply(dgenP.getUnit()), UnitType.PU));
+						}
+						if (loadElem.isDGenStatus()!=null)load.setDistGenStatus(loadElem.isDGenStatus()); 
 				   }
 			   }
 		   }
