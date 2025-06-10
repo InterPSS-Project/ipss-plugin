@@ -50,7 +50,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		// load the test data V33
 		AclfNetwork net33 = IpssAdapter.importAclfNet("testdata/adpter/psse/v31/ieee9_v31.raw")
 				.setFormat(PSSE)
-				.setPsseVersion(PsseVersion.PSSE_31)
+				.setPsseVersion(PsseVersion.PSSE_31) 
 				.load()
 				.getImportedObj();
 	}
@@ -322,7 +322,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 
 		AclfLoad load6 = bus6.getContributeLoadList().get(0);
 		// check the distributed generation load record is offline
-		assertTrue("DGen load record is not offline", load6.getDistGenStatus() == false);
+		assertTrue("DGen load record is not offline", load6.isDistGenStatus() == false);
 
 
 		testVAclf(net);
