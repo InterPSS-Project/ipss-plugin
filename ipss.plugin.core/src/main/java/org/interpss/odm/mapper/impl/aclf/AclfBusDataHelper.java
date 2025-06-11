@@ -463,6 +463,8 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 		
 		//this.bus.setBusControl(swchShunt);
 		this.bus.setSwitchedShuntDevice(swchShunt);
+		swchShunt.setParentBus(bus);
+		swchShunt.setRemoteBus(bus);
 		
 		ReactivePowerXmlType binit = xmlSwitchedShuntData.getBInit();
 		
@@ -483,7 +485,8 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 			
 			LimitType vLimit = new LimitType(xmlSwitchedShuntData.getDesiredVoltageRange().getMax(),
 					xmlSwitchedShuntData.getDesiredVoltageRange().getMin());
-			//TODO vLimit is missing
+			swchShunt.setDesiredVoltageRange(vLimit);
+			
 			//swchShunt.set
 			for(SwitchedShuntBlockXmlType varBankXml:xmlSwitchedShuntData.getBlock()){
 				ShuntCompensator varBank= CoreObjectFactory.createShuntCompensator("QBank");
