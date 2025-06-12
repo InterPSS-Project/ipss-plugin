@@ -25,9 +25,11 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.hvdc.HvdcControlMode;
 import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.funcImpl.AclfNetObjectComparator;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 import com.interpss.simu.SimuObjectFactory;
+import com.interpss.state.aclf.AclfBusState;
 
 public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 	@Test
@@ -36,7 +38,12 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 		
 		AclfNetwork netCopy = net.hzCopy();
 		
-		assertTrue("", net.diffState(netCopy));
+		//assertTrue("", net.diffState(netCopy));
+  		AclfNetObjectComparator comp = new AclfNetObjectComparator(net, netCopy);
+  		comp.compareNetwork();
+  		
+  		System.out.println("Differences found: " + comp.getDiffMsgList());
+  		assertTrue("" + comp.getDiffMsgList(), comp.getDiffMsgList().size() == 0);
 		
 		test_LCCHVDC_Data(netCopy);
 	}
@@ -47,7 +54,16 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 		
 		AclfNetwork netCopy = net.jsonCopy();
 		
-		assertTrue("", net.diffState(netCopy));
+		AclfBus bus = net.getBus("Bus1");
+		AclfBusState busState = new AclfBusState(bus);
+		AclfBus busCopy = AclfBusState.create(busState);
+		
+		//assertTrue("", net.diffState(netCopy));
+  		AclfNetObjectComparator comp = new AclfNetObjectComparator(net, netCopy);
+  		comp.compareNetwork();
+  		
+  		System.out.println("Differences found: " + comp.getDiffMsgList());
+  		assertTrue("" + comp.getDiffMsgList(), comp.getDiffMsgList().size() == 0);
 		
 		test_LCCHVDC_Data(netCopy);
 	}
@@ -358,6 +374,8 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 	}
 
 	private AclfNetwork createTestCase() {
+		System.out.println("Kundur 2-area LCC HVDC test case creation ...");
+		
 		IODMAdapter adapter = new PSSERawAdapter(PSSEAdapter.PsseVersion.PSSE_33);
 		assertTrue(adapter.parseInputFile("testData/adpter/psse/v33/Kundur_2area_LCC_HVDC.raw"));
 		
@@ -376,6 +394,7 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 
 		//HvdcLine2TVSC<AclfBus> vscHVDC = (HvdcLine2TVSC<AclfBus>) net.getSpecialBranchList().get(0);
 		
+		System.out.println("Kundur 2-area LCC HVDC test case created");
 		
 		return net;
 	}
