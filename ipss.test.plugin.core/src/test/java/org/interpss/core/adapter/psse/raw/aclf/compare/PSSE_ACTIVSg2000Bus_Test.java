@@ -1,5 +1,7 @@
 package org.interpss.core.adapter.psse.raw.aclf.compare;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.logging.Level;
 
 import org.ieee.odm.adapter.psse.PSSEAdapter;
@@ -8,15 +10,13 @@ import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.IpssCorePlugin;
-import org.interpss.display.AclfOutFunc;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.AclfNetObjectComparator;
@@ -58,7 +58,27 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 		assertTrue(aclfAlgo.loadflow());
 		//System.out.println(AclfOutFunc.loadFlowSummary(net));
 		
+		/*
+		 * All SwitchedShuntDevice remote bus branch id are 20, which is wrong.
+		 */
+		AclfBus bus1 = net.getBus("Bus1010");
+		assertTrue("", bus1.getSwitchedShuntDevice().getRemoteBusBranchId().equals("20"));
+		
+		/*
+		 * The bus control/PV bus limit and switched shunt device can not co-exit at a bus.
+		 */
+		AclfBus bus2 = net.getBus("Bus1033");
+		assertTrue("", bus2.getBusControl() != null && bus2.getPVBusLimit() != null &&
+					bus2.getSwitchedShuntDevice() != null);
+	
+		/*
+		AclfBusState busState = new AclfBusState(bus);
+		AclfBus bus2 = AclfBusState.create(busState);
+		*/
+		
   		AclfNetwork aclfNetCopy = net.jsonCopy();
+  		
+		//AclfBus busCopy = aclfNetCopy.getBus("Bus1033");
 		
   		AclfNetObjectComparator comp = new AclfNetObjectComparator(net, aclfNetCopy);
   		comp.compareNetwork();
