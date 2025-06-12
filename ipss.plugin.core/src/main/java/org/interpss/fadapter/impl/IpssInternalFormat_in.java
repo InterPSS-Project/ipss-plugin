@@ -40,6 +40,7 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.ShuntCompensator;
 import com.interpss.core.aclf.adj.PVBusLimit;
 import com.interpss.core.aclf.adpter.AclfCapacitorBusAdapter;
 import com.interpss.core.aclf.adpter.AclfLineAdapter;
@@ -328,8 +329,18 @@ public class IpssInternalFormat_in {
 
       	AclfBus bus = adjNet.getBus(id);
     	if (bus != null) {
+    		if (bus.getCompensatorList().size() != 1) {
+    			bus.getCompensatorList().clear();
+    			bus.getCompensatorList().add(CoreObjectFactory.createShuntCompensator(bus.getId() + "_QBank"));
+    		}
+    		ShuntCompensator bank = bus.getCompensatorList().get(0);
+    		bank.setSteps(1);
+    		bank.setUnitQMvar(b);
+    		bank.setB(b);
+    		/*
 			final AclfCapacitorBusAdapter cap = bus.toCapacitorBus();
 			cap.setQ(b);
+			*/
     	} else {
 			throw new InterpssRuntimeException("AclfDataFile.loadCapacitorBusInfo_2, Capacitor bus:" + id + " is not in the system" );
 		}
