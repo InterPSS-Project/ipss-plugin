@@ -463,7 +463,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 		swchShunt.setStatus(!xmlSwitchedShuntData.isOffLine());
 		
 		//this.bus.setBusControl(swchShunt);
-		this.bus.setSwitchedShuntDevice(swchShunt);
+		this.bus.setBusControl(swchShunt);
 		swchShunt.setParentBus(bus);
 		swchShunt.setRemoteBus(bus);
 		
