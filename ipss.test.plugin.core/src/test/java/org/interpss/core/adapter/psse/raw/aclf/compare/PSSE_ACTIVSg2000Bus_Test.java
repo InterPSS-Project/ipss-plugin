@@ -62,14 +62,14 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 		 * All SwitchedShuntDevice remote bus branch id are 20, which is wrong.
 		 */
 		AclfBus bus1 = net.getBus("Bus1010");
-		assertTrue("", bus1.getSwitchedShuntDevice().getRemoteBusBranchId().equals("20"));
+		assertTrue("", bus1.getSwitchedShunt().getRemoteBusBranchId().equals("20"));
 		
 		/*
 		 * The bus control/PV bus limit and switched shunt device can not co-exit at a bus.
 		 */
 		AclfBus bus2 = net.getBus("Bus1033");
 		assertTrue("", bus2.getBusControl() != null && bus2.getPVBusLimit() != null &&
-					bus2.getSwitchedShuntDevice() != null);
+					bus2.getSwitchedShunt() != null);
 	
 		/*
 		AclfBusState busState = new AclfBusState(bus);
