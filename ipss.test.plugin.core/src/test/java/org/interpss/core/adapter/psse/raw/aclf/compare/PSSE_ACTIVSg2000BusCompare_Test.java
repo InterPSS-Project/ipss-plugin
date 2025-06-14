@@ -24,7 +24,7 @@ import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 import com.interpss.simu.SimuObjectFactory;
 
-public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
+public class PSSE_ACTIVSg2000BusCompare_Test  extends CorePluginTestSetup {
 	
 	@Test
 	public void test_ACTIVSg2000_Compare() throws InterpssException{
@@ -61,8 +61,8 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 		/*
 		 * All SwitchedShuntDevice remote bus branch id are 20, which is wrong.
 		 */
-		AclfBus bus1 = net.getBus("Bus1010");
-		assertTrue("", bus1.getSwitchedShunt().getRemoteBusBranchId().equals("20"));
+		//AclfBus bus1 = net.getBus("Bus1010");
+		//assertTrue("", bus1.getSwitchedShunt().getRemoteBusBranchId().equals("20"));
 		
 		/*
 		 * The bus control/PV bus limit and switched shunt device can not co-exit at a bus.
@@ -78,13 +78,13 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 		
   		AclfNetwork aclfNetCopy = net.jsonCopy();
   		
-		//AclfBus busCopy = aclfNetCopy.getBus("Bus1033");
+		//AclfBus busCopy = aclfNetCopy.getBus("Bus1010");
 		
   		AclfNetObjectComparator comp = new AclfNetObjectComparator(net, aclfNetCopy);
   		comp.compareNetwork();
   		
-  		System.out.println("Differences found: " + comp.getDiffMsgList());
-  		//assertTrue("" + comp.getDiffMsgList(), comp.getDiffMsgList().size() == 0);
+  		//System.out.println("Differences found: " + comp.getDiffMsgList());
+  		assertTrue("" + comp.getDiffMsgList(), comp.getDiffMsgList().size() == 0);
 	}		
 	
 }
