@@ -67,9 +67,9 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 		/*
 		 * The bus control/PV bus limit and switched shunt device can not co-exit at a bus.
 		 */
-		AclfBus bus2 = net.getBus("Bus1033");
-		assertTrue("", bus2.getBusControl() != null && bus2.getPVBusLimit() != null &&
-					bus2.getSwitchedShunt() != null);
+//		AclfBus bus2 = net.getBus("Bus1033");
+//		assertTrue("", bus2.getBusControl() != null && bus2.getPVBusLimit() != null &&
+//					bus2.getSwitchedShunt() != null);
 	
 		/*
 		AclfBusState busState = new AclfBusState(bus);
