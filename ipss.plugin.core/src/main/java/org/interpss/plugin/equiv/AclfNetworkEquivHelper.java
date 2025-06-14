@@ -19,6 +19,8 @@ import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.hvdc.HvdcLine2T;
+import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
+import com.interpss.core.aclf.hvdc.HvdcLine2TVSC;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.BranchBusSide;
 
@@ -184,32 +186,38 @@ public class AclfNetworkEquivHelper {
             //check if the branch is a special branch (HVDC), if so, we need to handle it differently
             if(this.baseNetwork.getSpecialBranchList()!=null){
                 for(Branch bra: this.baseNetwork.getSpecialBranchList()){
-                    if(bra != null && bra.isActive() && bra instanceof HvdcLine2T){
-                        @SuppressWarnings("unchecked")
-						HvdcLine2T<AclfBus> hvdcBranch = (HvdcLine2T<AclfBus>) bra;
-                        if(hvdcBranch.getId().equals(cuttingBranch.getBranchId())){
-                            // handle HVDC branch
-                                if(cuttingBranch.getSplitSide() == BranchBusSide.FROM_SIDE){
-                                    Complex s = hvdcBranch.powerIntoConverter(hvdcBranch.getFromBusId());
-                                    AclfBus bus = equivNet.getBus(hvdcBranch.getFromBusId());
-                                    if(bus != null && bus.isActive()){
-                                        // create a load object with the total power at the boundary bus
-                                        AclfLoad load = CoreObjectFactory.createAclfLoad(hvdcBranch.getId() + "_" + hvdcBranch.getFromBusId());
-                                        bus.getContributeLoadList().add(load);
-                                        load.setLoadCP(s);
-                                        load.setCode(AclfLoadCode.CONST_P); // set load code to CONST_P
-                                        bus.setLoadCode(AclfLoadCode.CONST_P);
+                    if(bra != null && bra.isActive()) {
+                        if(bra instanceof HvdcLine2TLCC){
+                            @SuppressWarnings("unchecked")
+                            HvdcLine2TLCC<AclfBus> hvdcBranch = (HvdcLine2TLCC<AclfBus>) bra;
+                            if(hvdcBranch.getId().equals(cuttingBranch.getBranchId())){
+                                // handle HVDC branch
+                                    if(cuttingBranch.getSplitSide() == BranchBusSide.FROM_SIDE){
+                                        Complex s = hvdcBranch.powerIntoConverter(hvdcBranch.getFromBusId());
+                                        AclfBus bus = equivNet.getBus(hvdcBranch.getFromBusId());
+                                        if(bus != null && bus.isActive()){
+                                            // create a load object with the total power at the boundary bus
+                                            AclfLoad load = CoreObjectFactory.createAclfLoad(hvdcBranch.getId() + "_" + hvdcBranch.getFromBusId());
+                                            bus.getContributeLoadList().add(load);
+                                            load.setLoadCP(s);
+                                            load.setCode(AclfLoadCode.CONST_P); // set load code to CONST_P
+                                            bus.setLoadCode(AclfLoadCode.CONST_P);
+                                        }
+                                    }
+                                    else if(cuttingBranch.getSplitSide() == BranchBusSide.TO_SIDE){
+                                        Complex s = hvdcBranch.powerIntoConverter(hvdcBranch.getToBusId());
+                                        AclfBus toBus = equivNet.getBus(hvdcBranch.getToBusId());
+                                        AclfLoad load = CoreObjectFactory.createAclfLoad(hvdcBranch.getId() + "_" + hvdcBranch.getToBusId());
+                                        toBus.getContributeLoadList().add(load);
+                                        load.setLoadCP(s); // re(s) is negative as it is power into the converter, so it is negative load already, no need to further change it
+                                        toBus.setLoadCode(AclfLoadCode.CONST_P);
                                     }
                                 }
-                                else if(cuttingBranch.getSplitSide() == BranchBusSide.TO_SIDE){
-                                    Complex s = hvdcBranch.powerIntoConverter(hvdcBranch.getToBusId());
-                                    AclfBus toBus = equivNet.getBus(hvdcBranch.getToBusId());
-                                    AclfLoad load = CoreObjectFactory.createAclfLoad(hvdcBranch.getId() + "_" + hvdcBranch.getToBusId());
-                                    toBus.getContributeLoadList().add(load);
-                                    load.setLoadCP(s.negate()); // negative load for the converter
-                                    toBus.setLoadCode(AclfLoadCode.CONST_P);
-                                }
                             }
+                        
+                        }
+                        else if(bra instanceof HvdcLine2TVSC){
+                            throw new UnsupportedOperationException("HVDC VSC branch is not supported yet.");
                         }
                     }
                 }
@@ -280,6 +288,39 @@ public class AclfNetworkEquivHelper {
         e.printStackTrace();
     }
         return null;
+    }
+
+    public boolean equivHvdc() {
+        //   if(this.baseNetwork.getSpecialBranchList()!=null){
+        //         for(Branch bra: this.baseNetwork.getSpecialBranchList()){
+        //             if(bra != null && bra.isActive() && bra instanceof HvdcLine2T){
+        //                 @SuppressWarnings("unchecked")
+		// 				HvdcLine2T<AclfBus> hvdcBranch = (HvdcLine2T<AclfBus>) bra;
+    
+        //                 // handle HVDC branch
+        //                 if(cuttingBranch.getSplitSide() == BranchBusSide.FROM_SIDE){
+        //                     Complex s = hvdcBranch.powerIntoConverter(hvdcBranch.getFromBusId());
+        //                     AclfBus bus = equivNet.getBus(hvdcBranch.getFromBusId());
+        //                     if(bus != null && bus.isActive()){
+        //                         // create a load object with the total power at the boundary bus
+        //                         AclfLoad load = CoreObjectFactory.createAclfLoad(hvdcBranch.getId() + "_" + hvdcBranch.getFromBusId());
+        //                         bus.getContributeLoadList().add(load);
+        //                         load.setLoadCP(s);
+        //                         load.setCode(AclfLoadCode.CONST_P); // set load code to CONST_P
+        //                         bus.setLoadCode(AclfLoadCode.CONST_P);
+        //                     }
+        //                 }
+        //                 else if(cuttingBranch.getSplitSide() == BranchBusSide.TO_SIDE){
+        //                     Complex s = hvdcBranch.powerIntoConverter(hvdcBranch.getToBusId());
+        //                     AclfBus toBus = equivNet.getBus(hvdcBranch.getToBusId());
+        //                     AclfLoad load = CoreObjectFactory.createAclfLoad(hvdcBranch.getId() + "_" + hvdcBranch.getToBusId());
+        //                     toBus.getContributeLoadList().add(load);
+        //                     load.setLoadCP(s.negate()); // negative load for the converter
+        //                     toBus.setLoadCode(AclfLoadCode.CONST_P);
+        //                 }
+        //             }
+        //         }
+        return false;
     }
 
     public Set<BaseCuttingBranch<Complex>> getBoundaryBranches(){
