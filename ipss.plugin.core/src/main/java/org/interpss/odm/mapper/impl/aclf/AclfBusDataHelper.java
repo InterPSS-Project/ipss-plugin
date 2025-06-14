@@ -456,9 +456,6 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 	private void mapSwitchShuntData(SwitchedShuntXmlType xmlSwitchedShuntData){
 
 		SwitchedShunt swchShunt = CoreObjectFactory.createSwitchedShunt();
-		//TODO how the switched shunt should be modeled, controlBus or shuntDevice?
-		//swithced shunt is a also a AclfControlBus
-		//set status
 		swchShunt.setId("SwitchedShunt@"+bus.getId());
 		swchShunt.setStatus(!xmlSwitchedShuntData.isOffLine());
 		
@@ -466,6 +463,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 		this.bus.setBusControl(swchShunt);
 		swchShunt.setParentBus(bus);
 		swchShunt.setRemoteBus(bus);
+		swchShunt.setRemoteBusBranchId(bus.getId());
 		
 		ReactivePowerXmlType binit = xmlSwitchedShuntData.getBInit();
 		
