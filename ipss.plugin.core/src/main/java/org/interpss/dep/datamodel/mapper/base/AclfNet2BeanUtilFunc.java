@@ -158,7 +158,7 @@ public class AclfNet2BeanUtilFunc {
 		}		
 		
 		// map switched shunt data
-		if (bus.getSwitchedShunt() != null) {
+		if (bus.isSwitchedShunt()) {
 			SwitchedShunt ss = bus.getSwitchedShunt();
 			SwitchShuntBean ssb = new SwitchShuntBean();
 			mapSwitchShuntData(ss,ssb);			
