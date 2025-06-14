@@ -24,6 +24,7 @@ import org.interpss.core.adapter.psse.raw.aclf.PSSE_5Bus_TestCase;
 import org.interpss.core.adapter.psse.raw.aclf.PSSE_ACTIVSg2000Bus_Test;
 import org.interpss.core.adapter.psse.raw.aclf.PSSE_IEEE9Bus_Test;
 import org.interpss.core.adapter.psse.raw.aclf.SixBus_DclfPsXfr;
+import org.interpss.core.adapter.psse.raw.aclf.compare.PSSE_ACTIVSg2000BusCompare_Test;
 import org.interpss.core.adapter.psse.raw.acsc.IEEE39Bus_Acsc_Test;
 import org.interpss.core.adapter.psse.raw.acsc.IEEE9Bus_Acsc_Test;
 import org.interpss.core.adapter.psse.raw.dstab.IEEE9_Dstab_Adapter_Test;
@@ -85,6 +86,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	IEEE14_YMatrixSetTest.class,
 	SwingBusSubAreaTest.class,
 	PSSE_ACTIVSg2000Bus_Test.class,
+	PSSE_ACTIVSg2000BusCompare_Test.class,
 	Kundur_2Area_LCCHVDC2T_Aclf_Test.class,
 	Kundur_2Area_LCCHVDC2T_Test.class,
 	Kundur_2Area_VSCHVDC2T_Test.class,
