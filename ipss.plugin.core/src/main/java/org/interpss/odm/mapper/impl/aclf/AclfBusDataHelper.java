@@ -456,13 +456,14 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 	private void mapSwitchShuntData(SwitchedShuntXmlType xmlSwitchedShuntData){
 
 		SwitchedShunt swchShunt = CoreObjectFactory.createSwitchedShunt();
-		//TODO how the switched shunt should be modeled, controlBus or shuntDevice?
-		//swithced shunt is a also a AclfControlBus
-		//set status
+		swchShunt.setId("SwitchedShunt@"+bus.getId());
 		swchShunt.setStatus(!xmlSwitchedShuntData.isOffLine());
 		
 		//this.bus.setBusControl(swchShunt);
-		this.bus.setSwitchedShuntDevice(swchShunt);
+		this.bus.setBusControl(swchShunt);
+		swchShunt.setParentBus(bus);
+		swchShunt.setRemoteBus(bus);
+		swchShunt.setRemoteBusBranchId(bus.getId());
 		
 		ReactivePowerXmlType binit = xmlSwitchedShuntData.getBInit();
 		
@@ -483,7 +484,8 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 			
 			LimitType vLimit = new LimitType(xmlSwitchedShuntData.getDesiredVoltageRange().getMax(),
 					xmlSwitchedShuntData.getDesiredVoltageRange().getMin());
-			//TODO vLimit is missing
+			swchShunt.setDesiredVoltageRange(vLimit);
+			
 			//swchShunt.set
 			for(SwitchedShuntBlockXmlType varBankXml:xmlSwitchedShuntData.getBlock()){
 				ShuntCompensator varBank= CoreObjectFactory.createShuntCompensator("QBank");
