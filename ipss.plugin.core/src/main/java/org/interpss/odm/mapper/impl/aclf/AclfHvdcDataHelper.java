@@ -1,9 +1,13 @@
 package org.interpss.odm.mapper.impl.aclf;
 
 
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toActivePowerUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toAngleUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toVoltageUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toZUnit;
+
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.common.ODMLogger;
-import org.ieee.odm.schema.BusIDRefXmlType;
 import org.ieee.odm.schema.BusXmlType;
 import org.ieee.odm.schema.DCLineData2TXmlType;
 import org.ieee.odm.schema.DcLineControlModeEnumType;
@@ -15,13 +19,10 @@ import org.ieee.odm.schema.VSCConverterXmlType;
 import org.ieee.odm.schema.VSCDCControlModeEnumType;
 import org.ieee.odm.schema.VSCHVDC2TXmlType;
 import org.interpss.numeric.datatype.LimitType;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toActivePowerUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toAngleUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toVoltageUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toZUnit;
 
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.HvdcObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.hvdc.ConverterType;
@@ -133,7 +134,7 @@ public class AclfHvdcDataHelper {
 		
 		//set Rectifier data
 		if (hvdc2TXml.getRectifier() != null) {
-			ThyConverter<AclfBus> rectifier = CoreObjectFactory.createThyConverter((AclfBus)this.hvdc2T.getFromBus());
+			ThyConverter<AclfBus> rectifier = HvdcObjectFactory.createThyConverter((AclfBus)this.hvdc2T.getFromBus());
 			//TODO: It is better to rename the setRectifier method to setConverterType or something like that
 			rectifier.setConverterType(ConverterType.RECTIFIER);
 			lccHvdc2T.setRectifier(rectifier);
@@ -141,7 +142,7 @@ public class AclfHvdcDataHelper {
 			
 			// double
 			if (hvdc2TXml.getOperationMode() == DcLineOperationModeEnumType.DOUBLE) {
-				ThyConverter<AclfBus> rectifier2 = CoreObjectFactory.createThyConverter((AclfBus)this.hvdc2T.getFromBus());
+				ThyConverter<AclfBus> rectifier2 = HvdcObjectFactory.createThyConverter((AclfBus)this.hvdc2T.getFromBus());
 				rectifier2.setConverterType(ConverterType.RECTIFIER);
 				lccHvdc2T.setRectifier2(rectifier2);
 				setThyRectifierData(rectifier2, hvdc2TXml.getRectifier(), 2);
@@ -155,14 +156,14 @@ public class AclfHvdcDataHelper {
 		//set Inverter data
 		
 		if (hvdc2TXml.getInverter() != null) {
-			ThyConverter<AclfBus> inverter = CoreObjectFactory.createThyConverter((AclfBus)this.hvdc2T.getToBus());
+			ThyConverter<AclfBus> inverter = HvdcObjectFactory.createThyConverter((AclfBus)this.hvdc2T.getToBus());
 			lccHvdc2T.setInverter(inverter);
 			//It is better to rename the setInverter method to setConverterType or something like that 
 			inverter.setConverterType(ConverterType.INVERTER);
 			setThyInverterData(inverter, hvdc2TXml.getInverter(), 1);
 			// double
 			if (hvdc2TXml.getOperationMode() == DcLineOperationModeEnumType.DOUBLE) {
-				ThyConverter<AclfBus> inverter2 = CoreObjectFactory.createThyConverter((AclfBus)this.hvdc2T.getToBus());
+				ThyConverter<AclfBus> inverter2 = HvdcObjectFactory.createThyConverter((AclfBus)this.hvdc2T.getToBus());
 				lccHvdc2T.setInverter2(inverter2);
 				inverter2.setConverterType(ConverterType.INVERTER);
 				setThyInverterData(inverter2, hvdc2TXml.getInverter(), 2);
