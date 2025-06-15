@@ -63,6 +63,7 @@ import org.interpss.odm.mapper.base.AbstractODMSimuCtxDataMapper;
 
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.AclfAdjustObjectFactory;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
@@ -287,10 +288,10 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 		}
 		
 		for (FlowInterfaceRecXmlType xmlIntf : xmlIntList ) {
-			FlowInterface intf = CoreObjectFactory.createInterface(net, xmlIntf.getId());
+			FlowInterface intf = AclfAdjustObjectFactory.createInterface(net, xmlIntf.getId());
 
 			for ( FlowInterfaceBranchXmlType xmlBra : xmlIntf.getBranchList()) {
-				FlowInterfaceBranch branch = CoreObjectFactory.createInterfaceBranch(intf);
+				FlowInterfaceBranch branch = AclfAdjustObjectFactory.createInterfaceBranch(intf);
 				AclfBranch b = net.getBranch(xmlBra.getFromBusId(), xmlBra.getToBusId(), xmlBra.getCircuitId());
 				if (b == null) {
 					b = net.getBranch(xmlBra.getToBusId(), xmlBra.getFromBusId(), xmlBra.getCircuitId());
@@ -314,13 +315,13 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 			 * info.
 			 */
 			if (xmlIntf.getOffPeakLimit() != null) {
-				FlowInterfaceLimit onPeak = CoreObjectFactory.createInterfaceLimit();
+				FlowInterfaceLimit onPeak = AclfAdjustObjectFactory.createInterfaceLimit();
 				intf.setOnPeakLimit(onPeak);
 				map(xmlIntf, onPeak, net.getBaseKva());
 			}
 			
 			if (xmlIntf.getOnPeakLimit() != null) {
-				FlowInterfaceLimit offPeak = CoreObjectFactory.createInterfaceLimit();
+				FlowInterfaceLimit offPeak = AclfAdjustObjectFactory.createInterfaceLimit();
 				intf.setOffPeakLimit(offPeak);
 				map(xmlIntf, offPeak, net.getBaseKva());
 			}
