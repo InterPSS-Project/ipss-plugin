@@ -65,6 +65,7 @@ import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.AclfAdjustObjectFactory;
 import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.HvdcObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
@@ -167,7 +168,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 					branch = CoreObjectFactory.createAclf3WXformer();
 				else if(xmlBranch instanceof DCLineData2TXmlType) {
 					DCLineData2TXmlType dcLineXml  = (DCLineData2TXmlType)xmlBranch;
-					branch = CoreObjectFactory.createHvdcLine2TLCC(HvdcOperationMode.REC1_INV1, 
+					branch = HvdcObjectFactory.createHvdcLine2TLCC(HvdcOperationMode.REC1_INV1, 
 								dcLineXml.getId(), 
 								((LoadflowBusXmlType)dcLineXml.getFromBus().getIdRef()).getId(), 
 								((LoadflowBusXmlType)dcLineXml.getToBus().getIdRef()).getId());
@@ -183,7 +184,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 					
 				}
 				else if(xmlBranch instanceof VSCHVDC2TXmlType)
-					branch = CoreObjectFactory.createHvdc2TVSC();
+					branch = HvdcObjectFactory.createHvdc2TVSC();
 				else 
 					branch = CoreObjectFactory.createAclfBranch();
 				
