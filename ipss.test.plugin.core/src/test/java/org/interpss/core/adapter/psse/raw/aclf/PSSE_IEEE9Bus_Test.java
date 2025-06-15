@@ -33,6 +33,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
@@ -40,7 +41,10 @@ import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.adj.RemoteQControlType;
+import com.interpss.core.aclf.adj.VarCompensationMode;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
+import com.interpss.core.aclf.facts.StaticVarCompensator;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
@@ -300,6 +304,8 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		algo.setLfMethod(AclfMethodType.NR);
 		algo.setNonDivergent(true);
 		algo.loadflow();
+
+		assertTrue("Loadflow converged", net.isLfConverged());
 		//System.out.println(AclfOutFunc.loadFlowSummary(net));
 
 		/*
@@ -328,6 +334,117 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		testVAclf(net);
 
 		
+	}
+
+	@Test
+	public void testSVCLocalControl() throws Exception {
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v33/ieee9_svc_v33.raw")
+				.setFormat(PSSE)
+				.setPsseVersion(PsseVersion.PSSE_33)
+				.load()
+				.getImportedObj();
+
+		//check the SVC data connected to Bus-5
+		/*
+		 * @!  'NAME',         I,     J,MODE,PDES,   QDES,  VSET,   SHMX,   TRMX,   VTMN,   VTMX,   VSMX,    IMX,   LINX,   RMPCT,OWNER,  SET1,    SET2,VSREF, FCREG,   'MNAME'
+			"SVC1",5,     0, 1,  0.000,  0.000,1.00,50.000,  0.000,0.90000,1.10000,1.00000,  0.000,0.05000,  100.0, 0, 0.00000, 0.00000,   0, 0,   "            "
+		 */
+
+		AclfBus bus5 = net.getBus("Bus5");
+
+		//TODO: Should bus5 becomes a GenPV bus due to the addition of SVC?
+		
+		StaticVarCompensator svc1 = bus5.getStaticVarCompensator();
+		assertNotNull("Bus5 has SVC connected", svc1);
+		
+		assertTrue("SVC name is correct", svc1.getName().equals("SVC1"));
+
+		assertTrue("SVC voltage set point is correct", Math.abs(svc1.getVSpecified() - 1.01) < 1e-6);
+
+		//TODO: as the Qlimit is related to the actual Q output, which is dependent on the load flow bus voltage, so it is better to use another variable to store the capacitive rating, maybe Binit
+		assertTrue("SVC capacitive rating is correct", Math.abs(svc1.getQLimit().getMax() - 0.5) < 1e-6);
+
+		// rmpct is the percentage of the SVC remote control percentage, which is 100% in this case
+		assertTrue("SVC remote control percentage is correct", Math.abs(svc1.getRemoteControlPercentage() - 100.0) < 1e-6);
+
+		//remote control bus is bus 5 (local bus)
+		assertTrue("SVC remote control bus is correct", svc1.getRemoteBus().getId().equals("Bus5"));
+
+		//default control mode is continuous
+		assertTrue("SVC control mode is correct", svc1.getControlMode() == VarCompensationMode.CONTINUOUS);
+
+		//control type, default is  bus voltage control
+		assertTrue("SVC control type is correct", svc1.getControlType() == RemoteQControlType.BUS_VOLTAGE);
+
+		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		algo.setLfMethod(AclfMethodType.NR);
+		//algo.setNonDivergent(true);
+		algo.loadflow();
+
+		assertTrue("Loadflow converged", net.isLfConverged());
+
+		System.out.println(AclfOutFunc.loadFlowSummary(net));
+
+		//check the SVC results
+		//bus 5 is a genPV bus, so the voltage is 1.01 pu
+		assertTrue("Bus5 voltage magnitude is correct", Math.abs(bus5.getVoltageMag() - 1.01) < 1e-6);
+		assertTrue( bus5.isGenPV());
+		assertTrue("SVC Q output is correct", Math.abs(svc1.getQ() - 0.1598) < 1e-3); // Q output is 0.5 pu, which is the capacitive rating
+	}
+
+	@Test
+	public void testSVCRemoteControl() throws Exception {
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v33/ieee9_svc_remote_v33.raw")
+				.setFormat(PSSE)
+				.setPsseVersion(PsseVersion.PSSE_33)
+				.load()
+				.getImportedObj();
+
+		//check the SVC data connected to Bus-5
+		/*
+		 @!  'NAME',         I,     J,MODE,PDES,   QDES,  VSET,   SHMX,   TRMX,   VTMN,   VTMX,   VSMX,    IMX,   LINX,   RMPCT,OWNER,  SET1,    SET2,VSREF, FCREG,   'MNAME'
+"SVC1",5,     0, 1,  0.000,  0.000,1.01,50.000,  0.000,0.90000,1.10000,1.00000,  0.000,0.05000,  100.0, 0, 0.00000, 0.00000,   0, 4,   "            "
+		 */
+
+		AclfBus bus5 = net.getBus("Bus5");
+
+		//TODO: Should bus5 becomes a GenPV bus due to the addition of SVC?
+		
+		StaticVarCompensator svc1 = bus5.getStaticVarCompensator();
+		assertNotNull("Bus5 has SVC connected", svc1);
+		
+		assertTrue("SVC name is correct", svc1.getName().equals("SVC1"));
+
+		assertTrue("SVC voltage set point is correct", Math.abs(svc1.getVSpecified() - 1.03) < 1e-6);
+
+		//TODO: as the Qlimit is related to the actual Q output, which is dependent on the load flow bus voltage, so it is better to use another variable to store the capacitive rating, maybe Binit
+		assertTrue("SVC capacitive rating is correct", Math.abs(svc1.getQLimit().getMax() - 0.5) < 1e-6);
+
+		// rmpct is the percentage of the SVC remote control percentage, which is 100% in this case
+		assertTrue("SVC remote control percentage is correct", Math.abs(svc1.getRemoteControlPercentage() - 100.0) < 1e-6);
+
+		//remote control bus is bus 4
+		assertTrue("SVC remote control bus is correct", svc1.getRemoteBus().getId().equals("Bus4"));
+
+		//default control mode is continuous
+		assertTrue("SVC control mode is correct", svc1.getControlMode() == VarCompensationMode.CONTINUOUS);
+
+		//control type, default is  bus voltage control
+		assertTrue("SVC control type is correct", svc1.getControlType() == RemoteQControlType.BUS_VOLTAGE);
+
+		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		algo.setLfMethod(AclfMethodType.NR);
+		//algo.setNonDivergent(true);
+		algo.loadflow();
+
+		assertTrue("Loadflow converged", net.isLfConverged());
+
+		System.out.println(AclfOutFunc.loadFlowSummary(net));
+
+		//check the SVC results
+		AclfBus bus4 = net.getBus("Bus4");
+		assertTrue("Bus4 voltage magnitude is correct", Math.abs(bus4.getVoltageMag() - 1.03) < 1e-3);
+		//assertTrue("SVC Q output is correct", Math.abs(svc1.getQ() - 0.1598) < 1e-3); // Q output is 0.5 pu, which is the capacitive rating
 	}
 	
 	

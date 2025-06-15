@@ -1,7 +1,5 @@
 package org.interpss.core.adapter.psse.raw.aclf.compare;
 
-import static org.junit.Assert.assertTrue;
-
 import java.util.logging.Level;
 
 import org.ieee.odm.adapter.psse.PSSEAdapter;
@@ -11,12 +9,12 @@ import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.IpssCorePlugin;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
-import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.AclfNetObjectComparator;
@@ -36,7 +34,7 @@ public class PSSE_ACTIVSg2000BusCompare_Test  extends CorePluginTestSetup {
 		AclfModelParser parser =(AclfModelParser) adapter.getModel();
 		
 		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
+		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.ACLF_NETWORK);
 		if (!new ODMAclfParserMapper()
 					.map2Model(parser, simuCtx)) {
 			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");

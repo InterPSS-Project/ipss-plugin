@@ -24,13 +24,7 @@
 
 package org.interpss.odm.mapper.impl.aclf;
 
-import static org.interpss.odm.mapper.base.ODMFunction.BusXmlRef2BusId;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toActivePowerUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toAngleUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toApparentPowerUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toReactivePowerUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toVoltageUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toYUnit;
+import java.util.Optional;
 
 import javax.xml.bind.JAXBElement;
 
@@ -48,6 +42,7 @@ import org.ieee.odm.schema.LoadflowShuntYDataXmlType;
 import org.ieee.odm.schema.PowerXmlType;
 import org.ieee.odm.schema.ReactivePowerUnitType;
 import org.ieee.odm.schema.ReactivePowerXmlType;
+import org.ieee.odm.schema.StaticVarCompensatorXmlType;
 import org.ieee.odm.schema.SwitchedShuntBlockXmlType;
 import org.ieee.odm.schema.SwitchedShuntModeEnumType;
 import org.ieee.odm.schema.SwitchedShuntXmlType;
@@ -56,6 +51,13 @@ import org.ieee.odm.schema.VoltageXmlType;
 import org.ieee.odm.schema.YXmlType;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
+import static org.interpss.odm.mapper.base.ODMFunction.BusXmlRef2BusId;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toActivePowerUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toAngleUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toApparentPowerUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toReactivePowerUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toVoltageUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toYUnit;
 
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
@@ -70,11 +72,13 @@ import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.ShuntCompensator;
 import com.interpss.core.aclf.adj.PQBusLimit;
 import com.interpss.core.aclf.adj.PVBusLimit;
+import com.interpss.core.aclf.adj.RemoteQControlType;
 import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.adj.VarCompensationMode;
 import com.interpss.core.aclf.adpter.AclfPQGenBusAdapter;
 import com.interpss.core.aclf.adpter.AclfPVGenBusAdapter;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
+import com.interpss.core.aclf.facts.StaticVarCompensator;
 import com.interpss.core.acsc.AcscBus;
 import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.dstab.BaseDStabBus;
@@ -145,7 +149,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 			if (xmlBusData.getGenData().getCode() == LFGenCodeEnumType.SWING)
 				bus.toSwingBus().setDesiredVoltAng(angRad);
 			//add check to make sure there is at least one  generator with the bus
-			if(xmlBusData.getGenData().getCode()!=LFGenCodeEnumType.NONE_GEN && xmlBusData.getGenData().getContributeGen().size()>0)
+			if(xmlBusData.getGenData().getCode()!=LFGenCodeEnumType.NONE_GEN && !xmlBusData.getGenData().getContributeGen().isEmpty())
 				mapGenData(xmlBusData.getGenData());
 		} else {
 			bus.setGenCode(AclfGenCode.NON_GEN);
@@ -153,7 +157,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 
 		//System.out.println(bus.getId() + "  " + Number2String.toStr(bus.getVoltage()));		
 		
-		if (xmlBusData.getLoadData() != null && xmlBusData.getLoadData().getContributeLoad().size()>0) {
+		if (xmlBusData.getLoadData() != null && !xmlBusData.getLoadData().getContributeLoad().isEmpty()) {
 			mapLoadData(xmlBusData.getLoadData());
 		} else {
 			bus.setLoadCode(AclfLoadCode.NON_LOAD);
@@ -198,8 +202,13 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 		if(xmlBusData.getSwitchedShunt()!=null){
 			mapSwitchShuntData(xmlBusData.getSwitchedShunt());
 		}
+
+		if(xmlBusData.getSvc() != null) {
+			// map SVC data
+			mapStaticVarCompensatorData(xmlBusData.getSvc());
+		}
 	}
-	
+
 	private void mapGenData(BusGenDataXmlType xmlGenData) throws InterpssException {
 		LoadflowGenDataXmlType xmlDefaultGen = AclfParserHelper.getDefaultGen(xmlGenData);
 		VoltageXmlType vXml = xmlDefaultGen.getDesiredVoltage();
@@ -503,4 +512,73 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 			}
 		}
 	}
+
+	private void mapStaticVarCompensatorData(StaticVarCompensatorXmlType svcData) throws InterpssException{
+		Optional<StaticVarCompensator> svcOpt = CoreObjectFactory.createStaticVarCompensator(bus);
+		if (!svcOpt.isPresent()) return;
+
+		StaticVarCompensator svc = svcOpt.get();
+		svc.setId("SVC@" + bus.getId());
+		svc.setName(svcData.getName() != null ? svcData.getName() : "SVC@" + bus.getId());
+		svc.setStatus(!svcData.isOffLine());
+
+		// map SVC data
+		ReactivePowerXmlType capRating = svcData.getCapacitiveRating();
+		if (capRating != null) {
+			double factor = capRating.getUnit() == ReactivePowerUnitType.PU ? 1.0 :
+					capRating.getUnit() == ReactivePowerUnitType.MVAR ? 0.01 :
+							capRating.getUnit() == ReactivePowerUnitType.KVAR ? 1.0E-5 :
+									1.0E-8; // VAR->1.0E-8 with a 100 MVA base
+			svc.setQLimit(new LimitType(capRating.getValue() * factor, 0));
+		}
+
+		// map control mode
+		VarCompensationMode mode = VarCompensationMode.CONTINUOUS; 
+		svc.setControlMode(mode);
+
+		// control type
+		svc.setControlType(RemoteQControlType.BUS_VOLTAGE);
+
+		// map desired voltage
+		VoltageXmlType vXml = svcData.getVoltageSetPoint();
+		if (vXml != null) {
+			double vpu = UnitHelper.vConversion(vXml.getValue(),
+					bus.getBaseVoltage(), toVoltageUnit.apply(vXml.getUnit()), UnitType.PU);
+			svc.setVSpecified(vpu, UnitType.PU);
+		} else {
+			throw new InterpssException("For SVC bus, svcData.voltageSetPoint has to be defined, busId: " + bus.getId());
+		}
+
+		// map desired voltage range
+		LimitType vLimit = new LimitType(1.1, 0.9); // default value
+		svc.setDesiredVoltageRange(vLimit);
+
+		//Remote bus id
+		if (svcData.getRemoteControlledBus() != null) {
+			String remoteId = BusXmlRef2BusId.fx(svcData.getRemoteControlledBus());
+			svc.setRemoteBusBranchId(remoteId);
+			svc.setRemoteBus(this.aclfNet.getBus(remoteId));
+		}
+		else { // default is to control the local bus
+			svc.setRemoteBusBranchId(bus.getId());
+			svc.setRemoteBus(bus);
+		}
+
+		//remote control percentage
+		if (svcData.getRemoteControlledPercentage() != null) {
+			svc.setRemoteControlPercentage(svcData.getRemoteControlledPercentage());
+		} else {
+			svc.setRemoteControlPercentage(100.0); // default value
+		}
+
+		//TODO: in the isPVBusLimit() function of BaseAclfBusImpl.java, it checks the gen code of the bus 
+		// Check the gen code for the bus, if it is not a GENPV bus, set it to GENPV
+		if (bus.getGenCode() != AclfGenCode.GEN_PV) {
+			bus.setGenCode(AclfGenCode.GEN_PV); // set the bus gen code to GEN_PV
+		 
+		}
+		
+		//bus.SET
+	}
+
 }
