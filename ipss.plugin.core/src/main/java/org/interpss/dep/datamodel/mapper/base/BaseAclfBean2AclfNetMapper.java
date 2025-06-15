@@ -38,11 +38,11 @@ import org.interpss.dep.datamodel.bean.aclf.adj.XfrTapControlBean;
 import org.interpss.dep.datamodel.bean.base.BaseBranchBean;
 import org.interpss.dep.datamodel.bean.base.BaseJSONUtilBean;
 import org.interpss.numeric.datatype.LimitType;
-import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.mapper.AbstractMapper;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.AclfAdjustObjectFactory;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
@@ -209,7 +209,7 @@ public abstract class BaseAclfBean2AclfNetMapper<
 			
 			String remoteBusId = busBean.remoteVControlBusId;
 			if( !remoteBusId.equals("")){
-				RemoteQBus reQBus = CoreObjectFactory.createRemoteQBus(
+				RemoteQBus reQBus = AclfAdjustObjectFactory.createRemoteQBus(
 							bus, RemoteQControlType.BUS_VOLTAGE, remoteBusId).get();
 				reQBus.setAccFactor(0.5);
 			}
@@ -235,7 +235,7 @@ public abstract class BaseAclfBean2AclfNetMapper<
 		if (busBean.switchShunt != null){
 			SwitchShuntBean<TBusExt> ssb = busBean.switchShunt;
 			
-			SwitchedShunt ss = CoreObjectFactory.createSwitchedShunt(bus);
+			SwitchedShunt ss = AclfAdjustObjectFactory.createSwitchedShunt(bus);
 			ss.setVSpecified(ssb.vSpecified);
 			ss.setBInit(ssb.bInit);
 			VarCompensationMode mode = ssb.controlMode == VarCompensatorControlModeBean.Continuous?VarCompensationMode.CONTINUOUS:
@@ -312,11 +312,11 @@ public abstract class BaseAclfBean2AclfNetMapper<
 				if(tcb.controlMode == TapControlModeBean.Bus_Voltage){					
 					TapControl tap = null;
 					if(tcb.controlType == TapControlTypeBean.Point_Control){
-						tap = CoreObjectFactory.createTapVControlBusVoltage(branch, 
+						tap = AclfAdjustObjectFactory.createTapVControlBusVoltage(branch, 
 					            AdjControlType.POINT_CONTROL, aclfNet, tcb.controlledBusId).get();
 						tap.setVSpecified(tcb.desiredControlTarget);
 					}else{ // range control
-						tap=CoreObjectFactory.createTapVControlBusVoltage(branch, 
+						tap=AclfAdjustObjectFactory.createTapVControlBusVoltage(branch, 
 					            AdjControlType.RANGE_CONTROL, aclfNet, tcb.controlledBusId).get();
 							tap.setControlRange(new LimitType(tcb.upperLimit, tcb.lowerLimit));
 					}
@@ -330,7 +330,7 @@ public abstract class BaseAclfBean2AclfNetMapper<
 					
 				}else if(tcb.controlMode == TapControlModeBean.Mva_Flow){					
 					//TODO add Range Control
-					TapControl tap = CoreObjectFactory.createTapVControlMvarFlow(branch, 
+					TapControl tap = AclfAdjustObjectFactory.createTapVControlMvarFlow(branch, 
 							            AdjControlType.POINT_CONTROL).get();
 					tap.setMeteredOnFromSide(tcb.measuredOnFromSide);
 					tap.setMvarSpecified(tcb.desiredControlTarget);
@@ -347,7 +347,7 @@ public abstract class BaseAclfBean2AclfNetMapper<
 		if(branchBean.psXfrTapControl != null){
 			PsXfrTapControlBean<TBraExt> tcb = branchBean.psXfrTapControl;			
 				if(tcb.controlType == TapControlTypeBean.Point_Control){
-					PSXfrPControl psxfr = CoreObjectFactory.createPSXfrPControl(branch, AdjControlType.POINT_CONTROL).get();
+					PSXfrPControl psxfr = AclfAdjustObjectFactory.createPSXfrPControl(branch, AdjControlType.POINT_CONTROL).get();
 					psxfr.setStatus(tcb.status == 1? true : false);
 					psxfr.setPSpecified(tcb.desiredControlTarget);
 					psxfr.setAngLimit(new LimitType(Math.toRadians(tcb.maxAngle), Math.toRadians(tcb.minAngle)));
@@ -356,7 +356,7 @@ public abstract class BaseAclfBean2AclfNetMapper<
 					psxfr.setFlowFrom2To(tcb.flowFrom2To);
 					
 				}else if (tcb.controlType == TapControlTypeBean.Range_Control ){ // range control
-					PSXfrPControl psxfr = CoreObjectFactory.createPSXfrPControl(branch, AdjControlType.RANGE_CONTROL).get();
+					PSXfrPControl psxfr = AclfAdjustObjectFactory.createPSXfrPControl(branch, AdjControlType.RANGE_CONTROL).get();
 					psxfr.setStatus(tcb.status == 1? true : false);
 					psxfr.setControlRange(new LimitType(tcb.upperLimit, tcb.lowerLimit));
 					psxfr.setPSpecified(tcb.desiredControlTarget);
