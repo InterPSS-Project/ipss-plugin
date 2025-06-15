@@ -515,7 +515,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 	}
 
 	private void mapStaticVarCompensatorData(StaticVarCompensatorXmlType svcData) throws InterpssException{
-		Optional<StaticVarCompensator> svcOpt = CoreObjectFactory.createStaticVarCompensator(bus);
+		Optional<StaticVarCompensator> svcOpt =  AclfAdjustObjectFactory.createStaticVarCompensator(bus);
 		if (!svcOpt.isPresent()) return;
 
 		StaticVarCompensator svc = svcOpt.get();
