@@ -61,6 +61,7 @@ import static org.interpss.odm.mapper.base.ODMUnitHelper.toYUnit;
 
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.AclfAdjustObjectFactory;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGen;
@@ -221,7 +222,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 				pqBus.setGen(new Complex(p, q), toApparentPowerUnit.apply(xmlDefaultGen.getPower().getUnit()));
 			if (p != 0.0 || q != 0.0) {
 				if (xmlDefaultGen.getVoltageLimit() != null) {
-			  		final PQBusLimit pqLimit = CoreObjectFactory.createPQBusLimit(bus).get();
+			  		final PQBusLimit pqLimit = AclfAdjustObjectFactory.createPQBusLimit(bus).get();
 			  		pqLimit.setVLimit(new LimitType(xmlDefaultGen.getVoltageLimit().getMax(), 
 			  										xmlDefaultGen.getVoltageLimit().getMin()), 
 			  										toVoltageUnit.apply(xmlDefaultGen.getVoltageLimit().getUnit()));						
@@ -252,7 +253,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 					pvBus.setDesiredVoltMag(vpu, UnitType.PU);
 					
 					if (xmlDefaultGen.getQLimit() != null) {
-  			  			final PVBusLimit pvLimit = CoreObjectFactory.createPVBusLimit(bus);
+  			  			final PVBusLimit pvLimit = AclfAdjustObjectFactory.createPVBusLimit(bus);
   			  			pvLimit.setQLimit(new LimitType(xmlDefaultGen.getQLimit().getMax(), 
   			  										xmlDefaultGen.getQLimit().getMin()), 
   			  									toReactivePowerUnit.apply(xmlDefaultGen.getQLimit().getUnit()));
@@ -464,7 +465,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 	
 	private void mapSwitchShuntData(SwitchedShuntXmlType xmlSwitchedShuntData){
 
-		SwitchedShunt swchShunt = CoreObjectFactory.createSwitchedShunt();
+		SwitchedShunt swchShunt = AclfAdjustObjectFactory.createSwitchedShunt();
 		swchShunt.setId("SwitchedShunt@"+bus.getId());
 		swchShunt.setStatus(!xmlSwitchedShuntData.isOffLine());
 		
@@ -472,7 +473,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 		this.bus.setBusControl(swchShunt);
 		swchShunt.setParentBus(bus);
 		swchShunt.setRemoteBus(bus);
-		swchShunt.setRemoteBusBranchId(bus.getId());
+		//swchShunt.setRemoteBusBranchId(bus.getId());
 		
 		ReactivePowerXmlType binit = xmlSwitchedShuntData.getBInit();
 		

@@ -37,6 +37,7 @@ import org.interpss.plugin.pssl.simu.BaseDSL;
 import com.interpss.common.datatype.Constants;
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.AclfAdjustObjectFactory;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
@@ -65,7 +66,6 @@ import com.interpss.core.aclf.adpter.AclfPVGenBusAdapter;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.aclf.adpter.AclfXformerAdapter;
 import com.interpss.core.net.Branch;
-import com.interpss.core.net.Bus;
 import com.interpss.core.net.Network;
 
 /**
@@ -647,7 +647,7 @@ public class IpssAclfNet extends BaseDSL {
 		public FunctionLoadDSL(String busId, AclfNetwork net) throws InterpssException  {
 			super(net);
 			AclfBus bus = net.getBus(busId);
-			setObject(CoreObjectFactory.createFunctionLoad(bus).get());
+			setObject(AclfAdjustObjectFactory.createFunctionLoad(bus).get());
 		}
   		public FunctionLoadDSL setInitLoad(Complex load0, UnitType unit) { 
   								getObject().getP().setLoad0(load0.getReal(), unit, getAclfAdjNet().getBaseKva());
@@ -683,7 +683,7 @@ public class IpssAclfNet extends BaseDSL {
 		public PQBusLimitDSL(String busId, AclfNetwork net) throws InterpssException {
 			super(net);
 			AclfBus bus = net.getBus(busId);
-			setObject(CoreObjectFactory.createPQBusLimit(bus).get());
+			setObject(AclfAdjustObjectFactory.createPQBusLimit(bus).get());
 		}
   		public PQBusLimitDSL setQSpecified(double qSpec, UnitType unit) { 
   								getObject().setQSpecified(qSpec, unit);
@@ -712,7 +712,7 @@ public class IpssAclfNet extends BaseDSL {
 		public PVBusLimitDSL(String busId, AclfNetwork net) {
 			super(net);
 			AclfBus bus = net.getBus(busId);
-			setObject(CoreObjectFactory.createPVBusLimit(bus));
+			setObject(AclfAdjustObjectFactory.createPVBusLimit(bus));
 		}
   		public PVBusLimitDSL setVSpecified(double vSpec, UnitType unit) { 
 								getObject().setVSpecified(vSpec, unit);
@@ -742,7 +742,7 @@ public class IpssAclfNet extends BaseDSL {
 			super(net);
 			String branchId = ToBranchId.f(fromBusId, toBusId, cirId);
 			AclfBranch branch = net.getBranch(branchId);
-			setObject(CoreObjectFactory.createPSXfrPControl(branch, AdjControlType.POINT_CONTROL).get());
+			setObject(AclfAdjustObjectFactory.createPSXfrPControl(branch, AdjControlType.POINT_CONTROL).get());
 		}
   		public PSXfrPControlDSL setFlowControlType(AdjControlType type) { 
 								getObject().setFlowControlType(type);
