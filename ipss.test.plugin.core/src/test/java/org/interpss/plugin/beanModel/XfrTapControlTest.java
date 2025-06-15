@@ -30,12 +30,11 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.dep.datamodel.bean.aclf.AclfNetBean;
 import org.interpss.dep.datamodel.mapper.aclf.AclfBean2AclfNetMapper;
 import org.interpss.dep.datamodel.mapper.aclf.AclfNet2AclfBeanMapper;
-import org.interpss.dep.datamodel.mapper.base.BaseAclfBean2AclfNetMapper;
-import org.interpss.dep.datamodel.mapper.base.BaseAclfNet2AclfBeanMapper;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.junit.Test;
 
+import com.interpss.core.AclfAdjustObjectFactory;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
@@ -54,7 +53,7 @@ public class XfrTapControlTest extends CorePluginTestSetup {
 		AclfNetwork net = SampleTestingCases.sample2BusXfr();
 
 		AclfBranch branch = net.getBranch("0001->0002(1)");
-		TapControl tap = CoreObjectFactory.createTapVControlBusVoltage(branch, 
+		TapControl tap = AclfAdjustObjectFactory.createTapVControlBusVoltage(branch, 
 							AdjControlType.POINT_CONTROL, net, "0002").get();
 		tap.setControlLimit(new LimitType(1.10, 0.9));
 		tap.setControlOnFromSide(false);
@@ -96,7 +95,7 @@ public class XfrTapControlTest extends CorePluginTestSetup {
 		AclfNetwork net = SampleTestingCases.sample2BusXfr();
 
 		AclfBranch branch = net.getBranch("0001->0002(1)");
-		TapControl tap = CoreObjectFactory.createTapVControlBusVoltage(branch, 
+		TapControl tap = AclfAdjustObjectFactory.createTapVControlBusVoltage(branch, 
 							AdjControlType.POINT_CONTROL, net, "0002").get();
 		tap.setControlLimit(new LimitType(1.10, 0.9));
 		tap.setControlOnFromSide(false);
@@ -133,7 +132,7 @@ public class XfrTapControlTest extends CorePluginTestSetup {
 		AclfNetwork net = SampleTestingCases.sample2BusXfr();
 
 		AclfBranch branch = net.getBranch("0001->0002(1)");
-		TapControl tap = CoreObjectFactory.createTapVControlBusVoltage(branch, 
+		TapControl tap = AclfAdjustObjectFactory.createTapVControlBusVoltage(branch, 
 							AdjControlType.POINT_CONTROL, net, "0002").get();
 		tap.setControlLimit(new LimitType(1.10, 0.9));
 		tap.setControlOnFromSide(false);
