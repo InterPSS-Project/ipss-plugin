@@ -24,6 +24,15 @@
 
 package org.interpss.odm.mapper.impl.aclf;
 
+import static com.interpss.common.util.IpssLogger.ipssLogger;
+import static org.interpss.odm.mapper.base.ODMFunction.BusXmlRef2BusId;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toActivePowerUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toAngleUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toReactivePowerUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toVoltageUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toYUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toZUnit;
+
 import java.util.Optional;
 
 import org.apache.commons.math3.complex.Complex;
@@ -51,17 +60,10 @@ import org.ieee.odm.schema.YXmlType;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.odm.mapper.ODMAclfNetMapper;
-import static org.interpss.odm.mapper.base.ODMFunction.BusXmlRef2BusId;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toActivePowerUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toAngleUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toReactivePowerUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toVoltageUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toYUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toZUnit;
 
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
-import static com.interpss.common.util.IpssLogger.ipssLogger;
+import com.interpss.core.AclfAdjustObjectFactory;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.Aclf3WBranch;
 import com.interpss.core.aclf.AclfBranch;
@@ -223,7 +225,7 @@ public class AclfBranchDataHelper {
 				return;
 			}
 			if (xmlAngAdj.getMode() == AdjustmentModeEnumType.VALUE_ADJUSTMENT) {
-				PSXfrPControl psxfr = CoreObjectFactory.createPSXfrPControl(aclfBra, AdjControlType.POINT_CONTROL).get();
+				PSXfrPControl psxfr = AclfAdjustObjectFactory.createPSXfrPControl(aclfBra, AdjControlType.POINT_CONTROL).get();
 				psxfr.setStatus(!xmlAngAdj.isOffLine());
 				psxfr.setPSpecified(xmlAngAdj.getDesiredValue(), toActivePowerUnit.apply(xmlAngAdj.getDesiredActivePowerUnit()), baseKva);
 				psxfr.setAngLimit(new LimitType(xmlAngAdj.getAngleLimit().getMax(), xmlAngAdj.getAngleLimit().getMin()), toAngleUnit.apply(xmlAngAdj.getAngleLimit().getUnit()));
@@ -253,7 +255,7 @@ public class AclfBranchDataHelper {
 				psxfrCon.setMeteredOnFromSide(xmlAngAdj.isDesiredMeasuredOnFromSide());
 */				
 
-				PSXfrPControl psxfr = CoreObjectFactory.createPSXfrPControl(aclfBra, AdjControlType.RANGE_CONTROL).get();
+				PSXfrPControl psxfr = AclfAdjustObjectFactory.createPSXfrPControl(aclfBra, AdjControlType.RANGE_CONTROL).get();
 				psxfr.setStatus(!xmlAngAdj.isOffLine());
 				psxfr.setControlRange(UnitHelper.pConversion(new LimitType(xmlAngAdj.getRange().getMax(),xmlAngAdj.getRange().getMin()),
 						    baseKva, toActivePowerUnit.apply(xmlAngAdj.getDesiredActivePowerUnit()), UnitType.PU));
@@ -389,7 +391,7 @@ public class AclfBranchDataHelper {
 						
 						//specify the control type
 						if(xmlAdjData.getMode()==AdjustmentModeEnumType.VALUE_ADJUSTMENT){
-							Optional<TapControl> tapOpt = CoreObjectFactory.createTapVControlBusVoltage(aclfBra, 
+							Optional<TapControl> tapOpt = AclfAdjustObjectFactory.createTapVControlBusVoltage(aclfBra, 
 											AdjControlType.POINT_CONTROL, aclfNet, vcBusId);
 							if (tapOpt.isPresent()) {
 								tap = tapOpt.get();
@@ -398,7 +400,7 @@ public class AclfBranchDataHelper {
 						}
 
 						else {
-							Optional<TapControl> tapOpt = CoreObjectFactory.createTapVControlBusVoltage(aclfBra, 
+							Optional<TapControl> tapOpt = AclfAdjustObjectFactory.createTapVControlBusVoltage(aclfBra, 
 								AdjControlType.RANGE_CONTROL, aclfNet, vcBusId);
 							if (tapOpt.isPresent()) {
 								tap = tapOpt.get();
@@ -430,7 +432,7 @@ public class AclfBranchDataHelper {
 						}
 
 						if(xmlAdjData.getMode()==AdjustmentModeEnumType.VALUE_ADJUSTMENT){
-							Optional<TapControl> tapOpt = CoreObjectFactory.createTapVControlMvarFlow(aclfBra, 
+							Optional<TapControl> tapOpt = AclfAdjustObjectFactory.createTapVControlMvarFlow(aclfBra, 
 											AdjControlType.POINT_CONTROL);
 							if (tapOpt.isPresent()) {
 								tap = tapOpt.get(); 
@@ -438,7 +440,7 @@ public class AclfBranchDataHelper {
 							}
 						}
 						else {
-							Optional<TapControl> tapOpt = CoreObjectFactory.createTapVControlMvarFlow(aclfBra, 
+							Optional<TapControl> tapOpt = AclfAdjustObjectFactory.createTapVControlMvarFlow(aclfBra, 
 											AdjControlType.RANGE_CONTROL);
 							if (tapOpt.isPresent()) {
 								tap = tapOpt.get(); 
