@@ -33,6 +33,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.exp.InterpssRuntimeException;
 import com.interpss.common.msg.IPSSMsgHub;
+import com.interpss.core.AclfAdjustObjectFactory;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
@@ -42,7 +43,6 @@ import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.ShuntCompensator;
 import com.interpss.core.aclf.adj.PVBusLimit;
-import com.interpss.core.aclf.adpter.AclfCapacitorBusAdapter;
 import com.interpss.core.aclf.adpter.AclfLineAdapter;
 import com.interpss.core.aclf.adpter.AclfLoadBusAdapter;
 import com.interpss.core.aclf.adpter.AclfPQGenBusAdapter;
@@ -298,7 +298,7 @@ public class IpssInternalFormat_in {
       	AclfBus bus = adjNet.getBus(id);
     	if (bus != null ) {
         	bus.setGenCode(AclfGenCode.GEN_PV);
-      		final PVBusLimit pvLimit = CoreObjectFactory.createPVBusLimit(bus);
+      		final PVBusLimit pvLimit = AclfAdjustObjectFactory.createPVBusLimit(bus);
       		pvLimit.setVSpecified(v, UnitType.PU);
       		pvLimit.setQLimit(new LimitType(qmax,qmin), UnitType.mVA);
       		pvLimit.setStatus(true);
