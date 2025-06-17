@@ -24,6 +24,8 @@
 
 package org.interpss.core.adapter.psse.raw.aclf;
  
+import java.util.logging.Level;
+
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dep.datamodel.bean.aclf.AclfNetBean;
@@ -37,12 +39,15 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
+import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.adj.RemoteQBus;
 import com.interpss.core.aclf.adj.RemoteQControlType;
 import com.interpss.core.aclf.adj.VarCompensationMode;
+import com.interpss.core.aclf.adpter.AclfGenBusAdapter;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.aclf.facts.StaticVarCompensator;
 import com.interpss.core.algo.AclfMethodType;
@@ -388,8 +393,12 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		//check the SVC results
 		//bus 5 is a genPV bus, so the voltage is 1.01 pu
 		assertTrue("Bus5 voltage magnitude is correct", Math.abs(bus5.getVoltageMag() - 1.01) < 1e-6);
-		assertTrue( bus5.isGenPV());
-		assertTrue("SVC Q output is correct", Math.abs(svc1.getQ() - 0.1598) < 1e-3); // Q output is 0.5 pu, which is the capacitive rating
+		assertTrue( bus5.isGenPV()); // note the SVC is controlling the local bus voltage, so it is a GenPV bus
+		RemoteQBus re = bus5.getRemoteQBus();
+		AclfGenBusAdapter genBus = re.getParentBus().toGenBus();
+		double q = genBus.getGenResults(UnitType.PU).getImaginary();
+		System.out.println("Bus5 svc q: " + q);
+		assertTrue("SVC Q output is correct", Math.abs(q - 0.1598) < 1e-3); // Q output is 0.5 pu, which is the capacitive rating
 	}
 
 	@Test
@@ -399,32 +408,31 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 				.setPsseVersion(PsseVersion.PSSE_33)
 				.load()
 				.getImportedObj();
+		IpssLogger.getLogger().setLevel(Level.INFO);
 
 		//check the SVC data connected to Bus-5
 		/*
 		 @!  'NAME',         I,     J,MODE,PDES,   QDES,  VSET,   SHMX,   TRMX,   VTMN,   VTMX,   VSMX,    IMX,   LINX,   RMPCT,OWNER,  SET1,    SET2,VSREF, FCREG,   'MNAME'
-"SVC1",5,     0, 1,  0.000,  0.000,1.01,50.000,  0.000,0.90000,1.10000,1.00000,  0.000,0.05000,  100.0, 0, 0.00000, 0.00000,   0, 4,   "            "
+"SVC1",5,     0, 1,  0.000,  0.000,1.01,50.000,  0.000,0.90000,1.10000,1.00000,  0.000,0.05000,  100.0, 0, 0.00000, 0.00000,   0, 50,   "            "
 		 */
 
-		AclfBus bus5 = net.getBus("Bus5");
+		AclfBus bus50 = net.getBus("Bus50");
 
-		//TODO: Should bus5 becomes a GenPV bus due to the addition of SVC?
-		
-		StaticVarCompensator svc1 = bus5.getStaticVarCompensator();
-		assertNotNull("Bus5 has SVC connected", svc1);
-		
+		StaticVarCompensator svc1 = bus50.getStaticVarCompensator();
+		assertNotNull("Bus50 has SVC connected", svc1);
+
 		assertTrue("SVC name is correct", svc1.getName().equals("SVC1"));
 
-		assertTrue("SVC voltage set point is correct", Math.abs(svc1.getVSpecified() - 1.03) < 1e-6);
+		assertTrue("SVC voltage set point is correct", Math.abs(svc1.getVSpecified() - 1.01) < 1e-6);
 
 		//TODO: as the Qlimit is related to the actual Q output, which is dependent on the load flow bus voltage, so it is better to use another variable to store the capacitive rating, maybe Binit
-		assertTrue("SVC capacitive rating is correct", Math.abs(svc1.getQLimit().getMax() - 0.5) < 1e-6);
+		assertTrue("SVC capacitive rating is correct", Math.abs(svc1.getQLimit().getMax() - 1.0) < 1e-6);
 
 		// rmpct is the percentage of the SVC remote control percentage, which is 100% in this case
 		assertTrue("SVC remote control percentage is correct", Math.abs(svc1.getRemoteControlPercentage() - 100.0) < 1e-6);
 
 		//remote control bus is bus 4
-		assertTrue("SVC remote control bus is correct", svc1.getRemoteBus().getId().equals("Bus4"));
+		assertTrue("SVC remote control bus is correct", svc1.getRemoteBus().getId().equals("Bus5"));
 
 		//default control mode is continuous
 		assertTrue("SVC control mode is correct", svc1.getControlMode() == VarCompensationMode.CONTINUOUS);
@@ -442,9 +450,42 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		System.out.println(AclfOutFunc.loadFlowSummary(net));
 
 		//check the SVC results
-		AclfBus bus4 = net.getBus("Bus4");
-		assertTrue("Bus4 voltage magnitude is correct", Math.abs(bus4.getVoltageMag() - 1.03) < 1e-3);
+		AclfBus bus5 = net.getBus("Bus5");
+		assertTrue("Bus5 voltage magnitude is correct", Math.abs(bus5.getVoltageMag() - svc1.getVSpecified()) < 1e-3);
 		//assertTrue("SVC Q output is correct", Math.abs(svc1.getQ() - 0.1598) < 1e-3); // Q output is 0.5 pu, which is the capacitive rating
+
+		/*
+		 NO SVC
+		 *      BusID          Code           Volt(pu)   Angle(deg)      Pg(pu)    Qg(pu)    Pl(pu)    Ql(pu)    Bus Name   
+  ----------------------------------------------------------------------------------------------------------------
+  Bus1         Swing                1.04000        0.00       0.7165    0.2659    0.0000    0.0000   BUS-1      
+  Bus2         PV                   1.02500        9.31       1.6300    0.0629    0.0000    0.0000   BUS-2      
+  Bus3         PV                   1.02500        4.70       0.8500   -0.1107    0.0000    0.0000   BUS-3      
+  Bus4                              1.02624       -2.18       0.0000    0.0000    0.0000    0.0000   BUS-4      
+  Bus5                              0.99651       -3.95       0.0000    0.0000    0.0000    0.0000   BUS-5      
+  Bus6                ConstP        1.01301       -3.65       0.0000    0.0000    0.9000    0.3000   BUS-6      
+  Bus7                              1.02599        3.75       0.0000    0.0000    0.0000    0.0000   BUS-7      
+  Bus8                ConstP        1.01607        0.76       0.0000    0.0000    1.0000    0.3500   BUS-8      
+  Bus9                              1.03247        2.00       0.0000    0.0000    0.0000    0.0000   BUS-9      
+  Bus50               ConstP        0.99589       -4.02       0.0000    0.0000    1.2500    0.5000   BUS-50    
+  
+  
+
+		 * With SVC
+		 * 
+		 *      BusID          Code           Volt(pu)   Angle(deg)      Pg(pu)    Qg(pu)    Pl(pu)    Ql(pu)    Bus Name   
+  ----------------------------------------------------------------------------------------------------------------
+  Bus1         Swing                1.04000        0.00       0.7165    0.2660    0.0000    0.0000   BUS-1      
+  Bus2         PV                   1.02500        9.31       1.6300    0.0629    0.0000    0.0000   BUS-2      
+  Bus3         PV                   1.02500        4.70       0.8500   -0.1107    0.0000    0.0000   BUS-3      
+  Bus4                              1.02624       -2.18       0.0000    0.0000    0.0000    0.0000   BUS-4      
+  Bus5                              0.99650       -3.95       0.0000    0.0000    0.0000    0.0000   BUS-5      
+  Bus6                ConstP        1.01301       -3.65       0.0000    0.0000    0.9000    0.3000   BUS-6      
+  Bus7                              1.02599        3.75       0.0000    0.0000    0.0000    0.0000   BUS-7      
+  Bus8                ConstP        1.01607        0.76       0.0000    0.0000    1.0000    0.3500   BUS-8      
+  Bus9                              1.03247        2.00       0.0000    0.0000    0.0000    0.0000   BUS-9      
+  Bus50               ConstP        0.99588       -4.02       0.0000    0.9918    1.2500    0.5000   BUS-50
+		 */
 	}
 	
 	
