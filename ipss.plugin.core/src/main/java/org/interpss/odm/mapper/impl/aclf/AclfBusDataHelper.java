@@ -550,19 +550,36 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 			throw new InterpssException("For SVC bus, svcData.voltageSetPoint has to be defined, busId: " + bus.getId());
 		}
 
-		// map desired voltage range
-		LimitType vLimit = new LimitType(1.1, 0.9); // default value
+		//TODO: PSS/E input does not have the desired voltage range
+		//One option is to set desired voltage range based on the VSpecified using tolerance = 0.0001
+		LimitType vLimit = new LimitType(svc.getVSpecified()+0.0001, svc.getVSpecified()-0.0001); // default value
 		svc.setDesiredVoltageRange(vLimit);
+		
 
 		//Remote bus id
 		if (svcData.getRemoteControlledBus() != null) {
 			String remoteId = BusXmlRef2BusId.fx(svcData.getRemoteControlledBus());
+			
+			//TODO we cannot set the RemoteBus here since it may not exist in the network yet, as the SVC object is created while the parent bus is created, but the remote bus may not be created yet.
+			// we will set the remote bus when the remote bus is created.
+			// if (this.aclfNet.getBus(remoteId) == null) {
+			// 	throw new InterpssException("Remote bus " + remoteId + " does not exist in the network.");
+			// }
 			svc.setRemoteBusBranchId(remoteId);
-			svc.setRemoteBus(this.aclfNet.getBus(remoteId));
+			//svc.setRemoteBus(this.aclfNet.getBus(remoteId));
+
+			//TODO Check the gen code for the bus, if it is not a GENPQ bus, set it to GENPQ
+			if (bus.getGenCode() != AclfGenCode.GEN_PQ) {
+				bus.setGenCode(AclfGenCode.GEN_PQ); // set the bus gen code to GEN_PQ
+			}
 		}
 		else { // default is to control the local bus
 			svc.setRemoteBusBranchId(bus.getId());
 			svc.setRemoteBus(bus);
+			//TODO Check the gen code for the bus, if it is not a GENPV bus, set it to GENPV
+			if (bus.getGenCode() != AclfGenCode.GEN_PV) {
+				bus.setGenCode(AclfGenCode.GEN_PV); // set the bus gen code to GEN_PV
+			}
 		}
 
 		//remote control percentage
@@ -572,14 +589,10 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 			svc.setRemoteControlPercentage(100.0); // default value
 		}
 
-		//TODO: in the isPVBusLimit() function of BaseAclfBusImpl.java, it checks the gen code of the bus 
-		// Check the gen code for the bus, if it is not a GENPV bus, set it to GENPV
-		if (bus.getGenCode() != AclfGenCode.GEN_PV) {
-			bus.setGenCode(AclfGenCode.GEN_PV); // set the bus gen code to GEN_PV
-		 
-		}
+		// add the SVC to the network svcList
+		this.aclfNet.getSvcList().add(svc);
+
 		
-		//bus.SET
 	}
 
 }

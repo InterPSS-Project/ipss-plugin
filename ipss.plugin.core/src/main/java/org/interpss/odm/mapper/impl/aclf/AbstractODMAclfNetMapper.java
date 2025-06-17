@@ -25,9 +25,6 @@
 package org.interpss.odm.mapper.impl.aclf;
 
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toActivePowerUnit;
-
 import java.util.List;
 
 import javax.xml.bind.JAXBElement;
@@ -60,19 +57,24 @@ import org.interpss.odm.ext.pwd.AclfBranchPWDExtension;
 import org.interpss.odm.ext.pwd.AclfBusPWDExtension;
 import org.interpss.odm.mapper.ODMAclfNetMapper;
 import org.interpss.odm.mapper.base.AbstractODMSimuCtxDataMapper;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toActivePowerUnit;
 
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
+import static com.interpss.common.util.IpssLogger.ipssLogger;
 import com.interpss.core.AclfAdjustObjectFactory;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.HvdcObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
+import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfGenCode;
+import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.XfrZTableEntry;
+import com.interpss.core.aclf.facts.StaticVarCompensator;
 import com.interpss.core.aclf.flow.FlowInterface;
 import com.interpss.core.aclf.flow.FlowInterfaceBranch;
 import com.interpss.core.aclf.flow.FlowInterfaceLimit;
@@ -245,6 +247,15 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 	}
 	
 	public static void postAclfNetProcessing(BaseAclfNetwork<?,?> aclfNet) throws InterpssException {
+		
+		//TODO: set the svc remote bus
+		for (StaticVarCompensator svc : aclfNet.getSvcList()) {
+			if(svc.getRemoteBusBranchId() != null){
+				BaseAclfBus<? extends AclfGen, ? extends AclfLoad> remoteBus = aclfNet.getBus(svc.getRemoteBusBranchId());
+				svc.setRemoteBus(remoteBus);
+			}
+		}
+		
 		aclfNet.adjustXfrZ();
 		
 		aclfNet.initContributeGenLoad(false);
