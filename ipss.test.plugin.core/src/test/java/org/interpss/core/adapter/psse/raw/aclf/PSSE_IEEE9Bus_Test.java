@@ -397,7 +397,8 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		//check the SVC results
 		//bus 5 is a genPV bus, so the voltage is 1.01 pu
 		assertTrue("Bus5 voltage magnitude is correct", Math.abs(bus5.getVoltageMag() - 1.01) < 1e-6);
-		assertTrue( bus5.isGenPV()); // note the SVC is controlling the local bus voltage, so it is a GenPV bus
+		// TODO: note the SVC is controlling the local bus voltage, so it is a GenPV bus
+		assertTrue( bus5.isGenPV()); 
 		RemoteQBus re = bus5.getRemoteQBus();
 		AclfGenBusAdapter genBus = re.getParentBus().toGenBus();
 		double q = genBus.getGenResults(UnitType.PU).getImaginary();
@@ -451,6 +452,14 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 
 		assertTrue("Loadflow converged", net.isLfConverged());
 
+		/*
+		 * How to investigate the issue:
+		 */
+		// 1. print out the bus detailed info
+		//System.out.println(bus50.toString(net.getBaseKva()));
+		// 2. trace the bus mismatch calculation process
+		//Complex busPQ = bus50.mismatch(AclfMethodType.NR);
+		
 		System.out.println(AclfOutFunc.loadFlowSummary(net));
 
 		//check the SVC results
@@ -459,8 +468,9 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		//assertTrue("SVC Q output is correct", Math.abs(svc1.getQ() - 0.1598) < 1e-3); // Q output is 0.5 pu, which is the capacitive rating
 
 		/*
+		 NOTE: there is no difference in the results below, even though the Qg value is different for Bus 50
 		 NO SVC
-		 *      BusID          Code           Volt(pu)   Angle(deg)      Pg(pu)    Qg(pu)    Pl(pu)    Ql(pu)    Bus Name   
+      BusID          Code           Volt(pu)   Angle(deg)      Pg(pu)    Qg(pu)    Pl(pu)    Ql(pu)    Bus Name   
   ----------------------------------------------------------------------------------------------------------------
   Bus1         Swing                1.04000        0.00       0.7165    0.2659    0.0000    0.0000   BUS-1      
   Bus2         PV                   1.02500        9.31       1.6300    0.0629    0.0000    0.0000   BUS-2      
@@ -476,20 +486,25 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
   
 
 		 * With SVC
-		 * 
-		 *      BusID          Code           Volt(pu)   Angle(deg)      Pg(pu)    Qg(pu)    Pl(pu)    Ql(pu)    Bus Name   
+     BusID          Code           Volt(pu)   Angle(deg)      Pg(pu)    Qg(pu)    Pl(pu)    Ql(pu)    Bus Name   
   ----------------------------------------------------------------------------------------------------------------
-  Bus1         Swing                1.04000        0.00       0.7165    0.2660    0.0000    0.0000   BUS-1      
-  Bus2         PV                   1.02500        9.31       1.6300    0.0629    0.0000    0.0000   BUS-2      
-  Bus3         PV                   1.02500        4.70       0.8500   -0.1107    0.0000    0.0000   BUS-3      
-  Bus4                              1.02624       -2.18       0.0000    0.0000    0.0000    0.0000   BUS-4      
-  Bus5                              0.99650       -3.95       0.0000    0.0000    0.0000    0.0000   BUS-5      
-  Bus6                ConstP        1.01301       -3.65       0.0000    0.0000    0.9000    0.3000   BUS-6      
-  Bus7                              1.02599        3.75       0.0000    0.0000    0.0000    0.0000   BUS-7      
-  Bus8                ConstP        1.01607        0.76       0.0000    0.0000    1.0000    0.3500   BUS-8      
-  Bus9                              1.03247        2.00       0.0000    0.0000    0.0000    0.0000   BUS-9      
-  Bus50               ConstP        0.99588       -4.02       0.0000    0.9918    1.2500    0.5000   BUS-50
-		 */
+  Bus1         Swing                1.04000        0.00       0.7156    0.1681    0.0000    0.0000   BUS-1      
+  Bus2         PV                   1.02500        9.29       1.6300    0.0043    0.0000    0.0000   BUS-2      
+  Bus3         PV                   1.02500        4.72       0.8500   -0.1389    0.0000    0.0000   BUS-3      
+  Bus4                              1.03157       -2.17       0.0000    0.0000    0.0000    0.0000   BUS-4      
+  Bus5                              1.01082       -3.96       0.0000    0.0000    0.0000    0.0000   BUS-5      
+  Bus6                ConstP        1.01723       -3.61       0.0000    0.0000    0.9000    0.3000   BUS-6      
+  Bus7                              1.02955        3.75       0.0000    0.0000    0.0000    0.0000   BUS-7      
+  Bus8                ConstP        1.01890        0.78       0.0000    0.0000    1.0000    0.3500   BUS-8      
+  Bus9                              1.03409        2.03       0.0000    0.0000    0.0000    0.0000   BUS-9      
+  Bus50               ConstP        1.01036       -4.02       0.0000    0.1607    1.2500    0.5000   BUS-50    
+
+                Remote Q Voltage Adjustment/Control
+
+       VcBus    Type    ReQBus/Branch   Actual    Spec       Q      Qmax     Qmin   Status
+     -------- -------- --------------- -------- -------- -------- -------- -------- ------
+    Bus50     Voltage            Bus5   1.0108   1.0100     0.16     1.00     0.00    on
+*/
 	}
 	
 	
