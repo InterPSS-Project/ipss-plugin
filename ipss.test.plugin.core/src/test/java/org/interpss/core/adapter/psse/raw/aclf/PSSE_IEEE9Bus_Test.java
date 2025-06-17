@@ -397,7 +397,8 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		//check the SVC results
 		//bus 5 is a genPV bus, so the voltage is 1.01 pu
 		assertTrue("Bus5 voltage magnitude is correct", Math.abs(bus5.getVoltageMag() - 1.01) < 1e-6);
-		assertTrue( bus5.isGenPV()); // note the SVC is controlling the local bus voltage, so it is a GenPV bus
+		// TODO: note the SVC is controlling the local bus voltage, so it is a GenPV bus
+		assertTrue( bus5.isGenPV()); 
 		RemoteQBus re = bus5.getRemoteQBus();
 		AclfGenBusAdapter genBus = re.getParentBus().toGenBus();
 		double q = genBus.getGenResults(UnitType.PU).getImaginary();
@@ -459,6 +460,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		//assertTrue("SVC Q output is correct", Math.abs(svc1.getQ() - 0.1598) < 1e-3); // Q output is 0.5 pu, which is the capacitive rating
 
 		/*
+		 NOTE: there is no difference in the results below, even though the Qg value is different for Bus 50
 		 NO SVC
 		 *      BusID          Code           Volt(pu)   Angle(deg)      Pg(pu)    Qg(pu)    Pl(pu)    Ql(pu)    Bus Name   
   ----------------------------------------------------------------------------------------------------------------
