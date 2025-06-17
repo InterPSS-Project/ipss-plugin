@@ -340,7 +340,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 
 		
 	}
-
+ 
 	@Test
 	public void testSVCLocalControl() throws Exception {
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v33/ieee9_svc_v33.raw")
@@ -358,6 +358,10 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		AclfBus bus5 = net.getBus("Bus5");
 
 		//TODO: Should bus5 becomes a GenPV bus due to the addition of SVC?
+		// No. For SVC control, the bus Q (modeled as the load) is adjusted according
+		// to sensitivity dQ/dV, so the bus shold be a GenPQ bus with fixed Q (gen).
+		// For a GenPV bus, the bus Q is calculated according to the voltage set point, 
+		// which is not the case for SVC.
 		
 		StaticVarCompensator svc1 = bus5.getStaticVarCompensator();
 		assertNotNull("Bus5 has SVC connected", svc1);
