@@ -19,7 +19,6 @@ import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.core.funcImpl.AclfNetObjectComparator;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 import com.interpss.simu.SimuObjectFactory;
@@ -56,7 +55,7 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 		aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 		aclfAlgo.setTolerance(1.0E-6);
 		assertTrue(aclfAlgo.loadflow());
-		//System.out.println(AclfOutFunc.loadFlowSummary(net));
+		System.out.println(AclfOutFunc.loadFlowSummary(net));
 
 		
 		// Verify bus voltage magnitudes and angles for key buses
