@@ -465,7 +465,8 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		//check the SVC results
 		AclfBus bus5 = net.getBus("Bus5");
 		assertTrue("Bus5 voltage magnitude is correct", Math.abs(bus5.getVoltageMag() - svc1.getVSpecified()) < 1e-3);
-		//assertTrue("SVC Q output is correct", Math.abs(svc1.getQ() - 0.1598) < 1e-3); // Q output is 0.5 pu, which is the capacitive rating
+		double q = bus50.toCapacitorBus().getQResults();
+		assertTrue("SVC Q output is correct", Math.abs(q - 0.1598) < 1e-3); // Q output is 0.5 pu, which is the capacitive rating
 
 		/*
 		 NOTE: there is no difference in the results below, even though the Qg value is different for Bus 50
