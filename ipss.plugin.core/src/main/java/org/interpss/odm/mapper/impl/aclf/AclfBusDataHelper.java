@@ -487,14 +487,25 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 			swchShunt.setBInit(binit.getValue()*factor);
 			
 			VarCompensationMode mode = xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.CONTINUOUS?
-					VarCompensationMode.CONTINUOUS:xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.DISCRETE?
+					VarCompensationMode.CONTINUOUS:(xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.DISCRETE_LOCAL_VOLTAGE ||
+					xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.DISCRETE_REMOTE_REACTIVE_POWER)?
 					VarCompensationMode.DISCRETE:VarCompensationMode.FIXED;
 			
 			swchShunt.setControlMode(mode);
-			
-			LimitType vLimit = new LimitType(xmlSwitchedShuntData.getDesiredVoltageRange().getMax(),
-					xmlSwitchedShuntData.getDesiredVoltageRange().getMin());
-			swchShunt.setDesiredVoltageRange(vLimit);
+
+			//TODO: updated the control mode and support the reactive power range per PSS/E input format
+			if(xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.DISCRETE_LOCAL_VOLTAGE && xmlSwitchedShuntData.getDesiredVoltageRange()!=null){
+				
+				LimitType vLimit = new LimitType(xmlSwitchedShuntData.getDesiredVoltageRange().getMax(),
+						xmlSwitchedShuntData.getDesiredVoltageRange().getMin());
+				swchShunt.setDesiredVoltageRange(vLimit);
+			}
+			else if(xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.DISCRETE_REMOTE_REACTIVE_POWER && xmlSwitchedShuntData.getDesiredReactivePowerRange()!=null){
+				LimitType qLimit = new LimitType(xmlSwitchedShuntData.getDesiredReactivePowerRange().getMax(),
+						xmlSwitchedShuntData.getDesiredReactivePowerRange().getMin());
+				swchShunt.setDesiredReactivePowerRange(qLimit);
+			}
+		
 			
 			//swchShunt.set
 			for(SwitchedShuntBlockXmlType varBankXml:xmlSwitchedShuntData.getBlock()){
@@ -525,13 +536,27 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 
 		// map SVC data
 		ReactivePowerXmlType capRating = svcData.getCapacitiveRating();
+		ReactivePowerXmlType indRating = svcData.getInductiveRating();
+		double qMin = 0.0, qMax = 0.0;
 		if (capRating != null) {
 			double factor = capRating.getUnit() == ReactivePowerUnitType.PU ? 1.0 :
 					capRating.getUnit() == ReactivePowerUnitType.MVAR ? 0.01 :
 							capRating.getUnit() == ReactivePowerUnitType.KVAR ? 1.0E-5 :
 									1.0E-8; // VAR->1.0E-8 with a 100 MVA base
-			svc.setQLimit(new LimitType(capRating.getValue() * factor, 0));
+			
+			qMax = capRating.getValue() * factor;
 		}
+
+		if (indRating != null) {
+			double factor = indRating.getUnit() == ReactivePowerUnitType.PU ? 1.0 :
+					indRating.getUnit() == ReactivePowerUnitType.MVAR ? 0.01 :
+							indRating.getUnit() == ReactivePowerUnitType.KVAR ? 1.0E-5 :
+									1.0E-8; // VAR->1.0E-8 with a 100 MVA base
+			
+			qMin = -indRating.getValue() * factor;
+		}
+
+		svc.setQLimit(new LimitType(qMax, qMin)); // capacitive limit is positive, inductive limit is negative
 
 		// map control mode
 		VarCompensationMode mode = VarCompensationMode.CONTINUOUS; 
