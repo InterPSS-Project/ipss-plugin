@@ -465,14 +465,14 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 	
 	private void mapSwitchShuntData(SwitchedShuntXmlType xmlSwitchedShuntData){
 
-		SwitchedShunt swchShunt = AclfAdjustObjectFactory.createSwitchedShunt();
-		swchShunt.setId("SwitchedShunt@"+bus.getId());
+		SwitchedShunt swchShunt = AclfAdjustObjectFactory.createSwitchedShunt(this.bus);
+		//swchShunt.setId("SwitchedShunt@"+bus.getId());
 		swchShunt.setStatus(!xmlSwitchedShuntData.isOffLine());
 		
 		//this.bus.setBusControl(swchShunt);
-		this.bus.setBusControl(swchShunt);
-		swchShunt.setParentBus(bus);
-		swchShunt.setRemoteBus(bus);
+		//this.bus.setBusControl(swchShunt);
+		//swchShunt.setParentBus(bus);
+		//swchShunt.setRemoteBus(bus);
 		//swchShunt.setRemoteBusBranchId(bus.getId());
 		
 		ReactivePowerXmlType binit = xmlSwitchedShuntData.getBInit();
