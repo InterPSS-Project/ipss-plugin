@@ -498,12 +498,12 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 				
 				LimitType vLimit = new LimitType(xmlSwitchedShuntData.getDesiredVoltageRange().getMax(),
 						xmlSwitchedShuntData.getDesiredVoltageRange().getMin());
-				swchShunt.setDesiredVoltageRange(vLimit);
+				swchShunt.setDesiredControlRange(vLimit);
 			}
 			else if(xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.DISCRETE_REMOTE_REACTIVE_POWER && xmlSwitchedShuntData.getDesiredReactivePowerRange()!=null){
 				LimitType qLimit = new LimitType(xmlSwitchedShuntData.getDesiredReactivePowerRange().getMax(),
 						xmlSwitchedShuntData.getDesiredReactivePowerRange().getMin());
-				swchShunt.setDesiredReactivePowerRange(qLimit);
+				swchShunt.setDesiredControlRange(qLimit);
 			}
 		
 			
@@ -578,7 +578,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 		//TODO: PSS/E input does not have the desired voltage range
 		//One option is to set desired voltage range based on the VSpecified using tolerance = 0.0001
 		LimitType vLimit = new LimitType(svc.getVSpecified()+0.0001, svc.getVSpecified()-0.0001); // default value
-		svc.setDesiredVoltageRange(vLimit);
+		svc.setDesiredControlRange(vLimit);
 		
 
 		//Remote bus id
