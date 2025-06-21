@@ -242,7 +242,7 @@ public abstract class BaseAclfBean2AclfNetMapper<
 					ssb.controlMode == VarCompensatorControlModeBean.Discrete?VarCompensationMode.DISCRETE:
 						VarCompensationMode.FIXED;
 			ss.setControlMode(mode);
-			ss.setDesiredVoltageRange(new LimitType(ssb.vmax, ssb.vmin));
+			ss.setDesiredControlRange(new LimitType(ssb.vmax, ssb.vmin));
 			ss.setQLimit(new LimitType(ssb.qmax, ssb.qmin));
 			for(QBankBean<TBusExt> qbb: ssb.varBankList){
 				ShuntCompensator qb = CoreObjectFactory.createShuntCompensator(ss);
