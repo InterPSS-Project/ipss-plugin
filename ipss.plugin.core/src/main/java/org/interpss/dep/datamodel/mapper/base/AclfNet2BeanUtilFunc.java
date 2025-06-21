@@ -258,12 +258,12 @@ public class AclfNet2BeanUtilFunc {
 				VarCompensatorControlModeBean.Fixed;
 		if(ss.getRemoteBus() != null)
 			ssb.remoteBusId = ss.getRemoteBus().getId();
-		if(ss.getDesiredVoltageRange() != null){
-			ssb.vmax = ss.getDesiredVoltageRange().getMax();
-			ssb.vmin = ss.getDesiredVoltageRange().getMin();
+		if(ss.getDesiredControlRange() != null){
+			ssb.vmax = ss.getDesiredControlRange().getMax();
+			ssb.vmin = ss.getDesiredControlRange().getMin();
 		}
 		
-		if(ss.getQLimit() != null){
+		if(ss.getQLimit() != null){ 
 			ssb.qmax = ss.getQLimit().getMax();
 			ssb.qmin = ss.getQLimit().getMin();
 		}
