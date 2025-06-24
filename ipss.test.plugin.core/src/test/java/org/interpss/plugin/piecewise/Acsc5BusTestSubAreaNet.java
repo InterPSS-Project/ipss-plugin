@@ -46,6 +46,7 @@ import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.sc.SimpleFaultAlgorithm;
+import com.interpss.simu.util.sample.SampleAcscTestingCases;
 import com.interpss.simu.util.sample.SampleTestingCases;
 
 public class Acsc5BusTestSubAreaNet {
@@ -54,7 +55,7 @@ public class Acsc5BusTestSubAreaNet {
 		IpssCorePlugin.init();
 		
   		AcscNetwork net = CoreObjectFactory.createAcscNetwork();
-		SampleTestingCases.load_SC_5BusSystem(net);
+  		SampleAcscTestingCases.load_SC_5BusSystem(net);
 		//System.out.println(net.net2String());
 		
 		SubAreaNetProcessor<AcscBus, AcscBranch, SubArea012, Complex3x1> proc = 
@@ -80,7 +81,7 @@ public class Acsc5BusTestSubAreaNet {
 		IpssCorePlugin.init();
 		
   		AcscNetwork net = CoreObjectFactory.createAcscNetwork();
-		SampleTestingCases.load_SC_5BusSystem(net);
+  		SampleAcscTestingCases.load_SC_5BusSystem(net);
 		//System.out.println(net.net2String());
 		
 		SubAreaNetProcessor<AcscBus, AcscBranch, SubAcscNetwork, Complex3x1> proc = 
@@ -115,7 +116,7 @@ public class Acsc5BusTestSubAreaNet {
 		IpssCorePlugin.init();
 		
   		AcscNetwork faultNet = CoreObjectFactory.createAcscNetwork();
-		SampleTestingCases.load_SC_5BusSystem(faultNet);
+  		SampleAcscTestingCases.load_SC_5BusSystem(faultNet);
 		//System.out.println(faultNet.net2String());
 
   		assertTrue((faultNet.getBusList().size() == 5 && faultNet.getBranchList().size() == 5));
