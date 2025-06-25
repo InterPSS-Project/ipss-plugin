@@ -39,7 +39,7 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.adj.AdjControlType;
+import com.interpss.core.aclf.adj.AdjustControlType;
 import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.adpter.AclfLoadBusAdapter;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
@@ -58,7 +58,7 @@ public class XfrTapControlSample {
 		// example, it is used to control voltage
 		AclfBranch branch = net.getBranch("0001->0002(1)");
 		TapControl tap = AclfAdjustObjectFactory.createTapVControlBusVoltage(branch, 
-							AdjControlType.POINT_CONTROL, net, "0002").get();
+							AdjustControlType.POINT_CONTROL, net, "0002").get();
 		// tap limit
 		tap.setControlLimit(new LimitType(1.10, 0.9));
 		// control voltage on the toside
