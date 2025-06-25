@@ -745,7 +745,7 @@ public class IpssAclfNet extends BaseDSL {
 			setObject(AclfAdjustObjectFactory.createPSXfrPControl(branch, AdjustControlType.POINT_CONTROL).get());
 		}
   		public PSXfrPControlDSL setFlowControlType(AdjustControlType type) { 
-								getObject().setFlowControlType(type);
+								getObject().setAdjControlType(type);
 								return this; }
   		public PSXfrPControlDSL setPSpecified(double pSpec, UnitType unit) { 
   								getObject().setPSpecified(pSpec, unit, getAclfAdjNet().getBaseKva());
@@ -844,7 +844,7 @@ public class IpssAclfNet extends BaseDSL {
 								getObject().setMvarSpecified(mvaSpec, unit, getAclfAdjNet().getBaseKva());
 								return this; }
   		public TapControlDSL setFlowControlType(AdjustControlType type) { 
-  								getObject().setFlowControlType(type);
+  								getObject().setAdjControlType(type);
   								return this; }
   		public TapControlDSL setTapLimit(double rMax, double rMin) { 
   	  							getObject().setTurnRatioLimit(new LimitType(rMax, rMin));
