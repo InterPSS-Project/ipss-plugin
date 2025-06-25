@@ -51,7 +51,7 @@ import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.ShuntCompensator;
-import com.interpss.core.aclf.adj.AdjControlType;
+import com.interpss.core.aclf.adj.AdjustControlType;
 import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.adj.RemoteQBus;
 import com.interpss.core.aclf.adj.RemoteQControlType;
@@ -313,12 +313,12 @@ public abstract class BaseAclfBean2AclfNetMapper<
 					TapControl tap = null;
 					if(tcb.controlType == TapControlTypeBean.Point_Control){
 						tap = AclfAdjustObjectFactory.createTapVControlBusVoltage(branch, 
-					            AdjControlType.POINT_CONTROL, aclfNet, tcb.controlledBusId).get();
+					            AdjustControlType.POINT_CONTROL, aclfNet, tcb.controlledBusId).get();
 						tap.setVSpecified(tcb.desiredControlTarget);
 					}else{ // range control
 						tap=AclfAdjustObjectFactory.createTapVControlBusVoltage(branch, 
-					            AdjControlType.RANGE_CONTROL, aclfNet, tcb.controlledBusId).get();
-							tap.setControlRange(new LimitType(tcb.upperLimit, tcb.lowerLimit));
+					            AdjustControlType.RANGE_CONTROL, aclfNet, tcb.controlledBusId).get();
+							tap.setDesiredControlRange(new LimitType(tcb.upperLimit, tcb.lowerLimit));
 					}
 					tap.setStatus(tcb.status == 1? true : false);
 					AclfBus vcBus = aclfNet.getBus(tcb.controlledBusId);				
@@ -331,7 +331,7 @@ public abstract class BaseAclfBean2AclfNetMapper<
 				}else if(tcb.controlMode == TapControlModeBean.Mva_Flow){					
 					//TODO add Range Control
 					TapControl tap = AclfAdjustObjectFactory.createTapVControlMvarFlow(branch, 
-							            AdjControlType.POINT_CONTROL).get();
+							            AdjustControlType.POINT_CONTROL).get();
 					tap.setMeteredOnFromSide(tcb.measuredOnFromSide);
 					tap.setMvarSpecified(tcb.desiredControlTarget);
 					tap.setTurnRatioLimit(new LimitType(tcb.maxTap, tcb.minTap));
@@ -347,7 +347,7 @@ public abstract class BaseAclfBean2AclfNetMapper<
 		if(branchBean.psXfrTapControl != null){
 			PsXfrTapControlBean<TBraExt> tcb = branchBean.psXfrTapControl;			
 				if(tcb.controlType == TapControlTypeBean.Point_Control){
-					PSXfrPControl psxfr = AclfAdjustObjectFactory.createPSXfrPControl(branch, AdjControlType.POINT_CONTROL).get();
+					PSXfrPControl psxfr = AclfAdjustObjectFactory.createPSXfrPControl(branch, AdjustControlType.POINT_CONTROL).get();
 					psxfr.setStatus(tcb.status == 1? true : false);
 					psxfr.setPSpecified(tcb.desiredControlTarget);
 					psxfr.setAngLimit(new LimitType(Math.toRadians(tcb.maxAngle), Math.toRadians(tcb.minAngle)));
@@ -356,9 +356,9 @@ public abstract class BaseAclfBean2AclfNetMapper<
 					psxfr.setFlowFrom2To(tcb.flowFrom2To);
 					
 				}else if (tcb.controlType == TapControlTypeBean.Range_Control ){ // range control
-					PSXfrPControl psxfr = AclfAdjustObjectFactory.createPSXfrPControl(branch, AdjControlType.RANGE_CONTROL).get();
+					PSXfrPControl psxfr = AclfAdjustObjectFactory.createPSXfrPControl(branch, AdjustControlType.RANGE_CONTROL).get();
 					psxfr.setStatus(tcb.status == 1? true : false);
-					psxfr.setControlRange(new LimitType(tcb.upperLimit, tcb.lowerLimit));
+					psxfr.setDesiredControlRange(new LimitType(tcb.upperLimit, tcb.lowerLimit));
 					psxfr.setPSpecified(tcb.desiredControlTarget);
 					psxfr.setAngLimit(new LimitType(Math.toRadians(tcb.maxAngle), Math.toRadians(tcb.minAngle)));
 					psxfr.setControlOnFromSide(tcb.controlOnFromSide);
