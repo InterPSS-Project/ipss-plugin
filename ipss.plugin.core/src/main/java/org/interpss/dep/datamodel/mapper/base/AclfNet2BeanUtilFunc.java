@@ -280,7 +280,7 @@ public class AclfNet2BeanUtilFunc {
 	
 	private static void mapPsXfrData(PSXfrPControl tap, PsXfrTapControlBean<? extends BaseJSONUtilBean> tb) {
 		tb.controlOnFromSide = tap.isControlOnFromSide();
-		tb.controlType = tap.getFlowControlType()==AdjustControlType.POINT_CONTROL? TapControlTypeBean.Point_Control:
+		tb.controlType = tap.getAdjControlType()==AdjustControlType.POINT_CONTROL? TapControlTypeBean.Point_Control:
 			TapControlTypeBean.Range_Control;
 		tb.desiredControlTarget = tap.getPSpecified();
 		tb.flowFrom2To = tap.isFlowFrom2To();
@@ -312,7 +312,7 @@ public class AclfNet2BeanUtilFunc {
 		}
 		
 		tapBean.controlOnFromSide = tap.isControlOnFromSide();
-		tapBean.controlType = tap.getFlowControlType()== AdjustControlType.POINT_CONTROL? TapControlTypeBean.Point_Control:
+		tapBean.controlType = tap.getAdjControlType()== AdjustControlType.POINT_CONTROL? TapControlTypeBean.Point_Control:
 			TapControlTypeBean.Range_Control;
 		if(tap.getDesiredControlRange() != null){
 			tapBean.lowerLimit = tap.getDesiredControlRange().getMin();
