@@ -70,7 +70,7 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
-import com.interpss.core.aclf.adj.AdjControlType;
+import com.interpss.core.aclf.adj.AdjustControlType;
 import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.adpter.Aclf3WPSXformerAdapter;
@@ -225,7 +225,7 @@ public class AclfBranchDataHelper {
 				return;
 			}
 			if (xmlAngAdj.getMode() == AdjustmentModeEnumType.VALUE_ADJUSTMENT) {
-				PSXfrPControl psxfr = AclfAdjustObjectFactory.createPSXfrPControl(aclfBra, AdjControlType.POINT_CONTROL).get();
+				PSXfrPControl psxfr = AclfAdjustObjectFactory.createPSXfrPControl(aclfBra, AdjustControlType.POINT_CONTROL).get();
 				psxfr.setStatus(!xmlAngAdj.isOffLine());
 				psxfr.setPSpecified(xmlAngAdj.getDesiredValue(), toActivePowerUnit.apply(xmlAngAdj.getDesiredActivePowerUnit()), baseKva);
 				psxfr.setAngLimit(new LimitType(xmlAngAdj.getAngleLimit().getMax(), xmlAngAdj.getAngleLimit().getMin()), toAngleUnit.apply(xmlAngAdj.getAngleLimit().getUnit()));
@@ -255,9 +255,9 @@ public class AclfBranchDataHelper {
 				psxfrCon.setMeteredOnFromSide(xmlAngAdj.isDesiredMeasuredOnFromSide());
 */				
 
-				PSXfrPControl psxfr = AclfAdjustObjectFactory.createPSXfrPControl(aclfBra, AdjControlType.RANGE_CONTROL).get();
+				PSXfrPControl psxfr = AclfAdjustObjectFactory.createPSXfrPControl(aclfBra, AdjustControlType.RANGE_CONTROL).get();
 				psxfr.setStatus(!xmlAngAdj.isOffLine());
-				psxfr.setControlRange(UnitHelper.pConversion(new LimitType(xmlAngAdj.getRange().getMax(),xmlAngAdj.getRange().getMin()),
+				psxfr.setDesiredControlRange(UnitHelper.pConversion(new LimitType(xmlAngAdj.getRange().getMax(),xmlAngAdj.getRange().getMin()),
 						    baseKva, toActivePowerUnit.apply(xmlAngAdj.getDesiredActivePowerUnit()), UnitType.PU));
 				psxfr.setPSpecified(xmlAngAdj.getDesiredValue(), toActivePowerUnit.apply(xmlAngAdj.getDesiredActivePowerUnit()), baseKva);
 				psxfr.setAngLimit(new LimitType(xmlAngAdj.getAngleLimit().getMax(), xmlAngAdj.getAngleLimit().getMin()), toAngleUnit.apply(xmlAngAdj.getAngleLimit().getUnit()));
@@ -392,7 +392,7 @@ public class AclfBranchDataHelper {
 						//specify the control type
 						if(xmlAdjData.getMode()==AdjustmentModeEnumType.VALUE_ADJUSTMENT){
 							Optional<TapControl> tapOpt = AclfAdjustObjectFactory.createTapVControlBusVoltage(aclfBra, 
-											AdjControlType.POINT_CONTROL, aclfNet, vcBusId);
+											AdjustControlType.POINT_CONTROL, aclfNet, vcBusId);
 							if (tapOpt.isPresent()) {
 								tap = tapOpt.get();
 								tap.setVSpecified(xmlAdjData.getDesiredValue(), toVoltageUnit.apply(xmlAdjData.getDesiredVoltageUnit()));
@@ -401,12 +401,12 @@ public class AclfBranchDataHelper {
 
 						else {
 							Optional<TapControl> tapOpt = AclfAdjustObjectFactory.createTapVControlBusVoltage(aclfBra, 
-								AdjControlType.RANGE_CONTROL, aclfNet, vcBusId);
+								AdjustControlType.RANGE_CONTROL, aclfNet, vcBusId);
 							if (tapOpt.isPresent()) {
 								tap = tapOpt.get();
 								//TODO: add the unit conversion for the control range, but it is missing currently in the ODM data, so we skip it for now,
 								// it is desirable to change xmlAdjData.getDesiredVoltageUnit() to getVoltageUnit() so that it can be used for both cases
-								tap.setControlRange(new LimitType(xmlAdjData.getRange().getMax(),xmlAdjData.getRange().getMin()));
+								tap.setDesiredControlRange(new LimitType(xmlAdjData.getRange().getMax(),xmlAdjData.getRange().getMin()));
 							}
 						}
 						
@@ -433,7 +433,7 @@ public class AclfBranchDataHelper {
 
 						if(xmlAdjData.getMode()==AdjustmentModeEnumType.VALUE_ADJUSTMENT){
 							Optional<TapControl> tapOpt = AclfAdjustObjectFactory.createTapVControlMvarFlow(aclfBra, 
-											AdjControlType.POINT_CONTROL);
+											AdjustControlType.POINT_CONTROL);
 							if (tapOpt.isPresent()) {
 								tap = tapOpt.get(); 
 								tap.setMvarSpecified(xmlAdjData.getDesiredValue(), toReactivePowerUnit.apply(xmlAdjData.getDesiredMvarFlowUnit()), baseKva);
@@ -441,12 +441,12 @@ public class AclfBranchDataHelper {
 						}
 						else {
 							Optional<TapControl> tapOpt = AclfAdjustObjectFactory.createTapVControlMvarFlow(aclfBra, 
-											AdjControlType.RANGE_CONTROL);
+											AdjustControlType.RANGE_CONTROL);
 							if (tapOpt.isPresent()) {
 								tap = tapOpt.get(); 
 
 								//TODO: add the unit conversion for the control range, but it is missing currently in the ODM data, so we skip it for now,
-								tap.setControlRange(new LimitType(xmlAdjData.getRange().getMax(),xmlAdjData.getRange().getMin()));
+								tap.setDesiredControlRange(new LimitType(xmlAdjData.getRange().getMax(),xmlAdjData.getRange().getMin()));
 							}
 						}
 						if (tap!=null) {
