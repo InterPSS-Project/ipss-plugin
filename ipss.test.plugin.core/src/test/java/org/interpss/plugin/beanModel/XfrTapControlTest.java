@@ -39,7 +39,7 @@ import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.adj.AdjControlType;
+import com.interpss.core.aclf.adj.AdjustControlType;
 import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -54,7 +54,7 @@ public class XfrTapControlTest extends CorePluginTestSetup {
 
 		AclfBranch branch = net.getBranch("0001->0002(1)");
 		TapControl tap = AclfAdjustObjectFactory.createTapVControlBusVoltage(branch, 
-							AdjControlType.POINT_CONTROL, net, "0002").get();
+							AdjustControlType.POINT_CONTROL, net, "0002").get();
 		tap.setControlLimit(new LimitType(1.10, 0.9));
 		tap.setControlOnFromSide(false);
 		//tap.setTapOnFromSide(false);
@@ -96,7 +96,7 @@ public class XfrTapControlTest extends CorePluginTestSetup {
 
 		AclfBranch branch = net.getBranch("0001->0002(1)");
 		TapControl tap = AclfAdjustObjectFactory.createTapVControlBusVoltage(branch, 
-							AdjControlType.POINT_CONTROL, net, "0002").get();
+							AdjustControlType.POINT_CONTROL, net, "0002").get();
 		tap.setControlLimit(new LimitType(1.10, 0.9));
 		tap.setControlOnFromSide(false);
 		//tap.setTapOnFromSide(false);
@@ -133,7 +133,7 @@ public class XfrTapControlTest extends CorePluginTestSetup {
 
 		AclfBranch branch = net.getBranch("0001->0002(1)");
 		TapControl tap = AclfAdjustObjectFactory.createTapVControlBusVoltage(branch, 
-							AdjControlType.POINT_CONTROL, net, "0002").get();
+							AdjustControlType.POINT_CONTROL, net, "0002").get();
 		tap.setControlLimit(new LimitType(1.10, 0.9));
 		tap.setControlOnFromSide(false);
 		//tap.setTapOnFromSide(false);
