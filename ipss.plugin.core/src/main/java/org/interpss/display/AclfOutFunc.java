@@ -36,7 +36,7 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
-import com.interpss.core.aclf.adj.AdjControlType;
+import com.interpss.core.aclf.adj.AdjustControlType;
 import com.interpss.core.aclf.adj.FunctionLoad;
 import com.interpss.core.aclf.adj.PQBusLimit;
 import com.interpss.core.aclf.adj.PSXfrPControl;
@@ -716,24 +716,24 @@ public class AclfOutFunc {
 					str.append(Number2String.toStr("##0.0000", x.getVcBus()
 							.getVoltageMag(UnitType.PU))
 							+ " ");
-					if (x.getFlowControlType() == AdjControlType.POINT_CONTROL)
+					if (x.getFlowControlType() == AdjustControlType.POINT_CONTROL)
 						str.append(Number2String.toStr("##0.0000", x
 								.getVSpecified(UnitType.PU))
 								+ " ");
 					else
-						str.append(x.getControlRange() + " ");
+						str.append(x.getDesiredControlRange() + " ");
 				} else {
 					str.append(Number2String.toStr(-8, " "));
 					str.append(Number2String.toStr("##0.0000", x
 							.getMvarFlowCalculated(UnitType.PU, baseKva))
 							+ " ");
-					if (x.getFlowControlType() == AdjControlType.POINT_CONTROL)
+					if (x.getFlowControlType() == AdjustControlType.POINT_CONTROL)
 						str.append("   "
 								+ Number2String.toStr("##0.0000", x
 										.getMvarSpecified(UnitType.PU, baseKva))
 								+ "    ");
 					else
-						str.append(x.getControlRange() + " ");
+						str.append(x.getDesiredControlRange() + " ");
 				}
 
 				str.append(Number2String.toStr("0.000",
@@ -786,12 +786,12 @@ public class AclfOutFunc {
 								.powerTo2From(UnitType.PU).getReal()))
 						+ " ");
 
-				if (x.getFlowControlType() == AdjControlType.POINT_CONTROL)
+				if (x.getFlowControlType() == AdjustControlType.POINT_CONTROL)
 					str.append(Number2String.toStr("   " + "##0.0000", x
 							.getPSpecified(UnitType.PU, baseKVA))
 							+ "    ");
 				else
-					str.append(x.getControlRange() + " ");
+					str.append(x.getDesiredControlRange() + " ");
 
 				AclfPSXformerAdapter psXfr = x.getParentBranch().toPSXfr();
 				str.append(Number2String.toStr("#0.00", psXfr
