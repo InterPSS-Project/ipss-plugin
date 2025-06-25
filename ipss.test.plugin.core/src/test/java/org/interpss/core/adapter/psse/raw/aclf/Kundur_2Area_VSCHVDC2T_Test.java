@@ -181,6 +181,27 @@ public class Kundur_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 		
 		vscHVDC.getRecConverter().setId("Rec");
 		
+		//System.out.println("VSC HVDC: " + vscHVDC.toString(net.getBaseKva()));
+/*
+VSC HVDC: com.interpss.core.aclf.hvdc.impl.HvdcLine2TVSCImpl@6b3e12b5 (
+	id: Bus7->Bus9(cirId), name: VDCLINE1, desc: , number: 0, status: true) 
+	(booleanFlag: false, intFlag: 0, weight: (0.0, 0.0), sortNumber: 0, areaId: 1, zoneId: 1, ownerId: , 
+	statusChangeInfo: NoChange) (extensionObject: null) (circuitNumber: VDCLINE1, fromSideMetered: true) 
+	(rdc: 0.71, mvaRating: 0.0, imax: 0.0, dcLineNumber: 0) (iDcKa: 0.0)
+	
+	com.interpss.core.aclf.hvdc.impl.VSCConverterImpl@5aac4250 (id: Rec, name: , desc: , number: 0, status: true)
+	 (converterType: rectifier, refBusId: Bus7) (vdc: 0.0, pdc: 0.0, dcSetPoint: -209.0, 
+	 acSetPoint: 0.95, mvaRating: 400.0, acCurrentRating: 0.0, qMvarLimit: ( 100.0, -110.0 ), 
+	 acControlMode: acPowerFactor, dcControlMode: dcPower, remoteControlBusId: null, 
+	 remoteControlPercent: 100.0)
+	 
+	com.interpss.core.aclf.hvdc.impl.VSCConverterImpl@1338fb5 (id: Inv, name: , desc: , number: 0, status: true)
+	 (converterType: inverter, refBusId: Bus9) (vdc: 0.0, pdc: 0.0, dcSetPoint: 300.0, 
+	 acSetPoint: 0.98, mvaRating: 350.0, acCurrentRating: 0.0, qMvarLimit: ( 150.0, -140.0 ), 
+	 acControlMode: acVoltage, dcControlMode: dcVoltage, remoteControlBusId: null, 
+	 remoteControlPercent: 100.0)	
+ */
+		
 		return net;
 	}
 
