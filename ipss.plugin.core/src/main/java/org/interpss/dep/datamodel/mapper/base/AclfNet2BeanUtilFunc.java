@@ -48,7 +48,7 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.ShuntCompensator;
-import com.interpss.core.aclf.adj.AdjControlType;
+import com.interpss.core.aclf.adj.AdjustControlType;
 import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.adj.TapControl;
@@ -280,13 +280,13 @@ public class AclfNet2BeanUtilFunc {
 	
 	private static void mapPsXfrData(PSXfrPControl tap, PsXfrTapControlBean<? extends BaseJSONUtilBean> tb) {
 		tb.controlOnFromSide = tap.isControlOnFromSide();
-		tb.controlType = tap.getFlowControlType()==AdjControlType.POINT_CONTROL? TapControlTypeBean.Point_Control:
+		tb.controlType = tap.getFlowControlType()==AdjustControlType.POINT_CONTROL? TapControlTypeBean.Point_Control:
 			TapControlTypeBean.Range_Control;
 		tb.desiredControlTarget = tap.getPSpecified();
 		tb.flowFrom2To = tap.isFlowFrom2To();
-		if(tap.getControlRange() != null){
-			tb.lowerLimit = tap.getControlRange().getMin();
-			tb.upperLimit = tap.getControlRange().getMax();
+		if(tap.getDesiredControlRange() != null){
+			tb.lowerLimit = tap.getDesiredControlRange().getMin();
+			tb.upperLimit = tap.getDesiredControlRange().getMax();
 		}
 		if(tap.getAngLimit() != null){
 			tb.maxAngle = Math.toDegrees(tap.getAngLimit().getMax());
@@ -312,11 +312,11 @@ public class AclfNet2BeanUtilFunc {
 		}
 		
 		tapBean.controlOnFromSide = tap.isControlOnFromSide();
-		tapBean.controlType = tap.getFlowControlType()== AdjControlType.POINT_CONTROL? TapControlTypeBean.Point_Control:
+		tapBean.controlType = tap.getFlowControlType()== AdjustControlType.POINT_CONTROL? TapControlTypeBean.Point_Control:
 			TapControlTypeBean.Range_Control;
-		if(tap.getControlRange() != null){
-			tapBean.lowerLimit = tap.getControlRange().getMin();
-			tapBean.upperLimit = tap.getControlRange().getMax();
+		if(tap.getDesiredControlRange() != null){
+			tapBean.lowerLimit = tap.getDesiredControlRange().getMin();
+			tapBean.upperLimit = tap.getDesiredControlRange().getMax();
 		}
 		if(tap.getControlLimit() != null){
 			tapBean.maxTap = tap.getControlLimit().getMax();
