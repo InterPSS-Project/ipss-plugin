@@ -563,7 +563,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 		svc.setControlMode(mode);
 
 		// control type
-		svc.setControlType(RemoteQControlType.BUS_VOLTAGE);
+		svc.setRemoteQControlType(RemoteQControlType.BUS_VOLTAGE);
 
 		// map desired voltage
 		VoltageXmlType vXml = svcData.getVoltageSetPoint();
