@@ -73,7 +73,7 @@ import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.ShuntCompensator;
 import com.interpss.core.aclf.adj.PQBusLimit;
 import com.interpss.core.aclf.adj.PVBusLimit;
-import com.interpss.core.aclf.adj.RemoteQControlType;
+import com.interpss.core.aclf.adj.BusBranchControlType;
 import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.adj.VarCompensationMode;
 import com.interpss.core.aclf.adpter.AclfPQGenBusAdapter;
@@ -563,7 +563,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 		svc.setControlMode(mode);
 
 		// control type
-		svc.setRemoteQControlType(RemoteQControlType.BUS_VOLTAGE);
+		svc.setRemoteQControlType(BusBranchControlType.BUS_VOLTAGE);
 
 		// map desired voltage
 		VoltageXmlType vXml = svcData.getVoltageSetPoint();
