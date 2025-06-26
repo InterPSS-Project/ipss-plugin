@@ -54,7 +54,7 @@ import com.interpss.core.aclf.ShuntCompensator;
 import com.interpss.core.aclf.adj.AdjustControlType;
 import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.adj.RemoteQBus;
-import com.interpss.core.aclf.adj.RemoteQControlType;
+import com.interpss.core.aclf.adj.BusBranchControlType;
 import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.adj.VarCompensationMode;
@@ -210,7 +210,7 @@ public abstract class BaseAclfBean2AclfNetMapper<
 			String remoteBusId = busBean.remoteVControlBusId;
 			if( !remoteBusId.equals("")){
 				RemoteQBus reQBus = AclfAdjustObjectFactory.createRemoteQBus(
-							bus, RemoteQControlType.BUS_VOLTAGE, remoteBusId).get();
+							bus, BusBranchControlType.BUS_VOLTAGE, remoteBusId).get();
 				reQBus.setAccFactor(0.5);
 			}
 		}
