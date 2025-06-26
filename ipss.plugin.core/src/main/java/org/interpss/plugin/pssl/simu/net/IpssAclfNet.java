@@ -786,7 +786,7 @@ public class IpssAclfNet extends BaseDSL {
 			getObject().setId(busId);
 		}
   		public RemoteQBusDSL setControlType(RemoteQControlType type) { 
-  								getObject().setControlType(type);
+  								getObject().setRemoteQControlType(type);
   								return this; }
   		public RemoteQBusDSL setAdjBusBranchId(String reId) { 
 // TODO							this.getAclfAdjNet().addRemoteQBus(getObject(), reId);
