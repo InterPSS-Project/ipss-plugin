@@ -611,14 +611,14 @@ public class AclfOutFunc {
 				str.append(Number2String.toStr(5, " "));
 				str.append(Number2String.toStr(-9, OutputBusId.f(re.getParentBus(), net.getOriginalDataFormat())));
 				str.append(Number2String.toStr(-9,
-										(re.getControlType() == RemoteQControlType.BUS_VOLTAGE ? " Voltage"
+										(re.getRemoteQControlType() == RemoteQControlType.BUS_VOLTAGE ? " Voltage"
 												: "MvarFlow")));
 				str.append(Number2String.toStr(15,
-						re.getControlType() == RemoteQControlType.BUS_VOLTAGE ? re
+						re.getRemoteQControlType() == RemoteQControlType.BUS_VOLTAGE ? re
 								.getRemoteBus().getId() : re.getRemoteBranch()
 								.getId()));
 				str.append(Number2String.toStr("###0.0000",
-						re.getControlType() == RemoteQControlType.BUS_VOLTAGE ? re
+						re.getRemoteQControlType() == RemoteQControlType.BUS_VOLTAGE ? re
 								.getRemoteBus().getVoltageMag(UnitType.PU) : re
 								.getMvarFlowCalculated(re.getRemoteBranch(), UnitType.PU)));
 				str.append(Number2String.toStr("###0.0000", re.getVSpecified(UnitType.PU)));
