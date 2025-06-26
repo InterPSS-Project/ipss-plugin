@@ -45,7 +45,7 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adj.RemoteQBus;
-import com.interpss.core.aclf.adj.RemoteQControlType;
+import com.interpss.core.aclf.adj.BusBranchControlType;
 import com.interpss.core.aclf.adj.VarCompensationMode;
 import com.interpss.core.aclf.adpter.AclfGenBusAdapter;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
@@ -383,7 +383,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		assertTrue("SVC control mode is correct", svc1.getControlMode() == VarCompensationMode.CONTINUOUS);
 
 		//control type, default is  bus voltage control
-		assertTrue("SVC control type is correct", svc1.getRemoteQControlType() == RemoteQControlType.BUS_VOLTAGE);
+		assertTrue("SVC control type is correct", svc1.getRemoteQControlType() == BusBranchControlType.BUS_VOLTAGE);
 
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 		algo.setLfMethod(AclfMethodType.NR);
@@ -443,7 +443,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		assertTrue("SVC control mode is correct", svc1.getControlMode() == VarCompensationMode.CONTINUOUS);
 
 		//control type, default is  bus voltage control
-		assertTrue("SVC control type is correct", svc1.getRemoteQControlType() == RemoteQControlType.BUS_VOLTAGE);
+		assertTrue("SVC control type is correct", svc1.getRemoteQControlType() == BusBranchControlType.BUS_VOLTAGE);
 
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 		algo.setLfMethod(AclfMethodType.NR);
