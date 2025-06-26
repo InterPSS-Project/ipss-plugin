@@ -37,14 +37,13 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.adj.AdjustControlType;
+import com.interpss.core.aclf.adj.BusBranchControlType;
 import com.interpss.core.aclf.adj.FunctionLoad;
 import com.interpss.core.aclf.adj.PQBusLimit;
 import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.adj.PVBusLimit;
 import com.interpss.core.aclf.adj.RemoteQBus;
-import com.interpss.core.aclf.adj.RemoteQControlType;
 import com.interpss.core.aclf.adj.TapControl;
-import com.interpss.core.aclf.adj.XfrTapControlType;
 import com.interpss.core.aclf.adpter.AclfGenBusAdapter;
 import com.interpss.core.aclf.adpter.AclfPSXformerAdapter;
 import com.interpss.core.aclf.contingency.AclfBranchRating;
@@ -611,14 +610,14 @@ public class AclfOutFunc {
 				str.append(Number2String.toStr(5, " "));
 				str.append(Number2String.toStr(-9, OutputBusId.f(re.getParentBus(), net.getOriginalDataFormat())));
 				str.append(Number2String.toStr(-9,
-										(re.getRemoteQControlType() == RemoteQControlType.BUS_VOLTAGE ? " Voltage"
+										(re.getRemoteQControlType() == BusBranchControlType.BUS_VOLTAGE ? " Voltage"
 												: "MvarFlow")));
 				str.append(Number2String.toStr(15,
-						re.getRemoteQControlType() == RemoteQControlType.BUS_VOLTAGE ? re
+						re.getRemoteQControlType() == BusBranchControlType.BUS_VOLTAGE ? re
 								.getRemoteBus().getId() : re.getRemoteBranch()
 								.getId()));
 				str.append(Number2String.toStr("###0.0000",
-						re.getRemoteQControlType() == RemoteQControlType.BUS_VOLTAGE ? re
+						re.getRemoteQControlType() == BusBranchControlType.BUS_VOLTAGE ? re
 								.getRemoteBus().getVoltageMag(UnitType.PU) : re
 								.getMvarFlowCalculated(re.getRemoteBranch(), UnitType.PU)));
 				str.append(Number2String.toStr("###0.0000", re.getVSpecified(UnitType.PU)));
@@ -711,7 +710,7 @@ public class AclfOutFunc {
 				str.append(Number2String.toStr(-17, x.getParentBranch().getId())
 						+ " ");
 
-				if (x.getControlType() == XfrTapControlType.BUS_VOLTAGE) {
+				if (x.getControlType() == BusBranchControlType.BUS_VOLTAGE) {
 					str.append(Number2String.toStr(-8, x.getVcBus().getId()) + " ");
 					str.append(Number2String.toStr("##0.0000", x.getVcBus()
 							.getVoltageMag(UnitType.PU))
