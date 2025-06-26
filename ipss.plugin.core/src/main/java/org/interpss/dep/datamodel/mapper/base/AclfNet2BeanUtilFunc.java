@@ -27,13 +27,13 @@ package org.interpss.dep.datamodel.mapper.base;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.dep.datamodel.bean.aclf.AclfBranchBean;
 import org.interpss.dep.datamodel.bean.aclf.AclfBusBean;
+import org.interpss.dep.datamodel.bean.aclf.adj.BaseTapControlBean.TapControlModeBean;
+import org.interpss.dep.datamodel.bean.aclf.adj.BaseTapControlBean.TapControlTypeBean;
 import org.interpss.dep.datamodel.bean.aclf.adj.PsXfrTapControlBean;
 import org.interpss.dep.datamodel.bean.aclf.adj.QBankBean;
 import org.interpss.dep.datamodel.bean.aclf.adj.SwitchShuntBean;
-import org.interpss.dep.datamodel.bean.aclf.adj.XfrTapControlBean;
-import org.interpss.dep.datamodel.bean.aclf.adj.BaseTapControlBean.TapControlModeBean;
-import org.interpss.dep.datamodel.bean.aclf.adj.BaseTapControlBean.TapControlTypeBean;
 import org.interpss.dep.datamodel.bean.aclf.adj.SwitchShuntBean.VarCompensatorControlModeBean;
+import org.interpss.dep.datamodel.bean.aclf.adj.XfrTapControlBean;
 import org.interpss.dep.datamodel.bean.aclf.ext.AclfBranchResultBean;
 import org.interpss.dep.datamodel.bean.aclf.ext.AclfBusResultBean;
 import org.interpss.dep.datamodel.bean.base.BaseBranchBean;
@@ -49,11 +49,11 @@ import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.ShuntCompensator;
 import com.interpss.core.aclf.adj.AdjustControlType;
+import com.interpss.core.aclf.adj.BusBranchControlType;
 import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.adj.VarCompensationMode;
-import com.interpss.core.aclf.adj.XfrTapControlType;
 import com.interpss.core.aclf.adpter.AclfPSXformerAdapter;
 import com.interpss.core.aclf.adpter.AclfXformerAdapter;
 
@@ -302,7 +302,7 @@ public class AclfNet2BeanUtilFunc {
 
 	private static void mapXfrData(TapControl tap, XfrTapControlBean<? extends BaseJSONUtilBean> tapBean) {
 		tapBean.controlledBusId = tap.getVcBus().getId();
-		if(tap.getControlType() == XfrTapControlType.BUS_VOLTAGE){
+		if(tap.getControlType() == BusBranchControlType.BUS_VOLTAGE){
 			tapBean.controlMode = TapControlModeBean.Bus_Voltage;
 			tapBean.desiredControlTarget = tap.getVSpecified();
 			
