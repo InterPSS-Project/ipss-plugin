@@ -710,7 +710,7 @@ public class AclfOutFunc {
 				str.append(Number2String.toStr(-17, x.getParentBranch().getId())
 						+ " ");
 
-				if (x.getControlType() == BusBranchControlType.BUS_VOLTAGE) {
+				if (x.getTapControlType() == BusBranchControlType.BUS_VOLTAGE) {
 					str.append(Number2String.toStr(-8, x.getVcBus().getId()) + " ");
 					str.append(Number2String.toStr("##0.0000", x.getVcBus()
 							.getVoltageMag(UnitType.PU))
