@@ -831,7 +831,7 @@ public class IpssAclfNet extends BaseDSL {
 			getObject().setId(branchId);
 		}
   		public TapControlDSL setControlType(BusBranchControlType type) { 
-								getObject().setControlType(type);
+								getObject().setTapControlType(type);
 								return this; }
 //  		public TapControlDSL setAdjBusBranchId(String id) { 
 //  								this.getAclfAdjNet().addTapControl(getObject(), id);
