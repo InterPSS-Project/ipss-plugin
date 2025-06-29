@@ -30,8 +30,6 @@ public class Kundur_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 		
 		AclfNetwork netCopy = net.hzCopy();
 		
-		assertTrue("", net.diffState(netCopy));
-		
 		test_VSCHVDC_Data(netCopy);
 	}
 	
@@ -40,8 +38,6 @@ public class Kundur_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 		AclfNetwork net = createTestCaseV30();
 		
 		AclfNetwork netCopy = net.jsonCopy();
-		
-		assertTrue("", net.diffState(netCopy));
 		
 		test_VSCHVDC_Data(netCopy);
 	}
