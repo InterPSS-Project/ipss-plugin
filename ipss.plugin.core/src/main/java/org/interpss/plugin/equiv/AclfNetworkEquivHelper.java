@@ -49,15 +49,15 @@ public class AclfNetworkEquivHelper {
     public void  defineKeptSubNetworkByAreas(List<String> keptAreas){
         //iterate through all the buses and use the keptAreas to determine which buses to keep
         for(BaseAclfBus<AclfGen, AclfLoad> bus: this.baseNetwork.getBusList()){
-            if(bus.isActive() && keptAreas.contains(bus.getArea().getId())){
+            if(bus.isActive() && keptAreas.contains(bus.getAreaId())){
                 this.keptBusSet.add(bus.getId());
             }
         }
         
         for(AclfBranch branch:this.baseNetwork.getBranchList()){
             if(branch.isActive()){
-                if(keptAreas.contains(branch.getFromAclfBus().getArea().getId())){
-                    if(!keptAreas.contains(branch.getToAclfBus().getArea().getId())){
+                if(keptAreas.contains(branch.getFromAclfBus().getAreaId())){
+                    if(!keptAreas.contains(branch.getToAclfBus().getAreaId())){
                         this.boundaryBusSet.add(branch.getFromBusId());
                         this.boundaryBranchSet.add(new BaseCuttingBranch<Complex>(branch.getId(), 1, 0, BranchBusSide.FROM_SIDE));
 
@@ -68,7 +68,7 @@ public class AclfNetworkEquivHelper {
 
                 }
                 else{
-                    if(keptAreas.contains(branch.getToAclfBus().getArea().getId())){
+                    if(keptAreas.contains(branch.getToAclfBus().getAreaId())){
 
                         this.boundaryBusSet.add(branch.getToBusId());
                         this.boundaryBranchSet.add(new BaseCuttingBranch<Complex>(branch.getId(), 0, 1, BranchBusSide.TO_SIDE));
@@ -85,8 +85,8 @@ public class AclfNetworkEquivHelper {
                 if(bra != null && bra.isActive() && bra instanceof HvdcLine2T){
                     @SuppressWarnings("unchecked")
 					HvdcLine2T<AclfBus> branch = (HvdcLine2T<AclfBus>) bra;
-                    if(keptAreas.contains(branch.getFromBus().getArea().getId())){
-                        if(!keptAreas.contains(branch.getToBus().getArea().getId())){
+                    if(keptAreas.contains(branch.getFromBus().getAreaId())){
+                        if(!keptAreas.contains(branch.getToBus().getAreaId())){
                                 this.boundaryBusSet.add(branch.getFromBusId());
                                 this.boundaryBranchSet.add(new BaseCuttingBranch<Complex>(branch.getId(), 1, 0, BranchBusSide.FROM_SIDE));
 
@@ -97,7 +97,7 @@ public class AclfNetworkEquivHelper {
 
                     }
                     else{
-                        if(keptAreas.contains(branch.getToBus().getArea().getId())){
+                        if(keptAreas.contains(branch.getToBus().getAreaId())){
 
                             this.boundaryBusSet.add(branch.getToBusId());
                             this.boundaryBranchSet.add(new BaseCuttingBranch<Complex>(branch.getId(), 0, 1, BranchBusSide.TO_SIDE));
