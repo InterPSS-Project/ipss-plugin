@@ -43,6 +43,8 @@ import org.ieee.odm.schema.LineBranchXmlType;
 import org.ieee.odm.schema.LoadflowBusXmlType;
 import org.ieee.odm.schema.LoadflowNetXmlType;
 import org.ieee.odm.schema.NameValuePairXmlType;
+import org.ieee.odm.schema.NetAreaXmlType;
+import org.ieee.odm.schema.NetZoneXmlType;
 import org.ieee.odm.schema.PSXfr3WBranchXmlType;
 import org.ieee.odm.schema.PSXfrBranchXmlType;
 import org.ieee.odm.schema.PWDNetworkExtXmlType;
@@ -82,9 +84,11 @@ import com.interpss.core.aclf.flow.FlowInterfaceType;
 import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
 import com.interpss.core.aclf.hvdc.HvdcLine2TVSC;
 import com.interpss.core.aclf.hvdc.HvdcOperationMode;
+import com.interpss.core.net.Area;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.BranchBusSide;
 import com.interpss.core.net.OriginalDataFormat;
+import com.interpss.core.net.Zone;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
@@ -285,8 +289,37 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 		
 		if (xmlNet.getBusVLimit() != null)
 			net.setDefaultVoltageLimit(new LimitType(xmlNet.getBusVLimit().getMax(), xmlNet.getBusVLimit().getMin()));
+		
+		// map the area info
+		if (xmlNet.getAreaList() != null) {
+			for (NetAreaXmlType areaXml : xmlNet.getAreaList().getArea()) {
+				if (areaXml.getId() != null && !areaXml.getId().isEmpty()) {
+					Area area = net.getArea(areaXml.getId());
+					if (area == null) {
+						area = CoreObjectFactory.createArea(areaXml.getId(), net);
+					}
+					area.setName(areaXml.getName() == null? "Area" : areaXml.getName());
+					area.setDesc(areaXml.getDesc() == null? "Area Desc" : areaXml.getDesc());
+					//net.getAreaList().add(area);
+				}
+			}
+		}
+		// map the zone info
+		if (xmlNet.getLossZoneList() != null) {
+			for (NetZoneXmlType zoneXml : xmlNet.getLossZoneList().getLossZone()) {
+				if (zoneXml.getId() != null && !zoneXml.getId().isEmpty()) {
+					Zone zone = net.getZone(zoneXml.getId());
+					if (zone == null) {
+						zone = CoreObjectFactory.createZone(zoneXml.getId(), net);
+					}
+					zone.setName(zoneXml.getName() == null? "Zone" : zoneXml.getName());
+					zone.setDesc(zoneXml.getDesc() == null? "Zone Desc" : zoneXml.getDesc());
+					//net.getZoneList().add(zone);
+				}
+			}
+		}
 	}
-	
+
 	/**
 	 * map interface info to the AclfNet object
 	 * 

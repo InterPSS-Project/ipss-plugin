@@ -35,17 +35,19 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.adj.RemoteQBus;
 import com.interpss.core.aclf.adj.BusBranchControlType;
+import com.interpss.core.aclf.adj.RemoteQBus;
 import com.interpss.core.aclf.adj.VarCompensationMode;
 import com.interpss.core.aclf.adpter.AclfGenBusAdapter;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
@@ -282,6 +284,84 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		AclfBus bus10 = net.getBus("Bus10");
 		double voltageMagBus10 = bus10.getVoltageMag();
 		assertTrue(Math.abs(voltageMagBus10 - 1.03514) < 0.0001);
+	}
+
+	@Test
+	public void testAclf3WXfrZCorrData() throws Exception {
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v35/ieee9_qa_3wxfr_zcorr_v35.raw")
+				.setFormat(PSSE)
+				.setPsseVersion(PsseVersion.PSSE_35)
+				.load()
+				.getImportedObj();
+
+		// Check the 3W Xfr Z Corr Table 
+		assertNotNull(net.getXfrZTable());
+		assertTrue(net.getXfrZTable().size() == 1);
+
+
+		// check the 3w Xfr z correction
+		// 3WNDTR_90_91_92_1->Bus92(1)
+		AclfBranch xfr_92_str = net.getBranch("3WNDTR_90_91_92_1->Bus92(1)");
+		assertNotNull(xfr_92_str);
+		assertTrue(xfr_92_str.getXfrZTableNumber() == 1);
+		assertTrue(xfr_92_str.getZ().getReal() == 0.0);
+		// check the scale factor
+		assertTrue(xfr_92_str.getZMultiplyFactor().getReal() == 0.01);
+		assertTrue(xfr_92_str.getZMultiplyFactor().getImaginary() == 0.0);
+		assertEquals( 0.41194*0.01,xfr_92_str.getZ().getImaginary(),1.0e-5); // 0.41194 is the Z Corr value in the table, 0.01 is the scale factor
+
+		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		algo.setLfMethod(AclfMethodType.NR);
+		algo.setNonDivergent(true);
+		algo.loadflow();
+		//System.out.println(AclfOutFunc.loadFlowSummary(net));
+
+		/*
+				BusID          Code           Volt(pu)   Angle(deg)      Pg(pu)    Qg(pu)    Pl(pu)    Ql(pu)    Bus Name   
+			----------------------------------------------------------------------------------------------------------------
+			Bus1         Swing                1.04000        0.00      -0.0136    0.5989    0.0000    0.0000   BUS-1      
+			Bus2         PV                   1.02500        9.94       1.6300   -0.0515    0.0000    0.0000   BUS-2      
+			Bus3         PV                   1.02500       13.85       0.8500   -0.1697    0.0000    0.0000   BUS-3      
+			Bus4                              1.05531        0.02       0.0000    0.0000    0.0000    0.0000   BUS-4      
+			Bus5                ConstP        1.01843       -0.29       0.0000    0.0000    1.2500    0.5000   BUS-5      
+			Bus6                ConstP        1.02875        0.98       0.0000    0.0000    0.9000    0.3000   BUS-6      
+			Bus7                              1.04231        9.90       0.0000    0.0000    0.0000    0.0000   BUS-7      
+			Bus8                ConstP        1.02737        8.21       0.0000    0.0000    1.0000    0.3500   BUS-8      
+			Bus9                              1.03584       11.16       0.0000    0.0000    0.0000    0.0000   BUS-9      
+			Bus90                             1.03430       11.57       0.0000    0.0000    0.0000    0.0000   BUS-90     
+			Bus91        PV                   1.00000       22.69       0.4600   -0.0311    0.0000    0.0000   BUS-91     
+			Bus92        PQ                   1.03870       10.45       0.3200   -0.0400    0.0000    0.0000   BUS-92     
+			3WNDTR_90_91_92_1                      1.03886       10.38       0.0000    0.0000    0.0000    0.0000   3WXfr StarBus 
+		 */
+
+		AclfBus swingBus = net.getBus("Bus1");
+	  	AclfSwingBusAdapter swing = swingBus.toSwingBus();
+  		Complex p = swing.getGenResults(UnitType.PU);
+  		assertTrue(Math.abs(p.getReal()+0.0136)<0.0001);
+  		assertTrue(""+p.getImaginary(), Math.abs(p.getImaginary()-0.5989)<0.0001);
+
+		AclfBus bus4 = net.getBus("Bus4");
+		double voltageMag = bus4.getVoltageMag();
+		assertTrue(""+voltageMag, Math.abs(voltageMag - 1.05531) < 0.0001);
+
+		//bus92 voltage
+		AclfBus bus92 = net.getBus("Bus92");
+		double voltageMagBus92 = bus92.getVoltageMag();
+		assertTrue(Math.abs(voltageMagBus92 - 1.03870) < 0.0001);
+		//bus92 voltage angle
+		assertTrue(Math.abs(bus92.getVoltageAng() - 10.45/180*Math.PI) < 0.0001);
+
+		//bus 92 gen results
+		Complex pGenBus92 = bus92.toGenBus().getGenResults(UnitType.PU);
+		assertTrue(Math.abs(pGenBus92.getReal() - 0.3200) < 0.0001);
+		assertTrue(Math.abs(pGenBus92.getImaginary() + 0.0400) < 0.0001);
+
+		//bus 91 gen results
+		AclfBus bus91 = net.getBus("Bus91");
+		Complex pGenBus91 = bus91.toGenBus().getGenResults(UnitType.PU);
+		assertTrue(Math.abs(pGenBus91.getReal() - 0.4600) < 0.0001);
+		assertTrue(Math.abs(pGenBus91.getImaginary() + 0.0311) < 0.0001);
+
 	}
 	
 	private void testVAclf(AclfNetwork net) throws Exception {

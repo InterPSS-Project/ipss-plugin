@@ -24,9 +24,8 @@
 
 package org.interpss.display.impl;
 
-import static org.interpss.CorePluginFunction.formatKVStr;
-
 import org.apache.commons.math3.complex.Complex;
+import static org.interpss.CorePluginFunction.formatKVStr;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
@@ -219,9 +218,10 @@ BUS  10002 GZ-HLZ      220.00 CKT     MW     MVAR     MVA  %I 1.0445PU  -47.34  
 				s += String.format("%6.2fKV", vkv);
 			else	
 				s += String.format("%6.3fKV", vkv);
-			s += String.format("               MW     MVAR   %2d %2s             %2d %2s\n", 
-					bus.getArea().getNumber(), bus.getArea().getName(), 
-					bus.getZone().getNumber(), bus.getZone().getName());
+			
+			s += String.format("               MW     MVAR   %2s %2s             %2s %2s\n", 
+						bus.getAreaId(), bus.getAreaId().equals("0")? "": bus.getNetwork().getArea(bus.getAreaId()).getName(),  //AREA ID default is "0"
+						bus.getZoneId(), bus.getZoneId().equals("0")? "": bus.getNetwork().getZone(bus.getZoneId()).getName()); //ZONE ID default is "0"
 		}
 		else {
 /*
@@ -233,18 +233,16 @@ BUS  10002 GZ-HLZ      220.00 CKT     MW     MVAR     MVA  %I 1.0445PU  -47.34  
 			else
 				s += String.format("%7.3fKV", vkv);
 
-			s += String.format("               MW     MVAR   %2d %2s             %2d %2s\n", 
-						bus.getArea().getNumber(), bus.getArea().getName(), 
-						bus.getZone().getNumber(), bus.getZone().getName());
+			s += String.format("               MW     MVAR   %2s %2s             %2s %2s\n", 
+						bus.getAreaId(), bus.getAreaId().equals("0")? "": bus.getNetwork().getArea(bus.getAreaId()).getName(), 
+						bus.getZoneId(), bus.getZoneId().equals("0")? "": bus.getNetwork().getZone(bus.getZoneId()).getName());
 		}
 /*
  TO SHUNT                             0.0   484.3   484.3
  */
-		if (bus.isGen() && bus.isCapacitor() || bus.getShuntY().getImaginary() != 0.0) {
+		if (bus.getShuntY() != null && bus.getShuntY().getImaginary() != 0.0) {
 			double p = 0.0, q = 0.0;
-			if (bus.isCapacitor())
-				q = bus.getGenQ();
-			else if (bus.getShuntY() != null) {
+			if (bus.getShuntY() != null) {
 				if (bus.getShuntY().getReal() != 0.0)
 					p = -bus.getShuntY().getReal();
 				q = -bus.getShuntY().getImaginary();
@@ -252,6 +250,28 @@ BUS  10002 GZ-HLZ      220.00 CKT     MW     MVAR     MVA  %I 1.0445PU  -47.34  
 			p *= bus.getVoltageMag() * bus.getVoltageMag() * factor;
 			q *= bus.getVoltageMag() * bus.getVoltageMag() * factor;
 			s += formatBusLoad("TO SHUNT", p, q, q) + "\n";
+		}
+
+		// process switched shunt
+		/*
+		 *   TO SWITCHED SHUNT                        0.0   -25.5    25.5
+		 */
+		if (bus.isSwitchedShunt() && !bus.isStaticVarCompensator()) {
+			double  q = -bus.toCapacitorBus().getQ(); // negative value as the result is for "TO SWITCHED SHUNT"
+			
+			q *= bus.getVoltageMag() * bus.getVoltageMag() * factor;
+			s += formatBusLoad("TO SWITCHED SHUNT", 0, q, q) + "\n";
+		}
+
+		// process static var compensator
+		/*
+		 *   TO STATCOM               0.0   -25.5    25.5
+		 */
+		if (bus.isStaticVarCompensator()) {
+			double q = -bus.toCapacitorBus().getQ(); // negative value as the result is for "TO STATCOM"
+
+			q *= bus.getVoltageMag() * bus.getVoltageMag() * factor;
+			s += formatBusLoad("TO STATCOM", 0, q, q) + "\n";
 		}
 
 /*
@@ -327,11 +347,9 @@ BUS  10002 GZ-HLZ      220.00 CKT     MW     MVAR     MVA  %I 1.0445PU  -47.34  
 			s += String.format("                   ");
 			
 		Complex loss = branch.loss(UnitType.mVA);
-		s += String.format("%7.2f %7.2f   %2d %2s             %2d %2s\n", 
-					loss.getReal(), loss.getImaginary(),
-					branch.getArea().getNumber(), branch.getArea().getName(), 
-					branch.getZone().getNumber(), branch.getZone().getName());
-		
+		s += String.format("%7.2f %7.2f  \n", 
+					loss.getReal(), loss.getImaginary()); //a branch has no area/zone info, only buses have them
+
 		str.append(s);
 		return str;
 	}
