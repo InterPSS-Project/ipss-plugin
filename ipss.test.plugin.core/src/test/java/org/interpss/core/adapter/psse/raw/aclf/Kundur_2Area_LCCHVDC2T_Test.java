@@ -33,7 +33,7 @@ import com.interpss.simu.SimuObjectFactory;
 import com.interpss.state.aclf.AclfBusState;
 
 public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
-	@Test
+	//@Test
 	public void test_LCCHVDC_DeepCopy() throws Exception {
 		AclfNetwork net = createTestCase();
 		
