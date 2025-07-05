@@ -116,7 +116,7 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 		SwitchedShunt svc = AclfAdjustObjectFactory.createSwitchedShunt(bus, 
 				VarCompensationMode.CONTINUOUS, AdjustControlType.POINT_CONTROL).get();
 		svc.setVSpecified(0.9);
-		svc.setQLimit(new LimitType(1.0, 0.0));
+		svc.setBLimit(new LimitType(1.0, 0.0));
 		
 		IpssLogger.ipssLogger.setLevel(Level.INFO);
 		
@@ -171,7 +171,7 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 		SwitchedShunt svc = AclfAdjustObjectFactory.createSwitchedShunt(bus6, 
 				VarCompensationMode.CONTINUOUS, AdjustControlType.POINT_CONTROL).get();
 		svc.setVSpecified(0.9);
-		svc.setQLimit(new LimitType(1.0, 0.0));
+		svc.setBLimit(new LimitType(1.0, 0.0));
 		svc.setRemoteBus(bus1);		
 		
 		//System.out.println(aclfNet.net2String());		
@@ -220,7 +220,7 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 		SwitchedShunt svc = AclfAdjustObjectFactory.createSwitchedShunt(bus, 
 				VarCompensationMode.CONTINUOUS, AdjustControlType.POINT_CONTROL).get();
 		svc.setVSpecified(0.9);
-		svc.setQLimit(new LimitType(1.0, 0.0));
+		svc.setBLimit(new LimitType(1.0, 0.0));
 		
 		// map AclfNet to AclfNetBean
 		AclfNetBean netBean = new AclfNet2AclfBeanMapper().map2Model(net);
