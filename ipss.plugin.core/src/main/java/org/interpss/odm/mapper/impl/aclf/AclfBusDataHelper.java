@@ -556,7 +556,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 			qMin = -indRating.getValue() * factor;
 		}
 
-		svc.setQLimit(new LimitType(qMax, qMin)); // capacitive limit is positive, inductive limit is negative
+		svc.setBLimit(new LimitType(qMax, qMin)); // capacitive limit is positive, inductive limit is negative
 
 		// map control mode
 		VarCompensationMode mode = VarCompensationMode.CONTINUOUS; 
