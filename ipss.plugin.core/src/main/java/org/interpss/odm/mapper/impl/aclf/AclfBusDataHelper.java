@@ -75,7 +75,7 @@ import com.interpss.core.aclf.adj.PQBusLimit;
 import com.interpss.core.aclf.adj.PVBusLimit;
 import com.interpss.core.aclf.adj.BusBranchControlType;
 import com.interpss.core.aclf.adj.SwitchedShunt;
-import com.interpss.core.aclf.adj.VarCompensationMode;
+import com.interpss.core.aclf.adj.AclfAdjustControlMode;
 import com.interpss.core.aclf.adpter.AclfPQGenBusAdapter;
 import com.interpss.core.aclf.adpter.AclfPVGenBusAdapter;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
@@ -486,10 +486,10 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 			
 			swchShunt.setBInit(binit.getValue()*factor);
 			
-			VarCompensationMode mode = xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.CONTINUOUS?
-					VarCompensationMode.CONTINUOUS:(xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.DISCRETE_LOCAL_VOLTAGE ||
+			AclfAdjustControlMode mode = xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.CONTINUOUS?
+					AclfAdjustControlMode.CONTINUOUS:(xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.DISCRETE_LOCAL_VOLTAGE ||
 					xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.DISCRETE_REMOTE_REACTIVE_POWER)?
-					VarCompensationMode.DISCRETE:VarCompensationMode.FIXED;
+					AclfAdjustControlMode.DISCRETE:AclfAdjustControlMode.FIXED;
 			
 			swchShunt.setControlMode(mode);
 
@@ -559,7 +559,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 		svc.setBLimit(new LimitType(qMax, qMin)); // capacitive limit is positive, inductive limit is negative
 
 		// map control mode
-		VarCompensationMode mode = VarCompensationMode.CONTINUOUS; 
+		AclfAdjustControlMode mode = AclfAdjustControlMode.CONTINUOUS; 
 		svc.setControlMode(mode);
 
 		// control type

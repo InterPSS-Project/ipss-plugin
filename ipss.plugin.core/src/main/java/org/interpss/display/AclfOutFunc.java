@@ -36,7 +36,7 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
-import com.interpss.core.aclf.adj.AdjustControlType;
+import com.interpss.core.aclf.adj.AclfAdjustControlType;
 import com.interpss.core.aclf.adj.BusBranchControlType;
 import com.interpss.core.aclf.adj.FunctionLoad;
 import com.interpss.core.aclf.adj.PQBusLimit;
@@ -715,7 +715,7 @@ public class AclfOutFunc {
 					str.append(Number2String.toStr("##0.0000", x.getVcBus()
 							.getVoltageMag(UnitType.PU))
 							+ " ");
-					if (x.getAdjControlType() == AdjustControlType.POINT_CONTROL)
+					if (x.getAdjControlType() == AclfAdjustControlType.POINT_CONTROL)
 						str.append(Number2String.toStr("##0.0000", x
 								.getVSpecified(UnitType.PU))
 								+ " ");
@@ -726,7 +726,7 @@ public class AclfOutFunc {
 					str.append(Number2String.toStr("##0.0000", x
 							.getMvarFlowCalculated(UnitType.PU, baseKva))
 							+ " ");
-					if (x.getAdjControlType() == AdjustControlType.POINT_CONTROL)
+					if (x.getAdjControlType() == AclfAdjustControlType.POINT_CONTROL)
 						str.append("   "
 								+ Number2String.toStr("##0.0000", x
 										.getMvarSpecified(UnitType.PU, baseKva))
@@ -785,7 +785,7 @@ public class AclfOutFunc {
 								.powerTo2From(UnitType.PU).getReal()))
 						+ " ");
 
-				if (x.getAdjControlType() == AdjustControlType.POINT_CONTROL)
+				if (x.getAdjControlType() == AclfAdjustControlType.POINT_CONTROL)
 					str.append(Number2String.toStr("   " + "##0.0000", x
 							.getPSpecified(UnitType.PU, baseKVA))
 							+ "    ");

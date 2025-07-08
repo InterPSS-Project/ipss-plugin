@@ -38,7 +38,7 @@ import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adj.SwitchedShunt;
-import com.interpss.core.aclf.adj.VarCompensationMode;
+import com.interpss.core.aclf.adj.AclfAdjustControlMode;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
@@ -63,7 +63,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		assertTrue("", NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
 		assertTrue("", NumericUtil.equals(swShunt.getBActual(), 0.23637, 0.0001));
 		assertTrue("", NumericUtil.equals(swShunt.getQ(), 0.2, 0.0001));
-		assertTrue("", swShunt.getControlMode() == VarCompensationMode.FIXED);
+		assertTrue("", swShunt.getControlMode() == AclfAdjustControlMode.FIXED);
 		assertTrue("", swShunt.getShuntCompensatorList().size() == 3);
 		
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
@@ -73,7 +73,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		assertTrue("", NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
 		assertTrue("", NumericUtil.equals(swShunt.getBActual(), 0.23637, 0.0001));
 		assertTrue("", NumericUtil.equals(swShunt.getQ(), 0.2, 0.0001));
-		assertTrue("", swShunt.getControlMode() == VarCompensationMode.FIXED);
+		assertTrue("", swShunt.getControlMode() == AclfAdjustControlMode.FIXED);
 		assertTrue("", NumericUtil.equals(swShunt.getVSpecified(), 1.0, 0.0001));
 		assertTrue("", NumericUtil.equals(bus4.getVoltageMag(), 0.91985, 0.0001));
 		
@@ -104,7 +104,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		assertTrue("", NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
 		assertTrue("", NumericUtil.equals(swShunt.getBActual(), 0.23637, 0.0001));
 		assertTrue("", NumericUtil.equals(swShunt.getQ(), 0.2, 0.0001));
-		assertTrue("", swShunt.getControlMode() == VarCompensationMode.FIXED);
+		assertTrue("", swShunt.getControlMode() == AclfAdjustControlMode.FIXED);
 		assertTrue("", swShunt.getShuntCompensatorList().size() == 3);
 		
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
@@ -117,7 +117,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		assertTrue("", NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
 		assertTrue("", NumericUtil.equals(swShunt.getBActual(), 0.23637, 0.0001));
 		assertTrue("", NumericUtil.equals(swShunt.getQ(), 0.2, 0.0001));
-		assertTrue("", swShunt.getControlMode() == VarCompensationMode.FIXED);
+		assertTrue("", swShunt.getControlMode() == AclfAdjustControlMode.FIXED);
 		assertTrue("", NumericUtil.equals(swShunt.getVSpecified(), 1.0, 0.0001));
 		assertTrue("", NumericUtil.equals(bus4.getVoltageMag(), 0.91985, 0.0001));
 		
@@ -148,7 +148,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		assertTrue("", NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
 		assertTrue("", NumericUtil.equals(swShunt.getBActual(), 0.23637, 0.0001));
 		assertTrue("", NumericUtil.equals(swShunt.getQ(), 0.2, 0.0001));
-		assertTrue("", swShunt.getControlMode() == VarCompensationMode.FIXED);
+		assertTrue("", swShunt.getControlMode() == AclfAdjustControlMode.FIXED);
 		assertTrue("", swShunt.getShuntCompensatorList().size() == 3);
 		
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
@@ -162,7 +162,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		assertTrue("", NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
 		assertTrue("", NumericUtil.equals(swShunt.getBActual(), 0.4725, 0.0001));
 		assertTrue("", NumericUtil.equals(swShunt.getQ(), 0.47198, 0.0001));
-		assertTrue("", swShunt.getControlMode() == VarCompensationMode.CONTINUOUS);
+		assertTrue("", swShunt.getControlMode() == AclfAdjustControlMode.CONTINUOUS);
 		assertTrue("", NumericUtil.equals(swShunt.getVSpecified(), 1.0, 0.0001));
 		assertTrue("", NumericUtil.equals(bus4.getVoltageMag(), 0.99945, 0.0001));
 		
@@ -200,7 +200,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		assertTrue("", NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
 		assertTrue("", NumericUtil.equals(swShunt.getBActual(), 0.23637, 0.0001));
 		assertTrue("", NumericUtil.equals(swShunt.getQ(), 0.2, 0.0001));
-		assertTrue("", swShunt.getControlMode() == VarCompensationMode.FIXED);
+		assertTrue("", swShunt.getControlMode() == AclfAdjustControlMode.FIXED);
 		assertTrue("", swShunt.getShuntCompensatorList().size() == 3);
 		
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
@@ -214,7 +214,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		assertTrue("", NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
 		assertTrue("", NumericUtil.equals(swShunt.getBActual(), 0.4727, 0.0001));
 		assertTrue("", NumericUtil.equals(swShunt.getQ(), 0.4723, 0.0001));
-		assertTrue("", swShunt.getControlMode() == VarCompensationMode.DISCRETE);
+		assertTrue("", swShunt.getControlMode() == AclfAdjustControlMode.DISCRETE);
 		assertTrue("", NumericUtil.equals(swShunt.getVSpecified(), 1.0, 0.0001));
 		assertTrue("", NumericUtil.equals(bus4.getVoltageMag(), 0.99953, 0.0001));
 		
