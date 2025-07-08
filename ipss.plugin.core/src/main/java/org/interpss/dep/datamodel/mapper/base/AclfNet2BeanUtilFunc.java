@@ -48,12 +48,12 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.ShuntCompensator;
-import com.interpss.core.aclf.adj.AdjustControlType;
+import com.interpss.core.aclf.adj.AclfAdjustControlType;
 import com.interpss.core.aclf.adj.BusBranchControlType;
 import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.adj.TapControl;
-import com.interpss.core.aclf.adj.VarCompensationMode;
+import com.interpss.core.aclf.adj.AclfAdjustControlMode;
 import com.interpss.core.aclf.adpter.AclfPSXformerAdapter;
 import com.interpss.core.aclf.adpter.AclfXformerAdapter;
 
@@ -253,8 +253,8 @@ public class AclfNet2BeanUtilFunc {
 	
 	private static void mapSwitchShuntData(SwitchedShunt ss, SwitchShuntBean<? extends BaseJSONUtilBean> ssb) {
 		ssb.bInit = ss.getBInit();
-		ssb.controlMode = ss.getControlMode() == VarCompensationMode.CONTINUOUS? VarCompensatorControlModeBean.Continuous:
-			ss.getControlMode() == VarCompensationMode.DISCRETE? VarCompensatorControlModeBean.Discrete:
+		ssb.controlMode = ss.getControlMode() == AclfAdjustControlMode.CONTINUOUS? VarCompensatorControlModeBean.Continuous:
+			ss.getControlMode() == AclfAdjustControlMode.DISCRETE? VarCompensatorControlModeBean.Discrete:
 				VarCompensatorControlModeBean.Fixed;
 		if(ss.getRemoteBus() != null)
 			ssb.remoteBusId = ss.getRemoteBus().getId();
@@ -280,7 +280,7 @@ public class AclfNet2BeanUtilFunc {
 	
 	private static void mapPsXfrData(PSXfrPControl tap, PsXfrTapControlBean<? extends BaseJSONUtilBean> tb) {
 		tb.controlOnFromSide = tap.isControlOnFromSide();
-		tb.controlType = tap.getAdjControlType()==AdjustControlType.POINT_CONTROL? TapControlTypeBean.Point_Control:
+		tb.controlType = tap.getAdjControlType()==AclfAdjustControlType.POINT_CONTROL? TapControlTypeBean.Point_Control:
 			TapControlTypeBean.Range_Control;
 		tb.desiredControlTarget = tap.getPSpecified();
 		tb.flowFrom2To = tap.isFlowFrom2To();
@@ -312,7 +312,7 @@ public class AclfNet2BeanUtilFunc {
 		}
 		
 		tapBean.controlOnFromSide = tap.isControlOnFromSide();
-		tapBean.controlType = tap.getAdjControlType()== AdjustControlType.POINT_CONTROL? TapControlTypeBean.Point_Control:
+		tapBean.controlType = tap.getAdjControlType()== AclfAdjustControlType.POINT_CONTROL? TapControlTypeBean.Point_Control:
 			TapControlTypeBean.Range_Control;
 		if(tap.getDesiredControlRange() != null){
 			tapBean.lowerLimit = tap.getDesiredControlRange().getMin();
