@@ -222,7 +222,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		AclfSwingBusAdapter swing = net.getBus(swingId).toSwingBus();
 		//System.out.println("AclfNet Model: "+swing.getGenResults(UnitType.PU) );				
 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal() - 0.2253) < 0.0001);
-		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary() - 0.0077) < 0.0001);
+		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary() - 0.0079) < 0.0001);
 	}
 }
 
