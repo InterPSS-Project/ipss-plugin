@@ -48,7 +48,7 @@ import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adj.BusBranchControlType;
 import com.interpss.core.aclf.adj.RemoteQBus;
-import com.interpss.core.aclf.adj.VarCompensationMode;
+import com.interpss.core.aclf.adj.AclfAdjustControlMode;
 import com.interpss.core.aclf.adpter.AclfGenBusAdapter;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.aclf.facts.StaticVarCompensator;
@@ -460,7 +460,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		assertTrue("SVC remote control bus is correct", svc1.getRemoteBus().getId().equals("Bus5"));
 
 		//default control mode is continuous
-		assertTrue("SVC control mode is correct", svc1.getControlMode() == VarCompensationMode.CONTINUOUS);
+		assertTrue("SVC control mode is correct", svc1.getControlMode() == AclfAdjustControlMode.CONTINUOUS);
 
 		//control type, default is  bus voltage control
 		assertTrue("SVC control type is correct", svc1.getRemoteQControlType() == BusBranchControlType.BUS_VOLTAGE);
@@ -520,7 +520,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		assertTrue("SVC remote control bus is correct", svc1.getRemoteBus().getId().equals("Bus5"));
 
 		//default control mode is continuous
-		assertTrue("SVC control mode is correct", svc1.getControlMode() == VarCompensationMode.CONTINUOUS);
+		assertTrue("SVC control mode is correct", svc1.getControlMode() == AclfAdjustControlMode.CONTINUOUS);
 
 		//control type, default is  bus voltage control
 		assertTrue("SVC control type is correct", svc1.getRemoteQControlType() == BusBranchControlType.BUS_VOLTAGE);
