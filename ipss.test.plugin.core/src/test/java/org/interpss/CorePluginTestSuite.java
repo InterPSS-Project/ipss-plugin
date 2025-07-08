@@ -67,6 +67,7 @@ import org.interpss.core.zeroz.topo.IEEE14ZeroZBranchFuncLoopTest;
 import org.interpss.core.zeroz.topo.IEEE14ZeroZBranchFuncTest;
 import org.interpss.core.zeroz.topo.ZeroZBranchFuncTest;
 import org.interpss.plugin.beanModel.AclfBeanMapperTest;
+import org.interpss.plugin.lfGCtrl.SwitchedShuntGControlTest;
 import org.interpss.plugin.piecewise.Acsc5BusTestSubAreaNet;
 import org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise;
 import org.interpss.plugin.piecewise.IEEE14TestAclfSubAreaBuild;
@@ -219,6 +220,8 @@ import org.junit.runners.Suite.SuiteClasses;
 	PSSE_IEEE9Bus_Test.class,
 	IEEE9_Dstab_Adapter_Test.class,
 
+	// PSSE Global Adjustment Control
+	SwitchedShuntGControlTest.class,
 	
 	//Acsc5Bus_ODM_TestCase.class,
 	IEEE9Bus_Acsc_Test.class,
