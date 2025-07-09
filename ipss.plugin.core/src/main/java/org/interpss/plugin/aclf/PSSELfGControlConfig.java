@@ -49,7 +49,7 @@ public class PSSELfGControlConfig implements Consumer<LfAdjustAlgorithm>{
   							this.gCtrlSwitchedShunt == SwitchedShunt_Continuous? AclfAdjustControlMode.CONTINUOUS : 
   								AclfAdjustControlMode.DISCRETE);
   			}
-  			else if (bus.isPQBusLimit() || bus.isRemoteQBus()) {
+  			else if (bus.isPVBusLimit() || bus.isRemoteQBus()) {
   				if (this.gCtrlVarLimit == VarLimit_Ignore) {
   					bus.getBusControl().setControlStatus(false);
   				} 
