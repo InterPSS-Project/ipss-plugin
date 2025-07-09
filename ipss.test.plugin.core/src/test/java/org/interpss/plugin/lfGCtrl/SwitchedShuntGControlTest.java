@@ -24,21 +24,19 @@
 
 package org.interpss.plugin.lfGCtrl;
 
-import static org.junit.Assert.assertTrue;
-
 import org.interpss.CorePluginTestSetup;
-import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.plugin.aclf.PSSELfGControlConfig;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.adj.AclfAdjustControlMode;
+import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
@@ -48,7 +46,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		// load the test data
 		AclfNetwork net = IpssAdapter
 				.importAclfNet(
-						"testdata/adpter/psse/PSSE_5Bus_Test_switchShunt.raw")
+						"testData/adpter/psse/PSSE_5Bus_Test_switchShunt.raw")
 				.setFormat(IpssAdapter.FileFormat.PSSE)
 				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_30).load()
 				.getImportedObj();
@@ -57,8 +55,8 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		AclfBus bus4 = net.getBus("Bus4");
 		assertTrue(bus4.isSwitchedShunt());
 		SwitchedShunt swShunt = bus4.getSwitchedShunt();
-		swShunt.setBLimit(new LimitType(3.0*0.23637, 0.0));
-		//System.out.println("Switched Shunt: " + swShunt);
+		//swShunt.setBLimit(new LimitType(3.0*0.23637, 0.0));
+		System.out.println("Switched Shunt: " + swShunt);
 		
 		assertTrue("", NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
 		assertTrue("", NumericUtil.equals(swShunt.getBActual(), 0.23637, 0.0001));
@@ -89,7 +87,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		// load the test data
 		AclfNetwork net = IpssAdapter
 				.importAclfNet(
-						"testdata/adpter/psse/PSSE_5Bus_Test_switchShunt.raw")
+						"testData/adpter/psse/PSSE_5Bus_Test_switchShunt.raw")
 				.setFormat(IpssAdapter.FileFormat.PSSE)
 				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_30).load()
 				.getImportedObj();
@@ -98,7 +96,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		AclfBus bus4 = net.getBus("Bus4");
 		assertTrue(bus4.isSwitchedShunt());
 		SwitchedShunt swShunt = bus4.getSwitchedShunt();
-		swShunt.setBLimit(new LimitType(3.0*0.23637, 0.0));
+		//swShunt.setBLimit(new LimitType(3.0*0.23637, 0.0));
 		//System.out.println("Switched Shunt: " + swShunt);
 		
 		assertTrue("", NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
@@ -133,7 +131,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		// load the test data
 		AclfNetwork net = IpssAdapter
 				.importAclfNet(
-						"testdata/adpter/psse/PSSE_5Bus_Test_switchShunt.raw")
+						"testData/adpter/psse/PSSE_5Bus_Test_switchShunt.raw")
 				.setFormat(IpssAdapter.FileFormat.PSSE)
 				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_30).load()
 				.getImportedObj();
@@ -142,7 +140,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		AclfBus bus4 = net.getBus("Bus4");
 		assertTrue(bus4.isSwitchedShunt());
 		SwitchedShunt swShunt = bus4.getSwitchedShunt();
-		swShunt.setBLimit(new LimitType(3.0*0.23637, 0.0));
+		//swShunt.setBLimit(new LimitType(3.0*0.23637, 0.0));
 		//System.out.println("Switched Shunt: " + swShunt);
 		
 		assertTrue("", NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
@@ -178,7 +176,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		// load the test data
 		AclfNetwork net = IpssAdapter
 				.importAclfNet(
-						"testdata/adpter/psse/PSSE_5Bus_Test_switchShunt.raw")
+						"testData/adpter/psse/PSSE_5Bus_Test_switchShunt.raw")
 				.setFormat(IpssAdapter.FileFormat.PSSE)
 				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_30).load()
 				.getImportedObj();
@@ -189,7 +187,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		SwitchedShunt swShunt = bus4.getSwitchedShunt();
 		// TODO: need to set and init the switched shunt data according to the ShuntCompensatorList
 		// in the PSSE adapter
-		swShunt.setBLimit(new LimitType(3.0*0.23637, 0.0));
+		//swShunt.setBLimit(new LimitType(3.0*0.23637, 0.0));
 		double baseKva = net.getBaseKva();
 		swShunt.getShuntCompensatorList().forEach(comp -> {
 			comp.setUnitQMvar(0.23637*100.0); // UnitQ is in Mvar.
