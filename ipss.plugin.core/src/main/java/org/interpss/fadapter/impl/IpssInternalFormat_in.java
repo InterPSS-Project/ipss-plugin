@@ -42,6 +42,7 @@ import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.ShuntCompensator;
+import com.interpss.core.aclf.ShuntCompensatorType;
 import com.interpss.core.aclf.adj.PVBusLimit;
 import com.interpss.core.aclf.adpter.AclfLineAdapter;
 import com.interpss.core.aclf.adpter.AclfLoadBusAdapter;
@@ -331,7 +332,7 @@ public class IpssInternalFormat_in {
     	if (bus != null) {
     		if (bus.getCompensatorList().size() != 1) {
     			bus.getCompensatorList().clear();
-    			bus.getCompensatorList().add(CoreObjectFactory.createShuntCompensator(bus.getId() + "_QBank"));
+    			bus.getCompensatorList().add(CoreObjectFactory.createShuntCompensator(bus.getId()+"_QBank", ShuntCompensatorType.CAPACITOR));
     		}
     		ShuntCompensator bank = bus.getCompensatorList().get(0);
     		bank.setSteps(1);
