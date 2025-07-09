@@ -71,11 +71,11 @@ import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.ShuntCompensator;
+import com.interpss.core.aclf.adj.AclfAdjustControlMode;
+import com.interpss.core.aclf.adj.BusBranchControlType;
 import com.interpss.core.aclf.adj.PQBusLimit;
 import com.interpss.core.aclf.adj.PVBusLimit;
-import com.interpss.core.aclf.adj.BusBranchControlType;
 import com.interpss.core.aclf.adj.SwitchedShunt;
-import com.interpss.core.aclf.adj.AclfAdjustControlMode;
 import com.interpss.core.aclf.adpter.AclfPQGenBusAdapter;
 import com.interpss.core.aclf.adpter.AclfPVGenBusAdapter;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
@@ -508,20 +508,38 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 		
 			
 			//swchShunt.set
+			double bmin =0, bmax = 0;
+			int i = 1;
 			for(SwitchedShuntBlockXmlType varBankXml:xmlSwitchedShuntData.getBlock()){
-				ShuntCompensator varBank= CoreObjectFactory.createShuntCompensator("QBank");
+				ShuntCompensator varBank= CoreObjectFactory.createShuntCompensator("QBank-"+i++);
 				swchShunt.getShuntCompensatorList().add(varBank);
 				
 				varBank.setSteps(varBankXml.getSteps());
 				ReactivePowerXmlType unitVarXml = varBankXml.getIncrementB();
 				
-				factor = unitVarXml.getUnit()==ReactivePowerUnitType.PU?1.0:
-					unitVarXml.getUnit()==ReactivePowerUnitType.MVAR?1.0E-2:
-						unitVarXml.getUnit()==ReactivePowerUnitType.KVAR?1.0E-5:
-		            		 1.0E-8; 
-				//TODO UnitQMVar is in pu
-				varBank.setUnitQMvar(unitVarXml.getValue()*factor);
+				factor = unitVarXml.getUnit()==ReactivePowerUnitType.PU?100:
+					unitVarXml.getUnit()==ReactivePowerUnitType.MVAR?1.0:
+						unitVarXml.getUnit()==ReactivePowerUnitType.KVAR?1.0E-3:
+		            		 1.0E-6; // VAR->MVA base
+				//TODO UnitQMVar is in MVAR
+				double qmvar = unitVarXml.getValue()*factor;
+				varBank.setUnitQMvar(qmvar);
+				varBank.setStatus(varBankXml.isOffLine() == null ? true : !varBankXml.isOffLine());
+
+				if(varBank.isActive()){
+					//qmvar < 0, add to the bmin, otherwise add to bmax
+					if (qmvar < 0) { //  negative means inductive or reactor bank
+						bmin += varBankXml.getSteps()*qmvar/100.0; // convert to pu based on 100 MVA base
+					} else {
+						bmax += varBankXml.getSteps()*qmvar/100.0; // convert to pu based on 100 MVA base
+					}
+				}
 			}
+
+			//set Blimit
+			swchShunt.setBLimit(new LimitType(bmax,bmin));
+
+
 		}
 	}
 
