@@ -51,13 +51,14 @@ import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.ShuntCompensator;
+import com.interpss.core.aclf.ShuntCompensatorType;
+import com.interpss.core.aclf.adj.AclfAdjustControlMode;
 import com.interpss.core.aclf.adj.AclfAdjustControlType;
+import com.interpss.core.aclf.adj.BusBranchControlType;
 import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.adj.RemoteQBus;
-import com.interpss.core.aclf.adj.BusBranchControlType;
 import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.adj.TapControl;
-import com.interpss.core.aclf.adj.AclfAdjustControlMode;
 import com.interpss.core.aclf.adpter.AclfPVGenBusAdapter;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.net.Area;
@@ -245,7 +246,7 @@ public abstract class BaseAclfBean2AclfNetMapper<
 			ss.setDesiredControlRange(new LimitType(ssb.vmax, ssb.vmin));
 			ss.setQLimit(new LimitType(ssb.qmax, ssb.qmin));
 			for(QBankBean<TBusExt> qbb: ssb.varBankList){
-				ShuntCompensator qb = CoreObjectFactory.createShuntCompensator(ss);
+				ShuntCompensator qb = CoreObjectFactory.createShuntCompensator(ss, ShuntCompensatorType.CAPACITOR);
 				qb.setSteps(qbb.step);
 				qb.setUnitQMvar(qbb.UnitQMvar);
 			}				
