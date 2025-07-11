@@ -24,6 +24,14 @@
 
 package org.interpss.odm.mapper.impl.aclf;
 
+import static org.interpss.odm.mapper.base.ODMFunction.BusXmlRef2BusId;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toActivePowerUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toAngleUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toApparentPowerUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toReactivePowerUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toVoltageUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toYUnit;
+
 import java.util.Optional;
 
 import javax.xml.bind.JAXBElement;
@@ -51,13 +59,6 @@ import org.ieee.odm.schema.VoltageXmlType;
 import org.ieee.odm.schema.YXmlType;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import static org.interpss.odm.mapper.base.ODMFunction.BusXmlRef2BusId;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toActivePowerUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toAngleUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toApparentPowerUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toReactivePowerUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toVoltageUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toYUnit;
 
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
@@ -71,6 +72,7 @@ import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.ShuntCompensator;
+import com.interpss.core.aclf.ShuntCompensatorType;
 import com.interpss.core.aclf.adj.AclfAdjustControlMode;
 import com.interpss.core.aclf.adj.BusBranchControlType;
 import com.interpss.core.aclf.adj.PQBusLimit;
@@ -511,7 +513,8 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 			double bmin =0, bmax = 0;
 			int i = 1;
 			for(SwitchedShuntBlockXmlType varBankXml:xmlSwitchedShuntData.getBlock()){
-				ShuntCompensator varBank= CoreObjectFactory.createShuntCompensator("QBank-"+i++);
+				// TODO: handle the inductive shunt compensator case
+				ShuntCompensator varBank= CoreObjectFactory.createShuntCompensator("QBank-"+i++, ShuntCompensatorType.CAPACITOR);
 				swchShunt.getShuntCompensatorList().add(varBank);
 				
 				varBank.setSteps(varBankXml.getSteps());
