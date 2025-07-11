@@ -1,7 +1,5 @@
 package org.interpss.core.dstab;
 
-import static org.junit.Assert.assertTrue;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -18,6 +16,7 @@ import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.odm.mapper.ODMDStabParserMapper;
 import org.interpss.util.FileUtil;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -46,9 +45,7 @@ public class DStab_ACTIVSg2000Bus_Test  extends DStabTestSetupBase{
 			PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_33);
 			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 					
-					//NOTE: the original IEEE300Bus_modified_noHVDC.raw could result in oscillation for some faults due to capacitor compensation of long distance lines between 120 and 118
-					
-					"testData/adpter/psse/v33/ACTIVSg2000/ACTIVSg2000.raw",
+					"testData/adpter/psse/v33/ACTIVSg2000/ACTIVSg2000.RAW",
 					//"testData/adpter/psse/v33/ACTIVSg2000/ACTIVSg2000_dynamics_v2.dyr"
 					"testData/adpter/psse/v33/ACTIVSg2000/ACTIVSg2000_dyn_cmld_zone3_v1.dyr"
 			}));
