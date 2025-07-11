@@ -24,14 +24,6 @@
 
 package org.interpss.odm.mapper.impl.aclf;
 
-import static org.interpss.odm.mapper.base.ODMFunction.BusXmlRef2BusId;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toActivePowerUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toAngleUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toApparentPowerUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toReactivePowerUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toVoltageUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toYUnit;
-
 import java.util.Optional;
 
 import javax.xml.bind.JAXBElement;
@@ -59,6 +51,13 @@ import org.ieee.odm.schema.VoltageXmlType;
 import org.ieee.odm.schema.YXmlType;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
+import static org.interpss.odm.mapper.base.ODMFunction.BusXmlRef2BusId;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toActivePowerUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toAngleUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toApparentPowerUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toReactivePowerUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toVoltageUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toYUnit;
 
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
@@ -74,6 +73,7 @@ import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.ShuntCompensator;
 import com.interpss.core.aclf.ShuntCompensatorType;
 import com.interpss.core.aclf.adj.AclfAdjustControlMode;
+import com.interpss.core.aclf.adj.AclfAdjustControlType;
 import com.interpss.core.aclf.adj.BusBranchControlType;
 import com.interpss.core.aclf.adj.PQBusLimit;
 import com.interpss.core.aclf.adj.PVBusLimit;
@@ -84,6 +84,7 @@ import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.aclf.facts.StaticVarCompensator;
 import com.interpss.core.acsc.AcscBus;
 import com.interpss.core.acsc.BaseAcscBus;
+import com.interpss.core.net.OriginalDataFormat;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.opf.OpfBus;
@@ -495,8 +496,15 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 			
 			swchShunt.setControlMode(mode);
 
+			//per PSS/E, set the adjustment control type to be range control (the interPSS internal default is point control)
+			if(this.aclfNet.getOriginalDataFormat() == OriginalDataFormat.PSSE) 
+				swchShunt.setAdjControlType(AclfAdjustControlType.RANGE_CONTROL);
+			else
+				//TODO: for other input formats, we set the control type to be point control
+				swchShunt.setAdjControlType(AclfAdjustControlType.POINT_CONTROL);
+
 			//TODO: updated the control mode and support the reactive power range per PSS/E input format
-			if(xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.DISCRETE_LOCAL_VOLTAGE && xmlSwitchedShuntData.getDesiredVoltageRange()!=null){
+			if(xmlSwitchedShuntData.getDesiredVoltageRange()!=null){
 				
 				LimitType vLimit = new LimitType(xmlSwitchedShuntData.getDesiredVoltageRange().getMax(),
 						xmlSwitchedShuntData.getDesiredVoltageRange().getMin());
