@@ -40,8 +40,10 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.zeroz.AclfNetZeroZBranchHelper;
+import com.interpss.core.net.StatusChangeType;
 
 
+// NBModel Step-Test : IEEE14Bus Zero Z Branch Test
 public class IEEE14ZeroZBranchAclfTest extends CorePluginTestSetup {
 	@Test 
 	public void checkData_test() throws  InterpssException {
@@ -91,6 +93,16 @@ public class IEEE14ZeroZBranchAclfTest extends CorePluginTestSetup {
 		assertTrue(net.getBus("Bus71").isActive() && !net.getBus("Bus71").isConnect2ZeroZBranch());
 		assertTrue(net.getBus("Bus14").isActive() && !net.getBus("Bus14").isConnect2ZeroZBranch());
 		
+		// Bus7 is merged to Bus71, not active anymore due to the zeroZ branch merge
+		assertTrue(!net.getBus("Bus7").isActive() && net.getBus("Bus7").getStatusChangeInfo() == StatusChangeType.OFF_ZBR_BUS_MERGE);
+		assertTrue(net.getBus("Bus7").getMerge2BusId().equals("Bus71"));
+		
+		// The branch Bus13->Bus18(1) is reconnected to Bus13->Bus14(1)
+		assertTrue(net.getBranch("Bus13->Bus14(1)").isActive() && 
+				net.getBranch("Bus13->Bus14(1)").getStatusChangeInfo() == StatusChangeType.RECONNECT_ZBR_BUS_MERGE);
+		assertTrue(""+net.getBranch("Bus13->Bus14(1)").getOriginalBranchId(), 
+				net.getBranch("Bus13->Bus14(1)").getOriginalBranchId().equals("Bus13->Bus18(1)"));
+				
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
@@ -103,8 +115,8 @@ public class IEEE14ZeroZBranchAclfTest extends CorePluginTestSetup {
   		// See IEEE14Bus_odm_Test.java for the expected values
   		AclfBus swingBus = (AclfBus)net.getBus("Bus1");
   		AclfSwingBusAdapter swing = swingBus.toSwingBus();
-		System.out.println(swing.getGenResults(UnitType.PU).getReal());
-		System.out.println(swing.getGenResults(UnitType.PU).getImaginary());
+		//System.out.println(swing.getGenResults(UnitType.PU).getReal());
+		//System.out.println(swing.getGenResults(UnitType.PU).getImaginary());
  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.32393)<0.0001);
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.16549)<0.0001);
     }
