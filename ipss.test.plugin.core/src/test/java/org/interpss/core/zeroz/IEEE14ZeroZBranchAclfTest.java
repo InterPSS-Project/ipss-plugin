@@ -82,11 +82,7 @@ public class IEEE14ZeroZBranchAclfTest extends CorePluginTestSetup {
 		/*
 		 * process zeroZ branches by merging the zeroZ branches and connected buses to the retained bus
 		 */
-		AclfNetZeroZBranchHelper helper = new AclfNetZeroZBranchHelper(net);
-		net.getBusList().forEach(bus -> {
-			if (bus.isConnect2ZeroZBranch()) 
-				helper.zeroZBranchBusMerge(bus.getId());
-		});
+		new AclfNetZeroZBranchHelper(net).consolidate();
 	  	
 		assertTrue(net.getBus("Bus1").isActive() && !net.getBus("Bus1").isConnect2ZeroZBranch());
 		// please note that Bus71 is retained, instead of Bus7 
