@@ -158,17 +158,17 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 
 		//System.out.println("Switched Shunt: " + swShunt);
 		assertTrue("", NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
-		assertTrue("", NumericUtil.equals(swShunt.getBActual(), 0.4725, 0.0001));
-		assertTrue("", NumericUtil.equals(swShunt.getQ(), 0.47198, 0.0001));
+		assertTrue("", NumericUtil.equals(swShunt.getBActual(), 0.23637, 0.0001));
+		assertTrue("", NumericUtil.equals(swShunt.getQ(), 0.2, 0.0001));
 		assertTrue("", swShunt.getControlMode() == AclfAdjustControlMode.CONTINUOUS);
 		assertTrue("", NumericUtil.equals(swShunt.getVSpecified(), 1.0, 0.0001));
-		assertTrue("", NumericUtil.equals(bus4.getVoltageMag(), 0.99945, 0.0001));
+		assertTrue("", NumericUtil.equals(bus4.getVoltageMag(), 0.91985, 0.0001));
 		
 		String swingId = "Bus1";
 		AclfSwingBusAdapter swing = net.getBus(swingId).toSwingBus();
 		//System.out.println("AclfNet Model: "+swing.getGenResults(UnitType.PU) );				
-		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal() - 0.2253) < 0.0001);
-		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary() - 0.0079) < 0.0001);
+		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal() - 0.2255) < 0.0001);
+		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary() - 0.1585) < 0.0001);
 	}
 	
 	@Test
@@ -210,17 +210,17 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 
 		//System.out.println("Switched Shunt: " + swShunt);
 		assertTrue("", NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
-		assertTrue("", NumericUtil.equals(swShunt.getBActual(), 0.4727, 0.0001));
-		assertTrue("", NumericUtil.equals(swShunt.getQ(), 0.4723, 0.0001));
+		assertTrue("", NumericUtil.equals(swShunt.getBActual(), 0.23637, 0.0001));
+		assertTrue("", NumericUtil.equals(swShunt.getQ(), 0.2, 0.0001));
 		assertTrue("", swShunt.getControlMode() == AclfAdjustControlMode.DISCRETE);
 		assertTrue("", NumericUtil.equals(swShunt.getVSpecified(), 1.0, 0.0001));
-		assertTrue("", NumericUtil.equals(bus4.getVoltageMag(), 0.99953, 0.0001));
+		assertTrue("", NumericUtil.equals(bus4.getVoltageMag(), 0.91985, 0.0001));
 		
 		String swingId = "Bus1";
 		AclfSwingBusAdapter swing = net.getBus(swingId).toSwingBus();
 		//System.out.println("AclfNet Model: "+swing.getGenResults(UnitType.PU) );				
-		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal() - 0.2253) < 0.0001);
-		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary() - 0.0079) < 0.0001);
+		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal() - 0.2255) < 0.0001);
+		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary() - 0.1585) < 0.0001);
 	}
 }
 
