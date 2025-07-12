@@ -131,18 +131,71 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
         LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 		//algo.getLfAdjAlgo().setApplyAdjustAlgo(false); // Disable adjustment algorithm (locked shunt)
 		algo.setMaxIterations(30);
+        algo.setTolerance(0.0001);
 	  	algo.loadflow();
 	  	
   		assertTrue("Load flow should converge with locked shunt", net.isLfConverged());
 
          //printout the power flow results
-  		//System.out.println(AclfOutFunc.loadFlowSummary(net));
+  		System.out.println(AclfOutFunc.loadFlowSummary(net));
+
+        /*
+         * TODO: Error here
+         * InterPSS results: the dQ max is more than the tolerance, but it was determined as converged above 
+         *            Max Power Mismatches
+             Bus              dPmax       Bus              dQmax
+            -------------------------------------------------------
+            Bus3             0.000000  Bus4             0.079174 (pu)
+                            0.0153480                7917.427899 (kva)
+         */
+
+        //the PSS/E result is 47.2 MVAR, two banks of 23.6 MVAR each are switched on
+        assertEquals("Switched shunt Q at Bus 4", 47.2/100.0, 
+        		bus4.getSwitchedShunt().getQ(), 0.01);
+
+        assertTrue("Bus 4 voltage should be within reasonable range", 
+            bus4.getVoltageMag() > 0.95 && bus4.getVoltageMag() < 1.05);
+        
+        // the bus 4 voltage mag is 0.9997
+        assertEquals("Bus 4 voltage mag", 0.9997, bus4.getVoltageMag(), 0.0001);
+
+
+	}
+
+
+    @Test
+	public void test_5Bus_SwitchedShunt_discrete_swictchedoff() throws Exception {
+		IpssLogger.getLogger().setLevel(Level.INFO);
+		AclfNetwork net = createTestCase();
+		
+
+  		
+  		// Verify that the system still converges with fixed shunt compensation
+  		AclfBus bus4 = net.getBus("Bus4");
+  		assertTrue("Bus 4 should exist", bus4 != null);
+  		assertTrue("Bus 4 should have switched shunt", bus4.isSwitchedShunt());
+
+        //change the control mode to discrete
+        bus4.getSwitchedShunt().setControlMode(AclfAdjustControlMode.DISCRETE);
+        bus4.getSwitchedShunt().setDesiredControlRange(new LimitType(0.89, 0.85));
+
+        System.out.println(bus4.getSwitchedShunt().toString());
+
+        LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		//algo.getLfAdjAlgo().setApplyAdjustAlgo(false); // Disable adjustment algorithm (locked shunt)
+		algo.setMaxIterations(30);
+	  	algo.loadflow();
+	  	
+  		assertTrue("Load flow should converge with locked shunt", net.isLfConverged());
+
+         //printout the power flow results
+  		System.out.println(AclfOutFunc.loadFlowSummary(net));
 
         assertEquals("Switched shunt Q at Bus 4", 0/100.0, 
         		bus4.getSwitchedShunt().getQ(), 0.01);
 
         assertTrue("Bus 4 voltage should be within reasonable range", 
-            bus4.getVoltageMag() > 0.95 && bus4.getVoltageMag() < 1.05);
+            bus4.getVoltageMag() > 0.845 && bus4.getVoltageMag() < 0.895);
 
 
 	}
