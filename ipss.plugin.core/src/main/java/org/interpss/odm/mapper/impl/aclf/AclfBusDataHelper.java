@@ -545,6 +545,9 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 						bmax += varBankXml.getSteps()*qmvar/100.0; // convert to pu based on 100 MVA base
 					}
 				}
+
+				//calculate the B value (the total capacitive or inductive susceptance) for the bank
+				varBank.calB(this.aclfNet.getBaseKva());
 			}
 
 			//set Blimit
