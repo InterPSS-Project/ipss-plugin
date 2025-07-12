@@ -24,8 +24,6 @@
 
 package org.interpss.odm.mapper.impl.dstab;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
-
 import javax.xml.bind.JAXBElement;
 
 import org.ieee.odm.model.dstab.DStabModelParser;
@@ -59,6 +57,7 @@ import org.interpss.odm.mapper.impl.acsc.AbstractODMAcscParserMapper;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.msg.IPSSMsgHub;
+import static com.interpss.common.util.IpssLogger.ipssLogger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.net.Branch;
@@ -241,7 +240,7 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 		
 		// load model
 		
-		if(dstabBusXml.getLoadData().getContributeLoad().size() > 0){
+		if(dstabBusXml.getLoadData()!= null && dstabBusXml.getLoadData().getContributeLoad().size() > 0){
 				for(JAXBElement<? extends LoadflowLoadDataXmlType> dynLoadModel:dstabBusXml.getLoadData().getContributeLoad()){
 					DStabLoadDataXmlType dynLoad =(DStabLoadDataXmlType) dynLoadModel.getValue();
 					if(dynLoad!=null){
