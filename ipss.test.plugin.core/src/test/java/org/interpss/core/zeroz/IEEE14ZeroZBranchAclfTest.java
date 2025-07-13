@@ -43,7 +43,7 @@ import com.interpss.core.funcImpl.zeroz.AclfNetZeroZBranchHelper;
 import com.interpss.core.net.StatusChangeType;
 
 
-// NBModel Step-Test : IEEE14Bus Zero Z Branch Test
+// ZeroZBranch Mark : IEEE14Bus Zero Z Branch Test
 public class IEEE14ZeroZBranchAclfTest extends CorePluginTestSetup {
 	@Test 
 	public void checkData_test() throws  InterpssException {

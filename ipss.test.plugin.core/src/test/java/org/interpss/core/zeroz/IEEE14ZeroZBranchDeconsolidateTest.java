@@ -1,4 +1,4 @@
-package org.interpss.core.zeroz.topo;
+package org.interpss.core.zeroz;
 
 import static org.junit.Assert.assertTrue;
 
@@ -17,7 +17,7 @@ import com.interpss.core.funcImpl.AclfNetObjectComparator;
 import com.interpss.core.funcImpl.zeroz.AclfNetZeroZBranchHelper;
 import com.interpss.core.funcImpl.zeroz.AclfNetZeroZDeconsolidator;
 
-//NBModel Step-Test : IEEE14Bus Zero Z Branch Deconsolidation Test
+//ZeroZBranch Mark : IEEE14Bus Zero Z Branch Deconsolidation Test
 public class IEEE14ZeroZBranchDeconsolidateTest extends CorePluginTestSetup {
 	@Test 
 	public void test() throws  InterpssException {
@@ -39,7 +39,7 @@ public class IEEE14ZeroZBranchDeconsolidateTest extends CorePluginTestSetup {
 	  	//System.out.println("Active Bus & Branch: " + net.getNoActiveBus() + " " + net.getNoActiveBranch());
   		assertTrue((net.getNoActiveBus() == 14 && net.getNoActiveBranch() == 20));
 
-  		new AclfNetZeroZDeconsolidator(net).deconsolidate();
+  		new AclfNetZeroZDeconsolidator(net).deconsolidate(false);
 		
 	  	//System.out.println("Active Bus & Branch: " + net.getNoActiveBus() + " " + net.getNoActiveBranch());
   		assertTrue((net.getNoActiveBus() == 23 && net.getNoActiveBranch() == 30));
@@ -62,7 +62,7 @@ public class IEEE14ZeroZBranchDeconsolidateTest extends CorePluginTestSetup {
 
 		// (2) Deconsolidate the network by restoring the buses and branches 
 		// that were deactivated during the zero-Z branch bus merge process
-  		new AclfNetZeroZDeconsolidator(net).deconsolidate();
+  		new AclfNetZeroZDeconsolidator(net).deconsolidate(false);
 		
 		/*
 		 * (3) process zeroZ branches again.
@@ -122,7 +122,7 @@ public class IEEE14ZeroZBranchDeconsolidateTest extends CorePluginTestSetup {
 	  	//System.out.println("Active Bus & Branch: " + net.getNoActiveBus() + " " + net.getNoActiveBranch());
   		assertTrue((net.getNoActiveBus() == 14 && net.getNoActiveBranch() == 20));
 
-  		new AclfNetZeroZDeconsolidator(net).deconsolidate();
+  		new AclfNetZeroZDeconsolidator(net).deconsolidate(true);
 		
 	  	//System.out.println("Active Bus & Branch: " + net.getNoActiveBus() + " " + net.getNoActiveBranch());
   		assertTrue((net.getNoActiveBus() == 23 && net.getNoActiveBranch() == 30));
