@@ -29,8 +29,10 @@ import static org.junit.Assert.assertTrue;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.display.AclfOutFunc;
+import org.interpss.numeric.datatype.ComplexFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.Test;
@@ -41,9 +43,9 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.core.funcImpl.AclfNetInfoHelper;
 import com.interpss.core.funcImpl.zeroz.AclfNetZeroZBranchHelper;
 import com.interpss.core.funcImpl.zeroz.AclfNetZeroZDeconsolidator;
+import com.interpss.core.funcImpl.zeroz.dep.ZeroZBranchNetHelper;
 
 
 // ZeroZBranch Mark : IEEE14Bus Zero Z Branch Test
@@ -98,7 +100,15 @@ public class IEEE14ZeroZBranchAclfDeconTest extends CorePluginTestSetup {
   		//System.out.println(AclfOutFunc.loadFlowSummary(net));
   		net.getBusList().forEach(bus -> {
   			if (bus.isConnect2ZeroZBranch()) {
-  				// 
+  				ZeroZBranchNetHelper helper = new ZeroZBranchNetHelper(true);
+  				try {
+  					System.out.println("Bus " + bus.getId() + " is connected to zero Z branch, calculating power into net...");
+					Complex pIntoNet = helper.powerIntoNet(bus);
+					System.out.println("Bus " + bus.getId() + " power into net: " + ComplexFunc.toStr(pIntoNet));
+				} catch (InterpssException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
   			} else {
   				String result = AclfOutFunc.busLfSummary(bus, true);
   				//System.out.println(AclfOutFunc.busLfSummary(bus, true));
