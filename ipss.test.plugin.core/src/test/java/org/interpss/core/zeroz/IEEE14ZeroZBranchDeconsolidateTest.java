@@ -38,11 +38,18 @@ public class IEEE14ZeroZBranchDeconsolidateTest extends CorePluginTestSetup {
 		
 	  	//System.out.println("Active Bus & Branch: " + net.getNoActiveBus() + " " + net.getNoActiveBranch());
   		assertTrue((net.getNoActiveBus() == 14 && net.getNoActiveBranch() == 20));
-
+  		assertTrue(net.getBus("Bus14").getContributeLoadList().size() == 2);
+  		assertTrue(net.getBus("Bus14_1").getContributeLoadList().size() == 1);
+  		assertTrue(net.getBus("Bus14_1").getContributeLoadList().get(0).isActive() == false);
+  		
   		new AclfNetZeroZDeconsolidator(net).deconsolidate(false);
 		
 	  	//System.out.println("Active Bus & Branch: " + net.getNoActiveBus() + " " + net.getNoActiveBranch());
   		assertTrue((net.getNoActiveBus() == 23 && net.getNoActiveBranch() == 30));
+  		assertTrue(net.getBus("Bus14").getContributeLoadList().size() == 2);
+  		assertTrue(net.getBus("Bus14").getContributeLoadList().get(1).isActive() == false);
+  		assertTrue(net.getBus("Bus14_1").getContributeLoadList().size() == 1);
+  		assertTrue(net.getBus("Bus14_1").getContributeLoadList().get(0).isActive());
 	}
 	
 	@Test 
@@ -92,8 +99,8 @@ public class IEEE14ZeroZBranchDeconsolidateTest extends CorePluginTestSetup {
   		AclfSwingBusAdapter swing = swingBus.toSwingBus();
 		//System.out.println(swing.getGenResults(UnitType.PU).getReal());
 		//System.out.println(swing.getGenResults(UnitType.PU).getImaginary());
- 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.23958)<0.0001);
-  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.15687)<0.0001);
+ 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.3239)<0.0001);
+  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.1654)<0.0001);
 	}
 	
 	// Compare the network before and after zero-Z branch consolidation.

@@ -74,8 +74,8 @@ public class IEEE14ZeroZBranchAclfDeconTest extends CorePluginTestSetup {
   		AclfSwingBusAdapter swing = swingBus.toSwingBus();
 		//System.out.println(swing.getGenResults(UnitType.PU).getReal());
 		//System.out.println(swing.getGenResults(UnitType.PU).getImaginary());
- 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.23958)<0.0001);
-  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.15687)<0.0001);
+ 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.3239)<0.0001);
+  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.1654)<0.0001);
   		
   		Map<String,String> results = new HashMap<>();
   		net.getBusList().forEach(bus -> {
@@ -85,13 +85,15 @@ public class IEEE14ZeroZBranchAclfDeconTest extends CorePluginTestSetup {
   		});
   		
   		//System.out.println(net.getBus("Bus4").toString(net.getBaseKva()));
-  		AclfNetInfoHelper.outputBusAclfDebugInfo(net, "Bus4", false);
+  		//AclfNetInfoHelper.outputBusAclfDebugInfo(net, "Bus4", false);
+  		//AclfNetInfoHelper.outputBusAclfDebugInfo(net, "Bus71", false);
   		
   		// Deconsolidate the network, i.e., restore the zeroZ branches and connected buses to the original state
   		new AclfNetZeroZDeconsolidator(net).deconsolidate(true);
   		
   		//System.out.println(net.getBus("Bus4").toString(net.getBaseKva()));
-  		AclfNetInfoHelper.outputBusAclfDebugInfo(net, "Bus4", false);
+  		//AclfNetInfoHelper.outputBusAclfDebugInfo(net, "Bus4", false);
+  		//AclfNetInfoHelper.outputBusAclfDebugInfo(net, "Bus73", false);
   		
   		//System.out.println(AclfOutFunc.loadFlowSummary(net));
   		net.getBusList().forEach(bus -> {
