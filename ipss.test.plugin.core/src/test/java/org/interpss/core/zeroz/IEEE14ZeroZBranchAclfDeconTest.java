@@ -45,7 +45,7 @@ import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.zeroz.AclfNetZeroZBranchHelper;
 import com.interpss.core.funcImpl.zeroz.AclfNetZeroZDeconsolidator;
-import com.interpss.core.funcImpl.zeroz.dep.ZeroZBranchNetHelper;
+import com.interpss.core.funcImpl.zeroz.ZbrLfResultUtil;
 
 
 // ZeroZBranch Mark : IEEE14Bus Zero Z Branch Test
@@ -53,7 +53,7 @@ public class IEEE14ZeroZBranchAclfDeconTest extends CorePluginTestSetup {
 	@Test 
 	public void test() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/zeroz/Ieee14Bus_breaker_1.xml")
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/zeroz/Ieee14Bus_breaker.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();
@@ -100,10 +100,8 @@ public class IEEE14ZeroZBranchAclfDeconTest extends CorePluginTestSetup {
   		//System.out.println(AclfOutFunc.loadFlowSummary(net));
   		net.getBusList().forEach(bus -> {
   			if (bus.isConnect2ZeroZBranch()) {
-  				ZeroZBranchNetHelper helper = new ZeroZBranchNetHelper(true);
   				try {
-  					System.out.println("Bus " + bus.getId() + " is connected to zero Z branch, calculating power into net...");
-					Complex pIntoNet = helper.powerIntoNet(bus);
+					Complex pIntoNet = ZbrLfResultUtil.powerIntoNet(bus);
 					System.out.println("Bus " + bus.getId() + " power into net: " + ComplexFunc.toStr(pIntoNet));
 				} catch (InterpssException e) {
 					// TODO Auto-generated catch block
