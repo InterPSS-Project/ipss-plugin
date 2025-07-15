@@ -22,7 +22,7 @@ public class IEEE14ZeroZBranchDeconsolidateTest extends CorePluginTestSetup {
 	@Test 
 	public void test() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/zeroz/Ieee14Bus_breaker_1.xml")
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/zeroz/Ieee14Bus_breaker_loop.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();
@@ -55,7 +55,7 @@ public class IEEE14ZeroZBranchDeconsolidateTest extends CorePluginTestSetup {
 	@Test 
 	public void testAclf() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/zeroz/Ieee14Bus_breaker_1.xml")
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/zeroz/Ieee14Bus_breaker.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();
@@ -108,7 +108,7 @@ public class IEEE14ZeroZBranchDeconsolidateTest extends CorePluginTestSetup {
 	//@Test 
 	public void testCompare() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/zeroz/Ieee14Bus_breaker_1.xml")
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/zeroz/Ieee14Bus_breaker.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();
