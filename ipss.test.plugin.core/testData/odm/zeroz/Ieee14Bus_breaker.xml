@@ -135,11 +135,6 @@
                 <voltage unit="PU" value="1.062"/>
                 <angle unit="DEG" value="-13.37"/>
             </aclfBus>                                    
-            <aclfBus id="Bus74" offLine="false" number="74" zoneNumber="1" areaNumber="1" name="Bus 7     ZV">
-                <baseVoltage unit="KV" value="35.0"/>
-                <voltage unit="PU" value="1.062"/>
-                <angle unit="DEG" value="-13.37"/>
-            </aclfBus>
             <aclfBus id="Bus8" offLine="false" number="8" zoneNumber="1" areaNumber="1" name="Bus 8     TV">
                 <baseVoltage unit="KV" value="10.0"/>
                 <voltage unit="PU" value="1.09"/>
@@ -440,21 +435,6 @@
                 <ratingLimit/>
                 <lineInfo><type>Breaker</type></lineInfo>
             </aclfLine>
-            <aclfLine circuitId="1" id="Bus71_to_Bus74_cirId_1" offLine="false" zoneNumber="1" areaNumber="1">
-                <fromBus idRef="Bus71"/>
-                <toBus idRef="Bus74"/>
-                <z unit="PU" im="0.00000001" re="0.00000001"/>
-                <ratingLimit/>
-                <lineInfo><type>Breaker</type></lineInfo>
-            </aclfLine>
-            <aclfLine circuitId="1" id="Bus72_to_Bus74_cirId_1" offLine="false" zoneNumber="1" areaNumber="1">
-                <fromBus idRef="Bus72"/>
-                <toBus idRef="Bus74"/>
-                <z unit="PU" im="0.00000001" re="0.00000001"/>
-                <ratingLimit/>
-                <lineInfo><type>Breaker</type></lineInfo>
-            </aclfLine>
-            
             
             <aclfLine circuitId="1" id="Bus9_to_Bus10_cirId_1" offLine="false" zoneNumber="1" areaNumber="1">
                 <fromBus idRef="Bus9"/>
