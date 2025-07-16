@@ -10,6 +10,7 @@ import org.junit.Test;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
+import com.interpss.core.aclf.AclfNetModelType;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -26,6 +27,7 @@ public class IEEE14ZeroZBranchDeconsolidateTest extends CorePluginTestSetup {
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();
+		net.setAclfNetModelType(AclfNetModelType.ZBR_MODEL);
 	  	//System.out.println(net.net2String());
 		
 	  	//System.out.println("Active Bus & Branch: " + net.getNoActiveBus() + " " + net.getNoActiveBranch());
@@ -59,6 +61,7 @@ public class IEEE14ZeroZBranchDeconsolidateTest extends CorePluginTestSetup {
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();
+		net.setAclfNetModelType(AclfNetModelType.ZBR_MODEL);
 	  	//System.out.println(net.net2String());
 		
 		/*
@@ -112,6 +115,7 @@ public class IEEE14ZeroZBranchDeconsolidateTest extends CorePluginTestSetup {
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();
+		net.setAclfNetModelType(AclfNetModelType.ZBR_MODEL);
 	  	//System.out.println(net.net2String());
 		
 	  	//System.out.println("Active Bus & Branch: " + net.getNoActiveBus() + " " + net.getNoActiveBranch());
