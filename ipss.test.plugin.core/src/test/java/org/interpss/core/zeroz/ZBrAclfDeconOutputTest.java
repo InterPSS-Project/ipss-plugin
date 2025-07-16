@@ -22,7 +22,6 @@ import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.zeroz.AclfNetZeroZBranchHelper;
 import com.interpss.core.funcImpl.zeroz.AclfNetZeroZDeconsolidator;
-import com.interpss.core.funcImpl.zeroz.ZbrLfResultUtil;
 
 
 // ZeroZBranch Mark : IEEE14Bus Zero Z Branch Test
@@ -56,10 +55,29 @@ public class ZBrAclfDeconOutputTest extends CorePluginTestSetup {
 		//System.out.println(swing.getGenResults(UnitType.PU).getImaginary());
  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.3239)<0.0001);
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.1654)<0.0001);
-  		  		
+  		
+  		// cashe the bus and branch results for comparison after deconsolidation
+  		//System.out.println(AclfOutFunc.loadFlowSummary(net));
+  		Map<String,String> results = new HashMap<>();
+  		net.getBusList().stream()
+  			.filter(bus -> bus.isActive())
+  			.forEach(bus -> {
+	  			String result = AclfOutFunc.busLfSummary(bus, true);
+	  			//System.out.println(result);
+	  			results.put(bus.getId(), result);
+	  		});
+  		
   		// Deconsolidate the network, i.e., restore the zeroZ branches and connected buses to the original state
   		new AclfNetZeroZDeconsolidator(net).deconsolidate(true);
   		
-  		System.out.println(AclfOutFunc.loadFlowSummary(net));
+  		//System.out.println(AclfOutFunc.loadFlowSummary(net));
+  		net.getBusList().forEach(bus -> {
+  			if (results.get(bus.getId()) != null) {
+  				String result = AclfOutFunc.busLfSummary(bus, true);
+  				//System.out.println(AclfOutFunc.busLfSummary(bus, true));
+  				assertTrue("Bus " + bus.getId() + " results do not match", 
+  						results.get(bus.getId()).equals(result));
+  			}
+  		});
     }
 }
