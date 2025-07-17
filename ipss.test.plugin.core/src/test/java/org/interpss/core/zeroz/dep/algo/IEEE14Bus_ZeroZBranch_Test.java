@@ -22,7 +22,7 @@
   *
   */
 
-package org.interpss.core.zeroz.algo;
+package org.interpss.core.zeroz.dep.algo;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
@@ -41,12 +41,12 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.BranchFlowDirection;
 
-
+@Deprecated
 public class IEEE14Bus_ZeroZBranch_Test extends CorePluginTestSetup {
 	@Test 
 	public void regularMethod() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/ieee14Bus_breaker.xml")
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/zeroz/ieee14Bus_breaker.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();
