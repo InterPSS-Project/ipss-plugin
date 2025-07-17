@@ -3,6 +3,68 @@
   "time": "2024-03-15T00:15:00",
   "contingencyRiskInfoList": [
     {
+      "outageBranchId": "湖南.三江口A1厂/#3变-高",
+      "outageType": "变压器",
+      "failureDeviceInfoList": [
+        {
+          "name": "湖南.三江口A1厂/#3变-高",
+          "subName": "湖南.三江口A1厂",
+          "type": "Transformer",
+          "voltageKv": 230.0,
+          "noDeviceInVoltage": "1",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.三江口A1厂/10kV.#8母线",
+          "subName": "湖南.三江口A1厂",
+          "type": "Bus",
+          "voltageKv": 10.5,
+          "noDeviceInVoltage": "1",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.三江口A1厂/10kV.#7机",
+          "subName": "湖南.三江口A1厂",
+          "type": "Unit",
+          "voltageKv": 10.5,
+          "originalPowerPu": "0.12",
+          "subType": "发电厂"
+        }
+      ],
+      "disconctionInfo": [
+        {
+          "index": 1,
+          "genPu": 0.0,
+          "loadPu": 0.0,
+          "anyActiveGen": false,
+          "areaName": "张家界"
+        },
+        {
+          "index": 2,
+          "genPu": 0.12,
+          "loadPu": 0.0,
+          "anyActiveGen": true,
+          "areaName": "张家界"
+        }
+      ],
+      "isDisconctionFromAreaGrid": false,
+      "totalLoadInfo": {
+        "name": "湖南",
+        "loadLevelMw": 19752.62,
+        "loadReductionMw": 0.0,
+        "genReductionMw": 12.0
+      },
+      "cityLoadInfo": [
+        {
+          "name": "张家界",
+          "loadLevelMw": 306.97,
+          "loadReductionMw": 0.0,
+          "genReductionMw": 12.0
+        }
+      ],
+      "planRisk": false
+    },
+    {
       "outageBranchId": "湖南.双漳线",
       "outageType": "线路",
       "failureDeviceInfoList": [
@@ -152,6 +214,61 @@
       "planRisk": false
     },
     {
+      "outageBranchId": "湖南.华电长沙A5厂/#2变",
+      "outageType": "变压器",
+      "failureDeviceInfoList": [
+        {
+          "name": "湖南.华电长沙A5厂/20kV.#2机",
+          "subName": "湖南.华电长沙A5厂",
+          "type": "Unit",
+          "voltageKv": 20.0,
+          "originalPowerPu": "3.0",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.华电长沙/20kV.#2机厂用电",
+          "subName": "湖南.华电长沙A5厂",
+          "type": "Load",
+          "voltageKv": 20.0,
+          "originalPowerPu": "0.15000000000000002",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.华电长沙A5厂/#2变",
+          "subName": "湖南.华电长沙A5厂",
+          "type": "Transformer",
+          "voltageKv": 525.0,
+          "noDeviceInVoltage": "1",
+          "subType": "发电厂"
+        }
+      ],
+      "disconctionInfo": [
+        {
+          "index": 1,
+          "genPu": 3.0,
+          "loadPu": 0.15000000000000002,
+          "anyActiveGen": true,
+          "areaName": "长沙"
+        }
+      ],
+      "isDisconctionFromAreaGrid": false,
+      "totalLoadInfo": {
+        "name": "湖南",
+        "loadLevelMw": 19752.62,
+        "loadReductionMw": 15.000000000000002,
+        "genReductionMw": 300.0
+      },
+      "cityLoadInfo": [
+        {
+          "name": "长沙",
+          "loadLevelMw": 4690.74,
+          "loadReductionMw": 15.000000000000002,
+          "genReductionMw": 300.0
+        }
+      ],
+      "planRisk": false
+    },
+    {
       "outageBranchId": "华中.岳楚Ⅰ线",
       "outageType": "线路",
       "failureDeviceInfoList": [
@@ -221,6 +338,146 @@
       "planRisk": false
     },
     {
+      "outageBranchId": "湖南.沙坪站/#2变-高",
+      "outageType": "变压器",
+      "failureDeviceInfoList": [
+        {
+          "name": "湖南.沙坪站/35kV.#2母",
+          "subName": "华中.沙坪站",
+          "type": "Bus",
+          "voltageKv": 35.0,
+          "noDeviceInVoltage": "1",
+          "subType": "变电站"
+        },
+        {
+          "name": "湖南.沙坪站/#2变-高",
+          "subName": "华中.沙坪站",
+          "type": "Transformer",
+          "voltageKv": 525.0,
+          "noDeviceInVoltage": "1",
+          "subType": "变电站"
+        }
+      ],
+      "disconctionInfo": [
+        {
+          "index": 1,
+          "genPu": 0.0,
+          "loadPu": 0.0,
+          "anyActiveGen": false,
+          "areaName": "长沙"
+        },
+        {
+          "index": 2,
+          "genPu": 0.0,
+          "loadPu": 0.0,
+          "anyActiveGen": false,
+          "areaName": "长沙"
+        }
+      ],
+      "isDisconctionFromAreaGrid": false,
+      "totalLoadInfo": {
+        "name": "湖南",
+        "loadLevelMw": 19752.62,
+        "loadReductionMw": 0.0,
+        "genReductionMw": 0.0
+      },
+      "cityLoadInfo": [],
+      "planRisk": false
+    },
+    {
+      "outageBranchId": "湖南.酃湖站/#2变-高",
+      "outageType": "变压器",
+      "failureDeviceInfoList": [
+        {
+          "name": "湖南.酃湖站/#2变-高",
+          "subName": "湖南.酃湖站",
+          "type": "Transformer",
+          "voltageKv": 230.0,
+          "noDeviceInVoltage": "1",
+          "subType": "变电站"
+        }
+      ],
+      "disconctionInfo": [
+        {
+          "index": 1,
+          "genPu": 0.0,
+          "loadPu": 0.0,
+          "anyActiveGen": false,
+          "areaName": "衡阳"
+        },
+        {
+          "index": 2,
+          "genPu": 0.0,
+          "loadPu": 0.0,
+          "anyActiveGen": false,
+          "areaName": "衡阳"
+        },
+        {
+          "index": 3,
+          "genPu": 0.0,
+          "loadPu": 0.0,
+          "anyActiveGen": false,
+          "areaName": "衡阳"
+        }
+      ],
+      "isDisconctionFromAreaGrid": false,
+      "totalLoadInfo": {
+        "name": "湖南",
+        "loadLevelMw": 19752.62,
+        "loadReductionMw": 0.0,
+        "genReductionMw": 0.0
+      },
+      "cityLoadInfo": [],
+      "planRisk": false
+    },
+    {
+      "outageBranchId": "湖南.楚湖站/#4变-高",
+      "outageType": "变压器",
+      "failureDeviceInfoList": [
+        {
+          "name": "湖南.楚湖站/#4变-高",
+          "subName": "华中.楚湖站",
+          "type": "Transformer",
+          "voltageKv": 525.0,
+          "noDeviceInVoltage": "1",
+          "subType": "变电站"
+        },
+        {
+          "name": "湖南.楚湖站/35kV.Ⅳ母",
+          "subName": "华中.楚湖站",
+          "type": "Bus",
+          "voltageKv": 35.0,
+          "noDeviceInVoltage": "1",
+          "subType": "变电站"
+        }
+      ],
+      "disconctionInfo": [
+        {
+          "index": 1,
+          "genPu": 0.0,
+          "loadPu": 0.0,
+          "anyActiveGen": false,
+          "areaName": "岳阳"
+        },
+        {
+          "index": 2,
+          "genPu": 0.0,
+          "loadPu": 0.0,
+          "anyActiveGen": false,
+          "areaName": "岳阳"
+        }
+      ],
+      "isDisconctionFromAreaGrid": false,
+      "totalLoadInfo": {
+        "name": "湖南",
+        "loadLevelMw": 19752.62,
+        "loadReductionMw": 0.0,
+        "genReductionMw": 0.0
+      },
+      "cityLoadInfo": [],
+      "planRisk": false
+    },
+    {
       "outageBranchId": "湖南.外罗线",
       "outageType": "线路",
       "failureDeviceInfoList": [
@@ -279,6 +536,53 @@
           "genReductionMw": 130.18
         }
       ],
+      "planRisk": false
+    },
+    {
+      "outageBranchId": "湖南.东府站/#1变-高",
+      "outageType": "变压器",
+      "failureDeviceInfoList": [
+        {
+          "name": "湖南.东府站/35kV.Ⅰ母",
+          "subName": "华中.东府站",
+          "type": "Bus",
+          "voltageKv": 35.0,
+          "noDeviceInVoltage": "1",
+          "subType": "变电站"
+        },
+        {
+          "name": "湖南.东府站/#1变-高",
+          "subName": "华中.东府站",
+          "type": "Transformer",
+          "voltageKv": 525.0,
+          "noDeviceInVoltage": "1",
+          "subType": "变电站"
+        }
+      ],
+      "disconctionInfo": [
+        {
+          "index": 1,
+          "genPu": 0.0,
+          "loadPu": 0.0,
+          "anyActiveGen": false,
+          "areaName": "岳阳"
+        },
+        {
+          "index": 2,
+          "genPu": 0.0,
+          "loadPu": 0.0,
+          "anyActiveGen": false,
+          "areaName": "岳阳"
+        }
+      ],
+      "isDisconctionFromAreaGrid": false,
+      "totalLoadInfo": {
+        "name": "湖南",
+        "loadLevelMw": 19752.62,
+        "loadReductionMw": 0.0,
+        "genReductionMw": 0.0
+      },
+      "cityLoadInfo": [],
       "planRisk": false
     },
     {
@@ -404,6 +708,61 @@
       "planRisk": false
     },
     {
+      "outageBranchId": "湖南.华能岳阳A2厂/#2变",
+      "outageType": "变压器",
+      "failureDeviceInfoList": [
+        {
+          "name": "湖南.华能岳阳A2厂/18kV.#2机",
+          "subName": "湖南.华能岳阳A2厂",
+          "type": "Unit",
+          "voltageKv": 18.0,
+          "originalPowerPu": "2.3123",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.华能岳阳A2厂/18kV.#2机厂用电",
+          "subName": "湖南.华能岳阳A2厂",
+          "type": "Load",
+          "voltageKv": 18.0,
+          "originalPowerPu": "0.11289999999999999",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.华能岳阳A2厂/#2变",
+          "subName": "湖南.华能岳阳A2厂",
+          "type": "Transformer",
+          "voltageKv": 230.0,
+          "noDeviceInVoltage": "1",
+          "subType": "发电厂"
+        }
+      ],
+      "disconctionInfo": [
+        {
+          "index": 1,
+          "genPu": 2.3123,
+          "loadPu": 0.11289999999999999,
+          "anyActiveGen": true,
+          "areaName": "岳阳"
+        }
+      ],
+      "isDisconctionFromAreaGrid": false,
+      "totalLoadInfo": {
+        "name": "湖南",
+        "loadLevelMw": 19752.62,
+        "loadReductionMw": 11.29,
+        "genReductionMw": 231.23
+      },
+      "cityLoadInfo": [
+        {
+          "name": "岳阳",
+          "loadLevelMw": 1539.8474,
+          "loadReductionMw": 11.29,
+          "genReductionMw": 231.23
+        }
+      ],
+      "planRisk": false
+    },
+    {
       "outageBranchId": "湖南.锡红线",
       "outageType": "线路",
       "failureDeviceInfoList": [
@@ -479,6 +838,53 @@
       "planRisk": false
     },
     {
+      "outageBranchId": "湖南.水城站/#2变-高",
+      "outageType": "变压器",
+      "failureDeviceInfoList": [
+        {
+          "name": "湖南.水城站/35kV.Ⅱ母",
+          "subName": "华中.水城站",
+          "type": "Bus",
+          "voltageKv": 35.0,
+          "noDeviceInVoltage": "1",
+          "subType": "联络站"
+        },
+        {
+          "name": "湖南.水城站/#2变-高",
+          "subName": "华中.水城站",
+          "type": "Transformer",
+          "voltageKv": 525.0,
+          "noDeviceInVoltage": "1",
+          "subType": "联络站"
+        }
+      ],
+      "disconctionInfo": [
+        {
+          "index": 1,
+          "genPu": 0.0,
+          "loadPu": 0.0,
+          "anyActiveGen": false,
+          "areaName": "郴州"
+        },
+        {
+          "index": 2,
+          "genPu": 0.0,
+          "loadPu": 0.0,
+          "anyActiveGen": false,
+          "areaName": "郴州"
+        }
+      ],
+      "isDisconctionFromAreaGrid": false,
+      "totalLoadInfo": {
+        "name": "湖南",
+        "loadLevelMw": 19752.62,
+        "loadReductionMw": 0.0,
+        "genReductionMw": 0.0
+      },
+      "cityLoadInfo": [],
+      "planRisk": false
+    },
+    {
       "outageBranchId": "湖南.飞寨Ⅰ线",
       "outageType": "线路",
       "failureDeviceInfoList": [
@@ -545,6 +951,100 @@
           "genReductionMw": 148.74
         }
       ],
+      "planRisk": false
+    },
+    {
+      "outageBranchId": "湖南.古亭站/#3变-高",
+      "outageType": "变压器",
+      "failureDeviceInfoList": [
+        {
+          "name": "湖南.古亭站/#3变-高",
+          "subName": "华中.古亭站",
+          "type": "Transformer",
+          "voltageKv": 525.0,
+          "noDeviceInVoltage": "1",
+          "subType": "变电站"
+        },
+        {
+          "name": "湖南.古亭站/35kV.Ⅲ母",
+          "subName": "华中.古亭站",
+          "type": "Bus",
+          "voltageKv": 35.0,
+          "noDeviceInVoltage": "1",
+          "subType": "变电站"
+        }
+      ],
+      "disconctionInfo": [
+        {
+          "index": 1,
+          "genPu": 0.0,
+          "loadPu": 0.0,
+          "anyActiveGen": false,
+          "areaName": "株洲"
+        },
+        {
+          "index": 2,
+          "genPu": 0.0,
+          "loadPu": 0.0,
+          "anyActiveGen": false,
+          "areaName": "株洲"
+        }
+      ],
+      "isDisconctionFromAreaGrid": false,
+      "totalLoadInfo": {
+        "name": "湖南",
+        "loadLevelMw": 19752.62,
+        "loadReductionMw": 0.0,
+        "genReductionMw": 0.0
+      },
+      "cityLoadInfo": [],
+      "planRisk": false
+    },
+    {
+      "outageBranchId": "湖南.南岸站/#1变-高",
+      "outageType": "变压器",
+      "failureDeviceInfoList": [
+        {
+          "name": "湖南.南岸站/35kV.Ⅰ母",
+          "subName": "华中.南岸站",
+          "type": "Bus",
+          "voltageKv": 35.0,
+          "noDeviceInVoltage": "1",
+          "subType": "变电站"
+        },
+        {
+          "name": "湖南.南岸站/#1变-高",
+          "subName": "华中.南岸站",
+          "type": "Transformer",
+          "voltageKv": 525.0,
+          "noDeviceInVoltage": "1",
+          "subType": "变电站"
+        }
+      ],
+      "disconctionInfo": [
+        {
+          "index": 1,
+          "genPu": 0.0,
+          "loadPu": 0.0,
+          "anyActiveGen": false,
+          "areaName": "湘潭"
+        },
+        {
+          "index": 2,
+          "genPu": 0.0,
+          "loadPu": 0.0,
+          "anyActiveGen": false,
+          "areaName": "湘潭"
+        }
+      ],
+      "isDisconctionFromAreaGrid": false,
+      "totalLoadInfo": {
+        "name": "湖南",
+        "loadLevelMw": 19752.62,
+        "loadReductionMw": 0.0,
+        "genReductionMw": 0.0
+      },
+      "cityLoadInfo": [],
       "planRisk": false
     },
     {
@@ -842,6 +1342,61 @@
       "planRisk": false
     },
     {
+      "outageBranchId": "湖南.陕煤石门A2厂/#2变",
+      "outageType": "变压器",
+      "failureDeviceInfoList": [
+        {
+          "name": "湖南.陕煤石门A2厂/20kV.#2机",
+          "subName": "湖南.陕煤石门A2厂",
+          "type": "Unit",
+          "voltageKv": 20.0,
+          "originalPowerPu": "2.4842",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.陕煤石门A2厂/20kV.#2机厂用电",
+          "subName": "湖南.陕煤石门A2厂",
+          "type": "Load",
+          "voltageKv": 20.0,
+          "originalPowerPu": "0.1165",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.陕煤石门A2厂/#2变",
+          "subName": "湖南.陕煤石门A2厂",
+          "type": "Transformer",
+          "voltageKv": 230.0,
+          "noDeviceInVoltage": "1",
+          "subType": "发电厂"
+        }
+      ],
+      "disconctionInfo": [
+        {
+          "index": 1,
+          "genPu": 2.4842,
+          "loadPu": 0.1165,
+          "anyActiveGen": true,
+          "areaName": "常德"
+        }
+      ],
+      "isDisconctionFromAreaGrid": false,
+      "totalLoadInfo": {
+        "name": "湖南",
+        "loadLevelMw": 19752.62,
+        "loadReductionMw": 11.65,
+        "genReductionMw": 248.42
+      },
+      "cityLoadInfo": [
+        {
+          "name": "常德",
+          "loadLevelMw": 1120.526,
+          "loadReductionMw": 11.65,
+          "genReductionMw": 248.42
+        }
+      ],
+      "planRisk": false
+    },
+    {
       "outageBranchId": "湖南.忠湛线",
       "outageType": "线路",
       "failureDeviceInfoList": [
@@ -1014,6 +1569,54 @@
           "genReductionMw": 32.17
         }
       ],
+      "planRisk": false
+    },
+    {
+      "outageBranchId": "湖南.黔东A5厂/#2变",
+      "outageType": "变压器",
+      "failureDeviceInfoList": [
+        {
+          "name": "湖南.黔东A5厂/20kV.#2机",
+          "subName": "湖南.黔东A5厂",
+          "type": "Unit",
+          "voltageKv": 20.0,
+          "originalPowerPu": "4.5987",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.黔东A5厂/10kV.#2机厂用电",
+          "subName": "湖南.黔东A5厂",
+          "type": "Load",
+          "voltageKv": 20.0,
+          "originalPowerPu": "0.229935",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.黔东A5厂/#2变",
+          "subName": "湖南.黔东A5厂",
+          "type": "Transformer",
+          "voltageKv": 525.0,
+          "noDeviceInVoltage": "1",
+          "subType": "发电厂"
+        }
+      ],
+      "disconctionInfo": [
+        {
+          "index": 1,
+          "genPu": 4.5987,
+          "loadPu": 0.229935,
+          "anyActiveGen": true,
+          "areaName": "贵州"
+        }
+      ],
+      "isDisconctionFromAreaGrid": false,
+      "totalLoadInfo": {
+        "name": "湖南",
+        "loadLevelMw": 19752.62,
+        "loadReductionMw": 22.9935,
+        "genReductionMw": 459.87
+      },
+      "cityLoadInfo": [],
       "planRisk": false
     },
     {
@@ -1452,6 +2055,320 @@
       "planRisk": false
     },
     {
+      "outageBranchId": "湖南.皂市A2厂/#1变",
+      "outageType": "变压器",
+      "failureDeviceInfoList": [
+        {
+          "name": "湖南.皂市A2厂/10kV.#1机",
+          "subName": "湖南.皂市A2厂",
+          "type": "Unit",
+          "voltageKv": 10.5,
+          "originalPowerPu": "0.3",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.皂市A2厂/#1变",
+          "subName": "湖南.皂市A2厂",
+          "type": "Transformer",
+          "voltageKv": 230.0,
+          "noDeviceInVoltage": "1",
+          "subType": "发电厂"
+        }
+      ],
+      "disconctionInfo": [
+        {
+          "index": 1,
+          "genPu": 0.3,
+          "loadPu": 0.0,
+          "anyActiveGen": true,
+          "areaName": "常德"
+        }
+      ],
+      "isDisconctionFromAreaGrid": false,
+      "totalLoadInfo": {
+        "name": "湖南",
+        "loadLevelMw": 19752.62,
+        "loadReductionMw": 0.0,
+        "genReductionMw": 30.0
+      },
+      "cityLoadInfo": [
+        {
+          "name": "常德",
+          "loadLevelMw": 1120.526,
+          "loadReductionMw": 0.0,
+          "genReductionMw": 30.0
+        }
+      ],
+      "planRisk": false
+    },
+    {
+      "outageBranchId": "湖南.边城站/#2变-高",
+      "outageType": "变压器",
+      "failureDeviceInfoList": [
+        {
+          "name": "湖南.边城站/#2变-高",
+          "subName": "华中.边城站",
+          "type": "Transformer",
+          "voltageKv": 525.0,
+          "noDeviceInVoltage": "1",
+          "subType": "变电站"
+        },
+        {
+          "name": "湖南.边城站/35kV.Ⅱ母",
+          "subName": "华中.边城站",
+          "type": "Bus",
+          "voltageKv": 35.0,
+          "noDeviceInVoltage": "1",
+          "subType": "变电站"
+        }
+      ],
+      "disconctionInfo": [
+        {
+          "index": 1,
+          "genPu": 0.0,
+          "loadPu": 0.0,
+          "anyActiveGen": false,
+          "areaName": "湘西"
+        },
+        {
+          "index": 2,
+          "genPu": 0.0,
+          "loadPu": 0.0,
+          "anyActiveGen": false,
+          "areaName": "湘西"
+        }
+      ],
+      "isDisconctionFromAreaGrid": false,
+      "totalLoadInfo": {
+        "name": "湖南",
+        "loadLevelMw": 19752.62,
+        "loadReductionMw": 0.0,
+        "genReductionMw": 0.0
+      },
+      "cityLoadInfo": [],
+      "planRisk": false
+    },
+    {
+      "outageBranchId": "湖南.湘潭B2厂/#3变",
+      "outageType": "变压器",
+      "failureDeviceInfoList": [
+        {
+          "name": "湖南.湘潭B2厂/10kV.#3机",
+          "subName": "湖南.湘潭B2厂",
+          "type": "Unit",
+          "voltageKv": 10.5,
+          "originalPowerPu": "3.8222000000000005",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.湘潭B2厂/10kV.#3机厂用电",
+          "subName": "湖南.湘潭B2厂",
+          "type": "Load",
+          "voltageKv": 10.5,
+          "originalPowerPu": "0.2043",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.湘潭B2厂/#3变",
+          "subName": "湖南.湘潭B2厂",
+          "type": "Transformer",
+          "voltageKv": 230.0,
+          "noDeviceInVoltage": "1",
+          "subType": "发电厂"
+        }
+      ],
+      "disconctionInfo": [
+        {
+          "index": 1,
+          "genPu": 3.8222000000000005,
+          "loadPu": 0.2043,
+          "anyActiveGen": true,
+          "areaName": "湘潭"
+        }
+      ],
+      "isDisconctionFromAreaGrid": false,
+      "totalLoadInfo": {
+        "name": "湖南",
+        "loadLevelMw": 19752.62,
+        "loadReductionMw": 20.43,
+        "genReductionMw": 382.22
+      },
+      "cityLoadInfo": [
+        {
+          "name": "湘潭",
+          "loadLevelMw": 1321.45,
+          "loadReductionMw": 20.43,
+          "genReductionMw": 382.22
+        }
+      ],
+      "planRisk": false
+    },
+    {
+      "outageBranchId": "湖南.涟源A2厂/#1变",
+      "outageType": "变压器",
+      "failureDeviceInfoList": [
+        {
+          "name": "湖南.涟源A2厂/20kV.#1机",
+          "subName": "湖南.涟源A2厂",
+          "type": "Unit",
+          "voltageKv": 20.0,
+          "originalPowerPu": "2.2254",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.涟源A2厂/20kV.#1机厂用电",
+          "subName": "湖南.涟源A2厂",
+          "type": "Load",
+          "voltageKv": 20.0,
+          "originalPowerPu": "0.0934",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.涟源A2厂/#1变",
+          "subName": "湖南.涟源A2厂",
+          "type": "Transformer",
+          "voltageKv": 230.0,
+          "noDeviceInVoltage": "1",
+          "subType": "发电厂"
+        }
+      ],
+      "disconctionInfo": [
+        {
+          "index": 1,
+          "genPu": 2.2254,
+          "loadPu": 0.0934,
+          "anyActiveGen": true,
+          "areaName": "娄底"
+        }
+      ],
+      "isDisconctionFromAreaGrid": false,
+      "totalLoadInfo": {
+        "name": "湖南",
+        "loadLevelMw": 19752.62,
+        "loadReductionMw": 9.34,
+        "genReductionMw": 222.54
+      },
+      "cityLoadInfo": [
+        {
+          "name": "娄底",
+          "loadLevelMw": 1660.8324,
+          "loadReductionMw": 9.34,
+          "genReductionMw": 222.54
+        }
+      ],
+      "planRisk": false
+    },
+    {
+      "outageBranchId": "湖南.常德A2厂/#1变",
+      "outageType": "变压器",
+      "failureDeviceInfoList": [
+        {
+          "name": "湖南.常德A2厂/20kV.#1机",
+          "subName": "湖南.常德A2厂",
+          "type": "Unit",
+          "voltageKv": 20.0,
+          "originalPowerPu": "4.2044999999999995",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.常德A2厂/20kV.#1机厂用电",
+          "subName": "湖南.常德A2厂",
+          "type": "Load",
+          "voltageKv": 20.0,
+          "originalPowerPu": "0.2134",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.常德A2厂/#1变",
+          "subName": "湖南.常德A2厂",
+          "type": "Transformer",
+          "voltageKv": 230.0,
+          "noDeviceInVoltage": "1",
+          "subType": "发电厂"
+        }
+      ],
+      "disconctionInfo": [
+        {
+          "index": 1,
+          "genPu": 4.2044999999999995,
+          "loadPu": 0.2134,
+          "anyActiveGen": true,
+          "areaName": "常德"
+        }
+      ],
+      "isDisconctionFromAreaGrid": false,
+      "totalLoadInfo": {
+        "name": "湖南",
+        "loadLevelMw": 19752.62,
+        "loadReductionMw": 21.34,
+        "genReductionMw": 420.44999999999993
+      },
+      "cityLoadInfo": [
+        {
+          "name": "常德",
+          "loadLevelMw": 1120.526,
+          "loadReductionMw": 21.34,
+          "genReductionMw": 420.44999999999993
+        }
+      ],
+      "planRisk": false
+    },
+    {
+      "outageBranchId": "湖南.湘潭B5厂/#4变",
+      "outageType": "变压器",
+      "failureDeviceInfoList": [
+        {
+          "name": "湖南.湘潭B5厂/20kV.#4机",
+          "subName": "湖南.湘潭B5厂",
+          "type": "Unit",
+          "voltageKv": 20.0,
+          "originalPowerPu": "3.8222000000000005",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.湘潭B5厂/20kV.#4机厂用电",
+          "subName": "湖南.湘潭B5厂",
+          "type": "Load",
+          "voltageKv": 20.0,
+          "originalPowerPu": "0.11049999999999999",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.湘潭B5厂/#4变",
+          "subName": "湖南.湘潭B5厂",
+          "type": "Transformer",
+          "voltageKv": 525.0,
+          "noDeviceInVoltage": "1",
+          "subType": "发电厂"
+        }
+      ],
+      "disconctionInfo": [
+        {
+          "index": 1,
+          "genPu": 3.8222000000000005,
+          "loadPu": 0.11049999999999999,
+          "anyActiveGen": true,
+          "areaName": "湘潭"
+        }
+      ],
+      "isDisconctionFromAreaGrid": false,
+      "totalLoadInfo": {
+        "name": "湖南",
+        "loadLevelMw": 19752.62,
+        "loadReductionMw": 11.049999999999999,
+        "genReductionMw": 382.22
+      },
+      "cityLoadInfo": [
+        {
+          "name": "湘潭",
+          "loadLevelMw": 1321.45,
+          "loadReductionMw": 11.049999999999999,
+          "genReductionMw": 382.22
+        }
+      ],
+      "planRisk": false
+    },
+    {
       "outageBranchId": "湖南.方蓉线",
       "outageType": "线路",
       "failureDeviceInfoList": [
@@ -1500,6 +2417,281 @@
           "loadLevelMw": 1139.94,
           "loadReductionMw": 0.050000039932034765,
           "genReductionMw": 0.0
+        }
+      ],
+      "planRisk": false
+    },
+    {
+      "outageBranchId": "湖南.华能岳阳C5厂/#4变",
+      "outageType": "变压器",
+      "failureDeviceInfoList": [
+        {
+          "name": "湖南.华能岳阳C5厂/20kV.#4机",
+          "subName": "湖南.华能岳阳C5厂",
+          "type": "Unit",
+          "voltageKv": 20.0,
+          "originalPowerPu": "1.9111000000000002",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.华能岳阳C5厂/20kV.#4机厂用电",
+          "subName": "湖南.华能岳阳C5厂",
+          "type": "Load",
+          "voltageKv": 20.0,
+          "originalPowerPu": "0.09555500000000001",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.华能岳阳C5厂/#4变",
+          "subName": "湖南.华能岳阳C5厂",
+          "type": "Transformer",
+          "voltageKv": 525.0,
+          "noDeviceInVoltage": "1",
+          "subType": "发电厂"
+        }
+      ],
+      "disconctionInfo": [
+        {
+          "index": 1,
+          "genPu": 1.9111000000000002,
+          "loadPu": 0.09555500000000001,
+          "anyActiveGen": true,
+          "areaName": "岳阳"
+        }
+      ],
+      "isDisconctionFromAreaGrid": false,
+      "totalLoadInfo": {
+        "name": "湖南",
+        "loadLevelMw": 19752.62,
+        "loadReductionMw": 9.555500000000002,
+        "genReductionMw": 191.11
+      },
+      "cityLoadInfo": [
+        {
+          "name": "岳阳",
+          "loadLevelMw": 1539.8474,
+          "loadReductionMw": 9.555500000000002,
+          "genReductionMw": 191.11
+        }
+      ],
+      "planRisk": false
+    },
+    {
+      "outageBranchId": "湖南.攸县A5厂/#2变",
+      "outageType": "变压器",
+      "failureDeviceInfoList": [
+        {
+          "name": "湖南.攸县A5厂/20kV.#2机",
+          "subName": "湖南.攸县A5厂",
+          "type": "Unit",
+          "voltageKv": 20.0,
+          "originalPowerPu": "3.15",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.攸县A5厂/20kV.#2机厂用电",
+          "subName": "湖南.攸县A5厂",
+          "type": "Load",
+          "voltageKv": 20.0,
+          "originalPowerPu": "0.1748",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.攸县A5厂/#2变",
+          "subName": "湖南.攸县A5厂",
+          "type": "Transformer",
+          "voltageKv": 525.0,
+          "noDeviceInVoltage": "1",
+          "subType": "发电厂"
+        }
+      ],
+      "disconctionInfo": [
+        {
+          "index": 1,
+          "genPu": 3.15,
+          "loadPu": 0.1748,
+          "anyActiveGen": true,
+          "areaName": "株洲"
+        }
+      ],
+      "isDisconctionFromAreaGrid": false,
+      "totalLoadInfo": {
+        "name": "湖南",
+        "loadLevelMw": 19752.62,
+        "loadReductionMw": 17.48,
+        "genReductionMw": 315.0
+      },
+      "cityLoadInfo": [
+        {
+          "name": "株洲",
+          "loadLevelMw": 1144.59,
+          "loadReductionMw": 17.48,
+          "genReductionMw": 315.0
+        }
+      ],
+      "planRisk": false
+    },
+    {
+      "outageBranchId": "湖南.湘潭A2厂/#2变",
+      "outageType": "变压器",
+      "failureDeviceInfoList": [
+        {
+          "name": "湖南.湘潭A2厂/20kV.#2母线",
+          "subName": "湖南.湘潭A2厂",
+          "type": "Bus",
+          "voltageKv": 20.0,
+          "noDeviceInVoltage": "1",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.湘潭A2厂/20kV.#2机",
+          "subName": "湖南.湘潭A2厂",
+          "type": "Unit",
+          "voltageKv": 20.0,
+          "originalPowerPu": "1.9297",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.湘潭A2厂/20kV.#2机厂用电",
+          "subName": "湖南.湘潭A2厂",
+          "type": "Load",
+          "voltageKv": 20.0,
+          "originalPowerPu": "0.0959",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.湘潭A2厂/#2变",
+          "subName": "湖南.湘潭A2厂",
+          "type": "Transformer",
+          "voltageKv": 230.0,
+          "noDeviceInVoltage": "1",
+          "subType": "发电厂"
+        }
+      ],
+      "disconctionInfo": [
+        {
+          "index": 1,
+          "genPu": 1.9297,
+          "loadPu": 0.0959,
+          "anyActiveGen": true,
+          "areaName": "湘潭"
+        }
+      ],
+      "isDisconctionFromAreaGrid": false,
+      "totalLoadInfo": {
+        "name": "湖南",
+        "loadLevelMw": 19752.62,
+        "loadReductionMw": 9.59,
+        "genReductionMw": 192.97
+      },
+      "cityLoadInfo": [
+        {
+          "name": "湘潭",
+          "loadLevelMw": 1321.45,
+          "loadReductionMw": 9.59,
+          "genReductionMw": 192.97
+        }
+      ],
+      "planRisk": false
+    },
+    {
+      "outageBranchId": "湖南.洞庭站/#3变-高",
+      "outageType": "变压器",
+      "failureDeviceInfoList": [
+        {
+          "name": "湖南.洞庭站/35kV.Ⅲ母",
+          "subName": "华中.洞庭站",
+          "type": "Bus",
+          "voltageKv": 35.0,
+          "noDeviceInVoltage": "1",
+          "subType": "变电站"
+        },
+        {
+          "name": "湖南.洞庭站/#3变-高",
+          "subName": "华中.洞庭站",
+          "type": "Transformer",
+          "voltageKv": 525.0,
+          "noDeviceInVoltage": "1",
+          "subType": "变电站"
+        }
+      ],
+      "disconctionInfo": [
+        {
+          "index": 1,
+          "genPu": 0.0,
+          "loadPu": 0.0,
+          "anyActiveGen": false,
+          "areaName": "岳阳"
+        },
+        {
+          "index": 2,
+          "genPu": 0.0,
+          "loadPu": 0.0,
+          "anyActiveGen": false,
+          "areaName": "岳阳"
+        }
+      ],
+      "isDisconctionFromAreaGrid": false,
+      "totalLoadInfo": {
+        "name": "湖南",
+        "loadLevelMw": 19752.62,
+        "loadReductionMw": 0.0,
+        "genReductionMw": 0.0
+      },
+      "cityLoadInfo": [],
+      "planRisk": false
+    },
+    {
+      "outageBranchId": "湖南.金竹山B5厂/#1变",
+      "outageType": "变压器",
+      "failureDeviceInfoList": [
+        {
+          "name": "湖南.金竹山B5厂/20kV.#1机",
+          "subName": "湖南.金竹山B5厂",
+          "type": "Unit",
+          "voltageKv": 20.0,
+          "originalPowerPu": "4.1894",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.金竹山B5厂/20kV.#1机厂用电",
+          "subName": "湖南.金竹山B5厂",
+          "type": "Load",
+          "voltageKv": 20.0,
+          "originalPowerPu": "0.20947000000000002",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.金竹山B5厂/#1变",
+          "subName": "湖南.金竹山B5厂",
+          "type": "Transformer",
+          "voltageKv": 525.0,
+          "noDeviceInVoltage": "1",
+          "subType": "发电厂"
+        }
+      ],
+      "disconctionInfo": [
+        {
+          "index": 1,
+          "genPu": 4.1894,
+          "loadPu": 0.20947000000000002,
+          "anyActiveGen": true,
+          "areaName": "娄底"
+        }
+      ],
+      "isDisconctionFromAreaGrid": false,
+      "totalLoadInfo": {
+        "name": "湖南",
+        "loadLevelMw": 19752.62,
+        "loadReductionMw": 20.947000000000003,
+        "genReductionMw": 418.94
+      },
+      "cityLoadInfo": [
+        {
+          "name": "娄底",
+          "loadLevelMw": 1660.8324,
+          "loadReductionMw": 20.947000000000003,
+          "genReductionMw": 418.94
         }
       ],
       "planRisk": false
@@ -1588,6 +2780,116 @@
       "planRisk": false
     },
     {
+      "outageBranchId": "华中.安宁站/#3变-高",
+      "outageType": "变压器",
+      "failureDeviceInfoList": [
+        {
+          "name": "湖南.安宁站/35kV.Ⅲ母",
+          "subName": "华中.安宁站",
+          "type": "Bus",
+          "voltageKv": 35.0,
+          "noDeviceInVoltage": "1",
+          "subType": "变电站"
+        },
+        {
+          "name": "华中.安宁站/#3变-高",
+          "subName": "华中.安宁站",
+          "type": "Transformer",
+          "voltageKv": 525.0,
+          "noDeviceInVoltage": "1",
+          "subType": "变电站"
+        }
+      ],
+      "disconctionInfo": [
+        {
+          "index": 1,
+          "genPu": 0.0,
+          "loadPu": 0.0,
+          "anyActiveGen": false,
+          "areaName": "长沙"
+        },
+        {
+          "index": 2,
+          "genPu": 0.0,
+          "loadPu": 0.0,
+          "anyActiveGen": false,
+          "areaName": "长沙"
+        }
+      ],
+      "isDisconctionFromAreaGrid": false,
+      "totalLoadInfo": {
+        "name": "湖南",
+        "loadLevelMw": 19752.62,
+        "loadReductionMw": 0.0,
+        "genReductionMw": 0.0
+      },
+      "cityLoadInfo": [],
+      "planRisk": false
+    },
+    {
+      "outageBranchId": "湖南.宝庆A2厂/#1变",
+      "outageType": "变压器",
+      "failureDeviceInfoList": [
+        {
+          "name": "湖南.宝庆A2厂/10kV.#1母线",
+          "subName": "湖南.宝庆A2厂",
+          "type": "Bus",
+          "voltageKv": 10.5,
+          "noDeviceInVoltage": "1",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.宝庆A2厂/10kV.#1机",
+          "subName": "湖南.宝庆A2厂",
+          "type": "Unit",
+          "voltageKv": 10.5,
+          "originalPowerPu": "4.245299999999999",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.宝庆A2厂/10kV.#1机厂用电",
+          "subName": "湖南.宝庆A2厂",
+          "type": "Load",
+          "voltageKv": 10.5,
+          "originalPowerPu": "0.1734",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.宝庆A2厂/#1变",
+          "subName": "湖南.宝庆A2厂",
+          "type": "Transformer",
+          "voltageKv": 230.0,
+          "noDeviceInVoltage": "1",
+          "subType": "发电厂"
+        }
+      ],
+      "disconctionInfo": [
+        {
+          "index": 1,
+          "genPu": 4.245299999999999,
+          "loadPu": 0.1734,
+          "anyActiveGen": true,
+          "areaName": "邵阳"
+        }
+      ],
+      "isDisconctionFromAreaGrid": false,
+      "totalLoadInfo": {
+        "name": "湖南",
+        "loadLevelMw": 19752.62,
+        "loadReductionMw": 17.34,
+        "genReductionMw": 424.5299999999999
+      },
+      "cityLoadInfo": [
+        {
+          "name": "邵阳",
+          "loadLevelMw": 938.65,
+          "loadReductionMw": 17.34,
+          "genReductionMw": 424.5299999999999
+        }
+      ],
+      "planRisk": false
+    },
+    {
       "outageBranchId": "湖南.义谷线",
       "outageType": "线路",
       "failureDeviceInfoList": [
@@ -1638,6 +2940,85 @@
           "genReductionMw": 4.492000102996826
         }
       ],
+      "planRisk": false
+    },
+    {
+      "outageBranchId": "湖南.大伏潭电厂/#2变-高",
+      "outageType": "变压器",
+      "failureDeviceInfoList": [
+        {
+          "name": "湖南.大伏潭电厂/#2变-高",
+          "subName": "湖南.大伏潭电厂",
+          "type": "Transformer",
+          "voltageKv": 230.0,
+          "noDeviceInVoltage": "1",
+          "subType": "发电厂"
+        }
+      ],
+      "disconctionInfo": [
+        {
+          "index": 1,
+          "genPu": 0.0,
+          "loadPu": 0.0,
+          "anyActiveGen": false,
+          "areaName": "怀化"
+        }
+      ],
+      "isDisconctionFromAreaGrid": false,
+      "totalLoadInfo": {
+        "name": "湖南",
+        "loadLevelMw": 19752.62,
+        "loadReductionMw": 0.0,
+        "genReductionMw": 0.0
+      },
+      "cityLoadInfo": [],
+      "planRisk": false
+    },
+    {
+      "outageBranchId": "湖南.雁城站/#3变-高",
+      "outageType": "变压器",
+      "failureDeviceInfoList": [
+        {
+          "name": "湖南.雁城站/35kV.Ⅲ母",
+          "subName": "华中.雁城站",
+          "type": "Bus",
+          "voltageKv": 35.0,
+          "noDeviceInVoltage": "1",
+          "subType": "变电站"
+        },
+        {
+          "name": "湖南.雁城站/#3变-高",
+          "subName": "华中.雁城站",
+          "type": "Transformer",
+          "voltageKv": 525.0,
+          "noDeviceInVoltage": "1",
+          "subType": "变电站"
+        }
+      ],
+      "disconctionInfo": [
+        {
+          "index": 1,
+          "genPu": 0.0,
+          "loadPu": 0.0,
+          "anyActiveGen": false,
+          "areaName": "衡阳"
+        },
+        {
+          "index": 2,
+          "genPu": 0.0,
+          "loadPu": 0.0,
+          "anyActiveGen": false,
+          "areaName": "衡阳"
+        }
+      ],
+      "isDisconctionFromAreaGrid": false,
+      "totalLoadInfo": {
+        "name": "湖南",
+        "loadLevelMw": 19752.62,
+        "loadReductionMw": 0.0,
+        "genReductionMw": 0.0
+      },
+      "cityLoadInfo": [],
       "planRisk": false
     },
     {
@@ -1713,6 +3094,163 @@
           "loadLevelMw": 1321.45,
           "loadReductionMw": 9.59,
           "genReductionMw": 192.97
+        }
+      ],
+      "planRisk": false
+    },
+    {
+      "outageBranchId": "湖南.红光站/#4变-高",
+      "outageType": "变压器",
+      "failureDeviceInfoList": [
+        {
+          "name": "湖南.红光站/35kV.Ⅳ母",
+          "subName": "华中.红光站",
+          "type": "Bus",
+          "voltageKv": 35.0,
+          "noDeviceInVoltage": "1",
+          "subType": "变电站"
+        },
+        {
+          "name": "湖南.红光站/#4变-高",
+          "subName": "华中.红光站",
+          "type": "Transformer",
+          "voltageKv": 525.0,
+          "noDeviceInVoltage": "1",
+          "subType": "变电站"
+        }
+      ],
+      "disconctionInfo": [
+        {
+          "index": 1,
+          "genPu": 0.0,
+          "loadPu": 0.0,
+          "anyActiveGen": false,
+          "areaName": "娄底"
+        },
+        {
+          "index": 2,
+          "genPu": 0.0,
+          "loadPu": 0.0,
+          "anyActiveGen": false,
+          "areaName": "娄底"
+        }
+      ],
+      "isDisconctionFromAreaGrid": false,
+      "totalLoadInfo": {
+        "name": "湖南",
+        "loadLevelMw": 19752.62,
+        "loadReductionMw": 0.0,
+        "genReductionMw": 0.0
+      },
+      "cityLoadInfo": [],
+      "planRisk": false
+    },
+    {
+      "outageBranchId": "湖南.永州A2厂/#1变",
+      "outageType": "变压器",
+      "failureDeviceInfoList": [
+        {
+          "name": "湖南.永州A2厂/20kV.#1机",
+          "subName": "湖南.永州A2厂",
+          "type": "Unit",
+          "voltageKv": 20.0,
+          "originalPowerPu": "6.3704",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.永州A2厂/20kV.#1机厂用电",
+          "subName": "湖南.永州A2厂",
+          "type": "Load",
+          "voltageKv": 20.0,
+          "originalPowerPu": "0.2518",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.永州A2厂/#1变",
+          "subName": "湖南.永州A2厂",
+          "type": "Transformer",
+          "voltageKv": 230.0,
+          "noDeviceInVoltage": "1",
+          "subType": "发电厂"
+        }
+      ],
+      "disconctionInfo": [
+        {
+          "index": 1,
+          "genPu": 6.3704,
+          "loadPu": 0.2518,
+          "anyActiveGen": true,
+          "areaName": "永州"
+        }
+      ],
+      "isDisconctionFromAreaGrid": false,
+      "totalLoadInfo": {
+        "name": "湖南",
+        "loadLevelMw": 19752.62,
+        "loadReductionMw": 25.180000000000003,
+        "genReductionMw": 637.04
+      },
+      "cityLoadInfo": [
+        {
+          "name": "永州",
+          "loadLevelMw": 991.3934,
+          "loadReductionMw": 25.180000000000003,
+          "genReductionMw": 637.04
+        }
+      ],
+      "planRisk": false
+    },
+    {
+      "outageBranchId": "湖南.华能岳阳B2厂/#5变",
+      "outageType": "变压器",
+      "failureDeviceInfoList": [
+        {
+          "name": "湖南.华能岳阳B2厂/20kV.#5机",
+          "subName": "湖南.华能岳阳B2厂",
+          "type": "Unit",
+          "voltageKv": 20.0,
+          "originalPowerPu": "3.8222000000000005",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.华能岳阳B2厂/20kV.#5机厂用电",
+          "subName": "湖南.华能岳阳B2厂",
+          "type": "Load",
+          "voltageKv": 20.0,
+          "originalPowerPu": "0.19111000000000003",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.华能岳阳B2厂/#5变",
+          "subName": "湖南.华能岳阳B2厂",
+          "type": "Transformer",
+          "voltageKv": 230.0,
+          "noDeviceInVoltage": "1",
+          "subType": "发电厂"
+        }
+      ],
+      "disconctionInfo": [
+        {
+          "index": 1,
+          "genPu": 3.8222000000000005,
+          "loadPu": 0.19111000000000003,
+          "anyActiveGen": true,
+          "areaName": "岳阳"
+        }
+      ],
+      "isDisconctionFromAreaGrid": false,
+      "totalLoadInfo": {
+        "name": "湖南",
+        "loadLevelMw": 19752.62,
+        "loadReductionMw": 19.111000000000004,
+        "genReductionMw": 382.22
+      },
+      "cityLoadInfo": [
+        {
+          "name": "岳阳",
+          "loadLevelMw": 1539.8474,
+          "loadReductionMw": 19.111000000000004,
+          "genReductionMw": 382.22
         }
       ],
       "planRisk": false
@@ -4825,6 +6363,67 @@
           "loadLevelMw": 1120.526,
           "loadReductionMw": 0.0,
           "genReductionMw": 75.99999999999999
+        }
+      ],
+      "planRisk": false
+    },
+    {
+      "outageBranchId": "湖南.石盘Ⅱ线, 湖南.三盘线",
+      "outageType": "同杆并架",
+      "failureDeviceInfoList": [
+        {
+          "name": "湖南.三江口A1厂/10kV.#8母线",
+          "subName": "湖南.三江口A1厂",
+          "type": "Bus",
+          "voltageKv": 10.5,
+          "noDeviceInVoltage": "1",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.三江口A1厂/10kV.#7机",
+          "subName": "湖南.三江口A1厂",
+          "type": "Unit",
+          "voltageKv": 10.5,
+          "originalPowerPu": "0.12",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.三江口A1厂/#3变-高",
+          "subName": "湖南.三江口A1厂",
+          "type": "Transformer",
+          "voltageKv": 230.0,
+          "noDeviceInVoltage": "1",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.三盘线",
+          "subName": "湖南.三江口A1厂-湖南.盘山站",
+          "type": "AcLine",
+          "voltageKv": 230.0
+        }
+      ],
+      "disconctionInfo": [
+        {
+          "index": 1,
+          "genPu": 0.12,
+          "loadPu": 0.0,
+          "anyActiveGen": true,
+          "areaName": "张家界"
+        }
+      ],
+      "isDisconctionFromAreaGrid": false,
+      "totalLoadInfo": {
+        "name": "湖南",
+        "loadLevelMw": 19752.62,
+        "loadReductionMw": 0.0,
+        "genReductionMw": 12.0
+      },
+      "cityLoadInfo": [
+        {
+          "name": "张家界",
+          "loadLevelMw": 306.97,
+          "loadReductionMw": 0.0,
+          "genReductionMw": 12.0
         }
       ],
       "planRisk": false
@@ -9810,6 +11409,75 @@
           "loadLevelMw": 1120.526,
           "loadReductionMw": 0.0,
           "genReductionMw": 30.0
+        }
+      ],
+      "planRisk": false
+    },
+    {
+      "outageBranchId": "湖南.盘山站/220kV.Ⅱ母",
+      "outageType": "母线",
+      "failureDeviceInfoList": [
+        {
+          "name": "湖南.三江口A1厂/10kV.#8母线",
+          "subName": "湖南.三江口A1厂",
+          "type": "Bus",
+          "voltageKv": 10.5,
+          "noDeviceInVoltage": "1",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.三江口A1厂/10kV.#7机",
+          "subName": "湖南.三江口A1厂",
+          "type": "Unit",
+          "voltageKv": 10.5,
+          "originalPowerPu": "0.12",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.三江口A1厂/#3变-高",
+          "subName": "湖南.三江口A1厂",
+          "type": "Transformer",
+          "voltageKv": 230.0,
+          "noDeviceInVoltage": "1",
+          "subType": "发电厂"
+        },
+        {
+          "name": "湖南.三盘线",
+          "subName": "湖南.三江口A1厂-湖南.盘山站",
+          "type": "AcLine",
+          "voltageKv": 230.0
+        },
+        {
+          "name": "湖南.盘山站/220kV.Ⅱ母",
+          "subName": "湖南.盘山站",
+          "type": "Bus",
+          "voltageKv": 230.0,
+          "noDeviceInVoltage": "2",
+          "subType": "变电站"
+        }
+      ],
+      "disconctionInfo": [
+        {
+          "index": 1,
+          "genPu": 0.12,
+          "loadPu": 0.0,
+          "anyActiveGen": true,
+          "areaName": "张家界"
+        }
+      ],
+      "isDisconctionFromAreaGrid": false,
+      "totalLoadInfo": {
+        "name": "湖南",
+        "loadLevelMw": 19752.62,
+        "loadReductionMw": 0.0,
+        "genReductionMw": 12.0
+      },
+      "cityLoadInfo": [
+        {
+          "name": "张家界",
+          "loadLevelMw": 306.97,
+          "loadReductionMw": 0.0,
+          "genReductionMw": 12.0
         }
       ],
       "planRisk": false
