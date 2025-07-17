@@ -63,6 +63,9 @@ import org.interpss.core.optadj.IEEE14_OptAdj_N1ScanSSAResult_Test;
 import org.interpss.core.optadj.IEEE14_OptAdj_N1Scan_Test;
 import org.interpss.core.script.mvel.MvelExprEval_Test;
 import org.interpss.core.zeroz.IEEE14ZeroZBranchAclfTest;
+import org.interpss.core.zeroz.IEEE14ZeroZBranchDeconsolidateTest;
+import org.interpss.core.zeroz.ZBrAclfDeconOutputTest;
+import org.interpss.core.zeroz.ZeroZBranchNetUtilTest;
 import org.interpss.core.zeroz.topo.IEEE14ZeroZBranchFuncLoopTest;
 import org.interpss.core.zeroz.topo.IEEE14ZeroZBranchFuncTest;
 import org.interpss.core.zeroz.topo.ZeroZBranchFuncTest;
@@ -93,10 +96,13 @@ import org.junit.runners.Suite.SuiteClasses;
 	Kundur_2Area_VSCHVDC2T_Test.class,
 	
 	// ZeroZ branch
+	ZeroZBranchNetUtilTest.class,
 	ZeroZBranchFuncTest.class,
 	IEEE14ZeroZBranchFuncTest.class,
 	IEEE14ZeroZBranchFuncLoopTest.class,
 	IEEE14ZeroZBranchAclfTest.class,
+	IEEE14ZeroZBranchDeconsolidateTest.class,
+	ZBrAclfDeconOutputTest.class,
 	
 	// acsc
 	IEEE9Bus_Acsc_Test.class,
