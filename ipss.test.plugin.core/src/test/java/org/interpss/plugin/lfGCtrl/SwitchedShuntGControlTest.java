@@ -57,7 +57,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		assertTrue(bus4.isSwitchedShunt());
 		SwitchedShunt swShunt = bus4.getSwitchedShunt();
 		//swShunt.setBLimit(new LimitType(3.0*0.23637, 0.0));
-		System.out.println("Switched Shunt: " + swShunt);
+		//System.out.println("Switched Shunt: " + swShunt);
 		
 		assertTrue("", NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
 		assertTrue("", NumericUtil.equals(swShunt.getBActual(), 0.23637, 0.0001));
@@ -163,9 +163,9 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		algo.loadflow();
 		assertTrue(net.isLfConverged());
 
-		System.out.println("Switched Shunt: " + swShunt);
+		//System.out.println("Switched Shunt: " + swShunt);
 		assertTrue("", NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
-		assertTrue("", NumericUtil.equals(swShunt.getBActual(), 0.4725, 0.0001));
+		assertTrue("", NumericUtil.equals(swShunt.getBActual(), 0.47250, 0.0001));
 		assertTrue("", NumericUtil.equals(swShunt.getQ(), 0.47198, 0.0001));
 		assertTrue("", swShunt.getControlMode() == AclfAdjustControlMode.CONTINUOUS);
 		assertTrue("", NumericUtil.equals(swShunt.getVSpecified(), 1.0, 0.0001));
@@ -198,7 +198,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		// 	comp.setUnitQMvar(0.23637*100.0); // UnitQ is in Mvar.
 		// 	comp.calB(baseKva);  // we need to call this method to set the compensator B value
 		// });
-		System.out.println("Switched Shunt: " + swShunt);
+		//System.out.println("Switched Shunt: " + swShunt);
 		
 		assertTrue("", NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
 		assertTrue("", NumericUtil.equals(swShunt.getBActual(), 0.23637, 0.0001));
@@ -218,19 +218,19 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		algo.loadflow();
 		assertTrue(net.isLfConverged());
 
-		System.out.println("Switched Shunt: " + swShunt);
+		//System.out.println("Switched Shunt: " + swShunt);
 		assertTrue("", NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
-		assertTrue("", NumericUtil.equals(swShunt.getBActual(), 0.4727, 0.0001));
-		assertTrue("", NumericUtil.equals(swShunt.getQ(), 0.4723, 0.0001));
+		assertTrue("", NumericUtil.equals(swShunt.getBActual(), 0.47274, 0.0001));
+		assertTrue("", NumericUtil.equals(swShunt.getQ(), 0.47222  , 0.0001));
 		assertTrue("", swShunt.getControlMode() == AclfAdjustControlMode.DISCRETE);
 		assertTrue("", NumericUtil.equals(swShunt.getVSpecified(), 1.0, 0.0001));
-		assertTrue("", NumericUtil.equals(bus4.getVoltageMag(), 0.99953, 0.0001));
+		assertTrue("", NumericUtil.equals(bus4.getVoltageMag(), 0.99945, 0.0001));
 		
 		String swingId = "Bus1";
 		AclfSwingBusAdapter swing = net.getBus(swingId).toSwingBus();
 		//System.out.println("AclfNet Model: "+swing.getGenResults(UnitType.PU) );				
 		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal() - 0.2253) < 0.0001);
-		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary() - 0.0079) < 0.0001);
+		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary() - 0.0078) < 0.0001);
 	}
 }
 

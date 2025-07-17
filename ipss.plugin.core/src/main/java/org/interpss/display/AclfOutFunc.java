@@ -218,7 +218,7 @@ public class AclfOutFunc {
 		return str;
 	}
 
-	private static String busLfSummary(BaseAclfBus<?,?> bus, boolean incldMismatch) {
+	public static String busLfSummary(BaseAclfBus<?,?> bus, boolean incldMismatch) {
 		final StringBuffer str = new StringBuffer("");
 		//Complex busPQ = bus.calNetPQResults();
 		Complex gen = bus.calNetGenResults();
