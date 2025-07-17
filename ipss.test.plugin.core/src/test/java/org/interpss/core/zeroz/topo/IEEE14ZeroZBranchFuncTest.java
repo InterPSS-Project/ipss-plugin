@@ -43,13 +43,13 @@ public class IEEE14ZeroZBranchFuncTest extends CorePluginTestSetup {
 	@Test 
 	public void test() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/Ieee14Bus_breaker.xml")
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/zeroz/Ieee14Bus_breaker_loop.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();
 	  	//System.out.println(net.net2String());
 		
-	  	System.out.println("Active Bus & Branch: " + net.getNoActiveBus() + " " + net.getNoActiveBranch());
+	  	//System.out.println("Active Bus & Branch: " + net.getNoActiveBus() + " " + net.getNoActiveBranch());
   		assertTrue((net.getNoActiveBus() == 23 && net.getNoActiveBranch() == 30));
   		
 	  	/*
