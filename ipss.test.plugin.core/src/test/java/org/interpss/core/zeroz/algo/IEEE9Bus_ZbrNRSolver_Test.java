@@ -33,6 +33,10 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import java.util.Map;
+
+import org.apache.commons.math3.complex.Complex;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -153,7 +157,7 @@ public class IEEE9Bus_ZbrNRSolver_Test extends CorePluginTestSetup {
 		ZBR branch Bus81->Bus82(0) power injection: (-0.09999999999999994, -0.037499999999999804)
 		ZBR branch Bus60->Bus61(0) power injection: (0.3000000000000002, 0.10000000000000005)
 		 */
-		zbrSolver.getZbrPowerMap().forEach((zbrId, power) -> {
+	  	((Map<String, Complex>)net.getExtraInfo().get(ZbrNrSolver.ZBR_ALGO_RESULTS)).forEach((zbrId, power) -> {
 			System.out.println("ZBR branch " + zbrId + " power injection: " + power);
 			if (zbrId.equals("5->52(0)")) {
 				assertEquals(0.5, power.getReal(), 1e-6);
