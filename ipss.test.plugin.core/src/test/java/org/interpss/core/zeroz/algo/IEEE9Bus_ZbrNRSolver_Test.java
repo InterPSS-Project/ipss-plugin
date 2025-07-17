@@ -37,6 +37,7 @@ import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.aclf.AclfNetModelType;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -117,11 +118,14 @@ public class IEEE9Bus_ZbrNRSolver_Test extends CorePluginTestSetup {
 		// Create an AclfNetwork object
 		AclfNetwork net = createTestCase();
 		
+		//net.setDataChecked(true); // so the Z of ZBR lines are not adjusted to the threshold value
+		// Instead, we set the network model type to ZBR_MODEL, this will make sure the ZBR lines are treated as zero impedance branches
+		net.setAclfNetModelType(AclfNetModelType.ZBR_MODEL);
 		net.setZeroZBranchThreshold(1.0E-5);
 		
-	  	System.out.println(net.net2String());
+	  	//System.out.println(net.net2String());
 
-		net.setDataChecked(true); // so the Z of ZBR lines are not adjusted to the threshold value
+		
 
 	  	// use the new ZBRNRSolver loadflow algorithm to perform loadflow calculation
 	  	ZbrNrSolver zbrSolver = new ZbrNrSolver(net);
