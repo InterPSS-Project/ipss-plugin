@@ -35,7 +35,8 @@ import com.interpss.core.net.Branch;
  * @author mzhou
  *
  */
-public class DebugOutFunc {
+// Debug Info Func : AclfNet but connectivity output functions
+public class BusConnectDebugOutFunc {
 	private static final String OffSet_Space = "   ";
 	
 	/**
