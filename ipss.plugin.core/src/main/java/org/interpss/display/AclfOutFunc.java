@@ -62,6 +62,7 @@ import com.interpss.core.net.OriginalDataFormat;
  * @author mzhou
  *
  */
+// Debug Info Func : Aclf output functions
 public class AclfOutFunc {
 	public static boolean commaDelimited = false;
 	/**
