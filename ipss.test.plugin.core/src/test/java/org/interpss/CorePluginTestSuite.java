@@ -66,6 +66,7 @@ import org.interpss.core.zeroz.IEEE14ZeroZBranchAclfTest;
 import org.interpss.core.zeroz.IEEE14ZeroZBranchDeconsolidateTest;
 import org.interpss.core.zeroz.ZBrAclfDeconOutputTest;
 import org.interpss.core.zeroz.ZeroZBranchNetUtilTest;
+import org.interpss.core.zeroz.algo.IEEE9Bus_ZbrNRSolver_Test;
 import org.interpss.core.zeroz.topo.IEEE14ZeroZBranchFuncLoopTest;
 import org.interpss.core.zeroz.topo.IEEE14ZeroZBranchFuncTest;
 import org.interpss.core.zeroz.topo.ZeroZBranchFuncTest;
@@ -103,6 +104,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	IEEE14ZeroZBranchAclfTest.class,
 	IEEE14ZeroZBranchDeconsolidateTest.class,
 	ZBrAclfDeconOutputTest.class,
+	IEEE9Bus_ZbrNRSolver_Test.class,
 	
 	// acsc
 	IEEE9Bus_Acsc_Test.class,
