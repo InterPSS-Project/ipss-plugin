@@ -11,7 +11,7 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.net.Branch;
 
-
+// Debug Info Func : Bus QA information output functions
 public abstract class QAOutFunc {
 	public static StringBuffer busInfo(String busId, AclfNetwork net) {
 		StringBuffer buf = new StringBuffer();
