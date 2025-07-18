@@ -24,6 +24,9 @@
 
 package org.interpss.core.zeroz.algo;
 
+import java.util.Map;
+
+import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
@@ -125,8 +128,6 @@ public class IEEE9Bus_ZbrNRSolver_Test extends CorePluginTestSetup {
 		
 	  	//System.out.println(net.net2String());
 
-		
-
 	  	// use the new ZBRNRSolver loadflow algorithm to perform loadflow calculation
 	  	ZbrNrSolver zbrSolver = new ZbrNrSolver(net);
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
@@ -137,7 +138,7 @@ public class IEEE9Bus_ZbrNRSolver_Test extends CorePluginTestSetup {
 		assertTrue(net.isLfConverged());
 	  	
 	  	// output loadflow calculation results
-	  	System.out.println(aclfResultBusStyle.apply(net));
+	  	//System.out.println(aclfResultBusStyle.apply(net));
 
 		/**
 		ZBR branch Bus8->Bus82(0) power injection: (0.5, 0.18749999999999978)
@@ -153,7 +154,8 @@ public class IEEE9Bus_ZbrNRSolver_Test extends CorePluginTestSetup {
 		ZBR branch Bus81->Bus82(0) power injection: (-0.09999999999999994, -0.037499999999999804)
 		ZBR branch Bus60->Bus61(0) power injection: (0.3000000000000002, 0.10000000000000005)
 		 */
-		zbrSolver.getZbrPowerMap().forEach((zbrId, power) -> {
+		Map<String, Complex> zbrPowerMap = (Map<String, Complex>)net.getExtraInfo().get(ZbrNrSolver.ZBR_ALGO_RESULTS);
+		zbrPowerMap.forEach((zbrId, power) -> {
 			System.out.println("ZBR branch " + zbrId + " power injection: " + power);
 			if (zbrId.equals("5->52(0)")) {
 				assertEquals(0.5, power.getReal(), 1e-6);
