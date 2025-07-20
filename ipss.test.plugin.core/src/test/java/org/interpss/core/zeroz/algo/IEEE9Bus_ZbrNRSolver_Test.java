@@ -24,6 +24,9 @@
 
 package org.interpss.core.zeroz.algo;
 
+import java.util.Map;
+
+import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
@@ -33,10 +36,6 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-
-import java.util.Map;
-
-import org.apache.commons.math3.complex.Complex;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -129,8 +128,6 @@ public class IEEE9Bus_ZbrNRSolver_Test extends CorePluginTestSetup {
 		
 	  	//System.out.println(net.net2String());
 
-		
-
 	  	// use the new ZBRNRSolver loadflow algorithm to perform loadflow calculation
 	  	ZbrNrSolver zbrSolver = new ZbrNrSolver(net);
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
@@ -141,7 +138,7 @@ public class IEEE9Bus_ZbrNRSolver_Test extends CorePluginTestSetup {
 		assertTrue(net.isLfConverged());
 	  	
 	  	// output loadflow calculation results
-	  	System.out.println(aclfResultBusStyle.apply(net));
+	  	//System.out.println(aclfResultBusStyle.apply(net));
 
 		/**
 		ZBR branch Bus8->Bus82(0) power injection: (0.5, 0.18749999999999978)
