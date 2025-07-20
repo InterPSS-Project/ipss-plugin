@@ -278,6 +278,10 @@ public class AclfNetworkEquivHelper {
                 swingBus.setGenCode(AclfGenCode.SWING);
                 swingBus.setDesiredVoltMag(swingBus.getVoltageMag());
                 swingBus.setDesiredVoltAng(swingBus.getVoltageAng());
+                for(AclfGen gen: swingBus.getContributeGenList()){
+                    gen.setRemoteVControlBusId(swingBus.getId());
+                    gen.setDesiredVoltMag(swingBus.getDesiredVoltMag());
+                }
                 swingBus.initContributeGen(false);
             }
         }   
