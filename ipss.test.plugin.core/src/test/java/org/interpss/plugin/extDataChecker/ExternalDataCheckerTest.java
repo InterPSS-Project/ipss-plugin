@@ -27,6 +27,7 @@ public class ExternalDataCheckerTest extends CorePluginTestSetup {
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 		algo.loadflow(new PSSEExternalDataChecker(aclfNet -> {
 			// add data checker logic after the initialization here if needed
+			// here we can do external data checking configuration
 		}));
 		
 		assertTrue(net.isLfConverged());
