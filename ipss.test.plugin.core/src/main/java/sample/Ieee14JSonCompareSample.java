@@ -17,12 +17,12 @@ public class Ieee14JSonCompareSample {
 		
 		AclfNetwork aclfNet1 = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testdata/adpter/ieee_format/Ieee14Bus.ieee")
+				.load("ipss-plugin/ipss.test.plugin.core/testData/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();	
 		
 		AclfNetwork aclfNet2 = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testdata/adpter/ieee_format/Ieee14Bus.ieee")
+				.load("ipss-plugin/ipss.test.plugin.core/testData/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();	
 
 		FileUtil.writeText2File("testdata/json/ieee14Bus.json", new AclfNetworkState(aclfNet1).toString());
