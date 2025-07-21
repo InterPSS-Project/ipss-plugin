@@ -82,10 +82,10 @@ public class AclfOut_PSSE {
 		double pu2Mva = baseKVA * 0.001;
 		
 		String s = "";
-		s += String.format(" %7s %-12s%6s %3d %6.4f %6.1f", 
+		s += String.format(" %7s %-12s%6s %3s %6.4f %6.1f", 
 						bus.getNumber(), bus.getName(),
 						formatKVStr.apply(bus.getBaseVoltage()*0.001),
-						bus.getArea().getNumber(),
+						bus.getAreaId(),
 						bus.getVoltageMag(), bus.getVoltageAng(UnitType.Deg));
 		
 		double pgen = 0.0, pload = 0.0, pshunt = 0.0;
@@ -137,10 +137,10 @@ public class AclfOut_PSSE {
 		BaseAclfBus<?,?> toBus = onFromSide ? branch.getToAclfBus() : branch.getFromAclfBus();
 		
 		String s = braCnt == 0? "" : "                                                                       ";
-		s += String.format("%7s %-12s%6s %3d %2s",
+		s += String.format("%7s %-12s%6s %3s %2s",
 						toBus.getNumber(), toBus.getName(),
 						formatKVStr.apply(toBus.getBaseVoltage()*0.001),
-						toBus.getArea().getNumber(), branch.getCircuitNumber());
+						toBus.getAreaId(), branch.getCircuitNumber());
 
 		Complex pq = onFromSide? branch.powerFrom2To(UnitType.mVar) :
 									branch.powerTo2From(UnitType.mVar);
