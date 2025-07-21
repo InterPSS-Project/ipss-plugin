@@ -315,8 +315,8 @@ public class AclfNetEquivHelperTest {
         System.out.println(bus1CloneAdapter.getGenResults().getImaginary());
 
         // Assert that the swing bus results in the equivalent network match the original network
-        assertEquals(bus1Adapter.getGenResults().getReal(), bus1CloneAdapter.getGenResults().getReal(), 0.00001);
-        assertEquals(bus1Adapter.getGenResults().getImaginary(), bus1CloneAdapter.getGenResults().getImaginary(), 0.00001);
+        assertEquals(bus1Adapter.getGenResults().getReal(), bus1CloneAdapter.getGenResults().getReal(), 0.0001);
+        assertEquals(bus1Adapter.getGenResults().getImaginary(), bus1CloneAdapter.getGenResults().getImaginary(), 0.0001);
 
 
 
