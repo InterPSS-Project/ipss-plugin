@@ -1,11 +1,6 @@
 package org.interpss.odm.mapper.impl.aclf;
 
 
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toActivePowerUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toAngleUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toVoltageUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toZUnit;
-
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.common.ODMLogger;
 import org.ieee.odm.schema.BusXmlType;
@@ -19,9 +14,12 @@ import org.ieee.odm.schema.VSCConverterXmlType;
 import org.ieee.odm.schema.VSCDCControlModeEnumType;
 import org.ieee.odm.schema.VSCHVDC2TXmlType;
 import org.interpss.numeric.datatype.LimitType;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toActivePowerUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toAngleUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toVoltageUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toZUnit;
 
 import com.interpss.common.util.IpssLogger;
-import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.HvdcObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
@@ -348,6 +346,9 @@ public class AclfHvdcDataHelper {
     	BusXmlType busXml = (BusXmlType) vscConvXml.getBusId().getIdRef();
     	
     	vscInv.setBus(this.aclfNet.getBus(busXml.getId()));
+
+		//TODO: setId otherwise the id is null, and causes error in jsoncopy
+		vscInv.setId("VSC Inv_" + busXml.getId());
     	
     	// DC Control mode
     	HvdcControlMode dcMode = 
@@ -404,6 +405,9 @@ public class AclfHvdcDataHelper {
 	 	BusXmlType busXml = (BusXmlType) vscConvXml.getBusId().getIdRef();
 	 	
 	 	vscRec.setBus(this.aclfNet.getBus(busXml.getId()));
+
+		//TODO: setId otherwise the id is null, and causes error in jsoncopy
+		vscRec.setId("VSC Rec_" + busXml.getId());
 	 	
 	 	// DC Control mode
 	 	HvdcControlMode dcMode = 
