@@ -22,7 +22,7 @@
   *
   */
 
-package org.interpss.core.mnet;
+package org.interpss.core.mnet.childNet;
 
 import static org.junit.Assert.assertTrue;
 
