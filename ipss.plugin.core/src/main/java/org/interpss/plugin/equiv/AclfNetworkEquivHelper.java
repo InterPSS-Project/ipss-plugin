@@ -134,14 +134,15 @@ public class AclfNetworkEquivHelper {
             AclfBranch branch = this.baseNetwork.getBranch(cuttingBranch.getBranchId());
             if(branch != null&& branch.isActive()){
                 //check if the branch is a zero impedance branch, if so, this could lead to large power mismatch at the boundary bus
-                if(branch.getZ().abs()< this.baseNetwork.getZeroZBranchThreshold()) {
-                    IpssLogger.getLogger().severe("Branch " + branch.getId() + " is a zero impedance branch, which may lead to large power mismatch at the boundary bus. Consider selecting another boundary branch instead.");
+                if(branch.getZ().abs()<= this.baseNetwork.getZeroZBranchThreshold()) {
+                    IpssLogger.getLogger().severe("Warn! Branch " + branch.getId() + " is a zero impedance branch, which may lead to large power mismatch at the boundary bus. Consider selecting another boundary branch instead.");
                 }
 
                 if(cuttingBranch.getSplitSide() == BranchBusSide.FROM_SIDE){
                     
                     Complex s = branch.powerFrom2To();
-                    AclfBus bus = equivNet.getBus(branch.getFromBusId());
+                    @SuppressWarnings("rawtypes")
+                    BaseAclfBus bus = branch.getFromAclfBus();
                     if(bus != null && bus.isActive()){
                         // create a load object with the total power at the boundary bus
                         AclfLoad load = CoreObjectFactory.createAclfLoad(branch.getId() + "_" + branch.getFromBusId());
