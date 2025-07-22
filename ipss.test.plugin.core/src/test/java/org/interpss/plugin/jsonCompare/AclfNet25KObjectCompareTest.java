@@ -1,21 +1,22 @@
 package org.interpss.plugin.jsonCompare;
 
+import static org.junit.Assert.assertTrue;
+
 import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
 import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
-import org.interpss.util.AclfNetJsonComparator;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.funcImpl.AclfNetObjectComparator;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 import com.interpss.simu.SimuObjectFactory;
 
-public class AclfNetJsonCompareTest extends CorePluginTestSetup {	
+public class AclfNet25KObjectCompareTest extends CorePluginTestSetup {	
 	@Test
 	public void test() throws Exception {
 		
@@ -40,8 +41,14 @@ public class AclfNetJsonCompareTest extends CorePluginTestSetup {
 		Value mismatch at /branchAry[Bus71173->Bus71174(1)]/id: 
 		First:  "Bus71173->Bus71174(1)"
 		Second: "Bus42121->Bus42123(1)"
-		 */
+		 *
 		assertTrue(new AclfNetJsonComparator("Case1").compareJson(net, copyNet));
+		*/
+		
+		AclfNetObjectComparator comp = new AclfNetObjectComparator(net, copyNet);
+		comp.compareNetwork();
+		
+		assertTrue(comp.getDiffMsgList().isEmpty());
 	}
 }
 
