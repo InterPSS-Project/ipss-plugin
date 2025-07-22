@@ -308,7 +308,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		// check the scale factor
 		assertTrue(xfr_92_str.getZMultiplyFactor().getReal() == 0.01);
 		assertTrue(xfr_92_str.getZMultiplyFactor().getImaginary() == 0.0);
-		assertEquals( 0.41194*0.01,xfr_92_str.getZ().getImaginary(),1.0e-5); // 0.41194 is the Z Corr value in the table, 0.01 is the scale factor
+		assertEquals( 0.41194*0.01,xfr_92_str.getAdjustedZ().getImaginary(),1.0e-5); // 0.41194 is the Z Corr value in the table, 0.01 is the scale factor
 
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 		algo.setLfMethod(AclfMethodType.NR);
