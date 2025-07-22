@@ -25,7 +25,7 @@ public class Ieee14JSonCompareSample {
 				.load("ipss-plugin/ipss.test.plugin.core/testData/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();	
 
-		FileUtil.writeText2File("testdata/json/ieee14Bus.json", new AclfNetworkState(aclfNet1).toString());
+		FileUtil.writeText2File("ipss-plugin/ipss.test.plugin.core/testdata/json/ieee14Bus.json", new AclfNetworkState(aclfNet1).toString());
 
 		new AclfNetJsonComparator("Case1").compareJson(aclfNet1, aclfNet2);
 		
