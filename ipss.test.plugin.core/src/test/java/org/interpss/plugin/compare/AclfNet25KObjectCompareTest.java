@@ -1,4 +1,4 @@
-package org.interpss.plugin.jsonCompare;
+package org.interpss.plugin.compare;
 
 import static org.junit.Assert.assertTrue;
 

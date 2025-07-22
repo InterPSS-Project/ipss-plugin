@@ -71,6 +71,7 @@ import org.interpss.core.zeroz.topo.IEEE14ZeroZBranchFuncLoopTest;
 import org.interpss.core.zeroz.topo.IEEE14ZeroZBranchFuncTest;
 import org.interpss.core.zeroz.topo.ZeroZBranchFuncTest;
 import org.interpss.plugin.beanModel.AclfBeanMapperTest;
+import org.interpss.plugin.compare.AclfNet25KObjectCompareTest;
 import org.interpss.plugin.lfGCtrl.SwitchedShuntGControlTest;
 import org.interpss.plugin.piecewise.Acsc5BusTestSubAreaNet;
 import org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise;
@@ -95,6 +96,9 @@ import org.junit.runners.Suite.SuiteClasses;
 	Kundur_2Area_LCCHVDC2T_Aclf_Test.class,
 	Kundur_2Area_LCCHVDC2T_Test.class,
 	Kundur_2Area_VSCHVDC2T_Test.class,
+	
+	// Compare
+	AclfNet25KObjectCompareTest.class,
 	
 	// ZeroZ branch
 	ZeroZBranchNetUtilTest.class,
