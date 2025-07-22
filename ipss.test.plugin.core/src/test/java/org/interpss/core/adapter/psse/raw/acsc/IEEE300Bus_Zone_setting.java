@@ -365,9 +365,9 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 		
 		if(relayBranch != null){
 			
-			System.out.println("Relay branch Z ="+relayBranch.getZ());
+			System.out.println("Relay branch Z ="+relayBranch.getAdjustedZ());
 			
-			zAngle = ComplexFunc.arg(relayBranch.getZ())*180/Math.PI; // converted to degrees
+			zAngle = ComplexFunc.arg(relayBranch.getAdjustedZ())*180/Math.PI; // converted to degrees
 			
 			AcscBus relayBus = relayAtFromSide? relayBranch.getFromAcscBus():relayBranch.getToAcscBus();
 			
@@ -435,7 +435,7 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 				      if(Zapp.abs() > maxZapp) maxZapp = Zapp.abs();
 				  }
 			}
-			if(maxZapp<=relayBranch.getZ().abs()){
+			if(maxZapp<=relayBranch.getAdjustedZ().abs()){
 				IpssLogger.getLogger().severe("No proper zone 3 setting can be found, relayBus, remoteBus: "+relayBusId+","+relayRemoteBusId);
 			    return null;
 			}
