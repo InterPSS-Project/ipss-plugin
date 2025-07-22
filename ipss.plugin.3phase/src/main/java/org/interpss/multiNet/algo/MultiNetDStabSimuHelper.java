@@ -282,7 +282,7 @@ public class MultiNetDStabSimuHelper extends AbstractMultiNetDStabSimuHelper{
     		  for(String branchId: subNetProcessor.getInterfaceBranchIdList()){
     			  
   				DStabBranch branch= net.getBranch(branchId);
-  				this.Zl.setEntry(i, i, branch.getZ());
+  				this.Zl.setEntry(i, i, branch.getAdjustedZ());
   				i++;
     		  }
     		    

@@ -116,8 +116,8 @@ public class IpssInternalFormat_out {
 			out.write(String.format("%8s %8s %10.5f %10.5f %10.5f%n", 
 					branch.getFromBus().getId(), 
 					branch.getToBus().getId(),
-					branch.getZ().getReal(),
-					branch.getZ().getImaginary(),
+					branch.getAdjustedZ().getReal(),
+					branch.getAdjustedZ().getImaginary(),
 					branch.getHShuntY().getImaginary()));
 		}
         out.write(String.format("%s%n%n", "end"));
