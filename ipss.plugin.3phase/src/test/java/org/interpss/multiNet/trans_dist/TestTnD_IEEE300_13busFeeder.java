@@ -150,7 +150,7 @@ public class TestTnD_IEEE300_13busFeeder {
 		
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
-		dstabAlgo.setOutPutPerSteps(1);
+		dstabAlgo.setOutputPerSteps(1);
 		//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
 		
 		IpssLogger.getLogger().setLevel(Level.INFO);
@@ -614,7 +614,7 @@ public class TestTnD_IEEE300_13busFeeder {
 				
 				// set the output handler
 				dstabAlgo.setSimuOutputHandler(sm);
-				dstabAlgo.setOutPutPerSteps(1);
+				dstabAlgo.setOutputPerSteps(1);
 				//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 				
 				IpssLogger.getLogger().setLevel(Level.WARNING);
@@ -844,7 +844,7 @@ public class TestTnD_IEEE300_13busFeeder {
 			
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(1);
+			dstabAlgo.setOutputPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 			
 			IpssLogger.getLogger().setLevel(Level.WARNING);

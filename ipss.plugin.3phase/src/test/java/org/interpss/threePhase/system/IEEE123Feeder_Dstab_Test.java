@@ -209,7 +209,7 @@ public class IEEE123Feeder_Dstab_Test {
 
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
-		dstabAlgo.setOutPutPerSteps(1);
+		dstabAlgo.setOutputPerSteps(1);
 
 		dstabAlgo.setDynamicEventHandler(new DynamicEventProcessor3Phase());
 

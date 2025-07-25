@@ -418,7 +418,7 @@ public class TestTnD_DynamicSwitching {
 
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(1);
+			dstabAlgo.setOutputPerSteps(1);
 			// dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
@@ -781,7 +781,7 @@ public class TestTnD_DynamicSwitching {
 
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(1);
+			dstabAlgo.setOutputPerSteps(1);
 			// dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);

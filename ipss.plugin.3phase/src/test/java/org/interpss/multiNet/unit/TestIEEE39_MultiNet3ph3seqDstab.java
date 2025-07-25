@@ -121,7 +121,7 @@ public class TestIEEE39_MultiNet3ph3seqDstab {
 			sm.addGeneratorStdMonitor(new String[]{"Bus30-mach1","Bus31-mach1","Bus34-mach1","Bus39-mach1"});
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(1);
+			dstabAlgo.setOutputPerSteps(1);
 			
 			IpssLogger.getLogger().setLevel(Level.INFO);
 			
@@ -216,7 +216,7 @@ public class TestIEEE39_MultiNet3ph3seqDstab {
 			sm.addGeneratorStdMonitor(new String[]{"Bus30-mach1","Bus31-mach1","Bus34-mach1","Bus39-mach1"});
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(5);
+			dstabAlgo.setOutputPerSteps(5);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
 			
 			IpssLogger.getLogger().setLevel(Level.INFO);

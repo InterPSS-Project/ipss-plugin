@@ -153,7 +153,7 @@ public class Test6BusFeederCompositeLoadModel extends TestBase {
 		sm.addBusStdMonitor(new String[]{"Bus6","Bus2","Bus1"});
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
-		dstabAlgo.setOutPutPerSteps(1);
+		dstabAlgo.setOutputPerSteps(1);
 
 		dstabAlgo.setDynamicEventHandler(new DynamicEventProcessor3Phase());
 

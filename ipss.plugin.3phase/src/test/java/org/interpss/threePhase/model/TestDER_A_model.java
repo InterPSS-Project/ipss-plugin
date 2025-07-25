@@ -80,7 +80,7 @@ public class TestDER_A_model {
 
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
-		dstabAlgo.setOutPutPerSteps(1);
+		dstabAlgo.setOutputPerSteps(1);
 
 		dstabAlgo.setDynamicEventHandler(new DynamicEventProcessor3Phase());
 

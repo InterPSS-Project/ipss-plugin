@@ -429,7 +429,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 			
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(1);
+			dstabAlgo.setOutputPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 			
 			IpssLogger.getLogger().setLevel(Level.WARNING);
@@ -796,7 +796,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 				
 				// set the output handler
 				dstabAlgo.setSimuOutputHandler(sm);
-				dstabAlgo.setOutPutPerSteps(1);
+				dstabAlgo.setOutputPerSteps(1);
 				//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 				
 				IpssLogger.getLogger().setLevel(Level.WARNING);
@@ -1167,7 +1167,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 				
 				// set the output handler
 				dstabAlgo.setSimuOutputHandler(sm);
-				dstabAlgo.setOutPutPerSteps(1);
+				dstabAlgo.setOutputPerSteps(1);
 				//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 				
 				IpssLogger.getLogger().setLevel(Level.WARNING);
@@ -1514,7 +1514,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 			
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(1);
+			dstabAlgo.setOutputPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 			
 			if (dstabAlgo.initialization()) {
@@ -1862,7 +1862,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 			
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(1);
+			dstabAlgo.setOutputPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 			
 			IpssLogger.getLogger().setLevel(Level.WARNING);
@@ -2205,7 +2205,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 			
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(1);
+			dstabAlgo.setOutputPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 			
 			IpssLogger.getLogger().setLevel(Level.WARNING);
@@ -2554,7 +2554,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 				
 				// set the output handler
 				dstabAlgo.setSimuOutputHandler(sm);
-				dstabAlgo.setOutPutPerSteps(1);
+				dstabAlgo.setOutputPerSteps(1);
 				//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 				
 				if (dstabAlgo.initialization()) {
@@ -2832,7 +2832,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 			
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(1);
+			dstabAlgo.setOutputPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 			
 			IpssLogger.getLogger().setLevel(Level.WARNING);

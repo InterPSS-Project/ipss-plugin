@@ -238,7 +238,7 @@ public class TestCMPLDWModel extends TestSetupBase {
 		sm.addDynDeviceMonitor(DynDeviceType.ACMotor, "ACMotor_CMPLDW_1@Bus1_loadBus");
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
-		dstabAlgo.setOutPutPerSteps(5);
+		dstabAlgo.setOutputPerSteps(5);
 
 		IpssLogger.getLogger().setLevel(Level.FINE);
 
@@ -368,7 +368,7 @@ public class TestCMPLDWModel extends TestSetupBase {
 			sm.addDynDeviceMonitor(DynDeviceType.ACMotor, "ACMotor_1@Bus3_loadBus");
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(5);
+			dstabAlgo.setOutputPerSteps(5);
 			
 			IpssLogger.getLogger().setLevel(Level.FINE);
 			
@@ -498,7 +498,7 @@ public class TestCMPLDWModel extends TestSetupBase {
 			sm.addDynDeviceMonitor(DynDeviceType.ACMotor, "ACMotor_1@Bus3_loadBus");
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(5);
+			dstabAlgo.setOutputPerSteps(5);
 			
 			IpssLogger.getLogger().setLevel(Level.FINE);
 			

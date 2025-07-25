@@ -106,7 +106,7 @@ public class TestSinglePhaseACMotorModel {
 
   			// set the output handler
   			dstabAlgo.setSimuOutputHandler(sm);
-  			dstabAlgo.setOutPutPerSteps(1);
+  			dstabAlgo.setOutputPerSteps(1);
 
   			net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1", net, SimpleFaultCode.GROUND_3P,new Complex(0,0.1),null, 0.1,0.06), "SLG@Bus1");
   			dstabAlgo.setDynamicEventHandler(new DynamicEventProcessor3Phase());
@@ -210,7 +210,7 @@ public class TestSinglePhaseACMotorModel {
 
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
-		dstabAlgo.setOutPutPerSteps(1);
+		dstabAlgo.setOutputPerSteps(1);
 
 		// bus fault event
 		//net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1", net, SimpleFaultCode.GROUND_3P,new Complex(0,0.1),null, 0.1,0.06), "SLG@Bus1");
@@ -425,7 +425,7 @@ AC motor Pe: time,ACMotor_2@Bus1_phaseB, ACMotor_1@Bus1_phaseA
 
   			// set the output handler
   			dstabAlgo.setSimuOutputHandler(sm);
-  			dstabAlgo.setOutPutPerSteps(1);
+  			dstabAlgo.setOutputPerSteps(1);
   		  	if(dstabAlgo.initialization()){
 
 		       // check init load

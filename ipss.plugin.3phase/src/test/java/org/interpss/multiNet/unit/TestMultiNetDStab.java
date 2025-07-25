@@ -106,7 +106,7 @@ public class TestMultiNetDStab {
 		sm.addBusStdMonitor(new String[]{"Bus8","Bus5","Bus1"});
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
-		dstabAlgo.setOutPutPerSteps(1);
+		dstabAlgo.setOutputPerSteps(1);
 		
 		IpssLogger.getLogger().setLevel(Level.INFO);
 		
@@ -196,7 +196,7 @@ public class TestMultiNetDStab {
 		sm.addBusStdMonitor(new String[]{"Bus1","Bus2","Bus3","Bus5","Bus7","Bus8"});
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
-		dstabAlgo.setOutPutPerSteps(1);
+		dstabAlgo.setOutputPerSteps(1);
 		
 		IpssLogger.getLogger().setLevel(Level.INFO);
 		
@@ -297,7 +297,7 @@ public class TestMultiNetDStab {
 		sm.addBusStdMonitor(new String[]{"Bus1","Bus2","Bus3","Bus5","Bus7","Bus8"});
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
-		dstabAlgo.setOutPutPerSteps(1);
+		dstabAlgo.setOutputPerSteps(1);
 		
 		IpssLogger.getLogger().setLevel(Level.INFO);
 		
@@ -398,7 +398,7 @@ public class TestMultiNetDStab {
 		sm.addBusStdMonitor(new String[]{"Bus8","Bus7","Bus5","Bus3","Bus2","Bus1"});
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
-		dstabAlgo.setOutPutPerSteps(1);
+		dstabAlgo.setOutputPerSteps(1);
 		
 		IpssLogger.getLogger().setLevel(Level.FINE);
 		

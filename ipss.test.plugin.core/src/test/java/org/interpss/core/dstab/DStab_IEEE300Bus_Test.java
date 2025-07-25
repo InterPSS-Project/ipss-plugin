@@ -96,7 +96,7 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 			
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(25);
+			dstabAlgo.setOutputPerSteps(25);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
 			
 			
@@ -194,7 +194,7 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 			
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(10);
+			dstabAlgo.setOutputPerSteps(10);
 			
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
 			
@@ -352,7 +352,7 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 				
 						// set the output handler
 						dstabAlgo.setSimuOutputHandler(sm);
-						dstabAlgo.setOutPutPerSteps(10);
+						dstabAlgo.setOutputPerSteps(10);
 						//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
 						
 						IpssLogger.getLogger().setLevel(Level.OFF);

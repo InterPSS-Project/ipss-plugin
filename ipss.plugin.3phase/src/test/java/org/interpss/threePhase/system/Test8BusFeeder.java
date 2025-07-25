@@ -110,7 +110,7 @@ public class Test8BusFeeder {
 		sm.addBusStdMonitor(new String[]{"Bus2","Bus1"});
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
-		dstabAlgo.setOutPutPerSteps(1);
+		dstabAlgo.setOutputPerSteps(1);
 
 		dstabAlgo.setDynamicEventHandler(new DynamicEventProcessor3Phase());
 
@@ -194,7 +194,7 @@ public class Test8BusFeeder {
 		sm.addBusStdMonitor(new String[]{"Bus2","Bus1"});
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
-		dstabAlgo.setOutPutPerSteps(1);
+		dstabAlgo.setOutputPerSteps(1);
 
 		dstabAlgo.setDynamicEventHandler(new DynamicEventProcessor3Phase());
 

@@ -103,7 +103,7 @@ public class Test3PhaseInductionMotor extends TestBase {
 
 	  			// set the output handler
 	  			dstabAlgo.setSimuOutputHandler(sm);
-	  			dstabAlgo.setOutPutPerSteps(1);
+	  			dstabAlgo.setOutputPerSteps(1);
 	  		  	if(dstabAlgo.initialization()){
 	  		  		// check induction motor initialization;
 	  		  	    //slip

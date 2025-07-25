@@ -83,7 +83,7 @@ public class TestDynLoad_IEEE39 {
 		sm.addDynDeviceMonitor(DynDeviceType.ACMotor, "ACMotor_2@Bus504");
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
-		dstabAlgo.setOutPutPerSteps(5);
+		dstabAlgo.setOutputPerSteps(5);
 		
 		//output AC motor parameters
 		LD1PAC ac_504 = (LD1PAC) dsNet.getBus("Bus504").getDynLoadModelList().get(0);

@@ -267,7 +267,7 @@ public class TwoBus_3Phase_Test {
 		sm.addBusStdMonitor(new String[]{"Bus1"});
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
-		dstabAlgo.setOutPutPerSteps(1);
+		dstabAlgo.setOutputPerSteps(1);
 
 	  	if(dstabAlgo.initialization()){
 	  	    System.out.print(net.getYMatrixABC().getSparseEqnComplex().toString());
