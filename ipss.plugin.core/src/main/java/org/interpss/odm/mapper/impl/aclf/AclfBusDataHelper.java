@@ -469,14 +469,8 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 	private void mapSwitchShuntData(SwitchedShuntXmlType xmlSwitchedShuntData){
 
 		SwitchedShunt swchShunt = AclfAdjustObjectFactory.createSwitchedShunt(this.bus);
-		//swchShunt.setId("SwitchedShunt@"+bus.getId());
+
 		swchShunt.setStatus(!xmlSwitchedShuntData.isOffLine());
-		
-		//this.bus.setBusControl(swchShunt);
-		//this.bus.setBusControl(swchShunt);
-		//swchShunt.setParentBus(bus);
-		//swchShunt.setRemoteBus(bus);
-		//swchShunt.setRemoteBusBranchId(bus.getId());
 		
 		ReactivePowerXmlType binit = xmlSwitchedShuntData.getBInit();
 		
@@ -589,7 +583,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 		}
 
 		svc.setBLimit(new LimitType(qMax, qMin)); // capacitive limit is positive, inductive limit is negative
-
+		
 		// map control mode
 		AclfAdjustControlMode mode = AclfAdjustControlMode.CONTINUOUS; 
 		svc.setControlMode(mode);
@@ -625,16 +619,20 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 			svc.setRemoteBusBranchId(remoteId);
 			//svc.setRemoteBus(this.aclfNet.getBus(remoteId));
 
-			//TODO Check the gen code for the bus, if it is not a GENPQ bus, set it to GENPQ
-			if (bus.getGenCode() != AclfGenCode.GEN_PQ) {
+			//if svc is controlling its parent bus, set the parent bus a pv bus
+			if(svc.isActive() && remoteId.equals(bus.getId())) {
+				// set the bus gen code to GEN_PV
+				bus.setGenCode(AclfGenCode.GEN_PV);
+			}
+			else {
 				bus.setGenCode(AclfGenCode.GEN_PQ); // set the bus gen code to GEN_PQ
 			}
 		}
 		else { // default is to control the local bus
 			svc.setRemoteBusBranchId(bus.getId());
 			svc.setRemoteBus(bus);
-			//TODO Check the gen code for the bus, if it is not a GENPV bus, set it to GENPV
-			if (bus.getGenCode() != AclfGenCode.GEN_PV) {
+			//TODO Check the gen code for the bus, if the SVC is active and the bus is not a GENPV bus, set it to GENPV
+			if (svc.isActive()&&bus.getGenCode() != AclfGenCode.GEN_PV) {
 				bus.setGenCode(AclfGenCode.GEN_PV); // set the bus gen code to GEN_PV
 			}
 		}
