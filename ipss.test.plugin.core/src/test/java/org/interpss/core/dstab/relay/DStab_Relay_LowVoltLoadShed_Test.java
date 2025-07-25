@@ -100,7 +100,7 @@ public class DStab_Relay_LowVoltLoadShed_Test extends DStabTestSetupBase{
 		sm.addBusStdMonitor(new String[]{"Bus5","Bus4","Bus1"});
 		// set the output handler
 				dstabAlgo.setSimuOutputHandler(sm);
-				dstabAlgo.setOutPutPerSteps(5);
+				dstabAlgo.setOutputPerSteps(5);
 		
 		IpssLogger.getLogger().setLevel(Level.INFO);
 		

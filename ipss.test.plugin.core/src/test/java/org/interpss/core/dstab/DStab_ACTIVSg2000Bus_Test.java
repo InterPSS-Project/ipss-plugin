@@ -92,7 +92,7 @@ public class DStab_ACTIVSg2000Bus_Test  extends DStabTestSetupBase{
 			
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(50);
+			dstabAlgo.setOutputPerSteps(50);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
 			
 			/**
@@ -290,7 +290,7 @@ public class DStab_ACTIVSg2000Bus_Test  extends DStabTestSetupBase{
 			
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(10);
+			dstabAlgo.setOutputPerSteps(10);
 			
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
 			

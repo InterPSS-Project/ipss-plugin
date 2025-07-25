@@ -295,7 +295,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 			
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(5);
+			dstabAlgo.setOutputPerSteps(5);
 			dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 			
 			IpssLogger.getLogger().setLevel(Level.WARNING);
@@ -568,7 +568,7 @@ public class TestTnD_IEEE9_6BusFeeder {
 			
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(10);
+			dstabAlgo.setOutputPerSteps(10);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 			
 			IpssLogger.getLogger().setLevel(Level.WARNING);

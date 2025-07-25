@@ -90,7 +90,7 @@
 //		
 //		// set the output handler
 //		dstabAlgo.setSimuOutputHandler(sm);
-//		dstabAlgo.setOutPutPerSteps(1);
+//		dstabAlgo.setOutputPerSteps(1);
 //		
 //		IpssLogger.getLogger().setLevel(Level.FINE);
 //		
@@ -184,7 +184,7 @@
 //		
 //		// set the output handler
 //		dstabAlgo.setSimuOutputHandler(sm);
-//		dstabAlgo.setOutPutPerSteps(1);
+//		dstabAlgo.setOutputPerSteps(1);
 //		
 //		IpssLogger.getLogger().setLevel(Level.FINE);
 //		
@@ -301,7 +301,7 @@
 //		
 //		// set the output handler
 //		dstabAlgo.setSimuOutputHandler(sm);
-//		dstabAlgo.setOutPutPerSteps(1);
+//		dstabAlgo.setOutputPerSteps(1);
 //		
 //		IpssLogger.getLogger().setLevel(Level.FINE);
 //		
@@ -422,7 +422,7 @@
 //		
 //		// set the output handler
 //		dstabAlgo.setSimuOutputHandler(sm);
-//		dstabAlgo.setOutPutPerSteps(1);
+//		dstabAlgo.setOutputPerSteps(1);
 //		
 //		IpssLogger.getLogger().setLevel(Level.FINE);
 //		
@@ -539,7 +539,7 @@
 //		
 //		// set the output handler
 //		dstabAlgo.setSimuOutputHandler(sm);
-//		dstabAlgo.setOutPutPerSteps(1);
+//		dstabAlgo.setOutputPerSteps(1);
 //		
 //		IpssLogger.getLogger().setLevel(Level.FINE);
 //		
@@ -682,7 +682,7 @@
 //		
 //		// set the output handler
 //		dstabAlgo.setSimuOutputHandler(sm);
-//		dstabAlgo.setOutPutPerSteps(1);
+//		dstabAlgo.setOutputPerSteps(1);
 //		
 //		IpssLogger.getLogger().setLevel(Level.FINE);
 //		
@@ -844,7 +844,7 @@
 //		
 //		// set the output handler
 //		dstabAlgo.setSimuOutputHandler(sm);
-//		dstabAlgo.setOutPutPerSteps(1);
+//		dstabAlgo.setOutputPerSteps(1);
 //		
 //		IpssLogger.getLogger().setLevel(Level.FINE);
 //		
@@ -1016,7 +1016,7 @@
 //		
 //		// set the output handler
 //		dstabAlgo.setSimuOutputHandler(sm);
-//		dstabAlgo.setOutPutPerSteps(1);
+//		dstabAlgo.setOutputPerSteps(1);
 //		
 //		IpssLogger.getLogger().setLevel(Level.FINE);
 //		

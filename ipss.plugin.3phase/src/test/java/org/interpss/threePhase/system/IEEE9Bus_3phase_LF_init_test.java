@@ -268,7 +268,7 @@ ca = (0.0, 0.0),cb = (1.734723475976807E-18, -3.469446951953614E-18),cc = (-1.73
 
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(5);
+			dstabAlgo.setOutputPerSteps(5);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 
 			IpssLogger.getLogger().setLevel(Level.WARNING);
@@ -374,7 +374,7 @@ ca = (0.0, 0.0),cb = (1.734723475976807E-18, -3.469446951953614E-18),cc = (-1.73
 
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(5);
+			dstabAlgo.setOutputPerSteps(5);
 			// dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 
 			IpssLogger.getLogger().setLevel(Level.WARNING);

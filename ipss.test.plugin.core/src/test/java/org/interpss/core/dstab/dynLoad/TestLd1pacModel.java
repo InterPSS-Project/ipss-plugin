@@ -71,7 +71,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		sm.addDynDeviceMonitor(DynDeviceType.ACMotor, "ACMotor_1@Bus1");
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
-		dstabAlgo.setOutPutPerSteps(5);
+		dstabAlgo.setOutputPerSteps(5);
 
 		IpssLogger.getLogger().setLevel(Level.FINE);
 
@@ -136,7 +136,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		sm.addDynDeviceMonitor(DynDeviceType.ACMotor, "ACMotor_1@Bus1");
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
-		dstabAlgo.setOutPutPerSteps(5);
+		dstabAlgo.setOutputPerSteps(5);
 		// faultBusId, net, code, zlg, zll, startTime, durationTime)
 		net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Swing", net, SimpleFaultCode.GROUND_3P,
 				new Complex(0.01, 0), new Complex(0), 1.0d, 0.08), "3phaseFault@Bus1");
@@ -196,7 +196,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		sm.addDynDeviceMonitor(DynDeviceType.ACMotor, "ACMotor_1@Bus1");
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
-		dstabAlgo.setOutPutPerSteps(1);
+		dstabAlgo.setOutputPerSteps(1);
 
 		IpssLogger.getLogger().setLevel(Level.FINE);
 

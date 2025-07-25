@@ -100,7 +100,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 		
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
-		dstabAlgo.setOutPutPerSteps(5);
+		dstabAlgo.setOutputPerSteps(5);
 		
 		IpssLogger.getLogger().setLevel(Level.WARNING);
 		
@@ -200,7 +200,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 			sm.addBusStdMonitor(new String[]{"Bus5"});
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(1);
+			dstabAlgo.setOutputPerSteps(1);
 			
 			IpssLogger.getLogger().setLevel(Level.INFO);
 			
@@ -407,7 +407,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 			sm.addBusStdMonitor(new String[]{"Bus5"});
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(1);
+			dstabAlgo.setOutputPerSteps(1);
 			
 			IpssLogger.getLogger().setLevel(Level.INFO);
 			
@@ -543,7 +543,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 			sm.addBusStdMonitor(new String[]{"Bus5","Bus4","Bus7"});
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(1);
+			dstabAlgo.setOutputPerSteps(1);
 			
 			IpssLogger.getLogger().setLevel(Level.INFO);
 			
@@ -652,7 +652,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 			sm.addBusStdMonitor(new String[]{"Bus5","Bus4","Bus7","Bus8"});
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(1);
+			dstabAlgo.setOutputPerSteps(1);
 			
 			IpssLogger.getLogger().setLevel(Level.INFO);
 			
@@ -781,7 +781,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 			//sm.addBusStdMonitor(new String[]{"Bus5","Bus4","Bus7","Bus8"});
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(1);
+			dstabAlgo.setOutputPerSteps(1);
 			
 			IpssLogger.getLogger().setLevel(Level.INFO);
 			
@@ -1068,7 +1068,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 			//sm.addBusStdMonitor(new String[]{"Bus5","Bus4","Bus7","Bus8"});
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(1);
+			dstabAlgo.setOutputPerSteps(1);
 			
 			IpssLogger.getLogger().setLevel(Level.INFO);
 			

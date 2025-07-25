@@ -168,7 +168,7 @@ public class Test_GC_12_47_1_Feeder {
 //
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
-		dstabAlgo.setOutPutPerSteps(1);
+		dstabAlgo.setOutputPerSteps(1);
 
 		dstabAlgo.setDynamicEventHandler(new DynamicEventProcessor3Phase());
 
@@ -305,7 +305,7 @@ public class Test_GC_12_47_1_Feeder {
 //
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
-		dstabAlgo.setOutPutPerSteps(1);
+		dstabAlgo.setOutputPerSteps(1);
 
 		dstabAlgo.setDynamicEventHandler(new DynamicEventProcessor3Phase());
 

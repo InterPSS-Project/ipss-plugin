@@ -148,7 +148,7 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 		
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
-		dstabAlgo.setOutPutPerSteps(5);
+		dstabAlgo.setOutputPerSteps(5);
 		//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 		
 		IpssLogger.getLogger().setLevel(Level.WARNING);
@@ -317,7 +317,7 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 		
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
-		dstabAlgo.setOutPutPerSteps(1);
+		dstabAlgo.setOutputPerSteps(1);
 		//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 		
 		IpssLogger.getLogger().setLevel(Level.WARNING);
@@ -524,7 +524,7 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 		
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
-		dstabAlgo.setOutPutPerSteps(1);
+		dstabAlgo.setOutputPerSteps(1);
 		//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 		
 		IpssLogger.getLogger().setLevel(Level.WARNING);
@@ -715,7 +715,7 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 		
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
-		dstabAlgo.setOutPutPerSteps(1);
+		dstabAlgo.setOutputPerSteps(1);
 		//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 		
 		IpssLogger.getLogger().setLevel(Level.WARNING);
@@ -951,7 +951,7 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 		
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
-		dstabAlgo.setOutPutPerSteps(1);
+		dstabAlgo.setOutputPerSteps(1);
 		//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 		
 		IpssLogger.getLogger().setLevel(Level.WARNING);

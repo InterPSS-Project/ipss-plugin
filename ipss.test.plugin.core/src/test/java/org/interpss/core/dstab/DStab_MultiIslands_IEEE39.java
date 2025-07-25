@@ -88,7 +88,7 @@ public class DStab_MultiIslands_IEEE39 extends DStabTestSetupBase{
 		
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
-		dstabAlgo.setOutPutPerSteps(10);
+		dstabAlgo.setOutputPerSteps(10);
 		//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
 		
 		//IpssLogger.getLogger().setLevel(Level.INFO);

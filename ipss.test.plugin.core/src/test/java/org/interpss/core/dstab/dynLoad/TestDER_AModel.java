@@ -80,7 +80,7 @@ public class TestDER_AModel extends TestSetupBase {
 		sm.addDynDeviceMonitor(DynDeviceType.PVGen, "DER_A_1@Bus1");
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
-		dstabAlgo.setOutPutPerSteps(1);
+		dstabAlgo.setOutputPerSteps(1);
 
 		IpssLogger.getLogger().setLevel(Level.FINE);
 

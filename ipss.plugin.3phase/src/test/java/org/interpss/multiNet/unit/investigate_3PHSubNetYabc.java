@@ -123,7 +123,7 @@ public class investigate_3PHSubNetYabc {
 			//sm.addBusStdMonitor(new String[]{"Bus5","Bus4","Bus7","Bus8"});
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(1);
+			dstabAlgo.setOutputPerSteps(1);
 			
 			IpssLogger.getLogger().setLevel(Level.INFO);
 			
@@ -474,7 +474,7 @@ public class investigate_3PHSubNetYabc {
 			sm.addBusStdMonitor(new String[]{"Bus4","Bus8"});
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(1);
+			dstabAlgo.setOutputPerSteps(1);
 			
 			IpssLogger.getLogger().setLevel(Level.INFO);
 			
