@@ -31,6 +31,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.exp.IpssNumericException;
 
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.AclfAdjustObjectFactory;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
@@ -38,7 +39,7 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.adj.AdjControlType;
+import com.interpss.core.aclf.adj.AclfAdjustControlType;
 import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.adpter.AclfLoadBusAdapter;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
@@ -56,8 +57,8 @@ public class XfrTapControlSample {
 		// xfr tap could be used to control voltage or mvar flow. In this
 		// example, it is used to control voltage
 		AclfBranch branch = net.getBranch("0001->0002(1)");
-		TapControl tap = CoreObjectFactory.createTapVControlBusVoltage(branch, 
-							AdjControlType.POINT_CONTROL, net, "0002").get();
+		TapControl tap = AclfAdjustObjectFactory.createTapVControlBusVoltage(branch, 
+							AclfAdjustControlType.POINT_CONTROL, net, "0002").get();
 		// tap limit
 		tap.setControlLimit(new LimitType(1.10, 0.9));
 		// control voltage on the toside

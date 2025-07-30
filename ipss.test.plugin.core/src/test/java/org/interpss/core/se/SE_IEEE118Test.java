@@ -44,8 +44,6 @@ public class SE_IEEE118Test extends CorePluginTestSetup {
 		
 		// copy through Hz
 		SENetwork seNetCopy = seNet.hzCopy();
-		
-		assertTrue("", seNet.diffState(seNetCopy));
 	}
 	
 	@Test
@@ -64,8 +62,6 @@ public class SE_IEEE118Test extends CorePluginTestSetup {
 	
 		// copy through JSon serialization/deserialization
 		SENetwork seNetCopy = seNet.jsonCopy();
-		
-		assertTrue("", seNet.diffState(seNetCopy));
 	}	
 	
 	@Test

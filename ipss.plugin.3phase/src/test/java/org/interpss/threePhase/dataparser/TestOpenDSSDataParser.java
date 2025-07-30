@@ -192,7 +192,7 @@ public class TestOpenDSSDataParser {
 		   */
 
 		  DStab3PBranch xfr1 = parser.getBranchByName("xfm1");
-		  assertTrue(xfr1.getZ().subtract(new Complex(0,2.72)).abs()<1.0E-9);
+		  assertTrue(xfr1.getAdjustedZ().subtract(new Complex(0,2.72)).abs()<1.0E-9);
 		  assertTrue(xfr1.getFromBus().getId().equals("61s"));
 		  assertTrue(xfr1.getToBus().getId().equals("610"));
 
@@ -211,7 +211,7 @@ public class TestOpenDSSDataParser {
 		   */
 
 		  DStab3PBranch xfr2 = parser.getBranchByName("reg4a");
-		  assertTrue(xfr2.getZ().subtract(new Complex(0,0.01)).abs()<1.0E-9);
+		  assertTrue(xfr2.getAdjustedZ().subtract(new Complex(0,0.01)).abs()<1.0E-9);
 		  assertTrue(xfr2.getFromBus().getId().equals("160"));
 		  assertTrue(xfr2.getToBus().getId().equals("160r"));
 
@@ -361,7 +361,7 @@ public class TestOpenDSSDataParser {
 		   */
 
 		  DStab3PBranch xfr1 = parser.getBranchByName("xfm1");
-		  assertTrue(xfr1.getZ().subtract(new Complex(0,2.72).multiply(1.0/zbase)).abs()<1.0E-9);
+		  assertTrue(xfr1.getAdjustedZ().subtract(new Complex(0,2.72).multiply(1.0/zbase)).abs()<1.0E-9);
 		  assertTrue(xfr1.getFromBus().getId().equals("61s"));
 		  assertTrue(xfr1.getToBus().getId().equals("610"));
 
@@ -380,7 +380,7 @@ public class TestOpenDSSDataParser {
 		   */
 
 		  DStab3PBranch xfr2 = parser.getBranchByName("reg4a");
-		  assertTrue(xfr2.getZ().subtract(new Complex(0,0.01).multiply(1.0/zbase)).abs()<1.0E-9);
+		  assertTrue(xfr2.getAdjustedZ().subtract(new Complex(0,0.01).multiply(1.0/zbase)).abs()<1.0E-9);
 		  assertTrue(xfr2.getFromBus().getId().equals("160"));
 		  assertTrue(xfr2.getToBus().getId().equals("160r"));
 

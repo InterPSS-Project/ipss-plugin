@@ -594,7 +594,7 @@ public class OpenDSSDataParser {
         		  vBase = bra3Phase.getFromBus().getBaseVoltage()>=bra3Phase.getToBus().getBaseVoltage()?
         				  bra3Phase.getFromBus().getBaseVoltage():bra3Phase.getToBus().getBaseVoltage();
         		  zBase = vBase*vBase*1.0E-6/mvabase;
-        		  bra3Phase.setZ(bra3Phase.getZ().divide(zBase));
+        		  bra3Phase.setZ(bra3Phase.getAdjustedZ().divide(zBase));
 
         		  // convert the turn ratios
         		  double vllfactor = 1.0;

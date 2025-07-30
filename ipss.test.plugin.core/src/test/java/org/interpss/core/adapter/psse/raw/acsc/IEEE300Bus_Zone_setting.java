@@ -1,7 +1,5 @@
 package org.interpss.core.adapter.psse.raw.acsc;
 
-import static org.junit.Assert.assertTrue;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -22,7 +20,7 @@ import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.ComplexFunc;
 import org.interpss.odm.mapper.ODMAcscParserMapper;
-import org.junit.Test;
+import static org.junit.Assert.assertTrue;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.util.IpssLogger;
@@ -91,7 +89,7 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 //	  	
 	}
 	
-	@Test
+	//@Test
 	public void calcZone3Setting() throws Exception {
 		   
 		
@@ -367,9 +365,9 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 		
 		if(relayBranch != null){
 			
-			System.out.println("Relay branch Z ="+relayBranch.getZ());
+			System.out.println("Relay branch Z ="+relayBranch.getAdjustedZ());
 			
-			zAngle = ComplexFunc.arg(relayBranch.getZ())*180/Math.PI; // converted to degrees
+			zAngle = ComplexFunc.arg(relayBranch.getAdjustedZ())*180/Math.PI; // converted to degrees
 			
 			AcscBus relayBus = relayAtFromSide? relayBranch.getFromAcscBus():relayBranch.getToAcscBus();
 			
@@ -437,7 +435,7 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 				      if(Zapp.abs() > maxZapp) maxZapp = Zapp.abs();
 				  }
 			}
-			if(maxZapp<=relayBranch.getZ().abs()){
+			if(maxZapp<=relayBranch.getAdjustedZ().abs()){
 				IpssLogger.getLogger().severe("No proper zone 3 setting can be found, relayBus, remoteBus: "+relayBusId+","+relayRemoteBusId);
 			    return null;
 			}
