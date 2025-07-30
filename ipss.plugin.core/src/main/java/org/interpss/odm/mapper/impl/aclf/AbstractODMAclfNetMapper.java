@@ -25,9 +25,6 @@
 package org.interpss.odm.mapper.impl.aclf;
 
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toActivePowerUnit;
-
 import java.util.List;
 
 import javax.xml.bind.JAXBElement;
@@ -46,6 +43,8 @@ import org.ieee.odm.schema.LineBranchXmlType;
 import org.ieee.odm.schema.LoadflowBusXmlType;
 import org.ieee.odm.schema.LoadflowNetXmlType;
 import org.ieee.odm.schema.NameValuePairXmlType;
+import org.ieee.odm.schema.NetAreaXmlType;
+import org.ieee.odm.schema.NetZoneXmlType;
 import org.ieee.odm.schema.PSXfr3WBranchXmlType;
 import org.ieee.odm.schema.PSXfrBranchXmlType;
 import org.ieee.odm.schema.PWDNetworkExtXmlType;
@@ -60,17 +59,24 @@ import org.interpss.odm.ext.pwd.AclfBranchPWDExtension;
 import org.interpss.odm.ext.pwd.AclfBusPWDExtension;
 import org.interpss.odm.mapper.ODMAclfNetMapper;
 import org.interpss.odm.mapper.base.AbstractODMSimuCtxDataMapper;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toActivePowerUnit;
 
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
+import static com.interpss.common.util.IpssLogger.ipssLogger;
+import com.interpss.core.AclfAdjustObjectFactory;
 import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.HvdcObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
+import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfGenCode;
+import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.XfrZTableEntry;
+import com.interpss.core.aclf.facts.StaticVarCompensator;
 import com.interpss.core.aclf.flow.FlowInterface;
 import com.interpss.core.aclf.flow.FlowInterfaceBranch;
 import com.interpss.core.aclf.flow.FlowInterfaceLimit;
@@ -78,9 +84,11 @@ import com.interpss.core.aclf.flow.FlowInterfaceType;
 import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
 import com.interpss.core.aclf.hvdc.HvdcLine2TVSC;
 import com.interpss.core.aclf.hvdc.HvdcOperationMode;
+import com.interpss.core.net.Area;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.BranchBusSide;
 import com.interpss.core.net.OriginalDataFormat;
+import com.interpss.core.net.Zone;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
@@ -163,10 +171,10 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 				//System.out.println(xmlBranch.getName() + ", " + xmlBranch.getId() + ", " + cnt++);
 				Branch branch = null;
 				if (xmlBranch instanceof PSXfr3WBranchXmlType || xmlBranch instanceof Xfr3WBranchXmlType)
-					branch = CoreObjectFactory.createAclf3WXformer();
+					branch = CoreObjectFactory.createAclf3WBranch();
 				else if(xmlBranch instanceof DCLineData2TXmlType) {
 					DCLineData2TXmlType dcLineXml  = (DCLineData2TXmlType)xmlBranch;
-					branch = CoreObjectFactory.createHvdcLine2TLCC(HvdcOperationMode.REC1_INV1, 
+					branch = HvdcObjectFactory.createHvdcLine2TLCC(HvdcOperationMode.REC1_INV1, 
 								dcLineXml.getId(), 
 								((LoadflowBusXmlType)dcLineXml.getFromBus().getIdRef()).getId(), 
 								((LoadflowBusXmlType)dcLineXml.getToBus().getIdRef()).getId());
@@ -182,7 +190,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 					
 				}
 				else if(xmlBranch instanceof VSCHVDC2TXmlType)
-					branch = CoreObjectFactory.createHvdc2TVSC();
+					branch = HvdcObjectFactory.createHvdc2TVSC();
 				else 
 					branch = CoreObjectFactory.createAclfBranch();
 				
@@ -243,6 +251,27 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 	}
 	
 	public static void postAclfNetProcessing(BaseAclfNetwork<?,?> aclfNet) throws InterpssException {
+		
+		// set the svc remote bus
+		aclfNet.getBusList().forEach(bus -> {
+			if (bus.isStaticVarCompensator()) {
+				StaticVarCompensator svc = bus.getStaticVarCompensator();
+				if(svc.getRemoteBusBranchId() != null){
+					BaseAclfBus<? extends AclfGen, ? extends AclfLoad> remoteBus = aclfNet.getBus(svc.getRemoteBusBranchId());
+					svc.setRemoteBus(remoteBus);
+				}
+			}
+		});
+		
+		/*
+		for (StaticVarCompensator svc : aclfNet.getSvcList()) {
+			if(svc.getRemoteBusBranchId() != null){
+				BaseAclfBus<? extends AclfGen, ? extends AclfLoad> remoteBus = aclfNet.getBus(svc.getRemoteBusBranchId());
+				svc.setRemoteBus(remoteBus);
+			}
+		}
+		*/
+		
 		aclfNet.adjustXfrZ();
 		
 		aclfNet.initContributeGenLoad(false);
@@ -272,8 +301,37 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 		
 		if (xmlNet.getBusVLimit() != null)
 			net.setDefaultVoltageLimit(new LimitType(xmlNet.getBusVLimit().getMax(), xmlNet.getBusVLimit().getMin()));
+		
+		// map the area info
+		if (xmlNet.getAreaList() != null) {
+			for (NetAreaXmlType areaXml : xmlNet.getAreaList().getArea()) {
+				if (areaXml.getId() != null && !areaXml.getId().isEmpty()) {
+					Area area = net.getArea(areaXml.getId());
+					if (area == null) {
+						area = CoreObjectFactory.createArea(areaXml.getId(), net);
+					}
+					area.setName(areaXml.getName() == null? "Area" : areaXml.getName());
+					area.setDesc(areaXml.getDesc() == null? "Area Desc" : areaXml.getDesc());
+					//net.getAreaList().add(area);
+				}
+			}
+		}
+		// map the zone info
+		if (xmlNet.getLossZoneList() != null) {
+			for (NetZoneXmlType zoneXml : xmlNet.getLossZoneList().getLossZone()) {
+				if (zoneXml.getId() != null && !zoneXml.getId().isEmpty()) {
+					Zone zone = net.getZone(zoneXml.getId());
+					if (zone == null) {
+						zone = CoreObjectFactory.createZone(zoneXml.getId(), net);
+					}
+					zone.setName(zoneXml.getName() == null? "Zone" : zoneXml.getName());
+					zone.setDesc(zoneXml.getDesc() == null? "Zone Desc" : zoneXml.getDesc());
+					//net.getZoneList().add(zone);
+				}
+			}
+		}
 	}
-	
+
 	/**
 	 * map interface info to the AclfNet object
 	 * 
@@ -287,10 +345,10 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 		}
 		
 		for (FlowInterfaceRecXmlType xmlIntf : xmlIntList ) {
-			FlowInterface intf = CoreObjectFactory.createInterface(net, xmlIntf.getId());
+			FlowInterface intf = AclfAdjustObjectFactory.createInterface(net, xmlIntf.getId());
 
 			for ( FlowInterfaceBranchXmlType xmlBra : xmlIntf.getBranchList()) {
-				FlowInterfaceBranch branch = CoreObjectFactory.createInterfaceBranch(intf);
+				FlowInterfaceBranch branch = AclfAdjustObjectFactory.createInterfaceBranch(intf);
 				AclfBranch b = net.getBranch(xmlBra.getFromBusId(), xmlBra.getToBusId(), xmlBra.getCircuitId());
 				if (b == null) {
 					b = net.getBranch(xmlBra.getToBusId(), xmlBra.getFromBusId(), xmlBra.getCircuitId());
@@ -314,13 +372,13 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 			 * info.
 			 */
 			if (xmlIntf.getOffPeakLimit() != null) {
-				FlowInterfaceLimit onPeak = CoreObjectFactory.createInterfaceLimit();
+				FlowInterfaceLimit onPeak = AclfAdjustObjectFactory.createInterfaceLimit();
 				intf.setOnPeakLimit(onPeak);
 				map(xmlIntf, onPeak, net.getBaseKva());
 			}
 			
 			if (xmlIntf.getOnPeakLimit() != null) {
-				FlowInterfaceLimit offPeak = CoreObjectFactory.createInterfaceLimit();
+				FlowInterfaceLimit offPeak = AclfAdjustObjectFactory.createInterfaceLimit();
 				intf.setOffPeakLimit(offPeak);
 				map(xmlIntf, offPeak, net.getBaseKva());
 			}

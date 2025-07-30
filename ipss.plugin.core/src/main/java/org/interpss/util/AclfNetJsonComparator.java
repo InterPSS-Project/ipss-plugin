@@ -178,10 +178,18 @@ public class AclfNetJsonComparator {
         for (int i = 0; i < minSize; i++) {
         	if (array1.get(i).isJsonObject() && array2.get(i).isJsonObject()) {
     			// Assuming the objects in the arrays are model objects with an id field
-        		
-            	String id = array1.get(i).getAsJsonObject().get("id").getAsString();
-                String currentPath = path + "[" + id + "]";
-                comparePrettyPrint(currentPath, array1.get(i), array2.get(i));
+            	String id1 = array1.get(i).getAsJsonObject().get("id").getAsString();
+            	String id2 = array2.get(i).getAsJsonObject().get("id").getAsString();
+            	if (id1.equals(id2)) {
+	                String currentPath = path + "[" + id1 + "]";
+	                comparePrettyPrint(currentPath, array1.get(i), array2.get(i));
+            	}
+            	else {
+					// If the id mis-matches, we can compare the objects directly
+					System.out.println("ID mismatch at " + path + "[" + i + "]: " +
+							"\nFirst:  " + id1 +
+							"\nSecond: " + id2);
+				}
 			}
         	else {
         		/* for handling the case where the array elements are not model objects,

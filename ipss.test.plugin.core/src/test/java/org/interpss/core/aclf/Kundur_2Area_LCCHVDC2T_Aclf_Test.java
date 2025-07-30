@@ -1,7 +1,6 @@
 package org.interpss.core.aclf;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter;
@@ -9,18 +8,18 @@ import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.datatype.ComplexFunc;
-import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
+import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.hvdc.HvdcControlMode;
 import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.simu.SimuContext;
@@ -32,6 +31,7 @@ public class Kundur_2Area_LCCHVDC2T_Aclf_Test extends CorePluginTestSetup {
 	
 	@Test
 	public void test_LCCHVDC_Loadflow_PsetOnInv() throws Exception {
+		IpssLogger.getLogger().setLevel(Level.INFO);
 		AclfNetwork net = createTestCase();
 		//System.out.println(net.net2String());
 
@@ -41,7 +41,9 @@ public class Kundur_2Area_LCCHVDC2T_Aclf_Test extends CorePluginTestSetup {
 		 
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 		algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
+		algo.setMaxIterations(30);
 	  	algo.loadflow();
+
   		//System.out.println(net.net2String());
 	  	
   		assertTrue(net.isLfConverged());

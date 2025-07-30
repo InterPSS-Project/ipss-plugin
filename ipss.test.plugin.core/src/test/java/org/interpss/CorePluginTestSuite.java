@@ -24,6 +24,7 @@ import org.interpss.core.adapter.psse.raw.aclf.PSSE_5Bus_TestCase;
 import org.interpss.core.adapter.psse.raw.aclf.PSSE_ACTIVSg2000Bus_Test;
 import org.interpss.core.adapter.psse.raw.aclf.PSSE_IEEE9Bus_Test;
 import org.interpss.core.adapter.psse.raw.aclf.SixBus_DclfPsXfr;
+import org.interpss.core.adapter.psse.raw.aclf.compare.PSSE_ACTIVSg2000BusCompare_Test;
 import org.interpss.core.adapter.psse.raw.acsc.IEEE39Bus_Acsc_Test;
 import org.interpss.core.adapter.psse.raw.acsc.IEEE9Bus_Acsc_Test;
 import org.interpss.core.adapter.psse.raw.dstab.IEEE9_Dstab_Adapter_Test;
@@ -56,16 +57,22 @@ import org.interpss.core.dstab.mach.MachineSaturationTest;
 import org.interpss.core.dstab.mach.RoundRotorMachineTest;
 import org.interpss.core.dstab.mach.SMIB_Gen_Test;
 import org.interpss.core.dstab.mach.SalientPoleMachineTest;
-import org.interpss.core.mvel.MvelExprEval_Test;
 import org.interpss.core.optadj.IEEE14_OptAdj_BasecaseSSAResult_Test;
 import org.interpss.core.optadj.IEEE14_OptAdj_Basecase_Test;
 import org.interpss.core.optadj.IEEE14_OptAdj_N1ScanSSAResult_Test;
 import org.interpss.core.optadj.IEEE14_OptAdj_N1Scan_Test;
+import org.interpss.core.script.mvel.MvelExprEval_Test;
 import org.interpss.core.zeroz.IEEE14ZeroZBranchAclfTest;
+import org.interpss.core.zeroz.IEEE14ZeroZBranchDeconsolidateTest;
+import org.interpss.core.zeroz.ZBrAclfDeconOutputTest;
+import org.interpss.core.zeroz.ZeroZBranchNetUtilTest;
+import org.interpss.core.zeroz.algo.IEEE9Bus_ZbrNRSolver_Test;
 import org.interpss.core.zeroz.topo.IEEE14ZeroZBranchFuncLoopTest;
 import org.interpss.core.zeroz.topo.IEEE14ZeroZBranchFuncTest;
 import org.interpss.core.zeroz.topo.ZeroZBranchFuncTest;
 import org.interpss.plugin.beanModel.AclfBeanMapperTest;
+import org.interpss.plugin.compare.AclfNet25KObjectCompareTest;
+import org.interpss.plugin.lfGCtrl.SwitchedShuntGControlTest;
 import org.interpss.plugin.piecewise.Acsc5BusTestSubAreaNet;
 import org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise;
 import org.interpss.plugin.piecewise.IEEE14TestAclfSubAreaBuild;
@@ -85,15 +92,23 @@ import org.junit.runners.Suite.SuiteClasses;
 	IEEE14_YMatrixSetTest.class,
 	SwingBusSubAreaTest.class,
 	PSSE_ACTIVSg2000Bus_Test.class,
+	PSSE_ACTIVSg2000BusCompare_Test.class,
 	Kundur_2Area_LCCHVDC2T_Aclf_Test.class,
 	Kundur_2Area_LCCHVDC2T_Test.class,
 	Kundur_2Area_VSCHVDC2T_Test.class,
 	
+	// Compare
+	AclfNet25KObjectCompareTest.class,
+	
 	// ZeroZ branch
+	ZeroZBranchNetUtilTest.class,
 	ZeroZBranchFuncTest.class,
 	IEEE14ZeroZBranchFuncTest.class,
 	IEEE14ZeroZBranchFuncLoopTest.class,
 	IEEE14ZeroZBranchAclfTest.class,
+	IEEE14ZeroZBranchDeconsolidateTest.class,
+	ZBrAclfDeconOutputTest.class,
+	IEEE9Bus_ZbrNRSolver_Test.class,
 	
 	// acsc
 	IEEE9Bus_Acsc_Test.class,
@@ -217,6 +232,8 @@ import org.junit.runners.Suite.SuiteClasses;
 	PSSE_IEEE9Bus_Test.class,
 	IEEE9_Dstab_Adapter_Test.class,
 
+	// PSSE Global Adjustment Control
+	SwitchedShuntGControlTest.class,
 	
 	//Acsc5Bus_ODM_TestCase.class,
 	IEEE9Bus_Acsc_Test.class,

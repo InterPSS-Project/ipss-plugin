@@ -61,14 +61,16 @@ import static org.interpss.odm.mapper.base.ODMUnitHelper.toZUnit;
 
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.common.util.IpssLogger;
 import static com.interpss.common.util.IpssLogger.ipssLogger;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.AclfAdjustObjectFactory;
 import com.interpss.core.aclf.Aclf3WBranch;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
-import com.interpss.core.aclf.adj.AdjControlType;
+import com.interpss.core.aclf.XfrZTableEntry;
+import com.interpss.core.aclf.adj.AclfAdjustControlType;
 import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.adpter.Aclf3WPSXformerAdapter;
@@ -223,7 +225,7 @@ public class AclfBranchDataHelper {
 				return;
 			}
 			if (xmlAngAdj.getMode() == AdjustmentModeEnumType.VALUE_ADJUSTMENT) {
-				PSXfrPControl psxfr = CoreObjectFactory.createPSXfrPControl(aclfBra, AdjControlType.POINT_CONTROL).get();
+				PSXfrPControl psxfr = AclfAdjustObjectFactory.createPSXfrPControl(aclfBra, AclfAdjustControlType.POINT_CONTROL).get();
 				psxfr.setStatus(!xmlAngAdj.isOffLine());
 				psxfr.setPSpecified(xmlAngAdj.getDesiredValue(), toActivePowerUnit.apply(xmlAngAdj.getDesiredActivePowerUnit()), baseKva);
 				psxfr.setAngLimit(new LimitType(xmlAngAdj.getAngleLimit().getMax(), xmlAngAdj.getAngleLimit().getMin()), toAngleUnit.apply(xmlAngAdj.getAngleLimit().getUnit()));
@@ -253,9 +255,9 @@ public class AclfBranchDataHelper {
 				psxfrCon.setMeteredOnFromSide(xmlAngAdj.isDesiredMeasuredOnFromSide());
 */				
 
-				PSXfrPControl psxfr = CoreObjectFactory.createPSXfrPControl(aclfBra, AdjControlType.RANGE_CONTROL).get();
+				PSXfrPControl psxfr = AclfAdjustObjectFactory.createPSXfrPControl(aclfBra, AclfAdjustControlType.RANGE_CONTROL).get();
 				psxfr.setStatus(!xmlAngAdj.isOffLine());
-				psxfr.setControlRange(UnitHelper.pConversion(new LimitType(xmlAngAdj.getRange().getMax(),xmlAngAdj.getRange().getMin()),
+				psxfr.setDesiredControlRange(UnitHelper.pConversion(new LimitType(xmlAngAdj.getRange().getMax(),xmlAngAdj.getRange().getMin()),
 						    baseKva, toActivePowerUnit.apply(xmlAngAdj.getDesiredActivePowerUnit()), UnitType.PU));
 				psxfr.setPSpecified(xmlAngAdj.getDesiredValue(), toActivePowerUnit.apply(xmlAngAdj.getDesiredActivePowerUnit()), baseKva);
 				psxfr.setAngLimit(new LimitType(xmlAngAdj.getAngleLimit().getMax(), xmlAngAdj.getAngleLimit().getMin()), toAngleUnit.apply(xmlAngAdj.getAngleLimit().getUnit()));
@@ -389,8 +391,8 @@ public class AclfBranchDataHelper {
 						
 						//specify the control type
 						if(xmlAdjData.getMode()==AdjustmentModeEnumType.VALUE_ADJUSTMENT){
-							Optional<TapControl> tapOpt = CoreObjectFactory.createTapVControlBusVoltage(aclfBra, 
-											AdjControlType.POINT_CONTROL, aclfNet, vcBusId);
+							Optional<TapControl> tapOpt = AclfAdjustObjectFactory.createTapVControlBusVoltage(aclfBra, 
+											AclfAdjustControlType.POINT_CONTROL, aclfNet, vcBusId);
 							if (tapOpt.isPresent()) {
 								tap = tapOpt.get();
 								tap.setVSpecified(xmlAdjData.getDesiredValue(), toVoltageUnit.apply(xmlAdjData.getDesiredVoltageUnit()));
@@ -398,13 +400,13 @@ public class AclfBranchDataHelper {
 						}
 
 						else {
-							Optional<TapControl> tapOpt = CoreObjectFactory.createTapVControlBusVoltage(aclfBra, 
-								AdjControlType.RANGE_CONTROL, aclfNet, vcBusId);
+							Optional<TapControl> tapOpt = AclfAdjustObjectFactory.createTapVControlBusVoltage(aclfBra, 
+								AclfAdjustControlType.RANGE_CONTROL, aclfNet, vcBusId);
 							if (tapOpt.isPresent()) {
 								tap = tapOpt.get();
 								//TODO: add the unit conversion for the control range, but it is missing currently in the ODM data, so we skip it for now,
 								// it is desirable to change xmlAdjData.getDesiredVoltageUnit() to getVoltageUnit() so that it can be used for both cases
-								tap.setControlRange(new LimitType(xmlAdjData.getRange().getMax(),xmlAdjData.getRange().getMin()));
+								tap.setDesiredControlRange(new LimitType(xmlAdjData.getRange().getMax(),xmlAdjData.getRange().getMin()));
 							}
 						}
 						
@@ -430,21 +432,21 @@ public class AclfBranchDataHelper {
 						}
 
 						if(xmlAdjData.getMode()==AdjustmentModeEnumType.VALUE_ADJUSTMENT){
-							Optional<TapControl> tapOpt = CoreObjectFactory.createTapVControlMvarFlow(aclfBra, 
-											AdjControlType.POINT_CONTROL);
+							Optional<TapControl> tapOpt = AclfAdjustObjectFactory.createTapVControlMvarFlow(aclfBra, 
+											AclfAdjustControlType.POINT_CONTROL);
 							if (tapOpt.isPresent()) {
 								tap = tapOpt.get(); 
 								tap.setMvarSpecified(xmlAdjData.getDesiredValue(), toReactivePowerUnit.apply(xmlAdjData.getDesiredMvarFlowUnit()), baseKva);
 							}
 						}
 						else {
-							Optional<TapControl> tapOpt = CoreObjectFactory.createTapVControlMvarFlow(aclfBra, 
-											AdjControlType.RANGE_CONTROL);
+							Optional<TapControl> tapOpt = AclfAdjustObjectFactory.createTapVControlMvarFlow(aclfBra, 
+											AclfAdjustControlType.RANGE_CONTROL);
 							if (tapOpt.isPresent()) {
 								tap = tapOpt.get(); 
 
 								//TODO: add the unit conversion for the control range, but it is missing currently in the ODM data, so we skip it for now,
-								tap.setControlRange(new LimitType(xmlAdjData.getRange().getMax(),xmlAdjData.getRange().getMin()));
+								tap.setDesiredControlRange(new LimitType(xmlAdjData.getRange().getMax(),xmlAdjData.getRange().getMin()));
 							}
 						}
 						if (tap!=null) {
@@ -659,8 +661,25 @@ public class AclfBranchDataHelper {
 					throw new InterpssException("function not implemented yet"); 
 				}
 			}
-		}	
-		
+
+			// set the correction table flag
+			branch3W.setZCorrectionOnWinding(xfrData.isZCorrectionOnWinding());
+			//Set the 3W xfr Z table number
+			int tableNum1 = xfrData.getZTableNumber() != null ? xfrData.getZTableNumber() : 0;
+			int tableNum2 = xfrData.getZTableNumber2() != null ? xfrData.getZTableNumber2() : 0;
+			int tableNum3 = xfrData.getZTableNumber3() != null ? xfrData.getZTableNumber3() : 0;
+
+			if (tableNum1 > 0) {
+				branch3W.getFromAclfBranch().setXfrZTableNumber(tableNum1);
+			}
+			if (tableNum2 > 0) {
+				branch3W.getToAclfBranch().setXfrZTableNumber(tableNum2);
+			}
+			if (tableNum3 > 0) {
+				branch3W.getTertAclfBranch().setXfrZTableNumber(tableNum3);
+			}
+		}
+
 		/*
             <z unit="PU" im="0.025" re="2.0E-4"/>
             <fromTurnRatio unit="PU" value="1.0101"/>
@@ -668,15 +687,17 @@ public class AclfBranchDataHelper {
             <z23 unit="PU" im="0.01" re="3.0E-4"/>
             <z31 unit="PU" im="0.011" re="4.0E-4"/>
             <tertTurnRatio unit="PU" value="1.01"/>
-*/
+		*/
+		
+
 		double baseV = fromBaseV > toBaseV ? fromBaseV : toBaseV;
 		baseV = baseV > tertBaseV ? baseV : tertBaseV;
+
+		//converte the z values to the system base
 		Complex z12 = new Complex(xml3WXfr.getZ().getRe()*zratio12, xml3WXfr.getZ().getIm()*zratio12);
 		Complex z23 = new Complex(xml3WXfr.getZ23().getRe()*zratio23, xml3WXfr.getZ23().getIm()*zratio23);
 		Complex z31 = new Complex(xml3WXfr.getZ31().getRe()*zratio31, xml3WXfr.getZ31().getIm()*zratio31);
 		UnitType unit = toZUnit.apply(xml3WXfr.getZ().getUnit());
-		// set 3W xfr branch z to the three 2W xfr branches
-		xfr3W.setZ(z12, z31, z23, unit, baseV);
 
 		double fromRatio = xml3WXfr.getFromTurnRatio().getValue()*tapratio12;
 		double toRatio = xml3WXfr.getToTurnRatio().getValue()*tapratio23;
@@ -685,17 +706,125 @@ public class AclfBranchDataHelper {
 		xfr3W.setFromTurnRatio(fromRatio == 0.0 ? 1.0 : fromRatio);
 		xfr3W.setToTurnRatio(toRatio == 0.0 ? 1.0 : toRatio);
 		xfr3W.setTertTurnRatio(tertRatio == 0.0 ? 1.0 : tertRatio);
+
+		// check if the zcorrection is on winding or the bus-to-bus impedance, for the latter case, the z correction table is applied to the bus-to-bus impedance, we need to process it before setting the z
+		// branch3W.isZCorrectionOnWinding()
+		// it is handled in the post-processsing step for all the 2-winding xfr branches (3-winding xfrs are converted to 2-winding branches already by then)
+		if (!branch3W.isZCorrectionOnWinding()) {
+			//adjust the z12, z23, z31 based on the tap ratios	or the phase shifting angles
+			/**
+			 *  If the first T in a table is less than 0.5 or the last T entered is greater than
+				1.5, T is assumed to be the phase shift angle and each transformer impedance dependent on the table is
+				treated as a function of phase shift angle. Otherwise, the transformer impedances dependent on the table
+				are made sensitive to off-nominal turns ratio.
+			 */
+			if (xfrData.getZTableNumber()!= null && xfrData.getZTableNumber2()!= null && xfrData.getZTableNumber3()!= null &&
+					xfrData.getZTableNumber()+xfrData.getZTableNumber2()+xfrData.getZTableNumber3() > 1) {
+				throw new InterpssException("3W Xfr Z Table Number is not defined properly, more than one non-zero numbers, number: " + xfrData.getZTableNumber() + ", " + xfrData.getZTableNumber2() + ", " + xfrData.getZTableNumber3());
+			}
+
+			if (xfrData.getZTableNumber()!= null && xfrData.getZTableNumber() > 0) {
+				XfrZTableEntry elem = this.aclfNet.getXfrZTableEntry(xfrData.getZTableNumber());
+				boolean isPhaseShiftBased = false;
+				if (elem != null) {
+					// Determine if the adjustment is based on phase shift
+					if (elem.getPointSet().getPoints().size() > 0) {
+						double firstT = elem.getPointSet().getPoints().get(0).x;
+						double lastT = elem.getPointSet().getPoints().get(elem.getPointSet().getPoints().size() - 1).x;
+						isPhaseShiftBased = (firstT < 0.5 || lastT > 1.5);
+					}
+					else {
+						IpssLogger.getLogger().severe("Xfr Z Adj Table entry is empty, number: " + xfrData.getZTableNumber());
+					}
+					if (!isPhaseShiftBased) {
+						Complex factor = elem.getScaleFactor(xfr3W.getFromTurnRatio());
+						z12 = z12.multiply(factor);
+					}
+					else if (isPhaseShiftBased) { //Note: this could be applied to both phshift xfr and non-phase shift xfr, the phase shift angle could be zero and still valid
+						double phshiftAngle = branch3W.getFromAclfBranch().getFromPSXfrAngle();
+						Complex factor = elem.getScaleFactor(Math.toDegrees(phshiftAngle));
+						z12 = z12.multiply(factor);
+					}
+				}
+				else {
+					IpssLogger.getLogger().severe("Xfr Z Adj Table entry not found, number: " + xfrData.getZTableNumber());
+
+				}
+			}
+
+			if (xfrData.getZTableNumber2()!=null && xfrData.getZTableNumber2() > 0) {
+				XfrZTableEntry elem = this.aclfNet.getXfrZTableEntry(xfrData.getZTableNumber2());
+				boolean isPhaseShiftBased = false;
+				if (elem != null) {
+					// Determine if the adjustment is based on phase shift
+					if (elem.getPointSet().getPoints().size() > 0) {
+						double firstT = elem.getPointSet().getPoints().get(0).x;
+						double lastT = elem.getPointSet().getPoints().get(elem.getPointSet().getPoints().size() - 1).x;
+						isPhaseShiftBased = (firstT < 0.5 || lastT > 1.5);
+					}
+					else {
+						IpssLogger.getLogger().severe("Xfr Z Adj Table entry is empty, number: " + xfrData.getZTableNumber());
+					}
+					if (!isPhaseShiftBased) {
+						Complex factor = elem.getScaleFactor(xfr3W.getToTurnRatio());
+						z23 = z23.multiply(factor);
+					}
+					else if (isPhaseShiftBased) { //Note: this could be applied to both phshift xfr and non-phase shift xfr, the phase shift angle could be zero and still valid
+						double phshiftAngle = branch3W.getToAclfBranch().getFromPSXfrAngle();
+						Complex factor = elem.getScaleFactor(Math.toDegrees(phshiftAngle));
+						z23 = z23.multiply(factor);
+					}
+				}
+				else {
+					IpssLogger.getLogger().severe("Xfr Z Adj Table entry not found, number: " + xfrData.getZTableNumber());
+
+				}
+			}
+
+			if (xfrData.getZTableNumber3()!=null && xfrData.getZTableNumber3() > 0) {
+				XfrZTableEntry elem = this.aclfNet.getXfrZTableEntry(xfrData.getZTableNumber3());
+				boolean isPhaseShiftBased = false;
+				if (elem != null) {
+					// Determine if the adjustment is based on phase shift
+					if (elem.getPointSet().getPoints().size() > 0) {
+						double firstT = elem.getPointSet().getPoints().get(0).x;
+						double lastT = elem.getPointSet().getPoints().get(elem.getPointSet().getPoints().size() - 1).x;
+						isPhaseShiftBased = (firstT < 0.5 || lastT > 1.5);
+					}
+					else {
+						IpssLogger.getLogger().severe("Xfr Z Adj Table entry is empty, number: " + xfrData.getZTableNumber());
+					}
+					if (!isPhaseShiftBased) {
+						Complex factor = elem.getScaleFactor(xfr3W.getToTurnRatio());
+						z31 = z31.multiply(factor);
+					}
+					else if (isPhaseShiftBased) { //Note: this could be applied to both phshift xfr and non-phase shift xfr, the phase shift angle could be zero and still valid
+						double phshiftAngle = branch3W.getTertAclfBranch().getFromPSXfrAngle();
+						Complex factor = elem.getScaleFactor(Math.toDegrees(phshiftAngle));
+						z31 = z31.multiply(factor);
+					}
+				}
+				else {
+					IpssLogger.getLogger().severe("Xfr Z Adj Table entry not found, number: " + xfrData.getZTableNumber());
+
+				}
+			}
+		}	
+
+		// set 3W xfr branch z to the three 2W xfr branches
+		xfr3W.setZ(z12, z31, z23, unit, baseV);
 		
-/*
-                <ratingLimit>
-                    <mva unit="MVA" rating3="1090.0" rating2="1150.0" rating1="1200.0"/>
-                </ratingLimit>
-                <ratingLimit23>
-                    <mva unit="MVA" rating3="1112.0" rating2="1175.0" rating1="1250.0"/>
-                </ratingLimit23>
-                <ratingLimit13>
-                    <mva unit="MVA" rating3="1157.0" rating2="1200.0" rating1="1280.0"/>
-                </ratingLimit13>
- */
+		/*
+						<ratingLimit>
+							<mva unit="MVA" rating3="1090.0" rating2="1150.0" rating1="1200.0"/>
+						</ratingLimit>
+						<ratingLimit23>
+							<mva unit="MVA" rating3="1112.0" rating2="1175.0" rating1="1250.0"/>
+						</ratingLimit23>
+						<ratingLimit13>
+							<mva unit="MVA" rating3="1157.0" rating2="1200.0" rating1="1280.0"/>
+						</ratingLimit13>
+		*/
+		
 	}
 }

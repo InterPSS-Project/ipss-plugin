@@ -104,7 +104,7 @@ public class PSXfrPControlTest extends CorePluginTestSetup {
 	@Test	
 	public void fromSideCaseTest_Bean() throws Exception {				
 		
-		AclfNetwork aclfNet = SampleTestingCases.sample3BusPSXfrPControl();
+		AclfNetwork aclfNet = SampleTestingCases.sample3BusPSXfrPControlPoint();
 		//System.out.println(aclfNet.net2String());
 		// map AclfNet to AclfNetBean
 		AclfNetBean netBean = new AclfNet2AclfBeanMapper().map2Model(aclfNet);
@@ -137,7 +137,7 @@ public class PSXfrPControlTest extends CorePluginTestSetup {
 	
 	@Test
 	public void fromSideCaseTestBeanModelVerification() throws Exception {
-		AclfNetwork net = SampleTestingCases.sample3BusPSXfrPControl();	
+		AclfNetwork net = SampleTestingCases.sample3BusPSXfrPControlPoint();	
 		
 		// map AclfNet to AclfNetBean
 		AclfNetBean netBean = new AclfNet2AclfBeanMapper().map2Model(net);

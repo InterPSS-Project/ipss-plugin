@@ -217,7 +217,7 @@ public class PiecewiseAlgoPosImpl<TSub extends BaseSubArea<ISparseEqnComplex, Co
 		for ( int i = 0; i < nCutBranches; i++) {
   			AclfBranch branch = parentNet.getBranch(cuttingBranches[i].getBranchId());
   			for (int j = 0; j < nCutBranches; j++) {
-  				matrix[i][j] = i == j? branch.getZ() : new Complex(0.0,0.0);
+  				matrix[i][j] = i == j? branch.getAdjustedZ() : new Complex(0.0,0.0);
   			}
 		}
 		

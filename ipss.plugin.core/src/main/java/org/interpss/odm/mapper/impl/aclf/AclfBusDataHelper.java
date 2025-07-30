@@ -24,13 +24,7 @@
 
 package org.interpss.odm.mapper.impl.aclf;
 
-import static org.interpss.odm.mapper.base.ODMFunction.BusXmlRef2BusId;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toActivePowerUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toAngleUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toApparentPowerUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toReactivePowerUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toVoltageUnit;
-import static org.interpss.odm.mapper.base.ODMUnitHelper.toYUnit;
+import java.util.Optional;
 
 import javax.xml.bind.JAXBElement;
 
@@ -48,6 +42,7 @@ import org.ieee.odm.schema.LoadflowShuntYDataXmlType;
 import org.ieee.odm.schema.PowerXmlType;
 import org.ieee.odm.schema.ReactivePowerUnitType;
 import org.ieee.odm.schema.ReactivePowerXmlType;
+import org.ieee.odm.schema.StaticVarCompensatorXmlType;
 import org.ieee.odm.schema.SwitchedShuntBlockXmlType;
 import org.ieee.odm.schema.SwitchedShuntModeEnumType;
 import org.ieee.odm.schema.SwitchedShuntXmlType;
@@ -56,9 +51,17 @@ import org.ieee.odm.schema.VoltageXmlType;
 import org.ieee.odm.schema.YXmlType;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
+import static org.interpss.odm.mapper.base.ODMFunction.BusXmlRef2BusId;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toActivePowerUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toAngleUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toApparentPowerUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toReactivePowerUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toVoltageUnit;
+import static org.interpss.odm.mapper.base.ODMUnitHelper.toYUnit;
 
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.AclfAdjustObjectFactory;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGen;
@@ -68,15 +71,20 @@ import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.ShuntCompensator;
+import com.interpss.core.aclf.ShuntCompensatorType;
+import com.interpss.core.aclf.adj.AclfAdjustControlMode;
+import com.interpss.core.aclf.adj.AclfAdjustControlType;
+import com.interpss.core.aclf.adj.BusBranchControlType;
 import com.interpss.core.aclf.adj.PQBusLimit;
 import com.interpss.core.aclf.adj.PVBusLimit;
 import com.interpss.core.aclf.adj.SwitchedShunt;
-import com.interpss.core.aclf.adj.VarCompensationMode;
 import com.interpss.core.aclf.adpter.AclfPQGenBusAdapter;
 import com.interpss.core.aclf.adpter.AclfPVGenBusAdapter;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
+import com.interpss.core.aclf.facts.StaticVarCompensator;
 import com.interpss.core.acsc.AcscBus;
 import com.interpss.core.acsc.BaseAcscBus;
+import com.interpss.core.net.OriginalDataFormat;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.opf.OpfBus;
@@ -145,7 +153,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 			if (xmlBusData.getGenData().getCode() == LFGenCodeEnumType.SWING)
 				bus.toSwingBus().setDesiredVoltAng(angRad);
 			//add check to make sure there is at least one  generator with the bus
-			if(xmlBusData.getGenData().getCode()!=LFGenCodeEnumType.NONE_GEN && xmlBusData.getGenData().getContributeGen().size()>0)
+			if(xmlBusData.getGenData().getCode()!=LFGenCodeEnumType.NONE_GEN && !xmlBusData.getGenData().getContributeGen().isEmpty())
 				mapGenData(xmlBusData.getGenData());
 		} else {
 			bus.setGenCode(AclfGenCode.NON_GEN);
@@ -153,7 +161,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 
 		//System.out.println(bus.getId() + "  " + Number2String.toStr(bus.getVoltage()));		
 		
-		if (xmlBusData.getLoadData() != null && xmlBusData.getLoadData().getContributeLoad().size()>0) {
+		if (xmlBusData.getLoadData() != null && !xmlBusData.getLoadData().getContributeLoad().isEmpty()) {
 			mapLoadData(xmlBusData.getLoadData());
 		} else {
 			bus.setLoadCode(AclfLoadCode.NON_LOAD);
@@ -198,8 +206,13 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 		if(xmlBusData.getSwitchedShunt()!=null){
 			mapSwitchShuntData(xmlBusData.getSwitchedShunt());
 		}
+
+		if(xmlBusData.getSvc() != null) {
+			// map SVC data
+			mapStaticVarCompensatorData(xmlBusData.getSvc());
+		}
 	}
-	
+
 	private void mapGenData(BusGenDataXmlType xmlGenData) throws InterpssException {
 		LoadflowGenDataXmlType xmlDefaultGen = AclfParserHelper.getDefaultGen(xmlGenData);
 		VoltageXmlType vXml = xmlDefaultGen.getDesiredVoltage();
@@ -212,7 +225,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 				pqBus.setGen(new Complex(p, q), toApparentPowerUnit.apply(xmlDefaultGen.getPower().getUnit()));
 			if (p != 0.0 || q != 0.0) {
 				if (xmlDefaultGen.getVoltageLimit() != null) {
-			  		final PQBusLimit pqLimit = CoreObjectFactory.createPQBusLimit(bus).get();
+			  		final PQBusLimit pqLimit = AclfAdjustObjectFactory.createPQBusLimit(bus).get();
 			  		pqLimit.setVLimit(new LimitType(xmlDefaultGen.getVoltageLimit().getMax(), 
 			  										xmlDefaultGen.getVoltageLimit().getMin()), 
 			  										toVoltageUnit.apply(xmlDefaultGen.getVoltageLimit().getUnit()));						
@@ -243,7 +256,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 					pvBus.setDesiredVoltMag(vpu, UnitType.PU);
 					
 					if (xmlDefaultGen.getQLimit() != null) {
-  			  			final PVBusLimit pvLimit = CoreObjectFactory.createPVBusLimit(bus);
+  			  			final PVBusLimit pvLimit = AclfAdjustObjectFactory.createPVBusLimit(bus);
   			  			pvLimit.setQLimit(new LimitType(xmlDefaultGen.getQLimit().getMax(), 
   			  										xmlDefaultGen.getQLimit().getMin()), 
   			  									toReactivePowerUnit.apply(xmlDefaultGen.getQLimit().getUnit()));
@@ -439,6 +452,14 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 						}
 
 						load.setCode(code);
+
+						// process the distributed generation available at the load since psse v34
+						if(loadElem.getDGenPower()!=null){
+							PowerXmlType dgenP = loadElem.getDGenPower();
+							load.setDistGenPower(UnitHelper.pConversion(new Complex(dgenP.getRe(),dgenP.getIm()), baseKva, 
+									toApparentPowerUnit.apply(dgenP.getUnit()), UnitType.PU));
+						}
+						if (loadElem.isDGenStatus()!=null)load.setDistGenStatus(loadElem.isDGenStatus()); 
 				   }
 			   }
 		   }
@@ -447,14 +468,15 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 	
 	private void mapSwitchShuntData(SwitchedShuntXmlType xmlSwitchedShuntData){
 
-		SwitchedShunt swchShunt = CoreObjectFactory.createSwitchedShunt();
-		//TODO how the switched shunt should be modeled, controlBus or shuntDevice?
-		//swithced shunt is a also a AclfControlBus
-		//set status
+		SwitchedShunt swchShunt = AclfAdjustObjectFactory.createSwitchedShunt(this.bus);
+		//swchShunt.setId("SwitchedShunt@"+bus.getId());
 		swchShunt.setStatus(!xmlSwitchedShuntData.isOffLine());
 		
 		//this.bus.setBusControl(swchShunt);
-		this.bus.setSwitchedShuntDevice(swchShunt);
+		//this.bus.setBusControl(swchShunt);
+		//swchShunt.setParentBus(bus);
+		//swchShunt.setRemoteBus(bus);
+		//swchShunt.setRemoteBusBranchId(bus.getId());
 		
 		ReactivePowerXmlType binit = xmlSwitchedShuntData.getBInit();
 		
@@ -467,30 +489,165 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 			
 			swchShunt.setBInit(binit.getValue()*factor);
 			
-			VarCompensationMode mode = xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.CONTINUOUS?
-					VarCompensationMode.CONTINUOUS:xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.DISCRETE?
-					VarCompensationMode.DISCRETE:VarCompensationMode.FIXED;
+			AclfAdjustControlMode mode = xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.CONTINUOUS?
+					AclfAdjustControlMode.CONTINUOUS:(xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.DISCRETE_LOCAL_VOLTAGE ||
+					xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.DISCRETE_REMOTE_REACTIVE_POWER)?
+					AclfAdjustControlMode.DISCRETE:AclfAdjustControlMode.FIXED;
 			
 			swchShunt.setControlMode(mode);
+
+			//per PSS/E, set the adjustment control type to be range control (the interPSS internal default is point control)
+			if(this.aclfNet.getOriginalDataFormat() == OriginalDataFormat.PSSE) 
+				swchShunt.setAdjControlType(AclfAdjustControlType.RANGE_CONTROL);
+			else
+				//TODO: for other input formats, we set the control type to be point control
+				swchShunt.setAdjControlType(AclfAdjustControlType.POINT_CONTROL);
+
+			//TODO: updated the control mode and support the reactive power range per PSS/E input format
+			if(xmlSwitchedShuntData.getDesiredVoltageRange()!=null){
+				
+				LimitType vLimit = new LimitType(xmlSwitchedShuntData.getDesiredVoltageRange().getMax(),
+						xmlSwitchedShuntData.getDesiredVoltageRange().getMin());
+				swchShunt.setDesiredControlRange(vLimit);
+			}
+			else if(xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.DISCRETE_REMOTE_REACTIVE_POWER && xmlSwitchedShuntData.getDesiredReactivePowerRange()!=null){
+				LimitType qLimit = new LimitType(xmlSwitchedShuntData.getDesiredReactivePowerRange().getMax(),
+						xmlSwitchedShuntData.getDesiredReactivePowerRange().getMin());
+				swchShunt.setDesiredControlRange(qLimit);
+			}
+		
 			
-			LimitType vLimit = new LimitType(xmlSwitchedShuntData.getDesiredVoltageRange().getMax(),
-					xmlSwitchedShuntData.getDesiredVoltageRange().getMin());
-			//TODO vLimit is missing
 			//swchShunt.set
+			double bmin =0, bmax = 0;
+			int i = 1;
 			for(SwitchedShuntBlockXmlType varBankXml:xmlSwitchedShuntData.getBlock()){
-				ShuntCompensator varBank= CoreObjectFactory.createShuntCompensator("QBank");
+				// TODO: handle the inductive shunt compensator case
+				ShuntCompensator varBank= CoreObjectFactory.createShuntCompensator("QBank-"+i++, ShuntCompensatorType.CAPACITOR);
 				swchShunt.getShuntCompensatorList().add(varBank);
 				
 				varBank.setSteps(varBankXml.getSteps());
 				ReactivePowerXmlType unitVarXml = varBankXml.getIncrementB();
 				
-				factor = unitVarXml.getUnit()==ReactivePowerUnitType.PU?1.0:
-					unitVarXml.getUnit()==ReactivePowerUnitType.MVAR?1.0E-2:
-						unitVarXml.getUnit()==ReactivePowerUnitType.KVAR?1.0E-5:
-		            		 1.0E-8; 
-				//TODO UnitQMVar is in pu
-				varBank.setUnitQMvar(unitVarXml.getValue()*factor);
+				factor = unitVarXml.getUnit()==ReactivePowerUnitType.PU?100:
+					unitVarXml.getUnit()==ReactivePowerUnitType.MVAR?1.0:
+						unitVarXml.getUnit()==ReactivePowerUnitType.KVAR?1.0E-3:
+		            		 1.0E-6; // VAR->MVA base
+				//TODO UnitQMVar is in MVAR
+				double qmvar = unitVarXml.getValue()*factor;
+				varBank.setUnitQMvar(qmvar);
+				varBank.setStatus(varBankXml.isOffLine() == null ? true : !varBankXml.isOffLine());
+
+				if(varBank.isActive()){
+					//qmvar < 0, add to the bmin, otherwise add to bmax
+					if (qmvar < 0) { //  negative means inductive or reactor bank
+						bmin += varBankXml.getSteps()*qmvar/100.0; // convert to pu based on 100 MVA base
+					} else {
+						bmax += varBankXml.getSteps()*qmvar/100.0; // convert to pu based on 100 MVA base
+					}
+				}
+
+				//calculate the B value (the total capacitive or inductive susceptance) for the bank
+				varBank.calB(this.aclfNet.getBaseKva());
 			}
+
+			//set Blimit
+			swchShunt.setBLimit(new LimitType(bmax,bmin));
+
+
 		}
 	}
+
+	private void mapStaticVarCompensatorData(StaticVarCompensatorXmlType svcData) throws InterpssException{
+		Optional<StaticVarCompensator> svcOpt =  AclfAdjustObjectFactory.createStaticVarCompensator(bus);
+		if (!svcOpt.isPresent()) return;
+
+		StaticVarCompensator svc = svcOpt.get();
+		svc.setId("SVC@" + bus.getId());
+		svc.setName(svcData.getName() != null ? svcData.getName() : "SVC@" + bus.getId());
+		svc.setStatus(!svcData.isOffLine());
+
+		// map SVC data
+		ReactivePowerXmlType capRating = svcData.getCapacitiveRating();
+		ReactivePowerXmlType indRating = svcData.getInductiveRating();
+		double qMin = 0.0, qMax = 0.0;
+		if (capRating != null) {
+			double factor = capRating.getUnit() == ReactivePowerUnitType.PU ? 1.0 :
+					capRating.getUnit() == ReactivePowerUnitType.MVAR ? 0.01 :
+							capRating.getUnit() == ReactivePowerUnitType.KVAR ? 1.0E-5 :
+									1.0E-8; // VAR->1.0E-8 with a 100 MVA base
+			
+			qMax = capRating.getValue() * factor;
+		}
+
+		if (indRating != null) {
+			double factor = indRating.getUnit() == ReactivePowerUnitType.PU ? 1.0 :
+					indRating.getUnit() == ReactivePowerUnitType.MVAR ? 0.01 :
+							indRating.getUnit() == ReactivePowerUnitType.KVAR ? 1.0E-5 :
+									1.0E-8; // VAR->1.0E-8 with a 100 MVA base
+			
+			qMin = -indRating.getValue() * factor;
+		}
+
+		svc.setBLimit(new LimitType(qMax, qMin)); // capacitive limit is positive, inductive limit is negative
+
+		// map control mode
+		AclfAdjustControlMode mode = AclfAdjustControlMode.CONTINUOUS; 
+		svc.setControlMode(mode);
+
+		// control type
+		svc.setRemoteQControlType(BusBranchControlType.BUS_VOLTAGE);
+
+		// map desired voltage
+		VoltageXmlType vXml = svcData.getVoltageSetPoint();
+		if (vXml != null) {
+			double vpu = UnitHelper.vConversion(vXml.getValue(),
+					bus.getBaseVoltage(), toVoltageUnit.apply(vXml.getUnit()), UnitType.PU);
+			svc.setVSpecified(vpu, UnitType.PU);
+		} else {
+			throw new InterpssException("For SVC bus, svcData.voltageSetPoint has to be defined, busId: " + bus.getId());
+		}
+
+		//TODO: PSS/E input does not have the desired voltage range
+		//One option is to set desired voltage range based on the VSpecified using tolerance = 0.0001
+		LimitType vLimit = new LimitType(svc.getVSpecified()+0.0001, svc.getVSpecified()-0.0001); // default value
+		svc.setDesiredControlRange(vLimit);
+		
+
+		//Remote bus id
+		if (svcData.getRemoteControlledBus() != null) {
+			String remoteId = BusXmlRef2BusId.fx(svcData.getRemoteControlledBus());
+			
+			//TODO we cannot set the RemoteBus here since it may not exist in the network yet, as the SVC object is created while the parent bus is created, but the remote bus may not be created yet.
+			// we will set the remote bus when the remote bus is created.
+			// if (this.aclfNet.getBus(remoteId) == null) {
+			// 	throw new InterpssException("Remote bus " + remoteId + " does not exist in the network.");
+			// }
+			svc.setRemoteBusBranchId(remoteId);
+			//svc.setRemoteBus(this.aclfNet.getBus(remoteId));
+
+			//TODO Check the gen code for the bus, if it is not a GENPQ bus, set it to GENPQ
+			if (bus.getGenCode() != AclfGenCode.GEN_PQ) {
+				bus.setGenCode(AclfGenCode.GEN_PQ); // set the bus gen code to GEN_PQ
+			}
+		}
+		else { // default is to control the local bus
+			svc.setRemoteBusBranchId(bus.getId());
+			svc.setRemoteBus(bus);
+			//TODO Check the gen code for the bus, if it is not a GENPV bus, set it to GENPV
+			if (bus.getGenCode() != AclfGenCode.GEN_PV) {
+				bus.setGenCode(AclfGenCode.GEN_PV); // set the bus gen code to GEN_PV
+			}
+		}
+
+		//remote control percentage
+		if (svcData.getRemoteControlledPercentage() != null) {
+			svc.setRemoteControlPercentage(svcData.getRemoteControlledPercentage());
+		} else {
+			svc.setRemoteControlPercentage(100.0); // default value
+		}
+
+		// add the SVC to the network svcList
+		//this.aclfNet.getSvcList().add(svc);
+	}
+
 }

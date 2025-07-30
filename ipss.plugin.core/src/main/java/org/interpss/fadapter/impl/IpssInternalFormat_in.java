@@ -33,6 +33,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.exp.InterpssRuntimeException;
 import com.interpss.common.msg.IPSSMsgHub;
+import com.interpss.core.AclfAdjustObjectFactory;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
@@ -40,8 +41,9 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.ShuntCompensator;
+import com.interpss.core.aclf.ShuntCompensatorType;
 import com.interpss.core.aclf.adj.PVBusLimit;
-import com.interpss.core.aclf.adpter.AclfCapacitorBusAdapter;
 import com.interpss.core.aclf.adpter.AclfLineAdapter;
 import com.interpss.core.aclf.adpter.AclfLoadBusAdapter;
 import com.interpss.core.aclf.adpter.AclfPQGenBusAdapter;
@@ -297,7 +299,7 @@ public class IpssInternalFormat_in {
       	AclfBus bus = adjNet.getBus(id);
     	if (bus != null ) {
         	bus.setGenCode(AclfGenCode.GEN_PV);
-      		final PVBusLimit pvLimit = CoreObjectFactory.createPVBusLimit(bus);
+      		final PVBusLimit pvLimit = AclfAdjustObjectFactory.createPVBusLimit(bus);
       		pvLimit.setVSpecified(v, UnitType.PU);
       		pvLimit.setQLimit(new LimitType(qmax,qmin), UnitType.mVA);
       		pvLimit.setStatus(true);
@@ -328,8 +330,18 @@ public class IpssInternalFormat_in {
 
       	AclfBus bus = adjNet.getBus(id);
     	if (bus != null) {
+    		if (bus.getCompensatorList().size() != 1) {
+    			bus.getCompensatorList().clear();
+    			bus.getCompensatorList().add(CoreObjectFactory.createShuntCompensator(bus.getId()+"_QBank", ShuntCompensatorType.CAPACITOR));
+    		}
+    		ShuntCompensator bank = bus.getCompensatorList().get(0);
+    		bank.setSteps(1);
+    		bank.setUnitQMvar(b);
+    		bank.setB(b);
+    		/*
 			final AclfCapacitorBusAdapter cap = bus.toCapacitorBus();
 			cap.setQ(b);
+			*/
     	} else {
 			throw new InterpssRuntimeException("AclfDataFile.loadCapacitorBusInfo_2, Capacitor bus:" + id + " is not in the system" );
 		}
