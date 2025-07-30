@@ -37,6 +37,7 @@ import org.interpss.plugin.pssl.simu.BaseDSL;
 import com.interpss.common.datatype.Constants;
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.AclfAdjustObjectFactory;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
@@ -47,15 +48,14 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.adj.AclfAdjustFactory;
-import com.interpss.core.aclf.adj.AdjControlType;
+import com.interpss.core.aclf.adj.AclfAdjustControlType;
+import com.interpss.core.aclf.adj.BusBranchControlType;
 import com.interpss.core.aclf.adj.FunctionLoad;
 import com.interpss.core.aclf.adj.PQBusLimit;
 import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.adj.PVBusLimit;
 import com.interpss.core.aclf.adj.RemoteQBus;
-import com.interpss.core.aclf.adj.RemoteQControlType;
 import com.interpss.core.aclf.adj.TapControl;
-import com.interpss.core.aclf.adj.XfrTapControlType;
 import com.interpss.core.aclf.adpter.AclfCapacitorBusAdapter;
 import com.interpss.core.aclf.adpter.AclfLineAdapter;
 import com.interpss.core.aclf.adpter.AclfLoadBusAdapter;
@@ -65,7 +65,6 @@ import com.interpss.core.aclf.adpter.AclfPVGenBusAdapter;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.aclf.adpter.AclfXformerAdapter;
 import com.interpss.core.net.Branch;
-import com.interpss.core.net.Bus;
 import com.interpss.core.net.Network;
 
 /**
@@ -426,7 +425,7 @@ public class IpssAclfNet extends BaseDSL {
 		@SuppressWarnings(value="unchecked")
   		public TAclfDSL setCapacitorQ(double q, UnitType unit) { 
 					  	  	AclfCapacitorBusAdapter capBus = getAclfBus().toCapacitorBus();
-					  	  	capBus.setQ(q);
+					  	  	capBus.setB(q);
 							return (TAclfDSL)this;  		}
   		
 		@SuppressWarnings(value="unchecked")
@@ -647,7 +646,7 @@ public class IpssAclfNet extends BaseDSL {
 		public FunctionLoadDSL(String busId, AclfNetwork net) throws InterpssException  {
 			super(net);
 			AclfBus bus = net.getBus(busId);
-			setObject(CoreObjectFactory.createFunctionLoad(bus).get());
+			setObject(AclfAdjustObjectFactory.createFunctionLoad(bus).get());
 		}
   		public FunctionLoadDSL setInitLoad(Complex load0, UnitType unit) { 
   								getObject().getP().setLoad0(load0.getReal(), unit, getAclfAdjNet().getBaseKva());
@@ -683,7 +682,7 @@ public class IpssAclfNet extends BaseDSL {
 		public PQBusLimitDSL(String busId, AclfNetwork net) throws InterpssException {
 			super(net);
 			AclfBus bus = net.getBus(busId);
-			setObject(CoreObjectFactory.createPQBusLimit(bus).get());
+			setObject(AclfAdjustObjectFactory.createPQBusLimit(bus).get());
 		}
   		public PQBusLimitDSL setQSpecified(double qSpec, UnitType unit) { 
   								getObject().setQSpecified(qSpec, unit);
@@ -712,7 +711,7 @@ public class IpssAclfNet extends BaseDSL {
 		public PVBusLimitDSL(String busId, AclfNetwork net) {
 			super(net);
 			AclfBus bus = net.getBus(busId);
-			setObject(CoreObjectFactory.createPVBusLimit(bus));
+			setObject(AclfAdjustObjectFactory.createPVBusLimit(bus));
 		}
   		public PVBusLimitDSL setVSpecified(double vSpec, UnitType unit) { 
 								getObject().setVSpecified(vSpec, unit);
@@ -742,10 +741,10 @@ public class IpssAclfNet extends BaseDSL {
 			super(net);
 			String branchId = ToBranchId.f(fromBusId, toBusId, cirId);
 			AclfBranch branch = net.getBranch(branchId);
-			setObject(CoreObjectFactory.createPSXfrPControl(branch, AdjControlType.POINT_CONTROL).get());
+			setObject(AclfAdjustObjectFactory.createPSXfrPControl(branch, AclfAdjustControlType.POINT_CONTROL).get());
 		}
-  		public PSXfrPControlDSL setFlowControlType(AdjControlType type) { 
-								getObject().setFlowControlType(type);
+  		public PSXfrPControlDSL setFlowControlType(AclfAdjustControlType type) { 
+								getObject().setAdjControlType(type);
 								return this; }
   		public PSXfrPControlDSL setPSpecified(double pSpec, UnitType unit) { 
   								getObject().setPSpecified(pSpec, unit, getAclfAdjNet().getBaseKva());
@@ -760,7 +759,7 @@ public class IpssAclfNet extends BaseDSL {
   								getObject().setFlowFrom2To(flowFrom2To);	
   								return this; }
 
-  		public PSXfrPControlDSL flowControlType(AdjControlType type) { return setFlowControlType(type); }
+  		public PSXfrPControlDSL flowControlType(AclfAdjustControlType type) { return setFlowControlType(type); }
   		public PSXfrPControlDSL pSpecified(double pSpec, UnitType unit) { return setPSpecified(pSpec, unit); }
   		public PSXfrPControlDSL angLimit(double angMax, double angMin, UnitType unit) { return setAngLimit(angMax, angMin, unit); }
   		public PSXfrPControlDSL controlOnFromSide(boolean conOnFromSide) { return controlOnFromSide(conOnFromSide); }
@@ -785,8 +784,8 @@ public class IpssAclfNet extends BaseDSL {
 			setObject(AclfAdjustFactory.eINSTANCE.createRemoteQBus());
 			getObject().setId(busId);
 		}
-  		public RemoteQBusDSL setControlType(RemoteQControlType type) { 
-  								getObject().setControlType(type);
+  		public RemoteQBusDSL setControlType(BusBranchControlType type) { 
+  								getObject().setRemoteQControlType(type);
   								return this; }
   		public RemoteQBusDSL setAdjBusBranchId(String reId) { 
 // TODO							this.getAclfAdjNet().addRemoteQBus(getObject(), reId);
@@ -804,7 +803,7 @@ public class IpssAclfNet extends BaseDSL {
 								getObject().setFlowFrom2To(flowFrom2To);
 								return this; }
 
-  		public RemoteQBusDSL controlType(RemoteQControlType type) { return setControlType(type); } 
+  		public RemoteQBusDSL controlType(BusBranchControlType type) { return setControlType(type); } 
   		public RemoteQBusDSL adjBusBranchId(String reId) { return setAdjBusBranchId(reId); } 
   		public RemoteQBusDSL qLimit(double qMax, double qMin, UnitType unit) { return setQLimit(qMax, qMin, unit); } 
   		public RemoteQBusDSL vSpecified(double vSpec, UnitType unit) { return setVSpecified(vSpec, unit); } 
@@ -831,8 +830,8 @@ public class IpssAclfNet extends BaseDSL {
 			setObject(AclfAdjustFactory.eINSTANCE.createTapControl());
 			getObject().setId(branchId);
 		}
-  		public TapControlDSL setControlType(XfrTapControlType type) { 
-								getObject().setControlType(type);
+  		public TapControlDSL setControlType(BusBranchControlType type) { 
+								getObject().setTapControlType(type);
 								return this; }
 //  		public TapControlDSL setAdjBusBranchId(String id) { 
 //  								this.getAclfAdjNet().addTapControl(getObject(), id);
@@ -843,8 +842,8 @@ public class IpssAclfNet extends BaseDSL {
   		public TapControlDSL setMvarSpecified(double mvaSpec, UnitType unit) { 
 								getObject().setMvarSpecified(mvaSpec, unit, getAclfAdjNet().getBaseKva());
 								return this; }
-  		public TapControlDSL setFlowControlType(AdjControlType type) { 
-  								getObject().setFlowControlType(type);
+  		public TapControlDSL setFlowControlType(AclfAdjustControlType type) { 
+  								getObject().setAdjControlType(type);
   								return this; }
   		public TapControlDSL setTapLimit(double rMax, double rMin) { 
   	  							getObject().setTurnRatioLimit(new LimitType(rMax, rMin));
@@ -872,11 +871,11 @@ public class IpssAclfNet extends BaseDSL {
   								getObject().setMeteredOnFromSide(mvarSpecOnFromSide);
   								return this; }
 
-  		public TapControlDSL controlType(XfrTapControlType type) { return setControlType(type); } 
+  		public TapControlDSL controlType(BusBranchControlType type) { return setControlType(type); } 
 //  		public TapControlDSL adjBusBranchId(String id) { return setAdjBusBranchId(id); }
   		public TapControlDSL vSpecified(double vSpec, UnitType unit) { return setVSpecified(vSpec, unit); } 
   		public TapControlDSL mvarSpecified(double mvaSpec, UnitType unit) { return setMvarSpecified(mvaSpec, unit); }
-  		public TapControlDSL flowControlType(AdjControlType type) { return setFlowControlType(type); }
+  		public TapControlDSL flowControlType(AclfAdjustControlType type) { return setFlowControlType(type); }
   		public TapControlDSL turnRatioLimit(double rMax, double rMin) { return setTapLimit(rMax, rMin); }
   		public TapControlDSL adjSteps(int n) { return setAdjSteps(n); }
   		public TapControlDSL tapStepSize(double x) {	return setTapStepSize(x); }

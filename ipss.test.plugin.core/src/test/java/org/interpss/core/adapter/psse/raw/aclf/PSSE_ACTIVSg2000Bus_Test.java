@@ -51,11 +51,11 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 		//aclfAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
 
 		//aclfAlgo.getLfAdjAlgo().setPowerAdjAppType(AdjustApplyType.POST_ITERATION);
-		aclfAlgo.getLfAdjAlgo().setPowerAdjust(false);
+		aclfAlgo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(false);
 		aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 		aclfAlgo.setTolerance(1.0E-6);
 		assertTrue(aclfAlgo.loadflow());
-		//System.out.println(AclfOutFunc.loadFlowSummary(net));
+		System.out.println(AclfOutFunc.loadFlowSummary(net));
 
 		
 		// Verify bus voltage magnitudes and angles for key buses
@@ -99,7 +99,7 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 		//aclfAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
 
 		//aclfAlgo.getLfAdjAlgo().setPowerAdjAppType(AdjustApplyType.POST_ITERATION);
-		aclfAlgo.getLfAdjAlgo().setPowerAdjust(false);
+		aclfAlgo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(false);
 		aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 		aclfAlgo.setTolerance(1.0E-6);
 		assertTrue(aclfAlgo.loadflow());
@@ -146,7 +146,7 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 		//aclfAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
 
 		//aclfAlgo.getLfAdjAlgo().setPowerAdjAppType(AdjustApplyType.POST_ITERATION);
-		aclfAlgo.getLfAdjAlgo().setPowerAdjust(false);
+		aclfAlgo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(false);
 		aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 		aclfAlgo.setTolerance(1.0E-6);
 		assertTrue(aclfAlgo.loadflow());
@@ -195,7 +195,7 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 		//aclfAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
 
 		//aclfAlgo.getLfAdjAlgo().setPowerAdjAppType(AdjustApplyType.POST_ITERATION);
-		aclfAlgo.getLfAdjAlgo().setPowerAdjust(false);
+		aclfAlgo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(false);
 		aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 		aclfAlgo.setTolerance(1.0E-6);
 		assertTrue(aclfAlgo.loadflow());
@@ -214,149 +214,139 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 		//bus 8160 voltage mag = 1.0059, angle = -51.73
 		assertEquals(net.getBus("Bus8160").getVoltageMag(), 1.0059, 1.0E-4);
 		assertEquals(net.getBus("Bus8160").getVoltageAng(), -51.73*Math.PI/180, 1.0E-2);
-
 	}
-		//@Test
-		public void test_ACTIVSg2000_v33() throws InterpssException{
-			IpssCorePlugin.init();
-			IpssLogger.getLogger().setLevel(Level.WARNING);
-			PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_33);
-			assertTrue(adapter.parseInputFile(
-					"testData/adpter/psse/v33/ACTIVSg2000/ACTIVSg2000.raw"));
-			AclfModelParser parser =(AclfModelParser) adapter.getModel();
-			
-            
-			SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-			if (!new ODMAclfParserMapper()
-						.map2Model(parser, simuCtx)) {
-				System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-				return;
-			}
-			
-			
-		    AclfNetwork net =simuCtx.getAclfNet();
-		    
-		  
-		    LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(net);
-			
-			//aclfAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
 
-			//aclfAlgo.getLfAdjAlgo().setPowerAdjAppType(AdjustApplyType.POST_ITERATION);
-			aclfAlgo.getLfAdjAlgo().setPowerAdjust(false);
-			aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
-			aclfAlgo.setTolerance(1.0E-6);
-			assertTrue(aclfAlgo.loadflow());
-			System.out.println(AclfOutFunc.loadFlowSummary(net));
-	
-			
-		}
+	//@Test
+	public void test_ACTIVSg2000_v33() throws InterpssException{
+		IpssCorePlugin.init();
+		IpssLogger.getLogger().setLevel(Level.WARNING);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_33);
+		assertTrue(adapter.parseInputFile(
+				"testData/adpter/psse/v33/ACTIVSg2000/ACTIVSg2000.raw"));
+		AclfModelParser parser =(AclfModelParser) adapter.getModel();
 		
-
-		@Test
-		public void test_ACTIVSg2000_summerpeak_v34() throws InterpssException{
-			IpssCorePlugin.init();
-			IpssLogger.getLogger().setLevel(Level.WARNING);
-			PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_34);
-			assertTrue(adapter.parseInputFile(
-					"testData/psse/v34/Texas2k/Texas2k_series24_case3_2024summerpeak_noSub.RAW"));
-			AclfModelParser parser =(AclfModelParser) adapter.getModel();
-			
-            
-			SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-			if (!new ODMAclfParserMapper()
-						.map2Model(parser, simuCtx)) {
-				System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-				return;
-			}
-			
-			
-		    AclfNetwork net =simuCtx.getAclfNet();
-		    
-		  
-		    LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(net);
-			
-			//aclfAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
-
-			//aclfAlgo.getLfAdjAlgo().setPowerAdjAppType(AdjustApplyType.POST_ITERATION);
-			aclfAlgo.getLfAdjAlgo().setPowerAdjust(false);
-			aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
-			aclfAlgo.setTolerance(1.0E-6);
-			assertTrue(aclfAlgo.loadflow());
-			System.out.println(AclfOutFunc.loadFlowSummary(net));
-	
-			
-		}
-
-		//@Test
-		public void test_ACTIVSg2000_lowload_v34() throws InterpssException{
-			IpssCorePlugin.init();
-			IpssLogger.getLogger().setLevel(Level.WARNING);
-			PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_34);
-			assertTrue(adapter.parseInputFile(
-					"testData/psse/v34/Texas2k/Texas2k_series24_case4_2024lowload.RAW"));
-			AclfModelParser parser =(AclfModelParser) adapter.getModel();
-			
-            
-			SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-			if (!new ODMAclfParserMapper()
-						.map2Model(parser, simuCtx)) {
-				System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-				return;
-			}
-			
-			
-		    AclfNetwork net =simuCtx.getAclfNet();
-		    
-		  
-		    LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(net);
-			
-			//aclfAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
-
-			//aclfAlgo.getLfAdjAlgo().setPowerAdjAppType(AdjustApplyType.POST_ITERATION);
-			aclfAlgo.getLfAdjAlgo().setPowerAdjust(false);
-			aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
-			aclfAlgo.setTolerance(1.0E-6);
-			assertTrue(aclfAlgo.loadflow());
-			System.out.println(AclfOutFunc.loadFlowSummary(net));
-	
-			
-		}
-
-		//@Test
-		public void test_ACTIVSg2000_highrenewables_v34() throws InterpssException{
-			IpssCorePlugin.init();
-			IpssLogger.getLogger().setLevel(Level.WARNING);
-			PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_34);
-			assertTrue(adapter.parseInputFile(
-					"testData/psse/v34/Texas2k/Texas2k_series24_case5_2024highrenewables.RAW"));
-			AclfModelParser parser =(AclfModelParser) adapter.getModel();
-			
-            
-			SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-			if (!new ODMAclfParserMapper()
-						.map2Model(parser, simuCtx)) {
-				System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-				return;
-			}
-			
-			
-		    AclfNetwork net =simuCtx.getAclfNet();
-		    
-		  
-		    LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(net);
-			
-			//aclfAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
-
-			//aclfAlgo.getLfAdjAlgo().setPowerAdjAppType(AdjustApplyType.POST_ITERATION);
-			aclfAlgo.getLfAdjAlgo().setPowerAdjust(false);
-			aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
-			aclfAlgo.setTolerance(1.0E-6);
-			assertTrue(aclfAlgo.loadflow());
-			System.out.println(AclfOutFunc.loadFlowSummary(net));
-	
-			
+        
+		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
+		if (!new ODMAclfParserMapper()
+					.map2Model(parser, simuCtx)) {
+			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
+			return;
 		}
 		
 		
+	    AclfNetwork net =simuCtx.getAclfNet();
+	    
+	  
+	    LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		
+		//aclfAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
 
+		//aclfAlgo.getLfAdjAlgo().setPowerAdjAppType(AdjustApplyType.POST_ITERATION);
+		aclfAlgo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(false);
+		aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
+		aclfAlgo.setTolerance(1.0E-6);
+		assertTrue(aclfAlgo.loadflow());
+		System.out.println(AclfOutFunc.loadFlowSummary(net));
+	}
+	
+
+	@Test
+	public void test_ACTIVSg2000_summerpeak_v34() throws InterpssException{
+		IpssCorePlugin.init();
+		IpssLogger.getLogger().setLevel(Level.WARNING);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_34);
+		assertTrue(adapter.parseInputFile(
+				"testData/psse/v34/Texas2k/Texas2k_series24_case3_2024summerpeak_noSub.RAW"));
+		AclfModelParser parser =(AclfModelParser) adapter.getModel();
+		
+        
+		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
+		if (!new ODMAclfParserMapper()
+					.map2Model(parser, simuCtx)) {
+			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
+			return;
+		}
+		
+		
+	    AclfNetwork net =simuCtx.getAclfNet();
+	    
+	  
+	    LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		
+		//aclfAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
+
+		//aclfAlgo.getLfAdjAlgo().setPowerAdjAppType(AdjustApplyType.POST_ITERATION);
+		aclfAlgo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(false);
+		aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
+		aclfAlgo.setTolerance(1.0E-6);
+		assertTrue(aclfAlgo.loadflow());
+		System.out.println(AclfOutFunc.loadFlowSummary(net));
+	}
+
+	//@Test
+	public void test_ACTIVSg2000_lowload_v34() throws InterpssException{
+		IpssCorePlugin.init();
+		IpssLogger.getLogger().setLevel(Level.WARNING);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_34);
+		assertTrue(adapter.parseInputFile(
+				"testData/psse/v34/Texas2k/Texas2k_series24_case4_2024lowload.RAW"));
+		AclfModelParser parser =(AclfModelParser) adapter.getModel();
+		
+        
+		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
+		if (!new ODMAclfParserMapper()
+					.map2Model(parser, simuCtx)) {
+			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
+			return;
+		}
+		
+		
+	    AclfNetwork net =simuCtx.getAclfNet();
+	    
+	  
+	    LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		
+		//aclfAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
+
+		//aclfAlgo.getLfAdjAlgo().setPowerAdjAppType(AdjustApplyType.POST_ITERATION);
+		aclfAlgo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(false);
+		aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
+		aclfAlgo.setTolerance(1.0E-6);
+		assertTrue(aclfAlgo.loadflow());
+		System.out.println(AclfOutFunc.loadFlowSummary(net));
+	}
+
+	//@Test
+	public void test_ACTIVSg2000_highrenewables_v34() throws InterpssException{
+		IpssCorePlugin.init();
+		IpssLogger.getLogger().setLevel(Level.WARNING);
+		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_34);
+		assertTrue(adapter.parseInputFile(
+				"testData/psse/v34/Texas2k/Texas2k_series24_case5_2024highrenewables.RAW"));
+		AclfModelParser parser =(AclfModelParser) adapter.getModel();
+		
+        
+		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
+		if (!new ODMAclfParserMapper()
+					.map2Model(parser, simuCtx)) {
+			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
+			return;
+		}
+		
+		
+	    AclfNetwork net =simuCtx.getAclfNet();
+	    
+	  
+	    LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		
+		//aclfAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
+
+		//aclfAlgo.getLfAdjAlgo().setPowerAdjAppType(AdjustApplyType.POST_ITERATION);
+		aclfAlgo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(false);
+		aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
+		aclfAlgo.setTolerance(1.0E-6);
+		assertTrue(aclfAlgo.loadflow());
+		System.out.println(AclfOutFunc.loadFlowSummary(net));
+	}		
+	
 }

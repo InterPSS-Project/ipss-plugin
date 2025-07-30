@@ -36,15 +36,14 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
-import com.interpss.core.aclf.adj.AdjControlType;
+import com.interpss.core.aclf.adj.AclfAdjustControlType;
+import com.interpss.core.aclf.adj.BusBranchControlType;
 import com.interpss.core.aclf.adj.FunctionLoad;
 import com.interpss.core.aclf.adj.PQBusLimit;
 import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.adj.PVBusLimit;
 import com.interpss.core.aclf.adj.RemoteQBus;
-import com.interpss.core.aclf.adj.RemoteQControlType;
 import com.interpss.core.aclf.adj.TapControl;
-import com.interpss.core.aclf.adj.XfrTapControlType;
 import com.interpss.core.aclf.adpter.AclfGenBusAdapter;
 import com.interpss.core.aclf.adpter.AclfPSXformerAdapter;
 import com.interpss.core.aclf.contingency.AclfBranchRating;
@@ -63,6 +62,7 @@ import com.interpss.core.net.OriginalDataFormat;
  * @author mzhou
  *
  */
+// Debug Info Func : Aclf output functions
 public class AclfOutFunc {
 	public static boolean commaDelimited = false;
 	/**
@@ -219,7 +219,7 @@ public class AclfOutFunc {
 		return str;
 	}
 
-	private static String busLfSummary(BaseAclfBus<?,?> bus, boolean incldMismatch) {
+	public static String busLfSummary(BaseAclfBus<?,?> bus, boolean incldMismatch) {
 		final StringBuffer str = new StringBuffer("");
 		//Complex busPQ = bus.calNetPQResults();
 		Complex gen = bus.calNetGenResults();
@@ -611,14 +611,14 @@ public class AclfOutFunc {
 				str.append(Number2String.toStr(5, " "));
 				str.append(Number2String.toStr(-9, OutputBusId.f(re.getParentBus(), net.getOriginalDataFormat())));
 				str.append(Number2String.toStr(-9,
-										(re.getControlType() == RemoteQControlType.BUS_VOLTAGE ? " Voltage"
+										(re.getRemoteQControlType() == BusBranchControlType.BUS_VOLTAGE ? " Voltage"
 												: "MvarFlow")));
 				str.append(Number2String.toStr(15,
-						re.getControlType() == RemoteQControlType.BUS_VOLTAGE ? re
+						re.getRemoteQControlType() == BusBranchControlType.BUS_VOLTAGE ? re
 								.getRemoteBus().getId() : re.getRemoteBranch()
 								.getId()));
 				str.append(Number2String.toStr("###0.0000",
-						re.getControlType() == RemoteQControlType.BUS_VOLTAGE ? re
+						re.getRemoteQControlType() == BusBranchControlType.BUS_VOLTAGE ? re
 								.getRemoteBus().getVoltageMag(UnitType.PU) : re
 								.getMvarFlowCalculated(re.getRemoteBranch(), UnitType.PU)));
 				str.append(Number2String.toStr("###0.0000", re.getVSpecified(UnitType.PU)));
@@ -711,29 +711,29 @@ public class AclfOutFunc {
 				str.append(Number2String.toStr(-17, x.getParentBranch().getId())
 						+ " ");
 
-				if (x.getControlType() == XfrTapControlType.BUS_VOLTAGE) {
+				if (x.getTapControlType() == BusBranchControlType.BUS_VOLTAGE) {
 					str.append(Number2String.toStr(-8, x.getVcBus().getId()) + " ");
 					str.append(Number2String.toStr("##0.0000", x.getVcBus()
 							.getVoltageMag(UnitType.PU))
 							+ " ");
-					if (x.getFlowControlType() == AdjControlType.POINT_CONTROL)
+					if (x.getAdjControlType() == AclfAdjustControlType.POINT_CONTROL)
 						str.append(Number2String.toStr("##0.0000", x
 								.getVSpecified(UnitType.PU))
 								+ " ");
 					else
-						str.append(x.getControlRange() + " ");
+						str.append(x.getDesiredControlRange() + " ");
 				} else {
 					str.append(Number2String.toStr(-8, " "));
 					str.append(Number2String.toStr("##0.0000", x
 							.getMvarFlowCalculated(UnitType.PU, baseKva))
 							+ " ");
-					if (x.getFlowControlType() == AdjControlType.POINT_CONTROL)
+					if (x.getAdjControlType() == AclfAdjustControlType.POINT_CONTROL)
 						str.append("   "
 								+ Number2String.toStr("##0.0000", x
 										.getMvarSpecified(UnitType.PU, baseKva))
 								+ "    ");
 					else
-						str.append(x.getControlRange() + " ");
+						str.append(x.getDesiredControlRange() + " ");
 				}
 
 				str.append(Number2String.toStr("0.000",
@@ -786,12 +786,12 @@ public class AclfOutFunc {
 								.powerTo2From(UnitType.PU).getReal()))
 						+ " ");
 
-				if (x.getFlowControlType() == AdjControlType.POINT_CONTROL)
+				if (x.getAdjControlType() == AclfAdjustControlType.POINT_CONTROL)
 					str.append(Number2String.toStr("   " + "##0.0000", x
 							.getPSpecified(UnitType.PU, baseKVA))
 							+ "    ");
 				else
-					str.append(x.getControlRange() + " ");
+					str.append(x.getDesiredControlRange() + " ");
 
 				AclfPSXformerAdapter psXfr = x.getParentBranch().toPSXfr();
 				str.append(Number2String.toStr("#0.00", psXfr

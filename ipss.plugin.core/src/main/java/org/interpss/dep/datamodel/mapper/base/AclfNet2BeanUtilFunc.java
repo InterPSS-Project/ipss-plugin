@@ -27,13 +27,13 @@ package org.interpss.dep.datamodel.mapper.base;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.dep.datamodel.bean.aclf.AclfBranchBean;
 import org.interpss.dep.datamodel.bean.aclf.AclfBusBean;
+import org.interpss.dep.datamodel.bean.aclf.adj.BaseTapControlBean.TapControlModeBean;
+import org.interpss.dep.datamodel.bean.aclf.adj.BaseTapControlBean.TapControlTypeBean;
 import org.interpss.dep.datamodel.bean.aclf.adj.PsXfrTapControlBean;
 import org.interpss.dep.datamodel.bean.aclf.adj.QBankBean;
 import org.interpss.dep.datamodel.bean.aclf.adj.SwitchShuntBean;
-import org.interpss.dep.datamodel.bean.aclf.adj.XfrTapControlBean;
-import org.interpss.dep.datamodel.bean.aclf.adj.BaseTapControlBean.TapControlModeBean;
-import org.interpss.dep.datamodel.bean.aclf.adj.BaseTapControlBean.TapControlTypeBean;
 import org.interpss.dep.datamodel.bean.aclf.adj.SwitchShuntBean.VarCompensatorControlModeBean;
+import org.interpss.dep.datamodel.bean.aclf.adj.XfrTapControlBean;
 import org.interpss.dep.datamodel.bean.aclf.ext.AclfBranchResultBean;
 import org.interpss.dep.datamodel.bean.aclf.ext.AclfBusResultBean;
 import org.interpss.dep.datamodel.bean.base.BaseBranchBean;
@@ -48,12 +48,12 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.ShuntCompensator;
-import com.interpss.core.aclf.adj.AdjControlType;
+import com.interpss.core.aclf.adj.AclfAdjustControlType;
+import com.interpss.core.aclf.adj.BusBranchControlType;
 import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.adj.TapControl;
-import com.interpss.core.aclf.adj.VarCompensationMode;
-import com.interpss.core.aclf.adj.XfrTapControlType;
+import com.interpss.core.aclf.adj.AclfAdjustControlMode;
 import com.interpss.core.aclf.adpter.AclfPSXformerAdapter;
 import com.interpss.core.aclf.adpter.AclfXformerAdapter;
 
@@ -158,7 +158,7 @@ public class AclfNet2BeanUtilFunc {
 		}		
 		
 		// map switched shunt data
-		if (bus.getSwitchedShunt() != null) {
+		if (bus.isSwitchedShunt()) {
 			SwitchedShunt ss = bus.getSwitchedShunt();
 			SwitchShuntBean ssb = new SwitchShuntBean();
 			mapSwitchShuntData(ss,ssb);			
@@ -192,7 +192,7 @@ public class AclfNet2BeanUtilFunc {
 				(branch.isPSXfr() ? BaseBranchBean.BranchCode.PsXfr:
 					BaseBranchBean.BranchCode.ZBR ));
 		
-		Complex z = branch.getZ();
+		Complex z = branch.getAdjustedZ();
 		bean.z = new ComplexValueBean(z);
 		bean.shunt_y = new ComplexValueBean(format(new Complex(0, 0)));	
 		bean.turnRatio = new BranchValueBean(1.0,1.0);		
@@ -253,17 +253,17 @@ public class AclfNet2BeanUtilFunc {
 	
 	private static void mapSwitchShuntData(SwitchedShunt ss, SwitchShuntBean<? extends BaseJSONUtilBean> ssb) {
 		ssb.bInit = ss.getBInit();
-		ssb.controlMode = ss.getControlMode() == VarCompensationMode.CONTINUOUS? VarCompensatorControlModeBean.Continuous:
-			ss.getControlMode() == VarCompensationMode.DISCRETE? VarCompensatorControlModeBean.Discrete:
+		ssb.controlMode = ss.getControlMode() == AclfAdjustControlMode.CONTINUOUS? VarCompensatorControlModeBean.Continuous:
+			ss.getControlMode() == AclfAdjustControlMode.DISCRETE? VarCompensatorControlModeBean.Discrete:
 				VarCompensatorControlModeBean.Fixed;
 		if(ss.getRemoteBus() != null)
 			ssb.remoteBusId = ss.getRemoteBus().getId();
-		if(ss.getDesiredVoltageRange() != null){
-			ssb.vmax = ss.getDesiredVoltageRange().getMax();
-			ssb.vmin = ss.getDesiredVoltageRange().getMin();
+		if(ss.getDesiredControlRange() != null){
+			ssb.vmax = ss.getDesiredControlRange().getMax();
+			ssb.vmin = ss.getDesiredControlRange().getMin();
 		}
 		
-		if(ss.getQLimit() != null){
+		if(ss.getQLimit() != null){ 
 			ssb.qmax = ss.getQLimit().getMax();
 			ssb.qmin = ss.getQLimit().getMin();
 		}
@@ -280,13 +280,13 @@ public class AclfNet2BeanUtilFunc {
 	
 	private static void mapPsXfrData(PSXfrPControl tap, PsXfrTapControlBean<? extends BaseJSONUtilBean> tb) {
 		tb.controlOnFromSide = tap.isControlOnFromSide();
-		tb.controlType = tap.getFlowControlType()==AdjControlType.POINT_CONTROL? TapControlTypeBean.Point_Control:
+		tb.controlType = tap.getAdjControlType()==AclfAdjustControlType.POINT_CONTROL? TapControlTypeBean.Point_Control:
 			TapControlTypeBean.Range_Control;
 		tb.desiredControlTarget = tap.getPSpecified();
 		tb.flowFrom2To = tap.isFlowFrom2To();
-		if(tap.getControlRange() != null){
-			tb.lowerLimit = tap.getControlRange().getMin();
-			tb.upperLimit = tap.getControlRange().getMax();
+		if(tap.getDesiredControlRange() != null){
+			tb.lowerLimit = tap.getDesiredControlRange().getMin();
+			tb.upperLimit = tap.getDesiredControlRange().getMax();
 		}
 		if(tap.getAngLimit() != null){
 			tb.maxAngle = Math.toDegrees(tap.getAngLimit().getMax());
@@ -302,7 +302,7 @@ public class AclfNet2BeanUtilFunc {
 
 	private static void mapXfrData(TapControl tap, XfrTapControlBean<? extends BaseJSONUtilBean> tapBean) {
 		tapBean.controlledBusId = tap.getVcBus().getId();
-		if(tap.getControlType() == XfrTapControlType.BUS_VOLTAGE){
+		if(tap.getTapControlType() == BusBranchControlType.BUS_VOLTAGE){
 			tapBean.controlMode = TapControlModeBean.Bus_Voltage;
 			tapBean.desiredControlTarget = tap.getVSpecified();
 			
@@ -312,11 +312,11 @@ public class AclfNet2BeanUtilFunc {
 		}
 		
 		tapBean.controlOnFromSide = tap.isControlOnFromSide();
-		tapBean.controlType = tap.getFlowControlType()== AdjControlType.POINT_CONTROL? TapControlTypeBean.Point_Control:
+		tapBean.controlType = tap.getAdjControlType()== AclfAdjustControlType.POINT_CONTROL? TapControlTypeBean.Point_Control:
 			TapControlTypeBean.Range_Control;
-		if(tap.getControlRange() != null){
-			tapBean.lowerLimit = tap.getControlRange().getMin();
-			tapBean.upperLimit = tap.getControlRange().getMax();
+		if(tap.getDesiredControlRange() != null){
+			tapBean.lowerLimit = tap.getDesiredControlRange().getMin();
+			tapBean.upperLimit = tap.getDesiredControlRange().getMax();
 		}
 		if(tap.getControlLimit() != null){
 			tapBean.maxTap = tap.getControlLimit().getMax();
