@@ -123,7 +123,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
     		  for(String branchId: subNetProcessor.getInterfaceBranchIdList()){
     			  
   				DStabBranch branch= net.getBranch(branchId);
-  				ZlAry[i][i]= new Complex3x3(branch.getZ(),branch.getZ(),branch.getZ0());
+  				ZlAry[i][i]= new Complex3x3(branch.getAdjustedZ(),branch.getAdjustedZ(),branch.getZ0());
   				i++;
     		  }
     		    

@@ -10,7 +10,7 @@ import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.sc.SimpleFaultAlgorithm;
-import com.interpss.simu.util.sample.SampleTestingCases;
+import com.interpss.simu.util.sample.SampleAcscTestingCases;
 
 public class AcscSample {
 
@@ -22,7 +22,7 @@ public class AcscSample {
 	
 	public static void unitVoltTest() throws InterpssException {
   		AcscNetwork faultNet = CoreObjectFactory.createAcscNetwork();
-		SampleTestingCases.load_SC_5BusSystem(faultNet);
+  		SampleAcscTestingCases.load_SC_5BusSystem(faultNet);
 		
 		//System.out.println(faultNet.net2String());
 		

@@ -57,7 +57,7 @@ public class OpfDataHelper {
 					Bus busj = bra.getToBus().getId().equals(bus.getId()) ? bra
 							.getFromBus() : bra.getToBus();
 					int j = busj.getSortNumber();
-					double Bij = 1.0 / aclfBranch.getZ().getImaginary();// aclfBranch.b1ft();
+					double Bij = 1.0 / aclfBranch.getAdjustedZ().getImaginary();// aclfBranch.b1ft();
 					double Bij_exit = busAdm.get(i, j);
 					busAdm.set(i, j, Bij_exit-Bij);
 					Bii += Bij;
