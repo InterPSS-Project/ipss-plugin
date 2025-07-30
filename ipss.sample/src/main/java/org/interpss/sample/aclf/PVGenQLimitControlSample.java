@@ -32,6 +32,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.exp.IpssNumericException;
 
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.AclfAdjustObjectFactory;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfLoadCode;
@@ -54,7 +55,7 @@ public class PVGenQLimitControlSample {
 		net.getBus("1").setLoadCode(AclfLoadCode.CONST_Z);
 		
 		AclfBus bus = net.getBus("4");
-		PVBusLimit pvLimit = CoreObjectFactory.createPVBusLimit(bus);
+		PVBusLimit pvLimit = AclfAdjustObjectFactory.createPVBusLimit(bus);
 		pvLimit.setQLimit(new LimitType(1.4, 0.0));
 		
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);

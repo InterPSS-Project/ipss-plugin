@@ -256,7 +256,7 @@ public class PiecewiseAlgo012Impl<TBus extends BaseAcscBus<? extends AcscGen, ? 
   			AcscBranch branch = parentNet.getBranch(cuttingBranches[i].getBranchId());
   			for (int j = 0; j < nCutBranches; j++) {
   				matrix3x1[i][j] = i == j? 
-  						new Complex3x1(	branch.getZ0(), branch.getZ(), branch.getZ()) : 
+  						new Complex3x1(	branch.getZ0(), branch.getAdjustedZ(), branch.getAdjustedZ()) : 
   						new Complex3x1();
   			}
 		}

@@ -1,4 +1,4 @@
- /*
+/*
   * @(#)IpssFileAdapter.java   
   *
   * Copyright (C) 2006-2007 www.interpss.org
@@ -42,7 +42,7 @@ public interface IpssFileAdapter extends IpssCustomAdapter {
 	public static enum Version { 
 			NotDefined, 
 			IEEECDF, IeeeCDFExt1, 
-			PSSE_30, PSSE_29, PSSE_26 };
+			PSSE_26, PSSE_29, PSSE_30, PSSE_31, PSSE_32, PSSE_33, PSSE_34, PSSE_35, PSSE_36 };
 	
 	/**
 	 * get the file extension of the adapter
