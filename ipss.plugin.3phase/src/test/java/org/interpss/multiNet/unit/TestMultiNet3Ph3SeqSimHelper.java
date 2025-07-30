@@ -370,8 +370,8 @@ public class TestMultiNet3Ph3SeqSimHelper {
 		Complex v5 = dsNet.getBus("Bus5").getVoltage();
 		Complex v4 = dsNet.getBus("Bus4").getVoltage();
 		Complex v7 = dsNet.getBus("Bus7").getVoltage();
-		Complex z45 = dsNet.getBranch("Bus4->Bus5(0)").getZ();
-		Complex z57 = dsNet.getBranch("Bus5->Bus7(0)").getZ();
+		Complex z45 = dsNet.getBranch("Bus4->Bus5(0)").getAdjustedZ();
+		Complex z57 = dsNet.getBranch("Bus5->Bus7(0)").getAdjustedZ();
 		Complex I_5_4 = v5.subtract(v4).divide(z45);
 		Complex I_5_7 = v5.subtract(v7).divide(z57);
 		
@@ -608,8 +608,8 @@ public class TestMultiNet3Ph3SeqSimHelper {
 		Complex v4 = dsNet.getBus("Bus4").getVoltage();
 		Complex v7 = dsNet.getBus("Bus7").getVoltage();
 		Complex v8 = dsNet.getBus("Bus8").getVoltage();
-		Complex z45 = dsNet.getBranch("Bus4->Bus5(0)").getZ();
-		Complex z78 = dsNet.getBranch("Bus7->Bus8(0)").getZ();
+		Complex z45 = dsNet.getBranch("Bus4->Bus5(0)").getAdjustedZ();
+		Complex z78 = dsNet.getBranch("Bus7->Bus8(0)").getAdjustedZ();
 		Complex I_5_4 = v5.subtract(v4).divide(z45);
 		Complex I_7_8 = v7.subtract(v8).divide(z78);
 		
@@ -736,8 +736,8 @@ public class TestMultiNet3Ph3SeqSimHelper {
 		Complex v4 = dsNet.getBus("Bus4").getVoltage();
 		Complex v7 = dsNet.getBus("Bus7").getVoltage();
 		Complex v8 = dsNet.getBus("Bus8").getVoltage();
-		Complex z45 = dsNet.getBranch("Bus4->Bus5(0)").getZ();
-		Complex z78 = dsNet.getBranch("Bus7->Bus8(0)").getZ();
+		Complex z45 = dsNet.getBranch("Bus4->Bus5(0)").getAdjustedZ();
+		Complex z78 = dsNet.getBranch("Bus7->Bus8(0)").getAdjustedZ();
 		Complex I_5_4 = v5.subtract(v4).divide(z45);
 		Complex I_7_8 = v7.subtract(v8).divide(z78);
 		
