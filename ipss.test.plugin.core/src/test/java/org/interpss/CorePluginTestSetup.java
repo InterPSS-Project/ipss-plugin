@@ -54,7 +54,7 @@ public class CorePluginTestSetup {
 	protected static IPSSMsgHub msg;
 
 	@BeforeClass  
-	public static void setSpringAppCtx() {
+	public static void initTestEnv() {
 		IpssCorePlugin.init();
 		msg = CoreCommonFactory.getIpssMsgHub();
 		IpssLogger.getLogger().setLevel(Level.WARNING);
