@@ -84,12 +84,13 @@ public class IEEE14ZeroZBranchFuncTest extends CorePluginTestSetup {
   			bus.getId().equals("Bus73") || bus.getId().equals("Bus74")).count() == 5);
 	  	
 		AclfNetZeroZBranchHelper helper = new AclfNetZeroZBranchHelper(net);
+		AclfNetZeroZBranchHelper.NotMergeBusConnectXfr = false;
 		net.getBusList().forEach(bus -> {
 			if (bus.isConnect2ZeroZBranch()) 
 				helper.zeroZBranchBusMerge(bus.getId());
 		});
 	  	
-	  	//System.out.println("Active Bus & Branch: " + net.getNoActiveBus() + " " + net.getNoActiveBranch());
+	  	System.out.println("Active Bus & Branch: " + net.getNoActiveBus() + " " + net.getNoActiveBranch());
   		assertTrue((net.getNoActiveBus() == 14 && net.getNoActiveBranch() == 20));
 	  	
 		net.getBusList().forEach(bus -> {
