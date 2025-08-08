@@ -22,7 +22,13 @@ public class AclfResultHelper {
 	
 	public AclfNetInfo getNetResults() {
 		AclfNetInfo results = new AclfNetInfo();
-
+		
+		createNetResults(results);
+		
+		return results;
+	}
+	
+	public void createNetResults(AclfNetInfo results) {
 		if (this.aclfNet == null) {
 			results.setCaseDescription("No ACLF network load flow calculation results");
 		}
@@ -41,13 +47,15 @@ public class AclfResultHelper {
 			results.setTotalGeneration(this.aclfNet.totalGeneration(UnitType.mVA));
 			results.setTotalLoad(this.aclfNet.totalLoad(UnitType.mVA));
 		}
-		
-		return results;
 	}
 	
 	public List<AclfBusInfo> getBusResults() {
 		List<AclfBusInfo> busInfoList = new LinkedList<>();
-		
+		createBusResults(busInfoList);
+		return busInfoList;
+	}
+	
+	public void createBusResults(List<AclfBusInfo> busInfoList) {
 		this.aclfNet.getBusList().stream()
 				.filter(bus -> bus.isActive())
 				.forEach(bus -> {
@@ -55,8 +63,6 @@ public class AclfResultHelper {
 					
 					busInfoList.add(busInfo);
 				});
-		
-		return busInfoList;
 	}
 	
 	public AclfBusInfo getBusResult(String busId) {
@@ -84,15 +90,17 @@ public class AclfResultHelper {
 	
 	public List<AclfBranchInfo> getBranchResults() {
 		List<AclfBranchInfo> braInfoList = new LinkedList<>();
-		
+		createBranchResults(braInfoList);
+		return braInfoList;
+	}
+	
+	public void createBranchResults(List<AclfBranchInfo> branchInfoList) {
 		this.aclfNet.getBranchList().stream()
 				.filter(branch -> branch.isActive())
 				.forEach(branch -> {
 					AclfBranchInfo branchInfo = getBranchResult(branch.getId());
-					braInfoList.add(branchInfo);
+					branchInfoList.add(branchInfo);
 				});
-		
-		return braInfoList;
 	}
 	
 	public AclfBranchInfo getBranchResult(String branchId) {
