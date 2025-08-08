@@ -13,10 +13,10 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 
-public class LoadflowResultsHelper {
+public class AclfResultHelper {
 	private final AclfNetwork aclfNet;
 	
-	public LoadflowResultsHelper(AclfNetwork aclfNet) {
+	public AclfResultHelper(AclfNetwork aclfNet) {
 		this.aclfNet = aclfNet;
 	}
 	
