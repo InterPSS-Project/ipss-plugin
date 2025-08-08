@@ -19,6 +19,10 @@ public class AclfResultContainer extends AclfNetInfo {
 	
 	public AclfResultContainer() {
 		super();
+		this.busResults = new LinkedList<>();
+		this.svcResults = new LinkedList<>();
+		this.branchResults = new LinkedList<>();
+		this.hvdcResults = new LinkedList<>();
 	}
 	
 	public AclfResultContainer(String networkId, String networkName, String caseDescription, int numberOfBuses,
