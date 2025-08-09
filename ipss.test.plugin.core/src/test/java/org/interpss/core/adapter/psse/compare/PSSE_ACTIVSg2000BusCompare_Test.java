@@ -1,15 +1,14 @@
-package org.interpss.core.adapter.psse.raw.aclf.compare;
+package org.interpss.core.adapter.psse.compare;
+
+import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
+import static org.junit.Assert.assertTrue;
 
 import java.util.logging.Level;
 
-import org.ieee.odm.adapter.psse.PSSEAdapter;
-import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
-import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
-import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.IpssCorePlugin;
-import org.interpss.odm.mapper.ODMAclfParserMapper;
-import static org.junit.Assert.assertTrue;
+import org.interpss.plugin.pssl.plugin.IpssAdapter;
+import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -18,9 +17,6 @@ import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.AclfNetObjectComparator;
-import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
-import com.interpss.simu.SimuObjectFactory;
 
 public class PSSE_ACTIVSg2000BusCompare_Test  extends CorePluginTestSetup {
 	
@@ -28,6 +24,8 @@ public class PSSE_ACTIVSg2000BusCompare_Test  extends CorePluginTestSetup {
 	public void test_ACTIVSg2000_Compare() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssLogger.getLogger().setLevel(Level.WARNING);
+		
+		/*
 		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_36);
 		assertTrue(adapter.parseInputFile(
 				"testData/psse/v36/Texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW"));
@@ -41,10 +39,15 @@ public class PSSE_ACTIVSg2000BusCompare_Test  extends CorePluginTestSetup {
 			return;
 		}
 		
-		
 		AclfNetwork net =simuCtx.getAclfNet();
+		*/
+		// load the test data V36
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v36/Texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW")
+				.setFormat(PSSE)
+				.setPsseVersion(PsseVersion.PSSE_36) 
+				.load()
+				.getImportedObj();
 		
-	  
 		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(net);
 		
 		//aclfAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
