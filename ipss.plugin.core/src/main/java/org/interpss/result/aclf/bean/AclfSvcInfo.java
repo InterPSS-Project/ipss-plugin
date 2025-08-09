@@ -1,6 +1,5 @@
 package org.interpss.result.aclf.bean;
 
-import org.apache.commons.math3.complex.Complex;
 import org.interpss.datatype.base.BaseJSONBean;
 
 public class AclfSvcInfo extends BaseJSONBean {

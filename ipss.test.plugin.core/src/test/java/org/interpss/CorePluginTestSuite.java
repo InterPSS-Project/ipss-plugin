@@ -61,6 +61,7 @@ import org.interpss.core.optadj.IEEE14_OptAdj_BasecaseSSAResult_Test;
 import org.interpss.core.optadj.IEEE14_OptAdj_Basecase_Test;
 import org.interpss.core.optadj.IEEE14_OptAdj_N1ScanSSAResult_Test;
 import org.interpss.core.optadj.IEEE14_OptAdj_N1Scan_Test;
+import org.interpss.core.result.PSSE_IEEE9Bus_Result_Test;
 import org.interpss.core.script.mvel.MvelExprEval_Test;
 import org.interpss.core.zeroz.IEEE14ZeroZBranchAclfTest;
 import org.interpss.core.zeroz.IEEE14ZeroZBranchDeconsolidateTest;
@@ -109,6 +110,9 @@ import org.junit.runners.Suite.SuiteClasses;
 	IEEE14ZeroZBranchDeconsolidateTest.class,
 	ZBrAclfDeconOutputTest.class,
 	IEEE9Bus_ZbrNRSolver_Test.class,
+	
+	// Aclf Result
+	PSSE_IEEE9Bus_Result_Test.class,
 	
 	// acsc
 	IEEE9Bus_Acsc_Test.class,
