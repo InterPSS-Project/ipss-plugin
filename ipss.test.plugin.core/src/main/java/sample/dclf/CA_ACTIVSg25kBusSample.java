@@ -7,11 +7,13 @@ import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.util.PerformanceTimer;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
+import com.interpss.algo.parallel.BranchCAResultRec;
 import com.interpss.algo.parallel.ContingencyAnalysisMonad;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
@@ -65,21 +67,25 @@ public class CA_ACTIVSg25kBusSample {
 			});
 		System.out.println("Contingency list size: " + contList.size());
 		
+		// define a result processor to process the branch CA results
+		double violatingLoadingPercent = 100.0;
+		Consumer<BranchCAResultRec> resultProcessor = resultRec -> {
+			//System.out.println(resultRec.aclfBranch.getId() + 
+			//		", " + resultRec.contingency.getId() +
+			//		" postContFlow: " + resultRec.getPostFlowMW());
+			if (resultRec.calLoadingPercent() >= violatingLoadingPercent) {
+				System.out.println(resultRec.aclfBranch.getId() + 
+						", contBranch:" + resultRec.contingency.getId() +
+						" postContFlow: " + resultRec.getPostFlowMW() +
+						" loading: " + resultRec.calLoadingPercent());
+			}
+		};
+		
 		PerformanceTimer timer = new PerformanceTimer();
 		contList.parallelStream()
 			.forEach(contingency -> {
 				ContingencyAnalysisMonad.of(dclfAlgo, contingency)
-					.ca(resultRec -> {
-						//System.out.println(resultRec.aclfBranch.getId() + 
-						//		", " + resultRec.contingency.getId() +
-						//		" postContFlow: " + resultRec.getPostFlowMW());
-						if (resultRec.calLoadingPercent() >= 100.0) {
-							System.out.println(resultRec.aclfBranch.getId() + 
-									", contBranch:" + resultRec.contingency.getId() +
-									" postContFlow: " + resultRec.getPostFlowMW() +
-									" loading: " + resultRec.calLoadingPercent());
-						}
-					});
+					.ca(resultProcessor);
 			});
 		timer.logStd("Contingency Analysis for ACTIVSg25kBusSample");
 	}
