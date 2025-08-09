@@ -15,16 +15,17 @@ import org.interpss.core.adapter.internal.Bus11856Test;
 import org.interpss.core.adapter.internal.Bus1824Test;
 import org.interpss.core.adapter.internal.Bus6384Test;
 import org.interpss.core.adapter.internal.IEEE14Test;
+import org.interpss.core.adapter.psse.compare.PSSE_ACTIVSg25kObjectCompareTest;
+import org.interpss.core.adapter.psse.compare.PSSE_ACTIVSg2000BusCompare_Test;
+import org.interpss.core.adapter.psse.largeNet.PSSE_ACTIVSg2000Bus_Test;
 import org.interpss.core.adapter.psse.raw.aclf.CR_UserTestCases;
 import org.interpss.core.adapter.psse.raw.aclf.GuideSample_TestCase;
 import org.interpss.core.adapter.psse.raw.aclf.Kundur_2Area_LCCHVDC2T_Test;
 import org.interpss.core.adapter.psse.raw.aclf.Kundur_2Area_VSCHVDC2T_Test;
 import org.interpss.core.adapter.psse.raw.aclf.Mod_SixBus_DclfPsXfr;
 import org.interpss.core.adapter.psse.raw.aclf.PSSE_5Bus_TestCase;
-import org.interpss.core.adapter.psse.raw.aclf.PSSE_ACTIVSg2000Bus_Test;
 import org.interpss.core.adapter.psse.raw.aclf.PSSE_IEEE9Bus_Test;
 import org.interpss.core.adapter.psse.raw.aclf.SixBus_DclfPsXfr;
-import org.interpss.core.adapter.psse.raw.aclf.compare.PSSE_ACTIVSg2000BusCompare_Test;
 import org.interpss.core.adapter.psse.raw.acsc.IEEE39Bus_Acsc_Test;
 import org.interpss.core.adapter.psse.raw.acsc.IEEE9Bus_Acsc_Test;
 import org.interpss.core.adapter.psse.raw.dstab.IEEE9_Dstab_Adapter_Test;
@@ -72,7 +73,6 @@ import org.interpss.core.zeroz.topo.IEEE14ZeroZBranchFuncLoopTest;
 import org.interpss.core.zeroz.topo.IEEE14ZeroZBranchFuncTest;
 import org.interpss.core.zeroz.topo.ZeroZBranchFuncTest;
 import org.interpss.plugin.beanModel.AclfBeanMapperTest;
-import org.interpss.plugin.compare.AclfNet25KObjectCompareTest;
 import org.interpss.plugin.lfGCtrl.SwitchedShuntGControlTest;
 import org.interpss.plugin.piecewise.Acsc5BusTestSubAreaNet;
 import org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise;
@@ -99,7 +99,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	Kundur_2Area_VSCHVDC2T_Test.class,
 	
 	// Compare
-	AclfNet25KObjectCompareTest.class,
+	PSSE_ACTIVSg25kObjectCompareTest.class,
 	
 	// ZeroZ branch
 	ZeroZBranchNetUtilTest.class,
