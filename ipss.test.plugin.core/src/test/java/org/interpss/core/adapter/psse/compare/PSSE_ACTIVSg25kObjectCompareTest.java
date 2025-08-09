@@ -1,25 +1,21 @@
-package org.interpss.plugin.compare;
+package org.interpss.core.adapter.psse.compare;
 
+import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.Assert.assertTrue;
 
-import org.ieee.odm.adapter.psse.PSSEAdapter;
-import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
-import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
-import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.odm.mapper.ODMAclfParserMapper;
+import org.interpss.plugin.pssl.plugin.IpssAdapter;
+import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.Test;
 
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.funcImpl.AclfNetObjectComparator;
-import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
-import com.interpss.simu.SimuObjectFactory;
 
-public class AclfNet25KObjectCompareTest extends CorePluginTestSetup {	
+public class PSSE_ACTIVSg25kObjectCompareTest extends CorePluginTestSetup {	
 	@Test
 	public void test() throws Exception {
 		
+		/*
 		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_33);
 		assertTrue(adapter.parseInputFile("testData/psse/v33/ACTIVSg25k.RAW"));
 		AclfModelParser parser =(AclfModelParser) adapter.getModel();
@@ -32,7 +28,14 @@ public class AclfNet25KObjectCompareTest extends CorePluginTestSetup {
 		}
 		
 		AclfNetwork net =simuCtx.getAclfNet();
-
+		*/
+		
+		// load the test data V33
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v33/ACTIVSg25k.RAW")
+				.setFormat(PSSE)
+				.setPsseVersion(PsseVersion.PSSE_33) 
+				.load()
+				.getImportedObj();
 		
 		AclfNetwork copyNet = net.jsonCopy();
 
