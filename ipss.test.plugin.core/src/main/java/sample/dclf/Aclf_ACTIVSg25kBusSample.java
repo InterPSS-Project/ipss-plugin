@@ -16,7 +16,6 @@ import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
 public class Aclf_ACTIVSg25kBusSample {
-	private static Double maxBranchFlow = 0.0;
 	
 	public static void main(String args[]) throws InterpssException {
 		IpssCorePlugin.init();
