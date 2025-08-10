@@ -35,8 +35,22 @@ public class Dclf_ACTIVSg25kBusSample {
 		
 		DclfAlgorithm dclfAlgo = DclfAlgoObjectFactory.createDclfAlgorithm(aclfNet, CacheType.SenNotCached, true);
 		dclfAlgo.calculateDclf(DclfMethod.INC_LOSS);
-
 		//System.out.println(DclfOutFunc.dclfResults(dclfAlgo, false));
+		
+		DclfAlgoBus dclfBus = dclfAlgo.getDclfAlgoBus("Bus62120");
+		//AclfBus bus1 = dclfBus.getBus();
+		//int n1 = bus1.getSortNumber();
+		double pgen = dclfAlgo.getBusPower(dclfBus) * aclfNet.getBaseMva(); 
+		System.out.println("Bus62120 Pgen (inclLoss): " + pgen);
+		
+		dclfAlgo.calculateDclf(DclfMethod.STD);
+		//System.out.println(DclfOutFunc.dclfResults(dclfAlgo, false));
+		
+		dclfBus = dclfAlgo.getDclfAlgoBus("Bus62120");
+		//AclfBus bus1 = dclfBus.getBus();
+		//int n1 = bus1.getSortNumber();
+		pgen = dclfAlgo.getBusPower(dclfBus) * aclfNet.getBaseMva(); 
+		System.out.println("Bus62120 Pgen (std): " + pgen);
 		
 		Set<String> baseVoltSet = new HashSet<>();
 		Counter cnt = new Counter();
@@ -62,12 +76,6 @@ public class Dclf_ACTIVSg25kBusSample {
 		});
 		System.out.println("Base Voltages: " + baseVoltSet);	
 		System.out.println("Number of branches with base voltage >= 230kV: " + cnt.getCount());
-		System.out.println("Max branch flow: " + maxBranchFlow);
-
-		DclfAlgoBus dclfBus = dclfAlgo.getDclfAlgoBus("Bus62120");
-		//AclfBus bus1 = dclfBus.getBus();
-		//int n1 = bus1.getSortNumber();
-		double pgen = dclfAlgo.getBusPower(dclfBus) * aclfNet.getBaseMva(); 
-		System.out.println("Bus62120 Pgen: " + pgen);		
+		System.out.println("Max branch flow: " + maxBranchFlow);		
 	}
 }
