@@ -24,25 +24,20 @@
 
 package org.interpss.core.script.gvy;
 
-import java.util.HashMap;
-import java.util.Map;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
-import org.interpss.numeric.datatype.ComplexFunc;
-import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.script.gvy.AclfNetGvyScriptProcessor;
-import org.interpss.script.mvel.AclfNetMvelExprEvaluator;
-
-import static org.junit.Assert.assertTrue;
+import org.interpss.util.FileUtil;
 import org.junit.Test;
 
-import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.algo.LoadflowAlgorithm;
 
 public class GvyScriptEval_Test extends CorePluginTestSetup {
 	@Test 
@@ -70,6 +65,30 @@ public class GvyScriptEval_Test extends CorePluginTestSetup {
     				 "load = bus.getContributeLoad('Bus14-L1');" +
     				 "load.loadCP = new Complex(0.18, 0.07);";
 		result = gvyProcessor.evaluate(groovyCode);
+		System.out.println("Result: " + result);
+		assertTrue("Bus contribute load should be 0.18 + j0.07", 
+				NumericUtil.equals(net.getBus("Bus14").getContributeLoad("Bus14-L1").getLoadCP(), new Complex(0.18, 0.07), 1.0E-4));
+	}
+	
+	@Test 
+	public void bus14ScriptFileTestCase() throws Exception {
+		// load the IEEE-14 Bus system
+		AclfNetwork net = CorePluginFactory
+				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
+				.load("testData/adpter/ieee_format/Ieee14Bus.ieee")
+				.getAclfNet();		
+		
+ 		assertTrue("", net.isContributeGenLoadModel());
+ 		
+	  	AclfNetGvyScriptProcessor gvyProcessor = new AclfNetGvyScriptProcessor(net);
+
+	  	String scriptFile = "script/ieee14_adjust.gvy";
+	  	// Load Groovy script from the file as a string
+	  	String groovyCode = FileUtil.readFileAsString(scriptFile);
+	  	//System.out.println("Groovy Code: " + groovyCode);
+		
+		// Evaluate the Groovy code
+		Object result = gvyProcessor.evaluate(groovyCode);
 		System.out.println("Result: " + result);
 		assertTrue("Bus contribute load should be 0.18 + j0.07", 
 				NumericUtil.equals(net.getBus("Bus14").getContributeLoad("Bus14-L1").getLoadCP(), new Complex(0.18, 0.07), 1.0E-4));
