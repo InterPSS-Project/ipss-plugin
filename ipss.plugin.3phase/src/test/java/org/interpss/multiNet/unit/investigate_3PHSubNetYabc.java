@@ -78,8 +78,8 @@ public class investigate_3PHSubNetYabc {
 		Complex v4 = dsNet.getBus("Bus4").getVoltage();
 		Complex v7 = dsNet.getBus("Bus7").getVoltage();
 		Complex v8 = dsNet.getBus("Bus8").getVoltage();
-		Complex z45 = dsNet.getBranch("Bus4->Bus5(0)").getZ();
-		Complex z78 = dsNet.getBranch("Bus7->Bus8(0)").getZ();
+		Complex z45 = dsNet.getBranch("Bus4->Bus5(0)").getAdjustedZ();
+		Complex z78 = dsNet.getBranch("Bus7->Bus8(0)").getAdjustedZ();
 		Complex I_5_4 = v5.subtract(v4).divide(z45);
 		Complex I_7_8 = v7.subtract(v8).divide(z78);
 		
@@ -430,8 +430,8 @@ public class investigate_3PHSubNetYabc {
 		Complex v4 = dsNet.getBus("Bus4").getVoltage();
 		Complex v7 = dsNet.getBus("Bus7").getVoltage();
 		Complex v8 = dsNet.getBus("Bus8").getVoltage();
-		Complex z45 = dsNet.getBranch("Bus4->Bus5(0)").getZ();
-		Complex z78 = dsNet.getBranch("Bus7->Bus8(0)").getZ();
+		Complex z45 = dsNet.getBranch("Bus4->Bus5(0)").getAdjustedZ();
+		Complex z78 = dsNet.getBranch("Bus7->Bus8(0)").getAdjustedZ();
 		Complex I_5_4 = v5.subtract(v4).divide(z45);
 		Complex I_7_8 = v7.subtract(v8).divide(z78);
 		

@@ -192,7 +192,7 @@ public class AclfNet2BeanUtilFunc {
 				(branch.isPSXfr() ? BaseBranchBean.BranchCode.PsXfr:
 					BaseBranchBean.BranchCode.ZBR ));
 		
-		Complex z = branch.getZ();
+		Complex z = branch.getAdjustedZ();
 		bean.z = new ComplexValueBean(z);
 		bean.shunt_y = new ComplexValueBean(format(new Complex(0, 0)));	
 		bean.turnRatio = new BranchValueBean(1.0,1.0);		

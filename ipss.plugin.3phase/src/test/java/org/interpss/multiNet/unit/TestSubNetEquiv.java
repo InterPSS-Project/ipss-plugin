@@ -72,11 +72,11 @@ public class TestSubNetEquiv {
 	         //Calculated tie-line current
 
             Complex vdiff_5_7 = dsNet.getBus("Bus5").getVoltage().subtract(dsNet.getBus("Bus7").getVoltage());
-            Complex curr_5_7 = vdiff_5_7.divide(dsNet.getBranch("Bus5->Bus7(0)").getZ());
+            Complex curr_5_7 = vdiff_5_7.divide(dsNet.getBranch("Bus5->Bus7(0)").getAdjustedZ());
             
             
             Complex vdiff_7_8 = dsNet.getBus("Bus7").getVoltage().subtract(dsNet.getBus("Bus8").getVoltage());
-            Complex curr_7_8 = vdiff_7_8.divide(dsNet.getBranch("Bus7->Bus8(0)").getZ());
+            Complex curr_7_8 = vdiff_7_8.divide(dsNet.getBranch("Bus7->Bus8(0)").getAdjustedZ());
             
             System.out.println("Calculated current 5->7 = "+curr_5_7 );
 		    
