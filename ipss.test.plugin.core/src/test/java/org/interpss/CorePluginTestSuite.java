@@ -15,16 +15,18 @@ import org.interpss.core.adapter.internal.Bus11856Test;
 import org.interpss.core.adapter.internal.Bus1824Test;
 import org.interpss.core.adapter.internal.Bus6384Test;
 import org.interpss.core.adapter.internal.IEEE14Test;
+import org.interpss.core.adapter.psse.compare.PSSE_ACTIVSg25kObjectCompareTest;
+import org.interpss.core.adapter.psse.compare.PSSE_ACTIVSg2000BusCompare_Test;
+import org.interpss.core.adapter.psse.largeNet.PSSE_ACTIVSg2000Bus_Test;
+import org.interpss.core.adapter.psse.largeNet.PSSE_ACTIVSg25kBus_Test;
 import org.interpss.core.adapter.psse.raw.aclf.CR_UserTestCases;
 import org.interpss.core.adapter.psse.raw.aclf.GuideSample_TestCase;
 import org.interpss.core.adapter.psse.raw.aclf.Kundur_2Area_LCCHVDC2T_Test;
 import org.interpss.core.adapter.psse.raw.aclf.Kundur_2Area_VSCHVDC2T_Test;
 import org.interpss.core.adapter.psse.raw.aclf.Mod_SixBus_DclfPsXfr;
 import org.interpss.core.adapter.psse.raw.aclf.PSSE_5Bus_TestCase;
-import org.interpss.core.adapter.psse.raw.aclf.PSSE_ACTIVSg2000Bus_Test;
 import org.interpss.core.adapter.psse.raw.aclf.PSSE_IEEE9Bus_Test;
 import org.interpss.core.adapter.psse.raw.aclf.SixBus_DclfPsXfr;
-import org.interpss.core.adapter.psse.raw.aclf.compare.PSSE_ACTIVSg2000BusCompare_Test;
 import org.interpss.core.adapter.psse.raw.acsc.IEEE39Bus_Acsc_Test;
 import org.interpss.core.adapter.psse.raw.acsc.IEEE9Bus_Acsc_Test;
 import org.interpss.core.adapter.psse.raw.dstab.IEEE9_Dstab_Adapter_Test;
@@ -33,10 +35,10 @@ import org.interpss.core.adapter.ucte.UCTEFormatAusPowerTest;
 import org.interpss.core.ca.IEEE14_N1Scan_Test;
 import org.interpss.core.ca.Ieee14_CA_Test;
 import org.interpss.core.ca.Ieee14_GSF_Test;
-import org.interpss.core.dclf.IEEE118_EDclf_Test;
 import org.interpss.core.dclf.IEEE14_Dclf_Test;
-import org.interpss.core.dclf.IEEE14_EDclf_Test;
-import org.interpss.core.dclf.IEEE39_EDclf_Test;
+import org.interpss.core.dclf.edclf.IEEE118_EDclf_Test;
+import org.interpss.core.dclf.edclf.IEEE14_EDclf_Test;
+import org.interpss.core.dclf.edclf.IEEE39_EDclf_Test;
 import org.interpss.core.dist.DistSys_Test;
 import org.interpss.core.dstab.DStab_IEEE9Bus_Test;
 import org.interpss.core.dstab.cml.block.DelayControlBlockTests;
@@ -61,6 +63,7 @@ import org.interpss.core.optadj.IEEE14_OptAdj_BasecaseSSAResult_Test;
 import org.interpss.core.optadj.IEEE14_OptAdj_Basecase_Test;
 import org.interpss.core.optadj.IEEE14_OptAdj_N1ScanSSAResult_Test;
 import org.interpss.core.optadj.IEEE14_OptAdj_N1Scan_Test;
+import org.interpss.core.result.PSSE_IEEE9Bus_Result_Test;
 import org.interpss.core.script.mvel.MvelExprEval_Test;
 import org.interpss.core.zeroz.IEEE14ZeroZBranchAclfTest;
 import org.interpss.core.zeroz.IEEE14ZeroZBranchDeconsolidateTest;
@@ -71,7 +74,6 @@ import org.interpss.core.zeroz.topo.IEEE14ZeroZBranchFuncLoopTest;
 import org.interpss.core.zeroz.topo.IEEE14ZeroZBranchFuncTest;
 import org.interpss.core.zeroz.topo.ZeroZBranchFuncTest;
 import org.interpss.plugin.beanModel.AclfBeanMapperTest;
-import org.interpss.plugin.compare.AclfNet25KObjectCompareTest;
 import org.interpss.plugin.lfGCtrl.SwitchedShuntGControlTest;
 import org.interpss.plugin.piecewise.Acsc5BusTestSubAreaNet;
 import org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise;
@@ -91,14 +93,17 @@ import org.junit.runners.Suite.SuiteClasses;
 	IEEE9_MultiLoadTest.class,
 	IEEE14_YMatrixSetTest.class,
 	SwingBusSubAreaTest.class,
-	PSSE_ACTIVSg2000Bus_Test.class,
-	PSSE_ACTIVSg2000BusCompare_Test.class,
 	Kundur_2Area_LCCHVDC2T_Aclf_Test.class,
 	Kundur_2Area_LCCHVDC2T_Test.class,
 	Kundur_2Area_VSCHVDC2T_Test.class,
+
+	// large PSSE network
+	PSSE_ACTIVSg2000Bus_Test.class,
+	PSSE_ACTIVSg25kBus_Test.class,
 	
 	// Compare
-	AclfNet25KObjectCompareTest.class,
+	PSSE_ACTIVSg25kObjectCompareTest.class,
+	PSSE_ACTIVSg2000BusCompare_Test.class,
 	
 	// ZeroZ branch
 	ZeroZBranchNetUtilTest.class,
@@ -109,6 +114,9 @@ import org.junit.runners.Suite.SuiteClasses;
 	IEEE14ZeroZBranchDeconsolidateTest.class,
 	ZBrAclfDeconOutputTest.class,
 	IEEE9Bus_ZbrNRSolver_Test.class,
+	
+	// Aclf Result
+	PSSE_IEEE9Bus_Result_Test.class,
 	
 	// acsc
 	IEEE9Bus_Acsc_Test.class,
