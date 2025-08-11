@@ -54,17 +54,17 @@ public class Dstab3PBranchImpl extends DStabBranchImpl implements DStab3PBranch 
 		if(Zabc ==null){
 			if(this.isLine()){
 				if(this.getZ0()!=null && this.getZ0().abs()>0) {
-					setZabc(getZ(),getZ(),getZ0());
+					setZabc(getAdjustedZ(),getAdjustedZ(),getZ0());
 				} else {
-					setZabc(getZ(),getZ(),getZ().multiply(z0_to_z1_ratio));
+					setZabc(getAdjustedZ(),getAdjustedZ(),getAdjustedZ().multiply(z0_to_z1_ratio));
 				}
 			}
 			else{
-				if(this.getZ()!=null && this.getZ().abs()>0){
+				if(this.getAdjustedZ()!=null && this.getAdjustedZ().abs()>0){
 					Complex3x3 Zabc = new Complex3x3();
-					Zabc.aa = this.getZ();
-					Zabc.bb = this.getZ();
-					Zabc.cc = this.getZ();
+					Zabc.aa = this.getAdjustedZ();
+					Zabc.bb = this.getAdjustedZ();
+					Zabc.cc = this.getAdjustedZ();
 					setZabc(Zabc);
 				}
 			}
