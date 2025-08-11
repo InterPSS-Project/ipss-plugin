@@ -1,4 +1,4 @@
-package org.interpss.core.adapter.psse.raw.aclf;
+package org.interpss.core.adapter.psse.largeNet;
 
 import java.util.logging.Level;
 
@@ -10,6 +10,9 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
+import org.interpss.plugin.pssl.plugin.IpssAdapter;
+
+import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
@@ -29,6 +32,8 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 	public void test_ACTIVSg2000_2016summerpeak_v30() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssLogger.getLogger().setLevel(Level.WARNING);
+		
+		/*
 		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(
 				"testData/psse/v30/Texas2k/Texas2k_series24_case1_2016summerPeak_v30.RAW"));
@@ -42,9 +47,13 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 			return;
 		}
 		
-		
 		AclfNetwork net =simuCtx.getAclfNet();
-		
+		*/
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v30/Texas2k/Texas2k_series24_case1_2016summerPeak_v30.RAW")
+				.setFormat(PSSE)
+				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_30) 
+				.load()
+				.getImportedObj();
 	  
 		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(net);
 		
@@ -77,6 +86,8 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 	public void test_ACTIVSg2000_2016summerpeak_v34() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssLogger.getLogger().setLevel(Level.WARNING);
+		
+		/*
 		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_34);
 		assertTrue(adapter.parseInputFile(
 				"testData/psse/v34/Texas2k/Texas2k_series24_case1_2016summerPeak_noSub_v34.RAW"));
@@ -90,9 +101,14 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 			return;
 		}
 		
-		
 		AclfNetwork net =simuCtx.getAclfNet();
+		*/
 		
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v34/Texas2k/Texas2k_series24_case1_2016summerPeak_noSub_v34.RAW")
+				.setFormat(PSSE)
+				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_34) 
+				.load()
+				.getImportedObj();
 	  
 		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(net);
 		
@@ -124,6 +140,8 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 	public void test_ACTIVSg2000_2016summerpeak_v35() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssLogger.getLogger().setLevel(Level.WARNING);
+		
+		/*
 		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_35);
 		assertTrue(adapter.parseInputFile(
 				"testData/psse/v35/Texas2k/Texas2k_series24_case1_2016summerPeak_v35.RAW"));
@@ -137,10 +155,14 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 			return;
 		}
 		
-		
 		AclfNetwork net =simuCtx.getAclfNet();
+		*/
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v35/Texas2k/Texas2k_series24_case1_2016summerPeak_v35.RAW")
+				.setFormat(PSSE)
+				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_35) 
+				.load()
+				.getImportedObj();
 		
-	  
 		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(net);
 		
 		//aclfAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
@@ -173,6 +195,8 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 	public void test_ACTIVSg2000_2016summerpeak_v36() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssLogger.getLogger().setLevel(Level.WARNING);
+		
+		/*
 		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_36);
 		assertTrue(adapter.parseInputFile(
 				"testData/psse/v36/Texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW"));
@@ -186,10 +210,14 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 			return;
 		}
 		
-		
 		AclfNetwork net =simuCtx.getAclfNet();
+		*/
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v36/Texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW")
+				.setFormat(PSSE)
+				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_36) 
+				.load()
+				.getImportedObj();
 		
-	  
 		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(net);
 		
 		//aclfAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
