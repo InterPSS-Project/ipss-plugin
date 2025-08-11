@@ -1,14 +1,11 @@
 package sample.dclf;
 
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
-import static org.junit.Assert.assertTrue;
-
 import java.util.HashSet;
 import java.util.Set;
 
 import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.datatype.Counter;
-import org.interpss.numeric.util.NumericUtil;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.common.exp.InterpssException;
@@ -27,7 +24,7 @@ public class Dclf_ACTIVSg25kBusSample {
 		IpssCorePlugin.init();
 		
 		// load the test data V33
-		AclfNetwork aclfNet = IpssAdapter.importAclfNet("testData/psse/v33/ACTIVSg25k.RAW")
+		AclfNetwork aclfNet = IpssAdapter.importAclfNet("ipss-plugin/ipss.test.plugin.core/testData/psse/v33/ACTIVSg25k.RAW")
 				.setFormat(PSSE)
 				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_33) 
 				.load()
