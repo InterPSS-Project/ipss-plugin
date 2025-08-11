@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -273,39 +272,38 @@ public class AclfNetJsonComparator {
 
         int minSize = Math.min(size1, size2);
         for (int i = 0; i < minSize; i++) {
-            String currentPath = path + "[" + i + "]";
-            if (!array1.get(i).equals(array2.get(i))) {
-                if (outFilter.test(currentPath)) {
-                    isDifferent = true;
-                    System.out.println("Value mismatch at " + currentPath + ": " +
-                            "\nFirst:  " + array1.get(i) + 
-                            "\nSecond: " + array2.get(i));
-                }
-            }
-        }
-
-        handleArraySizeDifferences(path, array1.asList(), array2.asList());
-    }
-
-    private void handleArraySizeDifferences(String path, List<JsonElement> list1, List<JsonElement> list2) {
-        if (list1.size() > list2.size()) {
-            for (int i = list2.size(); i < list1.size(); i++) {
-                isDifferent = true;
-                String id = list1.get(i).isJsonObject() && list1.get(i).getAsJsonObject().has("id") 
-                        ? list1.get(i).getAsJsonObject().get("id").getAsString() 
-                        : String.valueOf(i);
-                System.out.println("Extra element in first array at " + path + "[" + id + "]: " + 
-                                "\nValue: " + list1.get(i));
-            }
-        } else if (list2.size() > list1.size()) {
-            for (int i = list1.size(); i < list2.size(); i++) {
-                isDifferent = true;
-                String id = list2.get(i).isJsonObject() && list2.get(i).getAsJsonObject().has("id") 
-                        ? list2.get(i).getAsJsonObject().get("id").getAsString() 
-                        : String.valueOf(i);
-                System.out.println("Extra element in second array at " + path + "[" + id + "]: " + 
-                                "\nValue: " + list2.get(i));
-            }
+        	if (array1.get(i).isJsonObject() && array2.get(i).isJsonObject()) {
+    			// Assuming the objects in the arrays are model objects with an id field
+            	String id1 = array1.get(i).getAsJsonObject().get("id").getAsString();
+            	String id2 = array2.get(i).getAsJsonObject().get("id").getAsString();
+            	if (id1.equals(id2)) {
+	                String currentPath = path + "[" + id1 + "]";
+	                comparePrettyPrint(currentPath, array1.get(i), array2.get(i));
+            	}
+            	else {
+					// If the id mis-matches, we can compare the objects directly
+					System.out.println("ID mismatch at " + path + "[" + i + "]: " +
+							"\nFirst:  " + id1 +
+							"\nSecond: " + id2);
+				}
+			}
+        	else {
+        		/* for handling the case where the array elements are not model objects,
+        		 * for example:
+        		 * 	
+        		 * "refBusIdSet": ["xxx.500.254"],
+        		 */
+        		String currentPath = path + "[" + i + "]";
+				if (!array1.get(i).equals(array2.get(i))) {
+					if (outFilter.test(currentPath)) {
+						isDifferent = true;
+						System.out.println("Value mismatch at " + currentPath + ": " +
+								"\nFirst:  " + array1.get(i) + 
+								"\nSecond: " + array2.get(i));
+					}
+				}
+        	}
         }
     }
+
 }

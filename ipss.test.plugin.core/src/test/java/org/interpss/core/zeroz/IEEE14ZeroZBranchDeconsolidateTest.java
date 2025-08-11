@@ -36,6 +36,7 @@ public class IEEE14ZeroZBranchDeconsolidateTest extends CorePluginTestSetup {
 		/*
 		 * process zeroZ branches by merging the zeroZ branches and connected buses to the retained bus
 		 */
+		AclfNetZeroZBranchHelper.NotMergeBusConnectXfr = false;
   		new AclfNetZeroZBranchHelper(net).consolidate();
 		
 	  	//System.out.println("Active Bus & Branch: " + net.getNoActiveBus() + " " + net.getNoActiveBranch());
@@ -46,10 +47,10 @@ public class IEEE14ZeroZBranchDeconsolidateTest extends CorePluginTestSetup {
   		
   		new AclfNetZeroZDeconsolidator(net).deconsolidate(false);
 		
-	  	//System.out.println("Active Bus & Branch: " + net.getNoActiveBus() + " " + net.getNoActiveBranch());
+	  	//System.out.println("Active Bus & Brancßh: " + net.getNoActiveBus() + " " + net.getNoActiveBranch());
   		assertTrue((net.getNoActiveBus() == 23 && net.getNoActiveBranch() == 30));
-  		assertTrue(net.getBus("Bus14").getContributeLoadList().size() == 2);
-  		assertTrue(net.getBus("Bus14").getContributeLoadList().get(1).isActive() == false);
+  		assertTrue(net.getBus("Bus14").getContributeLoadList().size() == 1);
+  		assertTrue(net.getBus("Bus14").getContributeLoadList().get(0).isActive() == true);
   		assertTrue(net.getBus("Bus14_1").getContributeLoadList().size() == 1);
   		assertTrue(net.getBus("Bus14_1").getContributeLoadList().get(0).isActive());
 	}
@@ -68,6 +69,7 @@ public class IEEE14ZeroZBranchDeconsolidateTest extends CorePluginTestSetup {
 		 * (1) process zeroZ branches by merging the zeroZ branches and connected buses to the retained bus
 		 */
 		AclfNetZeroZBranchHelper helper = new AclfNetZeroZBranchHelper(net);
+		AclfNetZeroZBranchHelper.NotMergeBusConnectXfr = false;
 		helper.consolidate();
 
 		// (2) Deconsolidate the network by restoring the buses and branches 
