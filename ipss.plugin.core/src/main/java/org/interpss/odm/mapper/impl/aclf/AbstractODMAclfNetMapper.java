@@ -252,13 +252,25 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 	
 	public static void postAclfNetProcessing(BaseAclfNetwork<?,?> aclfNet) throws InterpssException {
 		
-		//TODO: set the svc remote bus
+		// set the svc remote bus
+		aclfNet.getBusList().forEach(bus -> {
+			if (bus.isStaticVarCompensator()) {
+				StaticVarCompensator svc = bus.getStaticVarCompensator();
+				if(svc.getRemoteBusBranchId() != null){
+					BaseAclfBus<? extends AclfGen, ? extends AclfLoad> remoteBus = aclfNet.getBus(svc.getRemoteBusBranchId());
+					svc.setRemoteBus(remoteBus);
+				}
+			}
+		});
+		
+		/*
 		for (StaticVarCompensator svc : aclfNet.getSvcList()) {
 			if(svc.getRemoteBusBranchId() != null){
 				BaseAclfBus<? extends AclfGen, ? extends AclfLoad> remoteBus = aclfNet.getBus(svc.getRemoteBusBranchId());
 				svc.setRemoteBus(remoteBus);
 			}
 		}
+		*/
 		
 		aclfNet.adjustXfrZ();
 		

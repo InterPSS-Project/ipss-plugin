@@ -647,9 +647,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 		}
 
 		// add the SVC to the network svcList
-		this.aclfNet.getSvcList().add(svc);
-
-		
+		//this.aclfNet.getSvcList().add(svc);
 	}
 
 }

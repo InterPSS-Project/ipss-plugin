@@ -7,13 +7,13 @@ import org.ieee.odm.ODMObjectFactory;
 import org.ieee.odm.model.aclf.AclfModelParser;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.core.dstab.DStabTestSetupBase;
+import org.interpss.dep.QA.compare.IAclfBranchComparator;
+import org.interpss.dep.QA.compare.IAclfBusComparator;
+import org.interpss.dep.QA.compare.IAclfNetComparator;
+import org.interpss.dep.QA.compare.NetModelComparator;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
 import org.interpss.odm.mapper.ODMDStabParserMapper;
-import org.interpss.plugin.QA.compare.IAclfBranchComparator;
-import org.interpss.plugin.QA.compare.IAclfBusComparator;
-import org.interpss.plugin.QA.compare.IAclfNetComparator;
-import org.interpss.plugin.QA.compare.NetModelComparator;
 import org.junit.Test;
 
 import com.interpss.common.util.IpssLogger;

@@ -281,7 +281,7 @@ public class DynLoadCMPLDWGImpl extends DynLoadModelImpl implements DynLoadCMPLD
     	
     	//3. calculate tap = 1.0 such that Vmag_lowBus = (Vmin + Vmax)/2
     	
-  	     double Xxfr_pu = distXfr.getZ().getImaginary()*Tfixhs*Tfixhs;
+  	     double Xxfr_pu = distXfr.getAdjustedZ().getImaginary()*Tfixhs*Tfixhs;
   	     
   	     double Vmag_lowBus = (Vmin + Vmax)/2;
   	     
@@ -320,7 +320,7 @@ public class DynLoadCMPLDWGImpl extends DynLoadModelImpl implements DynLoadCMPLD
   	     
   	     // Vhs - voltage at the high voltage side of the transformer
   	     // Vhs = Vlf- i*Xxfr_pu*Tfixhs^2*Ilf_pu
-  	     Complex Vhs =  VtransBus.subtract(this.distXfr.getZ().multiply(Math.pow(Tfixhs, 2)).multiply(ItransBus));
+  	     Complex Vhs =  VtransBus.subtract(this.distXfr.getAdjustedZ().multiply(Math.pow(Tfixhs, 2)).multiply(ItransBus));
          
   	     
   	     // VlowBus - voltage at the low voltage side of the transformer
@@ -341,7 +341,7 @@ public class DynLoadCMPLDWGImpl extends DynLoadModelImpl implements DynLoadCMPLD
   	     Complex ItoloadBus = ItolowBus.subtract(IBss);
   	     
   	     // VloadBus - voltage at the load bus
-  	     Complex VloadBus = VlowBus.subtract(this.distFdr.getZ().multiply(ItoloadBus));
+  	     Complex VloadBus = VlowBus.subtract(this.distFdr.getAdjustedZ().multiply(ItoloadBus));
   	     
   	     // check if the Vload bus larger than 0.95 pu
   	     
@@ -365,7 +365,7 @@ public class DynLoadCMPLDWGImpl extends DynLoadModelImpl implements DynLoadCMPLD
   	    	  	     
   	    	  	     // Vhs - voltage at the high voltage side of the transformer
   	    	  	     // Vhs = Vlf- i*Xxfr_pu*Tfixhs^2*Ilf_pu
-  	    	  	     Vhs =  VtransBus.subtract(this.distXfr.getZ().multiply(Math.pow(Tfixhs, 2)).multiply(ItransBus));
+  	    	  	     Vhs =  VtransBus.subtract(this.distXfr.getAdjustedZ().multiply(Math.pow(Tfixhs, 2)).multiply(ItransBus));
   	    	         
   	    	  	     
   	    	  	     // VlowBus - voltage at the low voltage side of the transformer
@@ -386,7 +386,7 @@ public class DynLoadCMPLDWGImpl extends DynLoadModelImpl implements DynLoadCMPLD
   	    	  	     ItoloadBus = ItolowBus.subtract(IBss);
   	    	  	     
   	    	  	     // VloadBus - voltage at the load bus
-  	    	  	     VloadBus = VlowBus.subtract(this.distFdr.getZ().multiply(ItoloadBus));
+  	    	  	     VloadBus = VlowBus.subtract(this.distFdr.getAdjustedZ().multiply(ItoloadBus));
   	    	  	    
   	    	  	     if(VloadBus.abs()>=VloadBusMin){
   	    	  	    	 // there are some possibilities to further adjust the Tap
@@ -403,7 +403,7 @@ public class DynLoadCMPLDWGImpl extends DynLoadModelImpl implements DynLoadCMPLD
 	  	  	    	  	     
 	  	  	    	  	     // Vhs - voltage at the high voltage side of the transformer
 	  	  	    	  	     // Vhs = Vlf- i*Xxfr_pu*Tfixhs^2*Ilf_pu
-	  	  	    	  	     Vhs =  VtransBus.subtract(this.distXfr.getZ().multiply(Math.pow(Tfixhs, 2)).multiply(ItransBus));
+	  	  	    	  	     Vhs =  VtransBus.subtract(this.distXfr.getAdjustedZ().multiply(Math.pow(Tfixhs, 2)).multiply(ItransBus));
 	  	  	    	         
 	  	  	    	  	     
 	  	  	    	  	     // VlowBus - voltage at the low voltage side of the transformer
@@ -424,7 +424,7 @@ public class DynLoadCMPLDWGImpl extends DynLoadModelImpl implements DynLoadCMPLD
 	  	  	    	  	     ItoloadBus = ItolowBus.subtract(IBss);
 	  	  	    	  	     
 	  	  	    	  	     // VloadBus - voltage at the load bus
-	  	  	    	  	     VloadBus = VlowBus.subtract(this.distFdr.getZ().multiply(ItoloadBus));
+	  	  	    	  	     VloadBus = VlowBus.subtract(this.distFdr.getAdjustedZ().multiply(ItoloadBus));
 	  	  	    	  	     
 	  	  	    	  	     // update the upper and lower bounds
 	  	  	    	  	     if(VloadBus.abs()<VloadBusMin){
@@ -437,7 +437,7 @@ public class DynLoadCMPLDWGImpl extends DynLoadModelImpl implements DynLoadCMPLD
 			  	  	    	  	     
 			  	  	    	  	     // Vhs - voltage at the high voltage side of the transformer
 			  	  	    	  	     // Vhs = Vlf- i*Xxfr_pu*Tfixhs^2*Ilf_pu
-			  	  	    	  	     Vhs =  VtransBus.subtract(this.distXfr.getZ().multiply(Math.pow(Tfixhs, 2)).multiply(ItransBus));
+			  	  	    	  	     Vhs =  VtransBus.subtract(this.distXfr.getAdjustedZ().multiply(Math.pow(Tfixhs, 2)).multiply(ItransBus));
 			  	  	    	         
 			  	  	    	  	     
 			  	  	    	  	     // VlowBus - voltage at the low voltage side of the transformer
@@ -458,7 +458,7 @@ public class DynLoadCMPLDWGImpl extends DynLoadModelImpl implements DynLoadCMPLD
 			  	  	    	  	     ItoloadBus = ItolowBus.subtract(IBss);
 			  	  	    	  	     
 			  	  	    	  	     // VloadBus - voltage at the load bus
-			  	  	    	  	     VloadBus = VlowBus.subtract(this.distFdr.getZ().multiply(ItoloadBus));
+			  	  	    	  	     VloadBus = VlowBus.subtract(this.distFdr.getAdjustedZ().multiply(ItoloadBus));
 	  	  	    	  	            
 			  	  	    	  	     break;
 	  	  	    	  	     }
@@ -652,7 +652,7 @@ public class DynLoadCMPLDWGImpl extends DynLoadModelImpl implements DynLoadCMPLD
 	private Complex reduceZfdrToIncreaseVloadBus(Complex VlowBus, Complex ItoloadBus, Complex VloadBus) {
 		if(VlowBus.abs()>= VloadBusMin){
 			
-			 Complex Zfdr = this.distFdr.getZ();
+			 Complex Zfdr = this.distFdr.getAdjustedZ();
 			 
 			 double final_ratio =1.0;
 			 for (double ratio = 1.0;ratio>=1.0E-2; ratio-=0.01){
