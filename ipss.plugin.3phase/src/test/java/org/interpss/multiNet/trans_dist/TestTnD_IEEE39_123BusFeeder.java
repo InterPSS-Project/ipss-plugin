@@ -360,7 +360,7 @@ public class TestTnD_IEEE39_123BusFeeder {
 				
 				double dP = loadPQ.getReal()-distTotalLoadPQ.getReal();
 				// total Var at the transmission bus is equal to total feeder Q plus step-down transformer Var consumption
-				double dQ = loadPQ.getImaginary()-distTotalLoadPQ.getImaginary()-(distTotalLoadPQ.abs()*xfr1_2.getZ().getImaginary());
+				double dQ = loadPQ.getImaginary()-distTotalLoadPQ.getImaginary()-(distTotalLoadPQ.abs()*xfr1_2.getAdjustedZ().getImaginary());
 				
 				transBus.setLoadP(dP);
 				transBus.setLoadQ(dQ);

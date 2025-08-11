@@ -105,4 +105,15 @@ public class FileUtil {
 		inStream.close();
 		return bos.toByteArray();
 	}	
+	
+	/**
+	 * read a file and return file context as a String
+	 * 
+	 * @param file
+	 * @return
+	 * @throws IOException
+	 */
+	public static String readFileAsString(String filename) throws IOException {
+		return new String(readFile(new File(filename)));
+	}
 }
