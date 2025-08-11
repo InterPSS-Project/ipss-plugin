@@ -11,7 +11,7 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
 
-public class GSF_ACTIVSg25kBusSample {
+public class GSFParallel_ACTIVSg25kBusSample {
 	public static void main(String args[]) throws InterpssException {
 		IpssCorePlugin.init();
 		
@@ -22,37 +22,30 @@ public class GSF_ACTIVSg25kBusSample {
 				.load()
 				.getImportedObj();	
 		
-		aclfNet.getBusList().forEach(bus -> {
-			if (bus.isGen()) {
-				//System.out.println("GSF Gen@Bus-" + bus.getId());
-			}
-		});
-		/*
-		 * 	GSF Gen@Bus-Bus11294
-			GSF Gen@Bus-Bus11299
-			GSF Gen@Bus-Bus11303
-		 */
-		
 		/*
 		 * GFS samples
 		 */
 		SenAnalysisAlgorithm algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(aclfNet);
+		algo.calculateDclf();
 
 		String busId = "Bus11294"; // Gen@Bus-Bus11294
-		/*
+		
 		aclfNet.getBranchList().stream()
-			.filter(branch -> branch.isActive() && branch.isLine() && 
-								!branch.isConnect2RefBus() &&
-								branch.getHigherBaseVoltage() >= 230000.0)
+			.filter(branch -> branch.isActive() && !branch.isConnect2RefBus() )
 			.forEach(branch -> {
 				double gsf = algo.calGenShiftFactor(busId, branch); // w.r.p to the Ref Bus
-				if (Math.abs(gsf) > 0.3) 
-				System.out.println("GSF Gen@" + busId + " on Branch " + branch.getId() + ": " + gsf);
+				if (Math.abs(gsf) > 0.2) 
+					System.out.println("GSF Gen@" + busId + " on Branch " + branch.getId() + ": " + gsf);
 			});
-		*/
-		
-		AclfBranch branch1 = aclfNet.getBranch("Bus14265->Bus62125(1)"); 
-		double gsf1 = algo.calGenShiftFactor(busId, branch1); // w.r.p to the Ref Bus
-		System.out.println("GSF Gen@" + busId + " on Branch " + branch1.getId() + ": " + gsf1);
 	}
 }
+/*
+GSF Gen@Bus11294 on Branch Bus14265->Bus62125(1): 0.43305699304840073
+GSF Gen@Bus11294 on Branch Bus11178->Bus11034(1): 0.21505304632561686
+GSF Gen@Bus11294 on Branch Bus11034->Bus33349(1): 0.29826045384167155
+GSF Gen@Bus11294 on Branch Bus11076->Bus11295(1): -0.24257306844923562
+GSF Gen@Bus11294 on Branch Bus11174->Bus11178(1): 0.3034053363013301
+GSF Gen@Bus11294 on Branch Bus11293->Bus11295(1): 0.9999999999999989
+GSF Gen@Bus11294 on Branch Bus11293->Bus11294(1): -1.0
+GSF Gen@Bus11294 on Branch Bus49362->Bus49031(1): -0.2671879595068673
+*/
