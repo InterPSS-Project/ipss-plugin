@@ -313,7 +313,7 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 
 		if(likeBranch!=null){
 			if(xhl==0.0){
-				xhl = likeBranch.getZ().getImaginary();
+				xhl = likeBranch.getAdjustedZ().getImaginary();
 
 			}
 			if(normKV1==0.0){
