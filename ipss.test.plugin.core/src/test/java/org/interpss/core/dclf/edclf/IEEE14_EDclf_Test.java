@@ -22,7 +22,7 @@
   *
   */
 
-package org.interpss.core.dclf;
+package org.interpss.core.dclf.edclf;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginFactory;
