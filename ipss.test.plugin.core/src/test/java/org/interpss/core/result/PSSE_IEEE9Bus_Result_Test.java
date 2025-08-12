@@ -1,14 +1,13 @@
 package org.interpss.core.result;
  
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
-import static org.junit.Assert.assertTrue;
-
 import org.interpss.CorePluginTestSetup;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
+import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.interpss.result.aclf.AclfResultAdapter;
 import org.interpss.result.aclf.AclfResultContainer;
 import org.interpss.util.FileUtil;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.core.CoreObjectFactory;
@@ -19,7 +18,7 @@ public class PSSE_IEEE9Bus_Result_Test extends CorePluginTestSetup {
 	@Test
 	public void test() throws Exception {
 		// load the test data V33
-		AclfNetwork netV33 = IpssAdapter.importAclfNet("testdata/adpter/psse/v31/ieee9_v31.raw")
+		AclfNetwork netV33 = IpssAdapter.importAclfNet("testData/adpter/psse/v31/ieee9_v31.raw")
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_31) 
 				.load()

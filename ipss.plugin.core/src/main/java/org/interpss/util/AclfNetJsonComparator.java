@@ -3,6 +3,10 @@ package org.interpss.util;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import com.google.gson.JsonArray;
@@ -174,6 +178,98 @@ public class AclfNetJsonComparator {
                              size1 + " != " + size2);
         }
 
+        // Check if arrays contain objects with IDs
+        if (array1.size() > 0 && array2.size() > 0 && 
+            array1.get(0).isJsonObject() && array2.get(0).isJsonObject() &&
+            array1.get(0).getAsJsonObject().has("id") && 
+            array2.get(0).getAsJsonObject().has("id")) {
+            
+            compareArraysByIdMapping(path, array1, array2);
+        } else {
+            compareUnsortedArrays(path, array1, array2);
+        }
+    }
+
+    private void compareArraysByIdMapping(String path, JsonArray array1, JsonArray array2) {
+        // Create maps for ID-based lookup
+        Map<String, JsonElement> map1 = new HashMap<>();
+        Map<String, JsonElement> map2 = new HashMap<>();
+        
+        // Populate maps with debugging
+        for (int i = 0; i < array1.size(); i++) {
+            JsonElement elem = array1.get(i);
+            if (elem.isJsonObject() && elem.getAsJsonObject().has("id")) {
+                String id = elem.getAsJsonObject().get("id").getAsString();
+                if (map1.containsKey(id)) {
+                    System.out.println("WARNING: Duplicate ID in first array at " + path + ": " + id);
+                }
+                map1.put(id, elem);
+            }
+        }
+        
+        for (int i = 0; i < array2.size(); i++) {
+            JsonElement elem = array2.get(i);
+            if (elem.isJsonObject() && elem.getAsJsonObject().has("id")) {
+                String id = elem.getAsJsonObject().get("id").getAsString();
+                if (map2.containsKey(id)) {
+                    System.out.println("WARNING: Duplicate ID in second array at " + path + ": " + id);
+                }
+                map2.put(id, elem);
+            }
+        }
+        
+        // Debug: Show first few IDs from each array
+        if (map1.size() > 0 && map2.size() > 0) {
+            System.out.println("DEBUG " + path + " - First array has " + map1.size() + " elements, Second array has " + map2.size() + " elements");
+            if (map1.size() != map2.size()) {
+                System.out.println("DEBUG " + path + " - Size mismatch detected!");
+            }
+        }
+        
+        // Compare common elements
+        Set<String> commonIds = new HashSet<>(map1.keySet());
+        commonIds.retainAll(map2.keySet());
+        
+        Set<String> onlyInFirst = new HashSet<>(map1.keySet());
+        onlyInFirst.removeAll(map2.keySet());
+        
+        Set<String> onlyInSecond = new HashSet<>(map2.keySet());
+        onlyInSecond.removeAll(map1.keySet());
+        
+        // Report missing elements first
+        if (!onlyInFirst.isEmpty()) {
+            isDifferent = true;
+            System.out.println("Elements only in first array at " + path + ": " + onlyInFirst.size() + " elements");
+            for (String id : onlyInFirst) {
+                System.out.println("  Missing from second: " + id);
+            }
+        }
+        
+        if (!onlyInSecond.isEmpty()) {
+            isDifferent = true;
+            System.out.println("Elements only in second array at " + path + ": " + onlyInSecond.size() + " elements");
+            for (String id : onlyInSecond) {
+                System.out.println("  Missing from first: " + id);
+            }
+        }
+        
+        // Compare common elements
+        for (String id : commonIds) {
+            String currentPath = path + "[" + id + "]";
+            comparePrettyPrint(currentPath, map1.get(id), map2.get(id));
+        }
+    }
+
+    private void compareUnsortedArrays(String path, JsonArray array1, JsonArray array2) {
+        int size1 = array1.size();
+        int size2 = array2.size();
+        
+        if (size1 != size2) {
+            isDifferent = true;
+            System.out.println("Array size mismatch at " + path + ": " + 
+                            size1 + " != " + size2);
+        }
+
         int minSize = Math.min(size1, size2);
         for (int i = 0; i < minSize; i++) {
         	if (array1.get(i).isJsonObject() && array2.get(i).isJsonObject()) {
@@ -195,7 +291,7 @@ public class AclfNetJsonComparator {
         		/* for handling the case where the array elements are not model objects,
         		 * for example:
         		 * 	
-        		 * "refBusIdSet": ["����.����վ.500.254"],
+        		 * "refBusIdSet": ["xxx.500.254"],
         		 */
         		String currentPath = path + "[" + i + "]";
 				if (!array1.get(i).equals(array2.get(i))) {
@@ -208,19 +304,6 @@ public class AclfNetJsonComparator {
 				}
         	}
         }
-
-        if (size1 > size2) {
-            for (int i = size2; i < size1; i++) {
-            	isDifferent = true;
-                System.out.println("Extra element in first array at " + path + "[" + i + "]: " + 
-                                 "\nValue: " + array1.get(i));
-            }
-        } else if (size2 > size1) {
-            for (int i = size1; i < size2; i++) {
-            	isDifferent = true;
-                System.out.println("Extra element in second array at " + path + "[" + i + "]: " + 
-                                 "\nValue: " + array2.get(i));
-            }
-        }
     }
+
 }
