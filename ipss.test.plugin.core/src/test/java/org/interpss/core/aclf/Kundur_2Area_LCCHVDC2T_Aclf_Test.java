@@ -31,7 +31,7 @@ public class Kundur_2Area_LCCHVDC2T_Aclf_Test extends CorePluginTestSetup {
 	
 	@Test
 	public void test_LCCHVDC_Loadflow_PsetOnInv() throws Exception {
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 		AclfNetwork net = createTestCase();
 		//System.out.println(net.net2String());
 
