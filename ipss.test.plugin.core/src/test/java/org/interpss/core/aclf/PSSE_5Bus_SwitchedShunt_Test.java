@@ -34,7 +34,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 	
 	@Test
 	public void test_5Bus_SwitchedShunt_locked_Loadflow() throws Exception {
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 		AclfNetwork net = createTestCase();
 		
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
@@ -112,7 +112,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 	 */
 	@Test
 	public void test_5Bus_SwitchedShunt_discrete() throws Exception {
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 		AclfNetwork net = createTestCase();
 		
 
@@ -165,7 +165,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 
     @Test
 	public void test_5Bus_SwitchedShunt_discrete_swictchedoff() throws Exception {
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 		AclfNetwork net = createTestCase();
 		
 
@@ -202,7 +202,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 
     @Test
 	public void test_5Bus_SwitchedShunt_continuous_range() throws Exception {
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 		AclfNetwork net = createTestCase();
 		
 
