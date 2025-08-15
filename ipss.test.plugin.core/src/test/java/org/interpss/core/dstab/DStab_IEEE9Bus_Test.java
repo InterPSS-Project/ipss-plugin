@@ -909,7 +909,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	@Test
     public void IEEE9_Dstab_multiGen_Test() throws InterpssException{
             IpssCorePlugin.init();
-            IpssLogger.getLogger().setLevel(Level.INFO);
+            //IpssLogger.getLogger().setLevel(Level.INFO);
             PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
             assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
                             "testData/adpter/psse/v30/IEEE9Bus/ieee9_multiGen.raw",
