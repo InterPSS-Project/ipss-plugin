@@ -64,7 +64,7 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 		aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 		aclfAlgo.setTolerance(1.0E-6);
 		assertTrue(aclfAlgo.loadflow());
-		System.out.println(AclfOutFunc.loadFlowSummary(net));
+		//System.out.println(AclfOutFunc.loadFlowSummary(net));
 
 		
 		// Verify bus voltage magnitudes and angles for key buses
