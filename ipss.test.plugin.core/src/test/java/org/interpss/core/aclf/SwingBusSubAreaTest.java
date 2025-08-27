@@ -60,7 +60,7 @@ public class SwingBusSubAreaTest extends CorePluginTestSetup {
 		busSet = helper.calConnectedSubArea("1z");
 	  	assertTrue("", busSet.size() == 57);
 	  	
-	  	AclfNetwork subNet = net.createSubNet(busSet, false);
+	  	AclfNetwork subNet = net.createSubNet(busSet, false, false);
 	  	assertTrue("", subNet.getNoBus() == 57);
 	  	
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(subNet);

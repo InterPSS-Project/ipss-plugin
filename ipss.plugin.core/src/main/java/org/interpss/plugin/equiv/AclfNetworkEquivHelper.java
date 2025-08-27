@@ -124,7 +124,8 @@ public class AclfNetworkEquivHelper {
         try {
         //use subnetwork copy function to create a new network object
         if(copySubNet)
-            equivNet = this.baseNetwork.createSubNet(this.keptBusSet, this.keptBranchSet, false /*equivHvdc*/);
+            equivNet = this.baseNetwork.createSubNet(this.keptBusSet, this.keptBranchSet, 
+            				false /*activeOnly*/, false /*equivHvdc*/);
         else{
             equivNet = this.baseNetwork;
         }
