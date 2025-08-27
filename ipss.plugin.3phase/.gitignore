@@ -2,4 +2,21 @@
 /target/
 /.apt_generated/
 /.apt_generated_tests/
+*.class
+*.log
+*.jar
+*.war
+*.iml
+*.ipr
+*.iws
+*.idea/
+*.swp
+*.classpath
+*.prefs
+.DS_Store
+.settings/
+.project
+.metadata/
+
+
 
