@@ -19,6 +19,12 @@
   </properties>
 
   <dependencies>
+      <dependency>
+        <groupId>com.interpss</groupId>
+        <artifactId>ipss.plugin.core</artifactId>
+        <version>1.0</version>
+    </dependency>
+    
  	<dependency>
 	    <groupId>org.mvel</groupId>
 	    <artifactId>mvel2</artifactId>

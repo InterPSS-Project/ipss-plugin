@@ -22,7 +22,7 @@
   *
   */
 
-package org.interpss.sample.sparseeqn;
+package org.interpss.sample.sparseeqn.perform;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
