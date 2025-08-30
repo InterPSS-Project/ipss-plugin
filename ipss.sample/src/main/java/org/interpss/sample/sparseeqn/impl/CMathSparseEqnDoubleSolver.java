@@ -29,16 +29,18 @@ import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
+import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.sparse.ISparseEqnDouble;
 
 import com.interpss.core.sparse.impl.AbstractSparseEqnDoubleImpl;
+import com.interpss.core.sparse.solver.ISparseEqnSolver;
 
 
 /**
  * Sparse Equation of data type double for solving the [A]X=B problem. 
    using the apache common math lib. It is for illustrating extension implementation.
  */
-public class CMathSparseEqnDoubleSolver extends AbstractSparseEqnDoubleImpl {
+public class CMathSparseEqnDoubleSolver extends AbstractSparseEqnDoubleImpl implements ISparseEqnSolver {
 	RealMatrix A = null;
 	RealVector B = null;
 	RealVector X = null;
@@ -47,6 +49,12 @@ public class CMathSparseEqnDoubleSolver extends AbstractSparseEqnDoubleImpl {
 		super(n);
 		this.A = new Array2DRowRealMatrix( n, n );
 		this.B = new ArrayRealVector(n);
+	}
+	
+	public CMathSparseEqnDoubleSolver(ISparseEqnDouble eqn) {
+		super(eqn.getDimension());
+		this.A = new Array2DRowRealMatrix(eqn.getDimension(), eqn.getDimension() );
+		this.B = new ArrayRealVector(eqn.getDimension());
 	}
 	
 	@Override
@@ -84,5 +92,22 @@ public class CMathSparseEqnDoubleSolver extends AbstractSparseEqnDoubleImpl {
 	public void solveEqn() {
 		LUDecomposition lu = new LUDecomposition(A);
 		this.X = lu.getSolver().solve(B);
+	}
+
+	@Override
+	public void setMatrixDirty() {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public double[] solveEqn(double[] b) throws IpssNumericException {
+		LUDecomposition lu = new LUDecomposition(A);
+		ArrayRealVector B = new ArrayRealVector(b);
+		return lu.getSolver().solve(B).toArray();
+	}
+	
+	@Override
+	public boolean factorization( final double tolerance) throws IpssNumericException {
+		 return true;
 	}
 }
