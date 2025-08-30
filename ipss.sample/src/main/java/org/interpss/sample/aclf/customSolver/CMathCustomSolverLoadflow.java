@@ -30,7 +30,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.sparse.ISparseEqnDouble;
 import org.interpss.sample.aclf.customSolver.impl.CMathSparseEqnDouble;
 import org.interpss.sample.aclf.customSolver.impl.CMathSparseEqnDoubleSolver;
-import org.interpss.sample.aclf.customSolver.impl.CMathSparseEqnMatrix2x2Impl;
+import org.interpss.sample.aclf.customSolver.impl.CMathSparseEqnMatrix2x2;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;
@@ -122,7 +122,7 @@ public class CMathCustomSolverLoadflow {
 				(Integer n) -> new CMathSparseEqnDouble(n));
 		
 		SparseEqnObjectFactory.setMatrix2x2EqnCreator(
-				(Integer n) -> new CMathSparseEqnMatrix2x2Impl(n));
+				(Integer n) -> new CMathSparseEqnMatrix2x2(n));
 		
 	  	// create the default loadflow algorithm
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
