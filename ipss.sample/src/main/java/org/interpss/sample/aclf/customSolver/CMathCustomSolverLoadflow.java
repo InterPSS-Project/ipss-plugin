@@ -25,10 +25,12 @@
 package org.interpss.sample.aclf.customSolver;
 
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.sparse.ISparseEqnDouble;
+import org.interpss.sample.aclf.customSolver.impl.CMathSparseEqnDouble;
+import org.interpss.sample.aclf.customSolver.impl.CMathSparseEqnDoubleSolver;
+import org.interpss.sample.aclf.customSolver.impl.CMathSparseEqnMatrix2x2Impl;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;
@@ -42,15 +44,12 @@ import com.interpss.core.aclf.adpter.AclfLineAdapter;
 import com.interpss.core.aclf.adpter.AclfLoadBusAdapter;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.core.sparse.impl.csj.CSJSparseEqnDoubleImpl;
+import com.interpss.core.sparse.SparseEqnObjectFactory;
 import com.interpss.core.sparse.solver.SparseEqnSolverFactory;
-import com.interpss.core.sparse.solver.csj.CSJSqaureMatrixEqnDoubleSolver;
 
 
-public class CSJCustomSolverLoadflow {
+public class CMathCustomSolverLoadflow {
 	public static void main(String args[]) throws InterpssException {
-		IpssCorePlugin.init();
-		
 		simpleLoadflow();
 	}	
 
@@ -105,15 +104,34 @@ public class CSJCustomSolverLoadflow {
   		lineBranch.setZ(new Complex(0.05, 0.1), UnitType.PU, 4000.0);
   		// add the branch from Bus1 to Bus2
 	  	
+  		/*
 		SparseEqnSolverFactory.setDoubleSolverCreator(
 				(ISparseEqnDouble eqn) -> new CSJSqaureMatrixEqnDoubleSolver(eqn));
+		
+		SparseEqnObjectFactory.setDoubleEqnCreator(
+				(Integer n) -> new CSJSparseEqnDoubleImpl(n));
+		
+		SparseEqnObjectFactory.setMatrix2x2EqnCreator(
+				(Integer n) -> new CSJSparseEqnMatrix2x2Impl(n));
+  		*/
   		
+		SparseEqnSolverFactory.setDoubleSolverCreator(
+				(ISparseEqnDouble eqn) -> new CMathSparseEqnDoubleSolver(eqn));
+		
+		SparseEqnObjectFactory.setDoubleEqnCreator(
+				(Integer n) -> new CMathSparseEqnDouble(n));
+		
+		SparseEqnObjectFactory.setMatrix2x2EqnCreator(
+				(Integer n) -> new CMathSparseEqnMatrix2x2Impl(n));
+		
 	  	// create the default loadflow algorithm
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 
 	  	// use the loadflow algorithm to perform loadflow calculation
 	  	algo.loadflow();
 	  	
+  		//System.out.println(swingBus.getGenResults(UnitType.PU));
+  		
 	  	// output loadflow calculation results
 	  	System.out.println(AclfOutFunc.loadFlowSummary(net));
     }	
