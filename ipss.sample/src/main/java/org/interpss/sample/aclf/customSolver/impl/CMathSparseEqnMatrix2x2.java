@@ -8,12 +8,12 @@ import com.interpss.core.sparse.solver.SparseEqnSolverFactory;
  * To outside, the index number is from 0 to n-1
  */
 
-public class CMathSparseEqnMatrix2x2Impl extends AbstractSparseEqnMatrix2x2Impl {
+public class CMathSparseEqnMatrix2x2 extends AbstractSparseEqnMatrix2x2Impl {
 	/** Constructor
 	 * 
 	 * @param n the dimension of the equation
 	 */
-	public CMathSparseEqnMatrix2x2Impl(int n) {
+	public CMathSparseEqnMatrix2x2(int n) {
 		super(n);
 		this.solver = new SparseEqnSolverFactory().createSparseEqnDoubleSolver(this);
 		setDimension(n);
