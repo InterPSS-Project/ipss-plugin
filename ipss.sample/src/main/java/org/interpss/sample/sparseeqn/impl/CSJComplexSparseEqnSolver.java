@@ -1,4 +1,4 @@
-package org.interpss.sample.sparseeqn;
+package org.interpss.sample.sparseeqn.impl;
 
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
@@ -7,12 +7,12 @@ import com.interpss.core.sparse.solver.csj.ICSJSparseEqnSolver;
 
 import edu.emory.mathcs.csparsej.tdcomplex.DZcs_common.DZcsa;
 
-public class CustomComplexSparseEqnSolver implements ICSJSparseEqnSolver {
+public class CSJComplexSparseEqnSolver implements ICSJSparseEqnSolver {
 	protected boolean LUed = false;
 	
 	private ISparseEqnComplex sparseEqn;
 	
-	public CustomComplexSparseEqnSolver(ISparseEqnComplex sparseEqn) {
+	public CSJComplexSparseEqnSolver(ISparseEqnComplex sparseEqn) {
 		this.sparseEqn = sparseEqn;
 	}	
 	
