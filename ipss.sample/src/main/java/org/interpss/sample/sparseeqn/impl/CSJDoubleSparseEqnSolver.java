@@ -1,4 +1,4 @@
-package org.interpss.sample.sparseeqn;
+package org.interpss.sample.sparseeqn.impl;
 
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.sparse.ISparseEqnDouble;
@@ -7,13 +7,13 @@ import com.interpss.core.sparse.solver.csj.ICSJSparseEqnSolver;
 
 import edu.emory.mathcs.csparsej.tdcomplex.DZcs_common.DZcsa;
 
-public class CustomDoubleSparseEqnSolver implements ICSJSparseEqnSolver {
+public class CSJDoubleSparseEqnSolver implements ICSJSparseEqnSolver {
 	private boolean LUed = false;
 	
 	// sparse eqn to be solved by this solver
 	private ISparseEqnDouble sparseEqn;
 	
-	public CustomDoubleSparseEqnSolver(ISparseEqnDouble sparseEqn) {
+	public CSJDoubleSparseEqnSolver(ISparseEqnDouble sparseEqn) {
 		this.sparseEqn = sparseEqn;
 	}
 	
