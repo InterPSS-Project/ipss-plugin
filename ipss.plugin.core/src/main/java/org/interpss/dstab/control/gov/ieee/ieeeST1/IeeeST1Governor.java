@@ -1,4 +1,4 @@
- /*
+/*
   * @(#)IeeeST1Governor.java   
   *
   * Copyright (C) 2006 www.interpss.org
@@ -25,9 +25,10 @@
 package org.interpss.dstab.control.gov.ieee.ieeeST1;
 
 import org.interpss.numeric.datatype.LimitType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.interpss.common.exp.InterpssRuntimeException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.controller.deqn.AbstractGovernor;
@@ -40,6 +41,7 @@ public class IeeeST1Governor extends AbstractGovernor {
 	
 	// UI Editor panel
 //	private static final NBIeeeST1GovernorEditPanel _editPanel = new NBIeeeST1GovernorEditPanel();
+	private static final Logger log = LoggerFactory.getLogger(IeeeST1Governor.class);
 
 	/**
 	 * Default Constructor
@@ -93,14 +95,14 @@ public class IeeeST1Governor extends AbstractGovernor {
 		limit = new LimitType(getData().getPmax(), getData().getPmin());
 		statePref = getMachine().getPm();
         if (limit.isViolated(statePref)) {
-        	IpssLogger.getLogger().severe("Machine initial mechanical power Pm0 violates its governor power limits, " +
-        			"machine id: " + getMachine().getId());
+            log.error("Machine initial mechanical power Pm0 violates its governor power limits, " +
+                    "machine id: " + getMachine().getId());
         }
 		stateX1 = 0.0;
 		stateX2 = statePref;
 		stateX3 = stateX2;
 		stateX4 = (1.0 - getData().getFp()) * stateX3;
-		IpssLogger.getLogger().fine("Governor Limit:      " + limit);
+		log.debug("Governor Limit:      " + limit);
 		return true;
 	}
 
@@ -125,7 +127,7 @@ public class IeeeST1Governor extends AbstractGovernor {
 			final double dX3_dt = cal_dX3_dt(stateX2, stateX3);
 			final double dX4_dt = cal_dX4_dt(stateX3, stateX4);
 
-			IpssLogger.getLogger().fine("dX1_dt, dX2_dt, dX3_dt, dX4_dt: " + dX1_dt + ", " + 
+			log.debug("dX1_dt, dX2_dt, dX3_dt, dX4_dt: " + dX1_dt + ", " + 
 					dX2_dt + ", " + dX3_dt + ", " + dX4_dt);
 			
 			final double x1_1 = stateX1 + dX1_dt * dt;
@@ -138,7 +140,7 @@ public class IeeeST1Governor extends AbstractGovernor {
 			stateX3 = stateX3 + 0.5 * (cal_dX3_dt(x2_1,x3_1) + dX3_dt) * dt;
 			stateX4 = stateX4 + 0.5 * (cal_dX4_dt(x3_1,x4_1) + dX4_dt) * dt;
 
-			IpssLogger.getLogger().fine("stateX1, stateX2, stateX3, stateX4: " + stateX1 + ", " + 
+			log.debug("stateX1, stateX2, stateX3, stateX4: " + stateX1 + ", " + 
 					stateX2 + ", " + stateX3 + ", " + stateX4);
 			return true;
 		}
@@ -174,7 +176,7 @@ public class IeeeST1Governor extends AbstractGovernor {
 	 */	
 	@Override
 	public double getOutput(Machine mach) {
-		IpssLogger.getLogger().fine("Pm: " + (stateX3 * getData().getFp() + stateX4));
+		log.debug("Pm: " + (stateX3 * getData().getFp() + stateX4));
 		return stateX3 * getData().getFp() + stateX4;
 	}
 
