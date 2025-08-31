@@ -1,4 +1,4 @@
-package org.interpss.sample.aclf.customSolver;
+package org.interpss.sample.customSolver.solver;
 
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;

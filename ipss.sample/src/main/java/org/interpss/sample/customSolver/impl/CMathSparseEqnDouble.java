@@ -1,4 +1,4 @@
-package org.interpss.sample.aclf.customSolver.impl;
+package org.interpss.sample.customSolver.impl;
 
 import com.interpss.core.sparse.impl.AbstractSparseEqnDoubleImpl;
 import com.interpss.core.sparse.solver.SparseEqnSolverFactory;
