@@ -30,8 +30,9 @@ import org.ieee.odm.schema.GroundingEnumType;
 import org.ieee.odm.schema.NameTagXmlType;
 import org.ieee.odm.schema.OriginalDataFormatEnumType;
 import org.ieee.odm.schema.XformrtConnectionEnumType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
 import com.interpss.core.acsc.BusGroundCode;
 import com.interpss.core.acsc.XFormerConnectCode;
 import com.interpss.core.net.OriginalDataFormat;
@@ -44,6 +45,7 @@ import com.interpss.core.net.OriginalDataFormat;
  *
  */
 public class ODMHelper {
+    private static final Logger log = LoggerFactory.getLogger(ODMHelper.class);
 	static String PSSStudyCaseHead = "<PSSStudyCase xmlns=\"http://www.ieee.org/odm/Schema/2008\">";
 	static String PSSStudyCaseEnd = "</PSSStudyCase>";
 	
@@ -138,11 +140,10 @@ public class ODMHelper {
 	 */
 	public static NameTagXmlType getRecordByName(String recName, List<NameTagXmlType> list) {
 		for (NameTagXmlType scase : list) {
-			//NameTagXmlType scase = (NameTagXmlType)o;
 			if (scase.getName().equals(recName))
 				return scase;
 		}
-		ipssLogger.severe("Programming error, StudyCase cannot be found, recName: " + recName);
+		log.error("Programming error, StudyCase cannot be found, recName: " + recName);
 		return null;
 	}
 	
@@ -156,7 +157,6 @@ public class ODMHelper {
 		String[] sAry = new String[list.size()];
 		int cnt = 0;
 		for (NameTagXmlType scase : list) {
-			//NameTagXmlType scase = (NameTagXmlType)o;
 			sAry[cnt++] = scase.getName();
 		}
 		return sAry;

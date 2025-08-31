@@ -24,8 +24,6 @@
 
 package org.interpss.odm.mapper.impl.aclf;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
-
 import org.ieee.odm.model.aclf.AclfModelParser;
 import org.ieee.odm.model.acsc.AcscModelParser;
 import org.ieee.odm.schema.LoadflowNetXmlType;
@@ -40,6 +38,8 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 import com.interpss.simu.SimuObjectFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * abstract mapper implementation to map ODM Aclf parser object to InterPSS AclfNet object
@@ -48,7 +48,8 @@ import com.interpss.simu.SimuObjectFactory;
  * @param Tfrom from object type
  */
 public abstract class AbstractODMAclfParserMapper<Tfrom> extends AbstractODMSimuCtxDataMapper<Tfrom> {
-	private ODMAclfNetMapper.XfrBranchModel xfrBranchModel = ODMAclfNetMapper.XfrBranchModel.InterPSS;
+    private static final Logger log = LoggerFactory.getLogger(AbstractODMAclfParserMapper.class);
+    private ODMAclfNetMapper.XfrBranchModel xfrBranchModel = ODMAclfNetMapper.XfrBranchModel.InterPSS;
 	
 	/**
 	 * constructor
@@ -73,41 +74,41 @@ public abstract class AbstractODMAclfParserMapper<Tfrom> extends AbstractODMSimu
 	 * @param simuCtx
 	 */
 	@Override public boolean map2Model(Tfrom p, SimuContext simuCtx) {
-		boolean noError = true;
-		AclfModelParser parser = (AclfModelParser)p;
-		
-		if(parser == null) {
-			ipssLogger.severe("Error: AclfModelParser object is null");
-			return false;
-		}
-		
-		if (parser.getStudyCase().getNetworkCategory() == NetworkCategoryEnumType.TRANSMISSION ) {
-			LoadflowNetXmlType xmlNet = parser.getNet();
-			ODMAclfNetMapper mapper = new ODMAclfNetMapper();
-			mapper.setXfrBranchModel(xfrBranchModel);
-			
-			OriginalDataFormatEnumType ofmt = 
-					parser.getStudyCase().getContentInfo() != null?
-							parser.getStudyCase().getContentInfo().getOriginalDataFormat() :
-								OriginalDataFormatEnumType.CUSTOM;
-			mapper.setOriginalDataFormat(ODMHelper.map(ofmt));		
+        boolean noError = true;
+        AclfModelParser parser = (AclfModelParser)p;
+        
+        if(parser == null) {
+            log.error("Error: AclfModelParser object is null");
+            return false;
+        }
+        
+        if (parser.getStudyCase().getNetworkCategory() == NetworkCategoryEnumType.TRANSMISSION ) {
+            LoadflowNetXmlType xmlNet = parser.getNet();
+            ODMAclfNetMapper mapper = new ODMAclfNetMapper();
+            mapper.setXfrBranchModel(xfrBranchModel);
+            
+            OriginalDataFormatEnumType ofmt = 
+                    parser.getStudyCase().getContentInfo() != null?
+                            parser.getStudyCase().getContentInfo().getOriginalDataFormat() :
+                                OriginalDataFormatEnumType.CUSTOM;
+            mapper.setOriginalDataFormat(ODMHelper.map(ofmt));        
 
-			noError = mapper.map2Model(xmlNet, simuCtx);
-			
-			/*
-			 * a parent aclf net may contain child aclfNet or distNet network(s) 
-			 */
-			if (xmlNet.isHasChildNet() != null && xmlNet.isHasChildNet()) {
-				if (!new MultiNetAclfHelper(simuCtx.getAclfNet()).mapChildNet(xmlNet.getChildNetDef(), xfrBranchModel))
-					noError = false;
-			}
-			
-		} else {
-			ipssLogger.severe("Error: currently only Transmission NetworkType has been implemented");
-			return false;
-		}
-		return noError;
-	}
+            noError = mapper.map2Model(xmlNet, simuCtx);
+            
+            /*
+             * a parent aclf net may contain child aclfNet or distNet network(s) 
+             */
+            if (xmlNet.isHasChildNet() != null && xmlNet.isHasChildNet()) {
+                if (!new MultiNetAclfHelper(simuCtx.getAclfNet()).mapChildNet(xmlNet.getChildNetDef(), xfrBranchModel))
+                    noError = false;
+            }
+            
+        } else {
+            log.error("Error: currently only Transmission NetworkType has been implemented");
+            return false;
+        }
+        return noError;
+    }
 	
 	/**
 	 * map into store in the ODM parser into simuCtx object
