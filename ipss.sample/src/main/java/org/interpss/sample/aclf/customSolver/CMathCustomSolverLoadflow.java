@@ -29,7 +29,6 @@ import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.sparse.ISparseEqnDouble;
 import org.interpss.sample.aclf.customSolver.impl.CMathSparseEqnDouble;
-import org.interpss.sample.aclf.customSolver.impl.CMathSparseEqnDoubleSolver;
 import org.interpss.sample.aclf.customSolver.impl.CMathSparseEqnMatrix2x2;
 
 import com.interpss.common.exp.InterpssException;
