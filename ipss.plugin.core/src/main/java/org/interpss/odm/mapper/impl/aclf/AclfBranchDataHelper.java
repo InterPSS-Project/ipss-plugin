@@ -61,8 +61,8 @@ import static org.interpss.odm.mapper.base.ODMUnitHelper.toZUnit;
 
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
-import static com.interpss.common.util.IpssLogger.ipssLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.interpss.core.AclfAdjustObjectFactory;
 import com.interpss.core.aclf.Aclf3WBranch;
 import com.interpss.core.aclf.AclfBranch;
@@ -90,6 +90,8 @@ public class AclfBranchDataHelper {
 	private BaseAclfNetwork<?, ?> aclfNet = null;
 	private Branch branch = null;
 	private ODMAclfNetMapper.XfrBranchModel xfrBranchModel = ODMAclfNetMapper.XfrBranchModel.InterPSS;
+	
+	private static final Logger log = LoggerFactory.getLogger(AclfBranchDataHelper.class);
 	
 	/**
 	 * constructor
@@ -221,7 +223,7 @@ public class AclfBranchDataHelper {
 		if (xmlPsXfrBranch.getAngleAdjustment() != null) {
 			AngleAdjustmentXmlType xmlAngAdj = xmlPsXfrBranch.getAngleAdjustment();
 			if (xmlAngAdj == null ) {
-				ipssLogger.warning("Inconsist PsXfr shifting angle control data: " + aclfBra.getId());
+				log.warn("Inconsist PsXfr shifting angle control data: " + aclfBra.getId());
 				return;
 			}
 			if (xmlAngAdj.getMode() == AdjustmentModeEnumType.VALUE_ADJUSTMENT) {
@@ -292,10 +294,10 @@ public class AclfBranchDataHelper {
 				         //aclfBra.setZ(aclfBra.getZ().multiply(factor));
 				      }
 				      else
-					    ipssLogger.warning(xmlPsXfrBranch.getId()+" from angle is null");
+					    log.warn(xmlPsXfrBranch.getId()+" from angle is null");
 			      }
 		      }else{
-		    	  ipssLogger.warning("XFCorrection table is not defined for table number #"+num);
+		    	  log.warn("XFCorrection table is not defined for table number #"+num);
 		      }
 		  }
 		}
@@ -380,11 +382,11 @@ public class AclfBranchDataHelper {
 						*/ 
 						VoltageAdjustmentDataXmlType xmlAdjData = xmlTapAdj.getVoltageAdjData();
 						if (xmlAdjData == null){
-							ipssLogger.warning("No Xfr Tap control data: " + aclfBra.getId());
+							log.warn("No Xfr Tap control data: " + aclfBra.getId());
 							return;
 						}
 						else if ( xmlAdjData.getAdjVoltageBus() == null) {
-							ipssLogger.warning(" Xfr Tap control target bus number is not defined: " + aclfBra.getId());
+							log.warn(" Xfr Tap control target bus number is not defined: " + aclfBra.getId());
 							return;
 						}
 						String vcBusId = BusXmlRef2BusId.fx(xmlAdjData.getAdjVoltageBus());
@@ -427,7 +429,7 @@ public class AclfBranchDataHelper {
 					else if (xmlTapAdj.getAdjustmentType() == TapAdjustmentEnumType.M_VAR_FLOW) {
 						MvarFlowAdjustmentDataXmlType xmlAdjData = xmlTapAdj.getMvarFlowAdjData();
 						if (xmlAdjData == null) {
-							ipssLogger.warning("Mvar flow control data is missing from Xfr Tap control: " + aclfBra.getId());
+							log.warn("Mvar flow control data is missing from Xfr Tap control: " + aclfBra.getId());
 							return;
 						}
 
@@ -463,11 +465,11 @@ public class AclfBranchDataHelper {
 					}
 					else{
 						// the control type is not supported
-						ipssLogger.warning("Xfr Tap control type is not supported: "  + xmlTapAdj.getAdjustmentType()+ ", branch: " + aclfBra.getId() );
+						log.warn("Xfr Tap control type is not supported: "  + xmlTapAdj.getAdjustmentType()+ ", branch: " + aclfBra.getId() );
 					}
 
 				} catch (InterpssException e) {
-					ipssLogger.severe("Error in mapping Xfr tap control data, " + e.toString());
+					log.error("Error in mapping Xfr tap control data, " + e.toString());
 				}
 			}
 		}
@@ -497,11 +499,11 @@ public class AclfBranchDataHelper {
 			      }
 		  
 		       }else
-			    ipssLogger.warning("XFCorrection table is not defined for table number #"+num);
+			    log.warn("XFCorrection table is not defined for table number #"+num);
 
 	       }
 			//else{
-			//	ipssLogger.warning("Correction Table Number is less than 1, transformer Id :"+xmlXfrBranch.getId());
+			//	log.warn("Correction Table Number is less than 1, transformer Id :"+xmlXfrBranch.getId());
 			//}
 		}
 	  */
@@ -517,7 +519,7 @@ public class AclfBranchDataHelper {
 	 * @param xml3WXfr
 	 */
 	public void setXfr3WBranchData(Xfr3WBranchXmlType xml3WXfr) throws InterpssException {
-		//ipssLogger.info("Xfr3WBranchXmlType: " + xml3WXfr.getId());
+		//log.info("Xfr3WBranchXmlType: " + xml3WXfr.getId());
 		
 		Aclf3WBranch branch3W = (Aclf3WBranch)this.branch;
 		branch3W.setBranchCode(AclfBranchCode.W3_XFORMER);
@@ -542,7 +544,7 @@ public class AclfBranchDataHelper {
 	 * @throws InterpssException
 	 */
 	public void setPsXfr3WBranchData(PSXfr3WBranchXmlType xmlPsXfr3W) throws InterpssException {
-		//ipssLogger.info("PSXfr3WBranchXmlType: " + xmlPsXfr3W.getId());
+		//log.info("PSXfr3WBranchXmlType: " + xmlPsXfr3W.getId());
 		
 		Aclf3WBranch branch3W = (Aclf3WBranch)this.branch;
 		branch3W.setBranchCode(AclfBranchCode.W3_PS_XFORMER);
@@ -734,7 +736,7 @@ public class AclfBranchDataHelper {
 						isPhaseShiftBased = (firstT < 0.5 || lastT > 1.5);
 					}
 					else {
-						IpssLogger.getLogger().severe("Xfr Z Adj Table entry is empty, number: " + xfrData.getZTableNumber());
+						log.error("Xfr Z Adj Table entry is empty, number: " + xfrData.getZTableNumber());
 					}
 					if (!isPhaseShiftBased) {
 						Complex factor = elem.getScaleFactor(xfr3W.getFromTurnRatio());
@@ -747,7 +749,7 @@ public class AclfBranchDataHelper {
 					}
 				}
 				else {
-					IpssLogger.getLogger().severe("Xfr Z Adj Table entry not found, number: " + xfrData.getZTableNumber());
+					log.error("Xfr Z Adj Table entry not found, number: " + xfrData.getZTableNumber());
 
 				}
 			}
@@ -763,7 +765,7 @@ public class AclfBranchDataHelper {
 						isPhaseShiftBased = (firstT < 0.5 || lastT > 1.5);
 					}
 					else {
-						IpssLogger.getLogger().severe("Xfr Z Adj Table entry is empty, number: " + xfrData.getZTableNumber());
+						log.error("Xfr Z Adj Table entry is empty, number: " + xfrData.getZTableNumber());
 					}
 					if (!isPhaseShiftBased) {
 						Complex factor = elem.getScaleFactor(xfr3W.getToTurnRatio());
@@ -776,7 +778,7 @@ public class AclfBranchDataHelper {
 					}
 				}
 				else {
-					IpssLogger.getLogger().severe("Xfr Z Adj Table entry not found, number: " + xfrData.getZTableNumber());
+					log.error("Xfr Z Adj Table entry not found, number: " + xfrData.getZTableNumber());
 
 				}
 			}
@@ -792,7 +794,7 @@ public class AclfBranchDataHelper {
 						isPhaseShiftBased = (firstT < 0.5 || lastT > 1.5);
 					}
 					else {
-						IpssLogger.getLogger().severe("Xfr Z Adj Table entry is empty, number: " + xfrData.getZTableNumber());
+						log.error("Xfr Z Adj Table entry is empty, number: " + xfrData.getZTableNumber());
 					}
 					if (!isPhaseShiftBased) {
 						Complex factor = elem.getScaleFactor(xfr3W.getToTurnRatio());
@@ -805,7 +807,7 @@ public class AclfBranchDataHelper {
 					}
 				}
 				else {
-					IpssLogger.getLogger().severe("Xfr Z Adj Table entry not found, number: " + xfrData.getZTableNumber());
+					log.error("Xfr Z Adj Table entry not found, number: " + xfrData.getZTableNumber());
 
 				}
 			}
