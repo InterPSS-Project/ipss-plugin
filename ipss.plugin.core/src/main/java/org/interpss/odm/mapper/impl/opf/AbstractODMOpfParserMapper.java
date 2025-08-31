@@ -24,7 +24,6 @@
 
 package org.interpss.odm.mapper.impl.opf;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
 import static org.interpss.odm.mapper.base.ODMUnitHelper.toActivePowerUnit;
 import static org.interpss.odm.mapper.base.ODMUnitHelper.toReactivePowerUnit;
 import static org.interpss.odm.mapper.base.ODMUnitHelper.toVoltageUnit;
@@ -87,6 +86,8 @@ import com.interpss.opf.datatype.OpfBusLimits;
 import com.interpss.opf.datatype.OpfDatatypeFactory;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * abstract mapper implementation to map ODM to InterPSS object model for Opf
@@ -96,6 +97,7 @@ import com.interpss.simu.SimuCtxType;
  * @param <Tfrom>
  */
 public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclfParserMapper<Tfrom> {
+	private static final Logger log = LoggerFactory.getLogger(AbstractODMOpfParserMapper.class);
 	/**
 	 * constructor
 	 * 
@@ -112,25 +114,18 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 	 */
 	@Override public boolean map2Model(Tfrom p, SimuContext simuCtx) {
 		boolean noError = true;
-		
 		OpfModelParser parser = (OpfModelParser) p;
-		
 		if (parser.getStudyCase().getNetworkCategory() == NetworkCategoryEnumType.TRANSMISSION
-				&& parser.getStudyCase().getAnalysisCategory() == AnalysisCategoryEnumType.OPF) {			
+				&& parser.getStudyCase().getAnalysisCategory() == AnalysisCategoryEnumType.OPF) {
 			BaseOpfNetworkXmlType xmlNet = parser.getBaseOpfNet();
 			simuCtx.setNetType(SimuCtxType.OPF_NET);
-			
-			//XformerZTableXmlType xfrZTable = xmlNet.getXfrZTable();
-			
 			try {
 				OpfNetwork opfNet = null;
-				if (xmlNet.getOpfNetType() == OpfNetworkEnumType.SIMPLE_DCLF) 
+				if (xmlNet.getOpfNetType() == OpfNetworkEnumType.SIMPLE_DCLF)
 					opfNet = mapDclfOpfNetData((OpfDclfNetworkXmlType)xmlNet);
-				else 
+				else
 					opfNet = mapOpfNetData((OpfNetworkXmlType)xmlNet);
 				simuCtx.setOpfNet(opfNet);
-
-				
 				AclfBusDataHelper busHelper = new AclfBusDataHelper(opfNet);
 				ODMAclfNetMapper aclfNetMapper = new ODMAclfNetMapper();
 				for (JAXBElement<? extends BusXmlType> bus : xmlNet.getBusList().getBus()) {
@@ -139,66 +134,53 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 						if (xmlNet.getOpfNetType() == OpfNetworkEnumType.SIMPLE_DCLF) {
 							OpfDclfGenBusXmlType opfDclfGen = (OpfDclfGenBusXmlType) bus.getValue();
 							mapDclfOpfGenBusData(opfDclfGen, (OpfNetwork)opfNet);
-						}
-						else {
+						} else {
 							OpfGenBusXmlType opfGen = (OpfGenBusXmlType) bus.getValue();
 							mapOpfGenBusData(opfGen, (OpfNetwork)opfNet);
 						}
-					} 
-					else {
+					} else {
 						LoadflowBusXmlType busRec = (LoadflowBusXmlType) bus.getValue();
 						if (xmlNet.getOpfNetType() == OpfNetworkEnumType.SIMPLE_DCLF) {
 							OpfBus opfDclfBus = OpfObjectFactory.createOpfBus(busRec.getId(), opfNet);
-							throw new InterpssRuntimeException("Fix the compile error, AbstractODMOpfParserMapper");
+							log.error("Fix the compile error, AbstractODMOpfParserMapper");
 							/* TODO
 							aclfNetMapper.mapAclfBusData(busRec, opfDclfBus, opfNet, busHelper);
 							*/
-						}
-						else {
+						} else {
 							OpfBus opfBus = OpfObjectFactory.createOpfBus(busRec.getId(), (OpfNetwork)opfNet);
-							//throw new InterpssRuntimeException("Fix the compile error, AbstractODMOpfParserMapper");
-							
 							aclfNetMapper.mapAclfBusData(busRec, opfBus, opfNet, busHelper);
-							
 						}
 					}
 				}
-
 				for (JAXBElement<? extends BaseBranchXmlType> b : xmlNet.getBranchList().getBranch()) {
 					if (xmlNet.getOpfNetType() == OpfNetworkEnumType.SIMPLE_DCLF) {
 						OpfBranch opfDclfBranch = OpfObjectFactory.createOpfBranch();
 						aclfNetMapper.mapAclfBranchData(b.getValue(), opfDclfBranch, opfNet);
-					}
-					else {
+					} else {
 						OpfBranch opfBranch = OpfObjectFactory.createOpfBranch();
 						aclfNetMapper.mapAclfBranchData(b.getValue(), opfBranch, opfNet);
-						// map MW rating
 						BranchXmlType branchXml = (BranchXmlType)b.getValue();
 						if(branchXml.getRatingLimit()!=null){
 							if (branchXml.getRatingLimit().getMw()!=null){
 								OpfBranchDataHelper helper = new OpfBranchDataHelper(opfBranch, b.getValue());
-								
 								helper.setMwRating();
 							}
 						}
 					}
 				}
 			} catch (InterpssException e) {
-				ipssLogger.severe(e.toString());
+				log.error(e.toString());
 				noError = false;
 			}
-		} 
-		else {
-			ipssLogger.severe( "Error: wrong Transmission NetworkType and/or ApplicationType");
+		} else {
+			log.error("Error: wrong Transmission NetworkType and/or ApplicationType");
 			noError = false;
 		}
-		
 		if (parser.getStudyCase().getContentInfo() != null) {
 			OriginalDataFormatEnumType ofmt = parser.getStudyCase().getContentInfo().getOriginalDataFormat();
-			simuCtx.getNetwork().setOriginalDataFormat(ODMHelper.map(ofmt));		
-		} 
-		else {
-			ipssLogger.severe( "Error: StudyCase.ContentInfo were not entered");
+			simuCtx.getNetwork().setOriginalDataFormat(ODMHelper.map(ofmt));
+		} else {
+			log.error("Error: StudyCase.ContentInfo were not entered");
 			noError = false;
 		}
 		return noError;
@@ -260,7 +242,7 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 				PieceWiseLinearModelXmlType pw = busRec.getIncCost().getPieceWiseLinearModel();
 				boolean isConvex = checkConvex(pw);
 				if(isConvex == false){
-					ipssLogger.severe("Gen cost function must be in ascending order. Please check gen cost function at bus: "
+					log.error("Gen cost function must be in ascending order. Please check gen cost function at bus: "
 							+ busRec.getNumber());
 				}
 				PieceWiseCurve pwIpss = CommonCurveFactory.eINSTANCE.createPieceWiseCurve();
@@ -280,7 +262,7 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 				inc.setPieceWiseCurve(pwIpss);				
 				
 			}else{
-				ipssLogger.severe("Can not find a piece-wise cost model for bus: "+ opfGenBus.getId());
+				log.error("Can not find a piece-wise cost model for bus: "+ opfGenBus.getId());
 			}
 
 		}else {
@@ -321,7 +303,7 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 				quaIpss.setC(constCoeff);				
 				inc.setQuadraticCurve(quaIpss);
 			}else{
-				ipssLogger.severe("Can not find a quadratic cost model for bus: "+ opfGenBus.getId());
+				log.error("Can not find a quadratic cost model for bus: "+ opfGenBus.getId());
 			}			
 		}
 		opfGen.setIncCost(inc);

@@ -2,9 +2,10 @@ package org.interpss.plugin.optadj.algo.util;
 
 import org.interpss.numeric.datatype.Counter;
 import org.interpss.numeric.exp.IpssNumericException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
@@ -20,6 +21,7 @@ import com.interpss.core.common.ReferenceBusException;
 * @date 2023 Dec 29 11:47:22 
 */
 public class AclfNetSensHelper {
+    private static final Logger log = LoggerFactory.getLogger(AclfNetSensHelper.class);
 	// a AclfNetwork object
 	private AclfNetwork aclfNet;
 	
@@ -50,7 +52,7 @@ public class AclfNetSensHelper {
 							senMatrix[(int) (bus.getNumber() - 1)][(int) (branch.getNumber() - 1)] = calSen(dblAry, branch);
 						});
 			} catch (InterpssException | IpssNumericException | ReferenceBusException e) {
-				IpssLogger.getLogger().severe(e.toString());
+				log.error(e.toString());
 			}
 		});
 		return senMatrix;
