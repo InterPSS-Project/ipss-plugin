@@ -2,6 +2,7 @@ package org.interpss.sample.customSolver.impl;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.exp.IpssNumericException;
+import org.interpss.sample.customSolver.solver.CMathSquareMatrixEqnComplexSolver;
 
 import com.interpss.core.sparse.impl.AbstractSparseEqnComplexImpl;
 import com.interpss.core.sparse.solver.ISparseEqnSolver;
@@ -23,6 +24,8 @@ public class CMathSparseEqnComplex extends AbstractSparseEqnComplexImpl<ISparseE
 
 	@Override
 	public Complex[] solveLUedEqn(Complex[] b) throws IpssNumericException {
-		throw new IpssNumericException("Function not implemented");
+		CMathSquareMatrixEqnComplexSolver complexSolver = 
+				(CMathSquareMatrixEqnComplexSolver)this.solver;
+		return complexSolver.solveLUedEqn(b);
 	}
 }

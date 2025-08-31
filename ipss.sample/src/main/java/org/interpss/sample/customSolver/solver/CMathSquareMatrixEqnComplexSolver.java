@@ -98,7 +98,7 @@ public class CMathSquareMatrixEqnComplexSolver extends AbstractSparseEqnComplexI
 
 	@Override
 	public double[] solveEqn(double[] b) throws IpssNumericException {
-		throw new IpssNumericException("Function not implemented");
+		throw new IpssNumericException("CMathSquareMatrixEqnComplexSolver Function not implemented");
 	}
 
 	/**
