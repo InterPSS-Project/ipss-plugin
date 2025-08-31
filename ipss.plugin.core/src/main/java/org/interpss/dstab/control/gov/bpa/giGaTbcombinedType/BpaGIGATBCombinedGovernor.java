@@ -1,11 +1,13 @@
 package org.interpss.dstab.control.gov.bpa.giGaTbcombinedType;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
 import static com.interpss.dstab.controller.cml.field.ICMLStaticBlock.StaticBlockType.NonWindup;
 
 import java.lang.reflect.Field;
 
+import org.interpss.display.AcscOutFunc;
 import org.interpss.numeric.datatype.LimitType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.interpss.dstab.controller.cml.annotate.AnController;
 import com.interpss.dstab.controller.cml.annotate.AnControllerField;
@@ -37,6 +39,7 @@ import com.interpss.dstab.datatype.CMLFieldEnum;
 			   refPoint="thiscustomLoadControlBlock.u0 + this.delayBlock.y",
 			   display= {"str.Pm,this.output"})
 	public class BpaGIGATBCombinedGovernor extends AnnotateGovernor{
+		private static final Logger log = LoggerFactory.getLogger(BpaGIGATBCombinedGovernor.class);
 
 		/*
 		 * 1. regulator 
@@ -81,7 +84,7 @@ import com.interpss.dstab.datatype.CMLFieldEnum;
 		       @Override
 				public boolean initStateY0(double y0) {//TODO not sure what need to be implemented in this method.
 			        if(y0>pidMax||y0<pidMin) {
-			        	ipssLogger.warning("CustomBlock init problem: y0 > pidMax or y0 < pidMin");
+			        	log.warn("CustomBlock init problem: y0 > pidMax or y0 < pidMin");
 			            return false;
 			         }
 			        return true;	
@@ -128,7 +131,7 @@ import com.interpss.dstab.datatype.CMLFieldEnum;
 				       @Override
 						public boolean initStateY0(double y0) {//TODO not sure what need to be implemented in this method.
 					        if(y0>pid2Max||y0<pid2Min) {
-					        	ipssLogger.warning("CustomBlock init problem: y0 > pidMax or y0 < pidMin");
+					        	log.warn("CustomBlock init problem: y0 > pidMax or y0 < pidMin");
 					            return false;
 					         }
 					        return true;	
@@ -194,7 +197,7 @@ import com.interpss.dstab.datatype.CMLFieldEnum;
 			       @Override
 					public boolean initStateY0(double y0) {//TODO not sure what need to be implemented in this method.
 				        if(y0>pid3Max||y0<pid3Min) {
-				        	ipssLogger.warning("CustomBlock init problem: y0 > pidMax or y0 < pidMin");
+				        	log.warn("CustomBlock init problem: y0 > pidMax or y0 < pidMin");
 				            return false;
 				         }
 				        return true;	

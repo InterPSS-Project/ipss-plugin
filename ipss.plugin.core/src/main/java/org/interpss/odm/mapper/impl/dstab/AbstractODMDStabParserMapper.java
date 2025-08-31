@@ -57,7 +57,6 @@ import org.interpss.odm.mapper.impl.acsc.AbstractODMAcscParserMapper;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.msg.IPSSMsgHub;
-import static com.interpss.common.util.IpssLogger.ipssLogger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.net.Branch;
@@ -71,6 +70,8 @@ import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.mach.Machine;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * abstract mapper implementation to map ODM DStab parser object to InterPSS DStabNetwork object
@@ -80,6 +81,7 @@ import com.interpss.simu.SimuCtxType;
  * @param <Tfrom>
  */
 public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcscParserMapper<Tfrom> {
+	private static final Logger log = LoggerFactory.getLogger(AbstractODMDStabParserMapper.class);
 	protected IPSSMsgHub msg = null;
 	protected DynLoadDataHelper loadDataHelper =null;
 	/**
@@ -97,7 +99,6 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 	 */
 	@Override public boolean map2Model(Tfrom p, SimuContext simuCtx) {
 		boolean noError = true;
-		
 		DStabModelParser parser = (DStabModelParser) p;
 		if (parser.getStudyCase().getNetworkCategory() == NetworkCategoryEnumType.TRANSMISSION
 				&& parser.getStudyCase().getAnalysisCategory() == AnalysisCategoryEnumType.TRANSIENT_STABILITY) {
@@ -175,7 +176,7 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 						}
 					}
 					else {
-						ipssLogger.severe( "Error: only aclf<Branch>, acsc<Branch> and dstab<Branch> could be used for DStab study, \n"
+						log.error("Error: only aclf<Branch>, acsc<Branch> and dstab<Branch> could be used for DStab study, \n"
 								+ "branch #"+branch.getId());
 						noError = false;
 					}
@@ -189,17 +190,17 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 				if(parser.getStudyCase().getStudyScenario() !=null){
 					IpssStudyScenarioXmlType s = (IpssStudyScenarioXmlType)parser.getStudyCase().getStudyScenario().getValue();
 					new DStabScenarioHelper(dstabNet,dstabAlgo).
-								mapOneFaultScenario(s);
+							 mapOneFaultScenario(s);
 				}
 				
 				AbstractODMAclfNetMapper.postAclfNetProcessing(dstabNet);
 			} catch (InterpssException e) {
-				ipssLogger.severe(e.toString());
+				log.error(e.toString());
 				noError = false;
 			}
 		} 
 		else {
-			ipssLogger.severe( "Error: wrong Transmission NetworkType and/or ApplicationType");
+			log.error("Error: wrong Transmission NetworkType and/or ApplicationType");
 			return false;
 		}
 		
@@ -225,14 +226,14 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
                 dyGen = (DStabGenDataXmlType)dyGenElem.getValue();
                 //TODO input from ODM, generator is not created yet
                 if(dstabBus.getContributeGen(dyGen.getId())==null ){
-                        ipssLogger.severe("The generator, Id="+ dyGen.getId()+ " does NOT exist in the bus # "+dstabBus.getId());
+                        log.error("The generator, Id="+ dyGen.getId()+ " does NOT exist in the bus # "+dstabBus.getId());
                 }
                 if(dstabBus.getContributeGen(dyGen.getId()) instanceof DStabGen){
                      DStabGen dyGenObj=(DStabGen) dstabBus.getContributeGen(dyGen.getId());
                      setDynGenData(dstabBus,dyGen,dyGenObj);
                 }
                 else{
-                        ipssLogger.severe("The generator, Id="+ dyGen.getId()+ " of the bus # "+dstabBus.getId()+
+                        log.error("The generator, Id="+ dyGen.getId()+ " of the bus # "+dstabBus.getId()+
                                         " is NOT of DStabGen type!");
                 }
             }
@@ -255,9 +256,9 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 		// create the machine model and added to the parent bus object
 		if(dyGen.getMachineModel() ==null){
 			if(dyGen.isOffLine())
-				ipssLogger.info("Gen #"+dyGen.getId()+" @ bus#"+dstabBus.getId() +" is off line, and there is no machine model defined for it");
+				log.info("Gen #"+dyGen.getId()+" @ bus#"+dstabBus.getId() +" is off line, and there is no machine model defined for it");
 			else
-			    ipssLogger.severe("No machine defined for the in-service Gen:  "+dyGen.getId()+" @ bus#"+dstabBus.getId());
+			    log.error("No machine defined for the in-service Gen:  "+dyGen.getId()+" @ bus#"+dstabBus.getId());
 			
 			return; 
 		}
