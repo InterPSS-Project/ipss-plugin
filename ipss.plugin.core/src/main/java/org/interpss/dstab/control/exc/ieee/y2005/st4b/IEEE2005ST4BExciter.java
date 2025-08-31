@@ -5,7 +5,9 @@ import java.lang.reflect.Field;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.LimitType;
 
-import com.interpss.common.util.IpssLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.controller.cml.annotate.AnController;
@@ -27,6 +29,7 @@ import com.interpss.dstab.mach.MachineIfdBase;
 		   refPoint="this.vrPIBlock.u0  - pss.vs  + this.trDelayBlock.y",
 		   display= {})
 public class IEEE2005ST4BExciter  extends AnnotateExciter{
+    private static final Logger log = LoggerFactory.getLogger(IEEE2005ST4BExciter.class);
 	public double k1 = 1.0;/*constant*/
 	
 	/*
@@ -108,7 +111,7 @@ public class IEEE2005ST4BExciter  extends AnnotateExciter{
 	      public boolean initStateY0(double y0) {
 	    	  VB = calcVB(calcVe());
 	    	  if(VB ==0.0){
-	    		  IpssLogger.getLogger().severe("Error: VB of IEEE 2005 ST4B exciter is 0 for initialization, @ "+getMachine().getId() );
+	    		  log.error("Error: VB of IEEE 2005 ST4B exciter is 0 for initialization, @ "+getMachine().getId());
 	    	      return false;
 	    	  }
 	          this.u = y0/VB;
