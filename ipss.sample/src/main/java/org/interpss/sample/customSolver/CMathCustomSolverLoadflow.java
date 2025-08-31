@@ -22,14 +22,15 @@
   *
   */
 
-package org.interpss.sample.aclf.customSolver;
+package org.interpss.sample.customSolver;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.sparse.ISparseEqnDouble;
-import org.interpss.sample.aclf.customSolver.impl.CMathSparseEqnDouble;
-import org.interpss.sample.aclf.customSolver.impl.CMathSparseEqnMatrix2x2;
+import org.interpss.sample.customSolver.impl.CMathSparseEqnDouble;
+import org.interpss.sample.customSolver.impl.CMathSparseEqnMatrix2x2;
+import org.interpss.sample.customSolver.solver.CMathSparseEqnDoubleSolver;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;
