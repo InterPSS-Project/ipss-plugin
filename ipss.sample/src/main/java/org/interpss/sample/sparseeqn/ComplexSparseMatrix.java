@@ -70,7 +70,7 @@ public class ComplexSparseMatrix {
 	}
 	
 	public static void sample3() {
-		ISparseEqnComplex m = new CSJSparseEqnComplexImpl(2, 2);
+		CSJSparseEqnComplexImpl m = new CSJSparseEqnComplexImpl(2, 2);
 		
 		Complex  a11 = new Complex( 1.0, 1.1 ),
 			     a12 = new Complex( 3.1, 4.1 ),
