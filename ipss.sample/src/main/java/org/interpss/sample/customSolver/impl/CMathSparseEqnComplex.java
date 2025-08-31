@@ -1,4 +1,4 @@
-package org.interpss.sample.aclf.customSolver.impl;
+package org.interpss.sample.customSolver.impl;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.exp.IpssNumericException;
