@@ -2,9 +2,10 @@ package org.interpss.dstab.control.gov.custom;
 
 
 import org.interpss.numeric.datatype.LimitType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.interpss.common.exp.InterpssRuntimeException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.controller.deqn.AbstractGovernor;
@@ -24,6 +25,8 @@ public class PID_SixCoefficientHydroGovernor extends AbstractGovernor {
 	
 	//private LimitType limit_1 = null;
 
+	private static final Logger log = LoggerFactory.getLogger(PID_SixCoefficientHydroGovernor.class);
+	
 	public PID_SixCoefficientHydroGovernor(final String id, final String name, final String caty) {
 		// TODO Auto-generated constructor stub
 				super(id, name, caty);
@@ -58,8 +61,8 @@ public class PID_SixCoefficientHydroGovernor extends AbstractGovernor {
 		limit = new LimitType(1, 0);
 		statePref = getMachine().getPm();
         if (limit.isViolated(statePref)) {
-        	IpssLogger.getLogger().severe("Machine initial mechanical power Pm0 violates its governor power limits, " +
-        			"machine id: " + getMachine().getId());
+            log.error("Machine initial mechanical power Pm0 violates its governor power limits, " +
+                    "machine id: " + getMachine().getId());
         }
 		stateX1 = 0.0;
 		stateX2 = stateX1;
@@ -69,7 +72,7 @@ public class PID_SixCoefficientHydroGovernor extends AbstractGovernor {
 		stateX6 = stateX5;
 		
 		
-		IpssLogger.getLogger().fine("Governor Limit:      " + limit);
+		log.debug("Governor Limit:      " + limit);
 		return true;
 	}
 
@@ -176,7 +179,3 @@ public class PID_SixCoefficientHydroGovernor extends AbstractGovernor {
 		statePref = x;
 	}	
 } // SimpleExcAdapter
-
-	
-
-
