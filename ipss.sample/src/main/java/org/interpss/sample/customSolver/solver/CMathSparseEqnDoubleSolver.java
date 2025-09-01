@@ -106,6 +106,7 @@ public class CMathSparseEqnDoubleSolver extends AbstractSparseEqnDoubleImpl impl
 		
 		// do LU decomposition
 		LUDecomposition lu = new LUDecomposition(A);
+		this.factored = true;
 		
 		// build the {B} vector
 		ArrayRealVector B = new ArrayRealVector(b);
@@ -139,6 +140,6 @@ public class CMathSparseEqnDoubleSolver extends AbstractSparseEqnDoubleImpl impl
 	
 	@Override
 	public void setMatrixDirty() {
-		// do nothing
+		this.factored = false;
 	}
 }
