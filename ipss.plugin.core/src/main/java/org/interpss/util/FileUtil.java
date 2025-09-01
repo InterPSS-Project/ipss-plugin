@@ -116,6 +116,6 @@ public class FileUtil {
 	 * @throws IOException
 	 */
 	public static String readFileAsString(String filename) throws IOException {
-		return new String(readFile(new File(filename)));
+		return readFile(new File(filename)).toString();
 	}
 }
