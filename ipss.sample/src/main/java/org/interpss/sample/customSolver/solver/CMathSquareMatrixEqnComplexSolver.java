@@ -119,6 +119,6 @@ public class CMathSquareMatrixEqnComplexSolver extends AbstractSparseEqnComplexI
 	
 	@Override
 	public void setMatrixDirty() {
-		// do nothing
+		this.factored = false;
 	}
 }
