@@ -4,7 +4,6 @@ import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.sparse.ISparseEqnDouble;
 import org.slf4j.Logger;
@@ -47,29 +46,49 @@ public class CMathSparseEqnDoubleSolver extends AbstractSparseEqnDoubleImpl impl
 		this.eqn = (AbstractSparseEqnDoubleImpl)eqn;
 		//System.out.println("eqn: " + eqn);
 	}
+	
+	/**
+	 * factorization of the matrix.
+	 * 
+	 * @param tolerance the tolerance for matrix singular detection
+	 * @return if succeed return true.
+	 */
+	@Override public boolean factorization( final double tolerance)  throws IpssNumericException {
+		// do nothing for the apache common math lib implementation, since it is
+		// a full matrix solver
+		return true;
+	}
 		
-	@Override
-	public void solveEqn() {
-		// build the [A] matrix
-		RealMatrix A = buildAMatrix();
-
-		// do LU decomposition
-		LUDecomposition lu = new LUDecomposition(A);
-		
-		// build the {B} vector
-		int rows = this.eqn.getDimension(IndexType.Row);
-		RealVector B = new ArrayRealVector(rows);
-		for ( int i = 0; i < rows; i++ ) {
-			B.setEntry(i, this.eqn.getElem(i).bi);
-		}
-		
-		// solve the equation
-		RealVector X = lu.getSolver().solve(B);
-		
-		// set the solution back to the eqn B
-		this.eqn.setBVector(X.toArray());
+	@Override public boolean factorization()  throws IpssNumericException {
+		return factorization(1.0e-6);
 	}
 	
+	/**
+	 * Solve the [A]X = B problem, the result is stored in the eqn B vector.
+	 * 
+	 */
+	@Override
+	public void solveEqn() throws IpssNumericException {
+		// build the {B} vector
+		int rows = this.eqn.getDimension(IndexType.Row);
+		double[] b = new double[rows];
+		for ( int i = 0; i < rows; i++ ) {
+			b[i] = this.eqn.getElem(i).bi;
+		}
+
+		// solve the equation
+		double[] x = solveEqn(b);
+		
+		// set the solution back to the eqn B
+		this.eqn.setBVector(x);
+	}
+	
+	@Override
+	public double[] solveLUedEqn(double[] b) throws IpssNumericException {
+		// TODO Auto-generated method stub
+		return super.solveLUedEqn(b);
+	}
+
 	/**
 	 * Solve the equation [A]{x}={b}, return the solution {x}
 	 * 
@@ -79,6 +98,9 @@ public class CMathSparseEqnDoubleSolver extends AbstractSparseEqnDoubleImpl impl
 	 */
 	@Override
 	public double[] solveEqn(double[] b) throws IpssNumericException {
+		if (!this.factored)
+			this.factorization(1.0e-10);
+		
 		// build the [A] matrix
 		RealMatrix A = buildAMatrix();
 		
@@ -90,12 +112,6 @@ public class CMathSparseEqnDoubleSolver extends AbstractSparseEqnDoubleImpl impl
 		
 		// solve the equation
 		return lu.getSolver().solve(B).toArray();
-	}
-	
-	@Override
-	public boolean factorization( final double tolerance) throws IpssNumericException {
-		// no need to do factorization here
-		 return true;
 	}
 	
 	/**
