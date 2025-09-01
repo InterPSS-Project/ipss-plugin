@@ -30,8 +30,8 @@ import java.util.function.Function;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.exp.IpssNumericException;
-import org.interpss.numeric.matrix.ComplexMatrixEqn;
-import org.interpss.numeric.matrix.MatrixUtil;
+import org.interpss.numeric.matrix.ComplexFullMatrixEqn;
+import org.interpss.numeric.matrix.FullMatrixUtil;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 
 import com.interpss.algo.subAreaNet.base.BaseCuttingBranch;
@@ -60,7 +60,7 @@ public class PiecewiseAlgo012Impl<TBus extends BaseAcscBus<? extends AcscGen, ? 
 	//private AcscNetwork net;
 	
 	// Equivalent 012 Z-matrix for cutting branch current calculation
-	private ComplexMatrixEqn[] equivZMatrixEqn = new ComplexMatrixEqn[3];
+	private ComplexFullMatrixEqn[] equivZMatrixEqn = new ComplexFullMatrixEqn[3];
 	
 	/**
 	 * Constructor
@@ -194,16 +194,16 @@ public class PiecewiseAlgo012Impl<TBus extends BaseAcscBus<? extends AcscGen, ? 
 		if (this.netYmatrixDirty) {
 			Complex3x1[][] equivZMatrix = buildEquivZMtrix(cuttingBranches);
 			// transform Complex3x1 to Complex[3]
-			Complex[][][] matrix = MatrixUtil.toComplexMatrix(equivZMatrix);
+			Complex[][][] matrix = FullMatrixUtil.toComplexMatrix(equivZMatrix);
 			// compute inverse of the Z-matrix (012) 
 			for ( int i = 0; i < 3; i++ ) {
-				this.equivZMatrixEqn[i] = new ComplexMatrixEqn(matrix[i]);
+				this.equivZMatrixEqn[i] = new ComplexFullMatrixEqn(matrix[i]);
 				this.equivZMatrixEqn[i].inverseMatrix();
 			}
 		}
 		
 		// transfer Complex3x1 to Complex[3]
-		Complex[][] eCutBranchAry = MatrixUtil.toComplexAry(eCutBranch3x1);
+		Complex[][] eCutBranchAry = FullMatrixUtil.toComplexAry(eCutBranch3x1);
 		// solve branch current [I] = [Z]-1 [V] for 012 seq
     	Complex[] curAry0 = this.equivZMatrixEqn[0].solveEqn(eCutBranchAry[0], false);	
     	Complex[] curAry1 = this.equivZMatrixEqn[1].solveEqn(eCutBranchAry[1], false);	
@@ -284,7 +284,7 @@ public class PiecewiseAlgo012Impl<TBus extends BaseAcscBus<? extends AcscGen, ? 
 			/*
 			 * add the transpose[Mi]x[Zi]x[M] part. 
 			 */
-			matrix3x1 = MatrixUtil.add(matrix3x1, MatrixUtil.prePostMultiply(subarea.getZMatrix(), M));
+			matrix3x1 = FullMatrixUtil.add(matrix3x1, FullMatrixUtil.prePostMultiply(subarea.getZMatrix(), M));
 		}	
 		
 		return matrix3x1;

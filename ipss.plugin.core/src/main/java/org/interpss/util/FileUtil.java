@@ -109,7 +109,7 @@ public class FileUtil {
 	}	
 	
 	/**
-	 * read a file and return file context as a String
+	 * read a file and return file content as a String
 	 * 
 	 * @param file
 	 * @return

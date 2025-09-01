@@ -10,7 +10,7 @@ import org.interpss.multiNet.equivalent.NetworkEquivalent;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.exp.IpssNumericException;
-import org.interpss.numeric.matrix.MatrixUtil;
+import org.interpss.numeric.matrix.FullMatrixUtil;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.interpss.numeric.sparse.ISparseEqnComplexMatrix3x3;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
@@ -114,7 +114,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 	public void prepareBoundarySubSystemMatrix() {
 		int n = subNetProcessor.getInterfaceBranchIdList().size();
 	      
-		 this.ZlAry = MatrixUtil.createComplex3x32DArray(n,n);
+		 this.ZlAry = FullMatrixUtil.createComplex3x32DArray(n,n);
         
     	if(this.subNetIncidenceMatrixTable !=null){
     		
@@ -137,14 +137,14 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
     		  		  Complex3x3[][] Zth_k = this.subNetEquivTable.get(subNet.getId()).getMatrix3x3();
     	    		  
     		  		  
-    		  		 double[][] Pk =MatrixUtil.transpose(Pk_T);
+    		  		 double[][] Pk =FullMatrixUtil.transpose(Pk_T);
     		  		 
     		  		  //  Zl_k = Pk_T*Zth_k*Pk
     		  		 
-    		  		   Complex3x3[][] Zl_k =  MatrixUtil.multiply(MatrixUtil.preMultiply(Pk_T,Zth_k), Pk);
+    		  		   Complex3x3[][] Zl_k =  FullMatrixUtil.multiply(FullMatrixUtil.preMultiply(Pk_T,Zth_k), Pk);
     				  
     				  // Zl = Zl + sum{Zl_k}|all subsystems
-    				   this.ZlAry = MatrixUtil.add(this.ZlAry,Zl_k);
+    				   this.ZlAry = FullMatrixUtil.add(this.ZlAry,Zl_k);
     			  }
     		 
     		  	 
@@ -274,14 +274,14 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
     	if(this.ZlAry!=null){
     		int dim = this.ZlAry.length;
     		// use the latest Thevenin equivalent voltage sources
-    		Complex3x1[] Eth = MatrixUtil.createComplex3x1DArray(dim);
+    		Complex3x1[] Eth = FullMatrixUtil.createComplex3x1DArray(dim);
     	
     		for(BaseDStabNetwork<?, ?> subNet: this.subNetProcessor.getSubNetworkList()){
     			
     			Complex3x1[] Eth_k = this.subNetEquivTable.get(subNet.getId()).getSource3x1();
     			double[][] Pk_T = this.subNetIncidenceAryTable.get(subNet.getId());
-    			Eth_k = MatrixUtil.preMultiply(Pk_T,Eth_k);//Returns the result of multiplying this matrix by the vector v.
-    			Eth = MatrixUtil.add(Eth,Eth_k);
+    			Eth_k = FullMatrixUtil.preMultiply(Pk_T,Eth_k);//Returns the result of multiplying this matrix by the vector v.
+    			Eth = FullMatrixUtil.add(Eth,Eth_k);
     			
     			
     		}
@@ -313,7 +313,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 			}
     		 
     		 // retrieve the results
-    		 Complex3x1[] currVector = MatrixUtil.createComplex3x1DArray(dim);
+    		 Complex3x1[] currVector = FullMatrixUtil.createComplex3x1DArray(dim);
     		 for(int i=0; i<dim;i++){
     			     //TODO the internal 3seq Ymatrix storage sequence is [pos,neg,zero], and the result X is also with this sequence
     			     // however, the default Complex3x1 storage is [a_0, b_1, z_2], thus a transformation is required to obtain the 
@@ -337,8 +337,8 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 //    			FieldVector<Complex>  boundaryBusCurrInj = Pk_T.transpose().operate(currVector);
     			
     			double[][] Pk_T = this.subNetIncidenceAryTable.get(subNet.getId());
-    			double[][] Pk = MatrixUtil.transpose(Pk_T);
-    			 Complex3x1[] boundaryBusCurrInj = MatrixUtil.preMultiply(Pk,currVector);
+    			double[][] Pk = FullMatrixUtil.transpose(Pk_T);
+    			 Complex3x1[] boundaryBusCurrInj = FullMatrixUtil.preMultiply(Pk,currVector);
     			
     			Hashtable<String,Complex3x1> busCurrInjTable = new Hashtable<>();
     			int i =0;

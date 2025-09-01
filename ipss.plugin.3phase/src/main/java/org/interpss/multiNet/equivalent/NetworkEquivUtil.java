@@ -8,7 +8,7 @@ import org.interpss.multiNet.algo.SubNetworkProcessor;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.exp.IpssNumericException;
-import org.interpss.numeric.matrix.MatrixUtil;
+import org.interpss.numeric.matrix.FullMatrixUtil;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.interpss.numeric.sparse.ISparseEqnComplexMatrix3x3;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
@@ -151,7 +151,7 @@ public class NetworkEquivUtil {
 				netEquiv = new NetworkEquivalent(dim);
 				netEquiv.setEquivCoordinate(NetCoordinate.THREE_SEQUENCE);
 		 
-				 Complex3x3[][] Z120Matrix = MatrixUtil.createComplex3x32DArray(dim,dim);
+				 Complex3x3[][] Z120Matrix = FullMatrixUtil.createComplex3x32DArray(dim,dim);
 				    for(int i=0;i<dim;i++){
 				    	for(int j=0;j<dim;j++){
 				    		Z120Matrix[i][j] = new Complex3x3(posSeqZMatrix[i][j],negSeqZMatrix[i][j],zeroSeqZMatrix[i][j]);   
