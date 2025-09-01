@@ -36,7 +36,7 @@ public class CMathSquareMatrixEqnComplexSolver extends AbstractSparseEqnComplexI
 	}
 	
   /**
-   * LU decomposition of the matrix.
+   * factorization of the matrix.
 	* 
 	* @param tolerance the tolerance for matrix singular detection
 	* @return if succeed return true.
@@ -51,36 +51,29 @@ public class CMathSquareMatrixEqnComplexSolver extends AbstractSparseEqnComplexI
 	}
 
 	/**
-	 * Solve the [A]X = B problem
+	 * Solve the [A]X = B problem, the result is stored in the eqn B vector.
 	 * 
 	 */
 	@Override public void solveEqn() throws IpssNumericException {
-		if (!this.factored)
-			this.factorization(1.0e-10);
-		
-		// build the [A] matrix
-		FieldMatrix<Complex> A = buildAMatrix();
-		
-		// LU decomposition solver
-    	FieldDecompositionSolver<Complex> solver = new FieldLUDecomposition<Complex>(A).getSolver();
-    	
 		// build the {B} vector
 		int rows = this.eqn.getDimension(IndexType.Row);
 		Complex[] b = new Complex[rows];
 		for ( int i = 0; i < rows; i++ ) {
 			b[i] = this.eqn.getElem(i).bi;
 		}
-    	FieldVector<Complex> B = new ArrayFieldVector<>(b, false);
     	
     	// solve the equation
-    	FieldVector<Complex> X = solver.solve(B);
+    	Complex[] x = solveLUedEqn(b);
 
 		// set the solution back to the eqn B
-		this.eqn.setBVector(X.toArray());
+		this.eqn.setBVector(x);
 	}
 	
 	@Override
 	public Complex[] solveLUedEqn(Complex[] b) throws IpssNumericException {
+		if (!this.factored)
+			this.factorization(1.0e-10);
+		
 		// build the [A] matrix
 		FieldMatrix<Complex> A = buildAMatrix();
 		
