@@ -19,7 +19,7 @@ import org.interpss.multiNet.algo.MultiNet3Ph3SeqDynEventProcessor;
 import org.interpss.multiNet.algo.SubNetworkProcessor;
 import org.interpss.multiNet.equivalent.NetworkEquivalent;
 import org.interpss.numeric.datatype.Complex3x3;
-import org.interpss.numeric.matrix.MatrixUtil;
+import org.interpss.numeric.matrix.FullMatrixUtil;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
@@ -195,10 +195,10 @@ public class investigate_3PHSubNetYabc {
 			 
 			 assertTrue(equiv_2.getSource3x1().length==2);
 			 
-			 System.out.println("Zth_equiv2(120) = \n"+MatrixUtil.complex3x32DAry2String(equiv_2.getMatrix3x3()));   
+			 System.out.println("Zth_equiv2(120) = \n"+FullMatrixUtil.complex3x32DAry2String(equiv_2.getMatrix3x3()));   
 			 
 			 
-			 System.out.println("Vth_equiv2 = \n"+MatrixUtil.complex3x1Ary2String(equiv_2.getSource3x1())); 
+			 System.out.println("Vth_equiv2 = \n"+FullMatrixUtil.complex3x1Ary2String(equiv_2.getSource3x1())); 
 			 
 //			 
 //			 ISparseEqnComplex ypos1 = subNet_1.getYMatrix();
@@ -563,7 +563,7 @@ public class investigate_3PHSubNetYabc {
 				ca = (-1.9073486328125E-6, 9.5367431640625E-7),cb = (1.9073486328125E-6, 9.5367431640625E-7),cc = (-1.3676696797039316, 4.000005590181085E10)
 				, 
 		   */
-		  System.out.println(" Zth of subnet1: \n"+MatrixUtil.complex3x32DAry2String(Zth1));
+		  System.out.println(" Zth of subnet1: \n"+FullMatrixUtil.complex3x32DAry2String(Zth1));
 		  
 		  assertTrue(Zth1[0][0].aa.subtract(new Complex(1.0,0).divide(bus5LoadYeq)).abs()<1.0E-6); 
 		  
