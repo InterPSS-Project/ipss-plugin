@@ -43,7 +43,6 @@ import org.interpss.util.FileUtil;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
@@ -432,7 +431,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 			dstabAlgo.setOutPutPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 			
-			IpssLogger.getLogger().setLevel(Level.WARNING);
+			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			
 			
 	        // Must use this dynamic event process to modify the YMatrixABC
@@ -446,7 +445,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 			
 			dstabAlgo.setDynamicEventHandler(new MultiNet3Ph3SeqDynEventProcessor(mNetHelper));
 			
-			PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+			PerformanceTimer timer = new PerformanceTimer();
 			timer.start();
 			
 			if (dstabAlgo.initialization()) {
@@ -722,7 +721,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 				//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 	
 				
-				IpssLogger.getLogger().setLevel(Level.WARNING);
+				//IpssLogger.getLogger().setLevel(Level.WARNING);
 				
 				
 				
@@ -799,9 +798,9 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 				dstabAlgo.setOutPutPerSteps(1);
 				//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 				
-				IpssLogger.getLogger().setLevel(Level.WARNING);
+				//IpssLogger.getLogger().setLevel(Level.WARNING);
 				
-				PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+				PerformanceTimer timer = new PerformanceTimer();
 				timer.start();
 	
 				
@@ -1091,7 +1090,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 				//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 
 				
-				IpssLogger.getLogger().setLevel(Level.WARNING);
+				//IpssLogger.getLogger().setLevel(Level.WARNING);
 				
 				
 				
@@ -1170,9 +1169,9 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 				dstabAlgo.setOutPutPerSteps(1);
 				//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 				
-				IpssLogger.getLogger().setLevel(Level.WARNING);
+				//IpssLogger.getLogger().setLevel(Level.WARNING);
 				
-				PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+				PerformanceTimer timer = new PerformanceTimer();
 				timer.start();
 
 				
@@ -1440,9 +1439,9 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 				
 	
 				
-				IpssLogger.getLogger().setLevel(Level.WARNING);
+				//IpssLogger.getLogger().setLevel(Level.WARNING);
 				
-				PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+				PerformanceTimer timer = new PerformanceTimer();
 				
 		 
 				
@@ -1780,7 +1779,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 
 			
-			IpssLogger.getLogger().setLevel(Level.WARNING);
+			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			
 			
 			
@@ -1865,9 +1864,9 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 			dstabAlgo.setOutPutPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 			
-			IpssLogger.getLogger().setLevel(Level.WARNING);
+			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			
-			PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+			PerformanceTimer timer = new PerformanceTimer();
 			timer.start();
 
 			
@@ -2122,7 +2121,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 
 			
-			IpssLogger.getLogger().setLevel(Level.WARNING);
+			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			
 			
 			
@@ -2208,9 +2207,9 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 			dstabAlgo.setOutPutPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 			
-			IpssLogger.getLogger().setLevel(Level.WARNING);
+			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			
-			PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+			PerformanceTimer timer = new PerformanceTimer();
 			timer.start();
 
 			
@@ -2478,9 +2477,9 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 					
 
 					
-					IpssLogger.getLogger().setLevel(Level.WARNING);
+					//IpssLogger.getLogger().setLevel(Level.WARNING);
 					
-					PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+					PerformanceTimer timer = new PerformanceTimer();
 					
 			 
 					
@@ -2835,9 +2834,9 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 			dstabAlgo.setOutPutPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 			
-			IpssLogger.getLogger().setLevel(Level.WARNING);
+			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			
-			PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+			PerformanceTimer timer = new PerformanceTimer();
 			timer.start();
 	        // Must use this dynamic event process to modify the YMatrixABC
 //			dstabAlgo.setDynamicEventHandler(new DynamicEventProcessor3Phase());
