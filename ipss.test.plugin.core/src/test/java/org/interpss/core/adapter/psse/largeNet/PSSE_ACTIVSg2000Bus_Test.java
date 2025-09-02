@@ -1,6 +1,8 @@
 package org.interpss.core.adapter.psse.largeNet;
 
-import java.util.logging.Level;
+import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
@@ -11,14 +13,9 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
-
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -31,7 +28,7 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 	@Test
 	public void test_ACTIVSg2000_2016summerpeak_v30() throws InterpssException{
 		IpssCorePlugin.init();
-		IpssLogger.getLogger().setLevel(Level.WARNING);
+		//IpssLogger.getLogger().setLevel(Level.WARNING);
 		
 		/*
 		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
@@ -85,7 +82,7 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 	@Test
 	public void test_ACTIVSg2000_2016summerpeak_v34() throws InterpssException{
 		IpssCorePlugin.init();
-		IpssLogger.getLogger().setLevel(Level.WARNING);
+		//IpssLogger.getLogger().setLevel(Level.WARNING);
 		
 		/*
 		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_34);
@@ -139,7 +136,7 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 	@Test
 	public void test_ACTIVSg2000_2016summerpeak_v35() throws InterpssException{
 		IpssCorePlugin.init();
-		IpssLogger.getLogger().setLevel(Level.WARNING);
+		//IpssLogger.getLogger().setLevel(Level.WARNING);
 		
 		/*
 		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_35);
@@ -194,7 +191,7 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 	@Test
 	public void test_ACTIVSg2000_2016summerpeak_v36() throws InterpssException{
 		IpssCorePlugin.init();
-		IpssLogger.getLogger().setLevel(Level.WARNING);
+		//IpssLogger.getLogger().setLevel(Level.WARNING);
 		
 		/*
 		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_36);
@@ -247,7 +244,7 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 	//@Test
 	public void test_ACTIVSg2000_v33() throws InterpssException{
 		IpssCorePlugin.init();
-		IpssLogger.getLogger().setLevel(Level.WARNING);
+		//IpssLogger.getLogger().setLevel(Level.WARNING);
 		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_33);
 		assertTrue(adapter.parseInputFile(
 				"testData/adpter/psse/v33/ACTIVSg2000/ACTIVSg2000.raw"));
@@ -281,7 +278,7 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 	@Test
 	public void test_ACTIVSg2000_summerpeak_v34() throws InterpssException{
 		IpssCorePlugin.init();
-		IpssLogger.getLogger().setLevel(Level.WARNING);
+		//IpssLogger.getLogger().setLevel(Level.WARNING);
 		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_34);
 		assertTrue(adapter.parseInputFile(
 				"testData/psse/v34/Texas2k/Texas2k_series24_case3_2024summerpeak_noSub.RAW"));
@@ -314,7 +311,7 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 	//@Test
 	public void test_ACTIVSg2000_lowload_v34() throws InterpssException{
 		IpssCorePlugin.init();
-		IpssLogger.getLogger().setLevel(Level.WARNING);
+		//IpssLogger.getLogger().setLevel(Level.WARNING);
 		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_34);
 		assertTrue(adapter.parseInputFile(
 				"testData/psse/v34/Texas2k/Texas2k_series24_case4_2024lowload.RAW"));
@@ -347,7 +344,7 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 	//@Test
 	public void test_ACTIVSg2000_highrenewables_v34() throws InterpssException{
 		IpssCorePlugin.init();
-		IpssLogger.getLogger().setLevel(Level.WARNING);
+		//IpssLogger.getLogger().setLevel(Level.WARNING);
 		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_34);
 		assertTrue(adapter.parseInputFile(
 				"testData/psse/v34/Texas2k/Texas2k_series24_case5_2024highrenewables.RAW"));
