@@ -30,7 +30,6 @@ import java.util.Set;
 
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.display.AclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.junit.Test;
 
@@ -40,7 +39,6 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.AclfNetHelper;
-import com.interpss.core.funcImpl.CoreCopyFunc;
 
 public class SwingBusSubAreaTest extends CorePluginTestSetup {
 	@Test

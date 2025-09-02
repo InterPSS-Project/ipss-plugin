@@ -19,7 +19,6 @@ import org.junit.Test;
 
 import com.interpss.common.CoreCommonFactory;
 import com.interpss.common.msg.IPSSMsgHub;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -150,7 +149,7 @@ public class testCustomCurInjDstab {
 		  	 //System.out.println(boundaryBusCurInjTable);
 		  	
 	  	
-	  	PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger()) ;
+	  	PerformanceTimer timer = new PerformanceTimer() ;
 	  	// make sure the dstab algo is initialized successfully
 	  	if(dstabAlgo.initialization()){
 	  	

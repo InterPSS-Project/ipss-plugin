@@ -2,8 +2,6 @@ package org.interpss.core.adapter.bpa;
 
 import static org.junit.Assert.assertTrue;
 
-import java.util.logging.Level;
-
 import org.ieee.odm.adapter.IODMAdapter;
 import org.ieee.odm.adapter.bpa.BPAAdapter;
 import org.ieee.odm.model.dstab.DStabModelParser;
@@ -13,7 +11,6 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.odm.mapper.ODMDStabParserMapper;
 import org.junit.Test;
 
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
@@ -104,7 +101,7 @@ public class ODMMaper_IEEE9BusTest  extends DStabTestSetupBase {
 	      		y0="this.delayBlock.u0 + this.seFunc.y" // ,debug=true
 	   		)
 	   	 */
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 
 		/*
 		 * Use the Text output handler to print simu info to the Console 

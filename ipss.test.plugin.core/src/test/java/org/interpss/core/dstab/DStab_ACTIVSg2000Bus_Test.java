@@ -1,11 +1,12 @@
 package org.interpss.core.dstab;
 
+import static org.junit.Assert.assertTrue;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
@@ -16,11 +17,9 @@ import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.odm.mapper.ODMDStabParserMapper;
 import org.interpss.util.FileUtil;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.dstab.BaseDStabBus;
@@ -41,7 +40,7 @@ public class DStab_ACTIVSg2000Bus_Test  extends DStabTestSetupBase{
 		@Test
 		public void test_ACTIVSg2000_Dstab() throws InterpssException{
 			IpssCorePlugin.init();
-			IpssLogger.getLogger().setLevel(Level.WARNING);
+			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_33);
 			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 					
@@ -221,7 +220,7 @@ public class DStab_ACTIVSg2000Bus_Test  extends DStabTestSetupBase{
 		//@Test
 		public void test_ACTIVSg2000_Dstab_compositeLoadModel() throws InterpssException{
 			IpssCorePlugin.init();
-			IpssLogger.getLogger().setLevel(Level.WARNING);
+			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 					
@@ -294,7 +293,7 @@ public class DStab_ACTIVSg2000Bus_Test  extends DStabTestSetupBase{
 			
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
 			
-			IpssLogger.getLogger().setLevel(Level.INFO);
+			//IpssLogger.getLogger().setLevel(Level.INFO);
 			
 			String faultBusId = "Bus7"; //3, 5, 12 182  157 7 167  135
 			

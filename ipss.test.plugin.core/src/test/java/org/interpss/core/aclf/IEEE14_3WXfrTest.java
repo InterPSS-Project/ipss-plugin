@@ -24,12 +24,13 @@
 
 package org.interpss.core.aclf;
 
+import static org.junit.Assert.assertTrue;
+
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.core.CoreObjectFactory;

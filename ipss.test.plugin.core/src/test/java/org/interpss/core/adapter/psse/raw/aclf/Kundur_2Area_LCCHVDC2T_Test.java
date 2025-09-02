@@ -1,6 +1,7 @@
 package org.interpss.core.adapter.psse.raw.aclf;
 
-import java.util.logging.Level;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter;
@@ -14,23 +15,18 @@ import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.hvdc.HvdcControlMode;
 import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
-import com.interpss.core.aclf.hvdc.HvdcLine2TVSC;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.AclfNetObjectComparator;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 import com.interpss.simu.SimuObjectFactory;
-import com.interpss.state.aclf.AclfBusState;
 
 public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 	//@Test
@@ -320,7 +316,7 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 	@Test
 	public void test_LCCHVDC_PsetZero_Loadflow() throws Exception {
 
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 		IODMAdapter adapter = new PSSERawAdapter(PSSEAdapter.PsseVersion.PSSE_33);
 		assertTrue(adapter.parseInputFile("testData/psse/v33/Kundur_2area_LCC_HVDC_PsetZero.raw"));
 		
