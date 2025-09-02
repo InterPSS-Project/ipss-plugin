@@ -67,6 +67,7 @@ public class AclfResultHelper {
 	
 	public AclfBusInfo getBusResult(String busId) {
 		AclfBus bus = this.aclfNet.getBus(busId);
+		double baseMva = this.aclfNet.getBaseMva();
 					
 		AclfBusInfo busInfo = new AclfBusInfo();
 					
@@ -79,10 +80,10 @@ public class AclfResultHelper {
 						bus.isGen()? "PQ" : "Load"
 				);  
 		busInfo.setBusVoltageMagnitude(bus.getVoltageMag());
-		busInfo.setBusVoltageAnlgle(bus.getVoltageAng());
+		busInfo.setBusVoltageAnlgle(Math.toDegrees(bus.getVoltageAng()));
 		
-		busInfo.setBusGeneration(bus.calNetGenResults());
-		busInfo.setBusLoad(bus.calNetLoadResults());
+		busInfo.setBusGeneration(bus.calNetGenResults().multiply(baseMva));
+		busInfo.setBusLoad(bus.calNetLoadResults().multiply(baseMva));
 		
 		return busInfo;
 	}
@@ -113,8 +114,8 @@ public class AclfResultHelper {
 					
 		branchInfo.setBranchType(branch.isLine()? "AcLine" : "Transformer");  // AcLine, Transformer
 					
-		branchInfo.setBranchPowerFlowFromSide2ToSide(branch.powerFrom2To());
-		branchInfo.setBranchPowerFlowToSide2FromSide(branch.powerTo2From());
+		branchInfo.setBranchPowerFlowFromSide2ToSide(branch.powerFrom2To(UnitType.mVA));
+		branchInfo.setBranchPowerFlowToSide2FromSide(branch.powerTo2From(UnitType.mVA));
 		
 		return branchInfo;
 	}
