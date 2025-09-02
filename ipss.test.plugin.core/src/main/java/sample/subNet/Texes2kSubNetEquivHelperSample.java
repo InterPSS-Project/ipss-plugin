@@ -2,20 +2,15 @@ package sample.subNet;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.interpss.CorePluginFactory;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
-import org.interpss.display.impl.AclfOut_BusStyle;
 import org.interpss.display.impl.AclfOut_PSSE;
 import org.interpss.display.impl.AclfOut_PSSE.Format;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.plugin.equiv.AclfNetworkEquivHelper;
 import org.interpss.util.FileUtil;
-
-import com.interpss.common.util.IpssLogger;
-
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;
@@ -28,7 +23,7 @@ public class Texes2kSubNetEquivHelperSample {
 
     public static void main(String[] args) throws InterpssException {
 		IpssCorePlugin.init();
-    IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 
 		AclfNetwork aclfNet = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.PSSE,IpssFileAdapter.Version.PSSE_33)

@@ -26,8 +26,6 @@ package org.interpss.plugin.beanModel;
 
 import static org.junit.Assert.assertTrue;
 
-import java.util.logging.Level;
-
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dep.datamodel.bean.aclf.AclfNetBean;
@@ -41,16 +39,15 @@ import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.AclfAdjustObjectFactory;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.adj.AclfAdjustControlMode;
 import com.interpss.core.aclf.adj.AclfAdjustControlType;
 import com.interpss.core.aclf.adj.SwitchedShunt;
-import com.interpss.core.aclf.adj.AclfAdjustControlMode;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.simu.util.sample.SampleTestingCases;
@@ -118,7 +115,7 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 		svc.setVSpecified(0.9);
 		svc.setBLimit(new LimitType(1.0, 0.0));
 		
-		IpssLogger.ipssLogger.setLevel(Level.INFO);
+		//IpssLogger.ipssLogger.setLevel(Level.INFO);
 		
 		//System.out.println(aclfNet.net2String());
 		// map back and forth through the bean model

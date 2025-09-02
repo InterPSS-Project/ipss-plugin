@@ -15,6 +15,9 @@ public class AclfResultAdapter {
 	public static Comparator<AclfBus> busVoltLowerComparator = 
 						(b1, b2) -> b1.getVoltageMag() > b2.getVoltageMag()? 1 : -1; 			
 
+	public static Comparator<AclfBranch> branchFlowHigherComparator = 
+						(b1, b2) -> b1.powerFrom2To().abs() < b2.powerFrom2To().abs()? 1 : -1; 
+								
 	private Comparator<AclfBus> busComparator = (b1, b2) -> 0;
 	private Comparator<AclfBranch> branchComparator = (b1, b2) -> 0;
 	private int numOfBusResults = MaxNumOfBusResults;

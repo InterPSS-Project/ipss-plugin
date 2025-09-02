@@ -28,7 +28,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.interpss.CorePluginFunction;
 import org.interpss.CorePluginTestSetup;
@@ -37,7 +36,6 @@ import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
@@ -85,7 +83,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 				.load()
 				.getImportedObj();
 
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 		
 	  	// process zero impedance branches in the network
 	  	net.setZeroZBranchThreshold(0.00001);
@@ -122,7 +120,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 				.load()
 				.getImportedObj();
 
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 		
 	  	// process zero impedance branches in the network
 		net.setZeroZBranchThreshold(0.00001);
@@ -158,7 +156,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 				.load()
 				.getImportedObj();
 
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 		
 	  	// process zero impedance branches in the network
 		net.setZeroZBranchThreshold(0.00001);
@@ -201,7 +199,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 				.load()
 				.getImportedObj();
 
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 		
 	  	// process zero impedance branches in the network
 		net.setZeroZBranchThreshold(0.00001);
