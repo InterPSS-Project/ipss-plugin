@@ -1,5 +1,7 @@
 package org.interpss.multiNet.unit;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
@@ -21,11 +23,9 @@ import org.interpss.numeric.util.PerformanceTimer;
 import org.interpss.odm.mapper.ODMDStabParserMapper;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -123,7 +123,7 @@ public class TestIEEE39_MultiNet3ph3seqDstab {
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(1);
 			
-			IpssLogger.getLogger().setLevel(Level.INFO);
+			//IpssLogger.getLogger().setLevel(Level.INFO);
 			
 			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus17",proc.getSubNetworkByBusId("Bus17"),SimpleFaultCode.GROUND_LG,new Complex(0,0),null,0.5d,0.05),"3phaseFault@Bus5");
 			
@@ -219,7 +219,7 @@ public class TestIEEE39_MultiNet3ph3seqDstab {
 			dstabAlgo.setOutPutPerSteps(5);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
 			
-			IpssLogger.getLogger().setLevel(Level.INFO);
+			//IpssLogger.getLogger().setLevel(Level.INFO);
 			
 			//dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus17",proc.getSubNetworkByBusId("Bus17"),SimpleFaultCode.GROUND_3P,new Complex(0,0),null,1.0d,0.05),"3phaseFault@Bus17");
 			

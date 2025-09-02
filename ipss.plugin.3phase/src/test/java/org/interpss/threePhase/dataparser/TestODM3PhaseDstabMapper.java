@@ -25,7 +25,6 @@ import org.interpss.threePhase.util.ThreePhaseAclfOutFunc;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -104,9 +103,9 @@ public class TestODM3PhaseDstabMapper {
 		dstabAlgo.setOutPutPerSteps(1);
 		//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 
-		IpssLogger.getLogger().setLevel(Level.WARNING);
+		//IpssLogger.getLogger().setLevel(Level.WARNING);
 
-		PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+		PerformanceTimer timer = new PerformanceTimer();
 
         // Must use this dynamic event process to modify the YMatrixABC
 		dstabAlgo.setDynamicEventHandler(new DynamicEventProcessor3Phase());
@@ -228,9 +227,9 @@ public class TestODM3PhaseDstabMapper {
 				dstabAlgo.setSimuOutputHandler(sm);
 				dstabAlgo.setOutPutPerSteps(1);
 
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 
-		PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+		PerformanceTimer timer = new PerformanceTimer();
 
 
 		if (dstabAlgo.initialization()) {

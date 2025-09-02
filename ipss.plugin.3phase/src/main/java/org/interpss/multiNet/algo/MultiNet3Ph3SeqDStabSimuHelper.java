@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.apache.commons.math3.complex.Complex;
+import org.interpss.multiNet.algo.powerflow.TDMultiNetPowerflowAlgorithm;
 import org.interpss.multiNet.equivalent.NetworkEquivUtil;
 import org.interpss.multiNet.equivalent.NetworkEquivalent;
 import org.interpss.numeric.datatype.Complex3x1;
@@ -15,8 +16,9 @@ import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.interpss.numeric.sparse.ISparseEqnComplexMatrix3x3;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.net.NetCoordinate;
 import com.interpss.core.sparse.impl.csj.CSJSparseEqnComplexMatrix3x3Impl;
@@ -42,6 +44,7 @@ import com.interpss.dstab.DStabBranch;
  *
  */
 public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHelper{
+	private static final Logger log = LoggerFactory.getLogger(MultiNet3Ph3SeqDStabSimuHelper.class);
 	
 	private Complex3x3[][] ZlAry = null;
 	private List<String> threePhModelingSubNetIdList = null; // should be provided after subnetwork creation 
@@ -267,7 +270,7 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
 	public boolean solveBoundarySubSystem() {
 		boolean flag =true;
     	// as the matrix is only updated when there is a network change, they can be prepared and updated only when necessary 
-    	// Note: preparation and update of Zl is done outside this method
+     // Note: preparation and update of Zl is done outside this method
     	
     	this.subNet3SeqCurrInjTable = new Hashtable<>();
     	
@@ -356,7 +359,8 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
     		
     	}
     	else{
-    		 IpssLogger.getLogger().severe("The boundary sub system [Zl] matrix is null");
+    		 //IpssLogger.getLogger().severe("The boundary sub system [Zl] matrix is null");
+    		 log.error("The boundary sub system [Zl] matrix is null");
     		 flag = false;
     	}
     	return flag;

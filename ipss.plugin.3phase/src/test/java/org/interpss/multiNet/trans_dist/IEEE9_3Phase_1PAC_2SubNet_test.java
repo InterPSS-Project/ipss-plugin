@@ -1,5 +1,8 @@
 package org.interpss.multiNet.trans_dist;
 
+import static com.interpss.core.funcImpl.AcscFunction.acscXfrAptr;
+import static org.junit.Assert.assertTrue;
+
 import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
@@ -27,11 +30,9 @@ import org.interpss.threePhase.dynamic.model.impl.SinglePhaseACMotor;
 import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.interpss.util.FileUtil;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
@@ -41,7 +42,6 @@ import com.interpss.core.acsc.XFormerConnectCode;
 import com.interpss.core.acsc.adpter.AcscXformerAdapter;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import static com.interpss.core.funcImpl.AcscFunction.acscXfrAptr;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.DStabilityNetwork;
@@ -122,7 +122,7 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
 	    MultiNet3Ph3SeqDStabSimuHelper  mNetHelper = new MultiNet3Ph3SeqDStabSimuHelper(dsNet,proc);
 	  
 		
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 		
 
         // TODO a special 3-phase 3seq dstab algorithm object, with the following two setting as default
@@ -151,9 +151,9 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
 		dstabAlgo.setOutPutPerSteps(1);
 		//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 		
-		IpssLogger.getLogger().setLevel(Level.WARNING);
+		//IpssLogger.getLogger().setLevel(Level.WARNING);
 		
-		PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+		PerformanceTimer timer = new PerformanceTimer();
 		
         StringBuffer sb = new StringBuffer();
         
@@ -441,9 +441,9 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
 		dstabAlgo.setOutPutPerSteps(1);
 		//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 		
-		IpssLogger.getLogger().setLevel(Level.WARNING);
+		//IpssLogger.getLogger().setLevel(Level.WARNING);
 		
-		PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+		PerformanceTimer timer = new PerformanceTimer();
 		
         StringBuffer sb = new StringBuffer();
         

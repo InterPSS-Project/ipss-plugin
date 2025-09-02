@@ -2,8 +2,6 @@ package org.interpss.threePhase.system;
 
 import static org.junit.Assert.assertTrue;
 
-import java.util.logging.Level;
-
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
@@ -20,7 +18,6 @@ import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
@@ -163,7 +160,7 @@ public class TwoBus_3Phase_Test {
 	public void testSolvNetwork() throws Exception{
 
 		IpssCorePlugin.init();
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 		DStabNetwork3Phase net = create2BusSys();
 
 		//net.initBusVoltage();
@@ -237,7 +234,7 @@ public class TwoBus_3Phase_Test {
 	public void testDstab() throws Exception{
 
 		IpssCorePlugin.init();
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 		DStabNetwork3Phase net = create2BusSys();
 
 
