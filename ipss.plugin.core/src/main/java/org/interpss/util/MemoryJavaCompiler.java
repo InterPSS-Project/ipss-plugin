@@ -55,19 +55,16 @@ import javax.tools.SimpleJavaFileObject;
 import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
 
-import org.interpss.display.AcscOutFunc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.interpss.common.CoreCommonFactory;
 
-import junit.framework.AssertionFailedError;
-
 /**
  * In-memory Java file compiler. The code is based test.net.java.privateer on java.net
  */
 public class MemoryJavaCompiler {
-	private static final Logger log = LoggerFactory.getLogger(AcscOutFunc.class);
+	private static final Logger log = LoggerFactory.getLogger(MemoryJavaCompiler.class);
 	
 	private static Map<String, Class<?>> classMap = new HashMap<String, Class<?>>();
 	private static JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
