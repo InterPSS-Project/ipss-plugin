@@ -1,7 +1,5 @@
 package org.interpss.threePhase.dynamic.algo;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
-
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.NumericConstant;
 import org.interpss.numeric.datatype.Complex3x1;
@@ -26,8 +24,12 @@ import com.interpss.dstab.devent.GenerationTripEvent;
 import com.interpss.dstab.devent.LoadChangeEvent;
 import com.interpss.dstab.device.DynamicBusDevice;
 import com.interpss.dstab.dynLoad.DynLoadModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DynamicEventProcessor3Phase extends DynamicEventProcessor {
+
+    private static final Logger log = LoggerFactory.getLogger(DynamicEventProcessor3Phase.class);
 
 	protected DStabNetwork3Phase net = null;
 	/**
@@ -69,9 +71,7 @@ public class DynamicEventProcessor3Phase extends DynamicEventProcessor {
 					} catch (Exception e1) {
 						e1.printStackTrace();
 					}
-
-
-					ipssLogger.fine("Reset Ymatrix for event applying");
+					log.debug("Reset Ymatrix for event applying");
 
 					// apply those events which result in adding z to Y-matrix,
 					// such as applying fault Z
@@ -80,7 +80,7 @@ public class DynamicEventProcessor3Phase extends DynamicEventProcessor {
 							try{
 								applyDynamicEventAfter(dEvent, t);
 							} catch (IpssNumericException e) {
-								ipssLogger.severe(e.toString());
+								log.error(e.toString());
 								return false;
 							}
 						}

@@ -37,7 +37,6 @@ import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
@@ -558,9 +557,9 @@ public class TestTnD_IEEE39_Feeder {
 				dstabAlgo.setOutPutPerSteps(1);
 				//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 				
-				IpssLogger.getLogger().setLevel(Level.WARNING);
+				//IpssLogger.getLogger().setLevel(Level.WARNING);
 				
-				PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+				PerformanceTimer timer = new PerformanceTimer();
 				
 		        // Must use this dynamic event process to modify the YMatrixABC
 //				dstabAlgo.setDynamicEventHandler(new DynamicEventProcessor3Phase());
@@ -893,9 +892,9 @@ public class TestTnD_IEEE39_Feeder {
 				dstabAlgo.setOutPutPerSteps(5);
 				//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 				
-				IpssLogger.getLogger().setLevel(Level.WARNING);
+				//IpssLogger.getLogger().setLevel(Level.WARNING);
 				
-				PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+				PerformanceTimer timer = new PerformanceTimer();
 				
 				timer.start();
 				
