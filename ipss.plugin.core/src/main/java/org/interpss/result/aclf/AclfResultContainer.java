@@ -25,10 +25,12 @@ public class AclfResultContainer extends AclfNetInfo {
 		this.hvdcResults = new LinkedList<>();
 	}
 	
-	public AclfResultContainer(String networkId, String networkName, String caseDescription, int numberOfBuses,
-			int numberOfBranches, boolean loadflowConverged, Complex maxMismatch, Complex totalGeneration,
-			Complex totalLoad) {
-		super(networkId, networkName, caseDescription, numberOfBuses, numberOfBranches, loadflowConverged, 
+	public AclfResultContainer(String networkId, String networkName, String caseDescription, 
+			int numberOfBuses, int numberOfBranches, 
+			boolean loadflowConverged, Complex maxMismatch, 
+			Complex totalGeneration, Complex totalLoad) {
+		super(networkId, networkName, caseDescription, 
+				numberOfBuses, numberOfBranches, loadflowConverged, 
 				maxMismatch, totalGeneration, totalLoad);
 		this.busResults = new LinkedList<>();
 		this.svcResults = new LinkedList<>();
