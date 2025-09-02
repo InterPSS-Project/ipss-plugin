@@ -37,7 +37,6 @@ import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.abc.Static3PXformer;
 import com.interpss.core.aclf.AclfBranchCode;
@@ -72,7 +71,7 @@ public class ThreeBus_3Phase_Test {
 	public void testYMatrixabc() throws Exception{
 
 		IpssCorePlugin.init();
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 
 		DStabNetwork3Phase net = create3BusSys();
 
@@ -220,7 +219,7 @@ public class ThreeBus_3Phase_Test {
 	public void testDstab3Phase() throws Exception{
 
 		IpssCorePlugin.init();
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 		DStabNetwork3Phase net = create3BusSys();
 
 
@@ -269,7 +268,7 @@ public class ThreeBus_3Phase_Test {
 	public void test_3busfeeder_unbalanced_dstab() throws Exception{
 
 		IpssCorePlugin.init();
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 		DStabNetwork3Phase net = create3BusFeeder_unbalanced();
 
 		DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(net);
@@ -416,7 +415,7 @@ public class ThreeBus_3Phase_Test {
 	public void testSolvNetwork() throws Exception{
 
 		IpssCorePlugin.init();
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 
 		DStabNetwork3Phase net = create3BusSys();
 
