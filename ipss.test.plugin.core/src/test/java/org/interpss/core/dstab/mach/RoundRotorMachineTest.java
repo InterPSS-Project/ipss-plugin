@@ -29,7 +29,6 @@ import static org.junit.Assert.assertTrue;
 import org.interpss.display.AclfOutFunc;
 import org.junit.Test;
 
-import com.interpss.common.datatype.Constants;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;

@@ -20,7 +20,6 @@ import org.interpss.util.FileUtil;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.dstab.BaseDStabNetwork;
@@ -94,9 +93,9 @@ public class SMIB_Gen_Test extends TestSetupBase{
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
 		
-		IpssLogger.getLogger().setLevel(Level.FINE);
+		//IpssLogger.getLogger().setLevel(Level.FINE);
 		
-		PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+		PerformanceTimer timer = new PerformanceTimer();
 		
 		//for(int i =1; i<20;i++){
 			
@@ -204,9 +203,9 @@ public class SMIB_Gen_Test extends TestSetupBase{
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
 		
-		IpssLogger.getLogger().setLevel(Level.FINE);
+		//IpssLogger.getLogger().setLevel(Level.FINE);
 		
-		PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+		PerformanceTimer timer = new PerformanceTimer();
 		
 		//for(int i =1; i<20;i++){
 			
@@ -314,9 +313,9 @@ public class SMIB_Gen_Test extends TestSetupBase{
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
 		
-		IpssLogger.getLogger().setLevel(Level.FINE);
+		//IpssLogger.getLogger().setLevel(Level.FINE);
 		
-		PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+		PerformanceTimer timer = new PerformanceTimer();
 		
 		//for(int i =1; i<20;i++){
 			
@@ -414,9 +413,9 @@ public class SMIB_Gen_Test extends TestSetupBase{
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
 		
-		IpssLogger.getLogger().setLevel(Level.FINE);
+		//IpssLogger.getLogger().setLevel(Level.FINE);
 		
-		PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+		PerformanceTimer timer = new PerformanceTimer();
 		
 		//for(int i =1; i<20;i++){
 			
@@ -528,9 +527,9 @@ public class SMIB_Gen_Test extends TestSetupBase{
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
 		
-		IpssLogger.getLogger().setLevel(Level.FINE);
+		//IpssLogger.getLogger().setLevel(Level.FINE);
 		
-		PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+		PerformanceTimer timer = new PerformanceTimer();
 		
 		//for(int i =1; i<20;i++){
 			

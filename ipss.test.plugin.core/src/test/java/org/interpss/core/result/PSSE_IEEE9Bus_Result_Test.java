@@ -68,7 +68,7 @@ public class PSSE_IEEE9Bus_Result_Test extends CorePluginTestSetup {
   		
   		// turn the results into a string
   		String resultStr = results.toString();
-  		System.out.println("Higher Voltage: \n" + resultStr);
+  		//System.out.println("Higher Voltage: \n" + resultStr);
   		
   		// write the results to a file
   		//FileUtil.writeText2File("output/ieee9_v31_result.json", resultStr);
@@ -99,7 +99,38 @@ public class PSSE_IEEE9Bus_Result_Test extends CorePluginTestSetup {
   		
   		// turn the results into a string
   		String resultStr = results.toString();
-  		System.out.println("Lower Voltage: \n" + resultStr);
+  		//System.out.println("Lower Voltage: \n" + resultStr);
+  		
+  		// write the results to a file
+  		//FileUtil.writeText2File("output/ieee9_v31_result.json", resultStr);
+	}
+	
+	@Test
+	public void testHighFlow() throws Exception {
+		// load the test data V33
+		AclfNetwork netV33 = IpssAdapter.importAclfNet("testData/adpter/psse/v31/ieee9_v31.raw")
+				.setFormat(PSSE)
+				.setPsseVersion(PsseVersion.PSSE_31) 
+				.load()
+				.getImportedObj();
+		
+	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(netV33);
+	  	algo.loadflow();
+	  	
+  		assertTrue(netV33.isLfConverged());
+  		
+  		AclfResultContainer results = new AclfResultAdapter()
+  				.branchComparator(AclfResultAdapter.branchFlowHigherComparator)
+  				.numOfBranchResults(5)
+  				.accept(netV33);
+  		
+  		assertTrue("Loadflow converged", results.isLoadflowConverged());
+  		assertTrue("", results.getBusResults().size() == 9);
+  		assertTrue(""+results.getBranchResults().size(), results.getBranchResults().size() == 5);
+  		
+  		// turn the results into a string
+  		String resultStr = results.toString();
+  		System.out.println("Higher Branch Flow: \n" + resultStr);
   		
   		// write the results to a file
   		//FileUtil.writeText2File("output/ieee9_v31_result.json", resultStr);
