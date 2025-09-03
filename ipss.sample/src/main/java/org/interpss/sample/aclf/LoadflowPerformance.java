@@ -48,7 +48,7 @@ public class LoadflowPerformance {
 	  	timer.start();
 		AclfNetwork adjNet = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testData/UCTE_2000_WinterOffPeak.ieee")
+				.load("ipss-plugin/ipss.sample/testData/UCTE_2000_WinterOffPeak.ieee")
 				.getAclfNet();		  	
 	  	timer.logStd("Time for loading the case: ");
 
