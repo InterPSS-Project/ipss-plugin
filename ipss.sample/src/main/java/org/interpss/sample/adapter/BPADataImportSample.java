@@ -1,20 +1,19 @@
 package org.interpss.sample.adapter;
 
-import static org.interpss.CorePluginFunction.aclfResultBusStyle;
-
 import org.ieee.odm.adapter.IODMAdapter;
 import org.ieee.odm.adapter.bpa.BPAAdapter;
 import org.ieee.odm.model.aclf.AclfModelParser;
+import static org.interpss.CorePluginFunction.aclfResultBusStyle;
 import org.interpss.IpssCorePlugin;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
 
-import com.interpss.simu.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
+import com.interpss.simu.SimuObjectFactory;
 
 public class BPADataImportSample {
 
@@ -22,7 +21,7 @@ public class BPADataImportSample {
 		IpssCorePlugin.init();
 		
 		IODMAdapter adapter = new BPAAdapter();
-		adapter.parseInputFile("testData/bpa/07c_0615_notBE.dat"); 
+		adapter.parseInputFile("ipss-plugin/ipss.sample/testData/bpa/07c_0615_notBE.dat"); 
 		
 		AclfModelParser parser=(AclfModelParser) adapter.getModel();
 		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.ACLF_NETWORK);
