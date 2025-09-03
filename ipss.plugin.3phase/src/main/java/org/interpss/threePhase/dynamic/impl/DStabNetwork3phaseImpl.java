@@ -1,6 +1,5 @@
 package org.interpss.threePhase.dynamic.impl;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
 import static org.interpss.threePhase.util.ThreePhaseUtilFunction.threePhaseInductionMotorAptr;
 
 import java.util.Hashtable;
@@ -24,7 +23,6 @@ import org.interpss.threePhase.dynamic.model.DynLoadModel3Phase;
 import org.interpss.threePhase.util.ThreeSeqLoadProcessor;
 
 import com.interpss.common.datatype.Constants;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.BaseAclfBus;
@@ -41,7 +39,12 @@ import com.interpss.dstab.device.DynamicBusDevice;
 import com.interpss.dstab.dynLoad.DynLoadModel;
 import com.interpss.dstab.impl.BaseDStabNetworkImpl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DStab3PBranch> implements DStabNetwork3Phase {
+
+    private static final Logger log = LoggerFactory.getLogger(DStabNetwork3phaseImpl.class);
 
 	protected ISparseEqnComplexMatrix3x3 yMatrixAbc = null;
 	protected boolean is3PhaseNetworkInitialized = false;
@@ -247,17 +250,17 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 
 				    if(yii.aa.abs()<yiiMinTolerance){
 				    	yii.aa = new Complex(1.0,0);
-				    	IpssLogger.getLogger().info("Bus : "+b.getId()+": abs of Yii.aa of is less than 1.0E-8, changed to 1.0 ");
+				    	log.info("Bus : {}: abs of Yii.aa of is less than 1.0E-8, changed to 1.0 ", b.getId());
 				    }
 
 				    if(yii.bb.abs()<yiiMinTolerance){
 				    	yii.bb = new Complex(1.0,0);
-				    	IpssLogger.getLogger().info("Bus : "+b.getId()+": abs of Yii.bb of is less than 1.0E-8, changed to 1.0 ");
+				    	log.info("Bus : {}: abs of Yii.bb of is less than 1.0E-8, changed to 1.0 ", b.getId());
 				    }
 
 				    if(yii.cc.abs()<yiiMinTolerance){
 				    	yii.cc = new Complex(1.0,0);
-				    	IpssLogger.getLogger().info("Bus : "+b.getId()+": abs of Yii.cc of is less than 1.0E-8, changed to 1.0 ");
+				    	log.info("Bus : {}: abs of Yii.cc of is less than 1.0E-8, changed to 1.0 ", b.getId());
 				    }
 
 					yMatrixAbc.setA( yii,i, i);
@@ -468,7 +471,7 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 
   		}
   		catch (IpssNumericException e) {
-  			ipssLogger.severe(e.toString());
+  			log.error(e.toString());
   			return false;
   		}
 
@@ -478,7 +481,7 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 	@Override
 	public boolean initDStabNet() {
 		boolean initFlag = true;
-		IpssLogger.getLogger().info("Start three-phase DStabNetwork initialization...");
+		log.info("Start three-phase DStabNetwork initialization...");
 
 
 	  	//TODO this is a must step, otherwise the system cannot be initialized properly
@@ -542,7 +545,7 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 
 							// check the value of totalDynLoadPercent, it must be <=100.0; otherwise rescale it down to 100.
 							if(totalDynLoadPercent>100.0){
-								ipssLogger.severe("The total dynamic loads accout for more than 100% of the bus load. Rescaled down to 100%");
+								log.error("The total dynamic loads accout for more than 100% of the bus load. Rescaled down to 100%");
 								for(Object obj :bus.getDynLoadModelList()){
 									DynLoadModel load = (DynLoadModel)obj;
 									if(load.isActive()){

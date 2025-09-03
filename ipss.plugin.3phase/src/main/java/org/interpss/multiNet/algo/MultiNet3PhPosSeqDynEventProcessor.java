@@ -1,7 +1,5 @@
 package org.interpss.multiNet.algo;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
-
 import java.util.List;
 
 import org.apache.commons.math3.complex.Complex;
@@ -18,10 +16,13 @@ import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.datatype.DStabSimuTimeEvent;
 import com.interpss.dstab.devent.DynamicSimuEvent;
 import com.interpss.dstab.devent.DynamicSimuEventType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MultiNet3PhPosSeqDynEventProcessor extends
 		MultiNetDynamicEventProcessor {
    
+    private static final Logger log = LoggerFactory.getLogger(MultiNet3PhPosSeqDynEventProcessor.class);
 	private List<String> threePhaseSubNetIdList =null;
 	private BaseDStabNetwork<?,?> faultSubNet =null;
 	public MultiNet3PhPosSeqDynEventProcessor(
@@ -97,7 +98,7 @@ public class MultiNet3PhPosSeqDynEventProcessor extends
 					         }
 					}
 					        
-					ipssLogger.fine("Reset Ymatrix for event applying");
+					log.debug("Reset Ymatrix for event applying");
 
 					// apply those events which result in adding z to Y-matrix,
 					// such as applying fault Z
@@ -106,7 +107,7 @@ public class MultiNet3PhPosSeqDynEventProcessor extends
 							try{
 								applyDynamicEventAfter(dEvent, t);
 							} catch (IpssNumericException e) {
-								ipssLogger.severe(e.toString());
+								log.error(e.toString());
 								return false;
 							}
 						}

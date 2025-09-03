@@ -5,8 +5,8 @@ import org.apache.commons.math3.linear.FieldMatrix;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
-import org.interpss.numeric.matrix.ComplexMatrixEqn;
-import org.interpss.numeric.matrix.MatrixUtil;
+import org.interpss.numeric.matrix.ComplexFullMatrixEqn;
+import org.interpss.numeric.matrix.FullMatrixUtil;
 
 import com.interpss.core.net.NetCoordinate;
 import com.interpss.core.net.NetEquivType;
@@ -16,7 +16,7 @@ public class NetworkEquivalent {
 		 
 	private  NetEquivType type = NetEquivType.THEVENIN;
 	
-	private ComplexMatrixEqn complexEqn = null;
+	private ComplexFullMatrixEqn complexEqn = null;
     
 	// three-sequence or three-phase
 	private Complex3x1[] source3x1 = null;
@@ -35,7 +35,7 @@ public class NetworkEquivalent {
 	 * @param dim  the number of equivalent port/bus 
 	 */
 	public NetworkEquivalent(int dim){
-		this.complexEqn = new ComplexMatrixEqn(dim);
+		this.complexEqn = new ComplexFullMatrixEqn(dim);
 	}
 	
 	public NetworkEquivalent(int dim, NetCoordinate equivCoordinate,NetEquivType type){
@@ -60,20 +60,20 @@ public class NetworkEquivalent {
 		this.type = type;
 	}
 	
-	public ComplexMatrixEqn getComplexEqn() {
+	public ComplexFullMatrixEqn getComplexEqn() {
 		return this.complexEqn;
 	}	
 
 	
 	public Complex3x1[] getSource3x1() {
 		if(this.source3x1 ==null)
-			this.source3x1 = MatrixUtil.createComplex3x1DArray(this.complexEqn.getDimension());
+			this.source3x1 = FullMatrixUtil.createComplex3x1DArray(this.complexEqn.getDimension());
 		return source3x1;
 	}
 	
 	public Complex[] getSource() {
 		if(this.source ==null)
-			this.source = MatrixUtil.createComplex1DArray(this.complexEqn.getDimension());
+			this.source = FullMatrixUtil.createComplex1DArray(this.complexEqn.getDimension());
 		return source;
 	}
 	
@@ -94,7 +94,7 @@ public class NetworkEquivalent {
 	
 	public Complex[][] getMatrix() {
 		if (matrix ==null)
-		     matrix = MatrixUtil.createComplex2DArray(this.complexEqn.getDimension(), this.complexEqn.getDimension());
+		     matrix = FullMatrixUtil.createComplex2DArray(this.complexEqn.getDimension(), this.complexEqn.getDimension());
 		
 		return matrix;
 	}

@@ -48,7 +48,7 @@ public class SubNetCloneSample {
 		System.out.println("BusIdSet size: " + busIdSet.size());
   
 		// create a cloned subNet
-		AclfNetwork cloneNet = net.createSubNet(busIdSet, false /*equivHvdc*/);
+		AclfNetwork cloneNet = net.createSubNet(busIdSet, false, false /*equivHvdc*/);
 		
 		LoadflowAlgorithm algoClone = CoreObjectFactory.createLoadflowAlgorithm(cloneNet);
 		algoClone.setLfMethod(AclfMethodType.NR);
