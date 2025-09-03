@@ -21,8 +21,8 @@ public class ParallelContingencyAnalyzer25kTest {
     public static void main(String[] args) {
         try {
             // Initialize InterPSS
-            IpssCorePlugin.init();
-            IpssLogger.getLogger().setLevel(Level.INFO);
+           // IpssCorePlugin.init();
+           // IpssLogger.getLogger().setLevel(Level.INFO);
             
             System.out.println("=== Large-Scale Parallel Contingency Analysis Test ===");
             System.out.println("Testing with ACTIVSg25k bus system (25,000+ buses)");
@@ -32,7 +32,10 @@ public class ParallelContingencyAnalyzer25kTest {
             long loadStartTime = System.currentTimeMillis();
             System.out.println("Loading ACTIVSg25k network...");
             
-            AclfNetwork net = IpssAdapter.importAclfNet("ipss-plugin/ipss.test.plugin.core/testData/psse/v33/ACTIVSg25k.RAW")
+            String filename = "ipss-plugin/ipss.test.plugin.core/testData/psse/v33/ACTIVSg25k.RAW";
+            //String filename = "testData/psse/v33/ACTIVSg25k.RAW";
+
+            AclfNetwork net = IpssAdapter.importAclfNet(filename)
                     .setFormat(PSSE)
                     .setPsseVersion(IpssAdapter.PsseVersion.PSSE_33) 
                     .load()
