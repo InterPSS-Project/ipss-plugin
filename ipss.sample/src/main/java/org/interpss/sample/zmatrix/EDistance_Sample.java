@@ -147,7 +147,7 @@ public class EDistance_Sample {
 
 	
 	public static AclfNetwork getSampleNet() throws InterpssException {
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/ieee14.ieee")
+		AclfNetwork net = IpssAdapter.importAclfNet("ipss-plugin/ipss.sample/testData/ieee14.ieee")
 				.setFormat(IpssAdapter.FileFormat.IEEECommonFormat)
 				.load()
 				.getImportedObj();		
