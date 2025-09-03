@@ -1,11 +1,6 @@
 package sample.contingency;
 
-import java.util.logging.Level;
-
-import org.interpss.IpssCorePlugin;
 import org.interpss.plugin.contingency.ParallelContingencyAnalyzer;
-
-import com.interpss.common.util.IpssLogger;
 
 /**
  * Simple test to verify ParallelContingencyAnalyzer compiles and basic functionality works.
@@ -15,8 +10,8 @@ public class ParallelContingencyAnalyzerTest {
     public static void main(String[] args) {
         try {
             // Initialize InterPSS
-            IpssCorePlugin.init();
-            IpssLogger.getLogger().setLevel(Level.INFO);
+            //IpssCorePlugin.init();
+            //IpssLogger.getLogger().setLevel(Level.INFO);
             
             System.out.println("=== ParallelContingencyAnalyzer Test ===");
             
