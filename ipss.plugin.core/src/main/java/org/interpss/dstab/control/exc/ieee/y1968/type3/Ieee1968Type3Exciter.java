@@ -1,4 +1,4 @@
- /*
+/*
   * @(#)Ieee1968Type3Exciter.java   
   *
   * Copyright (C) 2006 www.interpss.org
@@ -29,7 +29,7 @@ import java.lang.reflect.Field;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.LimitType;
 
-import com.interpss.common.util.IpssLogger;
+import com.interpss.common.exp.InterpssException;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.controller.cml.annotate.AnController;
 import com.interpss.dstab.controller.cml.annotate.AnControllerField;
@@ -41,6 +41,8 @@ import com.interpss.dstab.controller.cml.field.block.WashoutControlBlock;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.mach.MachineIfdBase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @AnController(
 		   input="this.refPoint - mach.vt + pss.vs - this.washoutBlock.y",
@@ -48,6 +50,7 @@ import com.interpss.dstab.mach.MachineIfdBase;
 		   refPoint="this.kaDelayBlock.u0 - pss.vs + mach.vt + this.washoutBlock.y",
 		   display= {})
 public class Ieee1968Type3Exciter extends AnnotateExciter {
+    private static final Logger log = LoggerFactory.getLogger(Ieee1968Type3Exciter.class);
 	   public double ka = 50.0, ta = 0.05, vrmax = 10.0, vrmin = 0.0;
 	   @AnControllerField(
 	      type= CMLFieldEnum.ControlBlock,
@@ -69,12 +72,12 @@ public class Ieee1968Type3Exciter extends AnnotateExciter {
 	      @Override
 		public boolean initStateY0(double y0) {
 	         if ( y0 > vbmax || y0 < 0.0) {
-	            IpssLogger.getLogger().warning("CustomBlock init problem: y0 > vbmax or y0 < 0.0");
+	            log.warn("CustomBlock init problem: y0 > vbmax or y0 < 0.0");
 	            return false;
 	         }
 	         double x = calFunc();
 	         if ( this.A_gt_1 && y0 != 0.0 ) {
-	        	 IpssLogger.getLogger().warning("CustomBlock init problem: A > 1 and y0 != 0.0");
+             log.warn("CustomBlock init problem: A > 1 and y0 != 0.0");
 	            return false;         
 	         }
 	         this.u = y0 - x;
@@ -223,4 +226,3 @@ public class Ieee1968Type3Exciter extends AnnotateExciter {
 	public Object getFieldObject(Field field) throws Exception {
     	return field.get(this);    }
 } // SimpleExciter
-

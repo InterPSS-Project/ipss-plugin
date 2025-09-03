@@ -4,7 +4,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.ComplexFunc;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
-import org.interpss.numeric.util.SpraseEqnUtil;
+import org.interpss.numeric.util.CSJSpraseEqnUtil;
 
 import com.interpss.core.sparse.impl.csj.CSJSparseEqnComplexImpl;
 
@@ -70,7 +70,7 @@ public class ComplexSparseMatrix {
 	}
 	
 	public static void sample3() {
-		ISparseEqnComplex m = new CSJSparseEqnComplexImpl(2, 2);
+		CSJSparseEqnComplexImpl m = new CSJSparseEqnComplexImpl(2, 2);
 		
 		Complex  a11 = new Complex( 1.0, 1.1 ),
 			     a12 = new Complex( 3.1, 4.1 ),
@@ -88,7 +88,7 @@ public class ComplexSparseMatrix {
 		xAry[0] = b1;
 		xAry[1] = b2;
 		
-		DZcsa dAry = SpraseEqnUtil.ComplexAry2DZcsa(xAry);
+		DZcsa dAry = CSJSpraseEqnUtil.ComplexAry2DZcsa(xAry);
 		
 		DZcsa y = m.multiply(dAry);
 		//System.out.println("\n\nSample 3 output: ");

@@ -2,30 +2,17 @@ package org.interpss.core.dstab.dynLoad;
 
 import static org.junit.Assert.assertTrue;
 
-import java.util.logging.Level;
-
-import org.apache.commons.math3.complex.Complex;
 import org.interpss.core.dstab.mach.TestSetupBase;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.dstab.dynLoad.InductionMotor;
 import org.interpss.dstab.dynLoad.impl.InductionMotorImpl;
-import org.interpss.numeric.datatype.Unit.UnitType;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
-import com.interpss.core.CoreObjectFactory;
-import com.interpss.core.aclf.AclfBranchCode;
-import com.interpss.core.aclf.AclfGenCode;
-import com.interpss.core.aclf.AclfLoadCode;
-import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
-import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.algo.sc.ScBusModelType;
-import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabBus;
-import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
@@ -33,8 +20,6 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.cache.StateMonitor.DynDeviceType;
 import com.interpss.dstab.cache.StateMonitor.MonitorRecord;
-import com.interpss.dstab.mach.EConstMachine;
-import com.interpss.dstab.mach.MachineModelType;
 
 public class TestInductionMotorModel extends TestSetupBase {
 	
@@ -89,7 +74,7 @@ public class TestInductionMotorModel extends TestSetupBase {
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
 		
-		IpssLogger.getLogger().setLevel(Level.FINE);
+		//IpssLogger.getLogger().setLevel(Level.FINE);
 		
 		
 		if (dstabAlgo.initialization()) {
@@ -190,7 +175,7 @@ public class TestInductionMotorModel extends TestSetupBase {
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(1);
 			
-			IpssLogger.getLogger().setLevel(Level.FINE);
+			//IpssLogger.getLogger().setLevel(Level.FINE);
 			
 			
 			if (dstabAlgo.initialization()) {
@@ -279,7 +264,7 @@ public class TestInductionMotorModel extends TestSetupBase {
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
 		
-		IpssLogger.getLogger().setLevel(Level.FINE);
+		//IpssLogger.getLogger().setLevel(Level.FINE);
 		
 		
 		if (dstabAlgo.initialization()) {
@@ -362,7 +347,7 @@ public class TestInductionMotorModel extends TestSetupBase {
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
 		
-		IpssLogger.getLogger().setLevel(Level.FINE);
+		//IpssLogger.getLogger().setLevel(Level.FINE);
 		
 		
 		if (dstabAlgo.initialization()) {

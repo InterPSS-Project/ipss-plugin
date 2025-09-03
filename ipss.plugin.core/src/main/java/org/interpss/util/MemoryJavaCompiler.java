@@ -24,8 +24,6 @@
 
 package org.interpss.util;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
-
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -57,13 +55,17 @@ import javax.tools.SimpleJavaFileObject;
 import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.interpss.common.CoreCommonFactory;
-import com.interpss.common.util.IpssLogger;
 
 /**
  * In-memory Java file compiler. The code is based test.net.java.privateer on java.net
  */
 public class MemoryJavaCompiler {
+	private static final Logger log = LoggerFactory.getLogger(MemoryJavaCompiler.class);
+	
 	private static Map<String, Class<?>> classMap = new HashMap<String, Class<?>>();
 	private static JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
@@ -87,7 +89,7 @@ public class MemoryJavaCompiler {
 		//System.out.println(code);
 		MemoryJavaCompiler c = new MemoryJavaCompiler();
 		try {
-			ipssLogger.info("In memory compile Java code, " + name);
+			log.info("In memory compile Java code, " + name);
 			Class<?> klass = c.compileSource(name, code, c
 					.getDefaultClassLoader());
 			if (klass != null)
@@ -96,7 +98,7 @@ public class MemoryJavaCompiler {
 				throw new Exception(
 						"In memory Java compile problem, please constant InterPSS Support");
 		} catch (Exception e) {
-			IpssLogger.logErr(e);
+			log.error(e.toString());
 			return null;
 		}
 	}
@@ -127,7 +129,7 @@ public class MemoryJavaCompiler {
 		try {
 			Class.forName("javax.tools.ToolProvider");
 		} catch (final ClassNotFoundException e) {
-			ipssLogger.severe("Require Java 1.6 or later." + e.toString());
+			log.error("Require Java 1.6 or later." + e.toString());
 			return false;
 		}
 		return true;
@@ -205,7 +207,7 @@ public class MemoryJavaCompiler {
 
 		//If not running on JDK, compiler will be null
 		if (compiler == null) {
-			ipssLogger.severe(
+			log.error(
 							"Compiler not available.  This may happen if "
 									+ "running on JRE instead of JDK.  Please use a full "
 									+ "JDK to run tests.  "

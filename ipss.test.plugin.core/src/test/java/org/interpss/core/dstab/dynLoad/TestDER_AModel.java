@@ -3,24 +3,16 @@ package org.interpss.core.dstab.dynLoad;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.util.logging.Level;
-
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.core.dstab.mach.TestSetupBase;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.dstab.dynLoad.DER_A_PosSeq;
-import org.interpss.dstab.dynLoad.DynLoadCMPLDW;
-import org.interpss.dstab.dynLoad.DynLoadCMPLDWG;
 import org.interpss.dstab.dynLoad.impl.DER_A_PosSeqImpl;
-import org.interpss.dstab.dynLoad.impl.DynLoadCMPLDWGImpl;
-import org.interpss.dstab.dynLoad.impl.DynLoadCMPLDWImpl;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.core.algo.sc.ScBusModelType;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.DStabObjectFactory;
@@ -82,7 +74,7 @@ public class TestDER_AModel extends TestSetupBase {
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
 
-		IpssLogger.getLogger().setLevel(Level.FINE);
+		//IpssLogger.getLogger().setLevel(Level.FINE);
 
 		
 		if (dstabAlgo.initialization()) {

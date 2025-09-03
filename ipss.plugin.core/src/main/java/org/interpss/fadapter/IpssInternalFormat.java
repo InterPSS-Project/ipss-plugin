@@ -1,4 +1,4 @@
- /*
+/*
   * @(#)IpssInternalFormat.java   
   *
   * Copyright (C) 2006 www.interpss.org
@@ -24,8 +24,6 @@
 
 package org.interpss.fadapter;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -46,8 +44,11 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 import com.interpss.simu.SimuObjectFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class IpssInternalFormat extends IpssFileAdapterBase {
+    private static final Logger logger = LoggerFactory.getLogger(IpssInternalFormat.class);
 	public IpssInternalFormat(IPSSMsgHub msgHub) {
 		super(msgHub);
 	}	
@@ -77,7 +78,7 @@ public class IpssInternalFormat extends IpssFileAdapterBase {
 	  		simuCtx.setName(filepath.substring(filepath.lastIndexOf(File.separatorChar)+1));
 	  		simuCtx.setDesc("This project is created by input file " + filepath);
 		} catch (Exception e) {
-			ipssLogger.severe(e.toString());
+			logger.error(e.toString(), e);
 			throw new InterpssException(e.toString());
 		}
 	}
@@ -114,7 +115,7 @@ public class IpssInternalFormat extends IpssFileAdapterBase {
 	        out.close();
 	        return r;
 		} catch (Exception e) {
-			ipssLogger.severe(e.toString());
+			logger.error(e.toString(), e);
 			throw new InterpssException(e.toString());
 		}
    }

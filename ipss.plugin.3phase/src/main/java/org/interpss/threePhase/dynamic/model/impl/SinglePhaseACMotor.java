@@ -6,8 +6,9 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.dynamic.model.DynLoadModel1Phase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.interpss.common.util.IpssLogger;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.common.DStabOutSymbol;
 /**
@@ -53,7 +54,6 @@ import com.interpss.dstab.common.DStabOutSymbol;
  *
  */
 public class SinglePhaseACMotor extends DynLoadModel1Phase {
-
 
 
 	   //Model data
@@ -216,6 +216,8 @@ public class SinglePhaseACMotor extends DynLoadModel1Phase {
 
 		private boolean debugMode = false;
 
+		private static final Logger log = LoggerFactory.getLogger(SinglePhaseACMotor.class);
+
 
 		public SinglePhaseACMotor(){
 			states = new Hashtable<>();
@@ -286,7 +288,7 @@ public class SinglePhaseACMotor extends DynLoadModel1Phase {
 			// if mva is not defined and loading factor is available
 			if(this.getMvaBase()==0.0){
 				if(this.loadFactor >0 && this.loadFactor<=1.0) {
-					IpssLogger.getLogger().fine("AC motor MVABase will be calculated based on load factor");
+					log.debug("AC motor MVABase will be calculated based on load factor");
 				} else {
 					this.loadFactor = 1.0;
 				}
@@ -750,21 +752,18 @@ public class SinglePhaseACMotor extends DynLoadModel1Phase {
 		@Override
 		public boolean changeLoad(double factor) {
 			if (factor < -1.0){
-				IpssLogger.getLogger().severe(" percentageFactor < -1.0, this change will not be applied");
+				log.error(" percentageFactor < -1.0, this change will not be applied");
 				return false;
 			}
 			if (this.accumulatedLoadChangeFactor <= -1.0 &&  factor < 0.0) {
-				IpssLogger.getLogger().severe( "this.accumulatedLoadChangeFactor<=-1.0 and percentageFactor < 0.0, this change will not be applied");
+				log.error("this.accumulatedLoadChangeFactor<=-1.0 and percentageFactor < 0.0, this change will not be applied");
 			}
-
 			this.accumulatedLoadChangeFactor = this.accumulatedLoadChangeFactor + factor;
-
 			if (this.accumulatedLoadChangeFactor < -1.0){
-				IpssLogger.getLogger().severe( "the accumulatedLoadChangeFactor is less than -1.0 after this change, so the accumulatedLoadChangeFactor is reset to -1.0");
+				log.error("the accumulatedLoadChangeFactor is less than -1.0 after this change, so the accumulatedLoadChangeFactor is reset to -1.0");
 				this.accumulatedLoadChangeFactor = -1.0;
 			}
-			IpssLogger.getLogger().info("accumulated Load Change Factor = "+ this.accumulatedLoadChangeFactor);
-
+			log.info("accumulated Load Change Factor = "+ this.accumulatedLoadChangeFactor);
 			return true;
 		}
 

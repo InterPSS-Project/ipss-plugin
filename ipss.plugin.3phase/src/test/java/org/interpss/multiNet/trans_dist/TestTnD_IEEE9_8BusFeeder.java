@@ -1,5 +1,8 @@
 package org.interpss.multiNet.trans_dist;
 
+import static com.interpss.core.funcImpl.AcscFunction.acscXfrAptr;
+import static org.junit.Assert.assertTrue;
+
 import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
@@ -31,11 +34,9 @@ import org.interpss.threePhase.dynamic.model.impl.SinglePhaseACMotor;
 import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
 import org.interpss.threePhase.powerflow.impl.DistPowerFlowOutFunc;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
@@ -47,7 +48,6 @@ import com.interpss.core.acsc.PhaseCode;
 import com.interpss.core.acsc.XFormerConnectCode;
 import com.interpss.core.acsc.adpter.AcscXformerAdapter;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
-import static com.interpss.core.funcImpl.AcscFunction.acscXfrAptr;
 import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -426,9 +426,9 @@ public class TestTnD_IEEE9_8BusFeeder {
 			dstabAlgo.setOutPutPerSteps(5);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 			
-			IpssLogger.getLogger().setLevel(Level.WARNING);
+			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			
-			PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+			PerformanceTimer timer = new PerformanceTimer();
 			timer.start();
 	        // Must use this dynamic event process to modify the YMatrixABC
 //			dstabAlgo.setDynamicEventHandler(new DynamicEventProcessor3Phase());
@@ -683,9 +683,9 @@ public class TestTnD_IEEE9_8BusFeeder {
 			dstabAlgo.setOutPutPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 			
-			IpssLogger.getLogger().setLevel(Level.WARNING);
+			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			
-			PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+			PerformanceTimer timer = new PerformanceTimer();
 			timer.start();
 	        // Must use this dynamic event process to modify the YMatrixABC
 //			dstabAlgo.setDynamicEventHandler(new DynamicEventProcessor3Phase());

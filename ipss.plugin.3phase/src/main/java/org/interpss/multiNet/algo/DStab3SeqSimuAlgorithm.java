@@ -10,7 +10,6 @@ import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.algo.sc.ScBusModelType;
 import com.interpss.dstab.BaseDStabBus;
@@ -18,8 +17,12 @@ import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class DStab3SeqSimuAlgorithm {
 	
+	private static final Logger log = LoggerFactory.getLogger(DStab3SeqSimuAlgorithm.class);
 	
 	private BaseDStabNetwork<?,?> net = null;
 	
@@ -87,7 +90,7 @@ public class DStab3SeqSimuAlgorithm {
 			}
 		}
 		else
-			IpssLogger.getLogger().severe("No monitoring bus is defined");
+			log.error("No monitoring bus is defined");
 		
 		k = 0;
 		
@@ -100,7 +103,7 @@ public class DStab3SeqSimuAlgorithm {
 			flag = performOneStep3SeqSimulation(k++, null);
 			
 			if(!flag){
-				IpssLogger.getLogger().severe("Error during performing 3-Seq TS Simulation");
+				log.error("Error during performing 3-Seq TS Simulation");
 				break;
 			}
 		}

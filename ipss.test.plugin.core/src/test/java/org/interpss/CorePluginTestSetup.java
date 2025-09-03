@@ -34,7 +34,6 @@ import org.junit.BeforeClass;
 import com.interpss.common.CoreCommonFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.msg.IPSSMsgHub;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
@@ -57,7 +56,7 @@ public class CorePluginTestSetup {
 	public static void initTestEnv() {
 		IpssCorePlugin.init();
 		msg = CoreCommonFactory.getIpssMsgHub();
-		IpssLogger.getLogger().setLevel(Level.WARNING);
+		//IpssLogger.getLogger().setLevel(Level.WARNING);
 		ODMLogger.getLogger().setLevel(Level.WARNING);
 	}
 

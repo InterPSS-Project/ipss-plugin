@@ -40,6 +40,7 @@ import com.interpss.common.util.IpssLogger;
  * @author mzhou
  *
  */
+@Deprecated
 public class IpssCorePlugin {
 	/**
 	 * Core plugin Sptring ctx file path

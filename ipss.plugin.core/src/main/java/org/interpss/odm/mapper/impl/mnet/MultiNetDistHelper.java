@@ -24,7 +24,6 @@
 
 package org.interpss.odm.mapper.impl.mnet;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
 import static org.interpss.CorePluginFunction.DcSysXmlNet2DcSysNet;
 
 import java.util.List;
@@ -32,6 +31,8 @@ import java.util.List;
 import org.ieee.odm.schema.ChildNetworkDefXmlType;
 import org.ieee.odm.schema.DcNetworkXmlType;
 import org.ieee.odm.schema.NetworkXmlType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.net.childnet.ChildNetworkWrapper;
@@ -48,6 +49,7 @@ import com.interpss.dist.DistObjectFactory;
  *
  */
 public class MultiNetDistHelper extends BaseMultiNetHelper {
+	private static final Logger log = LoggerFactory.getLogger(MultiNetDistHelper.class);
 	private DistNetwork parentDistNet;
 	
 	public MultiNetDistHelper(DistNetwork net) {
@@ -63,16 +65,16 @@ public class MultiNetDistHelper extends BaseMultiNetHelper {
 						mapDcSysChildNet(parentDistNet, xmlChildDef);
 					} 
 					else 
-						ipssLogger.warning("Only DcSysNet could be defined as Child network of DistNet");
+						log.warn("Only DcSysNet could be defined as Child network of DistNet");
 				}
 				else {
-					ipssLogger.severe("Child network reference cannot be located in the ChileNetList");
+					log.error("Child network reference cannot be located in the ChileNetList");
 					return false;
 				}
 			}
 			return true;
 		} catch (InterpssException e) {
-			ipssLogger.severe(e.toString());
+			log.error(e.toString());
 		}
 		return false;
 	}

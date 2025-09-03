@@ -29,8 +29,8 @@ import java.util.function.Function;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.exp.IpssNumericException;
-import org.interpss.numeric.matrix.ComplexMatrixEqn;
-import org.interpss.numeric.matrix.MatrixUtil;
+import org.interpss.numeric.matrix.ComplexFullMatrixEqn;
+import org.interpss.numeric.matrix.FullMatrixUtil;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 
 import com.interpss.algo.subAreaNet.base.BaseCuttingBranch;
@@ -52,7 +52,7 @@ public class PiecewiseAlgoPosImpl<TSub extends BaseSubArea<ISparseEqnComplex, Co
 	//private AclfNetwork net;
 	
 	// Equivalent Z-matrix for cutting branch current calculation
-	private ComplexMatrixEqn equivZMatrixEqn;
+	private ComplexFullMatrixEqn equivZMatrixEqn;
 	
 	/**
 	 * Constructor
@@ -165,7 +165,7 @@ public class PiecewiseAlgoPosImpl<TSub extends BaseSubArea<ISparseEqnComplex, Co
 		// we build the equiv Z only if the network Y matrix has changed
 		if (this.netYmatrixDirty) {
 			Complex[][] equivZMatrix = buildEquivZMtrix(cuttingBranches);
-			this.equivZMatrixEqn = new ComplexMatrixEqn(equivZMatrix);
+			this.equivZMatrixEqn = new ComplexFullMatrixEqn(equivZMatrix);
 			this.equivZMatrixEqn.inverseMatrix();
 		}
 		
@@ -244,7 +244,7 @@ public class PiecewiseAlgoPosImpl<TSub extends BaseSubArea<ISparseEqnComplex, Co
 			/*
 			 * add the transpose[Mi]x[Zi]x[M] part. 
 			 */
-			matrix = MatrixUtil.add(matrix, MatrixUtil.prePostMultiply(subarea.getZMatrix(), M));
+			matrix = FullMatrixUtil.add(matrix, FullMatrixUtil.prePostMultiply(subarea.getZMatrix(), M));
 		}	
 		
 		return matrix;

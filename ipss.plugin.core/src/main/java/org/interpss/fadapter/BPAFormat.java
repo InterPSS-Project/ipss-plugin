@@ -1,4 +1,4 @@
- /*
+/*
   * @(#)BPAFormat.java   
   *
   * Copyright (C) 2006 www.interpss.org
@@ -24,8 +24,6 @@
 
 package org.interpss.fadapter;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
-
 import java.io.File;
 
 import org.ieee.odm.ODMFileFormatEnum;
@@ -39,8 +37,11 @@ import org.interpss.fadapter.impl.IpssFileAdapterBase;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.simu.SimuContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BPAFormat extends IpssFileAdapterBase {
+    private static final Logger logger = LoggerFactory.getLogger(BPAFormat.class);
 	public BPAFormat(IPSSMsgHub msgHub) {
 		super(msgHub, ODMFileFormatEnum.BPA);
 	}
@@ -61,10 +62,10 @@ public class BPAFormat extends IpssFileAdapterBase {
 			}
 			else {
 				msgHub.sendErrorMsg("Error to load file: " + filepath);
-	  			ipssLogger.severe("Error to load file: " + filepath);
+				logger.error("Error to load file: {}", filepath);
 			}		
 		} catch (ODMException e) {
-			ipssLogger.severe(e.toString());
+			logger.error(e.toString(), e);
 			throw new InterpssException("Error while loading custom file through ODM, " + e.toString());
 		}
  	}

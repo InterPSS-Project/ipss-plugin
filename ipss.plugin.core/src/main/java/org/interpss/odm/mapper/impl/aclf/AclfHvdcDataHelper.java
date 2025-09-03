@@ -19,7 +19,9 @@ import static org.interpss.odm.mapper.base.ODMUnitHelper.toAngleUnit;
 import static org.interpss.odm.mapper.base.ODMUnitHelper.toVoltageUnit;
 import static org.interpss.odm.mapper.base.ODMUnitHelper.toZUnit;
 
-import com.interpss.common.util.IpssLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.interpss.core.HvdcObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
@@ -38,6 +40,7 @@ import com.interpss.core.aclf.hvdc.VSCConverter;
 public class AclfHvdcDataHelper {
 	private BaseAclfNetwork<?, ?>  aclfNet = null;
 	private HvdcLine2T<?> hvdc2T = null;
+	private static final Logger log = LoggerFactory.getLogger(AclfHvdcDataHelper.class);
 
 	public AclfHvdcDataHelper(BaseAclfNetwork<?, ?>  aclfNet, HvdcLine2T<?> hvdc2T){
 		this.aclfNet = aclfNet;
@@ -147,7 +150,7 @@ public class AclfHvdcDataHelper {
 			}
 		}
 		else{ 
-			ODMLogger.getLogger().severe("Rectifier data is Null, or not defined in ODM/XML!");
+			log.error("Rectifier data is Null, or not defined in ODM/XML!");
 			return false;
 		}
 			
@@ -169,7 +172,7 @@ public class AclfHvdcDataHelper {
 		}
 		
 		else{
-			ODMLogger.getLogger().severe("Inverter data is Null, or not defined in ODM/XML!");
+			log.error("Inverter data is Null, or not defined in ODM/XML!");
 			return false;
 		}
 		
@@ -214,7 +217,7 @@ public class AclfHvdcDataHelper {
 		
 		// IFR = ITR=0, IDR =1.0 by default
 		if(rectifierXml.getRefXfrFromBusId()!=null && rectifierXml.getRefXfrToBusId()!=null){
-			IpssLogger.getLogger().severe("IFR, ITR for specifying a two winding transformer to control a converter is not supported in the LCC HVDC rectifier: "+ rectifier.getId());
+			log.error("IFR, ITR for specifying a two winding transformer to control a converter is not supported in the LCC HVDC rectifier: "+ rectifier.getId());
 		}
 		//BusIDRefXmlType fbRef=((BusIDRefXmlType)rectifierXml.getRefXfrFromBusId());
 		
@@ -277,7 +280,7 @@ public class AclfHvdcDataHelper {
 
 		// IFR = ITR=0, IDR =1.0 by default
 		if(inverterXml.getRefXfrFromBusId()!=null && inverterXml.getRefXfrToBusId()!=null){
-			IpssLogger.getLogger().severe("IFR, ITR for specifying a two winding transformer to control a converter is not supported in the LCC HVDC inverter: " + inverter.getId());
+			log.error("IFR, ITR for specifying a two winding transformer to control a converter is not supported in the LCC HVDC inverter: " + inverter.getId());
 		}
 
 		// TODO
@@ -320,13 +323,13 @@ public class AclfHvdcDataHelper {
     	// set the vsc converter data
     	 success = this.setVSCInverterData(vschvdc2TXml.getInverter());
     	if(!success) {
-    		IpssLogger.getLogger().severe("Error in setting the vsc inverter data");
+    		log.error("Error in setting the vsc inverter data");
     		return success;
     	}
     	
     	 success = this.setVSCRectifierData(vschvdc2TXml.getRectifier());
     	 if(!success) {
-     		IpssLogger.getLogger().severe("Error in setting the vsc rectifier data");
+     		log.error("Error in setting the vsc rectifier data");
      		return success;
      	}
     	
