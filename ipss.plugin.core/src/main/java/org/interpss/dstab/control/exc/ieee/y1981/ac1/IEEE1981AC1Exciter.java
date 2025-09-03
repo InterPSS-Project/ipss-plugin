@@ -2,7 +2,9 @@ package org.interpss.dstab.control.exc.ieee.y1981.ac1;
 
 import java.lang.reflect.Field;
 
-import com.interpss.common.util.IpssLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.controller.cml.annotate.AnController;
 import com.interpss.dstab.controller.cml.annotate.AnControllerField;
@@ -28,6 +30,7 @@ import com.interpss.dstab.mach.MachineIfdBase;
 		   //debug = true
 )
 public class IEEE1981AC1Exciter extends AnnotateExciter {
+    private static final Logger log = LoggerFactory.getLogger(IEEE1981AC1Exciter.class);
 	public double k1 = 1.0;/*constant*/
 	
 	/*
@@ -246,13 +249,13 @@ public class IEEE1981AC1Exciter extends AnnotateExciter {
 	        
 	        //init the value internally used.
 	        if(te == 0.0){
-				IpssLogger.getLogger().severe("Te = 0.0 for Exciter of "+mach.getId());
+				log.error("Te = 0.0 for Exciter of "+mach.getId());
 				return false;
 			}
 	        
 	        this.k1 = 1.0;
 			if(tf == 0.0){
-				IpssLogger.getLogger().severe("Tf =0.0 for Exciter of "+mach.getId());
+				log.error("Tf =0.0 for Exciter of "+mach.getId());
 				this.k = 0.0;
 			}
 			else

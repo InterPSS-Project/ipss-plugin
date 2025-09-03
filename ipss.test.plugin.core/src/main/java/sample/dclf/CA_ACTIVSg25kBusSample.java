@@ -36,7 +36,7 @@ public class CA_ACTIVSg25kBusSample {
 		// set the branch rating, since the original data does not have branch rating
 		double branchLimit = 2500.0;
 		aclfNet.getBranchList().stream()
-			.filter(branch -> branch.isActive() && branch.isLine())
+			.filter(branch -> branch.isActive())
 			.forEach(branch -> {
 				AclfBranch aclfBranch = (AclfBranch) branch;
 				aclfBranch.setRatingMva1(branchLimit);

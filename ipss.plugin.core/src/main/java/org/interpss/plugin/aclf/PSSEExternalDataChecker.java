@@ -7,7 +7,7 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.adj.TapControl;
-import com.interpss.core.funcImpl.CoreUtilFunc;
+import com.interpss.core.funcImpl.ParallelBranchUtilFunc;
 import com.interpss.core.net.Branch;
 
 /**
@@ -112,7 +112,7 @@ public class PSSEExternalDataChecker implements Consumer<BaseAclfNetwork<?,?>>{
 			}
 			else if (branch.isXfr() || branch.isPSXfr()) {
 				// 2.7 Nonidentical parallel transformers 
-				List<Branch> paraBranchList = CoreUtilFunc.getParallelBranchList(branch);
+				List<Branch> paraBranchList = ParallelBranchUtilFunc.getParallelBranchList(branch);
 				if (paraBranchList.size() > 1) {
 					boolean isIdentical = paraBranchList.stream()
 						.map(bra -> (AclfBranch)bra)

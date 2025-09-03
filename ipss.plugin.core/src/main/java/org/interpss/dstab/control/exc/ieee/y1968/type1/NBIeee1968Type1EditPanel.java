@@ -1,4 +1,4 @@
- /*
+/*
   * @(#)NBIeee1968Type1EditPanel.java   
   *
   * Copyright (C) 2006 www.interpss.org
@@ -23,12 +23,12 @@
   */
 package org.interpss.dstab.control.exc.ieee.y1968.type1;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
-
 import java.util.Vector;
 
 import org.interpss.dstab.control.base.EditHelper;
 import org.interpss.dstab.ui.ICustomPluginEditor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Editing screen panel implementation for input data editing for  NBIeee1968Type1 exciter
@@ -37,6 +37,7 @@ import org.interpss.dstab.ui.ICustomPluginEditor;
  *
  */
 public class NBIeee1968Type1EditPanel extends javax.swing.JPanel implements ICustomPluginEditor {
+    private static final Logger log = LoggerFactory.getLogger(NBIeee1968Type1EditPanel.class);
 	private static final long serialVersionUID = 1;
 
 	// define data to be edited
@@ -149,7 +150,7 @@ public class NBIeee1968Type1EditPanel extends javax.swing.JPanel implements ICus
     			if ( input == tfTextField)    return EditHelper.checkDblDataRange(input, _data, "tf");
     			
  	       	} catch (Exception e) {
- 	       		ipssLogger.severe(e.toString());
+ 	       		log.error(e.toString());
  	    		return false;
  	       	}		
 			return true;
