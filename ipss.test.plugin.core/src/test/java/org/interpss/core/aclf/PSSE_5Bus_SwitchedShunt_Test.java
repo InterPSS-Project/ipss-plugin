@@ -1,6 +1,7 @@
 package org.interpss.core.aclf;
 
-import java.util.logging.Level;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.ieee.odm.adapter.IODMAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
@@ -11,11 +12,8 @@ import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
@@ -34,7 +32,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 	
 	@Test
 	public void test_5Bus_SwitchedShunt_locked_Loadflow() throws Exception {
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 		AclfNetwork net = createTestCase();
 		
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
@@ -112,7 +110,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 	 */
 	@Test
 	public void test_5Bus_SwitchedShunt_discrete() throws Exception {
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 		AclfNetwork net = createTestCase();
 		
 
@@ -165,7 +163,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 
     @Test
 	public void test_5Bus_SwitchedShunt_discrete_swictchedoff() throws Exception {
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 		AclfNetwork net = createTestCase();
 		
 
@@ -202,7 +200,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 
     @Test
 	public void test_5Bus_SwitchedShunt_continuous_range() throws Exception {
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 		AclfNetwork net = createTestCase();
 		
 
@@ -244,7 +242,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 
      @Test
 	public void test_5Bus_SwitchedShunt_continuous_range_v35() throws Exception {
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 		AclfNetwork net = createTestCaseContinuousV35();
 		
 
@@ -288,7 +286,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 
     @Test
 	public void test_5Bus_SwitchedShunt_continuous_point() throws Exception {
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 		AclfNetwork net = createTestCase();
 		
 
@@ -336,7 +334,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
      */
      @Test
 	public void test_5Bus_SwitchedShunt_continuous_point_v35() throws Exception {
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 		AclfNetwork net = createTestCaseContinuousV35();
 		
 

@@ -2,8 +2,6 @@ package org.interpss.core.adapter.psse.raw.dstab;
 
 import static org.junit.Assert.assertTrue;
 
-import java.util.logging.Level;
-
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
@@ -17,7 +15,6 @@ import org.junit.Test;
 
 import com.interpss.common.CoreCommonFactory;
 import com.interpss.common.msg.IPSSMsgHub;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
@@ -32,7 +29,7 @@ public class IEEE9_Dstab_Adapter_Test {
 	public void test_IEEE9Bus_Dstab(){
 		IpssCorePlugin.init();
 		IPSSMsgHub msg = CoreCommonFactory.getIpssMsgHub();
-		IpssLogger.getLogger().setLevel(Level.WARNING);
+		//IpssLogger.getLogger().setLevel(Level.WARNING);
 		
 		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{

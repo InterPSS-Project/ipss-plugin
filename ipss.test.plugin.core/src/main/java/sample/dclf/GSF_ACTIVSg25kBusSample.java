@@ -49,8 +49,9 @@ public class GSF_ACTIVSg25kBusSample {
 				System.out.println("GSF Gen@" + busId + " on Branch " + branch.getId() + ": " + gsf);
 			});
 		*/
-		AclfBranch branch = aclfNet.getBranch("Bus14265->Bus62125(1)"); 
-		double gsf = algo.calGenShiftFactor(busId, branch); // w.r.p to the Ref Bus
-		System.out.println("GSF Gen@" + busId + " on Branch " + branch.getId() + ": " + gsf);
+		
+		AclfBranch branch1 = aclfNet.getBranch("Bus14265->Bus62125(1)"); 
+		double gsf1 = algo.calGenShiftFactor(busId, branch1); // w.r.p to the Ref Bus
+		System.out.println("GSF Gen@" + busId + " on Branch " + branch1.getId() + ": " + gsf1);
 	}
 }

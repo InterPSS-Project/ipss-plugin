@@ -7,7 +7,6 @@ import org.interpss.dstab.dynLoad.InductionMotor;
 import org.interpss.dstab.dynLoad.LD1PAC;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.dstab.BaseDStabBus;
@@ -19,6 +18,8 @@ import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.dynLoad.DStabDynamicLoadFactory;
 import com.interpss.dstab.dynLoad.DistNetworkEquivalentModel;
 import com.interpss.dstab.dynLoad.impl.DynLoadModelImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -100,6 +101,7 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
 	// otherwise, adjust the impedance first
 	private boolean initModelAdjustTapFirst = false; 
 	
+	private static final Logger log = LoggerFactory.getLogger(DynLoadCMPLDWImpl.class);
 	
 	public DynLoadCMPLDWImpl(){
 		
@@ -387,7 +389,7 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
 	  	  	    	  	     // Vhs - voltage at the high voltage side of the transformer
 	  	  	    	  	     // Vhs = Vlf- i*Xxfr_pu*Tfixhs^2*Ilf_pu
 	  	  	    	  	     Vhs =  VtransBus.subtract(this.distXfr.getAdjustedZ().multiply(Math.pow(Tfixhs, 2)).multiply(ItransBus));
-	  	  	    	         
+	  	  	    	  	     
 	  	  	    	  	     
 	  	  	    	  	     // VlowBus - voltage at the low voltage side of the transformer
 	  	  	    	  	     
@@ -421,7 +423,7 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
 			  	  	    	  	     // Vhs - voltage at the high voltage side of the transformer
 			  	  	    	  	     // Vhs = Vlf- i*Xxfr_pu*Tfixhs^2*Ilf_pu
 			  	  	    	  	     Vhs =  VtransBus.subtract(this.distXfr.getAdjustedZ().multiply(Math.pow(Tfixhs, 2)).multiply(ItransBus));
-			  	  	    	         
+			  	  	    	  	     
 			  	  	    	  	     
 			  	  	    	  	     // VlowBus - voltage at the low voltage side of the transformer
 			  	  	    	  	     
@@ -497,7 +499,7 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
     			this.indMotorA.initStates();
     		}
     		else{
-    			 IpssLogger.ipssLogger.severe(" The motor A should be a three-phase induction motor. Type = "+this.motorAType);
+    			 log.error(" The motor A should be a three-phase induction motor. Type = "+this.motorAType);
     		}
     	}
     	else{
@@ -517,7 +519,7 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
     			this.indMotorB.initStates();
     		}
     		else{
-    			 IpssLogger.ipssLogger.severe(" The motor B should be a three-phase induction motor. Type = "+this.motorBType);
+    			 log.error(" The motor B should be a three-phase induction motor. Type = "+this.motorBType);
     		}
     	}
     	else{
@@ -538,7 +540,7 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
     			this.indMotorC.initStates();
     		}
     		else{
-    			 IpssLogger.ipssLogger.severe(" The motor C should be a three-phase induction motor. Type = "+this.motorCType);
+    			 log.error(" The motor C should be a three-phase induction motor. Type = "+this.motorCType);
     		}
     	}
     	else{
@@ -558,7 +560,7 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
     			this.ac1PMotor.initStates();
     		}
     		else{
-    			 IpssLogger.ipssLogger.severe(" The motor D should be a 1-phase air conditioner motor. Type = "+this.motorDType);
+    			 log.error(" The motor D should be a 1-phase air conditioner motor. Type = "+this.motorDType);
     		}
     	}
     	else{
@@ -624,7 +626,7 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
 			 
 		 }
 		 else{
-			 IpssLogger.ipssLogger.severe("The calculated voltage of load bus connected to " + this.getDStabBus().getId()+ " is too low (< 0.95, and voltage at the low bus is :"+VlowBus.abs());
+			 log.error("The calculated voltage of load bus connected to " + this.getDStabBus().getId()+ " is too low (< 0.95, and voltage at the low bus is :"+VlowBus.abs());
 		 }
 		return VloadBus;
 	}

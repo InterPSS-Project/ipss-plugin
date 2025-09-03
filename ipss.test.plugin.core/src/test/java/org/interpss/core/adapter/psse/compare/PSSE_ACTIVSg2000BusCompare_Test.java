@@ -3,8 +3,6 @@ package org.interpss.core.adapter.psse.compare;
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.Assert.assertTrue;
 
-import java.util.logging.Level;
-
 import org.interpss.CorePluginTestSetup;
 import org.interpss.IpssCorePlugin;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
@@ -12,7 +10,6 @@ import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -23,7 +20,7 @@ public class PSSE_ACTIVSg2000BusCompare_Test  extends CorePluginTestSetup {
 	@Test
 	public void test_ACTIVSg2000_Compare() throws InterpssException{
 		IpssCorePlugin.init();
-		IpssLogger.getLogger().setLevel(Level.WARNING);
+		//IpssLogger.getLogger().setLevel(Level.WARNING);
 		
 		/*
 		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_36);

@@ -33,7 +33,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * File utility
@@ -42,6 +43,7 @@ import static com.interpss.common.util.IpssLogger.ipssLogger;
  *
  */
 public class FileUtil {
+    private static final Logger log = LoggerFactory.getLogger(FileUtil.class);
 	/**
 	 * Write the text to the file
 	 * 
@@ -72,7 +74,7 @@ public class FileUtil {
 	 * @return
 	 */
 	public static boolean write2File(String filename, byte[] bytes) {
-		ipssLogger.info("FileUtil.writeTextarea2File() info to file: " + filename);
+		log.info("FileUtil.writeTextarea2File() info to file: " + filename);
 		try {
 			OutputStream out = new BufferedOutputStream(new FileOutputStream(filename));
 			out.write(bytes);
@@ -80,7 +82,7 @@ public class FileUtil {
 			out.close();
 			return true;
 		} catch (Exception e) {
-			ipssLogger.severe("Cannot save to file: " + filename + ", " + e.toString());
+			log.error("Cannot save to file: " + filename + ", " + e.toString());
 		}
 		return false;
 	}
@@ -107,13 +109,13 @@ public class FileUtil {
 	}	
 	
 	/**
-	 * read a file and return file context as a String
+	 * read a file and return file content as a String
 	 * 
 	 * @param file
 	 * @return
 	 * @throws IOException
 	 */
 	public static String readFileAsString(String filename) throws IOException {
-		return new String(readFile(new File(filename)));
+		return readFile(new File(filename)).toString();
 	}
 }

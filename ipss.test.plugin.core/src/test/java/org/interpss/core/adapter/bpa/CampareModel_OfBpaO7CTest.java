@@ -16,7 +16,6 @@ import org.interpss.odm.mapper.ODMAclfParserMapper;
 import org.interpss.odm.mapper.ODMDStabParserMapper;
 import org.junit.Test;
 
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfBus;
@@ -75,11 +74,11 @@ public class CampareModel_OfBpaO7CTest extends DStabTestSetupBase {
 		public boolean compare(BaseAclfNetwork<?,?> baseNet, BaseAclfNetwork<?,?> net) {
 			boolean ok = true;
 			if (baseNet.getNoBus() != net.getNoBus()) {
-				IpssLogger.getLogger().warning("NoOfBus not the same: " + baseNet.getNoBus() + ", " + net.getNoBus());
+				//IpssLogger.getLogger().warning("NoOfBus not the same: " + baseNet.getNoBus() + ", " + net.getNoBus());
 				ok = false; 
 			}
 			if (baseNet.getNoBranch() != net.getNoBranch()) {
-				IpssLogger.getLogger().warning("NoOfBranch not the same: " + baseNet.getNoBranch() + ", " + net.getNoBranch());
+				//IpssLogger.getLogger().warning("NoOfBranch not the same: " + baseNet.getNoBranch() + ", " + net.getNoBranch());
 				ok = false; 
 			}
 			return ok;
@@ -91,13 +90,13 @@ public class CampareModel_OfBpaO7CTest extends DStabTestSetupBase {
 		public boolean compare(BaseAclfBus baseBus, BaseAclfBus bus) {
 			boolean ok = true;
 			if (bus == null) {
-				IpssLogger.getLogger().warning("AclfBus not found, " + baseBus.getId());
+				//IpssLogger.getLogger().warning("AclfBus not found, " + baseBus.getId());
 				ok = false; 
 			}
 			
 			// compare base voltage
 			if (!NumericUtil.equals(baseBus.getBaseVoltage(), bus.getBaseVoltage())) {
-				IpssLogger.getLogger().warning("AclfBus base voltage not same, " + baseBus.getId());
+				//IpssLogger.getLogger().warning("AclfBus base voltage not same, " + baseBus.getId());
 				ok = false; 
 			}
 
@@ -117,7 +116,7 @@ public class CampareModel_OfBpaO7CTest extends DStabTestSetupBase {
 		public boolean compare(AclfBranch baseBra, AclfBranch branch) {
 			boolean ok = true;
 			if (branch == null) {
-				IpssLogger.getLogger().warning("AclfBranch not found, " + baseBra.getId());
+				//IpssLogger.getLogger().warning("AclfBranch not found, " + baseBra.getId());
 				ok = false; 
 			}
 			return ok;

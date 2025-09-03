@@ -16,12 +16,14 @@ import org.interpss.multiNet.equivalent.NetworkEquivalent;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 
-import com.interpss.common.util.IpssLogger;
-import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabilityNetwork;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * MultiNetDStabSimuHelper is a "helper" class for multi-area/subnetwork, positive sequence based Transient Stability(TS) simulation. 
  * This is basic Multi-Area Thevenin Equivalent(MATE) approach implementation. Details of the approach can be found in the following paper:
@@ -38,6 +40,7 @@ import com.interpss.dstab.DStabilityNetwork;
  *
  */
 public class MultiNetDStabSimuHelper extends AbstractMultiNetDStabSimuHelper{
+    private static final Logger log = LoggerFactory.getLogger(MultiNetDStabSimuHelper.class);
 	
 
 	private FieldMatrix<Complex> Zl = null; // boundary subsystem matrix
@@ -200,7 +203,7 @@ public class MultiNetDStabSimuHelper extends AbstractMultiNetDStabSimuHelper{
     		
     	}
     	else{
-    		 IpssLogger.getLogger().severe("The boundary sub system [Zl] matrix is null");
+            log.error("The boundary sub system [Zl] matrix is null");
     		 flag = false;
     	}
     	return flag;
@@ -342,7 +345,8 @@ public class MultiNetDStabSimuHelper extends AbstractMultiNetDStabSimuHelper{
 					return false;
 				}
 			   
-			   for(BaseDStabBus b:subNet.getBusList()){
+			   for(Object bObj : subNet.getBusList()){
+				    DStabBus b = (DStabBus) bObj;
 				   //superpostition method
 				   //bus voltage V = Vinternal + Vext_injection
 				   b.setVoltage(b.getVoltage().add(subNetY.getX(b.getSortNumber())));

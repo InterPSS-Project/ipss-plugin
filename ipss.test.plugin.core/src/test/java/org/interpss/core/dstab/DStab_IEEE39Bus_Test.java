@@ -3,8 +3,6 @@ package org.interpss.core.dstab;
 import static com.interpss.dstab.cache.StateVariableRecorder.StateVarRecType.MachineState;
 import static org.junit.Assert.assertTrue;
 
-import java.util.logging.Level;
-
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
@@ -18,7 +16,6 @@ import org.interpss.odm.mapper.ODMDStabParserMapper;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
@@ -94,7 +91,7 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 			dstabAlgo.setOutPutPerSteps(5);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
 			
-			IpssLogger.getLogger().setLevel(Level.INFO);
+			//IpssLogger.getLogger().setLevel(Level.INFO);
 			
 			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus17",dsNet,SimpleFaultCode.GROUND_3P,new Complex(0,0),null,1.0d,0.05),"3phaseFault@Bus17");
 			

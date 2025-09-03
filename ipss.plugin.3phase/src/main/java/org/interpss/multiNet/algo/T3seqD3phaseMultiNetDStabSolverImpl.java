@@ -1,6 +1,5 @@
 package org.interpss.multiNet.algo;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
 import static com.interpss.dstab.funcImpl.DStabFunction.BuiltBusState;
 import static com.interpss.dstab.funcImpl.DStabFunction.BuiltMachineState;
 import static com.interpss.dstab.funcImpl.DStabFunction.BuiltScriptDynamicBusDeviceState;
@@ -28,33 +27,28 @@ import org.interpss.threePhase.dynamic.model.DynLoadModel1Phase;
 import org.interpss.threePhase.dynamic.model.DynLoadModel3Phase;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.net.Branch;
-import com.interpss.core.net.Bus;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
-import com.interpss.dstab.DStabBranch;
-import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.DStabLoad;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.common.DStabSimuException;
 import com.interpss.dstab.datatype.DStabSimuEvent;
-import com.interpss.dstab.device.DynamicBranchDevice;
-import com.interpss.dstab.device.DynamicBusDevice;
 import com.interpss.dstab.mach.Machine;
 
 public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl {
-	
-
+	private static final Logger log = LoggerFactory.getLogger(T3seqD3phaseMultiNetDStabSolverImpl.class);
 	
 	private List<String>  threePhaseSubNetIdList = null;
 	private Hashtable<String,Complex3x1> dist2Trans3PhaseCurInjTable =null;
@@ -150,7 +144,7 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 		consoleMsg("Start T&D multi-SubNetwork initialization ...");
 
 		if (!dstabAlgo.getNetwork().isLfConverged()) {
-			ipssLogger.severe("Error: Loadflow not converged yet!");
+			log.error("Error: Loadflow not converged yet!");
 			return false;
 		}
 		
@@ -167,7 +161,7 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 				
 			   }
 			   if (!flag){
-					  ipssLogger.severe("Error: SubNetwork initialization error:"+dsNet.getId());
+				   log.error("Error: SubNetwork initialization error:"+dsNet.getId());
 					  return false;
 				}
 			
@@ -443,7 +437,7 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 			
 			
 		     if(i>0 && netSolConverged) {
-				  IpssLogger.getLogger().fine(getSimuTime()+","+"multi subNetwork solution in the nextStep() is converged, iteration #"+(i+1));
+				  log.debug(getSimuTime()+","+"multi subNetwork solution in the nextStep() is converged, iteration #"+(i+1));
 				  break;
 			 }
 		    
@@ -838,7 +832,7 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 			procOutputEvent(DStabSimuEvent.EndOfSimuStep, null);
 			return true;
 		} catch (InterpssException e) {
-			ipssLogger.severe(e.toString());
+			log.error(e.toString());
 			return false;
 		}
 	}

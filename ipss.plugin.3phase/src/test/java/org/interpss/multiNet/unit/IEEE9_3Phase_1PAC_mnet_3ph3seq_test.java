@@ -1,5 +1,8 @@
 package org.interpss.multiNet.unit;
 
+import static com.interpss.core.funcImpl.AcscFunction.acscXfrAptr;
+import static org.junit.Assert.assertTrue;
+
 import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
@@ -32,11 +35,9 @@ import org.interpss.threePhase.powerflow.impl.DistPowerFlowOutFunc;
 import org.interpss.threePhase.util.ThreePhaseAclfOutFunc;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.interpss.util.FileUtil;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
@@ -49,7 +50,6 @@ import com.interpss.core.acsc.XFormerConnectCode;
 import com.interpss.core.acsc.adpter.AcscXformerAdapter;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import static com.interpss.core.funcImpl.AcscFunction.acscXfrAptr;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBranch;
@@ -151,9 +151,9 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 		dstabAlgo.setOutPutPerSteps(5);
 		//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 		
-		IpssLogger.getLogger().setLevel(Level.WARNING);
+		//IpssLogger.getLogger().setLevel(Level.WARNING);
 		
-		PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+		PerformanceTimer timer = new PerformanceTimer();
 		
         // Must use this dynamic event process to modify the YMatrixABC
 		dstabAlgo.setDynamicEventHandler(new DynamicEventProcessor3Phase());
@@ -320,9 +320,9 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 		dstabAlgo.setOutPutPerSteps(1);
 		//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 		
-		IpssLogger.getLogger().setLevel(Level.WARNING);
+		//IpssLogger.getLogger().setLevel(Level.WARNING);
 		
-		PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+		PerformanceTimer timer = new PerformanceTimer();
 		
 		StringBuffer sb = new StringBuffer();
 		
@@ -527,7 +527,7 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 		dstabAlgo.setOutPutPerSteps(1);
 		//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 		
-		IpssLogger.getLogger().setLevel(Level.WARNING);
+		//IpssLogger.getLogger().setLevel(Level.WARNING);
 		
 	
 
@@ -718,7 +718,7 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 		dstabAlgo.setOutPutPerSteps(1);
 		//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 		
-		IpssLogger.getLogger().setLevel(Level.WARNING);
+		//IpssLogger.getLogger().setLevel(Level.WARNING);
 		
 	
 		
@@ -954,7 +954,7 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 		dstabAlgo.setOutPutPerSteps(1);
 		//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 		
-		IpssLogger.getLogger().setLevel(Level.WARNING);
+		//IpssLogger.getLogger().setLevel(Level.WARNING);
 		
 	
 		

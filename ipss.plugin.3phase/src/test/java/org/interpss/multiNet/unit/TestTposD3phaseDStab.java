@@ -3,8 +3,6 @@ package org.interpss.multiNet.unit;
 import static org.interpss.threePhase.util.ThreePhaseUtilFunction.threePhaseXfrAptr;
 import static org.junit.Assert.assertTrue;
 
-import java.util.logging.Level;
-
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
@@ -37,12 +35,10 @@ import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.abc.Static3PXformer;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
-import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.BaseAclfBus;
@@ -270,9 +266,9 @@ public class TestTposD3phaseDStab {
 			dstabAlgo.setOutPutPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 			
-			IpssLogger.getLogger().setLevel(Level.WARNING);
+			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			
-			PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+			PerformanceTimer timer = new PerformanceTimer();
 			
 	 
 			
@@ -426,9 +422,9 @@ public class TestTposD3phaseDStab {
 			dstabAlgo.setOutPutPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 			
-			IpssLogger.getLogger().setLevel(Level.WARNING);
+			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			
-			PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+			PerformanceTimer timer = new PerformanceTimer();
 			
 	 
 			
@@ -590,9 +586,9 @@ public class TestTposD3phaseDStab {
 				dstabAlgo.setOutPutPerSteps(1);
 				//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 				
-				IpssLogger.getLogger().setLevel(Level.WARNING);
+				//IpssLogger.getLogger().setLevel(Level.WARNING);
 				
-				PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+				PerformanceTimer timer = new PerformanceTimer();
 				
 		 
 				
@@ -750,9 +746,9 @@ public class TestTposD3phaseDStab {
 				dstabAlgo.setOutPutPerSteps(1);
 				//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 				
-				IpssLogger.getLogger().setLevel(Level.WARNING);
+				//IpssLogger.getLogger().setLevel(Level.WARNING);
 				
-				PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+				PerformanceTimer timer = new PerformanceTimer();
 				
 		 
 				
@@ -909,9 +905,9 @@ public class TestTposD3phaseDStab {
 			dstabAlgo.setOutPutPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 			
-			IpssLogger.getLogger().setLevel(Level.WARNING);
+			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			
-			PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+			PerformanceTimer timer = new PerformanceTimer();
 			
 	 
 			
@@ -1050,9 +1046,9 @@ public class TestTposD3phaseDStab {
 			dstabAlgo.setOutPutPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 			
-			IpssLogger.getLogger().setLevel(Level.WARNING);
+			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			
-			PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+			PerformanceTimer timer = new PerformanceTimer();
 			
 	 
 			
@@ -1178,9 +1174,9 @@ public class TestTposD3phaseDStab {
 			dstabAlgo.setOutPutPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 			
-			IpssLogger.getLogger().setLevel(Level.WARNING);
+			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			
-			PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+			PerformanceTimer timer = new PerformanceTimer();
 			
 	 
 
