@@ -24,7 +24,6 @@
 
 package org.interpss.odm.mapper.impl.dcsys;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
 import static org.interpss.odm.mapper.base.ODMUnitHelper.toActivePowerUnit;
 import static org.interpss.odm.mapper.base.ODMUnitHelper.toVoltageUnit;
 import static org.interpss.odm.mapper.base.ODMUnitHelper.toZUnit;
@@ -53,8 +52,10 @@ import org.ieee.odm.schema.PVModuleItemXmlType;
 import org.ieee.odm.schema.VoltageUnitType;
 import org.interpss.numeric.NumericConstant;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.odm.mapper.base.AbstractODMNetDataMapper;
 import org.interpss.numeric.datatype.Vector_xy;
+import org.interpss.odm.mapper.base.AbstractODMNetDataMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.dc.DcBranch;
@@ -75,6 +76,8 @@ import com.interpss.dc.pv.module.PVModuleItem;
 import com.interpss.dc.pv.module.impl.PVModelHelper;
 
 public abstract class AbstractODMDcSysNetMapper<T> extends AbstractODMNetDataMapper<T, PVDcNetwork> {
+    private static final Logger log = LoggerFactory.getLogger(AbstractODMDcSysNetMapper.class);
+
 	public AbstractODMDcSysNetMapper() {
 	}
 	
@@ -126,7 +129,7 @@ public abstract class AbstractODMDcSysNetMapper<T> extends AbstractODMNetDataMap
 			 * a child dc sys net cannot contain any child network 
 			 */
 		} catch (IpssDcSysException e) {
-			ipssLogger.severe(e.toString());
+			log.error(e.toString());
 			noError = false;
 		}
 		

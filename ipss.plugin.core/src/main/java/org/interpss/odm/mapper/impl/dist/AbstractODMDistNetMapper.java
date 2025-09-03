@@ -23,8 +23,6 @@
  */
 package org.interpss.odm.mapper.impl.dist;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
-
 import javax.xml.bind.JAXBElement;
 
 import org.ieee.odm.schema.BaseBranchXmlType;
@@ -55,8 +53,11 @@ import com.interpss.dist.DistBusCode;
 import com.interpss.dist.DistNetwork;
 import com.interpss.dist.DistObjectFactory;
 import com.interpss.dist.ScStanderd;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractODMDistNetMapper<T> extends AbstractODMNetDataMapper<T, DistNetwork> {
+	private static final Logger log = LoggerFactory.getLogger(AbstractODMDistNetMapper.class);
 	public AbstractODMDistNetMapper() {
 	}
 	
@@ -86,33 +87,24 @@ public abstract class AbstractODMDistNetMapper<T> extends AbstractODMNetDataMapp
 	public boolean map2Model(T from, DistNetwork distNet) {
 		DistributionNetXmlType xmlNet = (DistributionNetXmlType)from;
 		boolean noError = true;
-		
 		try {
 			mapDistNetworkData(distNet, xmlNet);
-
 			for (JAXBElement<? extends BusXmlType> bus : xmlNet.getBusList().getBus()) {
 				DistBusXmlType busRec = (DistBusXmlType) bus.getValue();
 				mapDistBusData(busRec, distNet);
 			}
-
 			for (JAXBElement<? extends BaseBranchXmlType> b : xmlNet.getBranchList().getBranch()) {
 				DistBranchXmlType braRec = (DistBranchXmlType) b.getValue();
 				mapDistBranchData(braRec, distNet);
 			}
-			
-			/*
-			 * a child dist net may contain DcSys child network(s) 
-			 */
-			
 			if (xmlNet.isHasChildNet() != null && xmlNet.isHasChildNet()) {
 				if (!new MultiNetDistHelper(distNet).mapChildNet(xmlNet.getChildNetDef()))
 					noError = false;
-			}			
+			}
 		} catch (InterpssException e) {
-			ipssLogger.severe(e.toString());
+			log.error(e.toString());
 			noError = false;
 		}
-		
 		return noError;
 	}	
 	

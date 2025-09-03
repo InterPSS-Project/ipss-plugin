@@ -25,7 +25,6 @@
 
 package org.interpss.odm.mapper.impl.dstab;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
 import static org.interpss.CorePluginFunction.MapBranchOutageType;
 
 import org.ieee.odm.model.base.BaseDataSetter;
@@ -53,6 +52,8 @@ import org.ieee.odm.schema.TimePeriodUnitType;
 import org.ieee.odm.schema.TimePeriodXmlType;
 import org.interpss.odm.mapper.impl.aclf.AclfScenarioHelper;
 import org.interpss.odm.mapper.impl.acsc.AcscScenarioHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.interpss.common.datatype.Constants;
 import com.interpss.common.exp.InterpssException;
@@ -87,6 +88,7 @@ import com.interpss.dstab.mach.MachineControllerType;
  *
  */
 public class DStabScenarioHelper {
+	private static final Logger log = LoggerFactory.getLogger(DStabScenarioHelper.class);
 	
 	private BaseDStabNetwork<?,?> dstabNet = null;
 	private DynamicSimuAlgorithm dstabAlgo = null;	
@@ -195,7 +197,7 @@ public class DStabScenarioHelper {
 	 */
 	private void setDynamicEventData(DynamicSimuEvent eventObj,
 					DynamicEventXmlType eventXml) throws InterpssException {
-		ipssLogger.info("Dynamic Event Type: " + eventXml.getEventType().toString());
+		log.info("Dynamic Event Type: " + eventXml.getEventType().toString());
 
 		if (eventXml.getEventType() == DynamicEventEnumType.LOAD_CHANGE) {
 			initLoadChange(eventObj, eventXml, this.dstabAlgo.getTotalSimuTimeSec());
@@ -344,12 +346,12 @@ public class DStabScenarioHelper {
 	 */
 	private void setSetPointChangeDynEvent(DStabSetPointChangeXmlType spcEventXml, DStabSimuSettingXmlType settings) throws InterpssException {
 		// find the machine from the dtabNet using the machId
-		ipssLogger.info("Dynamic Event Type: SetPointChange");
+		log.info("Dynamic Event Type: SetPointChange");
 		String machId = spcEventXml.getRefGenBus().getBusId();
 		Machine mach = this.dstabNet.getMachine(machId);
 		if (mach == null)
 			throw new InterpssException("Machine for Set Point Change not found");
-		ipssLogger.info("SetPointChange mach id : " + mach.getId());
+		log.info("SetPointChange mach id : " + mach.getId());
 
 		// create a dynamic event of type SetPointChange. The event is added into the net during the event creation
 		DynamicSimuEvent eventObj = DStabObjectFactory.createDEvent(

@@ -63,7 +63,6 @@ import static org.interpss.odm.mapper.base.ODMUnitHelper.toActivePowerUnit;
 
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
-import static com.interpss.common.util.IpssLogger.ipssLogger;
 import com.interpss.core.AclfAdjustObjectFactory;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.HvdcObjectFactory;
@@ -91,6 +90,8 @@ import com.interpss.core.net.OriginalDataFormat;
 import com.interpss.core.net.Zone;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * abstract mapper implementation to map ODM LoadflowNetXmlType object to InterPSS AclfNetwork object
@@ -99,6 +100,7 @@ import com.interpss.simu.SimuCtxType;
  * @param Tfrom from object type
  */
 public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtxDataMapper<Tfrom> {
+    private static final Logger log = LoggerFactory.getLogger(AbstractODMAclfNetMapper.class);
 	private ODMAclfNetMapper.XfrBranchModel xfrBranchModel = ODMAclfNetMapper.XfrBranchModel.InterPSS;
 	private OriginalDataFormat originalFormat = OriginalDataFormat.IPSS_API;
 	
@@ -243,7 +245,8 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 			postAclfNetProcessing(aclfNet);
 			
 		} catch (InterpssException e) {
-			ipssLogger.severe(e.toString());
+			log.error(e.toString());
+			log.error("Exception in map2Model: ", e);
 			noError = false;
 		}
 
@@ -358,7 +361,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 					branch.setBranchDir(true);
 				
 				if (b == null) {
-					ipssLogger.severe("Branch in the interface not found, " +
+					log.error("Branch in the interface not found, " +
 							xmlBra.getFromBusId() + ", " + xmlBra.getToBusId() + ", " + xmlBra.getCircuitId());
 				}
 				else {

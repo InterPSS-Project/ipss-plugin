@@ -6,8 +6,10 @@ import org.interpss.dstab.dynLoad.DynLoadCMPLDWG;
 import org.interpss.dstab.dynLoad.DynLoadVFreqDependentModel;
 import org.interpss.dstab.dynLoad.InductionMotor;
 import org.interpss.dstab.dynLoad.LD1PAC;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
@@ -105,6 +107,7 @@ public class DynLoadCMPLDWGImpl extends DynLoadModelImpl implements DynLoadCMPLD
 
 	private Complex derPQ = null;
 	
+	private static final Logger log = LoggerFactory.getLogger(DynLoadCMPLDWGImpl.class);
 	
 	public DynLoadCMPLDWGImpl(){
 		
@@ -127,7 +130,7 @@ public class DynLoadCMPLDWGImpl extends DynLoadModelImpl implements DynLoadCMPLD
 
 		this.derPQ = derPowerPU;
 		if(this.derPQ.getImaginary()!=0.0){
-			IpssLogger.getLogger().severe(referenceId+" DER power should be real power only, imaginary part is ignored");
+			log.error(referenceId+" DER power should be real power only, imaginary part is ignored");
 			this.derPQ = new Complex(this.derPQ.getReal(), 0.0);	
 		}
 	
@@ -517,7 +520,7 @@ public class DynLoadCMPLDWGImpl extends DynLoadModelImpl implements DynLoadCMPLD
     			this.indMotorA.initStates();
     		}
     		else{
-    			 IpssLogger.ipssLogger.severe(" The motor A should be a three-phase induction motor. Type = "+this.motorAType);
+    			 log.error(" The motor A should be a three-phase induction motor. Type = "+this.motorAType);
     		}
     	}
     	else{
@@ -537,7 +540,7 @@ public class DynLoadCMPLDWGImpl extends DynLoadModelImpl implements DynLoadCMPLD
     			this.indMotorB.initStates();
     		}
     		else{
-    			 IpssLogger.ipssLogger.severe(" The motor B should be a three-phase induction motor. Type = "+this.motorBType);
+    			 log.error(" The motor B should be a three-phase induction motor. Type = "+this.motorBType);
     		}
     	}
     	else{
@@ -558,7 +561,7 @@ public class DynLoadCMPLDWGImpl extends DynLoadModelImpl implements DynLoadCMPLD
     			this.indMotorC.initStates();
     		}
     		else{
-    			 IpssLogger.ipssLogger.severe(" The motor C should be a three-phase induction motor. Type = "+this.motorCType);
+    			 log.error(" The motor C should be a three-phase induction motor. Type = "+this.motorCType);
     		}
     	}
     	else{
@@ -578,7 +581,7 @@ public class DynLoadCMPLDWGImpl extends DynLoadModelImpl implements DynLoadCMPLD
     			this.ac1PMotor.initStates();
     		}
     		else{
-    			 IpssLogger.ipssLogger.severe(" The motor D should be a 1-phase air conditioner motor. Type = "+this.motorDType);
+    			 log.error(" The motor D should be a 1-phase air conditioner motor. Type = "+this.motorDType);
     		}
     	}
     	else{
@@ -674,7 +677,7 @@ public class DynLoadCMPLDWGImpl extends DynLoadModelImpl implements DynLoadCMPLD
 			 
 		 }
 		 else{
-			 IpssLogger.ipssLogger.severe("The calculated voltage of load bus connected to " + this.getDStabBus().getId()+ " is too low (< 0.95, and voltage at the low bus is :"+VlowBus.abs());
+			 log.error("The calculated voltage of load bus connected to " + this.getDStabBus().getId()+ " is too low (< 0.95, and voltage at the low bus is :"+VlowBus.abs());
 		 }
 		return VloadBus;
 	}

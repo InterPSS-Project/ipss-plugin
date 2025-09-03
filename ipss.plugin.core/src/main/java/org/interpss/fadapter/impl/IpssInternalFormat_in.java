@@ -1,4 +1,4 @@
- /*
+/*
   * @(#)IpssInternalFormat_in.java   
   *
   * Copyright (C) 2006 www.interpss.org
@@ -24,8 +24,6 @@
 
 package org.interpss.fadapter.impl;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
-
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
@@ -49,8 +47,11 @@ import com.interpss.core.aclf.adpter.AclfLoadBusAdapter;
 import com.interpss.core.aclf.adpter.AclfPQGenBusAdapter;
 import com.interpss.core.aclf.adpter.AclfPVGenBusAdapter;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class IpssInternalFormat_in {
+    private static final Logger log = LoggerFactory.getLogger(IpssInternalFormat_in.class);
     public static AclfNetwork loadFile(final java.io.BufferedReader din, final IPSSMsgHub msg) throws Exception {
     	// create a AclfAdjNetwork object to hold the loadflow data
     	final AclfNetwork  aclfNet = CoreObjectFactory.createAclfNetwork();
@@ -297,18 +298,18 @@ public class IpssInternalFormat_in {
       	}
 
       	AclfBus bus = adjNet.getBus(id);
-    	if (bus != null ) {
-        	bus.setGenCode(AclfGenCode.GEN_PV);
-      		final PVBusLimit pvLimit = AclfAdjustObjectFactory.createPVBusLimit(bus);
-      		pvLimit.setVSpecified(v, UnitType.PU);
-      		pvLimit.setQLimit(new LimitType(qmax,qmin), UnitType.mVA);
-      		pvLimit.setStatus(true);
-			final AclfPVGenBusAdapter pv = bus.toPVBus();
-        	pv.setDesiredVoltMag(pvLimit.getVSpecified(UnitType.PU), UnitType.PU);
-      	} else {
-      		ipssLogger.info(str);
-			throw new InterpssRuntimeException("AclfDataFile.loadPVBusInfo_2, PV bus:" + id + " is not in the system" );
-		}
+        if (bus != null ) {
+            bus.setGenCode(AclfGenCode.GEN_PV);
+            final PVBusLimit pvLimit = AclfAdjustObjectFactory.createPVBusLimit(bus);
+            pvLimit.setVSpecified(v, UnitType.PU);
+            pvLimit.setQLimit(new LimitType(qmax,qmin), UnitType.mVA);
+            pvLimit.setStatus(true);
+            final AclfPVGenBusAdapter pv = bus.toPVBus();
+            pv.setDesiredVoltMag(pvLimit.getVSpecified(UnitType.PU), UnitType.PU);
+        } else {
+            log.info(str);
+            throw new InterpssRuntimeException("AclfDataFile.loadPVBusInfo_2, PV bus:" + id + " is not in the system" );
+        }
     }
 
     public static void loadPQBusInfo(final String str, final AclfNetwork adjNet) {
@@ -361,7 +362,7 @@ public class IpssInternalFormat_in {
         	x   = new Double(st.nextToken()).doubleValue();
         	b   = new Double(st.nextToken()).doubleValue();
         	if (st.hasMoreTokens()) {
-				throw new InterpssException("AclfDataFile.loadBranchInfo_1, BranchInfo str wrong");
+				throw new InterpssRuntimeException("AclfDataFile.loadBranchInfo_1, BranchInfo str wrong");
 			}
       	}
 

@@ -24,7 +24,9 @@
 
 package org.interpss.odm.mapper.base;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static org.interpss.odm.mapper.base.ODMFunction.BusXmlRef2BusId;
 
 import org.ieee.odm.schema.ApparentPowerUnitType;
@@ -56,6 +58,8 @@ import com.interpss.core.net.Zone;
  * @param <Tto> a Network object (AclfNetwork, AcscNetwork)
  */
 public abstract class AbstractODMNetDataMapper<Tfrom, Tto> extends AbstractMapper<Tfrom, Tto> {
+	 private static final Logger log = LoggerFactory.getLogger(AbstractODMNetDataMapper.class);
+	 
 	/**
 	 * constructor
 	 */
@@ -92,7 +96,7 @@ public abstract class AbstractODMNetDataMapper<Tfrom, Tto> extends AbstractMappe
 		bus.setDesc(busRec.getDesc() == null? "Bus Desc" : busRec.getDesc());
 		bus.setStatus(busRec.isOffLine() != null? !busRec.isOffLine() : true);
 		if (!bus.isActive()) {
-			ipssLogger.info("Bus is not active, " + bus.getId());
+			log.info("Bus is not active, " + bus.getId());
 		}
 		
 		/*
@@ -157,7 +161,7 @@ public abstract class AbstractODMNetDataMapper<Tfrom, Tto> extends AbstractMappe
 		branch.setDesc(branchRec.getDesc() == null ? "" : branchRec.getDesc());
 		branch.setStatus(branchRec.isOffLine() != null ? !branchRec.isOffLine() : true);
 		if (!branch.isActive()) {
-			ipssLogger.info("Branch is not active, " + branch.getId());
+			log.info("Branch is not active, " + branch.getId());
 		}
 		if (branchRec.getAreaNumber() != null) {
 			Area area = CoreObjectFactory.createArea(branchRec.getAreaNumber(), net);

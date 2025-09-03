@@ -3,25 +3,17 @@ package org.interpss.core.dclf;
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.Assert.assertTrue;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.logging.Level;
-
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.IpssCorePlugin;
-import org.interpss.numeric.datatype.AtomicCounter;
-import org.interpss.numeric.datatype.Counter;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.DclfAlgoObjectFactory;
-import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
@@ -77,7 +69,7 @@ public class Dclf_PSSE_ACTIVSg25kBus_Test  extends CorePluginTestSetup {
 	@Test
 	public void testAclf() throws InterpssException{
 		IpssCorePlugin.init();
-		IpssLogger.getLogger().setLevel(Level.WARNING);
+		//IpssLogger.getLogger().setLevel(Level.WARNING);
 
 		// load the test data V33
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v33/ACTIVSg25k.RAW")

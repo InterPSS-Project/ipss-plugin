@@ -20,7 +20,7 @@ import org.interpss.multiNet.algo.SubNetworkProcessor;
 import org.interpss.multiNet.equivalent.NetworkEquivalent;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
-import org.interpss.numeric.matrix.MatrixUtil;
+import org.interpss.numeric.matrix.FullMatrixUtil;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.numeric.util.PerformanceTimer;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
@@ -30,7 +30,6 @@ import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -102,9 +101,9 @@ public class TestMultiNet3Ph3SeqSimHelper {
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(5);
 		
-		IpssLogger.getLogger().setLevel(Level.WARNING);
+		//IpssLogger.getLogger().setLevel(Level.WARNING);
 		
-		PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+		PerformanceTimer timer = new PerformanceTimer();
 		
         // Must use this dynamic event process to modify the YMatrixABC
 		dstabAlgo.setDynamicEventHandler(new DynamicEventProcessor3Phase());
@@ -202,9 +201,9 @@ public class TestMultiNet3Ph3SeqSimHelper {
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(1);
 			
-			IpssLogger.getLogger().setLevel(Level.INFO);
+			//IpssLogger.getLogger().setLevel(Level.INFO);
 			
-			PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+			PerformanceTimer timer = new PerformanceTimer();
 			
 			
 			if (dstabAlgo.initialization()) {
@@ -299,7 +298,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 				ca = (-1.9073486328125E-6, 9.5367431640625E-7),cb = (1.9073486328125E-6, 9.5367431640625E-7),cc = (-1.3676696797039316, 4.000005590181085E10)
 				, 
 		   */
-		  System.out.println(" Zth of subnet1: \n"+MatrixUtil.complex3x32DAry2String(Zth1));
+		  System.out.println(" Zth of subnet1: \n"+FullMatrixUtil.complex3x32DAry2String(Zth1));
 		  
 		  assertTrue(Zth1[0][0].aa.subtract(new Complex(1.0,0).divide(bus5LoadYeq)).abs()<1.0E-6); 
 		  
@@ -409,7 +408,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(1);
 			
-			IpssLogger.getLogger().setLevel(Level.INFO);
+			//IpssLogger.getLogger().setLevel(Level.INFO);
 			
 		  // first initialize the subsystems in order to solve them in the following steps.	
 			 dstabAlgo.setSolver( new MultiNet3Ph3SeqDStabSolverImpl(dstabAlgo, mNetHelper));
@@ -432,7 +431,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 			 assertTrue(Vth1Ary[0].subtract(new Complex3x1(new Complex(0,0),new Complex(1.05349,-0.00194),new Complex(0,0))).abs()<5.0E-5);
 			 assertTrue(Vth1Ary[1].subtract(new Complex3x1(new Complex(0,0),new Complex(1.03674 ,0.15596),new Complex(0,0))).abs()<5.0E-5);
 			 
-			 System.out.println("Vth of subNet1 = "+MatrixUtil.complex3x1Ary2String(Vth1Ary));
+			 System.out.println("Vth of subNet1 = "+FullMatrixUtil.complex3x1Ary2String(Vth1Ary));
 			 
 			 NetworkEquivalent equivSubNet_2 = equivTable.get("SubNet-2");
 			 assertTrue(equivSubNet_2.getSource3x1().length==1);
@@ -545,7 +544,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(1);
 			
-			IpssLogger.getLogger().setLevel(Level.INFO);
+			//IpssLogger.getLogger().setLevel(Level.INFO);
 			
 			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",proc.getSubNetwork("SubNet-2"),SimpleFaultCode.GROUND_LG,new Complex(0,0), null,0.5d,0.05),"3phaseFault@Bus5");
 			
@@ -654,7 +653,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(1);
 			
-			IpssLogger.getLogger().setLevel(Level.INFO);
+			//IpssLogger.getLogger().setLevel(Level.INFO);
 			
 			//dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",proc.getSubNetwork("SubNet-1"),SimpleFaultCode.GROUND_LG,0.5d,0.05),"3phaseFault@Bus5");
 			
@@ -783,7 +782,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(1);
 			
-			IpssLogger.getLogger().setLevel(Level.INFO);
+			//IpssLogger.getLogger().setLevel(Level.INFO);
 			
 			//dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",proc.getSubNetwork("SubNet-2"),SimpleFaultCode.GROUND_LG,0.5d,0.05),"3phaseFault@Bus5");
 			
@@ -829,7 +828,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 			  */
 			 
 			 
-			 System.out.println(MatrixUtil.complex3x32DAry2String(equivZMatrix1));
+			 System.out.println(FullMatrixUtil.complex3x32DAry2String(equivZMatrix1));
 			 
 			 Complex3x3 equivZ1_00 = new Complex3x3();
 			 equivZ1_00.aa = new Complex(0.006112394324929721, 0.07952815172230401);
@@ -873,7 +872,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 				ca = (0.0, 0.0),cb = (0.0, 0.0),cc = (2.369018180678646E-5, 0.06449226766717943)
 			  */
 			 
-			 System.out.println(MatrixUtil.complex3x32DAry2String(equivZMatrix2));
+			 System.out.println(FullMatrixUtil.complex3x32DAry2String(equivZMatrix2));
 			 
 			 
 			 Complex3x3 equivZ2_10 = new Complex3x3();
@@ -1070,7 +1069,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(1);
 			
-			IpssLogger.getLogger().setLevel(Level.INFO);
+			//IpssLogger.getLogger().setLevel(Level.INFO);
 			
 			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",proc.getSubNetwork("SubNet-2"),SimpleFaultCode.GROUND_LG,new Complex(0,0),null,0.5d,0.05),"3phaseFault@Bus5");
 			
