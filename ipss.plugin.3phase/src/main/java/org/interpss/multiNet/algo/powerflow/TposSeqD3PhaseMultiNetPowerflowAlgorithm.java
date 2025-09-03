@@ -14,7 +14,6 @@ import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfGenCode;
@@ -24,8 +23,11 @@ import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.NetworkType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TposSeqD3PhaseMultiNetPowerflowAlgorithm {
+    private static final Logger log = LoggerFactory.getLogger(TposSeqD3PhaseMultiNetPowerflowAlgorithm.class);
 	
 	protected BaseAclfNetwork<? extends BaseAclfBus, ?extends AclfBranch> net = null;
 	protected BaseAclfNetwork<? extends BaseAclfBus, ?extends AclfBranch> transmissionNet = null;
@@ -74,13 +76,10 @@ public class TposSeqD3PhaseMultiNetPowerflowAlgorithm {
 		this.distNetList = new  ArrayList<>();
 		for(String id:subNetProc.getInternalSubNetBoundaryBusIdList()){
 			BaseAclfNetwork distNet = subNetProc.getSubNetworkByBusId(id);
-			
-
 			if(!this.distNetList.contains(distNet))
 			  this.distNetList.add(distNet);
-			  IpssLogger.getLogger().info("Subsystem #"+distNet.getId()+" is set to be Distribution network before performing T&D Loadflow");
+			  log.info("Subsystem #"+distNet.getId()+" is set to be Distribution network before performing T&D Loadflow");
 			  distNet.setNetworkType(NetworkType.DISTRIBUTION);
-			  
 		}
 		
 		transLfAlgo = CoreObjectFactory.createLoadflowAlgorithm(transmissionNet);
@@ -166,6 +165,7 @@ public class TposSeqD3PhaseMultiNetPowerflowAlgorithm {
 				Complex totalPower = sourceBus3Ph.get3PhaseVotlages().dotProduct(currInj3Phase.conjugate()).divide(3.0).multiply(distMVABase/transMVABase);
 				
 				System.out.println("Total power (on Transmission Network MVA Base) = "+totalPower.toString());
+				log.debug("Total power (on Transmission Network MVA Base) = {}", totalPower);
 				
 				distBoundaryTotalPowerTable.put(sourceBus.getId(), totalPower);
 			}
@@ -264,6 +264,7 @@ public class TposSeqD3PhaseMultiNetPowerflowAlgorithm {
 		    		  Complex3x1 vabc = this.distBoundaryBus3SeqVoltages.get(sourceBus3Ph.getId()).toABC();
 		    		  
 		    		  System.out.println("updated dist source bus vabc = "+vabc);
+		    		  log.debug("updated dist source bus vabc = {}", vabc);
 		    		  sourceBus3Ph.set3PhaseVotlages(vabc);
 		    		  //manually update the positive sequence, since internally it won't be automatically updated.
 		    		  sourceBus3Ph.setVoltage(sourceBus3Ph.getThreeSeqVoltage().b_1);
@@ -295,6 +296,7 @@ public class TposSeqD3PhaseMultiNetPowerflowAlgorithm {
 						Complex totalPower = sourceBus3Ph.get3PhaseVotlages().dotProduct(currInj3Phase.conjugate()).divide(3.0).multiply(distNet.getBaseMva()/transMVABase);
 						
 						System.out.println("Total power (on Transmission Network MVA Base) = "+totalPower.toString());
+						log.debug("Total power (on Transmission Network MVA Base) = {}", totalPower);
 						
 						distBoundaryTotalPowerTable.put(sourceBus3Ph.getId(), totalPower);
 						
@@ -366,6 +368,9 @@ public class TposSeqD3PhaseMultiNetPowerflowAlgorithm {
 				    			  System.out.println("i = "+i+" TDPF not converge!");
 				    			  System.out.println("Last step transmission system boundary bus 3 seq voltage: \n"+e.getKey() +","+this.lastStepTransBoundaryBus3SeqVoltages.get(e.getKey()));
 				    			  System.out.println("Current step transmission system boundary bus 3 seq voltage: \n"+e.getKey() +","+e.getValue());
+				    			  log.warn("i = {} TDPF not converge!", i);
+				    			  log.debug("Last step transmission system boundary bus 3 seq voltage: {} {}", e.getKey(), this.lastStepTransBoundaryBus3SeqVoltages.get(e.getKey()));
+				    			  log.debug("Current step transmission system boundary bus 3 seq voltage: {} {}", e.getKey(), e.getValue());
 				    		      
 				    		  }
 				    	  }
@@ -374,8 +379,7 @@ public class TposSeqD3PhaseMultiNetPowerflowAlgorithm {
 		    	     
 				      if (i>0 && this.pfFlag) {
 				    	  // taking into account the 1 iteration at the initialization stage
-				    	  IpssLogger.getLogger().info(" Transmision&Distribution combined power flow converges after " + (i+2) +" iterations.");
-				    	  System.out.println(" Transmision&Distribution combined power flow converges after " + (i+2) +" iterations.");
+				    	  log.info(" Transmision&Distribution combined power flow converges after {} iterations.", (i+2));
 				    	  // update the load flow convergence status
 				    	  this.transmissionNet.setLfConverged(true);
 				    	  

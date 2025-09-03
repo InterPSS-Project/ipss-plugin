@@ -23,7 +23,6 @@
   */
 package org.interpss.plugin.pssl.plugin;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
 import static org.interpss.CorePluginFunction.AclfParser2AclfNet;
 import static org.interpss.CorePluginFunction.AcscParser2AcscNet;
 import static org.interpss.CorePluginFunction.DStabParser2DStabAlgo;
@@ -482,7 +481,7 @@ public class IpssAdapter extends BaseDSL {
 			if(filename !=null) this.file1Name = filename;
 			
 			try {
-				ipssLogger.info("Load file: " + this.file1Name + " of format " + this.format);
+				//ipssLogger.info("Load file: " + this.file1Name + " of format " + this.format);
 
 				if ( this.format == FileFormat.IEEE_ODM) {
 					ODMModelParser parser = new ODMModelParser();
