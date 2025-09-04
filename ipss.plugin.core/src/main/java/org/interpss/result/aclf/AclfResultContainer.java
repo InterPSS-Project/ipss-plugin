@@ -6,12 +6,16 @@ import java.util.List;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.result.aclf.bean.AclfBranchInfo;
 import org.interpss.result.aclf.bean.AclfBusInfo;
+import org.interpss.result.aclf.bean.AclfGenInfo;
 import org.interpss.result.aclf.bean.AclfHvdcInfo;
+import org.interpss.result.aclf.bean.AclfLoadInfo;
 import org.interpss.result.aclf.bean.AclfNetInfo;
 import org.interpss.result.aclf.bean.AclfSvcInfo;
 
 public class AclfResultContainer extends AclfNetInfo {
 	private List<AclfBusInfo> busResults;
+	private List<AclfGenInfo> genResults;
+	private List<AclfLoadInfo> loadResults;
 	private List<AclfSvcInfo> svcResults;
 	
 	private List<AclfBranchInfo> branchResults;
@@ -20,6 +24,8 @@ public class AclfResultContainer extends AclfNetInfo {
 	public AclfResultContainer() {
 		super();
 		this.busResults = new LinkedList<>();
+		this.genResults = new LinkedList<>();
+		this.loadResults = new LinkedList<>();
 		this.svcResults = new LinkedList<>();
 		this.branchResults = new LinkedList<>();
 		this.hvdcResults = new LinkedList<>();
@@ -33,6 +39,8 @@ public class AclfResultContainer extends AclfNetInfo {
 				numberOfBuses, numberOfBranches, loadflowConverged, 
 				maxMismatch, totalGeneration, totalLoad);
 		this.busResults = new LinkedList<>();
+		this.genResults = new LinkedList<>();
+		this.loadResults = new LinkedList<>();
 		this.svcResults = new LinkedList<>();
 		this.branchResults = new LinkedList<>();
 		this.hvdcResults = new LinkedList<>();
@@ -40,6 +48,14 @@ public class AclfResultContainer extends AclfNetInfo {
 	
 	public List<AclfBusInfo> getBusResults() {
 		return busResults;
+	}
+	
+	public List<AclfGenInfo> getGenResults() {
+		return genResults;
+	}
+	
+	public List<AclfLoadInfo> getLoadResults() {
+		return loadResults;
 	}
 	
 	public List<AclfSvcInfo> getSvcResults() {
