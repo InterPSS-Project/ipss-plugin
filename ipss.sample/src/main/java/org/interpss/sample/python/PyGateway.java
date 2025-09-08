@@ -5,11 +5,11 @@ import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.IEEECommonF
 import org.interpss.CorePluginFunction;
 import org.interpss.IpssCorePlugin;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.interpss.plugin.pssl.simu.IpssAclf;
 
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.algo.AclfMethodType;
+import com.interpss.core.algo.LoadflowAlgorithm;
 
 import py4j.GatewayServer;
 
@@ -26,11 +26,12 @@ public class PyGateway {
 					.setFormat(IEEECommonFormat)
 					.load()
 					.getImportedObj();
-			
-		  	IpssAclf.createAclfAlgo(net)
-  					.lfMethod(AclfMethodType.NR)
-  					.nonDivergent(true)
-  					.runLoadflow();	
+		  	
+		  	// create the default loadflow algorithm
+		  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+
+		  	// use the loadflow algorithm to perform loadflow calculation
+		  	algo.loadflow();
 		  	
 		  	rntStr = CorePluginFunction.aclfResultSummary.apply(net).toString();
 		} catch ( InterpssException e) {

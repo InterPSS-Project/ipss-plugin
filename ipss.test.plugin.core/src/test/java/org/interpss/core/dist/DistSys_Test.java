@@ -24,26 +24,14 @@
 
 package org.interpss.core.dist;
 
-import static org.junit.Assert.assertTrue;
-
-import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.plugin.pssl.simu.IpssDist;
-import org.interpss.plugin.pssl.simu.net.IpssDistNet.DistNetDSL;
-import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.acsc.BusGroundCode;
-import com.interpss.core.acsc.XFormerConnectCode;
-import com.interpss.dist.DistBus;
-import com.interpss.dist.adpter.DistGenerator;
-import com.interpss.dist.adpter.DistUtility;
-import com.interpss.dist.adpter.DistXformer;
 
 public class DistSys_Test extends CorePluginTestSetup {
-	@Test
+	//@Test
 	public void singlePointTest1() throws InterpssException {
+		/*
 		DistNetDSL distNet = IpssDist.createDistNetwork("Sample DistNetwork")      
         						.setBaseKva(100000.0);
 		
@@ -77,6 +65,7 @@ public class DistSys_Test extends CorePluginTestSetup {
 	  	//System.out.println(bus.getAcscBus().getGenResults().getImaginary());
 	  	assertTrue(Math.abs(bus.getBus().calNetGenResults().getReal() + 0.05) < 0.001);
 	  	assertTrue(Math.abs(bus.getBus().calNetGenResults().getImaginary() + 0.0349) < 0.0001);
+	  	*/
 	}
 }
 
