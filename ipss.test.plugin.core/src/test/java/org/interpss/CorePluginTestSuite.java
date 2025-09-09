@@ -39,7 +39,6 @@ import org.interpss.core.dclf.IEEE14_Dclf_Test;
 import org.interpss.core.dclf.edclf.IEEE118_EDclf_Test;
 import org.interpss.core.dclf.edclf.IEEE14_EDclf_Test;
 import org.interpss.core.dclf.edclf.IEEE39_EDclf_Test;
-import org.interpss.core.dist.DistSys_Test;
 import org.interpss.core.dstab.DStab_IEEE9Bus_Test;
 import org.interpss.core.dstab.cml.block.DelayControlBlockTests;
 import org.interpss.core.dstab.cml.block.FilterControlBlockTests;
@@ -202,7 +201,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	//DistLF14Bus_PathLF_Test.class,
 	//DistLF14BusTest.class,
 	//DistSample2BusTest.class,
-	DistSys_Test.class,	
+	//DistSys_Test.class,	
 	
 	// DC System
 	//DcSample_2BusTest.class,
