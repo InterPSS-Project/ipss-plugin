@@ -466,17 +466,11 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 		}
 	}
 	
-	private void mapSwitchShuntData(SwitchedShuntXmlType xmlSwitchedShuntData){
+	private void mapSwitchShuntData(SwitchedShuntXmlType xmlSwitchedShuntData) throws InterpssException{
 
 		SwitchedShunt swchShunt = AclfAdjustObjectFactory.createSwitchedShunt(this.bus);
 		//swchShunt.setId("SwitchedShunt@"+bus.getId());
 		swchShunt.setStatus(!xmlSwitchedShuntData.isOffLine());
-		
-		//this.bus.setBusControl(swchShunt);
-		//this.bus.setBusControl(swchShunt);
-		//swchShunt.setParentBus(bus);
-		//swchShunt.setRemoteBus(bus);
-		//swchShunt.setRemoteBusBranchId(bus.getId());
 		
 		ReactivePowerXmlType binit = xmlSwitchedShuntData.getBInit();
 		
@@ -488,6 +482,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 				            		 1.0E-8; // VAR->1.0E-8 with a 100 MVA base
 			
 			swchShunt.setBInit(binit.getValue()*factor);
+		
 			
 			AclfAdjustControlMode mode = xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.CONTINUOUS?
 					AclfAdjustControlMode.CONTINUOUS:(xmlSwitchedShuntData.getMode()==SwitchedShuntModeEnumType.DISCRETE_LOCAL_VOLTAGE ||
@@ -552,9 +547,24 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 
 			//set Blimit
 			swchShunt.setBLimit(new LimitType(bmax,bmin));
-
-
 		}
+
+			//Remote bus id
+		if (xmlSwitchedShuntData.getRemoteControlledBus() != null) {
+			String remoteId = BusXmlRef2BusId.fx(xmlSwitchedShuntData.getRemoteControlledBus());
+
+		
+			swchShunt.setRemoteBusBranchId(remoteId);
+		
+		}
+		else { // default is to control the local bus
+			swchShunt.setRemoteBusBranchId(bus.getId());
+			swchShunt.setRemoteBus(bus);
+			
+		}
+
+
+		
 	}
 
 	private void mapStaticVarCompensatorData(StaticVarCompensatorXmlType svcData) throws InterpssException{
