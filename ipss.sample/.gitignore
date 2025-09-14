@@ -2,7 +2,7 @@
 /target/
 /bin/
 .classpath
-.settings/
+/.settings
 .project
 .metadata/
 *.log
@@ -16,3 +16,4 @@
 *.prefs
 .DS_Store
 /.apt_generated/
+
