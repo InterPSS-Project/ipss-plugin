@@ -52,7 +52,7 @@ public class DoubleSparseEqnPerformance {
 	
 	static void test() throws Exception {
 		int n = 21464;
-		ISparseEqnDouble eqn = buildEqnNewFormat("testData/JMatrix_20kBus.txt", n);
+		ISparseEqnDouble eqn = buildEqnNewFormat("ipss-plugin/ipss.sample/testData/JMatrix_20kBus.txt", n);
 		
 		eqn.setB2Unity(10);
 	  	PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
