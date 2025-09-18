@@ -203,8 +203,13 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 		
 		
 		
-		if(xmlBusData.getSwitchedShunt()!=null){
-			mapSwitchShuntData(xmlBusData.getSwitchedShunt());
+		if(xmlBusData.getSwitchedShuntData()!=null){
+			if(!xmlBusData.getSwitchedShuntData().getContributeSwitchedShunt().isEmpty()){
+				//iterate through all the switched shunt elements
+				for(SwitchedShuntXmlType elem: xmlBusData.getSwitchedShuntData().getContributeSwitchedShunt()){
+					mapSwitchShuntData(elem);
+				}	
+			}
 		}
 
 		if(xmlBusData.getSvc() != null) {
@@ -471,7 +476,11 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 		SwitchedShunt swchShunt = AclfAdjustObjectFactory.createSwitchedShunt(this.bus);
 		//swchShunt.setId("SwitchedShunt@"+bus.getId());
 		swchShunt.setStatus(!xmlSwitchedShuntData.isOffLine());
-		
+
+		//id, default id = "1"
+		String id = (xmlSwitchedShuntData.getId()==null || xmlSwitchedShuntData.getId().isEmpty())?"1":xmlSwitchedShuntData.getId();
+		swchShunt.setId(id);
+
 		ReactivePowerXmlType binit = xmlSwitchedShuntData.getBInit();
 		
 		if (binit != null) {
