@@ -256,8 +256,12 @@ BUS  10002 GZ-HLZ      220.00 CKT     MW     MVAR     MVA  %I 1.0445PU  -47.34  
 		/*
 		 *   TO SWITCHED SHUNT                        0.0   -25.5    25.5
 		 */
-		if (bus.isSwitchedShunt() && !bus.isStaticVarCompensator()) {
-			double  q = -bus.toCapacitorBus().getB(); // negative value as the result is for "TO SWITCHED SHUNT"
+		if (bus.isSwitchedShunt()) {
+			double b =  bus.getSwitchedShuntList().stream()
+				.filter(switchShunt->switchShunt.isControlStatus())
+				.mapToDouble(switchShunt->switchShunt.getBActual())
+				.sum();
+			double  q = - b; // negative value as the result is for "TO SWITCHED SHUNT"
 			
 			q *= bus.getVoltageMag() * bus.getVoltageMag() * factor;
 			s += formatBusLoad("TO SWITCHED SHUNT", 0, q, q) + "\n";
@@ -268,7 +272,7 @@ BUS  10002 GZ-HLZ      220.00 CKT     MW     MVAR     MVA  %I 1.0445PU  -47.34  
 		 *   TO STATCOM               0.0   -25.5    25.5
 		 */
 		if (bus.isStaticVarCompensator()) {
-			double q = -bus.toCapacitorBus().getB(); // negative value as the result is for "TO STATCOM"
+			double q = -bus.getStaticVarCompensator().getBActual(); // negative value as the result is for "TO STATCOM"
 
 			q *= bus.getVoltageMag() * bus.getVoltageMag() * factor;
 			s += formatBusLoad("TO STATCOM", 0, q, q) + "\n";
