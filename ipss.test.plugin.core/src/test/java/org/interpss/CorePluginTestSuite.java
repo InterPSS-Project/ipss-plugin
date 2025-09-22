@@ -6,6 +6,7 @@ import org.interpss.core.aclf.IEEE9_MultiGenTest;
 import org.interpss.core.aclf.IEEE9_MultiLoadTest;
 import org.interpss.core.aclf.Kundur_2Area_LCCHVDC2T_Aclf_Test;
 import org.interpss.core.aclf.SwingBusSubAreaTest;
+import org.interpss.core.aclf.svc.IEEE14_PVLimit_SVCTest;
 import org.interpss.core.adapter.bpa.BPASampleTestCases;
 import org.interpss.core.adapter.ge.GESampleTestCases;
 import org.interpss.core.adapter.ieee.IEEE009Bus_Test;
@@ -96,6 +97,9 @@ import org.junit.runners.Suite.SuiteClasses;
 	Kundur_2Area_LCCHVDC2T_Test.class,
 	Kundur_2Area_VSCHVDC2T_Test.class,
 
+	// SVC and PV limit
+	IEEE14_PVLimit_SVCTest.class,
+	
 	// large PSSE network
 	PSSE_ACTIVSg2000Bus_Test.class,
 	PSSE_ACTIVSg25kBus_Test.class,
