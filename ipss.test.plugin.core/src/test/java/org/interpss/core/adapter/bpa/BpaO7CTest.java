@@ -204,7 +204,7 @@ public class BpaO7CTest extends DStabTestSetupBase {
 
 			BaseDStabNetwork net = simuCtx.getDStabilityNet();
 
-			assertTrue(net.checkData(CoreObjectFactory.createDefultDataCheckConfiguration()));
+			assertTrue(net.checkData(CoreObjectFactory.createDefaultDataCheckConfiguration()));
 			assertTrue(net.getBranchList().size()==308);
 			assertTrue(net.getBusList().size()==141);
 			 
@@ -321,7 +321,7 @@ public class BpaO7CTest extends DStabTestSetupBase {
 			}
 			
 			 AclfNetwork net=simuCtx.getAclfNet();
-			 assertTrue(net.checkData(CoreObjectFactory.createDefultDataCheckConfiguration()));
+			 assertTrue(net.checkData(CoreObjectFactory.createDefaultDataCheckConfiguration()));
 			 assertTrue(net.getBranchList().size()==308);
 			 assertTrue(net.getBusList().size()==141);
 			 //System.out.println(net.net2String());
