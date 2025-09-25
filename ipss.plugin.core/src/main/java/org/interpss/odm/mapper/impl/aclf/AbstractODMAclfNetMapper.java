@@ -60,6 +60,8 @@ import org.interpss.odm.ext.pwd.AclfBusPWDExtension;
 import org.interpss.odm.mapper.ODMAclfNetMapper;
 import org.interpss.odm.mapper.base.AbstractODMSimuCtxDataMapper;
 import static org.interpss.odm.mapper.base.ODMUnitHelper.toActivePowerUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
@@ -90,8 +92,6 @@ import com.interpss.core.net.OriginalDataFormat;
 import com.interpss.core.net.Zone;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * abstract mapper implementation to map ODM LoadflowNetXmlType object to InterPSS AclfNetwork object
@@ -163,12 +163,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 			
 			int cnt = 0;
 			for (JAXBElement<? extends BaseBranchXmlType> b : xmlNet.getBranchList().getBranch()) {
-				/*
-				if (b == null) {
-					System.out.println("xxxxxxxxxx");
-				}
-				*/
-				
+	
 				BaseBranchXmlType xmlBranch = b.getValue();
 				//System.out.println(xmlBranch.getName() + ", " + xmlBranch.getId() + ", " + cnt++);
 				Branch branch = null;
@@ -196,7 +191,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 				else 
 					branch = CoreObjectFactory.createAclfBranch();
 				
-				// TODO: fix the following error:
+				// fix the following error:
 				/*
 				 * Exception in thread "main" java.lang.NullPointerException: Cannot invoke "com.interpss.core.net.Network.getOriginalDataFormat()" 
 				 * because the return value of "com.interpss.core.aclf.Aclf3WBranch.getNetwork()" is null
@@ -288,13 +283,15 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 		3. set the star bus number using setNumber()
 		*/
 
-		// Find the maximum bus number in the network to determine the starting number for star buses
-		int maxBusNum = aclfNet.getBusList().size();
-		// Calculate startingNum as the next power of 10 greater than maxBusNum
-		int startingNum = (int) Math.pow(10, Integer.toString(maxBusNum).length());
-		for (BaseAclfBus<?, ?> bus : aclfNet.getBusList()) {
-			if (bus.getName().equals("3WXfr StarBus")) {
-				bus.setNumber(startingNum++);
+		if (aclfNet.getOriginalDataFormat() == OriginalDataFormat.PSSE) {
+			// Find the maximum bus number in the network to determine the starting number for star buses
+			int maxBusNum = aclfNet.getBusList().size();
+			// Calculate startingNum as the next power of 10 greater than maxBusNum
+			int startingNum = (int) Math.pow(10, Integer.toString(maxBusNum).length());
+			for (BaseAclfBus<?, ?> bus : aclfNet.getBusList()) {
+				if (bus.getName().equals("3WXfr StarBus")) {
+					bus.setNumber(startingNum++);
+				}
 			}
 		}
 
