@@ -5,7 +5,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
-import org.interpss.plugin.opf.common.OPFLogger;
 import org.interpss.plugin.opf.constraint.OpfConstraint;
 import org.interpss.plugin.opf.constraint.dc.ActivePowerEqnConstraintCollector;
 import org.interpss.plugin.opf.constraint.dc.BusMinAngleConstraintCollector;
@@ -14,8 +13,9 @@ import org.interpss.plugin.opf.constraint.dc.LineMwFlowConstraintCollector;
 import org.interpss.plugin.opf.objectiveFunction.GIQPObjectiveFunctionCollector;
 import org.interpss.plugin.opf.solver.AbstractOpfSolver;
 import org.interpss.plugin.opf.util.OpfDataHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.interpss.core.net.Bus;
 import com.interpss.opf.OpfBus;
 import com.interpss.opf.OpfNetwork;
 
@@ -24,7 +24,8 @@ import cern.colt.matrix.impl.SparseDoubleMatrix2D;
 import cern.colt.matrix.linalg.Algebra;
 
 public class GIQPSolver extends AbstractOpfSolver {
-	
+    private static final Logger log = LoggerFactory.getLogger(GIQPSolver.class);
+    
 	QuadProgJ solver = null;	
 	private SparseDoubleMatrix2D G = null;
 	private SparseDoubleMatrix2D Ceq = null;
@@ -84,7 +85,7 @@ public class GIQPSolver extends AbstractOpfSolver {
 	}
 	@Override
 	public boolean solve() {
-		OPFLogger.getLogger().info("Running DC Optimal Power Flow Using QP solver....");
+		log.info("Running DC Optimal Power Flow Using QP solver....");
 		Long startTime = System.currentTimeMillis();
 		this.build(cstContainer);
 		
@@ -98,10 +99,10 @@ public class GIQPSolver extends AbstractOpfSolver {
 			this.isSolved = true;
 			Long endTime = System.currentTimeMillis();
 			Long duration = endTime - startTime;	
-			OPFLogger.getLogger().info("Optimization terminated.");	
-			OPFLogger.getLogger().info("Converged in " + OpfDataHelper.round(duration, 3) +" milliseconds.");	
+			log.info("Optimization terminated.");	
+			log.info("Converged in " + OpfDataHelper.round(duration, 3) +" milliseconds.");	
 		}catch(Exception e){
-			OPFLogger.getLogger().severe(e.toString());			
+			log.error(e.toString());			
 			return false;
 		}	
 		
@@ -231,13 +232,13 @@ public class GIQPSolver extends AbstractOpfSolver {
 
 	@Override
 	public void debug(String file) {
-		OPFLogger.getLogger().info("Running DCOPF debug mode for QP solver...");
+		log.info("Running DCOPF debug mode for QP solver...");
 		this.build(cstContainer);
 		try {
 			writeMatlabInputFile(file,G,a,Ceq,beq,Ciq, biq);
-			OPFLogger.getLogger().info("Output file for debug purpose has been saved to: "+file);
+			log.info("Output file for debug purpose has been saved to: "+file);
 		} catch (IOException e) {
-			OPFLogger.getLogger().severe(e.toString());
+			log.error(e.toString());
 			e.printStackTrace();
 		}
 		
@@ -260,7 +261,7 @@ public class GIQPSolver extends AbstractOpfSolver {
 			String linprog ="x = quadprog(G,a,Ciq,biq,Aeq,beq);";
 			out.append(linprog);
 		} catch (Exception e) {		
-			OPFLogger.getLogger().severe(e.toString());
+			log.error(e.toString());
 			e.printStackTrace();
 		}
 		  
