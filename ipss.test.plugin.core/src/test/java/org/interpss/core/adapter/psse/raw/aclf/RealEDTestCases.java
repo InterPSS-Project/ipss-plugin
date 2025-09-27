@@ -50,7 +50,7 @@ public class RealEDTestCases extends CorePluginTestSetup {
 				.getAclfNet();			
 		
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
-	  	algo.setNonDivergent(true);
+	  	algo.getNrMethodConfig().setNonDivergent(true);
 	  	algo.setLfMethod(AclfMethodType.NR);
 	  	net.setBypassDataCheck(true);
 	  	algo.loadflow();
