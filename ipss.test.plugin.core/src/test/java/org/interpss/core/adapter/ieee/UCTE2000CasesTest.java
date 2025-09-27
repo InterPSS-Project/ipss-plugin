@@ -51,7 +51,7 @@ public class UCTE2000CasesTest extends CorePluginTestSetup {
   		//assertTrue((net.getBusList().size() == 14 && net.getBranchList().size() == 20));
 
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
-	  	algo.setNonDivergent(true);
+	  	algo.getNrMethodConfig().setNonDivergent(true);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 	  	
@@ -73,7 +73,7 @@ public class UCTE2000CasesTest extends CorePluginTestSetup {
 
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.PQ);
-	  	algo.setNonDivergent(true);
+	  	algo.getNrMethodConfig().setNonDivergent(true);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 	  	

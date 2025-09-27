@@ -243,7 +243,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 		algo.setLfMethod(AclfMethodType.NR);
-		algo.setNonDivergent(true);
+		algo.getNrMethodConfig().setNonDivergent(true);
 		algo.loadflow();
 		System.out.println(AclfOutFunc.loadFlowSummary(net));
 
@@ -310,7 +310,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 		algo.setLfMethod(AclfMethodType.NR);
-		algo.setNonDivergent(true);
+		algo.getNrMethodConfig().setNonDivergent(true);
 		algo.loadflow();
 		//System.out.println(AclfOutFunc.loadFlowSummary(net));
 
@@ -385,7 +385,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 		algo.setLfMethod(AclfMethodType.NR);
-		algo.setNonDivergent(true);
+		algo.getNrMethodConfig().setNonDivergent(true);
 		algo.loadflow();
 
 		assertTrue("Loadflow converged", net.isLfConverged());
