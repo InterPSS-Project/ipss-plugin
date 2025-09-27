@@ -69,7 +69,7 @@ public class GuideSample_TestCase extends CorePluginTestSetup {
 
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.NR);
-	  	algo.setNonDivergent(true);
+	  	algo.getNrMethodConfig().setNonDivergent(true);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 	  	
@@ -95,7 +95,7 @@ public class GuideSample_TestCase extends CorePluginTestSetup {
 
 	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.NR);
-	  	algo.setNonDivergent(true);
+	  	algo.getNrMethodConfig().setNonDivergent(true);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 	  	
