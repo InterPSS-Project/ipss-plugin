@@ -131,6 +131,7 @@ public class AclfOutFunc {
 					str.append(psXfrPControlToString(net));
 			}
 		} catch (Exception emsg) {
+			//emsg.printStackTrace();
 			str.append(emsg.toString());
 		}
 		
