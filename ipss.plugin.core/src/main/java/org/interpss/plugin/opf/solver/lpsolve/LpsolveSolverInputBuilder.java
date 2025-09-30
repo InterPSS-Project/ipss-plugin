@@ -2,8 +2,9 @@ package org.interpss.plugin.opf.solver.lpsolve;
 
 import java.util.List;
 
-import org.interpss.plugin.opf.common.OPFLogger;
 import org.interpss.plugin.opf.constraint.OpfConstraint;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.interpss.opf.datatype.OpfConstraintType;
 
@@ -13,7 +14,8 @@ import lpsolve.LpSolve;
 import lpsolve.LpSolveException;
 
 public class LpsolveSolverInputBuilder {
-
+	private static final Logger log = LoggerFactory.getLogger(LpsolveSolverInputBuilder.class);
+	
 	private List<OpfConstraint> cstContainer = null;	
 	public LpsolveSolverInputBuilder(List<OpfConstraint> cstContainer){
 		this.cstContainer = cstContainer;	
@@ -60,7 +62,7 @@ public class LpsolveSolverInputBuilder {
 					}											
 				}
 			}catch (LpSolveException e) {				
-				OPFLogger.getLogger().severe(e.toString());
+				log.error(e.toString());
 			}	
 		}	
 	}
