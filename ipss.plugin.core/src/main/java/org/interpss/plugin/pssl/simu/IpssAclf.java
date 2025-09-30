@@ -141,7 +141,7 @@ public class IpssAclf extends BaseDSL {
   		 * @param b
   		 * @return
   		 */
-  		public LfAlgoDSL setNonDivergent(boolean b) { this.algo.setNonDivergent(b); return this; } 		
+  		public LfAlgoDSL setNonDivergent(boolean b) { this.algo.getNrMethodConfig().setNonDivergent(b); return this; } 		
   		/**
   		 * set none divergence status
   		 * 

@@ -129,8 +129,8 @@ public class IEEE9Bus_ZbrNRSolver_Test extends CorePluginTestSetup {
 	  	//System.out.println(net.net2String());
 
 	  	// use the new ZBRNRSolver loadflow algorithm to perform loadflow calculation
-	  	ZbrNrSolver zbrSolver = new ZbrNrSolver(net);
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	ZbrNrSolver zbrSolver = new ZbrNrSolver(net, algo.getNrMethodConfig());
 		algo.getLfCalculator().setNrSolver(zbrSolver);
 		algo.setTolerance(1.0E-6);
 		algo.setInitBusVoltage(true);
