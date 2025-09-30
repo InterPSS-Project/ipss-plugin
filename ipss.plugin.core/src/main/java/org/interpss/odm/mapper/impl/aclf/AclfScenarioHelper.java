@@ -86,7 +86,7 @@ public class AclfScenarioHelper {
 		}
 		
 		if(xmlLfInit.isNonDivergent()!=null){
-			aclfAlgo.setNonDivergent(xmlLfInit.isNonDivergent());
+			aclfAlgo.getNrMethodConfig().setNonDivergent(xmlLfInit.isNonDivergent());
 		}	
 	}
 	
