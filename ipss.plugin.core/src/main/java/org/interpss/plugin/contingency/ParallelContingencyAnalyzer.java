@@ -178,7 +178,7 @@ public class ParallelContingencyAnalyzer {
         algo.getDataCheckConfig().setAutoTurnLine2Xfr(config.isAutoTurnLine2Xfr());
         algo.setLfMethod(config.getLfMethod());
         algo.getLfAdjAlgo().setApplyAdjustAlgo(config.isApplyAdjustAlgo());
-        algo.setNonDivergent(config.isNonDivergent());
+        algo.getNrMethodConfig().setNonDivergent(config.isNonDivergent());
         algo.setMaxIterations(config.getMaxIterations());
         algo.setTolerance(config.getTolerance());
     }
