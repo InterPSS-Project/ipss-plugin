@@ -18,8 +18,10 @@ import org.interpss.odm.mapper.ODMAclfParserMapper;
 import org.junit.Test;
 
 import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.adj.BusBranchControlType;
 import com.interpss.core.aclf.hvdc.HvdcControlMode;
 import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -187,6 +189,13 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 	public void test_LCCHVDC_Loadflow_FireAngleLimit() throws Exception {
 		AclfNetwork net = createTestCase();
 		//System.out.println(net.net2String());
+		
+		String branchId = "Bus1->Bus5(1)";
+		AclfBranch branch = net.getBranch(branchId);
+		assertTrue(branch.isTapControl());
+		assertTrue(branch.getTapControl().getTapControlType() == BusBranchControlType.BUS_VOLTAGE);
+		// TODO: this is not set in the odm parser, need to check why
+		assertTrue(branch.getTapControl().getVcBus() != null);
 
 		HvdcLine2TLCC<AclfBus> lccHVDC = (HvdcLine2TLCC<AclfBus>) net.getSpecialBranchList().get(0);
 		// change limits
