@@ -15,10 +15,11 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.algo.impl.solver.optStep.CubicEqnStepSizeCalculator;
 
 public class Aclf_ACTIVSg25kBusSample {
 	
-	public static void main(String args[]) throws InterpssException {
+	public static void main(String args[]) throws Exception {
 		IpssCorePlugin.init();
 		
 		//IpssLogger.getLogger().setLevel(Level.INFO);
@@ -35,6 +36,9 @@ public class Aclf_ACTIVSg25kBusSample {
 		
 		System.out.println("Buses, Branches: " + net.getNoBus() + ", " + net.getNoBranch());
 	  
+		double stepSize = CubicEqnStepSizeCalculator.calStepSize(net);
+		System.out.println("Step size(1): " + stepSize);
+		
 		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(net);
 		
 		//aclfAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
@@ -47,6 +51,9 @@ public class Aclf_ACTIVSg25kBusSample {
 		System.out.println("MaxMismatch: " + net.maxMismatch(AclfMethodType.NR));
 		
 		assertTrue(aclfAlgo.loadflow());
+		
+		stepSize = CubicEqnStepSizeCalculator.calStepSize(net);
+		System.out.println("Step size(2): " + stepSize);
 		
 	  	AclfBus swingBus = net.getBus("Bus62120");
 	  	AclfSwingBusAdapter swing = swingBus.toSwingBus();
