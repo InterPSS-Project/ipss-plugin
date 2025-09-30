@@ -1,7 +1,8 @@
 package org.interpss.plugin.opf.objectiveFunction;
 
 import org.interpss.numeric.datatype.Point;
-import org.interpss.plugin.opf.common.OPFLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.interpss.core.common.curve.NumericCurveModel;
 import com.interpss.core.common.curve.PieceWiseCurve;
@@ -12,7 +13,8 @@ import lpsolve.LpSolve;
 import lpsolve.LpSolveException;
 
 public class LpsolveSolverObjectiveFunctionCollector extends BaseObjectiveFunctionCollector{
-	
+    private static final Logger log = LoggerFactory.getLogger(LpsolveSolverObjectiveFunctionCollector.class);
+    
 	public LpsolveSolverObjectiveFunctionCollector(OpfNetwork opfNet){
 		super(opfNet);
 	}
@@ -98,7 +100,7 @@ public class LpsolveSolverObjectiveFunctionCollector extends BaseObjectiveFuncti
 					NumericCurveModel incType = bus.getOpfGen().getIncCost().getCostModel();
 					if(!incType.equals(NumericCurveModel.PIECE_WISE)||
 							bus.getOpfGen().getIncCost().getPieceWiseCurve()==null){
-						OPFLogger.getLogger().severe("LP solver requires piecewise linear gen cost funtion for generator at bus: "
+						log.error("LP solver requires piecewise linear gen cost funtion for generator at bus: "
 								+bus.getNumber());						
 					}else{
 						//lpsolver.setColName(genIndex, "Pg" + (b.getSortNumber()+1));
@@ -144,7 +146,7 @@ public class LpsolveSolverObjectiveFunctionCollector extends BaseObjectiveFuncti
 				}			
 			}			
 		}catch(Exception e){
-			OPFLogger.getLogger().severe(e.toString());
+			log.error(e.toString());
 		}			
 		
 	}
@@ -178,7 +180,7 @@ public class LpsolveSolverObjectiveFunctionCollector extends BaseObjectiveFuncti
 			lpsolver.setObjFnex(numOfGen,obj, col);
 			
 		}catch(Exception e){
-			OPFLogger.getLogger().severe(e.toString());
+			log.error(e.toString());
 		}		
 		
 	}
