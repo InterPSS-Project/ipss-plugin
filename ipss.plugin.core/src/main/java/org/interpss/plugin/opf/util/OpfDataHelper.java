@@ -6,14 +6,12 @@ import java.io.IOException;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealVector;
-import org.interpss.plugin.opf.common.OPFLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.interpss.core.aclf.AclfBranch;
-import com.interpss.core.aclf.AclfBus;
-import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
-import com.interpss.opf.OpfBranch;
 import com.interpss.opf.OpfBus;
 import com.interpss.opf.OpfNetwork;
 
@@ -23,6 +21,8 @@ import lpsolve.LpSolve;
 import lpsolve.LpSolveException;
 
 public class OpfDataHelper {
+	private static final Logger log = LoggerFactory.getLogger(OpfDataHelper.class);
+	
 /*
 	public static int getNoOfGen(OpfNetwork net) {
 		int numOfGen = 0;
@@ -124,7 +124,7 @@ public class OpfDataHelper {
 				return bus.getSortNumber();
 			}
 		}
-		OPFLogger.getLogger().severe("No swing bus found in the system");
+		log.error("No swing bus found in the system");
 		return 0;
 	}
 
@@ -160,7 +160,7 @@ public class OpfDataHelper {
 			return (Array2DRowRealMatrix) angleDiffWeight.getSubMatrix(
 					selectedRows, selectedRows);
 		} catch (Exception e) {			
-			OPFLogger.getLogger().severe(e.toString());
+			log.error(e.toString());
 			e.printStackTrace();
 		}
 		return null;
