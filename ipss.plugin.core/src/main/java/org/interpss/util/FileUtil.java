@@ -112,13 +112,24 @@ public class FileUtil {
 	/**
 	 * read a file and return file content as a String
 	 * 
-	 * @param file
+	 * @param filename file name 
 	 * @return
 	 * @throws IOException
 	 */
 	public static String readFileAsString(String filename) throws IOException {
-		// Convert the byte array to a String using UTF-8 (standard for JSON)
-        String jsonString = new String(readFile(new File(filename)), StandardCharsets.UTF_8);
-        return jsonString;
+        return readFileAsString(filename, StandardCharsets.UTF_8.name());
+	}
+	
+	/**
+	 * read a file and return file content as a String
+	 * 
+	 * @param filename file name
+	 * @param charSet the charset to decode the file content
+	 * @return
+	 * @throws IOException
+	 */
+	public static String readFileAsString(String filename, String charSet) throws IOException {
+        String str = new String(readFile(new File(filename)), charSet);
+        return str;
 	}
 }
