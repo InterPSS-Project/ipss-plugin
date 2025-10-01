@@ -32,6 +32,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -116,6 +117,8 @@ public class FileUtil {
 	 * @throws IOException
 	 */
 	public static String readFileAsString(String filename) throws IOException {
-		return readFile(new File(filename)).toString();
+		// Convert the byte array to a String using UTF-8 (standard for JSON)
+        String jsonString = new String(readFile(new File(filename)), StandardCharsets.UTF_8);
+        return jsonString;
 	}
 }
