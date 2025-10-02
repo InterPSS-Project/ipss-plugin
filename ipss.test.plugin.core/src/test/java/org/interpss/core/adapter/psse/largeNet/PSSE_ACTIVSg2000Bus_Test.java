@@ -57,7 +57,7 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 		//aclfAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
 
 		//aclfAlgo.getLfAdjAlgo().setPowerAdjAppType(AdjustApplyType.POST_ITERATION);
-		aclfAlgo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(false);
+		//aclfAlgo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(false);
 		aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 		aclfAlgo.setTolerance(1.0E-6);
 		assertTrue(aclfAlgo.loadflow());
@@ -112,7 +112,7 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 		//aclfAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
 
 		//aclfAlgo.getLfAdjAlgo().setPowerAdjAppType(AdjustApplyType.POST_ITERATION);
-		aclfAlgo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(false);
+		//aclfAlgo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(false);
 		aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 		aclfAlgo.setTolerance(1.0E-6);
 		assertTrue(aclfAlgo.loadflow());
@@ -165,7 +165,7 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 		//aclfAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
 
 		//aclfAlgo.getLfAdjAlgo().setPowerAdjAppType(AdjustApplyType.POST_ITERATION);
-		aclfAlgo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(false);
+		//aclfAlgo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(false);
 		aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 		aclfAlgo.setTolerance(1.0E-6);
 		assertTrue(aclfAlgo.loadflow());
@@ -220,7 +220,7 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 		//aclfAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
 
 		//aclfAlgo.getLfAdjAlgo().setPowerAdjAppType(AdjustApplyType.POST_ITERATION);
-		aclfAlgo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(false);
+		//aclfAlgo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(false);
 		aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 		aclfAlgo.setTolerance(1.0E-6);
 		assertTrue(aclfAlgo.loadflow());
@@ -267,7 +267,7 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 		//aclfAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
 
 		//aclfAlgo.getLfAdjAlgo().setPowerAdjAppType(AdjustApplyType.POST_ITERATION);
-		aclfAlgo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(false);
+		//aclfAlgo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(false);
 		aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 		aclfAlgo.setTolerance(1.0E-6);
 		assertTrue(aclfAlgo.loadflow());
@@ -301,7 +301,7 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 		//aclfAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
 
 		//aclfAlgo.getLfAdjAlgo().setPowerAdjAppType(AdjustApplyType.POST_ITERATION);
-		aclfAlgo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(false);
+		//aclfAlgo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(false);
 		aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 		aclfAlgo.setTolerance(1.0E-6);
 		assertTrue(aclfAlgo.loadflow());
@@ -334,7 +334,7 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 		//aclfAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
 
 		//aclfAlgo.getLfAdjAlgo().setPowerAdjAppType(AdjustApplyType.POST_ITERATION);
-		aclfAlgo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(false);
+		//aclfAlgo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(false);
 		aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 		aclfAlgo.setTolerance(1.0E-6);
 		assertTrue(aclfAlgo.loadflow());
@@ -367,7 +367,7 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 		//aclfAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
 
 		//aclfAlgo.getLfAdjAlgo().setPowerAdjAppType(AdjustApplyType.POST_ITERATION);
-		aclfAlgo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(false);
+		//aclfAlgo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(false);
 		aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 		aclfAlgo.setTolerance(1.0E-6);
 		assertTrue(aclfAlgo.loadflow());

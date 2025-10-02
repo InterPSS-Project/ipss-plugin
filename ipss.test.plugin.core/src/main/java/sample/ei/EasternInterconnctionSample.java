@@ -30,7 +30,8 @@ public class EasternInterconnctionSample {
 		//aclfAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
 
 		//aclfAlgo.getLfAdjAlgo().setPowerAdjAppType(AdjustApplyType.POST_ITERATION);
-		aclfAlgo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(false);
+		// not need to turn off the power adjustment, since the turn of Adjust will turn off the power adjustmentå
+		//aclfAlgo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(false);
 		aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 		aclfAlgo.setTolerance(0.0001);
 		
