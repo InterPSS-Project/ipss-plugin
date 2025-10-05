@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.IntStream;
 
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -120,7 +120,7 @@ public class ParallelContingencyAnalyzer {
                         String branchId = copyNet.getBranchList().get(i).getId();
                         
                         // Create a new algorithm instance for each thread to avoid conflicts
-                        LoadflowAlgorithm parallelAlgo = CoreObjectFactory.createLoadflowAlgorithm(copyNet);
+                        LoadflowAlgorithm parallelAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(copyNet);
                         configureAlgorithm(parallelAlgo, config);
                         
                         boolean isConverged = parallelAlgo.loadflow();
