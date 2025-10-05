@@ -12,7 +12,7 @@ import org.junit.Test;
 import com.hazelcast.internal.serialization.SerializationService;
 import com.hazelcast.internal.serialization.impl.DefaultSerializationServiceBuilder;
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.se.SEBranch;
@@ -122,7 +122,7 @@ public class SE_IEEE118Test extends CorePluginTestSetup {
 				.getImportedObj();
 		
 		// run Loadflow 
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(aclfNet);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet);
 		algo.loadflow();
 		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet));
 		assertTrue("Loadflow should converged! ", aclfNet.isLfConverged());		
