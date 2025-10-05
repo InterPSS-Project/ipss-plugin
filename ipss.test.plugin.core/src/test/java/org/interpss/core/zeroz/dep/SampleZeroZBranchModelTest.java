@@ -36,7 +36,7 @@ import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.msg.IPSSMsgHub;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
@@ -59,7 +59,7 @@ public class SampleZeroZBranchModelTest extends CorePluginTestSetup {
 	  	set2BusNetworkData(net, msg);
 	  	
 	  	// create the default loadflow algorithm
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 
 	  	// use the loadflow algorithm to perform loadflow calculation
 	  	algo.setLfMethod(AclfMethodType.PQ);
@@ -85,7 +85,7 @@ public class SampleZeroZBranchModelTest extends CorePluginTestSetup {
 	  	//assertTrue(net.isZeroZBranchModel());
 
 	  	// create the default loadflow algorithm
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 
 	  	// use the loadflow algorithm to perform loadflow calculation
 	  	algo.setLfMethod(AclfMethodType.PQ);

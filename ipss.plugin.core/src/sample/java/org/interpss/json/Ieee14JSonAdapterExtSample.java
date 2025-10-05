@@ -11,7 +11,7 @@ import org.interpss.dep.datamodel.mapper.base.BaseAclfNet2AclfBeanMapper;
 import org.interpss.fadapter.IpssFileAdapter;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -72,7 +72,7 @@ public class Ieee14JSonAdapterExtSample {
 						.map2Model(netBean)
 						.getAclfNet();
 		
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(aclfNet);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet);
 	  	algo.loadflow();
   		System.out.println(aclfNet.maxMismatch(AclfMethodType.NR));
   		//System.out.println(net.net2String());

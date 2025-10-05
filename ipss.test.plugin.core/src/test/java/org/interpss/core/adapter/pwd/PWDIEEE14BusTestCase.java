@@ -40,7 +40,7 @@ import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.odm.mapper.ODMAclfNetMapper;
 import org.junit.Test;
 
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
@@ -54,7 +54,7 @@ public class PWDIEEE14BusTestCase extends CorePluginTestSetup {
 		
 		//System.out.println(net.net2String());
 
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
 		
 	  	//System.out.println(AclfOutFunc.loadFlowSummary(net));

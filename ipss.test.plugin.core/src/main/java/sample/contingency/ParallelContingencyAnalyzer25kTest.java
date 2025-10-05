@@ -5,7 +5,7 @@ import org.interpss.plugin.contingency.ParallelContingencyAnalyzer;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
@@ -48,7 +48,7 @@ public class ParallelContingencyAnalyzer25kTest {
             
             // Verify base case load flow convergence
             System.out.println("\nVerifying base case load flow...");
-            LoadflowAlgorithm baseAlgo = CoreObjectFactory.createLoadflowAlgorithm(net);
+            LoadflowAlgorithm baseAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
             baseAlgo.getDataCheckConfig().setTurnOffIslandBus(true);
             baseAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
             baseAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);

@@ -30,7 +30,7 @@ import org.interpss.fadapter.IpssFileAdapter;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
@@ -55,7 +55,7 @@ public class GESampleTestCases extends CorePluginTestSetup {
 		assertTrue(net.getNoBus() == 18);
 		assertTrue(net.getNoBranch() == 24);
 		
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
 		//System.out.println(net.net2String());
 	  	

@@ -34,7 +34,7 @@ import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.msg.IPSSMsgHub;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.net.Branch;
 import com.interpss.dstab.DStab3WBranch;
@@ -90,7 +90,7 @@ private static final Logger log = LoggerFactory.getLogger(AbstractODM3PhaseDStab
 						dstabNet, this.msg);
 				simuCtx.setDynSimuAlgorithm(dstabAlgo);
 
-				LoadflowAlgorithm lfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dstabNet);
+				LoadflowAlgorithm lfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(dstabNet);
 				dstabAlgo.setAclfAlgorithm(lfAlgo);
 
 				// map the bus info
