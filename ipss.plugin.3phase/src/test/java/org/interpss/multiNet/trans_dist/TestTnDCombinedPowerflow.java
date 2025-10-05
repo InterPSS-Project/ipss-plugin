@@ -30,7 +30,7 @@ import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
@@ -211,7 +211,7 @@ public class TestTnDCombinedPowerflow {
 	    
 	    addADistFeeder(dsNet); 
 	    
-	    LoadflowAlgorithm lfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
+	    LoadflowAlgorithm lfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(dsNet);
 	    assertTrue(lfAlgo.loadflow());
 	    
 	    

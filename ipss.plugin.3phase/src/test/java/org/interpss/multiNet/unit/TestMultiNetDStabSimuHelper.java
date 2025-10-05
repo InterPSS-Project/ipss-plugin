@@ -21,7 +21,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.net.NetCoordinate;
 import com.interpss.dstab.BaseDStabNetwork;
@@ -64,7 +64,7 @@ public class TestMultiNetDStabSimuHelper {
 		
 	    DStabilityNetwork dsNet = (DStabilityNetwork) simuCtx.getDStabilityNet();
 		
-		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
+		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(dsNet);
 		assertTrue(aclfAlgo.loadflow());
 		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 		
