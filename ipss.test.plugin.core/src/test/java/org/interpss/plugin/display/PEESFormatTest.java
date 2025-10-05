@@ -10,7 +10,7 @@ import org.interpss.CorePluginFactory;
 import org.interpss.odm.mapper.ODMAclfNetMapper;
 import org.junit.Test;
 
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -26,7 +26,7 @@ public class PEESFormatTest {
 				.map2Model((AclfModelParser)adapter.getModel())
 				.getAclfNet();	
 		
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.PQ);
 	  	algo.loadflow();
 	  	

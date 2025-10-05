@@ -14,7 +14,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
 import org.junit.Test;
 
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adj.AclfAdjustControlMode;
@@ -35,7 +35,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 		//IpssLogger.getLogger().setLevel(Level.INFO);
 		AclfNetwork net = createTestCase();
 		
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		//algo.getLfAdjAlgo().setApplyAdjustAlgo(true); // Enable adjustment algorithm for switched shunt
 		algo.setMaxIterations(30);
 	  	algo.loadflow();
@@ -126,7 +126,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 
         System.out.println(bus4.getSwitchedShunt().toString());
 
-        LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+        LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		//algo.getLfAdjAlgo().setApplyAdjustAlgo(false); // Disable adjustment algorithm (locked shunt)
 		algo.setMaxIterations(30);
         algo.setTolerance(0.0001);
@@ -179,7 +179,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 
         System.out.println(bus4.getSwitchedShunt().toString());
 
-        LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+        LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		//algo.getLfAdjAlgo().setApplyAdjustAlgo(false); // Disable adjustment algorithm (locked shunt)
 		algo.setMaxIterations(30);
 	  	algo.loadflow();
@@ -221,7 +221,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 
         System.out.println(bus4.getSwitchedShunt().toString());
 
-        LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+        LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		//algo.getLfAdjAlgo().setApplyAdjustAlgo(false); // Disable adjustment algorithm (locked shunt)
 		algo.setMaxIterations(30);
 	  	algo.loadflow();
@@ -265,7 +265,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 
         //bus4.getSwitchedShunt().setVSpecified(1.02);
 
-        LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+        LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		//algo.getLfAdjAlgo().setApplyAdjustAlgo(false); // Disable adjustment algorithm (locked shunt)
 		algo.setMaxIterations(30);
 	  	algo.loadflow();
@@ -307,7 +307,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 
         System.out.println(bus4.getSwitchedShunt().toString());
 
-        LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+        LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		//algo.getLfAdjAlgo().setApplyAdjustAlgo(false); // Disable adjustment algorithm (locked shunt)
 		algo.setMaxIterations(30);
 	  	algo.loadflow();
@@ -352,7 +352,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 
         System.out.println(bus4.getSwitchedShunt().toString());
 
-        LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+        LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		//algo.getLfAdjAlgo().setApplyAdjustAlgo(false); // Disable adjustment algorithm (locked shunt)
 		algo.setMaxIterations(30);
 	  	algo.loadflow();

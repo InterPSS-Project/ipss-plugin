@@ -9,7 +9,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
@@ -39,7 +39,7 @@ public class Aclf_ACTIVSg25kBusSample {
 		double stepSize = CubicEqnStepSizeCalculator.calStepSize(net);
 		System.out.println("Step size(1): " + stepSize);
 		
-		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		
 		//aclfAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
 

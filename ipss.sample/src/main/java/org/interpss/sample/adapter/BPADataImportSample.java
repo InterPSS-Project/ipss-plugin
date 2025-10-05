@@ -8,7 +8,7 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.simu.SimuContext;
@@ -32,7 +32,7 @@ public class BPADataImportSample {
 	    }
 		AclfNetwork net=simuCtx.getAclfNet();
 		
-		LoadflowAlgorithm  algo=CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm  algo=LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		net.accept(algo);
 		System.out.println(aclfResultBusStyle.apply(net));
 	}

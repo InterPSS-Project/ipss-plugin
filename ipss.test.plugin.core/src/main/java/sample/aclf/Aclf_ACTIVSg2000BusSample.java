@@ -6,7 +6,7 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -26,7 +26,7 @@ public class Aclf_ACTIVSg2000BusSample {
 		
 		System.out.println("Buses, Branches: " + net.getNoBus() + ", " + net.getNoBranch());
 	  
-		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		
 		//aclfAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
 
