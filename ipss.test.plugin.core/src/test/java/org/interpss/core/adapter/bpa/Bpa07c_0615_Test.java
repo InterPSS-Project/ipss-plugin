@@ -10,7 +10,7 @@ import org.interpss.core.dstab.DStabTestSetupBase;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
 import org.junit.Test;
 
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.simu.SimuContext;
@@ -31,7 +31,7 @@ public class Bpa07c_0615_Test extends DStabTestSetupBase {
 	    }
 		AclfNetwork net=simuCtx.getAclfNet();
 		
-		LoadflowAlgorithm  algo=CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm  algo=LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		net.accept(algo);
 		System.out.println(aclfResultBusStyle.apply(net));
 	}

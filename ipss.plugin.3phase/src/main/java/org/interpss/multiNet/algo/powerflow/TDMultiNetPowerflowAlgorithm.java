@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
@@ -87,7 +87,7 @@ public class TDMultiNetPowerflowAlgorithm {
 			  
 		}
 		
-		transLfAlgo = CoreObjectFactory.createLoadflowAlgorithm(transmissionNet);
+		transLfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(transmissionNet);
 		
 	}
 	

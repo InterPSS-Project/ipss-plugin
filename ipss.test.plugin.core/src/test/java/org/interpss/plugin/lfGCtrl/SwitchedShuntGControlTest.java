@@ -32,7 +32,7 @@ import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adj.AclfAdjustControlMode;
@@ -65,7 +65,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		assertTrue("", swShunt.getControlMode() == AclfAdjustControlMode.FIXED);
 		assertTrue("", swShunt.getShuntCompensatorList().size() == 3);
 		
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.loadflow();
 		assertTrue(net.isLfConverged());
 
@@ -106,7 +106,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		assertTrue("", swShunt.getControlMode() == AclfAdjustControlMode.FIXED);
 		assertTrue("", swShunt.getShuntCompensatorList().size() == 3);
 		
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.getLfAdjAlgo().initialize(new PSSELfGControlConfig(config -> {
 	  		config.gCtrlSwitchedShunt = PSSELfGControlConfig.SwitchedShunt_LockAll;
 	  	}));
@@ -156,7 +156,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		swShunt.setAdjControlType(AclfAdjustControlType.POINT_CONTROL);
 		
 		
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.getLfAdjAlgo().initialize(new PSSELfGControlConfig(config -> {
 	  		config.gCtrlSwitchedShunt = PSSELfGControlConfig.SwitchedShunt_Continuous;
 	  	}));
@@ -211,7 +211,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		// The input range in the data file is [0.9, 1.1], so the VSpecified is set to 1.0 (middle of the range by default	)
 		swShunt.setAdjControlType(AclfAdjustControlType.POINT_CONTROL);
 		
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.getLfAdjAlgo().initialize(new PSSELfGControlConfig(config -> {
 	  		config.gCtrlSwitchedShunt = PSSELfGControlConfig.SwitchedShunt_Discrete;
 	  	}));
