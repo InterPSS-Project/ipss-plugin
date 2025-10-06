@@ -9,7 +9,7 @@ import org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.Test;
 
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -27,7 +27,7 @@ public void testV31() throws Exception {
 			.load()
 			.getImportedObj();
 	
-	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
   	//algo.setLfMethod(AclfMethod.PQ);
 	//algo.setNonDivergent(true);
   	algo.setLfMethod(AclfMethodType.NR);
