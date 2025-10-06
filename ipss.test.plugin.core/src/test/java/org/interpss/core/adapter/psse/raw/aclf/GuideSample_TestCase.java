@@ -38,7 +38,7 @@ import org.interpss.odm.mapper.ODMAclfNetMapper;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
 import org.junit.Test;
 
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
@@ -67,7 +67,7 @@ public class GuideSample_TestCase extends CorePluginTestSetup {
  	  	AclfNetwork net = simuCtx.getAclfNet();
   		//System.out.println(net.net2String());
 
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.NR);
 	  	algo.getNrMethodConfig().setNonDivergent(true);
 	  	algo.loadflow();
@@ -93,7 +93,7 @@ public class GuideSample_TestCase extends CorePluginTestSetup {
 		
   		//System.out.println(net.net2String());
 
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.NR);
 	  	algo.getNrMethodConfig().setNonDivergent(true);
 	  	algo.loadflow();

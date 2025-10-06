@@ -22,6 +22,7 @@ import org.interpss.odm.mapper.ODMDStabParserMapper;
 import org.junit.Test;
 
 import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
@@ -59,7 +60,7 @@ public class BpaO7CTest extends DStabTestSetupBase {
 		assertTrue(net.getBranchList().size()==707);
 		assertTrue(net.getBusList().size()==536);
 		
-		LoadflowAlgorithm  algo=CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm  algo=LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		net.accept(algo);
 		System.out.println(AclfOutFunc.loadFlowSummary(net));
 		
@@ -94,7 +95,7 @@ public class BpaO7CTest extends DStabTestSetupBase {
 		//assertTrue(net.getBranchList().size()==215);
 		assertTrue(net.getBusList().size()==141);
 		
-		LoadflowAlgorithm  algo=CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm  algo=LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		assertTrue(net.accept(algo));
 
 		//get the genResult
@@ -145,7 +146,7 @@ public class BpaO7CTest extends DStabTestSetupBase {
 		
 		// run load flow first before initialization 
 		//LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
-		LoadflowAlgorithm  algo=CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm  algo=LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
 		assertTrue(net.isLfConverged());
 		//get the genResult
@@ -336,7 +337,7 @@ public class BpaO7CTest extends DStabTestSetupBase {
 				 * Run Loadflow
 				 */
 			
-				LoadflowAlgorithm aclfAlgo =CoreObjectFactory.createLoadflowAlgorithm(net);
+				LoadflowAlgorithm aclfAlgo =LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 				aclfAlgo.loadflow();
 				System.out.println(AclfOutFunc.loadFlowSummary(net));
 		}

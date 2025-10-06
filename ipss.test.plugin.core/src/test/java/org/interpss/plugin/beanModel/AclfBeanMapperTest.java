@@ -46,6 +46,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
@@ -57,7 +58,7 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
   		AclfNetwork net = CoreObjectFactory.createAclfNetwork();
 		SampleTestingCases.load_LF_5BusSystem(net);
 		
-	  	CoreObjectFactory.createLoadflowAlgorithm(net)
+	  	LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net)
 			 		     .loadflow();
   		//System.out.println(net.net2String());
 		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet));
@@ -77,7 +78,7 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 			.map2Model(netBean)
 			.getAclfNet();
 		
-	  	CoreObjectFactory.createLoadflowAlgorithm(aclfNet)
+	  	LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet)
 			 			 .loadflow();
 		
   		assertTrue(aclfNet.isLfConverged());	
@@ -271,7 +272,7 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 		AclfNetwork aclfNet = new AclfBean2AclfNetMapper().map2Model(netBean)
 				.getAclfNet();
 				
-	  	CoreObjectFactory.createLoadflowAlgorithm(aclfNet)
+	  	LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet)
 			 			 .loadflow(); 
 		
   		assertTrue(aclfNet.isLfConverged());
