@@ -35,7 +35,7 @@ import org.interpss.odm.mapper.ODMAclfParserMapper;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
@@ -64,7 +64,7 @@ public class PSSE_5Bus_TestCase extends CorePluginTestSetup {
 		//System.out.println(simuCtx.getAclfNet().net2String());
 		
 		AclfNetwork net = simuCtx.getAclfNet();
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.PQ);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());

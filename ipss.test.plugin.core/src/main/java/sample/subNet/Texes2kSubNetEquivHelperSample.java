@@ -13,7 +13,7 @@ import org.interpss.plugin.equiv.AclfNetworkEquivHelper;
 import org.interpss.util.FileUtil;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
@@ -30,7 +30,7 @@ public class Texes2kSubNetEquivHelperSample {
 				.load("ipss-plugin/ipss.test.plugin.core/testData/adpter/psse/v33/ACTIVSg2000/ACTIVSg2000.RAW")
 				.getAclfNet();
 
-    LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(aclfNet);
+    LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet);
 	  algo.setLfMethod(AclfMethodType.NR);
     algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 	  algo.loadflow();
@@ -57,7 +57,7 @@ public class Texes2kSubNetEquivHelperSample {
         assert(bus.mismatch(AclfMethodType.NR).abs() < 0.0001);
     }
 
-    LoadflowAlgorithm algo2 = CoreObjectFactory.createLoadflowAlgorithm(equivNet);
+    LoadflowAlgorithm algo2 = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(equivNet);
     algo2.setLfMethod(AclfMethodType.NR);
     algo2.getLfAdjAlgo().setApplyAdjustAlgo(false);
     //algo2.setNonDivergent(true); // set to true to avoid divergence due to large swing bus gen
