@@ -33,7 +33,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.junit.Test;
 
 import com.interpss.core.ChildNetObjectFactory;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
@@ -124,7 +124,7 @@ public class MNet_IEEE14Bus_Test extends CorePluginTestSetup {
 		/*
 		 * Run multi-network Loadflow
 		 */
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.setChildNetSolver(new DefaultChildNetLfSolver(algo));
 	  	algo.loadflow();
 	  	

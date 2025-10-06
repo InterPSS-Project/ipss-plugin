@@ -10,7 +10,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
 import org.junit.Test;
 
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
@@ -27,7 +27,7 @@ public class IEEE118Bus_Test extends CorePluginTestSetup{
 				.load("testData/adpter/ieee_format/ieee118.ieee")
 				.getAclfNet();	
 
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(aclfNet);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet);
 	  	algo.loadflow();
 		System.out.println("MaxMismatch: " + aclfNet.maxMismatch(AclfMethodType.NR));
 		
