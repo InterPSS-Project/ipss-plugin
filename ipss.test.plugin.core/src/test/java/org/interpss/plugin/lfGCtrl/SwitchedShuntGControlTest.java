@@ -27,7 +27,7 @@ package org.interpss.plugin.lfGCtrl;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
-import org.interpss.plugin.aclf.PSSELfGControlConfig;
+import org.interpss.plugin.aclf.LfGlobalAdjControlConfig;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
@@ -107,8 +107,8 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		assertTrue("", swShunt.getShuntCompensatorList().size() == 3);
 		
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
-	  	algo.getLfAdjAlgo().initialize(new PSSELfGControlConfig(config -> {
-	  		config.gCtrlSwitchedShunt = PSSELfGControlConfig.SwitchedShunt_LockAll;
+	  	algo.getLfAdjAlgo().initialize(new LfGlobalAdjControlConfig(config -> {
+	  		config.gCtrlSwitchedShunt = LfGlobalAdjControlConfig.SwitchedShunt_LockAll;
 	  	}));
 		algo.loadflow();
 		assertTrue(net.isLfConverged());
@@ -128,7 +128,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 	}
 	
 	@Test
-	public void testContinuous() throws Exception {
+	public void testContinuousOnly() throws Exception {
 		// load the test data
 		AclfNetwork net = IpssAdapter
 				.importAclfNet(
@@ -157,15 +157,30 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		
 		
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
-	  	algo.getLfAdjAlgo().initialize(new PSSELfGControlConfig(config -> {
-	  		config.gCtrlSwitchedShunt = PSSELfGControlConfig.SwitchedShunt_Continuous;
+	  	algo.getLfAdjAlgo().initialize(new LfGlobalAdjControlConfig(config -> {
+	  		config.gCtrlSwitchedShunt = LfGlobalAdjControlConfig.SwitchedShunt_ContinuousOnly;
 	  	}));
 		algo.loadflow();
 		assertTrue(net.isLfConverged());
 
 		//System.out.println("Switched Shunt: " + swShunt);
+
+		//Setting it continuous_only control, the switched shunt should be not activated as it is operated in fixed mode
 		assertTrue("", NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
-		assertTrue("", NumericUtil.equals(swShunt.getBActual(), 0.47250, 0.0001));
+		assertTrue("", NumericUtil.equals(swShunt.getBActual(), 0.23637, 0.0001));
+
+
+		// change the switched shunt to continuous mode, the switched shunt should be activated
+		swShunt.setControlMode(AclfAdjustControlMode.CONTINUOUS);
+
+		algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	algo.getLfAdjAlgo().initialize(new LfGlobalAdjControlConfig(config -> {
+	  		config.gCtrlSwitchedShunt = LfGlobalAdjControlConfig.SwitchedShunt_ContinuousOnly;
+	  	}));
+		algo.loadflow();
+		assertTrue(net.isLfConverged());
+
+
 		assertTrue("", NumericUtil.equals(swShunt.getQ(), 0.47198, 0.0001));
 		assertTrue("", swShunt.getControlMode() == AclfAdjustControlMode.CONTINUOUS);
 		assertTrue("", NumericUtil.equals(swShunt.getVSpecified(), 1.0, 0.0001));
@@ -179,7 +194,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 	}
 	
 	@Test
-	public void testDiscrate() throws Exception {
+	public void testEnableAll() throws Exception {
 		// load the test data
 		AclfNetwork net = IpssAdapter
 				.importAclfNet(
@@ -212,13 +227,13 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		swShunt.setAdjControlType(AclfAdjustControlType.POINT_CONTROL);
 		
 		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
-	  	algo.getLfAdjAlgo().initialize(new PSSELfGControlConfig(config -> {
-	  		config.gCtrlSwitchedShunt = PSSELfGControlConfig.SwitchedShunt_Discrete;
+	  	algo.getLfAdjAlgo().initialize(new LfGlobalAdjControlConfig(config -> {
+	  		config.gCtrlSwitchedShunt = LfGlobalAdjControlConfig.SwitchedShunt_EnableAll;
 	  	}));
 		algo.loadflow();
 		assertTrue(net.isLfConverged());
 
-		//System.out.println("Switched Shunt: " + swShunt);
+		System.out.println("Switched Shunt: " + swShunt);
 		assertTrue("", NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
 		assertTrue("", NumericUtil.equals(swShunt.getBActual(), 0.47274, 0.0001));
 		assertTrue("", NumericUtil.equals(swShunt.getQ(), 0.47222  , 0.0001));
