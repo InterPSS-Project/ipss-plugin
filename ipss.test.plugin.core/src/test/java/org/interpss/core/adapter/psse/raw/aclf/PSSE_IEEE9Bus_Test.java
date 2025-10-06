@@ -429,8 +429,8 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 
 		//check the SVC data connected to Bus-5
 		/*
-		 * @!  'NAME',         I,     J,MODE,PDES,   QDES,  VSET,   SHMX,   TRMX,   VTMN,   VTMX,   VSMX,    IMX,   LINX,   RMPCT,OWNER,  SET1,    SET2,VSREF, FCREG,   'MNAME'
-			"SVC1",5,     0, 1,  0.000,  0.000,1.00,50.000,  0.000,0.90000,1.10000,1.00000,  0.000,0.05000,  100.0, 0, 0.00000, 0.00000,   0, 0,   "            "
+			@!  'NAME',         I,     J,MODE,PDES,   QDES,  VSET,   SHMX,   TRMX,   VTMN,   VTMX,   VSMX,    IMX,   LINX,   RMPCT,OWNER,  SET1,    SET2,VSREF, FCREG,   'MNAME'
+			"SVC1",5,     0, 1,  0.000,  0.000,1.01,50.000,  0.000,0.90000,1.10000,1.00000,  0.000,0.05000,  100.0, 0, 0.00000, 0.00000,   0, 0,   "            "
 		 */
 
 		AclfBus bus5 = net.getBus("Bus5");
@@ -448,8 +448,8 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 
 		assertTrue("SVC voltage set point is correct", Math.abs(svc1.getVSpecified() - 1.01) < 1e-6);
 
-		//TODO: as the Qlimit is related to the actual Q output, which is dependent on the load flow bus voltage, so it is better to use another variable to store the capacitive rating, maybe Binit
-		assertTrue("SVC capacitive rating is correct", Math.abs(svc1.getQLimit().getMax() - 0.5) < 1e-6);
+		//TODO: change it back to BLimit after the Qlimit is used to represent the actual Q output limit
+		assertTrue("SVC capacitive rating is correct", Math.abs(svc1.getBLimit().getMax() - 0.5) < 1e-6);
 
 		// rmpct is the percentage of the SVC remote control percentage, which is 100% in this case
 		assertTrue("SVC remote control percentage is correct", Math.abs(svc1.getRemoteControlPercentage() - 100.0) < 1e-6);
@@ -477,11 +477,14 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		assertTrue("Bus5 voltage magnitude is correct", Math.abs(bus5.getVoltageMag() - 1.01) < 1e-6);
 		// TODO: note the SVC is controlling the local bus voltage, so it is a GenPV bus
 		assertTrue( bus5.isGenPV()); 
-		RemoteQBus re = bus5.getRemoteQBus();
-		AclfGenBusAdapter genBus = re.getParentBus().toGenBus();
+		//RemoteQBus re = bus5.getRemoteQBus();
+		AclfGenBusAdapter genBus = bus5.toGenBus();
 		double q = genBus.getGenResults(UnitType.PU).getImaginary();
 		System.out.println("Bus5 svc q: " + q);
-		assertTrue("SVC Q output is correct", Math.abs(q - 0.1598) < 1e-3); // Q output is 0.5 pu, which is the capacitive rating
+		assertTrue("SVC Q output is correct", Math.abs(q - 0.1598) < 1e-3); 
+		
+		//System.out.println("Bus5 svc BActual: " + svc1.getBActual());
+		//assertTrue("SVC Q output is correct", Math.abs(svc1.getBActual()*1.01*1.01 - 0.1598) < 1e-3); 
 	}
 
 	@Test
