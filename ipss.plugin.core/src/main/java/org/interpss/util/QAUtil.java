@@ -10,6 +10,7 @@ import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGen;
+import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
@@ -52,7 +53,7 @@ public class QAUtil {
 				}
 			}
 		}
-		System.out.println("Max bus voltage angle difference: " + maxDiff + " (Bus ID: " + maxDiffBusId + ")");
+		System.out.println("Max bus voltage difference: " + maxDiff + " (Bus ID: " + maxDiffBusId + ")");
 		return maxDiff;
 	}
 
@@ -137,15 +138,18 @@ public class QAUtil {
 		
 		// branch flow results
 		StringBuffer branchResultCompare = new StringBuffer();
-		branchResultCompare.append("BranchId,AreaId,FromBusId,ToBusId,P_IPSS,Q_PSS,P_PSSE, Q_PSSE,P_Diff,Q_Diff,FlowDiffPercent\n");
+		branchResultCompare.append("BranchId,AreaId,FromBusId,ToBusId,P_IPSS,P_PSSE, P_Diff,Q_IPSS,Q_PSSE,Q_Diff,FlowDiffPercent\n");
 		for(AclfBranch branch: net.getBranchList()) {
+			if(branch.getId().equals("3WNDTR_43123_48518_48516_1->Bus48518(1)")){
+				System.out.println(branch.toString());
+			}
 			if(branch.isActive() && copyNet.getBranch(branch.getId()) != null && branch.getZ().abs() > 0.001) { // check if the branch is active and has a non-zero impedance
 				Complex flow = branch.powerFrom2To();
 				Complex flowPSSE = copyNet.getBranch(branch.getId()).powerFrom2To();
 				Complex flowDiff = flow.subtract(flowPSSE);
 				double flowDiffPercent = flowDiff.abs()/flowPSSE.abs()*100;
 				String areaId = branch.getFromBus().getAreaId();
-				branchResultCompare.append(branch.getId()+","+areaId+","+branch.getFromBus().getId()+","+branch.getToBus().getId()+","+flow.getReal()+","+flow.getImaginary()+","+flowPSSE.getReal()+","+flowPSSE.getImaginary()+","+flowDiff.getReal()+","+flowDiff.getImaginary()+","+flowDiffPercent+"\n");
+				branchResultCompare.append(branch.getId()+","+areaId+","+branch.getFromBus().getId()+","+branch.getToBus().getId()+","+flow.getReal()+","+flowPSSE.getReal()+","+flowDiff.getReal()+","+flow.getImaginary()+","+flowPSSE.getImaginary()+","+flowDiff.getImaginary()+","+flowDiffPercent+"\n");
 			}
 		}
 	
@@ -162,7 +166,7 @@ public class QAUtil {
 
 
 		StringBuffer genResultCompare = new StringBuffer();
-		genResultCompare.append("BusId,genId,genType, P_IPSS,Q_PSS,P_PSSE, Q_PSSE,P_Diff,Q_Diff,pDiffPercent\n");
+		genResultCompare.append("BusId,genId,genType,P_IPSS,P_PSSE,P_Diff,pDiffPercent,Q_IPSS,Q_PSSE,Q_Diff,qDiffPercent\n");
 		for(AclfBus bus: net.getBusList()) {
 			if(bus.isActive() && bus.getContributeGenList() != null) {
 				for (AclfGen gen : bus.getContributeGenList()) {
@@ -176,10 +180,11 @@ public class QAUtil {
 							double pDiff = p - pCopy;
 							double qDiff = q - qCopy;
 							double pDiffPercent = (pDiff / pCopy) * 100; // Assuming P is the main focus
-							genResultCompare.append(bus.getId() + "," + gen.getId() + "," + bus.getGenCode() + "," + p + "," + q + "," + pCopy + "," + qCopy + "," + pDiff + "," + qDiff + "," + pDiffPercent + "\n");
+							double qDiffPercent = (qDiff / qCopy) * 100;
+							genResultCompare.append(bus.getId() + "," + gen.getId() + "," + bus.getGenCode() + "," + p + "," + pCopy + "," + pDiff + "," + pDiffPercent + "," + q + "," + qCopy + "," + qDiff + "," + qDiffPercent + "\n");
 						}
 						else{
-							genResultCompare.append(bus.getId() + "," + gen.getId() + "," + bus.getGenCode() + "," + p + "," + q + "," + 0 + "," + 0 + "," + p + "," + q + "," + 100 + "\n");
+							genResultCompare.append(bus.getId() + "," + gen.getId() + "," + bus.getGenCode() + "," + p + "," + 0 + "," + p + "," + 100 + "," + q + "," + 0 + "," + q + "," + 100 + "\n");
 						}
 					}
 				}
@@ -199,13 +204,13 @@ public class QAUtil {
 
     }
 
-	public static void checkBusMismatch(AclfNetwork net, double smallZBranchThreshold, double mismatchTreshold) {
+	public static void checkAllBusMismatch(AclfNetwork net, double smallZBranchThreshold, double mismatchTreshold) {
 
 		for (AclfBus bus : net.getBusList()) {
-			if(bus.getId().equals("Bus30731")) {
-				System.out.println(bus.toString());
+			// if(bus.getId().equals("Bus30731")) {
+			// 	System.out.println(bus.toString());
 
-			}	
+			// }	
 			Complex  mis = bus.mismatch(AclfMethodType.NR);
 			if(bus.isActive() //&& bus.getId().equals("Bus14001")
 					&& mis.abs()>mismatchTreshold && !isSmallZBranchConnected(bus.getId(),net,smallZBranchThreshold)){
@@ -234,6 +239,44 @@ public class QAUtil {
 			}
 		}
 	}
+
+	public static void checkBusMismatch(AclfNetwork net, String busId, double smallZBranchThreshold, double mismatchTreshold) {
+
+		AclfBus bus =  net.getBus(busId);
+		if (bus == null) {
+			System.out.println("Bus " + busId + " not found in the network.");
+			return;
+		}
+		
+		Complex  mis = bus.mismatch(AclfMethodType.NR);
+		if(bus.isActive() //&& bus.getId().equals("Bus14001")
+				&& mis.abs()>mismatchTreshold && !isSmallZBranchConnected(bus.getId(),net,smallZBranchThreshold)){
+			System.out.println(bus.getId()+" , mismatch = " +mis.toString());
+			System.out.println(bus.getId()+"\n"+ AclfOut_PSSE.busResults(bus,100000)+"\n");
+			for( Branch bra : bus.getBranchList()){
+				//check if the branch is active and is a special branch like HVDC, VSC-HVDC, or 3W transformer
+				if (bra.isActive() && !(bra instanceof AclfBranch)) {
+	
+					if (bra instanceof HvdcLine2TLCC){
+						HvdcLine2TLCC<AclfBus> hvdcBranch = (HvdcLine2TLCC<AclfBus>) bra;
+						System.out.println(String.format("Connected LCC HVDC Branch %s, power: %s",hvdcBranch.getId(),hvdcBranch.powerIntoConverter(bus.getId())));
+
+					} else if (bra instanceof  HvdcLine2TVSC) {
+						HvdcLine2TVSC<AclfBus> hvdcBranch = (HvdcLine2TVSC<AclfBus>) bra;
+
+						System.out.println(String.format("Connected VSC HVDC Branch %s, power: %s",hvdcBranch.getId(),hvdcBranch.powerIntoConverter(bus.getId())));
+					} else {
+						System.out.println("Connected Special Branch: " + bra.getId() );
+					}
+				}
+				
+			}
+			System.out.println(bus.toString());
+	
+		}
+		
+	}
+
 	private static boolean isSmallZBranchConnected(String busId, AclfNetwork net, double smallZ) {
 		AclfBus b = net.getBus(busId); // Uncommented to get the bus object
 		for(Branch bra:b.getBranchList()){
@@ -313,14 +356,16 @@ public static AclfNetwork equivHVDC(AclfNetwork net) {
 
 	public static AclfNetwork changeSVCToFixedShunt(AclfNetwork net) {
 		for(AclfBus bus: net.getBusList()){
-			if(bus.isActive() && bus.isStaticVarCompensator()){
+			if(bus.isActive() && bus.isStaticVarCompensator()&& bus.getStaticVarCompensator().isControlStatus()){
 
 				// if (bus.getId().equals("Bus345123")) {
 				// 	System.out.println(bus.toString());
 				// }
+				bus.setGenCode(AclfGenCode.GEN_PV);
 				Complex  mis = bus.mismatch(AclfMethodType.NR);
-				if(Math.abs(mis.getImaginary())>0.001 && bus.getStaticVarCompensator().isControlStatus()){
+				if(Math.abs(mis.getImaginary())>0.001 ){
 					StaticVarCompensator svc = bus.getStaticVarCompensator();
+					
 					double vm = bus.getVoltageMag();
 					double b = -mis.getImaginary()/(vm*vm);
 					// make sure b is within the Bmin and Bmax

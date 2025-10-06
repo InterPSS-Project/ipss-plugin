@@ -3,6 +3,8 @@ package org.interpss.core.adapter.psse.raw.aclf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.text.Format;
+
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
@@ -10,6 +12,7 @@ import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.display.AclfOutFunc;
+import org.interpss.display.impl.AclfOut_PSSE;
 import org.interpss.numeric.datatype.ComplexFunc;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
@@ -200,63 +203,99 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 		algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 		algo.setMaxIterations(30);
 	  	algo.loadflow();
-  		//System.out.println(net.net2String());
+  		System.out.println(net.net2String());
 	  	
   		assertTrue(net.isLfConverged());
   		
   		System.out.println(AclfOutFunc.loadFlowSummary(net));
+		System.out.println(AclfOut_PSSE.lfResults(net,AclfOut_PSSE.Format.POUT));
   		AclfBus bus1 = net.getBus("Bus1");
   		assertEquals(bus1.getVoltageAng(UnitType.Deg),69.43,0.01);
 
   		
   		/*
-  		 * The results below is similar to Powerworld results, but the taps position are different PSS/E
-								Max Power Mismatches
-					Bus              dPmax       Bus              dQmax
-					-------------------------------------------------------
-					Bus9             0.000000  Bus9             0.000093 (pu)
-									0.0001450                   9.315502 (kva)
+  		 * POWER FLOW RESULTS
+			BUS      1     BUS1   AR1  20.000 CKT     MW     MVAR     MVA   % 1.0300PU   69.43  X--- LOSSES ---X X---- AREA -----X X---- ZONE -----X      1
+			FROM GENERATION                        550.6   131.2R  566.0  63 20.600KV               MW     MVAR    1                 1
+			TO      5     BUS5   AR1  230.00  1    550.6   131.2   566.0     1.0000LK              0.00   50.32    1                 1
 
-			BusID          Code           Volt(pu)   Angle(deg)      Pg(pu)    Qg(pu)    Pl(pu)    Ql(pu)    Bus Name   
-		----------------------------------------------------------------------------------------------------------------
-		Bus1         Swing                1.03000       69.43       5.5030    1.2134    0.0000    0.0000   BUS1   AR1 
-		Bus2         PV                   1.01000       63.72       7.4100    1.5722    0.0000    0.0000   BUS2   AR1 
-		Bus3         Swing                1.03000       -6.80       7.7366    1.7238    0.0000    0.0000   BUS3   AR2 
-		Bus4         PV                   1.01000      -17.63       7.6600    1.6860    0.0000    0.0000   BUS4   AR2 
-		Bus5                              1.01428       64.39       0.0000    0.0000    0.0000    0.0000   BUS5   AR1 
-		Bus6                              0.99162       56.64       0.0000    0.0000    0.0000    0.0000   BUS6   AR1 
-		Bus7                ConstP        0.98059       49.09       0.0000    2.4039    7.6700    1.0000   BUS7   L   
-		Bus9                ConstP        0.98708      -33.94       0.0000    2.4358   19.6700    1.0000   BUS9   L   
-		Bus10                             0.99028      -24.96       0.0000    0.0000    0.0000    0.0000   BUS10   AR2 
-		Bus11                             1.00990      -13.92       0.0000    0.0000    0.0000    0.0000   BUS11   AR2 
+			BUS      2     BUS2   AR1  20.000 CKT     MW     MVAR     MVA   % 1.0100PU   63.70  X--- LOSSES ---X X---- AREA -----X X---- ZONE -----X      2
+			FROM GENERATION                        741.0   181.1R  762.8  85 20.200KV               MW     MVAR    1                 1
+			TO      6     BUS6   AR1  230.00  1    741.0   181.1   762.8     1.0000LK              0.00   95.07    1                 1
+
+			BUS      3     BUS3   AR2  20.000 CKT     MW     MVAR     MVA   % 1.0300PU   -6.80  X--- LOSSES ---X X---- AREA -----X X---- ZONE -----X      3
+			FROM GENERATION                        773.5   183.1R  794.9  88 20.600KV               MW     MVAR    2                 2
+			TO     11     BUS11   AR2 230.00  1    773.5   183.1   794.9     1.0000LK              0.00   99.26    2                 2
+
+			BUS      4     BUS4   AR2  20.000 CKT     MW     MVAR     MVA   % 1.0100PU  -17.66  X--- LOSSES ---X X---- AREA -----X X---- ZONE -----X      4
+			FROM GENERATION                        766.0   194.2R  790.2  88 20.200KV               MW     MVAR    2                 2
+			TO     10     BUS10   AR2 230.00  1    766.0   194.2   790.2     1.0000LK              0.00  102.03    2                 2
+
+			BUS      5     BUS5   AR1  230.00 CKT     MW     MVAR     MVA   % 1.0127PU   64.38  X--- LOSSES ---X X---- AREA -----X X---- ZONE -----X      5
+																			232.92KV               MW     MVAR    1                 1
+			TO      1     BUS1   AR1  20.000  1   -550.6   -80.8   556.5     1.0000UN              0.00   50.32    1                 1
+			TO      6     BUS6   AR1  230.00  1    550.6    80.8   556.5                           7.56   75.57    1                 1
+
+			BUS      6     BUS6   AR1  230.00 CKT     MW     MVAR     MVA   % 0.9877PU   56.59  X--- LOSSES ---X X---- AREA -----X X---- ZONE -----X      6
+																			227.17KV               MW     MVAR    1                 1
+			TO      2     BUS2   AR1  20.000  1   -741.0   -86.0   746.0     1.0000UN              0.00   95.07    1                 1
+			TO      5     BUS5   AR1  230.00  1   -543.0    -9.6   543.1                           7.56   75.57    1                 1
+			TO      7     BUS7   L    230.00  1   1284.0    95.7  1287.6                          16.99  169.95    1                 1
+
+			BUS      7     BUS7   L    230.00 CKT     MW     MVAR     MVA   % 0.9735PU   48.98  X--- LOSSES ---X X---- AREA -----X X---- ZONE -----X      7
+																			223.91KV               MW     MVAR    1                 1
+			TO LOAD-PQ                             767.0   100.0   773.5
+			TO SHUNT                                 0.0  -189.6   189.6
+			TO SWITCHED SHUNT                        0.0  -236.9   236.9
+			TO      9     BUS9   L    230.00 2DR   500.0   253.9   560.8     0.9875RG   20.70RG    4.90  494.83    2                 2              "1"
+			TO      6     BUS6   AR1  230.00  1  -1267.0    72.6  1269.1                          16.99  169.95    1                 1
+
+			BUS      9     BUS9   L    230.00 CKT     MW     MVAR     MVA   % 0.9796PU  -34.08  X--- LOSSES ---X X---- AREA -----X X---- ZONE -----X      9
+																			225.30KV               MW     MVAR    2                 2
+			TO LOAD-PQ                            1967.0   100.0  1969.5
+			TO SHUNT                                28.8  -307.1   308.4
+			TO SWITCHED SHUNT                        0.0  -239.9   239.9
+			TO      7     BUS7   L    230.00 2DI  -495.1   240.9   550.6     0.9938RG   19.48RG    4.90  494.83    1                 1              "1"
+			TO     10     BUS10   AR2 230.00  1  -1500.7   206.1  1514.8                          23.92  239.16    2                 2
+
+			BUS     10     BUS10   AR2 230.00 CKT     MW     MVAR     MVA   % 0.9861PU  -25.02  X--- LOSSES ---X X---- AREA -----X X---- ZONE -----X     10
+																			226.80KV               MW     MVAR    2                 2
+			TO      4     BUS4   AR2  20.000  1   -766.0   -92.2   771.5     1.0000UN              0.00  102.03    2                 2
+			TO      9     BUS9   L    230.00  1   1524.6    31.4  1524.9                          23.92  239.16    2                 2
+			TO     11     BUS11   AR2 230.00  1   -758.6    60.8   761.0                          14.90  148.98    2                 2
+
+			BUS     11     BUS11   AR2 230.00 CKT     MW     MVAR     MVA   % 1.0082PU  -13.93  X--- LOSSES ---X X---- AREA -----X X---- ZONE -----X     11
+																			231.88KV               MW     MVAR    2                 2
+			TO      3     BUS3   AR2  20.000  1   -773.5   -83.8   778.0     1.0000UN              0.00   99.26    2                 2
+			TO     10     BUS10   AR2 230.00  1    773.5    83.8   778.0                          14.90  148.98    2                 2
   		 */
-  		assertTrue(NumericUtil.equals(net.getBus("Bus7").getVoltageMag(),0.98059,0.0001));
-  		assertTrue(NumericUtil.equals(net.getBus("Bus7").getVoltageAng(),48.95/(180/Math.PI),0.01));
-  		assertTrue(NumericUtil.equals(net.getBus("Bus9").getVoltageMag(),0.98708,0.0001));
+  		assertTrue(NumericUtil.equals(net.getBus("Bus7").getVoltageMag(),0.9735,0.0001));
+  		assertTrue(NumericUtil.equals(net.getBus("Bus7").getVoltageAng(),48.98/(180/Math.PI),0.01));
+  		assertTrue(NumericUtil.equals(net.getBus("Bus9").getVoltageMag(),0.9796,0.0001));
 
 
   		System.out.println("Rec Power: " + ComplexFunc.toStr(lccHVDC.getRectifier().powerIntoConverter()));
   		System.out.println("Inv Power: " + ComplexFunc.toStr(lccHVDC.getInverter().powerIntoConverter()));
 
-  		//Rec Power: 5.0000 + j2.3077
-  		//Inv Power: -4.95098 + j2.1799
-  		assertTrue("", NumericUtil.equals(lccHVDC.getRectifier().powerIntoConverter(), new Complex(5.0000, 2.3077), 0.0001));
-  		assertTrue("", NumericUtil.equals(lccHVDC.getInverter().powerIntoConverter(), new Complex(-4.95098, 2.1799), 0.0001));
+  		//Rec Power: 5.0000 + j2.53911
+		//Inv Power: -4.95098 + j2.40888
+  		assertTrue("", NumericUtil.equals(lccHVDC.getRectifier().powerIntoConverter(), new Complex(5.0000, 2.5391), 0.0001));
+  		assertTrue("", NumericUtil.equals(lccHVDC.getInverter().powerIntoConverter(), new Complex(-4.95098, 2.4088), 0.0001));
 
 		
 		// firing angle
 		System.out.println("rec firing angle:" + lccHVDC.getRectifier().getFiringAng());
 		System.out.println("inv firing angle:" + lccHVDC.getInverter().getFiringAng());
-		// rec firing angle:17.784206407367336
-        // inv firing angle:16.429126699468245
-		assertEquals(lccHVDC.getRectifier().getFiringAng(), 17.784206407367336, 0.001);
-		assertEquals(lccHVDC.getInverter().getFiringAng(), 16.429126699468245, 0.001);
+		// rec firing angle:20.703003781355985
+		// inv firing angle:19.47345817347679
+		assertEquals(lccHVDC.getRectifier().getFiringAng(), 20.7030, 0.001);
+		assertEquals(lccHVDC.getInverter().getFiringAng(), 19.4734, 0.001);
 
 		//Tap ratio 
 		System.out.println("Tap ratio:" + lccHVDC.getRectifier().getXformerTapSetting());
 		System.out.println("Tap ratio:" + lccHVDC.getInverter().getXformerTapSetting());
-		assertEquals(lccHVDC.getRectifier().getXformerTapSetting(), 1.0125, 0.0001);
-		assertEquals(lccHVDC.getInverter().getXformerTapSetting(), 1.01875, 0.0001);
+		assertEquals(lccHVDC.getRectifier().getXformerTapSetting(), 0.9875, 0.0001);
+		assertEquals(lccHVDC.getInverter().getXformerTapSetting(), 0.99375, 0.0001);
 	
 
   
