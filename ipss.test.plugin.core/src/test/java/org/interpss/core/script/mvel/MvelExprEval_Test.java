@@ -39,7 +39,7 @@ import org.interpss.script.mvel.AclfNetMvelExprEvaluator;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
@@ -52,7 +52,7 @@ public class MvelExprEval_Test extends CorePluginTestSetup {
 				.load("testData/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();	
 		
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
 		
 		//System.out.println("Total gen: " + ComplexFunc.toStr(net.totalGeneration(UnitType.PU)));

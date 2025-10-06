@@ -29,7 +29,7 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.junit.Test;
 
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -49,7 +49,7 @@ public class RealEDTestCases extends CorePluginTestSetup {
 				.load("testData/adpter/psse/test_model_V30.raw")
 				.getAclfNet();			
 		
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.getNrMethodConfig().setNonDivergent(true);
 	  	algo.setLfMethod(AclfMethodType.NR);
 	  	net.setBypassDataCheck(true);

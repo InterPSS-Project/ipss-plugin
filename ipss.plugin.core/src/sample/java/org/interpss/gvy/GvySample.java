@@ -7,7 +7,7 @@ import org.interpss.script.gvy.AclfNetGvyScriptProcessor;
 import org.interpss.script.gvy.BaseGvyScriptProcessor;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
@@ -28,7 +28,7 @@ public class GvySample {
 				.load("testData/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();	
 		
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
 	  	
 	  	AclfNetGvyScriptProcessor gvyProcessor = new AclfNetGvyScriptProcessor(net);
