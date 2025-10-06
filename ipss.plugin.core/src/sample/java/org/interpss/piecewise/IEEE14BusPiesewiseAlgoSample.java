@@ -39,7 +39,7 @@ import com.interpss.algo.subAreaNet.seqPos.SubAreaPos;
 import com.interpss.algo.subAreaNet.seqPos.SubNetworkPos;
 import com.interpss.algo.subAreaNet.seqPos.impl.SubAreaPosProcessorImpl;
 import com.interpss.algo.subAreaNet.seqPos.impl.SubNetworkPosProcessorImpl;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
@@ -143,7 +143,7 @@ public class IEEE14BusPiesewiseAlgoSample {
 					.getAclfNet();	
 		
   		// calculate loadflow
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 	  	

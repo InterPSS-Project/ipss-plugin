@@ -32,6 +32,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,11 +112,24 @@ public class FileUtil {
 	/**
 	 * read a file and return file content as a String
 	 * 
-	 * @param file
+	 * @param filename file name 
 	 * @return
 	 * @throws IOException
 	 */
 	public static String readFileAsString(String filename) throws IOException {
-		return readFile(new File(filename)).toString();
+        return readFileAsString(filename, StandardCharsets.UTF_8.name());
+	}
+	
+	/**
+	 * read a file and return file content as a String
+	 * 
+	 * @param filename file name
+	 * @param charSet the charset to decode the file content
+	 * @return
+	 * @throws IOException
+	 */
+	public static String readFileAsString(String filename, String charSet) throws IOException {
+        String str = new String(readFile(new File(filename)), charSet);
+        return str;
 	}
 }

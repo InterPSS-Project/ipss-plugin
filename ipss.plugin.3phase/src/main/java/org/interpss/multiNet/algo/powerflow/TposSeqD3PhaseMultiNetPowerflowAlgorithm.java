@@ -14,7 +14,7 @@ import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
@@ -82,7 +82,7 @@ public class TposSeqD3PhaseMultiNetPowerflowAlgorithm {
 			  distNet.setNetworkType(NetworkType.DISTRIBUTION);
 		}
 		
-		transLfAlgo = CoreObjectFactory.createLoadflowAlgorithm(transmissionNet);
+		transLfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(transmissionNet);
 		
 	}
 	
