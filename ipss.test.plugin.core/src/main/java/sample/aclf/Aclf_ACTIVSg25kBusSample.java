@@ -61,7 +61,16 @@ public class Aclf_ACTIVSg25kBusSample {
 		aclfAlgo.getLfAdjAlgo().getVoltAdjConfig().setDiscreteAdjust(false);
 		
 		/*
-		 * Scenario-2: in addition, enable PV bus limit controls
+		 * Scenario-2: switched shunt control in continuous adjustment mode
+		 * 
+		 *   Aclf does not converges in 20 iterations 
+		 */
+		//aclfAlgo.getLfAdjAlgo().getVoltAdjConfig().setDiscreteAdjust(true);
+		
+		/*
+		 * Scenario-3: in addition to Switched shunt, enable PV bus limit controls
+		 * 
+		 * 	Aclf diverges 
 		 */
 		//aclfAlgo.getLfAdjAlgo().getLimitCtrlConfig().setPvLimitControl(true);
 		
