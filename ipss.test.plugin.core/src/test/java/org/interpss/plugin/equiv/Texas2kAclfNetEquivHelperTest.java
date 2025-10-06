@@ -14,7 +14,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfGenBusAdapter;
@@ -38,7 +38,7 @@ public class Texas2kAclfNetEquivHelperTest {
             .load("testData/psse/v35/Texas2k/Texas2k_series24_case1_2016summerPeak_v35.RAW")
             .getAclfNet();
 
-        LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(aclfNet);
+        LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet);
         algo.setLfMethod(AclfMethodType.NR);
         algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
         algo.loadflow();
@@ -64,7 +64,7 @@ public class Texas2kAclfNetEquivHelperTest {
        // System.out.println("Equivalent Sub-Network:");
         //System.out.println(equivNet.net2String());
 
-        LoadflowAlgorithm algo2 = CoreObjectFactory.createLoadflowAlgorithm(equivNet);
+        LoadflowAlgorithm algo2 = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(equivNet);
         algo2.setLfMethod(AclfMethodType.NR);
         algo2.getLfAdjAlgo().setApplyAdjustAlgo(false);
         algo2.loadflow();

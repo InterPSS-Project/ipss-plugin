@@ -19,7 +19,7 @@ import org.junit.Test;
 import com.interpss.common.CoreCommonFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.msg.IPSSMsgHub;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -294,7 +294,7 @@ public class TestCMPLDWModel extends TestSetupBase {
 		
 	    DStabilityNetwork dsNet =(DStabilityNetwork) simuCtx.getDStabilityNet();
 	    
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(dsNet);
 	  	algo.setLfMethod(AclfMethodType.PQ);
 	  	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 	  	algo.loadflow();

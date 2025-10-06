@@ -44,7 +44,7 @@ import com.interpss.algo.subAreaNet.seqPos.SubAreaPos;
 import com.interpss.algo.subAreaNet.seqPos.SubNetworkPos;
 import com.interpss.algo.subAreaNet.seqPos.impl.SubAreaPosProcessorImpl;
 import com.interpss.algo.subAreaNet.seqPos.impl.SubNetworkPosProcessorImpl;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfLoadCode;
@@ -524,7 +524,7 @@ public class IEEE14TestAclfNetPiesewise extends PiecewiseAlgoTestSetup {
   		 * Get the default loadflow algorithm and Run loadflow analysis. By default, it uses
   		 * NR method with convergence error tolerance 0.0001 pu
   		 */
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 	  	

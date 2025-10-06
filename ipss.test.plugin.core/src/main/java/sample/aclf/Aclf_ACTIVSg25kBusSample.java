@@ -9,13 +9,14 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.algo.impl.solver.optStep.CubicEqnStepSizeCalculator;
+import com.interpss.core.funcImpl.AclfAdjCtrlFunction;
 
 public class Aclf_ACTIVSg25kBusSample {
 	
@@ -35,17 +36,44 @@ public class Aclf_ACTIVSg25kBusSample {
 				.getImportedObj();
 		
 		System.out.println("Buses, Branches: " + net.getNoBus() + ", " + net.getNoBranch());
-	  
+		System.out.println(AclfAdjCtrlFunction.nOfPVBusLimit.apply(net) + " PV bus limit controls");
+		System.out.println(AclfAdjCtrlFunction.nOfPQBusLimit.apply(net) + " PQ bus limit controls");
+		System.out.println(AclfAdjCtrlFunction.nOfRemoteQBus.apply(net) + " Remote Q buses");
+		System.out.println(AclfAdjCtrlFunction.nOfSwitchedShunt.apply(net) + " Switched shunts");
+		System.out.println(AclfAdjCtrlFunction.nOfSvc.apply(net) + " SVCs");
+		System.out.println(AclfAdjCtrlFunction.nOfTapControl.apply(net) + " Tap controls");
+		System.out.println(AclfAdjCtrlFunction.nOfPSXfrPControl.apply(net) + " Phase shifting transformer P controls");
+
 		double stepSize = CubicEqnStepSizeCalculator.calStepSize(net);
 		System.out.println("Step size(1): " + stepSize);
 		
-		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(net);
-		
-		//aclfAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
+		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 
-		//aclfAlgo.getLfAdjAlgo().setPowerAdjAppType(AdjustApplyType.POST_ITERATION);
-		aclfAlgo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(false);
-		aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
+		// disable all the controls
+		AclfAdjCtrlFunction.disableAllAdjControls.accept(aclfAlgo);
+		
+		/*
+		 * Scenario-1: enable switched shunt controls, continuous adjustment mode
+		 * 
+		 *    Aclf converges in 19 iterations
+		 */
+		aclfAlgo.getLfAdjAlgo().getVoltAdjConfig().setSwitchedShuntAdjust(true);
+		aclfAlgo.getLfAdjAlgo().getVoltAdjConfig().setDiscreteAdjust(false);
+		
+		/*
+		 * Scenario-2: switched shunt control in continuous adjustment mode
+		 * 
+		 *   Aclf does not converges in 20 iterations 
+		 */
+		//aclfAlgo.getLfAdjAlgo().getVoltAdjConfig().setDiscreteAdjust(true);
+		
+		/*
+		 * Scenario-3: in addition to Switched shunt, enable PV bus limit controls
+		 * 
+		 * 	Aclf diverges 
+		 */
+		//aclfAlgo.getLfAdjAlgo().getLimitCtrlConfig().setPvLimitControl(true);
+		
 		aclfAlgo.setTolerance(1.0E-6);
 		
 		System.out.println("MaxMismatch: " + net.maxMismatch(AclfMethodType.NR));

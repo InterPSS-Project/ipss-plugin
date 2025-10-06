@@ -39,7 +39,7 @@ import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.Test;
 
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfLoad;
@@ -197,7 +197,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 				.load()
 				.getImportedObj();
 
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.setLfMethod(AclfMethodType.NR);
 		algo.loadflow();
 
@@ -241,7 +241,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 				.load()
 				.getImportedObj();
 
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.setLfMethod(AclfMethodType.NR);
 		algo.getNrMethodConfig().setNonDivergent(true);
 		algo.loadflow();
@@ -308,7 +308,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		assertTrue(xfr_92_str.getZMultiplyFactor().getImaginary() == 0.0);
 		assertEquals( 0.41194*0.01,xfr_92_str.getAdjustedZ().getImaginary(),1.0e-5); // 0.41194 is the Z Corr value in the table, 0.01 is the scale factor
 
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.setLfMethod(AclfMethodType.NR);
 		algo.getNrMethodConfig().setNonDivergent(true);
 		algo.loadflow();
@@ -363,7 +363,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 	}
 	
 	private void testVAclf(AclfNetwork net) throws Exception {
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.PQ);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
@@ -383,7 +383,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 				.load()
 				.getImportedObj();
 
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.setLfMethod(AclfMethodType.NR);
 		algo.getNrMethodConfig().setNonDivergent(true);
 		algo.loadflow();
@@ -463,7 +463,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		//control type, default is  bus voltage control
 		assertTrue("SVC control type is correct", svc1.getRemoteQControlType() == BusBranchControlType.BUS_VOLTAGE);
 
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.setLfMethod(AclfMethodType.NR);
 		//algo.setNonDivergent(true);
 		algo.loadflow();
@@ -526,7 +526,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		//control type, default is  bus voltage control
 		assertTrue("SVC control type is correct", svc1.getRemoteQControlType() == BusBranchControlType.BUS_VOLTAGE);
 
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.setLfMethod(AclfMethodType.NR);
 		//algo.setNonDivergent(true);
 		algo.loadflow();

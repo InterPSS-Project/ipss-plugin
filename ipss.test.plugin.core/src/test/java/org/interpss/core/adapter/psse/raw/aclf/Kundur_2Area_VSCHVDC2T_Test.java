@@ -15,7 +15,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.hvdc.HvdcLine2TVSC;
@@ -54,7 +54,7 @@ public class Kundur_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 			System.out.println(bus.mismatch(AclfMethodType.NR));
 		}
 		 
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());

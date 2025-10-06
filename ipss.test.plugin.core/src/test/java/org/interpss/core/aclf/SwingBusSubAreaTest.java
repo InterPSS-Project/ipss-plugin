@@ -34,7 +34,7 @@ import org.interpss.fadapter.IpssFileAdapter;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -61,7 +61,7 @@ public class SwingBusSubAreaTest extends CorePluginTestSetup {
 	  	AclfNetwork subNet = net.createSubNet(busSet, false, false);
 	  	assertTrue("", subNet.getNoBus() == 57);
 	  	
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(subNet);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(subNet);
 	  	algo.setLfMethod(AclfMethodType.NR);
 	  	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 	  	algo.loadflow();
