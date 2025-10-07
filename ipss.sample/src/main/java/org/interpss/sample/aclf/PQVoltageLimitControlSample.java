@@ -34,6 +34,7 @@ import org.interpss.numeric.exp.IpssNumericException;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.AclfAdjustObjectFactory;
 import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
@@ -67,7 +68,7 @@ public class PQVoltageLimitControlSample {
 		PQBusLimit pqLimit = AclfAdjustObjectFactory.createPQBusLimit(bus).get();
 		pqLimit.setVLimit(new LimitType(1.05, 0.95), UnitType.PU);
 		
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.NR);
 	  	algo.setMaxIterations(20);
 	  	algo.setTolerance(0.0001, UnitType.PU, net.getBaseKva());

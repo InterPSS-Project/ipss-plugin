@@ -131,6 +131,7 @@ public class AclfOutFunc {
 					str.append(psXfrPControlToString(net));
 			}
 		} catch (Exception emsg) {
+			//emsg.printStackTrace();
 			str.append(emsg.toString());
 		}
 		
@@ -534,7 +535,7 @@ public class AclfOutFunc {
 						UnitType.PU).getMax()));
 				str.append(Number2String.toStr("#####0.00", pv.getQLimit(
 						UnitType.PU).getMin()));
-				str.append(Number2String.toStr(6, pv.isActive() ? "on" : "off")
+				str.append(Number2String.toStr(6, pv.isControlStatus()&&pv.isAdjustStatus() ? "on" : "off")
 						+ "\n");
 			}
 		}
@@ -580,7 +581,7 @@ public class AclfOutFunc {
 				str.append(Number2String.toStr("##0.0000", pq
 						.getVLimit(UnitType.PU).getMin())
 						+ " ");
-				str.append(Number2String.toStr(5, pq.isActive() ? "on" : "off")
+				str.append(Number2String.toStr(5, pq.isControlStatus()&&pq.isAdjustStatus() ? "on" : "off")
 						+ "\n");
 			}
 		}
@@ -628,7 +629,7 @@ public class AclfOutFunc {
 						UnitType.PU).getMax()));
 				str.append(Number2String.toStr("#####0.00", re.getQLimit(
 						UnitType.PU).getMin()));
-				str.append(Number2String.toStr(6, re.isActive() ? "on" : "off")	+ "\n");
+				str.append(Number2String.toStr(6, re.isControlStatus()&&re.isAdjustStatus() ? "on" : "off")	+ "\n");
 			}
 		}
 		return str;
@@ -746,7 +747,7 @@ public class AclfOutFunc {
 				str.append(Number2String.toStr("0.000", x.getTurnRatioLimit().getMin())
 						+ "   ");
 				str.append(Number2String.toStr("####0", x.getTapStepSize()) + "  ");
-				str.append(Number2String.toStr(6, x.isActive() ? "on" : "off")
+				str.append(Number2String.toStr(6, x.isControlStatus()&&x.isAdjustStatus() ? "on" : "off")
 						+ "\n");
 			}
 		}
@@ -803,7 +804,7 @@ public class AclfOutFunc {
 				str.append(Number2String.toStr("#0.00", x.getAngLimit(UnitType.Deg)
 						.getMin())
 						+ " ");
-				str.append(Number2String.toStr(6, x.isActive() ? "on" : "off")
+				str.append(Number2String.toStr(6, x.isControlStatus()&&x.isAdjustStatus() ? "on" : "off")
 						+ "\n");
 			}
 		}

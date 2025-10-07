@@ -10,7 +10,7 @@ import org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.Test;
 
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
@@ -29,9 +29,9 @@ public void testV31() throws Exception {
 			.load()
 			.getImportedObj();
 	
-	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
   	//algo.setLfMethod(AclfMethod.PQ);
-	algo.setNonDivergent(true);
+	algo.getNrMethodConfig().setNonDivergent(true);
   	algo.setLfMethod(AclfMethodType.NR);
   	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
   	
@@ -55,9 +55,9 @@ public void testV32() throws Exception {
 			.load()
 			.getImportedObj();
 	
-	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
   	//algo.setLfMethod(AclfMethod.PQ);
-	algo.setNonDivergent(true);
+	algo.getNrMethodConfig().setNonDivergent(true);
   	algo.setLfMethod(AclfMethodType.NR);
   	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
   	
@@ -80,9 +80,9 @@ public void testV33() throws Exception {
 			.load()
 			.getImportedObj();
 	
-	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
   	//algo.setLfMethod(AclfMethod.PQ);
-	algo.setNonDivergent(true);
+	algo.getNrMethodConfig().setNonDivergent(true);
   	algo.setLfMethod(AclfMethodType.NR);
   	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
   	
@@ -104,9 +104,9 @@ public void testV34() throws Exception {
 			.load()
 			.getImportedObj();
 	
-	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
   	//algo.setLfMethod(AclfMethod.PQ);
-	algo.setNonDivergent(true);
+	algo.getNrMethodConfig().setNonDivergent(true);
   	algo.setLfMethod(AclfMethodType.NR);
   	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
   	
@@ -128,9 +128,9 @@ public void testV35() throws Exception {
 			.load()
 			.getImportedObj();
 	
-	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
   	//algo.setLfMethod(AclfMethod.PQ);
-	algo.setNonDivergent(true);
+	algo.getNrMethodConfig().setNonDivergent(true);
   	algo.setLfMethod(AclfMethodType.NR);
   	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
   	
@@ -153,9 +153,9 @@ public void testV36() throws Exception {
 			.load()
 			.getImportedObj();
 	
-	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
   	//algo.setLfMethod(AclfMethod.PQ);
-	algo.setNonDivergent(true);
+	algo.getNrMethodConfig().setNonDivergent(true);
   	algo.setLfMethod(AclfMethodType.NR);
   	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
   	

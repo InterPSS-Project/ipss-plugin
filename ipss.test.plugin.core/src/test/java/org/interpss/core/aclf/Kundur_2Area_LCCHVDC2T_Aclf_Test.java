@@ -15,7 +15,7 @@ import org.interpss.numeric.util.NumericUtil;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
 import org.junit.Test;
 
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
@@ -37,7 +37,7 @@ public class Kundur_2Area_LCCHVDC2T_Aclf_Test extends CorePluginTestSetup {
 		//Note: this is now handled in the odm mapper level, so no need to set it here
 		//lccHVDC.setPuBasedPowerFlowAlgo(false);
 		 
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 		algo.setMaxIterations(30);
 	  	algo.loadflow();

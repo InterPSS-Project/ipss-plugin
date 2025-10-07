@@ -6,6 +6,7 @@ import org.interpss.core.aclf.IEEE9_MultiGenTest;
 import org.interpss.core.aclf.IEEE9_MultiLoadTest;
 import org.interpss.core.aclf.Kundur_2Area_LCCHVDC2T_Aclf_Test;
 import org.interpss.core.aclf.SwingBusSubAreaTest;
+import org.interpss.core.aclf.svc.IEEE14_PVLimit_SVCTest;
 import org.interpss.core.adapter.bpa.BPASampleTestCases;
 import org.interpss.core.adapter.ge.GESampleTestCases;
 import org.interpss.core.adapter.ieee.IEEE009Bus_Test;
@@ -15,8 +16,8 @@ import org.interpss.core.adapter.internal.Bus11856Test;
 import org.interpss.core.adapter.internal.Bus1824Test;
 import org.interpss.core.adapter.internal.Bus6384Test;
 import org.interpss.core.adapter.internal.IEEE14Test;
-import org.interpss.core.adapter.psse.compare.PSSE_ACTIVSg25kObjectCompareTest;
 import org.interpss.core.adapter.psse.compare.PSSE_ACTIVSg2000BusCompare_Test;
+import org.interpss.core.adapter.psse.compare.PSSE_ACTIVSg25kObjectCompareTest;
 import org.interpss.core.adapter.psse.largeNet.PSSE_ACTIVSg2000Bus_Test;
 import org.interpss.core.adapter.psse.largeNet.PSSE_ACTIVSg25kBus_Test;
 import org.interpss.core.adapter.psse.raw.aclf.CR_UserTestCases;
@@ -63,7 +64,6 @@ import org.interpss.core.optadj.IEEE14_OptAdj_BasecaseSSAResult_Test;
 import org.interpss.core.optadj.IEEE14_OptAdj_Basecase_Test;
 import org.interpss.core.optadj.IEEE14_OptAdj_N1ScanSSAResult_Test;
 import org.interpss.core.optadj.IEEE14_OptAdj_N1Scan_Test;
-import org.interpss.core.result.PSSE_IEEE9Bus_Result_Test;
 import org.interpss.core.script.mvel.MvelExprEval_Test;
 import org.interpss.core.zeroz.IEEE14ZeroZBranchAclfTest;
 import org.interpss.core.zeroz.IEEE14ZeroZBranchDeconsolidateTest;
@@ -97,6 +97,9 @@ import org.junit.runners.Suite.SuiteClasses;
 	Kundur_2Area_LCCHVDC2T_Test.class,
 	Kundur_2Area_VSCHVDC2T_Test.class,
 
+	// SVC and PV limit
+	IEEE14_PVLimit_SVCTest.class,
+	
 	// large PSSE network
 	PSSE_ACTIVSg2000Bus_Test.class,
 	PSSE_ACTIVSg25kBus_Test.class,
@@ -114,9 +117,6 @@ import org.junit.runners.Suite.SuiteClasses;
 	IEEE14ZeroZBranchDeconsolidateTest.class,
 	ZBrAclfDeconOutputTest.class,
 	IEEE9Bus_ZbrNRSolver_Test.class,
-	
-	// Aclf Result
-	PSSE_IEEE9Bus_Result_Test.class,
 	
 	// acsc
 	IEEE9Bus_Acsc_Test.class,
