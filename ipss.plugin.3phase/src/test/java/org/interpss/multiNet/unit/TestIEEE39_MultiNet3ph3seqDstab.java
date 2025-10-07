@@ -26,7 +26,7 @@ import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.dstab.DStabObjectFactory;
@@ -74,7 +74,7 @@ public class TestIEEE39_MultiNet3ph3seqDstab {
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
 	    
 		
-		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
+		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(dsNet);
 		assertTrue(aclfAlgo.loadflow());
 		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 
@@ -179,7 +179,7 @@ public class TestIEEE39_MultiNet3ph3seqDstab {
 
 	    DStabilityNetwork dsNet = (DStabilityNetwork) simuCtx.getDStabilityNet();
 		
-		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
+		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(dsNet);
 		assertTrue(aclfAlgo.loadflow());
 		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 
