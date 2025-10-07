@@ -10,7 +10,7 @@ import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetModelType;
 import com.interpss.core.aclf.AclfNetwork;
@@ -78,7 +78,7 @@ public class IEEE14ZeroZBranchAclfTest extends CorePluginTestSetup {
 		assertTrue(""+net.getBranch("Bus13->Bus14(1)").getOriginalBranchId(), 
 				net.getBranch("Bus13->Bus14(1)").getOriginalBranchId().equals("Bus13->Bus18(1)"));
 				
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 	  	

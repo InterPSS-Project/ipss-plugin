@@ -37,8 +37,8 @@ import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
-import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.DclfAlgoObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
@@ -63,7 +63,7 @@ public class Mod_SixBus_DclfPsXfr extends CorePluginTestSetup {
 					.getImportedObj();
   		//System.out.println(net.net2String());
 
-	  	CoreObjectFactory.createLoadflowAlgorithm(net)
+	  	LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net)
 			 			 .loadflow();
 	  	
   		assertTrue(net.isLfConverged());
@@ -89,7 +89,7 @@ public class Mod_SixBus_DclfPsXfr extends CorePluginTestSetup {
 					.getImportedObj();
   		//System.out.println(net.net2String());
 
-	  	CoreObjectFactory.createLoadflowAlgorithm(net)
+	  	LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net)
 			 			 .loadflow();
 	  	
   		assertTrue(net.isLfConverged());

@@ -11,7 +11,7 @@ import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.Test;
 
 import com.interpss.core.ChildNetObjectFactory;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
@@ -41,7 +41,7 @@ public class MNet_IEEE9_PSSE_Test extends CorePluginTestSetup {
 		
   		assertTrue((net.getBusList().size() == 9&& net.getBranchList().size() == 9));
 
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
 	  	
   		assertTrue(net.isLfConverged());		
@@ -103,7 +103,7 @@ public class MNet_IEEE9_PSSE_Test extends CorePluginTestSetup {
 		/*
 		 * Run multi-network Loadflow
 		 */
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.setChildNetSolver(new DefaultChildNetLfSolver(algo));
 	  	algo.loadflow();
 	  	

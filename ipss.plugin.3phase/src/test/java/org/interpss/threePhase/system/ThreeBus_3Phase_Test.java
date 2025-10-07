@@ -38,6 +38,7 @@ import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.abc.Static3PXformer;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
@@ -80,7 +81,7 @@ public class ThreeBus_3Phase_Test {
 		net.initContributeGenLoad(false);
 
 		//create a load flow algorithm object
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	//run load flow using default setting
 
 
@@ -230,7 +231,7 @@ public class ThreeBus_3Phase_Test {
 				net, IpssCorePlugin.getMsgHub());
 
 		//create a load flow algorithm object
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	//run load flow using default setting
 
 
@@ -426,7 +427,7 @@ public class ThreeBus_3Phase_Test {
 		net.initContributeGenLoad(false);
 
 		//create a load flow algorithm object
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	//run load flow using default setting
 
 
