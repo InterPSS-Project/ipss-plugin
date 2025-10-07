@@ -29,7 +29,7 @@ import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
@@ -63,7 +63,7 @@ public class IEEE9Bus_3phase_LF_init_test {
 	net.initContributeGenLoad(false);
 
 	//create a load flow algorithm object
-  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
   	//run load flow using default setting
 
 
@@ -110,7 +110,7 @@ Load Flow Summary
 		net.initContributeGenLoad(false);
 
 		//create a load flow algorithm object
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	//run load flow using default setting
 		assertTrue(algo.loadflow())	;
 

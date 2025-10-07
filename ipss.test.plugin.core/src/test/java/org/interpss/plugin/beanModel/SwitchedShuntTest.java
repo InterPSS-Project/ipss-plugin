@@ -41,6 +41,7 @@ import org.junit.Test;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.AclfAdjustObjectFactory;
 import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
@@ -79,7 +80,7 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 		AclfNetwork net = new AclfBean2AclfNetMapper().map2Model(netBean)
 				.getAclfNet();
 		
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm();
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm();
 
 	  	net.accept(algo);
   		//System.out.println(net.net2String());
@@ -128,7 +129,7 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 		
 		//System.out.println(net.net2String());
 		
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm();
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm();
 
 	  	net.accept(algo);
   		//System.out.println(net.net2String());
@@ -183,7 +184,7 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 		
 		//System.out.println(net.net2String());		
 		
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm();
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm();
 
 	  	net.accept(algo);
   		//System.out.println(net.net2String());
@@ -256,7 +257,7 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 		AclfNetwork aclfNet = new AclfBean2AclfNetMapper().map2Model(netBean)
 				.getAclfNet();
 		
-		LoadflowAlgorithm algo = CoreObjectFactory
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory
 				.createLoadflowAlgorithm(aclfNet);
 		algo.loadflow();
 		assertTrue(aclfNet.isLfConverged());
