@@ -35,7 +35,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.junit.Test;
 
 import com.interpss.core.AclfAdjustObjectFactory;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
@@ -43,7 +43,7 @@ import com.interpss.core.aclf.adj.AclfAdjustControlType;
 import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.core.funcImpl.AclfAdptFunction;
+import com.interpss.core.funcImpl.AclfAdjCtrlFunction;
 import com.interpss.simu.util.sample.SampleTestingCases;
 
 public class XfrTapControlTest extends CorePluginTestSetup {
@@ -60,7 +60,7 @@ public class XfrTapControlTest extends CorePluginTestSetup {
 		//tap.setTapOnFromSide(false);
 		tap.setControlSpec(0.90);
 
-		assertTrue("", AclfAdptFunction.nOfTapControl.apply(net) == 1);
+		assertTrue("", AclfAdjCtrlFunction.nOfTapControl.apply(net) == 1);
 		
 		assertTrue(Math.abs(branch.getToTurnRatio()-1.0)<0.0001);
 		
@@ -71,7 +71,7 @@ public class XfrTapControlTest extends CorePluginTestSetup {
 		AclfNetwork aclfNet = new AclfBean2AclfNetMapper().map2Model(netBean)
 				.getAclfNet();
 
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(aclfNet);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 
@@ -102,7 +102,7 @@ public class XfrTapControlTest extends CorePluginTestSetup {
 		//tap.setTapOnFromSide(false);
 		tap.setControlSpec(0.90);
 
-		assertTrue("", AclfAdptFunction.nOfTapControl.apply(net) == 1);
+		assertTrue("", AclfAdjCtrlFunction.nOfTapControl.apply(net) == 1);
 		
 		assertTrue(Math.abs(branch.getToTurnRatio()-1.0)<0.0001);
 		
@@ -140,11 +140,11 @@ public class XfrTapControlTest extends CorePluginTestSetup {
 		tap.setControlSpec(0.90);
 		tap.setStatus(true);
 
-		assertTrue("", AclfAdptFunction.nOfTapControl.apply(net) == 1);
+		assertTrue("", AclfAdjCtrlFunction.nOfTapControl.apply(net) == 1);
 		
 		assertTrue(Math.abs(branch.getToTurnRatio()-1.0)<0.0001);
 
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 

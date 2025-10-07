@@ -34,6 +34,7 @@ import org.interpss.fadapter.IpssFileAdapter;
 import org.junit.Test;
 
 import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.Aclf3WXformerAdapter;
@@ -63,7 +64,7 @@ public class IEEE14_3WXfrTest extends CorePluginTestSetup {
 		
 		System.out.println(net.net2String());
 		
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setInitBusVoltage(true);
 	  	algo.setLfMethod(AclfMethodType.NR);
 	  	
