@@ -38,7 +38,7 @@ import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
@@ -90,7 +90,7 @@ public class TestTnD_IEEE300_13busFeeder {
 		
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
 	 
-		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
+		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(dsNet);
 		aclfAlgo.setLfMethod(AclfMethodType.PQ);
 		aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 		aclfAlgo.setTolerance(1.0E-6);
@@ -128,7 +128,7 @@ public class TestTnD_IEEE300_13busFeeder {
 	    
 	    DStabilityNetwork dsNet = (DStabilityNetwork) simuCtx.getDStabilityNet();
 	 
-		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
+		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(dsNet);
 		aclfAlgo.setLfMethod(AclfMethodType.PQ);
 		aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 		aclfAlgo.setTolerance(1.0E-6);
@@ -202,7 +202,7 @@ public class TestTnD_IEEE300_13busFeeder {
 		
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
 	 
-		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
+		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(dsNet);
 		aclfAlgo.setLfMethod(AclfMethodType.PQ);
 		aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 		aclfAlgo.setTolerance(1.0E-6);

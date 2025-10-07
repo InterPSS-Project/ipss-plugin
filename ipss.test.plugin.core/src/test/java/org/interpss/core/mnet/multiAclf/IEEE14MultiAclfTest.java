@@ -8,7 +8,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
@@ -34,7 +34,7 @@ public class IEEE14MultiAclfTest extends CorePluginTestSetup {
   			// create a copy of the AclfNetwork
 	  		AclfNetwork netCopy = AclfNetworkState.create(aclfNetState);
 	  		
-		  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(netCopy);
+		  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(netCopy);
 		  	algo.loadflow();
 	  		//System.out.println(net.net2String());
 		  	

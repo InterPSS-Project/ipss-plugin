@@ -1,6 +1,7 @@
 package org.interpss.plugin.opf.objectiveFunction;
 
-import org.interpss.plugin.opf.common.OPFLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.interpss.core.common.curve.NumericCurveModel;
 import com.interpss.core.common.curve.QuadraticCurve;
@@ -11,6 +12,8 @@ import cern.colt.matrix.impl.SparseDoubleMatrix1D;
 import cern.colt.matrix.impl.SparseDoubleMatrix2D;
 
 public class GIQPObjectiveFunctionCollector extends BaseObjectiveFunctionCollector{	
+    private static final Logger log = LoggerFactory.getLogger(GIQPObjectiveFunctionCollector.class);
+    
 	SparseDoubleMatrix2D G = null;
 	SparseDoubleMatrix1D a = null;
 	private double penalty = 0;	
@@ -41,7 +44,7 @@ public class GIQPObjectiveFunctionCollector extends BaseObjectiveFunctionCollect
 					NumericCurveModel incType = bus.getOpfGen().getIncCost().getCostModel();
 					if(!incType.equals(NumericCurveModel.QUADRATIC)||
 							bus.getOpfGen().getIncCost().getQuadraticCurve()==null){
-						OPFLogger.getLogger().severe("QP solver requires quadratic gen cost funtion for generator at bus: "
+						log.error("QP solver requires quadratic gen cost funtion for generator at bus: "
 								+bus.getNumber());						
 					}else{
 						QuadraticCurve quaCur = bus.getOpfGen().getIncCost().getQuadraticCurve();
@@ -61,7 +64,7 @@ public class GIQPObjectiveFunctionCollector extends BaseObjectiveFunctionCollect
 			}			
 			
 		}catch(Exception e){
-			OPFLogger.getLogger().severe(e.toString());
+			log.error(e.toString());
 		}		
 	}	
 

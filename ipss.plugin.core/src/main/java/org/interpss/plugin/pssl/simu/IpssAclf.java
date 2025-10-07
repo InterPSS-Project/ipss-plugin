@@ -26,7 +26,7 @@ package org.interpss.plugin.pssl.simu;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.IChildNetLfSolver;
@@ -68,7 +68,7 @@ public class IpssAclf extends BaseDSL {
 		 */
 		public LfAlgoDSL(BaseAclfNetwork<?,?> net) {
 			this.net = net;
-			this.algo = CoreObjectFactory.createLoadflowAlgorithm(this.net);	 }
+			this.algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(this.net);	 }
 /*
 	   * 	Loadflow calculation
 	   *    ====================		
@@ -141,7 +141,7 @@ public class IpssAclf extends BaseDSL {
   		 * @param b
   		 * @return
   		 */
-  		public LfAlgoDSL setNonDivergent(boolean b) { this.algo.setNonDivergent(b); return this; } 		
+  		public LfAlgoDSL setNonDivergent(boolean b) { this.algo.getNrMethodConfig().setNonDivergent(b); return this; } 		
   		/**
   		 * set none divergence status
   		 * 

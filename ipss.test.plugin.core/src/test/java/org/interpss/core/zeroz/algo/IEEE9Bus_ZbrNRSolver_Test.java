@@ -39,7 +39,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetModelType;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
@@ -61,7 +61,7 @@ public class IEEE9Bus_ZbrNRSolver_Test extends CorePluginTestSetup {
 	  	//System.out.println(net.net2String());
 
 	  	// create the default loadflow algorithm
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 
 	  	// use the loadflow algorithm to perform loadflow calculation
 	  	algo.setLfMethod(AclfMethodType.NR);
@@ -129,8 +129,8 @@ public class IEEE9Bus_ZbrNRSolver_Test extends CorePluginTestSetup {
 	  	//System.out.println(net.net2String());
 
 	  	// use the new ZBRNRSolver loadflow algorithm to perform loadflow calculation
-	  	ZbrNrSolver zbrSolver = new ZbrNrSolver(net);
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
+	  	ZbrNrSolver zbrSolver = new ZbrNrSolver(net, algo.getNrMethodConfig());
 		algo.getLfCalculator().setNrSolver(zbrSolver);
 		algo.setTolerance(1.0E-6);
 		algo.setInitBusVoltage(true);

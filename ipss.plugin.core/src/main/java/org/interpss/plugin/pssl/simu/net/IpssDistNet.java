@@ -28,6 +28,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.acsc.AcscNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -132,7 +133,7 @@ public class IpssDistNet {
 		
 		public boolean loadflow() throws InterpssException {
 			AcscNetwork aclfNet = this.getAcscNetwork();
-		  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(aclfNet);
+		  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet);
 		  	return algo.loadflow();			
 		}
 

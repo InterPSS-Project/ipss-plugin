@@ -1,0 +1,28 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Run CMathCustomSolverLoadflow",
+            "request": "launch",
+            "mainClass": "org.interpss.sample.customSolver.CMathCustomSolverLoadflow",
+            "projectName": "ipss.sample",
+            "cwd": "${workspaceFolder}",
+            "args": [],
+            "vmArgs": [],
+            "env": {},
+            "console": "integratedTerminal",
+            "preLaunchTask": "Maven: compile"
+        },
+        {
+            "type": "java",
+            "name": "Debug CMathCustomSolverLoadflow",
+            "request": "launch",
+            "mainClass": "org.interpss.sample.customSolver.CMathCustomSolverLoadflow",
+            "projectName": "ipss.sample",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "preLaunchTask": "Maven: compile"
+        }
+    ]
+}

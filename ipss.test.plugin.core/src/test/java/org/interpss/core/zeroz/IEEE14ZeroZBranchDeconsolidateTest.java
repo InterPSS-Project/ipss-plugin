@@ -8,7 +8,7 @@ import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetModelType;
 import com.interpss.core.aclf.AclfNetwork;
@@ -87,7 +87,7 @@ public class IEEE14ZeroZBranchDeconsolidateTest extends CorePluginTestSetup {
   		 * (4) run loadflow calculation. There should be no difference in the results
   		 */
   		//IpssLogger.getLogger().setLevel(Level.INFO);
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 	  	
