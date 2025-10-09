@@ -62,6 +62,8 @@ public class Aclf_ACTIVSg25kBusSwShuntInvestigation {
 		// disable all the controls
 		AclfAdjCtrlFunction.disableAllAdjControls.accept(aclfAlgo);
 		
+		
+		
 		aclfAlgo.setTolerance(1.0E-6);
 		aclfAlgo.setMaxIterations(30);
 		
