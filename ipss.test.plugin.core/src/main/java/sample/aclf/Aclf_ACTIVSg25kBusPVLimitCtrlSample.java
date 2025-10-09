@@ -73,13 +73,15 @@ public class Aclf_ACTIVSg25kBusPVLimitCtrlSample {
 		 * Scenario-3: in addition to Switched shunt, enable PV bus limit controls
 		 * 
 		 * 	Aclf diverges 
-		 */
+		 */		
 		aclfAlgo.getLfAdjAlgo().getLimitCtrlConfig().setPvLimitControl(true);
 		aclfAlgo.getLfAdjAlgo().getLimitCtrlConfig().setAdjustAppType(AdjustApplyType.POST_ITERATION);
 		// PV limit control process starts when max mismatch is below 1.0E-6 x 100
 		aclfAlgo.getLfAdjAlgo().getLimitCtrlConfig().setStartPoint(100);
 		// PV limit tolerance for limit violation checking is set to 100.0 x 1.0E-6
 		aclfAlgo.getLfAdjAlgo().getLimitCtrlConfig().setToleranceFactor(100.0);;
+		// change the default setting of checking the Q limit immediate to false for this test case		
+		aclfAlgo.getLfAdjAlgo().getLimitCtrlConfig().setCheckGenQLimitImmediate(false);
 		
 		aclfAlgo.setTolerance(1.0E-6);
 		aclfAlgo.setMaxIterations(30);
