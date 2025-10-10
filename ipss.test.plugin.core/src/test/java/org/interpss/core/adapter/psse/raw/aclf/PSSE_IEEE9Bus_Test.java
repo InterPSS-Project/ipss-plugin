@@ -311,6 +311,9 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.setLfMethod(AclfMethodType.NR);
 		algo.getNrMethodConfig().setNonDivergent(true);
+		
+		algo.getLfAdjAlgo().getLimitCtrlConfig().setCheckGenQLimitImmediate(false);
+		
 		algo.loadflow();
 		//System.out.println(AclfOutFunc.loadFlowSummary(net));
 
@@ -335,8 +338,8 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		AclfBus swingBus = net.getBus("Bus1");
 	  	AclfSwingBusAdapter swing = swingBus.toSwingBus();
   		Complex p = swing.getGenResults(UnitType.PU);
-  		assertTrue(Math.abs(p.getReal()+0.0136)<0.0001);
-  		assertTrue(""+p.getImaginary(), Math.abs(p.getImaginary()-0.5989)<0.0001);
+  		assertEquals(p.getReal(), -0.0136, 0.0001);
+  		assertEquals(p.getImaginary(), 0.5989, 0.0001);
 
 		AclfBus bus4 = net.getBus("Bus4");
 		double voltageMag = bus4.getVoltageMag();

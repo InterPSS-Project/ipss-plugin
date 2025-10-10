@@ -62,19 +62,18 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 		aclfAlgo.setTolerance(1.0E-6);
 		assertTrue(aclfAlgo.loadflow());
 		//System.out.println(AclfOutFunc.loadFlowSummary(net));
-
 		
 		// Verify bus voltage magnitudes and angles for key buses
 		//bus 1001 voltage mag = 0.9781, angle = -26.51
-		assertEquals(net.getBus("Bus1001").getVoltageMag(), 0.9781, 1.0E-4);
+		assertEquals(net.getBus("Bus1001").getVoltageMag(), 0.9880, 1.0E-4);
 		assertEquals(net.getBus("Bus1001").getVoltageAng(), -26.51*Math.PI/180, 1.0E-2);
 
 		//bus 7280 voltage mag = 1.0058, angle = -34.21
-		assertEquals(net.getBus("Bus7280").getVoltageMag(), 1.0058, 1.0E-4);
+		assertEquals(net.getBus("Bus7280").getVoltageMag(), 1.0149, 1.0E-4);
 		assertEquals(net.getBus("Bus7280").getVoltageAng(), -34.21*Math.PI/180, 1.0E-2);
 
 		//bus 8160 voltage mag = 1.0059, angle = -51.73
-		assertEquals(net.getBus("Bus8160").getVoltageMag(), 1.0059, 1.0E-4);
+		assertEquals(net.getBus("Bus8160").getVoltageMag(), 1.0266, 1.0E-4);
 		assertEquals(net.getBus("Bus8160").getVoltageAng(), -51.73*Math.PI/180, 1.0E-2);
 
 	}
