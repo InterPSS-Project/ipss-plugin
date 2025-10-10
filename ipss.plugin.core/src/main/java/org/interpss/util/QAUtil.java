@@ -356,7 +356,7 @@ public static AclfNetwork equivHVDC(AclfNetwork net) {
 
 	public static AclfNetwork changeSVCToFixedShunt(AclfNetwork net) {
 		for(AclfBus bus: net.getBusList()){
-			if(bus.isActive() && bus.isStaticVarCompensator()&& bus.getStaticVarCompensator().isControlStatus()){
+			if(bus.isActive() && bus.isStaticVarCompensator()&& bus.getFirstStaticVarCompensator().isControlStatus()){
 
 				// if (bus.getId().equals("Bus345123")) {
 				// 	System.out.println(bus.toString());
@@ -364,7 +364,7 @@ public static AclfNetwork equivHVDC(AclfNetwork net) {
 				bus.setGenCode(AclfGenCode.GEN_PV);
 				Complex  mis = bus.mismatch(AclfMethodType.NR);
 				if(Math.abs(mis.getImaginary())>0.001 ){
-					StaticVarCompensator svc = bus.getStaticVarCompensator();
+					StaticVarCompensator svc = bus.getFirstStaticVarCompensator();
 					
 					double vm = bus.getVoltageMag();
 					double b = -mis.getImaginary()/(vm*vm);

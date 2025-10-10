@@ -55,7 +55,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		// Bus4 is a switched shunt bus
 		AclfBus bus4 = net.getBus("Bus4");
 		assertTrue(bus4.isSwitchedShunt());
-		SwitchedShunt swShunt = bus4.getSwitchedShunt();
+		SwitchedShunt swShunt = bus4.getFirstSwitchedShunt();
 		//swShunt.setBLimit(new LimitType(3.0*0.23637, 0.0));
 		//System.out.println("Switched Shunt: " + swShunt);
 		
@@ -96,7 +96,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		// Bus4 is a switched shunt bus
 		AclfBus bus4 = net.getBus("Bus4");
 		assertTrue(bus4.isSwitchedShunt());
-		SwitchedShunt swShunt = bus4.getSwitchedShunt();
+		SwitchedShunt swShunt = bus4.getFirstSwitchedShunt();
 		//swShunt.setBLimit(new LimitType(3.0*0.23637, 0.0));
 		//System.out.println("Switched Shunt: " + swShunt);
 		
@@ -140,7 +140,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		// Bus4 is a switched shunt bus
 		AclfBus bus4 = net.getBus("Bus4");
 		assertTrue(bus4.isSwitchedShunt());
-		SwitchedShunt swShunt = bus4.getSwitchedShunt();
+		SwitchedShunt swShunt = bus4.getFirstSwitchedShunt();
 		//swShunt.setBLimit(new LimitType(3.0*0.23637, 0.0));
 		//System.out.println("Switched Shunt: " + swShunt);
 		
@@ -206,7 +206,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		// Bus4 is a switched shunt bus
 		AclfBus bus4 = net.getBus("Bus4");
 		assertTrue(bus4.isSwitchedShunt());
-		SwitchedShunt swShunt = bus4.getSwitchedShunt();
+		SwitchedShunt swShunt = bus4.getFirstSwitchedShunt();
 	
 		// double baseKva = net.getBaseKva();
 		// swShunt.getShuntCompensatorList().forEach(comp -> {
