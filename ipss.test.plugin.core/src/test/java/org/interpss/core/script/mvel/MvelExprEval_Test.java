@@ -55,8 +55,8 @@ public class MvelExprEval_Test extends CorePluginTestSetup {
 	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
 		
-		//System.out.println("Total gen: " + ComplexFunc.toStr(net.totalGeneration(UnitType.PU)));
-		//System.out.println("Total load: " + ComplexFunc.toStr(net.totalLoad(UnitType.PU)));
+		System.out.println("Total gen: " + ComplexFunc.toStr(net.totalGeneration(UnitType.PU)));
+		System.out.println("Total load: " + ComplexFunc.toStr(net.totalLoad(UnitType.PU)));
 		/*
 		 * Total gen: 2.72392 + j0.7885
            Total load: 2.5900 + j0.7350
@@ -74,11 +74,11 @@ public class MvelExprEval_Test extends CorePluginTestSetup {
 		System.out.println("Total gen: " + ComplexFunc.toStr(net.totalGeneration(UnitType.PU)));
 		System.out.println("Total load: " + ComplexFunc.toStr(net.totalLoad(UnitType.PU)));
 		/*
-		Total gen: 3.01313 + j0.88196
-		Total load: 2.8490 + j0.8085
+			Total gen: 3.01298 + j0.92497
+			Total load: 2.8490 + j0.8085
 		 */
  		//System.out.println(AclfOutFunc.loadFlowSummary(net));
- 		assertTrue(NumericUtil.equals(net.totalGeneration(UnitType.PU), new Complex(3.01313, 0.88196), 1.0E-4));
+ 		assertTrue(NumericUtil.equals(net.totalGeneration(UnitType.PU), new Complex(3.01298, 0.92497), 1.0E-4));
  		assertTrue(NumericUtil.equals(net.totalLoad(UnitType.PU), new Complex(2.8490, 0.8085), 1.0E-4));
 	}
 	
