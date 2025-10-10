@@ -9,6 +9,7 @@ import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.funcImpl.AclfAdjCtrlFunction;
 
 /**
  * Parallel Contingency Analysis wrapper for Python integration.
@@ -177,7 +178,9 @@ public class ParallelContingencyAnalyzer {
         algo.getDataCheckConfig().setTurnOffIslandBus(config.isTurnOffIslandBus());
         algo.getDataCheckConfig().setAutoTurnLine2Xfr(config.isAutoTurnLine2Xfr());
         algo.setLfMethod(config.getLfMethod());
-        algo.getLfAdjAlgo().setApplyAdjustAlgo(config.isApplyAdjustAlgo());
+         // disable all the controls
+        if(config.isApplyAdjustAlgo())
+            AclfAdjCtrlFunction.disableAllAdjControls.accept(algo);
         algo.getNrMethodConfig().setNonDivergent(config.isNonDivergent());
         algo.setMaxIterations(config.getMaxIterations());
         algo.setTolerance(config.getTolerance());
