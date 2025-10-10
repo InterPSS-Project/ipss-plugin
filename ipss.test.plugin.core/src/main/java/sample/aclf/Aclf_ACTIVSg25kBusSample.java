@@ -48,7 +48,7 @@ public class Aclf_ACTIVSg25kBusSample {
 		
 		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 
-		aclfAlgo.getLfAdjAlgo().getVoltAdjConfig().setCheckGenQLimitImmediate(false);
+		aclfAlgo.getLfAdjAlgo().getLimitCtrlConfig().setCheckGenQLimitImmediate(false);
 
 		// disable all the controls
 		AclfAdjCtrlFunction.disableAllAdjControls.accept(aclfAlgo);
