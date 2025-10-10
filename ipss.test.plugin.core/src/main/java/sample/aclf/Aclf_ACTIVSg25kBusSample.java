@@ -4,11 +4,10 @@ import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
-import com.interpss.common.exp.InterpssException;
+
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
@@ -21,12 +20,9 @@ import com.interpss.core.funcImpl.AclfAdjCtrlFunction;
 public class Aclf_ACTIVSg25kBusSample {
 	
 	public static void main(String args[]) throws Exception {
-		IpssCorePlugin.init();
 		
-		//IpssLogger.getLogger().setLevel(Level.INFO);
-		
-		//String filename = "ipss-plugin/ipss.test.plugin.core/testData/psse/v33/ACTIVSg25k.RAW";
-		String filename = "testData/psse/v33/ACTIVSg25k.RAW";
+		String filename = "ipss-plugin/ipss.test.plugin.core/testData/psse/v33/ACTIVSg25k.RAW";
+		//String filename = "testData/psse/v33/ACTIVSg25k.RAW";
 		
 		// load the test data V33
 		AclfNetwork net = IpssAdapter.importAclfNet(filename)
@@ -48,6 +44,8 @@ public class Aclf_ACTIVSg25kBusSample {
 		System.out.println("Step size(1): " + stepSize);
 		
 		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
+
+		aclfAlgo.getLfAdjAlgo().getVoltAdjConfig().setCheckGenQLimitImmediate(false);
 
 		// disable all the controls
 		AclfAdjCtrlFunction.disableAllAdjControls.accept(aclfAlgo);
