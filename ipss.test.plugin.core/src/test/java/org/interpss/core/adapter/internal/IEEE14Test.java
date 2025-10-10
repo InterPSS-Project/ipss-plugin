@@ -24,12 +24,14 @@
 
 package org.interpss.core.adapter.internal;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -81,8 +83,8 @@ public class IEEE14Test extends CorePluginTestSetup {
   		AclfSwingBusAdapter swing = swingBus.toSwingBus();
 		//System.out.println(swing.getGenResults(UnitType.PU).getReal());
 		//System.out.println(swing.getGenResults(UnitType.PU).getImaginary());
-  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.32373)<0.0001);
-  		assertTrue( Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.17462)<0.0001);
+  		assertEquals(swing.getGenResults(UnitType.PU).getReal(), 2.32386, 0.0001);
+  		assertEquals(swing.getGenResults(UnitType.PU).getImaginary(), -0.168894, 0.0001);
 	}
 	
 	//@Test
