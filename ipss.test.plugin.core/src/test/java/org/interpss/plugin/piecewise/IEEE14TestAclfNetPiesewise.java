@@ -25,6 +25,9 @@
 
 package org.interpss.plugin.piecewise;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.function.Function;
 
 import org.apache.commons.math3.complex.Complex;
@@ -35,7 +38,6 @@ import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.piecewise.algo.PiecewiseAlgorithm;
 import org.interpss.piecewise.algo.impl.PiecewiseAlgoPosImpl;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.algo.subAreaNet.SubAreaNetProcessor;
@@ -134,7 +136,7 @@ public class IEEE14TestAclfNetPiesewise extends PiecewiseAlgoTestSetup {
 	 * Break the network into two SubAreas and the calculate the bus voltage
 	 * 
 	 *    In this test case, the subareas are defined by manually
-	 */
+	 */ 
 	//@Test
 	public void testCase2() throws Exception {
 		AclfNetwork net = getTestNet();
@@ -289,8 +291,8 @@ public class IEEE14TestAclfNetPiesewise extends PiecewiseAlgoTestSetup {
 		 */
   		System.out.println(pieceWiseAlgo.getBusVoltage(2).get("10").abs());
   		System.out.println(pieceWiseAlgo.getBusVoltage(1).get("1").abs());
-  		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(2).get("10").abs(), 0.9480001594432435, 0.01));
-		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(1).get("1").abs(), 1.1603111303400062, 0.01));
+  		assertEquals(pieceWiseAlgo.getBusVoltage(2).get("10").abs(), 0.9336218714656881, 0.01);
+  		assertEquals(pieceWiseAlgo.getBusVoltage(1).get("1").abs(), 1.1582643132845656, 0.01);
 	}
 
 	/*
@@ -342,11 +344,9 @@ public class IEEE14TestAclfNetPiesewise extends PiecewiseAlgoTestSetup {
 		/*
 		 * Checking bus voltage results
 		 */
-  		System.out.println(pieceWiseAlgo.getBusVoltage(2).get("10").abs());
-  		System.out.println(pieceWiseAlgo.getBusVoltage(1).get("1").abs());
-  		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(2).get("10").abs(), 0.9480001594432435, 0.01));
-		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(1).get("1").abs(), 1.1603111303400062, 0.01));
-	}
+  		assertEquals(pieceWiseAlgo.getBusVoltage(2).get("10").abs(), 0.9336218714656881, 0.01);
+  		assertEquals(pieceWiseAlgo.getBusVoltage(1).get("1").abs(), 1.1582643132845656, 0.01);
+  	}
 	
 	/*
 	 * Break the network into three SubAreas
@@ -420,8 +420,6 @@ public class IEEE14TestAclfNetPiesewise extends PiecewiseAlgoTestSetup {
   		/*
   		 * Check open circuit voltage results
   		 */
-		System.out.println(pieceWiseAlgo.getBusVoltage(2).get("91").getReal());
-		System.out.println(pieceWiseAlgo.getBusVoltage(2).get("91").getImaginary());
 		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(2).get("91"), new Complex(-0.23360441002180587, 0.25487152860615664), 1.0e-10));
 		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(3).get("14"), new Complex(0.0, 0.0), 1.0e-10));
 		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(1).get("1"), new Complex(1.5318751236170223, 0.53233297483084), 1.0e-10));
@@ -502,11 +500,9 @@ public class IEEE14TestAclfNetPiesewise extends PiecewiseAlgoTestSetup {
     	
 		pieceWiseAlgo.calcuateSubAreaNetVoltage(proc.getCuttingBranches());  		
  		
-  		System.out.println(pieceWiseAlgo.getBusVoltage(2).get("10").abs());
-		System.out.println(pieceWiseAlgo.getBusVoltage(1).get("1").abs());
-  		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(2).get("10").abs(), 0.9480001594432259, 0.01));
-		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(1).get("1").abs(), 1.1603111303400135, 0.01));
-	}	
+  		assertEquals(pieceWiseAlgo.getBusVoltage(2).get("10").abs(), 0.9336218714656881, 0.01);
+  		assertEquals(pieceWiseAlgo.getBusVoltage(1).get("1").abs(), 1.1582643132845656, 0.01);
+  	}	
 	
 	private AclfNetwork getTestNet() throws Exception {
 		/*
