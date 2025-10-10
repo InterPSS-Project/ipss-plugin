@@ -47,6 +47,9 @@ public class BPASampleTestCases extends CorePluginTestSetup {
 				.getAclfNet();	
 		
 	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
+	  	
+	  	algo.getLfAdjAlgo().getLimitCtrlConfig().setCheckGenQLimitImmediate(false);
+	  	
 	  	algo.loadflow();
 		//System.out.println(net.net2String());
 	  	
