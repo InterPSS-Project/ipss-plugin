@@ -62,7 +62,6 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 		aclfAlgo.setTolerance(1.0E-6);
 		assertTrue(aclfAlgo.loadflow());
 		//System.out.println(AclfOutFunc.loadFlowSummary(net));
-
 		
 		// Verify bus voltage magnitudes and angles for key buses
 		//bus 1001 voltage mag = 0.9781, angle = -26.51

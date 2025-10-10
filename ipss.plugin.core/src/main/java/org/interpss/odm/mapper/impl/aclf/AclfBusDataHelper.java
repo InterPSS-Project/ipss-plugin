@@ -551,7 +551,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 				}
 
 				//calculate the B value (the total capacitive or inductive susceptance) for the bank
-				varBank.calB(this.aclfNet.getBaseKva());
+				varBank.calTotalB(this.aclfNet.getBaseKva());
 			}
 
 			//set Blimit

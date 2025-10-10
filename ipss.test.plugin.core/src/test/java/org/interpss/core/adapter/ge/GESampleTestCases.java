@@ -56,6 +56,9 @@ public class GESampleTestCases extends CorePluginTestSetup {
 		assertTrue(net.getNoBranch() == 24);
 		
 	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
+	  	
+	  	algo.getLfAdjAlgo().getLimitCtrlConfig().setCheckGenQLimitImmediate(false);
+	  	
 	  	algo.loadflow();
 		//System.out.println(net.net2String());
 	  	
