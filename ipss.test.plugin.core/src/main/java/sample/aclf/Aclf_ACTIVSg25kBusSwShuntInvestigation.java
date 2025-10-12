@@ -44,14 +44,14 @@ public class Aclf_ACTIVSg25kBusSwShuntInvestigation {
 					if (swShunt.getAdjControlType() == AclfAdjustControlType.RANGE_CONTROL) {
 						boolean violate = swShunt.getDesiredControlRange().isViolated(bus.getVoltageMag());
 						if (violate) {
-							System.out.println("Switched shunt range control violated: " + bus.getId() + ", " + swShunt.getId() + ", " + 
-								swShunt.getAdjControlType() + ", " + swShunt.getControlMode());
-							System.out.println(" volt range: " + bus.getVoltageMag() + ", " + swShunt.getDesiredControlRange());
+							//System.out.println("Switched shunt range control violated: " + bus.getId() + ", " + swShunt.getId() + ", " + 
+							//	swShunt.getAdjControlType() + ", " + swShunt.getControlMode());
+							//System.out.println(" volt range: " + bus.getVoltageMag() + ", " + swShunt.getDesiredControlRange());
 						}
 					}
 					else {
-						System.out.println("Switched shunt point control: " + bus.getId() + ", " + swShunt.getId() + ", " + 
-								swShunt.getAdjControlType() + ", " + swShunt.getControlMode());
+						//System.out.println("Switched shunt point control: " + bus.getId() + ", " + swShunt.getId() + ", " + 
+						//		swShunt.getAdjControlType() + ", " + swShunt.getControlMode());
 					}
 				});
 			}
@@ -62,10 +62,23 @@ public class Aclf_ACTIVSg25kBusSwShuntInvestigation {
 		// disable all the controls
 		AclfAdjCtrlFunction.disableAllAdjControls.accept(aclfAlgo);
 		
+		/*
+		 * Scenario-1: enable switched shunt controls, continuous adjustment mode
+		 * 
+		 *    Aclf converges in 19 iterations
+		 */
+		aclfAlgo.getLfAdjAlgo().getVoltAdjConfig().setSwitchedShuntAdjust(true);
+		aclfAlgo.getLfAdjAlgo().getVoltAdjConfig().setDiscreteAdjust(false);
 		
+		/*
+		 * Scenario-2: switched shunt control in continuous adjustment mode
+		 * 
+		 *   Aclf does not converges in 20 iterations 
+		 */
+		aclfAlgo.getLfAdjAlgo().getVoltAdjConfig().setDiscreteAdjust(true);
 		
 		aclfAlgo.setTolerance(1.0E-6);
-		aclfAlgo.setMaxIterations(30);
+		aclfAlgo.setMaxIterations(100);
 		
 		System.out.println("MaxMismatch: " + net.maxMismatch(AclfMethodType.NR));
 		
