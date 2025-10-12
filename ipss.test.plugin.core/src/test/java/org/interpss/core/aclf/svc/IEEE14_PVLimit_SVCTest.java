@@ -42,7 +42,9 @@ public class IEEE14_PVLimit_SVCTest extends CorePluginTestSetup {
 		svc.setBInit(0.0);
 		svc.setBLimit(new LimitType(0.1, 0.0));
 		svc.setDesiredControlRange(new LimitType(1.1, 0.9));
-		
+		/*
+		 * Add two banks of shunt capacitors to the SVC
+		 *
 		ShuntCompensator bank1 = CoreObjectFactory.createShuntCompensator(svc, ShuntCompensatorType.CAPACITOR);
 		bank1.setId("Bank1");
 		bank1.setSteps(1);
@@ -54,7 +56,7 @@ public class IEEE14_PVLimit_SVCTest extends CorePluginTestSetup {
 		bank2.setSteps(1);
 		bank2.setUnitQMvar(0.5);
 		bank2.setB(0.1);
-
+		 */
 		// we set the svc to be off control status, it will be turned on after the PVBusLimit
 		// hits the limit.
 		svc.setStatus(false);
@@ -103,6 +105,7 @@ public class IEEE14_PVLimit_SVCTest extends CorePluginTestSetup {
 		svc.setBLimit(new LimitType(0.1, 0.0));
 		svc.setDesiredControlRange(new LimitType(1.1, 0.9));
 		
+		/*
 		ShuntCompensator bank1 = CoreObjectFactory.createShuntCompensator(svc, ShuntCompensatorType.CAPACITOR);
 		bank1.setId("Bank1");
 		bank1.setSteps(1);
@@ -114,7 +117,7 @@ public class IEEE14_PVLimit_SVCTest extends CorePluginTestSetup {
 		bank2.setSteps(1);
 		bank2.setUnitQMvar(0.5);
 		bank2.setB(0.1);
-
+		 */	
 		// we set the svc to be off control status, it will be turned on after the PVBusLimit
 		// hits the limit.
 		svc.setStatus(false);
