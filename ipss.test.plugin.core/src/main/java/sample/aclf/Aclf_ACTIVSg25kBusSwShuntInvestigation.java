@@ -75,7 +75,7 @@ public class Aclf_ACTIVSg25kBusSwShuntInvestigation {
 		 * 
 		 *   Aclf does not converges in 20 iterations 
 		 */
-		//aclfAlgo.getLfAdjAlgo().getVoltAdjConfig().setDiscreteAdjust(true);
+		aclfAlgo.getLfAdjAlgo().getVoltAdjConfig().setDiscreteAdjust(true);
 		
 		aclfAlgo.setTolerance(1.0E-6);
 		aclfAlgo.setMaxIterations(100);
