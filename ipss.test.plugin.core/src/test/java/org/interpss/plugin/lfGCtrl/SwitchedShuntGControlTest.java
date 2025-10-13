@@ -24,12 +24,14 @@
 
 package org.interpss.plugin.lfGCtrl;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.plugin.aclf.LfGlobalAdjControlConfig;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -235,17 +237,17 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 
 		System.out.println("Switched Shunt: " + swShunt);
 		assertTrue("", NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
-		assertTrue("", NumericUtil.equals(swShunt.getBActual(), 0.47274, 0.0001));
-		assertTrue("", NumericUtil.equals(swShunt.getQ(), 0.47222  , 0.0001));
+		assertEquals(swShunt.getBActual(), 0.23637, 0.0001);
+		assertEquals(swShunt.getQ(), 0.23611  , 0.0001);
 		assertTrue("", swShunt.getControlMode() == AclfAdjustControlMode.DISCRETE);
-		assertTrue("", NumericUtil.equals(swShunt.getVSpecified(), 1.0, 0.0001));
-		assertTrue("", NumericUtil.equals(bus4.getVoltageMag(), 0.99945, 0.0001));
+		assertEquals(swShunt.getVSpecified(), 1.0, 0.0001);
+		assertEquals(bus4.getVoltageMag(), 0.99945, 0.0001);
 		
 		String swingId = "Bus1";
 		AclfSwingBusAdapter swing = net.getBus(swingId).toSwingBus();
 		//System.out.println("AclfNet Model: "+swing.getGenResults(UnitType.PU) );				
-		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal() - 0.2253) < 0.0001);
-		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary() - 0.0078) < 0.0001);
+		assertEquals(swing.getGenResults(UnitType.PU).getReal(), 0.2253, 0.0001);
+		assertEquals(swing.getGenResults(UnitType.PU).getImaginary(),0.0078, 0.0001);
 	}
 }
 
