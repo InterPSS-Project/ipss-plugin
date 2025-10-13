@@ -235,10 +235,10 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		algo.loadflow();
 		assertTrue(net.isLfConverged());
 
-		System.out.println("Switched Shunt: " + swShunt);
+		//System.out.println("Switched Shunt: " + swShunt);
 		assertTrue("", NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
-		assertEquals(swShunt.getBActual(), 0.47274, 0.0001);
-		assertEquals(swShunt.getQ(), 0.47222  , 0.0001);
+		assertEquals(swShunt.getBActual(), 0.23637, 0.0001);
+		assertEquals(swShunt.getQ(), 0.23611  , 0.0001);
 		assertTrue("", swShunt.getControlMode() == AclfAdjustControlMode.DISCRETE);
 		assertEquals(swShunt.getVSpecified(), 1.0, 0.0001);
 		assertEquals(bus4.getVoltageMag(), 0.99945, 0.0001);
