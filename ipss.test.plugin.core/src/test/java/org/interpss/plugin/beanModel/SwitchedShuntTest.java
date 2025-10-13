@@ -139,7 +139,7 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
   		AclfBus svcBus = (AclfBus)net.getBus("1");
   		//System.out.println(swing.getGenResults(UnitType.PU, net.getBaseKva()));
 		assertTrue(Math.abs(svcBus.getVoltageMag()-0.9)<0.001);
-		assertTrue(Math.abs(svcBus.getFirstSwitchedShunt().getQ()-0.1774)<0.0001);
+		assertTrue(Math.abs(svcBus.getFirstSwitchedShunt(true).getQ()-0.1774)<0.0001);
 	}
 
 	/*
@@ -196,7 +196,7 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
   		bus6 = net.getBus("6");
   		//System.out.println(bus1.getVoltageMag());
 		assertTrue(Math.abs(bus1.getVoltageMag()-0.9)<0.001);
-		assertTrue(Math.abs(bus6.getFirstSwitchedShunt().getQ()-0.18278)<0.0001);
+		assertTrue(Math.abs(bus6.getFirstSwitchedShunt(true).getQ()-0.18278)<0.0001);
 	}
 	
 	
