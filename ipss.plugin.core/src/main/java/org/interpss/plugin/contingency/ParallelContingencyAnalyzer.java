@@ -10,6 +10,7 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.AclfAdjCtrlFunction;
+import com.interpss.state.aclf.AclfNetworkState;
 
 /**
  * Parallel Contingency Analysis wrapper for Python integration.
@@ -109,11 +110,14 @@ public class ParallelContingencyAnalyzer {
             stream = stream.parallel();
         }
         
+        AclfNetworkState clonedNetBean = new AclfNetworkState(network);
+		
         long totalSuccessCount = stream
             .mapToObj(i -> {
                 try {
                     // Create a copy of the network for each contingency
-                    AclfNetwork copyNet = network.jsonCopy();
+                    //AclfNetwork copyNet = network.jsonCopy();
+                	AclfNetwork copyNet = AclfNetworkState.create(clonedNetBean);
                     
                     // Remove the i-th branch
                     if (i < copyNet.getBranchList().size()) {
