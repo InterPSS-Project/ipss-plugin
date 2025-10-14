@@ -22,8 +22,8 @@ public class Aclf_ACTIVSg25kBusSample {
 	
 	public static void main(String args[]) throws Exception {
 		
-		String filename = "ipss-plugin/ipss.test.plugin.core/testData/psse/v33/ACTIVSg25k.RAW";
-		//String filename = "testData/psse/v33/ACTIVSg25k.RAW";
+		//String filename = "ipss-plugin/ipss.test.plugin.core/testData/psse/v33/ACTIVSg25k.RAW";
+		String filename = "testData/psse/v33/ACTIVSg25k.RAW";
 		
 		// load the test data V33
 		AclfNetwork net = IpssAdapter.importAclfNet(filename)
@@ -58,7 +58,7 @@ public class Aclf_ACTIVSg25kBusSample {
 		 * 
 		 *    Aclf converges in 19 iterations
 		 */
-		//aclfAlgo.getLfAdjAlgo().getVoltAdjConfig().setSwitchedShuntAdjust(true);
+		aclfAlgo.getLfAdjAlgo().getVoltAdjConfig().setSwitchedShuntAdjust(true);
 		//aclfAlgo.getLfAdjAlgo().getVoltAdjConfig().setDiscreteAdjust(false);
 		
 		/*
@@ -66,20 +66,30 @@ public class Aclf_ACTIVSg25kBusSample {
 		 * 
 		 *   Aclf does not converges in 20 iterations 
 		 */
-		//aclfAlgo.getLfAdjAlgo().getVoltAdjConfig().setDiscreteAdjust(true);
+		aclfAlgo.getLfAdjAlgo().getVoltAdjConfig().setDiscreteAdjust(true);
 		
 		/*
 		 * Scenario-3: in addition to Switched shunt, enable PV bus limit controls
 		 * 
-		 * 	Aclf diverges 
-		 *
+		 */
+		/*
+		 * enable PV bus limit controls
+		 * 
+		 */		
 		aclfAlgo.getLfAdjAlgo().getLimitCtrlConfig().setPvLimitControl(true);
 		aclfAlgo.getLfAdjAlgo().getLimitCtrlConfig().setAdjustAppType(AdjustApplyType.POST_ITERATION);
+		// PV limit control process starts when max mismatch is below 1.0E-6 x 100
 		aclfAlgo.getLfAdjAlgo().getLimitCtrlConfig().setStartPoint(100);
-		aclfAlgo.getLfAdjAlgo().getLimitCtrlConfig().setToleranceFactor(1000.0);;
-		*/
+		// PV limit tolerance for limit violation checking is set to 100.0 x 1.0E-6
+		aclfAlgo.getLfAdjAlgo().getLimitCtrlConfig().setToleranceFactor(100.0);;
+
+		/*
+		 * Change PV bus to PQ bus with limit violation in the init process
+		 */
+		aclfAlgo.getLfAdjAlgo().getLimitCtrlConfig().setCheckGenQLimitImmediate(true);
+		
 		aclfAlgo.setTolerance(1.0E-6);
-		aclfAlgo.setMaxIterations(30);
+		aclfAlgo.setMaxIterations(50);
 		
 		System.out.println("MaxMismatch: " + net.maxMismatch(AclfMethodType.NR));
 		
