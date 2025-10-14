@@ -84,7 +84,7 @@ public class Aclf_ACTIVSg25kBusPVLimitCtrlSample {
 		/*
 		 * Change PV bus to PQ bus with limit violation in the init process
 		 */
-		aclfAlgo.getLfAdjAlgo().getLimitCtrlConfig().setCheckGenQLimitImmediate(true);
+		//aclfAlgo.getLfAdjAlgo().getLimitCtrlConfig().setCheckGenQLimitImmediate(true);
 		
 		aclfAlgo.setTolerance(1.0E-6);
 		aclfAlgo.setMaxIterations(30);
