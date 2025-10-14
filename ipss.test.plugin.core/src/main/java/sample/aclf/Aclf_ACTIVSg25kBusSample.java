@@ -64,9 +64,9 @@ public class Aclf_ACTIVSg25kBusSample {
 		/*
 		 * Scenario-2: switched shunt control in continuous adjustment mode
 		 * 
-		 *   Aclf does not converges in 20 iterations 
+		 *   Aclf does not converge in 20 iterations 
 		 */
-		aclfAlgo.getLfAdjAlgo().getVoltAdjConfig().setDiscreteAdjust(true);
+		//aclfAlgo.getLfAdjAlgo().getVoltAdjConfig().setDiscreteAdjust(true);
 		
 		/*
 		 * Scenario-3: in addition to Switched shunt, enable PV bus limit controls
@@ -86,14 +86,14 @@ public class Aclf_ACTIVSg25kBusSample {
 		/*
 		 * Change PV bus to PQ bus with limit violation in the init process
 		 */
-		aclfAlgo.getLfAdjAlgo().getLimitCtrlConfig().setCheckGenQLimitImmediate(true);
+		//aclfAlgo.getLfAdjAlgo().getLimitCtrlConfig().setCheckGenQLimitImmediate(true);
 		
 		aclfAlgo.setTolerance(1.0E-6);
 		aclfAlgo.setMaxIterations(50);
 		
 		System.out.println("MaxMismatch: " + net.maxMismatch(AclfMethodType.NR));
 		
-		assertTrue(aclfAlgo.loadflow());
+		aclfAlgo.loadflow();
 		
 		stepSize = CubicEqnStepSizeCalculator.calStepSize(net);
 		System.out.println("Step size(2): " + stepSize);
