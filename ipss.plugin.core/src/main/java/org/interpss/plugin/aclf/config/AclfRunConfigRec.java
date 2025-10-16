@@ -29,6 +29,7 @@ public class AclfRunConfigRec extends BaseJSONBean {
 	public boolean applyLimitControl = true;
 	public boolean pvBusLimitControl = true;
 	public boolean pqBusLimitControl = true;
+	public boolean limitBackoffCheck = false;
 	public boolean checkGenQLimImmediate = false;
 	
 	public boolean applyVoltAdjust = true;
@@ -105,6 +106,7 @@ public class AclfRunConfigRec extends BaseJSONBean {
         	algo.getLfAdjAlgo().getLimitCtrlConfig().setAdjust(this.applyLimitControl);
         	algo.getLfAdjAlgo().getLimitCtrlConfig().setPvLimitControl(this.pvBusLimitControl);
         	algo.getLfAdjAlgo().getLimitCtrlConfig().setPqLimitControl(this.pqBusLimitControl);
+        	algo.getLfAdjAlgo().getLimitCtrlConfig().setLimitBackoffCheck(this.limitBackoffCheck);
         	algo.getLfAdjAlgo().getLimitCtrlConfig().setCheckGenQLimitImmediate(this.checkGenQLimImmediate);
         	
         	algo.getLfAdjAlgo().getVoltAdjConfig().setAdjust(this.applyVoltAdjust);
