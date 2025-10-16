@@ -41,7 +41,7 @@ public class Aclf_ACTIVSg25kBusPVLimitCtrlSample {
 		/*
 		 * Since this is a solved case, we change PV bus with limit violation to PQ bus,
 		 * or bus.desiredVolt <> bus.voltage first
-		 */
+		 *
 		double changeThreshold = 0.001;
 		Counter cnt = new Counter();
 		net.getBusList().forEach(bus -> {
@@ -61,6 +61,7 @@ public class Aclf_ACTIVSg25kBusPVLimitCtrlSample {
 			}
 		});
 		System.out.println("Number of PV bus changed to PQ bus: " + cnt.getCount());
+		*/
 		
 		System.out.println("MaxMismatch Before Aclf: " + net.maxMismatch(AclfMethodType.NR));
 		
@@ -70,9 +71,8 @@ public class Aclf_ACTIVSg25kBusPVLimitCtrlSample {
 		AclfAdjCtrlFunction.disableAllAdjControls.accept(aclfAlgo);
 		
 		/*
-		 * Scenario-3: in addition to Switched shunt, enable PV bus limit controls
+		 * enable PV bus limit controls
 		 * 
-		 * 	Aclf diverges 
 		 */		
 		aclfAlgo.getLfAdjAlgo().getLimitCtrlConfig().setPvLimitControl(true);
 		aclfAlgo.getLfAdjAlgo().getLimitCtrlConfig().setAdjustAppType(AdjustApplyType.POST_ITERATION);
@@ -80,8 +80,11 @@ public class Aclf_ACTIVSg25kBusPVLimitCtrlSample {
 		aclfAlgo.getLfAdjAlgo().getLimitCtrlConfig().setStartPoint(100);
 		// PV limit tolerance for limit violation checking is set to 100.0 x 1.0E-6
 		aclfAlgo.getLfAdjAlgo().getLimitCtrlConfig().setToleranceFactor(100.0);;
-		// change the default setting of checking the Q limit immediate to false for this test case		
-		aclfAlgo.getLfAdjAlgo().getLimitCtrlConfig().setCheckGenQLimitImmediate(false);
+
+		/*
+		 * Change PV bus to PQ bus with limit violation in the init process
+		 */
+		//aclfAlgo.getLfAdjAlgo().getLimitCtrlConfig().setCheckGenQLimitImmediate(true);
 		
 		aclfAlgo.setTolerance(1.0E-6);
 		aclfAlgo.setMaxIterations(30);

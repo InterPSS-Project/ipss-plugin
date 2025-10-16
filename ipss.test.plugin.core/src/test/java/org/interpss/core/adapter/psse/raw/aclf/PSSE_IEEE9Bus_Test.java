@@ -444,7 +444,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		// For a GenPV bus, the bus Q is calculated according to the voltage set point, 
 		// which is not the case for SVC.
 		
-		StaticVarCompensator svc1 = bus5.getFirstStaticVarCompensator();
+		StaticVarCompensator svc1 = bus5.getFirstStaticVarCompensator(true);
 		assertNotNull("Bus5 has SVC connected", svc1);
 		
 		assertTrue("SVC name is correct", svc1.getName().equals("SVC1"));
@@ -507,7 +507,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 
 		AclfBus bus50 = net.getBus("Bus50");
 
-		StaticVarCompensator svc1 = bus50.getFirstStaticVarCompensator();
+		StaticVarCompensator svc1 = bus50.getFirstStaticVarCompensator(true);
 		assertNotNull("Bus50 has SVC connected", svc1);
 
 		assertTrue("SVC name is correct", svc1.getName().equals("SVC1"));
