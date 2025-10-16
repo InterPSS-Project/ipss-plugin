@@ -29,8 +29,8 @@ public class ParallelContingencyAnalyzer25kTest {
             long loadStartTime = System.currentTimeMillis();
             System.out.println("Loading ACTIVSg25k network...");
             
-            String filename = "ipss-plugin/ipss.test.plugin.core/testData/psse/v33/ACTIVSg25k.RAW";
-            //String filename = "testData/psse/v33/ACTIVSg25k.RAW";
+            //String filename = "ipss-plugin/ipss.test.plugin.core/testData/psse/v33/ACTIVSg25k.RAW";
+            String filename = "testData/psse/v33/ACTIVSg25k.RAW";
 
             AclfNetwork net = IpssAdapter.importAclfNet(filename)
                     .setFormat(PSSE)
