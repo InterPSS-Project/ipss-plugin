@@ -272,7 +272,7 @@ BUS  10002 GZ-HLZ      220.00 CKT     MW     MVAR     MVA  %I 1.0445PU  -47.34  
 		 *   TO STATCOM               0.0   -25.5    25.5
 		 */
 		if (bus.isStaticVarCompensator()) {
-			double q = -bus.getFirstStaticVarCompensator().getBActual(); // negative value as the result is for "TO STATCOM"
+			double q = -bus.getFirstStaticVarCompensator(true).getBActual(); // negative value as the result is for "TO STATCOM"
 
 			q *= bus.getVoltageMag() * bus.getVoltageMag() * factor;
 			s += formatBusLoad("TO STATCOM", 0, q, q) + "\n";
