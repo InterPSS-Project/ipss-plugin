@@ -1,4 +1,4 @@
-package org.interpss.plugin.aclf;
+package org.interpss.plugin.aclf.config.psse;
 
 import java.util.List;
 import java.util.function.Consumer;
