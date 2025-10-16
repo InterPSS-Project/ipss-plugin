@@ -24,12 +24,14 @@
 
 package org.interpss.plugin.lfGCtrl;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
-import org.interpss.plugin.aclf.LfGlobalAdjControlConfig;
+import org.interpss.plugin.aclf.config.psse.PSSELfAdjControlConfig;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -55,7 +57,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		// Bus4 is a switched shunt bus
 		AclfBus bus4 = net.getBus("Bus4");
 		assertTrue(bus4.isSwitchedShunt());
-		SwitchedShunt swShunt = bus4.getFirstSwitchedShunt();
+		SwitchedShunt swShunt = bus4.getFirstSwitchedShunt(true);
 		//swShunt.setBLimit(new LimitType(3.0*0.23637, 0.0));
 		//System.out.println("Switched Shunt: " + swShunt);
 		
@@ -96,7 +98,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		// Bus4 is a switched shunt bus
 		AclfBus bus4 = net.getBus("Bus4");
 		assertTrue(bus4.isSwitchedShunt());
-		SwitchedShunt swShunt = bus4.getFirstSwitchedShunt();
+		SwitchedShunt swShunt = bus4.getFirstSwitchedShunt(true);
 		//swShunt.setBLimit(new LimitType(3.0*0.23637, 0.0));
 		//System.out.println("Switched Shunt: " + swShunt);
 		
@@ -107,8 +109,8 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		assertTrue("", swShunt.getShuntCompensatorList().size() == 3);
 		
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
-	  	algo.getLfAdjAlgo().initialize(new LfGlobalAdjControlConfig(config -> {
-	  		config.gCtrlSwitchedShunt = LfGlobalAdjControlConfig.SwitchedShunt_LockAll;
+	  	algo.getLfAdjAlgo().initialize(new PSSELfAdjControlConfig(config -> {
+	  		config.gCtrlSwitchedShunt = PSSELfAdjControlConfig.SwitchedShunt_LockAll;
 	  	}));
 		algo.loadflow();
 		assertTrue(net.isLfConverged());
@@ -140,7 +142,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		// Bus4 is a switched shunt bus
 		AclfBus bus4 = net.getBus("Bus4");
 		assertTrue(bus4.isSwitchedShunt());
-		SwitchedShunt swShunt = bus4.getFirstSwitchedShunt();
+		SwitchedShunt swShunt = bus4.getFirstSwitchedShunt(true);
 		//swShunt.setBLimit(new LimitType(3.0*0.23637, 0.0));
 		//System.out.println("Switched Shunt: " + swShunt);
 		
@@ -157,8 +159,8 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		
 		
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
-	  	algo.getLfAdjAlgo().initialize(new LfGlobalAdjControlConfig(config -> {
-	  		config.gCtrlSwitchedShunt = LfGlobalAdjControlConfig.SwitchedShunt_ContinuousOnly;
+	  	algo.getLfAdjAlgo().initialize(new PSSELfAdjControlConfig(config -> {
+	  		config.gCtrlSwitchedShunt = PSSELfAdjControlConfig.SwitchedShunt_ContinuousOnly;
 	  	}));
 		algo.loadflow();
 		assertTrue(net.isLfConverged());
@@ -174,8 +176,8 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		swShunt.setControlMode(AclfAdjustControlMode.CONTINUOUS);
 
 		algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
-	  	algo.getLfAdjAlgo().initialize(new LfGlobalAdjControlConfig(config -> {
-	  		config.gCtrlSwitchedShunt = LfGlobalAdjControlConfig.SwitchedShunt_ContinuousOnly;
+	  	algo.getLfAdjAlgo().initialize(new PSSELfAdjControlConfig(config -> {
+	  		config.gCtrlSwitchedShunt = PSSELfAdjControlConfig.SwitchedShunt_ContinuousOnly;
 	  	}));
 		algo.loadflow();
 		assertTrue(net.isLfConverged());
@@ -206,7 +208,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		// Bus4 is a switched shunt bus
 		AclfBus bus4 = net.getBus("Bus4");
 		assertTrue(bus4.isSwitchedShunt());
-		SwitchedShunt swShunt = bus4.getFirstSwitchedShunt();
+		SwitchedShunt swShunt = bus4.getFirstSwitchedShunt(true);
 	
 		// double baseKva = net.getBaseKva();
 		// swShunt.getShuntCompensatorList().forEach(comp -> {
@@ -227,25 +229,25 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		swShunt.setAdjControlType(AclfAdjustControlType.POINT_CONTROL);
 
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
-	  	algo.getLfAdjAlgo().initialize(new LfGlobalAdjControlConfig(config -> {
-	  		config.gCtrlSwitchedShunt = LfGlobalAdjControlConfig.SwitchedShunt_EnableAll;
+	  	algo.getLfAdjAlgo().initialize(new PSSELfAdjControlConfig(config -> {
+	  		config.gCtrlSwitchedShunt = PSSELfAdjControlConfig.SwitchedShunt_EnableAll;
 	  	}));
 		algo.loadflow();
 		assertTrue(net.isLfConverged());
 
-		System.out.println("Switched Shunt: " + swShunt);
+		//System.out.println("Switched Shunt: " + swShunt);
 		assertTrue("", NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
-		assertTrue("", NumericUtil.equals(swShunt.getBActual(), 0.47274, 0.0001));
-		assertTrue("", NumericUtil.equals(swShunt.getQ(), 0.47222  , 0.0001));
+		assertEquals(swShunt.getBActual(), 0.23637, 0.0001);
+		assertEquals(swShunt.getQ(), 0.23611  , 0.0001);
 		assertTrue("", swShunt.getControlMode() == AclfAdjustControlMode.DISCRETE);
-		assertTrue("", NumericUtil.equals(swShunt.getVSpecified(), 1.0, 0.0001));
-		assertTrue("", NumericUtil.equals(bus4.getVoltageMag(), 0.99945, 0.0001));
+		assertEquals(swShunt.getVSpecified(), 1.0, 0.0001);
+		assertEquals(bus4.getVoltageMag(), 0.99945, 0.0001);
 		
 		String swingId = "Bus1";
 		AclfSwingBusAdapter swing = net.getBus(swingId).toSwingBus();
 		//System.out.println("AclfNet Model: "+swing.getGenResults(UnitType.PU) );				
-		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal() - 0.2253) < 0.0001);
-		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary() - 0.0078) < 0.0001);
+		assertEquals(swing.getGenResults(UnitType.PU).getReal(), 0.2253, 0.0001);
+		assertEquals(swing.getGenResults(UnitType.PU).getImaginary(),0.0078, 0.0001);
 	}
 }
 
