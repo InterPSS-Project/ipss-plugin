@@ -78,7 +78,7 @@ public class AclfRunConfigRec extends BaseJSONBean {
 	
 	public void saveAclfRunConfig(String configFilename) {
 		String json = this.toString();
-		FileUtil.writeText2File(json, configFilename);
+		FileUtil.writeText2File(configFilename, json);
 	}
 	
 	public void configAclfRun(LoadflowAlgorithm algo, boolean appluAdjust, boolean psseConfig) {
