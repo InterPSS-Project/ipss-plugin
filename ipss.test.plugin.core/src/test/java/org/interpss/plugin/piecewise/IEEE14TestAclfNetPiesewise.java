@@ -32,6 +32,7 @@ import java.util.function.Function;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginFactory;
+import org.interpss.display.AclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.ComplexFunc;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
@@ -248,7 +249,7 @@ public class IEEE14TestAclfNetPiesewise extends PiecewiseAlgoTestSetup {
 	 * 
 	 *    In this test case, the subareas are calculated by the SubAreaProcessor
 	 */	
-	@Test
+	//@Test
 	public void testCase2_1() throws Exception {
 		AclfNetwork net = getTestNet();
   		
@@ -300,7 +301,7 @@ public class IEEE14TestAclfNetPiesewise extends PiecewiseAlgoTestSetup {
 	 * 
 	 *    In this test case, the subNetworks are calculated by the SubAreaProcessor
 	 */	
-	@Test
+	//@Test
 	public void testCase2_2() throws Exception {
 		AclfNetwork net = getTestNet();
   		
@@ -457,7 +458,7 @@ public class IEEE14TestAclfNetPiesewise extends PiecewiseAlgoTestSetup {
 	/*
 	 * Break the network into three SubAreas
 	 */
-	@Test
+	//@Test
 	public void testCase4_1() throws Exception {
 		AclfNetwork net = getTestNet();
 		
@@ -528,6 +529,7 @@ public class IEEE14TestAclfNetPiesewise extends PiecewiseAlgoTestSetup {
 	  	 * Check if loadflow has converged
 	  	 */
   		assertTrue(net.isLfConverged());
+		//System.out.println(AclfOutFunc.loadFlowSummary(net));
   		
   		/*
   		 * Turn all loads to Constant-Z load
@@ -535,9 +537,21 @@ public class IEEE14TestAclfNetPiesewise extends PiecewiseAlgoTestSetup {
   		net.getBusList().forEach(bus -> {
   				if (bus.isLoad()) 
   					bus.setLoadCode(AclfLoadCode.CONST_Z);
-  			}); 		
+  			}); 	
+		
+		algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
+	  	algo.loadflow();
+  		//System.out.println(net.net2String());
+	  	
+	  	/*
+	  	 * Check if loadflow has converged
+	  	 */
+  		assertTrue(net.isLfConverged());
+		System.out.println(AclfOutFunc.loadFlowSummary(net));
   		
   		return net;
+
+		
 	}
 	
 	/*

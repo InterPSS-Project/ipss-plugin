@@ -2,7 +2,6 @@ package sample.aclf;
 
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 
-import org.interpss.IpssCorePlugin;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.common.exp.InterpssException;
@@ -14,9 +13,6 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 public class Aclf_ACTIVSg2000BusSample {
 	
 	public static void main(String args[]) throws InterpssException {
-		IpssCorePlugin.init();
-		
-		//IpssLogger.getLogger().setLevel(Level.INFO);
 		
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v36/Texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW")
 				.setFormat(PSSE)
