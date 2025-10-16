@@ -296,7 +296,7 @@ public static AclfNetwork equivHVDC(AclfNetwork net) {
 			if (!bra.isActive()) continue;
 			if (bra instanceof HvdcLine2TLCC) {
 				HvdcLine2TLCC<AclfBus> hvdcBranch = (HvdcLine2TLCC<AclfBus>) bra;
-				hvdcBranch.calculateLoadflow();
+				hvdcBranch.initLoadflow();
 				//add equivalent load to the from bus based on the power into the converter
 				//hvdcBranch.getFromBus().
 				Complex s = hvdcBranch.powerIntoConverter(hvdcBranch.getFromBusId());
@@ -326,7 +326,7 @@ public static AclfNetwork equivHVDC(AclfNetwork net) {
 
 			} else if (bra instanceof HvdcLine2TVSC) {
 				HvdcLine2TVSC<AclfBus> hvdcBranch = (HvdcLine2TVSC<AclfBus>) bra;
-				hvdcBranch.calculateLoadflow();
+				hvdcBranch.initLoadflow();
 			}
 		}
 
