@@ -4,7 +4,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.plugin.aclf.PSSEExternalDataChecker;
+import org.interpss.plugin.aclf.config.psse.PSSEExternalDataChecker;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 

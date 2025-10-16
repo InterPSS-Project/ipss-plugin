@@ -1,4 +1,4 @@
-package org.interpss.plugin.aclf;
+package org.interpss.plugin.aclf.config.psse;
 
 import java.util.function.Consumer;
 
@@ -7,11 +7,11 @@ import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.algo.LfAdjustAlgorithm;
 
 /**
- * This class is used to configure the global adjustment/control for the load flow
+ * This class is used to configure the PSSE adjustment/control for the load flow
  * adjustment algorithm in InterPSS.
  *   
  */
-public class LfGlobalAdjControlConfig implements Consumer<LfAdjustAlgorithm>{
+public class PSSELfAdjControlConfig implements Consumer<LfAdjustAlgorithm>{
 	public static final int SwitchedShunt_LockAll = 1;
 	public static final int SwitchedShunt_ContinuousOnly = 2;
 	public static final int SwitchedShunt_EnableAll = 3;
@@ -51,7 +51,7 @@ public class LfGlobalAdjControlConfig implements Consumer<LfAdjustAlgorithm>{
 	 * 
 	 * @param initializer a Consumer that initialize this configuration object
 	 */
-	public LfGlobalAdjControlConfig(Consumer<LfGlobalAdjControlConfig> initializer) {
+	public PSSELfAdjControlConfig(Consumer<PSSELfAdjControlConfig> initializer) {
 		initializer.accept(this);
 	}
 	

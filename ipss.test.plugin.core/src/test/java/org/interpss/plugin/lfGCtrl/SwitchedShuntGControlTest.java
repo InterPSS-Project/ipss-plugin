@@ -30,7 +30,7 @@ import static org.junit.Assert.assertTrue;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
-import org.interpss.plugin.aclf.LfGlobalAdjControlConfig;
+import org.interpss.plugin.aclf.config.psse.PSSELfAdjControlConfig;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
@@ -109,8 +109,8 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		assertTrue("", swShunt.getShuntCompensatorList().size() == 3);
 		
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
-	  	algo.getLfAdjAlgo().initialize(new LfGlobalAdjControlConfig(config -> {
-	  		config.gCtrlSwitchedShunt = LfGlobalAdjControlConfig.SwitchedShunt_LockAll;
+	  	algo.getLfAdjAlgo().initialize(new PSSELfAdjControlConfig(config -> {
+	  		config.gCtrlSwitchedShunt = PSSELfAdjControlConfig.SwitchedShunt_LockAll;
 	  	}));
 		algo.loadflow();
 		assertTrue(net.isLfConverged());
@@ -159,8 +159,8 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		
 		
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
-	  	algo.getLfAdjAlgo().initialize(new LfGlobalAdjControlConfig(config -> {
-	  		config.gCtrlSwitchedShunt = LfGlobalAdjControlConfig.SwitchedShunt_ContinuousOnly;
+	  	algo.getLfAdjAlgo().initialize(new PSSELfAdjControlConfig(config -> {
+	  		config.gCtrlSwitchedShunt = PSSELfAdjControlConfig.SwitchedShunt_ContinuousOnly;
 	  	}));
 		algo.loadflow();
 		assertTrue(net.isLfConverged());
@@ -176,8 +176,8 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		swShunt.setControlMode(AclfAdjustControlMode.CONTINUOUS);
 
 		algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
-	  	algo.getLfAdjAlgo().initialize(new LfGlobalAdjControlConfig(config -> {
-	  		config.gCtrlSwitchedShunt = LfGlobalAdjControlConfig.SwitchedShunt_ContinuousOnly;
+	  	algo.getLfAdjAlgo().initialize(new PSSELfAdjControlConfig(config -> {
+	  		config.gCtrlSwitchedShunt = PSSELfAdjControlConfig.SwitchedShunt_ContinuousOnly;
 	  	}));
 		algo.loadflow();
 		assertTrue(net.isLfConverged());
@@ -229,8 +229,8 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		swShunt.setAdjControlType(AclfAdjustControlType.POINT_CONTROL);
 
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
-	  	algo.getLfAdjAlgo().initialize(new LfGlobalAdjControlConfig(config -> {
-	  		config.gCtrlSwitchedShunt = LfGlobalAdjControlConfig.SwitchedShunt_EnableAll;
+	  	algo.getLfAdjAlgo().initialize(new PSSELfAdjControlConfig(config -> {
+	  		config.gCtrlSwitchedShunt = PSSELfAdjControlConfig.SwitchedShunt_EnableAll;
 	  	}));
 		algo.loadflow();
 		assertTrue(net.isLfConverged());
