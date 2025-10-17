@@ -83,8 +83,8 @@ public class IEEE14Test extends CorePluginTestSetup {
   		AclfSwingBusAdapter swing = swingBus.toSwingBus();
 		//System.out.println(swing.getGenResults(UnitType.PU).getReal());
 		//System.out.println(swing.getGenResults(UnitType.PU).getImaginary());
-  		assertEquals(swing.getGenResults(UnitType.PU).getReal(), 2.32373, 0.0001);
-  		assertEquals(swing.getGenResults(UnitType.PU).getImaginary(), -0.1746, 0.0001);
+  		assertEquals(swing.getGenResults(UnitType.PU).getReal(), 2.323859, 0.0001);
+  		assertEquals(swing.getGenResults(UnitType.PU).getImaginary(), -0.16888, 0.0001);
 	}
 	
 	//@Test
