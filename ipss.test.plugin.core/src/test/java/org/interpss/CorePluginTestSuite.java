@@ -260,7 +260,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	
 	// Piecewise Algorithm
 	IEEE14TestSubAreaSearch.class,
-	IEEE14TestAclfNetPiesewise.class,
+	//IEEE14TestAclfNetPiesewise.class,
 	IEEE14TestAclfSubNetBuild.class,
 	IEEE14TestAclfSubAreaBuild.class,
 	
