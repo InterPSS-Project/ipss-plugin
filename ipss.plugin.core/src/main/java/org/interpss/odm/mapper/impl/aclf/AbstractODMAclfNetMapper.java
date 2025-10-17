@@ -253,10 +253,11 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 		// set the svc remote bus
 		aclfNet.getBusList().forEach(bus -> {
 			if (bus.isStaticVarCompensator()) {
-				StaticVarCompensator svc = bus.getFirstStaticVarCompensator(true);
-				if(svc.getRemoteBusBranchId() != null){
-					BaseAclfBus<? extends AclfGen, ? extends AclfLoad> remoteBus = aclfNet.getBus(svc.getRemoteBusBranchId());
-					svc.setRemoteBus(remoteBus);
+				for(StaticVarCompensator svc: bus.getStaticVarCompensatorList()){
+					if(svc!=null && svc.getRemoteBusBranchId() != null){
+						BaseAclfBus<? extends AclfGen, ? extends AclfLoad> remoteBus = aclfNet.getBus(svc.getRemoteBusBranchId());
+						svc.setRemoteBus(remoteBus);
+					}
 				}
 			}
 		});

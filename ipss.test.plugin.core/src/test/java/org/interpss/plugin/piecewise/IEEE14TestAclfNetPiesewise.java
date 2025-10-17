@@ -75,7 +75,7 @@ public class IEEE14TestAclfNetPiesewise extends PiecewiseAlgoTestSetup {
 	/*
 	 * Solve the network Y-matrix using the full matrix approach
 	 */
-	//@Test
+	@Test
 	public void testCase1() throws Exception {
 		AclfNetwork net = getTestNet();
   		
@@ -138,7 +138,7 @@ public class IEEE14TestAclfNetPiesewise extends PiecewiseAlgoTestSetup {
 	 * 
 	 *    In this test case, the subareas are defined by manually
 	 */ 
-	//@Test
+	@Test
 	public void testCase2() throws Exception {
 		AclfNetwork net = getTestNet();
   		
@@ -249,7 +249,7 @@ public class IEEE14TestAclfNetPiesewise extends PiecewiseAlgoTestSetup {
 	 * 
 	 *    In this test case, the subareas are calculated by the SubAreaProcessor
 	 */	
-	//@Test
+	@Test
 	public void testCase2_1() throws Exception {
 		AclfNetwork net = getTestNet();
   		
@@ -301,7 +301,7 @@ public class IEEE14TestAclfNetPiesewise extends PiecewiseAlgoTestSetup {
 	 * 
 	 *    In this test case, the subNetworks are calculated by the SubAreaProcessor
 	 */	
-	//@Test
+	@Test
 	public void testCase2_2() throws Exception {
 		AclfNetwork net = getTestNet();
   		
@@ -354,7 +354,7 @@ public class IEEE14TestAclfNetPiesewise extends PiecewiseAlgoTestSetup {
 	 * 
 	 * 	 In this test case, the subareas are defined by manually
 	 */
-	//@Test
+	@Test
 	public void testCase4() throws Exception {
 		AclfNetwork net = getTestNet();
   		
@@ -458,7 +458,7 @@ public class IEEE14TestAclfNetPiesewise extends PiecewiseAlgoTestSetup {
 	/*
 	 * Break the network into three SubAreas
 	 */
-	//@Test
+	@Test
 	public void testCase4_1() throws Exception {
 		AclfNetwork net = getTestNet();
 		
