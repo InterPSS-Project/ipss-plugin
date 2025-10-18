@@ -4,7 +4,6 @@ import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.Assert.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.IpssCorePlugin;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.Test;
@@ -13,31 +12,13 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.core.funcImpl.AclfNetObjectComparator;
+import com.interpss.core.funcImpl.compare.AclfNetObjectComparator;
 
 public class PSSE_ACTIVSg2000BusCompare_Test  extends CorePluginTestSetup {
 	
 	@Test
 	public void test_ACTIVSg2000_Compare() throws InterpssException{
-		IpssCorePlugin.init();
-		//IpssLogger.getLogger().setLevel(Level.WARNING);
-		
-		/*
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_36);
-		assertTrue(adapter.parseInputFile(
-				"testData/psse/v36/Texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW"));
-		AclfModelParser parser =(AclfModelParser) adapter.getModel();
-		
-		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.ACLF_NETWORK);
-		if (!new ODMAclfParserMapper()
-					.map2Model(parser, simuCtx)) {
-			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-			return;
-		}
-		
-		AclfNetwork net =simuCtx.getAclfNet();
-		*/
+	
 		// load the test data V36
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v36/Texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW")
 				.setFormat(PSSE)
