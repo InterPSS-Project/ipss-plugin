@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.interpss.CorePluginFactory;
-import org.interpss.IpssCorePlugin;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.plugin.equiv.AclfNetworkEquivHelper;
 
@@ -13,13 +12,12 @@ import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.core.funcImpl.AclfNetObjectComparator;
+import com.interpss.core.funcImpl.compare.AclfNetObjectComparator;
 
 public class SubNetEquivHelperSample {
 
     public static void main(String[] args) throws InterpssException {
-		IpssCorePlugin.init();
-		
+
 		AclfNetwork aclfNet = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.PSSE)
 				.load("testData/adpter/psse/v30/Kundur_2area/Kundur_2area_v30.raw")

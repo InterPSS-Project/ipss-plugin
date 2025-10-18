@@ -9,7 +9,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.funcImpl.AclfNetObjectComparator;
+import com.interpss.core.funcImpl.compare.AclfNetObjectComparator;
 
 public class PSSE_ACTIVSg25kObjectCompareTest extends CorePluginTestSetup {	
 	@Test
