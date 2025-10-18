@@ -12,7 +12,7 @@ import org.junit.Test;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
-import com.interpss.core.funcImpl.AclfNetObjectComparator;
+import com.interpss.core.funcImpl.compare.AclfNetObjectComparator;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 import com.interpss.simu.SimuObjectFactory;

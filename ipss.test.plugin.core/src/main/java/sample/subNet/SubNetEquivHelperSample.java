@@ -13,7 +13,7 @@ import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.core.funcImpl.AclfNetObjectComparator;
+import com.interpss.core.funcImpl.compare.AclfNetObjectComparator;
 
 public class SubNetEquivHelperSample {
 
