@@ -18,6 +18,7 @@ import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
+import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -28,7 +29,7 @@ import com.interpss.core.aclf.adj.BusBranchControlType;
 import com.interpss.core.aclf.hvdc.HvdcControlMode;
 import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.core.funcImpl.AclfNetObjectComparator;
+import com.interpss.core.funcImpl.compare.AclfNetObjectComparator;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 import com.interpss.simu.SimuObjectFactory;
@@ -423,6 +424,55 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 
 
 
+	}
+
+	@Test
+	public void test_LCCHVDC_constantCurrent() throws Exception {
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v33/Kundur_2area_LCC_HVDC_current_control.raw")
+					.setFormat(IpssAdapter.FileFormat.PSSE)
+					.setPsseVersion(IpssAdapter.PsseVersion.PSSE_33)
+					.load()
+					.getImportedObj();
+
+		
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
+		//algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
+		//algo.setInitBusVoltage(true);
+		algo.setMaxIterations(30);
+		algo.setTolerance(0.001);
+	  	algo.loadflow();
+	  	
+  		assertTrue(net.isLfConverged());
+  		
+  		System.out.println(AclfOutFunc.loadFlowSummary(net));
+
+		/*
+				*      BusID          Code           Volt(pu)   Angle(deg)      Pg(pu)    Qg(pu)    Pl(pu)    Ql(pu)    Bus Name   
+		----------------------------------------------------------------------------------------------------------------
+		Bus1         Swing                1.03000       69.43       5.5648    1.5350    0.0000    0.0000   BUS1   AR1 
+		Bus2         PV                   1.01000       63.54       7.4100    2.3319    0.0000    0.0000   BUS2   AR1 
+		Bus3         Swing                1.03000       -6.80       7.6803    2.0264    0.0000    0.0000   BUS3   AR2 
+		Bus4         PV                   1.01000      -17.59       7.6600    2.4460    0.0000    0.0000   BUS4   AR2 
+		Bus5                              1.00919       64.31       0.0000    0.0000    0.0000    0.0000   BUS5   AR1 
+		Bus6                              0.97918       56.37       0.0000    0.0000    0.0000    0.0000   BUS6   AR1 
+		Bus7                ConstP        0.95831       48.57       0.0000    0.0000    7.6700    1.0000   BUS7   L   
+		Bus9                ConstP        0.96463      -34.22       0.0000    0.0000   19.6700    1.0000   BUS9   L   
+		Bus10                             0.97784      -25.01       0.0000    0.0000    0.0000    0.0000   BUS10   AR2 
+		Bus11                             1.00492      -13.90       0.0000    0.0000    0.0000    0.0000   BUS11   AR2 
+
+
+		 */
+
+		assertEquals(net.getBus("Bus2").getVoltageMag(UnitType.PU) , 1.0100, 0.0001);
+  		assertEquals(net.getBus("Bus3").getVoltageMag(UnitType.PU) , 1.0300, 0.0001);
+		assertEquals(net.getBus("Bus4").getVoltageMag(UnitType.PU) , 1.0100, 0.0001);
+		assertEquals(net.getBus("Bus5").getVoltageMag(UnitType.PU) , 1.00919, 0.0001);
+		assertEquals(net.getBus("Bus6").getVoltageMag(UnitType.PU) , 0.97918, 0.0001);
+		assertEquals(net.getBus("Bus7").getVoltageMag(UnitType.PU) , 0.95831, 0.0001);
+		assertEquals(net.getBus("Bus9").getVoltageMag(UnitType.PU) , 0.96463, 0.0001);
+		assertEquals(net.getBus("Bus10").getVoltageMag(UnitType.PU) , 0.97784, 0.0001);
+		assertEquals(net.getBus("Bus11").getVoltageMag(UnitType.PU) , 1.00492, 0.0001);
+		
 	}
 
 	private AclfNetwork createTestCase() {
