@@ -36,6 +36,9 @@ public class AclfNetObjPoolManager {
         return this.pool;
     }
     
+    /**
+	 * Create a GenericObjectPoolConfig with essential configurations
+	 */
     public static GenericObjectPoolConfig<AclfNetwork> createConfig() {
         // Create a configuration object
         GenericObjectPoolConfig<AclfNetwork> config = new GenericObjectPoolConfig<>();

@@ -37,6 +37,7 @@ public class PooledAclfNetObjectFactory extends BasePooledObjectFactory<AclfNetw
     // Called when an object is returned to the pool (e.g., reset its state)
     @Override
     public void passivateObject(PooledObject<AclfNetwork> pooledObject) {
+    	// Reset the object state using the seed object
     	new AclfNetObjectUpdater(this.seedAclfNet, pooledObject.getObject()).update();
     }
     
