@@ -38,6 +38,7 @@ public class AclfRunConfigRec extends BaseJSONBean {
 	public boolean switchedShuntAdjust = true;
 	public boolean svcFactsAdjust = true;
 	public boolean xfrTapControl = true;
+	public boolean hvdcTapControl = true;
 	
 	public boolean applyPowerAdjust = true;
 	public boolean psXfrPControl = true;
@@ -115,6 +116,7 @@ public class AclfRunConfigRec extends BaseJSONBean {
 			algo.getLfAdjAlgo().getVoltAdjConfig().setSwitchedShuntAdjust(this.switchedShuntAdjust);
 			algo.getLfAdjAlgo().getVoltAdjConfig().setSvcFactsAdjust(this.svcFactsAdjust);
 			algo.getLfAdjAlgo().getVoltAdjConfig().setXfrTapControl(this.xfrTapControl);
+			algo.getLfAdjAlgo().getVoltAdjConfig().setHvdcTapControl(this.hvdcTapControl);
 
         	algo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(this.applyPowerAdjust);
         	algo.getLfAdjAlgo().getPowerAdjConfig().setPsXfrPControl(this.psXfrPControl);
