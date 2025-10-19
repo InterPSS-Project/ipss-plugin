@@ -12,7 +12,7 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.compare.AclfNetObjectComparator;
 import com.interpss.state.aclf.AclfNetworkState;
 
-public class EasternInterconnctionSample {
+public class EasternInterconnctionJsonCopySample {
 	
 	public static void main(String args[]) throws InterpssException {
 		
@@ -40,5 +40,30 @@ public class EasternInterconnctionSample {
 		aclfAlgo.loadflow();
 	  	
 		System.out.println("After MaxMismatch: " + net.maxMismatch(AclfMethodType.NR));
+		/*
+        long loadStartTime = System.currentTimeMillis();
+        AclfNetworkState clonedNetBean = new AclfNetworkState(net);
+        for (int i = 0; i < 10; i++) {
+        	AclfNetwork copyNet = AclfNetworkState.create(clonedNetBean);
+        }
+        long loadEndTime = System.currentTimeMillis();
+        System.out.println("Network json copy(1) " + (loadEndTime - loadStartTime)*0.001 + " s");
+        
+        loadStartTime = System.currentTimeMillis();
+        for (int i = 0; i < 10; i++) {
+        	AclfNetwork copyNet = net.jsonCopy();
+        }
+        loadEndTime = System.currentTimeMillis();
+        System.out.println("Network json copy(2) " + (loadEndTime - loadStartTime)*0.001 + " s");
+        */
+        AclfNetwork copyNet = net.jsonCopy();
+        long loadStartTime = System.currentTimeMillis();
+        //for (int i = 0; i < 10; i++) {
+        AclfNetObjectComparator comparator = new AclfNetObjectComparator(net, copyNet);
+        comparator.compareNetwork();
+        //}
+        long loadEndTime = System.currentTimeMillis();
+        System.out.println("Network json copy(3) " + (loadEndTime - loadStartTime)*0.001 + " s");
+        System.out.println(comparator.getDiffMsgList());
 	}
 }
