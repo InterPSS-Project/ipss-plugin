@@ -123,7 +123,7 @@ public class ZeroZBranchFuncTest extends CorePluginTestSetup {
 
 		IpssAclfNet.addAclfBranch("Bus2", "Bus3", "Branch 1", net)
 				.setBranchCode(AclfBranchCode.LINE)
-				.setZ(new Complex(0.00000001, 0.000000000001), UnitType.PU);
+				.setZ(new Complex(0.0000000, 0.000000000001), UnitType.PU);
 	}	
 	
 }
