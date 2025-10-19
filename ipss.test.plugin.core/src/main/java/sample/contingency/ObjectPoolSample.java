@@ -20,8 +20,11 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.AclfAdjCtrlFunction;
 
 /**
- * Extended Parallel Contingency Analysis Test with ACTIVSg25k bus system.
- * This test demonstrates large-scale contingency analysis using parallel processing.
+ * Sample code to demonstrate the usage of Object Pooling for AclfNetwork objects
+ * in a contingency analysis scenario.
+ * 
+ * @author mzhou
+ *
  */
 public class ObjectPoolSample {
 	private static final Logger log = LoggerFactory.getLogger(ObjectPoolSample.class);
@@ -50,7 +53,8 @@ public class ObjectPoolSample {
 		aclfAlgo.loadflow();
 
     	//AclfNetwork seedAclfNet = net;
-    	ObjectPool<AclfNetwork> pool = new AclfNetObjPoolManager(seedAclfNet, AclfNetObjPoolManager.createConfig())
+		GenericObjectPoolConfig<AclfNetwork> config = AclfNetObjPoolManager.createConfig();
+    	ObjectPool<AclfNetwork> pool = new AclfNetObjPoolManager(seedAclfNet, config)
     										.getPool(); 
     	
     	runParallelTasks(pool);
@@ -58,22 +62,20 @@ public class ObjectPoolSample {
     
     public static void runParallelTasks(ObjectPool<AclfNetwork> pool) {
     	IntStream.range(0, 100)
-        	// Convert it into a parallel stream
-         	.parallel()
-         	// Perform the task (the side-effect operation) on each element
-	         .forEach(taskId -> {
+         	.parallel() // // Convert it into a parallel stream
+	        .forEach(taskId -> {    // Perform the task on each element
 	             AclfNetwork aclfNet = null;
 
 	             try {
 	                 // 1. Borrow an object from the pool (or create a new one if necessary)
 	                 aclfNet = pool.borrowObject();
 
-	                 // 2. Use the object
+	                 // 2. Use the object to do the required work
 	                 System.out.println("Performing CA on AclfNetwork instance: " + taskId);
 	                 // TODO
 	                 Thread.sleep(1000);
 
-	                 // 3. add any cleanup code here if necessary)
+	                 // 3. add any cleanup code here if necessary before returning the object
 	                 // TODO
 	             } catch (Exception e) {
 	                 // If an exception occurs, the object might be in a bad state.
