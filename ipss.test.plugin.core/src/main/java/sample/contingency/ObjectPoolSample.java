@@ -3,10 +3,14 @@ package sample.contingency;
 
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.IntStream;
 
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.interpss.plugin.contingency.ParallelContingencyAnalyzer;
+import org.interpss.plugin.contingency.ParallelContingencyAnalyzer.ContingencyResult;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.util.pool.AclfNetObjPoolManager;
 import org.slf4j.Logger;
@@ -30,7 +34,8 @@ public class ObjectPoolSample {
 	private static final Logger log = LoggerFactory.getLogger(ObjectPoolSample.class);
     
     public static void main(String[] args) throws InterpssException {
-        String filename = "testData/psse/v33/ACTIVSg25k.RAW";
+		String filename = "ipss-plugin/ipss.test.plugin.core/testData/psse/v33/ACTIVSg25k.RAW";
+        //String filename = "testData/psse/v33/ACTIVSg25k.RAW";
 
         AclfNetwork seedAclfNet = IpssAdapter.importAclfNet(filename)
                 .setFormat(PSSE)
@@ -39,6 +44,9 @@ public class ObjectPoolSample {
                 .getImportedObj();
         
 		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(seedAclfNet);
+
+		aclfAlgo.getDataCheckConfig().setTurnOffIslandBus(true);
+		aclfAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
 
 		aclfAlgo.getLfAdjAlgo().getLimitCtrlConfig().setCheckGenQLimitImmediate(false);
 
@@ -51,32 +59,67 @@ public class ObjectPoolSample {
 		System.out.println("MaxMismatch: " + seedAclfNet.maxMismatch(AclfMethodType.NR));
 		
 		aclfAlgo.loadflow();
+		
 
     	//AclfNetwork seedAclfNet = net;
 		GenericObjectPoolConfig<AclfNetwork> config = AclfNetObjPoolManager.createConfig();
     	ObjectPool<AclfNetwork> pool = new AclfNetObjPoolManager(seedAclfNet, config)
     										.getPool(); 
     	
-    	runParallelTasks(pool);
+    	ContingencyResult result = runParallelTasks(pool);
+
+		ParallelContingencyAnalyzer.printDetailedResults(result);
     }
     
-    public static void runParallelTasks(ObjectPool<AclfNetwork> pool) {
-    	IntStream.range(0, 100)
-         	.parallel() // // Convert it into a parallel stream
-	        .forEach(taskId -> {    // Perform the task on each element
-	             AclfNetwork aclfNet = null;
+    public static ContingencyResult runParallelTasks(ObjectPool<AclfNetwork> pool) {
 
+		 long startTime = System.currentTimeMillis();
+
+		    // Thread-safe map to store results
+        Map<String, Boolean> convergenceResults = new ConcurrentHashMap<>();
+
+		int totalCases = 100;
+
+		long totalSuccessCount = IntStream.range(0, totalCases)
+         	.parallel() // // Convert it into a parallel stream
+	        .mapToObj(taskId -> {    // Perform the task on each element
+	             AclfNetwork aclfNet = null;
 	             try {
 	                 // 1. Borrow an object from the pool (or create a new one if necessary)
 	                 aclfNet = pool.borrowObject();
 
 	                 // 2. Use the object to do the required work
 	                 System.out.println("Performing CA on AclfNetwork instance: " + taskId);
+					 
 	                 // TODO
-	                 Thread.sleep(1000);
+	                 //Thread.sleep(1000);
+					aclfNet.getBranchList().get(taskId).setStatus(false);
+					String branchId = aclfNet.getBranchList().get(taskId).getId();
+
+					// Create a new algorithm instance for each thread to avoid conflicts
+					LoadflowAlgorithm parallelAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet);
+
+					parallelAlgo.getDataCheckConfig().setTurnOffIslandBus(true);
+					parallelAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
+
+					parallelAlgo.getLfAdjAlgo().getLimitCtrlConfig().setCheckGenQLimitImmediate(true);
+
+					// disable all the controls
+					AclfAdjCtrlFunction.disableAllAdjControls.accept(parallelAlgo);
+					
+					parallelAlgo.setTolerance(1.0E-6);
+					parallelAlgo.setMaxIterations(50);
+					
+					
+					boolean isConverged = parallelAlgo.loadflow();
+					
+					// Store result in thread-safe map
+					convergenceResults.put(branchId, isConverged);
 
 	                 // 3. add any cleanup code here if necessary before returning the object
-	                 // TODO
+					aclfNet.getBranchList().get(taskId).setStatus(true);	
+
+					 return isConverged;
 	             } catch (Exception e) {
 	                 // If an exception occurs, the object might be in a bad state.
 	                 // Invalidate it so the pool doesn't reuse it.
@@ -89,6 +132,7 @@ public class ObjectPoolSample {
 	                     	log.error("Error invalidating object from pool", invalidateEx);
 	                     }
 	                 }
+					 return false;
 	             } finally {
 	                 // 4. ALWAYS return the object to the pool, unless you invalidated it
 	                 if (aclfNet != null) {
@@ -101,6 +145,20 @@ public class ObjectPoolSample {
 	                     }
 	                 }
 	             }
-	         });
+	         })
+			.mapToLong(converged -> converged ? 1 : 0)
+            .sum();
+
+			 long endTime = System.currentTimeMillis();
+        long executionTime = endTime - startTime;
+        
+        System.out.println("Contingency analysis completed!");
+        System.out.println("Total time: " + (executionTime / 1000.0) + " seconds");
+        System.out.println("Total successful contingencies: " + totalSuccessCount + " out of " + totalCases);
+        System.out.println("Success rate: " + String.format("%.2f%%", (double) totalSuccessCount / totalCases * 100));
+        
+        return new ParallelContingencyAnalyzer.ContingencyResult(convergenceResults, totalSuccessCount, totalCases, executionTime);
+			 
+
     }
 }
