@@ -309,8 +309,8 @@ public class AclfHvdcDataHelper {
     	boolean success = false;
     	
 		HvdcLine2TVSC<?> vscHvdc2T = (HvdcLine2TVSC<?>)hvdc2T; 
-		
-    	vscHvdc2T.setId(vschvdc2TXml.getId());
+		//Note: the id format is diffrent in ODM and InterPSS core model. The core model id is set in the baseBranchRec level
+    	//vscHvdc2T.setId(vschvdc2TXml.getId());
     	vscHvdc2T.setName(vschvdc2TXml.getName());
     	
     	// Rdc and rating
