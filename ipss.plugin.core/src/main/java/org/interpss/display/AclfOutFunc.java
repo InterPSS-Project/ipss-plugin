@@ -378,7 +378,7 @@ public class AclfOutFunc {
 	 */
 	public static String maxMismatchToString(BaseAclfNetwork<?, ?> net, String prefix) {
 		try {
-			double baseKVA = net.getBaseKva();
+			double baseMVA = net.getBaseMva();
 			String str = "\n"+prefix+"                         Max Power Mismatches\n"
 					+ prefix+"             Bus              dPmax       Bus              dQmax\n"
 					+ prefix+"            -------------------------------------------------------\n";
@@ -389,9 +389,9 @@ public class AclfOutFunc {
 			str += String.format("%-12s ", OutputBusId.f(mis.maxQBus, net.getOriginalDataFormat()));
 			str += String.format("%12.6f (pu)\n", mis.maxMis.getImaginary());
 			str += prefix+String.format("%24s", " ");
-			str += String.format("%12.6f0 ", baseKVA* mis.maxMis.getReal());
+			str += String.format("%12.6f0 ", baseMVA* mis.maxMis.getReal());
 			str += String.format("%14s", " ");
-			str += String.format("%12.6f (kva)\n", baseKVA * mis.maxMis.getImaginary());
+			str += String.format("%12.6f (mva)\n", baseMVA * mis.maxMis.getImaginary());
 			return str;
 		} catch (Exception emsg) {
 			return emsg.toString();
@@ -480,7 +480,7 @@ public class AclfOutFunc {
 			StringBuffer str, AclfBranch bra) {
 		if (bra.isActive()) {
 			AclfBranchRating adapter = branchRatingAptr.apply(bra);
-			if (adapter.isRatingViolated(CAViolationType.BRANCH_THERMAL_MVA_RATING, net.getBaseKva())) {
+			if (adapter.isRatingViolated(CAViolationType.BRANCH_THERMAL_MVA_RATING, net.getBaseMva())) {
 				str.append(Number2String.toStr(-25, bra.getId()));
 				Complex mva = bra.powerFrom2To(UnitType.mVA);
 				String side = "From";
