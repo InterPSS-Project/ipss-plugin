@@ -6,11 +6,11 @@ import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.LoadflowAlgoObjectFactory;
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.core.funcImpl.compare.AclfNetObjectComparator;
-import com.interpss.state.aclf.AclfNetworkState;
+import com.interpss.core.funcImpl.AclfAdjCtrlFunction;
 
 public class EasternInterconnctionSample {
 	
@@ -23,8 +23,9 @@ public class EasternInterconnctionSample {
 				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_33) 
 				.load()
 				.getImportedObj();
-		
+		AclfBranch branch = net.getBranch("Bus3522", "Bus3571", "1");
 		System.out.println("Buses, Branches: " + net.getNoBus() + ", " + net.getNoBranch());
+		System.out.println(AclfAdjCtrlFunction.nOfZeroZBranch.apply(net) + " Zero-Z branches");
 		System.out.println("Before MaxMismatch: " + net.maxMismatch(AclfMethodType.NR));
 	  
 		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
