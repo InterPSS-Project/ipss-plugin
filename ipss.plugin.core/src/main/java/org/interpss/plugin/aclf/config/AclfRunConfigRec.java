@@ -3,6 +3,7 @@ package org.interpss.plugin.aclf.config;
 import java.io.IOException;
 
 import org.interpss.datatype.base.BaseJSONBean;
+import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.util.FileUtil;
 
 import com.interpss.core.algo.AclfMethodType;
@@ -18,6 +19,7 @@ import com.interpss.core.algo.NrOptimizeAlgoType;
 public class AclfRunConfigRec extends BaseJSONBean {
 	public AclfMethodType lfMethod = AclfMethodType.NR;
 	public double tolerance = 0.0001;
+	public UnitType tolUnitType = UnitType.PU;
 	public int maxIterations = 20;
 	public boolean autoSetZeroZBranch = true;
 	public boolean turnOffIslandBus = true;
@@ -84,10 +86,13 @@ public class AclfRunConfigRec extends BaseJSONBean {
 	}
 	
 	public void configAclfRun(LoadflowAlgorithm algo, boolean appluAdjust, boolean psseConfig) {
+		double baseMVA = algo.getAclfNet().getBaseMva();
+		
         algo.setLfMethod(this.lfMethod);
 
         // Set tolerance and max iterations
-        algo.setTolerance(this.tolerance);
+        double tolPU = this.tolUnitType == UnitType.mVA? this.tolerance/baseMVA : this.tolerance;
+        algo.setTolerance(tolPU);
         algo.setMaxIterations(this.maxIterations);
         
         algo.getDataCheckConfig().setAutoSetZeroZBranch(this.autoSetZeroZBranch);
