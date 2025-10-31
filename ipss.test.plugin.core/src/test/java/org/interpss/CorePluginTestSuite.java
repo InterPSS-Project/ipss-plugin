@@ -11,6 +11,7 @@ import org.interpss.core.adapter.bpa.BPASampleTestCases;
 import org.interpss.core.adapter.ge.GESampleTestCases;
 import org.interpss.core.adapter.ieee.IEEE009Bus_Test;
 import org.interpss.core.adapter.ieee.IEEE118Bus_Test;
+import org.interpss.core.adapter.ieee.IEEE14BusTest;
 import org.interpss.core.adapter.ieee.IEEECommonFormat_CommaTest;
 import org.interpss.core.adapter.internal.Bus11856Test;
 import org.interpss.core.adapter.internal.Bus1824Test;
@@ -222,11 +223,10 @@ import org.junit.runners.Suite.SuiteClasses;
 	IEEECommonFormat_CommaTest.class,
 	//IEEECommonFormatTest.class,
 	IEEE009Bus_Test.class,
+	IEEE14BusTest.class,
 	IEEE118Bus_Test.class,
 	BPASampleTestCases.class,
 	UCTEFormatAusPowerTest.class,
-
-	
 
 	SixBus_DclfPsXfr.class,
 	PWDIEEE14BusTestCase.class,
