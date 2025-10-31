@@ -76,7 +76,7 @@ public class IEEE14BusTest extends CorePluginTestSetup {
 	  	algo.setMaxIterations(20);
 	  	algo.setTolerance(0.0001);
 	  	
-	  	NrMethodConfig nrMethodConfig = LoadflowAlgoObjectFactory.createDefaultNrMethodConfig();
+	  	NrMethodConfig nrMethodConfig = algo.getNrMethodConfig();
 	  	nrMethodConfig.setCoordinate(JacobianMatrixType.NR_XY_COORDINATE);
 	  	// re-configure the Nr solver with the updated config
 	  	algo.getLfCalculator().getNrSolver().reConfigSolver(nrMethodConfig);
