@@ -6,6 +6,7 @@ import org.interpss.datatype.base.BaseJSONBean;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.util.FileUtil;
 
+import com.interpss.core.aclf.JacobianMatrixType;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.AdjustApplyType;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -18,6 +19,7 @@ import com.interpss.core.algo.NrOptimizeAlgoType;
  */
 public class AclfRunConfigRec extends BaseJSONBean {
 	public AclfMethodType lfMethod = AclfMethodType.NR;
+	public boolean polarCoordinate = true;
 	public double tolerance = 0.0001;
 	public UnitType tolUnitType = UnitType.PU;
 	public int maxIterations = 20;
@@ -85,10 +87,20 @@ public class AclfRunConfigRec extends BaseJSONBean {
 		FileUtil.writeText2File(configFilename, json);
 	}
 	
-	public void configAclfRun(LoadflowAlgorithm algo, boolean appluAdjust, boolean psseConfig) {
+	public void configAclfRun(LoadflowAlgorithm algo, boolean polarCooridnate, boolean appluAdjust, boolean psseConfig) {
 		double baseMVA = algo.getAclfNet().getBaseMva();
 		
         algo.setLfMethod(this.lfMethod);
+        
+        NrMethodConfig nrConfig = algo.getNrMethodConfig();
+        // the default AclfNet coordinate is polar coordinate
+        if (!polarCooridnate) {
+			nrConfig.setCoordinate(JacobianMatrixType.NR_XY_COORDINATE);
+			// re-configure the Nr solver with the updated config
+			algo.getLfCalculator().getNrSolver().reConfigSolver(nrConfig);
+			
+			algo.getAclfNet().setPolarCoordinate(false);
+		}
 
         // Set tolerance and max iterations
         double tolPU = this.tolUnitType == UnitType.mVA? this.tolerance/baseMVA : this.tolerance;
@@ -128,17 +140,16 @@ public class AclfRunConfigRec extends BaseJSONBean {
         	
 	        // NR Config tab inputs
 	        if (this.lfMethod == AclfMethodType.NR) {
-	        	NrMethodConfig config = algo.getNrMethodConfig();
-	    	  	config.setNonDivergent(this.nonDivergent);
+	    	  	nrConfig.setNonDivergent(this.nonDivergent);
 	    	  	if (this.nonDivergent) {
-	        	  	config.setOptAlgo(this.optAlgo); 
-	        	  	config.setVariableUpdateLimit(this.variableUpdateLimit);
-	        	  	config.setDeltaVAngLimit(this.deltaVAngLimit);
-	        	  	config.setDeltaVMagLimit(this.deltaVMagLimit);
-	        	  	config.setStopNoSolutionFound(this.stopNoSolutionFound);
-	        	  	config.setMinScaleFactor(this.minScaleFactor);
+	        	  	nrConfig.setOptAlgo(this.optAlgo); 
+	        	  	nrConfig.setVariableUpdateLimit(this.variableUpdateLimit);
+	        	  	nrConfig.setDeltaVAngLimit(this.deltaVAngLimit);
+	        	  	nrConfig.setDeltaVMagLimit(this.deltaVMagLimit);
+	        	  	nrConfig.setStopNoSolutionFound(this.stopNoSolutionFound);
+	        	  	nrConfig.setMinScaleFactor(this.minScaleFactor);
 	        	  	// re-configure the Nr solver with the updated config
-	        	  	algo.getLfCalculator().getNrSolver().reConfigSolver(config);
+	        	  	algo.getLfCalculator().getNrSolver().reConfigSolver(nrConfig);
 	    	  	}
 	        }
 
