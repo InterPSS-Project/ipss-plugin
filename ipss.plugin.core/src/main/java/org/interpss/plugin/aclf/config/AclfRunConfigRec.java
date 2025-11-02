@@ -6,7 +6,6 @@ import org.interpss.datatype.base.BaseJSONBean;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.util.FileUtil;
 
-import com.interpss.core.aclf.JacobianMatrixType;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.AdjustApplyType;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -95,7 +94,7 @@ public class AclfRunConfigRec extends BaseJSONBean {
         NrMethodConfig nrConfig = algo.getNrMethodConfig();
         // the default AclfNet coordinate is polar coordinate
         if (!polarCooridnate) {
-			nrConfig.setCoordinate(JacobianMatrixType.NR_XY_COORDINATE);
+			//nrConfig.setCoordinate(JacobianMatrixType.NR_XY_COORDINATE);
 			// re-configure the Nr solver with the updated config
 			algo.getLfCalculator().getNrSolver().reConfigSolver(nrConfig);
 			
