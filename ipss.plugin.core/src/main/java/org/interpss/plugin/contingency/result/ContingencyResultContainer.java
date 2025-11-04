@@ -32,7 +32,7 @@ public class ContingencyResultContainer <TR extends ContingencyResultRec> {
             this.executionTimeMs = executionTimeMs;
         }
         
-        public Map<String, TR> getConvergenceResults() { return caResults; }
+        public Map<String, TR> getCAResults() { return caResults; }
         public long getTotalSuccessCount() { return totalSuccessCount; }
         public int getTotalCases() { return totalCases; }
         public long getExecutionTimeMs() { return executionTimeMs; }
