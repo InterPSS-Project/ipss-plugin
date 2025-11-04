@@ -10,7 +10,8 @@ import java.util.stream.IntStream;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.interpss.plugin.contingency.ParallelContingencyAnalyzer;
-import org.interpss.plugin.contingency.ParallelContingencyAnalyzer.ContingencyResult;
+import org.interpss.plugin.contingency.result.ContingencyResultRec;
+import org.interpss.plugin.contingency.result.ContingencyResults;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.util.pool.AclfNetObjPoolManager;
 import org.slf4j.Logger;
@@ -66,17 +67,17 @@ public class ObjectPoolSample {
     	ObjectPool<AclfNetwork> pool = new AclfNetObjPoolManager(seedAclfNet, config)
     										.getPool(); 
     	
-    	ContingencyResult result = runParallelTasks(pool);
+    	ContingencyResults<ContingencyResultRec> result = runParallelTasks(pool);
 
-		ParallelContingencyAnalyzer.printDetailedResults(result);
+		new ParallelContingencyAnalyzer<ContingencyResultRec>().printDetailedResults(result);
     }
     
-    public static ContingencyResult runParallelTasks(ObjectPool<AclfNetwork> pool) {
+    public static ContingencyResults<ContingencyResultRec> runParallelTasks(ObjectPool<AclfNetwork> pool) {
 
 		 long startTime = System.currentTimeMillis();
 
 		    // Thread-safe map to store results
-        Map<String, Boolean> convergenceResults = new ConcurrentHashMap<>();
+        Map<String, ContingencyResultRec> convergenceResults = new ConcurrentHashMap<>();
 
 		int totalCases = 100;
 
@@ -114,7 +115,8 @@ public class ObjectPoolSample {
 					boolean isConverged = parallelAlgo.loadflow();
 					
 					// Store result in thread-safe map
-					convergenceResults.put(branchId, isConverged);
+					ContingencyResultRec rec = new ContingencyResultRec(isConverged);
+					convergenceResults.put(branchId, rec);
 
 	                 // 3. add any cleanup code here if necessary before returning the object
 					aclfNet.getBranchList().get(taskId).setStatus(true);	
@@ -157,7 +159,7 @@ public class ObjectPoolSample {
         System.out.println("Total successful contingencies: " + totalSuccessCount + " out of " + totalCases);
         System.out.println("Success rate: " + String.format("%.2f%%", (double) totalSuccessCount / totalCases * 100));
         
-        return new ParallelContingencyAnalyzer.ContingencyResult(convergenceResults, totalSuccessCount, totalCases, executionTime);
+        return new ContingencyResults(convergenceResults, totalSuccessCount, totalCases, executionTime);
 			 
 
     }
