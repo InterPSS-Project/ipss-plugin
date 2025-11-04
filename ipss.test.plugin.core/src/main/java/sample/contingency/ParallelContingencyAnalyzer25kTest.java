@@ -167,8 +167,8 @@ public class ParallelContingencyAnalyzer25kTest {
                                               ContingencyResultContainer<ContingencyResultRec> parallel) {
         
         int mismatches = 0;
-        java.util.Map<String, ContingencyResultRec> seqResults = sequential.getConvergenceResults();
-        java.util.Map<String, ContingencyResultRec> parResults = parallel.getConvergenceResults();
+        java.util.Map<String, ContingencyResultRec> seqResults = sequential.getCAResults();
+        java.util.Map<String, ContingencyResultRec> parResults = parallel.getCAResults();
         
         for (String branchId : seqResults.keySet()) {
             if (!seqResults.get(branchId).equals(parResults.get(branchId))) {
