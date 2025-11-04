@@ -11,7 +11,7 @@ import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.interpss.plugin.contingency.ParallelContingencyAnalyzer;
 import org.interpss.plugin.contingency.result.ContingencyResultRec;
-import org.interpss.plugin.contingency.result.ContingencyResults;
+import org.interpss.plugin.contingency.result.ContingencyResultContainer;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.util.pool.AclfNetObjPoolManager;
 import org.slf4j.Logger;
@@ -67,12 +67,12 @@ public class ObjectPoolSample {
     	ObjectPool<AclfNetwork> pool = new AclfNetObjPoolManager(seedAclfNet, config)
     										.getPool(); 
     	
-    	ContingencyResults<ContingencyResultRec> result = runParallelTasks(pool);
+    	ContingencyResultContainer<ContingencyResultRec> result = runParallelTasks(pool);
 
 		new ParallelContingencyAnalyzer<ContingencyResultRec>().printDetailedResults(result);
     }
     
-    public static ContingencyResults<ContingencyResultRec> runParallelTasks(ObjectPool<AclfNetwork> pool) {
+    public static ContingencyResultContainer<ContingencyResultRec> runParallelTasks(ObjectPool<AclfNetwork> pool) {
 
 		 long startTime = System.currentTimeMillis();
 
@@ -159,7 +159,7 @@ public class ObjectPoolSample {
         System.out.println("Total successful contingencies: " + totalSuccessCount + " out of " + totalCases);
         System.out.println("Success rate: " + String.format("%.2f%%", (double) totalSuccessCount / totalCases * 100));
         
-        return new ContingencyResults(convergenceResults, totalSuccessCount, totalCases, executionTime);
+        return new ContingencyResultContainer(convergenceResults, totalSuccessCount, totalCases, executionTime);
 			 
 
     }
