@@ -186,7 +186,7 @@ public class ParallelContingencyAnalyzer <TR extends ContingencyResultRec> {
         System.out.println("Execution Time: " + result.getExecutionTimeSeconds() + " seconds");
         System.out.println("\nIndividual Results:");
         
-        result.getConvergenceResults().entrySet().stream()
+        result.getCAResults().entrySet().stream()
             .sorted(Map.Entry.comparingByKey())
             .forEach(entry -> {
                 System.out.println("Branch " + entry.getKey() + ": " + 
