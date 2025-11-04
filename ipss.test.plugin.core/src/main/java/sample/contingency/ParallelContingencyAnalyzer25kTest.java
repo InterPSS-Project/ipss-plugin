@@ -5,7 +5,7 @@ import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 
 import org.interpss.plugin.contingency.ParallelContingencyAnalyzer;
 import org.interpss.plugin.contingency.result.ContingencyResultRec;
-import org.interpss.plugin.contingency.result.ContingencyResults;
+import org.interpss.plugin.contingency.result.ContingencyResultContainer;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -103,13 +103,13 @@ public class ParallelContingencyAnalyzer25kTest {
                 
                 // Sequential analysis
                 System.out.println("\n--- Sequential Analysis ---");
-                ContingencyResults<ContingencyResultRec> sequentialResult = 
+                ContingencyResultContainer<ContingencyResultRec> sequentialResult = 
                     new ParallelContingencyAnalyzer<ContingencyResultRec>().analyzeContingencies(
                         net, contingencyCount, config, false);
                 
                 // Parallel analysis
                 System.out.println("\n--- Parallel Analysis ---");
-                ContingencyResults<ContingencyResultRec> parallelResult = 
+                ContingencyResultContainer<ContingencyResultRec> parallelResult = 
                     new ParallelContingencyAnalyzer<ContingencyResultRec>().analyzeContingencies(
                         net, contingencyCount, config, true);
                 
@@ -131,8 +131,8 @@ public class ParallelContingencyAnalyzer25kTest {
      * Print comparison between sequential and parallel results
      */
     private static void printComparison(int contingencyCount, 
-                                      ContingencyResults<ContingencyResultRec> sequential,
-                                      ContingencyResults<ContingencyResultRec> parallel) {
+                                      ContingencyResultContainer<ContingencyResultRec> sequential,
+                                      ContingencyResultContainer<ContingencyResultRec> parallel) {
         
         System.out.println("\n--- PERFORMANCE COMPARISON ---");
         System.out.println(String.format("Contingencies analyzed: %d", contingencyCount));
@@ -163,8 +163,8 @@ public class ParallelContingencyAnalyzer25kTest {
     /**
      * Verify that sequential and parallel results are consistent
      */
-    private static void verifyResultConsistency(ContingencyResults<ContingencyResultRec> sequential,
-                                              ContingencyResults<ContingencyResultRec> parallel) {
+    private static void verifyResultConsistency(ContingencyResultContainer<ContingencyResultRec> sequential,
+                                              ContingencyResultContainer<ContingencyResultRec> parallel) {
         
         int mismatches = 0;
         java.util.Map<String, ContingencyResultRec> seqResults = sequential.getConvergenceResults();
