@@ -76,14 +76,14 @@ public class IEEE14BusTest extends CorePluginTestSetup {
 	  	algo.setMaxIterations(20);
 	  	algo.setTolerance(0.0001);
 	  	
+		// at this point, the network is in polar coordinate
+		// transfer voltage (mag, ang) to (Vx, Vy) when changing the coordinate	in the setPolarCoordinate() method.
+	  	aclfNet.setPolarCoordinate(false);
+	  	
 	  	NrMethodConfig nrMethodConfig = algo.getNrMethodConfig();
 	  	//nrMethodConfig.setCoordinate(JacobianMatrixType.NR_XY_COORDINATE);
 	  	// re-configure the Nr solver with the updated config
 	  	algo.getLfCalculator().getNrSolver().reConfigSolver(nrMethodConfig);
-	  	
-		// at this point, the network is in polar coordinate
-		// transfer voltage (mag, ang) to (Vx, Vy) when changing the coordinate	in the setPolarCoordinate() method.
-	  	aclfNet.setPolarCoordinate(false);
 		
 	  	algo.loadflow();
 		System.out.println("MaxMismatch: " + aclfNet.maxMismatch(AclfMethodType.NR));

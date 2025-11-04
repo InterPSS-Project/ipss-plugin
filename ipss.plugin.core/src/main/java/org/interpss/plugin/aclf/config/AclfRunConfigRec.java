@@ -94,11 +94,11 @@ public class AclfRunConfigRec extends BaseJSONBean {
         NrMethodConfig nrConfig = algo.getNrMethodConfig();
         // the default AclfNet coordinate is polar coordinate
         if (!polarCooridnate) {
-			//nrConfig.setCoordinate(JacobianMatrixType.NR_XY_COORDINATE);
+        	// we need to set the AclfNet coordinate to rectangular coordinate before reconfiguring the NR solver
+			algo.getAclfNet().setPolarCoordinate(false);
+			
 			// re-configure the Nr solver with the updated config
 			algo.getLfCalculator().getNrSolver().reConfigSolver(nrConfig);
-			
-			algo.getAclfNet().setPolarCoordinate(false);
 		}
 
         // Set tolerance and max iterations
