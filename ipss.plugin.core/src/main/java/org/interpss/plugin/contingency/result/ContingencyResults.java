@@ -10,6 +10,7 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.AclfAdjCtrlFunction;
+import com.interpss.core.net.Bus;
 import com.interpss.state.aclf.AclfNetworkState;
 
 /**
@@ -17,13 +18,13 @@ import com.interpss.state.aclf.AclfNetworkState;
  * 
  * @author InterPSS Team
  */
-public class ContingencyResults {
-        private final Map<String, Boolean> convergenceResults;
+public class ContingencyResults <TR extends ContingencyResultRec> {
+        private final Map<String, TR> convergenceResults;
         private final long totalSuccessCount;
         private final int totalCases;
         private final long executionTimeMs;
         
-        public ContingencyResults(Map<String, Boolean> convergenceResults, long totalSuccessCount, 
+        public ContingencyResults(Map<String, TR> convergenceResults, long totalSuccessCount, 
                                int totalCases, long executionTimeMs) {
             this.convergenceResults = new HashMap<>(convergenceResults);
             this.totalSuccessCount = totalSuccessCount;
@@ -31,7 +32,7 @@ public class ContingencyResults {
             this.executionTimeMs = executionTimeMs;
         }
         
-        public Map<String, Boolean> getConvergenceResults() { return convergenceResults; }
+        public Map<String, TR> getConvergenceResults() { return convergenceResults; }
         public long getTotalSuccessCount() { return totalSuccessCount; }
         public int getTotalCases() { return totalCases; }
         public long getExecutionTimeMs() { return executionTimeMs; }
