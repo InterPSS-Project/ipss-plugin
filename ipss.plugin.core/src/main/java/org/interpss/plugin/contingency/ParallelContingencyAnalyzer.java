@@ -4,14 +4,14 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.IntStream;
 
-import org.interpss.plugin.contingency.result.ContingencyResultRec;
 import org.interpss.plugin.contingency.result.ContingencyResultContainer;
+import org.interpss.plugin.contingency.result.ContingencyResultRec;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.AclfAdjCtrlFunction;
+import com.interpss.core.net.ref.impl.NetworkRefImpl;
 import com.interpss.state.aclf.AclfNetworkState;
 
 /**
@@ -21,18 +21,26 @@ import com.interpss.state.aclf.AclfNetworkState;
  * 
  * @author InterPSS Team
  */
-public class ParallelContingencyAnalyzer <TR extends ContingencyResultRec> {   
+public class ParallelContingencyAnalyzer <TR extends ContingencyResultRec> extends NetworkRefImpl<AclfNetwork> { 
+	/**
+	 * Constructor
+	 * 
+	 * @param net  the AC load flow network
+	 */
+	public ParallelContingencyAnalyzer(AclfNetwork net) {
+		setNetwork(net);
+	}
+	
     /**
      * Perform parallel contingency analysis by removing branches one at a time.
      * This method is thread-safe and can be called from Python.
      * 
-     * @param network The base AC load flow network
      * @param totalCases Number of contingency cases to analyze
      * @param config Configuration parameters for the analysis
      * @param useParallel Whether to use parallel processing
      * @return ContingencyResult containing analysis results
      */
-    public ContingencyResultContainer<TR> analyzeContingencies(AclfNetwork network, int totalCases, 
+    public ContingencyResultContainer<TR> analyzeContingencies(int totalCases, 
                                                        ContingencyConfig config, boolean useParallel) {
         
         System.out.println("Starting " + (useParallel ? "parallel" : "sequential") + 
@@ -106,15 +114,15 @@ public class ParallelContingencyAnalyzer <TR extends ContingencyResultRec> {
     /**
      * Convenience method with default configuration and parallel processing enabled
      */
-    public ContingencyResultContainer<TR> analyzeContingencies(AclfNetwork network, int totalCases) {
-        return analyzeContingencies(network, totalCases, new ContingencyConfig(), true);
+    public ContingencyResultContainer<TR> analyzeContingencies(int totalCases) {
+        return analyzeContingencies(totalCases, new ContingencyConfig(), true);
     }
     
     /**
      * Convenience method with default configuration and configurable parallel processing
      */
-    public ContingencyResultContainer<TR> analyzeContingencies(AclfNetwork network, int totalCases, boolean useParallel) {
-        return analyzeContingencies(network, totalCases, new ContingencyConfig(), useParallel);
+    public ContingencyResultContainer<TR> analyzeContingencies(int totalCases, boolean useParallel) {
+        return analyzeContingencies(totalCases, new ContingencyConfig(), useParallel);
     }
     
     /**
@@ -147,7 +155,7 @@ public class ParallelContingencyAnalyzer <TR extends ContingencyResultRec> {
             .sorted(Map.Entry.comparingByKey())
             .forEach(entry -> {
                 System.out.println("Branch " + entry.getKey() + ": " + 
-                                 (entry.getValue().isConverged ? "CONVERGED" : "FAILED"));
+                                 (entry.getValue().isConverged() ? "CONVERGED" : "FAILED"));
             });
         System.out.println("============================================\n");
     }
