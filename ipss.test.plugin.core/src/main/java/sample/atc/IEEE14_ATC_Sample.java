@@ -76,7 +76,7 @@ public class IEEE14_ATC_Sample {
 		
 		dclfAlgo.calculateDclf();
 		
-		//System.out.println(DclfOutFunc.dclfResults(dclfAlgo, false));
+		System.out.println(DclfOutFunc.dclfResults(dclfAlgo, false));
 		
 		// check base case branch flow violations
 		AtomicCounter cnt = new AtomicCounter();
