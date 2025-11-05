@@ -16,6 +16,8 @@ public class ContingencyConfig  {
     private int maxIterations = 50;
     private double tolerance = 0.005;
     
+    private double overloadThreshold = 100.0; // in percent
+    
     // Getters and setters
     public boolean isTurnOffIslandBus() { return turnOffIslandBus; }
     public void setTurnOffIslandBus(boolean turnOffIslandBus) { this.turnOffIslandBus = turnOffIslandBus; }
@@ -37,6 +39,9 @@ public class ContingencyConfig  {
     
     public double getTolerance() { return tolerance; }
     public void setTolerance(double tolerance) { this.tolerance = tolerance; }
+    
+    public double getOverloadThreshold() { return overloadThreshold; }
+    public void setOverloadThreshold(double overloadThreshold) { this.overloadThreshold = overloadThreshold; }
     
     /**
      * Create a default configuration instance for Python convenience
