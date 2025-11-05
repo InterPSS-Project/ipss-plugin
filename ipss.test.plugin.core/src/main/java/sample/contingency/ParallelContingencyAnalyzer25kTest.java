@@ -105,14 +105,14 @@ public class ParallelContingencyAnalyzer25kTest {
                 // Sequential analysis
                 System.out.println("\n--- Sequential Analysis ---");
                 ContingencyResultContainer<ContingencyResultRec> sequentialResult = 
-                    new ParallelContingencyAnalyzer<ContingencyResultRec>().analyzeContingencies(
-                        net, contingencyCount, config, false);
+                    new ParallelContingencyAnalyzer<ContingencyResultRec>(net).analyzeContingencies(
+                    		contingencyCount, config, false);
                 
                 // Parallel analysis
                 System.out.println("\n--- Parallel Analysis ---");
                 ContingencyResultContainer<ContingencyResultRec> parallelResult = 
-                    new ParallelContingencyAnalyzer<ContingencyResultRec>().analyzeContingencies(
-                        net, contingencyCount, config, true);
+                    new ParallelContingencyAnalyzer<ContingencyResultRec>(net).analyzeContingencies(
+                    		contingencyCount, config, true);
                 
                 // Compare results
                 printComparison(contingencyCount, sequentialResult, parallelResult);

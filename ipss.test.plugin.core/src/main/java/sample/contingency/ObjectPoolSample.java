@@ -69,7 +69,7 @@ public class ObjectPoolSample {
     	
     	ContingencyResultContainer<ContingencyResultRec> result = runParallelTasks(pool);
 
-		new ParallelContingencyAnalyzer<ContingencyResultRec>().printDetailedResults(result);
+		new ParallelContingencyAnalyzer<ContingencyResultRec>(seedAclfNet).printDetailedResults(result);
     }
     
     public static ContingencyResultContainer<ContingencyResultRec> runParallelTasks(ObjectPool<AclfNetwork> pool) {
