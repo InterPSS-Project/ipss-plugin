@@ -3,9 +3,10 @@ package sample.contingency;
 
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 
+import org.interpss.plugin.contingency.ContingencyConfig;
 import org.interpss.plugin.contingency.ParallelContingencyAnalyzer;
-import org.interpss.plugin.contingency.result.ContingencyResultRec;
 import org.interpss.plugin.contingency.result.ContingencyResultContainer;
+import org.interpss.plugin.contingency.result.ContingencyResultRec;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -70,8 +71,8 @@ public class ParallelContingencyAnalyzer25kTest {
             }
             
             // Configure contingency analysis
-            ParallelContingencyAnalyzer.ContingencyConfig config = 
-                ParallelContingencyAnalyzer.createDefaultConfig();
+            ContingencyConfig config = 
+            		ContingencyConfig.createDefaultConfig();
             
             // Use more relaxed settings for large system
             config.setMaxIterations(50);
