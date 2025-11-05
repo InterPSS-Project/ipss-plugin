@@ -18,6 +18,12 @@ public class ContingencyConfig  {
     
     private double overloadThreshold = 100.0; // in percent
     
+    // Dclf screening options
+    private boolean dclfScreening = false;
+    private boolean dclfInclLoss = true;
+    private double dcLoadingCutoff = 100.0; // in percent
+    private double dcFlowChangeCutoff = 200.0; // in percent of base case flow
+    
     // Getters and setters
     public boolean isTurnOffIslandBus() { return turnOffIslandBus; }
     public void setTurnOffIslandBus(boolean turnOffIslandBus) { this.turnOffIslandBus = turnOffIslandBus; }
@@ -42,6 +48,18 @@ public class ContingencyConfig  {
     
     public double getOverloadThreshold() { return overloadThreshold; }
     public void setOverloadThreshold(double overloadThreshold) { this.overloadThreshold = overloadThreshold; }
+    
+    public boolean isDclfScreening() { return dclfScreening; }
+    public void setDclfScreening(boolean dclfScreening) { this.dclfScreening = dclfScreening; }
+    
+    public boolean isDclfInclLoss() { return dclfInclLoss; }
+    public void setDclfInclLoss(boolean dclfInclLoss) { this.dclfInclLoss = dclfInclLoss; }
+    
+    public double getDcLoadingCutoff() { return dcLoadingCutoff; }
+    public void setDcLoadingCutoff(double dcLoadingCutoff) { this.dcLoadingCutoff = dcLoadingCutoff; }
+    
+    public double getDcFlowChangeCutoff() { return dcFlowChangeCutoff; }
+    public void setDcFlowChangeCutoff(double dcFlowChangeCutoff) { this.dcFlowChangeCutoff = dcFlowChangeCutoff; }
     
     /**
      * Create a default configuration instance for Python convenience
