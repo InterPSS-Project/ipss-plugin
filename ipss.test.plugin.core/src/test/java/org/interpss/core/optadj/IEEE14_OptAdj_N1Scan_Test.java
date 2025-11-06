@@ -27,6 +27,7 @@ package org.interpss.core.optadj;
 import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -117,7 +118,7 @@ public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
 		System.out.println("Optimization sec constrian size." + optimizer.getGenOptimizer().getSecConstrainDataList().size());
 		assertTrue(optimizer.getGenOptimizer().getGenSize() == 14);
 		assertTrue(optimizer.getGenOptimizer().getGenConstrainDataList().size() == 28);
-		assertTrue(optimizer.getGenOptimizer().getSecConstrainDataList().size() == 150);
+		assertEquals(optimizer.getGenOptimizer().getSecConstrainDataList().size(), 150);
 		
 		dclfAlgo.calculateDclf();
 		
