@@ -42,12 +42,12 @@ public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
 		AclfNetwork aclfNet = (AclfNetwork) dclfAlgo.getNetwork();
 		double baseMva = aclfNet.getBaseMva();
 		aclfNet.getBranchList().stream().filter(branch -> branch.isActive()).forEach(outBranch -> {
-			int outBranchNo = (int) (outBranch.getNumber() - 1);
+			int outBranchNo = outBranch.getSortNumber();
 			double[] genSenArray = new double[controlGenMap.size()];
 			DclfAlgoBranch outDclfBranch = dclfAlgo.getDclfAlgoBranch(outBranch.getId());
 
 			controlGenMap.forEach((no, gen) -> {
-				int busNo = (int) (gen.getParentBus().getNumber() - 1);
+				int busNo = gen.getParentBus().getSortNumber();
 				float sen = senMatrix[busNo][outBranchNo];
 				genSenArray[no] = sen;
 			});
@@ -59,7 +59,7 @@ public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
 				try {
 					double[] lodf = dclfAlgo.lineOutageDFactors(caOutBranch);
 					aclfNet.getBranchList().stream().filter(branch -> branch.isActive()).forEach(branch -> {
-						int branchNo = (int) (branch.getNumber() - 1);
+						int branchNo = branch.getSortNumber();
 						if (Arrays.stream(genSenArray)
 								.anyMatch(sen -> Math.abs(sen * lodf[branch.getSortNumber()]) > SEN_THRESHOLD)) {
 							DclfAlgoBranch dclfBranch = dclfAlgo.getDclfAlgoBranch(branch.getId());
@@ -67,7 +67,7 @@ public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
 									+ lodf[branch.getSortNumber()] * outDclfBranch.getDclfFlow();
 
 							controlGenMap.forEach((no, gen) -> {
-								int busNo = (int) (gen.getParentBus().getNumber() - 1);
+								int busNo = gen.getParentBus().getSortNumber();
 								// GSFij + LODF x GSFkm
 								float sen = (float) (senMatrix[busNo][branchNo]
 										+ lodf[branch.getSortNumber()] * senMatrix[busNo][outBranchNo]);
