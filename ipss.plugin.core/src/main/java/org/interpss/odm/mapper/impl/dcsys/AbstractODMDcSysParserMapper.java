@@ -24,8 +24,6 @@
 
 package org.interpss.odm.mapper.impl.dcsys;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
-
 import org.ieee.odm.model.dc.DcSystemModelParser;
 import org.ieee.odm.schema.DcNetworkXmlType;
 import org.ieee.odm.schema.NetworkCategoryEnumType;
@@ -37,8 +35,11 @@ import com.interpss.dc.pv.PVDcNetwork;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 import com.interpss.simu.SimuObjectFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractODMDcSysParserMapper<T> extends AbstractODMNetDataMapper<T, SimuContext> {
+	private static final Logger log = LoggerFactory.getLogger(AbstractODMDcSysParserMapper.class);
 	public AbstractODMDcSysParserMapper() {
 	}
 	
@@ -74,19 +75,13 @@ public abstract class AbstractODMDcSysParserMapper<T> extends AbstractODMNetData
 	public boolean map2Model(T from, SimuContext simuCtx) {
 		DcSystemModelParser parser = (DcSystemModelParser)from;
 		boolean noError = true;
-		
 		if (parser.getStudyCase().getNetworkCategory() == NetworkCategoryEnumType.DC_SYSTEM ) {
 			DcNetworkXmlType xmlNet = parser.getDcNet();
 			noError = new ODMDcSysNetMapper().map2Model(xmlNet, (PVDcNetwork)simuCtx.getDcSysNet());
-			
-			/*
-			 * a parent dc sys net cannot contain any child network 
-			 */
 		} else {
-			ipssLogger.severe("Error: wrong network category type for DC system analysis");
+			log.error("Error: wrong network category type for DC system analysis");
 			return false;
 		}
-		
 		return noError;
 	}
 }

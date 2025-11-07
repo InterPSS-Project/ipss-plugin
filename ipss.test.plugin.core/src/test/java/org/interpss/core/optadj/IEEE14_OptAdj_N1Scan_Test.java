@@ -27,6 +27,7 @@ package org.interpss.core.optadj;
 import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -61,7 +62,10 @@ public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
 		net.getBranchList().stream()
 			.forEach(branch -> {
 				AclfBranch aclfBranch = (AclfBranch) branch;
-				aclfBranch.setRatingMva1(120.0);
+				// Mva1 is used for basecase loading limit
+				aclfBranch.setRatingMva1(100.0);
+				// Mva2 is used for contingency loading limit
+				aclfBranch.setRatingMva2(120.0);
 			});
 		
 		// define an caAlgo object and perform DCLF 
@@ -117,7 +121,7 @@ public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
 		System.out.println("Optimization sec constrian size." + optimizer.getGenOptimizer().getSecConstrainDataList().size());
 		assertTrue(optimizer.getGenOptimizer().getGenSize() == 14);
 		assertTrue(optimizer.getGenOptimizer().getGenConstrainDataList().size() == 28);
-		assertTrue(optimizer.getGenOptimizer().getSecConstrainDataList().size() == 150);
+		assertEquals(optimizer.getGenOptimizer().getSecConstrainDataList().size(), 150);
 		
 		dclfAlgo.calculateDclf();
 		

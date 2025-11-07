@@ -108,13 +108,15 @@ public class DclfOutFunc {
 		}
 		double baseMva = algo.getNetwork().getBaseKva() * 0.001;
 		for (DclfAlgoBus dclfBus : algo.getDclfAlgoBusList()) {
-			AclfBus bus = dclfBus.getBus();
+			AclfBus bus = dclfBus.getBus(); 
 			if (bus.isActive()) {
 				int n = bus.getSortNumber();
 				double angle = algo.getNetwork().isRefBus(bus)?
 						0.0 : Math.toDegrees(algo.getBusAngle(n));
 				double pgen =  (bus.isRefBus()? algo.getBusPower(dclfBus) : bus.getGenP()) * baseMva; 
+				pgen += dclfBus.getGenList().stream().mapToDouble(g -> g.getAdjust()).sum()* baseMva;
 				double pload =  bus.getLoadP() * baseMva; 
+				pload += dclfBus.getLoadList().stream().mapToDouble(l -> l.getAdjust()).sum()* baseMva;
 				double pshunt = bus.getShuntY().getReal() * baseMva; 
 				if (commaDelimited)
 					str.append(Number2String.toFixLengthStr(8, bus.getId()) + ","

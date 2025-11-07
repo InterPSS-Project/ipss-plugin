@@ -5,10 +5,11 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.math3.complex.Complex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.interpss.algo.subAreaNet.base.BaseCuttingBranch;
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
@@ -25,7 +26,7 @@ import com.interpss.core.net.Branch;
 import com.interpss.core.net.BranchBusSide;
 
 public class AclfNetworkEquivHelper {
-
+    private static final Logger log = LoggerFactory.getLogger(AclfNetworkEquivHelper.class);
     private AclfNetwork baseNetwork = null;
     private Set<String> boundaryBusSet = null;
     private Set<BaseCuttingBranch<Complex>> boundaryBranchSet = null;
@@ -124,7 +125,8 @@ public class AclfNetworkEquivHelper {
         try {
         //use subnetwork copy function to create a new network object
         if(copySubNet)
-            equivNet = this.baseNetwork.createSubNet(this.keptBusSet, this.keptBranchSet, false /*equivHvdc*/);
+            equivNet = this.baseNetwork.createSubNet(this.keptBusSet, this.keptBranchSet, 
+            				false /*activeOnly*/, false /*equivHvdc*/);
         else{
             equivNet = this.baseNetwork;
         }
@@ -134,14 +136,15 @@ public class AclfNetworkEquivHelper {
             AclfBranch branch = this.baseNetwork.getBranch(cuttingBranch.getBranchId());
             if(branch != null&& branch.isActive()){
                 //check if the branch is a zero impedance branch, if so, this could lead to large power mismatch at the boundary bus
-                if(branch.getZ().abs()< this.baseNetwork.getZeroZBranchThreshold()) {
-                    IpssLogger.getLogger().severe("Branch " + branch.getId() + " is a zero impedance branch, which may lead to large power mismatch at the boundary bus. Consider selecting another boundary branch instead.");
+                if(branch.getZ().abs()<= this.baseNetwork.getZeroZBranchThreshold()) {
+                    log.error("Warn! Branch " + branch.getId() + " is a zero impedance branch, which may lead to large power mismatch at the boundary bus. Consider selecting another boundary branch instead.");
                 }
 
                 if(cuttingBranch.getSplitSide() == BranchBusSide.FROM_SIDE){
                     
                     Complex s = branch.powerFrom2To();
-                    AclfBus bus = equivNet.getBus(branch.getFromBusId());
+                    @SuppressWarnings("rawtypes")
+                    BaseAclfBus bus = branch.getFromAclfBus();
                     if(bus != null && bus.isActive()){
                         // create a load object with the total power at the boundary bus
                         AclfLoad load = CoreObjectFactory.createAclfLoad(branch.getId() + "_" + branch.getFromBusId());
@@ -151,12 +154,12 @@ public class AclfNetworkEquivHelper {
                         bus.setLoadCode(AclfLoadCode.CONST_P);
                         bus.initContributeLoad(false);
                         // log the load creation and the power value
-                        IpssLogger.getLogger().info("Boundary load created at bus " + branch.getFromBusId() + " with power: " + s.toString());
+                        log.info("Boundary load created at bus " + branch.getFromBusId() + " with power: " + s.toString());
                 
                     }
                     else{
                         // throw errors
-                        IpssLogger.getLogger().severe("Boundary bus " + branch.getFromBusId() + " is not found or not active in the equivalent network.");
+                        log.error("Boundary bus " + branch.getFromBusId() + " is not found or not active in the equivalent network.");
                         throw new IllegalStateException("Boundary bus " + branch.getFromBusId() + " is not found or not active in the equivalent network.");
                     }
                 }
@@ -172,12 +175,12 @@ public class AclfNetworkEquivHelper {
                         bus.setLoadCode(AclfLoadCode.CONST_P);
                         bus.initContributeLoad(false);
                          // log the load creation and the power value
-                        IpssLogger.getLogger().info("Boundary load created at bus " + branch.getToBusId() + " with power: " + s.toString());
+                        log.info("Boundary load created at bus " + branch.getToBusId() + " with power: " + s.toString());
 
                     }
                     else{
                         // throw errors
-                        IpssLogger.getLogger().severe("Boundary bus " + branch.getToBusId() + " is not found or not active in the equivalent network.");
+                        log.error("Boundary bus " + branch.getToBusId() + " is not found or not active in the equivalent network.");
                         throw new IllegalStateException("Boundary bus " + branch.getToBusId() + " is not found or not active in the equivalent network.");
                     }
                 }

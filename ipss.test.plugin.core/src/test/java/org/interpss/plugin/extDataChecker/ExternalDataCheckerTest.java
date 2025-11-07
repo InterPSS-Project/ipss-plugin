@@ -4,11 +4,11 @@ import static org.junit.Assert.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.plugin.aclf.PSSEExternalDataChecker;
+import org.interpss.plugin.aclf.config.psse.PSSEExternalDataChecker;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -24,7 +24,7 @@ public class ExternalDataCheckerTest extends CorePluginTestSetup {
 				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_30).load()
 				.getImportedObj();
 		
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.loadflow(new PSSEExternalDataChecker(aclfNet -> {
 			// add data checker logic after the initialization here if needed
 			// here we can do external data checking configuration
