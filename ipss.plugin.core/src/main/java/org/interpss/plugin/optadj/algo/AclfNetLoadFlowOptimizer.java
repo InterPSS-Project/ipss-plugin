@@ -61,8 +61,6 @@ public class AclfNetLoadFlowOptimizer {
 		return genOptimizer;
 	}
 
-
-
 	/**
 	 * Optimize the generator state of the network
 	 * 
@@ -84,17 +82,17 @@ public class AclfNetLoadFlowOptimizer {
 		AclfNetwork aclfNet = dclfAlgo.getAclfNet();
 
 		AclfNetSensHelper helper = new AclfNetSensHelper(aclfNet);
-		float[][] senMatrix = helper.calSen();
+		double[][] gsfMatrix = helper.calGFS();
 		
 		Map<Integer, AclfGen> controlGenMap = null;
 		if (result == null) {
 			controlGenMap = arrangeIndex(aclfNet.getAclfGenNameLookupTable().values().stream().filter(gen -> gen.isActive())
 					.collect(Collectors.toSet()));
 		} else {
-			controlGenMap = arrangeIndex(buildControlGenSet(senMatrix, result));
+			controlGenMap = arrangeIndex(buildControlGenSet(gsfMatrix, result));
 		}
 		
-		buildSectionConstrain(senMatrix, controlGenMap, threshold);
+		buildSectionConstrain(gsfMatrix, controlGenMap, threshold);
 
 		buildGenConstrain(controlGenMap);
 
@@ -113,28 +111,28 @@ public class AclfNetLoadFlowOptimizer {
 		return genMap;
 	}
 
-	protected Set<AclfGen> buildControlGenSet(float[][] senMatrix, AclfNetSsaResultContainer result) {
+	protected Set<AclfGen> buildControlGenSet(double[][] gfsMatrix, AclfNetSsaResultContainer result) {
 		Set<AclfGen> genSet = new LinkedHashSet<AclfGen>();
 		result.getBaseOverLimitInfo().forEach(info -> {
-			processGenSet(senMatrix, genSet, info.getBranch().getId());
+			processGenSet(gfsMatrix, genSet, info.getBranch().getId());
 
 		});
 
 		result.getCaOverLimitInfo().forEach(info -> {
-			processGenSet(senMatrix, genSet, info.aclfBranch.getId());
-			processGenSet(senMatrix, genSet, info.contingency.getOutageBranch().getBranch().getId());
+			processGenSet(gfsMatrix, genSet, info.aclfBranch.getId());
+			processGenSet(gfsMatrix, genSet, info.contingency.getOutageBranch().getBranch().getId());
 		});
 		return genSet;
 	}
 
-	private void processGenSet(float[][] senMatrix, Set<AclfGen> genSet, String branchId) {
+	private void processGenSet(double[][] gfsMatrix, Set<AclfGen> genSet, String branchId) {
 		AclfNetwork net = dclfAlgo.getAclfNet();
 		AclfBranch branch = net.getBranch(branchId);
 		int branchNo = branch.getSortNumber();
 		net.getAclfGenNameLookupTable().forEach((name, gen) -> {
 			if (gen.isActive()) {
 				int busNo = gen.getParentBus().getSortNumber();
-				float sen = senMatrix[busNo][branchNo];
+				double sen = gfsMatrix[busNo][branchNo];
 				if (Math.abs(sen) > SEN_THRESHOLD) {
 					genSet.add(gen);
 				}
@@ -156,7 +154,7 @@ public class AclfNetLoadFlowOptimizer {
 		}
 	}
 
-	protected void buildSectionConstrain(float[][] senMatrix,
+	protected void buildSectionConstrain(double[][] gfsMatrix,
 			Map<Integer, AclfGen> controlGenMap, double threshold) {
 		AclfNetwork net = dclfAlgo.getAclfNet();
 		double baseMva = net.getBaseMva();
@@ -167,7 +165,7 @@ public class AclfNetLoadFlowOptimizer {
 
 			controlGenMap.forEach((no, gen) -> {
 				int busNo = gen.getParentBus().getSortNumber();
-				float sen = senMatrix[busNo][branchNo];
+				double sen = gfsMatrix[busNo][branchNo];
 				genSenArray[no] = dclfBranch.getDclfFlow() > 0 ? sen : -sen;
 			});
 			if (Arrays.stream(genSenArray).anyMatch(sen -> Math.abs(sen) > SEN_THRESHOLD)) {
