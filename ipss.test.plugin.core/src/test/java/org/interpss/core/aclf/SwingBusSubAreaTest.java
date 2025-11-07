@@ -30,17 +30,15 @@ import java.util.Set;
 
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.display.AclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.AclfNetHelper;
-import com.interpss.core.funcImpl.CoreCopyFunc;
 
 public class SwingBusSubAreaTest extends CorePluginTestSetup {
 	@Test
@@ -60,10 +58,10 @@ public class SwingBusSubAreaTest extends CorePluginTestSetup {
 		busSet = helper.calConnectedSubArea("1z");
 	  	assertTrue("", busSet.size() == 57);
 	  	
-	  	AclfNetwork subNet = net.createSubNet(busSet, false);
+	  	AclfNetwork subNet = net.createSubNet(busSet, false, false);
 	  	assertTrue("", subNet.getNoBus() == 57);
 	  	
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(subNet);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(subNet);
 	  	algo.setLfMethod(AclfMethodType.NR);
 	  	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 	  	algo.loadflow();

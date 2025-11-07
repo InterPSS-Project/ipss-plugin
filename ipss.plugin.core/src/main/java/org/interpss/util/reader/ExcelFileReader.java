@@ -1,4 +1,4 @@
- /*
+/*
   * @(#)ExcelFileReader.java   
   *
   * Copyright (C) 2006-2011 www.interpss.com
@@ -24,13 +24,6 @@
 
 package org.interpss.util.reader;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.util.Iterator;
-
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -39,8 +32,17 @@ import org.interpss.util.IExcelFileProcessor;
 
 import com.interpss.common.exp.InterpssException;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.Iterator;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class ExcelFileReader {
+    private static final Logger log = LoggerFactory.getLogger(ExcelFileReader.class);
 	protected String filepath = null;
 	protected int indexSheet = 0;
 	protected String sheetname = null;
@@ -71,7 +73,7 @@ public class ExcelFileReader {
 			final InputStream stream = new FileInputStream(file);
 	    	wb = WorkbookFactory.create(stream);
 		} catch (Exception e) {
-			ipssLogger.severe(e.toString());
+			log.error(e.toString());
 			throw new InterpssException(e.toString());
 		}
 		if (wb.getNumberOfSheets() <= this.indexSheet)  // index starts from 0

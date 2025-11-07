@@ -23,13 +23,14 @@
   */
 package org.interpss.plugin.pssl.plugin;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
 import static org.interpss.CorePluginFunction.AclfParser2AclfNet;
 import static org.interpss.CorePluginFunction.AcscParser2AcscNet;
 import static org.interpss.CorePluginFunction.DStabParser2DStabAlgo;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 
@@ -54,6 +55,7 @@ import org.ieee.odm.schema.AnalysisCategoryEnumType;
 import org.ieee.odm.schema.NetworkCategoryEnumType;
 import org.interpss.CorePluginFunction;
 import org.interpss.odm.mapper.ODMAclfNetMapper;
+import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.interpss.plugin.pssl.simu.BaseDSL;
 
 import com.interpss.common.exp.InterpssException;
@@ -102,6 +104,60 @@ public class IpssAdapter extends BaseDSL {
 			PSSE_31, 
 			PSSE_30, 
 			PSSE_29 };
+			
+	/**
+	* Parses the PSSE version from a PSSE file by reading the REV field.
+	* 
+	* @param filename the path to the PSSE file
+	* @return the corresponding PsseVersion
+	* @throws InterpssException if an error occurs during file reading or parsing
+	*/
+	public static PsseVersion parsePsseVersion(String filename) throws InterpssException {
+		try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+			String line;
+			
+			// Skip comment lines starting with @
+			while ((line = reader.readLine()) != null) {
+				line = line.trim();
+				if (!line.startsWith("@") && !line.isEmpty()) {
+					break;
+				}
+			}
+			
+			if (line != null) {
+				// Split by comma and get the third item (REV)
+				String[] parts = line.split(",");
+				if (parts.length >= 3) {
+					String revStr = parts[2].trim();
+					try {
+						int version = Integer.parseInt(revStr);
+						
+						// Map version number to PsseVersion enum
+						switch (version) {
+							case 30: return PsseVersion.PSSE_30;
+							case 31: return PsseVersion.PSSE_31;
+							case 32: return PsseVersion.PSSE_32;
+							case 33: return PsseVersion.PSSE_33;
+							case 34: return PsseVersion.PSSE_34;
+							case 35: return PsseVersion.PSSE_35;
+							case 36: return PsseVersion.PSSE_36;
+							default: 
+								// Default to latest version for unknown versions
+								return PsseVersion.PSSE_36;
+						}
+					} catch (NumberFormatException e) {
+						throw new InterpssException("Invalid REV format in PSSE file: " + revStr + " - " + e.getMessage());
+					}
+				} else {
+					throw new InterpssException("Invalid PSSE file format: insufficient fields in header line");
+				}
+			} else {
+				throw new InterpssException("Unable to read header information from PSSE file");
+			}
+		} catch (IOException e) {
+			throw new InterpssException("Error reading PSSE file: " + filename + " - " + e.getMessage());
+		}
+	}			
 			
 	/**
 	 * create an ImportAclfNetDSL object
@@ -482,7 +538,7 @@ public class IpssAdapter extends BaseDSL {
 			if(filename !=null) this.file1Name = filename;
 			
 			try {
-				ipssLogger.info("Load file: " + this.file1Name + " of format " + this.format);
+				//ipssLogger.info("Load file: " + this.file1Name + " of format " + this.format);
 
 				if ( this.format == FileFormat.IEEE_ODM) {
 					ODMModelParser parser = new ODMModelParser();
