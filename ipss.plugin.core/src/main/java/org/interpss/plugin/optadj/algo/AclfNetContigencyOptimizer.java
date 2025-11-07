@@ -60,34 +60,31 @@ public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
 			});
 
 			if (Arrays.stream(genSenArray).anyMatch(sen -> Math.abs(sen) > SEN_THRESHOLD)) {
-				CaOutageBranch caOutBranch = DclfAlgoObjectFactory.createCaOutageBranch(outDclfBranch,
-						CaBranchOutageType.OPEN);
-
 				//double[] lodfAry = dclfAlgo.lineOutageDFactors(caOutBranch);
-				double[] lodfAry = lodfMatrix[caOutBranch.getBranch().getSortNumber()];
+				//double[] lodfAry = lodfMatrix[outBranchNo];
 					
 				aclfNet.getBranchList().stream()
-					.filter(branch -> branch.isActive()).forEach(branch -> {
-						int branchNo = branch.getSortNumber();
+					.filter(branch -> branch.isActive())
+					.forEach(monBranch -> {
+						int monBranchNo = monBranch.getSortNumber();
+						double lodf = lodfMatrix[outBranchNo][monBranchNo];
 						if (Arrays.stream(genSenArray)
-								.anyMatch(sen -> Math.abs(sen * lodfAry[branch.getSortNumber()]) > SEN_THRESHOLD)) {
-							DclfAlgoBranch dclfBranch = dclfAlgo.getDclfAlgoBranch(branch.getId());
-							double postFlow = dclfBranch.getDclfFlow()
-									+ lodfAry[branch.getSortNumber()] * outDclfBranch.getDclfFlow();
+								.anyMatch(sen -> Math.abs(sen * lodf) > SEN_THRESHOLD)) {
+							DclfAlgoBranch monDclfBranch = dclfAlgo.getDclfAlgoBranch(monBranch.getId());
+							double postFlow = monDclfBranch.getDclfFlow() + lodf * outDclfBranch.getDclfFlow();
 
 							controlGenMap.forEach((no, gen) -> {
 								int busNo = gen.getParentBus().getSortNumber();
 								// GSFij + LODF x GSFkm
-								double sen = gfsMatrix[busNo][branchNo]
-										+ lodfAry[branch.getSortNumber()] * gfsMatrix[busNo][outBranchNo];
+								double sen = gfsMatrix[busNo][monBranchNo] + lodf * gfsMatrix[busNo][outBranchNo];
 								genSenArray[no] = postFlow > 0 ? sen : -sen;
 							});
 							
-							double limit = dclfBranch.getBranch().getRatingMva2() * threshold / 100;
+							double limit = monDclfBranch.getBranch().getRatingMva2() * threshold / 100;
 							double postFlowMw = Math.abs(postFlow * baseMva); ;
 							genOptimizer.addConstraint(new SectionConstrainData(postFlowMw, Relationship.LEQ, limit, genSenArray));
 						}
-				});
+					});
 			}
 		});
 	}
