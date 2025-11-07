@@ -7,11 +7,13 @@ import org.slf4j.LoggerFactory;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.DclfAlgoObjectFactory;
-import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.algo.dclf.DclfMethod;
+import com.interpss.core.aclf.BaseAclfNetwork;
+import com.interpss.core.algo.dclf.CaBranchOutageType;
+import com.interpss.core.algo.dclf.CaOutageBranch;
 import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.SenAnalysisType;
+import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 import com.interpss.core.common.ReferenceBusException;
 
 
@@ -24,8 +26,8 @@ import com.interpss.core.common.ReferenceBusException;
 public class AclfNetSensHelper {
     private static final Logger log = LoggerFactory.getLogger(AclfNetSensHelper.class);
     
-	// a AclfNetwork object
-	private AclfNetwork aclfNet;
+	// a SenAnalysisAlgorithm object
+	private SenAnalysisAlgorithm dclfAlgo;
 	
 	/**
 	 * Constructor
@@ -33,24 +35,25 @@ public class AclfNetSensHelper {
 	 * @param aclfNet
 	 */
 	public AclfNetSensHelper(AclfNetwork aclfNet) {
-		this.aclfNet = aclfNet;
-	}
-	
-	/**
-	 * calculate AclfNetwork sensitivities Sen[active bus][active branch]
-	 * 
-	 * @return
-	 */
-	public float[][] calSen(){
-		SenAnalysisAlgorithm dclfAlgo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(aclfNet);
+		//this.aclfNet = aclfNet;
+		this.dclfAlgo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(aclfNet);
 		setNetBusBranchNumber();
 		try {
 			dclfAlgo.getDclfSolver().prepareBMatrix(SenAnalysisType.PANGLE);
 		} catch (InterpssException | IpssNumericException e) {
 			log.error(e.toString());
 		}
+	}
+	
+	/**
+	 * calculate AclfNetwork sensitivities GFS[active bus][active branch]
+	 * 
+	 * @return
+	 */
+	public double[][] calGFS(){
+		BaseAclfNetwork<?,?> aclfNet = dclfAlgo.getNetwork();
 		
-		float[][] senMatrix = new float[aclfNet.getNoActiveBus()][aclfNet.getNoActiveBranch()];
+		double[][] senMatrix = new double[aclfNet.getNoActiveBus()][aclfNet.getNoActiveBranch()];
 		aclfNet.getBusList().parallelStream().filter(bus -> bus.isActive()).forEach(bus -> {
 			try {
 				double[] dblAry = dclfAlgo.getDclfSolver().getSenPAngle(bus.getId());
@@ -58,7 +61,7 @@ public class AclfNetSensHelper {
 						.forEach(branch -> {
 							double fAng = branch.getFromAclfBus().isRefBus()? 0.0 : dblAry[branch.getFromAclfBus().getSortNumber()];
 							double tAng = branch.getToAclfBus().isRefBus()? 0.0 : dblAry[branch.getToAclfBus().getSortNumber()];
-							senMatrix[bus.getSortNumber()][branch.getSortNumber()] = (float)(-branch.b1ft() * (fAng - tAng));
+							senMatrix[bus.getSortNumber()][branch.getSortNumber()] = (-branch.b1ft() * (fAng - tAng));
 						});
 			} catch (InterpssException | IpssNumericException | ReferenceBusException e) {
 				log.error(e.toString());
@@ -68,11 +71,39 @@ public class AclfNetSensHelper {
 	}
 	
 	/**
+	 * calculate AclfNetwork sensitivities LODF[active branch][active branch]
+	 * 
+	 * @return
+	 */
+	public double[][] calLODF(){
+		BaseAclfNetwork<?,?> aclfNet = dclfAlgo.getNetwork();
+		
+		double[][] lodfMatrix = new double[aclfNet.getNoActiveBranch()][aclfNet.getNoActiveBranch()];
+		 
+		aclfNet.getBranchList().parallelStream()
+			.filter(outBranch -> outBranch.isActive())
+			.forEach(outBranch -> {
+				DclfAlgoBranch outDclfBranch = dclfAlgo.getDclfAlgoBranch(outBranch.getId());
+				CaOutageBranch caOutBranch = DclfAlgoObjectFactory.createCaOutageBranch(outDclfBranch, CaBranchOutageType.OPEN);
+				try {
+					int outBranchNo = outBranch.getSortNumber();
+					lodfMatrix[outBranchNo] = dclfAlgo.lineOutageDFactors(caOutBranch);
+				} catch (InterpssException e) {
+					log.error(e.toString());
+				}
+			});
+		
+		return lodfMatrix;
+	}
+	
+	/**
 	 * set AclfNet bus number and branch number
 	 * 
 	 * @param aclfNet
 	 */
 	private void setNetBusBranchNumber() {
+		BaseAclfNetwork<?,?> aclfNet = dclfAlgo.getNetwork();
+		
 		Counter cnt = new Counter();
 
 		aclfNet.getBusList().stream()
