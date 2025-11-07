@@ -24,15 +24,17 @@
 
 package org.interpss.core.adapter.internal;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
@@ -65,7 +67,7 @@ public class IEEE14Test extends CorePluginTestSetup {
   		 * Get the default loadflow algorithm and Run loadflow analysis. By default, it uses
   		 * NR method with convergence error tolerance 0.0001 pu
   		 */
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 	  	
@@ -81,8 +83,8 @@ public class IEEE14Test extends CorePluginTestSetup {
   		AclfSwingBusAdapter swing = swingBus.toSwingBus();
 		//System.out.println(swing.getGenResults(UnitType.PU).getReal());
 		//System.out.println(swing.getGenResults(UnitType.PU).getImaginary());
-  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.32373)<0.0001);
-  		assertTrue( Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.17462)<0.0001);
+  		assertEquals(swing.getGenResults(UnitType.PU).getReal(), 2.323859, 0.0001);
+  		assertEquals(swing.getGenResults(UnitType.PU).getImaginary(), -0.16888, 0.0001);
 	}
 	
 	//@Test
@@ -111,7 +113,7 @@ public class IEEE14Test extends CorePluginTestSetup {
   		 * NR method with convergence error tolerance 0.0001 pu
   		 */
   		//IpssLogger.getLogger().setLevel(Level.INFO);
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.PQ);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
@@ -141,7 +143,7 @@ public class IEEE14Test extends CorePluginTestSetup {
 		net.getBranch("13->14(1)").setStatus(false);
 		net.getBranch("9->14(1)").setStatus(false);
 		
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 	  	

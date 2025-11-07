@@ -29,12 +29,12 @@
         <artifactId>mvel2</artifactId>
         <version>2.5.2.Final</version>
     </dependency>
-	
+
+    <!-- JUnit dependency without test scope since main classes need JUnit functionality -->
     <dependency>
           <groupId>junit</groupId>
           <artifactId>junit</artifactId>
           <version>4.13.2</version>
-          <scope>test</scope>
     </dependency>
     <dependency>
           <groupId>org.hamcrest</groupId>

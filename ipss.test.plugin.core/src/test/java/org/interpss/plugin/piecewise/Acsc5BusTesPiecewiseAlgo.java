@@ -47,7 +47,7 @@ import com.interpss.algo.subAreaNet.seq012.SubAcscNetwork;
 import com.interpss.algo.subAreaNet.seq012.SubArea012;
 import com.interpss.algo.subAreaNet.seq012.impl.SubAreaAcscProcessorImpl;
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
@@ -301,7 +301,7 @@ b(6): -0.0000 + j-0.00106
   		AcscNetwork net = create5BusSampleNet();
   		//System.out.println(net.net2String());
   		
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 	  	

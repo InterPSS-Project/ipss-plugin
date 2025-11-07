@@ -24,8 +24,6 @@
 
 package org.interpss.display;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
-
 import java.util.List;
 
 import org.apache.commons.math3.complex.Complex;
@@ -34,8 +32,9 @@ import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.ComplexFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.Number2String;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.AcscBus;
 import com.interpss.core.acsc.BaseAcscNetwork;
@@ -53,6 +52,8 @@ import com.interpss.core.net.Bus;
  *
  */
 public class AcscOutFunc {
+	private static final Logger log = LoggerFactory.getLogger(AcscOutFunc.class);
+	
 	/**
 	 * output Acsc analysis results
 	 * 
@@ -62,7 +63,7 @@ public class AcscOutFunc {
 	 */
 	public static String faultResult2String(BaseAcscNetwork<?,?> faultNet, SimpleFaultAlgorithm algo) {
 		StringBuffer sb = new StringBuffer();
-		ipssLogger.fine(
+		log.debug(
 				"# of Fault objects = " + algo.getFaultList().size());
 		for (Object fault : algo.getFaultList()) {
 			if (fault instanceof AcscBranchFault) {
@@ -98,7 +99,7 @@ public class AcscOutFunc {
 			str.append(displayBusVoltage(bf));
 			str.append(displayBranchCurrent(bf));
 		} catch (Exception e) {
-			IpssLogger.logErr(e);
+			log.error(e.toString());
 		}
 		return str.toString();
 	}
@@ -121,7 +122,7 @@ public class AcscOutFunc {
 			str.append(displayBusVoltage(bf));
 			str.append(displayBranchCurrent(bf));
 		} catch (Exception e) {
-			IpssLogger.logErr(e);
+			log.error(e.toString());
 		}
 		return str.toString();
 	}
@@ -163,7 +164,7 @@ public class AcscOutFunc {
 			bf.getFaultResult().calBranchCurrent();
 			bf.getFaultResult().calContributingCurrent();
 		} catch (Exception e) {
-			IpssLogger.logErr(e);
+			log.error(e.toString());
 			return e.toString();
 		}
 
@@ -252,7 +253,7 @@ public class AcscOutFunc {
 		try {
 			bf.getFaultResult().calBranchCurrent();
 		} catch (Exception e) {
-			IpssLogger.logErr(e);
+			log.error(e.toString());
 			return e.toString();
 		}
 
@@ -280,7 +281,7 @@ public class AcscOutFunc {
 						str.append(Number2String.toStr("###0.###", cpu.b_1.abs()) + "   "
 								+ Number2String.toStr("#######0.#", camp.b_1.abs())	+ "\n");
 					} catch (Exception e) {
-						IpssLogger.logErr(e);
+						log.error(e.toString());
 						str.append(e.toString() + "\n");
 					}
 				}
@@ -326,7 +327,7 @@ public class AcscOutFunc {
 					str.append(Number2String.toStr("###0.###", cpu.c_2.abs()) + "   "
 							+ Number2String.toStr("#######0.#", camp.c_2.abs()) + "\n");
 				} catch (Exception e) {
-					IpssLogger.logErr(e);
+					log.error(e.toString());
 					str.append(e.toString() + "\n");
 				}
 			  }
@@ -369,7 +370,7 @@ public class AcscOutFunc {
 						str.append(Number2String.toStr("###0.###", cpu.c_2.abs()) + "   "
 								+ Number2String.toStr("#######0.#", camp.c_2.abs()) + "\n");
 					} catch (Exception e) {
-						IpssLogger.logErr(e);
+						log.error(e.toString());
 						str.append(e.toString() + "\n");
 					}
 			  }

@@ -23,8 +23,6 @@
  */
 package org.interpss.odm.mapper.impl.dist;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
-
 import org.ieee.odm.model.dist.DistModelParser;
 import org.ieee.odm.schema.DistributionNetXmlType;
 import org.ieee.odm.schema.NetworkCategoryEnumType;
@@ -36,8 +34,11 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 import com.interpss.simu.SimuObjectFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractODMDistParserMapper<T> extends AbstractODMNetDataMapper<T, SimuContext> {
+	private static final Logger log = LoggerFactory.getLogger(AbstractODMDistParserMapper.class);
 	public AbstractODMDistParserMapper() {
 	}
 	
@@ -81,7 +82,7 @@ public abstract class AbstractODMDistParserMapper<T> extends AbstractODMNetDataM
 					noError = false;
 			}
 		} else {
-			ipssLogger.severe("Error: wrong network type, " + parser.getStudyCase().getNetworkCategory());
+			log.error("Error: wrong network type, " + parser.getStudyCase().getNetworkCategory());
 			return false;
 		}
 		

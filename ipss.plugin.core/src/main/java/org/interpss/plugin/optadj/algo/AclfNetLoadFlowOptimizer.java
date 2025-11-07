@@ -14,6 +14,8 @@ import org.interpss.plugin.optadj.algo.util.AclfNetSensHelper;
 import org.interpss.plugin.optadj.optimizer.GenStateOptimizer;
 import org.interpss.plugin.optadj.optimizer.bean.GenConstrainData;
 import org.interpss.plugin.optadj.optimizer.bean.SectionConstrainData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfGen;
@@ -31,6 +33,8 @@ import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
  * 
  */
 public class AclfNetLoadFlowOptimizer {
+    private static final Logger log = LoggerFactory.getLogger(AclfNetLoadFlowOptimizer.class);
+    
 	// sensitivity threshold for the optimization
 	final static double SEN_THRESHOLD = 0.02;
 	
@@ -126,10 +130,10 @@ public class AclfNetLoadFlowOptimizer {
 	private void processGenSet(float[][] senMatrix, Set<AclfGen> genSet, String branchId) {
 		AclfNetwork net = dclfAlgo.getAclfNet();
 		AclfBranch branch = net.getBranch(branchId);
-		int branchNo = (int) (branch.getNumber() - 1);
+		int branchNo = branch.getSortNumber();
 		net.getAclfGenNameLookupTable().forEach((name, gen) -> {
 			if (gen.isActive()) {
-				int busNo = (int) (gen.getParentBus().getNumber() - 1);
+				int busNo = gen.getParentBus().getSortNumber();
 				float sen = senMatrix[busNo][branchNo];
 				if (Math.abs(sen) > SEN_THRESHOLD) {
 					genSet.add(gen);
@@ -145,7 +149,8 @@ public class AclfNetLoadFlowOptimizer {
 				AclfGen gen = genMap.get(i);
 				// TODO output the result
 				System.out.println(gen.getName() + "," + genOptimizer.getPoint()[i] + " mw");
-				dclfAlgo.getDclfAlgoBus(gen.getParentBus().getId()).getGen(gen.getName()).get()
+				dclfAlgo.getDclfAlgoBus(gen.getParentBus().getId())
+						.getGen(gen.getName()).get()
 						.setAdjust(genOptimizer.getPoint()[i] / baseMva);
 			}
 		}
@@ -156,12 +161,12 @@ public class AclfNetLoadFlowOptimizer {
 		AclfNetwork net = dclfAlgo.getAclfNet();
 		double baseMva = net.getBaseMva();
 		net.getBranchList().stream().filter(branch -> branch.isActive()).forEach(branch -> {
-			int branchNo = (int) (branch.getNumber() - 1);
+			int branchNo = branch.getSortNumber();
 			double[] genSenArray = new double[controlGenMap.size()];
 			DclfAlgoBranch dclfBranch = dclfAlgo.getDclfAlgoBranch(branch.getId());
 
 			controlGenMap.forEach((no, gen) -> {
-				int busNo = (int) (gen.getParentBus().getNumber() - 1);
+				int busNo = gen.getParentBus().getSortNumber();
 				float sen = senMatrix[busNo][branchNo];
 				genSenArray[no] = dclfBranch.getDclfFlow() > 0 ? sen : -sen;
 			});

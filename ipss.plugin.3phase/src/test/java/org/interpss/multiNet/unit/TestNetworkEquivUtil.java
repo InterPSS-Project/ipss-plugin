@@ -15,13 +15,13 @@ import org.interpss.display.AclfOutFunc;
 import org.interpss.multiNet.algo.SubNetworkProcessor;
 import org.interpss.multiNet.equivalent.NetworkEquivUtil;
 import org.interpss.multiNet.equivalent.NetworkEquivalent;
-import org.interpss.numeric.matrix.MatrixUtil;
+import org.interpss.numeric.matrix.FullMatrixUtil;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.dstab.BaseDStabNetwork;
@@ -60,7 +60,7 @@ public class TestNetworkEquivUtil {
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
 	    
 		
-		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
+		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(dsNet);
 		assertTrue(aclfAlgo.loadflow());
 		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 		
@@ -82,7 +82,7 @@ public class TestNetworkEquivUtil {
 		 Complex[][] equivZ1 = NetworkEquivUtil.calcInterfaceSeqZMatrix(subNet, SequenceCode.POSITIVE, 
 				 proc.getSubNet2BoundaryBusListTable().get(subNet.getId()));
 		 
-		 System.out.print(MatrixUtil.complex2DAry2String(equivZ1));
+		 System.out.print(FullMatrixUtil.complex2DAry2String(equivZ1));
 		 
 		 //TODO
 		 // test 3-seq network equivalent
@@ -92,11 +92,11 @@ public class TestNetworkEquivUtil {
 			ba = (0.0, 0.0),bb = (0.011455305443682258, 0.05359768655900525),bc = (0.0, 0.0)
 			ca = (0.0, 0.0),cb = (0.0, 0.0),cc = (0.021653935523081317, 0.1440042923871657)
 		 */
-		 System.out.print(MatrixUtil.complex3x32DAry2String( equiv3Seq.getMatrix3x3()));
+		 System.out.print(FullMatrixUtil.complex3x32DAry2String( equiv3Seq.getMatrix3x3()));
 		 
 		 
 		 NetworkEquivalent equiv3Ph = NetworkEquivUtil.cal3PhaseNetworkTheveninEquiv((DStabNetwork3Phase) subNet, proc.getSubNet2BoundaryBusListTable().get(subNet.getId()));
-		 System.out.print(MatrixUtil.complex3x32DAry2String( equiv3Ph.getMatrix3x3()));
+		 System.out.print(FullMatrixUtil.complex3x32DAry2String( equiv3Ph.getMatrix3x3()));
 		 
 		//TODO test 3-phase network equivalent by comparing it with 3-seq network equiv
 		 
@@ -146,7 +146,7 @@ public class TestNetworkEquivUtil {
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
 	    
 		
-		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
+		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(dsNet);
 		assertTrue(aclfAlgo.loadflow());
 		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 	}

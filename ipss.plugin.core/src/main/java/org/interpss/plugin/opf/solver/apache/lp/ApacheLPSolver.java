@@ -19,7 +19,6 @@ import org.apache.commons.math3.optimization.linear.LinearConstraint;
 import org.apache.commons.math3.optimization.linear.LinearObjectiveFunction;
 import org.apache.commons.math3.optimization.linear.Relationship;
 import org.apache.commons.math3.optimization.linear.SimplexSolver;
-import org.interpss.plugin.opf.common.OPFLogger;
 import org.interpss.plugin.opf.constraint.OpfConstraint;
 import org.interpss.plugin.opf.constraint.dc.ActivePowerEqnConstraintCollector;
 import org.interpss.plugin.opf.constraint.dc.BusMinAngleConstraintCollector;
@@ -27,11 +26,14 @@ import org.interpss.plugin.opf.constraint.dc.GenMwOutputConstraintCollector;
 import org.interpss.plugin.opf.constraint.dc.LineMwFlowConstraintCollector;
 import org.interpss.plugin.opf.objectiveFunction.ApacheLpsolveSolverObjectiveFunctionCollector;
 import org.interpss.plugin.opf.solver.AbstractOpfSolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.interpss.opf.OpfNetwork;
 
 public class ApacheLPSolver extends AbstractOpfSolver{
-
+    private static final Logger log = LoggerFactory.getLogger(ApacheLPSolver.class);
+    
 	private Collection<LinearConstraint> constraintCollection = null;
 	private LinearObjectiveFunction objFunc = null;
 	private SimplexSolver solver = null;
@@ -85,23 +87,23 @@ public class ApacheLPSolver extends AbstractOpfSolver{
 			isSolved = true;
 		} catch (MathIllegalStateException e) {
 			isSolved = false;
-			OPFLogger.getLogger().severe(e.toString());
+			log.error(e.toString());
 		}
 		return isSolved;
 	}	
 	
 	@Override
 	public void debug(String file) {
-		OPFLogger.getLogger().info("Running DCOPF debug mode for Apache LP solver...");
+		log.info("Running DCOPF debug mode for Apache LP solver...");
 		if(objFunc ==null){
 			this.build(cstContainer);
 		}
 		
 		try {
 			outputMatrix( file);
-			OPFLogger.getLogger().info("Output file for debug purpose has been saved to: "+file);
+			log.info("Output file for debug purpose has been saved to: "+file);
 		} catch (Exception e) {
-			OPFLogger.getLogger().severe(e.toString());
+			log.error(e.toString());
 		}	
 		
 	}
@@ -126,7 +128,7 @@ public class ApacheLPSolver extends AbstractOpfSolver{
 				Aiq.setRowVector(iqcnt, coe);
 				biq.setEntry(iqcnt++, con.getValue());
 			}else {
-				OPFLogger.getLogger().severe("Relationship laggerthan needs to be convertted to lessthan."+
+				log.error("Relationship laggerthan needs to be convertted to lessthan."+
 			"for the "+ iqcnt+" inequality constraint.");
 			}			
 		}	
@@ -149,7 +151,7 @@ public class ApacheLPSolver extends AbstractOpfSolver{
 			String linprog ="x = linprog(f,Aiq,biq,Aeq,beq,[],[]);";
 			out.append(linprog);
 		} catch (Exception e) {	
-			OPFLogger.getLogger().severe(e.toString());
+			log.error(e.toString());
 			e.printStackTrace();
 		}		  
 		out.close();		
@@ -219,9 +221,9 @@ public class ApacheLPSolver extends AbstractOpfSolver{
 				out.append(");\n ");	
 	        }
 	        out.close();
-	        OPFLogger.getLogger().info("Input data saved to: "+fileName);
+	        log.info("Input data saved to: "+fileName);
 		} catch (IOException e) {
-			OPFLogger.getLogger().severe(e.toString());
+			log.error(e.toString());
 		}
 		
 		
@@ -279,9 +281,9 @@ public class ApacheLPSolver extends AbstractOpfSolver{
 				out.append("));\n ");	
 	        }
 	        out.close();
-	        OPFLogger.getLogger().info("Hard-coded data saved to: "+fileName);
+	        log.info("Hard-coded data saved to: "+fileName);
 		} catch (IOException e) {
-			OPFLogger.getLogger().severe(e.toString());
+			log.error(e.toString());
 		}
 		
 		

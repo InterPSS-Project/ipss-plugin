@@ -5,3 +5,8 @@
 /.apt_generated/
 /.apt_generated_tests/
 /.classpath
+*.log
+.classpath
+.project
+/.settings
+/config/

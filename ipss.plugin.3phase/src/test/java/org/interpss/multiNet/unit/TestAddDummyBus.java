@@ -1,5 +1,7 @@
 package org.interpss.multiNet.unit;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
@@ -17,12 +19,11 @@ import org.interpss.multiNet.algo.SubNetworkProcessor;
 import org.interpss.numeric.NumericConstant;
 import org.interpss.numeric.util.PerformanceTimer;
 import org.interpss.odm.mapper.ODMDStabParserMapper;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -115,7 +116,7 @@ public class TestAddDummyBus {
   Bus9                              1.03239        2.00       0.0000    0.0000   BUS-9     
 	     */
 	    System.out.println("after adding the dummy buses");
-	    LoadflowAlgorithm aclfAlgo2 = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
+	    LoadflowAlgorithm aclfAlgo2 = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(dsNet);
 		assertTrue(aclfAlgo2.loadflow());
 		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 		assertTrue(Math.abs(bus7.getVoltageMag()-1.02581)<1.0E-4);
@@ -203,7 +204,7 @@ public class TestAddDummyBus {
   Bus9                              1.03239        2.00       0.0000    0.0000   BUS-9     
 	     */
 	    System.out.println("after adding the dummy buses");
-	    LoadflowAlgorithm aclfAlgo2 = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
+	    LoadflowAlgorithm aclfAlgo2 = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(dsNet);
 		assertTrue(aclfAlgo2.loadflow());
 		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 		assertTrue(Math.abs(bus7.getVoltageMag()-1.02581)<1.0E-4);
@@ -248,9 +249,9 @@ public class TestAddDummyBus {
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
 		
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 		
-		PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+		PerformanceTimer timer = new PerformanceTimer();
 		
 		
 		// multiNetDynamic Event handler
