@@ -1,7 +1,5 @@
 package org.interpss.multiNet.algo;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
-
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.NumericConstant;
 import org.interpss.numeric.datatype.ComplexFunc;
@@ -21,9 +19,11 @@ import com.interpss.dstab.algo.defaultImpl.DynamicEventProcessor;
 import com.interpss.dstab.datatype.DStabSimuTimeEvent;
 import com.interpss.dstab.devent.DynamicSimuEvent;
 import com.interpss.dstab.devent.DynamicSimuEventType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MultiNetDynamicEventProcessor extends DynamicEventProcessor {
-	
+    private static final Logger log = LoggerFactory.getLogger(MultiNetDynamicEventProcessor.class);
 
 	BaseDStabNetwork<?, ?> net = null;
 	protected AbstractMultiNetDStabSimuHelper simuHelper = null;
@@ -91,7 +91,7 @@ public class MultiNetDynamicEventProcessor extends DynamicEventProcessor {
 
 					
 					
-					ipssLogger.fine("Reset Ymatrix for event applying");
+					log.debug("Reset Ymatrix for event applying");
 
 					// apply those events which result in adding z to Y-matrix,
 					// such as applying fault Z
@@ -100,7 +100,7 @@ public class MultiNetDynamicEventProcessor extends DynamicEventProcessor {
 							try{
 								applyDynamicEventAfter(dEvent, t);
 							} catch (IpssNumericException e) {
-								ipssLogger.severe(e.toString());
+								log.error(e.toString());
 								return false;
 							}
 						}

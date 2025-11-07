@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
@@ -22,7 +21,6 @@ import org.interpss.util.FileUtil;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
@@ -46,7 +44,7 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 		//@Test
 		public void test_IEEE300_Dstab() throws InterpssException{
 			IpssCorePlugin.init();
-			IpssLogger.getLogger().setLevel(Level.OFF);
+			//IpssLogger.getLogger().setLevel(Level.OFF);
 			PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 					
@@ -125,7 +123,7 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 		//@Test
 		public void test_IEEE300_Dstab_compositeLoadModel() throws InterpssException{
 			IpssCorePlugin.init();
-			IpssLogger.getLogger().setLevel(Level.WARNING);
+			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 					
@@ -198,7 +196,7 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 			
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
 			
-			IpssLogger.getLogger().setLevel(Level.INFO);
+			//IpssLogger.getLogger().setLevel(Level.INFO);
 			
 			String faultBusId = "Bus7"; //3, 5, 12 182  157 7 167  135
 			
@@ -242,7 +240,7 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 		@Test
 		public void IEEE300_Dstab_compositeLoadModel_generate_results_() throws InterpssException{
 			IpssCorePlugin.init();
-			IpssLogger.getLogger().setLevel(Level.WARNING);
+			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
 					"testData/adpter/psse/v30/IEEE300/IEEE300Bus_modified_noHVDC_v2.raw",
@@ -355,7 +353,7 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 						dstabAlgo.setOutPutPerSteps(10);
 						//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
 						
-						IpssLogger.getLogger().setLevel(Level.OFF);
+						//IpssLogger.getLogger().setLevel(Level.OFF);
 						
 											
 						dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(faultBusId,dsNet,SimpleFaultCode.GROUND_3P,new Complex(0,0),null,ft,fd),"3phaseFault@"+faultBusId);

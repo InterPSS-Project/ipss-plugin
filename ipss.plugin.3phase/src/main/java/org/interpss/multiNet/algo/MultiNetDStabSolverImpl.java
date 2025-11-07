@@ -7,8 +7,6 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.util.NumericUtil;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
-import static com.interpss.common.util.IpssLogger.ipssLogger;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.acsc.fault.AcscBranchFault;
 import com.interpss.core.net.Branch;
@@ -33,8 +31,11 @@ import static com.interpss.dstab.funcImpl.DStabFunction.BuiltBusState;
 import static com.interpss.dstab.funcImpl.DStabFunction.BuiltMachineState;
 import static com.interpss.dstab.funcImpl.DStabFunction.BuiltScriptDynamicBusDeviceState;
 import com.interpss.dstab.mach.Machine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MultiNetDStabSolverImpl extends DStabSolverImpl {
+    private static final Logger log = LoggerFactory.getLogger(MultiNetDStabSolverImpl.class);
 	
 	protected AbstractMultiNetDStabSimuHelper multiNetSimuHelper = null;
 	protected List<BaseDStabNetwork> subNetList = null;
@@ -52,7 +53,7 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 		consoleMsg("Start multi-SubNetwork initialization ...");
 
 		if (!dstabAlgo.getNetwork().isLfConverged()) {
-			ipssLogger.severe("Error: Loadflow not converged yet!");
+			log.error("Error: Loadflow not converged yet!");
 			return false;
 		}
 		
@@ -60,7 +61,7 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 		for(BaseDStabNetwork<?, ?> dsNet: this.subNetList){
 			
 				if (!dsNet.initDStabNet()){
-					  ipssLogger.severe("Error: SubNetwork initialization error:"+dsNet.getId());
+					log.error("Error: SubNetwork initialization error:"+dsNet.getId());
 					  return false;
 				}
 			
@@ -295,7 +296,7 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 				  
 			
 			  if(i>0 && netSolConverged) {
-				  IpssLogger.getLogger().fine(getSimuTime()+","+"multi subNetwork solution in the nextStep() is converged, iteration #"+(i+1));
+				  log.info(getSimuTime()+","+"multi subNetwork solution in the nextStep() is converged, iteration #"+(i+1));
 				  break;
 			  }
 	
@@ -612,7 +613,7 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 			procOutputEvent(DStabSimuEvent.EndOfSimuStep, null);
 			return true;
 		} catch (InterpssException e) {
-			ipssLogger.severe(e.toString());
+			log.error(e.toString());
 			return false;
 		}
 	}

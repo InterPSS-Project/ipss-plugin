@@ -36,14 +36,12 @@ import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.msg.IPSSMsgHub;
-import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
-import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.funcImpl.zeroz.AclfNetZeroZBranchHelper;
-import com.interpss.core.net.BranchBusSide;
 import com.interpss.core.net.Bus;
 
 
@@ -72,7 +70,7 @@ public class ZeroZBranchFuncTest extends CorePluginTestSetup {
 		net.getBusList().forEach(bus -> {
 			if (bus.isConnect2ZeroZBranch()) {
 				System.out.println("\nBus: " + bus.getId() + " is connected to a zeroZ branch");
-				List<Bus> busList = bus.findZeroZPathBuses();
+				List<BaseAclfBus<?,?>> busList = bus.findZeroZPathBuses();
 				System.out.println(busList.size() + " zeroZ path buses");
 				for (Bus b : busList) {
 					System.out.println("Bus: " + b.getId());
@@ -125,7 +123,7 @@ public class ZeroZBranchFuncTest extends CorePluginTestSetup {
 
 		IpssAclfNet.addAclfBranch("Bus2", "Bus3", "Branch 1", net)
 				.setBranchCode(AclfBranchCode.LINE)
-				.setZ(new Complex(0.00000001, 0.000000000001), UnitType.PU);
+				.setZ(new Complex(0.0000000, 0.000000000001), UnitType.PU);
 	}	
 	
 }

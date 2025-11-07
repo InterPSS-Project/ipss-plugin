@@ -1,4 +1,4 @@
- /*
+/*
   * @(#)TextFileReader.java   
   *
   * Copyright (C) 2006-2011 www.interpss.com
@@ -24,7 +24,11 @@
 
 package org.interpss.util.reader;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
+import org.interpss.util.ITextFileProcessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.interpss.common.exp.InterpssException;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -33,10 +37,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.interpss.util.ITextFileProcessor;
-
-import com.interpss.common.exp.InterpssException;
 
 /**
  * A text file reader implementation. The file is processed line by line
@@ -48,6 +48,7 @@ import com.interpss.common.exp.InterpssException;
  *
  */
 public class TextFileReader {
+    private static final Logger log = LoggerFactory.getLogger(TextFileReader.class);
 	protected String filepath = null;
 
 	/**
@@ -93,12 +94,12 @@ public class TextFileReader {
 						procer.processLine(str);
 				} while (str != null);
 			} catch (InterpssException e)  {
-				ipssLogger.severe(e.toString());
+				log.error(e.toString());
 			} finally {
 				din.close();
 			}
 		} catch (Exception e) {
-			ipssLogger.severe(e.toString());
+			log.error(e.toString());
 		}
 	}
 	

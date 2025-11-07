@@ -1,6 +1,7 @@
 package org.interpss.threePhase.odm;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.JAXBElement;
 
@@ -33,7 +34,7 @@ import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.msg.IPSSMsgHub;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.net.Branch;
 import com.interpss.dstab.DStab3WBranch;
@@ -47,6 +48,7 @@ public class AbstractODM3PhaseDStabParserMapper<Tfrom>  extends
 		AbstractODMDStabParserMapper<Tfrom> {
 
 protected IPSSMsgHub msg = null;
+private static final Logger log = LoggerFactory.getLogger(AbstractODM3PhaseDStabParserMapper.class);
 
 	/**
 	 * constructor
@@ -63,7 +65,6 @@ protected IPSSMsgHub msg = null;
 	 */
 	@Override public boolean map2Model(Tfrom p, SimuContext simuCtx) {
 		boolean noError = true;
-
 		DStabModelParser parser = (DStabModelParser) p;
 		if (parser.getStudyCase().getNetworkCategory() == NetworkCategoryEnumType.TRANSMISSION
 				&& parser.getStudyCase().getAnalysisCategory() == AnalysisCategoryEnumType.TRANSIENT_STABILITY) {
@@ -89,7 +90,7 @@ protected IPSSMsgHub msg = null;
 						dstabNet, this.msg);
 				simuCtx.setDynSimuAlgorithm(dstabAlgo);
 
-				LoadflowAlgorithm lfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dstabNet);
+				LoadflowAlgorithm lfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(dstabNet);
 				dstabAlgo.setAclfAlgorithm(lfAlgo);
 
 				// map the bus info
@@ -145,8 +146,7 @@ protected IPSSMsgHub msg = null;
 						}
 					}
 					else {
-						ipssLogger.severe( "Error: only aclf<Branch>, acsc<Branch> and dstab<Branch> could be used for DStab study, \n"
-								+ "branch #"+branch.getId());
+						log.error("Error: only aclf<Branch>, acsc<Branch> and dstab<Branch> could be used for DStab study, \nbranch #"+branch.getId());
 						noError = false;
 					}
 				}
@@ -164,16 +164,14 @@ protected IPSSMsgHub msg = null;
 
 				AbstractODMAclfNetMapper.postAclfNetProcessing(dstabNet);
 			} catch (InterpssException e) {
-				ipssLogger.severe(e.toString());
-				e.printStackTrace();
+				log.error(e.toString(), e);
 				noError = false;
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				log.error("Exception in map2Model", e);
 			}
 		}
 		else {
-			ipssLogger.severe( "Error: wrong Transmission NetworkType and/or ApplicationType");
+			log.error("Error: wrong Transmission NetworkType and/or ApplicationType");
 			return false;
 		}
 

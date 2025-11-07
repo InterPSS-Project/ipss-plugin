@@ -6,8 +6,9 @@ import java.util.List;
 import org.apache.commons.math3.linear.OpenMapRealVector;
 import org.apache.commons.math3.optimization.linear.LinearConstraint;
 import org.apache.commons.math3.optimization.linear.Relationship;
-import org.interpss.plugin.opf.common.OPFLogger;
 import org.interpss.plugin.opf.constraint.OpfConstraint;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.interpss.opf.datatype.OpfConstraintType;
 
@@ -15,7 +16,8 @@ import cern.colt.list.DoubleArrayList;
 import cern.colt.list.IntArrayList;
 
 public class ApacheLpsolveSolverInputBuilder {
-
+    private static final Logger log = LoggerFactory.getLogger(ApacheLpsolveSolverInputBuilder.class);
+    
 	private List<OpfConstraint> cstContainer = null;	
 	private Collection<LinearConstraint> constCol = null;
 	private int numOfVar = 0;
@@ -71,7 +73,7 @@ public class ApacheLpsolveSolverInputBuilder {
 				}
 				constCol.add(con);
 			}catch (Exception e){
-				OPFLogger.getLogger().severe(e.toString()+ " at constraint: "+conIn.getDesc());
+				log.error(e.toString()+ " at constraint: "+conIn.getDesc());
 				//e.printStackTrace();
 			}		
 		}		

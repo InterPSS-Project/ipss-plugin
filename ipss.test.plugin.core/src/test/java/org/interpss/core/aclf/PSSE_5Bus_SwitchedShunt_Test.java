@@ -1,6 +1,7 @@
 package org.interpss.core.aclf;
 
-import java.util.logging.Level;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.ieee.odm.adapter.IODMAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
@@ -11,12 +12,9 @@ import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
-import com.interpss.common.util.IpssLogger;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adj.AclfAdjustControlMode;
@@ -34,10 +32,10 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 	
 	@Test
 	public void test_5Bus_SwitchedShunt_locked_Loadflow() throws Exception {
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 		AclfNetwork net = createTestCase();
 		
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		//algo.getLfAdjAlgo().setApplyAdjustAlgo(true); // Enable adjustment algorithm for switched shunt
 		algo.setMaxIterations(30);
 	  	algo.loadflow();
@@ -99,7 +97,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
   		assertTrue("Bus 4 should have switched shunt", bus4.isSwitchedShunt());
         // verify the swiched shunt output is 84.4 mvar
         assertEquals("Switched shunt Q at Bus 4", 84.4/100.0, 
-        		bus4.getSwitchedShunt().getQ(), 0.01);
+        		bus4.getFirstSwitchedShunt(true).getQ(), 0.01);
   
 
   		// The voltage may be different from the adjustable case but should still be reasonable
@@ -112,7 +110,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 	 */
 	@Test
 	public void test_5Bus_SwitchedShunt_discrete() throws Exception {
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 		AclfNetwork net = createTestCase();
 		
 
@@ -123,12 +121,12 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
   		assertTrue("Bus 4 should have switched shunt", bus4.isSwitchedShunt());
 
         //change the control mode to discrete
-        bus4.getSwitchedShunt().setControlMode(AclfAdjustControlMode.DISCRETE);
-        bus4.getSwitchedShunt().setDesiredControlRange(new LimitType(1.05, 0.95));
+        bus4.getFirstSwitchedShunt(true).setControlMode(AclfAdjustControlMode.DISCRETE);
+        bus4.getFirstSwitchedShunt(true).setDesiredControlRange(new LimitType(1.05, 0.95));
 
-        System.out.println(bus4.getSwitchedShunt().toString());
+        System.out.println(bus4.getFirstSwitchedShunt(true).toString());
 
-        LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+        LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		//algo.getLfAdjAlgo().setApplyAdjustAlgo(false); // Disable adjustment algorithm (locked shunt)
 		algo.setMaxIterations(30);
         algo.setTolerance(0.0001);
@@ -151,7 +149,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 
         //the PSS/E result is 47.2 MVAR, two banks of 23.6 MVAR each are switched on
         assertEquals("Switched shunt Q at Bus 4", 47.2/100.0, 
-        		bus4.getSwitchedShunt().getQ(), 0.01);
+        		bus4.getFirstSwitchedShunt(true).getQ(), 0.01);
 
         assertTrue("Bus 4 voltage should be within reasonable range", 
             bus4.getVoltageMag() > 0.95 && bus4.getVoltageMag() < 1.05);
@@ -165,7 +163,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 
     @Test
 	public void test_5Bus_SwitchedShunt_discrete_swictchedoff() throws Exception {
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 		AclfNetwork net = createTestCase();
 		
 
@@ -176,12 +174,12 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
   		assertTrue("Bus 4 should have switched shunt", bus4.isSwitchedShunt());
 
         //change the control mode to discrete
-        bus4.getSwitchedShunt().setControlMode(AclfAdjustControlMode.DISCRETE);
-        bus4.getSwitchedShunt().setDesiredControlRange(new LimitType(0.89, 0.85));
+        bus4.getFirstSwitchedShunt(true).setControlMode(AclfAdjustControlMode.DISCRETE);
+        bus4.getFirstSwitchedShunt(true).setDesiredControlRange(new LimitType(0.89, 0.85));
 
-        System.out.println(bus4.getSwitchedShunt().toString());
+        System.out.println(bus4.getFirstSwitchedShunt(true).toString());
 
-        LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+        LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		//algo.getLfAdjAlgo().setApplyAdjustAlgo(false); // Disable adjustment algorithm (locked shunt)
 		algo.setMaxIterations(30);
 	  	algo.loadflow();
@@ -192,7 +190,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
   		System.out.println(AclfOutFunc.loadFlowSummary(net));
 
         assertEquals("Switched shunt Q at Bus 4", 0/100.0, 
-        		bus4.getSwitchedShunt().getQ(), 0.01);
+        		bus4.getFirstSwitchedShunt(true).getQ(), 0.01);
 
         assertTrue("Bus 4 voltage should be within reasonable range", 
             bus4.getVoltageMag() > 0.845 && bus4.getVoltageMag() < 0.895);
@@ -202,7 +200,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 
     @Test
 	public void test_5Bus_SwitchedShunt_continuous_range() throws Exception {
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 		AclfNetwork net = createTestCase();
 		
 
@@ -213,17 +211,17 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
   		assertTrue("Bus 4 should have switched shunt", bus4.isSwitchedShunt());
 
         //change the control mode to discrete
-        bus4.getSwitchedShunt().setControlMode(AclfAdjustControlMode.CONTINUOUS);
-        bus4.getSwitchedShunt().setAdjControlType(AclfAdjustControlType.RANGE_CONTROL);
+        bus4.getFirstSwitchedShunt(true).setControlMode(AclfAdjustControlMode.CONTINUOUS);
+        bus4.getFirstSwitchedShunt(true).setAdjControlType(AclfAdjustControlType.RANGE_CONTROL);
 
         //TODO why the following setting is not working and I need to use setVSpecified?
-        bus4.getSwitchedShunt().setDesiredControlRange(new LimitType(1.03, 1.02));
+        bus4.getFirstSwitchedShunt(true).setDesiredControlRange(new LimitType(1.03, 1.02));
 
         //bus4.getSwitchedShunt().setVSpecified(1.02);
 
-        System.out.println(bus4.getSwitchedShunt().toString());
+        System.out.println(bus4.getFirstSwitchedShunt(true).toString());
 
-        LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+        LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		//algo.getLfAdjAlgo().setApplyAdjustAlgo(false); // Disable adjustment algorithm (locked shunt)
 		algo.setMaxIterations(30);
 	  	algo.loadflow();
@@ -244,7 +242,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 
      @Test
 	public void test_5Bus_SwitchedShunt_continuous_range_v35() throws Exception {
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 		AclfNetwork net = createTestCaseContinuousV35();
 		
 
@@ -254,20 +252,20 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
   		assertTrue("Bus 4 should exist", bus4 != null);
   		assertTrue("Bus 4 should have switched shunt", bus4.isSwitchedShunt());
 
-        System.out.println(bus4.getSwitchedShunt().toString());
+        System.out.println(bus4.getFirstSwitchedShunt(true).toString());
 
         //assert the control mode is continuous
         assertTrue("Bus 4 switched shunt control mode should be continuous",
-            bus4.getSwitchedShunt().getControlMode() == AclfAdjustControlMode.CONTINUOUS);
+            bus4.getFirstSwitchedShunt(true).getControlMode() == AclfAdjustControlMode.CONTINUOUS);
         
         //Check bus4.getSwitchedShunt().getDesiredControlRange is within new LimitType(1.03, 1.02);
         assertTrue("Bus 4 switched shunt desired control range should be within (1.03, 1.02)",
-            bus4.getSwitchedShunt().getDesiredControlRange().getMax() == 1.03 &&
-            bus4.getSwitchedShunt().getDesiredControlRange().getMin() == 1.02);
+            bus4.getFirstSwitchedShunt(true).getDesiredControlRange().getMax() == 1.03 &&
+            bus4.getFirstSwitchedShunt(true).getDesiredControlRange().getMin() == 1.02);
 
         //bus4.getSwitchedShunt().setVSpecified(1.02);
 
-        LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+        LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		//algo.getLfAdjAlgo().setApplyAdjustAlgo(false); // Disable adjustment algorithm (locked shunt)
 		algo.setMaxIterations(30);
 	  	algo.loadflow();
@@ -288,7 +286,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 
     @Test
 	public void test_5Bus_SwitchedShunt_continuous_point() throws Exception {
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 		AclfNetwork net = createTestCase();
 		
 
@@ -299,17 +297,17 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
   		assertTrue("Bus 4 should have switched shunt", bus4.isSwitchedShunt());
 
         //change the control mode to discrete
-        bus4.getSwitchedShunt().setControlMode(AclfAdjustControlMode.CONTINUOUS);
-        bus4.getSwitchedShunt().setAdjControlType(AclfAdjustControlType.POINT_CONTROL);
+        bus4.getFirstSwitchedShunt(true).setControlMode(AclfAdjustControlMode.CONTINUOUS);
+        bus4.getFirstSwitchedShunt(true).setAdjControlType(AclfAdjustControlType.POINT_CONTROL);
 
         //TODO why the following setting is not working and I need to use setVSpecified?
         //bus4.getSwitchedShunt().setDesiredControlRange(new LimitType(1.03, 1.02));
 
-        bus4.getSwitchedShunt().setVSpecified(1.02);
+        bus4.getFirstSwitchedShunt(true).setVSpecified(1.02);
 
-        System.out.println(bus4.getSwitchedShunt().toString());
+        System.out.println(bus4.getFirstSwitchedShunt(true).toString());
 
-        LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+        LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		//algo.getLfAdjAlgo().setApplyAdjustAlgo(false); // Disable adjustment algorithm (locked shunt)
 		algo.setMaxIterations(30);
 	  	algo.loadflow();
@@ -336,7 +334,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
      */
      @Test
 	public void test_5Bus_SwitchedShunt_continuous_point_v35() throws Exception {
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 		AclfNetwork net = createTestCaseContinuousV35();
 		
 
@@ -348,13 +346,13 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 
 
         //You need to set the range same as the  point control set point
-        bus4.getSwitchedShunt().setDesiredControlRange(new LimitType(1.02, 1.02));
+        bus4.getFirstSwitchedShunt(true).setDesiredControlRange(new LimitType(1.02, 1.02));
 
         //bus4.getSwitchedShunt().setVSpecified(1.02);
 
-        System.out.println(bus4.getSwitchedShunt().toString());
+        System.out.println(bus4.getFirstSwitchedShunt(true).toString());
 
-        LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+        LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		//algo.getLfAdjAlgo().setApplyAdjustAlgo(false); // Disable adjustment algorithm (locked shunt)
 		algo.setMaxIterations(30);
 	  	algo.loadflow();

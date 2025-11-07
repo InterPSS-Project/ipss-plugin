@@ -32,7 +32,7 @@ import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
@@ -50,7 +50,7 @@ public class IEEE14Bus_odm_Test extends CorePluginTestSetup {
   		//System.out.println(net.net2String());
 		assertTrue((net.getBusList().size() == 14 && net.getBranchList().size() == 20));
 
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 	  	
@@ -72,7 +72,7 @@ public class IEEE14Bus_odm_Test extends CorePluginTestSetup {
   		//System.out.println(net.net2String());
 		assertTrue((net.getBusList().size() == 14 && net.getBranchList().size() == 20));
 
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 	  	

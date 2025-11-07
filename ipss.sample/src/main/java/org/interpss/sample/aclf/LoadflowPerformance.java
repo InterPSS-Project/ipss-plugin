@@ -30,7 +30,7 @@ import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.util.PerformanceTimer;
 
 import com.interpss.common.util.IpssLogger;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -48,7 +48,7 @@ public class LoadflowPerformance {
 	  	timer.start();
 		AclfNetwork adjNet = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testData/UCTE_2000_WinterOffPeak.ieee")
+				.load("ipss-plugin/ipss.sample/testData/UCTE_2000_WinterOffPeak.ieee")
 				.getAclfNet();		  	
 	  	timer.logStd("Time for loading the case: ");
 
@@ -56,7 +56,7 @@ public class LoadflowPerformance {
 		 * time running a full NR loadflow
 		 */
 		timer.start();
-	  	LoadflowAlgorithm algoLF = CoreObjectFactory.createLoadflowAlgorithm(adjNet);
+	  	LoadflowAlgorithm algoLF = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(adjNet);
 	  	algoLF.setLfMethod(AclfMethodType.NR);
 	  	algoLF.loadflow();
 	  	timer.logStd("Time for running Loadflow: ");

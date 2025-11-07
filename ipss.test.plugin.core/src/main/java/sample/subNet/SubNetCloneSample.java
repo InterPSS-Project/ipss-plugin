@@ -7,7 +7,7 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.fadapter.IpssFileAdapter;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
@@ -29,7 +29,7 @@ public class SubNetCloneSample {
 	
 		//System.out.println(net.net2String());
 
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.NR);
 	  	algo.loadflow();
 	  	
@@ -48,9 +48,9 @@ public class SubNetCloneSample {
 		System.out.println("BusIdSet size: " + busIdSet.size());
   
 		// create a cloned subNet
-		AclfNetwork cloneNet = net.createSubNet(busIdSet, false /*equivHvdc*/);
+		AclfNetwork cloneNet = net.createSubNet(busIdSet, false, false /*equivHvdc*/);
 		
-		LoadflowAlgorithm algoClone = CoreObjectFactory.createLoadflowAlgorithm(cloneNet);
+		LoadflowAlgorithm algoClone = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(cloneNet);
 		algoClone.setLfMethod(AclfMethodType.NR);
 		algoClone.loadflow();
 	  	

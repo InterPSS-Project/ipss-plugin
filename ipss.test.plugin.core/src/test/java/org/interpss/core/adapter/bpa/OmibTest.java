@@ -8,7 +8,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.ODMObjectFactory;
@@ -22,7 +21,6 @@ import org.interpss.numeric.util.Number2String;
 import org.interpss.odm.mapper.ODMDStabParserMapper;
 import org.junit.Test;
 
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
@@ -105,7 +103,7 @@ public class OmibTest extends DStabTestSetupBase{
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(ssRecorder);
 		
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 		//dstabAlgo.setSimuOutputHandler(new TextSimuOutputHandler());
 		if (dstabAlgo.initialization()) {
 			System.out.println("Running DStab simulation ...");

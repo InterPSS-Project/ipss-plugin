@@ -5,8 +5,9 @@ import java.util.List;
 import org.apache.commons.math3.linear.OpenMapRealVector;
 import org.interpss.numeric.datatype.Point;
 import org.interpss.plugin.opf.OpfSolverFactory;
-import org.interpss.plugin.opf.common.OPFLogger;
 import org.interpss.plugin.opf.constraint.OpfConstraint;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.interpss.core.common.curve.NumericCurveModel;
 import com.interpss.core.common.curve.PieceWiseCurve;
@@ -18,7 +19,8 @@ import cern.colt.list.DoubleArrayList;
 import cern.colt.list.IntArrayList;
 
 public class ApacheLpsolveSolverObjectiveFunctionCollector extends BaseObjectiveFunctionCollector{
-	
+    private static final Logger log = LoggerFactory.getLogger(ApacheLpsolveSolverObjectiveFunctionCollector.class);
+    
 	public ApacheLpsolveSolverObjectiveFunctionCollector(OpfNetwork opfNet){
 		super(opfNet);
 	}
@@ -35,7 +37,7 @@ public class ApacheLpsolveSolverObjectiveFunctionCollector extends BaseObjective
 					NumericCurveModel incType = bus.getOpfGen().getIncCost().getCostModel();
 					if(!incType.equals(NumericCurveModel.PIECE_WISE)||
 							bus.getOpfGen().getIncCost().getPieceWiseCurve()==null){
-						OPFLogger.getLogger().severe("LP solver requires piecewise linear gen cost funtion for generator at bus: "
+						log.error("LP solver requires piecewise linear gen cost funtion for generator at bus: "
 								+bus.getNumber());						
 					}else{
 						//lpsolver.setColName(genIndex, "Pg" + (b.getSortNumber()+1));
@@ -83,7 +85,7 @@ public class ApacheLpsolveSolverObjectiveFunctionCollector extends BaseObjective
 				}			
 			}			
 		}catch(Exception e){
-			OPFLogger.getLogger().severe(e.toString());
+			log.error(e.toString());
 		}			
 		
 	}

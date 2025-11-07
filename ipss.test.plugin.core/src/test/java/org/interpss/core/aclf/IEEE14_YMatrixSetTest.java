@@ -24,6 +24,8 @@
 
 package org.interpss.core.aclf;
 
+import static org.junit.Assert.assertTrue;
+
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
@@ -31,7 +33,6 @@ import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.interpss.numeric.sparse.base.ISparseEquation.IndexType;
 import org.interpss.numeric.util.NumericUtil;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.core.aclf.AclfNetwork;

@@ -46,12 +46,11 @@ import org.interpss.util.FileUtil;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
-import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.acsc.BusGroundCode;
 import com.interpss.core.acsc.PhaseCode;
@@ -489,9 +488,9 @@ public class TestTnD_DynamicSwitching {
 			// 1.0),"LoadReduce40%@Bus18");
 //			dsNet.addDynamicEvent(createGeneratorTripEvent("Bus2", "1", proc.getSubNetworkByBusId("Bus2"), 1),"Bus1_Mach1_trip_1sec");
 
-			IpssLogger.getLogger().setLevel(Level.WARNING);
+			//IpssLogger.getLogger().setLevel(Level.WARNING);
 
-			PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+			PerformanceTimer timer = new PerformanceTimer();
 			timer.start();
 			// Must use this dynamic event process to modify the YMatrixABC
 //			dstabAlgo.setDynamicEventHandler(new DynamicEventProcessor3Phase());
@@ -840,9 +839,9 @@ public class TestTnD_DynamicSwitching {
 			// 1.0),"LoadReduce40%@Bus18");
 //			dsNet.addDynamicEvent(createGeneratorTripEvent("Bus2", "1", proc.getSubNetworkByBusId("Bus2"), 1),"Bus1_Mach1_trip_1sec");
 
-			IpssLogger.getLogger().setLevel(Level.WARNING);
+			//IpssLogger.getLogger().setLevel(Level.WARNING);
 
-			PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+			PerformanceTimer timer = new PerformanceTimer();
 			timer.start();
 			// Must use this dynamic event process to modify the YMatrixABC
 			dstabAlgo.setDynamicEventHandler(new DynamicEventProcessor3Phase());
