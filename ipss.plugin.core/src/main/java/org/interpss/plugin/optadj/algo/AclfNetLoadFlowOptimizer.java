@@ -86,8 +86,9 @@ public class AclfNetLoadFlowOptimizer {
 		
 		Map<Integer, AclfGen> controlGenMap = null;
 		if (result == null) {
-			controlGenMap = arrangeIndex(aclfNet.getAclfGenNameLookupTable().values().stream().filter(gen -> gen.isActive())
-					.collect(Collectors.toSet()));
+			controlGenMap = arrangeIndex(aclfNet.getAclfGenNameLookupTable().values().stream()
+											    .filter(gen -> gen.isActive())
+											    .collect(Collectors.toSet()));
 		} else {
 			controlGenMap = arrangeIndex(buildControlGenSet(gsfMatrix, result));
 		}
