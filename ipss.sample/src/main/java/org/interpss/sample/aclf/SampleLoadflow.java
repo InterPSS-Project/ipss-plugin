@@ -31,6 +31,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
@@ -109,7 +110,7 @@ public class SampleLoadflow {
   		// add the branch from Bus1 to Bus2
 	  	
 	  	// create the default loadflow algorithm
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 
 	  	// use the loadflow algorithm to perform loadflow calculation
 	  	algo.loadflow();

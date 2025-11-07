@@ -16,7 +16,7 @@ import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.Test;
 
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -54,9 +54,9 @@ public class PSSE_Savnw_v33_Test extends CorePluginTestSetup {
 		
 		//System.out.println(net.net2String());
 		
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	//algo.setLfMethod(AclfMethod.PQ);
-		algo.setNonDivergent(true);
+		algo.getNrMethodConfig().setNonDivergent(true);
 	  	algo.setLfMethod(AclfMethodType.NR);
 	  	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 	  	

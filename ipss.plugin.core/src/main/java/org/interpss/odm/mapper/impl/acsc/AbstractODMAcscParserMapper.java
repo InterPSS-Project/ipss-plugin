@@ -24,7 +24,6 @@
 
 package org.interpss.odm.mapper.impl.acsc;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
 import static com.interpss.core.funcImpl.AcscFunction.acscLineAptr;
 import static com.interpss.core.funcImpl.AcscFunction.acscXfrAptr;
 import static org.interpss.odm.mapper.base.ODMUnitHelper.toYUnit;
@@ -89,6 +88,8 @@ import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * abstract mapper implementation to map ODM ACSC parser object to InterPSS AcscNetwork object
@@ -98,6 +99,7 @@ import com.interpss.simu.SimuCtxType;
  * @param <Tfrom>
  */
 public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclfParserMapper<Tfrom> {
+    private static final Logger log = LoggerFactory.getLogger(AbstractODMAcscParserMapper.class);
 	/**
 	 * constructor
 	 * 
@@ -113,11 +115,11 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 	 * @return
 	 */
 	@Override public boolean map2Model(Tfrom p, SimuContext simuCtx) {
-		boolean noError = true;
+        boolean noError = true;
 
 		AcscModelParser parser = (AcscModelParser) p;
 		if (simuCtx.getNetType() != SimuCtxType.ACSC_NET) {
-			ipssLogger.severe("SimuNetwork type should be set to ACSC_FAULT_NET for mapping ODM to SimpleFaultNetwork");
+			log.error("SimuNetwork type should be set to ACSC_FAULT_NET for mapping ODM to SimpleFaultNetwork");
 			return false;
 		}
 		
@@ -181,7 +183,7 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 					}
 					
 					else {
-						ipssLogger.severe( "Error: only acsc<Branch> could be used for SC study");
+						log.error( "Error: only acsc<Branch> could be used for SC study");
 						noError = false;
 					}
 				}		
@@ -192,12 +194,12 @@ public abstract class AbstractODMAcscParserMapper<Tfrom> extends AbstractODMAclf
 				
 				AbstractODMAclfNetMapper.postAclfNetProcessing(acscFaultNet);
 			} catch (InterpssException e) {
-				ipssLogger.severe(e.toString());
+				log.error(e.toString());
 				noError = false;
 			}
 		} 
 		else {
-			ipssLogger.severe( "Error: wrong Transmission NetworkType and/or ApplicationType");
+			log.error("Error: wrong Transmission NetworkType and/or ApplicationType");
 			return false;
 		}
 

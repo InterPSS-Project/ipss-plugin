@@ -33,7 +33,7 @@ import com.interpss.algo.subAreaNet.SubAreaNetProcessor;
 import com.interpss.algo.subAreaNet.seqPos.CuttingBranchPos;
 import com.interpss.algo.subAreaNet.seqPos.SubNetworkPos;
 import com.interpss.algo.subAreaNet.seqPos.impl.SubNetworkPosProcessorImpl;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
@@ -146,7 +146,7 @@ public class IEEE14TestAclfSubNetBuild extends PiecewiseAlgoTestSetup {
 		AclfNetwork net = IEEE14TestSubAreaSearch.getTestNet();
 		net.setId("Parenet Net");
 		
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
   		assertTrue(net.isLfConverged());
   		//System.out.println(net.net2String());

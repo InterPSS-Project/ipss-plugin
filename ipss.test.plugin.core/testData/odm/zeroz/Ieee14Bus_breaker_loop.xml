@@ -256,9 +256,9 @@
             <aclfLine circuitId="1" id="Bus1_to_Bus15_cirId_1" offLine="false" zoneNumber="1" areaNumber="1">
                 <fromBus idRef="Bus1"/>
                 <toBus idRef="Bus15"/>
-                <z unit="PU" im="0.00000001" re="0.00000001"/>
+                <z unit="PU" im="0.00000001" re="0.0000000"/>
                 <ratingLimit/>
-                <totalShuntY unit="PU" im="0.00000001" re="0.00000001"/>
+                <totalShuntY unit="PU" im="0.00000001" re="0.0000000"/>
                 <lineInfo><type>Breaker</type></lineInfo>
             </aclfLine>
             <aclfLine circuitId="1" id="Bus15_to_Bus2_cirId_1" offLine="false" zoneNumber="1" areaNumber="1">
@@ -274,9 +274,9 @@
             <aclfLine circuitId="1" id="Bus1_to_Bus16_cirId_1" offLine="false" zoneNumber="1" areaNumber="1">
                 <fromBus idRef="Bus1"/>
                 <toBus idRef="Bus16"/>
-                <z unit="PU" im="0.00000001" re="0.00000001"/>
+                <z unit="PU" im="0.00000001" re="0.0000000"/>
                 <ratingLimit/>
-                <totalShuntY unit="PU" im="0.00000001" re="0.00000001"/>
+                <totalShuntY unit="PU" im="0.00000001" re="0.0000000"/>
                 <lineInfo><type>Breaker</type></lineInfo>
             </aclfLine>
             <aclfLine circuitId="1" id="Bus16_to_Bus5_cirId_1" offLine="false" zoneNumber="1" areaNumber="1">
@@ -417,7 +417,7 @@
             <aclfLine circuitId="1" id="Bus73_to_Bus7_cirId_1" offLine="false" zoneNumber="1" areaNumber="1">
                 <fromBus idRef="Bus73"/>
                 <toBus idRef="Bus7"/>
-                <z unit="PU" im="0.00000001" re="0.00000001"/>
+                <z unit="PU" im="0.00000001" re="0.0000000"/>
                 <ratingLimit/>
                 <lineInfo><type>Breaker</type></lineInfo>
             </aclfLine>
@@ -425,7 +425,7 @@
             <aclfLine circuitId="1" id="Bus72_to_Bus7_cirId_1" offLine="false" zoneNumber="1" areaNumber="1">
                 <fromBus idRef="Bus72"/>
                 <toBus idRef="Bus7"/>
-                <z unit="PU" im="0.00000001" re="0.00000001"/>
+                <z unit="PU" im="0.00000001" re="0.0000000"/>
                 <ratingLimit/>
                 <lineInfo><type>Breaker</type></lineInfo>
             </aclfLine>
@@ -433,21 +433,21 @@
             <aclfLine circuitId="1" id="Bus71_to_Bus7_cirId_1" offLine="false" zoneNumber="1" areaNumber="1">
                 <fromBus idRef="Bus71"/>
                 <toBus idRef="Bus7"/>
-                <z unit="PU" im="0.00000001" re="0.00000001"/>
+                <z unit="PU" im="0.00000001" re="0.0000000"/>
                 <ratingLimit/>
                 <lineInfo><type>Breaker</type></lineInfo>
             </aclfLine>
             <aclfLine circuitId="1" id="Bus71_to_Bus74_cirId_1" offLine="false" zoneNumber="1" areaNumber="1">
                 <fromBus idRef="Bus71"/>
                 <toBus idRef="Bus74"/>
-                <z unit="PU" im="0.00000001" re="0.00000001"/>
+                <z unit="PU" im="0.00000001" re="0.0000000"/>
                 <ratingLimit/>
                 <lineInfo><type>Breaker</type></lineInfo>
             </aclfLine>
             <aclfLine circuitId="1" id="Bus72_to_Bus74_cirId_1" offLine="false" zoneNumber="1" areaNumber="1">
                 <fromBus idRef="Bus72"/>
                 <toBus idRef="Bus74"/>
-                <z unit="PU" im="0.00000001" re="0.00000001"/>
+                <z unit="PU" im="0.00000001" re="0.0000000"/>
                 <ratingLimit/>
                 <lineInfo><type>Breaker</type></lineInfo>
             </aclfLine>
@@ -471,7 +471,7 @@
             <aclfLine circuitId="1" id="Bus17_to_Bus14_cirId_1" offLine="false" zoneNumber="1" areaNumber="1">
                 <fromBus idRef="Bus17"/>
                 <toBus idRef="Bus14"/>
-                <z unit="PU" im="0.00000001" re="0.00000001"/>
+                <z unit="PU" im="0.00000001" re="0.0000000"/>
                 <ratingLimit/>
                 <lineInfo><type>Breaker</type></lineInfo>
             </aclfLine>
@@ -500,14 +500,14 @@
             <aclfLine circuitId="1" id="Bus18_to_Bus14_cirId_1" offLine="false" zoneNumber="1" areaNumber="1">
                 <fromBus idRef="Bus18"/>
                 <toBus idRef="Bus14"/>
-                <z unit="PU" im="0.00000001" re="0.00000001"/>
+                <z unit="PU" im="0.00000001" re="0.0000000"/>
                 <ratingLimit/>
                 <lineInfo><type>Breaker</type></lineInfo>
             </aclfLine>
             <aclfLine circuitId="1" id="Bus14_to_Bus14_1_cirId_1" offLine="false" zoneNumber="1" areaNumber="1">
                 <fromBus idRef="Bus14"/>
                 <toBus idRef="Bus14_1"/>
-                <z unit="PU" im="0.00000001" re="0.00000001"/>
+                <z unit="PU" im="0.00000001" re="0.0000000"/>
                 <ratingLimit/>
                 <lineInfo><type>Breaker</type></lineInfo>
             </aclfLine>

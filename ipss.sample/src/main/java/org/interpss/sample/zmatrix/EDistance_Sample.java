@@ -40,6 +40,7 @@ import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.common.ReferenceBusException;
+import com.interpss.core.sparse.impl.csj.CSJSparseEqnComplexImpl;
 import com.interpss.simu.util.sample.SampleTestingCases;
 
 import edu.emory.mathcs.csparsej.tdcomplex.DZcs_common.DZcsa;
@@ -91,7 +92,7 @@ public class EDistance_Sample {
 		AclfNetwork net = getSampleNet();
 		//System.out.println(net.net2String());
 		
-		ISparseEqnComplex eqn = net.formYMatrix();
+		CSJSparseEqnComplexImpl eqn = (CSJSparseEqnComplexImpl)net.formYMatrix();
 		
 		int j = net.getBus("Bus2").getSortNumber();
 		int i = net.getBus("Bus14").getSortNumber();
@@ -146,7 +147,7 @@ public class EDistance_Sample {
 
 	
 	public static AclfNetwork getSampleNet() throws InterpssException {
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/ieee14.ieee")
+		AclfNetwork net = IpssAdapter.importAclfNet("ipss-plugin/ipss.sample/testData/ieee14.ieee")
 				.setFormat(IpssAdapter.FileFormat.IEEECommonFormat)
 				.load()
 				.getImportedObj();		
