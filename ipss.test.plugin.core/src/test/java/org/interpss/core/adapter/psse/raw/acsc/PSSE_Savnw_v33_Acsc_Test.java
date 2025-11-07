@@ -25,8 +25,8 @@ import org.interpss.odm.mapper.ODMAcscParserMapper;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.AcscBus;
 import com.interpss.core.acsc.AcscNetwork;
@@ -61,7 +61,7 @@ public class PSSE_Savnw_v33_Acsc_Test extends CorePluginTestSetup {
 		
 		//System.out.println(net.net2String());
 		
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.PQ);
 	  	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 	  	algo.loadflow();
@@ -192,7 +192,7 @@ Contributing Gen:
 		
 		//System.out.println(net.net2String());
 		
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.PQ);
 	  	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 	  	algo.loadflow();
@@ -331,7 +331,7 @@ Contributing Gen:
 		try {
 		    Files.write(Paths.get(dyrFileName), sb.toString().getBytes());
 		    
-		    IpssLogger.getLogger().info("The zone 1/2/3 protection data is saved to :"+ dyrFileName);
+		    //IpssLogger.getLogger().info("The zone 1/2/3 protection data is saved to :"+ dyrFileName);
 		    System.out.println("The zone 1/2/3 protection data is saved to :"+ dyrFileName);
 		
 		} catch (IOException e) {
@@ -397,7 +397,7 @@ Contributing Gen:
 			relayBranch = net.getBranch(relayRemoteBusId,relayBusId,circuitID);
 			
 			if(relayBranch==null){
-				IpssLogger.getLogger().severe("No line is found for the input bus numbers:"+relayBusNum+","+relayRemoteBusNum);
+				//IpssLogger.getLogger().severe("No line is found for the input bus numbers:"+relayBusNum+","+relayRemoteBusNum);
 			    return null;
 			}
 			else
@@ -531,7 +531,7 @@ Contributing Gen:
 				if(relayBranch ==null){
 					relayBranch = net.getBranch(relayRemoteBusId,relayBusId,circuitID);
 					if(relayBranch==null){
-						IpssLogger.getLogger().severe("No line is found for the input bus numbers:"+relayBusNum+","+relayRemoteBusNum);
+						//IpssLogger.getLogger().severe("No line is found for the input bus numbers:"+relayBusNum+","+relayRemoteBusNum);
 					    return null;
 					}
 					else

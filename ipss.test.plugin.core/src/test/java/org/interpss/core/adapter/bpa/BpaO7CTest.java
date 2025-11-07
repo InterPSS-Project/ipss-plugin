@@ -22,13 +22,13 @@ import org.interpss.odm.mapper.ODMDStabParserMapper;
 import org.junit.Test;
 
 import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.core.net.Bus;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabObjectFactory;
@@ -60,7 +60,7 @@ public class BpaO7CTest extends DStabTestSetupBase {
 		assertTrue(net.getBranchList().size()==707);
 		assertTrue(net.getBusList().size()==536);
 		
-		LoadflowAlgorithm  algo=CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm  algo=LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		net.accept(algo);
 		System.out.println(AclfOutFunc.loadFlowSummary(net));
 		
@@ -95,7 +95,7 @@ public class BpaO7CTest extends DStabTestSetupBase {
 		//assertTrue(net.getBranchList().size()==215);
 		assertTrue(net.getBusList().size()==141);
 		
-		LoadflowAlgorithm  algo=CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm  algo=LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		assertTrue(net.accept(algo));
 
 		//get the genResult
@@ -146,7 +146,7 @@ public class BpaO7CTest extends DStabTestSetupBase {
 		
 		// run load flow first before initialization 
 		//LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
-		LoadflowAlgorithm  algo=CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm  algo=LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
 		assertTrue(net.isLfConverged());
 		//get the genResult
@@ -205,7 +205,7 @@ public class BpaO7CTest extends DStabTestSetupBase {
 
 			BaseDStabNetwork net = simuCtx.getDStabilityNet();
 
-			assertTrue(net.checkData(CoreObjectFactory.createDefultDataCheckConfiguration()));
+			assertTrue(net.checkData(CoreObjectFactory.createDefaultDataCheckConfiguration()));
 			assertTrue(net.getBranchList().size()==308);
 			assertTrue(net.getBusList().size()==141);
 			 
@@ -322,7 +322,7 @@ public class BpaO7CTest extends DStabTestSetupBase {
 			}
 			
 			 AclfNetwork net=simuCtx.getAclfNet();
-			 assertTrue(net.checkData(CoreObjectFactory.createDefultDataCheckConfiguration()));
+			 assertTrue(net.checkData(CoreObjectFactory.createDefaultDataCheckConfiguration()));
 			 assertTrue(net.getBranchList().size()==308);
 			 assertTrue(net.getBusList().size()==141);
 			 //System.out.println(net.net2String());
@@ -337,7 +337,7 @@ public class BpaO7CTest extends DStabTestSetupBase {
 				 * Run Loadflow
 				 */
 			
-				LoadflowAlgorithm aclfAlgo =CoreObjectFactory.createLoadflowAlgorithm(net);
+				LoadflowAlgorithm aclfAlgo =LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 				aclfAlgo.loadflow();
 				System.out.println(AclfOutFunc.loadFlowSummary(net));
 		}

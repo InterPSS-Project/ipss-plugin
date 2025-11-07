@@ -1,7 +1,5 @@
 package org.interpss.multiNet.algo;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
-
 import java.util.List;
 
 import org.apache.commons.math3.complex.Complex;
@@ -27,8 +25,12 @@ import com.interpss.dstab.devent.LoadChangeEvent;
 import com.interpss.dstab.device.DynamicBusDevice;
 import com.interpss.dstab.dynLoad.DynLoadModel;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class MultiNet3Ph3SeqDynEventProcessor extends
 		MultiNetDynamicEventProcessor {
+    private static final Logger log = LoggerFactory.getLogger(MultiNet3Ph3SeqDynEventProcessor.class);
    
 	private List<String> threePhaseSubNetIdList =null;
 	public MultiNet3Ph3SeqDynEventProcessor(
@@ -102,7 +104,7 @@ public class MultiNet3Ph3SeqDynEventProcessor extends
 					         }
 					}
 					        
-					ipssLogger.fine("Reset Ymatrix for event applying");
+					log.debug("Reset Ymatrix for event applying");
 
 					// apply those events which result in adding z to Y-matrix,
 					// such as applying fault Z
@@ -111,7 +113,7 @@ public class MultiNet3Ph3SeqDynEventProcessor extends
 							try{
 								applyDynamicEventAfter(dEvent, t);
 							} catch (IpssNumericException e) {
-								ipssLogger.severe(e.toString());
+								log.error(e.toString());
 								return false;
 							}
 						}
@@ -292,7 +294,7 @@ public class MultiNet3Ph3SeqDynEventProcessor extends
 								   			 double va = initVoltABC.a_0.abs();
 								   			 double vb = initVoltABC.b_1.abs();
 								   			 double vc = initVoltABC.c_2.abs();
-								   			 
+							   			 
 								   			 Complex ya = bus.get3PhaseNetLoadResults().a_0.conjugate().divide(va*va);
 								   			 Complex yb = bus.get3PhaseNetLoadResults().b_1.conjugate().divide(vb*vb);
 								   			 Complex yc = bus.get3PhaseNetLoadResults().c_2.conjugate().divide(vc*vc);

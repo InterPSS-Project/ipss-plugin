@@ -9,9 +9,10 @@ import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.interpss.common.msg.IPSSMsgHub;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.algo.sc.ScBusModelType;
 import com.interpss.core.net.Bus;
@@ -24,108 +25,109 @@ import com.interpss.dstab.common.DStabSimuException;
 
 public class DStab3SeqSolverImpl extends DStabSolverImpl {
 
-	private BaseDStabNetwork<?,?> net = null;
+    private static final Logger log = LoggerFactory.getLogger(DStab3SeqSolverImpl.class);
+    private BaseDStabNetwork<?,?> net = null;
 
-	private double negZeroSeqCurrTolerance = 1.0E-3;
+    private double negZeroSeqCurrTolerance = 1.0E-3;
 
-	public DStab3SeqSolverImpl(DynamicSimuAlgorithm algo, IPSSMsgHub msg) {
-		super(algo, msg);
-		this.net = dstabAlgo.getNetwork();
-	}
+    public DStab3SeqSolverImpl(DynamicSimuAlgorithm algo, IPSSMsgHub msg) {
+        super(algo, msg);
+        this.net = dstabAlgo.getNetwork();
+    }
 
-	@Override public boolean initialization() {
-		boolean flag = super.initialization();
+    @Override public boolean initialization() {
+        boolean flag = super.initialization();
 
-		// check three-sequence data
-		if(this.net.isPositiveSeqDataOnly()){
-			IpssLogger.getLogger().severe("Three-seq data is required, but the network model has only positive sequence data!");
-			return false;
-		}
-		//build the negative and zero sequence Y matrix
-		this.net.formScYMatrix(SequenceCode.NEGATIVE, ScBusModelType.DSTAB_SIMU, true);
+        // check three-sequence data
+        if(this.net.isPositiveSeqDataOnly()){
+            log.error("Three-seq data is required, but the network model has only positive sequence data!");
+            return false;
+        }
+        //build the negative and zero sequence Y matrix
+        this.net.formScYMatrix(SequenceCode.NEGATIVE, ScBusModelType.DSTAB_SIMU, true);
 
-		this.net.formScYMatrix(SequenceCode.ZERO, ScBusModelType.DSTAB_SIMU, true);
-
-
-		return flag;
-
-	}
-
-	@Override
-	public boolean networkSolutionStep() throws DStabSimuException{
-		boolean netSolConverged = true;
-		 //maxIterationTimes =1;
-		 for(int i=0;i<maxIterationTimes;i++){
-
-			 netSolConverged = true;
+        this.net.formScYMatrix(SequenceCode.ZERO, ScBusModelType.DSTAB_SIMU, true);
 
 
-			// solve net equation
-			 boolean netSolvFlag = false;
-			// solve net equation
+        return flag;
 
-			if ((dstabAlgo.getNetwork() instanceof DStabNetwork3Phase)) {
-				netSolvFlag = ((DStabNetwork3Phase)dstabAlgo.getNetwork()).solvePosSeqNetEqn();
-			} else {
-				netSolvFlag = dstabAlgo.getNetwork().solveNetEqn();
-			}
+    }
 
-			if(!netSolvFlag) {
-				throw new DStabSimuException("Exception in dstabNet.solveNetEqn()");
-			}
+    @Override
+    public boolean networkSolutionStep() throws DStabSimuException{
+        boolean netSolConverged = true;
+         //maxIterationTimes =1;
+         for(int i=0;i<maxIterationTimes;i++){
 
-			for ( Bus busi : dstabAlgo.getNetwork().getBusList() ) {
-				BaseDStabBus bus = (BaseDStabBus)busi;
-				if(bus.isActive()){
-					if(i>=1){
-						if(!NumericUtil.equals(bus.getVoltage(),voltageRecTable.get(bus.getId()),this.converge_tol)) {
-							netSolConverged =false;
-						}
-
-					}
-					voltageRecTable.put(bus.getId(), bus.getVoltage());
-					bus.getThreeSeqVoltage().b_1 = bus.getVoltage();
-				}
-			}
-
-			// check whether the network solution is converged?
-			if(i>=1 && netSolConverged) {
-				IpssLogger.getLogger().fine("SimuTime: "+dstabAlgo.getSimuTime()+"\n Network solution converges with "+(i+1)+" iterations");
-				break;
-			}
-
-		 } // END OF for maxIterationTimes loop
-		 return netSolConverged;
-	}
+             netSolConverged = true;
 
 
-	@Override public void nextStep(double time, double dt, DynamicSimuMethod method)  throws DStabSimuException {
+            // solve net equation
+             boolean netSolvFlag = false;
+            // solve net equation
 
-		super.nextStep(time, dt, method);
+            if ((dstabAlgo.getNetwork() instanceof DStabNetwork3Phase)) {
+                netSolvFlag = ((DStabNetwork3Phase)dstabAlgo.getNetwork()).solvePosSeqNetEqn();
+            } else {
+                netSolvFlag = dstabAlgo.getNetwork().solveNetEqn();
+            }
 
-	   //////////////////////////////////// The following is for the negative and zero sequences /////////////////
+            if(!netSolvFlag) {
+                throw new DStabSimuException("Exception in dstabNet.solveNetEqn()");
+            }
 
-		//solve the negative- and zero-sequence networks
-		Hashtable<String, Complex3x1> threeSeqCurInjTable = this.net.getCustom3SeqBusCurrInjHashtable();
+            for ( Bus busi : dstabAlgo.getNetwork().getBusList() ) {
+                BaseDStabBus bus = (BaseDStabBus)busi;
+                if(bus.isActive()){
+                    if(i>=1){
+                        if(!NumericUtil.equals(bus.getVoltage(),voltageRecTable.get(bus.getId()),this.converge_tol)) {
+                            netSolConverged =false;
+                        }
+
+                    }
+                    voltageRecTable.put(bus.getId(), bus.getVoltage());
+                    bus.getThreeSeqVoltage().b_1 = bus.getVoltage();
+                }
+            }
+
+            // check whether the network solution is converged?
+            if(i>=1 && netSolConverged) {
+                log.debug("SimuTime: "+dstabAlgo.getSimuTime()+"\n Network solution converges with "+(i+1)+" iterations");
+                break;
+            }
+
+         } // END OF for maxIterationTimes loop
+         return netSolConverged;
+    }
+
+
+    @Override public void nextStep(double time, double dt, DynamicSimuMethod method)  throws DStabSimuException {
+
+        super.nextStep(time, dt, method);
+
+       //////////////////////////////////// The following is for the negative and zero sequences /////////////////
+
+        //solve the negative- and zero-sequence networks
+        Hashtable<String, Complex3x1> threeSeqCurInjTable = this.net.getCustom3SeqBusCurrInjHashtable();
 
 
 
-		Hashtable<String, Complex> negCurTable =  new Hashtable<>();
+        Hashtable<String, Complex> negCurTable =  new Hashtable<>();
 
-	    Hashtable<String, Complex> zeroCurTable = new Hashtable<>();
+        Hashtable<String, Complex> zeroCurTable = new Hashtable<>();
 
-	    if(threeSeqCurInjTable!=null){
-	    	 negCurTable =   getSeqCurInjTable(threeSeqCurInjTable, SequenceCode.NEGATIVE);
-	    	 zeroCurTable =  getSeqCurInjTable(threeSeqCurInjTable, SequenceCode.ZERO);
+        if(threeSeqCurInjTable!=null){
+             negCurTable =   getSeqCurInjTable(threeSeqCurInjTable, SequenceCode.NEGATIVE);
+             zeroCurTable =  getSeqCurInjTable(threeSeqCurInjTable, SequenceCode.ZERO);
 
-	    }
+        }
 
-	  //TODO add the internal unbalanced bus fault effects to the negCurTable and  zeroCurTable
-	    addInternalFaultCurrentToCurTable( time,negCurTable,zeroCurTable);
+      //TODO add the internal unbalanced bus fault effects to the negCurTable and  zeroCurTable
+        addInternalFaultCurrentToCurTable( time,negCurTable,zeroCurTable);
 
-	   //solve sequence networks and save bus voltages
+       //solve sequence networks and save bus voltages
 
-	   // negative sequence
+       // negative sequence
        if(this.getMaxCurMag(negCurTable)>this.negZeroSeqCurrTolerance){
   		   Hashtable<String,Complex> negVoltTable = this.solveSeqNetwork(net,SequenceCode.NEGATIVE, negCurTable);
 
@@ -140,7 +142,7 @@ public class DStab3SeqSolverImpl extends DStabSolverImpl {
 	     Hashtable<String,Complex> zeroVoltTable = this.solveSeqNetwork(net,SequenceCode.ZERO, zeroCurTable);
 
 	     if(zeroVoltTable == null) {
-			System.out.println("zeroVoltTable == null ");
+			log.warn("zeroVoltTable == null ");
 		}
 
 		    for(Entry<String,Complex> e: zeroVoltTable.entrySet()){
@@ -182,8 +184,7 @@ public class DStab3SeqSolverImpl extends DStabSolverImpl {
 
 
 				} catch (IpssNumericException e1) {
-
-					e1.printStackTrace();
+					log.error("Error solving positive sequence network", e1);
 					return null;
 				}
 			   for(BaseDStabBus bus:subnet.getBusList()){
@@ -200,8 +201,7 @@ public class DStab3SeqSolverImpl extends DStabSolverImpl {
 				   try {
 						negSeqYMatrix.factorization(1.0E-8);
 					} catch (IpssNumericException e2) {
-						// TODO Auto-generated catch block
-						e2.printStackTrace();
+						log.error("Error factorizing negative sequence Y matrix", e2);
 					}
 			   }
 
@@ -219,8 +219,7 @@ public class DStab3SeqSolverImpl extends DStabSolverImpl {
 				   negSeqYMatrix.solveEqn();
 
 			   } catch (IpssNumericException e1) {
-
-					e1.printStackTrace();
+					log.error("Error solving negative sequence network", e1);
 					return null;
 			   }
 
@@ -237,8 +236,7 @@ public class DStab3SeqSolverImpl extends DStabSolverImpl {
 				   try {
 					     zeroSeqYMatrix.factorization(1.0E-8);
 						} catch (IpssNumericException e2) {
-							// TODO Auto-generated catch block
-							e2.printStackTrace();
+							log.error("Error factorizing zero sequence Y matrix", e2);
 					}
 			   }
 			   zeroSeqYMatrix.setB2Zero();
@@ -251,8 +249,7 @@ public class DStab3SeqSolverImpl extends DStabSolverImpl {
 				   zeroSeqYMatrix.solveEqn();
 
 			   } catch (IpssNumericException e1) {
-
-					e1.printStackTrace();
+					log.error("Error solving zero sequence network", e1);
 					return null;
 			   }
 

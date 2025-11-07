@@ -27,7 +27,6 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.util.FileUtil;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 import com.interpss.dc.DcBranch;
@@ -35,6 +34,8 @@ import com.interpss.dc.DcBusCode;
 import com.interpss.dc.DcNetwork;
 import com.interpss.dc.common.IpssDcSysException;
 import com.interpss.dc.pv.PVDcBus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Output DcSytem analysis results
@@ -43,6 +44,7 @@ import com.interpss.dc.pv.PVDcBus;
  *
  */
 public class DcSysResultOutput {
+    private static final Logger log = LoggerFactory.getLogger(DcSysResultOutput.class);
 	private StringBuffer buffer = null;
 	private String filename = null;
 	
@@ -88,7 +90,7 @@ public class DcSysResultOutput {
 							bus.getInverter().getPac(UnitType.Watt),
 							bus.getInverter().getQac(UnitType.Var));
 			} catch( IpssDcSysException e) {
-				IpssLogger.getLogger().severe(e.toString());
+                log.error(e.toString());
 				str += e.toString();
 			}
 			

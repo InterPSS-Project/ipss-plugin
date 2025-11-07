@@ -3,13 +3,14 @@ package org.interpss.multiNet.algo;
 import java.util.List;
 
 import org.apache.commons.math3.complex.Complex;
+import org.interpss.multiNet.algo.powerflow.TDMultiNetPowerflowAlgorithm;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
-import static com.interpss.common.util.IpssLogger.ipssLogger;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 import com.interpss.dstab.BaseDStabBus;
@@ -25,6 +26,7 @@ import com.interpss.dstab.device.DynamicBusDevice;
 import com.interpss.dstab.device.DynamicDevice;
 
 public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
+	private static final Logger log = LoggerFactory.getLogger(MultiNet3Ph3SeqDStabSolverImpl.class);
 	
 	private List<String>  threePhaseSubNetIdList = null;
 	private StringBuffer sb = new StringBuffer();
@@ -44,7 +46,7 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 		consoleMsg("Start multi-SubNetwork initialization ...");
 
 		if (!dstabAlgo.getNetwork().isLfConverged()) {
-			ipssLogger.severe("Error: Loadflow not converged yet!");
+			log.error("Error: Loadflow not converged yet!");
 			return false;
 		}
 		
@@ -60,7 +62,7 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 				
 			   }
 			   if (!flag){
-					  ipssLogger.severe("Error: SubNetwork initialization error:"+dsNet.getId());
+					  log.error("Error: SubNetwork initialization error:{}", dsNet.getId());
 					  return false;
 				}
 			
@@ -169,7 +171,7 @@ public class MultiNet3Ph3SeqDStabSolverImpl extends MultiNetDStabSolverImpl {
 				  
 			
 			  if(i>0 && netSolConverged) {
-				  IpssLogger.getLogger().fine(getSimuTime()+","+"multi subNetwork solution in the nextStep() is converged, iteration #"+(i+1));
+				  log.info("{}: multi subNetwork solution in the nextStep() is converged, iteration #{}", getSimuTime(), (i+1));
 				  break;
 			  }
 	

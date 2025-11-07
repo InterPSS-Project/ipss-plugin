@@ -4,28 +4,26 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.interpss.CorePluginFactory;
-import org.interpss.IpssCorePlugin;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.plugin.equiv.AclfNetworkEquivHelper;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.core.funcImpl.AclfNetObjectComparator;
+import com.interpss.core.funcImpl.compare.AclfNetObjectComparator;
 
 public class SubNetEquivHelperSample {
 
     public static void main(String[] args) throws InterpssException {
-		IpssCorePlugin.init();
-		
+
 		AclfNetwork aclfNet = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.PSSE)
 				.load("testData/adpter/psse/v30/Kundur_2area/Kundur_2area_v30.raw")
 				.getAclfNet();
 
-        LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(aclfNet);
+        LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet);
 	  	algo.setLfMethod(AclfMethodType.PQ);
         algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 	  	algo.loadflow();
@@ -43,7 +41,7 @@ public class SubNetEquivHelperSample {
         System.out.println("Equivalent Sub-Network:");
         //System.out.println(equivNet.net2String());
 
-        LoadflowAlgorithm algo2 = CoreObjectFactory.createLoadflowAlgorithm(equivNet);
+        LoadflowAlgorithm algo2 = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(equivNet);
 	  	algo2.setLfMethod(AclfMethodType.PQ);
         algo2.getLfAdjAlgo().setApplyAdjustAlgo(false);
 	  	algo2.loadflow();

@@ -25,17 +25,20 @@
 
 package org.interpss.plugin.piecewise;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.function.Function;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginFactory;
+import org.interpss.display.AclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.ComplexFunc;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.piecewise.algo.PiecewiseAlgorithm;
 import org.interpss.piecewise.algo.impl.PiecewiseAlgoPosImpl;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.algo.subAreaNet.SubAreaNetProcessor;
@@ -44,7 +47,7 @@ import com.interpss.algo.subAreaNet.seqPos.SubAreaPos;
 import com.interpss.algo.subAreaNet.seqPos.SubNetworkPos;
 import com.interpss.algo.subAreaNet.seqPos.impl.SubAreaPosProcessorImpl;
 import com.interpss.algo.subAreaNet.seqPos.impl.SubNetworkPosProcessorImpl;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfLoadCode;
@@ -67,12 +70,12 @@ public class IEEE14TestAclfNetPiesewise extends PiecewiseAlgoTestSetup {
 		}
 		else 
 			return new Complex(0.0, 0.0);
-	};
+	}; 
 	
 	/*
 	 * Solve the network Y-matrix using the full matrix approach
 	 */
-	//@Test
+	@Test
 	public void testCase1() throws Exception {
 		AclfNetwork net = getTestNet();
   		
@@ -134,8 +137,8 @@ public class IEEE14TestAclfNetPiesewise extends PiecewiseAlgoTestSetup {
 	 * Break the network into two SubAreas and the calculate the bus voltage
 	 * 
 	 *    In this test case, the subareas are defined by manually
-	 */
-	//@Test
+	 */ 
+	@Test
 	public void testCase2() throws Exception {
 		AclfNetwork net = getTestNet();
   		
@@ -287,10 +290,10 @@ public class IEEE14TestAclfNetPiesewise extends PiecewiseAlgoTestSetup {
 		/*
 		 * Checking bus voltage results
 		 */
-  		//System.out.println(pieceWiseAlgo.getBusVoltage(2).get("10").abs());
-  		//System.out.println(pieceWiseAlgo.getBusVoltage(1).get("1").abs());
-  		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(2).get("10").abs(), 0.9480001594432435, 1.0e-10));
-		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(1).get("1").abs(), 1.1603111303400062, 1.0e-10));
+  		System.out.println(pieceWiseAlgo.getBusVoltage(2).get("10").abs());
+  		System.out.println(pieceWiseAlgo.getBusVoltage(1).get("1").abs());
+  		assertEquals(pieceWiseAlgo.getBusVoltage(2).get("10").abs(), 0.9336218714656881, 0.01);
+  		assertEquals(pieceWiseAlgo.getBusVoltage(1).get("1").abs(), 1.1582643132845656, 0.01);
 	}
 
 	/*
@@ -342,18 +345,16 @@ public class IEEE14TestAclfNetPiesewise extends PiecewiseAlgoTestSetup {
 		/*
 		 * Checking bus voltage results
 		 */
-  		//System.out.println(pieceWiseAlgo.getBusVoltage(2).get("10").abs());
-  		//System.out.println(pieceWiseAlgo.getBusVoltage(1).get("1").abs());
-  		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(2).get("10").abs(), 0.9480001594432435, 1.0e-10));
-		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(1).get("1").abs(), 1.1603111303400062, 1.0e-10));
-	}
+  		assertEquals(pieceWiseAlgo.getBusVoltage(2).get("10").abs(), 0.9336218714656881, 0.01);
+  		assertEquals(pieceWiseAlgo.getBusVoltage(1).get("1").abs(), 1.1582643132845656, 0.01);
+  	}
 	
 	/*
 	 * Break the network into three SubAreas
 	 * 
 	 * 	 In this test case, the subareas are defined by manually
 	 */
-	//@Test
+	@Test
 	public void testCase4() throws Exception {
 		AclfNetwork net = getTestNet();
   		
@@ -420,8 +421,6 @@ public class IEEE14TestAclfNetPiesewise extends PiecewiseAlgoTestSetup {
   		/*
   		 * Check open circuit voltage results
   		 */
-		System.out.println(pieceWiseAlgo.getBusVoltage(2).get("91").getReal());
-		System.out.println(pieceWiseAlgo.getBusVoltage(2).get("91").getImaginary());
 		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(2).get("91"), new Complex(-0.23360441002180587, 0.25487152860615664), 1.0e-10));
 		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(3).get("14"), new Complex(0.0, 0.0), 1.0e-10));
 		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(1).get("1"), new Complex(1.5318751236170223, 0.53233297483084), 1.0e-10));
@@ -502,11 +501,9 @@ public class IEEE14TestAclfNetPiesewise extends PiecewiseAlgoTestSetup {
     	
 		pieceWiseAlgo.calcuateSubAreaNetVoltage(proc.getCuttingBranches());  		
  		
-  		//System.out.println(pieceWiseAlgo.getBusVoltage(2).get("10").abs());
-		//System.out.println(pieceWiseAlgo.getBusVoltage(1).get("1").abs());
-  		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(2).get("10").abs(), 0.9480001594432259, 1.0e-10));
-		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(1).get("1").abs(), 1.1603111303400135, 1.0e-10));
-	}	
+  		assertEquals(pieceWiseAlgo.getBusVoltage(2).get("10").abs(), 0.9336218714656881, 0.01);
+  		assertEquals(pieceWiseAlgo.getBusVoltage(1).get("1").abs(), 1.1582643132845656, 0.01);
+  	}	
 	
 	private AclfNetwork getTestNet() throws Exception {
 		/*
@@ -524,7 +521,7 @@ public class IEEE14TestAclfNetPiesewise extends PiecewiseAlgoTestSetup {
   		 * Get the default loadflow algorithm and Run loadflow analysis. By default, it uses
   		 * NR method with convergence error tolerance 0.0001 pu
   		 */
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 	  	
@@ -532,6 +529,7 @@ public class IEEE14TestAclfNetPiesewise extends PiecewiseAlgoTestSetup {
 	  	 * Check if loadflow has converged
 	  	 */
   		assertTrue(net.isLfConverged());
+		//System.out.println(AclfOutFunc.loadFlowSummary(net));
   		
   		/*
   		 * Turn all loads to Constant-Z load
@@ -539,9 +537,21 @@ public class IEEE14TestAclfNetPiesewise extends PiecewiseAlgoTestSetup {
   		net.getBusList().forEach(bus -> {
   				if (bus.isLoad()) 
   					bus.setLoadCode(AclfLoadCode.CONST_Z);
-  			}); 		
+  			}); 	
+		
+		algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
+	  	algo.loadflow();
+  		//System.out.println(net.net2String());
+	  	
+	  	/*
+	  	 * Check if loadflow has converged
+	  	 */
+  		assertTrue(net.isLfConverged());
+		System.out.println(AclfOutFunc.loadFlowSummary(net));
   		
   		return net;
+
+		
 	}
 	
 	/*

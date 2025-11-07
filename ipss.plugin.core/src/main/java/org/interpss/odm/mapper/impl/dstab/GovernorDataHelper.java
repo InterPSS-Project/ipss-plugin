@@ -51,8 +51,9 @@ import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
 import org.interpss.dstab.control.gov.simple.SimpleGovernor;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.dstab.mach.Machine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class for map ODM governor xml document to InterPSS governor model 
@@ -61,6 +62,7 @@ import com.interpss.dstab.mach.Machine;
  *
  */
 public class GovernorDataHelper {
+	private static final Logger log = LoggerFactory.getLogger(GovernorDataHelper.class);
 	private Machine mach = null;
 
 	/**
@@ -220,12 +222,10 @@ public class GovernorDataHelper {
 				gov.getData().setPup(govXml.getVOpen());
 				gov.getData().setPmax(govXml.getPMAX());
 				gov.getData().setPmin(govXml.getPMIN());
-				
 			}
-			else 
-				IpssLogger.getLogger().severe("GovIEEE1981Type1XmlType with  two PMech outputs is not support yet,"
-						+ " k2, k4,k6 and k8 must be zero. Gov @ Mach :"+mach.getId());
-			
+			else {
+				log.error("GovIEEE1981Type1XmlType with two PMech outputs is not supported yet, k2, k4, k6 and k8 must be zero. Gov @ Mach :"+mach.getId());
+			}
 		}
 		
         //GAST

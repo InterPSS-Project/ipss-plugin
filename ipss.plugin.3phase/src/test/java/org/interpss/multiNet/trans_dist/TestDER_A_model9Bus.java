@@ -1,7 +1,6 @@
 package org.interpss.multiNet.trans_dist;
 
 import static com.interpss.core.funcImpl.AcscFunction.acscXfrAptr;
-
 import static org.junit.Assert.assertTrue;
 
 import java.util.logging.Level;
@@ -14,10 +13,10 @@ import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
-import org.interpss.multiNet.algo.SubNetworkProcessor;
 import org.interpss.multiNet.algo.MultiNet3Ph3SeqDStabSimuHelper;
 import org.interpss.multiNet.algo.MultiNet3Ph3SeqDStabSolverImpl;
 import org.interpss.multiNet.algo.MultiNet3Ph3SeqDynEventProcessor;
+import org.interpss.multiNet.algo.SubNetworkProcessor;
 import org.interpss.multiNet.algo.powerflow.TDMultiNetPowerflowAlgorithm;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.PerformanceTimer;
@@ -32,7 +31,6 @@ import org.interpss.util.FileUtil;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
@@ -109,7 +107,7 @@ public class TestDER_A_model9Bus {
 		 tAlgo.setLfMethod(AclfMethodType.NR);
 		 tAlgo.setTolerance(1.0E-6);
 		 tAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
-		 tAlgo.setNonDivergent(true);
+		 tAlgo.getNrMethodConfig().setNonDivergent(true);
 		 tAlgo.setInitBusVoltage(true); 
 		 
 		//dsNet.initBusVoltage();
@@ -163,9 +161,9 @@ public class TestDER_A_model9Bus {
 		dstabAlgo.setOutPutPerSteps(1);
 		//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 		
-		IpssLogger.getLogger().setLevel(Level.WARNING);
+		//IpssLogger.getLogger().setLevel(Level.WARNING);
 		
-		PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+		PerformanceTimer timer = new PerformanceTimer();
 		
 		timer.start();
 		

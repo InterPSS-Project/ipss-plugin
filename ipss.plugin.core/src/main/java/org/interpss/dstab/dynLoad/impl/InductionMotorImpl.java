@@ -8,18 +8,14 @@ import java.util.Hashtable;
 import java.util.List;
 
 import org.apache.commons.math3.complex.Complex;
-import org.eclipse.emf.common.notify.Notification;
-import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.impl.ENotificationImpl;
-
-import com.interpss.common.util.IpssLogger;
-import com.interpss.dstab.BaseDStabBus;
-import com.interpss.dstab.DStabBus;
-import com.interpss.dstab.algo.DynamicSimuMethod;
-import com.interpss.dstab.common.DStabOutSymbol;
-import com.interpss.dstab.dynLoad.DStabDynamicLoadPackage;
 import org.interpss.dstab.dynLoad.InductionMotor;
 import org.interpss.dstab.dynLoad.MotorProtectionControl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.algo.DynamicSimuMethod;
+import com.interpss.dstab.common.DStabOutSymbol;
 import com.interpss.dstab.dynLoad.impl.DynLoadModelImpl;
 
 
@@ -27,6 +23,7 @@ import com.interpss.dstab.dynLoad.impl.DynLoadModelImpl;
  * An implementation of the model object '<em><b>Induction Motor</b></em>'.
   */
 public class InductionMotorImpl extends DynLoadModelImpl implements InductionMotor {
+	private static final Logger logger = LoggerFactory.getLogger(InductionMotorImpl.class);
 	public static final double SLIPMIN = 0.001;
 	public static final double SLIPMAX = 0.1;	
 	
@@ -1854,7 +1851,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	    
 	    
 	    if(dEpr>1.0E-4 || dEpm >1.0E-4){
-	    	IpssLogger.getLogger().severe("Initialization error, the dEp is not zero. dEp (re,im)= "+dEpr+","+dEpm);
+	    	logger.error("Initialization error, the dEp is not zero. dEp (re,im)= {},{}", dEpr, dEpm);
 	    	return  initSucceed = false;
 	    }
 	    
@@ -1885,7 +1882,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		    te = Eppr*Ir+Eppm*Im;
 		    
 		    if(dEppr>1.0E-4 || dEppm >1.0E-4){
-		    	IpssLogger.getLogger().severe("Initialization error, the dEpp is not zero. dEpp (re,im)= "+dEppr+","+dEppm);
+		    	logger.error("Initialization error, the dEpp is not zero. dEpp (re,im)= {},{}", dEppr, dEppm);
 		    	return initSucceed = false;
 		    }
 	    }
@@ -2327,16 +2324,16 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	public boolean changeLoad(double percentageFactor){
 		
 		if (percentageFactor < -1.0){
-			IpssLogger.getLogger().severe(" percentageFactor < -1.0, this change will not be applied");
+			logger.error("percentageFactor < -1.0, this change will not be applied");
 			return false;
 		}
 		if (this.accumulatedLoadChangeFactor <= -1.0 &&  percentageFactor < 0.0)
-			IpssLogger.getLogger().severe( "this.accumulatedLoadChangeFactor<=-1.0 and percentageFactor < 0.0, this change will not be applied");
+			logger.error("this.accumulatedLoadChangeFactor<=-1.0 and percentageFactor < 0.0, this change will not be applied");
 		
 		this.accumulatedLoadChangeFactor = this.accumulatedLoadChangeFactor + percentageFactor;
 		
 		if (this.accumulatedLoadChangeFactor < -1.0){
-			IpssLogger.getLogger().severe( "the accumulatedLoadChangeFactor is less than -1.0 after this change, so the accumulatedLoadChangeFactor is reset to -1.0");
+			logger.error("the accumulatedLoadChangeFactor is less than -1.0 after this change, so the accumulatedLoadChangeFactor is reset to -1.0");
 			this.accumulatedLoadChangeFactor = -1.0;
 		}
 		
@@ -2345,7 +2342,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		//also consider the load internal protection effects
 		this.Fonline = this.Fonline*this.Fuv;
 		
-		IpssLogger.getLogger().info("this.accumulatedLoadChangeFactor = "+ this.accumulatedLoadChangeFactor +", Fonline = "+this.Fonline);
+		logger.info("this.accumulatedLoadChangeFactor = "+ this.accumulatedLoadChangeFactor +", Fonline = "+this.Fonline);
 		
 		return true;
 	}

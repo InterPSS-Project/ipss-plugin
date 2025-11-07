@@ -1,4 +1,4 @@
- /*
+/*
   * @(#)IeeeST2Governor.java   
   *
   * Copyright (C) 2006 www.interpss.org
@@ -25,9 +25,10 @@
 package org.interpss.dstab.control.gov.ieee.ieeeST2;
 
 import org.interpss.numeric.datatype.LimitType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.interpss.common.exp.InterpssRuntimeException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.controller.deqn.AbstractGovernor;
@@ -37,6 +38,7 @@ public class IeeeST2Governor extends AbstractGovernor {
 	// state variables
 	private double statePm = 0.0, statePref = 0.0, stateX1 = 0.0, stateX2 = 0.0, stateX3 = 0.0, stateX4 = 0.0, stateX5 = 0.0;
 	private LimitType limit = null;
+	private static final Logger log = LoggerFactory.getLogger(IeeeST2Governor.class);
 
 	// UI Editor panel
 //	private static final NBIeeeST2GovernorEditPanel _editPanel = new NBIeeeST2GovernorEditPanel();
@@ -94,15 +96,15 @@ public class IeeeST2Governor extends AbstractGovernor {
 		limit = new LimitType(getData().getPmax(), getData().getPmin());
 		statePref = getMachine().getPm();
         if (limit.isViolated(statePref)) {
-        	IpssLogger.getLogger().severe("Machine initial mechanical power Pm0 violates its governor power limits, " +
-        			"machine id: " + getMachine().getId());
+            log.error("Machine initial mechanical power Pm0 violates its governor power limits, " +
+                    "machine id: " + getMachine().getId());
         }
 		stateX1 = 0.0;
 		stateX2 = statePref;
 		stateX3 = stateX2;
 		stateX4 = stateX3;
 		stateX5 = stateX4;
-		IpssLogger.getLogger().fine("Governor Limit:      " + limit);
+		log.debug("Governor Limit:      " + limit);
 		return true;
 	}
 	

@@ -1,0 +1,139 @@
+ /*
+  * @(#)SampleLoadflow.java   
+  *
+  * Copyright (C) 2006 www.interpss.org
+  *
+  * This program is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU LESSER GENERAL PUBLIC LICENSE
+  * as published by the Free Software Foundation; either version 2.1
+  * of the License, or (at your option) any later version.
+  *
+  * This program is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  * GNU General Public License for more details.
+  *
+  * @Author Mike Zhou
+  * @Version 1.0
+  * @Date 09/15/2006
+  * 
+  *   Revision History
+  *   ================
+  *
+  */
+
+package org.interpss.sample.customSolver;
+
+import org.apache.commons.math3.complex.Complex;
+import org.interpss.display.AclfOutFunc;
+import org.interpss.numeric.datatype.Unit.UnitType;
+import org.interpss.numeric.sparse.ISparseEqnDouble;
+import org.interpss.sample.customSolver.impl.CMathSparseEqnDouble;
+import org.interpss.sample.customSolver.impl.CMathSparseEqnMatrix2x2;
+import org.interpss.sample.customSolver.solver.CMathSparseEqnDoubleSolver;
+
+import com.interpss.common.exp.InterpssException;
+import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
+import com.interpss.core.aclf.AclfBranch;
+import com.interpss.core.aclf.AclfBranchCode;
+import com.interpss.core.aclf.AclfBus;
+import com.interpss.core.aclf.AclfGenCode;
+import com.interpss.core.aclf.AclfLoadCode;
+import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.adpter.AclfLineAdapter;
+import com.interpss.core.aclf.adpter.AclfLoadBusAdapter;
+import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
+import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.sparse.SparseEqnObjectFactory;
+import com.interpss.core.sparse.solver.SparseEqnSolverFactory;
+
+
+public class CMathCustomSolverLoadflow {
+	public static void main(String args[]) throws InterpssException {
+		simpleLoadflow();
+	}	
+
+	public static void simpleLoadflow() throws InterpssException {
+		// Create an AclfNetwork object
+		AclfNetwork net = CoreObjectFactory.createAclfNetwork();
+
+		double baseKva = 100000.0;
+		
+		// set system basekva for loadflow calculation
+		net.setBaseKva(baseKva);
+	  	
+		// create a AclfBus object
+  		AclfBus bus1 = CoreObjectFactory.createAclfBus("Bus1", net).get();
+  		// set bus name and description attributes
+  		bus1.setAttributes("Bus 1", "");
+  		// set bus base voltage 
+  		bus1.setBaseVoltage(4000.0);
+  		// set bus to be a swing bus
+  		bus1.setGenCode(AclfGenCode.SWING);
+  		// adapt the bus object to a swing bus object
+  		AclfSwingBusAdapter swingBus = bus1.toSwingBus();
+  		// set swing bus attributes
+  		swingBus.setDesiredVoltMag(1.0, UnitType.PU);
+  		swingBus.setDesiredVoltAng(0.0, UnitType.Deg);
+  		// add the bus into the network
+  		//net.addBus(bus1);
+  		
+  		AclfBus bus2 = CoreObjectFactory.createAclfBus("Bus2", net).get();
+  		bus2.setAttributes("Bus 2", "");
+  		bus2.setBaseVoltage(4000.0);
+  		// set the bus to a non-generator bus
+  		bus2.setGenCode(AclfGenCode.NON_GEN);
+  		// set the bus to a constant power load bus
+  		bus2.setLoadCode(AclfLoadCode.CONST_P);
+  		// adapt the bus object to a Load bus object
+  		AclfLoadBusAdapter loadBus = bus2.toLoadBus();
+  		// set load to the bus
+  		loadBus.setLoad(new Complex(1.0, 0.8), UnitType.PU);
+  		//net.addBus(bus2);
+  		
+  		// create an AclfBranch object
+  		AclfBranch branch = CoreObjectFactory.createAclfBranch();
+  		net.addBranch(branch, "Bus1", "Bus2");
+  		// set branch name, description and circuit number
+  		branch.setAttributes("Branch 1", "", "1");
+  		// set branch to a Line branch
+  		branch.setBranchCode(AclfBranchCode.LINE);
+  		// adapte the branch object to a line branch object
+		AclfLineAdapter lineBranch = branch.toLine();
+		// set branch parameters
+  		lineBranch.setZ(new Complex(0.05, 0.1), UnitType.PU, 4000.0);
+  		// add the branch from Bus1 to Bus2
+	  	
+  		/*
+		SparseEqnSolverFactory.setDoubleSolverCreator(
+				(ISparseEqnDouble eqn) -> new CSJSqaureMatrixEqnDoubleSolver(eqn));
+		
+		SparseEqnObjectFactory.setDoubleEqnCreator(
+				(Integer n) -> new CSJSparseEqnDoubleImpl(n));
+		
+		SparseEqnObjectFactory.setMatrix2x2EqnCreator(
+				(Integer n) -> new CSJSparseEqnMatrix2x2Impl(n));
+  		*/
+  		
+		SparseEqnSolverFactory.setDoubleSolverCreator(
+				(ISparseEqnDouble eqn) -> new CMathSparseEqnDoubleSolver(eqn));
+		
+		SparseEqnObjectFactory.setDoubleEqnCreator(
+				(Integer n) -> new CMathSparseEqnDouble(n));
+		
+		SparseEqnObjectFactory.setMatrix2x2EqnCreator(
+				(Integer n) -> new CMathSparseEqnMatrix2x2(n));
+		
+	  	// create the default loadflow algorithm
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
+
+	  	// use the loadflow algorithm to perform loadflow calculation
+	  	algo.loadflow();
+	  	
+  		//System.out.println(swingBus.getGenResults(UnitType.PU));
+  		
+	  	// output loadflow calculation results
+	  	System.out.println(AclfOutFunc.loadFlowSummary(net));
+    }	
+}

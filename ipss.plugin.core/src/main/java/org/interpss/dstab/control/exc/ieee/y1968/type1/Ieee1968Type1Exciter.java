@@ -1,4 +1,4 @@
- /*
+/*
   * @(#)Ieee1968Type1Exciter.java   
   *
   * Copyright (C) 2006 www.interpss.org
@@ -26,7 +26,6 @@ package org.interpss.dstab.control.exc.ieee.y1968.type1;
 import java.lang.reflect.Field;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.controller.cml.annotate.AnController;
 import com.interpss.dstab.controller.cml.annotate.AnControllerField;
@@ -38,6 +37,8 @@ import com.interpss.dstab.controller.cml.field.block.WashoutControlBlock;
 import com.interpss.dstab.controller.cml.field.func.SeFunction;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -52,6 +53,7 @@ import com.interpss.dstab.mach.Machine;
    //debug = true
    )
 public class Ieee1968Type1Exciter extends AnnotateExciter {
+    private static final Logger log = LoggerFactory.getLogger(Ieee1968Type1Exciter.class);
 	   public double ke = 1.0;
 
 	   // define a CML delay block, krDelayBlock----1/(1+sTr)
@@ -179,18 +181,18 @@ public class Ieee1968Type1Exciter extends AnnotateExciter {
 		this.tf = getData().getTf();
         
 		if(tf == 0.0){
-			IpssLogger.getLogger().severe("Tf =0.0 for Exciter of "+mach.getId());
+			log.error("Tf =0.0 for Exciter of "+mach.getId());
 			this.k = 0.0;
 		}
 		else
 		  this.k = kf/tf;
-		
-		this.kr=1.0;
-		if(te == 0.0){
-			IpssLogger.getLogger().severe("Te = 0.0 for Exciter of "+mach.getId());
-			return false;
-		}
-		this.kint = 1/te;
+        
+        this.kr=1.0;
+        if(te == 0.0){
+            log.error("Te = 0.0 for Exciter of "+mach.getId());
+            return false;
+        }
+        this.kint = 1/te;
 		
         /*
          * Value of KE equal zero indicates code should set KE:
@@ -240,4 +242,3 @@ public class Ieee1968Type1Exciter extends AnnotateExciter {
     @Override public Object getFieldObject(Field field) throws Exception {
     	return field.get(this);    }
 } // SimpleExciter
-

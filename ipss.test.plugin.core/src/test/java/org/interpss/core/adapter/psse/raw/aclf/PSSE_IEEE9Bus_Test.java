@@ -24,7 +24,10 @@
 
 package org.interpss.core.adapter.psse.raw.aclf;
  
-import java.util.logging.Level;
+import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
@@ -33,22 +36,17 @@ import org.interpss.dep.datamodel.mapper.aclf.AclfNet2AclfBeanMapper;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
-import com.interpss.common.util.IpssLogger;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.adj.AclfAdjustControlMode;
 import com.interpss.core.aclf.adj.BusBranchControlType;
 import com.interpss.core.aclf.adj.RemoteQBus;
-import com.interpss.core.aclf.adj.AclfAdjustControlMode;
 import com.interpss.core.aclf.adpter.AclfGenBusAdapter;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.aclf.facts.StaticVarCompensator;
@@ -199,7 +197,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 				.load()
 				.getImportedObj();
 
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.setLfMethod(AclfMethodType.NR);
 		algo.loadflow();
 
@@ -243,9 +241,9 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 				.load()
 				.getImportedObj();
 
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.setLfMethod(AclfMethodType.NR);
-		algo.setNonDivergent(true);
+		algo.getNrMethodConfig().setNonDivergent(true);
 		algo.loadflow();
 		System.out.println(AclfOutFunc.loadFlowSummary(net));
 
@@ -310,9 +308,12 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		assertTrue(xfr_92_str.getZMultiplyFactor().getImaginary() == 0.0);
 		assertEquals( 0.41194*0.01,xfr_92_str.getAdjustedZ().getImaginary(),1.0e-5); // 0.41194 is the Z Corr value in the table, 0.01 is the scale factor
 
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.setLfMethod(AclfMethodType.NR);
-		algo.setNonDivergent(true);
+		algo.getNrMethodConfig().setNonDivergent(true);
+		
+		algo.getLfAdjAlgo().getLimitCtrlConfig().setCheckGenQLimitImmediate(false);
+		
 		algo.loadflow();
 		//System.out.println(AclfOutFunc.loadFlowSummary(net));
 
@@ -337,8 +338,8 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		AclfBus swingBus = net.getBus("Bus1");
 	  	AclfSwingBusAdapter swing = swingBus.toSwingBus();
   		Complex p = swing.getGenResults(UnitType.PU);
-  		assertTrue(Math.abs(p.getReal()+0.0136)<0.0001);
-  		assertTrue(""+p.getImaginary(), Math.abs(p.getImaginary()-0.5989)<0.0001);
+  		assertEquals(p.getReal(), -0.0136, 0.0001);
+  		assertEquals(p.getImaginary(), 0.5989, 0.0001);
 
 		AclfBus bus4 = net.getBus("Bus4");
 		double voltageMag = bus4.getVoltageMag();
@@ -365,7 +366,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 	}
 	
 	private void testVAclf(AclfNetwork net) throws Exception {
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.PQ);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
@@ -385,9 +386,9 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 				.load()
 				.getImportedObj();
 
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.setLfMethod(AclfMethodType.NR);
-		algo.setNonDivergent(true);
+		algo.getNrMethodConfig().setNonDivergent(true);
 		algo.loadflow();
 
 		assertTrue("Loadflow converged", net.isLfConverged());
@@ -431,8 +432,8 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 
 		//check the SVC data connected to Bus-5
 		/*
-		 * @!  'NAME',         I,     J,MODE,PDES,   QDES,  VSET,   SHMX,   TRMX,   VTMN,   VTMX,   VSMX,    IMX,   LINX,   RMPCT,OWNER,  SET1,    SET2,VSREF, FCREG,   'MNAME'
-			"SVC1",5,     0, 1,  0.000,  0.000,1.00,50.000,  0.000,0.90000,1.10000,1.00000,  0.000,0.05000,  100.0, 0, 0.00000, 0.00000,   0, 0,   "            "
+			@!  'NAME',         I,     J,MODE,PDES,   QDES,  VSET,   SHMX,   TRMX,   VTMN,   VTMX,   VSMX,    IMX,   LINX,   RMPCT,OWNER,  SET1,    SET2,VSREF, FCREG,   'MNAME'
+			"SVC1",5,     0, 1,  0.000,  0.000,1.01,50.000,  0.000,0.90000,1.10000,1.00000,  0.000,0.05000,  100.0, 0, 0.00000, 0.00000,   0, 0,   "            "
 		 */
 
 		AclfBus bus5 = net.getBus("Bus5");
@@ -443,15 +444,15 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		// For a GenPV bus, the bus Q is calculated according to the voltage set point, 
 		// which is not the case for SVC.
 		
-		StaticVarCompensator svc1 = bus5.getStaticVarCompensator();
+		StaticVarCompensator svc1 = bus5.getFirstStaticVarCompensator(true);
 		assertNotNull("Bus5 has SVC connected", svc1);
 		
 		assertTrue("SVC name is correct", svc1.getName().equals("SVC1"));
 
 		assertTrue("SVC voltage set point is correct", Math.abs(svc1.getVSpecified() - 1.01) < 1e-6);
 
-		//TODO: as the Qlimit is related to the actual Q output, which is dependent on the load flow bus voltage, so it is better to use another variable to store the capacitive rating, maybe Binit
-		assertTrue("SVC capacitive rating is correct", Math.abs(svc1.getQLimit().getMax() - 0.5) < 1e-6);
+		//TODO: change it back to BLimit after the Qlimit is used to represent the actual Q output limit
+		assertTrue("SVC capacitive rating is correct", Math.abs(svc1.getBLimit().getMax() - 0.5) < 1e-6);
 
 		// rmpct is the percentage of the SVC remote control percentage, which is 100% in this case
 		assertTrue("SVC remote control percentage is correct", Math.abs(svc1.getRemoteControlPercentage() - 100.0) < 1e-6);
@@ -465,7 +466,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		//control type, default is  bus voltage control
 		assertTrue("SVC control type is correct", svc1.getRemoteQControlType() == BusBranchControlType.BUS_VOLTAGE);
 
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.setLfMethod(AclfMethodType.NR);
 		//algo.setNonDivergent(true);
 		algo.loadflow();
@@ -479,11 +480,14 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		assertTrue("Bus5 voltage magnitude is correct", Math.abs(bus5.getVoltageMag() - 1.01) < 1e-6);
 		// TODO: note the SVC is controlling the local bus voltage, so it is a GenPV bus
 		assertTrue( bus5.isGenPV()); 
-		RemoteQBus re = bus5.getRemoteQBus();
-		AclfGenBusAdapter genBus = re.getParentBus().toGenBus();
+		//RemoteQBus re = bus5.getRemoteQBus();
+		AclfGenBusAdapter genBus = bus5.toGenBus();
 		double q = genBus.getGenResults(UnitType.PU).getImaginary();
 		System.out.println("Bus5 svc q: " + q);
-		assertTrue("SVC Q output is correct", Math.abs(q - 0.1598) < 1e-3); // Q output is 0.5 pu, which is the capacitive rating
+		assertTrue("SVC Q output is correct", Math.abs(q - 0.1598) < 1e-3); 
+		
+		//System.out.println("Bus5 svc BActual: " + svc1.getBActual());
+		//assertTrue("SVC Q output is correct", Math.abs(svc1.getBActual()*1.01*1.01 - 0.1598) < 1e-3); 
 	}
 
 	@Test
@@ -493,7 +497,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 				.setPsseVersion(PsseVersion.PSSE_33)
 				.load()
 				.getImportedObj();
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 
 		//check the SVC data connected to Bus-5
 		/*
@@ -503,7 +507,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 
 		AclfBus bus50 = net.getBus("Bus50");
 
-		StaticVarCompensator svc1 = bus50.getStaticVarCompensator();
+		StaticVarCompensator svc1 = bus50.getFirstStaticVarCompensator(true);
 		assertNotNull("Bus50 has SVC connected", svc1);
 
 		assertTrue("SVC name is correct", svc1.getName().equals("SVC1"));
@@ -525,7 +529,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		//control type, default is  bus voltage control
 		assertTrue("SVC control type is correct", svc1.getRemoteQControlType() == BusBranchControlType.BUS_VOLTAGE);
 
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.setLfMethod(AclfMethodType.NR);
 		//algo.setNonDivergent(true);
 		algo.loadflow();

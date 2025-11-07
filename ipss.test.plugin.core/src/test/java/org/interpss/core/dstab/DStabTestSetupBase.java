@@ -24,15 +24,12 @@
 
 package org.interpss.core.dstab;
 
-import java.util.logging.Level;
-
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.NumericConstant;
 
 import com.interpss.common.CoreCommonFactory;
 import com.interpss.common.msg.IPSSMsgHub;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
@@ -48,7 +45,7 @@ public class DStabTestSetupBase extends CorePluginTestSetup {
 
 	public DStabTestSetupBase() { 
 		msg = CoreCommonFactory.getIpssMsgHub();
-		IpssLogger.getLogger().setLevel(Level.WARNING);
+		//IpssLogger.getLogger().setLevel(Level.WARNING);
  	}
 /*
 	public DynamicSimuAlgorithm createDStabAlgo(DStabilityNetwork net) {

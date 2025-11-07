@@ -7,7 +7,6 @@ import java.util.List;
 
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
-import org.interpss.plugin.opf.common.OPFLogger;
 import org.interpss.plugin.opf.constraint.OpfConstraint;
 import org.interpss.plugin.opf.constraint.dc.ActivePowerEqnConstraintCollector;
 import org.interpss.plugin.opf.constraint.dc.BusMinAngleConstraintCollector;
@@ -16,8 +15,9 @@ import org.interpss.plugin.opf.constraint.dc.LineMwFlowConstraintCollector;
 import org.interpss.plugin.opf.objectiveFunction.LpsolveSolverObjectiveFunctionCollector;
 import org.interpss.plugin.opf.solver.AbstractOpfSolver;
 import org.interpss.plugin.opf.util.OpfDataHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.interpss.core.net.Bus;
 import com.interpss.opf.OpfBus;
 import com.interpss.opf.OpfNetwork;
 
@@ -25,7 +25,8 @@ import lpsolve.LpSolve;
 import lpsolve.LpSolveException;
 
 public class LpsolveSolver extends AbstractOpfSolver {
-
+	private static final Logger log = LoggerFactory.getLogger(LpsolveSolver.class);
+	
 	private LpSolve lpsolver;
 
 	public LpsolveSolver(OpfNetwork opfNet, constraintHandleType constType) {
@@ -70,7 +71,7 @@ public class LpsolveSolver extends AbstractOpfSolver {
 			//int refineNum = 2;
 			objBuilder.genCostFunctionRefinement(lpsolver);
 		} catch (LpSolveException e) {
-			OPFLogger.getLogger().severe(e.toString());
+			log.error(e.toString());
 			e.printStackTrace();
 		}	
 
@@ -82,7 +83,7 @@ public class LpsolveSolver extends AbstractOpfSolver {
 	
 	@Override
 	public boolean solve() {
-		OPFLogger.getLogger().info("Running DC Optimal Power Flow Using LP solver....");		
+		log.info("Running DC Optimal Power Flow Using LP solver....");		
 		Long startTime = System.currentTimeMillis();
 		this.build(cstContainer);
 		int ret = 0;
@@ -92,20 +93,20 @@ public class LpsolveSolver extends AbstractOpfSolver {
 		try {
 			ret = lpsolver.solve();
 		} catch (LpSolveException e) {
-			OPFLogger.getLogger().severe(e.toString());
+			log.error(e.toString());
 		}
 		
 		if (ret == LpSolve.OPTIMAL)
 			ret = 0;
 		else
-            OPFLogger.getLogger().severe(this.retriveSolutionInfo(ret));
+            log.error(this.retriveSolutionInfo(ret));
 		
 		if (ret == 0) {
 			this.isSolved = true;
 			Long endTime = System.currentTimeMillis();
 			Long duration = endTime - startTime;	
-			OPFLogger.getLogger().info("Optimization terminated.");	
-			OPFLogger.getLogger().info("Converged in " + OpfDataHelper.round(duration, 3) +" milliseconds.");			
+			log.info("Optimization terminated.");	
+			log.info("Converged in " + OpfDataHelper.round(duration, 3) +" milliseconds.");			
 			try {
 				ofv = lpsolver.getObjective(); // in $/(pu*h)				
 				int xsize = lpsolver.getNcolumns();
@@ -115,7 +116,7 @@ public class LpsolveSolver extends AbstractOpfSolver {
 				this.attachedResult();
 				this.calLMP();				
 			} catch (LpSolveException e) {
-				OPFLogger.getLogger().severe(e.toString());
+				log.error(e.toString());
 			}
 		}
 		return isSolved;
@@ -134,7 +135,7 @@ public class LpsolveSolver extends AbstractOpfSolver {
 		try {
 			lpsolver.getDualSolution(shadowPrice);
 		} catch (LpSolveException e) {			
-			OPFLogger.getLogger().severe(e.toString());
+			log.error(e.toString());
 		}
 		
 		double baseMVA = this.getNetwork().getBaseKva() / 1000.0;
@@ -167,9 +168,9 @@ public class LpsolveSolver extends AbstractOpfSolver {
 	public void printInputData(String fileName) {
 		try {
 			lpsolver.writeLp(fileName);
-			OPFLogger.getLogger().info("The input data model has been saved to: "+fileName);
+			log.info("The input data model has been saved to: "+fileName);
 		} catch (LpSolveException e) {
-			OPFLogger.getLogger().severe(e.toString());
+			log.error(e.toString());
 			//e.printStackTrace();
 		}
 
@@ -228,20 +229,20 @@ public class LpsolveSolver extends AbstractOpfSolver {
 				busIdx++;
 			}
 		} catch (LpSolveException e) {			
-			OPFLogger.getLogger().severe(e.toString());
+			log.error(e.toString());
 		}
 
 	}
 
 	@Override
 	public void debug(String file) {
-		OPFLogger.getLogger().info("Running DCOPF debug mode for LP solver...");
+		log.info("Running DCOPF debug mode for LP solver...");
 		this.build(cstContainer);
 		try {
 			outputMatrix( file);
-			OPFLogger.getLogger().info("Output file for debug purpose has been saved to: "+file);
+			log.info("Output file for debug purpose has been saved to: "+file);
 		} catch (Exception e) {
-			OPFLogger.getLogger().severe(e.toString());
+			log.error(e.toString());
 			//e.printStackTrace();
 		}	
 		
@@ -307,7 +308,7 @@ public class LpsolveSolver extends AbstractOpfSolver {
 			String linprog ="x = linprog(f,Aiq,biq,Aeq,beq,lb,ub);";
 			out.append(linprog);
 		} catch (Exception e) {	
-			OPFLogger.getLogger().severe(e.toString());
+			log.error(e.toString());
 			//e.printStackTrace();
 		}
 		  

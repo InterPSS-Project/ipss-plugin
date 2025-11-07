@@ -12,10 +12,11 @@ import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
@@ -30,6 +31,7 @@ import com.interpss.core.net.Branch;
 import com.interpss.core.net.NetworkType;
 
 public class TDMultiNetPowerflowAlgorithm {
+	private static final Logger log = LoggerFactory.getLogger(TDMultiNetPowerflowAlgorithm.class);
 	
 	protected BaseAclfNetwork<? extends BaseAclfBus<?,?>, ?extends AclfBranch> net = null;
 	protected BaseAclfNetwork<? extends BaseAclfBus<?,?>, ?extends AclfBranch> transmissionNet = null;
@@ -80,12 +82,12 @@ public class TDMultiNetPowerflowAlgorithm {
 		BaseAclfNetwork distNet = subNetProc.getSubNetworkByBusId(id);
 			if(!this.distNetList.contains(distNet))
 			  this.distNetList.add(distNet);
-			  IpssLogger.getLogger().info("Subsystem #"+distNet.getId()+" is set to be Distribution network before performing T&D Loadflow");
+			  log.info("Subsystem #"+distNet.getId()+" is set to be Distribution network before performing T&D Loadflow");
 			  distNet.setNetworkType(NetworkType.DISTRIBUTION);
 			  
 		}
 		
-		transLfAlgo = CoreObjectFactory.createLoadflowAlgorithm(transmissionNet);
+		transLfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(transmissionNet);
 		
 	}
 	
@@ -390,7 +392,7 @@ public class TDMultiNetPowerflowAlgorithm {
 		    	     
 				      if (i>0 && this.pfFlag) {
 				    	  // taking into account the 1 iteration at the initialization stage
-				    	  IpssLogger.getLogger().info(" Transmision&Distribution combined power flow converges after " + (i+2) +" iterations.");
+				    	  log.info(" Transmision&Distribution combined power flow converges after " + (i+2) +" iterations.");
 				    	  System.out.println(" Transmision&Distribution combined power flow converges after " + (i+2) +" iterations.");
 				    	  // update the load flow convergence status
 				    	  this.transmissionNet.setLfConverged(true);

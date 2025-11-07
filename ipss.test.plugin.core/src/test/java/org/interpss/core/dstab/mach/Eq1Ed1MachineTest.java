@@ -30,7 +30,6 @@ import org.interpss.numeric.datatype.ComplexFunc;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.mach.Eq1Ed1Machine;

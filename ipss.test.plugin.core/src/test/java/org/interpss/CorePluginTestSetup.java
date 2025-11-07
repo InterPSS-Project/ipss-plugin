@@ -34,8 +34,7 @@ import org.junit.BeforeClass;
 import com.interpss.common.CoreCommonFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.msg.IPSSMsgHub;
-import com.interpss.common.util.IpssLogger;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
@@ -54,10 +53,10 @@ public class CorePluginTestSetup {
 	protected static IPSSMsgHub msg;
 
 	@BeforeClass  
-	public static void setSpringAppCtx() {
+	public static void initTestEnv() {
 		IpssCorePlugin.init();
 		msg = CoreCommonFactory.getIpssMsgHub();
-		IpssLogger.getLogger().setLevel(Level.WARNING);
+		//IpssLogger.getLogger().setLevel(Level.WARNING);
 		ODMLogger.getLogger().setLevel(Level.WARNING);
 	}
 
@@ -113,7 +112,7 @@ public class CorePluginTestSetup {
 	  	net.initContributeGenLoad(false);
 
 		// run load flow
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.NR);
 	  	algo.loadflow();
 	  	

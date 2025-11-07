@@ -60,10 +60,11 @@ import org.interpss.odm.ext.pwd.AclfBusPWDExtension;
 import org.interpss.odm.mapper.ODMAclfNetMapper;
 import org.interpss.odm.mapper.base.AbstractODMSimuCtxDataMapper;
 import static org.interpss.odm.mapper.base.ODMUnitHelper.toActivePowerUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
-import static com.interpss.common.util.IpssLogger.ipssLogger;
 import com.interpss.core.AclfAdjustObjectFactory;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.HvdcObjectFactory;
@@ -99,6 +100,7 @@ import com.interpss.simu.SimuCtxType;
  * @param Tfrom from object type
  */
 public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtxDataMapper<Tfrom> {
+    private static final Logger log = LoggerFactory.getLogger(AbstractODMAclfNetMapper.class);
 	private ODMAclfNetMapper.XfrBranchModel xfrBranchModel = ODMAclfNetMapper.XfrBranchModel.InterPSS;
 	private OriginalDataFormat originalFormat = OriginalDataFormat.IPSS_API;
 	
@@ -161,12 +163,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 			
 			int cnt = 0;
 			for (JAXBElement<? extends BaseBranchXmlType> b : xmlNet.getBranchList().getBranch()) {
-				/*
-				if (b == null) {
-					System.out.println("xxxxxxxxxx");
-				}
-				*/
-				
+	
 				BaseBranchXmlType xmlBranch = b.getValue();
 				//System.out.println(xmlBranch.getName() + ", " + xmlBranch.getId() + ", " + cnt++);
 				Branch branch = null;
@@ -194,7 +191,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 				else 
 					branch = CoreObjectFactory.createAclfBranch();
 				
-				// TODO: fix the following error:
+				// fix the following error:
 				/*
 				 * Exception in thread "main" java.lang.NullPointerException: Cannot invoke "com.interpss.core.net.Network.getOriginalDataFormat()" 
 				 * because the return value of "com.interpss.core.aclf.Aclf3WBranch.getNetwork()" is null
@@ -243,7 +240,8 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 			postAclfNetProcessing(aclfNet);
 			
 		} catch (InterpssException e) {
-			ipssLogger.severe(e.toString());
+			log.error(e.toString());
+			log.error("Exception in map2Model: ", e);
 			noError = false;
 		}
 
@@ -255,10 +253,11 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 		// set the svc remote bus
 		aclfNet.getBusList().forEach(bus -> {
 			if (bus.isStaticVarCompensator()) {
-				StaticVarCompensator svc = bus.getStaticVarCompensator();
-				if(svc.getRemoteBusBranchId() != null){
-					BaseAclfBus<? extends AclfGen, ? extends AclfLoad> remoteBus = aclfNet.getBus(svc.getRemoteBusBranchId());
-					svc.setRemoteBus(remoteBus);
+				for(StaticVarCompensator svc: bus.getStaticVarCompensatorList()){
+					if(svc!=null && svc.getRemoteBusBranchId() != null){
+						BaseAclfBus<? extends AclfGen, ? extends AclfLoad> remoteBus = aclfNet.getBus(svc.getRemoteBusBranchId());
+						svc.setRemoteBus(remoteBus);
+					}
 				}
 			}
 		});
@@ -275,6 +274,28 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 		aclfNet.adjustXfrZ();
 		
 		aclfNet.initContributeGenLoad(false);
+
+		
+		/*
+		set 3winding xfr star bus number; this is for information only, not used in internal calculation
+		1. find out the total number of buses in the network, if it is 3 digit, then the star bus number is starting at 4 digit
+		if it is 4 digit, then the star bus number is starting at 5 digit, so on and so forth
+		2. iterate over all the buses and find the bus with the name "3WXfr StarBus"
+		3. set the star bus number using setNumber()
+		*/
+
+		if (aclfNet.getOriginalDataFormat() == OriginalDataFormat.PSSE) {
+			// Find the maximum bus number in the network to determine the starting number for star buses
+			int maxBusNum = aclfNet.getBusList().size();
+			// Calculate startingNum as the next power of 10 greater than maxBusNum
+			int startingNum = (int) Math.pow(10, Integer.toString(maxBusNum).length());
+			for (BaseAclfBus<?, ?> bus : aclfNet.getBusList()) {
+				if (bus.getName().equals("3WXfr StarBus")) {
+					bus.setNumber(startingNum++);
+				}
+			}
+		}
+
 	}
 
 	/**
@@ -358,7 +379,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 					branch.setBranchDir(true);
 				
 				if (b == null) {
-					ipssLogger.severe("Branch in the interface not found, " +
+					log.error("Branch in the interface not found, " +
 							xmlBra.getFromBusId() + ", " + xmlBra.getToBusId() + ", " + xmlBra.getCircuitId());
 				}
 				else {

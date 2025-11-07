@@ -1,4 +1,4 @@
- /*
+/*
   * @(#)BaseDSL.java   
   *
   * Copyright (C) 2006-2011 www.interpss.com
@@ -24,9 +24,8 @@
 
 package org.interpss.plugin.pssl.simu;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
-
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.common.msg.StdoutMsgListener;
@@ -40,6 +39,7 @@ import com.interpss.common.msg.impl.TextMessageImpl;
  *
  */
 public class BaseDSL {
+	private static final Logger log = LoggerFactory.getLogger(BaseDSL.class);
 	/**
 	 * Analysis type exposed by PSSL and core simulation engine
 	 */
@@ -97,7 +97,7 @@ public class BaseDSL {
 	}
 	
 	static {
-		ipssLogger.setLevel(Level.WARNING);
+		//ipssLogger.setLevel(Level.WARNING);
 		psslMsg = new IPSSMsgHubImpl();
 		psslMsg.addMsgListener(new StdoutMsgListener(TextMessageImpl.TYPE_WARN));
 	}
