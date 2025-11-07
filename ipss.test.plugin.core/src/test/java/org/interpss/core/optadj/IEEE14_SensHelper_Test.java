@@ -50,5 +50,25 @@ public class IEEE14_SensHelper_Test extends CorePluginTestSetup {
 		no = net.getBus("Bus8").getSortNumber();
 		assertEquals(-0.657, gfs.get(no, 0), 0.001);  // Bus8
 		assertEquals(-0.079, gfs.get(no, 19), 0.001);
+		
+		/*
+		net.getBranchList().forEach(br -> {
+			System.out.println("Branch " + br.getId());
+		});
+		*/
+		
+		// Bus2->Bus3(1), Bus2->Bus4(1), Bus2->Bus5(1), Bus3->Bus4(1)
+		Set<String> branchIdSet = new HashSet<>(Arrays.asList("Bus2->Bus3(1)", 
+						"Bus2->Bus4(1)", "Bus2->Bus5(1)", "Bus3->Bus4(1)"));
+		gfs = senHelper.calGFS(busIdSet, branchIdSet);
+		
+		//System.out.println("GFS Matrix: \n" + gfs.toString());
+		no = net.getBus("Bus3").getSortNumber();
+		assertEquals(-0.532, gfs.get(no, 2), 0.001);  // Bus3, Bus2->Bus3(1)
+		assertEquals(0.468, gfs.get(no, 5), 0.001);  // Bus3, Bus3->Bus4(1)
+		
+		no = net.getBus("Bus8").getSortNumber();
+		assertEquals(-0.143, gfs.get(no, 2), 0.001);  // Bus8 , Bus2->Bus3(1)
+		assertEquals(-0.143, gfs.get(no, 5), 0.001);  // Bus8 , Bus3->Bus4(1)
 	}
 }
