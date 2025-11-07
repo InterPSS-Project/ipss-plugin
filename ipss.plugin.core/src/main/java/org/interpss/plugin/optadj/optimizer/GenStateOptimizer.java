@@ -85,7 +85,8 @@ public class GenStateOptimizer {
 		}
 		
 		for (GenConstrainData data : genConstrainDataList) {
-            final Expression constraint = model.addExpression("gen_constraint_" + data.getIndex());
+			final Expression constraint = model
+					.addExpression("gen_constraint_" + data.getIndex() + "_" + data.getLimit());
             constraint.set(data.getIndex(), 1.0);
             
 			switch (data.getRelationship()) {
