@@ -39,7 +39,7 @@ public class AclfNetSensHelper {
 	/**
 	 * Constructor
 	 * 
-	 * @param aclfNet
+	 * @param aclfNet the AclfNetwork object
 	 */
 	public AclfNetSensHelper(AclfNetwork aclfNet) {
 		//this.aclfNet = aclfNet;
@@ -55,7 +55,7 @@ public class AclfNetSensHelper {
 	/**
 	 * calculate AclfNetwork sensitivities GFS[active bus][active branch]
 	 * 
-	 * @return
+	 * @return the GSF matrix
 	 */
 	public Sen2DMatrix calGFS(){
 		BaseAclfNetwork<?,?> aclfNet = dclfAlgo.getNetwork();
@@ -73,7 +73,8 @@ public class AclfNetSensHelper {
 	/**
 	 * calculate AclfNetwork sensitivities GFS[gsf bus][active branch]
 	 * 
-	 * @return
+	 * @param gfsBusIdSet the set of bus IDs for which GFS is to be calculated
+	 * @return the GSF matrix
 	 */
 	public Sen2DMatrix calGFS(Set<String> gfsBusIdSet){
 		BaseAclfNetwork<?,?> aclfNet = dclfAlgo.getNetwork();
@@ -92,9 +93,11 @@ public class AclfNetSensHelper {
 	}
 	
 	/**
-	 * calculate AclfNetwork sensitivities GFS[gsf bus][mon branch]
+	 * calculate AclfNetwork sensitivities GFS[gsf bus][monitor branch]
 	 * 
-	 * @return
+	 * @param gfsBusIdSet the set of bus IDs for which GFS is to be calculated
+	 * @param branchIdSet the set of branch IDs to be monitored
+	 * @return the GSF matrix
 	 */
 	public Sen2DMatrix calGFS(Set<String> gfsBusIdSet, Set<String> branchIdSet){
 		BaseAclfNetwork<?,?> aclfNet = dclfAlgo.getNetwork();
