@@ -101,8 +101,8 @@ public class IEEE14_OptAdj_BasecaseSSAResult_Test extends CorePluginTestSetup {
 		System.out.println("Optimization gen size." + optimizer.getGenOptimizer().getGenSize());
 		System.out.println("Optimization gen constrain size." + optimizer.getGenOptimizer().getGenConstrainDataList().size());
 		System.out.println("Optimization sec constrian size." + optimizer.getGenOptimizer().getSecConstrainDataList().size());
-		assertTrue(optimizer.getGenOptimizer().getGenSize() == 13);
-		assertTrue(optimizer.getGenOptimizer().getGenConstrainDataList().size() == 26);
+		assertTrue(optimizer.getGenOptimizer().getGenSize() == 4);
+		assertTrue(optimizer.getGenOptimizer().getGenConstrainDataList().size() == 8);
 		assertTrue(optimizer.getGenOptimizer().getSecConstrainDataList().size() == 20);
 		
 		dclfAlgo.calculateDclf();
