@@ -21,7 +21,6 @@ import org.interpss.odm.mapper.ODMDStabParserMapper;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.dstab.DStabBus;
@@ -102,9 +101,9 @@ public class DStab_Relay_LowVoltLoadShed_Test extends DStabTestSetupBase{
 				dstabAlgo.setSimuOutputHandler(sm);
 				dstabAlgo.setOutPutPerSteps(5);
 		
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		//IpssLogger.getLogger().setLevel(Level.INFO);
 		
-		PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+		PerformanceTimer timer = new PerformanceTimer();
 		
 		//for(int i =1; i<20;i++){
 			

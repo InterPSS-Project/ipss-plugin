@@ -40,11 +40,12 @@ import com.interpss.common.util.IpssLogger;
  * @author mzhou
  *
  */
+@Deprecated
 public class IpssCorePlugin {
 	/**
 	 * Core plugin Sptring ctx file path
 	 */
-	public final static String CtxPath = "org/interpss/spring/CorePluginSpringCtx.xml";
+	//public final static String CtxPath = "org/interpss/spring/CorePluginSpringCtx.xml";
 	   
 	/**
 	 * initialize core plugin 

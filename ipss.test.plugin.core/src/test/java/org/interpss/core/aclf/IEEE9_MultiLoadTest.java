@@ -1,16 +1,17 @@
 package org.interpss.core.aclf;
 
+import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
+import static org.junit.Assert.assertTrue;
+
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
@@ -37,7 +38,7 @@ public class IEEE9_MultiLoadTest extends CorePluginTestSetup{
 		
 		//System.out.println(net.net2String());
 		
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
 	  	
   	    /*-------------------------

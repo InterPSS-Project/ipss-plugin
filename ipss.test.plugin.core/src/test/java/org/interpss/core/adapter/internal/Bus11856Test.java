@@ -35,7 +35,7 @@ import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.interpss.numeric.util.PerformanceTimer;
 import org.junit.Test;
 
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
@@ -102,7 +102,7 @@ public class Bus11856Test extends CorePluginTestSetup {
   	  		//System.out.println(net.net2String());
   		assertTrue((net.getBusList().size() == 11856));
 
-  		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+  		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
   		timer.start();
   		AclfNetHelper helper = new AclfNetHelper(net);
   		assertTrue(helper.checkSwingRefBus());

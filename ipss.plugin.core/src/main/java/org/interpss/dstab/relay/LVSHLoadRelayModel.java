@@ -7,7 +7,6 @@ import java.util.List;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Triplet;
 
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfLoad;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabBus;
@@ -16,8 +15,11 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.common.DStabOutSymbol;
 import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
 import com.interpss.dstab.dynLoad.DynLoadModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LVSHLoadRelayModel extends DynamicBusDeviceImpl implements BusRelayModel {
+    private static final Logger logger = LoggerFactory.getLogger(LVSHLoadRelayModel.class);
 
 	private static final String OUT_SYMBOL_STATUS = "RelayStatus";
 	// Triplet <voltage, time, fraction>
@@ -77,7 +79,7 @@ public class LVSHLoadRelayModel extends DynamicBusDeviceImpl implements BusRelay
 	public boolean action(double time) {
 		if(isActionTime(time)){ 
 		    applyLoadSheddingAction();
-		    IpssLogger.getLogger().info("LVSH load relay at time = "+time);
+		    logger.info("LVSH load relay at time = {}", time);
 		    this.isRelayTripped = false;
 		}
 		return true;
@@ -116,7 +118,7 @@ public class LVSHLoadRelayModel extends DynamicBusDeviceImpl implements BusRelay
 		
 		// check the relaySetPoints 
 		if (this.relaySetPoints == null || this.relaySetPoints.isEmpty()){
-			IpssLogger.getLogger().severe("No relay SetPoint is defined");
+			logger.error("No relay SetPoint is defined");
 			return false;
 		}
 		

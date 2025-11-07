@@ -16,7 +16,9 @@ import org.interpss.threePhase.powerflow.DistributionPFMethod;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
-import com.interpss.common.util.IpssLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.interpss.core.abc.Static3PXformer;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfGen;
@@ -40,6 +42,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	private Hashtable<String,Complex3x1> busVoltTable =null;
 	private boolean initBusVoltagesEnabled = true;
 	private boolean isAllPowerFlowConverged = false;
+
+	private static final Logger log = LoggerFactory.getLogger(DistributionPowerFlowAlgorithmImpl.class);
 
 
 	public DistributionPowerFlowAlgorithmImpl(){
@@ -191,7 +195,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				    // run power flow for each single island (as a subnetwork)
 					if(!powerflow_singleNet(subnet)) {
 
-						IpssLogger.getLogger().severe("Power flow does not converge in subnetwork #"+subnet.getId());
+						log.error("Power flow does not converge in subnetwork #"+subnet.getId());
 						return this.isAllPowerFlowConverged = false;
 					}
 		     }
@@ -292,7 +296,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			try {
 				throw new Exception("Error in odering the distribution buses");
 			} catch (Exception e) {
-				e.printStackTrace();
+				log.error("Error in ordering the distribution buses", e);
 			}
 		} else{
 			if(this.initBusVoltagesEnabled) {
@@ -304,7 +308,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			try {
 				throw new Exception("Error in iniitalizing the three-phase voltages of distribution buses");
 			} catch (Exception e) {
-				e.printStackTrace();
+				log.error("Error in initializing the three-phase voltages of distribution buses", e);
 			}
 		}
 		//step-3 applied a power flow solver forward/backward sweep algorithm.
@@ -312,7 +316,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 		        pfFlag =  FBSPowerflow();
 		        if(pfFlag) {
-		        	IpssLogger.getLogger().fine("The distribution network power flow is converged.");
+		        	log.info("The distribution network power flow is converged.");
 		        }
 			 }
 		else{

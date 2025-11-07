@@ -53,7 +53,10 @@ public class IEEE14_OptAdj_BasecaseSSAResult_Test extends CorePluginTestSetup {
 		net.getBranchList().stream()
 			.forEach(branch -> {
 				AclfBranch aclfBranch = (AclfBranch) branch;
-				aclfBranch.setRatingMva1(120.0);
+				// Mva1 is used for basecase loading limit
+				aclfBranch.setRatingMva1(100.0);
+				// Mva2 is used for contingency loading limit
+				aclfBranch.setRatingMva2(120.0);
 			});
 		
 		// define an caAlgo object and perform DCLF 

@@ -23,7 +23,6 @@
   */
 package org.interpss.plugin.pssl.simu.net;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
 import static com.interpss.common.util.NetUtilFunc.ToBranchId;
 import static com.interpss.core.funcImpl.AclfAdptFunction.loadBusAptr;
 import static com.interpss.core.funcImpl.AclfAdptFunction.swingBusAptr;
@@ -338,7 +337,9 @@ public class IpssAclfNet extends BaseDSL {
 
 	public static AclfBusDSL wrapAclfBus(AclfBus obj, AclfNetwork net) {
 		try { return new AclfBusDSL(obj, net); } 
-		catch (Exception e) { ipssLogger.severe(e.toString()); return null; }
+		catch (Exception e) { 
+			//ipssLogger.severe(e.toString()); 
+			return null; }
 	}
 
 	// ================ private implementation =======================
@@ -476,7 +477,9 @@ public class IpssAclfNet extends BaseDSL {
 
 	public static AclfBranchDSL wrapAclfBranch(AclfBranch obj, AclfNetwork net) {
 		try { return new AclfBranchDSL(obj, net);
-		} catch (Exception e) {	ipssLogger.severe(e.toString()); return null; }
+		} catch (Exception e) {	
+			//ipssLogger.severe(e.toString()); 
+			return null; }
 	}
 
 	// ================ private implementation =======================

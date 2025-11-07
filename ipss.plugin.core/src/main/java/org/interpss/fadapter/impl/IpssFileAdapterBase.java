@@ -1,4 +1,4 @@
- /*
+/*
   * @(#)IpssFileAdapterBase.java   
   *
   * Copyright (C) 2006-2007 www.interpss.org
@@ -24,8 +24,6 @@
 
 package org.interpss.fadapter.impl;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
-
 import java.io.File;
 
 import org.ieee.odm.ODMFileFormatEnum;
@@ -45,8 +43,11 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 import com.interpss.simu.SimuObjectFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class IpssFileAdapterBase implements IpssFileAdapter {
+    private static final Logger log = LoggerFactory.getLogger(IpssFileAdapterBase.class);
 	protected IPSSMsgHub msgHub;
 	private ODMFileFormatEnum format;
 	//private ODMAclfNetMapper.XfrBranchModel xfrBranchModel = ODMAclfNetMapper.XfrBranchModel.InterPSS;
@@ -84,7 +85,7 @@ public class IpssFileAdapterBase implements IpssFileAdapter {
 			IODMAdapter adapter = ODMObjectFactory.createODMAdapter(this.format);
 			loadByODMTransformation(adapter, simuCtx, filepath, msgHub, debug, outfile);
 		} catch (ODMException e) {
-			ipssLogger.severe(e.toString());
+			log.error(e.toString());
 			throw new InterpssException("Error while loading custom file through ODM, " + e.toString());
 		}
  	}
@@ -103,7 +104,7 @@ public class IpssFileAdapterBase implements IpssFileAdapter {
 		}
 		else {
   			msg.sendErrorMsg("Error to load file: " + filepath);
-  			ipssLogger.severe("Error to load file: " + filepath);
+  			log.error("Error to load file: " + filepath);
 		}
 	}
 	

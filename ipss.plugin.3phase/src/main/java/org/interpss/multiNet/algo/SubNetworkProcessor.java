@@ -10,7 +10,6 @@ import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
@@ -24,8 +23,11 @@ import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.DStabilityNetwork;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SubNetworkProcessor {
+    private static final Logger log = LoggerFactory.getLogger(SubNetworkProcessor.class);
 	
 	
 	
@@ -89,7 +91,7 @@ public class SubNetworkProcessor {
 		
 		}
 		else{
-			IpssLogger.getLogger().severe("The branchId is invalid # " +branchId);
+			log.error("The branchId is invalid # " +branchId);
 		}
 		
 	}
@@ -117,7 +119,7 @@ public class SubNetworkProcessor {
 			
 		}
 		else{
-			IpssLogger.getLogger().severe("The branchId is invalid # " +branchId);
+			log.error("The branchId is invalid # " +branchId);
 		}
 		
 		
@@ -213,7 +215,7 @@ public class SubNetworkProcessor {
 			k++;
 		}
 		else{
-			IpssLogger.getLogger().severe("The branchId is invalid # " + tieLineIdAry[k]);
+			log.error("The branchId is invalid # " + tieLineIdAry[k]);
 		}
 		
     	
@@ -255,7 +257,7 @@ public class SubNetworkProcessor {
 			 return flag = false;
 		 }
 		 else if(!faultBus.isActive()){
-			 IpssLogger.getLogger().severe("The input fault bus is off-line");
+			 log.error("The input fault bus is off-line");
 			 return flag = false;
 		 }
 		 else{
@@ -680,6 +682,6 @@ public class SubNetworkProcessor {
 			this.threePhaseSubNetIdList.add(this.subNetworkList.get(idx).getId());
 		}
 		else
-			IpssLogger.getLogger().severe("The input busId is not valid");
+			log.error("The input busId is not valid");
 	}
 }

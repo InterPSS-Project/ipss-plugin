@@ -1,5 +1,7 @@
 package org.interpss.core.adapter.psse.raw.acsc;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -20,11 +22,10 @@ import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.ComplexFunc;
 import org.interpss.odm.mapper.ODMAcscParserMapper;
-import static org.junit.Assert.assertTrue;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.AcscBus;
 import com.interpss.core.acsc.AcscNetwork;
@@ -61,7 +62,7 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 		
 		//System.out.println(net.net2String());
 		
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.PQ);
 	  	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 	  	algo.loadflow();
@@ -285,7 +286,7 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 		try {
 		    Files.write(Paths.get(dyrFileName), zoneSettings.getBytes());
 		    
-		    IpssLogger.getLogger().info("The zone 1/2/3 protection data is saved to :"+ dyrFileName);
+		    //IpssLogger.getLogger().info("The zone 1/2/3 protection data is saved to :"+ dyrFileName);
 		    System.out.println("The zone 1/2/3 protection data is saved to :"+ dyrFileName);
 		
 		} catch (IOException e) {
@@ -351,7 +352,7 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 			relayBranch = net.getBranch(relayRemoteBusId,relayBusId,circuitID);
 			
 			if(relayBranch==null){
-				IpssLogger.getLogger().severe("No line is found for the input bus numbers and ID:"+relayBusNum+","+relayRemoteBusNum+","+circuitID);
+				//IpssLogger.getLogger().severe("No line is found for the input bus numbers and ID:"+relayBusNum+","+relayRemoteBusNum+","+circuitID);
 			    return null;
 			}
 			else
@@ -436,7 +437,7 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 				  }
 			}
 			if(maxZapp<=relayBranch.getAdjustedZ().abs()){
-				IpssLogger.getLogger().severe("No proper zone 3 setting can be found, relayBus, remoteBus: "+relayBusId+","+relayRemoteBusId);
+				//IpssLogger.getLogger().severe("No proper zone 3 setting can be found, relayBus, remoteBus: "+relayBusId+","+relayRemoteBusId);
 			    return null;
 			}
 			 System.out.println("Apparent impedances:"+apparentImpedanceTable.toString());
@@ -489,7 +490,7 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 				if(relayBranch ==null){
 					relayBranch = net.getBranch(relayRemoteBusId,relayBusId,circuitID);
 					if(relayBranch==null){
-						IpssLogger.getLogger().severe("No line is found for the input bus numbers:"+relayBusNum+","+relayRemoteBusNum);
+						//IpssLogger.getLogger().severe("No line is found for the input bus numbers:"+relayBusNum+","+relayRemoteBusNum);
 					    return null;
 					}
 					else

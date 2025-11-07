@@ -24,7 +24,6 @@
 
 package org.interpss.odm.mapper.impl.mnet;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
 import static org.interpss.CorePluginFunction.AclfXmlNet2AclfNet;
 import static org.interpss.CorePluginFunction.DistXmlNet2DistNet;
 
@@ -47,6 +46,8 @@ import com.interpss.dist.DistBranch;
 import com.interpss.dist.DistBus;
 import com.interpss.dist.DistNetwork;
 import com.interpss.dist.DistObjectFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * AclfNet parent net Supported child net types: 1) AclfNet; 2) DistNet 
@@ -55,6 +56,7 @@ import com.interpss.dist.DistObjectFactory;
  *
  */
 public class MultiNetAclfHelper extends BaseMultiNetHelper {
+	private static final Logger log = LoggerFactory.getLogger(MultiNetAclfHelper.class);
 	private AclfNetwork parentAclfNet;
 	
 	public MultiNetAclfHelper(AclfNetwork net) {
@@ -73,16 +75,16 @@ public class MultiNetAclfHelper extends BaseMultiNetHelper {
 						mapDistChildNet(parentAclfNet, xmlChildDef);
 					} 
 					else
-						ipssLogger.warning("Only AclfNet and DistNet could be defined as Child network of AclfNet");
+						log.warn("Only AclfNet and DistNet could be defined as Child network of AclfNet");
 				}
 				else {
-					ipssLogger.severe("Child network reference cannot be located in the ChileNetList");
+					log.error("Child network reference cannot be located in the ChileNetList");
 					return false;
 				}
 			}
 			return true;
 		} catch (InterpssException e) {
-			ipssLogger.severe(e.toString());
+			log.error(e.toString());
 		}
 		return false;
 	}

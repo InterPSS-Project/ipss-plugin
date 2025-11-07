@@ -4,9 +4,10 @@ import java.util.ArrayList;
 
 import org.interpss.numeric.datatype.Point;
 import org.interpss.plugin.opf.OpfSolverFactory;
-import org.interpss.plugin.opf.common.OPFLogger;
 import org.interpss.plugin.opf.constraint.BaseConstraintCollector;
 import org.interpss.plugin.opf.constraint.OpfConstraint;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.interpss.core.common.curve.NumericCurveModel;
 import com.interpss.core.common.curve.PieceWiseCurve;
@@ -18,7 +19,8 @@ import cern.colt.list.DoubleArrayList;
 import cern.colt.list.IntArrayList;
 
 public class GenPWCostConstraintCollector extends BaseConstraintCollector{
-	
+    private static final Logger log = LoggerFactory.getLogger(GenPWCostConstraintCollector.class);
+    
 	public GenPWCostConstraintCollector(OpfNetwork opfNet,ArrayList<OpfConstraint> cstContainer) {
 		super(opfNet,cstContainer);			
 	}
@@ -35,7 +37,7 @@ public class GenPWCostConstraintCollector extends BaseConstraintCollector{
 				DoubleArrayList val = new DoubleArrayList();
 				NumericCurveModel incType = bus.getOpfGen().getIncCost().getCostModel();
 				if (incType.equals(NumericCurveModel.QUADRATIC)){
-					OPFLogger.getLogger().severe("Solver requires piecewise linear gen cost funtion" +
+					log.error("Solver requires piecewise linear gen cost funtion" +
 							" for generator at bus: "
 								+bus.getNumber());
 				}else{					
