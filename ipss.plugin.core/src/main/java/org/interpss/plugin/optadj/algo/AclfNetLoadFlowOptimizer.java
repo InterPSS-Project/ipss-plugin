@@ -14,6 +14,8 @@ import org.interpss.plugin.optadj.algo.util.AclfNetSensHelper;
 import org.interpss.plugin.optadj.optimizer.GenStateOptimizer;
 import org.interpss.plugin.optadj.optimizer.bean.GenConstrainData;
 import org.interpss.plugin.optadj.optimizer.bean.SectionConstrainData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfGen;
@@ -31,6 +33,8 @@ import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
  * 
  */
 public class AclfNetLoadFlowOptimizer {
+    private static final Logger log = LoggerFactory.getLogger(AclfNetLoadFlowOptimizer.class);
+    
 	// sensitivity threshold for the optimization
 	final static double SEN_THRESHOLD = 0.02;
 	

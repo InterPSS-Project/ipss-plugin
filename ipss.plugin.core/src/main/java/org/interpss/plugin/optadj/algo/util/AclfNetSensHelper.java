@@ -23,6 +23,7 @@ import com.interpss.core.common.ReferenceBusException;
 */
 public class AclfNetSensHelper {
     private static final Logger log = LoggerFactory.getLogger(AclfNetSensHelper.class);
+    
 	// a AclfNetwork object
 	private AclfNetwork aclfNet;
 	
