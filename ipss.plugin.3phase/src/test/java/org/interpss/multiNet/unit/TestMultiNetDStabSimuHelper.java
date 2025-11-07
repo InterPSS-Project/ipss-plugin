@@ -14,14 +14,14 @@ import org.interpss.display.AclfOutFunc;
 import org.interpss.multiNet.algo.MultiNetDStabSimuHelper;
 import org.interpss.multiNet.algo.SubNetworkProcessor;
 import org.interpss.multiNet.equivalent.NetworkEquivalent;
-import org.interpss.numeric.matrix.MatrixUtil;
+import org.interpss.numeric.matrix.FullMatrixUtil;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.odm.mapper.ODMDStabParserMapper;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.net.NetCoordinate;
 import com.interpss.dstab.BaseDStabNetwork;
@@ -64,7 +64,7 @@ public class TestMultiNetDStabSimuHelper {
 		
 	    DStabilityNetwork dsNet = (DStabilityNetwork) simuCtx.getDStabilityNet();
 		
-		LoadflowAlgorithm aclfAlgo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
+		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(dsNet);
 		assertTrue(aclfAlgo.loadflow());
 		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 		
@@ -101,7 +101,7 @@ public class TestMultiNetDStabSimuHelper {
 			  (0.005624740901572781, 0.02842605562067255), (0.058441502171763686, 0.19529838105182823), 
 		   */
 		  
-		  System.out.println("SubNet-1 eqv: \n"+MatrixUtil.complex2DAry2String(equiv_subNet1.getComplexEqn().getA()));
+		  System.out.println("SubNet-1 eqv: \n"+FullMatrixUtil.complex2DAry2String(equiv_subNet1.getComplexEqn().getA()));
 		  assertTrue(NumericUtil.equals(equiv_subNet1.getComplexEqn().getAij(0,0), new Complex(0.006112387800872096, 0.07952815643935975),1.0E-6));
 		  assertTrue(NumericUtil.equals(equiv_subNet1.getComplexEqn().getAij(0,1), new Complex(0.0056247409015727804, 0.02842605562067255),1.0E-6));
 		  assertTrue(NumericUtil.equals(equiv_subNet1.getComplexEqn().getAij(1,0), new Complex(0.005624740901572781, 0.02842605562067255),1.0E-6));
@@ -116,7 +116,7 @@ public class TestMultiNetDStabSimuHelper {
 			  (0.11337683562544085, 0.24325417157416276), (0.04343351865455726, 0.1244334898321662), 
 			  (0.04343351865455726, 0.12443348983216619), (0.022819398397765443, 0.14317671541236235), 
 		   */
-		  System.out.println("SubNet-2 eqv: \n"+MatrixUtil.complex2DAry2String(equiv_subNet2.getComplexEqn().getA()));
+		  System.out.println("SubNet-2 eqv: \n"+FullMatrixUtil.complex2DAry2String(equiv_subNet2.getComplexEqn().getA()));
 		  
 		  assertTrue(NumericUtil.equals(equiv_subNet2.getComplexEqn().getAij(0,0), new Complex(0.11337683562544085, 0.24325417157416276),1.0E-6));
 		  assertTrue(NumericUtil.equals(equiv_subNet2.getComplexEqn().getAij(0,1), new Complex(0.04343351865455726, 0.1244334898321662),1.0E-6));

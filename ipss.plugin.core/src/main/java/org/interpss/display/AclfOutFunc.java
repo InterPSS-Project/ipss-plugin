@@ -131,6 +131,7 @@ public class AclfOutFunc {
 					str.append(psXfrPControlToString(net));
 			}
 		} catch (Exception emsg) {
+			//emsg.printStackTrace();
 			str.append(emsg.toString());
 		}
 		
@@ -377,7 +378,7 @@ public class AclfOutFunc {
 	 */
 	public static String maxMismatchToString(BaseAclfNetwork<?, ?> net, String prefix) {
 		try {
-			double baseKVA = net.getBaseKva();
+			double baseMVA = net.getBaseMva();
 			String str = "\n"+prefix+"                         Max Power Mismatches\n"
 					+ prefix+"             Bus              dPmax       Bus              dQmax\n"
 					+ prefix+"            -------------------------------------------------------\n";
@@ -388,9 +389,9 @@ public class AclfOutFunc {
 			str += String.format("%-12s ", OutputBusId.f(mis.maxQBus, net.getOriginalDataFormat()));
 			str += String.format("%12.6f (pu)\n", mis.maxMis.getImaginary());
 			str += prefix+String.format("%24s", " ");
-			str += String.format("%12.6f0 ", baseKVA* mis.maxMis.getReal());
+			str += String.format("%12.6f0 ", baseMVA* mis.maxMis.getReal());
 			str += String.format("%14s", " ");
-			str += String.format("%12.6f (kva)\n", baseKVA * mis.maxMis.getImaginary());
+			str += String.format("%12.6f (mva)\n", baseMVA * mis.maxMis.getImaginary());
 			return str;
 		} catch (Exception emsg) {
 			return emsg.toString();
@@ -479,7 +480,7 @@ public class AclfOutFunc {
 			StringBuffer str, AclfBranch bra) {
 		if (bra.isActive()) {
 			AclfBranchRating adapter = branchRatingAptr.apply(bra);
-			if (adapter.isRatingViolated(CAViolationType.BRANCH_THERMAL_MVA_RATING, net.getBaseKva())) {
+			if (adapter.isRatingViolated(CAViolationType.BRANCH_THERMAL_MVA_RATING, net.getBaseMva())) {
 				str.append(Number2String.toStr(-25, bra.getId()));
 				Complex mva = bra.powerFrom2To(UnitType.mVA);
 				String side = "From";
@@ -534,7 +535,7 @@ public class AclfOutFunc {
 						UnitType.PU).getMax()));
 				str.append(Number2String.toStr("#####0.00", pv.getQLimit(
 						UnitType.PU).getMin()));
-				str.append(Number2String.toStr(6, pv.isActive() ? "on" : "off")
+				str.append(Number2String.toStr(6, pv.isControlStatus()&&pv.isAdjustStatus() ? "on" : "off")
 						+ "\n");
 			}
 		}
@@ -580,7 +581,7 @@ public class AclfOutFunc {
 				str.append(Number2String.toStr("##0.0000", pq
 						.getVLimit(UnitType.PU).getMin())
 						+ " ");
-				str.append(Number2String.toStr(5, pq.isActive() ? "on" : "off")
+				str.append(Number2String.toStr(5, pq.isControlStatus()&&pq.isAdjustStatus() ? "on" : "off")
 						+ "\n");
 			}
 		}
@@ -628,7 +629,7 @@ public class AclfOutFunc {
 						UnitType.PU).getMax()));
 				str.append(Number2String.toStr("#####0.00", re.getQLimit(
 						UnitType.PU).getMin()));
-				str.append(Number2String.toStr(6, re.isActive() ? "on" : "off")	+ "\n");
+				str.append(Number2String.toStr(6, re.isControlStatus()&&re.isAdjustStatus() ? "on" : "off")	+ "\n");
 			}
 		}
 		return str;
@@ -746,7 +747,7 @@ public class AclfOutFunc {
 				str.append(Number2String.toStr("0.000", x.getTurnRatioLimit().getMin())
 						+ "   ");
 				str.append(Number2String.toStr("####0", x.getTapStepSize()) + "  ");
-				str.append(Number2String.toStr(6, x.isActive() ? "on" : "off")
+				str.append(Number2String.toStr(6, x.isControlStatus()&&x.isAdjustStatus() ? "on" : "off")
 						+ "\n");
 			}
 		}
@@ -803,7 +804,7 @@ public class AclfOutFunc {
 				str.append(Number2String.toStr("#0.00", x.getAngLimit(UnitType.Deg)
 						.getMin())
 						+ " ");
-				str.append(Number2String.toStr(6, x.isActive() ? "on" : "off")
+				str.append(Number2String.toStr(6, x.isControlStatus()&&x.isAdjustStatus() ? "on" : "off")
 						+ "\n");
 			}
 		}

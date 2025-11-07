@@ -32,7 +32,7 @@ import org.interpss.numeric.util.NumericUtil;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
@@ -52,7 +52,7 @@ public class IEEECommonFormatTest extends CorePluginTestSetup {
   		//System.out.println(net.net2String());
 		assertTrue((net.getBusList().size() == 14 && net.getBranchList().size() == 20));
 
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 	  	
@@ -80,7 +80,7 @@ public class IEEECommonFormatTest extends CorePluginTestSetup {
   		//System.out.println(net.net2String());
 		assertTrue((net.getBusList().size() == 14 && net.getBranchList().size() == 20));
 
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 	  	
@@ -100,7 +100,7 @@ public class IEEECommonFormatTest extends CorePluginTestSetup {
 		AclfNetwork net = simuCtx.getAclfNet();
   		assertTrue(net.getBusList().size() == 39);
 
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 	  	
@@ -122,7 +122,7 @@ public class IEEECommonFormatTest extends CorePluginTestSetup {
 		AclfNetwork net = simuCtx.getAclfNet();
   		assertTrue((net.getBusList().size() == 30 && net.getBranchList().size() == 41));
 
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 	  	
@@ -143,7 +143,7 @@ public class IEEECommonFormatTest extends CorePluginTestSetup {
 		AclfNetwork net = simuCtx.getAclfNet();
   		assertTrue((net.getBusList().size() == 57 && net.getBranchList().size() == 80));
 
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 	  	
@@ -166,7 +166,7 @@ public class IEEECommonFormatTest extends CorePluginTestSetup {
 		AclfNetwork net = simuCtx.getAclfNet();
   		assertTrue((net.getBusList().size() == 118 && net.getBranchList().size() == 186));
 
-	  	LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(net);
+	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 	  	

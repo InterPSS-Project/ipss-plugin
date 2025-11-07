@@ -4,8 +4,11 @@ import java.util.Arrays;
 import java.util.Map;
 
 import org.apache.commons.math3.optim.linear.Relationship;
+import org.interpss.plugin.optadj.algo.util.AclfNetSensHelper;
 import org.interpss.plugin.optadj.optimizer.GenStateOptimizer;
 import org.interpss.plugin.optadj.optimizer.bean.SectionConstrainData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.DclfAlgoObjectFactory;
@@ -26,6 +29,8 @@ import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
  * 
  */
 public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
+    private static final Logger log = LoggerFactory.getLogger(AclfNetContigencyOptimizer.class);
+    
 	/**
 	 * Constructor
 	 * 
@@ -42,12 +47,12 @@ public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
 		AclfNetwork aclfNet = (AclfNetwork) dclfAlgo.getNetwork();
 		double baseMva = aclfNet.getBaseMva();
 		aclfNet.getBranchList().stream().filter(branch -> branch.isActive()).forEach(outBranch -> {
-			int outBranchNo = (int) (outBranch.getNumber() - 1);
+			int outBranchNo = outBranch.getSortNumber();
 			double[] genSenArray = new double[controlGenMap.size()];
 			DclfAlgoBranch outDclfBranch = dclfAlgo.getDclfAlgoBranch(outBranch.getId());
 
 			controlGenMap.forEach((no, gen) -> {
-				int busNo = (int) (gen.getParentBus().getNumber() - 1);
+				int busNo = gen.getParentBus().getSortNumber();
 				float sen = senMatrix[busNo][outBranchNo];
 				genSenArray[no] = sen;
 			});
@@ -57,30 +62,30 @@ public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
 						CaBranchOutageType.OPEN);
 				// lodf
 				try {
-					double[] lodf = dclfAlgo.lineOutageDFactors(caOutBranch);
+					double[] lodfAry = dclfAlgo.lineOutageDFactors(caOutBranch);
 					aclfNet.getBranchList().stream().filter(branch -> branch.isActive()).forEach(branch -> {
-						int branchNo = (int) (branch.getNumber() - 1);
+						int branchNo = branch.getSortNumber();
 						if (Arrays.stream(genSenArray)
-								.anyMatch(sen -> Math.abs(sen * lodf[branch.getSortNumber()]) > SEN_THRESHOLD)) {
+								.anyMatch(sen -> Math.abs(sen * lodfAry[branch.getSortNumber()]) > SEN_THRESHOLD)) {
 							DclfAlgoBranch dclfBranch = dclfAlgo.getDclfAlgoBranch(branch.getId());
 							double postFlow = dclfBranch.getDclfFlow()
-									+ lodf[branch.getSortNumber()] * outDclfBranch.getDclfFlow();
+									+ lodfAry[branch.getSortNumber()] * outDclfBranch.getDclfFlow();
 
 							controlGenMap.forEach((no, gen) -> {
-								int busNo = (int) (gen.getParentBus().getNumber() - 1);
+								int busNo = gen.getParentBus().getSortNumber();
 								// GSFij + LODF x GSFkm
 								float sen = (float) (senMatrix[busNo][branchNo]
-										+ lodf[branch.getSortNumber()] * senMatrix[busNo][outBranchNo]);
+										+ lodfAry[branch.getSortNumber()] * senMatrix[busNo][outBranchNo]);
 								genSenArray[no] = postFlow > 0 ? sen : -sen;
 							});
-							double limit = dclfBranch.getBranch().getRatingMva1() * threshold / 100;
+							double limit = dclfBranch.getBranch().getRatingMva2() * threshold / 100;
 							double postFlowMw = Math.abs(postFlow * baseMva); ;
 							genOptimizer.addConstraint(new SectionConstrainData(postFlowMw, Relationship.LEQ, limit, genSenArray));
 						}
 					});
 				} catch (InterpssException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					//e.printStackTrace();
+					log.error(e.toString());
 				}
 			}
 		});

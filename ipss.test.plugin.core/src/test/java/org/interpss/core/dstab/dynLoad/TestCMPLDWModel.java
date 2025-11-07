@@ -1,6 +1,6 @@
 package org.interpss.core.dstab.dynLoad;
 
-import java.util.logging.Level;
+import static org.junit.Assert.assertTrue;
 
 import org.ieee.odm.ODMFileFormatEnum;
 import org.ieee.odm.adapter.GenericODMAdapter;
@@ -14,14 +14,12 @@ import org.interpss.core.dstab.mach.TestSetupBase;
 import org.interpss.dstab.dynLoad.DynLoadCMPLDW;
 import org.interpss.dstab.dynLoad.impl.DynLoadCMPLDWImpl;
 import org.interpss.odm.mapper.ODMDStabParserMapper;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.common.CoreCommonFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.msg.IPSSMsgHub;
-import com.interpss.common.util.IpssLogger;
-import com.interpss.core.CoreObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -240,7 +238,7 @@ public class TestCMPLDWModel extends TestSetupBase {
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(5);
 
-		IpssLogger.getLogger().setLevel(Level.FINE);
+		//IpssLogger.getLogger().setLevel(Level.FINE);
 
 		
 		if (dstabAlgo.initialization()) {
@@ -273,7 +271,7 @@ public class TestCMPLDWModel extends TestSetupBase {
 	public void testCMPLDWInit() throws InterpssException{
 		IpssCorePlugin.init();
 		IPSSMsgHub msg = CoreCommonFactory.getIpssMsgHub();
-		IpssLogger.getLogger().setLevel(Level.WARNING);
+		//IpssLogger.getLogger().setLevel(Level.WARNING);
 		
 		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
@@ -296,7 +294,7 @@ public class TestCMPLDWModel extends TestSetupBase {
 		
 	    DStabilityNetwork dsNet =(DStabilityNetwork) simuCtx.getDStabilityNet();
 	    
-		LoadflowAlgorithm algo = CoreObjectFactory.createLoadflowAlgorithm(dsNet);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(dsNet);
 	  	algo.setLfMethod(AclfMethodType.PQ);
 	  	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 	  	algo.loadflow();
@@ -315,7 +313,7 @@ public class TestCMPLDWModel extends TestSetupBase {
 		
 		IpssCorePlugin.init();
 		IPSSMsgHub msg = CoreCommonFactory.getIpssMsgHub();
-		IpssLogger.getLogger().setLevel(Level.WARNING);
+		//IpssLogger.getLogger().setLevel(Level.WARNING);
     		
           GenericODMAdapter adapter = new GenericODMAdapter(ODMFileFormatEnum.PsseV30,ODMFileFormatEnum.GePSLF);
 		  
@@ -370,7 +368,7 @@ public class TestCMPLDWModel extends TestSetupBase {
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(5);
 			
-			IpssLogger.getLogger().setLevel(Level.FINE);
+			//IpssLogger.getLogger().setLevel(Level.FINE);
 			
 			
 			if (dstabAlgo.initialization()) {
@@ -445,7 +443,7 @@ public class TestCMPLDWModel extends TestSetupBase {
 		
 		IpssCorePlugin.init();
 		IPSSMsgHub msg = CoreCommonFactory.getIpssMsgHub();
-		IpssLogger.getLogger().setLevel(Level.WARNING);
+		//IpssLogger.getLogger().setLevel(Level.WARNING);
     		
           GenericODMAdapter adapter = new GenericODMAdapter(ODMFileFormatEnum.PsseV30,ODMFileFormatEnum.GePSLF);
 		  
@@ -500,7 +498,7 @@ public class TestCMPLDWModel extends TestSetupBase {
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(5);
 			
-			IpssLogger.getLogger().setLevel(Level.FINE);
+			//IpssLogger.getLogger().setLevel(Level.FINE);
 			
 			
 			if (dstabAlgo.initialization()) {
