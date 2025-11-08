@@ -25,7 +25,10 @@
 package org.interpss.core.optadj;
 
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import java.util.Map;
 
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
@@ -98,6 +101,12 @@ public class IEEE14_OptAdj_BasecaseSSAResult_Test extends CorePluginTestSetup {
 		// perform the Optimization adjustment
 		AclfNetLoadFlowOptimizer optimizer = new AclfNetLoadFlowOptimizer(dclfAlgo);
 		optimizer.optimize(ssaResults, 100);
+		
+		Map<String, Double> resultMap = optimizer.getResultMap();
+		System.out.println(resultMap);
+		
+		assertEquals(resultMap.get("Bus2-G1"), 0.5713, 0.0001);
+		
 		System.out.println("Optimization gen size." + optimizer.getGenOptimizer().getGenSize());
 		System.out.println("Optimization gen constrain size." + optimizer.getGenOptimizer().getGenConstrainDataList().size());
 		System.out.println("Optimization sec constrian size." + optimizer.getGenOptimizer().getSecConstrainDataList().size());
