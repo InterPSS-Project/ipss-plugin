@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.math3.optim.linear.Relationship;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.plugin.optadj.algo.result.AclfNetSsaResultContainer;
-import org.interpss.plugin.optadj.algo.util.AclfNetSensHelper;
+import org.interpss.plugin.optadj.algo.util.AclfNetGFSsHelper;
 import org.interpss.plugin.optadj.algo.util.Sen2DMatrix;
 import org.interpss.plugin.optadj.optimizer.GenStateOptimizer;
 import org.interpss.plugin.optadj.optimizer.bean.GenConstrainData;
@@ -82,16 +82,16 @@ public class AclfNetLoadFlowOptimizer {
 		
 		AclfNetwork aclfNet = dclfAlgo.getAclfNet();
 
-		AclfNetSensHelper helper = new AclfNetSensHelper(aclfNet);
+		AclfNetGFSsHelper helper = new AclfNetGFSsHelper(aclfNet);
 		Sen2DMatrix gsfMatrix = helper.calGFS();
 		
 		Map<Integer, AclfGen> controlGenMap = null;
 		if (result == null) {
-			controlGenMap = AclfNetSensHelper.arrangeIndex(aclfNet.getAclfGenNameLookupTable().values().stream()
+			controlGenMap = AclfNetGFSsHelper.arrangeIndex(aclfNet.getAclfGenNameLookupTable().values().stream()
 											    .filter(gen -> gen.isActive())
 											    .collect(Collectors.toSet()));
 		} else {
-			controlGenMap = AclfNetSensHelper.arrangeIndex(buildControlGenSet(gsfMatrix, result));
+			controlGenMap = AclfNetGFSsHelper.arrangeIndex(buildControlGenSet(gsfMatrix, result));
 		}
 		
 		buildSectionConstrain(gsfMatrix, controlGenMap, threshold);
