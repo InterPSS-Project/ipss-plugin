@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Map;
 
 import org.apache.commons.math3.optim.linear.Relationship;
-import org.interpss.plugin.optadj.algo.util.AclfNetSensHelper;
+import org.interpss.plugin.optadj.algo.util.AclfNetLODFsHelper;
 import org.interpss.plugin.optadj.algo.util.Sen2DMatrix;
 import org.interpss.plugin.optadj.optimizer.bean.SectionConstrainData;
 import org.slf4j.Logger;
@@ -42,7 +42,7 @@ public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
 		super.buildSectionConstrain(gfsMatrix, controlGenMap, threshold);
 		
 		AclfNetwork aclfNet = (AclfNetwork) dclfAlgo.getNetwork();
-		AclfNetSensHelper helper = new AclfNetSensHelper(aclfNet);
+		AclfNetLODFsHelper helper = new AclfNetLODFsHelper(aclfNet);
 		Sen2DMatrix lodfMatrix = helper.calLODF();
 		
 		double baseMva = aclfNet.getBaseMva();
