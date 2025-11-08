@@ -32,6 +32,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
@@ -122,6 +123,12 @@ public class IEEE14_OptAdj_N1ScanSSAResult_Test extends CorePluginTestSetup {
 		
 		AclfNetContigencyOptimizer optimizer = new AclfNetContigencyOptimizer(dclfAlgo);
 		optimizer.optimize(ssaResults, 100);
+		
+		Map<String, Double> resultMap = optimizer.getResultMap();
+		System.out.println(resultMap);
+		
+		assertEquals(resultMap.get("Bus3-G1"), 0.99, 0.0001);
+		
 		System.out.println("Optimization gen size." + optimizer.getGenOptimizer().getGenSize());
 		System.out.println("Optimization gen constrain size." + optimizer.getGenOptimizer().getGenConstrainDataList().size());
 		System.out.println("Optimization sec constrian size." + optimizer.getGenOptimizer().getSecConstrainDataList().size());
@@ -140,13 +147,13 @@ public class IEEE14_OptAdj_N1ScanSSAResult_Test extends CorePluginTestSetup {
 						//System.out.println(resultRec.aclfBranch.getId() + 
 						//		", " + resultRec.contingency.getId() +
 						//		" postContFlow: " + resultRec.getPostFlowMW());
-						double loading = resultRec.calLoadingPercent();
+						double loading = resultRec.calLoadingPercent(resultRec.aclfBranch.getRatingMva2());
 						if (loading > 100.0) {
 							cnt1.increment();
 							System.out.println("Branch: " + resultRec.aclfBranch.getId() + 
 									" outage: " + resultRec.contingency.getId() +
 									" postFlow: " + resultRec.getPostFlowMW() +
-									" rating: " + resultRec.aclfBranch.getRatingMva1() +
+									" rating: " + resultRec.aclfBranch.getRatingMva2() +
 									" loading: " + resultRec.calLoadingPercent());
 						}
 					});
