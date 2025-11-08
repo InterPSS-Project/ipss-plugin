@@ -10,7 +10,8 @@ import java.util.Set;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
-import org.interpss.plugin.optadj.algo.util.AclfNetSensHelper;
+import org.interpss.plugin.optadj.algo.util.AclfNetGFSsHelper;
+import org.interpss.plugin.optadj.algo.util.AclfNetLODFsHelper;
 import org.interpss.plugin.optadj.algo.util.Sen2DMatrix;
 import org.junit.Test;
 
@@ -25,7 +26,7 @@ public class IEEE14_SensHelper_Test extends CorePluginTestSetup {
 				.load("testData/adpter/ieee_format/ieee14.ieee")
 				.getAclfNet();
 		
-		AclfNetSensHelper senHelper = new AclfNetSensHelper(net);
+		AclfNetGFSsHelper senHelper = new AclfNetGFSsHelper(net);
 		
 		Sen2DMatrix gfs = senHelper.calGFS();
 		
@@ -95,7 +96,7 @@ public class IEEE14_SensHelper_Test extends CorePluginTestSetup {
 				.load("testData/adpter/ieee_format/ieee14.ieee")
 				.getAclfNet();
 		
-		AclfNetSensHelper senHelper = new AclfNetSensHelper(net);
+		AclfNetLODFsHelper senHelper = new AclfNetLODFsHelper(net);
 		
 		Sen2DMatrix lodf = senHelper.calLODF();
 		
