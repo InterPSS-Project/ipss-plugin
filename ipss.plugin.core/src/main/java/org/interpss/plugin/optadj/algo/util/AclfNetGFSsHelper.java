@@ -3,12 +3,14 @@ package org.interpss.plugin.optadj.algo.util;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.interpss.numeric.exp.IpssNumericException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
@@ -106,6 +108,33 @@ public class AclfNetGFSsHelper extends BaseAclfNetSensHelper {
 		
 		return senMatrix;
 		
+	}
+	
+	/**
+	 * calculate AclfNetwork sensitivities GFS for the specified generator set
+	 * 
+	 * @param genSet the set of generators for which GFS is to be calculated
+	 * @return the GSF matrix
+	 */
+	public Sen2DMatrix calGenGFS(Set<AclfGen> genSet){
+		Set<String> gfsBusIdSet = genSet.stream()
+				.map(gen -> gen.getParentBus().getId())
+				.collect(Collectors.toSet());
+		return calGFS(gfsBusIdSet);
+	}
+	
+	/**
+	 * calculate AclfNetwork sensitivities GFS for the specified generator set
+	 * 
+	 * @param genSet the set of generators for which GFS is to be calculated
+	 * @param monBranchIdSet the set of branch IDs to be monitored
+	 * @return the GSF matrix
+	 */
+	public Sen2DMatrix calGenGFS(Set<AclfGen> genSet, Set<String> monBranchIdSet){
+		Set<String> gfsBusIdSet = genSet.stream()
+				.map(gen -> gen.getParentBus().getId())
+				.collect(Collectors.toSet());
+		return calGFS(gfsBusIdSet, monBranchIdSet);
 	}
 	
 	private void setGfsRowIndex(BaseAclfNetwork<?,?> aclfNet, Sen2DMatrix senMatrix, Set<String> gfsBusIdSet) {
