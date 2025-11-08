@@ -82,14 +82,17 @@ public class AclfNetLoadFlowOptimizer {
 		
 		AclfNetwork aclfNet = dclfAlgo.getAclfNet();
 
+		Set<AclfGen> controlGenSet = aclfNet.getAclfGenNameLookupTable().values().stream()
+		    .filter(gen -> gen.isActive())
+		    .collect(Collectors.toSet());
+		
+		// we only calculate GFS matrix for all generators
 		AclfNetGFSsHelper helper = new AclfNetGFSsHelper(aclfNet);
-		Sen2DMatrix gsfMatrix = helper.calGFS();
+		Sen2DMatrix gsfMatrix = helper.calGenGFS(controlGenSet);
 		
 		Map<Integer, AclfGen> controlGenMap = null;
 		if (result == null) {
-			controlGenMap = AclfNetGFSsHelper.arrangeIndex(aclfNet.getAclfGenNameLookupTable().values().stream()
-											    .filter(gen -> gen.isActive())
-											    .collect(Collectors.toSet()));
+			controlGenMap = AclfNetGFSsHelper.arrangeIndex(controlGenSet);
 		} else {
 			controlGenMap = AclfNetGFSsHelper.arrangeIndex(buildControlGenSet(gsfMatrix, result));
 		}
