@@ -28,6 +28,8 @@ import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisA
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Map;
+
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
@@ -38,6 +40,7 @@ import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
+import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 
@@ -91,11 +94,18 @@ public class IEEE14_OptAdj_Basecase_Test extends CorePluginTestSetup {
 		// perform the Optimization adjustment
 		AclfNetLoadFlowOptimizer optimizer = new AclfNetLoadFlowOptimizer(dclfAlgo);
 		optimizer.optimize(100);
+		
+		Map<String, Double> resultMap = optimizer.getResultMap();
+		System.out.println(resultMap);
+		
+		assertEquals(resultMap.get("Bus2-G1"), 0.5713, 0.0001);
+		assertEquals(resultMap.get("Bus1-G1"), -0.5713, 0.0001);
+		
 		System.out.println("Optimization gen size." + optimizer.getGenOptimizer().getGenSize());
 		System.out.println("Optimization gen constrain size." + optimizer.getGenOptimizer().getGenConstrainDataList().size());
 		System.out.println("Optimization sec constrian size." + optimizer.getGenOptimizer().getSecConstrainDataList().size());
-		assertTrue(optimizer.getGenOptimizer().getGenSize() == 5);
-		assertTrue(optimizer.getGenOptimizer().getGenConstrainDataList().size() == 10);
+		assertEquals(optimizer.getGenOptimizer().getGenSize(), 5);
+		assertEquals(optimizer.getGenOptimizer().getGenConstrainDataList().size(), 10);
 		assertEquals(optimizer.getGenOptimizer().getSecConstrainDataList().size(), 20);
 		
 		dclfAlgo.calculateDclf();
