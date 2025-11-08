@@ -6,20 +6,14 @@ public class Sen2DMatrix {
 	private int[] rowIndex, colIndex;
 	
 	public Sen2DMatrix(int row, int col) {
-		this(row, col, true);
-	}
-	
-	public Sen2DMatrix(int row, int col, boolean initIndex) {
 		data = new double[row][col];
-		if (initIndex) {
-			rowIndex = new int[row];
-			colIndex = new int[col];
-			for (int i = 0; i < row; i++) {
-				rowIndex[i] = i;
-			}
-			for (int j = 0; j < col; j++) {
-				colIndex[j] = j;
-			}
+		rowIndex = new int[row];
+		colIndex = new int[col];
+		for (int i = 0; i < row; i++) {
+			rowIndex[i] = i;
+		}
+		for (int j = 0; j < col; j++) {
+			colIndex[j] = j;
 		}
 	}
 	
