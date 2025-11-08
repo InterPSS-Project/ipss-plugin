@@ -42,6 +42,8 @@ public class AclfNetLoadFlowOptimizer {
 	// a contingency analysis algorithm object based on which the optimization is performed
 	protected ContingencyAnalysisAlgorithm dclfAlgo;
 	
+	protected Map<Integer, AclfGen> controlGenMap;
+	
 	protected GenStateOptimizer genOptimizer;
 	
 	/**
@@ -60,6 +62,15 @@ public class AclfNetLoadFlowOptimizer {
 	 */
 	public GenStateOptimizer getGenOptimizer() {
 		return genOptimizer;
+	}
+	
+	/**
+	 * Get the control generator map used in the optimization
+	 * 
+	 * @return the control generator map
+	 */
+	public Map<Integer, AclfGen> getControlGenMap() {
+		return controlGenMap;
 	}
 
 	/**
@@ -90,20 +101,20 @@ public class AclfNetLoadFlowOptimizer {
 		AclfNetGFSsHelper helper = new AclfNetGFSsHelper(aclfNet);
 		Sen2DMatrix gsfMatrix = helper.calGenGFS(controlGenSet);
 		
-		Map<Integer, AclfGen> controlGenMap = null;
+		//Map<Integer, AclfGen> controlGenMap = null;
 		if (result == null) {
 			controlGenMap = AclfNetGFSsHelper.arrangeIndex(controlGenSet);
 		} else {
 			controlGenMap = AclfNetGFSsHelper.arrangeIndex(buildControlGenSet(gsfMatrix, result));
 		}
 		
-		buildSectionConstrain(gsfMatrix, controlGenMap, threshold);
+		buildSectionConstrain(gsfMatrix, threshold);
 
-		buildGenConstrain(controlGenMap);
+		buildGenConstrain();
 
 		genOptimizer.optimize();
 
-		updatedDclfalgo(controlGenMap);
+		updatedDclfalgo();
 	}
 
 	protected Set<AclfGen> buildControlGenSet(Sen2DMatrix gfsMatrix, AclfNetSsaResultContainer result) {
@@ -134,14 +145,30 @@ public class AclfNetLoadFlowOptimizer {
 			}
 		});
 	}
-
-	protected void updatedDclfalgo(Map<Integer, AclfGen> genMap) {
+	
+	/**
+	 * Get the optimization result map
+	 * 
+	 * @return the optimization result map, key: generator name, value: adjusted Pgen in PU
+	 */
+	public Map<String, Double> getResultMap() {
+		Map<String, Double> resultMap = new HashMap<>();
 		double baseMva = dclfAlgo.getNetwork().getBaseMva();
-		for (int i = 0; i < genMap.size(); i++) {
+		for (int i = 0; i < controlGenMap.size(); i++) {
 			if (Math.abs(genOptimizer.getPoint()[i]) > 1) {
-				AclfGen gen = genMap.get(i);
-				// TODO output the result
-				System.out.println(gen.getName() + "," + genOptimizer.getPoint()[i] + " mw");
+				AclfGen gen = controlGenMap.get(i);
+				resultMap.put(gen.getName(), genOptimizer.getPoint()[i] / baseMva);
+			}
+		}
+		return resultMap;
+	}
+
+	protected void updatedDclfalgo() {
+		double baseMva = dclfAlgo.getNetwork().getBaseMva();
+		for (int i = 0; i < controlGenMap.size(); i++) {
+			if (Math.abs(genOptimizer.getPoint()[i]) > 1) {
+				AclfGen gen = controlGenMap.get(i);
+				log.info(gen.getName() + "," + genOptimizer.getPoint()[i] + " mw");
 				dclfAlgo.getDclfAlgoBus(gen.getParentBus().getId())
 						.getGen(gen.getName()).get()
 						.setAdjust(genOptimizer.getPoint()[i] / baseMva);
@@ -149,8 +176,7 @@ public class AclfNetLoadFlowOptimizer {
 		}
 	}
 
-	protected void buildSectionConstrain(Sen2DMatrix gfsMatrix,
-			Map<Integer, AclfGen> controlGenMap, double threshold) {
+	protected void buildSectionConstrain(Sen2DMatrix gfsMatrix, double threshold) {
 		AclfNetwork net = dclfAlgo.getAclfNet();
 		double baseMva = net.getBaseMva();
 		net.getBranchList().stream().filter(branch -> branch.isActive()).forEach(branch -> {
@@ -171,15 +197,15 @@ public class AclfNetLoadFlowOptimizer {
 		});
 	}
 
-	protected void buildGenConstrain(Map<Integer, AclfGen> genMap) {
+	protected void buildGenConstrain() {
 		AclfNetwork net = dclfAlgo.getAclfNet();
 		double baseMva = net.getBaseMva();
-		genMap.forEach((no, gen) -> {
+		controlGenMap.forEach((no, gen) -> {
 			LimitType genLimit = gen.getPGenLimit();
-			genOptimizer.addConstraint(
-					new GenConstrainData(gen.getGen().getReal() * baseMva, Relationship.LEQ, genLimit.getMax() * 100, no));
-			genOptimizer.addConstraint(
-					new GenConstrainData(gen.getGen().getReal() * baseMva, Relationship.GEQ, genLimit.getMin() * 100, no));
+			genOptimizer.addConstraint(new GenConstrainData(gen.getGen().getReal() * baseMva, 
+												Relationship.LEQ, genLimit.getMax() * baseMva, no));
+			genOptimizer.addConstraint(new GenConstrainData(gen.getGen().getReal() * baseMva, 
+												Relationship.GEQ, genLimit.getMin() * baseMva, no));
 		});
 	}
 
