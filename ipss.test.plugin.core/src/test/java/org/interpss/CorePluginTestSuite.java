@@ -65,6 +65,7 @@ import org.interpss.core.optadj.IEEE14_OptAdj_BasecaseSSAResult_Test;
 import org.interpss.core.optadj.IEEE14_OptAdj_Basecase_Test;
 import org.interpss.core.optadj.IEEE14_OptAdj_N1ScanSSAResult_Test;
 import org.interpss.core.optadj.IEEE14_OptAdj_N1Scan_Test;
+import org.interpss.core.optadj.IEEE14_SensHelper_Test;
 import org.interpss.core.script.mvel.MvelExprEval_Test;
 import org.interpss.core.zeroz.IEEE14ZeroZBranchAclfTest;
 import org.interpss.core.zeroz.IEEE14ZeroZBranchDeconsolidateTest;
@@ -142,6 +143,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	IEEE118_EDclf_Test.class,
 	
 	// Optimization adjustment
+	IEEE14_SensHelper_Test.class,
 	IEEE14_OptAdj_Basecase_Test.class,
 	IEEE14_OptAdj_N1Scan_Test.class,
 	IEEE14_OptAdj_BasecaseSSAResult_Test.class,
