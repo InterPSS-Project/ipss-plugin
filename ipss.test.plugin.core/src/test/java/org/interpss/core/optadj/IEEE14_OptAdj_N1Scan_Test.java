@@ -94,12 +94,12 @@ public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
 						//System.out.println(resultRec.aclfBranch.getId() + 
 						//		", " + resultRec.contingency.getId() +
 						//		" postContFlow: " + resultRec.getPostFlowMW());
-						double loading = resultRec.calLoadingPercent();
+						double loading = resultRec.calLoadingPercent(resultRec.aclfBranch.getRatingMva2());
 						if (loading > 100.0) {
 							cnt.increment();
 							System.out.println("OverLimit Branch: " + resultRec.aclfBranch.getId() + " outage: "
 											+ resultRec.contingency.getId() + " postFlow: " + resultRec.getPostFlowMW()
-											+ " rating: " + resultRec.aclfBranch.getRatingMva1() + " loading: "
+											+ " rating: " + resultRec.aclfBranch.getRatingMva2() + " loading: "
 											+ loading);
 						}
 					});
