@@ -83,9 +83,12 @@ public class AclfNetLoadFlowOptimizer {
 	}
 	
 	/**
-	 * Optimize the generator state of the network based on the SSA analysis results
+	 * Optimize the generator state of the network based on the SSA analysis results.
 	 * 
-	 * @param result SSA analysis result container
+	 * Please note : When SSA result is provided, we only select the generators with large enough Sen
+		             related to the over limit branches for the optimization
+	 * 
+	 * @param result SSA (basecase plus optional N-1) analysis result container
 	 * @param threshold over limit threshold in percentage
 	 */
 	public void optimize(AclfNetSsaResultContainer result, double threshold) {
@@ -101,12 +104,12 @@ public class AclfNetLoadFlowOptimizer {
 		AclfNetGFSsHelper helper = new AclfNetGFSsHelper(aclfNet);
 		Sen2DMatrix gsfMatrix = helper.calGenGFS(controlGenSet);
 		
-		//Map<Integer, AclfGen> controlGenMap = null;
-		if (result == null) {
-			controlGenMap = AclfNetGFSsHelper.arrangeIndex(controlGenSet);
-		} else {
-			controlGenMap = AclfNetGFSsHelper.arrangeIndex(buildControlGenSet(gsfMatrix, result));
-		}
+		// When SSA result is provided, we only select the generators with large enough Sen
+		// related to the over limit branches for the optimization
+		if (result != null) 
+			controlGenSet = buildControlGenSet(gsfMatrix, result);
+		
+		controlGenMap = AclfNetGFSsHelper.arrangeIndex(controlGenSet);
 		
 		buildSectionConstrain(gsfMatrix, threshold);
 
@@ -189,6 +192,7 @@ public class AclfNetLoadFlowOptimizer {
 				double sen = gfsMatrix.get(busNo, branchNo);
 				genSenArray[no] = dclfBranch.getDclfFlow() > 0 ? sen : -sen;
 			});
+			
 			if (Arrays.stream(genSenArray).anyMatch(sen -> Math.abs(sen) > SEN_THRESHOLD)) {
 				double limit = dclfBranch.getBranch().getRatingMva1() * threshold / 100;
 				double flowMw = Math.abs(dclfBranch.getDclfFlow() * baseMva);
