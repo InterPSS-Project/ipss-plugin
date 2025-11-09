@@ -33,20 +33,7 @@ import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 public class IEEE14_OptAdj_SelOutge_Test extends CorePluginTestSetup {
 	@Test
 	public void test() throws InterpssException {
-		AclfNetwork net = CorePluginFactory
-				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testData/adpter/ieee_format/ieee14.ieee")
-				.getAclfNet();
-		
-		// set the branch rating.
-		net.getBranchList().stream()
-			.forEach(branch -> {
-				AclfBranch aclfBranch = (AclfBranch) branch;
-				// Mva1 is used for basecase loading limit
-				aclfBranch.setRatingMva1(100.0);
-				// Mva2 is used for contingency loading limit
-				aclfBranch.setRatingMva2(120.0);
-			});
+		AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
 		
 		/*
 		Bus2->Bus5(1) Bus9->Bus14(1) Bus13->Bus14(1) Bus12->Bus13(1) Bus3->Bus4(1) Bus5->Bus6(1)
@@ -100,13 +87,6 @@ public class IEEE14_OptAdj_SelOutge_Test extends CorePluginTestSetup {
 			});
 		System.out.println("Total number of branches over limit before OptAdj: " + cnt.getCount());
 		assertTrue(""+cnt.getCount(), cnt.getCount() == 18);
-
-		net.createAclfGenNameLookupTable(false).forEach((k, gen) -> {
-			System.out.println("Adj Gen: " + gen.getName());
-			if (gen.getPGenLimit() == null) {
-				gen.setPGenLimit(new LimitType(5, 0));
-			} 
-		});
 		 
 		AclfNetContigencyOptimizer optimizer = new AclfNetContigencyOptimizer(dclfAlgo);
 		optimizer.optimize(100, outBranchIdSet);
