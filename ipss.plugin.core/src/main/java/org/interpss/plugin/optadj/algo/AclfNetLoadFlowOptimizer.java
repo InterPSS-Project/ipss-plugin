@@ -42,8 +42,10 @@ public class AclfNetLoadFlowOptimizer {
 	// a contingency analysis algorithm object based on which the optimization is performed
 	protected ContingencyAnalysisAlgorithm dclfAlgo;
 	
+	// control generator map used in the optimization, key: index used in the optimizer, value: AclfGen object
 	protected Map<Integer, AclfGen> controlGenMap;
 	
+	// the GenState optimizer object created during the optimization
 	protected GenStateOptimizer genOptimizer;
 	
 	/**
@@ -109,17 +111,29 @@ public class AclfNetLoadFlowOptimizer {
 		if (result != null) 
 			controlGenSet = buildControlGenSet(gsfMatrix, result);
 		
+		// create the control generator map from the control generator set
 		controlGenMap = AclfNetGFSsHelper.arrangeIndex(controlGenSet);
 		
+		// build the branch section constraints based on the GFS matrix
 		buildSectionConstrain(gsfMatrix, threshold);
 
+		// build the generator output constraints
 		buildGenConstrain();
 
+		// perform the optimization
 		genOptimizer.optimize();
 
+		//
 		updatedDclfalgo();
 	}
 
+	/**
+	 * Build the control generator set based on the SSA result
+	 * 
+	 * @param gfsMatrix GFS matrix for all generators
+	 * @param result SSA result container
+	 * @return the control generator set
+	 */
 	protected Set<AclfGen> buildControlGenSet(Sen2DMatrix gfsMatrix, AclfNetSsaResultContainer result) {
 		Set<AclfGen> genSet = new LinkedHashSet<AclfGen>();
 		result.getBaseOverLimitInfo().forEach(info -> {
@@ -166,6 +180,9 @@ public class AclfNetLoadFlowOptimizer {
 		return resultMap;
 	}
 
+	/**
+	 * Update the DCLF algorithm object gen.adjust based on the optimization result
+	 */
 	protected void updatedDclfalgo() {
 		double baseMva = dclfAlgo.getNetwork().getBaseMva();
 		for (int i = 0; i < controlGenMap.size(); i++) {
@@ -179,6 +196,12 @@ public class AclfNetLoadFlowOptimizer {
 		}
 	}
 
+	/**
+	 * Build the branch section constraints based on the GFS matrix
+	 * 
+	 * @param gfsMatrix GFS matrix for all generators
+	 * @param threshold over limit threshold in percentage
+	 */
 	protected void buildSectionConstrain(Sen2DMatrix gfsMatrix, double threshold) {
 		AclfNetwork net = dclfAlgo.getAclfNet();
 		double baseMva = net.getBaseMva();
@@ -201,6 +224,9 @@ public class AclfNetLoadFlowOptimizer {
 		});
 	}
 
+	/**
+	 * Build the generator output constraints
+	 */
 	protected void buildGenConstrain() {
 		AclfNetwork net = dclfAlgo.getAclfNet();
 		double baseMva = net.getBaseMva();
