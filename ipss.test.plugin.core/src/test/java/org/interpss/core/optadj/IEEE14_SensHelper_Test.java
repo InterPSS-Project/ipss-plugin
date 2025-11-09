@@ -163,7 +163,7 @@ public class IEEE14_SensHelper_Test extends CorePluginTestSetup {
 		
 		// set the generator Pgen limit
 		net.createAclfGenNameLookupTable(false).forEach((k, gen) -> {
-			System.out.println("Adj Gen: " + gen.getName());
+			//System.out.println("Adj Gen: " + gen.getName());
 			if (gen.getPGenLimit() == null) {
 				gen.setPGenLimit(new LimitType(5, 0));
 			}
