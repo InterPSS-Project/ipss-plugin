@@ -10,21 +10,20 @@ import java.util.Set;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
+import org.interpss.numeric.datatype.LimitType;
 import org.interpss.plugin.optadj.algo.util.AclfNetGFSsHelper;
 import org.interpss.plugin.optadj.algo.util.AclfNetLODFsHelper;
 import org.interpss.plugin.optadj.algo.util.Sen2DMatrix;
 import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 
 public class IEEE14_SensHelper_Test extends CorePluginTestSetup {
 	@Test
 	public void gsfTest() throws InterpssException {
-		AclfNetwork net = CorePluginFactory
-				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testData/adpter/ieee_format/ieee14.ieee")
-				.getAclfNet();
+		AclfNetwork net = createSenTestCase();
 		
 		AclfNetGFSsHelper senHelper = new AclfNetGFSsHelper(net);
 		
@@ -91,10 +90,7 @@ public class IEEE14_SensHelper_Test extends CorePluginTestSetup {
 	
 	@Test
 	public void lodfTest() throws InterpssException {
-		AclfNetwork net = CorePluginFactory
-				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testData/adpter/ieee_format/ieee14.ieee")
-				.getAclfNet();
+		AclfNetwork net = createSenTestCase();
 		
 		AclfNetLODFsHelper senHelper = new AclfNetLODFsHelper(net);
 		
@@ -147,6 +143,33 @@ public class IEEE14_SensHelper_Test extends CorePluginTestSetup {
 		assertEquals(0.285, lodf.get(ni, nj), 0.001);   
 		nj = net.getBranch("Bus4->Bus5(1)").getSortNumber();      	// 6
 		assertEquals(-0.676, lodf.get(ni, nj), 0.001);
+	}
+	
+	public static AclfNetwork createSenTestCase() throws InterpssException {
+		AclfNetwork net = CorePluginFactory
+				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
+				.load("testData/adpter/ieee_format/ieee14.ieee")
+				.getAclfNet();
+		
+		// set the branch rating.
+		net.getBranchList().stream() 
+			.forEach(branch -> {
+				AclfBranch aclfBranch = (AclfBranch) branch;
+				// Mva1 is used for basecase loading limit
+				aclfBranch.setRatingMva1(100.0);
+				// Mva2 is used for contingency loading limit
+				aclfBranch.setRatingMva2(120.0);
+			});
+		
+		// set the generator Pgen limit
+		net.createAclfGenNameLookupTable(false).forEach((k, gen) -> {
+			System.out.println("Adj Gen: " + gen.getName());
+			if (gen.getPGenLimit() == null) {
+				gen.setPGenLimit(new LimitType(5, 0));
+			}
+		});
+		
+		return net;
 	}
 }
 
