@@ -35,8 +35,8 @@ public class IEEE14_OptAdj_BasecaseSSAResult_Test extends CorePluginTestSetup {
 		AtomicCounter cnt = new AtomicCounter();
 		dclfAlgo.getDclfAlgoBranchList().stream() 
 			.forEach(dclfBranch -> {
-					double flowMw = dclfBranch.getDclfFlow() * baseMVA;
-					double loading = Math.abs(flowMw / dclfBranch.getBranch().getRatingMva1())*100;
+				double flowMw = dclfBranch.getDclfFlow() * baseMVA;
+				double loading = Math.abs(flowMw / dclfBranch.getBranch().getRatingMva1())*100;
 				if (loading > 100.0) {
 					cnt.increment();
 					// add the over limit branch to the SSA result container
@@ -45,8 +45,8 @@ public class IEEE14_OptAdj_BasecaseSSAResult_Test extends CorePluginTestSetup {
 							" rating: " + dclfBranch.getBranch().getRatingMva1() +
 							" loading: " + loading);
 //						container.getBaseOverLimitInfo().add(dclfBranch);
-					}
-				});
+				}
+			});
 		System.out.println("Total number of branches over limit before OptAdj: " + cnt.getCount());
 		assertTrue(cnt.getCount() == 1);
 		
