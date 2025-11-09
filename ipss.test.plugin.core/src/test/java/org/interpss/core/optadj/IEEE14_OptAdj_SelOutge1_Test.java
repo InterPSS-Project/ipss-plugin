@@ -35,7 +35,9 @@ public class IEEE14_OptAdj_SelOutge1_Test extends CorePluginTestSetup {
 	public void test() throws InterpssException {
 		AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
 		
-		/*
+		/* This case is based on the IEEE14_OptAdj_N1Scan_Test but using the selected outage branches
+		 * approach. The "Bus4->Bus5(1)" branch is not included in the outage list 
+		 * to create more over limit branches.
 		Bus2->Bus5(1) Bus9->Bus14(1) Bus13->Bus14(1) Bus12->Bus13(1) Bus3->Bus4(1) Bus5->Bus6(1)
 		Bus4->Bus7(1) Bus2->Bus4(1) Bus10->Bus11(1)Bus6->Bus11(1) Bus7->Bus9(1) 
 		Bus4->Bus9(1) Bus7->Bus8(1) Bus6->Bus13(1) Bus6->Bus12(1) Bus2->Bus3(1) Bus4->Bus5(1) Bus9->Bus10(1)
