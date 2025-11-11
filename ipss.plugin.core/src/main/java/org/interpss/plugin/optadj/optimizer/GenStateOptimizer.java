@@ -2,11 +2,8 @@
 package org.interpss.plugin.optadj.optimizer;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-import org.apache.commons.math3.optim.linear.LinearConstraint;
 import org.apache.commons.math3.optim.linear.Relationship;
 import org.interpss.plugin.optadj.config.OptAdjConfigureInfo;
 import org.interpss.plugin.optadj.optimizer.bean.BaseConstrainData;
@@ -20,14 +17,12 @@ import org.ojalgo.optimisation.Optimisation;
  * 
  * @author Donghao.F
  * 
- * @date 2024��5��27�� ����5:19:38
  * 
  * 
  * 
  */
 public class GenStateOptimizer {
 
-	private Set<LinearConstraint> linearConstraintHashSet = new HashSet<LinearConstraint>();
 
 	private List<GenConstrainData> genConstrainDataList = new ArrayList<GenConstrainData>();
 	
@@ -101,7 +96,7 @@ public class GenStateOptimizer {
 			}
         }
 		
-		// 2. ����Լ��
+		// 2. 
         for (int i = 0; i < secConstrainDataList.size(); i++) {
             final SectionConstrainData data = secConstrainDataList.get(i);
             final Expression constraint = model.addExpression("section_constraint_" + i);
@@ -121,14 +116,14 @@ public class GenStateOptimizer {
         }
 		
         
-		// ȷ��dSecP >= 0
+		// dSecP >= 0
 		for (int i = 0; i < secConstrainDataList.size(); i++) {
 			final Expression constraint = model.addExpression("dSecP_nonneg_" + i);
 			constraint.set(genSize + i, 1.0);
 			constraint.lower(0.0);
 		}
 		
-		 // 3. |xi| Լ��
+		 // 3. |xi| 
         for (int i = 0; i < genSize; i++) {
             // 3.1 xi + wi >= 0
             final Expression constraint1 = model.addExpression("abs_constraint1_" + i);
@@ -148,7 +143,7 @@ public class GenStateOptimizer {
             constraint3.lower(0.0);
         }
         
-		// 4. |x1+x2+....| Լ��
+		// 4. |x1+x2+....| 
 		// 4.1 x1+x2 ... +w >= 0
 		final Expression sumConstraint1 = model.addExpression("sum_abs_constraint1");
 		for (int i = 0; i < genSize; i++) {
@@ -170,7 +165,7 @@ public class GenStateOptimizer {
         sumConstraint3.set(totalVars - 1, 1.0);
         sumConstraint3.lower(0.0);
 
-        // ����Ŀ�꺯��: |x1+x2+..| + 0.5*(|x1| + |x2| +...) + 10*(s1+s2+...)
+        //  |x1+x2+..| + 0.5*(|x1| + |x2| +...) + 10*(s1+s2+...)
         final Expression objective = model.addExpression("Objective").weight(1.0);
         for (int i = genSize; i < genSize + secConstrainDataList.size(); i++) {
             objective.set(i, 1.0/senLimit);
@@ -179,10 +174,8 @@ public class GenStateOptimizer {
             objective.set(i, 0.5);
         }
         objective.set(totalVars - 1, 1.0);
-        // �������
         result = model.minimise();
         
-        // ��ӡ���״̬
 //        System.out.println("Optimisation status: " + result.getState());
 	}
 	
