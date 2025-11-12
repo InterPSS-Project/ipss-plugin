@@ -140,7 +140,7 @@ public class IEEE14_ATC_Opt_Sample {
 		
 		AclfGen gen = net.getBus("Bus2").getContributeGen("Bus2-G1");
 		DclfAlgoGen dcGen = dclfAlgo.getDclfAlgoBus(gen.getParentBus().getId()).getGen(gen.getId()).get();
-		System.out.println("adjust p :" + dcGen.getGenP() + " , origin p :" + gen.getGen().getReal());
+		System.out.println("new p :" + dcGen.getGenP() + " , origin p :" + gen.getGen().getReal());
 	}
 }
 
