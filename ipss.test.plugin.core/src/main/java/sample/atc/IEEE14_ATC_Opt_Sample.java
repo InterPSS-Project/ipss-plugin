@@ -19,12 +19,14 @@ import org.interpss.plugin.optadj.optimizer.ATCOptimizer;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfGen;
+import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.contingency.Contingency;
 import com.interpss.core.algo.dclf.CaBranchOutageType;
 import com.interpss.core.algo.dclf.CaOutageBranch;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoGen;
+import com.interpss.core.algo.dclf.adapter.DclfAlgoLoad;
 
 public class IEEE14_ATC_Opt_Sample {
 	static AtomicCounter cnt = new AtomicCounter();
@@ -140,7 +142,12 @@ public class IEEE14_ATC_Opt_Sample {
 		
 		AclfGen gen = net.getBus("Bus2").getContributeGen("Bus2-G1");
 		DclfAlgoGen dcGen = dclfAlgo.getDclfAlgoBus(gen.getParentBus().getId()).getGen(gen.getId()).get();
-		System.out.println("new p :" + dcGen.getGenP() + " , origin p :" + gen.getGen().getReal());
+		System.out.println("Bus2-G1, new p :" + dcGen.getGenP() + " , origin p :" + gen.getGen().getReal());
+		
+		
+		AclfLoad load = net.getBus("Bus14").getContributeLoad("Bus14-L1");
+		DclfAlgoLoad dcLoad = dclfAlgo.getDclfAlgoBus(load.getParentBus().getId()).getLoad(load.getId()).get();
+		System.out.println("Bus14-L1, new p :" + dcLoad.getLoadP() + " , origin p :" + load.getLoadCP().getReal());
 	}
 }
 
