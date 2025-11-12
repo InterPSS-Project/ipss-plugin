@@ -11,9 +11,11 @@ import org.apache.commons.math3.optim.linear.Relationship;
 * 
 
 */
-public class GenConstrainData extends BaseConstrainData {
+public class DeviceConstrainData extends BaseConstrainData {
 
 	private int index;
+	
+	private boolean load;
 
 	public int getIndex() {
 		return index;
@@ -23,9 +25,17 @@ public class GenConstrainData extends BaseConstrainData {
 		this.index = index;
 	}
 
-	public GenConstrainData(double value, Relationship relationship, double limit, int index) {
+	public DeviceConstrainData(double value, Relationship relationship, double limit, int index) {
 		super(0, relationship, limit - value);
 		this.index = index;
+	}
+
+	public boolean isLoad() {
+		return load;
+	}
+
+	public void setLoad(boolean isLoad) {
+		this.load = isLoad;
 	}
 
 
