@@ -90,8 +90,18 @@ public abstract class BaseAclfNetSensHelper {
 	 * @return the map of index to control element
 	 */
 	public static <T> Map<Integer, T> arrangeIndex(Set<T> controlElemSet) {
+		return arrangeIndex(controlElemSet, 0);
+	}
+	
+	/**
+	 * arrange the index for the given set of control elements
+	 * 
+	 * @param controlElemSet the set of control elements
+	 * @return the map of index to control element
+	 */
+	public static <T> Map<Integer, T> arrangeIndex(Set<T> controlElemSet,int point) {
 		Map<Integer, T> genMap = new HashMap<>();
-		int index = 0;
+		int index = point;
 		for (T gen : controlElemSet) {
 			genMap.put(index++, gen);
 //			System.out.print(gen.getName()+",");
