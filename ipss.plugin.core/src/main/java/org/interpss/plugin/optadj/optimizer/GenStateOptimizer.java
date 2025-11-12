@@ -1,17 +1,10 @@
 
 package org.interpss.plugin.optadj.optimizer;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.commons.math3.optim.linear.Relationship;
-import org.interpss.plugin.optadj.config.OptAdjConfigureInfo;
-import org.interpss.plugin.optadj.optimizer.bean.BaseConstrainData;
-import org.interpss.plugin.optadj.optimizer.bean.GenConstrainData;
+import org.interpss.plugin.optadj.optimizer.bean.DeviceConstrainData;
 import org.interpss.plugin.optadj.optimizer.bean.SectionConstrainData;
 import org.ojalgo.optimisation.Expression;
-import org.ojalgo.optimisation.ExpressionsBasedModel;
-import org.ojalgo.optimisation.Optimisation;
 
 /**
  * 
@@ -21,51 +14,15 @@ import org.ojalgo.optimisation.Optimisation;
  * 
  * 
  */
-public class GenStateOptimizer {
+public class GenStateOptimizer extends BaseStateOptimizer{
 
-
-	private List<GenConstrainData> genConstrainDataList = new ArrayList<GenConstrainData>();
-	
-	private List<SectionConstrainData> secConstrainDataList = new ArrayList<SectionConstrainData>();
-	
 	private double senLimit = 0.05;
 
-	private int genSize;
-	
-	private Optimisation.Result result;
-	
-	private ExpressionsBasedModel model;
-
-	public GenStateOptimizer() {
-		 model = new ExpressionsBasedModel();
-		
-	}
-
-	public List<GenConstrainData> getGenConstrainDataList() {
-		return genConstrainDataList;
-	}
-	
-	public List<SectionConstrainData> getSecConstrainDataList() {
-		return secConstrainDataList;
-	}
-
-	public int getGenSize() {
-		return genSize;
-	}
-
-	public void addConstraint(BaseConstrainData data) {
-		if (data instanceof GenConstrainData) {
-			genConstrainDataList.add((GenConstrainData) data);
-		} else {
-			secConstrainDataList.add((SectionConstrainData) data);
-		}
-	}
-
 	public void optimize() {
-		System.out.println("gen constrain size:" + this.genConstrainDataList.size() + ", " + 
+		System.out.println("gen constrain size:" + this.deviceConstrainDataList.size() + ", " + 
 							"section constrain size:"	+ this.secConstrainDataList.size());
 		 // Determine genSize
-        genConstrainDataList.forEach(data -> {
+        deviceConstrainDataList.forEach(data -> {
             if (data.getIndex() + 1 > genSize) {
                 genSize = data.getIndex() + 1;
             }
@@ -79,7 +36,7 @@ public class GenStateOptimizer {
 			model.addVariable("v" + i).weight(0);
 		}
 		
-		for (GenConstrainData data : genConstrainDataList) {
+		for (DeviceConstrainData data : deviceConstrainDataList) {
 			final Expression constraint = model
 					.addExpression("gen_constraint_" + data.getIndex() + "_" + data.getLimit());
             constraint.set(data.getIndex(), 1.0);
@@ -178,37 +135,6 @@ public class GenStateOptimizer {
         
 //        System.out.println("Optimisation status: " + result.getState());
 	}
-	
-	public double[] getPoint() {
-        return result.toRawCopy1D();
-    }
 
-    public double getValue() {
-        return result.getValue();
-    }
-
-	public double getSenLimit() {
-		return senLimit;
-	}
-
-	public void setSenLimit(double senLimit) {
-		this.senLimit = senLimit;
-	}
-
-	public void addConfigure(OptAdjConfigureInfo info) {
-		info.getOptimizedUnitControlLimits().forEach(limit -> {
-			if (limit.getPMax() != -1) {
-				this.addConstraint(
-						new GenConstrainData(limit.getOrigin(), Relationship.LEQ, limit.getPMax(), limit.getIndex()));
-			}
-			if (limit.getPMin() != -1) {
-				this.addConstraint(
-						new GenConstrainData(limit.getOrigin(), Relationship.GEQ, limit.getPMin(), limit.getIndex()));
-			}
-		});
-		
-	};
-	
-	
 }
 
