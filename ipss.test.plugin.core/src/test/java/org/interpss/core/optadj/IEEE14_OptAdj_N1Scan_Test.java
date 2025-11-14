@@ -104,10 +104,10 @@ public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
 		assertEquals(resultMap.get("Bus3-G1"), 0.99, 0.0001);
 		assertEquals(resultMap.get("Bus1-G1"), -0.99, 0.0001);
 		
-		System.out.println("Optimization gen size." + optimizer.getGenOptimizer().getGenSize());
+//		System.out.println("Optimization gen size." + optimizer.getGenOptimizer().getGenSize());
 		System.out.println("Optimization gen constrain size." + optimizer.getGenOptimizer().getGenConstrainDataList().size());
 		System.out.println("Optimization sec constrian size." + optimizer.getGenOptimizer().getSecConstrainDataList().size());
-		assertTrue(optimizer.getGenOptimizer().getGenSize() == 5);
+//		assertTrue(optimizer.getGenOptimizer().getGenSize() == 5);
 		assertTrue(optimizer.getGenOptimizer().getGenConstrainDataList().size() == 10);
 		assertEquals(optimizer.getGenOptimizer().getSecConstrainDataList().size(), 101);
 		

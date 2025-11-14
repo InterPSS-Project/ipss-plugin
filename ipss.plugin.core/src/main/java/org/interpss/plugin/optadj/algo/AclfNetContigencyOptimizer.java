@@ -1,7 +1,6 @@
 package org.interpss.plugin.optadj.algo;
 
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.math3.optim.linear.Relationship;
@@ -11,7 +10,6 @@ import org.interpss.plugin.optadj.optimizer.bean.SectionConstrainData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
@@ -60,11 +58,17 @@ public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
 					(this.outBranchIdSet == null || this.outBranchIdSet.contains(branch.getId())))
 			.forEach(outBranch -> {
 				int outBranchNo = outBranch.getSortNumber();
-				double[] genSenArray = new double[controlGenMap.size()];
+				double[] genSenArray = new double[controlGenMap.size()+controlLoadMap.size()];
 				DclfAlgoBranch outDclfBranch = dclfAlgo.getDclfAlgoBranch(outBranch.getId());
 	
 				controlGenMap.forEach((no, gen) -> {
 					int busNo = gen.getParentBus().getSortNumber();
+					double sen = gfsMatrix.get(busNo, outBranchNo);
+					genSenArray[no] = sen;
+				});
+				
+				controlLoadMap.forEach((no, load) -> {
+					int busNo = load.getParentBus().getSortNumber();
 					double sen = gfsMatrix.get(busNo, outBranchNo);
 					genSenArray[no] = sen;
 				});
@@ -87,9 +91,16 @@ public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
 									genSenArray[no] = postFlow > 0 ? sen : -sen;
 								});
 								
+								controlLoadMap.forEach((no, load) -> {
+									int busNo = load.getParentBus().getSortNumber();
+									// GSFij + LODF x GSFkm
+									double sen = gfsMatrix.get(busNo, monBranchNo) + lodf * gfsMatrix.get(busNo, outBranchNo);
+									genSenArray[no] = postFlow > 0 ? sen : -sen;
+								});
+								
 								double limit = monDclfBranch.getBranch().getRatingMva2() * threshold / 100;
 								double postFlowMw = Math.abs(postFlow * baseMva); ;
-								genOptimizer.addConstraint(new SectionConstrainData(postFlowMw, Relationship.LEQ, limit, genSenArray));
+								optimizer.addConstraint(new SectionConstrainData(postFlowMw, Relationship.LEQ, limit, genSenArray));
 							}
 						});
 				}
