@@ -46,15 +46,11 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 public class PSSEJSon_IEEE9Bus_DSL_Test extends CorePluginTestSetup { 
 	@Test
 	public void testJSon() throws Exception {
-		FileImportDSL dsl = IpssAdapter.importAclfNet("testdata/adpter/psse/json/ieee9.rawx")
+		AclfNetwork net = IpssAdapter.importAclfNet("testdata/adpter/psse/json/ieee9.rawx")
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_JSON)
-				.load();
-		
-		PSSESchema json = dsl.getAclfParser().getJsonObject();
-		System.out.println("Json String:\n" + json.toString());
-		
-		AclfNetwork net = 	dsl.getImportedObj();
+				.load()
+				.getImportedObj();
 
 		testVAclf(net);
 	}
