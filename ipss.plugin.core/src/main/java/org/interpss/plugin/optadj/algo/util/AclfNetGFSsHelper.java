@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfGen;
+import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
@@ -184,5 +185,13 @@ public class AclfNetGFSsHelper extends BaseAclfNetSensHelper {
 		} catch (InterpssException | IpssNumericException | ReferenceBusException e) {
 			log.error(e.toString());
 		}
+	}
+
+	public Sen2DMatrix calGenLoadGFS(Set<AclfGen> controlGenSet, Set<AclfLoad> controlLoadSet) {
+		Set<String> gfsBusIdSet = controlGenSet.stream().map(gen -> gen.getParentBus().getId())
+				.collect(Collectors.toSet());
+
+		gfsBusIdSet.addAll(controlLoadSet.stream().map(load -> load.getParentBus().getId()).collect(Collectors.toSet()));
+		return calGFS(gfsBusIdSet);
 	}
 }
