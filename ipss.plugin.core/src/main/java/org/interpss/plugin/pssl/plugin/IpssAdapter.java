@@ -216,8 +216,10 @@ public class IpssAdapter extends BaseDSL {
 		 */
 		private IODMAdapter adapter = null;
 		
+		// ODM parser object
 		private IODMModelParser odmParser = null;
 		
+		// imported object, e.g., AclfNetwork, AcscNetwork, DStabAlgorithm, ...
 		private Object importedObj = null;
 		
 		/**
