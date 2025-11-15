@@ -19,6 +19,8 @@ import org.interpss.core.adapter.internal.Bus6384Test;
 import org.interpss.core.adapter.internal.IEEE14Test;
 import org.interpss.core.adapter.psse.compare.PSSE_ACTIVSg2000BusCompare_Test;
 import org.interpss.core.adapter.psse.compare.PSSE_ACTIVSg25kObjectCompareTest;
+import org.interpss.core.adapter.psse.json.aclf.PSSEJSon_IEEE9Bus_DSL_Test;
+import org.interpss.core.adapter.psse.json.aclf.PSSEJSon_IEEE9Bus_FAdapter_Test;
 import org.interpss.core.adapter.psse.largeNet.PSSE_ACTIVSg2000Bus_Test;
 import org.interpss.core.adapter.psse.largeNet.PSSE_ACTIVSg25kBus_Test;
 import org.interpss.core.adapter.psse.raw.aclf.CR_UserTestCases;
@@ -78,7 +80,6 @@ import org.interpss.core.zeroz.topo.ZeroZBranchFuncTest;
 import org.interpss.plugin.beanModel.AclfBeanMapperTest;
 import org.interpss.plugin.lfGCtrl.SwitchedShuntGControlTest;
 import org.interpss.plugin.piecewise.Acsc5BusTestSubAreaNet;
-import org.interpss.plugin.piecewise.IEEE14TestAclfNetPiesewise;
 import org.interpss.plugin.piecewise.IEEE14TestAclfSubAreaBuild;
 import org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild;
 import org.interpss.plugin.piecewise.IEEE14TestSubAreaSearch;
@@ -241,6 +242,10 @@ import org.junit.runners.Suite.SuiteClasses;
 	PSSE_5Bus_TestCase.class,
 	PSSE_IEEE9Bus_Test.class,
 	IEEE9_Dstab_Adapter_Test.class,
+	
+	// PSSE JSON
+	PSSEJSon_IEEE9Bus_DSL_Test.class,
+	PSSEJSon_IEEE9Bus_FAdapter_Test.class,
 
 	// PSSE Global Adjustment Control
 	SwitchedShuntGControlTest.class,
