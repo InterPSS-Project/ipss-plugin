@@ -220,7 +220,7 @@ public class AclfNetLoadFlowOptimizer {
 		for (int i = 0; i < controlGenMap.size(); i++) {
 			if (Math.abs(optimizer.getPoint()[i]) > 1) {
 				AclfGen gen = controlGenMap.get(i);
-				log.info(gen.getName() + "," + optimizer.getPoint()[i] + " mw");
+				log.info(gen.getName() + ", adj gen: " + optimizer.getPoint()[i] + " mw");
 				dclfAlgo.getDclfAlgoBus(gen.getParentBus().getId()).getGen(gen.getName()).get()
 						.setAdjust(optimizer.getPoint()[i] / baseMva);
 			}
@@ -229,9 +229,9 @@ public class AclfNetLoadFlowOptimizer {
 		for (int i = controlGenMap.size(); i < controlLoadMap.size(); i++) {
 			if (Math.abs(optimizer.getPoint()[i]) > 1) {
 				AclfLoad load = controlLoadMap.get(i);
-				log.info(load.getName() + "," + optimizer.getPoint()[i] + " mw");
+				log.info(load.getName() + ", adj load: " + optimizer.getPoint()[i] + " mw");
 				dclfAlgo.getDclfAlgoBus(load.getParentBus().getId()).getLoad(load.getName()).get()
-						.setAdjust(-optimizer.getPoint()[i] / baseMva);
+						.setAdjust(-optimizer.getPoint()[i] / baseMva); 
 			}
 		}
 	}
