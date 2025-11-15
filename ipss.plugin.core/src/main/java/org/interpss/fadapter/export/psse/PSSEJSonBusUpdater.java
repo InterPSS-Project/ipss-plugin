@@ -26,6 +26,7 @@ package org.interpss.fadapter.export.psse;
 
 import java.util.List;
 
+import org.ieee.odm.adapter.psse.bean.PSSESchema;
 import org.ieee.odm.model.IODMModelParser;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
@@ -43,8 +44,9 @@ public class PSSEJSonBusUpdater extends BasePSSEJSonUpdater{
 	 * 
 	 * @param fieldDef field name definitions
 	 */
-	public PSSEJSonBusUpdater(List<String> fieldDef) {
-		super(fieldDef, (lst) -> {
+	public PSSEJSonBusUpdater(PSSESchema.Bus bus) {
+		super(bus.getFields(), (lst) -> {
+			// fields appended at the end of the list
 			lst.add("vm1");
 			lst.add("va1");
 		});
@@ -55,14 +57,14 @@ public class PSSEJSonBusUpdater extends BasePSSEJSonUpdater{
 	 * 
 	 * @param data
 	 */
-	public void update(List<Object> data, BaseAclfNetwork<?,?> aclfNet) {
+	public void update(PSSESchema.Bus bus, BaseAclfNetwork<?,?> aclfNet) {
 		/*
  		"fields":["ibus", "name", "baskv", "ide", "area", "zone", "owner", "vm", "va", "nvhi", 	
  					"nvlo", "evhi", "evlo"], 
         "data":  [1, "BUS-1", 16.50000, 3, 1, 1, 1, 1.040000, 0.000000, 1.100000, 0.9000000, 
         			1.100000, 0.9000000], 
 		 */		
- 		data.forEach(b -> {
+ 		bus.getData().forEach(b -> {
    		   //System.out.println(b.getClass());
    		   @SuppressWarnings("unchecked")
  		   List<Object> lst = (List<Object>)b;
@@ -88,7 +90,7 @@ public class PSSEJSonBusUpdater extends BasePSSEJSonUpdater{
 		   System.out.println();
 		   */
    		   /*
-		    * Or we can just append the values to the end of the list
+		    * Or we can append the values to the end of the list
 		    */
 		   lst.add(aclfNet.getBus(id).getVoltageMag());    			// vm1
 		   lst.add(aclfNet.getBus(id).getVoltageAng(UnitType.Deg));	// va1
