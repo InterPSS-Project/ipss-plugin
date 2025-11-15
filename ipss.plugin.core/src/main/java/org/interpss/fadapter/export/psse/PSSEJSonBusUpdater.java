@@ -24,8 +24,10 @@
 
 package org.interpss.fadapter.export.psse;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 
+import org.ieee.odm.adapter.psse.json.parser.PSSEDataJSonParser;
 import org.ieee.odm.model.IODMModelParser;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
@@ -37,17 +39,14 @@ import com.interpss.core.aclf.BaseAclfNetwork;
  * @author mzhou
  *
  */
-public class PSSEJSonUpdater {
-	// the AclfNetwork object
-	private BaseAclfNetwork<?,?> aclfNet;
-	
+public class PSSEJSonBusUpdater extends BasePSSEJSonUpdater{	
 	/**
 	 * Constructor
 	 * 
-	 * @param aclfNet the AclfNetwork object
+	 * @param fieldDef field name definitions
 	 */
-	public PSSEJSonUpdater(BaseAclfNetwork<?,?> aclfNet) {
-		this.aclfNet = aclfNet;
+	public PSSEJSonBusUpdater(List<String> fieldDef) {
+		super(fieldDef);
 	}
 	
 	/**
@@ -55,7 +54,7 @@ public class PSSEJSonUpdater {
 	 * 
 	 * @param data
 	 */
-	public void updateBus(List<Object> data) {
+	public void update(List<Object> data, BaseAclfNetwork<?,?> aclfNet) {
 		/*
  		"fields":["ibus", "name", "baskv", "ide", "area", "zone", "owner", "vm", "va", "nvhi", 	
  					"nvlo", "evhi", "evlo"], 
@@ -66,20 +65,23 @@ public class PSSEJSonUpdater {
    		   //System.out.println(b.getClass());
    		   @SuppressWarnings("unchecked")
  		   List<Object> lst = (List<Object>)b;
-   		   int idIdx = 0;
-   		   int vmIdx = 7;
-   		   int vaIdx = 8;
+   		   int idIdx = this.positionTable.get("ibus");
+   		   int vmIdx = this.positionTable.get("vm");
+   		   int vaIdx = this.positionTable.get("va");
    		   String id = IODMModelParser.BusIdPreFix+((Double)lst.get(idIdx)).intValue();
+   		   /*
    		   System.out.print(" id: " + id); 
    		   System.out.print(" vm: " + lst.get(vmIdx)); 
    		   System.out.print(" va: " + lst.get(vaIdx)); 
    		   System.out.println();
-   		   
-   		   lst.set(vmIdx, this.aclfNet.getBus(id).getVoltageMag());
-   		   lst.set(vaIdx, this.aclfNet.getBus(id).getVoltageAng(UnitType.Deg));
+   		   */
+   		   lst.set(vmIdx, aclfNet.getBus(id).getVoltageMag());
+   		   lst.set(vaIdx, aclfNet.getBus(id).getVoltageAng(UnitType.Deg));
+   		   /*
    		   System.out.print(" vm: " + lst.get(vmIdx)); 
 		   System.out.print(" va: " + lst.get(vaIdx)); 
 		   System.out.println();
+		   */
    		});
 	}
 }
