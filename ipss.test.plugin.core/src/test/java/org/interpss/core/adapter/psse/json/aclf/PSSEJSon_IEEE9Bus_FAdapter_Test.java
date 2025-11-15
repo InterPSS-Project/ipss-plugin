@@ -26,16 +26,13 @@ package org.interpss.core.adapter.psse.json.aclf;
  
 import static org.junit.Assert.assertTrue;
 
-import java.util.List;
-
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter;
 import org.ieee.odm.adapter.psse.bean.PSSESchema;
 import org.ieee.odm.adapter.psse.json.PSSEJSonAdapter;
-import org.ieee.odm.model.IODMModelParser;
 import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.fadapter.export.psse.PSSEJSonUpdater;
+import org.interpss.fadapter.export.psse.PSSEJSonBusUpdater;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
 import org.junit.Test;
@@ -82,8 +79,8 @@ public class PSSEJSon_IEEE9Bus_FAdapter_Test extends CorePluginTestSetup {
   		assertTrue(Math.abs(p.getReal()-0.71646)<0.00001);
   		assertTrue(Math.abs(p.getImaginary()-0.27107)<0.00001);
   		
-  		PSSEJSonUpdater updater = new PSSEJSonUpdater(net); 
-  		updater.updateBus(json.getNetwork().getBus().getData());
+  		PSSEJSonBusUpdater busUpdater = new PSSEJSonBusUpdater(json.getNetwork().getBus().getFields()); 
+  		busUpdater.update(json.getNetwork().getBus().getData(), net);
   		
   		System.out.println("After Json String:\n" + json.toString());
 	}
