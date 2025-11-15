@@ -57,12 +57,9 @@ public class IEEE14_ATC_Opt_Sample {
 			}
 		});
 		
-		
 		// define an caAlgo object and perform DCLF 
 		ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(net);
 		dclfAlgo.calculateDclf();
-		
-		
 
 		// define a contingency list
 		List<Contingency> contList = new ArrayList<>();
@@ -77,8 +74,9 @@ public class IEEE14_ATC_Opt_Sample {
 					cont.setOutageBranch(outage);
 					contList.add(cont);
 				});
-		cnt = new AtomicCounter();
+		
 		// check base case branch flow violations
+		cnt = new AtomicCounter();
 		dclfAlgo.getDclfAlgoBranchList().stream()
 				.forEach(branch -> {
 					double flowMw = branch.getDclfFlow() * net.getBaseMva();
@@ -89,6 +87,7 @@ public class IEEE14_ATC_Opt_Sample {
 					}
 				});
 		System.out.println("Basecase Total number of branches with loading > 100%: " + cnt.getCount());
+		
 		cnt = new AtomicCounter();
 		dclfAlgo.getDclfAlgoBranchList().stream()
 			.filter(branch -> monitorBranchSet.contains(branch.getBranch().getId()))
@@ -103,18 +102,22 @@ public class IEEE14_ATC_Opt_Sample {
 			});
 		System.out.println("N-1 Total number of branches with loading > 100%: " + cnt.getCount());
 		
-		AclfNetATCOptimizer op = new AclfNetATCOptimizer(dclfAlgo);
+		/*
+		 * Perform ATC optimization
+		 */
+		AclfNetATCOptimizer op = new AclfNetATCOptimizer(dclfAlgo, new ATCOptimizer());
 		op.setControlGenSet(sourceGenSet);
 		
 		op.setControlLoadSet(sinkLoadSet);
-		op.setOptimizer(new ATCOptimizer());
+		//op.setOptimizer(new ATCOptimizer());
 		
 		op.optimize(100, monitorBranchSet);
 		
+		// after optimization, recalculate the DCLF with adjusted generation and load
 		dclfAlgo.calculateDclf();
 		
-		cnt = new AtomicCounter();
 		// check base case branch flow violations
+		cnt = new AtomicCounter();
 		dclfAlgo.getDclfAlgoBranchList().stream()
 				.forEach(branch -> {
 					double flowMw = branch.getDclfFlow() * net.getBaseMva();
@@ -123,8 +126,12 @@ public class IEEE14_ATC_Opt_Sample {
 						cnt.increment();
 						System.out.println(branch.getBranch().getId() + " loading: " + loading);
 					}
+					else if (loading >= 90.0) {
+						System.out.println(branch.getBranch().getId() + " loading(90%): " + loading);
+					}
 				});
 		System.out.println("Basecase Total number of branches with loading > 100%: " + cnt.getCount());
+		
 		cnt = new AtomicCounter();
 		dclfAlgo.getDclfAlgoBranchList().stream()
 			.filter(branch -> monitorBranchSet.contains(branch.getBranch().getId()))
@@ -135,6 +142,9 @@ public class IEEE14_ATC_Opt_Sample {
 					cnt.increment();
 					System.out.println(branch.getBranch().getId() + 
 							" loading: " + loading);
+				}
+				else if (loading >= 90.0) {
+					System.out.println(branch.getBranch().getId() + " loading(90%): " + loading);
 				}
 			});
 		System.out.println("N-1 Total number of branches with loading > 100%: " + cnt.getCount());
@@ -145,9 +155,17 @@ public class IEEE14_ATC_Opt_Sample {
 		System.out.println("Bus2-G1, new p :" + dcGen.getGenP() + " , origin p :" + gen.getGen().getReal());
 		
 		
-		AclfLoad load = net.getBus("Bus14").getContributeLoad("Bus14-L1");
+		AclfLoad load = net.getBus("Bus10").getContributeLoad("Bus10-L1");
 		DclfAlgoLoad dcLoad = dclfAlgo.getDclfAlgoBus(load.getParentBus().getId()).getLoad(load.getId()).get();
-		System.out.println("Bus14-L1, new p :" + dcLoad.getLoadP() + " , origin p :" + load.getLoadCP().getReal());
+		System.out.println("Bus10-L1, new p :" + dcLoad.getLoadP() + " , origin p :" + load.getLoadCP().getReal());
+		
+		AclfLoad load11 = net.getBus("Bus11").getContributeLoad("Bus11-L1");
+		DclfAlgoLoad dcLoad11 = dclfAlgo.getDclfAlgoBus(load11.getParentBus().getId()).getLoad(load11.getId()).get();
+		System.out.println("Bus11-L1, new p :" + dcLoad11.getLoadP() + " , origin p :" + load11.getLoadCP().getReal());
+		
+		AclfLoad load14 = net.getBus("Bus14").getContributeLoad("Bus14-L1");
+		DclfAlgoLoad dcLoad14 = dclfAlgo.getDclfAlgoBus(load14.getParentBus().getId()).getLoad(load14.getId()).get();
+		System.out.println("Bus14-L1, new p :" + dcLoad14.getLoadP() + " , origin p :" + load14.getLoadCP().getReal());
 	}
 }
 
