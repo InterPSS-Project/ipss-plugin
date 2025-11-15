@@ -69,7 +69,7 @@ public class PSSEJSon_IEEE9Bus_FAdapter_Test extends CorePluginTestSetup {
 	    
 	    AclfNetwork net = simuCtx.getAclfNet();
 		
-		PSSESchema json = parser.getJsonObject();
+		PSSESchema psseJson = parser.getJsonObject();
 		//System.out.println("Before Json String:\n" + json.toString());
 
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
@@ -85,13 +85,15 @@ public class PSSEJSon_IEEE9Bus_FAdapter_Test extends CorePluginTestSetup {
   		assertTrue(Math.abs(p.getReal()-0.71646)<0.00001);
   		assertTrue(Math.abs(p.getImaginary()-0.27107)<0.00001);
   		
-  		PSSEJSonBusUpdater busUpdater = new PSSEJSonBusUpdater(json.getNetwork().getBus().getFields()); 
-  		
-  		busUpdater.update(json.getNetwork().getBus().getData(), net);
+  		/*
+  		 * update the bus field/data into the PSSE Json object
+  		 */
+  		PSSEJSonBusUpdater busUpdater = new PSSEJSonBusUpdater(psseJson.getNetwork().getBus()); 
+  		busUpdater.update(psseJson.getNetwork().getBus(), net);
   		
   		//System.out.println("After Json String:\n" + json.toString());
   		
-  		FileUtil.writeText2File("testdata/adpter/psse/json/ieee9_export.rawx", json.toString());
+  		FileUtil.writeText2File("testdata/adpter/psse/json/ieee9_export.rawx", psseJson.toString());
 	}
 	
 	@Test
