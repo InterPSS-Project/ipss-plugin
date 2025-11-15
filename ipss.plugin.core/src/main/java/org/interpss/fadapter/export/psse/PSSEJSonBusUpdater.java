@@ -24,10 +24,8 @@
 
 package org.interpss.fadapter.export.psse;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 
-import org.ieee.odm.adapter.psse.json.parser.PSSEDataJSonParser;
 import org.ieee.odm.model.IODMModelParser;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
@@ -46,7 +44,10 @@ public class PSSEJSonBusUpdater extends BasePSSEJSonUpdater{
 	 * @param fieldDef field name definitions
 	 */
 	public PSSEJSonBusUpdater(List<String> fieldDef) {
-		super(fieldDef);
+		super(fieldDef, (lst) -> {
+			lst.add("vm1");
+			lst.add("va1");
+		});
 	}
 	
 	/**
@@ -66,8 +67,6 @@ public class PSSEJSonBusUpdater extends BasePSSEJSonUpdater{
    		   @SuppressWarnings("unchecked")
  		   List<Object> lst = (List<Object>)b;
    		   int idIdx = this.positionTable.get("ibus");
-   		   int vmIdx = this.positionTable.get("vm");
-   		   int vaIdx = this.positionTable.get("va");
    		   String id = IODMModelParser.BusIdPreFix+((Double)lst.get(idIdx)).intValue();
    		   /*
    		   System.out.print(" id: " + id); 
@@ -75,6 +74,12 @@ public class PSSEJSonBusUpdater extends BasePSSEJSonUpdater{
    		   System.out.print(" va: " + lst.get(vaIdx)); 
    		   System.out.println();
    		   */
+   		   
+   		   /*
+   		    * We can update the existing vm and va values in the list
+   		    */
+   		   int vmIdx = this.positionTable.get("vm");
+   		   int vaIdx = this.positionTable.get("va");
    		   lst.set(vmIdx, aclfNet.getBus(id).getVoltageMag());
    		   lst.set(vaIdx, aclfNet.getBus(id).getVoltageAng(UnitType.Deg));
    		   /*
@@ -82,6 +87,11 @@ public class PSSEJSonBusUpdater extends BasePSSEJSonUpdater{
 		   System.out.print(" va: " + lst.get(vaIdx)); 
 		   System.out.println();
 		   */
+   		   /*
+		    * Or we can just append the values to the end of the list
+		    */
+		   lst.add(aclfNet.getBus(id).getVoltageMag());    			// vm1
+		   lst.add(aclfNet.getBus(id).getVoltageAng(UnitType.Deg));	// va1
    		});
 	}
 }
