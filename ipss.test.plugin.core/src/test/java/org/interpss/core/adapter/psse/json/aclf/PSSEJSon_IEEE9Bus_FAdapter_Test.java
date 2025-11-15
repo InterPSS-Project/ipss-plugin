@@ -80,6 +80,7 @@ public class PSSEJSon_IEEE9Bus_FAdapter_Test extends CorePluginTestSetup {
   		assertTrue(Math.abs(p.getImaginary()-0.27107)<0.00001);
   		
   		PSSEJSonBusUpdater busUpdater = new PSSEJSonBusUpdater(json.getNetwork().getBus().getFields()); 
+  		
   		busUpdater.update(json.getNetwork().getBus().getData(), net);
   		
   		System.out.println("After Json String:\n" + json.toString());
