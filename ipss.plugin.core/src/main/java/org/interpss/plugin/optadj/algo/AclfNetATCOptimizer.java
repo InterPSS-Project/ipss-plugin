@@ -4,6 +4,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.math3.optim.linear.Relationship;
+import org.interpss.plugin.optadj.optimizer.BaseStateOptimizer;
 import org.interpss.plugin.optadj.optimizer.bean.DeviceConstrainData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,9 +28,9 @@ public class AclfNetATCOptimizer extends AclfNetContigencyOptimizer {
 	
 	Set<AclfGen>  controlGenSet;
 	
-    public AclfNetATCOptimizer(ContingencyAnalysisAlgorithm dclfAlgo) {
+    public AclfNetATCOptimizer(ContingencyAnalysisAlgorithm dclfAlgo, BaseStateOptimizer optimizer) {
 		super(dclfAlgo);
-		// TODO Auto-generated constructor stub
+		this.optimizer = optimizer;
 	}
 	
 	@Override
