@@ -6,7 +6,7 @@ import org.ieee.odm.adapter.IODMAdapter;
 import org.ieee.odm.adapter.psse.bean.PSSESchema;
 import org.ieee.odm.adapter.psse.json.PSSEJSonAdapter;
 import org.ieee.odm.model.aclf.AclfModelParser;
-import org.interpss.fadapter.export.psse.PSSEJSonBusUpdater;
+import org.interpss.fadapter.export.PSSEJSonExporter;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -34,24 +34,23 @@ public class PSSE_IEEE9Bus_BusSetSample {
 	    
 	    AclfNetwork net = simuCtx.getAclfNet();
 	    
+	    // run a loadflow
 	    LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.PQ);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 	    
+	  	// find the bus set connected to Bus1 within 2 hops
 		AclfNetTopoHelper helper = new AclfNetTopoHelper(net);
-		
-		Set<String> busSet = helper.findConnectedBuses(net.getBus("Bus1"), 2);
-		System.out.println("Connected bus set: " + busSet);
+		Set<String> busIdSet = helper.findConnectedBuses(net.getBus("Bus1"), 2);
+		System.out.println("Connected bus set: " + busIdSet);
 		
 		PSSESchema psseJson = parser.getJsonObject();
-		System.out.println("Before Bus Data: " + psseJson.getNetwork().getBus().getData());
+		//System.out.println("Before Bus Data: " + psseJson.getNetwork().getBus().getData());
 		
-		PSSEJSonBusUpdater busUpdater = new PSSEJSonBusUpdater(psseJson.getNetwork().getBus(), net); 
-		busUpdater.filter(busSet);
-		busUpdater.update();
-	  	
-		System.out.println("Before Bus Data: " + psseJson.getNetwork().getBus().getData());
+		// export the bus set data to a new PSSE json file
+		new PSSEJSonExporter(net, psseJson)
+				.export("output/ieee9_busset.rawx", busIdSet);
 	}
 }
 
