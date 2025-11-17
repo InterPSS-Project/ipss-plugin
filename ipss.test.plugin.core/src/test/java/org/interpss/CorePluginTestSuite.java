@@ -19,6 +19,7 @@ import org.interpss.core.adapter.internal.Bus6384Test;
 import org.interpss.core.adapter.internal.IEEE14Test;
 import org.interpss.core.adapter.psse.compare.PSSE_ACTIVSg2000BusCompare_Test;
 import org.interpss.core.adapter.psse.compare.PSSE_ACTIVSg25kObjectCompareTest;
+import org.interpss.core.adapter.psse.json.aclf.PSSEJSon_IEEE9Bus_BusSet_Test;
 import org.interpss.core.adapter.psse.json.aclf.PSSEJSon_IEEE9Bus_DSL_Test;
 import org.interpss.core.adapter.psse.json.aclf.PSSEJSon_IEEE9Bus_FAdapter_Test;
 import org.interpss.core.adapter.psse.largeNet.PSSE_ACTIVSg2000Bus_Test;
@@ -246,6 +247,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	// PSSE JSON
 	PSSEJSon_IEEE9Bus_DSL_Test.class,
 	PSSEJSon_IEEE9Bus_FAdapter_Test.class,
+	PSSEJSon_IEEE9Bus_BusSet_Test.class,
 
 	// PSSE Global Adjustment Control
 	SwitchedShuntGControlTest.class,
