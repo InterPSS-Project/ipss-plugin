@@ -49,8 +49,9 @@ public class PSSE_IEEE9Bus_BusSetSample {
 		//System.out.println("Before Bus Data: " + psseJson.getNetwork().getBus().getData());
 		
 		// export the bus set data to a new PSSE json file
-		new PSSEJSonExporter(net, psseJson)
-				.export("output/ieee9_busset.rawx", busIdSet);
+		PSSEJSonExporter exporter = new PSSEJSonExporter(net, psseJson);
+		exporter.filter(busIdSet);
+		exporter.export("output/ieee9_busset.rawx");
 	}
 }
 
