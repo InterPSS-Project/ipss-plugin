@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.ieee.odm.adapter.psse.bean.PSSESchema;
-import org.ieee.odm.model.IODMModelParser;
 
 import com.interpss.core.aclf.BaseAclfNetwork;
 
@@ -40,29 +39,13 @@ public class PSSEJSonXformerUpdater extends BasePSSEJSonUpdater{
 		xformer.getData().removeIf(data -> {
 	 		   @SuppressWarnings("unchecked")
 			   List<Object> lst = (List<Object>)data;
-	 		   String fid = getFromBusIdFromDataList(lst);
-	 		   String tid = getToBusIdFromDataList(lst);
-	 		   String kid = getTertBusIdFromDataList(lst);
-	 		   return !busIdSet.contains(fid) || !busIdSet.contains(tid) || !busIdSet.contains(kid);
+	 		   String fid = getBusIdFromDataList(lst, "ibus");
+	 		   String tid = getBusIdFromDataList(lst, "jbus");
+	 		   String kid = getBusIdFromDataList(lst, "kbus"); 
+	 		   return kid.equals("Bus0") ?    // not a 3WXfr
+	 				   !busIdSet.contains(fid) || !busIdSet.contains(tid) :
+	 				   !busIdSet.contains(fid) || !busIdSet.contains(tid) || !busIdSet.contains(kid);		   
 	 		});
-	}
-	
-	private String getFromBusIdFromDataList(List<Object> dataList) {
-		int idIdx = this.positionTable.get("ibus");
-		String id = IODMModelParser.BusIdPreFix+((Double)dataList.get(idIdx)).intValue();
-		return id;
-	}
-	
-	private String getToBusIdFromDataList(List<Object> dataList) {
-		int idIdx = this.positionTable.get("jbus");
-		String id = IODMModelParser.BusIdPreFix+((Double)dataList.get(idIdx)).intValue();
-		return id;
-	}
-	
-	private String getTertBusIdFromDataList(List<Object> dataList) {
-		int idIdx = this.positionTable.get("kbus");
-		String id = IODMModelParser.BusIdPreFix+((Double)dataList.get(idIdx)).intValue();
-		return id;
 	}
 	
 	/**

@@ -6,6 +6,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.function.Consumer;
 
+import org.ieee.odm.model.IODMModelParser;
+
 import com.interpss.core.aclf.BaseAclfNetwork;
 
 /**
@@ -50,4 +52,8 @@ public abstract class BasePSSEJSonUpdater {
 		}
 	}
 	
+	protected String getBusIdFromDataList(List<Object> dataList, String name) {
+		int idIdx = this.positionTable.get(name);
+		return IODMModelParser.BusIdPreFix+((Double)dataList.get(idIdx)).intValue();
+	}
 }

@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.ieee.odm.adapter.psse.bean.PSSESchema;
-import org.ieee.odm.model.IODMModelParser;
 
 import com.interpss.core.aclf.BaseAclfNetwork;
 
@@ -40,22 +39,10 @@ public class PSSEJSonAclineUpdater extends BasePSSEJSonUpdater{
 		acline.getData().removeIf(data -> {
 	 		   @SuppressWarnings("unchecked")
 			   List<Object> lst = (List<Object>)data;
-	 		   String fid = getFromBusIdFromDataList(lst);
-	 		   String tid = getToBusIdFromDataList(lst);
+	 		   String fid = getBusIdFromDataList(lst, "ibus");
+	 		   String tid = getBusIdFromDataList(lst, "jbus");
 	 		   return !busIdSet.contains(fid) || !busIdSet.contains(tid);
 	 		});
-	}
-	
-	private String getFromBusIdFromDataList(List<Object> dataList) {
-		int idIdx = this.positionTable.get("ibus");
-		String id = IODMModelParser.BusIdPreFix+((Double)dataList.get(idIdx)).intValue();
-		return id;
-	}
-	
-	private String getToBusIdFromDataList(List<Object> dataList) {
-		int idIdx = this.positionTable.get("jbus");
-		String id = IODMModelParser.BusIdPreFix+((Double)dataList.get(idIdx)).intValue();
-		return id;
 	}
 	
 	/**
