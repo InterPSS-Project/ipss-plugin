@@ -1,13 +1,17 @@
-package sample.psse.busset;
+package org.interpss.core.adapter.psse.json.aclf;
  
+import static org.junit.Assert.assertEquals;
+
 import java.util.Set;
 
 import org.ieee.odm.adapter.IODMAdapter;
 import org.ieee.odm.adapter.psse.bean.PSSESchema;
 import org.ieee.odm.adapter.psse.json.PSSEJSonAdapter;
 import org.ieee.odm.model.aclf.AclfModelParser;
+import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.export.PSSEJSonExporter;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
+import org.junit.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
@@ -18,8 +22,9 @@ import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 import com.interpss.simu.SimuObjectFactory;
 
-public class PSSE_IEEE9Bus_BusSetSample { 
-	public static void main(String args[]) throws Exception {
+public class PSSEJSon_IEEE9Bus_BusSet_Test extends CorePluginTestSetup { 
+	@Test
+	public void testJSonExport() throws Exception {
 	    IODMAdapter adapter = new PSSEJSonAdapter();
 	    adapter.parseInputFile("testdata/adpter/psse/json/ieee9.rawx");
 	    
@@ -30,8 +35,7 @@ public class PSSE_IEEE9Bus_BusSetSample {
 	    if (!new ODMAclfParserMapper().map2Model(parser, simuCtx)) {
 	        System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
 	   	 return;
-	    }		
-	    
+	    }	
 	    AclfNetwork net = simuCtx.getAclfNet();
 	    
 	    // run a loadflow
@@ -51,7 +55,13 @@ public class PSSE_IEEE9Bus_BusSetSample {
 		// export the bus set data to a new PSSE json file
 		PSSEJSonExporter exporter = new PSSEJSonExporter(net, psseJson);
 		exporter.filter(busIdSet);
-		exporter.export("output/ieee9_busset.rawx");
+		
+		assertEquals(psseJson.getNetwork().getBus().getData().size(), 4);
+		assertEquals(psseJson.getNetwork().getGenerator().getData().size(), 1);
+		assertEquals(psseJson.getNetwork().getLoad().getData().size(), 2);
+		
+		assertEquals(psseJson.getNetwork().getAcline().getData().size(), 2);
+		assertEquals(psseJson.getNetwork().getTransformer().getData().size(), 1);
 	}
 }
 
