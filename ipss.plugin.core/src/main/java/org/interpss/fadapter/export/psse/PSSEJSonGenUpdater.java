@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.ieee.odm.adapter.psse.bean.PSSESchema;
-import org.ieee.odm.model.IODMModelParser;
 
 import com.interpss.core.aclf.BaseAclfNetwork;
 
@@ -40,16 +39,10 @@ public class PSSEJSonGenUpdater extends BasePSSEJSonUpdater{
 		gen.getData().removeIf(data -> {
 	 		   @SuppressWarnings("unchecked")
 			   List<Object> lst = (List<Object>)data;
-	 		   String id = getBusIdFromDataList(lst);
+	 		   String id = getBusIdFromDataList(lst, "ibus");
 	 		   return !busIdSet.contains(id);
 	 		});
 	}
-	
-	private String getBusIdFromDataList(List<Object> dataList) {
-		   int idIdx = this.positionTable.get("ibus");
-		   String id = IODMModelParser.BusIdPreFix+((Double)dataList.get(idIdx)).intValue();
-		   return id;
-		}
 	
 	/**
 	 * update the data list based on the AclfNetwork simulation results 
