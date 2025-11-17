@@ -1,30 +1,7 @@
-/*
-  * @(#)PSSEAreaDataMapper.java   
-  *
-  * Copyright (C) 2006 www.interpss.org
-  *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU LESSER GENERAL PUBLIC LICENSE
-  * as published by the Free Software Foundation; either version 2.1
-  * of the License, or (at your option) any later version.
-  *
-  * This program is distributed in the hope that it will be useful,
-  * but WITHOUT ANY WARRANTY; without even the implied warranty of
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  * GNU General Public License for more details.
-  *
-  * @Author Mike Zhou
-  * @Version 1.0
-  * @Date 09/15/2006
-  * 
-  *   Revision History
-  *   ================
-  *
-  */
-
 package org.interpss.fadapter.export.psse;
 
 import java.util.List;
+import java.util.Set;
 
 import org.ieee.odm.adapter.psse.bean.PSSESchema;
 import org.ieee.odm.model.IODMModelParser;
@@ -39,25 +16,50 @@ import com.interpss.core.aclf.BaseAclfNetwork;
  *
  */
 public class PSSEJSonBusUpdater extends BasePSSEJSonUpdater{	
+	// the PSSE bus json object
+	private PSSESchema.Bus bus;
+	
 	/**
 	 * Constructor
 	 * 
 	 * @param fieldDef field name definitions
+	 * @param aclfNet  the AclfNetwork object
 	 */
-	public PSSEJSonBusUpdater(PSSESchema.Bus bus) {
-		super(bus.getFields(), (lst) -> {
+	public PSSEJSonBusUpdater(PSSESchema.Bus bus, BaseAclfNetwork<?,?> aclfNet) {
+		super(bus.getFields(), aclfNet, (lst) -> {
+			/*
 			// fields appended at the end of the list
 			lst.add("vm1");
 			lst.add("va1");
+			*/
 		});
+		this.bus = bus;
+	}
+	
+	/**
+	 * filter the bus data based on the given bus id set
+	 * 
+	 * @param busIdSet  the bus id set to keep
+	 */
+	public void filter(Set<String> busIdSet) {
+		bus.getData().removeIf(data -> {
+ 		   @SuppressWarnings("unchecked")
+		   List<Object> lst = (List<Object>)data;
+ 		   String id = getBusIdFromDataList(lst);
+ 		   return !busIdSet.contains(id);
+ 		});
+	}
+	
+	private String getBusIdFromDataList(List<Object> dataList) {
+	   int idIdx = this.positionTable.get("ibus");
+	   String id = IODMModelParser.BusIdPreFix+((Double)dataList.get(idIdx)).intValue();
+	   return id;
 	}
 	
 	/**
 	 * update the data list based on the AclfNetwork simulation results 
-	 * 
-	 * @param data
 	 */
-	public void update(PSSESchema.Bus bus, BaseAclfNetwork<?,?> aclfNet) {
+	public void update() {
 		/*
  		"fields":["ibus", "name", "baskv", "ide", "area", "zone", "owner", "vm", "va", "nvhi", 	
  					"nvlo", "evhi", "evlo"], 
@@ -68,8 +70,7 @@ public class PSSEJSonBusUpdater extends BasePSSEJSonUpdater{
    		   //System.out.println(b.getClass());
    		   @SuppressWarnings("unchecked")
  		   List<Object> lst = (List<Object>)b;
-   		   int idIdx = this.positionTable.get("ibus");
-   		   String id = IODMModelParser.BusIdPreFix+((Double)lst.get(idIdx)).intValue();
+   		   String id = getBusIdFromDataList(lst);
    		   /*
    		   System.out.print(" id: " + id); 
    		   System.out.print(" vm: " + lst.get(vmIdx)); 
@@ -91,9 +92,10 @@ public class PSSEJSonBusUpdater extends BasePSSEJSonUpdater{
 		   */
    		   /*
 		    * Or we can append the values to the end of the list
-		    */
+		    *
 		   lst.add(aclfNet.getBus(id).getVoltageMag());    			// vm1
 		   lst.add(aclfNet.getBus(id).getVoltageAng(UnitType.Deg));	// va1
+		   */
    		});
 	}
 }
