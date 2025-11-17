@@ -88,8 +88,8 @@ public class PSSEJSon_IEEE9Bus_FAdapter_Test extends CorePluginTestSetup {
   		/*
   		 * update the bus field/data into the PSSE Json object
   		 */
-  		PSSEJSonBusUpdater busUpdater = new PSSEJSonBusUpdater(psseJson.getNetwork().getBus()); 
-  		busUpdater.update(psseJson.getNetwork().getBus(), net);
+  		PSSEJSonBusUpdater busUpdater = new PSSEJSonBusUpdater(psseJson.getNetwork().getBus(), net); 
+  		busUpdater.update();
   		
   		//System.out.println("After Json String:\n" + json.toString());
   		
