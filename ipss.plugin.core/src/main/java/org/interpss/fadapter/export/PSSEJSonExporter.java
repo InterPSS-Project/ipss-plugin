@@ -42,12 +42,11 @@ public class PSSEJSonExporter {
 	}
 	
 	/**
-	 * filter the json data based on the given bus id set and export to the specified file
+	 * filter the json data based on the given bus id set
 	 * 
-	 * @param filename the output filename
 	 * @param busIdSet the bus id set to keep
 	 */
-	public void export(String filename, Set<String> busIdSet) {
+	public void filter(Set<String> busIdSet) {
 		// update the Bus json data based on the busIdSet
 		PSSEJSonBusUpdater busUpdater = new PSSEJSonBusUpdater(psseJson.getNetwork().getBus(), aclfNet); 
 		busUpdater.filter(busIdSet);
@@ -77,7 +76,14 @@ public class PSSEJSonExporter {
 		xfrUpdater.filter(busIdSet);
 		xfrUpdater.update();
 		log.debug("Xfr Data: " + psseJson.getNetwork().getTransformer().getData());
-		
+	}
+	
+	/**
+	 * export to the specified file
+	 * 
+	 * @param filename the output filename
+	 */
+	public void export(String filename) {
 		// write the json data to the output file
 		FileUtil.writeText2File(filename, psseJson.toString());
 	}
