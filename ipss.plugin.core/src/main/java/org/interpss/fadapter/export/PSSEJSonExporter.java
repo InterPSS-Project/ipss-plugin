@@ -3,11 +3,14 @@ package org.interpss.fadapter.export;
 import java.util.Set;
 
 import org.ieee.odm.adapter.psse.bean.PSSESchema;
-import org.interpss.fadapter.BPAFormat;
 import org.interpss.fadapter.export.psse.PSSEJSonAclineUpdater;
 import org.interpss.fadapter.export.psse.PSSEJSonBusUpdater;
+import org.interpss.fadapter.export.psse.PSSEJSonFactsDeviceUpdater;
+import org.interpss.fadapter.export.psse.PSSEJSonFixedShuntUpdater;
 import org.interpss.fadapter.export.psse.PSSEJSonGenUpdater;
 import org.interpss.fadapter.export.psse.PSSEJSonLoadUpdater;
+import org.interpss.fadapter.export.psse.PSSEJSonSwitchedShuntUpdater;
+import org.interpss.fadapter.export.psse.PSSEJSonSwitchingDeviceUpdater;
 import org.interpss.fadapter.export.psse.PSSEJSonXformerUpdater;
 import org.interpss.util.FileUtil;
 import org.slf4j.Logger;
@@ -65,7 +68,25 @@ public class PSSEJSonExporter {
 		loadUpdater.update();
 		log.debug("Load Data: " + psseJson.getNetwork().getLoad().getData());
 		
-		// 
+		// update the Switched shunt json data based on the busIdSet
+		PSSEJSonSwitchedShuntUpdater swshuntUpdater = new PSSEJSonSwitchedShuntUpdater(psseJson.getNetwork().getSwshunt(), aclfNet); 
+		swshuntUpdater.filter(busIdSet);
+		swshuntUpdater.update();
+		log.debug("Switched Shunt Data: " + psseJson.getNetwork().getLoad().getData());
+				
+		// update the Fixed shunt json data based on the busIdSet
+		PSSEJSonFixedShuntUpdater fShuntUpdater = new PSSEJSonFixedShuntUpdater(psseJson.getNetwork().getFixshunt(), aclfNet); 
+		fShuntUpdater.filter(busIdSet);
+		fShuntUpdater.update();
+		log.debug("Fixed shunt Data: " + psseJson.getNetwork().getLoad().getData());
+				
+		// update the Facts json data based on the busIdSet
+		PSSEJSonFactsDeviceUpdater factsUpdater = new PSSEJSonFactsDeviceUpdater(psseJson.getNetwork().getFacts(), aclfNet); 
+		factsUpdater.filter(busIdSet);
+		factsUpdater.update();
+		log.debug("Facts Data: " + psseJson.getNetwork().getLoad().getData());
+				
+		// update the Acline json data based on the busIdSet
 		PSSEJSonAclineUpdater aclineUpdater = new PSSEJSonAclineUpdater(psseJson.getNetwork().getAcline(), aclfNet); 
 		aclineUpdater.filter(busIdSet);
 		aclineUpdater.update();
@@ -76,6 +97,12 @@ public class PSSEJSonExporter {
 		xfrUpdater.filter(busIdSet);
 		xfrUpdater.update();
 		log.debug("Xfr Data: " + psseJson.getNetwork().getTransformer().getData());
+		
+		// update the Switching device json data based on the busIdSet
+		PSSEJSonSwitchingDeviceUpdater switchingUpdater = new PSSEJSonSwitchingDeviceUpdater(psseJson.getNetwork().getSysswd(), aclfNet); 
+		switchingUpdater.filter(busIdSet);
+		switchingUpdater.update();
+		log.debug("Switching Device Data: " + psseJson.getNetwork().getTransformer().getData());
 	}
 	
 	/**
