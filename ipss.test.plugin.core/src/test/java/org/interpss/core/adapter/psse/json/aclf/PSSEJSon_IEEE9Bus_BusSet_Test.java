@@ -54,7 +54,7 @@ public class PSSEJSon_IEEE9Bus_BusSet_Test extends CorePluginTestSetup {
 		
 		// export the bus set data to a new PSSE json file
 		PSSEJSonExporter exporter = new PSSEJSonExporter(net, psseJson);
-		exporter.filter(busIdSet);
+		exporter.filterAndUpdate(busIdSet);
 		
 		assertEquals(psseJson.getNetwork().getBus().getData().size(), 4);
 		assertEquals(psseJson.getNetwork().getGenerator().getData().size(), 1);

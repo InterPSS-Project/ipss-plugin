@@ -45,11 +45,11 @@ public class PSSEJSonExporter {
 	}
 	
 	/**
-	 * filter the json data based on the given bus id set
+	 * filter the json data based on the given bus id set and update the data based on the AclfNetwork Loadflow results;
 	 * 
 	 * @param busIdSet the bus id set to keep
 	 */
-	public void filter(Set<String> busIdSet) {
+	public void filterAndUpdate(Set<String> busIdSet) {
 		// update the Bus json data based on the busIdSet
 		PSSEJSonBusUpdater busUpdater = new PSSEJSonBusUpdater(psseJson.getNetwork().getBus(), aclfNet); 
 		busUpdater.filter(busIdSet);
