@@ -5,6 +5,8 @@ import java.util.Set;
 import org.ieee.odm.adapter.psse.bean.PSSESchema;
 import org.interpss.fadapter.export.psse.PSSEJSonAclineUpdater;
 import org.interpss.fadapter.export.psse.PSSEJSonBusUpdater;
+import org.interpss.fadapter.export.psse.PSSEJSonDc2TLCCUpdater;
+import org.interpss.fadapter.export.psse.PSSEJSonDc2TVSCUpdater;
 import org.interpss.fadapter.export.psse.PSSEJSonFactsDeviceUpdater;
 import org.interpss.fadapter.export.psse.PSSEJSonFixedShuntUpdater;
 import org.interpss.fadapter.export.psse.PSSEJSonGenUpdater;
@@ -103,6 +105,16 @@ public class PSSEJSonExporter {
 		switchingUpdater.filter(busIdSet);
 		switchingUpdater.update();
 		log.debug("Switching Device Data: " + psseJson.getNetwork().getTransformer().getData());
+		
+		PSSEJSonDc2TLCCUpdater dc2tLccUpdater = new PSSEJSonDc2TLCCUpdater(psseJson.getNetwork().getTwotermdc(), aclfNet);
+		dc2tLccUpdater.filter(busIdSet);
+		dc2tLccUpdater.update();
+		log.debug("DC 2T LCC Data: " + psseJson.getNetwork().getTwotermdc().getData());
+		
+		PSSEJSonDc2TVSCUpdater dc2tVscUpdater = new PSSEJSonDc2TVSCUpdater(psseJson.getNetwork().getVscdc(), aclfNet);
+		dc2tVscUpdater.filter(busIdSet);
+		dc2tVscUpdater.update();
+		log.debug("DC 2T VSC Data: " + psseJson.getNetwork().getVscdc().getData());
 	}
 	
 	/**
