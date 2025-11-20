@@ -50,7 +50,7 @@ public class PSSE_IEEE9Bus_BusSetSample {
 		
 		// export the bus set data to a new PSSE json file
 		PSSEJSonExporter exporter = new PSSEJSonExporter(net, psseJson);
-		exporter.filter(busIdSet);
+		exporter.filterAndUpdate(busIdSet);
 		exporter.export("output/ieee9_busset.rawx");
 	}
 }
