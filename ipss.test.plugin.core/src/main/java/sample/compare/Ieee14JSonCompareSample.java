@@ -1,4 +1,4 @@
-package sample;
+package sample.compare;
 
 import org.interpss.CorePluginFactory;
 import org.interpss.IpssCorePlugin;
