@@ -12,4 +12,8 @@ public class AclfBranchExchangeInfo extends BaseExchangeBean {
 	public double[] q_f2t;
 	public double[] p_t2f;
 	public double[] q_t2f;
+	
+	public AclfBranchExchangeInfo(String[] ids) {
+		super(ids);
+	}
 }
