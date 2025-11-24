@@ -10,4 +10,8 @@ public class AclfBusExchangeInfo extends BaseExchangeBean {
 	// bus voltage results
 	public double[] volt_mag;   // in p.u.
 	public double[] volt_ang;   // in degree
+	
+	public AclfBusExchangeInfo(String[] ids) {
+		super(ids);
+	}
 }
