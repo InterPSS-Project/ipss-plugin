@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+      <groupId>com.interpss</groupId>
+      <artifactId>ipss.plugin</artifactId>
+      <version>1.0</version>
+  </parent>
+
+  <artifactId>ipss.sample</artifactId>
+  
+  <properties>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+  </properties>
+  
+  <dependencies>
+      <dependency>
+        <groupId>com.interpss</groupId>
+        <artifactId>ipss.plugin.core</artifactId>
+        <version>1.0</version>
+    </dependency>
+    
+ 	<dependency>
+	    <groupId>org.mvel</groupId>
+	    <artifactId>mvel2</artifactId>
+	    <version>2.5.2.Final</version>
+	</dependency>	 
+
+	<!-- https://mvnrepository.com/artifact/net.sf.py4j/py4j -->
+	<dependency>
+	    <groupId>net.sf.py4j</groupId>
+	    <artifactId>py4j</artifactId>
+	    <version>0.10.9.3</version>
+	</dependency>
+	
+	<!-- JUnit dependency for test assertions -->
+	<dependency>
+	    <groupId>junit</groupId>
+	    <artifactId>junit</artifactId>
+	    <version>4.13.2</version>
+	</dependency>
+	
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- Maven Exec Plugin for running Java applications -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.1.0</version>
+        <configuration>
+          <mainClass>org.interpss.sample.customSolver.CMathCustomSolverLoadflow</mainClass>
+          <classpathScope>compile</classpathScope>
+        </configuration>
+      </plugin>
+      
+      <!-- Maven Compiler Plugin -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.8.1</version>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+        </configuration>
+      </plugin>
+      
+    </plugins>
+  </build>
+
+</project>
