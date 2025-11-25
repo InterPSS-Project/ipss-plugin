@@ -1,0 +1,67 @@
+import jpype
+from pathlib import Path
+import os
+
+# Get script directory for reliable path resolution
+script_dir = Path(__file__).resolve().parent
+
+# set jvm path
+#jvm_path = jpype.getDefaultJVMPath()
+jvm_path = "/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/lib/libjli.dylib"
+print(f"JVM Path: {jvm_path}")
+
+# set the JAR path using platform-independent path handling
+jar_path = str(script_dir.parent / "lib" / "ipss_runnable.jar")
+
+# Start JVM with proper path separators
+jpype.startJVM(jvm_path, "-ea", f"-Djava.class.path={jar_path}")
+
+# InterPSS core related classes
+CoreObjectFactory = jpype.JClass("com.interpss.core.CoreObjectFactory")
+LoadflowAlgoObjectFactory = jpype.JClass("com.interpss.core.LoadflowAlgoObjectFactory")
+
+# InterPSS output related classes
+AclfOutFunc = jpype.JClass("org.interpss.display.AclfOutFunc")
+
+# ODM related classes
+IeeeCDFAdapter = jpype.JClass("org.ieee.odm.adapter.ieeecdf.IeeeCDFAdapter")
+ODMAclfParserMapper = jpype.JClass("org.interpss.odm.mapper.ODMAclfParserMapper")
+NetType = jpype.JClass("org.ieee.odm.adapter.IODMAdapter.NetType")
+IEEECDFVersion = jpype.JClass("org.ieee.odm.adapter.ieeecdf.IeeeCDFAdapter.IEEECDFVersion")
+
+# InterPSS aclf result exchange related classes
+AclfResultExchangeAdapter = jpype.JClass("org.interpss.plugin.exchange.AclfResultExchangeAdapter")
+AclfBusExchangeInfo = jpype.JClass("org.interpss.plugin.exchange.bean.AclfBusExchangeInfo")
+AclfBranchExchangeInfo = jpype.JClass("org.interpss.plugin.exchange.bean.AclfBranchExchangeInfo")
+
+# create instances of the classes we are going to used
+adapter = IeeeCDFAdapter(IEEECDFVersion.Default)
+
+# Use platform-independent path handling for test data
+file_path = str(script_dir.parent / "testData" / "ieee" / "IEEE14Bus.dat")
+adapter.parseInputFile(file_path)
+net = ODMAclfParserMapper().map2Model(adapter.getModel()).getAclfNet()
+
+algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net)
+
+algo.loadflow()
+
+# basic load flow results summary, showing the bus type, voltage magnitude and angle and bus net power  	
+print(AclfOutFunc.loadFlowSummary(net))
+
+
+# Define a set of bus ids
+bus_ids = ["Bus1", "Bus2", "Bus3", "Bus4", "Bus5", "Bus6", "Bus7", "Bus8", "Bus9", "Bus10", "Bus11", "Bus12", "Bus13", "Bus14"]
+
+exAdapter = AclfResultExchangeAdapter(net);
+busBeanSet = AclfBusExchangeInfo(bus_ids);
+exAdapter.fillBusResult(busBeanSet);
+
+for busInfo in busBeanSet.volt_mag:
+    print(f"mag: {busInfo}") 
+    
+for busInfo in busBeanSet.volt_ang:
+    print(f"ang: {busInfo}")    
+
+# Shutdown JVM
+jpype.shutdownJVM()
