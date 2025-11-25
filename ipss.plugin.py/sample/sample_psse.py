@@ -1,6 +1,5 @@
 import jpype
 from pathlib import Path
-import os
 
 # Get script directory for reliable path resolution
 script_dir = Path(__file__).resolve().parent
