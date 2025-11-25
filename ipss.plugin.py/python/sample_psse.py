@@ -16,12 +16,18 @@ jar_path = str(script_dir.parent / "lib" / "ipss_runnable.jar")
 # Start JVM with proper path separators
 jpype.startJVM(jvm_path, "-ea", f"-Djava.class.path={jar_path}")
 
+# InterPSS core related classes
 CoreObjectFactory = jpype.JClass("com.interpss.core.CoreObjectFactory")
 LoadflowAlgoObjectFactory = jpype.JClass("com.interpss.core.LoadflowAlgoObjectFactory")
 
+# InterPSS output related classes
 AclfOutFunc = jpype.JClass("org.interpss.display.AclfOutFunc")
+
+# PSS/E output related classes
 AclfOut_PSSE = jpype.JClass("org.interpss.display.impl.AclfOut_PSSE")
 PSSEOutFormat = jpype.JClass("org.interpss.display.impl.AclfOut_PSSE.Format")
+
+# ODM related classes
 PSSERawAdapter = jpype.JClass("org.ieee.odm.adapter.psse.raw.PSSERawAdapter")
 ODMAclfParserMapper = jpype.JClass("org.interpss.odm.mapper.ODMAclfParserMapper")
 NetType = jpype.JClass("org.ieee.odm.adapter.IODMAdapter.NetType")
