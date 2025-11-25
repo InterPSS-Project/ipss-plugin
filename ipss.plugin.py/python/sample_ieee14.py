@@ -1,6 +1,7 @@
 import jpype
 from pathlib import Path
 import os
+from fsspec.transaction import FileActor
 
 # Get script directory for reliable path resolution
 script_dir = Path(__file__).resolve().parent
@@ -35,25 +36,30 @@ AclfBusExchangeInfo = jpype.JClass("org.interpss.plugin.exchange.bean.AclfBusExc
 AclfBranchExchangeInfo = jpype.JClass("org.interpss.plugin.exchange.bean.AclfBranchExchangeInfo")
 
 # create instances of the classes we are going to used
-adapter = IeeeCDFAdapter(IEEECDFVersion.Default)
+fileAdapter = IeeeCDFAdapter(IEEECDFVersion.Default)
 
 # Use platform-independent path handling for test data
 file_path = str(script_dir.parent / "testData" / "ieee" / "IEEE14Bus.dat")
-adapter.parseInputFile(file_path)
-net = ODMAclfParserMapper().map2Model(adapter.getModel()).getAclfNet()
+fileAdapter.parseInputFile(file_path)
+aclfNet = ODMAclfParserMapper().map2Model(fileAdapter.getModel()).getAclfNet()
 
-algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net)
+aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet)
 
-algo.loadflow()
+aclfAlgo.loadflow()
 
 # basic load flow results summary, showing the bus type, voltage magnitude and angle and bus net power  	
-print(AclfOutFunc.loadFlowSummary(net))
+print(AclfOutFunc.loadFlowSummary(aclfNet))
 
 
 # Define a set of bus ids
 bus_ids = ["Bus1", "Bus2", "Bus3", "Bus4", "Bus5", "Bus6", "Bus7", "Bus8", "Bus9", "Bus10", "Bus11", "Bus12", "Bus13", "Bus14"]
+branch_ids = ["Bus1->Bus2(1)", "Bus1->Bus5(1)", "Bus2->Bus3(1)", "Bus2->Bus4(1)", "Bus2->Bus5(1)", "Bus3->Bus4(1)", "Bus4->Bus5(1)", "Bus4->Bus7",
+                   "Bus4->Bus9(1)", "Bus5->Bus6(1)", "Bus6->Bus11(1)", "Bus6->Bus12(1)", "Bus6->Bus13(1)", "Bus7->Bus8(1)", "Bus7->Bus9(1)", "Bus9->Bus10(1)",
+                   "Bus9->Bus14(1)", "Bus10->Bus11(1)", "Bus12->Bus13(1)", "Bus13->Bus14(1)"]
 
-exAdapter = AclfResultExchangeAdapter(net);
+exAdapter = AclfResultExchangeAdapter(aclfNet);
+
+# Create bus result bean set and fill it with load flow results
 busBeanSet = AclfBusExchangeInfo(bus_ids);
 exAdapter.fillBusResult(busBeanSet);
 
@@ -62,6 +68,16 @@ for busInfo in busBeanSet.volt_mag:
     
 for busInfo in busBeanSet.volt_ang:
     print(f"ang: {busInfo}")    
+
+# Create branch result bean set and fill it with load flow results
+braBeanSet = AclfBranchExchangeInfo(branch_ids);
+exAdapter.fillBranchResult(braBeanSet);
+
+for braInfo in braBeanSet.p_f2t:
+    print(f"p_f2t: {braInfo}") 
+    
+for braInfo in braBeanSet.q_f2t:
+    print(f"q_f2t: {braInfo}")    
 
 # Shutdown JVM
 jpype.shutdownJVM()
