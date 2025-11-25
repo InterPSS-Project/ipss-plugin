@@ -7,14 +7,6 @@
 .metadata/
 *.log
 *.class
-*.jar
-*.war
-*.iml
-*.ipr
-*.iws
-*.swp
-*.prefs
 .DS_Store
 /.apt_generated/
-
 /.vscode/
