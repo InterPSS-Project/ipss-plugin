@@ -27,7 +27,7 @@ Complex = jpype.JClass("org.apache.commons.math3.complex.Complex")
 AclfOutFunc = jpype.JClass("org.interpss.display.AclfOutFunc")
 
 # create instances
-IpssCorePlugin.init();
+IpssCorePlugin.init()
 net = CoreObjectFactory.createAclfNetwork()
 net.setBaseKva(100000)
 bus1 = CoreObjectFactory.createAclfBus("Bus1", net).get()
