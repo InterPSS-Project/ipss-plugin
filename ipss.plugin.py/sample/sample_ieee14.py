@@ -33,6 +33,9 @@ AclfResultExchangeAdapter = jpype.JClass("org.interpss.plugin.exchange.AclfResul
 AclfBusExchangeInfo = jpype.JClass("org.interpss.plugin.exchange.bean.AclfBusExchangeInfo")
 AclfBranchExchangeInfo = jpype.JClass("org.interpss.plugin.exchange.bean.AclfBranchExchangeInfo")
 
+# InterPSS utility classes
+PerformanceTimer = jpype.JClass("org.interpss.numeric.util.PerformanceTimer")
+
 # create instances of the classes we are going to used
 fileAdapter = IeeeCDFAdapter(IEEECDFVersion.Default)
 
@@ -48,6 +51,7 @@ aclfAlgo.loadflow()
 # basic load flow results summary, showing the bus type, voltage magnitude and angle and bus net power  	
 print(AclfOutFunc.loadFlowSummary(aclfNet))
 
+timer = PerformanceTimer()
 
 # Define a set of bus ids
 bus_ids = ["Bus1", "Bus2", "Bus3", "Bus4", "Bus5", "Bus6", "Bus7", "Bus8", "Bus9", "Bus10", "Bus11", "Bus12", "Bus13", "Bus14"]
@@ -76,6 +80,8 @@ for braInfo in braBeanSet.p_f2t:
     
 for braInfo in braBeanSet.q_f2t:
     print(f"q_f2t: {braInfo}")    
+    
+timer.log("Time: ")    
 
 # Shutdown JVM
 jpype.shutdownJVM()
