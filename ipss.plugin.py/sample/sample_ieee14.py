@@ -1,4 +1,7 @@
 import jpype
+import jpype.imports
+from jpype.types import *
+
 from pathlib import Path
 
 # Get script directory for reliable path resolution
@@ -16,25 +19,23 @@ jar_path = str(script_dir.parent / "lib" / "ipss_runnable.jar")
 jpype.startJVM(jvm_path, "-ea", f"-Djava.class.path={jar_path}")
 
 # InterPSS core related classes
-CoreObjectFactory = jpype.JClass("com.interpss.core.CoreObjectFactory")
-LoadflowAlgoObjectFactory = jpype.JClass("com.interpss.core.LoadflowAlgoObjectFactory")
+from com.interpss.core import CoreObjectFactory
+from com.interpss.core import LoadflowAlgoObjectFactory
 
 # InterPSS output related classes
-AclfOutFunc = jpype.JClass("org.interpss.display.AclfOutFunc")
+from org.interpss.display import AclfOutFunc
 
 # ODM related classes
-IeeeCDFAdapter = jpype.JClass("org.ieee.odm.adapter.ieeecdf.IeeeCDFAdapter")
-ODMAclfParserMapper = jpype.JClass("org.interpss.odm.mapper.ODMAclfParserMapper")
-NetType = jpype.JClass("org.ieee.odm.adapter.IODMAdapter.NetType")
-IEEECDFVersion = jpype.JClass("org.ieee.odm.adapter.ieeecdf.IeeeCDFAdapter.IEEECDFVersion")
+from org.ieee.odm.adapter.ieeecdf import IeeeCDFAdapter
+from org.interpss.odm.mapper import ODMAclfParserMapper
+from org.ieee.odm.adapter.IODMAdapter import NetType
+from org.ieee.odm.adapter.ieeecdf.IeeeCDFAdapter import  IEEECDFVersion
 
 # InterPSS aclf result exchange related classes
-AclfResultExchangeAdapter = jpype.JClass("org.interpss.plugin.exchange.AclfResultExchangeAdapter")
-AclfBusExchangeInfo = jpype.JClass("org.interpss.plugin.exchange.bean.AclfBusExchangeInfo")
-AclfBranchExchangeInfo = jpype.JClass("org.interpss.plugin.exchange.bean.AclfBranchExchangeInfo")
+from org.interpss.plugin.exchange import AclfResultExchangeAdapter
 
 # InterPSS utility classes
-PerformanceTimer = jpype.JClass("org.interpss.numeric.util.PerformanceTimer")
+from org.interpss.numeric.util import PerformanceTimer
 
 # create instances of the classes we are going to used
 fileAdapter = IeeeCDFAdapter(IEEECDFVersion.Default)

@@ -1,4 +1,7 @@
 import jpype
+import jpype.imports
+from jpype.types import *
+
 from pathlib import Path
 
 # Get script directory for reliable path resolution
@@ -16,21 +19,21 @@ jar_path = str(script_dir.parent / "lib" / "ipss_runnable.jar")
 jpype.startJVM(jvm_path, "-ea", f"-Djava.class.path={jar_path}")
 
 # InterPSS core related classes
-CoreObjectFactory = jpype.JClass("com.interpss.core.CoreObjectFactory")
-LoadflowAlgoObjectFactory = jpype.JClass("com.interpss.core.LoadflowAlgoObjectFactory")
+from com.interpss.core import CoreObjectFactory
+from com.interpss.core import LoadflowAlgoObjectFactory
 
 # InterPSS output related classes
-AclfOutFunc = jpype.JClass("org.interpss.display.AclfOutFunc")
+from org.interpss.display import AclfOutFunc
 
 # PSS/E output related classes
-AclfOut_PSSE = jpype.JClass("org.interpss.display.impl.AclfOut_PSSE")
-PSSEOutFormat = jpype.JClass("org.interpss.display.impl.AclfOut_PSSE.Format")
+from org.interpss.display.impl import AclfOut_PSSE
+from org.interpss.display.impl.AclfOut_PSSE import Format
 
 # ODM related classes
-PSSERawAdapter = jpype.JClass("org.ieee.odm.adapter.psse.raw.PSSERawAdapter")
-ODMAclfParserMapper = jpype.JClass("org.interpss.odm.mapper.ODMAclfParserMapper")
-NetType = jpype.JClass("org.ieee.odm.adapter.IODMAdapter.NetType")
-PsseVersion = jpype.JClass("org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion")
+from org.ieee.odm.adapter.psse.raw import PSSERawAdapter
+from org.interpss.odm.mapper import ODMAclfParserMapper
+from org.ieee.odm.adapter.IODMAdapter import NetType
+from org.ieee.odm.adapter.psse.PSSEAdapter import PsseVersion
 
 # create instances of the classes we are going to used
 adapter = PSSERawAdapter(PsseVersion.PSSE_30)
