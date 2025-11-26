@@ -1,4 +1,7 @@
 import jpype
+import jpype.imports
+from jpype.types import *
+
 from pathlib import Path
 
 # Get script directory for reliable path resolution across platforms
@@ -16,15 +19,15 @@ jar_path = str(script_dir.parent / "lib" / "ipss_runnable.jar")
 jpype.startJVM(jvm_path, "-ea", f"-Djava.class.path={jar_path}")
 
 # load the Java classes to be used
-CoreObjectFactory = jpype.JClass("com.interpss.core.CoreObjectFactory")
-LoadflowAlgoObjectFactory = jpype.JClass("com.interpss.core.LoadflowAlgoObjectFactory")
+from com.interpss.core import CoreObjectFactory
+from com.interpss.core import LoadflowAlgoObjectFactory
 
-AclfGenCode = jpype.JClass("com.interpss.core.aclf.AclfGenCode")
-AclfLoadCode = jpype.JClass("com.interpss.core.aclf.AclfLoadCode")
-AclfBranchCode = jpype.JClass("com.interpss.core.aclf.AclfBranchCode")
+from com.interpss.core.aclf import AclfGenCode
+from com.interpss.core.aclf import AclfLoadCode
+from com.interpss.core.aclf import AclfBranchCode
 
-Complex = jpype.JClass("org.apache.commons.math3.complex.Complex")
-AclfOutFunc = jpype.JClass("org.interpss.display.AclfOutFunc")
+from org.apache.commons.math3.complex import Complex
+from org.interpss.display import AclfOutFunc
 
 # create instances
 #IpssCorePlugin.init()
