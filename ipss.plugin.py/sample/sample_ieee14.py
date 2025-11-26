@@ -4,12 +4,15 @@ from jpype.types import *
 
 from pathlib import Path
 
+import numpy as np
+
 # Get script directory for reliable path resolution
 script_dir = Path(__file__).resolve().parent
 
 # set jvm path
 #jvm_path = jpype.getDefaultJVMPath()
 jvm_path = "/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/lib/libjli.dylib"
+# jvm_path = f"{os.getenv('HOME')}/Library/Java/JavaVirtualMachines/corretto-21.0.9/Contents/Home/lib/libjli.dylib"
 print(f"JVM Path: {jvm_path}")
 
 # set the JAR path using platform-independent path handling
@@ -66,25 +69,31 @@ exAdapter = AclfResultExchangeAdapter(aclfNet)
 exAdapter.setBusIds(bus_ids)
 exAdapter.fillBusResult()
 
-# TODO use NumPy to transfer data in bulk
-for busInfo in exAdapter.getBusVoltMag():
-    print(f"mag: {busInfo}") 
+print("Bus Voltage Magnitude:")
+# Use NumPy to transfer data in bulk
+volt_mag = np.array(exAdapter.getBusVoltMag(), dtype=np.double, copy=False)
+print(f"type of volt_mag:{type(volt_mag)}")
+print(f"mag: {volt_mag}")
 
-# TODO use NumPy to transfer data in bulk    
-for busInfo in exAdapter.getBusVoltAng():
-    print(f"ang: {busInfo}")    
+# 报错：AttributeError: 'NoneType' object has no attribute 'volt_mag'
+# volt_mag = np.array(exAdapter.busResultBean.volt_mag)
+# print(f"mag: {volt_mag}")
+
+# Use NumPy to transfer data in bulk
+volt_ang = np.array(exAdapter.getBusVoltAng())
+print(f"ang: {volt_ang}")    
 
 # Create branch result bean set and fill it with load flow results
-exAdapter.setBranchIds(branch_ids);
-exAdapter.fillBranchResult();
+exAdapter.setBranchIds(branch_ids)
+exAdapter.fillBranchResult()
 
-# TODO use NumPy to transfer data in bulk
-for braInfo in exAdapter.getBranchPf2t():
-    print(f"p_f2t: {braInfo}") 
+# Use NumPy to transfer data in bulk
+p_f2t = np.array(exAdapter.getBranchPf2t())
+print(f"p_f2t: {p_f2t}")
 
-# TODO use NumPy to transfer data in bulk    
-for braInfo in exAdapter.getBranchQf2t():
-    print(f"q_f2t: {braInfo}")    
+# Use NumPy to transfer data in bulk
+q_f2t = np.array(exAdapter.getBranchQf2t())
+print(f"q_f2t: {q_f2t}")    
     
 timer.log("Time: ")    
 
