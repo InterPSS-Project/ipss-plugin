@@ -59,26 +59,30 @@ branch_ids = ["Bus1->Bus2(1)", "Bus1->Bus5(1)", "Bus2->Bus3(1)", "Bus2->Bus4(1)"
                    "Bus4->Bus9(1)", "Bus5->Bus6(1)", "Bus6->Bus11(1)", "Bus6->Bus12(1)", "Bus6->Bus13(1)", "Bus7->Bus8(1)", "Bus7->Bus9(1)", "Bus9->Bus10(1)",
                    "Bus9->Bus14(1)", "Bus10->Bus11(1)", "Bus12->Bus13(1)", "Bus13->Bus14(1)"]
 
-exAdapter = AclfResultExchangeAdapter(aclfNet);
+exAdapter = AclfResultExchangeAdapter(aclfNet)
 
 # Create bus result bean set and fill it with load flow results
-busBeanSet = AclfBusExchangeInfo(bus_ids);
-exAdapter.fillBusResult(busBeanSet);
+exAdapter.setBusIds(bus_ids)
+exAdapter.fillBusResult()
 
-for busInfo in busBeanSet.volt_mag:
+# TODO use NumPy to transfer data in bulk
+for busInfo in exAdapter.getBusVoltMag():
     print(f"mag: {busInfo}") 
-    
-for busInfo in busBeanSet.volt_ang:
+
+# TODO use NumPy to transfer data in bulk    
+for busInfo in exAdapter.getBusVoltAng():
     print(f"ang: {busInfo}")    
 
 # Create branch result bean set and fill it with load flow results
-braBeanSet = AclfBranchExchangeInfo(branch_ids);
-exAdapter.fillBranchResult(braBeanSet);
+exAdapter.setBranchIds(branch_ids);
+exAdapter.fillBranchResult();
 
-for braInfo in braBeanSet.p_f2t:
+# TODO use NumPy to transfer data in bulk
+for braInfo in exAdapter.getBranchPf2t():
     print(f"p_f2t: {braInfo}") 
-    
-for braInfo in braBeanSet.q_f2t:
+
+# TODO use NumPy to transfer data in bulk    
+for braInfo in exAdapter.getBranchQf2t():
     print(f"q_f2t: {braInfo}")    
     
 timer.log("Time: ")    
