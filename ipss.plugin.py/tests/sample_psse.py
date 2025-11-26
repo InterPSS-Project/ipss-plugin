@@ -1,3 +1,5 @@
+import os
+
 import jpype
 from pathlib import Path
 
@@ -6,7 +8,8 @@ script_dir = Path(__file__).resolve().parent
 
 # set jvm path
 #jvm_path = jpype.getDefaultJVMPath()
-jvm_path = "/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/lib/libjli.dylib"
+# jvm_path = "/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/lib/libjli.dylib"
+jvm_path = f"{os.getenv('HOME')}/Library/Java/JavaVirtualMachines/corretto-21.0.9/Contents/Home/lib/libjli.dylib"
 print(f"JVM Path: {jvm_path}")
 
 # set the JAR path using platform-independent path handling
@@ -36,7 +39,7 @@ PsseVersion = jpype.JClass("org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion")
 adapter = PSSERawAdapter(PsseVersion.PSSE_30)
 
 # Use platform-independent path handling for test data
-raw_path = str(script_dir.parent / "testData" / "psse" / "IEEE9Bus" / "ieee9.raw")
+raw_path = str(script_dir / "testData" / "psse" / "IEEE9Bus" / "ieee9.raw")
 adapter.parseInputFile(raw_path)
 net = ODMAclfParserMapper().map2Model(adapter.getModel()).getAclfNet()
 
