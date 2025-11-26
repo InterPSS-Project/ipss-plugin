@@ -38,10 +38,16 @@ public class AclfResultExchangeIeee14Sample {
 				.map(b -> b.getId())
 				.toArray(String[]::new);
 		
-		AclfBusExchangeInfo busBean = new AclfBusExchangeInfo(busIds);
-		adapter.fillBusResult(busBean);
+		adapter.setBusIds(busIds);
+		adapter.fillBusResult();
+		double[] voltMag = adapter.getBusVoltMag();
+		double[] voltAng = adapter.getBusVoltAng();
 		
-		AclfBranchExchangeInfo branchBean = new AclfBranchExchangeInfo(branchIds);
-		adapter.fillBranchResult(branchBean);
+		adapter.setBranchIds(branchIds);
+		adapter.fillBranchResult();
+		double[] pF2T = adapter.getBranchPf2t();
+		double[] qF2T = adapter.getBranchQf2t();
+		double[] pT2F = adapter.getBranchPt2f();
+		double[] qT2F = adapter.getBranchQt2f();
 	}
 }
