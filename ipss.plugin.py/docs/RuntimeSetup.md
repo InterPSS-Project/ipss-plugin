@@ -6,3 +6,5 @@ Runtime Env Setup
 ##### Java Setup
 
 ##### Log Setup
+
+##### Config.properties
