@@ -40,7 +40,7 @@ PerformanceTimer = jpype.JClass("org.interpss.numeric.util.PerformanceTimer")
 fileAdapter = IeeeCDFAdapter(IEEECDFVersion.Default)
 
 # Use platform-independent path handling for test data
-file_path = str(script_dir.parent / "testData" / "ieee" / "IEEE14Bus.dat")
+file_path = str(script_dir.parent / "testData" / "ieee" / "IEEE14Bus.ieee")
 fileAdapter.parseInputFile(file_path)
 aclfNet = ODMAclfParserMapper().map2Model(fileAdapter.getModel()).getAclfNet()
 
