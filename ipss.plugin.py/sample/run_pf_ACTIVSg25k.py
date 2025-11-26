@@ -77,12 +77,24 @@ output_file.close()
 print(f"Detailed results saved to {results_filename}")
 
 timer = PerformanceTimer()
+busIds = []
+net.getBusList().forEach(lambda bus: busIds.append(bus.getId()))
+print(f"{len(busIds)} buses")
+timer.log("create busIds: ")   
 
-net.getBusList().forEach(lambda bus: 
-                         print(f"Bus {bus.getId()}: V={bus.getVoltageMag()} p.u., Angle={bus.getVoltageAng()} deg")
-                    )
+exAdapter = AclfResultExchangeAdapter(net)
 
-timer.log("Time: ")   
+# Create bus result bean set and fill it with load flow results
+timer.start()
+exAdapter.setBusIds(busIds)
+exAdapter.fillBusResult();
+timer.log("fill bus results: ") 
 
+timer.start()
+for busInfo in exAdapter.getBusVoltMag(): x = busInfo
+#   print(f"mag: {busInfo}")
+timer.log("iterate bus set: ")   
+
+    
 # Shutdown JVM
 jpype.shutdownJVM()
