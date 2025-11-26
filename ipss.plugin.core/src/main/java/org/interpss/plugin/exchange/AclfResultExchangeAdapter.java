@@ -19,6 +19,10 @@ public class AclfResultExchangeAdapter {
 	// the Aclf network object
 	private AclfNetwork aclfNet;
 	
+	private AclfBusExchangeInfo busResultBean;
+	
+	private AclfBranchExchangeInfo branchResultBean;
+	
 	/** Constructor
 	 * 
 	 * @param aclfNet the Aclf network object
@@ -27,49 +31,79 @@ public class AclfResultExchangeAdapter {
 		this.aclfNet = aclfNet;
 	}
 
+	public void setBusIds(String[] ids) {
+		this.busResultBean = new AclfBusExchangeInfo(ids);
+	}
+	
+	public void setBranchIds(String[] ids) {
+		this.branchResultBean = new AclfBranchExchangeInfo(ids);
+	}
+	
 	/** Fill bus result info bean
 	 * 
-	 * @param bean the bus result info bean with ids set
 	 * @return true if success
 	 */
-	public boolean fillBusResult(AclfBusExchangeInfo bean) {
-		bean.volt_mag = new double[bean.lenght];
-		bean.volt_ang = new double[bean.lenght];
+	public boolean fillBusResult() {
+		busResultBean.volt_mag = new double[busResultBean.lenght];
+		busResultBean.volt_ang = new double[busResultBean.lenght];
 		
-		for (int i = 0; i < bean.lenght; i++) {
-			String id = bean.ids[i];
+		for (int i = 0; i < busResultBean.lenght; i++) {
+			String id = busResultBean.ids[i];
 			AclfBus bus = aclfNet.getBus(id);
 			if (bus == null)
 				continue;
-			bean.volt_mag[i] = bus.getVoltageMag();
-			bean.volt_ang[i] = bus.getVoltageAng(UnitType.Deg);
+			busResultBean.volt_mag[i] = bus.getVoltageMag();
+			busResultBean.volt_ang[i] = bus.getVoltageAng(UnitType.Deg);
 		}
 		return true;
 	}
 	
 	/** Fill branch result info bean
 	 * 
-	 * @param bean the branch result info bean with ids set
 	 * @return true if success
 	 */
-	public boolean fillBranchResult(AclfBranchExchangeInfo bean) {
-		bean.p_f2t = new double[bean.lenght];
-		bean.q_f2t = new double[bean.lenght];
-		bean.p_t2f = new double[bean.lenght];
-		bean.q_t2f = new double[bean.lenght];
+	public boolean fillBranchResult() {
+		branchResultBean.p_f2t = new double[branchResultBean.lenght];
+		branchResultBean.q_f2t = new double[branchResultBean.lenght];
+		branchResultBean.p_t2f = new double[branchResultBean.lenght];
+		branchResultBean.q_t2f = new double[branchResultBean.lenght];
 		
-		for (int i = 0; i < bean.lenght; i++) {
-			String id = bean.ids[i];
+		for (int i = 0; i < branchResultBean.lenght; i++) {
+			String id = branchResultBean.ids[i];
 			AclfBranch branch = aclfNet.getBranch(id);
 			if (branch == null)
 				continue;
 			Complex powerF2t = branch.powerFrom2To(UnitType.mVA);
 			Complex powerT2f = branch.powerTo2From(UnitType.mVA);
-			bean.p_f2t[i] = powerF2t.getReal();
-			bean.q_f2t[i] = powerF2t.getImaginary();
-			bean.p_t2f[i] = powerT2f.getReal();
-			bean.q_t2f[i] = powerT2f.getImaginary();
+			branchResultBean.p_f2t[i] = powerF2t.getReal();
+			branchResultBean.q_f2t[i] = powerF2t.getImaginary();
+			branchResultBean.p_t2f[i] = powerT2f.getReal();
+			branchResultBean.q_t2f[i] = powerT2f.getImaginary();
 		}
 		return true;
+	}
+	
+	public double[] getBusVoltMag() {
+		return busResultBean.volt_mag;
+	}
+	
+	public double[] getBusVoltAng() {
+		return busResultBean.volt_ang;
+	}
+	
+	public double[] getBranchPf2t() {
+		return branchResultBean.p_f2t;
+	}
+	
+	public double[] getBranchQf2t() {
+		return branchResultBean.q_f2t;
+	}
+	
+	public double[] getBranchPt2f() {
+		return branchResultBean.p_t2f;
+	}
+	
+	public double[] getBranchQt2f() {
+		return branchResultBean.q_t2f;
 	}
 }
