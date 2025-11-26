@@ -11,3 +11,5 @@
 .DS_Store
 /.apt_generated/
 /.vscode/
+
+/sample/results/
