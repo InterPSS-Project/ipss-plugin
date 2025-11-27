@@ -4,6 +4,8 @@ from jpype.types import *
 
 from pathlib import Path
 
+import numpy as np
+
 # Get script directory for reliable path resolution
 script_dir = Path(__file__).resolve().parent
 
@@ -66,36 +68,16 @@ algo.loadflow()
 # print(AclfOut_PSSE.lfResults(net,PSSEOutFormat.GUI))
 
 # Create results directory if it doesn't exist
-#results_dir = script_dir / "results"
-#results_dir.mkdir(exist_ok=True)
+results_dir = script_dir / "results"
+results_dir.mkdir(exist_ok=True)
 
-#results_filename = str(results_dir / "ACTIVSg25k_lf_results.txt")
-#output_file = open(results_filename, "w")
+results_filename = str(results_dir / "ACTIVSg25k_lf_results.txt")
+output_file = open(results_filename, "w")
 
-#output_file.write(str(AclfOut_PSSE.lfResults(net, PSSEOutFormat.GUI).toString()))
-#output_file.close()
+output_file.write(str(AclfOut_PSSE.lfResults(net, PSSEOutFormat.GUI).toString()))
+output_file.close()
 
-#print(f"Detailed results saved to {results_filename}")
-
-timer = PerformanceTimer()
-busIds = []
-net.getBusList().forEach(lambda bus: busIds.append(bus.getId()))
-print(f"{len(busIds)} buses")
-timer.log("create busIds: ")   
-
-exAdapter = AclfResultExchangeAdapter(net)
-
-# Create bus result bean set and fill it with load flow results
-timer.start()
-exAdapter.setBusIds(busIds)
-exAdapter.fillBusResult();
-timer.log("fill bus results: ") 
-
-timer.start()
-for busInfo in exAdapter.getBusVoltMag(): x = busInfo
-#   print(f"mag: {busInfo}")
-timer.log("iterate bus set: ")   
-
+print(f"Detailed results saved to {results_filename}")
     
 # Shutdown JVM
 jpype.shutdownJVM()
