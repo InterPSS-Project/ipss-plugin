@@ -35,7 +35,7 @@ from org.interpss.display.impl.AclfOut_PSSE import Format
 from org.ieee.odm.adapter.psse.raw import PSSERawAdapter
 from org.interpss.display.impl.AclfOut_PSSE import Format as PSSEOutFormat
 from org.interpss.odm.mapper import ODMAclfParserMapper
-from org.ieee.odm.adapter.IODMAdapter import NetType
+#from org.ieee.odm.adapter.IODMAdapter import NetType
 from org.ieee.odm.adapter.psse.PSSEAdapter import PsseVersion
 
 
