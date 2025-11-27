@@ -33,7 +33,7 @@ from org.interpss.display.impl.AclfOut_PSSE import Format
 
 # ODM related classes
 from org.ieee.odm.adapter.psse.raw import PSSERawAdapter
-from org.interpss.display.impl.AclfOut_PSSE import Format
+from org.interpss.display.impl.AclfOut_PSSE import Format as PSSEOutFormat
 from org.interpss.odm.mapper import ODMAclfParserMapper
 from org.ieee.odm.adapter.IODMAdapter import NetType
 from org.ieee.odm.adapter.psse.PSSEAdapter import PsseVersion
@@ -76,7 +76,7 @@ results_dir.mkdir(exist_ok=True)
 results_filename = str(results_dir / "ACTIVSg25k_lf_results.txt")
 output_file = open(results_filename, "w")
 
-output_file.write(str(AclfOut_PSSE.lfResults(net, Format.GUI).toString()))
+output_file.write(str(AclfOut_PSSE.lfResults(net, PSSEOutFormat.GUI).toString()))
 output_file.close()
 
 print(f"Detailed results saved to {results_filename}")
