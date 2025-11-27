@@ -60,24 +60,33 @@ algo.getDataCheckConfig().setAutoTurnLine2Xfr(True)
 algo.getLfAdjAlgo().setApplyAdjustAlgo(False)
 algo.loadflow()
 
+busIds = []
+net.getBusList().forEach(lambda bus: busIds.append(bus.getId()))
+print(f"{len(busIds)} buses")
 
-# basic load flow results summary, showing the bus type, voltage magnitude and angle and bus net power  	
-# print(AclfOutFunc.loadFlowSummary(net))
+exAdapter = AclfResultExchangeAdapter(net)
 
-# uncomment the line below to print out more detailed power flow results in PSS/E style
-# print(AclfOut_PSSE.lfResults(net,PSSEOutFormat.GUI))
+# Create bus result bean set and fill it with load flow results
+exAdapter.setBusIds(busIds)
+exAdapter.fillBusResult();
 
-# Create results directory if it doesn't exist
-results_dir = script_dir / "results"
-results_dir.mkdir(exist_ok=True)
+timer = PerformanceTimer()
+net.getBusList().forEach(lambda bus: 
+        bus.getVoltageMag())
+timer.log("iterate bus set(0)")   
 
-results_filename = str(results_dir / "ACTIVSg25k_lf_results.txt")
-output_file = open(results_filename, "w")
+timer.start()
+bus_result = exAdapter.getBusResultBean()
+for busInfo in bus_result.volt_mag: 
+        x = busInfo
+timer.log("iterate bus set(1)")   
 
-output_file.write(str(AclfOut_PSSE.lfResults(net, PSSEOutFormat.GUI).toString()))
-output_file.close()
+timer.start()
+volt_mag = np.array(exAdapter.getBusResultBean().volt_mag,  dtype=np.double, copy=False)
+for busInfo in volt_mag: 
+        x = busInfo
+timer.log("iterate bus set(2)")   
 
-print(f"Detailed results saved to {results_filename}")
     
 # Shutdown JVM
 jpype.shutdownJVM()
