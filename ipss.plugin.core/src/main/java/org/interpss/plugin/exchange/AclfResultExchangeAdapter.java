@@ -83,27 +83,11 @@ public class AclfResultExchangeAdapter {
 		return true;
 	}
 	
-	public double[] getBusVoltMag() {
-		return busResultBean.volt_mag;
+	public AclfBusExchangeInfo getBusResultBean() {
+		return busResultBean;
 	}
 	
-	public double[] getBusVoltAng() {
-		return busResultBean.volt_ang;
-	}
-	
-	public double[] getBranchPf2t() {
-		return branchResultBean.p_f2t;
-	}
-	
-	public double[] getBranchQf2t() {
-		return branchResultBean.q_f2t;
-	}
-	
-	public double[] getBranchPt2f() {
-		return branchResultBean.p_t2f;
-	}
-	
-	public double[] getBranchQt2f() {
-		return branchResultBean.q_t2f;
+	public AclfBranchExchangeInfo getBranchResultBean() {
+		return branchResultBean;
 	}
 }
