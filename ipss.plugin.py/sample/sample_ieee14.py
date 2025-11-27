@@ -71,7 +71,7 @@ exAdapter.fillBusResult()
 
 print("Bus Voltage Magnitude:")
 # Use NumPy to transfer data in bulk
-volt_mag = np.array(exAdapter.getBusVoltMag(), dtype=np.double, copy=False)
+volt_mag = np.array(exAdapter.getBusResultBean().volt_mag, dtype=np.double, copy=False)
 print(f"type of volt_mag:{type(volt_mag)}")
 print(f"mag: {volt_mag}")
 
@@ -80,7 +80,7 @@ print(f"mag: {volt_mag}")
 # print(f"mag: {volt_mag}")
 
 # Use NumPy to transfer data in bulk
-volt_ang = np.array(exAdapter.getBusVoltAng())
+volt_ang = np.array(exAdapter.getBusResultBean().volt_ang, dtype=np.double, copy=False)
 print(f"ang: {volt_ang}")    
 
 # Create branch result bean set and fill it with load flow results
@@ -88,11 +88,11 @@ exAdapter.setBranchIds(branch_ids)
 exAdapter.fillBranchResult()
 
 # Use NumPy to transfer data in bulk
-p_f2t = np.array(exAdapter.getBranchPf2t())
+p_f2t = np.array(exAdapter.getBranchResultBean().p_f2t, dtype=np.double, copy=False)
 print(f"p_f2t: {p_f2t}")
 
 # Use NumPy to transfer data in bulk
-q_f2t = np.array(exAdapter.getBranchQf2t())
+q_f2t = np.array(exAdapter.getBranchResultBean().q_f2t ,dtype=np.double, copy=False)
 print(f"q_f2t: {q_f2t}")    
     
 timer.log("Time: ")    
