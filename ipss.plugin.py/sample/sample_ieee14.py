@@ -9,6 +9,10 @@ import numpy as np
 # Get script directory for reliable path resolution
 script_dir = Path(__file__).resolve().parent
 
+#
+#  Step 1:  Configure and Start the JVM
+#
+
 # set jvm path
 #jvm_path = jpype.getDefaultJVMPath()
 jvm_path = "/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/lib/libjli.dylib"
@@ -21,24 +25,15 @@ jar_path = str(script_dir.parent / "lib" / "ipss_runnable.jar")
 # Start JVM with proper path separators
 jpype.startJVM(jvm_path, "-ea", f"-Djava.class.path={jar_path}")
 
-# InterPSS core related classes
-from com.interpss.core import CoreObjectFactory
-from com.interpss.core import LoadflowAlgoObjectFactory
-
-# InterPSS output related classes
-from org.interpss.display import AclfOutFunc
+#
+# Step 2:  Load data and create the Network Model
+#
 
 # ODM related classes
 from org.ieee.odm.adapter.ieeecdf import IeeeCDFAdapter
 from org.interpss.odm.mapper import ODMAclfParserMapper
-from org.ieee.odm.adapter.IODMAdapter import NetType
+#åfrom org.ieee.odm.adapter.IODMAdapter import NetType
 from org.ieee.odm.adapter.ieeecdf.IeeeCDFAdapter import  IEEECDFVersion
-
-# InterPSS aclf result exchange related classes
-from org.interpss.plugin.exchange import AclfResultExchangeAdapter
-
-# InterPSS utility classes
-from org.interpss.numeric.util import PerformanceTimer
 
 # create instances of the classes we are going to used
 fileAdapter = IeeeCDFAdapter(IEEECDFVersion.Default)
@@ -48,9 +43,30 @@ file_path = str(script_dir.parent / "testData" / "ieee" / "IEEE14Bus.ieee")
 fileAdapter.parseInputFile(file_path)
 aclfNet = ODMAclfParserMapper().map2Model(fileAdapter.getModel()).getAclfNet()
 
+#
+# Step 3:  Run Load Flow Algorithm
+#
+
+# InterPSS core related classes
+#from com.interpss.core import CoreObjectFactory
+from com.interpss.core import LoadflowAlgoObjectFactory
+
 aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet)
 
 aclfAlgo.loadflow()
+
+#
+# Step 4:  Process the simulation results
+#
+
+# InterPSS output related classes
+from org.interpss.display import AclfOutFunc
+
+# InterPSS utility classes
+from org.interpss.numeric.util import PerformanceTimer
+
+# InterPSS aclf result exchange related classes
+from org.interpss.plugin.exchange import AclfResultExchangeAdapter
 
 # basic load flow results summary, showing the bus type, voltage magnitude and angle and bus net power  	
 print(AclfOutFunc.loadFlowSummary(aclfNet))
@@ -97,5 +113,7 @@ print(f"q_f2t: {q_f2t}")
     
 timer.log("Time: ")    
 
-# Shutdown JVM
+# 
+# Step-5: Shutdown JVM
+#
 jpype.shutdownJVM()
