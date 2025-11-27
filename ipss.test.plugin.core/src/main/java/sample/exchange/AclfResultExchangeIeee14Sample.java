@@ -40,14 +40,14 @@ public class AclfResultExchangeIeee14Sample {
 		
 		adapter.setBusIds(busIds);
 		adapter.fillBusResult();
-		double[] voltMag = adapter.getBusVoltMag();
-		double[] voltAng = adapter.getBusVoltAng();
+		double[] voltMag = adapter.getBusResultBean().volt_mag;
+		double[] voltAng = adapter.getBusResultBean().volt_ang;
 		
 		adapter.setBranchIds(branchIds);
 		adapter.fillBranchResult();
-		double[] pF2T = adapter.getBranchPf2t();
-		double[] qF2T = adapter.getBranchQf2t();
-		double[] pT2F = adapter.getBranchPt2f();
-		double[] qT2F = adapter.getBranchQt2f();
+		double[] pF2T = adapter.getBranchResultBean().p_f2t;
+		double[] qF2T = adapter.getBranchResultBean().q_f2t;
+		double[] pT2F = adapter.getBranchResultBean().p_t2f;
+		double[] qT2F = adapter.getBranchResultBean().q_t2f;
 	}
 }
