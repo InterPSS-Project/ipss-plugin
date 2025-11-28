@@ -13,6 +13,8 @@ script_dir = Path(__file__).resolve().parent
 #  Step 1:  Configure and Start the JVM
 #
 
+# TODO: use CongfigManager and JvmManager classes to manage JVM initialization
+
 # set jvm path
 #jvm_path = jpype.getDefaultJVMPath()
 jvm_path = "/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/lib/libjli.dylib"
