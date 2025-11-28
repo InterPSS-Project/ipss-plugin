@@ -1,5 +1,5 @@
 {
-  "jvm_path": "{HOME}/Library/Java/JavaVirtualMachines/corretto-21.0.9/Contents/Home/lib/libjli.dylib",
+  "jvm_path": "/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/lib/libjli.dylib",
   "jar_path": "lib/ipss_runnable.jar",
   "log_path": "logs/ipss.log",
   "ieee_file_path": "testData/ieee/IEEE14Bus.ieee"
