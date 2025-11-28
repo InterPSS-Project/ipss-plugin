@@ -22,6 +22,13 @@ from src.config.config_mgr import ConfigManager, JvmManager
 # Load configuration file
 config_path=str(project_root / "config" / "config.json")
 config = ConfigManager.load_config(config_path)
+
+# Add local compiled classes to classpath to pick up changes in AclfResultExchangeAdapter
+# project_root is ipss.plugin.py, so .parent is the repo root
+plugin_core_src = project_root.parent / "ipss.plugin.core" / "src" / "main" / "java"
+if 'jar_path' in config:
+    config['jar_path'] = str(plugin_core_src) + ":" + config['jar_path']
+
 # Initialize and start the JVM
 JvmManager.initialize_jvm(config)
 
