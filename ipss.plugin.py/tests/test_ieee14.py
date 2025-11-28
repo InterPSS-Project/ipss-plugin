@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+# do not use the class approach here
 from tests.ieee.ieee_tool import IeeeLoadFlowTool
 
 # Add project root to sys.path to allow importing ipss module
@@ -11,7 +12,7 @@ project_root = script_dir.parent
 if str(project_root) not in sys.path:
     sys.path.append(str(project_root))
 
-
+# replace the following with the Step-1~3 from sample_ieee14.py 
 @pytest.fixture(scope="module")
 def ieee_tool():
     """Initialize the IeeeLoadFlowTool once for all tests in this module."""
