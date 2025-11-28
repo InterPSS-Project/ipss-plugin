@@ -31,7 +31,7 @@ class IeeeLoadFlowTool:
         # InterPSS aclf result exchange related classes
         self.AclfResultExchangeAdapter = jpype.JClass("org.interpss.plugin.exchange.AclfResultExchangeAdapter")
 
-    def run_loadflow(self, ieee_file_path, bus_ids, branch_ids):
+    def run_load_flow(self, ieee_file_path, bus_ids, branch_ids):
         """
         Run load flow on the given IEEE format file and return results.
         
