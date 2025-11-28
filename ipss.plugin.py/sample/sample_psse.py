@@ -2,21 +2,26 @@ import jpype
 import jpype.imports
 from jpype.types import *
 
+import sys
 from pathlib import Path
+
+import numpy as np
 
 # Get script directory for reliable path resolution
 script_dir = Path(__file__).resolve().parent
+project_root = script_dir.parent
+if str(project_root) not in sys.path:
+    sys.path.append(str(project_root))
 
-# set jvm path
-#jvm_path = jpype.getDefaultJVMPath()
-jvm_path = "/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/lib/libjli.dylib"
-print(f"JVM Path: {jvm_path}")
+#  Configure and Start the JVM
 
-# set the JAR path using platform-independent path handling
-jar_path = str(script_dir.parent / "lib" / "ipss_runnable.jar")
+from src.config.config_mgr import ConfigManager, JvmManager
 
-# Start JVM with proper path separators
-jpype.startJVM(jvm_path, "-ea", f"-Djava.class.path={jar_path}")
+# Load configuration file
+config_path=str(project_root / "config" / "config.json")
+config = ConfigManager.load_config(config_path)
+# Initialize and start the JVM
+JvmManager.initialize_jvm(config)
 
 # InterPSS core related classes
 from com.interpss.core import CoreObjectFactory
@@ -39,7 +44,7 @@ from org.ieee.odm.adapter.psse.PSSEAdapter import PsseVersion
 adapter = PSSERawAdapter(PsseVersion.PSSE_30)
 
 # Use platform-independent path handling for test data
-raw_path = str(script_dir.parent / "testData" / "psse" / "IEEE9Bus" / "ieee9.raw")
+raw_path = str(script_dir.parent /  "tests" / "testData" / "psse" / "IEEE9Bus" / "ieee9.raw")
 adapter.parseInputFile(raw_path)
 net = ODMAclfParserMapper().map2Model(adapter.getModel()).getAclfNet()
 
