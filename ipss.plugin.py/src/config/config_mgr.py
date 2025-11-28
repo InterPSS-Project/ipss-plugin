@@ -80,7 +80,7 @@ class JvmManager:
             jvm_path,
             "-ea",
             f"-Djava.class.path={jar_path}",
-            f"-Dlog.path={log_path}"
+            f"-Dlog.path={log_path}"              # there is no need to add log.path property here, since it is set in log4j2.xml
         ]
         
         if log_config_path:
