@@ -26,15 +26,15 @@ jar_path = str(script_dir.parent / "lib" / "ipss_runnable.jar")
 jpype.startJVM(jvm_path, "-ea", f"-Djava.class.path={jar_path}")
 
 
+#
+# Step 2:  Load data and create the Network Model
+#
+
 # ODM related classes
 from org.ieee.odm.adapter.ieeecdf import IeeeCDFAdapter
 from org.interpss.odm.mapper import ODMAclfParserMapper
 #åfrom org.ieee.odm.adapter.IODMAdapter import NetType
 from org.ieee.odm.adapter.ieeecdf.IeeeCDFAdapter import  IEEECDFVersion
-
-#
-# Step 2:  Load data and create the Network Model
-#
 
 # create instances of the classes we are going to used
 fileAdapter = IeeeCDFAdapter(IEEECDFVersion.Default)
