@@ -23,30 +23,10 @@ config = ConfigManager.load_config(config_path)
 # Initialize and start the JVM
 JvmManager.initialize_jvm(config)
 
-# InterPSS core related classes
-from com.interpss.core import CoreObjectFactory
-from com.interpss.core import LoadflowAlgoObjectFactory
-
-# InterPSS output related classes
-from org.interpss.display import AclfOutFunc
-
-# PSS/E output related classes
-from org.interpss.display.impl import AclfOut_PSSE
-from org.interpss.display.impl.AclfOut_PSSE import Format
-
 # ODM related classes
 from org.ieee.odm.adapter.psse.raw import PSSERawAdapter
-from org.interpss.display.impl.AclfOut_PSSE import Format as PSSEOutFormat
 from org.interpss.odm.mapper import ODMAclfParserMapper
-#from org.ieee.odm.adapter.IODMAdapter import NetType
 from org.ieee.odm.adapter.psse.PSSEAdapter import PsseVersion
-
-
-# InterPSS aclf result exchange related classes
-from org.interpss.plugin.exchange import AclfResultExchangeAdapter
-
-# InterPSS utility classes
-from org.interpss.numeric.util import PerformanceTimer
 
 # Create instances of the classes we are going to use
 adapter = PSSERawAdapter(PsseVersion.PSSE_33)
@@ -55,6 +35,9 @@ adapter = PSSERawAdapter(PsseVersion.PSSE_33)
 raw_path = str(script_dir.parent / "tests" / "testData" / "psse" / "ACTIVSg25k.RAW")
 adapter.parseInputFile(raw_path)
 net = ODMAclfParserMapper().map2Model(adapter.getModel()).getAclfNet()
+
+# InterPSS core related classes
+from com.interpss.core import LoadflowAlgoObjectFactory
 
 algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net)
 # the following two settings are false by default, but they are critical for some real-world networks due to data quality issues
@@ -65,6 +48,13 @@ algo.getDataCheckConfig().setAutoTurnLine2Xfr(True)
 algo.getLfAdjAlgo().setApplyAdjustAlgo(False)
 algo.loadflow()
 
+
+# InterPSS output related classes
+from org.interpss.display import AclfOutFunc
+
+# PSS/E output related classes
+from org.interpss.display.impl import AclfOut_PSSE
+from org.interpss.display.impl.AclfOut_PSSE import Format as PSSEOutFormat
 
 # basic load flow results summary, showing the bus type, voltage magnitude and angle and bus net power  	
 # print(AclfOutFunc.loadFlowSummary(net))
@@ -83,6 +73,13 @@ output_file.write(str(AclfOut_PSSE.lfResults(net, PSSEOutFormat.GUI).toString())
 output_file.close()
 
 print(f"Detailed results saved to {results_filename}")
+
+
+# InterPSS aclf result exchange related classes
+from org.interpss.plugin.exchange import AclfResultExchangeAdapter
+
+# InterPSS utility classes
+from org.interpss.numeric.util import PerformanceTimer
 
 timer = PerformanceTimer()
 busIds = []
