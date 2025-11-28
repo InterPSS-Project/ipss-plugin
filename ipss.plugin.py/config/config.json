@@ -1,5 +1,6 @@
 {
   "jvm_path": "/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/lib/libjli.dylib",
   "jar_path": "lib/ipss_runnable.jar",
-  "log_path": "logs/ipss.log"
+  "log_path": "logs/ipss.log",
+  "log_config_path": "config/log4j2.xml"
 }
