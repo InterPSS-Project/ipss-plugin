@@ -19,7 +19,7 @@ def ieee_tool():
 
 
 @pytest.fixture(scope="module")
-def ieee14_test_data():
+def init_test_data():
     """Provide IEEE14 test data file path and IDs."""
     ieee_file_path = str(script_dir / "testData" / "ieee" / "IEEE14Bus.ieee")
     bus_ids = [
