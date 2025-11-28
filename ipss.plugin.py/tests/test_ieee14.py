@@ -3,8 +3,6 @@ from pathlib import Path
 
 import pytest
 
-# do not use the class approach here
-from tests.ieee.ieee_tool import IeeeLoadFlowTool
 import numpy as np
 import jpype
 import jpype.imports
