@@ -81,8 +81,8 @@ class IeeeLoadFlowTool:
             ex_adapter.setBusIds(bus_ids)
             if ex_adapter.fillBusResult():
                 # Use NumPy to transfer data in bulk
-                result["volt_mag"] = np.array(ex_adapter.getBusVoltMag())
-                result["volt_ang"] = np.array(ex_adapter.getBusVoltAng())
+                result["volt_mag"] = np.array(ex_adapter.getBusResultBean().volt_mag, dtype=np.double, copy=False)
+                result["volt_ang"] = np.array(ex_adapter.getBusResultBean().volt_ang, dtype=np.double, copy=False)
             else:
                 result["err"] = "Failed to fill bus results"
                 return result
@@ -91,8 +91,8 @@ class IeeeLoadFlowTool:
             ex_adapter.setBranchIds(branch_ids)
             if ex_adapter.fillBranchResult():
                 # Use NumPy to transfer data in bulk
-                result["p_f2t"] = np.array(ex_adapter.getBranchPf2t())
-                result["q_f2t"] = np.array(ex_adapter.getBranchQf2t())
+                result["p_f2t"] = np.array(ex_adapter.getBranchResultBean().p_f2t, dtype=np.double, copy=False)
+                result["q_f2t"] = np.array(ex_adapter.getBranchResultBean().q_f2t, dtype=np.double, copy=False)
             else:
                 result["err"] = "Failed to fill branch results"
                 return result
