@@ -2,6 +2,7 @@ import jpype
 import jpype.imports
 from jpype.types import *
 
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -15,17 +16,29 @@ script_dir = Path(__file__).resolve().parent
 
 # TODO: use CongfigManager and JvmManager classes to manage JVM initialization
 
+script_dir = Path(__file__).resolve().parent
+project_root = script_dir.parent
+if str(project_root) not in sys.path:
+    sys.path.append(str(project_root))
+
+from src.setup.config_mgr import ConfigManager
+from src.setup.jvm_mgr import  JvmManager
+
+config_path=str(project_root / "config" / "config.json")
+config = ConfigManager.load_config(config_path)
+JvmManager.initialize_jvm(config)
+
 # set jvm path
 #jvm_path = jpype.getDefaultJVMPath()
-jvm_path = "/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/lib/libjli.dylib"
+#jvm_path = "/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/lib/libjli.dylib"
 # jvm_path = f"{os.getenv('HOME')}/Library/Java/JavaVirtualMachines/corretto-21.0.9/Contents/Home/lib/libjli.dylib"
-print(f"JVM Path: {jvm_path}")
+#print(f"JVM Path: {jvm_path}")
 
 # set the JAR path using platform-independent path handling
-jar_path = str(script_dir.parent / "lib" / "ipss_runnable.jar")
+#jar_path = str(script_dir.parent / "lib" / "ipss_runnable.jar")
 
 # Start JVM with proper path separators
-jpype.startJVM(jvm_path, "-ea", f"-Djava.class.path={jar_path}")
+#jpype.startJVM(jvm_path, "-ea", f"-Djava.class.path={jar_path}")
 
 #
 # Step 2:  Load data and create the Network Model
