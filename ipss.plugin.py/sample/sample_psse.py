@@ -14,7 +14,6 @@ if str(project_root) not in sys.path:
     sys.path.append(str(project_root))
 
 #  Configure and Start the JVM
-
 from src.config.config_mgr import ConfigManager, JvmManager
 
 # Load configuration file
@@ -22,17 +21,6 @@ config_path=str(project_root / "config" / "config.json")
 config = ConfigManager.load_config(config_path)
 # Initialize and start the JVM
 JvmManager.initialize_jvm(config)
-
-# InterPSS core related classes
-from com.interpss.core import CoreObjectFactory
-from com.interpss.core import LoadflowAlgoObjectFactory
-
-# InterPSS output related classes
-from org.interpss.display import AclfOutFunc
-
-# PSS/E output related classes
-from org.interpss.display.impl import AclfOut_PSSE
-from org.interpss.display.impl.AclfOut_PSSE import Format
 
 # ODM related classes
 from org.ieee.odm.adapter.psse.raw import PSSERawAdapter
@@ -48,12 +36,22 @@ raw_path = str(script_dir.parent /  "tests" / "testData" / "psse" / "IEEE9Bus" /
 adapter.parseInputFile(raw_path)
 net = ODMAclfParserMapper().map2Model(adapter.getModel()).getAclfNet()
 
+# InterPSS core related classes
+from com.interpss.core import LoadflowAlgoObjectFactory
+
 algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net)
 
 algo.loadflow()
 
+# InterPSS output related classes
+from org.interpss.display import AclfOutFunc
+
 # basic load flow results summary, showing the bus type, voltage magnitude and angle and bus net power  	
 print(AclfOutFunc.loadFlowSummary(net))
+
+# PSS/E output related classes
+from org.interpss.display.impl import AclfOut_PSSE
+from org.interpss.display.impl.AclfOut_PSSE import Format
 
 # print out more detailed power flow results in PSS/E style
 # print(AclfOut_PSSE.lfResults(net, PSSEOutFormat.GUI))
