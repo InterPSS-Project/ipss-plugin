@@ -11,12 +11,12 @@ class IeeeLoadFlowTool:
         
         Args:
             config_path (str, optional): Path to the configuration file. 
-                                         Defaults to config.json in the project root.
+                                         Defaults to config/config.json in the project root.
         """
         if config_path is None:
-            # Default to config.json in project root (assumed to be 2 levels up from this file)
-            # this file is in ipss/ieee/ieee_tool.py -> project root is ../../
-            config_path = Path(__file__).resolve().parents[2] / "config.json"
+            # Default to config/config.json in project root (assumed to be 2 levels up from this file)
+            # this file is in src/ieee/ieee_tool.py -> project root is ../../
+            config_path = Path(__file__).resolve().parents[2] / "config" / "config.json"
         
         self.config = self._load_config(config_path)
         self._init_jvm()
@@ -33,8 +33,8 @@ class IeeeLoadFlowTool:
         if 'jvm_path' in config:
             config['jvm_path'] = config['jvm_path'].replace("{HOME}", os.getenv('HOME'))
         
-        # Resolve jar_path relative to config file location
-        project_root = Path(path).parent
+        # Resolve jar_path relative to project root (parent of config directory)
+        project_root = Path(path).parent.parent
         if 'jar_path' in config:
              if not os.path.isabs(config['jar_path']):
                  config['jar_path'] = str(project_root / config['jar_path'])
