@@ -44,7 +44,7 @@ def init_test_data():
 def test_ieee14_loadflow(ieee_tool, init_test_data):
     """Test load flow calculation for IEEE 14-bus system."""
     # Run load flow
-    result = ieee_tool.run_loadflow(
+    result = ieee_tool.run_load_flow(
         init_test_data["file_path"],
         init_test_data["bus_ids"],
         init_test_data["branch_ids"]
