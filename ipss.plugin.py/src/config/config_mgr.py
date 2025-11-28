@@ -39,10 +39,7 @@ class ConfigManager:
         
         if 'jar_path' in config and not os.path.isabs(config['jar_path']):
             config['jar_path'] = str(project_root / config['jar_path'])
-        
-        if 'log_path' in config and not os.path.isabs(config['log_path']):
-            config['log_path'] = str(project_root / config['log_path'])
-        
+
         if 'log_config_path' in config and not os.path.isabs(config['log_config_path']):
             config['log_config_path'] = str(project_root / config['log_config_path'])
         
@@ -57,7 +54,7 @@ class JvmManager:
         Initialize the Java Virtual Machine.
         
         Args:
-            config (dict): Configuration dictionary containing jvm_path, jar_path, log_path, and optionally log_config_path.
+            config (dict): Configuration dictionary containing jvm_path, jar_path, and optionally log_config_path.
         """
         if jpype.isJVMStarted():
             print("JVM already started, skipping initialization.")
@@ -65,22 +62,15 @@ class JvmManager:
         
         jvm_path = config.get('jvm_path')
         jar_path = config.get('jar_path')
-        log_path = config.get('log_path', 'logs/ipss.log')
         log_config_path = config.get('log_config_path')
-        
-        # Create log directory if it doesn't exist
-        log_dir = os.path.dirname(log_path)
-        if log_dir and not os.path.exists(log_dir):
-            os.makedirs(log_dir)
-        
+
         print(f"Starting JVM with path: {jvm_path}")
         print(f"Classpath: {jar_path}")
         
         jvm_args = [
             jvm_path,
             "-ea",
-            f"-Djava.class.path={jar_path}",
-            f"-Dlog.path={log_path}"              # there is no need to add log.path property here, since it is set in log4j2.xml
+            f"-Djava.class.path={jar_path}"
         ]
         
         if log_config_path:
