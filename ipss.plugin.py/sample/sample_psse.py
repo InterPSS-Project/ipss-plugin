@@ -22,19 +22,11 @@ config = ConfigManager.load_config(config_path)
 # Initialize and start the JVM
 JvmManager.initialize_jvm(config)
 
-# ODM related classes
-from org.ieee.odm.adapter.psse.raw import PSSERawAdapter
-from org.interpss.odm.mapper import ODMAclfParserMapper
-from org.ieee.odm.adapter.IODMAdapter import NetType
+from src.adapter.input_adapter import PsseRawFileAdapter
 from org.ieee.odm.adapter.psse.PSSEAdapter import PsseVersion
 
-# create instances of the classes we are going to used
-adapter = PSSERawAdapter(PsseVersion.PSSE_30)
-
-# Use platform-independent path handling for test data
-raw_path = str(script_dir.parent /  "tests" / "testData" / "psse" / "IEEE9Bus" / "ieee9.raw")
-adapter.parseInputFile(raw_path)
-net = ODMAclfParserMapper().map2Model(adapter.getModel()).getAclfNet()
+file_path = str(script_dir.parent / "tests" / "testData" / "psse" / "IEEE9Bus" / "ieee9.raw")
+net = PsseRawFileAdapter.createAclfNet(file_path, PsseVersion.PSSE_30)
 
 # InterPSS core related classes
 from com.interpss.core import LoadflowAlgoObjectFactory
