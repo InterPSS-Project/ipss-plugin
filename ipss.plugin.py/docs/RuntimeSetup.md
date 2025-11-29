@@ -15,7 +15,7 @@ InterPSS Python API is based on the [JPype lib](https://jpype.readthedocs.io/en/
 InterPSS Python API uses the config.json located in the config dir to configure the Java env and the log.
 
 	{
-	  "jvm_path": "/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/lib/libjli.dylib",
+	  "jvm_path": "<JVM path>",
 	  "jar_path": "lib/ipss_runnable.jar",
 	  "log_config_path": "config/log4j2.xml"
 	}
