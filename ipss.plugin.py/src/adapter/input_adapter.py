@@ -1,6 +1,12 @@
+# Description: This module provides classes to create AclfNet objects from IEEE CDF and PSSE RAW files using ODM mappers.
 
 class IeeeFileAdapter:
     
+    # Create AclfNet from IEEE CDF file
+    # arguments: 
+    #     file_path - path to the IEEE CDF file
+    #     version   - version of the IEEE CDF format
+    # returns AclfNet object
     @staticmethod
     def createAclfNet(file_path=None, version=None):
          # ODM related classes
@@ -10,18 +16,22 @@ class IeeeFileAdapter:
         from org.ieee.odm.adapter.ieeecdf import IeeeCDFAdapter
         from org.ieee.odm.adapter.ieeecdf.IeeeCDFAdapter import  IEEECDFVersion
         
-        # create instances of the classes we are going to used
+        # create the file adapter and parse the input file
         fileAdapter = IeeeCDFAdapter(version)
-        
-        # Use platform-independent path handling for test data
-        #file_path = str(script_dir.parent / "tests" / "testData" / "ieee" / "IEEE14Bus.ieee")
         fileAdapter.parseInputFile(file_path)
+        
+        # map the ODM model to InterPSS AclfNet model
         aclfNet = ODMAclfParserMapper().map2Model(fileAdapter.getModel()).getAclfNet()       
         
         return aclfNet
 
 class PsseRawFileAdapter:
-    
+
+    # Create AclfNet from PSSE RAW file    
+    # arguments:
+    #     file_path - path to the PSSE RAW file
+    #     version   - version of the PSSE RAW format
+    # return AclfNet object
     @staticmethod
     def createAclfNet(file_path=None, version=None):
          # ODM related classes
@@ -31,12 +41,11 @@ class PsseRawFileAdapter:
         from org.ieee.odm.adapter.psse.raw import PSSERawAdapter
         from org.ieee.odm.adapter.psse.PSSEAdapter import PsseVersion
         
-        # create instances of the classes we are going to used
+        # create the file adapter and parse the input file
         fileAdapter = PSSERawAdapter(version)
-        
-        # Use platform-independent path handling for test data
-        #file_path = str(script_dir.parent / "tests" / "testData" / "ieee" / "IEEE14Bus.ieee")
         fileAdapter.parseInputFile(file_path)
+        
+        # map the ODM model to InterPSS AclfNet model
         aclfNet = ODMAclfParserMapper().map2Model(fileAdapter.getModel()).getAclfNet()       
         
         return aclfNet
