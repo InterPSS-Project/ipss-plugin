@@ -22,6 +22,7 @@ config = ConfigManager.load_config(config_path)
 # Initialize and start the JVM
 JvmManager.initialize_jvm(config)
 
+# Load data and create the Network Model
 from src.adapter.input_adapter import PsseRawFileAdapter
 from org.ieee.odm.adapter.psse.PSSEAdapter import PsseVersion
 
