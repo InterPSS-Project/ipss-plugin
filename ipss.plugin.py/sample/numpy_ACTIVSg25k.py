@@ -24,10 +24,10 @@ config = ConfigManager.load_config(config_path)
 JvmManager.initialize_jvm(config)
 
 from src.adapter.input_adapter import PsseRawFileAdapter
-from org.ieee.odm.adapter.psse.PSSEAdapter import PsseVersion
+#from org.ieee.odm.adapter.psse.PSSEAdapter import PsseVersion
 
 file_path = str(script_dir.parent / "tests" / "testData" / "psse" / "ACTIVSg25k.RAW")
-net = PsseRawFileAdapter.createAclfNet(file_path, PsseVersion.PSSE_33)
+net = PsseRawFileAdapter.createAclfNet(file_path, PsseRawFileAdapter.version.PSSE_33)
 
 # InterPSS core related classes
 from com.interpss.core import LoadflowAlgoObjectFactory

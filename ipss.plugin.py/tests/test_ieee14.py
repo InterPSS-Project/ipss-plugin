@@ -63,9 +63,9 @@ def test_ieee14_loadflow(start_jvm, init_test_data):
     # Step 2: Load data and create the Network Model
     
     from src.adapter.input_adapter import IeeeFileAdapter
-    from org.ieee.odm.adapter.ieeecdf.IeeeCDFAdapter import  IEEECDFVersion
+    #from org.ieee.odm.adapter.ieeecdf.IeeeCDFAdapter import  IEEECDFVersion
 
-    aclfNet = IeeeFileAdapter.createAclfNet(init_test_data["file_path"], IEEECDFVersion.Default)
+    aclfNet = IeeeFileAdapter.createAclfNet(init_test_data["file_path"])
 
     # Step 3: Run Load Flow Algorithm
     # InterPSS core related classes

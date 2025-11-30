@@ -29,10 +29,10 @@ JvmManager.initialize_jvm(config)
 #
 
 from src.adapter.input_adapter import IeeeFileAdapter
-from org.ieee.odm.adapter.ieeecdf.IeeeCDFAdapter import  IEEECDFVersion
+#from org.ieee.odm.adapter.ieeecdf.IeeeCDFAdapter import  IEEECDFVersion
 
 file_path = str(script_dir.parent / "tests" / "testData" / "ieee" / "IEEE14Bus.ieee")
-aclfNet = IeeeFileAdapter.createAclfNet(file_path, IEEECDFVersion.Default)
+aclfNet = IeeeFileAdapter.createAclfNet(file_path)
 
 #
 # Step 3:  Run Load Flow Algorithm
