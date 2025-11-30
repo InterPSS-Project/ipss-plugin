@@ -23,9 +23,9 @@ def start_jvm():
 
     # Add local compiled classes to classpath to pick up changes in AclfResultExchangeAdapter
     # project_root is ipss.plugin.py, so .parent is the repo root
-    plugin_core_src = project_root.parent / "ipss.plugin.core" / "src" / "main" / "java"
-    if 'jar_path' in config:
-        config['jar_path'] = str(plugin_core_src) + ":" + config['jar_path']
+    #plugin_core_src = project_root.parent / "ipss.plugin.core" / "src" / "main" / "java"
+    #if 'jar_path' in config:
+    #    config['jar_path'] = str(plugin_core_src) + ":" + config['jar_path']
 
     JvmManager.initialize_jvm(config)
     yield
@@ -61,15 +61,11 @@ def test_ieee14_loadflow(start_jvm, init_test_data):
     # Step 1: Configure and Start the JVM (Handled by start_jvm fixture)
 
     # Step 2: Load data and create the Network Model
-    # ODM related classes
-    from org.ieee.odm.adapter.ieeecdf import IeeeCDFAdapter
-    from org.interpss.odm.mapper import ODMAclfParserMapper
-    from org.ieee.odm.adapter.ieeecdf.IeeeCDFAdapter import IEEECDFVersion
+    
+    from src.adapter.input_adapter import IeeeFileAdapter
+    from org.ieee.odm.adapter.ieeecdf.IeeeCDFAdapter import  IEEECDFVersion
 
-    # create instances of the classes we are going to used
-    fileAdapter = IeeeCDFAdapter(IEEECDFVersion.Default)
-    fileAdapter.parseInputFile(init_test_data["file_path"])
-    aclfNet = ODMAclfParserMapper().map2Model(fileAdapter.getModel()).getAclfNet()
+    aclfNet = IeeeFileAdapter.createAclfNet(init_test_data["file_path"], IEEECDFVersion.Default)
 
     # Step 3: Run Load Flow Algorithm
     # InterPSS core related classes
