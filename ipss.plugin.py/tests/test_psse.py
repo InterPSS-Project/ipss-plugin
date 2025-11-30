@@ -44,9 +44,9 @@ def init_test_data():
 def test_loadflow(start_jvm, init_test_data):
     # Load data and create the Network Model
     from src.adapter.input_adapter import PsseRawFileAdapter
-    from org.ieee.odm.adapter.psse.PSSEAdapter import PsseVersion
+    # from org.ieee.odm.adapter.psse.PSSEAdapter import PsseVersion
 
-    aclfNet = PsseRawFileAdapter.createAclfNet(init_test_data["file_path"], PsseVersion.PSSE_30)
+    aclfNet = PsseRawFileAdapter.createAclfNet(init_test_data["file_path"], PsseRawFileAdapter.version.PSSE_30)
 
     # Run Load Flow Algorithm
     # InterPSS core related classes

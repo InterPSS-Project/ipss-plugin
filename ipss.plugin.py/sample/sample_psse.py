@@ -24,10 +24,10 @@ JvmManager.initialize_jvm(config)
 
 # Load data and create the Network Model
 from src.adapter.input_adapter import PsseRawFileAdapter
-from org.ieee.odm.adapter.psse.PSSEAdapter import PsseVersion
+#from org.ieee.odm.adapter.psse.PSSEAdapter import PsseVersion
 
 file_path = str(script_dir.parent / "tests" / "testData" / "psse" / "IEEE9Bus" / "ieee9.raw")
-net = PsseRawFileAdapter.createAclfNet(file_path, PsseVersion.PSSE_30)
+net = PsseRawFileAdapter.createAclfNet(file_path, PsseRawFileAdapter.version.PSSE_30)
 
 # InterPSS core related classes
 from com.interpss.core import LoadflowAlgoObjectFactory
