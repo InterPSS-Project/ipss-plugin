@@ -1,6 +1,9 @@
 # Description: This module provides classes to create AclfNet objects from IEEE CDF and PSSE RAW files using ODM mappers.
 
 class IeeeFileAdapter:
+    # IEEECDFVersion enum
+    from org.ieee.odm.adapter.ieeecdf.IeeeCDFAdapter import  IEEECDFVersion
+    version = IEEECDFVersion
     
     # Create AclfNet from IEEE CDF file
     # arguments: 
@@ -8,13 +11,13 @@ class IeeeFileAdapter:
     #     version   - version of the IEEE CDF format
     # returns AclfNet object
     @staticmethod
-    def createAclfNet(file_path=None, version=None):
+    def createAclfNet(file_path=None, version=IEEECDFVersion.Default):
          # ODM related classes
         from org.interpss.odm.mapper import ODMAclfParserMapper
        
         # IEEE CDF related classes
         from org.ieee.odm.adapter.ieeecdf import IeeeCDFAdapter
-        from org.ieee.odm.adapter.ieeecdf.IeeeCDFAdapter import  IEEECDFVersion
+        #from org.ieee.odm.adapter.ieeecdf.IeeeCDFAdapter import  IEEECDFVersion
         
         # create the file adapter and parse the input file
         fileAdapter = IeeeCDFAdapter(version)
@@ -26,6 +29,9 @@ class IeeeFileAdapter:
         return aclfNet
 
 class PsseRawFileAdapter:
+    # PsseVersion enum
+    from org.ieee.odm.adapter.psse.PSSEAdapter import PsseVersion
+    version = PsseVersion
 
     # Create AclfNet from PSSE RAW file    
     # arguments:
@@ -39,7 +45,7 @@ class PsseRawFileAdapter:
        
         # PSSE RAW related classes
         from org.ieee.odm.adapter.psse.raw import PSSERawAdapter
-        from org.ieee.odm.adapter.psse.PSSEAdapter import PsseVersion
+        # from org.ieee.odm.adapter.psse.PSSEAdapter import PsseVersion
         
         # create the file adapter and parse the input file
         fileAdapter = PSSERawAdapter(version)

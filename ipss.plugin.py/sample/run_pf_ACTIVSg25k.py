@@ -24,10 +24,10 @@ config = ConfigManager.load_config(config_path)
 JvmManager.initialize_jvm(config)
 
 from src.adapter.input_adapter import PsseRawFileAdapter
-from org.ieee.odm.adapter.psse.PSSEAdapter import PsseVersion
+#from org.ieee.odm.adapter.psse.PSSEAdapter import PsseVersion
 
 file_path = str(script_dir.parent / "tests" / "testData" / "psse" / "ACTIVSg25k.RAW")
-net = PsseRawFileAdapter.createAclfNet(file_path, PsseVersion.PSSE_33)
+net = PsseRawFileAdapter.createAclfNet(file_path, PsseRawFileAdapter.version.PSSE_33)
 
 # InterPSS core related classes
 from com.interpss.core import LoadflowAlgoObjectFactory
@@ -66,32 +66,6 @@ output_file.write(str(AclfOut_PSSE.lfResults(net, PSSEOutFormat.GUI).toString())
 output_file.close()
 
 print(f"Detailed results saved to {results_filename}")
-
-
-# InterPSS aclf result exchange related classes
-from org.interpss.plugin.exchange import AclfResultExchangeAdapter
-
-# InterPSS utility classes
-from org.interpss.numeric.util import PerformanceTimer
-
-timer = PerformanceTimer()
-busIds = []
-net.getBusList().forEach(lambda bus: busIds.append(bus.getId()))
-print(f"{len(busIds)} buses")
-timer.log("create busIds: ")   
-
-exAdapter = AclfResultExchangeAdapter(net)
-
-# Create bus result bean set and fill it with load flow results
-timer.start()
-exAdapter.setBusIds(busIds)
-exAdapter.fillBusResult();
-timer.log("fill bus results: ") 
-
-timer.start()
-for busInfo in exAdapter.getBusResultBean().volt_mag: x = busInfo
-#   print(f"mag: {busInfo}")
-timer.log("iterate bus set: ")   
     
 # Shutdown JVM
 jpype.shutdownJVM()
