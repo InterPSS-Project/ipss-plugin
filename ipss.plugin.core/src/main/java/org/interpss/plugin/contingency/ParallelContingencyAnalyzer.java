@@ -143,7 +143,7 @@ public class ParallelContingencyAnalyzer <TR extends ContingencyResultRec> exten
     /**
      * Print detailed results - useful for debugging from Python
      */
-    public void printDetailedResults(ContingencyResultContainer<TR> result) {
+    public static <TR extends ContingencyResultRec> void printDetailedResults(ContingencyResultContainer<TR> result) {
         System.out.println("\n=== Detailed Contingency Analysis Results ===");
         System.out.println("Total Cases: " + result.getTotalCases());
         System.out.println("Successful Cases: " + result.getTotalSuccessCount());

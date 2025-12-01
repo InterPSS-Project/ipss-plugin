@@ -1,17 +1,6 @@
 package org.interpss.plugin.contingency.result;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.IntStream;
-
-import com.interpss.core.LoadflowAlgoObjectFactory;
-import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.algo.AclfMethodType;
-import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.core.funcImpl.AclfAdjCtrlFunction;
-import com.interpss.core.net.Bus;
-import com.interpss.state.aclf.AclfNetworkState;
 
 /**
  * Result container class for contingency analysis
