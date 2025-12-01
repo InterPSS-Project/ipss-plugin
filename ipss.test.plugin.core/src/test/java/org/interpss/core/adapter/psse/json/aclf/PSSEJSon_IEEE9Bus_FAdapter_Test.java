@@ -24,8 +24,6 @@
 
 package org.interpss.core.adapter.psse.json.aclf;
  
-import static org.junit.Assert.assertTrue;
-
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter;
 import org.ieee.odm.adapter.psse.bean.PSSESchema;
@@ -35,6 +33,7 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.export.psse.PSSEJSonBusUpdater;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -51,7 +50,7 @@ public class PSSEJSon_IEEE9Bus_FAdapter_Test extends CorePluginTestSetup {
 	@Test
 	public void testJSon() throws Exception {
 	    IODMAdapter adapter = new PSSEJSonAdapter();
-	    assertTrue(adapter.parseInputFile("testdata/adpter/psse/json/ieee9.rawx"));
+	    assertTrue(adapter.parseInputFile("testData/adpter/psse/json/ieee9.rawx"));
 	    
 	    AclfModelParser parser = (AclfModelParser)adapter.getModel();
 	    //parser.stdout();
