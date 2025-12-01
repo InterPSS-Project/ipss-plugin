@@ -385,5 +385,19 @@ public static AclfNetwork equivHVDC(AclfNetwork net) {
 		return net;
 	}
 
+	public static void printBusConnections(AclfNetwork net, String busId) {
+		AclfBus bus = net.getBus(busId);
+		if (bus == null) {
+			System.out.println("Bus " + busId + " not found in the network.");
+			return;
+		}
+		System.out.println("Connections for Bus " + busId + ":");
+		for (Branch bra : bus.getBranchList()) {
+			if (bra.isActive()) {
+				System.out.println("Connected Branch: " + bra.getId() + ", From: " + bra.getFromBus().getId() + ", To: " + bra.getToBus().getId());
+			}
+		}
+	}
+
 
 }
