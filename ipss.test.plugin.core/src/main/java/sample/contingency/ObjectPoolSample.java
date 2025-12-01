@@ -160,7 +160,5 @@ public class ObjectPoolSample {
         System.out.println("Success rate: " + String.format("%.2f%%", (double) totalSuccessCount / totalCases * 100));
         
         return new ContingencyResultContainer(convergenceResults, totalSuccessCount, totalCases, executionTime);
-			 
-
     }
 }
