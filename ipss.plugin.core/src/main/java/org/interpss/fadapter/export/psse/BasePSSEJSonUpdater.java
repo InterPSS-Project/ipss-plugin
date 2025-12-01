@@ -6,6 +6,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.function.Consumer;
 
+import org.ieee.odm.model.IODMModelParser;
+
+import com.interpss.core.aclf.BaseAclfNetwork;
+
 /**
  * PSSE JSon format data updater
  * 
@@ -13,6 +17,8 @@ import java.util.function.Consumer;
  *
  */
 public abstract class BasePSSEJSonUpdater {	
+	protected BaseAclfNetwork<?,?> aclfNet;
+	
 	/**
 	 * field name to store position lookup info
 	 */
@@ -23,8 +29,8 @@ public abstract class BasePSSEJSonUpdater {
 	 * 
 	 * @param fieldDef the field definition list
 	 */
-	public BasePSSEJSonUpdater(List<String> fieldDef) {
-		this(fieldDef, null);
+	public BasePSSEJSonUpdater(List<String> fieldDef, BaseAclfNetwork<?,?> aclfNet) {
+		this(fieldDef, aclfNet, null);
 	}
 	
 	/**
@@ -33,7 +39,9 @@ public abstract class BasePSSEJSonUpdater {
 	 * @param fieldDef field name definitions
 	 * @param consumer a consumer to add more field names
 	 */
-	public BasePSSEJSonUpdater(List<String> fieldDef, Consumer<List<String>> consumer) {
+	public BasePSSEJSonUpdater(List<String> fieldDef, BaseAclfNetwork<?,?> aclfNet, Consumer<List<String>> consumer) {
+		this.aclfNet = aclfNet;
+		
 		if (consumer != null)
 			consumer.accept(fieldDef);
 		
@@ -44,4 +52,8 @@ public abstract class BasePSSEJSonUpdater {
 		}
 	}
 	
+	protected String getBusIdFromDataList(List<Object> dataList, String name) {
+		int idIdx = this.positionTable.get(name);
+		return IODMModelParser.BusIdPreFix+((Double)dataList.get(idIdx)).intValue();
+	}
 }

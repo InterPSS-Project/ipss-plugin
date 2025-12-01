@@ -1,0 +1,17 @@
+/runtime
+/target/
+/bin/
+.classpath
+/.settings
+.project
+.metadata/
+*.log
+*.class
+*.jar
+.DS_Store
+/.apt_generated/
+/.vscode/
+
+/tests/results/
+/config/config.json
+*.pyc
