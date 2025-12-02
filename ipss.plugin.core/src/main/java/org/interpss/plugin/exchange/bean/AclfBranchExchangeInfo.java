@@ -6,7 +6,7 @@ package org.interpss.plugin.exchange.bean;
  * @author mzhou
  *
  */
-public class AclfBranchExchangeInfo extends BaseExchangeBean {
+public class AclfBranchExchangeInfo extends BaseElemExchangeBean {
 	// branch flow results in MVA
 	public double[] p_f2t;
 	public double[] q_f2t;
