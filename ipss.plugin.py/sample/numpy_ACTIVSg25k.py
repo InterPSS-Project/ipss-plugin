@@ -51,11 +51,9 @@ busIds = []
 net.getBusList().forEach(lambda bus: busIds.append(bus.getId()))
 print(f"{len(busIds)} buses")
 
+# Create net result bean set and fill it with load flow results
 exAdapter = AclfResultExchangeAdapter(net)
-
-# Create bus result bean set and fill it with load flow results
-exAdapter.setBusIds(busIds)
-exAdapter.fillBusResult();
+netResult = exAdapter.createNetInfoBean(busIds, [])
 
 timer = PerformanceTimer()
 net.getBusList().forEach(lambda bus: 
@@ -63,13 +61,13 @@ net.getBusList().forEach(lambda bus:
 timer.log("iterate bus set(0)")   
 
 timer.start()
-bus_result = exAdapter.getBusResultBean()
+bus_result = netResult.busResultBean
 for busInfo in bus_result.volt_mag: 
         x = busInfo
 timer.log("iterate bus set(1)")   
 
 timer.start()
-volt_mag = np.array(exAdapter.getBusResultBean().volt_mag,  dtype=np.double, copy=False)
+volt_mag = np.array(netResult.busResultBean.volt_mag,  dtype=np.double, copy=False)
 for busInfo in volt_mag: 
         x = busInfo
 timer.log("iterate bus set(2)")   

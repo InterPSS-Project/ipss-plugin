@@ -78,23 +78,18 @@ def test_ieee14_loadflow(start_jvm, init_test_data):
     # InterPSS aclf result exchange related classes
     from org.interpss.plugin.exchange import AclfResultExchangeAdapter
 
+    # Create net result bean set and fill it with load flow results
     exAdapter = AclfResultExchangeAdapter(aclfNet)
+    netResult = exAdapter.createNetInfoBean(init_test_data["bus_ids"], init_test_data["branch_ids"])
 
-    # Create bus result bean set and fill it with load flow results
-    exAdapter.setBusIds(init_test_data["bus_ids"])
-    exAdapter.fillBusResult()
+    volt_mag = np.array(netResult.busResultBean.volt_mag, dtype=np.double, copy=False)
+    volt_ang = np.array(netResult.busResultBean.volt_ang, dtype=np.double, copy=False)
 
-    volt_mag = np.array(exAdapter.getBusResultBean().volt_mag, dtype=np.double, copy=False)
-    volt_ang = np.array(exAdapter.getBusResultBean().volt_ang, dtype=np.double, copy=False)
-
-    # Create branch result bean set and fill it with load flow results
-    exAdapter.setBranchIds(init_test_data["branch_ids"])
-    exAdapter.fillBranchResult()
-
-    p_f2t = np.array(exAdapter.getBranchResultBean().p_f2t, dtype=np.double, copy=False)
-    q_f2t = np.array(exAdapter.getBranchResultBean().q_f2t, dtype=np.double, copy=False)
+    p_f2t = np.array(netResult.branchResultBean.p_f2t, dtype=np.double, copy=False)
+    q_f2t = np.array(netResult.branchResultBean.q_f2t, dtype=np.double, copy=False)
 
     result = {
+        "hasElemInfo": netResult.hasElemInfo,
         "volt_mag": volt_mag,
         "volt_ang": volt_ang,
         "p_f2t": p_f2t,
@@ -103,6 +98,7 @@ def test_ieee14_loadflow(start_jvm, init_test_data):
     }
 
     # Check for errors
+    assert result["hasElemInfo"], "NetResult should have element info"
     assert result["err"] is None, f"Load flow failed with error: {result['err']}"
 
     # Verify results exist
