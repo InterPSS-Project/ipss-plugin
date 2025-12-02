@@ -56,17 +56,20 @@ exAdapter = AclfResultExchangeAdapter(net)
 netResult = exAdapter.createNetInfoBean(busIds, [])
 
 timer = PerformanceTimer()
+# Access voltage magnitude through object retrieval
 net.getBusList().forEach(lambda bus: 
         bus.getVoltageMag())
 timer.log("iterate bus set(0)")   
 
 timer.start()
-bus_result = netResult.busResultBean
-for busInfo in bus_result.volt_mag: 
+# Access voltage magnitude through double array
+volt_mag = netResult.busResultBean.volt_mag
+for busInfo in volt_mag: 
         x = busInfo
 timer.log("iterate bus set(1)")   
 
 timer.start()
+# Access voltage magnitude through numpy array
 volt_mag = np.array(netResult.busResultBean.volt_mag,  dtype=np.double, copy=False)
 for busInfo in volt_mag: 
         x = busInfo
