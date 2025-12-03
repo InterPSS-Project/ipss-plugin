@@ -65,7 +65,7 @@ public abstract class BaseResultExchangeAdapter<T extends AclfNetExchangeInfo> {
 	 * @param ids the branch ids array
 	 * @return true if success
 	 */
-	protected boolean fillBranchResult(AclfNetExchangeInfo netInfoBean, String[] ids) {
+	protected boolean createBranchResult(AclfNetExchangeInfo netInfoBean, String[] ids) {
 		netInfoBean.branchResultBean = new AclfBranchExchangeInfo(ids);
 		AclfBranchExchangeInfo branchResultBean = netInfoBean.branchResultBean;
 		branchResultBean.p_f2t = new double[branchResultBean.lenght];

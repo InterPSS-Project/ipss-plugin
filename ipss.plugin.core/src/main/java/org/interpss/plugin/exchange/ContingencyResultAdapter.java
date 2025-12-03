@@ -46,7 +46,7 @@ public class ContingencyResultAdapter extends BaseResultExchangeAdapter<Continge
 		
 		this.createBusResult(netInfoBean, busIds);
 		
-		this.fillBranchResult(netInfoBean, branchIds);
+		this.createBranchResult(netInfoBean, branchIds);
 		
 		return netInfoBean;
 	}
