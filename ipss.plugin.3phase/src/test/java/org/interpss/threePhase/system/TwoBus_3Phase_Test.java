@@ -42,7 +42,6 @@ public class TwoBus_3Phase_Test {
 	@Test
 	public void testInitBasedOnLF() throws InterpssException{
 
-		IpssCorePlugin.init();
 
 		DStabNetwork3Phase net = create2BusSys();
 
@@ -91,7 +90,6 @@ public class TwoBus_3Phase_Test {
 	@Test
 	public void testYMatrixabc() throws Exception{
 
-		IpssCorePlugin.init();
 
 		DStabNetwork3Phase net = create2BusSys();
 
@@ -159,7 +157,6 @@ public class TwoBus_3Phase_Test {
     @Test
 	public void testSolvNetwork() throws Exception{
 
-		IpssCorePlugin.init();
 		//IpssLogger.getLogger().setLevel(Level.INFO);
 		DStabNetwork3Phase net = create2BusSys();
 
@@ -233,7 +230,6 @@ public class TwoBus_3Phase_Test {
 	@Test
 	public void testDstab() throws Exception{
 
-		IpssCorePlugin.init();
 		//IpssLogger.getLogger().setLevel(Level.INFO);
 		DStabNetwork3Phase net = create2BusSys();
 
