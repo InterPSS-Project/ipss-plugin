@@ -1,7 +1,6 @@
 package sample.exchange;
 
 import org.interpss.CorePluginFactory;
-import org.interpss.IpssCorePlugin;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.plugin.exchange.AclfResultExchangeAdapter;
 import org.interpss.plugin.exchange.bean.AclfNetExchangeInfo;
@@ -14,7 +13,7 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 
 public class AclfResultExchangeIeee14Sample {
 	public static void main(String[] args) throws InterpssException {
-		IpssCorePlugin.init();
+		//IpssCorePlugin.init();
 		
 		AclfNetwork aclfNet = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
@@ -36,12 +35,13 @@ public class AclfResultExchangeIeee14Sample {
 				.toArray(String[]::new);
 		
 		AclfNetExchangeInfo netInfoBean = new AclfResultExchangeAdapter(aclfNet)
-				.createNetInfoBean(busIds, branchIds);
+				.createInfoBean(busIds, branchIds);
 		
 		 // get bus results
 		double[] voltMag = netInfoBean.busResultBean.volt_mag;
 		double[] voltAng = netInfoBean.busResultBean.volt_ang;
 		
+		// get branch results
 		double[] pF2T = netInfoBean.branchResultBean.p_f2t;
 		double[] qF2T = netInfoBean.branchResultBean.q_f2t;
 		double[] pT2F = netInfoBean.branchResultBean.p_t2f;
