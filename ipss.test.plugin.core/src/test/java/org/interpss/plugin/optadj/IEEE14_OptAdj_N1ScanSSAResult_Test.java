@@ -22,7 +22,7 @@
  *
  */
 
-package org.interpss.core.optadj;
+package org.interpss.plugin.optadj;
 
 import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
@@ -40,6 +40,7 @@ import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.AtomicCounter;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.plugin.optadj.algo.AclfNetContigencyOptimizer;
+import org.interpss.plugin.optadj.algo.result.AclfNetSsaResultContainer;
 import org.junit.Test;
 
 import com.interpss.algo.parallel.ContingencyAnalysisMonad;
@@ -51,7 +52,7 @@ import com.interpss.core.algo.dclf.CaBranchOutageType;
 import com.interpss.core.algo.dclf.CaOutageBranch;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 
-public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
+public class IEEE14_OptAdj_N1ScanSSAResult_Test extends CorePluginTestSetup {
 	@Test
 	public void test() throws InterpssException {
 		AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
@@ -74,6 +75,9 @@ public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
 				contList.add(cont);
 			});
 		
+		// defined a SSA result container
+		AclfNetSsaResultContainer ssaResults = new AclfNetSsaResultContainer();
+		
 		AtomicCounter cnt = new AtomicCounter();
 		contList.parallelStream()
 			.forEach(contingency -> {
@@ -85,6 +89,8 @@ public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
 						double loading = resultRec.calLoadingPercent(resultRec.aclfBranch.getRatingMva2());
 						if (loading > 100.0) {
 							cnt.increment();
+							// add the over limit branch CA result rec to the SSA result container
+							ssaResults.getCaOverLimitInfo().add(resultRec);
 							System.out.println("OverLimit Branch: " + resultRec.aclfBranch.getId() + " outage: "
 											+ resultRec.contingency.getId() + " postFlow: " + resultRec.getPostFlowMW()
 											+ " rating: " + resultRec.aclfBranch.getRatingMva2() + " loading: "
@@ -94,22 +100,22 @@ public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
 			});
 		System.out.println("Total number of branches over limit before OptAdj: " + cnt.getCount());
 		assertTrue(""+cnt.getCount(), cnt.getCount() == 18);
-		 
+		
 		AclfNetContigencyOptimizer optimizer = new AclfNetContigencyOptimizer(dclfAlgo);
-		optimizer.optimize(100);
+		optimizer.optimize(ssaResults, 100);
 		
 		Map<String, Double> resultMap = optimizer.getResultMap();
 		System.out.println(resultMap);
 		
 		assertEquals(resultMap.get("Bus3-G1"), 0.99, 0.0001);
-		assertEquals(resultMap.get("Bus1-G1"), -0.99, 0.0001);
 		
-//		System.out.println("Optimization gen size." + optimizer.getGenOptimizer().getGenSize());
+		System.out.println("Optimization gen size." + optimizer.getGenOptimizer().getGenSize());
 		System.out.println("Optimization gen constrain size." + optimizer.getGenOptimizer().getGenConstrainDataList().size());
 		System.out.println("Optimization sec constrian size." + optimizer.getGenOptimizer().getSecConstrainDataList().size());
-//		assertTrue(optimizer.getGenOptimizer().getGenSize() == 5);
-		assertTrue(optimizer.getGenOptimizer().getGenConstrainDataList().size() == 10);
-		assertEquals(optimizer.getGenOptimizer().getSecConstrainDataList().size(), 101);
+
+		assertEquals(optimizer.getGenOptimizer().getGenSize(), 4);
+		assertTrue(optimizer.getGenOptimizer().getGenConstrainDataList().size() == 8);
+		assertTrue(optimizer.getGenOptimizer().getSecConstrainDataList().size() == 101);
 		
 		dclfAlgo.calculateDclf();
 		
