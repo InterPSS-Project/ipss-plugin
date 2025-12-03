@@ -1,4 +1,4 @@
-package org.interpss.core.optadj;
+package org.interpss.plugin.optadj;
 
 import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingency;

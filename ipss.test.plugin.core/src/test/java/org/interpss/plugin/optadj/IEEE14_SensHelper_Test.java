@@ -1,5 +1,5 @@
 
-package org.interpss.core.optadj;
+package org.interpss.plugin.optadj;
 
 import static org.junit.Assert.assertEquals;
 
