@@ -72,7 +72,7 @@ branch_ids = ["Bus1->Bus2(1)", "Bus1->Bus5(1)", "Bus2->Bus3(1)", "Bus2->Bus4(1)"
 
 # Create net result bean set and fill it with load flow results
 exAdapter = AclfResultExchangeAdapter(aclfNet)
-netResult = exAdapter.createNetInfoBean(bus_ids, branch_ids)
+netResult = exAdapter.createInfoBean(bus_ids, branch_ids)
 
 print("Net Info:")
 print("Has Element Info:", netResult.hasElemInfo)

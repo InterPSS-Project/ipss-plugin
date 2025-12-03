@@ -80,7 +80,7 @@ def test_ieee14_loadflow(start_jvm, init_test_data):
 
     # Create net result bean set and fill it with load flow results
     exAdapter = AclfResultExchangeAdapter(aclfNet)
-    netResult = exAdapter.createNetInfoBean(init_test_data["bus_ids"], init_test_data["branch_ids"])
+    netResult = exAdapter.createInfoBean(init_test_data["bus_ids"], init_test_data["branch_ids"])
 
     volt_mag = np.array(netResult.busResultBean.volt_mag, dtype=np.double, copy=False)
     volt_ang = np.array(netResult.busResultBean.volt_ang, dtype=np.double, copy=False)
