@@ -8,9 +8,9 @@ package org.interpss.plugin.exchange.bean;
  */
 public class AclfNetExchangeInfo {
 	// network info exchange bean id
-	public String id;
+	public String netId;
 	// network info exchange beanname
-	public String name;
+	public String netName;
 	// network info exchange beandescription
 	public String desc;
 	
@@ -30,8 +30,8 @@ public class AclfNetExchangeInfo {
 	 * @param desc the network description
 	 */
 	public AclfNetExchangeInfo(String id, String name, String desc) {
-		this.id = id;
-		this.name = name;
+		this.netId = id;
+		this.netName = name;
 		this.desc = desc;
 	}
 }
