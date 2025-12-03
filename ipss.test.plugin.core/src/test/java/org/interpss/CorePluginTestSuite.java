@@ -74,6 +74,8 @@ import org.interpss.core.zeroz.topo.IEEE14ZeroZBranchFuncLoopTest;
 import org.interpss.core.zeroz.topo.IEEE14ZeroZBranchFuncTest;
 import org.interpss.core.zeroz.topo.ZeroZBranchFuncTest;
 import org.interpss.plugin.beanModel.AclfBeanMapperTest;
+import org.interpss.plugin.exchange.AclfResultExchagneIeee14Test;
+import org.interpss.plugin.exchange.ContingencyExchagneIeee14Test;
 import org.interpss.plugin.lfGCtrl.SwitchedShuntGControlTest;
 import org.interpss.plugin.optadj.IEEE14_OptAdj_BasecaseSSAResult_Test;
 import org.interpss.plugin.optadj.IEEE14_OptAdj_Basecase_Test;
@@ -266,6 +268,9 @@ import org.junit.runners.Suite.SuiteClasses;
 	
 	AclfBeanMapperTest.class,
 	
+	// exchange
+	AclfResultExchagneIeee14Test.class,
+	ContingencyExchagneIeee14Test.class,
 	
 	// Piecewise Algorithm
 	IEEE14TestSubAreaSearch.class,
