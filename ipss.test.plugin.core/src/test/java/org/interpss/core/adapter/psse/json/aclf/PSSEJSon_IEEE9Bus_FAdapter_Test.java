@@ -36,9 +36,6 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.export.psse.PSSEJSonBusUpdater;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
-import org.interpss.util.FileUtil;
 import org.junit.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -55,7 +52,7 @@ public class PSSEJSon_IEEE9Bus_FAdapter_Test extends CorePluginTestSetup {
 	@Test
 	public void testJSonExport() throws Exception {
 	    IODMAdapter adapter = new PSSEJSonAdapter();
-	    assertTrue(adapter.parseInputFile("testdata/adpter/psse/json/ieee9.rawx"));
+	    assertTrue(adapter.parseInputFile("testData/adpter/psse/json/ieee9.rawx"));
 	    
 	    AclfModelParser parser = (AclfModelParser)adapter.getModel();
 	    //parser.stdout();
