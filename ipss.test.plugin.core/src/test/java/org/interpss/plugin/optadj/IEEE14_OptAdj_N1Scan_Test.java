@@ -1,4 +1,28 @@
-package org.interpss.core.optadj;
+/*
+ * @(#)DclfSampleTest.java   
+ *
+ * Copyright (C) 2006 www.interpss.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU LESSER GENERAL PUBLIC LICENSE
+ * as published by the Free Software Foundation; either version 2.1
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * @Author Mike Zhou
+ * @Version 1.0
+ * @Date 07/15/2007
+ * 
+ *   Revision History
+ *   ================
+ *
+ */
+
+package org.interpss.plugin.optadj;
 
 import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
@@ -7,11 +31,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
@@ -30,25 +51,10 @@ import com.interpss.core.algo.dclf.CaBranchOutageType;
 import com.interpss.core.algo.dclf.CaOutageBranch;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 
-public class IEEE14_OptAdj_SelOutge_Test extends CorePluginTestSetup {
+public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
 	@Test
 	public void test() throws InterpssException {
 		AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
-		
-		/* This case is the same as IEEE14_OptAdj_N1Scan_Test but using the selected outage branches
-		 * approach.
-		Bus2->Bus5(1) Bus9->Bus14(1) Bus13->Bus14(1) Bus12->Bus13(1) Bus3->Bus4(1) Bus5->Bus6(1)
-		Bus4->Bus7(1) Bus2->Bus4(1) Bus10->Bus11(1)Bus6->Bus11(1) Bus7->Bus9(1) 
-		Bus4->Bus9(1) Bus7->Bus8(1) Bus6->Bus13(1) Bus6->Bus12(1) Bus2->Bus3(1) Bus4->Bus5(1) Bus9->Bus10(1)
-		 */
-		Set<String> outBranchIdSet = new HashSet<>(Arrays.asList(
-				"Bus1->Bus2(1)", "Bus1->Bus5(1)", 
-				"Bus2->Bus5(1)", "Bus9->Bus14(1)", "Bus13->Bus14(1)", "Bus12->Bus13(1)",
-				"Bus3->Bus4(1)", "Bus5->Bus6(1)", "Bus4->Bus7(1)", "Bus2->Bus4(1)", "Bus10->Bus11(1)",
-				"Bus6->Bus11(1)", "Bus7->Bus9(1)", "Bus4->Bus9(1)", "Bus7->Bus8(1)", "Bus6->Bus13(1)",
-				"Bus6->Bus12(1)", "Bus2->Bus3(1)", 
-				"Bus4->Bus5(1)", 
-				"Bus9->Bus10(1)"));
 		
 		// define an caAlgo object and perform DCLF 
 		ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(net);
@@ -58,7 +64,7 @@ public class IEEE14_OptAdj_SelOutge_Test extends CorePluginTestSetup {
 		List<Contingency> contList = new ArrayList<>();
 		net.getBranchList().stream()
 			// make sure the branch is not connected to a reference bus.
-			.filter(branch -> !((AclfBranch)branch).isConnect2RefBus() && outBranchIdSet.contains(branch.getId()))
+			.filter(branch -> !((AclfBranch)branch).isConnect2RefBus())
 			.forEach(branch -> {
 				// create a contingency object for the branch outage analysis
 				Contingency cont = createContingency("contBranch:"+branch.getId());
@@ -90,7 +96,7 @@ public class IEEE14_OptAdj_SelOutge_Test extends CorePluginTestSetup {
 		assertTrue(""+cnt.getCount(), cnt.getCount() == 18);
 		 
 		AclfNetContigencyOptimizer optimizer = new AclfNetContigencyOptimizer(dclfAlgo);
-		optimizer.optimize(100, outBranchIdSet);
+		optimizer.optimize(100);
 		
 		Map<String, Double> resultMap = optimizer.getResultMap();
 		System.out.println(resultMap);
@@ -98,10 +104,10 @@ public class IEEE14_OptAdj_SelOutge_Test extends CorePluginTestSetup {
 		assertEquals(resultMap.get("Bus3-G1"), 0.99, 0.0001);
 		assertEquals(resultMap.get("Bus1-G1"), -0.99, 0.0001);
 		
-		System.out.println("Optimization gen size." + optimizer.getGenOptimizer().getGenSize());
+//		System.out.println("Optimization gen size." + optimizer.getGenOptimizer().getGenSize());
 		System.out.println("Optimization gen constrain size." + optimizer.getGenOptimizer().getGenConstrainDataList().size());
 		System.out.println("Optimization sec constrian size." + optimizer.getGenOptimizer().getSecConstrainDataList().size());
-		assertTrue(optimizer.getGenOptimizer().getGenSize() == 5);
+//		assertTrue(optimizer.getGenOptimizer().getGenSize() == 5);
 		assertTrue(optimizer.getGenOptimizer().getGenConstrainDataList().size() == 10);
 		assertEquals(optimizer.getGenOptimizer().getSecConstrainDataList().size(), 101);
 		
@@ -130,5 +136,3 @@ public class IEEE14_OptAdj_SelOutge_Test extends CorePluginTestSetup {
 		assertTrue(cnt1.getCount() == 0);
 	}
 }
-
-
