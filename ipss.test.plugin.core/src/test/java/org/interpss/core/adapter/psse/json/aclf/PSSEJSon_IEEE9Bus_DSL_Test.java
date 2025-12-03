@@ -24,16 +24,13 @@
 
 package org.interpss.core.adapter.psse.json.aclf;
  
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
-import static org.junit.Assert.assertTrue;
-
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.adapter.psse.bean.PSSESchema;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.interpss.plugin.pssl.plugin.IpssAdapter.FileImportDSL;
+import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -46,7 +43,7 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 public class PSSEJSon_IEEE9Bus_DSL_Test extends CorePluginTestSetup { 
 	@Test
 	public void testJSon() throws Exception {
-		AclfNetwork net = IpssAdapter.importAclfNet("testdata/adpter/psse/json/ieee9.rawx")
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/json/ieee9.rawx")
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_JSON)
 				.load()
@@ -57,7 +54,7 @@ public class PSSEJSon_IEEE9Bus_DSL_Test extends CorePluginTestSetup {
 	
 	@Test
 	public void testJSon_Converter_output() throws Exception {
-		AclfNetwork net = IpssAdapter.importAclfNet("testdata/adpter/psse/json/ieee9_output.rawx")
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/json/ieee9_output.rawx")
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_JSON)
 				.load()
