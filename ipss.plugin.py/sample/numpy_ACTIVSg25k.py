@@ -53,7 +53,7 @@ print(f"{len(busIds)} buses")
 
 # Create net result bean set and fill it with load flow results
 exAdapter = AclfResultExchangeAdapter(net)
-netResult = exAdapter.createNetInfoBean(busIds, [])
+netResult = exAdapter.createInfoBean(busIds, [])
 
 timer = PerformanceTimer()
 # Access voltage magnitude through object retrieval
