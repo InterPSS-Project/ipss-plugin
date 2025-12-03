@@ -13,6 +13,10 @@ public class AclfBranchExchangeInfo extends BaseElemExchangeBean {
 	public double[] p_t2f;
 	public double[] q_t2f;
 	
+	/** Constructor
+	 * 
+	 * @param ids the branch ids
+	 */
 	public AclfBranchExchangeInfo(String[] ids) {
 		super(ids);
 	}
