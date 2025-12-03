@@ -1,4 +1,4 @@
-package org.interpss.core.optadj;
+package org.interpss.plugin.optadj;
 
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
 import static org.junit.Assert.assertEquals;
