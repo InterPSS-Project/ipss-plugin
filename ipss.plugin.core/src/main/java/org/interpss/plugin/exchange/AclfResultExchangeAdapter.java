@@ -32,7 +32,7 @@ public class AclfResultExchangeAdapter extends BaseResultExchangeAdapter<AclfNet
 		
 		this.createBusResult(netInfoBean, busIds);
 		
-		this.fillBranchResult(netInfoBean, branchIds);
+		this.createBranchResult(netInfoBean, branchIds);
 		
 		return netInfoBean;
 	}
