@@ -1,13 +1,7 @@
 package org.interpss.plugin.exchange;
 
-import org.apache.commons.math3.complex.Complex;
-import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.plugin.exchange.bean.AclfBranchExchangeInfo;
-import org.interpss.plugin.exchange.bean.AclfBusExchangeInfo;
 import org.interpss.plugin.exchange.bean.AclfNetExchangeInfo;
 
-import com.interpss.core.aclf.AclfBranch;
-import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 
 /**
@@ -16,17 +10,13 @@ import com.interpss.core.aclf.AclfNetwork;
  * @author mzhou
  *
  */
-public class AclfResultExchangeAdapter {
-	// the Aclf network object
-	private AclfNetwork aclfNet;
-
-	
+public class AclfResultExchangeAdapter extends BaseResultExchangeAdapter<AclfNetExchangeInfo> {
 	/** Constructor
 	 * 
 	 * @param aclfNet the Aclf network object
 	 */
 	public AclfResultExchangeAdapter(AclfNetwork aclfNet) {
-		this.aclfNet = aclfNet;
+		super(aclfNet);
 	}
 
 	/** Create AclfNetExchangeInfo bean
@@ -35,66 +25,15 @@ public class AclfResultExchangeAdapter {
 	 * @param branchIds the branch ids array
 	 * @return AclfNetExchangeInfo bean
 	 */
-	public AclfNetExchangeInfo createNetInfoBean(String[] busIds, String[] branchIds) {
+	@Override
+	public AclfNetExchangeInfo createInfoBean(String[] busIds, String[] branchIds) {
 		AclfNetExchangeInfo netInfoBean = new AclfNetExchangeInfo(aclfNet.getId(), aclfNet.getName(), aclfNet.getDesc());
 		netInfoBean.hasElemInfo = true;
 		
-		this.fillBusResult(netInfoBean, busIds);
+		this.createBusResult(netInfoBean, busIds);
 		
 		this.fillBranchResult(netInfoBean, branchIds);
 		
 		return netInfoBean;
-	}
-	
-	/** Fill bus result info bean
-	 * 
-	 * @param netInfoBean the AclfNetExchangeInfo bean
-	 * @param ids the bus ids array
-	 * @return true if success
-	 */
-	private boolean fillBusResult(AclfNetExchangeInfo netInfoBean, String[] ids) {
-		netInfoBean.busResultBean = new AclfBusExchangeInfo(ids);
-		AclfBusExchangeInfo busResultBean = netInfoBean.busResultBean;
-		busResultBean.volt_mag = new double[busResultBean.lenght];
-		busResultBean.volt_ang = new double[busResultBean.lenght];
-		
-		for (int i = 0; i < busResultBean.lenght; i++) {
-			String id = busResultBean.ids[i];
-			AclfBus bus = aclfNet.getBus(id);
-			if (bus == null)
-				continue;
-			busResultBean.volt_mag[i] = bus.getVoltageMag();
-			busResultBean.volt_ang[i] = bus.getVoltageAng(UnitType.Deg);
-		}
-		return true;
-	}
-	
-	/** Fill branch result info bean
-	 * 
-	 * @param netInfoBean the AclfNetExchangeInfo bean
-	 * @param ids the branch ids array
-	 * @return true if success
-	 */
-	private boolean fillBranchResult(AclfNetExchangeInfo netInfoBean, String[] ids) {
-		netInfoBean.branchResultBean = new AclfBranchExchangeInfo(ids);
-		AclfBranchExchangeInfo branchResultBean = netInfoBean.branchResultBean;
-		branchResultBean.p_f2t = new double[branchResultBean.lenght];
-		branchResultBean.q_f2t = new double[branchResultBean.lenght];
-		branchResultBean.p_t2f = new double[branchResultBean.lenght];
-		branchResultBean.q_t2f = new double[branchResultBean.lenght];
-		
-		for (int i = 0; i < branchResultBean.lenght; i++) {
-			String id = branchResultBean.ids[i];
-			AclfBranch branch = aclfNet.getBranch(id);
-			if (branch == null)
-				continue;
-			Complex powerF2t = branch.powerFrom2To(UnitType.mVA);
-			Complex powerT2f = branch.powerTo2From(UnitType.mVA);
-			branchResultBean.p_f2t[i] = powerF2t.getReal();
-			branchResultBean.q_f2t[i] = powerF2t.getImaginary();
-			branchResultBean.p_t2f[i] = powerT2f.getReal();
-			branchResultBean.q_t2f[i] = powerT2f.getImaginary();
-		}
-		return true;
 	}
 }

@@ -1,6 +1,9 @@
 package org.interpss.plugin.exchange;
 
-import java.util.concurrent.ConcurrentHashMap;
+import org.interpss.plugin.exchange.bean.ContingencyExchangeInfo;
+
+import com.interpss.core.aclf.AclfBranch;
+import com.interpss.core.aclf.AclfNetwork;
 
 /**
  * Adapter class for the contingency analysis result exchange
@@ -8,23 +11,43 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author mzhou
  *
  */
-public class ContingencyResultAdapter {
-	// a concurrent hash map to hold the contingency analysis result info beans
-	private ConcurrentHashMap<String, AclfResultExchangeAdapter> contingencyResultMap;
+public class ContingencyResultAdapter extends BaseResultExchangeAdapter<ContingencyExchangeInfo> {
+	// the contingency id
+	public String continId;
+	// the outage branch
+	public AclfBranch outageBranch;
 	
 	/** 
 	 * Constructor
 	 * 
+	 * @param aclfNet the Aclf network object
+	 * @param continId the contingency id
+	 * @param outageBranch the outage branch
+	 * 
 	 */
-	public ContingencyResultAdapter() {
-		contingencyResultMap = new ConcurrentHashMap<>();
+	public ContingencyResultAdapter(AclfNetwork aclfNet, String continId, AclfBranch outageBranch) {
+		super(aclfNet);
+		this.continId = continId;
+		this.outageBranch = outageBranch;
 	}
 	
-	/** Get the contingency result map
+	/** Create AclfNetExchangeInfo bean
 	 * 
-	 * @return the contingency result map
+	 * @param busIds the bus ids array
+	 * @param branchIds the branch ids array
+	 * @return AclfNetExchangeInfo bean
 	 */
-	public ConcurrentHashMap<String, AclfResultExchangeAdapter> getContingencyResultMap() {
-		return contingencyResultMap;
+	@Override
+	public ContingencyExchangeInfo createInfoBean(String[] busIds, String[] branchIds) {
+		ContingencyExchangeInfo netInfoBean = 
+				new ContingencyExchangeInfo(aclfNet.getId(), aclfNet.getName(), aclfNet.getDesc(),
+						this.continId, this.outageBranch);
+		netInfoBean.hasElemInfo = true;
+		
+		this.createBusResult(netInfoBean, busIds);
+		
+		this.fillBranchResult(netInfoBean, branchIds);
+		
+		return netInfoBean;
 	}
 }
