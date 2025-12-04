@@ -36,6 +36,7 @@ public class AclfResultExchagneIeee14Test extends CorePluginTestSetup {
 		
 		AclfNetExchangeInfo netInfoBean = new AclfResultExchangeAdapter(aclfNet)
 				.createInfoBean(busIds, branchIds);
+		assertTrue(netInfoBean.lfConverged);		
 		
 		 // get bus results
 		double[] voltMag = netInfoBean.busResultBean.volt_mag;

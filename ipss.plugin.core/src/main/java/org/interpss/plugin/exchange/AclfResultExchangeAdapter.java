@@ -29,6 +29,7 @@ public class AclfResultExchangeAdapter extends BaseResultExchangeAdapter<AclfNet
 	public AclfNetExchangeInfo createInfoBean(String[] busIds, String[] branchIds) {
 		AclfNetExchangeInfo netInfoBean = new AclfNetExchangeInfo(aclfNet.getId(), aclfNet.getName(), aclfNet.getDesc());
 		netInfoBean.hasElemInfo = true;
+		netInfoBean.lfConverged = this.aclfNet.isLfConverged();
 		
 		this.createBusResult(netInfoBean, busIds);
 		
