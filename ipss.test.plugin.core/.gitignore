@@ -12,3 +12,5 @@
 /config/
 /.vscode/
 /logs/
+
+/.cursorignore
