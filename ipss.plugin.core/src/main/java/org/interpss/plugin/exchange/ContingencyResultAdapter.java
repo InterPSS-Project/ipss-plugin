@@ -43,6 +43,7 @@ public class ContingencyResultAdapter extends BaseResultExchangeAdapter<Continge
 				new ContingencyExchangeInfo(aclfNet.getId(), aclfNet.getName(), aclfNet.getDesc(),
 						this.continId, this.outageBranch);
 		netInfoBean.hasElemInfo = true;
+		netInfoBean.lfConverged = this.aclfNet.isLfConverged();
 		
 		this.createBusResult(netInfoBean, busIds);
 		
