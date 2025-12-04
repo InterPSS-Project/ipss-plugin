@@ -42,6 +42,7 @@ public class ContingencyExchagneIeee14Test extends CorePluginTestSetup {
 		// store the base case result
 		ContingencyExchangeInfo basecaseInfoBean = new ContingencyResultAdapter(aclfNet, "BaseCase", null)
 				.createInfoBean(busIds, branchIds);
+		assertTrue(basecaseInfoBean.lfConverged);
 		
 		container.getContingencyResultMap().put("BaseCase", basecaseInfoBean);
 		
@@ -73,6 +74,7 @@ public class ContingencyExchagneIeee14Test extends CorePluginTestSetup {
 		ContingencyExchangeInfo continInfoBean = 
 				new ContingencyResultAdapter(aclfNet, outageBranchId, outageBranch)
 					.createInfoBean(busIds, branchIds);
+		assertTrue(continInfoBean.lfConverged);
 		
 		container.getContingencyResultMap().put(outageBranchId, continInfoBean);
 		

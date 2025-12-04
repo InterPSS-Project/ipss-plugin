@@ -16,6 +16,9 @@ public class AclfNetExchangeInfo {
 	
 	// flag to indicate whether to include the element (Bus/Branch ...) info in the exchange
 	public boolean hasElemInfo = true;
+
+	// flag to indicate whether the load flow converged
+	public boolean lfConverged = true;
 	
 	// bus result info bean
 	public AclfBusExchangeInfo busResultBean;
