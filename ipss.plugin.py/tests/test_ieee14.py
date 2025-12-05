@@ -17,7 +17,7 @@ if str(project_root) not in sys.path:
 @pytest.fixture(scope="module")
 def start_jvm():
     """Initialize and start the JVM once for all tests in this module."""
-    from src.config.config_mgr import ConfigManager, JvmManager
+    from src.config import ConfigManager, JvmManager
     config_path = str(project_root / "config" / "config.json")
     config = ConfigManager.load_config(config_path)
 
@@ -62,24 +62,18 @@ def test_ieee14_loadflow(start_jvm, init_test_data):
 
     # Step 2: Load data and create the Network Model
     
-    from src.adapter.input_adapter import IeeeFileAdapter
-    #from org.ieee.odm.adapter.ieeecdf.IeeeCDFAdapter import  IEEECDFVersion
+    # import InterPSS modules
+    from src.interpss import ipss
 
-    aclfNet = IeeeFileAdapter.createAclfNet(init_test_data["file_path"])
+    aclfNet = ipss.IeeeFileAdapter.createAclfNet(init_test_data["file_path"])
 
     # Step 3: Run Load Flow Algorithm
-    # InterPSS core related classes
-    from com.interpss.core import LoadflowAlgoObjectFactory
-
-    aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet)
+    aclfAlgo = ipss.LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet)
     aclfAlgo.loadflow()
 
     # Step 4: Process the simulation results
-    # InterPSS aclf result exchange related classes
-    from org.interpss.plugin.exchange import AclfResultExchangeAdapter
-
     # Create net result bean set and fill it with load flow results
-    exAdapter = AclfResultExchangeAdapter(aclfNet)
+    exAdapter = ipss.AclfResultExchangeAdapter(aclfNet)
     netResult = exAdapter.createInfoBean(init_test_data["bus_ids"], init_test_data["branch_ids"])
 
     volt_mag = np.array(netResult.busResultBean.volt_mag, dtype=np.double, copy=False)
