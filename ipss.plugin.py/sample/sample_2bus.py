@@ -13,9 +13,7 @@ project_root = script_dir.parent
 if str(project_root) not in sys.path:
     sys.path.append(str(project_root))
 
-#  Configure and Start the JVM
-
-from src.config.config_mgr import ConfigManager, JvmManager
+from src.config import ConfigManager, JvmManager
 
 # Load configuration file
 config_path=str(project_root / "config" / "config.json")
@@ -23,42 +21,34 @@ config = ConfigManager.load_config(config_path)
 # Initialize and start the JVM
 JvmManager.initialize_jvm(config)
 
-# load the Java classes to be used
-from com.interpss.core import CoreObjectFactory
-from com.interpss.core import LoadflowAlgoObjectFactory
-
-from com.interpss.core.aclf import AclfGenCode
-from com.interpss.core.aclf import AclfLoadCode
-from com.interpss.core.aclf import AclfBranchCode
-
-from org.apache.commons.math3.complex import Complex
-from org.interpss.display import AclfOutFunc
+# import InterPSS modules
+from src.interpss import ipss
 
 # create instances
 #IpssCorePlugin.init()
-net = CoreObjectFactory.createAclfNetwork()
+net = ipss.CoreObjectFactory.createAclfNetwork()
 net.setBaseKva(100000)
 
-bus1 = CoreObjectFactory.createAclfBus("Bus1", net).get()
+bus1 = ipss.CoreObjectFactory.createAclfBus("Bus1", net).get()
 bus1.setBaseVoltage(4000.0)
-bus1.setGenCode(AclfGenCode.SWING)
+bus1.setGenCode(ipss.AclfGenCode.SWING)
 
-bus2 = CoreObjectFactory.createAclfBus("Bus2", net).get()
-bus2.setLoadCode(AclfLoadCode.CONST_P)
+bus2 = ipss.CoreObjectFactory.createAclfBus("Bus2", net).get()
+bus2.setLoadCode(ipss.AclfLoadCode.CONST_P)
 bus2.setBaseVoltage(4000.0)
 bus2.setLoadP(1)
 bus2.setLoadQ(0.8)
 
-branch = CoreObjectFactory.createAclfBranch()
+branch = ipss.CoreObjectFactory.createAclfBranch()
 net.addBranch(branch, "Bus1", "Bus2")
-branch.setBranchCode(AclfBranchCode.LINE)
-branch.setZ(Complex(0.05, 0.1))
+branch.setBranchCode(ipss.AclfBranchCode.LINE)
+branch.setZ(ipss.Complex(0.05, 0.1))
 
-algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net)
+algo = ipss.LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net)
 
 algo.loadflow()
 	  	
-print(AclfOutFunc.loadFlowSummary(net))
+print(ipss.AclfOutFunc.loadFlowSummary(net))
 
 # shutdown JVM
 jpype.shutdownJVM()
