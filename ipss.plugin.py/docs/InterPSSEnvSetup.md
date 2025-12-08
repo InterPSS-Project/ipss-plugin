@@ -10,6 +10,6 @@ InterPSS Java objects are imported to the Python env through JPyte. In the ipss 
 	net = ipss.CoreObjectFactory.createAclfNetwork()
 	net.setBaseKva(100000)
 
-	# another way to import InterPSS Java object
+	# another way to import InterPSS Java objects
 	from com.interpss.core import CoreObjectFactory
 	net = CoreObjectFactory.createAclfNetwork()
