@@ -19,3 +19,13 @@ InterPSS Python API uses the config.json located in the config dir to configure 
 	  "jar_path": "lib/ipss_runnable.jar",
 	  "log_config_path": "config/log4j2.xml"
 	}
+
+##### Java Env Setup 
+
+	from src.config import ConfigManager, JvmManager
+
+	# Load configuration file
+	config_path=str(project_root / "config" / "config.json")
+	config = ConfigManager.load_config(config_path)
+	# Initialize and start the JVM
+	JvmManager.initialize_jvm(config)
