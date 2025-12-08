@@ -10,7 +10,7 @@ InterPSS Python API is based on the [JPype lib](https://jpype.readthedocs.io/en/
 
  - For JPype, please follow the [document on JPype website](https://jpype.readthedocs.io/en/latest/install.html) to install it. Using miniconda to create a virtual environment to install JPype is recommended.
 
-##### config.json
+##### Runtime Configuration
 
 InterPSS Python API uses the config.json located in the config dir to configure the Java env and the log.
 
