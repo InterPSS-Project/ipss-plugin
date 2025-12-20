@@ -100,6 +100,18 @@
 	    <artifactId>commons-pool2</artifactId>
 	    <version>2.12.1</version>
 	</dependency>
+	
+		<!-- https://mvnrepository.com/artifact/org.dflib/dflib -->
+		<dependency>
+		    <groupId>org.dflib</groupId>
+		    <artifactId>dflib</artifactId>
+		    <version>1.3.0</version>
+		</dependency>			
+		<dependency>
+		    <groupId>org.dflib</groupId>
+		    <artifactId>dflib-json</artifactId>
+		    <version>1.3.0</version>
+		</dependency>
     	
   </dependencies>
 
