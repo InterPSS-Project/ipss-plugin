@@ -1,27 +1,3 @@
- /*
-  * @(#)AclfSampleTest.java   
-  *
-  * Copyright (C) 2006 www.interpss.org
-  *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU LESSER GENERAL PUBLIC LICENSE
-  * as published by the Free Software Foundation; either version 2.1
-  * of the License, or (at your option) any later version.
-  *
-  * This program is distributed in the hope that it will be useful,
-  * but WITHOUT ANY WARRANTY; without even the implied warranty of
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  * GNU General Public License for more details.
-  *
-  * @Author Mike Zhou
-  * @Version 1.0
-  * @Date 07/15/2007
-  * 
-  *   Revision History
-  *   ================
-  *
-  */
-
 package org.interpss.core.ca;
 
 import static org.junit.Assert.assertTrue;
@@ -49,10 +25,12 @@ public class Ieee14_GSF_Test extends CorePluginTestSetup {
 		
 		SenAnalysisAlgorithm algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
 		
+		// Branch 1->2 and 1->5 form an interface, their GSF sum is -1.0 w.r.p to 8
 		double x1 = algo.calGenShiftFactor("Bus8", net.getBranch("Bus1->Bus2(1)"));
 		double x2 = algo.calGenShiftFactor("Bus8", net.getBranch("Bus1->Bus5(1)"));
 		assertTrue(NumericUtil.equals(x1+x2, -1.0, 0.0001));
 
+		// Branch 5->6, 4->7 and 4->9 form an interface, their GSF sum is -1.0 w.r.p to 8
 		x1 = algo.calGenShiftFactor("Bus8", net.getBranch("Bus5->Bus6(1)"));
 		x2 = algo.calGenShiftFactor("Bus8", net.getBranch("Bus4->Bus7(1)"));
 		double x3 = algo.calGenShiftFactor("Bus8", net.getBranch("Bus4->Bus9(1)"));
@@ -79,6 +57,7 @@ public class Ieee14_GSF_Test extends CorePluginTestSetup {
 		//System.out.println("GSF: " + f );	
 		assertTrue(NumericUtil.equals(f,-0.440623, 0.00001));
 
+		// multiple withdraw buses
 		algo.getInjectBusList().clear();
 		algo.addInjectBus(net.getBus("Bus2"), 1.0);
 		algo.getWithdrawBusList().clear();
@@ -97,6 +76,7 @@ public class Ieee14_GSF_Test extends CorePluginTestSetup {
 		//System.out.println("GSF: " + f );
 		assertTrue(NumericUtil.equals(f, 0.128015, 0.00001));
 	
+		// change the withdraw bus weights
 		algo.getInjectBusList().clear();
 		algo.addInjectBus(net.getBus("Bus2"), 1.0);
 		algo.getWithdrawBusList().clear();
