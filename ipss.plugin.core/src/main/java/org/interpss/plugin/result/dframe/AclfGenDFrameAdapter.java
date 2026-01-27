@@ -4,7 +4,6 @@ import org.dflib.DataFrame;
 import org.dflib.Extractor;
 import org.dflib.builder.DataFrameAppender;
 
-import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;
 
 /**
