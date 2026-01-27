@@ -1,5 +1,6 @@
 package org.interpss.plugin.exchange;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.interpss.CorePluginFactory;
@@ -41,10 +42,12 @@ public class AclfResultExchagneIeee14Test extends CorePluginTestSetup {
 		 // get bus results
 		double[] voltMag = netInfoBean.busResultBean.volt_mag;
 		assertTrue(voltMag != null && voltMag.length == busIds.length);
+		assertEquals(1.060, voltMag[0], 0.0001);
 		
 		// get branch results
 		double[] pF2T = netInfoBean.branchResultBean.p_f2t;
 		assertTrue(pF2T != null && pF2T.length == branchIds.length);
+		assertEquals(156.8817, pF2T[0], 0.0001);
 	}
 }
 
