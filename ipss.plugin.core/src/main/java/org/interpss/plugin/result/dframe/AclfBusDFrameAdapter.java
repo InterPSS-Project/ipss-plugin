@@ -1,4 +1,4 @@
-package org.interpss.plugin.exchange.dframe;
+package org.interpss.plugin.result.dframe;
 
 import org.dflib.DataFrame;
 import org.dflib.Extractor;
