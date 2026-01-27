@@ -4,10 +4,10 @@ import org.dflib.DataFrame;
 import org.dflib.Printers;
 import org.interpss.CorePluginFactory;
 import org.interpss.fadapter.IpssFileAdapter;
-import org.interpss.plugin.exchange.dframe.AclfBranchDFrameAdapter;
-import org.interpss.plugin.exchange.dframe.AclfBusDFrameAdapter;
-import org.interpss.plugin.exchange.dframe.AclfGenDFrameAdapter;
-import org.interpss.plugin.exchange.dframe.AclfLoadDFrameAdapter;
+import org.interpss.plugin.result.dframe.AclfBranchDFrameAdapter;
+import org.interpss.plugin.result.dframe.AclfBusDFrameAdapter;
+import org.interpss.plugin.result.dframe.AclfGenDFrameAdapter;
+import org.interpss.plugin.result.dframe.AclfLoadDFrameAdapter;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.LoadflowAlgoObjectFactory;
