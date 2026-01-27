@@ -30,7 +30,7 @@ public class AclfNetDFrameSample {
     	// 2. Adapt the AclfNetwork bus data to DataFrame
     	DataFrame dfBus = new AclfBusDFrameAdapter().adapt(net);    	
         System.out.println("\n--- Bus Data ---");
-        System.out.println(Printers.tabular.toString(dfBus));
+        Printers.tabular.print(dfBus);
         
     	// 3. Extend the DataFrame with new calculated columns
 	  	double baseMva = net.getBaseMva();
@@ -52,24 +52,24 @@ public class AclfNetDFrameSample {
 	  	});
 
         System.out.println("\n--- Bus Data ---");
-        System.out.println(Printers.tabular.toString(dfBus));
+        Printers.tabular.print(dfBus);
         
        	// 2. Adapt the AclfNetwork bus data to DataFrame
     	DataFrame dfGen = new AclfGenDFrameAdapter().adapt(net);   
     	
     	System.out.println("\n--- Gen Data ---");
-		System.out.println(Printers.tabular.toString(dfGen));
+		Printers.tabular.print(dfGen);
 		
 	   	// 2. Adapt the AclfNetwork bus data to DataFrame
 		DataFrame dfLoad = new AclfLoadDFrameAdapter().adapt(net);   
 		
 		System.out.println("\n--- Load Data ---");	
-		System.out.println(Printers.tabular.toString(dfLoad));
+		Printers.tabular.print(dfLoad);
 		
 		// 2. Adapt the AclfNetwork branch data to DataFrame
 		DataFrame dfBranch = new AclfBranchDFrameAdapter().adapt(net);    	
 		System.out.println("\n--- Branch Data ---");
-		System.out.println(Printers.tabular.toString(dfBranch));
+		Printers.tabular.print(dfBranch);
 			
 		dfBranch.forEach(row -> {
 			AclfBranchCode code = row.get("BranchCode", AclfBranchCode.class);
