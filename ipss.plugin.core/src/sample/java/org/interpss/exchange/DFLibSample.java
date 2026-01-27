@@ -65,7 +65,8 @@ public class DFLibSample {
     	DataFrame df = appender.toDataFrame();    	
     	
         System.out.println("\n--- Original Data ---");
-        System.out.println(Printers.tabular.toString(df));
+        //System.out.println(Printers.tabular.toString(df));
+        Printers.tabular.print(df);
     }
     
     public static void sample1() {
@@ -90,10 +91,12 @@ public class DFLibSample {
 
         // 3. Print the result as a pretty table
         System.out.println("--- Original Data ---");
-        System.out.println(Printers.tabular.toString(df));
+        //System.out.println(Printers.tabular.toString(df));
+        Printers.tabular.print(df);
 
         System.out.println("\n--- Processed Data (High Earners in Eng) ---");
-        System.out.println(Printers.tabular.toString(processedDf));
+        //System.out.println(Printers.tabular.toString(processedDf));
+        Printers.tabular.print(processedDf);
         
         // 4. Export to JSON String
         // This creates a standard JSON array of objects
