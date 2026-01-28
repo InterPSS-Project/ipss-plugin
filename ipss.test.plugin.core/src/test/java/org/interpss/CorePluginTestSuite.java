@@ -87,6 +87,7 @@ import org.interpss.plugin.piecewise.IEEE14TestAclfSubAreaBuild;
 import org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild;
 import org.interpss.plugin.piecewise.IEEE14TestSubAreaSearch;
 import org.interpss.plugin.piecewise.IEEE9BusTestDStabSubAreaNet;
+import org.interpss.plugin.result.AclfResultDFrameTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
@@ -123,6 +124,9 @@ import org.junit.runners.Suite.SuiteClasses;
 	IEEE14ZeroZBranchDeconsolidateTest.class,
 	ZBrAclfDeconOutputTest.class,
 	IEEE9Bus_ZbrNRSolver_Test.class,
+	
+	// DFrame
+	AclfResultDFrameTest.class,
 	
 	// acsc
 	IEEE9Bus_Acsc_Test.class,
