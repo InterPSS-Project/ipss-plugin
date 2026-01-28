@@ -1,4 +1,4 @@
-package org.interpss.exchange;
+package org.interpss.result.dframe;
 
 import org.dflib.DataFrame;
 import org.dflib.Printers;
@@ -15,7 +15,7 @@ import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
-public class AclfNetDFrameSample {
+public class AclfNetDFrameSample1 {
     
     public static void main(String[] args) throws InterpssException {
 		// load the IEEE-14 Bus system

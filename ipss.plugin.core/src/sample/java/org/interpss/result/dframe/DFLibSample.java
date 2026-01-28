@@ -1,4 +1,4 @@
-package org.interpss.exchange;
+package org.interpss.result.dframe;
 
 import static org.dflib.Exp.$int;
 import static org.dflib.Exp.$str;
