@@ -73,7 +73,7 @@ import org.interpss.core.zeroz.algo.IEEE9Bus_ZbrNRSolver_Test;
 import org.interpss.core.zeroz.topo.IEEE14ZeroZBranchFuncLoopTest;
 import org.interpss.core.zeroz.topo.IEEE14ZeroZBranchFuncTest;
 import org.interpss.core.zeroz.topo.ZeroZBranchFuncTest;
-import org.interpss.plugin.beanModel.AclfBeanMapperTest;
+import org.interpss.dep.plugin.beanModel.AclfBeanMapperTest;
 import org.interpss.plugin.exchange.AclfResultExchagneIeee14Test;
 import org.interpss.plugin.exchange.ContingencyExchagneIeee14Test;
 import org.interpss.plugin.lfGCtrl.SwitchedShuntGControlTest;

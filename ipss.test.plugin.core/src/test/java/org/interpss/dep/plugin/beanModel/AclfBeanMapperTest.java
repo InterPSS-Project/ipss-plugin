@@ -22,7 +22,7 @@
   *
   */
 
-package org.interpss.plugin.beanModel;
+package org.interpss.dep.plugin.beanModel;
 
 import java.util.logging.Level;
 
