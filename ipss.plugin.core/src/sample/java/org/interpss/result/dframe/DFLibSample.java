@@ -64,9 +64,12 @@ public class DFLibSample {
     	// 3. Create the final DataFrame
     	DataFrame df = appender.toDataFrame();    	
     	
-        System.out.println("\n--- Original Data ---");
-        //System.out.println(Printers.tabular.toString(df));
-        Printers.tabular.print(df);
+        System.out.println("\n--- Original Data1 ---");
+        System.out.println(df);
+        
+        System.out.println("\n--- Original Data2 ---");
+        DataFrame dfSorted = df.sort($int("age").desc());
+        System.out.println(dfSorted);
     }
     
     public static void sample1() {
