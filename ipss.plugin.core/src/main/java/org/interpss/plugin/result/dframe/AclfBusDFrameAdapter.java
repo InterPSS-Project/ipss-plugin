@@ -1,10 +1,12 @@
 package org.interpss.plugin.result.dframe;
 
+import org.apache.commons.math3.complex.Complex;
 import org.dflib.DataFrame;
 import org.dflib.Extractor;
 import org.dflib.builder.DataFrameAppender;
 
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.algo.AclfMethodType;
 
 /**
  * Adapter to convert AclfBus data to DataFrame
@@ -17,7 +19,8 @@ public class AclfBusDFrameAdapter {
 							String ownerName, long ownerNum, 
 							boolean inService, String busType,
 							double nomVolt, double voltMag, double voltAng, 
-							double genP, double genQ, double loadP, double loadQ) {}
+							double genP, double genQ, double loadP, double loadQ,
+							double misP, double misQ) {}
     // Appender to build the DataFrame
     private DataFrameAppender<BusDFrameRec> appender;
     
@@ -45,13 +48,16 @@ public class AclfBusDFrameAdapter {
                     Extractor.$double(BusDFrameRec::genP),
                     Extractor.$double(BusDFrameRec::genQ),
                     Extractor.$double(BusDFrameRec::loadP),
-                    Extractor.$double(BusDFrameRec::loadQ)
+                    Extractor.$double(BusDFrameRec::loadQ),
+                    Extractor.$double(BusDFrameRec::misP),
+                    Extractor.$double(BusDFrameRec::misQ)
                 )
                 // define the column names
                 .columnNames("ID", "Number", "Name", 
 							"AreaName", "AreaNum", "ZoneName", "ZoneNum", "OwnerName", "OwnerNum", 
 							"InService", "BusType", "NomVolt", "VoltMag", "VoltAng", 
-							"GenP", "GenQ", "LoadP", "LoadQ")
+							"GenP", "GenQ", "LoadP", "LoadQ",
+							"MismatchP", "MismatchQ")
                 .appender();
     }
     
@@ -64,6 +70,7 @@ public class AclfBusDFrameAdapter {
     public DataFrame adapt(AclfNetwork aclfNet) {
         // Append rows from the AclfNetwork bus object
         for (var bus : aclfNet.getBusList()) {
+        	Complex mis = bus.mismatch(AclfMethodType.NR); 
         	appender.append(new BusDFrameRec(
 					bus.getId(),
 					bus.getNumber(),
@@ -84,7 +91,9 @@ public class AclfBusDFrameAdapter {
 					bus.getGenP(),
 					bus.getGenQ(),
 					bus.getLoadP(),
-					bus.getLoadQ()));
+					bus.getLoadQ(),
+					mis.getReal(),
+					mis.getImaginary()));
         }
         
     	// Create the final DataFrame
