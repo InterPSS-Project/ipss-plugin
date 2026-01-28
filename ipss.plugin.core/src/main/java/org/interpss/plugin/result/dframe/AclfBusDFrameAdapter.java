@@ -15,6 +15,7 @@ public class AclfBusDFrameAdapter {
 							String areaName, long areaNum, 
 							String zoneName, long zoneNum, 
 							String ownerName, long ownerNum, 
+							boolean inService, String busType,
 							double nomVolt, double voltMag, double voltAng, 
 							double genP, double genQ, double loadP, double loadQ) {}
     // Appender to build the DataFrame
@@ -36,6 +37,8 @@ public class AclfBusDFrameAdapter {
                     Extractor.$long(BusDFrameRec::zoneNum),
                     Extractor.$col(BusDFrameRec::ownerName),
                     Extractor.$long(BusDFrameRec::ownerNum),
+                    Extractor.$bool(BusDFrameRec::inService),
+                    Extractor.$col(BusDFrameRec::busType),
                     Extractor.$double(BusDFrameRec::nomVolt),
                     Extractor.$double(BusDFrameRec::voltMag),
                     Extractor.$double(BusDFrameRec::voltAng),
@@ -47,7 +50,7 @@ public class AclfBusDFrameAdapter {
                 // define the column names
                 .columnNames("ID", "Number", "Name", 
 							"AreaName", "AreaNum", "ZoneName", "ZoneNum", "OwnerName", "OwnerNum", 
-							"NomVolt", "VoltMsg", "VoltAng", 
+							"InService", "BusType", "NomVolt", "VoltMag", "VoltAng", 
 							"GenP", "GenQ", "LoadP", "LoadQ")
                 .appender();
     }
@@ -71,6 +74,10 @@ public class AclfBusDFrameAdapter {
 					bus.getZone().getNumber(),
 					bus.getOwner() != null? bus.getOwner().getName(): "",
 					bus.getOwner() != null? bus.getOwner().getNumber(): 0,
+					bus.isActive(),		
+					bus.isSwing()? "Swing" :
+						bus.isGenPV()? "PV" :
+							bus.isGen()? "PQ" : "Load",
 					bus.getBaseVoltage(), // in pu
 					bus.getVoltageMag(),
 					bus.getVoltageAng(),
