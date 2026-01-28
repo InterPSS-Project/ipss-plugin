@@ -10,11 +10,11 @@ public class AclfResultDFrameAdapter {
 	public static final int MaxNumOfResults = 50;
 	
 	// Pre-defined comparators for common sorting needs
-	public static Sorter busVoltHigherSortExpr = $col("VoltMag").desc(); 
-	public static Sorter busVoltLowerSortExpr = $col("VoltMag").asc(); 
+	public static Sorter busVoltHigherSortExpr = $double("VoltMag").desc(); 
+	public static Sorter busVoltLowerSortExpr = $double("VoltMag").asc(); 
 	
-	public static Sorter pMismatchLargerSortExpr = $col("MismatchP").desc(); 
-	public static Sorter qMismatchLargerSortExpr = $col("MismatchQ").desc();
+	public static Sorter pMismatchLargerSortExpr = $double("MismatchP").desc(); 
+	public static Sorter qMismatchLargerSortExpr = $double("MismatchQ").desc();
 	public static Sorter mismatchLargerSorterExpr = 
 							$double("MismatchP").mul($double("MismatchP"))
 							.add($double("MismatchQ").mul($double("MismatchQ"))).desc();
