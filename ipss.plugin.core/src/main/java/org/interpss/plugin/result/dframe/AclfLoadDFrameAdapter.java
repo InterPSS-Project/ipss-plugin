@@ -14,6 +14,7 @@ public class AclfLoadDFrameAdapter {
 	private static record LoadDFrameRec(String busId, long busNumber,  String busName,
 			String loadId, String loadName, String loadCode,
 			boolean inService,
+			double ploadTotal, double qloadTotal,
 			double pload, double qload,
 			double ipload, double iqload,
 			double zpload, double zqload,
@@ -40,6 +41,8 @@ public class AclfLoadDFrameAdapter {
                 	Extractor.$col(LoadDFrameRec::loadName),
                 	Extractor.$col(LoadDFrameRec::loadCode),
                 	Extractor.$bool(LoadDFrameRec::inService),
+                	Extractor.$double(LoadDFrameRec::ploadTotal),
+                	Extractor.$double(LoadDFrameRec::qloadTotal),
                 	Extractor.$double(LoadDFrameRec::pload),
                 	Extractor.$double(LoadDFrameRec::qload),
                 	Extractor.$double(LoadDFrameRec::ipload),
@@ -60,6 +63,7 @@ public class AclfLoadDFrameAdapter {
                 .columnNames("BusID", "BusNumber", "BusName",
                 			"LoadID", "LoadName", "LoadCode",
                 			"InService",
+                			"PLoadTotal", "QLoadTotal",
                 			"PLoad", "QLoad",
                 			"IPLoad", "IQLoad",
                 			"ZPLoad", "ZQLoad",
@@ -79,6 +83,7 @@ public class AclfLoadDFrameAdapter {
         // Append rows from the AclfNetwork bus object
         for (var bus : aclfNet.getBusList()) {
         	for (var load : bus.getContributeLoadList()) {
+        		double vMag = bus.getVoltageMag();
 	        	appender.append(new LoadDFrameRec(
 	        			bus.getId(),
 	        			bus.getNumber(),
@@ -87,6 +92,8 @@ public class AclfLoadDFrameAdapter {
 	        			load.getName(),
 	        			load.getCode().toString(),
 	        			load.isActive(),
+	        			load.getLoad(vMag).getReal(),
+	        			load.getLoad(vMag).getImaginary(),
 	        			load.getLoadCP().getReal(),
 	        			load.getLoadCP().getImaginary(),
 	        			load.getLoadCI().getReal(),
