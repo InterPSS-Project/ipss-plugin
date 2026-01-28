@@ -1,7 +1,6 @@
 package org.interpss.result.dframe;
 
-import static org.dflib.Exp.$int;
-import static org.dflib.Exp.$str;
+import static org.dflib.Exp.*;
 
 import org.dflib.DataFrame;
 import org.dflib.Extractor;
@@ -70,6 +69,11 @@ public class DFLibSample {
         System.out.println("\n--- Original Data2 ---");
         DataFrame dfSorted = df.sort($int("age").desc());
         System.out.println(dfSorted);
+        
+        System.out.println("\n--- Original Data3 ---");
+        DataFrame dfSorted1 = df.sort($double("salary").desc());
+        // something is wrong with dflib sort on double?
+        System.out.println(dfSorted1);
     }
     
     public static void sample1() {
