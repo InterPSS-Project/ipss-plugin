@@ -64,11 +64,6 @@ import org.interpss.core.dstab.mach.MachineSaturationTest;
 import org.interpss.core.dstab.mach.RoundRotorMachineTest;
 import org.interpss.core.dstab.mach.SMIB_Gen_Test;
 import org.interpss.core.dstab.mach.SalientPoleMachineTest;
-import org.interpss.core.optadj.IEEE14_OptAdj_BasecaseSSAResult_Test;
-import org.interpss.core.optadj.IEEE14_OptAdj_Basecase_Test;
-import org.interpss.core.optadj.IEEE14_OptAdj_N1ScanSSAResult_Test;
-import org.interpss.core.optadj.IEEE14_OptAdj_N1Scan_Test;
-import org.interpss.core.optadj.IEEE14_SensHelper_Test;
 import org.interpss.core.script.mvel.MvelExprEval_Test;
 import org.interpss.core.zeroz.IEEE14ZeroZBranchAclfTest;
 import org.interpss.core.zeroz.IEEE14ZeroZBranchDeconsolidateTest;
@@ -78,13 +73,21 @@ import org.interpss.core.zeroz.algo.IEEE9Bus_ZbrNRSolver_Test;
 import org.interpss.core.zeroz.topo.IEEE14ZeroZBranchFuncLoopTest;
 import org.interpss.core.zeroz.topo.IEEE14ZeroZBranchFuncTest;
 import org.interpss.core.zeroz.topo.ZeroZBranchFuncTest;
-import org.interpss.plugin.beanModel.AclfBeanMapperTest;
+import org.interpss.dep.plugin.beanModel.AclfBeanMapperTest;
+import org.interpss.plugin.exchange.AclfResultExchagneIeee14Test;
+import org.interpss.plugin.exchange.ContingencyExchagneIeee14Test;
 import org.interpss.plugin.lfGCtrl.SwitchedShuntGControlTest;
+import org.interpss.plugin.optadj.IEEE14_OptAdj_BasecaseSSAResult_Test;
+import org.interpss.plugin.optadj.IEEE14_OptAdj_Basecase_Test;
+import org.interpss.plugin.optadj.IEEE14_OptAdj_N1ScanSSAResult_Test;
+import org.interpss.plugin.optadj.IEEE14_OptAdj_N1Scan_Test;
+import org.interpss.plugin.optadj.IEEE14_SensHelper_Test;
 import org.interpss.plugin.piecewise.Acsc5BusTestSubAreaNet;
 import org.interpss.plugin.piecewise.IEEE14TestAclfSubAreaBuild;
 import org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild;
 import org.interpss.plugin.piecewise.IEEE14TestSubAreaSearch;
 import org.interpss.plugin.piecewise.IEEE9BusTestDStabSubAreaNet;
+import org.interpss.plugin.result.AclfResultDFrameTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
@@ -121,6 +124,9 @@ import org.junit.runners.Suite.SuiteClasses;
 	IEEE14ZeroZBranchDeconsolidateTest.class,
 	ZBrAclfDeconOutputTest.class,
 	IEEE9Bus_ZbrNRSolver_Test.class,
+	
+	// DFrame
+	AclfResultDFrameTest.class,
 	
 	// acsc
 	IEEE9Bus_Acsc_Test.class,
@@ -266,6 +272,9 @@ import org.junit.runners.Suite.SuiteClasses;
 	
 	AclfBeanMapperTest.class,
 	
+	// exchange
+	AclfResultExchagneIeee14Test.class,
+	ContingencyExchagneIeee14Test.class,
 	
 	// Piecewise Algorithm
 	IEEE14TestSubAreaSearch.class,
