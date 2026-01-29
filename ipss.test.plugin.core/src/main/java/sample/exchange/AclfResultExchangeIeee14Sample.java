@@ -1,11 +1,9 @@
 package sample.exchange;
 
 import org.interpss.CorePluginFactory;
-import org.interpss.IpssCorePlugin;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.plugin.exchange.AclfResultExchangeAdapter;
-import org.interpss.plugin.exchange.bean.AclfBranchExchangeInfo;
-import org.interpss.plugin.exchange.bean.AclfBusExchangeInfo;
+import org.interpss.plugin.exchange.bean.AclfNetExchangeInfo;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -15,7 +13,7 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 
 public class AclfResultExchangeIeee14Sample {
 	public static void main(String[] args) throws InterpssException {
-		IpssCorePlugin.init();
+		//IpssCorePlugin.init();
 		
 		AclfNetwork aclfNet = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
@@ -28,8 +26,6 @@ public class AclfResultExchangeIeee14Sample {
 		
 		System.out.println("MaxMismatch: " + aclfNet.maxMismatch(AclfMethodType.NR));
 		
-		AclfResultExchangeAdapter adapter = new AclfResultExchangeAdapter(aclfNet);
-		
 		String[] busIds = aclfNet.getBusList().stream()
 				.map(b -> b.getId())
 				.toArray(String[]::new);
@@ -38,16 +34,17 @@ public class AclfResultExchangeIeee14Sample {
 				.map(b -> b.getId())
 				.toArray(String[]::new);
 		
-		adapter.setBusIds(busIds);
-		adapter.fillBusResult();
-		double[] voltMag = adapter.getBusResultBean().volt_mag;
-		double[] voltAng = adapter.getBusResultBean().volt_ang;
+		AclfNetExchangeInfo netInfoBean = new AclfResultExchangeAdapter(aclfNet)
+				.createInfoBean(busIds, branchIds);
 		
-		adapter.setBranchIds(branchIds);
-		adapter.fillBranchResult();
-		double[] pF2T = adapter.getBranchResultBean().p_f2t;
-		double[] qF2T = adapter.getBranchResultBean().q_f2t;
-		double[] pT2F = adapter.getBranchResultBean().p_t2f;
-		double[] qT2F = adapter.getBranchResultBean().q_t2f;
+		 // get bus results
+		double[] voltMag = netInfoBean.busResultBean.volt_mag;
+		double[] voltAng = netInfoBean.busResultBean.volt_ang;
+		
+		// get branch results
+		double[] pF2T = netInfoBean.branchResultBean.p_f2t;
+		double[] qF2T = netInfoBean.branchResultBean.q_f2t;
+		double[] pT2F = netInfoBean.branchResultBean.p_t2f;
+		double[] qT2F = netInfoBean.branchResultBean.q_t2f;
 	}
 }
