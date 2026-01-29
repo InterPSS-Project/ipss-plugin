@@ -24,7 +24,6 @@
 
 package org.interpss.sample.dclf_ca;
 
-import static com.interpss.core.DclfAlgoObjectFactory.createCaMonitoringBranch;
 import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
@@ -32,15 +31,9 @@ import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisA
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertTrue;
-
 import org.interpss.CorePluginFactory;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.AtomicCounter;
-import org.interpss.numeric.exp.IpssNumericException;
-import org.interpss.numeric.util.NumericUtil;
-import org.interpss.plugin.pssl.common.PSSLException;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.algo.parallel.ContingencyAnalysisMonad;
 import com.interpss.common.exp.InterpssException;
@@ -50,9 +43,6 @@ import com.interpss.core.aclf.contingency.Contingency;
 import com.interpss.core.algo.dclf.CaBranchOutageType;
 import com.interpss.core.algo.dclf.CaOutageBranch;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
-import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
-import com.interpss.core.common.OutageConnectivityException;
-import com.interpss.core.common.ReferenceBusException;
 
 public class Ieee14_N1ScanSample {
 	private static String filename = "testData/ieee14.ieee";
@@ -104,11 +94,18 @@ public class Ieee14_N1ScanSample {
 							
 							AclfNetwork aclfNet = dclfAlgo.getAclfNet();
 							
-							// GFS with respect to the reference bus
+							/*
+							 * 用GFS/PTDF调整开断线路的Flow，开断线路通过LODF影响过载线路。
+							 */
+							
+							CaOutageBranch outagedBranch = contingency.getOutageBranch();
+							AclfBranch monitoredBranch = resultRec.aclfBranch;
+							
+							// GFS of monitoredBranch with respect to the reference bus
 							aclfNet.getBusList().stream()
 								.filter(bus -> bus.isGenPV())
 								.forEach(bus -> {
-									double gfs = dclfAlgo.calGenShiftFactor(bus.getId(), resultRec.aclfBranch);    // w.r.p to the Ref Bus
+									double gfs = dclfAlgo.calGenShiftFactor(bus.getId(), monitoredBranch);    // w.r.p to the Ref Bus
 									System.out.println("   GSF Gen@" + bus.getId() + 
 												" on Branch " + resultRec.aclfBranch.getId() + ": " + gfs);
 								});
@@ -119,7 +116,7 @@ public class Ieee14_N1ScanSample {
 							.forEach(bus -> {
 								try {
 									// PTDF of loads with respect to the reference bus
-									double ptdf = dclfAlgo.pTransferDistFactor(bus.getId(), resultRec.aclfBranch);
+									double ptdf = dclfAlgo.pTransferDistFactor(bus.getId(), monitoredBranch);
 									System.out.println("   PTDF Load@" + bus.getId() + 
 											" wrp to RefBus on Branch " + resultRec.aclfBranch.getId() + ": " + ptdf);
 									
@@ -131,6 +128,15 @@ public class Ieee14_N1ScanSample {
 									e.printStackTrace();
 								}    
 							});
+							
+							// LODF of monitoredBranch with respect to the outagedBranch
+							try {
+								double lodf = dclfAlgo.lineOutageDFactor(outagedBranch, monitoredBranch);
+								System.out.println("   LODF of Branch " + monitoredBranch.getId() + 
+										" w.r.t outaged Branch " + outagedBranch.getId() + ": " + lodf);
+							} catch (InterpssException e) {
+								e.printStackTrace();
+							}
 						}
 					});
 		});
