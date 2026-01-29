@@ -17,7 +17,7 @@ if str(project_root) not in sys.path:
 @pytest.fixture(scope="module")
 def start_jvm():
     """Initialize and start the JVM once for all tests in this module."""
-    from src.config.config_mgr import ConfigManager, JvmManager
+    from src.config import ConfigManager, JvmManager
     config_path = str(project_root / "config" / "config.json")
     config = ConfigManager.load_config(config_path)
 
@@ -62,39 +62,28 @@ def test_ieee14_loadflow(start_jvm, init_test_data):
 
     # Step 2: Load data and create the Network Model
     
-    from src.adapter.input_adapter import IeeeFileAdapter
-    #from org.ieee.odm.adapter.ieeecdf.IeeeCDFAdapter import  IEEECDFVersion
+    # import InterPSS modules
+    from src.interpss import ipss
 
-    aclfNet = IeeeFileAdapter.createAclfNet(init_test_data["file_path"])
+    aclfNet = ipss.IeeeFileAdapter.createAclfNet(init_test_data["file_path"])
 
     # Step 3: Run Load Flow Algorithm
-    # InterPSS core related classes
-    from com.interpss.core import LoadflowAlgoObjectFactory
-
-    aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet)
+    aclfAlgo = ipss.LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet)
     aclfAlgo.loadflow()
 
     # Step 4: Process the simulation results
-    # InterPSS aclf result exchange related classes
-    from org.interpss.plugin.exchange import AclfResultExchangeAdapter
+    # Create net result bean set and fill it with load flow results
+    exAdapter = ipss.AclfResultExchangeAdapter(aclfNet)
+    netResult = exAdapter.createInfoBean(init_test_data["bus_ids"], init_test_data["branch_ids"])
 
-    exAdapter = AclfResultExchangeAdapter(aclfNet)
+    volt_mag = np.array(netResult.busResultBean.volt_mag, dtype=np.double, copy=False)
+    volt_ang = np.array(netResult.busResultBean.volt_ang, dtype=np.double, copy=False)
 
-    # Create bus result bean set and fill it with load flow results
-    exAdapter.setBusIds(init_test_data["bus_ids"])
-    exAdapter.fillBusResult()
-
-    volt_mag = np.array(exAdapter.getBusResultBean().volt_mag, dtype=np.double, copy=False)
-    volt_ang = np.array(exAdapter.getBusResultBean().volt_ang, dtype=np.double, copy=False)
-
-    # Create branch result bean set and fill it with load flow results
-    exAdapter.setBranchIds(init_test_data["branch_ids"])
-    exAdapter.fillBranchResult()
-
-    p_f2t = np.array(exAdapter.getBranchResultBean().p_f2t, dtype=np.double, copy=False)
-    q_f2t = np.array(exAdapter.getBranchResultBean().q_f2t, dtype=np.double, copy=False)
+    p_f2t = np.array(netResult.branchResultBean.p_f2t, dtype=np.double, copy=False)
+    q_f2t = np.array(netResult.branchResultBean.q_f2t, dtype=np.double, copy=False)
 
     result = {
+        "hasElemInfo": netResult.hasElemInfo,
         "volt_mag": volt_mag,
         "volt_ang": volt_ang,
         "p_f2t": p_f2t,
@@ -103,6 +92,7 @@ def test_ieee14_loadflow(start_jvm, init_test_data):
     }
 
     # Check for errors
+    assert result["hasElemInfo"], "NetResult should have element info"
     assert result["err"] is None, f"Load flow failed with error: {result['err']}"
 
     # Verify results exist

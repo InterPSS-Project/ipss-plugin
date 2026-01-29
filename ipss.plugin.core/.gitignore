@@ -6,3 +6,8 @@
 .project
 /.settings
 
+/logs/
+
+/.vscode/
+
+/.cursorignore

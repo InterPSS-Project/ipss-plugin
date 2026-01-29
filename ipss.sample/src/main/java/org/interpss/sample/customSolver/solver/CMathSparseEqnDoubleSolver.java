@@ -9,7 +9,6 @@ import org.interpss.numeric.sparse.ISparseEqnDouble;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.sparse.DoubleSEqnElem;
 import com.interpss.core.sparse.DoubleSEqnRow;
 import com.interpss.core.sparse.impl.AbstractSparseEqnDoubleImpl;
@@ -21,7 +20,7 @@ import com.interpss.core.sparse.solver.ISparseEqnSolver;
    using the apache common math lib. It is for illustrating extension implementation.
  */
 public class CMathSparseEqnDoubleSolver extends AbstractSparseEqnDoubleImpl implements ISparseEqnSolver {
-	private static final Logger log = LoggerFactory.getLogger(CoreObjectFactory.class);
+	private static final Logger log = LoggerFactory.getLogger(CMathSparseEqnDoubleSolver.class);
 	
 	// the sparse equation object to be solved
 	private AbstractSparseEqnDoubleImpl eqn;

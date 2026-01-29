@@ -16,7 +16,7 @@ if str(project_root) not in sys.path:
 @pytest.fixture(scope="module")
 def start_jvm():
     """Initialize and start the JVM once for all tests in this module."""
-    from src.config.config_mgr import ConfigManager, JvmManager
+    from src.config import ConfigManager, JvmManager
     config_path = str(project_root / "config" / "config.json")
     config = ConfigManager.load_config(config_path)
 
@@ -42,17 +42,14 @@ def init_test_data():
 
 
 def test_loadflow(start_jvm, init_test_data):
-    # Load data and create the Network Model
-    from src.adapter.input_adapter import PsseRawFileAdapter
-    # from org.ieee.odm.adapter.psse.PSSEAdapter import PsseVersion
+    # import InterPSS modules
+    from src.interpss import ipss
 
-    aclfNet = PsseRawFileAdapter.createAclfNet(init_test_data["file_path"], PsseRawFileAdapter.version.PSSE_30)
+    # Load data and create the Network Model
+    aclfNet = ipss.PsseRawFileAdapter.createAclfNet(init_test_data["file_path"], ipss.PsseRawFileAdapter.version.PSSE_30)
 
     # Run Load Flow Algorithm
-    # InterPSS core related classes
-    from com.interpss.core import LoadflowAlgoObjectFactory
-
-    aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet)
+    aclfAlgo = ipss.LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet)
     aclfAlgo.loadflow()
 
     assert aclfNet.isLfConverged(), "LF should be converged"
