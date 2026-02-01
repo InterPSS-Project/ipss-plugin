@@ -115,8 +115,13 @@ public class DclfOutFunc {
 						0.0 : Math.toDegrees(algo.getBusAngle(n));
 				double pgen =  (bus.isRefBus()? algo.getBusPower(dclfBus) : bus.getGenP()) * baseMva; 
 				pgen += dclfBus.getGenList().stream().mapToDouble(g -> g.getAdjust()).sum()* baseMva;
+				// Hvdc Dclf Handling
+				if (bus.getExternalPowerIntoNet() != null)
+					pgen -= bus.getExternalPowerIntoNet().getReal() * baseMva;
+				
 				double pload =  bus.getLoadP() * baseMva; 
 				pload += dclfBus.getLoadList().stream().mapToDouble(l -> l.getAdjust()).sum()* baseMva;
+				
 				double pshunt = bus.getShuntY().getReal() * baseMva; 
 				if (commaDelimited)
 					str.append(Number2String.toFixLengthStr(8, bus.getId()) + ","
