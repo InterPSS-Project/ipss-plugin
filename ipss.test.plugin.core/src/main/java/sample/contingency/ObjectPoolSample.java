@@ -9,8 +9,8 @@ import java.util.stream.IntStream;
 
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.interpss.plugin.contingency.ParallelContingencyAnalyzer;
-import org.interpss.plugin.contingency.result.ContingencyResultRec;
+import org.interpss.plugin.contingency.ParallelAclfContingencyAnalyzer;
+import org.interpss.plugin.contingency.result.AclfContingencyResultRec;
 import org.interpss.plugin.contingency.result.ContingencyResultContainer;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.util.pool.AclfNetObjPoolManager;
@@ -67,17 +67,17 @@ public class ObjectPoolSample {
     	ObjectPool<AclfNetwork> pool = new AclfNetObjPoolManager(seedAclfNet, config)
     										.getPool(); 
     	
-    	ContingencyResultContainer<ContingencyResultRec> result = runParallelTasks(pool);
+    	ContingencyResultContainer<AclfContingencyResultRec> result = runParallelTasks(pool);
 
-		new ParallelContingencyAnalyzer<ContingencyResultRec>(seedAclfNet).printDetailedResults(result);
+		new ParallelAclfContingencyAnalyzer<AclfContingencyResultRec>(seedAclfNet).printDetailedResults(result);
     }
     
-    public static ContingencyResultContainer<ContingencyResultRec> runParallelTasks(ObjectPool<AclfNetwork> pool) {
+    public static ContingencyResultContainer<AclfContingencyResultRec> runParallelTasks(ObjectPool<AclfNetwork> pool) {
 
 		 long startTime = System.currentTimeMillis();
 
 		    // Thread-safe map to store results
-        Map<String, ContingencyResultRec> convergenceResults = new ConcurrentHashMap<>();
+        Map<String, AclfContingencyResultRec> convergenceResults = new ConcurrentHashMap<>();
 
 		int totalCases = 100;
 
@@ -115,7 +115,7 @@ public class ObjectPoolSample {
 					boolean isConverged = parallelAlgo.loadflow();
 					
 					// Store result in thread-safe map
-					ContingencyResultRec rec = new ContingencyResultRec(isConverged);
+					AclfContingencyResultRec rec = new AclfContingencyResultRec(isConverged);
 					convergenceResults.put(branchId, rec);
 
 	                 // 3. add any cleanup code here if necessary before returning the object
