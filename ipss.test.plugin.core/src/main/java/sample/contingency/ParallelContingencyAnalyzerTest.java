@@ -1,6 +1,6 @@
 package sample.contingency;
 
-import org.interpss.plugin.contingency.ContingencyConfig;
+import org.interpss.plugin.contingency.AclfContingencyConfig;
 
 /**
  * Simple test to verify ParallelContingencyAnalyzer compiles and basic functionality works.
@@ -16,8 +16,8 @@ public class ParallelContingencyAnalyzerTest {
             System.out.println("=== ParallelContingencyAnalyzer Test ===");
             
             // Test configuration creation
-            ContingencyConfig config = 
-            		ContingencyConfig.createDefaultConfig();
+            AclfContingencyConfig config = 
+            		AclfContingencyConfig.createDefaultConfig();
             
             System.out.println("Default configuration created successfully:");
             System.out.println("  Max Iterations: " + config.getMaxIterations());

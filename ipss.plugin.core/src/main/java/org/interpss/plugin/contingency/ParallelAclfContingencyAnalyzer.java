@@ -5,7 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.IntStream;
 
 import org.interpss.plugin.contingency.result.ContingencyResultContainer;
-import org.interpss.plugin.contingency.result.ContingencyResultRec;
+import org.interpss.plugin.contingency.result.AclfContingencyResultRec;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
@@ -21,13 +21,13 @@ import com.interpss.state.aclf.AclfNetworkState;
  * 
  * @author InterPSS Team
  */
-public class ParallelContingencyAnalyzer <TR extends ContingencyResultRec> extends NetworkRefImpl<AclfNetwork> { 
+public class ParallelAclfContingencyAnalyzer <TR extends AclfContingencyResultRec> extends NetworkRefImpl<AclfNetwork> { 
 	/**
 	 * Constructor
 	 * 
 	 * @param net  the AC load flow network
 	 */
-	public ParallelContingencyAnalyzer(AclfNetwork net) {
+	public ParallelAclfContingencyAnalyzer(AclfNetwork net) {
 		setNetwork(net);
 	}
 	
@@ -41,7 +41,7 @@ public class ParallelContingencyAnalyzer <TR extends ContingencyResultRec> exten
      * @return ContingencyResult containing analysis results
      */
     public ContingencyResultContainer<TR> analyzeContingencies(int totalCases, 
-                                                       ContingencyConfig config, boolean useParallel) {
+                                                       AclfContingencyConfig config, boolean useParallel) {
         
         System.out.println("Starting " + (useParallel ? "parallel" : "sequential") + 
                          " contingency analysis with " + totalCases + " cases...");
@@ -80,7 +80,7 @@ public class ParallelContingencyAnalyzer <TR extends ContingencyResultRec> exten
                         boolean isConverged = parallelAlgo.loadflow();
                         
                         // Store result in thread-safe map
-                        ContingencyResultRec rec = new ContingencyResultRec(isConverged);
+                        AclfContingencyResultRec rec = new AclfContingencyResultRec(isConverged);
                         caResults.put(branchId, (TR)rec);
                         
                         return isConverged;
@@ -115,20 +115,20 @@ public class ParallelContingencyAnalyzer <TR extends ContingencyResultRec> exten
      * Convenience method with default configuration and parallel processing enabled
      */
     public ContingencyResultContainer<TR> analyzeContingencies(int totalCases) {
-        return analyzeContingencies(totalCases, new ContingencyConfig(), true);
+        return analyzeContingencies(totalCases, new AclfContingencyConfig(), true);
     }
     
     /**
      * Convenience method with default configuration and configurable parallel processing
      */
     public ContingencyResultContainer<TR> analyzeContingencies(int totalCases, boolean useParallel) {
-        return analyzeContingencies(totalCases, new ContingencyConfig(), useParallel);
+        return analyzeContingencies(totalCases, new AclfContingencyConfig(), useParallel);
     }
     
     /**
      * Configure the load flow algorithm with the specified parameters
      */
-    private static void configureAlgorithm(LoadflowAlgorithm algo, ContingencyConfig config) {
+    private static void configureAlgorithm(LoadflowAlgorithm algo, AclfContingencyConfig config) {
         algo.getDataCheckConfig().setTurnOffIslandBus(config.isTurnOffIslandBus());
         algo.getDataCheckConfig().setAutoTurnLine2Xfr(config.isAutoTurnLine2Xfr());
         algo.setLfMethod(config.getLfMethod());
@@ -143,7 +143,7 @@ public class ParallelContingencyAnalyzer <TR extends ContingencyResultRec> exten
     /**
      * Print detailed results - useful for debugging from Python
      */
-    public static <TR extends ContingencyResultRec> void printDetailedResults(ContingencyResultContainer<TR> result) {
+    public static <TR extends AclfContingencyResultRec> void printDetailedResults(ContingencyResultContainer<TR> result) {
         System.out.println("\n=== Detailed Contingency Analysis Results ===");
         System.out.println("Total Cases: " + result.getTotalCases());
         System.out.println("Successful Cases: " + result.getTotalSuccessCount());
