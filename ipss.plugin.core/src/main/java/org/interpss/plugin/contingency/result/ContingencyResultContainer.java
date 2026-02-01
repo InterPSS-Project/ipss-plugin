@@ -7,7 +7,7 @@ import java.util.Map;
  * 
  * @author InterPSS Team
  */
-public class ContingencyResultContainer <TR extends ContingencyResultRec> {
+public class ContingencyResultContainer <TR extends AclfContingencyResultRec> {
         private final Map<String, TR> caResults;
         private final long totalSuccessCount;
         private final int totalCases;
