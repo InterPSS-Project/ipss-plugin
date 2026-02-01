@@ -1,4 +1,4 @@
-package sample.dclf;
+package sample.dclf.bus25k;
 
 import java.util.ArrayList;
 import java.util.List;
