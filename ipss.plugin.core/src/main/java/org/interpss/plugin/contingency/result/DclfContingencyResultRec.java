@@ -20,4 +20,10 @@ public class DclfContingencyResultRec {
         public Double getPostFlowMW() { return postFlowMW; }
         public Double getLineRatingMW() { return lineRatingMW; }
         public Double getLoadingPercent() { return loadingPercent; }
+
+        @Override
+        public String toString() {
+            return String.format("{\n  \"branch_id\": \"%s\",\n  \"contingency_name\": \"%s\",\n  \"post_flow_mw\": %.2f,\n  \"line_rating_mw\": %.2f,\n  \"loading_percent\": %.2f\n}", 
+                branchId, contingencyName, postFlowMW, lineRatingMW, loadingPercent);
+        }
     }
