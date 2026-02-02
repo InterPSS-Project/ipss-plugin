@@ -24,10 +24,6 @@
 
 package org.interpss.sample.dclf_ca;
 
-import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
-import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
-import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +33,9 @@ import org.interpss.numeric.datatype.AtomicCounter;
 
 import com.interpss.algo.parallel.ContingencyAnalysisMonad;
 import com.interpss.common.exp.InterpssException;
+import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
+import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
+import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.contingency.Contingency;
@@ -95,7 +94,10 @@ public class Ieee14_N1ScanSample {
 							AclfNetwork aclfNet = dclfAlgo.getAclfNet();
 							
 							/*
-							 * 用GFS/PTDF调整开断线路的Flow，开断线路通过LODF影响过载线路。
+							 * GSF/PTDF are for capturing the impact of generation and load changes on the flow of a line; 
+							 * To capture the impacts of a line outage on other lines, line outage distribution factor (LODF) is used; 
+							 * 
+							 * The GSF of generation bus i w.r.t line j when line k is outaged is GSF_ijk = GSF_ij + GSF_ik*LODF_kj.
 							 */
 							
 							CaOutageBranch outagedBranch = contingency.getOutageBranch();
@@ -118,7 +120,7 @@ public class Ieee14_N1ScanSample {
 									// PTDF of loads with respect to the reference bus
 									double ptdf = dclfAlgo.pTransferDistFactor(bus.getId(), monitoredBranch);
 									System.out.println("   PTDF Load@" + bus.getId() + 
-											" wrp to RefBus on Branch " + resultRec.aclfBranch.getId() + ": " + ptdf);
+											" wrt to RefBus on Branch " + resultRec.aclfBranch.getId() + ": " + ptdf);
 									
 									// PTDF of loads with respect to gen@Bus-2
 									ptdf = dclfAlgo.pTransferDistFactor(bus.getId(), "Bus2", resultRec.aclfBranch);
