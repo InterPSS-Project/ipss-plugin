@@ -1,10 +1,15 @@
 package sample.dclf;
 
+import org.interpss.display.AclfOutFunc;
 import org.interpss.display.DclfOutFunc;
+import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.DclfAlgoObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.algo.AclfMethodType;
+import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.algo.dclf.DclfAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
@@ -16,7 +21,7 @@ public class Dclf_Hvdc2TVSC_5BusSample {
 
   		//HvdcLine2TVSC<AclfBus> vscHVDC = (HvdcLine2TVSC<AclfBus>) net.getSpecialBranchList().get(0);
   		//System.out.println(vscHVDC.toString(net.getBaseKva()));
-  		/*
+  		
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.NR);
 	  	algo.setMaxIterations(20);
@@ -24,7 +29,7 @@ public class Dclf_Hvdc2TVSC_5BusSample {
 	  	algo.loadflow();		
 	  	
 	  	System.out.println(AclfOutFunc.loadFlowSummary(net, false, false));
-		*/
+		
 	  	DclfAlgorithm dclfAlgo = DclfAlgoObjectFactory.createDclfAlgorithm(net, CacheType.SenNotCached, true);
 		dclfAlgo.calculateDclf(DclfMethod.INC_LOSS);
 		
@@ -39,6 +44,12 @@ public class Dclf_Hvdc2TVSC_5BusSample {
   3                   ConstP        1.05048       -3.98       0.0000    0.0000    3.7000    1.3000   3          
   4            PV                   1.05000       16.94       5.0000    1.0960    0.0000    0.0000   4          
   5            Swing                1.05000        0.00       2.4274    1.8182    0.0000    0.0000   5  
+ 
+                       HVDV Line Results
+
+         BranchID            Rectifier(1)      Inverter(1)       Rectifier(2)       Inverter(2) 
+ ---------------------     ----------------  ----------------  ----------------  ----------------
+2->1(Line-1)                   1.0     0.0      -1.0    -0.2       0.0     0.0       0.0     0.0
  
       DC Loadflow Results
 
