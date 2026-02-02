@@ -15,6 +15,7 @@ import org.interpss.plugin.contingency.util.ContingencyFileUtil;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 
+import com.interpss.common.exp.InterpssException;
 import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
@@ -29,7 +30,7 @@ import com.interpss.core.algo.dclf.DclfMethod;
 public class Texas2k_CASample {
 
     public static void main(String args[]) throws Exception {
-        AclfNetwork net = IpssAdapter.importAclfNet("ipss-plugin/ipss.sample/testData/psse/Texas2k_series24_case1_2016summerPeak_v36.RAW")
+        AclfNetwork net = IpssAdapter.importAclfNet("ipss-plugin/ipss.sample/testData/psse/texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW")
 				.setFormat(IpssAdapter.FileFormat.PSSE)
 				.psseVersion(PsseVersion.PSSE_36)
 				.load()
@@ -40,7 +41,7 @@ public class Texas2k_CASample {
 		algo.calculateDclf(DclfMethod.INC_LOSS);
 
 		//import contingency definitions from CA file
-		File contFile = new File("ipss-plugin/ipss.sample/testData/psse/2k_contingencies_115kVAbove.json");
+		File contFile = new File("ipss-plugin/ipss.sample/testData/psse/texas2k/2k_contingencies_115kVAbove.json");
 		List<BranchContingencyRecord> contingencies = ContingencyFileUtil.importContingenciesFromJson(contFile);
 		List<Contingency> contList = new java.util.ArrayList<>();
 
@@ -74,7 +75,7 @@ public class Texas2k_CASample {
 		}
 
 		//import monitored branches from JSON file
-		File monFile = new File("ipss-plugin/ipss.sample/testData/psse/2k_monitored_branches.json");
+		File monFile = new File("ipss-plugin/ipss.sample/testData/psse/texas2k/2k_monitored_branches.json");
 		List<MonitoredBranchRecord> monitoredBranches = ContingencyFileUtil.importMonitoredBranchRecordsFromJson(monFile);
 
 		Set<String> monitoredBranchIds = monitoredBranches.stream()
@@ -106,7 +107,7 @@ public class Texas2k_CASample {
 
 		for	 (DclfContingencyResultRec resultRec : results) {
 			AclfBranch	 monitoredBranch = (AclfBranch) net.getBranch(resultRec.getBranchId());
-			net.getBusList().stream()
+			net.getBusList().parallelStream()
 				.filter(bus -> bus.isActive() && (bus.isGenPV() || bus.isGenPQ()))
 				.forEach(bus -> {
 					double gfs = algo.calGenShiftFactor(bus.getId(), monitoredBranch);    // w.r.p to the Ref Bus
@@ -115,6 +116,35 @@ public class Texas2k_CASample {
 								" on Branch " + resultRec.getBranchId() + ": " + gfs);
 					}
 				});
+		}
+
+		// PTDF of loads
+
+		double ptdfThreshold = 0.05; // only print PTDF values above this threshold
+		for	 (DclfContingencyResultRec resultRec : results) {
+			AclfBranch	 monitoredBranch = (AclfBranch) net.getBranch(resultRec.getBranchId());
+		
+			net.getBusList().stream()
+			.filter(bus -> bus.isActive() && bus.isLoad() && !bus.isGen())
+			.forEach(bus -> {
+				try {
+					// PTDF of loads with respect to the reference bus
+					double ptdf = algo.pTransferDistFactor(bus.getId(), monitoredBranch);
+					if(Math.abs(ptdf) > ptdfThreshold) {
+						System.out.println("   PTDF Load@" + bus.getId() + 
+							" wrt to RefBus on Branch " + resultRec.getBranchId() + ": " + ptdf);
+					}
+
+					/*
+					// PTDF of loads with respect to gen@Bus-2 
+									ptdf = dclfAlgo.pTransferDistFactor(bus.getId(), "Bus2", resultRec.aclfBranch);
+									System.out.println("   PTDF Inject@" + bus.getId() + 
+											" Withdraw@Bus-2 on Branch " + resultRec.aclfBranch.getId() + ": " + ptdf);
+					 */
+				} catch (InterpssException e) {
+					e.printStackTrace();
+				}    
+			});
 		}
 
     }
