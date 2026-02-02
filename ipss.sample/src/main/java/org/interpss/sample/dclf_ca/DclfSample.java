@@ -24,7 +24,6 @@
 
 package org.interpss.sample.dclf_ca;
 
-import org.interpss.IpssCorePlugin;
 import org.interpss.display.DclfOutFunc;
 
 import com.interpss.core.CoreObjectFactory;
@@ -36,7 +35,6 @@ import com.interpss.simu.util.sample.SampleTestingCases;
 
 public class DclfSample {
 	public static void main(String args[]) throws Exception {
-		IpssCorePlugin.init();
 		
 		AclfNetwork aclfNet = CoreObjectFactory.createAclfNetwork();
 		SampleTestingCases.load_LF_5BusSystem(aclfNet);

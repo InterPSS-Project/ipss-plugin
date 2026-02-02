@@ -1,6 +1,6 @@
 package org.interpss.plugin.contingency.result;
 
-public class PSSEContingencyResultRec extends ContingencyResultRec {
+public class PSSEContingencyResultRec extends AclfContingencyResultRec {
 	private int contType = 0; // 0 - BaseCase, 1 - N-1, 2 - N-2;
 	private double largestBusMismatch = 0.0;
 	private int noLoadViolation = 0;

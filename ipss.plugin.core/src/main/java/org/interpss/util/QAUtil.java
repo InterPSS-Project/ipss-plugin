@@ -294,6 +294,7 @@ public static AclfNetwork equivHVDC(AclfNetwork net) {
 		// calculate the hvdc branch power
 		for (Branch bra : net.getSpecialBranchList()) {
 			if (!bra.isActive()) continue;
+			//System.out.println("Processing HVDC Branch: " + bra.getId());
 			if (bra instanceof HvdcLine2TLCC) {
 				HvdcLine2TLCC<AclfBus> hvdcBranch = (HvdcLine2TLCC<AclfBus>) bra;
 				hvdcBranch.initLoadflow();
@@ -301,7 +302,11 @@ public static AclfNetwork equivHVDC(AclfNetwork net) {
 				//hvdcBranch.getFromBus().
 				Complex s = hvdcBranch.powerIntoConverter(hvdcBranch.getFromBusId());
 				AclfBus bus = net.getBus(hvdcBranch.getFromBusId());
-				if(bus != null && bus.isActive()){
+				// if(bus.getId().equals("Bus667661")){
+				// 	System.out.println("HVDC From Bus Power: " + s);
+				// }
+
+				if(bus != null){
 					// create a load object with the total power at the boundary bus
 					AclfLoad load = CoreObjectFactory.createAclfLoad(hvdcBranch.getId() + "_" + hvdcBranch.getFromBusId());
 					bus.getContributeLoadList().add(load);
@@ -313,7 +318,7 @@ public static AclfNetwork equivHVDC(AclfNetwork net) {
 				//to bus
 				Complex sTo = hvdcBranch.powerIntoConverter(hvdcBranch.getToBusId());
 				AclfBus busTo = net.getBus(hvdcBranch.getToBusId());
-				if(busTo != null && busTo.isActive()){
+				if(busTo != null){
 					// create a load object with the total power at the boundary bus
 					AclfLoad loadTo = CoreObjectFactory.createAclfLoad(hvdcBranch.getId() + "_" + hvdcBranch.getToBusId());
 					busTo.getContributeLoadList().add(loadTo);
@@ -324,9 +329,117 @@ public static AclfNetwork equivHVDC(AclfNetwork net) {
 				//turn off the hvdc branch
 				bra.setStatus(false);
 
-			} else if (bra instanceof HvdcLine2TVSC) {
+			} else if (bra instanceof HvdcLine2TVSC && bra.isActive()) {
 				HvdcLine2TVSC<AclfBus> hvdcBranch = (HvdcLine2TVSC<AclfBus>) bra;
+				//turn off the hvdc branch
+				bra.setStatus(false);
+
+				//from bus
+				AclfBus busFrom = net.getBus(hvdcBranch.getFromBusId());
+				if(busFrom != null && busFrom.isActive()){
+					//hvdcBranch.initLoadflow();
+					// create a load object with the total power at the boundary bus
+					AclfLoad loadFrom = CoreObjectFactory.createAclfLoad(hvdcBranch.getId() + "_" + hvdcBranch.getFromBusId());
+					busFrom.getContributeLoadList().add(loadFrom);
+					loadFrom.setLoadCP(busFrom.mismatch(AclfMethodType.NR));
+					loadFrom.setCode(AclfLoadCode.CONST_P); // set load code to CONST_P
+					busFrom.setLoadCode(AclfLoadCode.CONST_P);
+				}
+				//to bus
+				AclfBus busTo = net.getBus(hvdcBranch.getToBusId());
+				if(busTo != null && busTo.isActive()){
+					// create a load object with the total power at the boundary bus
+					AclfLoad loadTo = CoreObjectFactory.createAclfLoad(hvdcBranch.getId() + "_" + hvdcBranch.getToBusId());
+					busTo.getContributeLoadList().add(loadTo);
+					loadTo.setLoadCP(busTo.mismatch(AclfMethodType.NR));
+					loadTo.setCode(AclfLoadCode.CONST_P); // set load code to CONST_P
+					busTo.setLoadCode(AclfLoadCode.CONST_P);
+				}
+				
+			}
+		}
+
+		return net;
+	}
+
+	public static AclfNetwork equivLCCHVDC(AclfNetwork net) {
+
+		// calculate the hvdc branch power
+		for (Branch bra : net.getSpecialBranchList()) {
+			if (!bra.isActive()) continue;
+			System.out.println("Processing HVDC Branch: " + bra.getId());
+			if (bra instanceof HvdcLine2TLCC) {
+				HvdcLine2TLCC<AclfBus> hvdcBranch = (HvdcLine2TLCC<AclfBus>) bra;
 				hvdcBranch.initLoadflow();
+				//add equivalent load to the from bus based on the power into the converter
+				//hvdcBranch.getFromBus().
+				Complex s = hvdcBranch.powerIntoConverter(hvdcBranch.getFromBusId());
+				AclfBus bus = net.getBus(hvdcBranch.getFromBusId());
+				if(bus.getId().equals("Bus667661")){
+					System.out.println("HVDC From Bus Power: " + s);
+				}
+
+				if(bus != null){
+					// create a load object with the total power at the boundary bus
+					AclfLoad load = CoreObjectFactory.createAclfLoad(hvdcBranch.getId() + "_" + hvdcBranch.getFromBusId());
+					bus.getContributeLoadList().add(load);
+					load.setLoadCP(s);
+					load.setCode(AclfLoadCode.CONST_P); // set load code to CONST_P
+					bus.setLoadCode(AclfLoadCode.CONST_P);
+				}
+
+				//to bus
+				Complex sTo = hvdcBranch.powerIntoConverter(hvdcBranch.getToBusId());
+				AclfBus busTo = net.getBus(hvdcBranch.getToBusId());
+				if(busTo != null){
+					// create a load object with the total power at the boundary bus
+					AclfLoad loadTo = CoreObjectFactory.createAclfLoad(hvdcBranch.getId() + "_" + hvdcBranch.getToBusId());
+					busTo.getContributeLoadList().add(loadTo);
+					loadTo.setLoadCP(sTo);
+					loadTo.setCode(AclfLoadCode.CONST_P); // set load code to CONST_P
+					busTo.setLoadCode(AclfLoadCode.CONST_P);
+				}
+				//turn off the hvdc branch
+				bra.setStatus(false);
+
+			} 
+		}
+
+		return net;
+	}
+
+	public static AclfNetwork equivVSCHVDC(AclfNetwork net) {
+
+		// calculate the hvdc branch power
+		for (Branch bra : net.getSpecialBranchList()) {
+			if (!bra.isActive()) continue;
+			if (bra instanceof HvdcLine2TVSC && bra.isActive()) {
+				HvdcLine2TVSC<AclfBus> hvdcBranch = (HvdcLine2TVSC<AclfBus>) bra;
+				//turn off the hvdc branch
+				bra.setStatus(false);
+
+				//from bus
+				AclfBus busFrom = net.getBus(hvdcBranch.getFromBusId());
+				if(busFrom != null && busFrom.isActive()){
+					//hvdcBranch.initLoadflow();
+					// create a load object with the total power at the boundary bus
+					AclfLoad loadFrom = CoreObjectFactory.createAclfLoad(hvdcBranch.getId() + "_" + hvdcBranch.getFromBusId());
+					busFrom.getContributeLoadList().add(loadFrom);
+					loadFrom.setLoadCP(busFrom.mismatch(AclfMethodType.NR));
+					loadFrom.setCode(AclfLoadCode.CONST_P); // set load code to CONST_P
+					busFrom.setLoadCode(AclfLoadCode.CONST_P);
+				}
+				//to bus
+				AclfBus busTo = net.getBus(hvdcBranch.getToBusId());
+				if(busTo != null && busTo.isActive()){
+					// create a load object with the total power at the boundary bus
+					AclfLoad loadTo = CoreObjectFactory.createAclfLoad(hvdcBranch.getId() + "_" + hvdcBranch.getToBusId());
+					busTo.getContributeLoadList().add(loadTo);
+					loadTo.setLoadCP(busTo.mismatch(AclfMethodType.NR));
+					loadTo.setCode(AclfLoadCode.CONST_P); // set load code to CONST_P
+					busTo.setLoadCode(AclfLoadCode.CONST_P);
+				}
+				
 			}
 		}
 
