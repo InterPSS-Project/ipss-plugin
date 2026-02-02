@@ -48,6 +48,9 @@ import com.interpss.core.aclf.adpter.AclfGenBusAdapter;
 import com.interpss.core.aclf.adpter.AclfPSXformerAdapter;
 import com.interpss.core.aclf.contingency.AclfBranchRating;
 import com.interpss.core.aclf.contingency.CAViolationType;
+import com.interpss.core.aclf.hvdc.HvdcLine2T;
+import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
+import com.interpss.core.aclf.hvdc.HvdcLine2TVSC;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.path.NetPathWalkDirectionEnum;
 import com.interpss.core.datatype.Mismatch;
@@ -134,6 +137,8 @@ public class AclfOutFunc {
 			//emsg.printStackTrace();
 			str.append(emsg.toString());
 		}
+		
+		str.append(hvdcLine(net));
 		
 		if (net.getChildNetWrapperList().size() > 0) {
 			/*
@@ -500,7 +505,76 @@ public class AclfOutFunc {
 			}
 		}
 	}
-
+	
+	/**
+	 * output Hvdc Line results
+	 * 
+	 * @param net
+	 * @return
+	 */
+	public static StringBuffer hvdcLine(BaseAclfNetwork<?,?> net) {
+		StringBuffer str = new StringBuffer("");
+		if (net.hasHvdc()) {
+			str.append("\n\n");
+			str
+					.append("                        HVDV Line Results\n\n");
+			str
+					.append("         BranchID            Rectifier(1)      Inverter(1)       Rectifier(2)       Inverter(2) \n");
+			str
+					.append(" ---------------------     ----------------  ----------------  ----------------  ----------------\n");
+			for (Branch b : net.getSpecialBranchList()) {
+				if (b instanceof HvdcLine2T<?>) {
+					HvdcLine2T<?> hvdc = (HvdcLine2T<?>) b;
+					str.append(Number2String.toStr(-25, hvdc.getId()));
+					double rec1P = 0.0;
+					double rec1Q = 0.0;
+					double inv1P = 0.0;
+					double inv1Q = 0.0;
+					double rec2P = 0.0;
+					double rec2Q = 0.0;
+					double inv2P = 0.0;
+					double inv2Q = 0.0;
+					
+					if (hvdc instanceof HvdcLine2TLCC<?>) {
+						HvdcLine2TLCC<?> hvdc2T = (HvdcLine2TLCC<?>) hvdc;
+						rec1P = hvdc2T.getRectifier().powerIntoConverter().getReal();
+						rec1Q = hvdc2T.getRectifier().powerIntoConverter().getImaginary();
+						inv1P = hvdc2T.getInverter().powerIntoConverter().getReal();
+						inv1Q = hvdc2T.getInverter().powerIntoConverter().getImaginary();
+						if (hvdc2T.getRectifier2() != null) {
+							rec2P = hvdc2T.getRectifier2().powerIntoConverter().getReal();
+							rec2Q = hvdc2T.getRectifier2().powerIntoConverter().getImaginary();
+						}
+						if (hvdc2T.getInverter2() != null) {
+							inv2P = hvdc2T.getInverter2().powerIntoConverter().getReal();
+							inv2Q = hvdc2T.getInverter2().powerIntoConverter().getImaginary();
+						}
+					}
+					else if (hvdc instanceof HvdcLine2TVSC<?>) {
+						HvdcLine2TVSC<?> hvdc2T = (HvdcLine2TVSC<?>) hvdc;
+						rec1P = hvdc2T.getRecConverter().powerIntoConverter().getReal();
+						rec1Q = hvdc2T.getRecConverter().powerIntoConverter().getImaginary();
+						inv1P = hvdc2T.getInvConverter().powerIntoConverter().getReal();
+						inv1Q = hvdc2T.getInvConverter().powerIntoConverter().getImaginary();
+					}
+					str.append("  " + Number2String.toStr("####0.0", rec1P));
+					str.append(" " + Number2String.toStr("####0.0", rec1Q));
+					str.append("   " + Number2String.toStr("####0.0", inv1P));
+					str.append(" " + Number2String.toStr("####0.0", inv1Q));
+					str.append("   " + Number2String.toStr("####0.0", rec2P));
+					str.append(" " + Number2String.toStr("####0.0", rec2Q));
+					str.append("   " + Number2String.toStr("####0.0", inv2P));
+					str.append(" " + Number2String.toStr("####0.0", inv2Q));
+				}
+			}
+		}
+		return str;
+	}
+/*
+         BranchID            Rectifier(1)      Inverter(1)       Rectifier(2)       Inverter(2) 
+ ---------------------     ----------------  ----------------  ----------------  ----------------
+4->5(Line-1)                   0.0     0.0       0.0     0.0       0.0     0.0       0.0     0.0                  0.0     0.0       0.0     0.0       0.0     0.0       0.0     0.0
+ */
 	/**
 	 * output PV bus limit adjustment result
 	 * 
