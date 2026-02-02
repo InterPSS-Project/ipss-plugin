@@ -24,7 +24,6 @@
 
 package org.interpss.sample.dclf_ca;
 
-import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.plugin.pssl.common.PSSLException;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
@@ -46,7 +45,6 @@ import com.interpss.core.common.ReferenceBusException;
 
 public class Ieee14_CASample {
 	public static void main(String args[]) throws Exception {
-		IpssCorePlugin.init();
 		
 		singleOutageSample();
 		
