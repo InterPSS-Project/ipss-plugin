@@ -15,9 +15,9 @@ import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 import com.interpss.simu.util.sample.SampleHvdcTestingCases;
 
-public class Dclf_Hvdc2TLCC_5BusSample {
+public class Dclf_Hvdc2TLCCDoubleLayered_5BusSample {
 	public static void main(String args[]) throws InterpssException {
-  		AclfNetwork net = SampleHvdcTestingCases.create2TSingleLCC();
+  		AclfNetwork net = SampleHvdcTestingCases.create2TDoubleLayered();
 		
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.NR);
@@ -51,8 +51,7 @@ public class Dclf_Hvdc2TLCC_5BusSample {
 
          BranchID            Rectifier(1)      Inverter(1)       Rectifier(2)       Inverter(2) 
  ---------------------     ----------------  ----------------  ----------------  ----------------
-4_1->5_1(Line-1)               3.5     1.4      -3.4     1.5       0.0     0.0       0.0     0.0
-
+4->5(Line-1)                   3.5     1.4      -1.7     0.7       0.0     0.0      -1.7     0.7  
   
       DC Loadflow Results
 
