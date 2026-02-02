@@ -7,16 +7,16 @@ import com.interpss.core.algo.AclfMethodType;
  * 
  * @author InterPSS Team
  */
-public class ContingencyConfig  {
-    private boolean turnOffIslandBus = true;
-    private boolean autoTurnLine2Xfr = true;
+public class AclfContingencyConfig  extends BaseContingencyConfig {
+    // Load flow options
+ ;
     private AclfMethodType lfMethod = AclfMethodType.NR;
     private boolean applyAdjustAlgo = false;
     private boolean nonDivergent = true;
     private int maxIterations = 50;
     private double tolerance = 0.005;
     
-    private double overloadThreshold = 100.0; // in percent
+
     
     // Dclf screening options
     private boolean dclfScreening = false;
@@ -24,13 +24,7 @@ public class ContingencyConfig  {
     private double dcLoadingCutoff = 100.0; // in percent
     private double dcFlowChangeCutoff = 200.0; // in percent of base case flow
     
-    // Getters and setters
-    public boolean isTurnOffIslandBus() { return turnOffIslandBus; }
-    public void setTurnOffIslandBus(boolean turnOffIslandBus) { this.turnOffIslandBus = turnOffIslandBus; }
-    
-    public boolean isAutoTurnLine2Xfr() { return autoTurnLine2Xfr; }
-    public void setAutoTurnLine2Xfr(boolean autoTurnLine2Xfr) { this.autoTurnLine2Xfr = autoTurnLine2Xfr; }
-    
+
     public AclfMethodType getLfMethod() { return lfMethod; }
     public void setLfMethod(AclfMethodType lfMethod) { this.lfMethod = lfMethod; }
     
@@ -46,9 +40,7 @@ public class ContingencyConfig  {
     public double getTolerance() { return tolerance; }
     public void setTolerance(double tolerance) { this.tolerance = tolerance; }
     
-    public double getOverloadThreshold() { return overloadThreshold; }
-    public void setOverloadThreshold(double overloadThreshold) { this.overloadThreshold = overloadThreshold; }
-    
+
     public boolean isDclfScreening() { return dclfScreening; }
     public void setDclfScreening(boolean dclfScreening) { this.dclfScreening = dclfScreening; }
     
@@ -64,7 +56,7 @@ public class ContingencyConfig  {
     /**
      * Create a default configuration instance for Python convenience
      */
-    public static ContingencyConfig createDefaultConfig() {
-        return new ContingencyConfig();
+    public static AclfContingencyConfig createDefaultConfig() {
+        return new AclfContingencyConfig();
     }
 }

@@ -1,9 +1,9 @@
 package org.interpss.plugin.contingency.result;
 
-public class ContingencyResultRec {
+public class AclfContingencyResultRec {
 	private boolean isConverged;
 	
-	public ContingencyResultRec(boolean isConverged) {
+	public AclfContingencyResultRec(boolean isConverged) {
 		this.isConverged = isConverged;
 	}
 	
