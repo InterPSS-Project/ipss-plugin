@@ -2,10 +2,14 @@ package sample.dclf;
 
 import org.interpss.display.AclfOutFunc;
 import org.interpss.display.DclfOutFunc;
+import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.DclfAlgoObjectFactory;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.algo.AclfMethodType;
+import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.algo.dclf.DclfAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
@@ -15,13 +19,12 @@ public class Dclf_Hvdc2TLCC_5BusSample {
 	public static void main(String args[]) throws InterpssException {
   		AclfNetwork net = SampleHvdcTestingCases.create2TSingleLCC();
 		
-  		/*
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.NR);
 	  	algo.setMaxIterations(20);
 	  	algo.setTolerance(0.0001, UnitType.PU, net.getBaseKva());
 	  	algo.loadflow();			
-	  	*/
+	  	
 	  	/*
 	  	 * There is a Hvdc line from bus 4_1 to bus 5_1
 	  	 */
@@ -43,6 +46,13 @@ public class Dclf_Hvdc2TLCC_5BusSample {
   5            Swing                1.05000        0.00       2.7498    3.6600    0.0000    0.0000   5          
   4_1                               1.03479      -30.62       0.0000    0.0000    0.0000    0.0000   4_1        
   5_1                               1.04073        1.86       0.0000    0.0000    0.0000    0.0000   5_1        
+
+                        HVDV Line Results
+
+         BranchID            Rectifier(1)      Inverter(1)       Rectifier(2)       Inverter(2) 
+ ---------------------     ----------------  ----------------  ----------------  ----------------
+4_1->5_1(Line-1)               3.5     1.4      -3.4     1.5       0.0     0.0       0.0     0.0
+
   
       DC Loadflow Results
 
