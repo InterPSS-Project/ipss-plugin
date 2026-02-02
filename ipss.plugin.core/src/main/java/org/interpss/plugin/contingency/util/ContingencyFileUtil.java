@@ -94,7 +94,7 @@ public class ContingencyFileUtil {
 	    }
 	}
 
-    public static List<MonitoredBranchRecord> importMonitoredBranchesFromJson(File file) throws IOException {
+    public static List<MonitoredBranchRecord> importMonitoredBranchRecordsFromJson(File file) throws IOException {
         List<MonitoredBranchRecord> monitoredBranches = new java.util.ArrayList<>();
     
         Gson gson = new Gson();
@@ -133,7 +133,7 @@ public class ContingencyFileUtil {
      * @param file
      * @param branches 
      */
-    public static void exportMonitoredBranchesToJson(File file, List<MonitoredBranchRecord> branches) throws IOException {
+    public static void exportMonitoredBranchRecordsToJson(File file, List<MonitoredBranchRecord> branches) throws IOException {
 	    
 	        // Create JSON structure
 	        MonitoredBranchListJson jsonData = new MonitoredBranchListJson();
