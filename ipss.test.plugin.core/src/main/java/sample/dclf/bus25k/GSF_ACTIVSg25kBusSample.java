@@ -1,4 +1,4 @@
-package sample.dclf;
+package sample.dclf.bus25k;
 
 import org.interpss.IpssCorePlugin;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
