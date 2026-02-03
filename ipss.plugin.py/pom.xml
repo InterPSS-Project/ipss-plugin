@@ -8,7 +8,7 @@
   <parent>
       <groupId>com.interpss</groupId>
       <artifactId>ipss.plugin</artifactId>
-      <version>1.0</version>
+      <version>1.0.3</version>
   </parent>
 
   <artifactId>ipss.sample.py</artifactId>
@@ -21,7 +21,7 @@
         <groupId>com.interpss</groupId>
         <artifactId>ipss.plugin.core</artifactId>
         <version>1.0</version>
-    </dependency>
+    </dependency> 
     
  	<dependency>
 	    <groupId>org.mvel</groupId>
