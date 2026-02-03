@@ -5,9 +5,16 @@
 
   <modelVersion>4.0.0</modelVersion>
 
+  <properties>
+    <maven.compiler.source>21</maven.compiler.source>
+    <maven.compiler.target>21</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+  </properties>
+  
   <groupId>com.interpss</groupId>
   <artifactId>ipss.plugin</artifactId>
-  <version>1.0</version>
+  <version>1.0.3</version>
   <packaging>pom</packaging>
     
   <modules>
@@ -16,13 +23,6 @@
         <module>ipss.test.plugin.core</module>
         <module>ipss.sample</module>
   </modules>
-  
-  <properties>
-    <maven.compiler.source>21</maven.compiler.source>
-    <maven.compiler.target>21</maven.compiler.target>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-  </properties>
 
   <dependencies>
     <dependency>
@@ -49,7 +49,7 @@
     <dependency>
           <groupId>com.interpss</groupId>
           <artifactId>ipss.core.lib</artifactId>
-          <version>1.0</version>
+          <version>1.0.3</version>
     </dependency>
     
      <dependency>
