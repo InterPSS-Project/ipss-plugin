@@ -52,11 +52,7 @@ public class Bus5_Result_Sample {
                 .append(branchDf).append(System.lineSeparator())
                 .append("=== Gen Info ===").append(System.lineSeparator())
                 .append(genDf).append(System.lineSeparator());
-        FileUtil.writeText2File("DataFrame-1.json", df.toString());
-
-        try (OutputStream out = new FileOutputStream("DataFrame.txt")) {
-            out.write(df.toString().getBytes());
-        }
+        FileUtil.writeText2File("DataFrame.txt", df.toString());
     }
 
     /**
