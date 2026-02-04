@@ -10,7 +10,7 @@ import org.interpss.plugin.exchange.bean.ContingencyExchangeInfo;
  * @author mzhou
  *
  */
-public class ContingencyResultContainer {
+public class ContingencyResultExContainer {
 	// a concurrent hash map to hold the contingency analysis result info beans
 	private ConcurrentHashMap<String, ContingencyExchangeInfo> contingencyResultMap;
 	
@@ -18,7 +18,7 @@ public class ContingencyResultContainer {
 	 * Constructor
 	 * 
 	 */
-	public ContingencyResultContainer() {
+	public ContingencyResultExContainer() {
 		contingencyResultMap = new ConcurrentHashMap<>();
 	}
 	
