@@ -39,6 +39,7 @@ public class Dclf_EastInterconnectionSample {
             double ratingMVA = branch.getRatingMva1();
             double loadingPercent = ratingMVA > 0 ? (Math.abs(powerFlowMW) / ratingMVA) * 100.0 : 0.0;
             if ( loadingPercent > 100.0) {
+            	System.out.println("Overloaded Branch: " + branch.getId() + ", Flow(MW): " + powerFlowMW + ", Rating(MVA): " + ratingMVA + ", Loading(%): " + loadingPercent);
             	cnt.increment();
             }
 		});		
