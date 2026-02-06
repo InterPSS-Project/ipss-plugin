@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.math3.optim.linear.Relationship;
 import org.interpss.plugin.optadj.optimizer.BaseStateOptimizer;
-import org.interpss.plugin.optadj.optimizer.bean.GenConstrainData;
+import org.interpss.plugin.optadj.optimizer.bean.DeviceConstrainData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,20 +36,20 @@ public class AclfNetATCOptimizer extends AclfNetContigencyOptimizer {
 	@Override
 	protected void buildGenConstrain() {
 		controlGenMap.forEach((no, gen) -> {
-			optimizer.addConstraint(new GenConstrainData(0, Relationship.GEQ, 0, no));
+			optimizer.addConstraint(new DeviceConstrainData(0, Relationship.GEQ, 0, no));
 
-			optimizer.addConstraint(new GenConstrainData(0, Relationship.LEQ, 1000, no));
+			optimizer.addConstraint(new DeviceConstrainData(0, Relationship.LEQ, 1000, no));
 		});
 	}
 
 	@Override
 	protected void buildLoadConstrain() {
 		controlLoadMap.forEach((no, load) -> {
-			GenConstrainData data = new GenConstrainData(0, Relationship.LEQ, 0, no);
-			data.setWeight(-1);
+			DeviceConstrainData data = new DeviceConstrainData(0, Relationship.LEQ, 0, no);
+			data.setLoad(true);
 			optimizer.addConstraint(data);
-			data = new GenConstrainData(0, Relationship.GEQ, -1000, no);
-			data.setWeight(-1);
+			data = new DeviceConstrainData(0, Relationship.GEQ, -1000, no);
+			data.setLoad(true);
 			optimizer.addConstraint(data);
 		});
 	}
