@@ -2,9 +2,12 @@
 package org.interpss.plugin.optadj.optimizer;
 
 import org.apache.commons.math3.optim.linear.Relationship;
+import org.interpss.plugin.optadj.algo.AclfNetBusOptimizer;
 import org.interpss.plugin.optadj.optimizer.bean.DeviceConstrainData;
 import org.interpss.plugin.optadj.optimizer.bean.SectionConstrainData;
 import org.ojalgo.optimisation.Expression;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -15,11 +18,12 @@ import org.ojalgo.optimisation.Expression;
  * 
  */
 public class GenStateOptimizer extends BaseStateOptimizer{
-
+    private static final Logger log = LoggerFactory.getLogger(GenStateOptimizer.class);
+    
 	private double senLimit = 0.05;
 
-	public void optimize() {
-		System.out.println("gen constrain size:" + this.deviceConstrainDataList.size() + ", " + 
+	public void optimize(int genOptSizeLimit, int secOptSizeLimit) {
+		log.info("gen constrain size:" + this.deviceConstrainDataList.size() + ", " + 
 							"section constrain size:"	+ this.secConstrainDataList.size());
 		 // Determine genSize
         deviceConstrainDataList.forEach(data -> {
