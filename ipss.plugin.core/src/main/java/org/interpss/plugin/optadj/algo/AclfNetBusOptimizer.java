@@ -45,7 +45,7 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
     protected final AclfNetwork network;
     
     // Performance optimization: cache frequently accessed values
-    private Double baseMvaCache;
+    private double baseMvaCache;
     private Map<String, DclfAlgoBranch> dclfBranchCache;
     
     protected Map<Integer, AclfBus> controlBusMap;
@@ -62,6 +62,7 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
         this.network = (AclfNetwork) dclfAlgo.getNetwork();
         this.helper = new AclfNetGFSsHelper(network);
         this.dclfBranchCache = new HashMap<>();
+        this.baseMvaCache = network.getBaseMva();
     }
 
     /**
@@ -204,7 +205,7 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
      * Build section constraints.
      */
     private void buildSectionConstraints(Sen2DMatrix gfsMatrix, double threshold) {
-        double baseMva = getBaseMva();
+        double baseMva = baseMvaCache;
         
         for (AclfBranch branch : network.getBranchList()) {
             if (!branch.isActive()) continue;
@@ -256,7 +257,7 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
      * Build generator constraints.
      */
     private void buildGenConstraints() {
-        double baseMva = getBaseMva();
+        double baseMva = baseMvaCache;
         
         for (Map.Entry<Integer, AclfBus> entry : controlBusMap.entrySet()) {
             int index = entry.getKey();
@@ -278,7 +279,7 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
      * Update DCLF algorithm with optimization results.
      */
     private void updateDclfAlgorithm() {
-        double baseMva = getBaseMva();
+        double baseMva = baseMvaCache;
         
         for (int i = 0; i < controlBusMap.size(); i++) {
             double adjustmentMW = getOptimizer().getPoint()[i];
@@ -314,21 +315,11 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
 	}
     
     /**
-     * Get base MVA with caching.
-     */
-    private double getBaseMva() {
-        if (baseMvaCache == null) {
-            baseMvaCache = network.getBaseMva();
-        }
-        return baseMvaCache;
-    }
-    
-    /**
      * Get optimization results as a map.
      */
     public Map<String, Double> getResultMap() {
         Map<String, Double> resultMap = new HashMap<>();
-        double baseMva = getBaseMva();
+        double baseMva = baseMvaCache;
         
         for (int i = 0; i < controlBusMap.size(); i++) {
             double adjustmentMW = getOptimizer().getPoint()[i];

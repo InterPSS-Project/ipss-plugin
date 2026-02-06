@@ -67,6 +67,17 @@ public abstract class BaseAclfNetOptimizer {
 		this.dclfAlgo = dclfAlgo;
 	}
 	
+	/**
+	 * Constructor
+	 * 
+	 * @param dclfAlgo
+	 */
+	public BaseAclfNetOptimizer(ContingencyAnalysisAlgorithm dclfAlgo, int genOptSizeLimit, int secOptSizeLimit) {
+        this(dclfAlgo);
+        this.genOptSizeLimit = genOptSizeLimit;
+        this.secOptSizeLimit = secOptSizeLimit;
+	}
+	
     // Getter methods
     public BaseStateOptimizer getOptimizer() {
         return optimizer;
