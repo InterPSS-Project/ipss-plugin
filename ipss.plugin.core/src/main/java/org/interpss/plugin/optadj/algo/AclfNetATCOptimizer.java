@@ -30,15 +30,15 @@ public class AclfNetATCOptimizer extends AclfNetContigencyOptimizer {
 	
     public AclfNetATCOptimizer(ContingencyAnalysisAlgorithm dclfAlgo, BaseStateOptimizer optimizer) {
 		super(dclfAlgo);
-		this.optimizer = optimizer;
+		this.setOptimizer(optimizer);
 	}
 	
 	@Override
 	protected void buildGenConstrain() {
 		controlGenMap.forEach((no, gen) -> {
-			optimizer.addConstraint(new DeviceConstrainData(0, Relationship.GEQ, 0, no));
+			getOptimizer().addConstraint(new DeviceConstrainData(0, Relationship.GEQ, 0, no));
 
-			optimizer.addConstraint(new DeviceConstrainData(0, Relationship.LEQ, 1000, no));
+			getOptimizer().addConstraint(new DeviceConstrainData(0, Relationship.LEQ, 1000, no));
 		});
 	}
 
@@ -47,10 +47,10 @@ public class AclfNetATCOptimizer extends AclfNetContigencyOptimizer {
 		controlLoadMap.forEach((no, load) -> {
 			DeviceConstrainData data = new DeviceConstrainData(0, Relationship.LEQ, 0, no);
 			data.setLoad(true);
-			optimizer.addConstraint(data);
+			getOptimizer().addConstraint(data);
 			data = new DeviceConstrainData(0, Relationship.GEQ, -1000, no);
 			data.setLoad(true);
-			optimizer.addConstraint(data);
+			getOptimizer().addConstraint(data);
 		});
 	}
 
