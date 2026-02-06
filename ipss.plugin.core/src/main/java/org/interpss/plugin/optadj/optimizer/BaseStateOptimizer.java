@@ -7,7 +7,7 @@ import java.util.List;
 import org.apache.commons.math3.optim.linear.Relationship;
 import org.interpss.plugin.optadj.config.OptAdjConfigureInfo;
 import org.interpss.plugin.optadj.optimizer.bean.BaseConstrainData;
-import org.interpss.plugin.optadj.optimizer.bean.DeviceConstrainData;
+import org.interpss.plugin.optadj.optimizer.bean.GenConstrainData;
 import org.interpss.plugin.optadj.optimizer.bean.SectionConstrainData;
 import org.ojalgo.optimisation.ExpressionsBasedModel;
 import org.ojalgo.optimisation.Optimisation;
@@ -23,7 +23,7 @@ import org.ojalgo.optimisation.Optimisation;
 public abstract class BaseStateOptimizer {
 
 
-	protected List<DeviceConstrainData> deviceConstrainDataList ;
+	protected List<GenConstrainData> deviceConstrainDataList ;
 	
 	protected List<SectionConstrainData> secConstrainDataList ;
 	
@@ -39,12 +39,12 @@ public abstract class BaseStateOptimizer {
 
 	public BaseStateOptimizer() {
 		 model = new ExpressionsBasedModel();
-		 deviceConstrainDataList = new ArrayList<DeviceConstrainData>();
+		 deviceConstrainDataList = new ArrayList<GenConstrainData>();
 		 secConstrainDataList = new ArrayList<SectionConstrainData>();
 		
 	}
 
-	public List<DeviceConstrainData> getGenConstrainDataList() {
+	public List<GenConstrainData> getGenConstrainDataList() {
 		return deviceConstrainDataList;
 	}
 	
@@ -53,8 +53,8 @@ public abstract class BaseStateOptimizer {
 	}
 
 	public void addConstraint(BaseConstrainData data) {
-		if (data instanceof DeviceConstrainData) {
-			deviceConstrainDataList.add((DeviceConstrainData) data);
+		if (data instanceof GenConstrainData) {
+			deviceConstrainDataList.add((GenConstrainData) data);
 		} else {
 			secConstrainDataList.add((SectionConstrainData) data);
 		}
@@ -75,11 +75,11 @@ public abstract class BaseStateOptimizer {
 		info.getOptimizedUnitControlLimits().forEach(limit -> {
 			if (limit.getPMax() != -1) {
 				this.addConstraint(
-						new DeviceConstrainData(limit.getOrigin(), Relationship.LEQ, limit.getPMax(), limit.getIndex()));
+						new GenConstrainData(limit.getOrigin(), Relationship.LEQ, limit.getPMax(), limit.getIndex()));
 			}
 			if (limit.getPMin() != -1) {
 				this.addConstraint(
-						new DeviceConstrainData(limit.getOrigin(), Relationship.GEQ, limit.getPMin(), limit.getIndex()));
+						new GenConstrainData(limit.getOrigin(), Relationship.GEQ, limit.getPMin(), limit.getIndex()));
 			}
 		});
 		
