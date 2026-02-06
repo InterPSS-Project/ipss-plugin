@@ -10,8 +10,7 @@ import org.interpss.numeric.datatype.Counter;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.plugin.optadj.algo.AclfNetLoadFlowOptimizer;
-import org.interpss.plugin.optadj.algo.AclfNetLoadFlowOptimizer1;
+import org.interpss.plugin.optadj.algo.AclfNetLoadFlowBusOptimizer;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.core.aclf.AclfBranch;
@@ -66,8 +65,7 @@ public class OptAdj_EInterconnect_Sample {
 		
 		PerformanceTimer timer = new PerformanceTimer();
 		// perform the Optimization adjustment
-		//AclfNetLoadFlowOptimizer optimizer = new AclfNetLoadFlowOptimizer(dclfAlgo);
-		AclfNetLoadFlowOptimizer1 optimizer = new AclfNetLoadFlowOptimizer1(dclfAlgo);
+		AclfNetLoadFlowBusOptimizer optimizer = new AclfNetLoadFlowBusOptimizer(dclfAlgo);
 		optimizer.optimize(100);
 		
 		timer.log("Opt");
