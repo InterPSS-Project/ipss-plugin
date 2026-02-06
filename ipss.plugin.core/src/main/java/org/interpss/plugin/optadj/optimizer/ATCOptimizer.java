@@ -3,7 +3,7 @@ package org.interpss.plugin.optadj.optimizer;
 
 import org.apache.commons.math3.optim.linear.Relationship;
 import org.interpss.plugin.optadj.optimizer.bean.BaseConstrainData;
-import org.interpss.plugin.optadj.optimizer.bean.GenConstrainData;
+import org.interpss.plugin.optadj.optimizer.bean.DeviceConstrainData;
 import org.interpss.plugin.optadj.optimizer.bean.SectionConstrainData;
 import org.ojalgo.optimisation.Expression;
 
@@ -18,8 +18,8 @@ import org.ojalgo.optimisation.Expression;
 public class ATCOptimizer extends BaseStateOptimizer {
 
 	public void addConstraint(BaseConstrainData data) {
-		if (data instanceof GenConstrainData) {
-			deviceConstrainDataList.add((GenConstrainData) data);
+		if (data instanceof DeviceConstrainData) {
+			deviceConstrainDataList.add((DeviceConstrainData) data);
 		} else {
 			secConstrainDataList.add((SectionConstrainData) data);
 		}
@@ -44,7 +44,7 @@ public class ATCOptimizer extends BaseStateOptimizer {
 			model.addVariable("v" + i).weight(0);
 		}
 		// 0. Device Constrain
-		for (GenConstrainData data : deviceConstrainDataList) {
+		for (DeviceConstrainData data : deviceConstrainDataList) {
 			final Expression constraint = model
 					.addExpression("gen_constraint_" + data.getIndex() + "_" + data.getLimit());
             constraint.set(data.getIndex(), 1.0);
@@ -81,7 +81,7 @@ public class ATCOptimizer extends BaseStateOptimizer {
 
 		// 2 g1+g2+g3.... == 0
 		final Expression sumConstraint = model.addExpression("sum_constraint1");
-		for (GenConstrainData data : deviceConstrainDataList) {
+		for (DeviceConstrainData data : deviceConstrainDataList) {
 			sumConstraint.set(data.getIndex(), 1.0);
 		}
 		sumConstraint.upper(0);
@@ -89,9 +89,12 @@ public class ATCOptimizer extends BaseStateOptimizer {
 
 		
 		final Expression objective = model.addExpression("Objective").weight(1.0);
-		for (GenConstrainData data : deviceConstrainDataList) {
-				objective.set(data.getIndex(), data.getWeight());
-			
+		for (DeviceConstrainData data : deviceConstrainDataList) {
+			if (data.isLoad()) {
+				objective.set(data.getIndex(), -1.0);
+			} else {
+				objective.set(data.getIndex(), 1.0);
+			}
 		}
 		
 		objective.set(totalVars - 1, 1.0);

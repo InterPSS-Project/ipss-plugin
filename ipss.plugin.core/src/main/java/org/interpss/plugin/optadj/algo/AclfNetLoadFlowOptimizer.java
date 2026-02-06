@@ -15,7 +15,7 @@ import org.interpss.plugin.optadj.algo.util.AclfNetGFSsHelper;
 import org.interpss.plugin.optadj.algo.util.Sen2DMatrix;
 import org.interpss.plugin.optadj.optimizer.BaseStateOptimizer;
 import org.interpss.plugin.optadj.optimizer.GenStateOptimizer;
-import org.interpss.plugin.optadj.optimizer.bean.GenConstrainData;
+import org.interpss.plugin.optadj.optimizer.bean.DeviceConstrainData;
 import org.interpss.plugin.optadj.optimizer.bean.SectionConstrainData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -278,9 +278,9 @@ public class AclfNetLoadFlowOptimizer {
 		double baseMva = net.getBaseMva();
 		controlGenMap.forEach((no, gen) -> {
 			LimitType genLimit = gen.getPGenLimit();
-			optimizer.addConstraint(new GenConstrainData(gen.getGen().getReal() * baseMva, 
+			optimizer.addConstraint(new DeviceConstrainData(gen.getGen().getReal() * baseMva, 
 												Relationship.LEQ, genLimit.getMax() * baseMva, no));
-			optimizer.addConstraint(new GenConstrainData(gen.getGen().getReal() * baseMva, 
+			optimizer.addConstraint(new DeviceConstrainData(gen.getGen().getReal() * baseMva, 
 												Relationship.GEQ, genLimit.getMin() * baseMva, no));
 		});
 	}
