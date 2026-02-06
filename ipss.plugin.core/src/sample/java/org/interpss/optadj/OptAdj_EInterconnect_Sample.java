@@ -53,7 +53,7 @@ public class OptAdj_EInterconnect_Sample {
             double ratingMVA = branch.getRatingMva1();
             double loadingPercent = ratingMVA > 0 ? (Math.abs(powerFlowMW) / ratingMVA) * 100.0 : 0.0;
             if ( loadingPercent > 100.0) {
-            	System.out.println("Overloaded Branch: " + branch.getId() + ", Flow(MW): " + powerFlowMW + ", Rating(MVA): " + ratingMVA + ", Loading(%): " + loadingPercent);
+            	//System.out.println("Overloaded Branch: " + branch.getId() + ", Flow(MW): " + powerFlowMW + ", Rating(MVA): " + ratingMVA + ", Loading(%): " + loadingPercent);
             	cnt.increment();
             }
             if (loadingPercent > maxLoading.val) {
@@ -73,9 +73,9 @@ public class OptAdj_EInterconnect_Sample {
 		Map<String, Double> resultMap = optimizer.getResultMap();
 		System.out.println(resultMap);
 		
-		System.out.println("Optimization gen size." + optimizer.getGenOptimizer().getGenSize());
-		System.out.println("Optimization gen constrain size." + optimizer.getGenOptimizer().getGenConstrainDataList().size());
-		System.out.println("Optimization sec constrain size." + optimizer.getGenOptimizer().getSecConstrainDataList().size());
+		System.out.println("Optimization gen size: " + optimizer.getGenOptimizer().getGenSize());
+		System.out.println("Optimization gen constrain size: " + optimizer.getGenOptimizer().getGenConstrainDataList().size());
+		System.out.println("Optimization sec constrain size: " + optimizer.getGenOptimizer().getSecConstrainDataList().size());
 	
 		dclfAlgo.calculateDclf(DclfMethod.INC_LOSS);
 		
@@ -89,10 +89,9 @@ public class OptAdj_EInterconnect_Sample {
 				double loading = Math.abs(flowMw / dclfBranch.getBranch().getRatingMva1())*100;
 				if (loading > 100) {
 					cnt1.increment();
-					System.out.println("Branch: " + dclfBranch.getId() + "  " + flowMw +
-							" rating: " + dclfBranch.getBranch().getRatingMva1() +
-							" loading: " + loading);
-						
+					//System.out.println("Branch: " + dclfBranch.getId() + "  " + flowMw +
+					//		" rating: " + dclfBranch.getBranch().getRatingMva1() +
+					//		" loading: " + loading);
 					}
 	            if (loading > maxLoading.val) {
 					maxLoading.val = loading;
