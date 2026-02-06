@@ -36,7 +36,7 @@ public class AclfNetLoadFlowBusOptimizer {
     private static final Logger log = LoggerFactory.getLogger(AclfNetLoadFlowBusOptimizer.class);
     
     // Configuration constants
-    private static final double GEN_SEN_THRESHOLD = 0.2;
+    private static final double GEN_SEN_THRESHOLD = 0.20;
     private static final double SECTION_SEN_THRESHOLD = 0.05;
     private static final double OPT_ADJUSTMENT_THRESHOLD_MW = 0.1;
     
@@ -297,7 +297,7 @@ public class AclfNetLoadFlowBusOptimizer {
             DclfAlgoBus dcBus = dclfAlgo.getDclfAlgoBus(bus.getId());
             if (dcBus == null) continue;
             
-            log.info("Bus {} adjustment: {} MW", bus.getName(), adjustmentMW);
+            log.debug("Bus {} adjustment: {} MW", bus.getName(), adjustmentMW);
             distributeAdjustmentToGenerators(bus, dcBus, adjustmentMW, baseMva);
         }
     }
@@ -317,7 +317,7 @@ public class AclfNetLoadFlowBusOptimizer {
 			double individualAdjustmentPU = adjustmentPU * genRatio;
 
 			gen.setAdjust(individualAdjustmentPU);
-			log.info("Gen {} adjustment: {} MW", gen.getId(), individualAdjustmentPU * baseMva);
+			log.debug("Gen {} adjustment: {} MW", gen.getId(), individualAdjustmentPU * baseMva);
 		}
 	}
     
