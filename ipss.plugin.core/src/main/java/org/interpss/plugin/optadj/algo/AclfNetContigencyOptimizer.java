@@ -23,7 +23,7 @@ import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
  * 
  * 
  */
-public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
+public class AclfNetContigencyOptimizer extends AclfNetGenLoadOptimizer {
     private static final Logger log = LoggerFactory.getLogger(AclfNetContigencyOptimizer.class);
     
     private Set<String> outBranchIdSet;
@@ -100,7 +100,7 @@ public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
 								
 								double limit = monDclfBranch.getBranch().getRatingMva2() * threshold / 100;
 								double postFlowMw = Math.abs(postFlow * baseMva); ;
-								optimizer.addConstraint(new SectionConstrainData(postFlowMw, Relationship.LEQ, limit, genSenArray));
+								getOptimizer().addConstraint(new SectionConstrainData(postFlowMw, Relationship.LEQ, limit, genSenArray));
 							}
 						});
 				}
