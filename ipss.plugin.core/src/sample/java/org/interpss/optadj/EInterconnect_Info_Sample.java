@@ -8,7 +8,7 @@ import java.util.Map;
 import org.interpss.numeric.datatype.Counter;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.plugin.optadj.algo.AclfNetLoadFlowOptimizer;
+import org.interpss.plugin.optadj.algo.AclfNetGenLoadOptimizer;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.core.aclf.AclfBranch;
