@@ -10,7 +10,7 @@ import org.interpss.numeric.datatype.Counter;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.plugin.optadj.algo.AclfNetLoadFlowBusOptimizer;
+import org.interpss.plugin.optadj.algo.AclfNetBusOptimizer;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.core.aclf.AclfBranch;
@@ -65,7 +65,7 @@ public class OptAdj_EInterconnect_Sample {
 		
 		PerformanceTimer timer = new PerformanceTimer();
 		// perform the Optimization adjustment
-		AclfNetLoadFlowBusOptimizer optimizer = new AclfNetLoadFlowBusOptimizer(dclfAlgo);
+		AclfNetBusOptimizer optimizer = new AclfNetBusOptimizer(dclfAlgo);
 		optimizer.optimize(100);
 		
 		timer.log("Opt");
@@ -73,9 +73,9 @@ public class OptAdj_EInterconnect_Sample {
 		Map<String, Double> resultMap = optimizer.getResultMap();
 		System.out.println(resultMap);
 		
-		System.out.println("Optimization gen size: " + optimizer.getGenOptimizer().getGenSize());
-		System.out.println("Optimization gen constrain size: " + optimizer.getGenOptimizer().getGenConstrainDataList().size());
-		System.out.println("Optimization sec constrain size: " + optimizer.getGenOptimizer().getSecConstrainDataList().size());
+		System.out.println("Optimization gen size: " + optimizer.getOptimizer().getGenSize());
+		System.out.println("Optimization gen constrain size: " + optimizer.getOptimizer().getGenConstrainDataList().size());
+		System.out.println("Optimization sec constrain size: " + optimizer.getOptimizer().getSecConstrainDataList().size());
 	
 		dclfAlgo.calculateDclf(DclfMethod.INC_LOSS);
 		
