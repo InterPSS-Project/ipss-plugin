@@ -60,7 +60,7 @@ public abstract class BaseStateOptimizer {
 		}
 	}
 
-	public abstract void optimize(); 
+	public abstract void optimize(int genOptSizeLimit, int secOptSizeLimit); 
 	
 	
 	public double[] getPoint() {
