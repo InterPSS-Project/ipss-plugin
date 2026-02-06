@@ -32,15 +32,15 @@ import com.interpss.core.algo.dclf.adapter.DclfAlgoGen;
  * 
  * @author Donghao.F
  */
-public class AclfNetLoadFlowBusOptimizer {
-    private static final Logger log = LoggerFactory.getLogger(AclfNetLoadFlowBusOptimizer.class);
+public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
+    private static final Logger log = LoggerFactory.getLogger(AclfNetBusOptimizer.class);
     
     // Configuration constants
     private static final double GEN_SEN_THRESHOLD = 0.20;
     private static final double SECTION_SEN_THRESHOLD = 0.05;
     private static final double OPT_ADJUSTMENT_THRESHOLD_MW = 0.1;
     
-    protected final ContingencyAnalysisAlgorithm dclfAlgo;
+    //protected final ContingencyAnalysisAlgorithm dclfAlgo;
     protected final AclfNetGFSsHelper helper;
     protected final AclfNetwork network;
     
@@ -49,7 +49,6 @@ public class AclfNetLoadFlowBusOptimizer {
     private Map<String, DclfAlgoBranch> dclfBranchCache;
     
     protected Map<Integer, AclfBus> controlBusMap;
-    protected BaseStateOptimizer optimizer;
     protected Set<String> overLimitBranchList;
     
     /**
@@ -58,15 +57,8 @@ public class AclfNetLoadFlowBusOptimizer {
      * @param dclfAlgo DCLF algorithm object used for optimization
      * @throws IllegalArgumentException if dclfAlgo or its network is null
      */
-    public AclfNetLoadFlowBusOptimizer(ContingencyAnalysisAlgorithm dclfAlgo) {
-        if (dclfAlgo == null) {
-            throw new IllegalArgumentException("DCLF algorithm cannot be null");
-        }
-        if (dclfAlgo.getNetwork() == null) {
-            throw new IllegalArgumentException("Network in DCLF algorithm cannot be null");
-        }
-        
-        this.dclfAlgo = dclfAlgo;
+    public AclfNetBusOptimizer(ContingencyAnalysisAlgorithm dclfAlgo) {
+        super(dclfAlgo);
         this.network = (AclfNetwork) dclfAlgo.getNetwork();
         this.helper = new AclfNetGFSsHelper(network);
         this.dclfBranchCache = new HashMap<>();
@@ -79,8 +71,8 @@ public class AclfNetLoadFlowBusOptimizer {
      */
     public void optimize(double threshold) {
         // Initialize optimizer if needed
-        if (this.optimizer == null) {
-            this.optimizer = new GenStateOptimizer();
+        if (this.getOptimizer() == null) {
+            this.setOptimizer(new GenStateOptimizer());
         }
         
         // 1. Identify overloaded branches
@@ -112,7 +104,7 @@ public class AclfNetLoadFlowBusOptimizer {
         buildGenConstraints();
         
         // 6. Execute optimization
-        optimizer.optimize();
+        getOptimizer().optimize(this.genOptSizeLimit, this.secOptSizeLimit);
         
         // 7. Update DCLF algorithm
         updateDclfAlgorithm();
@@ -240,7 +232,7 @@ public class AclfNetLoadFlowBusOptimizer {
                 double limit = dclfBranch.getBranch().getRatingMva1() * threshold / 100.0;
                 double flowMw = Math.abs(dclfBranch.getDclfFlow() * baseMva);
                 
-                optimizer.addConstraint(new SectionConstrainData(
+                getOptimizer().addConstraint(new SectionConstrainData(
                     flowMw, Relationship.LEQ, limit, genSenArray));
             }
         }
@@ -273,11 +265,11 @@ public class AclfNetLoadFlowBusOptimizer {
             double currentGenP = bus.getGenP() * baseMva;
             
             // Upper limit constraint
-            optimizer.addConstraint(new DeviceConstrainData(
+            getOptimizer().addConstraint(new DeviceConstrainData(
                 currentGenP, Relationship.LEQ, genLimit.getMax() * baseMva, index));
             
             // Lower limit constraint
-            optimizer.addConstraint(new DeviceConstrainData(
+            getOptimizer().addConstraint(new DeviceConstrainData(
                 currentGenP, Relationship.GEQ, genLimit.getMin() * baseMva, index));
         }
     }
@@ -289,7 +281,7 @@ public class AclfNetLoadFlowBusOptimizer {
         double baseMva = getBaseMva();
         
         for (int i = 0; i < controlBusMap.size(); i++) {
-            double adjustmentMW = optimizer.getPoint()[i];
+            double adjustmentMW = getOptimizer().getPoint()[i];
             
             if (Math.abs(adjustmentMW) <= OPT_ADJUSTMENT_THRESHOLD_MW) continue;
             
@@ -339,7 +331,7 @@ public class AclfNetLoadFlowBusOptimizer {
         double baseMva = getBaseMva();
         
         for (int i = 0; i < controlBusMap.size(); i++) {
-            double adjustmentMW = optimizer.getPoint()[i];
+            double adjustmentMW = getOptimizer().getPoint()[i];
             
             if (Math.abs(adjustmentMW) > OPT_ADJUSTMENT_THRESHOLD_MW) {
                 AclfBus bus = controlBusMap.get(i);
@@ -349,16 +341,7 @@ public class AclfNetLoadFlowBusOptimizer {
         return resultMap;
     }
     
-    // Getter methods
-    public BaseStateOptimizer getGenOptimizer() {
-        return optimizer;
-    }
-    
     public Map<Integer, AclfBus> getControlGenMap() {
         return controlBusMap != null ? new HashMap<>(controlBusMap) : new HashMap<>();
-    }
-    
-    public void setOptimizer(BaseStateOptimizer genOptimizer) {
-        this.optimizer = genOptimizer;
     }
 }

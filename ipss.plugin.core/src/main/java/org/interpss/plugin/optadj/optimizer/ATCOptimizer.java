@@ -26,7 +26,7 @@ public class ATCOptimizer extends BaseStateOptimizer {
 	}
 
 	@Override
-	public void optimize() {
+	public void optimize(int genOptSizeLimit, int secOptSizeLimit) {
 		System.out.println("gen constrain size:" + this.deviceConstrainDataList.size() + ", "
 				+ "section constrain size:" + this.secConstrainDataList.size());
 		// Determine genSize
