@@ -8,8 +8,7 @@ import java.util.Map;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.AtomicCounter;
-import org.interpss.numeric.datatype.LimitType;
-import org.interpss.plugin.optadj.algo.AclfNetLoadFlowOptimizer;
+import org.interpss.plugin.optadj.algo.AclfNetGenLoadOptimizer;
 import org.interpss.plugin.optadj.algo.result.AclfNetSsaResultContainer;
 import org.junit.Test;
 
@@ -51,7 +50,7 @@ public class IEEE14_OptAdj_BasecaseSSAResult_Test extends CorePluginTestSetup {
 		assertTrue(cnt.getCount() == 1);
 		
 		// perform the Optimization adjustment
-		AclfNetLoadFlowOptimizer optimizer = new AclfNetLoadFlowOptimizer(dclfAlgo);
+		AclfNetGenLoadOptimizer optimizer = new AclfNetGenLoadOptimizer(dclfAlgo);
 		optimizer.optimize(ssaResults, 100);
 		
 		Map<String, Double> resultMap = optimizer.getResultMap();
@@ -59,12 +58,12 @@ public class IEEE14_OptAdj_BasecaseSSAResult_Test extends CorePluginTestSetup {
 		
 		assertEquals(resultMap.get("Bus2-G1"), 0.5713, 0.0001);
 		
-		System.out.println("Optimization gen size." + optimizer.getGenOptimizer().getGenSize());
-		System.out.println("Optimization gen constrain size." + optimizer.getGenOptimizer().getGenConstrainDataList().size());
-		System.out.println("Optimization sec constrian size." + optimizer.getGenOptimizer().getSecConstrainDataList().size());
-		assertTrue(optimizer.getGenOptimizer().getGenSize() == 4);
-		assertTrue(optimizer.getGenOptimizer().getGenConstrainDataList().size() == 8);
-		assertTrue(optimizer.getGenOptimizer().getSecConstrainDataList().size() == 20);
+		System.out.println("Optimization gen size." + optimizer.getOptimizer().getGenSize());
+		System.out.println("Optimization gen constrain size." + optimizer.getOptimizer().getGenConstrainDataList().size());
+		System.out.println("Optimization sec constrian size." + optimizer.getOptimizer().getSecConstrainDataList().size());
+		assertTrue(optimizer.getOptimizer().getGenSize() == 4);
+		assertTrue(optimizer.getOptimizer().getGenConstrainDataList().size() == 8);
+		assertTrue(optimizer.getOptimizer().getSecConstrainDataList().size() == 20);
 		
 		dclfAlgo.calculateDclf();
 		
