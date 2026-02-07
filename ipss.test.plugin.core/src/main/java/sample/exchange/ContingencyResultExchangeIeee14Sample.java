@@ -3,7 +3,7 @@ package sample.exchange;
 import org.interpss.CorePluginFactory;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.plugin.exchange.ContingencyResultAdapter;
-import org.interpss.plugin.exchange.ContingencyResultContainer;
+import org.interpss.plugin.exchange.ContingencyResultExContainer;
 import org.interpss.plugin.exchange.bean.ContingencyExchangeInfo;
 
 import com.interpss.common.exp.InterpssException;
@@ -22,7 +22,7 @@ public class ContingencyResultExchangeIeee14Sample {
 				.load("testData/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();	
 		
-		ContingencyResultContainer container = new ContingencyResultContainer();
+		ContingencyResultExContainer container = new ContingencyResultExContainer();
 		
 		/*
 		 * Base case loadflow

@@ -5,7 +5,6 @@ import static org.junit.Assert.assertTrue;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
-import org.interpss.plugin.exchange.bean.AclfNetExchangeInfo;
 import org.interpss.plugin.exchange.bean.ContingencyExchangeInfo;
 import org.junit.Test;
 
@@ -23,7 +22,7 @@ public class ContingencyExchagneIeee14Test extends CorePluginTestSetup {
 				.load("testData/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();	
 		
-		ContingencyResultContainer container = new ContingencyResultContainer();
+		ContingencyResultExContainer container = new ContingencyResultExContainer();
 		
 		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet);
 
