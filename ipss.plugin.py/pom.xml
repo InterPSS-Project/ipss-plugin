@@ -20,7 +20,7 @@
       <dependency>
         <groupId>com.interpss</groupId>
         <artifactId>ipss.plugin.core</artifactId>
-        <version>1.0</version>
+        <version>${project.parent.version}</version>
     </dependency> 
     
  	<dependency>
