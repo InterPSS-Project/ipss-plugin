@@ -11,7 +11,6 @@ import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.plugin.optadj.algo.util.AclfNetGFSsHelper;
 import org.interpss.plugin.optadj.algo.util.Sen2DMatrix;
-import org.interpss.plugin.optadj.optimizer.BaseStateOptimizer;
 import org.interpss.plugin.optadj.optimizer.GenStateOptimizer;
 import org.interpss.plugin.optadj.optimizer.bean.DeviceConstrainData;
 import org.interpss.plugin.optadj.optimizer.bean.SectionConstrainData;
