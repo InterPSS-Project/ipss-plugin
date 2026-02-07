@@ -109,13 +109,13 @@ public class IEEE14_OptAdj_N1ScanSSAResult_Test extends CorePluginTestSetup {
 		
 		assertEquals(resultMap.get("Bus3-G1"), 0.99, 0.0001);
 		
-		System.out.println("Optimization gen size." + optimizer.getGenOptimizer().getGenSize());
-		System.out.println("Optimization gen constrain size." + optimizer.getGenOptimizer().getGenConstrainDataList().size());
-		System.out.println("Optimization sec constrian size." + optimizer.getGenOptimizer().getSecConstrainDataList().size());
+		System.out.println("Optimization gen size." + optimizer.getOptimizer().getGenSize());
+		System.out.println("Optimization gen constrain size." + optimizer.getOptimizer().getGenConstrainDataList().size());
+		System.out.println("Optimization sec constrian size." + optimizer.getOptimizer().getSecConstrainDataList().size());
 
-		assertEquals(optimizer.getGenOptimizer().getGenSize(), 4);
-		assertTrue(optimizer.getGenOptimizer().getGenConstrainDataList().size() == 8);
-		assertTrue(optimizer.getGenOptimizer().getSecConstrainDataList().size() == 101);
+		assertEquals(optimizer.getOptimizer().getGenSize(), 4);
+		assertTrue(optimizer.getOptimizer().getGenConstrainDataList().size() == 8);
+		assertTrue(optimizer.getOptimizer().getSecConstrainDataList().size() == 101);
 		
 		dclfAlgo.calculateDclf();
 		
