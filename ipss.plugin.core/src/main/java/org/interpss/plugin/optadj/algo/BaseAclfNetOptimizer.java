@@ -77,7 +77,7 @@ public abstract class BaseAclfNetOptimizer {
         this.genOptSizeLimit = genOptSizeLimit;
         this.secOptSizeLimit = secOptSizeLimit;
 	}
-	
+	 
     // Getter methods
     public BaseStateOptimizer getOptimizer() {
         return optimizer;
