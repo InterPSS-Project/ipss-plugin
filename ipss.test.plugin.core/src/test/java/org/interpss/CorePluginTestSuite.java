@@ -82,6 +82,7 @@ import org.interpss.plugin.optadj.IEEE14_OptAdj_Basecase_Test;
 import org.interpss.plugin.optadj.IEEE14_OptAdj_N1ScanSSAResult_Test;
 import org.interpss.plugin.optadj.IEEE14_OptAdj_N1Scan_Test;
 import org.interpss.plugin.optadj.IEEE14_SensHelper_Test;
+import org.interpss.plugin.optadj.ei.EI_OptAdj_Dclf_Test;
 import org.interpss.plugin.piecewise.Acsc5BusTestSubAreaNet;
 import org.interpss.plugin.piecewise.IEEE14TestAclfSubAreaBuild;
 import org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild;
@@ -156,6 +157,8 @@ import org.junit.runners.Suite.SuiteClasses;
 	IEEE14_OptAdj_N1Scan_Test.class,
 	IEEE14_OptAdj_BasecaseSSAResult_Test.class,
 	IEEE14_OptAdj_N1ScanSSAResult_Test.class,
+	
+	EI_OptAdj_Dclf_Test.class,
 	
 	// small Z branch
 	//SampleSwitchBreakerModelTest.class,
