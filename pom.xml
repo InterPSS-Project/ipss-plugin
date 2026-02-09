@@ -6,8 +6,6 @@
   <modelVersion>4.0.0</modelVersion>
 
   <properties>
-  	<ipss.core.version>1.0.3</ipss.core.version>
-  	<ieee.odm.version>1.0</ieee.odm.version>
     <maven.compiler.source>21</maven.compiler.source>
     <maven.compiler.target>21</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -51,18 +49,18 @@
     <dependency>
           <groupId>com.interpss</groupId>
           <artifactId>ipss.core.lib</artifactId>
-          <version>${ipss.core.version}</version>
+          <version>1.0.3</version>
     </dependency>
     
      <dependency>
           <groupId>org.ieee.odm</groupId>
           <artifactId>ieee.odm_pss</artifactId>
-          <version>${ieee.odm.version}</version>
+          <version>1.0</version>
       </dependency>
     <dependency>
           <groupId>org.ieee.odm</groupId>
           <artifactId>ieee.odm.schema</artifactId>
-          <version>${ieee.odm.version}</version>
+          <version>1.0</version>
       </dependency>
   </dependencies>
 
