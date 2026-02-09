@@ -15,7 +15,7 @@ import com.interpss.algo.parallel.BranchCAResultRec;
 import com.interpss.algo.parallel.ContingencyAnalysisMonad;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.contingency.BranchOutageContingency;
+import com.interpss.core.aclf.contingency.dclf.BranchOutageContingency;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.net.ref.impl.NetworkRefImpl;
