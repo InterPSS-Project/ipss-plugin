@@ -9,7 +9,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.contingency.dclf.CaBranchOutageType;
+import com.interpss.core.aclf.contingency.CaBranchOutageType;
 import com.interpss.core.aclf.contingency.dclf.CaOutageBranch;
 import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
