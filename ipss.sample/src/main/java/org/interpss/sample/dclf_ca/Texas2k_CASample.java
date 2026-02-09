@@ -21,7 +21,7 @@ import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.contingency.Contingency;
+import com.interpss.core.aclf.contingency.BranchOutageContingency;
 import com.interpss.core.algo.dclf.CaBranchOutageType;
 import com.interpss.core.algo.dclf.CaOutageBranch;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
@@ -54,14 +54,14 @@ public class Texas2k_CASample {
 		//import contingency definitions from CA file
 		File contFile = new File("ipss-plugin/ipss.sample/testData/psse/texas2k/2k_contingencies_115kVAbove.json");
 		List<BranchContingencyRecord> contingencies = ContingencyFileUtil.importContingenciesFromJson(contFile);
-		List<Contingency> contList = new java.util.ArrayList<>();
+		List<BranchOutageContingency> contList = new java.util.ArrayList<>();
 
 		for (BranchContingencyRecord record : contingencies) {
 			try {
 				// Find the branch based on from_bus and to_bus
 				String branchId = record.fromBus + "->" + record.toBus+"("+record.ckt+")";
 				if (net.getBranch(branchId) != null) {
-					Contingency cont = createContingency(record.name);
+					BranchOutageContingency cont = createContingency(record.name);
 					
 					// Determine outage type based on action type
 					CaBranchOutageType outageType;
