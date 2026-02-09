@@ -47,7 +47,7 @@ import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.adpter.AclfGenBusAdapter;
 import com.interpss.core.aclf.adpter.AclfPSXformerAdapter;
 import com.interpss.core.aclf.contingency.AclfBranchRating;
-import com.interpss.core.aclf.contingency.CaViolationType;
+import com.interpss.core.aclf.contingency.ContingencyViolationType;
 import com.interpss.core.aclf.hvdc.HvdcLine2T;
 import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
 import com.interpss.core.aclf.hvdc.HvdcLine2TVSC;
