@@ -15,7 +15,7 @@ import com.interpss.algo.parallel.BranchCAResultRec;
 import com.interpss.algo.parallel.ContingencyAnalysisMonad;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.contingency.Contingency;
+import com.interpss.core.aclf.contingency.BranchOutageContingency;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.net.ref.impl.NetworkRefImpl;
@@ -45,7 +45,7 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
 	 */
 	public static ConcurrentLinkedQueue<DclfContingencyResultRec> executeContingencyAnalysis(
 	        AclfNetwork aclfNet,
-	        List<Contingency> contingencyList,
+	        List<BranchOutageContingency> contingencyList,
 	        Set<String> monitoredBranchIds,
             DclfContingencyConfig config,
 	        int parallelismLevel) {
