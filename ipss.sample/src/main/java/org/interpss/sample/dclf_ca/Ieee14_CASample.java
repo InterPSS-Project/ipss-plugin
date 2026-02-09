@@ -35,9 +35,9 @@ import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.contingency.Contingency;
-import com.interpss.core.algo.dclf.CaBranchOutageType;
-import com.interpss.core.algo.dclf.CaOutageBranch;
+import com.interpss.core.aclf.contingency.CaBranchOutageType;
+import com.interpss.core.aclf.contingency.dclf.BranchOutageContingency;
+import com.interpss.core.aclf.contingency.dclf.CaOutageBranch;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 import com.interpss.core.common.OutageConnectivityException;
@@ -68,7 +68,7 @@ public class Ieee14_CASample {
 		double preFlowSum = dclfBranch1.getDclfFlow() + dclfBranch2.getDclfFlow() + dclfBranch3.getDclfFlow();
 
 		// define a contingency object
-		Contingency cont = createContingency("contId");
+		BranchOutageContingency cont = createContingency("contId");
 		
 		// define an outage branch
 		cont.setOutageBranch(createCaOutageBranch(algo.getDclfAlgoBranch("Bus5->Bus6(1)"), CaBranchOutageType.OPEN));
