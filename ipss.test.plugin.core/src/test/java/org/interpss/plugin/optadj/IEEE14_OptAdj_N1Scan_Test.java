@@ -23,9 +23,9 @@ import com.interpss.algo.parallel.ContingencyAnalysisMonad;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.contingency.Contingency;
-import com.interpss.core.algo.dclf.CaBranchOutageType;
-import com.interpss.core.algo.dclf.CaOutageBranch;
+import com.interpss.core.aclf.contingency.CaBranchOutageType;
+import com.interpss.core.aclf.contingency.dclf.BranchOutageContingency;
+import com.interpss.core.aclf.contingency.dclf.CaOutageBranch;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 
 public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
@@ -38,13 +38,13 @@ public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
 		dclfAlgo.calculateDclf();
 
 		// define a contingency list
-		List<Contingency> contList = new ArrayList<>();
+		List<BranchOutageContingency> contList = new ArrayList<>();
 		net.getBranchList().stream()
 			// make sure the branch is not connected to a reference bus.
 			.filter(branch -> !((AclfBranch)branch).isConnect2RefBus())
 			.forEach(branch -> {
 				// create a contingency object for the branch outage analysis
-				Contingency cont = createContingency("contBranch:"+branch.getId());
+				BranchOutageContingency cont = createContingency("contBranch:"+branch.getId());
 				// create an open CA outage branch object for the branch outage analysis
 				CaOutageBranch outage = createCaOutageBranch(dclfAlgo.getDclfAlgoBranch(branch.getId()), CaBranchOutageType.OPEN);
 				cont.setOutageBranch(outage);
