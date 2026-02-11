@@ -41,7 +41,7 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.contingency.ContingencyBranchOutageType;
 import com.interpss.core.aclf.contingency.dclf.BranchOutageContingency;
-import com.interpss.core.aclf.contingency.dclf.CaOutageBranch;
+import com.interpss.core.aclf.contingency.dclf.DclfOutageBranch;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 
 public class Ieee14_N1ScanSample {
@@ -73,7 +73,7 @@ public class Ieee14_N1ScanSample {
 				// create a contingency object for the branch outage analysis
 				BranchOutageContingency cont = createContingency("contBranch:"+branch.getId());
 				// create an open CA outage branch object for the branch outage analysis
-				CaOutageBranch outage = createCaOutageBranch(dclfAlgo.getDclfAlgoBranch(branch.getId()), ContingencyBranchOutageType.OPEN);
+				DclfOutageBranch outage = createCaOutageBranch(dclfAlgo.getDclfAlgoBranch(branch.getId()), ContingencyBranchOutageType.OPEN);
 				cont.setOutageEquip(outage);
 				contList.add(cont);
 			});
@@ -101,7 +101,7 @@ public class Ieee14_N1ScanSample {
 							 * The GSF of generation bus i w.r.t line j when line k is outaged is GSF_ijk = GSF_ij + GSF_ik*LODF_kj.
 							 */
 							
-							CaOutageBranch outagedBranch = contingency.getOutageEquip();
+							DclfOutageBranch outagedBranch = contingency.getOutageEquip();
 							AclfBranch monitoredBranch = resultRec.aclfBranch;
 							
 							// GFS of monitoredBranch with respect to the reference bus
