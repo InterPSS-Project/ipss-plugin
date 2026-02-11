@@ -1,5 +1,9 @@
 package org.interpss.sample.dclf_ca;
 
+import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
+import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
+import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
+
 import java.io.File;
 import java.util.List;
 import java.util.Set;
@@ -15,12 +19,9 @@ import org.interpss.plugin.contingency.util.ContingencyFileUtil;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 
-import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
-import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
-import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.contingency.CaBranchOutageType;
+import com.interpss.core.aclf.contingency.ContingencyBranchOutageType;
 import com.interpss.core.aclf.contingency.dclf.BranchOutageContingency;
 import com.interpss.core.aclf.contingency.dclf.CaOutageBranch;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
@@ -63,20 +64,20 @@ public class OpenEI100k_CASample {
 					BranchOutageContingency cont = createContingency(record.name);
 					
 					// Determine outage type based on action type
-					CaBranchOutageType outageType;
+					ContingencyBranchOutageType outageType;
 					switch (record.actionType.toLowerCase()) {
 						case "open":
-							outageType = CaBranchOutageType.OPEN;
+							outageType = ContingencyBranchOutageType.OPEN;
 							break;
 						case "close":
-							outageType = CaBranchOutageType.CLOSE;
+							outageType = ContingencyBranchOutageType.CLOSE;
 							break;
 						default:
-							outageType = CaBranchOutageType.OPEN; // Default to open
+							outageType = ContingencyBranchOutageType.OPEN; // Default to open
 					}
 					
 					CaOutageBranch outage = createCaOutageBranch(algo.getDclfAlgoBranch(branchId), outageType);
-					cont.setOutageBranch(outage);
+					cont.setOutageEquip(outage);
 					contList.add(cont);
 				}
 			} catch (Exception ex) {
