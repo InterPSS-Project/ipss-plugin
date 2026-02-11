@@ -1,4 +1,4 @@
-package sample.contingency;
+package sample.contingency.aclf._25k;
 
 import org.interpss.plugin.contingency.AclfContingencyConfig;
 
