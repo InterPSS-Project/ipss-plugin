@@ -7,9 +7,8 @@ import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.DclfAlgoObjectFactory;
-import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.contingency.CaBranchOutageType;
+import com.interpss.core.aclf.contingency.ContingencyBranchOutageType;
 import com.interpss.core.aclf.contingency.dclf.CaOutageBranch;
 import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
@@ -34,7 +33,7 @@ public class LODF_ACTIVSg25kBusSample {
 		String branchId = "Bus14265->Bus62125(1)"; 
 		
 		DclfAlgoBranch dclfBranch = algo.getDclfAlgoBranch(branchId);
-		CaOutageBranch outBranch = DclfAlgoObjectFactory.createCaOutageBranch(dclfBranch, CaBranchOutageType.OPEN);	
+		CaOutageBranch outBranch = DclfAlgoObjectFactory.createCaOutageBranch(dclfBranch, ContingencyBranchOutageType.OPEN);	
 
 		aclfNet.getBranchList().parallelStream()
 			.filter(branch -> branch.isActive() && !branch.isConnect2RefBus() &&

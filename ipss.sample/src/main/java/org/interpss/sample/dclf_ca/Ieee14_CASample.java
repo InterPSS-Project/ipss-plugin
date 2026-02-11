@@ -24,18 +24,19 @@
 
 package org.interpss.sample.dclf_ca;
 
+import static com.interpss.core.DclfAlgoObjectFactory.createCaMonitoringBranch;
+import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
+import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
+import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
+
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.plugin.pssl.common.PSSLException;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.common.exp.InterpssException;
-import static com.interpss.core.DclfAlgoObjectFactory.createCaMonitoringBranch;
-import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
-import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
-import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.contingency.CaBranchOutageType;
+import com.interpss.core.aclf.contingency.ContingencyBranchOutageType;
 import com.interpss.core.aclf.contingency.dclf.BranchOutageContingency;
 import com.interpss.core.aclf.contingency.dclf.CaOutageBranch;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
@@ -71,7 +72,7 @@ public class Ieee14_CASample {
 		BranchOutageContingency cont = createContingency("contId");
 		
 		// define an outage branch
-		cont.setOutageBranch(createCaOutageBranch(algo.getDclfAlgoBranch("Bus5->Bus6(1)"), CaBranchOutageType.OPEN));
+		cont.setOutageEquip(createCaOutageBranch(algo.getDclfAlgoBranch("Bus5->Bus6(1)"), ContingencyBranchOutageType.OPEN));
 
 		// define monitoring branches
 		cont.addMonitoringBranch(createCaMonitoringBranch(algo.getDclfAlgoBranch("Bus4->Bus7(1)")));
@@ -102,9 +103,9 @@ public class Ieee14_CASample {
 		algo.setRefBus("Bus14");
 		
 		algo.multiOpenOutgageAnalysis(new CaOutageBranch[] {
-				createCaOutageBranch(algo.getDclfAlgoBranch("Bus1->Bus5(1)"), CaBranchOutageType.OPEN),
-				createCaOutageBranch(algo.getDclfAlgoBranch("Bus3->Bus4(1)"), CaBranchOutageType.OPEN),
-				createCaOutageBranch(algo.getDclfAlgoBranch("Bus6->Bus11(1)"), CaBranchOutageType.OPEN)
+				createCaOutageBranch(algo.getDclfAlgoBranch("Bus1->Bus5(1)"), ContingencyBranchOutageType.OPEN),
+				createCaOutageBranch(algo.getDclfAlgoBranch("Bus3->Bus4(1)"), ContingencyBranchOutageType.OPEN),
+				createCaOutageBranch(algo.getDclfAlgoBranch("Bus6->Bus11(1)"), ContingencyBranchOutageType.OPEN)
 			});
 	      
    		/*
