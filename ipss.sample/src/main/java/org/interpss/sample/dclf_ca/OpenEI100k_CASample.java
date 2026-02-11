@@ -22,7 +22,7 @@ import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.contingency.ContingencyBranchOutageType;
-import com.interpss.core.aclf.contingency.dclf.BranchOutageContingency;
+import com.interpss.core.aclf.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.aclf.contingency.dclf.DclfOutageBranch;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
@@ -54,14 +54,14 @@ public class OpenEI100k_CASample {
 		//import contingency definitions from CA file
 		File contFile = new File("ipss-plugin/ipss.sample/testData/psse/openEI/OpenEI_filtered_contingencies.json");
 		List<BranchContingencyRecord> contingencies = ContingencyFileUtil.importContingenciesFromJson(contFile);
-		List<BranchOutageContingency> contList = new java.util.ArrayList<>();
+		List<DclfBranchOutage> contList = new java.util.ArrayList<>();
 
 		for (BranchContingencyRecord record : contingencies) {
 			try {
 				// Find the branch based on from_bus and to_bus
 				String branchId = record.fromBus + "->" + record.toBus+"("+record.ckt+")";
 				if (net.getBranch(branchId) != null) {
-					BranchOutageContingency cont = createContingency(record.name);
+					DclfBranchOutage cont = createContingency(record.name);
 					
 					// Determine outage type based on action type
 					ContingencyBranchOutageType outageType;
