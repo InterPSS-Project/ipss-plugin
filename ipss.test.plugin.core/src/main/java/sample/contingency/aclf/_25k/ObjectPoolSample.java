@@ -1,4 +1,4 @@
-package sample.contingency;
+package sample.contingency.aclf._25k;
 
 
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
