@@ -1,5 +1,10 @@
 package sample.dclf.bus25k;
 
+import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
+import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
+import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
+import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -7,17 +12,13 @@ import java.util.function.Consumer;
 import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.util.PerformanceTimer;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 
 import com.interpss.algo.parallel.BranchCAResultRec;
 import com.interpss.algo.parallel.ContingencyAnalysisMonad;
 import com.interpss.common.exp.InterpssException;
-import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
-import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
-import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.contingency.CaBranchOutageType;
+import com.interpss.core.aclf.contingency.ContingencyBranchOutageType;
 import com.interpss.core.aclf.contingency.dclf.BranchOutageContingency;
 import com.interpss.core.aclf.contingency.dclf.CaOutageBranch;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
@@ -60,8 +61,8 @@ public class CA_ACTIVSg25kBusSample {
 				BranchOutageContingency cont = createContingency("contBranch:"+branch.getId());
 				// create an open CA outage branch object for the branch outage analysis
 				CaOutageBranch outage = createCaOutageBranch(dclfAlgo.getDclfAlgoBranch(branch.getId()), 
-								CaBranchOutageType.OPEN);
-				cont.setOutageBranch(outage);
+						ContingencyBranchOutageType.OPEN);
+				cont.setOutageEquip(outage);
 				contList.add(cont);
 			});
 		System.out.println("Contingency list size: " + contList.size());
