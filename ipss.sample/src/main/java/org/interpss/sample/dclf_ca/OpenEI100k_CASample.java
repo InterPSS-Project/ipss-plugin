@@ -23,7 +23,7 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.contingency.ContingencyBranchOutageType;
 import com.interpss.core.aclf.contingency.dclf.BranchOutageContingency;
-import com.interpss.core.aclf.contingency.dclf.CaOutageBranch;
+import com.interpss.core.aclf.contingency.dclf.DclfOutageBranch;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
 
@@ -76,7 +76,7 @@ public class OpenEI100k_CASample {
 							outageType = ContingencyBranchOutageType.OPEN; // Default to open
 					}
 					
-					CaOutageBranch outage = createCaOutageBranch(algo.getDclfAlgoBranch(branchId), outageType);
+					DclfOutageBranch outage = createCaOutageBranch(algo.getDclfAlgoBranch(branchId), outageType);
 					cont.setOutageEquip(outage);
 					contList.add(cont);
 				}

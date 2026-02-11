@@ -20,7 +20,7 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.contingency.ContingencyBranchOutageType;
 import com.interpss.core.aclf.contingency.dclf.BranchOutageContingency;
-import com.interpss.core.aclf.contingency.dclf.CaOutageBranch;
+import com.interpss.core.aclf.contingency.dclf.DclfOutageBranch;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 
 public class CA_ACTIVSg25kBusSample {
@@ -60,7 +60,7 @@ public class CA_ACTIVSg25kBusSample {
 				// create a contingency object for the branch outage analysis
 				BranchOutageContingency cont = createContingency("contBranch:"+branch.getId());
 				// create an open CA outage branch object for the branch outage analysis
-				CaOutageBranch outage = createCaOutageBranch(dclfAlgo.getDclfAlgoBranch(branch.getId()), 
+				DclfOutageBranch outage = createCaOutageBranch(dclfAlgo.getDclfAlgoBranch(branch.getId()), 
 						ContingencyBranchOutageType.OPEN);
 				cont.setOutageEquip(outage);
 				contList.add(cont);
