@@ -3,7 +3,6 @@ package org.interpss.plugin.optadj.algo.util;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
 
 import org.interpss.numeric.datatype.Counter;
 import org.interpss.numeric.exp.IpssNumericException;
@@ -12,17 +11,10 @@ import org.slf4j.LoggerFactory;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.DclfAlgoObjectFactory;
-import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
-import com.interpss.core.aclf.contingency.CaBranchOutageType;
-import com.interpss.core.aclf.contingency.dclf.CaOutageBranch;
 import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.SenAnalysisType;
-import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
-import com.interpss.core.common.ReferenceBusException;
-import com.interpss.core.net.Branch;
 
 
 /** 
