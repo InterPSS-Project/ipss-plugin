@@ -13,7 +13,7 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.contingency.ContingencyBranchOutageType;
-import com.interpss.core.aclf.contingency.dclf.CaOutageBranch;
+import com.interpss.core.aclf.contingency.dclf.DclfOutageBranch;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 import com.interpss.core.net.Branch;
 
@@ -149,7 +149,7 @@ public class AclfNetLODFsHelper extends BaseAclfNetSensHelper {
 							 Predicate<Branch> branchFilter) {
 		try {
 			DclfAlgoBranch outDclfBranch = dclfAlgo.getDclfAlgoBranch(outBranch.getId());
-			CaOutageBranch caOutBranch = DclfAlgoObjectFactory.createCaOutageBranch(outDclfBranch, ContingencyBranchOutageType.OPEN);
+			DclfOutageBranch caOutBranch = DclfAlgoObjectFactory.createCaOutageBranch(outDclfBranch, ContingencyBranchOutageType.OPEN);
 			double[] lodfAry = dclfAlgo.lineOutageDFactors(caOutBranch);
 			int outBranchNo = outBranch.getSortNumber();
 			/*
