@@ -38,7 +38,7 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.contingency.ContingencyBranchOutageType;
 import com.interpss.core.aclf.contingency.dclf.BranchOutageContingency;
-import com.interpss.core.aclf.contingency.dclf.CaOutageBranch;
+import com.interpss.core.aclf.contingency.dclf.DclfOutageBranch;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 import com.interpss.core.common.OutageConnectivityException;
@@ -102,7 +102,7 @@ public class Ieee14_CASample {
 
 		algo.setRefBus("Bus14");
 		
-		algo.multiOpenOutgageAnalysis(new CaOutageBranch[] {
+		algo.multiOpenOutgageAnalysis(new DclfOutageBranch[] {
 				createCaOutageBranch(algo.getDclfAlgoBranch("Bus1->Bus5(1)"), ContingencyBranchOutageType.OPEN),
 				createCaOutageBranch(algo.getDclfAlgoBranch("Bus3->Bus4(1)"), ContingencyBranchOutageType.OPEN),
 				createCaOutageBranch(algo.getDclfAlgoBranch("Bus6->Bus11(1)"), ContingencyBranchOutageType.OPEN)
