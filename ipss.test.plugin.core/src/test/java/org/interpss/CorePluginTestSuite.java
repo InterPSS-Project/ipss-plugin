@@ -40,6 +40,7 @@ import org.interpss.core.adapter.ucte.UCTEFormatAusPowerTest;
 import org.interpss.core.ca.IEEE14_N1Scan_Test;
 import org.interpss.core.ca.Ieee14_CA_Test;
 import org.interpss.core.ca.Ieee14_GSF_Test;
+import org.interpss.core.ca.aclf.IEEE14_AclfN1Scan_Test;
 import org.interpss.core.dclf.IEEE14_Dclf_Test;
 import org.interpss.core.dclf.edclf.IEEE118_EDclf_Test;
 import org.interpss.core.dclf.edclf.IEEE14_EDclf_Test;
@@ -144,6 +145,8 @@ import org.junit.runners.Suite.SuiteClasses;
 	//ieee14_CAClosurePSSL_Test.class,
 	Ieee14_GSF_Test.class,
 	IEEE14_N1Scan_Test.class,
+	
+	IEEE14_AclfN1Scan_Test.class,
 	
 	// EDclf
 	IEEE14_Dclf_Test.class,

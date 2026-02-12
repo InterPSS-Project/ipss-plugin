@@ -1,10 +1,14 @@
-package sample.contingency.aclf;
+package org.interpss.core.ca.aclf;
+
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.interpss.CorePluginFactory;
+import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
+import org.junit.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.AclfContingencyObjectFactory;
@@ -13,15 +17,17 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.contingency.aclf.AclfBranchOutage;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.AclfContingencyUtilFunc;
+import com.interpss.core.funcImpl.compare.AclfNetObjectComparator;
 
-public class Ieee14AclfContingencySample {
-	public static void main(String[] args) throws InterpssException {
-		//IpssCorePlugin.init();
-		
+public class IEEE14_AclfN1Scan_Test extends CorePluginTestSetup {
+	@Test
+	public void test() throws InterpssException {
 		AclfNetwork aclfNet = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
 				.load("testData/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();	
+		
+		AclfNetwork baseNet = aclfNet.jsonCopy();
 		
 		// create contingency outage list
 		List<AclfBranchOutage> branchOutageList = new ArrayList<>();
@@ -43,11 +49,23 @@ public class Ieee14AclfContingencySample {
 			
 			try {
 				LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(netCopy);
+				//aclfAlgo.setMaxIterations(50);
+				//aclfAlgo.getNrMethodConfig().setNonDivergent(true);
 				aclfAlgo.loadflow();
+				
+				assertTrue(netCopy.isLfConverged());
 			} catch (InterpssException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		});
+		
+		// compare the network model with the base network model copy, 
+		// to make sure the network model is not modified by the contingency analysis.
+		AclfNetObjectComparator comp = new AclfNetObjectComparator(aclfNet, baseNet);
+		comp.compareNetwork();
+		
+		assertTrue(comp.getDiffMsgList().isEmpty());
 	}
 }
+
