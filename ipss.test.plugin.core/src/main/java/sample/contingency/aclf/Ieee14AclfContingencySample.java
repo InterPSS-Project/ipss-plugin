@@ -25,10 +25,13 @@ public class Ieee14AclfContingencySample {
 		
 		// create contingency outage list
 		List<AclfBranchOutage> branchOutageList = new ArrayList<>();
-		aclfNet.getBranchList().forEach(branch -> {
-			AclfBranchOutage outage = AclfContingencyObjectFactory.createAclfBranchOutage(branch);
-			branchOutageList.add(outage);
-		});
+		aclfNet.getBranchList().stream()
+			// exclude the branch outage, which will cause load flow non-convergence.
+			.filter(branch -> !branch.getId().equals("Bus1->Bus2(1)"))
+			.forEach(branch -> {
+				AclfBranchOutage outage = AclfContingencyObjectFactory.createAclfBranchOutage(branch);
+				branchOutageList.add(outage);
+			});
 		
 		branchOutageList.forEach(outage -> {
 			System.out.println("Outage branch: " + outage.getOutageEquip().getId());
@@ -46,9 +49,5 @@ public class Ieee14AclfContingencySample {
 				e.printStackTrace();
 			}
 		});
-		
-
-		
-
 	}
 }
