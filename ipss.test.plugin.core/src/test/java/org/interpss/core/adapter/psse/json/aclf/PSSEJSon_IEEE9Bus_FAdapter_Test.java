@@ -98,7 +98,7 @@ public class PSSEJSon_IEEE9Bus_FAdapter_Test extends CorePluginTestSetup {
 	
 	@Test
 	public void testJSonImport() throws Exception {
-		AclfNetwork net = IpssAdapter.importAclfNet("testdata/adpter/psse/json/ieee9_export.rawx")
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/json/ieee9_export.rawx")
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_JSON)
 				.load()
