@@ -26,6 +26,10 @@ public class AclfRunConfigRec extends BaseJSONBean {
 	public boolean turnOffIslandBus = true;
 	public boolean autoTurnLine2Xfr = true;
 	
+	public boolean busLoadLowVoltAdj = true;
+	public double vConstPMin = 0.7;
+	public double vConstIMin = 0.5;
+	
 	public boolean includeAdjustments = false;
 	public boolean activateAllAdjCtrl = false;
 	
@@ -109,6 +113,10 @@ public class AclfRunConfigRec extends BaseJSONBean {
         algo.getDataCheckConfig().setAutoSetZeroZBranch(this.autoSetZeroZBranch);
         algo.getDataCheckConfig().setTurnOffIslandBus(this.turnOffIslandBus);
     	algo.getDataCheckConfig().setAutoTurnLine2Xfr(this.autoTurnLine2Xfr);
+    	
+    	algo.getAclfNet().getBusLoadLowVoltConfig().setApplyVoltAdjust(this.busLoadLowVoltAdj);
+    	algo.getAclfNet().getBusLoadLowVoltConfig().setVConstPMin(this.vConstPMin);
+		algo.getAclfNet().getBusLoadLowVoltConfig().setVConstIMin(this.vConstIMin);
         
         // include adjustments/controls
         if (!appluAdjust) {
