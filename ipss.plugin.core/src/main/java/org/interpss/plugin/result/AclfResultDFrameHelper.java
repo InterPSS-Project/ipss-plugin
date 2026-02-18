@@ -83,7 +83,7 @@ public class AclfResultDFrameHelper {
 	 */
 	public List<AclfBusInfo> getBusResults() {
 		List<AclfBusInfo> busInfoList = new LinkedList<>();
-		createBusResults(busInfoList, null, this.aclfNet.getNoActiveBus());
+		createBusResults(busInfoList, null, this.aclfNet.getNoBus()); // default to include all buses
 		return busInfoList;
 	}
 	
@@ -128,6 +128,12 @@ public class AclfResultDFrameHelper {
 		double baseMva = this.aclfNet.getBaseMva();
 					
 		AclfBusInfo busInfo = new AclfBusInfo();
+		
+		// Set area and zone information
+		busInfo.setAreaNo((int)row.getLong("AreaNum"));
+		busInfo.setAreaName((String)row.get("AreaName"));
+		busInfo.setZoneNo((int)row.getLong("ZoneNum"));
+		busInfo.setZoneName((String)row.get("ZoneName"));
 					
 		busInfo.setBusId((String)row.get("ID"));
 		busInfo.setBusName((String)row.get("Name"));
@@ -153,7 +159,10 @@ public class AclfResultDFrameHelper {
 	 */
 	public List<AclfGenInfo> getGenResults() {
 		List<AclfGenInfo> genInfoList = new LinkedList<>();
-		createGenResults(genInfoList, null, 0);
+		int totalGenerators = this.aclfNet.getBusList().stream()
+								.mapToInt(bus -> bus.getContributeGenList().size())
+								.sum();// default to include all gens
+		createGenResults(genInfoList, null, totalGenerators); // default to include all gens
 		return genInfoList;
 	}
 	
