@@ -2,12 +2,15 @@ package org.interpss.result;
 
 import org.dflib.DataFrame;
 import org.dflib.builder.DataFrameArrayAppender;
+import org.dflib.parquet.Parquet;
 import org.interpss.plugin.result.AclfResultAdapter;
 import org.interpss.plugin.result.AclfResultContainer;
-import org.interpss.plugin.result.bean.AclfBusInfo;
 import org.interpss.plugin.result.bean.AclfBranchInfo;
+import org.interpss.plugin.result.bean.AclfBusInfo;
 import org.interpss.plugin.result.bean.AclfGenInfo;
 import org.interpss.plugin.result.bean.AclfNetInfo;
+import org.interpss.plugin.result.dframe.AclfBranchDFrameAdapter;
+import org.interpss.plugin.result.dframe.AclfBusDFrameAdapter;
 import org.interpss.util.FileUtil;
 
 import com.interpss.core.CoreObjectFactory;
@@ -15,9 +18,6 @@ import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.simu.util.sample.SampleTestingCases;
-
-import java.io.FileOutputStream;
-import java.io.OutputStream;
 
 public class Bus5_Result_Sample {
     public static void main(String args[]) throws Exception {
@@ -34,13 +34,50 @@ public class Bus5_Result_Sample {
         //System.out.println(resultStr);
 
         // write the results to a file
-        FileUtil.writeText2File("bus5_result.json", resultStr);
+        FileUtil.writeText2File("output/bus5_result.json", resultStr);
 
         // Convert AclfResultContainer to DataFrames
         DataFrame netDf = toNetInfoDataFrame(results);
         DataFrame busDf = toBusInfoDataFrame(results);
         DataFrame branchDf = toBranchInfoDataFrame(results);
         DataFrame genDf = toGenInfoDataFrame(results);
+
+        Parquet.saver().save(busDf, "output/basic_busDf.parquet");
+
+        DataFrame busDf2 = Parquet.loader().load("output/basic_busDf.parquet");
+
+        System.out.println(busDf2.toString());
+
+        // detailed bus DataFrame with all the fields from AclfBus, including area and zone info, and bus type (Swing, PV, PQ)
+
+        DataFrame detailedBusDf = new AclfBusDFrameAdapter().adapt(net);
+        Parquet.saver().save(detailedBusDf, "output/detailed_busDf.parquet");
+
+        DataFrame detailedBusDf2 = Parquet.loader().load("output/detailed_busDf.parquet");
+
+        System.out.println(detailedBusDf2.toString());
+
+
+        DataFrame basicBusDf = new AclfBusDFrameAdapter().adapt(net, false);
+        Parquet.saver().save(basicBusDf, "output/basicAdapter_busDf.parquet");
+
+        DataFrame basicBusDf2 = Parquet.loader().load("output/basicAdapter_busDf.parquet");
+
+        System.out.println(basicBusDf2.toString());
+
+        // Similarly for branch DataFrame
+        DataFrame detailedBranchDf = new AclfBranchDFrameAdapter().adapt(net);
+        Parquet.saver().save(detailedBranchDf, "output/detailed_branchDf.parquet");
+
+        DataFrame detailedBranchDf2 = Parquet.loader().load("output/detailed_branchDf.parquet");
+
+        System.out.println(detailedBranchDf2.toString());
+
+        DataFrame basicBranchDf = new AclfBranchDFrameAdapter().adapt(net, false);
+        Parquet.saver().save(basicBranchDf, "output/basic_branchDf.parquet");   
+
+        DataFrame basicBranchDf2 = Parquet.loader().load("output/basic_branchDf.parquet");
+        System.out.println(basicBranchDf2.toString());
 
         // Print DataFrames
         StringBuilder df = new StringBuilder();
@@ -52,7 +89,7 @@ public class Bus5_Result_Sample {
                 .append(branchDf).append(System.lineSeparator())
                 .append("=== Gen Info ===").append(System.lineSeparator())
                 .append(genDf).append(System.lineSeparator());
-        FileUtil.writeText2File("DataFrame.txt", df.toString());
+        FileUtil.writeText2File("output/DataFrame.txt", df.toString());
     }
 
     /**
@@ -91,9 +128,9 @@ public class Bus5_Result_Sample {
         for (AclfBusInfo bus : results.getBusResults()) {
             appender.append(
                     bus.getAreaNo(),
-                    bus.getAreaName(),
+                    bus.getAreaName() != null ? bus.getAreaName() : "",
                     bus.getZoneNo(),
-                    bus.getZoneName(),
+                    bus.getZoneName() != null ? bus.getZoneName() : "",
                     bus.getBusId(),
                     bus.getBusName(),
                     bus.getBusType(),
