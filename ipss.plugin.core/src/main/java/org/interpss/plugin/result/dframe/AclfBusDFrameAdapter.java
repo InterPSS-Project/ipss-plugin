@@ -1,5 +1,7 @@
 package org.interpss.plugin.result.dframe;
 
+import java.util.Set;
+
 import org.apache.commons.math3.complex.Complex;
 import org.dflib.DataFrame;
 import org.dflib.Extractor;
@@ -21,6 +23,11 @@ public class AclfBusDFrameAdapter {
 							double nomVolt, double voltMag, double voltAng, 
 							double genP, double genQ, double loadP, double loadQ,
 							double misP, double misQ) {}
+	
+	// Define a record for basic bus info
+	private static record BusBasicDFrameRec(String id, long number, String name,
+							boolean inService, double nomVolt, double voltMag, double voltAng) {}
+	
     // Appender to build the DataFrame
     private DataFrameAppender<BusDFrameRec> appender;
     
@@ -68,35 +75,87 @@ public class AclfBusDFrameAdapter {
 	 * @return the adapted DataFrame
 	 */
     public DataFrame adapt(AclfNetwork aclfNet) {
-        // Append rows from the AclfNetwork bus object
-        for (var bus : aclfNet.getBusList()) {
-        	Complex mis = bus.mismatch(AclfMethodType.NR); 
-        	appender.append(new BusDFrameRec(
-					bus.getId(),
-					bus.getNumber(),
-					bus.getName(),
-					bus.getArea().getName(),
-					bus.getArea().getNumber(),
-					bus.getZone().getName(),
-					bus.getZone().getNumber(),
-					bus.getOwner() != null? bus.getOwner().getName(): "",
-					bus.getOwner() != null? bus.getOwner().getNumber(): 0,
-					bus.isActive(),		
-					bus.isSwing()? "Swing" :
-						bus.isGenPV()? "PV" :
-							bus.isGen()? "PQ" : "Load",
-					bus.getBaseVoltage(), // in pu
-					bus.getVoltageMag(),
-					bus.getVoltageAng(),
-					bus.getGenP(),
-					bus.getGenQ(),
-					bus.getLoadP(),
-					bus.getLoadQ(),
-					mis.getReal(),
-					mis.getImaginary()));
-        }
-        
-    	// Create the final DataFrame
-    	return appender.toDataFrame();    	
+       return adapt(aclfNet, null, true); // default to include all buses and detailed bus information   	
+    }
+
+	/**
+	 * Adapt the AclfNetwork bus data to DataFrame with options for monitored bus IDs and detailed/basic info
+	 * @param aclfNet
+	 * @param isDetailedMode - true to include all bus information, false to include only basic bus information
+	 * @return the adapted DataFrame
+	 */
+	public DataFrame adapt(AclfNetwork aclfNet, boolean isDetailedMode) {
+		return adapt(aclfNet, null, isDetailedMode); // default to include all buses, with option for detailed or basic bus information
+    }
+
+	/**
+	 * Adapt the AclfNetwork bus data to DataFrame with options for monitored bus IDs and detailed/basic info
+	 * @param aclfNet
+	 * @param monitoredBusIDs - set of bus IDs to include in the DataFrame (null or empty to include all buses)
+	 * @param isDetailedMode - true to include all bus information, false to include only basic bus information
+	 * @return the adapted DataFrame
+	 */
+	public DataFrame adapt(AclfNetwork aclfNet, Set<String> monitoredBusIDs, boolean isDetailedMode) {
+		if (isDetailedMode) {
+			// Include all bus information
+			for (var bus : aclfNet.getBusList()) {
+				if (monitoredBusIDs == null || monitoredBusIDs.contains(bus.getId())) {
+					Complex mis = bus.mismatch(AclfMethodType.NR); 
+					appender.append(new BusDFrameRec(
+							bus.getId(),
+							bus.getNumber(),
+							bus.getName(),
+						bus.getArea().getName(),
+						bus.getArea().getNumber(),
+						bus.getZone().getName(),
+						bus.getZone().getNumber(),
+						bus.getOwner() != null? bus.getOwner().getName(): "",
+						bus.getOwner() != null? bus.getOwner().getNumber(): 0,
+						bus.isActive(),		
+						bus.isSwing()? "Swing" :
+							bus.isGenPV()? "PV" :"PQ", // three types of bus, Swing, PV, PQ {including genPQ and loadPQ, or non-gen non-load bus	}
+						bus.getBaseVoltage(), // in volt
+						bus.getVoltageMag(),
+						bus.getVoltageAng(),
+						bus.getGenP(),
+						bus.getGenQ(),
+						bus.getLoadP(),
+						bus.getLoadQ(),
+						mis.getReal(),
+						mis.getImaginary()));
+				}
+			}
+			// Create the final DataFrame with all columns
+			return appender.toDataFrame();
+		} else {
+			// Include only basic bus information
+			DataFrameAppender<BusBasicDFrameRec> basicAppender = DataFrame
+					.byRow(
+						Extractor.$col(BusBasicDFrameRec::id),
+						Extractor.$long(BusBasicDFrameRec::number),
+						Extractor.$col(BusBasicDFrameRec::name),
+						Extractor.$bool(BusBasicDFrameRec::inService),
+						Extractor.$double(BusBasicDFrameRec::nomVolt),
+						Extractor.$double(BusBasicDFrameRec::voltMag),
+						Extractor.$double(BusBasicDFrameRec::voltAng)
+					)
+					.columnNames("ID", "Number", "Name", "InService", "NomVolt", "VoltMag", "VoltAng")
+					.appender();
+			
+			for (var bus : aclfNet.getBusList()) {
+				if (monitoredBusIDs == null || monitoredBusIDs.contains(bus.getId())) {
+					basicAppender.append(new BusBasicDFrameRec(
+							bus.getId(),
+							bus.getNumber(),
+							bus.getName(),
+							bus.isActive(),
+							bus.getBaseVoltage(), // in volt
+							bus.getVoltageMag(),
+							bus.getVoltageAng()));
+				}
+			}
+			// Create the final DataFrame with basic columns only
+			return basicAppender.toDataFrame();
+		}
     }
 }
