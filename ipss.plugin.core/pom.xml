@@ -115,10 +115,17 @@
 		</dependency>
 
 		<dependency>
-		    <groupId>org.dflib</groupId>
-		    <artifactId>dflib-parquet</artifactId>
-		    <version>2.0.0-M6</version>
+			<groupId>org.dflib</groupId>
+			<artifactId>dflib-csv</artifactId>
+			<version>2.0.0-M6</version>
 		</dependency>
+
+		<dependency>
+			<groupId>org.dflib</groupId>
+			<artifactId>dflib-parquet</artifactId>
+			<version>2.0.0-M6</version>
+		</dependency>
+		
     	
   </dependencies>
 
@@ -131,6 +138,25 @@
         <configuration>
           <failIfNoTests>false</failIfNoTests>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>3.3.0</version>
+        <executions>
+          <execution>
+            <id>add-source</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>src/sample/java</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
