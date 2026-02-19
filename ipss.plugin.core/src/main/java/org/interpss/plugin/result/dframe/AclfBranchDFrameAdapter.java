@@ -118,7 +118,8 @@ public class AclfBranchDFrameAdapter {
 	 * @param aclfNet the AclfNetwork object
 	 * @param isDetailedMode flag to indicate whether to include detailed branch information or only basic information (ID, from/to bus info, status)
 	 * @return the DataFrame containing branch	 data
-	 */	public DataFrame adapt(AclfNetwork aclfNet, boolean isDetailedMode) {
+	 */	
+    public DataFrame adapt(AclfNetwork aclfNet, boolean isDetailedMode) {
 		return adapt(aclfNet, null, isDetailedMode); // default to include all branches, with option for detailed or basic branch information
 	}	
 
