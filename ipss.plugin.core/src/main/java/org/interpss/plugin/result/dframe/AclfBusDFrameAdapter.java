@@ -2,13 +2,11 @@ package org.interpss.plugin.result.dframe;
 
 import java.util.Set;
 
-import org.apache.commons.math3.complex.Complex;
 import org.dflib.DataFrame;
 import org.dflib.Extractor;
 import org.dflib.builder.DataFrameAppender;
 
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.algo.AclfMethodType;
 
 /**
  * Adapter to convert AclfBus data to DataFrame
@@ -22,11 +20,11 @@ public class AclfBusDFrameAdapter {
 							boolean inService, String busType,
 							double nomVolt, double voltMag, double voltAng, 
 							double genP, double genQ, double loadP, double loadQ,
-							double misP, double misQ) {}
+							double busInjP, double busInjQ) {}
 	
 	// Define a record for basic bus info
 	private static record BusBasicDFrameRec(String id, long number, String name,
-							boolean inService, double nomVolt, double voltMag, double voltAng) {}
+							boolean inService, double nomVolt, double voltMag, double voltAng, double busInjP, double busInjQ) {}
 	
     // Appender to build the DataFrame
     //private DataFrameAppender<BusDFrameRec> appender;
@@ -59,15 +57,15 @@ public class AclfBusDFrameAdapter {
                     Extractor.$double(BusDFrameRec::genQ),
                     Extractor.$double(BusDFrameRec::loadP),
                     Extractor.$double(BusDFrameRec::loadQ),
-                    Extractor.$double(BusDFrameRec::misP),
-                    Extractor.$double(BusDFrameRec::misQ)
+                    Extractor.$double(BusDFrameRec::busInjP),
+                    Extractor.$double(BusDFrameRec::busInjQ)
                 )
                 // define the column names
                 .columnNames("ID", "Number", "Name", 
 							"AreaName", "AreaNum", "ZoneName", "ZoneNum", "OwnerName", "OwnerNum", 
 							"InService", "BusType", "NomVolt", "VoltMag", "VoltAng", 
 							"GenP", "GenQ", "LoadP", "LoadQ",
-							"MismatchP", "MismatchQ")
+							"BusInjP", "BusInjQ")
                 .appender();
     }
     
@@ -83,6 +81,7 @@ public class AclfBusDFrameAdapter {
 					Extractor.$double(BusBasicDFrameRec::voltMag),
 					Extractor.$double(BusBasicDFrameRec::voltAng)
 				)
+				// define the column names
 				.columnNames("ID", "Number", "Name", "InService", "NomVolt", "VoltMag", "VoltAng")
 				.appender();
     }
@@ -120,15 +119,15 @@ public class AclfBusDFrameAdapter {
 			// Include all bus information
 			for (var bus : aclfNet.getBusList()) {
 				if (monitoredBusIDs == null || monitoredBusIDs.contains(bus.getId())) {
-					Complex mis = bus.mismatch(AclfMethodType.NR); 
+					//Complex mis = bus.mismatch(AclfMethodType.NR); 
 					appender.append(new BusDFrameRec(
-							bus.getId(),
-							bus.getNumber(),
-							bus.getName(),
-						bus.getArea().getName(),
-						bus.getArea().getNumber(),
-						bus.getZone().getName(),
-						bus.getZone().getNumber(),
+						bus.getId(),
+						bus.getNumber(),
+						bus.getName(),
+						bus.getArea() != null ? bus.getArea().getName() : "",
+						bus.getArea() != null ? bus.getArea().getNumber() : 0,
+						bus.getZone() != null ? bus.getZone().getName() : "",
+						bus.getZone() != null ? bus.getZone().getNumber() : 0,
 						bus.getOwner() != null? bus.getOwner().getName(): "",
 						bus.getOwner() != null? bus.getOwner().getNumber(): 0,
 						bus.isActive(),		
@@ -138,11 +137,11 @@ public class AclfBusDFrameAdapter {
 						bus.getVoltageMag(),
 						bus.getVoltageAng(),
 						bus.getGenP(),
-						bus.getGenQ(),
+						bus.calNetGenResults().getImaginary(), // use calNetGenResults to get the genQ value after load flow calculation, as getGenQ() may not be updated with the latest load flow results
 						bus.getLoadP(),
 						bus.getLoadQ(),
-						mis.getReal(),
-						mis.getImaginary()));
+						bus.powerIntoNet().getReal(),
+						bus.powerIntoNet().getImaginary()));
 				}
 			}
 			// Create the final DataFrame with all columns
@@ -150,17 +149,19 @@ public class AclfBusDFrameAdapter {
 		} else {
 			// Include only basic bus information
 			DataFrameAppender<BusBasicDFrameRec> basicAppender = createBasicAppender();
-			
+
 			for (var bus : aclfNet.getBusList()) {
 				if (monitoredBusIDs == null || monitoredBusIDs.contains(bus.getId())) {
 					basicAppender.append(new BusBasicDFrameRec(
 							bus.getId(),
 							bus.getNumber(),
-							bus.getName(),
+							bus.getArea() != null ? bus.getArea().getName() : "",
 							bus.isActive(),
 							bus.getBaseVoltage(), // in volt
 							bus.getVoltageMag(),
-							bus.getVoltageAng()));
+							bus.getVoltageAng(),
+							bus.powerIntoNet().getReal(),
+							bus.powerIntoNet().getImaginary()));
 				}
 			}
 			// Create the final DataFrame with basic columns only
