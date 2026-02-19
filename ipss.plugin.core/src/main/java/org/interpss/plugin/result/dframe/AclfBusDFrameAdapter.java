@@ -23,7 +23,7 @@ public class AclfBusDFrameAdapter {
 							double busInjP, double busInjQ) {}
 	
 	// Define a record for basic bus info
-	private static record BusBasicDFrameRec(String id, long number, String name,String areaName,
+	private static record BusBasicDFrameRec(String id, long number, String name,
 							boolean inService, double nomVolt, double voltMag, double voltAng, double busInjP, double busInjQ) {}
 	
     // Appender to build the DataFrame
@@ -75,12 +75,13 @@ public class AclfBusDFrameAdapter {
 				.byRow(
 					Extractor.$col(BusBasicDFrameRec::id),
 					Extractor.$long(BusBasicDFrameRec::number),
-					Extractor.$col(BusBasicDFrameRec::areaName),
+					Extractor.$col(BusBasicDFrameRec::name),
 					Extractor.$bool(BusBasicDFrameRec::inService),
 					Extractor.$double(BusBasicDFrameRec::nomVolt),
 					Extractor.$double(BusBasicDFrameRec::voltMag),
 					Extractor.$double(BusBasicDFrameRec::voltAng)
 				)
+				// define the column names
 				.columnNames("ID", "Number", "Name", "InService", "NomVolt", "VoltMag", "VoltAng")
 				.appender();
     }
@@ -148,13 +149,12 @@ public class AclfBusDFrameAdapter {
 		} else {
 			// Include only basic bus information
 			DataFrameAppender<BusBasicDFrameRec> basicAppender = createBasicAppender();
-			
+
 			for (var bus : aclfNet.getBusList()) {
 				if (monitoredBusIDs == null || monitoredBusIDs.contains(bus.getId())) {
 					basicAppender.append(new BusBasicDFrameRec(
 							bus.getId(),
 							bus.getNumber(),
-							bus.getName(),
 							bus.getArea() != null ? bus.getArea().getName() : "",
 							bus.isActive(),
 							bus.getBaseVoltage(), // in volt

@@ -96,6 +96,7 @@ public class AclfBranchDFrameAdapter {
 					Extractor.$double(BasicBranchDFrameRec::qTo2From),
 					Extractor.$double(BasicBranchDFrameRec::flowFromSide)
 				)
+				// define the column names
 				.columnNames("ID", "FromBusID", "ToBusID", "CircuitNum",
 						"PFrom2To", "QFrom2To",
 						"PTo2From", "QTo2From", "FlowFromSide")
