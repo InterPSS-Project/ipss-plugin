@@ -28,7 +28,7 @@ from jpype.types import *
 import sys
 from pathlib import Path
 
-init(autoreset=True)  # 自动重置颜色
+init(autoreset=True)  # Auto reset color
 
 def load_prompt(path: str) -> str:
     return Path(path).read_text(encoding="utf-8")
@@ -65,8 +65,10 @@ async def main():
         },
     )
 
+    from src.interpss import ipss
+
     store = SessionStore()
-    tools = make_tools(store)
+    tools = make_tools(store, script_dir, ipss)
 
     loadflow_agent = AssistantAgent(
         name="loadflow_agent",
@@ -74,12 +76,12 @@ async def main():
         model_client=model_client,
         tools=tools,
         reflect_on_tool_use=False,
-        handoffs=["power_grid_schedule_agent"],
+        handoffs=["result_output_agent"],
     )
 
     scheduler_agent = AssistantAgent(
-        name="power_grid_schedule_agent",
-        system_message=load_prompt("autoagent/prompts/scheduler_system.md"),
+        name="result_output_agent",
+        system_message=load_prompt("autoagent/prompts/output_system.md"),
         model_client=model_client,
         tools=[],
         reflect_on_tool_use=True,
@@ -94,17 +96,16 @@ async def main():
         )
     )
 
-    # 用户输入任务
+    # User input task
     task_input = input("发消息：\n> ")
 
-    # 运行团队
+    # Run team
     async for event in team.run_stream(task=task_input):
         pretty_print_event(event)
 
     # 
     # Shutdown JVM
     #
-    print("Shutting down JVM...")
     try:
         jpype.shutdownJVM()
         print("JVM shutdown complete.")

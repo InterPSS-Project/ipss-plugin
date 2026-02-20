@@ -12,7 +12,9 @@ class ipss:
     # InterPSS Core Classes
     #
     from com.interpss.core import CoreObjectFactory
-      
+
+    from com.interpss.core.aclf import AclfNetwork
+
     from com.interpss.core.aclf import AclfGenCode
     from com.interpss.core.aclf import AclfLoadCode
     from com.interpss.core.aclf import AclfBranchCode
