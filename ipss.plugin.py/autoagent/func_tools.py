@@ -36,7 +36,9 @@ def create_tools(session: SessionStore, script_dir: str, ipss: any):
         if (format == "psse") :
             file_path = str(script_dir.parent / "tests" / "testData" / "psse" / "IEEE9Bus" / model_name)
             print(f"File Path: {file_path}")
-            session.aclfNet = ipss.PsseRawFileAdapter.createAclfNet(file_path, ipss.PsseRawFileAdapter.version.PSSE_30)
+            # Automatically determine PSSE version by parsing the file
+            psseVersion = ipss.IpssAdapter.parsePsseVersion(file_path)
+            session.aclfNet = ipss.IpssAdapter.importAclfNet(file_path).setFormat(ipss.IpssAdapter.FileFormat.PSSE).setPsseVersion(psseVersion).load().getImportedObj()
         else :
             file_path = str(script_dir.parent / "tests" / "testData" / "ieee" / model_name)
             print(f"File Path: {file_path}")

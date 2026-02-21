@@ -27,6 +27,7 @@ class ipss:
     #
     from org.interpss.display import AclfOutFunc
     
+    from org.interpss.plugin.pssl.plugin import IpssAdapter
     from org.interpss.display.impl import AclfOut_PSSE
     from org.interpss.display.impl.AclfOut_PSSE import Format as PSSEOutFormat
 
