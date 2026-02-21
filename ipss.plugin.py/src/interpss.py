@@ -7,6 +7,7 @@ class ipss:
     # Commons Classes
     #
     from org.apache.commons.math3.complex import Complex
+    from org.interpss.numeric.datatype.Unit import UnitType
 
     #
     # InterPSS Core Classes

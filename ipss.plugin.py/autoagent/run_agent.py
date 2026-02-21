@@ -1,5 +1,5 @@
 from func_tools import (
-    make_tools,
+    create_tools,
     SessionStore,
 )
 from utils import pretty_print_event
@@ -51,6 +51,9 @@ async def main():
     # Initialize and start the JVM
     JvmManager.initialize_jvm(config)
 
+    # 
+    # Initialize LLM model client
+    #
     model_client = OpenAIChatCompletionClient(
         model="qwen3:14b",
         api_key="ollama",
@@ -65,11 +68,20 @@ async def main():
         },
     )
 
+    # 
+    # Initialize InterPSS
+    #
     from src.interpss import ipss
 
-    store = SessionStore()
-    tools = make_tools(store, script_dir, ipss)
+    # 
+    # Initialize SessionStore and tools
+    #
+    session = SessionStore()
+    tools = create_tools(session, script_dir, ipss)
 
+    # 
+    # Initialize loadflow agent
+    #
     loadflow_agent = AssistantAgent(
         name="loadflow_agent",
         system_message=load_prompt("autoagent/prompts/loadflow_system.md"),
@@ -79,7 +91,10 @@ async def main():
         handoffs=["result_output_agent"],
     )
 
-    scheduler_agent = AssistantAgent(
+    # 
+    # Initialize result output agent
+    #
+    output_agent = AssistantAgent(
         name="result_output_agent",
         system_message=load_prompt("autoagent/prompts/output_system.md"),
         model_client=model_client,
@@ -88,8 +103,11 @@ async def main():
         handoffs=["loadflow_agent"],
     )
 
+    # 
+    # Initialize team
+    #
     team = Swarm(
-        participants=[scheduler_agent, loadflow_agent],
+        participants=[loadflow_agent, output_agent],
         termination_condition=OrTerminationCondition(
             TextMentionTermination(text="TERMINATE"),
             MaxMessageTermination(max_messages=30, include_agent_event=False)
@@ -97,7 +115,7 @@ async def main():
     )
 
     # User input task
-    task_input = input("发消息：\n> ")
+    task_input = input("User Message：\n> ")
 
     # Run team
     async for event in team.run_stream(task=task_input):

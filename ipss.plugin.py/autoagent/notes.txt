@@ -1,1 +1,3 @@
-load IEEE14Bus.ieee network model, then run Loadflow analysis
+load IEEE14Bus.ieee network model in ieee format, then run Loadflow analysis
+
+load ieee9.raw network model in psse format, then run Loadflow analysis
