@@ -25,14 +25,17 @@ public class AclfGenDFrameAdapter {
 			double mwControlPFactor, double mvarControlPFactor) {}
     
 	// Appender to build the DataFrame
-    private DataFrameAppender<GenDFrameRec> appender;
+    //private DataFrameAppender<GenDFrameRec> appender;
     
     /**
      * Constructor to initialize the DataFrame appender
      */
     public AclfGenDFrameAdapter() {
+    }
+    
+    private static DataFrameAppender<GenDFrameRec> createAppender() {
 	  	// Define how to pull data from the object into columns
-        this.appender = DataFrame
+        return DataFrame
                 .byRow(
                 	Extractor.$col(GenDFrameRec::busId),	
 					Extractor.$long(GenDFrameRec::busNumber),
@@ -85,6 +88,7 @@ public class AclfGenDFrameAdapter {
 	 * @return DataFrame containing generator data
 	 */
     public DataFrame adapt(AclfNetwork aclfNet) {
+    	DataFrameAppender<GenDFrameRec> appender = createAppender();
         // Append rows from the AclfNetwork bus object
         for (var bus : aclfNet.getBusList()) {
         	for (var gen : bus.getContributeGenList()) {

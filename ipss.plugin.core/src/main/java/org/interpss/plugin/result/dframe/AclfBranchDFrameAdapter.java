@@ -33,14 +33,17 @@ public class AclfBranchDFrameAdapter {
 			double flowFromSide) {}
     
 	// Appender to build the DataFrame
-    private DataFrameAppender<BranchDFrameRec> appender;
+    //private DataFrameAppender<BranchDFrameRec> appender;
     
     /**
 	 * Constructor to initialize the DataFrame appender
 	 */
     public AclfBranchDFrameAdapter() {
+    }
+    
+    private static DataFrameAppender<BranchDFrameRec> createAppender() {
 	  	// Define how to pull data from the object into columns
-        this.appender = DataFrame
+        return DataFrame
                 .byRow(
                 	Extractor.$col(BranchDFrameRec::id),
                 	Extractor.$col(BranchDFrameRec::name),
@@ -78,6 +81,25 @@ public class AclfBranchDFrameAdapter {
 							"PFrom2To", "QFrom2To",
 							"PTo2From", "QTo2From", "FlowFromSide")
                 .appender();
+    }
+    
+    private static DataFrameAppender<BasicBranchDFrameRec> createBasicInfoAppender() {
+		return DataFrame
+				.byRow(
+					Extractor.$col(BasicBranchDFrameRec::id),
+					Extractor.$col(BasicBranchDFrameRec::fromBusId),
+					Extractor.$col(BasicBranchDFrameRec::toBusId),
+					Extractor.$col(BasicBranchDFrameRec::circuitNum),
+					Extractor.$double(BasicBranchDFrameRec::pFrom2To),
+					Extractor.$double(BasicBranchDFrameRec::qFrom2To),
+					Extractor.$double(BasicBranchDFrameRec::pTo2From),
+					Extractor.$double(BasicBranchDFrameRec::qTo2From),
+					Extractor.$double(BasicBranchDFrameRec::flowFromSide)
+				)
+				.columnNames("ID", "FromBusID", "ToBusID", "CircuitNum",
+						"PFrom2To", "QFrom2To",
+						"PTo2From", "QTo2From", "FlowFromSide")
+				.appender();
     }
     
     /**
@@ -122,6 +144,7 @@ public class AclfBranchDFrameAdapter {
     public DataFrame adapt(AclfNetwork aclfNet, Set<String> monitoredBranchIDs, boolean isDetailedMode) {
         // Append rows from the AclfNetwork bus object
 		if (isDetailedMode) {
+			DataFrameAppender<BranchDFrameRec> appender = createAppender();
 			
 			for (var branch : aclfNet.getBranchList()) {
 				if (monitoredBranchIDs == null || monitoredBranchIDs.contains(branch.getId())) {
@@ -157,22 +180,7 @@ public class AclfBranchDFrameAdapter {
 			return appender.toDataFrame();
 		} else {
 			// Basic branch information
-			DataFrameAppender<BasicBranchDFrameRec> basicAppender = DataFrame
-					.byRow(
-						Extractor.$col(BasicBranchDFrameRec::id),
-						Extractor.$col(BasicBranchDFrameRec::fromBusId),
-						Extractor.$col(BasicBranchDFrameRec::toBusId),
-						Extractor.$col(BasicBranchDFrameRec::circuitNum),
-						Extractor.$double(BasicBranchDFrameRec::pFrom2To),
-						Extractor.$double(BasicBranchDFrameRec::qFrom2To),
-						Extractor.$double(BasicBranchDFrameRec::pTo2From),
-						Extractor.$double(BasicBranchDFrameRec::qTo2From),
-						Extractor.$double(BasicBranchDFrameRec::flowFromSide)
-					)
-					.columnNames("ID", "FromBusID", "ToBusID", "CircuitNum",
-							"PFrom2To", "QFrom2To",
-							"PTo2From", "QTo2From", "FlowFromSide")
-					.appender();
+			DataFrameAppender<BasicBranchDFrameRec> basicAppender = createBasicInfoAppender();
 			
 			for (var branch : aclfNet.getBranchList()) {
 				if (monitoredBranchIDs == null || monitoredBranchIDs.contains(branch.getId())) {

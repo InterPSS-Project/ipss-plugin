@@ -25,14 +25,17 @@ public class AclfLoadDFrameAdapter {
 			long ownerNum, String ownerName) {}
     
 	// Appender to build the DataFrame
-    private DataFrameAppender<LoadDFrameRec> appender;
+    //private DataFrameAppender<LoadDFrameRec> appender;
     
     /**
      * Constructor to initialize the DataFrame appender
      */
     public AclfLoadDFrameAdapter() {
+    }
+    
+    private static DataFrameAppender<LoadDFrameRec> createAppender() {
 	  	// Define how to pull data from the object into columns
-        this.appender = DataFrame
+        return DataFrame
                 .byRow(
                 	Extractor.$col(LoadDFrameRec::busId),
                 	Extractor.$long(LoadDFrameRec::busNumber),
@@ -80,6 +83,8 @@ public class AclfLoadDFrameAdapter {
 	 * @return the adapted DataFrame
 	 */
     public DataFrame adapt(AclfNetwork aclfNet) {
+    	DataFrameAppender<LoadDFrameRec> appender = createAppender();
+    	
         // Append rows from the AclfNetwork bus object
         for (var bus : aclfNet.getBusList()) {
         	for (var load : bus.getContributeLoadList()) {
