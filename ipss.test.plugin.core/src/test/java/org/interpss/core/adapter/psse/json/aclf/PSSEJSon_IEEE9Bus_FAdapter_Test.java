@@ -33,7 +33,7 @@ import org.ieee.odm.adapter.psse.bean.PSSESchema;
 import org.ieee.odm.adapter.psse.json.PSSEJSonAdapter;
 import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.fadapter.export.psse.PSSEJSonBusUpdater;
+import org.interpss.fadapter.psse.export.psse.PSSEJSonBusUpdater;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
