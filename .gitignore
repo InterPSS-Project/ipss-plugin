@@ -6,4 +6,4 @@
 /.classpath
 .project
 /.cursorignore
-logs/*.*
+/logs/
