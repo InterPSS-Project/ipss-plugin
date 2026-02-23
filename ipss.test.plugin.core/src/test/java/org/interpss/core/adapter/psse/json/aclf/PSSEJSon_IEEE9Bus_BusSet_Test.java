@@ -9,7 +9,7 @@ import org.ieee.odm.adapter.psse.bean.PSSESchema;
 import org.ieee.odm.adapter.psse.json.PSSEJSonAdapter;
 import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.fadapter.export.PSSEJSonExporter;
+import org.interpss.fadapter.psse.export.PSSEJSonExporter;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
 import org.junit.Test;
 
