@@ -1,4 +1,4 @@
-package org.interpss.plugin.contingency.parser;
+package org.interpss.plugin.contingency.con_format.bean;
 
 /**
  * A bus-to-bus load (or generation / shunt) transfer event in a PSS/E contingency case.
