@@ -1,6 +1,6 @@
-package org.interpss.plugin.contingency.con_frmt.bean;
+package org.interpss.plugin.contingency.con_fmt.bean;
 
-import org.interpss.plugin.contingency.con_frmt.mapper.ConToIpssMapper;
+import org.interpss.plugin.contingency.con_fmt.mapper.ConToIpssMapper;
 
 /**
  * An event record that disconnects an entire bus from the network.

@@ -1,4 +1,4 @@
-package org.interpss.plugin.contingency.con_frmt.bean;
+package org.interpss.plugin.contingency.con_fmt.bean;
 
 /**
  * The action performed on a bus-attached piece of equipment in a contingency event.

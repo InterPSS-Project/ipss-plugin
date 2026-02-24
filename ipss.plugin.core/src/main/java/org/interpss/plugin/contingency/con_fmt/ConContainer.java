@@ -1,10 +1,10 @@
-package org.interpss.plugin.contingency.con_frmt;
+package org.interpss.plugin.contingency.con_fmt;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.interpss.plugin.contingency.con_frmt.bean.ConCase;
-import org.interpss.plugin.contingency.con_frmt.util.ConFileConverter;
+import org.interpss.plugin.contingency.con_fmt.bean.ConCase;
+import org.interpss.plugin.contingency.con_fmt.util.ConFileConverter;
 
 /**
  * Top-level container produced by parsing an entire PSS/E {@code .con} file.
