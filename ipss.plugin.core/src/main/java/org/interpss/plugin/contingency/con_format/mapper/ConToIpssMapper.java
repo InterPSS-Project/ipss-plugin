@@ -1,12 +1,17 @@
-package org.interpss.plugin.contingency.parser;
+package org.interpss.plugin.contingency.con_format.mapper;
+
+import static com.interpss.common.util.NetUtilFunc.ToBranchId;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.interpss.plugin.contingency.con_format.ConContainer;
+import org.interpss.plugin.contingency.con_format.bean.ConBranchEvent;
+import org.interpss.plugin.contingency.con_format.bean.ConBusEvent;
+import org.interpss.plugin.contingency.con_format.bean.ConCase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.interpss.common.util.NetUtilFunc.ToBranchId;
 import com.interpss.core.AclfContingencyObjectFactory;
 import com.interpss.core.aclf.Aclf3WBranch;
 import com.interpss.core.aclf.AclfBranch;

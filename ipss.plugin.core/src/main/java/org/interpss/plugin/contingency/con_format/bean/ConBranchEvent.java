@@ -1,4 +1,4 @@
-package org.interpss.plugin.contingency.parser;
+package org.interpss.plugin.contingency.con_format.bean;
 
 /**
  * An event record that acts on a two-terminal branch/transformer or on a single
