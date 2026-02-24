@@ -1,12 +1,12 @@
-package org.interpss.plugin.contingency.con_format.util;
+package org.interpss.plugin.contingency.con_frmt.util;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.interpss.plugin.contingency.con_format.ConContainer;
-import org.interpss.plugin.contingency.con_format.bean.ConBranchAction;
-import org.interpss.plugin.contingency.con_format.parser.ConFileParser;
+import org.interpss.plugin.contingency.con_frmt.ConContainer;
+import org.interpss.plugin.contingency.con_frmt.bean.ConBranchAction;
+import org.interpss.plugin.contingency.con_frmt.parser.ConFileParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
