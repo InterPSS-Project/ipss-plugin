@@ -45,22 +45,22 @@ public class ConToIpssMapper_Test extends CorePluginTestSetup {
         net = CoreObjectFactory.createAclfNetwork();
 
         // --- buses ---
-        CoreObjectFactory.createAclfBus("1001", net).get().setNumber(1001);
-        CoreObjectFactory.createAclfBus("1002", net).get().setNumber(1002);
-        CoreObjectFactory.createAclfBus("1003", net).get().setNumber(1003);
+        CoreObjectFactory.createAclfBus("Bus1001", net).get().setNumber(1001);
+        CoreObjectFactory.createAclfBus("Bus1002", net).get().setNumber(1002);
+        CoreObjectFactory.createAclfBus("Bus1003", net).get().setNumber(1003);
 
         // --- branches ---
         // 1001 -> 1002, circuit "1", active
         AclfBranch bra12 = CoreObjectFactory.createAclfBranch();
         bra12.setCircuitNumber("1");
         bra12.setStatus(true);
-        net.addBranch(bra12, "1001", "1002");
+        net.addBranch(bra12, "Bus1001", "Bus1002");
 
         // 1002 -> 1003, circuit "1", active
         AclfBranch bra23 = CoreObjectFactory.createAclfBranch();
         bra23.setCircuitNumber("1");
         bra23.setStatus(true);
-        net.addBranch(bra23, "1002", "1003");
+        net.addBranch(bra23, "Bus1002", "Bus1003");
 
         mapper = new ConToIpssMapper(net);
     }
