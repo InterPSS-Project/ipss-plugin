@@ -1,4 +1,4 @@
-package org.interpss.plugin.contingency.parser;
+package org.interpss.plugin.contingency.con_format.bean;
 
 /**
  * The action performed on a branch or transformer in a contingency event.

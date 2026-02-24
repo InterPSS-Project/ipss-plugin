@@ -1,7 +1,10 @@
-package org.interpss.plugin.contingency.parser;
+package org.interpss.plugin.contingency.con_format;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.interpss.plugin.contingency.con_format.bean.ConCase;
+import org.interpss.plugin.contingency.con_format.util.ConFileConverter;
 
 /**
  * Top-level container produced by parsing an entire PSS/E {@code .con} file.

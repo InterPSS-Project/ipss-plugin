@@ -1,23 +1,24 @@
 package org.interpss.core.contingency.parser;
 
-import java.nio.file.Paths;
-import java.util.List;
-
-import org.interpss.plugin.contingency.parser.ConBranchAction;
-import org.interpss.plugin.contingency.parser.ConBranchEvent;
-import org.interpss.plugin.contingency.parser.ConBusEvent;
-import org.interpss.plugin.contingency.parser.ConBusModAction;
-import org.interpss.plugin.contingency.parser.ConBusModEvent;
-import org.interpss.plugin.contingency.parser.ConCase;
-import org.interpss.plugin.contingency.parser.ConContainer;
-import org.interpss.plugin.contingency.parser.ConEquipAction;
-import org.interpss.plugin.contingency.parser.ConEquipEvent;
-import org.interpss.plugin.contingency.parser.ConEquipMoveEvent;
-import org.interpss.plugin.contingency.parser.ConEquipType;
-import org.interpss.plugin.contingency.parser.ConFileParser;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+
+import java.nio.file.Paths;
+import java.util.List;
+
+import org.interpss.plugin.contingency.con_format.ConContainer;
+import org.interpss.plugin.contingency.con_format.bean.ConBranchAction;
+import org.interpss.plugin.contingency.con_format.bean.ConBranchEvent;
+import org.interpss.plugin.contingency.con_format.bean.ConBusEvent;
+import org.interpss.plugin.contingency.con_format.bean.ConBusModAction;
+import org.interpss.plugin.contingency.con_format.bean.ConBusModEvent;
+import org.interpss.plugin.contingency.con_format.bean.ConCase;
+import org.interpss.plugin.contingency.con_format.bean.ConEquipAction;
+import org.interpss.plugin.contingency.con_format.bean.ConEquipEvent;
+import org.interpss.plugin.contingency.con_format.bean.ConEquipMoveEvent;
+import org.interpss.plugin.contingency.con_format.bean.ConEquipType;
+import org.interpss.plugin.contingency.con_format.parser.ConFileParser;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
