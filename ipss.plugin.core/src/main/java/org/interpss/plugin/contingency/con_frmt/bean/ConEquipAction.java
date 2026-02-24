@@ -1,4 +1,4 @@
-package org.interpss.plugin.contingency.con_format.bean;
+package org.interpss.plugin.contingency.con_frmt.bean;
 
 /**
  * The action performed on a bus-attached piece of equipment in a contingency event.
