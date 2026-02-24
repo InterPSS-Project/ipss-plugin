@@ -41,6 +41,8 @@ import org.interpss.core.ca.IEEE14_N1Scan_Test;
 import org.interpss.core.ca.Ieee14_CA_Test;
 import org.interpss.core.ca.Ieee14_GSF_Test;
 import org.interpss.core.ca.aclf.IEEE14_AclfN1Scan_Test;
+import org.interpss.core.contingency.parser.ConFileParser_Test;
+import org.interpss.core.contingency.parser.ConToIpssMapper_Test;
 import org.interpss.core.dclf.IEEE14_Dclf_Test;
 import org.interpss.core.dclf.edclf.IEEE118_EDclf_Test;
 import org.interpss.core.dclf.edclf.IEEE14_EDclf_Test;
@@ -263,6 +265,10 @@ import org.junit.runners.Suite.SuiteClasses;
 
 	// PSSE Global Adjustment Control
 	SwitchedShuntGControlTest.class,
+	
+	// PSSE Contingency
+	ConFileParser_Test.class,
+	ConToIpssMapper_Test.class,
 	
 	//Acsc5Bus_ODM_TestCase.class,
 	IEEE9Bus_Acsc_Test.class,
