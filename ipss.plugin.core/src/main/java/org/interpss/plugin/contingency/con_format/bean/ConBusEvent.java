@@ -1,4 +1,6 @@
-package org.interpss.plugin.contingency.parser;
+package org.interpss.plugin.contingency.con_format.bean;
+
+import org.interpss.plugin.contingency.con_format.mapper.ConToIpssMapper;
 
 /**
  * An event record that disconnects an entire bus from the network.
