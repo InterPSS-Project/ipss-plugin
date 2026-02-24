@@ -201,17 +201,20 @@ public class ConToIpssMapper {
             return;
         }
 
+        var outageObj = AclfContingencyObjectFactory.createAclfXfr3WOutage(xfr3W, outageType);
+        // this issue has been fixed.
         // AclfContingencyObjectFactory only creates an OPEN-type Xfr3WOutage;
         // for a CLOSE event we still use the same factory method but note the
         // desired type for awareness. Future enhancement: set CLOSE type when
         // the object supports it.
-        var outageObj = AclfContingencyObjectFactory.createAclfXfr3WOutage(xfr3W);
+        /*
         if (outageType == ContingencyBranchOutageType.CLOSE) {
             outageObj.setOutageType(ContingencyBranchOutageType.CLOSE);
             log.debug("Contingency '{}': CLOSE 3W transformer {}", caseLabel, xfr3W.getId());
         } else {
             log.debug("Contingency '{}': DISCONNECT 3W transformer {}", caseLabel, xfr3W.getId());
         }
+        */
 
         target.getOutageEquips().add(outageObj);
     }
