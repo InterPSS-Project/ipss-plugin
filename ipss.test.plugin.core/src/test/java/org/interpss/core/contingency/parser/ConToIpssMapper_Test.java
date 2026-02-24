@@ -1,16 +1,17 @@
 package org.interpss.core.contingency.parser;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.util.List;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.plugin.contingency.parser.ConBranchAction;
-import org.interpss.plugin.contingency.parser.ConBranchEvent;
-import org.interpss.plugin.contingency.parser.ConBusEvent;
-import org.interpss.plugin.contingency.parser.ConCase;
-import org.interpss.plugin.contingency.parser.ConContainer;
-import org.interpss.plugin.contingency.parser.ConToIpssMapper;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import org.interpss.plugin.contingency.con_format.ConContainer;
+import org.interpss.plugin.contingency.con_format.bean.ConBranchAction;
+import org.interpss.plugin.contingency.con_format.bean.ConBranchEvent;
+import org.interpss.plugin.contingency.con_format.bean.ConBusEvent;
+import org.interpss.plugin.contingency.con_format.bean.ConCase;
+import org.interpss.plugin.contingency.con_format.mapper.ConToIpssMapper;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
