@@ -1,4 +1,4 @@
-package org.interpss.plugin.contingency.con_format.bean;
+package org.interpss.plugin.contingency.con_frmt.bean;
 
 /**
  * The modification verb for a bus-level quantity event.
