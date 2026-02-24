@@ -224,7 +224,7 @@ public class ConToIpssMapper {
     // -----------------------------------------------------------------------
 
     /**
-     * Looks up a bus by PSS/E integer bus number via a linear network scan.
+     * Looks up a bus by PSS/E integer bus number via a lookup ( instead of linear network scan).
      * Returns the bus object (whose {@link AclfBus#getId()} gives the
      * InterPSS String bus ID, e.g. {@code "Bus1001"} or {@code "1001"}
      * depending on how the network was loaded).
