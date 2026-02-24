@@ -1,4 +1,4 @@
-package org.interpss.plugin.contingency.parser;
+package org.interpss.plugin.contingency.con_format.bean;
 
 /**
  * An equipment-level event in a PSSE-FORMAT contingency case.
