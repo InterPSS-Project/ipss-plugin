@@ -229,12 +229,16 @@ public class ConToIpssMapper {
      * @return the matching bus, or {@code null} if not found
      */
     private AclfBus findBusByNumber(int busNum) {
+    	// PSS/E busid = "Bus"+busNum in InterPSS implementation.
+    	return net.getBus("Bus"+busNum);
+    	/*
         for (AclfBus bus : net.getBusList()) {
             if ((int) bus.getNumber() == busNum) {
                 return bus;
             }
         }
         return null;
+        */
     }
 
     /**
