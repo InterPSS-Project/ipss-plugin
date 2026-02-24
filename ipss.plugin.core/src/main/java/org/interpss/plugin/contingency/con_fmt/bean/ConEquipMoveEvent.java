@@ -1,4 +1,4 @@
-package org.interpss.plugin.contingency.con_frmt.bean;
+package org.interpss.plugin.contingency.con_fmt.bean;
 
 /**
  * A bus-to-bus load (or generation / shunt) transfer event in a PSS/E contingency case.
