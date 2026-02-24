@@ -6,12 +6,12 @@ import static org.junit.Assert.assertNotNull;
 import java.util.List;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.plugin.contingency.con_format.ConContainer;
-import org.interpss.plugin.contingency.con_format.bean.ConBranchAction;
-import org.interpss.plugin.contingency.con_format.bean.ConBranchEvent;
-import org.interpss.plugin.contingency.con_format.bean.ConBusEvent;
-import org.interpss.plugin.contingency.con_format.bean.ConCase;
-import org.interpss.plugin.contingency.con_format.mapper.ConToIpssMapper;
+import org.interpss.plugin.contingency.con_frmt.ConContainer;
+import org.interpss.plugin.contingency.con_frmt.bean.ConBranchAction;
+import org.interpss.plugin.contingency.con_frmt.bean.ConBranchEvent;
+import org.interpss.plugin.contingency.con_frmt.bean.ConBusEvent;
+import org.interpss.plugin.contingency.con_frmt.bean.ConCase;
+import org.interpss.plugin.contingency.con_frmt.mapper.ConToIpssMapper;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
