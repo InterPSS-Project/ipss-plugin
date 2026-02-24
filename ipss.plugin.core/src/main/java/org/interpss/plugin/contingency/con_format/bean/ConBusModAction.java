@@ -1,4 +1,4 @@
-package org.interpss.plugin.contingency.parser;
+package org.interpss.plugin.contingency.con_format.bean;
 
 /**
  * The modification verb for a bus-level quantity event.
