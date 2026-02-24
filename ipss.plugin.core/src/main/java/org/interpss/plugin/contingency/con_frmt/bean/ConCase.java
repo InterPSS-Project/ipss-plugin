@@ -1,4 +1,4 @@
-package org.interpss.plugin.contingency.con_format.bean;
+package org.interpss.plugin.contingency.con_frmt.bean;
 
 import java.util.ArrayList;
 import java.util.List;
