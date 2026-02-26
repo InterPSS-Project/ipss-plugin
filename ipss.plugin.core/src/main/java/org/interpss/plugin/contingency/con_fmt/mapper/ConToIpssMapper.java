@@ -162,6 +162,9 @@ public class ConToIpssMapper {
                     mapTwoTerminalBranchOutage(event, target, caseLabel, ContingencyBranchOutageType.CLOSE);
             }
             case DISCONNECT_3W_WINDING ->
+            		// TODO: this might be disconnecting a single winding instead of the whole 3W transformer; 
+            		// future enhancement: support single-winding outages when the source data and contingency 
+            		// object model support it
                     map3WBranchOutage(event, target, caseLabel, ContingencyBranchOutageType.OPEN);
             default ->
                     log.warn("Contingency '{}': unhandled branch action {}", caseLabel, event.getAction());
