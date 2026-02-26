@@ -1,8 +1,9 @@
 package sample.dclf.bus25k;
 
+import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
+
 import org.interpss.IpssCorePlugin;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.DclfAlgoObjectFactory;

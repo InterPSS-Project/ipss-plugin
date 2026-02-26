@@ -14,8 +14,8 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.AclfContingencyObjectFactory;
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.contingency.aclf.AclfBranchOutage;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.contingency.aclf.AclfBranchOutage;
 import com.interpss.core.funcImpl.AclfContingencyUtilFunc;
 import com.interpss.core.funcImpl.compare.AclfNetObjectComparator;
 

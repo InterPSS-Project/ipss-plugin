@@ -21,12 +21,12 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.contingency.ContingencyBranchOutageType;
-import com.interpss.core.aclf.contingency.dclf.DclfBranchOutage;
-import com.interpss.core.aclf.contingency.dclf.DclfOutageBranch;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoGen;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoLoad;
+import com.interpss.core.contingency.ContingencyBranchOutageType;
+import com.interpss.core.contingency.dclf.DclfBranchOutage;
+import com.interpss.core.contingency.dclf.DclfOutageBranch;
 
 public class IEEE14_ATC_Opt_Sample {
 	static AtomicCounter cnt = new AtomicCounter();
