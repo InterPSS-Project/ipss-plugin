@@ -19,8 +19,8 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.contingency.ContingencyBranchOutageType;
-import com.interpss.core.aclf.contingency.aclf.AclfMultiOutage;
+import com.interpss.core.contingency.ContingencyBranchOutageType;
+import com.interpss.core.contingency.aclf.AclfMultiOutage;
 
 /**
  * Unit tests for {@link ConToIpssMapper}.
