@@ -17,8 +17,8 @@ import com.interpss.core.aclf.Aclf3WBranch;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.contingency.ContingencyBranchOutageType;
-import com.interpss.core.aclf.contingency.aclf.AclfMultiOutage;
+import com.interpss.core.contingency.ContingencyBranchOutageType;
+import com.interpss.core.contingency.aclf.AclfMultiOutage;
 import com.interpss.core.net.Branch;
 
 /**
