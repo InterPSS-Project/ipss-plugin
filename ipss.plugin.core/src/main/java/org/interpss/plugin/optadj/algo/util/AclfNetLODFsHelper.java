@@ -12,9 +12,9 @@ import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfNetwork;
-import com.interpss.core.aclf.contingency.ContingencyBranchOutageType;
-import com.interpss.core.aclf.contingency.dclf.DclfOutageBranch;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
+import com.interpss.core.contingency.ContingencyBranchOutageType;
+import com.interpss.core.contingency.dclf.DclfOutageBranch;
 import com.interpss.core.net.Branch;
 
 
