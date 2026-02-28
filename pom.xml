@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
-        <ipss.core.version>1.0.5</ipss.core.version>
+        <ipss.core.version>1.0.6</ipss.core.version>
         <ieee.odm.version>1.0</ieee.odm.version>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
@@ -16,7 +16,7 @@
 
     <groupId>com.interpss</groupId>
     <artifactId>ipss.plugin</artifactId>
-    <version>1.0.5</version>
+    <version>1.0.6</version>
     <packaging>pom</packaging>
 
     <modules>
