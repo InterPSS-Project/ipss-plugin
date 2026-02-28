@@ -9,8 +9,8 @@ import org.interpss.fadapter.IpssFileAdapter;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.algo.dclf.CaBranchOutageType;
-import com.interpss.core.algo.dclf.CaOutageBranch;
+import com.interpss.core.contingency.ContingencyBranchOutageType;
+import com.interpss.core.contingency.dclf.DclfOutageBranch;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 
@@ -33,7 +33,7 @@ public class Case1354Investigation {
 		System.out.println("Pre-outage flow: " + branchMonitor.getDclfFlow() * aclfNet.getBaseMva());	
 		
 		DclfAlgoBranch branchOut = caAlgo.getDclfAlgoBranch(aclfNet.getAclfBranchNameLookupTable().get("Branch76").getId());
-		CaOutageBranch outageBranch = DclfAlgoObjectFactory.createCaOutageBranch(branchOut, CaBranchOutageType.OPEN);
+		DclfOutageBranch outageBranch = DclfAlgoObjectFactory.createCaOutageBranch(branchOut, ContingencyBranchOutageType.OPEN);
         double preFlow = outageBranch.getDclfFlow();
         
         double f = caAlgo.lineOutageDFactor(outageBranch, branchMonitor.getBranch());
