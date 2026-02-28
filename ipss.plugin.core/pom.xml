@@ -3,162 +3,162 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-  <modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-      <groupId>com.interpss</groupId>
-      <artifactId>ipss.plugin</artifactId>
-      <version>1.0.5</version>
-  </parent>
- 
-   <artifactId>ipss.plugin.core</artifactId>
-   <packaging>jar</packaging>
-  
-  <properties>
-  </properties>
+    <parent>
+        <groupId>com.interpss</groupId>
+        <artifactId>ipss.plugin</artifactId>
+        <version>1.0.6</version>
+    </parent>
 
-  <dependencies>
+    <artifactId>ipss.plugin.core</artifactId>
+    <packaging>jar</packaging>
 
-    <dependency>
+    <properties>
+    </properties>
+
+    <dependencies>
+
+        <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.13.1</version>
-    </dependency>
-    
-	<dependency>
-	    <groupId>org.apache.logging.log4j</groupId>
-	    <artifactId>log4j-api</artifactId>
-	    <version>2.25.3</version>
-	</dependency>
-	<dependency>
-	    <groupId>org.apache.logging.log4j</groupId>
-	    <artifactId>log4j-core</artifactId>
-	    <version>2.25.3</version>
-	</dependency>
-	<dependency>
-	    <groupId>org.apache.logging.log4j</groupId>
-	    <artifactId>log4j-slf4j-impl</artifactId>
-	    <version>2.25.3</version>
-	</dependency> 
-	
-	<dependency>
-	    <groupId>org.mvel</groupId>
-	    <artifactId>mvel2</artifactId>
-	    <version>2.5.2.Final</version>
-	</dependency>
-	<!-- https://mvnrepository.com/artifact/org.apache.groovy/groovy -->
-	<dependency>
-	    <groupId>org.apache.groovy</groupId>
-	    <artifactId>groovy</artifactId>
-	    <version>4.0.27</version>
-	</dependency>
+        </dependency>
 
- 	<dependency>
-	        <groupId>javax.xml.bind</groupId>
-	        <artifactId>jaxb-api</artifactId>
-	        <version>2.3.1</version>
-	    </dependency>	
-	<dependency>
-	    <groupId>org.apache.poi</groupId>
-	    <artifactId>poi</artifactId>
-	    <version>5.4.0</version>
-	</dependency>
-	<dependency>
-	    <groupId>org.apache.poi</groupId>
-	    <artifactId>poi-ooxml</artifactId>
-	    <version>5.4.0</version>
-	</dependency>	
-	<!-- https://mvnrepository.com/artifact/org.swinglabs/swing-layout -->
-	<dependency>
-	    <groupId>org.swinglabs</groupId>
-	    <artifactId>swing-layout</artifactId>
-	    <version>1.0.3</version>
-	</dependency>	
-	
-	<!-- https://mvnrepository.com/artifact/colt/colt -->
-	<dependency>
-	    <groupId>colt</groupId>
-	    <artifactId>colt</artifactId>
-	    <version>1.2.0</version>
-	</dependency>	
-	
-	<dependency>
-	    <groupId>org.ojalgo</groupId>
-	    <artifactId>ojalgo</artifactId>
-	    <version>51.2.0</version>
-	</dependency>
-	
-	<!-- https://mvnrepository.com/artifact/com.datumbox/lpsolve -->
-	<dependency>
-	    <groupId>com.datumbox</groupId>
-	    <artifactId>lpsolve</artifactId>
-	    <version>5.5.2.0</version>
-	</dependency>	
-		
-	<dependency>
-	    <groupId>org.apache.commons</groupId>
-	    <artifactId>commons-pool2</artifactId>
-	    <version>2.12.1</version>
-	</dependency>
-	
-		<!-- https://mvnrepository.com/artifact/org.dflib/dflib -->
-		<dependency>
-		    <groupId>org.dflib</groupId>
-		    <artifactId>dflib</artifactId>
-		    <version>2.0.0-M6</version>
-		</dependency>		
-			
-		<dependency>
-		    <groupId>org.dflib</groupId>
-		    <artifactId>dflib-json</artifactId>
-		    <version>2.0.0-M6</version>
-		</dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>2.25.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.25.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>2.25.3</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.dflib</groupId>
-			<artifactId>dflib-csv</artifactId>
-			<version>2.0.0-M6</version>
-		</dependency>
+        <dependency>
+            <groupId>org.mvel</groupId>
+            <artifactId>mvel2</artifactId>
+            <version>2.5.2.Final</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.groovy/groovy -->
+        <dependency>
+            <groupId>org.apache.groovy</groupId>
+            <artifactId>groovy</artifactId>
+            <version>4.0.27</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.dflib</groupId>
-			<artifactId>dflib-parquet</artifactId>
-			<version>2.0.0-M6</version>
-		</dependency>
-		
-    	
-  </dependencies>
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+            <version>5.4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.4.0</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.swinglabs/swing-layout -->
+        <dependency>
+            <groupId>org.swinglabs</groupId>
+            <artifactId>swing-layout</artifactId>
+            <version>1.0.3</version>
+        </dependency>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.12.4</version>
-        <configuration>
-          <failIfNoTests>false</failIfNoTests>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <version>3.3.0</version>
-        <executions>
-          <execution>
-            <id>add-source</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>add-source</goal>
-            </goals>
-            <configuration>
-              <sources>
-                <source>src/sample/java</source>
-              </sources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
+        <!-- https://mvnrepository.com/artifact/colt/colt -->
+        <dependency>
+            <groupId>colt</groupId>
+            <artifactId>colt</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ojalgo</groupId>
+            <artifactId>ojalgo</artifactId>
+            <version>51.2.0</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.datumbox/lpsolve -->
+        <dependency>
+            <groupId>com.datumbox</groupId>
+            <artifactId>lpsolve</artifactId>
+            <version>5.5.2.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
+            <version>2.12.1</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.dflib/dflib -->
+        <dependency>
+            <groupId>org.dflib</groupId>
+            <artifactId>dflib</artifactId>
+            <version>2.0.0-M6</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dflib</groupId>
+            <artifactId>dflib-json</artifactId>
+            <version>2.0.0-M6</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dflib</groupId>
+            <artifactId>dflib-csv</artifactId>
+            <version>2.0.0-M6</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dflib</groupId>
+            <artifactId>dflib-parquet</artifactId>
+            <version>2.0.0-M6</version>
+        </dependency>
+
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.12.4</version>
+                <configuration>
+                    <failIfNoTests>false</failIfNoTests>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <id>add-source</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/sample/java</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
