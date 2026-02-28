@@ -200,7 +200,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 
     @Test
 	public void test_5Bus_SwitchedShunt_continuous_range() throws Exception {
-		//IpssLogger.getLogger().setLevel(Level.INFO);
+	
 		AclfNetwork net = createTestCase();
 		
 
@@ -210,11 +210,10 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
   		assertTrue("Bus 4 should exist", bus4 != null);
   		assertTrue("Bus 4 should have switched shunt", bus4.isSwitchedShunt());
 
-        //change the control mode to discrete
+   
         bus4.getFirstSwitchedShunt(true).setControlMode(AclfAdjustControlMode.CONTINUOUS);
         bus4.getFirstSwitchedShunt(true).setAdjControlType(AclfAdjustControlType.RANGE_CONTROL);
 
-        //TODO why the following setting is not working and I need to use setVSpecified?
         bus4.getFirstSwitchedShunt(true).setDesiredControlRange(new LimitType(1.03, 1.02));
 
         //bus4.getSwitchedShunt().setVSpecified(1.02);
@@ -242,7 +241,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 
      @Test
 	public void test_5Bus_SwitchedShunt_continuous_range_v35() throws Exception {
-		//IpssLogger.getLogger().setLevel(Level.INFO);
+		
 		AclfNetwork net = createTestCaseContinuousV35();
 		
 
@@ -275,8 +274,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
          //printout the power flow results
   		System.out.println(AclfOutFunc.loadFlowSummary(net));
 
-        // assertEquals("Switched shunt Q at Bus 4", 0/100.0, 
-        // 		bus4.getSwitchedShunt().getQ(), 0.01);
+    
 
         assertTrue("Bus 4 voltage should be within reasonable range within tolerance", 
             bus4.getVoltageMag() > 1.0195 && bus4.getVoltageMag() < 1.0305);
@@ -296,20 +294,22 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
   		assertTrue("Bus 4 should exist", bus4 != null);
   		assertTrue("Bus 4 should have switched shunt", bus4.isSwitchedShunt());
 
-        //change the control mode to discrete
+        //change the control type to point control
         bus4.getFirstSwitchedShunt(true).setControlMode(AclfAdjustControlMode.CONTINUOUS);
         bus4.getFirstSwitchedShunt(true).setAdjControlType(AclfAdjustControlType.POINT_CONTROL);
 
         //TODO why the following setting is not working and I need to use setVSpecified?
         //bus4.getSwitchedShunt().setDesiredControlRange(new LimitType(1.03, 1.02));
 
-        bus4.getFirstSwitchedShunt(true).setVSpecified(1.02);
+        bus4.getFirstSwitchedShunt(true).setVSpecified(1.025);
 
         System.out.println(bus4.getFirstSwitchedShunt(true).toString());
 
         LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		//algo.getLfAdjAlgo().setApplyAdjustAlgo(false); // Disable adjustment algorithm (locked shunt)
 		algo.setMaxIterations(30);
+		algo.getLfAdjAlgo().getVoltAdjConfig().setToleranceFactor(1);
+		algo.setTolerance(0.001);
 	  	algo.loadflow();
 	  	
   		assertTrue("Load flow should converge with locked shunt", net.isLfConverged());
@@ -321,7 +321,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
         // 		bus4.getSwitchedShunt().getQ(), 0.01);
 
         assertTrue("Bus 4 voltage should be within reasonable range", 
-            bus4.getVoltageMag() > 1.019 && bus4.getVoltageMag() < 1.021);
+            bus4.getVoltageMag() > 1.024 && bus4.getVoltageMag() < 1.026);
 
 
 	}
