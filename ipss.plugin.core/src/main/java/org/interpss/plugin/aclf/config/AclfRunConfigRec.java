@@ -64,8 +64,9 @@ public class AclfRunConfigRec extends BaseJSONBean {
 	public double limitCtrlTolearnceFactor = 10.0;
 	public AdjustApplyType limitCtrlApplyType = AdjustApplyType.DURING_ITERATION;
 	
+	// TODO: use absolute value for voltAdjTolerance
 	public int voltAdjStartPoint = 10;
-	public double voltAdjTolearnceFactor = 10.0;
+	public double voltAdjTolearnce = 0.01;
 	public AdjustApplyType voltAdjApplyType = AdjustApplyType.DURING_ITERATION;
 	
 	public int powerAdjStartPoint = 10;
@@ -165,8 +166,9 @@ public class AclfRunConfigRec extends BaseJSONBean {
         	algo.getLfAdjAlgo().getLimitCtrlConfig().setToleranceFactor(this.limitCtrlTolearnceFactor);
         	algo.getLfAdjAlgo().getLimitCtrlConfig().setAdjustAppType(this.limitCtrlApplyType);
 
+        	// TODO: use absolute value for voltAdjTolerance
         	algo.getLfAdjAlgo().getVoltAdjConfig().setStartPoint(this.voltAdjStartPoint);
-        	algo.getLfAdjAlgo().getVoltAdjConfig().setToleranceFactor(this.voltAdjTolearnceFactor);
+        	algo.getLfAdjAlgo().getVoltAdjConfig().setAdjTolerance(this.voltAdjTolearnce);
         	algo.getLfAdjAlgo().getVoltAdjConfig().setAdjustAppType(this.voltAdjApplyType);
 
         	algo.getLfAdjAlgo().getPowerAdjConfig().setStartPoint(this.powerAdjStartPoint);
