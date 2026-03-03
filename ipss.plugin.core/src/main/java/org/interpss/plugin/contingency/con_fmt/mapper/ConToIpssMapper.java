@@ -23,6 +23,7 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.ContingencyBusDeviceType;
+import com.interpss.core.contingency.aclf.AclfBranchOutage;
 import com.interpss.core.contingency.aclf.AclfMultiOutage;
 import com.interpss.core.net.Branch;
 
@@ -175,10 +176,9 @@ public class ConToIpssMapper {
             boolean fromMatch = bra.getFromBus() == bus;
             boolean toMatch   = bra.getToBus()   == bus;
             if (fromMatch || toMatch) {
-                target.getOutageEquips().add(
-                        AclfContingencyObjectFactory.createAclfBranchOutage(
-                                bra, ContingencyBranchOutageType.OPEN));
-                addedCount++;
+                if (addBranchOutageIfAbsent(bra, ContingencyBranchOutageType.OPEN, target, caseLabel)) {
+                    addedCount++;
+                }
             }
         }
 
@@ -268,11 +268,35 @@ public class ConToIpssMapper {
             return;
         }
 
-        target.getOutageEquips().add(
-                AclfContingencyObjectFactory.createAclfBranchOutage(branch, outageType));
+        if (!addBranchOutageIfAbsent(branch, outageType, target, caseLabel)) {
+            return;
+        }
 
         log.debug("Contingency '{}': {} branch {} ({}->{})", caseLabel, outageType,
                 branch.getId(), event.getFromBusNum(), event.getToBusNum());
+    }
+
+    private boolean addBranchOutageIfAbsent(AclfBranch branch, ContingencyBranchOutageType outageType,
+                                            AclfMultiOutage target, String caseLabel) {
+        for (Object outageEquip : target.getOutageEquips()) {
+            if (!(outageEquip instanceof AclfBranchOutage)) {
+                continue;
+            }
+            AclfBranchOutage existing = (AclfBranchOutage) outageEquip;
+            if (existing.getOutageEquip() == null) {
+                continue;
+            }
+            if (existing.getOutageType() == outageType
+                    && branch.getId().equals(existing.getOutageEquip().getId())) {
+                log.warn("Contingency '{}': duplicate mapped branch outage skipped: {} ({})",
+                        caseLabel, branch.getId(), outageType);
+                return false;
+            }
+        }
+
+        target.getOutageEquips().add(
+                AclfContingencyObjectFactory.createAclfBranchOutage(branch, outageType));
+        return true;
     }
 
     // ---- three-winding ----
