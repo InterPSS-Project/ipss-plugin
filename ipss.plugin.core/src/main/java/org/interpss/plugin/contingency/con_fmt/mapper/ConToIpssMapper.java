@@ -11,6 +11,7 @@ import org.interpss.plugin.contingency.con_fmt.bean.ConBusEvent;
 import org.interpss.plugin.contingency.con_fmt.bean.ConCase;
 import org.interpss.plugin.contingency.con_fmt.bean.ConEquipAction;
 import org.interpss.plugin.contingency.con_fmt.bean.ConEquipEvent;
+import org.interpss.plugin.contingency.con_fmt.bean.ConEquipType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -144,7 +145,10 @@ public class ConToIpssMapper {
     }
 
     private String buildEquipEventKey(ConEquipEvent event) {
-        String equipId = event.getEquipId() != null ? event.getEquipId() : "";
+        String equipId = event.getEquipId() != null ? event.getEquipId().trim() : "";
+        if (event.getEquipType() == ConEquipType.SWSHUNT && equipId.isEmpty()) {
+            equipId = "1";
+        }
         return event.getAction() + "|" + event.getEquipType() + "|" + equipId + "|" + event.getBusNum();
     }
 
@@ -225,7 +229,18 @@ public class ConToIpssMapper {
             return;
         }
 
-        String equipId = event.getEquipId() != null ? event.getEquipId() : "";
+        String equipId = event.getEquipId() != null ? event.getEquipId().trim() : "";
+        if (event.getEquipType() == ConEquipType.SWSHUNT && equipId.isEmpty()) {
+            equipId = "1";
+        }
+
+        if (equipId.isEmpty() && (event.getEquipType() == ConEquipType.MACHINE
+            || event.getEquipType() == ConEquipType.LOAD)) {
+            log.warn("Contingency '{}': equip type {} at bus {} has blank id; event skipped",
+                caseLabel, event.getEquipType(), event.getBusNum());
+            return;
+        }
+
         switch (event.getEquipType()) {
             case MACHINE -> target.getOutageEquips().add(
                     AclfContingencyObjectFactory.createBusDeviceOutage(
