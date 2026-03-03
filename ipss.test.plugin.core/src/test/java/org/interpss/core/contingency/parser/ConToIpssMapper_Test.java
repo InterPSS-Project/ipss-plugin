@@ -1,8 +1,5 @@
 package org.interpss.core.contingency.parser;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.util.List;
 
 import org.interpss.CorePluginTestSetup;
@@ -12,6 +9,9 @@ import org.interpss.plugin.contingency.con_fmt.bean.ConBranchEvent;
 import org.interpss.plugin.contingency.con_fmt.bean.ConBusEvent;
 import org.interpss.plugin.contingency.con_fmt.bean.ConCase;
 import org.interpss.plugin.contingency.con_fmt.mapper.ConToIpssMapper;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -20,6 +20,7 @@ import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.contingency.ContingencyBranchOutageType;
+import com.interpss.core.contingency.aclf.AclfBranchOutage;
 import com.interpss.core.contingency.aclf.AclfMultiOutage;
 
 /**
@@ -214,6 +215,30 @@ public class ConToIpssMapper_Test extends CorePluginTestSetup {
         AclfMultiOutage outage = mapper.mapCase(cas);
 
         assertEquals(2, outage.getOutageEquips().size());
+    }
+
+    /**
+     * Duplicate branch events in one case should be deduplicated, and all mapped
+     * outage items must keep a non-null outage equipment reference.
+     */
+    @Test
+    public void testMapCase_duplicateBranchEvent_dedupAndNoNullOutageEquip() {
+        ConCase cas = new ConCase("253686_DUP");
+        cas.addBranchEvent(new ConBranchEvent(ConBranchAction.DISCONNECT, 1001, 1002, "1"));
+        cas.addBranchEvent(new ConBranchEvent(ConBranchAction.DISCONNECT, 1001, 1002, "1")); // duplicate
+        cas.addBranchEvent(new ConBranchEvent(ConBranchAction.DISCONNECT, 1002, 1003, "1"));
+
+        AclfMultiOutage outage = mapper.mapCase(cas);
+
+        // duplicate 1001-1002 event is skipped, leaving two unique outages
+        assertEquals(2, outage.getOutageEquips().size());
+
+        outage.getOutageEquips().forEach(item -> {
+            assertTrue(item instanceof AclfBranchOutage);
+            assertNotNull(((AclfBranchOutage) item).getOutageEquip());
+            assertNotNull(((AclfBranchOutage) item).getOutageEquip().getId());
+            assertEquals(ContingencyBranchOutageType.OPEN, item.getOutageType());
+        });
     }
 
     // -----------------------------------------------------------------------
