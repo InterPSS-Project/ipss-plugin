@@ -34,6 +34,10 @@ public class AclfBusDFrameAdapter {
 	 */
     public AclfBusDFrameAdapter() {
     }
+
+	private static boolean shouldIncludeBus(Set<String> monitoredBusIDs, String busId) {
+		return monitoredBusIDs == null || monitoredBusIDs.isEmpty() || monitoredBusIDs.contains(busId);
+	}
     
     private static DataFrameAppender<BusDFrameRec> createAppender() {
 	  	// Define how to pull data from the object into columns
@@ -79,10 +83,12 @@ public class AclfBusDFrameAdapter {
 					Extractor.$bool(BusBasicDFrameRec::inService),
 					Extractor.$double(BusBasicDFrameRec::nomVolt),
 					Extractor.$double(BusBasicDFrameRec::voltMag),
-					Extractor.$double(BusBasicDFrameRec::voltAng)
+					Extractor.$double(BusBasicDFrameRec::voltAng),
+					Extractor.$double(BusBasicDFrameRec::busInjP),
+                    Extractor.$double(BusBasicDFrameRec::busInjQ)
 				)
 				// define the column names
-				.columnNames("ID", "Number", "Name", "InService", "NomVolt", "VoltMag", "VoltAng")
+				.columnNames("ID", "Number", "Name", "InService", "NomVolt", "VoltMag", "VoltAng", "BusInjP", "BusInjQ")
 				.appender();
     }
     
@@ -118,7 +124,7 @@ public class AclfBusDFrameAdapter {
 			DataFrameAppender<BusDFrameRec> appender = createAppender();
 			// Include all bus information
 			for (var bus : aclfNet.getBusList()) {
-				if (monitoredBusIDs == null || monitoredBusIDs.contains(bus.getId())) {
+				if (shouldIncludeBus(monitoredBusIDs, bus.getId())) {
 					//Complex mis = bus.mismatch(AclfMethodType.NR); 
 					appender.append(new BusDFrameRec(
 						bus.getId(),
@@ -151,11 +157,11 @@ public class AclfBusDFrameAdapter {
 			DataFrameAppender<BusBasicDFrameRec> basicAppender = createBasicAppender();
 
 			for (var bus : aclfNet.getBusList()) {
-				if (monitoredBusIDs == null || monitoredBusIDs.contains(bus.getId())) {
+				if (shouldIncludeBus(monitoredBusIDs, bus.getId())) {
 					basicAppender.append(new BusBasicDFrameRec(
 							bus.getId(),
 							bus.getNumber(),
-							bus.getArea() != null ? bus.getArea().getName() : "",
+							bus.getName(),
 							bus.isActive(),
 							bus.getBaseVoltage(), // in volt
 							bus.getVoltageMag(),
