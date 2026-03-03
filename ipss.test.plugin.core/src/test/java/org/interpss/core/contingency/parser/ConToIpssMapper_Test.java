@@ -274,6 +274,42 @@ public class ConToIpssMapper_Test extends CorePluginTestSetup {
         assertEquals("Bus1002", genOutage.getOutageEquip().getId());
     }
 
+    /**
+     * Empty equipment id in REMOVE MACHINE should be skipped gracefully
+     * instead of throwing an InterPSS runtime exception.
+     */
+    @Test
+    public void testMapCase_machineOutage_blankId_isSkipped() {
+        ConCase cas = new ConCase("BLANK_GEN_ID");
+        cas.addEquipEvent(new ConEquipEvent(ConEquipAction.REMOVE, ConEquipType.MACHINE, "", 1002));
+
+        AclfMultiOutage outage = mapper.mapCase(cas);
+
+        assertNotNull(outage);
+        assertEquals(0, outage.getOutageEquips().size());
+    }
+
+    /**
+     * SWSHUNT id is optional in .con input; blank id should default to "1".
+     */
+    @Test
+    public void testMapCase_swshuntOutage_blankId_defaultsToOne() {
+        ConCase cas = new ConCase("BLANK_SWSHUNT_ID");
+        cas.addEquipEvent(new ConEquipEvent(ConEquipAction.REMOVE, ConEquipType.SWSHUNT, "", 1002));
+
+        AclfMultiOutage outage = mapper.mapCase(cas);
+
+        assertNotNull(outage);
+        assertEquals(1, outage.getOutageEquips().size());
+        assertTrue(outage.getOutageEquips().get(0) instanceof AclfBusDeviceOutage);
+
+        AclfBusDeviceOutage swshuntOutage = (AclfBusDeviceOutage) outage.getOutageEquips().get(0);
+        assertEquals(ContingencyBusDeviceType.SWITCHED_SHUNT, swshuntOutage.getBusDeviceOutageType());
+        assertEquals("1", swshuntOutage.getBusDeviceId());
+        assertNotNull(swshuntOutage.getOutageEquip());
+        assertEquals("Bus1002", swshuntOutage.getOutageEquip().getId());
+    }
+
     // -----------------------------------------------------------------------
     // Tests: map(ConContainer)
     // -----------------------------------------------------------------------
