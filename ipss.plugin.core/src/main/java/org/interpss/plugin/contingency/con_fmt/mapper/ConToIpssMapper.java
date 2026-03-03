@@ -1,9 +1,9 @@
 package org.interpss.plugin.contingency.con_fmt.mapper;
 
-import static com.interpss.common.util.NetUtilFunc.ToBranchId;
-
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.interpss.plugin.contingency.con_fmt.ConContainer;
 import org.interpss.plugin.contingency.con_fmt.bean.ConBranchEvent;
@@ -12,6 +12,7 @@ import org.interpss.plugin.contingency.con_fmt.bean.ConCase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.interpss.common.util.NetUtilFunc.ToBranchId;
 import com.interpss.core.AclfContingencyObjectFactory;
 import com.interpss.core.aclf.Aclf3WBranch;
 import com.interpss.core.aclf.AclfBranch;
@@ -99,11 +100,33 @@ public class ConToIpssMapper {
         }
 
         // ---- branch/transformer events ----
+        Set<String> mappedBranchEventKeys = new HashSet<>();
         for (ConBranchEvent be : cas.getBranchEvents()) {
+            String eventKey = buildBranchEventKey(be);
+            if (!mappedBranchEventKeys.add(eventKey)) {
+                log.warn("Contingency '{}': duplicate branch event skipped: {}", cas.getLabel(), eventKey);
+                continue;
+            }
             mapBranchEvent(be, multiOutage, cas.getLabel());
         }
 
         return multiOutage;
+    }
+
+    private String buildBranchEventKey(ConBranchEvent event) {
+        if (event.isThreeWinding()) {
+            int[] buses = new int[] { event.getFromBusNum(), event.getToBusNum(), event.getThirdBusNum() };
+            java.util.Arrays.sort(buses);
+            //3 WINDING BRANCH EVENT KEY: action|3W|bus1|bus2|bus3|ckt (bus order normalized)
+            return event.getAction() + "|3W|" + buses[0] + "|" + buses[1] + "|" + buses[2] + "|" + event.getCkt(); 
+        }
+
+        int busA = event.getFromBusNum();
+        int busB = event.getToBusNum();
+        int from = Math.min(busA, busB);
+        int to = Math.max(busA, busB);
+        // TWO TERMINAL BRANCH EVENT KEY: action|2T|fromBus|toBus|ckt (from/to order normalized)
+        return event.getAction() + "|2T|" + from + "|" + to + "|" + event.getCkt(); 
     }
 
     // -----------------------------------------------------------------------
