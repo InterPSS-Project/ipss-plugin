@@ -176,6 +176,9 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		swShunt.setControlMode(AclfAdjustControlMode.CONTINUOUS);
 
 		algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
+		
+		algo.getLfAdjAlgo().getVoltAdjConfig().setAdjTolerance(0.01);
+		
 	  	algo.getLfAdjAlgo().initialize(new PSSELfAdjControlConfig(config -> {
 	  		config.gCtrlSwitchedShunt = PSSELfAdjControlConfig.SwitchedShunt_ContinuousOnly;
 	  	}));
@@ -229,6 +232,9 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		swShunt.setAdjControlType(AclfAdjustControlType.POINT_CONTROL);
 
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
+		
+		algo.getLfAdjAlgo().getVoltAdjConfig().setAdjTolerance(0.01);
+		
 	  	algo.getLfAdjAlgo().initialize(new PSSELfAdjControlConfig(config -> {
 	  		config.gCtrlSwitchedShunt = PSSELfAdjControlConfig.SwitchedShunt_EnableAll;
 	  	}));
