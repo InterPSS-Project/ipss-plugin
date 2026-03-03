@@ -7,3 +7,4 @@
 .project
 /.cursorignore
 /logs/
+/ipss.plugin.3phase/logs/*.log
