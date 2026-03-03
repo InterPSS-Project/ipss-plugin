@@ -8,6 +8,9 @@ import org.interpss.plugin.contingency.con_fmt.bean.ConBranchAction;
 import org.interpss.plugin.contingency.con_fmt.bean.ConBranchEvent;
 import org.interpss.plugin.contingency.con_fmt.bean.ConBusEvent;
 import org.interpss.plugin.contingency.con_fmt.bean.ConCase;
+import org.interpss.plugin.contingency.con_fmt.bean.ConEquipAction;
+import org.interpss.plugin.contingency.con_fmt.bean.ConEquipEvent;
+import org.interpss.plugin.contingency.con_fmt.bean.ConEquipType;
 import org.interpss.plugin.contingency.con_fmt.mapper.ConToIpssMapper;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -20,7 +23,9 @@ import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.contingency.ContingencyBranchOutageType;
+import com.interpss.core.contingency.ContingencyBusDeviceType;
 import com.interpss.core.contingency.aclf.AclfBranchOutage;
+import com.interpss.core.contingency.aclf.AclfBusDeviceOutage;
 import com.interpss.core.contingency.aclf.AclfMultiOutage;
 
 /**
@@ -239,6 +244,34 @@ public class ConToIpssMapper_Test extends CorePluginTestSetup {
             assertNotNull(((AclfBranchOutage) item).getOutageEquip().getId());
             assertEquals(ContingencyBranchOutageType.OPEN, item.getOutageType());
         });
+    }
+
+    /**
+     * A case can contain both branch and generator outages. Generator REMOVE
+     * events are mapped to {@link AclfBusDeviceOutage} of type GEN.
+     */
+    @Test
+    public void testMapCase_branchAndGeneratorOutage_mixedTypes() {
+        ConCase cas = new ConCase("MIXED_BRANCH_GEN");
+        cas.addBranchEvent(new ConBranchEvent(ConBranchAction.DISCONNECT, 1001, 1002, "1"));
+        cas.addEquipEvent(new ConEquipEvent(ConEquipAction.REMOVE, ConEquipType.MACHINE, "G1", 1002));
+
+        AclfMultiOutage outage = mapper.mapCase(cas);
+
+        assertEquals(2, outage.getOutageEquips().size());
+        assertTrue(outage.getOutageEquips().stream().anyMatch(item -> item instanceof AclfBranchOutage));
+        assertTrue(outage.getOutageEquips().stream().anyMatch(item -> item instanceof AclfBusDeviceOutage));
+
+        AclfBusDeviceOutage genOutage = outage.getOutageEquips().stream()
+                .filter(item -> item instanceof AclfBusDeviceOutage)
+                .map(item -> (AclfBusDeviceOutage) item)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("Generator outage not mapped"));
+
+        assertEquals(ContingencyBusDeviceType.GEN, genOutage.getBusDeviceOutageType());
+        assertEquals("G1", genOutage.getBusDeviceId());
+        assertNotNull(genOutage.getOutageEquip());
+        assertEquals("Bus1002", genOutage.getOutageEquip().getId());
     }
 
     // -----------------------------------------------------------------------

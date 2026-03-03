@@ -9,6 +9,8 @@ import org.interpss.plugin.contingency.con_fmt.ConContainer;
 import org.interpss.plugin.contingency.con_fmt.bean.ConBranchEvent;
 import org.interpss.plugin.contingency.con_fmt.bean.ConBusEvent;
 import org.interpss.plugin.contingency.con_fmt.bean.ConCase;
+import org.interpss.plugin.contingency.con_fmt.bean.ConEquipAction;
+import org.interpss.plugin.contingency.con_fmt.bean.ConEquipEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +21,7 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.contingency.ContingencyBranchOutageType;
+import com.interpss.core.contingency.ContingencyBusDeviceType;
 import com.interpss.core.contingency.aclf.AclfMultiOutage;
 import com.interpss.core.net.Branch;
 
@@ -110,6 +113,17 @@ public class ConToIpssMapper {
             mapBranchEvent(be, multiOutage, cas.getLabel());
         }
 
+        // ---- equipment events (machine/load/shunt outages) ----
+        Set<String> mappedEquipEventKeys = new HashSet<>();
+        for (ConEquipEvent ee : cas.getEquipEvents()) {
+            String eventKey = buildEquipEventKey(ee);
+            if (!mappedEquipEventKeys.add(eventKey)) {
+                log.warn("Contingency '{}': duplicate equipment event skipped: {}", cas.getLabel(), eventKey);
+                continue;
+            }
+            mapEquipEvent(ee, multiOutage, cas.getLabel());
+        }
+
         return multiOutage;
     }
 
@@ -127,6 +141,11 @@ public class ConToIpssMapper {
         int to = Math.max(busA, busB);
         // TWO TERMINAL BRANCH EVENT KEY: action|2T|fromBus|toBus|ckt (from/to order normalized)
         return event.getAction() + "|2T|" + from + "|" + to + "|" + event.getCkt(); 
+    }
+
+    private String buildEquipEventKey(ConEquipEvent event) {
+        String equipId = event.getEquipId() != null ? event.getEquipId() : "";
+        return event.getAction() + "|" + event.getEquipType() + "|" + equipId + "|" + event.getBusNum();
     }
 
     // -----------------------------------------------------------------------
@@ -191,6 +210,33 @@ public class ConToIpssMapper {
                     map3WBranchOutage(event, target, caseLabel, ContingencyBranchOutageType.OPEN);
             default ->
                     log.warn("Contingency '{}': unhandled branch action {}", caseLabel, event.getAction());
+        }
+    }
+
+    private void mapEquipEvent(ConEquipEvent event, AclfMultiOutage target, String caseLabel) {
+        if (event.getAction() != ConEquipAction.REMOVE) {
+            log.warn("Contingency '{}': equip action {} not mapped yet", caseLabel, event.getAction());
+            return;
+        }
+
+        AclfBus bus = findBusByNumber(event.getBusNum());
+        if (bus == null) {
+            log.warn("Contingency '{}': equip event bus {} not found in network", caseLabel, event.getBusNum());
+            return;
+        }
+
+        String equipId = event.getEquipId() != null ? event.getEquipId() : "";
+        switch (event.getEquipType()) {
+            case MACHINE -> target.getOutageEquips().add(
+                    AclfContingencyObjectFactory.createBusDeviceOutage(
+                            bus, ContingencyBusDeviceType.GEN, equipId));
+            case LOAD -> target.getOutageEquips().add(
+                    AclfContingencyObjectFactory.createBusDeviceOutage(
+                            bus, ContingencyBusDeviceType.LOAD, equipId));
+            case SWSHUNT -> target.getOutageEquips().add(
+                    AclfContingencyObjectFactory.createBusDeviceOutage(
+                            bus, ContingencyBusDeviceType.SWITCHED_SHUNT, equipId));
+            default -> log.warn("Contingency '{}': equip type {} not mapped yet", caseLabel, event.getEquipType());
         }
     }
 
