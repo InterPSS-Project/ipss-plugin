@@ -310,6 +310,27 @@ public class ConToIpssMapper_Test extends CorePluginTestSetup {
         assertEquals("Bus1002", swshuntOutage.getOutageEquip().getId());
     }
 
+    /**
+     * When DISCONNECT_BUS and DISCONNECT_BRANCH overlap on the same branch,
+     * branch outages should be deduplicated and all outage equip refs remain non-null.
+     */
+    @Test
+    public void testMapCase_busAndBranchOverlap_dedupBranchOutage() {
+        ConCase cas = new ConCase("BUS_BRANCH_OVERLAP");
+        cas.addBranchEvent(new ConBranchEvent(ConBranchAction.DISCONNECT, 1001, 1002, "1"));
+        cas.addBusEvent(new ConBusEvent(1002));
+
+        AclfMultiOutage outage = mapper.mapCase(cas);
+
+        // Bus1002 has two incident branches total; explicit 1001-1002 should not duplicate it
+        assertEquals(2, outage.getOutageEquips().size());
+        outage.getOutageEquips().forEach(item -> {
+            assertTrue(item instanceof AclfBranchOutage);
+            assertNotNull(((AclfBranchOutage) item).getOutageEquip());
+            assertNotNull(((AclfBranchOutage) item).getOutageEquip().getId());
+        });
+    }
+
     // -----------------------------------------------------------------------
     // Tests: map(ConContainer)
     // -----------------------------------------------------------------------
