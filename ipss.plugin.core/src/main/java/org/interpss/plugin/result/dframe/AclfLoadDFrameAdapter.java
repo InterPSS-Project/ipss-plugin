@@ -1,9 +1,12 @@
 package org.interpss.plugin.result.dframe;
 
+import java.util.function.Predicate;
+
 import org.dflib.DataFrame;
 import org.dflib.Extractor;
 import org.dflib.builder.DataFrameAppender;
 
+import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfNetwork;
 
 /**
@@ -79,17 +82,30 @@ public class AclfLoadDFrameAdapter {
     
     /**
 	 * Adapt the AclfNetwork load data to DataFrame
-	 * * @param aclfNet the AclfNetwork object
+	 * 
+	 * @param aclfNet the AclfNetwork object
 	 * @return the adapted DataFrame
 	 */
     public DataFrame adapt(AclfNetwork aclfNet) {
+    	return adapt(aclfNet, load -> true);
+    }
+    
+    /**
+	 * Adapt the AclfNetwork load data to DataFrame
+	 * 
+	 * @param aclfNet the AclfNetwork object
+	 * @param predicate a predicate to filter loads (e.g., by load code, in-service status, etc.)
+	 * @return the adapted DataFrame
+	 */
+    public DataFrame adapt(AclfNetwork aclfNet, Predicate<AclfLoad> predicate) {
     	DataFrameAppender<LoadDFrameRec> appender = createAppender();
     	
         // Append rows from the AclfNetwork bus object
         for (var bus : aclfNet.getBusList()) {
         	for (var load : bus.getContributeLoadList()) {
-        		double vMag = bus.getVoltageMag();
-	        	appender.append(new LoadDFrameRec(
+        		if (predicate.test(load)) {
+        			double vMag = bus.getVoltageMag();
+        			appender.append(new LoadDFrameRec(
 	        			bus.getId(),
 	        			bus.getNumber(),
 	        			bus.getName(),
@@ -114,6 +130,7 @@ public class AclfLoadDFrameAdapter {
 	        			bus.getZone().getName(),
 	        			bus.getOwner() != null? bus.getOwner().getNumber(): 0,
 	        			bus.getOwner() != null? bus.getOwner().getName(): ""));
+        		}
         	}
         }
         
