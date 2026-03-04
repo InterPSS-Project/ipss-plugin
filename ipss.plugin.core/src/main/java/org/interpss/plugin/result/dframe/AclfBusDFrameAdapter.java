@@ -1,11 +1,13 @@
 package org.interpss.plugin.result.dframe;
 
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.dflib.DataFrame;
 import org.dflib.Extractor;
 import org.dflib.builder.DataFrameAppender;
 
+import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 
 /**
@@ -35,9 +37,11 @@ public class AclfBusDFrameAdapter {
     public AclfBusDFrameAdapter() {
     }
 
+    /*
 	private static boolean shouldIncludeBus(Set<String> monitoredBusIDs, String busId) {
 		return monitoredBusIDs == null || monitoredBusIDs.isEmpty() || monitoredBusIDs.contains(busId);
 	}
+	*/
     
     private static DataFrameAppender<BusDFrameRec> createAppender() {
 	  	// Define how to pull data from the object into columns
@@ -99,7 +103,7 @@ public class AclfBusDFrameAdapter {
 	 * @return the adapted DataFrame
 	 */
     public DataFrame adapt(AclfNetwork aclfNet) {
-       return adapt(aclfNet, null, true); // default to include all buses and detailed bus information   	
+       return adapt(aclfNet, bus -> true, true); // default to include all buses and detailed bus information   	
     }
 
 	/**
@@ -109,22 +113,37 @@ public class AclfBusDFrameAdapter {
 	 * @return the adapted DataFrame
 	 */
 	public DataFrame adapt(AclfNetwork aclfNet, boolean isDetailedMode) {
-		return adapt(aclfNet, null, isDetailedMode); // default to include all buses, with option for detailed or basic bus information
+		return adapt(aclfNet, bus -> true, isDetailedMode); // default to include all buses, with option for detailed or basic bus information
     }
 
 	/**
 	 * Adapt the AclfNetwork bus data to DataFrame with options for monitored bus IDs and detailed/basic info
+	 
 	 * @param aclfNet
 	 * @param monitoredBusIDs - set of bus IDs to include in the DataFrame (null or empty to include all buses)
 	 * @param isDetailedMode - true to include all bus information, false to include only basic bus information
 	 * @return the adapted DataFrame
 	 */
 	public DataFrame adapt(AclfNetwork aclfNet, Set<String> monitoredBusIDs, boolean isDetailedMode) {
+		return adapt(aclfNet, 
+					 bus -> monitoredBusIDs == null || monitoredBusIDs.isEmpty() || monitoredBusIDs.contains(bus.getId()), 
+				     isDetailedMode); // use a predicate to filter buses based on monitoredBusIDs, with option for detailed or basic bus information
+	}
+	
+	/**
+	 * Adapt the AclfNetwork bus data to DataFrame with options for monitored bus IDs and detailed/basic info
+	 
+	 * @param aclfNet
+	 * @param predicate - a predicate to filter which buses to include in the DataFrame (e.g., based on monitored bus IDs)
+	 * @param isDetailedMode - true to include all bus information, false to include only basic bus information
+	 * @return the adapted DataFrame
+	 */
+	public DataFrame adapt(AclfNetwork aclfNet, Predicate<AclfBus> predicate, boolean isDetailedMode) {
 		if (isDetailedMode) {
 			DataFrameAppender<BusDFrameRec> appender = createAppender();
 			// Include all bus information
 			for (var bus : aclfNet.getBusList()) {
-				if (shouldIncludeBus(monitoredBusIDs, bus.getId())) {
+				if (predicate.test(bus)) {
 					//Complex mis = bus.mismatch(AclfMethodType.NR); 
 					appender.append(new BusDFrameRec(
 						bus.getId(),
@@ -157,7 +176,7 @@ public class AclfBusDFrameAdapter {
 			DataFrameAppender<BusBasicDFrameRec> basicAppender = createBasicAppender();
 
 			for (var bus : aclfNet.getBusList()) {
-				if (shouldIncludeBus(monitoredBusIDs, bus.getId())) {
+				if (predicate.test(bus)) {
 					basicAppender.append(new BusBasicDFrameRec(
 							bus.getId(),
 							bus.getNumber(),
