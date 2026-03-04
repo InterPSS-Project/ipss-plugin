@@ -1,11 +1,13 @@
 package org.interpss.plugin.result.dframe;
 
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.dflib.DataFrame;
 import org.dflib.Extractor;
 import org.dflib.builder.DataFrameAppender;
 
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfNetwork;
 
@@ -110,7 +112,7 @@ public class AclfBranchDFrameAdapter {
 	 * @return the DataFrame containing branch data
 	 */
     public DataFrame adapt(AclfNetwork aclfNet) {
-       return adapt(aclfNet, null, true); // default to include all branches and detailed branch information   	
+       return adapt(aclfNet, branch -> true, true); // default to include all branches and detailed branch information   	
     }
 
 	/**
@@ -121,7 +123,7 @@ public class AclfBranchDFrameAdapter {
 	 * @return the DataFrame containing branch	 data
 	 */	
     public DataFrame adapt(AclfNetwork aclfNet, boolean isDetailedMode) {
-		return adapt(aclfNet, null, isDetailedMode); // default to include all branches, with option for detailed or basic branch information
+		return adapt(aclfNet, branch -> true, isDetailedMode); // default to include all branches, with option for detailed or basic branch information
 	}	
 
 	/**
@@ -143,13 +145,27 @@ public class AclfBranchDFrameAdapter {
 	 * @param isDetailedMode flag to indicate whether to include detailed branch information or only basic information (ID, from/to bus info, status)
 	 * @return the DataFrame containing branch data
 	 */
-    public DataFrame adapt(AclfNetwork aclfNet, Set<String> monitoredBranchIDs, boolean isDetailedMode) {
+	public DataFrame adapt(AclfNetwork aclfNet, Set<String> monitoredBranchIDs, boolean isDetailedMode) {
+		   return adapt(aclfNet, 
+				        branch -> monitoredBranchIDs == null || monitoredBranchIDs.contains(branch.getId()), 
+				        isDetailedMode); // use a predicate to filter branches based on monitoredBranchIDs, with option for detailed or basic branch information
+	}
+	  
+	/**
+	* Adapt the AclfNetwork branch data to DataFrame with options for monitored branch IDs and detailed/basic info
+	* 
+	* @param aclfNet the AclfNetwork object
+	 * @param predicate - a predicate to filter which branches to include in the DataFrame (e.g., based on monitored branch IDs)
+	 * @param isDetailedMode flag to indicate whether to include detailed branch information or only basic information (ID, from/to bus info, status)
+	 * @return the DataFrame containing branch data
+	 */	  
+	public DataFrame adapt(AclfNetwork aclfNet, Predicate<AclfBranch> predicate, boolean isDetailedMode) {
         // Append rows from the AclfNetwork bus object
 		if (isDetailedMode) {
 			DataFrameAppender<BranchDFrameRec> appender = createAppender();
 			
 			for (var branch : aclfNet.getBranchList()) {
-				if (monitoredBranchIDs == null || monitoredBranchIDs.contains(branch.getId())) {
+				if (predicate.test(branch)) {
 					appender.append(new BranchDFrameRec(
 							branch.getId(),
 							branch.getName(),
@@ -185,7 +201,7 @@ public class AclfBranchDFrameAdapter {
 			DataFrameAppender<BasicBranchDFrameRec> basicAppender = createBasicInfoAppender();
 			
 			for (var branch : aclfNet.getBranchList()) {
-				if (monitoredBranchIDs == null || monitoredBranchIDs.contains(branch.getId())) {
+				if ( predicate.test(branch)) {
 					basicAppender.append(new BasicBranchDFrameRec(
 							branch.getId(),
 							branch.getFromBusId(),
