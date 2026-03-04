@@ -1,9 +1,12 @@
 package org.interpss.plugin.result.dframe;
 
+import java.util.function.Predicate;
+
 import org.dflib.DataFrame;
 import org.dflib.Extractor;
 import org.dflib.builder.DataFrameAppender;
 
+import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfNetwork;
 
 /**
@@ -88,11 +91,23 @@ public class AclfGenDFrameAdapter {
 	 * @return DataFrame containing generator data
 	 */
     public DataFrame adapt(AclfNetwork aclfNet) {
+    	return adapt(aclfNet, gen -> true); // Default to include all generators
+    }
+    
+    /**
+	 * Adapt the AclfNetwork generator data to a DataFrame
+	 * 
+	 * @param aclfNet the AclfNetwork object
+	 * @param predicate a Predicate to filter which generators to include in the DataFrame
+	 * @return DataFrame containing generator data
+	 */
+    public DataFrame adapt(AclfNetwork aclfNet, Predicate<AclfGen> predicate) {
     	DataFrameAppender<GenDFrameRec> appender = createAppender();
         // Append rows from the AclfNetwork bus object
         for (var bus : aclfNet.getBusList()) {
         	for (var gen : bus.getContributeGenList()) {
-	        	appender.append(new GenDFrameRec(
+        		if (predicate.test(gen)) 
+        			appender.append(new GenDFrameRec(
 						bus.getId(),
 						bus.getNumber(),
 						bus.getName(),
