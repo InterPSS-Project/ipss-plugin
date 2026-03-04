@@ -13,7 +13,7 @@ import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
-public class AclfResultDFrameTest extends CorePluginTestSetup {	
+public class AclfResultDFrameAdapterTest extends CorePluginTestSetup {	
 	@Test
 	public void test() throws Exception {
 		AclfNetwork aclfNet = CorePluginFactory
