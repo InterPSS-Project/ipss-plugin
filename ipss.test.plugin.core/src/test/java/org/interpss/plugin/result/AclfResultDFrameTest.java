@@ -47,6 +47,30 @@ public class AclfResultDFrameTest extends CorePluginTestSetup {
   		assertEquals(5, results.getGenResults().size());
   		assertEquals(11, results.getLoadResults().size());
   		assertEquals(20, results.getBranchResults().size());
+  		
+  		AclfResultContainer results1 = new AclfResultDFrameAdapter()
+  				.accept(aclfNet, bus -> true, gen -> true, load -> true, branch -> true);
+  		
+  		// validate the results
+  		assertTrue(results1.getNetResults().isLoadflowConverged());
+  		assertEquals(14, results1.getBusResults().size());
+  		assertEquals(5, results1.getGenResults().size());
+  		assertEquals(11, results1.getLoadResults().size());
+  		assertEquals(20, results1.getBranchResults().size());
+  		
+  		AclfResultContainer results2 = new AclfResultDFrameAdapter()
+  				.accept(aclfNet, 
+  						bus -> bus.getVoltageMag() > 1.05, 
+  						gen -> gen.getGen().getReal() > 0.0, 
+  						load -> load.getLoadCP().getReal() > 0.5, 
+  						branch -> branch.powerFrom2To().getReal() > 0.5);
+  		
+  		// validate the results
+  		assertTrue(results2.getNetResults().isLoadflowConverged());
+  		assertEquals(9, results2.getBusResults().size());
+  		assertEquals(2, results2.getGenResults().size());
+  		assertEquals(1, results2.getLoadResults().size());
+  		assertEquals(4, results2.getBranchResults().size());
 	}
 }
 
