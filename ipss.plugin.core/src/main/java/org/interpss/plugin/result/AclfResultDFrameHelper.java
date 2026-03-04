@@ -2,6 +2,7 @@ package org.interpss.plugin.result;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.apache.commons.math3.complex.Complex;
 import org.dflib.DataFrame;
@@ -16,7 +17,11 @@ import org.interpss.plugin.result.bean.AclfLoadInfo;
 import org.interpss.plugin.result.bean.AclfNetInfo;
 import org.interpss.plugin.result.dframe.AclfNetDFrameAdapter;
 
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
+import com.interpss.core.aclf.AclfBus;
+import com.interpss.core.aclf.AclfGen;
+import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 
@@ -34,7 +39,30 @@ public class AclfResultDFrameHelper {
 	public AclfResultDFrameHelper(AclfNetwork aclfNet) {
 		this.aclfNet = aclfNet;
 		this.dfAdapter = new AclfNetDFrameAdapter();
-	  	dfAdapter.adapt(aclfNet);
+	  	//dfAdapter.adapt(aclfNet);
+	}
+	
+	/**
+	 * Load data into DataFrames using the adapter
+	 */
+	public void loadData2DFrame() {
+		dfAdapter.adapt(this.aclfNet);
+	}
+	
+	/**
+	 * Load data into DataFrames using the adapter with filters
+	 * 
+	 * @param busFilter filter for buses
+	 * @param genFilter filter for generators
+	 * @param loadFilter filter for loads
+	 * @param branchFilter filter for branches
+	 */
+	public void loadData2DFrame(
+				Predicate<AclfBus> busFilter, 
+				Predicate<AclfGen> genFilter, 
+				Predicate<AclfLoad> loadFilter, 
+				Predicate<AclfBranch> branchFilter) {
+		dfAdapter.adapt(this.aclfNet, busFilter, genFilter, loadFilter, branchFilter);
 	}
 	
 	/**

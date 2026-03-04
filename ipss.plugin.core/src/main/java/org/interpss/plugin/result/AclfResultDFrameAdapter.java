@@ -2,8 +2,14 @@ package org.interpss.plugin.result;
 
 import static org.dflib.Exp.*;
 
+import java.util.function.Predicate;
+
 import org.dflib.Sorter;
 
+import com.interpss.core.aclf.AclfBranch;
+import com.interpss.core.aclf.AclfBus;
+import com.interpss.core.aclf.AclfGen;
+import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfNetwork;
 
 public class AclfResultDFrameAdapter {	
@@ -146,10 +152,33 @@ public class AclfResultDFrameAdapter {
 	 * @return AclfResultContainer object containing the extracted results
 	 */
 	public AclfResultContainer accept(AclfNetwork aclfNet) {
+		return accept(aclfNet, bus -> true, gen -> true, load -> true, branch -> true);
+	}
+	
+	/**
+	 * Accept the AclfNetwork object and extract the load flow results into
+	 * an AclfResultContainer object, based on the sort rules and number of 
+	 * result points.
+	 * 
+	 * @param aclfNet the AclfNetwork object containing load flow results
+	 * @param busFilter a predicate to filter the buses to be included in the results
+	 * @param genFilter a predicate to filter the generators to be included in the results
+	 * @param loadFilter a predicate to filter the loads to be included in the results
+	 * @param branchFilter a predicate to filter the branches to be included in the results
+	 * @return AclfResultContainer object containing the extracted results
+	 */
+	public AclfResultContainer accept(AclfNetwork aclfNet, 
+			Predicate<AclfBus> busFilter, 
+    		Predicate<AclfGen> genFilter, 
+    		Predicate<AclfLoad> loadFilter, 
+    		Predicate<AclfBranch> branchFilter) {
 		AclfResultContainer results = new AclfResultContainer();
 		
+		// use the helper to extract the results into DataFrames, 
 		AclfResultDFrameHelper helper = new AclfResultDFrameHelper(aclfNet);
+		helper.loadData2DFrame(busFilter, genFilter, loadFilter, branchFilter);
 		
+		// Then create the result records based on the info in the DataFrames
 		helper.createNetResults(results.getNetResults());
 		
 		results.getBusResults().clear();
