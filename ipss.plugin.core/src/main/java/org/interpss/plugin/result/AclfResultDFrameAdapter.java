@@ -42,7 +42,7 @@ public class AclfResultDFrameAdapter {
 	private Sorter loadSortExpr = null;
 	private Sorter branchSortExpr = null;
 	
-	// default number of results to be extracted
+	// max number of results to be extracted
 	private int numOfBusResults = MaxNumOfResults;
 	private int numOfGenResults = MaxNumOfResults;
 	private int numOfLoadResults = MaxNumOfResults;
