@@ -14,7 +14,7 @@ import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
-public class AclfNetDFrameSample2 {
+public class AclfNetDFrameJSonSample {
     
     public static void main(String[] args) throws InterpssException {
 		// load the IEEE-14 Bus system
@@ -33,9 +33,5 @@ public class AclfNetDFrameSample2 {
         
 		Json.saver().save(dfBus, "output/Ieee14Bus_bus.json");
 		System.out.println("Save to json file: output/Ieee14Bus_bus.json");
-		
-		// write the dfBus to a csv file
-		Csv.saver().save(dfBus, "output/Ieee14Bus_bus.csv");
-		System.out.println("Save to csv file: output/Ieee14Bus_bus.csv");
     }
 }
