@@ -73,7 +73,7 @@ public class AclfNetDFAdapter_ACTIVSg25kSample {
 		System.out.println("Number of rows in dfBranch: " + dfBranch.height());
 		
 		Predicate<AclfBus> busFilter = bus -> bus.getBaseVoltage() >= 100 * 1000  // voltage level filter: only include buses with base voltage >= 100kV
-				&& (bus.getVoltageMag() > 1.04 || bus.getVoltageMag() < 0.96);
+				&& (bus.getVoltageMag() > 1.05 || bus.getVoltageMag() < 0.95);
 		
 		Predicate<AclfBranch> branchFilter = branch -> {
 			double ratingMVA = branch.getRatingMva1();
