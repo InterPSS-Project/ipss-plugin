@@ -75,7 +75,7 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
 	                resultRec.aclfBranch.getId(),
 	                resultRec.contingency.getId().replaceFirst("contBranch:", ""),
 	                resultRec.getPostFlowMW(),
-	                resultRec.aclfBranch.getRatingMva1(), // Line rating in MVA
+	                resultRec.calBranchRateB(), // Line rating in MVA
 	                resultRec.calLoadingPercent()
 	            );
 	            
@@ -121,6 +121,7 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
             } catch (Exception e) {
                 throw new RuntimeException(e);
             } finally {
+            	customPool.close(); // Properly close the pool to free resources
                 customPool.shutdown();
             }
         }
