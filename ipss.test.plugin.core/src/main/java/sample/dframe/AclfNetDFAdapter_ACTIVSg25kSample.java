@@ -1,4 +1,4 @@
-package sample.exchange;
+package sample.dframe;
 
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 
