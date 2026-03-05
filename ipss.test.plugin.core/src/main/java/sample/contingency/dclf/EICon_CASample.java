@@ -86,7 +86,7 @@ public class EICon_CASample {
 		// define the contingency analysis configuration
 	    DclfContingencyConfig config =  new DclfContingencyConfig();
 	    config.setDclfInclLoss(true);
-		config.setOverloadThreshold(120.0); // in percentage	
+		config.setOverloadThreshold(100.0); // in percentage	
 
 		ConcurrentLinkedQueue<DclfContingencyResultRec> results = 
 				ParallelDclfContingencyAnalyzer.executeContingencyAnalysis(
