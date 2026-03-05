@@ -50,6 +50,9 @@ import com.interpss.dstab.mach.EConstMachine;
 import com.interpss.dstab.mach.MachineModelType;
 
 public class CorePluginTestSetup {
+	//protected static final String TEST_ROOT = "ipss.plugin.core/";
+	protected static final String TEST_ROOT = "";
+
 	protected static IPSSMsgHub msg;
 
 	@BeforeClass  
