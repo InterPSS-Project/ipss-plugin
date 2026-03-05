@@ -5,6 +5,7 @@ import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import java.util.function.Predicate;
 
 import org.dflib.DataFrame;
+import org.dflib.csv.Csv;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.result.dframe.AclfNetDFrameAdapter;
@@ -19,6 +20,8 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.AclfAdjCtrlFunction;
 
 public class AclfNetDFAdapter_ACTIVSg25kSample {
+	//private static final String TEST_ROOT = "ipss.plugin.core/";
+	private static final String TEST_ROOT = "";
 	
 	public static void main(String args[]) throws Exception {
 		
@@ -71,28 +74,21 @@ public class AclfNetDFAdapter_ACTIVSg25kSample {
 		
 		DataFrame dfBranch = dfAdapter.getDfBranch();
 		System.out.println("Number of rows in dfBranch: " + dfBranch.height());
-		
-		Predicate<AclfBus> busFilter = bus -> bus.getBaseVoltage() >= 100 * 1000  // voltage level filter: only include buses with base voltage >= 100kV
-				&& (bus.getVoltageMag() > 1.05 || bus.getVoltageMag() < 0.95);
-		
-		Predicate<AclfBranch> branchFilter = branch -> {
-			double ratingMVA = branch.getRatingMva1();
-			if (ratingMVA <= 0) return false; // skip branches with non-positive rating
 			
-			double powerFlowMW = branch.powerFrom2To(UnitType.mVA).abs();
-			double loadingPercent = Math.abs(powerFlowMW) / ratingMVA * 100.0;
-			if (loadingPercent > 70.0) 
-				return true;
-			else
-				return false;
-		};
-			
-	  	dfAdapter.adapt(net, busFilter, gen -> true, load -> true, branchFilter);
+	  	dfAdapter.adapt(net, true);
 	  	
     	dfBus = dfAdapter.getDfBus();    	
 		System.out.println("Number of rows with filter in dfBus: " + dfBus.height());
 		
+		// write the dfBus to a csv file
+		Csv.saver().save(dfBus, TEST_ROOT + "output/ACTIVSg25k_DF_bus.csv");
+		System.out.println("Save to csv file: output/ACTIVSg25k_DF_bus.csv");
+		
 		dfBranch = dfAdapter.getDfBranch();
 		System.out.println("Number of rows with filter in dfBranch: " + dfBranch.height());
+		
+		// write the dfBranch to a csv file
+		Csv.saver().save(dfBranch, TEST_ROOT + "output/ACTIVSg25k_DF_branch.csv");
+		System.out.println("Save to csv file: output/ACTIVSg25k_DF_branch.csv");
 	}
 }
