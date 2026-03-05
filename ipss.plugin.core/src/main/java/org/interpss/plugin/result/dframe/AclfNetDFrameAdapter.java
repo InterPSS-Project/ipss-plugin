@@ -15,6 +15,8 @@ import com.interpss.core.aclf.AclfNetwork;
  * Adapter to convert AclfNet data to a set of DataFrame objects
  */
 public class AclfNetDFrameAdapter {
+	// default filters for bus and branch data for simulation report generation, 
+	// can be overridden by user input filters in the adapt() method
 	public static Predicate<AclfBus> BusFilter = bus -> bus.getBaseVoltage() >= 100 * 1000  // voltage level filter: only include buses with base voltage >= 100kV
 						&& (bus.getVoltageMag() > 1.05 || bus.getVoltageMag() < 0.95);
 	
@@ -42,18 +44,38 @@ public class AclfNetDFrameAdapter {
     public AclfNetDFrameAdapter() {
     }
     
+    /**
+     * Get the DataFrame for bus data
+     * 
+     * @return the DataFrame for bus data
+     */
     public DataFrame getDfBus() {
     	return dfBus;
     }
     
+    /**
+     * Get the DataFrame for generator data
+     * 
+     * @return the DataFrame for generator data
+     */
     public DataFrame getDfGen() {
 		return dfGen;
 	}
     
+    /**
+	 * Get the DataFrame for load data
+	 * 
+	 * @return the DataFrame for load data
+	 */
     public DataFrame getDfLoad() {
     	return dfLoad;
     }
     
+    /**
+	 * Get the DataFrame for branch data
+	 * 
+	 * @return the DataFrame for branch data
+	 * */
     public DataFrame getDfBranch() {
     	return dfBranch;
     }
@@ -65,11 +87,30 @@ public class AclfNetDFrameAdapter {
 	 * @return the adapted DataFrame
 	 */
     public void adapt(AclfNetwork aclfNet) {
-    	this.dfBus = new AclfBusDFrameAdapter().adapt(aclfNet);
-    	this.dfGen = new AclfGenDFrameAdapter().adapt(aclfNet);
-    	this.dfLoad = new AclfLoadDFrameAdapter().adapt(aclfNet);
-    	
-    	this.dfBranch = new AclfBranchDFrameAdapter().adapt(aclfNet);
+    	adapt(aclfNet, false);
+    }
+    
+    /**
+	 * Adapt the AclfNetwork bus/gen/load and branch data to DataFrame
+	 * 
+	 * @param aclfNet the AclfNetwork object
+	 * @param filtered whether to apply the default filters for bus and branch data
+	 * @return the adapted DataFrame
+	 */
+    public void adapt(AclfNetwork aclfNet, boolean filtered) {
+		if (filtered) {
+			this.dfBus = new AclfBusDFrameAdapter().adapt(aclfNet, BusFilter, true);
+			this.dfGen = new AclfGenDFrameAdapter().adapt(aclfNet, gen -> true);
+			this.dfLoad = new AclfLoadDFrameAdapter().adapt(aclfNet, load -> true);
+			
+			this.dfBranch = new AclfBranchDFrameAdapter().adapt(aclfNet, BranchFilter, true);
+		} else {
+	    	this.dfBus = new AclfBusDFrameAdapter().adapt(aclfNet);
+	    	this.dfGen = new AclfGenDFrameAdapter().adapt(aclfNet);
+	    	this.dfLoad = new AclfLoadDFrameAdapter().adapt(aclfNet);
+	    	
+	    	this.dfBranch = new AclfBranchDFrameAdapter().adapt(aclfNet);
+		}
     }
     
     /**
