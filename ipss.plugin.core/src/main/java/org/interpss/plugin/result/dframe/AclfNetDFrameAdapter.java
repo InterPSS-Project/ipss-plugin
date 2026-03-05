@@ -3,6 +3,7 @@ package org.interpss.plugin.result.dframe;
 import java.util.function.Predicate;
 
 import org.dflib.DataFrame;
+import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
@@ -14,6 +15,21 @@ import com.interpss.core.aclf.AclfNetwork;
  * Adapter to convert AclfNet data to a set of DataFrame objects
  */
 public class AclfNetDFrameAdapter {
+	public static Predicate<AclfBus> BusFilter = bus -> bus.getBaseVoltage() >= 100 * 1000  // voltage level filter: only include buses with base voltage >= 100kV
+						&& (bus.getVoltageMag() > 1.05 || bus.getVoltageMag() < 0.95);
+	
+	public static Predicate<AclfBranch> BranchFilter = branch -> {
+		double ratingMVA = branch.getRatingMva1();
+		if (ratingMVA <= 0) return false; // skip branches with non-positive rating
+		
+		double powerFlowMW = branch.powerFrom2To(UnitType.mVA).abs();
+		double loadingPercent = Math.abs(powerFlowMW) / ratingMVA * 100.0;
+		if (loadingPercent > 70.0) 
+			return true;
+		else
+			return false;
+	};
+	
 	private DataFrame dfBus;
 	private DataFrame dfGen;
 	private DataFrame dfLoad;
