@@ -17,8 +17,8 @@ import com.interpss.core.aclf.AclfNetwork;
 public class AclfBranchDFrameAdapter {
 	// Define a record to hold the data for each branch
 	private static record  BranchDFrameRec(String id, String name, String circuit, boolean status,
-			String fromId, long fromNumber, String fromName,
-			String toId, long toNumber, String toName,
+			String fromBusId, long fromBusNumber, String fromBusName,
+			String toBusId, long toBusNumber, String toBusName,
 			boolean inService,
 			AclfBranchCode branchCode,   // AclfBranchCode
 			boolean xfmr,         
@@ -51,12 +51,12 @@ public class AclfBranchDFrameAdapter {
                 	Extractor.$col(BranchDFrameRec::name),
                 	Extractor.$col(BranchDFrameRec::circuit),
                 	Extractor.$bool(BranchDFrameRec::status),
-                	Extractor.$col(BranchDFrameRec::fromId),
-                	Extractor.$long(BranchDFrameRec::fromNumber),
-                	Extractor.$col(BranchDFrameRec::fromName),
-                	Extractor.$col(BranchDFrameRec::toId),
-                	Extractor.$long(BranchDFrameRec::toNumber),
-                	Extractor.$col(BranchDFrameRec::toName),
+                	Extractor.$col(BranchDFrameRec::fromBusId),
+                	Extractor.$long(BranchDFrameRec::fromBusNumber),
+                	Extractor.$col(BranchDFrameRec::fromBusName),
+                	Extractor.$col(BranchDFrameRec::toBusId),
+                	Extractor.$long(BranchDFrameRec::toBusNumber),
+                	Extractor.$col(BranchDFrameRec::toBusName),
                 	Extractor.$bool(BranchDFrameRec::inService),
                 	Extractor.$col(BranchDFrameRec::branchCode),
                 	Extractor.$bool(BranchDFrameRec::xfmr),
@@ -74,8 +74,8 @@ public class AclfBranchDFrameAdapter {
                 )
                 // define the column names
                 .columnNames("ID", "Name", "Circuit", "Status",
-                			"FromID", "FromNumber", "FromName",
-                			"ToID", "ToNumber", "ToName",
+                			"FromBusID", "FromBusNumber", "FromBusName",
+                			"ToBusID", "ToBusNumber", "ToBusName",
                 			"InService", "BranchCode",
                 			"IsXfmr",
                 			"R", "X", "B",
