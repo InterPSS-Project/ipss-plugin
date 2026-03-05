@@ -85,7 +85,7 @@ public class Texas2k_CASample {
 		// define the contingency analysis configuration
 	    DclfContingencyConfig config =  new DclfContingencyConfig();
 	    config.setDclfInclLoss(true);
-		config.setOverloadThreshold(110); // in percentage	
+		config.setOverloadThreshold(100); // in percentage	
 
 		ConcurrentLinkedQueue<DclfContingencyResultRec> results = 
 				ParallelDclfContingencyAnalyzer.executeContingencyAnalysis(net, contList, monitoredBranchIds, config, 8);	
