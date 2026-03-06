@@ -8,6 +8,7 @@ import org.dflib.Extractor;
 import org.dflib.builder.DataFrameAppender;
 
 import com.interpss.algo.parallel.BranchCAResultRec;
+import com.interpss.core.aclf.AclfBranchCode;
 
 /**
  * Adapter to convert BranchCAResultRec data to DataFrame
@@ -15,6 +16,8 @@ import com.interpss.algo.parallel.BranchCAResultRec;
 public class DclfContingencyDFrameAdapter {
 	// Define a record to hold the data for each record
 	private static record ContDFrameRec(String branchId, String branchName,
+							AclfBranchCode branchCode,   // AclfBranchCode
+							boolean xfmr, 
 							String contingencyName, String outageBranchId, String outageBranchName,
 							double postFlowMW, double lineRatingMW, double loadingPercent) {}
     
@@ -30,6 +33,8 @@ public class DclfContingencyDFrameAdapter {
                 .byRow(
                 	Extractor.$col(ContDFrameRec::branchId),
                 	Extractor.$col(ContDFrameRec::branchName),
+                	Extractor.$col(ContDFrameRec::branchCode),
+                	Extractor.$bool(ContDFrameRec::xfmr),
                 	Extractor.$col(ContDFrameRec::contingencyName),
                 	Extractor.$col(ContDFrameRec::outageBranchId),
                 	Extractor.$col(ContDFrameRec::outageBranchName),
@@ -39,6 +44,7 @@ public class DclfContingencyDFrameAdapter {
                 )
                 // define the column names
                 .columnNames("BranchID", "BranchName",
+                			"BranchCode", "IsXfmr",
                 			"ContingencyName", "OutageBranchId", "OutageBranchName",
                 			"PostFlowMW", "LineRatingMW", "LoadingPercent")
                 .appender();
@@ -69,6 +75,8 @@ public class DclfContingencyDFrameAdapter {
 				appender.append(new ContDFrameRec(
 						rec.aclfBranch.getId(), 
 						rec.aclfBranch.getName(),
+						rec.aclfBranch.getBranchCode(),
+						rec.aclfBranch.getBranchCode() == AclfBranchCode.XFORMER || rec.aclfBranch.getBranchCode() == AclfBranchCode.PS_XFORMER,
 						rec.contingency.getId(), 
 						rec.contingency.getOutageEquip().getBranch().getId(), 
 						rec.contingency.getOutageEquip().getBranch().getName(),
