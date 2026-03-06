@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
 import org.dflib.DataFrame;
+import org.dflib.csv.Csv;
 import org.interpss.plugin.contingency.DclfContingencyConfig;
 import org.interpss.plugin.contingency.ParallelDclfContingencyAnalyzer;
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
@@ -29,6 +30,8 @@ import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
 
 public class DclfContDFAdapter_Texas2kSample {
+	//private static final String TEST_ROOT = "ipss.plugin.core/";
+	private static final String TEST_ROOT = "";
 
     public static void main(String args[]) throws Exception {
         AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v36/texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW")
@@ -85,7 +88,7 @@ public class DclfContDFAdapter_Texas2kSample {
 		// define the contingency analysis configuration
 	    DclfContingencyConfig config =  new DclfContingencyConfig();
 	    config.setDclfInclLoss(true);
-		config.setOverloadThreshold(100); // in percentage	
+		config.setOverloadThreshold(90); // in percentage	
 
 		ConcurrentLinkedQueue<BranchCAResultRec> results = 
 				ParallelDclfContingencyAnalyzer.performContingencyAnalysis(
@@ -108,6 +111,10 @@ public class DclfContDFAdapter_Texas2kSample {
 		DataFrame dfCaRec = dfAdapter.adapt(results);
 	  	   	
 		System.out.println("Number of rows in dfBus: " + dfCaRec.height());
+		
+		// write the dfBus to a csv file
+		Csv.saver().save(dfCaRec, TEST_ROOT + "output/Texas2k_DF_contingency.csv");
+		System.out.println("Save to csv file: output/Texas2k_DF_contingency.csv");
     }
 
 }
