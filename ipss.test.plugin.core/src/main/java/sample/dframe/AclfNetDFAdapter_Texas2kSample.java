@@ -2,6 +2,8 @@ package sample.dframe;
 
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 
+import java.util.function.Predicate;
+
 import org.dflib.DataFrame;
 import org.dflib.csv.Csv;
 import org.interpss.numeric.datatype.Unit.UnitType;
@@ -10,6 +12,7 @@ import org.interpss.plugin.result.dframe.AclfNetDFrameAdapter;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.AdjustApplyType;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -68,13 +71,21 @@ public class AclfNetDFAdapter_Texas2kSample {
     	DataFrame dfBus = dfAdapter.getDfBus();    	
 		System.out.println("Number of rows in dfBus: " + dfBus.height());
 		
+		DataFrame dfGen = dfAdapter.getDfGen();    	
+		System.out.println("Number of rows in dfGen: " + dfGen.height());
+		
+		DataFrame dfLoad = dfAdapter.getDfLoad();
+		System.out.println("Number of rows in dfLoad: " + dfLoad.height());
+		
 		DataFrame dfBranch = dfAdapter.getDfBranch();
 		System.out.println("Number of rows in dfBranch: " + dfBranch.height());
-			
-	  	dfAdapter.adapt(net, 
-	  			bus -> (bus.getVoltageMag() > 1.04 || bus.getVoltageMag() < 0.94),
-				gen -> true,
-				load -> true,
+		
+		Predicate<BaseAclfBus<?,?>> busFilter = bus -> (bus.getVoltageMag() > 1.03 || bus.getVoltageMag() < 0.97);
+	  	
+		dfAdapter.adapt(net, 
+	  			busFilter,
+				gen -> busFilter.test(gen.getParentBus()),
+				load -> busFilter.test(load.getParentBus()),
 				branch -> {
 					double ratingMVA = branch.getRatingMva1();
 					if (ratingMVA <= 0) return false; // skip branches with non-positive rating
@@ -93,6 +104,20 @@ public class AclfNetDFAdapter_Texas2kSample {
 		// write the dfBus to a csv file
 		Csv.saver().save(dfBus, TEST_ROOT + "output/Texas2k_DF_bus.csv");
 		System.out.println("Save to csv file: output/Texas2k_DF_bus.csv");
+		
+		dfGen = dfAdapter.getDfGen();
+		System.out.println("Number of rows with filter in dfGen: " + dfGen.height());
+		
+		// write the dfGen to a csv file
+		Csv.saver().save(dfGen, TEST_ROOT + "output/Texas2k_DF_gen.csv");
+		System.out.println("Save to csv file: output/Texas2k_DF_gen.csv");
+		
+		dfLoad = dfAdapter.getDfLoad();
+		System.out.println("Number of rows with filter in dfLoad: " + dfLoad.height());
+		
+		// write the dfLoad to a csv file
+		Csv.saver().save(dfLoad, TEST_ROOT + "output/Texas2k_DF_load.csv");
+		System.out.println("Save to csv file: output/Texas2k_DF_load.csv");
 		
 		dfBranch = dfAdapter.getDfBranch();
 		System.out.println("Number of rows with filter in dfBranch: " + dfBranch.height());
