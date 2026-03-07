@@ -8,8 +8,8 @@ import org.dflib.Extractor;
 import org.dflib.builder.DataFrameAppender;
 import org.interpss.numeric.datatype.LimitType;
 
-import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.adpter.AclfCapacitorBusAdapter;
 
 /**
@@ -149,7 +149,7 @@ public class AclfBusDFrameAdapter {
 	 * @param isDetailedMode - true to include all bus information, false to include only basic bus information
 	 * @return the adapted DataFrame
 	 */
-	public DataFrame adapt(AclfNetwork aclfNet, Predicate<AclfBus> predicate, boolean isDetailedMode) {
+	public DataFrame adapt(AclfNetwork aclfNet, Predicate<BaseAclfBus<?,?>> predicate, boolean isDetailedMode) {
 		if (isDetailedMode) {
 			DataFrameAppender<BusDFrameRec> appender = createAppender();
 			// Include all bus information
