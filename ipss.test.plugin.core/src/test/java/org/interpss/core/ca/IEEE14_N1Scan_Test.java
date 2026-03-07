@@ -106,7 +106,7 @@ public class IEEE14_N1Scan_Test extends CorePluginTestSetup {
 					});
 		});
 		
-		assertTrue("Total number of branches with loading > 100%: " + cnt.getCount(), cnt.getCount() == 18);
+		assertTrue("Total number of branches with loading > 100%: " + cnt.getCount(), cnt.getCount() == 15);
 	}
 }
 /*

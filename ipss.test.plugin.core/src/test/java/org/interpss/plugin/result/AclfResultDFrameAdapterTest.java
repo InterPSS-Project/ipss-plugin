@@ -18,7 +18,7 @@ public class AclfResultDFrameAdapterTest extends CorePluginTestSetup {
 	public void test() throws Exception {
 		AclfNetwork aclfNet = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testData/adpter/ieee_format/Ieee14Bus.ieee")
+				.load(TEST_ROOT + "testData/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();	
 		
 		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet);
