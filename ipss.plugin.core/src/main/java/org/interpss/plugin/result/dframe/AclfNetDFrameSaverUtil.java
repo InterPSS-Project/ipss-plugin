@@ -1,12 +1,10 @@
-package org.interpss.plugin.result;
+package org.interpss.plugin.result.dframe;
 
 import java.util.Set;
 
 import org.dflib.DataFrame;
 import org.dflib.csv.Csv;
 import org.dflib.parquet.Parquet;
-import org.interpss.plugin.result.dframe.AclfBranchDFrameAdapter;
-import org.interpss.plugin.result.dframe.AclfBusDFrameAdapter;
 
 import com.interpss.core.aclf.AclfNetwork;
 
@@ -17,7 +15,7 @@ import com.interpss.core.aclf.AclfNetwork;
  * 
  * @author InterPSS Team
  */
-public class AclfResultSaver {
+public class AclfNetDFrameSaverUtil {
 	
 	// ========== Bus Record Methods with Network Input ==========
 	
