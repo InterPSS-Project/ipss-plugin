@@ -41,7 +41,7 @@ public class AclfNetDFrameSaverUtil {
 		if (aclfNet == null) {
 			throw new IllegalArgumentException("AclfNetwork cannot be null");
 		}
-		DataFrame df = new AclfBusDFrameAdapter().adapt(aclfNet, !detailed);
+		DataFrame df = new AclfBusDFrameAdapter().adapt(aclfNet, detailed);
 		saveToParquet(df, filePath);
 	}
 	
@@ -84,7 +84,7 @@ public class AclfNetDFrameSaverUtil {
 		if (aclfNet == null) {
 			throw new IllegalArgumentException("AclfNetwork cannot be null");
 		}
-		DataFrame df = new AclfBusDFrameAdapter().adapt(aclfNet, !detailed);
+		DataFrame df = new AclfBusDFrameAdapter().adapt(aclfNet, detailed);
 		saveToCsv(df, filePath);
 	}
 	
@@ -129,7 +129,7 @@ public class AclfNetDFrameSaverUtil {
 		if (aclfNet == null) {
 			throw new IllegalArgumentException("AclfNetwork cannot be null");
 		}
-		DataFrame df = new AclfBranchDFrameAdapter().adapt(aclfNet, !detailed);
+		DataFrame df = new AclfBranchDFrameAdapter().adapt(aclfNet, detailed);
 		saveToParquet(df, filePath);
 	}
 	
@@ -172,7 +172,7 @@ public class AclfNetDFrameSaverUtil {
 		if (aclfNet == null) {
 			throw new IllegalArgumentException("AclfNetwork cannot be null");
 		}
-		DataFrame df = new AclfBranchDFrameAdapter().adapt(aclfNet, !detailed);
+		DataFrame df = new AclfBranchDFrameAdapter().adapt(aclfNet, detailed);
 		saveToCsv(df, filePath);
 	}
 	
