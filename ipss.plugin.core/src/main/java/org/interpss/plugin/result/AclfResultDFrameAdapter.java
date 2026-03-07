@@ -1,16 +1,16 @@
 package org.interpss.plugin.result;
 
-import static org.dflib.Exp.*;
+import static org.dflib.Exp.$double;
 
 import java.util.function.Predicate;
 
 import org.dflib.Sorter;
 
 import com.interpss.core.aclf.AclfBranch;
-import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfBus;
 
 public class AclfResultDFrameAdapter {	
 	public static final int MaxNumOfResults = 50;
@@ -168,7 +168,7 @@ public class AclfResultDFrameAdapter {
 	 * @return AclfResultContainer object containing the extracted results
 	 */
 	public AclfResultContainer accept(AclfNetwork aclfNet, 
-			Predicate<AclfBus> busFilter, 
+			Predicate<BaseAclfBus<?,?>> busFilter, 
     		Predicate<AclfGen> genFilter, 
     		Predicate<AclfLoad> loadFilter, 
     		Predicate<AclfBranch> branchFilter) {
