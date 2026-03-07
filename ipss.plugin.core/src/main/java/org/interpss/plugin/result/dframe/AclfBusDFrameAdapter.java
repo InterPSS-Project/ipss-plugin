@@ -165,8 +165,8 @@ public class AclfBusDFrameAdapter {
 						bus.calNetGenResults().getImaginary(), // use calNetGenResults to get the genQ value after load flow calculation, as getGenQ() may not be updated with the latest load flow results
 						bus.getLoadP(),
 						bus.getLoadQ(),
-						bus.powerIntoNet().getReal(),
-						bus.powerIntoNet().getImaginary()));
+						bus.powerIntoNet(false).getReal(),
+						bus.powerIntoNet(false).getImaginary()));
 				}
 			}
 			// Create the final DataFrame with all columns
@@ -185,8 +185,8 @@ public class AclfBusDFrameAdapter {
 							bus.getBaseVoltage(), // in volt
 							bus.getVoltageMag(),
 							bus.getVoltageAng(),
-							bus.powerIntoNet().getReal(),
-							bus.powerIntoNet().getImaginary()));
+							bus.powerIntoNet(false).getReal(),
+							bus.powerIntoNet(false).getImaginary()));
 				}
 			}
 			// Create the final DataFrame with basic columns only
