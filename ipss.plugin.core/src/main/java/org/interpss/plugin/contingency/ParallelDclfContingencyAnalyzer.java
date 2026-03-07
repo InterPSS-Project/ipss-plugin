@@ -1,10 +1,13 @@
 package org.interpss.plugin.contingency;
 
+import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
+
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ForkJoinPool;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.interpss.plugin.contingency.result.DclfContingencyResultRec;
@@ -13,7 +16,6 @@ import org.slf4j.LoggerFactory;
 
 import com.interpss.algo.parallel.BranchCAResultRec;
 import com.interpss.algo.parallel.ContingencyAnalysisMonad;
-import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
@@ -34,7 +36,7 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
 	}
     
     /**
-	 * Core contingency analysis method without GUI dependencies.
+	 * Core contingency analysis method for GUI output.
 	 * 
 	 * @param aclfNet The AC load flow network
 	 * @param contingencyList List of contingencies to analyze
@@ -49,39 +51,60 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
 	        Set<String> monitoredBranchIds,
             DclfContingencyConfig config,
 	        int parallelismLevel) {
-	    
 	    log.debug("Starting core contingency analysis with {} contingencies, {} monitored branches, {} parallelism",
 	            contingencyList.size(), 
 	            monitoredBranchIds == null ? "all" : monitoredBranchIds.size(),
 	            parallelismLevel);
 	    
+	    ConcurrentLinkedQueue<BranchCAResultRec> caResultRecords = 
+	    		performContingencyAnalysis(aclfNet, contingencyList, monitoredBranchIds,
+	    				config.getOverloadThreshold(), config.isDclfInclLoss(), parallelismLevel);
+	    // Convert BranchCAResultRec to DclfContingencyResultRec for GUI output
+	    return caResultRecords.stream()
+	    		.map(caResultRec -> new DclfContingencyResultRec(
+	    				caResultRec.aclfBranch.getId(),
+	    				caResultRec.contingency.getId().replaceFirst("contBranch:", ""),
+	    				caResultRec.getPostFlowMW(),
+	    				caResultRec.calBranchRateB(), // Line rating in MVA
+	    				caResultRec.calLoadingPercent()
+	    		))
+	    		.collect(Collectors.toCollection(ConcurrentLinkedQueue::new));
+	}
+	
+    /**
+	 * Core contingency analysis method without GUI output format dependencies.
+	 * 
+	 * @param aclfNet The AC load flow network
+	 * @param contingencyList List of contingencies to analyze
+	 * @param monitoredBranchIds Set of branch IDs to monitor for violations (null = monitor all)
+	 * @param overloadThreshold Threshold for violation detection
+	 * @param dclfInclLoss Whether to include losses in DCLF calculation
+	 * @param parallelismLevel Number of threads to use for parallel execution
+	 * @return ConcurrentLinkedQueue containing all contingency results that exceed threshold
+	 */
+	public static ConcurrentLinkedQueue<BranchCAResultRec> performContingencyAnalysis(
+	        AclfNetwork aclfNet,
+	        List<DclfBranchOutage> contingencyList,
+	        Set<String> monitoredBranchIds,
+	        double overloadThreshold,
+	        boolean dclfInclLoss,
+	        int parallelismLevel) {
 	    // Create DCLF algorithm
 	    ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(aclfNet);
-	    dclfAlgo.calculateDclf(config.isDclfInclLoss()? DclfMethod.INC_LOSS : DclfMethod.STD);
+	    dclfAlgo.calculateDclf(dclfInclLoss? DclfMethod.INC_LOSS : DclfMethod.STD);
 	    
 	    // Use thread-safe collection for parallel processing
-	    ConcurrentLinkedQueue<DclfContingencyResultRec> resultRecords = new ConcurrentLinkedQueue<>();
+	    ConcurrentLinkedQueue<BranchCAResultRec> caResultRecords = new ConcurrentLinkedQueue<>();
 	    
 	    // Define result processor
-	    Consumer<BranchCAResultRec> resultProcessor = resultRec -> {
-	        // If monitoring only selected branches, check if this branch is in the monitored list
-	        if (monitoredBranchIds != null && !monitoredBranchIds.contains(resultRec.aclfBranch.getId())) {
-	            return; // Skip this branch - not monitored
-	        }
-	        
-	        if (resultRec.calLoadingPercent() >= config.getOverloadThreshold()) {	            
-	            // Create DclfContingencyResultRec object
-	            DclfContingencyResultRec caResult = new DclfContingencyResultRec(
-	                resultRec.aclfBranch.getId(),
-	                resultRec.contingency.getId().replaceFirst("contBranch:", ""),
-	                resultRec.getPostFlowMW(),
-	                resultRec.aclfBranch.getRatingMva1(), // Line rating in MVA
-	                resultRec.calLoadingPercent()
-	            );
-	            
-	            // Thread-safe add without explicit synchronization
-	            resultRecords.add(caResult);
-	        }
+	    Consumer<BranchCAResultRec> resultProcessor = caResultRec -> {
+	    	// If monitoring only selected branches, check if this branch is in the monitored list
+	    	if (monitoredBranchIds != null && !monitoredBranchIds.contains(caResultRec.aclfBranch.getId())) {
+				// Skip this branch - not monitored) {
+	    	}
+	    	else if (caResultRec.calLoadingPercent() >= overloadThreshold) {
+	    		caResultRecords.add(caResultRec);
+	    	}
 	    };
 	    
 	    // Execute contingency analysis with configured parallelism
@@ -95,9 +118,9 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
 	    );
 	    
 	    log.info("Dclf contingency analysis completed. Found {} violations out of {} contingencies",
-	            resultRecords.size(), contingencyList.size());
+	            caResultRecords.size(), contingencyList.size());
 	    
-	    return resultRecords;
+	    return caResultRecords;
 	}
     
 
@@ -121,6 +144,7 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
             } catch (Exception e) {
                 throw new RuntimeException(e);
             } finally {
+            	customPool.close(); // Properly close the pool to free resources
                 customPool.shutdown();
             }
         }
