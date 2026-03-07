@@ -6,9 +6,11 @@ import java.util.function.Predicate;
 import org.dflib.DataFrame;
 import org.dflib.Extractor;
 import org.dflib.builder.DataFrameAppender;
+import org.interpss.numeric.datatype.LimitType;
 
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.adpter.AclfCapacitorBusAdapter;
 
 /**
  * Adapter to convert AclfBus data to DataFrame
@@ -21,7 +23,9 @@ public class AclfBusDFrameAdapter {
 							String ownerName, long ownerNum, 
 							boolean inService, String busType,
 							double nomVolt, double voltMag, double voltAng, 
-							double genP, double genQ, double loadP, double loadQ,
+							double genP, double genQ, double genQMax, double genQMin,
+							double loadP, double loadQ,
+							double shuntB, double shuntBMax, double shuntBMin, 
 							double busInjP, double busInjQ) {}
 	
 	// Define a record for basic bus info
@@ -33,7 +37,7 @@ public class AclfBusDFrameAdapter {
     
     /**
 	 * Constructor to initialize the DataFrame appender
-	 */
+	 *
     public AclfBusDFrameAdapter() {
     }
 
@@ -63,8 +67,13 @@ public class AclfBusDFrameAdapter {
                     Extractor.$double(BusDFrameRec::voltAng),
                     Extractor.$double(BusDFrameRec::genP),
                     Extractor.$double(BusDFrameRec::genQ),
+                    Extractor.$double(BusDFrameRec::genQMax),
+                    Extractor.$double(BusDFrameRec::genQMin),
                     Extractor.$double(BusDFrameRec::loadP),
                     Extractor.$double(BusDFrameRec::loadQ),
+                    Extractor.$double(BusDFrameRec::shuntB),
+                    Extractor.$double(BusDFrameRec::shuntBMax),
+                    Extractor.$double(BusDFrameRec::shuntBMin),
                     Extractor.$double(BusDFrameRec::busInjP),
                     Extractor.$double(BusDFrameRec::busInjQ)
                 )
@@ -72,7 +81,9 @@ public class AclfBusDFrameAdapter {
                 .columnNames("ID", "Number", "Name", 
 							"AreaName", "AreaNum", "ZoneName", "ZoneNum", "OwnerName", "OwnerNum", 
 							"InService", "BusType", "NomVolt", "VoltMag", "VoltAng", 
-							"GenP", "GenQ", "LoadP", "LoadQ",
+							"GenP", "GenQ", "GenQMax", "GenQMin",
+							"LoadP", "LoadQ",
+							"AdjustableShuntB", "AdjustableShuntBMax", "AdjustableShuntBMin",
 							"BusInjP", "BusInjQ")
                 .appender();
     }
@@ -145,6 +156,16 @@ public class AclfBusDFrameAdapter {
 			for (var bus : aclfNet.getBusList()) {
 				if (predicate.test(bus)) {
 					//Complex mis = bus.mismatch(AclfMethodType.NR); 
+					double shuntB = 0.0; 
+					double shuntBMax = 0.0;
+					double shuntBMin = 0.0;
+					if (bus.isCapacitor()) {
+						AclfCapacitorBusAdapter cap = bus.toCapacitorBus();
+						shuntB = cap.getB(true);
+						LimitType bLimit = cap.getBLimit(false);
+						shuntBMax = bLimit.getMax();
+						shuntBMin = bLimit.getMin();
+					}
 					appender.append(new BusDFrameRec(
 						bus.getId(),
 						bus.getNumber(),
@@ -163,8 +184,13 @@ public class AclfBusDFrameAdapter {
 						bus.getVoltageAng(),
 						bus.getGenP(),
 						bus.calNetGenResults().getImaginary(), // use calNetGenResults to get the genQ value after load flow calculation, as getGenQ() may not be updated with the latest load flow results
+						bus.getQGenLimit().getMax(),
+						bus.getQGenLimit().getMin(),
 						bus.getLoadP(),
 						bus.getLoadQ(),
+						shuntB,
+						shuntBMax,
+						shuntBMin,
 						bus.powerIntoNet().getReal(),
 						bus.powerIntoNet().getImaginary()));
 				}
