@@ -191,8 +191,8 @@ public class AclfBusDFrameAdapter {
 						shuntB,
 						shuntBMax,
 						shuntBMin,
-						bus.powerIntoNet().getReal(),
-						bus.powerIntoNet().getImaginary()));
+						bus.powerIntoNet(false).getReal(),
+						bus.powerIntoNet(false).getImaginary()));
 				}
 			}
 			// Create the final DataFrame with all columns
@@ -211,8 +211,8 @@ public class AclfBusDFrameAdapter {
 							bus.getBaseVoltage(), // in volt
 							bus.getVoltageMag(),
 							bus.getVoltageAng(),
-							bus.powerIntoNet().getReal(),
-							bus.powerIntoNet().getImaginary()));
+							bus.powerIntoNet(false).getReal(),
+							bus.powerIntoNet(false).getImaginary()));
 				}
 			}
 			// Create the final DataFrame with basic columns only
