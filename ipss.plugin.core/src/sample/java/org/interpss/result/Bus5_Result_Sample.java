@@ -5,6 +5,7 @@ import org.dflib.builder.DataFrameArrayAppender;
 import org.dflib.parquet.Parquet;
 import org.interpss.plugin.result.AclfResultAdapter;
 import org.interpss.plugin.result.AclfResultContainer;
+import org.interpss.plugin.result.AclfResultSaver;
 import org.interpss.plugin.result.bean.AclfBranchInfo;
 import org.interpss.plugin.result.bean.AclfBusInfo;
 import org.interpss.plugin.result.bean.AclfGenInfo;
@@ -42,12 +43,34 @@ public class Bus5_Result_Sample {
         DataFrame branchDf = toBranchInfoDataFrame(results);
         DataFrame genDf = toGenInfoDataFrame(results);
 
-        Parquet.saver().save(busDf, "output/basic_busDf.parquet");
+        AclfResultSaver.saveToParquet(busDf, "output/basic_busDf.parquet");
 
         DataFrame busDf2 = Parquet.loader().load("output/basic_busDf.parquet");
 
         System.out.println(busDf2.toString());
 
+        // ========== Using AclfResultSaver for simplified saving ==========
+        
+        // Detailed bus records - saved directly from network
+        AclfResultSaver.saveBusRecordToParquet(net, "output/detailed_busDf_saver.parquet", true);
+        AclfResultSaver.saveBusRecordToCsv(net, "output/detailed_busDf_saver.csv", true);
+        
+        // Basic bus records - saved directly from network
+        AclfResultSaver.saveBusRecordToParquet(net, "output/basic_busDf_saver.parquet", false);
+        AclfResultSaver.saveBusRecordToCsv(net, "output/basic_busDf_saver.csv", false);
+        
+        // Detailed branch records - saved directly from network
+        AclfResultSaver.saveBranchRecordToParquet(net, "output/detailed_branchDf_saver.parquet", true);
+        AclfResultSaver.saveBranchRecordToCsv(net, "output/detailed_branchDf_saver.csv", true);
+        
+        // Basic branch records - saved directly from network  
+        AclfResultSaver.saveBranchRecordToParquet(net, "output/basic_branchDf_saver.parquet", false);
+        AclfResultSaver.saveBranchRecordToCsv(net, "output/basic_branchDf_saver.csv", false);
+        
+        System.out.println("Saved bus and branch records using AclfResultSaver");
+
+        // ========== Original manual DataFrame creation (for comparison) ==========
+        
         // detailed bus DataFrame with all the fields from AclfBus, including area and zone info, and bus type (Swing, PV, PQ)
 
         DataFrame detailedBusDf = new AclfBusDFrameAdapter().adapt(net);
@@ -56,7 +79,6 @@ public class Bus5_Result_Sample {
         DataFrame detailedBusDf2 = Parquet.loader().load("output/detailed_busDf.parquet");
 
         System.out.println(detailedBusDf2.toString());
-
 
         DataFrame basicBusDf = new AclfBusDFrameAdapter().adapt(net, false);
         Parquet.saver().save(basicBusDf, "output/basicAdapter_busDf.parquet");
