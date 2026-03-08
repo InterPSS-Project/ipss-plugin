@@ -5,13 +5,13 @@ import org.dflib.builder.DataFrameArrayAppender;
 import org.dflib.parquet.Parquet;
 import org.interpss.plugin.result.AclfResultAdapter;
 import org.interpss.plugin.result.AclfResultContainer;
-import org.interpss.plugin.result.AclfResultSaver;
 import org.interpss.plugin.result.bean.AclfBranchInfo;
 import org.interpss.plugin.result.bean.AclfBusInfo;
 import org.interpss.plugin.result.bean.AclfGenInfo;
 import org.interpss.plugin.result.bean.AclfNetInfo;
 import org.interpss.plugin.result.dframe.AclfBranchDFrameAdapter;
 import org.interpss.plugin.result.dframe.AclfBusDFrameAdapter;
+import org.interpss.plugin.result.dframe.AclfNetDFrameSaverUtil;
 import org.interpss.util.FileUtil;
 
 import com.interpss.core.CoreObjectFactory;
@@ -43,7 +43,7 @@ public class Bus5_Result_Sample {
         DataFrame branchDf = toBranchInfoDataFrame(results);
         DataFrame genDf = toGenInfoDataFrame(results);
 
-        AclfResultSaver.saveToParquet(busDf, "output/basic_busDf.parquet");
+        AclfNetDFrameSaverUtil.saveToParquet(busDf, "output/basic_busDf.parquet");
 
         DataFrame busDf2 = Parquet.loader().load("output/basic_busDf.parquet");
 
@@ -52,20 +52,20 @@ public class Bus5_Result_Sample {
         // ========== Using AclfResultSaver for simplified saving ==========
         
         // Detailed bus records - saved directly from network
-        AclfResultSaver.saveBusRecordToParquet(net, "output/detailed_busDf_saver.parquet", true);
-        AclfResultSaver.saveBusRecordToCsv(net, "output/detailed_busDf_saver.csv", true);
+        AclfNetDFrameSaverUtil.saveBusRecordToParquet(net, "output/detailed_busDf_saver.parquet", true);
+        AclfNetDFrameSaverUtil.saveBusRecordToCsv(net, "output/detailed_busDf_saver.csv", true);
         
         // Basic bus records - saved directly from network
-        AclfResultSaver.saveBusRecordToParquet(net, "output/basic_busDf_saver.parquet", false);
-        AclfResultSaver.saveBusRecordToCsv(net, "output/basic_busDf_saver.csv", false);
+        AclfNetDFrameSaverUtil.saveBusRecordToParquet(net, "output/basic_busDf_saver.parquet", false);
+        AclfNetDFrameSaverUtil.saveBusRecordToCsv(net, "output/basic_busDf_saver.csv", false);
         
         // Detailed branch records - saved directly from network
-        AclfResultSaver.saveBranchRecordToParquet(net, "output/detailed_branchDf_saver.parquet", true);
-        AclfResultSaver.saveBranchRecordToCsv(net, "output/detailed_branchDf_saver.csv", true);
+        AclfNetDFrameSaverUtil.saveBranchRecordToParquet(net, "output/detailed_branchDf_saver.parquet", true);
+        AclfNetDFrameSaverUtil.saveBranchRecordToCsv(net, "output/detailed_branchDf_saver.csv", true);
         
         // Basic branch records - saved directly from network  
-        AclfResultSaver.saveBranchRecordToParquet(net, "output/basic_branchDf_saver.parquet", false);
-        AclfResultSaver.saveBranchRecordToCsv(net, "output/basic_branchDf_saver.csv", false);
+        AclfNetDFrameSaverUtil.saveBranchRecordToParquet(net, "output/basic_branchDf_saver.parquet", false);
+        AclfNetDFrameSaverUtil.saveBranchRecordToCsv(net, "output/basic_branchDf_saver.csv", false);
         
         System.out.println("Saved bus and branch records using AclfResultSaver");
 
