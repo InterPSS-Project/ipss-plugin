@@ -1,12 +1,10 @@
-package org.interpss.plugin.result;
+package org.interpss.plugin.result.dframe;
 
 import java.util.Set;
 
 import org.dflib.DataFrame;
 import org.dflib.csv.Csv;
 import org.dflib.parquet.Parquet;
-import org.interpss.plugin.result.dframe.AclfBranchDFrameAdapter;
-import org.interpss.plugin.result.dframe.AclfBusDFrameAdapter;
 
 import com.interpss.core.aclf.AclfNetwork;
 
@@ -17,7 +15,7 @@ import com.interpss.core.aclf.AclfNetwork;
  * 
  * @author InterPSS Team
  */
-public class AclfResultSaver {
+public class AclfNetDFrameSaverUtil {
 	
 	// ========== Bus Record Methods with Network Input ==========
 	
@@ -43,7 +41,7 @@ public class AclfResultSaver {
 		if (aclfNet == null) {
 			throw new IllegalArgumentException("AclfNetwork cannot be null");
 		}
-		DataFrame df = new AclfBusDFrameAdapter().adapt(aclfNet, !detailed);
+		DataFrame df = new AclfBusDFrameAdapter().adapt(aclfNet, detailed);
 		saveToParquet(df, filePath);
 	}
 	
@@ -86,7 +84,7 @@ public class AclfResultSaver {
 		if (aclfNet == null) {
 			throw new IllegalArgumentException("AclfNetwork cannot be null");
 		}
-		DataFrame df = new AclfBusDFrameAdapter().adapt(aclfNet, !detailed);
+		DataFrame df = new AclfBusDFrameAdapter().adapt(aclfNet, detailed);
 		saveToCsv(df, filePath);
 	}
 	
@@ -131,7 +129,7 @@ public class AclfResultSaver {
 		if (aclfNet == null) {
 			throw new IllegalArgumentException("AclfNetwork cannot be null");
 		}
-		DataFrame df = new AclfBranchDFrameAdapter().adapt(aclfNet, !detailed);
+		DataFrame df = new AclfBranchDFrameAdapter().adapt(aclfNet, detailed);
 		saveToParquet(df, filePath);
 	}
 	
@@ -174,7 +172,7 @@ public class AclfResultSaver {
 		if (aclfNet == null) {
 			throw new IllegalArgumentException("AclfNetwork cannot be null");
 		}
-		DataFrame df = new AclfBranchDFrameAdapter().adapt(aclfNet, !detailed);
+		DataFrame df = new AclfBranchDFrameAdapter().adapt(aclfNet, detailed);
 		saveToCsv(df, filePath);
 	}
 	

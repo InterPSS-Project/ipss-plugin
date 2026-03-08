@@ -6,10 +6,10 @@ import org.dflib.DataFrame;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.core.aclf.AclfBranch;
-import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfBus;
 
 /**
  * Adapter to convert AclfNet data to a set of DataFrame objects
@@ -17,8 +17,13 @@ import com.interpss.core.aclf.AclfNetwork;
 public class AclfNetDFrameAdapter {
 	// default filters for bus and branch data for simulation report generation, 
 	// can be overridden by user input filters in the adapt() method
-	public static Predicate<AclfBus> BusFilter = bus -> bus.getBaseVoltage() >= 100 * 1000  // voltage level filter: only include buses with base voltage >= 100kV
+	public static Predicate<BaseAclfBus<?,?>> BusFilter = bus -> 
+						bus.getBaseVoltage() >= 100 * 1000  // voltage level filter: only include buses with base voltage >= 100kV
 						&& (bus.getVoltageMag() > 1.05 || bus.getVoltageMag() < 0.95);
+	
+	public static Predicate<AclfGen> GenFilter = gen -> BusFilter.test(gen.getParentBus()); 
+	
+	public static Predicate<AclfLoad> LoadFilter = load -> BusFilter.test(load.getParentBus()); 
 	
 	public static Predicate<AclfBranch> BranchFilter = branch -> {
 		double ratingMVA = branch.getRatingMva1();
@@ -100,8 +105,8 @@ public class AclfNetDFrameAdapter {
     public void adapt(AclfNetwork aclfNet, boolean filtered) {
 		if (filtered) {
 			this.dfBus = new AclfBusDFrameAdapter().adapt(aclfNet, BusFilter, true);
-			this.dfGen = new AclfGenDFrameAdapter().adapt(aclfNet, gen -> true);
-			this.dfLoad = new AclfLoadDFrameAdapter().adapt(aclfNet, load -> true);
+			this.dfGen = new AclfGenDFrameAdapter().adapt(aclfNet, GenFilter);
+			this.dfLoad = new AclfLoadDFrameAdapter().adapt(aclfNet, LoadFilter);
 			
 			this.dfBranch = new AclfBranchDFrameAdapter().adapt(aclfNet, BranchFilter, true);
 		} else {
@@ -124,7 +129,7 @@ public class AclfNetDFrameAdapter {
 	 * @return the adapted DataFrame
 	 * */
     public void adapt(AclfNetwork aclfNet, 
-    		Predicate<AclfBus> busFilter, 
+    		Predicate<BaseAclfBus<?,?>> busFilter, 
     		Predicate<AclfGen> genFilter, 
     		Predicate<AclfLoad> loadFilter, 
     		Predicate<AclfBranch> branchFilter) {
