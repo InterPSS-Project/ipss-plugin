@@ -19,10 +19,10 @@ import org.interpss.plugin.result.dframe.AclfNetDFrameAdapter;
 
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
-import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.algo.AclfMethodType;
 
 public class AclfResultDFrameHelper {
@@ -58,7 +58,7 @@ public class AclfResultDFrameHelper {
 	 * @param branchFilter filter for branches
 	 */
 	public void loadData2DFrame(
-				Predicate<AclfBus> busFilter, 
+				Predicate<BaseAclfBus<?,?>> busFilter, 
 				Predicate<AclfGen> genFilter, 
 				Predicate<AclfLoad> loadFilter, 
 				Predicate<AclfBranch> branchFilter) {
