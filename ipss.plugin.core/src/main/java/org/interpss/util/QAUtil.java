@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.display.impl.AclfOut_PSSE;
+import org.slf4j.Logger;
 
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
@@ -17,10 +18,13 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.facts.StaticVarCompensator;
 import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
 import com.interpss.core.aclf.hvdc.HvdcLine2TVSC;
+import com.interpss.core.aclf.hvdc.VSCConverter;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.net.Branch;
 
 public class QAUtil {
+	// add a logger
+	private static final Logger log = org.slf4j.LoggerFactory.getLogger(QAUtil.class);
 
 	public static double getMaxBusVoltageMagDiff (AclfNetwork net, AclfNetwork copyNet) {
 		double maxDiff = 0;
@@ -417,33 +421,78 @@ public static AclfNetwork equivHVDC(AclfNetwork net) {
 				HvdcLine2TVSC<AclfBus> hvdcBranch = (HvdcLine2TVSC<AclfBus>) bra;
 				//turn off the hvdc branch
 				bra.setStatus(false);
-
-				//from bus
-				AclfBus busFrom = net.getBus(hvdcBranch.getFromBusId());
-				if(busFrom != null && busFrom.isActive()){
-					//hvdcBranch.initLoadflow();
-					// create a load object with the total power at the boundary bus
-					AclfLoad loadFrom = CoreObjectFactory.createAclfLoad(hvdcBranch.getId() + "_" + hvdcBranch.getFromBusId());
-					busFrom.getContributeLoadList().add(loadFrom);
-					loadFrom.setLoadCP(busFrom.mismatch(AclfMethodType.NR));
-					loadFrom.setCode(AclfLoadCode.CONST_P); // set load code to CONST_P
-					busFrom.setLoadCode(AclfLoadCode.CONST_P);
-				}
-				//to bus
-				AclfBus busTo = net.getBus(hvdcBranch.getToBusId());
-				if(busTo != null && busTo.isActive()){
-					// create a load object with the total power at the boundary bus
-					AclfLoad loadTo = CoreObjectFactory.createAclfLoad(hvdcBranch.getId() + "_" + hvdcBranch.getToBusId());
-					busTo.getContributeLoadList().add(loadTo);
-					loadTo.setLoadCP(busTo.mismatch(AclfMethodType.NR));
-					loadTo.setCode(AclfLoadCode.CONST_P); // set load code to CONST_P
-					busTo.setLoadCode(AclfLoadCode.CONST_P);
-				}
-				
+				// To consider the VSC-HVDC control modes on both terminals.
+				processVscConverter(net, hvdcBranch.getId(), hvdcBranch.getRecConverter());
+				processVscConverter(net, hvdcBranch.getId(), hvdcBranch.getInvConverter());
 			}
 		}
 
 		return net;
+	}
+
+	private static void processVscConverter(AclfNetwork net, String branchId, VSCConverter<AclfBus> converter) {
+		if (converter == null) {
+			return;
+		}
+
+		AclfBus bus = converter.getBus();
+		if (bus == null || !bus.isActive()) {
+			return;
+		}
+
+		double acSet = converter.getAcSetPoint();
+		switch (converter.getAcControlMode()) {
+			case AC_POWER_FACTOR:
+			case AC_REACTIVE_POWER:
+				addEquivalentLoad(bus, branchId + "_" + bus.getId(),
+						createEquivalentLoadPower(net.getBaseMva(), converter));
+				break;
+
+			case AC_VOLTAGE: {
+				double vm = bus.getVoltageMag();
+				if (Math.abs(acSet - vm) > 0.001) {
+					log.warn(String.format(
+							"Warning: The voltage setpoint of VSC-HVDC %s is different from the terminal bus voltage. Setpoint: %f, Bus Voltage: %f",
+							converter.getId(), acSet, vm));
+				}
+				bus.setGenCode(AclfGenCode.GEN_PV);
+				bus.setGenP(-converter.powerIntoConverter().getReal());
+				bus.setDesiredVoltMag(acSet);
+				break;
+			}
+
+			case AC_FREQ:
+				throw new UnsupportedOperationException("AC frequency control is not supported yet!");
+		}
+	}
+
+	private static Complex createEquivalentLoadPower(double baseMva, VSCConverter<AclfBus> converter) {
+		Complex converterPower = converter.powerIntoConverter();
+		double activePower = converterPower.getReal();
+		double reactivePower;
+
+		switch (converter.getAcControlMode()) {
+			case AC_POWER_FACTOR:
+				reactivePower = activePower * Math.tan(Math.acos(converter.getAcSetPoint()));
+				break;
+
+			case AC_REACTIVE_POWER:
+				reactivePower = converter.getAcSetPoint() / baseMva;
+				break;
+
+			default:
+				reactivePower = converterPower.getImaginary();
+		}
+
+		return new Complex(activePower, reactivePower);
+	}
+
+	private static void addEquivalentLoad(AclfBus bus, String loadId, Complex loadPower) {
+		AclfLoad load = CoreObjectFactory.createAclfLoad(loadId);
+		bus.getContributeLoadList().add(load);
+		load.setLoadCP(loadPower);
+		load.setCode(AclfLoadCode.CONST_P); // set load code to CONST_P
+		bus.setLoadCode(AclfLoadCode.CONST_P);
 	}
 
 	public static AclfNetwork changeSWShuntToFixedShunt(AclfNetwork net) {
@@ -487,7 +536,7 @@ public static AclfNetwork equivHVDC(AclfNetwork net) {
 					// set the initial B value
 					// svc.setBInit(-b);
 					if (b != 0) bus.setShuntY(bus.getShuntY().add(new Complex(0, b)));
-					System.out.println(String.format("SVC %s at Bus %s is merged into bus shuntY with B = %f pu", svc.getId(), bus.getId(), svc.getBInit()) );
+					log.info(String.format("SVC %s at Bus %s is merged into bus shuntY with B = %f pu", svc.getId(), bus.getId(), svc.getBInit()) );
 					// remove the SVC from the bus
 					svc.setControlStatus(false);
 					
@@ -501,10 +550,10 @@ public static AclfNetwork equivHVDC(AclfNetwork net) {
 	public static void printBusConnections(AclfNetwork net, String busId) {
 		AclfBus bus = net.getBus(busId);
 		if (bus == null) {
-			System.out.println("Bus " + busId + " not found in the network.");
+			log.warn("Bus " + busId + " not found in the network.");
 			return;
 		}
-		System.out.println("Connections for Bus " + busId + ":");
+		log.info("Connections for Bus " + busId + ":");
 		for (Branch bra : bus.getBranchList()) {
 			if (bra.isActive()) {
 				System.out.println("Connected Branch: " + bra.getId() + ", From: " + bra.getFromBus().getId() + ", To: " + bra.getToBus().getId());
