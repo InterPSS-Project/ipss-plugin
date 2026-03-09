@@ -17,6 +17,7 @@ import org.interpss.plugin.contingency.ParallelDclfContingencyAnalyzer;
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
 import org.interpss.plugin.contingency.definition.MonitoredBranchRecord;
 import org.interpss.plugin.contingency.util.ContingencyFileUtil;
+import org.interpss.plugin.contingency.util.DclfContingencyHelper;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.interpss.plugin.result.dframe.ca.DclfContingencyDFrameAdapter;
@@ -46,38 +47,11 @@ public class DclfContDFAdapter_Texas2kSample {
 
 		//import contingency definitions from CA file
 		File contFile = new File("testData/psse/v36/texas2k/2k_contingencies_115kVAbove.json");
-		List<BranchContingencyRecord> contingencies = ContingencyFileUtil.importContingenciesFromJson(contFile);
-		List<DclfBranchOutage> contList = new java.util.ArrayList<>();
-
-		for (BranchContingencyRecord record : contingencies) {
-			try {
-				// Find the branch based on from_bus and to_bus
-				String branchId = record.fromBus + "->" + record.toBus+"("+record.ckt+")";
-				if (net.getBranch(branchId) != null) {
-					DclfBranchOutage cont = createContingency(record.name);
-					
-					// Determine outage type based on action type
-					ContingencyBranchOutageType outageType;
-					switch (record.actionType.toLowerCase()) {
-						case "open":
-							outageType = ContingencyBranchOutageType.OPEN;
-							break;
-						case "close":
-							outageType = ContingencyBranchOutageType.CLOSE;
-							break;
-						default:
-							outageType = ContingencyBranchOutageType.OPEN; // Default to open
-					}
-					
-					DclfOutageBranch outage = createCaOutageBranch(algo.getDclfAlgoBranch(branchId), outageType);
-					cont.setOutageEquip(outage);
-					contList.add(cont);
-				}
-			} catch (Exception ex) {
-				throw new Exception("Warning: Could not create contingency for " + record.name + ": " + ex.getMessage() + "\n");
-			}
-		}
-
+		List<BranchContingencyRecord> contingencRecs = ContingencyFileUtil.importContingenciesFromJson(contFile);
+		
+		List<DclfBranchOutage> dclfContList = new DclfContingencyHelper(algo)
+					.createDclfContList(contingencRecs);
+		
 		//import monitored branches from JSON file
 		File monFile = new File("testData/psse/v36/texas2k/2k_monitored_branches.json");
 		List<MonitoredBranchRecord> monitoredBranches = ContingencyFileUtil.importMonitoredBranchRecordsFromJson(monFile);
@@ -92,7 +66,7 @@ public class DclfContDFAdapter_Texas2kSample {
 
 		ConcurrentLinkedQueue<BranchCAResultRec> results = 
 				ParallelDclfContingencyAnalyzer.performContingencyAnalysis(
-								net, contList, monitoredBranchIds, 
+								net, dclfContList, monitoredBranchIds, 
 								config.getOverloadThreshold(), config.isDclfInclLoss(), 8);	
 
 		// print the results
@@ -110,7 +84,7 @@ public class DclfContDFAdapter_Texas2kSample {
 		DclfContingencyDFrameAdapter dfAdapter = new DclfContingencyDFrameAdapter();
 		DataFrame dfCaRec = dfAdapter.adapt(results);
 	  	   	
-		System.out.println("Number of rows in dfBus: " + dfCaRec.height());
+		System.out.println("Number of rows in dfCaRec: " + dfCaRec.height());
 		
 		// write the dfBus to a csv file
 		Csv.saver().save(dfCaRec, TEST_ROOT + "output/Texas2k_DF_contingency.csv");
