@@ -30,14 +30,14 @@ import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
 
-public class DclfContDFAdapter_Texas2kSample {
+public class DclfContDFAdapter_EICon_Sample {
 	//private static final String TEST_ROOT = "ipss.plugin.core/";
 	private static final String TEST_ROOT = "";
 
     public static void main(String args[]) throws Exception {
-        AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v36/texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW")
+        AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW")
 				.setFormat(IpssAdapter.FileFormat.PSSE)
-				.psseVersion(PsseVersion.PSSE_36)
+				.psseVersion(PsseVersion.PSSE_33)
 				.load()
 				.getImportedObj();	
         
@@ -46,14 +46,14 @@ public class DclfContDFAdapter_Texas2kSample {
 		algo.calculateDclf(DclfMethod.INC_LOSS);
 
 		//import contingency definitions from CA file
-		File contFile = new File("testData/psse/v36/texas2k/2k_contingencies_115kVAbove.json");
+		File contFile = new File("testData/psse/v33/OpenEI_filtered_contingencies.json");
 		List<BranchContingencyRecord> contingencRecs = ContingencyFileUtil.importContingenciesFromJson(contFile);
 		
 		List<DclfBranchOutage> dclfContList = new DclfContingencyHelper(algo)
 					.createDclfContList(contingencRecs);
 		
 		//import monitored branches from JSON file
-		File monFile = new File("testData/psse/v36/texas2k/2k_monitored_branches.json");
+		File monFile = new File("testData/psse/v33/OpenEI_monitored_branches.json");
 		List<MonitoredBranchRecord> monitoredBranches = ContingencyFileUtil.importMonitoredBranchRecordsFromJson(monFile);
 
 		Set<String> monitoredBranchIds = monitoredBranches.stream()
@@ -62,7 +62,7 @@ public class DclfContDFAdapter_Texas2kSample {
 		// define the contingency analysis configuration
 	    DclfContingencyConfig config =  new DclfContingencyConfig();
 	    config.setDclfInclLoss(true);
-		config.setOverloadThreshold(90); // in percentage	
+		config.setOverloadThreshold(120); // in percentage	
 
 		ConcurrentLinkedQueue<BranchCAResultRec> results = 
 				ParallelDclfContingencyAnalyzer.performContingencyAnalysis(
@@ -87,8 +87,8 @@ public class DclfContDFAdapter_Texas2kSample {
 		System.out.println("Number of rows in dfCaRec: " + dfCaRec.height());
 		
 		// write the dfBus to a csv file
-		Csv.saver().save(dfCaRec, TEST_ROOT + "output/Texas2k_DF_contingency.csv");
-		System.out.println("Save to csv file: output/Texas2k_DF_contingency.csv");
+		Csv.saver().save(dfCaRec, TEST_ROOT + "output/Eastern_Interconnect_DF_contingency.csv");
+		System.out.println("Save to csv file: output/Eastern_Interconnect_DF_contingency.csv");
     }
 
 }
