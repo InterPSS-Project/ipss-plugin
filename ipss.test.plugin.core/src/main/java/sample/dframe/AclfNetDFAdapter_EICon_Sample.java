@@ -51,21 +51,9 @@ public class AclfNetDFAdapter_EICon_Sample {
 		
 		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet);
 
-		// disable all the controls
-		AclfAdjCtrlFunction.disableAllAdjControls.accept(aclfAlgo);
+		aclfAlgo.getNrMethodConfig().setNonDivergent(true);
 		
-		/*
-		 * enable PV bus limit controls
-		 * 
-		 */		
-		aclfAlgo.getLfAdjAlgo().getLimitCtrlConfig().setPvLimitControl(true);
-		aclfAlgo.getLfAdjAlgo().getLimitCtrlConfig().setAdjustAppType(AdjustApplyType.POST_ITERATION);
-		// PV limit control process starts when max mismatch is below 1.0E-6 x 100
-		aclfAlgo.getLfAdjAlgo().getLimitCtrlConfig().setStartPoint(100);
-		// PV limit tolerance for limit violation checking is set to 100.0 x 1.0E-6
-		aclfAlgo.getLfAdjAlgo().getLimitCtrlConfig().setToleranceFactor(100.0);;
-		
-		aclfAlgo.setTolerance(1.0E-6);
+		aclfAlgo.setTolerance(1.0E-4);
 		aclfAlgo.setMaxIterations(50);
 				
 		aclfAlgo.loadflow();
@@ -78,6 +66,12 @@ public class AclfNetDFAdapter_EICon_Sample {
     	DataFrame dfBus = dfAdapter.getDfBus();    	
 		System.out.println("Number of rows in dfBus: " + dfBus.height());
 		
+		DataFrame dfGen = dfAdapter.getDfGen();    	
+		System.out.println("Number of rows in dfGen: " + dfGen.height());
+		
+		DataFrame dfLoad = dfAdapter.getDfLoad();
+		System.out.println("Number of rows in dfLoad: " + dfLoad.height());
+		
 		DataFrame dfBranch = dfAdapter.getDfBranch();
 		System.out.println("Number of rows in dfBranch: " + dfBranch.height());
 			
@@ -87,14 +81,28 @@ public class AclfNetDFAdapter_EICon_Sample {
 		System.out.println("Number of rows with filter in dfBus: " + dfBus.height());
 		
 		// write the dfBus to a csv file
-		Csv.saver().save(dfBus, TEST_ROOT + "output/Base_Eastern_Interconnect_515GW_DF_bus.csv");
-		System.out.println("Save to csv file: output/Base_Eastern_Interconnect_515GW_DF_bus.csv");
+		Csv.saver().save(dfBus, TEST_ROOT + "output/Eastern_Interconnect_DF_bus.csv");
+		System.out.println("Save to csv file: output/Eastern_Interconnect_DF_bus.csv");
+		
+		dfGen = dfAdapter.getDfGen();
+		System.out.println("Number of rows with filter in dfGen: " + dfGen.height());
+		
+		// write the dfGen to a csv file
+		Csv.saver().save(dfGen, TEST_ROOT + "output/Eastern_Interconnect_DF_gen.csv");
+		System.out.println("Save to csv file: output/Eastern_Interconnect_DF_gen.csv");
+		
+		dfLoad = dfAdapter.getDfLoad();
+		System.out.println("Number of rows with filter in dfLoad: " + dfLoad.height());
+		
+		// write the dfLoad to a csv file
+		Csv.saver().save(dfLoad, TEST_ROOT + "output/Eastern_Interconnect_DF_load.csv");
+		System.out.println("Save to csv file: output/Eastern_Interconnect_DF_load.csv");
 		
 		dfBranch = dfAdapter.getDfBranch();
 		System.out.println("Number of rows with filter in dfBranch: " + dfBranch.height());
 		
 		// write the dfBranch to a csv file
-		Csv.saver().save(dfBranch, TEST_ROOT + "output/Base_Eastern_Interconnect_515GW_DF_branch.csv");
-		System.out.println("Save to csv file: output/Base_Eastern_Interconnect_515GW_DF_branch.csv");
+		Csv.saver().save(dfBranch, TEST_ROOT + "output/Eastern_Interconnect_DF_branch.csv");
+		System.out.println("Save to csv file: output/Eastern_Interconnect_DF_branch.csv");
     }
 }

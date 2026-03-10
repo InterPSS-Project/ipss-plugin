@@ -67,7 +67,7 @@ public class DclfContDFAdapter_Texas2kSample {
 		ConcurrentLinkedQueue<BranchCAResultRec> results = 
 				ParallelDclfContingencyAnalyzer.performContingencyAnalysis(
 								net, dclfContList, monitoredBranchIds, 
-								config.getOverloadThreshold(), config.isDclfInclLoss(), 8);	
+								config.getOverloadThreshold(), config.isDclfInclLoss(), 14);	
 
 		// print the results
 		for (BranchCAResultRec rec : results) {
