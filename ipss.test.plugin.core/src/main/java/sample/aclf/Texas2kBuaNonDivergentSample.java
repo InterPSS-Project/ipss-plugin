@@ -10,7 +10,7 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
-public class Aclf_ACTIVSg2000BusSample {
+public class Texas2kBuaNonDivergentSample {
 	
 	public static void main(String args[]) throws InterpssException {
 		
@@ -24,14 +24,15 @@ public class Aclf_ACTIVSg2000BusSample {
 	  
 		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		
-		//aclfAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
-
-		//aclfAlgo.getLfAdjAlgo().setPowerAdjAppType(AdjustApplyType.POST_ITERATION);
-		// not need to turn off the power adjustment, since the turn of Adjust will turn off the power adjustment
-		//aclfAlgo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(false);
-		aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
-		aclfAlgo.setTolerance(1.0E-6);
+		aclfAlgo.getNrMethodConfig().setNonDivergent(true);
 		
-		System.out.println("MaxMismatch: " + net.maxMismatch(AclfMethodType.NR));
+		aclfAlgo.setTolerance(1.0E-6);
+		aclfAlgo.setMaxIterations(50);
+		
+		System.out.println("MaxMismatch (Before): " + net.maxMismatch(AclfMethodType.NR));
+		
+		aclfAlgo.loadflow();
+		
+		System.out.println("MaxMismatch (After): " + net.maxMismatch(AclfMethodType.NR));
 	}
 }
