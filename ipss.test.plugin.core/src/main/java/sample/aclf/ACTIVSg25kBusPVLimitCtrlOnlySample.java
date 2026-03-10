@@ -15,7 +15,7 @@ import com.interpss.core.algo.AdjustApplyType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.AclfAdjCtrlFunction;
 
-public class Aclf_ACTIVSg25kBusPVLimitCtrlSample {
+public class ACTIVSg25kBusPVLimitCtrlOnlySample {
 	
 	public static void main(String args[]) throws Exception {
 		IpssCorePlugin.init();
@@ -67,6 +67,8 @@ public class Aclf_ACTIVSg25kBusPVLimitCtrlSample {
 		
 		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 
+		aclfAlgo.getNrMethodConfig().setNonDivergent(true);
+		
 		// disable all the controls
 		AclfAdjCtrlFunction.disableAllAdjControls.accept(aclfAlgo);
 		
