@@ -80,23 +80,13 @@ public class AclfNetDFAdapter_Texas2kSample {
 		DataFrame dfBranch = dfAdapter.getDfBranch();
 		System.out.println("Number of rows in dfBranch: " + dfBranch.height());
 		
-		Predicate<BaseAclfBus<?,?>> busFilter = bus -> (bus.getVoltageMag() > 1.03 || bus.getVoltageMag() < 0.97);
-	  	
-		dfAdapter.adapt(net, 
-	  			busFilter,
-				gen -> busFilter.test(gen.getParentBus()),
-				load -> busFilter.test(load.getParentBus()),
-				branch -> {
-					double ratingMVA = branch.getRatingMva1();
-					if (ratingMVA <= 0) return false; // skip branches with non-positive rating
-					
-					double powerFlowMW = branch.powerFrom2To(UnitType.mVA).abs();
-					double loadingPercent = Math.abs(powerFlowMW) / ratingMVA * 100.0;
-					if (loadingPercent > 70.0) 
-						return true;
-					else
-						return false;
-				});
+		// define filter criteria for buses, generators, loads, and branches
+		AclfNetDFrameAdapter.BaseVThreshold = 1000;  // 1kv
+		AclfNetDFrameAdapter.OverVoltageThreshold = 1.03;
+		AclfNetDFrameAdapter.UnderVoltageThreshold = 0.97;
+		AclfNetDFrameAdapter.LoadingPercentThreshold = 70.0;
+		
+		dfAdapter.adapt(net, true);
 	  	
     	dfBus = dfAdapter.getDfBus();    	
 		System.out.println("Number of rows with filter in dfBus: " + dfBus.height());
