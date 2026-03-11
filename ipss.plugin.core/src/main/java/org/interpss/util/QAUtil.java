@@ -279,7 +279,7 @@ public class QAUtil {
 	
 		}
 		
-	}
+	} 
 
 	private static boolean isSmallZBranchConnected(String busId, AclfNetwork net, double smallZ) {
 		AclfBus b = net.getBus(busId); // Uncommented to get the bus object
@@ -293,7 +293,8 @@ public class QAUtil {
 		}
 		return false;
 	}
-public static AclfNetwork equivHVDC(AclfNetwork net) {
+	
+	public static AclfNetwork equivHVDC(AclfNetwork net) {
 
 		// calculate the hvdc branch power
 		for (Branch bra : net.getSpecialBranchList()) {
