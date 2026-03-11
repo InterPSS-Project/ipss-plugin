@@ -62,7 +62,7 @@ public class DclfContDFAdapter_EICon_Sample {
 		// define the contingency analysis configuration
 	    DclfContingencyConfig config =  new DclfContingencyConfig();
 	    config.setDclfInclLoss(true);
-		config.setOverloadThreshold(120); // in percentage	
+		config.setOverloadThreshold(100); // in percentage	
 
 		ConcurrentLinkedQueue<BranchCAResultRec> results = 
 				ParallelDclfContingencyAnalyzer.performContingencyAnalysis(
@@ -75,10 +75,11 @@ public class DclfContDFAdapter_EICon_Sample {
 			String branchId = rec.aclfBranch.getId();
 			String contingencyName = rec.contingency.getId();
 			Double postFlowMW = rec.getPostFlowMW();
+			Double shiftedFlowMW = rec.shiftedFlowMW;
 			Double lineRatingMW = rec.calBranchRateB();
 			Double loadingPercent = rec.calLoadingPercent();
-			System.out.println(String.format("{\n  \"branch_id\": \"%s\",\n  \"contingency_name\": \"%s\",\n  \"post_flow_mw\": %.2f,\n  \"line_rating_mw\": %.2f,\n  \"loading_percent\": %.2f\n}", 
-                branchId, contingencyName, postFlowMW, lineRatingMW, loadingPercent));
+			System.out.println(String.format("{\n  \"branch_id\": \"%s\",\n  \"contingency_name\": \"%s\",\\n  \\\"post_flow_mw\\\": %.2f,\n  \"shift_flow_mw\": %.2f,\n  \"line_rating_mw\": %.2f,\n  \"loading_percent\": %.2f\n}", 
+                branchId, contingencyName, postFlowMW, shiftedFlowMW, lineRatingMW, loadingPercent));
 		}
 		
 		DclfContingencyDFrameAdapter dfAdapter = new DclfContingencyDFrameAdapter();
