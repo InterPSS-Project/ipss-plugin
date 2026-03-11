@@ -18,7 +18,7 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.algo.impl.solver.optStep.CubicEqnStepSizeCalculator;
 import com.interpss.core.funcImpl.AclfAdjCtrlFunction;
 
-public class Aclf_ACTIVSg25kBusSample {
+public class ACTIVSg25kBusSwShuntCtrlOnlySample1 {
 	
 	public static void main(String args[]) throws Exception {
 		
@@ -50,6 +50,8 @@ public class Aclf_ACTIVSg25kBusSample {
 
 		aclfAlgo.getLfAdjAlgo().getLimitCtrlConfig().setCheckGenQLimitImmediate(false);
 
+		aclfAlgo.getNrMethodConfig().setNonDivergent(true);
+		
 		// disable all the controls
 		AclfAdjCtrlFunction.disableAllAdjControls.accept(aclfAlgo);
 		
@@ -75,7 +77,7 @@ public class Aclf_ACTIVSg25kBusSample {
 		/*
 		 * enable PV bus limit controls
 		 * 
-		 */		
+		 *		
 		aclfAlgo.getLfAdjAlgo().getLimitCtrlConfig().setPvLimitControl(true);
 		aclfAlgo.getLfAdjAlgo().getLimitCtrlConfig().setAdjustAppType(AdjustApplyType.POST_ITERATION);
 		// PV limit control process starts when max mismatch is below 1.0E-6 x 100

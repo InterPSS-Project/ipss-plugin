@@ -15,11 +15,16 @@ import com.interpss.core.aclf.BaseAclfBus;
  * Adapter to convert AclfNet data to a set of DataFrame objects
  */
 public class AclfNetDFrameAdapter {
+	public static double BaseVThreshold = 100 * 1000; // 100kV, only include buses with base voltage >= 100kV
+	public static double OverVoltageThreshold = 1.05;  // over voltage threshold for bus filtering
+	public static double UnderVoltageThreshold = 0.95;  // under voltage threshold for bus filtering
+	public static double LoadingPercentThreshold = 70.0;  // loading percent threshold for branch filtering
+	
 	// default filters for bus and branch data for simulation report generation, 
 	// can be overridden by user input filters in the adapt() method
 	public static Predicate<BaseAclfBus<?,?>> BusFilter = bus -> 
-						bus.getBaseVoltage() >= 100 * 1000  // voltage level filter: only include buses with base voltage >= 100kV
-						&& (bus.getVoltageMag() > 1.05 || bus.getVoltageMag() < 0.95);
+						bus.getBaseVoltage() >= BaseVThreshold  // voltage level filter: only include buses with base voltage >= 100kV
+						&& (bus.getVoltageMag() > OverVoltageThreshold || bus.getVoltageMag() < UnderVoltageThreshold);
 	
 	public static Predicate<AclfGen> GenFilter = gen -> BusFilter.test(gen.getParentBus()); 
 	
@@ -31,7 +36,7 @@ public class AclfNetDFrameAdapter {
 		
 		double powerFlowMW = branch.powerFrom2To(UnitType.mVA).abs();
 		double loadingPercent = Math.abs(powerFlowMW) / ratingMVA * 100.0;
-		if (loadingPercent > 70.0) 
+		if (loadingPercent > LoadingPercentThreshold) 
 			return true;
 		else
 			return false;

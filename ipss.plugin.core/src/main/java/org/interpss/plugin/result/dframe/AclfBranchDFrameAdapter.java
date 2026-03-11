@@ -26,7 +26,7 @@ public class AclfBranchDFrameAdapter {
 			double limMvaA, double limMvaB, double limMvaC,
 			double pFrom2To, double qFrom2To,
 			double pTo2From, double qTo2From,
-			double flowFromSide) {}
+			double flowFromSide, double loading) {}
 	
 	// Define a record for basic branch info
 	private static record BasicBranchDFrameRec(String id, String fromBusId, String toBusId, String circuitNum,
@@ -70,7 +70,8 @@ public class AclfBranchDFrameAdapter {
                 	Extractor.$double(BranchDFrameRec::qFrom2To),
                 	Extractor.$double(BranchDFrameRec::pTo2From),
                 	Extractor.$double(BranchDFrameRec::qTo2From),
-                	Extractor.$double(BranchDFrameRec::flowFromSide)
+                	Extractor.$double(BranchDFrameRec::flowFromSide),
+                	Extractor.$double(BranchDFrameRec::loading)
                 )
                 // define the column names
                 .columnNames("ID", "Name", "Circuit", "Status",
@@ -81,7 +82,7 @@ public class AclfBranchDFrameAdapter {
                 			"R", "X", "B",
                 			"LimMvaA", "LimMvaB", "LimMvaC",
 							"PFrom2To", "QFrom2To",
-							"PTo2From", "QTo2From", "FlowFromSide")
+							"PTo2From", "QTo2From", "Flow@FromSide", "Loading%")
                 .appender();
     }
     
@@ -101,7 +102,7 @@ public class AclfBranchDFrameAdapter {
 				// define the column names
 				.columnNames("ID", "FromBusID", "ToBusID", "CircuitNum",
 						"PFrom2To", "QFrom2To",
-						"PTo2From", "QTo2From", "FlowFromSide")
+						"PTo2From", "QTo2From", "Flow@FromSide")
 				.appender();
     }
     
@@ -164,8 +165,19 @@ public class AclfBranchDFrameAdapter {
 		if (isDetailedMode) {
 			DataFrameAppender<BranchDFrameRec> appender = createAppender();
 			
+			double baseMva = aclfNet.getBaseMva();
 			for (var branch : aclfNet.getBranchList()) {
 				if (predicate.test(branch)) {
+					double flowFromSide = branch.powerFrom2To().abs();
+					
+					double powerFlowMW = flowFromSide * baseMva;
+		            double ratingMVA = branch.getRatingMva1();
+		            
+		            double loadingPercent = 0.0;
+		            if (ratingMVA > 0.0) {
+		                loadingPercent = Math.abs(powerFlowMW) / ratingMVA * 100.0;
+		            }
+		            
 					appender.append(new BranchDFrameRec(
 							branch.getId(),
 							branch.getName(),
@@ -190,7 +202,8 @@ public class AclfBranchDFrameAdapter {
 							branch.powerFrom2To().getImaginary(),
 							branch.powerTo2From().getReal(),
 							branch.powerTo2From().getImaginary(),
-							branch.powerFrom2To().abs())
+							flowFromSide,
+							loadingPercent)
 						);
 				}
 			}
