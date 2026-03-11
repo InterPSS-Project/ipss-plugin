@@ -19,7 +19,7 @@ public class DclfContingencyDFrameAdapter {
 							AclfBranchCode branchCode,   // AclfBranchCode
 							boolean xfmr, 
 							String contingencyName, String outageBranchId, String outageBranchName,
-							double postFlowMW, double lineRatingMW, double loadingPercent) {}
+							double preFlowMW, double postFlowMW, double lineRatingMW, double loadingPercent) {}
     
     /**
      * Constructor to initialize the DataFrame appender
@@ -38,6 +38,7 @@ public class DclfContingencyDFrameAdapter {
                 	Extractor.$col(ContDFrameRec::contingencyName),
                 	Extractor.$col(ContDFrameRec::outageBranchId),
                 	Extractor.$col(ContDFrameRec::outageBranchName),
+                	Extractor.$double(ContDFrameRec::preFlowMW),
                 	Extractor.$double(ContDFrameRec::postFlowMW),
                 	Extractor.$double(ContDFrameRec::lineRatingMW),
                 	Extractor.$double(ContDFrameRec::loadingPercent)
@@ -46,7 +47,7 @@ public class DclfContingencyDFrameAdapter {
                 .columnNames("BranchID", "BranchName",
                 			"BranchCode", "IsXfmr",
                 			"ContingencyName", "OutageBranchId", "OutageBranchName",
-                			"PostFlowMW", "LineRatingMW", "LoadingPercent")
+                			"BasecaseFlowMW", "PostFlowMW", "LineRatingMW", "LoadingPercent")
                 .appender();
     }
     
@@ -80,6 +81,7 @@ public class DclfContingencyDFrameAdapter {
 						rec.contingency.getId(), 
 						rec.contingency.getOutageEquip().getBranch().getId(), 
 						rec.contingency.getOutageEquip().getBranch().getName(),
+						rec.preFlowMW,
 						rec.getPostFlowMW(), 
 						rec.calBranchRateB(), 
 						rec.calLoadingPercent()

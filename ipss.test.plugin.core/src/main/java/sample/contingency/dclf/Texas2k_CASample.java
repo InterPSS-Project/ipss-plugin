@@ -16,6 +16,7 @@ import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
 import org.interpss.plugin.contingency.definition.MonitoredBranchRecord;
 import org.interpss.plugin.contingency.result.DclfContingencyResultRec;
 import org.interpss.plugin.contingency.util.ContingencyFileUtil;
+import org.interpss.plugin.contingency.util.DclfContingencyHelper;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 
@@ -44,36 +45,9 @@ public class Texas2k_CASample {
 		//import contingency definitions from CA file
 		File contFile = new File("testData/psse/v36/texas2k/2k_contingencies_115kVAbove.json");
 		List<BranchContingencyRecord> contingencies = ContingencyFileUtil.importContingenciesFromJson(contFile);
-		List<DclfBranchOutage> contList = new java.util.ArrayList<>();
-
-		for (BranchContingencyRecord record : contingencies) {
-			try {
-				// Find the branch based on from_bus and to_bus
-				String branchId = record.fromBus + "->" + record.toBus+"("+record.ckt+")";
-				if (net.getBranch(branchId) != null) {
-					DclfBranchOutage cont = createContingency(record.name);
-					
-					// Determine outage type based on action type
-					ContingencyBranchOutageType outageType;
-					switch (record.actionType.toLowerCase()) {
-						case "open":
-							outageType = ContingencyBranchOutageType.OPEN;
-							break;
-						case "close":
-							outageType = ContingencyBranchOutageType.CLOSE;
-							break;
-						default:
-							outageType = ContingencyBranchOutageType.OPEN; // Default to open
-					}
-					
-					DclfOutageBranch outage = createCaOutageBranch(algo.getDclfAlgoBranch(branchId), outageType);
-					cont.setOutageEquip(outage);
-					contList.add(cont);
-				}
-			} catch (Exception ex) {
-				throw new Exception("Warning: Could not create contingency for " + record.name + ": " + ex.getMessage() + "\n");
-			}
-		}
+		
+		List<DclfBranchOutage> dclfContList = new DclfContingencyHelper(algo)
+						.createDclfContList(contingencies);
 
 		//import monitored branches from JSON file
 		File monFile = new File("testData/psse/v36/texas2k/2k_monitored_branches.json");
@@ -88,7 +62,7 @@ public class Texas2k_CASample {
 		config.setOverloadThreshold(100); // in percentage	
 
 		ConcurrentLinkedQueue<DclfContingencyResultRec> results = 
-				ParallelDclfContingencyAnalyzer.executeContingencyAnalysis(net, contList, monitoredBranchIds, config, 8);	
+				ParallelDclfContingencyAnalyzer.executeContingencyAnalysis(net, dclfContList, monitoredBranchIds, config, 8);	
 
 		// print the results
 		for (DclfContingencyResultRec rec : results) {
