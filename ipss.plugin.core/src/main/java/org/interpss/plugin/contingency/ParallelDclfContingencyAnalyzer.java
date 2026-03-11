@@ -103,7 +103,7 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
 				// Skip this branch - not monitored) {
 	    	}
 	    	else if (caResultRec.calLoadingPercent() >= overloadThreshold) {
-	    		// Only include contingencies that cause significant flow shifting
+	    		// Only include contingencies that cause meaningful flow shifting
 	    		if (Math.abs(caResultRec.shiftedFlowMW) > BranchCAResultRec.ContingencyShiftThreshold)  
 	    			caResultRecords.add(caResultRec);
 	    	}
