@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.display.impl.AclfOut_PSSE;
+import org.interpss.numeric.datatype.ComplexFunc;
 import org.slf4j.Logger;
 
 import com.interpss.core.CoreObjectFactory;
@@ -61,22 +62,30 @@ public class QAUtil {
 		return maxDiff;
 	}
 
-	public static double getMaxBranchFlowDiff (AclfNetwork net, AclfNetwork copyNet, double zeroZBranchTreshold) {
-		double maxDiff = 0;
+	public static Complex getMaxBranchFlowDiff (AclfNetwork net, AclfNetwork copyNet, double zeroZBranchTreshold) {
+		Complex maxDiff = new Complex(0,0);
 		String maxDiffBranchId = "";
 		for(AclfBranch branch: net.getBranchList()) {
-			if(branch.isActive() && copyNet.getBranch(branch.getId()) != null && branch.getAdjustedZ().abs() > zeroZBranchTreshold) { // check if the branch is active and has a non-zero impedance
+			AclfBranch copyBranch = copyNet.getBranch(branch.getId());
+			if(branch.isActive() && copyBranch != null && branch.getAdjustedZ().abs() > zeroZBranchTreshold) { // check if the branch is active and has a non-zero impedance
 				Complex flow = branch.powerFrom2To();
-				Complex flowPSSE = copyNet.getBranch(branch.getId()).powerFrom2To();
+				Complex flowPSSE = copyBranch.powerFrom2To();
 				Complex flowDiff = flow.subtract(flowPSSE);
 				double flowDiffAbs = flowDiff.abs();
-				if(flowDiffAbs > maxDiff) {
-					maxDiff = flowDiffAbs;
+				if(flowDiffAbs > maxDiff.abs()) {
+					maxDiff = flowDiff;
 					maxDiffBranchId = branch.getId();
+					/*
+					if (maxDiffBranchId.equals("Bus7366->Bus7400(1)")) {
+						System.out.println("Branch " + maxDiffBranchId + " has a flow difference of " + maxDiff);
+						System.out.println("Flow from 2 to: " + flow);
+						System.out.println("PSSE Flow from 2 to: " + flowPSSE);
+					}
+					*/
 				}
 			}
 		}
-		System.out.println("Max branch flow difference: " + maxDiff + " (Branch ID: " + maxDiffBranchId + ")");
+		System.out.println("Max branch flow difference: " + ComplexFunc.toStr(maxDiff) + " (Branch ID: " + maxDiffBranchId + ")");
 		return maxDiff;
 	}
 
