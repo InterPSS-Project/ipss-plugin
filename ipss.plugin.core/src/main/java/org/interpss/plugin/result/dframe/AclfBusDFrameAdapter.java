@@ -186,8 +186,8 @@ public class AclfBusDFrameAdapter {
 						bus.calNetGenResults().getImaginary(), // use calNetGenResults to get the genQ value after load flow calculation, as getGenQ() may not be updated with the latest load flow results
 						bus.getQGenLimit().getMax(),
 						bus.getQGenLimit().getMin(),
-						bus.getLoadP(),
-						bus.getLoadQ(),
+						bus.calNetLoadResults().getReal(), // use calNetLoadResults to get the loadP value after load flow calculation, as getLoadP() may not be updated with the latest load flow resultsesults().getReal(), // use calNetLoadResults to get the loadP value after load flow calculation, as getLoadP() may not be updated with the latest load flow results
+						bus.calNetLoadResults().getImaginary(), // use calNetLoadResults to get the loadQ value after load flow calculation, as getLoadQ() may not be updated with the latest load flow resultsesults().getImaginary(), // use calNetLoadResults to get the loadQ value after load flow calculation, as getLoadQ() may not be updated with the latest load flow results
 						shuntB,
 						shuntBMax,
 						shuntBMin,
