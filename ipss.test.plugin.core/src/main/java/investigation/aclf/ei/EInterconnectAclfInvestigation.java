@@ -35,6 +35,11 @@ public class EInterconnectAclfInvestigation {
 		System.out.println(AclfAdjCtrlFunction.nOfPSXfrPControl.apply(aclfNet) + " Phase shifting transformer P controls");
 
 		System.out.println("MaxMismatch Before Aclf: " + aclfNet.maxMismatch(AclfMethodType.NR));
+		/*
+		 * MaxMismatch Before Aclf: dPmax :  5.5000 at Bus : Bus58540,     dQmax :  4.60353 at Bus : Bus55247
+		 * 
+		 * Caused by Hvdc line not modeled in the mismatch calculation. 
+		 */
 		
 		AclfNetwork netPsse = aclfNet.jsonCopy();
 		
@@ -60,11 +65,12 @@ public class EInterconnectAclfInvestigation {
 		
 		QAUtil.getMaxBranchFlowDiff(aclfNet, netPsse, 0.00001);
 		
+		String busId = "Bus58540";  // Bus58540, Bus55247, Bus50458
 		System.out.println("\n\n===========IpssNet ===========");
-		AclfNetInfoHelper.outputBusAclfDebugInfo(aclfNet, "Bus50458", false);
+		AclfNetInfoHelper.outputBusAclfDebugInfo(aclfNet, busId, false);
 		
 		System.out.println("\n\n===========PsseNet ===========");
-		AclfNetInfoHelper.outputBusAclfDebugInfo(netPsse, "Bus50458", false);
+		AclfNetInfoHelper.outputBusAclfDebugInfo(netPsse, busId, false);
 		
 		/*
 		System.out.println("\n\n===========IpssNet ===========");
