@@ -52,7 +52,7 @@ public class Texas2kBusAclfInvestigation {
 		AclfNetInfoHelper.outputBranchAclfDebugInfo(netPsse, "Bus7366->Bus7400(1)", false);
 		
 /*
- *      PSSE Result
+ *      Original PSSE Result
  *      
  *      Bus7400: genP: 8.784, genQ: -16.74503, qGenLimit: ( 4.4712, -0.9749 ), voltSpec: 1.0		
  *      
