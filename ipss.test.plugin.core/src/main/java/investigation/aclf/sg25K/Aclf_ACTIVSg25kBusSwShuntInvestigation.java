@@ -1,4 +1,4 @@
-package sample.aclf;
+package investigation.aclf.sg25K;
 
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 
