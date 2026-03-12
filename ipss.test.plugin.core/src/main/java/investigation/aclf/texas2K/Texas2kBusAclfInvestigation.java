@@ -65,9 +65,9 @@ public class Texas2kBusAclfInvestigation {
 		
 		Observation:
 		
-		1) PSSE format results at Bus7400 is not correct, the genP is 8.784, but the genQ is -16.74503, 
-		which is much larger than the qGenLimit of -0.0799.
-		2) The genQ is -16.74503, which is much larger than the qGenLimit of -0.0799, 
+		1) PSSE format results at Bus7400 are not correct, the genP is 8.784, but the genQ is -16.74503, 
+		which is much larger than the qGenLimit.min of -0.0799.
+		2) The genQ is -16.74503, which is much larger than the qGenLimit.min of -0.0799, 
 		but the voltage spec is set to 1.0, which is too low for the available gen Q limit.  
 */
 	}
