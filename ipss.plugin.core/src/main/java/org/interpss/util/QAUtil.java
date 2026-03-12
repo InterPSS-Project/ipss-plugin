@@ -52,10 +52,14 @@ public class QAUtil {
 	}
 
 	public static double getMaxBusVoltageDiff (AclfNetwork net, AclfNetwork copyNet) {
+		return getMaxBusVoltageDiff(net, copyNet, false);
+	}
+	
+	public static double getMaxBusVoltageDiff (AclfNetwork net, AclfNetwork copyNet, boolean genBusOnly) {
 		double maxDiff = 0;
 		String maxDiffBusId = "";
 		for(AclfBus bus: net.getBusList()) {
-			if(bus.isActive()) {
+			if(bus.isActive() && !genBusOnly || bus.isGen()) {
 				Complex v = bus.getVoltage();
 				AclfBus copyBus = copyNet.getBus(bus.getId());
 				Complex vCopy = copyBus.getVoltage();
@@ -100,6 +104,7 @@ public class QAUtil {
     public static double getMaxGenPOutputDiff (AclfNetwork net, AclfNetwork copyNet) {
 		double maxDiff = 0;
 		String maxDiffGenId = "";
+		AclfGenCode maxDiffGenType = AclfGenCode.NON_GEN;
 		for(AclfBus bus: net.getBusList()) {
 			if(bus.isActive() && bus.getContributeGenList() != null) {
 				for (AclfGen gen : bus.getContributeGenList()) {
@@ -116,13 +121,15 @@ public class QAUtil {
 							if (pDiffPercent > maxDiff) {
 								maxDiff = pDiffPercent;
 								maxDiffGenId = bus.getId() + "-" + gen.getId();
+								maxDiffGenType = bus.getGenCode();
 							}
 						}
 					}
 				}
 			}
 		}
-		System.out.println("Max generator output difference: " + maxDiff + " (Generator ID: " + maxDiffGenId + ")");
+		System.out.println("Max generator output difference: " + maxDiff + " (Generator ID: " + maxDiffGenId + 
+				 			" Type: " + maxDiffGenType + ")");
 		return maxDiff;
 	}
 
