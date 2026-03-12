@@ -6,11 +6,12 @@ import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.util.QAUtil;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
+import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
-import com.interpss.core.algo.AdjustApplyType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.AclfAdjCtrlFunction;
+import com.interpss.core.funcImpl.AclfNetInfoHelper;
 
 public class EInterconnectAclfInvestigation {
     public static void main(String args[]) throws Exception {
@@ -37,6 +38,8 @@ public class EInterconnectAclfInvestigation {
 		
 		AclfNetwork netPsse = aclfNet.jsonCopy();
 		
+		AclfBus bus = aclfNet.getBus("Bus50320");
+		
 		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet);
 
 		aclfAlgo.getNrMethodConfig().setNonDivergent(true);
@@ -51,10 +54,52 @@ public class EInterconnectAclfInvestigation {
 		
 		System.out.println("MaxMismatch After Aclf: " + aclfNet.maxMismatch(AclfMethodType.NR));
 		
-		QAUtil.getMaxBusVoltageDiff(aclfNet, netPsse);
+		QAUtil.getMaxBusVoltageDiff(aclfNet, netPsse, true);
 		
 		QAUtil.getMaxGenPOutputDiff(aclfNet, netPsse);
 		
 		QAUtil.getMaxBranchFlowDiff(aclfNet, netPsse, 0.00001);
+		
+		System.out.println("\n\n===========IpssNet ===========");
+		AclfNetInfoHelper.outputBusAclfDebugInfo(aclfNet, "Bus50458", false);
+		
+		System.out.println("\n\n===========PsseNet ===========");
+		AclfNetInfoHelper.outputBusAclfDebugInfo(netPsse, "Bus50458", false);
+		
+		/*
+		System.out.println("\n\n===========IpssNet ===========");
+		AclfNetInfoHelper.outputBusAclfDebugInfo(aclfNet, "Bus50320", false);
+		
+		System.out.println("\n\n===========PsseNet ===========");
+		AclfNetInfoHelper.outputBusAclfDebugInfo(netPsse, "Bus50320", false);
+		*/
+		
+		/*
+		System.out.println("\n\n===========IpssNet ===========");
+		AclfNetInfoHelper.outputBranchAclfDebugInfo(aclfNet, "Bus27916->Bus27926(1)", false);
+		
+		System.out.println("\n\n===========PsseNet ===========");
+		AclfNetInfoHelper.outputBranchAclfDebugInfo(netPsse, "Bus27916->Bus27926(1)", false);
+		*/
+		
+		/*
+		 *      Original PSSE Result
+		 *      
+		 *      Branch Bus27916->Bus27926(1) connects to two PV buses
+		 *      
+		 *      Bus27916
+		 *      	Voltage: 1.01999998 < -0.42405903552551066 rad
+		 *      	Gen Type: GenPV, genP: 9.14006, genQ: 1.156, qGenLimit: ( 12.056, -6.522 ), voltSpec: 1.02
+
+				Bus27926
+					Voltage: 1.0203141 < -0.42297337091760007 rad
+					Gen Type: GenPV, genP: 6.47147, genQ: 1.15602, qGenLimit: ( 7.68, -4.13 ), voltSpec: 1.02
+					
+				Observation:
+				
+					1) There are Q rooms at bus Bus27926. However, the bus voltage is not controlled at the VSpec level.
+
+					2) InterPSS maintains the voltage at the spec level, this the reason why we see branch flow difference
+		 */
     }
 }
