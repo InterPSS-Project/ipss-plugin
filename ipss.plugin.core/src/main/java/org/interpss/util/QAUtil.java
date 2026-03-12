@@ -1,13 +1,21 @@
 package org.interpss.util;
 
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Reader;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.display.impl.AclfOut_PSSE;
 import org.interpss.numeric.datatype.ComplexFunc;
 import org.slf4j.Logger;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
@@ -120,7 +128,7 @@ public class QAUtil {
 
 
 
-    public static void printResults(AclfNetwork net, AclfNetwork copyNet, String busCompareFile, String branchCompareFile, String genCompareFile) {
+    public static void saveCompareResults(AclfNetwork net, AclfNetwork copyNet, String busCompareFile, String branchCompareFile, String genCompareFile) {
         StringBuffer busResultCompare = new StringBuffer();
 		busResultCompare.append("BusId,AreaId,Vm,VmPSSE,VmDiff,Va,VaPSSE,VaDiff,VmDiffPercent,VaDiffPercent\n");
 		for(AclfBus bus: net.getBusList()) {
@@ -216,6 +224,57 @@ public class QAUtil {
 		}
 
     }
+
+	public static void saveBusVoltCompareResults(AclfNetwork net, AclfNetwork copyNet, String busCompareFile, String busNumberJsonFile) {
+		Set<String> includedBusIds = loadBusIdsFromJson(busNumberJsonFile);
+        StringBuffer busResultCompare = new StringBuffer();
+		busResultCompare.append("BusId,AreaId,Vm,VmPSSE,VmDiff,Va,VaPSSE,VaDiff,VmDiffPercent,VaDiffPercent\n");
+		for(AclfBus bus: net.getBusList()) {
+			if(bus.isActive() && includedBusIds.contains(bus.getId())) {
+				double vm = bus.getVoltageMag();
+				double va = bus.getVoltageAng()*180/Math.PI; // convert to degree
+				//System.out.println(bus.getId() + ", Vm: " + vm + ",	
+				AclfBus copyBus = copyNet.getBus(bus.getId());
+				double vmCopy = copyBus.getVoltageMag();
+				double vaCopy = copyBus.getVoltageAng()*180/Math.PI; // convert to degree
+				double vmdiff = vm - vmCopy;
+				double vadiff = va - vaCopy;
+				double vmdiffPercent = vmdiff/vmCopy*100;
+				double vadiffPercent = vadiff/vaCopy*100;
+				String areaId = bus.getAreaId();
+				busResultCompare.append(bus.getId()+","+areaId+","+vm+","+vmCopy+","+vmdiff+","+va+","+vaCopy+","+vadiff+","+vmdiffPercent+","+vadiffPercent+"\n");
+			}
+		}
+
+		try (FileWriter writer = new FileWriter(busCompareFile)) {
+			writer.write(busResultCompare.toString());
+			writer.flush();
+			System.out.println("Bus comparison results are saved to: " + busCompareFile);
+		} catch (IOException e) {
+			System.err.println("Error writing bus comparison results to file: " + e.getMessage());
+			e.printStackTrace();
+		}
+	}
+
+	private static Set<String> loadBusIdsFromJson(String busNumberJsonFile) {
+		Set<String> busIds = new HashSet<>();
+		try (Reader reader = new FileReader(busNumberJsonFile)) {
+			JsonObject jsonObject = JsonParser.parseReader(reader).getAsJsonObject();
+			JsonArray busNumbers = jsonObject.getAsJsonArray("Bus Number");
+			if (busNumbers == null) {
+				throw new IllegalArgumentException("Missing 'Bus Number' array in " + busNumberJsonFile);
+			}
+
+			for (JsonElement busNumber : busNumbers) {
+				String value = busNumber.getAsString().trim();
+				busIds.add(value.startsWith("Bus") ? value : "Bus" + value);
+			}
+		} catch (IOException e) {
+			throw new RuntimeException("Error reading bus number JSON file: " + busNumberJsonFile, e);
+		}
+
+		return busIds;
+	}
 
 	public static void checkAllBusMismatch(AclfNetwork net, double smallZBranchThreshold, double mismatchTreshold) {
 
