@@ -38,28 +38,5 @@ public class Texas2kBusNonDivergentSample {
 		aclfAlgo.loadflow();
 		
 		System.out.println("MaxMismatch (After): " + net.maxMismatch(AclfMethodType.NR));
-		
-		QAUtil.getMaxBusVoltageDiff(net, netCopy);
-		
-		QAUtil.getMaxGenPOutputDiff(net, netCopy);
-		
-		QAUtil.getMaxBranchFlowDiff(net, netCopy, 0.00001);
-		
-		System.out.println("\n\n===========IpssNet ===========");
-		AclfNetInfoHelper.outputBranchAclfDebugInfo(net, "Bus7366->Bus7400(1)", false);
-		
-		System.out.println("\n\n===========PsseNet ===========");
-		AclfNetInfoHelper.outputBranchAclfDebugInfo(netCopy, "Bus7366->Bus7400(1)", false);
-		
-/*
- *      PSSE ßBus7400: genP: 8.784, genQ: -16.74503, qGenLimit: ( 4.4712, -0.9749 )		
- *      
-		gen: (0.72, -1.37254), desiredVoltMag: 1.0, qGenLimit: ( 0.3665, -0.0799 ), 
-		gen: (0.72, -1.37254), desiredVoltMag: 1.0, qGenLimit: ( 0.3665, -0.0799 )
-		gen: (0.72, -1.37254), desiredVoltMag: 1.0, qGenLimit: ( 0.3665, -0.0799 )
-		gen: (0.72, -1.37254), desiredVoltMag: 1.0, qGenLimit: ( 0.3665, -0.0799 ), 
-		gen: (1.44, -2.74509), desiredVoltMag: 1.0, qGenLimit: ( 0.733, -0.1598 ), 
-		gen: (4.464, -8.50978), desiredVoltMag: 1.0, qGenLimit: ( 2.2722, -0.4955 ), 
- */
 	}
 }
