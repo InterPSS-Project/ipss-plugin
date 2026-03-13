@@ -14,9 +14,12 @@ import com.interpss.core.funcImpl.AclfAdjCtrlFunction;
 import com.interpss.core.funcImpl.AclfNetInfoHelper;
 
 public class EInterconnectAclfInvestigation {
+	//static String RootDir = "";
+	static String RootDir = "ipss.test.plugin.core/";
+
     public static void main(String args[]) throws Exception {
 		// load the test data V33
-		AclfNetwork aclfNet = IpssAdapter.importAclfNet("testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW")
+		AclfNetwork aclfNet = IpssAdapter.importAclfNet(RootDir + "testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW")
 				.setFormat(PSSE)
 				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_33) 
 				.load()
