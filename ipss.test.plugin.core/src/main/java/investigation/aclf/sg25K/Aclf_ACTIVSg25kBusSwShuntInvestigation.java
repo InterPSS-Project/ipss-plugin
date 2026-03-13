@@ -18,14 +18,13 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.AclfAdjCtrlFunction;
 
 public class Aclf_ACTIVSg25kBusSwShuntInvestigation {
-	
+	//static String RootDir = "";
+	static String RootDir = "ipss.test.plugin.core/";
+
 	public static void main(String args[]) throws Exception {
-		IpssCorePlugin.init();
-		
 		//IpssLogger.getLogger().setLevel(Level.INFO);
 		
-		//String filename = "ipss-plugin/ipss.test.plugin.core/testData/psse/v33/ACTIVSg25k.RAW";
-		String filename = "testData/psse/v33/ACTIVSg25k.RAW";
+		String filename = RootDir + "testData/psse/v33/ACTIVSg25k.RAW";
 		
 		// load the test data V33
 		AclfNetwork net = IpssAdapter.importAclfNet(filename)
