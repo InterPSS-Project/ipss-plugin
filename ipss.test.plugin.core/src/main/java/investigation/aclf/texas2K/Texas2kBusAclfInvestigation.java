@@ -13,10 +13,12 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.AclfNetInfoHelper;
 
 public class Texas2kBusAclfInvestigation {
+	//static String RootDir = "";
+	static String RootDir = "ipss.test.plugin.core/";
 	
 	public static void main(String args[]) throws InterpssException {
 		
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v36/Texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW")
+		AclfNetwork net = IpssAdapter.importAclfNet(RootDir + "testData/psse/v36/Texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW")
 				.setFormat(PSSE)
 				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_36) 
 				.load()
