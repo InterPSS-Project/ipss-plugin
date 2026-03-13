@@ -36,14 +36,32 @@ public class EInterconnectAclfInvestigation {
 
 		System.out.println("MaxMismatch Before Aclf: " + aclfNet.maxMismatch(AclfMethodType.NR));
 		/*
-		 * MaxMismatch Before Aclf: dPmax :  5.5000 at Bus : Bus58540,     dQmax :  4.60353 at Bus : Bus55247
+		 * MaxMismatch Before Aclf: dPmax :  1.36705 at Bus : Bus3522,     dQmax :  1.70761 at Bus : Bus3571
 		 * 
-		 * Caused by Hvdc line not modeled in the mismatch calculation. 
 		 */
 		
 		AclfNetwork netPsse = aclfNet.jsonCopy();
+
+		String busId = "Bus3522";  // Bus3522, Bus3571
+		System.out.println("\n\n===========PsseNet ===========");
+		AclfNetInfoHelper.outputBusAclfDebugInfo(netPsse, busId, false);
 		
-		AclfBus bus = aclfNet.getBus("Bus50320");
+		/*
+		 * 	Original PSSE Result
+		 * 
+		 * 		Bus3522
+		 * 			Voltage: 1.01999998 < -1.1231210317211404 rad
+					Gen Type: GenPV, genP: 4.44539, genQ: 3.48575, qGenLimit: ( 4.051, -2.18 ), voltSpec: 1.02
+					Mismatch: (-1.3670462510646297, 0.0)
+		 * 
+		 * 		Bus3571
+		 * 			Voltage: 1.01998389 < -1.1231306833919041 rad
+					Mismatch: (1.367026488949108, 1.7076114559180913)
+					
+				Observation:
+					1) The case was not converged, there are buses with large mismatch. 
+			
+		 */
 		
 		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet);
 
@@ -65,12 +83,14 @@ public class EInterconnectAclfInvestigation {
 		
 		QAUtil.getMaxBranchFlowDiff(aclfNet, netPsse, 0.00001);
 		
-		String busId = "Bus58540";  // Bus58540, Bus55247, Bus50458
+		/*
+		busId = "Bus50458";  // Bus58540, Bus55247, Bus50458
 		System.out.println("\n\n===========IpssNet ===========");
 		AclfNetInfoHelper.outputBusAclfDebugInfo(aclfNet, busId, false);
 		
 		System.out.println("\n\n===========PsseNet ===========");
 		AclfNetInfoHelper.outputBusAclfDebugInfo(netPsse, busId, false);
+		*/
 		
 		/*
 		System.out.println("\n\n===========IpssNet ===========");
