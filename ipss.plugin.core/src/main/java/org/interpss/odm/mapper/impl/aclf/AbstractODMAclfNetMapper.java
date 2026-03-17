@@ -286,9 +286,16 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 
 		if (aclfNet.getOriginalDataFormat() == OriginalDataFormat.PSSE) {
 			// Find the maximum bus number in the network to determine the starting number for star buses
-			int maxBusNum = aclfNet.getBusList().size();
+			long maxBusNum = aclfNet.getBusList().size();
+
+			// If there are buses with number, find the maximum number using stream API
+			maxBusNum = aclfNet.getBusList().stream()
+					.mapToLong(bus -> bus.getNumber() > 0 ? bus.getNumber() : 0) // consider only positive bus numbers
+					.max()
+					.orElse(maxBusNum); // if no bus has a number, use the total count as maxBusNum
+
 			// Calculate startingNum as the next power of 10 greater than maxBusNum
-			int startingNum = (int) Math.pow(10, Integer.toString(maxBusNum).length());
+			long startingNum = (long) Math.pow(10, Long.toString(maxBusNum).length());
 			for (BaseAclfBus<?, ?> bus : aclfNet.getBusList()) {
 				if (bus.getName().equals("3WXfr StarBus")) {
 					bus.setNumber(startingNum++);
