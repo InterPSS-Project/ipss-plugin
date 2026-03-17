@@ -1,7 +1,8 @@
-package sample.aclf;
+package org.interpss.aclf;
 
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 
+import org.interpss.display.AclfOutFunc;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -44,5 +45,7 @@ public class EInterconnectAllCtrlSample {
 		aclfAlgo.loadflow();
 		
 		System.out.println("MaxMismatch After Aclf: " + aclfNet.maxMismatch(AclfMethodType.NR));
+		
+		System.out.println(AclfOutFunc.loadFlowSummary(aclfNet));
     }
 }
