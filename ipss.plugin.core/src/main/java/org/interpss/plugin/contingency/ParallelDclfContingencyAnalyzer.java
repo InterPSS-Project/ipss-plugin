@@ -91,8 +91,12 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
 	        int parallelismLevel) {
 	    // Create DCLF algorithm
 	    ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(aclfNet);
-	    dclfAlgo.calculateDclf(dclfInclLoss? DclfMethod.INC_LOSS : DclfMethod.STD);
+	    DclfMethod method = dclfInclLoss? DclfMethod.INC_LOSS : DclfMethod.STD;
+	    dclfAlgo.calculateDclf(method);
 	    
+		log.info("Dclf calculation using " + method );
+		log.info("RefBus P :" + dclfAlgo.getBusPower(aclfNet.getRefBusId()) + " @" + aclfNet.getRefBusId() );
+
 	    // Use thread-safe collection for parallel processing
 	    ConcurrentLinkedQueue<BranchCAResultRec> caResultRecords = new ConcurrentLinkedQueue<>();
 	    
