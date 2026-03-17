@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.display.impl.AclfOut_PSSE;
+import org.interpss.numeric.datatype.ComplexFunc;
 import org.slf4j.Logger;
 
 import com.google.gson.JsonArray;
@@ -51,10 +52,14 @@ public class QAUtil {
 	}
 
 	public static double getMaxBusVoltageDiff (AclfNetwork net, AclfNetwork copyNet) {
+		return getMaxBusVoltageDiff(net, copyNet, false);
+	}
+	
+	public static double getMaxBusVoltageDiff (AclfNetwork net, AclfNetwork copyNet, boolean genBusOnly) {
 		double maxDiff = 0;
 		String maxDiffBusId = "";
 		for(AclfBus bus: net.getBusList()) {
-			if(bus.isActive()) {
+			if(bus.isActive() && !genBusOnly || bus.isGen()) {
 				Complex v = bus.getVoltage();
 				AclfBus copyBus = copyNet.getBus(bus.getId());
 				Complex vCopy = copyBus.getVoltage();
@@ -69,28 +74,37 @@ public class QAUtil {
 		return maxDiff;
 	}
 
-	public static double getMaxBranchFlowDiff (AclfNetwork net, AclfNetwork copyNet, double zeroZBranchTreshold) {
-		double maxDiff = 0;
+	public static Complex getMaxBranchFlowDiff (AclfNetwork net, AclfNetwork copyNet, double zeroZBranchTreshold) {
+		Complex maxDiff = new Complex(0,0);
 		String maxDiffBranchId = "";
 		for(AclfBranch branch: net.getBranchList()) {
-			if(branch.isActive() && copyNet.getBranch(branch.getId()) != null && branch.getAdjustedZ().abs() > zeroZBranchTreshold) { // check if the branch is active and has a non-zero impedance
+			AclfBranch copyBranch = copyNet.getBranch(branch.getId());
+			if(branch.isActive() && copyBranch != null && branch.getAdjustedZ().abs() > zeroZBranchTreshold) { // check if the branch is active and has a non-zero impedance
 				Complex flow = branch.powerFrom2To();
-				Complex flowPSSE = copyNet.getBranch(branch.getId()).powerFrom2To();
+				Complex flowPSSE = copyBranch.powerFrom2To();
 				Complex flowDiff = flow.subtract(flowPSSE);
 				double flowDiffAbs = flowDiff.abs();
-				if(flowDiffAbs > maxDiff) {
-					maxDiff = flowDiffAbs;
+				if(flowDiffAbs > maxDiff.abs()) {
+					maxDiff = flowDiff;
 					maxDiffBranchId = branch.getId();
+					/*
+					if (maxDiffBranchId.equals("Bus7366->Bus7400(1)")) {
+						System.out.println("Branch " + maxDiffBranchId + " has a flow difference of " + maxDiff);
+						System.out.println("Flow from 2 to: " + flow);
+						System.out.println("PSSE Flow from 2 to: " + flowPSSE);
+					}
+					*/
 				}
 			}
 		}
-		System.out.println("Max branch flow difference: " + maxDiff + " (Branch ID: " + maxDiffBranchId + ")");
+		System.out.println("Max branch flow difference: " + ComplexFunc.toStr(maxDiff) + " (Branch ID: " + maxDiffBranchId + ")");
 		return maxDiff;
 	}
 
     public static double getMaxGenPOutputDiff (AclfNetwork net, AclfNetwork copyNet) {
 		double maxDiff = 0;
 		String maxDiffGenId = "";
+		AclfGenCode maxDiffGenType = AclfGenCode.NON_GEN;
 		for(AclfBus bus: net.getBusList()) {
 			if(bus.isActive() && bus.getContributeGenList() != null) {
 				for (AclfGen gen : bus.getContributeGenList()) {
@@ -107,13 +121,15 @@ public class QAUtil {
 							if (pDiffPercent > maxDiff) {
 								maxDiff = pDiffPercent;
 								maxDiffGenId = bus.getId() + "-" + gen.getId();
+								maxDiffGenType = bus.getGenCode();
 							}
 						}
 					}
 				}
 			}
 		}
-		System.out.println("Max generator output difference: " + maxDiff + " (Generator ID: " + maxDiffGenId + ")");
+		System.out.println("Max generator output difference: " + maxDiff + " (Generator ID: " + maxDiffGenId + 
+				 			" Type: " + maxDiffGenType + ")");
 		return maxDiff;
 	}
 
@@ -338,7 +354,7 @@ public class QAUtil {
 	
 		}
 		
-	}
+	} 
 
 	private static boolean isSmallZBranchConnected(String busId, AclfNetwork net, double smallZ) {
 		AclfBus b = net.getBus(busId); // Uncommented to get the bus object
@@ -352,7 +368,8 @@ public class QAUtil {
 		}
 		return false;
 	}
-public static AclfNetwork equivHVDC(AclfNetwork net) {
+	
+	public static AclfNetwork equivHVDC(AclfNetwork net) {
 
 		// calculate the hvdc branch power
 		for (Branch bra : net.getSpecialBranchList()) {
