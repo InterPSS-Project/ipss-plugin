@@ -77,6 +77,7 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.XfrZTableEntry;
+import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.facts.StaticVarCompensator;
 import com.interpss.core.aclf.flow.FlowInterface;
 import com.interpss.core.aclf.flow.FlowInterfaceBranch;
@@ -254,9 +255,17 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 		aclfNet.getBusList().forEach(bus -> {
 			if (bus.isStaticVarCompensator()) {
 				for(StaticVarCompensator svc: bus.getStaticVarCompensatorList()){
-					if(svc!=null && svc.getRemoteBusBranchId() != null){
+					if(svc!=null && svc.getRemoteBusBranchId() != null && !svc.getRemoteBusBranchId().isEmpty()){
 						BaseAclfBus<? extends AclfGen, ? extends AclfLoad> remoteBus = aclfNet.getBus(svc.getRemoteBusBranchId());
 						svc.setRemoteBus(remoteBus);
+					}
+				}
+			}
+			if (bus.isSwitchedShunt()) {
+				for(SwitchedShunt sw: bus.getSwitchedShuntList()){
+					if(sw!=null && sw.getRemoteBusBranchId() != null && !sw.getRemoteBusBranchId().isEmpty()){
+						BaseAclfBus<? extends AclfGen, ? extends AclfLoad> remoteBus = aclfNet.getBus(sw.getRemoteBusBranchId());
+						sw.setRemoteBus(remoteBus);
 					}
 				}
 			}
