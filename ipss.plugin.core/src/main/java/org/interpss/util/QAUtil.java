@@ -528,12 +528,12 @@ public class QAUtil {
 				double vm = bus.getVoltageMag();
 				if (Math.abs(acSet - vm) > 0.001) {
 					log.warn(String.format(
-							"Warning: The voltage setpoint of VSC-HVDC %s is different from the terminal bus voltage. Setpoint: %f, Bus Voltage: %f",
+							"Warning: The voltage setpoint of VSC-HVDC %s is different from the terminal bus voltage. Setpoint: %f, Bus Voltage: %f. Set to terminal voltage for equivalence. Please check the original data and update the setpoint if needed.",
 							converter.getId(), acSet, vm));
 				}
 				bus.setGenCode(AclfGenCode.GEN_PV);
 				bus.setGenP(-converter.powerIntoConverter().getReal());
-				bus.setDesiredVoltMag(acSet);
+				bus.setDesiredVoltMag(vm); // Set the desired voltage magnitude to the current bus voltage
 				break;
 			}
 
