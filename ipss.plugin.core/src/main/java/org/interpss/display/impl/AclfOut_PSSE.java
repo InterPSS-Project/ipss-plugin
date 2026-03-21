@@ -33,6 +33,7 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
+import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 
@@ -205,8 +206,10 @@ BUS  10002 GZ-HLZ      220.00 CKT     MW     MVAR     MVA  %I 1.0445PU  -47.34  
 		double vkv = bus.getVoltageMag(UnitType.kV);
 /*
  FROM GENERATION                    600.0    34.4R  601.0 601 19.095KV               MW     MVAR    1 GD             19 50
- */
-		if (bus.isGen() && !bus.isCapacitor()) {
+ */		
+		//TODO:  why the bus cannot be a capacitor (with fixed or switched shunt)?
+		//if (bus.isGen() && !bus.isCapacitor()) { // this is the original implementation before 3/17/26
+		if (bus.isGen()) {
 			Complex pq = bus.calNetGenResults();
 			s += formatBusLoad("FROM GENERATION", pq.getReal()*factor, pq.getImaginary()*factor, pq.abs()*factor);
 			
@@ -285,6 +288,20 @@ BUS  10002 GZ-HLZ      220.00 CKT     MW     MVAR     MVA  %I 1.0445PU  -47.34  
 			Complex pq = bus.calNetLoadResults();
 			s += formatBusLoad("TO LOAD-PQ", pq.getReal()*factor, pq.getImaginary()*factor, pq.abs()*factor) + "\n";
 		}
+
+		/*
+		  To HVDC Terminal
+		 */
+		for(Branch br: ((BaseAclfNetwork<?,?>) bus.getNetwork()).getSpecialBranchList()) {
+			if (br.isActive() && br instanceof HvdcLine2TLCC ) {
+				HvdcLine2TLCC<AclfBus> hvdcBranch = (HvdcLine2TLCC<AclfBus>) br;
+				if(bus.getId().equals(hvdcBranch.getFromBus().getId()) || bus.getId().equals(hvdcBranch.getToBus().getId())) {
+					Complex pq = hvdcBranch.powerIntoConverter(bus.getId());
+					s += formatBusHVDCTerminalPower(" TO HVDC: " + hvdcBranch.getId(), pq.getReal()*factor, pq.getImaginary()*factor, pq.abs()*factor);
+				}
+			}
+		}
+		
 		
 		for (Branch br : bus.getBranchList()) {
 			if (br.isActive()) {
@@ -297,6 +314,9 @@ BUS  10002 GZ-HLZ      220.00 CKT     MW     MVAR     MVA  %I 1.0445PU  -47.34  
 	}
 
 	private static String formatBusLoad(String label, double mw, double mvar, double mva) {
+		return String.format(" %-16s                 %7.1f %7.1f %7.1f", label, mw, mvar, mva);
+	}
+	private static String formatBusHVDCTerminalPower(String label, double mw, double mvar, double mva) {
 		return String.format(" %-16s                 %7.1f %7.1f %7.1f", label, mw, mvar, mva);
 	}
 
