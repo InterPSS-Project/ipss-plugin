@@ -24,16 +24,14 @@
 
 package org.interpss.odm.mapper.base;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import static org.interpss.odm.mapper.base.ODMFunction.BusXmlRef2BusId;
-
 import org.ieee.odm.schema.ApparentPowerUnitType;
 import org.ieee.odm.schema.BaseBranchXmlType;
 import org.ieee.odm.schema.BusXmlType;
 import org.ieee.odm.schema.NetworkXmlType;
 import org.ieee.odm.schema.VoltageUnitType;
+import static org.interpss.odm.mapper.base.ODMFunction.BusXmlRef2BusId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.interpss.common.datatype.Constants;
 import com.interpss.common.exp.InterpssException;
@@ -95,9 +93,9 @@ public abstract class AbstractODMNetDataMapper<Tfrom, Tto> extends AbstractMappe
 		bus.setName(busRec.getName() == null? "Bus" : busRec.getName());
 		bus.setDesc(busRec.getDesc() == null? "Bus Desc" : busRec.getDesc());
 		bus.setStatus(busRec.isOffLine() != null? !busRec.isOffLine() : true);
-		if (!bus.isActive()) {
-			log.info("Bus is not active, " + bus.getId());
-		}
+		// if (!bus.isActive()) {
+		// 	log.info("Bus is not active, " + bus.getId());
+		// }
 		
 		/*
 		if (busRec.getCimRdfRecords() != null && busRec.getCimRdfRecords().getRdfRec().size() > 0) {
@@ -160,9 +158,9 @@ public abstract class AbstractODMNetDataMapper<Tfrom, Tto> extends AbstractMappe
 		branch.setName(branchRec.getName() == null ? "" : branchRec.getName());
 		branch.setDesc(branchRec.getDesc() == null ? "" : branchRec.getDesc());
 		branch.setStatus(branchRec.isOffLine() != null ? !branchRec.isOffLine() : true);
-		if (!branch.isActive()) {
-			log.info("Branch is not active, " + branch.getId());
-		}
+		// if (!branch.isActive()) {
+		// 	log.info("Branch is not active, " + branch.getId());
+		// }
 		if (branchRec.getAreaNumber() != null) {
 			Area area = CoreObjectFactory.createArea(branchRec.getAreaNumber(), net);
 			branch.setArea(area);
