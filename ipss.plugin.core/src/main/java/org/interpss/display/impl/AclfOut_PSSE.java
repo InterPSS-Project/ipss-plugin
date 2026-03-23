@@ -297,7 +297,7 @@ BUS  10002 GZ-HLZ      220.00 CKT     MW     MVAR     MVA  %I 1.0445PU  -47.34  
 				HvdcLine2TLCC<AclfBus> hvdcBranch = (HvdcLine2TLCC<AclfBus>) br;
 				if(bus.getId().equals(hvdcBranch.getFromBus().getId()) || bus.getId().equals(hvdcBranch.getToBus().getId())) {
 					Complex pq = hvdcBranch.powerIntoConverter(bus.getId());
-					s += formatBusHVDCTerminalPower(" TO HVDC: " + hvdcBranch.getId(), pq.getReal()*factor, pq.getImaginary()*factor, pq.abs()*factor);
+					s += formatBusHVDCTerminalPower("TO HVDC:" + hvdcBranch.getCircuitNumber(), pq.getReal()*factor, pq.getImaginary()*factor, pq.abs()*factor) + "\n";
 				}
 			}
 		}
