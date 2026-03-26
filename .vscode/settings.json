@@ -3,5 +3,23 @@
     "java.debug.settings.hotCodeReplace": "auto",
     "java.configuration.updateBuildConfiguration": "automatic",
     "java.format.settings.url": "https://raw.githubusercontent.com/google/google-java-format/master/google-java-format-1.9-all-deps.jar",
-    "java.format.settings.profile": "GoogleStyle"
+    "java.format.settings.profile": "GoogleStyle",
+    "files.exclude": {
+        "**/.settings": true,
+        "**/.github": true,
+        "**/bin" :true,
+        "**/target" : true,
+        "**/.project" : true,
+        "**/.apt_generated" :true,
+        "**/.apt_generated_tests" :true,
+        "**/.classpath" : true,
+        "**/.classpath_lib" : true,
+        "**/.flattened-pom.xml" : true,
+        "**/.cursor" : true,
+        "**/.cursorignore" : true,
+        "**/.pydevproject" :true,
+        "**/.pytest_cache":true,
+        "**/.venv":true,
+        "**/__pycache__":true,
+      }
 }
