@@ -42,7 +42,7 @@ busIds = []
 net.getBusList().forEach(lambda bus: busIds.append(bus.getId()))
 print(f"{len(busIds)} buses")
 
-# Exchange container for ContingencyExchangeInfo beans (not ContingencyResultContainer, which is the immutable CA summary type)
+# Exchange container for ContingencyExchangeInfo beans 
 contResultContainer = ipss.ContingencyResultExContainer()
 
 for i in range(10):
