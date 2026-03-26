@@ -29,6 +29,7 @@ class ipss:
 
     from org.interpss.plugin.exchange import AclfResultExchangeAdapter
     from org.interpss.plugin.exchange import ContingencyResultAdapter
+    from org.interpss.plugin.exchange import ContingencyResultExContainer
     from org.interpss.plugin.contingency.result import ContingencyResultContainer
     
     #
