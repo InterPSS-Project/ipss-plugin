@@ -175,14 +175,13 @@ public class ConToIpssMapper {
         int addedCount = 0;
         for(Branch bra : bus.getBranchList()) {
             if (!bra.isActive()) continue;
-            if(bra instanceof Aclf3WBranch) {
-                // skip 3W branches here since they will be handled by corresponding 2-terminal branch events; 
+            if (!(bra instanceof AclfBranch)) {
+                // skip non-AclfBranch types (3W transformers, HVDC, etc.)
                 continue;
             }
             if (addBranchOutageIfAbsent((AclfBranch) bra, ContingencyBranchOutageType.OPEN, target, caseLabel)) {
-                    addedCount++;
+                addedCount++;
             }
-            
         }
 
         if (addedCount == 0) {
