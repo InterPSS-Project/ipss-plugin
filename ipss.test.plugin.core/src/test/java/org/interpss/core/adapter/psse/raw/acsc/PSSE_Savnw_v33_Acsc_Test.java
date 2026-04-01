@@ -429,7 +429,7 @@ Contributing Gen:
 				if(!bra.getId().equals(relayBranch.getId())){
 				    remoteBranchList.add((AcscBranch)bra);
 				    AcscBus twoBusAwayBus = null;
-				    twoBusAwayBus = (AcscBus) bra.getOppositeBus(relayRemoteBus).get();
+				    twoBusAwayBus = (AcscBus) bra.getOppositeBus(relayRemoteBus);
 				    // take into account of lines parallel to the relay branch
 				    if(twoBusAwayBus !=null && !twoBusAwayBus.getId().equals(relayBus.getId())) {
 				    	remoteBusList.add(twoBusAwayBus);
