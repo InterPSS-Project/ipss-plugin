@@ -74,7 +74,7 @@ public class BusConnectDebugOutFunc {
 			buf.append(offSet + "  Branch type: " + branch.getBranchCode() + "\n\n");
 			
 			if (level > 1)
-				buf.append(busConnectivityInfo((AclfBus)branch.getOppositeBus(bus).get(), level-1, offSet + OffSet_Space));
+				buf.append(busConnectivityInfo((AclfBus)branch.getOppositeBus(bus), level-1, offSet + OffSet_Space));
 		}
 
 		// display debug info the connected branches
