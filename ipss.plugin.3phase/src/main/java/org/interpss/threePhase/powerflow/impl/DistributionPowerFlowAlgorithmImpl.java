@@ -98,7 +98,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			if(startingBus!=null){
 				  for(Branch connectedBra: startingBus.getBranchList()){
 						if(connectedBra.isActive() && !connectedBra.isBooleanFlag()){
-								Bus findBus = connectedBra.getOppositeBus(startingBus).get();
+								Bus findBus = connectedBra.getOppositeBus(startingBus);
 
 								//update status
 								connectedBra.setBooleanFlag(true);
@@ -599,7 +599,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 							DStab3PBranch bra3Phase = (DStab3PBranch) bra;
 
 							DStab3PBus downStreamBus = null;
-							downStreamBus = (DStab3PBus) bra.getOppositeBus(bus).get();
+							downStreamBus = (DStab3PBus) bra.getOppositeBus(bus);
 
 							if(downStreamBus.getIntFlag()<2){
 								Complex3x1 vabc = null;

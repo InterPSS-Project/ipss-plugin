@@ -524,7 +524,7 @@ public class OpenDSSDataParser {
 				  for(Branch connectedBra: startingBus.getBranchList()){
 					  AclfBranch aclfBra = (AclfBranch) connectedBra;
 						if(!connectedBra.isBooleanFlag()){
-								Bus findBus = connectedBra.getOppositeBus(startingBus).get();
+								Bus findBus = connectedBra.getOppositeBus(startingBus);
 
 								//update status
 								connectedBra.setBooleanFlag(true);
