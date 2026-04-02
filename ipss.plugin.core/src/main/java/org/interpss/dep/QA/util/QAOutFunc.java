@@ -23,7 +23,7 @@ public abstract class QAOutFunc {
 		
 		// display debug info of the bus and connected buses and branches
 		buf.append("\nBus/Branch debug info: \n\n" + bus.toString(net.getBaseKva()));
-		for (Branch b : bus.getBranchList()) {
+		for (Branch b : bus.getBranchIterable()) {
 			AclfBranch bra = (AclfBranch)b;
 			buf.append("\n\n" + bra.getOppositeBus(bus).toString(net.getBaseKva()));
 			buf.append("\n\n" + bra.toString(net.getBaseKva()));

@@ -98,7 +98,7 @@ public class IEEE14Bus_ZeroZBranch_Test extends CorePluginTestSetup {
 	
 	public Complex currentIntoNet(BaseAclfBus bus, AclfBranch excludeBranch) throws InterpssException {
 		Complex sum = bus.getVoltage().multiply(bus.yii());
-		for( Branch b : bus.getBranchList()) {
+		for( Branch b : bus.getBranchIterable()) {
 			if ( b.isActive() && b instanceof AclfBranch) {
 				if (excludeBranch != null && b.getId().equals(excludeBranch.getId()))
 					;  // bypass the branch
@@ -206,7 +206,7 @@ public class IEEE14Bus_ZeroZBranch_Test extends CorePluginTestSetup {
 		if (bus.isLoad())
 			p = p.subtract(bus.calNetLoadResults());
 		
-		for( Branch b : bus.getBranchList()) {
+		for( Branch b : bus.getBranchIterable()) {
 			if ( !b.getId().equals(branch.getId()) && b.isActive() && b instanceof AclfBranch) {
 				AclfBranch bra = (AclfBranch)b;
 				if (bra.isZeroZBranch()) {

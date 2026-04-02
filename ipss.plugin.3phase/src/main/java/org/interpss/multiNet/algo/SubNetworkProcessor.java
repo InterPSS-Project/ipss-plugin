@@ -517,7 +517,7 @@ public class SubNetworkProcessor {
 		
         //System.out.println("BusId, Name, kV: "+busId+","+source.getName()+","+source.getBaseVoltage()*0.001);
         
-		for (Branch bra : source.getBranchList()) {
+		for (Branch bra : source.getBranchIterable()) {
 
 			if (!_internalInterfaceBranchIdList.contains(bra.getId()) && !bra.isGroundBranch() 
 					&& bra instanceof AclfBranch) {
