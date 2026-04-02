@@ -424,7 +424,7 @@ Contributing Gen:
 			// 2. find all the connected branches connected to relayRemoteBus, except the relayBranch.
 			// and then find the two-bus away remote bus, apply a three-phase fault on it.
 			
-			for(Branch bra:relayRemoteBus.getBranchList()){
+			for(Branch bra:relayRemoteBus.getBranchIterable()){
 				// not include the relay branch itself
 				if(!bra.getId().equals(relayBranch.getId())){
 				    remoteBranchList.add((AcscBranch)bra);
