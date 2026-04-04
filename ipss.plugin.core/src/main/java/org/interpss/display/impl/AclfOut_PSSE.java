@@ -122,7 +122,7 @@ public class AclfOut_PSSE {
 		s += String.format(" %7.1f%s %7.1f %7.1f", qgen, qchar, qload, qshunt);
 		
 		int cnt = 0;
-		for (Branch b : bus.getBranchList()) {
+		for (Branch b : bus.getBranchIterable()) {
 			if (b.isActive() && b instanceof AclfBranch) {
 				AclfBranch bra = (AclfBranch) b;
 				s += branchGUIForat(bra, cnt++, bus, baseKVA);
@@ -288,22 +288,8 @@ BUS  10002 GZ-HLZ      220.00 CKT     MW     MVAR     MVA  %I 1.0445PU  -47.34  
 			Complex pq = bus.calNetLoadResults();
 			s += formatBusLoad("TO LOAD-PQ", pq.getReal()*factor, pq.getImaginary()*factor, pq.abs()*factor) + "\n";
 		}
-
-		/*
-		  To HVDC Terminal
-		 */
-		for(Branch br: ((BaseAclfNetwork<?,?>) bus.getNetwork()).getSpecialBranchList()) {
-			if (br.isActive() && br instanceof HvdcLine2TLCC ) {
-				HvdcLine2TLCC<AclfBus> hvdcBranch = (HvdcLine2TLCC<AclfBus>) br;
-				if(bus.getId().equals(hvdcBranch.getFromBus().getId()) || bus.getId().equals(hvdcBranch.getToBus().getId())) {
-					Complex pq = hvdcBranch.powerIntoConverter(bus.getId());
-					s += formatBusHVDCTerminalPower("TO HVDC:" + hvdcBranch.getCircuitNumber(), pq.getReal()*factor, pq.getImaginary()*factor, pq.abs()*factor) + "\n";
-				}
-			}
-		}
 		
-		
-		for (Branch br : bus.getBranchList()) {
+		for (Branch br : bus.getBranchIterable()) {
 			if (br.isActive()) {
 				s += branchResults(br, bus, baseKVA);
 			}
