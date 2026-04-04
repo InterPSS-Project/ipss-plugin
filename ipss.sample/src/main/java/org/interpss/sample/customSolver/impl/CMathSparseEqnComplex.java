@@ -19,13 +19,13 @@ public class CMathSparseEqnComplex extends AbstractSparseEqnComplexImpl<ISparseE
 	 */
 	public CMathSparseEqnComplex(int n) {
 		super(n);
-		this.solver = new SparseEqnSolverFactory().createSparseEqnComplexSolver(this);
+		this.sparseEqnSolver = new SparseEqnSolverFactory().createSparseEqnComplexSolver(this);
 	}
 
 	@Override
 	public Complex[] solveLUedEqn(Complex[] b) throws IpssNumericException {
 		CMathSquareMatrixEqnComplexSolver complexSolver = 
-				(CMathSquareMatrixEqnComplexSolver)this.solver;
+				(CMathSquareMatrixEqnComplexSolver)this.sparseEqnSolver;
 		return complexSolver.solveLUedEqn(b);
 	}
 }
