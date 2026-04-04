@@ -97,7 +97,7 @@ public class DStab3PBusImpl extends BaseDStabBusImpl<DStab3PGen,DStab3PLoad> imp
 		//always start from zero
 		yiiAbc = new Complex3x3();
 		// contributions from the connected branches
-		 for(Branch bra:this.getBranchList()) {
+		 for(Branch bra:this.getBranchIterable()) {
 			 if(bra.isActive()){
 				 if(bra instanceof DStab3PBranch){
 					 DStab3PBranch thrPhBranch = (DStab3PBranch) bra;

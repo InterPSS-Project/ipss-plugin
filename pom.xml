@@ -6,8 +6,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
-        <revision>1.0.12</revision>
-        <ipss.core.version>1.0.12</ipss.core.version>
+        <revision>1.0.13</revision>
+        <ipss.core.version>1.0.13</ipss.core.version>
         <ieee.odm.version>1.0</ieee.odm.version>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>

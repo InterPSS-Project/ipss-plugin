@@ -295,7 +295,7 @@ public class QAUtil {
 					&& mis.abs()>mismatchTreshold && !isSmallZBranchConnected(bus.getId(),net,smallZBranchThreshold)){
 				System.out.println(bus.getId()+" , mismatch = " +mis.toString());
 				System.out.println(bus.getId()+"\n"+ AclfOut_PSSE.busResults(bus,100000)+"\n");
-				for( Branch bra : bus.getBranchList()){
+				for( Branch bra : bus.getBranchIterable()){
 					//check if the branch is active and is a special branch like HVDC, VSC-HVDC, or 3W transformer
 					if (bra.isActive() && !(bra instanceof AclfBranch)) {
 		
@@ -332,7 +332,7 @@ public class QAUtil {
 				&& mis.abs()>mismatchTreshold && !isSmallZBranchConnected(bus.getId(),net,smallZBranchThreshold)){
 			System.out.println(bus.getId()+" , mismatch = " +mis.toString());
 			System.out.println(bus.getId()+"\n"+ AclfOut_PSSE.busResults(bus,100000)+"\n");
-			for( Branch bra : bus.getBranchList()){
+			for( Branch bra : bus.getBranchIterable()){
 				//check if the branch is active and is a special branch like HVDC, VSC-HVDC, or 3W transformer
 				if (bra.isActive() && !(bra instanceof AclfBranch)) {
 	
@@ -358,7 +358,7 @@ public class QAUtil {
 
 	private static boolean isSmallZBranchConnected(String busId, AclfNetwork net, double smallZ) {
 		AclfBus b = net.getBus(busId); // Uncommented to get the bus object
-		for(Branch bra:b.getBranchList()){
+		for(Branch bra:b.getBranchIterable()){
 			if(bra.isActive() && bra instanceof AclfBranch) { // Changed 'and' to '&&'
 				AclfBranch branch = (AclfBranch) bra; // Cast to AclfBranch to access getZ()
 				if(branch.getZ().abs()<smallZ) {
@@ -630,7 +630,7 @@ public class QAUtil {
 			return;
 		}
 		log.info("Connections for Bus " + busId + ":");
-		for (Branch bra : bus.getBranchList()) {
+		for (Branch bra : bus.getBranchIterable()) {
 			if (bra.isActive()) {
 				System.out.println("Connected Branch: " + bra.getId() + ", From: " + bra.getFromBus().getId() + ", To: " + bra.getToBus().getId());
 			}

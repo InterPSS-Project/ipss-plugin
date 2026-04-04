@@ -102,7 +102,7 @@ public class Ieee14_CASample {
 
 		algo.setRefBus("Bus14");
 		
-		algo.multiOpenOutgageAnalysis(new DclfOutageBranch[] {
+		algo.multiOpenOutageAnalysis(new DclfOutageBranch[] {
 				createCaOutageBranch(algo.getDclfAlgoBranch("Bus1->Bus5(1)"), ContingencyBranchOutageType.OPEN),
 				createCaOutageBranch(algo.getDclfAlgoBranch("Bus3->Bus4(1)"), ContingencyBranchOutageType.OPEN),
 				createCaOutageBranch(algo.getDclfAlgoBranch("Bus6->Bus11(1)"), ContingencyBranchOutageType.OPEN)

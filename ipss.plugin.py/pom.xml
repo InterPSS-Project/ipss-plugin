@@ -8,7 +8,7 @@
   <parent>
       <groupId>com.interpss</groupId>
       <artifactId>ipss.plugin</artifactId>
-      <version>1.0.4</version>
+      <version>1.0.12</version>
   </parent>
 
   <artifactId>ipss.sample.py</artifactId>
@@ -47,6 +47,25 @@
 
   <build>
     <plugins>
+      <!-- Runtime JARs for JPype (EMF, commons-math3, etc. not fully bundled in ipss_runnable.jar) -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.6.1</version>
+        <executions>
+          <execution>
+            <id>copy-runtime-deps</id>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <phase>validate</phase>
+            <configuration>
+              <outputDirectory>${project.basedir}/lib/deps</outputDirectory>
+              <includeScope>runtime</includeScope>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <!-- Maven Exec Plugin for running Java applications -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
