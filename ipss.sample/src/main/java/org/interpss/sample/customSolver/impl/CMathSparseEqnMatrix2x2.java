@@ -15,7 +15,7 @@ public class CMathSparseEqnMatrix2x2 extends AbstractSparseEqnMatrix2x2Impl {
 	 */
 	public CMathSparseEqnMatrix2x2(int n) {
 		super(n);
-		this.solver = new SparseEqnSolverFactory().createSparseEqnDoubleSolver(this);
+		this.sparseEqnSolver = new SparseEqnSolverFactory().createSparseEqnDoubleSolver(this);
 		setDimension(n);
 	}
 }
