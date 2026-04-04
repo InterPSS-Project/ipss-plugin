@@ -65,7 +65,7 @@ public class DistPowerFlowOutFunc {
 			if(b.isActive() && b.isSwing()) {
 				DStab3PBus bus3Phase = (DStab3PBus) b;
 				Complex3x1 sumOfCurrents = bus3Phase.calcLoad3PhEquivCurInj().multiply(-1);
-				for(Branch bra:b.getBranchList()){
+				for(Branch bra:b.getBranchIterable()){
 					DStab3PBranch branch3P = (DStab3PBranch) bra;
 					if (bra.isActive()){
 						if(bra.getFromBus().getId().equals(bus3Phase.getId())){
