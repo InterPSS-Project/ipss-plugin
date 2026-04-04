@@ -96,9 +96,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			startingBus.setIntFlag(2);
 
 			if(startingBus!=null){
-				  for(Branch connectedBra: startingBus.getBranchList()){
+				  for(Branch connectedBra: startingBus.getBranchIterable()){
 						if(connectedBra.isActive() && !connectedBra.isBooleanFlag()){
-								Bus findBus = connectedBra.getOppositeBus(startingBus).get();
+								Bus findBus = connectedBra.getOppositeBus(startingBus);
 
 								//update status
 								connectedBra.setBooleanFlag(true);
@@ -259,7 +259,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 		//System.out.println("BusId, Name, kV: "+busId+","+source.getName()+","+source.getBaseVoltage()*0.001);
 
-		for (Branch bra : source.getBranchList()) {
+		for (Branch bra : source.getBranchIterable()) {
 
 		  if (bra.isActive() && !bra.isGroundBranch() && bra instanceof AclfBranch) {
 			isToBus = bra.getFromBus().getId().equals(busId);
@@ -391,7 +391,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 					String upStreamBranchId = "";
 					String upStreamBusId="";
 					int unvisitedBranchNum = 0;
-					for (Branch bra: bus.getBranchList()){
+					for (Branch bra: bus.getBranchIterable()){
 						DStab3PBranch bra3P = (DStab3PBranch) bra;
 						// all visited branches are on the downstream side, and there should be only one upstream branch
 						if(bra.isActive() && bra.getIntFlag() ==1){
@@ -593,13 +593,13 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 					// update the bus state, with intFlag =2 meaning this bus voltage has been updated
 					bus.setIntFlag(2);
 					DStab3PBus bus3P = (DStab3PBus) bus;
-					for(Branch bra:bus.getBranchList()){
+					for(Branch bra:bus.getBranchIterable()){
 
 						if(bra.isActive()){
 							DStab3PBranch bra3Phase = (DStab3PBranch) bra;
 
 							DStab3PBus downStreamBus = null;
-							downStreamBus = (DStab3PBus) bra.getOppositeBus(bus).get();
+							downStreamBus = (DStab3PBus) bra.getOppositeBus(bus);
 
 							if(downStreamBus.getIntFlag()<2){
 								Complex3x1 vabc = null;
@@ -674,7 +674,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 				sumOfBranchCurrents = bus3p.calcLoad3PhEquivCurInj().multiply(-1);
 
-				for (Branch bra: bus.getBranchList()){
+				for (Branch bra: bus.getBranchIterable()){
 					if(bra.isActive()){
 					    if(bra instanceof DStab3PBranch){
 
