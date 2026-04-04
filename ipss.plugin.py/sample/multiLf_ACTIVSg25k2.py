@@ -42,19 +42,17 @@ busIds = []
 net.getBusList().forEach(lambda bus: busIds.append(bus.getId()))
 print(f"{len(busIds)} buses")
 
-# Create contingency result container
-contResultContainer = ipss.ContingencyResultContainer()
+# Exchange container for ContingencyExchangeInfo beans 
+contResultContainer = ipss.ContingencyResultExContainer()
 
 for i in range(10):
     # Create net result bean set and fill it with load flow results
     exAdapter = ipss.ContingencyResultAdapter(net, "continId", None)   # None for outage branch since we do not actually perform any contingency analysis here
     netResult = exAdapter.createInfoBean(busIds, [])
-    # Store the result in contingency result container on the Java side
     contResultContainer.getContingencyResultMap().put(f"contingency_{i}", netResult)
     
 timer = ipss.PerformanceTimer()
 for i in range(10):
-    # Access contingency result from container using contingency id
     netResult = contResultContainer.getContingencyResultMap().get(f"contingency_{i}")
     # Access bus voltage magnitude list
     volt_mag = netResult.busResultBean.volt_mag
@@ -64,7 +62,6 @@ timer.log("iterate bus set(1)")
 
 timer.start()
 for i in range(10):
-    # Access contingency result from container using contingency id
     netResult = contResultContainer.getContingencyResultMap().get(f"contingency_{i}")
     # Access bus voltage magnitude list as numpy array
     volt_mag = np.array(netResult.busResultBean.volt_mag,  dtype=np.double, copy=False)
