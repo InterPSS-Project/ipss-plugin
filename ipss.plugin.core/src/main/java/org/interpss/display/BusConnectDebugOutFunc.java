@@ -67,14 +67,14 @@ public class BusConnectDebugOutFunc {
 		buf.append(offSet + "Bus status: " + bus.isActive() + "\n");
 		
 		buf.append("\n" + offSet + "Connected Branch info: \n");
-		for (Branch bra : bus.getBranchList()) {
+		for (Branch bra : bus.getBranchIterable()) {
 			AclfBranch branch = (AclfBranch)bra;
 			buf.append(offSet + "  Branch Id : " + branch.getId() + "\n");
 			buf.append(offSet + "  Branch status: " + branch.isActive() + "\n");
 			buf.append(offSet + "  Branch type: " + branch.getBranchCode() + "\n\n");
 			
 			if (level > 1)
-				buf.append(busConnectivityInfo((AclfBus)branch.getOppositeBus(bus).get(), level-1, offSet + OffSet_Space));
+				buf.append(busConnectivityInfo((AclfBus)branch.getOppositeBus(bus), level-1, offSet + OffSet_Space));
 		}
 
 		// display debug info the connected branches
