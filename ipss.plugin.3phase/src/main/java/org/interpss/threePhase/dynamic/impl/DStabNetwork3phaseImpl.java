@@ -194,9 +194,9 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 			startingBus.setIntFlag(2);
 
 			if(startingBus!=null){
-				  for(Branch connectedBra: startingBus.getBranchList()){
+				  for(Branch connectedBra: startingBus.getBranchIterable()){
 						if(connectedBra.isActive() && !connectedBra.isBooleanFlag()){
-								Bus findBus = connectedBra.getOppositeBus(startingBus).get();
+								Bus findBus = connectedBra.getOppositeBus(startingBus);
 
 								//update status
 								connectedBra.setBooleanFlag(true);

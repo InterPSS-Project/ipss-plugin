@@ -147,7 +147,7 @@ public class TopologyProcesor {
 	 * @throws InterpssException 
 	 */
 	private void searchBranchInSubstation(AclfBranch refBranch, Bus refBus, List<String> branchIdList) throws InterpssException {
-		for (Branch bra : refBus.getBranchList()) {
+		for (Branch bra : refBus.getBranchIterable()) {
 			if (!bra.getId().equals(refBranch.getId()) &&   // do not include the refBranch
 					bra.isActive() &&                       // branch has to be active
 					!bra.isBooleanFlag() &&                     // make sure the branch has not been visisted to prevent loop situation 
@@ -157,7 +157,7 @@ public class TopologyProcesor {
 				branch.setBooleanFlag(true);
 				if (branch.getBranchCode() == AclfBranchCode.BREAKER)
 					// if the branch is a Breaker, continue the search
-					searchBranchInSubstation(branch, branch.getOppositeBus(refBus).get(), branchIdList);
+					searchBranchInSubstation(branch, branch.getOppositeBus(refBus), branchIdList);
 			}
 		}
 	}
@@ -197,10 +197,10 @@ public class TopologyProcesor {
 			busList = temBusList;
 			temBusList = new ArrayList<Bus>();
 			for(Bus b: busList){
-				for (Branch bran: b.getBranchList()){
+				for (Branch bran: b.getBranchIterable()){
 					if(bran.isActive()&& !bran.isBooleanFlag()){							
 						bran.setBooleanFlag(true);
-						Bus oppBus = bran.getOppositeBus(b).get();
+						Bus oppBus = bran.getOppositeBus(b);
 						if(byZone){
 							if(oppBus.getZone().getNumber()!=zoneNum){								
 								return false;
@@ -272,9 +272,9 @@ public class TopologyProcesor {
 		
 		for(Bus b: this.groupBusList){
 			// Othersie, find the bus that connecting other zones/areas as the ref bus
-			for(Branch bra: b.getBranchList()){
+			for(Branch bra: b.getBranchIterable()){
 				if(bra.isActive()){
-					Bus oppBus = bra.getOppositeBus(b).get();
+					Bus oppBus = bra.getOppositeBus(b);
 					if(this.byzone){
 						if (oppBus.getZone().getNumber()!=num){
 							this.refBus = b;
@@ -390,9 +390,9 @@ public class TopologyProcesor {
 		boolean done = true;
 		AclfBus aclfBus = (AclfBus)elem;
 		if (aclfBus.getIntFlag() == 0) {  // if the bus is marked, mark the opposite buses
-			for (Branch branch : aclfBus.getBranchList()) {
+			for (Branch branch : aclfBus.getBranchIterable()) {
 				if (branch.isActive()) {  // only count active branch
-					Bus bus = branch.getOppositeBus(aclfBus).get();
+					Bus bus = branch.getOppositeBus(aclfBus);
 					if (bus.getIntFlag() == 1) {
 						bus.setIntFlag(0);  // mark the bus
 						done = false;						
@@ -430,11 +430,11 @@ public class TopologyProcesor {
 			busList = temBusList;
 			temBusList = new ArrayList<Bus>();
 			for(Bus b: busList){
-				for (Branch bra: b.getBranchList()){
+				for (Branch bra: b.getBranchIterable()){
 					if(bra.isActive()&& !bra.isBooleanFlag()){
 						branchList.add(bra.getId());
 						bra.setBooleanFlag(true);
-						Bus oppBus = bra.getOppositeBus(b).get();
+						Bus oppBus = bra.getOppositeBus(b);
 						temBusList.add(oppBus);
 					}					
 				}

@@ -379,12 +379,12 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 			// 2. find all the connected branches connected to relayRemoteBus, except the relayBranch.
 			// and then find the two-bus away remote bus, apply a three-phase fault on it.
 			
-			for(Branch bra:relayRemoteBus.getBranchList()){
+			for(Branch bra:relayRemoteBus.getBranchIterable()){
 				// not include the relay branch itself
 				if(!bra.getId().equals(relayBranch.getId())){
 				    remoteBranchList.add((AcscBranch)bra);
 				    AcscBus twoBusAwayBus = null;
-				    twoBusAwayBus = (AcscBus) bra.getOppositeBus(relayRemoteBus).get();
+				    twoBusAwayBus = (AcscBus) bra.getOppositeBus(relayRemoteBus);
 				    // take into account of lines parallel to the relay branch
 				    if(twoBusAwayBus !=null && !twoBusAwayBus.getId().equals(relayBus.getId())) {
 				    	remoteBusList.add(twoBusAwayBus);

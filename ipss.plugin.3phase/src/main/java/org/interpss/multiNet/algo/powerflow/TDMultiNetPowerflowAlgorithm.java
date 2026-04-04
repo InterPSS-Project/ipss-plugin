@@ -140,7 +140,7 @@ public class TDMultiNetPowerflowAlgorithm {
 				
 				Complex3x1 currInj3Phase = new Complex3x1();
 				
-				for(Branch bra: sourceBus.getBranchList()){
+				for(Branch bra: sourceBus.getBranchIterable()){
 					if(bra.isActive()){
 						DStab3PBranch acLine = (DStab3PBranch) bra;
 						
@@ -286,7 +286,7 @@ public class TDMultiNetPowerflowAlgorithm {
 					
 						Complex3x1 currInj3Phase = new Complex3x1();
 						
-						for(Branch bra: sourceBus3Ph.getBranchList()){
+						for(Branch bra: sourceBus3Ph.getBranchIterable()){
 							if(bra.isActive()){
 								DStab3PBranch acLine = (DStab3PBranch) bra;
 								if(bra.getFromBus().getId().equals(sourceBus3Ph.getId())){
