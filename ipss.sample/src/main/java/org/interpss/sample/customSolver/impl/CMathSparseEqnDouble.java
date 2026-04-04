@@ -14,7 +14,7 @@ public class CMathSparseEqnDouble extends AbstractSparseEqnDoubleImpl {
 	 */
 	public CMathSparseEqnDouble(int n) {
 		super(n);
-		this.solver = new SparseEqnSolverFactory().createSparseEqnDoubleSolver(this);
-		this.solver.setMatrixDirty();
+		this.sparseEqnSolver = new SparseEqnSolverFactory().createSparseEqnDoubleSolver(this);
+		this.sparseEqnSolver.setMatrixDirty();
 	}	
 }
