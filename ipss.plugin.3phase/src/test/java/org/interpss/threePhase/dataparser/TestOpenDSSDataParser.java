@@ -1,7 +1,7 @@
 package org.interpss.threePhase.dataparser;
 
 import static com.interpss.core.funcImpl.AcscFunction.acscXfrAptr;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,7 +19,7 @@ import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 import org.interpss.threePhase.dataParser.opendss.OpenDSSDataParser;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.core.abc.LoadConnectionType;
 import com.interpss.core.aclf.AclfLoadCode;

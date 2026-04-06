@@ -1,13 +1,13 @@
 package org.interpss.core.zeroz;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -39,7 +39,7 @@ public class IEEE14ZeroZBranchAclfTest extends CorePluginTestSetup {
 			if (branch.isZeroZBranch()) {
 				//System.out.println("\nBranch: " + branch.getId() + " is a zeroZ branch");
 				// for zeroZ branch, the Z value should be set to the threshold
-				assertTrue("", NumericUtil.equals(branch.getZ(), new Complex(0.0, net.getZeroZBranchThreshold()), 1E-6));
+				assertTrue(NumericUtil.equals(branch.getZ(), new Complex(0.0, net.getZeroZBranchThreshold()), 1E-6));
 			}
 		});
     }	
@@ -75,8 +75,7 @@ public class IEEE14ZeroZBranchAclfTest extends CorePluginTestSetup {
 		// The branch Bus13->Bus18(1) is reconnected to Bus13->Bus14(1)
 		assertTrue(net.getBranch("Bus13->Bus14(1)").isActive() && 
 				net.getBranch("Bus13->Bus14(1)").getStatusChangeInfo() == StatusChangeType.RECONNECT_ZBR_BUS_MERGE);
-		assertTrue(""+net.getBranch("Bus13->Bus14(1)").getOriginalBranchId(), 
-				net.getBranch("Bus13->Bus14(1)").getOriginalBranchId().equals("Bus13->Bus18(1)"));
+		assertTrue(net.getBranch("Bus13->Bus14(1)").getOriginalBranchId().equals("Bus13->Bus18(1)"), ""+net.getBranch("Bus13->Bus14(1)").getOriginalBranchId());
 				
 	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();

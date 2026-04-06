@@ -1,7 +1,7 @@
 package org.interpss.threePhase.system;
 
 import static com.interpss.core.funcImpl.AcscFunction.acscXfrAptr;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.logging.Level;
 
@@ -24,7 +24,7 @@ import org.interpss.threePhase.dynamic.model.impl.SinglePhaseACMotor;
 import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
 import org.interpss.threePhase.util.ThreePhaseAclfOutFunc;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranchCode;

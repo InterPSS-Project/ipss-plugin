@@ -1,7 +1,7 @@
 package org.interpss.core.dstab;
 
 import static com.interpss.dstab.cache.StateVariableRecorder.StateVarRecType.MachineState;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
@@ -13,7 +13,7 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.NumericConstant;
 import org.interpss.odm.mapper.ODMDStabParserMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;

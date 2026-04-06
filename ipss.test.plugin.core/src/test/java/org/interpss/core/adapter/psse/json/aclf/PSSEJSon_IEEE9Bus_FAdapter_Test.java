@@ -25,7 +25,7 @@
 package org.interpss.core.adapter.psse.json.aclf;
  
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter;
@@ -39,7 +39,7 @@ import org.interpss.odm.mapper.ODMAclfParserMapper;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.interpss.util.FileUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;

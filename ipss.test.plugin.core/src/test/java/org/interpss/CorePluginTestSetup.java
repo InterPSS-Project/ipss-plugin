@@ -29,7 +29,7 @@ import java.util.logging.Level;
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.common.ODMLogger;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.BeforeAll;
 
 import com.interpss.common.CoreCommonFactory;
 import com.interpss.common.exp.InterpssException;
@@ -55,7 +55,7 @@ public class CorePluginTestSetup {
 
 	protected static IPSSMsgHub msg;
 
-	@BeforeClass  
+	@BeforeAll  
 	public static void initTestEnv() {
 		IpssCorePlugin.init();
 		msg = CoreCommonFactory.getIpssMsgHub();

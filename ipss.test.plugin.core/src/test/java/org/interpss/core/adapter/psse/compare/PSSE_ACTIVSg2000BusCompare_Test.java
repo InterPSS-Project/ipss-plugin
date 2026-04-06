@@ -1,12 +1,12 @@
 package org.interpss.core.adapter.psse.compare;
 
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -41,13 +41,13 @@ public class PSSE_ACTIVSg2000BusCompare_Test  extends CorePluginTestSetup {
 		 * All SwitchedShuntDevice remote bus branch id are 20, which is wrong.
 		 */
 		//AclfBus bus1 = net.getBus("Bus1010");
-		//assertTrue("", bus1.getSwitchedShunt().getRemoteBusBranchId().equals("20"));
+		//assertTrue(bus1.getSwitchedShunt().getRemoteBusBranchId().equals("20"));
 		
 		/*
 		 * The bus control/PV bus limit and switched shunt device can not co-exit at a bus.
 		 */
 //		AclfBus bus2 = net.getBus("Bus1033");
-//		assertTrue("", bus2.getBusControl() != null && bus2.getPVBusLimit() != null &&
+//		assertTrue(bus2.getBusControl() != null && bus2.getPVBusLimit() != null &&
 //					bus2.getSwitchedShunt() != null);
 	
 		/*
@@ -63,7 +63,7 @@ public class PSSE_ACTIVSg2000BusCompare_Test  extends CorePluginTestSetup {
   		comp.compareNetwork();
   		
   		//System.out.println("Differences found: " + comp.getDiffMsgList());
-  		assertTrue("" + comp.getDiffMsgList(), comp.getDiffMsgList().size() == 0);
+  		assertTrue(comp.getDiffMsgList().size() == 0, "" + comp.getDiffMsgList());
 	}		
 	
 }

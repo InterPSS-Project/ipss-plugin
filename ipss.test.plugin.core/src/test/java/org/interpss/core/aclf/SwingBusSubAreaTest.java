@@ -24,14 +24,14 @@
 
 package org.interpss.core.aclf;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Set;
 
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -53,13 +53,13 @@ public class SwingBusSubAreaTest extends CorePluginTestSetup {
   	
 		AclfNetHelper helper = new AclfNetHelper(net);
 		Set<String> busSet = helper.calConnectedSubArea("1a");
-	  	assertTrue("", busSet.size() == 57);
+	  	assertTrue(busSet.size() == 57);
 	  	
 		busSet = helper.calConnectedSubArea("1z");
-	  	assertTrue("", busSet.size() == 57);
+	  	assertTrue(busSet.size() == 57);
 	  	
 	  	AclfNetwork subNet = net.createSubNet(busSet, false, false);
-	  	assertTrue("", subNet.getNoBus() == 57);
+	  	assertTrue(subNet.getNoBus() == 57);
 	  	
 	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(subNet);
 	  	algo.setLfMethod(AclfMethodType.NR);

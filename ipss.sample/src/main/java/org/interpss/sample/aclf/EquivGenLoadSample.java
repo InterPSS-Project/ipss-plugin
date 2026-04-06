@@ -24,8 +24,6 @@
 
 package org.interpss.sample.aclf;
 
-import static org.junit.Assert.assertTrue;
-
 import java.util.Hashtable;
 
 import org.apache.commons.math3.complex.Complex;
@@ -58,7 +56,7 @@ public class EquivGenLoadSample {
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 	  	
-  		assertTrue(net.isLfConverged());
+  		assert net.isLfConverged();
 		System.out.println("Largest mismatch-1 " + net.maxMismatch(AclfMethodType.NR)); 
 		
   		// init Equiv Gen/Load configuration
