@@ -24,13 +24,13 @@
 
 package org.interpss.core.adapter.ieee;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;

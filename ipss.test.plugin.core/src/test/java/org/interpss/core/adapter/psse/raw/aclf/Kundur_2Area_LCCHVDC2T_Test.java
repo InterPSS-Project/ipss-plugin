@@ -1,7 +1,7 @@
 package org.interpss.core.adapter.psse.raw.aclf;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.text.Format;
 
@@ -19,7 +19,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
@@ -41,12 +41,12 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 		
 		AclfNetwork netCopy = net.hzCopy();
 		
-		//assertTrue("", net.diffState(netCopy));
+		//assertTrue(net.diffState(netCopy));
   		AclfNetObjectComparator comp = new AclfNetObjectComparator(net, netCopy);
   		comp.compareNetwork();
   		
   		System.out.println("Differences found: " + comp.getDiffMsgList());
-  		assertTrue("" + comp.getDiffMsgList(), comp.getDiffMsgList().size() == 0);
+  		assertTrue(comp.getDiffMsgList().size() == 0, "" + comp.getDiffMsgList());
 		
 		test_LCCHVDC_Data(netCopy);
 	}
@@ -66,12 +66,12 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 		//AclfBus bus7 = net.getBus("Bus7");
 		//AclfBus bus7Copy = netCopy.getBus("Bus7");
 		
-		//assertTrue("", net.diffState(netCopy));
+		//assertTrue(net.diffState(netCopy));
   		AclfNetObjectComparator comp = new AclfNetObjectComparator(net, netCopy);
   		comp.compareNetwork();
   		
   		System.out.println("Differences found: " + comp.getDiffMsgList());
-  		assertTrue("" + comp.getDiffMsgList(), comp.getDiffMsgList().size() == 0);
+  		assertTrue(comp.getDiffMsgList().size() == 0, "" + comp.getDiffMsgList());
 		
 		test_LCCHVDC_Data(netCopy);
 	}
@@ -167,8 +167,8 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 
   		//Rec Power: 5.0000 + j2.9871
   		//Inv Power: -4.95098 + j2.84946
-  		assertTrue("", NumericUtil.equals(lccHVDC.getRectifier().powerIntoConverter(), new Complex(5.0000, 2.9871), 0.0001));
-  		assertTrue("", NumericUtil.equals(lccHVDC.getInverter().powerIntoConverter(), new Complex(-4.95098, 2.84946), 0.0001));
+  		assertTrue(NumericUtil.equals(lccHVDC.getRectifier().powerIntoConverter(), new Complex(5.0000, 2.9871), 0.0001));
+  		assertTrue(NumericUtil.equals(lccHVDC.getInverter().powerIntoConverter(), new Complex(-4.95098, 2.84946), 0.0001));
 
 		
 		// firing angle
@@ -289,8 +289,8 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 
   		//Rec Power: 5.0000 + j2.53911
 		//Inv Power: -4.95098 + j2.40888
-  		assertTrue("", NumericUtil.equals(lccHVDC.getRectifier().powerIntoConverter(), new Complex(5.0000, 2.5391), 0.0001));
-  		assertTrue("", NumericUtil.equals(lccHVDC.getInverter().powerIntoConverter(), new Complex(-4.95098, 2.4088), 0.0001));
+  		assertTrue(NumericUtil.equals(lccHVDC.getRectifier().powerIntoConverter(), new Complex(5.0000, 2.5391), 0.0001));
+  		assertTrue(NumericUtil.equals(lccHVDC.getInverter().powerIntoConverter(), new Complex(-4.95098, 2.4088), 0.0001));
 
 		
 		// firing angle

@@ -2,8 +2,8 @@ package org.interpss.plugin.optadj.ei;
 
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Map;
 
@@ -15,7 +15,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.PerformanceTimer;
 import org.interpss.plugin.optadj.algo.AclfNetBusOptimizer;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
