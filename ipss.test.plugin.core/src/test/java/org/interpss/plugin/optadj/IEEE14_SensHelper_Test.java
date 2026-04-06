@@ -1,7 +1,7 @@
 
 package org.interpss.plugin.optadj;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -14,7 +14,7 @@ import org.interpss.numeric.datatype.LimitType;
 import org.interpss.plugin.optadj.algo.util.AclfNetGFSsHelper;
 import org.interpss.plugin.optadj.algo.util.AclfNetLODFsHelper;
 import org.interpss.plugin.optadj.algo.util.Sen2DMatrix;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;

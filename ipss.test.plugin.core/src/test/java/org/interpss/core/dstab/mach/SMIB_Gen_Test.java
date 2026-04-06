@@ -1,6 +1,6 @@
 package org.interpss.core.dstab.mach;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Comparator;
 import java.util.logging.Level;
@@ -17,7 +17,7 @@ import org.interpss.numeric.util.NumericUtil;
 import org.interpss.numeric.util.PerformanceTimer;
 import org.interpss.odm.mapper.ODMDStabParserMapper;
 import org.interpss.util.FileUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
@@ -449,9 +449,9 @@ public class SMIB_Gen_Test extends TestSetupBase{
 //		System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
 		
 		assertTrue(NumericUtil.equals(sm.getMachEfdTable().get("Bus1-mach1").get(0).value, 1.105872869,1.0E-4));
-		assertTrue(""+sm.getMachEfdTable().get("Bus1-mach1").get(83).t, NumericUtil.equals(sm.getMachEfdTable().get("Bus1-mach1").get(83).t, 0.41,1.0E-4));
-		assertTrue(""+sm.getMachEfdTable().get("Bus1-mach1").get(83).value, NumericUtil.equals(sm.getMachEfdTable().get("Bus1-mach1").get(83).value, 1.10587,1.0E-4));
-		assertTrue(""+sm.getMachEfdTable().get("Bus1-mach1").get(2000).value, NumericUtil.equals(sm.getMachEfdTable().get("Bus1-mach1").get(2000).value, 2.7344,1.0E-4));
+		assertTrue(NumericUtil.equals(sm.getMachEfdTable().get("Bus1-mach1").get(83).t, 0.41,1.0E-4), ""+sm.getMachEfdTable().get("Bus1-mach1").get(83).t);
+		assertTrue(NumericUtil.equals(sm.getMachEfdTable().get("Bus1-mach1").get(83).value, 1.10587,1.0E-4), ""+sm.getMachEfdTable().get("Bus1-mach1").get(83).value);
+		assertTrue(NumericUtil.equals(sm.getMachEfdTable().get("Bus1-mach1").get(2000).value, 2.7344,1.0E-4), ""+sm.getMachEfdTable().get("Bus1-mach1").get(2000).value);
 		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(0).value, 0.50001,1.0E-5));
 
 		FileUtil.writeText2File("output/SMIB/GENROU_IEEET1_Efd.csv",sm.toCSVString(sm.getMachEfdTable()));
