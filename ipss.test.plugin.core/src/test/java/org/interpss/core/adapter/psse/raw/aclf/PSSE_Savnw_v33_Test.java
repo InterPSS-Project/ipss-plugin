@@ -1,7 +1,7 @@
 package org.interpss.core.adapter.psse.raw.aclf;
 
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.ieee.odm.adapter.IODMAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
@@ -14,7 +14,7 @@ import org.interpss.display.AclfOutFunc;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;

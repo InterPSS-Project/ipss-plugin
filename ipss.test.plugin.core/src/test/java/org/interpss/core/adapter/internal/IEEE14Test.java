@@ -24,15 +24,15 @@
 
 package org.interpss.core.adapter.internal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
@@ -156,7 +156,7 @@ public class IEEE14Test extends CorePluginTestSetup {
   		
   		System.out.println(AclfOutFunc.busSummaryCommaDelimited(net, true, false));
   		
-  		assertTrue("", net.getBus("14").calNetPQResults().abs() == 0.0);
+  		assertTrue(net.getBus("14").calNetPQResults().abs() == 0.0);
 	}
 }
 

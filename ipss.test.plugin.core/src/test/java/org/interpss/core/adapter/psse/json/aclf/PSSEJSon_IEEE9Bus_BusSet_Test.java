@@ -1,6 +1,6 @@
 package org.interpss.core.adapter.psse.json.aclf;
  
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Set;
 
@@ -11,7 +11,7 @@ import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.psse.export.PSSEJSonExporter;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;

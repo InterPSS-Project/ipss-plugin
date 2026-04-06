@@ -1,6 +1,6 @@
 package org.interpss.core.dstab.dynLoad;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.ieee.odm.ODMFileFormatEnum;
 import org.ieee.odm.adapter.GenericODMAdapter;
@@ -14,7 +14,7 @@ import org.interpss.core.dstab.mach.TestSetupBase;
 import org.interpss.dstab.dynLoad.DynLoadCMPLDW;
 import org.interpss.dstab.dynLoad.impl.DynLoadCMPLDWImpl;
 import org.interpss.odm.mapper.ODMDStabParserMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.common.CoreCommonFactory;
 import com.interpss.common.exp.InterpssException;

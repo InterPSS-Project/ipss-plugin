@@ -1,6 +1,6 @@
 package org.interpss.threePhase.model;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
@@ -19,7 +19,7 @@ import org.interpss.threePhase.dynamic.model.impl.SinglePhaseACMotor;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.powerflow.impl.DistPowerFlowOutFunc;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranchCode;

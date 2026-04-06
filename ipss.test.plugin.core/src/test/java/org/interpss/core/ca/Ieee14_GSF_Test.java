@@ -1,12 +1,12 @@
 package org.interpss.core.ca;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.util.NumericUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.DclfAlgoObjectFactory;

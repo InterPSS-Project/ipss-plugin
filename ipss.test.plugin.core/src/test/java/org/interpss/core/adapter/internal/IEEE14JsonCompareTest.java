@@ -30,8 +30,8 @@ import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.util.AclfNetJsonComparator;
-import static org.junit.Assert.assertTrue;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.core.aclf.AclfNetwork;
 
@@ -49,7 +49,7 @@ public class IEEE14JsonCompareTest extends CorePluginTestSetup {
 		//FileUtil.writeText2File(jsonFile, new AclfNetworkState(aclfNet).toString());
 		
 		// compare the json file with the aclfNet
-		assertTrue("", new AclfNetJsonComparator("Internal format ieee14Bus")
+		assertTrue(new AclfNetJsonComparator("Internal format ieee14Bus")
 							.compareJson(aclfNet, new File(jsonFile)));
 	}
 }

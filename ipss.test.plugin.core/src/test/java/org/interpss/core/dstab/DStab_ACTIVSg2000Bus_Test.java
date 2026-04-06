@@ -1,6 +1,6 @@
 package org.interpss.core.dstab;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -17,7 +17,7 @@ import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.odm.mapper.ODMDStabParserMapper;
 import org.interpss.util.FileUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.acsc.fault.SimpleFaultCode;

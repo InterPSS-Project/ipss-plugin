@@ -24,7 +24,7 @@
 
 package org.interpss.dep.plugin.beanModel;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dep.datamodel.bean.aclf.AclfNetBean;
@@ -32,7 +32,7 @@ import org.interpss.dep.datamodel.mapper.aclf.AclfBean2AclfNetMapper;
 import org.interpss.dep.datamodel.mapper.aclf.AclfNet2AclfBeanMapper;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.core.AclfAdjustObjectFactory;
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -60,7 +60,7 @@ public class XfrTapControlTest extends CorePluginTestSetup {
 		//tap.setTapOnFromSide(false);
 		tap.setControlSpec(0.90);
 
-		assertTrue("", AclfAdjCtrlFunction.nOfTapControl.apply(net) == 1);
+		assertTrue(AclfAdjCtrlFunction.nOfTapControl.apply(net) == 1);
 		
 		assertTrue(Math.abs(branch.getToTurnRatio()-1.0)<0.0001);
 		
@@ -102,7 +102,7 @@ public class XfrTapControlTest extends CorePluginTestSetup {
 		//tap.setTapOnFromSide(false);
 		tap.setControlSpec(0.90);
 
-		assertTrue("", AclfAdjCtrlFunction.nOfTapControl.apply(net) == 1);
+		assertTrue(AclfAdjCtrlFunction.nOfTapControl.apply(net) == 1);
 		
 		assertTrue(Math.abs(branch.getToTurnRatio()-1.0)<0.0001);
 		
@@ -140,7 +140,7 @@ public class XfrTapControlTest extends CorePluginTestSetup {
 		tap.setControlSpec(0.90);
 		tap.setStatus(true);
 
-		assertTrue("", AclfAdjCtrlFunction.nOfTapControl.apply(net) == 1);
+		assertTrue(AclfAdjCtrlFunction.nOfTapControl.apply(net) == 1);
 		
 		assertTrue(Math.abs(branch.getToTurnRatio()-1.0)<0.0001);
 

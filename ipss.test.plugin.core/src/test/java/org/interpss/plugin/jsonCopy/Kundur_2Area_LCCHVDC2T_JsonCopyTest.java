@@ -6,8 +6,8 @@ import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
 import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
-import static org.junit.Assert.assertTrue;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
@@ -35,12 +35,12 @@ public class Kundur_2Area_LCCHVDC2T_JsonCopyTest extends CorePluginTestSetup {
 		//AclfBus bus7 = net.getBus("Bus7");
 		//AclfBus bus7Copy = netCopy.getBus("Bus7");
 		
-		//assertTrue("", net.diffState(netCopy));
+		//assertTrue(net.diffState(netCopy));
   		AclfNetObjectComparator comp = new AclfNetObjectComparator(net, netCopy);
   		comp.compareNetwork();
   		
   		System.out.println("Differences found: " + comp.getDiffMsgList());
-  		assertTrue("" + comp.getDiffMsgList(), comp.getDiffMsgList().size() == 0);
+  		assertTrue(comp.getDiffMsgList().size() == 0, "" + comp.getDiffMsgList());
 		
 		
 	}

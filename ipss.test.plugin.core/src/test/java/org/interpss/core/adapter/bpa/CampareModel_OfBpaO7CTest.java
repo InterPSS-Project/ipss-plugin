@@ -14,7 +14,7 @@ import org.interpss.dep.QA.compare.NetModelComparator;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
 import org.interpss.odm.mapper.ODMDStabParserMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;

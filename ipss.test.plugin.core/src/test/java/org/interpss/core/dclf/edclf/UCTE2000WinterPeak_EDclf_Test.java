@@ -25,7 +25,7 @@
 package org.interpss.core.dclf.edclf;
 
 import static com.interpss.core.algo.dclf.solver.IConnectBusProcessor.predicateConnectBus;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginFactory;
@@ -33,7 +33,7 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.util.NumericUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
@@ -95,7 +95,7 @@ public class UCTE2000WinterPeak_EDclf_Test extends CorePluginTestSetup {
 		mis = aclfNet.maxMismatch(AclfMethodType.NR, predicateConnectBus);
 		System.out.println("ConnectBus VAdjustment Mismatch: " + mis);
 		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet, true));
-		assertTrue("", mis.maxMis.abs() < 0.0001);
+		assertTrue(mis.maxMis.abs() < 0.0001);
 	}
 }
 
