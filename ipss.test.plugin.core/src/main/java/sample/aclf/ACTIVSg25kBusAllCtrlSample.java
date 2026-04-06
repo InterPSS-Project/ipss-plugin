@@ -1,8 +1,6 @@
 package sample.aclf;
 
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
-import static org.junit.Assert.assertTrue;
-
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;

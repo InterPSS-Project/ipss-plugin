@@ -24,7 +24,7 @@
 
 package org.interpss.core.zeroz.topo;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
@@ -32,7 +32,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.plugin.pssl.simu.net.IpssAclfNet;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.msg.IPSSMsgHub;
@@ -63,9 +63,9 @@ public class ZeroZBranchFuncTest extends CorePluginTestSetup {
 	  		}
 	  	});
 	  	
-	  	assertTrue("", !net.getBus("Bus1").isConnect2ZeroZBranch());
-	  	assertTrue("", net.getBus("Bus2").isConnect2ZeroZBranch());
-	  	assertTrue("", net.getBus("Bus3").isConnect2ZeroZBranch());
+	  	assertTrue(!net.getBus("Bus1").isConnect2ZeroZBranch());
+	  	assertTrue(net.getBus("Bus2").isConnect2ZeroZBranch());
+	  	assertTrue(net.getBus("Bus3").isConnect2ZeroZBranch());
 	  	
 		net.getBusList().forEach(bus -> {
 			if (bus.isConnect2ZeroZBranch()) {
@@ -78,27 +78,27 @@ public class ZeroZBranchFuncTest extends CorePluginTestSetup {
 			}
 		});
 	  	
-	  	assertTrue("", net.getBus("Bus2").findZeroZPathBuses().size() == 2);
-	  	assertTrue("", net.getBus("Bus3").findZeroZPathBuses().size() == 2);
+	  	assertTrue(net.getBus("Bus2").findZeroZPathBuses().size() == 2);
+	  	assertTrue(net.getBus("Bus3").findZeroZPathBuses().size() == 2);
 	  	
 	  	// before the merge
-	  	assertTrue("", net.getNoActiveBus() == 3);
-	  	assertTrue("", net.getNoActiveBranch() == 2);
+	  	assertTrue(net.getNoActiveBus() == 3);
+	  	assertTrue(net.getNoActiveBranch() == 2);
 	  	
-	  	assertTrue("", net.getBranch("Bus1->Bus2(Branch 1)").isActive());
-	  	assertTrue("", net.getBranch("Bus2->Bus3(Branch 1)").isActive());
+	  	assertTrue(net.getBranch("Bus1->Bus2(Branch 1)").isActive());
+	  	assertTrue(net.getBranch("Bus2->Bus3(Branch 1)").isActive());
 	  	
 		// select a bus as the focus bus.
 		AclfNetZeroZBranchHelper helper = new AclfNetZeroZBranchHelper(net);
 	  	helper.zeroZBranchBusMerge("Bus3");
 	  	
 	  	// after the merge
-	  	assertTrue("", net.getNoActiveBus() == 2);
-	  	assertTrue("", net.getNoActiveBranch() == 1);
+	  	assertTrue(net.getNoActiveBus() == 2);
+	  	assertTrue(net.getNoActiveBranch() == 1);
 	  	
 	  	// the branch it reconnected to the Bus3
-	  	assertTrue("", net.getBranch("Bus1->Bus3(Branch 1)").isActive());
-	  	assertTrue("", !net.getBranch("Bus2->Bus3(Branch 1)").isActive());
+	  	assertTrue(net.getBranch("Bus1->Bus3(Branch 1)").isActive());
+	  	assertTrue(!net.getBranch("Bus2->Bus3(Branch 1)").isActive());
 	}
 
 	private void set2BusNetworkData(AclfNetwork net, IPSSMsgHub msg) throws InterpssException {

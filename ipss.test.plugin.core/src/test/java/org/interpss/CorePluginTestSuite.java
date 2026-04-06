@@ -92,12 +92,11 @@ import org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild;
 import org.interpss.plugin.piecewise.IEEE14TestSubAreaSearch;
 import org.interpss.plugin.piecewise.IEEE9BusTestDStabSubAreaNet;
 import org.interpss.plugin.result.AclfResultDFrameAdapterTest;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import org.junit.platform.suite.api.SelectClasses;
+import org.junit.platform.suite.api.Suite;
 
-@RunWith(Suite.class)
-@SuiteClasses({
+@Suite
+@SelectClasses({
 	// aclf
 	IEEE14_3WXfrTest.class,
 	IEEE9_MultiGenTest.class,

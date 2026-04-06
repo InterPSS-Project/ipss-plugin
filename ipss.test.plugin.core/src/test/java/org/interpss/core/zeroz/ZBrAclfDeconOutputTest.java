@@ -1,6 +1,6 @@
 package org.interpss.core.zeroz;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +11,7 @@ import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.datatype.ComplexFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.LoadflowAlgoObjectFactory;

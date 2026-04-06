@@ -1,6 +1,6 @@
 package org.interpss.multiNet.unit;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.logging.Level;
 
@@ -23,7 +23,7 @@ import org.interpss.numeric.util.PerformanceTimer;
 import org.interpss.odm.mapper.ODMDStabParserMapper;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.LoadflowAlgoObjectFactory;
