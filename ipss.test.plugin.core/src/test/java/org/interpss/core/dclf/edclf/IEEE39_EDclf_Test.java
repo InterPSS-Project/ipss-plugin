@@ -28,8 +28,8 @@ import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
-import static org.junit.Assert.assertTrue;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
@@ -94,7 +94,7 @@ public class IEEE39_EDclf_Test extends CorePluginTestSetup {
 		System.out.println("EDclf/VCorrection Mismatch: " + aclfNet.maxMismatch(AclfMethodType.NR));
 		mis = aclfNet.maxMismatch(AclfMethodType.NR, predicateConnectBus);
 		System.out.println("ConnectBus VAdjustment Mismatch: " + mis);
-		assertTrue("", mis.maxMis.abs() < 0.0001);
+		assertTrue(mis.maxMis.abs() < 0.0001);
 		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet, true));
 	}	
 	
@@ -110,8 +110,8 @@ public class IEEE39_EDclf_Test extends CorePluginTestSetup {
 		ISparseEqnComplex[] ySet = new YMatrixSolver(aclfNet)
 				.formYMatrixSet(false, predicateConnectBus);
 		
-		assertTrue("", ySet[0].getDimension() == 12);
-		assertTrue("", ySet[3].getDimension() == 27);
+		assertTrue(ySet[0].getDimension() == 12);
+		assertTrue(ySet[3].getDimension() == 27);
 	}	
 	
 }

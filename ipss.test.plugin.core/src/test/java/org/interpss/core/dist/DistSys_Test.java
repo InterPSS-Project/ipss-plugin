@@ -24,14 +24,14 @@
 
 package org.interpss.core.dist;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.plugin.pssl.simu.IpssDist;
 import org.interpss.plugin.pssl.simu.net.IpssDistNet.DistNetDSL;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.acsc.BusGroundCode;

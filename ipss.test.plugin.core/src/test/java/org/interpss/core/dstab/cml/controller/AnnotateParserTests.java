@@ -24,7 +24,7 @@
 
 package org.interpss.core.dstab.cml.controller;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.interpss.core.dstab.DStabTestSetupBase;
 import org.interpss.core.dstab.cml.controller.util.DStabTestUtilFunc;
@@ -32,7 +32,7 @@ import org.interpss.core.dstab.cml.controller.util.TestAnnotateExciter;
 import org.interpss.core.dstab.cml.controller.util.TestAnnotateGovernor;
 import org.interpss.core.dstab.cml.controller.util.TestAnnotateStabilizer;
 import org.interpss.core.dstab.cml.controller.util.TestAnnotateStabilizerComplex;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.dstab.BaseDStabNetwork;

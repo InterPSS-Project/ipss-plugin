@@ -25,8 +25,8 @@
 
 package org.interpss.plugin.piecewise;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.function.Function;
 
@@ -39,7 +39,7 @@ import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.piecewise.algo.PiecewiseAlgorithm;
 import org.interpss.piecewise.algo.impl.PiecewiseAlgoPosImpl;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.algo.subAreaNet.SubAreaNetProcessor;
 import com.interpss.algo.subAreaNet.seqPos.CuttingBranchPos;

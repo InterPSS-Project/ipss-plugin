@@ -1,12 +1,12 @@
 package org.interpss.core.dstab.dynLoad;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.core.dstab.mach.TestSetupBase;
 import org.interpss.dstab.dynLoad.DynLoadCMPLDWG;
 import org.interpss.dstab.dynLoad.impl.DynLoadCMPLDWGImpl;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.algo.LoadflowAlgorithm;
