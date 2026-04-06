@@ -24,7 +24,7 @@
 
 package org.interpss.dep.plugin.beanModel;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dep.datamodel.bean.aclf.AclfNetBean;
@@ -33,7 +33,7 @@ import org.interpss.dep.datamodel.mapper.aclf.AclfNet2AclfBeanMapper;
 import org.interpss.dep.datamodel.mapper.base.BaseAclfBean2AclfNetMapper;
 import org.interpss.dep.datamodel.mapper.base.BaseAclfNet2AclfBeanMapper;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -115,7 +115,7 @@ public class PSXfrPControlTest extends CorePluginTestSetup {
 				
 		//System.out.println(net.net2String());		
 				
-		assertTrue("", AclfAdjCtrlFunction.nOfPSXfrPControl.apply(net) == 1);
+		assertTrue(AclfAdjCtrlFunction.nOfPSXfrPControl.apply(net) == 1);
 		
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
