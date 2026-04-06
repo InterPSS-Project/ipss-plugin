@@ -27,7 +27,7 @@ package org.interpss.core.ca;
 import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +37,7 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.AtomicCounter;
 import org.interpss.numeric.util.NumericUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.algo.parallel.ContingencyAnalysisMonad;
 import com.interpss.common.exp.InterpssException;
@@ -91,10 +91,10 @@ public class IEEE14_N1Scan_Test extends CorePluginTestSetup {
 						//		" postContFlow: " + resultRec.getPostFlowMW());
 						if (resultRec.aclfBranch.getId().equals("resultRec.aclfBranch.getId()") &&
 								resultRec.contingency.getId().equals("contBranch:Bus4->Bus5(1)"))
-							assertTrue("", NumericUtil.equals(resultRec.getPostFlowMW(), 166.08, 0.01));
+							assertTrue(NumericUtil.equals(resultRec.getPostFlowMW(), 166.08, 0.01));
 						else if (resultRec.aclfBranch.getId().equals("resultRec.aclfBranch.getId()") &&
 								resultRec.contingency.getId().equals("contBranch:Bus3->Bus4(1)"))
-							assertTrue("", NumericUtil.equals(resultRec.getPostFlowMW(), 152.90, 0.01));
+							assertTrue(NumericUtil.equals(resultRec.getPostFlowMW(), 152.90, 0.01));
 						
 						if (resultRec.calLoadingPercent() >= 100.0) {
 							cnt.increment();
@@ -106,7 +106,7 @@ public class IEEE14_N1Scan_Test extends CorePluginTestSetup {
 					});
 		});
 		
-		assertTrue("Total number of branches with loading > 100%: " + cnt.getCount(), cnt.getCount() == 15);
+		assertTrue(cnt.getCount() == 15, "Total number of branches with loading > 100%: " + cnt.getCount());
 	}
 }
 /*
