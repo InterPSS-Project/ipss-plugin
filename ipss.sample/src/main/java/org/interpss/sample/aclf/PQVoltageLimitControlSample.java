@@ -24,8 +24,6 @@
 
 package org.interpss.sample.aclf;
 
-import static org.junit.Assert.assertTrue;
-
 import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
@@ -75,7 +73,7 @@ public class PQVoltageLimitControlSample {
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 	  	
-  		assertTrue(net.isLfConverged());
+  		assert net.isLfConverged();
 
   		AclfBus swingBus = net.getBus("5");
 		AclfSwingBusAdapter swing = swingBus.toSwingBus();
