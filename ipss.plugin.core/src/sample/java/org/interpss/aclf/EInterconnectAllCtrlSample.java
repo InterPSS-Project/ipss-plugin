@@ -8,8 +8,8 @@ import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
-import com.interpss.core.algo.AdjustApplyType;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.algo.NrOptimizeAlgoType;
 import com.interpss.core.funcImpl.AclfAdjCtrlFunction;
 
 public class EInterconnectAllCtrlSample {
@@ -38,6 +38,7 @@ public class EInterconnectAllCtrlSample {
 		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet);
 
 		aclfAlgo.getNrMethodConfig().setNonDivergent(true);
+		aclfAlgo.getNrMethodConfig().setOptAlgo(NrOptimizeAlgoType.BINARY_SEARCH);
 		
 		aclfAlgo.setTolerance(1.0E-6);
 		aclfAlgo.setMaxIterations(100);
