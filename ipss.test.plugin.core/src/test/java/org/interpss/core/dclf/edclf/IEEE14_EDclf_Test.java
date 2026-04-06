@@ -30,8 +30,8 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.interpss.numeric.util.NumericUtil;
-import static org.junit.Assert.assertTrue;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
@@ -60,9 +60,9 @@ public class IEEE14_EDclf_Test extends CorePluginTestSetup {
 		  1.0185 + 0.0019i      (1.0180460023843958, 3.696227070719982E-4)     Bus5
 		  1.0345 + 0.0126i      (1.0345801248346052, 0.012910562373645573)      Bus14
 		*/
-		assertTrue("", NumericUtil.equals(aclfNet.getBus("Bus4").getVoltageMag(), 1.01638, 0.0001));
-		assertTrue("", NumericUtil.equals(aclfNet.getBus("Bus5").getVoltageMag(), 1.01805, 0.0001));
-		assertTrue("", NumericUtil.equals(aclfNet.getBus("Bus14").getVoltageMag(), 1.03458, 0.0001));	
+		assertTrue(NumericUtil.equals(aclfNet.getBus("Bus4").getVoltageMag(), 1.01638, 0.0001));
+		assertTrue(NumericUtil.equals(aclfNet.getBus("Bus5").getVoltageMag(), 1.01805, 0.0001));
+		assertTrue(NumericUtil.equals(aclfNet.getBus("Bus14").getVoltageMag(), 1.03458, 0.0001));	
 		
 		System.out.println("EDclf Mismatch: " + aclfNet.maxMismatch(AclfMethodType.NR));
 		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet, true));
@@ -161,9 +161,9 @@ public class IEEE14_EDclf_Test extends CorePluginTestSetup {
 		  1.0501 + 0.0074i
 		  1.0345 + 0.0126i      (1.0345801248346052, 0.012910562373645573)
 		*/
-		assertTrue("", NumericUtil.equals(voltAry[0].getReal(), 1.01638, 0.0001));
-		assertTrue("", NumericUtil.equals(voltAry[1].getReal(), 1.01805, 0.0001));
-		assertTrue("", NumericUtil.equals(voltAry[8].getReal(), 1.03458, 0.0001));		
+		assertTrue(NumericUtil.equals(voltAry[0].getReal(), 1.01638, 0.0001));
+		assertTrue(NumericUtil.equals(voltAry[1].getReal(), 1.01805, 0.0001));
+		assertTrue(NumericUtil.equals(voltAry[8].getReal(), 1.03458, 0.0001));		
 	}
 	
 	@Test 
@@ -175,14 +175,14 @@ public class IEEE14_EDclf_Test extends CorePluginTestSetup {
 		
 		//aclfNet.initContributeGenLoad();
 		
-		assertTrue("", predicateConnectBus.test(aclfNet.getBus("Bus7")) == true);
-		assertTrue("", predicateConnectBus.test(aclfNet.getBus("Bus14")) == false);
+		assertTrue(predicateConnectBus.test(aclfNet.getBus("Bus7")) == true);
+		assertTrue(predicateConnectBus.test(aclfNet.getBus("Bus14")) == false);
 		
 		ISparseEqnComplex[] ySet = new YMatrixSolver(aclfNet)
 				.formYMatrixSet(false, predicateConnectBus);
 		
-		assertTrue("", ySet[0].getDimension() == 1);
-		assertTrue("", ySet[3].getDimension() == 13);
+		assertTrue(ySet[0].getDimension() == 1);
+		assertTrue(ySet[3].getDimension() == 13);
 	}	
 }
 

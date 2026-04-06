@@ -30,11 +30,11 @@ import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.util.AclfNetJsonComparator;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -60,7 +60,7 @@ public class IEEE14BusTest extends CorePluginTestSetup {
 		
 		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet));
 		
-		assertTrue("", aclfNet.isLfConverged());
+		assertTrue(aclfNet.isLfConverged());
 	}
 	
 	@Test 
@@ -90,7 +90,7 @@ public class IEEE14BusTest extends CorePluginTestSetup {
 		
 		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet));
 		
-		assertTrue("", aclfNet.isLfConverged());
+		assertTrue(aclfNet.isLfConverged());
 	}
 }
 

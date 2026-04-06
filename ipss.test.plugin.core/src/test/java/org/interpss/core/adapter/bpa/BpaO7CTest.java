@@ -1,7 +1,7 @@
 package org.interpss.core.adapter.bpa;
 
 import static com.interpss.dstab.cache.StateVariableRecorder.StateVarRecType.MachineState;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -19,7 +19,7 @@ import org.interpss.dstab.output.TextSimuOutputHandler;
 import org.interpss.numeric.NumericConstant;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
 import org.interpss.odm.mapper.ODMDStabParserMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.LoadflowAlgoObjectFactory;

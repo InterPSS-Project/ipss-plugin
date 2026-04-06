@@ -24,9 +24,10 @@
 
 package org.interpss.core.dstab.cml.block;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssRuntimeException;
 import com.interpss.dstab.controller.cml.field.block.WashoutControlBlock;
@@ -62,9 +63,11 @@ public class WashoutControlBlockTests {
 		assertTrue(Math.abs(block.getY()) < 0.0001);
 	}
 	
-	@Test(expected=InterpssRuntimeException.class)
+	@Test
 	public void testException() {
-		WashoutControlBlock block = new WashoutControlBlock(1.0, 0.1);
-		assertTrue(block.initStateY0(1.0));
+		assertThrows(InterpssRuntimeException.class, () -> {
+			WashoutControlBlock block = new WashoutControlBlock(1.0, 0.1);
+			assertTrue(block.initStateY0(1.0));
+		});
 	}
 }

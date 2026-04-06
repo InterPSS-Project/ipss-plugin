@@ -1,6 +1,6 @@
 package org.interpss.core.aclf.svc;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginFactory;
@@ -9,7 +9,7 @@ import org.interpss.display.AclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.core.AclfAdjustObjectFactory;
 import com.interpss.core.CoreObjectFactory;
@@ -136,7 +136,7 @@ public class IEEE14_PVLimit_SVCTest extends CorePluginTestSetup {
  		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet));
 	  	
 	  	assertTrue(bus8.isGenPQ());
-	  	assertTrue(""+bus8.getVoltageMag(), Math.abs(bus8.getVoltageMag() - 1.0877) < 0.001);
+	  	assertTrue(Math.abs(bus8.getVoltageMag() - 1.0877) < 0.001, ""+bus8.getVoltageMag());
 	  	// the PVBusLimit control hits the limit.
 	  	assertTrue(bus8.getPVBusLimit().isControlStatus());
 	  	assertTrue(!bus8.getPVBusLimit().isAdjustStatus());

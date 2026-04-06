@@ -1,14 +1,14 @@
 package org.interpss.core.dstab.dynLoad;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.core.dstab.mach.TestSetupBase;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.dstab.dynLoad.DER_A_PosSeq;
 import org.interpss.dstab.dynLoad.impl.DER_A_PosSeqImpl;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfGenCode;

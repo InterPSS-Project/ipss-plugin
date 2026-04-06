@@ -1,6 +1,6 @@
 package org.interpss.plugin.piecewise;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
@@ -13,7 +13,7 @@ import org.interpss.odm.mapper.ODMDStabParserMapper;
 import org.interpss.piecewise.subAreaNet.seq012.SubDStabNetwork;
 import org.interpss.piecewise.subAreaNet.seq012.impl.SubAreaDStabProcessorImpl;
 import org.interpss.piecewise.subAreaNet.seq012.impl.SubNetworkDStabProcessorImpl;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.algo.subAreaNet.SubAreaNetProcessor;
 import com.interpss.algo.subAreaNet.seq012.CuttingBranch012;
@@ -57,13 +57,13 @@ public class IEEE9BusTestDStabSubAreaNet {
   		});		
   		// System.out.println(dsNet.net2String());
 
-  		assertTrue("We should have total two SubAreas", proc.getSubAreaNetList().size() == 2);
+  		assertTrue(proc.getSubAreaNetList().size() == 2, "We should have total two SubAreas");
 
-  		assertTrue("Bus1 should be in the SubArea (1)", dsNet.getBus("Bus1").getSubAreaFlag() == 1);
-  		assertTrue("Bus9 should be in the SubArea (1)", dsNet.getBus("Bus9").getSubAreaFlag() == 1);
+  		assertTrue(dsNet.getBus("Bus1").getSubAreaFlag() == 1, "Bus1 should be in the SubArea (1)");
+  		assertTrue(dsNet.getBus("Bus9").getSubAreaFlag() == 1, "Bus9 should be in the SubArea (1)");
   		
-  		assertTrue("Bus2 should be in the SubArea (2)", dsNet.getBus("Bus2").getSubAreaFlag() == 2);
-  		assertTrue("Bus7 should be in the SubArea (2)", dsNet.getBus("Bus7").getSubAreaFlag() == 2);
+  		assertTrue(dsNet.getBus("Bus2").getSubAreaFlag() == 2, "Bus2 should be in the SubArea (2)");
+  		assertTrue(dsNet.getBus("Bus7").getSubAreaFlag() == 2, "Bus7 should be in the SubArea (2)");
 	}
 
 	@Test
@@ -84,19 +84,19 @@ public class IEEE9BusTestDStabSubAreaNet {
   		//});		
   		// System.out.println(dsNet.net2String());
 
-  		assertTrue("We should have total two SubAreas", proc.getSubAreaNetList().size() == 2);
+  		assertTrue(proc.getSubAreaNetList().size() == 2, "We should have total two SubAreas");
 
-  		assertTrue("SubArea (1) should have 2 interface buses", proc.getSubAreaNet(1).getInterfaceBusIdList().size() == 2);
-  		assertTrue("SubArea (1) should have 7 buses", proc.getSubAreaNet(1).getSubNet().getBusList().size() == 7);
+  		assertTrue(proc.getSubAreaNet(1).getInterfaceBusIdList().size() == 2, "SubArea (1) should have 2 interface buses");
+  		assertTrue(proc.getSubAreaNet(1).getSubNet().getBusList().size() == 7, "SubArea (1) should have 7 buses");
 
-  		assertTrue("Bus1 should be in the SubArea (1)", dsNet.getBus("Bus1").getSubAreaFlag() == 1);
-  		assertTrue("Bus9 should be in the SubArea (1)", dsNet.getBus("Bus9").getSubAreaFlag() == 1);
+  		assertTrue(dsNet.getBus("Bus1").getSubAreaFlag() == 1, "Bus1 should be in the SubArea (1)");
+  		assertTrue(dsNet.getBus("Bus9").getSubAreaFlag() == 1, "Bus9 should be in the SubArea (1)");
   		
-  		assertTrue("SubArea (1) should have 1 interface bus", proc.getSubAreaNet(2).getInterfaceBusIdList().size() == 1);
-  		assertTrue("SubArea (2) should have 2 buses", proc.getSubAreaNet(2).getSubNet().getBusList().size() == 2);
+  		assertTrue(proc.getSubAreaNet(2).getInterfaceBusIdList().size() == 1, "SubArea (1) should have 1 interface bus");
+  		assertTrue(proc.getSubAreaNet(2).getSubNet().getBusList().size() == 2, "SubArea (2) should have 2 buses");
 
-  		assertTrue("Bus2 should be in the SubArea (2)", dsNet.getBus("Bus2").getSubAreaFlag() == 2);
-  		assertTrue("Bus7 should be in the SubArea (2)", dsNet.getBus("Bus7").getSubAreaFlag() == 2);
+  		assertTrue(dsNet.getBus("Bus2").getSubAreaFlag() == 2, "Bus2 should be in the SubArea (2)");
+  		assertTrue(dsNet.getBus("Bus7").getSubAreaFlag() == 2, "Bus7 should be in the SubArea (2)");
 	}
 	
 	private BaseDStabNetwork getTestNet() {
