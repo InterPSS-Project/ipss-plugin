@@ -1,6 +1,6 @@
 package org.interpss.core.adapter.psse.raw.acsc;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -22,7 +22,7 @@ import org.interpss.display.AcscOutFunc;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.ComplexFunc;
 import org.interpss.odm.mapper.ODMAcscParserMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;

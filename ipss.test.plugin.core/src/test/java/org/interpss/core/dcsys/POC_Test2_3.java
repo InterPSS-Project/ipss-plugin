@@ -24,7 +24,7 @@
 
 package org.interpss.core.dcsys;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.interpss.CorePluginFunction;
 import org.interpss.CorePluginTestSetup;

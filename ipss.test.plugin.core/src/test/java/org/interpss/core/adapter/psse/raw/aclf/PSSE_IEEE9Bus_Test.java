@@ -25,9 +25,9 @@
 package org.interpss.core.adapter.psse.raw.aclf;
  
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
@@ -37,7 +37,7 @@ import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
@@ -219,11 +219,11 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 	  	AclfSwingBusAdapter swing = swingBus.toSwingBus();
   		Complex p = swing.getGenResults(UnitType.PU);
   		assertTrue(Math.abs(p.getReal()-0.7198)<0.0001);
-  		assertTrue(""+p.getImaginary(), Math.abs(p.getImaginary()-0.3880)<0.0001);
+  		assertTrue(Math.abs(p.getImaginary()-0.3880)<0.0001, ""+p.getImaginary());
 
 		AclfBus bus4 = net.getBus("Bus4");
 		double voltageMag = bus4.getVoltageMag();
-		assertTrue(""+voltageMag, Math.abs(voltageMag - 1.05832) < 0.0001);
+		assertTrue(Math.abs(voltageMag - 1.05832) < 0.0001, ""+voltageMag);
 
 
 		AclfBus bus7 = net.getBus("Bus7");
@@ -267,11 +267,11 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 	  	AclfSwingBusAdapter swing = swingBus.toSwingBus();
   		Complex p = swing.getGenResults(UnitType.PU);
   		assertTrue(Math.abs(p.getReal()-0.7226)<0.0001);
-  		assertTrue(""+p.getImaginary(), Math.abs(p.getImaginary()-0.3650)<0.0001);
+  		assertTrue(Math.abs(p.getImaginary()-0.3650)<0.0001, ""+p.getImaginary());
 
 		AclfBus bus4 = net.getBus("Bus4");
 		double voltageMag = bus4.getVoltageMag();
-		assertTrue(""+voltageMag, Math.abs(voltageMag - 1.05866) < 0.0001);
+		assertTrue(Math.abs(voltageMag - 1.05866) < 0.0001, ""+voltageMag);
 
 
 		AclfBus bus7 = net.getBus("Bus7");
@@ -343,7 +343,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 
 		AclfBus bus4 = net.getBus("Bus4");
 		double voltageMag = bus4.getVoltageMag();
-		assertTrue(""+voltageMag, Math.abs(voltageMag - 1.05531) < 0.0001);
+		assertTrue(Math.abs(voltageMag - 1.05531) < 0.0001, ""+voltageMag);
 
 		//bus92 voltage
 		AclfBus bus92 = net.getBus("Bus92");
@@ -391,7 +391,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		algo.getNrMethodConfig().setNonDivergent(true);
 		algo.loadflow();
 
-		assertTrue("Loadflow converged", net.isLfConverged());
+		assertTrue(net.isLfConverged(), "Loadflow converged");
 		//System.out.println(AclfOutFunc.loadFlowSummary(net));
 
 		/*
@@ -414,7 +414,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 
 		AclfLoad load6 = bus6.getContributeLoadList().get(0);
 		// check the distributed generation load record is offline
-		assertTrue("DGen load record is not offline", load6.isDistGenStatus() == false);
+		assertTrue(load6.isDistGenStatus() == false, "DGen load record is not offline");
 
 
 		testVAclf(net);
@@ -445,49 +445,49 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		// which is not the case for SVC.
 		
 		StaticVarCompensator svc1 = bus5.getFirstStaticVarCompensator(true);
-		assertNotNull("Bus5 has SVC connected", svc1);
+		assertNotNull(svc1, "Bus5 has SVC connected");
 		
-		assertTrue("SVC name is correct", svc1.getName().equals("SVC1"));
+		assertTrue(svc1.getName().equals("SVC1"), "SVC name is correct");
 
-		assertTrue("SVC voltage set point is correct", Math.abs(svc1.getVSpecified() - 1.01) < 1e-6);
+		assertTrue(Math.abs(svc1.getVSpecified() - 1.01) < 1e-6, "SVC voltage set point is correct");
 
 		//TODO: change it back to BLimit after the Qlimit is used to represent the actual Q output limit
-		assertTrue("SVC capacitive rating is correct", Math.abs(svc1.getBLimit().getMax() - 0.5) < 1e-6);
+		assertTrue(Math.abs(svc1.getBLimit().getMax() - 0.5) < 1e-6, "SVC capacitive rating is correct");
 
 		// rmpct is the percentage of the SVC remote control percentage, which is 100% in this case
-		assertTrue("SVC remote control percentage is correct", Math.abs(svc1.getRemoteControlPercentage() - 100.0) < 1e-6);
+		assertTrue(Math.abs(svc1.getRemoteControlPercentage() - 100.0) < 1e-6, "SVC remote control percentage is correct");
 
 		//remote control bus is bus 5 (local bus)
-		assertTrue("SVC remote control bus is correct", svc1.getRemoteBus().getId().equals("Bus5"));
+		assertTrue(svc1.getRemoteBus().getId().equals("Bus5"), "SVC remote control bus is correct");
 
 		//default control mode is continuous
-		assertTrue("SVC control mode is correct", svc1.getControlMode() == AclfAdjustControlMode.CONTINUOUS);
+		assertTrue(svc1.getControlMode() == AclfAdjustControlMode.CONTINUOUS, "SVC control mode is correct");
 
 		//control type, default is  bus voltage control
-		assertTrue("SVC control type is correct", svc1.getRemoteQControlType() == BusBranchControlType.BUS_VOLTAGE);
+		assertTrue(svc1.getRemoteQControlType() == BusBranchControlType.BUS_VOLTAGE, "SVC control type is correct");
 
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.setLfMethod(AclfMethodType.NR);
 		//algo.setNonDivergent(true);
 		algo.loadflow();
 
-		assertTrue("Loadflow converged", net.isLfConverged());
+		assertTrue(net.isLfConverged(), "Loadflow converged");
 
 		//System.out.println(AclfOutFunc.loadFlowSummary(net));
 
 		//check the SVC results
 		//bus 5 is a genPV bus, so the voltage is 1.01 pu
-		assertTrue("Bus5 voltage magnitude is correct", Math.abs(bus5.getVoltageMag() - 1.01) < 1e-6);
+		assertTrue(Math.abs(bus5.getVoltageMag() - 1.01) < 1e-6, "Bus5 voltage magnitude is correct");
 		// TODO: note the SVC is controlling the local bus voltage, so it is a GenPV bus
 		assertTrue( bus5.isGenPV()); 
 		//RemoteQBus re = bus5.getRemoteQBus();
 		AclfGenBusAdapter genBus = bus5.toGenBus();
 		double q = genBus.getGenResults(UnitType.PU).getImaginary();
 		System.out.println("Bus5 svc q: " + q);
-		assertTrue("SVC Q output is correct", Math.abs(q + 0.10778) < 1e-3); 
+		assertTrue(Math.abs(q + 0.10778) < 1e-3, "SVC Q output is correct"); 
 		
 		//System.out.println("Bus5 svc BActual: " + svc1.getBActual());
-		//assertTrue("SVC Q output is correct", Math.abs(svc1.getBActual()*1.01*1.01 - 0.1598) < 1e-3); 
+		//assertTrue(Math.abs(svc1.getBActual()*1.01*1.01 - 0.1598) < 1e-3, "SVC Q output is correct"); 
 	}
 
 	@Test
@@ -508,33 +508,33 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		AclfBus bus50 = net.getBus("Bus50");
 
 		StaticVarCompensator svc1 = bus50.getFirstStaticVarCompensator(true);
-		assertNotNull("Bus50 has SVC connected", svc1);
+		assertNotNull(svc1, "Bus50 has SVC connected");
 
-		assertTrue("SVC name is correct", svc1.getName().equals("SVC1"));
+		assertTrue(svc1.getName().equals("SVC1"), "SVC name is correct");
 
-		assertTrue("SVC voltage set point is correct", Math.abs(svc1.getVSpecified() - 1.01) < 1e-6);
+		assertTrue(Math.abs(svc1.getVSpecified() - 1.01) < 1e-6, "SVC voltage set point is correct");
 
 		//TODO: as the Qlimit is related to the actual Q output, which is dependent on the load flow bus voltage, so it is better to use another variable to store the capacitive rating, maybe Binit
-		assertTrue("SVC capacitive rating is correct", Math.abs(svc1.getQLimit().getMax() - 1.0) < 1e-6);
+		assertTrue(Math.abs(svc1.getQLimit().getMax() - 1.0) < 1e-6, "SVC capacitive rating is correct");
 
 		// rmpct is the percentage of the SVC remote control percentage, which is 100% in this case
-		assertTrue("SVC remote control percentage is correct", Math.abs(svc1.getRemoteControlPercentage() - 100.0) < 1e-6);
+		assertTrue(Math.abs(svc1.getRemoteControlPercentage() - 100.0) < 1e-6, "SVC remote control percentage is correct");
 
 		//remote control bus is bus 4
-		assertTrue("SVC remote control bus is correct", svc1.getRemoteBus().getId().equals("Bus5"));
+		assertTrue(svc1.getRemoteBus().getId().equals("Bus5"), "SVC remote control bus is correct");
 
 		//default control mode is continuous
-		assertTrue("SVC control mode is correct", svc1.getControlMode() == AclfAdjustControlMode.CONTINUOUS);
+		assertTrue(svc1.getControlMode() == AclfAdjustControlMode.CONTINUOUS, "SVC control mode is correct");
 
 		//control type, default is  bus voltage control
-		assertTrue("SVC control type is correct", svc1.getRemoteQControlType() == BusBranchControlType.BUS_VOLTAGE);
+		assertTrue(svc1.getRemoteQControlType() == BusBranchControlType.BUS_VOLTAGE, "SVC control type is correct");
 
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.setLfMethod(AclfMethodType.NR);
 		//algo.setNonDivergent(true);
 		algo.loadflow();
 
-		assertTrue("Loadflow converged", net.isLfConverged());
+		assertTrue(net.isLfConverged(), "Loadflow converged");
 
 		/*
 		 * How to investigate the issue:
@@ -550,10 +550,10 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		AclfBus bus5 = net.getBus("Bus5");
 		System.out.println("Bus5 voltage: " + bus5.getVoltageMag() + " pu, angle: " + bus5.getVoltageAng() * 180 / Math.PI + " deg");
 		System.out.println("Bus5 svc vspec: " + svc1.getVSpecified() + " pu");
-		assertTrue("Bus5 voltage magnitude is correct", Math.abs(bus5.getVoltageMag() - svc1.getVSpecified()) < 1e-2);
+		assertTrue(Math.abs(bus5.getVoltageMag() - svc1.getVSpecified()) < 1e-2, "Bus5 voltage magnitude is correct");
 		double q = bus50.toCapacitorBus().getQResults();
 		System.out.println("Bus50 svc q: " + q);
-		assertTrue("SVC Q output is correct"+q, Math.abs(q - 0.1248) < 1e-3); // Q output is 0.5 pu, which is the capacitive rating
+		assertTrue(Math.abs(q - 0.1248) < 1e-3, "SVC Q output is correct"+q); // Q output is 0.5 pu, which is the capacitive rating
 
 		/*
 		 NOTE: there is no difference in the results below, even though the Qg value is different for Bus 50
