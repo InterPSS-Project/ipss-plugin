@@ -43,12 +43,6 @@
 	    <version>0.10.9.3</version>
 	</dependency>
 	
-	<!-- JUnit dependency for test assertions -->
-	<dependency>
-	    <groupId>junit</groupId>
-	    <artifactId>junit</artifactId>
-	    <version>4.13.2</version>
-	</dependency>
 	
   </dependencies>
 
@@ -78,7 +72,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.12.4</version>
+        <version>3.5.2</version>
         <configuration>
           <failIfNoTests>false</failIfNoTests>
         </configuration>

@@ -1,6 +1,6 @@
 package org.interpss.core.zeroz;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +11,7 @@ import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.datatype.ComplexFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -101,14 +101,14 @@ public class IEEE14ZeroZBranchAclfDeconTest extends CorePluginTestSetup {
 				Complex pIntoNet = bus.powerIntoNet();
 				//System.out.println("Bus " + bus.getId() + " power into net: " + ComplexFunc.toStr(pIntoNet));
 	  			if (pIntoNetResults.get(bus.getId()) == null) 
-	  					assertTrue("Bus " + bus.getId() + " pIntoNetResults do not match", 
-	  						pIntoNetResults.get(bus.getId()).equals(ComplexFunc.toStr(pIntoNet)));
+	  					assertTrue(pIntoNetResults.get(bus.getId()).equals(ComplexFunc.toStr(pIntoNet)),
+	  						"Bus " + bus.getId() + " pIntoNetResults do not match");
   			} else {
   				// For the bus not connected to zeroZ branch, we can use the regular method
   				String result = AclfOutFunc.busLfSummary(bus, true);
   				//System.out.println(AclfOutFunc.busLfSummary(bus, true));
-  				assertTrue("Bus " + bus.getId() + " results do not match", 
-  						results.get(bus.getId()).equals(result));
+  				assertTrue(results.get(bus.getId()).equals(result),
+  						"Bus " + bus.getId() + " results do not match");
   			}
   		});
   		
@@ -116,10 +116,10 @@ public class IEEE14ZeroZBranchAclfDeconTest extends CorePluginTestSetup {
   			// we only compare the branch results for the branches that are not zeroZ branches
   			if (!branch.isZeroZBranch()) {
   				//System.out.println("---Branch: " + branch.getId());
-	  			assertTrue("Branch " + branch.getId() + " from2to results do not match", 
-	  					from2ToResults.get(branch.getId()).equals(ComplexFunc.toStr(branch.powerFrom2To())));
-	  			assertTrue("Branch " + branch.getId() + " to2from results do not match", 
-	  					to2FromResults.get(branch.getId()).equals(ComplexFunc.toStr(branch.powerTo2From())));
+	  			assertTrue(from2ToResults.get(branch.getId()).equals(ComplexFunc.toStr(branch.powerFrom2To())),
+	  					"Branch " + branch.getId() + " from2to results do not match");
+	  			assertTrue(to2FromResults.get(branch.getId()).equals(ComplexFunc.toStr(branch.powerTo2From())),
+	  					"Branch " + branch.getId() + " to2from results do not match");
   			}
   		});
     }
