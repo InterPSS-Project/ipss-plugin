@@ -28,8 +28,8 @@ import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import static org.junit.Assert.assertTrue;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
@@ -47,14 +47,14 @@ public class IEEECommonFormat_CommaTest extends CorePluginTestSetup {
 		
 		assertTrue((net.getBusList().size() == 14 && net.getBranchList().size() == 20));
 
-		assertTrue("", net.getBus("Bus1").getId().equals("Bus1"));
-		assertTrue("", net.getBus("Bus1").getContributeGen("Bus1-G1") != null);
-		assertTrue("", net.getBus("Bus1").getContributeGen("Bus1-G1").getName().equals("Bus1-G1"));
+		assertTrue(net.getBus("Bus1").getId().equals("Bus1"));
+		assertTrue(net.getBus("Bus1").getContributeGen("Bus1-G1") != null);
+		assertTrue(net.getBus("Bus1").getContributeGen("Bus1-G1").getName().equals("Bus1-G1"));
 		
-		assertTrue("", net.getBus("Bus2").getContributeGen("Bus2-G1") != null);
-		assertTrue("", net.getBus("Bus2").getContributeGen("Bus2-G1").getName().equals("Bus2-G1"));
-		assertTrue("", net.getBus("Bus2").getContributeLoad("Bus2-L1") != null);
-		assertTrue("", net.getBus("Bus2").getContributeLoad("Bus2-L1").getName().equals("Bus2-L1"));
+		assertTrue(net.getBus("Bus2").getContributeGen("Bus2-G1") != null);
+		assertTrue(net.getBus("Bus2").getContributeGen("Bus2-G1").getName().equals("Bus2-G1"));
+		assertTrue(net.getBus("Bus2").getContributeLoad("Bus2-L1") != null);
+		assertTrue(net.getBus("Bus2").getContributeLoad("Bus2-L1").getName().equals("Bus2-L1"));
 		
 //		IODMAdapter adapter = new IeeeCDFAdapter(IpssLogger.getLogger());
 //		adapter.parseInputFile("testdata/ieee_format/ieee14_comma.ieee");
