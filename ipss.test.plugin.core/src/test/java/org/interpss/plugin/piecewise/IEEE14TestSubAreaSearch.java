@@ -27,8 +27,8 @@ package org.interpss.plugin.piecewise;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginFactory;
 import org.interpss.fadapter.IpssFileAdapter;
-import static org.junit.Assert.assertTrue;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.algo.subAreaNet.SubAreaNetProcessor;
 import com.interpss.algo.subAreaNet.seqPos.CuttingBranchPos;
@@ -105,7 +105,7 @@ public class IEEE14TestSubAreaSearch extends PiecewiseAlgoTestSetup {
 		// make sure all cutting branches are in the network
   		for (int i = 0; i < proc.getCuttingBranches().length; i++) {
   			AclfBranch branch = net.getBranch(proc.getCuttingBranches()[i].getBranchId());
-  			assertTrue(proc.getCuttingBranches()[i].getBranchId() + " not found!", branch != null);
+  			assertTrue(branch != null, proc.getCuttingBranches()[i].getBranchId() + " not found!");
   		};
   		
   		proc.processSubAreaNet();

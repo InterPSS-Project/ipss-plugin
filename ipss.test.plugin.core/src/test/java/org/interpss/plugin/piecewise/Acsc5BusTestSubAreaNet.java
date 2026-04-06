@@ -24,13 +24,13 @@
 
 package org.interpss.plugin.piecewise;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.util.TestUtilFunc;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.algo.subAreaNet.SubAreaNetProcessor;
 import com.interpss.algo.subAreaNet.seq012.CuttingBranch012;
