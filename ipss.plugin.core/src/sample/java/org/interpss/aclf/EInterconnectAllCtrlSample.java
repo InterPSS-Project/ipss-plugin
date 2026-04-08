@@ -11,6 +11,7 @@ import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.algo.NrOptimizeAlgoType;
 import com.interpss.core.funcImpl.AclfAdjCtrlFunction;
+import com.interpss.core.sparse.SparseEqnObjectFactory;
 
 public class EInterconnectAllCtrlSample {
     public static void main(String args[]) throws Exception {
@@ -35,9 +36,11 @@ public class EInterconnectAllCtrlSample {
 
 		System.out.println("MaxMismatch Before Aclf: " + aclfNet.maxMismatch(AclfMethodType.NR));
 		
+		SparseEqnObjectFactory.SparseEqnSolverType = SparseEqnObjectFactory.SparseEqnSolverKLU;
+		
 		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet);
 
-		aclfAlgo.getNrMethodConfig().setNonDivergent(true);
+		aclfAlgo.getNrMethodConfig().setNonDivergent(false);
 		aclfAlgo.getNrMethodConfig().setOptAlgo(NrOptimizeAlgoType.CUBIC_EQN);
 		
 		aclfAlgo.setTolerance(1.0E-6);
