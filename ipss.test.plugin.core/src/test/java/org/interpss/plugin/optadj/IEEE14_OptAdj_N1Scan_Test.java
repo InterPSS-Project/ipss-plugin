@@ -4,8 +4,8 @@ package org.interpss.plugin.optadj;
 import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +14,7 @@ import java.util.Map;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.AtomicCounter;
 import org.interpss.plugin.optadj.algo.AclfNetContigencyOptimizer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.algo.parallel.ContingencyAnalysisMonad;
 import com.interpss.common.exp.InterpssException;
@@ -67,7 +67,7 @@ public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
 					});
 			});
 		System.out.println("Total number of branches over limit before OptAdj: " + cnt.getCount());
-		assertTrue(""+cnt.getCount(), cnt.getCount() == 18);
+		assertTrue(cnt.getCount() == 18, ""+cnt.getCount());
 		 
 		AclfNetContigencyOptimizer optimizer = new AclfNetContigencyOptimizer(dclfAlgo);
 		optimizer.optimize(100);
