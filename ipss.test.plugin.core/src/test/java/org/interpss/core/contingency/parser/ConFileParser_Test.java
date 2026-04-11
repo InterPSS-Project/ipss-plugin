@@ -1,8 +1,8 @@
 package org.interpss.core.contingency.parser;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Paths;
 import java.util.List;
@@ -19,8 +19,8 @@ import org.interpss.plugin.contingency.con_fmt.bean.ConEquipEvent;
 import org.interpss.plugin.contingency.con_fmt.bean.ConEquipMoveEvent;
 import org.interpss.plugin.contingency.con_fmt.bean.ConEquipType;
 import org.interpss.plugin.contingency.con_fmt.parser.ConFileParser;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link ConFileParser}.
@@ -36,7 +36,7 @@ public class ConFileParser_Test {
 
     private static ConContainer container;
 
-    @BeforeClass
+    @BeforeAll
     public static void parseFixture() throws Exception {
         container = new ConFileParser().parse(Paths.get(FIXTURE));
     }
@@ -71,7 +71,7 @@ public class ConFileParser_Test {
         assertEquals(ConBranchAction.DISCONNECT, e.getAction());
         assertEquals(1001L, e.getFromBusNum());
         assertEquals(1002L, e.getToBusNum());
-        assertEquals("1", e.getCkt());
+        assertEquals(e.getCkt(), "1");
     }
 
     @Test
@@ -101,7 +101,7 @@ public class ConFileParser_Test {
         assertEquals(2001L, e.getFromBusNum());
         assertEquals(2002L, e.getToBusNum());
         assertEquals(2003L, e.getThirdBusNum());
-        assertEquals("1", e.getCkt());
+        assertEquals(e.getCkt(), "1");
     }
 
     @Test
@@ -162,7 +162,7 @@ public class ConFileParser_Test {
         ConEquipEvent e = c.getEquipEvents().get(0);
         assertEquals(ConEquipAction.REMOVE, e.getAction());
         assertEquals(ConEquipType.MACHINE, e.getEquipType());
-        assertEquals("G1", e.getEquipId());
+        assertEquals(e.getEquipId(), "G1");
         assertEquals(4001L, e.getBusNum());
     }
 
@@ -173,7 +173,7 @@ public class ConFileParser_Test {
         // UNIT is treated as a synonym for MACHINE
         assertEquals(ConEquipAction.REMOVE, e.getAction());
         assertEquals(ConEquipType.MACHINE, e.getEquipType());
-        assertEquals("1", e.getEquipId());
+        assertEquals(e.getEquipId(), "1");
         assertEquals(4002L, e.getBusNum());
     }
 
@@ -183,7 +183,7 @@ public class ConFileParser_Test {
         ConEquipEvent e = c.getEquipEvents().get(0);
         assertEquals(ConEquipAction.REMOVE, e.getAction());
         assertEquals(ConEquipType.LOAD, e.getEquipType());
-        assertEquals("1", e.getEquipId());
+        assertEquals(e.getEquipId(), "1");
         assertEquals(5001L, e.getBusNum());
     }
 
@@ -212,7 +212,7 @@ public class ConFileParser_Test {
         ConEquipEvent e = c.getEquipEvents().get(0);
         assertEquals(ConEquipAction.REMOVE, e.getAction());
         assertEquals(ConEquipType.SWSHUNT, e.getEquipType());
-        assertEquals("A1", e.getEquipId());
+        assertEquals(e.getEquipId(), "A1");
         assertEquals(5004L, e.getBusNum());
     }
 
@@ -226,9 +226,9 @@ public class ConFileParser_Test {
         ConBusModEvent e = c.getBusModEvents().get(0);
         assertEquals(ConBusModAction.DECREASE, e.getAction());
         assertEquals(6001L, e.getBusNum());
-        assertEquals("GENERATION", e.getAttribute());
+        assertEquals(e.getAttribute(), "GENERATION");
         assertEquals(100.0, e.getValue(), 1e-9);
-        assertEquals("MW", e.getUnit());
+        assertEquals(e.getUnit(), "MW");
     }
 
     @Test
@@ -238,9 +238,9 @@ public class ConFileParser_Test {
         ConBusModEvent e = c.getBusModEvents().get(0);
         assertEquals(ConBusModAction.DECREASE, e.getAction());
         assertEquals(6002L, e.getBusNum());
-        assertEquals("LOAD", e.getAttribute());
+        assertEquals(e.getAttribute(), "LOAD");
         assertEquals(50.0, e.getValue(), 1e-9);
-        assertEquals("PERCENT", e.getUnit());
+        assertEquals(e.getUnit(), "PERCENT");
     }
 
     @Test
@@ -249,9 +249,9 @@ public class ConFileParser_Test {
         ConBusModEvent e = c.getBusModEvents().get(0);
         assertEquals(ConBusModAction.SET, e.getAction());
         assertEquals(6003L, e.getBusNum());
-        assertEquals("SHUNT", e.getAttribute());
+        assertEquals(e.getAttribute(), "SHUNT");
         assertEquals(25.0, e.getValue(), 1e-9);
-        assertEquals("MVAR", e.getUnit());
+        assertEquals(e.getUnit(), "MVAR");
     }
 
     // -----------------------------------------------------------------------
@@ -265,8 +265,8 @@ public class ConFileParser_Test {
         ConEquipMoveEvent e = c.getEquipMoveEvents().get(0);
         assertEquals(ConEquipType.LOAD, e.getEquipType());
         assertEquals(100.0, e.getValue(), 1e-9);
-        assertEquals("PERCENT", e.getUnit());
-        assertEquals("LOAD", e.getLoadType());
+        assertEquals(e.getUnit(), "PERCENT");
+        assertEquals(e.getLoadType(), "LOAD");
         assertEquals(7001L, e.getFromBusNum());
         assertEquals(7002L, e.getToBusNum());
     }
@@ -278,8 +278,8 @@ public class ConFileParser_Test {
         ConEquipMoveEvent e = c.getEquipMoveEvents().get(0);
         assertEquals(ConEquipType.GENERATION, e.getEquipType());
         assertEquals(50.0, e.getValue(), 1e-9);
-        assertEquals("MW", e.getUnit());
-        assertEquals("GENERATION", e.getLoadType());
+        assertEquals(e.getUnit(), "MW");
+        assertEquals(e.getLoadType(), "GENERATION");
         assertEquals(7001L, e.getFromBusNum());
         assertEquals(7002L, e.getToBusNum());
     }
@@ -291,8 +291,8 @@ public class ConFileParser_Test {
         ConEquipMoveEvent e = c.getEquipMoveEvents().get(0);
         assertEquals(ConEquipType.SHUNT, e.getEquipType());
         assertEquals(25.0, e.getValue(), 1e-9);
-        assertEquals("MVAR", e.getUnit());
-        assertEquals("SHUNT", e.getLoadType());
+        assertEquals(e.getUnit(), "MVAR");
+        assertEquals(e.getLoadType(), "SHUNT");
         assertEquals(7003L, e.getFromBusNum());
         assertEquals(7004L, e.getToBusNum());
     }
@@ -303,8 +303,8 @@ public class ConFileParser_Test {
         ConEquipMoveEvent e = c.getEquipMoveEvents().get(0);
         assertEquals(ConEquipType.ACTIVE_LOAD, e.getEquipType());
         assertEquals(30.0, e.getValue(), 1e-9);
-        assertEquals("MW", e.getUnit());
-        assertEquals("ACTIVE LOAD", e.getLoadType());
+        assertEquals(e.getUnit(), "MW");
+        assertEquals(e.getLoadType(), "ACTIVE LOAD");
         assertEquals(7001L, e.getFromBusNum());
         assertEquals(7002L, e.getToBusNum());
     }
@@ -316,8 +316,8 @@ public class ConFileParser_Test {
         ConEquipMoveEvent e = c.getEquipMoveEvents().get(0);
         assertEquals(ConEquipType.REACTIVE_LOAD, e.getEquipType());
         assertEquals(15.0, e.getValue(), 1e-9);
-        assertEquals("MVAR", e.getUnit());
-        assertEquals("REACTIVE LOAD", e.getLoadType());
+        assertEquals(e.getUnit(), "MVAR");
+        assertEquals(e.getLoadType(), "REACTIVE LOAD");
         assertEquals(7003L, e.getFromBusNum());
         assertEquals(7004L, e.getToBusNum());
     }
@@ -331,7 +331,7 @@ public class ConFileParser_Test {
         ConEquipEvent e = c.getEquipEvents().get(0);
         assertEquals(ConEquipAction.BLOCK, e.getAction());
         assertEquals(ConEquipType.DC_LINE, e.getEquipType());
-        assertEquals("1", e.getEquipId());
+        assertEquals(e.getEquipId(), "1");
         assertEquals(-1L, e.getBusNum()); // not bus-attached
     }
 
@@ -342,7 +342,7 @@ public class ConFileParser_Test {
     @Test
     public void testMultiEventCase_category() {
         ConCase c = findCase("MULTI_EVENT");
-        assertEquals("CAT_N2", c.getCategory());
+        assertEquals(c.getCategory(), "CAT_N2");
     }
 
     @Test

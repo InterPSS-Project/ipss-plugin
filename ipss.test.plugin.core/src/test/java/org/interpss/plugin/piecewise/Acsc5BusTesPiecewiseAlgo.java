@@ -24,7 +24,7 @@
 
 package org.interpss.plugin.piecewise;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.function.Function;
 
@@ -38,7 +38,7 @@ import org.interpss.piecewise.algo.PiecewiseAlgorithm;
 import org.interpss.piecewise.algo.impl.PiecewiseAlgoAcscImpl;
 import org.interpss.plugin.pssl.simu.net.IpssAcscNet;
 import org.interpss.plugin.pssl.simu.net.IpssAcscNet.AcscNetworkDSL;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.algo.subAreaNet.SubAreaNetProcessor;
 import com.interpss.algo.subAreaNet.base.BaseCuttingBranch;

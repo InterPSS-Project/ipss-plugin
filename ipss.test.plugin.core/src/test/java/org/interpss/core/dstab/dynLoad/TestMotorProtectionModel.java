@@ -1,6 +1,6 @@
 //package org.interpss.core.dstab.dynLoad;
 //
-//import static org.junit.Assert.assertTrue;
+//import static org.junit.jupiter.api.Assertions.assertTrue;
 //
 //import java.util.logging.Level;
 //
@@ -9,7 +9,7 @@
 //import org.interpss.display.AclfOutFunc;
 //import org.interpss.numeric.datatype.Point;
 //import org.interpss.numeric.datatype.Unit.UnitType;
-//import org.junit.Test;
+//import org.junit.jupiter.api.Test;
 //
 //import com.interpss.CoreObjectFactory;
 //import com.interpss.DStabObjectFactory;

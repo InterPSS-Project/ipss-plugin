@@ -14,12 +14,11 @@ import org.interpss.multiNet.unit.TestMultiNetDStab;
 import org.interpss.multiNet.unit.TestMultiNetDStabSimuHelper;
 import org.interpss.multiNet.unit.TestNetworkEquivUtil;
 import org.interpss.multiNet.unit.TestSubNetEquiv;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import org.junit.platform.suite.api.SelectClasses;
+import org.junit.platform.suite.api.Suite;
 
-@RunWith(Suite.class)
-@SuiteClasses({
+@Suite
+@SelectClasses({
 	//test basic functions or utils
 	TestSubNetEquiv.class,
 	TestAddDummyBus.class,

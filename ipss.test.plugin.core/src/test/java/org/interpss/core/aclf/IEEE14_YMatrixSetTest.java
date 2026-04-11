@@ -24,7 +24,7 @@
 
 package org.interpss.core.aclf;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginFactory;
@@ -33,7 +33,7 @@ import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.interpss.numeric.sparse.base.ISparseEquation.IndexType;
 import org.interpss.numeric.util.NumericUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.impl.solver.YMatrixSolver;
@@ -81,8 +81,8 @@ public class IEEE14_YMatrixSetTest extends CorePluginTestSetup {
 		   (8,9)     -1.1370 + 2.3150i
 		   (9,9)      2.5610 - 5.3440i	
  */
-		assertTrue("", NumericUtil.equals(ynn.getA(0, 0), new Complex(10.5130, -38.6542), 0.001));
-		assertTrue("", NumericUtil.equals(ynn.getA(1, 0), new Complex(-6.8410, 21.5786), 0.001));
+		assertTrue(NumericUtil.equals(ynn.getA(0, 0), new Complex(10.5130, -38.6542), 0.001));
+		assertTrue(NumericUtil.equals(ynn.getA(1, 0), new Complex(-6.8410, 21.5786), 0.001));
 		
 		ISparseEqnComplex ynm = ySet[1];
 		//System.out.println(ynm);
@@ -113,8 +113,8 @@ public class IEEE14_YMatrixSetTest extends CorePluginTestSetup {
 				6
 				8
  */
-		assertTrue("", NumericUtil.equals(ynm.getA(1-1, 2-1), new Complex(-1.6860,  5.1158), 0.001));
-		assertTrue("", NumericUtil.equals(ynm.getA(2-1, 2-1), new Complex(-1.7011,  5.1939), 0.001));
+		assertTrue(NumericUtil.equals(ynm.getA(1-1, 2-1), new Complex(-1.6860,  5.1158), 0.001));
+		assertTrue(NumericUtil.equals(ynm.getA(2-1, 2-1), new Complex(-1.7011,  5.1939), 0.001));
 	}
 	
 	@Test 
@@ -133,12 +133,12 @@ public class IEEE14_YMatrixSetTest extends CorePluginTestSetup {
 						        bus -> !(bus.isGenPV() || bus.isSwing()));
 		ISparseEqnComplex ynn = ySet[0];
 		//System.out.println(ynn);
-		assertTrue("", ynn.getDimension() == 8);
+		assertTrue(ynn.getDimension() == 8);
 		
 		ISparseEqnComplex ynm = ySet[1];
 		//System.out.println(ynm);
-		assertTrue("", ynm.getDimension(IndexType.Row) == 8);
-		assertTrue("", ynm.getDimension(IndexType.Col) == 5);
+		assertTrue(ynm.getDimension(IndexType.Row) == 8);
+		assertTrue(ynm.getDimension(IndexType.Col) == 5);
 	}
 	
 }

@@ -29,8 +29,8 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
-import static org.junit.Assert.assertTrue;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -67,13 +67,13 @@ public class IEEE14_Dclf_Test extends CorePluginTestSetup {
 		AclfBus bus1 = dclfBus1.getBus();
 		int n1 = bus1.getSortNumber();
 		double pgen = dclfAlgo.getBusPower(dclfBus1) * aclfNet.getBaseMva(); 
-		assertTrue("Aclf 232.393", NumericUtil.equals(pgen, 225.43, 0.01));
+		assertTrue(NumericUtil.equals(pgen, 225.43, 0.01), "Aclf 232.393");
 
 		DclfAlgoBus dclfBus2 = dclfAlgo.getDclfAlgoBus("Bus2");
 		AclfBus bus2 = dclfBus2.getBus();
 		int n2 = bus2.getSortNumber();
 		double angle = dclfAlgo.getBusAngle(n2);
-		assertTrue("", NumericUtil.equals(angle, -0.092, 0.001));		
+		assertTrue(NumericUtil.equals(angle, -0.092, 0.001));		
 	}
 
 	@Test 
@@ -98,13 +98,13 @@ public class IEEE14_Dclf_Test extends CorePluginTestSetup {
 		AclfBus bus1 = dclfBus1.getBus();
 		int n1 = bus1.getSortNumber();
 		double pgen = dclfAlgo.getBusPower(dclfBus1) * aclfNet.getBaseMva(); 
-		assertTrue("Aclf 232.393", NumericUtil.equals(pgen, 219.00, 0.01));
+		assertTrue(NumericUtil.equals(pgen, 219.00, 0.01), "Aclf 232.393");
 
 		DclfAlgoBus dclfBus2 = dclfAlgo.getDclfAlgoBus("Bus2");
 		AclfBus bus2 = dclfBus2.getBus();
 		int n2 = bus2.getSortNumber();
 		double angle = dclfAlgo.getBusAngle(n2);
-		assertTrue("", NumericUtil.equals(angle, -0.088, 0.001));			
+		assertTrue(NumericUtil.equals(angle, -0.088, 0.001));			
 	}
 	
 	//@Test 
