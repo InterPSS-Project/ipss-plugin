@@ -27,7 +27,7 @@ package org.interpss.core.adapter.ucte;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.core.aclf.AclfNetwork;
 
