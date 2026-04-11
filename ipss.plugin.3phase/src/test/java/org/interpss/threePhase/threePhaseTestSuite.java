@@ -15,14 +15,13 @@ import org.interpss.threePhase.system.TestDistributionPowerflowAlgo;
 import org.interpss.threePhase.system.TestIEEETestFeederPowerFlow;
 import org.interpss.threePhase.system.ThreeBus_3Phase_Test;
 import org.interpss.threePhase.system.TwoBus_3Phase_Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import org.junit.platform.suite.api.SelectClasses;
+import org.junit.platform.suite.api.Suite;
 
 
 
-@RunWith(Suite.class)
-@SuiteClasses({
+@Suite
+@SelectClasses({
 
 	//ODM
 	TestODM3PhaseDstabMapper.class,

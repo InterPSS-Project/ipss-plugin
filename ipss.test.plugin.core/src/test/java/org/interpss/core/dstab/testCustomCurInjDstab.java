@@ -1,7 +1,7 @@
 package org.interpss.core.dstab;
 
 import static com.interpss.dstab.cache.StateVariableRecorder.StateVarRecType.MachineState;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Hashtable;
 import java.util.List;
@@ -15,7 +15,7 @@ import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.util.PerformanceTimer;
 import org.interpss.odm.mapper.ODMDStabParserMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.common.CoreCommonFactory;
 import com.interpss.common.msg.IPSSMsgHub;
