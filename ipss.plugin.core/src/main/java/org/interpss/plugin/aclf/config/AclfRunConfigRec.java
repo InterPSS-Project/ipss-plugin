@@ -52,7 +52,7 @@ public class AclfRunConfigRec extends BaseJSONBean {
 	
 	// NR method config
 	public boolean nonDivergent = false;
-	public NrOptimizeAlgoType optAlgo = NrOptimizeAlgoType.CUBIC_EQN_STEP_SIZE;
+	public NrOptimizeAlgoType optAlgo = NrOptimizeAlgoType.CUBIC_EQN;
 	public boolean variableUpdateLimit = false;
 	public double deltaVAngLimit = 0.2;
 	public double deltaVMagLimit = 0.1;

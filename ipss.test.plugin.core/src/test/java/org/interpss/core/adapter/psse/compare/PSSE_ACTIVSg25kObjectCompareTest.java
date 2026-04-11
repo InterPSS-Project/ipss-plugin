@@ -5,8 +5,8 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
-import static org.junit.Assert.assertTrue;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.funcImpl.compare.AclfNetObjectComparator;

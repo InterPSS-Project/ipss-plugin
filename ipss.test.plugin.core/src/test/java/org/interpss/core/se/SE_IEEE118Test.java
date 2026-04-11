@@ -1,13 +1,13 @@
 package org.interpss.core.se;
 
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.IEEECommonFormat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.util.FileUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.hazelcast.internal.serialization.SerializationService;
 import com.hazelcast.internal.serialization.impl.DefaultSerializationServiceBuilder;
@@ -72,10 +72,10 @@ public class SE_IEEE118Test extends CorePluginTestSetup {
 
 		// qer: Qualified Estimation Rate
 		double qer = seAlgo.se();
-		assertTrue("QER should be larger than 95% ", qer > 0.95);		
+		assertTrue(qer > 0.95, "QER should be larger than 95% ");		
 		
 		double maxResidual = seNet.calMaxResidual();
-		assertTrue("Max residual should be less than 2% ", maxResidual < 0.02);
+		assertTrue(maxResidual < 0.02, "Max residual should be less than 2% ");
 	}
 	
 	//@Test
@@ -92,10 +92,10 @@ public class SE_IEEE118Test extends CorePluginTestSetup {
 
 		// qer: Qualified Estimation Rate
 		double qer = seAlgo.se();
-		assertTrue("QER should be larger than 95% ", qer > 0.95);		
+		assertTrue(qer > 0.95, "QER should be larger than 95% ");		
 		
 		double maxResidual = seNetCopy.calMaxResidual();
-		assertTrue("Max residual should be less than 2% ", maxResidual < 0.02);
+		assertTrue(maxResidual < 0.02, "Max residual should be less than 2% ");
 	}
 	
 	//@Test
@@ -108,10 +108,10 @@ public class SE_IEEE118Test extends CorePluginTestSetup {
 
 		// qer: Qualified Estimation Rate
 		double qer = seAlgo.se();
-		assertTrue("QER should be larger than 95% ", qer > 0.95);		
+		assertTrue(qer > 0.95, "QER should be larger than 95% ");		
 		
 		double maxResidual = seNetCopy.calMaxResidual();
-		assertTrue("Max residual should be less than 2% ", maxResidual < 0.02);
+		assertTrue(maxResidual < 0.02, "Max residual should be less than 2% ");
 	}
 	
 	private SENetwork createTestCase() throws InterpssException {
@@ -125,7 +125,7 @@ public class SE_IEEE118Test extends CorePluginTestSetup {
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet);
 		algo.loadflow();
 		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet));
-		assertTrue("Loadflow should converged! ", aclfNet.isLfConverged());		
+		assertTrue(aclfNet.isLfConverged(), "Loadflow should converged! ");		
 		
 		SENetwork seNet = SENetworkHelper.createSENetwrok(aclfNet);
 		seNet.setId("SE Test Net");

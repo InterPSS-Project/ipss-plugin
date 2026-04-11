@@ -33,8 +33,8 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
-import static org.junit.Assert.assertTrue;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.LoadflowAlgoObjectFactory;

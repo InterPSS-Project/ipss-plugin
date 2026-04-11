@@ -1,12 +1,12 @@
 package org.interpss.threePhase.sparse.Matrix3x3;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.exp.IpssNumericException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.core.sparse.impl.csj.CSJSparseEqnComplexMatrix3x3Impl;
 

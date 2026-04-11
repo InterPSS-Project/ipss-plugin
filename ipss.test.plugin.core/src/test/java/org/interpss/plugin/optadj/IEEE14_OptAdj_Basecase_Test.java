@@ -25,15 +25,15 @@
 package org.interpss.plugin.optadj;
 
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Map;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.AtomicCounter;
 import org.interpss.plugin.optadj.algo.AclfNetGenLoadOptimizer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;

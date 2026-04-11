@@ -1,6 +1,6 @@
 package org.interpss.core.adapter.psse.raw.acsc;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

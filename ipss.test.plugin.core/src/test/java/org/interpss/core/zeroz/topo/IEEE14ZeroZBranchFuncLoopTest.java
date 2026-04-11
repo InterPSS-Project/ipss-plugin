@@ -24,11 +24,11 @@
 
 package org.interpss.core.zeroz.topo;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
@@ -62,17 +62,17 @@ public class IEEE14ZeroZBranchFuncLoopTest extends CorePluginTestSetup {
 		});
 		*/	
 		
-	  	assertTrue("", net.getBus("Bus7").findZeroZPathBuses().size() == 5);
-	  	assertTrue("", net.getBus("Bus71").findZeroZPathBuses().size() == 5);
-	  	assertTrue("", net.getBus("Bus72").findZeroZPathBuses().size() == 5);
-	  	assertTrue("", net.getBus("Bus73").findZeroZPathBuses().size() == 5);
-	  	assertTrue("", net.getBus("Bus74").findZeroZPathBuses().size() == 5);
+	  	assertTrue(net.getBus("Bus7").findZeroZPathBuses().size() == 5);
+	  	assertTrue(net.getBus("Bus71").findZeroZPathBuses().size() == 5);
+	  	assertTrue(net.getBus("Bus72").findZeroZPathBuses().size() == 5);
+	  	assertTrue(net.getBus("Bus73").findZeroZPathBuses().size() == 5);
+	  	assertTrue(net.getBus("Bus74").findZeroZPathBuses().size() == 5);
 	  	
-	  	assertTrue("", net.getBus("Bus7").findZeroZPathBuses().stream().filter(bus -> 
+	  	assertTrue(net.getBus("Bus7").findZeroZPathBuses().stream().filter(bus -> 
 	  		bus.getId().equals("Bus7") || bus.getId().equals("Bus71") || bus.getId().equals("Bus72") ||
 	  		bus.getId().equals("Bus73") || bus.getId().equals("Bus74")).count() == 5);
 
-	  	assertTrue("", net.getBus("Bus71").findZeroZPathBuses().stream().filter(bus -> 
+	  	assertTrue(net.getBus("Bus71").findZeroZPathBuses().stream().filter(bus -> 
 	  		bus.getId().equals("Bus7") || bus.getId().equals("Bus71") || bus.getId().equals("Bus72") ||
 	  		bus.getId().equals("Bus73") || bus.getId().equals("Bus74")).count() == 5);
 	  	
@@ -85,15 +85,15 @@ public class IEEE14ZeroZBranchFuncLoopTest extends CorePluginTestSetup {
   		assertTrue((net.getNoActiveBus() == 14 && net.getNoActiveBranch() == 20));
   		
 		net.getBusList().forEach(bus -> {
-			assertTrue("Bus should be not connected any zero Z branch: "+bus.getId(), 
-						bus.isConnect2ZeroZBranch() == false);
+		assertTrue(bus.isConnect2ZeroZBranch() == false,
+					"Bus should be not connected any zero Z branch: "+bus.getId());
 		});
 		
 		net.getBranchList().forEach(bra -> {
 			AclfBranch aclfBra = (AclfBranch)bra;
 			//System.out.println("Branch: " + aclfBra.getId() + ", " + aclfBra.isActive() + " is a zeroZ branch: " + aclfBra.isZeroZBranch());
-			assertTrue("There should be no active zero Z branch "+aclfBra.getId(), 
-						!(aclfBra.isActive() && aclfBra.isZeroZBranch()));
+		assertTrue(!(aclfBra.isActive() && aclfBra.isZeroZBranch()),
+					"There should be no active zero Z branch "+aclfBra.getId());
 		});	  	
     }	
 }

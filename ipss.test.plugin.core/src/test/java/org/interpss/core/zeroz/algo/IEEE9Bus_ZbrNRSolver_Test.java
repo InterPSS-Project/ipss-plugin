@@ -34,9 +34,9 @@ import org.ieee.odm.model.aclf.AclfModelParser;
 import static org.interpss.CorePluginFunction.aclfResultBusStyle;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.LoadflowAlgoObjectFactory;

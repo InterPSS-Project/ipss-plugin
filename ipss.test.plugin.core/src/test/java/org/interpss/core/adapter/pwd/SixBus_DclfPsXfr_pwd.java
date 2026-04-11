@@ -24,7 +24,7 @@
 
 package org.interpss.core.adapter.pwd;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.logging.Level;
 
@@ -38,7 +38,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.odm.mapper.ODMAclfNetMapper;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.LoadflowAlgoObjectFactory;

@@ -1,6 +1,6 @@
 package org.interpss.core.adapter.psse.raw.acsc;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
@@ -11,7 +11,7 @@ import org.ieee.odm.model.acsc.AcscModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.util.TestUtilFunc;
 import org.interpss.odm.mapper.ODMAcscParserMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;

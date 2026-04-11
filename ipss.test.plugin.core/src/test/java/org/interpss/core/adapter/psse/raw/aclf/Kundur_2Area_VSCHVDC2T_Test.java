@@ -11,9 +11,9 @@ import org.interpss.numeric.datatype.ComplexFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
@@ -108,8 +108,8 @@ public class Kundur_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 		//TODO: this results is different from the PSS/E results, because the converter loss is not modeled in InterPSS yet
   		//Rec Power: 2.0900   + j 0.68695
   		//Inv Power: -2.086 + j 0.6297
-  		assertTrue("", NumericUtil.equals(vscHVDC.getRecConverter().powerIntoConverter(), new Complex(2.0900, 0.68695), 0.0001));
-  		assertTrue("", NumericUtil.equals(vscHVDC.getInvConverter().powerIntoConverter(), new Complex(-2.086, 0.6297), 0.001));
+  		assertTrue(NumericUtil.equals(vscHVDC.getRecConverter().powerIntoConverter(), new Complex(2.0900, 0.68695), 0.0001));
+  		assertTrue(NumericUtil.equals(vscHVDC.getInvConverter().powerIntoConverter(), new Complex(-2.086, 0.6297), 0.001));
 	}
 	
 	@Test
