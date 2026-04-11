@@ -24,7 +24,7 @@
 
 package org.interpss.core.adapter.pwd;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.logging.Level;
 
@@ -33,7 +33,7 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;

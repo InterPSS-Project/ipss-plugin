@@ -1,7 +1,7 @@
 package org.interpss.core.aclf;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter;
@@ -13,7 +13,7 @@ import org.interpss.numeric.datatype.ComplexFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.odm.mapper.ODMAclfParserMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
@@ -77,8 +77,8 @@ public class Kundur_2Area_LCCHVDC2T_Aclf_Test extends CorePluginTestSetup {
 		 *  Rec Power: 5.0500 + j3.00162
 			Inv Power: -5.0000 + j2.87694
 		 */
-  		assertTrue("", NumericUtil.equals(lccHVDC.getRectifier().powerIntoConverter(), new Complex(5.0500, 3.00162), 0.0001));
-  		assertTrue("", NumericUtil.equals(lccHVDC.getInverter().powerIntoConverter(), new Complex(-5.0000, 2.87694), 0.0001));
+  		assertTrue(NumericUtil.equals(lccHVDC.getRectifier().powerIntoConverter(), new Complex(5.0500, 3.00162), 0.0001));
+  		assertTrue(NumericUtil.equals(lccHVDC.getInverter().powerIntoConverter(), new Complex(-5.0000, 2.87694), 0.0001));
 
 		
 		// firing angle

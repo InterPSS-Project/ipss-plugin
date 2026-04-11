@@ -2,7 +2,7 @@ package org.interpss.threePhase.system;
 
 import static com.interpss.core.funcImpl.AcscFunction.acscXfrAptr;
 import static org.interpss.threePhase.util.ThreePhaseUtilFunction.threePhaseInductionMotorAptr;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -33,7 +33,7 @@ import org.interpss.threePhase.powerflow.impl.DistPowerFlowOutFunc;
 import org.interpss.threePhase.util.ThreePhaseAclfOutFunc;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.interpss.util.FileUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;

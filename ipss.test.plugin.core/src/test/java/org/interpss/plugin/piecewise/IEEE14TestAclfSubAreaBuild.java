@@ -24,12 +24,12 @@
 
 package org.interpss.plugin.piecewise;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
 import org.apache.commons.math3.complex.Complex;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.algo.subAreaNet.SubAreaNetProcessor;
 import com.interpss.algo.subAreaNet.seqPos.CuttingBranchPos;
@@ -59,7 +59,7 @@ public class IEEE14TestAclfSubAreaBuild extends PiecewiseAlgoTestSetup {
   		
   		proc.processSubAreaNet();
   		
-  		assertTrue("We should have two sub-network objects", proc.getSubAreaNetList().size() == 2);
+  		assertTrue(proc.getSubAreaNetList().size() == 2, "We should have two sub-network objects");
   		//System.out.println(proc.getSubAreaList().toString());
   		
   		//System.out.println("Bus-1 subarea flag: " + net.getBus("1").getIntFlag());
@@ -80,8 +80,8 @@ public class IEEE14TestAclfSubAreaBuild extends PiecewiseAlgoTestSetup {
   		
   		List<SubAreaPos> subAreaList = proc.processSubAreaNet(true);  // SingleSide SubArea case.
   		
-  		assertTrue("We should have 1 sub-network objects", proc.getSubAreaNetList().size() == 1);
-  		assertTrue("We should have 1 sub-network objects", subAreaList.size() == 1);
+  		assertTrue(proc.getSubAreaNetList().size() == 1, "We should have 1 sub-network objects");
+  		assertTrue(subAreaList.size() == 1, "We should have 1 sub-network objects");
   		//System.out.println(proc.getSubAreaList().toString());
   		
   		assertTrue(net.getBus("14").getSubAreaFlag() == 1);
@@ -99,8 +99,8 @@ public class IEEE14TestAclfSubAreaBuild extends PiecewiseAlgoTestSetup {
   		
 		List<SubAreaPos> subAreaList = proc.processSubAreaNet(true);  // SingleSide SubArea case.
   		
-  		assertTrue("We should have 1 sub-network objects", proc.getSubAreaNetList().size() == 1);
-  		assertTrue("We should have 1 sub-network objects", subAreaList.size() == 1);
+  		assertTrue(proc.getSubAreaNetList().size() == 1, "We should have 1 sub-network objects");
+  		assertTrue(subAreaList.size() == 1, "We should have 1 sub-network objects");
   		//System.out.println(proc.getSubAreaList().toString());
   		
   		assertTrue(net.getBus("4").getSubAreaFlag() == 1);
@@ -121,7 +121,7 @@ public class IEEE14TestAclfSubAreaBuild extends PiecewiseAlgoTestSetup {
   		proc.processSubAreaNet();
   		
   		// we should have three sub-network objects
-  		assertTrue("we should have three sub-network objects", proc.getSubAreaNetList().size() == 3);
+  		assertTrue(proc.getSubAreaNetList().size() == 3, "we should have three sub-network objects");
 
   		//System.out.println("Bus-1 subarea flag: " + net.getBus("1").getIntFlag());
   		//System.out.println("Bus-14 subarea flag: " + net.getBus("14").getIntFlag());
@@ -135,7 +135,7 @@ public class IEEE14TestAclfSubAreaBuild extends PiecewiseAlgoTestSetup {
 		AclfNetwork net = IEEE14TestSubAreaSearch.getTestNet();
 		net.setId("Parenet Net");
 		
-		assertTrue("", net.getBusList().size() == 17);
+		assertTrue(net.getBusList().size() == 17);
 		
 		SubAreaNetProcessor<AclfBus, AclfBranch, SubAreaPos, Complex> 
 				proc = new SubNetworkPosProcessorImpl<>(net, new CuttingBranchPos[] { 
@@ -151,16 +151,16 @@ public class IEEE14TestAclfSubAreaBuild extends PiecewiseAlgoTestSetup {
   		 * Please note: The following behavior has been changed. The Parent Net still has
   		 * references to all Bus/Branch objects after the splitting. 
   		 */
-  		assertTrue("Parent Net should have 17 still buses", net.getBusList().size() == 17);
+  		assertTrue(net.getBusList().size() == 17, "Parent Net should have 17 still buses");
 
-  		assertTrue("Bus 1 in the SubNet-1",  net.getBus("1").getNetwork().getId().equals("SubNet-1"));
-  		assertTrue("Bus 9 in the SubNet-2", net.getBus("9").getNetwork().getId().equals("SubNet-2"));
-  		assertTrue("Bus 14 in the SubNet-14", net.getBus("14").getNetwork().getId().equals("SubNet-3"));
+  		assertTrue(net.getBus("1").getNetwork().getId().equals("SubNet-1"), "Bus 1 in the SubNet-1");
+  		assertTrue(net.getBus("9").getNetwork().getId().equals("SubNet-2"), "Bus 9 in the SubNet-2");
+  		assertTrue(net.getBus("14").getNetwork().getId().equals("SubNet-3"), "Bus 14 in the SubNet-14");
   		
   		//System.out.println(net.getBranch("1->2(1)").getNetwork().getId());
   		//System.out.println(net.getBranch("5->61(1)").getNetwork().getId());
-  		assertTrue("Branch 1->2(1) should be in SubNet-1", net.getBranch("1->2(1)").getNetwork().getId().equals("SubNet-1"));
-  		assertTrue("Branch 5->61(1) should be in SubNet-2", net.getBranch("5->61(1)").getNetwork().getId().equals("SubNet-2"));
+  		assertTrue(net.getBranch("1->2(1)").getNetwork().getId().equals("SubNet-1"), "Branch 1->2(1) should be in SubNet-1");
+  		assertTrue(net.getBranch("5->61(1)").getNetwork().getId().equals("SubNet-2"), "Branch 5->61(1) should be in SubNet-2");
 	}
 	
 	@Test
@@ -183,8 +183,8 @@ public class IEEE14TestAclfSubAreaBuild extends PiecewiseAlgoTestSetup {
   		
   		proc.processSubAreaNet();
   		
-  		assertTrue("Bus 1 in the SubNet-1",  net.getBus("1").getNetwork().getId().equals("SubNet-1"));
-  		assertTrue("Bus 9 in the SubNet-2", net.getBus("9").getNetwork().getId().equals("SubNet-2"));
-  		assertTrue("Bus 14 in the SubNet-14", net.getBus("14").getNetwork().getId().equals("SubNet-3"));  		
+  		assertTrue(net.getBus("1").getNetwork().getId().equals("SubNet-1"), "Bus 1 in the SubNet-1");
+  		assertTrue(net.getBus("9").getNetwork().getId().equals("SubNet-2"), "Bus 9 in the SubNet-2");
+  		assertTrue(net.getBus("14").getNetwork().getId().equals("SubNet-3"), "Bus 14 in the SubNet-14");  		
 	}
 }

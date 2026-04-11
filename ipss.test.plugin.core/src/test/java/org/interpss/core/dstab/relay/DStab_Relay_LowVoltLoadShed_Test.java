@@ -1,6 +1,6 @@
 package org.interpss.core.dstab.relay;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +18,7 @@ import org.interpss.dstab.relay.LVSHLoadRelayModel;
 import org.interpss.numeric.datatype.Triplet;
 import org.interpss.numeric.util.PerformanceTimer;
 import org.interpss.odm.mapper.ODMDStabParserMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.acsc.fault.SimpleFaultCode;

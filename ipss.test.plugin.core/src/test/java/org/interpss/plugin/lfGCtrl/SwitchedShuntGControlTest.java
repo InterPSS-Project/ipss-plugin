@@ -24,15 +24,15 @@
 
 package org.interpss.plugin.lfGCtrl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.plugin.aclf.config.psse.PSSELfAdjControlConfig;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
@@ -61,22 +61,22 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		//swShunt.setBLimit(new LimitType(3.0*0.23637, 0.0));
 		//System.out.println("Switched Shunt: " + swShunt);
 		
-		assertTrue("", NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
-		assertTrue("", NumericUtil.equals(swShunt.getBActual(), 0.23637, 0.0001));
-		assertTrue("", NumericUtil.equals(swShunt.getQ(), 0.2, 0.0001));
-		assertTrue("", swShunt.getControlMode() == AclfAdjustControlMode.FIXED);
-		assertTrue("", swShunt.getShuntCompensatorList().size() == 3);
+		assertTrue(NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
+		assertTrue(NumericUtil.equals(swShunt.getBActual(), 0.23637, 0.0001));
+		assertTrue(NumericUtil.equals(swShunt.getQ(), 0.2, 0.0001));
+		assertTrue(swShunt.getControlMode() == AclfAdjustControlMode.FIXED);
+		assertTrue(swShunt.getShuntCompensatorList().size() == 3);
 		
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.loadflow();
 		assertTrue(net.isLfConverged());
 
-		assertTrue("", NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
-		assertTrue("", NumericUtil.equals(swShunt.getBActual(), 0.23637, 0.0001));
-		assertTrue("", NumericUtil.equals(swShunt.getQ(), 0.2, 0.0001));
-		assertTrue("", swShunt.getControlMode() == AclfAdjustControlMode.FIXED);
-		assertTrue("", NumericUtil.equals(swShunt.getVSpecified(), 1.0, 0.0001));
-		assertTrue("", NumericUtil.equals(bus4.getVoltageMag(), 0.91985, 0.0001));
+		assertTrue(NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
+		assertTrue(NumericUtil.equals(swShunt.getBActual(), 0.23637, 0.0001));
+		assertTrue(NumericUtil.equals(swShunt.getQ(), 0.2, 0.0001));
+		assertTrue(swShunt.getControlMode() == AclfAdjustControlMode.FIXED);
+		assertTrue(NumericUtil.equals(swShunt.getVSpecified(), 1.0, 0.0001));
+		assertTrue(NumericUtil.equals(bus4.getVoltageMag(), 0.91985, 0.0001));
 		
 		String swingId = "Bus1";
 		AclfSwingBusAdapter swing = net.getBus(swingId).toSwingBus();
@@ -102,11 +102,11 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		//swShunt.setBLimit(new LimitType(3.0*0.23637, 0.0));
 		//System.out.println("Switched Shunt: " + swShunt);
 		
-		assertTrue("", NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
-		assertTrue("", NumericUtil.equals(swShunt.getBActual(), 0.23637, 0.0001));
-		assertTrue("", NumericUtil.equals(swShunt.getQ(), 0.2, 0.0001));
-		assertTrue("", swShunt.getControlMode() == AclfAdjustControlMode.FIXED);
-		assertTrue("", swShunt.getShuntCompensatorList().size() == 3);
+		assertTrue(NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
+		assertTrue(NumericUtil.equals(swShunt.getBActual(), 0.23637, 0.0001));
+		assertTrue(NumericUtil.equals(swShunt.getQ(), 0.2, 0.0001));
+		assertTrue(swShunt.getControlMode() == AclfAdjustControlMode.FIXED);
+		assertTrue(swShunt.getShuntCompensatorList().size() == 3);
 		
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.getLfAdjAlgo().initialize(new PSSELfAdjControlConfig(config -> {
@@ -115,12 +115,12 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		algo.loadflow();
 		assertTrue(net.isLfConverged());
 
-		assertTrue("", NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
-		assertTrue("", NumericUtil.equals(swShunt.getBActual(), 0.23637, 0.0001));
-		assertTrue("", NumericUtil.equals(swShunt.getQ(), 0.2, 0.0001));
-		assertTrue("", swShunt.getControlMode() == AclfAdjustControlMode.FIXED);
-		assertTrue("", NumericUtil.equals(swShunt.getVSpecified(), 1.0, 0.0001));
-		assertTrue("", NumericUtil.equals(bus4.getVoltageMag(), 0.91985, 0.0001));
+		assertTrue(NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
+		assertTrue(NumericUtil.equals(swShunt.getBActual(), 0.23637, 0.0001));
+		assertTrue(NumericUtil.equals(swShunt.getQ(), 0.2, 0.0001));
+		assertTrue(swShunt.getControlMode() == AclfAdjustControlMode.FIXED);
+		assertTrue(NumericUtil.equals(swShunt.getVSpecified(), 1.0, 0.0001));
+		assertTrue(NumericUtil.equals(bus4.getVoltageMag(), 0.91985, 0.0001));
 		
 		String swingId = "Bus1";
 		AclfSwingBusAdapter swing = net.getBus(swingId).toSwingBus();
@@ -146,11 +146,11 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		//swShunt.setBLimit(new LimitType(3.0*0.23637, 0.0));
 		//System.out.println("Switched Shunt: " + swShunt);
 		
-		assertTrue("", NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
-		assertTrue("", NumericUtil.equals(swShunt.getBActual(), 0.23637, 0.0001));
-		assertTrue("", NumericUtil.equals(swShunt.getQ(), 0.2, 0.0001));
-		assertTrue("", swShunt.getControlMode() == AclfAdjustControlMode.FIXED);
-		assertTrue("", swShunt.getShuntCompensatorList().size() == 3);
+		assertTrue(NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
+		assertTrue(NumericUtil.equals(swShunt.getBActual(), 0.23637, 0.0001));
+		assertTrue(NumericUtil.equals(swShunt.getQ(), 0.2, 0.0001));
+		assertTrue(swShunt.getControlMode() == AclfAdjustControlMode.FIXED);
+		assertTrue(swShunt.getShuntCompensatorList().size() == 3);
 
 		//TODO: pss/e switched shunt control default is range control, not point control, if we need to
 		// get the following test passed, we need to set the control type to be point control
@@ -168,8 +168,8 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		//System.out.println("Switched Shunt: " + swShunt);
 
 		//Setting it continuous_only control, the switched shunt should be not activated as it is operated in fixed mode
-		assertTrue("", NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
-		assertTrue("", NumericUtil.equals(swShunt.getBActual(), 0.23637, 0.0001));
+		assertTrue(NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
+		assertTrue(NumericUtil.equals(swShunt.getBActual(), 0.23637, 0.0001));
 
 
 		// change the switched shunt to continuous mode, the switched shunt should be activated
@@ -186,10 +186,10 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		assertTrue(net.isLfConverged());
 
 
-		assertEquals("", swShunt.getQ(), 0.47988, 0.0001);
-		assertTrue("", swShunt.getControlMode() == AclfAdjustControlMode.CONTINUOUS);
-		assertEquals("", swShunt.getVSpecified(), 1.0, 0.0001);
-		assertEquals("", bus4.getVoltageMag(), 1.00157, 0.0001);
+		assertEquals(swShunt.getQ(), 0.47988, 0.0001);
+		assertTrue(swShunt.getControlMode() == AclfAdjustControlMode.CONTINUOUS);
+		assertEquals(swShunt.getVSpecified(), 1.0, 0.0001);
+		assertEquals(bus4.getVoltageMag(), 1.00157, 0.0001);
 		
 		String swingId = "Bus1";
 		AclfSwingBusAdapter swing = net.getBus(swingId).toSwingBus();
@@ -220,11 +220,11 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		// });
 		//System.out.println("Switched Shunt: " + swShunt);
 		
-		assertTrue("", NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
-		assertTrue("", NumericUtil.equals(swShunt.getBActual(), 0.23637, 0.0001));
-		assertTrue("", NumericUtil.equals(swShunt.getQ(), 0.2, 0.0001));
-		assertTrue("", swShunt.getControlMode() == AclfAdjustControlMode.FIXED);
-		assertTrue("", swShunt.getShuntCompensatorList().size() == 3);
+		assertTrue(NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
+		assertTrue(NumericUtil.equals(swShunt.getBActual(), 0.23637, 0.0001));
+		assertTrue(NumericUtil.equals(swShunt.getQ(), 0.2, 0.0001));
+		assertTrue(swShunt.getControlMode() == AclfAdjustControlMode.FIXED);
+		assertTrue(swShunt.getShuntCompensatorList().size() == 3);
 
 		//TODO: pss/e switched shunt control default is range control, not point control, if we need to
 		// get the following test passed, we need to set the control type to be point control
@@ -242,10 +242,10 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		assertTrue(net.isLfConverged());
 
 		//System.out.println("Switched Shunt: " + swShunt);
-		assertTrue("", NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
+		assertTrue(NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
 		assertEquals(swShunt.getBActual(), 0.47274, 0.0001);
 		assertEquals(swShunt.getQ(), 0.47423  , 0.0001);
-		assertTrue("", swShunt.getControlMode() == AclfAdjustControlMode.DISCRETE);
+		assertTrue(swShunt.getControlMode() == AclfAdjustControlMode.DISCRETE);
 		assertEquals(swShunt.getVSpecified(), 1.0, 0.0001);
 		assertEquals(bus4.getVoltageMag(), 1.0016, 0.0001);
 		
