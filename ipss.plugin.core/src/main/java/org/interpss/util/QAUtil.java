@@ -1,10 +1,15 @@
 package org.interpss.util;
 
+import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.math3.complex.Complex;
@@ -621,6 +626,129 @@ public class QAUtil {
 		}
 		
 		return net;
+	}
+
+	/**
+	 * Compare the InterPSS Y-matrix CSV output with a PSS/E Ybus text file.
+	 * The PSS/E file format is: fromBusNum, toBusNum, real, imag (one entry per line).
+	 * Lines after "ZERO IMPEDANCE LINE CONNECTED BUSES (BUS IN MATRIX LISTED FIRST):" are ignored.
+	 * The PSS/E file is used as the base; only entries present in the PSS/E file are checked.
+	 * Bus numbers > 1,000,000 in the PSS/E file are 3-winding transformer star buses,
+	 * matched in the CSV by finding a row where one bus starts with "3WNDTR_" and the
+	 * other bus matches the regular bus.
+	 *
+	 * @param csvFilePath      path to the InterPSS Y-matrix CSV file
+	 * @param psseFilePath     path to the PSS/E Ybus text file
+	 * @param tolerance        comparison tolerance
+	 * @return comparison result as string
+	 */
+	public static String compareYMatrix(String csvFilePath, String psseFilePath, double tolerance) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Mismatch,fromBusNum,toBusNum,CSV_re,CSV_im,PSSE_re,PSSE_im,absDiff\n");
+
+		int matchCount = 0;
+		int mismatchCount = 0;
+		int notFoundCount = 0;
+		int star3WCount = 0;
+
+		// Load CSV into a lookup map: "fromBusId|toBusId" -> Complex(re, im)
+		Map<String, Complex> csvMap = new HashMap<>();
+		// For 3WNDTR matching: regularBusId -> list of [starBusId, re, im]
+		Map<String, List<String[]>> csvStarBusMap = new HashMap<>();
+
+		try (BufferedReader br = new BufferedReader(new FileReader(csvFilePath))) {
+			String line = br.readLine(); // skip header row
+			while ((line = br.readLine()) != null) {
+				String[] parts = line.trim().split(",");
+				if (parts.length < 4) continue;
+				String fromId = parts[0].trim();
+				String toId   = parts[1].trim();
+				double re = Double.parseDouble(parts[2].trim());
+				double im = Double.parseDouble(parts[3].trim());
+				csvMap.put(fromId + "|" + toId, new Complex(re, im));
+				// Build reverse lookup for rows involving a 3-winding star bus
+				if (fromId.startsWith("3WNDTR_") || toId.startsWith("3WNDTR_")) {
+					String regularId = fromId.startsWith("3WNDTR_") ? toId : fromId;
+					String starId    = fromId.startsWith("3WNDTR_") ? fromId : toId;
+					csvStarBusMap.computeIfAbsent(regularId, k -> new ArrayList<>())
+						.add(new String[]{starId, String.valueOf(re), String.valueOf(im)});
+				}
+			}
+		} catch (Exception e) {
+			sb.append("Error reading CSV: ").append(e.getMessage()).append("\n");
+			return sb.toString();
+		}
+
+		// Parse PSS/E file as base and compare
+		try (BufferedReader br = new BufferedReader(new FileReader(psseFilePath))) {
+			String line;
+			while ((line = br.readLine()) != null) {
+				if (line.contains("ZERO IMPEDANCE LINE CONNECTED BUSES")) break;
+				line = line.trim();
+				if (line.isEmpty()) continue;
+				String[] parts = line.split(",");
+				if (parts.length != 4) continue;
+				try {
+					int fromBusNum = Integer.parseInt(parts[0].trim());
+					int toBusNum   = Integer.parseInt(parts[1].trim());
+					double psseRe  = Double.parseDouble(parts[2].trim());
+					double psseIm  = Double.parseDouble(parts[3].trim());
+
+					boolean fromIsStar = fromBusNum > 1_000_000;
+					boolean toIsStar   = toBusNum   > 1_000_000;
+
+					Complex csvValue = null;
+					if (!fromIsStar && !toIsStar) {
+						// Both regular buses
+						String fromId = "Bus" + fromBusNum;
+						String toId   = "Bus" + toBusNum;
+						csvValue = csvMap.get(fromId + "|" + toId);
+						if (csvValue == null)
+							csvValue = csvMap.get(toId + "|" + fromId);
+					} else {
+						// One is a 3-winding star bus — match via the regular bus
+						star3WCount++;
+						String regularId = fromIsStar ? "Bus" + toBusNum : "Bus" + fromBusNum;
+						List<String[]> starEntries = csvStarBusMap.get(regularId);
+						if (starEntries != null && starEntries.size() == 1) {
+							String[] entry = starEntries.get(0);
+							csvValue = new Complex(Double.parseDouble(entry[1]), Double.parseDouble(entry[2]));
+						} else if (starEntries != null && starEntries.size() > 1) {
+							sb.append("AmbiguousStarBus,").append(fromBusNum).append(",").append(toBusNum)
+							  .append(",multiple 3WNDTR entries for ").append(regularId).append("\n");
+							notFoundCount++;
+							continue;
+						}
+					}
+
+					if (csvValue == null) {
+						sb.append("NotFound,").append(fromBusNum).append(",").append(toBusNum).append("\n");
+						notFoundCount++;
+					} else {
+						double diff = csvValue.subtract(new Complex(psseRe, psseIm)).abs();
+						if (Math.abs(csvValue.getReal() - psseRe) > tolerance
+								|| Math.abs(csvValue.getImaginary() - psseIm) > tolerance) {
+							sb.append("Mismatch,").append(fromBusNum).append(",").append(toBusNum).append(",")
+							  .append(csvValue.getReal()).append(",").append(csvValue.getImaginary()).append(",")
+							  .append(psseRe).append(",").append(psseIm).append(",").append(diff).append("\n");
+							mismatchCount++;
+						} else {
+							matchCount++;
+						}
+					}
+				} catch (NumberFormatException e) {
+					// skip non-data lines (title rows etc.)
+				}
+			}
+		} catch (Exception e) {
+			sb.append("Error reading PSS/E file: ").append(e.getMessage()).append("\n");
+		}
+
+		sb.append("Total matches: ").append(matchCount)
+		  .append(", mismatches: ").append(mismatchCount)
+		  .append(", not found: ").append(notFoundCount)
+		  .append(", 3W star bus entries: ").append(star3WCount).append("\n");
+		return sb.toString();
 	}
 
 	public static void printBusConnections(AclfNetwork net, String busId) {
