@@ -24,14 +24,14 @@
 
 package org.interpss.core.dstab.cml.controller;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Field;
 
 import org.interpss.core.dstab.DStabTestSetupBase;
 import org.interpss.core.dstab.cml.controller.util.DStabTestUtilFunc;
 import org.interpss.core.dstab.cml.controller.util.TestAnnotateExciter;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabBus;
@@ -59,10 +59,10 @@ public class AnnotationExciterTests extends DStabTestSetupBase {
 		/*
 		public double k = 50.0, t = 0.05, vmax = 10.0, vmin = 0.0;
 			 */
-		assertTrue("", exe.getDoubleField("k") == 50.0);
-		assertTrue("", exe.getDoubleField("t") == 0.05);
-		assertTrue("", exe.getDoubleField("vmax") == 10.0);
-		assertTrue("", exe.getDoubleField("vmin") == 0.0);
+		assertTrue(exe.getDoubleField("k") == 50.0);
+		assertTrue(exe.getDoubleField("t") == 0.05);
+		assertTrue(exe.getDoubleField("vmax") == 10.0);
+		assertTrue(exe.getDoubleField("vmin") == 0.0);
 	}
 	
 	@Test
@@ -76,11 +76,11 @@ public class AnnotationExciterTests extends DStabTestSetupBase {
         	display= {"str.Efd, this.output", "str.ExciterState, this.delayBlock.state"})		 
         	*/
 		
-		assertTrue("", exe.getAnController().input().equals("pss.vs - mach.vt"));
-		assertTrue("", exe.getAnController().output().equals("this.delayBlock.y"));
-		assertTrue("", exe.getAnController().refPoint().equals("this.delayBlock.u0 - pss.vs + mach.vt"));
-		assertTrue("", exe.getAnController().display()[0].equals("str.Efd, this.output"));
-		assertTrue("", exe.getAnController().display()[1].equals("str.ExciterState, this.delayBlock.state"));
+		assertTrue(exe.getAnController().input().equals("pss.vs - mach.vt"));
+		assertTrue(exe.getAnController().output().equals("this.delayBlock.y"));
+		assertTrue(exe.getAnController().refPoint().equals("this.delayBlock.u0 - pss.vs + mach.vt"));
+		assertTrue(exe.getAnController().display()[0].equals("str.Efd, this.output"));
+		assertTrue(exe.getAnController().display()[1].equals("str.ExciterState, this.delayBlock.state"));
 	}
 	
 	@Test
@@ -96,11 +96,11 @@ public class AnnotationExciterTests extends DStabTestSetupBase {
     	*/
 		Field field = exe.getField("delayBlock");
 		AnControllerField anField = field.getAnnotation(AnControllerField.class);
-		assertTrue("", anField.type() == CMLFieldEnum.ControlBlock);
-		assertTrue("", anField.input().equals("this.refPoint + pss.vs - mach.vt"));
-		assertTrue("", anField.parameter()[0].equals("type.Limit"));
-		assertTrue("", anField.parameter()[1].equals("this.k"));
-		assertTrue("", anField.y0().equals("mach.efd"));
+		assertTrue(anField.type() == CMLFieldEnum.ControlBlock);
+		assertTrue(anField.input().equals("this.refPoint + pss.vs - mach.vt"));
+		assertTrue(anField.parameter()[0].equals("type.Limit"));
+		assertTrue(anField.parameter()[1].equals("this.k"));
+		assertTrue(anField.y0().equals("mach.efd"));
 	}
 	
 	@Test
@@ -112,8 +112,8 @@ public class AnnotationExciterTests extends DStabTestSetupBase {
             */
 		Field field = exe.getField("seFunc1");
 		AnFunctionField funcField = field.getAnnotation(AnFunctionField.class);
-		assertTrue("", funcField.input()[0].equals("this.refPoint"));
-		assertTrue("", funcField.input()[1].equals("pss.vs"));
+		assertTrue(funcField.input()[0].equals("this.refPoint"));
+		assertTrue(funcField.input()[1].equals("pss.vs"));
 	}
 	
 	/*
@@ -176,51 +176,51 @@ Display: {
 		symbol: pss.vs, opt: Add, type: not mapped
 		symbol: mach.vt, opt: Sub, type: not mapped
 		*/
-	    assertTrue("", exc.getInputExp().getRecList().length == 2);
+	    assertTrue(exc.getInputExp().getRecList().length == 2);
 
-	    assertTrue("", exc.getInputExp().getRecList()[0].getSymbolStr().equals("pss.vs"));
-	    assertTrue("", exc.getInputExp().getRecList()[0].opt == ExpCalculator.Opt.Add);
+	    assertTrue(exc.getInputExp().getRecList()[0].getSymbolStr().equals("pss.vs"));
+	    assertTrue(exc.getInputExp().getRecList()[0].opt == ExpCalculator.Opt.Add);
 	    
-	    assertTrue("", exc.getInputExp().getRecList()[1].getSymbolStr().equals("mach.vt"));
-	    assertTrue("", exc.getInputExp().getRecList()[1].opt == ExpCalculator.Opt.Sub);
+	    assertTrue(exc.getInputExp().getRecList()[1].getSymbolStr().equals("mach.vt"));
+	    assertTrue(exc.getInputExp().getRecList()[1].opt == ExpCalculator.Opt.Sub);
 	    /*
 		Output: Expression: this.delayBlock.y
 		symbol: this.delayBlock.y, opt: Add, type: not mapped
 	     */
-	    assertTrue("", exc.getOutputExp().getRecList().length == 1);
+	    assertTrue(exc.getOutputExp().getRecList().length == 1);
 	    
-	    assertTrue("", exc.getOutputExp().getRecList()[0].getSymbolStr().equals("this.delayBlock.y"));
-	    assertTrue("", exc.getOutputExp().getRecList()[0].opt == ExpCalculator.Opt.Add);
+	    assertTrue(exc.getOutputExp().getRecList()[0].getSymbolStr().equals("this.delayBlock.y"));
+	    assertTrue(exc.getOutputExp().getRecList()[0].opt == ExpCalculator.Opt.Add);
 	    /*
 		RefPoint: Expression: this.delayBlock.u0 - pss.vs + mach.vt
 		symbol: this.delayBlock.u0, opt: Add, type: not mapped
 		symbol: pss.vs, opt: Sub, type: not mapped
 		symbol: mach.vt, opt: Add, type: not mapped
 		*/
-	    assertTrue("", exc.getRefPointExp().getRecList().length == 3);
+	    assertTrue(exc.getRefPointExp().getRecList().length == 3);
 	    
-	    assertTrue("", exc.getRefPointExp().getRecList()[0].getSymbolStr().equals("this.delayBlock.u0"));
-	    assertTrue("", exc.getRefPointExp().getRecList()[0].opt == ExpCalculator.Opt.Add);
+	    assertTrue(exc.getRefPointExp().getRecList()[0].getSymbolStr().equals("this.delayBlock.u0"));
+	    assertTrue(exc.getRefPointExp().getRecList()[0].opt == ExpCalculator.Opt.Add);
 	    
-	    assertTrue("", exc.getRefPointExp().getRecList()[2].getSymbolStr().equals("mach.vt"));
-	    assertTrue("", exc.getRefPointExp().getRecList()[2].opt == ExpCalculator.Opt.Add);
+	    assertTrue(exc.getRefPointExp().getRecList()[2].getSymbolStr().equals("mach.vt"));
+	    assertTrue(exc.getRefPointExp().getRecList()[2].opt == ExpCalculator.Opt.Add);
 	    /*
 		Is child controller : false
 	     */
-	    assertTrue("", !exc.isChildController());
+	    assertTrue(!exc.isChildController());
 	    /*
 		Display: {
   			[Display String, name, varStr, varType: str.Efd, this.output, str.Efd, this.output, null]
   			[Display String, name, varStr, varType: str.ExciterState, this.delayBlock.state, str.ExciterState, this.delayBlock.state, null]
 		}
 	     */
-	    assertTrue("", exc.getDisplayRecList().length == 2);
+	    assertTrue(exc.getDisplayRecList().length == 2);
 	    
-	    assertTrue("", exc.getDisplayRecList()[0].getDisplayName().equals("str.Efd"));
-	    assertTrue("", exc.getDisplayRecList()[0].getSymbolStr().equals("this.output"));
+	    assertTrue(exc.getDisplayRecList()[0].getDisplayName().equals("str.Efd"));
+	    assertTrue(exc.getDisplayRecList()[0].getSymbolStr().equals("this.output"));
 
-	    assertTrue("", exc.getDisplayRecList()[1].getDisplayName().equals("str.ExciterState"));
-	    assertTrue("", exc.getDisplayRecList()[1].getSymbolStr().equals("this.delayBlock.state"));
+	    assertTrue(exc.getDisplayRecList()[1].getDisplayName().equals("str.ExciterState"));
+	    assertTrue(exc.getDisplayRecList()[1].getSymbolStr().equals("this.delayBlock.state"));
 	}
 	
 	@Test
@@ -264,13 +264,13 @@ controlBlock {
 type, k, t, limit: Limit, 50.0, 0.05, ( 10.0, 0.0 )
 }, 
 		 */
-	    assertTrue("", exc.getFieldWrapperList().size() == 3);
+	    assertTrue(exc.getFieldWrapperList().size() == 3);
 	    BlockFieldAnWrapper<?> wrapper = (BlockFieldAnWrapper<?>)exc.getFieldWrapperList().get(0);
 	    
 		/*
 			init order : 0}, 
 		*/
-	    assertTrue("", wrapper.getInitOrder() == 0);
+	    assertTrue(wrapper.getInitOrder() == 0);
 	    /*
 		input {
 			Expression: this.refPoint + pss.vs - mach.vt
@@ -279,7 +279,7 @@ type, k, t, limit: Limit, 50.0, 0.05, ( 10.0, 0.0 )
 			symbol: mach.vt, opt: Sub, type: not mapped
 		}, 
 		*/
-	    assertTrue("", wrapper.getInputExp().getRecList().length == 3);
+	    assertTrue(wrapper.getInputExp().getRecList().length == 3);
 	    
 	    /*
 		y0 {
@@ -287,7 +287,7 @@ type, k, t, limit: Limit, 50.0, 0.05, ( 10.0, 0.0 )
 			symbol: mach.efd, opt: Add, type: not mapped
 		}
 		*/
-	    assertTrue("", wrapper.getY0Exp().getRecList().length == 1);
+	    assertTrue(wrapper.getY0Exp().getRecList().length == 1);
 
 	    /*
 		controlBlock {
@@ -295,11 +295,11 @@ type, k, t, limit: Limit, 50.0, 0.05, ( 10.0, 0.0 )
 		}, 
 		 */	
 	    DelayControlBlock block = (DelayControlBlock)wrapper.getField();
-	    assertTrue("", block.getType() == StaticBlockType.Limit);
-	    assertTrue("", block.getK() == 50.0);
-	    assertTrue("", block.getT() == 0.05);
-	    assertTrue("", block.getLimit().getMax() == 10.0);
-	    assertTrue("", block.getLimit().getMin() == 0.0);
+	    assertTrue(block.getType() == StaticBlockType.Limit);
+	    assertTrue(block.getK() == 50.0);
+	    assertTrue(block.getT() == 0.05);
+	    assertTrue(block.getLimit().getMax() == 10.0);
+	    assertTrue(block.getLimit().getMin() == 0.0);
 	}
 	
 	@Test
@@ -335,17 +335,17 @@ Field name : seFunc
 	    /*
 	       Input strings : this.refPoint, pss.vs, mach.vt, 
 	       */
-	    assertTrue("", wrapper.getInputs().length == 3);
+	    assertTrue(wrapper.getInputs().length == 3);
 
-	    assertTrue("", wrapper.getInputs()[0].equals("this.refPoint"));
-	    assertTrue("", wrapper.getInputs()[1].equals("pss.vs"));
-	    assertTrue("", wrapper.getInputs()[2].equals("mach.vt"));
+	    assertTrue(wrapper.getInputs()[0].equals("this.refPoint"));
+	    assertTrue(wrapper.getInputs()[1].equals("pss.vs"));
+	    assertTrue(wrapper.getInputs()[2].equals("mach.vt"));
 	    /*
 	       Funciton Block {E1, Se(E1), E2, Se(E2): 1.0, 1.0, 1.0, 1.0A, B: 0.0, 0.0}, 
 	    */
 	    SeFunction func = (SeFunction)wrapper.getField();
 
-	    assertTrue("", func.getVarRecList().size() == 0);  // the var record has not been mapped yet.
+	    assertTrue(func.getVarRecList().size() == 0);  // the var record has not been mapped yet.
 	}
 	
 	@Test
@@ -382,15 +382,15 @@ Field name : seFunc1
 	    /*
 	       Input strings : this.refPoint, pss.vs, mach.vt,
 	    */
-	    assertTrue("", wrapper.getInputs().length == 3);
+	    assertTrue(wrapper.getInputs().length == 3);
 
-	    assertTrue("", wrapper.getInputs()[0].equals("this.refPoint"));
-	    assertTrue("", wrapper.getInputs()[1].equals("pss.vs"));
-	    assertTrue("", wrapper.getInputs()[2].equals("mach.vt"));	    
+	    assertTrue(wrapper.getInputs()[0].equals("this.refPoint"));
+	    assertTrue(wrapper.getInputs()[1].equals("pss.vs"));
+	    assertTrue(wrapper.getInputs()[2].equals("mach.vt"));	    
 	    /*
 	       Function Block {org.interpss.core.dstab.cml.controller.util.TestAnnotateExciter$1@5c33f1a9}, 
 	     */
-	    assertTrue("", wrapper.getField() instanceof CMLFunctionAdapter);
+	    assertTrue(wrapper.getField() instanceof CMLFunctionAdapter);
 	}	
 	
 	/*
@@ -435,14 +435,14 @@ RefPoint: Expression: this.delayBlock.u0 - pss.vs + mach.vt
   symbol: pss.vs, opt: Sub, type: PssVs
   symbol: mach.vt, opt: Add, type: MachVt
 */
-	    assertTrue("", exc.getInputExp().getRecList()[0].getSymbolType() == CMLVarEnum.PssVs);
-	    assertTrue("", exc.getInputExp().getRecList()[1].getSymbolType() == CMLVarEnum.MachVt);
+	    assertTrue(exc.getInputExp().getRecList()[0].getSymbolType() == CMLVarEnum.PssVs);
+	    assertTrue(exc.getInputExp().getRecList()[1].getSymbolType() == CMLVarEnum.MachVt);
 
-	    assertTrue("", exc.getOutputExp().getRecList()[0].getSymbolType() == CMLVarEnum.ControllerFieldOutput);
+	    assertTrue(exc.getOutputExp().getRecList()[0].getSymbolType() == CMLVarEnum.ControllerFieldOutput);
 
-	    assertTrue("", exc.getRefPointExp().getRecList()[0].getSymbolType() == CMLVarEnum.ControllerFieldInput);
-	    assertTrue("", exc.getRefPointExp().getRecList()[1].getSymbolType() == CMLVarEnum.PssVs);
-	    assertTrue("", exc.getRefPointExp().getRecList()[2].getSymbolType() == CMLVarEnum.MachVt);
+	    assertTrue(exc.getRefPointExp().getRecList()[0].getSymbolType() == CMLVarEnum.ControllerFieldInput);
+	    assertTrue(exc.getRefPointExp().getRecList()[1].getSymbolType() == CMLVarEnum.PssVs);
+	    assertTrue(exc.getRefPointExp().getRecList()[2].getSymbolType() == CMLVarEnum.MachVt);
 	}
 	
 	@Test
@@ -483,11 +483,11 @@ y0 {
 		 */
 	    BlockFieldAnWrapper<?> wrapper = (BlockFieldAnWrapper<?>)exc.getFieldWrapperList().get(0);
 	    
-	    assertTrue("", wrapper.getInputExp().getRecList()[0].getSymbolType() == CMLVarEnum.ControllerRefPoint);
-	    assertTrue("", wrapper.getInputExp().getRecList()[1].getSymbolType() == CMLVarEnum.PssVs);
-	    assertTrue("", wrapper.getInputExp().getRecList()[2].getSymbolType() == CMLVarEnum.MachVt);
+	    assertTrue(wrapper.getInputExp().getRecList()[0].getSymbolType() == CMLVarEnum.ControllerRefPoint);
+	    assertTrue(wrapper.getInputExp().getRecList()[1].getSymbolType() == CMLVarEnum.PssVs);
+	    assertTrue(wrapper.getInputExp().getRecList()[2].getSymbolType() == CMLVarEnum.MachVt);
 	    
-	    assertTrue("", wrapper.getY0Exp().getRecList()[0].getSymbolType() == CMLVarEnum.MachEfd);
+	    assertTrue(wrapper.getY0Exp().getRecList()[0].getSymbolType() == CMLVarEnum.MachEfd);
 	}
 	
 	@Test
@@ -522,16 +522,16 @@ Field name : seFunc
 	    FunctionFieldAnWrapper<?> wrapper = (FunctionFieldAnWrapper<?>)exc.getFieldWrapperList().get(1);
 	    SeFunction func = (SeFunction)wrapper.getField();
 
-	    assertTrue("", func.getVarRecList().size() == 3);  // the var record has not been mapped yet.
+	    assertTrue(func.getVarRecList().size() == 3);  // the var record has not been mapped yet.
 
-	    assertTrue("", func.getVarRecList().get(0).getSymbolStr().equals("this.refPoint"));
-	    assertTrue("", func.getVarRecList().get(0).getSymbolType() == CMLVarEnum.ControllerRefPoint);
+	    assertTrue(func.getVarRecList().get(0).getSymbolStr().equals("this.refPoint"));
+	    assertTrue(func.getVarRecList().get(0).getSymbolType() == CMLVarEnum.ControllerRefPoint);
 
-	    assertTrue("", func.getVarRecList().get(1).getSymbolStr().equals("pss.vs"));
-	    assertTrue("", func.getVarRecList().get(1).getSymbolType() == CMLVarEnum.PssVs);
+	    assertTrue(func.getVarRecList().get(1).getSymbolStr().equals("pss.vs"));
+	    assertTrue(func.getVarRecList().get(1).getSymbolType() == CMLVarEnum.PssVs);
 
-	    assertTrue("", func.getVarRecList().get(2).getSymbolStr().equals("mach.vt"));
-	    assertTrue("", func.getVarRecList().get(2).getSymbolType() == CMLVarEnum.MachVt);
+	    assertTrue(func.getVarRecList().get(2).getSymbolStr().equals("mach.vt"));
+	    assertTrue(func.getVarRecList().get(2).getSymbolType() == CMLVarEnum.MachVt);
 	}
 	
 	/*
@@ -567,6 +567,6 @@ Field name : delayBlock
 init order : 1},  
 		 */
 	    BlockFieldAnWrapper<?> wrapper = (BlockFieldAnWrapper<?>)exc.getFieldWrapperList().get(0);
-	    assertTrue("", wrapper.getInitOrder() == 1);
+	    assertTrue(wrapper.getInitOrder() == 1);
 	}	
 }

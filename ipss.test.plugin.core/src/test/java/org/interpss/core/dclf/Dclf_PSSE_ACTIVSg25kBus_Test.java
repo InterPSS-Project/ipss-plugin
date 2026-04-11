@@ -1,7 +1,7 @@
 package org.interpss.core.dclf;
 
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
@@ -9,7 +9,7 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.DclfAlgoObjectFactory;
@@ -42,7 +42,7 @@ public class Dclf_PSSE_ACTIVSg25kBus_Test  extends CorePluginTestSetup {
 		//AclfBus bus1 = dclfBus.getBus();
 		//int n1 = bus1.getSortNumber();
 		double pgen = dclfAlgo.getBusPower(dclfBus) * aclfNet.getBaseMva(); 
-		assertTrue(""+pgen, NumericUtil.equals(pgen, 1224.42, 0.01));		
+		assertTrue(NumericUtil.equals(pgen, 1224.42, 0.01), ""+pgen);		
 	}
 
 	@Test 
@@ -63,7 +63,7 @@ public class Dclf_PSSE_ACTIVSg25kBus_Test  extends CorePluginTestSetup {
 		//AclfBus bus1 = dclfBus.getBus();
 		//int n1 = bus1.getSortNumber();
 		double pgen = dclfAlgo.getBusPower(dclfBus) * aclfNet.getBaseMva(); 
-		assertTrue(""+pgen, NumericUtil.equals(pgen, -4620.32, 0.01));			
+		assertTrue(NumericUtil.equals(pgen, -4620.32, 0.01), ""+pgen);			
 	}
 	
 	@Test

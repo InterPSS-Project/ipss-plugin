@@ -24,9 +24,9 @@
 
 package org.interpss.core.dstab.mach;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.dstab.BaseDStabBus;

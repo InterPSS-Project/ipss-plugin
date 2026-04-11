@@ -1,12 +1,11 @@
 package org.interpss.core.dstab;
 
 import org.interpss.core.adapter.odm.dstab.DStab_2Bus;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import org.junit.platform.suite.api.SelectClasses;
+import org.junit.platform.suite.api.Suite;
 
-@RunWith(Suite.class)
-@SuiteClasses({
+@Suite
+@SelectClasses({
 	DStab_2Bus.class,
 })
 public class DStabODMTestSuite {
