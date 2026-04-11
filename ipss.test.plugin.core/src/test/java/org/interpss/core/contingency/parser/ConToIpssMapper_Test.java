@@ -12,11 +12,11 @@ import org.interpss.plugin.contingency.con_fmt.bean.ConEquipAction;
 import org.interpss.plugin.contingency.con_fmt.bean.ConEquipEvent;
 import org.interpss.plugin.contingency.con_fmt.bean.ConEquipType;
 import org.interpss.plugin.contingency.con_fmt.mapper.ConToIpssMapper;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;
@@ -46,7 +46,7 @@ public class ConToIpssMapper_Test extends CorePluginTestSetup {
     // Network fixture
     // -----------------------------------------------------------------------
 
-    @BeforeClass
+    @BeforeAll
     public static void buildNetwork() throws InterpssException {
         net = CoreObjectFactory.createAclfNetwork();
 
@@ -93,7 +93,7 @@ public class ConToIpssMapper_Test extends CorePluginTestSetup {
         AclfMultiOutage outage = mapper.mapCase(cas);
 
         assertNotNull(outage);
-        assertEquals("OPEN_12", outage.getId());
+        assertEquals(outage.getId(), "OPEN_12");
         assertEquals(1, outage.getOutageEquips().size());
         assertEquals(ContingencyBranchOutageType.OPEN,
                 outage.getOutageEquips().get(0).getOutageType());
@@ -269,9 +269,9 @@ public class ConToIpssMapper_Test extends CorePluginTestSetup {
                 .orElseThrow(() -> new AssertionError("Generator outage not mapped"));
 
         assertEquals(ContingencyBusDeviceType.GEN, genOutage.getBusDeviceOutageType());
-        assertEquals("G1", genOutage.getBusDeviceId());
+        assertEquals(genOutage.getBusDeviceId(), "G1");
         assertNotNull(genOutage.getOutageEquip());
-        assertEquals("Bus1002", genOutage.getOutageEquip().getId());
+        assertEquals(genOutage.getOutageEquip().getId(), "Bus1002");
     }
 
     /**
@@ -305,9 +305,9 @@ public class ConToIpssMapper_Test extends CorePluginTestSetup {
 
         AclfBusDeviceOutage swshuntOutage = (AclfBusDeviceOutage) outage.getOutageEquips().get(0);
         assertEquals(ContingencyBusDeviceType.SWITCHED_SHUNT, swshuntOutage.getBusDeviceOutageType());
-        assertEquals("1", swshuntOutage.getBusDeviceId());
+        assertEquals(swshuntOutage.getBusDeviceId(), "1");
         assertNotNull(swshuntOutage.getOutageEquip());
-        assertEquals("Bus1002", swshuntOutage.getOutageEquip().getId());
+        assertEquals(swshuntOutage.getOutageEquip().getId(), "Bus1002");
     }
 
     /**
@@ -350,9 +350,9 @@ public class ConToIpssMapper_Test extends CorePluginTestSetup {
         List<AclfMultiOutage> outages = mapper.map(container);
 
         assertEquals(3, outages.size());
-        assertEquals("C1", outages.get(0).getId());
-        assertEquals("C2", outages.get(1).getId());
-        assertEquals("C3", outages.get(2).getId());
+        assertEquals(outages.get(0).getId(), "C1");
+        assertEquals(outages.get(1).getId(), "C2");
+        assertEquals(outages.get(2).getId(), "C3");
 
         // spot-check outage types
         assertEquals(ContingencyBranchOutageType.OPEN,

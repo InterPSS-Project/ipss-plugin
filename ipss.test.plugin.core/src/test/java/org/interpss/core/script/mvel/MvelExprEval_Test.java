@@ -36,8 +36,8 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.script.mvel.AclfNetMvelExprEvaluator;
 
-import static org.junit.Assert.assertTrue;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
@@ -90,24 +90,24 @@ public class MvelExprEval_Test extends CorePluginTestSetup {
 				.load("testData/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();		
 		
- 		assertTrue("", net.isContributeGenLoadModel());
+ 		assertTrue(net.isContributeGenLoadModel());
  		
 		AclfNetMvelExprEvaluator eval = new AclfNetMvelExprEvaluator(net);
 		String id = eval.evalMvelExpression("aclfnet.id");
 		//System.out.println("Net id: " + id);
- 		assertTrue("", id.equals("Base_Case_from_IEEECDF_format"));
+ 		assertTrue(id.equals("Base_Case_from_IEEECDF_format"));
  		
 		eval.evalMvelExpression("aclfnet.setId('New Id')");
 		id = eval.evalMvelExpression("aclfnet.id");
 		//System.out.println("Net id: " + id);
- 		assertTrue("", id.equals("New Id"));
+ 		assertTrue(id.equals("New Id"));
  		
 		Map<String, Object> vars = new HashMap<>();
 		vars.put("id", "New Id1");
 		eval.evalMvelExpression("aclfnet.setId(id)", vars);
 		id = eval.evalMvelExpression("aclfnet.id");
 		//System.out.println("Net id1: " + id);
- 		assertTrue("", id.equals("New Id1"));
+ 		assertTrue(id.equals("New Id1"));
  		
  		/*
  		 * Please note: Where access or modify Bus or Branch objects, we need to do it
@@ -115,12 +115,12 @@ public class MvelExprEval_Test extends CorePluginTestSetup {
  		 */
 		double loadP = eval.evalMvelExpression("bus = aclfnet.getBus('Bus14'); bus.loadP;");
 		System.out.println("Bus14 LoadP: " + loadP);
- 		assertTrue("", loadP == 0.149);		
+ 		assertTrue(loadP == 0.149);		
  		
 		eval.evalMvelExpression("bus = aclfnet.getBus('Bus14'); bus.loadP = 0.18;");
 		loadP = eval.evalMvelExpression("bus = aclfnet.getBus('Bus14'); bus.loadP;");
 		System.out.println("Bus14 LoadP: " + loadP);
- 		assertTrue("", loadP == 0.18);		
+ 		assertTrue(loadP == 0.18);		
  		
  		System.out.println(net.getBus("Bus14").getContributeLoad("Bus14-L1"));
 		eval.evalMvelExpression("bus = aclfnet.getBus('Bus14'); load = bus.getContributeLoad('Bus14-L1'); load.loadCP = new org.apache.commons.math3.complex.Complex(0.18, 0.07)");
