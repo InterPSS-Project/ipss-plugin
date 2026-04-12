@@ -39,15 +39,15 @@ public class EInterconnectAllCtrlSample {
 		System.out.println("MaxMismatch Before Aclf: " + aclfNet.maxMismatch(AclfMethodType.NR));
 		long tPreflight = System.nanoTime();
 		
-		SparseEqnObjectFactory.SparseEqnSolverType = SparseEqnObjectFactory.SparseEqnSolverKLU;
+		//SparseEqnObjectFactory.SparseEqnSolverType = SparseEqnObjectFactory.SparseEqnSolverKLU;
 		
 		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet);
 
-		aclfAlgo.getNrMethodConfig().setNonDivergent(false);
+		aclfAlgo.getNrMethodConfig().setNonDivergent(true);
 		aclfAlgo.getNrMethodConfig().setOptAlgo(NrOptimizeAlgoType.CUBIC_EQN);
 		//aclfAlgo.getNrMethodConfig().setOptAlgo(NrOptimizeAlgoType.BINARY_SEARCH);
 		
-		aclfNet.setPolarCoordinate(false);
+		//aclfNet.setPolarCoordinate(false);
 		
 		aclfAlgo.setTolerance(1.0E-6);
 		aclfAlgo.setMaxIterations(100);
