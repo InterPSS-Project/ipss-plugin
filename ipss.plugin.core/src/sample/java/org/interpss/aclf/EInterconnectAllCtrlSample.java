@@ -43,11 +43,11 @@ public class EInterconnectAllCtrlSample {
 		
 		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet);
 
-		aclfAlgo.getNrMethodConfig().setNonDivergent(true);
+		aclfAlgo.getNrMethodConfig().setNonDivergent(false);
 		aclfAlgo.getNrMethodConfig().setOptAlgo(NrOptimizeAlgoType.CUBIC_EQN);
 		//aclfAlgo.getNrMethodConfig().setOptAlgo(NrOptimizeAlgoType.BINARY_SEARCH);
 		
-		//aclfNet.setPolarCoordinate(false);
+		aclfNet.setPolarCoordinate(false);
 		
 		aclfAlgo.setTolerance(1.0E-6);
 		aclfAlgo.setMaxIterations(100);
