@@ -21,6 +21,7 @@ import com.interpss.core.aclf.Aclf3WBranch;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.hvdc.HvdcLine2T;
 import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.ContingencyBusDeviceType;
 import com.interpss.core.contingency.aclf.AclfBranchOutage;
@@ -170,16 +171,24 @@ public class ConToIpssMapper {
             return;
         }
 
+        bus.setStatus(false);
+
         int addedCount = 0;
-        for (AclfBranch bra : net.getBranchList()) {
+        for(Branch bra : bus.getBranchList()) {
             if (!bra.isActive()) continue;
-            boolean fromMatch = bra.getFromBus() == bus;
-            boolean toMatch   = bra.getToBus()   == bus;
-            if (fromMatch || toMatch) {
-                if (addBranchOutageIfAbsent(bra, ContingencyBranchOutageType.OPEN, target, caseLabel)) {
-                    addedCount++;
-                }
+            if(bra instanceof Aclf3WBranch) {
+                // skip 3W branches here since they will be handled by corresponding 2-terminal branch events; 
+                continue;
             }
+            else if(bra instanceof HvdcLine2T) {
+                bra.setStatus(false);
+                addedCount++;
+            }
+            else
+                if (addBranchOutageIfAbsent((AclfBranch) bra, ContingencyBranchOutageType.OPEN, target, caseLabel)) {
+                        addedCount++;
+                }
+            
         }
 
         if (addedCount == 0) {
