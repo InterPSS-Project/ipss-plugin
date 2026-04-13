@@ -61,6 +61,9 @@ public class AclfHvdcDataHelper {
 		//set DCLine Id
 		//this.hvdc2T.setId(hvdc2TXml.getId());
 		
+		//set DCLine name
+		this.hvdc2T.setName(hvdc2TXml.getName());
+		
 		HvdcLine2TLCC<AclfBus> lccHvdc2T = (HvdcLine2TLCC<AclfBus>)hvdc2T; 
 				 
 		//Control Mode
