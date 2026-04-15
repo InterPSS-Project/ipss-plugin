@@ -2,6 +2,7 @@ package org.interpss.sample.customSolver.impl;
 
 import com.interpss.core.sparse.impl.AbstractSparseEqnMatrix2x2Impl;
 import com.interpss.core.sparse.solver.SparseEqnSolverFactory;
+import org.interpss.sample.customSolver.solver.CMathSparseEqnDoubleSolver;
 
 /**
  * CommonMath Sparse Equation of data type 2x2 matrix for solving the [A]X=B problem. 
@@ -15,7 +16,7 @@ public class CMathSparseEqnMatrix2x2 extends AbstractSparseEqnMatrix2x2Impl {
 	 */
 	public CMathSparseEqnMatrix2x2(int n) {
 		super(n);
-		this.sparseEqnSolver = new SparseEqnSolverFactory().createSparseEqnDoubleSolver(this);
+		this.sparseEqnSolver = new CMathSparseEqnDoubleSolver(this);
 		setDimension(n);
 	}
 }
