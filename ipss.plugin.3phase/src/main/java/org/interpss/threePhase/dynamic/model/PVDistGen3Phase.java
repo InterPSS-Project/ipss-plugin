@@ -202,7 +202,7 @@ public class PVDistGen3Phase extends DynGenModel3Phase{
 
 
 
-    	 double vtAng = ComplexFunc.arg(getPosSeqVt());
+    	 double vtAng = getPosSeqVt().getArgument();
     	 double Ir =  Ip_prod*Math.cos(vtAng)-Iq_prod*Math.sin(vtAng);
     	 double Ix =  Ip_prod*Math.sin(vtAng)-Iq_prod*Math.cos(vtAng);
 
