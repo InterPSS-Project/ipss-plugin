@@ -470,7 +470,7 @@ public class DER_A_PosSeqImpl extends DynamicBusDeviceImpl implements DER_A_PosS
 		
 		//this.Xe = this.getParentGen().getPosGenZ().multiply(this.getParentGen().getZMultiFactor()).getImaginary();
 		
-		double vtAng = ComplexFunc.arg(this.getDStabBus().getVoltage()); // get angle of bus V
+		double vtAng = this.getDStabBus().getVoltage().getArgument(); // get angle of bus V
 		// calculate system internal voltage in dq
 		double Eq = getPosSeqVt().getImaginary() + (this.Ip * this.Xe);
 		//System.out.println(this.Ip);
@@ -495,7 +495,7 @@ public class DER_A_PosSeqImpl extends DynamicBusDeviceImpl implements DER_A_PosS
 		//double Ifact = (this.genPQInit.getReal() * this.genPQInit.getReal()) / (this.Pref * 100);
 		double sysAdjIp = this.Ip * (this.PdeviceBase / 100); // assuming system MVA base of 100 MVA
 		double sysAdjIq = this.Iq * (this.PdeviceBase / 100); // assuming system MVA base of 100 MVA
-		double vtAng = ComplexFunc.arg(this.getDStabBus().getVoltage()); // get angle of bus V
+		double vtAng = this.getDStabBus().getVoltage().getArgument(); // get angle of bus V
 		double Ir = (sysAdjIp*Math.cos(vtAng) - sysAdjIq*Math.sin(vtAng));// * this.IdeviceBase; // out of device per unit
 		double Ix = (sysAdjIp*Math.sin(vtAng) - sysAdjIq*Math.cos(vtAng));// * this.IdeviceBase; // out of device per unit
 		Complex effectiveCurrInj = new Complex(Ir, Ix);
