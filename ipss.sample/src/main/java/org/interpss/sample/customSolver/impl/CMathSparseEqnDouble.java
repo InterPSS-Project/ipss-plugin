@@ -2,9 +2,9 @@ package org.interpss.sample.customSolver.impl;
 
 import com.interpss.core.sparse.impl.AbstractSparseEqnDoubleImpl;
 import com.interpss.core.sparse.solver.SparseEqnSolverFactory;
-
+import org.interpss.sample.customSolver.solver.CMathSparseEqnDoubleSolver;
 /**
- * CommonMatch Sparse Equation of data type double for solving the [A]X=B problem. 
+ * CommonMath Sparse Equation of data type double for solving the [A]X=B problem. 
  * To outside, the index number is from 0 to n-1.
  */
 public class CMathSparseEqnDouble extends AbstractSparseEqnDoubleImpl {
@@ -14,7 +14,7 @@ public class CMathSparseEqnDouble extends AbstractSparseEqnDoubleImpl {
 	 */
 	public CMathSparseEqnDouble(int n) {
 		super(n);
-		this.sparseEqnSolver = new SparseEqnSolverFactory().createSparseEqnDoubleSolver(this);
+		this.sparseEqnSolver = new CMathSparseEqnDoubleSolver(this);
 		this.sparseEqnSolver.setMatrixDirty();
 	}	
 }
