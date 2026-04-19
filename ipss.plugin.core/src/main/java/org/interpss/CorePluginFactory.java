@@ -29,6 +29,7 @@ import org.interpss.fadapter.GEFormat;
 import org.interpss.fadapter.IeeeCDFFormat;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.fadapter.IpssInternalFormat;
+import org.interpss.fadapter.MatpowerFormat;
 import org.interpss.fadapter.PTIFormat;
 import org.interpss.fadapter.PWDFormat;
 import org.interpss.fadapter.UCTEFormat;
@@ -167,6 +168,9 @@ public class CorePluginFactory extends CoreCommonFactory {
 		else if (f == IpssFileAdapter.FileFormat.PWD) {
 			return new PWDFormat(CoreCommonFactory.getIpssMsgHub());
 		} 
+		else if (f == IpssFileAdapter.FileFormat.MATPOWER) {
+			return new MatpowerFormat(CoreCommonFactory.getIpssMsgHub());
+		}
 		else if (f == IpssFileAdapter.FileFormat.UCTE) {
 			return new UCTEFormat(CoreCommonFactory.getIpssMsgHub());
 		} 
