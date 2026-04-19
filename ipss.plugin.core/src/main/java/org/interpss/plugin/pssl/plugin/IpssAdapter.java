@@ -23,10 +23,6 @@
   */
 package org.interpss.plugin.pssl.plugin;
 
-import static org.interpss.CorePluginFunction.AclfParser2AclfNet;
-import static org.interpss.CorePluginFunction.AcscParser2AcscNet;
-import static org.interpss.CorePluginFunction.DStabParser2DStabAlgo;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,6 +30,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 
+import org.ieee.odm.ODMFileFormatEnum;
+import org.ieee.odm.ODMObjectFactory;
 import org.ieee.odm.adapter.IODMAdapter;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.bpa.BPAAdapter;
@@ -54,6 +52,9 @@ import org.ieee.odm.model.dstab.DStabModelParser;
 import org.ieee.odm.schema.AnalysisCategoryEnumType;
 import org.ieee.odm.schema.NetworkCategoryEnumType;
 import org.interpss.CorePluginFunction;
+import static org.interpss.CorePluginFunction.AclfParser2AclfNet;
+import static org.interpss.CorePluginFunction.AcscParser2AcscNet;
+import static org.interpss.CorePluginFunction.DStabParser2DStabAlgo;
 import org.interpss.odm.mapper.ODMAclfNetMapper;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.interpss.plugin.pssl.simu.BaseDSL;
@@ -86,6 +87,7 @@ public class IpssAdapter extends BaseDSL {
 			IEEE_ODM, 
 			BPA, 
 			PWD, 
+			MATPOWER,
 			Custom,
 			// PSASP   it is private now
 			};
@@ -461,6 +463,9 @@ public class IpssAdapter extends BaseDSL {
 					}
 					else if ( this.format == FileFormat.PWD ) {
 						adapter = new PowerWorldAdapter();
+					}
+					else if ( this.format == FileFormat.MATPOWER ) {
+						adapter = ODMObjectFactory.createODMAdapter(ODMFileFormatEnum.MatPower);
 					}
 					else if ( this.format == FileFormat.Custom ) {
 						Class<?> klass = Class.forName(this.classname);
