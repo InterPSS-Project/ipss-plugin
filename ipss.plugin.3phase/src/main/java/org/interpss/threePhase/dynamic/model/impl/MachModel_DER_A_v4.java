@@ -426,7 +426,7 @@ public class MachModel_DER_A_v4 extends DynGenModel3Phase{
 			
 			this.Xe = this.getParentGen().getPosGenZ().multiply(this.getParentGen().getZMultiFactor()).getImaginary();
 			
-			double vtAng = ComplexFunc.arg(this.getParentGen().getParentBus().getVoltage()); // get angle of bus V
+			double vtAng = this.getParentGen().getParentBus().getVoltage().getArgument(); // get angle of bus V
 	    	double vtAng_x = Math.cos(vtAng);
 	    	double vtAng_y = Math.sin(vtAng);
 
@@ -451,7 +451,7 @@ public class MachModel_DER_A_v4 extends DynGenModel3Phase{
 		private boolean calcNortonEquivalent() {
 			//System.out.println("calcNortonEquivalent called, time = " + (Math.floor(getCurrSimuTime() * 1000) / 1000));
 			//System.out.println("int voltage: " + this.internalVoltage);
-			double vtAng = ComplexFunc.arg(this.getParentGen().getParentBus().getVoltage()); // get angle of bus V
+			double vtAng = this.getParentGen().getParentBus().getVoltage().getArgument(); // get angle of bus V
 			double Ir = this.Ip*Math.cos(vtAng) - this.Iq*Math.sin(vtAng);
 			double Ix =  this.Ip*Math.sin(vtAng) - this.Iq*Math.cos(vtAng);
 			Complex effectiveCurrInj = new Complex(Ir, Ix);
