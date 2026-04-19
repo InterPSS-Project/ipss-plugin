@@ -27,16 +27,16 @@ public class ThreePhaseAclfOutFunc {
 				  sb.append(bus.getId()+"   "+bus.getName()+"      "+ String.format("%4.1f    ",(bus.getBaseVoltage()/1000.0))+"    ");
 				  sb.append(String.format("   %4.3f   ",vabc.a_0.abs()));
 
-				  sb.append(String.format("%6.2f    ",ComplexFunc.arg(vabc.a_0)*180/Math.PI));
+				  sb.append(String.format("%6.2f    ", vabc.a_0.getArgument()*180/Math.PI));
 
                   sb.append(String.format("     %4.3f   ",vabc.b_1.abs()));
 
-				  sb.append(String.format("%6.2f    ",ComplexFunc.arg(vabc.b_1)*180/Math.PI));
+				  sb.append(String.format("%6.2f    ", vabc.b_1.getArgument()*180/Math.PI));
 
 
                   sb.append(String.format("    %4.3f   ",vabc.c_2.abs()));
 
-				  sb.append(String.format("%6.2f   \n",ComplexFunc.arg(vabc.c_2)*180/Math.PI));
+				  sb.append(String.format("%6.2f   \n", vabc.c_2.getArgument()*180/Math.PI));
 
 
 			  }

@@ -18,8 +18,10 @@ Starting from 2025/03, InterPSS development is based on Maven. ipss-plugin repo 
 
 Run the testsuite
 ```
-    mvn -pl ipss.test.plugin.core test -Dtest=org.interpss.CorePluginTestSuite
+    mvn -pl ipss.test.plugin.core test -Dtest=CorePluginTestSuite
 ```
+
+The suite class is `org.interpss.CorePluginTestSuite`. Using the simple class name matches the CI workflow and avoids Surefire pattern mismatches caused by an incorrect package name.
 
 ##### Installation
 - Step-1, download (git clone is recommended) the latest [ipss-common repository](https://github.com/InterPSS-Project/ipss-common)  which contains the dependent jar libs in [ipss.lib](https://github.com/InterPSS-Project/ipss-common/tree/master/ipss.lib)

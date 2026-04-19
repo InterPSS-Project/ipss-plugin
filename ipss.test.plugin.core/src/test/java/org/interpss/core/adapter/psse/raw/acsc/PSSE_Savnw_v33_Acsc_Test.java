@@ -413,7 +413,7 @@ Contributing Gen:
 			
 			System.out.println("Relay branch Z ="+relayBranch.getZ());
 			
-			zAngle = ComplexFunc.arg(relayBranch.getZ())*180/Math.PI; // converted to degrees
+			zAngle = relayBranch.getZ().getArgument()*180/Math.PI; // converted to degrees
 			
 			AcscBus relayBus = relayAtFromSide? relayBranch.getFromAcscBus():relayBranch.getToAcscBus();
 			
@@ -571,7 +571,7 @@ Contributing Gen:
 					// zone1: 120% line impedance
 					Z2app = relayBranch.getZ().abs()*1.2;
 					
-					zAngle = ComplexFunc.arg(relayBranch.getZ())*180/Math.PI; // converted to degrees
+					zAngle = relayBranch.getZ().getArgument()*180/Math.PI; // converted to degrees
 					
 					AcscBus relayBus = relayAtFromSide? relayBranch.getFromAcscBus():relayBranch.getToAcscBus();
 					
