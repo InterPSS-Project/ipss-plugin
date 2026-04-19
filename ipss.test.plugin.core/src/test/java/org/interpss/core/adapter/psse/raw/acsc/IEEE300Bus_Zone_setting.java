@@ -368,7 +368,7 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 			
 			System.out.println("Relay branch Z ="+relayBranch.getAdjustedZ());
 			
-			zAngle = ComplexFunc.arg(relayBranch.getAdjustedZ())*180/Math.PI; // converted to degrees
+			zAngle = relayBranch.getAdjustedZ().getArgument()*180/Math.PI; // converted to degrees
 			
 			AcscBus relayBus = relayAtFromSide? relayBranch.getFromAcscBus():relayBranch.getToAcscBus();
 			
@@ -432,7 +432,7 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 			// compare all the apparent impedances, the maximum value will be used
 			// take the direction into account, only if abs{angle(Zpp)-angle(Zbranch)}<90 will be considered
 			for (Complex Zapp: apparentImpedanceTable.values()){
-				  if(Math.abs(ComplexFunc.arg(Zapp)*180/Math.PI - zAngle)<90.0){
+				  if(Math.abs(Zapp.getArgument()*180/Math.PI - zAngle)<90.0){
 				      if(Zapp.abs() > maxZapp) maxZapp = Zapp.abs();
 				  }
 			}
@@ -530,7 +530,7 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 					// zone1: 120% line impedance
 					Z2app = relayBranch.getZ().abs()*1.2;
 					
-					zAngle = ComplexFunc.arg(relayBranch.getZ())*180/Math.PI; // converted to degrees
+					zAngle = relayBranch.getZ().getArgument()*180/Math.PI; // converted to degrees
 					
 					AcscBus relayBus = relayAtFromSide? relayBranch.getFromAcscBus():relayBranch.getToAcscBus();
 					
