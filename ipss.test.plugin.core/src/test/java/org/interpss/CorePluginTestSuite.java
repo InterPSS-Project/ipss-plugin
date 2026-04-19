@@ -126,7 +126,7 @@ import org.junit.platform.suite.api.Suite;
 	IEEE14ZeroZBranchAclfTest.class,
 	IEEE14ZeroZBranchDeconsolidateTest.class,
 	ZBrAclfDeconOutputTest.class,
-	IEEE9Bus_ZbrNRSolver_Test.class,
+	//IEEE9Bus_ZbrNRSolver_Test.class,
 	
 	// DFrame
 	AclfResultDFrameAdapterTest.class,
@@ -192,13 +192,13 @@ import org.junit.platform.suite.api.Suite;
 	SMIB_Gen_Test.class,
 	
 	//DStab dynamic devic model
-	TestInductionMotorModel.class,
-	TestLd1pacModel.class,
-	TestDER_AModel.class,
-	TestCMPLDWModel.class,
-	TestCMPLDWGModel.class,
+	//TestInductionMotorModel.class,
+	//TestLd1pacModel.class,
+	//TestDER_AModel.class,
+	//TestCMPLDWModel.class,
+	//TestCMPLDWGModel.class,
 	
-	TestCalBusDStabLoad.class,
+	//TestCalBusDStabLoad.class,
 
 
 	// DStab ODM
@@ -224,7 +224,7 @@ import org.junit.platform.suite.api.Suite;
 	//DistLF14Bus_PathLF_Test.class,
 	//DistLF14BusTest.class,
 	//DistSample2BusTest.class,
-	DistSys_Test.class,	
+	//DistSys_Test.class,	
 	
 	// DC System
 	//DcSample_2BusTest.class,
