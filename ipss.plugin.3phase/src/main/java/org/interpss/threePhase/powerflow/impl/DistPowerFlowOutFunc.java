@@ -31,9 +31,9 @@ public class DistPowerFlowOutFunc {
 			Complex va = bus.get3PhaseVotlages().a_0;
 			Complex vb = bus.get3PhaseVotlages().b_1;
 			Complex vc = bus.get3PhaseVotlages().c_2;
-			double va_angle = ComplexFunc.arg(va);
-			double vb_angle = ComplexFunc.arg(vb);
-			double vc_angle = ComplexFunc.arg(vc);
+			double va_angle = va.getArgument();
+			double vb_angle = vb.getArgument();
+			double vc_angle = vc.getArgument();
 			sb.append(bus.getId()+","+va.abs()+","+va_angle+","+vb.abs()+","+vb_angle+","+vc.abs()+","+vc_angle+",");
 			sb.append(bus.get3PhaseVotlages().toString()+"\n");
 
@@ -106,16 +106,16 @@ public class DistPowerFlowOutFunc {
 				  sb.append(bus.getId()+"   "+bus.getName()+"      "+ String.format("%4.1f    ",(bus.getBaseVoltage()/1000.0))+"    ");
 				  sb.append(String.format("   %4.3f   ",vabc.a_0.abs()));
 
-				  sb.append(String.format("%6.2f    ",ComplexFunc.arg(vabc.a_0)*180/Math.PI));
+				  sb.append(String.format("%6.2f    ", vabc.a_0.getArgument()*180/Math.PI));
 
                   sb.append(String.format("     %4.3f   ",vabc.b_1.abs()));
 
-				  sb.append(String.format("%6.2f    ",ComplexFunc.arg(vabc.b_1)*180/Math.PI));
+				  sb.append(String.format("%6.2f    ", vabc.b_1.getArgument()*180/Math.PI));
 
 
                   sb.append(String.format("    %4.3f   ",vabc.c_2.abs()));
 
-				  sb.append(String.format("%6.2f   \n",ComplexFunc.arg(vabc.c_2)*180/Math.PI));
+				  sb.append(String.format("%6.2f   \n", vabc.c_2.getArgument()*180/Math.PI));
 
 
 			  }

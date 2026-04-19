@@ -39,7 +39,7 @@ public class EInterconnectAllCtrlSample {
 		System.out.println("MaxMismatch Before Aclf: " + aclfNet.maxMismatch(AclfMethodType.NR));
 		long tPreflight = System.nanoTime();
 		
-		SparseEqnObjectFactory.SparseEqnSolverType = SparseEqnObjectFactory.SparseEqnSolverKLU;
+		//SparseEqnObjectFactory.SparseEqnSolverType = SparseEqnObjectFactory.SparseEqnSolverKLU;
 		
 		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet);
 
@@ -57,12 +57,12 @@ public class EInterconnectAllCtrlSample {
 		
 		System.out.println("MaxMismatch After Aclf: " + aclfNet.maxMismatch(AclfMethodType.NR));
 		
-		System.out.println(AclfOutFunc.loadFlowSummary(aclfNet));
+		//System.out.println(AclfOutFunc.loadFlowSummary(aclfNet));
 		long tEnd = System.nanoTime();
 
 		double s = 1_000_000_000.0;
 		System.out.printf(
-				"Profile: import=%.0f s, preflight=%.0f s, loadflow=%.0f s, report=%.0f s, total=%.0f s%n",
+				"\nProfile: import=%.0f s, preflight=%.0f s, loadflow=%.0f s, report=%.0f s, total=%.0f s%n",
 				(tImport - t0) / s,
 				(tPreflight - tImport) / s,
 				(tLoadflow - tPreflight) / s,
