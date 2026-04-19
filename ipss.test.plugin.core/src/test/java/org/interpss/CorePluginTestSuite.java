@@ -17,6 +17,14 @@ import org.interpss.core.adapter.internal.Bus11856Test;
 import org.interpss.core.adapter.internal.Bus1824Test;
 import org.interpss.core.adapter.internal.Bus6384Test;
 import org.interpss.core.adapter.internal.IEEE14Test;
+import org.interpss.core.adapter.matpower.MatpowerCase13659PegaseTest;
+import org.interpss.core.adapter.matpower.MatpowerCase3012WpTest;
+import org.interpss.core.adapter.matpower.MatpowerCase3120SpTest;
+import org.interpss.core.adapter.matpower.MatpowerCase3375WpTest;
+import org.interpss.core.adapter.matpower.MatpowerCase6468RteTest;
+import org.interpss.core.adapter.matpower.MatpowerCase8387PegaseTest;
+import org.interpss.core.adapter.matpower.MatpowerCase9241PegaseTest;
+import org.interpss.core.adapter.matpower.MatpowerFormatTest;
 import org.interpss.core.adapter.psse.compare.PSSE_ACTIVSg2000BusCompare_Test;
 import org.interpss.core.adapter.psse.compare.PSSE_ACTIVSg25kObjectCompareTest;
 import org.interpss.core.adapter.psse.json.aclf.PSSEJSon_IEEE9Bus_BusSet_Test;
@@ -47,7 +55,6 @@ import org.interpss.core.dclf.IEEE14_Dclf_Test;
 import org.interpss.core.dclf.edclf.IEEE118_EDclf_Test;
 import org.interpss.core.dclf.edclf.IEEE14_EDclf_Test;
 import org.interpss.core.dclf.edclf.IEEE39_EDclf_Test;
-import org.interpss.core.dist.DistSys_Test;
 import org.interpss.core.dstab.DStab_IEEE9Bus_Test;
 import org.interpss.core.dstab.cml.block.DelayControlBlockTests;
 import org.interpss.core.dstab.cml.block.FilterControlBlockTests;
@@ -56,12 +63,6 @@ import org.interpss.core.dstab.cml.block.PIControlBlockTests;
 import org.interpss.core.dstab.cml.block.WashoutControlBlockTests;
 import org.interpss.core.dstab.cml.controller.AnnotateParserTests;
 import org.interpss.core.dstab.cml.controller.AnnotationExciterTests;
-import org.interpss.core.dstab.dynLoad.TestCMPLDWGModel;
-import org.interpss.core.dstab.dynLoad.TestCMPLDWModel;
-import org.interpss.core.dstab.dynLoad.TestCalBusDStabLoad;
-import org.interpss.core.dstab.dynLoad.TestDER_AModel;
-import org.interpss.core.dstab.dynLoad.TestInductionMotorModel;
-import org.interpss.core.dstab.dynLoad.TestLd1pacModel;
 import org.interpss.core.dstab.mach.EConstMachineTest;
 import org.interpss.core.dstab.mach.MachineSaturationTest;
 import org.interpss.core.dstab.mach.RoundRotorMachineTest;
@@ -72,7 +73,6 @@ import org.interpss.core.zeroz.IEEE14ZeroZBranchAclfTest;
 import org.interpss.core.zeroz.IEEE14ZeroZBranchDeconsolidateTest;
 import org.interpss.core.zeroz.ZBrAclfDeconOutputTest;
 import org.interpss.core.zeroz.ZeroZBranchNetUtilTest;
-import org.interpss.core.zeroz.algo.IEEE9Bus_ZbrNRSolver_Test;
 import org.interpss.core.zeroz.topo.IEEE14ZeroZBranchFuncLoopTest;
 import org.interpss.core.zeroz.topo.IEEE14ZeroZBranchFuncTest;
 import org.interpss.core.zeroz.topo.ZeroZBranchFuncTest;
@@ -243,6 +243,16 @@ import org.junit.platform.suite.api.Suite;
 	IEEE14BusTest.class,
 	IEEE118Bus_Test.class,
 	BPASampleTestCases.class,
+
+	//matpower
+	MatpowerFormatTest.class,
+	MatpowerCase3012WpTest.class,
+	MatpowerCase3120SpTest.class,
+	MatpowerCase3375WpTest.class,
+	MatpowerCase8387PegaseTest.class,
+	MatpowerCase9241PegaseTest.class,
+	MatpowerCase13659PegaseTest.class,
+	MatpowerCase6468RteTest.class,
 	UCTEFormatAusPowerTest.class,
 
 	SixBus_DclfPsXfr.class,

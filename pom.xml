@@ -8,7 +8,7 @@
     <properties>
         <revision>1.0.15</revision>
         <ipss.core.version>1.0.15</ipss.core.version>
-        <ieee.odm.version>1.0</ieee.odm.version>
+        <ieee.odm.version>1.0.1</ieee.odm.version>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
