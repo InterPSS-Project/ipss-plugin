@@ -388,27 +388,27 @@ public class TestTnD_IEEE300_13busFeeder {
 					   DStab3PBus bus3p = dsBus;
 					   Complex3x1 vabc = bus3p.get3PhaseVotlages();
 					   double vA = vabc.a_0.abs();
-					   double phA = ComplexFunc.arg(vabc.a_0)*180/Math.PI;
+					   double phA = vabc.a_0.getArgument()*180/Math.PI;
 					   
 					   double vB = vabc.b_1.abs();
-					   double phB = ComplexFunc.arg(vabc.b_1)*180/Math.PI;
+					   double phB = vabc.b_1.getArgument()*180/Math.PI;
 					   
 					   double vC = vabc.c_2.abs();
-					   double phC = ComplexFunc.arg(vabc.c_2)*180/Math.PI;
+					   double phC = vabc.c_2.getArgument()*180/Math.PI;
 					   
 					      sb.append(bus3p.getId()+"   "+bus3p.getName()+"      "+ String.format("%4.1f    ",(bus3p.getBaseVoltage()/1000.0))+"    ");
 						  sb.append(String.format("   %4.3f   ",vabc.a_0.abs()));
 						  
-						  sb.append(String.format("%6.2f    ",ComplexFunc.arg(vabc.a_0)*180/Math.PI));
+						  sb.append(String.format("%6.2f    ", vabc.a_0.getArgument()*180/Math.PI));
 						  
 		                  sb.append(String.format("     %4.3f   ",vabc.b_1.abs()));
 						  
-						  sb.append(String.format("%6.2f    ",ComplexFunc.arg(vabc.b_1)*180/Math.PI));
+						  sb.append(String.format("%6.2f    ", vabc.b_1.getArgument()*180/Math.PI));
 						  
 						  
 		                  sb.append(String.format("    %4.3f   ",vabc.c_2.abs()));
 						  
-						  sb.append(String.format("%6.2f   \n",ComplexFunc.arg(vabc.c_2)*180/Math.PI));
+						  sb.append(String.format("%6.2f   \n", vabc.c_2.getArgument()*180/Math.PI));
 						  
 				   }
 			   }
@@ -428,27 +428,27 @@ public class TestTnD_IEEE300_13busFeeder {
 					   DStab3PBus bus3p = (DStab3PBus) dsBus;
 					   Complex3x1 vabc = bus3p.get3PhaseVotlages();
 					   double vA = vabc.a_0.abs();
-					   double phA = ComplexFunc.arg(vabc.a_0)*180/Math.PI;
+					   double phA = vabc.a_0.getArgument()*180/Math.PI;
 					   
 					   double vB = vabc.b_1.abs();
-					   double phB = ComplexFunc.arg(vabc.b_1)*180/Math.PI;
+					   double phB = vabc.b_1.getArgument()*180/Math.PI;
 					   
 					   double vC = vabc.c_2.abs();
-					   double phC = ComplexFunc.arg(vabc.c_2)*180/Math.PI;
+					   double phC = vabc.c_2.getArgument()*180/Math.PI;
 					   
 					      sb.append(bus3p.getId()+"   "+bus3p.getName()+"      "+ String.format("%4.1f    ",(bus3p.getBaseVoltage()/1000.0))+"    ");
 						  sb.append(String.format("   %4.3f   ",vabc.a_0.abs()));
 						  
-						  sb.append(String.format("%6.2f    ",ComplexFunc.arg(vabc.a_0)*180/Math.PI));
+						  sb.append(String.format("%6.2f    ", vabc.a_0.getArgument()*180/Math.PI));
 						  
 		                  sb.append(String.format("     %4.3f   ",vabc.b_1.abs()));
 						  
-						  sb.append(String.format("%6.2f    ",ComplexFunc.arg(vabc.b_1)*180/Math.PI));
+						  sb.append(String.format("%6.2f    ", vabc.b_1.getArgument()*180/Math.PI));
 						  
 						  
 		                  sb.append(String.format("    %4.3f   ",vabc.c_2.abs()));
 						  
-						  sb.append(String.format("%6.2f   \n",ComplexFunc.arg(vabc.c_2)*180/Math.PI));
+						  sb.append(String.format("%6.2f   \n", vabc.c_2.getArgument()*180/Math.PI));
 						  
 				   }
 			   }
