@@ -65,6 +65,15 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
     }
 
     /**
+     * Get the GFSs helper instance.
+     * 
+     * @return the GFSs helper instance
+     */
+    public AclfNetGFSsHelper getGFSsHelper() {
+        return helper;
+    }
+    
+    /**
      * Optimize generator states to eliminate line overloads.
      * 
      * @param threshold Overload threshold in percentage (e.g., 120 for 120%)
@@ -331,7 +340,23 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
         return resultMap;
     }
     
+    /**
+     * Get the control bus map.
+     * 
+     * @return the control bus map, key: bus index, value: bus
+     */
     public Map<Integer, AclfBus> getControlGenMap() {
         return controlBusMap != null ? new HashMap<>(controlBusMap) : new HashMap<>();
+    }
+
+    /**
+     * Get the control bus id set.
+     * 
+     * @return the control bus id set
+     */
+    public Set<String> getControlBusIdSet() {
+        return this.getControlGenMap().values().stream()
+				.map(AclfBus::getId)
+				.collect(Collectors.toCollection(HashSet::new));
     }
 }
