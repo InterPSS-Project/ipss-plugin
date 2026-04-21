@@ -6,7 +6,7 @@ The `optadj` module computes coordinated generator/load adjustments that reduce 
 
 At a high level, it:
 
-1. Runs on top of an existing `DclfAnalysisAlgorithm/ContingencyAnalysisAlgorithm` result context.
+1. Runs on top of an existing `ContingencyAnalysisAlgorithm` result context.
 2. Builds linear constraints from branch-flow sensitivities.
 3. Solves a linear optimization problem with slack variables.
 4. Writes adjustments back to DCLF algorithm entities (`DclfAlgoGen` / `DclfAlgoLoad`).

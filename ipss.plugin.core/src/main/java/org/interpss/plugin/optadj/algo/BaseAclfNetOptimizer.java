@@ -1,31 +1,10 @@
 package org.interpss.plugin.optadj.algo;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.apache.commons.math3.optim.linear.Relationship;
-import org.interpss.numeric.datatype.LimitType;
-import org.interpss.plugin.optadj.algo.result.AclfNetSsaResultContainer;
-import org.interpss.plugin.optadj.algo.util.AclfNetGFSsHelper;
-import org.interpss.plugin.optadj.algo.util.Sen2DMatrix;
 import org.interpss.plugin.optadj.optimizer.BaseStateOptimizer;
-import org.interpss.plugin.optadj.optimizer.GenStateOptimizer;
-import org.interpss.plugin.optadj.optimizer.bean.DeviceConstrainData;
-import org.interpss.plugin.optadj.optimizer.bean.SectionConstrainData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.interpss.core.aclf.AclfBranch;
-import com.interpss.core.aclf.AclfGen;
-import com.interpss.core.aclf.AclfLoad;
-import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
-import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 
 /**
  * 
