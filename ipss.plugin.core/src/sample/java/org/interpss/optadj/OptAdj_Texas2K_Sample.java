@@ -19,31 +19,25 @@ import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 
-public class OptAdj_EInterconnect_Sample {
+public class OptAdj_Texas2K_Sample {
 	static class DblBuffer {
 		double val;
 	}
     public static void main(String args[]) throws Exception {
 		// load the test data V33
-		AclfNetwork aclfNet = IpssAdapter.importAclfNet("ipss.plugin.core/testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW")
+		AclfNetwork aclfNet = IpssAdapter.importAclfNet("ipss.plugin.core/testData/psse/v36/Texas2k_series24_case1_2016summerPeak_v36.RAW")
 				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_33) 
+				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_36) 
 				.load()
 				.getImportedObj();	
-		
-		// set the generator Pgen limit
-		aclfNet.createAclfGenNameLookupTable(false).forEach((k, gen) -> {
-			//System.out.println("Adj Gen: " + gen.getName());
-			if (gen.getPGenLimit() == null) {
-				gen.setPGenLimit(new LimitType(5, 0));
-			}
-		});
 		
 		// define an caAlgo object and perform DCLF 
 		ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(aclfNet, CacheType.SenNotCached, true);
 		dclfAlgo.calculateDclf(DclfMethod.INC_LOSS);
 		//System.out.println(DclfOutFunc.dclfResults(dclfAlgo, false));
 		
+		double loadingThreshold = 90.0;
+
 		Counter cnt = new Counter(0);
 		DblBuffer maxLoading = new DblBuffer();
 		dclfAlgo.getDclfAlgoBranchList().forEach(braDclf -> {
@@ -52,7 +46,7 @@ public class OptAdj_EInterconnect_Sample {
             double powerFlowMW = dclfAlgo.getBranchFlow(branch, UnitType.mW);
             double ratingMVA = branch.getRatingMva1();
             double loadingPercent = ratingMVA > 0 ? (Math.abs(powerFlowMW) / ratingMVA) * 100.0 : 0.0;
-            if ( loadingPercent > 100.0) {
+            if ( loadingPercent > loadingThreshold) {
             	System.out.println("Overloaded Branch: " + branch.getId() + ", Flow(MW): " + powerFlowMW + ", Rating(MVA): " + ratingMVA + ", Loading(%): " + loadingPercent);
             	cnt.increment();
             }
@@ -66,7 +60,7 @@ public class OptAdj_EInterconnect_Sample {
 		PerformanceTimer timer = new PerformanceTimer();
 		// perform the Optimization adjustment
 		AclfNetBusOptimizer optimizer = new AclfNetBusOptimizer(dclfAlgo);
-		optimizer.optimize(100);
+		optimizer.optimize(loadingThreshold);
 		
 		timer.log("Opt");
 		
@@ -87,7 +81,7 @@ public class OptAdj_EInterconnect_Sample {
 			.forEach(dclfBranch -> {
 				double flowMw = dclfBranch.getDclfFlow() * baseMVA;
 				double loading = Math.abs(flowMw / dclfBranch.getBranch().getRatingMva1())*100;
-				if (loading > 100) {
+				if (loading > loadingThreshold) {
 					cnt1.increment();
 					System.out.println("Branch: " + dclfBranch.getId() + "  " + flowMw +
 							" rating: " + dclfBranch.getBranch().getRatingMva1() +
