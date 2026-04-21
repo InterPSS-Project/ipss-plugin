@@ -8,7 +8,7 @@ package org.interpss.plugin.optadj.config;
 * 
 
 */
-public class OPtAdjControlLimit {
+public class OptAdjControlLimit {
 
 	private String genName;
 	
@@ -20,7 +20,7 @@ public class OPtAdjControlLimit {
 	
 	private double pMin;
 
-	public OPtAdjControlLimit(String genName, double origin, double pMax, double pMin) {
+	public OptAdjControlLimit(String genName, double origin, double pMax, double pMin) {
 		super();
 		this.genName = genName;
 		this.origin = origin;

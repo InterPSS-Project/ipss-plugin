@@ -15,15 +15,15 @@ import java.util.Map;
 */
 public class OptAdjConfigureInfo {
 
-	private List<OPtAdjControlLimit> optimizedUnitControlLimits;
+	private List<OptAdjControlLimit> optimizedUnitControlLimits;
 	
 	public OptAdjConfigureInfo() {
 		super();
-		this.optimizedUnitControlLimits = new ArrayList<OPtAdjControlLimit>();
+		this.optimizedUnitControlLimits = new ArrayList<OptAdjControlLimit>();
 	}
 
 	public void disableGeneratorControl(String genName, double originP) {
-		this.optimizedUnitControlLimits.add(new OPtAdjControlLimit(genName, originP, originP, originP));
+		this.optimizedUnitControlLimits.add(new OptAdjControlLimit(genName, originP, originP, originP));
 	}
 
 	/**
@@ -32,7 +32,7 @@ public class OptAdjConfigureInfo {
 	 * @param percent 1~100
 	 */
 	public void setGeneratorMaxPercentage(String genName, double originP, double originPMax) {
-		this.optimizedUnitControlLimits.add(new OPtAdjControlLimit(genName, originP, originPMax , -1));
+		this.optimizedUnitControlLimits.add(new OptAdjControlLimit(genName, originP, originPMax , -1));
 	}
 	
 	/**
@@ -41,7 +41,7 @@ public class OptAdjConfigureInfo {
 	 * @param percent 1~100
 	 */
 	public void setGeneratorMinPercentage(String genName, double originP, double originPMin) {
-		this.optimizedUnitControlLimits.add(new OPtAdjControlLimit(genName, originP, -1, originPMin));
+		this.optimizedUnitControlLimits.add(new OptAdjControlLimit(genName, originP, -1, originPMin));
 	}
 	
 	
@@ -51,7 +51,7 @@ public class OptAdjConfigureInfo {
 		});
 	}
 
-	public List<OPtAdjControlLimit> getOptimizedUnitControlLimits() {
+	public List<OptAdjControlLimit> getOptimizedUnitControlLimits() {
 		return optimizedUnitControlLimits;
 	}
 	
