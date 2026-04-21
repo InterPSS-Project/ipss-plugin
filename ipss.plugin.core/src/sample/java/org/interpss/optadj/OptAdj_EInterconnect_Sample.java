@@ -25,7 +25,7 @@ public class OptAdj_EInterconnect_Sample {
 	}
     public static void main(String args[]) throws Exception {
 		// load the test data V33
-		AclfNetwork aclfNet = IpssAdapter.importAclfNet("testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW")
+		AclfNetwork aclfNet = IpssAdapter.importAclfNet("ipss.plugin.core/testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW")
 				.setFormat(PSSE)
 				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_33) 
 				.load()
@@ -71,7 +71,7 @@ public class OptAdj_EInterconnect_Sample {
 		timer.log("Opt");
 		
 		Map<String, Double> resultMap = optimizer.getResultMap();
-		System.out.println(resultMap);
+		System.out.println("Optimization result: " + resultMap);
 		
 		System.out.println("Optimization gen size: " + optimizer.getOptimizer().getGenSize());
 		System.out.println("Optimization gen constrain size: " + optimizer.getOptimizer().getGenConstrainDataList().size());
