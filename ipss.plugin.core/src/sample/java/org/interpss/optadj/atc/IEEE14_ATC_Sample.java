@@ -1,4 +1,4 @@
-package sample.atc;
+package org.interpss.optadj.atc;
 
 import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
@@ -29,7 +29,7 @@ public class IEEE14_ATC_Sample {
 	public static void main(String args[]) throws InterpssException {
 		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testData/adpter/ieee_format/ieee14.ieee")
+				.load("ipss.plugin.core/testData/adpter/ieee_format/ieee14.ieee")
 				.getAclfNet();
 
 		Set<String> sourceGenSet = new HashSet<>(Arrays.asList("Bus2-G1"));

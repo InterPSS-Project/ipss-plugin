@@ -55,8 +55,9 @@ public class OptAdj_EInterconnect_Sample {
             double ratingMVA = branch.getRatingMva1();
             double loadingPercent = ratingMVA > 0 ? (Math.abs(powerFlowMW) / ratingMVA) * 100.0 : 0.0;
             if ( loadingPercent > 100.0) {
-            	System.out.println("Overloaded Branch: " + branch.getId() + ", Flow(MW): " + powerFlowMW + ", Rating(MVA): " + ratingMVA + ", Loading(%): " + loadingPercent);
-            	cnt.increment();
+            	System.out.printf("Overloaded Branch: %s, Flow(MW): %.2f, Rating(MVA): %.2f, Loading(%%): %.2f%n",
+            			branch.getId(), powerFlowMW, ratingMVA, loadingPercent);
+				cnt.increment();
             }
             if (loadingPercent > maxLoading.val) {
 				maxLoading.val = loadingPercent;
