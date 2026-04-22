@@ -214,7 +214,7 @@ public class AclfNetGenLoadOptimizer extends BaseAclfNetOptimizer {
 				AclfGen gen = controlGenMap.get(i);
 				log.info(gen.getName() + ", adj gen: " + getOptimizer().getPoint()[i] + " mw");
 				DclfAlgoBus dclfBus = dclfAlgo.getDclfAlgoBus(gen.getParentBus().getId());
-				dclfBus.getGen(gen.getName()).get()
+				dclfBus.getGen(gen.getId()).get()
 						.setAdjust(getOptimizer().getPoint()[i] / baseMva);
 			}
 		}
