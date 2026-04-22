@@ -493,9 +493,9 @@ public class AclfOutFunc {
 				str.append("     " + Number2String.toStr("####0.0", mva.abs()));
 				str.append("   " + Number2String.toStr("##0.0", 100.0*CoreUtilFunc.calPFactor(mva.getReal(), mva.getImaginary())) + "%");
 				str.append("    " + Number2String.toStr(-4, side));
-				str.append("      " + Number2String.toStr("####0.0", bra.getRatingMva1()));
-				str.append("      " + Number2String.toStr("####0.0", bra.getRatingMva2()));
-				str.append("      " + Number2String.toStr("####0.0", bra.getRatingMva3()));
+				str.append("      " + Number2String.toStr("####0.0", bra.getRatingMvaA()));
+				str.append("      " + Number2String.toStr("####0.0", bra.getRatingMvaB()));
+				str.append("      " + Number2String.toStr("####0.0", bra.getRatingMvaC()));
 				str.append("\n");
 			}
 		}
