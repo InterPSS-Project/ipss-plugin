@@ -102,7 +102,7 @@ public class ContingencyOutConfigure implements ContingencyOutFunc.IConfigure {
 		if(this.useBranchRatingIndividualLimit){
 			for (AclfBranch bra : aclfNet.getBranchList()) {
 	  			AclfBranchResultRec rec = mcase.getBranchResultSummary().get(bra.getId());
-	  			double rating = branchRatingType == BranchSSARatingType.ratingA? bra.getRatingMva1():
+	  			double rating = branchRatingType == BranchSSARatingType.ratingA? bra.getRatingMvaA():
 	  				(branchRatingType == BranchSSARatingType.ratingB? bra.getRatingMvaB(): bra.getRatingMvaC());	  			
 	  			rec.getRating().setThermalMvaRating(rating);
 	  			rec.getRating().setThermalAmpsRating(0.0);
