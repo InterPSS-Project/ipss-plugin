@@ -116,7 +116,7 @@ public class IEEE14_ATC_Sample {
 						//		", " + resultRec.contingency.getId() +
 						//		" postContFlow: " + resultRec.getPostFlowMW());
 						if (monitorBranchSet.contains(resultRec.aclfBranch.getId())) {
-							double loading = resultRec.calLoadingPercent(resultRec.aclfBranch.getRatingMva2());
+							double loading = resultRec.calLoadingPercent(resultRec.aclfBranch.getRatingMvaB());
 							if (loading >= 100.0) {
 								cnt1.increment();
 								System.out.println(resultRec.aclfBranch.getId() + 
