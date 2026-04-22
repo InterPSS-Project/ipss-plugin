@@ -170,9 +170,9 @@ public class AclfOut_PSSE {
 		else
 			s += String.format("                 ");
 			
-		double rating = branch.getRatingMva1();
+		double rating = branch.getRatingMvaA();
 		if (rating > 0.0) {
-			double loading = 100.0 * pq.abs() / branch.getRatingMva1();
+			double loading = 100.0 * pq.abs() / branch.getRatingMvaA();
 			s += String.format(" %3.0f %5.0f\n", loading, rating);
 		}
 		else
@@ -336,8 +336,8 @@ BUS  10002 GZ-HLZ      220.00 CKT     MW     MVAR     MVA  %I 1.0445PU  -47.34  
 		s += String.format("%-2s %7.1f %7.1f %7.1f ", branch.getCircuitNumber(), 
 					pq.getReal(), pq.getImaginary(), pq.abs());
 
-		if (branch.getRatingMva1() > 0.0) {
-			double iper = 100.0 * pq.abs() / branch.getRatingMva1();
+		if (branch.getRatingMvaA() > 0.0) {
+			double iper = 100.0 * pq.abs() / branch.getRatingMvaA();
 			s += String.format("%3.0f ", iper);
 		}
 		else 
