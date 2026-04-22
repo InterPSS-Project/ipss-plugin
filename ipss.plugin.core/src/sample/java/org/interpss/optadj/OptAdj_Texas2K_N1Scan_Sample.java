@@ -94,29 +94,24 @@ public class OptAdj_Texas2K_N1Scan_Sample {
 						if (loading > 100.0) {
 							cnt1.increment();
 
-							// TODO: output the max combined shifting factor. combined shifting factor is defined as 
-							//     GFS of the monitored branch + 
-							//         GFS of the contingency branch * LDOF of the contingency branch to the monitored branch 
-							//              w.r.t. a control gen    
-							
-							AclfBranch monitoredBranch = resultRec.aclfBranch;
-							DclfOutageBranch contingencyOutage = resultRec.contingency.getOutageEquip();
-							AclfBranch contingencyBranch = contingencyOutage.getBranch();
-							double lodf = 0.0;
-							try {
-								lodf = dclfAlgo.lineOutageDFactor(contingencyOutage, monitoredBranch);
-							} catch (InterpssException e) {
-								throw new RuntimeException("Failed to calculate LODF for "
-										+ contingencyBranch.getId() + " -> " + monitoredBranch.getId(), e);
-							}
 							double maxAbsCombinedShiftingFactor = 0.0;
 							String maxGenName = "";
 							
 							for (AclfGen gen : optimizer.getControlGenMap().values()) {
-								String busId = gen.getParentBus().getId();
-								double gfsMonitored = dclfAlgo.calGenShiftFactor(busId, monitoredBranch);
-								double gfsContingency = dclfAlgo.calGenShiftFactor(busId, contingencyBranch);
-								double combinedShiftingFactor = gfsMonitored + gfsContingency * lodf;
+								// Combined shifting factor is defined as 
+								//     GFS of the monitored branch + 
+								//         GFS of the contingency branch * LDOF of the contingency branch to the monitored branch 
+								//              w.r.t. a control gen    
+								double combinedShiftingFactor = 0.0;
+								try {
+									combinedShiftingFactor = resultRec.calCombinedShiftingFactor(gen, dclfAlgo);
+								} catch (InterpssException e) {
+									System.out.println(String.format(Locale.US,
+											"Failed to calculate combined shifting factor for bus: %s branch: %s error: %s",
+											gen.getParentBus().getId(), resultRec.aclfBranch.getId(), e.getMessage()));
+									continue;
+								}
+
 								double absCombined = Math.abs(combinedShiftingFactor);
 								if (absCombined > maxAbsCombinedShiftingFactor) {
 									maxAbsCombinedShiftingFactor = absCombined;
