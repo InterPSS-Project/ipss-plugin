@@ -31,7 +31,7 @@ public class OptAdj_Texas2K_N1Scan_Sample {
 				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_36) 
 				.load()
 				.getImportedObj();	
-		
+		  
 		// define an caAlgo object and perform DCLF 
 		ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(aclfNet, CacheType.SenNotCached, true);
 		dclfAlgo.calculateDclf(DclfMethod.INC_LOSS);
@@ -71,7 +71,7 @@ public class OptAdj_Texas2K_N1Scan_Sample {
 		optimizer.optimize(100);
 		
 		Map<String, Double> resultMap = optimizer.getResultMap();
-		System.out.println(resultMap);
+		System.out.println("Optimization result: " + resultMap);
 		
 		System.out.println("Optimization gen size." + optimizer.getControlGenMap().size());
 		System.out.println("Optimization gen constrain size." + optimizer.getOptimizer().getGenConstrainDataList().size());
