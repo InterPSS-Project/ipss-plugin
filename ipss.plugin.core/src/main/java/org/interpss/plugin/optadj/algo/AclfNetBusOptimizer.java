@@ -176,7 +176,7 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
             
             AclfBranch branch = dclfBranch.getBranch();
             double powerFlowMW = dclfAlgo.getBranchFlow(branch, UnitType.mW);
-            double ratingMVA = branch.getRatingMva1();
+            double ratingMVA = branch.getRatingMvaA();
             
             if (ratingMVA <= 0) continue;
             
@@ -238,7 +238,7 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
             }
             
             if (hasSignificantSensitivity) {
-                double limit = dclfBranch.getBranch().getRatingMva1() * threshold / 100.0;
+                double limit = dclfBranch.getBranch().getRatingMvaA() * threshold / 100.0;
                 double flowMw = Math.abs(dclfBranch.getDclfFlow() * baseMva);
                 
                 getOptimizer().addConstraint(new SectionConstrainData(
