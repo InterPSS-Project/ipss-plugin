@@ -136,7 +136,11 @@ public class AclfNetGenLoadOptimizer extends BaseAclfNetOptimizer {
 	}
 
 	protected Set<AclfGen> buildControlGenSet() {
-		return ((AclfNetwork) dclfAlgo.getNetwork()).getAclfGenNameLookupTable().values().stream()
+		AclfNetwork net = (AclfNetwork) dclfAlgo.getNetwork();
+		if (net.getAclfGenNameLookupTable() == null) {
+			net.createAclfGenNameLookupTable(true);
+		}
+		return net.getAclfGenNameLookupTable().values().stream()
 				.filter(gen -> gen.isActive()).collect(Collectors.toSet());
 	}
 
