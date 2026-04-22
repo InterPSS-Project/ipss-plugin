@@ -212,7 +212,7 @@ public class AclfNetGenLoadOptimizer extends BaseAclfNetOptimizer {
 		for (int i = 0; i < controlGenMap.size(); i++) {
 			if (Math.abs(getOptimizer().getPoint()[i]) > 1) {
 				AclfGen gen = controlGenMap.get(i);
-				log.info(gen.getName() + ", adj gen: " + getOptimizer().getPoint()[i] + " mw");
+				log.debug(gen.getName() + ", adj gen: " + getOptimizer().getPoint()[i] + " mw");
 				DclfAlgoBus dclfBus = dclfAlgo.getDclfAlgoBus(gen.getParentBus().getId());
 				dclfBus.getGen(gen.getId()).get()
 						.setAdjust(getOptimizer().getPoint()[i] / baseMva);
@@ -222,7 +222,7 @@ public class AclfNetGenLoadOptimizer extends BaseAclfNetOptimizer {
 		for (int i = 0; i < controlLoadMap.size(); i++) {
 			if (Math.abs(getOptimizer().getPoint()[i]) > 1) {
 				AclfLoad load = controlLoadMap.get(i);
-				log.info(load.getName() + ", adj load: " + getOptimizer().getPoint()[i] + " mw");
+				log.debug(load.getName() + ", adj load: " + getOptimizer().getPoint()[i] + " mw");
 				dclfAlgo.getDclfAlgoBus(load.getParentBus().getId()).getLoad(load.getName()).get()
 						.setAdjust(-getOptimizer().getPoint()[i] / baseMva); 
 			}
