@@ -25,6 +25,7 @@ import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
+import com.interpss.core.algo.dclf.adapter.DclfAlgoBus;
 
 /**
  * 
@@ -123,7 +124,7 @@ public class AclfNetGenLoadOptimizer extends BaseAclfNetOptimizer {
 		getOptimizer().optimize(this.genOptSizeLimit, this.secOptSizeLimit);
 
 		//
-		updatedDclfalgo();
+		updatedDclfAlgo();
 	}
 	
 	protected void buildLoadConstrain() {
@@ -206,18 +207,19 @@ public class AclfNetGenLoadOptimizer extends BaseAclfNetOptimizer {
 	/**
 	 * Update the DCLF algorithm object gen.adjust based on the optimization result
 	 */
-	protected void updatedDclfalgo() {
+	protected void updatedDclfAlgo() {
 		double baseMva = dclfAlgo.getNetwork().getBaseMva();
 		for (int i = 0; i < controlGenMap.size(); i++) {
 			if (Math.abs(getOptimizer().getPoint()[i]) > 1) {
 				AclfGen gen = controlGenMap.get(i);
 				log.info(gen.getName() + ", adj gen: " + getOptimizer().getPoint()[i] + " mw");
-				dclfAlgo.getDclfAlgoBus(gen.getParentBus().getId()).getGen(gen.getName()).get()
+				DclfAlgoBus dclfBus = dclfAlgo.getDclfAlgoBus(gen.getParentBus().getId());
+				dclfBus.getGen(gen.getName()).get()
 						.setAdjust(getOptimizer().getPoint()[i] / baseMva);
 			}
 		}
 
-		for (int i = controlGenMap.size(); i < controlLoadMap.size(); i++) {
+		for (int i = 0; i < controlLoadMap.size(); i++) {
 			if (Math.abs(getOptimizer().getPoint()[i]) > 1) {
 				AclfLoad load = controlLoadMap.get(i);
 				log.info(load.getName() + ", adj load: " + getOptimizer().getPoint()[i] + " mw");
