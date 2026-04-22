@@ -75,7 +75,7 @@ public class DclfOutFunc {
 				AclfBranch aclfBra = (AclfBranch)bra;
 				double mwFlow = algo.getBranchFlow(aclfBra, UnitType.mW);
 				String id = aclfBra.getId();
-				double limitMva = aclfBra.getRatingMva1();
+				double limitMva = aclfBra.getRatingMvaA();
 				double loading = Math.abs(100*(mwFlow)/limitMva);
 				boolean v = Math.abs(mwFlow) > limitMva;
 				if (loading >= threshhold) {
@@ -167,7 +167,7 @@ public class DclfOutFunc {
 		String str = "";
 		double mwFlow = algo.getBranchFlow(aclfBra, UnitType.mW);
 		
-		double limitMva = aclfBra.getRatingMva1();
+		double limitMva = aclfBra.getRatingMvaA();
 		double deratedLimit = limitMva - mw*f;
 		boolean v = mwFlow > deratedLimit;
 		str += Number2String.toFixLengthStr(22, aclfBra.getId())
@@ -213,7 +213,7 @@ public class DclfOutFunc {
 		double mwFlow = algo.getBranchFlow(aclfBra, UnitType.mW);
 		
 		double newMva = mwFlow + mw * f;
-		double limitMva = aclfBra.getRatingMva1() * dfactor;
+		double limitMva = aclfBra.getRatingMvaA() * dfactor;
 		boolean v = newMva > limitMva;
 		str += Number2String.toFixLengthStr(22, aclfBra.getId())
 					+ "      " + String.format("%9.3f", f) 
