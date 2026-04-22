@@ -16,6 +16,9 @@ import org.interpss.plugin.optadj.algo.AclfNetContigencyOptimizer;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.algo.parallel.ContingencyAnalysisMonad;
+import com.interpss.common.exp.InterpssException;
+import com.interpss.core.aclf.AclfBranch;
+import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
@@ -90,11 +93,43 @@ public class OptAdj_Texas2K_N1Scan_Sample {
 						double loading = resultRec.calLoadingPercent(resultRec.calBranchRateB());
 						if (loading > 100.0) {
 							cnt1.increment();
+
+							// TODO: output the max combined shifting factor. combined shifting factor is defined as 
+							//     GFS of the monitored branch + 
+							//         GFS of the contingency branch * LDOF of the contingency branch to the monitored branch 
+							//              w.r.t. a control gen    
+							
+							AclfBranch monitoredBranch = resultRec.aclfBranch;
+							DclfOutageBranch contingencyOutage = resultRec.contingency.getOutageEquip();
+							AclfBranch contingencyBranch = contingencyOutage.getBranch();
+							double lodf = 0.0;
+							try {
+								lodf = dclfAlgo.lineOutageDFactor(contingencyOutage, monitoredBranch);
+							} catch (InterpssException e) {
+								throw new RuntimeException("Failed to calculate LODF for "
+										+ contingencyBranch.getId() + " -> " + monitoredBranch.getId(), e);
+							}
+							double maxAbsCombinedShiftingFactor = 0.0;
+							String maxGenName = "";
+							
+							for (AclfGen gen : optimizer.getControlGenMap().values()) {
+								String busId = gen.getParentBus().getId();
+								double gfsMonitored = dclfAlgo.calGenShiftFactor(busId, monitoredBranch);
+								double gfsContingency = dclfAlgo.calGenShiftFactor(busId, contingencyBranch);
+								double combinedShiftingFactor = gfsMonitored + gfsContingency * lodf;
+								double absCombined = Math.abs(combinedShiftingFactor);
+								if (absCombined > maxAbsCombinedShiftingFactor) {
+									maxAbsCombinedShiftingFactor = absCombined;
+									maxGenName = gen.getName();
+								}
+							}
+							
 							System.out.println(String.format(Locale.US,
-									"Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f",
+									"Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f max|combinedSF|: %.5f controlGen: %s",
 									resultRec.aclfBranch.getId(), resultRec.contingency.getId(),
 									resultRec.getPostFlowMW(), resultRec.calBranchRateB(),
-									resultRec.calLoadingPercent()));
+									resultRec.calLoadingPercent(),
+									maxAbsCombinedShiftingFactor, maxGenName));
 						}
 					});
 			});
