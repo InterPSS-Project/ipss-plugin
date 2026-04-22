@@ -73,12 +73,12 @@ public class IEEE14_OptAdj_SelOutge_Test extends CorePluginTestSetup {
 						//System.out.println(resultRec.aclfBranch.getId() + 
 						//		", " + resultRec.contingency.getId() +
 						//		" postContFlow: " + resultRec.getPostFlowMW());
-						double loading = resultRec.calLoadingPercent(resultRec.aclfBranch.getRatingMva2());
+						double loading = resultRec.calLoadingPercent(resultRec.aclfBranch.getRatingMvaB());
 						if (loading > 100.0) {
 							cnt.increment();
 							System.out.println("OverLimit Branch: " + resultRec.aclfBranch.getId() + " outage: "
 											+ resultRec.contingency.getId() + " postFlow: " + resultRec.getPostFlowMW()
-											+ " rating: " + resultRec.aclfBranch.getRatingMva2() + " loading: "
+											+ " rating: " + resultRec.aclfBranch.getRatingMvaB() + " loading: "
 											+ loading);
 						}
 					});
@@ -112,13 +112,13 @@ public class IEEE14_OptAdj_SelOutge_Test extends CorePluginTestSetup {
 						//System.out.println(resultRec.aclfBranch.getId() + 
 						//		", " + resultRec.contingency.getId() +
 						//		" postContFlow: " + resultRec.getPostFlowMW());
-						double loading = resultRec.calLoadingPercent(resultRec.aclfBranch.getRatingMva2());
+						double loading = resultRec.calLoadingPercent(resultRec.aclfBranch.getRatingMvaB());
 						if (loading > 100.0) {
 							cnt1.increment();
 							System.out.println("Branch: " + resultRec.aclfBranch.getId() + 
 									" outage: " + resultRec.contingency.getId() +
 									" postFlow: " + resultRec.getPostFlowMW() +
-									" rating: " + resultRec.aclfBranch.getRatingMva2() +
+									" rating: " + resultRec.aclfBranch.getRatingMvaB() +
 									" loading: " + resultRec.calLoadingPercent());
 						}
 					});
