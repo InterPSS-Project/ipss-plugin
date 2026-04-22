@@ -171,7 +171,7 @@ public class AclfBranchDFrameAdapter {
 					double flowFromSide = branch.powerFrom2To().abs();
 					
 					double powerFlowMW = flowFromSide * baseMva;
-		            double ratingMVA = branch.getRatingMva1();
+		            double ratingMVA = branch.getRatingMvaA();
 		            
 		            double loadingPercent = 0.0;
 		            if (ratingMVA > 0.0) {
