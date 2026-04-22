@@ -31,7 +31,7 @@ public class AclfNetDFrameAdapter {
 	public static Predicate<AclfLoad> LoadFilter = load -> BusFilter.test(load.getParentBus()); 
 	
 	public static Predicate<AclfBranch> BranchFilter = branch -> {
-		double ratingMVA = branch.getRatingMva1();
+		double ratingMVA = branch.getRatingMvaA();
 		if (ratingMVA <= 0) return false; // skip branches with non-positive rating
 		
 		double powerFlowMW = branch.powerFrom2To(UnitType.mVA).abs();

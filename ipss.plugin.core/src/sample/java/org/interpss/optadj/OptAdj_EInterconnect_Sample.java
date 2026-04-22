@@ -52,7 +52,7 @@ public class OptAdj_EInterconnect_Sample {
 			AclfBranch branch = braDclf.getBranch();
 
             double powerFlowMW = dclfAlgo.getBranchFlow(branch, UnitType.mW);
-            double ratingMVA = branch.getRatingMva1();
+            double ratingMVA = branch.getRatingMvaA();
             double loadingPercent = ratingMVA > 0 ? (Math.abs(powerFlowMW) / ratingMVA) * 100.0 : 0.0;
             if ( loadingPercent > 100.0) {
             	System.out.printf("Overloaded Branch: %s, Flow(MW): %.2f, Rating(MVA): %.2f, Loading(%%): %.2f%n",
@@ -92,7 +92,7 @@ public class OptAdj_EInterconnect_Sample {
 		dclfAlgo.getDclfAlgoBranchList().stream()
 			.forEach(dclfBranch -> {
 				double flowMw = dclfBranch.getDclfFlow() * baseMVA;
-				double loading = Math.abs(flowMw / dclfBranch.getBranch().getRatingMva1())*100;
+				double loading = Math.abs(flowMw / dclfBranch.getBranch().getRatingMvaA())*100;
 				if (loading > 100) {
 					cnt1.increment();
 					int branchNo = dclfBranch.getBranch().getSortNumber();
@@ -105,7 +105,7 @@ public class OptAdj_EInterconnect_Sample {
 									.max()
 									.orElse(0.0);
 					System.out.printf("Branch: %s  %.2f rating: %.2f loading: %.2f  max |GFS|: %.2f%n",
-							dclfBranch.getId(), flowMw, dclfBranch.getBranch().getRatingMva1(), loading, maxAbsGfs);
+							dclfBranch.getId(), flowMw, dclfBranch.getBranch().getRatingMvaA(), loading, maxAbsGfs);
 				}
 	            if (loading > maxLoading.val) {
 					maxLoading.val = loading;

@@ -256,7 +256,7 @@ public class AclfNetGenLoadOptimizer extends BaseAclfNetOptimizer {
 			});
 			
 			if (Arrays.stream(genSenArray).anyMatch(sen -> Math.abs(sen) > SEN_THRESHOLD)) {
-				double limit = dclfBranch.getBranch().getRatingMva1() * threshold / 100;
+				double limit = dclfBranch.getBranch().getRatingMvaA() * threshold / 100;
 				double flowMw = Math.abs(dclfBranch.getDclfFlow() * baseMva);
 				getOptimizer().addConstraint(new SectionConstrainData(flowMw, Relationship.LEQ, limit, genSenArray));
 			}
