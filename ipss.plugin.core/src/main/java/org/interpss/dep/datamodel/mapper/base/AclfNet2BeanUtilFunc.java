@@ -231,9 +231,9 @@ public class AclfNet2BeanUtilFunc {
 			}
 		}
 		
-		bean.mvaRatingA = branch.getRatingMva1();
-		bean.mvaRatingB = branch.getRatingMva2();
-		bean.mvaRatingC = branch.getRatingMva3();			
+		bean.mvaRatingA = branch.getRatingMvaA();
+		bean.mvaRatingB = branch.getRatingMvaB();
+		bean.mvaRatingC = branch.getRatingMvaC();			
 	}	
 	
 	public static void mapAclfBranchResult(AclfBranch branch, AclfBranchBean<? extends BaseJSONUtilBean> bean) {
