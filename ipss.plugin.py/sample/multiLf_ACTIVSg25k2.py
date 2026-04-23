@@ -27,7 +27,7 @@ JvmManager.initialize_jvm(config)
 from src.interpss import ipss
 
 file_path = str(script_dir.parent / "tests" / "testData" / "psse" / "ACTIVSg25k.RAW")
-net = ipss.PsseRawFileAdapter.createAclfNet(file_path, ipss.PsseRawFileAdapter.version.PSSE_33)
+net = ipss.PsseRawFileAdapter.createAclfNet(file_path)
 
 algo = ipss.LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net)
 # the following two settings are false by default, but they are critical for some real-world networks due to data quality issues
