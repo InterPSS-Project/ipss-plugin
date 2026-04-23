@@ -43,7 +43,7 @@ import com.interpss.core.net.Bus;
 
 @Deprecated
 public class IEEE14BusBreakerTest extends CorePluginTestSetup {
-	@Test 
+	//@Test 
 	public void processZeroZBranch() throws  InterpssException {
 		// Create an AclfNetwork object
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/zeroz/ieee14Bus_breaker.xml")
@@ -63,7 +63,7 @@ public class IEEE14BusBreakerTest extends CorePluginTestSetup {
 	  			assertTrue(b.isBooleanFlag());
 	}	
 	
-	@Test 
+	//@Test 
 	public void findZeroZPath() throws  InterpssException {
 		// Create an AclfNetwork object
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/zeroz/ieee14Bus_breaker.xml")

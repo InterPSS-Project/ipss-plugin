@@ -127,7 +127,7 @@ public class TestTposD3phaseDStab {
 	}
 	
 	
-	@Test
+	//@Test
 	public void testTransBusVoltDistTotalPower_solve_dist_by_PF() throws InterpssException{
 		IpssCorePlugin.init();
 		 

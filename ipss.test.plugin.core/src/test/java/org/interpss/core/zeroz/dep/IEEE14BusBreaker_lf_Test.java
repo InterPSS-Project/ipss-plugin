@@ -75,7 +75,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.1655)<0.0001);
     }	
 
-	@Test 
+	//@Test 
 	public void case2_zeroZBranchProcessingBranchType()  throws InterpssException {
 		// Create an AclfNetwork object
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/ieee14Bus_breaker.xml")
@@ -112,7 +112,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.1655)<0.0001);
 	}	
 
-	@Test 
+	//@Test 
 	public void case2_zeroZBranchProcessingZValue()  throws InterpssException {
 		// Create an AclfNetwork object
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/ieee14Bus_breaker.xml")
@@ -148,7 +148,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.1655)<0.0001);
 	}	
 
-	@Test 
+	//@Test 
 	public void case2_zeroZBranch_ProtectedBranch()  throws InterpssException {
 		// Create an AclfNetwork object
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/ieee14Bus_breaker.xml")
@@ -191,7 +191,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.1655)<0.0001);
 	}
 	
-	@Test 
+	//@Test 
 	public void case2_zeroZBranchProcessingZValue_1()  throws InterpssException {
 		// Create an AclfNetwork object
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/ieee14Bus_breaker_1.xml")

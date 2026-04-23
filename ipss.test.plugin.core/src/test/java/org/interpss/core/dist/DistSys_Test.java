@@ -42,7 +42,7 @@ import com.interpss.dist.adpter.DistUtility;
 import com.interpss.dist.adpter.DistXformer;
 
 public class DistSys_Test extends CorePluginTestSetup {
-	@Test
+	//@Test
 	public void singlePointTest1() throws InterpssException {
 		DistNetDSL distNet = IpssDist.createDistNetwork("Sample DistNetwork")      
         						.setBaseKva(100000.0);

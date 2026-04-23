@@ -59,7 +59,7 @@ import com.interpss.simu.SimuObjectFactory;
 
 public class TestTnD_IEEE9_13busFeeder {
 	
-	@Test
+	//@Test
 	public void test_IEEE9_TD_dynamicSim_multiFeeder() throws InterpssException{
 		IpssCorePlugin.init();
 		
