@@ -10,3 +10,5 @@
 /ipss.plugin.3phase/logs/*.log
 **/.flattened-pom.xml
 .vscode/settings.json
+
+ipss.plugin.py/sample/results/*.*
