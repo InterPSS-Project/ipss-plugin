@@ -15,6 +15,7 @@ InterPSS Python Plugin
 
 2. Copy that JAR to the name the samples use:
 ```
+        rm -rf ipss.plugin.py/lib/*
         cp ipss.plugin.core/target/ipss.plugin.core-*.jar ipss.plugin.py/lib/ipss_runnable.jar
 ```
 

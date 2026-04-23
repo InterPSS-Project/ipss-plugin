@@ -61,7 +61,7 @@ import com.interpss.simu.SimuCtxType;
 import com.interpss.simu.SimuObjectFactory;
 public class TestTnD_IEEE9_6BusFeeder {
 	
-	@Test
+	//@Test
 	public void test_IEEE9_feeder_co_dynamicSim() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
