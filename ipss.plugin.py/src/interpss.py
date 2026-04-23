@@ -30,6 +30,10 @@ class ipss:
     from org.interpss.plugin.exchange import AclfResultExchangeAdapter
     from org.interpss.plugin.exchange import ContingencyResultAdapter
     from org.interpss.plugin.exchange import ContingencyResultExContainer
+
+    from org.interpss.plugin.result.dframe import AclfNetDFrameAdapter
+
+    from org.dflib.csv import Csv as DFrameCsv
     
     #
     # InterPSS Utility Classes
