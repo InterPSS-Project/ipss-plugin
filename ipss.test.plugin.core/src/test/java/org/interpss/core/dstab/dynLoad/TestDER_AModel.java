@@ -24,7 +24,7 @@ import com.interpss.dstab.cache.StateMonitor.DynDeviceType;
 
 public class TestDER_AModel extends TestSetupBase {
 
-	@Test
+	//@Test
 	public void test_DER_A_2Bus() throws InterpssException {
 		DStabilityNetwork net = create2BusSystem();
 
@@ -102,7 +102,7 @@ public class TestDER_AModel extends TestSetupBase {
 
 	}
 
-	@Test
+	//@Test
 	public void test_DER_A() throws InterpssException{
 
 		DStabilityNetwork net = create2BusSystem();

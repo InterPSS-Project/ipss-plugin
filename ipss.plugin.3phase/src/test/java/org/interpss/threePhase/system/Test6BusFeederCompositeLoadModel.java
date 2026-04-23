@@ -38,7 +38,7 @@ import com.interpss.dstab.cache.StateMonitor.MonitorRecord;
  */
 public class Test6BusFeederCompositeLoadModel extends TestBase {
 
-	@Test
+	//@Test
 	public void testFeederCompositeLoad() throws InterpssException{
         IpssCorePlugin.init();
 

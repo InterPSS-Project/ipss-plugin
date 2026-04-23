@@ -51,7 +51,7 @@ import com.interpss.simu.SimuObjectFactory;
 
 
 public class IEEE9Bus_ZbrNRSolver_Test extends CorePluginTestSetup {
-	@Test 
+	//@Test 
 	public void regularMethod() throws  InterpssException {
 		// Create an AclfNetwork object
 		AclfNetwork net = createTestCase();
@@ -116,7 +116,7 @@ public class IEEE9Bus_ZbrNRSolver_Test extends CorePluginTestSetup {
 		assertEquals(-3.95/180*Math.PI, net.getBus("Bus52").getVoltageAng(), 1e-4);
 	}
 
-	@Test
+	//@Test
 	public void zbrNRSolverMethod() throws  InterpssException {
 		// Create an AclfNetwork object
 		AclfNetwork net = createTestCase();

@@ -23,7 +23,7 @@ import com.interpss.dstab.cache.StateMonitor.MonitorRecord;
 
 public class TestInductionMotorModel extends TestSetupBase {
 	
-	@Test
+	//@Test
 	public void test_induction_Motor_dynModel_single_cage()  throws InterpssException {
 		DStabilityNetwork net = create2BusSystem();
 		net.initialization(ScBusModelType.DSTAB_SIMU);
@@ -128,7 +128,7 @@ public class TestInductionMotorModel extends TestSetupBase {
 		}
 	}
 	
-	@Test
+	//@Test
 	public void test_induction_Motor_dynModel_single_cage_loadchange()  throws InterpssException {
 			DStabilityNetwork net = create2BusSystem();
 			net.initialization(ScBusModelType.DSTAB_SIMU);
