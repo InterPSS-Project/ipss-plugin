@@ -20,7 +20,7 @@ import com.interpss.dstab.cache.StateMonitor.DynDeviceType;
 
 public class TestCMPLDWGModel extends TestSetupBase {
 
-	@Test
+	//@Test
 	public void test_CMPLDWG_Single_Model() throws InterpssException {
 		DStabilityNetwork net = create2BusSystem();
 

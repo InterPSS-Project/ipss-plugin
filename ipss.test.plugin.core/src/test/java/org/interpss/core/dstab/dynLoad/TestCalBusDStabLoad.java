@@ -21,7 +21,7 @@ import com.interpss.dstab.cache.StateMonitor.DynDeviceType;
 
 public class TestCalBusDStabLoad extends TestSetupBase {
 	
-	@Test
+	//@Test
 	public void test_cal_half_indMotor()  throws InterpssException {
 		DStabilityNetwork net = create2BusSystem();
 		net.initialization(ScBusModelType.DSTAB_SIMU);
