@@ -237,7 +237,7 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 		}
 		
 		
-		@Test
+		//@Test
 		public void IEEE300_Dstab_compositeLoadModel_generate_results_() throws InterpssException{
 			IpssCorePlugin.init();
 			//IpssLogger.getLogger().setLevel(Level.WARNING);

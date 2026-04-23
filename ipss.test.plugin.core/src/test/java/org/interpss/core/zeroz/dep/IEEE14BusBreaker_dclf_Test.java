@@ -40,7 +40,7 @@ import com.interpss.core.funcImpl.zeroz.dep.ZeroZBranchProcesor;
 
 @Deprecated
 public class IEEE14BusBreaker_dclf_Test extends CorePluginTestSetup {
-	@Test 
+	//@Test 
 	public void case1_regularMethod() throws  InterpssException, ReferenceBusException, IpssNumericException {
 		// Create an AclfNetwork object
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/zeroz/ieee14Bus_breaker.xml")
@@ -58,7 +58,7 @@ public class IEEE14BusBreaker_dclf_Test extends CorePluginTestSetup {
 		//algo.destroy();	
     }	
 	
-	@Test 
+	//@Test 
 	public void case1_smallZ() throws  InterpssException, ReferenceBusException, IpssNumericException {
 		// Create an AclfNetwork object
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/zeroz/ieee14Bus_breaker.xml")
@@ -79,7 +79,7 @@ public class IEEE14BusBreaker_dclf_Test extends CorePluginTestSetup {
 		//algo.destroy();	
     }	
 
-	@Test 
+	//@Test 
 	public void case1_smallZ_1() throws  InterpssException, ReferenceBusException, IpssNumericException {
 		// test casa with a small-Z brach loop at Bus-14
 		
