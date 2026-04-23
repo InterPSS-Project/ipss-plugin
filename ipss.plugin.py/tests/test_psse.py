@@ -35,7 +35,7 @@ def start_jvm():
 
 @pytest.fixture(scope="module")
 def init_test_data():
-    psse_file_path = str(script_dir / "testData" / "psse" / "IEEE9Bus" / "ieee9.raw")
+    psse_file_path = str(script_dir / "testData" / "psse" / "ieee9_v31.raw")
     return {
         "file_path": psse_file_path
     }
@@ -46,7 +46,7 @@ def test_loadflow(start_jvm, init_test_data):
     from src.interpss import ipss
 
     # Load data and create the Network Model
-    aclfNet = ipss.PsseRawFileAdapter.createAclfNet(init_test_data["file_path"], ipss.PsseRawFileAdapter.version.PSSE_30)
+    aclfNet = ipss.PsseRawFileAdapter.createAclfNet(init_test_data["file_path"])
 
     # Run Load Flow Algorithm
     aclfAlgo = ipss.LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet)

@@ -28,8 +28,8 @@ from src.interpss import ipss
 # Load data and create the Network Model
 #from org.ieee.odm.adapter.psse.PSSEAdapter import PsseVersion
 
-file_path = str(script_dir.parent / "tests" / "testData" / "psse" / "IEEE9Bus" / "ieee9.raw")
-net = ipss.PsseRawFileAdapter.createAclfNet(file_path, ipss.PsseRawFileAdapter.version.PSSE_30)
+file_path = str(script_dir.parent / "tests" / "testData" / "psse" / "ieee9_v31.raw")
+net = ipss.PsseRawFileAdapter.createAclfNet(file_path)
 
 # InterPSS core related classes
 algo = ipss.LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net)
