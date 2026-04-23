@@ -46,9 +46,13 @@ aclfAlgo.loadflow()
 # Step 4:  Process the simulation results
 #
 
+# create the data frame adapter
 dfAdapter = ipss.AclfNetDFrameAdapter()
 
+# adapt the network model to the data frame
 dfAdapter.adapt(aclfNet)
+
+# get the data frames
 dfBus = dfAdapter.getDfBus()
 dfGen = dfAdapter.getDfGen()
 dfLoad = dfAdapter.getDfLoad()
@@ -59,6 +63,7 @@ print("Number of rows with filter in dfGen: " + str(dfGen.height()))
 print("Number of rows with filter in dfLoad: " + str(dfLoad.height()))
 print("Number of rows with filter in dfBranch: " + str(dfBranch.height()))
 
+# write the data frames to csv files
 results_dir = script_dir / "results"
 ipss.DFrameCsv.saver().save(dfBus, str(results_dir / "Ieee14Bus_DF_bus.csv"))
 ipss.DFrameCsv.saver().save(dfGen, str(results_dir / "Ieee14Bus_DF_gen.csv"))
