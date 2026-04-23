@@ -64,13 +64,15 @@ class PsseRawFileAdapter:
     # return AclfNet object
     @staticmethod
     def createAclfNet(file_path=None):
-        from org.interpss.plugin.pssl.plugin import IpssAdapter 
-       
         from org.interpss.plugin.pssl.plugin import IpssAdapter
         
         # Automatically determine PSSE version by parsing the file
         psseVersion = IpssAdapter.parsePsseVersion(file_path)
 	
-        aclfNet = IpssAdapter.importAclfNet(file_path).setFormat(IpssAdapter.FileFormat.PSSE).setPsseVersion(psseVersion) .load().getImportedObj()    
+        aclfNet = IpssAdapter.importAclfNet(file_path)              \
+                        .setFormat(IpssAdapter.FileFormat.PSSE)     \
+                        .setPsseVersion(psseVersion)                \
+                        .load()                                     \
+                        .getImportedObj()
         
         return aclfNet        
