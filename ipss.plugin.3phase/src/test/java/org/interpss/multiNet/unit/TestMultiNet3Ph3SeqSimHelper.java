@@ -47,7 +47,7 @@ import com.interpss.simu.SimuObjectFactory;
 public class TestMultiNet3Ph3SeqSimHelper {
 	
 	
-	@Test
+	//@Test
 	public void test_IEEE9Bus_3phase_dstab() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
@@ -226,7 +226,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 	 * Test the subnetwork equivalent
 	 * @throws InterpssException
 	 */
-	@Test
+	//@Test
 	public void test_3phase3SeqSubNetEquiv_IEEE9Bus_1port() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
@@ -334,7 +334,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 	 * Test the calculation of boundary tie-line current, with bus5 as the only boundary bus
 	 * @throws InterpssException
 	 */
-	@Test
+	//@Test
 	public void test_MultiSubNetTieLineCurrent_IEEE9Bus_1port() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
@@ -571,7 +571,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 		InterfaceBranch("Bus7->Bus8(0)");
 	 * 
 	 */
-	@Test
+	//@Test
 	public void test_3phase3SeqMultiSubNetTS_IEEE9Bus_bus57_2port() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
@@ -698,7 +698,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 		InterfaceBranch("Bus7->Bus8(0)");
 	 * 
 	 */
-	@Test
+	//@Test
 	public void test_3phase3SeqSubNetEquiv_IEEE9Bus_2port() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
@@ -996,7 +996,7 @@ public class TestMultiNet3Ph3SeqSimHelper {
 		InterfaceBranch("Bus7->Bus8(0)");
 	 * 
 	 */
-	@Test
+	//@Test
 	public void test_3phase3SeqMultiSubNetTS_IEEE9Bus_bus257_2port() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);

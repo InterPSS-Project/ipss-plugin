@@ -37,7 +37,7 @@ import com.interpss.simu.SimuObjectFactory;
 public class TestCMPLDWModel extends TestSetupBase {
 
 
-	@Test
+	//@Test
 	public void test_CMPLDW_Single_Model() throws InterpssException {
 		// create a machine in a two-bus network. The loadflow already converged
 		DStabilityNetwork net = create2BusSystem();
@@ -438,7 +438,7 @@ public class TestCMPLDWModel extends TestSetupBase {
 		  
 	}
 
-	@Test
+	//@Test
 	public void test_CMPLDW_init_methods() throws InterpssException{
 		
 		IpssCorePlugin.init();

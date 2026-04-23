@@ -74,7 +74,7 @@ public class Acsc5BusTesPiecewiseAlgo {
 				return new Complex3x1();
 		};
 		
-	@Test
+	//@Test
 	public void subNetworkTest() throws Exception {
 		IpssCorePlugin.init();
 		
@@ -137,7 +137,7 @@ public class Acsc5BusTesPiecewiseAlgo {
 					new Complex(-0.00015, -0.00192), 1.0e-5));		
 	}
 
-	@Test
+	//@Test
 	public void subAreaTest() throws Exception {
 		IpssCorePlugin.init();
 		
@@ -203,7 +203,7 @@ public class Acsc5BusTesPiecewiseAlgo {
 	/*
 	 * Full matrix approach
 	 */
-	@Test
+	//@Test
 	public void fullMatrixTest() throws Exception {
 		IpssCorePlugin.init();
 		

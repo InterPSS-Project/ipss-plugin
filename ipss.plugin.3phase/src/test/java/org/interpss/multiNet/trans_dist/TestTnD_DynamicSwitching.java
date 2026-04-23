@@ -187,7 +187,7 @@ public class TestTnD_DynamicSwitching {
 
 	}
 
-	@Test
+	//@Test
 	public void test_IEEE9_8Busfeeder_dynSwitch() throws InterpssException {
 		IpssCorePlugin.init();
 

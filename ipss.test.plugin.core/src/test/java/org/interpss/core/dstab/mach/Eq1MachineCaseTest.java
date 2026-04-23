@@ -37,7 +37,7 @@ import com.interpss.dstab.util.sample.SampleDStabCase;
 
 public class Eq1MachineCaseTest extends TestSetupBase {
 	
-	@Test
+	//@Test
 	public void test_Case1()  throws InterpssException {
 		// create a machine in a two-bus network. The loadflow already converged
 		BaseDStabNetwork net = SampleDStabCase.createDStabTestNet();

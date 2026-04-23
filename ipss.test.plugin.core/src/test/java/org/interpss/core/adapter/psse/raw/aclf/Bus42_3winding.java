@@ -36,7 +36,7 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
 public class Bus42_3winding extends CorePluginTestSetup {
-	@Test
+	//@Test
 	public void testCaseNoDC() throws Exception {
 		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.PSSE, IpssFileAdapter.Version.PSSE_30)

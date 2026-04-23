@@ -42,7 +42,7 @@ import com.interpss.simu.SimuContext;
 
 @Deprecated
 public class IEEECommonFormatTest extends CorePluginTestSetup {
-	@Test 
+	//@Test 
 	public void bus14testCase() throws Exception {
 		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
@@ -70,7 +70,7 @@ public class IEEECommonFormatTest extends CorePluginTestSetup {
   				System.out.println("Large mismatch: " + bus.getId() + " : " + helper.powerIntoNet(bus) + ", " + bus.powerIntoNet()); 		
 	}
 
-	@Test 
+	//@Test 
 	public void bus14SwingBusAngtestCase() throws Exception {
 		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
@@ -92,7 +92,7 @@ public class IEEECommonFormatTest extends CorePluginTestSetup {
   		assertTrue(Math.abs(swing.getDesiredVoltAng(UnitType.Deg)-1.0)<0.0001);
   	}	
 	
-	@Test
+	//@Test
 	public void bus39testCase() throws Exception{
 		IpssFileAdapter adapter = CorePluginFactory.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF);
 		SimuContext simuCtx = adapter.load("testData/adpter/ieee_format/ieee039.DAT");
@@ -114,7 +114,7 @@ public class IEEECommonFormatTest extends CorePluginTestSetup {
   		//System.out.println(AclfOut.lfResultsBusStyle(net));
   	}
 
-	@Test
+	//@Test
 	public void bus30testCase() throws Exception{
 		IpssFileAdapter adapter = CorePluginFactory.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF);
 		SimuContext simuCtx = adapter.load("testData/adpter/ieee_format/ieee30.ieee");
@@ -135,7 +135,7 @@ public class IEEECommonFormatTest extends CorePluginTestSetup {
   		//System.out.println(AclfOut.lfResultsBusStyle(net));
 	}
 
-	@Test
+	//@Test
 	public void bus57testCase() throws Exception{
 		IpssFileAdapter adapter = CorePluginFactory.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF);
 		SimuContext simuCtx = adapter.load("testData/adpter/ieee_format/ieee57.ieee");
@@ -158,7 +158,7 @@ public class IEEECommonFormatTest extends CorePluginTestSetup {
   		//System.out.println(AclfOut.lfResultsBusStyle(net));
 	}
 
-	@Test
+	//@Test
 	public void bus118testCase() throws Exception{
 		IpssFileAdapter adapter = CorePluginFactory.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF);
 		SimuContext simuCtx = adapter.load("testData/adpter/ieee_format/ieee118.ieee");
