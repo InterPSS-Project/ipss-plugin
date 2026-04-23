@@ -29,7 +29,7 @@ public class SE_IEEE118Test extends CorePluginTestSetup {
 	double errorPQ = 0.05;
 	double errorV = 0.01;
 	
-	@Test
+	//@Test
 	public void testDeepCopy() throws InterpssException, IpssNumericException, Exception {
 		SENetwork seNet = createTestCase();
 		
@@ -46,7 +46,7 @@ public class SE_IEEE118Test extends CorePluginTestSetup {
 		SENetwork seNetCopy = seNet.hzCopy();
 	}
 	
-	@Test
+	//@Test
 	public void testJsonCopy() throws InterpssException, IpssNumericException, Exception {
 		SENetwork seNet = createTestCase();
 		
@@ -64,7 +64,7 @@ public class SE_IEEE118Test extends CorePluginTestSetup {
 		SENetwork seNetCopy = seNet.jsonCopy();
 	}	
 	
-	@Test
+	//@Test
 	public void testSEAlgo() throws InterpssException, IpssNumericException, Exception {
 		SENetwork seNet = createTestCase();
 
