@@ -40,7 +40,7 @@ algo.loadflow()
 print(ipss.AclfOutFunc.loadFlowSummary(net))
 
 # print out more detailed power flow results in PSS/E style
-print(ipss.AclfOut_PSSE.lfResults(net, ipss.PSSEOutFormat.GUI))
+#print(ipss.AclfOut_PSSE.lfResults(net, ipss.PSSEOutFormat.GUI))
 
 # Shutdown JVM
 jpype.shutdownJVM()
