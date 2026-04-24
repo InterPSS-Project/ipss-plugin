@@ -1,20 +1,29 @@
-import argparse
 import jpype
 import jpype.imports
 from jpype.types import *
 
 import sys
 from pathlib import Path
+import argparse
 
 import numpy as np
 
+#
+# Parse cmd arguments
+#
+
+# Define cmd arguments
 parser = argparse.ArgumentParser(description="InterPSS Py Command Line Interface")
 parser.add_argument("simutype", help="simulation type", choices=["aclf", "ca"])
 parser.add_argument("format", help="case file format", choices=["ieee", "psse"])
 parser.add_argument("input", help="case file path")
 
 args = parser.parse_args()
-print(args.simutype, args.format, args.input)
+# print(args.simutype, args.format, args.input)
+
+#
+# Configure and Start the JVM
+#
 
 # Get script directory for reliable path resolution
 script_dir = Path(__file__).resolve().parent
@@ -31,6 +40,10 @@ config = ConfigManager.load_config(config_path)
 # Initialize and start the JVM
 JvmManager.initialize_jvm(config)
 
+#
+# Load data and create the Network Model
+#
+
 # import InterPSS modules
 from src.interpss import ipss
 
@@ -43,13 +56,52 @@ else:
     print("Invalid format")
     exit(1)
 
-# InterPSS core related classes
-algo = ipss.LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net)
+#
+# Perform the simulation tasks
+#
 
-algo.loadflow()
+if args.simutype == "aclf":
+    # create Loadflow algorithm and run loadflow calculation
+    algo = ipss.LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net)
+    algo.loadflow()
+    
+    # basic load flow results summary, showing the bus type, voltage magnitude and angle and bus net power  	
+    # print(ipss.AclfOutFunc.loadFlowSummary(net))
 
-# basic load flow results summary, showing the bus type, voltage magnitude and angle and bus net power  	
-print(ipss.AclfOutFunc.loadFlowSummary(net))
+    # create the data frame adapter
+    dfAdapter = ipss.AclfNetDFrameAdapter()
+    # adapt the network model to the data frame
+    dfAdapter.adapt(net)
+    # get the data frames
+    dfBus = dfAdapter.getDfBus()
+    dfGen = dfAdapter.getDfGen()
+    dfLoad = dfAdapter.getDfLoad()
+    dfBranch = dfAdapter.getDfBranch()
+
+    # write the data frames to csv files
+    # convert str "data/psse/ieee9_v31.raw" to "psse_ieee9_v31"
+    out_file_prefix = args.input.split("/")[-1]
+    out_file_prefix = out_file_prefix.split(".")[0]
+    if args.format == "ieee":
+        out_file_prefix = "ieee_" + out_file_prefix
+    elif args.format == "psse":
+        out_file_prefix = "psse_" + out_file_prefix
+    else:
+        print("Invalid format")
+        exit(1)
+
+    results_dir = script_dir / "result"
+    # print(str(results_dir / (out_file_prefix + "_DF_bus.csv")))
+    ipss.DFrameCsv.saver().save(dfBus, str(results_dir / (out_file_prefix + "_DF_bus.csv")))
+    ipss.DFrameCsv.saver().save(dfGen, str(results_dir / (out_file_prefix + "_DF_gen.csv")))
+    ipss.DFrameCsv.saver().save(dfLoad, str(results_dir / (out_file_prefix + "_DF_load.csv")))
+    ipss.DFrameCsv.saver().save(dfBranch, str(results_dir / (out_file_prefix + "_DF_branch.csv")))
+elif args.simutype == "ca":
+    algo = ipss.ContingencyAlgoObjectFactory.createContingencyAlgorithm(net)
+    algo.contingency()
+else:
+    print("Invalid simulation type")
+    exit(1)
 
 # Shutdown JVM
 jpype.shutdownJVM()
