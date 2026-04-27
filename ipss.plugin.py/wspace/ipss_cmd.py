@@ -80,12 +80,12 @@ if args.simutype == "aclf":
 
     # write the data frames to csv files
     # convert str "data/psse/ieee9_v31.raw" to "psse_ieee9_v31"
-    out_file_prefix = args.input.split("/")[-1]
-    out_file_prefix = out_file_prefix.split(".")[0]
+    file_name = args.input.split("/")[-1]
+    file_name = file_name.split(".")[0]
     if args.format == "ieee":
-        out_file_prefix = "ieee_" + out_file_prefix
+        out_file_prefix = "ieee_" + file_name
     elif args.format == "psse":
-        out_file_prefix = "psse_" + out_file_prefix
+        out_file_prefix = "psse_" + file_name
     else:
         print("Invalid format")
         exit(1)
