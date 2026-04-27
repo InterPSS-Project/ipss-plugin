@@ -1,3 +1,8 @@
+* Start the virtual environment
+```
+    source .venv/bin/activate
+```
+
 * Load IEEE14Bus.ieee and run Load Flow Algorithm
 ```
     python ipss_cmd.py aclf ieee data/ieee/IEEE14Bus.ieee
