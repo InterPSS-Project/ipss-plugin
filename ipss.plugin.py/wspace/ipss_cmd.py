@@ -90,7 +90,7 @@ if args.simutype == "aclf":
         print("Invalid format")
         exit(1)
 
-    results_dir = script_dir / "result"
+    results_dir = script_dir / "result" / out_file_prefix
     # print(str(results_dir / (out_file_prefix + "_DF_bus.csv")))
     ipss.DFrameCsv.saver().save(dfBus, str(results_dir / (out_file_prefix + "_DF_bus.csv")))
     ipss.DFrameCsv.saver().save(dfGen, str(results_dir / (out_file_prefix + "_DF_gen.csv")))
