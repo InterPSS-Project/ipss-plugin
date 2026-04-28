@@ -8,7 +8,6 @@ import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import org.interpss.numeric.datatype.AtomicCounter;
@@ -17,7 +16,6 @@ import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.algo.parallel.ContingencyAnalysisMonad;
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
@@ -49,7 +47,7 @@ public class OptAdj_Texas2K_N1Scan_Sample {
 				cont.setOutageEquip(outage);
 				contList.add(cont);
 			});
-		
+		 
 		AtomicCounter cnt = new AtomicCounter();
 		contList.parallelStream()
 			.forEach(contingency -> {
@@ -61,8 +59,7 @@ public class OptAdj_Texas2K_N1Scan_Sample {
 						double loading = resultRec.calLoadingPercent(resultRec.calBranchRateB());
 						if (loading > 100.0) {
 							cnt.increment();
-							System.out.println(String.format(Locale.US,
-									"OverLimit Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f",
+							System.out.println(String.format("OverLimit Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f",
 									resultRec.aclfBranch.getId(), resultRec.contingency.getId(),
 									resultRec.getPostFlowMW(), resultRec.calBranchRateB(), loading));
 						}
@@ -95,7 +92,7 @@ public class OptAdj_Texas2K_N1Scan_Sample {
 							cnt1.increment();
 
 							double maxAbsCombinedShiftingFactor = 0.0;
-							String maxGenName = "";
+							AclfGen maxGen = null;
 							
 							for (AclfGen gen : optimizer.getControlGenMap().values()) {
 								// Combined shifting factor is defined as 
@@ -106,8 +103,7 @@ public class OptAdj_Texas2K_N1Scan_Sample {
 								try {
 									combinedShiftingFactor = resultRec.calCombinedShiftingFactor(gen, dclfAlgo);
 								} catch (InterpssException e) {
-									System.out.println(String.format(Locale.US,
-											"Failed to calculate combined shifting factor for bus: %s branch: %s error: %s",
+									System.out.println(String.format("Failed to calculate combined shifting factor for bus: %s branch: %s error: %s",
 											gen.getParentBus().getId(), resultRec.aclfBranch.getId(), e.getMessage()));
 									continue;
 								}
@@ -115,16 +111,16 @@ public class OptAdj_Texas2K_N1Scan_Sample {
 								double absCombined = Math.abs(combinedShiftingFactor);
 								if (absCombined > maxAbsCombinedShiftingFactor) {
 									maxAbsCombinedShiftingFactor = absCombined;
-									maxGenName = gen.getName();
+									maxGen = gen;
 								}
 							}
 							
-							System.out.println(String.format(Locale.US,
-									"Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f max|combinedSF|: %.5f controlGen: %s",
+							System.out.println(String.format("Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f max|combinedSF|: %.5f controlGen: %s P: %.2f PGenLimit: %.2f",
 									resultRec.aclfBranch.getId(), resultRec.contingency.getId(),
 									resultRec.getPostFlowMW(), resultRec.calBranchRateB(),
 									resultRec.calLoadingPercent(),
-									maxAbsCombinedShiftingFactor, maxGenName));
+									maxAbsCombinedShiftingFactor, maxGen.getName(),
+									maxGen.getGen().getReal(), maxGen.getPGenLimit().getMax()));
 						}
 					});
 			});
