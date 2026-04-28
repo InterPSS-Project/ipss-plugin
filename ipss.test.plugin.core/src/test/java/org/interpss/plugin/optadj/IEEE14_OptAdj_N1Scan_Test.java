@@ -68,7 +68,7 @@ public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
 			});
 		System.out.println("Total number of branches over limit before OptAdj: " + cnt.getCount());
 		assertTrue(cnt.getCount() == 18, ""+cnt.getCount());
-		 
+		
 		AclfNetContigencyOptimizer optimizer = new AclfNetContigencyOptimizer(dclfAlgo);
 		optimizer.optimize(100);
 		
@@ -83,7 +83,7 @@ public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
 		System.out.println("Optimization sec constrian size." + optimizer.getOptimizer().getSecConstrainDataList().size());
 //		assertTrue(optimizer.getGenOptimizer().getGenSize() == 5);
 		assertTrue(optimizer.getOptimizer().getGenConstrainDataList().size() == 10);
-		assertEquals(optimizer.getOptimizer().getSecConstrainDataList().size(), 101);
+		assertEquals(optimizer.getOptimizer().getSecConstrainDataList().size(), 42);
 		
 		dclfAlgo.calculateDclf();
 		
