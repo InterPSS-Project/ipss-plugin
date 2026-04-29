@@ -91,8 +91,8 @@ public class OptAdj_Texas2K_N1Scan_Sample {
 						if (loading > 100.0) {
 							cnt1.increment();
 
-							double maxAbsCombinedShiftingFactor = 0.0;
-							AclfGen maxGen = null;
+							double maxAbsCombinedAdjustable = 0.0;
+							String maxGenName = "";
 							
 							for (AclfGen gen : optimizer.getControlGenMap().values()) {
 								// Combined shifting factor is defined as 
@@ -108,19 +108,20 @@ public class OptAdj_Texas2K_N1Scan_Sample {
 									continue;
 								}
 
-								double absCombined = Math.abs(combinedShiftingFactor);
-								if (absCombined > maxAbsCombinedShiftingFactor) {
-									maxAbsCombinedShiftingFactor = absCombined;
-									maxGen = gen;
+								double genAdjustable = combinedShiftingFactor > 0.0 ? gen.getPGenLimit().getMax() - gen.getGen().getReal() :  gen.getGen().getReal() - gen.getPGenLimit().getMin();
+								double absCombined = Math.abs(genAdjustable * combinedShiftingFactor);
+								if (absCombined > maxAbsCombinedAdjustable) {
+									maxAbsCombinedAdjustable = absCombined;
+									maxGenName = gen.getName();
 								}
 							}
 							
-							System.out.println(String.format("Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f max|combinedSF|: %.5f controlGen: %s P: %.2f PGenLimit: %.2f",
+
+							System.out.println(String.format("Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f max|adj|: %.2f controlGen: %s",
 									resultRec.aclfBranch.getId(), resultRec.contingency.getId(),
 									resultRec.getPostFlowMW(), resultRec.calBranchRateB(),
 									resultRec.calLoadingPercent(),
-									maxAbsCombinedShiftingFactor, maxGen.getName(),
-									maxGen.getGen().getReal(), maxGen.getPGenLimit().getMax()));
+									maxAbsCombinedAdjustable, maxGenName));
 						}
 					});
 			});
