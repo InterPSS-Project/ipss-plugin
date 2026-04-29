@@ -109,7 +109,7 @@ public class OptAdj_Texas2K_N1Scan_Sample {
 									continue;
 								}
 
-								double genAdjustable = combinedShiftingFactor > 0.0 ? gen.getPGenLimit().getMax() - gen.getGen().getReal() :  gen.getGen().getReal() - gen.getPGenLimit().getMin();
+								double genAdjustable = combinedShiftingFactor < 0.0 ? gen.getPGenLimit().getMax() - gen.getGen().getReal() :  gen.getGen().getReal() - gen.getPGenLimit().getMin();
 								double absCombined = Math.abs(genAdjustable * combinedShiftingFactor);
 								if (absCombined > maxAbsCombinedAdjustable) {
 									maxAbsCombinedAdjustable = absCombined;
