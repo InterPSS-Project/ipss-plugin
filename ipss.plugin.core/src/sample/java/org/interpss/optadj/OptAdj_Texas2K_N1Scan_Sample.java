@@ -61,8 +61,7 @@ public class OptAdj_Texas2K_N1Scan_Sample {
 						double loading = resultRec.calLoadingPercent(resultRec.calBranchRateB());
 						if (loading > 100.0) {
 							cnt.increment();
-							System.out.println(String.format(Locale.US,
-									"OverLimit Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f",
+							System.out.println(String.format("OverLimit Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f",
 									resultRec.aclfBranch.getId(), resultRec.contingency.getId(),
 									resultRec.getPostFlowMW(), resultRec.calBranchRateB(), loading));
 						}
@@ -94,7 +93,7 @@ public class OptAdj_Texas2K_N1Scan_Sample {
 						if (loading > 100.0) {
 							cnt1.increment();
 
-							double maxAbsCombinedShiftingFactor = 0.0;
+							double maxAbsCombinedAdjustable = 0.0;
 							String maxGenName = "";
 							
 							for (AclfGen gen : optimizer.getControlGenMap().values()) {
@@ -106,25 +105,23 @@ public class OptAdj_Texas2K_N1Scan_Sample {
 								try {
 									combinedShiftingFactor = resultRec.calCombinedShiftingFactor(gen, dclfAlgo);
 								} catch (InterpssException e) {
-									System.out.println(String.format(Locale.US,
-											"Failed to calculate combined shifting factor for bus: %s branch: %s error: %s",
+									System.out.println(String.format("Failed to calculate combined shifting factor for bus: %s branch: %s error: %s",
 											gen.getParentBus().getId(), resultRec.aclfBranch.getId(), e.getMessage()));
 									continue;
 								}
-
-								double absCombined = Math.abs(combinedShiftingFactor);
-								if (absCombined > maxAbsCombinedShiftingFactor) {
-									maxAbsCombinedShiftingFactor = absCombined;
+								double genAdjustable = combinedShiftingFactor > 0.0 ? gen.getPGenLimit().getMax() - gen.getGen().getReal() :  gen.getGen().getReal() - gen.getPGenLimit().getMin();
+								double absCombined = Math.abs(genAdjustable * combinedShiftingFactor);
+								if (absCombined > maxAbsCombinedAdjustable) {
+									maxAbsCombinedAdjustable = absCombined;
 									maxGenName = gen.getName();
 								}
 							}
 							
-							System.out.println(String.format(Locale.US,
-									"Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f max|combinedSF|: %.5f controlGen: %s",
+							System.out.println(String.format("Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f max|adj|: %.2f controlGen: %s",
 									resultRec.aclfBranch.getId(), resultRec.contingency.getId(),
 									resultRec.getPostFlowMW(), resultRec.calBranchRateB(),
 									resultRec.calLoadingPercent(),
-									maxAbsCombinedShiftingFactor, maxGenName));
+									maxAbsCombinedAdjustable, maxGenName));
 						}
 					});
 			});
