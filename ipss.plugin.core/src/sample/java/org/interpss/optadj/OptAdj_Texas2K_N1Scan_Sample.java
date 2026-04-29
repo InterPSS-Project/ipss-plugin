@@ -79,6 +79,7 @@ public class OptAdj_Texas2K_N1Scan_Sample {
 		
 		dclfAlgo.calculateDclf();
 		
+		double baseMVA = aclfNet.getBaseMva();
 		AtomicCounter cnt1 = new AtomicCounter();
 		contList.parallelStream()
 			.forEach(contingency -> {
@@ -116,12 +117,11 @@ public class OptAdj_Texas2K_N1Scan_Sample {
 								}
 							}
 							
-
 							System.out.println(String.format("Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f max|adj|: %.2f controlGen: %s",
 									resultRec.aclfBranch.getId(), resultRec.contingency.getId(),
 									resultRec.getPostFlowMW(), resultRec.calBranchRateB(),
 									resultRec.calLoadingPercent(),
-									maxAbsCombinedAdjustable, maxGenName));
+									maxAbsCombinedAdjustable*baseMVA, maxGenName));
 						}
 					});
 			});
