@@ -1,8 +1,16 @@
 package org.interpss.plugin.aclf.config;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 
 import org.interpss.datatype.base.BaseJSONBean;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.util.FileUtil;
 
@@ -52,7 +60,7 @@ public class AclfRunConfigRec extends BaseJSONBean {
 	
 	// NR method config
 	public boolean nonDivergent = false;
-	public NrOptimizeAlgoType optAlgo = NrOptimizeAlgoType.CUBIC_EQN;
+	public NrOptimizeAlgoType optAlgo = defaultNrOptimizeAlgoType();
 	public boolean variableUpdateLimit = false;
 	public double deltaVAngLimit = 0.2;
 	public double deltaVMagLimit = 0.1;
@@ -80,6 +88,39 @@ public class AclfRunConfigRec extends BaseJSONBean {
 	public double svcAccFactor = 1.0;
 	public double xfrTapAccFactor = 1.0;
 	public double psXfrPContrlAccFactor = 1.0;
+
+	/**
+	 * Cubic step optimizer is {@code NrOptimizeAlgoType} value 2. Older ipss-core JARs on the
+	 * classpath may omit the {@code CUBIC_EQN} literal; avoid a static reference to it.
+	 */
+	private static NrOptimizeAlgoType defaultNrOptimizeAlgoType() {
+		NrOptimizeAlgoType cubic = NrOptimizeAlgoType.get(2);
+		return cubic != null ? cubic : NrOptimizeAlgoType.BINARY_SEARCH;
+	}
+
+	private static NrOptimizeAlgoType deserializeNrOptimizeAlgoType(JsonElement json, Type typeOfT,
+			JsonDeserializationContext context) throws JsonParseException {
+		if (json == null || json.isJsonNull()) {
+			return defaultNrOptimizeAlgoType();
+		}
+		String name = json.getAsString();
+		try {
+			return NrOptimizeAlgoType.valueOf(name);
+		} catch (IllegalArgumentException ex) {
+			if ("CUBIC_EQN".equals(name) || "CubicEqn".equals(name)) {
+				return defaultNrOptimizeAlgoType();
+			}
+			throw ex;
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T extends BaseJSONBean> T fromString(String json) {
+		Gson gson = new GsonBuilder().registerTypeAdapter(NrOptimizeAlgoType.class,
+				(JsonDeserializer<NrOptimizeAlgoType>) AclfRunConfigRec::deserializeNrOptimizeAlgoType).create();
+		return (T) gson.fromJson(json, AclfRunConfigRec.class);
+	}
 	
 	public static AclfRunConfigRec loadAclfRunConfig(String configFilename) throws IOException {
     	String json = FileUtil.readFileAsString(configFilename);
