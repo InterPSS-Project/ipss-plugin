@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.interpss.numeric.datatype.AtomicCounter;
 import org.interpss.numeric.datatype.Counter;
+import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.PerformanceTimer;
 import org.interpss.plugin.optadj.algo.AclfNetBusOptimizer;
@@ -15,6 +16,7 @@ import org.interpss.plugin.optadj.algo.util.Sen2DMatrix;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.core.aclf.AclfBranch;
+import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
@@ -90,16 +92,26 @@ public class OptAdj_Texas2K_Sample {
 				if (loading > loadingThreshold) {
 					cnt1.increment();
 					int branchNo = dclfBranch.getBranch().getSortNumber();
-					double maxAbsGfs = controlBusGfsMatrix == null ? 0.0
+					double maxAdjustableGenP = controlBusGfsMatrix == null ? 0.0
 							: controlBusIdSet.stream()
 									.mapToDouble(busId -> {
-										int busNo = aclfNet.getBus(busId).getSortNumber();
-										return Math.abs(controlBusGfsMatrix.get(busNo, branchNo));
+										AclfBus bus = (AclfBus) aclfNet.getBus(busId);
+										int busNo = bus.getSortNumber();
+										double genP = bus.getGenP() * baseMVA;
+										LimitType genLimit = bus.getPGenLimit();
+										double gfs = controlBusGfsMatrix.get(busNo, branchNo);
+										/*
+										 * Adjustable Gen P = GFS * (Gen Limit - Gen P)
+										 * if GFS > 0, we can increase Gen P
+										 * if GFS < 0, we can decrease Gen P
+										 */
+										double adjustableGenP = gfs > 0 ? genLimit.getMax() - genP : genP - genLimit.getMin();
+										return Math.abs(gfs * (adjustableGenP));
 									})
 									.max()
 									.orElse(0.0);
-					System.out.printf("Branch: %s  %.2f rating: %.2f loading: %.2f  max |GFS|: %.2f%n",
-							dclfBranch.getId(), flowMw, dclfBranch.getBranch().getRatingMvaA(), loading, maxAbsGfs);
+					System.out.printf("Branch: %s  %.2f rating: %.2f loading: %.2f  max |Adj|: %.2f%n",
+							dclfBranch.getId(), flowMw, dclfBranch.getBranch().getRatingMvaA(), loading, maxAdjustableGenP);
 				}
 	            if (loading > maxLoading.val) {
 					maxLoading.val = loading;
