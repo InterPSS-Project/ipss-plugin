@@ -30,6 +30,11 @@ public class DeviceConstrainData extends BaseConstrainData {
 		this.index = index;
 	}
 
+	public DeviceConstrainData(double value, Relationship relationship, double limit, int index,boolean isLoad) {
+		this(value,relationship,limit,index);
+		this.load = isLoad;
+	}
+
 	public boolean isLoad() {
 		return load;
 	}
