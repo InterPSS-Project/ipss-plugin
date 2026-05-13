@@ -22,7 +22,7 @@ import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 
-public class OptAdj_Texas2K_Sample {
+public class OptAdjGen_Texas2K_Sample {
 	static class DblBuffer {
 		double val;
 	}
