@@ -132,9 +132,11 @@ public class GenStateOptimizer extends BaseStateOptimizer{
             objective.set(i, 1.0/senLimit);
         }
         for (int i = genSize + secConstrainDataList.size(); i < totalVars - 1; i++) {
-            objective.set(i, 0.5);
+            double weight = getGenConstrainDataList().get(i-(genSize + secConstrainDataList.size())).isLoad()?1:0.5;
+            objective.set(i, weight);
         }
         objective.set(totalVars - 1, 1.0);
+
         result = model.minimise();
         
 //        System.out.println("Optimisation status: " + result.getState());
