@@ -99,7 +99,7 @@ public class IEEE14_OptAdj_N1ScanSSAResult_Test extends CorePluginTestSetup {
 		assertTrue(cnt.getCount() == 18, ""+cnt.getCount());
 		
 		AclfNetContigencyOptimizer optimizer = new AclfNetContigencyOptimizer(dclfAlgo);
-		optimizer.optimize(ssaResults, 100);
+		optimizer.optimize(ssaResults, 100, true);
 		
 		Map<String, Double> resultMap = optimizer.getResultMap();
 		System.out.println(resultMap);
