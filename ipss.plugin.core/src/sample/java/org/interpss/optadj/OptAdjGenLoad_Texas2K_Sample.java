@@ -71,23 +71,12 @@ public class OptAdjGenLoad_Texas2K_Sample {
 		optimizer.optimize(loadingThreshold, false);
 		
 		timer.log("Opt");
+
+		System.out.println("Optimization gen result: " + optimizer.getResultGenMap());
+		System.out.println("Optimization load result: " + optimizer.getResultLoadMap());
 		
-		Map<String, Double> resultMap = optimizer.getResultMap();
-		// PSSE import names: Gen:GenNo(BusName), Load:LoadNo(BusName)
-		Map<String, Double> genResultMap = new LinkedHashMap<>();
-		Map<String, Double> loadResultMap = new LinkedHashMap<>();
-		resultMap.forEach((name, pu) -> {
-			if (name.startsWith("Gen:")) {
-				genResultMap.put(name, pu);
-			} else if (name.startsWith("Load:")) {
-				loadResultMap.put(name, pu);
-			}
-		});
-		System.out.println("Optimization gen result: " + genResultMap);
-		System.out.println("Optimization load result: " + loadResultMap);
-		
-		System.out.println("Optimization gen size: " + optimizer.getOptimizer().getGenSize());
-		System.out.println("Optimization gen constrain size: " + optimizer.getOptimizer().getGenConstrainDataList().size());
+		System.out.println("Optimization gen/load size: " + optimizer.getOptimizer().getGenSize());
+		System.out.println("Optimization gen/load constrain size: " + optimizer.getOptimizer().getGenConstrainDataList().size());
 		System.out.println("Optimization sec constrain size: " + optimizer.getOptimizer().getSecConstrainDataList().size());
 	
 		// Dclf after the optimization, Dclf gen has been adjusted
