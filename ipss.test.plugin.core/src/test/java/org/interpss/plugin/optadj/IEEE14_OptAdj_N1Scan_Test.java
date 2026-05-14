@@ -70,7 +70,7 @@ public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
 		assertTrue(cnt.getCount() == 18, ""+cnt.getCount());
 		
 		AclfNetContigencyOptimizer optimizer = new AclfNetContigencyOptimizer(dclfAlgo);
-		optimizer.optimize(100);
+		optimizer.optimize(100, true);
 		
 		Map<String, Double> resultMap = optimizer.getResultMap();
 		System.out.println(resultMap);
