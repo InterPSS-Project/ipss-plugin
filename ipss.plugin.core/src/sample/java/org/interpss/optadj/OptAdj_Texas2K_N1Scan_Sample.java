@@ -68,7 +68,7 @@ public class OptAdj_Texas2K_N1Scan_Sample {
 		System.out.println("Total number of branches over limit before OptAdj: " + cnt.getCount());
 		 
 		AclfNetContigencyOptimizer optimizer = new AclfNetContigencyOptimizer(dclfAlgo);
-		optimizer.optimize(100);
+		optimizer.optimize(100, false);
 		
 		Map<String, Double> resultMap = optimizer.getResultMap();
 		System.out.println("Optimization result: " + resultMap);

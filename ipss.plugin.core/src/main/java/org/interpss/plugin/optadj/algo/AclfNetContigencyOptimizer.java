@@ -43,7 +43,7 @@ public class AclfNetContigencyOptimizer extends AclfNetGenLoadOptimizer {
 	public void optimize(double threshold, Set<String> outBranchIdSet) {
 		this.outBranchIdSet = outBranchIdSet;
 		
-		super.optimize(threshold);
+		super.optimize(threshold, true);
 	}
 	
 	@Override
