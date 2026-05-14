@@ -271,6 +271,39 @@ public class AclfNetGenLoadOptimizer extends BaseAclfNetOptimizer {
 	}
 
 	/**
+	 * Get the optimization result map
+	 * 
+	 * @return the optimization result map, key: generator or load name, value: adjustment in PU
+	 */
+	public Map<String, Double> getResultGenMap() {
+		Map<String, Double> resultMap = new HashMap<>();
+		double baseMva = dclfAlgo.getNetwork().getBaseMva();
+		for (int i = 0; i < controlGenMap.size(); i++) {
+			if (Math.abs(getOptimizer().getPoint()[i]) > 1) {
+				AclfGen gen = controlGenMap.get(i);
+				resultMap.put("Gen:" + gen.getName(), getOptimizer().getPoint()[i] / baseMva);
+			}
+		}
+		return resultMap;
+	}
+
+	/**
+	 * Get the optimization result map
+	 * 
+	 * @return the optimization result map, key: generator or load name, value: adjustment in PU
+	 */
+	public Map<String, Double> getResultLoadMap() {
+		Map<String, Double> resultMap = new HashMap<>();
+		double baseMva = dclfAlgo.getNetwork().getBaseMva();
+		controlLoadMap.forEach((index, load) -> {
+			if (Math.abs(getOptimizer().getPoint()[index]) > 1) {
+				resultMap.put("Load:" + load.getName(), getOptimizer().getPoint()[index] / baseMva);
+			}
+		});
+		return resultMap;
+	}
+
+	/**
 	 * Update the DCLF algorithm object gen.adjust based on the optimization result
 	 */
 	protected void updatedDclfAlgo() {
