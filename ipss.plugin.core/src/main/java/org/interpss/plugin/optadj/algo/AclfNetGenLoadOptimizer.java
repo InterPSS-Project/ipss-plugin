@@ -1,8 +1,8 @@
 package org.interpss.plugin.optadj.algo;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -49,6 +49,7 @@ public class AclfNetGenLoadOptimizer extends BaseAclfNetOptimizer {
 	// control generator map used in the optimization, key: index used in the optimizer, value: AclfGen object
 	protected Map<Integer, AclfGen> controlGenMap;
 	
+	// control load map used in the optimization, key: index used in the optimizer, value: AclfLoad object
 	protected Map<Integer, AclfLoad> controlLoadMap;
 	
 	/**
@@ -70,45 +71,50 @@ public class AclfNetGenLoadOptimizer extends BaseAclfNetOptimizer {
 	}
 
 	/**
-	 * Optimize the generator state of the network
+	 * Optimize the generator/load state of the network
 	 * 
 	 * @param threshold over limit threshold in percentage
+	 * @param adjustGenOnly whether only adjust the generator state
 	 */
-	public void optimize(double threshold) {
-		optimize(null, threshold);
+	public void optimize(double threshold, boolean adjustGenOnly) {
+		optimize(null, threshold, adjustGenOnly);
 	}
 	
 	/**
-	 * Optimize the generator state of the network based on the SSA analysis results.
+	 * Optimize the generator/load state of the network based on the SSA analysis results.
 	 * 
-	 * Please note : When SSA result is provided, we only select the generators with large enough Sen
+	 * Please note : When SSA result is provided, we only select the generators/loads with large enough Sen
 		             related to the over limit branches for the optimization
 	 * 
 	 * @param result SSA (basecase plus optional N-1) analysis result container
 	 * @param threshold over limit threshold in percentage
+	 * @param adjustGenOnly whether only adjust the generator state
 	 */
-	public void optimize(AclfNetSsaResultContainer result, double threshold) {
+	public void optimize(AclfNetSsaResultContainer result, double threshold, boolean adjustGenOnly) {
 		if (this.getOptimizer() == null)
 			this.setOptimizer(new GenStateOptimizer());
 		
-		Set<AclfGen> controlGenSet = buildControlGenSet();
-		Set<AclfLoad> controlLoadSet = buildControlLoadSet();
-		
-		// we only calculate GFS matrix for all generators
+		Set<AclfGen> fullGenSet = buildControlGenSet();
+		Set<AclfLoad> fullLoadSet = buildControlLoadSet();
 		AclfNetGFSsHelper helper = new AclfNetGFSsHelper((AclfNetwork) dclfAlgo.getNetwork());
-		Sen2DMatrix gsfMatrix = helper.calGenLoadGFS(controlGenSet, controlLoadSet);
+		Sen2DMatrix gsfMatrix = helper.calGenLoadGFS(fullGenSet,
+				adjustGenOnly ? Collections.emptySet() : fullLoadSet);
 		
-		// When SSA result is provided, we only select the generators with large enough Sen
-		// related to the over limit branches for the optimization
-//		if (result != null) {
-//			controlGenSet = buildControlGenSet(gsfMatrix, result);
-//			controlLoadSet = buildControlLoadSet(gsfMatrix, result);
-//		}
+		Set<AclfGen> controlGenSet;
+		Set<AclfLoad> controlLoadSet;
+		if (result != null) {
+			controlGenSet = buildControlGenSet(gsfMatrix, result);
+			if (controlGenSet.isEmpty()) {
+				controlGenSet = new LinkedHashSet<>(fullGenSet);
+			}
+			controlLoadSet = adjustGenOnly ? Collections.emptySet() : buildControlLoadSet(gsfMatrix, result);
+		} else {
+			controlGenSet = fullGenSet;
+			controlLoadSet = adjustGenOnly ? Collections.emptySet() : fullLoadSet;
+		}
 		
 		// create the control generator map from the control generator set
 		controlGenMap = AclfNetGFSsHelper.arrangeIndex(controlGenSet);
-		
-		// create the control load map from the control generator set
 		controlLoadMap = AclfNetGFSsHelper.arrangeIndex(controlLoadSet, controlGenMap.size());
 		
 		// build the branch section constraints based on the GFS matrix
@@ -116,8 +122,6 @@ public class AclfNetGenLoadOptimizer extends BaseAclfNetOptimizer {
 
 		// build the generator output constraints
 		buildGenConstrain();
-		
-		// build the load output constraints
 		buildLoadConstrain();
 
 		// perform the optimization
@@ -127,40 +131,43 @@ public class AclfNetGenLoadOptimizer extends BaseAclfNetOptimizer {
 		updatedDclfAlgo();
 	}
 
-//	/**
-//	 * Build the control load set based on the SSA result
-//	 *
-//	 * @param gfsMatrix GFS matrix for all loads
-//	 * @param result SSA result container
-//	 * @return the control load set
-//	 */
-//	protected Set<AclfLoad> buildControlLoadSet(Sen2DMatrix gfsMatrix, AclfNetSsaResultContainer result) {
-//		Set<AclfLoad> loadSet = new LinkedHashSet<AclfLoad>();
-//		result.getBaseOverLimitInfo().forEach(info -> {
-//			processLoadSet(gfsMatrix, loadSet, info.getBranch().getId());
-//		});
-//
-//		result.getCaOverLimitInfo().forEach(info -> {
-//			processLoadSet(gfsMatrix, loadSet, info.aclfBranch.getId());
-//			processLoadSet(gfsMatrix, loadSet, info.contingency.getOutageEquip().getBranch().getId());
-//		});
-//		return loadSet;
-//	}
-//
-//	private void processLoadSet(Sen2DMatrix gfsMatrix, Set<AclfLoad> loadSet, String branchId) {
-//		AclfNetwork net = dclfAlgo.getAclfNet();
-//		AclfBranch branch = net.getBranch(branchId);
-//		int branchNo = branch.getSortNumber();
-//		net.getAclfLoadNameLookupTable().forEach((name, load) -> {
-//			if (load.isActive()) {
-//				int busNo = load.getParentBus().getSortNumber();
-//				double sen = gfsMatrix.get(busNo, branchNo);
-//				if (Math.abs(sen) > SEN_THRESHOLD) {
-//					loadSet.add(load);
-//				}
-//			}
-//		});
-//	}
+	/**
+	 * Build the control load set based on the SSA result.
+	 *
+	 * @param gfsMatrix GFS matrix for candidate control buses
+	 * @param result SSA result container
+	 * @return the control load set
+	 */
+	protected Set<AclfLoad> buildControlLoadSet(Sen2DMatrix gfsMatrix, AclfNetSsaResultContainer result) {
+		Set<AclfLoad> loadSet = new LinkedHashSet<>();
+		result.getBaseOverLimitInfo().forEach(info -> {
+			processLoadSet(gfsMatrix, loadSet, info.getBranch().getId());
+		});
+
+		result.getCaOverLimitInfo().forEach(info -> {
+			processLoadSet(gfsMatrix, loadSet, info.aclfBranch.getId());
+			processLoadSet(gfsMatrix, loadSet, info.contingency.getOutageEquip().getBranch().getId());
+		});
+		return loadSet;
+	}
+
+	private void processLoadSet(Sen2DMatrix gfsMatrix, Set<AclfLoad> loadSet, String branchId) {
+		AclfNetwork net = dclfAlgo.getAclfNet();
+		if (net.getAclfLoadNameLookupTable() == null) {
+			net.createAclfLoadNameLookupTable(true);
+		}
+		AclfBranch branch = net.getBranch(branchId);
+		int branchNo = branch.getSortNumber();
+		net.getAclfLoadNameLookupTable().forEach((name, load) -> {
+			if (load.isActive()) {
+				int busNo = load.getParentBus().getSortNumber();
+				double sen = gfsMatrix.get(busNo, branchNo);
+				if (Math.abs(sen) > SEN_THRESHOLD) {
+					loadSet.add(load);
+				}
+			}
+		});
+	}
 
 	protected void buildLoadConstrain() {
 		AclfNetwork net = dclfAlgo.getAclfNet();
@@ -193,41 +200,44 @@ public class AclfNetGenLoadOptimizer extends BaseAclfNetOptimizer {
 				.filter(gen -> gen.isActive()).collect(Collectors.toSet());
 	}
 
-//	/**
-//	 * Build the control generator set based on the SSA result
-//	 *
-//	 * @param gfsMatrix GFS matrix for all generators
-//	 * @param result SSA result container
-//	 * @return the control generator set
-//	 */
-//	protected Set<AclfGen> buildControlGenSet(Sen2DMatrix gfsMatrix, AclfNetSsaResultContainer result) {
-//		Set<AclfGen> genSet = new LinkedHashSet<AclfGen>();
-//		result.getBaseOverLimitInfo().forEach(info -> {
-//			processGenSet(gfsMatrix, genSet, info.getBranch().getId());
-//
-//		});
-//
-//		result.getCaOverLimitInfo().forEach(info -> {
-//			processGenSet(gfsMatrix, genSet, info.aclfBranch.getId());
-//			processGenSet(gfsMatrix, genSet, info.contingency.getOutageEquip().getBranch().getId());
-//		});
-//		return genSet;
-//	}
+	/**
+	 * Build the control generator set based on the SSA result.
+	 *
+	 * @param gfsMatrix GFS matrix for candidate control buses
+	 * @param result SSA result container
+	 * @return the control generator set
+	 */
+	protected Set<AclfGen> buildControlGenSet(Sen2DMatrix gfsMatrix, AclfNetSsaResultContainer result) {
+		Set<AclfGen> genSet = new LinkedHashSet<>();
+		result.getBaseOverLimitInfo().forEach(info -> {
+			processGenSet(gfsMatrix, genSet, info.getBranch().getId());
+		});
 
-//	private void processGenSet(Sen2DMatrix gfsMatrix, Set<AclfGen> genSet, String branchId) {
-//		AclfNetwork net = dclfAlgo.getAclfNet();
-//		AclfBranch branch = net.getBranch(branchId);
-//		int branchNo = branch.getSortNumber();
-//		net.getAclfGenNameLookupTable().forEach((name, gen) -> {
-//			if (gen.isActive()) {
-//				int busNo = gen.getParentBus().getSortNumber();
-//				double sen = gfsMatrix.get(busNo, branchNo);
-//				if (Math.abs(sen) > SEN_THRESHOLD) {
-//					genSet.add(gen);
-//				}
-//			}
-//		});
-//	}
+		result.getCaOverLimitInfo().forEach(info -> {
+			processGenSet(gfsMatrix, genSet, info.aclfBranch.getId());
+			processGenSet(gfsMatrix, genSet, info.contingency.getOutageEquip().getBranch().getId());
+		});
+		return genSet;
+	}
+
+	private void processGenSet(Sen2DMatrix gfsMatrix, Set<AclfGen> genSet, String branchId) {
+		AclfNetwork net = dclfAlgo.getAclfNet();
+		if (net.getAclfGenNameLookupTable() == null) {
+			net.createAclfGenNameLookupTable(true);
+		}
+		AclfBranch branch = net.getBranch(branchId);
+		int branchNo = branch.getSortNumber();
+		net.getAclfGenNameLookupTable().forEach((name, gen) -> {
+			if (gen.isActive()) {
+				int busNo = gen.getParentBus().getSortNumber();
+				double sen = gfsMatrix.get(busNo, branchNo);
+				if (Math.abs(sen) > SEN_THRESHOLD) {
+					genSet.add(gen);
+				}
+			}
+		});
+	}
+
 	
 	/**
 	 * Get the optimization result map
