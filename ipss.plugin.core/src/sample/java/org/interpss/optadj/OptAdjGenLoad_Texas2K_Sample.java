@@ -67,7 +67,7 @@ public class OptAdjGenLoad_Texas2K_Sample {
 		PerformanceTimer timer = new PerformanceTimer();
 		// perform the Optimization adjustment
 		AclfNetGenLoadOptimizer optimizer = new AclfNetGenLoadOptimizer(dclfAlgo);
-		optimizer.optimize(loadingThreshold);
+		optimizer.optimize(loadingThreshold, false);
 		
 		timer.log("Opt");
 		
