@@ -3,6 +3,7 @@ package org.interpss.optadj;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -72,7 +73,18 @@ public class OptAdjGenLoad_Texas2K_Sample {
 		timer.log("Opt");
 		
 		Map<String, Double> resultMap = optimizer.getResultMap();
-		System.out.println("Optimization result: " + resultMap);
+		// PSSE import names: Gen:GenNo(BusName), Load:LoadNo(BusName)
+		Map<String, Double> genResultMap = new LinkedHashMap<>();
+		Map<String, Double> loadResultMap = new LinkedHashMap<>();
+		resultMap.forEach((name, pu) -> {
+			if (name.startsWith("Gen:")) {
+				genResultMap.put(name, pu);
+			} else if (name.startsWith("Load:")) {
+				loadResultMap.put(name, pu);
+			}
+		});
+		System.out.println("Optimization gen result: " + genResultMap);
+		System.out.println("Optimization load result: " + loadResultMap);
 		
 		System.out.println("Optimization gen size: " + optimizer.getOptimizer().getGenSize());
 		System.out.println("Optimization gen constrain size: " + optimizer.getOptimizer().getGenConstrainDataList().size());
