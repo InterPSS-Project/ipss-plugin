@@ -51,7 +51,7 @@ public class IEEE14_OptAdj_BasecaseSSAResult_Test extends CorePluginTestSetup {
 		
 		// perform the Optimization adjustment
 		AclfNetGenLoadOptimizer optimizer = new AclfNetGenLoadOptimizer(dclfAlgo);
-		optimizer.optimize(ssaResults, 100);
+		optimizer.optimize(ssaResults, 100, true);
 		
 		Map<String, Double> resultMap = optimizer.getResultMap();
 		System.out.println(resultMap);
