@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.IntStream;
 
-import org.interpss.plugin.contingency.result.ContingencyResultContainer;
+import org.interpss.plugin.contingency.result.AclfContingencyResultContainer;
 import org.interpss.plugin.contingency.result.AclfContingencyResultRec;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -40,7 +40,7 @@ public class ParallelAclfContingencyAnalyzer <TR extends AclfContingencyResultRe
      * @param useParallel Whether to use parallel processing
      * @return ContingencyResult containing analysis results
      */
-    public ContingencyResultContainer<TR> analyzeContingencies(int totalCases, 
+    public AclfContingencyResultContainer<TR> analyzeContingencies(int totalCases, 
                                                        AclfContingencyConfig config, boolean useParallel) {
         
         System.out.println("Starting " + (useParallel ? "parallel" : "sequential") + 
@@ -108,20 +108,20 @@ public class ParallelAclfContingencyAnalyzer <TR extends AclfContingencyResultRe
         System.out.println("Total successful contingencies: " + totalSuccessCount + " out of " + totalCases);
         System.out.println("Success rate: " + String.format("%.2f%%", (double) totalSuccessCount / totalCases * 100));
         
-        return new ContingencyResultContainer<TR>(caResults, totalSuccessCount, totalCases, executionTime);
+        return new AclfContingencyResultContainer<TR>(caResults, totalSuccessCount, totalCases, executionTime);
     }
     
     /**
      * Convenience method with default configuration and parallel processing enabled
      */
-    public ContingencyResultContainer<TR> analyzeContingencies(int totalCases) {
+    public AclfContingencyResultContainer<TR> analyzeContingencies(int totalCases) {
         return analyzeContingencies(totalCases, new AclfContingencyConfig(), true);
     }
     
     /**
      * Convenience method with default configuration and configurable parallel processing
      */
-    public ContingencyResultContainer<TR> analyzeContingencies(int totalCases, boolean useParallel) {
+    public AclfContingencyResultContainer<TR> analyzeContingencies(int totalCases, boolean useParallel) {
         return analyzeContingencies(totalCases, new AclfContingencyConfig(), useParallel);
     }
     
@@ -143,7 +143,7 @@ public class ParallelAclfContingencyAnalyzer <TR extends AclfContingencyResultRe
     /**
      * Print detailed results - useful for debugging from Python
      */
-    public static <TR extends AclfContingencyResultRec> void printDetailedResults(ContingencyResultContainer<TR> result) {
+    public static <TR extends AclfContingencyResultRec> void printDetailedResults(AclfContingencyResultContainer<TR> result) {
         System.out.println("\n=== Detailed Contingency Analysis Results ===");
         System.out.println("Total Cases: " + result.getTotalCases());
         System.out.println("Successful Cases: " + result.getTotalSuccessCount());
