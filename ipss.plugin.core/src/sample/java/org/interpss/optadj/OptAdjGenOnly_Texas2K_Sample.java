@@ -5,24 +5,27 @@ import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.interpss.numeric.datatype.AtomicCounter;
 import org.interpss.numeric.datatype.Counter;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.plugin.optadj.algo.AclfNetBusOptimizer;
+import org.interpss.plugin.optadj.algo.AclfNetGenLoadOptimizer;
+import org.interpss.plugin.optadj.algo.util.AclfNetGFSsHelper;
 import org.interpss.plugin.optadj.algo.util.Sen2DMatrix;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
+import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 
-public class OptAdjGen_Texas2K_Sample {
+public class OptAdjGenOnly_Texas2K_Sample {
 	static class DblBuffer {
 		double val;
 	}
@@ -63,8 +66,8 @@ public class OptAdjGen_Texas2K_Sample {
 		
 		PerformanceTimer timer = new PerformanceTimer();
 		// perform the Optimization adjustment
-		AclfNetBusOptimizer optimizer = new AclfNetBusOptimizer(dclfAlgo);
-		optimizer.optimize(loadingThreshold);
+		AclfNetGenLoadOptimizer optimizer = new AclfNetGenLoadOptimizer(dclfAlgo);
+		optimizer.optimize(loadingThreshold, true);
 		
 		timer.log("Opt");
 		
@@ -80,8 +83,12 @@ public class OptAdjGen_Texas2K_Sample {
 		
 		// check the branch loading after the optimization adjustment
 		double baseMVA = aclfNet.getBaseMva();
-		Set<String> controlBusIdSet = optimizer.getControlBusIdSet();
-		Sen2DMatrix controlBusGfsMatrix = controlBusIdSet.isEmpty() ? null : optimizer.getGFSsHelper().calGFS(controlBusIdSet);
+		Set<String> controlBusIdSet = optimizer.getControlGenMap().values().stream()
+				.map(AclfGen::getParentBus)
+				.map(bus -> bus.getId())
+				.collect(Collectors.toSet());
+		AclfNetGFSsHelper gfsHelper = new AclfNetGFSsHelper(aclfNet);
+		Sen2DMatrix controlBusGfsMatrix = controlBusIdSet.isEmpty() ? null : gfsHelper.calGFS(controlBusIdSet);
 		
 		AtomicCounter cnt1 = new AtomicCounter();
 		maxLoading.val = 0.0;
