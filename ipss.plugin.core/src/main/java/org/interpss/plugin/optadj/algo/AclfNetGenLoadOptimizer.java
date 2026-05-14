@@ -71,6 +71,15 @@ public class AclfNetGenLoadOptimizer extends BaseAclfNetOptimizer {
 	}
 
 	/**
+	 * Get the control load map used in the optimization
+	 *
+	 * @return the control load map
+	 */
+	public Map<Integer, AclfLoad> getControlLoadMap() {
+		return controlLoadMap;
+	}
+
+	/**
 	 * Optimize the generator/load state of the network
 	 * 
 	 * @param threshold over limit threshold in percentage
@@ -242,7 +251,7 @@ public class AclfNetGenLoadOptimizer extends BaseAclfNetOptimizer {
 	/**
 	 * Get the optimization result map
 	 * 
-	 * @return the optimization result map, key: generator name, value: adjusted Pgen in PU
+	 * @return the optimization result map, key: generator or load name, value: adjustment in PU
 	 */
 	public Map<String, Double> getResultMap() {
 		Map<String, Double> resultMap = new HashMap<>();
@@ -253,12 +262,11 @@ public class AclfNetGenLoadOptimizer extends BaseAclfNetOptimizer {
 				resultMap.put(gen.getName(), getOptimizer().getPoint()[i] / baseMva);
 			}
 		}
-		for (int i = controlGenMap.size(); i < controlLoadMap.size(); i++) {
-			if (Math.abs(getOptimizer().getPoint()[i]) > 1) {
-				AclfLoad load = controlLoadMap.get(i);
-				resultMap.put(load.getName(), getOptimizer().getPoint()[i] / baseMva);
+		controlLoadMap.forEach((index, load) -> {
+			if (Math.abs(getOptimizer().getPoint()[index]) > 1) {
+				resultMap.put(load.getName(), getOptimizer().getPoint()[index] / baseMva);
 			}
-		}
+		});
 		return resultMap;
 	}
 
