@@ -7,13 +7,13 @@ import java.util.Map;
  * 
  * @author InterPSS Team
  */
-public class ContingencyResultContainer <TR extends AclfContingencyResultRec> {
+public class AclfContingencyResultContainer <TR extends AclfContingencyResultRec> {
         private final Map<String, TR> caResults;
         private final long totalSuccessCount;
         private final int totalCases;
         private final long executionTimeMs;
         
-        public ContingencyResultContainer(Map<String, TR> caResults, long totalSuccessCount, 
+        public AclfContingencyResultContainer(Map<String, TR> caResults, long totalSuccessCount, 
                                int totalCases, long executionTimeMs) {
             this.caResults = caResults;
             this.totalSuccessCount = totalSuccessCount;
