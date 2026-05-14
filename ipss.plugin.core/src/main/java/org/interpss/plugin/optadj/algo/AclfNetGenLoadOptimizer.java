@@ -91,7 +91,6 @@ public class AclfNetGenLoadOptimizer extends BaseAclfNetOptimizer {
 		if (this.getOptimizer() == null)
 			this.setOptimizer(new GenStateOptimizer());
 		
-		
 		Set<AclfGen> controlGenSet = buildControlGenSet();
 		Set<AclfLoad> controlLoadSet = buildControlLoadSet();
 		
@@ -109,7 +108,7 @@ public class AclfNetGenLoadOptimizer extends BaseAclfNetOptimizer {
 		// create the control generator map from the control generator set
 		controlGenMap = AclfNetGFSsHelper.arrangeIndex(controlGenSet);
 		
-		// create the control generator map from the control generator set
+		// create the control load map from the control generator set
 		controlLoadMap = AclfNetGFSsHelper.arrangeIndex(controlLoadSet, controlGenMap.size());
 		
 		// build the branch section constraints based on the GFS matrix
@@ -118,7 +117,7 @@ public class AclfNetGenLoadOptimizer extends BaseAclfNetOptimizer {
 		// build the generator output constraints
 		buildGenConstrain();
 		
-		// build the generator output constraints
+		// build the load output constraints
 		buildLoadConstrain();
 
 		// perform the optimization
