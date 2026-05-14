@@ -25,7 +25,7 @@ import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
 
-public class OptAdj_Texas2K_N1Scan_Sample {
+public class OptAdjGenLoad_Texas2K_N1Scan_Sample {
 	public static void main(String args[]) throws Exception {
 		AclfNetwork aclfNet = IpssAdapter.importAclfNet("ipss.plugin.core/testData/psse/v36/Texas2k_series24_case1_2016summerPeak_v36.RAW")
 				.setFormat(PSSE)
