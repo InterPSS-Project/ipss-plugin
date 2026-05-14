@@ -23,7 +23,7 @@ public class GenStateOptimizer extends BaseStateOptimizer{
 	private double senLimit = 0.05;
 
 	public void optimize(int genOptSizeLimit, int secOptSizeLimit) {
-		log.info("gen constrain size:" + this.deviceConstrainDataList.size() + ", " + 
+		log.info("device constrain size:" + this.deviceConstrainDataList.size() + ", " + 
 							"section constrain size:"	+ this.secConstrainDataList.size());
 		 // Determine genSize
         deviceConstrainDataList.forEach(data -> {
