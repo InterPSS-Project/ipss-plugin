@@ -150,7 +150,7 @@ public class AclfNetGenLoadOptimizer extends BaseAclfNetOptimizer {
 	protected Set<AclfLoad> buildControlLoadSet(Sen2DMatrix gfsMatrix, AclfNetSsaResultContainer result) {
 		Set<AclfLoad> loadSet = new LinkedHashSet<>();
 		result.getBaseOverLimitInfo().forEach(info -> {
-			processLoadSet(gfsMatrix, loadSet, info.getBranch().getId());
+			processLoadSet(gfsMatrix, loadSet, info.dclfBranch.getId());
 		});
 
 		result.getCaOverLimitInfo().forEach(info -> {
@@ -219,7 +219,7 @@ public class AclfNetGenLoadOptimizer extends BaseAclfNetOptimizer {
 	protected Set<AclfGen> buildControlGenSet(Sen2DMatrix gfsMatrix, AclfNetSsaResultContainer result) {
 		Set<AclfGen> genSet = new LinkedHashSet<>();
 		result.getBaseOverLimitInfo().forEach(info -> {
-			processGenSet(gfsMatrix, genSet, info.getBranch().getId());
+			processGenSet(gfsMatrix, genSet, info.dclfBranch.getId());
 		});
 
 		result.getCaOverLimitInfo().forEach(info -> {

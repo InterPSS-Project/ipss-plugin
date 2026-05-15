@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 import org.interpss.datatype.base.BaseJSONBean;
 
 import com.interpss.algo.parallel.BranchCAResultRec;
-import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 
 
 /** 
@@ -24,26 +23,26 @@ import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 */
 public class AclfNetSsaResultContainer extends BaseJSONBean{
 	// a list of branches that are over the limit in the base case
-	private List<DclfAlgoBranch> baseOverLimitInfo;
+	private List<BranchDclfResultRec> baseOverLimitInfo;
 	// a list of branches that are over the limit in the contingency situation	
 	private List<BranchCAResultRec> caOverLimitInfo;
 
 	public AclfNetSsaResultContainer() {
 		super();
-		baseOverLimitInfo = new CopyOnWriteArrayList<DclfAlgoBranch>();
+		baseOverLimitInfo = new CopyOnWriteArrayList<BranchDclfResultRec>();
 		caOverLimitInfo = new CopyOnWriteArrayList<BranchCAResultRec>();
 	}
 
-	public List<DclfAlgoBranch> getBaseOverLimitInfo() {
+	public List<BranchDclfResultRec> getBaseOverLimitInfo() {
 		return baseOverLimitInfo;
 	}
 
-	public Map<String, DclfAlgoBranch> toBaseOverLimitInfoMap() {
+	public Map<String, BranchDclfResultRec> toBaseOverLimitInfoMap() {
 		return baseOverLimitInfo.stream()
-			.collect(Collectors.toMap(DclfAlgoBranch::getId, Function.identity()));
+			.collect(Collectors.toMap(rec -> rec.dclfBranch.getId(), Function.identity()));
 	}
 
-	public void setBaseOverLimitInfo(List<DclfAlgoBranch> baseOverLimitInfo) {
+	public void setBaseOverLimitInfo(List<BranchDclfResultRec> baseOverLimitInfo) {
 		this.baseOverLimitInfo = baseOverLimitInfo;
 	}
 
