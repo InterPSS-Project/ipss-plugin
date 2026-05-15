@@ -7,10 +7,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ForkJoinPool;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.interpss.plugin.contingency.result.DclfContingencyResultRec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +43,7 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
 	 * @param parallelismLevel Number of threads to use for parallel execution
 	 * @return ConcurrentLinkedQueue containing all contingency results that exceed threshold
 	 */
-	public static ConcurrentLinkedQueue<DclfContingencyResultRec> executeContingencyAnalysis(
+	public static ConcurrentLinkedQueue<BranchCAResultRec> executeContingencyAnalysis(
 	        AclfNetwork aclfNet,
 	        List<DclfBranchOutage> contingencyList,
 	        Set<String> monitoredBranchIds,
@@ -56,19 +54,8 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
 	            monitoredBranchIds == null ? "all" : monitoredBranchIds.size(),
 	            parallelismLevel);
 	    
-	    ConcurrentLinkedQueue<BranchCAResultRec> caResultRecords = 
-	    		performContingencyAnalysis(aclfNet, contingencyList, monitoredBranchIds,
-	    				config.getOverloadThreshold(), config.isDclfInclLoss(), parallelismLevel);
-	    // Convert BranchCAResultRec to DclfContingencyResultRec for GUI output
-	    return caResultRecords.stream()
-	    		.map(caResultRec -> new DclfContingencyResultRec(
-	    				caResultRec.aclfBranch.getId(),
-	    				caResultRec.contingency.getId().replaceFirst("contBranch:", ""),
-	    				caResultRec.getPostFlowMW(),
-	    				caResultRec.calBranchRateB(), // Line rating in MVA
-	    				caResultRec.calLoadingPercent()
-	    		))
-	    		.collect(Collectors.toCollection(ConcurrentLinkedQueue::new));
+	    return performContingencyAnalysis(aclfNet, contingencyList, monitoredBranchIds,
+	    		config.getOverloadThreshold(), config.isDclfInclLoss(), parallelismLevel);
 	}
 	
     /**
