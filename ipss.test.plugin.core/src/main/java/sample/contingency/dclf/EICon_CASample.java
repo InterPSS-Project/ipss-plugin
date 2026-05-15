@@ -14,13 +14,12 @@ import org.interpss.plugin.contingency.DclfContingencyConfig;
 import org.interpss.plugin.contingency.ParallelDclfContingencyAnalyzer;
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
 import org.interpss.plugin.contingency.definition.MonitoredBranchRecord;
-import org.interpss.plugin.contingency.result.DclfContingencyResultRec;
 import org.interpss.plugin.contingency.util.ContingencyFileUtil;
 import org.interpss.plugin.contingency.util.DclfContingencyHelper;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 
-import com.interpss.core.aclf.AclfBranch;
+import com.interpss.algo.parallel.BranchCAResultRec;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
@@ -62,19 +61,19 @@ public class EICon_CASample {
 	    config.setDclfInclLoss(true);
 		config.setOverloadThreshold(100.0); // in percentage	
 
-		ConcurrentLinkedQueue<DclfContingencyResultRec> results = 
+		ConcurrentLinkedQueue<BranchCAResultRec> results = 
 				ParallelDclfContingencyAnalyzer.executeContingencyAnalysis(
 						net, dclfContList, monitoredBranchIds, config, 16);	
 
 		// print the results
 		int cnt = 0;
-		for (DclfContingencyResultRec rec : results) {
+		for (BranchCAResultRec rec : results) {
 			//System.out.println(rec.toString());
-			String branchId = rec.getBranchId();
-			String contingencyName = rec.getContingencyName();
+			String branchId = rec.aclfBranch.getId();
+			String contingencyName = rec.contingency.getId().replaceFirst("contBranch:", "");
 			Double postFlowMW = rec.getPostFlowMW();
-			Double lineRatingMW = rec.getLineRatingMW();
-			Double loadingPercent = rec.getLoadingPercent();
+			Double lineRatingMW = rec.calBranchRateB();
+			Double loadingPercent = rec.calLoadingPercent();
 			if (cnt++ < 10)
 				System.out.println(String.format("{\n  \"branch_id\": \"%s\",\n  \"contingency_name\": \"%s\",\n  \"post_flow_mw\": %.2f,\n  \"line_rating_mw\": %.2f,\n  \"loading_percent\": %.2f\n}", 
 						branchId, contingencyName, postFlowMW, lineRatingMW, loadingPercent));
