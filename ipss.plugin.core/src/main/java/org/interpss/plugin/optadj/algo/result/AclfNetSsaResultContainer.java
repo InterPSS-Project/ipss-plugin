@@ -21,7 +21,7 @@ import com.interpss.algo.parallel.BranchCAResultRec;
 * 
 
 */
-public class AclfNetSsaResultContainer extends BaseJSONBean{
+public class AclfNetSsaResultContainer extends BaseJSONBean {
 	// a list of branches that are over the limit in the base case
 	private List<BranchDclfResultRec> baseOverLimitInfo;
 	// a list of branches that are over the limit in the contingency situation	
