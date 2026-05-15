@@ -1,7 +1,10 @@
 package org.interpss.plugin.optadj.algo.result;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.interpss.datatype.base.BaseJSONBean;
 
@@ -35,12 +38,22 @@ public class AclfNetSsaResultContainer extends BaseJSONBean{
 		return baseOverLimitInfo;
 	}
 
+	public Map<String, DclfAlgoBranch> toBaseOverLimitInfoMap() {
+		return baseOverLimitInfo.stream()
+			.collect(Collectors.toMap(DclfAlgoBranch::getId, Function.identity()));
+	}
+
 	public void setBaseOverLimitInfo(List<DclfAlgoBranch> baseOverLimitInfo) {
 		this.baseOverLimitInfo = baseOverLimitInfo;
 	}
 
 	public List<BranchCAResultRec> getCaOverLimitInfo() {
 		return caOverLimitInfo;
+	}
+
+	public Map<String, BranchCAResultRec> toCaOverLimitInfoMap() {
+		return caOverLimitInfo.stream()
+			.collect(Collectors.toMap(rec -> rec.aclfBranch.getId(), Function.identity()));
 	}
 
 	public void setCaOverLimitInfo(List<BranchCAResultRec> caOverLimitInfo) {
