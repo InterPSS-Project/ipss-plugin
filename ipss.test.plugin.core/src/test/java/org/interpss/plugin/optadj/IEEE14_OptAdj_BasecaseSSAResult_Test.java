@@ -58,7 +58,7 @@ public class IEEE14_OptAdj_BasecaseSSAResult_Test extends CorePluginTestSetup {
 		Map<String, Double> resultMap = optimizer.getResultMap();
 		System.out.println(resultMap);
 		
-		assertEquals(resultMap.get("Bus2-G1"), 0.5713, 0.0001);
+		assertEquals(resultMap.get("Gen:Bus2-G1"), 0.5713, 0.0001);
 		
 		System.out.println("Optimization gen size." + optimizer.getOptimizer().getGenSize());
 		System.out.println("Optimization gen constrain size." + optimizer.getOptimizer().getGenConstrainDataList().size());
@@ -78,10 +78,14 @@ public class IEEE14_OptAdj_BasecaseSSAResult_Test extends CorePluginTestSetup {
 				double loading = Math.abs(flowMw / dclfBranch.getBranch().getRatingMva1())*100;
 				if (loading > 90) {
 					cnt1.increment();
-
-					System.out.println("Branch: " + dclfBranch.getId() + "  " + flowMw +
-							" rating: " + dclfBranch.getBranch().getRatingMva1() +
-							" loading: " + loading);
+					BranchDclfResultRec rec = baseOverLimitInfoMap.get(dclfBranch.getId());
+					double originalFlowMw = rec.mwFlow;
+					double originalLoading = rec.loadingPercent;
+					System.out.println("Branch: " + dclfBranch.getId() + " flowMw(after): " + flowMw
+							+ " flowMw(original): " + originalFlowMw
+							+ " rating: " + dclfBranch.getBranch().getRatingMva1()
+							+ " loading%(after): " + loading
+							+ " loading%(original): " + originalLoading);
 						
 					}
 				});
