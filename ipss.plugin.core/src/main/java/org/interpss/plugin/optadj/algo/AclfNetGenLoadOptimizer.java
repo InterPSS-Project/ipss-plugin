@@ -255,18 +255,8 @@ public class AclfNetGenLoadOptimizer extends BaseAclfNetOptimizer {
 	 */
 	public Map<String, Double> getResultMap() {
 		Map<String, Double> resultMap = new HashMap<>();
-		double baseMva = dclfAlgo.getNetwork().getBaseMva();
-		for (int i = 0; i < controlGenMap.size(); i++) {
-			if (Math.abs(getOptimizer().getPoint()[i]) > 1) {
-				AclfGen gen = controlGenMap.get(i);
-				resultMap.put(gen.getName(), getOptimizer().getPoint()[i] / baseMva);
-			}
-		}
-		controlLoadMap.forEach((index, load) -> {
-			if (Math.abs(getOptimizer().getPoint()[index]) > 1) {
-				resultMap.put(load.getName(), getOptimizer().getPoint()[index] / baseMva);
-			}
-		});
+		resultMap.putAll(getResultGenMap());
+		resultMap.putAll(getResultLoadMap());
 		return resultMap;
 	}
 
