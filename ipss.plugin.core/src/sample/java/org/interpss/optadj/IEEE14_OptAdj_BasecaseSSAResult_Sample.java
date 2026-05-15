@@ -11,6 +11,7 @@ import org.interpss.numeric.datatype.LimitType;
 import org.interpss.plugin.optadj.algo.AclfNetGenLoadOptimizer;
 import org.interpss.plugin.optadj.algo.result.AclfNetSsaResultContainer;
 import org.interpss.plugin.optadj.algo.result.BranchDclfResultRec;
+import org.interpss.plugin.optadj.algo.result.BranchOptAdjustResultRec;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
@@ -39,7 +40,7 @@ public class IEEE14_OptAdj_BasecaseSSAResult_Sample {
 				if (loading > 100.0) {
 					cnt.increment();
 					// add the over limit branch to the SSA result container
-					ssaResults.getBaseOverLimitInfo().add(new BranchDclfResultRec(dclfBranch));
+					ssaResults.getBaseOverLimitInfo().add(new BranchOptAdjustResultRec(dclfBranch));
 					System.out.println("Over Limit Branch: " + dclfBranch.getId() + "  " + flowMw +
 							" rating: " + dclfBranch.getBranch().getRatingMva1() +
 							" loading: " + loading);
@@ -65,20 +66,22 @@ public class IEEE14_OptAdj_BasecaseSSAResult_Sample {
 		Map<String, BranchDclfResultRec> baseOverLimitInfoMap = ssaResults.toBaseOverLimitInfoMap();
 		dclfAlgo.getDclfAlgoBranchList().stream()
 			.forEach(dclfBranch -> {
-				BranchDclfResultRec rec = baseOverLimitInfoMap.get(dclfBranch.getId());
+				BranchOptAdjustResultRec rec = (BranchOptAdjustResultRec) baseOverLimitInfoMap.get(dclfBranch.getId());
 				if (rec != null) {
-					double originalFlowMw = rec.mwFlow;
-					double originalLoading = rec.loadingPercent;
-					double flowMw = dclfBranch.getDclfFlow() * baseMVA;
-					double loading = Math.abs(flowMw / dclfBranch.getBranch().getRatingMva1())*100;
-					System.out.println(String.format("Branch: %s flowMw(after): %.2f flowMw(original): %.2f rating: %.2f loading%%(after): %.2f loading%%(original): %.2f",
-							dclfBranch.getId(), flowMw, originalFlowMw,
-							dclfBranch.getBranch().getRatingMva1(), loading, originalLoading));
-					}
-				});
+					rec.adjustedMwFlow = dclfBranch.getDclfFlow() * baseMVA;
+					rec.adjustedLoadingPercent = Math.abs(rec.adjustedMwFlow / dclfBranch.getBranch().getRatingMva1())*100;
+				}
+			});
+
+		ssaResults.getBaseOverLimitInfo().forEach(rec -> {
+			BranchOptAdjustResultRec recAdj = (BranchOptAdjustResultRec) rec;
+			System.out.println(String.format("Branch: %s flowMw(optadj): %.2f flowMw(original): %.2f rating: %.2f loading%%(optadj): %.2f loading%%(original): %.2f",
+			recAdj.dclfBranch.getId(), recAdj.adjustedMwFlow, recAdj.mwFlow,
+			recAdj.dclfBranch.getBranch().getRatingMva1(), recAdj.adjustedLoadingPercent, recAdj.loadingPercent));
+		});		
 	}
 
-	private static AclfNetwork createTestCase() throws InterpssException {
+	public static AclfNetwork createTestCase() throws InterpssException {
 		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
 				.load("ipss.plugin.core/testData/adpter/ieee_format/ieee14.ieee")
