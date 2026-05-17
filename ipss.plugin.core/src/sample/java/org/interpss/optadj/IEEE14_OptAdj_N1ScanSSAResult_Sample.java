@@ -34,6 +34,9 @@ import java.util.Map;
 import org.interpss.numeric.datatype.AtomicCounter;
 import org.interpss.plugin.optadj.algo.AclfNetContigencyOptimizer;
 import org.interpss.plugin.optadj.algo.result.AclfNetSsaResultContainer;
+import org.interpss.plugin.optadj.algo.result.BranchOptAdjustCAResultRec;
+
+import com.interpss.algo.parallel.BranchCAResultRec;
 import com.interpss.algo.parallel.ContingencyAnalysisMonad;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
@@ -67,7 +70,7 @@ public class IEEE14_OptAdj_N1ScanSSAResult_Sample {
 			});
 		
 		// defined a SSA result container
-		AclfNetSsaResultContainer ssaResults = new AclfNetSsaResultContainer();
+		AclfNetSsaResultContainer ssaResults = new AclfNetSsaResultContainer(true);
 		
 		AtomicCounter cnt = new AtomicCounter();
 		contList.parallelStream()
@@ -76,12 +79,13 @@ public class IEEE14_OptAdj_N1ScanSSAResult_Sample {
 					.ca(resultRec -> {
 						//System.out.println(resultRec.aclfBranch.getId() + 
 						//		", " + resultRec.contingency.getId() +
-						//		" postContFlow: " + resultRec.getPostFlowMW());
+						//		" postContFlow: " + resultRec.getPostFlowMW() +
+						//		" loading: " + resultRec.calLoadingPercent() + "%");
 						double loading = resultRec.calLoadingPercent(resultRec.aclfBranch.getRatingMvaB());
 						if (loading > 100.0) {
 							cnt.increment();
 							// add the over limit branch CA result rec to the SSA result container
-							ssaResults.getCaOverLimitInfo().add(resultRec);
+							ssaResults.getCaOverLimitInfo().add(new BranchOptAdjustCAResultRec(resultRec));
 							System.out.println(String.format("OverLimit Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f",
 									resultRec.aclfBranch.getId(), resultRec.contingency.getId(),
 									resultRec.getPostFlowMW(), resultRec.aclfBranch.getRatingMvaB(), loading));
@@ -101,27 +105,31 @@ public class IEEE14_OptAdj_N1ScanSSAResult_Sample {
 		System.out.println("Optimization sec constrian size." + optimizer.getOptimizer().getSecConstrainDataList().size());
 
 		dclfAlgo.calculateDclf();
-		
-		AtomicCounter cnt1 = new AtomicCounter();
+			
+		Map<String, BranchCAResultRec> caOverLimitInfoMap = ssaResults.toCaOverLimitInfoMap();
 		contList.parallelStream()
 			.forEach(contingency -> {
 				ContingencyAnalysisMonad.of(dclfAlgo, contingency)
 					.ca(resultRec -> {
-						//System.out.println(resultRec.aclfBranch.getId() + 
-						//		", " + resultRec.contingency.getId() +
-						//		" postContFlow: " + resultRec.getPostFlowMW());
-						double loading = resultRec.calLoadingPercent(resultRec.aclfBranch.getRatingMvaB());
-						if (loading > 90.0) {
-							cnt1.increment();
-							System.out.println("Branch: " + resultRec.aclfBranch.getId() + 
-									" outage: " + resultRec.contingency.getId() +
-									" postFlow: " + resultRec.getPostFlowMW() +
-									" rating: " + resultRec.aclfBranch.getRatingMvaB() +
-									" loading: " + resultRec.calLoadingPercent());
+						String mapId = AclfNetSsaResultContainer.caOverLimitInfoMapId(resultRec);
+						BranchCAResultRec rec = caOverLimitInfoMap.get(mapId);
+						if (rec != null) {
+							BranchOptAdjustCAResultRec recAdj = (BranchOptAdjustCAResultRec) rec;
+							//System.out.println(resultRec.aclfBranch.getId() + 
+							//		", " + resultRec.contingency.getId() +
+							//		" postContFlow: " + resultRec.getPostFlowMW() + 
+							//	    " loading: " + Math.abs(loading) + "%");
+							recAdj.adjustedMwFlow = resultRec.getPostFlowMW();
+							recAdj.adjustedLoadingPercent = resultRec.calLoadingPercent();
+							//System.out.println("Branch: " + resultRec.aclfBranch.getId() + 
+							//			" outage: " + resultRec.contingency.getId() +
+							//			" postFlow: " + resultRec.getPostFlowMW() +
+							//			" rating: " + resultRec.aclfBranch.getRatingMvaB() +
+							//			" loading: " + resultRec.calLoadingPercent());
 						}
 					});
 			});
-		System.out.println("Total number of branches over limit after OptAdj: " + cnt1.getCount());
-		
+
+		System.out.println(ssaResults.toString());
 	}
 }

@@ -73,7 +73,7 @@ public class IEEE14_OptAdj_N1ScanSSAResult_Test extends CorePluginTestSetup {
 			});
 		
 		// defined a SSA result container
-		AclfNetSsaResultContainer ssaResults = new AclfNetSsaResultContainer();
+		AclfNetSsaResultContainer ssaResults = new AclfNetSsaResultContainer(true);
 		
 		AtomicCounter cnt = new AtomicCounter();
 		contList.parallelStream()
