@@ -149,7 +149,7 @@ public class AclfNetSsaResultContainer extends BaseJSONBean {
 				BranchOptAdjustCAResultRec recAdj = (BranchOptAdjustCAResultRec) rec;
 				sb.append(String.format("OverLimit Branch: %s outage: %s postFlow(optadj): %.2f rating: %.2f loading(optadj): %.2f postFlow(original): %.2f loading%%(original): %.2f",
 						recAdj.aclfBranch.getId(), recAdj.contingency.getId(),
-						recAdj.adjustedMwFlow, recAdj.aclfBranch.getRatingMvaB(), recAdj.adjustedLoadingPercent,
+						recAdj.adjustedPostFlowMW, recAdj.aclfBranch.getRatingMvaB(), recAdj.adjustedLoadingPercent,
 						rec.getPostFlowMW(), rec.calLoadingPercent())
 				).append("\n");
 			} else {
