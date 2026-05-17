@@ -71,6 +71,8 @@ public class IEEE14_OptAdj_N1ScanSSAResult_Sample {
 		
 		// defined a SSA result container
 		AclfNetSsaResultContainer ssaResults = new AclfNetSsaResultContainer(true);
+
+		ssaResults.setContingencyThreshold(100.0);
 		
 		AtomicCounter cnt = new AtomicCounter();
 		contList.parallelStream()
