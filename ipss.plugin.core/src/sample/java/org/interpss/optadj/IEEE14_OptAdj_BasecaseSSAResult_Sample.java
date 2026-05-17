@@ -70,6 +70,7 @@ public class IEEE14_OptAdj_BasecaseSSAResult_Sample {
 		Map<String, BranchOptAdjustResultRec> baseOverLimitInfoMap = ssaResults.toBaseOverLimitInfoMap();
 		dclfAlgo.getDclfAlgoBranchList().stream()
 			.forEach(dclfBranch -> {
+				// update the adjusted flow and loading percent
 				BranchOptAdjustResultRec rec = baseOverLimitInfoMap.get(dclfBranch.getId());
 				if (rec != null) {
 					rec.adjustedFlowMW = dclfBranch.getDclfFlow() * baseMVA;

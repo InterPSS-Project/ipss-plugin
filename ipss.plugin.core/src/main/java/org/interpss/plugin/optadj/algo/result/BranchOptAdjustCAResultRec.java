@@ -7,7 +7,7 @@ import com.interpss.algo.parallel.BranchCAResultRec;
 * Branch Optimization Adjustment result record
 */
 public class BranchOptAdjustCAResultRec extends BranchCAResultRec {
-	public double adjustedMwFlow;
+	public double adjustedPostFlowMW;
 	public double adjustedLoadingPercent;
 
 	public BranchOptAdjustCAResultRec(BranchCAResultRec rec) {
