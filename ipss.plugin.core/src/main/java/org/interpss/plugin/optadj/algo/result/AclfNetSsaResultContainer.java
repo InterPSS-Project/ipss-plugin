@@ -26,8 +26,13 @@ public class AclfNetSsaResultContainer extends BaseJSONBean {
 
 	// a list of branches that are over the limit in the base case
 	private List<? extends BranchDclfResultRec> baseOverLimitInfo;
+
+	private Map<String, Double> optAdjBaseResultMap;
+
 	// a list of branches that are over the limit in the contingency situation	
 	private List<? extends BranchCAResultRec> caOverLimitInfo;
+
+	private Map<String, Double> optAdjCAOverLimitResultMap;
 
 	public AclfNetSsaResultContainer(boolean hasOptAdjInfo) {
 		super();
@@ -49,6 +54,14 @@ public class AclfNetSsaResultContainer extends BaseJSONBean {
 		this.baseOverLimitInfo = baseOverLimitInfo;
 	}
 
+	public Map<String, Double> getOptAdjBaseResultMap() {
+		return optAdjBaseResultMap;
+	}
+
+	public void setOptAdjBaseResultMap(Map<String, Double> optAdjBaseResultMap) {
+		this.optAdjBaseResultMap = optAdjBaseResultMap;
+	}
+
 	public <T extends BranchCAResultRec> List<T> getCaOverLimitInfo() {
 		return (List<T>) caOverLimitInfo;
 	}
@@ -66,11 +79,22 @@ public class AclfNetSsaResultContainer extends BaseJSONBean {
 		this.caOverLimitInfo = caOverLimitInfo;
 	}
 
+	public Map<String, Double> getOptAdjCAOverLimitResultMap() {
+		return optAdjCAOverLimitResultMap;
+	}
+
+	public void setOptAdjCAOverLimitResultMap(Map<String, Double> optAdjCAOverLimitResultMap) {
+		this.optAdjCAOverLimitResultMap = optAdjCAOverLimitResultMap;
+	}
+
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("AclfNetSsaResultContainer [").append("\n");
 
 		sb.append("hasOptAdjInfo=").append(hasOptAdjInfo).append("\n");
+
+		sb.append("optAdjBaseResultMap=").append("\n");
+		sb.append(optAdjBaseResultMap).append("\n");
 
 		sb.append("baseOverLimitInfo=").append("\n");
 		this.baseOverLimitInfo.forEach(rec -> {
@@ -87,6 +111,9 @@ public class AclfNetSsaResultContainer extends BaseJSONBean {
 				  .append("\n");
 			}
 		});
+
+		sb.append("optAdjCAOverLimitResultMap=").append("\n");
+		sb.append(optAdjCAOverLimitResultMap).append("\n");
 
 		sb.append("caOverLimitInfo=").append("\n");
 		this.caOverLimitInfo.forEach(rec -> {

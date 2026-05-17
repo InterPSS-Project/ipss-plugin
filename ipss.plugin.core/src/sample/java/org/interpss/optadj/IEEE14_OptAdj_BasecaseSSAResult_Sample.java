@@ -55,6 +55,8 @@ public class IEEE14_OptAdj_BasecaseSSAResult_Sample {
 		
 		Map<String, Double> resultMap = optimizer.getResultMap();
 		System.out.println(resultMap);
+
+		ssaResults.setOptAdjBaseResultMap(resultMap);
 		
 		System.out.println("Optimization gen size." + optimizer.getOptimizer().getGenSize());
 		System.out.println("Optimization gen constrain size." + optimizer.getOptimizer().getGenConstrainDataList().size());
