@@ -28,7 +28,7 @@ public class IEEE14_OptAdj_BasecaseSSAResult_Sample {
 		
 
 		// defined a SSA result container
-		AclfNetSsaResultContainer ssaResults = new AclfNetSsaResultContainer();
+		AclfNetSsaResultContainer ssaResults = new AclfNetSsaResultContainer(true);
 		
 		// check the branch loading
 		double baseMVA = net.getBaseMva();
@@ -63,22 +63,17 @@ public class IEEE14_OptAdj_BasecaseSSAResult_Sample {
 		dclfAlgo.calculateDclf();
 		
 		// check the branch loading after the optimization adjustment
-		Map<String, BranchDclfResultRec> baseOverLimitInfoMap = ssaResults.toBaseOverLimitInfoMap();
+		Map<String, BranchOptAdjustResultRec> baseOverLimitInfoMap = ssaResults.toBaseOverLimitInfoMap();
 		dclfAlgo.getDclfAlgoBranchList().stream()
 			.forEach(dclfBranch -> {
-				BranchOptAdjustResultRec rec = (BranchOptAdjustResultRec) baseOverLimitInfoMap.get(dclfBranch.getId());
+				BranchOptAdjustResultRec rec = baseOverLimitInfoMap.get(dclfBranch.getId());
 				if (rec != null) {
 					rec.adjustedMwFlow = dclfBranch.getDclfFlow() * baseMVA;
 					rec.adjustedLoadingPercent = Math.abs(rec.adjustedMwFlow / dclfBranch.getBranch().getRatingMva1())*100;
 				}
-			});
+			});	
 
-		ssaResults.getBaseOverLimitInfo().forEach(rec -> {
-			BranchOptAdjustResultRec recAdj = (BranchOptAdjustResultRec) rec;
-			System.out.println(String.format("Branch: %s flowMw(optadj): %.2f flowMw(original): %.2f rating: %.2f loading%%(optadj): %.2f loading%%(original): %.2f",
-			recAdj.dclfBranch.getId(), recAdj.adjustedMwFlow, recAdj.mwFlow,
-			recAdj.dclfBranch.getBranch().getRatingMva1(), recAdj.adjustedLoadingPercent, recAdj.loadingPercent));
-		});		
+		System.out.println(ssaResults.toString());
 	}
 
 	public static AclfNetwork createTestCase() throws InterpssException {
@@ -92,9 +87,7 @@ public class IEEE14_OptAdj_BasecaseSSAResult_Sample {
 			.forEach(branch -> {
 				AclfBranch aclfBranch = (AclfBranch) branch;
 				// Mva1 is used for basecase loading limit
-				aclfBranch.setRatingMva1(100.0);
-				// Mva2 is used for contingency loading limit
-				aclfBranch.setRatingMva2(120.0);
+				aclfBranch.setRatingMva1(120.0);
 			});
 		
 		// set the generator Pgen limit
