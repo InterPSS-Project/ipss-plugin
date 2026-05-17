@@ -22,16 +22,25 @@ import com.interpss.algo.parallel.BranchCAResultRec;
 
 */
 public class AclfNetSsaResultContainer extends BaseJSONBean {
+	// whether the optimization adjustment has been performed
 	private boolean hasOptAdjInfo = false;
+
+	// the over limit threshold for the base case
+	private double basecaseThreshold = 100.0;
+
+	// the over limit threshold for the contingency analysis	
+	private double contingencyThreshold = 100.0;
 
 	// a list of branches that are over the limit in the base case
 	private List<? extends BranchDclfResultRec> baseOverLimitInfo;
 
+	// a map of the optimization adjustment results for the base case
 	private Map<String, Double> optAdjBaseResultMap;
 
 	// a list of branches that are over the limit in the contingency situation	
 	private List<? extends BranchCAResultRec> caOverLimitInfo;
 
+	// a map of the optimization adjustment results for the contingency situation
 	private Map<String, Double> optAdjCAOverLimitResultMap;
 
 	public AclfNetSsaResultContainer(boolean hasOptAdjInfo) {
@@ -39,6 +48,22 @@ public class AclfNetSsaResultContainer extends BaseJSONBean {
 		this.hasOptAdjInfo = hasOptAdjInfo;
 		baseOverLimitInfo = new CopyOnWriteArrayList<BranchDclfResultRec>();
 		caOverLimitInfo = new CopyOnWriteArrayList<BranchCAResultRec>();
+	}
+
+	public double getBasecaseThreshold() {
+		return basecaseThreshold;
+	}
+
+	public void setBasecaseThreshold(double basecaseThreshold) {
+		this.basecaseThreshold = basecaseThreshold;
+	}
+
+	public double getContingencyThreshold() {
+		return contingencyThreshold;
+	}
+
+	public void setContingencyThreshold(double contingencyThreshold) {
+		this.contingencyThreshold = contingencyThreshold;
 	}
 
 	public <T extends BranchDclfResultRec> List<T> getBaseOverLimitInfo() {
@@ -91,6 +116,9 @@ public class AclfNetSsaResultContainer extends BaseJSONBean {
 		StringBuilder sb = new StringBuilder();
 		sb.append("AclfNetSsaResultContainer [").append("\n");
 
+		sb.append("basecaseThreshold=").append(basecaseThreshold).append("\n");
+		sb.append("contingencyThreshold=").append(contingencyThreshold).append("\n");	
+
 		sb.append("hasOptAdjInfo=").append(hasOptAdjInfo).append("\n");
 
 		sb.append("optAdjBaseResultMap=").append("\n");
@@ -101,7 +129,7 @@ public class AclfNetSsaResultContainer extends BaseJSONBean {
 			if (hasOptAdjInfo) {
 				BranchOptAdjustResultRec recAdj = (BranchOptAdjustResultRec) rec;
 				sb.append(String.format("Branch: %s flowMw(optadj): %.2f rating: %.2f loading%%(optadj): %.2f | flowMw(original): %.2f loading%%(original): %.2f",
-				recAdj.dclfBranch.getId(), recAdj.adjustedMwFlow, recAdj.dclfBranch.getBranch().getRatingMvaA(), recAdj.adjustedLoadingPercent, 
+				recAdj.dclfBranch.getId(), recAdj.adjustedFlowMW, recAdj.dclfBranch.getBranch().getRatingMvaA(), recAdj.adjustedLoadingPercent, 
 				recAdj.mwFlow, recAdj.loadingPercent))
 				.append("\n");
 			} else {
