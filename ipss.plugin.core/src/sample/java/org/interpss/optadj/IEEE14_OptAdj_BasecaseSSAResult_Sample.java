@@ -29,6 +29,8 @@ public class IEEE14_OptAdj_BasecaseSSAResult_Sample {
 
 		// defined a SSA result container
 		AclfNetSsaResultContainer ssaResults = new AclfNetSsaResultContainer(true);
+
+		ssaResults.setBasecaseThreshold(100.0);
 		
 		// check the branch loading
 		double baseMVA = net.getBaseMva();
@@ -70,8 +72,8 @@ public class IEEE14_OptAdj_BasecaseSSAResult_Sample {
 			.forEach(dclfBranch -> {
 				BranchOptAdjustResultRec rec = baseOverLimitInfoMap.get(dclfBranch.getId());
 				if (rec != null) {
-					rec.adjustedMwFlow = dclfBranch.getDclfFlow() * baseMVA;
-					rec.adjustedLoadingPercent = Math.abs(rec.adjustedMwFlow / dclfBranch.getBranch().getRatingMva1())*100;
+					rec.adjustedFlowMW = dclfBranch.getDclfFlow() * baseMVA;
+					rec.adjustedLoadingPercent = Math.abs(rec.adjustedFlowMW / dclfBranch.getBranch().getRatingMva1())*100;
 				}
 			});	
 
