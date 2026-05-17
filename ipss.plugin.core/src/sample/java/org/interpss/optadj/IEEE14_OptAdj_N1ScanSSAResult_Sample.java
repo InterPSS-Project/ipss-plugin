@@ -123,7 +123,8 @@ public class IEEE14_OptAdj_N1ScanSSAResult_Sample {
 							//		", " + resultRec.contingency.getId() +
 							//		" postContFlow: " + resultRec.getPostFlowMW() + 
 							//	    " loading: " + Math.abs(loading) + "%");
-							recAdj.adjustedMwFlow = resultRec.getPostFlowMW();
+							// update the adjusted flow and loading percent
+							recAdj.adjustedPostFlowMW = resultRec.getPostFlowMW();
 							recAdj.adjustedLoadingPercent = resultRec.calLoadingPercent();
 							//System.out.println("Branch: " + resultRec.aclfBranch.getId() + 
 							//			" outage: " + resultRec.contingency.getId() +
