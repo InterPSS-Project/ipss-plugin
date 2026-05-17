@@ -29,7 +29,7 @@ public class IEEE14_OptAdj_BasecaseSSAResult_Test extends CorePluginTestSetup {
 		
 
 		// defined a SSA result container
-		AclfNetSsaResultContainer ssaResults = new AclfNetSsaResultContainer();
+		AclfNetSsaResultContainer ssaResults = new AclfNetSsaResultContainer(true);
 		
 		// check the branch loading
 		double baseMVA = net.getBaseMva();
