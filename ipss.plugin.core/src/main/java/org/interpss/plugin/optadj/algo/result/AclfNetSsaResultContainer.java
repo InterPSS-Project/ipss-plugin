@@ -22,40 +22,90 @@ import com.interpss.algo.parallel.BranchCAResultRec;
 
 */
 public class AclfNetSsaResultContainer extends BaseJSONBean {
-	// a list of branches that are over the limit in the base case
-	private List<BranchDclfResultRec> baseOverLimitInfo;
-	// a list of branches that are over the limit in the contingency situation	
-	private List<BranchCAResultRec> caOverLimitInfo;
+	private boolean hasOptAdjInfo = false;
 
-	public AclfNetSsaResultContainer() {
+	// a list of branches that are over the limit in the base case
+	private List<? extends BranchDclfResultRec> baseOverLimitInfo;
+	// a list of branches that are over the limit in the contingency situation	
+	private List<? extends BranchCAResultRec> caOverLimitInfo;
+
+	public AclfNetSsaResultContainer(boolean hasOptAdjInfo) {
 		super();
+		this.hasOptAdjInfo = hasOptAdjInfo;
 		baseOverLimitInfo = new CopyOnWriteArrayList<BranchDclfResultRec>();
 		caOverLimitInfo = new CopyOnWriteArrayList<BranchCAResultRec>();
 	}
 
-	public List<BranchDclfResultRec> getBaseOverLimitInfo() {
-		return baseOverLimitInfo;
+	public <T extends BranchDclfResultRec> List<T> getBaseOverLimitInfo() {
+		return (List<T>) baseOverLimitInfo;
 	}
 
-	public Map<String, BranchDclfResultRec> toBaseOverLimitInfoMap() {
-		return baseOverLimitInfo.stream()
+	public <T extends BranchDclfResultRec> Map<String, T> toBaseOverLimitInfoMap() {
+		return (Map<String, T>) baseOverLimitInfo.stream()
 			.collect(Collectors.toMap(rec -> rec.dclfBranch.getId(), Function.identity()));
 	}
 
-	public void setBaseOverLimitInfo(List<BranchDclfResultRec> baseOverLimitInfo) {
+	public void setBaseOverLimitInfo(List<? extends BranchDclfResultRec> baseOverLimitInfo) {
 		this.baseOverLimitInfo = baseOverLimitInfo;
 	}
 
-	public List<BranchCAResultRec> getCaOverLimitInfo() {
-		return caOverLimitInfo;
+	public <T extends BranchCAResultRec> List<T> getCaOverLimitInfo() {
+		return (List<T>) caOverLimitInfo;
 	}
 
-	public Map<String, BranchCAResultRec> toCaOverLimitInfoMap() {
-		return caOverLimitInfo.stream()
-			.collect(Collectors.toMap(rec -> rec.aclfBranch.getId(), Function.identity()));
+	public <T extends BranchCAResultRec> Map<String, T> toCaOverLimitInfoMap() {
+		return (Map<String, T>) caOverLimitInfo.stream()
+			.collect(Collectors.toMap(rec -> caOverLimitInfoMapId(rec), Function.identity()));
 	}
 
-	public void setCaOverLimitInfo(List<BranchCAResultRec> caOverLimitInfo) {
+	public static String caOverLimitInfoMapId(BranchCAResultRec rec) {
+		return rec.contingency.getId() + "_" + rec.aclfBranch.getId();
+	}
+
+	public void setCaOverLimitInfo(List<? extends BranchCAResultRec> caOverLimitInfo) {
 		this.caOverLimitInfo = caOverLimitInfo;
+	}
+
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("AclfNetSsaResultContainer [").append("\n");
+
+		sb.append("hasOptAdjInfo=").append(hasOptAdjInfo).append("\n");
+
+		sb.append("baseOverLimitInfo=").append("\n");
+		this.baseOverLimitInfo.forEach(rec -> {
+			if (hasOptAdjInfo) {
+				BranchOptAdjustResultRec recAdj = (BranchOptAdjustResultRec) rec;
+				sb.append(String.format("Branch: %s flowMw(optadj): %.2f rating: %.2f loading%%(optadj): %.2f | flowMw(original): %.2f loading%%(original): %.2f",
+				recAdj.dclfBranch.getId(), recAdj.adjustedMwFlow, recAdj.dclfBranch.getBranch().getRatingMvaA(), recAdj.adjustedLoadingPercent, 
+				recAdj.mwFlow, recAdj.loadingPercent))
+				.append("\n");
+			} else {
+				sb.append(String.format("Branch: %s flowMw(original): %.2f rating: %.2f loading%%(original): %.2f",
+							rec.dclfBranch.getId(), rec.mwFlow,
+							rec.dclfBranch.getBranch().getRatingMvaA(), rec.loadingPercent))
+				  .append("\n");
+			}
+		});
+
+		sb.append("caOverLimitInfo=").append("\n");
+		this.caOverLimitInfo.forEach(rec -> {
+			if (hasOptAdjInfo) {
+				BranchOptAdjustCAResultRec recAdj = (BranchOptAdjustCAResultRec) rec;
+				sb.append(String.format("OverLimit Branch: %s outage: %s postFlow(optadj): %.2f rating: %.2f loading(optadj): %.2f postFlow(original): %.2f loading%%(original): %.2f",
+						recAdj.aclfBranch.getId(), recAdj.contingency.getId(),
+						recAdj.adjustedMwFlow, recAdj.aclfBranch.getRatingMvaB(), recAdj.adjustedLoadingPercent,
+						rec.getPostFlowMW(), rec.calLoadingPercent())
+				).append("\n");
+			} else {
+				sb.append(String.format("OverLimit Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f",
+						rec.aclfBranch.getId(), rec.contingency.getId(),
+						rec.getPostFlowMW(), rec.aclfBranch.getRatingMvaB(), rec.calLoadingPercent())
+				).append("\n");
+			}
+		});
+
+		sb.append("]");
+		return sb.toString();
 	}
 }
