@@ -10,11 +10,13 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.AtomicCounter;
 import org.interpss.plugin.optadj.algo.AclfNetGenLoadOptimizer;
 import org.interpss.plugin.optadj.algo.result.AclfNetSsaResultContainer;
+import org.interpss.plugin.optadj.algo.result.BranchDclfResultRec;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
+import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 
 public class IEEE14_OptAdj_BasecaseSSAResult_Test extends CorePluginTestSetup {
 	@Test
@@ -27,7 +29,7 @@ public class IEEE14_OptAdj_BasecaseSSAResult_Test extends CorePluginTestSetup {
 		
 
 		// defined a SSA result container
-		AclfNetSsaResultContainer ssaResults = new AclfNetSsaResultContainer();
+		AclfNetSsaResultContainer ssaResults = new AclfNetSsaResultContainer(true);
 		
 		// check the branch loading
 		double baseMVA = net.getBaseMva();
@@ -39,7 +41,7 @@ public class IEEE14_OptAdj_BasecaseSSAResult_Test extends CorePluginTestSetup {
 				if (loading > 100.0) {
 					cnt.increment();
 					// add the over limit branch to the SSA result container
-					ssaResults.getBaseOverLimitInfo().add(dclfBranch);
+					ssaResults.getBaseOverLimitInfo().add(new BranchDclfResultRec(dclfBranch));
 					System.out.println("Over Limit Branch: " + dclfBranch.getId() + "  " + flowMw +
 							" rating: " + dclfBranch.getBranch().getRatingMva1() +
 							" loading: " + loading);
@@ -51,12 +53,12 @@ public class IEEE14_OptAdj_BasecaseSSAResult_Test extends CorePluginTestSetup {
 		
 		// perform the Optimization adjustment
 		AclfNetGenLoadOptimizer optimizer = new AclfNetGenLoadOptimizer(dclfAlgo);
-		optimizer.optimize(ssaResults, 100);
+		optimizer.optimize(ssaResults, 100, true);
 		
 		Map<String, Double> resultMap = optimizer.getResultMap();
 		System.out.println(resultMap);
 		
-		assertEquals(resultMap.get("Bus2-G1"), 0.5713, 0.0001);
+		assertEquals(resultMap.get("Gen:Bus2-G1"), 0.5713, 0.0001);
 		
 		System.out.println("Optimization gen size." + optimizer.getOptimizer().getGenSize());
 		System.out.println("Optimization gen constrain size." + optimizer.getOptimizer().getGenConstrainDataList().size());
@@ -69,15 +71,21 @@ public class IEEE14_OptAdj_BasecaseSSAResult_Test extends CorePluginTestSetup {
 		
 		// check the branch loading after the optimization adjustment
 		AtomicCounter cnt1 = new AtomicCounter();
+		Map<String, BranchDclfResultRec> baseOverLimitInfoMap = ssaResults.toBaseOverLimitInfoMap();
 		dclfAlgo.getDclfAlgoBranchList().stream()
 			.forEach(dclfBranch -> {
 				double flowMw = dclfBranch.getDclfFlow() * baseMVA;
 				double loading = Math.abs(flowMw / dclfBranch.getBranch().getRatingMva1())*100;
 				if (loading > 90) {
 					cnt1.increment();
-					System.out.println("Branch: " + dclfBranch.getId() + "  " + flowMw +
-							" rating: " + dclfBranch.getBranch().getRatingMva1() +
-							" loading: " + loading);
+					BranchDclfResultRec rec = baseOverLimitInfoMap.get(dclfBranch.getId());
+					double originalFlowMw = rec.mwFlow;
+					double originalLoading = rec.loadingPercent;
+					System.out.println("Branch: " + dclfBranch.getId() + " flowMw(after): " + flowMw
+							+ " flowMw(original): " + originalFlowMw
+							+ " rating: " + dclfBranch.getBranch().getRatingMva1()
+							+ " loading%(after): " + loading
+							+ " loading%(original): " + originalLoading);
 						
 					}
 				});

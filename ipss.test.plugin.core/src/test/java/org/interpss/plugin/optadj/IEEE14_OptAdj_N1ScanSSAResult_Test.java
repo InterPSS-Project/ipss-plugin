@@ -73,7 +73,7 @@ public class IEEE14_OptAdj_N1ScanSSAResult_Test extends CorePluginTestSetup {
 			});
 		
 		// defined a SSA result container
-		AclfNetSsaResultContainer ssaResults = new AclfNetSsaResultContainer();
+		AclfNetSsaResultContainer ssaResults = new AclfNetSsaResultContainer(true);
 		
 		AtomicCounter cnt = new AtomicCounter();
 		contList.parallelStream()
@@ -99,12 +99,12 @@ public class IEEE14_OptAdj_N1ScanSSAResult_Test extends CorePluginTestSetup {
 		assertTrue(cnt.getCount() == 18, ""+cnt.getCount());
 		
 		AclfNetContigencyOptimizer optimizer = new AclfNetContigencyOptimizer(dclfAlgo);
-		optimizer.optimize(ssaResults, 100);
+		optimizer.optimize(ssaResults, 100, true);
 		
 		Map<String, Double> resultMap = optimizer.getResultMap();
 		System.out.println(resultMap);
 		
-		assertEquals(resultMap.get("Bus3-G1"), 0.99, 0.0001);
+		assertEquals(resultMap.get("Gen:Bus6-G1"), 0.99, 0.0001);
 		
 		System.out.println("Optimization gen size." + optimizer.getOptimizer().getGenSize());
 		System.out.println("Optimization gen constrain size." + optimizer.getOptimizer().getGenConstrainDataList().size());
