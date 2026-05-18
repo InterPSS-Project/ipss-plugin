@@ -14,11 +14,11 @@ import org.interpss.plugin.contingency.DclfContingencyConfig;
 import org.interpss.plugin.contingency.ParallelDclfContingencyAnalyzer;
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
 import org.interpss.plugin.contingency.definition.MonitoredBranchRecord;
-import org.interpss.plugin.contingency.result.DclfContingencyResultRec;
 import org.interpss.plugin.contingency.util.ContingencyFileUtil;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 
+import com.interpss.algo.parallel.BranchCAResultRec;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
@@ -98,17 +98,17 @@ public class Texas2k_CASample {
 	    config.setDclfInclLoss(true);
 		config.setOverloadThreshold(100); // in percentage	
 
-		ConcurrentLinkedQueue<DclfContingencyResultRec> results = 
+		ConcurrentLinkedQueue<BranchCAResultRec> results = 
 				ParallelDclfContingencyAnalyzer.executeContingencyAnalysis(net, contList, monitoredBranchIds, config, 4);	
 
 		// print the results
-		for (DclfContingencyResultRec rec : results) {
+		for (BranchCAResultRec rec : results) {
 			//System.out.println(rec.toString());
-			String branchId = rec.getBranchId();
-			String contingencyName = rec.getContingencyName();
+			String branchId = rec.aclfBranch.getId();
+			String contingencyName = rec.contingency.getId().replaceFirst("contBranch:", "");
 			Double postFlowMW = rec.getPostFlowMW();
-			Double lineRatingMW = rec.getLineRatingMW();
-			Double loadingPercent = rec.getLoadingPercent();
+			Double lineRatingMW = rec.calBranchRateB();
+			Double loadingPercent = rec.calLoadingPercent();
 			System.out.println(String.format("{\n  \"branch_id\": \"%s\",\n  \"contingency_name\": \"%s\",\n  \"post_flow_mw\": %.2f,\n  \"line_rating_mw\": %.2f,\n  \"loading_percent\": %.2f\n}", 
                 branchId, contingencyName, postFlowMW, lineRatingMW, loadingPercent));
 		}
@@ -117,15 +117,15 @@ public class Texas2k_CASample {
 		
 		double gsfThreshold = 0.05; // only print GSF values above this threshold
 
-		for	 (DclfContingencyResultRec resultRec : results) {
-			AclfBranch	 monitoredBranch = (AclfBranch) net.getBranch(resultRec.getBranchId());
+		for	 (BranchCAResultRec resultRec : results) {
+			AclfBranch	 monitoredBranch = (AclfBranch) net.getBranch(resultRec.aclfBranch.getId());
 			net.getBusList().parallelStream()
 				.filter(bus -> bus.isActive() && (bus.isGenPV() || bus.isGenPQ()))
 				.forEach(bus -> {
 					double gfs = algo.calGenShiftFactor(bus.getId(), monitoredBranch);    // w.r.p to the Ref Bus
 					if (Math.abs(gfs) > gsfThreshold) {
 						System.out.println("   GSF Gen@" + bus.getId() + 
-								" on Branch " + resultRec.getBranchId() + ": " + gfs);
+								" on Branch " + resultRec.aclfBranch.getId() + ": " + gfs);
 					}
 				});
 		}
@@ -133,8 +133,8 @@ public class Texas2k_CASample {
 		// PTDF of loads
 
 		double ptdfThreshold = 0.05; // only print PTDF values above this threshold
-		for	 (DclfContingencyResultRec resultRec : results) {
-			AclfBranch	 monitoredBranch = (AclfBranch) net.getBranch(resultRec.getBranchId());
+		for	 (BranchCAResultRec resultRec : results) {
+			AclfBranch	 monitoredBranch = (AclfBranch) net.getBranch(resultRec.aclfBranch.getId());
 		
 			net.getBusList().stream()
 			.filter(bus -> bus.isActive() && bus.isLoad() && !bus.isGen())
@@ -144,7 +144,7 @@ public class Texas2k_CASample {
 					double ptdf = algo.pTransferDistFactor(bus.getId(), monitoredBranch);
 					if(Math.abs(ptdf) > ptdfThreshold) {
 						System.out.println("   PTDF Load@" + bus.getId() + 
-							" wrt to RefBus on Branch " + resultRec.getBranchId() + ": " + ptdf);
+							" wrt to RefBus on Branch " + resultRec.aclfBranch.getId() + ": " + ptdf);
 					}
 
 					/*
