@@ -39,7 +39,7 @@ public class IEEE14_OptAdj_BasecaseSSAResult_Sample {
 			.forEach(dclfBranch -> {
 				double flowMw = dclfBranch.getDclfFlow() * baseMVA;
 				double loading = Math.abs(flowMw / dclfBranch.getBranch().getRatingMva1())*100;
-				if (loading > 100.0) {
+				if (loading > ssaResults.getBasecaseThreshold()) {
 					cnt.increment();
 					// add the over limit branch to the SSA result container
 					ssaResults.getBaseOverLimitInfo().add(new BranchOptAdjustResultRec(dclfBranch));
@@ -53,7 +53,7 @@ public class IEEE14_OptAdj_BasecaseSSAResult_Sample {
 		
 		// perform the Optimization adjustment
 		AclfNetGenLoadOptimizer optimizer = new AclfNetGenLoadOptimizer(dclfAlgo);
-		optimizer.optimize(ssaResults, 100, true);
+		optimizer.optimize(ssaResults, ssaResults.getBasecaseThreshold(), true);
 		
 		Map<String, Double> resultMap = optimizer.getResultMap();
 		System.out.println(resultMap);

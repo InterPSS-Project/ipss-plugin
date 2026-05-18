@@ -2,6 +2,7 @@ package org.interpss.plugin.optadj.algo.result;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -47,7 +48,9 @@ public class AclfNetSsaResultContainer extends BaseJSONBean {
 		super();
 		this.hasOptAdjInfo = hasOptAdjInfo;
 		baseOverLimitInfo = new CopyOnWriteArrayList<BranchDclfResultRec>();
+		this.optAdjBaseResultMap = new ConcurrentHashMap<String, Double>();
 		caOverLimitInfo = new CopyOnWriteArrayList<BranchCAResultRec>();
+		this.optAdjCAOverLimitResultMap = new ConcurrentHashMap<String, Double>();
 	}
 
 	public double getBasecaseThreshold() {
