@@ -1,12 +1,15 @@
 package org.interpss.plugin.optadj.algo.result;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.interpss.datatype.base.BaseJSONBean;
 
 import com.interpss.algo.parallel.BranchCAResultRec;
-import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 
 
 /** 
@@ -19,31 +22,148 @@ import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 * 
 
 */
-public class AclfNetSsaResultContainer extends BaseJSONBean{
+public class AclfNetSsaResultContainer extends BaseJSONBean {
+	// whether the optimization adjustment has been performed
+	private boolean hasOptAdjInfo = false;
+
+	// the over limit threshold for the base case
+	private double basecaseThreshold = 100.0;
+
+	// the over limit threshold for the contingency analysis	
+	private double contingencyThreshold = 100.0;
+
 	// a list of branches that are over the limit in the base case
-	private List<DclfAlgoBranch> baseOverLimitInfo;
+	private List<? extends BranchDclfResultRec> baseOverLimitInfo;
+
+	// a map of the optimization adjustment results for the base case
+	private Map<String, Double> optAdjBaseResultMap;
+
 	// a list of branches that are over the limit in the contingency situation	
-	private List<BranchCAResultRec> caOverLimitInfo;
+	private List<? extends BranchCAResultRec> caOverLimitInfo;
 
-	public AclfNetSsaResultContainer() {
+	// a map of the optimization adjustment results for the contingency situation
+	private Map<String, Double> optAdjCAOverLimitResultMap;
+
+	public AclfNetSsaResultContainer(boolean hasOptAdjInfo) {
 		super();
-		baseOverLimitInfo = new CopyOnWriteArrayList<DclfAlgoBranch>();
+		this.hasOptAdjInfo = hasOptAdjInfo;
+		baseOverLimitInfo = new CopyOnWriteArrayList<BranchDclfResultRec>();
+		this.optAdjBaseResultMap = new ConcurrentHashMap<String, Double>();
 		caOverLimitInfo = new CopyOnWriteArrayList<BranchCAResultRec>();
+		this.optAdjCAOverLimitResultMap = new ConcurrentHashMap<String, Double>();
 	}
 
-	public List<DclfAlgoBranch> getBaseOverLimitInfo() {
-		return baseOverLimitInfo;
+	public double getBasecaseThreshold() {
+		return basecaseThreshold;
 	}
 
-	public void setBaseOverLimitInfo(List<DclfAlgoBranch> baseOverLimitInfo) {
+	public void setBasecaseThreshold(double basecaseThreshold) {
+		this.basecaseThreshold = basecaseThreshold;
+	}
+
+	public double getContingencyThreshold() {
+		return contingencyThreshold;
+	}
+
+	public void setContingencyThreshold(double contingencyThreshold) {
+		this.contingencyThreshold = contingencyThreshold;
+	}
+
+	public <T extends BranchDclfResultRec> List<T> getBaseOverLimitInfo() {
+		return (List<T>) baseOverLimitInfo;
+	}
+
+	public <T extends BranchDclfResultRec> Map<String, T> toBaseOverLimitInfoMap() {
+		return (Map<String, T>) baseOverLimitInfo.stream()
+			.collect(Collectors.toMap(rec -> rec.dclfBranch.getId(), Function.identity()));
+	}
+
+	public void setBaseOverLimitInfo(List<? extends BranchDclfResultRec> baseOverLimitInfo) {
 		this.baseOverLimitInfo = baseOverLimitInfo;
 	}
 
-	public List<BranchCAResultRec> getCaOverLimitInfo() {
-		return caOverLimitInfo;
+	public Map<String, Double> getOptAdjBaseResultMap() {
+		return optAdjBaseResultMap;
 	}
 
-	public void setCaOverLimitInfo(List<BranchCAResultRec> caOverLimitInfo) {
+	public void setOptAdjBaseResultMap(Map<String, Double> optAdjBaseResultMap) {
+		this.optAdjBaseResultMap = optAdjBaseResultMap;
+	}
+
+	public <T extends BranchCAResultRec> List<T> getCaOverLimitInfo() {
+		return (List<T>) caOverLimitInfo;
+	}
+
+	public <T extends BranchCAResultRec> Map<String, T> toCaOverLimitInfoMap() {
+		return (Map<String, T>) caOverLimitInfo.stream()
+			.collect(Collectors.toMap(rec -> caOverLimitInfoMapId(rec), Function.identity()));
+	}
+
+	public static String caOverLimitInfoMapId(BranchCAResultRec rec) {
+		return rec.contingency.getId() + "_" + rec.aclfBranch.getId();
+	}
+
+	public void setCaOverLimitInfo(List<? extends BranchCAResultRec> caOverLimitInfo) {
 		this.caOverLimitInfo = caOverLimitInfo;
+	}
+
+	public Map<String, Double> getOptAdjCAOverLimitResultMap() {
+		return optAdjCAOverLimitResultMap;
+	}
+
+	public void setOptAdjCAOverLimitResultMap(Map<String, Double> optAdjCAOverLimitResultMap) {
+		this.optAdjCAOverLimitResultMap = optAdjCAOverLimitResultMap;
+	}
+
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("AclfNetSsaResultContainer [").append("\n");
+
+		sb.append("basecaseThreshold=").append(basecaseThreshold).append("\n");
+		sb.append("contingencyThreshold=").append(contingencyThreshold).append("\n");	
+
+		sb.append("hasOptAdjInfo=").append(hasOptAdjInfo).append("\n");
+
+		sb.append("optAdjBaseResultMap=").append("\n");
+		sb.append(optAdjBaseResultMap).append("\n");
+
+		sb.append("baseOverLimitInfo=").append("\n");
+		this.baseOverLimitInfo.forEach(rec -> {
+			if (hasOptAdjInfo) {
+				BranchOptAdjustResultRec recAdj = (BranchOptAdjustResultRec) rec;
+				sb.append(String.format("Branch: %s flowMw(optadj): %.2f rating: %.2f loading%%(optadj): %.2f | flowMw(original): %.2f loading%%(original): %.2f",
+				recAdj.dclfBranch.getId(), recAdj.adjustedFlowMW, recAdj.dclfBranch.getBranch().getRatingMvaA(), recAdj.adjustedLoadingPercent, 
+				recAdj.mwFlow, recAdj.loadingPercent))
+				.append("\n");
+			} else {
+				sb.append(String.format("Branch: %s flowMw(original): %.2f rating: %.2f loading%%(original): %.2f",
+							rec.dclfBranch.getId(), rec.mwFlow,
+							rec.dclfBranch.getBranch().getRatingMvaA(), rec.loadingPercent))
+				  .append("\n");
+			}
+		});
+
+		sb.append("optAdjCAOverLimitResultMap=").append("\n");
+		sb.append(optAdjCAOverLimitResultMap).append("\n");
+
+		sb.append("caOverLimitInfo=").append("\n");
+		this.caOverLimitInfo.forEach(rec -> {
+			if (hasOptAdjInfo) {
+				BranchOptAdjustCAResultRec recAdj = (BranchOptAdjustCAResultRec) rec;
+				sb.append(String.format("OverLimit Branch: %s outage: %s postFlow(optadj): %.2f rating: %.2f loading(optadj): %.2f postFlow(original): %.2f loading%%(original): %.2f",
+						recAdj.aclfBranch.getId(), recAdj.contingency.getId(),
+						recAdj.adjustedPostFlowMW, recAdj.aclfBranch.getRatingMvaB(), recAdj.adjustedLoadingPercent,
+						rec.getPostFlowMW(), rec.calLoadingPercent())
+				).append("\n");
+			} else {
+				sb.append(String.format("OverLimit Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f",
+						rec.aclfBranch.getId(), rec.contingency.getId(),
+						rec.getPostFlowMW(), rec.aclfBranch.getRatingMvaB(), rec.calLoadingPercent())
+				).append("\n");
+			}
+		});
+
+		sb.append("]");
+		return sb.toString();
 	}
 }

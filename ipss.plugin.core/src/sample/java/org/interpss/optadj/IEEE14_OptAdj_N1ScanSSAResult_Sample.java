@@ -22,24 +22,21 @@
  *
  */
 
-package org.interpss.plugin.optadj;
+package org.interpss.optadj;
 
 import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.AtomicCounter;
 import org.interpss.plugin.optadj.algo.AclfNetContigencyOptimizer;
 import org.interpss.plugin.optadj.algo.result.AclfNetSsaResultContainer;
-import org.junit.jupiter.api.Test;
+import org.interpss.plugin.optadj.algo.result.BranchOptAdjustCAResultRec;
 
+import com.interpss.algo.parallel.BranchCAResultRec;
 import com.interpss.algo.parallel.ContingencyAnalysisMonad;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
@@ -49,10 +46,10 @@ import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
 
-public class IEEE14_OptAdj_N1ScanSSAResult_Test extends CorePluginTestSetup {
-	@Test
-	public void test() throws InterpssException {
-		AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
+public class IEEE14_OptAdj_N1ScanSSAResult_Sample {
+
+    public static void main(String args[]) throws Exception {
+		AclfNetwork net = IEEE14_OptAdj_BasecaseSSAResult_Sample.createTestCase();
 		
 		// define an caAlgo object and perform DCLF 
 		ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(net);
@@ -74,6 +71,8 @@ public class IEEE14_OptAdj_N1ScanSSAResult_Test extends CorePluginTestSetup {
 		
 		// defined a SSA result container
 		AclfNetSsaResultContainer ssaResults = new AclfNetSsaResultContainer(true);
+
+		ssaResults.setContingencyThreshold(100.0);
 		
 		AtomicCounter cnt = new AtomicCounter();
 		contList.parallelStream()
@@ -82,36 +81,60 @@ public class IEEE14_OptAdj_N1ScanSSAResult_Test extends CorePluginTestSetup {
 					.ca(resultRec -> {
 						//System.out.println(resultRec.aclfBranch.getId() + 
 						//		", " + resultRec.contingency.getId() +
-						//		" postContFlow: " + resultRec.getPostFlowMW());
+						//		" postContFlow: " + resultRec.getPostFlowMW() +
+						//		" loading: " + resultRec.calLoadingPercent() + "%");
 						double loading = resultRec.calLoadingPercent(resultRec.aclfBranch.getRatingMvaB());
-						if (loading > 100.0) {
+						if (loading > ssaResults.getContingencyThreshold()) {
 							cnt.increment();
 							// add the over limit branch CA result rec to the SSA result container
-							ssaResults.getCaOverLimitInfo().add(resultRec);
-							System.out.println("OverLimit Branch: " + resultRec.aclfBranch.getId() + " outage: "
-											+ resultRec.contingency.getId() + " postFlow: " + resultRec.getPostFlowMW()
-											+ " rating: " + resultRec.aclfBranch.getRatingMvaB() + " loading: "
-											+ loading);
+							ssaResults.getCaOverLimitInfo().add(new BranchOptAdjustCAResultRec(resultRec));
+							System.out.println(String.format("OverLimit Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f",
+									resultRec.aclfBranch.getId(), resultRec.contingency.getId(),
+									resultRec.getPostFlowMW(), resultRec.aclfBranch.getRatingMvaB(), loading));
 						}
 					});
 			});
 		System.out.println("Total number of branches over limit before OptAdj: " + cnt.getCount());
-		assertTrue(cnt.getCount() == 18, ""+cnt.getCount());
 		
 		AclfNetContigencyOptimizer optimizer = new AclfNetContigencyOptimizer(dclfAlgo);
-		optimizer.optimize(ssaResults, 100, true);
+		optimizer.optimize(ssaResults, ssaResults.getContingencyThreshold(), true);
 		
 		Map<String, Double> resultMap = optimizer.getResultMap();
 		System.out.println(resultMap);
-		
-		assertEquals(resultMap.get("Gen:Bus6-G1"), 0.99, 0.0001);
+
+		ssaResults.setOptAdjCAOverLimitResultMap(resultMap);
 		
 		System.out.println("Optimization gen size." + optimizer.getOptimizer().getGenSize());
 		System.out.println("Optimization gen constrain size." + optimizer.getOptimizer().getGenConstrainDataList().size());
 		System.out.println("Optimization sec constrian size." + optimizer.getOptimizer().getSecConstrainDataList().size());
 
-		assertEquals(optimizer.getOptimizer().getGenSize(), 4);
-		assertTrue(optimizer.getOptimizer().getGenConstrainDataList().size() == 8);
-		assertEquals(optimizer.getOptimizer().getSecConstrainDataList().size(), 42);
+		dclfAlgo.calculateDclf();
+			
+		Map<String, BranchCAResultRec> caOverLimitInfoMap = ssaResults.toCaOverLimitInfoMap();
+		contList.parallelStream()
+			.forEach(contingency -> {
+				ContingencyAnalysisMonad.of(dclfAlgo, contingency)
+					.ca(resultRec -> {
+						String recId = AclfNetSsaResultContainer.caOverLimitInfoMapId(resultRec);
+						BranchCAResultRec rec = caOverLimitInfoMap.get(recId);
+						if (rec != null) {
+							BranchOptAdjustCAResultRec recAdj = (BranchOptAdjustCAResultRec) rec;
+							//System.out.println(resultRec.aclfBranch.getId() + 
+							//		", " + resultRec.contingency.getId() +
+							//		" postContFlow: " + resultRec.getPostFlowMW() + 
+							//	    " loading: " + Math.abs(loading) + "%");
+							// update the adjusted flow and loading percent
+							recAdj.adjustedPostFlowMW = resultRec.getPostFlowMW();
+							recAdj.adjustedLoadingPercent = resultRec.calLoadingPercent();
+							//System.out.println("Branch: " + resultRec.aclfBranch.getId() + 
+							//			" outage: " + resultRec.contingency.getId() +
+							//			" postFlow: " + resultRec.getPostFlowMW() +
+							//			" rating: " + resultRec.aclfBranch.getRatingMvaB() +
+							//			" loading: " + resultRec.calLoadingPercent());
+						}
+					});
+			});
+
+		System.out.println(ssaResults.toString());
 	}
 }

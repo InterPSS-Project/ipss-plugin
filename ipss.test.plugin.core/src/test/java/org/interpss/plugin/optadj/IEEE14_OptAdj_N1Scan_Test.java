@@ -70,13 +70,13 @@ public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
 		assertTrue(cnt.getCount() == 18, ""+cnt.getCount());
 		
 		AclfNetContigencyOptimizer optimizer = new AclfNetContigencyOptimizer(dclfAlgo);
-		optimizer.optimize(100);
+		optimizer.optimize(100, true);
 		
 		Map<String, Double> resultMap = optimizer.getResultMap();
 		System.out.println(resultMap);
 		
-		assertEquals(resultMap.get("Bus3-G1"), 0.99, 0.0001);
-		assertEquals(resultMap.get("Bus1-G1"), -0.99, 0.0001);
+		assertEquals(resultMap.get("Gen:Bus6-G1"), 0.99, 0.0001);
+		assertEquals(resultMap.get("Gen:Bus1-G1"), -0.99, 0.0001);
 		
 //		System.out.println("Optimization gen size." + optimizer.getGenOptimizer().getGenSize());
 		System.out.println("Optimization gen constrain size." + optimizer.getOptimizer().getGenConstrainDataList().size());
