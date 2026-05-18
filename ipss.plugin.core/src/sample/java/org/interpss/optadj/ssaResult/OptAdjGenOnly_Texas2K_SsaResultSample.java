@@ -9,6 +9,8 @@ import org.interpss.numeric.datatype.Counter;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.PerformanceTimer;
 import org.interpss.plugin.optadj.algo.AclfNetGenLoadOptimizer;
+import org.interpss.plugin.optadj.algo.result.AclfNetSsaResultContainer;
+import org.interpss.plugin.optadj.algo.result.BranchOptAdjustResultRec;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.core.aclf.AclfBranch;
@@ -34,10 +36,14 @@ public class OptAdjGenOnly_Texas2K_SsaResultSample {
 		dclfAlgo.calculateDclf(DclfMethod.INC_LOSS);
 		//System.out.println(DclfOutFunc.dclfResults(dclfAlgo, false));
 		
+		// set the basecase loading threshold
 		double loadingThreshold = 90.0;
 
-		Counter cnt = new Counter(0);
-		DblBuffer maxLoading = new DblBuffer();
+		// defined a SSA result container
+		AclfNetSsaResultContainer ssaResults = new AclfNetSsaResultContainer(true);
+
+		ssaResults.setBasecaseThreshold(loadingThreshold);
+
 		dclfAlgo.getDclfAlgoBranchList().forEach(braDclf -> {
 			AclfBranch branch = braDclf.getBranch();
 
@@ -45,26 +51,25 @@ public class OptAdjGenOnly_Texas2K_SsaResultSample {
             double ratingMVA = branch.getRatingMvaA();
             double loadingPercent = ratingMVA > 0 ? (Math.abs(powerFlowMW) / ratingMVA) * 100.0 : 0.0;
             if ( loadingPercent > loadingThreshold) {
+				// add the basecaseover limit branch to the SSA result container
+				ssaResults.getBaseOverLimitInfo().add(new BranchOptAdjustResultRec(braDclf));
             	System.out.printf("Overloaded Branch: %s, Flow(MW): %.2f, Rating(MVA): %.2f, Loading(%%): %.2f%n",
             			branch.getId(), powerFlowMW, ratingMVA, loadingPercent);
-            	cnt.increment();
             }
-            if (loadingPercent > maxLoading.val) {
-				maxLoading.val = loadingPercent;
-			}
 		});		
-		System.out.println("Number of overloaded branches: " + cnt.getCount()); 
-		System.out.println("Max loading percent: " + maxLoading.val);
 		
 		PerformanceTimer timer = new PerformanceTimer();
 		// perform the Optimization adjustment
 		AclfNetGenLoadOptimizer optimizer = new AclfNetGenLoadOptimizer(dclfAlgo);
-		optimizer.optimize(loadingThreshold, true);
+		optimizer.optimize(ssaResults, loadingThreshold, true);
 		
 		timer.log("Opt");
 		
 		Map<String, Double> resultMap = optimizer.getResultGenMap();
 		System.out.println("Optimization gen result: " + resultMap);
+
+		// set the optimization gen/load result map to the SSA result container
+		ssaResults.setOptAdjBaseResultMap(resultMap);
 		
 		System.out.println("Optimization gen size: " + optimizer.getOptimizer().getGenSize());
 		System.out.println("Optimization gen constrain size: " + optimizer.getOptimizer().getGenConstrainDataList().size());
@@ -73,24 +78,20 @@ public class OptAdjGenOnly_Texas2K_SsaResultSample {
 		// Dclf after the optimization, Dclf gen has been adjusted
 		dclfAlgo.calculateDclf(DclfMethod.INC_LOSS);
 		
-		// check the branch loading after the optimization adjustment
+		// update the branch loading after the optimization adjustment
 		double baseMVA = aclfNet.getBaseMva();
-		AtomicCounter cnt1 = new AtomicCounter();
-		maxLoading.val = 0.0;
+		Map<String, BranchOptAdjustResultRec> baseOverLimitInfoMap = ssaResults.toBaseOverLimitInfoMap();
 		dclfAlgo.getDclfAlgoBranchList().stream()
 			.forEach(dclfBranch -> {
-				double flowMw = dclfBranch.getDclfFlow() * baseMVA;
-				double loading = Math.abs(flowMw / dclfBranch.getBranch().getRatingMvaA())*100;
-				if (loading > loadingThreshold) {
-					cnt1.increment();
-					System.out.printf("Branch: %s  %.2f rating: %.2f loading: %.2f%n",
-							dclfBranch.getId(), flowMw, dclfBranch.getBranch().getRatingMvaA(), loading);
-				}
-	            if (loading > maxLoading.val) {
-					maxLoading.val = loading;
+				// update the adjusted flow and loading percent
+				BranchOptAdjustResultRec rec = baseOverLimitInfoMap.get(dclfBranch.getId());
+				if (rec != null) {
+					// update the adjusted flow and loading percent after the optimization adjustment
+					rec.adjustedFlowMW = dclfBranch.getDclfFlow() * baseMVA;
+					rec.adjustedLoadingPercent = Math.abs(rec.adjustedFlowMW / dclfBranch.getBranch().getRatingMvaA())*100;
 				}
 			});
-		System.out.println("Total number of branches over limit after OptAdj: " + cnt1.getCount());
-		System.out.println("Max loading percent: " + maxLoading.val);
+
+		System.out.println(ssaResults.toString());
     }
 }
