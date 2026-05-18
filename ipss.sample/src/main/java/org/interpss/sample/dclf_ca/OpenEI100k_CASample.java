@@ -14,11 +14,11 @@ import org.interpss.plugin.contingency.DclfContingencyConfig;
 import org.interpss.plugin.contingency.ParallelDclfContingencyAnalyzer;
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
 import org.interpss.plugin.contingency.definition.MonitoredBranchRecord;
-import org.interpss.plugin.contingency.result.DclfContingencyResultRec;
 import org.interpss.plugin.contingency.util.ContingencyFileUtil;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 
+import com.interpss.algo.parallel.BranchCAResultRec;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
@@ -97,17 +97,17 @@ public class OpenEI100k_CASample {
 	    config.setDclfInclLoss(true);
 		config.setOverloadThreshold(100); // in percentage	
 
-		ConcurrentLinkedQueue<DclfContingencyResultRec> results = 
+		ConcurrentLinkedQueue<BranchCAResultRec> results = 
 				ParallelDclfContingencyAnalyzer.executeContingencyAnalysis(net, contList, monitoredBranchIds, config, 4);	
 
 		// print the results
-		for (DclfContingencyResultRec rec : results) {
+		for (BranchCAResultRec rec : results) {
 			//System.out.println(rec.toString());
-			String branchId = rec.getBranchId();
-			String contingencyName = rec.getContingencyName();
+			String branchId = rec.aclfBranch.getId();
+			String contingencyName = rec.contingency.getId().replaceFirst("contBranch:", "");
 			Double postFlowMW = rec.getPostFlowMW();
-			Double lineRatingMW = rec.getLineRatingMW();
-			Double loadingPercent = rec.getLoadingPercent();
+			Double lineRatingMW = rec.calBranchRateB();
+			Double loadingPercent = rec.calLoadingPercent();
 			System.out.println(String.format("{\n  \"branch_id\": \"%s\",\n  \"contingency_name\": \"%s\",\n  \"post_flow_mw\": %.2f,\n  \"line_rating_mw\": %.2f,\n  \"loading_percent\": %.2f\n}", 
                 branchId, contingencyName, postFlowMW, lineRatingMW, loadingPercent));
 		}
@@ -118,17 +118,17 @@ public class OpenEI100k_CASample {
 
         //Note: limit the number of GSF calculations for demo purpose
         int calculateNumber = 100; // number of overloaded branches to calculate GSFs for
-		for	 (DclfContingencyResultRec resultRec : results) {
+		for	 (BranchCAResultRec resultRec : results) {
             if (calculateNumber-- <=0)
                 break;
-			AclfBranch	 monitoredBranch = (AclfBranch) net.getBranch(resultRec.getBranchId());
+			AclfBranch	 monitoredBranch = (AclfBranch) net.getBranch(resultRec.aclfBranch.getId());
 			net.getBusList().parallelStream()
 				.filter(bus -> bus.isActive() && (bus.isGenPV() || bus.isGenPQ()))
 				.forEach(bus -> {
 					double gfs = algo.calGenShiftFactor(bus.getId(), monitoredBranch);    // w.r.t to the Ref Bus
 					if (Math.abs(gfs) > gsfThreshold) {
 						System.out.println("   GSF Gen@" + bus.getId() + 
-								" on Branch " + resultRec.getBranchId() + ": " + gfs);
+								" on Branch " + resultRec.aclfBranch.getId() + ": " + gfs);
 					}
 				});
 		}

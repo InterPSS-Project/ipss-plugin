@@ -3,6 +3,7 @@ package org.interpss.optadj;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -67,15 +68,15 @@ public class OptAdjGenLoad_Texas2K_Sample {
 		PerformanceTimer timer = new PerformanceTimer();
 		// perform the Optimization adjustment
 		AclfNetGenLoadOptimizer optimizer = new AclfNetGenLoadOptimizer(dclfAlgo);
-		optimizer.optimize(loadingThreshold);
+		optimizer.optimize(loadingThreshold, false);
 		
 		timer.log("Opt");
+
+		System.out.println("Optimization gen result: " + optimizer.getResultGenMap());
+		System.out.println("Optimization load result: " + optimizer.getResultLoadMap());
 		
-		Map<String, Double> resultMap = optimizer.getResultMap();
-		System.out.println("Optimization result: " + resultMap);
-		
-		System.out.println("Optimization gen size: " + optimizer.getOptimizer().getGenSize());
-		System.out.println("Optimization gen constrain size: " + optimizer.getOptimizer().getGenConstrainDataList().size());
+		System.out.println("Optimization gen/load size: " + optimizer.getOptimizer().getGenSize());
+		System.out.println("Optimization gen/load constrain size: " + optimizer.getOptimizer().getGenConstrainDataList().size());
 		System.out.println("Optimization sec constrain size: " + optimizer.getOptimizer().getSecConstrainDataList().size());
 	
 		// Dclf after the optimization, Dclf gen has been adjusted

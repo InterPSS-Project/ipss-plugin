@@ -67,13 +67,13 @@ public class IEEE14_OptAdj_Basecase_Test extends CorePluginTestSetup {
 		
 		// perform the Optimization adjustment
 		AclfNetGenLoadOptimizer optimizer = new AclfNetGenLoadOptimizer(dclfAlgo);
-		optimizer.optimize(100);
+		optimizer.optimize(100, true);
 		
 		Map<String, Double> resultMap = optimizer.getResultMap();
 		System.out.println(resultMap);
 		
-		assertEquals(resultMap.get("Bus2-G1"), 0.5713, 0.0001);
-		assertEquals(resultMap.get("Bus1-G1"), -0.5713, 0.0001);
+		assertEquals(resultMap.get("Gen:Bus2-G1"), 0.5713, 0.0001);
+		assertEquals(resultMap.get("Gen:Bus1-G1"), -0.5713, 0.0001);
 		
 		System.out.println("Optimization gen size." + optimizer.getOptimizer().getGenSize());
 		System.out.println("Optimization gen constrain size." + optimizer.getOptimizer().getGenConstrainDataList().size());
