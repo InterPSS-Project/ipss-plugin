@@ -7,6 +7,7 @@ import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisA
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -25,7 +26,7 @@ import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
 
-public class OptAdj_Texas2K_N1Scan_Sample {
+public class OptAdjGenLoad_Texas2K_N1Scan_Sample {
 	public static void main(String args[]) throws Exception {
 		AclfNetwork aclfNet = IpssAdapter.importAclfNet("ipss.plugin.core/testData/psse/v36/Texas2k_series24_case1_2016summerPeak_v36.RAW")
 				.setFormat(PSSE)
@@ -68,10 +69,21 @@ public class OptAdj_Texas2K_N1Scan_Sample {
 		System.out.println("Total number of branches over limit before OptAdj: " + cnt.getCount());
 		 
 		AclfNetContigencyOptimizer optimizer = new AclfNetContigencyOptimizer(dclfAlgo);
-		optimizer.optimize(100);
+		optimizer.optimize(100, false);
 		
 		Map<String, Double> resultMap = optimizer.getResultMap();
-		System.out.println("Optimization result: " + resultMap);
+		// PSSE import names: Gen:GenNo(BusName), Load:LoadNo(BusName)
+		Map<String, Double> genResultMap = new LinkedHashMap<>();
+		Map<String, Double> loadResultMap = new LinkedHashMap<>();
+		resultMap.forEach((name, pu) -> {
+			if (name.startsWith("Gen:")) {
+				genResultMap.put(name, pu);
+			} else if (name.startsWith("Load:")) {
+				loadResultMap.put(name, pu);
+			}
+		});
+		System.out.println("Optimization gen result: " + genResultMap);
+		System.out.println("Optimization load result: " + loadResultMap);
 		
 		System.out.println("Optimization gen size." + optimizer.getControlGenMap().size());
 		System.out.println("Optimization gen constrain size." + optimizer.getOptimizer().getGenConstrainDataList().size());
