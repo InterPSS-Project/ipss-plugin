@@ -84,7 +84,7 @@ public class IEEE14_OptAdj_N1ScanSSAResult_Sample {
 						//		" postContFlow: " + resultRec.getPostFlowMW() +
 						//		" loading: " + resultRec.calLoadingPercent() + "%");
 						double loading = resultRec.calLoadingPercent(resultRec.aclfBranch.getRatingMvaB());
-						if (loading > 100.0) {
+						if (loading > ssaResults.getContingencyThreshold()) {
 							cnt.increment();
 							// add the over limit branch CA result rec to the SSA result container
 							ssaResults.getCaOverLimitInfo().add(new BranchOptAdjustCAResultRec(resultRec));
@@ -97,7 +97,7 @@ public class IEEE14_OptAdj_N1ScanSSAResult_Sample {
 		System.out.println("Total number of branches over limit before OptAdj: " + cnt.getCount());
 		
 		AclfNetContigencyOptimizer optimizer = new AclfNetContigencyOptimizer(dclfAlgo);
-		optimizer.optimize(ssaResults, 100, true);
+		optimizer.optimize(ssaResults, ssaResults.getContingencyThreshold(), true);
 		
 		Map<String, Double> resultMap = optimizer.getResultMap();
 		System.out.println(resultMap);
@@ -115,8 +115,8 @@ public class IEEE14_OptAdj_N1ScanSSAResult_Sample {
 			.forEach(contingency -> {
 				ContingencyAnalysisMonad.of(dclfAlgo, contingency)
 					.ca(resultRec -> {
-						String mapId = AclfNetSsaResultContainer.caOverLimitInfoMapId(resultRec);
-						BranchCAResultRec rec = caOverLimitInfoMap.get(mapId);
+						String recId = AclfNetSsaResultContainer.caOverLimitInfoMapId(resultRec);
+						BranchCAResultRec rec = caOverLimitInfoMap.get(recId);
 						if (rec != null) {
 							BranchOptAdjustCAResultRec recAdj = (BranchOptAdjustCAResultRec) rec;
 							//System.out.println(resultRec.aclfBranch.getId() + 
