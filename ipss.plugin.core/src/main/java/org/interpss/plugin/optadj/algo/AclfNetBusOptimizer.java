@@ -47,11 +47,14 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
     protected final AclfNetwork network;
     
     // Performance optimization: cache frequently accessed values
-    private double baseMvaCache;
+    //private double baseMvaCache;
     private Map<String, DclfAlgoBranch> dclfBranchCache;
     
     protected Map<Integer, AclfBus> controlBusMap;
-    protected Set<String> overLimitBranchList;
+
+    // heavy loaded branch threshold factor, used to calculate the heavy loaded branch threshold
+    private final double HEAVYLOAD_THRESHOLD_FACTOR = 0.8;
+    protected Set<String> heavyLoadedBranchList;
     
     /**
      * Constructor for AclfNetLoadFlowBusOptimizer.
@@ -64,7 +67,7 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
         this.network = (AclfNetwork) dclfAlgo.getNetwork();
         this.helper = new AclfNetGFSsHelper(network);
         this.dclfBranchCache = new HashMap<>();
-        this.baseMvaCache = network.getBaseMva();
+        //this.baseMvaCache = network.getBaseMva();
     }
 
     /**
@@ -88,10 +91,10 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
         }
         
         // 1. Identify overloaded branches
-        identifyOverloadedBranches(threshold);
+        identifyHeavyLoadedBranches(threshold*HEAVYLOAD_THRESHOLD_FACTOR);
         
         // Early return if no overloads
-        if (overLimitBranchList.isEmpty()) {
+        if (heavyLoadedBranchList.isEmpty()) {
             log.debug("No overloaded branches found");
             return;
         }
@@ -142,7 +145,7 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
             .collect(Collectors.toCollection(HashSet::new));
         
         // Calculate GFS matrix for generator buses to overloaded branches
-        Sen2DMatrix gfsMatrix = helper.calGFS(genBusIds, overLimitBranchList);
+        Sen2DMatrix gfsMatrix = helper.calGFS(genBusIds, heavyLoadedBranchList);
         
         // Filter buses with sufficient sensitivity
         return genBuses.stream()
@@ -156,7 +159,7 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
     private boolean hasSufficientSensitivity(Sen2DMatrix gfsMatrix, AclfBus bus) {
         int busNo = bus.getSortNumber();
         
-        for (String branchId : overLimitBranchList) {
+        for (String branchId : heavyLoadedBranchList) {
             AclfBranch branch = network.getBranch(branchId);
             if (branch == null) continue;
             
@@ -171,8 +174,8 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
     /**
      * Identify overloaded branches in the network.
      */
-    private void identifyOverloadedBranches(double threshold) {
-        overLimitBranchList = new HashSet<>();
+    private void identifyHeavyLoadedBranches(double threshold) {
+        heavyLoadedBranchList = new HashSet<>();
         
         for (DclfAlgoBranch dclfBranch : dclfAlgo.getDclfAlgoBranchList()) {
             if (!isNonSwingBranch(dclfBranch)) continue;
@@ -185,11 +188,11 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
             
             double loadingPercent = Math.abs(powerFlowMW) / ratingMVA * 100.0;
             if (loadingPercent > threshold) {
-                overLimitBranchList.add(branch.getId());
+                heavyLoadedBranchList.add(branch.getId());
             }
         }
         
-        log.info("Found {} overloaded branches", overLimitBranchList.size());
+        log.info("Found {} heavyly loaded branches", heavyLoadedBranchList.size());
     }
     
     /**
@@ -216,7 +219,7 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
      * Build section constraints.
      */
     private void buildSectionConstraints(Sen2DMatrix gfsMatrix, double threshold) {
-        double baseMva = baseMvaCache;
+        double baseMva = network.getBaseMva();
         
         for (AclfBranch branch : network.getBranchList()) {
             if (!branch.isActive()) continue;
@@ -268,7 +271,7 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
      * Build generator constraints.
      */
     private void buildGenConstraints() {
-        double baseMva = baseMvaCache;
+        double baseMva = network.getBaseMva();
         
         for (Map.Entry<Integer, AclfBus> entry : controlBusMap.entrySet()) {
             int index = entry.getKey();
@@ -290,7 +293,7 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
      * Update DCLF algorithm with optimization results.
      */
     private void updateDclfAlgorithm() {
-        double baseMva = baseMvaCache;
+        double baseMva = network.getBaseMva();
         
         for (int i = 0; i < controlBusMap.size(); i++) {
             double adjustmentMW = getOptimizer().getPoint()[i];
@@ -330,7 +333,7 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
      */
     public Map<String, Double> getResultMap() {
         Map<String, Double> resultMap = new HashMap<>();
-        double baseMva = baseMvaCache;
+        double baseMva = network.getBaseMva();
         
         for (int i = 0; i < controlBusMap.size(); i++) {
             double adjustmentMW = getOptimizer().getPoint()[i];
