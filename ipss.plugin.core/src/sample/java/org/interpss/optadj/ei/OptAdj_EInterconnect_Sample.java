@@ -1,4 +1,4 @@
-package org.interpss.optadj;
+package org.interpss.optadj.ei;
 
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
