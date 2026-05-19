@@ -61,6 +61,7 @@ The implementation is layered to keep network sensitivity, optimization model co
   - Bus-centric variant (control variable per bus instead of per generator).
   - Adds caching (`DclfAlgoBranch`, base MVA) and filters by sensitivity thresholds.
   - Distributes optimized bus adjustment back to each generator proportionally.
+  - Optional load-only buses via `optimize(threshold, adjustGenOnly)` when `adjustGenOnly` is false.
 
 ### Optimization model
 
