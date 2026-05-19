@@ -13,6 +13,7 @@ import org.interpss.threePhase.basic.dstab.DStab3PGen;
 import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 import org.interpss.threePhase.basic.dstab.impl.DStab3PGenImpl;
 import org.interpss.threePhase.basic.dstab.impl.DStab3PLoadImpl;
+import org.interpss.threePhase.powerflow.DistributionPFMethod;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.powerflow.impl.DistPowerFlowOutFunc;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
@@ -270,6 +271,15 @@ public class TestDistributionPowerflowAlgo {
 
 	}
 
+	@Test
+	public void testDefaultDistributionPFMethod() throws InterpssException {
+		Static3PNetwork net = createDistNetNoDG();
+
+		DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(net);
+
+		assertTrue(distPFAlgo.getPFMethod() == DistributionPFMethod.Fixed_Point);
+	}
+
 
 	@Test
 	public void testDistBusPF() throws InterpssException {
@@ -277,6 +287,30 @@ public class TestDistributionPowerflowAlgo {
 
 		DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(net);
 		//distPFAlgo.orderDistributionBuses(true);
+
+		assertTrue(distPFAlgo.powerflow());
+
+		/*
+		 *  Vabc of bus -Bus1,1.0100 + j0.0000  -0.5050 + j-0.87469  -0.5050 + j0.87469
+			Vabc of bus -Bus2,0.99636 + j-0.05941  -0.54963 + j-0.83317  -0.44673 + j0.89258
+			Vabc of bus -Bus3,0.99075 + j-0.07914  -0.56392 + j-0.81844  -0.42683 + j0.89759
+			Vabc of bus -Bus4,0.98834 + j-0.09907  -0.57997 + j-0.80639  -0.40837 + j0.90546
+		 */
+		for(BaseAclfBus bus:net.getBusList()){
+			DStab3PBus bus3P = (DStab3PBus) bus;
+			System.out.println("Vabc of bus -"+bus3P.getId()+","+bus3P.get3PhaseVotlages().toString());
+		}
+
+		System.out.println(DistPowerFlowOutFunc.powerflowResultSummary(net));
+
+	}
+
+		@Test
+	public void testDistBusPFBFSweep() throws InterpssException {
+		Static3PNetwork net = createDistNetNoDG();
+
+		DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(net);
+		distPFAlgo.setPFMethod(DistributionPFMethod.Forward_Backword_Sweep);
 
 		assertTrue(distPFAlgo.powerflow());
 

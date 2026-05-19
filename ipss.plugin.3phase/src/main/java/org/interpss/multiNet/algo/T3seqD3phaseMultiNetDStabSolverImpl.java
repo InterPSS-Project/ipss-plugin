@@ -25,6 +25,7 @@ import org.interpss.threePhase.basic.dstab.impl.DStab3PLoadImpl;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.model.DynLoadModel1Phase;
 import org.interpss.threePhase.dynamic.model.DynLoadModel3Phase;
+import org.interpss.threePhase.powerflow.DistributionPFMethod;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.slf4j.Logger;
@@ -369,6 +370,7 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 							//solveDistNetFixedSourceVolt(dsNet3Ph, sourceId);
 							
 							DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(dsNet);
+							distPFAlgo.setPFMethod(DistributionPFMethod.Forward_Backword_Sweep);
 							
 							// always use the set source bus voltage above as the initial voltage
 							distPFAlgo.setInitBusVoltageEnabled(false);
