@@ -68,11 +68,9 @@ import com.interpss.simu.SimuObjectFactory;
 
 public class ThreeBus_3Phase_Test {
 
-	//@Test
+	@Test
 	public void testYMatrixabc() throws Exception{
 
-		IpssCorePlugin.init();
-		//IpssLogger.getLogger().setLevel(Level.INFO);
 
 		DStabNetwork3Phase net = create3BusSys();
 
@@ -219,8 +217,6 @@ public class ThreeBus_3Phase_Test {
 	//@Test
 	public void testDstab3Phase() throws Exception{
 
-		IpssCorePlugin.init();
-		//IpssLogger.getLogger().setLevel(Level.INFO);
 		DStabNetwork3Phase net = create3BusSys();
 
 
