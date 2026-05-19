@@ -157,6 +157,31 @@ public class DStab3PBusImpl extends BaseDStabBusImpl<DStab3PGen,DStab3PLoad> imp
 	}
 
 	@Override
+	public Complex3x3 getYiiAbcForPowerflow() {
+		Complex3x3 yii = new Complex3x3();
+
+		for(Branch bra:this.getBranchIterable()) {
+			 if(bra.isActive()){
+				 if(bra instanceof DStab3PBranch){
+					 DStab3PBranch thrPhBranch = (DStab3PBranch) bra;
+					 if(this.getId().equals(bra.getFromBus().getId())) {
+						yii = yii.add(thrPhBranch.getYffabc());
+					} else {
+						yii = yii.add(thrPhBranch.getYttabc());
+					}
+				 }
+			 }
+
+		 }
+
+		 if(shuntYabc != null){
+			 yii = yii.add(shuntYabc);
+		 }
+
+		return yii;
+	}
+
+	@Override
 	public List<DynLoadModel1Phase> getPhaseADynLoadList() {
 
 		if(this.phaseADynLoadList == null) {
