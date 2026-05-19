@@ -66,8 +66,8 @@ public class IEEE_13BusFeeder_Test {
 
 	}
 
-
-		public void test_ieee13feeder_powerflow_BFSweep() throws InterpssException{
+	@Test
+	public void test_ieee13feeder_powerflow_BFSweep() throws InterpssException{
 
 
        DStabNetwork3Phase net = createIEEE13BusFeeder4DStab();
