@@ -26,7 +26,7 @@ import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 public class AclfNetContigencyOptimizer extends AclfNetGenLoadOptimizer {
     private static final Logger log = LoggerFactory.getLogger(AclfNetContigencyOptimizer.class);
 
-	// loading threshold for the optimization
+	// loading threshold for the optimization, ignore if the loading is less than this threshold
 	public static double LOADING_THRESHOLD = 0.5;
     
     private Set<String> outBranchIdSet;
