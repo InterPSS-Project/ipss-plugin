@@ -39,7 +39,10 @@ public class Dstab3PBranchImpl extends DStabBranchImpl implements DStab3PBranch 
 	@Override
 	public void setZabc(Complex3x3 Zabc) {
 		this.Zabc = Zabc;
-
+		this.Yabc = null;
+		if(this.isXfr() && Zabc != null && Zabc.aa != null && Zabc.aa.abs() > 0.0) {
+			this.setZ(Zabc.aa);
+		}
 	}
 
 	@Override
