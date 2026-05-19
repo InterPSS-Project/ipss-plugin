@@ -51,7 +51,6 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	private boolean initBusVoltagesEnabled = true;
 	private boolean isAllPowerFlowConverged = false;
 	private boolean fixedPointFallbackUsed = false;
-	private double powerflowYMatrixGmin = 1.0E-8;
 	private double transformerAntiFloatAdmittance = 1.0E-6;
 	private Hashtable<Integer, Complex3x1> swingBusVoltageBoundaryCurrent = new Hashtable<>();
 
@@ -411,7 +410,12 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 					Complex3x3 yii = ((DStab3PBus) bus).getYiiAbcForPowerflow();
 
 					if(!bus.isSwing()) {
-						yii = yii.add(Complex3x3.createUnitMatrix().multiply(this.powerflowYMatrixGmin));
+						// replace zero diagonal entries with 1.0 to avoid singularity
+						// for partial-phase buses (e.g., 1-ph or 2-ph connections)
+						double yiiMinTolerance = 1.0E-8;
+						if(yii.aa.abs() < yiiMinTolerance) yii.aa = new Complex(1.0, 0);
+						if(yii.bb.abs() < yiiMinTolerance) yii.bb = new Complex(1.0, 0);
+						if(yii.cc.abs() < yiiMinTolerance) yii.cc = new Complex(1.0, 0);
 					}
 
 					yMatrix.setA(yii, i, i);
