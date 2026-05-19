@@ -22,7 +22,7 @@
  *
  */
 
-package org.interpss.optadj;
+package org.interpss.optadj.ssaResult;
 
 import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
