@@ -35,8 +35,11 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
     private static final Logger log = LoggerFactory.getLogger(AclfNetBusOptimizer.class);
     
     // Configuration constants
-    private static final double GEN_SEN_THRESHOLD = 0.20;
-    private static final double SECTION_SEN_THRESHOLD = 0.05;
+    // Gfs adjustment sensitivity threshold
+    private static final double BUS_GFS_THRESHOLD = 0.20;
+    // Section adjustment sensitivity threshold
+    private static final double SECTION_GFS_THRESHOLD = 0.05;
+    // Gen/Load optimization adjustment threshold in MW
     private static final double OPT_ADJUSTMENT_THRESHOLD_MW = 0.1;
     
     //protected final ContingencyAnalysisAlgorithm dclfAlgo;
@@ -158,7 +161,7 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
             if (branch == null) continue;
             
             double sensitivity = gfsMatrix.get(busNo, branch.getSortNumber());
-            if (Math.abs(sensitivity) > GEN_SEN_THRESHOLD) {
+            if (Math.abs(sensitivity) > BUS_GFS_THRESHOLD) {
                 return true;
             }
         }
@@ -232,7 +235,7 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
                 // Adjust sign based on flow direction
                 genSenArray[index] = dclfBranch.getDclfFlow() > 0 ? sen : -sen;
                 
-                if (Math.abs(genSenArray[index]) > SECTION_SEN_THRESHOLD) {
+                if (Math.abs(genSenArray[index]) > SECTION_GFS_THRESHOLD) {
                     hasSignificantSensitivity = true;
                 }
             }
