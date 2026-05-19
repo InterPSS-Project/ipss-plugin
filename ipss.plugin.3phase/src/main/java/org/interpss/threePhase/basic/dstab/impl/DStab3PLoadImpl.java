@@ -200,7 +200,17 @@ public class DStab3PLoadImpl extends DStab1PLoadImpl implements DStab3PLoad {
 
 
 
-		return equivCurInj = loadPQ.divide(vabc).conjugate().multiply(-1.0);
+		equivCurInj = new Complex3x1();
+		if(vabc.a_0.abs() > this.Vminpu) {
+			equivCurInj.a_0 = loadPQ.a_0.divide(vabc.a_0).conjugate().multiply(-1.0);
+		}
+		if(vabc.b_1.abs() > this.Vminpu) {
+			equivCurInj.b_1 = loadPQ.b_1.divide(vabc.b_1).conjugate().multiply(-1.0);
+		}
+		if(vabc.c_2.abs() > this.Vminpu) {
+			equivCurInj.c_2 = loadPQ.c_2.divide(vabc.c_2).conjugate().multiply(-1.0);
+		}
+		return equivCurInj;
 	}
 
 	@Override
