@@ -18,6 +18,7 @@ import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 import org.interpss.threePhase.basic.dstab.impl.DStab3PLoadImpl;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.algo.DynamicEventProcessor3Phase;
+import org.interpss.threePhase.powerflow.DistributionPFMethod;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.powerflow.impl.DistPowerFlowOutFunc;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
@@ -45,16 +46,34 @@ public class IEEE_13BusFeeder_Test {
 
 	private final double ft2mile = 1.0/5280.0;
 
-	//@Test
-	public void test_ieee13feeder_powerflow() throws InterpssException{
+	@Test
+	public void test_ieee13feeder_powerflow_fixedPoint() throws InterpssException{
 
-		IpssCorePlugin.init();
-		IpssCorePlugin.setLoggerLevel(Level.INFO);
+       DStabNetwork3Phase net = createIEEE13BusFeeder4DStab();
+
+	   // the default method is fixed point, so no need to set it here
+		DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(net);
+		//distPFAlgo.orderDistributionBuses(true);
+
+		assertTrue(distPFAlgo.powerflow());
+
+		for(BaseDStabBus<?,?> bus: net.getBusList()){
+			System.out.println("id, sortNum: "+bus.getId()+","+bus.getSortNumber());
+		}
+
+		System.out.println(DistPowerFlowOutFunc.powerflowResultSummary(net));
+		System.out.println(DistPowerFlowOutFunc.busLfSummary(net));
+
+	}
+
+
+		public void test_ieee13feeder_powerflow_BFSweep() throws InterpssException{
+
 
        DStabNetwork3Phase net = createIEEE13BusFeeder4DStab();
 
 		DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(net);
-		//distPFAlgo.orderDistributionBuses(true);
+		distPFAlgo.setPFMethod(DistributionPFMethod.Forward_Backword_Sweep);
 
 		assertTrue(distPFAlgo.powerflow());
 
