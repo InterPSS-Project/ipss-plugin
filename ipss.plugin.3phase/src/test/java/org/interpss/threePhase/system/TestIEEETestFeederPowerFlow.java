@@ -21,9 +21,6 @@ public class TestIEEETestFeederPowerFlow {
 	@Test
 	public void testIEEE123BusPowerflow(){
 
-		IpssCorePlugin.init();
-		IpssCorePlugin.setLoggerLevel(Level.INFO);
-
 		OpenDSSDataParser parser = new OpenDSSDataParser();
 		parser.parseFeederData("testData/feeder/IEEE123","IEEE123Master_Modified_v2.dss");
 
