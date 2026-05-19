@@ -39,6 +39,8 @@ public interface DistributionPowerFlowAlgorithm {
 
 	public DistributionPFMethod getPFMethod();
 
+	public void setPFMethod(DistributionPFMethod method);
+
 	public void setTolerance(double tolerance);
 
 	public double getTolerance();
