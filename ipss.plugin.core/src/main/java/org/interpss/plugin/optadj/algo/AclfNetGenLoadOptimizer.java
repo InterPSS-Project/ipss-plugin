@@ -42,6 +42,9 @@ public class AclfNetGenLoadOptimizer extends BaseAclfNetOptimizer {
     
 	// sensitivity threshold for the optimization
 	final static double SEN_THRESHOLD = 0.02;
+
+	// load limit factor, used to calculate the load limit
+	final static double LOAD_LIMIT_FACTOR = 1.5;
 	
 	// a contingency analysis algorithm object based on which the optimization is performed
 	//protected ContingencyAnalysisAlgorithm dclfAlgo;
@@ -184,7 +187,7 @@ public class AclfNetGenLoadOptimizer extends BaseAclfNetOptimizer {
 		controlLoadMap.forEach((no, load) -> {
 
 			getOptimizer().addConstraint(new DeviceConstrainData(load.getLoadCP().getReal() * baseMva,
-					Relationship.LEQ, load.getLoadCP().getReal()*1.5 * baseMva, no,true));
+					Relationship.LEQ, load.getLoadCP().getReal()*LOAD_LIMIT_FACTOR * baseMva, no,true));
 			getOptimizer().addConstraint(new DeviceConstrainData(load.getLoadCP().getReal() * baseMva,
 					Relationship.GEQ, 0, no,true));
 		});
