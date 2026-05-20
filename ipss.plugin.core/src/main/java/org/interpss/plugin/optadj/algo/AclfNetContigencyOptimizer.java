@@ -98,7 +98,7 @@ public class AclfNetContigencyOptimizer extends AclfNetGenLoadOptimizer {
 									int busNo = load.getParentBus().getSortNumber();
 									// GSFij + LODF x GSFkm
 									double sen = gfsMatrix.get(busNo, monBranchNo) + lodf * gfsMatrix.get(busNo, outBranchNo);
-									genSenArray[no] = postFlow > 0 ? sen : -sen;
+									genSenArray[no] = postFlow > 0 ? -sen : sen;
 								});
 								
 								double limit = monDclfBranch.getBranch().getRatingMvaB() * threshold / 100;
