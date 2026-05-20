@@ -1,11 +1,15 @@
 package org.interpss.plugin.optadj.algo;
 
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
 
 import org.apache.commons.math3.optim.linear.Relationship;
@@ -46,9 +50,10 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
     private static final double SECTION_GFS_THRESHOLD = 0.05;
     // Gen/Load optimization adjustment threshold in MW
     private static final double OPT_ADJUSTMENT_THRESHOLD_MW = 0.1;
-    // load limit factor, used to calculate the load limit
-    //private static final double LOAD_LIMIT_FACTOR = 1.5;
-    //private static final double MIN_LOAD_P_PU = 0.001;
+    
+    private enum ControlBusRole {
+        GEN, LOAD
+    }
     
     protected final AclfNetGFSsHelper helper;
     protected final AclfNetwork network;
@@ -56,7 +61,8 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
     private Map<String, DclfAlgoBranch> dclfBranchCache;
     
     protected Map<Integer, AclfBus> controlBusMap;
-    protected Set<String> controlLoadBusIds;
+    /** Bus id -> role (GEN or LOAD) for buses in {@link #controlBusMap}. */
+    private Map<String, ControlBusRole> controlBusRoles;
 
     // heavy loaded branch threshold factor, used to calculate the heavy loaded branch threshold
     private final double HEAVYLOAD_THRESHOLD_FACTOR = 0.9;
@@ -89,7 +95,13 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
      * @return load control bus id set (empty when gen-only optimization was used)
      */
     public Set<String> getControlLoadBusIdSet() {
-        return controlLoadBusIds != null ? new HashSet<>(controlLoadBusIds) : new HashSet<>();
+        if (controlBusRoles == null) {
+            return new HashSet<>();
+        }
+        return controlBusRoles.entrySet().stream()
+            .filter(e -> e.getValue() == ControlBusRole.LOAD)
+            .map(Map.Entry::getKey)
+            .collect(Collectors.toCollection(HashSet::new));
     }
     
     /**
@@ -114,7 +126,7 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
             this.getOptimizer().getGenConstrainDataList().clear();
             this.getOptimizer().getSecConstrainDataList().clear();
         }
-        controlLoadBusIds = new HashSet<>();
+        controlBusRoles = new HashMap<>();
         
         identifyHeavyLoadedBranches(threshold * HEAVYLOAD_THRESHOLD_FACTOR);
         
@@ -148,36 +160,33 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
      * @param adjustGenOnly when true, exclude load-only buses from the control set
      */
     private Set<AclfBus> buildControlBusSet(boolean adjustGenOnly) {
-        Set<AclfBus> genBuses = network.getBusList().stream()
-            .filter(bus -> bus.isActive() && bus.isGen())
-            .map(bus -> (AclfBus) bus)
-            .collect(Collectors.toCollection(HashSet::new));
+        Map<ControlBusRole, Set<AclfBus>> candidatesByRole = new EnumMap<>(ControlBusRole.class);
+        candidatesByRole.put(ControlBusRole.GEN, collectGenCandidateBuses());
+        candidatesByRole.put(ControlBusRole.LOAD,
+            adjustGenOnly ? Collections.emptySet() : collectLoadCandidateBuses());
         
-        Set<AclfBus> loadBuses = adjustGenOnly
-            ? Collections.emptySet()
-            : collectLoadBusesAtHeavyBranches();
+        Set<AclfBus> allCandidates = candidatesByRole.values().stream()
+            .flatMap(Set::stream)
+            .collect(Collectors.toCollection(LinkedHashSet::new));
         
-        if (genBuses.isEmpty() && loadBuses.isEmpty()) {
+        if (allCandidates.isEmpty()) {
             return new LinkedHashSet<>();
         }
         
-        Set<String> candidateBusIds = new HashSet<>();
-        genBuses.forEach(bus -> candidateBusIds.add(bus.getId()));
-        loadBuses.forEach(bus -> candidateBusIds.add(bus.getId()));
+        Set<String> candidateBusIds = allCandidates.stream()
+            .map(AclfBus::getId)
+            .collect(Collectors.toCollection(HashSet::new));
         
         Sen2DMatrix gfsMatrix = helper.calGFS(candidateBusIds, heavyLoadedBranchList);
         
         Set<AclfBus> controlBusSet = new LinkedHashSet<>();
-        genBuses.stream()
-            .filter(bus -> hasSufficientSensitivity(gfsMatrix, bus))
-            .forEach(controlBusSet::add);
-        
-        if (!adjustGenOnly) {
-            loadBuses.stream()
+        for (Map.Entry<ControlBusRole, Set<AclfBus>> entry : candidatesByRole.entrySet()) {
+            ControlBusRole role = entry.getKey();
+            entry.getValue().stream()
                 .filter(bus -> hasSufficientSensitivity(gfsMatrix, bus))
                 .forEach(bus -> {
                     controlBusSet.add(bus);
-                    controlLoadBusIds.add(bus.getId());
+                    controlBusRoles.put(bus.getId(), role);
                 });
         }
         
@@ -185,9 +194,19 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
     }
 
     /**
+     * Collect active generator buses as generation control candidates.
+     */
+    private Set<AclfBus> collectGenCandidateBuses() {
+        return network.getBusList().stream()
+            .filter(bus -> bus.isActive() && bus.isGen())
+            .map(bus -> (AclfBus) bus)
+            .collect(Collectors.toCollection(HashSet::new));
+    }
+
+    /**
      * Collect load-only buses at terminals of heavily loaded branches as load control candidates.
      */
-    private Set<AclfBus> collectLoadBusesAtHeavyBranches() {
+    private Set<AclfBus> collectLoadCandidateBuses() {
         Set<AclfBus> loadCandidateBuses = new HashSet<>();
         for (String branchId : heavyLoadedBranchList) {
             AclfBranch branch = network.getBranch(branchId);
@@ -201,8 +220,11 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
     }
 
     private void addLoadCandidateBus(Set<AclfBus> loadCandidateBuses, AclfBus bus) {
+        if (bus == null || !bus.isActive() || !bus.isLoad() || bus.isGen()) {
+            return;
+        }
         double currentLoadP = bus.getLoadP() * network.getBaseMva();
-        if (bus != null && bus.isActive() && bus.isLoad() && !bus.isGen() && currentLoadP > OPT_ADJUSTMENT_THRESHOLD_MW) {
+        if (currentLoadP > OPT_ADJUSTMENT_THRESHOLD_MW) {
             loadCandidateBuses.add(bus);
         }
     }
@@ -287,15 +309,11 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
             for (Map.Entry<Integer, AclfBus> entry : controlBusMap.entrySet()) {
                 int index = entry.getKey();
                 AclfBus bus = entry.getValue();
-                double sen = gfsMatrix.get(bus.getSortNumber(), branch.getSortNumber());
+                double gfsSen = gfsMatrix.get(bus.getSortNumber(), branch.getSortNumber());
+                double sen = toSectionSensitivity(dclfBranch, gfsSen, getControlBusRole(bus));
+                genSenArray[index] = sen;
                 
-                if (isLoadControlBus(bus)) {
-                    genSenArray[index] = dclfBranch.getDclfFlow() > 0 ? -sen : sen;
-                } else {
-                    genSenArray[index] = dclfBranch.getDclfFlow() > 0 ? sen : -sen;
-                }
-                
-                if (Math.abs(genSenArray[index]) > SECTION_GFS_THRESHOLD) {
+                if (Math.abs(sen) > SECTION_GFS_THRESHOLD) {
                     hasSignificantSensitivity = true;
                 }
             }
@@ -309,9 +327,20 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
             }
         }
     }
+
+    /**
+     * Convert bus GFS to section-constraint sensitivity; sign convention differs for gen vs load.
+     */
+    private double toSectionSensitivity(DclfAlgoBranch dclfBranch, double gfsSen, ControlBusRole role) {
+        boolean positiveFlow = dclfBranch.getDclfFlow() > 0;
+        if (role == ControlBusRole.LOAD) {
+            return positiveFlow ? -gfsSen : gfsSen;
+        }
+        return positiveFlow ? gfsSen : -gfsSen;
+    }
     
-    private boolean isLoadControlBus(AclfBus bus) {
-        return controlLoadBusIds != null && controlLoadBusIds.contains(bus.getId());
+    private ControlBusRole getControlBusRole(AclfBus bus) {
+        return controlBusRoles.getOrDefault(bus.getId(), ControlBusRole.GEN);
     }
     
     /**
@@ -338,24 +367,32 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
             int index = entry.getKey();
             AclfBus bus = entry.getValue();
             
-            if (isLoadControlBus(bus)) {
-                double currentLoadP = bus.getLoadP() * baseMva;
-                double upperLimit = currentLoadP > 0 ? currentLoadP * LOAD_LIMIT_FACTOR : 0.0;
-                double lowerLimit = currentLoadP > 0 ? 0.0 : currentLoadP * LOAD_LIMIT_FACTOR;
-                getOptimizer().addConstraint(new DeviceConstrainData(
-                    currentLoadP, Relationship.LEQ, upperLimit, index, true));
-                getOptimizer().addConstraint(new DeviceConstrainData(
-                    currentLoadP, Relationship.GEQ, lowerLimit, index, true));
+            if (getControlBusRole(bus) == ControlBusRole.LOAD) {
+                addLoadDeviceConstraints(bus, index, baseMva);
             } else {
-                LimitType genLimit = bus.getPGenLimit();
-                double currentGenP = bus.getGenP() * baseMva;
-                
-                getOptimizer().addConstraint(new DeviceConstrainData(
-                    currentGenP, Relationship.LEQ, genLimit.getMax() * baseMva, index));
-                getOptimizer().addConstraint(new DeviceConstrainData(
-                    currentGenP, Relationship.GEQ, genLimit.getMin() * baseMva, index));
+                addGenDeviceConstraints(bus, index, baseMva);
             }
         }
+    }
+
+    private void addGenDeviceConstraints(AclfBus bus, int index, double baseMva) {
+        LimitType genLimit = bus.getPGenLimit();
+        double currentGenP = bus.getGenP() * baseMva;
+        
+        getOptimizer().addConstraint(new DeviceConstrainData(
+            currentGenP, Relationship.LEQ, genLimit.getMax() * baseMva, index));
+        getOptimizer().addConstraint(new DeviceConstrainData(
+            currentGenP, Relationship.GEQ, genLimit.getMin() * baseMva, index));
+    }
+
+    private void addLoadDeviceConstraints(AclfBus bus, int index, double baseMva) {
+        double currentLoadP = bus.getLoadP() * baseMva;
+        double upperLimit = currentLoadP > 0 ? currentLoadP * LOAD_LIMIT_FACTOR : 0.0;
+        double lowerLimit = currentLoadP > 0 ? 0.0 : currentLoadP * LOAD_LIMIT_FACTOR;
+        getOptimizer().addConstraint(new DeviceConstrainData(
+            currentLoadP, Relationship.LEQ, upperLimit, index, true));
+        getOptimizer().addConstraint(new DeviceConstrainData(
+            currentLoadP, Relationship.GEQ, lowerLimit, index, true));
     }
     
     /**
@@ -374,7 +411,7 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
             if (dcBus == null) continue;
             
             log.debug("Bus {} adjustment: {} MW", bus.getName(), adjustmentMW);
-            if (isLoadControlBus(bus)) {
+            if (getControlBusRole(bus) == ControlBusRole.LOAD) {
                 distributeAdjustmentToLoads(bus, dcBus, adjustmentMW, baseMva);
             } else {
                 distributeAdjustmentToGenerators(bus, dcBus, adjustmentMW, baseMva);
@@ -385,38 +422,41 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
     /**
      * Distribute adjustment to individual generators.
      */
-	private void distributeAdjustmentToGenerators(AclfBus bus, DclfAlgoBus dcBus, double adjustmentMW, double baseMva) {
-		double totalBusGenP = bus.getGenP() + dcBus.getGenAdjust();
-		if (Math.abs(totalBusGenP) < 1e-6)
-			return;
-
-		double adjustmentPU = adjustmentMW / baseMva;
-
-		for (DclfAlgoGen gen : dcBus.getGenList()) {
-			double genRatio = gen.getGenP() / totalBusGenP;
-			double individualAdjustmentPU = adjustmentPU * genRatio;
-
-			gen.setAdjust(individualAdjustmentPU);
-			log.debug("Gen {} adjustment: {} MW", gen.getId(), individualAdjustmentPU * baseMva);
-		}
-	}
+    private void distributeAdjustmentToGenerators(AclfBus bus, DclfAlgoBus dcBus, double adjustmentMW, double baseMva) {
+        double totalBusP = bus.getGenP() + dcBus.getGenAdjust();
+        distributeAdjustmentProportional(
+            dcBus.getGenList(), totalBusP, adjustmentMW, baseMva,
+            DclfAlgoGen::getGenP, DclfAlgoGen::setAdjust, "Gen", DclfAlgoGen::getId);
+    }
 
     /**
      * Distribute adjustment to individual loads.
      */
     private void distributeAdjustmentToLoads(AclfBus bus, DclfAlgoBus dcBus, double adjustmentMW, double baseMva) {
-        double totalBusLoadP = bus.getLoadP() + dcBus.getLoadAdjust();
-        if (Math.abs(totalBusLoadP) < 1e-6)
+        double totalBusP = bus.getLoadP() + dcBus.getLoadAdjust();
+        distributeAdjustmentProportional(
+            dcBus.getLoadList(), totalBusP, adjustmentMW, baseMva,
+            DclfAlgoLoad::getLoadP, DclfAlgoLoad::setAdjust, "Load", DclfAlgoLoad::getId);
+    }
+
+    private <T> void distributeAdjustmentProportional(
+            Iterable<T> devices,
+            double totalBusP,
+            double adjustmentMW,
+            double baseMva,
+            ToDoubleFunction<T> getP,
+            BiConsumer<T, Double> setAdjustPu,
+            String deviceLabel,
+            Function<T, String> getId) {
+        if (Math.abs(totalBusP) < 1e-6) {
             return;
-
+        }
         double adjustmentPU = adjustmentMW / baseMva;
-
-        for (DclfAlgoLoad load : dcBus.getLoadList()) {
-            double loadRatio = load.getLoadP() / totalBusLoadP;
-            double individualAdjustmentPU = adjustmentPU * loadRatio;
-
-            load.setAdjust(individualAdjustmentPU);
-            log.debug("Load {} adjustment: {} MW", load.getId(), individualAdjustmentPU * baseMva);
+        for (T device : devices) {
+            double ratio = getP.applyAsDouble(device) / totalBusP;
+            double individualAdjustmentPU = adjustmentPU * ratio;
+            setAdjustPu.accept(device, individualAdjustmentPU);
+            log.debug("{} {} adjustment: {} MW", deviceLabel, getId.apply(device), individualAdjustmentPU * baseMva);
         }
     }
     
@@ -435,8 +475,8 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
             
             if (Math.abs(adjustmentMW) > OPT_ADJUSTMENT_THRESHOLD_MW) {
                 AclfBus bus = controlBusMap.get(i);
-                String key = isLoadControlBus(bus) ? "Load:" + bus.getId() : "Gen:" + bus.getId();
-                resultMap.put(key, adjustmentMW / baseMva);
+                String prefix = getControlBusRole(bus) == ControlBusRole.LOAD ? "Load:" : "Gen:";
+                resultMap.put(prefix + bus.getId(), adjustmentMW / baseMva);
             }
         }
         return resultMap;
