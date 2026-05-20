@@ -17,6 +17,9 @@ import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
  */
 public abstract class BaseAclfNetOptimizer {
     private static final Logger log = LoggerFactory.getLogger(BaseAclfNetOptimizer.class);
+
+    // load limit factor, used to calculate the load limit
+    protected static final double LOAD_LIMIT_FACTOR = 1.5;
     
     // adjust gen size for the optimization, -1 means no limit
     protected int genOptSizeLimit = -1;
