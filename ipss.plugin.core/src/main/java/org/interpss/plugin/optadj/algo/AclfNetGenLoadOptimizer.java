@@ -44,7 +44,7 @@ public class AclfNetGenLoadOptimizer extends BaseAclfNetOptimizer {
 	final static double SEN_THRESHOLD = 0.02;
 
 	// load limit factor, used to calculate the load limit
-	final static double LOAD_LIMIT_FACTOR = 1.5;
+	//final static double LOAD_LIMIT_FACTOR = 1.5;
 	
 	// a contingency analysis algorithm object based on which the optimization is performed
 	//protected ContingencyAnalysisAlgorithm dclfAlgo;
