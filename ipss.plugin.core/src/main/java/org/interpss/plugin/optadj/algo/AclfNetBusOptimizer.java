@@ -47,8 +47,8 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
     // Gen/Load optimization adjustment threshold in MW
     private static final double OPT_ADJUSTMENT_THRESHOLD_MW = 0.1;
     // load limit factor, used to calculate the load limit
-    private static final double LOAD_LIMIT_FACTOR = 1.5;
-    private static final double MIN_LOAD_P_PU = 0.001;
+    //private static final double LOAD_LIMIT_FACTOR = 1.5;
+    //private static final double MIN_LOAD_P_PU = 0.001;
     
     protected final AclfNetGFSsHelper helper;
     protected final AclfNetwork network;
@@ -202,7 +202,8 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
     }
 
     private void addLoadCandidateBus(Set<AclfBus> loadCandidateBuses, AclfBus bus) {
-        if (bus != null && bus.isActive() && bus.isLoad() && !bus.isGen() && bus.getLoadP() > MIN_LOAD_P_PU) {
+        double currentLoadP = bus.getLoadP() * network.getBaseMva();
+        if (bus != null && bus.isActive() && bus.isLoad() && !bus.isGen() && currentLoadP > OPT_ADJUSTMENT_THRESHOLD_MW) {
             loadCandidateBuses.add(bus);
         }
     }
