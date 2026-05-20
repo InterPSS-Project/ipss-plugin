@@ -32,7 +32,7 @@ import com.interpss.core.algo.dclf.adapter.DclfAlgoLoad;
  * AC Load Flow Bus Optimizer for eliminating line overloads by optimizing bus-level
  * generator and optional load injection. Uses GFS (Generation Shift Factor) analysis
  * to identify control buses. Load-only buses at heavily loaded branch terminals may
- * be included when {@link #optimize(double, boolean)} is called with {@code adjustGenOnly=false}.
+ * be included. It is recommended to use this optimizer for off-line large scale optimization.
  * 
  * @author Donghao.F
  */
