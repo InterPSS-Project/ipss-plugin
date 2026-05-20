@@ -66,7 +66,6 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
      * Constructor for AclfNetLoadFlowBusOptimizer.
      * 
      * @param dclfAlgo DCLF algorithm object used for optimization
-     * @throws IllegalArgumentException if dclfAlgo or its etwork is null
      */
     public AclfNetBusOptimizer(ContingencyAnalysisAlgorithm dclfAlgo) {
         super(dclfAlgo);
