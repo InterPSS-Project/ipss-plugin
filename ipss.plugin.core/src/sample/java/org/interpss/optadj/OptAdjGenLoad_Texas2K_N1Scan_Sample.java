@@ -103,37 +103,11 @@ public class OptAdjGenLoad_Texas2K_N1Scan_Sample {
 						double loading = resultRec.calLoadingPercent(resultRec.calBranchRateB());
 						if (loading > 100.0) {
 							cnt1.increment();
-
-							double maxAbsCombinedAdjustable = 0.0;
-							String maxGenName = "";
 							
-							for (AclfGen gen : optimizer.getControlGenMap().values()) {
-								// Combined shifting factor is defined as 
-								//     GFS of the monitored branch + 
-								//         GFS of the contingency branch * LDOF of the contingency branch to the monitored branch 
-								//              w.r.t. a control gen    
-								double combinedShiftingFactor = 0.0;
-								try {
-									combinedShiftingFactor = resultRec.calCombinedShiftingFactor(gen, dclfAlgo);
-								} catch (InterpssException e) {
-									System.out.println(String.format("Failed to calculate combined shifting factor for bus: %s branch: %s error: %s",
-											gen.getParentBus().getId(), resultRec.aclfBranch.getId(), e.getMessage()));
-									continue;
-								}
-
-								double genAdjustable = combinedShiftingFactor < 0.0 ? gen.getPGenLimit().getMax() - gen.getGen().getReal() :  gen.getGen().getReal() - gen.getPGenLimit().getMin();
-								double absCombined = Math.abs(genAdjustable * combinedShiftingFactor);
-								if (absCombined > maxAbsCombinedAdjustable) {
-									maxAbsCombinedAdjustable = absCombined;
-									maxGenName = gen.getName();
-								}
-							}
-							
-							System.out.println(String.format("Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f max|adj|: %.2f controlGen: %s",
+							System.out.println(String.format("Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f",
 									resultRec.aclfBranch.getId(), resultRec.contingency.getId(),
 									resultRec.getPostFlowMW(), resultRec.calBranchRateB(),
-									resultRec.calLoadingPercent(),
-									maxAbsCombinedAdjustable*baseMVA, maxGenName));
+									resultRec.calLoadingPercent()));
 						}
 					});
 			});
