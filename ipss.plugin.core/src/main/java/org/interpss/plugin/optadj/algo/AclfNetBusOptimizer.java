@@ -154,17 +154,17 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
             .map(bus -> (AclfBus) bus)
             .collect(Collectors.toCollection(HashSet::new));
         
-        Set<AclfBus> loadCandidateBuses = adjustGenOnly
+        Set<AclfBus> loadBuses = adjustGenOnly
             ? Collections.emptySet()
-            : collectLoadCandidateBusesAtHeavyBranches();
+            : collectLoadBusesAtHeavyBranches();
         
-        if (genBuses.isEmpty() && loadCandidateBuses.isEmpty()) {
+        if (genBuses.isEmpty() && loadBuses.isEmpty()) {
             return new LinkedHashSet<>();
         }
         
         Set<String> candidateBusIds = new HashSet<>();
         genBuses.forEach(bus -> candidateBusIds.add(bus.getId()));
-        loadCandidateBuses.forEach(bus -> candidateBusIds.add(bus.getId()));
+        loadBuses.forEach(bus -> candidateBusIds.add(bus.getId()));
         
         Sen2DMatrix gfsMatrix = helper.calGFS(candidateBusIds, heavyLoadedBranchList);
         
@@ -174,7 +174,7 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
             .forEach(controlBusSet::add);
         
         if (!adjustGenOnly) {
-            loadCandidateBuses.stream()
+            loadBuses.stream()
                 .filter(bus -> hasSufficientSensitivity(gfsMatrix, bus))
                 .forEach(bus -> {
                     controlBusSet.add(bus);
@@ -188,7 +188,7 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
     /**
      * Collect load-only buses at terminals of heavily loaded branches as load control candidates.
      */
-    private Set<AclfBus> collectLoadCandidateBusesAtHeavyBranches() {
+    private Set<AclfBus> collectLoadBusesAtHeavyBranches() {
         Set<AclfBus> loadCandidateBuses = new HashSet<>();
         for (String branchId : heavyLoadedBranchList) {
             AclfBranch branch = network.getBranch(branchId);
@@ -340,10 +340,12 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
             
             if (isLoadControlBus(bus)) {
                 double currentLoadP = bus.getLoadP() * baseMva;
+                double upperLimit = currentLoadP > 0 ? currentLoadP * LOAD_LIMIT_FACTOR : 0.0;
+                double lowerLimit = currentLoadP > 0 ? 0.0 : currentLoadP * LOAD_LIMIT_FACTOR;
                 getOptimizer().addConstraint(new DeviceConstrainData(
-                    currentLoadP, Relationship.LEQ, currentLoadP * LOAD_LIMIT_FACTOR, index, true));
+                    currentLoadP, Relationship.LEQ, upperLimit, index, true));
                 getOptimizer().addConstraint(new DeviceConstrainData(
-                    currentLoadP, Relationship.GEQ, 0, index, true));
+                    currentLoadP, Relationship.GEQ, lowerLimit, index, true));
             } else {
                 LimitType genLimit = bus.getPGenLimit();
                 double currentGenP = bus.getGenP() * baseMva;
