@@ -185,11 +185,11 @@ public class AclfNetGenLoadOptimizer extends BaseAclfNetOptimizer {
 		AclfNetwork net = dclfAlgo.getAclfNet();
 		double baseMva = net.getBaseMva();
 		controlLoadMap.forEach((no, load) -> {
-
-			getOptimizer().addConstraint(new DeviceConstrainData(load.getLoadCP().getReal() * baseMva,
-					Relationship.LEQ, load.getLoadCP().getReal()*LOAD_LIMIT_FACTOR * baseMva, no,true));
-			getOptimizer().addConstraint(new DeviceConstrainData(load.getLoadCP().getReal() * baseMva,
-					Relationship.GEQ, 0, no,true));
+			double currentLoadP = load.getLoadCP().getReal() * baseMva;
+			double upperLimit = currentLoadP > 0 ? currentLoadP * LOAD_LIMIT_FACTOR : 0.0;
+			double lowerLimit = currentLoadP > 0 ? 0.0 : currentLoadP * LOAD_LIMIT_FACTOR;
+			getOptimizer().addConstraint(new DeviceConstrainData(currentLoadP, Relationship.LEQ, upperLimit, no,true));
+			getOptimizer().addConstraint(new DeviceConstrainData(currentLoadP, Relationship.GEQ, lowerLimit, no,true));
 		});
 	}
 
