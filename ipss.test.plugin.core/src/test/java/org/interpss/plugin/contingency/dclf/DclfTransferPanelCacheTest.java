@@ -10,12 +10,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
 
 import org.interpss.CorePluginTestSetup;
+import org.interpss.plugin.contingency.ParallelDclfContingencyAnalyzer;
 import org.interpss.plugin.optadj.IEEE14_SensHelper_Test;
 import org.junit.jupiter.api.Test;
 
+import com.interpss.algo.parallel.BranchCAResultRec;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
@@ -60,6 +65,52 @@ public class DclfTransferPanelCacheTest extends CorePluginTestSetup {
                 assertEquals(expected, cache.getLodf(monitorIndex, outageIndex), 1.0e-10);
             }
         }
+    }
+
+    @Test
+    public void cachedAnalyzerMatchesParallelAnalyzerPostFlows() throws InterpssException {
+        AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
+        ContingencyAnalysisAlgorithm sourceAlgo = createContingencyAnalysisAlgorithm(net);
+        sourceAlgo.calculateDclf();
+
+        List<DclfBranchOutage> contingencies = firstNonRefBranchOutages(net, sourceAlgo, 5);
+        Set<String> monitors = new LinkedHashSet<>(Arrays.asList(
+                "Bus2->Bus3(1)",
+                "Bus2->Bus4(1)",
+                "Bus3->Bus4(1)",
+                "Bus4->Bus5(1)",
+                "Bus6->Bus11(1)"));
+
+        DclfContingencyStudySpec spec = DclfContingencyStudySpec.builder(net)
+                .contingencies(contingencies)
+                .monitoredBranchIds(monitors)
+                .overloadThreshold(0.0)
+                .build();
+
+        DclfTransferPanelCache cache = DclfTransferPanelBuilder.build(spec);
+        ConcurrentLinkedQueue<BranchCAResultRec> cachedResults =
+                new CachedDclfContingencyAnalyzer(cache).analyzeCurrentProfile();
+        ConcurrentLinkedQueue<BranchCAResultRec> parallelResults =
+                ParallelDclfContingencyAnalyzer.performContingencyAnalysis(
+                        net, contingencies, monitors, 0.0, false, 1);
+
+        Map<String, BranchCAResultRec> cachedByKey = toResultMap(cachedResults);
+        Map<String, BranchCAResultRec> parallelByKey = toResultMap(parallelResults);
+
+        assertEquals(parallelByKey.keySet(), cachedByKey.keySet());
+        for (Map.Entry<String, BranchCAResultRec> entry : parallelByKey.entrySet()) {
+            BranchCAResultRec expected = entry.getValue();
+            BranchCAResultRec actual = cachedByKey.get(entry.getKey());
+            assertEquals(expected.preFlowMW, actual.preFlowMW, 1.0e-8);
+            assertEquals(expected.shiftedFlowMW, actual.shiftedFlowMW, 1.0e-8);
+            assertEquals(expected.getPostFlowMW(), actual.getPostFlowMW(), 1.0e-8);
+        }
+    }
+
+    private static Map<String, BranchCAResultRec> toResultMap(ConcurrentLinkedQueue<BranchCAResultRec> results) {
+        return results.stream().collect(Collectors.toMap(
+                result -> result.contingency.getId() + "|" + result.aclfBranch.getId(),
+                result -> result));
     }
 
     private static List<DclfBranchOutage> firstNonRefBranchOutages(
