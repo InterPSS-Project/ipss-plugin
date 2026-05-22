@@ -62,7 +62,7 @@ The first checked-in slice is intentionally conservative:
    `ParallelDclfContingencyAnalyzer`.
 3. Add chunked monitor panels for OpenEI/full EI scale.
 4. Replace scalar panel construction with batched endpoint sensitivity solves.
-5. Add explicit multi-outage Woodbury helpers based on the existing
+5. Done: add explicit multi-outage Woodbury helpers based on the existing
    `[E - PTDF]` implementation.
 
 ## Phase 2 Validation
@@ -72,3 +72,20 @@ The first checked-in slice is intentionally conservative:
 - cached LODF panel values match InterPSS `lineOutageDFactor()` on IEEE 14,
 - `CachedDclfContingencyAnalyzer` returns the same monitored post-flow records
   as `ParallelDclfContingencyAnalyzer` for the same outage and monitor sets.
+
+## Phase 3 Woodbury Solver
+
+`DclfWoodburyOutageSolver` adds a small API around InterPSS DCLF Woodbury
+calculations:
+
+- `singleOpenLodf()` and `singleOpenPostFlow()` expose the N-1
+  Sherman-Morrison result through existing InterPSS semantics.
+- `solveMultiOpen()` computes multi-open outage monitor flows with the existing
+  `[E - PTDF]^-1` Woodbury matrix, returning pre-flow, shifted-flow, and
+  post-flow in both pu and MW.
+- The wrapper restores branch sort numbers and the original outage list after
+  computing the Woodbury result, so callers do not inherit the temporary matrix
+  indexing used by `calMultiOutageInvE_PTDF()`.
+
+Current tests verify single-open post-flow equivalence and multi-open shifted
+flow equivalence against InterPSS `multiOpenOutageAnalysis()` on IEEE 14.
