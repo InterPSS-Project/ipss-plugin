@@ -13,7 +13,7 @@ import com.interpss.core.contingency.dclf.DclfBranchOutage;
 /**
  * Immutable study definition for cached DCLF branch contingency analysis.
  */
-public final class DclfContingencyStudySpec {
+final class DclfContingencyStudySpec {
     private final AclfNetwork aclfNetwork;
     private final List<DclfBranchOutage> contingencies;
     private final Set<String> monitoredBranchIds;

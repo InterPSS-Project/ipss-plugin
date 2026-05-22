@@ -3,7 +3,7 @@ package org.interpss.plugin.contingency.dclf;
 /**
  * Options for building a DCLF contingency transfer panel.
  */
-public final class PanelBuildOptions {
+final class PanelBuildOptions {
     public static final double DEFAULT_DENOMINATOR_TOLERANCE = 1.0e-8;
 
     private final double denominatorTolerance;
