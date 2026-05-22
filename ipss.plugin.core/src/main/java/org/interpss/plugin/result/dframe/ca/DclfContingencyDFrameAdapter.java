@@ -2,6 +2,7 @@ package org.interpss.plugin.result.dframe.ca;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.dflib.DataFrame;
 import org.dflib.Extractor;
@@ -79,8 +80,12 @@ public class DclfContingencyDFrameAdapter {
 						rec.aclfBranch.getBranchCode(),
 						rec.aclfBranch.getBranchCode() == AclfBranchCode.XFORMER || rec.aclfBranch.getBranchCode() == AclfBranchCode.PS_XFORMER,
 						rec.contingency.getId(), 
-						rec.contingency.getOutageEquip().getBranch().getId(), 
-						rec.contingency.getOutageEquip().getBranch().getName(),
+						rec.getOutageEquips().stream()
+								.map(outage -> outage.getBranch().getId())
+								.collect(Collectors.joining(",")),
+						rec.getOutageEquips().stream()
+								.map(outage -> outage.getBranch().getName())
+								.collect(Collectors.joining(",")),
 						rec.preFlowMW,
 						rec.getPostFlowMW(), 
 						rec.calBranchRateB(), 
