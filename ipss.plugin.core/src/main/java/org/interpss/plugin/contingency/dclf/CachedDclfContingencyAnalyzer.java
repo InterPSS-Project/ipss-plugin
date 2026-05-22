@@ -35,9 +35,10 @@ public final class CachedDclfContingencyAnalyzer {
             }
 
             DclfBranchOutage contingency = contingencies[outageIndex];
-            double outagePreFlowMW =
-                    dclfAlgo.getDclfAlgoBranch(contingency.getOutageEquip().getBranch().getId()).getDclfFlow()
-                            * baseMva;
+            double outagePreFlowPu =
+                    dclfAlgo.getDclfAlgoBranch(contingency.getOutageEquip().getBranch().getId()).getDclfFlow();
+            contingency.getOutageEquip().setDclfFlow(outagePreFlowPu);
+            double outagePreFlowMW = outagePreFlowPu * baseMva;
 
             for (DclfTransferPanelChunk chunk : cache.getChunks()) {
                 for (int localMonitorIndex = 0; localMonitorIndex < chunk.getMonitorCount(); localMonitorIndex++) {
