@@ -94,13 +94,15 @@ public class EInterconnect_Info_Sample {
 	static void printOverloadSummary(ContingencyAnalysisAlgorithm dclfAlgo, double thresholdPercent) {
 		Counter cnt = new Counter(0);
 		DblBuffer maxLoading = new DblBuffer();
-		dclfAlgo.getDclfAlgoBranchList().forEach(braDclf -> {
-			AclfBranch branch = braDclf.getBranch();
+		dclfAlgo.getDclfAlgoBranchList().forEach(dclfBranch -> {
+			AclfBranch branch = dclfBranch.getBranch();
 			double powerFlowMW = dclfAlgo.getBranchFlow(branch, UnitType.mW);
 			double ratingMVA = branch.getRatingMvaA();
 			double loadingPercent = ratingMVA > 0 ? (Math.abs(powerFlowMW) / ratingMVA) * 100.0 : 0.0;
 			if (loadingPercent > thresholdPercent) {
 				cnt.increment();
+				System.out.printf("Branch: %s  %.2f  rating: %.2f  loading: %.2f%n",
+				dclfBranch.getId(), powerFlowMW, ratingMVA, loadingPercent);
 			}
 			if (loadingPercent > maxLoading.val) {
 				maxLoading.val = loadingPercent;
