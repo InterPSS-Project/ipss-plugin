@@ -40,7 +40,11 @@ import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfContingencySolutionMethod;
+import com.interpss.core.algo.dclf.DclfContingencyWoodburySolver;
+import com.interpss.core.algo.dclf.DclfContingencyWoodburySolver.OpenBranchOutageBatch;
+import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
+import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfMonitoringBranch;
@@ -99,8 +103,14 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
         woodburyConfig.setSolutionMethod(DclfContingencySolutionMethod.WoodburyMatrixUpdate);
 
         ConcurrentLinkedQueue<BranchCAResultRec> woodburyResults =
-                DclfMultiOutageContingencyAnalyzer.performContingencyAnalysis(
-                        net, multiOutages, monitors, woodburyConfig, 4);
+                ParallelDclfContingencyAnalyzer.performContingencyAnalysis(
+                        net,
+                        multiOutages,
+                        monitors,
+                        woodburyConfig.getOverloadThreshold(),
+                        woodburyConfig.isDclfInclLoss(),
+                        4,
+                        woodburyConfig.getSolutionMethod());
         ConcurrentLinkedQueue<BranchCAResultRec> sparseResults =
                 coreCaResults(
                         net,
@@ -281,11 +291,9 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
                 .build();
 
         long cachedStartNs = System.nanoTime();
-        DclfTransferPanelCache cache = DclfTransferPanelBuilder.build(
-                spec,
-                PanelBuildOptions.builder().monitorChunkSize(256).build());
+        OpenBranchOutageBatch cache = buildOpenBranchOutageBatch(spec, 256);
         ConcurrentLinkedQueue<BranchCAResultRec> cachedResults =
-                new CachedDclfContingencyAnalyzer(cache).analyzeCurrentProfile(8);
+                cache.analyzeCurrentProfile(spec.getOverloadThreshold(), spec.getShiftThresholdMw(), 8);
         long cachedElapsedMs = (System.nanoTime() - cachedStartNs) / 1_000_000L;
 
         long parallelStartNs = System.nanoTime();
@@ -351,12 +359,9 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
                 .build();
 
         long setupStartNs = System.nanoTime();
-        DclfTransferPanelCache cache = DclfTransferPanelBuilder.build(
-                spec,
-                PanelBuildOptions.builder().monitorChunkSize(256).build());
+        OpenBranchOutageBatch cache = buildOpenBranchOutageBatch(spec, 256);
         long setupElapsedMs = (System.nanoTime() - setupStartNs) / 1_000_000L;
 
-        CachedDclfContingencyAnalyzer cachedAnalyzer = new CachedDclfContingencyAnalyzer(cache);
         long cachedScanNs = 0L;
         long parallelNs = 0L;
         int cachedRecordTotal = 0;
@@ -366,7 +371,8 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
             applyBusLoads(baseLoads, hourlyLoadFactors[hour]);
 
             long cachedStartNs = System.nanoTime();
-            ConcurrentLinkedQueue<BranchCAResultRec> cachedResults = cachedAnalyzer.analyzeCurrentProfile(8);
+            ConcurrentLinkedQueue<BranchCAResultRec> cachedResults =
+                    cache.analyzeCurrentProfile(spec.getOverloadThreshold(), spec.getShiftThresholdMw(), 8);
             cachedScanNs += System.nanoTime() - cachedStartNs;
 
             long parallelStartNs = System.nanoTime();
@@ -422,11 +428,9 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
                 .overloadThreshold(0.0)
                 .build();
 
-        DclfTransferPanelCache cache = DclfTransferPanelBuilder.build(
-                spec,
-                PanelBuildOptions.builder().monitorChunkSize(monitorChunkSize).build());
+        OpenBranchOutageBatch cache = buildOpenBranchOutageBatch(spec, monitorChunkSize);
         ConcurrentLinkedQueue<BranchCAResultRec> cachedResults =
-                new CachedDclfContingencyAnalyzer(cache).analyzeCurrentProfile(parallelism);
+                cache.analyzeCurrentProfile(spec.getOverloadThreshold(), spec.getShiftThresholdMw(), parallelism);
         ConcurrentLinkedQueue<BranchCAResultRec> parallelResults =
                 ParallelDclfContingencyAnalyzer.performContingencyAnalysis(
                         net, contingencies, monitors, 0.0, false, parallelism);
@@ -445,6 +449,36 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
             assertEquals(expected.shiftedFlowMW, actual.shiftedFlowMW, MW_TOLERANCE);
             assertEquals(expected.getPostFlowMW(), actual.getPostFlowMW(), MW_TOLERANCE);
         }
+    }
+
+    private static OpenBranchOutageBatch buildOpenBranchOutageBatch(
+            DclfContingencyStudySpec spec,
+            int monitorChunkSize)
+            throws InterpssException {
+        ContingencyAnalysisAlgorithm dclfAlgo =
+                createContingencyAnalysisAlgorithm(spec.getAclfNetwork(), CacheType.SenCached, true);
+        AclfBranch[] monitors = resolveMonitoredBranches(dclfAlgo, spec.getMonitoredBranchIds());
+        return new DclfContingencyWoodburySolver(dclfAlgo)
+                .buildOpenBranchOutageBatch(
+                        spec.getContingencies(),
+                        monitors,
+                        DclfMethod.STD,
+                        monitorChunkSize);
+    }
+
+    private static AclfBranch[] resolveMonitoredBranches(
+            ContingencyAnalysisAlgorithm dclfAlgo,
+            Set<String> monitoredBranchIds) {
+        List<AclfBranch> branches = new ArrayList<>();
+        for (DclfAlgoBranch dclfBranch : dclfAlgo.getDclfAlgoBranchList()) {
+            AclfBranch branch = dclfBranch.getBranch();
+            if (branch != null
+                    && branch.isActive()
+                    && (monitoredBranchIds == null || monitoredBranchIds.contains(branch.getId()))) {
+                branches.add(branch);
+            }
+        }
+        return branches.toArray(new AclfBranch[0]);
     }
 
     private static void assertParallelCaSparseAndWoodbury(
