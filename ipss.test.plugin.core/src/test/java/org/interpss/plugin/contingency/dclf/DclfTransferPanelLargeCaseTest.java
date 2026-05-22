@@ -88,19 +88,19 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
         assertEquals(2, multiOutages.get(0).getOutageEquips().size());
         assertEquals(3, multiOutages.get(1).getOutageEquips().size());
 
-        ConcurrentLinkedQueue<DclfOutageCAResultRec> woodburyResults =
+        ConcurrentLinkedQueue<BranchCAResultRec> woodburyResults =
                 DclfMultiOutageContingencyAnalyzer.performContingencyAnalysis(
                         net, multiOutages, monitors, 0.0, false, 4);
-        ConcurrentLinkedQueue<DclfOutageCAResultRec> interpssResults =
+        ConcurrentLinkedQueue<BranchCAResultRec> interpssResults =
                 interpssMultiOpenResults(net, multiOutages, monitors, 0.0, 1.0);
 
-        Map<String, DclfOutageCAResultRec> woodburyByKey = toMultiResultMap(woodburyResults);
-        Map<String, DclfOutageCAResultRec> interpssByKey = toMultiResultMap(interpssResults);
+        Map<String, BranchCAResultRec> woodburyByKey = toResultMap(woodburyResults);
+        Map<String, BranchCAResultRec> interpssByKey = toResultMap(interpssResults);
 
         assertEquals(interpssByKey.keySet(), woodburyByKey.keySet());
-        for (Map.Entry<String, DclfOutageCAResultRec> entry : interpssByKey.entrySet()) {
-            DclfOutageCAResultRec expected = entry.getValue();
-            DclfOutageCAResultRec actual = woodburyByKey.get(entry.getKey());
+        for (Map.Entry<String, BranchCAResultRec> entry : interpssByKey.entrySet()) {
+            BranchCAResultRec expected = entry.getValue();
+            BranchCAResultRec actual = woodburyByKey.get(entry.getKey());
             assertEquals(expected.preFlowMW, actual.preFlowMW, MW_TOLERANCE);
             assertEquals(expected.shiftedFlowMW, actual.shiftedFlowMW, MW_TOLERANCE);
             assertEquals(expected.getPostFlowMW(), actual.getPostFlowMW(), MW_TOLERANCE);
@@ -437,7 +437,7 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
         return multiOutages;
     }
 
-    private static ConcurrentLinkedQueue<DclfOutageCAResultRec> interpssMultiOpenResults(
+    private static ConcurrentLinkedQueue<BranchCAResultRec> interpssMultiOpenResults(
             AclfNetwork net,
             List<DclfMultiOutage> multiOutages,
             Set<String> monitorIds,
@@ -451,7 +451,7 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
                 .map(net::getBranch)
                 .filter(branch -> branch != null && branch.isActive())
                 .collect(Collectors.toList());
-        ConcurrentLinkedQueue<DclfOutageCAResultRec> results = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<BranchCAResultRec> results = new ConcurrentLinkedQueue<>();
         double baseMva = net.getBaseMva();
 
         for (DclfMultiOutage multiOutage : multiOutages) {
@@ -467,8 +467,8 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
                     continue;
                 }
 
-                DclfOutageCAResultRec result =
-                        new DclfOutageCAResultRec(
+                BranchCAResultRec result =
+                        new BranchCAResultRec(
                                 multiOutage,
                                 monitor,
                                 dclfBranch.getDclfFlow() * baseMva,
@@ -582,13 +582,6 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
     }
 
     private static Map<String, BranchCAResultRec> toResultMap(ConcurrentLinkedQueue<BranchCAResultRec> results) {
-        return results.stream().collect(Collectors.toMap(
-                result -> result.contingency.getId() + "|" + result.aclfBranch.getId(),
-                result -> result));
-    }
-
-    private static Map<String, DclfOutageCAResultRec> toMultiResultMap(
-            ConcurrentLinkedQueue<DclfOutageCAResultRec> results) {
         return results.stream().collect(Collectors.toMap(
                 result -> result.contingency.getId() + "|" + result.aclfBranch.getId(),
                 result -> result));
