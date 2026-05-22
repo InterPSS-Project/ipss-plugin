@@ -13,7 +13,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
-import com.interpss.core.algo.dclf.DclfWoodburyOutageSolver;
+import com.interpss.core.algo.dclf.DclfContingencyWoodburySolver;
 import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 import com.interpss.core.contingency.ContingencyBranchOutageType;
@@ -77,14 +77,14 @@ public final class DclfMultiOutageContingencyAnalyzer {
         }
 
         ConcurrentLinkedQueue<BranchCAResultRec> results = new ConcurrentLinkedQueue<>();
-        DclfWoodburyOutageSolver solver = new DclfWoodburyOutageSolver(dclfAlgorithm);
+        DclfContingencyWoodburySolver solver = new DclfContingencyWoodburySolver(dclfAlgorithm);
 
         for (DclfMultiOutage contingency : contingencyList) {
             DclfOutageBranch[] outageBranches = outageBranches(contingency);
             refreshOutagePreFlows(outageBranches);
 
-            DclfWoodburyOutageSolver.MultiOpenResult solved =
-                    solver.solveMultiOpen(outageBranches, monitoredBranches, parallelism);
+            DclfContingencyWoodburySolver.MultiOpenResult solved =
+                    solver.solveMultiOpen(outageBranches, monitoredBranches);
             for (int monitorIndex = 0; monitorIndex < solved.getMonitorCount(); monitorIndex++) {
                 double shiftedFlowMw = solved.getShiftedFlowMw(monitorIndex);
                 if (Math.abs(shiftedFlowMw) <= shiftThresholdMw) {
