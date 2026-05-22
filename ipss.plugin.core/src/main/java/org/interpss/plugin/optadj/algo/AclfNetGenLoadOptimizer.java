@@ -29,19 +29,20 @@ import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBus;
 
 /**
+ * AC Load Flow Bus Optimizer for eliminating line overloads and/or N-1 contingency limit violations by optimizing 
+ * generator and optional load injection. It uses full GFS matrix to identify control buses. It is recommended to be used 
+ * for on-line application optimization.
  * 
  * @author Donghao.F
- * 
- * @date 
- * 
- * 
- * 
  */
 public class AclfNetGenLoadOptimizer extends BaseAclfNetOptimizer {
     private static final Logger log = LoggerFactory.getLogger(AclfNetGenLoadOptimizer.class);
     
 	// sensitivity threshold for the optimization
 	final static double SEN_THRESHOLD = 0.02;
+
+	// load limit factor, used to calculate the load limit
+	//final static double LOAD_LIMIT_FACTOR = 1.5;
 	
 	// a contingency analysis algorithm object based on which the optimization is performed
 	//protected ContingencyAnalysisAlgorithm dclfAlgo;
@@ -182,11 +183,11 @@ public class AclfNetGenLoadOptimizer extends BaseAclfNetOptimizer {
 		AclfNetwork net = dclfAlgo.getAclfNet();
 		double baseMva = net.getBaseMva();
 		controlLoadMap.forEach((no, load) -> {
-
-			getOptimizer().addConstraint(new DeviceConstrainData(load.getLoadCP().getReal() * baseMva,
-					Relationship.LEQ, load.getLoadCP().getReal()*1.5 * baseMva, no,true));
-			getOptimizer().addConstraint(new DeviceConstrainData(load.getLoadCP().getReal() * baseMva,
-					Relationship.GEQ, 0, no,true));
+			double currentLoadP = load.getLoadCP().getReal() * baseMva;
+			double upperLimit = currentLoadP > 0 ? currentLoadP * LOAD_LIMIT_FACTOR : 0.0;
+			double lowerLimit = currentLoadP > 0 ? 0.0 : currentLoadP * LOAD_LIMIT_FACTOR;
+			getOptimizer().addConstraint(new DeviceConstrainData(currentLoadP, Relationship.LEQ, upperLimit, no,true));
+			getOptimizer().addConstraint(new DeviceConstrainData(currentLoadP, Relationship.GEQ, lowerLimit, no,true));
 		});
 	}
 
