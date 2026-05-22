@@ -5,6 +5,7 @@ import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.File;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
@@ -29,11 +31,15 @@ import org.junit.jupiter.api.Test;
 import com.interpss.algo.parallel.BranchCAResultRec;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
+import com.interpss.core.aclf.AclfBus;
+import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
+
+import org.apache.commons.math3.complex.Complex;
 
 @Tag("large")
 public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
@@ -125,6 +131,89 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
             assertEquals(expected.shiftedFlowMW, actual.shiftedFlowMW, MW_TOLERANCE);
             assertEquals(expected.getPostFlowMW(), actual.getPostFlowMW(), MW_TOLERANCE);
         }
+    }
+
+    @Test
+    public void openEiFullJsonTwentyFourHourProfilesReuseTransferPanel() throws Exception {
+        assumeTrue(Boolean.getBoolean("interpss.fullJsonDclfTests"),
+                "Set -Dinterpss.fullJsonDclfTests=true to run full JSON DCLF transfer-panel regressions");
+        assumeTrue(Boolean.getBoolean("interpss.hourlyDclfTests"),
+                "Set -Dinterpss.hourlyDclfTests=true to run 24-hour full JSON DCLF performance comparison");
+
+        AclfNetwork net = importPsse(
+                "testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW",
+                IpssAdapter.PsseVersion.PSSE_33);
+        setDefaultRatings(net);
+
+        ContingencyAnalysisAlgorithm sourceAlgo = createContingencyAnalysisAlgorithm(net);
+        sourceAlgo.calculateDclf();
+
+        List<BranchContingencyRecord> contingencyRecords =
+                ContingencyFileUtil.importContingenciesFromJson(
+                        new File("testData/psse/v33/OpenEI_filtered_contingencies.json"));
+        List<MonitoredBranchRecord> monitorRecords =
+                ContingencyFileUtil.importMonitoredBranchRecordsFromJson(
+                        new File("testData/psse/v33/OpenEI_monitored_branches.json"));
+        List<DclfBranchOutage> contingencies = dclfContingenciesFromJsonRecords(net, sourceAlgo, contingencyRecords);
+        Set<String> monitors = monitoredBranchIds(net, monitorRecords);
+        List<LoadSnapshot> baseLoads = captureLoads(net);
+        double[][] hourlyLoadFactors = hourlyLoadFactors(24, baseLoads.size(), 0.05, 20260521L);
+
+        DclfContingencyStudySpec spec = DclfContingencyStudySpec.builder(net)
+                .contingencies(contingencies)
+                .monitoredBranchIds(monitors)
+                .overloadThreshold(100.0)
+                .build();
+
+        long setupStartNs = System.nanoTime();
+        DclfTransferPanelCache cache = DclfTransferPanelBuilder.build(
+                spec,
+                PanelBuildOptions.builder().monitorChunkSize(256).build());
+        long setupElapsedMs = (System.nanoTime() - setupStartNs) / 1_000_000L;
+
+        CachedDclfContingencyAnalyzer cachedAnalyzer = new CachedDclfContingencyAnalyzer(cache);
+        long cachedScanNs = 0L;
+        long parallelNs = 0L;
+        int cachedRecordTotal = 0;
+        int parallelRecordTotal = 0;
+
+        for (int hour = 0; hour < hourlyLoadFactors.length; hour++) {
+            applyBusLoads(baseLoads, hourlyLoadFactors[hour]);
+
+            long cachedStartNs = System.nanoTime();
+            ConcurrentLinkedQueue<BranchCAResultRec> cachedResults = cachedAnalyzer.analyzeCurrentProfile();
+            cachedScanNs += System.nanoTime() - cachedStartNs;
+
+            long parallelStartNs = System.nanoTime();
+            ConcurrentLinkedQueue<BranchCAResultRec> parallelResults =
+                    ParallelDclfContingencyAnalyzer.performContingencyAnalysis(
+                            net, contingencies, monitors, 100.0, false, 8);
+            parallelNs += System.nanoTime() - parallelStartNs;
+
+            cachedRecordTotal += cachedResults.size();
+            parallelRecordTotal += parallelResults.size();
+            assertSameResults("hour " + hour, cachedResults, parallelResults);
+        }
+
+        restoreBusLoads(baseLoads);
+
+        long cachedScanElapsedMs = cachedScanNs / 1_000_000L;
+        long cachedTotalElapsedMs = setupElapsedMs + cachedScanElapsedMs;
+        long parallelElapsedMs = parallelNs / 1_000_000L;
+
+        System.out.println("OpenEI 24-hour full JSON DCLF cached setup: outages=" + cache.getOutageCount()
+                + ", monitors=" + cache.getMonitorCount()
+                + ", chunks=" + cache.getChunkCount()
+                + ", estimatedPanelMB=" + cache.estimatePanelBytes() / (1024 * 1024)
+                + ", variedLoads=" + baseLoads.size()
+                + ", setupMs=" + setupElapsedMs);
+        System.out.println("OpenEI 24-hour full JSON DCLF cached scans: hours=" + hourlyLoadFactors.length
+                + ", records=" + cachedRecordTotal
+                + ", scanMs=" + cachedScanElapsedMs
+                + ", totalMs=" + cachedTotalElapsedMs);
+        System.out.println("OpenEI 24-hour full JSON DCLF parallel baseline: hours=" + hourlyLoadFactors.length
+                + ", records=" + parallelRecordTotal
+                + ", elapsedMs=" + parallelElapsedMs);
     }
 
     private static void assertChunkedPanelMatchesParallelAnalyzer(
@@ -219,6 +308,31 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
         return branchIds;
     }
 
+    private static void assertSameResults(
+            String context,
+            ConcurrentLinkedQueue<BranchCAResultRec> cachedResults,
+            ConcurrentLinkedQueue<BranchCAResultRec> parallelResults) {
+        Map<String, BranchCAResultRec> cachedByKey = toResultMap(cachedResults);
+        Map<String, BranchCAResultRec> parallelByKey = toResultMap(parallelResults);
+
+        if (!parallelByKey.keySet().equals(cachedByKey.keySet())) {
+            fail(context
+                    + " result keys differ; parallelRecords=" + parallelByKey.size()
+                    + ", cachedRecords=" + cachedByKey.size()
+                    + ", missingFromCached="
+                    + parallelByKey.keySet().stream().filter(key -> !cachedByKey.containsKey(key)).count()
+                    + ", extraInCached="
+                    + cachedByKey.keySet().stream().filter(key -> !parallelByKey.containsKey(key)).count());
+        }
+        for (Map.Entry<String, BranchCAResultRec> entry : parallelByKey.entrySet()) {
+            BranchCAResultRec expected = entry.getValue();
+            BranchCAResultRec actual = cachedByKey.get(entry.getKey());
+            assertEquals(expected.preFlowMW, actual.preFlowMW, MW_TOLERANCE, context);
+            assertEquals(expected.shiftedFlowMW, actual.shiftedFlowMW, MW_TOLERANCE, context);
+            assertEquals(expected.getPostFlowMW(), actual.getPostFlowMW(), MW_TOLERANCE, context);
+        }
+    }
+
     private static Set<String> monitoredBranchIds(AclfNetwork net, List<MonitoredBranchRecord> monitorRecords) {
         Set<String> branchIds = new LinkedHashSet<>();
 
@@ -272,6 +386,57 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
         return null;
     }
 
+    private static List<LoadSnapshot> captureLoads(AclfNetwork net) {
+        List<LoadSnapshot> loads = new ArrayList<>();
+        for (AclfBus bus : net.getBusList()) {
+            if (!bus.isActive()) {
+                continue;
+            }
+            if (!bus.getContributeLoadList().isEmpty()) {
+                for (AclfLoad load : bus.getContributeLoadList()) {
+                    Complex loadCP = load.getLoadCP();
+                    Complex loadCI = load.getLoadCI();
+                    Complex loadCZ = load.getLoadCZ();
+                    if (isNonZero(loadCP) || isNonZero(loadCI) || isNonZero(loadCZ)) {
+                        loads.add(new LoadSnapshot(load, loadCP, loadCI, loadCZ));
+                    }
+                }
+            } else if (Math.abs(bus.getLoadP()) > 1.0e-12 || Math.abs(bus.getLoadQ()) > 1.0e-12) {
+                loads.add(new LoadSnapshot(bus, bus.getLoadP(), bus.getLoadQ()));
+            }
+        }
+        return loads;
+    }
+
+    private static boolean isNonZero(Complex value) {
+        return value != null && (Math.abs(value.getReal()) > 1.0e-12 || Math.abs(value.getImaginary()) > 1.0e-12);
+    }
+
+    private static double[][] hourlyLoadFactors(int hourCount, int loadCount, double maxVariation, long seed) {
+        Random random = new Random(seed);
+        double[][] factors = new double[hourCount][loadCount];
+
+        for (int hour = 0; hour < hourCount; hour++) {
+            for (int loadIndex = 0; loadIndex < loadCount; loadIndex++) {
+                factors[hour][loadIndex] = 1.0 + (random.nextDouble() * 2.0 - 1.0) * maxVariation;
+            }
+        }
+
+        return factors;
+    }
+
+    private static void applyBusLoads(List<LoadSnapshot> baseLoads, double[] factors) {
+        for (int i = 0; i < baseLoads.size(); i++) {
+            baseLoads.get(i).apply(factors[i]);
+        }
+    }
+
+    private static void restoreBusLoads(List<LoadSnapshot> baseLoads) {
+        for (LoadSnapshot load : baseLoads) {
+            load.restore();
+        }
+    }
+
     private static Map<String, BranchCAResultRec> toResultMap(ConcurrentLinkedQueue<BranchCAResultRec> results) {
         return results.stream().collect(Collectors.toMap(
                 result -> result.contingency.getId() + "|" + result.aclfBranch.getId(),
@@ -287,5 +452,54 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
                 branch.setRatingMva2(branch.getRatingMva1() > 0.0 ? branch.getRatingMva1() * 1.2 : 120.0);
             }
         });
+    }
+
+    private static final class LoadSnapshot {
+        private final AclfBus bus;
+        private final AclfLoad load;
+        private final double baseP;
+        private final double baseQ;
+        private final Complex baseLoadCP;
+        private final Complex baseLoadCI;
+        private final Complex baseLoadCZ;
+
+        private LoadSnapshot(AclfBus bus, double baseP, double baseQ) {
+            this.bus = bus;
+            this.load = null;
+            this.baseP = baseP;
+            this.baseQ = baseQ;
+            this.baseLoadCP = null;
+            this.baseLoadCI = null;
+            this.baseLoadCZ = null;
+        }
+
+        private LoadSnapshot(AclfLoad load, Complex baseLoadCP, Complex baseLoadCI, Complex baseLoadCZ) {
+            this.bus = null;
+            this.load = load;
+            this.baseP = 0.0;
+            this.baseQ = 0.0;
+            this.baseLoadCP = baseLoadCP;
+            this.baseLoadCI = baseLoadCI;
+            this.baseLoadCZ = baseLoadCZ;
+        }
+
+        private void apply(double factor) {
+            if (load != null) {
+                load.setLoadCP(scale(baseLoadCP, factor));
+                load.setLoadCI(scale(baseLoadCI, factor));
+                load.setLoadCZ(scale(baseLoadCZ, factor));
+            } else {
+                bus.setLoadP(baseP * factor);
+                bus.setLoadQ(baseQ * factor);
+            }
+        }
+
+        private void restore() {
+            apply(1.0);
+        }
+
+        private static Complex scale(Complex value, double factor) {
+            return value != null ? value.multiply(factor) : null;
+        }
     }
 }
