@@ -1,6 +1,10 @@
 package org.interpss.plugin.contingency;
 
+import static com.interpss.core.DclfAlgoObjectFactory.createCaMonitoringBranch;
+import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
+import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
+import static com.interpss.core.DclfAlgoObjectFactory.createMultiOutageContingency;
 
 import java.util.List;
 import java.util.Set;
@@ -13,14 +17,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.interpss.algo.parallel.BranchCAResultRec;
+import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfContingencySolutionMethod;
 import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
+import com.interpss.core.contingency.BaseContingency;
 import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.dclf.DclfBranchOutage;
+import com.interpss.core.contingency.dclf.DclfMonitoringBranch;
+import com.interpss.core.contingency.dclf.DclfMultiOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
 import com.interpss.core.net.ref.impl.NetworkRefImpl;
 
@@ -49,7 +57,7 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
 	 */
 	public static ConcurrentLinkedQueue<BranchCAResultRec> executeContingencyAnalysis(
 	        AclfNetwork aclfNet,
-	        List<DclfBranchOutage> contingencyList,
+	        List<? extends BaseContingency<DclfMonitoringBranch>> contingencyList,
 	        Set<String> monitoredBranchIds,
             DclfContingencyConfig config,
 	        int parallelismLevel) {
@@ -81,7 +89,7 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
 	 */
 	public static ConcurrentLinkedQueue<BranchCAResultRec> performContingencyAnalysis(
 	        AclfNetwork aclfNet,
-	        List<DclfBranchOutage> contingencyList,
+	        List<? extends BaseContingency<DclfMonitoringBranch>> contingencyList,
 	        Set<String> monitoredBranchIds,
 	        double overloadThreshold,
 	        boolean dclfInclLoss,
@@ -98,32 +106,66 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
 
 	public static ConcurrentLinkedQueue<BranchCAResultRec> performContingencyAnalysis(
 	        AclfNetwork aclfNet,
-	        List<DclfBranchOutage> contingencyList,
+	        List<? extends BaseContingency<DclfMonitoringBranch>> contingencyList,
 	        Set<String> monitoredBranchIds,
 	        double overloadThreshold,
 	        boolean dclfInclLoss,
 	        int parallelismLevel,
 	        DclfContingencySolutionMethod solutionMethod) {
-	    // Create DCLF algorithm
+		if (contingencyList == null) {
+			throw new IllegalArgumentException("contingencyList cannot be null");
+		}
+		if (solutionMethod == null) {
+			throw new IllegalArgumentException("solutionMethod cannot be null");
+		}
+
 	    ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(aclfNet);
 		dclfAlgo.setSolutionMethod(solutionMethod);
 	    DclfMethod method = dclfInclLoss? DclfMethod.INC_LOSS : DclfMethod.STD;
 	    dclfAlgo.calculateDclf(method);
-	    refreshOutagePreFlows(dclfAlgo, contingencyList);
 	    
 		log.info("Dclf calculation using " + method + ", solution method " + solutionMethod);
 		log.info("RefBus P :" + dclfAlgo.getBusPower(aclfNet.getRefBusId()) + " @" + aclfNet.getRefBusId() );
 
-	    // Use thread-safe collection for parallel processing
+		if (!contingencyList.isEmpty() && isFastOpenBranchStudy(contingencyList)) {
+			refreshOutagePreFlows(dclfAlgo, contingencyList);
+			return performOpenBranchOutageFastAnalysis(
+					dclfAlgo,
+					contingencyList,
+					monitoredBranchIds,
+					overloadThreshold,
+					parallelismLevel);
+		}
+
+		try {
+			return performCoreCaAnalysis(
+					aclfNet,
+					contingencyList,
+					monitoredBranchIds,
+					overloadThreshold,
+					BranchCAResultRec.ContingencyShiftThreshold,
+					method,
+					solutionMethod,
+					parallelismLevel);
+		} catch (InterpssException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private static ConcurrentLinkedQueue<BranchCAResultRec> performOpenBranchOutageFastAnalysis(
+			ContingencyAnalysisAlgorithm dclfAlgo,
+			List<? extends BaseContingency<DclfMonitoringBranch>> contingencyList,
+			Set<String> monitoredBranchIds,
+			double overloadThreshold,
+			int parallelismLevel) {
 	    ConcurrentLinkedQueue<BranchCAResultRec> caResultRecords = new ConcurrentLinkedQueue<>();
 	    
-	    // Execute contingency analysis with configured parallelism
 	    executeParallel(
 	        contingencyList.stream(),
 	        contingency -> {
 				analyzeOpenBranchOutageFast(
 						dclfAlgo,
-						contingency,
+						(DclfBranchOutage) contingency,
 						monitoredBranchIds,
 						overloadThreshold,
 						caResultRecords);
@@ -135,6 +177,63 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
 	            caResultRecords.size(), contingencyList.size());
 	    
 	    return caResultRecords;
+	}
+
+	private static ConcurrentLinkedQueue<BranchCAResultRec> performCoreCaAnalysis(
+			AclfNetwork aclfNet,
+			List<? extends BaseContingency<DclfMonitoringBranch>> contingencyList,
+			Set<String> monitoredBranchIds,
+			double overloadThreshold,
+			double shiftThresholdMw,
+			DclfMethod method,
+			DclfContingencySolutionMethod solutionMethod,
+			int parallelismLevel)
+			throws InterpssException {
+		ConcurrentLinkedQueue<BranchCAResultRec> caResultRecords = new ConcurrentLinkedQueue<>();
+		if (contingencyList.isEmpty()) {
+			return caResultRecords;
+		}
+
+		int workerCount = Math.max(1, Math.min(parallelismLevel, contingencyList.size()));
+		ContingencyAnalysisAlgorithm[] workerAlgorithms =
+				buildWorkerAlgorithms(aclfNet, method, solutionMethod, workerCount);
+		double baseMva = aclfNet.getBaseMva();
+
+		try {
+			executeParallel(
+					java.util.stream.IntStream.range(0, workerCount).boxed(),
+					workerIndex -> {
+						try {
+							ContingencyAnalysisAlgorithm workerAlgo = workerAlgorithms[workerIndex];
+							for (int contingencyIndex = workerIndex;
+									contingencyIndex < contingencyList.size();
+									contingencyIndex += workerCount) {
+								BaseContingency<DclfMonitoringBranch> workingContingency =
+										createWorkingContingency(
+												workerAlgo,
+												contingencyList.get(contingencyIndex),
+												monitoredBranchIds);
+								workerAlgo.ca(workingContingency);
+								collectMonitoringResults(
+										workerAlgo,
+										workingContingency,
+										baseMva,
+										overloadThreshold,
+										shiftThresholdMw,
+										caResultRecords);
+							}
+						} catch (InterpssException e) {
+							throw new RuntimeException(e);
+						}
+					},
+					workerCount);
+		} catch (RuntimeException e) {
+			throwInterpssOrRuntime(e);
+		}
+
+		log.info("Dclf contingency analysis completed. Found {} violations out of {} contingencies",
+				caResultRecords.size(), contingencyList.size());
+		return caResultRecords;
 	}
 
 	private static void analyzeOpenBranchOutageFast(
@@ -193,14 +292,186 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
 
 	private static void refreshOutagePreFlows(
 			ContingencyAnalysisAlgorithm dclfAlgo,
-			List<DclfBranchOutage> contingencyList) {
-		for (DclfBranchOutage contingency : contingencyList) {
+			List<? extends BaseContingency<DclfMonitoringBranch>> contingencyList) {
+		for (BaseContingency<DclfMonitoringBranch> baseContingency : contingencyList) {
+			DclfBranchOutage contingency = (DclfBranchOutage) baseContingency;
 			if (contingency.getOutageEquip() == null || contingency.getOutageEquip().getBranch() == null) {
 				continue;
 			}
 			String branchId = contingency.getOutageEquip().getBranch().getId();
 			contingency.getOutageEquip().setDclfFlow(dclfAlgo.getDclfAlgoBranch(branchId).getDclfFlow());
 		}
+	}
+
+	private static boolean isFastOpenBranchStudy(
+			List<? extends BaseContingency<DclfMonitoringBranch>> contingencyList) {
+		for (BaseContingency<DclfMonitoringBranch> contingency : contingencyList) {
+			if (!(contingency instanceof DclfBranchOutage)) {
+				return false;
+			}
+			DclfOutageBranch outageBranch = ((DclfBranchOutage) contingency).getOutageEquip();
+			if (outageBranch == null || outageBranch.getOutageType() != ContingencyBranchOutageType.OPEN) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private static ContingencyAnalysisAlgorithm[] buildWorkerAlgorithms(
+			AclfNetwork aclfNet,
+			DclfMethod method,
+			DclfContingencySolutionMethod solutionMethod,
+			int workerCount)
+			throws InterpssException {
+		ContingencyAnalysisAlgorithm[] workerAlgorithms =
+				new ContingencyAnalysisAlgorithm[workerCount];
+
+		try {
+			executeParallel(
+					java.util.stream.IntStream.range(0, workerCount).boxed(),
+					workerIndex -> {
+						ContingencyAnalysisAlgorithm dclfAlgo =
+								createContingencyAnalysisAlgorithm(aclfNet);
+						dclfAlgo.setSolutionMethod(solutionMethod);
+						dclfAlgo.calculateDclf(method);
+						workerAlgorithms[workerIndex] = dclfAlgo;
+					},
+					workerCount);
+		} catch (RuntimeException e) {
+			throwInterpssOrRuntime(e);
+		}
+
+		return workerAlgorithms;
+	}
+
+	private static BaseContingency<DclfMonitoringBranch> createWorkingContingency(
+			ContingencyAnalysisAlgorithm dclfAlgo,
+			BaseContingency<DclfMonitoringBranch> source,
+			Set<String> monitoredBranchIds)
+			throws InterpssException {
+		if (source instanceof DclfBranchOutage) {
+			return createWorkingBranchOutage(dclfAlgo, (DclfBranchOutage) source, monitoredBranchIds);
+		}
+		if (source instanceof DclfMultiOutage) {
+			return createWorkingMultiOutage(dclfAlgo, (DclfMultiOutage) source, monitoredBranchIds);
+		}
+		throw new InterpssException("Unsupported DCLF contingency type: "
+				+ (source == null ? "null" : source.getClass().getName()));
+	}
+
+	private static DclfBranchOutage createWorkingBranchOutage(
+			ContingencyAnalysisAlgorithm dclfAlgo,
+			DclfBranchOutage source,
+			Set<String> monitoredBranchIds)
+			throws InterpssException {
+		if (source == null || source.getOutageEquip() == null || source.getOutageEquip().getBranch() == null) {
+			throw new InterpssException("DCLF branch outage contingency cannot be null");
+		}
+
+		DclfBranchOutage working = createContingency(source.getId());
+		working.setOutageType(source.getOutageType());
+		DclfOutageBranch sourceOutage = source.getOutageEquip();
+		DclfOutageBranch workingOutage =
+				createWorkingOutageBranch(dclfAlgo, sourceOutage, sourceOutage.getOutageType());
+		working.setOutageEquip(workingOutage);
+		addMonitoringBranches(dclfAlgo, working, monitoredBranchIds);
+		return working;
+	}
+
+	private static DclfMultiOutage createWorkingMultiOutage(
+			ContingencyAnalysisAlgorithm dclfAlgo,
+			DclfMultiOutage source,
+			Set<String> monitoredBranchIds)
+			throws InterpssException {
+		if (source == null) {
+			throw new InterpssException("DCLF multi-outage contingency cannot be null");
+		}
+		if (source.getOutageEquips().isEmpty()) {
+			throw new InterpssException("DCLF multi-outage contingency has no outage branches: "
+					+ source.getId());
+		}
+
+		DclfMultiOutage working =
+				createMultiOutageContingency(source.getId(), source.getOutageType());
+		for (DclfOutageBranch sourceOutage : source.getOutageEquips()) {
+			working.getOutageEquips().add(
+					createWorkingOutageBranch(dclfAlgo, sourceOutage, source.getOutageType()));
+		}
+		addMonitoringBranches(dclfAlgo, working, monitoredBranchIds);
+		return working;
+	}
+
+	private static DclfOutageBranch createWorkingOutageBranch(
+			ContingencyAnalysisAlgorithm dclfAlgo,
+			DclfOutageBranch sourceOutage,
+			ContingencyBranchOutageType outageType)
+			throws InterpssException {
+		if (sourceOutage == null || sourceOutage.getBranch() == null) {
+			throw new InterpssException("DCLF outage branch cannot be null");
+		}
+		DclfAlgoBranch outageDclfBranch =
+				dclfAlgo.getDclfAlgoBranch(sourceOutage.getBranch().getId());
+		if (outageDclfBranch == null) {
+			throw new InterpssException("DCLF outage branch is not available in the analysis algorithm: "
+					+ sourceOutage.getBranch().getId());
+		}
+
+		DclfOutageBranch workingOutage = createCaOutageBranch(outageDclfBranch, outageType);
+		workingOutage.setDclfFlow(outageDclfBranch.getDclfFlow());
+		return workingOutage;
+	}
+
+	private static void addMonitoringBranches(
+			ContingencyAnalysisAlgorithm dclfAlgo,
+			BaseContingency<DclfMonitoringBranch> contingency,
+			Set<String> monitoredBranchIds) {
+		for (DclfAlgoBranch dclfBranch : dclfAlgo.getDclfAlgoBranchList()) {
+			AclfBranch branch = dclfBranch.getBranch();
+			if (branch != null
+					&& dclfBranch.isActive()
+					&& (monitoredBranchIds == null || monitoredBranchIds.contains(branch.getId()))) {
+				contingency.addMonitoringBranch(createCaMonitoringBranch(dclfBranch));
+			}
+		}
+	}
+
+	private static void collectMonitoringResults(
+			ContingencyAnalysisAlgorithm dclfAlgo,
+			BaseContingency<DclfMonitoringBranch> contingency,
+			double baseMva,
+			double overloadThreshold,
+			double shiftThresholdMw,
+			ConcurrentLinkedQueue<BranchCAResultRec> results) {
+		for (DclfMonitoringBranch monitoringBranch : contingency.getMonitoringBranches()) {
+			AclfBranch monitor = monitoringBranch.getBranch();
+			DclfAlgoBranch dclfBranch = dclfAlgo.getDclfAlgoBranch(monitor.getId());
+			if (dclfBranch == null) {
+				continue;
+			}
+
+			double preFlowMw = dclfBranch.getDclfFlow() * baseMva;
+			double shiftedFlowMw = monitoringBranch.getShiftedFlow() * baseMva;
+			if (Math.abs(shiftedFlowMw) <= shiftThresholdMw) {
+				continue;
+			}
+
+			BranchCAResultRec result =
+					new BranchCAResultRec(contingency, monitor, preFlowMw, shiftedFlowMw);
+			if (result.calLoadingPercent() >= overloadThreshold) {
+				results.add(result);
+			}
+		}
+	}
+
+	private static void throwInterpssOrRuntime(RuntimeException e) throws InterpssException {
+		Throwable cause = e;
+		while (cause.getCause() != null) {
+			cause = cause.getCause();
+		}
+		if (cause instanceof InterpssException) {
+			throw (InterpssException) cause;
+		}
+		throw e;
 	}
     
 
@@ -213,7 +484,7 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
      * @param parallelism Number of threads to use for parallel execution
      */
 	public static <T> void executeParallel(Stream<T> stream, Consumer<T> action, int parallelism) {
-        if (parallelism == 1) {
+        if (parallelism <= 1) {
             // Sequential execution
             stream.forEach(action);
         } else {
