@@ -14,7 +14,7 @@ public final class DclfTransferPanelCache {
     private final ContingencyAnalysisAlgorithm dclfAlgorithm;
     private final AclfBranch[] monitoredBranches;
     private final DclfBranchOutage[] contingencies;
-    private final double[][] lodfPanel;
+    private final DclfTransferPanelChunk[] chunks;
     private final double[] denominator;
     private final boolean[] validOutage;
 
@@ -23,14 +23,14 @@ public final class DclfTransferPanelCache {
             ContingencyAnalysisAlgorithm dclfAlgorithm,
             AclfBranch[] monitoredBranches,
             DclfBranchOutage[] contingencies,
-            double[][] lodfPanel,
+            DclfTransferPanelChunk[] chunks,
             double[] denominator,
             boolean[] validOutage) {
         this.spec = spec;
         this.dclfAlgorithm = dclfAlgorithm;
         this.monitoredBranches = Arrays.copyOf(monitoredBranches, monitoredBranches.length);
         this.contingencies = Arrays.copyOf(contingencies, contingencies.length);
-        this.lodfPanel = copy(lodfPanel);
+        this.chunks = Arrays.copyOf(chunks, chunks.length);
         this.denominator = Arrays.copyOf(denominator, denominator.length);
         this.validOutage = Arrays.copyOf(validOutage, validOutage.length);
     }
@@ -60,7 +60,13 @@ public final class DclfTransferPanelCache {
     }
 
     public double getLodf(int monitorIndex, int outageIndex) {
-        return lodfPanel[monitorIndex][outageIndex];
+        for (DclfTransferPanelChunk chunk : chunks) {
+            int localIndex = monitorIndex - chunk.getMonitorOffset();
+            if (localIndex >= 0 && localIndex < chunk.getMonitorCount()) {
+                return chunk.getLodf(localIndex, outageIndex);
+            }
+        }
+        throw new IndexOutOfBoundsException("monitorIndex out of range: " + monitorIndex);
     }
 
     public double getDenominator(int outageIndex) {
@@ -72,14 +78,22 @@ public final class DclfTransferPanelCache {
     }
 
     public long estimatePanelBytes() {
-        return (long) getMonitorCount() * (long) getOutageCount() * Double.BYTES;
+        long bytes = 0;
+        for (DclfTransferPanelChunk chunk : chunks) {
+            bytes += chunk.estimatePanelBytes();
+        }
+        return bytes;
     }
 
-    private static double[][] copy(double[][] data) {
-        double[][] copied = new double[data.length][];
-        for (int i = 0; i < data.length; i++) {
-            copied[i] = Arrays.copyOf(data[i], data[i].length);
-        }
-        return copied;
+    public int getChunkCount() {
+        return chunks.length;
+    }
+
+    public DclfTransferPanelChunk getChunk(int chunkIndex) {
+        return chunks[chunkIndex];
+    }
+
+    public DclfTransferPanelChunk[] getChunks() {
+        return Arrays.copyOf(chunks, chunks.length);
     }
 }
