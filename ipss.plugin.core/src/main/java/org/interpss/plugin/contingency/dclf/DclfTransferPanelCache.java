@@ -9,7 +9,7 @@ import com.interpss.core.contingency.dclf.DclfBranchOutage;
 /**
  * Immutable monitor-by-outage LODF panel for a fixed InterPSS DCLF topology.
  */
-public final class DclfTransferPanelCache {
+final class DclfTransferPanelCache {
     private final DclfContingencyStudySpec spec;
     private final ContingencyAnalysisAlgorithm dclfAlgorithm;
     private final AclfBranch[] monitoredBranches;

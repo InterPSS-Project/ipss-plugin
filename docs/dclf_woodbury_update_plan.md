@@ -43,7 +43,8 @@ After this cache is built, every new load/generation profile only needs:
 
 ## First Implementation Slice
 
-The first checked-in slice is intentionally conservative:
+The first checked-in slice is intentionally conservative and is now treated as
+an internal optimization layer rather than a user-facing API:
 
 - It adds the new package `org.interpss.plugin.contingency.dclf`.
 - It builds an immutable full in-memory LODF panel for N-1 branch-open
@@ -53,6 +54,11 @@ The first checked-in slice is intentionally conservative:
   cases, and parallel branch behavior stay aligned with current InterPSS.
 - It adds a cached analyzer that applies the panel without mutating shared
   `DclfAlgoBranch.shiftedFlow` state.
+- `DclfTransferPanel*`, `PanelBuildOptions`, `DclfContingencyStudySpec`, and
+  `CachedDclfContingencyAnalyzer` are package-private implementation classes.
+  Normal callers should use the consistent CA APIs and select the solution
+  method through `ContingencyAnalysisAlgorithm.setSolutionMethod(...)` or
+  `DclfContingencyConfig.setSolutionMethod(...)`.
 
 ## Next Steps
 
@@ -64,9 +70,11 @@ The first checked-in slice is intentionally conservative:
 4. Done: replace scalar panel construction with per-outage LODF vector solves.
 5. Done: add explicit multi-outage Woodbury helpers based on the existing
    `[E - PTDF]` implementation.
-6. Done: add a public multi-outage contingency analyzer and JSON-driven
+6. Done: add a multi-outage contingency analyzer and JSON-driven
    Texas2k regression that randomly groups existing branch contingencies into
    N-2 and N-3 outage cases.
+7. Done: expose solution-method selection through the existing CA API boundary
+   instead of exposing transfer-panel-specific classes.
 
 ## Phase 2 Validation
 
@@ -78,10 +86,11 @@ The first checked-in slice is intentionally conservative:
 
 ## Phase 3 Woodbury Solver
 
-`DclfWoodburyOutageSolver` now lives in `ipss.core_EMF` alongside the existing
-InterPSS DCLF contingency algorithm. `DclfContingencyMethod` names the two core
-solver modes, `sparseEqn_solver` and `woodburyMatrix_solver`; the Woodbury
-solver reports `woodburyMatrix_solver`.
+`DclfContingencyWoodburySolver` now lives in `ipss.core_EMF` alongside the
+existing InterPSS DCLF contingency algorithm.
+`DclfContingencySolutionMethod` names the two core solver modes,
+`SparseEqnSolve` and `WoodburyMatrixUpdate`; the Woodbury solver reports
+`WoodburyMatrixUpdate`.
 
 - `singleOpenLodf()` and `singleOpenPostFlow()` expose the N-1
   Sherman-Morrison result through existing InterPSS semantics.
@@ -95,14 +104,13 @@ solver reports `woodburyMatrix_solver`.
 Current tests verify single-open post-flow equivalence and multi-open shifted
 flow equivalence against InterPSS `multiOpenOutageAnalysis()` on IEEE 14.
 
-`DclfMultiOutageContingencyAnalyzer` now promotes that helper into an analysis
-path for `DclfMultiOutage` contingencies. It calculates the current DCLF once,
-refreshes each outage branch pre-flow from the InterPSS DCLF branch model, then
-uses `DclfWoodburyOutageSolver.solveMultiOpen()` to evaluate the selected
-monitored branches. The analyzer now emits the same `BranchCAResultRec` type
-used by N-1 analysis; the result record carries normalized outage-equipment
-accessors and optional multi-outage LODF factors for combined-shift sensitivity
-calculations.
+`DclfMultiOutageContingencyAnalyzer` now promotes solution-method selection into
+an analysis path for `DclfMultiOutage` contingencies. It calculates the current
+DCLF once, sets the selected `DclfContingencySolutionMethod`, and calls
+`ContingencyAnalysisAlgorithm.ca()` for each contingency. The analyzer emits the
+same `BranchCAResultRec` type used by N-1 analysis; the result record carries
+normalized outage-equipment accessors and optional multi-outage LODF factors for
+combined-shift sensitivity calculations.
 
 The Texas2k JSON regression reads the existing branch-contingency and monitored
 branch JSON files, shuffles the valid single outages with a fixed seed, creates
