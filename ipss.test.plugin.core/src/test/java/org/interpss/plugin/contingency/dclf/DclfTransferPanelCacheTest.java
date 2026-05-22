@@ -28,8 +28,8 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
-import com.interpss.core.algo.dclf.DclfContingencyMethod;
-import com.interpss.core.algo.dclf.DclfWoodburyOutageSolver;
+import com.interpss.core.algo.dclf.DclfContingencySolutionMethod;
+import com.interpss.core.algo.dclf.DclfContingencyWoodburySolver;
 import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfMultiOutage;
@@ -258,8 +258,8 @@ public class DclfTransferPanelCacheTest extends CorePluginTestSetup {
         DclfOutageBranch outage = contingency.getOutageEquip();
         AclfBranch monitor = net.getBranch("Bus2->Bus4(1)");
 
-        DclfWoodburyOutageSolver solver = new DclfWoodburyOutageSolver(dclfAlgo);
-        assertEquals(DclfContingencyMethod.woodburyMatrix_solver, solver.getContingencyMethod());
+        DclfContingencyWoodburySolver solver = new DclfContingencyWoodburySolver(dclfAlgo);
+        assertEquals(DclfContingencySolutionMethod.WoodburyMatrixUpdate, solver.getSolutionMethod());
         double expected = dclfAlgo.calPostOutageFlow(outage, dclfAlgo.getDclfAlgoBranch(monitor.getId()));
         double actual = solver.singleOpenPostFlow(outage, dclfAlgo.getDclfAlgoBranch(monitor.getId()));
 
@@ -284,16 +284,15 @@ public class DclfTransferPanelCacheTest extends CorePluginTestSetup {
         };
         int originalSortNumber = outages[0].getBranch().getSortNumber();
 
-        DclfWoodburyOutageSolver solver = new DclfWoodburyOutageSolver(dclfAlgo);
-        DclfWoodburyOutageSolver.MultiOpenResult serialResult = solver.solveMultiOpen(outages, monitors);
-        DclfWoodburyOutageSolver.MultiOpenResult result = solver.solveMultiOpen(outages, monitors, 2);
+        DclfContingencyWoodburySolver solver = new DclfContingencyWoodburySolver(dclfAlgo);
+        DclfContingencyWoodburySolver.MultiOpenResult result = solver.solveMultiOpen(outages, monitors);
 
         assertEquals(originalSortNumber, outages[0].getBranch().getSortNumber());
         assertEquals(outages.length, result.getOutageCount());
         assertEquals(monitors.length, result.getMonitorCount());
         for (int monitorIndex = 0; monitorIndex < monitors.length; monitorIndex++) {
-            assertEquals(serialResult.getShiftedFlowPu(monitorIndex), result.getShiftedFlowPu(monitorIndex), 1.0e-10);
-            assertEquals(serialResult.getPostFlowPu(monitorIndex), result.getPostFlowPu(monitorIndex), 1.0e-10);
+            assertEquals(result.getPreFlowPu(monitorIndex) + result.getShiftedFlowPu(monitorIndex),
+                    result.getPostFlowPu(monitorIndex), 1.0e-10);
         }
 
         dclfAlgo.multiOpenOutageAnalysis(outages);
@@ -328,8 +327,8 @@ public class DclfTransferPanelCacheTest extends CorePluginTestSetup {
                 .filter(branch -> branch.isActive() && !outageBranchIds.contains(branch.getId()))
                 .findFirst()
                 .orElseThrow();
-        DclfWoodburyOutageSolver.MultiOpenResult solved =
-                new DclfWoodburyOutageSolver(dclfAlgo).solveMultiOpen(outages, new AclfBranch[] {monitor});
+        DclfContingencyWoodburySolver.MultiOpenResult solved =
+                new DclfContingencyWoodburySolver(dclfAlgo).solveMultiOpen(outages, new AclfBranch[] {monitor});
 
         BranchCAResultRec result =
                 new BranchCAResultRec(
