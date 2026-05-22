@@ -143,7 +143,8 @@ Current opt-in cases:
   `-Dinterpss.fullJsonDclfTests=true`.
 - OpenEI 24-hour repeated profiles: the same full JSON study set with
   deterministic `+/-5%` contributed-load variation per hour. The cached path
-  builds the transfer panel once, then reuses it across 24 profile solves. This
+  builds the transfer panel once, then reuses it across 24 profile solves. Both
+  cached and original analyzers use 8 workers for the contingency scan. This
   case additionally requires `-Dinterpss.hourlyDclfTests=true`.
 
 Latest OpenEI full JSON result:
@@ -155,22 +156,22 @@ Latest OpenEI full JSON result:
 - Chunking: 125 monitor chunks with chunk size 256.
 - Estimated cached LODF panel size: 1,527 MB.
 - Thermal violations above 100% rating: 11,513 records.
-- Cached transfer-panel run: 46,308 ms, including panel build and current
-  profile scan.
-- InterPSS parallel baseline: 19,722 ms with 8 workers.
+- Cached transfer-panel run: 41,225 ms, including panel build and 8-worker
+  current profile scan.
+- InterPSS parallel baseline: 19,209 ms with 8 workers.
 - The cached and parallel result keys and MW values matched exactly within
   `1.0e-7`.
 
-Latest OpenEI 24-hour repeated-profile result:
+Latest OpenEI 24-hour repeated-profile result with 8-worker cached scans:
 
 - Hourly profiles: 24 deterministic random load profiles, varying 56,504
   contributed load records by `+/-5%`.
-- Cached transfer-panel setup: 41,055 ms.
-- Cached repeated-profile scans: 111,947 ms.
-- Cached total time including setup: 153,002 ms.
-- Original parallel baseline total time: 444,295 ms with 8 workers.
+- Cached transfer-panel setup: 40,951 ms.
+- Cached repeated-profile scans: 4,320 ms with 8 workers.
+- Cached total time including setup: 45,271 ms.
+- Original parallel baseline total time: 446,071 ms with 8 workers.
 - Total violation records across all hours: 280,854.
-- End-to-end speedup: 2.90x including one-time setup, and 3.97x for repeated
+- End-to-end speedup: 9.85x including one-time setup, and 103.26x for repeated
   hourly scans after setup.
 - The cached and original solver results matched exactly within `1.0e-7` for
   every hourly profile.
@@ -180,6 +181,12 @@ parallel analyzer. `DclfOutageBranch.dclfFlow` is captured when contingencies
 are created, but repeated profiles change the branch pre-flow. The analyzer now
 refreshes each outage branch pre-flow from the current `ContingencyAnalysisAlgorithm`
 after `calculateDclf()` and before running contingency monads.
+
+The cached analyzer now snapshots current outage and monitor base flows after
+each hourly DCLF solve, then applies the immutable LODF panel by monitor chunk
+using a caller-provided worker count. `DclfWoodburyOutageSolver` also exposes a
+parallel multi-open monitor solve overload so the Woodbury monitor update can be
+split across workers.
 
 The full JSON test needs the heap on the Surefire forked JVM, not only Maven
 itself. A 12 GB forked heap was not enough for this case; 24 GB completed.

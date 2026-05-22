@@ -279,12 +279,17 @@ public class DclfTransferPanelCacheTest extends CorePluginTestSetup {
         };
         int originalSortNumber = outages[0].getBranch().getSortNumber();
 
-        DclfWoodburyOutageSolver.MultiOpenResult result =
-                new DclfWoodburyOutageSolver(dclfAlgo).solveMultiOpen(outages, monitors);
+        DclfWoodburyOutageSolver solver = new DclfWoodburyOutageSolver(dclfAlgo);
+        DclfWoodburyOutageSolver.MultiOpenResult serialResult = solver.solveMultiOpen(outages, monitors);
+        DclfWoodburyOutageSolver.MultiOpenResult result = solver.solveMultiOpen(outages, monitors, 2);
 
         assertEquals(originalSortNumber, outages[0].getBranch().getSortNumber());
         assertEquals(outages.length, result.getOutageCount());
         assertEquals(monitors.length, result.getMonitorCount());
+        for (int monitorIndex = 0; monitorIndex < monitors.length; monitorIndex++) {
+            assertEquals(serialResult.getShiftedFlowPu(monitorIndex), result.getShiftedFlowPu(monitorIndex), 1.0e-10);
+            assertEquals(serialResult.getPostFlowPu(monitorIndex), result.getPostFlowPu(monitorIndex), 1.0e-10);
+        }
 
         dclfAlgo.multiOpenOutageAnalysis(outages);
         for (int monitorIndex = 0; monitorIndex < monitors.length; monitorIndex++) {
