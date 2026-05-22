@@ -11,7 +11,7 @@ import com.interpss.core.contingency.dclf.DclfBranchOutage;
 /**
  * Applies a precomputed DCLF LODF transfer panel to the current network profile.
  */
-public final class CachedDclfContingencyAnalyzer {
+final class CachedDclfContingencyAnalyzer {
     private final DclfTransferPanelCache cache;
 
     public CachedDclfContingencyAnalyzer(DclfTransferPanelCache cache) {
