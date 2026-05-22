@@ -3,6 +3,8 @@ package org.interpss.plugin.contingency.dclf;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ForkJoinPool;
+import java.util.stream.IntStream;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
@@ -38,6 +40,14 @@ public final class DclfWoodburyOutageSolver {
 
     public MultiOpenResult solveMultiOpen(DclfOutageBranch[] outageBranches, AclfBranch[] monitorBranches)
             throws InterpssException {
+        return solveMultiOpen(outageBranches, monitorBranches, 1);
+    }
+
+    public MultiOpenResult solveMultiOpen(
+            DclfOutageBranch[] outageBranches,
+            AclfBranch[] monitorBranches,
+            int parallelism)
+            throws InterpssException {
         if (outageBranches == null || outageBranches.length == 0) {
             throw new IllegalArgumentException("outageBranches cannot be null or empty");
         }
@@ -59,29 +69,24 @@ public final class DclfWoodburyOutageSolver {
             double[] shiftedFlowPu = new double[monitorBranches.length];
             double[] preFlowPu = new double[monitorBranches.length];
             double[] postFlowPu = new double[monitorBranches.length];
-
-            for (int monitorIndex = 0; monitorIndex < monitorBranches.length; monitorIndex++) {
-                AclfBranch monitorBranch = monitorBranches[monitorIndex];
-                DclfAlgoBranch monitorDclfBranch = dclfAlgorithm.getDclfAlgoBranch(monitorBranch.getId());
-                preFlowPu[monitorIndex] = monitorDclfBranch != null ? monitorDclfBranch.getDclfFlow() : 0.0;
-
-                double[] lodfs = dclfAlgorithm.calMultiOutageLODFs(monitorBranch, invEptdf);
-                lodfByMonitor[monitorIndex] = lodfs;
-                if (lodfs == null) {
-                    shiftedFlowPu[monitorIndex] = -preFlowPu[monitorIndex];
-                } else {
-                    if (lodfs.length != outageBranches.length) {
-                        throw new InterpssException(
-                                "Linearly dependent multi-outage rows are not supported by this Woodbury wrapper yet");
-                    }
-                    for (int outageIndex = 0; outageIndex < outageBranches.length; outageIndex++) {
-                        DclfAlgoBranch outageDclfBranch =
-                                dclfAlgorithm.getDclfAlgoBranch(outageBranches[outageIndex].getBranch().getId());
-                        shiftedFlowPu[monitorIndex] += outageDclfBranch.getDclfFlow() * lodfs[outageIndex];
-                    }
-                }
-                postFlowPu[monitorIndex] = preFlowPu[monitorIndex] + shiftedFlowPu[monitorIndex];
+            double[] outagePreFlowPu = new double[outageBranches.length];
+            for (int outageIndex = 0; outageIndex < outageBranches.length; outageIndex++) {
+                DclfAlgoBranch outageDclfBranch =
+                        dclfAlgorithm.getDclfAlgoBranch(outageBranches[outageIndex].getBranch().getId());
+                outagePreFlowPu[outageIndex] = outageDclfBranch.getDclfFlow();
+                outageBranches[outageIndex].setDclfFlow(outagePreFlowPu[outageIndex]);
             }
+
+            runMonitorSolve(
+                    monitorBranches,
+                    invEptdf,
+                    outageBranches.length,
+                    outagePreFlowPu,
+                    lodfByMonitor,
+                    preFlowPu,
+                    shiftedFlowPu,
+                    postFlowPu,
+                    parallelism);
 
             return new MultiOpenResult(
                     Arrays.copyOf(outageBranches, outageBranches.length),
@@ -96,6 +101,94 @@ public final class DclfWoodburyOutageSolver {
             dclfAlgorithm.getOutageBranchList().clear();
             dclfAlgorithm.getOutageBranchList().addAll(originalOutageList);
         }
+    }
+
+    private void runMonitorSolve(
+            AclfBranch[] monitorBranches,
+            Object invEptdf,
+            int outageCount,
+            double[] outagePreFlowPu,
+            double[][] lodfByMonitor,
+            double[] preFlowPu,
+            double[] shiftedFlowPu,
+            double[] postFlowPu,
+            int parallelism)
+            throws InterpssException {
+        if (parallelism <= 1 || monitorBranches.length <= 1) {
+            for (int monitorIndex = 0; monitorIndex < monitorBranches.length; monitorIndex++) {
+                solveMonitor(
+                        monitorIndex,
+                        monitorBranches,
+                        invEptdf,
+                        outageCount,
+                        outagePreFlowPu,
+                        lodfByMonitor,
+                        preFlowPu,
+                        shiftedFlowPu,
+                        postFlowPu);
+            }
+            return;
+        }
+
+        ForkJoinPool pool = new ForkJoinPool(parallelism);
+        try {
+            pool.submit(() -> IntStream.range(0, monitorBranches.length).parallel().forEach(monitorIndex -> {
+                try {
+                    solveMonitor(
+                            monitorIndex,
+                            monitorBranches,
+                            invEptdf,
+                            outageCount,
+                            outagePreFlowPu,
+                            lodfByMonitor,
+                            preFlowPu,
+                            shiftedFlowPu,
+                            postFlowPu);
+                } catch (InterpssException e) {
+                    throw new RuntimeException(e);
+                }
+            })).get();
+        } catch (Exception e) {
+            Throwable cause = e.getCause() != null ? e.getCause() : e;
+            if (cause instanceof RuntimeException && cause.getCause() instanceof InterpssException) {
+                throw (InterpssException) cause.getCause();
+            }
+            throw new InterpssException(cause.toString());
+        } finally {
+            pool.close();
+            pool.shutdown();
+        }
+    }
+
+    private void solveMonitor(
+            int monitorIndex,
+            AclfBranch[] monitorBranches,
+            Object invEptdf,
+            int outageCount,
+            double[] outagePreFlowPu,
+            double[][] lodfByMonitor,
+            double[] preFlowPu,
+            double[] shiftedFlowPu,
+            double[] postFlowPu)
+            throws InterpssException {
+        AclfBranch monitorBranch = monitorBranches[monitorIndex];
+        DclfAlgoBranch monitorDclfBranch = dclfAlgorithm.getDclfAlgoBranch(monitorBranch.getId());
+        preFlowPu[monitorIndex] = monitorDclfBranch != null ? monitorDclfBranch.getDclfFlow() : 0.0;
+
+        double[] lodfs = dclfAlgorithm.calMultiOutageLODFs(monitorBranch, invEptdf);
+        lodfByMonitor[monitorIndex] = lodfs;
+        if (lodfs == null) {
+            shiftedFlowPu[monitorIndex] = -preFlowPu[monitorIndex];
+        } else {
+            if (lodfs.length != outageCount) {
+                throw new InterpssException(
+                        "Linearly dependent multi-outage rows are not supported by this Woodbury wrapper yet");
+            }
+            for (int outageIndex = 0; outageIndex < outageCount; outageIndex++) {
+                shiftedFlowPu[monitorIndex] += outagePreFlowPu[outageIndex] * lodfs[outageIndex];
+            }
+        }
+        postFlowPu[monitorIndex] = preFlowPu[monitorIndex] + shiftedFlowPu[monitorIndex];
     }
 
     private static int[] saveSortNumbers(DclfOutageBranch[] outageBranches) {
