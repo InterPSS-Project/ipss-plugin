@@ -38,8 +38,10 @@ public class AclfNetBusOptUtil {
 				// add the over limit branch to the SSA result container
 				if (ssaResults != null)
 					ssaResults.getBaseOverLimitInfo().add(new BranchOptAdjustResultRec(dclfBranch));
-				System.out.printf("Branch: %s  %.2f  rating: %.2f  loading: %.2f%n",
-				dclfBranch.getId(), powerFlowMW, ratingMVA, loadingPercent);
+				else {
+					System.out.printf("Branch: %s  %.2f  rating: %.2f  loading: %.2f%n",
+						              dclfBranch.getId(), powerFlowMW, ratingMVA, loadingPercent);
+				}
 			}
 			if (loadingPercent > maxLoading.val) {
 				maxLoading.val = loadingPercent;
@@ -68,15 +70,16 @@ public class AclfNetBusOptUtil {
 		System.out.println("Control load bus count: " + optimizer.getControlLoadBusIdSet().size());
 
 		Map<String, Double> resultMap = optimizer.getResultMap();
-		System.out.println("Optimization result: " + resultMap);
-		System.out.println("Optimization variable size: " + optimizer.getOptimizer().getGenSize());
-		System.out.println("Optimization device constrain size: "
-				+ optimizer.getOptimizer().getGenConstrainDataList().size());
-		System.out.println("Optimization sec constrain size: "
-				+ optimizer.getOptimizer().getSecConstrainDataList().size());
-
 		if (ssaResults != null)
-			ssaResults.setOptAdjBaseResultMap(resultMap);		
+			ssaResults.setOptAdjBaseResultMap(resultMap);	
+		else {
+			System.out.println("Optimization result: " + resultMap);
+			System.out.println("Optimization variable size: " + optimizer.getOptimizer().getGenSize());
+			System.out.println("Optimization device constrain size: "
+					+ optimizer.getOptimizer().getGenConstrainDataList().size());
+			System.out.println("Optimization sec constrain size: "
+					+ optimizer.getOptimizer().getSecConstrainDataList().size());
+		}	
 
 		dclfAlgo.calculateDclf(DclfMethod.INC_LOSS);
 
@@ -97,44 +100,46 @@ public class AclfNetBusOptUtil {
 			double loading = rating > 0 ? Math.abs(flowMw / rating) * 100 : 0.0;
 			if (loading > OPT_THRESHOLD) {
 				cnt1.increment();
-				int branchNo = dclfBranch.getBranch().getSortNumber();
-				double maxAbsGenGfs = controlBusGfsMatrix == null ? 0.0
-						: controlBusIdSet.stream()
-								.mapToDouble(busId -> {
-									int busNo = aclfNet.getBus(busId).getSortNumber();
-									return controlBusRoleMap.get(busId) == AclfNetBusOptimizer.ControlBusRole.GEN ? 
-									Math.abs(controlBusGfsMatrix.get(busNo, branchNo)) : 0.0;
-								})
-								.max()
-								.orElse(0.0);
-				double maxAbsLoadGfs = controlBusGfsMatrix == null || adjustGenOnly? 0.0
-						: controlBusIdSet.stream()
-								.mapToDouble(busId -> {
-									int busNo = aclfNet.getBus(busId).getSortNumber();
-									return controlBusRoleMap.get(busId) == AclfNetBusOptimizer.ControlBusRole.LOAD ? 
-									Math.abs(controlBusGfsMatrix.get(busNo, branchNo)) : 0.0;
-								})
-								.max()
-								.orElse(0.0);				
 
-				System.out.printf("Branch: %s  %.2f  rating: %.2f  loading: %.2f  max |GenGFS|: %.2f",
-						dclfBranch.getId(), flowMw, rating, loading, maxAbsGenGfs);
-				if (adjustGenOnly)
-					System.out.printf("%n");
-				else
-					System.out.printf("  max |LoadGFS|: %.2f%n", maxAbsLoadGfs);		
+				if (ssaResults != null) {
+					BranchOptAdjustResultRec rec = baseOverLimitInfoMap.get(dclfBranch.getId());
+					if (rec != null) {
+						rec.adjustedFlowMW = dclfBranch.getDclfFlow() * baseMVA;
+						rec.adjustedLoadingPercent = Math.abs(rec.adjustedFlowMW / dclfBranch.getBranch().getRatingMva1())*100;
+					}
+				}
+				else {
+					int branchNo = dclfBranch.getBranch().getSortNumber();
+					double maxAbsGenGfs = controlBusGfsMatrix == null ? 0.0
+							: controlBusIdSet.stream()
+									.mapToDouble(busId -> {
+										int busNo = aclfNet.getBus(busId).getSortNumber();
+										return controlBusRoleMap.get(busId) == AclfNetBusOptimizer.ControlBusRole.GEN ? 
+										Math.abs(controlBusGfsMatrix.get(busNo, branchNo)) : 0.0;
+									})
+									.max()
+									.orElse(0.0);
+					double maxAbsLoadGfs = controlBusGfsMatrix == null || adjustGenOnly? 0.0
+							: controlBusIdSet.stream()
+									.mapToDouble(busId -> {
+										int busNo = aclfNet.getBus(busId).getSortNumber();
+										return controlBusRoleMap.get(busId) == AclfNetBusOptimizer.ControlBusRole.LOAD ? 
+										Math.abs(controlBusGfsMatrix.get(busNo, branchNo)) : 0.0;
+									})
+									.max()
+									.orElse(0.0);				
+	
+					System.out.printf("Branch: %s  %.2f  rating: %.2f  loading: %.2f  max |GenGFS|: %.2f",
+							dclfBranch.getId(), flowMw, rating, loading, maxAbsGenGfs);
+					if (adjustGenOnly)
+						System.out.printf("%n");
+					else
+						System.out.printf("  max |LoadGFS|: %.2f%n", maxAbsLoadGfs);			
+				}
 			}
+			
 			if (loading > maxLoading.val) {
 				maxLoading.val = loading;
-			}
-
-			// update the adjusted flow and loading percent
-			if (ssaResults != null) {
-				BranchOptAdjustResultRec rec = baseOverLimitInfoMap.get(dclfBranch.getId());
-				if (rec != null) {
-					rec.adjustedFlowMW = dclfBranch.getDclfFlow() * baseMVA;
-					rec.adjustedLoadingPercent = Math.abs(rec.adjustedFlowMW / dclfBranch.getBranch().getRatingMva1())*100;
-				}
 			}
 		});
 		System.out.println("Total number of branches over limit after OptAdj: " + cnt1.getCount());
