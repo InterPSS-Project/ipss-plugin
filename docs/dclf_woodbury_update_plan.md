@@ -123,3 +123,30 @@ This scale-up exposed a radial-outage edge case. When `PTDF(k,k)` is near
 returns a valid LODF vector for radial outages. `DclfTransferPanelBuilder` now
 marks those outages valid to match `lineOutageDFactors()` and the existing
 parallel analyzer.
+
+## Phase 6 Large Case Gated Tests
+
+`DclfTransferPanelLargeCaseTest` adds opt-in large regressions. They are gated
+by the system property `-Dinterpss.largeDclfTests=true` so normal test runs
+compile the class but skip the large RAW imports.
+
+Current opt-in cases:
+
+- Texas2k PSS/E v36: 60 outages, 120 monitored branches, monitor chunk size 24,
+  compared against `ParallelDclfContingencyAnalyzer` with 4 workers.
+- ACTIVSg25k PSS/E v33: 30 outages, 60 monitored branches, monitor chunk size
+  15, compared against `ParallelDclfContingencyAnalyzer` with 4 workers.
+
+Run commands:
+
+```text
+mvn -q -pl ipss.test.plugin.core -am \
+  -Dinterpss.largeDclfTests=true \
+  -Dtest=org.interpss.plugin.contingency.dclf.DclfTransferPanelLargeCaseTest#texas2kChunkedPanelMatchesParallelAnalyzer \
+  -Dsurefire.failIfNoSpecifiedTests=false test
+
+mvn -q -pl ipss.test.plugin.core -am \
+  -Dinterpss.largeDclfTests=true \
+  -Dtest=org.interpss.plugin.contingency.dclf.DclfTransferPanelLargeCaseTest#activsg25kChunkedPanelMatchesParallelAnalyzer \
+  -Dsurefire.failIfNoSpecifiedTests=false test
+```
