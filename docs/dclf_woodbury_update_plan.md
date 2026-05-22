@@ -78,8 +78,10 @@ The first checked-in slice is intentionally conservative:
 
 ## Phase 3 Woodbury Solver
 
-`DclfWoodburyOutageSolver` adds a small API around InterPSS DCLF Woodbury
-calculations:
+`DclfWoodburyOutageSolver` now lives in `ipss.core_EMF` alongside the existing
+InterPSS DCLF contingency algorithm. `DclfContingencyMethod` names the two core
+solver modes, `sparseEqn_solver` and `woodburyMatrix_solver`; the Woodbury
+solver reports `woodburyMatrix_solver`.
 
 - `singleOpenLodf()` and `singleOpenPostFlow()` expose the N-1
   Sherman-Morrison result through existing InterPSS semantics.
