@@ -45,7 +45,7 @@ public final class DclfMultiOutageContingencyAnalyzer {
         this.shiftThresholdMw = shiftThresholdMw;
     }
 
-    public static ConcurrentLinkedQueue<DclfOutageCAResultRec> performContingencyAnalysis(
+    public static ConcurrentLinkedQueue<BranchCAResultRec> performContingencyAnalysis(
             AclfNetwork aclfNet,
             List<DclfMultiOutage> contingencyList,
             Set<String> monitoredBranchIds,
@@ -67,7 +67,7 @@ public final class DclfMultiOutageContingencyAnalyzer {
         return analyzer.analyze(contingencyList, parallelismLevel);
     }
 
-    public ConcurrentLinkedQueue<DclfOutageCAResultRec> analyze(
+    public ConcurrentLinkedQueue<BranchCAResultRec> analyze(
             List<DclfMultiOutage> contingencyList,
             int parallelism)
             throws InterpssException {
@@ -75,7 +75,7 @@ public final class DclfMultiOutageContingencyAnalyzer {
             throw new IllegalArgumentException("contingencyList cannot be null");
         }
 
-        ConcurrentLinkedQueue<DclfOutageCAResultRec> results = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<BranchCAResultRec> results = new ConcurrentLinkedQueue<>();
         DclfWoodburyOutageSolver solver = new DclfWoodburyOutageSolver(dclfAlgorithm);
 
         for (DclfMultiOutage contingency : contingencyList) {
@@ -90,12 +90,13 @@ public final class DclfMultiOutageContingencyAnalyzer {
                     continue;
                 }
 
-                DclfOutageCAResultRec result =
-                        new DclfOutageCAResultRec(
+                BranchCAResultRec result =
+                        new BranchCAResultRec(
                                 contingency,
                                 monitoredBranches[monitorIndex],
                                 solved.getPreFlowMw(monitorIndex),
-                                shiftedFlowMw);
+                                shiftedFlowMw,
+                                solved.getLodfs(monitorIndex));
                 if (result.calLoadingPercent() >= overloadThreshold) {
                     results.add(result);
                 }
