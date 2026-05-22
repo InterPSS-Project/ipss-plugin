@@ -15,7 +15,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
+import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
+import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.plugin.contingency.ParallelDclfContingencyAnalyzer;
 import org.interpss.plugin.optadj.IEEE14_SensHelper_Test;
 import org.junit.jupiter.api.Test;
@@ -161,6 +163,88 @@ public class DclfTransferPanelCacheTest extends CorePluginTestSetup {
     }
 
     @Test
+    public void ieee118ChunkedPanelMatchesParallelAnalyzerAtLargerScale() throws Exception {
+        AclfNetwork net = createIeeeCdfTestCase("testData/adpter/ieee_format/ieee118.ieee");
+        ContingencyAnalysisAlgorithm sourceAlgo = createContingencyAnalysisAlgorithm(net);
+        sourceAlgo.calculateDclf();
+
+        List<DclfBranchOutage> contingencies = firstNonRefBranchOutages(net, sourceAlgo, 25);
+        Set<String> monitors = firstActiveBranchIds(net, 40);
+
+        DclfContingencyStudySpec spec = DclfContingencyStudySpec.builder(net)
+                .contingencies(contingencies)
+                .monitoredBranchIds(monitors)
+                .overloadThreshold(0.0)
+                .build();
+
+        DclfTransferPanelCache chunkedCache = DclfTransferPanelBuilder.build(
+                spec,
+                PanelBuildOptions.builder().monitorChunkSize(8).build());
+        ConcurrentLinkedQueue<BranchCAResultRec> cachedResults =
+                new CachedDclfContingencyAnalyzer(chunkedCache).analyzeCurrentProfile();
+        ConcurrentLinkedQueue<BranchCAResultRec> parallelResults =
+                ParallelDclfContingencyAnalyzer.performContingencyAnalysis(
+                        net, contingencies, monitors, 0.0, false, 4);
+
+        assertEquals(25, chunkedCache.getOutageCount());
+        assertEquals(40, chunkedCache.getMonitorCount());
+        assertEquals(5, chunkedCache.getChunkCount());
+
+        Map<String, BranchCAResultRec> cachedByKey = toResultMap(cachedResults);
+        Map<String, BranchCAResultRec> parallelByKey = toResultMap(parallelResults);
+
+        assertEquals(parallelByKey.keySet(), cachedByKey.keySet());
+        for (Map.Entry<String, BranchCAResultRec> entry : parallelByKey.entrySet()) {
+            BranchCAResultRec expected = entry.getValue();
+            BranchCAResultRec actual = cachedByKey.get(entry.getKey());
+            assertEquals(expected.preFlowMW, actual.preFlowMW, 1.0e-8);
+            assertEquals(expected.shiftedFlowMW, actual.shiftedFlowMW, 1.0e-8);
+            assertEquals(expected.getPostFlowMW(), actual.getPostFlowMW(), 1.0e-8);
+        }
+    }
+
+    @Test
+    public void ieee300ChunkedPanelMatchesParallelAnalyzerAtLargerScale() throws Exception {
+        AclfNetwork net = createIeeeCdfTestCase("testData/adpter/ieee_format/ieee300.ieee");
+        ContingencyAnalysisAlgorithm sourceAlgo = createContingencyAnalysisAlgorithm(net);
+        sourceAlgo.calculateDclf();
+
+        List<DclfBranchOutage> contingencies = firstNonRefBranchOutages(net, sourceAlgo, 40);
+        Set<String> monitors = firstActiveBranchIds(net, 80);
+
+        DclfContingencyStudySpec spec = DclfContingencyStudySpec.builder(net)
+                .contingencies(contingencies)
+                .monitoredBranchIds(monitors)
+                .overloadThreshold(0.0)
+                .build();
+
+        DclfTransferPanelCache chunkedCache = DclfTransferPanelBuilder.build(
+                spec,
+                PanelBuildOptions.builder().monitorChunkSize(16).build());
+        ConcurrentLinkedQueue<BranchCAResultRec> cachedResults =
+                new CachedDclfContingencyAnalyzer(chunkedCache).analyzeCurrentProfile();
+        ConcurrentLinkedQueue<BranchCAResultRec> parallelResults =
+                ParallelDclfContingencyAnalyzer.performContingencyAnalysis(
+                        net, contingencies, monitors, 0.0, false, 4);
+
+        assertEquals(40, chunkedCache.getOutageCount());
+        assertEquals(80, chunkedCache.getMonitorCount());
+        assertEquals(5, chunkedCache.getChunkCount());
+
+        Map<String, BranchCAResultRec> cachedByKey = toResultMap(cachedResults);
+        Map<String, BranchCAResultRec> parallelByKey = toResultMap(parallelResults);
+
+        assertEquals(parallelByKey.keySet(), cachedByKey.keySet());
+        for (Map.Entry<String, BranchCAResultRec> entry : parallelByKey.entrySet()) {
+            BranchCAResultRec expected = entry.getValue();
+            BranchCAResultRec actual = cachedByKey.get(entry.getKey());
+            assertEquals(expected.preFlowMW, actual.preFlowMW, 1.0e-8);
+            assertEquals(expected.shiftedFlowMW, actual.shiftedFlowMW, 1.0e-8);
+            assertEquals(expected.getPostFlowMW(), actual.getPostFlowMW(), 1.0e-8);
+        }
+    }
+
+    @Test
     public void woodburySingleOpenMatchesInterpssPostOutageFlow() throws InterpssException {
         AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
         ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(net);
@@ -240,5 +324,34 @@ public class DclfTransferPanelCacheTest extends CorePluginTestSetup {
         }
 
         return contingencies;
+    }
+
+    private static Set<String> firstActiveBranchIds(AclfNetwork net, int count) {
+        Set<String> branchIds = new LinkedHashSet<>();
+
+        for (AclfBranch branch : net.getBranchList()) {
+            if (branch.isActive()) {
+                branchIds.add(branch.getId());
+                if (branchIds.size() == count) {
+                    break;
+                }
+            }
+        }
+
+        return branchIds;
+    }
+
+    private static AclfNetwork createIeeeCdfTestCase(String path) throws InterpssException {
+        AclfNetwork net = CorePluginFactory
+                .getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
+                .load(path)
+                .getAclfNet();
+
+        net.getBranchList().forEach(branch -> {
+            branch.setRatingMva1(100.0);
+            branch.setRatingMva2(120.0);
+        });
+
+        return net;
     }
 }

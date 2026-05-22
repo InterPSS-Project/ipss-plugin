@@ -58,7 +58,9 @@ public final class DclfTransferPanelBuilder {
                     aclfOutageBranch.getToBus().getId(),
                     aclfOutageBranch);
             denominator[outageIndex] = 1.0 - outagePtdf;
-            validOutage[outageIndex] = Math.abs(denominator[outageIndex]) > options.getDenominatorTolerance();
+            validOutage[outageIndex] =
+                    Math.abs(denominator[outageIndex]) > options.getDenominatorTolerance()
+                            || Math.abs(Math.abs(outagePtdf) - 1.0) <= options.getDenominatorTolerance();
 
             double[] lodfVector = dclfAlgo.lineOutageDFactors(outageBranch);
             for (ChunkBuilder chunkBuilder : chunkBuilders) {
