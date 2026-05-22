@@ -51,7 +51,7 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
     // Gen/Load optimization adjustment threshold in MW
     private static final double OPT_ADJUSTMENT_THRESHOLD_MW = 0.1;
     
-    private enum ControlBusRole {
+    public static enum ControlBusRole {
         GEN, LOAD
     }
     
@@ -500,5 +500,14 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
         return this.getControlGenMap().values().stream()
 				.map(AclfBus::getId)
 				.collect(Collectors.toCollection(HashSet::new));
+    }
+
+    /**
+     * Get the control bus roles.
+     * 
+     * @return the control bus roles, key: bus id, value: control bus role
+     */
+    public Map<String, ControlBusRole> getControlBusRoleMap() {
+        return controlBusRoles != null ? new HashMap<>(controlBusRoles) : new HashMap<>();
     }
 }
