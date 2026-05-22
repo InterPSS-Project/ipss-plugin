@@ -141,6 +141,10 @@ Current opt-in cases:
   compared against `ParallelDclfContingencyAnalyzer` with 8 workers. This case
   requires both `-Dinterpss.largeDclfTests=true` and
   `-Dinterpss.fullJsonDclfTests=true`.
+- OpenEI 24-hour repeated profiles: the same full JSON study set with
+  deterministic `+/-5%` contributed-load variation per hour. The cached path
+  builds the transfer panel once, then reuses it across 24 profile solves. This
+  case additionally requires `-Dinterpss.hourlyDclfTests=true`.
 
 Latest OpenEI full JSON result:
 
@@ -156,6 +160,26 @@ Latest OpenEI full JSON result:
 - InterPSS parallel baseline: 19,722 ms with 8 workers.
 - The cached and parallel result keys and MW values matched exactly within
   `1.0e-7`.
+
+Latest OpenEI 24-hour repeated-profile result:
+
+- Hourly profiles: 24 deterministic random load profiles, varying 56,504
+  contributed load records by `+/-5%`.
+- Cached transfer-panel setup: 41,055 ms.
+- Cached repeated-profile scans: 111,947 ms.
+- Cached total time including setup: 153,002 ms.
+- Original parallel baseline total time: 444,295 ms with 8 workers.
+- Total violation records across all hours: 280,854.
+- End-to-end speedup: 2.90x including one-time setup, and 3.97x for repeated
+  hourly scans after setup.
+- The cached and original solver results matched exactly within `1.0e-7` for
+  every hourly profile.
+
+This repeated-profile test exposed a stale outage-flow issue in the original
+parallel analyzer. `DclfOutageBranch.dclfFlow` is captured when contingencies
+are created, but repeated profiles change the branch pre-flow. The analyzer now
+refreshes each outage branch pre-flow from the current `ContingencyAnalysisAlgorithm`
+after `calculateDclf()` and before running contingency monads.
 
 The full JSON test needs the heap on the Surefire forked JVM, not only Maven
 itself. A 12 GB forked heap was not enough for this case; 24 GB completed.
@@ -178,5 +202,13 @@ mvn -q -pl ipss.test.plugin.core -am \
   -Dinterpss.largeDclfTests=true \
   -Dinterpss.fullJsonDclfTests=true \
   -Dtest=org.interpss.plugin.contingency.dclf.DclfTransferPanelLargeCaseTest#openEiFullJsonChunkedPanelMatchesParallelAnalyzer \
+  -Dsurefire.failIfNoSpecifiedTests=false test
+
+mvn -q -pl ipss.test.plugin.core -am \
+  -DargLine=-Xmx24g \
+  -Dinterpss.largeDclfTests=true \
+  -Dinterpss.fullJsonDclfTests=true \
+  -Dinterpss.hourlyDclfTests=true \
+  -Dtest=org.interpss.plugin.contingency.dclf.DclfTransferPanelLargeCaseTest#openEiFullJsonTwentyFourHourProfilesReuseTransferPanel \
   -Dsurefire.failIfNoSpecifiedTests=false test
 ```
