@@ -195,6 +195,64 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
     }
 
     @Test
+    public void openEiJsonParallelAnalyzerSparseVsWoodburyPerformance() throws Exception {
+        assumeTrue(Boolean.getBoolean("interpss.fullJsonDclfTests"),
+                "Set -Dinterpss.fullJsonDclfTests=true to run OpenEI JSON DCLF performance comparison");
+
+        AclfNetwork net = importPsse(
+                "testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW",
+                IpssAdapter.PsseVersion.PSSE_33);
+        setDefaultRatings(net);
+
+        int contingencyCount = intProperty("interpss.performanceOpenEiContingencies", 10);
+        int monitorCount = intProperty("interpss.performanceOpenEiMonitors", 60);
+        int parallelism = performanceParallelism();
+        double overloadThreshold = performanceOverloadThreshold();
+
+        ContingencyAnalysisAlgorithm sourceAlgo = createContingencyAnalysisAlgorithm(net);
+        sourceAlgo.calculateDclf();
+
+        List<BranchContingencyRecord> contingencyRecords =
+                ContingencyFileUtil.importContingenciesFromJson(
+                        new File("testData/psse/v33/OpenEI_filtered_contingencies.json"));
+        List<MonitoredBranchRecord> monitorRecords =
+                ContingencyFileUtil.importMonitoredBranchRecordsFromJson(
+                        new File("testData/psse/v33/OpenEI_monitored_branches.json"));
+        List<DclfBranchOutage> contingencies =
+                dclfContingenciesFromJsonRecords(net, sourceAlgo, contingencyRecords)
+                        .stream()
+                        .limit(contingencyCount)
+                        .collect(Collectors.toList());
+        Set<String> monitors = monitoredBranchIds(net, monitorRecords, monitorCount);
+
+        AnalyzerRun sparseRun =
+                measureParallelAnalyzer(
+                        "OpenEI JSON N-1 analyzer",
+                        net,
+                        contingencies,
+                        monitors,
+                        DclfContingencySolutionMethod.SparseEqnSolve,
+                        overloadThreshold,
+                        parallelism);
+        AnalyzerRun woodburyRun =
+                measureParallelAnalyzer(
+                        "OpenEI JSON N-1 analyzer",
+                        net,
+                        contingencies,
+                        monitors,
+                        DclfContingencySolutionMethod.WoodburyMatrixUpdate,
+                        overloadThreshold,
+                        parallelism);
+
+        assertSameResults(
+                "OpenEI JSON N-1 analyzer",
+                woodburyRun.results,
+                sparseRun.results,
+                LARGE_CASE_CA_MW_TOLERANCE);
+        printAnalyzerPerformanceComparison(sparseRun, woodburyRun);
+    }
+
+    @Test
     public void openEiFullJsonChunkedPanelMatchesParallelAnalyzer() throws Exception {
         assumeTrue(Boolean.getBoolean("interpss.fullJsonDclfTests"),
                 "Set -Dinterpss.fullJsonDclfTests=true to run full JSON DCLF transfer-panel regressions");
@@ -402,7 +460,7 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
                         contingencies,
                         monitors,
                         DclfContingencySolutionMethod.SparseEqnSolve,
-                        0.0,
+                        performanceOverloadThreshold(),
                         BranchCAResultRec.ContingencyShiftThreshold,
                         parallelism);
         PerformanceRun woodburyRun =
@@ -411,7 +469,7 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
                         contingencies,
                         monitors,
                         DclfContingencySolutionMethod.WoodburyMatrixUpdate,
-                        0.0,
+                        performanceOverloadThreshold(),
                         BranchCAResultRec.ContingencyShiftThreshold,
                         parallelism);
 
@@ -609,6 +667,47 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
         System.out.println("  " + woodburyRun.summary());
         System.out.println("  totalSpeedup(Woodbury/Sparse)="
                 + formatDouble(sparseRun.totalNs() / (double) woodburyRun.totalNs()));
+    }
+
+    private static AnalyzerRun measureParallelAnalyzer(
+            String caseName,
+            AclfNetwork net,
+            List<DclfBranchOutage> contingencies,
+            Set<String> monitors,
+            DclfContingencySolutionMethod solutionMethod,
+            double overloadThreshold,
+            int parallelism) {
+        long startNs = System.nanoTime();
+        ConcurrentLinkedQueue<BranchCAResultRec> results =
+                ParallelDclfContingencyAnalyzer.performContingencyAnalysis(
+                        net,
+                        contingencies,
+                        monitors,
+                        overloadThreshold,
+                        false,
+                        parallelism,
+                        solutionMethod);
+        return new AnalyzerRun(
+                caseName,
+                solutionMethod,
+                contingencies.size(),
+                monitors.size(),
+                parallelism,
+                System.nanoTime() - startNs,
+                results);
+    }
+
+    private static void printAnalyzerPerformanceComparison(
+            AnalyzerRun sparseRun,
+            AnalyzerRun woodburyRun) {
+        System.out.println(sparseRun.caseName + " fast analyzer performance: contingencies="
+                + sparseRun.contingencyCount
+                + ", monitors=" + sparseRun.monitorCount
+                + ", parallelism=" + sparseRun.parallelism);
+        System.out.println("  " + sparseRun.summary());
+        System.out.println("  " + woodburyRun.summary());
+        System.out.println("  totalSpeedup(Woodbury/Sparse)="
+                + formatDouble(sparseRun.elapsedNs / (double) woodburyRun.elapsedNs));
     }
 
     private static AclfNetwork importPsse(String path, IpssAdapter.PsseVersion version) throws InterpssException {
@@ -934,6 +1033,18 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
         return Math.max(1, Integer.parseInt(value.trim()));
     }
 
+    private static double performanceOverloadThreshold() {
+        return doubleProperty("interpss.performanceOverloadThreshold", 0.0);
+    }
+
+    private static double doubleProperty(String name, double defaultValue) {
+        String value = System.getProperty(name);
+        if (value == null || value.trim().isEmpty()) {
+            return defaultValue;
+        }
+        return Double.parseDouble(value.trim());
+    }
+
     private static String formatDouble(double value) {
         return String.format(java.util.Locale.ROOT, "%.2f", value);
     }
@@ -1002,6 +1113,46 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
             this.setupNs = setupNs;
             this.scanNs = scanNs;
             this.workerCount = workerCount;
+        }
+    }
+
+    private static final class AnalyzerRun {
+        private final String caseName;
+        private final DclfContingencySolutionMethod solutionMethod;
+        private final int contingencyCount;
+        private final int monitorCount;
+        private final int parallelism;
+        private final long elapsedNs;
+        private final ConcurrentLinkedQueue<BranchCAResultRec> results;
+
+        private AnalyzerRun(
+                String caseName,
+                DclfContingencySolutionMethod solutionMethod,
+                int contingencyCount,
+                int monitorCount,
+                int parallelism,
+                long elapsedNs,
+                ConcurrentLinkedQueue<BranchCAResultRec> results) {
+            this.caseName = caseName;
+            this.solutionMethod = solutionMethod;
+            this.contingencyCount = contingencyCount;
+            this.monitorCount = monitorCount;
+            this.parallelism = parallelism;
+            this.elapsedNs = elapsedNs;
+            this.results = results;
+        }
+
+        private String summary() {
+            double elapsedMs = elapsedNs / 1_000_000.0;
+            double elapsedSeconds = elapsedNs / 1_000_000_000.0;
+            double contingenciesPerSecond = contingencyCount / elapsedSeconds;
+            double monitorChecksPerSecond = contingencyCount * (double) monitorCount / elapsedSeconds;
+
+            return solutionMethod
+                    + ": records=" + results.size()
+                    + ", elapsedMs=" + formatDouble(elapsedMs)
+                    + ", contingenciesPerSec=" + formatDouble(contingenciesPerSecond)
+                    + ", monitorChecksPerSec=" + formatDouble(monitorChecksPerSecond);
         }
     }
 
