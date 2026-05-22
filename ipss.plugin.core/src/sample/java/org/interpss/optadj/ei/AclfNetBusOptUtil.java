@@ -8,6 +8,8 @@ import org.interpss.numeric.datatype.Counter;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.PerformanceTimer;
 import org.interpss.plugin.optadj.algo.AclfNetBusOptimizer;
+import org.interpss.plugin.optadj.algo.result.AclfNetSsaResultContainer;
+import org.interpss.plugin.optadj.algo.result.BranchOptAdjustResultRec;
 import org.interpss.plugin.optadj.algo.util.Sen2DMatrix;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
@@ -19,8 +21,11 @@ public class AclfNetBusOptUtil {
 		double val;
 	}
 	
-
 	static void printOverloadSummary(ContingencyAnalysisAlgorithm dclfAlgo, double thresholdPercent) {
+		printOverloadSummary(dclfAlgo, thresholdPercent, null);
+	}
+
+	static void printOverloadSummary(ContingencyAnalysisAlgorithm dclfAlgo, double thresholdPercent, AclfNetSsaResultContainer ssaResults) {
 		Counter cnt = new Counter(0);
 		DblBuffer maxLoading = new DblBuffer();
 		dclfAlgo.getDclfAlgoBranchList().forEach(dclfBranch -> {
@@ -30,6 +35,9 @@ public class AclfNetBusOptUtil {
 			double loadingPercent = ratingMVA > 0 ? (Math.abs(powerFlowMW) / ratingMVA) * 100.0 : 0.0;
 			if (loadingPercent > thresholdPercent) {
 				cnt.increment();
+				// add the over limit branch to the SSA result container
+				if (ssaResults != null)
+					ssaResults.getBaseOverLimitInfo().add(new BranchOptAdjustResultRec(dclfBranch));
 				System.out.printf("Branch: %s  %.2f  rating: %.2f  loading: %.2f%n",
 				dclfBranch.getId(), powerFlowMW, ratingMVA, loadingPercent);
 			}
@@ -42,7 +50,12 @@ public class AclfNetBusOptUtil {
 	}
 
 	static void runBusOptimization(ContingencyAnalysisAlgorithm dclfAlgo, AclfNetwork aclfNet, double OPT_THRESHOLD,
-			boolean adjustGenOnly, String label) throws Exception {
+		                           boolean adjustGenOnly, String label) throws Exception {
+		runBusOptimization(dclfAlgo, aclfNet, OPT_THRESHOLD, adjustGenOnly, label, null);
+	}
+  
+	static void runBusOptimization(ContingencyAnalysisAlgorithm dclfAlgo, AclfNetwork aclfNet, double OPT_THRESHOLD,
+			                       boolean adjustGenOnly, String label, AclfNetSsaResultContainer ssaResults) throws Exception {
 		System.out.println();
 		System.out.println("=== " + label + " bus optimization ===");
 
@@ -62,6 +75,9 @@ public class AclfNetBusOptUtil {
 		System.out.println("Optimization sec constrain size: "
 				+ optimizer.getOptimizer().getSecConstrainDataList().size());
 
+		if (ssaResults != null)
+			ssaResults.setOptAdjBaseResultMap(resultMap);		
+
 		dclfAlgo.calculateDclf(DclfMethod.INC_LOSS);
 
 		double baseMVA = aclfNet.getBaseMva();
@@ -71,6 +87,8 @@ public class AclfNetBusOptUtil {
 				? null
 				: optimizer.getGFSsHelper().calGFS(controlBusIdSet);
 
+		// check the branch loading after the optimization adjustment
+		Map<String, BranchOptAdjustResultRec> baseOverLimitInfoMap = ssaResults != null ? ssaResults.toBaseOverLimitInfoMap() : null;
 		AtomicCounter cnt1 = new AtomicCounter();
 		DblBuffer maxLoading = new DblBuffer();
 		dclfAlgo.getDclfAlgoBranchList().forEach(dclfBranch -> {
@@ -108,6 +126,15 @@ public class AclfNetBusOptUtil {
 			}
 			if (loading > maxLoading.val) {
 				maxLoading.val = loading;
+			}
+
+			// update the adjusted flow and loading percent
+			if (ssaResults != null) {
+				BranchOptAdjustResultRec rec = baseOverLimitInfoMap.get(dclfBranch.getId());
+				if (rec != null) {
+					rec.adjustedFlowMW = dclfBranch.getDclfFlow() * baseMVA;
+					rec.adjustedLoadingPercent = Math.abs(rec.adjustedFlowMW / dclfBranch.getBranch().getRatingMva1())*100;
+				}
 			}
 		});
 		System.out.println("Total number of branches over limit after OptAdj: " + cnt1.getCount());
