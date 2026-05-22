@@ -7,6 +7,7 @@ import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -17,6 +18,9 @@ import java.util.stream.Collectors;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.plugin.contingency.ParallelDclfContingencyAnalyzer;
+import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
+import org.interpss.plugin.contingency.definition.MonitoredBranchRecord;
+import org.interpss.plugin.contingency.util.ContingencyFileUtil;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -55,6 +59,72 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
                 "testData/psse/v33/ACTIVSg25k.RAW",
                 IpssAdapter.PsseVersion.PSSE_33);
         assertChunkedPanelMatchesParallelAnalyzer(net, 30, 60, 15, 4);
+    }
+
+    @Test
+    public void openEiFullJsonChunkedPanelMatchesParallelAnalyzer() throws Exception {
+        assumeTrue(Boolean.getBoolean("interpss.fullJsonDclfTests"),
+                "Set -Dinterpss.fullJsonDclfTests=true to run full JSON DCLF transfer-panel regressions");
+
+        AclfNetwork net = importPsse(
+                "testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW",
+                IpssAdapter.PsseVersion.PSSE_33);
+        setDefaultRatings(net);
+
+        ContingencyAnalysisAlgorithm sourceAlgo = createContingencyAnalysisAlgorithm(net);
+        sourceAlgo.calculateDclf();
+
+        List<BranchContingencyRecord> contingencyRecords =
+                ContingencyFileUtil.importContingenciesFromJson(
+                        new File("testData/psse/v33/OpenEI_filtered_contingencies.json"));
+        List<MonitoredBranchRecord> monitorRecords =
+                ContingencyFileUtil.importMonitoredBranchRecordsFromJson(
+                        new File("testData/psse/v33/OpenEI_monitored_branches.json"));
+        List<DclfBranchOutage> contingencies = dclfContingenciesFromJsonRecords(net, sourceAlgo, contingencyRecords);
+        Set<String> monitors = monitoredBranchIds(net, monitorRecords);
+
+        DclfContingencyStudySpec spec = DclfContingencyStudySpec.builder(net)
+                .contingencies(contingencies)
+                .monitoredBranchIds(monitors)
+                .overloadThreshold(100.0)
+                .build();
+
+        long cachedStartNs = System.nanoTime();
+        DclfTransferPanelCache cache = DclfTransferPanelBuilder.build(
+                spec,
+                PanelBuildOptions.builder().monitorChunkSize(256).build());
+        ConcurrentLinkedQueue<BranchCAResultRec> cachedResults =
+                new CachedDclfContingencyAnalyzer(cache).analyzeCurrentProfile();
+        long cachedElapsedMs = (System.nanoTime() - cachedStartNs) / 1_000_000L;
+
+        long parallelStartNs = System.nanoTime();
+        ConcurrentLinkedQueue<BranchCAResultRec> parallelResults =
+                ParallelDclfContingencyAnalyzer.performContingencyAnalysis(
+                        net, contingencies, monitors, 100.0, false, 8);
+        long parallelElapsedMs = (System.nanoTime() - parallelStartNs) / 1_000_000L;
+
+        System.out.println("OpenEI full JSON DCLF cached: outages=" + cache.getOutageCount()
+                + ", monitors=" + cache.getMonitorCount()
+                + ", chunks=" + cache.getChunkCount()
+                + ", estimatedPanelMB=" + cache.estimatePanelBytes() / (1024 * 1024)
+                + ", records=" + cachedResults.size()
+                + ", elapsedMs=" + cachedElapsedMs);
+        System.out.println("OpenEI full JSON DCLF parallel: records=" + parallelResults.size()
+                + ", elapsedMs=" + parallelElapsedMs);
+
+        Map<String, BranchCAResultRec> cachedByKey = toResultMap(cachedResults);
+        Map<String, BranchCAResultRec> parallelByKey = toResultMap(parallelResults);
+
+        assertEquals(contingencies.size(), cache.getOutageCount());
+        assertEquals(monitors.size(), cache.getMonitorCount());
+        assertEquals(parallelByKey.keySet(), cachedByKey.keySet());
+        for (Map.Entry<String, BranchCAResultRec> entry : parallelByKey.entrySet()) {
+            BranchCAResultRec expected = entry.getValue();
+            BranchCAResultRec actual = cachedByKey.get(entry.getKey());
+            assertEquals(expected.preFlowMW, actual.preFlowMW, MW_TOLERANCE);
+            assertEquals(expected.shiftedFlowMW, actual.shiftedFlowMW, MW_TOLERANCE);
+            assertEquals(expected.getPostFlowMW(), actual.getPostFlowMW(), MW_TOLERANCE);
+        }
     }
 
     private static void assertChunkedPanelMatchesParallelAnalyzer(
@@ -147,6 +217,59 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
         }
 
         return branchIds;
+    }
+
+    private static Set<String> monitoredBranchIds(AclfNetwork net, List<MonitoredBranchRecord> monitorRecords) {
+        Set<String> branchIds = new LinkedHashSet<>();
+
+        for (MonitoredBranchRecord record : monitorRecords) {
+            String branchId = resolveBranchId(net, record.fromBus, record.toBus, record.ckt);
+            AclfBranch branch = branchId != null ? net.getBranch(branchId) : null;
+            if (branch != null && branch.isActive() && !branch.isConnect2RefBus()) {
+                branchIds.add(branchId);
+            }
+        }
+
+        return branchIds;
+    }
+
+    private static List<DclfBranchOutage> dclfContingenciesFromJsonRecords(
+            AclfNetwork net,
+            ContingencyAnalysisAlgorithm dclfAlgo,
+            List<BranchContingencyRecord> contingencyRecords) {
+        List<DclfBranchOutage> contingencies = new ArrayList<>();
+
+        for (BranchContingencyRecord record : contingencyRecords) {
+            String branchId = resolveBranchId(net, record.fromBus, record.toBus, record.ckt);
+            if (branchId == null) {
+                continue;
+            }
+            AclfBranch branch = net.getBranch(branchId);
+            if (branch == null || !branch.isActive() || branch.isConnect2RefBus()) {
+                continue;
+            }
+            DclfBranchOutage contingency = createContingency(record.name);
+            DclfOutageBranch outage =
+                    createCaOutageBranch(dclfAlgo.getDclfAlgoBranch(branchId), ContingencyBranchOutageType.OPEN);
+            contingency.setOutageEquip(outage);
+            contingencies.add(contingency);
+        }
+
+        return contingencies;
+    }
+
+    private static String resolveBranchId(AclfNetwork net, String fromBus, String toBus, String circuit) {
+        String forward = fromBus + "->" + toBus + "(" + circuit + ")";
+        if (net.getBranch(forward) != null) {
+            return forward;
+        }
+
+        String reverse = toBus + "->" + fromBus + "(" + circuit + ")";
+        if (net.getBranch(reverse) != null) {
+            return reverse;
+        }
+
+        return null;
     }
 
     private static Map<String, BranchCAResultRec> toResultMap(ConcurrentLinkedQueue<BranchCAResultRec> results) {
