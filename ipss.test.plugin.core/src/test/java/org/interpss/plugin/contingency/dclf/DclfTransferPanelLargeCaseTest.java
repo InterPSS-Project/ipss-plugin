@@ -88,19 +88,19 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
         assertEquals(2, multiOutages.get(0).getOutageEquips().size());
         assertEquals(3, multiOutages.get(1).getOutageEquips().size());
 
-        ConcurrentLinkedQueue<DclfMultiOutageCAResultRec> woodburyResults =
+        ConcurrentLinkedQueue<DclfOutageCAResultRec> woodburyResults =
                 DclfMultiOutageContingencyAnalyzer.performContingencyAnalysis(
                         net, multiOutages, monitors, 0.0, false, 4);
-        ConcurrentLinkedQueue<DclfMultiOutageCAResultRec> interpssResults =
+        ConcurrentLinkedQueue<DclfOutageCAResultRec> interpssResults =
                 interpssMultiOpenResults(net, multiOutages, monitors, 0.0, 1.0);
 
-        Map<String, DclfMultiOutageCAResultRec> woodburyByKey = toMultiResultMap(woodburyResults);
-        Map<String, DclfMultiOutageCAResultRec> interpssByKey = toMultiResultMap(interpssResults);
+        Map<String, DclfOutageCAResultRec> woodburyByKey = toMultiResultMap(woodburyResults);
+        Map<String, DclfOutageCAResultRec> interpssByKey = toMultiResultMap(interpssResults);
 
         assertEquals(interpssByKey.keySet(), woodburyByKey.keySet());
-        for (Map.Entry<String, DclfMultiOutageCAResultRec> entry : interpssByKey.entrySet()) {
-            DclfMultiOutageCAResultRec expected = entry.getValue();
-            DclfMultiOutageCAResultRec actual = woodburyByKey.get(entry.getKey());
+        for (Map.Entry<String, DclfOutageCAResultRec> entry : interpssByKey.entrySet()) {
+            DclfOutageCAResultRec expected = entry.getValue();
+            DclfOutageCAResultRec actual = woodburyByKey.get(entry.getKey());
             assertEquals(expected.preFlowMW, actual.preFlowMW, MW_TOLERANCE);
             assertEquals(expected.shiftedFlowMW, actual.shiftedFlowMW, MW_TOLERANCE);
             assertEquals(expected.getPostFlowMW(), actual.getPostFlowMW(), MW_TOLERANCE);
@@ -437,7 +437,7 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
         return multiOutages;
     }
 
-    private static ConcurrentLinkedQueue<DclfMultiOutageCAResultRec> interpssMultiOpenResults(
+    private static ConcurrentLinkedQueue<DclfOutageCAResultRec> interpssMultiOpenResults(
             AclfNetwork net,
             List<DclfMultiOutage> multiOutages,
             Set<String> monitorIds,
@@ -451,7 +451,7 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
                 .map(net::getBranch)
                 .filter(branch -> branch != null && branch.isActive())
                 .collect(Collectors.toList());
-        ConcurrentLinkedQueue<DclfMultiOutageCAResultRec> results = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<DclfOutageCAResultRec> results = new ConcurrentLinkedQueue<>();
         double baseMva = net.getBaseMva();
 
         for (DclfMultiOutage multiOutage : multiOutages) {
@@ -467,8 +467,8 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
                     continue;
                 }
 
-                DclfMultiOutageCAResultRec result =
-                        new DclfMultiOutageCAResultRec(
+                DclfOutageCAResultRec result =
+                        new DclfOutageCAResultRec(
                                 multiOutage,
                                 monitor,
                                 dclfBranch.getDclfFlow() * baseMva,
@@ -587,8 +587,8 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
                 result -> result));
     }
 
-    private static Map<String, DclfMultiOutageCAResultRec> toMultiResultMap(
-            ConcurrentLinkedQueue<DclfMultiOutageCAResultRec> results) {
+    private static Map<String, DclfOutageCAResultRec> toMultiResultMap(
+            ConcurrentLinkedQueue<DclfOutageCAResultRec> results) {
         return results.stream().collect(Collectors.toMap(
                 result -> result.contingency.getId() + "|" + result.aclfBranch.getId(),
                 result -> result));
