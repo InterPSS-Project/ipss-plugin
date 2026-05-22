@@ -64,6 +64,9 @@ The first checked-in slice is intentionally conservative:
 4. Done: replace scalar panel construction with per-outage LODF vector solves.
 5. Done: add explicit multi-outage Woodbury helpers based on the existing
    `[E - PTDF]` implementation.
+6. Done: add a public multi-outage contingency analyzer and JSON-driven
+   Texas2k regression that randomly groups existing branch contingencies into
+   N-2 and N-3 outage cases.
 
 ## Phase 2 Validation
 
@@ -89,6 +92,19 @@ calculations:
 
 Current tests verify single-open post-flow equivalence and multi-open shifted
 flow equivalence against InterPSS `multiOpenOutageAnalysis()` on IEEE 14.
+
+`DclfMultiOutageContingencyAnalyzer` now promotes that helper into an analysis
+path for `DclfMultiOutage` contingencies. It calculates the current DCLF once,
+refreshes each outage branch pre-flow from the InterPSS DCLF branch model, then
+uses `DclfWoodburyOutageSolver.solveMultiOpen()` to evaluate the selected
+monitored branches. The result type is `DclfMultiOutageCAResultRec`, mirroring
+the existing single-outage `BranchCAResultRec` fields while preserving the
+multi-outage contingency object.
+
+The Texas2k JSON regression reads the existing branch-contingency and monitored
+branch JSON files, shuffles the valid single outages with a fixed seed, creates
+one N-2 and one N-3 `DclfMultiOutage`, and compares Woodbury monitor results
+against InterPSS `multiOpenOutageAnalysis()`.
 
 ## Phase 4 Chunked Panels and Batched LODF Construction
 
