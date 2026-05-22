@@ -3,16 +3,19 @@ package org.interpss.optadj.ei;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
+import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
+import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
 
 public class OptAdjGenLoad_EInterconnect_Sample {
 	public static void main(String[] args) throws Exception {
 		AclfNetwork aclfNet = EInterconnect_Info_Sample.loadCase();
-		ContingencyAnalysisAlgorithm dclfAlgo = EInterconnect_Info_Sample.createDclfAlgo(aclfNet);
+		
+		ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(aclfNet, CacheType.SenNotCached, true);
 		dclfAlgo.calculateDclf(DclfMethod.INC_LOSS);
 
 		System.out.println("=== Base case overloads ===");
-		EInterconnect_Info_Sample.printOverloadSummary(dclfAlgo, EInterconnect_Info_Sample.OPT_THRESHOLD);
+		AclfNetBusOptUtil.printOverloadSummary(dclfAlgo, EInterconnect_Info_Sample.OPT_THRESHOLD);
 		
-		EInterconnect_Info_Sample.runBusOptimization(dclfAlgo, aclfNet, false, "Gen+Load");
+		AclfNetBusOptUtil.runBusOptimization(dclfAlgo, aclfNet, EInterconnect_Info_Sample.OPT_THRESHOLD, false, "Gen+Load");
 	}
 }
