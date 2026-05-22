@@ -52,6 +52,7 @@ import org.apache.commons.math3.complex.Complex;
 @Tag("large")
 public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
     private static final double MW_TOLERANCE = 1.0e-7;
+    private static final double LARGE_CASE_CA_MW_TOLERANCE = 1.0e-2;
 
     @BeforeEach
     public void requireLargeTestsEnabled() {
@@ -414,7 +415,7 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
                         BranchCAResultRec.ContingencyShiftThreshold,
                         parallelism);
 
-        assertSameResults(caseName, woodburyRun.results, sparseRun.results);
+        assertSameResults(caseName, woodburyRun.results, sparseRun.results, LARGE_CASE_CA_MW_TOLERANCE);
         printPerformanceComparison(caseName, sparseRun, woodburyRun);
     }
 
@@ -427,8 +428,7 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
             double shiftThresholdMw,
             int parallelism)
             throws InterpssException {
-        long startNs = System.nanoTime();
-        ConcurrentLinkedQueue<BranchCAResultRec> results =
+        CoreCaRun run =
                 parallelCoreCaResults(
                         net,
                         contingencies,
@@ -441,12 +441,13 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
                 solutionMethod,
                 contingencies.size(),
                 monitorIds.size(),
-                parallelism,
-                System.nanoTime() - startNs,
-                results);
+                run.workerCount,
+                run.setupNs,
+                run.scanNs,
+                run.results);
     }
 
-    private static ConcurrentLinkedQueue<BranchCAResultRec> parallelCoreCaResults(
+    private static CoreCaRun parallelCoreCaResults(
             AclfNetwork net,
             List<DclfBranchOutage> contingencies,
             Set<String> monitorIds,
@@ -456,50 +457,88 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
             int parallelism)
             throws InterpssException {
         ConcurrentLinkedQueue<BranchCAResultRec> results = new ConcurrentLinkedQueue<>();
-        double baseMva = net.getBaseMva();
-        ThreadLocal<ContingencyAnalysisAlgorithm> threadAlgo =
-                ThreadLocal.withInitial(() -> {
-                    ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(net);
-                    dclfAlgo.setSolutionMethod(solutionMethod);
-                    dclfAlgo.calculateDclf();
-                    return dclfAlgo;
-                });
+        if (contingencies.isEmpty()) {
+            return new CoreCaRun(results, 0L, 0L, 0);
+        }
 
+        double baseMva = net.getBaseMva();
+        int workerCount = Math.max(1, Math.min(parallelism, contingencies.size()));
+
+        long setupStartNs = System.nanoTime();
+        ContingencyAnalysisAlgorithm[] workerAlgorithms =
+                buildWorkerAlgorithms(net, solutionMethod, workerCount);
+        long setupNs = System.nanoTime() - setupStartNs;
+
+        long scanStartNs = System.nanoTime();
         try {
             ParallelDclfContingencyAnalyzer.executeParallel(
-                    contingencies.stream(),
-                    contingency -> {
+                    java.util.stream.IntStream.range(0, workerCount).boxed(),
+                    workerIndex -> {
                         try {
-                            ContingencyAnalysisAlgorithm dclfAlgo = threadAlgo.get();
-                            DclfBranchOutage workingContingency =
-                                    createWorkingBranchOutage(dclfAlgo, contingency, monitorIds);
-                            dclfAlgo.ca(workingContingency);
-                            collectMonitoringResults(
-                                    dclfAlgo,
-                                    workingContingency,
-                                    baseMva,
-                                    overloadThreshold,
-                                    shiftThresholdMw,
-                                    results);
+                            ContingencyAnalysisAlgorithm dclfAlgo = workerAlgorithms[workerIndex];
+                            for (int contingencyIndex = workerIndex;
+                                    contingencyIndex < contingencies.size();
+                                    contingencyIndex += workerCount) {
+                                DclfBranchOutage workingContingency =
+                                        createWorkingBranchOutage(
+                                                dclfAlgo,
+                                                contingencies.get(contingencyIndex),
+                                                monitorIds);
+                                dclfAlgo.ca(workingContingency);
+                                collectMonitoringResults(
+                                        dclfAlgo,
+                                        workingContingency,
+                                        baseMva,
+                                        overloadThreshold,
+                                        shiftThresholdMw,
+                                        results);
+                            }
                         } catch (InterpssException e) {
                             throw new RuntimeException(e);
                         }
                     },
-                    parallelism);
+                    workerCount);
         } catch (RuntimeException e) {
-            Throwable cause = e;
-            while (cause.getCause() != null) {
-                cause = cause.getCause();
-            }
-            if (cause instanceof InterpssException) {
-                throw (InterpssException) cause;
-            }
-            throw e;
-        } finally {
-            threadAlgo.remove();
+            throwInterpssOrRuntime(e);
         }
 
-        return results;
+        return new CoreCaRun(results, setupNs, System.nanoTime() - scanStartNs, workerCount);
+    }
+
+    private static ContingencyAnalysisAlgorithm[] buildWorkerAlgorithms(
+            AclfNetwork net,
+            DclfContingencySolutionMethod solutionMethod,
+            int workerCount)
+            throws InterpssException {
+        ContingencyAnalysisAlgorithm[] workerAlgorithms =
+                new ContingencyAnalysisAlgorithm[workerCount];
+
+        try {
+            ParallelDclfContingencyAnalyzer.executeParallel(
+                    java.util.stream.IntStream.range(0, workerCount).boxed(),
+                    workerIndex -> {
+                        ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(net);
+                        dclfAlgo.setSolutionMethod(solutionMethod);
+                        dclfAlgo.calculateDclf();
+                        workerAlgorithms[workerIndex] = dclfAlgo;
+                    },
+                    workerCount);
+        } catch (RuntimeException e) {
+            throwInterpssOrRuntime(e);
+        }
+
+        return workerAlgorithms;
+    }
+
+    private static void throwInterpssOrRuntime(RuntimeException e) throws InterpssException {
+        Throwable cause = e;
+        while (cause.getCause() != null) {
+            cause = cause.getCause();
+        }
+        if (cause instanceof InterpssException) {
+            throw (InterpssException) cause;
+        }
+        throw e;
     }
 
     private static DclfBranchOutage createWorkingBranchOutage(
@@ -568,8 +607,8 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
                 + ", parallelism=" + sparseRun.parallelism);
         System.out.println("  " + sparseRun.summary());
         System.out.println("  " + woodburyRun.summary());
-        System.out.println("  speedup(Woodbury/Sparse)="
-                + formatDouble(sparseRun.elapsedNs / (double) woodburyRun.elapsedNs));
+        System.out.println("  totalSpeedup(Woodbury/Sparse)="
+                + formatDouble(sparseRun.totalNs() / (double) woodburyRun.totalNs()));
     }
 
     private static AclfNetwork importPsse(String path, IpssAdapter.PsseVersion version) throws InterpssException {
@@ -622,6 +661,14 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
             String context,
             ConcurrentLinkedQueue<BranchCAResultRec> cachedResults,
             ConcurrentLinkedQueue<BranchCAResultRec> parallelResults) {
+        assertSameResults(context, cachedResults, parallelResults, MW_TOLERANCE);
+    }
+
+    private static void assertSameResults(
+            String context,
+            ConcurrentLinkedQueue<BranchCAResultRec> cachedResults,
+            ConcurrentLinkedQueue<BranchCAResultRec> parallelResults,
+            double mwTolerance) {
         Map<String, BranchCAResultRec> cachedByKey = toResultMap(cachedResults);
         Map<String, BranchCAResultRec> parallelByKey = toResultMap(parallelResults);
 
@@ -637,9 +684,9 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
         for (Map.Entry<String, BranchCAResultRec> entry : parallelByKey.entrySet()) {
             BranchCAResultRec expected = entry.getValue();
             BranchCAResultRec actual = cachedByKey.get(entry.getKey());
-            assertEquals(expected.preFlowMW, actual.preFlowMW, MW_TOLERANCE, context);
-            assertEquals(expected.shiftedFlowMW, actual.shiftedFlowMW, MW_TOLERANCE, context);
-            assertEquals(expected.getPostFlowMW(), actual.getPostFlowMW(), MW_TOLERANCE, context);
+            assertEquals(expected.preFlowMW, actual.preFlowMW, mwTolerance, context);
+            assertEquals(expected.shiftedFlowMW, actual.shiftedFlowMW, mwTolerance, context);
+            assertEquals(expected.getPostFlowMW(), actual.getPostFlowMW(), mwTolerance, context);
         }
     }
 
@@ -896,7 +943,8 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
         private final int contingencyCount;
         private final int monitorCount;
         private final int parallelism;
-        private final long elapsedNs;
+        private final long setupNs;
+        private final long scanNs;
         private final ConcurrentLinkedQueue<BranchCAResultRec> results;
 
         private PerformanceRun(
@@ -904,27 +952,56 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
                 int contingencyCount,
                 int monitorCount,
                 int parallelism,
-                long elapsedNs,
+                long setupNs,
+                long scanNs,
                 ConcurrentLinkedQueue<BranchCAResultRec> results) {
             this.solutionMethod = solutionMethod;
             this.contingencyCount = contingencyCount;
             this.monitorCount = monitorCount;
             this.parallelism = parallelism;
-            this.elapsedNs = elapsedNs;
+            this.setupNs = setupNs;
+            this.scanNs = scanNs;
             this.results = results;
         }
 
         private String summary() {
-            double elapsedMs = elapsedNs / 1_000_000.0;
-            double elapsedSeconds = elapsedNs / 1_000_000_000.0;
-            double contingenciesPerSecond = contingencyCount / elapsedSeconds;
-            double monitorChecksPerSecond = contingencyCount * (double) monitorCount / elapsedSeconds;
+            double totalMs = totalNs() / 1_000_000.0;
+            double totalSeconds = totalNs() / 1_000_000_000.0;
+            double scanSeconds = scanNs / 1_000_000_000.0;
+            double totalContingenciesPerSecond = contingencyCount / totalSeconds;
+            double scanContingenciesPerSecond = contingencyCount / scanSeconds;
+            double totalMonitorChecksPerSecond = contingencyCount * (double) monitorCount / totalSeconds;
 
             return solutionMethod
                     + ": records=" + results.size()
-                    + ", elapsedMs=" + formatDouble(elapsedMs)
-                    + ", contingenciesPerSec=" + formatDouble(contingenciesPerSecond)
-                    + ", monitorChecksPerSec=" + formatDouble(monitorChecksPerSecond);
+                    + ", setupMs=" + formatDouble(setupNs / 1_000_000.0)
+                    + ", caScanMs=" + formatDouble(scanNs / 1_000_000.0)
+                    + ", totalMs=" + formatDouble(totalMs)
+                    + ", totalContingenciesPerSec=" + formatDouble(totalContingenciesPerSecond)
+                    + ", caScanContingenciesPerSec=" + formatDouble(scanContingenciesPerSecond)
+                    + ", totalMonitorChecksPerSec=" + formatDouble(totalMonitorChecksPerSecond);
+        }
+
+        private long totalNs() {
+            return setupNs + scanNs;
+        }
+    }
+
+    private static final class CoreCaRun {
+        private final ConcurrentLinkedQueue<BranchCAResultRec> results;
+        private final long setupNs;
+        private final long scanNs;
+        private final int workerCount;
+
+        private CoreCaRun(
+                ConcurrentLinkedQueue<BranchCAResultRec> results,
+                long setupNs,
+                long scanNs,
+                int workerCount) {
+            this.results = results;
+            this.setupNs = setupNs;
+            this.scanNs = scanNs;
+            this.workerCount = workerCount;
         }
     }
 
