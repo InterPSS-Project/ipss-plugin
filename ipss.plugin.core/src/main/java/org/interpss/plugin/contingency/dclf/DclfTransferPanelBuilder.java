@@ -19,7 +19,7 @@ import com.interpss.core.contingency.dclf.DclfOutageBranch;
 /**
  * Builds fixed-topology DCLF LODF panels from existing InterPSS DCLF APIs.
  */
-public final class DclfTransferPanelBuilder {
+final class DclfTransferPanelBuilder {
     private DclfTransferPanelBuilder() {
     }
 

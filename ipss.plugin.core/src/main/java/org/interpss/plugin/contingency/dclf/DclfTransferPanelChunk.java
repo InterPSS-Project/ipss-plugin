@@ -7,7 +7,7 @@ import com.interpss.core.aclf.AclfBranch;
 /**
  * A contiguous monitor slice of a monitor-by-outage LODF panel.
  */
-public final class DclfTransferPanelChunk {
+final class DclfTransferPanelChunk {
     private final int monitorOffset;
     private final AclfBranch[] monitoredBranches;
     private final double[][] lodfPanel;
