@@ -28,6 +28,8 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
+import com.interpss.core.algo.dclf.DclfContingencyMethod;
+import com.interpss.core.algo.dclf.DclfWoodburyOutageSolver;
 import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfMultiOutage;
@@ -257,6 +259,7 @@ public class DclfTransferPanelCacheTest extends CorePluginTestSetup {
         AclfBranch monitor = net.getBranch("Bus2->Bus4(1)");
 
         DclfWoodburyOutageSolver solver = new DclfWoodburyOutageSolver(dclfAlgo);
+        assertEquals(DclfContingencyMethod.woodburyMatrix_solver, solver.getContingencyMethod());
         double expected = dclfAlgo.calPostOutageFlow(outage, dclfAlgo.getDclfAlgoBranch(monitor.getId()));
         double actual = solver.singleOpenPostFlow(outage, dclfAlgo.getDclfAlgoBranch(monitor.getId()));
 
