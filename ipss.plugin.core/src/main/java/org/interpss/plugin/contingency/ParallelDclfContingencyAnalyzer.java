@@ -13,11 +13,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.interpss.algo.parallel.BranchCAResultRec;
-import com.interpss.algo.parallel.ContingencyAnalysisMonad;
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
+import com.interpss.core.algo.dclf.DclfContingencySolutionMethod;
 import com.interpss.core.algo.dclf.DclfMethod;
+import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
+import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.dclf.DclfBranchOutage;
+import com.interpss.core.contingency.dclf.DclfOutageBranch;
 import com.interpss.core.net.ref.impl.NetworkRefImpl;
 
 public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork>{
@@ -54,8 +58,14 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
 	            monitoredBranchIds == null ? "all" : monitoredBranchIds.size(),
 	            parallelismLevel);
 	    
-	    return performContingencyAnalysis(aclfNet, contingencyList, monitoredBranchIds,
-	    		config.getOverloadThreshold(), config.isDclfInclLoss(), parallelismLevel);
+	    return performContingencyAnalysis(
+				aclfNet,
+				contingencyList,
+				monitoredBranchIds,
+	    		config.getOverloadThreshold(),
+				config.isDclfInclLoss(),
+				parallelismLevel,
+				config.getSolutionMethod());
 	}
 	
     /**
@@ -76,37 +86,47 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
 	        double overloadThreshold,
 	        boolean dclfInclLoss,
 	        int parallelismLevel) {
+		return performContingencyAnalysis(
+				aclfNet,
+				contingencyList,
+				monitoredBranchIds,
+				overloadThreshold,
+				dclfInclLoss,
+				parallelismLevel,
+				DclfContingencySolutionMethod.SparseEqnSolve);
+	}
+
+	public static ConcurrentLinkedQueue<BranchCAResultRec> performContingencyAnalysis(
+	        AclfNetwork aclfNet,
+	        List<DclfBranchOutage> contingencyList,
+	        Set<String> monitoredBranchIds,
+	        double overloadThreshold,
+	        boolean dclfInclLoss,
+	        int parallelismLevel,
+	        DclfContingencySolutionMethod solutionMethod) {
 	    // Create DCLF algorithm
 	    ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(aclfNet);
+		dclfAlgo.setSolutionMethod(solutionMethod);
 	    DclfMethod method = dclfInclLoss? DclfMethod.INC_LOSS : DclfMethod.STD;
 	    dclfAlgo.calculateDclf(method);
 	    refreshOutagePreFlows(dclfAlgo, contingencyList);
 	    
-		log.info("Dclf calculation using " + method );
+		log.info("Dclf calculation using " + method + ", solution method " + solutionMethod);
 		log.info("RefBus P :" + dclfAlgo.getBusPower(aclfNet.getRefBusId()) + " @" + aclfNet.getRefBusId() );
 
 	    // Use thread-safe collection for parallel processing
 	    ConcurrentLinkedQueue<BranchCAResultRec> caResultRecords = new ConcurrentLinkedQueue<>();
 	    
-	    // Define result processor
-	    Consumer<BranchCAResultRec> resultProcessor = caResultRec -> {
-	    	// If monitoring only selected branches, check if this branch is in the monitored list
-	    	if (monitoredBranchIds != null && !monitoredBranchIds.contains(caResultRec.aclfBranch.getId())) {
-				// Skip this branch - not monitored) {
-	    	}
-	    	else if (caResultRec.calLoadingPercent() >= overloadThreshold) {
-	    		// Only include contingencies that cause meaningful flow shifting
-	    		if (Math.abs(caResultRec.shiftedFlowMW) > BranchCAResultRec.ContingencyShiftThreshold)  
-	    			caResultRecords.add(caResultRec);
-	    	}
-	    };
-	    
 	    // Execute contingency analysis with configured parallelism
 	    executeParallel(
 	        contingencyList.stream(),
 	        contingency -> {
-	            ContingencyAnalysisMonad.of(dclfAlgo, contingency)
-	                .ca(resultProcessor);
+				analyzeOpenBranchOutageFast(
+						dclfAlgo,
+						contingency,
+						monitoredBranchIds,
+						overloadThreshold,
+						caResultRecords);
 	        },
 	        parallelismLevel
 	    );
@@ -115,6 +135,60 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
 	            caResultRecords.size(), contingencyList.size());
 	    
 	    return caResultRecords;
+	}
+
+	private static void analyzeOpenBranchOutageFast(
+			ContingencyAnalysisAlgorithm dclfAlgo,
+			DclfBranchOutage contingency,
+			Set<String> monitoredBranchIds,
+			double overloadThreshold,
+			ConcurrentLinkedQueue<BranchCAResultRec> caResultRecords) {
+		try {
+			/*
+			 * Standard N-1 open outages use the same Sherman-Morrison/LODF vector
+			 * kernel for both solution-method names. Avoid ContingencyAnalysisAlgorithm.ca()
+			 * here because it mutates every DclfAlgoBranch and copies monitoring state;
+			 * this analyzer only needs streamed BranchCAResultRec records.
+			 */
+			DclfOutageBranch outageBranch = contingency.getOutageEquip();
+			if (outageBranch == null || outageBranch.getOutageType() != ContingencyBranchOutageType.OPEN) {
+				throw new UnsupportedOperationException(
+						"ParallelDclfContingencyAnalyzer fast path supports OPEN branch outages only: "
+								+ contingency.getId());
+			}
+
+			double baseMva = dclfAlgo.getAclfNet().getBaseMva();
+			double outagePreFlowMw = outageBranch.getDclfFlow() * baseMva;
+			double[] lodfAry = dclfAlgo.lineOutageDFactors(outageBranch);
+
+			for (DclfAlgoBranch dclfBranch : dclfAlgo.getDclfAlgoBranchList()) {
+				if (!dclfBranch.isActive()) {
+					continue;
+				}
+
+				AclfBranch aclfBranch = dclfBranch.getBranch();
+				if (monitoredBranchIds != null && !monitoredBranchIds.contains(aclfBranch.getId())) {
+					continue;
+				}
+
+				double shiftedFlowMw = outagePreFlowMw * lodfAry[aclfBranch.getSortNumber()];
+				if (Math.abs(shiftedFlowMw) <= BranchCAResultRec.ContingencyShiftThreshold) {
+					continue;
+				}
+
+				BranchCAResultRec result =
+						new BranchCAResultRec(
+								contingency,
+								aclfBranch,
+								dclfBranch.getDclfFlow() * baseMva,
+								shiftedFlowMw);
+				if (result.calLoadingPercent() >= overloadThreshold) {
+					caResultRecords.add(result);
+				}
+			}
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	private static void refreshOutagePreFlows(
