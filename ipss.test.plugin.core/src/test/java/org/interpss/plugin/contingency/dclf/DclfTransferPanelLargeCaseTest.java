@@ -100,7 +100,7 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
                 spec,
                 PanelBuildOptions.builder().monitorChunkSize(256).build());
         ConcurrentLinkedQueue<BranchCAResultRec> cachedResults =
-                new CachedDclfContingencyAnalyzer(cache).analyzeCurrentProfile();
+                new CachedDclfContingencyAnalyzer(cache).analyzeCurrentProfile(8);
         long cachedElapsedMs = (System.nanoTime() - cachedStartNs) / 1_000_000L;
 
         long parallelStartNs = System.nanoTime();
@@ -181,7 +181,7 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
             applyBusLoads(baseLoads, hourlyLoadFactors[hour]);
 
             long cachedStartNs = System.nanoTime();
-            ConcurrentLinkedQueue<BranchCAResultRec> cachedResults = cachedAnalyzer.analyzeCurrentProfile();
+            ConcurrentLinkedQueue<BranchCAResultRec> cachedResults = cachedAnalyzer.analyzeCurrentProfile(8);
             cachedScanNs += System.nanoTime() - cachedStartNs;
 
             long parallelStartNs = System.nanoTime();
@@ -241,7 +241,7 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
                 spec,
                 PanelBuildOptions.builder().monitorChunkSize(monitorChunkSize).build());
         ConcurrentLinkedQueue<BranchCAResultRec> cachedResults =
-                new CachedDclfContingencyAnalyzer(cache).analyzeCurrentProfile();
+                new CachedDclfContingencyAnalyzer(cache).analyzeCurrentProfile(parallelism);
         ConcurrentLinkedQueue<BranchCAResultRec> parallelResults =
                 ParallelDclfContingencyAnalyzer.performContingencyAnalysis(
                         net, contingencies, monitors, 0.0, false, parallelism);
