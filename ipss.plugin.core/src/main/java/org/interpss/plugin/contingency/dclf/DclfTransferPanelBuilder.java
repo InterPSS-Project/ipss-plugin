@@ -3,6 +3,7 @@ package org.interpss.plugin.contingency.dclf;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -42,9 +43,9 @@ public final class DclfTransferPanelBuilder {
         AclfBranch[] monitors = resolveMonitoredBranches(spec, dclfAlgo);
         DclfBranchOutage[] contingencies = spec.getContingencies().toArray(new DclfBranchOutage[0]);
 
-        double[][] lodfPanel = new double[monitors.length][contingencies.length];
         double[] denominator = new double[contingencies.length];
         boolean[] validOutage = new boolean[contingencies.length];
+        ChunkBuilder[] chunkBuilders = createChunkBuilders(monitors, contingencies.length, options);
 
         for (int outageIndex = 0; outageIndex < contingencies.length; outageIndex++) {
             DclfBranchOutage contingency = contingencies[outageIndex];
@@ -59,20 +60,49 @@ public final class DclfTransferPanelBuilder {
             denominator[outageIndex] = 1.0 - outagePtdf;
             validOutage[outageIndex] = Math.abs(denominator[outageIndex]) > options.getDenominatorTolerance();
 
-            for (int monitorIndex = 0; monitorIndex < monitors.length; monitorIndex++) {
-                lodfPanel[monitorIndex][outageIndex] =
-                        dclfAlgo.lineOutageDFactor(outageBranch, monitors[monitorIndex]);
+            double[] lodfVector = dclfAlgo.lineOutageDFactors(outageBranch);
+            for (ChunkBuilder chunkBuilder : chunkBuilders) {
+                chunkBuilder.setOutageColumn(outageIndex, lodfVector);
             }
         }
+
+        DclfTransferPanelChunk[] chunks = buildChunks(chunkBuilders);
 
         return new DclfTransferPanelCache(
                 spec,
                 dclfAlgo,
                 monitors,
                 contingencies,
-                lodfPanel,
+                chunks,
                 denominator,
                 validOutage);
+    }
+
+    private static ChunkBuilder[] createChunkBuilders(
+            AclfBranch[] monitors,
+            int outageCount,
+            PanelBuildOptions options) {
+        int chunkSize = options.getMonitorChunkSize() > 0 ? options.getMonitorChunkSize() : monitors.length;
+        if (chunkSize == 0) {
+            return new ChunkBuilder[0];
+        }
+
+        List<ChunkBuilder> chunks = new ArrayList<>();
+        for (int monitorOffset = 0; monitorOffset < monitors.length; monitorOffset += chunkSize) {
+            int end = Math.min(monitors.length, monitorOffset + chunkSize);
+            AclfBranch[] chunkMonitors = Arrays.copyOfRange(monitors, monitorOffset, end);
+            chunks.add(new ChunkBuilder(monitorOffset, chunkMonitors, outageCount));
+        }
+
+        return chunks.toArray(new ChunkBuilder[0]);
+    }
+
+    private static DclfTransferPanelChunk[] buildChunks(ChunkBuilder[] builders) {
+        DclfTransferPanelChunk[] chunks = new DclfTransferPanelChunk[builders.length];
+        for (int i = 0; i < builders.length; i++) {
+            chunks[i] = builders[i].build();
+        }
+        return chunks;
     }
 
     private static AclfBranch[] resolveMonitoredBranches(
@@ -101,6 +131,28 @@ public final class DclfTransferPanelBuilder {
             throw new InterpssException(
                     "DclfTransferPanelBuilder currently supports OPEN branch contingencies only: "
                             + outageBranch.getId());
+        }
+    }
+
+    private static final class ChunkBuilder {
+        private final int monitorOffset;
+        private final AclfBranch[] monitors;
+        private final double[][] lodfPanel;
+
+        private ChunkBuilder(int monitorOffset, AclfBranch[] monitors, int outageCount) {
+            this.monitorOffset = monitorOffset;
+            this.monitors = monitors;
+            this.lodfPanel = new double[monitors.length][outageCount];
+        }
+
+        private void setOutageColumn(int outageIndex, double[] lodfVector) {
+            for (int monitorIndex = 0; monitorIndex < monitors.length; monitorIndex++) {
+                lodfPanel[monitorIndex][outageIndex] = lodfVector[monitors[monitorIndex].getSortNumber()];
+            }
+        }
+
+        private DclfTransferPanelChunk build() {
+            return new DclfTransferPanelChunk(monitorOffset, monitors, lodfPanel);
         }
     }
 }
