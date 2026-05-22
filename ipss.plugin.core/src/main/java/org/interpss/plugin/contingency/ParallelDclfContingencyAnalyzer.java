@@ -80,6 +80,7 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
 	    ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(aclfNet);
 	    DclfMethod method = dclfInclLoss? DclfMethod.INC_LOSS : DclfMethod.STD;
 	    dclfAlgo.calculateDclf(method);
+	    refreshOutagePreFlows(dclfAlgo, contingencyList);
 	    
 		log.info("Dclf calculation using " + method );
 		log.info("RefBus P :" + dclfAlgo.getBusPower(aclfNet.getRefBusId()) + " @" + aclfNet.getRefBusId() );
@@ -114,6 +115,18 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
 	            caResultRecords.size(), contingencyList.size());
 	    
 	    return caResultRecords;
+	}
+
+	private static void refreshOutagePreFlows(
+			ContingencyAnalysisAlgorithm dclfAlgo,
+			List<DclfBranchOutage> contingencyList) {
+		for (DclfBranchOutage contingency : contingencyList) {
+			if (contingency.getOutageEquip() == null || contingency.getOutageEquip().getBranch() == null) {
+				continue;
+			}
+			String branchId = contingency.getOutageEquip().getBranch().getId();
+			contingency.getOutageEquip().setDclfFlow(dclfAlgo.getDclfAlgoBranch(branchId).getDclfFlow());
+		}
 	}
     
 
