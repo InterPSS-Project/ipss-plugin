@@ -97,7 +97,7 @@ flow equivalence against InterPSS `multiOpenOutageAnalysis()` on IEEE 14.
 path for `DclfMultiOutage` contingencies. It calculates the current DCLF once,
 refreshes each outage branch pre-flow from the InterPSS DCLF branch model, then
 uses `DclfWoodburyOutageSolver.solveMultiOpen()` to evaluate the selected
-monitored branches. The result type is `DclfMultiOutageCAResultRec`, mirroring
+monitored branches. The result type is `DclfOutageCAResultRec`, mirroring
 the existing single-outage `BranchCAResultRec` fields while preserving the
 multi-outage contingency object.
 
