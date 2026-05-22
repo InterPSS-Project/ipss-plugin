@@ -25,7 +25,6 @@ public final class CachedDclfContingencyAnalyzer {
         DclfContingencyStudySpec spec = cache.getSpec();
         dclfAlgo.calculateDclf(spec.getMethod());
 
-        AclfBranch[] monitors = cache.getMonitoredBranches();
         DclfBranchOutage[] contingencies = cache.getContingencies();
         double baseMva = spec.getAclfNetwork().getBaseMva();
         ConcurrentLinkedQueue<BranchCAResultRec> results = new ConcurrentLinkedQueue<>();
@@ -40,19 +39,21 @@ public final class CachedDclfContingencyAnalyzer {
                     dclfAlgo.getDclfAlgoBranch(contingency.getOutageEquip().getBranch().getId()).getDclfFlow()
                             * baseMva;
 
-            for (int monitorIndex = 0; monitorIndex < monitors.length; monitorIndex++) {
-                AclfBranch monitor = monitors[monitorIndex];
-                double preFlowMW = dclfAlgo.getDclfAlgoBranch(monitor.getId()).getDclfFlow() * baseMva;
-                double shiftedFlowMW = outagePreFlowMW * cache.getLodf(monitorIndex, outageIndex);
+            for (DclfTransferPanelChunk chunk : cache.getChunks()) {
+                for (int localMonitorIndex = 0; localMonitorIndex < chunk.getMonitorCount(); localMonitorIndex++) {
+                    AclfBranch monitor = chunk.getMonitoredBranch(localMonitorIndex);
+                    double preFlowMW = dclfAlgo.getDclfAlgoBranch(monitor.getId()).getDclfFlow() * baseMva;
+                    double shiftedFlowMW = outagePreFlowMW * chunk.getLodf(localMonitorIndex, outageIndex);
 
-                if (Math.abs(shiftedFlowMW) <= spec.getShiftThresholdMw()) {
-                    continue;
-                }
+                    if (Math.abs(shiftedFlowMW) <= spec.getShiftThresholdMw()) {
+                        continue;
+                    }
 
-                BranchCAResultRec result =
-                        new BranchCAResultRec(contingency, monitor, preFlowMW, shiftedFlowMW);
-                if (result.calLoadingPercent() >= spec.getOverloadThreshold()) {
-                    results.add(result);
+                    BranchCAResultRec result =
+                            new BranchCAResultRec(contingency, monitor, preFlowMW, shiftedFlowMW);
+                    if (result.calLoadingPercent() >= spec.getOverloadThreshold()) {
+                        results.add(result);
+                    }
                 }
             }
         }

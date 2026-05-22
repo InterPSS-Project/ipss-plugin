@@ -60,8 +60,8 @@ The first checked-in slice is intentionally conservative:
    `ContingencyAnalysisAlgorithm.lineOutageDFactor()`.
 2. Done: add post-flow comparisons against
    `ParallelDclfContingencyAnalyzer`.
-3. Add chunked monitor panels for OpenEI/full EI scale.
-4. Replace scalar panel construction with batched endpoint sensitivity solves.
+3. Done: add chunked monitor panels for OpenEI/full EI scale.
+4. Done: replace scalar panel construction with per-outage LODF vector solves.
 5. Done: add explicit multi-outage Woodbury helpers based on the existing
    `[E - PTDF]` implementation.
 
@@ -89,3 +89,22 @@ calculations:
 
 Current tests verify single-open post-flow equivalence and multi-open shifted
 flow equivalence against InterPSS `multiOpenOutageAnalysis()` on IEEE 14.
+
+## Phase 4 Chunked Panels and Batched LODF Construction
+
+The transfer cache is now chunk-native:
+
+- `DclfTransferPanelChunk` stores a contiguous monitor slice and its
+  monitor-by-outage LODF block.
+- `PanelBuildOptions.monitorChunkSize` controls chunking. The default `0`
+  preserves full-panel behavior by creating one chunk.
+- `CachedDclfContingencyAnalyzer` iterates chunks directly so large monitor sets
+  do not require callers to materialize one monolithic panel.
+- `DclfTransferPanelBuilder` now computes one InterPSS `lineOutageDFactors()`
+  vector per outage and scatters only requested monitor entries into chunks.
+  This keeps InterPSS radial/parallel-branch semantics while avoiding repeated
+  scalar `lineOutageDFactor()` calls for every monitor/outage pair.
+
+The IEEE 14 regression test builds both full and chunked panels, compares every
+cached LODF value, and verifies that full-panel and chunked analyzers return the
+same post-flow records.
