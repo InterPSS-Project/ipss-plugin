@@ -1,19 +1,20 @@
 package org.interpss.plugin.contingency.dclf;
 
 import com.interpss.core.aclf.AclfBranch;
-import com.interpss.core.contingency.dclf.DclfMultiOutage;
+import com.interpss.core.contingency.BaseContingency;
+import com.interpss.core.contingency.dclf.DclfMonitoringBranch;
 
 /**
- * Contingency-analysis result record for a multi-branch DCLF outage.
+ * Contingency-analysis result record for DCLF branch-outage contingencies.
  */
-public final class DclfMultiOutageCAResultRec {
-    public final DclfMultiOutage contingency;
+public final class DclfOutageCAResultRec {
+    public final BaseContingency<DclfMonitoringBranch> contingency;
     public final AclfBranch aclfBranch;
     public final double preFlowMW;
     public final double shiftedFlowMW;
 
-    public DclfMultiOutageCAResultRec(
-            DclfMultiOutage contingency,
+    public DclfOutageCAResultRec(
+            BaseContingency<DclfMonitoringBranch> contingency,
             AclfBranch aclfBranch,
             double preFlowMW,
             double shiftedFlowMW) {
