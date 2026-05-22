@@ -45,7 +45,7 @@ public final class DclfMultiOutageContingencyAnalyzer {
         this.shiftThresholdMw = shiftThresholdMw;
     }
 
-    public static ConcurrentLinkedQueue<DclfMultiOutageCAResultRec> performContingencyAnalysis(
+    public static ConcurrentLinkedQueue<DclfOutageCAResultRec> performContingencyAnalysis(
             AclfNetwork aclfNet,
             List<DclfMultiOutage> contingencyList,
             Set<String> monitoredBranchIds,
@@ -67,7 +67,7 @@ public final class DclfMultiOutageContingencyAnalyzer {
         return analyzer.analyze(contingencyList, parallelismLevel);
     }
 
-    public ConcurrentLinkedQueue<DclfMultiOutageCAResultRec> analyze(
+    public ConcurrentLinkedQueue<DclfOutageCAResultRec> analyze(
             List<DclfMultiOutage> contingencyList,
             int parallelism)
             throws InterpssException {
@@ -75,7 +75,7 @@ public final class DclfMultiOutageContingencyAnalyzer {
             throw new IllegalArgumentException("contingencyList cannot be null");
         }
 
-        ConcurrentLinkedQueue<DclfMultiOutageCAResultRec> results = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<DclfOutageCAResultRec> results = new ConcurrentLinkedQueue<>();
         DclfWoodburyOutageSolver solver = new DclfWoodburyOutageSolver(dclfAlgorithm);
 
         for (DclfMultiOutage contingency : contingencyList) {
@@ -90,8 +90,8 @@ public final class DclfMultiOutageContingencyAnalyzer {
                     continue;
                 }
 
-                DclfMultiOutageCAResultRec result =
-                        new DclfMultiOutageCAResultRec(
+                DclfOutageCAResultRec result =
+                        new DclfOutageCAResultRec(
                                 contingency,
                                 monitoredBranches[monitorIndex],
                                 solved.getPreFlowMw(monitorIndex),
