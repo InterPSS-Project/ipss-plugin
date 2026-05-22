@@ -27,8 +27,8 @@ public class EInterconnect_Info_Sample {
 		double val;
 	}
 	
-	private static final String CASE_PATH = "ipss.plugin.core/testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW";
-	private static final double OPT_THRESHOLD = 100.0;
+	static final String CASE_PATH = "ipss.plugin.core/testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW";
+	static final double OPT_THRESHOLD = 100.0;
 
     public static void main(String args[]) throws Exception {
 		// load the test data V33
@@ -114,7 +114,6 @@ public class EInterconnect_Info_Sample {
 			boolean adjustGenOnly, String label) throws Exception {
 		System.out.println();
 		System.out.println("=== " + label + " bus optimization ===");
-		dclfAlgo.calculateDclf(DclfMethod.INC_LOSS);
 
 		PerformanceTimer timer = new PerformanceTimer();
 		AclfNetBusOptimizer optimizer = new AclfNetBusOptimizer(dclfAlgo);
@@ -136,6 +135,7 @@ public class EInterconnect_Info_Sample {
 
 		double baseMVA = aclfNet.getBaseMva();
 		Set<String> controlBusIdSet = optimizer.getControlBusIdSet();
+		Map<String, AclfNetBusOptimizer.ControlBusRole> controlBusRoleMap = optimizer.getControlBusRoleMap();
 		Sen2DMatrix controlBusGfsMatrix = controlBusIdSet.isEmpty()
 				? null
 				: optimizer.getGFSsHelper().calGFS(controlBusIdSet);
@@ -146,19 +146,34 @@ public class EInterconnect_Info_Sample {
 			double flowMw = dclfBranch.getDclfFlow() * baseMVA;
 			double rating = dclfBranch.getBranch().getRatingMvaA();
 			double loading = rating > 0 ? Math.abs(flowMw / rating) * 100 : 0.0;
-			if (loading > 100) {
+			if (loading > OPT_THRESHOLD) {
 				cnt1.increment();
 				int branchNo = dclfBranch.getBranch().getSortNumber();
-				double maxAbsGfs = controlBusGfsMatrix == null ? 0.0
+				double maxAbsGenGfs = controlBusGfsMatrix == null ? 0.0
 						: controlBusIdSet.stream()
 								.mapToDouble(busId -> {
 									int busNo = aclfNet.getBus(busId).getSortNumber();
-									return Math.abs(controlBusGfsMatrix.get(busNo, branchNo));
+									return controlBusRoleMap.get(busId) == AclfNetBusOptimizer.ControlBusRole.GEN ? 
+									Math.abs(controlBusGfsMatrix.get(busNo, branchNo)) : 0.0;
 								})
 								.max()
 								.orElse(0.0);
-				System.out.printf("Branch: %s  %.2f rating: %.2f loading: %.2f  max |GFS|: %.2f%n",
-						dclfBranch.getId(), flowMw, rating, loading, maxAbsGfs);
+				double maxAbsLoadGfs = controlBusGfsMatrix == null || adjustGenOnly? 0.0
+						: controlBusIdSet.stream()
+								.mapToDouble(busId -> {
+									int busNo = aclfNet.getBus(busId).getSortNumber();
+									return controlBusRoleMap.get(busId) == AclfNetBusOptimizer.ControlBusRole.LOAD ? 
+									Math.abs(controlBusGfsMatrix.get(busNo, branchNo)) : 0.0;
+								})
+								.max()
+								.orElse(0.0);				
+
+				System.out.printf("Branch: %s  %.2f  rating: %.2f  loading: %.2f  max |GenGFS|: %.2f",
+						dclfBranch.getId(), flowMw, rating, loading, maxAbsGenGfs);
+				if (adjustGenOnly)
+					System.out.printf("%n");
+				else
+					System.out.printf("  max |LoadGFS|: %.2f%n", maxAbsLoadGfs);		
 			}
 			if (loading > maxLoading.val) {
 				maxLoading.val = loading;
