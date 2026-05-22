@@ -11,7 +11,7 @@ import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.contingency.dclf.DclfBranchOutage;
 
 /**
- * Immutable study definition for cached DCLF branch contingency analysis.
+ * Immutable study definition used by cached DCLF branch-contingency tests.
  */
 final class DclfContingencyStudySpec {
     private final AclfNetwork aclfNetwork;
