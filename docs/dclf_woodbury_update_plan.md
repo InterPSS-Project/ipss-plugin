@@ -56,10 +56,19 @@ The first checked-in slice is intentionally conservative:
 
 ## Next Steps
 
-1. Add unit tests comparing cached panel LODF values to
+1. Done: add unit tests comparing cached panel LODF values to
    `ContingencyAnalysisAlgorithm.lineOutageDFactor()`.
-2. Add post-flow comparisons against `ParallelDclfContingencyAnalyzer`.
+2. Done: add post-flow comparisons against
+   `ParallelDclfContingencyAnalyzer`.
 3. Add chunked monitor panels for OpenEI/full EI scale.
 4. Replace scalar panel construction with batched endpoint sensitivity solves.
 5. Add explicit multi-outage Woodbury helpers based on the existing
    `[E - PTDF]` implementation.
+
+## Phase 2 Validation
+
+`DclfTransferPanelCacheTest` now checks both layers:
+
+- cached LODF panel values match InterPSS `lineOutageDFactor()` on IEEE 14,
+- `CachedDclfContingencyAnalyzer` returns the same monitored post-flow records
+  as `ParallelDclfContingencyAnalyzer` for the same outage and monitor sets.
