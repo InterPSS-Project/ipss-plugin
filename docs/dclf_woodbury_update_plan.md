@@ -104,13 +104,14 @@ existing InterPSS DCLF contingency algorithm.
 Current tests verify single-open post-flow equivalence and multi-open shifted
 flow equivalence against InterPSS `multiOpenOutageAnalysis()` on IEEE 14.
 
-`DclfMultiOutageContingencyAnalyzer` now promotes solution-method selection into
-an analysis path for `DclfMultiOutage` contingencies. It calculates the current
-DCLF once, sets the selected `DclfContingencySolutionMethod`, and calls
-`ContingencyAnalysisAlgorithm.ca()` for each contingency. The analyzer emits the
-same `BranchCAResultRec` type used by N-1 analysis; the result record carries
-normalized outage-equipment accessors and optional multi-outage LODF factors for
-combined-shift sensitivity calculations.
+`ParallelDclfContingencyAnalyzer` now promotes solution-method selection into a
+shared analysis path for both `DclfBranchOutage` and `DclfMultiOutage`
+contingencies. It preserves the fast N-1 OPEN LODF path for standard branch
+outages, and uses `ContingencyAnalysisAlgorithm.ca()` with one algorithm
+instance per worker for multioutage and other generic CA cases. The analyzer
+emits the same `BranchCAResultRec` type used by N-1 analysis; the result record
+carries normalized outage-equipment accessors and optional multi-outage LODF
+factors for combined-shift sensitivity calculations.
 
 The Texas2k JSON regression reads the existing branch-contingency and monitored
 branch JSON files, shuffles the valid single outages with a fixed seed, creates

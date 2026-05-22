@@ -31,6 +31,10 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfContingencySolutionMethod;
 import com.interpss.core.algo.dclf.DclfContingencyWoodburySolver;
+import com.interpss.core.algo.dclf.DclfContingencyWoodburySolver.OpenBranchOutageBatch;
+import com.interpss.core.algo.dclf.DclfMethod;
+import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
+import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfMultiOutage;
@@ -55,7 +59,7 @@ public class DclfTransferPanelCacheTest extends CorePluginTestSetup {
                 .monitoredBranchIds(monitors)
                 .build();
 
-        DclfTransferPanelCache cache = DclfTransferPanelBuilder.build(spec);
+        OpenBranchOutageBatch cache = buildOpenBranchOutageBatch(spec);
         ContingencyAnalysisAlgorithm oracle = cache.getDclfAlgorithm();
         AclfBranch[] monitoredBranches = cache.getMonitoredBranches();
         DclfBranchOutage[] cachedContingencies = cache.getContingencies();
@@ -94,9 +98,9 @@ public class DclfTransferPanelCacheTest extends CorePluginTestSetup {
                 .overloadThreshold(0.0)
                 .build();
 
-        DclfTransferPanelCache cache = DclfTransferPanelBuilder.build(spec);
+        OpenBranchOutageBatch cache = buildOpenBranchOutageBatch(spec);
         ConcurrentLinkedQueue<BranchCAResultRec> cachedResults =
-                new CachedDclfContingencyAnalyzer(cache).analyzeCurrentProfile();
+                cache.analyzeCurrentProfile(spec.getOverloadThreshold(), spec.getShiftThresholdMw(), 1);
         ConcurrentLinkedQueue<BranchCAResultRec> parallelResults =
                 ParallelDclfContingencyAnalyzer.performContingencyAnalysis(
                         net, contingencies, monitors, 0.0, false, 1);
@@ -134,10 +138,8 @@ public class DclfTransferPanelCacheTest extends CorePluginTestSetup {
                 .overloadThreshold(0.0)
                 .build();
 
-        DclfTransferPanelCache fullCache = DclfTransferPanelBuilder.build(spec);
-        DclfTransferPanelCache chunkedCache = DclfTransferPanelBuilder.build(
-                spec,
-                PanelBuildOptions.builder().monitorChunkSize(2).build());
+        OpenBranchOutageBatch fullCache = buildOpenBranchOutageBatch(spec);
+        OpenBranchOutageBatch chunkedCache = buildOpenBranchOutageBatch(spec, 2);
 
         assertEquals(1, fullCache.getChunkCount());
         assertEquals(3, chunkedCache.getChunkCount());
@@ -153,9 +155,11 @@ public class DclfTransferPanelCacheTest extends CorePluginTestSetup {
         }
 
         Map<String, BranchCAResultRec> fullResults =
-                toResultMap(new CachedDclfContingencyAnalyzer(fullCache).analyzeCurrentProfile());
+                toResultMap(fullCache.analyzeCurrentProfile(
+                        spec.getOverloadThreshold(), spec.getShiftThresholdMw(), 1));
         Map<String, BranchCAResultRec> chunkedResults =
-                toResultMap(new CachedDclfContingencyAnalyzer(chunkedCache).analyzeCurrentProfile());
+                toResultMap(chunkedCache.analyzeCurrentProfile(
+                        spec.getOverloadThreshold(), spec.getShiftThresholdMw(), 1));
 
         assertEquals(fullResults.keySet(), chunkedResults.keySet());
         for (Map.Entry<String, BranchCAResultRec> entry : fullResults.entrySet()) {
@@ -168,7 +172,7 @@ public class DclfTransferPanelCacheTest extends CorePluginTestSetup {
     }
 
     @Test
-    public void multiOutageAnalyzerHonorsConfiguredSolutionMethod() throws InterpssException {
+    public void parallelAnalyzerSupportsMultiOutageSolutionMethodSelection() throws InterpssException {
         AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
         ContingencyAnalysisAlgorithm sourceAlgo = createContingencyAnalysisAlgorithm(net);
         sourceAlgo.calculateDclf();
@@ -195,11 +199,23 @@ public class DclfTransferPanelCacheTest extends CorePluginTestSetup {
         woodburyConfig.setSolutionMethod(DclfContingencySolutionMethod.WoodburyMatrixUpdate);
 
         ConcurrentLinkedQueue<BranchCAResultRec> sparseResults =
-                DclfMultiOutageContingencyAnalyzer.performContingencyAnalysis(
-                        net, List.of(multiOutage), monitors, sparseConfig, 1);
+                ParallelDclfContingencyAnalyzer.performContingencyAnalysis(
+                        net,
+                        List.of(multiOutage),
+                        monitors,
+                        sparseConfig.getOverloadThreshold(),
+                        sparseConfig.isDclfInclLoss(),
+                        1,
+                        sparseConfig.getSolutionMethod());
         ConcurrentLinkedQueue<BranchCAResultRec> woodburyResults =
-                DclfMultiOutageContingencyAnalyzer.performContingencyAnalysis(
-                        net, List.of(multiOutage), monitors, woodburyConfig, 1);
+                ParallelDclfContingencyAnalyzer.performContingencyAnalysis(
+                        net,
+                        List.of(multiOutage),
+                        monitors,
+                        woodburyConfig.getOverloadThreshold(),
+                        woodburyConfig.isDclfInclLoss(),
+                        1,
+                        woodburyConfig.getSolutionMethod());
 
         assertTrue(!woodburyResults.isEmpty());
         Map<String, BranchCAResultRec> sparseByKey = toResultMap(sparseResults);
@@ -229,11 +245,10 @@ public class DclfTransferPanelCacheTest extends CorePluginTestSetup {
                 .overloadThreshold(0.0)
                 .build();
 
-        DclfTransferPanelCache chunkedCache = DclfTransferPanelBuilder.build(
-                spec,
-                PanelBuildOptions.builder().monitorChunkSize(8).build());
+        OpenBranchOutageBatch chunkedCache = buildOpenBranchOutageBatch(spec, 8);
         ConcurrentLinkedQueue<BranchCAResultRec> cachedResults =
-                new CachedDclfContingencyAnalyzer(chunkedCache).analyzeCurrentProfile();
+                chunkedCache.analyzeCurrentProfile(
+                        spec.getOverloadThreshold(), spec.getShiftThresholdMw(), 1);
         ConcurrentLinkedQueue<BranchCAResultRec> parallelResults =
                 ParallelDclfContingencyAnalyzer.performContingencyAnalysis(
                         net, contingencies, monitors, 0.0, false, 4);
@@ -270,11 +285,10 @@ public class DclfTransferPanelCacheTest extends CorePluginTestSetup {
                 .overloadThreshold(0.0)
                 .build();
 
-        DclfTransferPanelCache chunkedCache = DclfTransferPanelBuilder.build(
-                spec,
-                PanelBuildOptions.builder().monitorChunkSize(16).build());
+        OpenBranchOutageBatch chunkedCache = buildOpenBranchOutageBatch(spec, 16);
         ConcurrentLinkedQueue<BranchCAResultRec> cachedResults =
-                new CachedDclfContingencyAnalyzer(chunkedCache).analyzeCurrentProfile();
+                chunkedCache.analyzeCurrentProfile(
+                        spec.getOverloadThreshold(), spec.getShiftThresholdMw(), 1);
         ConcurrentLinkedQueue<BranchCAResultRec> parallelResults =
                 ParallelDclfContingencyAnalyzer.performContingencyAnalysis(
                         net, contingencies, monitors, 0.0, false, 4);
@@ -402,6 +416,41 @@ public class DclfTransferPanelCacheTest extends CorePluginTestSetup {
         return results.stream().collect(Collectors.toMap(
                 result -> result.contingency.getId() + "|" + result.aclfBranch.getId(),
                 result -> result));
+    }
+
+    private static OpenBranchOutageBatch buildOpenBranchOutageBatch(DclfContingencyStudySpec spec)
+            throws InterpssException {
+        return buildOpenBranchOutageBatch(spec, 0);
+    }
+
+    private static OpenBranchOutageBatch buildOpenBranchOutageBatch(
+            DclfContingencyStudySpec spec,
+            int monitorChunkSize)
+            throws InterpssException {
+        ContingencyAnalysisAlgorithm dclfAlgo =
+                createContingencyAnalysisAlgorithm(spec.getAclfNetwork(), CacheType.SenCached, true);
+        AclfBranch[] monitors = resolveMonitoredBranches(dclfAlgo, spec.getMonitoredBranchIds());
+        return new DclfContingencyWoodburySolver(dclfAlgo)
+                .buildOpenBranchOutageBatch(
+                        spec.getContingencies(),
+                        monitors,
+                        DclfMethod.STD,
+                        monitorChunkSize);
+    }
+
+    private static AclfBranch[] resolveMonitoredBranches(
+            ContingencyAnalysisAlgorithm dclfAlgo,
+            Set<String> monitoredBranchIds) {
+        List<AclfBranch> branches = new ArrayList<>();
+        for (DclfAlgoBranch dclfBranch : dclfAlgo.getDclfAlgoBranchList()) {
+            AclfBranch branch = dclfBranch.getBranch();
+            if (branch != null
+                    && branch.isActive()
+                    && (monitoredBranchIds == null || monitoredBranchIds.contains(branch.getId()))) {
+                branches.add(branch);
+            }
+        }
+        return branches.toArray(new AclfBranch[0]);
     }
 
     private static List<DclfBranchOutage> firstNonRefBranchOutages(
