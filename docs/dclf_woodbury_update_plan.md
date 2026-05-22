@@ -108,3 +108,18 @@ The transfer cache is now chunk-native:
 The IEEE 14 regression test builds both full and chunked panels, compares every
 cached LODF value, and verifies that full-panel and chunked analyzers return the
 same post-flow records.
+
+## Phase 5 Scaled Regression Tests
+
+The regression suite now includes medium-size InterPSS fixtures:
+
+- IEEE 118: 25 outages, 40 monitored branches, monitor chunk size 8, compared
+  against `ParallelDclfContingencyAnalyzer` with 4 workers.
+- IEEE 300: 40 outages, 80 monitored branches, monitor chunk size 16, compared
+  against `ParallelDclfContingencyAnalyzer` with 4 workers.
+
+This scale-up exposed a radial-outage edge case. When `PTDF(k,k)` is near
+`+/-1`, the raw denominator `1 - PTDF(k,k)` can be near zero, but InterPSS still
+returns a valid LODF vector for radial outages. `DclfTransferPanelBuilder` now
+marks those outages valid to match `lineOutageDFactors()` and the existing
+parallel analyzer.
