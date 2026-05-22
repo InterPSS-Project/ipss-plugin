@@ -107,6 +107,59 @@ public class DclfTransferPanelCacheTest extends CorePluginTestSetup {
         }
     }
 
+    @Test
+    public void woodburySingleOpenMatchesInterpssPostOutageFlow() throws InterpssException {
+        AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
+        ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(net);
+        dclfAlgo.calculateDclf();
+
+        DclfBranchOutage contingency = firstNonRefBranchOutages(net, dclfAlgo, 1).get(0);
+        DclfOutageBranch outage = contingency.getOutageEquip();
+        AclfBranch monitor = net.getBranch("Bus2->Bus4(1)");
+
+        DclfWoodburyOutageSolver solver = new DclfWoodburyOutageSolver(dclfAlgo);
+        double expected = dclfAlgo.calPostOutageFlow(outage, dclfAlgo.getDclfAlgoBranch(monitor.getId()));
+        double actual = solver.singleOpenPostFlow(outage, dclfAlgo.getDclfAlgoBranch(monitor.getId()));
+
+        assertEquals(expected, actual, 1.0e-10);
+    }
+
+    @Test
+    public void woodburyMultiOpenMatchesInterpssMultiOpenAnalysis() throws InterpssException {
+        AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
+        ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(net);
+        dclfAlgo.calculateDclf();
+
+        List<DclfBranchOutage> contingencies = firstNonRefBranchOutages(net, dclfAlgo, 2);
+        DclfOutageBranch[] outages = contingencies.stream()
+                .map(DclfBranchOutage::getOutageEquip)
+                .toArray(DclfOutageBranch[]::new);
+        AclfBranch[] monitors = new AclfBranch[] {
+                outages[0].getBranch(),
+                net.getBranch("Bus2->Bus4(1)"),
+                net.getBranch("Bus3->Bus4(1)"),
+                net.getBranch("Bus4->Bus5(1)")
+        };
+        int originalSortNumber = outages[0].getBranch().getSortNumber();
+
+        DclfWoodburyOutageSolver.MultiOpenResult result =
+                new DclfWoodburyOutageSolver(dclfAlgo).solveMultiOpen(outages, monitors);
+
+        assertEquals(originalSortNumber, outages[0].getBranch().getSortNumber());
+        assertEquals(outages.length, result.getOutageCount());
+        assertEquals(monitors.length, result.getMonitorCount());
+
+        dclfAlgo.multiOpenOutageAnalysis(outages);
+        for (int monitorIndex = 0; monitorIndex < monitors.length; monitorIndex++) {
+            double expectedShifted = dclfAlgo.getDclfAlgoBranch(monitors[monitorIndex].getId()).getShiftedFlow();
+            assertEquals(expectedShifted, result.getShiftedFlowPu(monitorIndex), 1.0e-10);
+            assertEquals(
+                    dclfAlgo.getDclfAlgoBranch(monitors[monitorIndex].getId()).getDclfFlow() + expectedShifted,
+                    result.getPostFlowPu(monitorIndex),
+                    1.0e-10);
+        }
+    }
+
     private static Map<String, BranchCAResultRec> toResultMap(ConcurrentLinkedQueue<BranchCAResultRec> results) {
         return results.stream().collect(Collectors.toMap(
                 result -> result.contingency.getId() + "|" + result.aclfBranch.getId(),
