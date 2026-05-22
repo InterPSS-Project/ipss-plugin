@@ -1,6 +1,7 @@
 package org.interpss.plugin.contingency.dclf;
 
 import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
+import static com.interpss.core.DclfAlgoObjectFactory.createCaMonitoringBranch;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
 import static com.interpss.core.DclfAlgoObjectFactory.createMultiOutageContingency;
@@ -21,6 +22,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
 import org.interpss.CorePluginTestSetup;
+import org.interpss.plugin.contingency.DclfContingencyConfig;
 import org.interpss.plugin.contingency.ParallelDclfContingencyAnalyzer;
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
 import org.interpss.plugin.contingency.definition.MonitoredBranchRecord;
@@ -37,9 +39,10 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
-import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
+import com.interpss.core.algo.dclf.DclfContingencySolutionMethod;
 import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.dclf.DclfBranchOutage;
+import com.interpss.core.contingency.dclf.DclfMonitoringBranch;
 import com.interpss.core.contingency.dclf.DclfMultiOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
 
@@ -64,7 +67,7 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
     }
 
     @Test
-    public void texas2kJsonRandomMultiOutagesMatchInterpssMultiOpenAnalysis() throws Exception {
+    public void texas2kJsonRandomMultiOutagesCompareSparseAndWoodburyCa() throws Exception {
         AclfNetwork net = importPsse(
                 "testData/psse/v36/Texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW",
                 IpssAdapter.PsseVersion.PSSE_36);
@@ -88,17 +91,28 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
         assertEquals(2, multiOutages.get(0).getOutageEquips().size());
         assertEquals(3, multiOutages.get(1).getOutageEquips().size());
 
+        DclfContingencyConfig woodburyConfig = DclfContingencyConfig.createDefaultConfig();
+        woodburyConfig.setOverloadThreshold(0.0);
+        woodburyConfig.setDclfInclLoss(false);
+        woodburyConfig.setSolutionMethod(DclfContingencySolutionMethod.WoodburyMatrixUpdate);
+
         ConcurrentLinkedQueue<BranchCAResultRec> woodburyResults =
                 DclfMultiOutageContingencyAnalyzer.performContingencyAnalysis(
-                        net, multiOutages, monitors, 0.0, false, 4);
-        ConcurrentLinkedQueue<BranchCAResultRec> interpssResults =
-                interpssMultiOpenResults(net, multiOutages, monitors, 0.0, 1.0);
+                        net, multiOutages, monitors, woodburyConfig, 4);
+        ConcurrentLinkedQueue<BranchCAResultRec> sparseResults =
+                coreCaResults(
+                        net,
+                        multiOutages,
+                        monitors,
+                        DclfContingencySolutionMethod.SparseEqnSolve,
+                        0.0,
+                        BranchCAResultRec.ContingencyShiftThreshold);
 
         Map<String, BranchCAResultRec> woodburyByKey = toResultMap(woodburyResults);
-        Map<String, BranchCAResultRec> interpssByKey = toResultMap(interpssResults);
+        Map<String, BranchCAResultRec> sparseByKey = toResultMap(sparseResults);
 
-        assertEquals(interpssByKey.keySet(), woodburyByKey.keySet());
-        for (Map.Entry<String, BranchCAResultRec> entry : interpssByKey.entrySet()) {
+        assertEquals(sparseByKey.keySet(), woodburyByKey.keySet());
+        for (Map.Entry<String, BranchCAResultRec> entry : sparseByKey.entrySet()) {
             BranchCAResultRec expected = entry.getValue();
             BranchCAResultRec actual = woodburyByKey.get(entry.getKey());
             assertEquals(expected.preFlowMW, actual.preFlowMW, MW_TOLERANCE);
@@ -437,14 +451,16 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
         return multiOutages;
     }
 
-    private static ConcurrentLinkedQueue<BranchCAResultRec> interpssMultiOpenResults(
+    private static ConcurrentLinkedQueue<BranchCAResultRec> coreCaResults(
             AclfNetwork net,
             List<DclfMultiOutage> multiOutages,
             Set<String> monitorIds,
+            DclfContingencySolutionMethod solutionMethod,
             double overloadThreshold,
             double shiftThresholdMw)
             throws InterpssException {
         ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(net);
+        dclfAlgo.setSolutionMethod(solutionMethod);
         dclfAlgo.calculateDclf();
 
         List<AclfBranch> monitors = monitorIds.stream()
@@ -455,23 +471,21 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
         double baseMva = net.getBaseMva();
 
         for (DclfMultiOutage multiOutage : multiOutages) {
-            DclfOutageBranch[] outageBranches =
-                    multiOutage.getOutageEquips().toArray(new DclfOutageBranch[0]);
-            refreshOutagePreFlows(dclfAlgo, outageBranches);
-            dclfAlgo.multiOpenOutageAnalysis(outageBranches);
+            DclfMultiOutage workingContingency = createWorkingMultiOutage(dclfAlgo, multiOutage, monitors);
+            dclfAlgo.ca(workingContingency);
 
-            for (AclfBranch monitor : monitors) {
-                DclfAlgoBranch dclfBranch = dclfAlgo.getDclfAlgoBranch(monitor.getId());
-                double shiftedFlowMw = dclfBranch.getShiftedFlow() * baseMva;
+            for (DclfMonitoringBranch monitoringBranch : workingContingency.getMonitoringBranches()) {
+                AclfBranch monitor = monitoringBranch.getBranch();
+                double shiftedFlowMw = monitoringBranch.getShiftedFlow() * baseMva;
                 if (Math.abs(shiftedFlowMw) <= shiftThresholdMw) {
                     continue;
                 }
 
                 BranchCAResultRec result =
                         new BranchCAResultRec(
-                                multiOutage,
+                                workingContingency,
                                 monitor,
-                                dclfBranch.getDclfFlow() * baseMva,
+                                dclfAlgo.getDclfAlgoBranch(monitor.getId()).getDclfFlow() * baseMva,
                                 shiftedFlowMw);
                 if (result.calLoadingPercent() >= overloadThreshold) {
                     results.add(result);
@@ -482,13 +496,26 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
         return results;
     }
 
-    private static void refreshOutagePreFlows(
+    private static DclfMultiOutage createWorkingMultiOutage(
             ContingencyAnalysisAlgorithm dclfAlgo,
-            DclfOutageBranch[] outageBranches) {
-        for (DclfOutageBranch outageBranch : outageBranches) {
-            DclfAlgoBranch dclfBranch = dclfAlgo.getDclfAlgoBranch(outageBranch.getBranch().getId());
-            outageBranch.setDclfFlow(dclfBranch != null ? dclfBranch.getDclfFlow() : 0.0);
+            DclfMultiOutage source,
+            List<AclfBranch> monitors) {
+        DclfMultiOutage working =
+                createMultiOutageContingency(source.getId(), source.getOutageType());
+
+        for (DclfOutageBranch outageBranch : source.getOutageEquips()) {
+            DclfOutageBranch workingOutage =
+                    createCaOutageBranch(
+                            dclfAlgo.getDclfAlgoBranch(outageBranch.getBranch().getId()),
+                            source.getOutageType());
+            workingOutage.setDclfFlow(
+                    dclfAlgo.getDclfAlgoBranch(outageBranch.getBranch().getId()).getDclfFlow());
+            working.getOutageEquips().add(workingOutage);
         }
+        for (AclfBranch monitor : monitors) {
+            working.addMonitoringBranch(createCaMonitoringBranch(dclfAlgo.getDclfAlgoBranch(monitor.getId())));
+        }
+        return working;
     }
 
     private static List<DclfBranchOutage> dclfContingenciesFromJsonRecords(

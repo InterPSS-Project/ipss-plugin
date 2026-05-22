@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
+import org.interpss.plugin.contingency.DclfContingencyConfig;
 import org.interpss.plugin.contingency.ParallelDclfContingencyAnalyzer;
 import org.interpss.plugin.optadj.IEEE14_SensHelper_Test;
 import org.junit.jupiter.api.Test;
@@ -160,6 +161,53 @@ public class DclfTransferPanelCacheTest extends CorePluginTestSetup {
         for (Map.Entry<String, BranchCAResultRec> entry : fullResults.entrySet()) {
             BranchCAResultRec expected = entry.getValue();
             BranchCAResultRec actual = chunkedResults.get(entry.getKey());
+            assertEquals(expected.preFlowMW, actual.preFlowMW, 1.0e-8);
+            assertEquals(expected.shiftedFlowMW, actual.shiftedFlowMW, 1.0e-8);
+            assertEquals(expected.getPostFlowMW(), actual.getPostFlowMW(), 1.0e-8);
+        }
+    }
+
+    @Test
+    public void multiOutageAnalyzerHonorsConfiguredSolutionMethod() throws InterpssException {
+        AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
+        ContingencyAnalysisAlgorithm sourceAlgo = createContingencyAnalysisAlgorithm(net);
+        sourceAlgo.calculateDclf();
+
+        DclfMultiOutage multiOutage =
+                createMultiOutageContingency("configured-method-multi-open", ContingencyBranchOutageType.OPEN);
+        for (DclfBranchOutage contingency : firstNonRefBranchOutages(net, sourceAlgo, 2)) {
+            multiOutage.getOutageEquips().add(contingency.getOutageEquip());
+        }
+        Set<String> monitors = new LinkedHashSet<>(Arrays.asList(
+                "Bus2->Bus3(1)",
+                "Bus2->Bus4(1)",
+                "Bus3->Bus4(1)",
+                "Bus4->Bus5(1)"));
+
+        DclfContingencyConfig sparseConfig = DclfContingencyConfig.createDefaultConfig();
+        sparseConfig.setOverloadThreshold(0.0);
+        sparseConfig.setDclfInclLoss(false);
+        sparseConfig.setSolutionMethod(DclfContingencySolutionMethod.SparseEqnSolve);
+
+        DclfContingencyConfig woodburyConfig = DclfContingencyConfig.createDefaultConfig();
+        woodburyConfig.setOverloadThreshold(0.0);
+        woodburyConfig.setDclfInclLoss(false);
+        woodburyConfig.setSolutionMethod(DclfContingencySolutionMethod.WoodburyMatrixUpdate);
+
+        ConcurrentLinkedQueue<BranchCAResultRec> sparseResults =
+                DclfMultiOutageContingencyAnalyzer.performContingencyAnalysis(
+                        net, List.of(multiOutage), monitors, sparseConfig, 1);
+        ConcurrentLinkedQueue<BranchCAResultRec> woodburyResults =
+                DclfMultiOutageContingencyAnalyzer.performContingencyAnalysis(
+                        net, List.of(multiOutage), monitors, woodburyConfig, 1);
+
+        assertTrue(!woodburyResults.isEmpty());
+        Map<String, BranchCAResultRec> sparseByKey = toResultMap(sparseResults);
+        Map<String, BranchCAResultRec> woodburyByKey = toResultMap(woodburyResults);
+        assertEquals(sparseByKey.keySet(), woodburyByKey.keySet());
+        for (Map.Entry<String, BranchCAResultRec> entry : sparseByKey.entrySet()) {
+            BranchCAResultRec expected = entry.getValue();
+            BranchCAResultRec actual = woodburyByKey.get(entry.getKey());
             assertEquals(expected.preFlowMW, actual.preFlowMW, 1.0e-8);
             assertEquals(expected.shiftedFlowMW, actual.shiftedFlowMW, 1.0e-8);
             assertEquals(expected.getPostFlowMW(), actual.getPostFlowMW(), 1.0e-8);
