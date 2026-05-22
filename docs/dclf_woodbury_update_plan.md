@@ -97,9 +97,10 @@ flow equivalence against InterPSS `multiOpenOutageAnalysis()` on IEEE 14.
 path for `DclfMultiOutage` contingencies. It calculates the current DCLF once,
 refreshes each outage branch pre-flow from the InterPSS DCLF branch model, then
 uses `DclfWoodburyOutageSolver.solveMultiOpen()` to evaluate the selected
-monitored branches. The result type is `DclfOutageCAResultRec`, mirroring
-the existing single-outage `BranchCAResultRec` fields while preserving the
-multi-outage contingency object.
+monitored branches. The analyzer now emits the same `BranchCAResultRec` type
+used by N-1 analysis; the result record carries normalized outage-equipment
+accessors and optional multi-outage LODF factors for combined-shift sensitivity
+calculations.
 
 The Texas2k JSON regression reads the existing branch-contingency and monitored
 branch JSON files, shuffles the valid single outages with a fixed seed, creates
