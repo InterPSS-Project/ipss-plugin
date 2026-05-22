@@ -1,6 +1,9 @@
 package org.interpss.plugin.contingency.dclf;
 
+import static com.interpss.core.DclfAlgoObjectFactory.createCaMonitoringBranch;
+import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
+import static com.interpss.core.DclfAlgoObjectFactory.createMultiOutageContingency;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,37 +16,78 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
-import com.interpss.core.algo.dclf.DclfContingencyWoodburySolver;
+import com.interpss.core.algo.dclf.DclfContingencySolutionMethod;
 import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 import com.interpss.core.contingency.ContingencyBranchOutageType;
+import com.interpss.core.contingency.dclf.DclfMonitoringBranch;
 import com.interpss.core.contingency.dclf.DclfMultiOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
+import org.interpss.plugin.contingency.DclfContingencyConfig;
 
 /**
- * Applies the Woodbury multi-open DCLF solve to multi-branch contingencies.
+ * Applies core DCLF CA solution-method selection to multi-branch contingencies.
  */
 public final class DclfMultiOutageContingencyAnalyzer {
     private final ContingencyAnalysisAlgorithm dclfAlgorithm;
     private final AclfBranch[] monitoredBranches;
     private final double overloadThreshold;
     private final double shiftThresholdMw;
+    private final DclfContingencySolutionMethod solutionMethod;
 
     public DclfMultiOutageContingencyAnalyzer(
             ContingencyAnalysisAlgorithm dclfAlgorithm,
             AclfBranch[] monitoredBranches,
             double overloadThreshold,
             double shiftThresholdMw) {
+        this(
+                dclfAlgorithm,
+                monitoredBranches,
+                overloadThreshold,
+                shiftThresholdMw,
+                DclfContingencySolutionMethod.WoodburyMatrixUpdate);
+    }
+
+    public DclfMultiOutageContingencyAnalyzer(
+            ContingencyAnalysisAlgorithm dclfAlgorithm,
+            AclfBranch[] monitoredBranches,
+            double overloadThreshold,
+            double shiftThresholdMw,
+            DclfContingencySolutionMethod solutionMethod) {
         if (dclfAlgorithm == null) {
             throw new IllegalArgumentException("dclfAlgorithm cannot be null");
         }
         if (monitoredBranches == null) {
             throw new IllegalArgumentException("monitoredBranches cannot be null");
         }
+        if (solutionMethod == null) {
+            throw new IllegalArgumentException("solutionMethod cannot be null");
+        }
         this.dclfAlgorithm = dclfAlgorithm;
         this.monitoredBranches = Arrays.copyOf(monitoredBranches, monitoredBranches.length);
         this.overloadThreshold = overloadThreshold;
         this.shiftThresholdMw = shiftThresholdMw;
+        this.solutionMethod = solutionMethod;
+    }
+
+    public static ConcurrentLinkedQueue<BranchCAResultRec> performContingencyAnalysis(
+            AclfNetwork aclfNet,
+            List<DclfMultiOutage> contingencyList,
+            Set<String> monitoredBranchIds,
+            DclfContingencyConfig config,
+            int parallelismLevel)
+            throws InterpssException {
+        if (config == null) {
+            throw new IllegalArgumentException("config cannot be null");
+        }
+        return performContingencyAnalysis(
+                aclfNet,
+                contingencyList,
+                monitoredBranchIds,
+                config.getOverloadThreshold(),
+                config.isDclfInclLoss(),
+                parallelismLevel,
+                config.getSolutionMethod());
     }
 
     public static ConcurrentLinkedQueue<BranchCAResultRec> performContingencyAnalysis(
@@ -53,6 +97,25 @@ public final class DclfMultiOutageContingencyAnalyzer {
             double overloadThreshold,
             boolean dclfInclLoss,
             int parallelismLevel)
+            throws InterpssException {
+        return performContingencyAnalysis(
+                aclfNet,
+                contingencyList,
+                monitoredBranchIds,
+                overloadThreshold,
+                dclfInclLoss,
+                parallelismLevel,
+                DclfContingencySolutionMethod.WoodburyMatrixUpdate);
+    }
+
+    public static ConcurrentLinkedQueue<BranchCAResultRec> performContingencyAnalysis(
+            AclfNetwork aclfNet,
+            List<DclfMultiOutage> contingencyList,
+            Set<String> monitoredBranchIds,
+            double overloadThreshold,
+            boolean dclfInclLoss,
+            int parallelismLevel,
+            DclfContingencySolutionMethod solutionMethod)
             throws InterpssException {
         ContingencyAnalysisAlgorithm dclfAlgorithm = createContingencyAnalysisAlgorithm(aclfNet);
         DclfMethod method = dclfInclLoss ? DclfMethod.INC_LOSS : DclfMethod.STD;
@@ -64,7 +127,8 @@ public final class DclfMultiOutageContingencyAnalyzer {
                         dclfAlgorithm,
                         monitoredBranches,
                         overloadThreshold,
-                        BranchCAResultRec.ContingencyShiftThreshold);
+                        BranchCAResultRec.ContingencyShiftThreshold,
+                        solutionMethod);
         return analyzer.analyze(contingencyList, parallelismLevel);
     }
 
@@ -77,27 +141,28 @@ public final class DclfMultiOutageContingencyAnalyzer {
         }
 
         ConcurrentLinkedQueue<BranchCAResultRec> results = new ConcurrentLinkedQueue<>();
-        DclfContingencyWoodburySolver solver = new DclfContingencyWoodburySolver(dclfAlgorithm);
+        dclfAlgorithm.setSolutionMethod(solutionMethod);
+        double baseMva = dclfAlgorithm.getAclfNet().getBaseMva();
 
         for (DclfMultiOutage contingency : contingencyList) {
-            DclfOutageBranch[] outageBranches = outageBranches(contingency);
-            refreshOutagePreFlows(outageBranches);
+            DclfMultiOutage workingContingency = createWorkingContingency(contingency);
+            dclfAlgorithm.ca(workingContingency);
 
-            DclfContingencyWoodburySolver.MultiOpenResult solved =
-                    solver.solveMultiOpen(outageBranches, monitoredBranches);
-            for (int monitorIndex = 0; monitorIndex < solved.getMonitorCount(); monitorIndex++) {
-                double shiftedFlowMw = solved.getShiftedFlowMw(monitorIndex);
+            for (DclfMonitoringBranch monitoringBranch : workingContingency.getMonitoringBranches()) {
+                AclfBranch monitor = monitoringBranch.getBranch();
+                DclfAlgoBranch dclfBranch = dclfAlgorithm.getDclfAlgoBranch(monitor.getId());
+                double preFlowMw = dclfBranch.getDclfFlow() * baseMva;
+                double shiftedFlowMw = monitoringBranch.getShiftedFlow() * baseMva;
                 if (Math.abs(shiftedFlowMw) <= shiftThresholdMw) {
                     continue;
                 }
 
                 BranchCAResultRec result =
                         new BranchCAResultRec(
-                                contingency,
-                                monitoredBranches[monitorIndex],
-                                solved.getPreFlowMw(monitorIndex),
-                                shiftedFlowMw,
-                                solved.getLodfs(monitorIndex));
+                                workingContingency,
+                                monitor,
+                                preFlowMw,
+                                shiftedFlowMw);
                 if (result.calLoadingPercent() >= overloadThreshold) {
                     results.add(result);
                 }
@@ -107,13 +172,14 @@ public final class DclfMultiOutageContingencyAnalyzer {
         return results;
     }
 
-    private DclfOutageBranch[] outageBranches(DclfMultiOutage contingency) throws InterpssException {
+    private DclfMultiOutage createWorkingContingency(DclfMultiOutage contingency) throws InterpssException {
         if (contingency == null) {
             throw new InterpssException("DCLF multi-outage contingency cannot be null");
         }
-        if (contingency.getOutageType() != ContingencyBranchOutageType.OPEN) {
+        if (contingency.getOutageType() != ContingencyBranchOutageType.OPEN
+                && contingency.getOutageType() != ContingencyBranchOutageType.CLOSE) {
             throw new InterpssException(
-                    "DclfMultiOutageContingencyAnalyzer currently supports OPEN branch outages only: "
+                    "DclfMultiOutageContingencyAnalyzer supports OPEN and CLOSE branch outages only: "
                             + contingency.getId());
         }
         if (contingency.getOutageEquips().isEmpty()) {
@@ -121,24 +187,32 @@ public final class DclfMultiOutageContingencyAnalyzer {
                     + contingency.getId());
         }
 
-        DclfOutageBranch[] outageBranches = new DclfOutageBranch[contingency.getOutageEquips().size()];
+        DclfMultiOutage workingContingency =
+                createMultiOutageContingency(contingency.getId(), contingency.getOutageType());
         for (int i = 0; i < contingency.getOutageEquips().size(); i++) {
             DclfOutageBranch outageBranch = contingency.getOutageEquips().get(i);
             if (outageBranch == null || outageBranch.getBranch() == null) {
                 throw new InterpssException("DCLF multi-outage contingency has an invalid outage branch: "
                         + contingency.getId());
             }
-            outageBranches[i] = outageBranch;
-        }
-        return outageBranches;
-    }
-
-    private void refreshOutagePreFlows(DclfOutageBranch[] outageBranches) {
-        for (DclfOutageBranch outageBranch : outageBranches) {
             DclfAlgoBranch dclfBranch =
                     dclfAlgorithm.getDclfAlgoBranch(outageBranch.getBranch().getId());
-            outageBranch.setDclfFlow(dclfBranch != null ? dclfBranch.getDclfFlow() : 0.0);
+            if (dclfBranch == null) {
+                throw new InterpssException("DCLF outage branch is not available in the analysis algorithm: "
+                        + outageBranch.getBranch().getId());
+            }
+            DclfOutageBranch workingOutage = createCaOutageBranch(dclfBranch, contingency.getOutageType());
+            workingOutage.setDclfFlow(dclfBranch.getDclfFlow());
+            workingContingency.getOutageEquips().add(workingOutage);
         }
+
+        for (AclfBranch monitor : monitoredBranches) {
+            DclfAlgoBranch dclfBranch = dclfAlgorithm.getDclfAlgoBranch(monitor.getId());
+            if (dclfBranch != null) {
+                workingContingency.addMonitoringBranch(createCaMonitoringBranch(dclfBranch));
+            }
+        }
+        return workingContingency;
     }
 
     private static AclfBranch[] resolveMonitoredBranches(
