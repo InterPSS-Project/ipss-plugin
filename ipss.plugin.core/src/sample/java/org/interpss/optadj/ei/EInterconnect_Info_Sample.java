@@ -1,26 +1,12 @@
 package org.interpss.optadj.ei;
 
-import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 
-import java.util.Map;
-import java.util.Set;
-
-import org.interpss.numeric.datatype.AtomicCounter;
 import org.interpss.numeric.datatype.Counter;
 import org.interpss.numeric.datatype.LimitType;
-import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.plugin.optadj.algo.AclfNetBusOptimizer;
-import org.interpss.plugin.optadj.algo.AclfNetGenLoadOptimizer;
-import org.interpss.plugin.optadj.algo.util.Sen2DMatrix;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
-import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
-import com.interpss.core.algo.dclf.DclfMethod;
-import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 
 public class EInterconnect_Info_Sample {
 	static class DblBuffer {
