@@ -108,6 +108,59 @@ public class DclfTransferPanelCacheTest extends CorePluginTestSetup {
     }
 
     @Test
+    public void chunkedPanelMatchesFullPanelAndAnalyzerResults() throws InterpssException {
+        AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
+        ContingencyAnalysisAlgorithm sourceAlgo = createContingencyAnalysisAlgorithm(net);
+        sourceAlgo.calculateDclf();
+
+        List<DclfBranchOutage> contingencies = firstNonRefBranchOutages(net, sourceAlgo, 4);
+        Set<String> monitors = new LinkedHashSet<>(Arrays.asList(
+                "Bus2->Bus3(1)",
+                "Bus2->Bus4(1)",
+                "Bus3->Bus4(1)",
+                "Bus4->Bus5(1)",
+                "Bus6->Bus11(1)"));
+
+        DclfContingencyStudySpec spec = DclfContingencyStudySpec.builder(net)
+                .contingencies(contingencies)
+                .monitoredBranchIds(monitors)
+                .overloadThreshold(0.0)
+                .build();
+
+        DclfTransferPanelCache fullCache = DclfTransferPanelBuilder.build(spec);
+        DclfTransferPanelCache chunkedCache = DclfTransferPanelBuilder.build(
+                spec,
+                PanelBuildOptions.builder().monitorChunkSize(2).build());
+
+        assertEquals(1, fullCache.getChunkCount());
+        assertEquals(3, chunkedCache.getChunkCount());
+        assertEquals(fullCache.estimatePanelBytes(), chunkedCache.estimatePanelBytes());
+
+        for (int monitorIndex = 0; monitorIndex < fullCache.getMonitorCount(); monitorIndex++) {
+            for (int outageIndex = 0; outageIndex < fullCache.getOutageCount(); outageIndex++) {
+                assertEquals(
+                        fullCache.getLodf(monitorIndex, outageIndex),
+                        chunkedCache.getLodf(monitorIndex, outageIndex),
+                        1.0e-10);
+            }
+        }
+
+        Map<String, BranchCAResultRec> fullResults =
+                toResultMap(new CachedDclfContingencyAnalyzer(fullCache).analyzeCurrentProfile());
+        Map<String, BranchCAResultRec> chunkedResults =
+                toResultMap(new CachedDclfContingencyAnalyzer(chunkedCache).analyzeCurrentProfile());
+
+        assertEquals(fullResults.keySet(), chunkedResults.keySet());
+        for (Map.Entry<String, BranchCAResultRec> entry : fullResults.entrySet()) {
+            BranchCAResultRec expected = entry.getValue();
+            BranchCAResultRec actual = chunkedResults.get(entry.getKey());
+            assertEquals(expected.preFlowMW, actual.preFlowMW, 1.0e-8);
+            assertEquals(expected.shiftedFlowMW, actual.shiftedFlowMW, 1.0e-8);
+            assertEquals(expected.getPostFlowMW(), actual.getPostFlowMW(), 1.0e-8);
+        }
+    }
+
+    @Test
     public void woodburySingleOpenMatchesInterpssPostOutageFlow() throws InterpssException {
         AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
         ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(net);
