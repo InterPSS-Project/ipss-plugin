@@ -136,6 +136,29 @@ Current opt-in cases:
   compared against `ParallelDclfContingencyAnalyzer` with 4 workers.
 - ACTIVSg25k PSS/E v33: 30 outages, 60 monitored branches, monitor chunk size
   15, compared against `ParallelDclfContingencyAnalyzer` with 4 workers.
+- OpenEI full JSON PSS/E v33: `Base_Eastern_Interconnect_515GW.RAW` with
+  `OpenEI_filtered_contingencies.json` and `OpenEI_monitored_branches.json`,
+  compared against `ParallelDclfContingencyAnalyzer` with 8 workers. This case
+  requires both `-Dinterpss.largeDclfTests=true` and
+  `-Dinterpss.fullJsonDclfTests=true`.
+
+Latest OpenEI full JSON result:
+
+- JSON import: 6,294 contingencies and 31,840 monitored branches.
+- Resolved study set after filtering reference-bus/out-of-service outage
+  branches: 6,288 outages and 31,840 monitors.
+- DCLF matrix dimension: 78,484.
+- Chunking: 125 monitor chunks with chunk size 256.
+- Estimated cached LODF panel size: 1,527 MB.
+- Thermal violations above 100% rating: 11,513 records.
+- Cached transfer-panel run: 46,308 ms, including panel build and current
+  profile scan.
+- InterPSS parallel baseline: 19,722 ms with 8 workers.
+- The cached and parallel result keys and MW values matched exactly within
+  `1.0e-7`.
+
+The full JSON test needs the heap on the Surefire forked JVM, not only Maven
+itself. A 12 GB forked heap was not enough for this case; 24 GB completed.
 
 Run commands:
 
@@ -148,5 +171,12 @@ mvn -q -pl ipss.test.plugin.core -am \
 mvn -q -pl ipss.test.plugin.core -am \
   -Dinterpss.largeDclfTests=true \
   -Dtest=org.interpss.plugin.contingency.dclf.DclfTransferPanelLargeCaseTest#activsg25kChunkedPanelMatchesParallelAnalyzer \
+  -Dsurefire.failIfNoSpecifiedTests=false test
+
+mvn -q -pl ipss.test.plugin.core -am \
+  -DargLine=-Xmx24g \
+  -Dinterpss.largeDclfTests=true \
+  -Dinterpss.fullJsonDclfTests=true \
+  -Dtest=org.interpss.plugin.contingency.dclf.DclfTransferPanelLargeCaseTest#openEiFullJsonChunkedPanelMatchesParallelAnalyzer \
   -Dsurefire.failIfNoSpecifiedTests=false test
 ```
