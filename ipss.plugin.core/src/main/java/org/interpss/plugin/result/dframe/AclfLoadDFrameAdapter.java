@@ -111,7 +111,7 @@ public class AclfLoadDFrameAdapter {
 	        			bus.getName(),
 	        			load.getId(),
 	        			load.getName(),
-	        			load.getCode().toString(),
+	        			bus.getLoadCode().toString(),
 	        			load.isActive(),
 	        			load.getLoad(vMag).getReal(),
 	        			load.getLoad(vMag).getImaginary(),
