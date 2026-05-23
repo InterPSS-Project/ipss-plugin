@@ -113,7 +113,7 @@ public class AclfGenDFrameAdapter {
 						bus.getName(),
 						gen.getId(),
 						gen.getName(),
-						gen.getCode().toString(),
+						bus.getGenCode().toString(),
 						gen.isActive(),
 						gen.getDesiredVoltMag(),
 						gen.getRemoteVControlBusId(),
