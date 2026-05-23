@@ -19,13 +19,13 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.AclfAdjCtrlFunction;
 
 public class AclfNetDFAdapter_Texas2kSample {
-	//private static final String TEST_ROOT = "ipss.plugin.core/";
-	private static final String TEST_ROOT = "";
+	private static final String TEST_ROOT = "ipss.test.plugin.core/";
+	//private static final String TEST_ROOT = "";
 	
 	public static void main(String args[]) throws Exception {
 		
 		//String filename = "ipss-plugin/ipss.test.plugin.core/testData/psse/v33/ACTIVSg25k.RAW";
-		String filename = "testData/psse/v36/texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW";
+		String filename = "ipss.test.plugin.core/testData/psse/v36/texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW";
 		
 		// load the test data V33
 		AclfNetwork net = IpssAdapter.importAclfNet(filename)
