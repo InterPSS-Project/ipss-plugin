@@ -156,7 +156,7 @@ public class AclfNetGenLoadOptimizer extends BaseAclfNetOptimizer {
 
 		result.getCaOverLimitInfo().forEach(info -> {
 			processLoadSet(gfsMatrix, loadSet, info.aclfBranch.getId());
-			processLoadSet(gfsMatrix, loadSet, info.contingency.getOutageEquip().getBranch().getId());
+			info.getOutageEquips().forEach(outage -> processLoadSet(gfsMatrix, loadSet, outage.getBranch().getId()));
 		});
 		return loadSet;
 	}
@@ -225,7 +225,7 @@ public class AclfNetGenLoadOptimizer extends BaseAclfNetOptimizer {
 
 		result.getCaOverLimitInfo().forEach(info -> {
 			processGenSet(gfsMatrix, genSet, info.aclfBranch.getId());
-			processGenSet(gfsMatrix, genSet, info.contingency.getOutageEquip().getBranch().getId());
+			info.getOutageEquips().forEach(outage -> processGenSet(gfsMatrix, genSet, outage.getBranch().getId()));
 		});
 		return genSet;
 	}
