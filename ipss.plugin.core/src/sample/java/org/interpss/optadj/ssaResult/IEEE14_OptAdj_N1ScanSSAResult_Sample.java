@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.interpss.numeric.datatype.AtomicCounter;
-import org.interpss.plugin.optadj.algo.AclfNetContigencyOptimizer;
+import org.interpss.plugin.optadj.algo.AclfNetGenLoadContigencyOptimizer;
 import org.interpss.plugin.optadj.algo.result.AclfNetSsaResultContainer;
 import org.interpss.plugin.optadj.algo.result.BranchOptAdjustCAResultRec;
 
@@ -96,7 +96,7 @@ public class IEEE14_OptAdj_N1ScanSSAResult_Sample {
 			});
 		System.out.println("Total number of branches over limit before OptAdj: " + cnt.getCount());
 		
-		AclfNetContigencyOptimizer optimizer = new AclfNetContigencyOptimizer(dclfAlgo);
+		AclfNetGenLoadContigencyOptimizer optimizer = new AclfNetGenLoadContigencyOptimizer(dclfAlgo);
 		optimizer.optimize(ssaResults, ssaResults.getContingencyThreshold(), true);
 		
 		Map<String, Double> resultMap = optimizer.getResultMap();
