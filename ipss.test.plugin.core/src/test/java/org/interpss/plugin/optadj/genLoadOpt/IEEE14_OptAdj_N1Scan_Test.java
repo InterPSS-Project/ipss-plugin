@@ -14,7 +14,7 @@ import java.util.Map;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.AtomicCounter;
 import org.interpss.plugin.optadj.IEEE14_SensHelper_Test;
-import org.interpss.plugin.optadj.algo.AclfNetGenLoadContigencyOptimizer;
+import org.interpss.plugin.optadj.algo.AclfNetGlobalContigencyOptimizer;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.algo.parallel.ContingencyAnalysisMonad;
@@ -70,7 +70,7 @@ public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
 		System.out.println("Total number of branches over limit before OptAdj: " + cnt.getCount());
 		assertTrue(cnt.getCount() == 18, ""+cnt.getCount());
 		
-		AclfNetGenLoadContigencyOptimizer optimizer = new AclfNetGenLoadContigencyOptimizer(dclfAlgo);
+		AclfNetGlobalContigencyOptimizer optimizer = new AclfNetGlobalContigencyOptimizer(dclfAlgo);
 		optimizer.optimize(100, true);
 		
 		Map<String, Double> resultMap = optimizer.getResultMap();

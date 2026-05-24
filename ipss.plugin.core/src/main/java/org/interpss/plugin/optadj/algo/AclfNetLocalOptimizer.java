@@ -40,8 +40,8 @@ import com.interpss.core.algo.dclf.adapter.DclfAlgoLoad;
  * 
  * @author Donghao.F
  */
-public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
-    private static final Logger log = LoggerFactory.getLogger(AclfNetBusOptimizer.class);
+public class AclfNetLocalOptimizer extends BaseAclfNetOptimizer {
+    private static final Logger log = LoggerFactory.getLogger(AclfNetLocalOptimizer.class);
     
     // Configuration constants
     // Gfs adjustment sensitivity threshold
@@ -73,7 +73,7 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
      * 
      * @param dclfAlgo DCLF algorithm object used for optimization
      */
-    public AclfNetBusOptimizer(ContingencyAnalysisAlgorithm dclfAlgo) {
+    public AclfNetLocalOptimizer(ContingencyAnalysisAlgorithm dclfAlgo) {
         super(dclfAlgo);
         this.network = (AclfNetwork) dclfAlgo.getNetwork();
         this.helper = new AclfNetGFSsHelper(network);
