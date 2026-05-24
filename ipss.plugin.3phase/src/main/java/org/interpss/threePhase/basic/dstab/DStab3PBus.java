@@ -3,6 +3,7 @@ package org.interpss.threePhase.basic.dstab;
 import java.util.List;
 
 import org.interpss.numeric.datatype.Complex3x1;
+import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.threePhase.dynamic.model.DynLoadModel1Phase;
 import org.interpss.threePhase.dynamic.model.DynLoadModel3Phase;
 
@@ -34,6 +35,8 @@ public interface DStab3PBus extends IBus3Phase, BaseDStabBus<DStab3PGen,DStab3PL
     public List<DStab3PGen> getThreePhaseGenList();
 
     public Complex3x1  calc3PhEquivCurInj();
+
+    public Complex3x3 getYiiAbcForPowerflow();
 
     public Complex3x1 get3PhaseTotalLoad();
 

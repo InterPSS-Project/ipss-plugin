@@ -3,6 +3,8 @@ package org.interpss.threePhase.dynamic;
 import java.util.Hashtable;
 
 import org.interpss.numeric.datatype.Complex3x1;
+import org.interpss.numeric.exp.IpssNumericException;
+import org.interpss.numeric.sparse.ISparseEqnComplexMatrix3x3;
 import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
 
@@ -31,6 +33,10 @@ public interface DStabNetwork3Phase extends INetwork3Phase, BaseDStabNetwork<DSt
 	public boolean solvePosSeqNetEqn();
 
 	public boolean initPosSeqDStabNet();
+
+	public ISparseEqnComplexMatrix3x3 formYMatrixABCForPowerflow() throws IpssNumericException;
+
+	public ISparseEqnComplexMatrix3x3 getYMatrixABCForPowerflow();
 
 	public Hashtable<String, Complex3x1> get3phaseCustomCurrInjTable();
 
