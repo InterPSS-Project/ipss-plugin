@@ -13,7 +13,7 @@ import org.interpss.numeric.datatype.Counter;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.plugin.optadj.algo.AclfNetBusOptimizer;
+import org.interpss.plugin.optadj.algo.AclfNetLocalOptimizer;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.result.dframe.AclfNetDFrameAdapter;
 
