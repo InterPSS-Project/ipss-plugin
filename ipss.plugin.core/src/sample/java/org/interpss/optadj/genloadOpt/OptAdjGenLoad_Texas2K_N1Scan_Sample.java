@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.interpss.numeric.datatype.AtomicCounter;
-import org.interpss.plugin.optadj.algo.AclfNetGenLoadContigencyOptimizer;
+import org.interpss.plugin.optadj.algo.AclfNetGlobalContigencyOptimizer;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.algo.parallel.ContingencyAnalysisMonad;
@@ -68,7 +68,7 @@ public class OptAdjGenLoad_Texas2K_N1Scan_Sample {
 			});
 		System.out.println("Total number of branches over limit before OptAdj: " + cnt.getCount());
 		 
-		AclfNetGenLoadContigencyOptimizer optimizer = new AclfNetGenLoadContigencyOptimizer(dclfAlgo);
+		AclfNetGlobalContigencyOptimizer optimizer = new AclfNetGlobalContigencyOptimizer(dclfAlgo);
 		optimizer.optimize(100, false);
 		
 		Map<String, Double> resultMap = optimizer.getResultMap();

@@ -2,7 +2,7 @@
 package org.interpss.plugin.optadj.optimizer;
 
 import org.apache.commons.math3.optim.linear.Relationship;
-import org.interpss.plugin.optadj.algo.AclfNetBusOptimizer;
+import org.interpss.plugin.optadj.algo.AclfNetLocalOptimizer;
 import org.interpss.plugin.optadj.optimizer.bean.DeviceConstrainData;
 import org.interpss.plugin.optadj.optimizer.bean.SectionConstrainData;
 import org.ojalgo.optimisation.Expression;
