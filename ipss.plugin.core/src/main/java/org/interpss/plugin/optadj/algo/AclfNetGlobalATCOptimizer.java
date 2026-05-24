@@ -20,15 +20,15 @@ import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
  * 
  * 
  */
-public class AclfNetATCOptimizer extends AclfNetGenLoadContigencyOptimizer {
+public class AclfNetGlobalATCOptimizer extends AclfNetGlobalContigencyOptimizer {
 	
-	private static final Logger log = LoggerFactory.getLogger(AclfNetATCOptimizer.class);
+	private static final Logger log = LoggerFactory.getLogger(AclfNetGlobalATCOptimizer.class);
 	
 	Set<AclfLoad>  controlLoadSet;
 	
 	Set<AclfGen>  controlGenSet;
 	
-    public AclfNetATCOptimizer(ContingencyAnalysisAlgorithm dclfAlgo, BaseStateOptimizer optimizer) {
+    public AclfNetGlobalATCOptimizer(ContingencyAnalysisAlgorithm dclfAlgo, BaseStateOptimizer optimizer) {
 		super(dclfAlgo);
 		this.setOptimizer(optimizer);
 	}

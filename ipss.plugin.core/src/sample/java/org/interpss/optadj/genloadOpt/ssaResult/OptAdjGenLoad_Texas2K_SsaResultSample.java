@@ -13,7 +13,7 @@ import org.interpss.numeric.datatype.Counter;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.plugin.optadj.algo.AclfNetGenLoadOptimizer;
+import org.interpss.plugin.optadj.algo.AclfNetGlobalOptimizer;
 import org.interpss.plugin.optadj.algo.result.AclfNetSsaResultContainer;
 import org.interpss.plugin.optadj.algo.result.BranchOptAdjustResultRec;
 import org.interpss.plugin.optadj.algo.util.AclfNetGFSsHelper;
@@ -65,7 +65,7 @@ public class OptAdjGenLoad_Texas2K_SsaResultSample {
 		
 		PerformanceTimer timer = new PerformanceTimer();
 		// perform the Optimization adjustment
-		AclfNetGenLoadOptimizer optimizer = new AclfNetGenLoadOptimizer(dclfAlgo);
+		AclfNetGlobalOptimizer optimizer = new AclfNetGlobalOptimizer(dclfAlgo);
 		optimizer.optimize(loadingThreshold, false);
 		
 		timer.log("Opt");

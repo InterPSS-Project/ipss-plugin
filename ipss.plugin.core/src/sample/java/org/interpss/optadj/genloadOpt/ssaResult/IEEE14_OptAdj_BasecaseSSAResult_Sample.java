@@ -8,7 +8,7 @@ import org.interpss.CorePluginFactory;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.AtomicCounter;
 import org.interpss.numeric.datatype.LimitType;
-import org.interpss.plugin.optadj.algo.AclfNetGenLoadOptimizer;
+import org.interpss.plugin.optadj.algo.AclfNetGlobalOptimizer;
 import org.interpss.plugin.optadj.algo.result.AclfNetSsaResultContainer;
 import org.interpss.plugin.optadj.algo.result.BranchDclfResultRec;
 import org.interpss.plugin.optadj.algo.result.BranchOptAdjustResultRec;
@@ -52,7 +52,7 @@ public class IEEE14_OptAdj_BasecaseSSAResult_Sample {
 		System.out.println("Total number of branches over limit before OptAdj: " + cnt.getCount());
 		
 		// perform the Optimization adjustment
-		AclfNetGenLoadOptimizer optimizer = new AclfNetGenLoadOptimizer(dclfAlgo);
+		AclfNetGlobalOptimizer optimizer = new AclfNetGlobalOptimizer(dclfAlgo);
 		optimizer.optimize(ssaResults, ssaResults.getBasecaseThreshold(), true);
 		
 		Map<String, Double> resultMap = optimizer.getResultMap();
