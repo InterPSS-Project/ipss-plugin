@@ -28,6 +28,7 @@ import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.BaseAcscBus;
+import com.interpss.core.acsc.BusGroundCode;
 import com.interpss.core.acsc.XFormerConnectCode;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
@@ -47,9 +48,11 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
     private static final Logger log = LoggerFactory.getLogger(DStabNetwork3phaseImpl.class);
 
 	protected ISparseEqnComplexMatrix3x3 yMatrixAbc = null;
+	protected ISparseEqnComplexMatrix3x3 yMatrixAbcPowerflow = null;
 	protected boolean is3PhaseNetworkInitialized = false;
 	protected Hashtable<String, Complex3x1> threePhaseCurInjTable = null;
 	private boolean isLoadModelConverted = false;
+	private double powerflowTransformerAntiFloatAdmittance = 1.0E-6;
 
 
 	@Override
@@ -383,6 +386,71 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 		return yMatrixAbc;
 	}
 
+	@Override
+	public ISparseEqnComplexMatrix3x3 formYMatrixABCForPowerflow() throws IpssNumericException {
+
+		yMatrixAbcPowerflow = new CSJSparseEqnComplexMatrix3x3Impl(getNoBus());
+
+		for(BaseDStabBus b:this.getBusList()){
+			if(b.isActive()){
+				if(b instanceof DStab3PBus){
+					int i = b.getSortNumber();
+					DStab3PBus ph3Bus = (DStab3PBus) b;
+					Complex3x3 yii = ph3Bus.getYiiAbcForPowerflow();
+
+					yMatrixAbcPowerflow.setA(yii, i, i);
+				} else {
+					throw new IpssNumericException("The processing bus # "+b.getId()+"  is not a threePhaseBus");
+				}
+			}
+		}
+
+		for (AcscBranch bra : this.getBranchList()) {
+			if (bra.isActive()) {
+				if(bra instanceof DStab3PBranch){
+					DStab3PBranch ph3Branch = (DStab3PBranch) bra;
+					int i = bra.getFromBus().getSortNumber(),
+						j = bra.getToBus().getSortNumber();
+					yMatrixAbcPowerflow.addToA(ph3Branch.getYftabc(), i, j);
+					yMatrixAbcPowerflow.addToA(ph3Branch.getYtfabc(), j, i);
+					addTransformerAntiFloatAdmittance(yMatrixAbcPowerflow, ph3Branch);
+				} else {
+					throw new IpssNumericException("The processing branch #"+bra.getId()+"  is not a threePhaseBranch");
+				}
+			}
+
+		}
+
+		return yMatrixAbcPowerflow;
+	}
+
+	private void addTransformerAntiFloatAdmittance(ISparseEqnComplexMatrix3x3 yMatrix, DStab3PBranch branch) {
+		if(!branch.isXfr()) {
+			return;
+		}
+
+		Complex3x3 antiFloatYii = Complex3x3.createUnitMatrix()
+				.multiply(new Complex(this.powerflowTransformerAntiFloatAdmittance, 0.0));
+
+		boolean hasFloatingWinding = isFloatingTransformerWinding(
+				branch.getFromGrounding().getXfrConnectCode(),
+				branch.getFromGrounding().getGroundCode())
+				|| isFloatingTransformerWinding(
+				branch.getToGrounding().getXfrConnectCode(),
+				branch.getToGrounding().getGroundCode());
+
+		if(hasFloatingWinding) {
+			yMatrix.addToA(antiFloatYii, branch.getFromBus().getSortNumber(), branch.getFromBus().getSortNumber());
+			yMatrix.addToA(antiFloatYii, branch.getToBus().getSortNumber(), branch.getToBus().getSortNumber());
+		}
+	}
+
+	private boolean isFloatingTransformerWinding(XFormerConnectCode connectCode, BusGroundCode groundCode) {
+		return connectCode == XFormerConnectCode.DELTA
+				|| connectCode == XFormerConnectCode.DELTA11
+				|| (connectCode == XFormerConnectCode.WYE && groundCode == BusGroundCode.UNGROUNDED);
+	}
+
 	private void convertLoadModel() {
 		for ( BaseDStabBus<?,?> busi : getBusList() ) {
 			   //only the active buses will be initialized
@@ -398,6 +466,11 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 	@Override
 	public ISparseEqnComplexMatrix3x3 getYMatrixABC(){
 		return this.yMatrixAbc;
+	}
+
+	@Override
+	public ISparseEqnComplexMatrix3x3 getYMatrixABCForPowerflow() {
+		return this.yMatrixAbcPowerflow;
 	}
 
 	@Override
