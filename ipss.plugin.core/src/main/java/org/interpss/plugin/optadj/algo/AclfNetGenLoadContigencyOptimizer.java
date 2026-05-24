@@ -23,8 +23,8 @@ import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
  * 
  * 
  */
-public class AclfNetContigencyOptimizer extends AclfNetGenLoadOptimizer {
-    private static final Logger log = LoggerFactory.getLogger(AclfNetContigencyOptimizer.class);
+public class AclfNetGenLoadContigencyOptimizer extends AclfNetGenLoadOptimizer {
+    private static final Logger log = LoggerFactory.getLogger(AclfNetGenLoadContigencyOptimizer.class);
 
 	// loading threshold for the optimization, ignore if the loading is less than this threshold
 	public static double LOADING_THRESHOLD = 0.5;
@@ -36,7 +36,7 @@ public class AclfNetContigencyOptimizer extends AclfNetGenLoadOptimizer {
 	 * 
 	 * @param dclfAlgo
 	 */
-	public AclfNetContigencyOptimizer(ContingencyAnalysisAlgorithm dclfAlgo) {
+	public AclfNetGenLoadContigencyOptimizer(ContingencyAnalysisAlgorithm dclfAlgo) {
 		super(dclfAlgo);
 	}
 
@@ -44,6 +44,20 @@ public class AclfNetContigencyOptimizer extends AclfNetGenLoadOptimizer {
 		this.outBranchIdSet = outBranchIdSet;
 		
 		super.optimize(threshold, true);
+	}
+
+	public void optimize(double threshold, Set<String> outBranchIdSet, boolean adjustGenOnly) {
+		this.outBranchIdSet = outBranchIdSet;
+		
+		super.optimize(threshold, adjustGenOnly);
+	}
+
+	public void optimize(double threshold, boolean adjustGenOnly) {
+		super.optimize(threshold, true);
+	}
+
+	public void optimize(double threshold) {
+		optimize(threshold, true);
 	}
 	
 	@Override
