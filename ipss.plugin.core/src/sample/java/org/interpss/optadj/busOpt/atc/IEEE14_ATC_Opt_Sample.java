@@ -13,7 +13,7 @@ import java.util.Set;
 import org.interpss.CorePluginFactory;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.AtomicCounter;
-import org.interpss.plugin.optadj.algo.AclfNetATCOptimizer;
+import org.interpss.plugin.optadj.algo.AclfNetGlobalATCOptimizer;
 import org.interpss.plugin.optadj.optimizer.ATCOptimizer;
 
 import com.interpss.common.exp.InterpssException;
@@ -105,7 +105,7 @@ public class IEEE14_ATC_Opt_Sample {
 		/*
 		 * Perform ATC optimization
 		 */
-		AclfNetATCOptimizer op = new AclfNetATCOptimizer(dclfAlgo, new ATCOptimizer());
+		AclfNetGlobalATCOptimizer op = new AclfNetGlobalATCOptimizer(dclfAlgo, new ATCOptimizer());
 		op.setControlGenSet(sourceGenSet);
 		
 		op.setControlLoadSet(sinkLoadSet);

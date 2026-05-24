@@ -33,7 +33,7 @@ import java.util.Map;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.AtomicCounter;
 import org.interpss.plugin.optadj.IEEE14_SensHelper_Test;
-import org.interpss.plugin.optadj.algo.AclfNetGenLoadOptimizer;
+import org.interpss.plugin.optadj.algo.AclfNetGlobalOptimizer;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -67,7 +67,7 @@ public class IEEE14_OptAdj_Basecase_Test extends CorePluginTestSetup {
 		assertTrue(cnt.getCount() == 1);
 		
 		// perform the Optimization adjustment
-		AclfNetGenLoadOptimizer optimizer = new AclfNetGenLoadOptimizer(dclfAlgo);
+		AclfNetGlobalOptimizer optimizer = new AclfNetGlobalOptimizer(dclfAlgo);
 		optimizer.optimize(100, true);
 		
 		Map<String, Double> resultMap = optimizer.getResultMap();
