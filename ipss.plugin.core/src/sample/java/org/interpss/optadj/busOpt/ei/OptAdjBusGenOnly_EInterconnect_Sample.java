@@ -7,7 +7,7 @@ import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
 
-public class OptAdjGenOnly_EInterconnect_Sample {
+public class OptAdjBusGenOnly_EInterconnect_Sample {
 
 
 	public static void main(String[] args) throws Exception {
