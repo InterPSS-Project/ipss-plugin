@@ -1,4 +1,4 @@
-package org.interpss.optadj.busOpt.ei;
+package org.interpss.optadj.busOpt;
 
 import java.util.Map;
 import java.util.Set;
@@ -21,11 +21,11 @@ public class AclfNetBusOptUtil {
 		double val;
 	}
 	
-	static void printOverloadSummary(ContingencyAnalysisAlgorithm dclfAlgo, double thresholdPercent) {
+	public static void printOverloadSummary(ContingencyAnalysisAlgorithm dclfAlgo, double thresholdPercent) {
 		printOverloadSummary(dclfAlgo, thresholdPercent, null);
 	}
 
-	static void printOverloadSummary(ContingencyAnalysisAlgorithm dclfAlgo, double thresholdPercent, AclfNetSsaResultContainer ssaResults) {
+	public static void printOverloadSummary(ContingencyAnalysisAlgorithm dclfAlgo, double thresholdPercent, AclfNetSsaResultContainer ssaResults) {
 		Counter cnt = new Counter(0);
 		DblBuffer maxLoading = new DblBuffer();
 		dclfAlgo.getDclfAlgoBranchList().forEach(dclfBranch -> {
@@ -51,12 +51,12 @@ public class AclfNetBusOptUtil {
 		System.out.println("Max loading percent: " + maxLoading.val);
 	}
 
-	static void runBusOptimization(ContingencyAnalysisAlgorithm dclfAlgo, AclfNetwork aclfNet, double OPT_THRESHOLD,
+	public static void runBusOptimization(ContingencyAnalysisAlgorithm dclfAlgo, AclfNetwork aclfNet, double OPT_THRESHOLD,
 		                           boolean adjustGenOnly, String label) throws Exception {
-		runBusOptimization(dclfAlgo, aclfNet, OPT_THRESHOLD, adjustGenOnly, label, null);
+		runBaseCaseBusOptimization(dclfAlgo, aclfNet, OPT_THRESHOLD, adjustGenOnly, label, null);
 	}
   
-	static void runBusOptimization(ContingencyAnalysisAlgorithm dclfAlgo, AclfNetwork aclfNet, double OPT_THRESHOLD,
+	public static void runBaseCaseBusOptimization(ContingencyAnalysisAlgorithm dclfAlgo, AclfNetwork aclfNet, double OPT_THRESHOLD,
 			                       boolean adjustGenOnly, String label, AclfNetSsaResultContainer ssaResults) throws Exception {
 		System.out.println();
 		System.out.println("=== " + label + " bus optimization ===");

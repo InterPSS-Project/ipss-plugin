@@ -6,6 +6,8 @@ import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
 
+import org.interpss.optadj.busOpt.AclfNetBusOptUtil;
+
 public class OptAdjBusGenLoad_EInterconnect_Sample {
 	public static void main(String[] args) throws Exception {
 		AclfNetwork aclfNet = EInterconnect_Info_Sample.loadCase();
