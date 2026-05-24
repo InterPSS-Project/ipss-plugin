@@ -52,12 +52,9 @@ public class AclfNetGenLoadContigencyOptimizer extends AclfNetGenLoadOptimizer {
 		super.optimize(threshold, adjustGenOnly);
 	}
 
+	@Override
 	public void optimize(double threshold, boolean adjustGenOnly) {
 		super.optimize(threshold, true);
-	}
-
-	public void optimize(double threshold) {
-		optimize(threshold, true);
 	}
 	
 	@Override
