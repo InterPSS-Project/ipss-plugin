@@ -1,5 +1,4 @@
-
-package org.interpss.plugin.optadj;
+package org.interpss.plugin.optadj.genLoadOpt;
 
 import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
@@ -8,11 +7,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.AtomicCounter;
+import org.interpss.plugin.optadj.IEEE14_SensHelper_Test;
 import org.interpss.plugin.optadj.algo.AclfNetGenLoadContigencyOptimizer;
 import org.junit.jupiter.api.Test;
 
@@ -25,10 +28,25 @@ import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
 
-public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
+public class IEEE14_OptAdj_SelOutage_Test extends CorePluginTestSetup {
 	@Test
 	public void test() throws InterpssException {
 		AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
+		
+		/* This case is the same as IEEE14_OptAdj_N1Scan_Test but using the selected outage branches
+		 * approach.
+		Bus2->Bus5(1) Bus9->Bus14(1) Bus13->Bus14(1) Bus12->Bus13(1) Bus3->Bus4(1) Bus5->Bus6(1)
+		Bus4->Bus7(1) Bus2->Bus4(1) Bus10->Bus11(1)Bus6->Bus11(1) Bus7->Bus9(1) 
+		Bus4->Bus9(1) Bus7->Bus8(1) Bus6->Bus13(1) Bus6->Bus12(1) Bus2->Bus3(1) Bus4->Bus5(1) Bus9->Bus10(1)
+		 */
+		Set<String> outBranchIdSet = new HashSet<>(Arrays.asList(
+				"Bus1->Bus2(1)", "Bus1->Bus5(1)", 
+				"Bus2->Bus5(1)", "Bus9->Bus14(1)", "Bus13->Bus14(1)", "Bus12->Bus13(1)",
+				"Bus3->Bus4(1)", "Bus5->Bus6(1)", "Bus4->Bus7(1)", "Bus2->Bus4(1)", "Bus10->Bus11(1)",
+				"Bus6->Bus11(1)", "Bus7->Bus9(1)", "Bus4->Bus9(1)", "Bus7->Bus8(1)", "Bus6->Bus13(1)",
+				"Bus6->Bus12(1)", "Bus2->Bus3(1)", 
+				"Bus4->Bus5(1)", 
+				"Bus9->Bus10(1)"));
 		
 		// define an caAlgo object and perform DCLF 
 		ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(net);
@@ -38,7 +56,7 @@ public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
 		List<DclfBranchOutage> contList = new ArrayList<>();
 		net.getBranchList().stream()
 			// make sure the branch is not connected to a reference bus.
-			.filter(branch -> !((AclfBranch)branch).isConnect2RefBus())
+			.filter(branch -> !((AclfBranch)branch).isConnect2RefBus() && outBranchIdSet.contains(branch.getId()))
 			.forEach(branch -> {
 				// create a contingency object for the branch outage analysis
 				DclfBranchOutage cont = createContingency("contBranch:"+branch.getId());
@@ -68,9 +86,9 @@ public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
 			});
 		System.out.println("Total number of branches over limit before OptAdj: " + cnt.getCount());
 		assertTrue(cnt.getCount() == 18, ""+cnt.getCount());
-		
+		 
 		AclfNetGenLoadContigencyOptimizer optimizer = new AclfNetGenLoadContigencyOptimizer(dclfAlgo);
-		optimizer.optimize(100, true);
+		optimizer.optimize(100, outBranchIdSet);
 		
 		Map<String, Double> resultMap = optimizer.getResultMap();
 		System.out.println(resultMap);
@@ -78,12 +96,12 @@ public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
 		assertEquals(resultMap.get("Gen:Bus3-G1"), 0.99, 0.0001);
 		assertEquals(resultMap.get("Gen:Bus1-G1"), -0.99, 0.0001);
 		
-//		System.out.println("Optimization gen size." + optimizer.getGenOptimizer().getGenSize());
+		System.out.println("Optimization gen size." + optimizer.getOptimizer().getGenSize());
 		System.out.println("Optimization gen constrain size." + optimizer.getOptimizer().getGenConstrainDataList().size());
 		System.out.println("Optimization sec constrian size." + optimizer.getOptimizer().getSecConstrainDataList().size());
-//		assertTrue(optimizer.getGenOptimizer().getGenSize() == 5);
+		assertTrue(optimizer.getOptimizer().getGenSize() == 5);
 		assertTrue(optimizer.getOptimizer().getGenConstrainDataList().size() == 10);
-		assertEquals(optimizer.getOptimizer().getSecConstrainDataList().size(), 42);
+		assertEquals(optimizer.getOptimizer().getSecConstrainDataList().size(), 101);
 		
 		dclfAlgo.calculateDclf();
 		
@@ -110,3 +128,5 @@ public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
 		assertTrue(cnt1.getCount() == 0);
 	}
 }
+
+
