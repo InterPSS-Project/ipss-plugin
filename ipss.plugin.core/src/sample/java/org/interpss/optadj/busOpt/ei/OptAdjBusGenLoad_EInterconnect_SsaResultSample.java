@@ -8,7 +8,7 @@ import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisA
 
 import org.interpss.plugin.optadj.algo.result.AclfNetSsaResultContainer;
 
-public class OptAdjGenLoad_EInterconnect_SsaResultSample {
+public class OptAdjBusGenLoad_EInterconnect_SsaResultSample {
 	public static void main(String[] args) throws Exception {
 		AclfNetwork aclfNet = EInterconnect_Info_Sample.loadCase();
 		
