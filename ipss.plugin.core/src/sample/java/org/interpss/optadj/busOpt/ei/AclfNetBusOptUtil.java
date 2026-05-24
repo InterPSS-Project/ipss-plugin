@@ -1,4 +1,4 @@
-package org.interpss.optadj.ei;
+package org.interpss.optadj.busOpt.ei;
 
 import java.util.Map;
 import java.util.Set;

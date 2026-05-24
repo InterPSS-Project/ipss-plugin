@@ -1,4 +1,4 @@
-package org.interpss.optadj.ei;
+package org.interpss.optadj.busOpt.ei;
 
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 
