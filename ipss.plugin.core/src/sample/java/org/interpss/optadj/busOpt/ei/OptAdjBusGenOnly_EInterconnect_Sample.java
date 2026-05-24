@@ -7,6 +7,8 @@ import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
 
+import org.interpss.optadj.busOpt.AclfNetBusOptUtil;
+
 public class OptAdjBusGenOnly_EInterconnect_Sample {
 
 
