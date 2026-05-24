@@ -1,5 +1,5 @@
 
-package org.interpss.optadj;
+package org.interpss.optadj.genloadOpt;
 
 import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
