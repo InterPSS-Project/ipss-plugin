@@ -18,6 +18,12 @@
     </properties>
 
     <dependencies>
+        <!-- Direct dependency so this module's classpath includes ipss.core API (parent-only deps can be missing in some IDE setups). -->
+        <dependency>
+            <groupId>com.interpss</groupId>
+            <artifactId>ipss.core.lib</artifactId>
+            <version>${ipss.core.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>com.google.code.gson</groupId>

@@ -10,6 +10,7 @@ import org.interpss.multiNet.algo.SubNetworkProcessor;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
+import org.interpss.threePhase.powerflow.DistributionPFMethod;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.slf4j.Logger;
@@ -132,6 +133,7 @@ public class TDMultiNetPowerflowAlgorithm {
 				sourceBus.setVoltage(new Complex(1.0,0));
 				
 				DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(distNet);
+				distPFAlgo.setPFMethod(DistributionPFMethod.Forward_Backword_Sweep);
 				distPFAlgo.setTolerance(this.distTolerance);
 			
 				if(!distPFAlgo.powerflow()){
@@ -275,6 +277,7 @@ public class TDMultiNetPowerflowAlgorithm {
 		    		  sourceBus3Ph.setVoltage(sourceBus3Ph.getThreeSeqVoltage().b_1);
 		    		  
 		    		  DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(distNet);
+		    		  distPFAlgo.setPFMethod(DistributionPFMethod.Forward_Backword_Sweep);
                       
 		    		  // use the voltages obtained from the last step and transmission system power flow results
 		    		  distPFAlgo.setInitBusVoltageEnabled(false);
