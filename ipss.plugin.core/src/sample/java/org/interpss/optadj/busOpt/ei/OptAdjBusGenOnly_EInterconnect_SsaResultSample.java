@@ -7,6 +7,7 @@ import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
 
+import org.interpss.optadj.busOpt.AclfNetBusOptUtil;
 import org.interpss.plugin.optadj.algo.result.AclfNetSsaResultContainer;
 
 public class OptAdjBusGenOnly_EInterconnect_SsaResultSample {
@@ -26,7 +27,7 @@ public class OptAdjBusGenOnly_EInterconnect_SsaResultSample {
 		System.out.println("=== Base case overloads ===");
 		AclfNetBusOptUtil.printOverloadSummary(dclfAlgo, EInterconnect_Info_Sample.OPT_THRESHOLD, ssaResults);
 
-		AclfNetBusOptUtil.runBusOptimization(dclfAlgo, aclfNet, EInterconnect_Info_Sample.OPT_THRESHOLD, true, "Gen-only", ssaResults);
+		AclfNetBusOptUtil.runBaseCaseBusOptimization(dclfAlgo, aclfNet, EInterconnect_Info_Sample.OPT_THRESHOLD, true, "Gen-only", ssaResults);
 
 		System.out.println(ssaResults.toString());
 	}
