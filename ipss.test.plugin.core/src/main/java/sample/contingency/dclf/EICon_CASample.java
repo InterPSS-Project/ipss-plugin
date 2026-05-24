@@ -32,7 +32,7 @@ public class EICon_CASample {
 	private static final String TEST_ROOT = "";
 	
     public static void main(String args[]) throws Exception {
-        AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW")
+        AclfNetwork net = IpssAdapter.importAclfNet("ipss.test.plugin.core/testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW")
 				.setFormat(IpssAdapter.FileFormat.PSSE)
 				.psseVersion(PsseVersion.PSSE_33)
 				.load()
@@ -43,14 +43,14 @@ public class EICon_CASample {
 		algo.calculateDclf(DclfMethod.INC_LOSS);
 
 		//import contingency definitions from CA file
-		File contFile = new File("testData/psse/v33/OpenEI_filtered_contingencies.json");
+		File contFile = new File("ipss.test.plugin.core/testData/psse/v33/OpenEI_filtered_contingencies.json");
 		List<BranchContingencyRecord> contingencies = ContingencyFileUtil.importContingenciesFromJson(contFile);
 		
 		List<DclfBranchOutage> dclfContList = new DclfContingencyHelper(algo)
 					.createDclfContList(contingencies);
 
 		//import monitored branches from JSON file
-		File monFile = new File("testData/psse/v33/OpenEI_monitored_branches.json");
+		File monFile = new File("ipss.test.plugin.core/testData/psse/v33/OpenEI_monitored_branches.json");
 		List<MonitoredBranchRecord> monitoredBranches = ContingencyFileUtil.importMonitoredBranchRecordsFromJson(monFile);
 
 		Set<String> monitoredBranchIds = monitoredBranches.stream()

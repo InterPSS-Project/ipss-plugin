@@ -30,7 +30,7 @@ import com.interpss.core.contingency.dclf.DclfOutageBranch;
 public class Texas2k_CASample {
 
     public static void main(String args[]) throws Exception {
-        AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v36/texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW")
+        AclfNetwork net = IpssAdapter.importAclfNet("ipss.test.plugin.core/testData/psse/v36/texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW")
 				.setFormat(IpssAdapter.FileFormat.PSSE)
 				.psseVersion(PsseVersion.PSSE_36)
 				.load()
@@ -41,14 +41,14 @@ public class Texas2k_CASample {
 		algo.calculateDclf(DclfMethod.INC_LOSS);
 
 		//import contingency definitions from CA file
-		File contFile = new File("testData/psse/v36/texas2k/2k_contingencies_115kVAbove.json");
+		File contFile = new File("ipss.test.plugin.core/testData/psse/v36/texas2k/2k_contingencies_115kVAbove.json");
 		List<BranchContingencyRecord> contingencies = ContingencyFileUtil.importContingenciesFromJson(contFile);
 		
 		List<DclfBranchOutage> dclfContList = new DclfContingencyHelper(algo)
 						.createDclfContList(contingencies);
 
 		//import monitored branches from JSON file
-		File monFile = new File("testData/psse/v36/texas2k/2k_monitored_branches.json");
+		File monFile = new File("ipss.test.plugin.core/testData/psse/v36/texas2k/2k_monitored_branches.json");
 		List<MonitoredBranchRecord> monitoredBranches = ContingencyFileUtil.importMonitoredBranchRecordsFromJson(monFile);
 
 		Set<String> monitoredBranchIds = monitoredBranches.stream()
