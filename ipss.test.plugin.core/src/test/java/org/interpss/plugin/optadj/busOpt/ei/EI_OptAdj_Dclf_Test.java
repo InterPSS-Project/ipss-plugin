@@ -13,7 +13,7 @@ import org.interpss.numeric.datatype.Counter;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.plugin.optadj.algo.AclfNetBusOptimizer;
+import org.interpss.plugin.optadj.algo.AclfNetLocalOptimizer;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.Test;
 
@@ -74,7 +74,7 @@ public class EI_OptAdj_Dclf_Test extends CorePluginTestSetup {
 		
 		PerformanceTimer timer = new PerformanceTimer();
 		// perform the Optimization adjustment
-		AclfNetBusOptimizer optimizer = new AclfNetBusOptimizer(dclfAlgo);
+		AclfNetLocalOptimizer optimizer = new AclfNetLocalOptimizer(dclfAlgo);
 		optimizer.optimize(100);
 		
 		timer.log("Opt");
