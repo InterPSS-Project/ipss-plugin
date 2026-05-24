@@ -22,6 +22,12 @@
             <artifactId>ipss.plugin.core</artifactId>
             <version>${revision}</version>
         </dependency>
+        <!-- Direct dependency so test classpath includes ipss.core API (parent-only deps can be missing in some IDE setups). -->
+        <dependency>
+            <groupId>com.interpss</groupId>
+            <artifactId>ipss.core.lib</artifactId>
+            <version>${ipss.core.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.mvel</groupId>
             <artifactId>mvel2</artifactId>
