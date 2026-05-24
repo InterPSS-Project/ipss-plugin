@@ -294,7 +294,7 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
     /**
      * Build section constraints.
      */
-    private void buildSectionConstraints(Sen2DMatrix gfsMatrix, double threshold) {
+    protected void buildSectionConstraints(Sen2DMatrix gfsMatrix, double threshold) {
         double baseMva = network.getBaseMva();
         
         for (AclfBranch branch : network.getBranchList()) {
@@ -331,7 +331,7 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
     /**
      * Convert bus GFS to section-constraint sensitivity; sign convention differs for gen vs load.
      */
-    private double toSectionSensitivity(DclfAlgoBranch dclfBranch, double gfsSen, ControlBusRole role) {
+    protected double toSectionSensitivity(DclfAlgoBranch dclfBranch, double gfsSen, ControlBusRole role) {
         boolean positiveFlow = dclfBranch.getDclfFlow() > 0;
         if (role == ControlBusRole.LOAD) {
             return positiveFlow ? -gfsSen : gfsSen;
@@ -339,7 +339,7 @@ public class AclfNetBusOptimizer extends BaseAclfNetOptimizer {
         return positiveFlow ? gfsSen : -gfsSen;
     }
     
-    private ControlBusRole getControlBusRole(AclfBus bus) {
+    protected ControlBusRole getControlBusRole(AclfBus bus) {
         return controlBusRoles.getOrDefault(bus.getId(), ControlBusRole.GEN);
     }
     
