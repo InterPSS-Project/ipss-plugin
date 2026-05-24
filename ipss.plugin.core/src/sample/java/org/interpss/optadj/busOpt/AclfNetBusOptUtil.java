@@ -7,7 +7,7 @@ import org.interpss.numeric.datatype.AtomicCounter;
 import org.interpss.numeric.datatype.Counter;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.plugin.optadj.algo.AclfNetBusOptimizer;
+import org.interpss.plugin.optadj.algo.AclfNetLocalOptimizer;
 import org.interpss.plugin.optadj.algo.result.AclfNetSsaResultContainer;
 import org.interpss.plugin.optadj.algo.result.BranchOptAdjustResultRec;
 import org.interpss.plugin.optadj.algo.util.Sen2DMatrix;
@@ -62,7 +62,7 @@ public class AclfNetBusOptUtil {
 		System.out.println("=== " + label + " bus optimization ===");
 
 		PerformanceTimer timer = new PerformanceTimer();
-		AclfNetBusOptimizer optimizer = new AclfNetBusOptimizer(dclfAlgo);
+		AclfNetLocalOptimizer optimizer = new AclfNetLocalOptimizer(dclfAlgo);
 		optimizer.optimize(OPT_THRESHOLD, adjustGenOnly);
 		timer.log("Opt-" + label);
 
@@ -85,7 +85,7 @@ public class AclfNetBusOptUtil {
 
 		double baseMVA = aclfNet.getBaseMva();
 		Set<String> controlBusIdSet = optimizer.getControlBusIdSet();
-		Map<String, AclfNetBusOptimizer.ControlBusRole> controlBusRoleMap = optimizer.getControlBusRoleMap();
+		Map<String, AclfNetLocalOptimizer.ControlBusRole> controlBusRoleMap = optimizer.getControlBusRoleMap();
 		Sen2DMatrix controlBusGfsMatrix = controlBusIdSet.isEmpty()
 				? null
 				: optimizer.getGFSsHelper().calGFS(controlBusIdSet);
@@ -114,7 +114,7 @@ public class AclfNetBusOptUtil {
 							: controlBusIdSet.stream()
 									.mapToDouble(busId -> {
 										int busNo = aclfNet.getBus(busId).getSortNumber();
-										return controlBusRoleMap.get(busId) == AclfNetBusOptimizer.ControlBusRole.GEN ? 
+										return controlBusRoleMap.get(busId) == AclfNetLocalOptimizer.ControlBusRole.GEN ? 
 										Math.abs(controlBusGfsMatrix.get(busNo, branchNo)) : 0.0;
 									})
 									.max()
@@ -123,7 +123,7 @@ public class AclfNetBusOptUtil {
 							: controlBusIdSet.stream()
 									.mapToDouble(busId -> {
 										int busNo = aclfNet.getBus(busId).getSortNumber();
-										return controlBusRoleMap.get(busId) == AclfNetBusOptimizer.ControlBusRole.LOAD ? 
+										return controlBusRoleMap.get(busId) == AclfNetLocalOptimizer.ControlBusRole.LOAD ? 
 										Math.abs(controlBusGfsMatrix.get(busNo, branchNo)) : 0.0;
 									})
 									.max()
