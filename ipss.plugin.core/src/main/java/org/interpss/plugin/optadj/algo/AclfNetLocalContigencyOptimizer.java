@@ -2,9 +2,11 @@ package org.interpss.plugin.optadj.algo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.math3.optim.linear.Relationship;
 import org.interpss.plugin.optadj.algo.util.AclfNetLODFsHelper;
@@ -42,7 +44,11 @@ public class AclfNetLocalContigencyOptimizer extends AclfNetLocalOptimizer {
 	// sensitivity threshold for N-1 contingency constraints
 	private static final double SEN_THRESHOLD = 0.02;
     
-    private Set<String> outBranchIdSet;
+    //private Set<String> outBranchIdSet = Collections.emptySet();
+
+	private List<DclfBranchOutage> dclfContList = new ArrayList<>();
+
+	Set<String> monitoredBranchIds = Collections.emptySet();
     
 	/**
 	 * Constructor
@@ -53,16 +59,21 @@ public class AclfNetLocalContigencyOptimizer extends AclfNetLocalOptimizer {
 		super(dclfAlgo);
 	}
 
-	public void optimize(double threshold, Set<String> outBranchIdSet) {
-		this.outBranchIdSet = outBranchIdSet;
-		
-		super.optimize(threshold, true);
+	public void optimize(double threshold, List<DclfBranchOutage> dclfContList, Set<String> monitoredBranchIds) {
+		this.optimize(threshold, dclfContList, monitoredBranchIds, true);
 	}
 
-	public void optimize(double threshold, Set<String> outBranchIdSet, boolean adjustGenOnly) {
-		this.outBranchIdSet = outBranchIdSet;
+	public void optimize(double threshold, List<DclfBranchOutage> dclfContList, boolean adjustGenOnly) {
+		this.dclfContList = dclfContList;
 		
-		super.optimize(threshold, adjustGenOnly);
+		this.optimize(threshold, adjustGenOnly);
+	}
+
+	public void optimize(double threshold, List<DclfBranchOutage> dclfContList, Set<String> monitoredBranchIds, boolean adjustGenOnly) {
+		this.dclfContList = dclfContList;
+		this.monitoredBranchIds = monitoredBranchIds;
+		
+		this.optimize(threshold, adjustGenOnly);
 	}
 
 	@Override
@@ -78,20 +89,18 @@ public class AclfNetLocalContigencyOptimizer extends AclfNetLocalOptimizer {
 		heavyLoadedBranchIdSet = new HashSet<>();
 			
 		// define a contingency list
-		List<DclfBranchOutage> contList = new ArrayList<>();
-		dclfAlgo.getNetwork().getBranchList().stream()
-			// make sure the branch is not connected to a reference bus.
-			.filter(branch -> !((AclfBranch)branch).isConnect2RefBus())
-			.forEach(branch -> {
-				// create a contingency object for the branch outage analysis
-				DclfBranchOutage cont = createContingency("contBranch:"+branch.getId());
-				// create an open CA outage branch object for the branch outage analysis
-				DclfOutageBranch outage = createCaOutageBranch(dclfAlgo.getDclfAlgoBranch(branch.getId()), ContingencyBranchOutageType.OPEN);
-				cont.setOutageEquip(outage);
-				contList.add(cont);
-			});
+		if (this.dclfContList.isEmpty()) {
+			dclfAlgo.getNetwork().getBranchList().stream()
+				.filter(branch -> !((AclfBranch)branch).isConnect2RefBus())
+				.forEach(branch -> {
+					DclfBranchOutage cont = createContingency("contBranch:"+branch.getId());
+					DclfOutageBranch outage = createCaOutageBranch(dclfAlgo.getDclfAlgoBranch(branch.getId()), ContingencyBranchOutageType.OPEN);
+					cont.setOutageEquip(outage);
+					this.dclfContList.add(cont);
+				});
+		}
 		
-		contList.parallelStream()
+		dclfContList.parallelStream()
 			.forEach(contingency -> {
 				ContingencyAnalysisMonad.of(dclfAlgo, contingency)
 					.ca(resultRec -> {
@@ -104,7 +113,8 @@ public class AclfNetLocalContigencyOptimizer extends AclfNetLocalOptimizer {
 											+ resultRec.contingency.getId() + " postFlow: " + resultRec.getPostFlowMW()
 											+ " rating: " + resultRec.aclfBranch.getRatingMvaB() + " loading: "
 											+ loading);
-							heavyLoadedBranchIdSet.add(resultRec.aclfBranch.getId());				
+							if (this.monitoredBranchIds.isEmpty() || this.monitoredBranchIds.contains(resultRec.aclfBranch.getId())) 				
+								heavyLoadedBranchIdSet.add(resultRec.aclfBranch.getId());				
 						}
 					});
 			});
@@ -117,13 +127,17 @@ public class AclfNetLocalContigencyOptimizer extends AclfNetLocalOptimizer {
 		super.buildSectionConstraints(gfsMatrix, threshold);
 
 		AclfNetLODFsHelper lodfHelper = new AclfNetLODFsHelper(network);
-		Sen2DMatrix lodfMatrix = this.outBranchIdSet == null
-				? lodfHelper.calLODF() : lodfHelper.calLODF(this.outBranchIdSet);
+		Set<String> outBranchIdSet = this.dclfContList.stream()
+			.map(cont -> cont.getOutageEquip().getBranch().getId())
+			.collect(Collectors.toSet());
+			
+		Sen2DMatrix lodfMatrix = outBranchIdSet.isEmpty()
+				? lodfHelper.calLODF() : lodfHelper.calLODF(outBranchIdSet);
 
 		double baseMva = network.getBaseMva();
 		network.getBranchList().stream()
 			.filter(branch -> branch.isActive() &&
-					(this.outBranchIdSet == null || this.outBranchIdSet.contains(branch.getId())))
+					(outBranchIdSet.isEmpty() || outBranchIdSet.contains(branch.getId())))
 			.forEach(outBranch -> {
 				int outBranchNo = outBranch.getSortNumber();
 				double[] busSenArray = new double[controlBusMap.size()];
