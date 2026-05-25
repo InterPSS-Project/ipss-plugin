@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -72,20 +73,20 @@ public class IEEE14_OptAdjLocal_N1Scan_Test extends CorePluginTestSetup {
 		assertTrue(cnt.getCount() == 18, ""+cnt.getCount());
 		
 		AclfNetLocalContigencyOptimizer optimizer = new AclfNetLocalContigencyOptimizer(dclfAlgo);
-		optimizer.optimize(100, true);
+		optimizer.optimize(100, contList, true);
 		
 		Map<String, Double> resultMap = optimizer.getResultMap();
 		System.out.println("Optimization result (Gen only): " + resultMap);
 		
-		// {Gen:Bus3=0.9900000000000014}
-		assertEquals(resultMap.get("Gen:Bus3"), 0.99, 0.0001);
+		// {Gen:Bus2=0.5713493069227146}	
+		assertEquals(resultMap.get("Gen:Bus2"), 0.5713, 0.0001);
 		
 //		System.out.println("Optimization gen size." + optimizer.getGenOptimizer().getGenSize());
 		System.out.println("Optimization gen constrain size." + optimizer.getOptimizer().getGenConstrainDataList().size());
 		System.out.println("Optimization sec constrian size." + optimizer.getOptimizer().getSecConstrainDataList().size());
 //		assertTrue(optimizer.getGenOptimizer().getGenSize() == 5);
 		assertTrue(optimizer.getOptimizer().getGenConstrainDataList().size() == 26);
-		assertEquals(optimizer.getOptimizer().getSecConstrainDataList().size(), 47);
+		assertEquals(optimizer.getOptimizer().getSecConstrainDataList().size(), 46);
 		
 		dclfAlgo.calculateDclf();
 		
@@ -109,7 +110,7 @@ public class IEEE14_OptAdjLocal_N1Scan_Test extends CorePluginTestSetup {
 					});
 			});
 		System.out.println("Total number of branches over limit after OptAdj: " + cnt1.getCount());
-		assertTrue(cnt1.getCount() == 18);
+		assertTrue(cnt1.getCount() == 0);
 	}
 
 	@Test
@@ -150,20 +151,20 @@ public class IEEE14_OptAdjLocal_N1Scan_Test extends CorePluginTestSetup {
 		assertTrue(cnt.getCount() == 18, ""+cnt.getCount());
 		
 		AclfNetLocalContigencyOptimizer optimizer = new AclfNetLocalContigencyOptimizer(dclfAlgo);
-		optimizer.optimize(100, false);
+		optimizer.optimize(100, contList, false);
 		
 		Map<String, Double> resultMap = optimizer.getResultMap();
 		System.out.println("Optimization result (Gen+Load): " + resultMap);
 		
-		// {Gen:Bus3=0.9900000000000014}
-		assertEquals(resultMap.get("Gen:Bus3"), 0.9900, 0.0001);
+		// {Gen:Bus2=0.5713493069227146}
+		assertEquals(resultMap.get("Gen:Bus2"), 0.5713, 0.0001);
 		
 		System.out.println("Optimization gen size." + optimizer.getOptimizer().getGenSize());
 		System.out.println("Optimization gen constrain size." + optimizer.getOptimizer().getGenConstrainDataList().size());
 		System.out.println("Optimization sec constrian size." + optimizer.getOptimizer().getSecConstrainDataList().size());
 		assertEquals(optimizer.getOptimizer().getGenSize(), 13);
 		assertEquals(optimizer.getOptimizer().getGenConstrainDataList().size(), 26);
-		assertEquals(optimizer.getOptimizer().getSecConstrainDataList().size(), 47);
+		assertEquals(optimizer.getOptimizer().getSecConstrainDataList().size(), 46);
 		
 		dclfAlgo.calculateDclf();
 		
@@ -184,6 +185,6 @@ public class IEEE14_OptAdjLocal_N1Scan_Test extends CorePluginTestSetup {
 					});
 			});
 		System.out.println("Total number of branches over limit after OptAdj: " + cnt1.getCount());
-		assertTrue(cnt1.getCount() == 18);
+		assertTrue(cnt1.getCount() == 0);
 	}
 }
