@@ -29,7 +29,7 @@ import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBus;
 
 /**
- * AC Load Flow Bus Optimizer for eliminating line overloads and/or N-1 contingency limit violations by optimizing 
+ * AC Load Flow Global Optimizer for eliminating line overloads and/or N-1 contingency limit violations by optimizing 
  * generator and optional load injection. It uses full GFS matrix to identify control buses. It is recommended to be used 
  * for on-line application optimization.
  * 
