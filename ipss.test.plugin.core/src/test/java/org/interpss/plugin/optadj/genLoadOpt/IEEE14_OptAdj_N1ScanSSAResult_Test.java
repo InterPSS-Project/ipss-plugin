@@ -52,7 +52,7 @@ import com.interpss.core.contingency.dclf.DclfOutageBranch;
 
 public class IEEE14_OptAdj_N1ScanSSAResult_Test extends CorePluginTestSetup {
 	@Test
-	public void test() throws InterpssException {
+	public void testGenOnly() throws InterpssException {
 		AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
 		
 		// define an caAlgo object and perform DCLF 
@@ -103,7 +103,7 @@ public class IEEE14_OptAdj_N1ScanSSAResult_Test extends CorePluginTestSetup {
 		optimizer.optimize(ssaResults, 100, true);
 		
 		Map<String, Double> resultMap = optimizer.getResultMap();
-		System.out.println(resultMap);
+		System.out.println("Optimization result (Gen only): " + resultMap);
 		
 		assertEquals(resultMap.get("Gen:Bus3-G1"), 0.99, 0.0001);
 		
@@ -114,5 +114,81 @@ public class IEEE14_OptAdj_N1ScanSSAResult_Test extends CorePluginTestSetup {
 		assertEquals(optimizer.getOptimizer().getGenSize(), 4);
 		assertTrue(optimizer.getOptimizer().getGenConstrainDataList().size() == 8);
 		assertEquals(optimizer.getOptimizer().getSecConstrainDataList().size(), 42);
+	}
+
+	@Test
+	public void testGenLoad() throws InterpssException {
+		AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
+		
+		ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(net);
+		dclfAlgo.calculateDclf();
+
+		List<DclfBranchOutage> contList = new ArrayList<>();
+		net.getBranchList().stream()
+			.filter(branch -> !((AclfBranch)branch).isConnect2RefBus())
+			.forEach(branch -> {
+				DclfBranchOutage cont = createContingency("contBranch:"+branch.getId());
+				DclfOutageBranch outage = createCaOutageBranch(dclfAlgo.getDclfAlgoBranch(branch.getId()), ContingencyBranchOutageType.OPEN);
+				cont.setOutageEquip(outage);
+				contList.add(cont);
+			});
+		
+		AclfNetSsaResultContainer ssaResults = new AclfNetSsaResultContainer(true);
+		
+		AtomicCounter cnt = new AtomicCounter();
+		contList.parallelStream()
+			.forEach(contingency -> {
+				ContingencyAnalysisMonad.of(dclfAlgo, contingency)
+					.ca(resultRec -> {
+						double loading = resultRec.calLoadingPercent(resultRec.aclfBranch.getRatingMvaB());
+						if (loading > 100.0) {
+							cnt.increment();
+							ssaResults.getCaOverLimitInfo().add(resultRec);
+							System.out.println("OverLimit Branch: " + resultRec.aclfBranch.getId() + " outage: "
+											+ resultRec.contingency.getId() + " postFlow: " + resultRec.getPostFlowMW()
+											+ " rating: " + resultRec.aclfBranch.getRatingMvaB() + " loading: "
+											+ loading);
+						}
+					});
+			});
+		System.out.println("Total number of branches over limit before OptAdj: " + cnt.getCount());
+		assertTrue(cnt.getCount() == 18, ""+cnt.getCount());
+		
+		AclfNetGlobalContigencyOptimizer optimizer = new AclfNetGlobalContigencyOptimizer(dclfAlgo);
+		optimizer.optimize(ssaResults, 100, false);
+		
+		Map<String, Double> resultMap = optimizer.getResultMap();
+		System.out.println("Optimization result (Gen+Load): " + resultMap);
+		
+		assertEquals(resultMap.get("Gen:Bus3-G1"), 0.4950, 0.0001);
+		assertEquals(resultMap.get("Load:Bus3-L1"), -0.4950, 0.0001);
+		
+		System.out.println("Optimization gen size." + optimizer.getOptimizer().getGenSize());
+		System.out.println("Optimization gen constrain size." + optimizer.getOptimizer().getGenConstrainDataList().size());
+		System.out.println("Optimization sec constrian size." + optimizer.getOptimizer().getSecConstrainDataList().size());
+		assertEquals(optimizer.getOptimizer().getGenSize(), 15);
+		assertEquals(optimizer.getOptimizer().getGenConstrainDataList().size(), 30);
+		assertEquals(optimizer.getOptimizer().getSecConstrainDataList().size(), 47);
+		
+		dclfAlgo.calculateDclf();
+		
+		AtomicCounter cnt1 = new AtomicCounter();
+		contList.parallelStream()
+			.forEach(contingency -> {
+				ContingencyAnalysisMonad.of(dclfAlgo, contingency)
+					.ca(resultRec -> {
+						double loading = resultRec.calLoadingPercent(resultRec.aclfBranch.getRatingMvaB());
+						if (loading > 100.0) {
+							cnt1.increment();
+							System.out.println("Branch: " + resultRec.aclfBranch.getId() + 
+									" outage: " + resultRec.contingency.getId() +
+									" postFlow: " + resultRec.getPostFlowMW() +
+									" rating: " + resultRec.aclfBranch.getRatingMvaB() +
+									" loading: " + resultRec.calLoadingPercent());
+						}
+					});
+			});
+		System.out.println("Total number of branches over limit after OptAdj: " + cnt1.getCount());
+		assertTrue(cnt1.getCount() == 0);
 	}
 }
