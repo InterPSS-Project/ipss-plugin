@@ -109,10 +109,10 @@ public class AclfNetLocalContigencyOptimizer extends AclfNetLocalOptimizer {
 						//		" postContFlow: " + resultRec.getPostFlowMW());
 						double loading = resultRec.calLoadingPercent(resultRec.aclfBranch.getRatingMvaB());
 						if (loading > threshold) {
-							System.out.println("OverLimit Branch: " + resultRec.aclfBranch.getId() + " outage: "
-											+ resultRec.contingency.getId() + " postFlow: " + resultRec.getPostFlowMW()
-											+ " rating: " + resultRec.aclfBranch.getRatingMvaB() + " loading: "
-											+ loading);
+							//System.out.println("OverLimit Branch: " + resultRec.aclfBranch.getId() + " outage: "
+							//				+ resultRec.contingency.getId() + " postFlow: " + resultRec.getPostFlowMW()
+							//				+ " rating: " + resultRec.aclfBranch.getRatingMvaB() + " loading: "
+							//				+ loading);
 							if (this.monitoredBranchIds.isEmpty() || this.monitoredBranchIds.contains(resultRec.aclfBranch.getId())) 				
 								heavyLoadedBranchIdSet.add(resultRec.aclfBranch.getId());				
 						}
