@@ -101,7 +101,7 @@ public class IEEE14_OptAdjLocal_Basecase_Test extends CorePluginTestSetup {
 		assertTrue(cnt1.getCount() == 1);
 	}
 
-	//@Test
+	@Test
 	public void testGenLoad() throws InterpssException {
 		AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
 		
@@ -133,11 +133,10 @@ public class IEEE14_OptAdjLocal_Basecase_Test extends CorePluginTestSetup {
 		Map<String, Double> resultMap = optimizer.getResultMap();
 		System.out.println("Optimization result (Gen+Load): " + resultMap);
 		
-		// {Load:Bus13-L1=-0.135, Gen:Bus2-G1=0.3242687198753958, Load:Bus11-L1=-0.035, Load:Bus14-L1=-0.149}
-		assertEquals(resultMap.get("Gen:Bus2-G1"), 0.3242687198753958, 0.0001);
-		assertEquals(resultMap.get("Load:Bus13-L1"), -0.135, 0.0001);
-		assertEquals(resultMap.get("Load:Bus11-L1"), -0.035, 0.0001);
-		assertEquals(resultMap.get("Load:Bus14-L1"), -0.149, 0.0001);
+		// {Load:Bus2-L1=-0.217, Gen:Bus2-G1=0.2934529534438754, Load:Bus4-L1=-0.0764529534438754}
+		assertEquals(resultMap.get("Gen:Bus2-G1"), 0.2934529534438754, 0.0001);
+		assertEquals(resultMap.get("Load:Bus2-L1"), -0.217, 0.0001);
+		assertEquals(resultMap.get("Load:Bus4-L1"), -0.0764529534438754, 0.0001);
 		
 		System.out.println("Optimization gen size." + optimizer.getOptimizer().getGenSize());
 		System.out.println("Optimization gen constrain size." + optimizer.getOptimizer().getGenConstrainDataList().size());
