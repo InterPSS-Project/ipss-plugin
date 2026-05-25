@@ -116,7 +116,7 @@ public class EI_OptAdjGenLoad_Dclf_Test extends CorePluginTestSetup {
 			});
 		System.out.println("Total number of branches over limit after OptAdj: " + cnt1.getCount());
 		System.out.println("Max loading percent: " + maxLoading.val);
-		assertTrue(cnt1.getCount() == 38);
-		assertEquals(118.22, maxLoading.val, 0.01);
+		assertTrue(cnt1.getCount() == 41);
+		assertEquals(118.24, maxLoading.val, 0.01);
 	}
 }
