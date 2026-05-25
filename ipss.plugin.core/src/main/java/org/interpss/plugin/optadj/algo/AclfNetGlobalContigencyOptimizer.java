@@ -54,7 +54,7 @@ public class AclfNetGlobalContigencyOptimizer extends AclfNetGlobalOptimizer {
 
 	@Override
 	public void optimize(double threshold, boolean adjustGenOnly) {
-		super.optimize(threshold, true);
+		super.optimize(threshold, adjustGenOnly);
 	}
 	
 	@Override
