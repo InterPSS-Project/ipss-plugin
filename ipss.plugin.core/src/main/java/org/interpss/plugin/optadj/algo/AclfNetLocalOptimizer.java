@@ -128,7 +128,7 @@ public class AclfNetLocalOptimizer extends BaseAclfNetOptimizer {
         }
         controlBusRoles = new HashMap<>();
         
-        identifyHeavyLoadedBranches(threshold * HEAVYLOAD_THRESHOLD_FACTOR);
+        identifyOverlimitBranches(threshold * HEAVYLOAD_THRESHOLD_FACTOR);
         
         if (heavyLoadedBranchIdSet.isEmpty()) {
             log.debug("No overloaded branches found");
@@ -250,7 +250,7 @@ public class AclfNetLocalOptimizer extends BaseAclfNetOptimizer {
     /**
      * Identify overloaded branches in the network.
      */
-    protected void identifyHeavyLoadedBranches(double threshold) {
+    protected void identifyOverlimitBranches(double threshold) {
         heavyLoadedBranchIdSet = new HashSet<>();
         
         for (DclfAlgoBranch dclfBranch : dclfAlgo.getDclfAlgoBranchList()) {

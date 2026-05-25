@@ -85,7 +85,7 @@ public class AclfNetLocalContigencyOptimizer extends AclfNetLocalOptimizer {
      * Identify over limit branches in the network.
      */
 	@Override
-	protected void identifyHeavyLoadedBranches(double threshold) {
+	protected void identifyOverlimitBranches(double threshold) {
 		heavyLoadedBranchIdSet = new HashSet<>();
 			
 		// define a contingency list
