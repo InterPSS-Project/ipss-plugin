@@ -24,7 +24,7 @@ import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 
-public class EI_OptAdj_Dclf_Test extends CorePluginTestSetup {
+public class EI_OptAdjGenLoad_Dclf_Test extends CorePluginTestSetup {
 	static class DblBuffer {
 		double val;
 	}
@@ -75,16 +75,24 @@ public class EI_OptAdj_Dclf_Test extends CorePluginTestSetup {
 		PerformanceTimer timer = new PerformanceTimer();
 		// perform the Optimization adjustment
 		AclfNetLocalOptimizer optimizer = new AclfNetLocalOptimizer(dclfAlgo);
-		optimizer.optimize(100);
+		optimizer.optimize(100, false);
 		
 		timer.log("Opt");
 		
 		Map<String, Double> resultMap = optimizer.getResultMap();
 		//System.out.println(resultMap);
 		
-		//System.out.println("Optimization gen size: " + optimizer.getOptimizer().getGenSize());
-		//System.out.println("Optimization gen constrain size: " + optimizer.getOptimizer().getGenConstrainDataList().size());
-		//System.out.println("Optimization sec constrain size: " + optimizer.getOptimizer().getSecConstrainDataList().size());
+		System.out.println("Optimization gen size: " + optimizer.getOptimizer().getGenSize());
+		System.out.println("Optimization gen constrain size: " + optimizer.getOptimizer().getGenConstrainDataList().size());
+		System.out.println("Optimization sec constrain size: " + optimizer.getOptimizer().getSecConstrainDataList().size());
+		/*
+		Optimization gen size: 255
+		Optimization gen constrain size: 510
+		Optimization sec constrain size: 6419
+ 		*/
+		assertEquals(optimizer.getOptimizer().getGenSize(), 255);
+		assertEquals(optimizer.getOptimizer().getGenConstrainDataList().size(), 510);
+		assertEquals(optimizer.getOptimizer().getSecConstrainDataList().size(), 6419);
 	
 		dclfAlgo.calculateDclf(DclfMethod.INC_LOSS);
 		
@@ -108,7 +116,7 @@ public class EI_OptAdj_Dclf_Test extends CorePluginTestSetup {
 			});
 		System.out.println("Total number of branches over limit after OptAdj: " + cnt1.getCount());
 		System.out.println("Max loading percent: " + maxLoading.val);
-		assertTrue(cnt1.getCount() == 33);
-		assertEquals(124.64, maxLoading.val, 0.01);
+		assertTrue(cnt1.getCount() == 38);
+		assertEquals(118.22, maxLoading.val, 0.01);
 	}
 }

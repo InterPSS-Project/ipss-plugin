@@ -1,6 +1,9 @@
 package org.interpss.plugin.optadj.algo;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.math3.optim.linear.Relationship;
@@ -10,8 +13,16 @@ import org.interpss.plugin.optadj.optimizer.bean.SectionConstrainData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.interpss.algo.parallel.ContingencyAnalysisMonad;
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
+import com.interpss.core.contingency.ContingencyBranchOutageType;
+import com.interpss.core.contingency.dclf.DclfBranchOutage;
+import com.interpss.core.contingency.dclf.DclfOutageBranch;
+
+import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
+import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
 
 /**
  * 
@@ -59,6 +70,48 @@ public class AclfNetLocalContigencyOptimizer extends AclfNetLocalOptimizer {
 		super.optimize(threshold, adjustGenOnly);
 	}
 
+	/**
+     * Identify over limit branches in the network.
+     */
+	@Override
+	protected void identifyHeavyLoadedBranches(double threshold) {
+		heavyLoadedBranchIdSet = new HashSet<>();
+			
+		// define a contingency list
+		List<DclfBranchOutage> contList = new ArrayList<>();
+		dclfAlgo.getNetwork().getBranchList().stream()
+			// make sure the branch is not connected to a reference bus.
+			.filter(branch -> !((AclfBranch)branch).isConnect2RefBus())
+			.forEach(branch -> {
+				// create a contingency object for the branch outage analysis
+				DclfBranchOutage cont = createContingency("contBranch:"+branch.getId());
+				// create an open CA outage branch object for the branch outage analysis
+				DclfOutageBranch outage = createCaOutageBranch(dclfAlgo.getDclfAlgoBranch(branch.getId()), ContingencyBranchOutageType.OPEN);
+				cont.setOutageEquip(outage);
+				contList.add(cont);
+			});
+		
+		contList.parallelStream()
+			.forEach(contingency -> {
+				ContingencyAnalysisMonad.of(dclfAlgo, contingency)
+					.ca(resultRec -> {
+						//System.out.println(resultRec.aclfBranch.getId() + 
+						//		", " + resultRec.contingency.getId() +
+						//		" postContFlow: " + resultRec.getPostFlowMW());
+						double loading = resultRec.calLoadingPercent(resultRec.aclfBranch.getRatingMvaB());
+						if (loading > threshold) {
+							System.out.println("OverLimit Branch: " + resultRec.aclfBranch.getId() + " outage: "
+											+ resultRec.contingency.getId() + " postFlow: " + resultRec.getPostFlowMW()
+											+ " rating: " + resultRec.aclfBranch.getRatingMvaB() + " loading: "
+											+ loading);
+							heavyLoadedBranchIdSet.add(resultRec.aclfBranch.getId());				
+						}
+					});
+			});
+			
+		log.info("Found {} over limit branches", heavyLoadedBranchIdSet.size());
+	}
+		
 	@Override
 	protected void buildSectionConstraints(Sen2DMatrix gfsMatrix, double threshold) {
 		super.buildSectionConstraints(gfsMatrix, threshold);

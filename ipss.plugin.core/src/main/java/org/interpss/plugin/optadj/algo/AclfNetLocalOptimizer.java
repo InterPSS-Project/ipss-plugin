@@ -66,7 +66,7 @@ public class AclfNetLocalOptimizer extends BaseAclfNetOptimizer {
 
     // heavy loaded branch threshold factor, used to calculate the heavy loaded branch threshold
     private final double HEAVYLOAD_THRESHOLD_FACTOR = 0.9;
-    protected Set<String> heavyLoadedBranchList;
+    protected Set<String> heavyLoadedBranchIdSet;
     
     /**
      * Constructor for AclfNetLoadFlowBusOptimizer.
@@ -130,7 +130,7 @@ public class AclfNetLocalOptimizer extends BaseAclfNetOptimizer {
         
         identifyHeavyLoadedBranches(threshold * HEAVYLOAD_THRESHOLD_FACTOR);
         
-        if (heavyLoadedBranchList.isEmpty()) {
+        if (heavyLoadedBranchIdSet.isEmpty()) {
             log.debug("No overloaded branches found");
             return;
         }
@@ -177,7 +177,7 @@ public class AclfNetLocalOptimizer extends BaseAclfNetOptimizer {
             .map(AclfBus::getId)
             .collect(Collectors.toCollection(HashSet::new));
         
-        Sen2DMatrix gfsMatrix = helper.calGFS(candidateBusIds, heavyLoadedBranchList);
+        Sen2DMatrix gfsMatrix = helper.calGFS(candidateBusIds, heavyLoadedBranchIdSet);
         
         Set<AclfBus> controlBusSet = new LinkedHashSet<>();
         for (Map.Entry<ControlBusRole, Set<AclfBus>> entry : candidatesByRole.entrySet()) {
@@ -208,7 +208,7 @@ public class AclfNetLocalOptimizer extends BaseAclfNetOptimizer {
      */
     private Set<AclfBus> collectLoadCandidateBuses() {
         Set<AclfBus> loadCandidateBuses = new HashSet<>();
-        for (String branchId : heavyLoadedBranchList) {
+        for (String branchId : heavyLoadedBranchIdSet) {
             AclfBranch branch = network.getBranch(branchId);
             if (branch == null) {
                 continue;
@@ -235,7 +235,7 @@ public class AclfNetLocalOptimizer extends BaseAclfNetOptimizer {
     private boolean hasSufficientSensitivity(Sen2DMatrix gfsMatrix, AclfBus bus) {
         int busNo = bus.getSortNumber();
         
-        for (String branchId : heavyLoadedBranchList) {
+        for (String branchId : heavyLoadedBranchIdSet) {
             AclfBranch branch = network.getBranch(branchId);
             if (branch == null) continue;
             
@@ -250,8 +250,8 @@ public class AclfNetLocalOptimizer extends BaseAclfNetOptimizer {
     /**
      * Identify overloaded branches in the network.
      */
-    private void identifyHeavyLoadedBranches(double threshold) {
-        heavyLoadedBranchList = new HashSet<>();
+    protected void identifyHeavyLoadedBranches(double threshold) {
+        heavyLoadedBranchIdSet = new HashSet<>();
         
         for (DclfAlgoBranch dclfBranch : dclfAlgo.getDclfAlgoBranchList()) {
             if (!isNonSwingBranch(dclfBranch)) continue;
@@ -264,11 +264,11 @@ public class AclfNetLocalOptimizer extends BaseAclfNetOptimizer {
             
             double loadingPercent = Math.abs(powerFlowMW) / ratingMVA * 100.0;
             if (loadingPercent > threshold) {
-                heavyLoadedBranchList.add(branch.getId());
+                heavyLoadedBranchIdSet.add(branch.getId());
             }
         }
         
-        log.info("Found {} heavyly loaded branches", heavyLoadedBranchList.size());
+        log.info("Found {} heavyly loaded branches", heavyLoadedBranchIdSet.size());
     }
     
     /**
