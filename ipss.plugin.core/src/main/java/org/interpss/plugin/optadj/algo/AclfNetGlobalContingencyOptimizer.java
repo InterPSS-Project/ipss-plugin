@@ -23,8 +23,8 @@ import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
  * 
  * 
  */
-public class AclfNetGlobalContigencyOptimizer extends AclfNetGlobalOptimizer {
-    private static final Logger log = LoggerFactory.getLogger(AclfNetGlobalContigencyOptimizer.class);
+public class AclfNetGlobalContingencyOptimizer extends AclfNetGlobalOptimizer {
+    private static final Logger log = LoggerFactory.getLogger(AclfNetGlobalContingencyOptimizer.class);
 
 	// loading threshold for the optimization, ignore if the loading is less than this threshold
 	public static double LOADING_THRESHOLD = 0.5;
@@ -36,7 +36,7 @@ public class AclfNetGlobalContigencyOptimizer extends AclfNetGlobalOptimizer {
 	 * 
 	 * @param dclfAlgo
 	 */
-	public AclfNetGlobalContigencyOptimizer(ContingencyAnalysisAlgorithm dclfAlgo) {
+	public AclfNetGlobalContingencyOptimizer(ContingencyAnalysisAlgorithm dclfAlgo) {
 		super(dclfAlgo);
 	}
 

@@ -35,8 +35,8 @@ import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
  * 
  * 
  */
-public class AclfNetLocalContigencyOptimizer extends AclfNetLocalOptimizer {
-    private static final Logger log = LoggerFactory.getLogger(AclfNetLocalContigencyOptimizer.class);
+public class AclfNetLocalContingencyOptimizer extends AclfNetLocalOptimizer {
+    private static final Logger log = LoggerFactory.getLogger(AclfNetLocalContingencyOptimizer.class);
 
 	// loading threshold for the optimization, ignore if the loading is less than this threshold
 	public static double LOADING_THRESHOLD = 0.5;
@@ -55,7 +55,7 @@ public class AclfNetLocalContigencyOptimizer extends AclfNetLocalOptimizer {
 	 * 
 	 * @param dclfAlgo
 	 */
-	public AclfNetLocalContigencyOptimizer(ContingencyAnalysisAlgorithm dclfAlgo) {
+	public AclfNetLocalContingencyOptimizer(ContingencyAnalysisAlgorithm dclfAlgo) {
 		super(dclfAlgo);
 	}
 
