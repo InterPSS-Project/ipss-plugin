@@ -169,7 +169,7 @@ public class AclfNetGlobalOptimizer extends BaseAclfNetOptimizer {
 		AclfBranch branch = net.getBranch(branchId);
 		int branchNo = branch.getSortNumber();
 		net.getAclfLoadNameLookupTable().forEach((name, load) -> {
-			if (load.isActive()) {
+			if (load.isActive() && !load.getParentBus().isGen()) {
 				int busNo = load.getParentBus().getSortNumber();
 				double sen = gfsMatrix.get(busNo, branchNo);
 				if (Math.abs(sen) > SEN_THRESHOLD) {
@@ -197,9 +197,9 @@ public class AclfNetGlobalOptimizer extends BaseAclfNetOptimizer {
 			net.createAclfLoadNameLookupTable(true);
 		}
 		return net.getAclfLoadNameLookupTable().values().stream()
-				.filter(NameTag::isActive).collect(Collectors.toSet());
+				.filter(load -> load.isActive() && !load.getParentBus().isGen())
+				.collect(Collectors.toSet());
 	}
-
 
 	protected Set<AclfGen> buildControlGenSet() {
 		AclfNetwork net = (AclfNetwork) dclfAlgo.getNetwork();
@@ -248,6 +248,21 @@ public class AclfNetGlobalOptimizer extends BaseAclfNetOptimizer {
 		});
 	}
 
+	/**
+	 * Build the generator output constraints
+	 */
+	protected void buildGenConstrain() {
+		AclfNetwork net = dclfAlgo.getAclfNet();
+		double baseMva = net.getBaseMva();
+		controlGenMap.forEach((no, gen) -> {
+				LimitType genLimit = gen.getPGenLimit();
+				getOptimizer().addConstraint(new DeviceConstrainData(gen.getGen().getReal() * baseMva, 
+													Relationship.LEQ, genLimit.getMax() * baseMva, no));
+				getOptimizer().addConstraint(new DeviceConstrainData(gen.getGen().getReal() * baseMva, 
+													Relationship.GEQ, genLimit.getMin() * baseMva, no));
+		});
+	}
+	
 	
 	/**
 	 * Get the optimization result map
@@ -353,21 +368,6 @@ public class AclfNetGlobalOptimizer extends BaseAclfNetOptimizer {
 				double flowMw = Math.abs(dclfBranch.getDclfFlow() * baseMva);
 				getOptimizer().addConstraint(new SectionConstrainData(flowMw, Relationship.LEQ, limit, genSenArray));
 			}
-		});
-	}
-
-	/**
-	 * Build the generator output constraints
-	 */
-	protected void buildGenConstrain() {
-		AclfNetwork net = dclfAlgo.getAclfNet();
-		double baseMva = net.getBaseMva();
-		controlGenMap.forEach((no, gen) -> {
-			LimitType genLimit = gen.getPGenLimit();
-			getOptimizer().addConstraint(new DeviceConstrainData(gen.getGen().getReal() * baseMva, 
-												Relationship.LEQ, genLimit.getMax() * baseMva, no));
-			getOptimizer().addConstraint(new DeviceConstrainData(gen.getGen().getReal() * baseMva, 
-												Relationship.GEQ, genLimit.getMin() * baseMva, no));
 		});
 	}
 }
