@@ -55,7 +55,7 @@ public class AclfNetGlobalATCOptimizer extends AclfNetGlobalContingencyOptimizer
 	}
 
 	@Override
-	protected Set<AclfLoad> buildControlLoadSet() {
+	protected Set<AclfLoad> buildControlLoadSet(Set<AclfGen> controlGenSet) {
 		return this.controlLoadSet;
 
 	}
