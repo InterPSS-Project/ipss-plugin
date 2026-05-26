@@ -20,7 +20,7 @@ import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
  * 
  * 
  */
-public class AclfNetGlobalATCOptimizer extends AclfNetGlobalContigencyOptimizer {
+public class AclfNetGlobalATCOptimizer extends AclfNetGlobalContingencyOptimizer {
 	
 	private static final Logger log = LoggerFactory.getLogger(AclfNetGlobalATCOptimizer.class);
 	
