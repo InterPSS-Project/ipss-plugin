@@ -169,7 +169,7 @@ public class AclfNetGlobalOptimizer extends BaseAclfNetOptimizer {
 		AclfBranch branch = net.getBranch(branchId);
 		int branchNo = branch.getSortNumber();
 		net.getAclfLoadNameLookupTable().forEach((name, load) -> {
-			if (load.isActive() && !load.getParentBus().isGen()) {
+			if (load.isActive()) {
 				int busNo = load.getParentBus().getSortNumber();
 				double sen = gfsMatrix.get(busNo, branchNo);
 				if (Math.abs(sen) > SEN_THRESHOLD) {
@@ -197,7 +197,7 @@ public class AclfNetGlobalOptimizer extends BaseAclfNetOptimizer {
 			net.createAclfLoadNameLookupTable(true);
 		}
 		return net.getAclfLoadNameLookupTable().values().stream()
-				.filter(load -> load.isActive() && !load.getParentBus().isGen())
+				.filter(load -> load.isActive())
 				.collect(Collectors.toSet());
 	}
 

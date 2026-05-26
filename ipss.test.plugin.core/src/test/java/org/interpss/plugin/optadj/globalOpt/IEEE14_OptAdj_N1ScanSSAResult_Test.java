@@ -160,15 +160,16 @@ public class IEEE14_OptAdj_N1ScanSSAResult_Test extends CorePluginTestSetup {
 		Map<String, Double> resultMap = optimizer.getResultMap();
 		System.out.println("Optimization result (Gen+Load): " + resultMap);
 		
-		// {Gen:Bus3-G1=0.9900000000000017}
-		assertEquals(resultMap.get("Gen:Bus3-G1"), 0.990, 0.0001);
+		// {Gen:Bus3-G1=0.49500000000000094, Load:Bus3-L1=-0.495000000000001}
+		assertEquals(resultMap.get("Gen:Bus3-G1"), 0.4950003150015758, 0.0001);
+		assertEquals(resultMap.get("Load:Bus3-L1"), -0.4950003150015758, 0.0001);
 		
 		System.out.println("Optimization gen size." + optimizer.getOptimizer().getGenSize());
 		System.out.println("Optimization gen constrain size." + optimizer.getOptimizer().getGenConstrainDataList().size());
 		System.out.println("Optimization sec constrian size." + optimizer.getOptimizer().getSecConstrainDataList().size());
-		assertEquals(optimizer.getOptimizer().getGenSize(), 4);
-		assertEquals(optimizer.getOptimizer().getGenConstrainDataList().size(), 8);
-		assertEquals(optimizer.getOptimizer().getSecConstrainDataList().size(), 42);
+		assertEquals(optimizer.getOptimizer().getGenSize(), 15);
+		assertEquals(optimizer.getOptimizer().getGenConstrainDataList().size(), 30);
+		assertEquals(optimizer.getOptimizer().getSecConstrainDataList().size(), 47);
 		
 		dclfAlgo.calculateDclf();
 		
