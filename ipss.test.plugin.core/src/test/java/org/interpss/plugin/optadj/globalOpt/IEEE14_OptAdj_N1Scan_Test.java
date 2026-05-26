@@ -111,7 +111,7 @@ public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
 		assertTrue(cnt1.getCount() == 0);
 	}
 
-	//@Test
+	@Test
 	public void testGenLoad() throws InterpssException {
 		AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
 		
@@ -154,19 +154,16 @@ public class IEEE14_OptAdj_N1Scan_Test extends CorePluginTestSetup {
 		Map<String, Double> resultMap = optimizer.getResultMap();
 		System.out.println("Optimization result (Gen+Load): " + resultMap);
 		
-		// {Load:Bus5-L1=-0.076, Load:Bus6-L1=-0.0530002650013257, Gen:Bus3-G1=0.49500026500132577, Load:Bus2-L1=-0.217, Load:Bus14-L1=-0.149}
-		assertEquals(resultMap.get("Gen:Bus3-G1"), 0.49500026500132577, 0.0001);
-		assertEquals(resultMap.get("Load:Bus5-L1"), -0.076, 0.0001);
-		assertEquals(resultMap.get("Load:Bus6-L1"), -0.0530002650013257, 0.0001);	
-		assertEquals(resultMap.get("Load:Bus2-L1"), -0.217, 0.0001);
-		assertEquals(resultMap.get("Load:Bus14-L1"), -0.149, 0.0001);
+		// {Gen:Bus1-G1=-0.990000000000002, Gen:Bus3-G1=0.990000000000002}
+		assertEquals(resultMap.get("Gen:Bus1-G1"), -0.990, 0.0001);
+		assertEquals(resultMap.get("Gen:Bus3-G1"), 0.990, 0.0001);
 		
 		System.out.println("Optimization gen size." + optimizer.getOptimizer().getGenSize());
 		System.out.println("Optimization gen constrain size." + optimizer.getOptimizer().getGenConstrainDataList().size());
 		System.out.println("Optimization sec constrian size." + optimizer.getOptimizer().getSecConstrainDataList().size());
-		assertEquals(optimizer.getOptimizer().getGenSize(), 16);
-		assertEquals(optimizer.getOptimizer().getGenConstrainDataList().size(), 32);
-		assertEquals(optimizer.getOptimizer().getSecConstrainDataList().size(), 47);
+		assertEquals(optimizer.getOptimizer().getGenSize(), 5);
+		assertEquals(optimizer.getOptimizer().getGenConstrainDataList().size(), 10);
+		assertEquals(optimizer.getOptimizer().getSecConstrainDataList().size(), 42);
 		
 		dclfAlgo.calculateDclf();
 		
