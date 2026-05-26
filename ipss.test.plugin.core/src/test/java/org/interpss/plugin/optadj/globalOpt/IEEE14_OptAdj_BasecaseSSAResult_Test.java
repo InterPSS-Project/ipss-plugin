@@ -128,14 +128,15 @@ public class IEEE14_OptAdj_BasecaseSSAResult_Test extends CorePluginTestSetup {
 		Map<String, Double> resultMap = optimizer.getResultMap();
 		System.out.println("Optimization result (Gen+Load): " + resultMap);
 		
-		// {Gen:Bus2-G1=0.5713493069227147}
-		assertEquals(resultMap.get("Gen:Bus2-G1"), 0.57135, 0.0001);
+		// (Gen+Load): {Gen:Bus2-G1=0.302168125498727, Load:Bus3-L1=-0.302168125498727}
+		assertEquals(resultMap.get("Gen:Bus2-G1"), 0.302168125498727, 0.0001);
+		assertEquals(resultMap.get("Load:Bus3-L1"), -0.302168125498727, 0.0001);
 		
 		System.out.println("Optimization gen size." + optimizer.getOptimizer().getGenSize());
 		System.out.println("Optimization gen constrain size." + optimizer.getOptimizer().getGenConstrainDataList().size());
 		System.out.println("Optimization sec constrian size." + optimizer.getOptimizer().getSecConstrainDataList().size());
-		assertEquals(optimizer.getOptimizer().getGenSize(), 4);
-		assertEquals(optimizer.getOptimizer().getGenConstrainDataList().size(), 8);
+		assertEquals(optimizer.getOptimizer().getGenSize(), 15);
+		assertEquals(optimizer.getOptimizer().getGenConstrainDataList().size(), 30);
 		assertEquals(optimizer.getOptimizer().getSecConstrainDataList().size(), 20);
 		
 		dclfAlgo.calculateDclf();
