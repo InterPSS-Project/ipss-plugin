@@ -105,7 +105,7 @@ public class AclfNetGlobalOptimizer extends BaseAclfNetOptimizer {
 			this.setOptimizer(new GenStateOptimizer());
 		
 		Set<AclfGen> fullGenSet = buildControlGenSet();
-		Set<AclfLoad> fullLoadSet = buildControlLoadSet();
+		Set<AclfLoad> fullLoadSet = buildControlLoadSet(fullGenSet);
 		AclfNetGFSsHelper helper = new AclfNetGFSsHelper((AclfNetwork) dclfAlgo.getNetwork());
 		Sen2DMatrix gsfMatrix = helper.calGenLoadGFS(fullGenSet,
 				adjustGenOnly ? Collections.emptySet() : fullLoadSet);
@@ -117,7 +117,8 @@ public class AclfNetGlobalOptimizer extends BaseAclfNetOptimizer {
 			if (controlGenSet.isEmpty()) {
 				controlGenSet = new LinkedHashSet<>(fullGenSet);
 			}
-			controlLoadSet = adjustGenOnly ? Collections.emptySet() : buildControlLoadSet(gsfMatrix, result);
+			controlLoadSet = adjustGenOnly ? Collections.emptySet()
+					: buildControlLoadSet(gsfMatrix, result, controlGenSet);
 		} else {
 			controlGenSet = fullGenSet;
 			controlLoadSet = adjustGenOnly ? Collections.emptySet() : fullLoadSet;
@@ -146,22 +147,29 @@ public class AclfNetGlobalOptimizer extends BaseAclfNetOptimizer {
 	 *
 	 * @param gfsMatrix GFS matrix for candidate control buses
 	 * @param result SSA result container
+	 * @param controlGenSet generators already selected as controls (loads at those buses are skipped)
 	 * @return the control load set
 	 */
-	protected Set<AclfLoad> buildControlLoadSet(Sen2DMatrix gfsMatrix, AclfNetSsaResultContainer result) {
+	protected Set<AclfLoad> buildControlLoadSet(Sen2DMatrix gfsMatrix, AclfNetSsaResultContainer result,
+			Set<AclfGen> controlGenSet) {
+		Set<String> controlGenBusIds = controlGenSet.stream()
+				.map(gen -> gen.getParentBus().getId())
+				.collect(Collectors.toSet());
 		Set<AclfLoad> loadSet = new LinkedHashSet<>();
 		result.getBaseOverLimitInfo().forEach(info -> {
-			processLoadSet(gfsMatrix, loadSet, info.dclfBranch.getId());
+			processLoadSet(gfsMatrix, loadSet, controlGenBusIds, info.dclfBranch.getId());
 		});
 
 		result.getCaOverLimitInfo().forEach(info -> {
-			processLoadSet(gfsMatrix, loadSet, info.aclfBranch.getId());
-			info.getOutageEquips().forEach(outage -> processLoadSet(gfsMatrix, loadSet, outage.getBranch().getId()));
+			processLoadSet(gfsMatrix, loadSet, controlGenBusIds, info.aclfBranch.getId());
+			info.getOutageEquips().forEach(outage ->
+					processLoadSet(gfsMatrix, loadSet, controlGenBusIds, outage.getBranch().getId()));
 		});
 		return loadSet;
 	}
 
-	private void processLoadSet(Sen2DMatrix gfsMatrix, Set<AclfLoad> loadSet, String branchId) {
+	private void processLoadSet(Sen2DMatrix gfsMatrix, Set<AclfLoad> loadSet, Set<String> controlGenBusIds,
+			String branchId) {
 		AclfNetwork net = dclfAlgo.getAclfNet();
 		if (net.getAclfLoadNameLookupTable() == null) {
 			net.createAclfLoadNameLookupTable(true);
@@ -169,7 +177,7 @@ public class AclfNetGlobalOptimizer extends BaseAclfNetOptimizer {
 		AclfBranch branch = net.getBranch(branchId);
 		int branchNo = branch.getSortNumber();
 		net.getAclfLoadNameLookupTable().forEach((name, load) -> {
-			if (load.isActive()) {
+			if (load.isActive() && !controlGenBusIds.contains(load.getParentBus().getId())) {
 				int busNo = load.getParentBus().getSortNumber();
 				double sen = gfsMatrix.get(busNo, branchNo);
 				if (Math.abs(sen) > SEN_THRESHOLD) {
@@ -191,13 +199,16 @@ public class AclfNetGlobalOptimizer extends BaseAclfNetOptimizer {
 		});
 	}
 
-	protected Set<AclfLoad> buildControlLoadSet() {
+	protected Set<AclfLoad> buildControlLoadSet(Set<AclfGen> controlGenSet) {
 		AclfNetwork net = (AclfNetwork) dclfAlgo.getNetwork();
 		if (net.getAclfLoadNameLookupTable() == null) {
 			net.createAclfLoadNameLookupTable(true);
 		}
+		Set<String> controlGenBusIds = controlGenSet.stream()
+					.map(gen -> gen.getParentBus().getId())
+					.collect(Collectors.toSet());
 		return net.getAclfLoadNameLookupTable().values().stream()
-				.filter(load -> load.isActive())
+				.filter(load -> load.isActive() && !controlGenBusIds.contains(load.getParentBus().getId()))
 				.collect(Collectors.toSet());
 	}
 
