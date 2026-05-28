@@ -8,7 +8,7 @@ This checklist tracks implementation of Java-native DistOPF for InterPSS using t
 - [x] Create subpackage `org.interpss.threePhase.opf.dist.constraint`.
 - [x] Create subpackage `org.interpss.threePhase.opf.dist.objective`.
 - [x] Create subpackage `org.interpss.threePhase.opf.dist.solver`.
-- [ ] Create subpackage `org.interpss.threePhase.opf.dist.util`.
+- [x] Create subpackage `org.interpss.threePhase.opf.dist.util`.
 - [x] Add `DistOpfAlgorithm`.
 - [x] Add `DistOpfOptions`.
 - [x] Add `DistOpfObjective`.
