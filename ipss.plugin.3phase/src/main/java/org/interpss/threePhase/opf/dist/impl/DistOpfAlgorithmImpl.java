@@ -7,12 +7,16 @@ import org.interpss.threePhase.opf.dist.DistOpfObjective;
 import org.interpss.threePhase.opf.dist.DistOpfOptions;
 import org.interpss.threePhase.opf.dist.DistOpfResult;
 import org.interpss.threePhase.opf.dist.DistOpfStatus;
+import org.interpss.threePhase.opf.dist.model.DistOpfBranchData;
+import org.interpss.threePhase.opf.dist.model.DistOpfBusData;
 import org.interpss.threePhase.opf.dist.model.DistOpfModelData;
 import org.interpss.threePhase.opf.dist.model.DistOpfModelDataExtractor;
 import org.interpss.threePhase.opf.dist.model.DistOpfModel;
 import org.interpss.threePhase.opf.dist.model.LinDistFlowModelBuilder;
 import org.interpss.threePhase.opf.dist.solver.DistOpfSolverResult;
 import org.interpss.threePhase.opf.dist.solver.OjAlgoDistOpfSolver;
+
+import com.interpss.core.acsc.PhaseCode;
 
 public class DistOpfAlgorithmImpl implements DistOpfAlgorithm {
 
@@ -51,10 +55,33 @@ public class DistOpfAlgorithmImpl implements DistOpfAlgorithm {
 			DistOpfSolverResult solverResult = new OjAlgoDistOpfSolver().solve(model, options);
 			DistOpfResult result = new DistOpfResult(solverResult.getStatus(),
 					solverResult.getObjectiveValue(), solverResult.getMaxConstraintResidual());
-			result.addWarning("DistOPF ojAlgo solve integration is not implemented yet.");
+			mapResult(model, solverResult, result);
 			return result;
 		} catch (RuntimeException e) {
 			return new DistOpfResult(DistOpfStatus.ERROR, Double.NaN, Double.NaN).addWarning(e.getMessage());
+		}
+	}
+
+	private static void mapResult(DistOpfModel model, DistOpfSolverResult solverResult, DistOpfResult result) {
+		if (!result.isSolved()) {
+			result.addWarning(solverResult.getMessage());
+			return;
+		}
+		double[] x = solverResult.getPrimalVariables();
+		DistOpfModelData modelData = model.getModelData();
+		for (DistOpfBusData bus : modelData.getBuses()) {
+			for (PhaseCode phase : bus.getPhases()) {
+				result.putBusVoltageSquared(bus.getId(), phase.name(),
+						x[model.getVariableIndex().busV2(bus.getId(), phase)]);
+			}
+		}
+		for (DistOpfBranchData branch : modelData.getBranches()) {
+			for (PhaseCode phase : branch.getPhases()) {
+				result.putBranchActivePower(branch.getId(), phase.name(),
+						x[model.getVariableIndex().branchP(branch.getId(), phase)]);
+				result.putBranchReactivePower(branch.getId(), phase.name(),
+						x[model.getVariableIndex().branchQ(branch.getId(), phase)]);
+			}
 		}
 	}
 
