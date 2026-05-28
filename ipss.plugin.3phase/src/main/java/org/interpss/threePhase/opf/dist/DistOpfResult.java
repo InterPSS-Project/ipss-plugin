@@ -6,6 +6,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.math3.complex.Complex;
+import org.interpss.numeric.datatype.Complex3x1;
+import org.interpss.numeric.datatype.Unit.UnitType;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PGen;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 
 public class DistOpfResult {
@@ -117,10 +122,49 @@ public class DistOpfResult {
 	}
 
 	public void applySetpointsToNetwork(DStabNetwork3Phase net) {
-		// Setpoint mapping is added with DER extraction. Keep solve() non-mutating.
+		for (DStab3PBus bus : net.getBusList()) {
+			for (DStab3PGen gen : bus.getThreePhaseGenList()) {
+				applySetpoint(gen);
+			}
+			for (DStab3PGen gen : bus.getContributeGenList()) {
+				applySetpoint(gen);
+			}
+		}
 	}
 
 	private static String key(String id, String phase) {
 		return id + "." + phase;
+	}
+
+	private void applySetpoint(DStab3PGen gen) {
+		if (gen == null || gen.getId() == null || !hasDerSetpoint(gen.getId())) {
+			return;
+		}
+		Complex3x1 current = gen.getPower3Phase(UnitType.PU);
+		Complex3x1 updated = current == null ? new Complex3x1() : current;
+		updated.a_0 = phaseSetpoint(gen.getId(), "A", updated.a_0);
+		updated.b_1 = phaseSetpoint(gen.getId(), "B", updated.b_1);
+		updated.c_2 = phaseSetpoint(gen.getId(), "C", updated.c_2);
+		gen.setPower3Phase(updated, UnitType.PU);
+	}
+
+	private boolean hasDerSetpoint(String derId) {
+		return derActivePower.containsKey(key(derId, "A"))
+				|| derActivePower.containsKey(key(derId, "B"))
+				|| derActivePower.containsKey(key(derId, "C"))
+				|| derReactivePower.containsKey(key(derId, "A"))
+				|| derReactivePower.containsKey(key(derId, "B"))
+				|| derReactivePower.containsKey(key(derId, "C"));
+	}
+
+	private Complex phaseSetpoint(String derId, String phase, Complex current) {
+		Double p = derActivePower.get(key(derId, phase));
+		Double q = derReactivePower.get(key(derId, phase));
+		if (p == null && q == null) {
+			return current == null ? Complex.ZERO : current;
+		}
+		double real = p == null ? (current == null ? 0.0 : current.getReal()) : p.doubleValue();
+		double imag = q == null ? (current == null ? 0.0 : current.getImaginary()) : q.doubleValue();
+		return new Complex(real, imag);
 	}
 }
