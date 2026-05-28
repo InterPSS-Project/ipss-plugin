@@ -63,6 +63,23 @@ public class DistOpfModelDataExtractorTest {
 		assertEquals(0.25, data.getBranches().get(0).getThermalLimitPu(), 1.0e-12);
 	}
 
+	@Test
+	public void extractsMissingPhaseBranchFromImpedanceMatrix() throws InterpssException {
+		DStabNetwork3Phase net = createTwoBusFeeder();
+		DStab3PBranch branch = net.getBranch("source->load(0)");
+		Complex3x3 zabc = new Complex3x3();
+		zabc.aa = new Complex(0.01, 0.04);
+		zabc.bb = Complex.ZERO;
+		zabc.cc = new Complex(0.01, 0.04);
+		branch.setZabc(zabc);
+
+		DistOpfModelData data = new DistOpfModelDataExtractor().extract(net);
+
+		assertEquals(2, data.getBranches().get(0).getPhases().size());
+		assertTrue(data.getBranches().get(0).getPhases().contains(PhaseCode.A));
+		assertTrue(data.getBranches().get(0).getPhases().contains(PhaseCode.C));
+	}
+
 	private static DStabNetwork3Phase createTwoBusFeeder() throws InterpssException {
 		DStabNetwork3Phase net = ThreePhaseObjectFactory.create3PhaseDStabNetwork();
 		net.setBaseKva(1000.0);
