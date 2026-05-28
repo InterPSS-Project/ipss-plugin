@@ -49,7 +49,7 @@ public class DistOpfModelDataExtractor {
 			buses.add(new DistOpfBusData(bus.getId(), bus.isSwing(), bus.getBaseVoltage(),
 					EnumSet.of(PhaseCode.A, PhaseCode.B, PhaseCode.C), fixedLoad.load,
 					fixedLoad.capacitorQ));
-			ders.addAll(extractDers(bus));
+			ders.addAll(extractDers(bus, net.getBaseMva()));
 		}
 		if (swingBusId == null) {
 			throw new IllegalArgumentException("DistOPF requires one active swing bus");
@@ -130,19 +130,20 @@ public class DistOpfModelDataExtractor {
 		return new Complex(0.0, -capLoadPhase.getImaginary());
 	}
 
-	private static List<DistOpfDerData> extractDers(DStab3PBus bus) {
+	private static List<DistOpfDerData> extractDers(DStab3PBus bus, double baseMva) {
 		List<DistOpfDerData> ders = new ArrayList<DistOpfDerData>();
 		Set<DStab3PGen> seen = new HashSet<DStab3PGen>();
 		for (DStab3PGen gen : bus.getThreePhaseGenList()) {
-			addDer(bus, gen, seen, ders);
+			addDer(bus, gen, seen, ders, baseMva);
 		}
 		for (DStab3PGen gen : bus.getContributeGenList()) {
-			addDer(bus, gen, seen, ders);
+			addDer(bus, gen, seen, ders, baseMva);
 		}
 		return ders;
 	}
 
-	private static void addDer(DStab3PBus bus, DStab3PGen gen, Set<DStab3PGen> seen, List<DistOpfDerData> ders) {
+	private static void addDer(DStab3PBus bus, DStab3PGen gen, Set<DStab3PGen> seen,
+			List<DistOpfDerData> ders, double baseMva) {
 		if (gen == null || seen.contains(gen)) {
 			return;
 		}
@@ -160,7 +161,30 @@ public class DistOpfModelDataExtractor {
 			id = "DER@" + bus.getId() + "#" + ders.size();
 		}
 		ders.add(new DistOpfDerData(id, bus.getId(),
-				EnumSet.of(PhaseCode.A, PhaseCode.B, PhaseCode.C), power));
+				EnumSet.of(PhaseCode.A, PhaseCode.B, PhaseCode.C), power,
+				apparentPowerLimitPu(gen, baseMva, power)));
+	}
+
+	private static Double apparentPowerLimitPu(DStab3PGen gen, double baseMva, Complex3x1 power) {
+		double baseLimit = maxApparentPower(power);
+		if (baseMva > 0.0 && gen.getMvaBase() > 0.0) {
+			baseLimit = Math.max(baseLimit, gen.getMvaBase() / baseMva / 3.0);
+		}
+		return baseLimit > 0.0 ? Double.valueOf(baseLimit) : null;
+	}
+
+	private static double maxApparentPower(Complex3x1 power) {
+		double max = 0.0;
+		if (power.a_0 != null) {
+			max = Math.max(max, power.a_0.abs());
+		}
+		if (power.b_1 != null) {
+			max = Math.max(max, power.b_1.abs());
+		}
+		if (power.c_2 != null) {
+			max = Math.max(max, power.c_2.abs());
+		}
+		return max;
 	}
 
 	private static String branchId(DStab3PBranch branch) {
