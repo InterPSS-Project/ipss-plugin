@@ -48,6 +48,21 @@ public class DistOpfDerControlTest {
 	}
 
 	@Test
+	public void targetSubstationPObjectiveControlsDerP() throws InterpssException {
+		DistOpfOptions options = new DistOpfOptions().setTargetSubstationPPu(0.18);
+		DistOpfResult result = ThreePhaseObjectFactory.createDistOpfAlgorithm(createTwoBusFeederWithDer())
+				.setControlMode(DistOpfControlMode.P)
+				.setObjective(DistOpfObjective.TARGET_SUBSTATION_P)
+				.setOptions(options)
+				.solve();
+
+		assertEquals(DistOpfStatus.OPTIMAL, result.getStatus());
+		assertEquals(0.0, result.getObjectiveValue(), 1.0e-7);
+		assertEquals(0.04, result.getDerActivePower("der-1", "A"), 1.0e-7);
+		assertEquals(0.06, result.getBranchActivePower("source->load(0)", "A"), 1.0e-7);
+	}
+
+	@Test
 	public void solveDoesNotMutateNetworkUntilSetpointsAreApplied() throws InterpssException {
 		DStabNetwork3Phase net = createTwoBusFeederWithDer();
 		DStab3PGen der = net.getBus("load").getThreePhaseGenList().get(0);

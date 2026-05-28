@@ -13,7 +13,11 @@ public class DistOpfVariableIndex {
 		BUS_V2,
 		DER_P,
 		DER_Q,
-		CURTAILMENT
+		CURTAILMENT,
+		TARGET_P_POSITIVE,
+		TARGET_P_NEGATIVE,
+		TARGET_Q_POSITIVE,
+		TARGET_Q_NEGATIVE
 	}
 
 	private final Map<String, Integer> indexByKey = new LinkedHashMap<String, Integer>();
@@ -40,6 +44,22 @@ public class DistOpfVariableIndex {
 
 	public int curtailment(String busId, PhaseCode phase) {
 		return getOrCreate(VariableType.CURTAILMENT, busId, phase);
+	}
+
+	public int targetPPositive(String busId) {
+		return getOrCreate(VariableType.TARGET_P_POSITIVE, busId, PhaseCode.A);
+	}
+
+	public int targetPNegative(String busId) {
+		return getOrCreate(VariableType.TARGET_P_NEGATIVE, busId, PhaseCode.A);
+	}
+
+	public int targetQPositive(String busId) {
+		return getOrCreate(VariableType.TARGET_Q_POSITIVE, busId, PhaseCode.A);
+	}
+
+	public int targetQNegative(String busId) {
+		return getOrCreate(VariableType.TARGET_Q_NEGATIVE, busId, PhaseCode.A);
 	}
 
 	public int size() {
