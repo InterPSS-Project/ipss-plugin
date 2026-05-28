@@ -15,8 +15,10 @@ import java.util.Set;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
+import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PGen;
 import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 
@@ -29,6 +31,7 @@ public class DistOpfModelDataExtractor {
 	public DistOpfModelData extract(DStabNetwork3Phase net) {
 		List<DistOpfBusData> buses = new ArrayList<DistOpfBusData>();
 		List<DistOpfBranchData> branches = new ArrayList<DistOpfBranchData>();
+		List<DistOpfDerData> ders = new ArrayList<DistOpfDerData>();
 		String swingBusId = null;
 
 		for (DStab3PBus bus : net.getBusList()) {
@@ -43,6 +46,7 @@ public class DistOpfModelDataExtractor {
 			}
 			buses.add(new DistOpfBusData(bus.getId(), bus.isSwing(), bus.getBaseVoltage(),
 					EnumSet.of(PhaseCode.A, PhaseCode.B, PhaseCode.C), safeLoad(bus)));
+			ders.addAll(extractDers(bus));
 		}
 		if (swingBusId == null) {
 			throw new IllegalArgumentException("DistOPF requires one active swing bus");
@@ -58,7 +62,7 @@ public class DistOpfModelDataExtractor {
 		}
 
 		Topology topology = validateRadialAndOrient(swingBusId, buses, branches);
-		return new DistOpfModelData(net.getBaseMva(), swingBusId, buses, branches,
+		return new DistOpfModelData(net.getBaseMva(), swingBusId, buses, branches, ders,
 				topology.childrenByBusId, topology.parentBranchByBusId);
 	}
 
@@ -78,6 +82,39 @@ public class DistOpfModelDataExtractor {
 			}
 		}
 		return load;
+	}
+
+	private static List<DistOpfDerData> extractDers(DStab3PBus bus) {
+		List<DistOpfDerData> ders = new ArrayList<DistOpfDerData>();
+		Set<DStab3PGen> seen = new HashSet<DStab3PGen>();
+		for (DStab3PGen gen : bus.getThreePhaseGenList()) {
+			addDer(bus, gen, seen, ders);
+		}
+		for (DStab3PGen gen : bus.getContributeGenList()) {
+			addDer(bus, gen, seen, ders);
+		}
+		return ders;
+	}
+
+	private static void addDer(DStab3PBus bus, DStab3PGen gen, Set<DStab3PGen> seen, List<DistOpfDerData> ders) {
+		if (gen == null || seen.contains(gen)) {
+			return;
+		}
+		seen.add(gen);
+		Complex3x1 power = gen.getPower3Phase(UnitType.PU);
+		if (power == null && gen.getGen() != null) {
+			Complex perPhasePower = gen.getGen().divide(3.0);
+			power = new Complex3x1(perPhasePower, perPhasePower, perPhasePower);
+		}
+		if (power == null) {
+			return;
+		}
+		String id = gen.getId();
+		if (id == null || id.length() == 0) {
+			id = "DER@" + bus.getId() + "#" + ders.size();
+		}
+		ders.add(new DistOpfDerData(id, bus.getId(),
+				EnumSet.of(PhaseCode.A, PhaseCode.B, PhaseCode.C), power));
 	}
 
 	private static String branchId(DStab3PBranch branch) {
