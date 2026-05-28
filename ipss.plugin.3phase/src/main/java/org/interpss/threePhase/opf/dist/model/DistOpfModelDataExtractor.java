@@ -15,6 +15,7 @@ import java.util.Set;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
+import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
@@ -46,9 +47,10 @@ public class DistOpfModelDataExtractor {
 				swingBusId = bus.getId();
 			}
 			FixedLoadAndCapacitor fixedLoad = fixedLoadAndCapacitor(bus);
+			VoltageLimit voltageLimit = voltageLimit(bus);
 			buses.add(new DistOpfBusData(bus.getId(), bus.isSwing(), bus.getBaseVoltage(),
 					EnumSet.of(PhaseCode.A, PhaseCode.B, PhaseCode.C), fixedLoad.load,
-					fixedLoad.capacitorQ));
+					fixedLoad.capacitorQ, voltageLimit.minPu, voltageLimit.maxPu));
 			ders.addAll(extractDers(bus, net.getBaseMva()));
 		}
 		if (swingBusId == null) {
@@ -81,6 +83,14 @@ public class DistOpfModelDataExtractor {
 			}
 		}
 		return new FixedLoadAndCapacitor(totalLoad, capacitorQ);
+	}
+
+	private static VoltageLimit voltageLimit(DStab3PBus bus) {
+		LimitType limit = bus.getVLimit();
+		if (limit == null || limit.isError() || limit.getMin() <= 0.0 || limit.getMax() <= 0.0) {
+			return new VoltageLimit(null, null);
+		}
+		return new VoltageLimit(Double.valueOf(limit.getMin()), Double.valueOf(limit.getMax()));
 	}
 
 	private static Complex3x1 safeLoad(DStab3PBus bus) {
@@ -314,6 +324,16 @@ public class DistOpfModelDataExtractor {
 		private FixedLoadAndCapacitor(Complex3x1 load, Complex3x1 capacitorQ) {
 			this.load = load;
 			this.capacitorQ = capacitorQ;
+		}
+	}
+
+	private static class VoltageLimit {
+		private final Double minPu;
+		private final Double maxPu;
+
+		private VoltageLimit(Double minPu, Double maxPu) {
+			this.minPu = minPu;
+			this.maxPu = maxPu;
 		}
 	}
 }
