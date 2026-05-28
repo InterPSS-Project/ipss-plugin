@@ -56,7 +56,7 @@ This checklist tracks implementation of Java-native DistOPF for InterPSS using t
 - [x] Extract fixed bus phase P loads.
 - [x] Extract fixed bus phase Q loads.
 - [x] Extract fixed capacitor Q injections.
-- [ ] Extract fixed regulator ratios.
+- [x] Extract fixed regulator ratios.
 - [x] Extract DER active-power limits.
 - [x] Extract DER reactive-power limits.
 - [x] Extract inverter apparent-power limits where available.
