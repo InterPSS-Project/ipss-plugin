@@ -7,10 +7,13 @@ import org.interpss.threePhase.opf.dist.constraint.DistDerLimitConstraintCollect
 import org.interpss.threePhase.opf.dist.constraint.DistPowerBalanceConstraintCollector;
 import org.interpss.threePhase.opf.dist.constraint.DistReactivePowerBalanceConstraintCollector;
 import org.interpss.threePhase.opf.dist.constraint.DistSwingVoltageConstraintCollector;
+import org.interpss.threePhase.opf.dist.constraint.DistSubstationTargetConstraintCollector;
 import org.interpss.threePhase.opf.dist.constraint.DistVoltageDropConstraintCollector;
 import org.interpss.threePhase.opf.dist.constraint.DistVoltageLimitConstraintCollector;
 import org.interpss.threePhase.opf.dist.objective.CurtailmentMinObjectiveCollector;
 import org.interpss.threePhase.opf.dist.objective.GenMaxObjectiveCollector;
+import org.interpss.threePhase.opf.dist.objective.TargetSubstationPObjectiveCollector;
+import org.interpss.threePhase.opf.dist.objective.TargetSubstationQObjectiveCollector;
 
 import com.interpss.core.acsc.PhaseCode;
 
@@ -43,6 +46,14 @@ public class LinDistFlowModelBuilder {
 				}
 			}
 		}
+		if (objective == DistOpfObjective.TARGET_SUBSTATION_P && options.getTargetSubstationPPu() != null) {
+			variableIndex.targetPPositive(modelData.getSwingBusId());
+			variableIndex.targetPNegative(modelData.getSwingBusId());
+		}
+		if (objective == DistOpfObjective.TARGET_SUBSTATION_Q && options.getTargetSubstationQPu() != null) {
+			variableIndex.targetQPositive(modelData.getSwingBusId());
+			variableIndex.targetQNegative(modelData.getSwingBusId());
+		}
 
 		DistOpfModel model = new DistOpfModel(modelData, variableIndex);
 		new DistPowerBalanceConstraintCollector(modelData, variableIndex, model.getMutableConstraints()).collectConstraint();
@@ -51,17 +62,23 @@ public class LinDistFlowModelBuilder {
 		new DistSwingVoltageConstraintCollector(modelData, variableIndex, model.getMutableConstraints()).collectConstraint();
 		new DistVoltageLimitConstraintCollector(modelData, variableIndex, model.getMutableConstraints(), options).collectConstraint();
 		new DistDerLimitConstraintCollector(modelData, variableIndex, model.getMutableConstraints(), controlMode).collectConstraint();
-		model.setLinearObjective(linearObjective(modelData, variableIndex, controlMode, objective));
+		new DistSubstationTargetConstraintCollector(modelData, variableIndex, model.getMutableConstraints(),
+				options, objective).collectConstraint();
+		model.setLinearObjective(linearObjective(modelData, variableIndex, controlMode, objective, options));
 		return model;
 	}
 
 	private static double[] linearObjective(DistOpfModelData modelData, DistOpfVariableIndex variableIndex,
-			DistOpfControlMode controlMode, DistOpfObjective objective) {
+			DistOpfControlMode controlMode, DistOpfObjective objective, DistOpfOptions options) {
 		double[] objectiveVector = new double[variableIndex.size()];
 		if (objective == DistOpfObjective.CURTAILMENT_MIN && controlsP(controlMode)) {
 			new CurtailmentMinObjectiveCollector(modelData, variableIndex, objectiveVector).collectObjective();
 		} else if (objective == DistOpfObjective.GEN_MAX) {
 			new GenMaxObjectiveCollector(modelData, variableIndex, objectiveVector).collectObjective();
+		} else if (objective == DistOpfObjective.TARGET_SUBSTATION_P && options.getTargetSubstationPPu() != null) {
+			new TargetSubstationPObjectiveCollector(modelData, variableIndex, objectiveVector).collectObjective();
+		} else if (objective == DistOpfObjective.TARGET_SUBSTATION_Q && options.getTargetSubstationQPu() != null) {
+			new TargetSubstationQObjectiveCollector(modelData, variableIndex, objectiveVector).collectObjective();
 		}
 		return objectiveVector;
 	}
