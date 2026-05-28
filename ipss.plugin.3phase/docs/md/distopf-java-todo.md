@@ -112,9 +112,9 @@ This checklist tracks implementation of Java-native DistOPF for InterPSS using t
 - [x] Add `TargetSubstationQObjectiveCollector`.
 - [x] Add positive and negative Q target deviation variables.
 - [x] Add target substation Q objective coefficients.
-- [ ] Add `LossMinObjectiveCollector`.
+- [x] Add `LossMinObjectiveCollector`.
 - [ ] Verify ojAlgo convex QP support before enabling quadratic loss objective.
-- [ ] If QP support is insufficient, add documented linear loss approximation.
+- [x] If QP support is insufficient, add documented linear loss approximation.
 - [x] Add objective-vector unit tests.
 
 ## Milestone 6: Solver Adapter
