@@ -4,95 +4,95 @@ This checklist tracks implementation of Java-native DistOPF for InterPSS using t
 
 ## Milestone 1: Project Structure
 
-- [ ] Create package `org.interpss.threePhase.opf.dist`.
-- [ ] Create subpackage `org.interpss.threePhase.opf.dist.constraint`.
-- [ ] Create subpackage `org.interpss.threePhase.opf.dist.objective`.
-- [ ] Create subpackage `org.interpss.threePhase.opf.dist.solver`.
+- [x] Create package `org.interpss.threePhase.opf.dist`.
+- [x] Create subpackage `org.interpss.threePhase.opf.dist.constraint`.
+- [x] Create subpackage `org.interpss.threePhase.opf.dist.objective`.
+- [x] Create subpackage `org.interpss.threePhase.opf.dist.solver`.
 - [ ] Create subpackage `org.interpss.threePhase.opf.dist.util`.
-- [ ] Add `DistOpfAlgorithm`.
-- [ ] Add `DistOpfOptions`.
-- [ ] Add `DistOpfObjective`.
-- [ ] Add `DistOpfControlMode`.
-- [ ] Add `DistOpfStatus`.
-- [ ] Add factory method `createDistOpfAlgorithm(DStabNetwork3Phase net)`.
-- [ ] Add a minimal smoke test that constructs the algorithm from a three-phase network.
+- [x] Add `DistOpfAlgorithm`.
+- [x] Add `DistOpfOptions`.
+- [x] Add `DistOpfObjective`.
+- [x] Add `DistOpfControlMode`.
+- [x] Add `DistOpfStatus`.
+- [x] Add factory method `createDistOpfAlgorithm(DStabNetwork3Phase net)`.
+- [x] Add a minimal smoke test that constructs the algorithm from a three-phase network.
 
 ## Milestone 2: Shared Optimization Model
 
-- [ ] Decide whether `OpfConstraint` can be reused directly from `org.interpss.plugin.opf.constraint`.
-- [ ] If direct reuse is clean, document the dependency and use `OpfConstraint`.
+- [x] Decide whether `OpfConstraint` can be reused directly from `org.interpss.plugin.opf.constraint`.
+- [x] If direct reuse is clean, document the dependency and use `OpfConstraint`.
 - [ ] If direct reuse is not clean, create `DistOpfConstraint` with the same sparse-row shape.
-- [ ] Add sparse row helper methods for equality constraints.
-- [ ] Add sparse row helper methods for less-than constraints.
-- [ ] Add sparse row helper methods for greater-than constraints.
-- [ ] Add sparse row helper methods for bounded row constraints.
-- [ ] Add `DistOpfModel`.
-- [ ] Add `DistOpfVariableIndex`.
-- [ ] Add variable-index support for branch phase active power `Pij`.
-- [ ] Add variable-index support for branch phase reactive power `Qij`.
-- [ ] Add variable-index support for bus phase squared voltage `V2`.
-- [ ] Add variable-index support for DER active power `Pg`.
-- [ ] Add variable-index support for DER reactive power `Qg`.
-- [ ] Add variable-index support for curtailment variables.
-- [ ] Add variable lower-bound storage.
-- [ ] Add variable upper-bound storage.
-- [ ] Add unit tests for deterministic variable ordering.
+- [x] Add sparse row helper methods for equality constraints.
+- [x] Add sparse row helper methods for less-than constraints.
+- [x] Add sparse row helper methods for greater-than constraints.
+- [x] Add sparse row helper methods for bounded row constraints.
+- [x] Add `DistOpfModel`.
+- [x] Add `DistOpfVariableIndex`.
+- [x] Add variable-index support for branch phase active power `Pij`.
+- [x] Add variable-index support for branch phase reactive power `Qij`.
+- [x] Add variable-index support for bus phase squared voltage `V2`.
+- [x] Add variable-index support for DER active power `Pg`.
+- [x] Add variable-index support for DER reactive power `Qg`.
+- [x] Add variable-index support for curtailment variables.
+- [x] Add variable lower-bound storage.
+- [x] Add variable upper-bound storage.
+- [x] Add unit tests for deterministic variable ordering.
 
 ## Milestone 3: Network Extraction
 
-- [ ] Add `DistOpfModelData`.
-- [ ] Add `DistOpfModelDataExtractor`.
-- [ ] Extract base MVA.
-- [ ] Extract voltage bases.
-- [ ] Identify swing/source bus.
-- [ ] Extract active buses.
-- [ ] Extract active branches.
-- [ ] Extract bus phase sets.
-- [ ] Extract branch phase sets.
-- [ ] Extract parent/child topology from the source bus.
-- [ ] Validate that the network is connected.
-- [ ] Validate that the v1 network is radial.
-- [ ] Extract per-branch 3x3 phase impedance matrices.
-- [ ] Extract fixed bus phase P loads.
-- [ ] Extract fixed bus phase Q loads.
+- [x] Add `DistOpfModelData`.
+- [x] Add `DistOpfModelDataExtractor`.
+- [x] Extract base MVA.
+- [x] Extract voltage bases.
+- [x] Identify swing/source bus.
+- [x] Extract active buses.
+- [x] Extract active branches.
+- [x] Extract bus phase sets.
+- [x] Extract branch phase sets.
+- [x] Extract parent/child topology from the source bus.
+- [x] Validate that the network is connected.
+- [x] Validate that the v1 network is radial.
+- [x] Extract per-branch 3x3 phase impedance matrices.
+- [x] Extract fixed bus phase P loads.
+- [x] Extract fixed bus phase Q loads.
 - [ ] Extract fixed capacitor Q injections.
 - [ ] Extract fixed regulator ratios.
-- [ ] Extract DER active-power limits.
-- [ ] Extract DER reactive-power limits.
+- [x] Extract DER active-power limits.
+- [x] Extract DER reactive-power limits.
 - [ ] Extract inverter apparent-power limits where available.
 - [ ] Extract bus phase voltage limits.
 - [ ] Extract branch thermal ratings where available.
-- [ ] Normalize extracted values to per-unit.
-- [ ] Exclude dynamic generator admittance contributions.
-- [ ] Exclude dynamic load admittance contributions.
-- [ ] Exclude induction motor equivalent admittance contributions.
-- [ ] Add extraction tests for a small three-phase feeder.
+- [x] Normalize extracted values to per-unit.
+- [x] Exclude dynamic generator admittance contributions.
+- [x] Exclude dynamic load admittance contributions.
+- [x] Exclude induction motor equivalent admittance contributions.
+- [x] Add extraction tests for a small three-phase feeder.
 - [ ] Add extraction tests for a feeder with missing phases.
 
 ## Milestone 4: Constraint Collectors
 
-- [ ] Add `IDistOpfConstraintCollector`.
-- [ ] Add `BaseDistOpfConstraintCollector`.
-- [ ] Add `DistPowerBalanceConstraintCollector`.
-- [ ] Add active-power balance equations for each non-source bus phase.
-- [ ] Add `DistReactivePowerBalanceConstraintCollector`.
-- [ ] Add reactive-power balance equations for each non-source bus phase.
+- [x] Add `IDistOpfConstraintCollector`.
+- [x] Add `BaseDistOpfConstraintCollector`.
+- [x] Add `DistPowerBalanceConstraintCollector`.
+- [x] Add active-power balance equations for each non-source bus phase.
+- [x] Add `DistReactivePowerBalanceConstraintCollector`.
+- [x] Add reactive-power balance equations for each non-source bus phase.
 - [ ] Add fixed capacitor injection handling in reactive-power balance.
-- [ ] Add `DistVoltageDropConstraintCollector`.
-- [ ] Add voltage-drop equations for one-phase branches.
-- [ ] Add voltage-drop equations for two-phase branches.
-- [ ] Add voltage-drop equations for three-phase branches.
-- [ ] Add full phase-coupled R/X impedance terms.
-- [ ] Add `DistSwingVoltageConstraintCollector`.
-- [ ] Add source voltage equality constraints.
-- [ ] Add `DistVoltageLimitConstraintCollector`.
-- [ ] Add squared-voltage lower bounds.
-- [ ] Add squared-voltage upper bounds.
-- [ ] Add `DistDerLimitConstraintCollector`.
-- [ ] Fix DER variables when `DistOpfControlMode.NONE` is selected.
-- [ ] Enable active-power controls when `DistOpfControlMode.P` is selected.
-- [ ] Enable reactive-power controls when `DistOpfControlMode.Q` is selected.
-- [ ] Enable P/Q controls when `DistOpfControlMode.PQ` is selected.
+- [x] Add `DistVoltageDropConstraintCollector`.
+- [x] Add voltage-drop equations for one-phase branches.
+- [x] Add voltage-drop equations for two-phase branches.
+- [x] Add voltage-drop equations for three-phase branches.
+- [x] Add full phase-coupled R/X impedance terms.
+- [x] Add `DistSwingVoltageConstraintCollector`.
+- [x] Add source voltage equality constraints.
+- [x] Add `DistVoltageLimitConstraintCollector`.
+- [x] Add squared-voltage lower bounds.
+- [x] Add squared-voltage upper bounds.
+- [x] Add `DistDerLimitConstraintCollector`.
+- [x] Fix DER variables when `DistOpfControlMode.NONE` is selected.
+- [x] Enable active-power controls when `DistOpfControlMode.P` is selected.
+- [x] Enable reactive-power controls when `DistOpfControlMode.Q` is selected.
+- [x] Enable P/Q controls when `DistOpfControlMode.PQ` is selected.
 - [ ] Add `DistInverterCapabilityConstraintCollector`.
 - [ ] Add octagonal inverter capability approximation.
 - [ ] Add `DistBranchThermalLimitConstraintCollector`.
@@ -101,83 +101,83 @@ This checklist tracks implementation of Java-native DistOPF for InterPSS using t
 
 ## Milestone 5: Objective Collectors
 
-- [ ] Add `BaseDistOpfObjectiveCollector`.
-- [ ] Add `CurtailmentMinObjectiveCollector`.
-- [ ] Add curtailment minimization objective coefficients.
-- [ ] Add `GenMaxObjectiveCollector`.
-- [ ] Add generation maximization as negative minimization coefficients.
-- [ ] Add `TargetSubstationPObjectiveCollector`.
-- [ ] Add positive and negative P target deviation variables.
-- [ ] Add target substation P objective coefficients.
-- [ ] Add `TargetSubstationQObjectiveCollector`.
-- [ ] Add positive and negative Q target deviation variables.
-- [ ] Add target substation Q objective coefficients.
+- [x] Add `BaseDistOpfObjectiveCollector`.
+- [x] Add `CurtailmentMinObjectiveCollector`.
+- [x] Add curtailment minimization objective coefficients.
+- [x] Add `GenMaxObjectiveCollector`.
+- [x] Add generation maximization as negative minimization coefficients.
+- [x] Add `TargetSubstationPObjectiveCollector`.
+- [x] Add positive and negative P target deviation variables.
+- [x] Add target substation P objective coefficients.
+- [x] Add `TargetSubstationQObjectiveCollector`.
+- [x] Add positive and negative Q target deviation variables.
+- [x] Add target substation Q objective coefficients.
 - [ ] Add `LossMinObjectiveCollector`.
 - [ ] Verify ojAlgo convex QP support before enabling quadratic loss objective.
 - [ ] If QP support is insufficient, add documented linear loss approximation.
-- [ ] Add objective-vector unit tests.
+- [x] Add objective-vector unit tests.
 
 ## Milestone 6: Solver Adapter
 
-- [ ] Add `DistOpfSolver`.
-- [ ] Add `DistOpfSolverResult`.
-- [ ] Add `OjAlgoDistOpfSolver`.
-- [ ] Configure `OjAlgoDistOpfSolver` as the default solver for small systems.
-- [ ] Convert sparse equality constraints to ojAlgo input.
-- [ ] Convert sparse inequality constraints to ojAlgo input.
-- [ ] Convert variable lower bounds to ojAlgo input.
-- [ ] Convert variable upper bounds to ojAlgo input.
-- [ ] Convert linear objective coefficients to ojAlgo input.
-- [ ] Map ojAlgo optimal status to `DistOpfStatus.OPTIMAL`.
-- [ ] Map ojAlgo infeasible status to `DistOpfStatus.INFEASIBLE`.
-- [ ] Map ojAlgo unbounded status to `DistOpfStatus.UNBOUNDED`.
-- [ ] Preserve solver message in `DistOpfSolverResult`.
-- [ ] Compute maximum constraint residual after solve.
+- [x] Add `DistOpfSolver`.
+- [x] Add `DistOpfSolverResult`.
+- [x] Add `OjAlgoDistOpfSolver`.
+- [x] Configure `OjAlgoDistOpfSolver` as the default solver for small systems.
+- [x] Convert sparse equality constraints to ojAlgo input.
+- [x] Convert sparse inequality constraints to ojAlgo input.
+- [x] Convert variable lower bounds to ojAlgo input.
+- [x] Convert variable upper bounds to ojAlgo input.
+- [x] Convert linear objective coefficients to ojAlgo input.
+- [x] Map ojAlgo optimal status to `DistOpfStatus.OPTIMAL`.
+- [x] Map ojAlgo infeasible status to `DistOpfStatus.INFEASIBLE`.
+- [x] Map ojAlgo unbounded status to `DistOpfStatus.UNBOUNDED`.
+- [x] Preserve solver message in `DistOpfSolverResult`.
+- [x] Compute maximum constraint residual after solve.
 - [ ] Add infeasibility diagnostics where available.
-- [ ] Add LP solver tests using a tiny hand-built model.
+- [x] Add LP solver tests using a tiny hand-built model.
 
 ## Milestone 7: Result Handling
 
-- [ ] Add `DistOpfResult`.
-- [ ] Add bus phase voltage result records.
-- [ ] Add branch phase P/Q flow result records.
-- [ ] Add DER P/Q setpoint result records.
-- [ ] Add objective value field.
-- [ ] Add solver status field.
-- [ ] Add warning list.
-- [ ] Add constraint residual summary.
+- [x] Add `DistOpfResult`.
+- [x] Add bus phase voltage result records.
+- [x] Add branch phase P/Q flow result records.
+- [x] Add DER P/Q setpoint result records.
+- [x] Add objective value field.
+- [x] Add solver status field.
+- [x] Add warning list.
+- [x] Add constraint residual summary.
 - [ ] Add binding-constraint summary where available.
-- [ ] Add `applySetpointsToNetwork(DStabNetwork3Phase net)`.
-- [ ] Ensure `solve()` does not mutate the network.
-- [ ] Add tests proving setpoints are only applied when explicitly requested.
+- [x] Add `applySetpointsToNetwork(DStabNetwork3Phase net)`.
+- [x] Ensure `solve()` does not mutate the network.
+- [x] Add tests proving setpoints are only applied when explicitly requested.
 
 ## Milestone 8: Power-Flow Validation
 
-- [ ] Add `DistOpfPowerFlowValidation`.
-- [ ] Add option `validateWithPowerFlow`.
-- [ ] Apply result setpoints to a copied or explicitly supplied network.
-- [ ] Run fixed-point three-phase power flow after OPF.
-- [ ] Record power-flow convergence status.
+- [x] Add `DistOpfPowerFlowValidation`.
+- [x] Add option `validateWithPowerFlow`.
+- [x] Apply result setpoints to a copied or explicitly supplied network.
+- [x] Run fixed-point three-phase power flow after OPF.
+- [x] Record power-flow convergence status.
 - [ ] Record power-flow iteration count.
-- [ ] Compare LinDistFlow bus voltages against solved power-flow voltages.
-- [ ] Report maximum voltage difference.
+- [x] Compare LinDistFlow bus voltages against solved power-flow voltages.
+- [x] Report maximum voltage difference.
 - [ ] Report voltage-limit violations after fixed-point PF.
 - [ ] Report branch-limit violations after fixed-point PF.
-- [ ] Add validation tests for a small feeder.
+- [x] Add validation tests for a small feeder.
 
 ## Milestone 9: Test Systems and Acceptance Tests
 
-- [ ] Add unit tests for variable indexing.
-- [ ] Add unit tests for sparse constraint row creation.
-- [ ] Add unit tests for network extraction.
+- [x] Add unit tests for variable indexing.
+- [x] Add unit tests for sparse constraint row creation.
+- [x] Add unit tests for network extraction.
 - [ ] Add unit tests for each constraint collector.
-- [ ] Add unit tests for each objective collector.
-- [ ] Add no-control OPF test on a small feeder.
+- [x] Add unit tests for each objective collector.
+- [x] Add no-control OPF test on a small feeder.
 - [ ] Add Q-control voltage correction test.
 - [ ] Add P-curtailment voltage correction test.
 - [ ] Add thermal-limit binding test.
 - [ ] Add infeasible OPF test.
-- [ ] Add post-OPF fixed-point PF validation test.
+- [x] Add post-OPF fixed-point PF validation test.
 - [ ] Add comparison fixture for IEEE 13-bus from GRIDAPPSD/distopf if licensing and data layout are acceptable.
 - [ ] Add larger feeder validation after IEEE 13-bus passes.
 
