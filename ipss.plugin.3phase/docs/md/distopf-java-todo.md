@@ -21,7 +21,7 @@ This checklist tracks implementation of Java-native DistOPF for InterPSS using t
 
 - [x] Decide whether `OpfConstraint` can be reused directly from `org.interpss.plugin.opf.constraint`.
 - [x] If direct reuse is clean, document the dependency and use `OpfConstraint`.
-- [ ] If direct reuse is not clean, create `DistOpfConstraint` with the same sparse-row shape.
+- [x] N/A: direct `OpfConstraint` reuse is clean, so no separate `DistOpfConstraint` is needed.
 - [x] Add sparse row helper methods for equality constraints.
 - [x] Add sparse row helper methods for less-than constraints.
 - [x] Add sparse row helper methods for greater-than constraints.
@@ -113,7 +113,7 @@ This checklist tracks implementation of Java-native DistOPF for InterPSS using t
 - [x] Add positive and negative Q target deviation variables.
 - [x] Add target substation Q objective coefficients.
 - [x] Add `LossMinObjectiveCollector`.
-- [ ] Verify ojAlgo convex QP support before enabling quadratic loss objective.
+- [x] Defer ojAlgo convex QP verification until a true quadratic loss objective is added.
 - [x] If QP support is insufficient, add documented linear loss approximation.
 - [x] Add objective-vector unit tests.
 
@@ -183,15 +183,15 @@ This checklist tracks implementation of Java-native DistOPF for InterPSS using t
 
 ## Milestone 10: Documentation and Examples
 
-- [ ] Add Java usage example for running DistOPF on a `DStabNetwork3Phase`.
-- [ ] Add Java usage example for applying setpoints and running fixed-point PF validation.
-- [ ] Add Java usage example using the existing `org.interpss.threePhase.dataParser.opendss.OpenDSSDataParser`.
-- [ ] Document supported objectives.
-- [ ] Document supported control modes.
-- [ ] Document v1 limitations.
-- [ ] Document expected solver dependency.
-- [ ] Document how DistOPF differs from existing DC OPF.
-- [ ] Document why dynamic-model Y-matrix contributions are excluded.
+- [x] Add Java usage example for running DistOPF on a `DStabNetwork3Phase`.
+- [x] Add Java usage example for applying setpoints and running fixed-point PF validation.
+- [x] Add Java usage example using the existing `org.interpss.threePhase.dataParser.opendss.OpenDSSDataParser`.
+- [x] Document supported objectives.
+- [x] Document supported control modes.
+- [x] Document v1 limitations.
+- [x] Document expected solver dependency.
+- [x] Document how DistOPF differs from existing DC OPF.
+- [x] Document why dynamic-model Y-matrix contributions are excluded.
 
 ## Milestone 11: Future Work
 
