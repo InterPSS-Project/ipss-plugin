@@ -14,6 +14,7 @@ import org.interpss.threePhase.opf.dist.constraint.DistVoltageDropConstraintColl
 import org.interpss.threePhase.opf.dist.constraint.DistVoltageLimitConstraintCollector;
 import org.interpss.threePhase.opf.dist.objective.CurtailmentMinObjectiveCollector;
 import org.interpss.threePhase.opf.dist.objective.GenMaxObjectiveCollector;
+import org.interpss.threePhase.opf.dist.objective.LossMinObjectiveCollector;
 import org.interpss.threePhase.opf.dist.objective.TargetSubstationPObjectiveCollector;
 import org.interpss.threePhase.opf.dist.objective.TargetSubstationQObjectiveCollector;
 
@@ -86,6 +87,8 @@ public class LinDistFlowModelBuilder {
 			new TargetSubstationPObjectiveCollector(modelData, variableIndex, objectiveVector).collectObjective();
 		} else if (objective == DistOpfObjective.TARGET_SUBSTATION_Q && options.getTargetSubstationQPu() != null) {
 			new TargetSubstationQObjectiveCollector(modelData, variableIndex, objectiveVector).collectObjective();
+		} else if (objective == DistOpfObjective.LOSS_MIN) {
+			new LossMinObjectiveCollector(modelData, variableIndex, objectiveVector).collectObjective();
 		}
 		return objectiveVector;
 	}
