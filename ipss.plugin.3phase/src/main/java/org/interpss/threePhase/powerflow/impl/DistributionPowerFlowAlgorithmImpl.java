@@ -45,6 +45,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 	private double tol = 1.0E-6;
 	private int    maxIteration = 20;
+	private int    iterationCount = -1;
 	private boolean radialNetworkOnly = true;
 	private boolean pfFlag =false;
 	private Hashtable<String,Complex3x1> busVoltTable =null;
@@ -366,8 +367,10 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		}
 
 		this.pfFlag = false;
+		this.iterationCount = -1;
 
 		for (int i = 0; i < this.maxIteration; i++) {
+			this.iterationCount = i;
 			saveBusVoltages();
 
 			try {
@@ -585,6 +588,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 
 		for (int i=0;i<this.maxIteration;i++){
+			this.iterationCount = i;
 
 			for (Branch bra: this.distNet.getBranchList()){
 				bra.setIntFlag(0);
@@ -989,6 +993,11 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	public int getMaxIteration() {
 
 		return this.maxIteration;
+	}
+
+	@Override
+	public int getIterationCount() {
+		return this.iterationCount;
 	}
 
 	@Override
