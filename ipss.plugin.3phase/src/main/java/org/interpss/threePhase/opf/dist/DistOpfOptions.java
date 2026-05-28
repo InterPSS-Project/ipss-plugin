@@ -11,6 +11,8 @@ public class DistOpfOptions {
 	private boolean fixedRegulators = true;
 	private int maxPowerFlowIterations = 50;
 	private double powerFlowTolerance = 1.0e-6;
+	private Double targetSubstationPPu;
+	private Double targetSubstationQPu;
 
 	public double getMinVoltagePu() {
 		return minVoltagePu;
@@ -90,6 +92,24 @@ public class DistOpfOptions {
 
 	public DistOpfOptions setPowerFlowTolerance(double powerFlowTolerance) {
 		this.powerFlowTolerance = powerFlowTolerance;
+		return this;
+	}
+
+	public Double getTargetSubstationPPu() {
+		return targetSubstationPPu;
+	}
+
+	public DistOpfOptions setTargetSubstationPPu(double targetSubstationPPu) {
+		this.targetSubstationPPu = Double.valueOf(targetSubstationPPu);
+		return this;
+	}
+
+	public Double getTargetSubstationQPu() {
+		return targetSubstationQPu;
+	}
+
+	public DistOpfOptions setTargetSubstationQPu(double targetSubstationQPu) {
+		this.targetSubstationQPu = Double.valueOf(targetSubstationQPu);
 		return this;
 	}
 }

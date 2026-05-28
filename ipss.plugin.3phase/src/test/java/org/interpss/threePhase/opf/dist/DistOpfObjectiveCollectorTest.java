@@ -13,6 +13,8 @@ import org.interpss.threePhase.opf.dist.model.DistOpfModelData;
 import org.interpss.threePhase.opf.dist.model.DistOpfVariableIndex;
 import org.interpss.threePhase.opf.dist.objective.CurtailmentMinObjectiveCollector;
 import org.interpss.threePhase.opf.dist.objective.GenMaxObjectiveCollector;
+import org.interpss.threePhase.opf.dist.objective.TargetSubstationPObjectiveCollector;
+import org.interpss.threePhase.opf.dist.objective.TargetSubstationQObjectiveCollector;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.acsc.PhaseCode;
@@ -45,6 +47,28 @@ public class DistOpfObjectiveCollectorTest {
 		assertEquals(-1.0, objective[index.derP("der-1", PhaseCode.B)], 1.0e-12);
 		assertEquals(-1.0, objective[index.derP("der-1", PhaseCode.C)], 1.0e-12);
 		assertEquals(0.0, objective[index.curtailment("der-1", PhaseCode.A)], 1.0e-12);
+	}
+
+	@Test
+	public void targetObjectivesUsePositiveAndNegativeDeviationVariables() {
+		DistOpfModelData data = modelDataWithDer();
+		DistOpfVariableIndex index = variableIndexForDer();
+		index.targetPPositive("source");
+		index.targetPNegative("source");
+		index.targetQPositive("source");
+		index.targetQNegative("source");
+
+		double[] pObjective = new double[index.size()];
+		new TargetSubstationPObjectiveCollector(data, index, pObjective).collectObjective();
+		assertEquals(1.0, pObjective[index.targetPPositive("source")], 1.0e-12);
+		assertEquals(1.0, pObjective[index.targetPNegative("source")], 1.0e-12);
+		assertEquals(0.0, pObjective[index.targetQPositive("source")], 1.0e-12);
+
+		double[] qObjective = new double[index.size()];
+		new TargetSubstationQObjectiveCollector(data, index, qObjective).collectObjective();
+		assertEquals(1.0, qObjective[index.targetQPositive("source")], 1.0e-12);
+		assertEquals(1.0, qObjective[index.targetQNegative("source")], 1.0e-12);
+		assertEquals(0.0, qObjective[index.targetPPositive("source")], 1.0e-12);
 	}
 
 	private static DistOpfVariableIndex variableIndexForDer() {
