@@ -13,15 +13,19 @@ public class DistOpfModelData {
 	private final List<DistOpfBusData> buses;
 	private final List<DistOpfBranchData> branches;
 	private final Map<String, List<DistOpfBranchData>> childrenByBusId;
+	private final Map<String, DistOpfBranchData> parentBranchByBusId;
 
 	public DistOpfModelData(double baseMva, String swingBusId,
 			List<DistOpfBusData> buses, List<DistOpfBranchData> branches,
-			Map<String, List<DistOpfBranchData>> childrenByBusId) {
+			Map<String, List<DistOpfBranchData>> childrenByBusId,
+			Map<String, DistOpfBranchData> parentBranchByBusId) {
 		this.baseMva = baseMva;
 		this.swingBusId = swingBusId;
 		this.buses = Collections.unmodifiableList(new ArrayList<DistOpfBusData>(buses));
 		this.branches = Collections.unmodifiableList(new ArrayList<DistOpfBranchData>(branches));
 		this.childrenByBusId = copyChildren(childrenByBusId);
+		this.parentBranchByBusId = Collections.unmodifiableMap(
+				new LinkedHashMap<String, DistOpfBranchData>(parentBranchByBusId));
 	}
 
 	public double getBaseMva() {
@@ -43,6 +47,10 @@ public class DistOpfModelData {
 	public List<DistOpfBranchData> getChildren(String busId) {
 		List<DistOpfBranchData> children = childrenByBusId.get(busId);
 		return children == null ? Collections.<DistOpfBranchData>emptyList() : children;
+	}
+
+	public DistOpfBranchData getParentBranch(String busId) {
+		return parentBranchByBusId.get(busId);
 	}
 
 	private static Map<String, List<DistOpfBranchData>> copyChildren(

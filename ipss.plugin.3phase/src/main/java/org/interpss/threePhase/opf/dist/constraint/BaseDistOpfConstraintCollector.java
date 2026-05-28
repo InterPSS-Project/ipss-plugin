@@ -3,15 +3,18 @@ package org.interpss.threePhase.opf.dist.constraint;
 import java.util.List;
 
 import org.interpss.plugin.opf.constraint.OpfConstraint;
+import org.interpss.threePhase.opf.dist.model.DistOpfModelData;
 import org.interpss.threePhase.opf.dist.model.DistOpfVariableIndex;
 
 public abstract class BaseDistOpfConstraintCollector implements IDistOpfConstraintCollector {
 
 	protected final DistOpfVariableIndex variableIndex;
+	protected final DistOpfModelData modelData;
 	protected final List<OpfConstraint> constraints;
 
-	protected BaseDistOpfConstraintCollector(DistOpfVariableIndex variableIndex,
+	protected BaseDistOpfConstraintCollector(DistOpfModelData modelData, DistOpfVariableIndex variableIndex,
 			List<OpfConstraint> constraints) {
+		this.modelData = modelData;
 		this.variableIndex = variableIndex;
 		this.constraints = constraints;
 	}
