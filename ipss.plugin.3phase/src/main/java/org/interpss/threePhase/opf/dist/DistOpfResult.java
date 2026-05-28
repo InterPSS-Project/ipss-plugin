@@ -24,6 +24,8 @@ public class DistOpfResult {
 	private final Map<String, Double> branchReactivePower = new LinkedHashMap<String, Double>();
 	private final Map<String, Double> derActivePower = new LinkedHashMap<String, Double>();
 	private final Map<String, Double> derReactivePower = new LinkedHashMap<String, Double>();
+	private Boolean powerFlowConverged;
+	private double maxPowerFlowVoltageDiff = Double.NaN;
 
 	public DistOpfResult(DistOpfStatus status, double objectiveValue, double maxConstraintResidual) {
 		this.status = status;
@@ -119,6 +121,24 @@ public class DistOpfResult {
 
 	public Map<String, Double> getDerReactivePower() {
 		return Collections.unmodifiableMap(derReactivePower);
+	}
+
+	public Boolean getPowerFlowConverged() {
+		return powerFlowConverged;
+	}
+
+	public DistOpfResult setPowerFlowConverged(boolean powerFlowConverged) {
+		this.powerFlowConverged = Boolean.valueOf(powerFlowConverged);
+		return this;
+	}
+
+	public double getMaxPowerFlowVoltageDiff() {
+		return maxPowerFlowVoltageDiff;
+	}
+
+	public DistOpfResult setMaxPowerFlowVoltageDiff(double maxPowerFlowVoltageDiff) {
+		this.maxPowerFlowVoltageDiff = maxPowerFlowVoltageDiff;
+		return this;
 	}
 
 	public void applySetpointsToNetwork(DStabNetwork3Phase net) {
