@@ -9,6 +9,7 @@ import org.interpss.threePhase.opf.dist.DistOpfResult;
 import org.interpss.threePhase.opf.dist.DistOpfStatus;
 import org.interpss.threePhase.opf.dist.model.DistOpfBranchData;
 import org.interpss.threePhase.opf.dist.model.DistOpfBusData;
+import org.interpss.threePhase.opf.dist.model.DistOpfDerData;
 import org.interpss.threePhase.opf.dist.model.DistOpfModelData;
 import org.interpss.threePhase.opf.dist.model.DistOpfModelDataExtractor;
 import org.interpss.threePhase.opf.dist.model.DistOpfModel;
@@ -51,7 +52,7 @@ public class DistOpfAlgorithmImpl implements DistOpfAlgorithm {
 	public DistOpfResult solve() {
 		try {
 			DistOpfModelData modelData = new DistOpfModelDataExtractor().extract(net);
-			DistOpfModel model = new LinDistFlowModelBuilder().build(modelData, options);
+			DistOpfModel model = new LinDistFlowModelBuilder().build(modelData, options, controlMode, objective);
 			DistOpfSolverResult solverResult = new OjAlgoDistOpfSolver().solve(model, options);
 			DistOpfResult result = new DistOpfResult(solverResult.getStatus(),
 					solverResult.getObjectiveValue(), solverResult.getMaxConstraintResidual());
@@ -81,6 +82,14 @@ public class DistOpfAlgorithmImpl implements DistOpfAlgorithm {
 						x[model.getVariableIndex().branchP(branch.getId(), phase)]);
 				result.putBranchReactivePower(branch.getId(), phase.name(),
 						x[model.getVariableIndex().branchQ(branch.getId(), phase)]);
+			}
+		}
+		for (DistOpfDerData der : modelData.getDers()) {
+			for (PhaseCode phase : der.getPhases()) {
+				result.putDerActivePower(der.getId(), phase.name(),
+						x[model.getVariableIndex().derP(der.getId(), phase)]);
+				result.putDerReactivePower(der.getId(), phase.name(),
+						x[model.getVariableIndex().derQ(der.getId(), phase)]);
 			}
 		}
 	}
