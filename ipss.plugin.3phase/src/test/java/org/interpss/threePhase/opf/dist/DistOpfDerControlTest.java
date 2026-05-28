@@ -48,6 +48,26 @@ public class DistOpfDerControlTest {
 	}
 
 	@Test
+	public void thermalLimitBindsWhenDerCanRelieveBranchFlow() throws InterpssException {
+		DistOpfResult result = ThreePhaseObjectFactory.createDistOpfAlgorithm(createTwoBusFeederWithDer(0.06))
+				.setControlMode(DistOpfControlMode.P)
+				.setObjective(DistOpfObjective.GEN_MAX)
+				.solve();
+
+		assertEquals(DistOpfStatus.OPTIMAL, result.getStatus());
+		assertEquals(0.06, result.getBranchActivePower("source->load(0)", "A"), 1.0e-7);
+		assertEquals(0.06, result.getBranchActivePower("source->load(0)", "B"), 1.0e-7);
+		assertEquals(0.06, result.getBranchActivePower("source->load(0)", "C"), 1.0e-7);
+	}
+
+	@Test
+	public void thermalLimitReportsInfeasibleWhenNoControlCanRelieveBranchFlow() throws InterpssException {
+		DistOpfResult result = ThreePhaseObjectFactory.createDistOpfAlgorithm(createTwoBusFeeder(0.09)).solve();
+
+		assertEquals(DistOpfStatus.INFEASIBLE, result.getStatus());
+	}
+
+	@Test
 	public void targetSubstationPObjectiveControlsDerP() throws InterpssException {
 		DistOpfOptions options = new DistOpfOptions().setTargetSubstationPPu(0.18);
 		DistOpfResult result = ThreePhaseObjectFactory.createDistOpfAlgorithm(createTwoBusFeederWithDer())
@@ -90,6 +110,10 @@ public class DistOpfDerControlTest {
 	}
 
 	private static DStabNetwork3Phase createTwoBusFeederWithDer() throws InterpssException {
+		return createTwoBusFeederWithDer(0.0);
+	}
+
+	private static DStabNetwork3Phase createTwoBusFeederWithDer(double ratingMva1) throws InterpssException {
 		DStabNetwork3Phase net = ThreePhaseObjectFactory.create3PhaseDStabNetwork();
 		net.setBaseKva(1000.0);
 
@@ -116,6 +140,37 @@ public class DistOpfDerControlTest {
 		DStab3PBranch line = ThreePhaseObjectFactory.create3PBranch("source", "load", "0", net);
 		line.setBranchCode(AclfBranchCode.LINE);
 		line.setZabc(Complex3x3.createUnitMatrix().multiply(new Complex(0.01, 0.04)));
+		if (ratingMva1 > 0.0) {
+			line.setRatingMva1(ratingMva1);
+		}
+		return net;
+	}
+
+	private static DStabNetwork3Phase createTwoBusFeeder(double ratingMva1) throws InterpssException {
+		DStabNetwork3Phase net = ThreePhaseObjectFactory.create3PhaseDStabNetwork();
+		net.setBaseKva(1000.0);
+
+		DStab3PBus source = ThreePhaseObjectFactory.create3PDStabBus("source", net);
+		source.setBaseVoltage(12470.0);
+		source.setGenCode(AclfGenCode.SWING);
+		source.setLoadCode(AclfLoadCode.NON_LOAD);
+		source.setVoltage(new Complex(1.0, 0.0));
+
+		DStab3PBus loadBus = ThreePhaseObjectFactory.create3PDStabBus("load", net);
+		loadBus.setBaseVoltage(12470.0);
+		loadBus.setGenCode(AclfGenCode.NON_GEN);
+		loadBus.setLoadCode(AclfLoadCode.CONST_P);
+		DStab3PLoad load = ThreePhaseObjectFactory.create3PLoad("load-1");
+		load.set3PhaseLoad(new Complex3x1(new Complex(0.1, 0.02),
+				new Complex(0.1, 0.02), new Complex(0.1, 0.02)));
+		loadBus.getThreePhaseLoadList().add(load);
+
+		DStab3PBranch line = ThreePhaseObjectFactory.create3PBranch("source", "load", "0", net);
+		line.setBranchCode(AclfBranchCode.LINE);
+		line.setZabc(Complex3x3.createUnitMatrix().multiply(new Complex(0.01, 0.04)));
+		if (ratingMva1 > 0.0) {
+			line.setRatingMva1(ratingMva1);
+		}
 		return net;
 	}
 }
