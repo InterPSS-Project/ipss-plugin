@@ -19,6 +19,8 @@ public class DistOpfResult {
 	private final double objectiveValue;
 	private final double maxConstraintResidual;
 	private final List<String> warnings = new ArrayList<String>();
+	private final List<String> bindingConstraints = new ArrayList<String>();
+	private final List<String> diagnostics = new ArrayList<String>();
 	private final Map<String, Double> busVoltageSquared = new LinkedHashMap<String, Double>();
 	private final Map<String, Double> branchActivePower = new LinkedHashMap<String, Double>();
 	private final Map<String, Double> branchReactivePower = new LinkedHashMap<String, Double>();
@@ -57,6 +59,34 @@ public class DistOpfResult {
 
 	public DistOpfResult addWarning(String warning) {
 		this.warnings.add(warning);
+		return this;
+	}
+
+	public List<String> getBindingConstraints() {
+		return Collections.unmodifiableList(bindingConstraints);
+	}
+
+	public DistOpfResult addBindingConstraint(String bindingConstraint) {
+		this.bindingConstraints.add(bindingConstraint);
+		return this;
+	}
+
+	public DistOpfResult addBindingConstraints(List<String> bindingConstraints) {
+		this.bindingConstraints.addAll(bindingConstraints);
+		return this;
+	}
+
+	public List<String> getDiagnostics() {
+		return Collections.unmodifiableList(diagnostics);
+	}
+
+	public DistOpfResult addDiagnostic(String diagnostic) {
+		this.diagnostics.add(diagnostic);
+		return this;
+	}
+
+	public DistOpfResult addDiagnostics(List<String> diagnostics) {
+		this.diagnostics.addAll(diagnostics);
 		return this;
 	}
 
