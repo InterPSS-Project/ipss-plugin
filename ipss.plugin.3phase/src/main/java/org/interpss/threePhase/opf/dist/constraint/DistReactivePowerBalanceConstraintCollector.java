@@ -3,6 +3,7 @@ package org.interpss.threePhase.opf.dist.constraint;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.interpss.threePhase.opf.dist.DistOpfOptions;
 import org.interpss.threePhase.opf.dist.model.DistOpfBranchData;
 import org.interpss.threePhase.opf.dist.model.DistOpfBusData;
 import org.interpss.threePhase.opf.dist.model.DistOpfDerData;
@@ -13,9 +14,18 @@ import com.interpss.core.acsc.PhaseCode;
 
 public class DistReactivePowerBalanceConstraintCollector extends BaseDistOpfConstraintCollector {
 
+	private final DistOpfOptions options;
+
 	public DistReactivePowerBalanceConstraintCollector(DistOpfModelData modelData,
 			DistOpfVariableIndex variableIndex, List<org.interpss.plugin.opf.constraint.OpfConstraint> constraints) {
+		this(modelData, variableIndex, constraints, new DistOpfOptions());
+	}
+
+	public DistReactivePowerBalanceConstraintCollector(DistOpfModelData modelData,
+			DistOpfVariableIndex variableIndex, List<org.interpss.plugin.opf.constraint.OpfConstraint> constraints,
+			DistOpfOptions options) {
 		super(modelData, variableIndex, constraints);
+		this.options = options;
 	}
 
 	@Override
@@ -45,10 +55,18 @@ public class DistReactivePowerBalanceConstraintCollector extends BaseDistOpfCons
 						values.add(1.0);
 					}
 				}
-				addEquality("QBalance@" + bus.getId() + "." + phase,
-						DistConstraintUtil.q(bus.getLoad(), phase), toIntArray(columns), toDoubleArray(values));
+				addEquality("QBalance@" + bus.getId() + "." + phase, qDemand(bus, phase),
+						toIntArray(columns), toDoubleArray(values));
 			}
 		}
+	}
+
+	private double qDemand(DistOpfBusData bus, PhaseCode phase) {
+		double demand = DistConstraintUtil.q(bus.getLoad(), phase);
+		if (options.isFixedCapacitors()) {
+			demand -= DistConstraintUtil.q(bus.getFixedCapacitorQ(), phase);
+		}
+		return demand;
 	}
 
 	private static int[] toIntArray(List<Integer> values) {
