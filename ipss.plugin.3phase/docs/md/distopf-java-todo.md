@@ -61,13 +61,13 @@ This checklist tracks implementation of Java-native DistOPF for InterPSS using t
 - [x] Extract DER reactive-power limits.
 - [ ] Extract inverter apparent-power limits where available.
 - [ ] Extract bus phase voltage limits.
-- [ ] Extract branch thermal ratings where available.
+- [x] Extract branch thermal ratings where available.
 - [x] Normalize extracted values to per-unit.
 - [x] Exclude dynamic generator admittance contributions.
 - [x] Exclude dynamic load admittance contributions.
 - [x] Exclude induction motor equivalent admittance contributions.
 - [x] Add extraction tests for a small three-phase feeder.
-- [ ] Add extraction tests for a feeder with missing phases.
+- [x] Add extraction tests for a feeder with missing phases.
 
 ## Milestone 4: Constraint Collectors
 
@@ -95,8 +95,8 @@ This checklist tracks implementation of Java-native DistOPF for InterPSS using t
 - [x] Enable P/Q controls when `DistOpfControlMode.PQ` is selected.
 - [ ] Add `DistInverterCapabilityConstraintCollector`.
 - [ ] Add octagonal inverter capability approximation.
-- [ ] Add `DistBranchThermalLimitConstraintCollector`.
-- [ ] Add octagonal branch apparent-power approximation.
+- [x] Add `DistBranchThermalLimitConstraintCollector`.
+- [x] Add octagonal branch apparent-power approximation.
 - [ ] Add collector tests that verify sparse row coefficients.
 
 ## Milestone 5: Objective Collectors
@@ -175,8 +175,8 @@ This checklist tracks implementation of Java-native DistOPF for InterPSS using t
 - [x] Add no-control OPF test on a small feeder.
 - [ ] Add Q-control voltage correction test.
 - [ ] Add P-curtailment voltage correction test.
-- [ ] Add thermal-limit binding test.
-- [ ] Add infeasible OPF test.
+- [x] Add thermal-limit binding test.
+- [x] Add infeasible OPF test.
 - [x] Add post-OPF fixed-point PF validation test.
 - [ ] Add comparison fixture for IEEE 13-bus from GRIDAPPSD/distopf if licensing and data layout are acceptable.
 - [ ] Add larger feeder validation after IEEE 13-bus passes.
