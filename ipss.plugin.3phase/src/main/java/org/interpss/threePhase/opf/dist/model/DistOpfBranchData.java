@@ -16,6 +16,7 @@ public class DistOpfBranchData {
 	private final Set<PhaseCode> phases;
 	private final Complex3x3 zabc;
 	private final Double thermalLimitPu;
+	private final double voltageRatio;
 
 	public DistOpfBranchData(String id, String fromBusId, String toBusId,
 			Set<PhaseCode> phases, Complex3x3 zabc) {
@@ -24,12 +25,18 @@ public class DistOpfBranchData {
 
 	public DistOpfBranchData(String id, String fromBusId, String toBusId,
 			Set<PhaseCode> phases, Complex3x3 zabc, Double thermalLimitPu) {
+		this(id, fromBusId, toBusId, phases, zabc, thermalLimitPu, 1.0);
+	}
+
+	public DistOpfBranchData(String id, String fromBusId, String toBusId,
+			Set<PhaseCode> phases, Complex3x3 zabc, Double thermalLimitPu, double voltageRatio) {
 		this.id = id;
 		this.fromBusId = fromBusId;
 		this.toBusId = toBusId;
 		this.phases = Collections.unmodifiableSet(EnumSet.copyOf(phases));
 		this.zabc = zabc;
 		this.thermalLimitPu = thermalLimitPu;
+		this.voltageRatio = voltageRatio;
 	}
 
 	public String getId() {
@@ -54,5 +61,9 @@ public class DistOpfBranchData {
 
 	public Double getThermalLimitPu() {
 		return thermalLimitPu;
+	}
+
+	public double getVoltageRatio() {
+		return voltageRatio;
 	}
 }
