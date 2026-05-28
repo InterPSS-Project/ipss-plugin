@@ -56,9 +56,9 @@ public class DistOpfModelDataExtractor {
 					branch.getToBus().getId(), phasesFromZabc(zabc), zabc));
 		}
 
-		Map<String, List<DistOpfBranchData>> childrenByBusId = validateRadialAndOrient(
-				swingBusId, buses, branches);
-		return new DistOpfModelData(net.getBaseMva(), swingBusId, buses, branches, childrenByBusId);
+		Topology topology = validateRadialAndOrient(swingBusId, buses, branches);
+		return new DistOpfModelData(net.getBaseMva(), swingBusId, buses, branches,
+				topology.childrenByBusId, topology.parentBranchByBusId);
 	}
 
 	private static Complex3x1 safeLoad(DStab3PBus bus) {
@@ -97,7 +97,7 @@ public class DistOpfModelDataExtractor {
 		return value != null && value.abs() > PHASE_TOLERANCE;
 	}
 
-	private static Map<String, List<DistOpfBranchData>> validateRadialAndOrient(String swingBusId,
+	private static Topology validateRadialAndOrient(String swingBusId,
 			List<DistOpfBusData> buses, List<DistOpfBranchData> branches) {
 		Set<String> busIds = new HashSet<String>();
 		for (DistOpfBusData bus : buses) {
@@ -112,6 +112,7 @@ public class DistOpfModelDataExtractor {
 
 		Set<String> visited = new HashSet<String>();
 		Map<String, List<DistOpfBranchData>> childrenByBusId = new LinkedHashMap<String, List<DistOpfBranchData>>();
+		Map<String, DistOpfBranchData> parentBranchByBusId = new LinkedHashMap<String, DistOpfBranchData>();
 		Queue<String> queue = new ArrayDeque<String>();
 		queue.add(swingBusId);
 		visited.add(swingBusId);
@@ -127,6 +128,7 @@ public class DistOpfModelDataExtractor {
 				visited.add(nextBusId);
 				queue.add(nextBusId);
 				addChild(childrenByBusId, busId, branch);
+				parentBranchByBusId.put(nextBusId, branch);
 				traversedBranches++;
 			}
 		}
@@ -137,7 +139,7 @@ public class DistOpfModelDataExtractor {
 		if (traversedBranches != branches.size() || branches.size() != buses.size() - 1) {
 			throw new IllegalArgumentException("DistOPF v1 requires a radial feeder");
 		}
-		return childrenByBusId;
+		return new Topology(childrenByBusId, parentBranchByBusId);
 	}
 
 	private static void addAdjacent(Map<String, List<DistOpfBranchData>> adjacent,
@@ -158,5 +160,16 @@ public class DistOpfModelDataExtractor {
 			childrenByBusId.put(busId, list);
 		}
 		list.add(branch);
+	}
+
+	private static class Topology {
+		private final Map<String, List<DistOpfBranchData>> childrenByBusId;
+		private final Map<String, DistOpfBranchData> parentBranchByBusId;
+
+		private Topology(Map<String, List<DistOpfBranchData>> childrenByBusId,
+				Map<String, DistOpfBranchData> parentBranchByBusId) {
+			this.childrenByBusId = childrenByBusId;
+			this.parentBranchByBusId = parentBranchByBusId;
+		}
 	}
 }
