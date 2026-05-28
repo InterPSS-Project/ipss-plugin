@@ -47,6 +47,33 @@ public class DistOpfDerControlTest {
 		assertEquals(0.06, result.getBranchActivePower("source->load(0)", "A"), 1.0e-7);
 	}
 
+	@Test
+	public void solveDoesNotMutateNetworkUntilSetpointsAreApplied() throws InterpssException {
+		DStabNetwork3Phase net = createTwoBusFeederWithDer();
+		DStab3PGen der = net.getBus("load").getThreePhaseGenList().get(0);
+
+		DistOpfResult solved = ThreePhaseObjectFactory.createDistOpfAlgorithm(net)
+				.setControlMode(DistOpfControlMode.P)
+				.setObjective(DistOpfObjective.GEN_MAX)
+				.solve();
+
+		assertEquals(DistOpfStatus.OPTIMAL, solved.getStatus());
+		assertEquals(0.04, der.getPower3Phase(UnitType.PU).a_0.getReal(), 1.0e-7);
+
+		DistOpfResult result = new DistOpfResult(DistOpfStatus.OPTIMAL, 0.0, 0.0)
+				.putDerActivePower("der-1", "A", 0.02)
+				.putDerActivePower("der-1", "B", 0.02)
+				.putDerActivePower("der-1", "C", 0.02)
+				.putDerReactivePower("der-1", "A", 0.0)
+				.putDerReactivePower("der-1", "B", 0.0)
+				.putDerReactivePower("der-1", "C", 0.0);
+		result.applySetpointsToNetwork(net);
+
+		assertEquals(0.02, der.getPower3Phase(UnitType.PU).a_0.getReal(), 1.0e-7);
+		assertEquals(0.02, der.getPower3Phase(UnitType.PU).b_1.getReal(), 1.0e-7);
+		assertEquals(0.02, der.getPower3Phase(UnitType.PU).c_2.getReal(), 1.0e-7);
+	}
+
 	private static DStabNetwork3Phase createTwoBusFeederWithDer() throws InterpssException {
 		DStabNetwork3Phase net = ThreePhaseObjectFactory.create3PhaseDStabNetwork();
 		net.setBaseKva(1000.0);
