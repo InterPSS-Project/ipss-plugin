@@ -65,6 +65,16 @@ public class DistOpfModelDataExtractorTest {
 	}
 
 	@Test
+	public void extractsFixedRegulatorVoltageRatio() throws InterpssException {
+		DStabNetwork3Phase net = createTwoBusFeeder();
+		net.getBranch("source->load(0)").setToTurnRatio(1.02);
+
+		DistOpfModelData data = new DistOpfModelDataExtractor().extract(net);
+
+		assertEquals(1.02, data.getBranches().get(0).getVoltageRatio(), 1.0e-12);
+	}
+
+	@Test
 	public void extractsBusVoltageLimits() throws InterpssException {
 		DStabNetwork3Phase net = createTwoBusFeeder();
 		net.getBus("load").setVLimit(new LimitType(1.04, 0.97));
