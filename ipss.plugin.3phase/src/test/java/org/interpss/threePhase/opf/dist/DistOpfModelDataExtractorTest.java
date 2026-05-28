@@ -53,6 +53,16 @@ public class DistOpfModelDataExtractorTest {
 		assertThrows(IllegalArgumentException.class, () -> new DistOpfModelDataExtractor().extract(net));
 	}
 
+	@Test
+	public void extractsBranchThermalRating() throws InterpssException {
+		DStabNetwork3Phase net = createTwoBusFeeder();
+		net.getBranch("source->load(0)").setRatingMva1(0.25);
+
+		DistOpfModelData data = new DistOpfModelDataExtractor().extract(net);
+
+		assertEquals(0.25, data.getBranches().get(0).getThermalLimitPu(), 1.0e-12);
+	}
+
 	private static DStabNetwork3Phase createTwoBusFeeder() throws InterpssException {
 		DStabNetwork3Phase net = ThreePhaseObjectFactory.create3PhaseDStabNetwork();
 		net.setBaseKva(1000.0);
