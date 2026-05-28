@@ -64,6 +64,21 @@ public class DistOpfModelDataExtractorTest {
 	}
 
 	@Test
+	public void extractsFixedCapacitorInjectionSeparatelyFromLoad() throws InterpssException {
+		DStabNetwork3Phase net = createTwoBusFeeder();
+		DStab3PLoad capacitor = ThreePhaseObjectFactory.create3PLoad("cap-1");
+		capacitor.setCode(AclfLoadCode.CONST_Z);
+		capacitor.set3PhaseLoad(new Complex3x1(new Complex(0.0, -0.01),
+				new Complex(0.0, -0.01), new Complex(0.0, -0.01)));
+		net.getBus("load").getThreePhaseLoadList().add(capacitor);
+
+		DistOpfModelData data = new DistOpfModelDataExtractor().extract(net);
+
+		assertEquals(0.02, data.getBuses().get(1).getLoad().a_0.getImaginary(), 1.0e-12);
+		assertEquals(0.01, data.getBuses().get(1).getFixedCapacitorQ().a_0.getImaginary(), 1.0e-12);
+	}
+
+	@Test
 	public void extractsMissingPhaseBranchFromImpedanceMatrix() throws InterpssException {
 		DStabNetwork3Phase net = createTwoBusFeeder();
 		DStab3PBranch branch = net.getBranch("source->load(0)");
