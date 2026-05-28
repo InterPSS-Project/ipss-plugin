@@ -27,6 +27,7 @@ public class DistOpfResult {
 	private final Map<String, Double> derActivePower = new LinkedHashMap<String, Double>();
 	private final Map<String, Double> derReactivePower = new LinkedHashMap<String, Double>();
 	private Boolean powerFlowConverged;
+	private int powerFlowIterationCount = -1;
 	private double maxPowerFlowVoltageDiff = Double.NaN;
 	private double maxPowerFlowVoltageViolation = Double.NaN;
 	private double maxPowerFlowBranchLimitViolation = Double.NaN;
@@ -161,6 +162,15 @@ public class DistOpfResult {
 
 	public DistOpfResult setPowerFlowConverged(boolean powerFlowConverged) {
 		this.powerFlowConverged = Boolean.valueOf(powerFlowConverged);
+		return this;
+	}
+
+	public int getPowerFlowIterationCount() {
+		return powerFlowIterationCount;
+	}
+
+	public DistOpfResult setPowerFlowIterationCount(int powerFlowIterationCount) {
+		this.powerFlowIterationCount = powerFlowIterationCount;
 		return this;
 	}
 

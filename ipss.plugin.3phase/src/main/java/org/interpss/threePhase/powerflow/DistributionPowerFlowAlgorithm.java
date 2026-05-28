@@ -49,6 +49,8 @@ public interface DistributionPowerFlowAlgorithm {
 
 	public int getMaxIteration();
 
+	public int getIterationCount();
+
 	public void  setInitBusVoltageEnabled(boolean enableInitBus3PhaseVolts);
 
 	public boolean isInitBusVoltageEnabled();
