@@ -22,7 +22,7 @@ public class DistOpfApiTest {
 
 		assertNotNull(algorithm);
 		DistOpfResult result = algorithm.solve();
-		assertEquals(DistOpfStatus.NOT_SOLVED, result.getStatus());
+		assertEquals(DistOpfStatus.ERROR, result.getStatus());
 		assertFalse(result.isSolved());
 	}
 
