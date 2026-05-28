@@ -98,6 +98,23 @@ public class DistOpfDerControlTest {
 	}
 
 	@Test
+	public void inverterCapabilityLimitsReactiveSupport() throws InterpssException {
+		DistOpfOptions options = new DistOpfOptions().setTargetSubstationQPu(-0.02);
+
+		DistOpfResult result = ThreePhaseObjectFactory
+				.createDistOpfAlgorithm(createTwoBusFeederWithDerPower(new Complex(0.04, 0.0), 0.0, 0.135))
+				.setControlMode(DistOpfControlMode.Q)
+				.setObjective(DistOpfObjective.TARGET_SUBSTATION_Q)
+				.setOptions(options)
+				.solve();
+
+		double qLimit = Math.sqrt(2.0) * 0.045 - 0.04;
+		assertEquals(DistOpfStatus.OPTIMAL, result.getStatus());
+		assertEquals(qLimit, result.getDerReactivePower("der-1", "A"), 1.0e-7);
+		assertEquals(0.02 - qLimit, result.getBranchReactivePower("source->load(0)", "A"), 1.0e-7);
+	}
+
+	@Test
 	public void pCurtailmentCorrectsHighVoltageFromExport() throws InterpssException {
 		DistOpfOptions options = new DistOpfOptions().setMaxVoltagePu(Math.sqrt(1.0002));
 
@@ -155,6 +172,12 @@ public class DistOpfDerControlTest {
 
 	private static DStabNetwork3Phase createTwoBusFeederWithDerPower(Complex derPower, double ratingMva1)
 			throws InterpssException {
+		return createTwoBusFeederWithDerPower(derPower, ratingMva1, 0.0);
+	}
+
+	private static DStabNetwork3Phase createTwoBusFeederWithDerPower(Complex derPower, double ratingMva1,
+			double derMvaBase)
+			throws InterpssException {
 		DStabNetwork3Phase net = ThreePhaseObjectFactory.create3PhaseDStabNetwork();
 		net.setBaseKva(1000.0);
 
@@ -174,6 +197,9 @@ public class DistOpfDerControlTest {
 		loadBus.getThreePhaseLoadList().add(load);
 
 		DStab3PGen der = ThreePhaseObjectFactory.create3PGenerator("der-1");
+		if (derMvaBase > 0.0) {
+			der.setMvaBase(derMvaBase);
+		}
 		der.setPower3Phase(new Complex3x1(derPower, derPower, derPower), UnitType.PU);
 		loadBus.getThreePhaseGenList().add(der);
 
