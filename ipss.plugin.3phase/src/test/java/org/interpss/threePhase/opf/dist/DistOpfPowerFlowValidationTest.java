@@ -30,6 +30,8 @@ public class DistOpfPowerFlowValidationTest {
 
 		assertEquals(Boolean.TRUE, result.getPowerFlowConverged());
 		assertTrue(result.getMaxPowerFlowVoltageDiff() < 0.01);
+		assertEquals(0.0, result.getMaxPowerFlowVoltageViolation(), 1.0e-7);
+		assertEquals(0.0, result.getMaxPowerFlowBranchLimitViolation(), 1.0e-7);
 	}
 
 	private static DStabNetwork3Phase createTwoBusFeeder() throws InterpssException {
@@ -54,6 +56,7 @@ public class DistOpfPowerFlowValidationTest {
 		DStab3PBranch line = ThreePhaseObjectFactory.create3PBranch("source", "load", "0", net);
 		line.setBranchCode(AclfBranchCode.LINE);
 		line.setZabc(Complex3x3.createUnitMatrix().multiply(new Complex(0.01, 0.04)));
+		line.setRatingMva1(1.0);
 		return net;
 	}
 }
