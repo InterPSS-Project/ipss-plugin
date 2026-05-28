@@ -15,12 +15,19 @@ public class DistOpfDerData {
 	private final String busId;
 	private final Set<PhaseCode> phases;
 	private final Complex3x1 power;
+	private final Double apparentPowerLimitPu;
 
 	public DistOpfDerData(String id, String busId, Set<PhaseCode> phases, Complex3x1 power) {
+		this(id, busId, phases, power, null);
+	}
+
+	public DistOpfDerData(String id, String busId, Set<PhaseCode> phases, Complex3x1 power,
+			Double apparentPowerLimitPu) {
 		this.id = id;
 		this.busId = busId;
 		this.phases = Collections.unmodifiableSet(EnumSet.copyOf(phases));
 		this.power = power == null ? new Complex3x1() : power;
+		this.apparentPowerLimitPu = apparentPowerLimitPu;
 	}
 
 	public String getId() {
@@ -37,6 +44,10 @@ public class DistOpfDerData {
 
 	public Complex3x1 getPower() {
 		return power;
+	}
+
+	public Double getApparentPowerLimitPu() {
+		return apparentPowerLimitPu;
 	}
 
 	public double getP(PhaseCode phase) {
@@ -56,6 +67,9 @@ public class DistOpfDerData {
 	}
 
 	public double getQAbsLimit(PhaseCode phase) {
+		if (apparentPowerLimitPu != null) {
+			return apparentPowerLimitPu.doubleValue();
+		}
 		double p = Math.abs(getP(phase));
 		double q = Math.abs(getQ(phase));
 		return Math.max(Math.max(p, q), 1.0e-6);
