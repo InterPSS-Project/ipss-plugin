@@ -122,6 +122,63 @@ flowchart TD
 9. Optionally apply DER setpoints to the InterPSS network.
 10. Validate the result by running fixed-point three-phase power flow.
 
+## 5.1 Usage Examples
+
+Run DistOPF on an existing `DStabNetwork3Phase`:
+
+```java
+DStabNetwork3Phase net = ...;
+
+DistOpfResult result = ThreePhaseObjectFactory.createDistOpfAlgorithm(net)
+		.setControlMode(DistOpfControlMode.PQ)
+		.setObjective(DistOpfObjective.CURTAILMENT_MIN)
+		.setOptions(new DistOpfOptions()
+				.setMinVoltagePu(0.95)
+				.setMaxVoltagePu(1.05))
+		.solve();
+```
+
+Apply solved DER setpoints explicitly and validate with fixed-point power flow:
+
+```java
+if (result.isSolved()) {
+	result.applySetpointsToNetwork(net);
+	new DistOpfPowerFlowValidation().validate(net, result, new DistOpfOptions());
+	double maxVoltageDiff = result.getMaxPowerFlowVoltageDiff();
+	int pfIterations = result.getPowerFlowIterationCount();
+}
+```
+
+Use the existing OpenDSS import path in `ipss.plugin.3phase`:
+
+```java
+OpenDSSDataParser parser = new OpenDSSDataParser();
+parser.parseFeederData("testData/feeder/IEEE123", "IEEE123Master_Modified_v2.dss");
+parser.calcVoltageBases();
+parser.convertActualValuesToPU(1.0);
+
+DStabNetwork3Phase net = parser.getDistNetwork();
+DistOpfResult result = ThreePhaseObjectFactory.createDistOpfAlgorithm(net)
+		.setControlMode(DistOpfControlMode.NONE)
+		.setObjective(DistOpfObjective.LOSS_MIN)
+		.solve();
+```
+
+Supported objectives:
+
+- `CURTAILMENT_MIN`: minimizes DER active-power curtailment variables when P control is enabled.
+- `GEN_MAX`: maximizes DER active-power output by minimizing negative generation.
+- `TARGET_SUBSTATION_P`: minimizes absolute deviation from a target source active-power import.
+- `TARGET_SUBSTATION_Q`: minimizes absolute deviation from a target source reactive-power import.
+- `LOSS_MIN`: LP proxy that minimizes active import at source outgoing branch phases.
+
+Supported control modes:
+
+- `NONE`: DER P/Q are fixed at extracted values.
+- `P`: DER P can move within extracted limits; Q remains fixed.
+- `Q`: DER Q can move within extracted/inverter limits; P remains fixed.
+- `PQ`: DER P and Q can both move within extracted and inverter capability limits.
+
 ## 6. Package Layout
 
 Recommended package structure:
@@ -197,7 +254,7 @@ TARGET_SUBSTATION_Q,
 LOSS_MIN
 ```
 
-`LOSS_MIN` may be implemented after the LP objectives if QP support needs additional validation.
+`LOSS_MIN` is implemented in v1 as an LP proxy that minimizes active import on source outgoing branch phases. A true quadratic I2R loss objective should remain future work until convex QP support and result parity are validated.
 
 ### 7.4 `DistOpfControlMode`
 
@@ -464,13 +521,12 @@ Initial implementation:
 
 ### 10.6 `LossMinObjectiveCollector`
 
-Minimizes estimated feeder losses.
+Minimizes estimated feeder losses with an LP approximation.
 
-Recommended staging:
+Implementation detail:
 
-- Add after LP objectives are stable.
-- Use ojAlgo QP if convex QP support is verified.
-- Otherwise add a documented linear approximation.
+- Use source outgoing branch active-power coefficients as the v1 linear loss/import proxy.
+- Keep true quadratic I2R loss minimization as future work until convex QP behavior is validated.
 
 ## 11. Solver Classes
 
@@ -499,6 +555,7 @@ Responsibilities:
 Default use:
 
 - Use `OjAlgoDistOpfSolver` as the default for small feeders and unit-test systems.
+- Requires the existing Maven ojAlgo dependency available to `ipss.plugin.3phase`.
 - Keep the solver interface open so larger systems can later use alternative LP/QP/MIP backends without changing constraint or objective collectors.
 
 ### 11.3 `DistOpfSolverResult`
