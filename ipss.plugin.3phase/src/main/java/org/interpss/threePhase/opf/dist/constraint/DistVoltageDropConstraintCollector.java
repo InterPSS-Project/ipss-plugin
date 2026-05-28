@@ -3,6 +3,7 @@ package org.interpss.threePhase.opf.dist.constraint;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.threePhase.opf.dist.model.DistOpfBranchData;
 import org.interpss.threePhase.opf.dist.model.DistOpfModelData;
@@ -27,39 +28,68 @@ public class DistVoltageDropConstraintCollector extends BaseDistOpfConstraintCol
 				values.add(1.0);
 				columns.add(variableIndex.busV2(branch.getToBusId(), phase));
 				values.add(-1.0);
-				columns.add(variableIndex.branchP(branch.getId(), phase));
-				values.add(-2.0 * r(branch.getZabc(), phase));
-				columns.add(variableIndex.branchQ(branch.getId(), phase));
-				values.add(-2.0 * x(branch.getZabc(), phase));
+				for (PhaseCode coupledPhase : branch.getPhases()) {
+					Complex z = z(branch.getZabc(), phase, coupledPhase);
+					columns.add(variableIndex.branchP(branch.getId(), coupledPhase));
+					values.add(-2.0 * z.getReal());
+					columns.add(variableIndex.branchQ(branch.getId(), coupledPhase));
+					values.add(-2.0 * z.getImaginary());
+				}
 				addEquality("VDrop@" + branch.getId() + "." + phase, 0.0,
 						toIntArray(columns), toDoubleArray(values));
 			}
 		}
 	}
 
-	private static double r(Complex3x3 zabc, PhaseCode phase) {
-		switch (phase) {
+	private static Complex z(Complex3x3 zabc, PhaseCode rowPhase, PhaseCode columnPhase) {
+		switch (rowPhase) {
 		case A:
-			return zabc.aa.getReal();
+			return zFromA(zabc, columnPhase);
 		case B:
-			return zabc.bb.getReal();
+			return zFromB(zabc, columnPhase);
 		case C:
-			return zabc.cc.getReal();
+			return zFromC(zabc, columnPhase);
 		default:
-			return 0.0;
+			return Complex.ZERO;
 		}
 	}
 
-	private static double x(Complex3x3 zabc, PhaseCode phase) {
-		switch (phase) {
+	private static Complex zFromA(Complex3x3 zabc, PhaseCode columnPhase) {
+		switch (columnPhase) {
 		case A:
-			return zabc.aa.getImaginary();
+			return zabc.aa;
 		case B:
-			return zabc.bb.getImaginary();
+			return zabc.ab;
 		case C:
-			return zabc.cc.getImaginary();
+			return zabc.ac;
 		default:
-			return 0.0;
+			return Complex.ZERO;
+		}
+	}
+
+	private static Complex zFromB(Complex3x3 zabc, PhaseCode columnPhase) {
+		switch (columnPhase) {
+		case A:
+			return zabc.ba;
+		case B:
+			return zabc.bb;
+		case C:
+			return zabc.bc;
+		default:
+			return Complex.ZERO;
+		}
+	}
+
+	private static Complex zFromC(Complex3x3 zabc, PhaseCode columnPhase) {
+		switch (columnPhase) {
+		case A:
+			return zabc.ca;
+		case B:
+			return zabc.cb;
+		case C:
+			return zabc.cc;
+		default:
+			return Complex.ZERO;
 		}
 	}
 
