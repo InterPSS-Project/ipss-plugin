@@ -29,6 +29,7 @@ public class DistOpfPowerFlowValidationTest {
 		new DistOpfPowerFlowValidation().validate(net, result, new DistOpfOptions());
 
 		assertEquals(Boolean.TRUE, result.getPowerFlowConverged());
+		assertTrue(result.getPowerFlowIterationCount() > 0);
 		assertTrue(result.getMaxPowerFlowVoltageDiff() < 0.01);
 		assertEquals(0.0, result.getMaxPowerFlowVoltageViolation(), 1.0e-7);
 		assertEquals(0.0, result.getMaxPowerFlowBranchLimitViolation(), 1.0e-7);
