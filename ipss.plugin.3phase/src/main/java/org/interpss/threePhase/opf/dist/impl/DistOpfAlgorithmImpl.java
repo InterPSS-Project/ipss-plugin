@@ -64,6 +64,8 @@ public class DistOpfAlgorithmImpl implements DistOpfAlgorithm {
 	}
 
 	private static void mapResult(DistOpfModel model, DistOpfSolverResult solverResult, DistOpfResult result) {
+		result.addBindingConstraints(solverResult.getBindingConstraints());
+		result.addDiagnostics(solverResult.getDiagnostics());
 		if (!result.isSolved()) {
 			result.addWarning(solverResult.getMessage());
 			return;
