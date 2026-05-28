@@ -22,6 +22,7 @@ import org.interpss.threePhase.basic.dstab.DStab3PGen;
 import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 
+import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.acsc.PhaseCode;
 
 public class DistOpfModelDataExtractor {
@@ -44,8 +45,10 @@ public class DistOpfModelDataExtractor {
 				}
 				swingBusId = bus.getId();
 			}
+			FixedLoadAndCapacitor fixedLoad = fixedLoadAndCapacitor(bus);
 			buses.add(new DistOpfBusData(bus.getId(), bus.isSwing(), bus.getBaseVoltage(),
-					EnumSet.of(PhaseCode.A, PhaseCode.B, PhaseCode.C), safeLoad(bus)));
+					EnumSet.of(PhaseCode.A, PhaseCode.B, PhaseCode.C), fixedLoad.load,
+					fixedLoad.capacitorQ));
 			ders.addAll(extractDers(bus));
 		}
 		if (swingBusId == null) {
@@ -67,6 +70,19 @@ public class DistOpfModelDataExtractor {
 				topology.childrenByBusId, topology.parentBranchByBusId);
 	}
 
+	private static FixedLoadAndCapacitor fixedLoadAndCapacitor(DStab3PBus bus) {
+		Complex3x1 totalLoad = safeLoad(bus);
+		Complex3x1 capacitorQ = new Complex3x1();
+		for (DStab3PLoad threePhaseLoad : bus.getThreePhaseLoadList()) {
+			if (isFixedCapacitor(threePhaseLoad)) {
+				Complex3x1 capLoad = threePhaseLoad.getInit3PhaseLoad();
+				capacitorQ = capacitorQ.add(capacitorInjection(capLoad));
+				totalLoad = totalLoad.subtract(capLoad);
+			}
+		}
+		return new FixedLoadAndCapacitor(totalLoad, capacitorQ);
+	}
+
 	private static Complex3x1 safeLoad(DStab3PBus bus) {
 		try {
 			Complex3x1 load = bus.get3PhaseTotalLoad();
@@ -83,6 +99,35 @@ public class DistOpfModelDataExtractor {
 			}
 		}
 		return load;
+	}
+
+	private static boolean isFixedCapacitor(DStab3PLoad load) {
+		Complex3x1 value = load.getInit3PhaseLoad();
+		return load.getCode() == AclfLoadCode.CONST_Z
+				&& value != null
+				&& isCapacitorPhase(value.a_0)
+				&& isCapacitorPhase(value.b_1)
+				&& isCapacitorPhase(value.c_2);
+	}
+
+	private static boolean isCapacitorPhase(Complex value) {
+		return value == null || Math.abs(value.getReal()) < PHASE_TOLERANCE
+				&& value.getImaginary() <= PHASE_TOLERANCE;
+	}
+
+	private static Complex3x1 capacitorInjection(Complex3x1 capLoad) {
+		Complex3x1 injection = new Complex3x1();
+		injection.a_0 = capacitorInjection(capLoad.a_0);
+		injection.b_1 = capacitorInjection(capLoad.b_1);
+		injection.c_2 = capacitorInjection(capLoad.c_2);
+		return injection;
+	}
+
+	private static Complex capacitorInjection(Complex capLoadPhase) {
+		if (capLoadPhase == null || capLoadPhase.getImaginary() >= 0.0) {
+			return Complex.ZERO;
+		}
+		return new Complex(0.0, -capLoadPhase.getImaginary());
 	}
 
 	private static List<DistOpfDerData> extractDers(DStab3PBus bus) {
@@ -235,6 +280,16 @@ public class DistOpfModelDataExtractor {
 				Map<String, DistOpfBranchData> parentBranchByBusId) {
 			this.childrenByBusId = childrenByBusId;
 			this.parentBranchByBusId = parentBranchByBusId;
+		}
+	}
+
+	private static class FixedLoadAndCapacitor {
+		private final Complex3x1 load;
+		private final Complex3x1 capacitorQ;
+
+		private FixedLoadAndCapacitor(Complex3x1 load, Complex3x1 capacitorQ) {
+			this.load = load;
+			this.capacitorQ = capacitorQ;
 		}
 	}
 }

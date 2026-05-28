@@ -49,6 +49,22 @@ public class DistOpfApiTest {
 	}
 
 	@Test
+	public void algorithmIncludesFixedCapacitorInjectionInReactiveBalance() throws InterpssException {
+		DStabNetwork3Phase net = createTwoBusFeeder();
+		DStab3PLoad capacitor = ThreePhaseObjectFactory.create3PLoad("cap-1");
+		capacitor.setCode(AclfLoadCode.CONST_Z);
+		capacitor.set3PhaseLoad(new Complex3x1(new Complex(0.0, -0.01),
+				new Complex(0.0, -0.01), new Complex(0.0, -0.01)));
+		net.getBus("load").getThreePhaseLoadList().add(capacitor);
+
+		DistOpfResult result = ThreePhaseObjectFactory.createDistOpfAlgorithm(net).solve();
+
+		assertEquals(DistOpfStatus.OPTIMAL, result.getStatus());
+		assertEquals(0.01, result.getBranchReactivePower("source->load(0)", "A"), 1.0e-7);
+		assertEquals(0.9972, result.getBusVoltageSquared("load", "A"), 1.0e-7);
+	}
+
+	@Test
 	public void variableIndexIsDeterministic() {
 		DistOpfVariableIndex index = new DistOpfVariableIndex();
 
