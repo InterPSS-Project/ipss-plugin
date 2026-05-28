@@ -97,7 +97,7 @@ This checklist tracks implementation of Java-native DistOPF for InterPSS using t
 - [x] Add octagonal inverter capability approximation.
 - [x] Add `DistBranchThermalLimitConstraintCollector`.
 - [x] Add octagonal branch apparent-power approximation.
-- [ ] Add collector tests that verify sparse row coefficients.
+- [x] Add collector tests that verify sparse row coefficients.
 
 ## Milestone 5: Objective Collectors
 
@@ -170,7 +170,7 @@ This checklist tracks implementation of Java-native DistOPF for InterPSS using t
 - [x] Add unit tests for variable indexing.
 - [x] Add unit tests for sparse constraint row creation.
 - [x] Add unit tests for network extraction.
-- [ ] Add unit tests for each constraint collector.
+- [x] Add unit tests for each constraint collector.
 - [x] Add unit tests for each objective collector.
 - [x] Add no-control OPF test on a small feeder.
 - [x] Add Q-control voltage correction test.
