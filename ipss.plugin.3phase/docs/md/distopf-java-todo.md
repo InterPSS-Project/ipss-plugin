@@ -60,7 +60,7 @@ This checklist tracks implementation of Java-native DistOPF for InterPSS using t
 - [x] Extract DER active-power limits.
 - [x] Extract DER reactive-power limits.
 - [x] Extract inverter apparent-power limits where available.
-- [ ] Extract bus phase voltage limits.
+- [x] Extract bus phase voltage limits.
 - [x] Extract branch thermal ratings where available.
 - [x] Normalize extracted values to per-unit.
 - [x] Exclude dynamic generator admittance contributions.

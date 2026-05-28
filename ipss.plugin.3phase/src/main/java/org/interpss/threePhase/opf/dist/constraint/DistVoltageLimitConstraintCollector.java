@@ -22,9 +22,13 @@ public class DistVoltageLimitConstraintCollector extends BaseDistOpfConstraintCo
 
 	@Override
 	public void collectConstraint() {
-		double lower = options.getMinVoltagePu() * options.getMinVoltagePu();
-		double upper = options.getMaxVoltagePu() * options.getMaxVoltagePu();
 		for (DistOpfBusData bus : modelData.getBuses()) {
+			double minVoltage = bus.getMinVoltagePu() == null ? options.getMinVoltagePu()
+					: bus.getMinVoltagePu().doubleValue();
+			double maxVoltage = bus.getMaxVoltagePu() == null ? options.getMaxVoltagePu()
+					: bus.getMaxVoltagePu().doubleValue();
+			double lower = minVoltage * minVoltage;
+			double upper = maxVoltage * maxVoltage;
 			for (PhaseCode phase : bus.getPhases()) {
 				addBounded("VLimit@" + bus.getId() + "." + phase, lower, upper,
 						new int[] { variableIndex.busV2(bus.getId(), phase) }, new double[] { 1.0 });
