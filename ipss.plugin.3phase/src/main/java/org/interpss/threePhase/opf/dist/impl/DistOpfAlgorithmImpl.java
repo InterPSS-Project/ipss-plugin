@@ -1,0 +1,68 @@
+package org.interpss.threePhase.opf.dist.impl;
+
+import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
+import org.interpss.threePhase.opf.dist.DistOpfAlgorithm;
+import org.interpss.threePhase.opf.dist.DistOpfControlMode;
+import org.interpss.threePhase.opf.dist.DistOpfObjective;
+import org.interpss.threePhase.opf.dist.DistOpfOptions;
+import org.interpss.threePhase.opf.dist.DistOpfResult;
+import org.interpss.threePhase.opf.dist.model.DistOpfModel;
+import org.interpss.threePhase.opf.dist.model.DistOpfVariableIndex;
+import org.interpss.threePhase.opf.dist.solver.DistOpfSolverResult;
+import org.interpss.threePhase.opf.dist.solver.OjAlgoDistOpfSolver;
+
+public class DistOpfAlgorithmImpl implements DistOpfAlgorithm {
+
+	private final DStabNetwork3Phase net;
+	private DistOpfObjective objective = DistOpfObjective.CURTAILMENT_MIN;
+	private DistOpfControlMode controlMode = DistOpfControlMode.NONE;
+	private DistOpfOptions options = new DistOpfOptions();
+
+	public DistOpfAlgorithmImpl(DStabNetwork3Phase net) {
+		this.net = net;
+	}
+
+	@Override
+	public DistOpfAlgorithm setObjective(DistOpfObjective objective) {
+		this.objective = objective;
+		return this;
+	}
+
+	@Override
+	public DistOpfAlgorithm setControlMode(DistOpfControlMode controlMode) {
+		this.controlMode = controlMode;
+		return this;
+	}
+
+	@Override
+	public DistOpfAlgorithm setOptions(DistOpfOptions options) {
+		this.options = options;
+		return this;
+	}
+
+	@Override
+	public DistOpfResult solve() {
+		DistOpfModel model = new DistOpfModel(new DistOpfVariableIndex());
+		DistOpfSolverResult solverResult = new OjAlgoDistOpfSolver().solve(model, options);
+		DistOpfResult result = new DistOpfResult(solverResult.getStatus(),
+				solverResult.getObjectiveValue(), solverResult.getMaxConstraintResidual());
+		result.addWarning("DistOPF model extraction and LinDistFlow collectors are not implemented yet.");
+		return result;
+	}
+
+	public DStabNetwork3Phase getNetwork() {
+		return net;
+	}
+
+	public DistOpfObjective getObjective() {
+		return objective;
+	}
+
+	public DistOpfControlMode getControlMode() {
+		return controlMode;
+	}
+
+	public DistOpfOptions getOptions() {
+		return options;
+	}
+}

@@ -15,6 +15,8 @@ import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.impl.DStabNetwork3phaseImpl;
 import org.interpss.threePhase.dynamic.model.DStabGen3PhaseAdapter;
 import org.interpss.threePhase.dynamic.model.impl.DStabGen3PhaseAdapterImpl;
+import org.interpss.threePhase.opf.dist.DistOpfAlgorithm;
+import org.interpss.threePhase.opf.dist.impl.DistOpfAlgorithmImpl;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.powerflow.impl.DistributionPowerFlowAlgorithmImpl;
 
@@ -128,6 +130,10 @@ public class ThreePhaseObjectFactory {
 		DistributionPowerFlowAlgorithmImpl algo = new DistributionPowerFlowAlgorithmImpl(net);
 
 		return algo;
+	}
+
+	public static DistOpfAlgorithm createDistOpfAlgorithm(DStabNetwork3Phase net){
+		return new DistOpfAlgorithmImpl(net);
 	}
 
 }
