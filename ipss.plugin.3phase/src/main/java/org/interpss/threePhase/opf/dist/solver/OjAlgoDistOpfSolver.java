@@ -7,6 +7,7 @@ import org.interpss.plugin.opf.constraint.OpfConstraint;
 import org.interpss.threePhase.opf.dist.DistOpfOptions;
 import org.interpss.threePhase.opf.dist.DistOpfStatus;
 import org.interpss.threePhase.opf.dist.model.DistOpfModel;
+import org.interpss.threePhase.opf.dist.util.DistOpfLimitUtil;
 import org.ojalgo.optimisation.Expression;
 import org.ojalgo.optimisation.ExpressionsBasedModel;
 import org.ojalgo.optimisation.Optimisation;
@@ -54,10 +55,10 @@ public class OjAlgoDistOpfSolver implements DistOpfSolver {
 		if (constraint.getCstType() == OpfConstraintType.EQUALITY) {
 			expression.level(constraint.getUpperLimit());
 		} else {
-			if (constraint.getLowerLimit() > -1.0e19) {
+			if (DistOpfLimitUtil.hasFiniteLowerLimit(constraint.getLowerLimit())) {
 				expression.lower(constraint.getLowerLimit());
 			}
-			if (constraint.getUpperLimit() < 1.0e19) {
+			if (DistOpfLimitUtil.hasFiniteUpperLimit(constraint.getUpperLimit())) {
 				expression.upper(constraint.getUpperLimit());
 			}
 		}
@@ -90,10 +91,12 @@ public class OjAlgoDistOpfSolver implements DistOpfSolver {
 			if (constraint.getCstType() == OpfConstraintType.EQUALITY) {
 				residual = Math.abs(activity - constraint.getUpperLimit());
 			} else {
-				if (constraint.getLowerLimit() > -1.0e19 && activity < constraint.getLowerLimit()) {
+				if (DistOpfLimitUtil.hasFiniteLowerLimit(constraint.getLowerLimit())
+						&& activity < constraint.getLowerLimit()) {
 					residual = Math.max(residual, constraint.getLowerLimit() - activity);
 				}
-				if (constraint.getUpperLimit() < 1.0e19 && activity > constraint.getUpperLimit()) {
+				if (DistOpfLimitUtil.hasFiniteUpperLimit(constraint.getUpperLimit())
+						&& activity > constraint.getUpperLimit()) {
 					residual = Math.max(residual, activity - constraint.getUpperLimit());
 				}
 			}
@@ -113,11 +116,11 @@ public class OjAlgoDistOpfSolver implements DistOpfSolver {
 				continue;
 			}
 			double activity = activity(constraint, primal);
-			if (constraint.getLowerLimit() > -1.0e19
+			if (DistOpfLimitUtil.hasFiniteLowerLimit(constraint.getLowerLimit())
 					&& Math.abs(activity - constraint.getLowerLimit()) <= tol) {
 				bindingConstraints.add(constraint.getDesc() + "@lower");
 			}
-			if (constraint.getUpperLimit() < 1.0e19
+			if (DistOpfLimitUtil.hasFiniteUpperLimit(constraint.getUpperLimit())
 					&& Math.abs(activity - constraint.getUpperLimit()) <= tol) {
 				bindingConstraints.add(constraint.getDesc() + "@upper");
 			}
