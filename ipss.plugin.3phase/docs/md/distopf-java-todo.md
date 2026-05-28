@@ -133,7 +133,7 @@ This checklist tracks implementation of Java-native DistOPF for InterPSS using t
 - [x] Map ojAlgo unbounded status to `DistOpfStatus.UNBOUNDED`.
 - [x] Preserve solver message in `DistOpfSolverResult`.
 - [x] Compute maximum constraint residual after solve.
-- [ ] Add infeasibility diagnostics where available.
+- [x] Add infeasibility diagnostics where available.
 - [x] Add LP solver tests using a tiny hand-built model.
 
 ## Milestone 7: Result Handling
@@ -146,7 +146,7 @@ This checklist tracks implementation of Java-native DistOPF for InterPSS using t
 - [x] Add solver status field.
 - [x] Add warning list.
 - [x] Add constraint residual summary.
-- [ ] Add binding-constraint summary where available.
+- [x] Add binding-constraint summary where available.
 - [x] Add `applySetpointsToNetwork(DStabNetwork3Phase net)`.
 - [x] Ensure `solve()` does not mutate the network.
 - [x] Add tests proving setpoints are only applied when explicitly requested.
