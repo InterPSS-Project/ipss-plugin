@@ -83,6 +83,38 @@ public class DistOpfDerControlTest {
 	}
 
 	@Test
+	public void qControlCorrectsLowVoltageWithReactiveSupport() throws InterpssException {
+		DistOpfOptions options = new DistOpfOptions().setMinVoltagePu(Math.sqrt(0.998));
+
+		DistOpfResult result = ThreePhaseObjectFactory.createDistOpfAlgorithm(createTwoBusFeederWithDer())
+				.setControlMode(DistOpfControlMode.Q)
+				.setOptions(options)
+				.solve();
+
+		assertEquals(DistOpfStatus.OPTIMAL, result.getStatus());
+		assertEquals(0.01, result.getDerReactivePower("der-1", "A"), 1.0e-7);
+		assertEquals(0.998, result.getBusVoltageSquared("load", "A"), 1.0e-7);
+		assertEquals(0.01, result.getBranchReactivePower("source->load(0)", "A"), 1.0e-7);
+	}
+
+	@Test
+	public void pCurtailmentCorrectsHighVoltageFromExport() throws InterpssException {
+		DistOpfOptions options = new DistOpfOptions().setMaxVoltagePu(Math.sqrt(1.0002));
+
+		DistOpfResult result = ThreePhaseObjectFactory
+				.createDistOpfAlgorithm(createTwoBusFeederWithDerPower(new Complex(0.2, 0.0)))
+				.setControlMode(DistOpfControlMode.P)
+				.setObjective(DistOpfObjective.CURTAILMENT_MIN)
+				.setOptions(options)
+				.solve();
+
+		assertEquals(DistOpfStatus.OPTIMAL, result.getStatus());
+		assertEquals(0.19, result.getDerActivePower("der-1", "A"), 1.0e-7);
+		assertEquals(1.0002, result.getBusVoltageSquared("load", "A"), 1.0e-7);
+		assertEquals(-0.09, result.getBranchActivePower("source->load(0)", "A"), 1.0e-7);
+	}
+
+	@Test
 	public void solveDoesNotMutateNetworkUntilSetpointsAreApplied() throws InterpssException {
 		DStabNetwork3Phase net = createTwoBusFeederWithDer();
 		DStab3PGen der = net.getBus("load").getThreePhaseGenList().get(0);
@@ -114,6 +146,15 @@ public class DistOpfDerControlTest {
 	}
 
 	private static DStabNetwork3Phase createTwoBusFeederWithDer(double ratingMva1) throws InterpssException {
+		return createTwoBusFeederWithDerPower(new Complex(0.04, 0.0), ratingMva1);
+	}
+
+	private static DStabNetwork3Phase createTwoBusFeederWithDerPower(Complex derPower) throws InterpssException {
+		return createTwoBusFeederWithDerPower(derPower, 0.0);
+	}
+
+	private static DStabNetwork3Phase createTwoBusFeederWithDerPower(Complex derPower, double ratingMva1)
+			throws InterpssException {
 		DStabNetwork3Phase net = ThreePhaseObjectFactory.create3PhaseDStabNetwork();
 		net.setBaseKva(1000.0);
 
@@ -133,8 +174,7 @@ public class DistOpfDerControlTest {
 		loadBus.getThreePhaseLoadList().add(load);
 
 		DStab3PGen der = ThreePhaseObjectFactory.create3PGenerator("der-1");
-		der.setPower3Phase(new Complex3x1(new Complex(0.04, 0.0),
-				new Complex(0.04, 0.0), new Complex(0.04, 0.0)), UnitType.PU);
+		der.setPower3Phase(new Complex3x1(derPower, derPower, derPower), UnitType.PU);
 		loadBus.getThreePhaseGenList().add(der);
 
 		DStab3PBranch line = ThreePhaseObjectFactory.create3PBranch("source", "load", "0", net);
