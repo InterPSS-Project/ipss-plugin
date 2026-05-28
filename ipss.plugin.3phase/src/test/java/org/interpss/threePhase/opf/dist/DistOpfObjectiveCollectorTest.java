@@ -7,12 +7,15 @@ import java.util.EnumSet;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
+import org.interpss.numeric.datatype.Complex3x3;
+import org.interpss.threePhase.opf.dist.model.DistOpfBranchData;
 import org.interpss.threePhase.opf.dist.model.DistOpfBusData;
 import org.interpss.threePhase.opf.dist.model.DistOpfDerData;
 import org.interpss.threePhase.opf.dist.model.DistOpfModelData;
 import org.interpss.threePhase.opf.dist.model.DistOpfVariableIndex;
 import org.interpss.threePhase.opf.dist.objective.CurtailmentMinObjectiveCollector;
 import org.interpss.threePhase.opf.dist.objective.GenMaxObjectiveCollector;
+import org.interpss.threePhase.opf.dist.objective.LossMinObjectiveCollector;
 import org.interpss.threePhase.opf.dist.objective.TargetSubstationPObjectiveCollector;
 import org.interpss.threePhase.opf.dist.objective.TargetSubstationQObjectiveCollector;
 import org.junit.jupiter.api.Test;
@@ -71,6 +74,24 @@ public class DistOpfObjectiveCollectorTest {
 		assertEquals(0.0, qObjective[index.targetPPositive("source")], 1.0e-12);
 	}
 
+	@Test
+	public void lossMinUsesSourceOutgoingActivePowerVariables() {
+		DistOpfModelData data = modelDataWithSourceBranch();
+		DistOpfVariableIndex index = new DistOpfVariableIndex();
+		for (PhaseCode phase : EnumSet.of(PhaseCode.A, PhaseCode.B, PhaseCode.C)) {
+			index.branchP("source->load(0)", phase);
+			index.branchQ("source->load(0)", phase);
+		}
+		double[] objective = new double[index.size()];
+
+		new LossMinObjectiveCollector(data, index, objective).collectObjective();
+
+		assertEquals(1.0, objective[index.branchP("source->load(0)", PhaseCode.A)], 1.0e-12);
+		assertEquals(1.0, objective[index.branchP("source->load(0)", PhaseCode.B)], 1.0e-12);
+		assertEquals(1.0, objective[index.branchP("source->load(0)", PhaseCode.C)], 1.0e-12);
+		assertEquals(0.0, objective[index.branchQ("source->load(0)", PhaseCode.A)], 1.0e-12);
+	}
+
 	private static DistOpfVariableIndex variableIndexForDer() {
 		DistOpfVariableIndex index = new DistOpfVariableIndex();
 		for (PhaseCode phase : EnumSet.of(PhaseCode.A, PhaseCode.B, PhaseCode.C)) {
@@ -90,5 +111,18 @@ public class DistOpfObjectiveCollectorTest {
 		return new DistOpfModelData(1.0, "source", Collections.singletonList(source),
 				Collections.emptyList(), Collections.singletonList(der),
 				Collections.emptyMap(), Collections.emptyMap());
+	}
+
+	private static DistOpfModelData modelDataWithSourceBranch() {
+		DistOpfBusData source = new DistOpfBusData("source", true, 12470.0,
+				EnumSet.of(PhaseCode.A, PhaseCode.B, PhaseCode.C), new Complex3x1());
+		DistOpfBusData load = new DistOpfBusData("load", false, 12470.0,
+				EnumSet.of(PhaseCode.A, PhaseCode.B, PhaseCode.C), new Complex3x1());
+		DistOpfBranchData branch = new DistOpfBranchData("source->load(0)", "source", "load",
+				EnumSet.of(PhaseCode.A, PhaseCode.B, PhaseCode.C), Complex3x3.createUnitMatrix());
+		return new DistOpfModelData(1.0, "source", java.util.Arrays.asList(source, load),
+				Collections.singletonList(branch), Collections.emptyList(),
+				Collections.singletonMap("source", Collections.singletonList(branch)),
+				Collections.singletonMap("load", branch));
 	}
 }
