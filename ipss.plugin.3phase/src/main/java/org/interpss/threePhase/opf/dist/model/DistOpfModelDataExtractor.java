@@ -58,7 +58,8 @@ public class DistOpfModelDataExtractor {
 			}
 			Complex3x3 zabc = branch.getZabc();
 			branches.add(new DistOpfBranchData(branchId(branch), branch.getFromBus().getId(),
-					branch.getToBus().getId(), phasesFromZabc(zabc), zabc));
+					branch.getToBus().getId(), phasesFromZabc(zabc), zabc,
+					thermalLimitPu(branch, net.getBaseMva())));
 		}
 
 		Topology topology = validateRadialAndOrient(swingBusId, buses, branches);
@@ -142,6 +143,19 @@ public class DistOpfModelDataExtractor {
 			phases.add(PhaseCode.C);
 		}
 		return phases;
+	}
+
+	private static Double thermalLimitPu(DStab3PBranch branch, double baseMva) {
+		if (baseMva <= 0.0) {
+			return null;
+		}
+		if (branch.getRatingMva1() > 0.0) {
+			return Double.valueOf(branch.getRatingMva1() / baseMva);
+		}
+		if (branch.isXfr() && branch.getXfrRatedKVA() > 0.0) {
+			return Double.valueOf(branch.getXfrRatedKVA() / 1000.0 / baseMva);
+		}
+		return null;
 	}
 
 	private static boolean nonZero(Complex value) {
