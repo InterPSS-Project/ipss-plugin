@@ -59,7 +59,7 @@ This checklist tracks implementation of Java-native DistOPF for InterPSS using t
 - [ ] Extract fixed regulator ratios.
 - [x] Extract DER active-power limits.
 - [x] Extract DER reactive-power limits.
-- [ ] Extract inverter apparent-power limits where available.
+- [x] Extract inverter apparent-power limits where available.
 - [ ] Extract bus phase voltage limits.
 - [x] Extract branch thermal ratings where available.
 - [x] Normalize extracted values to per-unit.
@@ -93,8 +93,8 @@ This checklist tracks implementation of Java-native DistOPF for InterPSS using t
 - [x] Enable active-power controls when `DistOpfControlMode.P` is selected.
 - [x] Enable reactive-power controls when `DistOpfControlMode.Q` is selected.
 - [x] Enable P/Q controls when `DistOpfControlMode.PQ` is selected.
-- [ ] Add `DistInverterCapabilityConstraintCollector`.
-- [ ] Add octagonal inverter capability approximation.
+- [x] Add `DistInverterCapabilityConstraintCollector`.
+- [x] Add octagonal inverter capability approximation.
 - [x] Add `DistBranchThermalLimitConstraintCollector`.
 - [x] Add octagonal branch apparent-power approximation.
 - [ ] Add collector tests that verify sparse row coefficients.
