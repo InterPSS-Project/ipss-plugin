@@ -50,6 +50,19 @@ public class LinDistFlowModelBuilderTest {
 				.anyMatch(c -> containsCoefficient(c, branchPb, -0.004)));
 	}
 
+	@Test
+	public void voltageDropIncludesFixedVoltageRatio() throws InterpssException {
+		DStabNetwork3Phase net = createTwoBusFeeder();
+		net.getBranch("source->load(0)").setToTurnRatio(1.02);
+		DistOpfModelData data = new DistOpfModelDataExtractor().extract(net);
+		DistOpfModel model = new LinDistFlowModelBuilder().build(data, new DistOpfOptions());
+		int sourceVa = model.getVariableIndex().busV2("source", PhaseCode.A);
+
+		assertTrue(model.getConstraints().stream()
+				.filter(c -> c.getDesc().startsWith("VDrop@") && c.getDesc().endsWith(".A"))
+				.anyMatch(c -> containsCoefficient(c, sourceVa, 1.0404)));
+	}
+
 	private static DStabNetwork3Phase createTwoBusFeeder() throws InterpssException {
 		DStabNetwork3Phase net = ThreePhaseObjectFactory.create3PhaseDStabNetwork();
 		net.setBaseKva(1000.0);
