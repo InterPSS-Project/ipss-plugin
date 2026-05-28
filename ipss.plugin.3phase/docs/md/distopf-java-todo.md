@@ -173,8 +173,8 @@ This checklist tracks implementation of Java-native DistOPF for InterPSS using t
 - [ ] Add unit tests for each constraint collector.
 - [x] Add unit tests for each objective collector.
 - [x] Add no-control OPF test on a small feeder.
-- [ ] Add Q-control voltage correction test.
-- [ ] Add P-curtailment voltage correction test.
+- [x] Add Q-control voltage correction test.
+- [x] Add P-curtailment voltage correction test.
 - [x] Add thermal-limit binding test.
 - [x] Add infeasible OPF test.
 - [x] Add post-OPF fixed-point PF validation test.
