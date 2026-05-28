@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
+import org.interpss.numeric.datatype.LimitType;
 import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.basic.dstab.DStab3PLoad;
@@ -61,6 +62,17 @@ public class DistOpfModelDataExtractorTest {
 		DistOpfModelData data = new DistOpfModelDataExtractor().extract(net);
 
 		assertEquals(0.25, data.getBranches().get(0).getThermalLimitPu(), 1.0e-12);
+	}
+
+	@Test
+	public void extractsBusVoltageLimits() throws InterpssException {
+		DStabNetwork3Phase net = createTwoBusFeeder();
+		net.getBus("load").setVLimit(new LimitType(1.04, 0.97));
+
+		DistOpfModelData data = new DistOpfModelDataExtractor().extract(net);
+
+		assertEquals(0.97, data.getBuses().get(1).getMinVoltagePu(), 1.0e-12);
+		assertEquals(1.04, data.getBuses().get(1).getMaxVoltagePu(), 1.0e-12);
 	}
 
 	@Test
