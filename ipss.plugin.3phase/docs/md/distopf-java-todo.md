@@ -158,7 +158,7 @@ This checklist tracks implementation of Java-native DistOPF for InterPSS using t
 - [x] Apply result setpoints to a copied or explicitly supplied network.
 - [x] Run fixed-point three-phase power flow after OPF.
 - [x] Record power-flow convergence status.
-- [ ] Record power-flow iteration count.
+- [x] Record power-flow iteration count.
 - [x] Compare LinDistFlow bus voltages against solved power-flow voltages.
 - [x] Report maximum voltage difference.
 - [x] Report voltage-limit violations after fixed-point PF.
