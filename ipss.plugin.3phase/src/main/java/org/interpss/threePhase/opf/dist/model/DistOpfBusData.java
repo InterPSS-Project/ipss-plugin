@@ -15,14 +15,21 @@ public class DistOpfBusData {
 	private final double baseVoltage;
 	private final Set<PhaseCode> phases;
 	private final Complex3x1 load;
+	private final Complex3x1 fixedCapacitorQ;
 
 	public DistOpfBusData(String id, boolean swing, double baseVoltage,
 			Set<PhaseCode> phases, Complex3x1 load) {
+		this(id, swing, baseVoltage, phases, load, new Complex3x1());
+	}
+
+	public DistOpfBusData(String id, boolean swing, double baseVoltage,
+			Set<PhaseCode> phases, Complex3x1 load, Complex3x1 fixedCapacitorQ) {
 		this.id = id;
 		this.swing = swing;
 		this.baseVoltage = baseVoltage;
 		this.phases = Collections.unmodifiableSet(EnumSet.copyOf(phases));
 		this.load = load;
+		this.fixedCapacitorQ = fixedCapacitorQ == null ? new Complex3x1() : fixedCapacitorQ;
 	}
 
 	public String getId() {
@@ -43,5 +50,9 @@ public class DistOpfBusData {
 
 	public Complex3x1 getLoad() {
 		return load;
+	}
+
+	public Complex3x1 getFixedCapacitorQ() {
+		return fixedCapacitorQ;
 	}
 }
