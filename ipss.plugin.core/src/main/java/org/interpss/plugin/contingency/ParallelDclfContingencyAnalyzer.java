@@ -6,6 +6,8 @@ import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
 import static com.interpss.core.DclfAlgoObjectFactory.createMultiOutageContingency;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -22,6 +24,7 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfContingencySolutionMethod;
+import com.interpss.core.algo.dclf.DclfContingencyWoodburySolver;
 import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 import com.interpss.core.contingency.BaseContingency;
@@ -35,6 +38,9 @@ import com.interpss.core.net.ref.impl.NetworkRefImpl;
 public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork>{
     //create logger
     private static final Logger log = LoggerFactory.getLogger(ParallelDclfContingencyAnalyzer.class);
+	private static final int DEFAULT_WOODBURY_MONITOR_BATCH_SIZE = 5120;
+	private static final String WOODBURY_MONITOR_BATCH_SIZE_PROPERTY =
+			"interpss.dclf.woodbury.monitorBatchSize";
 
     /**
 	 * Constructor
@@ -127,6 +133,19 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
 		log.info("Dclf calculation using " + method + ", solution method " + solutionMethod);
 		log.info("RefBus P :" + dclfAlgo.getBusPower(aclfNet.getRefBusId()) + " @" + aclfNet.getRefBusId() );
 
+		if (!contingencyList.isEmpty()
+				&& solutionMethod == DclfContingencySolutionMethod.WoodburyMatrixUpdate
+				&& isFastOpenBranchStudy(contingencyList)) {
+			return performCachedWoodburyOpenBranchOutageAnalysis(
+					dclfAlgo,
+					contingencyList,
+					monitoredBranchIds,
+					overloadThreshold,
+					BranchCAResultRec.ContingencyShiftThreshold,
+					method,
+					parallelismLevel);
+		}
+
 		if (!contingencyList.isEmpty() && isFastOpenBranchStudy(contingencyList)) {
 			refreshOutagePreFlows(dclfAlgo, contingencyList);
 			return performOpenBranchOutageFastAnalysis(
@@ -150,6 +169,96 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
 		} catch (InterpssException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	private static ConcurrentLinkedQueue<BranchCAResultRec> performCachedWoodburyOpenBranchOutageAnalysis(
+			ContingencyAnalysisAlgorithm dclfAlgo,
+			List<? extends BaseContingency<DclfMonitoringBranch>> contingencyList,
+			Set<String> monitoredBranchIds,
+			double overloadThreshold,
+			double shiftThresholdMw,
+			DclfMethod method,
+			int parallelismLevel) {
+		try {
+			DclfContingencyWoodburySolver solver = new DclfContingencyWoodburySolver(dclfAlgo);
+			List<DclfBranchOutage> branchOutages = toBranchOutageList(contingencyList);
+			AclfBranch[] monitorBranches = monitoredBranches(dclfAlgo, monitoredBranchIds);
+			ConcurrentLinkedQueue<BranchCAResultRec> results = analyzeWoodburyOpenBranchOutageBatches(
+					solver,
+					branchOutages,
+					monitorBranches,
+					method,
+					overloadThreshold,
+					shiftThresholdMw,
+					parallelismLevel);
+			log.info("Dclf Woodbury cached contingency analysis completed. Found {} violations out of {} contingencies",
+					results.size(), contingencyList.size());
+			return results;
+		} catch (InterpssException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private static ConcurrentLinkedQueue<BranchCAResultRec> analyzeWoodburyOpenBranchOutageBatches(
+			DclfContingencyWoodburySolver solver,
+			List<DclfBranchOutage> branchOutages,
+			AclfBranch[] monitorBranches,
+			DclfMethod method,
+			double overloadThreshold,
+			double shiftThresholdMw,
+			int parallelismLevel)
+			throws InterpssException {
+		int monitorBatchSize = woodburyMonitorBatchSize(monitorBranches.length);
+		int setupParallelism = Math.max(1, parallelismLevel);
+		int scanParallelism = Math.max(1, parallelismLevel);
+
+		ConcurrentLinkedQueue<BranchCAResultRec> results = new ConcurrentLinkedQueue<>();
+		for (int from = 0; from < monitorBranches.length; from += monitorBatchSize) {
+			int to = Math.min(monitorBranches.length, from + monitorBatchSize);
+			AclfBranch[] monitorBatch = Arrays.copyOfRange(monitorBranches, from, to);
+			results.addAll(solver.analyzeOpenBranchOutageBatch(
+					branchOutages,
+					monitorBatch,
+					method,
+					overloadThreshold,
+					shiftThresholdMw,
+					monitorBatchSize,
+					setupParallelism,
+					scanParallelism));
+		}
+		log.info("Dclf Woodbury monitor batching used for {} monitor branches, {} contingencies, batch size {}",
+				monitorBranches.length, branchOutages.size(), monitorBatchSize);
+		return results;
+	}
+
+	private static int woodburyMonitorBatchSize(int monitorCount) {
+		int configuredMonitorBatchSize = Math.max(1,
+				Integer.getInteger(WOODBURY_MONITOR_BATCH_SIZE_PROPERTY, DEFAULT_WOODBURY_MONITOR_BATCH_SIZE));
+		return Math.max(1, Math.min(configuredMonitorBatchSize, Math.max(1, monitorCount)));
+	}
+
+	private static List<DclfBranchOutage> toBranchOutageList(
+			List<? extends BaseContingency<DclfMonitoringBranch>> contingencyList) {
+		List<DclfBranchOutage> branchOutages = new ArrayList<>(contingencyList.size());
+		for (BaseContingency<DclfMonitoringBranch> contingency : contingencyList) {
+			branchOutages.add((DclfBranchOutage) contingency);
+		}
+		return branchOutages;
+	}
+
+	private static AclfBranch[] monitoredBranches(
+			ContingencyAnalysisAlgorithm dclfAlgo,
+			Set<String> monitoredBranchIds) {
+		List<AclfBranch> branches = new ArrayList<>();
+		for (DclfAlgoBranch dclfBranch : dclfAlgo.getDclfAlgoBranchList()) {
+			AclfBranch branch = dclfBranch.getBranch();
+			if (branch != null
+					&& dclfBranch.isActive()
+					&& (monitoredBranchIds == null || monitoredBranchIds.contains(branch.getId()))) {
+				branches.add(branch);
+			}
+		}
+		return branches.toArray(new AclfBranch[0]);
 	}
 
 	private static ConcurrentLinkedQueue<BranchCAResultRec> performOpenBranchOutageFastAnalysis(
