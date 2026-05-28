@@ -161,8 +161,8 @@ This checklist tracks implementation of Java-native DistOPF for InterPSS using t
 - [ ] Record power-flow iteration count.
 - [x] Compare LinDistFlow bus voltages against solved power-flow voltages.
 - [x] Report maximum voltage difference.
-- [ ] Report voltage-limit violations after fixed-point PF.
-- [ ] Report branch-limit violations after fixed-point PF.
+- [x] Report voltage-limit violations after fixed-point PF.
+- [x] Report branch-limit violations after fixed-point PF.
 - [x] Add validation tests for a small feeder.
 
 ## Milestone 9: Test Systems and Acceptance Tests
