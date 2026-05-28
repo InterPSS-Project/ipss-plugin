@@ -21,6 +21,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
+import com.interpss.core.acsc.PhaseCode;
 
 public class LinDistFlowModelBuilderTest {
 
@@ -35,6 +36,18 @@ public class LinDistFlowModelBuilderTest {
 		assertTrue(model.getConstraints().stream().anyMatch(c -> c.getDesc().startsWith("PBalance@load.A")));
 		assertTrue(model.getConstraints().stream().anyMatch(c -> c.getDesc().startsWith("VDrop@")));
 		assertTrue(model.getConstraints().stream().anyMatch(c -> c.getDesc().startsWith("SwingV2@source.A")));
+	}
+
+	@Test
+	public void voltageDropIncludesMutualPhaseCoupling() throws InterpssException {
+		DistOpfModelData data = new DistOpfModelDataExtractor().extract(createTwoBusFeeder());
+		DistOpfModel model = new LinDistFlowModelBuilder().build(data, new DistOpfOptions());
+		String branchId = data.getBranches().get(0).getId();
+		int branchPb = model.getVariableIndex().branchP(branchId, PhaseCode.B);
+
+		assertTrue(model.getConstraints().stream()
+				.filter(c -> c.getDesc().startsWith("VDrop@") && c.getDesc().endsWith(".A"))
+				.anyMatch(c -> containsCoefficient(c, branchPb, -0.004)));
 	}
 
 	private static DStabNetwork3Phase createTwoBusFeeder() throws InterpssException {
@@ -58,7 +71,21 @@ public class LinDistFlowModelBuilderTest {
 
 		DStab3PBranch line = ThreePhaseObjectFactory.create3PBranch("source", "load", "0", net);
 		line.setBranchCode(AclfBranchCode.LINE);
-		line.setZabc(Complex3x3.createUnitMatrix().multiply(new Complex(0.01, 0.04)));
+		line.setZabc(new Complex3x3(new Complex[][] {
+				{ new Complex(0.01, 0.04), new Complex(0.002, 0.003), new Complex(0.001, 0.002) },
+				{ new Complex(0.002, 0.003), new Complex(0.01, 0.04), new Complex(0.002, 0.003) },
+				{ new Complex(0.001, 0.002), new Complex(0.002, 0.003), new Complex(0.01, 0.04) } }));
 		return net;
+	}
+
+	private static boolean containsCoefficient(org.interpss.plugin.opf.constraint.OpfConstraint constraint,
+			int column, double value) {
+		for (int i = 0; i < constraint.getColNo().size(); i++) {
+			if (constraint.getColNo().get(i) == column
+					&& Math.abs(constraint.getVal().get(i) - value) < 1.0e-12) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
