@@ -22,6 +22,7 @@ public class DistOpfPowerFlowValidation {
 		powerFlow.setMaxIteration(options.getMaxPowerFlowIterations());
 		boolean converged = powerFlow.powerflow();
 		result.setPowerFlowConverged(converged);
+		result.setPowerFlowIterationCount(powerFlow.getIterationCount());
 		result.setMaxPowerFlowVoltageDiff(maxVoltageDiff(net, result));
 		result.setMaxPowerFlowVoltageViolation(maxVoltageViolation(net, options));
 		result.setMaxPowerFlowBranchLimitViolation(maxBranchLimitViolation(net));
