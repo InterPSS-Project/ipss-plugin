@@ -26,6 +26,8 @@ public class DistOpfResult {
 	private final Map<String, Double> derReactivePower = new LinkedHashMap<String, Double>();
 	private Boolean powerFlowConverged;
 	private double maxPowerFlowVoltageDiff = Double.NaN;
+	private double maxPowerFlowVoltageViolation = Double.NaN;
+	private double maxPowerFlowBranchLimitViolation = Double.NaN;
 
 	public DistOpfResult(DistOpfStatus status, double objectiveValue, double maxConstraintResidual) {
 		this.status = status;
@@ -138,6 +140,24 @@ public class DistOpfResult {
 
 	public DistOpfResult setMaxPowerFlowVoltageDiff(double maxPowerFlowVoltageDiff) {
 		this.maxPowerFlowVoltageDiff = maxPowerFlowVoltageDiff;
+		return this;
+	}
+
+	public double getMaxPowerFlowVoltageViolation() {
+		return maxPowerFlowVoltageViolation;
+	}
+
+	public DistOpfResult setMaxPowerFlowVoltageViolation(double maxPowerFlowVoltageViolation) {
+		this.maxPowerFlowVoltageViolation = maxPowerFlowVoltageViolation;
+		return this;
+	}
+
+	public double getMaxPowerFlowBranchLimitViolation() {
+		return maxPowerFlowBranchLimitViolation;
+	}
+
+	public DistOpfResult setMaxPowerFlowBranchLimitViolation(double maxPowerFlowBranchLimitViolation) {
+		this.maxPowerFlowBranchLimitViolation = maxPowerFlowBranchLimitViolation;
 		return this;
 	}
 
