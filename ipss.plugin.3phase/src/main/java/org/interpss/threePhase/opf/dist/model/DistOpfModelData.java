@@ -12,6 +12,7 @@ public class DistOpfModelData {
 	private final String swingBusId;
 	private final List<DistOpfBusData> buses;
 	private final List<DistOpfBranchData> branches;
+	private final List<DistOpfDerData> ders;
 	private final Map<String, List<DistOpfBranchData>> childrenByBusId;
 	private final Map<String, DistOpfBranchData> parentBranchByBusId;
 
@@ -19,10 +20,19 @@ public class DistOpfModelData {
 			List<DistOpfBusData> buses, List<DistOpfBranchData> branches,
 			Map<String, List<DistOpfBranchData>> childrenByBusId,
 			Map<String, DistOpfBranchData> parentBranchByBusId) {
+		this(baseMva, swingBusId, buses, branches, Collections.<DistOpfDerData>emptyList(),
+				childrenByBusId, parentBranchByBusId);
+	}
+
+	public DistOpfModelData(double baseMva, String swingBusId,
+			List<DistOpfBusData> buses, List<DistOpfBranchData> branches, List<DistOpfDerData> ders,
+			Map<String, List<DistOpfBranchData>> childrenByBusId,
+			Map<String, DistOpfBranchData> parentBranchByBusId) {
 		this.baseMva = baseMva;
 		this.swingBusId = swingBusId;
 		this.buses = Collections.unmodifiableList(new ArrayList<DistOpfBusData>(buses));
 		this.branches = Collections.unmodifiableList(new ArrayList<DistOpfBranchData>(branches));
+		this.ders = Collections.unmodifiableList(new ArrayList<DistOpfDerData>(ders));
 		this.childrenByBusId = copyChildren(childrenByBusId);
 		this.parentBranchByBusId = Collections.unmodifiableMap(
 				new LinkedHashMap<String, DistOpfBranchData>(parentBranchByBusId));
@@ -42,6 +52,20 @@ public class DistOpfModelData {
 
 	public List<DistOpfBranchData> getBranches() {
 		return branches;
+	}
+
+	public List<DistOpfDerData> getDers() {
+		return ders;
+	}
+
+	public List<DistOpfDerData> getDers(String busId) {
+		List<DistOpfDerData> busDers = new ArrayList<DistOpfDerData>();
+		for (DistOpfDerData der : ders) {
+			if (der.getBusId().equals(busId)) {
+				busDers.add(der);
+			}
+		}
+		return Collections.unmodifiableList(busDers);
 	}
 
 	public List<DistOpfBranchData> getChildren(String busId) {

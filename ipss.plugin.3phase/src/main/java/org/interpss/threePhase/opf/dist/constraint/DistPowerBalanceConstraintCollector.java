@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.interpss.threePhase.opf.dist.model.DistOpfBranchData;
 import org.interpss.threePhase.opf.dist.model.DistOpfBusData;
+import org.interpss.threePhase.opf.dist.model.DistOpfDerData;
 import org.interpss.threePhase.opf.dist.model.DistOpfModelData;
 import org.interpss.threePhase.opf.dist.model.DistOpfVariableIndex;
 
@@ -36,6 +37,12 @@ public class DistPowerBalanceConstraintCollector extends BaseDistOpfConstraintCo
 					if (child.getPhases().contains(phase)) {
 						columns.add(variableIndex.branchP(child.getId(), phase));
 						values.add(-1.0);
+					}
+				}
+				for (DistOpfDerData der : modelData.getDers(bus.getId())) {
+					if (der.getPhases().contains(phase)) {
+						columns.add(variableIndex.derP(der.getId(), phase));
+						values.add(1.0);
 					}
 				}
 				addEquality("PBalance@" + bus.getId() + "." + phase,

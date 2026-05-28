@@ -17,6 +17,8 @@ public class DistOpfResult {
 	private final Map<String, Double> busVoltageSquared = new LinkedHashMap<String, Double>();
 	private final Map<String, Double> branchActivePower = new LinkedHashMap<String, Double>();
 	private final Map<String, Double> branchReactivePower = new LinkedHashMap<String, Double>();
+	private final Map<String, Double> derActivePower = new LinkedHashMap<String, Double>();
+	private final Map<String, Double> derReactivePower = new LinkedHashMap<String, Double>();
 
 	public DistOpfResult(DistOpfStatus status, double objectiveValue, double maxConstraintResidual) {
 		this.status = status;
@@ -64,6 +66,16 @@ public class DistOpfResult {
 		return this;
 	}
 
+	public DistOpfResult putDerActivePower(String derId, String phase, double value) {
+		this.derActivePower.put(key(derId, phase), value);
+		return this;
+	}
+
+	public DistOpfResult putDerReactivePower(String derId, String phase, double value) {
+		this.derReactivePower.put(key(derId, phase), value);
+		return this;
+	}
+
 	public Double getBusVoltageSquared(String busId, String phase) {
 		return this.busVoltageSquared.get(key(busId, phase));
 	}
@@ -76,6 +88,14 @@ public class DistOpfResult {
 		return this.branchReactivePower.get(key(branchId, phase));
 	}
 
+	public Double getDerActivePower(String derId, String phase) {
+		return this.derActivePower.get(key(derId, phase));
+	}
+
+	public Double getDerReactivePower(String derId, String phase) {
+		return this.derReactivePower.get(key(derId, phase));
+	}
+
 	public Map<String, Double> getBusVoltageSquared() {
 		return Collections.unmodifiableMap(busVoltageSquared);
 	}
@@ -86,6 +106,14 @@ public class DistOpfResult {
 
 	public Map<String, Double> getBranchReactivePower() {
 		return Collections.unmodifiableMap(branchReactivePower);
+	}
+
+	public Map<String, Double> getDerActivePower() {
+		return Collections.unmodifiableMap(derActivePower);
+	}
+
+	public Map<String, Double> getDerReactivePower() {
+		return Collections.unmodifiableMap(derReactivePower);
 	}
 
 	public void applySetpointsToNetwork(DStabNetwork3Phase net) {
