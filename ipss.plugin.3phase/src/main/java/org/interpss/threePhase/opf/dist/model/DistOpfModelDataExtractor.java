@@ -17,6 +17,7 @@ import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 
 import com.interpss.core.acsc.PhaseCode;
@@ -62,8 +63,21 @@ public class DistOpfModelDataExtractor {
 	}
 
 	private static Complex3x1 safeLoad(DStab3PBus bus) {
-		Complex3x1 load = bus.get3PhaseTotalLoad();
-		return load == null ? new Complex3x1() : load;
+		try {
+			Complex3x1 load = bus.get3PhaseTotalLoad();
+			if (load != null) {
+				return load;
+			}
+		} catch (NullPointerException e) {
+			// Some OpenDSS parser paths populate loads before initializing Vabc.
+		}
+		Complex3x1 load = new Complex3x1();
+		for (DStab3PLoad threePhaseLoad : bus.getThreePhaseLoadList()) {
+			if (threePhaseLoad.getInit3PhaseLoad() != null) {
+				load = load.add(threePhaseLoad.getInit3PhaseLoad());
+			}
+		}
+		return load;
 	}
 
 	private static String branchId(DStab3PBranch branch) {
