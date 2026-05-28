@@ -9,6 +9,8 @@ import org.interpss.threePhase.opf.dist.constraint.DistReactivePowerBalanceConst
 import org.interpss.threePhase.opf.dist.constraint.DistSwingVoltageConstraintCollector;
 import org.interpss.threePhase.opf.dist.constraint.DistVoltageDropConstraintCollector;
 import org.interpss.threePhase.opf.dist.constraint.DistVoltageLimitConstraintCollector;
+import org.interpss.threePhase.opf.dist.objective.CurtailmentMinObjectiveCollector;
+import org.interpss.threePhase.opf.dist.objective.GenMaxObjectiveCollector;
 
 import com.interpss.core.acsc.PhaseCode;
 
@@ -57,17 +59,9 @@ public class LinDistFlowModelBuilder {
 			DistOpfControlMode controlMode, DistOpfObjective objective) {
 		double[] objectiveVector = new double[variableIndex.size()];
 		if (objective == DistOpfObjective.CURTAILMENT_MIN && controlsP(controlMode)) {
-			for (DistOpfDerData der : modelData.getDers()) {
-				for (PhaseCode phase : der.getPhases()) {
-					objectiveVector[variableIndex.curtailment(der.getId(), phase)] = 1.0;
-				}
-			}
+			new CurtailmentMinObjectiveCollector(modelData, variableIndex, objectiveVector).collectObjective();
 		} else if (objective == DistOpfObjective.GEN_MAX) {
-			for (DistOpfDerData der : modelData.getDers()) {
-				for (PhaseCode phase : der.getPhases()) {
-					objectiveVector[variableIndex.derP(der.getId(), phase)] = -1.0;
-				}
-			}
+			new GenMaxObjectiveCollector(modelData, variableIndex, objectiveVector).collectObjective();
 		}
 		return objectiveVector;
 	}
