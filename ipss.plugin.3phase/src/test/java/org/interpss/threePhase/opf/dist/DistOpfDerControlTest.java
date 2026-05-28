@@ -1,6 +1,7 @@
 package org.interpss.threePhase.opf.dist;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
@@ -58,6 +59,8 @@ public class DistOpfDerControlTest {
 		assertEquals(0.06, result.getBranchActivePower("source->load(0)", "A"), 1.0e-7);
 		assertEquals(0.06, result.getBranchActivePower("source->load(0)", "B"), 1.0e-7);
 		assertEquals(0.06, result.getBranchActivePower("source->load(0)", "C"), 1.0e-7);
+		assertTrue(result.getBindingConstraints().stream()
+				.anyMatch(c -> c.contains("Thermal@source->load(0).A.P@upper")));
 	}
 
 	@Test
@@ -65,6 +68,8 @@ public class DistOpfDerControlTest {
 		DistOpfResult result = ThreePhaseObjectFactory.createDistOpfAlgorithm(createTwoBusFeeder(0.09)).solve();
 
 		assertEquals(DistOpfStatus.INFEASIBLE, result.getStatus());
+		assertFalse(result.getDiagnostics().isEmpty());
+		assertTrue(result.getDiagnostics().stream().anyMatch(d -> d.contains("INFEASIBLE")));
 	}
 
 	@Test
