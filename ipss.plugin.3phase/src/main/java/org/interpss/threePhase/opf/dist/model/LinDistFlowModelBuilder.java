@@ -58,7 +58,8 @@ public class LinDistFlowModelBuilder {
 
 		DistOpfModel model = new DistOpfModel(modelData, variableIndex);
 		new DistPowerBalanceConstraintCollector(modelData, variableIndex, model.getMutableConstraints()).collectConstraint();
-		new DistReactivePowerBalanceConstraintCollector(modelData, variableIndex, model.getMutableConstraints()).collectConstraint();
+		new DistReactivePowerBalanceConstraintCollector(modelData, variableIndex, model.getMutableConstraints(), options)
+				.collectConstraint();
 		new DistVoltageDropConstraintCollector(modelData, variableIndex, model.getMutableConstraints()).collectConstraint();
 		new DistSwingVoltageConstraintCollector(modelData, variableIndex, model.getMutableConstraints()).collectConstraint();
 		new DistVoltageLimitConstraintCollector(modelData, variableIndex, model.getMutableConstraints(), options).collectConstraint();
