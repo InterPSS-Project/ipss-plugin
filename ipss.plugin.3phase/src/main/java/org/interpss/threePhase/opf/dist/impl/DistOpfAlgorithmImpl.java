@@ -6,8 +6,11 @@ import org.interpss.threePhase.opf.dist.DistOpfControlMode;
 import org.interpss.threePhase.opf.dist.DistOpfObjective;
 import org.interpss.threePhase.opf.dist.DistOpfOptions;
 import org.interpss.threePhase.opf.dist.DistOpfResult;
+import org.interpss.threePhase.opf.dist.DistOpfStatus;
+import org.interpss.threePhase.opf.dist.model.DistOpfModelData;
+import org.interpss.threePhase.opf.dist.model.DistOpfModelDataExtractor;
 import org.interpss.threePhase.opf.dist.model.DistOpfModel;
-import org.interpss.threePhase.opf.dist.model.DistOpfVariableIndex;
+import org.interpss.threePhase.opf.dist.model.LinDistFlowModelBuilder;
 import org.interpss.threePhase.opf.dist.solver.DistOpfSolverResult;
 import org.interpss.threePhase.opf.dist.solver.OjAlgoDistOpfSolver;
 
@@ -42,12 +45,17 @@ public class DistOpfAlgorithmImpl implements DistOpfAlgorithm {
 
 	@Override
 	public DistOpfResult solve() {
-		DistOpfModel model = new DistOpfModel(new DistOpfVariableIndex());
-		DistOpfSolverResult solverResult = new OjAlgoDistOpfSolver().solve(model, options);
-		DistOpfResult result = new DistOpfResult(solverResult.getStatus(),
-				solverResult.getObjectiveValue(), solverResult.getMaxConstraintResidual());
-		result.addWarning("DistOPF model extraction and LinDistFlow collectors are not implemented yet.");
-		return result;
+		try {
+			DistOpfModelData modelData = new DistOpfModelDataExtractor().extract(net);
+			DistOpfModel model = new LinDistFlowModelBuilder().build(modelData, options);
+			DistOpfSolverResult solverResult = new OjAlgoDistOpfSolver().solve(model, options);
+			DistOpfResult result = new DistOpfResult(solverResult.getStatus(),
+					solverResult.getObjectiveValue(), solverResult.getMaxConstraintResidual());
+			result.addWarning("DistOPF ojAlgo solve integration is not implemented yet.");
+			return result;
+		} catch (RuntimeException e) {
+			return new DistOpfResult(DistOpfStatus.ERROR, Double.NaN, Double.NaN).addWarning(e.getMessage());
+		}
 	}
 
 	public DStabNetwork3Phase getNetwork() {
