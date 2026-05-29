@@ -652,8 +652,8 @@ This keeps DistOPF creation consistent with existing InterPSS algorithm factorie
 The first implementation explicitly supports:
 
 - Radial feeders only.
-- Single-period OPF only.
-- LinDistFlow formulation only.
+- Single-period OPF, with sequential multi-period schedules built from repeated single-period solves.
+- LinDistFlow formulation by default, plus optional successive loss-linearized branch-flow iterations.
 - Static distribution network model only.
 - Fixed capacitor injections.
 - Fixed regulator ratios.
@@ -667,11 +667,10 @@ The first implementation explicitly excludes:
 - Meshed distribution networks.
 - Mixed-integer capacitor control.
 - Mixed-integer regulator control.
-- Batteries and schedules.
-- Multi-period optimization.
-- Nonlinear branch-flow OPF.
+- Full simultaneous multi-period optimization.
+- Full nonlinear branch-flow OPF with a nonlinear solver.
 - New OpenDSS import parity work. DistOPF should use the existing `org.interpss.threePhase.dataParser.opendss` parser.
-- Public CIM import parity.
+- New CIM import parity work. DistOPF consumes `DStabNetwork3Phase` from the existing ODM/CIM mapper path.
 
 ## 15. Future Extensions
 
@@ -679,9 +678,8 @@ Future work should build on the same collector/objective/solver framework:
 
 - Mixed-integer capacitor control.
 - Mixed-integer regulator tap control.
-- Battery active/reactive power and state-of-charge constraints.
-- Multi-period schedules.
-- Nonlinear branch-flow OPF.
+- Simultaneous multi-period schedules.
+- Full nonlinear branch-flow OPF.
 - Existing OpenDSS parser integration examples.
 - CSV/CIM import utilities where still needed.
 - OR-Tools solver adapter for larger LP/MIP use cases.
