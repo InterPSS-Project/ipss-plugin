@@ -82,9 +82,13 @@ public class DistOpfModel {
 	}
 
 	public void setBinaryVariable(int index) {
+		setIntegerVariableBounds(index, 0.0, 1.0);
+	}
+
+	public void setIntegerVariableBounds(int index, double lower, double upper) {
 		ensureVariableMetadata();
-		lowerBounds[index] = 0.0;
-		upperBounds[index] = 1.0;
+		lowerBounds[index] = lower;
+		upperBounds[index] = upper;
 		integerVariables[index] = true;
 	}
 

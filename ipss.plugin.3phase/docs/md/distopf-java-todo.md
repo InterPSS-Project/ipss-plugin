@@ -196,7 +196,7 @@ This checklist tracks implementation of Java-native DistOPF for InterPSS using t
 ## Milestone 11: Future Work
 
 - [x] Add mixed-integer capacitor control for user-supplied switched capacitor model data.
-- [ ] Add mixed-integer regulator tap control.
+- [x] Add mixed-integer regulator tap control for user-supplied linearized tap model data.
 - [x] Add battery P/Q controls.
 - [x] Add single-period battery state-of-charge constraints.
 - [ ] Add multi-period schedules.
