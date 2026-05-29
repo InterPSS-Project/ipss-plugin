@@ -3,6 +3,7 @@ package org.interpss.threePhase.opf.dist.model;
 import org.interpss.threePhase.opf.dist.DistOpfControlMode;
 import org.interpss.threePhase.opf.dist.DistOpfObjective;
 import org.interpss.threePhase.opf.dist.DistOpfOptions;
+import org.interpss.threePhase.opf.dist.constraint.DistBatteryStateOfChargeConstraintCollector;
 import org.interpss.threePhase.opf.dist.constraint.DistBranchThermalLimitConstraintCollector;
 import org.interpss.threePhase.opf.dist.constraint.DistDerLimitConstraintCollector;
 import org.interpss.threePhase.opf.dist.constraint.DistInverterCapabilityConstraintCollector;
@@ -66,6 +67,8 @@ public class LinDistFlowModelBuilder {
 		new DistSwingVoltageConstraintCollector(modelData, variableIndex, model.getMutableConstraints()).collectConstraint();
 		new DistVoltageLimitConstraintCollector(modelData, variableIndex, model.getMutableConstraints(), options).collectConstraint();
 		new DistDerLimitConstraintCollector(modelData, variableIndex, model.getMutableConstraints(), controlMode).collectConstraint();
+		new DistBatteryStateOfChargeConstraintCollector(modelData, variableIndex, model.getMutableConstraints(), options)
+				.collectConstraint();
 		new DistInverterCapabilityConstraintCollector(modelData, variableIndex, model.getMutableConstraints())
 				.collectConstraint();
 		new DistBranchThermalLimitConstraintCollector(modelData, variableIndex, model.getMutableConstraints(), options)
