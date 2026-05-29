@@ -653,7 +653,7 @@ The first implementation explicitly supports:
 
 - Radial feeders only.
 - Single-period OPF, with sequential multi-period schedules built from repeated single-period solves.
-- Angle-coupled LinDistFlow by default, direct squared-voltage LinDistFlow as an explicit alternate voltage model, and optional successive loss-linearized branch-flow iterations.
+- Angle-coupled LinDistFlow by default, Classic LinDistFlow as an explicit alternate voltage model, and optional successive loss-linearized branch-flow iterations.
 - Static distribution network model only.
 - Fixed capacitor injections.
 - Fixed regulator ratios.
