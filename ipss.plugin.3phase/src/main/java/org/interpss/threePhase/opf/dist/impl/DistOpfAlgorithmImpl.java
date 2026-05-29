@@ -10,6 +10,7 @@ import org.interpss.threePhase.opf.dist.DistOpfSolverType;
 import org.interpss.threePhase.opf.dist.DistOpfStatus;
 import org.interpss.threePhase.opf.dist.model.DistOpfBranchData;
 import org.interpss.threePhase.opf.dist.model.DistOpfBusData;
+import org.interpss.threePhase.opf.dist.model.DistOpfCapacitorData;
 import org.interpss.threePhase.opf.dist.model.DistOpfDerData;
 import org.interpss.threePhase.opf.dist.model.DistOpfModelData;
 import org.interpss.threePhase.opf.dist.model.DistOpfModelDataExtractor;
@@ -102,6 +103,12 @@ public class DistOpfAlgorithmImpl implements DistOpfAlgorithm {
 						x[model.getVariableIndex().derP(der.getId(), phase)]);
 				result.putDerReactivePower(der.getId(), phase.name(),
 						x[model.getVariableIndex().derQ(der.getId(), phase)]);
+			}
+		}
+		for (DistOpfCapacitorData capacitor : modelData.getCapacitors()) {
+			for (PhaseCode phase : capacitor.getPhases()) {
+				result.putCapacitorStatus(capacitor.getId(), phase.name(),
+						x[model.getVariableIndex().capacitorStatus(capacitor.getId(), phase)]);
 			}
 		}
 	}
