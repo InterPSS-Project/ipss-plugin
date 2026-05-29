@@ -31,7 +31,8 @@ public class DistOpfCsvModelDataImporter {
 			List<DistOpfBusData> buses = buses(directory.resolve("bus_data.csv"), capacitors, includeVoltageLimits);
 			List<DistOpfDerData> ders = ders(directory.resolve("gen_data.csv"));
 			Map<String, Map<PhaseCode, Double>> regulatorRatios = regulatorRatios(directory.resolve("reg_data.csv"));
-			List<DistOpfBranchData> branches = branches(directory.resolve("branch_data.csv"), regulatorRatios);
+			List<DistOpfBranchData> branches = branches(directory.resolve("branch_data.csv"), regulatorRatios,
+					regulatorRatios.keySet());
 			String swingBusId = swingBusId(buses);
 			Map<String, List<DistOpfBranchData>> childrenByBusId =
 					new LinkedHashMap<String, List<DistOpfBranchData>>();
@@ -56,16 +57,19 @@ public class DistOpfCsvModelDataImporter {
 			Set<PhaseCode> phases = phases(value(row, "phases"));
 			Complex3x1 load = new Complex3x1(
 					pq(row, "pl_a", "ql_a"), pq(row, "pl_b", "ql_b"), pq(row, "pl_c", "ql_c"));
+			Complex3x1 voltage = new Complex3x1(new Complex(number(row, "v_a", 1.0), 0.0),
+					new Complex(number(row, "v_b", 1.0), 0.0),
+					new Complex(number(row, "v_c", 1.0), 0.0));
 			buses.add(new DistOpfBusData(id, "SWING".equalsIgnoreCase(value(row, "bus_type")),
 					number(row, "v_ln_base", 1.0), phases, load, capacitors.get(id),
-					includeVoltageLimits ? numberObject(row, "v_min") : null,
+					voltage, includeVoltageLimits ? numberObject(row, "v_min") : null,
 					includeVoltageLimits ? numberObject(row, "v_max") : null));
 		}
 		return buses;
 	}
 
 	private static List<DistOpfBranchData> branches(Path path,
-			Map<String, Map<PhaseCode, Double>> regulatorRatios) throws IOException {
+			Map<String, Map<PhaseCode, Double>> regulatorRatios, Set<String> regulatorBranches) throws IOException {
 		List<DistOpfBranchData> branches = new ArrayList<DistOpfBranchData>();
 		for (Map<String, String> row : rows(path)) {
 			String from = value(row, "fb");
@@ -73,7 +77,8 @@ public class DistOpfCsvModelDataImporter {
 			String name = value(row, "name");
 			String id = name == null || name.length() == 0 ? from + "->" + to : name;
 			branches.add(new DistOpfBranchData(id, from, to, phases(value(row, "phases")),
-					zabc(row), null, 1.0, regulatorRatios.get(key(from, to))));
+					zabc(row), null, 1.0, regulatorRatios.get(key(from, to)),
+					regulatorBranches.contains(key(from, to))));
 		}
 		return branches;
 	}
