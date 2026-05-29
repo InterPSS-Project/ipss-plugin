@@ -90,6 +90,10 @@ public class DistOpfBranchData {
 		return ratio == null ? voltageRatio : ratio.doubleValue();
 	}
 
+	public Map<PhaseCode, Double> getVoltageRatioByPhase() {
+		return voltageRatioByPhase;
+	}
+
 	public boolean isFixedVoltageRatioOnly() {
 		return fixedVoltageRatioOnly;
 	}
