@@ -8,14 +8,24 @@ import org.interpss.threePhase.opf.dist.model.DistOpfBusData;
 import org.interpss.threePhase.opf.dist.model.DistOpfDerData;
 import org.interpss.threePhase.opf.dist.model.DistOpfModelData;
 import org.interpss.threePhase.opf.dist.model.DistOpfVariableIndex;
+import org.interpss.threePhase.opf.dist.model.DistBranchFlowLossProfile;
 
 import com.interpss.core.acsc.PhaseCode;
 
 public class DistPowerBalanceConstraintCollector extends BaseDistOpfConstraintCollector {
 
+	private final DistBranchFlowLossProfile lossProfile;
+
 	public DistPowerBalanceConstraintCollector(DistOpfModelData modelData,
 			DistOpfVariableIndex variableIndex, List<org.interpss.plugin.opf.constraint.OpfConstraint> constraints) {
+		this(modelData, variableIndex, constraints, DistBranchFlowLossProfile.none());
+	}
+
+	public DistPowerBalanceConstraintCollector(DistOpfModelData modelData,
+			DistOpfVariableIndex variableIndex, List<org.interpss.plugin.opf.constraint.OpfConstraint> constraints,
+			DistBranchFlowLossProfile lossProfile) {
 		super(modelData, variableIndex, constraints);
+		this.lossProfile = lossProfile;
 	}
 
 	@Override
@@ -45,8 +55,10 @@ public class DistPowerBalanceConstraintCollector extends BaseDistOpfConstraintCo
 						values.add(1.0);
 					}
 				}
+				double demand = DistConstraintUtil.p(bus.getLoad(), phase)
+						+ lossProfile.activePowerLoss(parent, phase);
 				addEquality("PBalance@" + bus.getId() + "." + phase,
-						DistConstraintUtil.p(bus.getLoad(), phase), toIntArray(columns), toDoubleArray(values));
+						demand, toIntArray(columns), toDoubleArray(values));
 			}
 		}
 	}
