@@ -11,6 +11,8 @@ public class DistOpfOptions {
 	private boolean fixedRegulators = true;
 	private int maxPowerFlowIterations = 50;
 	private double powerFlowTolerance = 1.0e-6;
+	private int branchFlowLossIterations = 0;
+	private double branchFlowLossTolerance = 1.0e-7;
 	private double timeStepHours = 1.0;
 	private DistOpfSolverType solverType = DistOpfSolverType.OJALGO;
 	private Double targetSubstationPPu;
@@ -94,6 +96,24 @@ public class DistOpfOptions {
 
 	public DistOpfOptions setPowerFlowTolerance(double powerFlowTolerance) {
 		this.powerFlowTolerance = powerFlowTolerance;
+		return this;
+	}
+
+	public int getBranchFlowLossIterations() {
+		return branchFlowLossIterations;
+	}
+
+	public DistOpfOptions setBranchFlowLossIterations(int branchFlowLossIterations) {
+		this.branchFlowLossIterations = branchFlowLossIterations;
+		return this;
+	}
+
+	public double getBranchFlowLossTolerance() {
+		return branchFlowLossTolerance;
+	}
+
+	public DistOpfOptions setBranchFlowLossTolerance(double branchFlowLossTolerance) {
+		this.branchFlowLossTolerance = branchFlowLossTolerance;
 		return this;
 	}
 
