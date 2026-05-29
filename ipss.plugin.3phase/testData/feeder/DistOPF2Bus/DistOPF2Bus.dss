@@ -1,0 +1,4 @@
+New Circuit.DistOPF2Bus phases=3
+~ bus1=sourcebus basekv=12.47 pu=1.0
+New Line.line1 bus1=sourcebus bus2=loadbus phases=3 r1=0.01 x1=0.04 r0=0.01 x0=0.04 length=1
+New Load.load1 bus1=loadbus phases=3 conn=wye model=1 kV=12.47 kW=300 kvar=60
