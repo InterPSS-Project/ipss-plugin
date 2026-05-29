@@ -6,6 +6,7 @@ import java.util.List;
 import org.interpss.threePhase.opf.dist.DistOpfOptions;
 import org.interpss.threePhase.opf.dist.model.DistOpfBranchData;
 import org.interpss.threePhase.opf.dist.model.DistOpfBusData;
+import org.interpss.threePhase.opf.dist.model.DistOpfCapacitorData;
 import org.interpss.threePhase.opf.dist.model.DistOpfDerData;
 import org.interpss.threePhase.opf.dist.model.DistOpfModelData;
 import org.interpss.threePhase.opf.dist.model.DistOpfVariableIndex;
@@ -53,6 +54,12 @@ public class DistReactivePowerBalanceConstraintCollector extends BaseDistOpfCons
 					if (der.getPhases().contains(phase)) {
 						columns.add(variableIndex.derQ(der.getId(), phase));
 						values.add(1.0);
+					}
+				}
+				for (DistOpfCapacitorData capacitor : modelData.getCapacitors(bus.getId())) {
+					if (capacitor.getPhases().contains(phase)) {
+						columns.add(variableIndex.capacitorStatus(capacitor.getId(), phase));
+						values.add(capacitor.getQ(phase));
 					}
 				}
 				addEquality("QBalance@" + bus.getId() + "." + phase, qDemand(bus, phase),
