@@ -20,6 +20,7 @@ public class DistOpfBranchData {
 	private final Double thermalLimitPu;
 	private final double voltageRatio;
 	private final Map<PhaseCode, Double> voltageRatioByPhase;
+	private final boolean fixedVoltageRatioOnly;
 
 	public DistOpfBranchData(String id, String fromBusId, String toBusId,
 			Set<PhaseCode> phases, Complex3x3 zabc) {
@@ -39,6 +40,12 @@ public class DistOpfBranchData {
 	public DistOpfBranchData(String id, String fromBusId, String toBusId,
 			Set<PhaseCode> phases, Complex3x3 zabc, Double thermalLimitPu,
 			double voltageRatio, Map<PhaseCode, Double> voltageRatioByPhase) {
+		this(id, fromBusId, toBusId, phases, zabc, thermalLimitPu, voltageRatio, voltageRatioByPhase, false);
+	}
+
+	public DistOpfBranchData(String id, String fromBusId, String toBusId,
+			Set<PhaseCode> phases, Complex3x3 zabc, Double thermalLimitPu,
+			double voltageRatio, Map<PhaseCode, Double> voltageRatioByPhase, boolean fixedVoltageRatioOnly) {
 		this.id = id;
 		this.fromBusId = fromBusId;
 		this.toBusId = toBusId;
@@ -47,6 +54,7 @@ public class DistOpfBranchData {
 		this.thermalLimitPu = thermalLimitPu;
 		this.voltageRatio = voltageRatio;
 		this.voltageRatioByPhase = copyVoltageRatios(voltageRatioByPhase);
+		this.fixedVoltageRatioOnly = fixedVoltageRatioOnly;
 	}
 
 	public String getId() {
@@ -80,6 +88,10 @@ public class DistOpfBranchData {
 	public double getVoltageRatio(PhaseCode phase) {
 		Double ratio = voltageRatioByPhase.get(phase);
 		return ratio == null ? voltageRatio : ratio.doubleValue();
+	}
+
+	public boolean isFixedVoltageRatioOnly() {
+		return fixedVoltageRatioOnly;
 	}
 
 	private static Map<PhaseCode, Double> copyVoltageRatios(Map<PhaseCode, Double> source) {
