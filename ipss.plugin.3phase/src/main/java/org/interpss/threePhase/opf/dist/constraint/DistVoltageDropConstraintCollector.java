@@ -26,7 +26,7 @@ public class DistVoltageDropConstraintCollector extends BaseDistOpfConstraintCol
 				List<Integer> columns = new ArrayList<Integer>();
 				List<Double> values = new ArrayList<Double>();
 				columns.add(variableIndex.busV2(branch.getFromBusId(), phase));
-				values.add(branch.getVoltageRatio() * branch.getVoltageRatio());
+				values.add(branch.getVoltageRatio(phase) * branch.getVoltageRatio(phase));
 				columns.add(variableIndex.busV2(branch.getToBusId(), phase));
 				values.add(-1.0);
 				for (PhaseCode coupledPhase : branch.getPhases()) {

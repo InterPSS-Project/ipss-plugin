@@ -2,6 +2,8 @@ package org.interpss.threePhase.opf.dist.model;
 
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.interpss.numeric.datatype.Complex3x3;
@@ -17,6 +19,7 @@ public class DistOpfBranchData {
 	private final Complex3x3 zabc;
 	private final Double thermalLimitPu;
 	private final double voltageRatio;
+	private final Map<PhaseCode, Double> voltageRatioByPhase;
 
 	public DistOpfBranchData(String id, String fromBusId, String toBusId,
 			Set<PhaseCode> phases, Complex3x3 zabc) {
@@ -30,6 +33,12 @@ public class DistOpfBranchData {
 
 	public DistOpfBranchData(String id, String fromBusId, String toBusId,
 			Set<PhaseCode> phases, Complex3x3 zabc, Double thermalLimitPu, double voltageRatio) {
+		this(id, fromBusId, toBusId, phases, zabc, thermalLimitPu, voltageRatio, null);
+	}
+
+	public DistOpfBranchData(String id, String fromBusId, String toBusId,
+			Set<PhaseCode> phases, Complex3x3 zabc, Double thermalLimitPu,
+			double voltageRatio, Map<PhaseCode, Double> voltageRatioByPhase) {
 		this.id = id;
 		this.fromBusId = fromBusId;
 		this.toBusId = toBusId;
@@ -37,6 +46,7 @@ public class DistOpfBranchData {
 		this.zabc = zabc;
 		this.thermalLimitPu = thermalLimitPu;
 		this.voltageRatio = voltageRatio;
+		this.voltageRatioByPhase = copyVoltageRatios(voltageRatioByPhase);
 	}
 
 	public String getId() {
@@ -65,5 +75,18 @@ public class DistOpfBranchData {
 
 	public double getVoltageRatio() {
 		return voltageRatio;
+	}
+
+	public double getVoltageRatio(PhaseCode phase) {
+		Double ratio = voltageRatioByPhase.get(phase);
+		return ratio == null ? voltageRatio : ratio.doubleValue();
+	}
+
+	private static Map<PhaseCode, Double> copyVoltageRatios(Map<PhaseCode, Double> source) {
+		Map<PhaseCode, Double> copy = new EnumMap<PhaseCode, Double>(PhaseCode.class);
+		if (source != null) {
+			copy.putAll(source);
+		}
+		return Collections.unmodifiableMap(copy);
 	}
 }
