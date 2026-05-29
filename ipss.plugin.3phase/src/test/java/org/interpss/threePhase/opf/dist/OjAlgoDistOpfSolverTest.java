@@ -10,10 +10,12 @@ import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
+import org.interpss.threePhase.opf.dist.constraint.DistOpfConstraintFactory;
 import org.interpss.threePhase.opf.dist.model.DistOpfBranchData;
 import org.interpss.threePhase.opf.dist.model.DistOpfModel;
 import org.interpss.threePhase.opf.dist.model.DistOpfModelData;
 import org.interpss.threePhase.opf.dist.model.DistOpfModelDataExtractor;
+import org.interpss.threePhase.opf.dist.model.DistOpfVariableIndex;
 import org.interpss.threePhase.opf.dist.model.LinDistFlowModelBuilder;
 import org.interpss.threePhase.opf.dist.solver.DistOpfSolverResult;
 import org.interpss.threePhase.opf.dist.solver.OjAlgoDistOpfSolver;
@@ -45,6 +47,22 @@ public class OjAlgoDistOpfSolverTest {
 		assertEquals(0.1, result.getPrimalVariables()[pA], 1.0e-7);
 		assertEquals(0.02, result.getPrimalVariables()[qA], 1.0e-7);
 		assertEquals(0.9964, result.getPrimalVariables()[vLoadA], 1.0e-7);
+	}
+
+	@Test
+	public void honorsBinaryVariableBounds() {
+		DistOpfVariableIndex variableIndex = new DistOpfVariableIndex();
+		int binary = variableIndex.targetPPositive("source");
+		DistOpfModel model = new DistOpfModel(variableIndex);
+		model.setLinearObjective(new double[] { 1.0 });
+		model.setBinaryVariable(binary);
+		model.addConstraint(DistOpfConstraintFactory.greaterThan(0, "BinaryLower", 0.2,
+				new int[] { binary }, new double[] { 1.0 }));
+
+		DistOpfSolverResult result = new OjAlgoDistOpfSolver().solve(model, new DistOpfOptions());
+
+		assertEquals(DistOpfStatus.OPTIMAL, result.getStatus());
+		assertEquals(1.0, result.getPrimalVariables()[binary], 1.0e-7);
 	}
 
 	private static DStabNetwork3Phase createTwoBusFeeder() throws InterpssException {
