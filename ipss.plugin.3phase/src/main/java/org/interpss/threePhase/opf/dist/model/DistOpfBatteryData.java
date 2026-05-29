@@ -11,6 +11,10 @@ public class DistOpfBatteryData extends DistOpfDerData {
 
 	private final double chargeLimitPu;
 	private final double dischargeLimitPu;
+	private final double energyCapacityPuHour;
+	private final double initialStateOfChargePu;
+	private final double minStateOfChargePu;
+	private final double maxStateOfChargePu;
 
 	public DistOpfBatteryData(String id, String busId, Set<PhaseCode> phases,
 			double chargeLimitPu, double dischargeLimitPu, Double apparentPowerLimitPu) {
@@ -24,6 +28,24 @@ public class DistOpfBatteryData extends DistOpfDerData {
 		super(id, busId, phases, power, apparentPowerLimitPu);
 		this.chargeLimitPu = Math.abs(chargeLimitPu);
 		this.dischargeLimitPu = Math.abs(dischargeLimitPu);
+		this.energyCapacityPuHour = 0.0;
+		this.initialStateOfChargePu = 0.0;
+		this.minStateOfChargePu = 0.0;
+		this.maxStateOfChargePu = 1.0;
+	}
+
+	public DistOpfBatteryData(String id, String busId, Set<PhaseCode> phases,
+			Complex3x1 power, double chargeLimitPu, double dischargeLimitPu,
+			Double apparentPowerLimitPu, double energyCapacityPuHour,
+			double initialStateOfChargePu, double minStateOfChargePu,
+			double maxStateOfChargePu) {
+		super(id, busId, phases, power, apparentPowerLimitPu);
+		this.chargeLimitPu = Math.abs(chargeLimitPu);
+		this.dischargeLimitPu = Math.abs(dischargeLimitPu);
+		this.energyCapacityPuHour = Math.max(0.0, energyCapacityPuHour);
+		this.initialStateOfChargePu = initialStateOfChargePu;
+		this.minStateOfChargePu = minStateOfChargePu;
+		this.maxStateOfChargePu = maxStateOfChargePu;
 	}
 
 	@Override
@@ -53,6 +75,26 @@ public class DistOpfBatteryData extends DistOpfDerData {
 
 	public double getDischargeLimitPu() {
 		return dischargeLimitPu;
+	}
+
+	public boolean hasStateOfChargeLimits() {
+		return energyCapacityPuHour > 0.0;
+	}
+
+	public double getEnergyCapacityPuHour() {
+		return energyCapacityPuHour;
+	}
+
+	public double getInitialStateOfChargePu() {
+		return initialStateOfChargePu;
+	}
+
+	public double getMinStateOfChargePu() {
+		return minStateOfChargePu;
+	}
+
+	public double getMaxStateOfChargePu() {
+		return maxStateOfChargePu;
 	}
 
 	private Complex phasePower(PhaseCode phase) {

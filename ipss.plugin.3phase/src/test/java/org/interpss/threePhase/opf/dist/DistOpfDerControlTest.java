@@ -236,17 +236,64 @@ public class DistOpfDerControlTest {
 				model.getVariableIndex().branchQ("source->load(0)", PhaseCode.A)], 1.0e-7);
 	}
 
+	@Test
+	public void batteryDischargeIsLimitedByStateOfCharge() throws InterpssException {
+		DistOpfOptions options = new DistOpfOptions().setTargetSubstationPPu(0.25);
+		DistOpfModel model = batteryModelWithSoc(options, 0.04, 0.50, 0.25, 0.75);
+
+		DistOpfSolverResult result = new OjAlgoDistOpfSolver().solve(model, options);
+
+		assertEquals(DistOpfStatus.OPTIMAL, result.getStatus());
+		assertEquals(0.01, result.getPrimalVariables()[
+				model.getVariableIndex().derP("battery-1", PhaseCode.A)], 1.0e-7);
+		assertEquals(0.09, result.getPrimalVariables()[
+				model.getVariableIndex().branchP("source->load(0)", PhaseCode.A)], 1.0e-7);
+	}
+
+	@Test
+	public void batteryChargeIsLimitedByStateOfChargeHeadroom() throws InterpssException {
+		DistOpfOptions options = new DistOpfOptions().setTargetSubstationPPu(0.33);
+		DistOpfModel model = batteryModelWithSoc(options, 0.04, 0.50, 0.25, 0.75);
+
+		DistOpfSolverResult result = new OjAlgoDistOpfSolver().solve(model, options);
+
+		assertEquals(DistOpfStatus.OPTIMAL, result.getStatus());
+		assertEquals(-0.01, result.getPrimalVariables()[
+				model.getVariableIndex().derP("battery-1", PhaseCode.A)], 1.0e-7);
+		assertEquals(0.11, result.getPrimalVariables()[
+				model.getVariableIndex().branchP("source->load(0)", PhaseCode.A)], 1.0e-7);
+	}
+
 	private static DStabNetwork3Phase createTwoBusFeederWithDer() throws InterpssException {
 		return createTwoBusFeederWithDer(0.0);
 	}
 
 	private static DistOpfModel batteryModel(DistOpfOptions options, DistOpfControlMode controlMode,
 			DistOpfObjective objective) throws InterpssException {
+		return batteryModel(options, controlMode, objective, null);
+	}
+
+	private static DistOpfModel batteryModelWithSoc(DistOpfOptions options, double energyCapacityPuHour,
+			double initialSocPu, double minSocPu, double maxSocPu) throws InterpssException {
+		return batteryModel(options, DistOpfControlMode.P, DistOpfObjective.TARGET_SUBSTATION_P,
+				new double[] { energyCapacityPuHour, initialSocPu, minSocPu, maxSocPu });
+	}
+
+	private static DistOpfModel batteryModel(DistOpfOptions options, DistOpfControlMode controlMode,
+			DistOpfObjective objective, double[] socData) throws InterpssException {
 		DistOpfModelData baseData = new DistOpfModelDataExtractor().extract(createTwoBusFeeder(0.0));
 		ArrayList<DistOpfDerData> ders = new ArrayList<DistOpfDerData>(baseData.getDers());
-		ders.add(new DistOpfBatteryData("battery-1", "load",
-				EnumSet.of(PhaseCode.A),
-				0.05, 0.06, Double.valueOf(0.08)));
+		if (socData == null) {
+			ders.add(new DistOpfBatteryData("battery-1", "load",
+					EnumSet.of(PhaseCode.A),
+					0.05, 0.06, Double.valueOf(0.08)));
+		}
+		else {
+			ders.add(new DistOpfBatteryData("battery-1", "load",
+					EnumSet.of(PhaseCode.A), new Complex3x1(),
+					0.05, 0.06, Double.valueOf(0.08),
+					socData[0], socData[1], socData[2], socData[3]));
+		}
 		Map<String, List<DistOpfBranchData>> childrenByBusId =
 				new LinkedHashMap<String, List<DistOpfBranchData>>();
 		childrenByBusId.put("source", baseData.getBranches());
