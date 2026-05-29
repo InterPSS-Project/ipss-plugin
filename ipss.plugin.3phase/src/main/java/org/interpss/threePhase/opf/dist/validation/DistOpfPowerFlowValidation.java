@@ -7,6 +7,7 @@ import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.opf.dist.DistOpfOptions;
 import org.interpss.threePhase.opf.dist.DistOpfResult;
+import org.interpss.threePhase.opf.dist.model.DistOpfModelDataExtractor;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
@@ -26,6 +27,8 @@ public class DistOpfPowerFlowValidation {
 		result.setMaxPowerFlowVoltageDiff(maxVoltageDiff(net, result));
 		result.setMaxPowerFlowVoltageViolation(maxVoltageViolation(net, options));
 		result.setMaxPowerFlowBranchLimitViolation(maxBranchLimitViolation(net));
+		result.setMaxBranchFlowVoltageDropResidual(new DistBranchFlowEquationValidation()
+				.maxVoltageDropResidual(new DistOpfModelDataExtractor().extract(net), result));
 		return result;
 	}
 
