@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.interpss.threePhase.opf.dist.DistOpfOptions;
+import org.interpss.threePhase.opf.dist.DistOpfVoltageModel;
 import org.interpss.threePhase.opf.dist.model.DistOpfBranchData;
 import org.interpss.threePhase.opf.dist.model.DistOpfBusData;
 import org.interpss.threePhase.opf.dist.model.DistOpfCapacitorData;
@@ -71,6 +72,11 @@ public class DistReactivePowerBalanceConstraintCollector extends BaseDistOpfCons
 						values.add(capacitor.getQ(phase));
 					}
 				}
+				if (options.getVoltageModel() == DistOpfVoltageModel.PYTHON_DISTOPF_COMPAT
+						&& DistConstraintUtil.q(bus.getFixedCapacitorQ(), phase) != 0.0) {
+					columns.add(variableIndex.busV2(bus.getId(), phase));
+					values.add(DistConstraintUtil.q(bus.getFixedCapacitorQ(), phase));
+				}
 				addEquality("QBalance@" + bus.getId() + "." + phase,
 						qDemand(bus, phase) + lossProfile.reactivePowerLoss(parent, phase),
 						toIntArray(columns), toDoubleArray(values));
@@ -80,7 +86,8 @@ public class DistReactivePowerBalanceConstraintCollector extends BaseDistOpfCons
 
 	private double qDemand(DistOpfBusData bus, PhaseCode phase) {
 		double demand = DistConstraintUtil.q(bus.getLoad(), phase);
-		if (options.isFixedCapacitors()) {
+		if (options.isFixedCapacitors()
+				&& options.getVoltageModel() != DistOpfVoltageModel.PYTHON_DISTOPF_COMPAT) {
 			demand -= DistConstraintUtil.q(bus.getFixedCapacitorQ(), phase);
 		}
 		return demand;

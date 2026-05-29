@@ -92,9 +92,11 @@ public class LinDistFlowModelBuilder {
 		new DistReactivePowerBalanceConstraintCollector(modelData, variableIndex, model.getMutableConstraints(), options,
 				lossProfile)
 				.collectConstraint();
-		new DistVoltageDropConstraintCollector(modelData, variableIndex, model.getMutableConstraints(), lossProfile)
+		new DistVoltageDropConstraintCollector(modelData, variableIndex, model.getMutableConstraints(), lossProfile,
+				options)
 				.collectConstraint();
-		new DistSwingVoltageConstraintCollector(modelData, variableIndex, model.getMutableConstraints()).collectConstraint();
+		new DistSwingVoltageConstraintCollector(modelData, variableIndex, model.getMutableConstraints(), options)
+				.collectConstraint();
 		new DistVoltageLimitConstraintCollector(modelData, variableIndex, model.getMutableConstraints(), options).collectConstraint();
 		new DistDerLimitConstraintCollector(modelData, variableIndex, model.getMutableConstraints(), controlMode).collectConstraint();
 		new DistBatteryStateOfChargeConstraintCollector(modelData, variableIndex, model.getMutableConstraints(), options)

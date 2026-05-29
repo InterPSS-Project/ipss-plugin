@@ -65,6 +65,73 @@ public class DistOpfPythonReferenceComparisonTest {
 				model.getVariableIndex().branchQ("sub", PhaseCode.A)], 7.0e-3);
 	}
 
+	@Test
+	public void matchesPythonDistopfIeee13CsvVoltagesWithCompatibilityModel() {
+		DistOpfModelData data = new DistOpfCsvModelDataImporter().importModel(
+				Paths.get("src/test/resources/distopf/ieee13"), false);
+		DistOpfOptions options = new DistOpfOptions()
+				.setMinVoltagePu(0.0)
+				.setMaxVoltagePu(2.0)
+				.setVoltageModel(DistOpfVoltageModel.PYTHON_DISTOPF_COMPAT);
+		DistOpfModel model = new LinDistFlowModelBuilder().build(data, options);
+
+		DistOpfSolverResult result = new OjAlgoDistOpfSolver().solve(model, options);
+
+		assertEquals(DistOpfStatus.OPTIMAL, result.getStatus());
+		assertVoltage(result, model, "1", PhaseCode.A, 1.000100);
+		assertVoltage(result, model, "1", PhaseCode.B, 1.000100);
+		assertVoltage(result, model, "1", PhaseCode.C, 1.000100);
+		assertVoltage(result, model, "2", PhaseCode.A, 1.000100);
+		assertVoltage(result, model, "2", PhaseCode.B, 1.000100);
+		assertVoltage(result, model, "2", PhaseCode.C, 1.000100);
+		assertVoltage(result, model, "3", PhaseCode.A, 1.056356);
+		assertVoltage(result, model, "3", PhaseCode.B, 1.037604);
+		assertVoltage(result, model, "3", PhaseCode.C, 1.056356);
+		assertVoltage(result, model, "4", PhaseCode.A, 1.017351);
+		assertVoltage(result, model, "4", PhaseCode.B, 1.026092);
+		assertVoltage(result, model, "4", PhaseCode.C, 1.007218);
+		assertVoltage(result, model, "5", PhaseCode.A, 1.017351);
+		assertVoltage(result, model, "5", PhaseCode.B, 1.026092);
+		assertVoltage(result, model, "5", PhaseCode.C, 1.007218);
+		assertVoltage(result, model, "6", PhaseCode.A, 0.990692);
+		assertVoltage(result, model, "6", PhaseCode.B, 1.037468);
+		assertVoltage(result, model, "6", PhaseCode.C, 0.972220);
+		assertVoltage(result, model, "7", PhaseCode.B, 1.018820);
+		assertVoltage(result, model, "7", PhaseCode.C, 1.007945);
+		assertVoltage(result, model, "8", PhaseCode.B, 1.017097);
+		assertVoltage(result, model, "8", PhaseCode.C, 1.005938);
+		assertVoltage(result, model, "9", PhaseCode.A, 0.990692);
+		assertVoltage(result, model, "9", PhaseCode.B, 1.037468);
+		assertVoltage(result, model, "9", PhaseCode.C, 0.972220);
+		assertVoltage(result, model, "10", PhaseCode.A, 0.984242);
+		assertVoltage(result, model, "10", PhaseCode.B, 1.039756);
+		assertVoltage(result, model, "10", PhaseCode.C, 0.970344);
+		assertVoltage(result, model, "11", PhaseCode.C, 0.968244);
+		assertVoltage(result, model, "12", PhaseCode.A, 0.983307);
+		assertVoltage(result, model, "13", PhaseCode.A, 1.010974);
+		assertVoltage(result, model, "13", PhaseCode.B, 1.030317);
+		assertVoltage(result, model, "13", PhaseCode.C, 0.996214);
+		assertVoltage(result, model, "14", PhaseCode.A, 1.020278);
+		assertVoltage(result, model, "14", PhaseCode.B, 1.028001);
+		assertVoltage(result, model, "14", PhaseCode.C, 1.009794);
+		assertVoltage(result, model, "15", PhaseCode.A, 0.990692);
+		assertVoltage(result, model, "15", PhaseCode.B, 1.037468);
+		assertVoltage(result, model, "15", PhaseCode.C, 0.972220);
+		assertVoltage(result, model, "16", PhaseCode.A, 0.988785);
+		assertVoltage(result, model, "16", PhaseCode.C, 0.970222);
+		assertEquals(1.212062, result.getPrimalVariables()[
+				model.getVariableIndex().branchP("sub", PhaseCode.A)], 2.0e-5);
+		assertEquals(0.527291, result.getPrimalVariables()[
+				model.getVariableIndex().branchQ("sub", PhaseCode.A)], 2.0e-5);
+	}
+
+	private static void assertVoltage(DistOpfSolverResult result, DistOpfModel model,
+			String busId, PhaseCode phase, double expectedMagnitude) {
+		double voltageSquared = result.getPrimalVariables()[model.getVariableIndex().busV2(busId, phase)];
+		assertEquals(expectedMagnitude, Math.sqrt(voltageSquared), 2.0e-6,
+				busId + "." + phase.name());
+	}
+
 	private static DStabNetwork3Phase createTwoBusFeeder() throws InterpssException {
 		DStabNetwork3Phase net = ThreePhaseObjectFactory.create3PhaseDStabNetwork();
 		net.setBaseKva(1000.0);
