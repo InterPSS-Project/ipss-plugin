@@ -191,13 +191,14 @@ public class OpenDSSDataParser {
     		        					  String[] tempAry2 = nextLine.split("\\s+");
 
     		        					  for (String element : tempAry2) {
-    		        						  if(element.contains("basekv=")){
+    		        						  String lowerElement = element.toLowerCase();
+    		        						  if(lowerElement.contains("basekv=")){
     		        							  basekv = Double.valueOf(element.substring(7));
     		        						  }
-    		        						  else if(element.contains("Bus1=")){
-    		        							  sourceBusId = element.substring(5);
+    		        						  else if(lowerElement.contains("bus1=")){
+    		        							  sourceBusId = element.substring(5).toLowerCase();
     		        						  }
-    		        						  else if(element.contains("pu=")){
+    		        						  else if(lowerElement.contains("pu=")){
     		        							  volt_pu = Double.valueOf(element.substring(3));
     		        						  }
     		        					  }
@@ -225,6 +226,21 @@ public class OpenDSSDataParser {
     		        				}
     		        			}
 
+    		        			else if(tempAry[1].contains("Linecode.") ||tempAry[1].contains("linecode.")){
+    		        				List<String> lineCodeLines = new ArrayList<>();
+    		        				lineCodeLines.add(str);
+    		        				nextLine = reader.readLine();
+    		        				lineCnt++;
+    		        				while(nextLine != null && nextLine.trim().startsWith("~")) {
+    		        					lineCodeLines.add(nextLine.trim());
+    		        					nextLine = reader.readLine();
+    		        					lineCnt++;
+    		        				}
+    		        				if(nextLine != null) {
+    		        					useLastLineString = true;
+    		        				}
+    		        				no_error = no_error && this.lineCodeParser.parseLineCodeBlock(lineCodeLines);
+    		        			}
     		        			else if(tempAry[1].contains("Line.") ||tempAry[1].contains("line.")){
     		        				this.lineParser.parseLineData(str);
     		        			}
@@ -256,8 +272,8 @@ public class OpenDSSDataParser {
                                 	}
 
 
-    		        				if(useLastLineString) { // if true, it means all xfr data is in one line
-										this.xfrParser.parseTransformerDataOneLine(str);
+    		        				if(useLastLineString) { // if true, it means all xfr data is in one logical line
+										this.xfrParser.parseTransformerDataOneLine(xfrStrAry[1] == null ? str : str + " " + xfrStrAry[1]);
 									} else { // if true, it means all xfr data is in one line
 										this.xfrParser.parseTransformerDataMultiLines(xfrStrAry);
 									}
@@ -367,13 +383,14 @@ public class OpenDSSDataParser {
     		        					  String[] tempAry2 = nextLine.split("\\s+");
 
     		        					  for (String element : tempAry2) {
-    		        						  if(element.contains("basekv=")){
+    		        						  String lowerElement = element.toLowerCase();
+    		        						  if(lowerElement.contains("basekv=")){
     		        							  basekv = Double.valueOf(element.substring(7));
     		        						  }
-    		        						  else if(element.contains("Bus1=")||element.contains("bus1=")){
-    		        							  sourceBusId = element.substring(4);
+    		        						  else if(lowerElement.contains("bus1=")){
+    		        							  sourceBusId = element.substring(5).toLowerCase();
     		        						  }
-    		        						  else if(element.contains("pu=")){
+    		        						  else if(lowerElement.contains("pu=")){
     		        							  volt_pu = Double.valueOf(element.substring(3));
     		        						  }
     		        					  }
@@ -401,6 +418,21 @@ public class OpenDSSDataParser {
     		        				}
     		        			}
 
+    		        			else if(tempAry[1].contains("Linecode.") ||tempAry[1].contains("linecode.")){
+    		        				List<String> lineCodeLines = new ArrayList<>();
+    		        				lineCodeLines.add(str);
+    		        				nextLine = reader.readLine();
+    		        				lineCnt++;
+    		        				while(nextLine != null && nextLine.trim().startsWith("~")) {
+    		        					lineCodeLines.add(nextLine.trim());
+    		        					nextLine = reader.readLine();
+    		        					lineCnt++;
+    		        				}
+    		        				if(nextLine != null) {
+    		        					useLastLineString = true;
+    		        				}
+    		        				no_error = no_error && this.lineCodeParser.parseLineCodeBlock(lineCodeLines);
+    		        			}
     		        			else if(tempAry[1].contains("Line.") ||tempAry[1].contains("line.")){
     		        				this.lineParser.parseLineData(str);
     		        			}
@@ -433,8 +465,8 @@ public class OpenDSSDataParser {
                                 	}
 
 
-    		        				if(useLastLineString) { // all data in one line
-										this.xfrParser.parseTransformerDataOneLine(str);
+    		        				if(useLastLineString) { // all data in one logical line
+										this.xfrParser.parseTransformerDataOneLine(xfrStrAry[1] == null ? str : str + " " + xfrStrAry[1]);
 									} else { // all data in one line
 										this.xfrParser.parseTransformerDataMultiLines(xfrStrAry);
 									}
@@ -717,7 +749,3 @@ public class OpenDSSDataParser {
 
 
 }
-
-
-
-
