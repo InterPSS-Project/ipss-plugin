@@ -11,6 +11,7 @@ public class DistOpfOptions {
 	private boolean fixedRegulators = true;
 	private int maxPowerFlowIterations = 50;
 	private double powerFlowTolerance = 1.0e-6;
+	private double timeStepHours = 1.0;
 	private Double targetSubstationPPu;
 	private Double targetSubstationQPu;
 
@@ -92,6 +93,15 @@ public class DistOpfOptions {
 
 	public DistOpfOptions setPowerFlowTolerance(double powerFlowTolerance) {
 		this.powerFlowTolerance = powerFlowTolerance;
+		return this;
+	}
+
+	public double getTimeStepHours() {
+		return timeStepHours;
+	}
+
+	public DistOpfOptions setTimeStepHours(double timeStepHours) {
+		this.timeStepHours = timeStepHours;
 		return this;
 	}
 

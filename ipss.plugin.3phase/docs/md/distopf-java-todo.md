@@ -198,7 +198,7 @@ This checklist tracks implementation of Java-native DistOPF for InterPSS using t
 - [ ] Add mixed-integer capacitor control.
 - [ ] Add mixed-integer regulator tap control.
 - [x] Add battery P/Q controls.
-- [ ] Add battery state-of-charge constraints.
+- [x] Add single-period battery state-of-charge constraints.
 - [ ] Add multi-period schedules.
 - [ ] Add nonlinear branch-flow OPF.
 - [ ] Add meshed-network support if required.
