@@ -49,7 +49,7 @@ public class DistVoltageDropConstraintCollector extends BaseDistOpfConstraintCol
 				values.add(branch.getVoltageRatio(phase) * branch.getVoltageRatio(phase));
 				columns.add(variableIndex.busV2(branch.getToBusId(), phase));
 				values.add(-1.0);
-				if (!pythonRegulatorBranch(branch)) {
+				if (!angleCoupledIdealVoltageRatioBranch(branch)) {
 					for (PhaseCode coupledPhase : branch.getPhases()) {
 						Complex z = z(branch.getZabc(), phase, coupledPhase);
 						columns.add(variableIndex.branchP(branch.getId(), coupledPhase));
@@ -71,8 +71,8 @@ public class DistVoltageDropConstraintCollector extends BaseDistOpfConstraintCol
 		}
 	}
 
-	private boolean pythonRegulatorBranch(DistOpfBranchData branch) {
-		if (options.getVoltageModel() != DistOpfVoltageModel.PYTHON_DISTOPF_COMPAT) {
+	private boolean angleCoupledIdealVoltageRatioBranch(DistOpfBranchData branch) {
+		if (options.getVoltageModel() != DistOpfVoltageModel.ANGLE_COUPLED_LINDISTFLOW) {
 			return false;
 		}
 		if (branch.isFixedVoltageRatioOnly()) {
@@ -88,7 +88,7 @@ public class DistVoltageDropConstraintCollector extends BaseDistOpfConstraintCol
 
 	private double pCoefficient(DistOpfBranchData branch, PhaseCode rowPhase,
 			PhaseCode columnPhase, Complex z) {
-		if (options.getVoltageModel() != DistOpfVoltageModel.PYTHON_DISTOPF_COMPAT
+		if (options.getVoltageModel() != DistOpfVoltageModel.ANGLE_COUPLED_LINDISTFLOW
 				|| rowPhase == columnPhase) {
 			return -2.0 * z.getReal();
 		}
@@ -100,7 +100,7 @@ public class DistVoltageDropConstraintCollector extends BaseDistOpfConstraintCol
 
 	private double qCoefficient(DistOpfBranchData branch, PhaseCode rowPhase,
 			PhaseCode columnPhase, Complex z) {
-		if (options.getVoltageModel() != DistOpfVoltageModel.PYTHON_DISTOPF_COMPAT
+		if (options.getVoltageModel() != DistOpfVoltageModel.ANGLE_COUPLED_LINDISTFLOW
 				|| rowPhase == columnPhase) {
 			return -2.0 * z.getImaginary();
 		}

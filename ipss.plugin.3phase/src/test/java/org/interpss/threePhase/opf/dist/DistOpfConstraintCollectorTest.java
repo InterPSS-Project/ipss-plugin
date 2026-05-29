@@ -22,6 +22,7 @@ import org.interpss.threePhase.opf.dist.constraint.DistSubstationTargetConstrain
 import org.interpss.threePhase.opf.dist.constraint.DistSwingVoltageConstraintCollector;
 import org.interpss.threePhase.opf.dist.constraint.DistVoltageDropConstraintCollector;
 import org.interpss.threePhase.opf.dist.constraint.DistVoltageLimitConstraintCollector;
+import org.interpss.threePhase.opf.dist.model.DistBranchFlowLossProfile;
 import org.interpss.threePhase.opf.dist.model.DistOpfBranchData;
 import org.interpss.threePhase.opf.dist.model.DistOpfBusData;
 import org.interpss.threePhase.opf.dist.model.DistOpfDerData;
@@ -38,9 +39,11 @@ public class DistOpfConstraintCollectorTest {
 		DistOpfModelData data = modelData();
 		DistOpfVariableIndex index = variableIndex();
 		List<OpfConstraint> constraints = new ArrayList<OpfConstraint>();
+		DistOpfOptions options = new DistOpfOptions()
+				.setVoltageModel(DistOpfVoltageModel.SQUARED_VOLTAGE);
 
 		new DistPowerBalanceConstraintCollector(data, index, constraints).collectConstraint();
-		new DistReactivePowerBalanceConstraintCollector(data, index, constraints, new DistOpfOptions())
+		new DistReactivePowerBalanceConstraintCollector(data, index, constraints, options)
 				.collectConstraint();
 
 		OpfConstraint p = constraint(constraints, "PBalance@load.A");
@@ -61,9 +64,12 @@ public class DistOpfConstraintCollectorTest {
 		DistOpfModelData data = modelData();
 		DistOpfVariableIndex index = variableIndex();
 		List<OpfConstraint> constraints = new ArrayList<OpfConstraint>();
+		DistOpfOptions options = new DistOpfOptions()
+				.setVoltageModel(DistOpfVoltageModel.SQUARED_VOLTAGE);
 
-		new DistVoltageDropConstraintCollector(data, index, constraints).collectConstraint();
-		new DistSwingVoltageConstraintCollector(data, index, constraints).collectConstraint();
+		new DistVoltageDropConstraintCollector(data, index, constraints,
+				DistBranchFlowLossProfile.none(), options).collectConstraint();
+		new DistSwingVoltageConstraintCollector(data, index, constraints, options).collectConstraint();
 		new DistVoltageLimitConstraintCollector(data, index, constraints,
 				new DistOpfOptions().setMinVoltagePu(0.96).setMaxVoltagePu(1.04)).collectConstraint();
 

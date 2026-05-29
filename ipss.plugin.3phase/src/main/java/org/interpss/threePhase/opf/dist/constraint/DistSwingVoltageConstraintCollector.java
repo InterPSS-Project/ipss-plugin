@@ -33,7 +33,7 @@ public class DistSwingVoltageConstraintCollector extends BaseDistOpfConstraintCo
 				continue;
 			}
 			for (PhaseCode phase : bus.getPhases()) {
-				double voltage = options.getVoltageModel() == DistOpfVoltageModel.PYTHON_DISTOPF_COMPAT
+				double voltage = options.getVoltageModel() == DistOpfVoltageModel.ANGLE_COUPLED_LINDISTFLOW
 						? bus.getInitialVoltageMagnitude(phase)
 						: 1.0;
 				addEquality("SwingV2@" + bus.getId() + "." + phase, voltage * voltage,

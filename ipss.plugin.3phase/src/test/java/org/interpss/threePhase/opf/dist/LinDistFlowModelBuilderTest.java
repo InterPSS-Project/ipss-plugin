@@ -48,7 +48,7 @@ public class LinDistFlowModelBuilderTest {
 
 		assertTrue(model.getConstraints().stream()
 				.filter(c -> c.getDesc().startsWith("VDrop@") && c.getDesc().endsWith(".A"))
-				.anyMatch(c -> containsCoefficient(c, branchPb, -0.004)));
+				.anyMatch(c -> containsCoefficient(c, branchPb, 0.002 - Math.sqrt(3.0) * 0.003)));
 	}
 
 	@Test

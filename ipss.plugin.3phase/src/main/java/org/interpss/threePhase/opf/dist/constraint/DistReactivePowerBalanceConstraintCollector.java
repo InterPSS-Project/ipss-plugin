@@ -72,7 +72,7 @@ public class DistReactivePowerBalanceConstraintCollector extends BaseDistOpfCons
 						values.add(capacitor.getQ(phase));
 					}
 				}
-				if (options.getVoltageModel() == DistOpfVoltageModel.PYTHON_DISTOPF_COMPAT
+				if (options.getVoltageModel() == DistOpfVoltageModel.ANGLE_COUPLED_LINDISTFLOW
 						&& DistConstraintUtil.q(bus.getFixedCapacitorQ(), phase) != 0.0) {
 					columns.add(variableIndex.busV2(bus.getId(), phase));
 					values.add(DistConstraintUtil.q(bus.getFixedCapacitorQ(), phase));
@@ -87,7 +87,7 @@ public class DistReactivePowerBalanceConstraintCollector extends BaseDistOpfCons
 	private double qDemand(DistOpfBusData bus, PhaseCode phase) {
 		double demand = DistConstraintUtil.q(bus.getLoad(), phase);
 		if (options.isFixedCapacitors()
-				&& options.getVoltageModel() != DistOpfVoltageModel.PYTHON_DISTOPF_COMPAT) {
+				&& options.getVoltageModel() != DistOpfVoltageModel.ANGLE_COUPLED_LINDISTFLOW) {
 			demand -= DistConstraintUtil.q(bus.getFixedCapacitorQ(), phase);
 		}
 		return demand;

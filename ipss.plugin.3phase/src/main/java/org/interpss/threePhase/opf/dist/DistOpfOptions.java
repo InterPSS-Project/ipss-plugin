@@ -15,7 +15,7 @@ public class DistOpfOptions {
 	private double branchFlowLossTolerance = 1.0e-7;
 	private double timeStepHours = 1.0;
 	private DistOpfSolverType solverType = DistOpfSolverType.OJALGO;
-	private DistOpfVoltageModel voltageModel = DistOpfVoltageModel.SQUARED_VOLTAGE;
+	private DistOpfVoltageModel voltageModel = DistOpfVoltageModel.ANGLE_COUPLED_LINDISTFLOW;
 	private Double targetSubstationPPu;
 	private Double targetSubstationQPu;
 
