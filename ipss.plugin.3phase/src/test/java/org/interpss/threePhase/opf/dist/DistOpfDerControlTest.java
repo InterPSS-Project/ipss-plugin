@@ -22,6 +22,7 @@ import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.opf.dist.model.DistOpfBatteryData;
 import org.interpss.threePhase.opf.dist.model.DistOpfBranchData;
+import org.interpss.threePhase.opf.dist.model.DistOpfCapacitorData;
 import org.interpss.threePhase.opf.dist.model.DistOpfDerData;
 import org.interpss.threePhase.opf.dist.model.DistOpfModel;
 import org.interpss.threePhase.opf.dist.model.DistOpfModelData;
@@ -117,6 +118,35 @@ public class DistOpfDerControlTest {
 		assertEquals(0.01, result.getDerReactivePower("der-1", "A"), 1.0e-7);
 		assertEquals(0.998, result.getBusVoltageSquared("load", "A"), 1.0e-7);
 		assertEquals(0.01, result.getBranchReactivePower("source->load(0)", "A"), 1.0e-7);
+	}
+
+	@Test
+	public void switchedCapacitorClosesToSatisfyVoltageLimit() throws InterpssException {
+		DistOpfOptions options = new DistOpfOptions().setMinVoltagePu(Math.sqrt(0.997));
+		DistOpfModelData baseData = new DistOpfModelDataExtractor().extract(createTwoBusFeeder(0.0));
+		ArrayList<DistOpfCapacitorData> capacitors = new ArrayList<DistOpfCapacitorData>();
+		Complex capStep = new Complex(0.0, 0.01);
+		capacitors.add(new DistOpfCapacitorData("cap-1", "load",
+				EnumSet.of(PhaseCode.A, PhaseCode.B, PhaseCode.C),
+				new Complex3x1(capStep, capStep, capStep)));
+		DistOpfModelData modelData = new DistOpfModelData(baseData.getBaseMva(),
+				baseData.getSwingBusId(), baseData.getBuses(), baseData.getBranches(),
+				baseData.getDers(), capacitors, childrenByBusId(baseData), parentBranchByBusId(baseData));
+		DistOpfModel model = new LinDistFlowModelBuilder().build(modelData, options);
+
+		DistOpfSolverResult result = new OjAlgoDistOpfSolver().solve(model, options);
+
+		assertEquals(DistOpfStatus.OPTIMAL, result.getStatus());
+		assertEquals(1.0, result.getPrimalVariables()[
+				model.getVariableIndex().capacitorStatus("cap-1", PhaseCode.A)], 1.0e-7);
+		assertEquals(1.0, result.getPrimalVariables()[
+				model.getVariableIndex().capacitorStatus("cap-1", PhaseCode.B)], 1.0e-7);
+		assertEquals(1.0, result.getPrimalVariables()[
+				model.getVariableIndex().capacitorStatus("cap-1", PhaseCode.C)], 1.0e-7);
+		assertEquals(0.01, result.getPrimalVariables()[
+				model.getVariableIndex().branchQ("source->load(0)", PhaseCode.A)], 1.0e-7);
+		assertEquals(0.9972, result.getPrimalVariables()[
+				model.getVariableIndex().busV2("load", PhaseCode.A)], 1.0e-7);
 	}
 
 	@Test
@@ -294,16 +324,24 @@ public class DistOpfDerControlTest {
 					0.05, 0.06, Double.valueOf(0.08),
 					socData[0], socData[1], socData[2], socData[3]));
 		}
+		DistOpfModelData modelData = new DistOpfModelData(baseData.getBaseMva(),
+				baseData.getSwingBusId(), baseData.getBuses(), baseData.getBranches(), ders,
+				childrenByBusId(baseData), parentBranchByBusId(baseData));
+		return new LinDistFlowModelBuilder().build(modelData, options, controlMode, objective);
+	}
+
+	private static Map<String, List<DistOpfBranchData>> childrenByBusId(DistOpfModelData baseData) {
 		Map<String, List<DistOpfBranchData>> childrenByBusId =
 				new LinkedHashMap<String, List<DistOpfBranchData>>();
 		childrenByBusId.put("source", baseData.getBranches());
+		return childrenByBusId;
+	}
+
+	private static Map<String, DistOpfBranchData> parentBranchByBusId(DistOpfModelData baseData) {
 		Map<String, DistOpfBranchData> parentBranchByBusId =
 				new LinkedHashMap<String, DistOpfBranchData>();
 		parentBranchByBusId.put("load", baseData.getBranches().get(0));
-		DistOpfModelData modelData = new DistOpfModelData(baseData.getBaseMva(),
-				baseData.getSwingBusId(), baseData.getBuses(), baseData.getBranches(), ders,
-				childrenByBusId, parentBranchByBusId);
-		return new LinDistFlowModelBuilder().build(modelData, options, controlMode, objective);
+		return parentBranchByBusId;
 	}
 
 	private static DStabNetwork3Phase createTwoBusFeederWithDer(double ratingMva1) throws InterpssException {
