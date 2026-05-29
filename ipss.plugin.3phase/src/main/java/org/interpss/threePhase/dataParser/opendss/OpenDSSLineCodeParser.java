@@ -385,6 +385,12 @@ public class OpenDSSLineCodeParser {
 					}
 					lineConfig.setShuntY3x3Matrix(toImaginary3x3(nphases, cMatrixData));
 				}
+				else if (lowerStr.contains("units=")) {
+					if (lineConfig == null) {
+						throw new Error("line code units are defined before linecode header: " + str);
+					}
+					lineConfig.setLengthUnit(getStringValue(str.split("\\s+"), "units=", ""));
+				}
 			}
 			return true;
 		} catch (Exception e) {
@@ -404,6 +410,16 @@ public class OpenDSSLineCodeParser {
 			String lowerToken = token.toLowerCase();
 			if (lowerToken.startsWith(key)) {
 				return Integer.valueOf(token.substring(token.indexOf("=") + 1));
+			}
+		}
+		return defaultValue;
+	}
+
+	private static String getStringValue(String[] tokens, String key, String defaultValue) {
+		for (String token : tokens) {
+			String lowerToken = token.toLowerCase();
+			if (lowerToken.startsWith(key)) {
+				return token.substring(token.indexOf("=") + 1);
 			}
 		}
 		return defaultValue;
