@@ -205,4 +205,4 @@ This checklist tracks implementation of Java-native DistOPF for InterPSS using t
 - [x] Add additional OpenDSS parser coverage only if DistOPF validation exposes missing feeder features.
 - [ ] Add CIM import parity.
 - [x] Add OR-Tools solver adapter dependency gate.
-- [ ] Add additional solver adapters as needed.
+- [x] Add Apache Commons Math LP solver adapter for continuous DistOPF cases.
