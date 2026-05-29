@@ -14,6 +14,7 @@ public class DistOpfModelData {
 	private final List<DistOpfBranchData> branches;
 	private final List<DistOpfDerData> ders;
 	private final List<DistOpfCapacitorData> capacitors;
+	private final List<DistOpfRegulatorData> regulators;
 	private final Map<String, List<DistOpfBranchData>> childrenByBusId;
 	private final Map<String, DistOpfBranchData> parentBranchByBusId;
 
@@ -38,12 +39,22 @@ public class DistOpfModelData {
 			List<DistOpfCapacitorData> capacitors,
 			Map<String, List<DistOpfBranchData>> childrenByBusId,
 			Map<String, DistOpfBranchData> parentBranchByBusId) {
+		this(baseMva, swingBusId, buses, branches, ders, capacitors,
+				Collections.<DistOpfRegulatorData>emptyList(), childrenByBusId, parentBranchByBusId);
+	}
+
+	public DistOpfModelData(double baseMva, String swingBusId,
+			List<DistOpfBusData> buses, List<DistOpfBranchData> branches, List<DistOpfDerData> ders,
+			List<DistOpfCapacitorData> capacitors, List<DistOpfRegulatorData> regulators,
+			Map<String, List<DistOpfBranchData>> childrenByBusId,
+			Map<String, DistOpfBranchData> parentBranchByBusId) {
 		this.baseMva = baseMva;
 		this.swingBusId = swingBusId;
 		this.buses = Collections.unmodifiableList(new ArrayList<DistOpfBusData>(buses));
 		this.branches = Collections.unmodifiableList(new ArrayList<DistOpfBranchData>(branches));
 		this.ders = Collections.unmodifiableList(new ArrayList<DistOpfDerData>(ders));
 		this.capacitors = Collections.unmodifiableList(new ArrayList<DistOpfCapacitorData>(capacitors));
+		this.regulators = Collections.unmodifiableList(new ArrayList<DistOpfRegulatorData>(regulators));
 		this.childrenByBusId = copyChildren(childrenByBusId);
 		this.parentBranchByBusId = Collections.unmodifiableMap(
 				new LinkedHashMap<String, DistOpfBranchData>(parentBranchByBusId));
@@ -91,6 +102,20 @@ public class DistOpfModelData {
 			}
 		}
 		return Collections.unmodifiableList(busCapacitors);
+	}
+
+	public List<DistOpfRegulatorData> getRegulators() {
+		return regulators;
+	}
+
+	public List<DistOpfRegulatorData> getRegulators(String branchId) {
+		List<DistOpfRegulatorData> branchRegulators = new ArrayList<DistOpfRegulatorData>();
+		for (DistOpfRegulatorData regulator : regulators) {
+			if (regulator.getBranchId().equals(branchId)) {
+				branchRegulators.add(regulator);
+			}
+		}
+		return Collections.unmodifiableList(branchRegulators);
 	}
 
 	public List<DistOpfBranchData> getChildren(String busId) {

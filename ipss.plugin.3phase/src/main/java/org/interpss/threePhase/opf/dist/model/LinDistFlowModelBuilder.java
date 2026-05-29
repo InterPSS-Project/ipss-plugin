@@ -55,6 +55,11 @@ public class LinDistFlowModelBuilder {
 				variableIndex.capacitorStatus(capacitor.getId(), phase);
 			}
 		}
+		for (DistOpfRegulatorData regulator : modelData.getRegulators()) {
+			for (PhaseCode phase : regulator.getPhases()) {
+				variableIndex.regulatorTap(regulator.getId(), phase);
+			}
+		}
 		if (objective == DistOpfObjective.TARGET_SUBSTATION_P && options.getTargetSubstationPPu() != null) {
 			variableIndex.targetPPositive(modelData.getSwingBusId());
 			variableIndex.targetPNegative(modelData.getSwingBusId());
@@ -68,6 +73,12 @@ public class LinDistFlowModelBuilder {
 		for (DistOpfCapacitorData capacitor : modelData.getCapacitors()) {
 			for (PhaseCode phase : capacitor.getPhases()) {
 				model.setBinaryVariable(variableIndex.capacitorStatus(capacitor.getId(), phase));
+			}
+		}
+		for (DistOpfRegulatorData regulator : modelData.getRegulators()) {
+			for (PhaseCode phase : regulator.getPhases()) {
+				model.setIntegerVariableBounds(variableIndex.regulatorTap(regulator.getId(), phase),
+						regulator.getMinTap(), regulator.getMaxTap());
 			}
 		}
 		new DistPowerBalanceConstraintCollector(modelData, variableIndex, model.getMutableConstraints()).collectConstraint();

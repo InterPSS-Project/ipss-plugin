@@ -16,6 +16,7 @@ import org.interpss.threePhase.opf.dist.model.DistOpfModelData;
 import org.interpss.threePhase.opf.dist.model.DistOpfModelDataExtractor;
 import org.interpss.threePhase.opf.dist.model.DistOpfModel;
 import org.interpss.threePhase.opf.dist.model.LinDistFlowModelBuilder;
+import org.interpss.threePhase.opf.dist.model.DistOpfRegulatorData;
 import org.interpss.threePhase.opf.dist.solver.DistOpfSolver;
 import org.interpss.threePhase.opf.dist.solver.DistOpfSolverResult;
 import org.interpss.threePhase.opf.dist.solver.ORToolsDistOpfSolver;
@@ -109,6 +110,12 @@ public class DistOpfAlgorithmImpl implements DistOpfAlgorithm {
 			for (PhaseCode phase : capacitor.getPhases()) {
 				result.putCapacitorStatus(capacitor.getId(), phase.name(),
 						x[model.getVariableIndex().capacitorStatus(capacitor.getId(), phase)]);
+			}
+		}
+		for (DistOpfRegulatorData regulator : modelData.getRegulators()) {
+			for (PhaseCode phase : regulator.getPhases()) {
+				result.putRegulatorTap(regulator.getId(), phase.name(),
+						x[model.getVariableIndex().regulatorTap(regulator.getId(), phase)]);
 			}
 		}
 	}
