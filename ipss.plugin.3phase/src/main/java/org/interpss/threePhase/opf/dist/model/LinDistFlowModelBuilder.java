@@ -29,6 +29,12 @@ public class LinDistFlowModelBuilder {
 
 	public DistOpfModel build(DistOpfModelData modelData, DistOpfOptions options,
 			DistOpfControlMode controlMode, DistOpfObjective objective) {
+		return build(modelData, options, controlMode, objective, DistBranchFlowLossProfile.none());
+	}
+
+	public DistOpfModel build(DistOpfModelData modelData, DistOpfOptions options,
+			DistOpfControlMode controlMode, DistOpfObjective objective,
+			DistBranchFlowLossProfile lossProfile) {
 		DistOpfVariableIndex variableIndex = new DistOpfVariableIndex();
 		for (DistOpfBranchData branch : modelData.getBranches()) {
 			for (PhaseCode phase : branch.getPhases()) {
@@ -81,10 +87,13 @@ public class LinDistFlowModelBuilder {
 						regulator.getMinTap(), regulator.getMaxTap());
 			}
 		}
-		new DistPowerBalanceConstraintCollector(modelData, variableIndex, model.getMutableConstraints()).collectConstraint();
-		new DistReactivePowerBalanceConstraintCollector(modelData, variableIndex, model.getMutableConstraints(), options)
+		new DistPowerBalanceConstraintCollector(modelData, variableIndex, model.getMutableConstraints(), lossProfile)
 				.collectConstraint();
-		new DistVoltageDropConstraintCollector(modelData, variableIndex, model.getMutableConstraints()).collectConstraint();
+		new DistReactivePowerBalanceConstraintCollector(modelData, variableIndex, model.getMutableConstraints(), options,
+				lossProfile)
+				.collectConstraint();
+		new DistVoltageDropConstraintCollector(modelData, variableIndex, model.getMutableConstraints(), lossProfile)
+				.collectConstraint();
 		new DistSwingVoltageConstraintCollector(modelData, variableIndex, model.getMutableConstraints()).collectConstraint();
 		new DistVoltageLimitConstraintCollector(modelData, variableIndex, model.getMutableConstraints(), options).collectConstraint();
 		new DistDerLimitConstraintCollector(modelData, variableIndex, model.getMutableConstraints(), controlMode).collectConstraint();

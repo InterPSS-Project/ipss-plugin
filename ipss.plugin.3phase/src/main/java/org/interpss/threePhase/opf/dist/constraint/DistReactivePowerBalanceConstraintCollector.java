@@ -10,23 +10,32 @@ import org.interpss.threePhase.opf.dist.model.DistOpfCapacitorData;
 import org.interpss.threePhase.opf.dist.model.DistOpfDerData;
 import org.interpss.threePhase.opf.dist.model.DistOpfModelData;
 import org.interpss.threePhase.opf.dist.model.DistOpfVariableIndex;
+import org.interpss.threePhase.opf.dist.model.DistBranchFlowLossProfile;
 
 import com.interpss.core.acsc.PhaseCode;
 
 public class DistReactivePowerBalanceConstraintCollector extends BaseDistOpfConstraintCollector {
 
 	private final DistOpfOptions options;
+	private final DistBranchFlowLossProfile lossProfile;
 
 	public DistReactivePowerBalanceConstraintCollector(DistOpfModelData modelData,
 			DistOpfVariableIndex variableIndex, List<org.interpss.plugin.opf.constraint.OpfConstraint> constraints) {
-		this(modelData, variableIndex, constraints, new DistOpfOptions());
+		this(modelData, variableIndex, constraints, new DistOpfOptions(), DistBranchFlowLossProfile.none());
 	}
 
 	public DistReactivePowerBalanceConstraintCollector(DistOpfModelData modelData,
 			DistOpfVariableIndex variableIndex, List<org.interpss.plugin.opf.constraint.OpfConstraint> constraints,
 			DistOpfOptions options) {
+		this(modelData, variableIndex, constraints, options, DistBranchFlowLossProfile.none());
+	}
+
+	public DistReactivePowerBalanceConstraintCollector(DistOpfModelData modelData,
+			DistOpfVariableIndex variableIndex, List<org.interpss.plugin.opf.constraint.OpfConstraint> constraints,
+			DistOpfOptions options, DistBranchFlowLossProfile lossProfile) {
 		super(modelData, variableIndex, constraints);
 		this.options = options;
+		this.lossProfile = lossProfile;
 	}
 
 	@Override
@@ -62,7 +71,8 @@ public class DistReactivePowerBalanceConstraintCollector extends BaseDistOpfCons
 						values.add(capacitor.getQ(phase));
 					}
 				}
-				addEquality("QBalance@" + bus.getId() + "." + phase, qDemand(bus, phase),
+				addEquality("QBalance@" + bus.getId() + "." + phase,
+						qDemand(bus, phase) + lossProfile.reactivePowerLoss(parent, phase),
 						toIntArray(columns), toDoubleArray(values));
 			}
 		}
