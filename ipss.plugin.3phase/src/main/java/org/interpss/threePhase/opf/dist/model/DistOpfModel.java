@@ -14,6 +14,7 @@ public class DistOpfModel {
 	private double[] linearObjective = new double[0];
 	private double[] lowerBounds = new double[0];
 	private double[] upperBounds = new double[0];
+	private boolean[] integerVariables = new boolean[0];
 
 	public DistOpfModel(DistOpfVariableIndex variableIndex) {
 		this(null, variableIndex);
@@ -70,5 +71,41 @@ public class DistOpfModel {
 
 	public void setUpperBounds(double[] upperBounds) {
 		this.upperBounds = upperBounds;
+	}
+
+	public boolean[] getIntegerVariables() {
+		return integerVariables;
+	}
+
+	public void setIntegerVariables(boolean[] integerVariables) {
+		this.integerVariables = integerVariables;
+	}
+
+	public void setBinaryVariable(int index) {
+		ensureVariableMetadata();
+		lowerBounds[index] = 0.0;
+		upperBounds[index] = 1.0;
+		integerVariables[index] = true;
+	}
+
+	private void ensureVariableMetadata() {
+		int size = getNumberOfVariables();
+		if (lowerBounds.length != size) {
+			lowerBounds = boundedArray(size, Double.NEGATIVE_INFINITY);
+		}
+		if (upperBounds.length != size) {
+			upperBounds = boundedArray(size, Double.POSITIVE_INFINITY);
+		}
+		if (integerVariables.length != size) {
+			integerVariables = new boolean[size];
+		}
+	}
+
+	private static double[] boundedArray(int size, double value) {
+		double[] values = new double[size];
+		for (int i = 0; i < size; i++) {
+			values[i] = value;
+		}
+		return values;
 	}
 }

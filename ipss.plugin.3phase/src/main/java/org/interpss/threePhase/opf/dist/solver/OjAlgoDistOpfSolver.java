@@ -25,10 +25,22 @@ public class OjAlgoDistOpfSolver implements DistOpfSolver {
 		}
 		ExpressionsBasedModel ojModel = new ExpressionsBasedModel();
 		double[] objective = model.getLinearObjective();
+		double[] lowerBounds = model.getLowerBounds();
+		double[] upperBounds = model.getUpperBounds();
+		boolean[] integerVariables = model.getIntegerVariables();
 		for (int i = 0; i < model.getNumberOfVariables(); i++) {
 			Variable variable = ojModel.addVariable("x" + i);
 			if (objective != null && i < objective.length) {
 				variable.weight(objective[i]);
+			}
+			if (lowerBounds != null && i < lowerBounds.length && Double.isFinite(lowerBounds[i])) {
+				variable.lower(lowerBounds[i]);
+			}
+			if (upperBounds != null && i < upperBounds.length && Double.isFinite(upperBounds[i])) {
+				variable.upper(upperBounds[i]);
+			}
+			if (integerVariables != null && i < integerVariables.length && integerVariables[i]) {
+				variable.integer(true);
 			}
 		}
 		for (OpfConstraint constraint : model.getConstraints()) {
