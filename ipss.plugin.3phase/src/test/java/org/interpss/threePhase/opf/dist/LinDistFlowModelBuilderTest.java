@@ -13,6 +13,7 @@ import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.opf.dist.model.DistOpfModel;
 import org.interpss.threePhase.opf.dist.model.DistOpfModelData;
 import org.interpss.threePhase.opf.dist.model.DistOpfModelDataExtractor;
+import org.interpss.threePhase.opf.dist.model.DistBranchFlowLossProfile;
 import org.interpss.threePhase.opf.dist.model.LinDistFlowModelBuilder;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.jupiter.api.Test;
@@ -63,6 +64,21 @@ public class LinDistFlowModelBuilderTest {
 				.anyMatch(c -> containsCoefficient(c, sourceVa, 1.0404)));
 	}
 
+	@Test
+	public void lossProfileAddsFixedBranchFlowLossOffsets() throws InterpssException {
+		DistOpfModelData data = new DistOpfModelDataExtractor().extract(createTwoBusFeeder());
+		String branchId = data.getBranches().get(0).getId();
+		DistBranchFlowLossProfile lossProfile = DistBranchFlowLossProfile.none()
+				.putCurrentSquared(branchId, PhaseCode.A, 0.0104);
+
+		DistOpfModel model = new LinDistFlowModelBuilder().build(data, new DistOpfOptions(),
+				DistOpfControlMode.NONE, DistOpfObjective.CURTAILMENT_MIN, lossProfile);
+
+		assertEquals(0.100104, equalityRhs(model, "PBalance@load.A"), 1.0e-12);
+		assertEquals(0.020416, equalityRhs(model, "QBalance@load.A"), 1.0e-12);
+		assertEquals(-1.768e-5, equalityRhs(model, "VDrop@" + branchId + ".A"), 1.0e-12);
+	}
+
 	private static DStabNetwork3Phase createTwoBusFeeder() throws InterpssException {
 		DStabNetwork3Phase net = ThreePhaseObjectFactory.create3PhaseDStabNetwork();
 		net.setBaseKva(1000.0);
@@ -100,5 +116,13 @@ public class LinDistFlowModelBuilderTest {
 			}
 		}
 		return false;
+	}
+
+	private static double equalityRhs(DistOpfModel model, String description) {
+		return model.getConstraints().stream()
+				.filter(c -> c.getDesc().equals(description))
+				.findFirst()
+				.orElseThrow(() -> new AssertionError("Missing constraint " + description))
+				.getUpperLimit();
 	}
 }

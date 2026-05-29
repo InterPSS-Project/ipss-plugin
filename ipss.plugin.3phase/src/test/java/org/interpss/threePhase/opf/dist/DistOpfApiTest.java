@@ -65,6 +65,25 @@ public class DistOpfApiTest {
 	}
 
 	@Test
+	public void algorithmCanRunLossLinearizedBranchFlowIteration() throws InterpssException {
+		DistOpfResult result = ThreePhaseObjectFactory.createDistOpfAlgorithm(createTwoBusFeeder())
+				.setOptions(new DistOpfOptions().setBranchFlowLossIterations(1))
+				.solve();
+
+		assertEquals(DistOpfStatus.OPTIMAL, result.getStatus());
+		assertEquals(0.100104, result.getBranchActivePower("source->load(0)", "A"), 1.0e-9);
+		assertEquals(0.020416, result.getBranchReactivePower("source->load(0)", "A"), 1.0e-9);
+		assertEquals(0.99638232, result.getBusVoltageSquared("load", "A"), 1.0e-9);
+		assertTrue(result.getDiagnostics().stream()
+				.anyMatch(message -> message.contains("Branch-flow loss iteration 1")));
+	}
+
+	@Test
+	public void zeroBranchFlowLossIterationsKeepsDefaultLinDistFlow() {
+		assertEquals(0, new DistOpfOptions().getBranchFlowLossIterations());
+	}
+
+	@Test
 	public void ojAlgoIsDefaultSolverAndOrToolsCanBeSelectedExplicitly() throws InterpssException {
 		DistOpfOptions defaultOptions = new DistOpfOptions();
 		DistOpfResult defaultResult = ThreePhaseObjectFactory.createDistOpfAlgorithm(createTwoBusFeeder())
