@@ -1,0 +1,18 @@
+! Derived from GRIDAPPSD/distopf src/distopf/cases/dss/test_line/main.dss
+! Imported source snapshot: ce39973
+! Branch lengths are converted from 2000 ft to 0.3787878788 mi because the
+! current InterPSS OpenDSS parser does not perform unit conversion.
+
+New Circuit.test_line phases=3
+~ basekv=4.16 pu=1.000 bus1=1
+
+New Linecode.test nphases=3 BaseFreq=60
+~ rmatrix=(0.3 | 0.1 0.3 | 0.1 0.1 0.3)
+~ xmatrix=(1.0 | 0.5 1.0 | 0.5 0.5 1.0)
+
+New Line.12 Phases=3 Bus1=1.1.2.3 Bus2=2.1.2.3 LineCode=test Length=0.3787878788 units=mi
+New Line.23 Phases=3 Bus1=2.1.2.3 Bus2=3.1.2.3 LineCode=test Length=0.3787878788 units=mi
+
+New Load.3a Bus1=3.1 Phases=1 Conn=Wye Model=1 kV=2.40177 kW=1000 kvar=500
+New Load.3b Bus1=3.2 Phases=1 Conn=Wye Model=1 kV=2.40177 kW=1000 kvar=500
+New Load.3c Bus1=3.3 Phases=1 Conn=Wye Model=1 kV=2.40177 kW=1000 kvar=500
