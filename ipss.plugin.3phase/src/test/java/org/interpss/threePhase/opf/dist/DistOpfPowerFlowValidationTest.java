@@ -10,7 +10,6 @@ import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
-import org.interpss.threePhase.opf.dist.validation.DistOpfPowerFlowValidation;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.jupiter.api.Test;
 
@@ -26,16 +25,22 @@ public class DistOpfPowerFlowValidationTest {
 		DStabNetwork3Phase net = createTwoBusFeeder();
 		DistOpfResult result = ThreePhaseObjectFactory.createDistOpfAlgorithm(net).solve();
 
-		new DistOpfPowerFlowValidation().validate(net, result, new DistOpfOptions());
-
 		assertEquals(Boolean.TRUE, result.getPowerFlowConverged());
 		assertTrue(result.getPowerFlowIterationCount() > 0);
 		assertTrue(result.getMaxPowerFlowVoltageDiff() < 0.01);
+		assertEquals(1.0, result.getPowerFlowBusVoltageMagnitude("source", "A"), 1.0e-12);
+		assertEquals(0.100104, result.getPowerFlowBranchActivePower("source->load(0)", "A"), 1.0e-6);
+		assertEquals(0.02041750301083667,
+				result.getPowerFlowBranchReactivePower("source->load(0)", "A"), 1.0e-12);
+		assertEquals(1.04e-4, result.getMaxPowerFlowBranchActivePowerDiff(), 1.0e-6);
+		assertEquals(4.1750301083667e-4, result.getMaxPowerFlowBranchReactivePowerDiff(), 1.0e-12);
 		assertEquals(0.0, result.getMaxPowerFlowVoltageViolation(), 1.0e-7);
 		assertEquals(0.0, result.getMaxPowerFlowBranchLimitViolation(), 1.0e-7);
 		assertEquals(1.768e-5, result.getMaxBranchFlowVoltageDropResidual(), 1.0e-9);
 		assertEquals(1.04e-4, result.getMaxBranchFlowActivePowerBalanceResidual(), 1.0e-9);
 		assertEquals(4.16e-4, result.getMaxBranchFlowReactivePowerBalanceResidual(), 1.0e-9);
+		assertTrue(result.getDiagnostics().stream()
+				.anyMatch(message -> message.startsWith("AC power-flow validation: converged=true")));
 	}
 
 	private static DStabNetwork3Phase createTwoBusFeeder() throws InterpssException {
