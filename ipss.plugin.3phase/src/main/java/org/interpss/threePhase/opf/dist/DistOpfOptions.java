@@ -12,6 +12,7 @@ public class DistOpfOptions {
 	private int maxPowerFlowIterations = 50;
 	private double powerFlowTolerance = 1.0e-6;
 	private double timeStepHours = 1.0;
+	private DistOpfSolverType solverType = DistOpfSolverType.OJALGO;
 	private Double targetSubstationPPu;
 	private Double targetSubstationQPu;
 
@@ -102,6 +103,15 @@ public class DistOpfOptions {
 
 	public DistOpfOptions setTimeStepHours(double timeStepHours) {
 		this.timeStepHours = timeStepHours;
+		return this;
+	}
+
+	public DistOpfSolverType getSolverType() {
+		return solverType;
+	}
+
+	public DistOpfOptions setSolverType(DistOpfSolverType solverType) {
+		this.solverType = solverType;
 		return this;
 	}
 

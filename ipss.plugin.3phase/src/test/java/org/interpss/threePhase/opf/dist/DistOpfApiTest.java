@@ -65,6 +65,25 @@ public class DistOpfApiTest {
 	}
 
 	@Test
+	public void ojAlgoIsDefaultSolverAndOrToolsCanBeSelectedExplicitly() throws InterpssException {
+		DistOpfOptions defaultOptions = new DistOpfOptions();
+		DistOpfResult defaultResult = ThreePhaseObjectFactory.createDistOpfAlgorithm(createTwoBusFeeder())
+				.setOptions(defaultOptions)
+				.solve();
+
+		assertEquals(DistOpfSolverType.OJALGO, defaultOptions.getSolverType());
+		assertEquals(DistOpfStatus.OPTIMAL, defaultResult.getStatus());
+
+		DistOpfResult orToolsResult = ThreePhaseObjectFactory.createDistOpfAlgorithm(createTwoBusFeeder())
+				.setOptions(new DistOpfOptions().setSolverType(DistOpfSolverType.ORTOOLS))
+				.solve();
+
+		assertEquals(DistOpfStatus.ERROR, orToolsResult.getStatus());
+		assertTrue(orToolsResult.getDiagnostics().stream()
+				.anyMatch(message -> message.contains("OR-Tools Java solver adapter")));
+	}
+
+	@Test
 	public void variableIndexIsDeterministic() {
 		DistOpfVariableIndex index = new DistOpfVariableIndex();
 
