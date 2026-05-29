@@ -27,6 +27,7 @@ public class DistOpfResult {
 	private final Map<String, Double> derActivePower = new LinkedHashMap<String, Double>();
 	private final Map<String, Double> derReactivePower = new LinkedHashMap<String, Double>();
 	private final Map<String, Double> capacitorStatus = new LinkedHashMap<String, Double>();
+	private final Map<String, Double> regulatorTap = new LinkedHashMap<String, Double>();
 	private Boolean powerFlowConverged;
 	private int powerFlowIterationCount = -1;
 	private double maxPowerFlowVoltageDiff = Double.NaN;
@@ -122,6 +123,11 @@ public class DistOpfResult {
 		return this;
 	}
 
+	public DistOpfResult putRegulatorTap(String regulatorId, String phase, double value) {
+		this.regulatorTap.put(key(regulatorId, phase), value);
+		return this;
+	}
+
 	public Double getBusVoltageSquared(String busId, String phase) {
 		return this.busVoltageSquared.get(key(busId, phase));
 	}
@@ -146,6 +152,10 @@ public class DistOpfResult {
 		return this.capacitorStatus.get(key(capacitorId, phase));
 	}
 
+	public Double getRegulatorTap(String regulatorId, String phase) {
+		return this.regulatorTap.get(key(regulatorId, phase));
+	}
+
 	public Map<String, Double> getBusVoltageSquared() {
 		return Collections.unmodifiableMap(busVoltageSquared);
 	}
@@ -168,6 +178,10 @@ public class DistOpfResult {
 
 	public Map<String, Double> getCapacitorStatus() {
 		return Collections.unmodifiableMap(capacitorStatus);
+	}
+
+	public Map<String, Double> getRegulatorTap() {
+		return Collections.unmodifiableMap(regulatorTap);
 	}
 
 	public Boolean getPowerFlowConverged() {
