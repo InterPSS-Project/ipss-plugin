@@ -7,6 +7,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.threePhase.opf.dist.model.DistOpfBranchData;
 import org.interpss.threePhase.opf.dist.model.DistOpfModelData;
+import org.interpss.threePhase.opf.dist.model.DistOpfRegulatorData;
 import org.interpss.threePhase.opf.dist.model.DistOpfVariableIndex;
 
 import com.interpss.core.acsc.PhaseCode;
@@ -34,6 +35,12 @@ public class DistVoltageDropConstraintCollector extends BaseDistOpfConstraintCol
 					values.add(-2.0 * z.getReal());
 					columns.add(variableIndex.branchQ(branch.getId(), coupledPhase));
 					values.add(-2.0 * z.getImaginary());
+				}
+				for (DistOpfRegulatorData regulator : modelData.getRegulators(branch.getId())) {
+					if (regulator.getPhases().contains(phase)) {
+						columns.add(variableIndex.regulatorTap(regulator.getId(), phase));
+						values.add(regulator.getTapStepVoltageSquaredPu());
+					}
 				}
 				addEquality("VDrop@" + branch.getId() + "." + phase, 0.0,
 						toIntArray(columns), toDoubleArray(values));
