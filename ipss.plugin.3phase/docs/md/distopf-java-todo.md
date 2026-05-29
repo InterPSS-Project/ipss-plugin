@@ -179,7 +179,7 @@ This checklist tracks implementation of Java-native DistOPF for InterPSS using t
 - [x] Add infeasible OPF test.
 - [x] Add post-OPF fixed-point PF validation test.
 - [ ] Add comparison fixture for IEEE 13-bus from GRIDAPPSD/distopf if licensing and data layout are acceptable.
-- [ ] Add larger feeder validation after IEEE 13-bus passes.
+- [x] Add larger feeder validation after IEEE 13-bus passes.
 
 ## Milestone 10: Documentation and Examples
 
@@ -202,7 +202,7 @@ This checklist tracks implementation of Java-native DistOPF for InterPSS using t
 - [ ] Add multi-period schedules.
 - [ ] Add nonlinear branch-flow OPF.
 - [ ] Add meshed-network support if required.
-- [ ] Add additional OpenDSS parser coverage only if DistOPF validation exposes missing feeder features.
+- [x] Add additional OpenDSS parser coverage only if DistOPF validation exposes missing feeder features.
 - [ ] Add CIM import parity.
 - [ ] Add OR-Tools solver adapter.
 - [ ] Add additional solver adapters as needed.

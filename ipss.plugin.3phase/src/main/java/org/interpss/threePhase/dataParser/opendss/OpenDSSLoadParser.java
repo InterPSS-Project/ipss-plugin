@@ -7,6 +7,7 @@ import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 import org.interpss.threePhase.basic.dstab.impl.DStab1PLoadImpl;
 import org.interpss.threePhase.basic.dstab.impl.DStab3PLoadImpl;
+import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.abc.LoadConnectionType;
@@ -133,6 +134,9 @@ public class OpenDSSLoadParser {
 			//get the bus object
 			busName =this.dataParser.getBusIdPrefix()+busName;
 			DStab3PBus bus =  this.dataParser.getDistNetwork().getBus(busName);
+			if(bus == null) {
+				bus = ThreePhaseObjectFactory.create3PDStabBus(busName, this.dataParser.getDistNetwork());
+			}
 
 			DStab1PLoad load= null;
 			if(phaseNum==3) {

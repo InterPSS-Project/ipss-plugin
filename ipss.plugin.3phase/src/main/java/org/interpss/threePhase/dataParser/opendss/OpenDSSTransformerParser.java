@@ -6,6 +6,8 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranchCode;
@@ -50,9 +52,9 @@ public class OpenDSSTransformerParser {
 		String fromBusId = "", toBusId = "";
 		String fromConnection="", toConnection = "";
 
-		String defStr = xfrStr[0].trim().toLowerCase();
-		String wdg1Str = xfrStr[1].trim().toLowerCase();
-		String wdg2Str = xfrStr[2].trim().toLowerCase();
+		String defStr = normalizeInlineRpnDivisions(xfrStr[0].trim().toLowerCase());
+		String wdg1Str = normalizeInlineRpnDivisions(xfrStr[1].trim().toLowerCase());
+		String wdg2Str = normalizeInlineRpnDivisions(xfrStr[2].trim().toLowerCase());
 
 		String[] defStrAry  = defStr.split("\\s+");
 		String[] wdg1StrAry = wdg1Str.split("\\s+");
@@ -199,7 +201,7 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 		String referenceXfrName = "";
 		String phase1 = "", phase2 = "",phase3 = "";
 
-		String[] xfrStrAry  = xfrStr.trim().toLowerCase().split("\\s+(?![^\\[]*\\])");
+		String[] xfrStrAry  = normalizeInlineRpnDivisions(xfrStr.trim().toLowerCase()).split("\\s+(?![^\\[]*\\])");
 
 
 		for (String element : xfrStrAry) {
@@ -349,6 +351,12 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 				}
 			}
 		}
+		if(fromConnection.equals("")){
+			fromConnection = "wye";
+		}
+		if(toConnection.equals("")){
+			toConnection = "wye";
+		}
 
 		xfrBranch.setFromTurnRatio(normKV1*1000.0);
 		xfrBranch.setToTurnRatio(normKV2*1000.0);
@@ -427,6 +435,19 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 		boolean no_error = true;
 
 		return no_error;
+	}
+
+	private static String normalizeInlineRpnDivisions(String value) {
+		Pattern pattern = Pattern.compile("\\(([-+0-9.Ee]+)\\s+([-+0-9.Ee]+)\\s+/\\)");
+		Matcher matcher = pattern.matcher(value);
+		StringBuffer buffer = new StringBuffer();
+		while (matcher.find()) {
+			double numerator = Double.valueOf(matcher.group(1)).doubleValue();
+			double denominator = Double.valueOf(matcher.group(2)).doubleValue();
+			matcher.appendReplacement(buffer, Double.toString(numerator / denominator));
+		}
+		matcher.appendTail(buffer);
+		return buffer.toString();
 	}
 
 
