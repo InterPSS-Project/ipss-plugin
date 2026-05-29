@@ -110,9 +110,9 @@ public class DistOpfApiTest {
 				.setOptions(new DistOpfOptions().setSolverType(DistOpfSolverType.ORTOOLS))
 				.solve();
 
-		assertEquals(DistOpfStatus.ERROR, orToolsResult.getStatus());
-		assertTrue(orToolsResult.getDiagnostics().stream()
-				.anyMatch(message -> message.contains("OR-Tools Java solver adapter")));
+		assertEquals(DistOpfStatus.OPTIMAL, orToolsResult.getStatus());
+		assertEquals(defaultResult.getBusVoltageSquared("load", "A"),
+				orToolsResult.getBusVoltageSquared("load", "A"), 1.0e-9);
 	}
 
 	@Test
