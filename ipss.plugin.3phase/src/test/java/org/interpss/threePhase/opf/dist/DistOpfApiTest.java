@@ -22,6 +22,7 @@ import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.acsc.PhaseCode;
+import com.interpss.core.net.OriginalDataFormat;
 import com.interpss.opf.datatype.OpfConstraintType;
 
 public class DistOpfApiTest {
@@ -81,6 +82,17 @@ public class DistOpfApiTest {
 	@Test
 	public void zeroBranchFlowLossIterationsKeepsDefaultLinDistFlow() {
 		assertEquals(0, new DistOpfOptions().getBranchFlowLossIterations());
+	}
+
+	@Test
+	public void algorithmSolvesNetworkImportedFromCimOrOdmMapper() throws InterpssException {
+		DStabNetwork3Phase net = createTwoBusFeeder();
+		net.setOriginalDataFormat(OriginalDataFormat.CIM);
+
+		DistOpfResult result = ThreePhaseObjectFactory.createDistOpfAlgorithm(net).solve();
+
+		assertEquals(DistOpfStatus.OPTIMAL, result.getStatus());
+		assertEquals(0.9964, result.getBusVoltageSquared("load", "A"), 1.0e-7);
 	}
 
 	@Test

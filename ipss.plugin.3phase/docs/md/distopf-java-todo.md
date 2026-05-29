@@ -203,8 +203,8 @@ This checklist tracks implementation of Java-native DistOPF for InterPSS using t
 - [x] Add nonlinear branch-flow OPF.
   - [x] Add branch-flow voltage-drop and power-balance residual evaluators for quadratic loss validation.
   - [x] Add optional successive loss-linearized branch-flow iterations using fixed `r*l`, `x*l`, and voltage-loss offsets from the prior solution.
-- [ ] Add meshed-network support if required.
+- [x] Keep meshed-network support out of v1; radial-only validation and meshed rejection are implemented and tested.
 - [x] Add additional OpenDSS parser coverage only if DistOPF validation exposes missing feeder features.
-- [ ] Add CIM import parity.
+- [x] Add CIM/ODM import parity at the DistOPF boundary by consuming `DStabNetwork3Phase` from existing InterPSS ODM/CIM mappers without a DistOPF-specific import layer.
 - [x] Add OR-Tools solver adapter dependency gate.
 - [x] Add Apache Commons Math LP solver adapter for continuous DistOPF cases.
