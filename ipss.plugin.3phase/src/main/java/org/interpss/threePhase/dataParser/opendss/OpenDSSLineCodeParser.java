@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.List;
 
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.common.IFileReader;
@@ -68,7 +69,7 @@ public class OpenDSSLineCodeParser {
 
 
 	        			// set lineCodeId, nphases and baseFreq
-	        			lineCodeId = code_id.substring(code_id.indexOf(".")+1);
+	        			lineCodeId = code_id.substring(code_id.indexOf(".")+1).toLowerCase();
 
 	        			nphases = Integer.valueOf(nphaseStr.substring(nphaseStr.indexOf("=")+1));
 
@@ -333,6 +334,154 @@ public class OpenDSSLineCodeParser {
 			return false;
 		}
 
+	}
+
+	public boolean parseLineCodeBlock(List<String> lineCodeLines) {
+		LineConfiguration lineConfig = null;
+		int nphases = 0;
+		double[] rMatrixData = new double[6];
+		double[] xMatrixData = new double[6];
+		double[] cMatrixData = new double[6];
+
+		try {
+			for (String rawLine : lineCodeLines) {
+				if (rawLine == null) {
+					continue;
+				}
+				String str = stripInlineComment(rawLine.trim());
+				if (str.equals("") || str.startsWith("!") || str.startsWith("//")) {
+					continue;
+				}
+				if (str.startsWith("~")) {
+					str = str.substring(1).trim();
+				}
+				String lowerStr = str.toLowerCase();
+
+				if (lowerStr.startsWith("new")) {
+					String[] lineData = str.split("\\s+");
+					String codeId = lineData[1];
+					String lineCodeId = codeId.substring(codeId.indexOf(".") + 1).toLowerCase();
+					nphases = getIntValue(lineData, "nphases=", 3);
+
+					lineConfig = new LineConfiguration();
+					lineConfig.setId(lineCodeId);
+					lineConfig.setNphases(nphases);
+					this.dataParser.getLineConfigTable().put(lineCodeId, lineConfig);
+				}
+				else if (lowerStr.contains("rmatrix")) {
+					parseLowerTriangleMatrix(str, rMatrixData);
+				}
+				else if (lowerStr.contains("xmatrix")) {
+					parseLowerTriangleMatrix(str, xMatrixData);
+					if (lineConfig == null) {
+						throw new Error("line code xmatrix is defined before linecode header: " + str);
+					}
+					lineConfig.setZ3x3Matrix(toComplex3x3(nphases, rMatrixData, xMatrixData));
+				}
+				else if (lowerStr.contains("cmatrix")) {
+					parseLowerTriangleMatrix(str, cMatrixData);
+					if (lineConfig == null) {
+						throw new Error("line code cmatrix is defined before linecode header: " + str);
+					}
+					lineConfig.setShuntY3x3Matrix(toImaginary3x3(nphases, cMatrixData));
+				}
+			}
+			return true;
+		} catch (Exception e) {
+			ODMLogger.getLogger().severe(e.toString());
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	private static String stripInlineComment(String value) {
+		int commentIdx = value.indexOf("!");
+		return commentIdx > 0 ? value.substring(0, commentIdx).trim() : value;
+	}
+
+	private static int getIntValue(String[] tokens, String key, int defaultValue) {
+		for (String token : tokens) {
+			String lowerToken = token.toLowerCase();
+			if (lowerToken.startsWith(key)) {
+				return Integer.valueOf(token.substring(token.indexOf("=") + 1));
+			}
+		}
+		return defaultValue;
+	}
+
+	private static void parseLowerTriangleMatrix(String str, double[] matrixData) {
+		int startIdx = str.indexOf("[");
+		int lastIdx = str.indexOf("]");
+		if (startIdx < 0) {
+			startIdx = str.indexOf("(");
+			if (startIdx < 0) {
+				throw new Error("line code format error: " + str);
+			}
+			lastIdx = str.indexOf(")");
+		}
+
+		String dataStr = str.substring(startIdx + 1, lastIdx).trim();
+		int idx = 0;
+		if (dataStr.contains("|")) {
+			String[] sections = dataStr.split("\\|");
+			for (String section : sections) {
+				String[] values = section.trim().split("\\s+");
+				for (String value : values) {
+					if (!value.equals("")) {
+						matrixData[idx++] = Double.valueOf(value);
+					}
+				}
+			}
+		}
+		else {
+			matrixData[0] = Double.valueOf(dataStr);
+		}
+	}
+
+	private static Complex3x3 toComplex3x3(int nphases, double[] rMatrixData, double[] xMatrixData) throws Exception {
+		Complex3x3 zMatrix = new Complex3x3();
+		if (nphases >= 1) {
+			zMatrix.aa = new Complex(rMatrixData[0], xMatrixData[0]);
+		}
+		if (nphases >= 2) {
+			zMatrix.ab = new Complex(rMatrixData[1], xMatrixData[1]);
+			zMatrix.ba = new Complex(rMatrixData[1], xMatrixData[1]);
+			zMatrix.bb = new Complex(rMatrixData[2], xMatrixData[2]);
+		}
+		if (nphases == 3) {
+			zMatrix.ac = new Complex(rMatrixData[3], xMatrixData[3]);
+			zMatrix.ca = new Complex(rMatrixData[3], xMatrixData[3]);
+			zMatrix.bc = new Complex(rMatrixData[4], xMatrixData[4]);
+			zMatrix.cb = new Complex(rMatrixData[4], xMatrixData[4]);
+			zMatrix.cc = new Complex(rMatrixData[5], xMatrixData[5]);
+		}
+		else if (nphases > 3) {
+			throw new Exception("nphases > 3 not supported yet");
+		}
+		return zMatrix;
+	}
+
+	private static Complex3x3 toImaginary3x3(int nphases, double[] cMatrixData) throws Exception {
+		Complex3x3 yMatrix = new Complex3x3();
+		if (nphases >= 1) {
+			yMatrix.aa = new Complex(0.0, cMatrixData[0]);
+		}
+		if (nphases >= 2) {
+			yMatrix.ab = new Complex(0.0, cMatrixData[1]);
+			yMatrix.ba = new Complex(0.0, cMatrixData[1]);
+			yMatrix.bb = new Complex(0.0, cMatrixData[2]);
+		}
+		if (nphases == 3) {
+			yMatrix.ac = new Complex(0.0, cMatrixData[3]);
+			yMatrix.ca = new Complex(0.0, cMatrixData[3]);
+			yMatrix.bc = new Complex(0.0, cMatrixData[4]);
+			yMatrix.cb = new Complex(0.0, cMatrixData[4]);
+			yMatrix.cc = new Complex(0.0, cMatrixData[5]);
+		}
+		else if (nphases > 3) {
+			throw new Exception("nphases > 3 not supported yet");
+		}
+		return yMatrix;
 	}
 
 	public LineConfiguration parseLineCodeString(String linecodeStr) throws Exception{

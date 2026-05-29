@@ -73,7 +73,7 @@ public class OpenDSSLineParser {
 			}
 			else if(lineStrAry[i].contains("linecode=")){
 				lineCodeIdx = i;
-				lineCodeId= lineStrAry[i].substring(9);
+				lineCodeId= lineStrAry[i].substring(9).toLowerCase();
 			}
 			else if(lineStrAry[i].contains("length=")){
 				lineLength = Double.valueOf(lineStrAry[i].substring(7));
@@ -190,6 +190,57 @@ public class OpenDSSLineParser {
 				zabc.ba = new Complex(0.0);
 
 			}
+			else if (fromBusPhases.equals("2.1")){
+				Complex z11 = zabc.aa;
+				Complex z12 = zabc.ab;
+				Complex z21 = zabc.ba;
+				Complex z22 = zabc.bb;
+
+				zabc.aa = z22;
+				zabc.ab = z21;
+				zabc.ba = z12;
+				zabc.bb = z11;
+
+				zabc.ac = new Complex(0.0);
+				zabc.ca = new Complex(0.0);
+				zabc.bc = new Complex(0.0);
+				zabc.cb = new Complex(0.0);
+				zabc.cc = new Complex(0.0);
+			}
+			else if (fromBusPhases.equals("3.1")){
+				Complex z11 = zabc.aa;
+				Complex z12 = zabc.ab;
+				Complex z21 = zabc.ba;
+				Complex z22 = zabc.bb;
+
+				zabc.aa = z22;
+				zabc.ac = z21;
+				zabc.ca = z12;
+				zabc.cc = z11;
+
+				zabc.ab = new Complex(0.0);
+				zabc.ba = new Complex(0.0);
+				zabc.bb = new Complex(0.0);
+				zabc.bc = new Complex(0.0);
+				zabc.cb = new Complex(0.0);
+			}
+			else if (fromBusPhases.equals("3.2")){
+				Complex z11 = zabc.aa;
+				Complex z12 = zabc.ab;
+				Complex z21 = zabc.ba;
+				Complex z22 = zabc.bb;
+
+				zabc.bb = z22;
+				zabc.bc = z21;
+				zabc.cb = z12;
+				zabc.cc = z11;
+
+				zabc.aa = new Complex(0.0);
+				zabc.ab = new Complex(0.0);
+				zabc.ba = new Complex(0.0);
+				zabc.ac = new Complex(0.0);
+				zabc.ca = new Complex(0.0);
+			}
 			else{
 				throw new Error("phase arrangement not support yet : "+fromBusPhases);
 			}
@@ -255,6 +306,9 @@ public class OpenDSSLineParser {
 
 		// need to consider the line length
 		//TODO consistency of the unit types
+		if(lineLength == 0.0 && lineCodeIdx < 0) {
+			lineLength = 1.0;
+		}
 		line.setZabc(zabc.multiply(lineLength));
 
 		if(line.getZabc().absMax()<1.0E-7){

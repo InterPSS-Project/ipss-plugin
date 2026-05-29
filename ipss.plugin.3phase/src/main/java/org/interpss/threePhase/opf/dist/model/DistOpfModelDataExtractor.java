@@ -17,12 +17,14 @@ import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
+import org.interpss.threePhase.basic.dstab.DStab1PLoad;
 import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.basic.dstab.DStab3PGen;
 import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 
+import com.interpss.core.abc.LoadConnectionType;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.acsc.PhaseCode;
 
@@ -61,11 +63,12 @@ public class DistOpfModelDataExtractor {
 			if (!branch.isActive()) {
 				continue;
 			}
-			Complex3x3 zabc = branch.getZabc();
+			Complex3x3 zabc = zabc(branch);
 			branches.add(new DistOpfBranchData(branchId(branch), branch.getFromBus().getId(),
-					branch.getToBus().getId(), phasesFromZabc(zabc), zabc,
+					branch.getToBus().getId(), phasesFromBranch(branch, zabc), zabc,
 					thermalLimitPu(branch, net.getBaseMva()), voltageRatio(branch)));
 		}
+		branches = mergeParallelPhaseBranches(branches);
 
 		Topology topology = validateRadialAndOrient(swingBusId, buses, branches);
 		return new DistOpfModelData(net.getBaseMva(), swingBusId, buses, branches, ders,
@@ -94,21 +97,52 @@ public class DistOpfModelDataExtractor {
 	}
 
 	private static Complex3x1 safeLoad(DStab3PBus bus) {
-		try {
-			Complex3x1 load = bus.get3PhaseTotalLoad();
-			if (load != null) {
-				return load;
-			}
-		} catch (NullPointerException e) {
-			// Some OpenDSS parser paths populate loads before initializing Vabc.
-		}
 		Complex3x1 load = new Complex3x1();
 		for (DStab3PLoad threePhaseLoad : bus.getThreePhaseLoadList()) {
 			if (threePhaseLoad.getInit3PhaseLoad() != null) {
 				load = load.add(threePhaseLoad.getInit3PhaseLoad());
 			}
 		}
+		for (DStab1PLoad singlePhaseLoad : bus.getSinglePhaseLoadList()) {
+			if (singlePhaseLoad.isActive()) {
+				addSinglePhaseLoad(load, singlePhaseLoad);
+			}
+		}
 		return load;
+	}
+
+	private static void addSinglePhaseLoad(Complex3x1 load, DStab1PLoad singlePhaseLoad) {
+		Complex value = singlePhaseLoad.getLoad(1.0);
+		if (value == null) {
+			return;
+		}
+		PhaseCode phase = singlePhaseLoad.getPhaseCode();
+		LoadConnectionType connection = singlePhaseLoad.getLoadConnectionType();
+		if (connection == LoadConnectionType.SINGLE_PHASE_DELTA) {
+			Complex half = value.divide(2.0);
+			if (phase == PhaseCode.AB) {
+				load.a_0 = load.a_0.add(half);
+				load.b_1 = load.b_1.add(half);
+			}
+			else if (phase == PhaseCode.BC) {
+				load.b_1 = load.b_1.add(half);
+				load.c_2 = load.c_2.add(half);
+			}
+			else if (phase == PhaseCode.AC) {
+				load.a_0 = load.a_0.add(half);
+				load.c_2 = load.c_2.add(half);
+			}
+			return;
+		}
+		if (phase == PhaseCode.A) {
+			load.a_0 = load.a_0.add(value);
+		}
+		else if (phase == PhaseCode.B) {
+			load.b_1 = load.b_1.add(value);
+		}
+		else if (phase == PhaseCode.C) {
+			load.c_2 = load.c_2.add(value);
+		}
 	}
 
 	private static boolean isFixedCapacitor(DStab3PLoad load) {
@@ -205,6 +239,19 @@ public class DistOpfModelDataExtractor {
 		return id;
 	}
 
+	private static Set<PhaseCode> phasesFromBranch(DStab3PBranch branch, Complex3x3 zabc) {
+		if (branch.getPhaseCode() == PhaseCode.A) {
+			return EnumSet.of(PhaseCode.A);
+		}
+		if (branch.getPhaseCode() == PhaseCode.B) {
+			return EnumSet.of(PhaseCode.B);
+		}
+		if (branch.getPhaseCode() == PhaseCode.C) {
+			return EnumSet.of(PhaseCode.C);
+		}
+		return phasesFromZabc(zabc);
+	}
+
 	private static Set<PhaseCode> phasesFromZabc(Complex3x3 zabc) {
 		Set<PhaseCode> phases = EnumSet.noneOf(PhaseCode.class);
 		if (nonZero(zabc.aa)) {
@@ -222,6 +269,31 @@ public class DistOpfModelDataExtractor {
 			phases.add(PhaseCode.C);
 		}
 		return phases;
+	}
+
+	private static Complex3x3 zabc(DStab3PBranch branch) {
+		Complex3x3 zabc = branch.getZabc();
+		if (zabc != null) {
+			return zabc;
+		}
+		Complex z = branch.getZ();
+		if (z == null) {
+			z = Complex.ZERO;
+		}
+		Complex3x3 scalarZabc = new Complex3x3();
+		if (branch.getPhaseCode() == PhaseCode.A) {
+			scalarZabc.aa = z;
+		}
+		else if (branch.getPhaseCode() == PhaseCode.B) {
+			scalarZabc.bb = z;
+		}
+		else if (branch.getPhaseCode() == PhaseCode.C) {
+			scalarZabc.cc = z;
+		}
+		else {
+			scalarZabc = Complex3x3.createUnitMatrix().multiply(z);
+		}
+		return scalarZabc;
 	}
 
 	private static Double thermalLimitPu(DStab3PBranch branch, double baseMva) {
@@ -250,6 +322,75 @@ public class DistOpfModelDataExtractor {
 		return value != null && value.abs() > PHASE_TOLERANCE;
 	}
 
+	private static List<DistOpfBranchData> mergeParallelPhaseBranches(List<DistOpfBranchData> branches) {
+		Map<String, List<DistOpfBranchData>> byEndpoints = new LinkedHashMap<String, List<DistOpfBranchData>>();
+		for (DistOpfBranchData branch : branches) {
+			String key = branch.getFromBusId() + "->" + branch.getToBusId();
+			List<DistOpfBranchData> group = byEndpoints.get(key);
+			if (group == null) {
+				group = new ArrayList<DistOpfBranchData>();
+				byEndpoints.put(key, group);
+			}
+			group.add(branch);
+		}
+
+		List<DistOpfBranchData> merged = new ArrayList<DistOpfBranchData>();
+		for (List<DistOpfBranchData> group : byEndpoints.values()) {
+			if (group.size() == 1 || !canMergeParallelPhaseBranches(group)) {
+				merged.addAll(group);
+			}
+			else {
+				merged.add(mergeParallelPhaseBranchGroup(group));
+			}
+		}
+		return merged;
+	}
+
+	private static boolean canMergeParallelPhaseBranches(List<DistOpfBranchData> group) {
+		Set<PhaseCode> phases = EnumSet.noneOf(PhaseCode.class);
+		double ratio = group.get(0).getVoltageRatio();
+		for (DistOpfBranchData branch : group) {
+			if (Math.abs(branch.getVoltageRatio() - ratio) > PHASE_TOLERANCE) {
+				return false;
+			}
+			for (PhaseCode phase : branch.getPhases()) {
+				if (phases.contains(phase)) {
+					return false;
+				}
+				phases.add(phase);
+			}
+		}
+		return true;
+	}
+
+	private static DistOpfBranchData mergeParallelPhaseBranchGroup(List<DistOpfBranchData> group) {
+		DistOpfBranchData first = group.get(0);
+		StringBuilder id = new StringBuilder(first.getId());
+		Set<PhaseCode> phases = EnumSet.noneOf(PhaseCode.class);
+		Complex3x3 zabc = new Complex3x3();
+		Double thermalLimitPu = null;
+		for (DistOpfBranchData branch : group) {
+			if (branch != first) {
+				id.append("+").append(branch.getId());
+			}
+			phases.addAll(branch.getPhases());
+			zabc = zabc.add(branch.getZabc());
+			thermalLimitPu = minLimit(thermalLimitPu, branch.getThermalLimitPu());
+		}
+		return new DistOpfBranchData(id.toString(), first.getFromBusId(), first.getToBusId(),
+				phases, zabc, thermalLimitPu, first.getVoltageRatio());
+	}
+
+	private static Double minLimit(Double current, Double candidate) {
+		if (candidate == null) {
+			return current;
+		}
+		if (current == null || candidate.doubleValue() < current.doubleValue()) {
+			return candidate;
+		}
+		return current;
+	}
+
 	private static Topology validateRadialAndOrient(String swingBusId,
 			List<DistOpfBusData> buses, List<DistOpfBranchData> branches) {
 		Set<String> busIds = new HashSet<String>();
@@ -264,6 +405,7 @@ public class DistOpfModelDataExtractor {
 		}
 
 		Set<String> visited = new HashSet<String>();
+		Set<String> treeBranchIds = new HashSet<String>();
 		Map<String, List<DistOpfBranchData>> childrenByBusId = new LinkedHashMap<String, List<DistOpfBranchData>>();
 		Map<String, DistOpfBranchData> parentBranchByBusId = new LinkedHashMap<String, DistOpfBranchData>();
 		Queue<String> queue = new ArrayDeque<String>();
@@ -282,6 +424,7 @@ public class DistOpfModelDataExtractor {
 				queue.add(nextBusId);
 				addChild(childrenByBusId, busId, branch);
 				parentBranchByBusId.put(nextBusId, branch);
+				treeBranchIds.add(branch.getId());
 				traversedBranches++;
 			}
 		}
@@ -290,9 +433,24 @@ public class DistOpfModelDataExtractor {
 			throw new IllegalArgumentException("DistOPF v1 requires a connected feeder");
 		}
 		if (traversedBranches != branches.size() || branches.size() != buses.size() - 1) {
-			throw new IllegalArgumentException("DistOPF v1 requires a radial feeder");
+			throw new IllegalArgumentException("DistOPF v1 requires a radial feeder: buses="
+					+ buses.size() + ", branches=" + branches.size()
+					+ ", traversedBranches=" + traversedBranches
+					+ ", nonTreeBranches=" + nonTreeBranchIds(branches, treeBranchIds));
 		}
 		return new Topology(childrenByBusId, parentBranchByBusId);
+	}
+
+	private static List<String> nonTreeBranchIds(List<DistOpfBranchData> branches,
+			Set<String> treeBranchIds) {
+		List<String> ids = new ArrayList<String>();
+		for (DistOpfBranchData branch : branches) {
+			if (!treeBranchIds.contains(branch.getId())) {
+				ids.add(branch.getId() + "(" + branch.getFromBusId() + "->"
+						+ branch.getToBusId() + ")");
+			}
+		}
+		return ids;
 	}
 
 	private static void addAdjacent(Map<String, List<DistOpfBranchData>> adjacent,
