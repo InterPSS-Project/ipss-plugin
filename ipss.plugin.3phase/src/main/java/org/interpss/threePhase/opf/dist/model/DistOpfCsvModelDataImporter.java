@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,7 @@ public class DistOpfCsvModelDataImporter {
 			List<DistOpfBranchData> branches = branches(directory.resolve("branch_data.csv"), regulatorRatios,
 					regulatorRatios.keySet());
 			String swingBusId = swingBusId(buses);
+			branches = orientBranches(swingBusId, branches);
 			Map<String, List<DistOpfBranchData>> childrenByBusId =
 					new LinkedHashMap<String, List<DistOpfBranchData>>();
 			Map<String, DistOpfBranchData> parentBranchByBusId =
@@ -72,6 +74,9 @@ public class DistOpfCsvModelDataImporter {
 			Map<String, Map<PhaseCode, Double>> regulatorRatios, Set<String> regulatorBranches) throws IOException {
 		List<DistOpfBranchData> branches = new ArrayList<DistOpfBranchData>();
 		for (Map<String, String> row : rows(path)) {
+			if ("OPEN".equalsIgnoreCase(value(row, "status"))) {
+				continue;
+			}
 			String from = value(row, "fb");
 			String to = value(row, "tb");
 			String name = value(row, "name");
@@ -81,6 +86,50 @@ public class DistOpfCsvModelDataImporter {
 					regulatorBranches.contains(key(from, to))));
 		}
 		return branches;
+	}
+
+	private static List<DistOpfBranchData> orientBranches(String swingBusId, List<DistOpfBranchData> branches) {
+		Map<String, List<DistOpfBranchData>> adjacency = new LinkedHashMap<String, List<DistOpfBranchData>>();
+		for (DistOpfBranchData branch : branches) {
+			addAdjacent(adjacency, branch.getFromBusId(), branch);
+			addAdjacent(adjacency, branch.getToBusId(), branch);
+		}
+		List<DistOpfBranchData> oriented = new ArrayList<DistOpfBranchData>();
+		Set<DistOpfBranchData> used = new HashSet<DistOpfBranchData>();
+		orientChildren(swingBusId, adjacency, used, oriented);
+		if (oriented.size() != branches.size()) {
+			for (DistOpfBranchData branch : branches) {
+				if (!used.contains(branch)) {
+					oriented.add(branch);
+				}
+			}
+		}
+		return oriented;
+	}
+
+	private static void orientChildren(String busId, Map<String, List<DistOpfBranchData>> adjacency,
+			Set<DistOpfBranchData> used, List<DistOpfBranchData> oriented) {
+		List<DistOpfBranchData> branches = adjacency.get(busId);
+		if (branches == null) {
+			return;
+		}
+		for (DistOpfBranchData branch : branches) {
+			if (used.contains(branch)) {
+				continue;
+			}
+			used.add(branch);
+			DistOpfBranchData orientedBranch = branch.getFromBusId().equals(busId)
+					? branch
+					: reverse(branch);
+			oriented.add(orientedBranch);
+			orientChildren(orientedBranch.getToBusId(), adjacency, used, oriented);
+		}
+	}
+
+	private static DistOpfBranchData reverse(DistOpfBranchData branch) {
+		return new DistOpfBranchData(branch.getId(), branch.getToBusId(), branch.getFromBusId(),
+				branch.getPhases(), branch.getZabc(), branch.getThermalLimitPu(), branch.getVoltageRatio(),
+				branch.getVoltageRatioByPhase(), branch.isFixedVoltageRatioOnly());
 	}
 
 	private static List<DistOpfDerData> ders(Path path) throws IOException {
@@ -211,6 +260,16 @@ public class DistOpfCsvModelDataImporter {
 
 	private static String key(String fromBusId, String toBusId) {
 		return fromBusId + "->" + toBusId;
+	}
+
+	private static void addAdjacent(Map<String, List<DistOpfBranchData>> adjacency,
+			String busId, DistOpfBranchData branch) {
+		List<DistOpfBranchData> branches = adjacency.get(busId);
+		if (branches == null) {
+			branches = new ArrayList<DistOpfBranchData>();
+			adjacency.put(busId, branches);
+		}
+		branches.add(branch);
 	}
 
 	private static void addChild(Map<String, List<DistOpfBranchData>> childrenByBusId,
