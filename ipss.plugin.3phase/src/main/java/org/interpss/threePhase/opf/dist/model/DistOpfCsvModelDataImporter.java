@@ -172,12 +172,20 @@ public class DistOpfCsvModelDataImporter {
 		}
 		for (Map<String, String> row : rows(path)) {
 			Map<PhaseCode, Double> phaseRatios = new EnumMap<PhaseCode, Double>(PhaseCode.class);
-			phaseRatios.put(PhaseCode.A, Double.valueOf(number(row, "ratio_a", 1.0)));
-			phaseRatios.put(PhaseCode.B, Double.valueOf(number(row, "ratio_b", 1.0)));
-			phaseRatios.put(PhaseCode.C, Double.valueOf(number(row, "ratio_c", 1.0)));
+			phaseRatios.put(PhaseCode.A, Double.valueOf(regulatorRatio(row, "ratio_a", "tap_a")));
+			phaseRatios.put(PhaseCode.B, Double.valueOf(regulatorRatio(row, "ratio_b", "tap_b")));
+			phaseRatios.put(PhaseCode.C, Double.valueOf(regulatorRatio(row, "ratio_c", "tap_c")));
 			ratios.put(key(value(row, "fb"), value(row, "tb")), phaseRatios);
 		}
 		return ratios;
+	}
+
+	private static double regulatorRatio(Map<String, String> row, String ratioColumn, String tapColumn) {
+		String ratio = value(row, ratioColumn);
+		if (ratio != null && ratio.length() > 0) {
+			return Double.parseDouble(ratio);
+		}
+		return 1.0 + 0.00625 * number(row, tapColumn, 0.0);
 	}
 
 	private static Complex3x3 zabc(Map<String, String> row) {
