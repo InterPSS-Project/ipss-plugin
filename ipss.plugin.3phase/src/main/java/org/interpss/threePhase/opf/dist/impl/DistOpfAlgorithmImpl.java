@@ -16,6 +16,7 @@ import org.interpss.threePhase.opf.dist.model.DistOpfModelDataExtractor;
 import org.interpss.threePhase.opf.dist.model.LinDistFlowModelBuilder;
 import org.interpss.threePhase.opf.dist.solver.DistOpfSolverFactory;
 import org.interpss.threePhase.opf.dist.solver.DistOpfSolverResult;
+import org.interpss.threePhase.opf.dist.validation.DistOpfPowerFlowValidation;
 
 public class DistOpfAlgorithmImpl implements DistOpfAlgorithm {
 
@@ -66,6 +67,9 @@ public class DistOpfAlgorithmImpl implements DistOpfAlgorithm {
 				if (delta <= options.getBranchFlowLossTolerance()) {
 					break;
 				}
+			}
+			if (options.isValidateWithPowerFlow()) {
+				new DistOpfPowerFlowValidation().validate(net, result, options);
 			}
 			return result;
 		} catch (RuntimeException e) {
