@@ -34,6 +34,8 @@ public class DistOpfPowerFlowValidationTest {
 		assertEquals(0.0, result.getMaxPowerFlowVoltageViolation(), 1.0e-7);
 		assertEquals(0.0, result.getMaxPowerFlowBranchLimitViolation(), 1.0e-7);
 		assertEquals(1.768e-5, result.getMaxBranchFlowVoltageDropResidual(), 1.0e-9);
+		assertEquals(1.04e-4, result.getMaxBranchFlowActivePowerBalanceResidual(), 1.0e-9);
+		assertEquals(4.16e-4, result.getMaxBranchFlowReactivePowerBalanceResidual(), 1.0e-9);
 	}
 
 	private static DStabNetwork3Phase createTwoBusFeeder() throws InterpssException {
