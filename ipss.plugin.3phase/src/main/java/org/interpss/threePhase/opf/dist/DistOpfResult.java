@@ -33,6 +33,7 @@ public class DistOpfResult {
 	private double maxPowerFlowVoltageDiff = Double.NaN;
 	private double maxPowerFlowVoltageViolation = Double.NaN;
 	private double maxPowerFlowBranchLimitViolation = Double.NaN;
+	private double maxBranchFlowVoltageDropResidual = Double.NaN;
 
 	public DistOpfResult(DistOpfStatus status, double objectiveValue, double maxConstraintResidual) {
 		this.status = status;
@@ -226,6 +227,15 @@ public class DistOpfResult {
 
 	public DistOpfResult setMaxPowerFlowBranchLimitViolation(double maxPowerFlowBranchLimitViolation) {
 		this.maxPowerFlowBranchLimitViolation = maxPowerFlowBranchLimitViolation;
+		return this;
+	}
+
+	public double getMaxBranchFlowVoltageDropResidual() {
+		return maxBranchFlowVoltageDropResidual;
+	}
+
+	public DistOpfResult setMaxBranchFlowVoltageDropResidual(double maxBranchFlowVoltageDropResidual) {
+		this.maxBranchFlowVoltageDropResidual = maxBranchFlowVoltageDropResidual;
 		return this;
 	}
 
