@@ -54,9 +54,7 @@ public class DistOpfPythonReferenceComparisonTest {
 		assertEquals(DistOpfStatus.OPTIMAL, result.getStatus());
 		assertEquals(16, data.getBuses().size());
 		assertEquals(15, data.getBranches().size());
-		// Python distopf 0.2.0 uses a voltage-magnitude LinDistFlow variant for this CSV case,
-		// while Java InterPSS uses squared-voltage LinDistFlow. Compare topology and source
-		// P/Q directly, and keep a near-source voltage check where the formulations remain close.
+		// Angle-coupled LinDistFlow is the default voltage model.
 		assertEquals(1.037604, Math.sqrt(result.getPrimalVariables()[
 				model.getVariableIndex().busV2("3", PhaseCode.B)]), 7.0e-3);
 		assertEquals(1.212062, result.getPrimalVariables()[
@@ -66,13 +64,13 @@ public class DistOpfPythonReferenceComparisonTest {
 	}
 
 	@Test
-	public void matchesPythonDistopfIeee13CsvVoltagesWithCompatibilityModel() {
+	public void matchesPythonDistopfIeee13CsvVoltagesWithAngleCoupledModel() {
 		DistOpfModelData data = new DistOpfCsvModelDataImporter().importModel(
 				Paths.get("src/test/resources/distopf/ieee13"), false);
 		DistOpfOptions options = new DistOpfOptions()
 				.setMinVoltagePu(0.0)
 				.setMaxVoltagePu(2.0)
-				.setVoltageModel(DistOpfVoltageModel.PYTHON_DISTOPF_COMPAT);
+				.setVoltageModel(DistOpfVoltageModel.ANGLE_COUPLED_LINDISTFLOW);
 		DistOpfModel model = new LinDistFlowModelBuilder().build(data, options);
 
 		DistOpfSolverResult result = new OjAlgoDistOpfSolver().solve(model, options);
