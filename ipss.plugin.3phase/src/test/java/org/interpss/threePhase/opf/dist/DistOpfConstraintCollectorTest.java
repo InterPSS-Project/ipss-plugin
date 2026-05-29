@@ -40,7 +40,7 @@ public class DistOpfConstraintCollectorTest {
 		DistOpfVariableIndex index = variableIndex();
 		List<OpfConstraint> constraints = new ArrayList<OpfConstraint>();
 		DistOpfOptions options = new DistOpfOptions()
-				.setVoltageModel(DistOpfVoltageModel.SQUARED_VOLTAGE);
+				.setVoltageModel(DistOpfVoltageModel.CLASSIC_LINDISTFLOW);
 
 		new DistPowerBalanceConstraintCollector(data, index, constraints).collectConstraint();
 		new DistReactivePowerBalanceConstraintCollector(data, index, constraints, options)
@@ -65,7 +65,7 @@ public class DistOpfConstraintCollectorTest {
 		DistOpfVariableIndex index = variableIndex();
 		List<OpfConstraint> constraints = new ArrayList<OpfConstraint>();
 		DistOpfOptions options = new DistOpfOptions()
-				.setVoltageModel(DistOpfVoltageModel.SQUARED_VOLTAGE);
+				.setVoltageModel(DistOpfVoltageModel.CLASSIC_LINDISTFLOW);
 
 		new DistVoltageDropConstraintCollector(data, index, constraints,
 				DistBranchFlowLossProfile.none(), options).collectConstraint();
