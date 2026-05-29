@@ -61,8 +61,8 @@ public class DistOpfApiTest {
 		DistOpfResult result = ThreePhaseObjectFactory.createDistOpfAlgorithm(net).solve();
 
 		assertEquals(DistOpfStatus.OPTIMAL, result.getStatus());
-		assertEquals(0.01, result.getBranchReactivePower("source->load(0)", "A"), 1.0e-7);
-		assertEquals(0.9972, result.getBusVoltageSquared("load", "A"), 1.0e-7);
+		assertEquals(0.01002802241793, result.getBranchReactivePower("source->load(0)", "A"), 1.0e-12);
+		assertEquals(0.99719775820657, result.getBusVoltageSquared("load", "A"), 1.0e-12);
 	}
 
 	@Test
@@ -103,6 +103,7 @@ public class DistOpfApiTest {
 				.solve();
 
 		assertEquals(DistOpfSolverType.OJALGO, defaultOptions.getSolverType());
+		assertEquals(DistOpfVoltageModel.ANGLE_COUPLED_LINDISTFLOW, defaultOptions.getVoltageModel());
 		assertEquals(DistOpfStatus.OPTIMAL, defaultResult.getStatus());
 
 		DistOpfResult orToolsResult = ThreePhaseObjectFactory.createDistOpfAlgorithm(createTwoBusFeeder())
