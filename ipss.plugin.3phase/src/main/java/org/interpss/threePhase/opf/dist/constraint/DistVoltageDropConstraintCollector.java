@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.math3.complex.Complex;
+import org.interpss.threePhase.opf.dist.DistOpfOptions;
+import org.interpss.threePhase.opf.dist.DistOpfVoltageModel;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.threePhase.opf.dist.model.DistBranchFlowLossProfile;
 import org.interpss.threePhase.opf.dist.model.DistOpfBranchData;
@@ -16,17 +18,25 @@ import com.interpss.core.acsc.PhaseCode;
 public class DistVoltageDropConstraintCollector extends BaseDistOpfConstraintCollector {
 
 	private final DistBranchFlowLossProfile lossProfile;
+	private final DistOpfOptions options;
 
 	public DistVoltageDropConstraintCollector(DistOpfModelData modelData,
 			DistOpfVariableIndex variableIndex, List<org.interpss.plugin.opf.constraint.OpfConstraint> constraints) {
-		this(modelData, variableIndex, constraints, DistBranchFlowLossProfile.none());
+		this(modelData, variableIndex, constraints, DistBranchFlowLossProfile.none(), new DistOpfOptions());
 	}
 
 	public DistVoltageDropConstraintCollector(DistOpfModelData modelData,
 			DistOpfVariableIndex variableIndex, List<org.interpss.plugin.opf.constraint.OpfConstraint> constraints,
 			DistBranchFlowLossProfile lossProfile) {
+		this(modelData, variableIndex, constraints, lossProfile, new DistOpfOptions());
+	}
+
+	public DistVoltageDropConstraintCollector(DistOpfModelData modelData,
+			DistOpfVariableIndex variableIndex, List<org.interpss.plugin.opf.constraint.OpfConstraint> constraints,
+			DistBranchFlowLossProfile lossProfile, DistOpfOptions options) {
 		super(modelData, variableIndex, constraints);
 		this.lossProfile = lossProfile;
+		this.options = options;
 	}
 
 	@Override
@@ -39,12 +49,14 @@ public class DistVoltageDropConstraintCollector extends BaseDistOpfConstraintCol
 				values.add(branch.getVoltageRatio(phase) * branch.getVoltageRatio(phase));
 				columns.add(variableIndex.busV2(branch.getToBusId(), phase));
 				values.add(-1.0);
-				for (PhaseCode coupledPhase : branch.getPhases()) {
-					Complex z = z(branch.getZabc(), phase, coupledPhase);
-					columns.add(variableIndex.branchP(branch.getId(), coupledPhase));
-					values.add(-2.0 * z.getReal());
-					columns.add(variableIndex.branchQ(branch.getId(), coupledPhase));
-					values.add(-2.0 * z.getImaginary());
+				if (!pythonRegulatorBranch(branch)) {
+					for (PhaseCode coupledPhase : branch.getPhases()) {
+						Complex z = z(branch.getZabc(), phase, coupledPhase);
+						columns.add(variableIndex.branchP(branch.getId(), coupledPhase));
+						values.add(pCoefficient(branch, phase, coupledPhase, z));
+						columns.add(variableIndex.branchQ(branch.getId(), coupledPhase));
+						values.add(qCoefficient(branch, phase, coupledPhase, z));
+					}
 				}
 				for (DistOpfRegulatorData regulator : modelData.getRegulators(branch.getId())) {
 					if (regulator.getPhases().contains(phase)) {
@@ -56,6 +68,58 @@ public class DistVoltageDropConstraintCollector extends BaseDistOpfConstraintCol
 						-lossProfile.voltageDropLoss(branch, phase),
 						toIntArray(columns), toDoubleArray(values));
 			}
+		}
+	}
+
+	private boolean pythonRegulatorBranch(DistOpfBranchData branch) {
+		if (options.getVoltageModel() != DistOpfVoltageModel.PYTHON_DISTOPF_COMPAT) {
+			return false;
+		}
+		if (branch.isFixedVoltageRatioOnly()) {
+			return true;
+		}
+		for (PhaseCode phase : branch.getPhases()) {
+			if (Math.abs(branch.getVoltageRatio(phase) - 1.0) > 1.0e-12) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private double pCoefficient(DistOpfBranchData branch, PhaseCode rowPhase,
+			PhaseCode columnPhase, Complex z) {
+		if (options.getVoltageModel() != DistOpfVoltageModel.PYTHON_DISTOPF_COMPAT
+				|| rowPhase == columnPhase) {
+			return -2.0 * z.getReal();
+		}
+		if (columnPhase == nextPhase(rowPhase)) {
+			return z.getReal() - Math.sqrt(3.0) * z.getImaginary();
+		}
+		return z.getReal() + Math.sqrt(3.0) * z.getImaginary();
+	}
+
+	private double qCoefficient(DistOpfBranchData branch, PhaseCode rowPhase,
+			PhaseCode columnPhase, Complex z) {
+		if (options.getVoltageModel() != DistOpfVoltageModel.PYTHON_DISTOPF_COMPAT
+				|| rowPhase == columnPhase) {
+			return -2.0 * z.getImaginary();
+		}
+		if (columnPhase == nextPhase(rowPhase)) {
+			return z.getImaginary() + Math.sqrt(3.0) * z.getReal();
+		}
+		return z.getImaginary() - Math.sqrt(3.0) * z.getReal();
+	}
+
+	private static PhaseCode nextPhase(PhaseCode phase) {
+		switch (phase) {
+		case A:
+			return PhaseCode.B;
+		case B:
+			return PhaseCode.C;
+		case C:
+			return PhaseCode.A;
+		default:
+			return phase;
 		}
 	}
 
