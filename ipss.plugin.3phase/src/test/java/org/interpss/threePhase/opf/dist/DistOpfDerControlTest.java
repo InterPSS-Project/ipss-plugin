@@ -108,6 +108,25 @@ public class DistOpfDerControlTest {
 	}
 
 	@Test
+	public void scheduleSolverRunsPeriodSpecificTargets() throws InterpssException {
+		DistOpfModelData modelData = new DistOpfModelDataExtractor().extract(createTwoBusFeederWithDer());
+		ArrayList<DistOpfSchedulePeriod> periods = new ArrayList<DistOpfSchedulePeriod>();
+		periods.add(new DistOpfSchedulePeriod(new DistOpfOptions().setTargetSubstationPPu(0.18),
+				DistOpfControlMode.P, DistOpfObjective.TARGET_SUBSTATION_P));
+		periods.add(new DistOpfSchedulePeriod(new DistOpfOptions().setTargetSubstationPPu(0.30),
+				DistOpfControlMode.P, DistOpfObjective.TARGET_SUBSTATION_P));
+
+		DistOpfScheduleResult result = new DistOpfScheduleSolver().solve(modelData, periods);
+
+		assertTrue(result.isSolved());
+		assertEquals(2, result.getPeriodResults().size());
+		assertEquals(0.04, result.getPeriodResult(0).getDerActivePower("der-1", "A"), 1.0e-7);
+		assertEquals(0.0, result.getPeriodResult(1).getDerActivePower("der-1", "A"), 1.0e-7);
+		assertEquals(0.06, result.getPeriodResult(0).getBranchActivePower("source->load(0)", "A"), 1.0e-7);
+		assertEquals(0.10, result.getPeriodResult(1).getBranchActivePower("source->load(0)", "A"), 1.0e-7);
+	}
+
+	@Test
 	public void qControlCorrectsLowVoltageWithReactiveSupport() throws InterpssException {
 		DistOpfOptions options = new DistOpfOptions().setMinVoltagePu(Math.sqrt(0.998));
 
