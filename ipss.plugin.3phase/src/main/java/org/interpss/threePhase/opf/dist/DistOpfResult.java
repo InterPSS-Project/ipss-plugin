@@ -28,9 +28,14 @@ public class DistOpfResult {
 	private final Map<String, Double> derReactivePower = new LinkedHashMap<String, Double>();
 	private final Map<String, Double> capacitorStatus = new LinkedHashMap<String, Double>();
 	private final Map<String, Double> regulatorTap = new LinkedHashMap<String, Double>();
+	private final Map<String, Double> powerFlowBusVoltageMagnitude = new LinkedHashMap<String, Double>();
+	private final Map<String, Double> powerFlowBranchActivePower = new LinkedHashMap<String, Double>();
+	private final Map<String, Double> powerFlowBranchReactivePower = new LinkedHashMap<String, Double>();
 	private Boolean powerFlowConverged;
 	private int powerFlowIterationCount = -1;
 	private double maxPowerFlowVoltageDiff = Double.NaN;
+	private double maxPowerFlowBranchActivePowerDiff = Double.NaN;
+	private double maxPowerFlowBranchReactivePowerDiff = Double.NaN;
 	private double maxPowerFlowVoltageViolation = Double.NaN;
 	private double maxPowerFlowBranchLimitViolation = Double.NaN;
 	private double maxBranchFlowVoltageDropResidual = Double.NaN;
@@ -131,6 +136,21 @@ public class DistOpfResult {
 		return this;
 	}
 
+	public DistOpfResult putPowerFlowBusVoltageMagnitude(String busId, String phase, double value) {
+		this.powerFlowBusVoltageMagnitude.put(key(busId, phase), value);
+		return this;
+	}
+
+	public DistOpfResult putPowerFlowBranchActivePower(String branchId, String phase, double value) {
+		this.powerFlowBranchActivePower.put(key(branchId, phase), value);
+		return this;
+	}
+
+	public DistOpfResult putPowerFlowBranchReactivePower(String branchId, String phase, double value) {
+		this.powerFlowBranchReactivePower.put(key(branchId, phase), value);
+		return this;
+	}
+
 	public Double getBusVoltageSquared(String busId, String phase) {
 		return this.busVoltageSquared.get(key(busId, phase));
 	}
@@ -157,6 +177,18 @@ public class DistOpfResult {
 
 	public Double getRegulatorTap(String regulatorId, String phase) {
 		return this.regulatorTap.get(key(regulatorId, phase));
+	}
+
+	public Double getPowerFlowBusVoltageMagnitude(String busId, String phase) {
+		return this.powerFlowBusVoltageMagnitude.get(key(busId, phase));
+	}
+
+	public Double getPowerFlowBranchActivePower(String branchId, String phase) {
+		return this.powerFlowBranchActivePower.get(key(branchId, phase));
+	}
+
+	public Double getPowerFlowBranchReactivePower(String branchId, String phase) {
+		return this.powerFlowBranchReactivePower.get(key(branchId, phase));
 	}
 
 	public Map<String, Double> getBusVoltageSquared() {
@@ -187,6 +219,18 @@ public class DistOpfResult {
 		return Collections.unmodifiableMap(regulatorTap);
 	}
 
+	public Map<String, Double> getPowerFlowBusVoltageMagnitude() {
+		return Collections.unmodifiableMap(powerFlowBusVoltageMagnitude);
+	}
+
+	public Map<String, Double> getPowerFlowBranchActivePower() {
+		return Collections.unmodifiableMap(powerFlowBranchActivePower);
+	}
+
+	public Map<String, Double> getPowerFlowBranchReactivePower() {
+		return Collections.unmodifiableMap(powerFlowBranchReactivePower);
+	}
+
 	public Boolean getPowerFlowConverged() {
 		return powerFlowConverged;
 	}
@@ -211,6 +255,24 @@ public class DistOpfResult {
 
 	public DistOpfResult setMaxPowerFlowVoltageDiff(double maxPowerFlowVoltageDiff) {
 		this.maxPowerFlowVoltageDiff = maxPowerFlowVoltageDiff;
+		return this;
+	}
+
+	public double getMaxPowerFlowBranchActivePowerDiff() {
+		return maxPowerFlowBranchActivePowerDiff;
+	}
+
+	public DistOpfResult setMaxPowerFlowBranchActivePowerDiff(double maxPowerFlowBranchActivePowerDiff) {
+		this.maxPowerFlowBranchActivePowerDiff = maxPowerFlowBranchActivePowerDiff;
+		return this;
+	}
+
+	public double getMaxPowerFlowBranchReactivePowerDiff() {
+		return maxPowerFlowBranchReactivePowerDiff;
+	}
+
+	public DistOpfResult setMaxPowerFlowBranchReactivePowerDiff(double maxPowerFlowBranchReactivePowerDiff) {
+		this.maxPowerFlowBranchReactivePowerDiff = maxPowerFlowBranchReactivePowerDiff;
 		return this;
 	}
 
