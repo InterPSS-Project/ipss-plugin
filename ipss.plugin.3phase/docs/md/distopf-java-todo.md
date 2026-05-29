@@ -201,7 +201,7 @@ This checklist tracks implementation of Java-native DistOPF for InterPSS using t
 - [x] Add single-period battery state-of-charge constraints.
 - [x] Add sequential multi-period schedules using per-period single-period DistOPF models.
 - [ ] Add nonlinear branch-flow OPF.
-  - [x] Add branch-flow voltage-drop residual evaluator for quadratic loss term validation.
+  - [x] Add branch-flow voltage-drop and power-balance residual evaluators for quadratic loss validation.
 - [ ] Add meshed-network support if required.
 - [x] Add additional OpenDSS parser coverage only if DistOPF validation exposes missing feeder features.
 - [ ] Add CIM import parity.
