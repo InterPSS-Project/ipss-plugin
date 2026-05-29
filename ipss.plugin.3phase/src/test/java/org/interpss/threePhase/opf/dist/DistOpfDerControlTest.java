@@ -22,11 +22,13 @@ import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.opf.dist.model.DistOpfBatteryData;
 import org.interpss.threePhase.opf.dist.model.DistOpfBranchData;
+import org.interpss.threePhase.opf.dist.model.DistOpfBusData;
 import org.interpss.threePhase.opf.dist.model.DistOpfCapacitorData;
 import org.interpss.threePhase.opf.dist.model.DistOpfDerData;
 import org.interpss.threePhase.opf.dist.model.DistOpfModel;
 import org.interpss.threePhase.opf.dist.model.DistOpfModelData;
 import org.interpss.threePhase.opf.dist.model.DistOpfModelDataExtractor;
+import org.interpss.threePhase.opf.dist.model.DistOpfRegulatorData;
 import org.interpss.threePhase.opf.dist.model.LinDistFlowModelBuilder;
 import org.interpss.threePhase.opf.dist.solver.DistOpfSolverResult;
 import org.interpss.threePhase.opf.dist.solver.OjAlgoDistOpfSolver;
@@ -146,6 +148,39 @@ public class DistOpfDerControlTest {
 		assertEquals(0.01, result.getPrimalVariables()[
 				model.getVariableIndex().branchQ("source->load(0)", PhaseCode.A)], 1.0e-7);
 		assertEquals(0.9972, result.getPrimalVariables()[
+				model.getVariableIndex().busV2("load", PhaseCode.A)], 1.0e-7);
+	}
+
+	@Test
+	public void regulatorTapRaisesVoltageWithinDiscreteLimits() throws InterpssException {
+		DistOpfOptions options = new DistOpfOptions();
+		DistOpfModelData baseData = new DistOpfModelDataExtractor().extract(createTwoBusFeeder(0.0));
+		ArrayList<DistOpfBusData> buses = new ArrayList<DistOpfBusData>();
+		for (DistOpfBusData bus : baseData.getBuses()) {
+			if ("load".equals(bus.getId())) {
+				buses.add(new DistOpfBusData(bus.getId(), bus.isSwing(), bus.getBaseVoltage(),
+						bus.getPhases(), bus.getLoad(), bus.getFixedCapacitorQ(),
+						Math.sqrt(1.001), Math.sqrt(1.002)));
+			}
+			else {
+				buses.add(bus);
+			}
+		}
+		ArrayList<DistOpfRegulatorData> regulators = new ArrayList<DistOpfRegulatorData>();
+		regulators.add(new DistOpfRegulatorData("reg-1", "source->load(0)",
+				EnumSet.of(PhaseCode.A, PhaseCode.B, PhaseCode.C), 0, 2, 0.005));
+		DistOpfModelData modelData = new DistOpfModelData(baseData.getBaseMva(),
+				baseData.getSwingBusId(), buses, baseData.getBranches(),
+				baseData.getDers(), baseData.getCapacitors(), regulators,
+				childrenByBusId(baseData), parentBranchByBusId(baseData));
+		DistOpfModel model = new LinDistFlowModelBuilder().build(modelData, options);
+
+		DistOpfSolverResult result = new OjAlgoDistOpfSolver().solve(model, options);
+
+		assertEquals(DistOpfStatus.OPTIMAL, result.getStatus());
+		assertEquals(1.0, result.getPrimalVariables()[
+				model.getVariableIndex().regulatorTap("reg-1", PhaseCode.A)], 1.0e-7);
+		assertEquals(1.0014, result.getPrimalVariables()[
 				model.getVariableIndex().busV2("load", PhaseCode.A)], 1.0e-7);
 	}
 

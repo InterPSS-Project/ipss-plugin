@@ -14,6 +14,7 @@ public class DistOpfVariableIndex {
 		DER_P,
 		DER_Q,
 		CAPACITOR_STATUS,
+		REGULATOR_TAP,
 		CURTAILMENT,
 		TARGET_P_POSITIVE,
 		TARGET_P_NEGATIVE,
@@ -45,6 +46,10 @@ public class DistOpfVariableIndex {
 
 	public int capacitorStatus(String capacitorId, PhaseCode phase) {
 		return getOrCreate(VariableType.CAPACITOR_STATUS, capacitorId, phase);
+	}
+
+	public int regulatorTap(String regulatorId, PhaseCode phase) {
+		return getOrCreate(VariableType.REGULATOR_TAP, regulatorId, phase);
 	}
 
 	public int curtailment(String busId, PhaseCode phase) {
