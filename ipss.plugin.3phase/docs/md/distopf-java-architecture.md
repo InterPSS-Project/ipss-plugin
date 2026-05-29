@@ -52,6 +52,8 @@ Useful framework elements:
   - `GIQPSolver`
   - `LpsolveSolver`
   - `OjAlgoDistOpfSolver`, proposed as the default DistOPF adapter for small systems
+  - `ApacheLpDistOpfSolver`, a continuous LP DistOPF adapter backed by Apache Commons Math
+  - `ORToolsDistOpfSolver`, planned for larger LP/MIP use cases once the native dependency is wired
 - Result attachment pattern in `AbstractOpfSolver`.
 
 The collector/objective/solver-adapter pattern is valuable and should be carried forward. The DC OPF equations and network assumptions should not be reused directly because they are based on `OpfNetwork`, bus angle variables, MW-only power balance, and transmission branch-flow approximations.
@@ -558,7 +560,31 @@ Default use:
 - Requires the existing Maven ojAlgo dependency available to `ipss.plugin.3phase`.
 - Keep the solver interface open so larger systems can later use alternative LP/QP/MIP backends without changing constraint or objective collectors.
 
-### 11.3 `DistOpfSolverResult`
+### 11.3 `ApacheLpDistOpfSolver`
+
+Continuous LP solver adapter backed by Apache Commons Math Simplex.
+
+Responsibilities:
+
+- Convert sparse DistOPF constraints into Apache Commons Math `LinearConstraint` rows.
+- Apply finite variable bounds as additional linear constraints.
+- Solve continuous LinDistFlow LP cases.
+- Reject integer/binary models with diagnostics so capacitor/regulator MIP controls are not silently relaxed.
+
+Recommended use:
+
+- Small continuous LP validation and environments where Apache Commons Math is already available.
+- Not for mixed-integer capacitor/regulator controls.
+
+### 11.4 `ORToolsDistOpfSolver`
+
+Planned adapter for larger LP/MIP use cases.
+
+Current responsibility:
+
+- Provide an explicit dependency gate until the OR-Tools Java artifact and native runtime are added.
+
+### 11.5 `DistOpfSolverResult`
 
 Raw solver result before network/result mapping.
 
