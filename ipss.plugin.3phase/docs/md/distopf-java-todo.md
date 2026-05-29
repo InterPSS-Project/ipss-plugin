@@ -199,7 +199,7 @@ This checklist tracks implementation of Java-native DistOPF for InterPSS using t
 - [x] Add mixed-integer regulator tap control for user-supplied linearized tap model data.
 - [x] Add battery P/Q controls.
 - [x] Add single-period battery state-of-charge constraints.
-- [ ] Add multi-period schedules.
+- [x] Add sequential multi-period schedules using per-period single-period DistOPF models.
 - [ ] Add nonlinear branch-flow OPF.
 - [ ] Add meshed-network support if required.
 - [x] Add additional OpenDSS parser coverage only if DistOPF validation exposes missing feeder features.
