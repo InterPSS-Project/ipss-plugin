@@ -26,4 +26,18 @@ public class DistOpfOpenDssImportTest {
 		assertTrue(data.getBranches().size() > 100);
 		assertEquals(data.getBuses().size() - 1, data.getBranches().size());
 	}
+
+	@Test
+	public void extractsExistingOpenDssIeee13FeederForDistOpf() {
+		OpenDSSDataParser parser = new OpenDSSDataParser();
+		parser.parseFeederData("testData/feeder/IEEE13", "IEEE13Nodeckt.dss");
+		parser.calcVoltageBases();
+		parser.convertActualValuesToPU(1.0);
+
+		DStabNetwork3Phase distNet = parser.getDistNetwork();
+		DistOpfModelData data = new DistOpfModelDataExtractor().extract(distNet);
+
+		assertTrue(data.getBuses().size() >= 13);
+		assertEquals(data.getBuses().size() - 1, data.getBranches().size());
+	}
 }
