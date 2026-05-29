@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x3;
+import org.interpss.threePhase.opf.dist.model.DistBranchFlowLossProfile;
 import org.interpss.threePhase.opf.dist.model.DistOpfBranchData;
 import org.interpss.threePhase.opf.dist.model.DistOpfModelData;
 import org.interpss.threePhase.opf.dist.model.DistOpfRegulatorData;
@@ -14,9 +15,18 @@ import com.interpss.core.acsc.PhaseCode;
 
 public class DistVoltageDropConstraintCollector extends BaseDistOpfConstraintCollector {
 
+	private final DistBranchFlowLossProfile lossProfile;
+
 	public DistVoltageDropConstraintCollector(DistOpfModelData modelData,
 			DistOpfVariableIndex variableIndex, List<org.interpss.plugin.opf.constraint.OpfConstraint> constraints) {
+		this(modelData, variableIndex, constraints, DistBranchFlowLossProfile.none());
+	}
+
+	public DistVoltageDropConstraintCollector(DistOpfModelData modelData,
+			DistOpfVariableIndex variableIndex, List<org.interpss.plugin.opf.constraint.OpfConstraint> constraints,
+			DistBranchFlowLossProfile lossProfile) {
 		super(modelData, variableIndex, constraints);
+		this.lossProfile = lossProfile;
 	}
 
 	@Override
@@ -42,7 +52,8 @@ public class DistVoltageDropConstraintCollector extends BaseDistOpfConstraintCol
 						values.add(regulator.getTapStepVoltageSquaredPu());
 					}
 				}
-				addEquality("VDrop@" + branch.getId() + "." + phase, 0.0,
+				addEquality("VDrop@" + branch.getId() + "." + phase,
+						-lossProfile.voltageDropLoss(branch, phase),
 						toIntArray(columns), toDoubleArray(values));
 			}
 		}
