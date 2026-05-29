@@ -1,0 +1,59 @@
+package org.interpss.threePhase.dataParser.opendss;
+
+final class OpenDSSUnitConverter {
+
+	private OpenDSSUnitConverter() {
+	}
+
+	static double lengthFactor(String fromUnit, String toUnit) {
+		String from = normalizeLengthUnit(fromUnit);
+		String to = normalizeLengthUnit(toUnit);
+		if (from.equals("") || to.equals("") || from.equals("none") || to.equals("none") || from.equals(to)) {
+			return 1.0;
+		}
+		return metersPerUnit(from) / metersPerUnit(to);
+	}
+
+	private static String normalizeLengthUnit(String unit) {
+		if (unit == null) {
+			return "";
+		}
+		String value = unit.trim().toLowerCase();
+		if (value.equals("mile") || value.equals("miles") || value.equals("mi")) {
+			return "mi";
+		}
+		if (value.equals("kft") || value.equals("kfeet")) {
+			return "kft";
+		}
+		if (value.equals("ft") || value.equals("feet") || value.equals("foot")) {
+			return "ft";
+		}
+		if (value.equals("km") || value.equals("kmeters")) {
+			return "km";
+		}
+		if (value.equals("m") || value.equals("meter") || value.equals("meters")) {
+			return "m";
+		}
+		if (value.equals("none")) {
+			return "none";
+		}
+		return value;
+	}
+
+	private static double metersPerUnit(String unit) {
+		switch (unit) {
+		case "mi":
+			return 1609.344;
+		case "kft":
+			return 304.8;
+		case "ft":
+			return 0.3048;
+		case "km":
+			return 1000.0;
+		case "m":
+			return 1.0;
+		default:
+			throw new IllegalArgumentException("Unsupported OpenDSS length unit: " + unit);
+		}
+	}
+}

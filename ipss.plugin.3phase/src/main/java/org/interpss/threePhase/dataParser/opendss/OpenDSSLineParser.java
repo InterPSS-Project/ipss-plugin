@@ -79,7 +79,7 @@ public class OpenDSSLineParser {
 				lineLength = Double.valueOf(lineStrAry[i].substring(7));
 			}
 			else if(lineStrAry[i].contains("units=")){
-				units = lineStrAry[i].substring(5);
+				units = lineStrAry[i].substring(6);
 			}
 			else if(lineStrAry[i].contains("r1=")){
 				r1 = Double.valueOf(lineStrAry[i].substring(3));
@@ -135,6 +135,7 @@ public class OpenDSSLineParser {
 
 			if(config!=null){
 				zabc = config.getZ3x3Matrix();
+				lineLength = lineLength * OpenDSSUnitConverter.lengthFactor(units, config.getLengthUnit());
 			}
 			else{
 				throw new Error("LineConfiguration definition not found, LineCodeId:"+lineCodeId);
