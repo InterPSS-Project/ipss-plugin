@@ -178,7 +178,7 @@ This checklist tracks implementation of Java-native DistOPF for InterPSS using t
 - [x] Add thermal-limit binding test.
 - [x] Add infeasible OPF test.
 - [x] Add post-OPF fixed-point PF validation test.
-- [ ] Add comparison fixture for IEEE 13-bus from GRIDAPPSD/distopf if licensing and data layout are acceptable.
+- [x] Add comparison fixture for IEEE 13-bus from Python `distopf` CSV data with MIT package metadata.
 - [x] Add larger feeder validation after IEEE 13-bus passes.
 
 ## Milestone 10: Documentation and Examples
