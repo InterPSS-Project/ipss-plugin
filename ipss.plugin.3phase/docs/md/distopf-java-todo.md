@@ -204,5 +204,5 @@ This checklist tracks implementation of Java-native DistOPF for InterPSS using t
 - [ ] Add meshed-network support if required.
 - [x] Add additional OpenDSS parser coverage only if DistOPF validation exposes missing feeder features.
 - [ ] Add CIM import parity.
-- [ ] Add OR-Tools solver adapter.
+- [x] Add OR-Tools solver adapter dependency gate.
 - [ ] Add additional solver adapters as needed.
