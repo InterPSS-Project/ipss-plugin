@@ -4,6 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
@@ -14,6 +20,15 @@ import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.basic.dstab.DStab3PGen;
 import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
+import org.interpss.threePhase.opf.dist.model.DistOpfBatteryData;
+import org.interpss.threePhase.opf.dist.model.DistOpfBranchData;
+import org.interpss.threePhase.opf.dist.model.DistOpfDerData;
+import org.interpss.threePhase.opf.dist.model.DistOpfModel;
+import org.interpss.threePhase.opf.dist.model.DistOpfModelData;
+import org.interpss.threePhase.opf.dist.model.DistOpfModelDataExtractor;
+import org.interpss.threePhase.opf.dist.model.LinDistFlowModelBuilder;
+import org.interpss.threePhase.opf.dist.solver.DistOpfSolverResult;
+import org.interpss.threePhase.opf.dist.solver.OjAlgoDistOpfSolver;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.jupiter.api.Test;
 
@@ -21,6 +36,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
+import com.interpss.core.acsc.PhaseCode;
 
 public class DistOpfDerControlTest {
 
@@ -178,8 +194,69 @@ public class DistOpfDerControlTest {
 		assertEquals(0.02, der.getPower3Phase(UnitType.PU).c_2.getReal(), 1.0e-7);
 	}
 
+	@Test
+	public void batteryCanDischargeToMeetSubstationPTarget() throws InterpssException {
+		DistOpfOptions options = new DistOpfOptions().setTargetSubstationPPu(0.25);
+		DistOpfModel model = batteryModel(options, DistOpfControlMode.P, DistOpfObjective.TARGET_SUBSTATION_P);
+
+		DistOpfSolverResult result = new OjAlgoDistOpfSolver().solve(model, options);
+
+		assertEquals(DistOpfStatus.OPTIMAL, result.getStatus());
+		assertEquals(0.05, result.getPrimalVariables()[
+				model.getVariableIndex().derP("battery-1", PhaseCode.A)], 1.0e-7);
+		assertEquals(0.05, result.getPrimalVariables()[
+				model.getVariableIndex().branchP("source->load(0)", PhaseCode.A)], 1.0e-7);
+	}
+
+	@Test
+	public void batteryCanChargeToMeetSubstationPTarget() throws InterpssException {
+		DistOpfOptions options = new DistOpfOptions().setTargetSubstationPPu(0.33);
+		DistOpfModel model = batteryModel(options, DistOpfControlMode.P, DistOpfObjective.TARGET_SUBSTATION_P);
+
+		DistOpfSolverResult result = new OjAlgoDistOpfSolver().solve(model, options);
+
+		assertEquals(DistOpfStatus.OPTIMAL, result.getStatus());
+		assertEquals(-0.03, result.getPrimalVariables()[
+				model.getVariableIndex().derP("battery-1", PhaseCode.A)], 1.0e-7);
+		assertEquals(0.13, result.getPrimalVariables()[
+				model.getVariableIndex().branchP("source->load(0)", PhaseCode.A)], 1.0e-7);
+	}
+
+	@Test
+	public void batteryProvidesReactiveSupportWithinInverterCapability() throws InterpssException {
+		DistOpfOptions options = new DistOpfOptions().setTargetSubstationQPu(0.04);
+		DistOpfModel model = batteryModel(options, DistOpfControlMode.Q, DistOpfObjective.TARGET_SUBSTATION_Q);
+
+		DistOpfSolverResult result = new OjAlgoDistOpfSolver().solve(model, options);
+
+		assertEquals(DistOpfStatus.OPTIMAL, result.getStatus());
+		assertEquals(0.02, result.getPrimalVariables()[
+				model.getVariableIndex().derQ("battery-1", PhaseCode.A)], 1.0e-7);
+		assertEquals(0.0, result.getPrimalVariables()[
+				model.getVariableIndex().branchQ("source->load(0)", PhaseCode.A)], 1.0e-7);
+	}
+
 	private static DStabNetwork3Phase createTwoBusFeederWithDer() throws InterpssException {
 		return createTwoBusFeederWithDer(0.0);
+	}
+
+	private static DistOpfModel batteryModel(DistOpfOptions options, DistOpfControlMode controlMode,
+			DistOpfObjective objective) throws InterpssException {
+		DistOpfModelData baseData = new DistOpfModelDataExtractor().extract(createTwoBusFeeder(0.0));
+		ArrayList<DistOpfDerData> ders = new ArrayList<DistOpfDerData>(baseData.getDers());
+		ders.add(new DistOpfBatteryData("battery-1", "load",
+				EnumSet.of(PhaseCode.A),
+				0.05, 0.06, Double.valueOf(0.08)));
+		Map<String, List<DistOpfBranchData>> childrenByBusId =
+				new LinkedHashMap<String, List<DistOpfBranchData>>();
+		childrenByBusId.put("source", baseData.getBranches());
+		Map<String, DistOpfBranchData> parentBranchByBusId =
+				new LinkedHashMap<String, DistOpfBranchData>();
+		parentBranchByBusId.put("load", baseData.getBranches().get(0));
+		DistOpfModelData modelData = new DistOpfModelData(baseData.getBaseMva(),
+				baseData.getSwingBusId(), baseData.getBuses(), baseData.getBranches(), ders,
+				childrenByBusId, parentBranchByBusId);
+		return new LinDistFlowModelBuilder().build(modelData, options, controlMode, objective);
 	}
 
 	private static DStabNetwork3Phase createTwoBusFeederWithDer(double ratingMva1) throws InterpssException {
