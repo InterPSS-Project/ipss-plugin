@@ -6,6 +6,7 @@ import org.interpss.threePhase.opf.dist.DistOpfControlMode;
 import org.interpss.threePhase.opf.dist.DistOpfObjective;
 import org.interpss.threePhase.opf.dist.DistOpfOptions;
 import org.interpss.threePhase.opf.dist.DistOpfResult;
+import org.interpss.threePhase.opf.dist.DistOpfSolverType;
 import org.interpss.threePhase.opf.dist.DistOpfStatus;
 import org.interpss.threePhase.opf.dist.model.DistOpfBranchData;
 import org.interpss.threePhase.opf.dist.model.DistOpfBusData;
@@ -14,7 +15,9 @@ import org.interpss.threePhase.opf.dist.model.DistOpfModelData;
 import org.interpss.threePhase.opf.dist.model.DistOpfModelDataExtractor;
 import org.interpss.threePhase.opf.dist.model.DistOpfModel;
 import org.interpss.threePhase.opf.dist.model.LinDistFlowModelBuilder;
+import org.interpss.threePhase.opf.dist.solver.DistOpfSolver;
 import org.interpss.threePhase.opf.dist.solver.DistOpfSolverResult;
+import org.interpss.threePhase.opf.dist.solver.ORToolsDistOpfSolver;
 import org.interpss.threePhase.opf.dist.solver.OjAlgoDistOpfSolver;
 
 import com.interpss.core.acsc.PhaseCode;
@@ -53,7 +56,7 @@ public class DistOpfAlgorithmImpl implements DistOpfAlgorithm {
 		try {
 			DistOpfModelData modelData = new DistOpfModelDataExtractor().extract(net);
 			DistOpfModel model = new LinDistFlowModelBuilder().build(modelData, options, controlMode, objective);
-			DistOpfSolverResult solverResult = new OjAlgoDistOpfSolver().solve(model, options);
+			DistOpfSolverResult solverResult = solver(options).solve(model, options);
 			DistOpfResult result = new DistOpfResult(solverResult.getStatus(),
 					solverResult.getObjectiveValue(), solverResult.getMaxConstraintResidual());
 			mapResult(model, solverResult, result);
@@ -61,6 +64,13 @@ public class DistOpfAlgorithmImpl implements DistOpfAlgorithm {
 		} catch (RuntimeException e) {
 			return new DistOpfResult(DistOpfStatus.ERROR, Double.NaN, Double.NaN).addWarning(e.getMessage());
 		}
+	}
+
+	private static DistOpfSolver solver(DistOpfOptions options) {
+		if (options.getSolverType() == DistOpfSolverType.ORTOOLS) {
+			return new ORToolsDistOpfSolver();
+		}
+		return new OjAlgoDistOpfSolver();
 	}
 
 	private static void mapResult(DistOpfModel model, DistOpfSolverResult solverResult, DistOpfResult result) {
