@@ -13,6 +13,7 @@ public class DistOpfModelData {
 	private final List<DistOpfBusData> buses;
 	private final List<DistOpfBranchData> branches;
 	private final List<DistOpfDerData> ders;
+	private final List<DistOpfCapacitorData> capacitors;
 	private final Map<String, List<DistOpfBranchData>> childrenByBusId;
 	private final Map<String, DistOpfBranchData> parentBranchByBusId;
 
@@ -28,11 +29,21 @@ public class DistOpfModelData {
 			List<DistOpfBusData> buses, List<DistOpfBranchData> branches, List<DistOpfDerData> ders,
 			Map<String, List<DistOpfBranchData>> childrenByBusId,
 			Map<String, DistOpfBranchData> parentBranchByBusId) {
+		this(baseMva, swingBusId, buses, branches, ders, Collections.<DistOpfCapacitorData>emptyList(),
+				childrenByBusId, parentBranchByBusId);
+	}
+
+	public DistOpfModelData(double baseMva, String swingBusId,
+			List<DistOpfBusData> buses, List<DistOpfBranchData> branches, List<DistOpfDerData> ders,
+			List<DistOpfCapacitorData> capacitors,
+			Map<String, List<DistOpfBranchData>> childrenByBusId,
+			Map<String, DistOpfBranchData> parentBranchByBusId) {
 		this.baseMva = baseMva;
 		this.swingBusId = swingBusId;
 		this.buses = Collections.unmodifiableList(new ArrayList<DistOpfBusData>(buses));
 		this.branches = Collections.unmodifiableList(new ArrayList<DistOpfBranchData>(branches));
 		this.ders = Collections.unmodifiableList(new ArrayList<DistOpfDerData>(ders));
+		this.capacitors = Collections.unmodifiableList(new ArrayList<DistOpfCapacitorData>(capacitors));
 		this.childrenByBusId = copyChildren(childrenByBusId);
 		this.parentBranchByBusId = Collections.unmodifiableMap(
 				new LinkedHashMap<String, DistOpfBranchData>(parentBranchByBusId));
@@ -66,6 +77,20 @@ public class DistOpfModelData {
 			}
 		}
 		return Collections.unmodifiableList(busDers);
+	}
+
+	public List<DistOpfCapacitorData> getCapacitors() {
+		return capacitors;
+	}
+
+	public List<DistOpfCapacitorData> getCapacitors(String busId) {
+		List<DistOpfCapacitorData> busCapacitors = new ArrayList<DistOpfCapacitorData>();
+		for (DistOpfCapacitorData capacitor : capacitors) {
+			if (capacitor.getBusId().equals(busId)) {
+				busCapacitors.add(capacitor);
+			}
+		}
+		return Collections.unmodifiableList(busCapacitors);
 	}
 
 	public List<DistOpfBranchData> getChildren(String busId) {
