@@ -98,8 +98,27 @@ public class DStab3PLoadImpl extends DStab1PLoadImpl implements DStab3PLoad {
 
 
 		  case THREE_PHASE_DELTA:
-			  throw new Error("Connection type not supported yet!! Bus, load id,connectType, phases: "
-			          +this.getParentBus().getId()+","+this.getId()+","+this.loadConnectType+","+this.ph);
+			  if(this.code==AclfLoadCode.CONST_P){
+				  // default
+			  }
+			  else if(this.code==AclfLoadCode.CONST_I){
+				  loadPQ.a_0 = ph3Load.a_0.multiply(vabc.a_0.subtract(vabc.b_1).abs()/Math.sqrt(3.0));
+				  loadPQ.b_1 = ph3Load.b_1.multiply(vabc.b_1.subtract(vabc.c_2).abs()/Math.sqrt(3.0));
+				  loadPQ.c_2 = ph3Load.c_2.multiply(vabc.c_2.subtract(vabc.a_0).abs()/Math.sqrt(3.0));
+			  }
+			  else if(this.code==AclfLoadCode.CONST_Z){
+				  double vab = vabc.a_0.subtract(vabc.b_1).abs()/Math.sqrt(3.0);
+				  double vbc = vabc.b_1.subtract(vabc.c_2).abs()/Math.sqrt(3.0);
+				  double vca = vabc.c_2.subtract(vabc.a_0).abs()/Math.sqrt(3.0);
+				  loadPQ.a_0 = ph3Load.a_0.multiply(vab*vab);
+				  loadPQ.b_1 = ph3Load.b_1.multiply(vbc*vbc);
+				  loadPQ.c_2 = ph3Load.c_2.multiply(vca*vca);
+			  }
+			  else{
+				  throw new Error("Load model type not supported yet!! Bus, load id,model type, phases: "
+				          +this.getParentBus().getId()+","+this.getId()+","+this.code+","+this.ph);
+			  }
+			  break;
 
 		  default:
 
@@ -188,8 +207,32 @@ public class DStab3PLoadImpl extends DStab1PLoadImpl implements DStab3PLoad {
 
 
 		  case THREE_PHASE_DELTA:
-			  throw new Error("Connection type not supported yet!! Bus, load id,connectType, phases: "
-			          +this.getParentBus().getId()+","+this.getId()+","+this.loadConnectType+","+this.ph);
+			  Complex vab = vabc.a_0.subtract(vabc.b_1);
+			  Complex vbc = vabc.b_1.subtract(vabc.c_2);
+			  Complex vca = vabc.c_2.subtract(vabc.a_0);
+			  if(this.code==AclfLoadCode.CONST_P){
+				  loadPQ.a_0 = deltaLoad(ph3Load.a_0, vab);
+				  loadPQ.b_1 = deltaLoad(ph3Load.b_1, vbc);
+				  loadPQ.c_2 = deltaLoad(ph3Load.c_2, vca);
+			  }
+			  else if(this.code==AclfLoadCode.CONST_I){
+				  loadPQ.a_0 = ph3Load.a_0.multiply(vab.abs()/Math.sqrt(3.0));
+				  loadPQ.b_1 = ph3Load.b_1.multiply(vbc.abs()/Math.sqrt(3.0));
+				  loadPQ.c_2 = ph3Load.c_2.multiply(vca.abs()/Math.sqrt(3.0));
+			  }
+			  else if(this.code==AclfLoadCode.CONST_Z){
+				  double vabMag = vab.abs()/Math.sqrt(3.0);
+				  double vbcMag = vbc.abs()/Math.sqrt(3.0);
+				  double vcaMag = vca.abs()/Math.sqrt(3.0);
+				  loadPQ.a_0 = ph3Load.a_0.multiply(vabMag*vabMag);
+				  loadPQ.b_1 = ph3Load.b_1.multiply(vbcMag*vbcMag);
+				  loadPQ.c_2 = ph3Load.c_2.multiply(vcaMag*vcaMag);
+			  }
+			  else{
+				  throw new Error("Load model type not supported yet!! Bus, load id,model type, phases: "
+				          +this.getParentBus().getId()+","+this.getId()+","+this.code+","+this.ph);
+			  }
+			  break;
 
 		  default:
 
@@ -201,16 +244,41 @@ public class DStab3PLoadImpl extends DStab1PLoadImpl implements DStab3PLoad {
 
 
 		equivCurInj = new Complex3x1();
-		if(vabc.a_0.abs() > this.Vminpu) {
-			equivCurInj.a_0 = loadPQ.a_0.divide(vabc.a_0).conjugate().multiply(-1.0);
+		if(this.loadConnectType == LoadConnectionType.THREE_PHASE_DELTA) {
+			Complex iab = loadCurrent(loadPQ.a_0, vabc.a_0.subtract(vabc.b_1));
+			Complex ibc = loadCurrent(loadPQ.b_1, vabc.b_1.subtract(vabc.c_2));
+			Complex ica = loadCurrent(loadPQ.c_2, vabc.c_2.subtract(vabc.a_0));
+			equivCurInj.a_0 = iab.multiply(-1.0).add(ica);
+			equivCurInj.b_1 = ibc.multiply(-1.0).add(iab);
+			equivCurInj.c_2 = ica.multiply(-1.0).add(ibc);
 		}
-		if(vabc.b_1.abs() > this.Vminpu) {
-			equivCurInj.b_1 = loadPQ.b_1.divide(vabc.b_1).conjugate().multiply(-1.0);
-		}
-		if(vabc.c_2.abs() > this.Vminpu) {
-			equivCurInj.c_2 = loadPQ.c_2.divide(vabc.c_2).conjugate().multiply(-1.0);
+		else {
+			if(vabc.a_0.abs() > this.Vminpu) {
+				equivCurInj.a_0 = loadPQ.a_0.divide(vabc.a_0).conjugate().multiply(-1.0);
+			}
+			if(vabc.b_1.abs() > this.Vminpu) {
+				equivCurInj.b_1 = loadPQ.b_1.divide(vabc.b_1).conjugate().multiply(-1.0);
+			}
+			if(vabc.c_2.abs() > this.Vminpu) {
+				equivCurInj.c_2 = loadPQ.c_2.divide(vabc.c_2).conjugate().multiply(-1.0);
+			}
 		}
 		return equivCurInj;
+	}
+
+	private Complex deltaLoad(Complex nominalLoad, Complex lineVoltage) {
+		double vmag = lineVoltage.abs()/Math.sqrt(3.0);
+		if(vmag > this.Vminpu) {
+			return nominalLoad;
+		}
+		return nominalLoad.multiply(vmag*vmag);
+	}
+
+	private Complex loadCurrent(Complex load, Complex voltage) {
+		if(voltage.abs() < 0.001) {
+			return Complex.ZERO;
+		}
+		return load.divide(voltage).conjugate();
 	}
 
 	@Override
