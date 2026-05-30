@@ -121,6 +121,8 @@ public class DistOpfOpenDssImportTest {
 		assertEquals(PhaseCode.A, branchByName(distNet, "reg1").getPhaseCode());
 		assertEquals(PhaseCode.B, branchByName(distNet, "reg2").getPhaseCode());
 		assertEquals(PhaseCode.C, branchByName(distNet, "reg3").getPhaseCode());
+		assertEquals(122.0 * 20.0 * Math.sqrt(3.0) / 4160.0,
+				branchByName(distNet, "reg1").getToTurnRatio(), 1.0e-6);
 
 		DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(distNet);
 		powerFlow.setTolerance(1.0e-4);

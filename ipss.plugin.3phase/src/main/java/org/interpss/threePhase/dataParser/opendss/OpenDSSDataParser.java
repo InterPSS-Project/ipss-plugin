@@ -272,6 +272,9 @@ public class OpenDSSDataParser {
 										this.xfrParser.parseTransformerDataMultiLines(xfrStrAry);
 									}
     		        			}
+                                else if(tempAry[1].contains("RegControl.") ||tempAry[1].contains("regcontrol.")){
+    		        				this.regulatorParser.parseRegControlData(str);
+    		        			}
     		        			else if(tempAry[1].contains("Load.") ||tempAry[1].contains("load.")){
     		        				this.loadParser.parseLoadData(str);
     		        			}
@@ -484,6 +487,9 @@ public class OpenDSSDataParser {
 										this.xfrParser.parseTransformerDataMultiLines(xfrStrAry);
 									}
     		        			}
+    		        			else if(tempAry[1].contains("RegControl.") ||tempAry[1].contains("regcontrol.")){
+    		        				this.regulatorParser.parseRegControlData(str);
+    		        			}
     		        			else if(tempAry[1].contains("Load.") ||tempAry[1].contains("load.")){
     		        				this.loadParser.parseLoadData(str);
     		        			}
@@ -549,6 +555,7 @@ public class OpenDSSDataParser {
 
  		// perform BFS and set the bus sortNumber
  		BFS(onceVisitedBuses);
+ 		this.regulatorParser.applyFixedRegControlRatios();
 
 
 
