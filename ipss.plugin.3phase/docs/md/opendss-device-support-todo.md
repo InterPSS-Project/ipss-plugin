@@ -65,9 +65,11 @@
   - [ ] `3Bus` PF/OPF validation, blocked until OpenDSS `vminpu`/low-voltage
     load fallback behavior is represented for this stressed constant-power case
   - [x] `4Bus-YY-Bal` PF/OPF validation
-  - `4Bus-YD-Bal`
-  - `4Bus-DY-Bal`
-  - `4Bus-GrdYD-Bal`
+  - [ ] `4Bus-YD-Bal`; parser/connection coverage added, PF/OPF pending
+    three-phase delta load support
+  - [x] `4Bus-DY-Bal` parser, fixed-point PF, OPF, and post-OPF PF validation
+  - [ ] `4Bus-GrdYD-Bal`; parser/connection coverage added, PF/OPF pending
+    three-phase delta load support
 - [ ] Compare computed matrices with OpenDSS/distopf reference matrices.
 
 ## Phase 5: Transformers and Regulators
@@ -81,7 +83,11 @@
 - [x] Support single-phase regulator transformer parsing and fixed-point PF.
   - [x] Normalize single-phase regulator thermal limits on the one-phase PU base
     used by OpenDSS-imported single-phase loads.
-- [ ] Support delta-wye and grounded-wye-delta variants.
+- [x] Support delta-wye and grounded-wye-delta transformer connection parsing
+  using InterPSS `XFormerConnectCode` and existing anti-float Y-matrix handling.
+  - [x] Strip OpenDSS terminal node suffixes from transformer bus names.
+  - [x] Preserve `.4` floating-neutral and `.0` grounded-neutral semantics for
+    wye windings.
 - [x] Add fixed-ratio regulator metadata from `RegControl`.
   - [x] Parse `transformer=`, `winding=`, `vreg=`, and `ptratio=` and apply the
     fixed winding target after voltage-base propagation.
