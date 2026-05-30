@@ -22,6 +22,9 @@ Notes:
 - `2BusD/main-InterPSS.dss` follows the GRIDAPPSD/distopf
   `src/distopf/cases/dss/2BusD/2Bus.DSS` feeder and adds balanced
   single-phase delta loads on the geometry-derived line case.
+- `2Bus_1phase/main-InterPSS.dss` follows the GRIDAPPSD/distopf
+  `src/distopf/cases/dss/2Bus_1phase/2Bus1ph.DSS` feeder and keeps the native
+  one-phase, two-wire geometry with neutral reduction.
 - `3Bus/main-InterPSS.dss` follows the GRIDAPPSD/distopf
   `src/distopf/cases/dss/3Bus/3Bus.DSS` feeder. It is used for native geometry
   import and matrix-reference tests; full PF/OPF validation remains pending
