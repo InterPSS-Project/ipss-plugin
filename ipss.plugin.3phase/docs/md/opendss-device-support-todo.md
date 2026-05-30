@@ -80,14 +80,14 @@
   - [x] Convert multiline `wdg=` transformer `%r` and `xhl` from OpenDSS
     percent-on-kVA values to ohms before InterPSS PU conversion.
 - [x] Support single-phase regulator transformer parsing and fixed-point PF.
+  - [x] Normalize single-phase regulator thermal limits on the one-phase PU base
+    used by OpenDSS-imported single-phase loads.
 - [ ] Support delta-wye and grounded-wye-delta variants.
 - [ ] Add fixed-ratio regulator metadata from `RegControl`.
 - [ ] Add anti-float treatment for transformer connections that create floating
   nodes in the PF Y-matrix.
 - [ ] Verify regulator branches:
-  - [ ] `test_reg` OPF validation; parser and fixed-point PF coverage added,
-    DistOPF model remains infeasible until fixed regulator voltage-ratio
-    handling is represented
+  - [x] `test_reg` parser, fixed-point PF, OPF, and post-OPF PF validation
   - [ ] IEEE13
   - [ ] IEEE34
   - [ ] IEEE123
