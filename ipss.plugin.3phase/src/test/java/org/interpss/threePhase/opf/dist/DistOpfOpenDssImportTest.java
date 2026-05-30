@@ -107,6 +107,7 @@ public class DistOpfOpenDssImportTest {
 	public void verifiesDistOpfOnGridappsdDistopfOpenDssGeometryCases() {
 		verifyGridappsdDistopfGeometryCase("2Bus", "n2");
 		verifyGridappsdDistopfGeometryCase("2BusD", "n2");
+		verifyGridappsdDistopfGeometryCase("2Bus_1phase", "n2");
 	}
 
 	@Test

@@ -1,0 +1,25 @@
+clear
+Set DefaultBaseFrequency=60
+
+! GRIDAPPSD/distopf src/distopf/cases/dss/2Bus_1phase/2Bus1ph.DSS, source snapshot ce39973.
+new circuit.2bus_1phase basekV=4.16 phases=3
+~ mvasc3=200000 200000
+
+set earthmodel=carson
+
+new wiredata.conductor Runits=mi Rac=0.306 GMRunits=ft GMRac=0.0244  Radunits=in Diam=0.721 normamps=530
+new wiredata.neutral   Runits=mi Rac=0.592 GMRunits=ft GMRac=0.00814 Radunits=in Diam=0.563 normamps=340
+
+new linegeometry.2wire nconds=2 nphases=1 reduce=yes
+~ cond=1 wire=conductor units=ft x=2 h=28
+~ cond=2 wire=neutral   units=ft x=0 h=28
+
+new line.line1 bus1=sourcebus.1 bus2=n2.1 geometry=2wire length=5280 units=ft
+
+new load.load1 phases=1 bus1=n2.1 conn=wye kV=2.40177 kW=225 pf=0.9 model=1
+~ vminpu=0.75
+
+set voltagebases=[4.16]
+calcvoltagebases
+set loadmult=1.0
+solve
