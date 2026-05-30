@@ -276,7 +276,26 @@ public class OpenDSSDataParser {
     		        				this.regulatorParser.parseRegControlData(str);
     		        			}
     		        			else if(tempAry[1].contains("Load.") ||tempAry[1].contains("load.")){
-    		        				this.loadParser.parseLoadData(str);
+    		        				String loadStr = str;
+    		        				String[] nextStrAry = getNextDataInputString(reader);
+    		        				if(nextStrAry[0]!=null){
+    		        					nextLine = nextStrAry[0].trim();
+    		        					lineCnt = lineCnt + Integer.valueOf(nextStrAry[1]);
+    		        					while(nextLine.startsWith("~")){
+    		        						loadStr = loadStr + " " + nextLine;
+    		        						nextStrAry = getNextDataInputString(reader);
+    		        						if(nextStrAry[0]==null){
+    		        							nextLine = null;
+    		        							break;
+    		        						}
+    		        						nextLine = nextStrAry[0].trim();
+    		        						lineCnt = lineCnt + Integer.valueOf(nextStrAry[1]);
+    		        					}
+    		        					if(nextLine!=null){
+    		        						useLastLineString = true;
+    		        					}
+    		        				}
+    		        				this.loadParser.parseLoadData(loadStr);
     		        			}
                                 else if(tempAry[1].contains("Capacitor.") ||tempAry[1].contains("capacitor.")){
     		        				this.capParser.parseCapDataString(str);
@@ -491,7 +510,26 @@ public class OpenDSSDataParser {
     		        				this.regulatorParser.parseRegControlData(str);
     		        			}
     		        			else if(tempAry[1].contains("Load.") ||tempAry[1].contains("load.")){
-    		        				this.loadParser.parseLoadData(str);
+    		        				String loadStr = str;
+    		        				String[] nextStrAry = getNextDataInputString(reader);
+    		        				if(nextStrAry[0]!=null){
+    		        					nextLine = nextStrAry[0].trim();
+    		        					lineCnt = lineCnt + Integer.valueOf(nextStrAry[1]);
+    		        					while(nextLine.startsWith("~")){
+    		        						loadStr = loadStr + " " + nextLine;
+    		        						nextStrAry = getNextDataInputString(reader);
+    		        						if(nextStrAry[0]==null){
+    		        							nextLine = null;
+    		        							break;
+    		        						}
+    		        						nextLine = nextStrAry[0].trim();
+    		        						lineCnt = lineCnt + Integer.valueOf(nextStrAry[1]);
+    		        					}
+    		        					if(nextLine!=null){
+    		        						useLastLineString = true;
+    		        					}
+    		        				}
+    		        				this.loadParser.parseLoadData(loadStr);
     		        			}
                                 else if(tempAry[1].contains("Capacitor.") ||tempAry[1].contains("capacitor.")){
     		        				this.capParser.parseCapDataString(str);
