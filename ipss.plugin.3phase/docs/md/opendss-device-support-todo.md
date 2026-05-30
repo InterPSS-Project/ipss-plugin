@@ -60,7 +60,7 @@
   `4Bus-YY-Bal_dss` CSV reference for the same 4-wire geometry.
 - [ ] Verify original GRIDAPPSD/distopf:
   - [x] `2Bus`
-  - `2BusD`
+  - [x] `2BusD`
   - `2Bus_1phase`
   - [ ] `3Bus` PF/OPF validation, blocked until OpenDSS `vminpu`/low-voltage
     load fallback behavior is represented for this stressed constant-power case
