@@ -83,7 +83,9 @@
   - [x] Normalize single-phase regulator thermal limits on the one-phase PU base
     used by OpenDSS-imported single-phase loads.
 - [ ] Support delta-wye and grounded-wye-delta variants.
-- [ ] Add fixed-ratio regulator metadata from `RegControl`.
+- [x] Add fixed-ratio regulator metadata from `RegControl`.
+  - [x] Parse `transformer=`, `winding=`, `vreg=`, and `ptratio=` and apply the
+    fixed winding target after voltage-base propagation.
 - [ ] Add anti-float treatment for transformer connections that create floating
   nodes in the PF Y-matrix.
 - [ ] Verify regulator branches:
