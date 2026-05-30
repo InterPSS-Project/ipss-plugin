@@ -126,6 +126,17 @@ public class DistOpfOpenDssImportTest {
 		powerFlow.setTolerance(1.0e-4);
 		assertTrue(powerFlow.powerflow());
 		assertTrue(distNet.getBus("3").get3PhaseVotlages().absMax() > 0.75);
+
+		DistOpfModelData data = new DistOpfModelDataExtractor().extract(distNet);
+		assertEquals(4.998, data.getBranches().get(0).getThermalLimitPu(), 1.0e-6);
+
+		DistOpfResult result = ThreePhaseObjectFactory.createDistOpfAlgorithm(distNet)
+				.setOptions(relaxedOrToolsOptions())
+				.solve();
+
+		assertEquals(DistOpfStatus.OPTIMAL, result.getStatus());
+		assertEquals(Boolean.TRUE, result.getPowerFlowConverged());
+		assertTrue(result.getMaxPowerFlowVoltageViolation() < 1.0e-6);
 	}
 
 	@Test
