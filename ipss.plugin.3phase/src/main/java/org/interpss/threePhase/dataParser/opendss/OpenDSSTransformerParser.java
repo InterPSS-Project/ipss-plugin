@@ -45,7 +45,7 @@ public class OpenDSSTransformerParser {
 		int phaseNum = 3;
 		int windingNum = 2;
 		double xhl = 0;
-		double losspercent1 = 0,losspercent2;
+		double losspercent1 = 0,losspercent2 = 0;
 		double kva1 = 0, kva2 = 0;
 		double nominalKV1 = 0, nominalKV2 = 0;
 		String xfrId = "";
@@ -106,7 +106,7 @@ public class OpenDSSTransformerParser {
 				nominalKV2 = Double.valueOf(element.substring(3));
 			}
 			else if(element.contains("kva=")){
-				kva1 = Double.valueOf(element.substring(4));
+				kva2 = Double.valueOf(element.substring(4));
 			}
 			else if(element.contains("%r=")){
 				losspercent2= Double.valueOf(element.substring(3));
@@ -134,8 +134,8 @@ public class OpenDSSTransformerParser {
 //		xfrBranch.getFromAclfBus().setBaseVoltage(normKV1, UnitType.kV);
 //		xfrBranch.getToAclfBus().setBaseVoltage(normKV2, UnitType.kV);
 
-		//TODO calculate r based on loss percent
-		xfrBranch.setZ( new Complex( 0.0, xhl ));
+		xfrBranch.setZ(transformerSeriesImpedanceOhm(nominalKV1, nominalKV2, kva1, kva2,
+				losspercent1 + losspercent2, xhl));
 
 		xfrBranch.setXfrRatedKVA(kva1);
 
@@ -382,8 +382,7 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 //		xfrBranch.getFromBus().setBaseVoltage(normKV1, UnitType.kV);
 //		xfrBranch.getToBus().setBaseVoltage(normKV2, UnitType.kV);
 //
-		//TODO calculate r based on loss percent
-		xfrBranch.setZ( new Complex( 0.0, xhl ));
+		xfrBranch.setZ(transformerSeriesImpedanceOhm(normKV1, normKV2, kva1, kva2, losspercent1, xhl));
 
 		xfrBranch.setXfrRatedKVA(kva1);
 
@@ -448,6 +447,17 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 		}
 		matcher.appendTail(buffer);
 		return buffer.toString();
+	}
+
+	private static Complex transformerSeriesImpedanceOhm(double kv1, double kv2,
+			double kva1, double kva2, double rPercent, double xPercent) {
+		double highKv = Math.max(kv1, kv2);
+		double ratedKva = kva1 > 0.0 ? kva1 : kva2;
+		if (highKv <= 0.0 || ratedKva <= 0.0) {
+			return new Complex(0.0, xPercent);
+		}
+		double zBaseOhm = highKv * highKv / (ratedKva / 1000.0);
+		return new Complex(rPercent / 100.0, xPercent / 100.0).multiply(zBaseOhm);
 	}
 
 
