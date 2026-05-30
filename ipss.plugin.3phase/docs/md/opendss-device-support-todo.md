@@ -61,7 +61,7 @@
 - [ ] Verify original GRIDAPPSD/distopf:
   - [x] `2Bus`
   - [x] `2BusD`
-  - `2Bus_1phase`
+  - [x] `2Bus_1phase`
   - [ ] `3Bus` PF/OPF validation, blocked until OpenDSS `vminpu`/low-voltage
     load fallback behavior is represented for this stressed constant-power case
   - `4Bus-YY-Bal`
