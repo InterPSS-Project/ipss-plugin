@@ -300,13 +300,22 @@ public class DistOpfModelDataExtractor {
 		if (baseMva <= 0.0) {
 			return null;
 		}
+		double branchBaseMva = thermalLimitBaseMva(branch, baseMva);
 		if (branch.getRatingMva1() > 0.0) {
-			return Double.valueOf(branch.getRatingMva1() / baseMva);
+			return Double.valueOf(branch.getRatingMva1() / branchBaseMva);
 		}
 		if (branch.isXfr() && branch.getXfrRatedKVA() > 0.0) {
-			return Double.valueOf(branch.getXfrRatedKVA() / 1000.0 / baseMva);
+			return Double.valueOf(branch.getXfrRatedKVA() / 1000.0 / branchBaseMva);
 		}
 		return null;
+	}
+
+	private static double thermalLimitBaseMva(DStab3PBranch branch, double baseMva) {
+		PhaseCode phase = branch.getPhaseCode();
+		if (phase == PhaseCode.A || phase == PhaseCode.B || phase == PhaseCode.C) {
+			return baseMva / 3.0;
+		}
+		return baseMva;
 	}
 
 	private static double voltageRatio(DStab3PBranch branch) {
