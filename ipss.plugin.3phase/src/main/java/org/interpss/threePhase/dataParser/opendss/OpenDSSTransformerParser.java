@@ -123,7 +123,8 @@ public class OpenDSSTransformerParser {
 
 
 		// create a transformer object
-		DStab3PBranch xfrBranch = ThreePhaseObjectFactory.create3PBranch(fromBusId, toBusId, "0", this.dataParser.getDistNetwork());
+		DStab3PBranch xfrBranch = ThreePhaseObjectFactory.create3PBranch(fromBusId, toBusId, xfrId,
+				this.dataParser.getDistNetwork());
 		xfrBranch.setName(xfrId);
 		xfrBranch.setBranchCode(AclfBranchCode.XFORMER);
 
@@ -301,7 +302,8 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 
 
 		// create a transformer object
-		DStab3PBranch xfrBranch = ThreePhaseObjectFactory.create3PBranch(fromBusId, toBusId, "0", this.dataParser.getDistNetwork());
+		DStab3PBranch xfrBranch = ThreePhaseObjectFactory.create3PBranch(fromBusId, toBusId, xfrId,
+				this.dataParser.getDistNetwork());
 
 		// since InterPSS uses fromBus->toBus(cirId) as the unique branchId, here the original Id is set as the name.
 		xfrBranch.setName(this.dataParser.getBusIdPrefix()+xfrId);

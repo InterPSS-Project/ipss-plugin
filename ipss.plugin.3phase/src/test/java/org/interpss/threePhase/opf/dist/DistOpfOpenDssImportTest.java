@@ -15,6 +15,8 @@ import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.jupiter.api.Test;
 
+import com.interpss.core.acsc.PhaseCode;
+
 public class DistOpfOpenDssImportTest {
 
 	@Test
@@ -108,6 +110,22 @@ public class DistOpfOpenDssImportTest {
 		verifyGridappsdDistopfLinecodeCase("test_line_unbal_load");
 		verifyGridappsdDistopfLinecodeCase("test_line_unbal_line");
 		verifyGridappsdDistopfLinecodeCase("test_line_unbal_load_unbal_line");
+	}
+
+	@Test
+	public void importsGridappsdDistopfRegulatorCaseWithFixedPointPowerFlow() {
+		DStabNetwork3Phase distNet = openDssNetwork(
+				"testData/feeder/DistOPFGridappsdDss/test_reg",
+				"main-InterPSS.dss");
+
+		assertEquals(PhaseCode.A, branchByName(distNet, "reg1").getPhaseCode());
+		assertEquals(PhaseCode.B, branchByName(distNet, "reg2").getPhaseCode());
+		assertEquals(PhaseCode.C, branchByName(distNet, "reg3").getPhaseCode());
+
+		DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(distNet);
+		powerFlow.setTolerance(1.0e-4);
+		assertTrue(powerFlow.powerflow());
+		assertTrue(distNet.getBus("3").get3PhaseVotlages().absMax() > 0.75);
 	}
 
 	@Test
