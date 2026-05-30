@@ -220,12 +220,15 @@ public class DistOpfOpenDssImportTest {
 		DStab3PBranch dy = branchByName(dyNet, "t1");
 		assertEquals(XFormerConnectCode.DELTA11, dy.getFromGrounding().getXfrConnectCode());
 		assertEquals(XFormerConnectCode.WYE, dy.getToGrounding().getXfrConnectCode());
+		verifyFixedPointPfAndDistOpf(dyNet);
+	}
 
-		DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(dyNet);
+	private static void verifyFixedPointPfAndDistOpf(DStabNetwork3Phase distNet) {
+		DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(distNet);
 		powerFlow.setTolerance(1.0e-4);
 		assertTrue(powerFlow.powerflow());
 
-		DistOpfResult result = ThreePhaseObjectFactory.createDistOpfAlgorithm(dyNet)
+		DistOpfResult result = ThreePhaseObjectFactory.createDistOpfAlgorithm(distNet)
 				.setOptions(relaxedOrToolsOptions())
 				.solve();
 

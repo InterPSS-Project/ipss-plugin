@@ -65,11 +65,13 @@
   - [ ] `3Bus` PF/OPF validation, blocked until OpenDSS `vminpu`/low-voltage
     load fallback behavior is represented for this stressed constant-power case
   - [x] `4Bus-YY-Bal` PF/OPF validation
-  - [ ] `4Bus-YD-Bal`; parser/connection coverage added, PF/OPF pending
-    three-phase delta load support
+  - [ ] `4Bus-YD-Bal`; parser/connection coverage and three-phase delta load
+    injection added, PF/OPF pending transformer phase-shift/convergence
+    validation
   - [x] `4Bus-DY-Bal` parser, fixed-point PF, OPF, and post-OPF PF validation
-  - [ ] `4Bus-GrdYD-Bal`; parser/connection coverage added, PF/OPF pending
-    three-phase delta load support
+  - [ ] `4Bus-GrdYD-Bal`; parser/connection coverage and three-phase delta
+    load injection added, PF/OPF pending transformer phase-shift/convergence
+    validation
 - [ ] Compare computed matrices with OpenDSS/distopf reference matrices.
 
 ## Phase 5: Transformers and Regulators
@@ -101,6 +103,7 @@
 
 ## Phase 6: Loads, Capacitors, and Controls
 
+- [x] Support balanced three-phase delta load current injection.
 - [ ] Support one-phase delta loads connected line-to-line.
 - [ ] Map OpenDSS model 4 and ZIP inputs to documented PF approximations.
 - [x] Parse and retain `vminpu` and `vmaxpu` where relevant.
