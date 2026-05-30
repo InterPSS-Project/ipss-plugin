@@ -30,3 +30,7 @@ Notes:
   import and matrix-reference tests; full PF/OPF validation remains pending
   because the stressed constant-power case needs OpenDSS low-voltage load
   fallback behavior.
+- `4Bus-YY-Bal/main-InterPSS.dss` follows the GRIDAPPSD/distopf
+  `src/distopf/cases/dss/4Bus-YY-Bal/4Bus-YY-Bal.DSS` feeder. It is used for
+  multiline wye-wye transformer import coverage; full PF/OPF validation remains
+  pending.

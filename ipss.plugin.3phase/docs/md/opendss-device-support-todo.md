@@ -64,7 +64,8 @@
   - [x] `2Bus_1phase`
   - [ ] `3Bus` PF/OPF validation, blocked until OpenDSS `vminpu`/low-voltage
     load fallback behavior is represented for this stressed constant-power case
-  - `4Bus-YY-Bal`
+  - [ ] `4Bus-YY-Bal` PF/OPF validation; parser and transformer impedance
+    coverage added, fixed-point PF convergence still pending
   - `4Bus-YD-Bal`
   - `4Bus-DY-Bal`
   - `4Bus-GrdYD-Bal`
@@ -76,6 +77,8 @@
   arrays.
 - [ ] Support `buses=`, `conns=`, `kvs=`, `kvas=`, `wdg=`, `%r`, `%loadloss`,
   and `xhl` consistently.
+  - [x] Convert multiline `wdg=` transformer `%r` and `xhl` from OpenDSS
+    percent-on-kVA values to ohms before InterPSS PU conversion.
 - [ ] Support single-phase regulator transformers.
 - [ ] Support delta-wye and grounded-wye-delta variants.
 - [ ] Add fixed-ratio regulator metadata from `RegControl`.
