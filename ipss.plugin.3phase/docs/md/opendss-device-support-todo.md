@@ -34,8 +34,8 @@
 - [x] Support `none`, `mi`, `kft`, `ft`, `km`, and `m`.
 - [x] Replace normalized GRIDAPPSD/distopf `test_line` fixture with native
   `Length=2000 units=ft`.
-- [ ] Add impedance conversion assertions for the imported `test_line` branches.
-- [ ] Run PF, OPF, and post-OPF PF validation for `test_line`.
+- [x] Add impedance conversion assertions for the imported `test_line` branches.
+- [x] Run PF, OPF, and post-OPF PF validation for `test_line`.
 
 ## Phase 3: Small Linecode Cases
 
@@ -127,6 +127,6 @@
 - [x] Store linecode units.
 - [x] Convert line lengths for linecode-based lines.
 - [x] Update `DistOPFGridappsdDss/test_line` to use native 2000 ft lengths.
-- [ ] Run `DistOpfOpenDssImportTest`.
-- [ ] Run `mvn -pl ipss.plugin.3phase clean '-Dtest=org.interpss.threePhase.opf.dist.*Test' test`.
-- [ ] Commit the parser/unit-conversion slice.
+- [x] Run `DistOpfOpenDssImportTest`.
+- [x] Run `mvn -pl ipss.plugin.3phase clean '-Dtest=org.interpss.threePhase.opf.dist.*Test' test`.
+- [x] Commit the parser/unit-conversion slice.

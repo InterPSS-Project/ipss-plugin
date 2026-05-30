@@ -94,6 +94,13 @@ public class DistOpfOpenDssImportTest {
 	@Test
 	public void verifiesDistOpfOnGridappsdDistopfOpenDssTestLine() {
 		verifyGridappsdDistopfLinecodeCase("test_line");
+
+		DStabNetwork3Phase distNet = openDssNetwork(
+				"testData/feeder/DistOPFGridappsdDss/test_line",
+				"main-InterPSS.dss");
+		Complex3x3 expected = gridappsdTestLinePu();
+		assertTrue(branchByName(distNet, "12").getZabc().subtract(expected).absMax() < 1.0e-10);
+		assertTrue(branchByName(distNet, "23").getZabc().subtract(expected).absMax() < 1.0e-10);
 	}
 
 	@Test
@@ -191,6 +198,31 @@ public class DistOpfOpenDssImportTest {
 				.setMinVoltagePu(0.0)
 				.setMaxVoltagePu(2.0)
 				.setPowerFlowTolerance(1.0e-4);
+	}
+
+	private static DStab3PBranch branchByName(DStabNetwork3Phase distNet, String branchName) {
+		return (DStab3PBranch) distNet.getBranchList().stream()
+				.filter(branch -> branchName.equals(branch.getName()))
+				.findFirst()
+				.orElseThrow();
+	}
+
+	private static Complex3x3 gridappsdTestLinePu() {
+		double lengthMi = 2000.0 / 5280.0;
+		double zBase = 4.16 * 4.16;
+		Complex self = new Complex(0.3, 1.0).multiply(lengthMi / zBase);
+		Complex mutual = new Complex(0.1, 0.5).multiply(lengthMi / zBase);
+		Complex3x3 zabc = new Complex3x3();
+		zabc.aa = self;
+		zabc.ab = mutual;
+		zabc.ac = mutual;
+		zabc.ba = mutual;
+		zabc.bb = self;
+		zabc.bc = mutual;
+		zabc.ca = mutual;
+		zabc.cb = mutual;
+		zabc.cc = self;
+		return zabc;
 	}
 
 	private static Complex3x3 gridappsdFourBusGeometryReferenceLine2Pu() {
