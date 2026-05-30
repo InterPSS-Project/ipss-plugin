@@ -1,0 +1,17 @@
+! Derived from GRIDAPPSD/distopf src/distopf/cases/dss/test_line_unbal_load_unbal_line/main.dss
+! Imported source snapshot: ce39973
+
+New Circuit.test_line_unbal_load_unbal_line phases=3
+~ basekv=4.16 pu=1.000 bus1=1
+
+New Linecode.mtx601 nphases=3 BaseFreq=60
+~ rmatrix=(0.3465 | 0.1560 0.3375 | 0.1580 0.1535 0.3414)
+~ xmatrix=(1.0179 | 0.5017 1.0478 | 0.4236 0.3849 1.0348)
+~ units=mi
+
+New Line.12 Phases=3 Bus1=1.1.2.3 Bus2=2.1.2.3 LineCode=mtx601 Length=2000 units=ft
+New Line.23 Phases=3 Bus1=2.1.2.3 Bus2=3.1.2.3 LineCode=mtx601 Length=2000 units=ft
+
+New Load.3a Bus1=3.1 Phases=1 Conn=Wye Model=1 kV=2.40177 kW=1230.2 kvar=604.6
+New Load.3b Bus1=3.2 Phases=1 Conn=Wye Model=1 kV=2.40177 kW=975.9 kvar=346.5
+New Load.3c Bus1=3.3 Phases=1 Conn=Wye Model=1 kV=2.40177 kW=1300.0 kvar=589.2

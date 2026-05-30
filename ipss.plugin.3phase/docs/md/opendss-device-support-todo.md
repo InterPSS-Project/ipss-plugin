@@ -39,13 +39,14 @@
 
 ## Phase 3: Small Linecode Cases
 
-- [ ] Add native fixtures/tests for:
+- [x] Add native fixtures/tests for:
   - `test_line_unbal_load`
   - `test_line_unbal_line`
   - `test_line_unbal_load_unbal_line`
-- [ ] Verify one-phase wye load handling on missing-phase buses.
-- [ ] Verify unbalanced line impedance phase mapping.
-- [ ] Verify DistOPF extraction keeps per-phase load and branch data.
+- [x] Verify one-phase wye load handling on three single-phase loads.
+- [x] Verify unbalanced line impedance phase mapping.
+- [x] Verify DistOPF extraction keeps per-phase load and branch data through
+  PF/OPF/post-OPF PF validation.
 
 ## Phase 4: Geometry and Cable Data
 

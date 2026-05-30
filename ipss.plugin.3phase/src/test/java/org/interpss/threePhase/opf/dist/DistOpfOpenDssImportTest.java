@@ -90,25 +90,14 @@ public class DistOpfOpenDssImportTest {
 
 	@Test
 	public void verifiesDistOpfOnGridappsdDistopfOpenDssTestLine() {
-		DStabNetwork3Phase distNet = openDssNetwork(
-				"testData/feeder/DistOPFGridappsdDss/test_line",
-				"main-InterPSS.dss");
+		verifyGridappsdDistopfLinecodeCase("test_line");
+	}
 
-		DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(distNet);
-		powerFlow.setTolerance(1.0e-4);
-		assertTrue(powerFlow.powerflow());
-		DStab3PBus loadBus = distNet.getBus("3");
-		assertTrue(loadBus.get3PhaseVotlages().absMax() > 0.75);
-
-		DistOpfResult result = ThreePhaseObjectFactory.createDistOpfAlgorithm(distNet)
-				.setOptions(relaxedOrToolsOptions())
-				.solve();
-
-		assertEquals(DistOpfStatus.OPTIMAL, result.getStatus());
-		assertEquals(Boolean.TRUE, result.getPowerFlowConverged());
-		assertTrue(result.getPowerFlowIterationCount() > 0);
-		assertTrue(result.getMaxPowerFlowVoltageViolation() < 1.0e-6);
-		assertTrue(result.getMaxPowerFlowBranchLimitViolation() < 1.0e-6);
+	@Test
+	public void verifiesDistOpfOnGridappsdDistopfOpenDssSmallLinecodeCases() {
+		verifyGridappsdDistopfLinecodeCase("test_line_unbal_load");
+		verifyGridappsdDistopfLinecodeCase("test_line_unbal_line");
+		verifyGridappsdDistopfLinecodeCase("test_line_unbal_load_unbal_line");
 	}
 
 	private static DStabNetwork3Phase openDssNetwork(String folderPath, String feederFile) {
@@ -121,6 +110,28 @@ public class DistOpfOpenDssImportTest {
 		parser.calcVoltageBases();
 		parser.convertActualValuesToPU(1.0);
 		return parser;
+	}
+
+	private static void verifyGridappsdDistopfLinecodeCase(String caseName) {
+		DStabNetwork3Phase distNet = openDssNetwork(
+				"testData/feeder/DistOPFGridappsdDss/" + caseName,
+				"main-InterPSS.dss");
+
+		DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(distNet);
+		powerFlow.setTolerance(1.0e-4);
+		assertTrue(powerFlow.powerflow(), caseName);
+		DStab3PBus loadBus = distNet.getBus("3");
+		assertTrue(loadBus.get3PhaseVotlages().absMax() > 0.75, caseName);
+
+		DistOpfResult result = ThreePhaseObjectFactory.createDistOpfAlgorithm(distNet)
+				.setOptions(relaxedOrToolsOptions())
+				.solve();
+
+		assertEquals(DistOpfStatus.OPTIMAL, result.getStatus(), caseName);
+		assertEquals(Boolean.TRUE, result.getPowerFlowConverged(), caseName);
+		assertTrue(result.getPowerFlowIterationCount() > 0, caseName);
+		assertTrue(result.getMaxPowerFlowVoltageViolation() < 1.0e-6, caseName);
+		assertTrue(result.getMaxPowerFlowBranchLimitViolation() < 1.0e-6, caseName);
 	}
 
 	private static DistOpfOptions relaxedOrToolsOptions() {
