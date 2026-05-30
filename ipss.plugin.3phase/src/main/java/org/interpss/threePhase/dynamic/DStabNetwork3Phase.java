@@ -8,7 +8,7 @@ import org.interpss.numeric.sparse.ISparseEqnComplexMatrix3x3;
 import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
 
-import com.interpss.core.abc.INetwork3Phase;
+import com.interpss.core.threephase.INetwork3Phase;
 import com.interpss.dstab.BaseDStabNetwork;
 
 public interface DStabNetwork3Phase extends INetwork3Phase, BaseDStabNetwork<DStab3PBus, DStab3PBranch>{

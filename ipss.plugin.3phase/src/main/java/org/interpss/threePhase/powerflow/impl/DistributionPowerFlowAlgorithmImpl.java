@@ -23,7 +23,7 @@ import com.interpss.common.datatype.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.interpss.core.abc.Static3PXformer;
+import com.interpss.core.threephase.Static3PXformer;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfLoad;
