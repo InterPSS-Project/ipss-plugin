@@ -30,6 +30,7 @@ public class OpenDSSLineParser {
 		String  toBusId = "";
 		String  toBusPhases = "1.2.3"; // by default;
 		String  lineCodeId = "";
+		String  geometryId = "";
 		String  units = "";
 		double  lineLength = 0;
 		int     phaseNum = 3;    // 3 phases by default
@@ -41,7 +42,7 @@ public class OpenDSSLineParser {
 
 		DStab3PBus fromBus = null, toBus = null;
 
-		int phaseIdx = -1, lineCodeIdx = -1;
+		int phaseIdx = -1, lineConfigIdx = -1;
 
 		/*
 		 * (6) r1 Positive sequence Resistance, ohms per unit length. See also Rmatrix.
@@ -72,8 +73,12 @@ public class OpenDSSLineParser {
 				toBusStr = lineStrAry[i].substring(5);
 			}
 			else if(lineStrAry[i].contains("linecode=")){
-				lineCodeIdx = i;
+				lineConfigIdx = i;
 				lineCodeId= lineStrAry[i].substring(9).toLowerCase();
+			}
+			else if(lineStrAry[i].contains("geometry=")){
+				lineConfigIdx = i;
+				geometryId= lineStrAry[i].substring(9).toLowerCase();
 			}
 			else if(lineStrAry[i].contains("length=")){
 				lineLength = Double.valueOf(lineStrAry[i].substring(7));
@@ -129,16 +134,17 @@ public class OpenDSSLineParser {
 		Complex3x3 yshuntabc = new Complex3x3();
 		LineConfiguration config = null;
 
-		if(lineCodeIdx> 0){ // line parameters defined by line code
+		if(lineConfigIdx> 0){ // line parameters defined by line code or geometry
 
-			config = this.dataParser.getLineConfigTable().get(lineCodeId);
+			String configId = lineCodeId.equals("") ? geometryId : lineCodeId;
+			config = this.dataParser.getLineConfigTable().get(configId);
 
 			if(config!=null){
 				zabc = config.getZ3x3Matrix();
 				lineLength = lineLength * OpenDSSUnitConverter.lengthFactor(units, config.getLengthUnit());
 			}
 			else{
-				throw new Error("LineConfiguration definition not found, LineCodeId:"+lineCodeId);
+				throw new Error("LineConfiguration definition not found, id:"+configId);
 			}
 		}
 		else{ // line parameters defined by raw data
@@ -307,7 +313,7 @@ public class OpenDSSLineParser {
 
 		// need to consider the line length
 		//TODO consistency of the unit types
-		if(lineLength == 0.0 && lineCodeIdx < 0) {
+		if(lineLength == 0.0 && lineConfigIdx < 0) {
 			lineLength = 1.0;
 		}
 		line.setZabc(zabc.multiply(lineLength));
