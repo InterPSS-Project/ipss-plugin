@@ -1,0 +1,33 @@
+! GRIDAPPSD/distopf src/distopf/cases/dss/test_reg/main.dss, source snapshot ce39973.
+Clear
+
+new circuit.test_reg
+~ basekv=4.16 pu=1.000 phases=3 bus1=1
+
+New linecode.test nphases=3 BaseFreq=60
+~ rmatrix = (0.3 | 0.1 0.3 | 0.1 0.1 0.3 )
+~ xmatrix = (1.0 | 0.5 1.0 | 0.5 0.5 1.0 )
+~ units=mi
+
+New Transformer.Reg1 phases=1 XHL=0.01 kVAs=[1666 1666]
+~ Buses=[1.1 2.1] kVs=[2.4  2.4] %LoadLoss=0.01
+new regcontrol.Reg1  transformer=Reg1 winding=2  vreg=122  band=2  ptratio=20 ctprim=700  R=3   X=9
+
+New Transformer.Reg2 phases=1 XHL=0.01 kVAs=[1666 1666]
+~ Buses=[1.2 2.2] kVs=[2.4  2.4] %LoadLoss=0.01
+new regcontrol.Reg2  transformer=Reg2 winding=2  vreg=122  band=2  ptratio=20 ctprim=700  R=3   X=9
+
+New Transformer.Reg3 phases=1 XHL=0.01 kVAs=[1666 1666]
+~ Buses=[1.3 2.3] kVs=[2.4  2.4] %LoadLoss=0.01
+new regcontrol.Reg3  transformer=Reg3 winding=2  vreg=122  band=2  ptratio=20 ctprim=700  R=3   X=9
+
+New Line.23 Phases=3 Bus1=2.1.2.3 Bus2=3.1.2.3 LineCode=test Length=2000 units=ft
+
+New Load.3a Bus1=3.1 Phases=1 Conn=Wye Model=1 kV=2.40177 kW=1000 kvar=500
+New Load.3b Bus1=3.2 Phases=1 Conn=Wye Model=1 kV=2.40177 kW=1000 kvar=500
+New Load.3c Bus1=3.3 Phases=1 Conn=Wye Model=1 kV=2.40177 kW=1000 kvar=500
+
+Set Voltagebases=[4.16]
+Set LoadMult=1.0
+calcv
+Solve
