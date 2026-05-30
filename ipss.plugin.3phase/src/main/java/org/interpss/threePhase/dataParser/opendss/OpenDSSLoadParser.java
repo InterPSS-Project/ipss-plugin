@@ -69,6 +69,8 @@ public class OpenDSSLoadParser {
 			double nominalKV = 0;
 			double loadP = 0.0, loadQ  = 0.0;
 			double powerfactor = 0.0;
+			Double vminpu = null;
+			Double vmaxpu = null;
 
 			String[] loadStrAry = loadStr.toLowerCase().trim().split("\\s+");
 
@@ -99,6 +101,12 @@ public class OpenDSSLoadParser {
 				}
 				else if(element.startsWith("kv=")){
 					nominalKV = Double.valueOf(element.substring(3));
+				}
+				else if(element.startsWith("vminpu=")){
+					vminpu = Double.valueOf(element.substring(7));
+				}
+				else if(element.startsWith("vmaxpu=")){
+					vmaxpu = Double.valueOf(element.substring(7));
 				}
 
 
@@ -149,6 +157,12 @@ public class OpenDSSLoadParser {
 			load.setId(loadId);
 			// rated KV
 			load.setNominalKV(nominalKV);
+			if (vminpu != null) {
+				load.setVminpu(vminpu.doubleValue());
+			}
+			if (vmaxpu != null) {
+				load.setVmaxpu(vmaxpu.doubleValue());
+			}
 
 			//load model type
 			if(modelType==1){
