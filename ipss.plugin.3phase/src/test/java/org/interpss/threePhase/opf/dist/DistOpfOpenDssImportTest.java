@@ -16,7 +16,9 @@ import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.jupiter.api.Test;
 
+import com.interpss.core.acsc.BusGroundCode;
 import com.interpss.core.acsc.PhaseCode;
+import com.interpss.core.acsc.XFormerConnectCode;
 
 public class DistOpfOpenDssImportTest {
 
@@ -187,6 +189,43 @@ public class DistOpfOpenDssImportTest {
 		assertTrue(powerFlow.powerflow());
 
 		DistOpfResult result = ThreePhaseObjectFactory.createDistOpfAlgorithm(distNet)
+				.setOptions(relaxedOrToolsOptions())
+				.solve();
+
+		assertEquals(DistOpfStatus.OPTIMAL, result.getStatus());
+		assertEquals(Boolean.TRUE, result.getPowerFlowConverged());
+	}
+
+	@Test
+	public void importsGridappsdDistopfFourBusTransformerConnectionVariants() {
+		DStabNetwork3Phase ydNet = openDssNetwork(
+				"testData/feeder/DistOPFGridappsdDss/4Bus-YD-Bal",
+				"main-InterPSS.dss");
+		DStab3PBranch yd = branchByName(ydNet, "t1");
+		assertEquals("n2", yd.getFromBus().getId());
+		assertEquals(XFormerConnectCode.WYE, yd.getFromGrounding().getXfrConnectCode());
+		assertEquals(BusGroundCode.UNGROUNDED, yd.getFromGrounding().getGroundCode());
+		assertEquals(XFormerConnectCode.DELTA11, yd.getToGrounding().getXfrConnectCode());
+
+		DStabNetwork3Phase grdYdNet = openDssNetwork(
+				"testData/feeder/DistOPFGridappsdDss/4Bus-GrdYD-Bal",
+				"main-InterPSS.dss");
+		DStab3PBranch grdYd = branchByName(grdYdNet, "t1");
+		assertEquals(BusGroundCode.SOLID_GROUNDED, grdYd.getFromGrounding().getGroundCode());
+		assertEquals(XFormerConnectCode.DELTA11, grdYd.getToGrounding().getXfrConnectCode());
+
+		DStabNetwork3Phase dyNet = openDssNetwork(
+				"testData/feeder/DistOPFGridappsdDss/4Bus-DY-Bal",
+				"main-InterPSS.dss");
+		DStab3PBranch dy = branchByName(dyNet, "t1");
+		assertEquals(XFormerConnectCode.DELTA11, dy.getFromGrounding().getXfrConnectCode());
+		assertEquals(XFormerConnectCode.WYE, dy.getToGrounding().getXfrConnectCode());
+
+		DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(dyNet);
+		powerFlow.setTolerance(1.0e-4);
+		assertTrue(powerFlow.powerflow());
+
+		DistOpfResult result = ThreePhaseObjectFactory.createDistOpfAlgorithm(dyNet)
 				.setOptions(relaxedOrToolsOptions())
 				.solve();
 
