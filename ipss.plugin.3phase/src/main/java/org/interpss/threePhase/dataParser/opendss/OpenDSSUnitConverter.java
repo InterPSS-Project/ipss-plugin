@@ -28,6 +28,12 @@ final class OpenDSSUnitConverter {
 		if (value.equals("ft") || value.equals("feet") || value.equals("foot")) {
 			return "ft";
 		}
+		if (value.equals("in") || value.equals("inch") || value.equals("inches")) {
+			return "in";
+		}
+		if (value.equals("cm") || value.equals("centimeter") || value.equals("centimeters")) {
+			return "cm";
+		}
 		if (value.equals("km") || value.equals("kmeters")) {
 			return "km";
 		}
@@ -48,6 +54,10 @@ final class OpenDSSUnitConverter {
 			return 304.8;
 		case "ft":
 			return 0.3048;
+		case "in":
+			return 0.0254;
+		case "cm":
+			return 0.01;
 		case "km":
 			return 1000.0;
 		case "m":

@@ -15,3 +15,7 @@ Notes:
 - The upstream files already use explicit `Linecode` matrices. These fixtures
   keep the native 2000 ft branch lengths to verify OpenDSS line length unit
   conversion against linecodes declared in miles.
+- `2Bus/main-InterPSS.dss` follows the GRIDAPPSD/distopf
+  `src/distopf/cases/dss/2Bus/2Bus.DSS` feeder and keeps the native
+  `WireData`/`LineGeometry` definitions to verify geometry-derived line
+  configuration import.

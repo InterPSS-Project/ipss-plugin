@@ -50,13 +50,14 @@
 
 ## Phase 4: Geometry and Cable Data
 
-- [ ] Add `OpenDSSWireDataParser`.
+- [x] Add `OpenDSSWireDataParser`.
 - [ ] Add `OpenDSSCableDataParser` for `CNData`.
-- [ ] Add `OpenDSSLineGeometryParser`.
-- [ ] Implement neutral reduction for `reduce=yes`.
-- [ ] Add a geometry impedance calculator or validated approximation.
+- [x] Add `OpenDSSLineGeometryParser`.
+- [x] Implement neutral reduction for `reduce=yes` on wire-based overhead
+  geometries.
+- [x] Add a Carson impedance approximation for wire-based overhead geometries.
 - [ ] Verify original GRIDAPPSD/distopf:
-  - `2Bus`
+  - [x] `2Bus`
   - `2BusD`
   - `2Bus_1phase`
   - `3Bus`
