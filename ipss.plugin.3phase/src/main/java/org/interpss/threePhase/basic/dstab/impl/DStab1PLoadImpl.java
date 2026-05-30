@@ -6,7 +6,7 @@ import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.threePhase.basic.dstab.DStab1PLoad;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
 
-import com.interpss.core.abc.LoadConnectionType;
+import com.interpss.core.threephase.LoadConnectionType;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.acsc.PhaseCode;
 import com.interpss.dstab.impl.DStabLoadImpl;

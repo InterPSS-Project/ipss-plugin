@@ -10,7 +10,7 @@ import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
 
-import com.interpss.core.abc.Static3PXformer;
+import com.interpss.core.threephase.Static3PXformer;
 import com.interpss.core.acsc.PhaseCode;
 import com.interpss.dstab.impl.DStabBranchImpl;
 

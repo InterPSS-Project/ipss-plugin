@@ -7,7 +7,7 @@ import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.threePhase.dynamic.model.DynLoadModel1Phase;
 import org.interpss.threePhase.dynamic.model.DynLoadModel3Phase;
 
-import com.interpss.core.abc.IBus3Phase;
+import com.interpss.core.threephase.IBus3Phase;
 import com.interpss.dstab.BaseDStabBus;
 
 public interface DStab3PBus extends IBus3Phase, BaseDStabBus<DStab3PGen,DStab3PLoad> {
