@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x3;
+import org.interpss.threePhase.basic.dstab.DStab1PLoad;
 import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.dataParser.opendss.OpenDSSDataParser;
@@ -177,6 +178,20 @@ public class DistOpfOpenDssImportTest {
 		Complex actualTransformerZ = branchByName(distNet, "t1").getZ();
 		assertEquals(expectedTransformerZ.getReal(), actualTransformerZ.getReal(), 1.0e-10);
 		assertEquals(expectedTransformerZ.getImaginary(), actualTransformerZ.getImaginary(), 1.0e-10);
+		assertEquals(0.75,
+				((DStab1PLoad) distNet.getBus("n4").getThreePhaseLoadList().get(0)).getVminpu(),
+				1.0e-12);
+
+		DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(distNet);
+		powerFlow.setTolerance(1.0e-4);
+		assertTrue(powerFlow.powerflow());
+
+		DistOpfResult result = ThreePhaseObjectFactory.createDistOpfAlgorithm(distNet)
+				.setOptions(relaxedOrToolsOptions())
+				.solve();
+
+		assertEquals(DistOpfStatus.OPTIMAL, result.getStatus());
+		assertEquals(Boolean.TRUE, result.getPowerFlowConverged());
 	}
 
 	private static DStabNetwork3Phase openDssNetwork(String folderPath, String feederFile) {

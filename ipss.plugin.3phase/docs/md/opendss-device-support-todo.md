@@ -64,8 +64,7 @@
   - [x] `2Bus_1phase`
   - [ ] `3Bus` PF/OPF validation, blocked until OpenDSS `vminpu`/low-voltage
     load fallback behavior is represented for this stressed constant-power case
-  - [ ] `4Bus-YY-Bal` PF/OPF validation; parser and transformer impedance
-    coverage added, fixed-point PF convergence still pending
+  - [x] `4Bus-YY-Bal` PF/OPF validation
   - `4Bus-YD-Bal`
   - `4Bus-DY-Bal`
   - `4Bus-GrdYD-Bal`
@@ -98,7 +97,8 @@
 
 - [ ] Support one-phase delta loads connected line-to-line.
 - [ ] Map OpenDSS model 4 and ZIP inputs to documented PF approximations.
-- [ ] Parse and retain `vminpu` and `vmaxpu` where relevant.
+- [x] Parse and retain `vminpu` and `vmaxpu` where relevant.
+  - [x] Preserve load continuation lines beginning with `~` before parsing.
 - [ ] Parse `CapControl` and keep capacitors fixed by default.
 - [ ] Add optional fixed control-state import for capacitors/regulators.
 - [ ] Verify IEEE34 and IEEE123 PF and OPF with fixed controls.
