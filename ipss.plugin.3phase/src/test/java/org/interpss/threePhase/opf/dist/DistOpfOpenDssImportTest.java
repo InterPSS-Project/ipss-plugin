@@ -132,6 +132,22 @@ public class DistOpfOpenDssImportTest {
 		assertTrue(line2.getZabc().subtract(expected).absMax() < 1.0e-6);
 	}
 
+	@Test
+	public void importsGridappsdDistopfFourBusYyTransformerCase() {
+		DStabNetwork3Phase distNet = openDssNetwork(
+				"testData/feeder/DistOPFGridappsdDss/4Bus-YY-Bal",
+				"main-InterPSS.dss");
+
+		DistOpfModelData data = new DistOpfModelDataExtractor().extract(distNet);
+		assertEquals("sourcebus", data.getSwingBusId());
+		assertEquals(3, data.getBranches().size());
+
+		Complex expectedTransformerZ = new Complex(1.0 / 600.0, 1.0 / 100.0);
+		Complex actualTransformerZ = branchByName(distNet, "t1").getZ();
+		assertEquals(expectedTransformerZ.getReal(), actualTransformerZ.getReal(), 1.0e-10);
+		assertEquals(expectedTransformerZ.getImaginary(), actualTransformerZ.getImaginary(), 1.0e-10);
+	}
+
 	private static DStabNetwork3Phase openDssNetwork(String folderPath, String feederFile) {
 		return openDssParser(folderPath, feederFile).getDistNetwork();
 	}
@@ -151,7 +167,16 @@ public class DistOpfOpenDssImportTest {
 
 		DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(distNet);
 		powerFlow.setTolerance(1.0e-4);
-		assertTrue(powerFlow.powerflow(), caseName);
+		boolean converged = powerFlow.powerflow();
+		if (!converged && caseName.equals("4Bus-YY-Bal")) {
+			distNet.getBusList().forEach(bus -> System.out.println(bus.getId() + " base=" + bus.getBaseVoltage()
+					+ " v=" + ((DStab3PBus) bus).get3PhaseVotlages()));
+			distNet.getBranchList().forEach(branch -> System.out.println(branch.getId() + " name=" + branch.getName()
+					+ " z=" + ((DStab3PBranch) branch).getZ()
+					+ " ratios=" + ((DStab3PBranch) branch).getFromTurnRatio()
+					+ "," + ((DStab3PBranch) branch).getToTurnRatio()));
+		}
+		assertTrue(converged, caseName);
 		DStab3PBus loadBus = distNet.getBus("3");
 		assertTrue(loadBus.get3PhaseVotlages().absMax() > 0.75, caseName);
 
