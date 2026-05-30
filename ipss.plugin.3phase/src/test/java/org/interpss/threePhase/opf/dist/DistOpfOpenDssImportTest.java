@@ -3,6 +3,9 @@ package org.interpss.threePhase.opf.dist;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.apache.commons.math3.complex.Complex;
+import org.interpss.numeric.datatype.Complex3x3;
+import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.dataParser.opendss.OpenDSSDataParser;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
@@ -105,6 +108,21 @@ public class DistOpfOpenDssImportTest {
 		verifyGridappsdDistopfGeometryCase("2Bus", "n2");
 	}
 
+	@Test
+	public void verifiesGridappsdDistopfThreeBusGeometryImportAgainstOpenDssReference() {
+		DStabNetwork3Phase distNet = openDssNetwork(
+				"testData/feeder/DistOPFGridappsdDss/3Bus",
+				"main-InterPSS.dss");
+
+		DistOpfModelData data = new DistOpfModelDataExtractor().extract(distNet);
+		assertEquals("sourcebus", data.getSwingBusId());
+		assertEquals(2, data.getBranches().size());
+
+		DStab3PBranch line2 = (DStab3PBranch) distNet.getBranch("n2->n3(1)");
+		Complex3x3 expected = gridappsdFourBusGeometryReferenceLine2Pu().multiply(1.0 / 3.0);
+		assertTrue(line2.getZabc().subtract(expected).absMax() < 1.0e-6);
+	}
+
 	private static DStabNetwork3Phase openDssNetwork(String folderPath, String feederFile) {
 		return openDssParser(folderPath, feederFile).getDistNetwork();
 	}
@@ -171,5 +189,19 @@ public class DistOpfOpenDssImportTest {
 				.setMinVoltagePu(0.0)
 				.setMaxVoltagePu(2.0)
 				.setPowerFlowTolerance(1.0e-4);
+	}
+
+	private static Complex3x3 gridappsdFourBusGeometryReferenceLine2Pu() {
+		Complex3x3 zabc = new Complex3x3();
+		zabc.aa = new Complex(0.037555348629970634, 0.08848522434789394);
+		zabc.ab = new Complex(0.012799734119631217, 0.041176539792255815);
+		zabc.ac = new Complex(0.012597392964900048, 0.0315943165225697);
+		zabc.ba = zabc.ab;
+		zabc.bb = new Complex(0.03830033198138786, 0.08603346172797469);
+		zabc.bc = new Complex(0.012968503211444628, 0.034772109690860135);
+		zabc.ca = zabc.ac;
+		zabc.cb = zabc.bc;
+		zabc.cc = new Complex(0.03787720145332743, 0.0874201326245422);
+		return zabc;
 	}
 }

@@ -56,11 +56,14 @@
 - [x] Implement neutral reduction for `reduce=yes` on wire-based overhead
   geometries.
 - [x] Add a Carson impedance approximation for wire-based overhead geometries.
+- [x] Compare the `3Bus` geometry-derived line matrix with the OpenDSS-exported
+  `4Bus-YY-Bal_dss` CSV reference for the same 4-wire geometry.
 - [ ] Verify original GRIDAPPSD/distopf:
   - [x] `2Bus`
   - `2BusD`
   - `2Bus_1phase`
-  - `3Bus`
+  - [ ] `3Bus` PF/OPF validation, blocked until OpenDSS `vminpu`/low-voltage
+    load fallback behavior is represented for this stressed constant-power case
   - `4Bus-YY-Bal`
   - `4Bus-YD-Bal`
   - `4Bus-DY-Bal`

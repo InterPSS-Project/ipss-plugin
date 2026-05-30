@@ -19,3 +19,8 @@ Notes:
   `src/distopf/cases/dss/2Bus/2Bus.DSS` feeder and keeps the native
   `WireData`/`LineGeometry` definitions to verify geometry-derived line
   configuration import.
+- `3Bus/main-InterPSS.dss` follows the GRIDAPPSD/distopf
+  `src/distopf/cases/dss/3Bus/3Bus.DSS` feeder. It is used for native geometry
+  import and matrix-reference tests; full PF/OPF validation remains pending
+  because the stressed constant-power case needs OpenDSS low-voltage load
+  fallback behavior.
