@@ -51,6 +51,7 @@ public class OpenDSSTransformerParser {
 		String xfrId = "";
 		String fromBusId = "", toBusId = "";
 		String fromConnection="", toConnection = "";
+		boolean fromWyeGrounded = true, toWyeGrounded = true;
 
 		String defStr = normalizeInlineRpnDivisions(xfrStr[0].trim().toLowerCase());
 		String wdg1Str = normalizeInlineRpnDivisions(xfrStr[1].trim().toLowerCase());
@@ -78,7 +79,9 @@ public class OpenDSSTransformerParser {
 
 		for (String element : wdg1StrAry) {
 			if(element.contains("bus=")){
-				fromBusId = element.substring(4);
+				TerminalBus terminal = terminalBus(element.substring(4));
+				fromBusId = terminal.busId;
+				fromWyeGrounded = terminal.wyeGrounded;
 			}
 			else if(element.contains("conn=")){
 				fromConnection = element.substring(5);
@@ -97,7 +100,9 @@ public class OpenDSSTransformerParser {
 		for (String element : wdg2StrAry) {
 
 			if(element.contains("bus=")){
-				toBusId = element.substring(4);
+				TerminalBus terminal = terminalBus(element.substring(4));
+				toBusId = terminal.busId;
+				toWyeGrounded = terminal.wyeGrounded;
 			}
 			else if(element.contains("conn=")){
 				toConnection = element.substring(5);
@@ -153,7 +158,8 @@ public class OpenDSSTransformerParser {
 			}
 	    }
 	    else if(fromConnection.equalsIgnoreCase("Wye")){
-	    	xfr0.setFromGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
+	    	xfr0.setFromGrounding(fromWyeGrounded ? BusGroundCode.SOLID_GROUNDED : BusGroundCode.UNGROUNDED,
+					XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 	    }
 	    else{
 	    	throw new Error("Transformer connection type at winding 1 is not supported yet #"+fromConnection);
@@ -167,7 +173,8 @@ public class OpenDSSTransformerParser {
 			}
 	    }
 	    else if(toConnection.equalsIgnoreCase("Wye")){
-	    	xfr0.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
+	    	xfr0.setToGrounding(toWyeGrounded ? BusGroundCode.SOLID_GROUNDED : BusGroundCode.UNGROUNDED,
+					XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 	    }
 	    else{
 	    	throw new Error("Transformer connection type at winding 2 is not supported yet #"+toConnection);
@@ -201,6 +208,7 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 		String fromConnection="", toConnection = "";
 		String referenceXfrName = "";
 		String phase1 = "", phase2 = "",phase3 = "";
+		boolean fromWyeGrounded = true, toWyeGrounded = true;
 
 		String[] xfrStrAry  = normalizeInlineRpnDivisions(xfrStr.trim().toLowerCase()).split("\\s+(?![^\\[]*\\])");
 
@@ -223,7 +231,18 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 				int startIdx =  element.indexOf("[")+1;
 				int endIdx =  element.indexOf("]");
 				String[] busIds = element.substring(startIdx,endIdx).trim().split("\\s+");
-				fromBusId = busIds[0];
+				TerminalBus fromTerminal = terminalBus(busIds[0]);
+				fromBusId = fromTerminal.busId;
+				fromWyeGrounded = fromTerminal.wyeGrounded;
+				if(fromTerminal.nodes.length>0){
+					phase1 = fromTerminal.nodes[0];
+				}
+				if(fromTerminal.nodes.length>1){
+					phase2 = fromTerminal.nodes[1];
+				}
+				if(fromTerminal.nodes.length>2){
+					phase3 = fromTerminal.nodes[2];
+				}
 				if(fromBusId.contains(".")){
 
 //					int dotIdx = fromBusId.indexOf(".");
@@ -243,7 +262,9 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 					}
 
 				}
-				toBusId = busIds[1];
+				TerminalBus toTerminal = terminalBus(busIds[1]);
+				toBusId = toTerminal.busId;
+				toWyeGrounded = toTerminal.wyeGrounded;
 
 				if(toBusId.contains(".")){
 //					int dotIdx = toBusId.indexOf(".");
@@ -399,7 +420,8 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 			}
 	    }
 	    else if(fromConnection.equalsIgnoreCase("Wye")){
-	    	xfr0.setFromGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
+	    	xfr0.setFromGrounding(fromWyeGrounded ? BusGroundCode.SOLID_GROUNDED : BusGroundCode.UNGROUNDED,
+					XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 	    }
 	    else{
 	    	throw new Error("Transformer connection type at winding 1 is not supported yet #"+fromConnection);
@@ -413,7 +435,8 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 			}
 	    }
 	    else if(toConnection.equalsIgnoreCase("Wye")){
-	    	xfr0.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
+	    	xfr0.setToGrounding(toWyeGrounded ? BusGroundCode.SOLID_GROUNDED : BusGroundCode.UNGROUNDED,
+					XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 	    }
 	    else{
 	    	throw new Error("Transformer connection type at winding 2 is not supported yet #"+toConnection);
@@ -464,4 +487,34 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 
 
 
+	private static TerminalBus terminalBus(String openDssBusId) {
+		String[] parts = openDssBusId.split("\\.");
+		if (parts.length == 1) {
+			return new TerminalBus(openDssBusId, true, new String[0]);
+		}
+		String[] nodes = new String[parts.length - 1];
+		boolean grounded = true;
+		for (int i = 1; i < parts.length; i++) {
+			nodes[i - 1] = parts[i];
+			if ("4".equals(parts[i])) {
+				grounded = false;
+			}
+			else if ("0".equals(parts[i])) {
+				grounded = true;
+			}
+		}
+		return new TerminalBus(parts[0], grounded, nodes);
+	}
+
+	private static class TerminalBus {
+		private final String busId;
+		private final boolean wyeGrounded;
+		private final String[] nodes;
+
+		private TerminalBus(String busId, boolean wyeGrounded, String[] nodes) {
+			this.busId = busId;
+			this.wyeGrounded = wyeGrounded;
+			this.nodes = nodes;
+		}
+	}
 }
