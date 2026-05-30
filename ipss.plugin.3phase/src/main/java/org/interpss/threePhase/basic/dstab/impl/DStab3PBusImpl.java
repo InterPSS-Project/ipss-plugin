@@ -21,7 +21,7 @@ import org.interpss.threePhase.dynamic.model.DynLoadModel1Phase;
 import org.interpss.threePhase.dynamic.model.DynLoadModel3Phase;
 import org.interpss.threePhase.util.ThreeSeqLoadProcessor;
 
-import com.interpss.core.abc.LoadConnectionType;
+import com.interpss.core.threephase.LoadConnectionType;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.net.Branch;

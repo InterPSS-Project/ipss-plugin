@@ -21,7 +21,7 @@ import org.interpss.threePhase.dataParser.opendss.OpenDSSDataParser;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.junit.jupiter.api.Test;
 
-import com.interpss.core.abc.LoadConnectionType;
+import com.interpss.core.threephase.LoadConnectionType;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.acsc.PhaseCode;
 import com.interpss.core.acsc.XFormerConnectCode;

@@ -10,7 +10,7 @@ import org.interpss.threePhase.basic.dstab.impl.DStab3PLoadImpl;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.abc.LoadConnectionType;
+import com.interpss.core.threephase.LoadConnectionType;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.acsc.PhaseCode;
 
