@@ -151,7 +151,7 @@ public interface INetwork3Phase extends EObject {
     ISparseEqnComplexMatrix3x3 formYMatrixABCForPowerflow() throws IpssNumericException;
     ISparseEqnComplexMatrix3x3 getYMatrixABCForPowerflow();
 
-    boolean run3PhaseLoadflow();
+    boolean run3PhasePowerflow();
 }
 ```
 

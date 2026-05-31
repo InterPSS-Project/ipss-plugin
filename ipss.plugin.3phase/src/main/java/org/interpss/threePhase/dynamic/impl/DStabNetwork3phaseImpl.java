@@ -474,7 +474,7 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 	}
 
 	@Override
-	public boolean run3PhaseLoadflow() {
+	public boolean run3PhasePowerflow() {
 		throw new UnsupportedOperationException();
 	}
 
