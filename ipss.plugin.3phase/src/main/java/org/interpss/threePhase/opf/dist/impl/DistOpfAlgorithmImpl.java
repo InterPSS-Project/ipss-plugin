@@ -2,7 +2,6 @@ package org.interpss.threePhase.opf.dist.impl;
 
 import java.util.Map;
 
-import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.opf.dist.DistOpfAlgorithm;
 import org.interpss.threePhase.opf.dist.DistOpfControlMode;
 import org.interpss.threePhase.opf.dist.DistOpfObjective;
@@ -18,14 +17,16 @@ import org.interpss.threePhase.opf.dist.solver.DistOpfSolverFactory;
 import org.interpss.threePhase.opf.dist.solver.DistOpfSolverResult;
 import org.interpss.threePhase.opf.dist.validation.DistOpfPowerFlowValidation;
 
+import com.interpss.core.threephase.INetwork3Phase;
+
 public class DistOpfAlgorithmImpl implements DistOpfAlgorithm {
 
-	private final DStabNetwork3Phase net;
+	private final INetwork3Phase net;
 	private DistOpfObjective objective = DistOpfObjective.CURTAILMENT_MIN;
 	private DistOpfControlMode controlMode = DistOpfControlMode.NONE;
 	private DistOpfOptions options = new DistOpfOptions();
 
-	public DistOpfAlgorithmImpl(DStabNetwork3Phase net) {
+	public DistOpfAlgorithmImpl(INetwork3Phase net) {
 		this.net = net;
 	}
 
@@ -106,7 +107,7 @@ public class DistOpfAlgorithmImpl implements DistOpfAlgorithm {
 		return maxDelta;
 	}
 
-	public DStabNetwork3Phase getNetwork() {
+	public INetwork3Phase getNetwork() {
 		return net;
 	}
 
