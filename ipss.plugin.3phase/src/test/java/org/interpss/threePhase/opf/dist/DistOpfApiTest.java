@@ -22,6 +22,8 @@ import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.acsc.PhaseCode;
+import com.interpss.core.threephase.Static3PNetwork;
+import com.interpss.core.threephase.Static3PhaseFactory;
 import com.interpss.core.net.OriginalDataFormat;
 import com.interpss.opf.datatype.OpfConstraintType;
 
@@ -47,6 +49,16 @@ public class DistOpfApiTest {
 		assertEquals(0.9964, result.getBusVoltageSquared("load", "A"), 1.0e-7);
 		assertTrue(result.getBranchActivePower().values().stream().anyMatch(v -> Math.abs(v - 0.1) < 1.0e-7));
 		assertTrue(result.getBranchReactivePower().values().stream().anyMatch(v -> Math.abs(v - 0.02) < 1.0e-7));
+	}
+
+	@Test
+	public void algorithmSolvesStatic3PNetworkContainer() throws InterpssException {
+		DistOpfResult result = ThreePhaseObjectFactory.createDistOpfAlgorithm(createTwoBusStaticNetwork()).solve();
+
+		assertEquals(DistOpfStatus.OPTIMAL, result.getStatus());
+		assertTrue(result.isSolved());
+		assertEquals(0.9964, result.getBusVoltageSquared("load", "A"), 1.0e-7);
+		assertTrue(result.getBranchActivePower().values().stream().anyMatch(v -> Math.abs(v - 0.1) < 1.0e-7));
 	}
 
 	@Test
@@ -146,6 +158,31 @@ public class DistOpfApiTest {
 		source.setVoltage(new Complex(1.0, 0.0));
 
 		DStab3PBus loadBus = ThreePhaseObjectFactory.create3PDStabBus("load", net);
+		loadBus.setBaseVoltage(12470.0);
+		loadBus.setGenCode(AclfGenCode.NON_GEN);
+		loadBus.setLoadCode(AclfLoadCode.CONST_P);
+		DStab3PLoad load = ThreePhaseObjectFactory.create3PLoad("load-1");
+		load.set3PhaseLoad(new Complex3x1(new Complex(0.1, 0.02),
+				new Complex(0.1, 0.02), new Complex(0.1, 0.02)));
+		loadBus.getThreePhaseLoadList().add(load);
+
+		DStab3PBranch line = ThreePhaseObjectFactory.create3PBranch("source", "load", "0", net);
+		line.setBranchCode(AclfBranchCode.LINE);
+		line.setZabc(Complex3x3.createUnitMatrix().multiply(new Complex(0.01, 0.04)));
+		return net;
+	}
+
+	private static Static3PNetwork createTwoBusStaticNetwork() throws InterpssException {
+		Static3PNetwork net = Static3PhaseFactory.eINSTANCE.createStatic3PNetwork();
+		net.setBaseKva(1000.0);
+
+		DStab3PBus source = ThreePhaseObjectFactory.create3PAclfBus("source", net);
+		source.setBaseVoltage(12470.0);
+		source.setGenCode(AclfGenCode.SWING);
+		source.setLoadCode(AclfLoadCode.NON_LOAD);
+		source.setVoltage(new Complex(1.0, 0.0));
+
+		DStab3PBus loadBus = ThreePhaseObjectFactory.create3PAclfBus("load", net);
 		loadBus.setBaseVoltage(12470.0);
 		loadBus.setGenCode(AclfGenCode.NON_GEN);
 		loadBus.setLoadCode(AclfLoadCode.CONST_P);
