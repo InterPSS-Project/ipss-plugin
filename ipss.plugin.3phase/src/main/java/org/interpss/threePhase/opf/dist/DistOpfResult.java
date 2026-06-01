@@ -9,9 +9,16 @@ import java.util.Map;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.basic.dstab.DStab3PGen;
-import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
+
+import com.interpss.core.aclf.AclfBranch;
+import com.interpss.core.aclf.AclfGen;
+import com.interpss.core.aclf.AclfLoad;
+import com.interpss.core.aclf.BaseAclfBus;
+import com.interpss.core.aclf.BaseAclfNetwork;
+import com.interpss.core.threephase.IBus3Phase;
+import com.interpss.core.threephase.IGen3Phase;
+import com.interpss.core.threephase.INetwork3Phase;
 
 public class DistOpfResult {
 
@@ -323,23 +330,45 @@ public class DistOpfResult {
 		return this;
 	}
 
-	public void applySetpointsToNetwork(DStabNetwork3Phase net) {
-		for (DStab3PBus bus : net.getBusList()) {
-			for (DStab3PGen gen : bus.getThreePhaseGenList()) {
+	public void applySetpointsToNetwork(INetwork3Phase net) {
+		for (BaseAclfBus<? extends AclfGen, ? extends AclfLoad> bus : aclfNetwork(net).getBusList()) {
+			IBus3Phase bus3P = threePhaseBus(bus);
+			for (IGen3Phase gen : bus3P.getThreePhaseGenList()) {
 				applySetpoint(gen);
 			}
-			for (DStab3PGen gen : bus.getContributeGenList()) {
-				applySetpoint(gen);
+			for (AclfGen gen : bus.getContributeGenList()) {
+				if (gen instanceof IGen3Phase) {
+					applySetpoint((IGen3Phase) gen);
+				}
 			}
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private static BaseAclfNetwork<? extends BaseAclfBus<? extends AclfGen, ? extends AclfLoad>, ? extends AclfBranch> aclfNetwork(
+			INetwork3Phase net) {
+		if (net instanceof BaseAclfNetwork) {
+			return (BaseAclfNetwork<? extends BaseAclfBus<? extends AclfGen, ? extends AclfLoad>, ? extends AclfBranch>) net;
+		}
+		throw new IllegalArgumentException("DistOPF setpoint application requires a three-phase network that also extends BaseAclfNetwork");
+	}
+
+	private static IBus3Phase threePhaseBus(BaseAclfBus<?, ?> bus) {
+		if (bus instanceof IBus3Phase) {
+			return (IBus3Phase) bus;
+		}
+		throw new IllegalArgumentException("DistOPF bus is not a three-phase bus: " + bus.getId());
 	}
 
 	private static String key(String id, String phase) {
 		return id + "." + phase;
 	}
 
-	private void applySetpoint(DStab3PGen gen) {
+	private void applySetpoint(IGen3Phase gen) {
 		if (gen == null || gen.getId() == null || !hasDerSetpoint(gen.getId())) {
+			return;
+		}
+		if (!(gen instanceof DStab3PGen)) {
 			return;
 		}
 		Complex3x1 current = gen.getPower3Phase(UnitType.PU);
@@ -347,7 +376,7 @@ public class DistOpfResult {
 		updated.a_0 = phaseSetpoint(gen.getId(), "A", updated.a_0);
 		updated.b_1 = phaseSetpoint(gen.getId(), "B", updated.b_1);
 		updated.c_2 = phaseSetpoint(gen.getId(), "C", updated.c_2);
-		gen.setPower3Phase(updated, UnitType.PU);
+		((DStab3PGen) gen).setPower3Phase(updated, UnitType.PU);
 	}
 
 	private boolean hasDerSetpoint(String derId) {
