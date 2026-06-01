@@ -13,7 +13,6 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.sparse.ISparseEqnComplexMatrix3x3;
 import org.interpss.threePhase.basic.dstab.DStab3PBranch;
-import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.powerflow.DistributionPFMethod;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
@@ -23,6 +22,9 @@ import com.interpss.common.datatype.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.interpss.core.threephase.IBranch3Phase;
+import com.interpss.core.threephase.IBus3Phase;
+import com.interpss.core.threephase.INetwork3Phase;
 import com.interpss.core.threephase.Static3PXformer;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfGen;
@@ -39,7 +41,7 @@ import com.interpss.core.sparse.impl.csj.CSJSparseEqnComplexMatrix3x3Impl;
 
 public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlowAlgorithm{
 
-	private BaseAclfNetwork<? extends BaseAclfBus<? extends AclfGen, ? extends AclfLoad>,? extends AclfBranch> distNet = null;
+	private INetwork3Phase distNet = null;
 
 	private DistributionPFMethod pfMethod = DistributionPFMethod.Fixed_Point;
 
@@ -63,26 +65,56 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 	}
 
-    public DistributionPowerFlowAlgorithmImpl(BaseAclfNetwork net){
+    public DistributionPowerFlowAlgorithmImpl(INetwork3Phase net){
 		this.distNet = net;
 		busVoltTable = new Hashtable<>();
+	}
+
+	@SuppressWarnings("unchecked")
+	private BaseAclfNetwork<? extends BaseAclfBus<? extends AclfGen, ? extends AclfLoad>, ? extends AclfBranch> aclfNetwork() {
+		if(this.distNet instanceof BaseAclfNetwork) {
+			return (BaseAclfNetwork<? extends BaseAclfBus<? extends AclfGen, ? extends AclfLoad>, ? extends AclfBranch>) this.distNet;
+		}
+		throw new UnsupportedOperationException("Distribution power flow requires a three-phase network that also extends BaseAclfNetwork");
+	}
+
+	private IBus3Phase threePhaseBus(BaseAclfBus<?, ?> bus) {
+		if(bus instanceof IBus3Phase) {
+			return (IBus3Phase) bus;
+		}
+		throw new UnsupportedOperationException("The bus object is not a three-phase type: " + bus.getId());
+	}
+
+	private IBranch3Phase threePhaseBranch(AclfBranch branch) {
+		if(branch instanceof IBranch3Phase) {
+			return (IBranch3Phase) branch;
+		}
+		throw new UnsupportedOperationException("The branch object is not a three-phase type: " + branch.getId());
+	}
+
+	private DStab3PBranch sweepBranch(Branch branch) {
+		if(branch instanceof DStab3PBranch) {
+			return (DStab3PBranch) branch;
+		}
+		throw new UnsupportedOperationException("Forward/backward sweep requires DStab3PBranch branch operations: " + branch.getId());
 	}
 
 
 	@Override
 	public boolean orderDistributionBuses(boolean radialOnly) {
-		Queue<DStab3PBus> onceVisitedBuses = new  LinkedList<>();
+		Queue<Bus> onceVisitedBuses = new  LinkedList<>();
+		BaseAclfNetwork<?, ?> net = aclfNetwork();
 
 		// find the source bus, which is the swing bus for radial feeders;
-		for(BaseAclfBus<?,?> b: distNet.getBusList()){
+		for(BaseAclfBus<?,?> b: net.getBusList()){
 			    b.setIntFlag(0); // reset it as this will be used below.
 				if(b.isActive() && b.isSwing()){
-					onceVisitedBuses.add((DStab3PBus) b);
+					onceVisitedBuses.add(b);
 				}
 		}
 
 		//make sure all internal branches are unvisited
-		for(AclfBranch bra:distNet.getBranchList()){
+		for(AclfBranch bra:net.getBranchList()){
 			bra.setBooleanFlag(false);
 		}
 
@@ -90,7 +122,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		BFS(onceVisitedBuses);
 
 
-		distNet.setBusNumberArranged(true);
+		net.setBusNumberArranged(true);
 
 
 		return true;
@@ -98,11 +130,11 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 
 
-    private void BFS (Queue<DStab3PBus> onceVisitedBuses){
+    private void BFS (Queue<Bus> onceVisitedBuses){
     	int orderNumber = 0;
 		//Retrieves and removes the head of this queue, or returns null if this queue is empty.
 	    while(!onceVisitedBuses.isEmpty()){
-			DStab3PBus  startingBus = onceVisitedBuses.poll();
+			Bus  startingBus = onceVisitedBuses.poll();
 			startingBus.setSortNumber(orderNumber++);
 			startingBus.setBooleanFlag(true);
 			startingBus.setIntFlag(2);
@@ -118,7 +150,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 								//for first time visited buses
 								if(findBus.getIntFlag()==0){
 									findBus.setIntFlag(1);
-									onceVisitedBuses.add((DStab3PBus) findBus);
+									onceVisitedBuses.add(findBus);
 
 								}
 						}
@@ -133,15 +165,15 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	public boolean initBusVoltages() {
 
 
-			for(BaseAclfBus b: distNet.getBusList()){
-					DStab3PBus bus = (DStab3PBus) b;
+			for(BaseAclfBus b: aclfNetwork().getBusList()){
+					IBus3Phase bus3P = threePhaseBus(b);
 
 					if(b.isSwing()) {
-						bus.set3PhaseVotlages(getSwingBusThreePhaseVoltages(b.getVoltageMag(), b.getVoltageAng(UnitType.Deg)));
+						bus3P.set3PhaseVotlages(getSwingBusThreePhaseVoltages(b.getVoltageMag(), b.getVoltageAng(UnitType.Deg)));
 					} else if(b.isGenPV()) {
-						bus.set3PhaseVotlages(getPVBusThreePhaseVoltages(b.getVoltageMag()));
+						bus3P.set3PhaseVotlages(getPVBusThreePhaseVoltages(b.getVoltageMag()));
 					} else {
-						bus.set3PhaseVotlages(getUnitThreePhaseVoltages());
+						bus3P.set3PhaseVotlages(getUnitThreePhaseVoltages());
 					}
 
 			}
@@ -172,14 +204,15 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	public boolean powerflow() {
 
 		 this.isAllPowerFlowConverged = true;
+		 BaseAclfNetwork<? extends BaseAclfBus<? extends AclfGen, ? extends AclfLoad>, ? extends AclfBranch> distNet = aclfNetwork();
 
 		//step-1. check if there is any island in the system
-		 AclfNetHelper helper = new AclfNetHelper(getNetwork());
+		 AclfNetHelper helper = new AclfNetHelper(distNet);
 		 List<String> islandBusList = helper.calIslandBuses();
 
 		 // turn off single islanded bus
 		 for(String busId: islandBusList) {
-			 BaseAclfBus bus = this.distNet.getBus(busId);
+			 BaseAclfBus bus = (BaseAclfBus) distNet.getBus(busId);
 			 if(bus.isActive() && bus.nActiveBranchConnected()==0) {
 				bus.setStatus(false);
 			}
@@ -187,12 +220,12 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 		//step-2a. if the system is one single island, run it as a single Network
 		if(islandBusList.isEmpty()) {
-			this.isAllPowerFlowConverged = powerflow_singleNet(this.distNet);
+			this.isAllPowerFlowConverged = powerflow_singleNet(distNet);
 		}
 		// step-2b. otherwise, create subnetworks for the islands and run power flow for each island
 		else {
-			 final BaseAclfNetwork originNetwork = this.distNet;
-			 List<BaseAclfNetwork>  subNetworkList = createSubNetworkList(this.distNet, islandBusList);
+			 final BaseAclfNetwork originNetwork = distNet;
+			 List<BaseAclfNetwork>  subNetworkList = createSubNetworkList(distNet, islandBusList);
 
 
 
@@ -213,7 +246,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		     }
 			 //set the parent network load flow status as converged
 			 this.setNetwork(originNetwork);
-			 this.getNetwork().setLfConverged(true);
+			 aclfNetwork().setLfConverged(true);
 		}
 
 		return this.isAllPowerFlowConverged;
@@ -345,7 +378,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			throw new UnsupportedOperationException("The power flow method is not supported yet:"+this.pfMethod);
 		}
 
-		this.distNet.setLfConverged(pfFlag);
+		distNet.setLfConverged(pfFlag);
 
 
 		return pfFlag;
@@ -355,9 +388,10 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 		ISparseEqnComplexMatrix3x3 yMatrix = null;
 		this.fixedPointFallbackUsed = false;
+		BaseAclfNetwork<? extends BaseAclfBus<? extends AclfGen, ? extends AclfLoad>, ? extends AclfBranch> distNet = aclfNetwork();
 
 		try {
-			yMatrix = formYMatrixABCForPowerflow(this.distNet);
+			yMatrix = formYMatrixABCForPowerflow(distNet);
 			applySwingBusVoltageBoundary(yMatrix);
 			yMatrix.factorization(Constants.Matrix_LU_Tolerance);
 		} catch (IpssNumericException e) {
@@ -408,45 +442,37 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 		for(BaseAclfBus bus: (List<BaseAclfBus>) distNet.getBusList()) {
 			if(bus.isActive()) {
-				if(bus instanceof DStab3PBus) {
-					int i = bus.getSortNumber();
-					Complex3x3 yii = ((DStab3PBus) bus).getYiiAbcForPowerflow();
+				int i = bus.getSortNumber();
+				Complex3x3 yii = threePhaseBus(bus).getYiiAbcForPowerflow();
 
-					if(!bus.isSwing()) {
-						// replace zero diagonal entries with 1.0 to avoid singularity
-						// for partial-phase buses (e.g., 1-ph or 2-ph connections)
-						double yiiMinTolerance = 1.0E-8;
-						if(yii.aa.abs() < yiiMinTolerance) yii.aa = new Complex(1.0, 0);
-						if(yii.bb.abs() < yiiMinTolerance) yii.bb = new Complex(1.0, 0);
-						if(yii.cc.abs() < yiiMinTolerance) yii.cc = new Complex(1.0, 0);
-					}
-
-					yMatrix.setA(yii, i, i);
-				} else {
-					throw new IpssNumericException("The processing bus # "+bus.getId()+" is not a three-phase bus");
+				if(!bus.isSwing()) {
+					// replace zero diagonal entries with 1.0 to avoid singularity
+					// for partial-phase buses (e.g., 1-ph or 2-ph connections)
+					double yiiMinTolerance = 1.0E-8;
+					if(yii.aa.abs() < yiiMinTolerance) yii.aa = new Complex(1.0, 0);
+					if(yii.bb.abs() < yiiMinTolerance) yii.bb = new Complex(1.0, 0);
+					if(yii.cc.abs() < yiiMinTolerance) yii.cc = new Complex(1.0, 0);
 				}
+
+				yMatrix.setA(yii, i, i);
 			}
 		}
 
 		for(AclfBranch branch: (List<AclfBranch>) distNet.getBranchList()) {
 			if(branch.isActive()) {
-				if(branch instanceof DStab3PBranch) {
-					DStab3PBranch branch3P = (DStab3PBranch) branch;
-					int i = branch.getFromBus().getSortNumber();
-					int j = branch.getToBus().getSortNumber();
-					yMatrix.addToA(branch3P.getYftabc(), i, j);
-					yMatrix.addToA(branch3P.getYtfabc(), j, i);
-					addTransformerAntiFloatAdmittance(yMatrix, branch3P);
-				} else {
-					throw new IpssNumericException("The processing branch # "+branch.getId()+" is not a three-phase branch");
-				}
+				IBranch3Phase branch3P = threePhaseBranch(branch);
+				int i = branch.getFromBus().getSortNumber();
+				int j = branch.getToBus().getSortNumber();
+				yMatrix.addToA(branch3P.getYftabc(), i, j);
+				yMatrix.addToA(branch3P.getYtfabc(), j, i);
+				addTransformerAntiFloatAdmittance(yMatrix, branch);
 			}
 		}
 
 		return yMatrix;
 	}
 
-	private void addTransformerAntiFloatAdmittance(ISparseEqnComplexMatrix3x3 yMatrix, DStab3PBranch branch) {
+	private void addTransformerAntiFloatAdmittance(ISparseEqnComplexMatrix3x3 yMatrix, AclfBranch branch) {
 		if(!branch.isXfr() || !(branch instanceof AcscBranch)) {
 			return;
 		}
@@ -478,12 +504,13 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		Complex3x3 zero = new Complex3x3();
 		Complex3x3 unit = Complex3x3.createUnitMatrix();
 		this.swingBusVoltageBoundaryCurrent.clear();
+		BaseAclfNetwork<? extends BaseAclfBus<? extends AclfGen, ? extends AclfLoad>, ? extends AclfBranch> distNet = aclfNetwork();
 
-		for(BaseAclfBus bus: this.distNet.getBusList()) {
+		for(BaseAclfBus bus: distNet.getBusList()) {
 			if(bus.isActive() && bus.isSwing()) {
-				DStab3PBus swingBus = (DStab3PBus) bus;
+				IBus3Phase swingBus = threePhaseBus(bus);
 				int swingSortNumber = bus.getSortNumber();
-				for(int row = 0; row < this.distNet.getNoBus(); row++) {
+				for(int row = 0; row < distNet.getNoBus(); row++) {
 					if(row != swingSortNumber) {
 						Complex3x3 yToSwing = yMatrix.getA(row, swingSortNumber);
 						Complex3x1 compensation = yToSwing.multiply(swingBus.get3PhaseVotlages());
@@ -499,9 +526,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	}
 
 	private void setPowerflowCurrentInjections(ISparseEqnComplexMatrix3x3 yMatrix) {
-		for(BaseAclfBus bus: this.distNet.getBusList()) {
+		for(BaseAclfBus bus: aclfNetwork().getBusList()) {
 			if(bus.isActive() && !bus.isSwing()) {
-				DStab3PBus bus3P = (DStab3PBus) bus;
+				IBus3Phase bus3P = threePhaseBus(bus);
 				Complex3x1 curInj = bus3P.calc3PhEquivCurInj();
 				Complex3x1 boundaryCurrent = this.swingBusVoltageBoundaryCurrent.get(bus.getSortNumber());
 				yMatrix.setBi(boundaryCurrent == null ? curInj : curInj.subtract(boundaryCurrent), bus.getSortNumber());
@@ -510,23 +537,23 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	}
 
 	private void setSwingBusVoltageRhs(ISparseEqnComplexMatrix3x3 yMatrix) {
-		for(BaseAclfBus bus: this.distNet.getBusList()) {
+		for(BaseAclfBus bus: aclfNetwork().getBusList()) {
 			if(bus.isActive() && bus.isSwing()) {
-				DStab3PBus bus3P = (DStab3PBus) bus;
+				IBus3Phase bus3P = threePhaseBus(bus);
 				yMatrix.setBi(bus3P.get3PhaseVotlages(), bus.getSortNumber());
 			}
 		}
 	}
 
 	private boolean updateSolvedBusVoltages(ISparseEqnComplexMatrix3x3 yMatrix) {
-		for(BaseAclfBus bus: this.distNet.getBusList()) {
+		for(BaseAclfBus bus: aclfNetwork().getBusList()) {
 			if(bus.isActive() && !bus.isSwing()) {
-				DStab3PBus bus3P = (DStab3PBus) bus;
+				IBus3Phase bus3P = threePhaseBus(bus);
 				Complex3x1 vabc = yMatrix.getX(bus.getSortNumber());
 
 				if(!vabc.a_0.isNaN() && !vabc.b_1.isNaN() && !vabc.c_2.isNaN()){
 					bus3P.set3PhaseVotlages(vabc);
-					bus.setVoltage(bus3P.getThreeSeqVoltage().b_1);
+					bus.setVoltage(vabc.to012().b_1);
 				} else {
 					return false;
 				}
@@ -536,10 +563,10 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	}
 
 	private void saveBusVoltages() {
-		for(BaseAclfBus bus: this.distNet.getBusList()) {
+		for(BaseAclfBus bus: aclfNetwork().getBusList()) {
 			if(bus.isActive()) {
-				DStab3PBus bus3P = (DStab3PBus) bus;
-				this.busVoltTable.put(bus3P.getId(), Complex3x1.valueOf(bus3P.get3PhaseVotlages()));
+				IBus3Phase bus3P = threePhaseBus(bus);
+				this.busVoltTable.put(bus.getId(), Complex3x1.valueOf(bus3P.get3PhaseVotlages()));
 			}
 		}
 	}
@@ -547,10 +574,10 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	private double calcMaxVoltageMismatch() {
 		double maxMis = 0.0;
 
-		for(BaseAclfBus bus: this.distNet.getBusList()) {
+		for(BaseAclfBus bus: aclfNetwork().getBusList()) {
 			if(bus.isActive()) {
-				DStab3PBus bus3P = (DStab3PBus) bus;
-				Complex3x1 oldVolt = this.busVoltTable.get(bus3P.getId());
+				IBus3Phase bus3P = threePhaseBus(bus);
+				Complex3x1 oldVolt = this.busVoltTable.get(bus.getId());
 				if(oldVolt != null) {
 					maxMis = Math.max(maxMis, bus3P.get3PhaseVotlages().subtract(oldVolt).absMax());
 				}
@@ -561,15 +588,11 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	}
 
 	private void updateBranchCurrentsFromSolvedVoltages() {
-		for(AclfBranch branch: this.distNet.getBranchList()) {
+		for(AclfBranch branch: aclfNetwork().getBranchList()) {
 			if(branch.isActive()) {
-				if(branch instanceof DStab3PBranch) {
-					DStab3PBranch branch3P = (DStab3PBranch) branch;
-					branch3P.setCurrentAbcAtFromSide(branch3P.calc3PhaseCurrentFrom2To());
-					branch3P.setCurrentAbcAtToSide(branch3P.calc3PhaseCurrentTo2From());
-				} else {
-					throw new Error("The branch is not a three-phase type #"+branch.getId());
-				}
+				DStab3PBranch branch3P = sweepBranch(branch);
+				branch3P.setCurrentAbcAtFromSide(branch3P.calc3PhaseCurrentFrom2To());
+				branch3P.setCurrentAbcAtToSide(branch3P.calc3PhaseCurrentTo2From());
 			}
 		}
 	}
@@ -585,16 +608,16 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		 *
 		 */
 
-
+		BaseAclfNetwork<? extends BaseAclfBus<? extends AclfGen, ? extends AclfLoad>, ? extends AclfBranch> distNet = aclfNetwork();
 
 		for (int i=0;i<this.maxIteration;i++){
 			this.iterationCount = i;
 
-			for (Branch bra: this.distNet.getBranchList()){
+			for (Branch bra: distNet.getBranchList()){
 				bra.setIntFlag(0);
 			}
 
-			for (Bus b: this.distNet.getBusList()){
+			for (Bus b: distNet.getBusList()){
 				 b.setIntFlag(0);
 			}
 
@@ -602,20 +625,14 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			//Step-1 backward sweep step
 			//-----------------------------------------------------------------------
 
-			for(int sortNum =this.distNet.getNoBus()-1;sortNum>0;sortNum--){
-				BaseAclfBus bus = this.distNet.getBus(sortNum);
+			for(int sortNum =distNet.getNoBus()-1;sortNum>0;sortNum--){
+				BaseAclfBus bus = (BaseAclfBus) distNet.getBus(sortNum);
 				if(bus==null){
-					throw new Error(" The bus sort num # "+sortNum +" returns null bus object in distribution #"+this.distNet.getId());
+					throw new Error(" The bus sort num # "+sortNum +" returns null bus object in distribution #"+distNet.getId());
 
 				}
 				if(bus.isActive()){
-					DStab3PBus bus3P = null;
-					if(bus instanceof DStab3PBus){
-						bus3P = (DStab3PBus) bus;
-					}
-					else{
-						throw new UnsupportedOperationException("The bus oject is not a 3phase type:"+bus.getId());
-					}
+					IBus3Phase bus3P = threePhaseBus(bus);
 
 
 					// update the non-visited branch current based on the bus current injection
@@ -638,7 +655,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 					String upStreamBusId="";
 					int unvisitedBranchNum = 0;
 					for (Branch bra: bus.getBranchIterable()){
-						DStab3PBranch bra3P = (DStab3PBranch) bra;
+						DStab3PBranch bra3P = sweepBranch(bra);
 						// all visited branches are on the downstream side, and there should be only one upstream branch
 						if(bra.isActive() && bra.getIntFlag() ==1){
 
@@ -679,9 +696,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 						Complex3x1 busSelfEquivCurInj3Ph =bus3P.calc3PhEquivCurInj();
 
 						// add the branch current flows to obtain the current injections
-						DStab3PBranch upStreamBranch = (DStab3PBranch) this.distNet.getBranch(upStreamBranchId);
+						DStab3PBranch upStreamBranch = sweepBranch(distNet.getBranch(upStreamBranchId));
 
-						DStab3PBus upStreamBus3P = null;
+						BaseAclfBus upStreamBus = null;
 
 						/*
 						 * The line modeling
@@ -701,7 +718,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 							//calculate and set the upstream branch current
 							upStreamBranch.setCurrentAbcAtFromSide(busSelfEquivCurInj3Ph.subtract( sumOfBranchCurrents));
 
-							upStreamBus3P = (DStab3PBus) upStreamBranch.getToBus();
+							upStreamBus = (BaseAclfBus) upStreamBranch.getToBus();
 
 							//calculate the voltages at the upstream end
 							//NOTE: For, current flowing through the branch, the direction from bus -> to bus  is regarded as positive;
@@ -735,15 +752,15 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 							upStreamBranch.setCurrentAbcAtToSide(iabc.multiply(-1.0));
 
-							if(upStreamBus3P.getIntFlag()==0 && !upStreamBus3P.isSwing()){
-							   upStreamBus3P.set3PhaseVotlages(vabc);
-							   upStreamBus3P.setIntFlag(1);
+							if(upStreamBus.getIntFlag()==0 && !upStreamBus.isSwing()){
+							   threePhaseBus(upStreamBus).set3PhaseVotlages(vabc);
+							   upStreamBus.setIntFlag(1);
 							}
 						}
 						else{
 							upStreamBranch.setCurrentAbcAtToSide(sumOfBranchCurrents.subtract(busSelfEquivCurInj3Ph));
 
-	                        upStreamBus3P = (DStab3PBus) upStreamBranch.getFromBus();
+	                        upStreamBus = (BaseAclfBus) upStreamBranch.getFromBus();
 
 	                        //calculate the bus voltage at the upstream end
 							Complex3x1 vabc = null;
@@ -781,9 +798,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 							upStreamBranch.setCurrentAbcAtFromSide(iabc.multiply(1.0));
 
 
-							if(upStreamBus3P.getIntFlag()==0 && !upStreamBus3P.isSwing()){
-								   upStreamBus3P.set3PhaseVotlages(vabc);
-								   upStreamBus3P.setIntFlag(1);
+							if(upStreamBus.getIntFlag()==0 && !upStreamBus.isSwing()){
+								   threePhaseBus(upStreamBus).set3PhaseVotlages(vabc);
+								   upStreamBus.setIntFlag(1);
 							}
 
 						}
@@ -803,16 +820,16 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 			double mis = 0;
 			this.pfFlag =true;
-			for(BaseAclfBus bus: this.distNet.getBusList()){
+			for(BaseAclfBus bus: distNet.getBusList()){
 				if(bus.isActive()){
-					DStab3PBus bus3P = (DStab3PBus) bus;
+					IBus3Phase bus3P = threePhaseBus(bus);
 					if(i>=1){
-						mis=bus3P.get3PhaseVotlages().subtract(busVoltTable.get(bus3P.getId())).absMax();
+						mis=bus3P.get3PhaseVotlages().subtract(busVoltTable.get(bus.getId())).absMax();
 						if(mis>this.getTolerance()){
 							this.pfFlag = false;
 						}
 					}
-					busVoltTable.put(bus3P.getId(), bus3P.get3PhaseVotlages());
+					busVoltTable.put(bus.getId(), bus3P.get3PhaseVotlages());
 				 }
 			}
 
@@ -831,21 +848,20 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			//Step-3 :forward sweep step
 			//-----------------------------------------------------------------------
 
-			for(int sortNum2 = 0;sortNum2<this.distNet.getNoBus();sortNum2++){
+			for(int sortNum2 = 0;sortNum2<distNet.getNoBus();sortNum2++){
 
-				BaseAclfBus bus = this.distNet.getBus(sortNum2);
+				BaseAclfBus bus = (BaseAclfBus) distNet.getBus(sortNum2);
 
 				if(bus.isActive()){
 					// update the bus state, with intFlag =2 meaning this bus voltage has been updated
 					bus.setIntFlag(2);
-					DStab3PBus bus3P = (DStab3PBus) bus;
+					IBus3Phase bus3P = threePhaseBus(bus);
 					for(Branch bra:bus.getBranchIterable()){
 
 						if(bra.isActive()){
-							DStab3PBranch bra3Phase = (DStab3PBranch) bra;
+							DStab3PBranch bra3Phase = sweepBranch(bra);
 
-							DStab3PBus downStreamBus = null;
-							downStreamBus = (DStab3PBus) bra.getOppositeBus(bus);
+							BaseAclfBus downStreamBus = (BaseAclfBus) bra.getOppositeBus(bus);
 
 							if(downStreamBus.getIntFlag()<2){
 								Complex3x1 vabc = null;
@@ -889,7 +905,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 									}
 								}
 
-								downStreamBus.set3PhaseVotlages(vabc);
+								threePhaseBus(downStreamBus).set3PhaseVotlages(vabc);
 								downStreamBus.setIntFlag(2);
 							}
 						}
@@ -913,18 +929,16 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	public void calcSwingBusGenPower() {
 		// update the swing bus generation output based on the converged power flow result
 
-		for(BaseAclfBus<? extends AclfGen, ? extends AclfLoad> bus: this.distNet.getBusList()){
+		for(BaseAclfBus<? extends AclfGen, ? extends AclfLoad> bus: aclfNetwork().getBusList()){
 			if(bus.isActive() && bus.isSwing()){
-				DStab3PBus bus3p = (DStab3PBus) bus;
+				IBus3Phase bus3p = threePhaseBus(bus);
 				Complex3x1 sumOfBranchCurrents = new Complex3x1();
 
 				sumOfBranchCurrents = bus3p.calcLoad3PhEquivCurInj().multiply(-1);
 
 				for (Branch bra: bus.getBranchIterable()){
 					if(bra.isActive()){
-					    if(bra instanceof DStab3PBranch){
-
-						DStab3PBranch bra3P = (DStab3PBranch) bra;
+						DStab3PBranch bra3P = sweepBranch(bra);
 						// all visited branches are on the downstream side, and there should be only one upstream branch
 
 
@@ -938,17 +952,13 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 								sumOfBranchCurrents= sumOfBranchCurrents.add(bra3P.getCurrentAbcAtToSide().multiply(-1.0));
 							}
-						}
-					    else{
-							throw new Error("The branch is not a three-phase type #"+bra.getId() );
-						}
 					}
 
 			    }
 
 				System.out.println("Source node 3 sequence current into network: "+sumOfBranchCurrents.to012());
 
-				Complex posGenPQ = bus3p.getThreeSeqVoltage().b_1.multiply(sumOfBranchCurrents.to012().b_1.conjugate());
+				Complex posGenPQ = bus3p.get3PhaseVotlages().to012().b_1.multiply(sumOfBranchCurrents.to012().b_1.conjugate());
 				if(bus.getContributeGenList().size()>0){
 				   bus.getContributeGenList().get(0).setGen(posGenPQ);
 				   System.out.println("Source node positive sequence power into network: "+posGenPQ.toString());
@@ -1001,15 +1011,19 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	}
 
 	@Override
-	public BaseAclfNetwork getNetwork() {
+	public INetwork3Phase getNetwork() {
 
 		return this.distNet;
 	}
 
 	@Override
-	public void setNetwork(BaseAclfNetwork net) {
+	public void setNetwork(INetwork3Phase net) {
 		this.distNet = net;
 
+	}
+
+	public void setNetwork(BaseAclfNetwork<?, ?> net) {
+		this.distNet = (INetwork3Phase) net;
 	}
 
 	@Override
