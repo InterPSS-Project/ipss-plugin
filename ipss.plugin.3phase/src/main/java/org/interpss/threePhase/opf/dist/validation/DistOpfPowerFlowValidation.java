@@ -4,9 +4,6 @@ import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
-import org.interpss.threePhase.basic.dstab.DStab3PBranch;
-import org.interpss.threePhase.basic.dstab.DStab3PBus;
-import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.opf.dist.DistOpfOptions;
 import org.interpss.threePhase.opf.dist.DistOpfResult;
 import org.interpss.threePhase.opf.dist.model.DistOpfModelData;
@@ -14,28 +11,38 @@ import org.interpss.threePhase.opf.dist.model.DistOpfModelDataExtractor;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
+import com.interpss.core.aclf.AclfBranch;
+import com.interpss.core.aclf.AclfGen;
+import com.interpss.core.aclf.AclfLoad;
+import com.interpss.core.aclf.BaseAclfBus;
+import com.interpss.core.aclf.BaseAclfNetwork;
+import com.interpss.core.threephase.IBranch3Phase;
+import com.interpss.core.threephase.IBus3Phase;
+import com.interpss.core.threephase.INetwork3Phase;
+
 public class DistOpfPowerFlowValidation {
 
-	public DistOpfResult validate(DStabNetwork3Phase net, DistOpfResult result, DistOpfOptions options) {
+	public DistOpfResult validate(INetwork3Phase net, DistOpfResult result, DistOpfOptions options) {
 		if (!result.isSolved()) {
 			return result.addWarning("Power-flow validation skipped because DistOPF was not solved");
 		}
+		BaseAclfNetwork<? extends BaseAclfBus<? extends AclfGen, ? extends AclfLoad>, ? extends AclfBranch> aclfNet = aclfNetwork(net);
 		result.applySetpointsToNetwork(net);
-		DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(net);
+		DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(aclfNet);
 		powerFlow.setTolerance(options.getPowerFlowTolerance());
 		powerFlow.setMaxIteration(options.getMaxPowerFlowIterations());
 		boolean converged = powerFlow.powerflow();
 		result.setPowerFlowConverged(converged);
 		result.setPowerFlowIterationCount(powerFlow.getIterationCount());
-		capturePowerFlowVoltages(net, result);
-		capturePowerFlowBranchPowers(net, result);
+		capturePowerFlowVoltages(aclfNet, result);
+		capturePowerFlowBranchPowers(aclfNet, result);
 		result.setMaxPowerFlowVoltageDiff(maxVoltageDiff(result));
 		result.setMaxPowerFlowBranchActivePowerDiff(maxBranchPowerDiff(
 				result.getBranchActivePower(), result.getPowerFlowBranchActivePower()));
 		result.setMaxPowerFlowBranchReactivePowerDiff(maxBranchPowerDiff(
 				result.getBranchReactivePower(), result.getPowerFlowBranchReactivePower()));
-		result.setMaxPowerFlowVoltageViolation(maxVoltageViolation(net, options));
-		result.setMaxPowerFlowBranchLimitViolation(maxBranchLimitViolation(net));
+		result.setMaxPowerFlowVoltageViolation(maxVoltageViolation(aclfNet, options));
+		result.setMaxPowerFlowBranchLimitViolation(maxBranchLimitViolation(aclfNet));
 		result.addDiagnostic("AC power-flow validation: converged=" + converged
 				+ ", iterations=" + powerFlow.getIterationCount()
 				+ ", max voltage diff=" + result.getMaxPowerFlowVoltageDiff()
@@ -52,9 +59,34 @@ public class DistOpfPowerFlowValidation {
 		return result;
 	}
 
-	private static void capturePowerFlowVoltages(DStabNetwork3Phase net, DistOpfResult result) {
-		for (DStab3PBus bus : net.getBusList()) {
-			Complex3x1 vabc = bus.get3PhaseVotlages();
+	@SuppressWarnings("unchecked")
+	private static BaseAclfNetwork<? extends BaseAclfBus<? extends AclfGen, ? extends AclfLoad>, ? extends AclfBranch> aclfNetwork(
+			INetwork3Phase net) {
+		if (net instanceof BaseAclfNetwork) {
+			return (BaseAclfNetwork<? extends BaseAclfBus<? extends AclfGen, ? extends AclfLoad>, ? extends AclfBranch>) net;
+		}
+		throw new IllegalArgumentException("DistOPF validation requires a three-phase network that also extends BaseAclfNetwork");
+	}
+
+	private static IBus3Phase threePhaseBus(BaseAclfBus<?, ?> bus) {
+		if (bus instanceof IBus3Phase) {
+			return (IBus3Phase) bus;
+		}
+		throw new IllegalArgumentException("DistOPF bus is not a three-phase bus: " + bus.getId());
+	}
+
+	private static IBranch3Phase threePhaseBranch(AclfBranch branch) {
+		if (branch instanceof IBranch3Phase) {
+			return (IBranch3Phase) branch;
+		}
+		throw new IllegalArgumentException("DistOPF branch is not a three-phase branch: " + branch.getId());
+	}
+
+	private static void capturePowerFlowVoltages(
+			BaseAclfNetwork<? extends BaseAclfBus<? extends AclfGen, ? extends AclfLoad>, ? extends AclfBranch> net,
+			DistOpfResult result) {
+		for (BaseAclfBus<? extends AclfGen, ? extends AclfLoad> bus : net.getBusList()) {
+			Complex3x1 vabc = threePhaseBus(bus).get3PhaseVotlages();
 			captureVoltage(result, bus.getId(), "A", vabc == null ? null : vabc.a_0);
 			captureVoltage(result, bus.getId(), "B", vabc == null ? null : vabc.b_1);
 			captureVoltage(result, bus.getId(), "C", vabc == null ? null : vabc.c_2);
@@ -67,13 +99,17 @@ public class DistOpfPowerFlowValidation {
 		}
 	}
 
-	private static void capturePowerFlowBranchPowers(DStabNetwork3Phase net, DistOpfResult result) {
-		for (DStab3PBranch branch : net.getBranchList()) {
+	private static void capturePowerFlowBranchPowers(
+			BaseAclfNetwork<? extends BaseAclfBus<? extends AclfGen, ? extends AclfLoad>, ? extends AclfBranch> net,
+			DistOpfResult result) {
+		for (AclfBranch branch : net.getBranchList()) {
 			if (!branch.isActive()) {
 				continue;
 			}
-			Complex3x1 current = branch.calc3PhaseCurrentFrom2To();
-			Complex3x1 voltage = ((DStab3PBus) branch.getFromBus()).get3PhaseVotlages();
+			IBranch3Phase branch3P = threePhaseBranch(branch);
+			Complex3x1 voltage = threePhaseBus((BaseAclfBus<?, ?>) branch.getFromBus()).get3PhaseVotlages();
+			Complex3x1 toVoltage = threePhaseBus((BaseAclfBus<?, ?>) branch.getToBus()).get3PhaseVotlages();
+			Complex3x1 current = branch3P.getYffabc().multiply(voltage).add(branch3P.getYftabc().multiply(toVoltage));
 			captureBranchPower(result, branch.getId(), "A", voltage == null ? null : voltage.a_0,
 					current == null ? null : current.a_0);
 			captureBranchPower(result, branch.getId(), "B", voltage == null ? null : voltage.b_1,
@@ -118,10 +154,12 @@ public class DistOpfPowerFlowValidation {
 		return maxDiff;
 	}
 
-	private static double maxVoltageViolation(DStabNetwork3Phase net, DistOpfOptions options) {
+	private static double maxVoltageViolation(
+			BaseAclfNetwork<? extends BaseAclfBus<? extends AclfGen, ? extends AclfLoad>, ? extends AclfBranch> net,
+			DistOpfOptions options) {
 		double maxViolation = 0.0;
-		for (DStab3PBus bus : net.getBusList()) {
-			Complex3x1 vabc = bus.get3PhaseVotlages();
+		for (BaseAclfBus<? extends AclfGen, ? extends AclfLoad> bus : net.getBusList()) {
+			Complex3x1 vabc = threePhaseBus(bus).get3PhaseVotlages();
 			maxViolation = Math.max(maxViolation, voltageViolation(vabc == null ? null : vabc.a_0, options));
 			maxViolation = Math.max(maxViolation, voltageViolation(vabc == null ? null : vabc.b_1, options));
 			maxViolation = Math.max(maxViolation, voltageViolation(vabc == null ? null : vabc.c_2, options));
@@ -143,15 +181,18 @@ public class DistOpfPowerFlowValidation {
 		return 0.0;
 	}
 
-	private static double maxBranchLimitViolation(DStabNetwork3Phase net) {
+	private static double maxBranchLimitViolation(
+			BaseAclfNetwork<? extends BaseAclfBus<? extends AclfGen, ? extends AclfLoad>, ? extends AclfBranch> net) {
 		double maxViolation = 0.0;
-		for (DStab3PBranch branch : net.getBranchList()) {
+		for (AclfBranch branch : net.getBranchList()) {
 			if (!branch.isActive() || branch.getRatingMva1() <= 0.0) {
 				continue;
 			}
 			double limit = branch.getRatingMva1() / net.getBaseMva();
-			Complex3x1 current = branch.calc3PhaseCurrentFrom2To();
-			Complex3x1 voltage = ((DStab3PBus) branch.getFromBus()).get3PhaseVotlages();
+			IBranch3Phase branch3P = threePhaseBranch(branch);
+			Complex3x1 voltage = threePhaseBus((BaseAclfBus<?, ?>) branch.getFromBus()).get3PhaseVotlages();
+			Complex3x1 toVoltage = threePhaseBus((BaseAclfBus<?, ?>) branch.getToBus()).get3PhaseVotlages();
+			Complex3x1 current = branch3P.getYffabc().multiply(voltage).add(branch3P.getYftabc().multiply(toVoltage));
 			maxViolation = Math.max(maxViolation, branchPhaseViolation(voltage.a_0, current.a_0, limit));
 			maxViolation = Math.max(maxViolation, branchPhaseViolation(voltage.b_1, current.b_1, limit));
 			maxViolation = Math.max(maxViolation, branchPhaseViolation(voltage.c_2, current.c_2, limit));
