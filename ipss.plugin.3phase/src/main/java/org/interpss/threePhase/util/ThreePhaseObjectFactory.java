@@ -28,6 +28,7 @@ import com.interpss.core.aclf.netAdj.NetAdjustFactory;
 import com.interpss.core.acsc.AcscFactory;
 import com.interpss.core.acsc.BusScCode;
 import com.interpss.core.acsc.BusScGrounding;
+import com.interpss.core.threephase.INetwork3Phase;
 import com.interpss.core.net.OriginalDataFormat;
 import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.StaticLoadModel;
@@ -127,7 +128,7 @@ public class ThreePhaseObjectFactory {
 	}
 
 	public static DistributionPowerFlowAlgorithm createDistPowerFlowAlgorithm(BaseAclfNetwork net){
-		DistributionPowerFlowAlgorithmImpl algo = new DistributionPowerFlowAlgorithmImpl(net);
+		DistributionPowerFlowAlgorithmImpl algo = new DistributionPowerFlowAlgorithmImpl((INetwork3Phase) net);
 
 		return algo;
 	}
