@@ -133,7 +133,7 @@ public class ThreePhaseObjectFactory {
 		return algo;
 	}
 
-	public static DistOpfAlgorithm createDistOpfAlgorithm(DStabNetwork3Phase net){
+	public static DistOpfAlgorithm createDistOpfAlgorithm(INetwork3Phase net){
 		return new DistOpfAlgorithmImpl(net);
 	}
 
