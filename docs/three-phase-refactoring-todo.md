@@ -45,13 +45,13 @@ Plan: `docs/three-phase-interface-refactoring-plan.md`
 
 ## Phase A5: Migrate DistOPF Classes
 
-- [ ] `DistOpfModelDataExtractor.extract()` — accept `INetwork3Phase`
-- [ ] `DistOpfAlgorithmImpl` — accept `INetwork3Phase`
-- [ ] `DistOpfResult.applySetpointsToNetwork()` — accept `INetwork3Phase`
-- [ ] `DistOpfPowerFlowValidation` — accept `INetwork3Phase`
-- [ ] `DistOpfResultMapper` — accept interface types
-- [ ] Verify: all DistOPF tests pass on `DStabNetwork3Phase`
-- [ ] Add test: DistOPF on `Static3PNetwork`
+- [x] `DistOpfModelDataExtractor.extract()` — accept `INetwork3Phase`
+- [x] `DistOpfAlgorithmImpl` — accept `INetwork3Phase`
+- [x] `DistOpfResult.applySetpointsToNetwork()` — accept `INetwork3Phase`
+- [x] `DistOpfPowerFlowValidation` — accept `INetwork3Phase`
+- [x] `DistOpfResultMapper` — accept interface types
+- [x] Verify: all DistOPF tests pass on `DStabNetwork3Phase`
+- [x] Add test: DistOPF on `Static3PNetwork`
 
 ## Phase A6: Final Verification
 
