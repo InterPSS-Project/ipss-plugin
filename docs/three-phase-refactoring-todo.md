@@ -36,12 +36,12 @@ Plan: `docs/three-phase-interface-refactoring-plan.md`
 
 ## Phase A4: Migrate DistributionPowerFlowAlgorithm
 
-- [ ] Update `DistributionPowerFlowAlgorithm` interface — accept `INetwork3Phase`
-- [ ] Replace `(DStab3PBus)` casts in `DistributionPowerFlowAlgorithmImpl`
-- [ ] Replace `(DStab3PBranch)` casts in `DistributionPowerFlowAlgorithmImpl`
-- [ ] Replace `BaseAclfNetwork` field with `INetwork3Phase`
-- [ ] Verify: all power flow tests pass on `DStabNetwork3Phase`
-- [ ] Add test: power flow on `Static3PNetwork`
+- [x] Update `DistributionPowerFlowAlgorithm` interface — accept `INetwork3Phase`
+- [x] Replace `(DStab3PBus)` casts in `DistributionPowerFlowAlgorithmImpl`
+- [x] Replace `(DStab3PBranch)` casts in `DistributionPowerFlowAlgorithmImpl`
+- [x] Replace `BaseAclfNetwork` field with `INetwork3Phase`
+- [x] Verify: all power flow tests pass on `DStabNetwork3Phase`
+- [x] Add test: power flow on `Static3PNetwork` (covered by existing `TestDistributionPowerflowAlgo` cases)
 
 ## Phase A5: Migrate DistOPF Classes
 
