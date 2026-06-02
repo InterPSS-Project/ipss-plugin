@@ -122,6 +122,67 @@ public class IEEE123Feeder_Dstab_Test {
 	}
 
 	@Test
+	public void testIEEE123BusDstabSimWithoutAcMotors() throws InterpssException{
+
+		IpssCorePlugin.init();
+		IpssCorePlugin.setLoggerLevel(Level.INFO);
+
+		OpenDSSDataParser parser = new OpenDSSDataParser();
+		parser.parseFeederData("testData/feeder/IEEE123","IEEE123Master_Modified_v2.dss");
+		parser.calcVoltageBases();
+		parser.convertActualValuesToPU(100.0);
+
+		DStabNetwork3Phase distNet = parser.getDistNetwork();
+		parser.getBranchByName("reg1a").setToTurnRatio(1.0438);
+
+		DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(distNet);
+		assertTrue(distPFAlgo.powerflow());
+
+		BaseDStabBus bus150 = distNet.getBus("150");
+		DStabGen constantGen = DStabObjectFactory.createDStabGen();
+		constantGen.setId("Source");
+		constantGen.setMvaBase(100);
+		constantGen.setPosGenZ(new Complex(0.0,0.05));
+		constantGen.setNegGenZ(new Complex(0.0,0.05));
+		constantGen.setZeroGenZ(new Complex(0.0,0.05));
+		bus150.getContributeGenList().add(constantGen);
+
+		EConstMachine mach = (EConstMachine)DStabObjectFactory.
+				createMachine("MachId", "MachName", MachineModelType.ECONSTANT, distNet, "150", "Source");
+		mach.setRating(100, UnitType.mVA, distNet.getBaseKva());
+		mach.setRatedVoltage(4160.0);
+		mach.setH(50000.0);
+		mach.setXd1(0.05);
+
+		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(
+				distNet, IpssCorePlugin.getMsgHub());
+		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+		dstabAlgo.setSimuStepSec(0.005d);
+		dstabAlgo.setTotalSimuTimeSec(1.0);
+		dstabAlgo.setDynamicEventHandler(new DynamicEventProcessor3Phase());
+
+		StateMonitor sm = new StateMonitor();
+		sm.addBusStdMonitor(new String[]{"150","150r","300","30","21"});
+		sm.add3PhaseBusStdMonitor(new String[]{"150","150r","300","30","21"});
+		dstabAlgo.setSimuOutputHandler(sm);
+		dstabAlgo.setOutPutPerSteps(1);
+
+		assertTrue(dstabAlgo.initialization());
+		while(dstabAlgo.getSimuTime() <= dstabAlgo.getTotalSimuTimeSec()){
+			assertTrue(dstabAlgo.solveDEqnStep(true));
+
+			if(dstabAlgo.getSimuTime() > 0.5 && dstabAlgo.getSimuTime() < 0.5833){
+				mach.setE(0.4);
+			}
+			else if (dstabAlgo.getSimuTime() >= 0.6){
+				mach.setE(1.0);
+			}
+		}
+
+		assertTrue(Double.isFinite(distNet.getBus("30").get3PhaseVotlages().absMax()));
+	}
+
+	@Test
 	public void testIEEE123BusDstabSim() throws InterpssException{
 
 		IpssCorePlugin.init();
