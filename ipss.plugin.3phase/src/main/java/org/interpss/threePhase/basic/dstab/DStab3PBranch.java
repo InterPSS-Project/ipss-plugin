@@ -3,8 +3,8 @@ package org.interpss.threePhase.basic.dstab;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 
-import com.interpss.core.abc.IBranch3Phase;
-import com.interpss.core.abc.Static3PXformer;
+import com.interpss.core.threephase.IBranch3Phase;
+import com.interpss.core.threephase.Static3PXformer;
 import com.interpss.core.acsc.PhaseCode;
 import com.interpss.dstab.DStabBranch;
 

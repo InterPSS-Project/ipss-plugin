@@ -7,8 +7,8 @@ import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.dynamic.model.DStabGen3PhaseAdapter;
 import org.interpss.threePhase.dynamic.model.InductionMotor3PhaseAdapter;
 
-import com.interpss.core.abc.Static3PXformer;
-import com.interpss.core.abc.Static3PhaseFactory;
+import com.interpss.core.threephase.Static3PXformer;
+import com.interpss.core.threephase.Static3PhaseFactory;
 import com.interpss.dstab.DStabGen;
 
 public class ThreePhaseUtilFunction {

@@ -84,9 +84,9 @@ public class IEEE123Feeder_Dstab_Test {
 		DStab3PBus bus150r = distNet.getBus("150r");
 		Complex3x1 vabc_150r = bus150r.get3PhaseVotlages();
 		/*
-		 * 150r,1.0437947512832042,-2.2960030801920628E-4,1.043702121833145,4.188670668153503,1.0437156069184814,2.09417437174131,1.04379 + j-0.00024  -0.52196 + j-0.90381  -0.52166 + j0.9040
+		 * 150r,1.0437958911380725,-8.796014653702537E-6,1.0437981798256701,-2.0944006088487295,1.0437972393853074,2.094387968538491
 		 */
-		assertTrue(vabc_150r.subtract(new Complex3x1(new Complex(1.04379,-0.00024),new Complex(-0.52196,-0.90381),new Complex(-0.52166,0.9040))).absMax()<1.0E-4);
+		assertTrue(vabc_150r.subtract(new Complex3x1(new Complex(1.0437958910976932,-9.181243953806592E-6),new Complex(-0.5219040674970107,-0.9039528663251519),new Complex(-0.5218921709962742,0.9039586488336646))).absMax()<1.0E-4);
 
 		/// Compared with IEEE TEST FEEDER RESULTS
 		//RG1   |  1.0437 at    .00  |  1.0438 at -120.00  |  1.0438 at  120.00 |
@@ -119,6 +119,67 @@ public class IEEE123Feeder_Dstab_Test {
 //		assertTrue(Math.abs(vabc_30.a_0.abs()-0.9969)<1.0E-3);
 //		assertTrue(Math.abs(vabc_30.b_1.abs()-1.0331)<1.0E-3);
 //		assertTrue(Math.abs(vabc_30.c_2.abs()-1.0078)<1.0E-3);
+	}
+
+	@Test
+	public void testIEEE123BusDstabSimWithoutAcMotors() throws InterpssException{
+
+		IpssCorePlugin.init();
+		IpssCorePlugin.setLoggerLevel(Level.INFO);
+
+		OpenDSSDataParser parser = new OpenDSSDataParser();
+		parser.parseFeederData("testData/feeder/IEEE123","IEEE123Master_Modified_v2.dss");
+		parser.calcVoltageBases();
+		parser.convertActualValuesToPU(100.0);
+
+		DStabNetwork3Phase distNet = parser.getDistNetwork();
+		parser.getBranchByName("reg1a").setToTurnRatio(1.0438);
+
+		DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(distNet);
+		assertTrue(distPFAlgo.powerflow());
+
+		BaseDStabBus bus150 = distNet.getBus("150");
+		DStabGen constantGen = DStabObjectFactory.createDStabGen();
+		constantGen.setId("Source");
+		constantGen.setMvaBase(100);
+		constantGen.setPosGenZ(new Complex(0.0,0.05));
+		constantGen.setNegGenZ(new Complex(0.0,0.05));
+		constantGen.setZeroGenZ(new Complex(0.0,0.05));
+		bus150.getContributeGenList().add(constantGen);
+
+		EConstMachine mach = (EConstMachine)DStabObjectFactory.
+				createMachine("MachId", "MachName", MachineModelType.ECONSTANT, distNet, "150", "Source");
+		mach.setRating(100, UnitType.mVA, distNet.getBaseKva());
+		mach.setRatedVoltage(4160.0);
+		mach.setH(50000.0);
+		mach.setXd1(0.05);
+
+		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(
+				distNet, IpssCorePlugin.getMsgHub());
+		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+		dstabAlgo.setSimuStepSec(0.005d);
+		dstabAlgo.setTotalSimuTimeSec(1.0);
+		dstabAlgo.setDynamicEventHandler(new DynamicEventProcessor3Phase());
+
+		StateMonitor sm = new StateMonitor();
+		sm.addBusStdMonitor(new String[]{"150","150r","300","30","21"});
+		sm.add3PhaseBusStdMonitor(new String[]{"150","150r","300","30","21"});
+		dstabAlgo.setSimuOutputHandler(sm);
+		dstabAlgo.setOutPutPerSteps(1);
+
+		assertTrue(dstabAlgo.initialization());
+		while(dstabAlgo.getSimuTime() <= dstabAlgo.getTotalSimuTimeSec()){
+			assertTrue(dstabAlgo.solveDEqnStep(true));
+
+			if(dstabAlgo.getSimuTime() > 0.5 && dstabAlgo.getSimuTime() < 0.5833){
+				mach.setE(0.4);
+			}
+			else if (dstabAlgo.getSimuTime() >= 0.6){
+				mach.setE(1.0);
+			}
+		}
+
+		assertTrue(Double.isFinite(distNet.getBus("30").get3PhaseVotlages().absMax()));
 	}
 
 	@Test

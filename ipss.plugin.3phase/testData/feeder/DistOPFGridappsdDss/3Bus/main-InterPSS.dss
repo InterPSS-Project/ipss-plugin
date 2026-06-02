@@ -1,0 +1,28 @@
+clear
+Set DefaultBaseFrequency=60
+
+! GRIDAPPSD/distopf src/distopf/cases/dss/3Bus/3Bus.DSS, source snapshot ce39973.
+new circuit.3Bus basekV=4.16 phases=3
+~ mvasc3=200000 200000
+
+set earthmodel=carson
+
+new wiredata.conductor Runits=mi Rac=0.306 GMRunits=ft GMRac=0.0244  Radunits=in Diam=0.721 normamps=530
+new wiredata.neutral   Runits=mi Rac=0.592 GMRunits=ft GMRac=0.00814 Radunits=in Diam=0.563 normamps=340
+
+new linegeometry.4wire nconds=4 nphases=3 reduce=yes
+~ cond=1 wire=conductor units=ft x=-4   h=28
+~ cond=2 wire=conductor units=ft x=-1.5 h=28
+~ cond=3 wire=conductor units=ft x=3    h=28
+~ cond=4 wire=neutral   units=ft x=0    h=24
+
+new line.line1 bus1=sourcebus bus2=n2 geometry=4wire length=2000 units=ft
+new line.line2 bus1=n2 bus2=n3 geometry=4wire length=2500 units=ft
+
+new load.load1 phases=3 bus1=n3 conn=wye kV=4.16 kW=5400 pf=0.9 model=1
+~ vminpu=0.75
+
+set voltagebases=[12.47, 4.16]
+calcvoltagebases
+set loadmult=1
+solve

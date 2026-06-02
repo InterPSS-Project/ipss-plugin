@@ -7,6 +7,7 @@ import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisA
 import static com.interpss.core.DclfAlgoObjectFactory.createMultiOutageContingency;
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -164,6 +165,46 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
                 contingencies,
                 monitors,
                 parallelism);
+    }
+
+    @Test
+    public void activsg25kFullWoodburyAnalyzerCompletesWithDefaultMonitorBatching() throws Exception {
+        assumeTrue(Boolean.getBoolean("interpss.full25kDclfTests"),
+                "Set -Dinterpss.full25kDclfTests=true to run full 25k Woodbury DCLF contingency analysis");
+
+        AclfNetwork net = importPsse(
+                "testData/psse/v33/ACTIVSg25k.RAW",
+                IpssAdapter.PsseVersion.PSSE_33);
+        setDefaultRatings(net);
+
+        ContingencyAnalysisAlgorithm sourceAlgo = createContingencyAnalysisAlgorithm(net);
+        sourceAlgo.calculateDclf();
+
+        List<DclfBranchOutage> contingencies = firstNonRefBranchOutages(net, sourceAlgo, Integer.MAX_VALUE);
+        Set<String> monitors = firstActiveBranchIds(net, Integer.MAX_VALUE);
+
+        assertTrue(contingencies.size() > 10_000);
+        assertTrue(monitors.size() > 10_000);
+        assertTrue((long) contingencies.size() * (long) monitors.size() > 50_000_000L);
+
+        long startNs = System.nanoTime();
+        ConcurrentLinkedQueue<BranchCAResultRec> results =
+                ParallelDclfContingencyAnalyzer.performContingencyAnalysis(
+                        net,
+                        contingencies,
+                        monitors,
+                        performanceOverloadThreshold(),
+                        false,
+                        performanceParallelism(),
+                        DclfContingencySolutionMethod.WoodburyMatrixUpdate);
+        long elapsedMs = (System.nanoTime() - startNs) / 1_000_000L;
+
+        System.out.println("ACTIVSg25k full Woodbury analyzer: contingencies="
+                + contingencies.size()
+                + ", monitors=" + monitors.size()
+                + ", records=" + results.size()
+                + ", elapsedMs=" + elapsedMs);
+        assertTrue(results.size() > 0);
     }
 
     @Test

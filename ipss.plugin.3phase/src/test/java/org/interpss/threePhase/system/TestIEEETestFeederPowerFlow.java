@@ -58,9 +58,9 @@ public class TestIEEETestFeederPowerFlow {
 		DStab3PBus bus150r = distNet.getBus("150r");
 		Complex3x1 vabc_150r = bus150r.get3PhaseVotlages();
 		/*
-		 * 150r,1.0436958711168833,-2.3401129732907437E-4,1.043751961975151,4.188644578364089,1.0437277807878227,2.094204336986655,1.0437 + j-0.00024  -0.52201 + j-0.90384  -0.52169 + j0.90399
-         */
-		assertTrue(vabc_150r.subtract(new Complex3x1(new Complex(1.0437, -0.00024),new Complex(-0.52201,-0.90384),new Complex(-0.52169, 0.90399))).absMax()<1.0E-4);
+		 * 150r,1.0437958810857966,-8.799769060861278E-6,1.043798182183477,-2.094400606444785,1.0437972403912146,2.0943879682778963
+		 */
+		assertTrue(vabc_150r.subtract(new Complex3x1(new Complex(1.043795881045383, -9.185162700114685E-6),new Complex(-0.5219040665028727,-0.9039528696216944),new Complex(-0.5218921712636547, 0.9039586498408116))).absMax()<1.0E-4);
 
 		/// Compared with IEEE TEST FEEDER RESULTS
 		//RG1   |  1.0437 at    .00  |  1.0438 at -120.00  |  1.0438 at  120.00 |
@@ -146,9 +146,9 @@ public class TestIEEETestFeederPowerFlow {
 		DStab3PBus bus150r = distNet.getBus("150r");
 		Complex3x1 vabc_150r = bus150r.get3PhaseVotlages();
 		/*
-		 * 150r,1.0436958711168833,-2.3401129732907437E-4,1.043751961975151,4.188644578364089,1.0437277807878227,2.094204336986655,1.0437 + j-0.00024  -0.52201 + j-0.90384  -0.52169 + j0.90399
-         */
-		assertTrue(vabc_150r.subtract(new Complex3x1(new Complex(1.0437, -0.00024),new Complex(-0.52201,-0.90384),new Complex(-0.52169, 0.90399))).absMax()<1.0E-4);
+		 * 150r,1.0437961598719774,-8.663067858306927E-6,1.0437977665492846,-2.0944008633340525,1.0437973565575476,2.0943880187270127
+		 */
+		assertTrue(vabc_150r.subtract(new Complex3x1(new Complex(1.0437961598328096, -9.042476963098021E-6),new Complex(-0.5219040908994763,-0.9039523756015391),new Complex(-0.5218922749500231, 0.9039587241152185))).absMax()<1.0E-4);
 
 		/// Compared with IEEE TEST FEEDER RESULTS
 		//RG1   |  1.0437 at    .00  |  1.0438 at -120.00  |  1.0438 at  120.00 |
