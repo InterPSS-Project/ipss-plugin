@@ -249,6 +249,7 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 					int i = b.getSortNumber();
 					DStab3PBus ph3Bus = (DStab3PBus) b;
 					Complex3x3 yii = ph3Bus.getYiiAbc();
+					replaceNonFiniteAdmittance(yii, b.getId());
 					// check if there is any Yii = 0.0 (abs(Yii) <1.0E-8)
 
 				    if(yii.aa.abs()<yiiMinTolerance){
@@ -281,6 +282,7 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 						j = bra.getToBus().getSortNumber();
 					yMatrixAbc.addToA( ph3Branch.getYftabc(), i, j );
 					yMatrixAbc.addToA( ph3Branch.getYtfabc(), j, i );
+					addTransformerAntiFloatAdmittance(yMatrixAbc, ph3Branch);
 				} else {
 					throw new IpssNumericException("The processing branch #"+bra.getId()+"  is not a threePhaseBranch");
 				}
@@ -449,6 +451,26 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 		return connectCode == XFormerConnectCode.DELTA
 				|| connectCode == XFormerConnectCode.DELTA11
 				|| (connectCode == XFormerConnectCode.WYE && groundCode == BusGroundCode.UNGROUNDED);
+	}
+
+	private void replaceNonFiniteAdmittance(Complex3x3 yii, String busId) {
+		yii.aa = replaceNonFiniteAdmittance(yii.aa, busId, "aa");
+		yii.ab = replaceNonFiniteAdmittance(yii.ab, busId, "ab");
+		yii.ac = replaceNonFiniteAdmittance(yii.ac, busId, "ac");
+		yii.ba = replaceNonFiniteAdmittance(yii.ba, busId, "ba");
+		yii.bb = replaceNonFiniteAdmittance(yii.bb, busId, "bb");
+		yii.bc = replaceNonFiniteAdmittance(yii.bc, busId, "bc");
+		yii.ca = replaceNonFiniteAdmittance(yii.ca, busId, "ca");
+		yii.cb = replaceNonFiniteAdmittance(yii.cb, busId, "cb");
+		yii.cc = replaceNonFiniteAdmittance(yii.cc, busId, "cc");
+	}
+
+	private Complex replaceNonFiniteAdmittance(Complex value, String busId, String entryName) {
+		if(value == null || value.isNaN() || value.isInfinite()) {
+			log.warn("Bus {} dynamic Yii.{} is non-finite; replaced with 0.0", busId, entryName);
+			return Complex.ZERO;
+		}
+		return value;
 	}
 
 	private void convertLoadModel() {
