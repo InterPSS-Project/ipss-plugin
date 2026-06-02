@@ -6,6 +6,8 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranchCode;
@@ -43,16 +45,17 @@ public class OpenDSSTransformerParser {
 		int phaseNum = 3;
 		int windingNum = 2;
 		double xhl = 0;
-		double losspercent1 = 0,losspercent2;
+		double losspercent1 = 0,losspercent2 = 0;
 		double kva1 = 0, kva2 = 0;
 		double nominalKV1 = 0, nominalKV2 = 0;
 		String xfrId = "";
 		String fromBusId = "", toBusId = "";
 		String fromConnection="", toConnection = "";
+		boolean fromWyeGrounded = true, toWyeGrounded = true;
 
-		String defStr = xfrStr[0].trim().toLowerCase();
-		String wdg1Str = xfrStr[1].trim().toLowerCase();
-		String wdg2Str = xfrStr[2].trim().toLowerCase();
+		String defStr = normalizeInlineRpnDivisions(xfrStr[0].trim().toLowerCase());
+		String wdg1Str = normalizeInlineRpnDivisions(xfrStr[1].trim().toLowerCase());
+		String wdg2Str = normalizeInlineRpnDivisions(xfrStr[2].trim().toLowerCase());
 
 		String[] defStrAry  = defStr.split("\\s+");
 		String[] wdg1StrAry = wdg1Str.split("\\s+");
@@ -76,7 +79,9 @@ public class OpenDSSTransformerParser {
 
 		for (String element : wdg1StrAry) {
 			if(element.contains("bus=")){
-				fromBusId = element.substring(4);
+				TerminalBus terminal = terminalBus(element.substring(4));
+				fromBusId = terminal.busId;
+				fromWyeGrounded = terminal.wyeGrounded;
 			}
 			else if(element.contains("conn=")){
 				fromConnection = element.substring(5);
@@ -85,7 +90,7 @@ public class OpenDSSTransformerParser {
 				nominalKV1 = Double.valueOf(element.substring(3));
 			}
 			else if(element.contains("kva=")){
-				kva1 = Double.valueOf(element.substring(5));
+				kva1 = Double.valueOf(element.substring(4));
 			}
 			else if(element.contains("%r=")){
 				losspercent1= Double.valueOf(element.substring(3));
@@ -95,7 +100,9 @@ public class OpenDSSTransformerParser {
 		for (String element : wdg2StrAry) {
 
 			if(element.contains("bus=")){
-				toBusId = element.substring(4);
+				TerminalBus terminal = terminalBus(element.substring(4));
+				toBusId = terminal.busId;
+				toWyeGrounded = terminal.wyeGrounded;
 			}
 			else if(element.contains("conn=")){
 				toConnection = element.substring(5);
@@ -104,7 +111,7 @@ public class OpenDSSTransformerParser {
 				nominalKV2 = Double.valueOf(element.substring(3));
 			}
 			else if(element.contains("kva=")){
-				kva1 = Double.valueOf(element.substring(4));
+				kva2 = Double.valueOf(element.substring(4));
 			}
 			else if(element.contains("%r=")){
 				losspercent2= Double.valueOf(element.substring(3));
@@ -121,7 +128,8 @@ public class OpenDSSTransformerParser {
 
 
 		// create a transformer object
-		DStab3PBranch xfrBranch = ThreePhaseObjectFactory.create3PBranch(fromBusId, toBusId, "0", this.dataParser.getDistNetwork());
+		DStab3PBranch xfrBranch = ThreePhaseObjectFactory.create3PBranch(fromBusId, toBusId, xfrId,
+				this.dataParser.getDistNetwork());
 		xfrBranch.setName(xfrId);
 		xfrBranch.setBranchCode(AclfBranchCode.XFORMER);
 
@@ -132,8 +140,8 @@ public class OpenDSSTransformerParser {
 //		xfrBranch.getFromAclfBus().setBaseVoltage(normKV1, UnitType.kV);
 //		xfrBranch.getToAclfBus().setBaseVoltage(normKV2, UnitType.kV);
 
-		//TODO calculate r based on loss percent
-		xfrBranch.setZ( new Complex( 0.0, xhl ));
+		xfrBranch.setZ(transformerSeriesImpedanceOhm(nominalKV1, nominalKV2, kva1, kva2,
+				losspercent1 + losspercent2, xhl));
 
 		xfrBranch.setXfrRatedKVA(kva1);
 
@@ -150,7 +158,8 @@ public class OpenDSSTransformerParser {
 			}
 	    }
 	    else if(fromConnection.equalsIgnoreCase("Wye")){
-	    	xfr0.setFromGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
+	    	xfr0.setFromGrounding(fromWyeGrounded ? BusGroundCode.SOLID_GROUNDED : BusGroundCode.UNGROUNDED,
+					XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 	    }
 	    else{
 	    	throw new Error("Transformer connection type at winding 1 is not supported yet #"+fromConnection);
@@ -164,7 +173,8 @@ public class OpenDSSTransformerParser {
 			}
 	    }
 	    else if(toConnection.equalsIgnoreCase("Wye")){
-	    	xfr0.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
+	    	xfr0.setToGrounding(toWyeGrounded ? BusGroundCode.SOLID_GROUNDED : BusGroundCode.UNGROUNDED,
+					XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 	    }
 	    else{
 	    	throw new Error("Transformer connection type at winding 2 is not supported yet #"+toConnection);
@@ -198,8 +208,9 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 		String fromConnection="", toConnection = "";
 		String referenceXfrName = "";
 		String phase1 = "", phase2 = "",phase3 = "";
+		boolean fromWyeGrounded = true, toWyeGrounded = true;
 
-		String[] xfrStrAry  = xfrStr.trim().toLowerCase().split("\\s+(?![^\\[]*\\])");
+		String[] xfrStrAry  = normalizeInlineRpnDivisions(xfrStr.trim().toLowerCase()).split("\\s+(?![^\\[]*\\])");
 
 
 		for (String element : xfrStrAry) {
@@ -220,7 +231,18 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 				int startIdx =  element.indexOf("[")+1;
 				int endIdx =  element.indexOf("]");
 				String[] busIds = element.substring(startIdx,endIdx).trim().split("\\s+");
-				fromBusId = busIds[0];
+				TerminalBus fromTerminal = terminalBus(busIds[0]);
+				fromBusId = fromTerminal.busId;
+				fromWyeGrounded = fromTerminal.wyeGrounded;
+				if(fromTerminal.nodes.length>0){
+					phase1 = fromTerminal.nodes[0];
+				}
+				if(fromTerminal.nodes.length>1){
+					phase2 = fromTerminal.nodes[1];
+				}
+				if(fromTerminal.nodes.length>2){
+					phase3 = fromTerminal.nodes[2];
+				}
 				if(fromBusId.contains(".")){
 
 //					int dotIdx = fromBusId.indexOf(".");
@@ -240,7 +262,9 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 					}
 
 				}
-				toBusId = busIds[1];
+				TerminalBus toTerminal = terminalBus(busIds[1]);
+				toBusId = toTerminal.busId;
+				toWyeGrounded = toTerminal.wyeGrounded;
 
 				if(toBusId.contains(".")){
 //					int dotIdx = toBusId.indexOf(".");
@@ -299,7 +323,8 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 
 
 		// create a transformer object
-		DStab3PBranch xfrBranch = ThreePhaseObjectFactory.create3PBranch(fromBusId, toBusId, "0", this.dataParser.getDistNetwork());
+		DStab3PBranch xfrBranch = ThreePhaseObjectFactory.create3PBranch(fromBusId, toBusId, xfrId,
+				this.dataParser.getDistNetwork());
 
 		// since InterPSS uses fromBus->toBus(cirId) as the unique branchId, here the original Id is set as the name.
 		xfrBranch.setName(this.dataParser.getBusIdPrefix()+xfrId);
@@ -349,6 +374,12 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 				}
 			}
 		}
+		if(fromConnection.equals("")){
+			fromConnection = "wye";
+		}
+		if(toConnection.equals("")){
+			toConnection = "wye";
+		}
 
 		xfrBranch.setFromTurnRatio(normKV1*1000.0);
 		xfrBranch.setToTurnRatio(normKV2*1000.0);
@@ -374,8 +405,7 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 //		xfrBranch.getFromBus().setBaseVoltage(normKV1, UnitType.kV);
 //		xfrBranch.getToBus().setBaseVoltage(normKV2, UnitType.kV);
 //
-		//TODO calculate r based on loss percent
-		xfrBranch.setZ( new Complex( 0.0, xhl ));
+		xfrBranch.setZ(transformerSeriesImpedanceOhm(normKV1, normKV2, kva1, kva2, losspercent1, xhl));
 
 		xfrBranch.setXfrRatedKVA(kva1);
 
@@ -390,7 +420,8 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 			}
 	    }
 	    else if(fromConnection.equalsIgnoreCase("Wye")){
-	    	xfr0.setFromGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
+	    	xfr0.setFromGrounding(fromWyeGrounded ? BusGroundCode.SOLID_GROUNDED : BusGroundCode.UNGROUNDED,
+					XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 	    }
 	    else{
 	    	throw new Error("Transformer connection type at winding 1 is not supported yet #"+fromConnection);
@@ -404,7 +435,8 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 			}
 	    }
 	    else if(toConnection.equalsIgnoreCase("Wye")){
-	    	xfr0.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
+	    	xfr0.setToGrounding(toWyeGrounded ? BusGroundCode.SOLID_GROUNDED : BusGroundCode.UNGROUNDED,
+					XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 	    }
 	    else{
 	    	throw new Error("Transformer connection type at winding 2 is not supported yet #"+toConnection);
@@ -429,6 +461,60 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 		return no_error;
 	}
 
+	private static String normalizeInlineRpnDivisions(String value) {
+		Pattern pattern = Pattern.compile("\\(([-+0-9.Ee]+)\\s+([-+0-9.Ee]+)\\s+/\\)");
+		Matcher matcher = pattern.matcher(value);
+		StringBuffer buffer = new StringBuffer();
+		while (matcher.find()) {
+			double numerator = Double.valueOf(matcher.group(1)).doubleValue();
+			double denominator = Double.valueOf(matcher.group(2)).doubleValue();
+			matcher.appendReplacement(buffer, Double.toString(numerator / denominator));
+		}
+		matcher.appendTail(buffer);
+		return buffer.toString();
+	}
+
+	private static Complex transformerSeriesImpedanceOhm(double kv1, double kv2,
+			double kva1, double kva2, double rPercent, double xPercent) {
+		double highKv = Math.max(kv1, kv2);
+		double ratedKva = kva1 > 0.0 ? kva1 : kva2;
+		if (highKv <= 0.0 || ratedKva <= 0.0) {
+			return new Complex(0.0, xPercent);
+		}
+		double zBaseOhm = highKv * highKv / (ratedKva / 1000.0);
+		return new Complex(rPercent / 100.0, xPercent / 100.0).multiply(zBaseOhm);
+	}
 
 
+
+	private static TerminalBus terminalBus(String openDssBusId) {
+		String[] parts = openDssBusId.split("\\.");
+		if (parts.length == 1) {
+			return new TerminalBus(openDssBusId, true, new String[0]);
+		}
+		String[] nodes = new String[parts.length - 1];
+		boolean grounded = true;
+		for (int i = 1; i < parts.length; i++) {
+			nodes[i - 1] = parts[i];
+			if ("4".equals(parts[i])) {
+				grounded = false;
+			}
+			else if ("0".equals(parts[i])) {
+				grounded = true;
+			}
+		}
+		return new TerminalBus(parts[0], grounded, nodes);
+	}
+
+	private static class TerminalBus {
+		private final String busId;
+		private final boolean wyeGrounded;
+		private final String[] nodes;
+
+		private TerminalBus(String busId, boolean wyeGrounded, String[] nodes) {
+			this.busId = busId;
+			this.wyeGrounded = wyeGrounded;
+			this.nodes = nodes;
+		}
+	}
 }
