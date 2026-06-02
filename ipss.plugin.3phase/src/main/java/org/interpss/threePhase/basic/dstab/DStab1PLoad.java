@@ -3,8 +3,8 @@ package org.interpss.threePhase.basic.dstab;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 
-import com.interpss.core.abc.ILoad1Phase;
-import com.interpss.core.abc.LoadConnectionType;
+import com.interpss.core.threephase.ILoad1Phase;
+import com.interpss.core.threephase.LoadConnectionType;
 import com.interpss.core.acsc.PhaseCode;
 import com.interpss.dstab.DStabLoad;
 

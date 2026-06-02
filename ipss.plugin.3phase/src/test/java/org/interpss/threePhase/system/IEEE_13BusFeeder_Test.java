@@ -94,7 +94,7 @@ public class IEEE_13BusFeeder_Test {
 
        DStabNetwork3Phase net = createIEEE13BusFeeder4DStab();
 
-       net.setStaticLoadIncludedInYMatrix(true);
+       net.setStaticLoadIncludedInYMatrix(false);
 
 
 		DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(net);
@@ -146,7 +146,7 @@ public class IEEE_13BusFeeder_Test {
 	  		  for(DStab3PBus bus: net.getBusList()){
 	  			  sm.addBusPhaseVoltageMonitorRecord(bus.getId(), dstabAlgo.getSimuTime(), bus.get3PhaseVotlages());
 	  		  }
-	  		 dstabAlgo.solveDEqnStep(true);
+	  		  assertTrue(dstabAlgo.solveDEqnStep(true));
 	  	    }
 	  	}
 
@@ -233,7 +233,7 @@ public class IEEE_13BusFeeder_Test {
 	  		  for(DStab3PBus bus: net.getBusList()){
 	  			  sm.addBusPhaseVoltageMonitorRecord(bus.getId(), dstabAlgo.getSimuTime(), bus.get3PhaseVotlages());
 	  		  }
-	  		 dstabAlgo.solveDEqnStep(true);
+	  		  assertTrue(dstabAlgo.solveDEqnStep(true));
 	  	    }
 	  	}
 
