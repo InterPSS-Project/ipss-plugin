@@ -7,9 +7,10 @@ import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 import org.interpss.threePhase.basic.dstab.impl.DStab1PLoadImpl;
 import org.interpss.threePhase.basic.dstab.impl.DStab3PLoadImpl;
+import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.abc.LoadConnectionType;
+import com.interpss.core.threephase.LoadConnectionType;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.acsc.PhaseCode;
 
@@ -68,6 +69,8 @@ public class OpenDSSLoadParser {
 			double nominalKV = 0;
 			double loadP = 0.0, loadQ  = 0.0;
 			double powerfactor = 0.0;
+			Double vminpu = null;
+			Double vmaxpu = null;
 
 			String[] loadStrAry = loadStr.toLowerCase().trim().split("\\s+");
 
@@ -98,6 +101,12 @@ public class OpenDSSLoadParser {
 				}
 				else if(element.startsWith("kv=")){
 					nominalKV = Double.valueOf(element.substring(3));
+				}
+				else if(element.startsWith("vminpu=")){
+					vminpu = Double.valueOf(element.substring(7));
+				}
+				else if(element.startsWith("vmaxpu=")){
+					vmaxpu = Double.valueOf(element.substring(7));
 				}
 
 
@@ -133,6 +142,9 @@ public class OpenDSSLoadParser {
 			//get the bus object
 			busName =this.dataParser.getBusIdPrefix()+busName;
 			DStab3PBus bus =  this.dataParser.getDistNetwork().getBus(busName);
+			if(bus == null) {
+				bus = ThreePhaseObjectFactory.create3PDStabBus(busName, this.dataParser.getDistNetwork());
+			}
 
 			DStab1PLoad load= null;
 			if(phaseNum==3) {
@@ -145,6 +157,12 @@ public class OpenDSSLoadParser {
 			load.setId(loadId);
 			// rated KV
 			load.setNominalKV(nominalKV);
+			if (vminpu != null) {
+				load.setVminpu(vminpu.doubleValue());
+			}
+			if (vmaxpu != null) {
+				load.setVmaxpu(vmaxpu.doubleValue());
+			}
 
 			//load model type
 			if(modelType==1){

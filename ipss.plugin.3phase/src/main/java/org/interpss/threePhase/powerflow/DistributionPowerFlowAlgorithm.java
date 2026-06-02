@@ -1,14 +1,14 @@
 package org.interpss.threePhase.powerflow;
 
-import com.interpss.core.aclf.BaseAclfNetwork;
+import com.interpss.core.threephase.INetwork3Phase;
 
 
 public interface DistributionPowerFlowAlgorithm {
 
 
-	BaseAclfNetwork getNetwork();
+	INetwork3Phase getNetwork();
 
-	void setNetwork(BaseAclfNetwork net);
+	void setNetwork(INetwork3Phase net);
 
 	/**
 	 * Order the distribution system buses. If <radialOnly> is set to be true,
@@ -48,6 +48,8 @@ public interface DistributionPowerFlowAlgorithm {
 	public void setMaxIteration(int maxIterNum);
 
 	public int getMaxIteration();
+
+	public int getIterationCount();
 
 	public void  setInitBusVoltageEnabled(boolean enableInitBus3PhaseVolts);
 
