@@ -60,7 +60,7 @@ Plan: `docs/three-phase-interface-refactoring-plan.md`
 - [x] Dead-code cleanup audit: no safe removals found; `BaseAclfNetwork` compatibility points are still used by multi-network callers
 
 Verification notes:
-- `mvn test` reaches 3phase tests and still reports the four pre-existing 3phase failures documented in A1 (`TestIEEETestFeederPowerFlow` and `TestOpenDSSDataParser`); the earlier IEEE123 DStab stall was traced to non-finite dynamic Yii entries on absent partial-phase load voltages, not AC motor dynamics.
+- `mvn test` now reaches the end of `ipss.plugin.3phase` without the prior IEEE123 DStab stall. It fails with five existing 3phase assertion failures in `TestOpenDSSDataParser`, `TestIEEETestFeederPowerFlow`, and `IEEE123Feeder_Dstab_Test.testIEEE123BusPowerflow`; `ipss.test.plugin.core` and `ipss.sample` are skipped because Maven stops at the failing 3phase module.
 - `mvn -pl ipss.plugin.3phase -am test -Dtest=IEEE123Feeder_Dstab_Test#testIEEE123BusDstabSimWithoutAcMotors -Dsurefire.failIfNoSpecifiedTests=false` passes and confirms IEEE123 DStab runs with AC motors removed.
 - `mvn -pl ipss.plugin.3phase -am test -Dtest=IEEE123Feeder_Dstab_Test#testIEEE123BusDstabSim -Dsurefire.failIfNoSpecifiedTests=false` passes and confirms IEEE123 DStab runs with AC motors included.
 - `mvn -pl ipss.plugin.3phase test -Dtest=TestDER_A_model -Dsurefire.failIfNoSpecifiedTests=false` passes and covers power flow → DStab initialization → dynamic simulation.
