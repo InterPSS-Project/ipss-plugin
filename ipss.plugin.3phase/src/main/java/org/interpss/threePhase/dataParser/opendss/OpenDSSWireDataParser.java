@@ -43,10 +43,10 @@ public class OpenDSSWireDataParser {
 			}
 
 			if (id.equals("")) {
-				throw new Error("WireData id is missing: " + wireDataStr);
+				throw new IllegalArgumentException("WireData id is missing: " + wireDataStr);
 			}
 			if (rac <= 0.0 || gmrAc <= 0.0) {
-				throw new Error("WireData Rac and GMRac must be positive: " + wireDataStr);
+				throw new IllegalArgumentException("WireData Rac and GMRac must be positive: " + wireDataStr);
 			}
 			dataParser.getWireDataTable().put(id, new OpenDSSWireData(id, rac, rUnits, gmrAc, gmrUnits, normAmps));
 			return true;
