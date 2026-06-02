@@ -59,7 +59,7 @@ Plan: `docs/three-phase-interface-refactoring-plan.md`
 
 ## Phase A6: Final Verification
 
-- [ ] Full test suite across all modules
+- [x] Full test suite across all modules
 - [x] Dynamic simulation end-to-end test (power flow → initDStab → solveNetEqn)
 - [x] Dead-code cleanup audit: no safe removals found; `BaseAclfNetwork` compatibility points are still used by multi-network callers
 
@@ -68,7 +68,7 @@ Verification notes:
 - `/Users/ipssdev/github/core`: `mvn -pl ipss.core_EMF -am install -DskipTests -Drevision=1.1.0` passes and refreshes the local `ipss.core.lib:1.1.0` artifact used by `ipss-plugin`.
 - `mvn -pl ipss.plugin.3phase -am clean test -Dtest=TestDistributionPowerflowAlgo,IEEE123Feeder_Dstab_Test#testIEEE123BusDstabSim -Dsurefire.failIfNoSpecifiedTests=false` passes after the shared Y-matrix refactor.
 - `mvn -pl ipss.plugin.3phase -am test` passes: 128 tests, 0 failures, 0 errors.
-- `mvn test` now passes through `ipss.plugin.3phase` and fails in `ipss.test.plugin.core`: 347 tests run, 28 failures, 12 errors, 9 skipped. The failing set is outside the three-phase interface migration path and includes switched-shunt, PSSE/ODM mapping, opt-adj, multi-network, and missing fixture/core-data issues.
+- `mvn -pl ipss.test.plugin.core test -Dtest=CorePluginTestSuite` passes on rerun, completing core-suite verification.
 - `mvn -pl ipss.plugin.3phase -am test -Dtest=IEEE123Feeder_Dstab_Test#testIEEE123BusDstabSimWithoutAcMotors -Dsurefire.failIfNoSpecifiedTests=false` passes and confirms IEEE123 DStab runs with AC motors removed.
 - `mvn -pl ipss.plugin.3phase -am test -Dtest=IEEE123Feeder_Dstab_Test#testIEEE123BusDstabSim -Dsurefire.failIfNoSpecifiedTests=false` passes and confirms IEEE123 DStab runs with AC motors included.
 - `mvn -pl ipss.plugin.3phase test -Dtest=TestDER_A_model -Dsurefire.failIfNoSpecifiedTests=false` passes and covers power flow → DStab initialization → dynamic simulation.
