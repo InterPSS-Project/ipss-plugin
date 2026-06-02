@@ -39,7 +39,7 @@ import org.junit.jupiter.api.Test;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.LoadflowAlgoObjectFactory;
-import com.interpss.core.abc.Static3PXformer;
+import com.interpss.core.threephase.Static3PXformer;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;

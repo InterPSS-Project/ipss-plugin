@@ -37,6 +37,7 @@ public class OpenDSSDataParser {
 	protected String busIdPrefix = "";
 	// Line configuration table
 	protected Hashtable<String,LineConfiguration> lineConfigTable = null;
+	protected Hashtable<String,OpenDSSWireData> wireDataTable = null;
 
 	protected DStabNetwork3Phase distNet = null;
 	protected OpenDSSLineCodeParser lineCodeParser = null;
@@ -45,6 +46,8 @@ public class OpenDSSDataParser {
 	protected OpenDSSTransformerParser xfrParser = null;
 	protected OpenDSSCapacitorParser capParser = null;
 	protected OpenDSSRegulatorParser regulatorParser = null;
+	protected OpenDSSWireDataParser wireDataParser = null;
+	protected OpenDSSLineGeometryParser lineGeometryParser = null;
 
 
 	boolean debug = false;
@@ -63,6 +66,8 @@ public class OpenDSSDataParser {
     	this.xfrParser =  new  OpenDSSTransformerParser (this);
     	//TODO tentatively, treat regulator as a fixed tap transformer
     	this.regulatorParser = new  OpenDSSRegulatorParser(this);
+    	this.wireDataParser = new OpenDSSWireDataParser(this);
+    	this.lineGeometryParser = new OpenDSSLineGeometryParser(this);
     }
 
     public void setDebugMode(boolean enableDebug){
@@ -78,6 +83,13 @@ public class OpenDSSDataParser {
 
 	public void setLineConfigTable(Hashtable<String, LineConfiguration> lineConfigTable) {
 		this.lineConfigTable = lineConfigTable;
+	}
+
+	public Hashtable<String, OpenDSSWireData> getWireDataTable() {
+		if(wireDataTable == null){
+			wireDataTable = new Hashtable<>();
+		}
+		return wireDataTable;
 	}
 
 	public void setDistNetwork( DStabNetwork3Phase distNet){
@@ -121,6 +133,14 @@ public class OpenDSSDataParser {
 		return regulatorParser;
 	}
 
+	public OpenDSSWireDataParser getWireDataParser() {
+		return wireDataParser;
+	}
+
+	public OpenDSSLineGeometryParser getLineGeometryParser() {
+		return lineGeometryParser;
+	}
+
 	public boolean parseFeederData(String folderPath,String feederFile){
 
     	 boolean no_error = true;
@@ -130,6 +150,7 @@ public class OpenDSSDataParser {
 		 String str ="", nextLine = "";
 	     int lineCnt = 0;
 	     boolean useLastLineString = false;
+	     boolean inBlockComment = false;
 
 	     List<String> redirectFiles  = new ArrayList<>();
 
@@ -157,7 +178,13 @@ public class OpenDSSDataParser {
 						}
     		        	if (str != null && !str.trim().equals("")) {
     		        		str = str.trim();
-    		        		if(str.startsWith("!") || str.startsWith("//")){
+    		        		if(inBlockComment){
+    		        			inBlockComment = !str.contains("*/");
+    		        		}
+    		        		else if(str.startsWith("/*")){
+    		        			inBlockComment = !str.contains("*/");
+    		        		}
+    		        		else if(str.startsWith("!") || str.startsWith("//")){
     		        			//bypass the comments
     		        		}
     		        		else if(str.startsWith("New")||str.startsWith("new")){
@@ -172,59 +199,42 @@ public class OpenDSSDataParser {
     		        				tempAry[1] = tempAry[1].substring(7);
     		        			}
     		        			if(tempAry[1].contains("Circuit.") ||tempAry[1].contains("circuit.")){
-    		        				//create a network object and add the source bus
-    		        				String circuitId = tempAry[1].substring(8);
-    		        				this.getDistNetwork().setId(circuitId);
-
-    		        				String sourceBusId = "";
-    		        				double basekv = 0.0;
-    		        				double volt_pu = 1.0;
-    		        				DStab3PBus sourceBus = null;
-
-    		        				if(!str.contains("basekv=")){
-    		        				  nextLine  = reader.readLine().trim();
-    		        				  lineCnt++;
-
-    		        				  int continueIdx = nextLine.indexOf("~");
-    		        				  if(continueIdx==0){
-    		        					  nextLine = nextLine.substring(continueIdx+1).trim();
-    		        					  String[] tempAry2 = nextLine.split("\\s+");
-
-    		        					  for (String element : tempAry2) {
-    		        						  if(element.contains("basekv=")){
-    		        							  basekv = Double.valueOf(element.substring(7));
-    		        						  }
-    		        						  else if(element.contains("Bus1=")){
-    		        							  sourceBusId = element.substring(5);
-    		        						  }
-    		        						  else if(element.contains("pu=")){
-    		        							  volt_pu = Double.valueOf(element.substring(3));
-    		        						  }
-    		        					  }
-
-    		        				  }
-    		        				  else{
-
-    		        					  throw new Error("basekv is not defined for the source bus and no contiunation data");
-    		        				  }
-
-    		        				  // create the source bus
-    		        				  if(sourceBusId.length()>0){
-    		        					  if(distNet.getBus(sourceBusId)==null) {
-											sourceBus = ThreePhaseObjectFactory.create3PDStabBus(this.busIdPrefix+sourceBusId, distNet);
-										}
-
-    		        					  sourceBus.setGenCode(AclfGenCode.SWING);
-    		        					  sourceBus.setBaseVoltage(basekv, UnitType.kV);
-
-    		        					  sourceBus.setVoltageMag(volt_pu);
-    		        				  }
-    		        				  else{
-    		        					  throw new Error("source bus name is not properly parse! # "+ nextLine);
-    		        				  }
-    		        				}
+    		        				createSourceBus(str, reader);
     		        			}
 
+    		        			else if(tempAry[1].contains("Linecode.") ||tempAry[1].contains("linecode.")){
+    		        				List<String> lineCodeLines = new ArrayList<>();
+    		        				lineCodeLines.add(str);
+    		        				nextLine = reader.readLine();
+    		        				lineCnt++;
+    		        				while(nextLine != null && nextLine.trim().startsWith("~")) {
+    		        					lineCodeLines.add(nextLine.trim());
+    		        					nextLine = reader.readLine();
+    		        					lineCnt++;
+    		        				}
+    		        				if(nextLine != null) {
+    		        					useLastLineString = true;
+    		        				}
+    		        				no_error = no_error && this.lineCodeParser.parseLineCodeBlock(lineCodeLines);
+    		        			}
+    		        			else if(tempAry[1].contains("WireData.") ||tempAry[1].contains("wiredata.")){
+    		        				no_error = no_error && this.wireDataParser.parseWireData(str);
+    		        			}
+    		        			else if(tempAry[1].contains("LineGeometry.") ||tempAry[1].contains("linegeometry.")){
+    		        				List<String> geometryLines = new ArrayList<>();
+    		        				geometryLines.add(str);
+    		        				nextLine = reader.readLine();
+    		        				lineCnt++;
+    		        				while(nextLine != null && nextLine.trim().startsWith("~")) {
+    		        					geometryLines.add(nextLine.trim());
+    		        					nextLine = reader.readLine();
+    		        					lineCnt++;
+    		        				}
+    		        				if(nextLine != null) {
+    		        					useLastLineString = true;
+    		        				}
+    		        				no_error = no_error && this.lineGeometryParser.parseLineGeometryBlock(geometryLines);
+    		        			}
     		        			else if(tempAry[1].contains("Line.") ||tempAry[1].contains("line.")){
     		        				this.lineParser.parseLineData(str);
     		        			}
@@ -256,14 +266,36 @@ public class OpenDSSDataParser {
                                 	}
 
 
-    		        				if(useLastLineString) { // if true, it means all xfr data is in one line
-										this.xfrParser.parseTransformerDataOneLine(str);
+    		        				if(useLastLineString) { // if true, it means all xfr data is in one logical line
+										this.xfrParser.parseTransformerDataOneLine(xfrStrAry[1] == null ? str : str + " " + xfrStrAry[1]);
 									} else { // if true, it means all xfr data is in one line
 										this.xfrParser.parseTransformerDataMultiLines(xfrStrAry);
 									}
     		        			}
+                                else if(tempAry[1].contains("RegControl.") ||tempAry[1].contains("regcontrol.")){
+    		        				this.regulatorParser.parseRegControlData(str);
+    		        			}
     		        			else if(tempAry[1].contains("Load.") ||tempAry[1].contains("load.")){
-    		        				this.loadParser.parseLoadData(str);
+    		        				String loadStr = str;
+    		        				String[] nextStrAry = getNextDataInputString(reader);
+    		        				if(nextStrAry[0]!=null){
+    		        					nextLine = nextStrAry[0].trim();
+    		        					lineCnt = lineCnt + Integer.valueOf(nextStrAry[1]);
+    		        					while(nextLine.startsWith("~")){
+    		        						loadStr = loadStr + " " + nextLine;
+    		        						nextStrAry = getNextDataInputString(reader);
+    		        						if(nextStrAry[0]==null){
+    		        							nextLine = null;
+    		        							break;
+    		        						}
+    		        						nextLine = nextStrAry[0].trim();
+    		        						lineCnt = lineCnt + Integer.valueOf(nextStrAry[1]);
+    		        					}
+    		        					if(nextLine!=null){
+    		        						useLastLineString = true;
+    		        					}
+    		        				}
+    		        				this.loadParser.parseLoadData(loadStr);
     		        			}
                                 else if(tempAry[1].contains("Capacitor.") ||tempAry[1].contains("capacitor.")){
     		        				this.capParser.parseCapDataString(str);
@@ -303,7 +335,52 @@ public class OpenDSSDataParser {
 
     	 no_error=no_error&initFlag;
 
-    	 return no_error;
+         return no_error;
+     }
+
+     private void createSourceBus(String circuitStr, IFileReader reader) throws ODMException {
+    	 String sourceBusId = "sourcebus";
+    	 double basekv = 0.0;
+    	 double voltPu = 1.0;
+
+    	 String allCircuitData = circuitStr;
+    	 if(!circuitStr.toLowerCase().contains("basekv=")){
+    		 String nextLine = reader.readLine();
+    		 if(nextLine != null && nextLine.trim().startsWith("~")){
+    			 allCircuitData = allCircuitData + " " + nextLine.trim().substring(1).trim();
+    		 }
+    	 }
+
+    	 String[] tokens = allCircuitData.split("\\s+");
+    	 for(String token : tokens) {
+    		 String lowerToken = token.toLowerCase();
+    		 if(lowerToken.contains("circuit.")) {
+    			 String circuitId = token.substring(token.indexOf(".") + 1);
+    			 this.getDistNetwork().setId(circuitId);
+    		 }
+    		 else if(lowerToken.startsWith("bus1=")) {
+    			 sourceBusId = token.substring(token.indexOf("=") + 1).toLowerCase();
+    		 }
+    		 else if(lowerToken.startsWith("basekv=")) {
+    			 basekv = Double.valueOf(token.substring(token.indexOf("=") + 1));
+    		 }
+    		 else if(lowerToken.startsWith("pu=")) {
+    			 voltPu = Double.valueOf(token.substring(token.indexOf("=") + 1));
+    		 }
+    	 }
+
+    	 if(basekv <= 0.0) {
+    		 throw new Error("basekv is not defined for the source bus: " + circuitStr);
+    	 }
+
+    	 String prefixedSourceBusId = this.busIdPrefix + sourceBusId;
+    	 DStab3PBus sourceBus = this.distNet.getBus(prefixedSourceBusId);
+    	 if(sourceBus == null) {
+    		 sourceBus = ThreePhaseObjectFactory.create3PDStabBus(prefixedSourceBusId, distNet);
+    	 }
+    	 sourceBus.setGenCode(AclfGenCode.SWING);
+    	 sourceBus.setBaseVoltage(basekv, UnitType.kV);
+    	 sourceBus.setVoltageMag(voltPu);
      }
 
      private boolean parseFile(String folderPath, String fileName){
@@ -312,6 +389,7 @@ public class OpenDSSDataParser {
     	 String str ="", nextLine = "";
 	     int lineCnt = 0;
 	     boolean useLastLineString = true;
+	     boolean inBlockComment = false;
 
 	     List<String> redirectFiles  = new ArrayList<>();
 
@@ -339,7 +417,13 @@ public class OpenDSSDataParser {
 						}
     		        	if (str != null && !str.trim().equals("")) {
     		        		str = str.trim();
-    		        		if(str.startsWith("!") || str.startsWith("//")){
+    		        		if(inBlockComment){
+    		        			inBlockComment = !str.contains("*/");
+    		        		}
+    		        		else if(str.startsWith("/*")){
+    		        			inBlockComment = !str.contains("*/");
+    		        		}
+    		        		else if(str.startsWith("!") || str.startsWith("//")){
     		        			//bypass the comment
     		        		}
     		        		else if(str.startsWith("New")||str.startsWith("new")){
@@ -348,59 +432,42 @@ public class OpenDSSDataParser {
     		        				tempAry[1] = tempAry[1].substring(7);
     		        			}
     		        			if(tempAry[1].contains("Circuit.") ||tempAry[1].contains("circuit.")){
-    		        				//create a network object and add the source bus
-    		        				String circuitId = tempAry[1].substring(8);
-    		        				this.getDistNetwork().setId(circuitId);
-
-    		        				String sourceBusId = "";
-    		        				double basekv = 0.0;
-    		        				double volt_pu = 1.0;
-    		        				DStab3PBus sourceBus = null;
-
-    		        				if(!str.contains("basekv=")){
-    		        				  nextLine  = reader.readLine();
-    		        				  lineCnt++;
-
-    		        				  int continueIdx = nextLine.indexOf("~");
-    		        				  if(continueIdx>0){
-    		        					  nextLine = nextLine.substring(continueIdx+1);
-    		        					  String[] tempAry2 = nextLine.split("\\s+");
-
-    		        					  for (String element : tempAry2) {
-    		        						  if(element.contains("basekv=")){
-    		        							  basekv = Double.valueOf(element.substring(7));
-    		        						  }
-    		        						  else if(element.contains("Bus1=")||element.contains("bus1=")){
-    		        							  sourceBusId = element.substring(4);
-    		        						  }
-    		        						  else if(element.contains("pu=")){
-    		        							  volt_pu = Double.valueOf(element.substring(3));
-    		        						  }
-    		        					  }
-
-    		        				  }
-    		        				  else{
-    		        					  no_error = false;
-    		        					  throw new Error("basekv is not defined for the source bus and no contiunation data");
-    		        				  }
-
-    		        				  // create the source bus
-    		        				  if(sourceBusId.length()>0){
-    		        					  if(distNet.getBus(sourceBusId)==null) {
-											sourceBus = ThreePhaseObjectFactory.create3PDStabBus(sourceBusId, distNet);
-										}
-
-    		        					  sourceBus.setBaseVoltage(basekv, UnitType.kV);
-
-    		        					  sourceBus.setVoltageMag(volt_pu);
-    		        				  }
-    		        				  else{
-    		        					  no_error = false;
-    		        					  throw new Error("source bus name is not properly parse! # "+ nextLine);
-    		        				  }
-    		        				}
+    		        				createSourceBus(str, reader);
     		        			}
 
+    		        			else if(tempAry[1].contains("Linecode.") ||tempAry[1].contains("linecode.")){
+    		        				List<String> lineCodeLines = new ArrayList<>();
+    		        				lineCodeLines.add(str);
+    		        				nextLine = reader.readLine();
+    		        				lineCnt++;
+    		        				while(nextLine != null && nextLine.trim().startsWith("~")) {
+    		        					lineCodeLines.add(nextLine.trim());
+    		        					nextLine = reader.readLine();
+    		        					lineCnt++;
+    		        				}
+    		        				if(nextLine != null) {
+    		        					useLastLineString = true;
+    		        				}
+    		        				no_error = no_error && this.lineCodeParser.parseLineCodeBlock(lineCodeLines);
+    		        			}
+    		        			else if(tempAry[1].contains("WireData.") ||tempAry[1].contains("wiredata.")){
+    		        				no_error = no_error && this.wireDataParser.parseWireData(str);
+    		        			}
+    		        			else if(tempAry[1].contains("LineGeometry.") ||tempAry[1].contains("linegeometry.")){
+    		        				List<String> geometryLines = new ArrayList<>();
+    		        				geometryLines.add(str);
+    		        				nextLine = reader.readLine();
+    		        				lineCnt++;
+    		        				while(nextLine != null && nextLine.trim().startsWith("~")) {
+    		        					geometryLines.add(nextLine.trim());
+    		        					nextLine = reader.readLine();
+    		        					lineCnt++;
+    		        				}
+    		        				if(nextLine != null) {
+    		        					useLastLineString = true;
+    		        				}
+    		        				no_error = no_error && this.lineGeometryParser.parseLineGeometryBlock(geometryLines);
+    		        			}
     		        			else if(tempAry[1].contains("Line.") ||tempAry[1].contains("line.")){
     		        				this.lineParser.parseLineData(str);
     		        			}
@@ -433,14 +500,36 @@ public class OpenDSSDataParser {
                                 	}
 
 
-    		        				if(useLastLineString) { // all data in one line
-										this.xfrParser.parseTransformerDataOneLine(str);
+    		        				if(useLastLineString) { // all data in one logical line
+										this.xfrParser.parseTransformerDataOneLine(xfrStrAry[1] == null ? str : str + " " + xfrStrAry[1]);
 									} else { // all data in one line
 										this.xfrParser.parseTransformerDataMultiLines(xfrStrAry);
 									}
     		        			}
+    		        			else if(tempAry[1].contains("RegControl.") ||tempAry[1].contains("regcontrol.")){
+    		        				this.regulatorParser.parseRegControlData(str);
+    		        			}
     		        			else if(tempAry[1].contains("Load.") ||tempAry[1].contains("load.")){
-    		        				this.loadParser.parseLoadData(str);
+    		        				String loadStr = str;
+    		        				String[] nextStrAry = getNextDataInputString(reader);
+    		        				if(nextStrAry[0]!=null){
+    		        					nextLine = nextStrAry[0].trim();
+    		        					lineCnt = lineCnt + Integer.valueOf(nextStrAry[1]);
+    		        					while(nextLine.startsWith("~")){
+    		        						loadStr = loadStr + " " + nextLine;
+    		        						nextStrAry = getNextDataInputString(reader);
+    		        						if(nextStrAry[0]==null){
+    		        							nextLine = null;
+    		        							break;
+    		        						}
+    		        						nextLine = nextStrAry[0].trim();
+    		        						lineCnt = lineCnt + Integer.valueOf(nextStrAry[1]);
+    		        					}
+    		        					if(nextLine!=null){
+    		        						useLastLineString = true;
+    		        					}
+    		        				}
+    		        				this.loadParser.parseLoadData(loadStr);
     		        			}
                                 else if(tempAry[1].contains("Capacitor.") ||tempAry[1].contains("capacitor.")){
     		        				this.capParser.parseCapDataString(str);
@@ -504,6 +593,7 @@ public class OpenDSSDataParser {
 
  		// perform BFS and set the bus sortNumber
  		BFS(onceVisitedBuses);
+ 		this.regulatorParser.applyFixedRegControlRatios();
 
 
 
@@ -717,7 +807,3 @@ public class OpenDSSDataParser {
 
 
 }
-
-
-
-

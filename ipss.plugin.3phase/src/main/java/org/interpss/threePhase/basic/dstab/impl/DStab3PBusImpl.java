@@ -21,7 +21,7 @@ import org.interpss.threePhase.dynamic.model.DynLoadModel1Phase;
 import org.interpss.threePhase.dynamic.model.DynLoadModel3Phase;
 import org.interpss.threePhase.util.ThreeSeqLoadProcessor;
 
-import com.interpss.core.abc.LoadConnectionType;
+import com.interpss.core.threephase.LoadConnectionType;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.net.Branch;
@@ -138,12 +138,9 @@ public class DStab3PBusImpl extends BaseDStabBusImpl<DStab3PGen,DStab3PLoad> imp
 		 if(((BaseDStabNetwork)this.getNetwork()).isStaticLoadIncludedInYMatrix()) {
 			 if(this.get3PhaseNetLoadResults() != null && this.get3PhaseNetLoadResults().abs() >0.0){
 				 Complex3x1 initVoltABC = this.get3PhaseInitVoltage();
-				 double va = initVoltABC.a_0.abs();
-				 double vb = initVoltABC.b_1.abs();
-				 double vc = initVoltABC.c_2.abs();
-				 Complex ya = this.get3PhaseNetLoadResults().a_0.conjugate().divide(va*va);
-				 Complex yb = this.get3PhaseNetLoadResults().b_1.conjugate().divide(vb*vb);
-				 Complex yc = this.get3PhaseNetLoadResults().c_2.conjugate().divide(vc*vc);
+				 Complex ya = staticLoadAdmittance(this.get3PhaseNetLoadResults().a_0, initVoltABC.a_0);
+				 Complex yb = staticLoadAdmittance(this.get3PhaseNetLoadResults().b_1, initVoltABC.b_1);
+				 Complex yc = staticLoadAdmittance(this.get3PhaseNetLoadResults().c_2, initVoltABC.c_2);
 
 				 yiiAbc = yiiAbc.add(new Complex3x3(ya,yb,yc));
 			 }
@@ -154,6 +151,15 @@ public class DStab3PBusImpl extends BaseDStabBusImpl<DStab3PGen,DStab3PLoad> imp
 
 
 		return yiiAbc;
+	}
+
+	private Complex staticLoadAdmittance(Complex load, Complex voltage) {
+		if(load == null || voltage == null || voltage.abs() <= 1.0E-8 || load.isNaN() || load.isInfinite()) {
+			return Complex.ZERO;
+		}
+
+		Complex admittance = load.conjugate().divide(voltage.abs() * voltage.abs());
+		return admittance.isNaN() || admittance.isInfinite() ? Complex.ZERO : admittance;
 	}
 
 	@Override
