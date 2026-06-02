@@ -191,8 +191,9 @@ public class TestOpenDSSDataParser {
 			~ wdg=2 bus=610       conn=Delta kv=0.48    kva=150    %r=0.635
 		   */
 
-		  DStab3PBranch xfr1 = parser.getBranchByName("xfm1");
-		  assertTrue(xfr1.getAdjustedZ().subtract(new Complex(0,2.72)).abs()<1.0E-9);
+			  DStab3PBranch xfr1 = parser.getBranchByName("xfm1");
+			  Complex xfm1ZOhm = new Complex(1.4652074666666668, 3.138082133333334);
+			  assertTrue(xfr1.getAdjustedZ().subtract(xfm1ZOhm).abs()<1.0E-9);
 		  assertTrue(xfr1.getFromBus().getId().equals("61s"));
 		  assertTrue(xfr1.getToBus().getId().equals("610"));
 
@@ -200,7 +201,7 @@ public class TestOpenDSSDataParser {
 		  assertTrue(Math.abs(xfr1.getFromTurnRatio()-4160)<1.0E-6);
 		  assertTrue(Math.abs(xfr1.getToTurnRatio()-480)<1.0E-6);
 
-		  assertTrue(Math.abs(xfr1.getXfrRatedKVA()-150)<1.0E-6);
+			  assertTrue(Math.abs(xfr1.getXfrRatedKVA()-150)<1.0E-6);
 
 		  AcscXformerAdapter xfr10 = acscXfrAptr.apply(xfr1);
 		  assertTrue(xfr10.getFromGrounding().getXfrConnectCode()==XFormerConnectCode.DELTA);
@@ -210,8 +211,9 @@ public class TestOpenDSSDataParser {
 		   * new transformer.reg4a phases=1          windings=2        buses=[160.1 160r.1]   conns=[wye wye]       kvs=[2.402 2.402] kvas=[2000 2000] XHL=.01 %LoadLoss=0.00001 ppm=0.0
 		   */
 
-		  DStab3PBranch xfr2 = parser.getBranchByName("reg4a");
-		  assertTrue(xfr2.getAdjustedZ().subtract(new Complex(0,0.01)).abs()<1.0E-9);
+			  DStab3PBranch xfr2 = parser.getBranchByName("reg4a");
+			  Complex reg4aZOhm = new Complex(2.884802000000001E-7, 0.00028848020000000004);
+			  assertTrue(xfr2.getAdjustedZ().subtract(reg4aZOhm).abs()<1.0E-9);
 		  assertTrue(xfr2.getFromBus().getId().equals("160"));
 		  assertTrue(xfr2.getToBus().getId().equals("160r"));
 
@@ -360,8 +362,9 @@ public class TestOpenDSSDataParser {
 			~ wdg=2 bus=610       conn=Delta kv=0.48    kva=150    %r=0.635
 		   */
 
-		  DStab3PBranch xfr1 = parser.getBranchByName("xfm1");
-		  assertTrue(xfr1.getAdjustedZ().subtract(new Complex(0,2.72).multiply(1.0/zbase)).abs()<1.0E-9);
+			  DStab3PBranch xfr1 = parser.getBranchByName("xfm1");
+			  Complex xfm1ZOhm = new Complex(1.4652074666666668, 3.138082133333334);
+			  assertTrue(xfr1.getAdjustedZ().subtract(xfm1ZOhm.multiply(1.0/zbase)).abs()<1.0E-9);
 		  assertTrue(xfr1.getFromBus().getId().equals("61s"));
 		  assertTrue(xfr1.getToBus().getId().equals("610"));
 
@@ -369,7 +372,7 @@ public class TestOpenDSSDataParser {
 		  assertTrue(Math.abs(xfr1.getFromTurnRatio()/xfr1.getToTurnRatio()-1.0)<1.0E-6);
 
 
-		  assertTrue(Math.abs(xfr1.getXfrRatedKVA()-150)<1.0E-6);
+			  assertTrue(Math.abs(xfr1.getXfrRatedKVA()-150)<1.0E-6);
 
 		  AcscXformerAdapter xfr10 = acscXfrAptr.apply(xfr1);
 		  assertTrue(xfr10.getFromGrounding().getXfrConnectCode()==XFormerConnectCode.DELTA);
@@ -379,8 +382,9 @@ public class TestOpenDSSDataParser {
 		   * new transformer.reg4a phases=1          windings=2        buses=[160.1 160r.1]   conns=[wye wye]       kvs=[2.402 2.402] kvas=[2000 2000] XHL=.01 %LoadLoss=0.00001 ppm=0.0
 		   */
 
-		  DStab3PBranch xfr2 = parser.getBranchByName("reg4a");
-		  assertTrue(xfr2.getAdjustedZ().subtract(new Complex(0,0.01).multiply(1.0/zbase)).abs()<1.0E-9);
+			  DStab3PBranch xfr2 = parser.getBranchByName("reg4a");
+			  Complex reg4aZOhm = new Complex(2.884802000000001E-7, 0.00028848020000000004);
+			  assertTrue(xfr2.getAdjustedZ().subtract(reg4aZOhm.multiply(1.0/zbase)).abs()<1.0E-9);
 		  assertTrue(xfr2.getFromBus().getId().equals("160"));
 		  assertTrue(xfr2.getToBus().getId().equals("160r"));
 
@@ -389,7 +393,7 @@ public class TestOpenDSSDataParser {
 		  //TODO in the future, could add the nominalKV info to the transformer
 		  System.out.println("reg4a tap = "+xfr2.getFromTurnRatio());
 		  assertTrue(Math.abs(xfr2.getFromTurnRatio()-2402.0/basevolt)<1.0E-6);
-		  assertTrue(Math.abs(xfr2.getToTurnRatio()-2402.0/basevolt)<1.0E-6);
+			  assertTrue(Math.abs(xfr2.getToTurnRatio()-124.0*20.0*Math.sqrt(3)/4160.0)<1.0E-6);
 
 		  assertTrue(Math.abs(xfr2.getXfrRatedKVA()-2000)<1.0E-6);
 
