@@ -28,12 +28,14 @@ import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.BaseAcscBus;
-import com.interpss.core.acsc.BusGroundCode;
 import com.interpss.core.acsc.XFormerConnectCode;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 import com.interpss.core.net.NetworkType;
-import com.interpss.core.sparse.impl.csj.CSJSparseEqnComplexMatrix3x3Impl;
+import com.interpss.core.threephase.IBranch3Phase;
+import com.interpss.core.threephase.IBus3Phase;
+import com.interpss.core.threephase.util.ThreePhaseYMatrixBuilder;
+import com.interpss.core.threephase.util.ThreePhaseYMatrixBuilder.BusAdmittanceMode;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.device.DynamicBusDevice;
@@ -233,63 +235,19 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 
 	@Override
 	public ISparseEqnComplexMatrix3x3 formYMatrixABC() throws IpssNumericException {
-
-		double yiiMinTolerance = 1.0E-8;
-
 		// check if load model is converted
 		if(!this.isLoadModelConverted && this.isStaticLoadIncludedInYMatrix()) {
 			convertLoadModel();
 		}
 
-		yMatrixAbc = new CSJSparseEqnComplexMatrix3x3Impl(getNoBus());
-
-		for(BaseDStabBus b:this.getBusList()){
-			if(b.isActive()){
-				if(b instanceof DStab3PBus){
-					int i = b.getSortNumber();
-					DStab3PBus ph3Bus = (DStab3PBus) b;
-					Complex3x3 yii = ph3Bus.getYiiAbc();
-					replaceNonFiniteAdmittance(yii, b.getId());
-					// check if there is any Yii = 0.0 (abs(Yii) <1.0E-8)
-
-				    if(yii.aa.abs()<yiiMinTolerance){
-				    	yii.aa = new Complex(1.0,0);
-				    	log.info("Bus : {}: abs of Yii.aa of is less than 1.0E-8, changed to 1.0 ", b.getId());
-				    }
-
-				    if(yii.bb.abs()<yiiMinTolerance){
-				    	yii.bb = new Complex(1.0,0);
-				    	log.info("Bus : {}: abs of Yii.bb of is less than 1.0E-8, changed to 1.0 ", b.getId());
-				    }
-
-				    if(yii.cc.abs()<yiiMinTolerance){
-				    	yii.cc = new Complex(1.0,0);
-				    	log.info("Bus : {}: abs of Yii.cc of is less than 1.0E-8, changed to 1.0 ", b.getId());
-				    }
-
-					yMatrixAbc.setA( yii,i, i);
-				} else {
-					throw new IpssNumericException("The processing bus # "+b.getId()+"  is not a threePhaseBus");
-				}
-			}
-		}
-
-		for (AcscBranch bra : this.getBranchList()) {
-			if (bra.isActive()) {
-				if(bra instanceof DStab3PBranch){
-					DStab3PBranch ph3Branch = (DStab3PBranch) bra;
-					int i = bra.getFromBus().getSortNumber(),
-						j = bra.getToBus().getSortNumber();
-					yMatrixAbc.addToA( ph3Branch.getYftabc(), i, j );
-					yMatrixAbc.addToA( ph3Branch.getYtfabc(), j, i );
-					addTransformerAntiFloatAdmittance(yMatrixAbc, ph3Branch);
-				} else {
-					throw new IpssNumericException("The processing branch #"+bra.getId()+"  is not a threePhaseBranch");
-				}
-			}
-
-		}
-
+		yMatrixAbc = ThreePhaseYMatrixBuilder.build(
+				getNoBus(),
+				getBusList(),
+				getBranchList(),
+				BusAdmittanceMode.DYNAMIC,
+				true,
+				true,
+				this.powerflowTransformerAntiFloatAdmittance);
 
 		//TODO append the equivalent admittance of dynamic loads to YMatrixABC
 		for (DStab3PBus bus3p : getBusList() ) {
@@ -390,87 +348,15 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 
 	@Override
 	public ISparseEqnComplexMatrix3x3 formYMatrixABCForPowerflow() throws IpssNumericException {
-
-		yMatrixAbcPowerflow = new CSJSparseEqnComplexMatrix3x3Impl(getNoBus());
-
-		for(BaseDStabBus b:this.getBusList()){
-			if(b.isActive()){
-				if(b instanceof DStab3PBus){
-					int i = b.getSortNumber();
-					DStab3PBus ph3Bus = (DStab3PBus) b;
-					Complex3x3 yii = ph3Bus.getYiiAbcForPowerflow();
-
-					yMatrixAbcPowerflow.setA(yii, i, i);
-				} else {
-					throw new IpssNumericException("The processing bus # "+b.getId()+"  is not a threePhaseBus");
-				}
-			}
-		}
-
-		for (AcscBranch bra : this.getBranchList()) {
-			if (bra.isActive()) {
-				if(bra instanceof DStab3PBranch){
-					DStab3PBranch ph3Branch = (DStab3PBranch) bra;
-					int i = bra.getFromBus().getSortNumber(),
-						j = bra.getToBus().getSortNumber();
-					yMatrixAbcPowerflow.addToA(ph3Branch.getYftabc(), i, j);
-					yMatrixAbcPowerflow.addToA(ph3Branch.getYtfabc(), j, i);
-					addTransformerAntiFloatAdmittance(yMatrixAbcPowerflow, ph3Branch);
-				} else {
-					throw new IpssNumericException("The processing branch #"+bra.getId()+"  is not a threePhaseBranch");
-				}
-			}
-
-		}
-
+		yMatrixAbcPowerflow = ThreePhaseYMatrixBuilder.build(
+				getNoBus(),
+				getBusList(),
+				getBranchList(),
+				BusAdmittanceMode.POWERFLOW,
+				false,
+				false,
+				this.powerflowTransformerAntiFloatAdmittance);
 		return yMatrixAbcPowerflow;
-	}
-
-	private void addTransformerAntiFloatAdmittance(ISparseEqnComplexMatrix3x3 yMatrix, DStab3PBranch branch) {
-		if(!branch.isXfr()) {
-			return;
-		}
-
-		Complex3x3 antiFloatYii = Complex3x3.createUnitMatrix()
-				.multiply(new Complex(this.powerflowTransformerAntiFloatAdmittance, 0.0));
-
-		boolean hasFloatingWinding = isFloatingTransformerWinding(
-				branch.getFromGrounding().getXfrConnectCode(),
-				branch.getFromGrounding().getGroundCode())
-				|| isFloatingTransformerWinding(
-				branch.getToGrounding().getXfrConnectCode(),
-				branch.getToGrounding().getGroundCode());
-
-		if(hasFloatingWinding) {
-			yMatrix.addToA(antiFloatYii, branch.getFromBus().getSortNumber(), branch.getFromBus().getSortNumber());
-			yMatrix.addToA(antiFloatYii, branch.getToBus().getSortNumber(), branch.getToBus().getSortNumber());
-		}
-	}
-
-	private boolean isFloatingTransformerWinding(XFormerConnectCode connectCode, BusGroundCode groundCode) {
-		return connectCode == XFormerConnectCode.DELTA
-				|| connectCode == XFormerConnectCode.DELTA11
-				|| (connectCode == XFormerConnectCode.WYE && groundCode == BusGroundCode.UNGROUNDED);
-	}
-
-	private void replaceNonFiniteAdmittance(Complex3x3 yii, String busId) {
-		yii.aa = replaceNonFiniteAdmittance(yii.aa, busId, "aa");
-		yii.ab = replaceNonFiniteAdmittance(yii.ab, busId, "ab");
-		yii.ac = replaceNonFiniteAdmittance(yii.ac, busId, "ac");
-		yii.ba = replaceNonFiniteAdmittance(yii.ba, busId, "ba");
-		yii.bb = replaceNonFiniteAdmittance(yii.bb, busId, "bb");
-		yii.bc = replaceNonFiniteAdmittance(yii.bc, busId, "bc");
-		yii.ca = replaceNonFiniteAdmittance(yii.ca, busId, "ca");
-		yii.cb = replaceNonFiniteAdmittance(yii.cb, busId, "cb");
-		yii.cc = replaceNonFiniteAdmittance(yii.cc, busId, "cc");
-	}
-
-	private Complex replaceNonFiniteAdmittance(Complex value, String busId, String entryName) {
-		if(value == null || value.isNaN() || value.isInfinite()) {
-			log.warn("Bus {} dynamic Yii.{} is non-finite; replaced with 0.0", busId, entryName);
-			return Complex.ZERO;
-		}
-		return value;
 	}
 
 	private void convertLoadModel() {
@@ -488,6 +374,16 @@ public class DStabNetwork3phaseImpl extends BaseDStabNetworkImpl<DStab3PBus, DSt
 	@Override
 	public ISparseEqnComplexMatrix3x3 getYMatrixABC(){
 		return this.yMatrixAbc;
+	}
+
+	@Override
+	public java.util.List<? extends IBus3Phase> getThreePhaseBusList() {
+		return getBusList();
+	}
+
+	@Override
+	public java.util.List<? extends IBranch3Phase> getThreePhaseBranchList() {
+		return getBranchList();
 	}
 
 	@Override
