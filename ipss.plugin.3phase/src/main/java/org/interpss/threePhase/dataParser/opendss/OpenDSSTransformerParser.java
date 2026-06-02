@@ -90,7 +90,7 @@ public class OpenDSSTransformerParser {
 				nominalKV1 = Double.valueOf(element.substring(3));
 			}
 			else if(element.contains("kva=")){
-				kva1 = Double.valueOf(element.substring(5));
+				kva1 = Double.valueOf(element.substring(4));
 			}
 			else if(element.contains("%r=")){
 				losspercent1= Double.valueOf(element.substring(3));
