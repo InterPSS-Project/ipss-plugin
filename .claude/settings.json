@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "allow to move forward to the next task if the previous task is completed,tested and committed"
+    ]
+  }
+}

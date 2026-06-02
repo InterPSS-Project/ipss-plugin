@@ -30,6 +30,7 @@ public class OpenDSSLineParser {
 		String  toBusId = "";
 		String  toBusPhases = "1.2.3"; // by default;
 		String  lineCodeId = "";
+		String  geometryId = "";
 		String  units = "";
 		double  lineLength = 0;
 		int     phaseNum = 3;    // 3 phases by default
@@ -41,7 +42,7 @@ public class OpenDSSLineParser {
 
 		DStab3PBus fromBus = null, toBus = null;
 
-		int phaseIdx = -1, lineCodeIdx = -1;
+		int phaseIdx = -1, lineConfigIdx = -1;
 
 		/*
 		 * (6) r1 Positive sequence Resistance, ohms per unit length. See also Rmatrix.
@@ -72,14 +73,18 @@ public class OpenDSSLineParser {
 				toBusStr = lineStrAry[i].substring(5);
 			}
 			else if(lineStrAry[i].contains("linecode=")){
-				lineCodeIdx = i;
-				lineCodeId= lineStrAry[i].substring(9);
+				lineConfigIdx = i;
+				lineCodeId= lineStrAry[i].substring(9).toLowerCase();
+			}
+			else if(lineStrAry[i].contains("geometry=")){
+				lineConfigIdx = i;
+				geometryId= lineStrAry[i].substring(9).toLowerCase();
 			}
 			else if(lineStrAry[i].contains("length=")){
 				lineLength = Double.valueOf(lineStrAry[i].substring(7));
 			}
 			else if(lineStrAry[i].contains("units=")){
-				units = lineStrAry[i].substring(5);
+				units = lineStrAry[i].substring(6);
 			}
 			else if(lineStrAry[i].contains("r1=")){
 				r1 = Double.valueOf(lineStrAry[i].substring(3));
@@ -129,15 +134,17 @@ public class OpenDSSLineParser {
 		Complex3x3 yshuntabc = new Complex3x3();
 		LineConfiguration config = null;
 
-		if(lineCodeIdx> 0){ // line parameters defined by line code
+		if(lineConfigIdx> 0){ // line parameters defined by line code or geometry
 
-			config = this.dataParser.getLineConfigTable().get(lineCodeId);
+			String configId = lineCodeId.equals("") ? geometryId : lineCodeId;
+			config = this.dataParser.getLineConfigTable().get(configId);
 
 			if(config!=null){
 				zabc = config.getZ3x3Matrix();
+				lineLength = lineLength * OpenDSSUnitConverter.lengthFactor(units, config.getLengthUnit());
 			}
 			else{
-				throw new Error("LineConfiguration definition not found, LineCodeId:"+lineCodeId);
+				throw new Error("LineConfiguration definition not found, id:"+configId);
 			}
 		}
 		else{ // line parameters defined by raw data
@@ -189,6 +196,57 @@ public class OpenDSSLineParser {
 				zabc.cb = zabc.ba;
 				zabc.ba = new Complex(0.0);
 
+			}
+			else if (fromBusPhases.equals("2.1")){
+				Complex z11 = zabc.aa;
+				Complex z12 = zabc.ab;
+				Complex z21 = zabc.ba;
+				Complex z22 = zabc.bb;
+
+				zabc.aa = z22;
+				zabc.ab = z21;
+				zabc.ba = z12;
+				zabc.bb = z11;
+
+				zabc.ac = new Complex(0.0);
+				zabc.ca = new Complex(0.0);
+				zabc.bc = new Complex(0.0);
+				zabc.cb = new Complex(0.0);
+				zabc.cc = new Complex(0.0);
+			}
+			else if (fromBusPhases.equals("3.1")){
+				Complex z11 = zabc.aa;
+				Complex z12 = zabc.ab;
+				Complex z21 = zabc.ba;
+				Complex z22 = zabc.bb;
+
+				zabc.aa = z22;
+				zabc.ac = z21;
+				zabc.ca = z12;
+				zabc.cc = z11;
+
+				zabc.ab = new Complex(0.0);
+				zabc.ba = new Complex(0.0);
+				zabc.bb = new Complex(0.0);
+				zabc.bc = new Complex(0.0);
+				zabc.cb = new Complex(0.0);
+			}
+			else if (fromBusPhases.equals("3.2")){
+				Complex z11 = zabc.aa;
+				Complex z12 = zabc.ab;
+				Complex z21 = zabc.ba;
+				Complex z22 = zabc.bb;
+
+				zabc.bb = z22;
+				zabc.bc = z21;
+				zabc.cb = z12;
+				zabc.cc = z11;
+
+				zabc.aa = new Complex(0.0);
+				zabc.ab = new Complex(0.0);
+				zabc.ba = new Complex(0.0);
+				zabc.ac = new Complex(0.0);
+				zabc.ca = new Complex(0.0);
 			}
 			else{
 				throw new Error("phase arrangement not support yet : "+fromBusPhases);
@@ -255,6 +313,9 @@ public class OpenDSSLineParser {
 
 		// need to consider the line length
 		//TODO consistency of the unit types
+		if(lineLength == 0.0 && lineConfigIdx < 0) {
+			lineLength = 1.0;
+		}
 		line.setZabc(zabc.multiply(lineLength));
 
 		if(line.getZabc().absMax()<1.0E-7){

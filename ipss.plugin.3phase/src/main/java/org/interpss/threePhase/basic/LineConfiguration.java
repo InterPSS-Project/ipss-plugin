@@ -14,6 +14,7 @@ public class LineConfiguration {
 	private InputType type =null;
 
 	//TODO units
+	private String lengthUnit = "";
 
 	private Complex3x3 zMtx = null;
 
@@ -54,6 +55,14 @@ public class LineConfiguration {
 		this.type = type;
 	}
 
+	public String getLengthUnit() {
+		return lengthUnit;
+	}
+
+	public void setLengthUnit(String lengthUnit) {
+		this.lengthUnit = lengthUnit == null ? "" : lengthUnit;
+	}
+
 	public Complex3x3 getZ3x3Matrix() {
 		return zMtx;
 	}
@@ -83,6 +92,7 @@ public class LineConfiguration {
 		sb.append("InputType: "+type+"\n");
 		sb.append("nphases: "+nphases+"\n");
 		sb.append("baseFreq: "+baseFreq+"\n");
+		sb.append("lengthUnit: "+lengthUnit+"\n");
 		sb.append("zmatrix: "+this.zMtx.toString()+"\n");
 		sb.append("ymatrix: "+ (this.shuntYMtx==null? "":this.shuntYMtx.toString())+"\n");
 
