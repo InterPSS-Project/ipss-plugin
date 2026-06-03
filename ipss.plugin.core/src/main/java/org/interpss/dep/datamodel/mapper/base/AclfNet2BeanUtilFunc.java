@@ -301,7 +301,8 @@ public class AclfNet2BeanUtilFunc {
 	}
 
 	private static void mapXfrData(TapControl tap, XfrTapControlBean<? extends BaseJSONUtilBean> tapBean) {
-		tapBean.controlledBusId = tap.getVcBus().getId();
+		if (tap.getVcBus() != null)
+			tapBean.controlledBusId = tap.getVcBus().getId();
 		if(tap.getTapControlType() == BusBranchControlType.BUS_VOLTAGE){
 			tapBean.controlMode = TapControlModeBean.Bus_Voltage;
 			tapBean.desiredControlTarget = tap.getVSpecified();
