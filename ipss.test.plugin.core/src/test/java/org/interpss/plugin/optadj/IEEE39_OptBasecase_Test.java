@@ -34,7 +34,7 @@ public class IEEE39_OptBasecase_Test extends CorePluginTestSetup {
 		int count = 0;
 		for (DclfAlgoBranch dclfBranch : dclfAlgo.getDclfAlgoBranchList()) {
 			double flowMw = dclfBranch.getDclfFlow() * baseMva;
-			double rating = dclfBranch.getBranch().getRatingMva1();
+			double rating = dclfBranch.getBranch().getRatingMvaA();
 			double loadingPct = Math.abs(flowMw / rating) * 100.0;
 			if (loadingPct > loadingPctThreshold) {
 				count++;
@@ -48,7 +48,7 @@ public class IEEE39_OptBasecase_Test extends CorePluginTestSetup {
 		double maxLoading = 0.0;
 		for (DclfAlgoBranch dclfBranch : dclfAlgo.getDclfAlgoBranchList()) {
 			double flowMw = dclfBranch.getDclfFlow() * baseMva;
-			double rating = dclfBranch.getBranch().getRatingMva1();
+			double rating = dclfBranch.getBranch().getRatingMvaA();
 			double loadingPct = Math.abs(flowMw / rating) * 100.0;
 			maxLoading = Math.max(maxLoading, loadingPct);
 		}
