@@ -3,13 +3,13 @@ package org.interpss.plugin.optadj.optimizer.bean;
 
 * @author  Donghao.F 
 
-* @date 2026��4��17�� ����11:40:33 
+* @date 2026 Apr 17 11:40:33 
 
 * 
 
 */
 /**
- * ����������࣬�洢�������������Լ����Ȩ����Ϣ
+ * Generator parameter helper that stores generator limits and penalty weights.
  */
 public class GeneratorParameter {
     private final int index;

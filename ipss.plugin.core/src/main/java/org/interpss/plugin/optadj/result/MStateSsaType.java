@@ -1,9 +1,9 @@
 package org.interpss.plugin.optadj.result;
 
 public enum MStateSsaType {
-	BaseNetwork("��������"),    		// �ڻ��������ϡ���δ��̬������Ȼ�����SSA
-	NetOutage("���翪��"),      		// �ڻ��������ϸ��ӿ��ϡ���δ��̬������Ȼ�����SSA
-	Net3WXfrOutage("������俪��");  	// �ڻ��������ϸ���������俪�ϡ���δ��̬������Ȼ�����SSA
+	BaseNetwork("Base Network"),    		// Run SSA on natural power flow over the base network without static adjustment
+	NetOutage("Network Outage"),      		// Run SSA on natural power flow with an additional branch outage over the base network
+	Net3WXfrOutage("Three-Winding Transformer Outage");  	// Run SSA on natural power flow with a three-winding transformer outage over the base network
 	
 	private String name;
 	

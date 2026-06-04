@@ -9,7 +9,7 @@ import org.apache.commons.math3.optim.linear.Relationship;
 
 * @author  Donghao.F 
 
-* @date 2024��5��27�� ����5:23:23 
+* @date 2024 May 27 17:23:23 
 
 * 
 
@@ -42,10 +42,10 @@ public class SectionConstrainData extends BaseConstrainData {
 	        return input;
 	    }
 	    
-	    // Ԥ���� HashMap ��С����������
+	    // Pre-size HashMap to reduce rehashing
 	    Map<Double, Integer> counts = new HashMap<>(input.length * 4 / 3 + 1);
 	    double[] result = new double[input.length];
-	    final double epsilon = 1e-10; // �� 1e-5��������Ҫ����
+	    final double epsilon = 1e-10; // smaller than 1e-5 when finer separation is needed
 	    
 	    for (int i = 0; i < input.length; i++) {
 	        double value = input[i];
@@ -54,7 +54,7 @@ public class SectionConstrainData extends BaseConstrainData {
 	        if (count == 0) {
 	            result[i] = value;
 	        } else {
-	            // ����ֵ������������������
+	            // duplicate value: add a tiny offset to make it unique
 	            result[i] = value + (value >= 0 ? -epsilon : epsilon) * count;
 	        }
 	        
