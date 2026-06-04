@@ -5,7 +5,7 @@ package org.interpss.plugin.optadj.result;
 */
 public class SsaParamInfo {
 	// SSA analysis type [ BaseNetwork("Base Network"), NetOutage("Network Outage") ]
-	private MStateSsaType ssaType;
+	private SsaType ssaType;
 	
 	// LODF threshold for N-1 scan calculation
 	private double lodfThreshold = 0.2; 
@@ -14,17 +14,17 @@ public class SsaParamInfo {
 	private String outBranchName;
 	
 	public SsaParamInfo(double lodfThreshold) {
-		this.ssaType = MStateSsaType.BaseNetwork;
+		this.ssaType = SsaType.BaseNetwork;
 		this.lodfThreshold = lodfThreshold;
 	}
 	
-	public SsaParamInfo(MStateSsaType ssaType, String outBranchName, double lodfThreshold) {
+	public SsaParamInfo(SsaType ssaType, String outBranchName, double lodfThreshold) {
 		this(lodfThreshold);
 		this.ssaType = ssaType;
 		this.outBranchName = outBranchName;
 	}
 
-	public MStateSsaType getSsaType() {
+	public SsaType getSsaType() {
 		return ssaType;
 	}
 	
