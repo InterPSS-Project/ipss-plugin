@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.math3.optim.linear.Relationship;
 import org.interpss.numeric.datatype.LimitType;
-import org.interpss.plugin.optadj.algo.util.AclfNetSensHelper;
+import org.interpss.plugin.optadj.algo.util.AclfNetSensSparseHelper;
 
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfGen;
@@ -38,7 +38,7 @@ public class AclfNetLoadFlowOptimizer {
 	public void optimize(ContingencyAnalysisAlgorithm dclfAlgo, SsaResultOneStateInfo result, double threshold) {
 		AclfNetwork net = (AclfNetwork) dclfAlgo.getNetwork();
 
-		AclfNetSensHelper helper = new AclfNetSensHelper(net);
+		AclfNetSensSparseHelper helper = new AclfNetSensSparseHelper(net);
 		float[][] senMatrix = helper.calSen();
 		
 		Map<Integer, AclfGen> controlGenMap = null;

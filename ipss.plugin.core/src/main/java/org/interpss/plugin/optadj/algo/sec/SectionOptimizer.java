@@ -23,7 +23,7 @@ import org.interpss.plugin.optadj.algo.bean.PowerSystemSection;
 import org.interpss.plugin.optadj.optimizer.GenStateOptimizer;
 import org.interpss.plugin.optadj.optimizer.bean.GenConstrainData;
 import org.interpss.plugin.optadj.optimizer.bean.SectionConstrainData;
-import org.interpss.plugin.optadj.algo.util.AclfNetSensHelper;
+import org.interpss.plugin.optadj.algo.util.AclfNetSensSparseHelper;
 
 /** 
 
@@ -84,7 +84,7 @@ public class SectionOptimizer {
 		    .collect(Collectors.toSet());
 
 		
-		DMatrixSparseCSC sen = new AclfNetSensHelper(net).calSenSortNumber(busSet, allowedBranches);
+		DMatrixSparseCSC sen = new AclfNetSensSparseHelper(net).calSenSortNumber(busSet, allowedBranches);
 		this.sections.forEach(sec -> {
 			sec.calculate(net,generatorMap, sen);
 		});
