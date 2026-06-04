@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.ejml.data.DMatrixSparseCSC;
-import org.interpss.plugin.optadj.algo.util.AclfNetSensHelper;
+import org.interpss.plugin.optadj.algo.util.AclfNetSensSparseHelper;
 
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfGen;
@@ -207,13 +207,13 @@ public class PowerSystemSection {
      * 
      * @see #calculate(AclfNetwork, double[][])
      * @see #calculateCurrentPower(AclfNetwork)
-     * @see AclfNetSensHelper
+     * @see AclfNetSensSparseHelper
      */
     public void calculate(AclfNetwork net) {
         // ����1: �������������Ⱦ���
         // ʹ��AclfNetSensHelper��������㷢�����֧·��������
         // sen[i][j] ��ʾ��i�������ĸ�߶Ե�j��֧·��������
-        DMatrixSparseCSC sen = new AclfNetSensHelper(net).calSenSortNumber();
+        DMatrixSparseCSC sen = new AclfNetSensSparseHelper(net).calSenSortNumber();
         
         // ����2: ���������Ⱦ�����㷢����Զ����������
         // ʹ�ù�ʽ: ������Զ��������� = ��(�������֧·������ �� ֧·ϵ��)
