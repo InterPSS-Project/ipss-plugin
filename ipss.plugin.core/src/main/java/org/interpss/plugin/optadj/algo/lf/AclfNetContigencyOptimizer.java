@@ -68,7 +68,7 @@ public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
 										+ lodf[branch.getSortNumber()] * senMatrix[busNo][outBranchNo]);
 								genSenArray[no] = postFlow > 0 ? sen : -sen;
 							});
-							double limit = dclfBranch.getBranch().getRatingMva1() * threshold / 100;
+							double limit = dclfBranch.getBranch().getRatingMvaB() * threshold / 100;
 							double postFlowMw = Math.abs(postFlow * 100) ;
 							opt.adConstraint(new SectionConstrainData(postFlowMw, Relationship.LEQ, limit, genSenArray));
 						}
