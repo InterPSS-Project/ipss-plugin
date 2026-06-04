@@ -20,7 +20,7 @@ import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 import org.interpss.plugin.optadj.optimizer.GenStateOptimizer;
 import org.interpss.plugin.optadj.optimizer.bean.GenConstrainData;
 import org.interpss.plugin.optadj.optimizer.bean.SectionConstrainData;
-import org.interpss.plugin.optadj.algo.ssa.bean.SsaResultOneStateInfo;
+import org.interpss.plugin.optadj.result.SsaResultOneStateInfo;
 
 /**
  * 
