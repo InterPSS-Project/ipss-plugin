@@ -15,10 +15,8 @@ import org.interpss.datatype.base.BaseJSONBean;
 * 
 
 */
-public class SsaResultOneStateInfo extends BaseJSONBean{
+public class SsaResultContainer extends BaseJSONBean{
 	double lodfThreshold = 0.2;
-	
-	int timePoint = -1;
 	
 	List<SsaBranchOverLimitInfo> baseOverLimitInfo;
 	
@@ -26,7 +24,7 @@ public class SsaResultOneStateInfo extends BaseJSONBean{
 
 	List<SsaBranchOverLimitInfo> largeLODFInfo;
 	
-	public SsaResultOneStateInfo(double lodfThreshold) {
+	public SsaResultContainer(double lodfThreshold) {
 		super();
 		this.lodfThreshold = lodfThreshold;
 		baseOverLimitInfo = new CopyOnWriteArrayList<SsaBranchOverLimitInfo>();
@@ -34,25 +32,8 @@ public class SsaResultOneStateInfo extends BaseJSONBean{
 		largeLODFInfo = new CopyOnWriteArrayList<SsaBranchOverLimitInfo>();
 	}
 	
-	public SsaResultOneStateInfo(int timePoint, double lodfThreshold) {
-		this(lodfThreshold);
-		this.timePoint = timePoint;
-	}
-	
-	public SsaResultOneStateInfo(int timePoint) {
-		this(timePoint, 1.1);
-	}
-	
 	public double getLodfThreshold() {
 		return lodfThreshold;
-	}
-	
-	public int getTimePoint() {
-		return timePoint;
-	}
-
-	public void setTimePoint(int timePoint) {
-		this.timePoint = timePoint;
 	}
 
 	public List<SsaBranchOverLimitInfo> getBaseOverLimitInfo() {
