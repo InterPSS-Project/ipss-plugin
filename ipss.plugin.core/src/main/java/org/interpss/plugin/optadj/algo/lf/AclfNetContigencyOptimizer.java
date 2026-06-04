@@ -10,10 +10,10 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.algo.dclf.CaBranchOutageType;
-import com.interpss.core.algo.dclf.CaOutageBranch;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
+import com.interpss.core.contingency.ContingencyBranchOutageType;
+import com.interpss.core.contingency.dclf.DclfOutageBranch;
 
 import org.interpss.plugin.optadj.optimizer.GenStateOptimizer;
 import org.interpss.plugin.optadj.optimizer.bean.SectionConstrainData;
@@ -48,8 +48,8 @@ public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
 			});
 
 			if (Arrays.stream(genSenArray).anyMatch(sen -> Math.abs(sen) > SEN_THRESHOLD)) {
-				CaOutageBranch caOutBranch = DclfAlgoObjectFactory.createCaOutageBranch(outDclfBranch,
-						CaBranchOutageType.OPEN);
+				DclfOutageBranch caOutBranch = DclfAlgoObjectFactory.createCaOutageBranch(outDclfBranch,
+						ContingencyBranchOutageType.OPEN);
 				// lodf
 				try {
 					double[] lodf = dclfAlgo.lineOutageDFactors(caOutBranch);

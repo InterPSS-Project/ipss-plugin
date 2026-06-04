@@ -29,8 +29,8 @@ import com.interpss.core.algo.dclf.solver.IDclfSolver;
 * @author  Donghao.F 
 * @date 2023 Dec 29 11:47:22 
 */
-public class AclfNetSensHelper {
-	private static Logger log = LoggerFactory.getLogger(AclfNetSensHelper.class);
+public class AclfNetSensSparseHelper {
+	private static Logger log = LoggerFactory.getLogger(AclfNetSensSparseHelper.class);
 	
 	// a AclfNetwork object
 	private AclfNetwork aclfNet;
@@ -40,7 +40,7 @@ public class AclfNetSensHelper {
 	 * 
 	 * @param aclfNet
 	 */
-	public AclfNetSensHelper(AclfNetwork aclfNet) {
+	public AclfNetSensSparseHelper(AclfNetwork aclfNet) {
 		this.aclfNet = aclfNet;
 	}
 	
