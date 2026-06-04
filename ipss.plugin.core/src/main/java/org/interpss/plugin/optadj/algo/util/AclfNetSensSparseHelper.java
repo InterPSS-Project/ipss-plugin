@@ -31,6 +31,10 @@ import com.interpss.core.algo.dclf.solver.IDclfSolver;
 */
 public class AclfNetSensSparseHelper {
 	private static Logger log = LoggerFactory.getLogger(AclfNetSensSparseHelper.class);
+
+	private static final double ANGDIFF_THRESHOLD = 1e-6;
+	private static final double BUS_SEN_THRESHOLD = 1e-3;
+	private static final double TRANSFER_IMPEDANCE_THRESHOLD = 1e-6;
 	
 	// a AclfNetwork object
 	private AclfNetwork aclfNet;
@@ -98,10 +102,10 @@ public class AclfNetSensSparseHelper {
 							double tAng = toBus.isRefBus() ? 0.0 : dblAry[toBus.getSortNumber()];
 							double dAng = fAng - tAng;
 
-							if (Math.abs(dAng) > 1e-6) {
+							if (Math.abs(dAng) > ANGDIFF_THRESHOLD) {
 								double b1ft = branch.b1ft();
 								double value = -b1ft * dAng;
-								if (Math.abs(value) > 1e-3) {
+								if (Math.abs(value) > BUS_SEN_THRESHOLD) {
 									triplets.add(new Triplet(bus.getSortNumber(), branch.getSortNumber(), value));
 									
 								}
@@ -177,10 +181,7 @@ public class AclfNetSensSparseHelper {
 	    for (AclfBus sourceBus : sourceBuses) {
 	        int sourceSortNum = sourceBus.getSortNumber();
 	        
-	       
-	        
 	        // Inject unit current at the source bus using sortNumber as the index
-	        
 	        
 	        // Use voltage difference at the target bus as transfer impedance
 	        for (AclfBus targetBus : targetBuses) {
@@ -200,7 +201,7 @@ public class AclfNetSensSparseHelper {
 	            double value = c.getReal();// take real part
 	            
 	            // store only non-zero values
-	            if (Math.abs(value) > 1e-6) {
+	            if (Math.abs(value) > TRANSFER_IMPEDANCE_THRESHOLD) {
 	                triplets.add(new Triplet(sourceSortNum, targetSortNum, value));
 	            }
 	        }
