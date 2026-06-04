@@ -52,6 +52,9 @@ import org.interpss.core.ca.aclf.IEEE14_AclfN1Scan_Test;
 import org.interpss.core.contingency.parser.ConFileParser_Test;
 import org.interpss.core.contingency.parser.ConToIpssMapper_Test;
 import org.interpss.core.dclf.IEEE14_Dclf_Test;
+import org.interpss.plugin.optadj.IEEE39_OptBasecase_Test;
+import org.interpss.plugin.optadj.IEEE39_OptN1Scan_Test;
+import org.interpss.plugin.optadj.IEEE39_OptSection_Test;
 import org.interpss.core.dclf.edclf.IEEE118_EDclf_Test;
 import org.interpss.core.dclf.edclf.IEEE14_EDclf_Test;
 import org.interpss.core.dclf.edclf.IEEE39_EDclf_Test;
@@ -147,6 +150,11 @@ import org.junit.platform.suite.api.Suite;
 	IEEE14_EDclf_Test.class,
 	IEEE39_EDclf_Test.class,
 	IEEE118_EDclf_Test.class,
+
+	// Optimization adjustment
+	IEEE39_OptBasecase_Test.class,
+	IEEE39_OptN1Scan_Test.class,
+	IEEE39_OptSection_Test.class,
 	
 	// small Z branch
 	///SampleSwitchBreakerModelTest.class,
