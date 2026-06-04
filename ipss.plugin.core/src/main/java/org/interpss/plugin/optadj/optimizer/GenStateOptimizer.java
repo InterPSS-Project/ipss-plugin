@@ -22,7 +22,7 @@ import org.interpss.plugin.optadj.optimizer.bean.SectionConstrainData;
  * 
  * @author Donghao.F
  * 
- * @date 2024��5��27�� ����5:19:38
+ * @date 2024 May 27 17:19:38
  * 
  * 
  * 
@@ -44,16 +44,16 @@ public class GenStateOptimizer {
     private double interfaceFactor = 1e4;
     private double sectionFactor = 1e2;
     
-    // ����������
-    private double[] cachedDGenP;      // ����������� dGenP
-    private double[] cachedDSecP;      // �����ɳڱ��� dSecP����ԭʼ˳��
+    // Cached results
+    private double[] cachedDGenP;      // Cached generator adjustments dGenP
+    private double[] cachedDSecP;      // Cached section slack variables dSecP, in original order
     
-    // ӳ�䣺ԭʼ�������� -> ��Ч��������
+    // Mapping: original section index -> effective section index
     private Map<Integer, Integer> secIndexToEffectiveIndex;
     private int effectiveSecCount;
     
- // ���������鼯Ⱥ����
-    private GeneratorClustering.ClusteringResult generatorClusters;  // �����������
+ // Generator clustering related
+    private GeneratorClustering.ClusteringResult generatorClusters;  // Clustering result
     private double generatorClusteringThreshold = 0.001;
     
     public GenStateOptimizer() {
@@ -68,18 +68,18 @@ public class GenStateOptimizer {
         }
     }
     
- // ���Զ���
+ // Custom objects
     private Map<Integer, GeneratorParameter> genParams;
     private MergeSectionResult mergeResult;
 
     public boolean optimize() {
-        // Ԥ�����׶�
+        // Preprocessing phase
         preprocess();
         
-        // ͳһ���Ż�ģ�ͽ׶�
+        // Build unified optimization model
         buildOptimizationModel();
         
-        // ���׶�
+        // Solve phase
         result = model.minimise();
         if (result.getState().isSuccess()) {
             cacheResults(mergeResult);
@@ -89,10 +89,10 @@ public class GenStateOptimizer {
     }
 
     /**
-     * Ԥ�����׶Σ��ռ����ݡ��ϲ�Լ��������ӳ��
+     * Preprocessing: collect data, merge constraints, and build mappings
      */
     private void preprocess() {
-        // 1. ʹ�� GeneratorParameter �ռ����������
+        // 1. Collect generator parameters with GeneratorParameter
         genParams = new HashMap<>();
         for (GenConstrainData data : genConstrainDataList) {
             int idx = data.getIndex();
@@ -107,30 +107,30 @@ public class GenStateOptimizer {
         }
         genSize = genParams.size();
         
-        // 2. Ԥ��������Լ�����ϲ��ȣ�
+        // 2. Preprocess section constraints (merge similar ones)
         mergeResult = mergeSectionsBySensitivity();
         effectiveSecCount = mergeResult.mergedSections.size();
         
-        // 3. Ԥ����ӳ���ϵ
+        // 3. Build index mappings
         secIndexToEffectiveIndex = new HashMap<>();
         for (int i = 0; i < secConstrainDataList.size(); i++) {
             secIndexToEffectiveIndex.put(i, 
                 mergeResult.originalToMergedIndex.getOrDefault(i, -1));
         }
         
-        // 4. �����������������Ⱥ
+        // 4. Build generator clusters
         buildGeneratorClusters();
         
-        // 5. ���������ݷ������Ⱥ���¶��������������
+        // 5. Update section sensitivities based on generator clusters
         updateSectionSensitivitiesByClusters();
         
-        // 6. ��ӡͳ����Ϣ
+        // 6. Print statistics
         printOptimizationStats(mergeResult);
     }
     
     /**
-     * ���ݷ������Ⱥ���¶��������������
-     * ͬһ��Ⱥ�ڵķ��������������ֵ�ü�Ⱥƽ��ֵ�滻
+     * Update section sensitivities based on generator clusters
+     * Replace generator sensitivities within a cluster with the cluster average
      */
     private void updateSectionSensitivitiesByClusters() {
         if (generatorClusters == null || generatorClusters.clusters == null) {
@@ -142,13 +142,13 @@ public class GenStateOptimizer {
             double[] updatedSen = new double[originalSen.length];
             System.arraycopy(originalSen, 0, updatedSen, 0, originalSen.length);
             
-            // ��ÿ����Ⱥ����
+            // For each cluster
             for (GeneratorClustering.GeneratorCluster cluster : generatorClusters.clusters) {
                 if (cluster.originalIndices == null || cluster.originalIndices.isEmpty()) {
                     continue;
                 }
                 
-                // ���㼯Ⱥ�ڷ�����ڸö����ϵ�ƽ��������
+                // Compute average generator sensitivity on this section within the cluster
                 double sumSen = 0.0;
                 int validCount = 0;
                 for (int genIdx : cluster.originalIndices) {
@@ -161,7 +161,7 @@ public class GenStateOptimizer {
                 if (validCount > 0) {
                     double avgSen = sumSen / validCount;
                     
-                    // ����Ⱥ�����з��������������Ϊƽ��ֵ
+                    // Set all generator sensitivities in the cluster to the average
                     for (int genIdx : cluster.originalIndices) {
                         if (genIdx < updatedSen.length) {
                             updatedSen[genIdx] = avgSen;
@@ -170,16 +170,16 @@ public class GenStateOptimizer {
                 }
             }
             
-            // ���¶��������������
+            // Update section sensitivity array
             section.senArray = updatedSen;
         }
     }
     
     /**
-     * �����������Ⱥ
+     * Build generator clusters
      */
     private void buildGeneratorClusters() {
-        // ׼�������Ⱦ���
+        // Prepare sensitivity matrix
         int numSections = mergeResult.mergedSections.size();
         double[][] sensitivities = new double[genSize][numSections];
         
@@ -194,7 +194,7 @@ public class GenStateOptimizer {
             }
         }
         
-        // ׼�������������Ȩ��
+        // Prepare generator capacity limits and weights
         double[] minCapacities = new double[genSize];
         double[] maxCapacities = new double[genSize];
         double[] weights = new double[genSize];
@@ -206,14 +206,14 @@ public class GenStateOptimizer {
             weights[i] = gp.getWeight();
         }
         
-        // ִ�о���
+        // Run clustering
         this.generatorClusters = GeneratorClustering.cluster(
             sensitivities, minCapacities, maxCapacities, weights, generatorClusteringThreshold
         );
     }
 
     /**
-     * ͳһ���Ż�ģ�ͽ׶Σ����ھ�������
+     * Build unified optimization model based on clusters
      */
     private void buildOptimizationModel() {
         model = new ExpressionsBasedModel();
@@ -222,7 +222,7 @@ public class GenStateOptimizer {
         
         int clusterCount = generatorClusters.clusteredGenCount;
         
-        // 1. Ϊÿ�����ഴ������
+        // 1. Create variables for each cluster
         Variable[] pVars = new Variable[clusterCount];
         Variable[] nVars = new Variable[clusterCount];
         for (int c = 0; c < clusterCount; c++) {
@@ -232,30 +232,30 @@ public class GenStateOptimizer {
             nVars[c] = model.addVariable("cluster_n_" + c).lower(0);
         }
         
-        // 2. ��������Լ��
+        // 2. Add cluster constraints
         for (int c = 0; c < clusterCount; c++) {
             GeneratorClustering.GeneratorCluster cluster = generatorClusters.clusters.get(c);
             Expression clusterExpr = model.addExpression("cluster_" + c)
                 .set(pVars[c], 1).set(nVars[c], -1);
             
-            // ����Ƿ���ʵ�ʵ��½磨���ڸ����
+            // Apply lower bound when the cluster has a finite minimum
             if (cluster.totalMinCapacity > Double.NEGATIVE_INFINITY) {
                 clusterExpr.lower(cluster.totalMinCapacity);
             }
-            // ����Ƿ���ʵ���Ͻ磨С�������
+            // Apply upper bound when the cluster has a finite maximum
             if (cluster.totalMaxCapacity < Double.POSITIVE_INFINITY) {
                 clusterExpr.upper(cluster.totalMaxCapacity);
             }
         }
         
-        // 3. ����Լ��
+        // 3. Section constraints
         Variable[] dSecVars = new Variable[effectiveSecCount];
         for (int i = 0; i < effectiveSecCount; i++) {
             dSecVars[i] = model.addVariable("dSecP_" + i).lower(0);
             addSectionConstraint(mergeResult.mergedSections.get(i), pVars, nVars, dSecVars[i], i);
         }
         
-        // 4. ����ƽ��
+        // 4. Power balance
         Variable sp = model.addVariable("sp").lower(0);
         Variable sn = model.addVariable("sn").lower(0);
         Expression sumBalance = model.addExpression("sum_balance");
@@ -264,7 +264,7 @@ public class GenStateOptimizer {
         }
         sumBalance.set(sp, 1).set(sn, -1).level(0);
         
-        // 5. Ŀ�꺯��
+        // 5. Objective function
         Expression objective = model.addExpression("Objective").weight(1.0);
         for (int c = 0; c < clusterCount; c++) {
             GeneratorClustering.GeneratorCluster cluster = generatorClusters.clusters.get(c);
@@ -279,13 +279,13 @@ public class GenStateOptimizer {
         objective.set(sp, interfaceFactor).set(sn, interfaceFactor);
     }
 
-    // ��ȡ����Լ�������߼�
+    // Section constraint helper logic
 	private void addSectionConstraint(MergedSectionData merged, Variable[] pVars, Variable[] nVars, Variable dSecVar,
 			int idx) {
 		boolean hasLower = merged.lowerBound > Double.NEGATIVE_INFINITY;
 		boolean hasUpper = merged.upperBound < Double.POSITIVE_INFINITY;
 
-		// ͳһʹ��һ�� Expression
+		// Use a single Expression
 		Expression expr = model.addExpression("section_" + idx);
 
 		for (int c = 0; c < generatorClusters.clusteredGenCount; c++) {
@@ -295,13 +295,13 @@ public class GenStateOptimizer {
 				expr.set(pVars[c], sen).set(nVars[c], -sen);
 		}
 
-		// ͳһ�������½�
+		// Apply lower and upper bounds
 		if (hasLower)
 			expr.lower(merged.lowerBound);
 		if (hasUpper)
 			expr.upper(merged.upperBound);
 
-		// �������ɳڣ�ֻ�����ɳ�
+		// Add slack variable when needed
 		if (merged.lowerBound > 0) {
 			expr.set(dSecVar, 1);
 		}
@@ -314,16 +314,16 @@ public class GenStateOptimizer {
         int originalEffectiveCount = (int) mergeResult.originalToMergedIndex.values().stream()
             .filter(v -> v >= 0).count();
         
-        System.out.println("========== ����ϲ��Ż�ͳ�� ==========");
-        System.out.println("ԭʼ��������: " + secConstrainDataList.size());
-        System.out.println("��Ч������(���˺�): " + originalEffectiveCount);
-        System.out.println("�ϲ����������: " + effectiveSecCount);
+        System.out.println("========== Section Merge Optimization Stats ==========");
+        System.out.println("Original section count: " + secConstrainDataList.size());
+        System.out.println("Effective sections (after filtering): " + originalEffectiveCount);
+        System.out.println("Merged section count: " + effectiveSecCount);
         if (originalEffectiveCount > 0) {
-            System.out.printf("���������: %.1f%%%n", 
+            System.out.printf("Section reduction rate: %.1f%%%n", 
                 (1 - (double)effectiveSecCount / originalEffectiveCount) * 100);
         }
-        System.out.println("�ܱ�����: " + (genSize * 2 + effectiveSecCount + 2));
-        System.out.println("��Լ����: " + (genSize + effectiveSecCount + 1));
+        System.out.println("Total variables: " + (genSize * 2 + effectiveSecCount + 2));
+        System.out.println("Total constraints: " + (genSize + effectiveSecCount + 1));
         System.out.println("======================================\n");
     }
 
@@ -331,13 +331,13 @@ public class GenStateOptimizer {
         double[] raw = result.toRawCopy1D();
         int clusterCount = generatorClusters.clusteredGenCount;
         
-        // 1. �Ȼ�ȡÿ������ĵ�����
+        // 1. Read each cluster adjustment first
         double[] clusterAdjustments = new double[clusterCount];
         for (int c = 0; c < clusterCount; c++) {
             clusterAdjustments[c] = raw[c] - raw[c + clusterCount];
         }
         
-        // 2. ���������������ظ�����������������������䣩
+        // 2. Distribute cluster adjustments back to individual generators (proportional allocation)
         cachedDGenP = new double[genSize];
         for (int c = 0; c < clusterCount; c++) {
             GeneratorClustering.GeneratorCluster cluster = generatorClusters.clusters.get(c);
@@ -345,7 +345,7 @@ public class GenStateOptimizer {
             
             if (Math.abs(totalAdjustment) < 1e-3) continue;
             
-            // ֱ��ʹ�� cluster �����е��ܺ�
+            // Use total capacity stored in the cluster directly
             double totalCap = (totalAdjustment > 0) ? cluster.totalMaxCapacity : -cluster.totalMinCapacity;
             
             for (int genIdx : cluster.originalIndices) {
@@ -364,9 +364,9 @@ public class GenStateOptimizer {
             }
         }
         
-        // 3. �����ɳڱ������߼����䣬��ƫ������Ҫ������
+        // 3. Cache section slack variables; allocation logic unchanged, distribution may need tuning
         cachedDSecP = new double[secConstrainDataList.size()];
-        int dSecOffset = clusterCount * 2;  // ע�⣺������ clusterCount * 2
+        int dSecOffset = clusterCount * 2;  // Note: offset is clusterCount * 2
         for (int i = 0; i < secConstrainDataList.size(); i++) {
             Integer effIdx = mergeResult.originalToMergedIndex.get(i);
             cachedDSecP[i] = (effIdx != null && effIdx >= 0) ? raw[dSecOffset + effIdx] : 0.0;
@@ -374,22 +374,22 @@ public class GenStateOptimizer {
     }
 
     /**
-     * �ϲ���������ͬ�Ķ���Լ��
-     * �жϱ�׼�����з������������ƫ�С�� 0.001
+     * Merge section constraints with identical sensitivity profiles
+     * Criterion: all generator sensitivity deviations are below 0.001
      */
     private MergeSectionResult mergeSectionsBySensitivity() {
         final double TOLERANCE = 0.001;
         
-        // ����������ǩ�� -> �������
+        // Sensitivity signature -> section group
         Map<String, List<SectionConstrainData>> groups = new HashMap<>();
         Map<SectionConstrainData, Integer> originalIndex = new HashMap<>();
         
-        // ����ԭʼ����ӳ��
+        // Build original index mapping
         for (int i = 0; i < secConstrainDataList.size(); i++) {
             originalIndex.put(secConstrainDataList.get(i), i);
         }
         
-        // ���飺��Ч���水������ǩ������
+        // Group valid sections by sensitivity signature
         for (SectionConstrainData data : secConstrainDataList) {
             if (!isValidSection(data)) continue;
             
@@ -397,7 +397,7 @@ public class GenStateOptimizer {
             groups.computeIfAbsent(signature, k -> new ArrayList<>()).add(data);
         }
         
-        // �����ϲ����
+        // Build merged result
         List<MergedSectionData> mergedSections = new ArrayList<>();
         Map<Integer, Integer> indexMap = new HashMap<>();
         
@@ -408,7 +408,7 @@ public class GenStateOptimizer {
             merged.upperBound = Double.POSITIVE_INFINITY;
             merged.originalIndices = new ArrayList<>();
             
-            // �ϲ�Լ���߽�
+            // Merge constraint bounds
             for (SectionConstrainData data : group) {
                 double bound = data.getLimit() - data.getValue();
                 if (data.getRelationship() == Relationship.LEQ) {
@@ -429,7 +429,7 @@ public class GenStateOptimizer {
         return new MergeSectionResult(mergedSections, indexMap);
     }
 
-    // �ж϶����Ƿ���Ч
+    // Check whether a section is effective
     private boolean isValidSection(SectionConstrainData data) {
         for (double v : data.getSenArray()) {
             if (Math.abs(v) >= senSecLimit) return true;
@@ -437,7 +437,7 @@ public class GenStateOptimizer {
         return false;
     }
 
-    // ����������ǩ����������ƴ�ӣ�
+    // Build sensitivity signature (quantized concatenation)
     private String getSensitivitySignature(double[] senArray, double tolerance) {
         StringBuilder sb = new StringBuilder();
         int len = Math.min(senArray.length, genSize);
@@ -449,7 +449,7 @@ public class GenStateOptimizer {
         return sb.toString();
     }
 
-    // ����������
+    // Filter sensitivity values
     private double[] filterSensitivity(double[] senArray) {
         int len = Math.min(senArray.length, genSize);
         double[] filtered = new double[len];
@@ -460,7 +460,7 @@ public class GenStateOptimizer {
     }
 
     /**
-     * ����ϲ����
+     * Section merge result
      */
     private static class MergeSectionResult {
         final List<MergedSectionData> mergedSections;
@@ -474,7 +474,7 @@ public class GenStateOptimizer {
     }
 
     /**
-     * �ϲ���Ķ�������
+     * Merged section data
      */
     private static class MergedSectionData {
         double[] senArray;
@@ -484,9 +484,9 @@ public class GenStateOptimizer {
     }
     
     /**
-     * ��ȡ������ĵ����� dGenP
-     * @param genIndex �����ԭʼ����
-     * @return ������ֵ
+     * Get generator adjustment dGenP
+     * @param genIndex original generator index
+     * @return adjustment value
      */
     public double getDGenP(int genIndex) {
         if (cachedDGenP == null || genIndex < 0 || genIndex >= genSize) {
@@ -496,9 +496,9 @@ public class GenStateOptimizer {
     }
     
     /**
-     * ��ȡ������ɳڱ���ֵ dSecP
-     * @param secIndex ����ԭʼ����
-     * @return �ɳڱ���ֵ
+     * Get section slack variable dSecP
+     * @param secIndex original section index
+     * @return slack variable value
      */
     public double getDSecP(int secIndex) {
         if (cachedDSecP == null || secIndex < 0 || secIndex >= cachedDSecP.length) {
@@ -516,17 +516,17 @@ public class GenStateOptimizer {
         double[] raw = result.toRawCopy1D();
         int clusterCount = generatorClusters.clusteredGenCount;
         
-        // ԭ��ʽ����: dGenP(genSize) + dSecP(secSize)
+        // Legacy layout: dGenP(genSize) + dSecP(secSize)
         int legacySize = genSize + secConstrainDataList.size();
         double[] legacy = new double[legacySize];
         
-        // 1. ��ȡÿ������ĵ�����
+        // 1. Read each cluster adjustment first
         double[] clusterAdjustments = new double[clusterCount];
         for (int c = 0; c < clusterCount; c++) {
             clusterAdjustments[c] = raw[c] - raw[c + clusterCount];
         }
         
-        // 2. ���������������ظ������������ cacheResults ����һ�£�
+        // 2. Distribute cluster adjustments back to generators (same as cacheResults)
         for (int c = 0; c < clusterCount; c++) {
             GeneratorClustering.GeneratorCluster cluster = generatorClusters.clusters.get(c);
             double totalAdjustment = clusterAdjustments[c];
@@ -546,8 +546,8 @@ public class GenStateOptimizer {
             }
         }
         
-        // 3. dSecP_i����ԭʼ˳����Ч������0��
-        int dSecOffset = clusterCount * 2;  // ��Ϊ clusterCount * 2
+        // 3. dSecP_i in original order; ineffective sections are 0
+        int dSecOffset = clusterCount * 2;  // offset is clusterCount * 2
         for (int i = 0; i < secConstrainDataList.size(); i++) {
             Integer effIdx = secIndexToEffectiveIndex.get(i);
             if (effIdx != null && effIdx >= 0) {
@@ -584,31 +584,31 @@ public class GenStateOptimizer {
     }
     
     /**
-     * ��ӡ���з�����ĵ�����
+     * Print all generator adjustments
      */
     public void printAllDGenP() {
         if (cachedDGenP == null) {
             System.out.println("No valid solution available");
             return;
         }
-        System.out.println("=== ����������� dGenP ===");
+        System.out.println("=== Generator Adjustments dGenP ===");
         for (int i = 0; i < cachedDGenP.length; i++) {
-            System.out.printf("����� %d: %.6f\n", i, cachedDGenP[i]);
+            System.out.printf("Generator %d: %.6f\n", i, cachedDGenP[i]);
         }
     }
 
     /**
-     * ��ӡ���ж����ɳڱ���
+     * Print all section slack variables
      */
     public void printAllDSecP() {
         if (cachedDSecP == null) {
             System.out.println("No valid solution available");
             return;
         }
-        System.out.println("=== �����ɳڱ��� dSecP ===");
+        System.out.println("=== Section Slack Variables dSecP ===");
         for (int i = 0; i < cachedDSecP.length; i++) {
             String sectionName = secConstrainDataList.get(i).getName();
-            System.out.printf("���� %d (%s): %.6f\n", i, sectionName, cachedDSecP[i]);
+            System.out.printf("Section %d (%s): %.6f\n", i, sectionName, cachedDSecP[i]);
         }
     }
 
