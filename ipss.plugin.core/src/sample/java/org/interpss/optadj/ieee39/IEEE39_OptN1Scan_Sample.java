@@ -61,7 +61,7 @@ public class IEEE39_OptN1Scan_Sample {
 							// add the over limit branch CA result rec to the SSA result container
 							System.out.println(String.format("OverLimit Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f",
 									resultRec.aclfBranch.getId(), resultRec.contingency.getId(),
-									resultRec.getPostFlowMW(), resultRec.aclfBranch.getRatingMva1(), loading));
+									resultRec.getPostFlowMW(), resultRec.aclfBranch.getRatingMvaB(), loading));
 						}
 					});
 			});
@@ -87,7 +87,7 @@ public class IEEE39_OptN1Scan_Sample {
 							// add the over limit branch CA result rec to the SSA result container
 							System.out.println(String.format("OverLimit Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f",
 									resultRec.aclfBranch.getId(), resultRec.contingency.getId(),
-									resultRec.getPostFlowMW(), resultRec.aclfBranch.getRatingMva1(), loading));
+									resultRec.getPostFlowMW(), resultRec.aclfBranch.getRatingMvaB(), loading));
 						}
 					});
 			});
