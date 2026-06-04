@@ -8,10 +8,16 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
 import com.interpss.core.common.ReferenceBusException;
+
+import org.slf4j.Logger;
+
 import org.interpss.numeric.datatype.Counter;
 import org.interpss.numeric.exp.IpssNumericException;
+import org.slf4j.LoggerFactory;
 
 public class AclfNetSensHelper {
+   private static Logger log = LoggerFactory.getLogger(AclfNetSensHelper.class);
+
    private AclfNetwork aclfNet;
 
    public AclfNetSensHelper(AclfNetwork aclfNet) {
@@ -28,7 +34,7 @@ public class AclfNetSensHelper {
             double[] dblAry = dclfAlgo.getDclfSolver().getSenPAngle(bus.getId());
             this.aclfNet.getBranchList().stream().filter((branch) -> branch.isActive() && branch.getNumber() != 0L).forEach((branch) -> senMatrix[(int)(bus.getNumber() - 1L)][(int)(branch.getNumber() - 1L)] = this.calSen(dblAry, branch));
          } catch (IpssNumericException | ReferenceBusException | InterpssException e) {
-            IpssLogger.getLogger().severe(((Exception)e).toString());
+            log.error("Error calculating sensitivity", e);
          }
 
       });
