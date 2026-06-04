@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.math3.optim.linear.Relationship;
 import org.interpss.numeric.datatype.LimitType;
-import org.interpss.plugin.optadj.algo.util.AclfNetSensSparseHelper;
+import org.interpss.plugin.optadj.algo.util.AclfNetSensHelper;
 
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfGen;
@@ -17,7 +17,7 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 
-import org.interpss.	plugin.optadj.optimizer.GenStateOptimizer;
+import org.interpss.plugin.optadj.optimizer.GenStateOptimizer;
 import org.interpss.plugin.optadj.optimizer.bean.GenConstrainData;
 import org.interpss.plugin.optadj.optimizer.bean.SectionConstrainData;
 import org.interpss.plugin.optadj.algo.ssa.bean.SsaResultOneStateInfo;
@@ -38,7 +38,7 @@ public class AclfNetLoadFlowOptimizer {
 	public void optimize(ContingencyAnalysisAlgorithm dclfAlgo, SsaResultOneStateInfo result, double threshold) {
 		AclfNetwork net = (AclfNetwork) dclfAlgo.getNetwork();
 
-		AclfNetSensSparseHelper helper = new AclfNetSensSparseHelper(net);
+		AclfNetSensHelper helper = new AclfNetSensHelper(net);
 		float[][] senMatrix = helper.calSen();
 		
 		Map<Integer, AclfGen> controlGenMap = null;
