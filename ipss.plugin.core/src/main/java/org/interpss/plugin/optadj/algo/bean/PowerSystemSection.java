@@ -3,7 +3,7 @@ package org.interpss.plugin.optadj.algo.bean;
 
 * @author  Donghao.F 
 
-* @date 2026��1��6�� ����10:16:50 
+* @date 2026 Jan 6 10:16:50 
 
 * 
 
@@ -26,37 +26,37 @@ import com.interpss.core.algo.dclf.DclfAlgorithm;
 
 
 /**
- * ����ϵͳ����������
- * �����������֧·��֧·ϵ���ͻ�����������Ϣ
+ * Power system section model.
+ * Stores section branches, branch coefficients, and generator sensitivity data.
  */
 public class PowerSystemSection {
 	
 	private final String sectionName;
     
-    // 1. �������֧·ID�б�
+    // 1. Branch IDs in this section
     private final List<String> branchIds;
     
-    // 2. ֧·ϵ��ӳ�䣨֧·ID -> ϵ����
+    // 2. Branch coefficient map (branch ID -> coefficient)
     private final Map<String, Double> branchCoefficients;
     
-    // 3. ����Զ����������ӳ�䣨����ID -> �����ȣ�
+    // 3. Generator-to-section sensitivity map (generator ID -> sensitivity)
     private final Map<String, Double> generatorSensitivities;
     
-    // ���浱ǰ����ֵ��MW��
+    // Current section power (MW)
     private double currentPower;
     
-    // ����
+    // Upper limit
     private double upper;
     
-    // ����
+    // Upper limit
     private double lower;
     
     
     /**
-     * ���캯��
-     * @param branchIds ֧·ID�б�
-     * @param branchCoefficients ֧·ϵ��ӳ��
-     * @param generatorSensitivities ����������ӳ��
+     * Constructor
+     * @param branchIds branch ID list
+     * @param branchCoefficients branch coefficient map
+     * @param generatorSensitivities generator sensitivity map
      */
 	public PowerSystemSection(List<String> branchIds, Map<String, Double> branchCoefficients,
 			Map<String, Double> generatorSensitivities, double upper, double lower, String sectionName) {
@@ -75,26 +75,26 @@ public class PowerSystemSection {
 	}
     
     /**
-     * ������֤
-     * ȷ��֧·ID�б���ϵ��ӳ���һ����
+     * Data validation
+     * Ensures branch IDs and coefficient map are consistent
      */
     private void validateData() {
-        // ���branchIds�е�ÿ��֧·�Ƿ��ж�Ӧ��ϵ��
+        // Check that every branch in branchIds has a coefficient
         for (String branchId : branchIds) {
             if (!branchCoefficients.containsKey(branchId)) {
-                throw new IllegalArgumentException("֧· " + branchId + " ��ϵ��ӳ���в�����");
+                throw new IllegalArgumentException("Branch " + branchId + " is missing from the coefficient map");
             }
         }
         
-        // ���ϵ��ӳ���е�֧·�Ƿ���ID�б��У���ѡ��ȡ��������
+        // Check that every coefficient entry appears in branchIds
         for (String branchId : branchCoefficients.keySet()) {
             if (!branchIds.contains(branchId)) {
-                throw new IllegalArgumentException("ϵ��ӳ���е�֧· " + branchId + " ����֧·ID�б���");
+                throw new IllegalArgumentException("Branch " + branchId + " in coefficient map is not in branch ID list");
             }
         }
     }
     
-    // ==================== Getter���� ====================
+    // ==================== Getters ====================
     
     public List<String> getBranchIds() {
         return Collections.unmodifiableList(branchIds);
@@ -109,35 +109,35 @@ public class PowerSystemSection {
     }
     
     /**
-     * ��ȡָ��֧·��ϵ��
-     * @param branchId ֧·ID
-     * @return ֧·ϵ��
+     * Get the coefficient for a branch
+     * @param branchId branch ID
+     * @return branch coefficient
      */
     public Double getBranchCoefficient(String branchId) {
         return branchCoefficients.get(branchId);
     }
     
     /**
-     * ��ȡָ�������������
-     * @param generatorId ����ID
-     * @return ������ֵ
+     * Get the sensitivity for a generator
+     * @param generatorId generator ID
+     * @return sensitivity value
      */
     public Double getGeneratorSensitivity(String generatorId) {
         return generatorSensitivities.get(generatorId);
     }
     
     /**
-     * ���֧·�Ƿ��ڶ�����
-     * @param branchId ֧·ID
-     * @return �Ƿ����
+     * Check whether a branch belongs to this section
+     * @param branchId branch ID
+     * @return whether the branch is included
      */
     public boolean containsBranch(String branchId) {
         return branchIds.contains(branchId);
     }
     
     /**
-     * ��ȡ�����С��������֧·������
-     * @return ֧·����
+     * Get the number of branches in this section
+     * @return branch count
      */
     public int getSectionSize() {
         return branchIds.size();
@@ -149,11 +149,11 @@ public class PowerSystemSection {
 	}
 
 	/**
-     * �����ⲿ�������֧·�������ȣ����㷢����Զ����������
-     * ���㹫ʽ��������Զ���������� = ��(�������֧·�������� �� ֧·ϵ��)
+     * Compute generator-to-section sensitivity from branch sensitivities
+     * Formula: generator-to-section sensitivity = sum(branch sensitivity * branch coefficient)
      * 
-     * @param generatorBranchSensitivities �������֧·��������ӳ��
-     * @return ������Զ����������
+     * @param generatorBranchSensitivities generator-to-branch sensitivity map
+     * @return generator-to-section sensitivity
      */
     private double calculateGeneratorToSectionSensitivity(Map<String, Double> generatorBranchSensitivities) {
         if (generatorBranchSensitivities == null || generatorBranchSensitivities.isEmpty()) {
@@ -175,93 +175,94 @@ public class PowerSystemSection {
     }
     
     /**
-     * �����������������ݣ��ۺϷ�����
-     * ִ��˳��
-     * 1. �������������Ⱦ���
-     * 2. ���������ȼ��㷢����Զ����������
-     * 3. ������浱ǰ����
+     * Calculate all section data (aggregate entry point)
+     * Execution order:
+     * 1. Build the generator sensitivity matrix
+     * 2. Compute generator-to-section sensitivities from the matrix
+     * 3. Calculate current section power
      * 
-     * �˷�����һ����ݵ��ۺϷ�����һ������ɶ�������м�������
+     * Convenience method that runs all intermediate calculations in one call
      * 
-     * @param net ACLF����ģ�ͣ����ڻ�ȡ�������˺ͳ�������
+     * @param net ACLF network model used to obtain topology and operating data
      * 
-     * �������̣�
-     * ����������������������������������������������������������������������������������������������
-     * ��            calculate(net)                   ��
-     * ��                                             ��
-     * �� 1. ʹ��AclfNetSensHelper���������Ⱦ���       ��
-     * ��    ����> ���ض�ά���� sen[�����ĸ��][֧·]    ��
-     * ��                                             ��
-     * �� 2. ����calculate(net, sen)                  ��
-     * ��    ����> ���������Ⱦ�����㷢����Զ���������� ��
-     * ��                                             ��
-     * �� 3. ����calculateCurrentPower(net)           ��
-     * ��    ����> ������浱ǰ��ʵ�ʹ���ֵ             ��
-     * ����������������������������������������������������������������������������������������������
+     * Flow:
+     * +----------------------------------------------+
+     * |            calculate(net)                    |
+     * |                                              |
+     * | 1. Build sensitivity matrix with             |
+     * |    AclfNetSensHelper                         |
+     * |    -> sparse matrix sen[generator bus][branch] |
+     * |                                              |
+     * | 2. call calculate(net, sen)                  |
+     * |    -> compute generator-to-section sensitivities |
+     * |                                              |
+     * | 3. call calculateCurrentPower(net)           |
+     * |    -> compute actual current section power   |
+     * +----------------------------------------------+
      * 
-     * ע�⣺
-     * - �����ȼ���������AclfNetSensHelper��
-     * - ���湦�ʼ������������統ǰ�ĳ���״̬
-     * - ����˳���������������Ϊ���������ȼ�����Ҫ���������Ⱦ���
-     * - �˷�����������ڲ������������ݺ͵�ǰ����ֵ
+     * Notes:
+     * - Sensitivity calculation is delegated to AclfNetSensHelper
+     * - Section power calculation depends on the current operating state
+     * - Order matters because generator sensitivities require the sensitivity matrix
+     * - This method updates internal sensitivity data and current power
      * 
      * @see #calculate(AclfNetwork, double[][])
      * @see #calculateCurrentPower(AclfNetwork)
      * @see AclfNetSensSparseHelper
      */
     public void calculate(AclfNetwork net) {
-        // ����1: �������������Ⱦ���
-        // ʹ��AclfNetSensHelper��������㷢�����֧·��������
-        // sen[i][j] ��ʾ��i�������ĸ�߶Ե�j��֧·��������
+        // Step 1: build generator sensitivity matrix
+        // Use AclfNetSensHelper to compute generator-to-branch sensitivities
+        // sen[i][j] is the sensitivity of generator bus i to branch j
         DMatrixSparseCSC sen = new AclfNetSensSparseHelper(net).calSenSortNumber();
         
-        // ����2: ���������Ⱦ�����㷢����Զ����������
-        // ʹ�ù�ʽ: ������Զ��������� = ��(�������֧·������ �� ֧·ϵ��)
+        // Step 2: compute generator-to-section sensitivities from the matrix
+        // Formula: generator-to-section sensitivity = sum(branch sensitivity * branch coefficient)
         calculate(net, net.getAclfGenNameLookupTable(), sen);
         
-        // ����3: ������浱ǰ��ʵ�ʹ���ֵ
-        // ʹ�ù�ʽ: ���浱ǰ���� = ��(֧·���� �� ֧·ϵ��)
+        // Step 3: compute actual current section power
+        // Formula: section power = sum(branch flow * branch coefficient)
         calculateCurrentPower(net);
     }
 	
 	/**
-	 * ����ACLF���������浱ǰ����
-	 * ���㹫ʽ�����湦�� = ��(֧·���� �� ֧·ϵ��)
+	 * Calculate current section power from the ACLF network
+	 * Formula: section power = sum(branch flow * branch coefficient)
 	 * 
-	 * @param net ACLF����ģ��
-	 * @return ���浱ǰ�ܹ���
+	 * @param net ACLF network model
+	 * @return current total section power
 	 */
 	public double calculateCurrentPower(AclfNetwork net) {
 	    if (net == null) {
-	        throw new IllegalArgumentException("ACLF���粻��Ϊ��");
+	        throw new IllegalArgumentException("ACLF network must not be null");
 	    }
 	    
 	    double totalPower = 0.0;
 	    
 	    for (String branchId : branchIds) {
-	        // ��ȡ֧·����
+	        // Get branch object
 	        AclfBranch branch = net.getBranch(branchId);
 	        if (branch == null) {
-	            // ��¼������׳��쳣��ȡ����ҵ������
+	            // Skip missing branches instead of throwing
 	            continue;
 	        }
 	        
-	        // ��ȡ֧·ϵ��
+	        // Get branch coefficient
 	        Double coefficient = branchCoefficients.get(branchId);
 	        if (coefficient == null) {
-	            coefficient = 1.0; // Ĭ��ϵ��Ϊ1.0
+	            coefficient = 1.0; // default coefficient is 1.0
 	        }
 	        
-	        // ��ȡ֧·�й����ʣ�������getActivePower������
+	        // Get branch active power
 	        double branchPower = branch.powerFrom2To().getReal();
 	        
 	       
-	        // �ۼӣ�֧·���� �� ֧·ϵ��
+	        // Accumulate branch flow * branch coefficient
 	        totalPower += branchPower * coefficient;
 //	        System.out.println(branch.getId()+branchPower * coefficient);
 	    }
 	    
-	    // ���²����ص�ǰ����
+	    // Update and return current power
 	    this.currentPower = totalPower;
 	    return totalPower;
 	}
@@ -272,81 +273,81 @@ public class PowerSystemSection {
 	    double totalPower = 0.0;
 	    
 	    for (String branchId : branchIds) {
-	        // ��ȡ֧·����
+	        // Get branch object
 	        AclfBranch branch = net.getBranch(branchId);
 	        if (branch == null) {
-	            // ��¼������׳��쳣��ȡ����ҵ������
+	            // Skip missing branches instead of throwing
 	            continue;
 	        }
 	        
-	        // ��ȡ֧·ϵ��
+	        // Get branch coefficient
 	        Double coefficient = branchCoefficients.get(branchId);
 	        if (coefficient == null) {
-	            coefficient = 1.0; // Ĭ��ϵ��Ϊ1.0
+	            coefficient = 1.0; // default coefficient is 1.0
 	        }
 	        
-	        // ��ȡ֧·�й����ʣ�������getActivePower������
+	        // Get branch active power
 	        double branchPower = dcAlgo.getBranchFlow(branchId);
 	        
 	       
-	        // �ۼӣ�֧·���� �� ֧·ϵ��
+	        // Accumulate branch flow * branch coefficient
 	        totalPower += branchPower * coefficient;
 //	        System.out.println(branch.getId()+branchPower * coefficient);
 	    }
 	    
-	    // ���²����ص�ǰ����
+	    // Update and return current power
 	    this.currentPower = totalPower;
 	    return totalPower;
 	}
 	
 	
 	/**
-	 * ���ڵ���ģ�ͺ������Ⱦ���������з�����Զ����������
-	 * @param net ��������ģ��
+	 * Compute generator-to-section sensitivities from the network model and sensitivity matrix
+	 * @param net network model
 	 * @param generatorMap 
-	 * @param sen �����ȶ�ά���� [�����ĸ��][֧·]
+	 * @param sen sensitivity matrix [generator bus][branch]
 	 */
 	public void calculate(AclfNetwork net, Map<String, AclfGen> generatorMap, DMatrixSparseCSC sen) {
 	    if (net == null || sen == null) {
-	        throw new IllegalArgumentException("����ģ�ͺ����������鲻��Ϊ��");
+	        throw new IllegalArgumentException("Network model and sensitivity matrix must not be null");
 	    }
 	    
-	    // �������з����
+	    // Iterate over all generators
 	    for (Map.Entry<String, AclfGen> entry : generatorMap.entrySet()) {
 	        String generatorId = entry.getKey();
 	        AclfGen generator = entry.getValue();
 	        BaseAclfBus<?, ?> parentBus = generator.getParentBus();
 	        
 	        if (parentBus == null) {
-	            continue; // ����û��ĸ�ߵķ����
+	            continue; // skip generators without a parent bus
 	        }
 	        
-	        // �ռ������������֧·��������
+	        // Collect generator-to-branch sensitivities for section branches
 	        Map<String, Double> branchSensitivities = new HashMap<>();
 	        
 	        for (String branchId : this.branchIds) {
 	            AclfBranch branch = net.getBranch(branchId);
 	            if (branch == null) {
-	                continue; // ���������ڵ�֧·
+	                continue; // skip branches not in the network
 	            }
 	            
 	            try {
-	                // �������������л�ȡ����
+	                // Read sensitivity from the sparse matrix
 	                int busIndex = parentBus.getSortNumber();
 	                int branchIndex = branch.getSortNumber();
 
-					// ���������Χ
+					// Check matrix bounds
 
 					double sensitivity = sen.get(busIndex, branchIndex);
 					branchSensitivities.put(branchId, sensitivity);
 
 	            } catch (Exception e) {
-	                // �������ܵ�ת���쳣
+	                // Handle possible conversion errors
 	                branchSensitivities.put(branchId, 0.0);
 	            }
 	        }
 	        
-	        // ���㷢����Զ����������
+	        // Compute generator-to-section sensitivity
 			double sectionSensitivity = calculateGeneratorToSectionSensitivity(branchSensitivities);
 			if (Math.abs(sectionSensitivity) > 0.001) {
 				this.generatorSensitivities.put(generatorId, sectionSensitivity);
@@ -354,20 +355,20 @@ public class PowerSystemSection {
 	    }
 	}
     
-    // ==================== Builderģʽ����ѡ�� ====================
+    // ==================== Builder (optional) ====================
     
     /**
-     * Builder�࣬���ڹ���PowerSystemSection����
+     * Builder for constructing PowerSystemSection instances
      */
     public static class Builder {
     	private String sectionName;
         private List<String> branchIds = new ArrayList<>();
         private Map<String, Double> branchCoefficients = new HashMap<>();
         private Map<String, Double> generatorSensitivities = new HashMap<>();
-        // ����
+        // Upper limit
         private double upper = Double.POSITIVE_INFINITY;
         
-        // ����
+        // Upper limit
         private double lower = Double.NEGATIVE_INFINITY;
         public Builder addBranch(String branchId, double coefficient) {
             branchIds.add(branchId);
@@ -407,7 +408,7 @@ public class PowerSystemSection {
         
     }
     
-    // ==================== ��дObject���� ====================
+    // ==================== Object overrides ====================
     
     @Override
     public String toString() {

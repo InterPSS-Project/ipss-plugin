@@ -29,7 +29,7 @@ import org.interpss.plugin.optadj.algo.util.AclfNetSensSparseHelper;
 
 * @author  Donghao.F 
 
-* @date 2026��1��6�� ����11:22:49 
+* @date 2026 Jan 6 11:22:49 
 
 * 
 
@@ -38,17 +38,17 @@ public class SectionOptimizer {
 	private AclfNetwork net;
 	private List<PowerSystemSection> sections;
 	private Map<String,Integer> generatorIndexMap;
-	// ����ӳ�䣺��� -> ID
+	// Reverse mapping: index -> ID
 	private List<String> generatorIndexToId;
 
 	Map<String, AclfGen> generatorMap;
 	
 	Predicate<AclfGen> genPre = gen -> true;
 	/**
-	 * ���캯��
+	 * Constructor
 	 * 
-	 * @param network  ��������ģ��
-	 * @param sections �����б�
+	 * @param network network model
+	 * @param sections section list
 	 */
 	public SectionOptimizer(AclfNetwork network, List<PowerSystemSection> sections) {
 		this.net = network;
@@ -56,9 +56,9 @@ public class SectionOptimizer {
 	}
 
 	/**
-	 * ����GenStateOptimizer
+	 * Run GenStateOptimizer
 	 * 
-	 * @return ���������Լ���Ͷ���Լ�����Ż���
+	 * @return optimized generator and section constraint adjustments
 	 */
 	public Map<String, Double> optmize() {
 		
@@ -68,13 +68,13 @@ public class SectionOptimizer {
 		
 		
 
-		Set<String> busSet = new HashSet<>(); // ʹ��Set�Զ�ȥ��
+		Set<String> busSet = new HashSet<>(); // use Set for automatic deduplication
 
 		generatorMap.forEach((k, gen) -> {
-			// ֻ�ռ� genNameSet �а����ķ����
+			// collect only generators included in genNameSet
 			AclfBus bus = (AclfBus) gen.getParentBus();
 			if (bus != null) {
-				busSet.add(bus.getId()); // �Զ�ȥ���ռ��ڵ�
+				busSet.add(bus.getId()); // collect bus IDs with deduplication
 			}
 		});
 
@@ -88,23 +88,23 @@ public class SectionOptimizer {
 		this.sections.forEach(sec -> {
 			sec.calculate(net,generatorMap, sen);
 		});
-	    // 1. �����Ż���
+	    // 1. Create optimizer
 	    GenStateOptimizer optimizer = new GenStateOptimizer();
 	    
-	    // 2. ���������ӳ���
-	    buildGeneratorIndexMap(); // ����˫��ӳ��
+	    // 2. Build generator index map
+	    buildGeneratorIndexMap(); // build bidirectional mapping
 	    
-	    // 3. ����Լ������
+	    // 3. Build constraints
 	    buildGeneratorConstraints(optimizer);
 	    buildSectionConstraints(optimizer);
-	    // 4. ִ���Ż�����
+	    // 4. Run optimization
 	    if (!optimizer.optimize()) {
-	        throw new RuntimeException("�Ż������ʧ��");
+	        throw new RuntimeException("Optimization solve failed");
 	    }
 	    System.out.println("isAllControl:" + optimizer.isAllControl());
-//	    System.out.println("==================== ����������Ȳ�ֵ�Ա� ====================");
+//	    System.out.println("==================== Generator Sensitivity Comparison ====================");
 //	    System.out.printf("%-20s %-12s %-12s %-15s %-15s %-15s\n", 
-//	                      "���������", "��ǰ����", "�����", "��ʵ������", "���������", "��ֵ");
+//	                      "Generator", "Current Power", "Max Power", "True Sensitivity", "False Sensitivity", "Diff");
 //	    System.out.println("--------------------------------------------------------------------------------");
 //
 //	    generatorMap.forEach((k, v) -> {
@@ -120,14 +120,14 @@ public class SectionOptimizer {
 //	                          genName, currentPower, maxPower, trueSen, falseSen, diff);
 //	    });
 //
-//	    System.out.println("==================== �Ա���� ====================");
+//	    System.out.println("==================== Comparison End ====================");
 	    
 	    
-	    // 5. ��ȡ�Ż������ת��ΪMap
+	    // 5. Convert optimization result to a map
 	    Map<String, Double> resultMap = new LinkedHashMap<>();
 	    double[] optimalPoints = optimizer.getCachedDGenP();
 //	    optimizer.printAllDSecP();
-	    // 6. ��������ӳ��ط����ID
+	    // 6. Map index back to generator ID
 		for (int i = 0; i < generatorIndexToId.size(); i++) {
 			String generatorId = generatorIndexToId.get(i);
 			double optimalValue = optimalPoints[i];
@@ -150,14 +150,14 @@ public class SectionOptimizer {
 	        double currentImag = currentGen.getImaginary();
 	        boolean isCurrentlyActive = gen.isActive();
 	        
-	        // ��������������Q/P��
+	        // Preserve original Q/P ratio
 	        double ratio = (Math.abs(currentReal) > EPSILON) ? currentImag / currentReal : 0.0;
 	        
-	        // ���й�
+	        // Active power
 	        double newReal = isCurrentlyActive ? currentReal + v : v;
 	        boolean isShutdown = Math.abs(newReal) <= EPSILON;
 	        
-	        // ���޹�����ԭʼ����������������
+	        // Reactive power follows the original Q/P ratio unless shut down
 	        double newImag = isShutdown ? 0.0 : newReal * ratio;
 	        
 	        gen.setGen(new Complex(newReal, newImag));
@@ -168,16 +168,16 @@ public class SectionOptimizer {
 	}
 
 	/**
-	 * ���������Լ������
+	 * Build generator constraints
 	 */
 	private void buildGeneratorConstraints(GenStateOptimizer optimizer) {
 
-		// ���������еķ����
+		// iterate over all generators in the map
 		for (AclfGen generator : generatorMap.values()) {
 
 			
 				int index = generatorIndexMap.get(generator.getName());
-				// ���û���Լ��
+				// apply active-power limits
 				double p = generator.isActive() ? generator.getGen().getReal() : 0;
 				if (generator.getPGenLimit() != null) {
 					optimizer.adConstraint(new GenConstrainData(p, Relationship.LEQ,
@@ -193,14 +193,14 @@ public class SectionOptimizer {
 	}
 	
 	/**
-	 * ���ɷ�������ӳ���
-	 * @param network ��������ģ��
-	 * @return �����ID����ŵ�ӳ��
+	 * Build generator index map
+	 * @param network network model
+	 * @return generator ID to index map
 	 */
 	private void buildGeneratorIndexMap() {
 		generatorIndexMap = new HashMap<>();
 		generatorIndexToId = new ArrayList<String>();
-		// ����1: ֱ�ӱ���values����¼����
+		// method 1: iterate values directly and record indices
 		int index = 0;
 		for (AclfGen generator : generatorMap.values()) {
 			
@@ -213,7 +213,7 @@ public class SectionOptimizer {
 	}
 
 	/**
-	 * ��������Լ������
+	 * Build section constraints
 	 */
 	private void buildSectionConstraints(GenStateOptimizer optimizer) {
 
@@ -222,10 +222,10 @@ public class SectionOptimizer {
 		for (int i = 0; i < sections.size(); i++) {
 			PowerSystemSection section = sections.get(i);
 
-			// ʹ������Ԥ��ʼ��
+			// pre-initialize sensitivity array
 			double[] senArray = new double[generatorCount];
 
-			// ����������ӳ��
+			// fill array using generator index map
 			section.getGeneratorSensitivities().forEach((genId, sensitivity) -> {
 				Integer idx = generatorIndexMap.get(genId);
 				if (idx != null) {
@@ -233,9 +233,9 @@ public class SectionOptimizer {
 				}
 			});
 
-			// ԭ�߼�������Լ��
+			// original upper/lower section constraints
 
-			// ���Ʒ����෴
+			// signs are opposite for upper and lower bounds
 			optimizer.adConstraint(new SectionConstrainData(section.getCurrentPower(), Relationship.LEQ,
 					section.getUpper(), senArray));
 

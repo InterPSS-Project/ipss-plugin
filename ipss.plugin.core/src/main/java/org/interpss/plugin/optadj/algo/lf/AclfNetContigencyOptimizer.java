@@ -22,7 +22,7 @@ import org.interpss.plugin.optadj.optimizer.bean.SectionConstrainData;
  * 
  * @author Donghao.F
  * 
- * @date 2025��4��17�� ����11:20:49
+ * @date 2025 Apr 17 11:20:49
  * 
  * 
  * 
