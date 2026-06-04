@@ -20,7 +20,7 @@ import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 import org.interpss.plugin.optadj.optimizer.GenStateOptimizer;
 import org.interpss.plugin.optadj.optimizer.bean.GenConstrainData;
 import org.interpss.plugin.optadj.optimizer.bean.SectionConstrainData;
-import org.interpss.plugin.optadj.result.SsaResultOneStateInfo;
+import org.interpss.plugin.optadj.result.SsaResultContainer;
 
 /**
  * 
@@ -35,7 +35,7 @@ public class AclfNetLoadFlowOptimizer {
 
 	final static double SEN_THRESHOLD = 0.02;
 
-	public void optimize(ContingencyAnalysisAlgorithm dclfAlgo, SsaResultOneStateInfo result, double threshold) {
+	public void optimize(ContingencyAnalysisAlgorithm dclfAlgo, SsaResultContainer result, double threshold) {
 		AclfNetwork net = (AclfNetwork) dclfAlgo.getNetwork();
 
 		AclfNetSensHelper helper = new AclfNetSensHelper(net);
@@ -71,7 +71,7 @@ public class AclfNetLoadFlowOptimizer {
 	}
 
 	protected Set<AclfGen> buildControlGenSet(AclfNetwork net, float[][] senMatrix,
-			SsaResultOneStateInfo result) {
+			SsaResultContainer result) {
 		Set<AclfGen> genSet = new LinkedHashSet<AclfGen>();
 		result.getBaseOverLimitInfo().forEach(info -> {
 			processGenSet(net, senMatrix, genSet, info.getOverLimitBranchId());
