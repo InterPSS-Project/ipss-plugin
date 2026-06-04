@@ -4,7 +4,7 @@ package org.interpss.plugin.optadj.result;
 * SSA input parameter info
 */
 public class SsaParamInfo {
-	// SSA analysis type [ BaseNetwork("��������"), NetOutage("���翪��") ]
+	// SSA analysis type [ BaseNetwork("Base Network"), NetOutage("Network Outage") ]
 	private MStateSsaType ssaType;
 	
 	// LODF threshold for N-1 scan calculation
