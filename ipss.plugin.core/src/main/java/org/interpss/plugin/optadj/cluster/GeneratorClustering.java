@@ -3,7 +3,7 @@ package org.interpss.plugin.optadj.cluster;
 
 * @author  Donghao.F 
 
-* @date 2026��4��17�� ����11:02:04 
+* @date 2026 Apr 17 11:02:04 
 
 * 
 
@@ -12,36 +12,36 @@ package org.interpss.plugin.optadj.cluster;
 import java.util.*;
 
 /**
- * ��������๤����
- * �������������ƫ����п��پ���
- * Ҫ��weight��ȫһ�²��ܾ���
+ * Generator clustering utility.
+ * Clusters generators with similar sensitivity profiles for faster optimization.
+ * Generators can be clustered only when their weights are identical.
  */
 public class GeneratorClustering {
     
     private static final double DEFAULT_THRESHOLD = 0.001;
     
     /**
-     * ��������
+     * Clustering result.
      */
     public static class ClusteringResult {
-        public List<GeneratorCluster> clusters;           // �����б�
-        public Map<Integer, Integer> genToClusterMap;     // ԭʼ��������� -> ����ID
-        public int originalGenCount;                      // ԭʼ���������
-        public int clusteredGenCount;                     // ���������
-        public double reductionRate;                      // ������
-        public double threshold;                          // ʹ�õ���ֵ
+        public List<GeneratorCluster> clusters;           // cluster list
+        public Map<Integer, Integer> genToClusterMap;     // original generator index -> cluster ID
+        public int originalGenCount;                      // original generator count
+        public int clusteredGenCount;                     // clustered generator count
+        public double reductionRate;                      // reduction rate
+        public double threshold;                          // threshold used
     }
     
     /**
-     * ����������
+     * Generator cluster.
      */
     public static class GeneratorCluster {
         public int clusterId;
-        public List<Integer> originalIndices;              // ԭʼ����������б�
-        public double[] representativeSensitivity;         // ����������������ȣ���һ����
-        public double weight;                               // ����Ȩ�أ����з����weight����һ�£�
-        public double totalMinCapacity;                    // ����С����
-        public double totalMaxCapacity;                    // ��������
+        public List<Integer> originalIndices;              // original generator index list
+        public double[] representativeSensitivity;         // representative sensitivity (first member)
+        public double weight;                               // cluster weight (all members must match)
+        public double totalMinCapacity;                    // total minimum capacity
+        public double totalMaxCapacity;                    // total maximum capacity
         
         public int size() {
             return originalIndices.size();
@@ -49,7 +49,7 @@ public class GeneratorClustering {
     }
     
     /**
-     * ʹ��Ĭ����ֵ���о���
+     * Cluster using the default threshold.
      */
     public static ClusteringResult cluster(double[][] sensitivities,
                                             double[] minCapacities,
@@ -59,14 +59,14 @@ public class GeneratorClustering {
     }
     
     /**
-     * ʹ��ָ����ֵ���о���
+     * Cluster using the specified threshold.
      * 
-     * @param sensitivities �����Ⱦ��� [���������][��������]
-     * @param minCapacities �������С���� [���������]
-     * @param maxCapacities ����������� [���������]
-     * @param weights �����Ȩ�� [���������]��������ȫһ�²��ܾ��ࣩ
-     * @param threshold ƫ����ֵ����һ������0.001��
-     * @return ������
+     * @param sensitivities sensitivity matrix [generator count][section count]
+     * @param minCapacities minimum capacity per generator [generator count]
+     * @param maxCapacities maximum capacity per generator [generator count]
+     * @param weights generator weights [generator count]; clustering requires identical weights
+     * @param threshold deviation threshold, typically around 0.001
+     * @return clustering result
      */
     public static ClusteringResult cluster(double[][] sensitivities,
                                             double[] minCapacities,
@@ -75,7 +75,7 @@ public class GeneratorClustering {
                                             double threshold) {
         
         if (sensitivities == null || sensitivities.length == 0) {
-            throw new IllegalArgumentException("�����Ⱦ�����Ϊ��");
+            throw new IllegalArgumentException("Sensitivity matrix must not be empty");
         }
         
         int numGens = sensitivities.length;
@@ -105,12 +105,12 @@ public class GeneratorClustering {
             for (int j = i + 1; j < numGens; j++) {
                 if (visited[j]) continue;
                 
-                // ����1��weight������ȫһ��
+                // condition 1: weights must be identical
                 if (Math.abs(w[j] - cluster.weight) > 1e-9) {
                     continue;
                 }
                 
-                // ����2�������ȱ�������
+                // condition 2: sensitivity profiles must be similar
                 if (isSimilar(sensitivities[i], sensitivities[j], threshold)) {
                     cluster.originalIndices.add(j);
                     cluster.totalMinCapacity += mins[j];
@@ -131,8 +131,8 @@ public class GeneratorClustering {
         result.reductionRate = (1 - (double)clusters.size() / numGens) * 100;
         result.threshold = threshold;
         
-        // ��ӡ��Ҫ��Ϣ
-        System.out.printf("���������: %d -> %d (����%.1f%%, ��ֵ=%.4f)%n",
+        // print summary
+        System.out.printf("Generator clustering: %d -> %d (reduced %.1f%%, threshold=%.4f)%n",
             result.originalGenCount, result.clusteredGenCount, 
             result.reductionRate, result.threshold);
         
@@ -140,7 +140,7 @@ public class GeneratorClustering {
     }
     
     /**
-     * �ж����������������Ƿ����ƣ����ƫ���
+     * Check whether two sensitivity profiles are similar (max absolute difference).
      */
     private static boolean isSimilar(double[] sens1, double[] sens2, double threshold) {
         for (int i = 0; i < sens1.length; i++) {
@@ -152,22 +152,22 @@ public class GeneratorClustering {
     }
     
     /**
-     * ��ȡ�����еķ�����б�
+     * Get the generator list in a cluster.
      */
     public static List<Integer> getGeneratorsInCluster(ClusteringResult result, int clusterId) {
         if (clusterId < 0 || clusterId >= result.clusters.size()) {
-            throw new IllegalArgumentException("��Ч�ľ���ID: " + clusterId);
+            throw new IllegalArgumentException("Invalid cluster ID: " + clusterId);
         }
         return new ArrayList<>(result.clusters.get(clusterId).originalIndices);
     }
     
     /**
-     * ��ȡĳ��������ľ���ID
+     * Get the cluster ID for a generator index.
      */
     public static int getClusterId(ClusteringResult result, int generatorIndex) {
         Integer clusterId = result.genToClusterMap.get(generatorIndex);
         if (clusterId == null) {
-            throw new IllegalArgumentException("���������������: " + generatorIndex);
+            throw new IllegalArgumentException("Generator index out of range: " + generatorIndex);
         }
         return clusterId;
     }

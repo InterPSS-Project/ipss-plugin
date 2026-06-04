@@ -76,7 +76,7 @@ public class AclfNetSensSparseHelper {
 		int busSize = busList.size();
 		int branchSize = branchList.size();
 
-		// ���ռ����з���Ԫ��
+		// Collect all non-zero elements first
 		List<Triplet> triplets = new ArrayList<>();
 
 		SenAnalysisAlgorithm dclfAlgo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(aclfNet);
@@ -114,14 +114,14 @@ public class AclfNetSensSparseHelper {
 			}
 		}
 
-		// �ؼ���ʹ�� DMatrixSparseTriplet �ռ�������� COO ��ʽ��
-		// initLength ��������Ϊʵ��Ԫ������������ᵼ��Ƶ�����ݣ������½�4�����ڴ淭��[citation:1]
+		// Use DMatrixSparseTriplet to collect entries in COO format
+		// initLength should match the actual non-zero count; over-allocation causes frequent resizing and memory churn
 		DMatrixSparseTriplet tripletMatrix = new DMatrixSparseTriplet(aclfNet.getNoBus(),aclfNet.getNoBranch(), triplets.size());
 		for (Triplet t : triplets) {
 			tripletMatrix.addItem(t.row, t.col, t.value);
 		}
 
-		// ת��Ϊ CSC ��ʽ�����ں�����ѧ���㣩
+		// Convert to CSC format for subsequent numerical operations
 		DMatrixSparseCSC cscMatrix = DConvertMatrixStruct.convert(tripletMatrix, (DMatrixSparseCSC) null);
 //		triplets.forEach(t->{
 //			System.out.println(t+","+ cscMatrix.get(t.row, t.col));
@@ -129,7 +129,7 @@ public class AclfNetSensSparseHelper {
 		return cscMatrix;
 	}
 	
-	// ������
+	// Triplet holder
 	static class Triplet {
 	    int row, col;
 	    double value;
@@ -153,14 +153,14 @@ public class AclfNetSensSparseHelper {
 	}
 	
 	/**
-	 * ����ڵ�֮���ת���迹ϡ����󣨱���sortNumber��Ϊ������
+	 * Calculate sparse transfer impedance between buses (indexed by sortNumber)
 	 * 
-	 * @param busSet Դ�ڵ�ID���ϣ�ע������Ľڵ㣩
-	 * @param targetBusSet Ŀ��ڵ�ID���ϣ�������ѹ�Ľڵ㣩
-	 * @return CSC��ʽϡ�����������ΪԴ�ڵ�sortNumber��������ΪĿ��ڵ�sortNumber
+	 * @param busSet source bus ID set (injection buses)
+	 * @param targetBusSet target bus ID set (buses whose voltage is observed)
+	 * @return CSC sparse matrix with row = source bus sortNumber and column = target bus sortNumber
 	 */
 	public DMatrixSparseCSC calculateTransferImpedanceSparse(Set<String> busSet, Set<String> targetBusSet) {
-		// 1. ��ȡԴ�ڵ��б���Ŀ��ڵ��б�
+		// 1. Get source and target bus lists
 	    List<AclfBus> sourceBuses = aclfNet.getBusList().stream()
 	            .filter(bus -> busSet.contains(bus.getId()))
 	            .collect(Collectors.toList());
@@ -169,44 +169,44 @@ public class AclfNetSensSparseHelper {
 	            .filter(bus -> targetBusSet.contains(bus.getId()))
 	            .collect(Collectors.toList());
 	    
-	    // 2. �洢��Ԫ�� (row, col, value)
+	    // 2. Store non-zero triplets (row, col, value)
 	    List<Triplet> triplets = new ArrayList<>();
-	 // ��ÿ��Դ�ڵ㣬ע�뵥λ���������һ�����緽��
+	 // For each source bus, inject unit current and solve one network equation
         ISparseEqnComplex eqn = aclfNet.formYMatrix();
-	    // 3. ����ת���迹
+	    // 3. Compute transfer impedance
 	    for (AclfBus sourceBus : sourceBuses) {
 	        int sourceSortNum = sourceBus.getSortNumber();
 	        
 	       
 	        
-	        // ��Դ�ڵ�ע�뵥λ������ֱ��ʹ��sortNumber��Ϊ������
+	        // Inject unit current at the source bus using sortNumber as the index
 	        
 	        
-	        // ��ȡ��Ŀ��ڵ�ĵ�ѹ����Ϊת���迹��
+	        // Use voltage difference at the target bus as transfer impedance
 	        for (AclfBus targetBus : targetBuses) {
 	        	int targetSortNum = targetBus.getSortNumber();
-	        	eqn.setB2Zero(); // �����������
+	        	eqn.setB2Zero(); // reset RHS vector
 	            
 	            eqn.setBi(new Complex(1.0, 0.0), sourceSortNum);
 		        eqn.setBi(new Complex(-1.0, 0.0), targetSortNum);
 		        try {
-		            eqn.solveEqn(); // ���ڵ��ѹ
+		            eqn.solveEqn(); // solve bus voltages
 		        } catch (IpssNumericException e) {
 		            e.printStackTrace();
 		            continue;
 		        }
 	            
 		        Complex c = eqn.getX(sourceSortNum).subtract(eqn.getX(targetSortNum));
-	            double value = c.getReal();// ȡ��ֵ
+	            double value = c.getReal();// take real part
 	            
-	            // ֻ�洢����ֵ����ѡ��
+	            // store only non-zero values
 	            if (Math.abs(value) > 1e-6) {
 	                triplets.add(new Triplet(sourceSortNum, targetSortNum, value));
 	            }
 	        }
 	    }
 	    
-	    // 4. ����ϡ���������=�ܽڵ���������=�ܽڵ�����
+	    // 4. Build sparse matrix with dimensions = total bus count
 	    int totalBusCount = aclfNet.getNoBus();
 	    DMatrixSparseTriplet tripletMatrix = new DMatrixSparseTriplet(
 	        totalBusCount, totalBusCount, triplets.size()
@@ -216,7 +216,7 @@ public class AclfNetSensSparseHelper {
 	        tripletMatrix.addItem(t.row, t.col, t.value);
 	    }
 	    
-	    // ת��Ϊ CSC ��ʽ�����ں�����ѧ���㣩
+	    // Convert to CSC format for subsequent numerical operations
 	    DMatrixSparseCSC cscMatrix = DConvertMatrixStruct.convert(tripletMatrix, (DMatrixSparseCSC) null);
 	    
 	    return cscMatrix;
