@@ -118,10 +118,10 @@ public class AclfNetLoadFlowOptimizer {
 		Map<String, GenAdjustResult> results = new HashMap<>();
 		double baseMva = dclfAlgo.getNetwork().getBaseMva();
 		for (int i = 0; i < genMap.size(); i++) {
-			if (Math.abs(opt.getPoint()[i]) > GEN_DISPATCH_THRESHOLD) {
+			double dP = opt.getDGenP(i);
+			if (Math.abs(dP) > GEN_DISPATCH_THRESHOLD) {
 				AclfGen gen = genMap.get(i);
 				DclfAlgoGen dclfGen = dclfAlgo.getDclfAlgoBus(gen.getParentBus().getId()).getGen(gen.getName()).get();
-				double dP = opt.getPoint()[i];
 				results.put(gen.getName(), new GenAdjustResult(dclfGen.getGenP()*baseMva, dP, gen.getPGenLimit()));
 				dclfGen.setAdjust(dP / 100);
 				//System.out.println(gen.getName() + ", dP:" + dP + ", genP:" + dclfGen.getGenP() + ", genLimit: " + gen.getPGenLimit());
