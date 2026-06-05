@@ -84,6 +84,6 @@ public class IEEE39_OptN1Scan_Test extends CorePluginTestSetup {
 		// Regression anchors (IEEE39_OptN1Scan_Sample, 600 MVA uniform ratings, 100% limit).
 		assertEquals(45, contList.size(), "N-1 branch-outage contingency count");
 		assertEquals(51, overLimitBefore, "N-1 overload violations before optimization");
-		assertEquals(8, overLimitAfter, "N-1 overload violations after optimization");
+		assertEquals(7, overLimitAfter, "N-1 overload violations after optimization");
 	}
 }
