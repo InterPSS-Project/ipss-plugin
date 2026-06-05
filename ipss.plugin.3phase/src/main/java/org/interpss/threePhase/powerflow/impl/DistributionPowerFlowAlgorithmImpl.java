@@ -117,11 +117,16 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				&& Double.isFinite(value.getImaginary());
 	}
 
-	private Complex3x1 phaseTransformerFromSideCurrentVoltageDrop(DStab3PBranch branch, Complex3x1 fromSideCurrent) {
-		Complex3x1 current = currentOrZero(fromSideCurrent);
+	private Complex3x1 turnRatioTransformerCurrentVoltageDrop(DStab3PBranch branch, Complex3x1 current) {
+		double[] fromRatios = transformerFromTurnRatios(branch);
+		double[] toRatios = transformerToTurnRatios(branch);
+		return turnRatioTransformerCurrentVoltageDrop(branch, current, fromRatios, toRatios);
+	}
+
+	private Complex3x1 turnRatioTransformerCurrentVoltageDrop(DStab3PBranch branch, Complex3x1 branchCurrent,
+			double[] fromRatios, double[] toRatios) {
+		Complex3x1 current = currentOrZero(branchCurrent);
 		Complex3x3 zabc = branch.getZabc();
-		double[] fromRatios = branch.getFromTurnRatioABC();
-		double[] toRatios = branch.getToTurnRatioABC();
 		Complex3x1 voltageDrop = new Complex3x1();
 		voltageDrop.a_0 = zabc.aa.multiply(fromRatios[0] * toRatios[0]).multiply(current.a_0);
 		voltageDrop.b_1 = zabc.bb.multiply(fromRatios[1] * toRatios[1]).multiply(current.b_1);
@@ -129,6 +134,43 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		return voltageDrop;
 	}
 
+	private Complex3x3 turnRatioFromBusVabc2ToBusVabcMatrix(DStab3PBranch branch) {
+		return ratioMatrix(transformerToTurnRatios(branch), transformerFromTurnRatios(branch));
+	}
+
+	private Complex3x3 turnRatioToBusVabc2FromBusVabcMatrix(DStab3PBranch branch) {
+		return ratioMatrix(transformerFromTurnRatios(branch), transformerToTurnRatios(branch));
+	}
+
+	private Complex3x3 ratioMatrix(double[] numerator, double[] denominator) {
+		Complex3x3 matrix = new Complex3x3();
+		matrix.aa = new Complex(numerator[0] / denominator[0], 0.0);
+		matrix.bb = new Complex(numerator[1] / denominator[1], 0.0);
+		matrix.cc = new Complex(numerator[2] / denominator[2], 0.0);
+		return matrix;
+	}
+
+	private double[] transformerFromTurnRatios(DStab3PBranch branch) {
+		if(branch.hasPhaseTurnRatio()) {
+			return branch.getFromTurnRatioABC();
+		}
+		return new double[] {branch.getFromTurnRatio(), branch.getFromTurnRatio(), branch.getFromTurnRatio()};
+	}
+
+	private double[] transformerToTurnRatios(DStab3PBranch branch) {
+		if(branch.hasPhaseTurnRatio()) {
+			return branch.getToTurnRatioABC();
+		}
+		return new double[] {branch.getToTurnRatio(), branch.getToTurnRatio(), branch.getToTurnRatio()};
+	}
+
+	private boolean usesRegulatorTurnRatioFbsModel(DStab3PBranch branch) {
+		return branch.isXfr()
+				&& isRegulatorBranch(branch)
+				&& (branch.hasPhaseTurnRatio()
+						|| Math.abs(branch.getFromTurnRatio() - 1.0) > 1.0E-10
+						|| Math.abs(branch.getToTurnRatio() - 1.0) > 1.0E-10);
+	}
 
 	@Override
 	public boolean orderDistributionBuses(boolean radialOnly) {
@@ -658,6 +700,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				 b.setIntFlag(0);
 			}
 
+			saveBusVoltages();
+
 			//-----------------------------------------------------------------------
 			//Step-1 backward sweep step
 			//-----------------------------------------------------------------------
@@ -787,9 +831,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 							// transformer
 							else if (upStreamBranch.isXfr()){
 								Static3PXformer xfr3p = upStreamBranch.to3PXformer();
-								if(upStreamBranch.hasPhaseTurnRatio()) {
-									vabc = upStreamBranch.getFromBusVabc2ToBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).subtract(
-											phaseTransformerFromSideCurrentVoltageDrop(upStreamBranch, upStreamBranch.getCurrentAbcAtFromSide()));
+								if(usesRegulatorTurnRatioFbsModel(upStreamBranch)) {
+									vabc = turnRatioFromBusVabc2ToBusVabcMatrix(upStreamBranch).multiply(bus3P.get3PhaseVotlages()).subtract(
+											turnRatioTransformerCurrentVoltageDrop(upStreamBranch, upStreamBranch.getCurrentAbcAtFromSide()));
 									iabc = upStreamBranch.getYttabc().multiply(vabc).add(
 											upStreamBranch.getYtfabc().multiply(bus3P.get3PhaseVotlages()));
 								}
@@ -843,9 +887,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 							else if (upStreamBranch.isXfr()){
 								Static3PXformer xfr3p = upStreamBranch.to3PXformer();
 
-								if(upStreamBranch.hasPhaseTurnRatio()) {
-									vabc =	upStreamBranch.getToBusVabc2FromBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).add(
-											upStreamBranch.getToBusIabc2FromBusVabcMatrix().multiply(upStreamBranch.getCurrentAbcAtToSide()));
+								if(usesRegulatorTurnRatioFbsModel(upStreamBranch)) {
+									vabc =	turnRatioToBusVabc2FromBusVabcMatrix(upStreamBranch).multiply(bus3P.get3PhaseVotlages()).add(
+											turnRatioTransformerCurrentVoltageDrop(upStreamBranch, upStreamBranch.getCurrentAbcAtToSide()));
 								}
 								else {
 									vabc =	xfr3p.getLVBusVabc2HVBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).add(
@@ -854,7 +898,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 	                            //calculate the current injection at the upstream end
 
-								if(upStreamBranch.hasPhaseTurnRatio()) {
+								if(usesRegulatorTurnRatioFbsModel(upStreamBranch)) {
 									iabc = upStreamBranch.getYffabc().multiply(vabc).add(
 											upStreamBranch.getYftabc().multiply(bus3P.get3PhaseVotlages()));
 								}
@@ -891,40 +935,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 
 			//-----------------------------------------------------------------------
-			//Step-2 check convergence.
-			//-----------------------------------------------------------------------
-
-			// compare the voltage results of the last two steps
-
-
-			double mis = 0;
-			this.pfFlag =true;
-			for(BaseAclfBus bus: distNet.getBusList()){
-				if(bus.isActive()){
-					IBus3Phase bus3P = threePhaseBus(bus);
-					if(i>=1){
-						mis=bus3P.get3PhaseVotlages().subtract(busVoltTable.get(bus.getId())).absMax();
-						if(mis>this.getTolerance()){
-							this.pfFlag = false;
-						}
-					}
-					busVoltTable.put(bus.getId(), bus3P.get3PhaseVotlages());
-				 }
-			}
-
-			// power flow is converged, break the outer iteration and return
-			if(i>0 && this.pfFlag) {
-				System.out.println("\n\nDistribution power flow converged, iterations = "+i+"\n");
-
-
-				calcSwingBusGenPower();
-
-				break;
-			}
-
-
-			//-----------------------------------------------------------------------
-			//Step-3 :forward sweep step
+			//Step-2 :forward sweep step
 			//-----------------------------------------------------------------------
 
 			Hashtable<String, Integer> regulatorUpdatedPhaseMask = new Hashtable<>();
@@ -943,6 +954,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 							DStab3PBranch bra3Phase = sweepBranch(bra);
 
 							BaseAclfBus downStreamBus = (BaseAclfBus) bra.getOppositeBus(bus);
+							if(bus.getSortNumber() >= downStreamBus.getSortNumber()) {
+								continue;
+							}
 
 							int branchPhaseMask = branchPhaseMask(bra3Phase);
 							int downStreamRegulatorUpdatedPhaseMask =
@@ -963,9 +977,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 									}
 									else if (bra3Phase.isXfr()){
 										Static3PXformer xfr3p = bra3Phase.to3PXformer();
-										if(bra3Phase.hasPhaseTurnRatio()) {
-											vabc =  bra3Phase.getFromBusVabc2ToBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).subtract(
-													bra3Phase.getToBusIabc2ToBusVabcMatrix().multiply(currentOrZero(bra3Phase.getCurrentAbcAtToSide())));
+										if(usesRegulatorTurnRatioFbsModel(bra3Phase)) {
+											vabc =  turnRatioFromBusVabc2ToBusVabcMatrix(bra3Phase).multiply(bus3P.get3PhaseVotlages()).subtract(
+													turnRatioTransformerCurrentVoltageDrop(bra3Phase, bra3Phase.getCurrentAbcAtToSide()));
 										}
 										else {
 											vabc =  xfr3p.getHVBusVabc2LVBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).subtract(
@@ -992,9 +1006,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 									else if (bra3Phase.isXfr()){
 										Static3PXformer xfr3p = bra3Phase.to3PXformer();
 
-										if(bra3Phase.hasPhaseTurnRatio()) {
-											vabc =  bra3Phase.getToBusVabc2FromBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).add(
-													bra3Phase.getToBusIabc2FromBusVabcMatrix().multiply(currentOrZero(bra3Phase.getCurrentAbcAtFromSide())));
+										if(usesRegulatorTurnRatioFbsModel(bra3Phase)) {
+											vabc =  turnRatioToBusVabc2FromBusVabcMatrix(bra3Phase).multiply(bus3P.get3PhaseVotlages()).add(
+													turnRatioTransformerCurrentVoltageDrop(bra3Phase, bra3Phase.getCurrentAbcAtFromSide()));
 										}
 										else {
 											vabc =  xfr3p.getHVBusVabc2LVBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).add(
@@ -1022,6 +1036,27 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 				}
 
+			}
+
+			//-----------------------------------------------------------------------
+			//Step-3 check convergence after voltage propagation.
+			//-----------------------------------------------------------------------
+
+			this.pfFlag = true;
+			for(BaseAclfBus bus: distNet.getBusList()){
+				if(bus.isActive() && i >= 1){
+					IBus3Phase bus3P = threePhaseBus(bus);
+					double mis = bus3P.get3PhaseVotlages().subtract(busVoltTable.get(bus.getId())).absMax();
+					if(mis > this.getTolerance()){
+						this.pfFlag = false;
+					}
+				 }
+			}
+
+			if(i > 0 && this.pfFlag) {
+				System.out.println("\n\nDistribution power flow converged, iterations = "+i+"\n");
+				calcSwingBusGenPower();
+				break;
 			}
 
 
@@ -1078,9 +1113,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 			if(busIsFromSide) {
 				branch.setCurrentAbcAtFromSide(branchCurrentAtBus);
-				if(branch.hasPhaseTurnRatio()) {
-					upstreamVoltage = branch.getFromBusVabc2ToBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).subtract(
-							phaseTransformerFromSideCurrentVoltageDrop(branch, branchCurrentAtBus));
+				if(usesRegulatorTurnRatioFbsModel(branch)) {
+					upstreamVoltage = turnRatioFromBusVabc2ToBusVabcMatrix(branch).multiply(bus3P.get3PhaseVotlages()).subtract(
+							turnRatioTransformerCurrentVoltageDrop(branch, branchCurrentAtBus));
 				}
 				else {
 					Static3PXformer xfr3p = branch.to3PXformer();
@@ -1093,9 +1128,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			}
 			else {
 				branch.setCurrentAbcAtToSide(branchCurrentAtBus);
-				if(branch.hasPhaseTurnRatio()) {
-					upstreamVoltage = branch.getToBusVabc2FromBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).add(
-							branch.getToBusIabc2FromBusVabcMatrix().multiply(branchCurrentAtBus));
+				if(usesRegulatorTurnRatioFbsModel(branch)) {
+					upstreamVoltage = turnRatioToBusVabc2FromBusVabcMatrix(branch).multiply(bus3P.get3PhaseVotlages()).add(
+							turnRatioTransformerCurrentVoltageDrop(branch, branchCurrentAtBus));
 				}
 				else {
 					Static3PXformer xfr3p = branch.to3PXformer();
