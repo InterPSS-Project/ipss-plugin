@@ -33,6 +33,7 @@ import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.BusGroundCode;
+import com.interpss.core.acsc.PhaseCode;
 import com.interpss.core.acsc.XFormerConnectCode;
 import com.interpss.core.funcImpl.AclfNetHelper;
 import com.interpss.core.net.Branch;
@@ -97,6 +98,35 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			return (DStab3PBranch) branch;
 		}
 		throw new UnsupportedOperationException("Forward/backward sweep requires DStab3PBranch branch operations: " + branch.getId());
+	}
+
+	private Complex3x1 currentOrZero(Complex3x1 current) {
+		return current != null ? current : new Complex3x1();
+	}
+
+	private Complex3x1 finiteCurrentOrZero(Complex3x1 current) {
+		if(current == null || !isFinite(current.a_0) || !isFinite(current.b_1) || !isFinite(current.c_2)) {
+			return new Complex3x1();
+		}
+		return current;
+	}
+
+	private boolean isFinite(Complex value) {
+		return value != null
+				&& Double.isFinite(value.getReal())
+				&& Double.isFinite(value.getImaginary());
+	}
+
+	private Complex3x1 phaseTransformerFromSideCurrentVoltageDrop(DStab3PBranch branch, Complex3x1 fromSideCurrent) {
+		Complex3x1 current = currentOrZero(fromSideCurrent);
+		Complex3x3 zabc = branch.getZabc();
+		double[] fromRatios = branch.getFromTurnRatioABC();
+		double[] toRatios = branch.getToTurnRatioABC();
+		Complex3x1 voltageDrop = new Complex3x1();
+		voltageDrop.a_0 = zabc.aa.multiply(fromRatios[0] * toRatios[0]).multiply(current.a_0);
+		voltageDrop.b_1 = zabc.bb.multiply(fromRatios[1] * toRatios[1]).multiply(current.b_1);
+		voltageDrop.c_2 = zabc.cc.multiply(fromRatios[2] * toRatios[2]).multiply(current.c_2);
+		return voltageDrop;
 	}
 
 
@@ -434,6 +464,13 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			}
 		}
 
+		if(!this.pfFlag) {
+			log.warn("Fixed-point power-flow did not converge within " + this.maxIteration
+					+ " iterations; falling back to forward/backward sweep");
+			this.fixedPointFallbackUsed = true;
+			return FBSPowerflow();
+		}
+
 		return this.pfFlag;
 	}
 
@@ -625,6 +662,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			//Step-1 backward sweep step
 			//-----------------------------------------------------------------------
 
+			Hashtable<String, Integer> backwardUpdatedPhaseMask = new Hashtable<>();
+
 			for(int sortNum =distNet.getNoBus()-1;sortNum>0;sortNum--){
 				BaseAclfBus bus = (BaseAclfBus) distNet.getBus(sortNum);
 				if(bus==null){
@@ -654,6 +693,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 					String upStreamBranchId = "";
 					String upStreamBusId="";
 					int unvisitedBranchNum = 0;
+					List<DStab3PBranch> unvisitedBranches = new ArrayList<>();
 					for (Branch bra: bus.getBranchIterable()){
 						DStab3PBranch bra3P = sweepBranch(bra);
 						// all visited branches are on the downstream side, and there should be only one upstream branch
@@ -662,17 +702,18 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 							if(bra.getFromBus().getId().equals(bus.getId())){
 
 
-							   sumOfBranchCurrents= sumOfBranchCurrents.add(bra3P.getCurrentAbcAtFromSide());
+							   sumOfBranchCurrents= sumOfBranchCurrents.add(currentOrZero(bra3P.getCurrentAbcAtFromSide()));
 							}
 							else{
 
 
-								sumOfBranchCurrents= sumOfBranchCurrents.add(bra3P.getCurrentAbcAtToSide().multiply(-1.0));
+								sumOfBranchCurrents= sumOfBranchCurrents.add(currentOrZero(bra3P.getCurrentAbcAtToSide()).multiply(-1.0));
 							}
 						}
 						else if(bra.isActive() && bra.getIntFlag() ==0){
 
 							 upStreamBranchId = bra.getId();
+							 unvisitedBranches.add(bra3P);
 							 unvisitedBranchNum +=1;
 							 bra.setIntFlag(1);
 
@@ -694,6 +735,11 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 						// consider the existing bus current injection into the network from generators, loads, shunt capacitors, etc.
 						Complex3x1 busSelfEquivCurInj3Ph =bus3P.calc3PhEquivCurInj();
+
+						if(processParallelPartialRegulatorBackward(bus, bus3P, busSelfEquivCurInj3Ph,
+								sumOfBranchCurrents, unvisitedBranches, backwardUpdatedPhaseMask)) {
+							continue;
+						}
 
 						// add the branch current flows to obtain the current injections
 						DStab3PBranch upStreamBranch = sweepBranch(distNet.getBranch(upStreamBranchId));
@@ -741,20 +787,35 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 							// transformer
 							else if (upStreamBranch.isXfr()){
 								Static3PXformer xfr3p = upStreamBranch.to3PXformer();
-								vabc = xfr3p.getLVBusVabc2HVBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).add(
-										xfr3p.getLVBusIabc2HVBusVabcMatrix().multiply(upStreamBranch.getCurrentAbcAtFromSide().multiply(-1)));
+								if(upStreamBranch.hasPhaseTurnRatio()) {
+									vabc = upStreamBranch.getFromBusVabc2ToBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).subtract(
+											phaseTransformerFromSideCurrentVoltageDrop(upStreamBranch, upStreamBranch.getCurrentAbcAtFromSide()));
+									iabc = upStreamBranch.getYttabc().multiply(vabc).add(
+											upStreamBranch.getYtfabc().multiply(bus3P.get3PhaseVotlages()));
+								}
+								else {
+									vabc = xfr3p.getLVBusVabc2HVBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).add(
+											xfr3p.getLVBusIabc2HVBusVabcMatrix().multiply(upStreamBranch.getCurrentAbcAtFromSide().multiply(-1)));
 
-								iabc= xfr3p.getLVBusVabc2HVBusIabcMatrix().multiply(bus3P.get3PhaseVotlages()).add(
-										xfr3p.getLVBusIabc2HVBusIabcMatrix().multiply(upStreamBranch.getCurrentAbcAtFromSide().multiply(-1)));
+									iabc= xfr3p.getLVBusVabc2HVBusIabcMatrix().multiply(bus3P.get3PhaseVotlages()).add(
+											xfr3p.getLVBusIabc2HVBusIabcMatrix().multiply(upStreamBranch.getCurrentAbcAtFromSide().multiply(-1)));
+								}
 
 							}
 
 
 							upStreamBranch.setCurrentAbcAtToSide(iabc.multiply(-1.0));
 
-							if(upStreamBus.getIntFlag()==0 && !upStreamBus.isSwing()){
-							   threePhaseBus(upStreamBus).set3PhaseVotlages(vabc);
-							   upStreamBus.setIntFlag(1);
+							if(!upStreamBus.isSwing()){
+								if(isPartialPhaseLine(upStreamBranch)) {
+									mergeUpstreamPartialBranchVoltage(upStreamBus, upStreamBranch, vabc,
+											backwardUpdatedPhaseMask);
+								}
+								else if(upStreamBus.getIntFlag()==0 || isPartiallyUpdated(upStreamBus, backwardUpdatedPhaseMask)){
+								   threePhaseBus(upStreamBus).set3PhaseVotlages(vabc);
+								   upStreamBus.setIntFlag(1);
+								   backwardUpdatedPhaseMask.put(upStreamBus.getId(), 0b111);
+								}
 							}
 						}
 						else{
@@ -782,14 +843,25 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 							else if (upStreamBranch.isXfr()){
 								Static3PXformer xfr3p = upStreamBranch.to3PXformer();
 
-								vabc =	xfr3p.getLVBusVabc2HVBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).add(
-										xfr3p.getLVBusIabc2HVBusVabcMatrix().multiply(upStreamBranch.getCurrentAbcAtToSide()));
+								if(upStreamBranch.hasPhaseTurnRatio()) {
+									vabc =	upStreamBranch.getToBusVabc2FromBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).add(
+											upStreamBranch.getToBusIabc2FromBusVabcMatrix().multiply(upStreamBranch.getCurrentAbcAtToSide()));
+								}
+								else {
+									vabc =	xfr3p.getLVBusVabc2HVBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).add(
+											xfr3p.getLVBusIabc2HVBusVabcMatrix().multiply(upStreamBranch.getCurrentAbcAtToSide()));
+								}
 
 	                            //calculate the current injection at the upstream end
 
-
-								iabc =  xfr3p.getLVBusVabc2HVBusIabcMatrix().multiply(bus3P.get3PhaseVotlages()).add(
-										xfr3p.getLVBusIabc2HVBusIabcMatrix().multiply(upStreamBranch.getCurrentAbcAtToSide()));
+								if(upStreamBranch.hasPhaseTurnRatio()) {
+									iabc = upStreamBranch.getYffabc().multiply(vabc).add(
+											upStreamBranch.getYftabc().multiply(bus3P.get3PhaseVotlages()));
+								}
+								else {
+									iabc =  xfr3p.getLVBusVabc2HVBusIabcMatrix().multiply(bus3P.get3PhaseVotlages()).add(
+											xfr3p.getLVBusIabc2HVBusIabcMatrix().multiply(upStreamBranch.getCurrentAbcAtToSide()));
+								}
 
 
 							}
@@ -798,9 +870,16 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 							upStreamBranch.setCurrentAbcAtFromSide(iabc.multiply(1.0));
 
 
-							if(upStreamBus.getIntFlag()==0 && !upStreamBus.isSwing()){
+							if(!upStreamBus.isSwing()){
+								if(isPartialPhaseLine(upStreamBranch)) {
+									mergeUpstreamPartialBranchVoltage(upStreamBus, upStreamBranch, vabc,
+											backwardUpdatedPhaseMask);
+								}
+								else if(upStreamBus.getIntFlag()==0 || isPartiallyUpdated(upStreamBus, backwardUpdatedPhaseMask)){
 								   threePhaseBus(upStreamBus).set3PhaseVotlages(vabc);
 								   upStreamBus.setIntFlag(1);
+								   backwardUpdatedPhaseMask.put(upStreamBus.getId(), 0b111);
+								}
 							}
 
 						}
@@ -848,6 +927,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			//Step-3 :forward sweep step
 			//-----------------------------------------------------------------------
 
+			Hashtable<String, Integer> regulatorUpdatedPhaseMask = new Hashtable<>();
+
 			for(int sortNum2 = 0;sortNum2<distNet.getNoBus();sortNum2++){
 
 				BaseAclfBus bus = (BaseAclfBus) distNet.getBus(sortNum2);
@@ -863,7 +944,12 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 							BaseAclfBus downStreamBus = (BaseAclfBus) bra.getOppositeBus(bus);
 
-							if(downStreamBus.getIntFlag()<2){
+							int branchPhaseMask = branchPhaseMask(bra3Phase);
+							int downStreamRegulatorUpdatedPhaseMask =
+									regulatorUpdatedPhaseMask.getOrDefault(downStreamBus.getId(), 0);
+							if(downStreamBus.getIntFlag()<2
+									|| (isPartialPhaseRegulatorTransformer(bra3Phase)
+											&& (downStreamRegulatorUpdatedPhaseMask & branchPhaseMask) != branchPhaseMask)){
 								Complex3x1 vabc = null;
 								if(bra.isFromBus(bus)){
 
@@ -873,12 +959,18 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 									if(bra3Phase.isLine()){
 
 									   vabc =  bra3Phase.getFromBusVabc2ToBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).subtract(
-											bra3Phase.getToBusIabc2ToBusVabcMatrix().multiply(bra3Phase.getCurrentAbcAtToSide()));
+											bra3Phase.getToBusIabc2ToBusVabcMatrix().multiply(currentOrZero(bra3Phase.getCurrentAbcAtToSide())));
 									}
 									else if (bra3Phase.isXfr()){
 										Static3PXformer xfr3p = bra3Phase.to3PXformer();
-										vabc =  xfr3p.getHVBusVabc2LVBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).subtract(
-												xfr3p.getLVBusIabc2LVBusVabcMatrix().multiply(bra3Phase.getCurrentAbcAtToSide()));
+										if(bra3Phase.hasPhaseTurnRatio()) {
+											vabc =  bra3Phase.getFromBusVabc2ToBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).subtract(
+													bra3Phase.getToBusIabc2ToBusVabcMatrix().multiply(currentOrZero(bra3Phase.getCurrentAbcAtToSide())));
+										}
+										else {
+											vabc =  xfr3p.getHVBusVabc2LVBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).subtract(
+													xfr3p.getLVBusIabc2LVBusVabcMatrix().multiply(currentOrZero(bra3Phase.getCurrentAbcAtToSide())));
+										}
 									}
 
 								}
@@ -895,18 +987,34 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 									if(bra3Phase.isLine()){
 										vabc =  bra3Phase.getFromBusVabc2ToBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).add(
-												bra3Phase.getToBusIabc2ToBusVabcMatrix().multiply(bra3Phase.getCurrentAbcAtFromSide()));
+												bra3Phase.getToBusIabc2ToBusVabcMatrix().multiply(currentOrZero(bra3Phase.getCurrentAbcAtFromSide())));
 									}
 									else if (bra3Phase.isXfr()){
 										Static3PXformer xfr3p = bra3Phase.to3PXformer();
 
-										vabc =  xfr3p.getHVBusVabc2LVBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).add(
-												xfr3p.getLVBusIabc2LVBusVabcMatrix().multiply(bra3Phase.getCurrentAbcAtFromSide()));
+										if(bra3Phase.hasPhaseTurnRatio()) {
+											vabc =  bra3Phase.getToBusVabc2FromBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).add(
+													bra3Phase.getToBusIabc2FromBusVabcMatrix().multiply(currentOrZero(bra3Phase.getCurrentAbcAtFromSide())));
+										}
+										else {
+											vabc =  xfr3p.getHVBusVabc2LVBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).add(
+													xfr3p.getLVBusIabc2LVBusVabcMatrix().multiply(currentOrZero(bra3Phase.getCurrentAbcAtFromSide())));
+										}
 									}
 								}
 
-								threePhaseBus(downStreamBus).set3PhaseVotlages(vabc);
-								downStreamBus.setIntFlag(2);
+								if(isPartialPhaseRegulatorTransformer(bra3Phase)) {
+									IBus3Phase downStreamBus3P = threePhaseBus(downStreamBus);
+									downStreamBus3P.set3PhaseVotlages(mergeBranchPhaseVoltage(
+											downStreamBus3P.get3PhaseVotlages(), vabc, branchPhaseMask,
+											downStreamRegulatorUpdatedPhaseMask != 0));
+									regulatorUpdatedPhaseMask.put(downStreamBus.getId(),
+											downStreamRegulatorUpdatedPhaseMask | branchPhaseMask);
+								}
+								else {
+									threePhaseBus(downStreamBus).set3PhaseVotlages(vabc);
+									downStreamBus.setIntFlag(2);
+								}
 							}
 						}
 					}
@@ -924,6 +1032,194 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		return this.pfFlag;
 
 
+	}
+
+	private boolean isPartialPhaseRegulatorTransformer(DStab3PBranch branch) {
+		return branch.isXfr()
+				&& branch.getPhaseCode() != null
+				&& branch.getPhaseCode() != PhaseCode.ABC
+				&& isRegulatorBranch(branch);
+	}
+
+	private boolean processParallelPartialRegulatorBackward(BaseAclfBus bus, IBus3Phase bus3P,
+			Complex3x1 busSelfEquivCurInj3Ph, Complex3x1 sumOfBranchCurrents,
+			List<DStab3PBranch> unvisitedBranches, Hashtable<String, Integer> backwardUpdatedPhaseMask) {
+		if(unvisitedBranches.size() <= 1) {
+			return false;
+		}
+
+		DStab3PBranch firstBranch = unvisitedBranches.get(0);
+		if(!isPartialPhaseRegulatorTransformer(firstBranch)) {
+			return false;
+		}
+
+		boolean busIsFromSide = firstBranch.getFromBus().getId().equals(bus.getId());
+		BaseAclfBus upStreamBus = (BaseAclfBus) (busIsFromSide ? firstBranch.getToBus() : firstBranch.getFromBus());
+		for(DStab3PBranch branch : unvisitedBranches) {
+			if(!isPartialPhaseRegulatorTransformer(branch)) {
+				return false;
+			}
+			boolean sameSide = busIsFromSide == branch.getFromBus().getId().equals(bus.getId());
+			BaseAclfBus branchUpstreamBus = (BaseAclfBus) (busIsFromSide ? branch.getToBus() : branch.getFromBus());
+			if(!sameSide || !branchUpstreamBus.getId().equals(upStreamBus.getId())) {
+				return false;
+			}
+		}
+
+		Complex3x1 totalCurrentAtBus = busIsFromSide
+				? busSelfEquivCurInj3Ph.subtract(sumOfBranchCurrents)
+				: sumOfBranchCurrents.subtract(busSelfEquivCurInj3Ph);
+
+		for(DStab3PBranch branch : unvisitedBranches) {
+			int phaseMask = branchPhaseMask(branch);
+			Complex3x1 branchCurrentAtBus = phaseMaskedValue(totalCurrentAtBus, phaseMask);
+			Complex3x1 upstreamVoltage;
+			Complex3x1 upstreamCurrent;
+
+			if(busIsFromSide) {
+				branch.setCurrentAbcAtFromSide(branchCurrentAtBus);
+				if(branch.hasPhaseTurnRatio()) {
+					upstreamVoltage = branch.getFromBusVabc2ToBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).subtract(
+							phaseTransformerFromSideCurrentVoltageDrop(branch, branchCurrentAtBus));
+				}
+				else {
+					Static3PXformer xfr3p = branch.to3PXformer();
+					upstreamVoltage = xfr3p.getHVBusVabc2LVBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).subtract(
+							xfr3p.getLVBusIabc2LVBusVabcMatrix().multiply(branchCurrentAtBus));
+				}
+				upstreamCurrent = branch.getYttabc().multiply(upstreamVoltage).add(
+						branch.getYtfabc().multiply(bus3P.get3PhaseVotlages()));
+				branch.setCurrentAbcAtToSide(phaseMaskedValue(upstreamCurrent.multiply(-1.0), phaseMask));
+			}
+			else {
+				branch.setCurrentAbcAtToSide(branchCurrentAtBus);
+				if(branch.hasPhaseTurnRatio()) {
+					upstreamVoltage = branch.getToBusVabc2FromBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).add(
+							branch.getToBusIabc2FromBusVabcMatrix().multiply(branchCurrentAtBus));
+				}
+				else {
+					Static3PXformer xfr3p = branch.to3PXformer();
+					upstreamVoltage = xfr3p.getLVBusVabc2HVBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).add(
+							xfr3p.getLVBusIabc2HVBusVabcMatrix().multiply(branchCurrentAtBus));
+				}
+				upstreamCurrent = branch.getYffabc().multiply(upstreamVoltage).add(
+						branch.getYftabc().multiply(bus3P.get3PhaseVotlages()));
+				branch.setCurrentAbcAtFromSide(phaseMaskedValue(upstreamCurrent, phaseMask));
+			}
+
+			if(!upStreamBus.isSwing()) {
+				IBus3Phase upStreamBus3P = threePhaseBus(upStreamBus);
+				upStreamBus3P.set3PhaseVotlages(mergeBranchPhaseVoltage(
+						upStreamBus3P.get3PhaseVotlages(), upstreamVoltage, phaseMask,
+						upStreamBus3P.get3PhaseVotlages() != null));
+				markBackwardUpdatedPhases(upStreamBus, backwardUpdatedPhaseMask, phaseMask);
+			}
+		}
+
+		return true;
+	}
+
+	private boolean isPartialPhaseLine(DStab3PBranch branch) {
+		return branch.isLine()
+				&& branch.getPhaseCode() != null
+				&& branch.getPhaseCode() != PhaseCode.ABC;
+	}
+
+	private void mergeUpstreamPartialBranchVoltage(BaseAclfBus upStreamBus, DStab3PBranch upStreamBranch,
+			Complex3x1 branchVoltage, Hashtable<String, Integer> backwardUpdatedPhaseMask) {
+		IBus3Phase upStreamBus3P = threePhaseBus(upStreamBus);
+		int phaseMask = branchPhaseMask(upStreamBranch);
+		upStreamBus3P.set3PhaseVotlages(mergeBranchPhaseVoltage(
+				upStreamBus3P.get3PhaseVotlages(),
+				branchVoltage,
+				phaseMask,
+				upStreamBus3P.get3PhaseVotlages() != null));
+		markBackwardUpdatedPhases(upStreamBus, backwardUpdatedPhaseMask, phaseMask);
+	}
+
+	private boolean isPartiallyUpdated(BaseAclfBus bus, Hashtable<String, Integer> backwardUpdatedPhaseMask) {
+		int phaseMask = backwardUpdatedPhaseMask.getOrDefault(bus.getId(), 0);
+		return phaseMask != 0 && phaseMask != 0b111;
+	}
+
+	private void markBackwardUpdatedPhases(BaseAclfBus bus,
+			Hashtable<String, Integer> backwardUpdatedPhaseMask, int phaseMask) {
+		int updatedPhaseMask = backwardUpdatedPhaseMask.getOrDefault(bus.getId(), 0) | phaseMask;
+		backwardUpdatedPhaseMask.put(bus.getId(), updatedPhaseMask);
+		if(updatedPhaseMask == 0b111) {
+			bus.setIntFlag(1);
+		}
+	}
+
+	private boolean isRegulatorBranch(DStab3PBranch branch) {
+		String id = branch.getId() == null ? "" : branch.getId().toLowerCase();
+		String name = branch.getName() == null ? "" : branch.getName().toLowerCase();
+		String fromBusId = branch.getFromBus() == null ? "" : branch.getFromBus().getId().toLowerCase();
+		String toBusId = branch.getToBus() == null ? "" : branch.getToBus().getId().toLowerCase();
+		return id.contains("reg")
+				|| name.contains("reg")
+				|| fromBusId.endsWith("r")
+				|| toBusId.endsWith("r");
+	}
+
+	private int branchPhaseMask(DStab3PBranch branch) {
+		PhaseCode phaseCode = branch.getPhaseCode();
+		String phase = phaseCode == null ? "ABC" : phaseCode.toString();
+		if("ABC".equals(phase)) {
+			return 0b111;
+		}
+		if("A".equals(phase)) {
+			return 0b001;
+		}
+		if("B".equals(phase)) {
+			return 0b010;
+		}
+		if("C".equals(phase)) {
+			return 0b100;
+		}
+		if("AB".equals(phase)) {
+			return 0b011;
+		}
+		if("AC".equals(phase)) {
+			return 0b101;
+		}
+		if("BC".equals(phase)) {
+			return 0b110;
+		}
+		return 0b111;
+	}
+
+	private Complex3x1 phaseMaskedValue(Complex3x1 value, int phaseMask) {
+		Complex3x1 masked = new Complex3x1();
+		if((phaseMask & 0b001) != 0) {
+			masked.a_0 = value.a_0;
+		}
+		if((phaseMask & 0b010) != 0) {
+			masked.b_1 = value.b_1;
+		}
+		if((phaseMask & 0b100) != 0) {
+			masked.c_2 = value.c_2;
+		}
+		return masked;
+	}
+
+	private Complex3x1 mergeBranchPhaseVoltage(Complex3x1 existingVoltage, Complex3x1 branchVoltage,
+			int branchPhaseMask, boolean mergeWithExisting) {
+		Complex zero = new Complex(0.0, 0.0);
+		Complex3x1 merged = new Complex3x1(zero, zero, zero);
+		if(mergeWithExisting && existingVoltage != null) {
+			merged = Complex3x1.valueOf(existingVoltage);
+		}
+		if((branchPhaseMask & 0b001) != 0) {
+			merged.a_0 = branchVoltage.a_0;
+		}
+		if((branchPhaseMask & 0b010) != 0) {
+			merged.b_1 = branchVoltage.b_1;
+		}
+		if((branchPhaseMask & 0b100) != 0) {
+			merged.c_2 = branchVoltage.c_2;
+		}
+		return merged;
 	}
 
 	public void calcSwingBusGenPower() {
@@ -945,12 +1241,12 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 							if(bra.getFromBus().getId().equals(bus.getId())){
 
 
-							   sumOfBranchCurrents= sumOfBranchCurrents.add(bra3P.getCurrentAbcAtFromSide());
+							   sumOfBranchCurrents= sumOfBranchCurrents.add(finiteCurrentOrZero(bra3P.getCurrentAbcAtFromSide()));
 							}
 							else{
 
 
-								sumOfBranchCurrents= sumOfBranchCurrents.add(bra3P.getCurrentAbcAtToSide().multiply(-1.0));
+								sumOfBranchCurrents= sumOfBranchCurrents.add(finiteCurrentOrZero(bra3P.getCurrentAbcAtToSide()).multiply(-1.0));
 							}
 					}
 
