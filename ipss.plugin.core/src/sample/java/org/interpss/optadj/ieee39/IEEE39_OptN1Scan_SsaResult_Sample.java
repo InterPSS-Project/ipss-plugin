@@ -18,8 +18,8 @@ import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 
 import org.interpss.plugin.optadj.algo.lf.AclfNetContigencyOptimizer;
 import org.interpss.plugin.optadj.algo.lf.AclfNetLoadFlowOptimizer.GenAdjustResult;
+import org.interpss.plugin.optadj.algo.util.AclfNetSsaHelper;
 import org.interpss.plugin.optadj.result.SsaResultContainer;
-import org.interpss.plugin.optadj.result.SsaBranchOverLimitInfo;
 
 public class IEEE39_OptN1Scan_SsaResult_Sample {
 
@@ -32,9 +32,6 @@ public class IEEE39_OptN1Scan_SsaResult_Sample {
 				CacheType.SenNotCached, true);
 		dclfAlgo.calculateDclf();
 
-		SsaResultContainer ssaResult = new SsaResultContainer();
-		ssaResult.setCaLoadingThreshold(100.0);
-				
 		// define a contingency list
 		List<DclfBranchOutage> contList = new ArrayList<>();
 		net.getBranchList().stream()
@@ -51,31 +48,8 @@ public class IEEE39_OptN1Scan_SsaResult_Sample {
 				contList.add(cont);
 			});
 	
-		AtomicCounter cnt = new AtomicCounter();
-		// perform N-1 outage scan
-		contList.parallelStream()
-			.forEach(contingency -> {
-				ContingencyAnalysisMonad.of(dclfAlgo, contingency)
-					.ca(resultRec -> {
-						//System.out.println(resultRec.aclfBranch.getId() + 
-						//		", " + resultRec.contingency.getId() +
-						//		" postContFlow: " + resultRec.getPostFlowMW() +
-						//		" loading: " + resultRec.calLoadingPercent() + "%");
-						double loading = resultRec.calLoadingPercent();
-						if (loading > 100.0) {
-							cnt.increment();
-							// add the over limit branch CA result rec to the SSA result container
-							DclfOutageBranch outageBranch = ((DclfBranchOutage)resultRec.contingency).getOutageEquip();
-							ssaResult.getCaOverLimitInfo().add(new SsaBranchOverLimitInfo(
-									outageBranch.getBranch().getId(), resultRec.aclfBranch.getId(), 
-									resultRec.aclfBranch.getRatingMvaB(), resultRec.preFlowMW, resultRec.getPostFlowMW()));
-							System.out.println(String.format("OverLimit Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f",
-									resultRec.aclfBranch.getId(), outageBranch.getBranch().getId(),
-									resultRec.getPostFlowMW(), resultRec.aclfBranch.getRatingMvaB(), loading));
-						}
-					});
-			});
-		System.out.println("Total number of branches over limit before OptAdj: " + cnt.getCount());
+		SsaResultContainer ssaResult = new AclfNetSsaHelper(dclfAlgo).contingencyScan(contList, 100.0);
+		System.out.println("Total number of branches over limit before OptAdj: " + ssaResult.getCaOverLimitInfo().size());
 		
 		Map<String, GenAdjustResult> results = new AclfNetContigencyOptimizer().optimize(dclfAlgo, ssaResult, 100.0);
 		results.forEach((genName, result) -> {
