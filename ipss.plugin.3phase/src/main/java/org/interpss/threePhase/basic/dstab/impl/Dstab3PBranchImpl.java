@@ -591,9 +591,9 @@ public class Dstab3PBranchImpl extends DStabBranchImpl implements DStab3PBranch 
 		if(this.phaseXfrIabc2VabcMatrix == null) {
 			Complex3x3 zabc = getZabc();
 			this.phaseXfrIabc2VabcMatrix = new Complex3x3();
-			this.phaseXfrIabc2VabcMatrix.aa = zabc.aa.divide(this.toTurnRatioABC[0]);
-			this.phaseXfrIabc2VabcMatrix.bb = zabc.bb.divide(this.toTurnRatioABC[1]);
-			this.phaseXfrIabc2VabcMatrix.cc = zabc.cc.divide(this.toTurnRatioABC[2]);
+			this.phaseXfrIabc2VabcMatrix.aa = zabc.aa.multiply(this.fromTurnRatioABC[0] * this.toTurnRatioABC[0]);
+			this.phaseXfrIabc2VabcMatrix.bb = zabc.bb.multiply(this.fromTurnRatioABC[1] * this.toTurnRatioABC[1]);
+			this.phaseXfrIabc2VabcMatrix.cc = zabc.cc.multiply(this.fromTurnRatioABC[2] * this.toTurnRatioABC[2]);
 		}
 		return this.phaseXfrIabc2VabcMatrix;
 	}
