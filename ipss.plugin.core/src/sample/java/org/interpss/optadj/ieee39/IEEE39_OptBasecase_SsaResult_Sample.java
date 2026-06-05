@@ -7,8 +7,10 @@ import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 
 import org.interpss.plugin.optadj.algo.lf.AclfNetLoadFlowOptimizer;
+import org.interpss.plugin.optadj.result.SsaBranchOverLimitInfo;
+import org.interpss.plugin.optadj.result.SsaResultContainer;
 
-public class IEEE39_OptBasecase_Sample {
+public class IEEE39_OptBasecase_SsaResult_Sample {
 
 	public static void main(String args[]) throws Exception {
 	    // Load network
@@ -18,6 +20,9 @@ public class IEEE39_OptBasecase_Sample {
 		ContingencyAnalysisAlgorithm dclfAlgo = DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm(net,
 				CacheType.SenNotCached, true);
 		dclfAlgo.calculateDclf();
+
+		SsaResultContainer ssaResult = new SsaResultContainer();
+		ssaResult.setBaseLoadingThreshold(100.0);
 				
 		// check the branch loading
 		double baseMVA = net.getBaseMva();
@@ -25,7 +30,8 @@ public class IEEE39_OptBasecase_Sample {
 			.forEach(dclfBranch -> {
 				double flowMw = dclfBranch.getDclfFlow() * baseMVA;
 				double loading = Math.abs(flowMw / dclfBranch.getBranch().getRatingMvaA())*100;
-				if (loading > 100) {
+				if (loading > ssaResult.getBaseLoadingThreshold()) {
+					ssaResult.getBaseOverLimitInfo().add(new SsaBranchOverLimitInfo(dclfBranch.getId(), dclfBranch.getBranch().getRatingMvaA(), flowMw));
 					System.out.printf("Over Limit Branch: %s  %.2f rating: %.2f loading: %.2f%n",
 							dclfBranch.getId(),
 							flowMw,
@@ -45,7 +51,7 @@ public class IEEE39_OptBasecase_Sample {
 			.forEach(dclfBranch -> {
 				double flowMw = dclfBranch.getDclfFlow() * baseMVA;
 				double loading = Math.abs(flowMw / dclfBranch.getBranch().getRatingMva1())*100;
-				if (loading > 100) {
+				if (loading > ssaResult.getBaseLoadingThreshold()) {
 					System.out.printf("Over Limit Branch: %s  %.2f rating: %.2f loading: %.2f%n",
 							dclfBranch.getId(),
 							flowMw,

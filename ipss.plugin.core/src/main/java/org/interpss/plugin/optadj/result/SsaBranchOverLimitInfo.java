@@ -10,52 +10,46 @@ import org.interpss.datatype.base.BaseJSONBean;
 */
 
 public class SsaBranchOverLimitInfo extends BaseJSONBean{
+	private String overLimitBranchId;
 	
-	String outageBranchId;
+	private double limitMW;
 	
-	String overLimitBranchId;
-	
-	double lodf;
-	
-	double limitKA;
-	
-	double baseFlowKA;
-	
-	double calFlowKA;
-	
-	double overFlowMW;
+	private double baseFlowMW;
 
-	double baseFlowMW;
+	private String outageBranchId;
 
-	double calFlowMW;
+	private double shftedFlowMW;
+
+	private double loadingPercent;
 	
-	String fromGeoArea;
-	
-	String toGeoArea;
-	
-	
-	public SsaBranchOverLimitInfo(String overLimitBranchId, double lodf, double limit, double baseFlow, double overFlow) {
+	/**
+	 * Constructor for base case over limit info
+	 * 
+	 * @param overLimitBranchId
+	 * @param limitMw
+	 * @param baseFlowMw
+	 */
+	public SsaBranchOverLimitInfo(String overLimitBranchId, double limitMw, double baseFlowMw) {
 		super();
 		this.overLimitBranchId = overLimitBranchId;
-		this.lodf = lodf;
-		this.limitKA = limit;
-		this.baseFlowKA = baseFlow;
-		this.overFlowMW = overFlow;
+		this.limitMW = limitMw;
+		this.baseFlowMW = baseFlowMw;
+		this.loadingPercent = 100.0 * Math.abs(baseFlowMW) / limitMW;
 	}
-
-	public SsaBranchOverLimitInfo(String outageBranchId, String overLimitBranchId, double lodf, double limitKA,
-			double baseFlowKA, double calFlowKA, double calFlowMW, double overFlowMW) {
-		this(overLimitBranchId, lodf, limitKA, baseFlowKA, overFlowMW);
+	/**
+	 * Constructor for contingency over limit info
+	 * 
+	 * @param outageBranchId
+	 * @param overLimitBranchId
+	 * @param limitMw
+	 * @param baseFlowMw
+	 * @param shftedFlowMw
+	 */
+	public SsaBranchOverLimitInfo(String outageBranchId, String overLimitBranchId, double limitMw, double baseFlowMw, double shftedFlowMw) {
+		this(overLimitBranchId, limitMw, baseFlowMw);
 		this.outageBranchId = outageBranchId;
-		this.calFlowKA = calFlowKA;
-		this.calFlowMW = calFlowMW;
-	}
-	
-	public SsaBranchOverLimitInfo(String overLimitBranchId, double lpdf, double limitKA, double baseFlowKA, double overFlowMW,
-			String fromGeoArea, String toGeoArea) {
-		this(overLimitBranchId, lpdf, limitKA, baseFlowKA, overFlowMW);
-		this.fromGeoArea = fromGeoArea;
-		this.toGeoArea = toGeoArea;
+		this.shftedFlowMW = shftedFlowMw;
+		this.loadingPercent = 100.0 * Math.abs(baseFlowMw + shftedFlowMW) / limitMW;
 	}
 
 	public String getOutageBranchId() {
@@ -66,51 +60,15 @@ public class SsaBranchOverLimitInfo extends BaseJSONBean{
 		return overLimitBranchId;
 	}
 
-	public double getLodf() {
-		return lodf;
-	}
-
-	public double getLimitKA() {
-		return limitKA;
-	}
-
-	public double getBaseFlowKA() {
-		return baseFlowKA;
-	}
-
-	public double getCalFlowKA() {
-		return calFlowKA;
-	}
-
-	public double getOverFlowMW() {
-		return overFlowMW;
-	}
-
 	public double getBaseFlowMW() {
 		return baseFlowMW;
+	}	
+
+	public double getLimitMW() {
+		return limitMW;
 	}
 
-	public String getFromGeoArea() {
-		return fromGeoArea;
+	public double getShftedFlowMW() {
+		return shftedFlowMW;
 	}
-
-	public String getToGeoArea() {
-		return toGeoArea;
-	}
-
-	public void setFromGeoArea(String fromGeoArea) {
-		this.fromGeoArea = fromGeoArea;
-	}
-
-	public void setToGeoArea(String toGeoArea) {
-		this.toGeoArea = toGeoArea;
-	}
-
-	public double getCalFlowMW() {
-		return calFlowMW;
-	}
-
-
-	
-	
 }
