@@ -2,6 +2,7 @@ package org.interpss.optadj.ieee39;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.interpss.numeric.datatype.AtomicCounter;
 
@@ -16,6 +17,7 @@ import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 
 import org.interpss.plugin.optadj.algo.lf.AclfNetContigencyOptimizer;
+import org.interpss.plugin.optadj.algo.lf.AclfNetLoadFlowOptimizer.GenAdjustResult;
 import org.interpss.plugin.optadj.result.SsaResultContainer;
 import org.interpss.plugin.optadj.result.SsaBranchOverLimitInfo;
 
@@ -75,7 +77,10 @@ public class IEEE39_OptN1Scan_SsaResult_Sample {
 			});
 		System.out.println("Total number of branches over limit before OptAdj: " + cnt.getCount());
 		
-		new AclfNetContigencyOptimizer().optimize(dclfAlgo, ssaResult, 100.0);
+		Map<String, GenAdjustResult> results = new AclfNetContigencyOptimizer().optimize(dclfAlgo, ssaResult, 100.0);
+		results.forEach((genName, result) -> {
+			System.out.println(genName + ", dP:" + result.dP() + ", genP:" + result.genP() + ", genLimit: " + result.genLimit());
+		});
 
 		dclfAlgo.calculateDclf();
 	
