@@ -11,7 +11,8 @@ import org.ojalgo.optimisation.ExpressionsBasedModel;
 import org.ojalgo.optimisation.Optimisation;
 import org.ojalgo.optimisation.Variable;
 import org.ojalgo.type.context.NumberContext;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.interpss.plugin.optadj.cluster.GeneratorClustering;
 import org.interpss.plugin.optadj.optimizer.bean.BaseConstrainData;
 import org.interpss.plugin.optadj.optimizer.bean.GenConstrainData;
@@ -28,6 +29,7 @@ import org.interpss.plugin.optadj.optimizer.bean.SectionConstrainData;
  * 
  */
 public class GenStateOptimizer {
+    private static Logger log = LoggerFactory.getLogger(GenStateOptimizer.class);
 
     List<GenConstrainData> genConstrainDataList = new ArrayList<GenConstrainData>();
     List<SectionConstrainData> secConstrainDataList = new ArrayList<SectionConstrainData>();
@@ -314,17 +316,19 @@ public class GenStateOptimizer {
         int originalEffectiveCount = (int) mergeResult.originalToMergedIndex.values().stream()
             .filter(v -> v >= 0).count();
         
-        System.out.println("========== Section Merge Optimization Stats ==========");
-        System.out.println("Original section count: " + secConstrainDataList.size());
-        System.out.println("Effective sections (after filtering): " + originalEffectiveCount);
-        System.out.println("Merged section count: " + effectiveSecCount);
+        StringBuffer stats = new StringBuffer("\n");
+        stats.append("========== Section Merge Optimization Stats ==========\n");
+        stats.append("Original section count: ").append(secConstrainDataList.size()).append('\n');
+        stats.append("Effective sections (after filtering): ").append(originalEffectiveCount).append('\n');
+        stats.append("Merged section count: ").append(effectiveSecCount).append('\n');
         if (originalEffectiveCount > 0) {
-            System.out.printf("Section reduction rate: %.1f%%%n", 
-                (1 - (double)effectiveSecCount / originalEffectiveCount) * 100);
+            stats.append(String.format("Section reduction rate: %.1f%%%n",
+                (1 - (double) effectiveSecCount / originalEffectiveCount) * 100));
         }
-        System.out.println("Total variables: " + (genSize * 2 + effectiveSecCount + 2));
-        System.out.println("Total constraints: " + (genSize + effectiveSecCount + 1));
-        System.out.println("======================================\n");
+        stats.append("Total variables: ").append(genSize * 2 + effectiveSecCount + 2).append('\n');
+        stats.append("Total constraints: ").append(genSize + effectiveSecCount + 1).append('\n');
+        stats.append("======================================\n");
+        log.info(stats.toString());
     }
 
     private void cacheResults(MergeSectionResult mergeResult) {
