@@ -106,8 +106,10 @@ public class OpenDssParserPowerFlowComparisonTest {
 				+ " FBS="
 				+ phaseMagnitudes(fbsBus.get3PhaseVotlages()));
 		System.out.println(busComparisonSummary("21", fixedPointNet, fbsNet));
-		System.out.println(maxCurrentMismatch(fixedPointNet).summary("IEEE123 fixed-point"));
-		System.out.println(maxCurrentMismatch(fbsNet).summary("IEEE123 FBS"));
+		CurrentMismatch fbsStoredMismatch = maxStoredSweepCurrentMismatch(fbsNet);
+		System.out.println(fbsStoredMismatch.summary("IEEE123 FBS stored-current"));
+		assertTrue(fbsStoredMismatch.maxAbs < 1.0e-5,
+				"Max FBS stored-current mismatch " + fbsStoredMismatch.maxAbs + " at " + fbsStoredMismatch.label);
 	}
 
 	private static ComparisonResult assertMatchesDssPythonReference(String feederFolder, String masterFile, String referenceResource)
@@ -284,6 +286,43 @@ public class OpenDssParserPowerFlowComparisonTest {
 			}
 		}
 		return new CurrentMismatch(maxAbs, label);
+	}
+
+	private static CurrentMismatch maxStoredSweepCurrentMismatch(DStabNetwork3Phase distNet) {
+		double maxAbs = 0.0;
+		String label = "";
+		for(Object busObj : distNet.getBusList()) {
+			DStab3PBus bus = (DStab3PBus) busObj;
+			if(!bus.isActive() || bus.isSwing()) {
+				continue;
+			}
+
+			Complex3x1 branchCurrent = new Complex3x1();
+			for(Branch branchObj : bus.getBranchIterable()) {
+				if(!branchObj.isActive()) {
+					continue;
+				}
+				DStab3PBranch branch = (DStab3PBranch) branchObj;
+				if(branch.getFromBus().getId().equals(bus.getId())) {
+					branchCurrent = branchCurrent.add(currentOrZero(branch.getCurrentAbcAtFromSide()));
+				}
+				else {
+					branchCurrent = branchCurrent.add(currentOrZero(branch.getCurrentAbcAtToSide()).multiply(-1.0));
+				}
+			}
+
+			Complex3x1 residual = branchCurrent.subtract(bus.calc3PhEquivCurInj());
+			double abs = residual.absMax();
+			if(abs > maxAbs) {
+				maxAbs = abs;
+				label = bus.getId();
+			}
+		}
+		return new CurrentMismatch(maxAbs, label);
+	}
+
+	private static Complex3x1 currentOrZero(Complex3x1 current) {
+		return current == null ? new Complex3x1() : current;
 	}
 
 	private static String regulatorPingPongSummary(String branchName, DStabNetwork3Phase fixedPointNet,
