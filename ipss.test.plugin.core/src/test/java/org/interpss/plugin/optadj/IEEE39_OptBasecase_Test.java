@@ -3,12 +3,14 @@ package org.interpss.plugin.optadj;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Map;
+
 import org.interpss.CorePluginTestSetup;
 import org.interpss.plugin.optadj.algo.lf.AclfNetLoadFlowOptimizer;
+import org.interpss.plugin.optadj.algo.lf.AclfNetLoadFlowOptimizer.GenAdjustResult;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.DclfAlgoObjectFactory;
-import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
@@ -21,6 +23,7 @@ import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
  */
 public class IEEE39_OptBasecase_Test extends CorePluginTestSetup {
 	private static final double LOADING_LIMIT_PCT = 100.0;
+	private static final double DISPATCH_TOLERANCE_MW = 0.05;
 
 	private static int countOverLimitBranches(ContingencyAnalysisAlgorithm dclfAlgo) {
 		return countBranchesAboveLoading(dclfAlgo, LOADING_LIMIT_PCT);
@@ -65,7 +68,28 @@ public class IEEE39_OptBasecase_Test extends CorePluginTestSetup {
 		assertTrue(overLimitBefore > 0,
 				"Precondition: IEEE-39 case with 600 MVA ratings should have overloaded branches");
 
-		new AclfNetLoadFlowOptimizer().optimize(dclfAlgo, null, LOADING_LIMIT_PCT);
+		Map<String, GenAdjustResult> adjustResults = new AclfNetLoadFlowOptimizer().optimize(dclfAlgo, null,
+				LOADING_LIMIT_PCT);
+
+		assertTrue(adjustResults.size() >= 6 && adjustResults.size() <= 8,
+				"Multiple generators should receive material dispatch adjustment");
+		adjustResults.values().forEach(result -> assertTrue(Math.abs(result.dP()) > 1.0,
+				"Dispatch above threshold for " + result.genName()));
+		double netDispatchMw = adjustResults.values().stream().mapToDouble(GenAdjustResult::dP).sum();
+		assertEquals(0.0, netDispatchMw, DISPATCH_TOLERANCE_MW, "Net generator dispatch should balance");
+
+		double increaseMw = adjustResults.values().stream().filter(r -> r.dP() > 0.0)
+				.mapToDouble(GenAdjustResult::dP).sum();
+		double decreaseMw = adjustResults.values().stream().filter(r -> r.dP() < 0.0)
+				.mapToDouble(GenAdjustResult::dP).sum();
+
+		// Regression anchors (IEEE39_OptBasecase_Sample): ~362 MW redispatch, split across gens may vary.
+		assertTrue(increaseMw > 350.0 && increaseMw < 375.0, "Total generation increase (~362 MW)");
+		assertTrue(decreaseMw < -350.0 && decreaseMw > -375.0, "Total generation decrease (~-362 MW)");
+		assertTrue(adjustResults.containsKey("Bus30-G1") && adjustResults.get("Bus30-G1").dP() > 200.0,
+				"Bus30-G1 should receive the largest increase");
+		assertTrue(adjustResults.containsKey("Bus38-G1") && adjustResults.get("Bus38-G1").dP() < -200.0,
+				"Bus38-G1 should receive the largest decrease");
 
 		dclfAlgo.calculateDclf(DclfMethod.INC_LOSS);
 
