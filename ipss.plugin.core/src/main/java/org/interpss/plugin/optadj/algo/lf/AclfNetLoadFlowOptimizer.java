@@ -1,8 +1,10 @@
 package org.interpss.plugin.optadj.algo.lf;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -16,6 +18,7 @@ import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
+import com.interpss.core.algo.dclf.adapter.DclfAlgoGen;
 
 import org.interpss.plugin.optadj.optimizer.GenStateOptimizer;
 import org.interpss.plugin.optadj.optimizer.bean.GenConstrainData;
@@ -34,8 +37,10 @@ import org.interpss.plugin.optadj.result.SsaResultContainer;
 public class AclfNetLoadFlowOptimizer {
 
 	final static double SEN_THRESHOLD = 0.02;
+	final static double GEN_DISPATCH_THRESHOLD = 1.0;
 
-	public void optimize(ContingencyAnalysisAlgorithm dclfAlgo, SsaResultContainer result, double threshold) {
+	public Map<String, GenAdjustResult> optimize(ContingencyAnalysisAlgorithm dclfAlgo, SsaResultContainer result,
+			double threshold) {
 		AclfNetwork net = (AclfNetwork) dclfAlgo.getNetwork();
 
 		AclfNetSensHelper helper = new AclfNetSensHelper(net);
@@ -57,7 +62,11 @@ public class AclfNetLoadFlowOptimizer {
 
 		opt.optimize();
 
-		updatedDclfalgo(dclfAlgo, controlGenMap, opt);
+		return updatedDclfAlgo(dclfAlgo, controlGenMap, opt);
+	}
+
+	/** Generator dispatch adjustment applied to the DCLF model (MW and per-unit). */
+	public record GenAdjustResult(String genName, double genP, double dP, LimitType genLimit) {
 	}
 
 	private Map<Integer, AclfGen> arrangeIndex(Set<AclfGen> controlGenSet) {
@@ -99,18 +108,20 @@ public class AclfNetLoadFlowOptimizer {
 		});
 	}
 
-	protected void updatedDclfalgo(ContingencyAnalysisAlgorithm dclfAlgo, Map<Integer, AclfGen> genMap,
+	protected Map<String, GenAdjustResult> updatedDclfAlgo(ContingencyAnalysisAlgorithm dclfAlgo, Map<Integer, AclfGen> genMap,
 			GenStateOptimizer opt) {
+		Map<String, GenAdjustResult> results = new HashMap<>();
 		for (int i = 0; i < genMap.size(); i++) {
-
-			if (Math.abs(opt.getPoint()[i]) > 1) {
+			if (Math.abs(opt.getPoint()[i]) > GEN_DISPATCH_THRESHOLD) {
 				AclfGen gen = genMap.get(i);
-				// TODO output the result
-				System.out.println(gen.getName() + "," + opt.getPoint()[i]);
-				dclfAlgo.getDclfAlgoBus(gen.getParentBus().getId()).getGen(gen.getName()).get()
-						.setAdjust(opt.getPoint()[i] / 100);
+				DclfAlgoGen dclfGen = dclfAlgo.getDclfAlgoBus(gen.getParentBus().getId()).getGen(gen.getName()).get();
+				double dP = opt.getPoint()[i];
+				results.put(gen.getName(), new GenAdjustResult(gen.getName(), dclfGen.getGenP(), dP, gen.getPGenLimit()));
+				dclfGen.setAdjust(dP / 100);
+				System.out.println(gen.getName() + ", dP:" + dP + ", genP:" + dclfGen.getGenP() + ", genLimit: " + gen.getPGenLimit());
 			}
 		}
+		return results;
 	}
 
 	protected void buildSectionConstrain(ContingencyAnalysisAlgorithm dclfAlgo, float[][] senMatrix,
