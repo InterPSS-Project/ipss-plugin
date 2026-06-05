@@ -21,7 +21,17 @@ public class IEEE39_Sample_Data {
 	            bus.getContributeGenList().clear();
 	    });
 		
-	    net.createAclfGenNameLookupTable(true).values().forEach(gen -> gen.setPGenLimit(new LimitType(7, 0)));
+	    net.createAclfGenNameLookupTable(true).values()
+			.forEach(gen -> {
+				if (gen.getName().equals("Bus39-G1")) {
+					gen.setPGenLimit(new LimitType(10, 0));
+				}
+				else if (gen.getName().equals("Bus38-G1")) {
+					gen.setPGenLimit(new LimitType(8.3, 0));
+				}
+				else
+					gen.setPGenLimit(new LimitType(7, 0));
+			});
 
 		// set the branch rating.
 		net.getBranchList().stream() 
