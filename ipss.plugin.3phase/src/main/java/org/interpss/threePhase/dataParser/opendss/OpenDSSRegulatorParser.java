@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 
+import com.interpss.core.acsc.PhaseCode;
+
 public class OpenDSSRegulatorParser {
 
 	private final OpenDSSDataParser dataParser;
@@ -50,11 +52,15 @@ public class OpenDSSRegulatorParser {
 			if (transformer == null) {
 				continue;
 			}
+			double controlledWindingVoltage = control.controlledWindingVoltage;
+			if (transformer.getPhaseCode() == PhaseCode.ABC) {
+				controlledWindingVoltage *= Math.sqrt(3.0);
+			}
 			if (control.winding == 1) {
-				transformer.setFromTurnRatio(control.controlledWindingVoltage);
+				transformer.setFromTurnRatio(controlledWindingVoltage);
 			}
 			else {
-				transformer.setToTurnRatio(control.controlledWindingVoltage);
+				transformer.setToTurnRatio(controlledWindingVoltage);
 			}
 		}
 	}

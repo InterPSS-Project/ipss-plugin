@@ -10,6 +10,7 @@ import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranchCode;
+import com.interpss.core.acsc.PhaseCode;
 
 public class OpenDSSLineParser {
 
@@ -308,6 +309,7 @@ public class OpenDSSLineParser {
 
 
 		line.setBranchCode(AclfBranchCode.LINE);
+		line.setPhaseCode(phaseCode(fromBusPhases));
 		// the format of Zmatrix need to be consistent with the number of phases and the phases in use.
 
 
@@ -328,6 +330,31 @@ public class OpenDSSLineParser {
 
 		return no_error;
 
+	}
+
+	private static PhaseCode phaseCode(String busPhases) {
+		if("1".equals(busPhases)) {
+			return PhaseCode.A;
+		}
+		if("2".equals(busPhases)) {
+			return PhaseCode.B;
+		}
+		if("3".equals(busPhases)) {
+			return PhaseCode.C;
+		}
+		if("1.2".equals(busPhases) || "2.1".equals(busPhases)) {
+			return PhaseCode.AB;
+		}
+		if("1.3".equals(busPhases) || "3.1".equals(busPhases)) {
+			return PhaseCode.AC;
+		}
+		if("2.3".equals(busPhases) || "3.2".equals(busPhases)) {
+			return PhaseCode.BC;
+		}
+		if("1.2.3".equals(busPhases)) {
+			return PhaseCode.ABC;
+		}
+		throw new Error("phase arrangement not support yet : "+busPhases);
 	}
 
 //	private boolean parseLineDataWithLineCode(String lineStr) throws InterpssException{
