@@ -1,7 +1,5 @@
 package org.interpss.optadj.ieee39;
 
-import org.interpss.IpssCorePlugin;
-
 import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
@@ -31,7 +29,7 @@ public class IEEE39_OptBasecase_Sample {
 					System.out.printf("Over Limit Branch: %s  %.2f rating: %.2f loading: %.2f%n",
 							dclfBranch.getId(),
 							flowMw,
-							dclfBranch.getBranch().getRatingMva1(),
+							dclfBranch.getBranch().getRatingMvaA(),
 							loading);
 					}
 			});
