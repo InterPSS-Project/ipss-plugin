@@ -6,7 +6,10 @@ import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 
+import java.util.Map;
+
 import org.interpss.plugin.optadj.algo.lf.AclfNetLoadFlowOptimizer;
+import org.interpss.plugin.optadj.algo.lf.AclfNetLoadFlowOptimizer.GenAdjustResult;
 import org.interpss.plugin.optadj.result.SsaBranchOverLimitInfo;
 import org.interpss.plugin.optadj.result.SsaResultContainer;
 
@@ -41,7 +44,10 @@ public class IEEE39_OptBasecase_SsaResult_Sample {
 			});
 
 		// perform basecase loaing limit optimization	
-		new AclfNetLoadFlowOptimizer().optimize(dclfAlgo, ssaResult, 100.0);
+		Map<String, GenAdjustResult> results = new AclfNetLoadFlowOptimizer().optimize(dclfAlgo, ssaResult, 100.0);
+		results.forEach((genName, result) -> {
+			System.out.println(genName + ", dP:" + result.dP() + ", genP:" + result.genP() + ", genLimit: " + result.genLimit());
+		});
 		
 		// perform DCLF recalculation after optimization
 		dclfAlgo.calculateDclf(DclfMethod.INC_LOSS);	
