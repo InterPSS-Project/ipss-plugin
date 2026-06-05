@@ -2,14 +2,20 @@ package org.interpss.threePhase.dataParser.opendss;
 
 import static com.interpss.core.funcImpl.AcscFunction.acscXfrAptr;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Unit.UnitType;
+import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.acsc.BusGroundCode;
 import com.interpss.core.acsc.PhaseCode;
@@ -19,6 +25,7 @@ import com.interpss.core.acsc.adpter.AcscXformerAdapter;
 public class OpenDSSTransformerParser {
 
     private OpenDSSDataParser dataParser = null;
+	private final Map<String, double[]> transformerTaps = new HashMap<>();
 
 	public OpenDSSTransformerParser(OpenDSSDataParser parser){
 		this.dataParser = parser;
@@ -52,6 +59,7 @@ public class OpenDSSTransformerParser {
 		String fromBusId = "", toBusId = "";
 		String fromConnection="", toConnection = "";
 		boolean fromWyeGrounded = true, toWyeGrounded = true;
+		String phase1 = "";
 
 		String defStr = normalizeInlineRpnDivisions(xfrStr[0].trim().toLowerCase());
 		String wdg1Str = normalizeInlineRpnDivisions(xfrStr[1].trim().toLowerCase());
@@ -82,6 +90,9 @@ public class OpenDSSTransformerParser {
 				TerminalBus terminal = terminalBus(element.substring(4));
 				fromBusId = terminal.busId;
 				fromWyeGrounded = terminal.wyeGrounded;
+				if(terminal.nodes.length>0) {
+					phase1 = terminal.nodes[0];
+				}
 			}
 			else if(element.contains("conn=")){
 				fromConnection = element.substring(5);
@@ -136,6 +147,20 @@ public class OpenDSSTransformerParser {
 		// use the turn ratios to tentatively store the nominalKVs, will convert both to true ratios later.
 		xfrBranch.setFromTurnRatio(nominalKV1*1000.0);
 		xfrBranch.setToTurnRatio(nominalKV2*1000.0);
+		if(phaseNum ==3){
+			xfrBranch.setPhaseCode(PhaseCode.ABC);
+		}
+		else if(phaseNum ==1){
+			if(phase1.equals("1")) {
+				xfrBranch.setPhaseCode(PhaseCode.A);
+			} else if(phase1.equals("2")) {
+				xfrBranch.setPhaseCode(PhaseCode.B);
+			} else if(phase1.equals("3")) {
+				xfrBranch.setPhaseCode(PhaseCode.C);
+			} else{
+				throw new Error("Transformer connection phase currently must be either 1, 2 or 3.  xfr #" +xfrId);
+			}
+		}
 
 //		xfrBranch.getFromAclfBus().setBaseVoltage(normKV1, UnitType.kV);
 //		xfrBranch.getToAclfBus().setBaseVoltage(normKV2, UnitType.kV);
@@ -185,6 +210,121 @@ public class OpenDSSTransformerParser {
 		return no_error;
 	}
 
+	public boolean parseTransformerTapData(String transformerTapStr) {
+		String normalized = transformerTapStr.trim().toLowerCase();
+		Matcher matcher = Pattern.compile("transformer\\.([^\\.\\s]+)\\.taps=\\[([^\\]]+)\\]").matcher(normalized);
+		if(!matcher.find()) {
+			return true;
+		}
+		String transformerName = matcher.group(1);
+		String[] tapTokens = matcher.group(2).trim().split("\\s+");
+		if(tapTokens.length < 2) {
+			return true;
+		}
+		double fromTap = Double.valueOf(tapTokens[0]).doubleValue();
+		double toTap = Double.valueOf(tapTokens[1]).doubleValue();
+		this.transformerTaps.put(transformerName, new double[] {fromTap, toTap});
+		this.transformerTaps.put(this.dataParser.getBusIdPrefix() + transformerName, new double[] {fromTap, toTap});
+		return true;
+	}
+
+	public void mergeParallelSinglePhaseRegulatorBranches() throws InterpssException {
+		Map<String, List<DStab3PBranch>> branchGroups = new HashMap<>();
+		for(AclfBranch branch : new ArrayList<AclfBranch>(this.dataParser.getDistNetwork().getBranchList())) {
+			if(branch.isActive() && branch.isXfr() && branch instanceof DStab3PBranch) {
+				DStab3PBranch branch3P = (DStab3PBranch) branch;
+				if(branch3P.getPhaseCode() != PhaseCode.ABC) {
+					String key = branch.getFromBus().getId() + "->" + branch.getToBus().getId();
+					branchGroups.computeIfAbsent(key, ignored -> new ArrayList<>()).add(branch3P);
+				}
+			}
+		}
+		for(List<DStab3PBranch> group : branchGroups.values()) {
+			mergeCompleteSinglePhaseBank(group);
+		}
+	}
+
+	private void mergeCompleteSinglePhaseBank(List<DStab3PBranch> group) throws InterpssException {
+		if(group.size() != 3) {
+			return;
+		}
+		DStab3PBranch phaseA = branchForPhase(group, PhaseCode.A);
+		DStab3PBranch phaseB = branchForPhase(group, PhaseCode.B);
+		DStab3PBranch phaseC = branchForPhase(group, PhaseCode.C);
+		if(phaseA == null || phaseB == null || phaseC == null) {
+			return;
+		}
+		if(!hasExplicitTap(phaseA) || !hasExplicitTap(phaseB) || !hasExplicitTap(phaseC)) {
+			return;
+		}
+		if(!sameGroundedWyeConnection(phaseA, phaseB) || !sameGroundedWyeConnection(phaseA, phaseC)) {
+			return;
+		}
+
+		String fromBusId = phaseA.getFromBus().getId();
+		String toBusId = phaseA.getToBus().getId();
+		DStab3PBranch merged = ThreePhaseObjectFactory.create3PBranch(fromBusId, toBusId,
+				phaseA.getName() + "_abc", this.dataParser.getDistNetwork());
+		merged.setName(phaseA.getName() + "_abc");
+		merged.setBranchCode(AclfBranchCode.XFORMER);
+		merged.setPhaseCode(PhaseCode.ABC);
+		merged.setFromTurnRatio(phaseA.getFromTurnRatio());
+		merged.setToTurnRatio(phaseA.getToTurnRatio());
+		merged.setFromTurnRatioABC(tappedTurnRatio(phaseA, true), tappedTurnRatio(phaseB, true), tappedTurnRatio(phaseC, true));
+		merged.setToTurnRatioABC(tappedTurnRatio(phaseA, false), tappedTurnRatio(phaseB, false), tappedTurnRatio(phaseC, false));
+		merged.setZabc(diagonalZabc(phaseA, phaseB, phaseC));
+		merged.setXfrRatedKVA(phaseA.getXfrRatedKVA() + phaseB.getXfrRatedKVA() + phaseC.getXfrRatedKVA());
+
+		AcscXformerAdapter sourceGrounding = acscXfrAptr.apply(phaseA);
+		AcscXformerAdapter mergedGrounding = acscXfrAptr.apply(merged);
+		mergedGrounding.setFromGrounding(sourceGrounding.getFromGrounding().getGroundCode(),
+				sourceGrounding.getFromGrounding().getXfrConnectCode(), new Complex(0.0,0.0), UnitType.PU);
+		mergedGrounding.setToGrounding(sourceGrounding.getToGrounding().getGroundCode(),
+				sourceGrounding.getToGrounding().getXfrConnectCode(), new Complex(0.0,0.0), UnitType.PU);
+
+		for(DStab3PBranch branch : group) {
+			branch.setStatus(false);
+		}
+	}
+
+	private DStab3PBranch branchForPhase(List<DStab3PBranch> branches, PhaseCode phaseCode) {
+		for(DStab3PBranch branch : branches) {
+			if(branch.getPhaseCode() == phaseCode) {
+				return branch;
+			}
+		}
+		return null;
+	}
+
+	private boolean sameGroundedWyeConnection(DStab3PBranch reference, DStab3PBranch branch) {
+		AcscXformerAdapter ref = acscXfrAptr.apply(reference);
+		AcscXformerAdapter other = acscXfrAptr.apply(branch);
+		return ref.getFromGrounding().getXfrConnectCode() == XFormerConnectCode.WYE
+				&& ref.getToGrounding().getXfrConnectCode() == XFormerConnectCode.WYE
+				&& other.getFromGrounding().getXfrConnectCode() == XFormerConnectCode.WYE
+				&& other.getToGrounding().getXfrConnectCode() == XFormerConnectCode.WYE
+				&& ref.getFromGrounding().getGroundCode() == other.getFromGrounding().getGroundCode()
+				&& ref.getToGrounding().getGroundCode() == other.getToGrounding().getGroundCode();
+	}
+
+	private Complex3x3 diagonalZabc(DStab3PBranch phaseA, DStab3PBranch phaseB, DStab3PBranch phaseC) {
+		Complex3x3 zabc = new Complex3x3();
+		zabc.aa = phaseA.getAdjustedZ();
+		zabc.bb = phaseB.getAdjustedZ();
+		zabc.cc = phaseC.getAdjustedZ();
+		return zabc;
+	}
+
+	private double tappedTurnRatio(DStab3PBranch branch, boolean fromSide) {
+		double[] taps = this.transformerTaps.get(branch.getName());
+		double tap = taps == null ? 1.0 : taps[fromSide ? 0 : 1];
+		return (fromSide ? branch.getFromTurnRatio() : branch.getToTurnRatio()) * tap;
+	}
+
+	private boolean hasExplicitTap(DStab3PBranch branch) {
+		return this.transformerTaps.containsKey(branch.getName());
+	}
+
 public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssException{
 
 
@@ -209,6 +349,9 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 		String referenceXfrName = "";
 		String phase1 = "", phase2 = "",phase3 = "";
 		boolean fromWyeGrounded = true, toWyeGrounded = true;
+		boolean phaseSpecified = false;
+		boolean xhlSpecified = false;
+		boolean lossSpecified = false;
 
 		String[] xfrStrAry  = normalizeInlineRpnDivisions(xfrStr.trim().toLowerCase()).split("\\s+(?![^\\[]*\\])");
 
@@ -219,12 +362,14 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 			}
 			else if(element.contains("phases=")){
 				phaseNum = Integer.valueOf(element.substring(7));
+				phaseSpecified = true;
 			}
 			else if(element.contains("windings=")){
 				windingNum = Integer.valueOf(element.substring(9));
 			}
 			else if(element.contains("xhl=")){
 				xhl= Double.valueOf(element.substring(4));
+				xhlSpecified = true;
 			}
 
 			else if(element.contains("buses=")){
@@ -299,9 +444,11 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 			}
 			else if(element.contains("%r=")){
 				losspercent1= Double.valueOf(element.substring(3));
+				lossSpecified = true;
 			}
 			else if (element.contains("%loadloss=")){
 				losspercent1= Double.valueOf(element.substring(10));
+				lossSpecified = true;
 			}
 			else if (element.contains("like=")){
 				referenceXfrName= element.substring(5);
@@ -337,15 +484,14 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 		}
 
 		if(likeBranch!=null){
-			if(xhl==0.0){
-				xhl = likeBranch.getAdjustedZ().getImaginary();
-
+			if(!phaseSpecified){
+				phaseNum = phaseCount(likeBranch.getPhaseCode());
 			}
 			if(normKV1==0.0){
-				normKV1 = likeBranch.getFromBus().getBaseVoltage()/1000.0;
+				normKV1 = likeBranch.getFromTurnRatio()/1000.0;
 			}
 			if(normKV2==0.0){
-				normKV2 = likeBranch.getToBus().getBaseVoltage()/1000.0;
+				normKV2 = likeBranch.getToTurnRatio()/1000.0;
 			}
 			if(kva1==0.0){
 				kva1 = likeBranch.getXfrRatedKVA();
@@ -405,7 +551,20 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 //		xfrBranch.getFromBus().setBaseVoltage(normKV1, UnitType.kV);
 //		xfrBranch.getToBus().setBaseVoltage(normKV2, UnitType.kV);
 //
-		xfrBranch.setZ(transformerSeriesImpedanceOhm(normKV1, normKV2, kva1, kva2, losspercent1, xhl));
+		Complex seriesZ = transformerSeriesImpedanceOhm(normKV1, normKV2, kva1, kva2, losspercent1, xhl);
+		if(likeBranch != null) {
+			Complex likeZ = likeBranch.getAdjustedZ();
+			if(!lossSpecified && !xhlSpecified) {
+				seriesZ = likeZ;
+			}
+			else if(!lossSpecified) {
+				seriesZ = new Complex(likeZ.getReal(), seriesZ.getImaginary());
+			}
+			else if(!xhlSpecified) {
+				seriesZ = new Complex(seriesZ.getReal(), likeZ.getImaginary());
+			}
+		}
+		xfrBranch.setZ(seriesZ);
 
 		xfrBranch.setXfrRatedKVA(kva1);
 
@@ -483,6 +642,10 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 		}
 		double zBaseOhm = highKv * highKv / (ratedKva / 1000.0);
 		return new Complex(rPercent / 100.0, xPercent / 100.0).multiply(zBaseOhm);
+	}
+
+	private static int phaseCount(PhaseCode phaseCode) {
+		return phaseCode == PhaseCode.ABC ? 3 : 1;
 	}
 
 
