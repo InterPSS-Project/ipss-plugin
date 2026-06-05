@@ -1,10 +1,8 @@
 package org.interpss.plugin.optadj.algo.lf;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -42,7 +40,10 @@ public class AclfNetLoadFlowOptimizer {
 	/** 
 	 * Generator dispatch adjustment applied to the DCLF model (MW and per-unit). 
 	 */
-	public record GenAdjustResult(String genName, double genP, double dP, LimitType genLimit) {
+	public record GenAdjustResult(double genP, double adjP, LimitType genLimit) {
+		public String toString() {
+			return String.format("genP: %.2f, asjP: %.2f, tolP: %.2f, genLimit: %s", genP, adjP, genP+adjP, genLimit);
+		}
 	}
 
 	public Map<String, GenAdjustResult> optimize(ContingencyAnalysisAlgorithm dclfAlgo, SsaResultContainer result,
@@ -113,15 +114,15 @@ public class AclfNetLoadFlowOptimizer {
 		});
 	}
 
-	protected Map<String, GenAdjustResult> updatedDclfAlgo(ContingencyAnalysisAlgorithm dclfAlgo, Map<Integer, AclfGen> genMap,
-			GenStateOptimizer opt) {
+	protected Map<String, GenAdjustResult> updatedDclfAlgo(ContingencyAnalysisAlgorithm dclfAlgo, Map<Integer, AclfGen> genMap, GenStateOptimizer opt) {
 		Map<String, GenAdjustResult> results = new HashMap<>();
+		double baseMva = dclfAlgo.getNetwork().getBaseMva();
 		for (int i = 0; i < genMap.size(); i++) {
 			if (Math.abs(opt.getPoint()[i]) > GEN_DISPATCH_THRESHOLD) {
 				AclfGen gen = genMap.get(i);
 				DclfAlgoGen dclfGen = dclfAlgo.getDclfAlgoBus(gen.getParentBus().getId()).getGen(gen.getName()).get();
 				double dP = opt.getPoint()[i];
-				results.put(gen.getName(), new GenAdjustResult(gen.getName(), dclfGen.getGenP(), dP, gen.getPGenLimit()));
+				results.put(gen.getName(), new GenAdjustResult(dclfGen.getGenP()*baseMva, dP, gen.getPGenLimit()));
 				dclfGen.setAdjust(dP / 100);
 				//System.out.println(gen.getName() + ", dP:" + dP + ", genP:" + dclfGen.getGenP() + ", genLimit: " + gen.getPGenLimit());
 			}

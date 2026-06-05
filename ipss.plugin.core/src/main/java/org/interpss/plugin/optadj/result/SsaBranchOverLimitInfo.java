@@ -3,9 +3,6 @@ package org.interpss.plugin.optadj.result;
 import org.interpss.datatype.base.BaseJSONBean;
 
 /** 
-
-* @author  Donghao.F
-* @date 2023 Mar 11 09:50:58 
 * 
 */
 
