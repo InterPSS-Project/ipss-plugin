@@ -39,6 +39,12 @@ public class AclfNetLoadFlowOptimizer {
 	final static double SEN_THRESHOLD = 0.02;
 	final static double GEN_DISPATCH_THRESHOLD = 1.0;
 
+	/** 
+	 * Generator dispatch adjustment applied to the DCLF model (MW and per-unit). 
+	 */
+	public record GenAdjustResult(String genName, double genP, double dP, LimitType genLimit) {
+	}
+
 	public Map<String, GenAdjustResult> optimize(ContingencyAnalysisAlgorithm dclfAlgo, SsaResultContainer result,
 			double threshold) {
 		AclfNetwork net = (AclfNetwork) dclfAlgo.getNetwork();
@@ -51,6 +57,9 @@ public class AclfNetLoadFlowOptimizer {
 			controlGenMap = arrangeIndex(net.getAclfGenNameLookupTable().values().stream().filter(gen -> gen.isActive())
 					.collect(Collectors.toSet()));
 		} else {
+			if (net.getAclfBranchNameLookupTable() == null) {
+				net.createAclfBranchNameLookupTable(true);
+			}
 			controlGenMap = arrangeIndex(buildControlGenSet(net, senMatrix, result));
 		}
 		
@@ -63,10 +72,6 @@ public class AclfNetLoadFlowOptimizer {
 		opt.optimize();
 
 		return updatedDclfAlgo(dclfAlgo, controlGenMap, opt);
-	}
-
-	/** Generator dispatch adjustment applied to the DCLF model (MW and per-unit). */
-	public record GenAdjustResult(String genName, double genP, double dP, LimitType genLimit) {
 	}
 
 	private Map<Integer, AclfGen> arrangeIndex(Set<AclfGen> controlGenSet) {
@@ -118,7 +123,7 @@ public class AclfNetLoadFlowOptimizer {
 				double dP = opt.getPoint()[i];
 				results.put(gen.getName(), new GenAdjustResult(gen.getName(), dclfGen.getGenP(), dP, gen.getPGenLimit()));
 				dclfGen.setAdjust(dP / 100);
-				System.out.println(gen.getName() + ", dP:" + dP + ", genP:" + dclfGen.getGenP() + ", genLimit: " + gen.getPGenLimit());
+				//System.out.println(gen.getName() + ", dP:" + dP + ", genP:" + dclfGen.getGenP() + ", genLimit: " + gen.getPGenLimit());
 			}
 		}
 		return results;
