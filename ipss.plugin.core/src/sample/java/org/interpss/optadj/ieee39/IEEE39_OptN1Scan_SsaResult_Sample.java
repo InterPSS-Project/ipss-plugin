@@ -63,18 +63,19 @@ public class IEEE39_OptN1Scan_SsaResult_Sample {
 						if (loading > 100.0) {
 							cnt.increment();
 							// add the over limit branch CA result rec to the SSA result container
+							DclfOutageBranch outageBranch = ((DclfBranchOutage)resultRec.contingency).getOutageEquip();
 							ssaResult.getCaOverLimitInfo().add(new SsaBranchOverLimitInfo(
-									resultRec.contingency.getId(), resultRec.aclfBranch.getId(), 
+									outageBranch.getBranch().getId(), resultRec.aclfBranch.getId(), 
 									resultRec.aclfBranch.getRatingMvaB(), resultRec.preFlowMW, resultRec.getPostFlowMW()));
 							System.out.println(String.format("OverLimit Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f",
-									resultRec.aclfBranch.getId(), resultRec.contingency.getId(),
+									resultRec.aclfBranch.getId(), outageBranch.getBranch().getId(),
 									resultRec.getPostFlowMW(), resultRec.aclfBranch.getRatingMvaB(), loading));
 						}
 					});
 			});
 		System.out.println("Total number of branches over limit before OptAdj: " + cnt.getCount());
 		
-		new AclfNetContigencyOptimizer().optimize(dclfAlgo, null, 100.0);
+		new AclfNetContigencyOptimizer().optimize(dclfAlgo, ssaResult, 100.0);
 
 		dclfAlgo.calculateDclf();
 	
@@ -92,8 +93,9 @@ public class IEEE39_OptN1Scan_SsaResult_Sample {
 						if (loading > 100.0) {
 							cntAfter.increment();
 							// add the over limit branch CA result rec to the SSA result container
+							DclfOutageBranch outageBranch = ((DclfBranchOutage)resultRec.contingency).getOutageEquip();
 							System.out.println(String.format("OverLimit Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f",
-									resultRec.aclfBranch.getId(), resultRec.contingency.getId(),
+									resultRec.aclfBranch.getId(), outageBranch.getBranch().getId(),
 									resultRec.getPostFlowMW(), resultRec.aclfBranch.getRatingMvaB(), loading));
 						}
 					});

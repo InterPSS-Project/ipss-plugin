@@ -41,7 +41,7 @@ public class IEEE39_OptBasecase_SsaResult_Sample {
 			});
 
 		// perform basecase loaing limit optimization	
-		new AclfNetLoadFlowOptimizer().optimize(dclfAlgo, null, 100.0);
+		new AclfNetLoadFlowOptimizer().optimize(dclfAlgo, ssaResult, 100.0);
 		
 		// perform DCLF recalculation after optimization
 		dclfAlgo.calculateDclf(DclfMethod.INC_LOSS);	
