@@ -70,7 +70,7 @@ public class IEEE39_OptN1Scan_Sample {
 		
 		Map<String, GenAdjustResult> results = new AclfNetContigencyOptimizer().optimize(dclfAlgo, null, 100.0);
 		results.forEach((genName, result) -> {
-			System.out.println(genName + ", dP:" + result.dP() + ", genP:" + result.genP() + ", genLimit: " + result.genLimit());
+			System.out.println("GenAdjustResult: " + genName + ", " + result.toString());
 		});
 
 		dclfAlgo.calculateDclf();
