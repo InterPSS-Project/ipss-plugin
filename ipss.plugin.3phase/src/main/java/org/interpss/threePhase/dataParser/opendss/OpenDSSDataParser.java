@@ -53,25 +53,25 @@ public class OpenDSSDataParser {
 	boolean debug = false;
 
     public OpenDSSDataParser(){
-    	//create and initialize the distribution network model
-    	if(this.distNet == null){
+	//create and initialize the distribution network model
+	if(this.distNet == null){
 			 this.distNet = ThreePhaseObjectFactory.create3PhaseDStabNetwork();
 			 this.distNet.setNetworkType(NetworkType.DISTRIBUTION);
 		}
 
-    	this.lineCodeParser = new  OpenDSSLineCodeParser (this);
-    	this.lineParser = new  OpenDSSLineParser (this);
-    	this.loadParser = new  OpenDSSLoadParser (this);
-    	this.capParser =  new  OpenDSSCapacitorParser (this);
-    	this.xfrParser =  new  OpenDSSTransformerParser (this);
-    	//TODO tentatively, treat regulator as a fixed tap transformer
-    	this.regulatorParser = new  OpenDSSRegulatorParser(this);
-    	this.wireDataParser = new OpenDSSWireDataParser(this);
-    	this.lineGeometryParser = new OpenDSSLineGeometryParser(this);
+	this.lineCodeParser = new  OpenDSSLineCodeParser (this);
+	this.lineParser = new  OpenDSSLineParser (this);
+	this.loadParser = new  OpenDSSLoadParser (this);
+	this.capParser =  new  OpenDSSCapacitorParser (this);
+	this.xfrParser =  new  OpenDSSTransformerParser (this);
+	//TODO tentatively, treat regulator as a fixed tap transformer
+	this.regulatorParser = new  OpenDSSRegulatorParser(this);
+	this.wireDataParser = new OpenDSSWireDataParser(this);
+	this.lineGeometryParser = new OpenDSSLineGeometryParser(this);
     }
 
     public void setDebugMode(boolean enableDebug){
-    	this.debug = enableDebug;
+	this.debug = enableDebug;
     }
 
 	public Hashtable<String, LineConfiguration> getLineConfigTable() {
@@ -109,7 +109,7 @@ public class OpenDSSDataParser {
 
 
 
- 	public OpenDSSLineCodeParser getLineCodeParser() {
+	public OpenDSSLineCodeParser getLineCodeParser() {
 		return lineCodeParser;
 	}
 
@@ -143,9 +143,9 @@ public class OpenDSSDataParser {
 
 	public boolean parseFeederData(String folderPath,String feederFile){
 
-    	 boolean no_error = true;
+	 boolean no_error = true;
 
-    	 //parse the master file, first create an network object as well as the sourceBus
+	 //parse the master file, first create an network object as well as the sourceBus
 
 		 String str ="", nextLine = "";
 	     int lineCnt = 0;
@@ -154,458 +154,471 @@ public class OpenDSSDataParser {
 
 	     List<String> redirectFiles  = new ArrayList<>();
 
-    	 if(!feederFile.equals("")){
-    		 try {
-    			    String fullFilePath = folderPath+"/"+feederFile;
- 				    final File file = new File(fullFilePath);
-    				final InputStream stream = new FileInputStream(file);
-    				final BufferedReader din = new BufferedReader(new InputStreamReader(stream));
-    				IFileReader reader = new ODMTextFileReader(din);
+	 if(!feederFile.equals("")){
+		 try {
+			    String fullFilePath = folderPath+"/"+feederFile;
+				    final File file = new File(fullFilePath);
+				final InputStream stream = new FileInputStream(file);
+				final BufferedReader din = new BufferedReader(new InputStreamReader(stream));
+				IFileReader reader = new ODMTextFileReader(din);
 
-    				ODMLogger.getLogger().info("Start to parse feeder file and create the parser object # " + fullFilePath);
+				ODMLogger.getLogger().info("Start to parse feeder file and create the parser object # " + fullFilePath);
 
-    		    	do {
-    		    		if(useLastLineString){
-    		    			str = nextLine;
-    		    			useLastLineString = false;
-    		    		}
-    		    		else{
-    		    			str = reader.readLine();
-    		                lineCnt++;
-    		    		}
-    		    		if (this.debug) {
+			do {
+				if(useLastLineString){
+					str = nextLine;
+					useLastLineString = false;
+				}
+				else{
+					str = reader.readLine();
+		                lineCnt++;
+				}
+				if (this.debug) {
 							System.out.println("Parsing: "+str);
 						}
-    		        	if (str != null && !str.trim().equals("")) {
-    		        		str = str.trim();
-    		        		if(inBlockComment){
-    		        			inBlockComment = !str.contains("*/");
-    		        		}
-    		        		else if(str.startsWith("/*")){
-    		        			inBlockComment = !str.contains("*/");
-    		        		}
-    		        		else if(str.startsWith("!") || str.startsWith("//")){
-    		        			//bypass the comments
-    		        		}
-    		        		else if(str.startsWith("New")||str.startsWith("new")){
+			if (str != null && !str.trim().equals("")) {
+				str = str.trim();
+				if(inBlockComment){
+					inBlockComment = !str.contains("*/");
+				}
+				else if(str.startsWith("/*")){
+					inBlockComment = !str.contains("*/");
+				}
+				else if(str.startsWith("!") || str.startsWith("//")){
+					//bypass the comments
+				}
+				else if(str.startsWith("New")||str.startsWith("new")){
 
-    		        			//Consider in-line comment using !
-    		        			if(str.indexOf("!")>0){
-    		        				str = str.substring(0, str.indexOf("!"));
-    		        			}
+					//Consider in-line comment using !
+					if(str.indexOf("!")>0){
+						str = str.substring(0, str.indexOf("!"));
+					}
 
-    		        			String[] tempAry = str.split("\\s+");
-    		        			if(tempAry[1].contains("object=")||tempAry[1].contains("Object=")){
-    		        				tempAry[1] = tempAry[1].substring(7);
-    		        			}
-    		        			if(tempAry[1].contains("Circuit.") ||tempAry[1].contains("circuit.")){
-    		        				createSourceBus(str, reader);
-    		        			}
+					String[] tempAry = str.split("\\s+");
+					if(tempAry[1].contains("object=")||tempAry[1].contains("Object=")){
+						tempAry[1] = tempAry[1].substring(7);
+					}
+					if(tempAry[1].contains("Circuit.") ||tempAry[1].contains("circuit.")){
+						createSourceBus(str, reader);
+					}
 
-    		        			else if(tempAry[1].contains("Linecode.") ||tempAry[1].contains("linecode.")){
-    		        				List<String> lineCodeLines = new ArrayList<>();
-    		        				lineCodeLines.add(str);
-    		        				nextLine = reader.readLine();
-    		        				lineCnt++;
-    		        				while(nextLine != null && nextLine.trim().startsWith("~")) {
-    		        					lineCodeLines.add(nextLine.trim());
-    		        					nextLine = reader.readLine();
-    		        					lineCnt++;
-    		        				}
-    		        				if(nextLine != null) {
-    		        					useLastLineString = true;
-    		        				}
-    		        				no_error = no_error && this.lineCodeParser.parseLineCodeBlock(lineCodeLines);
-    		        			}
-    		        			else if(tempAry[1].contains("WireData.") ||tempAry[1].contains("wiredata.")){
-    		        				no_error = no_error && this.wireDataParser.parseWireData(str);
-    		        			}
-    		        			else if(tempAry[1].contains("LineGeometry.") ||tempAry[1].contains("linegeometry.")){
-    		        				List<String> geometryLines = new ArrayList<>();
-    		        				geometryLines.add(str);
-    		        				nextLine = reader.readLine();
-    		        				lineCnt++;
-    		        				while(nextLine != null && nextLine.trim().startsWith("~")) {
-    		        					geometryLines.add(nextLine.trim());
-    		        					nextLine = reader.readLine();
-    		        					lineCnt++;
-    		        				}
-    		        				if(nextLine != null) {
-    		        					useLastLineString = true;
-    		        				}
-    		        				no_error = no_error && this.lineGeometryParser.parseLineGeometryBlock(geometryLines);
-    		        			}
-    		        			else if(tempAry[1].contains("Line.") ||tempAry[1].contains("line.")){
-    		        				this.lineParser.parseLineData(str);
-    		        			}
+					else if(tempAry[1].contains("Linecode.") ||tempAry[1].contains("linecode.")){
+						List<String> lineCodeLines = new ArrayList<>();
+						lineCodeLines.add(str);
+						nextLine = reader.readLine();
+						lineCnt++;
+						while(nextLine != null && nextLine.trim().startsWith("~")) {
+							lineCodeLines.add(nextLine.trim());
+							nextLine = reader.readLine();
+							lineCnt++;
+						}
+						if(nextLine != null) {
+							useLastLineString = true;
+						}
+						no_error = no_error && this.lineCodeParser.parseLineCodeBlock(lineCodeLines);
+					}
+					else if(tempAry[1].contains("WireData.") ||tempAry[1].contains("wiredata.")){
+						no_error = no_error && this.wireDataParser.parseWireData(str);
+					}
+					else if(tempAry[1].contains("LineGeometry.") ||tempAry[1].contains("linegeometry.")){
+						List<String> geometryLines = new ArrayList<>();
+						geometryLines.add(str);
+						nextLine = reader.readLine();
+						lineCnt++;
+						while(nextLine != null && nextLine.trim().startsWith("~")) {
+							geometryLines.add(nextLine.trim());
+							nextLine = reader.readLine();
+							lineCnt++;
+						}
+						if(nextLine != null) {
+							useLastLineString = true;
+						}
+						no_error = no_error && this.lineGeometryParser.parseLineGeometryBlock(geometryLines);
+					}
+					else if(tempAry[1].contains("Line.") ||tempAry[1].contains("line.")){
+						this.lineParser.parseLineData(str);
+					}
                                 else if(tempAry[1].contains("Transformer.") ||tempAry[1].contains("transformer.")){
-                                	String [] xfrStrAry = new String[3];
-                                	xfrStrAry[0] = str;
+	String [] xfrStrAry = new String[3];
+	xfrStrAry[0] = str;
 
-                                	String[] nextStrAry = getNextDataInputString(reader);
-                                	if(nextStrAry[0]==null){
-                                		break;
-                                	}
-                                	nextLine = nextStrAry[0].trim();
-                                	lineCnt = lineCnt + Integer.valueOf(nextStrAry[1]);
+	String[] nextStrAry = getNextDataInputString(reader);
+	if(nextStrAry[0]==null){
+		break;
+	}
+	nextLine = nextStrAry[0].trim();
+	lineCnt = lineCnt + Integer.valueOf(nextStrAry[1]);
 
-                                	if(nextLine.startsWith("~")){
-                                		xfrStrAry[1] = nextLine;
-                                		// by default there are three line strings for one transformer definition
-                                		nextLine = reader.readLine().trim();
-                                    	lineCnt++;
-                                    	if(nextLine.startsWith("~")){
-                                    		xfrStrAry[2] = nextLine;
-                                    	}
-                                    	else{
-                                    		useLastLineString = true;
-                                    	}
-                                	}
-                                	else{
-                                		useLastLineString = true;
-                                	}
+	if(nextLine.startsWith("~")){
+		xfrStrAry[1] = nextLine;
+		// by default there are three line strings for one transformer definition
+		nextLine = reader.readLine().trim();
+	lineCnt++;
+	if(nextLine.startsWith("~")){
+		xfrStrAry[2] = nextLine;
+	}
+	else{
+		useLastLineString = true;
+	}
+	}
+	else{
+		useLastLineString = true;
+	}
 
 
-    		        				if(useLastLineString) { // if true, it means all xfr data is in one logical line
+						if(useLastLineString) { // if true, it means all xfr data is in one logical line
 										this.xfrParser.parseTransformerDataOneLine(xfrStrAry[1] == null ? str : str + " " + xfrStrAry[1]);
 									} else { // if true, it means all xfr data is in one line
 										this.xfrParser.parseTransformerDataMultiLines(xfrStrAry);
 									}
-    		        			}
+					}
                                 else if(tempAry[1].contains("RegControl.") ||tempAry[1].contains("regcontrol.")){
-    		        				this.regulatorParser.parseRegControlData(str);
-    		        			}
-    		        			else if(tempAry[1].contains("Load.") ||tempAry[1].contains("load.")){
-    		        				String loadStr = str;
-    		        				String[] nextStrAry = getNextDataInputString(reader);
-    		        				if(nextStrAry[0]!=null){
-    		        					nextLine = nextStrAry[0].trim();
-    		        					lineCnt = lineCnt + Integer.valueOf(nextStrAry[1]);
-    		        					while(nextLine.startsWith("~")){
-    		        						loadStr = loadStr + " " + nextLine;
-    		        						nextStrAry = getNextDataInputString(reader);
-    		        						if(nextStrAry[0]==null){
-    		        							nextLine = null;
-    		        							break;
-    		        						}
-    		        						nextLine = nextStrAry[0].trim();
-    		        						lineCnt = lineCnt + Integer.valueOf(nextStrAry[1]);
-    		        					}
-    		        					if(nextLine!=null){
-    		        						useLastLineString = true;
-    		        					}
-    		        				}
-    		        				this.loadParser.parseLoadData(loadStr);
-    		        			}
+						this.regulatorParser.parseRegControlData(str);
+					}
+					else if(tempAry[1].contains("Load.") ||tempAry[1].contains("load.")){
+						String loadStr = str;
+						String[] nextStrAry = getNextDataInputString(reader);
+						if(nextStrAry[0]!=null){
+							nextLine = nextStrAry[0].trim();
+							lineCnt = lineCnt + Integer.valueOf(nextStrAry[1]);
+							while(nextLine.startsWith("~")){
+								loadStr = loadStr + " " + nextLine;
+								nextStrAry = getNextDataInputString(reader);
+								if(nextStrAry[0]==null){
+									nextLine = null;
+									break;
+								}
+								nextLine = nextStrAry[0].trim();
+								lineCnt = lineCnt + Integer.valueOf(nextStrAry[1]);
+							}
+							if(nextLine!=null){
+								useLastLineString = true;
+							}
+						}
+						this.loadParser.parseLoadData(loadStr);
+					}
                                 else if(tempAry[1].contains("Capacitor.") ||tempAry[1].contains("capacitor.")){
-    		        				this.capParser.parseCapDataString(str);
-    		        			}
+						this.capParser.parseCapDataString(str);
+					}
 
                                 else{
-                                	ODMLogger.getLogger().severe("Non-supported object for line # "+str);
+	ODMLogger.getLogger().severe("Non-supported object for line # "+str);
                                 }
-    		        		}
-    		        		else if(str.startsWith("redirect")||str.startsWith("Redirect")){
-    		        			ODMLogger.getLogger().info(str);
-    		        			String redictFileName = str.split("\\s+")[1];
-    		        			if(redictFileName.toLowerCase().contains("linecode")){
-    		        				no_error=this.lineCodeParser.parseLineCodeFile(folderPath+"/"+redictFileName);
-    		        			}
-    		        			else{
-    		        				no_error = no_error&&parseFile(folderPath,redictFileName);
-    		        			}
-    		        		}
-    		        		else{
-    		        			ODMLogger.getLogger().severe("Non-supported syntax/data model in line # "+lineCnt+"  :\n "+str);
-    		        		}
-    		        	}
-    		    	}while(str!=null);
-    		 } catch (Exception e) {
-    			    ODMLogger.getLogger().severe("processing line #"+str);
-    				ODMLogger.getLogger().severe(e.toString());
+				}
+				else if(str.startsWith("redirect")||str.startsWith("Redirect")){
+					ODMLogger.getLogger().info(str);
+					String redictFileName = str.split("\\s+")[1];
+					if(redictFileName.toLowerCase().contains("linecode")){
+						no_error=this.lineCodeParser.parseLineCodeFile(folderPath+"/"+redictFileName);
+					}
+					else{
+						no_error = no_error&&parseFile(folderPath,redictFileName);
+					}
+				}
+				else if(str.toLowerCase().startsWith("transformer.") && str.toLowerCase().contains(".taps=")){
+					no_error = no_error && this.xfrParser.parseTransformerTapData(str);
+				}
+				else{
+					ODMLogger.getLogger().severe("Non-supported syntax/data model in line # "+lineCnt+"  :\n "+str);
+				}
+			}
+			}while(str!=null);
+		 } catch (Exception e) {
+			    ODMLogger.getLogger().severe("processing line #"+str);
+				ODMLogger.getLogger().severe(e.toString());
 
-    				e.printStackTrace();
-    				return false;
-    		}// end of try
-    	  } // end of if file name is not empty
+				e.printStackTrace();
+				return false;
+		}// end of try
+	  } // end of if file name is not empty
 
 
          // we should separate the network initialization from the importing data stage  to provide more flexibility to users
-    	 boolean initFlag= true;//initNetwork();
+	 boolean initFlag= true;//initNetwork();
 
-    	 no_error=no_error&initFlag;
+	 no_error=no_error&initFlag;
 
          return no_error;
      }
 
      private void createSourceBus(String circuitStr, IFileReader reader) throws ODMException {
-    	 String sourceBusId = "sourcebus";
-    	 double basekv = 0.0;
-    	 double voltPu = 1.0;
+	 String sourceBusId = "sourcebus";
+	 double basekv = 0.0;
+	 double voltPu = 1.0;
 
-    	 String allCircuitData = circuitStr;
-    	 if(!circuitStr.toLowerCase().contains("basekv=")){
-    		 String nextLine = reader.readLine();
-    		 if(nextLine != null && nextLine.trim().startsWith("~")){
-    			 allCircuitData = allCircuitData + " " + nextLine.trim().substring(1).trim();
-    		 }
-    	 }
+	 String allCircuitData = circuitStr;
+	 if(!circuitStr.toLowerCase().contains("basekv=")){
+		 String nextLine = reader.readLine();
+		 if(nextLine != null && nextLine.trim().startsWith("~")){
+			 allCircuitData = allCircuitData + " " + nextLine.trim().substring(1).trim();
+		 }
+	 }
 
-    	 String[] tokens = allCircuitData.split("\\s+");
-    	 for(String token : tokens) {
-    		 String lowerToken = token.toLowerCase();
-    		 if(lowerToken.contains("circuit.")) {
-    			 String circuitId = token.substring(token.indexOf(".") + 1);
-    			 this.getDistNetwork().setId(circuitId);
-    		 }
-    		 else if(lowerToken.startsWith("bus1=")) {
-    			 sourceBusId = token.substring(token.indexOf("=") + 1).toLowerCase();
-    		 }
-    		 else if(lowerToken.startsWith("basekv=")) {
-    			 basekv = Double.valueOf(token.substring(token.indexOf("=") + 1));
-    		 }
-    		 else if(lowerToken.startsWith("pu=")) {
-    			 voltPu = Double.valueOf(token.substring(token.indexOf("=") + 1));
-    		 }
-    	 }
+	 String[] tokens = allCircuitData.split("\\s+");
+	 for(String token : tokens) {
+		 String lowerToken = token.toLowerCase();
+		 if(lowerToken.contains("circuit.")) {
+			 String circuitId = token.substring(token.indexOf(".") + 1);
+			 this.getDistNetwork().setId(circuitId);
+		 }
+		 else if(lowerToken.startsWith("bus1=")) {
+			 sourceBusId = token.substring(token.indexOf("=") + 1).toLowerCase();
+		 }
+		 else if(lowerToken.startsWith("basekv=")) {
+			 basekv = Double.valueOf(token.substring(token.indexOf("=") + 1));
+		 }
+		 else if(lowerToken.startsWith("pu=")) {
+			 voltPu = Double.valueOf(token.substring(token.indexOf("=") + 1));
+		 }
+	 }
 
-    	 if(basekv <= 0.0) {
-    		 throw new Error("basekv is not defined for the source bus: " + circuitStr);
-    	 }
+	 if(basekv <= 0.0) {
+		 throw new Error("basekv is not defined for the source bus: " + circuitStr);
+	 }
 
-    	 String prefixedSourceBusId = this.busIdPrefix + sourceBusId;
-    	 DStab3PBus sourceBus = this.distNet.getBus(prefixedSourceBusId);
-    	 if(sourceBus == null) {
-    		 sourceBus = ThreePhaseObjectFactory.create3PDStabBus(prefixedSourceBusId, distNet);
-    	 }
-    	 sourceBus.setGenCode(AclfGenCode.SWING);
-    	 sourceBus.setBaseVoltage(basekv, UnitType.kV);
-    	 sourceBus.setVoltageMag(voltPu);
+	 String prefixedSourceBusId = this.busIdPrefix + sourceBusId;
+	 DStab3PBus sourceBus = this.distNet.getBus(prefixedSourceBusId);
+	 if(sourceBus == null) {
+		 sourceBus = ThreePhaseObjectFactory.create3PDStabBus(prefixedSourceBusId, distNet);
+	 }
+	 sourceBus.setGenCode(AclfGenCode.SWING);
+	 sourceBus.setBaseVoltage(basekv, UnitType.kV);
+	 sourceBus.setVoltageMag(voltPu);
      }
 
      private boolean parseFile(String folderPath, String fileName){
 
-    	 boolean no_error = true;
-    	 String str ="", nextLine = "";
+	 boolean no_error = true;
+	 String str ="", nextLine = "";
 	     int lineCnt = 0;
 	     boolean useLastLineString = true;
 	     boolean inBlockComment = false;
 
 	     List<String> redirectFiles  = new ArrayList<>();
 
-    	 if(!fileName.equals("")){
-    		 try {
-    			    String fullFilePath = folderPath+"/"+fileName;
-    				final File file = new File(fullFilePath);
-    				final InputStream stream = new FileInputStream(file);
-    				final BufferedReader din = new BufferedReader(new InputStreamReader(stream));
-    				IFileReader reader = new ODMTextFileReader(din);
+	 if(!fileName.equals("")){
+		 try {
+			    String fullFilePath = folderPath+"/"+fileName;
+				final File file = new File(fullFilePath);
+				final InputStream stream = new FileInputStream(file);
+				final BufferedReader din = new BufferedReader(new InputStreamReader(stream));
+				IFileReader reader = new ODMTextFileReader(din);
 
-    				ODMLogger.getLogger().info("Start to parse file: " + fullFilePath);
+				ODMLogger.getLogger().info("Start to parse file: " + fullFilePath);
 
-    		    	do {
-    		    		if(useLastLineString){
-    		    			str = nextLine;
-    		    			useLastLineString =false;
-    		    		}
-    		    		else{
-    		    			str = reader.readLine();
-    		                lineCnt++;
-    		    		}
-    		    		if(this.debug) {
+			do {
+				if(useLastLineString){
+					str = nextLine;
+					useLastLineString =false;
+				}
+				else{
+					str = reader.readLine();
+		                lineCnt++;
+				}
+				if(this.debug) {
 							System.out.println("Parsing :" +str);
 						}
-    		        	if (str != null && !str.trim().equals("")) {
-    		        		str = str.trim();
-    		        		if(inBlockComment){
-    		        			inBlockComment = !str.contains("*/");
-    		        		}
-    		        		else if(str.startsWith("/*")){
-    		        			inBlockComment = !str.contains("*/");
-    		        		}
-    		        		else if(str.startsWith("!") || str.startsWith("//")){
-    		        			//bypass the comment
-    		        		}
-    		        		else if(str.startsWith("New")||str.startsWith("new")){
-    		        			String[] tempAry = str.split("\\s+");
-    		        			if(tempAry[1].contains("object=")||tempAry[1].contains("Object=")){
-    		        				tempAry[1] = tempAry[1].substring(7);
-    		        			}
-    		        			if(tempAry[1].contains("Circuit.") ||tempAry[1].contains("circuit.")){
-    		        				createSourceBus(str, reader);
-    		        			}
+			if (str != null && !str.trim().equals("")) {
+				str = str.trim();
+				if(inBlockComment){
+					inBlockComment = !str.contains("*/");
+				}
+				else if(str.startsWith("/*")){
+					inBlockComment = !str.contains("*/");
+				}
+				else if(str.startsWith("!") || str.startsWith("//")){
+					//bypass the comment
+				}
+				else if(str.startsWith("New")||str.startsWith("new")){
+					String[] tempAry = str.split("\\s+");
+					if(tempAry[1].contains("object=")||tempAry[1].contains("Object=")){
+						tempAry[1] = tempAry[1].substring(7);
+					}
+					if(tempAry[1].contains("Circuit.") ||tempAry[1].contains("circuit.")){
+						createSourceBus(str, reader);
+					}
 
-    		        			else if(tempAry[1].contains("Linecode.") ||tempAry[1].contains("linecode.")){
-    		        				List<String> lineCodeLines = new ArrayList<>();
-    		        				lineCodeLines.add(str);
-    		        				nextLine = reader.readLine();
-    		        				lineCnt++;
-    		        				while(nextLine != null && nextLine.trim().startsWith("~")) {
-    		        					lineCodeLines.add(nextLine.trim());
-    		        					nextLine = reader.readLine();
-    		        					lineCnt++;
-    		        				}
-    		        				if(nextLine != null) {
-    		        					useLastLineString = true;
-    		        				}
-    		        				no_error = no_error && this.lineCodeParser.parseLineCodeBlock(lineCodeLines);
-    		        			}
-    		        			else if(tempAry[1].contains("WireData.") ||tempAry[1].contains("wiredata.")){
-    		        				no_error = no_error && this.wireDataParser.parseWireData(str);
-    		        			}
-    		        			else if(tempAry[1].contains("LineGeometry.") ||tempAry[1].contains("linegeometry.")){
-    		        				List<String> geometryLines = new ArrayList<>();
-    		        				geometryLines.add(str);
-    		        				nextLine = reader.readLine();
-    		        				lineCnt++;
-    		        				while(nextLine != null && nextLine.trim().startsWith("~")) {
-    		        					geometryLines.add(nextLine.trim());
-    		        					nextLine = reader.readLine();
-    		        					lineCnt++;
-    		        				}
-    		        				if(nextLine != null) {
-    		        					useLastLineString = true;
-    		        				}
-    		        				no_error = no_error && this.lineGeometryParser.parseLineGeometryBlock(geometryLines);
-    		        			}
-    		        			else if(tempAry[1].contains("Line.") ||tempAry[1].contains("line.")){
-    		        				this.lineParser.parseLineData(str);
-    		        			}
+					else if(tempAry[1].contains("Linecode.") ||tempAry[1].contains("linecode.")){
+						List<String> lineCodeLines = new ArrayList<>();
+						lineCodeLines.add(str);
+						nextLine = reader.readLine();
+						lineCnt++;
+						while(nextLine != null && nextLine.trim().startsWith("~")) {
+							lineCodeLines.add(nextLine.trim());
+							nextLine = reader.readLine();
+							lineCnt++;
+						}
+						if(nextLine != null) {
+							useLastLineString = true;
+						}
+						no_error = no_error && this.lineCodeParser.parseLineCodeBlock(lineCodeLines);
+					}
+					else if(tempAry[1].contains("WireData.") ||tempAry[1].contains("wiredata.")){
+						no_error = no_error && this.wireDataParser.parseWireData(str);
+					}
+					else if(tempAry[1].contains("LineGeometry.") ||tempAry[1].contains("linegeometry.")){
+						List<String> geometryLines = new ArrayList<>();
+						geometryLines.add(str);
+						nextLine = reader.readLine();
+						lineCnt++;
+						while(nextLine != null && nextLine.trim().startsWith("~")) {
+							geometryLines.add(nextLine.trim());
+							nextLine = reader.readLine();
+							lineCnt++;
+						}
+						if(nextLine != null) {
+							useLastLineString = true;
+						}
+						no_error = no_error && this.lineGeometryParser.parseLineGeometryBlock(geometryLines);
+					}
+					else if(tempAry[1].contains("Line.") ||tempAry[1].contains("line.")){
+						this.lineParser.parseLineData(str);
+					}
                                 else if(tempAry[1].contains("Transformer.") ||tempAry[1].contains("transformer.")){
-                                	String [] xfrStrAry = new String[3];
-                                	xfrStrAry[0] = str;
+	String [] xfrStrAry = new String[3];
+	xfrStrAry[0] = str;
 
 
-                                	String[] nextStrAry = getNextDataInputString(reader);
-                                	if(nextStrAry[0]==null){
-                                		break;
-                                	}
-                                	nextLine = nextStrAry[0].trim();
-                                	lineCnt = lineCnt + Integer.valueOf(nextStrAry[1]);
+	String[] nextStrAry = getNextDataInputString(reader);
+	if(nextStrAry[0]==null){
+		break;
+	}
+	nextLine = nextStrAry[0].trim();
+	lineCnt = lineCnt + Integer.valueOf(nextStrAry[1]);
 
-                                	if(nextLine.startsWith("~")){
-                                		xfrStrAry[1] = nextLine;
-                                		// by default there are three line strings for one transformer definition
-                                		nextLine = reader.readLine().trim();
-                                    	lineCnt++;
-                                    	if(nextLine.startsWith("~")){
-                                    		xfrStrAry[2] = nextLine;
-                                    	}
-                                    	else{
-                                    		useLastLineString = true;
-                                    	}
-                                	}
-                                	else{
-                                		useLastLineString = true;
-                                	}
+	if(nextLine.startsWith("~")){
+		xfrStrAry[1] = nextLine;
+		// by default there are three line strings for one transformer definition
+		nextLine = reader.readLine().trim();
+	lineCnt++;
+	if(nextLine.startsWith("~")){
+		xfrStrAry[2] = nextLine;
+	}
+	else{
+		useLastLineString = true;
+	}
+	}
+	else{
+		useLastLineString = true;
+	}
 
 
-    		        				if(useLastLineString) { // all data in one logical line
+						if(useLastLineString) { // all data in one logical line
 										this.xfrParser.parseTransformerDataOneLine(xfrStrAry[1] == null ? str : str + " " + xfrStrAry[1]);
 									} else { // all data in one line
 										this.xfrParser.parseTransformerDataMultiLines(xfrStrAry);
 									}
-    		        			}
-    		        			else if(tempAry[1].contains("RegControl.") ||tempAry[1].contains("regcontrol.")){
-    		        				this.regulatorParser.parseRegControlData(str);
-    		        			}
-    		        			else if(tempAry[1].contains("Load.") ||tempAry[1].contains("load.")){
-    		        				String loadStr = str;
-    		        				String[] nextStrAry = getNextDataInputString(reader);
-    		        				if(nextStrAry[0]!=null){
-    		        					nextLine = nextStrAry[0].trim();
-    		        					lineCnt = lineCnt + Integer.valueOf(nextStrAry[1]);
-    		        					while(nextLine.startsWith("~")){
-    		        						loadStr = loadStr + " " + nextLine;
-    		        						nextStrAry = getNextDataInputString(reader);
-    		        						if(nextStrAry[0]==null){
-    		        							nextLine = null;
-    		        							break;
-    		        						}
-    		        						nextLine = nextStrAry[0].trim();
-    		        						lineCnt = lineCnt + Integer.valueOf(nextStrAry[1]);
-    		        					}
-    		        					if(nextLine!=null){
-    		        						useLastLineString = true;
-    		        					}
-    		        				}
-    		        				this.loadParser.parseLoadData(loadStr);
-    		        			}
+					}
+					else if(tempAry[1].contains("RegControl.") ||tempAry[1].contains("regcontrol.")){
+						this.regulatorParser.parseRegControlData(str);
+					}
+					else if(tempAry[1].contains("Load.") ||tempAry[1].contains("load.")){
+						String loadStr = str;
+						String[] nextStrAry = getNextDataInputString(reader);
+						if(nextStrAry[0]!=null){
+							nextLine = nextStrAry[0].trim();
+							lineCnt = lineCnt + Integer.valueOf(nextStrAry[1]);
+							while(nextLine.startsWith("~")){
+								loadStr = loadStr + " " + nextLine;
+								nextStrAry = getNextDataInputString(reader);
+								if(nextStrAry[0]==null){
+									nextLine = null;
+									break;
+								}
+								nextLine = nextStrAry[0].trim();
+								lineCnt = lineCnt + Integer.valueOf(nextStrAry[1]);
+							}
+							if(nextLine!=null){
+								useLastLineString = true;
+							}
+						}
+						this.loadParser.parseLoadData(loadStr);
+					}
                                 else if(tempAry[1].contains("Capacitor.") ||tempAry[1].contains("capacitor.")){
-    		        				this.capParser.parseCapDataString(str);
-    		        			}
+						this.capParser.parseCapDataString(str);
+					}
 
                                 else{
-                                	ODMLogger.getLogger().severe("Non-supported object for line # "+str);
+	ODMLogger.getLogger().severe("Non-supported object for line # "+str);
                                 }
-    		        		}
-    		        		else if(str.startsWith("redirect")||str.startsWith("Redirect")){
-    		        			ODMLogger.getLogger().info(str);
-    		        		}
-    		        		else{
-    		        			ODMLogger.getLogger().severe("Non-supported syntax/data model in line # "+lineCnt+"  :\n "+str);
-    		        		}
-    		        	}
-    		    	}while(str!=null);
+				}
+				else if(str.startsWith("redirect")||str.startsWith("Redirect")){
+					ODMLogger.getLogger().info(str);
+				}
+				else if(str.toLowerCase().startsWith("transformer.") && str.toLowerCase().contains(".taps=")){
+					no_error = no_error && this.xfrParser.parseTransformerTapData(str);
+				}
+				else{
+					ODMLogger.getLogger().severe("Non-supported syntax/data model in line # "+lineCnt+"  :\n "+str);
+				}
+			}
+			}while(str!=null);
 
-    		    	ODMLogger.getLogger().info("End of parsing file: " + fullFilePath);
-    		 } catch (Exception e) {
+			ODMLogger.getLogger().info("End of parsing file: " + fullFilePath);
+		 } catch (Exception e) {
 
-    			    ODMLogger.getLogger().severe("processing line #"+str);
-    				ODMLogger.getLogger().severe(e.toString());
+			    ODMLogger.getLogger().severe("processing line #"+str);
+				ODMLogger.getLogger().severe(e.toString());
 
-    				e.printStackTrace();
-    				return false;
-    		}// end of try
+				e.printStackTrace();
+				return false;
+		}// end of try
 
 
-    	  } // end of if file name is not empty
-    	 return no_error;
+	  } // end of if file name is not empty
+	 return no_error;
      }
 
 
      public boolean initNetwork(){
-    	 double mvaBase = 10.0; // initial mvaBase
-    	 boolean no_error = calcVoltageBases() & convertActualValuesToPU(mvaBase);
-    	 return no_error;
+	 double mvaBase = 10.0; // initial mvaBase
+	 boolean no_error = calcVoltageBases() & convertActualValuesToPU(mvaBase);
+	 return no_error;
      }
      public boolean calcVoltageBases(){
-    	 boolean no_error = true;
+	 boolean no_error = true;
 
-    	 Queue<DStab3PBus> onceVisitedBuses = new  LinkedList<>();
+	 try {
+		this.xfrParser.mergeParallelSinglePhaseRegulatorBranches();
+	 } catch (Exception e) {
+		ODMLogger.getLogger().severe("Failed to merge parallel single-phase transformer regulators: " + e.toString());
+		return false;
+	}
 
- 		// find the source bus, which is the swing bus for radial feeders;
- 		for(DStab3PBus b: distNet.getBusList()){
- 				if(b.isActive() && b.isSwing()){
- 					onceVisitedBuses.add(b);
- 					b.setIntFlag(1);
- 				}
- 				else{
- 					b.setIntFlag(0);
- 					b.setBooleanFlag(false);
- 				}
- 		}
+	 Queue<DStab3PBus> onceVisitedBuses = new  LinkedList<>();
 
- 		//make sure all internal branches are unvisited
- 		for(AclfBranch bra:distNet.getBranchList()){
- 			bra.setBooleanFlag(false);
- 		}
+		// find the source bus, which is the swing bus for radial feeders;
+		for(DStab3PBus b: distNet.getBusList()){
+				if(b.isActive() && b.isSwing()){
+					onceVisitedBuses.add(b);
+					b.setIntFlag(1);
+				}
+				else{
+					b.setIntFlag(0);
+					b.setBooleanFlag(false);
+				}
+		}
 
- 		// perform BFS and set the bus sortNumber
- 		BFS(onceVisitedBuses);
- 		this.regulatorParser.applyFixedRegControlRatios();
+		//make sure all internal branches are unvisited
+		for(AclfBranch bra:distNet.getBranchList()){
+			bra.setBooleanFlag(false);
+		}
+
+		// perform BFS and set the bus sortNumber
+		BFS(onceVisitedBuses);
+		this.regulatorParser.applyFixedRegControlRatios();
 
 
 
-    	 return no_error;
+	 return no_error;
      }
 
 
     private void BFS (Queue<DStab3PBus> onceVisitedBuses){
- 	int orderNumber = 0;
+	int orderNumber = 0;
 		//Retrieves and removes the head of this queue, or returns null if this queue is empty.
 	    while(!onceVisitedBuses.isEmpty()){
-	    	DStab3PBus  startingBus = onceVisitedBuses.poll();
+		DStab3PBus  startingBus = onceVisitedBuses.poll();
 			startingBus.setSortNumber(orderNumber++);
 			startingBus.setBooleanFlag(true);
 			startingBus.setIntFlag(2);
@@ -648,21 +661,21 @@ public class OpenDSSDataParser {
 
      public boolean convertActualValuesToPU(double mvaBase){
 
-    	 if(mvaBase>0) {
-    		 if(mvaBase>20){
-    			 ODMLogger.getLogger().warning("The input mvaBase is beyond the normal range of [5, 20] MVA, input mvabase = "+mvaBase);
-    		 }
-    		 this.getDistNetwork().setBaseKva(mvaBase*1000.0);
-    	 }
-    	 else{
-    		 ODMLogger.getLogger().severe("The input mvabase <= 0. mvabase = 1.0 MVA will be used");
-    		 mvaBase = 1.0;
-    		 this.getDistNetwork().setBaseKva(mvaBase*1000.0);
-    	 }
+	 if(mvaBase>0) {
+		 if(mvaBase>20){
+			 ODMLogger.getLogger().warning("The input mvaBase is beyond the normal range of [5, 20] MVA, input mvabase = "+mvaBase);
+		 }
+		 this.getDistNetwork().setBaseKva(mvaBase*1000.0);
+	 }
+	 else{
+		 ODMLogger.getLogger().severe("The input mvabase <= 0. mvabase = 1.0 MVA will be used");
+		 mvaBase = 1.0;
+		 this.getDistNetwork().setBaseKva(mvaBase*1000.0);
+	 }
 
-    	 boolean no_error = convertBranchZYMatrixToPU()&&convertLoadCapacitorToPU();
+	 boolean no_error = convertBranchZYMatrixToPU()&&convertLoadCapacitorToPU();
 
-    	 return no_error;
+	 return no_error;
      }
 
      private boolean convertBranchZYMatrixToPU(){
@@ -671,64 +684,79 @@ public class OpenDSSDataParser {
           double mvabase = this.getDistNetwork().getBaseMva();
           double vBase = 0.0, zBase = 0.0;
           for(DStabBranch bra: this.getDistNetwork().getBranchList()){
-        	  DStab3PBranch bra3Phase = (DStab3PBranch) bra;
+	  DStab3PBranch bra3Phase = (DStab3PBranch) bra;
 
-        	  if(bra3Phase.isLine()){
-        		  vBase = bra.getFromBus().getBaseVoltage();
-        		  zBase = vBase*vBase*1.0E-6/mvabase;
+	  if(bra3Phase.isLine()){
+		  vBase = bra.getFromBus().getBaseVoltage();
+		  zBase = vBase*vBase*1.0E-6/mvabase;
 
-        		  bra3Phase.setZabc(bra3Phase.getZabc().multiply(1.0/zBase));
-        	  }
-        	  else if(bra3Phase.isXfr() || bra3Phase.isPSXfr()){
-        		  // convert the Z to high voltage side
-        		  vBase = bra3Phase.getFromBus().getBaseVoltage()>=bra3Phase.getToBus().getBaseVoltage()?
-        				  bra3Phase.getFromBus().getBaseVoltage():bra3Phase.getToBus().getBaseVoltage();
-        		  zBase = vBase*vBase*1.0E-6/mvabase;
-        		  bra3Phase.setZ(bra3Phase.getAdjustedZ().divide(zBase));
+		  bra3Phase.setZabc(bra3Phase.getZabc().multiply(1.0/zBase));
+	  }
+	  else if(bra3Phase.isXfr() || bra3Phase.isPSXfr()){
+		  // convert the Z to high voltage side
+		  vBase = bra3Phase.getFromBus().getBaseVoltage()>=bra3Phase.getToBus().getBaseVoltage()?
+				  bra3Phase.getFromBus().getBaseVoltage():bra3Phase.getToBus().getBaseVoltage();
+		  zBase = vBase*vBase*1.0E-6/mvabase;
+		  bra3Phase.setZ(bra3Phase.getAdjustedZ().divide(zBase));
 
-        		  // convert the turn ratios
-        		  double vllfactor = 1.0;
-        		  if(bra3Phase.getPhaseCode()!=PhaseCode.ABC){
-        			  vllfactor = Math.sqrt(3);
-        		  }
-        		  bra3Phase.setFromTurnRatio(bra3Phase.getFromTurnRatio()*vllfactor /bra3Phase.getFromBus().getBaseVoltage());
-        		  bra3Phase.setToTurnRatio(bra3Phase.getToTurnRatio()*vllfactor/bra3Phase.getToBus().getBaseVoltage());
-        	  }
-        	  else{
-        		  ODMLogger.getLogger().severe("Sepcial branch type is not supported, branchId = "+bra.getId());
-        	  }
+		  // convert the turn ratios
+		  double vllfactor = 1.0;
+		  if(bra3Phase.getPhaseCode()!=PhaseCode.ABC){
+			  vllfactor = Math.sqrt(3);
+		  }
+		  bra3Phase.setFromTurnRatio(bra3Phase.getFromTurnRatio()*vllfactor /bra3Phase.getFromBus().getBaseVoltage());
+		  bra3Phase.setToTurnRatio(bra3Phase.getToTurnRatio()*vllfactor/bra3Phase.getToBus().getBaseVoltage());
+		  convertPhaseTurnRatiosToPU(bra3Phase, vllfactor);
+	  }
+	  else{
+		  ODMLogger.getLogger().severe("Sepcial branch type is not supported, branchId = "+bra.getId());
+	  }
 
           }
 
-    	  return no_error;
+	  return no_error;
+     }
+
+     private void convertPhaseTurnRatiosToPU(DStab3PBranch bra3Phase, double vllfactor) {
+	 if(!bra3Phase.hasPhaseTurnRatio()) {
+		 return;
+	 }
+	 double[] fromRatios = bra3Phase.getFromTurnRatioABC();
+	 double[] toRatios = bra3Phase.getToTurnRatioABC();
+	 for(int i = 0; i < 3; i++) {
+		 fromRatios[i] = fromRatios[i] * vllfactor / bra3Phase.getFromBus().getBaseVoltage();
+		 toRatios[i] = toRatios[i] * vllfactor / bra3Phase.getToBus().getBaseVoltage();
+	 }
+	 bra3Phase.setFromTurnRatioABC(fromRatios[0], fromRatios[1], fromRatios[2]);
+	 bra3Phase.setToTurnRatioABC(toRatios[0], toRatios[1], toRatios[2]);
      }
 
      private boolean convertLoadCapacitorToPU(){
          boolean no_error = true;
 
-   	     double baseKVA3P = this.getDistNetwork().getBaseKva();
-   	     double baseKVA1P = baseKVA3P/3.0;
+	     double baseKVA3P = this.getDistNetwork().getBaseKva();
+	     double baseKVA1P = baseKVA3P/3.0;
 
          for(DStab3PBus bus3P: this.getDistNetwork().getBusList()){
 
-        	 if(bus3P.getSinglePhaseLoadList().size()>0){
-        		 for(DStab1PLoad load:bus3P.getSinglePhaseLoadList()){
-        			 DStab1PLoad ld1P = load;
-        			 ld1P.setLoadCP(ld1P.getLoadCP().divide(baseKVA1P));
-        			 ld1P.setLoadCI(ld1P.getLoadCI().divide(baseKVA1P));
-        			 ld1P.setLoadCZ(ld1P.getLoadCZ().divide(baseKVA1P));
-        		 }
-        	 }
+	 if(bus3P.getSinglePhaseLoadList().size()>0){
+		 for(DStab1PLoad load:bus3P.getSinglePhaseLoadList()){
+			 DStab1PLoad ld1P = load;
+			 ld1P.setLoadCP(ld1P.getLoadCP().divide(baseKVA1P));
+			 ld1P.setLoadCI(ld1P.getLoadCI().divide(baseKVA1P));
+			 ld1P.setLoadCZ(ld1P.getLoadCZ().divide(baseKVA1P));
+		 }
+	 }
 
-        	 if(bus3P.getThreePhaseLoadList().size()>0){
-        		 for(DStab3PLoad load3P:bus3P.getThreePhaseLoadList()){
-        			 load3P.set3PhaseLoad(load3P.getInit3PhaseLoad().multiply(1.0/baseKVA1P));
-        		 }
-        	 }
+	 if(bus3P.getThreePhaseLoadList().size()>0){
+		 for(DStab3PLoad load3P:bus3P.getThreePhaseLoadList()){
+			 load3P.set3PhaseLoad(load3P.getInit3PhaseLoad().multiply(1.0/baseKVA1P));
+		 }
+	 }
          }
 
 
-   	  return no_error;
+	  return no_error;
     }
 
      /**
@@ -742,59 +770,59 @@ public class OpenDSSDataParser {
       * @throws ODMException
       */
      private String[] getNextDataInputString(IFileReader reader) throws ODMException{
-    	 String dataString = null;
-    	 int skipLineNum = 0;
-    	 do{
-    		 dataString =reader.readLine();
-    		 if(dataString!=null){
-    			 dataString = dataString.trim().toLowerCase();
-    			 if(dataString.trim().length()>0){
-    				 if(dataString.startsWith("!") ||dataString.startsWith("//")){
-    					 //it is a comment line, skip
-    					 skipLineNum++;
-    				 }
-    				 else if(dataString.startsWith("/*")){
-    					 //keep search until find the "*/", which denotes the end of the comment block.
-    					 skipLineNum++;
-    					 if(!dataString.contains("*/")){
+	 String dataString = null;
+	 int skipLineNum = 0;
+	 do{
+		 dataString =reader.readLine();
+		 if(dataString!=null){
+			 dataString = dataString.trim().toLowerCase();
+			 if(dataString.trim().length()>0){
+				 if(dataString.startsWith("!") ||dataString.startsWith("//")){
+					 //it is a comment line, skip
+					 skipLineNum++;
+				 }
+				 else if(dataString.startsWith("/*")){
+					 //keep search until find the "*/", which denotes the end of the comment block.
+					 skipLineNum++;
+					 if(!dataString.contains("*/")){
 
-	    					 do{
-	    						 dataString =reader.readLine();
-	    						 skipLineNum++;
+						 do{
+							 dataString =reader.readLine();
+							 skipLineNum++;
 
-	    			    		 if(dataString!=null){
+						 if(dataString!=null){
 
-	    			    			 if(dataString.contains("*/")){
-	    			    				 break;
-	    			    			 }
+							 if(dataString.contains("*/")){
+								 break;
+							 }
 
-	    			    		 }
+						 }
 
-	    					 }while(dataString !=null);
-    					 }
-    				 }
-    				 else{
-    					 // now we find the next non-comment data string;
-    					 break;
-    				 }
-    			 }
-    		 }
+						 }while(dataString !=null);
+					 }
+				 }
+				 else{
+					 // now we find the next non-comment data string;
+					 break;
+				 }
+			 }
+		 }
 
-    	 }while(dataString !=null);
+	 }while(dataString !=null);
 
-    	String[] returnStr =  new String[]{dataString,Integer.toString(skipLineNum)};
+	String[] returnStr =  new String[]{dataString,Integer.toString(skipLineNum)};
 
-    	return returnStr;
+	return returnStr;
 
      }
 
      public DStab3PBranch getBranchByName(String branchName){
-    	 for(Branch bra: this.getDistNetwork().getBranchList()){
-    		 if(bra.getName().equals(branchName)){
-    			 return (DStab3PBranch) bra;
-    		 }
-    	 }
-    	 return null;
+	 for(Branch bra: this.getDistNetwork().getBranchList()){
+		 if(bra.getName().equals(branchName)){
+			 return (DStab3PBranch) bra;
+		 }
+	 }
+	 return null;
      }
 
 	public String getBusIdPrefix() {
