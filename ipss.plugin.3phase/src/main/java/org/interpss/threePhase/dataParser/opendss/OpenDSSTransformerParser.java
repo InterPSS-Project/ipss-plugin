@@ -251,6 +251,12 @@ public class OpenDSSTransformerParser {
 			else if(element.contains("%rs=")) {
 				code.rPercents = doubleValues(listValues(element));
 			}
+			else if(element.contains("%imag=")) {
+				code.imagPercent = Double.valueOf(element.substring(6));
+			}
+			else if(element.contains("%noloadloss=")) {
+				code.noLoadLossPercent = Double.valueOf(element.substring(12));
+			}
 			else if(element.contains("xhl=")) {
 				code.xhl = Double.valueOf(element.substring(4));
 			}
@@ -387,6 +393,8 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 		double[] normKVs = new double[0];
 		double[] kvaRatings = new double[0];
 		double[] rPercents = new double[0];
+		double imagPercent = 0.0;
+		double noLoadLossPercent = 0.0;
 		String[] busTerminals = new String[0];
 		String xfrId = "";
 		String fromBusId = "", toBusId = "";
@@ -498,6 +506,12 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 				rPercents = doubleValues(listValues(element));
 				lossSpecified = true;
 			}
+			else if(element.contains("%imag=")){
+				imagPercent = Double.valueOf(element.substring(6));
+			}
+			else if(element.contains("%noloadloss=")){
+				noLoadLossPercent = Double.valueOf(element.substring(12));
+			}
 			else if(element.contains("%r=")){
 				if(windingContext > 0) {
 					if(!hasWindingSpecificResistance) {
@@ -567,11 +581,17 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 			if(kvaRatings.length == 0) {
 				kvaRatings = code.kvas;
 			}
+			if(imagPercent == 0.0) {
+				imagPercent = code.imagPercent;
+			}
+			if(noLoadLossPercent == 0.0) {
+				noLoadLossPercent = code.noLoadLossPercent;
+			}
 		}
 		if(isCenterTappedServiceTransformer(phaseNum, windingNum, busTerminals,
 				normKVs, kvaRatings, rPercents, xhl, xht, xlt)) {
 			return createCenterTappedServiceTransformer(xfrId, busTerminals,
-					normKVs, kvaRatings, rPercents, xhl, xht, xlt);
+					normKVs, kvaRatings, rPercents, xhl, xht, xlt, imagPercent, noLoadLossPercent);
 		}
 
 		fromBusId =this.dataParser.getBusIdPrefix()+fromBusId;
@@ -755,7 +775,8 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 	}
 
 	private boolean createCenterTappedServiceTransformer(String xfrId, String[] busTerminals,
-			double[] kvs, double[] kvas, double[] rPercents, double xhl, double xht, double xlt)
+			double[] kvs, double[] kvas, double[] rPercents, double xhl, double xht, double xlt,
+			double imagPercent, double noLoadLossPercent)
 			throws InterpssException {
 		TerminalBus primary = terminalBus(busTerminals[0]);
 		TerminalBus secondary1 = terminalBus(busTerminals[1]);
@@ -796,6 +817,8 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 				addToBlock(refs[row], refs[col], value, yff, yft, ytf, ytt);
 			}
 		}
+		addPrimaryNoLoadAdmittance(yff, phaseIndex(primary.nodes[0]),
+				noLoadAdmittance(kvs[0], kvas[0], imagPercent, noLoadLossPercent));
 		xfrBranch.setExplicitYabc(yff, yft, ytf, ytt);
 
 		AcscXformerAdapter xfr0 = acscXfrAptr.apply(xfrBranch);
@@ -832,6 +855,24 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 			}
 		}
 		return ypu;
+	}
+
+	private static Complex noLoadAdmittance(double kv, double kva, double imagPercent, double noLoadLossPercent) {
+		if(kv <= 0.0 || kva <= 0.0 || (imagPercent == 0.0 && noLoadLossPercent == 0.0)) {
+			return Complex.ZERO;
+		}
+		double conductancePu = noLoadLossPercent/100.0;
+		double currentPu = imagPercent/100.0;
+		double susceptancePu = Math.sqrt(Math.max(0.0, currentPu*currentPu - conductancePu*conductancePu));
+		Complex admittancePu = new Complex(conductancePu, -susceptancePu);
+		return admittancePu.multiply((kva/1000.0)/(kv*kv));
+	}
+
+	private static void addPrimaryNoLoadAdmittance(Complex3x3 yff, int phase, Complex admittance) {
+		if(admittance.equals(Complex.ZERO)) {
+			return;
+		}
+		setPhaseValue(yff, phase, phase, getPhaseValue(yff, phase, phase).add(admittance));
 	}
 
 	private static int secondaryPolarity(TerminalBus terminal) {
@@ -1043,5 +1084,7 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 		private double xhl = 0.0;
 		private double xht = 0.0;
 		private double xlt = 0.0;
+		private double imagPercent = 0.0;
+		private double noLoadLossPercent = 0.0;
 	}
 }
