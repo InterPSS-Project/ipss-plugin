@@ -51,6 +51,8 @@ public interface DistributionPowerFlowAlgorithm {
 
 	public int getIterationCount();
 
+	public boolean isFixedPointFallbackUsed();
+
 	public void  setInitBusVoltageEnabled(boolean enableInitBus3PhaseVolts);
 
 	public boolean isInitBusVoltageEnabled();

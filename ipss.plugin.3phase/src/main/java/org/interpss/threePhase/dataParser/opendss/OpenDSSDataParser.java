@@ -11,10 +11,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
+import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.common.IFileReader;
 import org.ieee.odm.common.ODMException;
 import org.ieee.odm.common.ODMLogger;
 import org.ieee.odm.common.ODMTextFileReader;
+import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.threePhase.basic.LineConfiguration;
 import org.interpss.threePhase.basic.dstab.DStab1PLoad;
@@ -25,7 +27,9 @@ import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
 import com.interpss.core.aclf.AclfBranch;
+import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
+import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.acsc.PhaseCode;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
@@ -48,6 +52,7 @@ public class OpenDSSDataParser {
 	protected OpenDSSRegulatorParser regulatorParser = null;
 	protected OpenDSSWireDataParser wireDataParser = null;
 	protected OpenDSSLineGeometryParser lineGeometryParser = null;
+	private boolean regControlEnabled = true;
 
 
 	boolean debug = false;
@@ -141,6 +146,10 @@ public class OpenDSSDataParser {
 		return lineGeometryParser;
 	}
 
+	public void setRegControlEnabled(boolean regControlEnabled) {
+		this.regControlEnabled = regControlEnabled;
+	}
+
 	public boolean parseFeederData(String folderPath,String feederFile){
 
 	 boolean no_error = true;
@@ -199,7 +208,11 @@ public class OpenDSSDataParser {
 						tempAry[1] = tempAry[1].substring(7);
 					}
 					if(tempAry[1].contains("Circuit.") ||tempAry[1].contains("circuit.")){
-						createSourceBus(str, reader);
+						LogicalLine logicalLine = collectLogicalContinuationLine(str, reader);
+						createSourceBus(logicalLine.logicalLine);
+						nextLine = logicalLine.nextLine;
+						lineCnt = lineCnt + logicalLine.consumedLineCount;
+						useLastLineString = nextLine != null;
 					}
 
 					else if(tempAry[1].contains("Linecode.") ||tempAry[1].contains("linecode.")){
@@ -238,42 +251,26 @@ public class OpenDSSDataParser {
 					else if(tempAry[1].contains("Line.") ||tempAry[1].contains("line.")){
 						this.lineParser.parseLineData(str);
 					}
-                                else if(tempAry[1].contains("Transformer.") ||tempAry[1].contains("transformer.")){
-	String [] xfrStrAry = new String[3];
-	xfrStrAry[0] = str;
-
-	String[] nextStrAry = getNextDataInputString(reader);
-	if(nextStrAry[0]==null){
-		break;
-	}
-	nextLine = nextStrAry[0].trim();
-	lineCnt = lineCnt + Integer.valueOf(nextStrAry[1]);
-
-	if(nextLine.startsWith("~")){
-		xfrStrAry[1] = nextLine;
-		// by default there are three line strings for one transformer definition
-		nextLine = reader.readLine().trim();
-	lineCnt++;
-	if(nextLine.startsWith("~")){
-		xfrStrAry[2] = nextLine;
-	}
-	else{
-		useLastLineString = true;
-	}
-	}
-	else{
-		useLastLineString = true;
-	}
-
-
-						if(useLastLineString) { // if true, it means all xfr data is in one logical line
-										this.xfrParser.parseTransformerDataOneLine(xfrStrAry[1] == null ? str : str + " " + xfrStrAry[1]);
-									} else { // if true, it means all xfr data is in one line
-										this.xfrParser.parseTransformerDataMultiLines(xfrStrAry);
-									}
+					else if(tempAry[1].contains("Reactor.") ||tempAry[1].contains("reactor.")){
+						no_error = no_error && parseReactorData(str);
+					}
+					else if(tempAry[1].contains("Transformer.") ||tempAry[1].contains("transformer.")){
+						LogicalLine transformerLine = collectLogicalContinuationLine(str, reader);
+						lineCnt = lineCnt + transformerLine.consumedLineCount;
+						nextLine = transformerLine.nextLine;
+						useLastLineString = transformerLine.nextLine != null;
+						String[] legacyWindingLines = legacyWindingTransformerLines(str, transformerLine.logicalLine);
+						no_error = no_error && (legacyWindingLines == null
+								? this.xfrParser.parseTransformerDataOneLine(transformerLine.logicalLine)
+								: this.xfrParser.parseTransformerDataMultiLines(legacyWindingLines));
+					}
+					else if(tempAry[1].contains("XfmrCode.") ||tempAry[1].contains("xfmrcode.")){
+						no_error = no_error && this.xfrParser.parseXfmrCodeData(str);
 					}
                                 else if(tempAry[1].contains("RegControl.") ||tempAry[1].contains("regcontrol.")){
-						this.regulatorParser.parseRegControlData(str);
+						if(this.regControlEnabled) {
+							this.regulatorParser.parseRegControlData(str);
+						}
 					}
 					else if(tempAry[1].contains("Load.") ||tempAry[1].contains("load.")){
 						String loadStr = str;
@@ -341,19 +338,12 @@ public class OpenDSSDataParser {
          return no_error;
      }
 
-     private void createSourceBus(String circuitStr, IFileReader reader) throws ODMException {
+     private void createSourceBus(String circuitStr) throws ODMException {
 	 String sourceBusId = "sourcebus";
 	 double basekv = 0.0;
 	 double voltPu = 1.0;
 
 	 String allCircuitData = circuitStr;
-	 if(!circuitStr.toLowerCase().contains("basekv=")){
-		 String nextLine = reader.readLine();
-		 if(nextLine != null && nextLine.trim().startsWith("~")){
-			 allCircuitData = allCircuitData + " " + nextLine.trim().substring(1).trim();
-		 }
-	 }
-
 	 String[] tokens = allCircuitData.split("\\s+");
 	 for(String token : tokens) {
 		 String lowerToken = token.toLowerCase();
@@ -373,7 +363,7 @@ public class OpenDSSDataParser {
 	 }
 
 	 if(basekv <= 0.0) {
-		 throw new Error("basekv is not defined for the source bus: " + circuitStr);
+		 basekv = 115.0;
 	 }
 
 	 String prefixedSourceBusId = this.busIdPrefix + sourceBusId;
@@ -435,7 +425,11 @@ public class OpenDSSDataParser {
 						tempAry[1] = tempAry[1].substring(7);
 					}
 					if(tempAry[1].contains("Circuit.") ||tempAry[1].contains("circuit.")){
-						createSourceBus(str, reader);
+						LogicalLine logicalLine = collectLogicalContinuationLine(str, reader);
+						createSourceBus(logicalLine.logicalLine);
+						nextLine = logicalLine.nextLine;
+						lineCnt = lineCnt + logicalLine.consumedLineCount;
+						useLastLineString = nextLine != null;
 					}
 
 					else if(tempAry[1].contains("Linecode.") ||tempAry[1].contains("linecode.")){
@@ -474,43 +468,26 @@ public class OpenDSSDataParser {
 					else if(tempAry[1].contains("Line.") ||tempAry[1].contains("line.")){
 						this.lineParser.parseLineData(str);
 					}
-                                else if(tempAry[1].contains("Transformer.") ||tempAry[1].contains("transformer.")){
-	String [] xfrStrAry = new String[3];
-	xfrStrAry[0] = str;
-
-
-	String[] nextStrAry = getNextDataInputString(reader);
-	if(nextStrAry[0]==null){
-		break;
-	}
-	nextLine = nextStrAry[0].trim();
-	lineCnt = lineCnt + Integer.valueOf(nextStrAry[1]);
-
-	if(nextLine.startsWith("~")){
-		xfrStrAry[1] = nextLine;
-		// by default there are three line strings for one transformer definition
-		nextLine = reader.readLine().trim();
-	lineCnt++;
-	if(nextLine.startsWith("~")){
-		xfrStrAry[2] = nextLine;
-	}
-	else{
-		useLastLineString = true;
-	}
-	}
-	else{
-		useLastLineString = true;
-	}
-
-
-						if(useLastLineString) { // all data in one logical line
-										this.xfrParser.parseTransformerDataOneLine(xfrStrAry[1] == null ? str : str + " " + xfrStrAry[1]);
-									} else { // all data in one line
-										this.xfrParser.parseTransformerDataMultiLines(xfrStrAry);
-									}
+					else if(tempAry[1].contains("Reactor.") ||tempAry[1].contains("reactor.")){
+						no_error = no_error && parseReactorData(str);
+					}
+					else if(tempAry[1].contains("Transformer.") ||tempAry[1].contains("transformer.")){
+						LogicalLine transformerLine = collectLogicalContinuationLine(str, reader);
+						lineCnt = lineCnt + transformerLine.consumedLineCount;
+						nextLine = transformerLine.nextLine;
+						useLastLineString = transformerLine.nextLine != null;
+						String[] legacyWindingLines = legacyWindingTransformerLines(str, transformerLine.logicalLine);
+						no_error = no_error && (legacyWindingLines == null
+								? this.xfrParser.parseTransformerDataOneLine(transformerLine.logicalLine)
+								: this.xfrParser.parseTransformerDataMultiLines(legacyWindingLines));
+					}
+					else if(tempAry[1].contains("XfmrCode.") ||tempAry[1].contains("xfmrcode.")){
+						no_error = no_error && this.xfrParser.parseXfmrCodeData(str);
 					}
 					else if(tempAry[1].contains("RegControl.") ||tempAry[1].contains("regcontrol.")){
-						this.regulatorParser.parseRegControlData(str);
+						if(this.regControlEnabled) {
+							this.regulatorParser.parseRegControlData(str);
+						}
 					}
 					else if(tempAry[1].contains("Load.") ||tempAry[1].contains("load.")){
 						String loadStr = str;
@@ -606,7 +583,9 @@ public class OpenDSSDataParser {
 
 		// perform BFS and set the bus sortNumber
 		BFS(onceVisitedBuses);
-		this.regulatorParser.applyFixedRegControlRatios();
+		if(this.regControlEnabled) {
+			this.regulatorParser.applyFixedRegControlRatios();
+		}
 
 
 
@@ -686,11 +665,20 @@ public class OpenDSSDataParser {
           for(DStabBranch bra: this.getDistNetwork().getBranchList()){
 	  DStab3PBranch bra3Phase = (DStab3PBranch) bra;
 
-	  if(bra3Phase.isLine()){
+	  if(bra3Phase.hasExplicitYabc()) {
+		  convertExplicitBranchYToPU(bra3Phase, mvabase);
+	  }
+	  else if(bra3Phase.isLine()){
 		  vBase = bra.getFromBus().getBaseVoltage();
 		  zBase = vBase*vBase*1.0E-6/mvabase;
 
 		  bra3Phase.setZabc(bra3Phase.getZabc().multiply(1.0/zBase));
+		  if(bra3Phase.getFromShuntYabc() != null) {
+			  bra3Phase.setFromShuntYabc(bra3Phase.getFromShuntYabc().multiply(zBase));
+		  }
+		  if(bra3Phase.getToShuntYabc() != null) {
+			  bra3Phase.setToShuntYabc(bra3Phase.getToShuntYabc().multiply(zBase));
+		  }
 	  }
 	  else if(bra3Phase.isXfr() || bra3Phase.isPSXfr()){
 		  // convert the Z to high voltage side
@@ -715,6 +703,19 @@ public class OpenDSSDataParser {
           }
 
 	  return no_error;
+     }
+
+     private void convertExplicitBranchYToPU(DStab3PBranch branch, double mvabase) {
+	 double fromBaseKV = branch.getFromBus().getBaseVoltage()*1.0E-3;
+	 double toBaseKV = branch.getToBus().getBaseVoltage()*1.0E-3;
+	 branch.setExplicitYabc(
+			 branch.getYffabc().multiply(fromBaseKV*fromBaseKV/mvabase),
+			 branch.getYftabc().multiply(fromBaseKV*toBaseKV/mvabase),
+			 branch.getYtfabc().multiply(toBaseKV*fromBaseKV/mvabase),
+			 branch.getYttabc().multiply(toBaseKV*toBaseKV/mvabase));
+
+	 branch.setFromTurnRatio(branch.getFromTurnRatio()/branch.getFromBus().getBaseVoltage());
+	 branch.setToTurnRatio(branch.getToTurnRatio()/branch.getToBus().getBaseVoltage());
      }
 
      private void convertPhaseTurnRatiosToPU(DStab3PBranch bra3Phase, double vllfactor) {
@@ -750,13 +751,30 @@ public class OpenDSSDataParser {
 
 	 if(bus3P.getThreePhaseLoadList().size()>0){
 		 for(DStab3PLoad load3P:bus3P.getThreePhaseLoadList()){
-			 load3P.set3PhaseLoad(load3P.getInit3PhaseLoad().multiply(1.0/baseKVA1P));
+			 double voltageScale = threePhaseConstZVoltageScale(bus3P, load3P);
+			 load3P.set3PhaseLoad(load3P.getInit3PhaseLoad().multiply(voltageScale/baseKVA1P));
 		 }
 	 }
          }
 
 
 	  return no_error;
+    }
+
+     private double threePhaseConstZVoltageScale(DStab3PBus bus3P, DStab3PLoad load3P) {
+	 if(load3P.getCode() != AclfLoadCode.CONST_Z || load3P.getNominalKV() <= 0.0) {
+		 return 1.0;
+	 }
+
+	 double busBaseKVLL = bus3P.getBaseVoltage()*1.0E-3;
+	 double ratedKV = load3P.getNominalKV();
+	 if(busBaseKVLL <= 0.0 || ratedKV <= 0.0) {
+		 return 1.0;
+	 }
+
+	 double baseKV = ratedKV < busBaseKVLL*0.75 ? busBaseKVLL/Math.sqrt(3.0) : busBaseKVLL;
+	 double scale = baseKV/ratedKV;
+	 return scale*scale;
     }
 
      /**
@@ -769,6 +787,194 @@ public class OpenDSSDataParser {
       * @return String[2]
       * @throws ODMException
       */
+     private LogicalLine collectLogicalContinuationLine(String firstLine, IFileReader reader) throws ODMException {
+	 String logicalLine = firstLine;
+	 String nextDataLine = null;
+	 int consumedLineCount = 0;
+	 while(true) {
+		 String[] nextStrAry = getNextDataInputString(reader);
+		 consumedLineCount = consumedLineCount + Integer.valueOf(nextStrAry[1]);
+		 if(nextStrAry[0] == null) {
+			 break;
+		 }
+		 consumedLineCount++;
+		 nextDataLine = nextStrAry[0].trim();
+		 if(!nextDataLine.startsWith("~")) {
+			 break;
+		 }
+		 logicalLine = logicalLine + " " + nextDataLine.substring(1).trim();
+		 nextDataLine = null;
+	 }
+	 return new LogicalLine(logicalLine, nextDataLine, consumedLineCount);
+     }
+
+     private static String[] legacyWindingTransformerLines(String firstLine, String logicalLine) {
+	 String lower = logicalLine.toLowerCase();
+	 int wdg1Idx = lower.indexOf(" wdg=1 ");
+	 int wdg2Idx = lower.indexOf(" wdg=2 ");
+	 if(wdg1Idx < 0 || wdg2Idx <= wdg1Idx) {
+		 return null;
+	 }
+	 String wdg1 = logicalLine.substring(wdg1Idx + 1, wdg2Idx).trim();
+	 String wdg2 = logicalLine.substring(wdg2Idx + 1).trim();
+	 if(!wdg1.toLowerCase().contains(" bus=") || !wdg2.toLowerCase().contains(" bus=")) {
+		 return null;
+	 }
+	 return new String[] {
+			 firstLine,
+			 "~ " + wdg1,
+			 "~ " + wdg2
+	 };
+     }
+
+     private boolean parseReactorData(String reactorStr) throws Exception {
+	 String reactorName = "";
+	 String fromBusId = "";
+	 String toBusId = "";
+	 int phaseNum = 3;
+	 double r = 0.0;
+	 double x = 0.0;
+	 for(String token : splitOutsideLists(reactorStr.trim().toLowerCase())) {
+		 if(token.contains("reactor.")) {
+			 reactorName = token.substring(token.indexOf("reactor.") + 8);
+		 }
+		 else if(token.startsWith("bus1=")) {
+			 fromBusId = terminalBusId(token.substring(5));
+		 }
+		 else if(token.startsWith("bus2=")) {
+			 toBusId = terminalBusId(token.substring(5));
+		 }
+		 else if(token.startsWith("phases=")) {
+			 phaseNum = Integer.valueOf(token.substring(7));
+		 }
+		 else if(token.startsWith("r=")) {
+			 r = parseOpenDssNumber(token.substring(2));
+		 }
+		 else if(token.startsWith("x=")) {
+			 x = parseOpenDssNumber(token.substring(2));
+		 }
+	 }
+	 if(fromBusId.equals("") || toBusId.equals("")) {
+		 throw new Error("Reactor bus terminals are not defined: " + reactorStr);
+	 }
+	 fromBusId = this.busIdPrefix + fromBusId;
+	 toBusId = this.busIdPrefix + toBusId;
+	 if(this.distNet.getBus(fromBusId) == null) {
+		 ThreePhaseObjectFactory.create3PDStabBus(fromBusId, this.distNet);
+	 }
+	 if(this.distNet.getBus(toBusId) == null) {
+		 ThreePhaseObjectFactory.create3PDStabBus(toBusId, this.distNet);
+	 }
+	 DStab3PBranch reactor = ThreePhaseObjectFactory.create3PBranch(fromBusId, toBusId,
+			 reactorName.equals("") ? "1" : reactorName, this.distNet);
+	 reactor.setName(this.busIdPrefix + reactorName);
+	 reactor.setBranchCode(AclfBranchCode.LINE);
+	 reactor.setPhaseCode(phaseNum == 1 ? PhaseCode.A : PhaseCode.ABC);
+	 Complex z = new Complex(r, x);
+	 Complex3x3 zabc = new Complex3x3();
+	 zabc.aa = z;
+	 if(phaseNum > 1) {
+		 zabc.bb = z;
+	 }
+	 if(phaseNum > 2) {
+		 zabc.cc = z;
+	 }
+	 reactor.setZabc(zabc);
+	 return true;
+     }
+
+     private static String terminalBusId(String openDssBusId) {
+	 int dotIdx = openDssBusId.indexOf(".");
+	 return dotIdx < 0 ? openDssBusId : openDssBusId.substring(0, dotIdx);
+     }
+
+     private static double parseOpenDssNumber(String value) {
+	 String trimmed = value.trim();
+	 if(trimmed.startsWith("(") && trimmed.endsWith(")")) {
+		 return evaluateRpn(trimmed.substring(1, trimmed.length() - 1));
+	 }
+	 return Double.valueOf(trimmed).doubleValue();
+     }
+
+     private static double evaluateRpn(String expression) {
+	 List<Double> stack = new ArrayList<>();
+	 for(String token : expression.trim().split("\\s+")) {
+		 if(token.equals("+") || token.equals("-") || token.equals("*") || token.equals("/")) {
+			 double right = stack.remove(stack.size() - 1);
+			 double left = stack.remove(stack.size() - 1);
+			 if(token.equals("+")) {
+				 stack.add(left + right);
+			 }
+			 else if(token.equals("-")) {
+				 stack.add(left - right);
+			 }
+			 else if(token.equals("*")) {
+				 stack.add(left * right);
+			 }
+			 else {
+				 stack.add(left / right);
+			 }
+		 }
+		 else if(token.equals("sqr")) {
+			 double operand = stack.remove(stack.size() - 1);
+			 stack.add(operand * operand);
+		 }
+		 else {
+			 stack.add(Double.valueOf(token));
+		 }
+	 }
+	 if(stack.size() != 1) {
+		 throw new Error("Unable to evaluate OpenDSS RPN expression: " + expression);
+	 }
+	 return stack.get(0).doubleValue();
+     }
+
+     private static String[] splitOutsideLists(String value) {
+	 List<String> tokens = new ArrayList<>();
+	 StringBuilder current = new StringBuilder();
+	 int bracketDepth = 0;
+	 int parenDepth = 0;
+	 for (int i = 0; i < value.length(); i++) {
+		 char ch = value.charAt(i);
+		 if (Character.isWhitespace(ch) && bracketDepth == 0 && parenDepth == 0) {
+			 if (current.length() > 0) {
+				 tokens.add(current.toString());
+				 current.setLength(0);
+			 }
+			 continue;
+		 }
+		 if (ch == '[') {
+			 bracketDepth++;
+		 }
+		 else if (ch == ']' && bracketDepth > 0) {
+			 bracketDepth--;
+		 }
+		 else if (ch == '(') {
+			 parenDepth++;
+		 }
+		 else if (ch == ')' && parenDepth > 0) {
+			 parenDepth--;
+		 }
+		 current.append(ch);
+	 }
+	 if (current.length() > 0) {
+		 tokens.add(current.toString());
+	 }
+	 return tokens.toArray(new String[0]);
+     }
+
+     private static class LogicalLine {
+	 private final String logicalLine;
+	 private final String nextLine;
+	 private final int consumedLineCount;
+
+	 private LogicalLine(String logicalLine, String nextLine, int consumedLineCount) {
+		 this.logicalLine = logicalLine;
+		 this.nextLine = nextLine;
+		 this.consumedLineCount = consumedLineCount;
+	 }
+     }
+
      private String[] getNextDataInputString(IFileReader reader) throws ODMException{
 	 String dataString = null;
 	 int skipLineNum = 0;

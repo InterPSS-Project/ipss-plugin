@@ -53,10 +53,10 @@ public class OpenDSSCapacitorParser {
 					if(tempAry.length>1){
 						phase1 = tempAry[1];
 					}
-					else if(tempAry.length>2){
+					if(tempAry.length>2){
 						phase2 = tempAry[2];
 					}
-					else if(tempAry.length>3){
+					if(tempAry.length>3){
 						phase3 = tempAry[3];
 					}
 				}
@@ -90,6 +90,7 @@ public class OpenDSSCapacitorParser {
 		load.setCode(AclfLoadCode.CONST_Z);
 		load.setLoadConnectionType(LoadConnectionType.THREE_PHASE_WYE);
 		load.setPhaseCode(PhaseCode.ABC);
+		load.setNominalKV(nominalKV);
 
 		// single phase and three-phase capacitors are all modeled by three-phase shunts
 		double kva1Phase = capKVAR/3.0;
