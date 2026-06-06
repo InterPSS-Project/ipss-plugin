@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.ArrayDeque;
 import java.util.Collections;
@@ -87,6 +89,78 @@ public class OpenDssParserPowerFlowComparisonTest {
 	@Test
 	public void ieee8500FixedPointConvergesWithRegControlsDisabled() throws IOException {
 		assertIeee8500PowerFlowConvergesWithRegControlsDisabled(DistributionPFMethod.Fixed_Point);
+	}
+
+	@Test
+	@Disabled("Diagnostic only: checks whether IEEE8500 DSS mismatch is fixed-point tolerance limited")
+	public void ieee8500FixedPointToleranceSensitivityDiagnostic() throws IOException {
+		List<VoltageReference> references = readReferences(
+				"opendss-reference/ieee8500-controls-off-dss-python-voltage-reference.csv");
+		for(double tolerance : new double[] {1.0e-4, 1.0e-6, 1.0e-8}) {
+			OpenDSSDataParser parser = new OpenDSSDataParser();
+			parser.setRegControlEnabled(false);
+			assertTrue(parser.parseFeederData("testData/feeder/IEEE8500", "Master-InterPSS.dss"));
+			assertTrue(parser.calcVoltageBases());
+			assertTrue(parser.convertActualValuesToPU(1.0));
+
+			DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(parser.getDistNetwork());
+			powerFlow.setPFMethod(DistributionPFMethod.Fixed_Point);
+			powerFlow.setInitBusVoltageEnabled(true);
+			powerFlow.setMaxIteration(1000);
+			powerFlow.setTolerance(tolerance);
+			assertTrue(powerFlow.powerflow(), "Power flow failed at tolerance=" + tolerance
+					+ ", iterations=" + powerFlow.getIterationCount());
+			ComparisonResult result = compareVoltages(parser.getDistNetwork(), references);
+			System.out.println("IEEE8500 fixed-point tolerance=" + tolerance
+					+ ", iterations=" + powerFlow.getIterationCount()
+					+ ", " + result.summary("IEEE8500"));
+		}
+	}
+
+	@Test
+	@Disabled("Diagnostic only: exports solved IEEE8500 InterPSS load powers/currents for DSS-Python comparison")
+	public void ieee8500InterpssSolvedLoadExportDiagnostic() throws IOException {
+		OpenDSSDataParser parser = new OpenDSSDataParser();
+		parser.setRegControlEnabled(false);
+		assertTrue(parser.parseFeederData("testData/feeder/IEEE8500", "Master-InterPSS.dss"));
+		assertTrue(parser.calcVoltageBases());
+		assertTrue(parser.convertActualValuesToPU(1.0));
+
+		DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(parser.getDistNetwork());
+		powerFlow.setPFMethod(DistributionPFMethod.Fixed_Point);
+		powerFlow.setInitBusVoltageEnabled(true);
+		powerFlow.setMaxIteration(1000);
+		powerFlow.setTolerance(1.0e-8);
+		assertTrue(powerFlow.powerflow(), "IEEE8500 fixed-point failed, iterations="
+				+ powerFlow.getIterationCount());
+
+		Path output = Path.of("target", "load-comparison", "interpss-ieee8500-loads.csv");
+		Files.createDirectories(output.getParent());
+		Files.writeString(output, interpssLoadCsv(parser.getDistNetwork()), StandardCharsets.UTF_8);
+		System.out.println("Wrote InterPSS load export: " + output.toAbsolutePath());
+	}
+
+	@Test
+	@Disabled("Diagnostic only: exports solved IEEE8500 InterPSS branch powers/currents for DSS-Python comparison")
+	public void ieee8500InterpssSolvedBranchExportDiagnostic() throws IOException {
+		OpenDSSDataParser parser = new OpenDSSDataParser();
+		parser.setRegControlEnabled(false);
+		assertTrue(parser.parseFeederData("testData/feeder/IEEE8500", "Master-InterPSS.dss"));
+		assertTrue(parser.calcVoltageBases());
+		assertTrue(parser.convertActualValuesToPU(1.0));
+
+		DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(parser.getDistNetwork());
+		powerFlow.setPFMethod(DistributionPFMethod.Fixed_Point);
+		powerFlow.setInitBusVoltageEnabled(true);
+		powerFlow.setMaxIteration(1000);
+		powerFlow.setTolerance(1.0e-8);
+		assertTrue(powerFlow.powerflow(), "IEEE8500 fixed-point failed, iterations="
+				+ powerFlow.getIterationCount());
+
+		Path output = Path.of("target", "load-comparison", "interpss-ieee8500-branches.csv");
+		Files.createDirectories(output.getParent());
+		Files.writeString(output, interpssBranchCsv(parser.getDistNetwork()), StandardCharsets.UTF_8);
+		System.out.println("Wrote InterPSS branch export: " + output.toAbsolutePath());
 	}
 
 	@Test
@@ -340,6 +414,8 @@ public class OpenDssParserPowerFlowComparisonTest {
 			System.out.println("IEEE8500 " + method + " with parsed capacitors disabled: converged="
 					+ converged + ", iterations=" + powerFlow.getIterationCount()
 					+ ", disabledCaps=" + disabledCaps);
+			printLocalVoltageMagnitudes(parser.getDistNetwork(),
+					List.of("regxfmr_hvmv_sub_lsb", "m3032977", "m1166366", "sx2862616c"));
 			if(!converged) {
 				printIeee8500FailureDiagnostics(parser.getDistNetwork(), method, powerFlow.getIterationCount());
 			}
@@ -367,14 +443,26 @@ public class OpenDssParserPowerFlowComparisonTest {
 				"opendss-reference/ieee8500-controls-off-dss-python-voltage-reference.csv");
 		printTopVoltageMismatches(distNet, references, 12);
 		printLocalVoltageComparison(distNet, references,
+				List.of("l3312692", "m3016088", "l3082993", "l3177894", "l2989571"));
+		printSourcePathVoltageErrors(distNet, references, "l3312692", 1, 2.0e-3);
+		printSourcePathVoltageDropErrors(distNet, references, "l3312692", 1, 5.0e-5);
+		printSourcePath(distNet, "l3312692");
+		printSourcePathBranchCurrents(distNet, "l3312692", "hvmv_sub_hsb");
+		printLocalVoltageComparison(distNet, references,
 				List.of("l3101194", "l2862616", "x2862616c", "sx2862616c"));
 		printSourcePathVoltageErrors(distNet, references, "sx2862616c", 3, 2.0e-3);
 		printSourcePathVoltageDropErrors(distNet, references, "sx2862616c", 3, 2.0e-4);
-		printSourcePath(distNet, "sx2862616c");
 		printIncidentBranches(distNet, "sourcebus");
 		printIncidentBranches(distNet, "hvmv_sub_hsb");
 		printIncidentBranches(distNet, "regxfmr_hvmv_sub_lsb");
 		printIncidentBranches(distNet, "m3032977");
+		printIncidentBranches(distNet, "m3016088");
+		printIncidentBranches(distNet, "l3312692");
+		printThreePhaseCurrentBalance(distNet, "hvmv_sub_hsb");
+		printThreePhaseCurrentBalance(distNet, "regxfmr_hvmv_sub_lsb");
+		printThreePhaseCurrentBalance(distNet, "m3032977");
+		printThreePhaseCurrentBalance(distNet, "m3016088");
+		printThreePhaseCurrentBalance(distNet, "l3312692");
 		printIncidentBranches(distNet, "m1166366");
 		printIncidentBranches(distNet, "m1166368");
 		printIncidentBranches(distNet, "l2973833");
@@ -383,6 +471,8 @@ public class OpenDssParserPowerFlowComparisonTest {
 		printIncidentBranches(distNet, "sx2862616c");
 		printPhysicalBranchDiagnostic(distNet, "hvmv_sub");
 		printPhysicalBranchDiagnostic(distNet, "ln6504018-1");
+		printPhysicalBranchDiagnostic(distNet, "ln6504020-2");
+		printPhysicalBranchDiagnostic(distNet, "ln6318761-1");
 	}
 
 	@Test
@@ -1092,6 +1182,22 @@ public class OpenDssParserPowerFlowComparisonTest {
 	}
 
 	@Test
+	public void centerTappedLowVoltageTwoPhaseWyeLoadUsesOpenDssVminFallback() throws IOException {
+		assertCenterTappedLowVoltageMiniCaseConverges("testData/feeder/CenterTapMiniLowVoltageTwoPhaseLoad",
+				"opendss-reference/centertap-mini-low-voltage-two-phase-load-dss-python-voltage-reference.csv",
+				"CenterTapMiniLowVoltageTwoPhaseLoad DSS-Python",
+				"Center-tapped low-voltage two-phase wye load mini case failed");
+	}
+
+	@Test
+	public void centerTappedLowVoltageSinglePhaseLoadsUseOpenDssVminFallback() throws IOException {
+		assertCenterTappedLowVoltageMiniCaseConverges("testData/feeder/CenterTapMiniLowVoltageSinglePhaseLoads",
+				"opendss-reference/centertap-mini-low-voltage-single-phase-loads-dss-python-voltage-reference.csv",
+				"CenterTapMiniLowVoltageSinglePhaseLoads DSS-Python",
+				"Center-tapped low-voltage single-phase load mini case failed");
+	}
+
+	@Test
 	public void centerTappedSinglePhaseDeltaLoadMiniCaseConverges() throws IOException {
 		assertCenterTappedMiniCaseConverges("testData/feeder/CenterTapMiniDeltaLoad",
 				"opendss-reference/centertap-mini-delta-load-dss-python-voltage-reference.csv",
@@ -1122,6 +1228,36 @@ public class OpenDssParserPowerFlowComparisonTest {
 		assertEquals(1.0, vabc.a_0.abs(), 0.08);
 		assertEquals(1.0, vabc.b_1.abs(), 0.08);
 		assertEquals(1.0, splitPhaseLineVoltagePu(vabc), 0.08);
+		assertTrue(vabc.c_2.abs() < 1.0e-3);
+
+		ComparisonResult result = compareVoltages(distNet, readReferences(referenceResource));
+		assertMiniDssPythonComparison(result, comparisonLabel);
+	}
+
+	private static void assertCenterTappedLowVoltageMiniCaseConverges(String feederFolder, String referenceResource,
+			String comparisonLabel, String failureMessage) throws IOException {
+		OpenDSSDataParser parser = new OpenDSSDataParser();
+		assertTrue(parser.parseFeederData(feederFolder, "Master.dss"));
+		assertTrue(parser.calcVoltageBases());
+		assertTrue(parser.convertActualValuesToPU(1.0));
+
+		DStabNetwork3Phase distNet = parser.getDistNetwork();
+		DStab3PBranch transformer = parser.getBranchByName("service");
+		assertTrue(transformer.hasExplicitYabc(), "Center-tapped transformer should use explicit Y blocks");
+		assertEquals(208.0, distNet.getBus("secondary").getBaseVoltage(), 2.0);
+
+		DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(distNet);
+		powerFlow.setPFMethod(DistributionPFMethod.Fixed_Point);
+		powerFlow.setInitBusVoltageEnabled(true);
+		powerFlow.setMaxIteration(50);
+		powerFlow.setTolerance(1.0e-8);
+		assertTrue(powerFlow.powerflow(), failureMessage + ", iterations=" + powerFlow.getIterationCount());
+
+		Complex3x1 vabc = distNet.getBus("loadbus").get3PhaseVotlages();
+		assertTrue(vabc.a_0.abs() < 0.88, "phase 1 should be below Vminpu to exercise OpenDSS fallback");
+		assertTrue(vabc.b_1.abs() < 0.88, "phase 2 should be below Vminpu to exercise OpenDSS fallback");
+		assertTrue(splitPhaseLineVoltagePu(vabc) < 0.88,
+				"split-phase line voltage should be below Vminpu to exercise OpenDSS fallback");
 		assertTrue(vabc.c_2.abs() < 1.0e-3);
 
 		ComparisonResult result = compareVoltages(distNet, readReferences(referenceResource));
@@ -1395,6 +1531,145 @@ public class OpenDssParserPowerFlowComparisonTest {
 					+ " yftAbs=" + branch3p.getYftabc().absMax()
 					+ " ytfAbs=" + branch3p.getYtfabc().absMax());
 		}
+	}
+
+	private static void printLocalVoltageMagnitudes(DStabNetwork3Phase distNet, List<String> busIds) {
+		System.out.println("IEEE8500 local InterPSS voltage magnitudes:");
+		for(String busId : busIds) {
+			DStab3PBus bus = distNet.getBus(busId);
+			if(bus == null) {
+				System.out.println("  " + busId + " missing");
+				continue;
+			}
+			System.out.println("  " + busId + " " + phaseMagnitudes(bus.get3PhaseVotlages()));
+		}
+	}
+
+	private static String interpssLoadCsv(DStabNetwork3Phase distNet) {
+		StringBuilder builder = new StringBuilder();
+		builder.append("source,name,bus,load_class,code,conn,phase,nominal_kv,vminpu,vmaxpu,p_kw,q_kvar,current_abs_sum_a,current_abs_max_a,currents,powers_kva\n");
+		double baseKva1P = distNet.getBaseKva()/3.0;
+		for(DStab3PBus bus : distNet.getBusList()) {
+			Complex3x1 vabc = bus.get3PhaseVotlages();
+			double baseCurrentA = baseKva1P/(bus.getBaseVoltage()*1.0e-3/Math.sqrt(3.0));
+			for(DStab1PLoad load : bus.getSinglePhaseLoadList()) {
+				Complex3x1 injection = load.getEquivCurrInj(vabc);
+				Complex3x1 loadCurrent = injection.multiply(-1.0);
+				Complex3x1 power = phasePowers(vabc, loadCurrent);
+				appendInterpssLoadRow(builder, load.getId(), bus.getId(), "single",
+						load.getCode().toString(), load.getLoadConnectionType().toString(),
+						load.getPhaseCode().toString(), load.getNominalKV(), load.getVminpu(), load.getVmaxpu(),
+						loadCurrent, power, baseKva1P, baseCurrentA);
+			}
+			for(DStab3PLoad load : bus.getThreePhaseLoadList()) {
+				DStab1PLoad loadBase = (DStab1PLoad) load;
+				Complex3x1 injection = load.getEquivCurrInj(vabc);
+				Complex3x1 loadCurrent = injection.multiply(-1.0);
+				Complex3x1 power = phasePowers(vabc, loadCurrent);
+				appendInterpssLoadRow(builder, load.getId(), bus.getId(), "three",
+						load.getCode().toString(), load.getLoadConnectionType().toString(),
+						load.getPhaseCode().toString(), load.getNominalKV(), loadBase.getVminpu(), loadBase.getVmaxpu(),
+						loadCurrent, power, baseKva1P, baseCurrentA);
+			}
+		}
+		return builder.toString();
+	}
+
+	private static String interpssBranchCsv(DStabNetwork3Phase distNet) {
+		StringBuilder builder = new StringBuilder();
+		builder.append("source,class,name,bus,from_bus,to_bus,phase,p_kw,q_kvar,current_abs_sum_a,current_abs_max_a,currents,powers_kva\n");
+		double baseVa = distNet.getBaseKva() * 1000.0;
+		for(Branch branch : distNet.getBranchList()) {
+			if(!branch.isActive()) {
+				continue;
+			}
+			DStab3PBranch branch3p = (DStab3PBranch) branch;
+			DStab3PBus fromBus = (DStab3PBus) branch.getFromBus();
+			DStab3PBus toBus = (DStab3PBus) branch.getToBus();
+			Complex3x1 fromCurrentPu = branch3p.calc3PhaseCurrentFrom2To();
+			Complex3x1 toCurrentPu = branch3p.calc3PhaseCurrentTo2From();
+			double fromIbase = baseVa / (Math.sqrt(3.0) * fromBus.getBaseVoltage());
+			double toIbase = baseVa / (Math.sqrt(3.0) * toBus.getBaseVoltage());
+			Complex3x1 fromCurrent = fromCurrentPu.multiply(fromIbase);
+			Complex3x1 toCurrent = toCurrentPu.multiply(toIbase);
+			Complex3x1 fromPower = physicalPhasePowers(fromBus.get3PhaseVotlages(), fromBus.getBaseVoltage(), fromCurrent);
+			Complex3x1 toPower = physicalPhasePowers(toBus.get3PhaseVotlages(), toBus.getBaseVoltage(), toCurrent);
+			Complex totalPower = fromPower.a_0.add(fromPower.b_1).add(fromPower.c_2)
+					.add(toPower.a_0).add(toPower.b_1).add(toPower.c_2);
+			double currentAbsSum = fromCurrent.a_0.abs() + fromCurrent.b_1.abs() + fromCurrent.c_2.abs()
+					+ toCurrent.a_0.abs() + toCurrent.b_1.abs() + toCurrent.c_2.abs();
+			double currentAbsMax = Collections.max(List.of(fromCurrent.a_0.abs(), fromCurrent.b_1.abs(),
+					fromCurrent.c_2.abs(), toCurrent.a_0.abs(), toCurrent.b_1.abs(), toCurrent.c_2.abs()));
+			builder.append("interpss,")
+					.append(branch3p.isXfr() ? "Transformer" : "Line").append(",")
+					.append(csv(branch.getName().toLowerCase())).append(",")
+					.append(csv(fromBus.getId().toLowerCase() + ";" + toBus.getId().toLowerCase())).append(",")
+					.append(csv(fromBus.getId().toLowerCase())).append(",")
+					.append(csv(toBus.getId().toLowerCase())).append(",")
+					.append(csv(branch3p.getPhaseCode().toString())).append(",")
+					.append(String.format("%.12g", totalPower.getReal())).append(",")
+					.append(String.format("%.12g", totalPower.getImaginary())).append(",")
+					.append(String.format("%.12g", currentAbsSum)).append(",")
+					.append(String.format("%.12g", currentAbsMax)).append(",")
+					.append(csv(formatComplex(fromCurrent.a_0) + ";" + formatComplex(fromCurrent.b_1) + ";"
+							+ formatComplex(fromCurrent.c_2) + ";" + formatComplex(toCurrent.a_0) + ";"
+							+ formatComplex(toCurrent.b_1) + ";" + formatComplex(toCurrent.c_2))).append(",")
+					.append(csv(formatComplex(fromPower.a_0) + ";" + formatComplex(fromPower.b_1) + ";"
+							+ formatComplex(fromPower.c_2) + ";" + formatComplex(toPower.a_0) + ";"
+							+ formatComplex(toPower.b_1) + ";" + formatComplex(toPower.c_2))).append("\n");
+		}
+		return builder.toString();
+	}
+
+	private static Complex3x1 physicalPhasePowers(Complex3x1 voltagePu, double baseVoltageLl, Complex3x1 currentA) {
+		double phaseBaseV = baseVoltageLl / Math.sqrt(3.0);
+		return new Complex3x1(
+				voltagePu.a_0.multiply(phaseBaseV).multiply(currentA.a_0.conjugate()).divide(1000.0),
+				voltagePu.b_1.multiply(phaseBaseV).multiply(currentA.b_1.conjugate()).divide(1000.0),
+				voltagePu.c_2.multiply(phaseBaseV).multiply(currentA.c_2.conjugate()).divide(1000.0));
+	}
+
+	private static Complex3x1 phasePowers(Complex3x1 voltage, Complex3x1 current) {
+		return new Complex3x1(
+				voltage.a_0.multiply(current.a_0.conjugate()),
+				voltage.b_1.multiply(current.b_1.conjugate()),
+				voltage.c_2.multiply(current.c_2.conjugate()));
+	}
+
+	private static void appendInterpssLoadRow(StringBuilder builder, String name, String bus, String loadClass,
+			String code, String connection, String phase, double nominalKv, double vminpu, double vmaxpu,
+			Complex3x1 currentPu, Complex3x1 powerPu, double baseKva1P, double baseCurrentA) {
+		Complex totalPower = powerPu.a_0.add(powerPu.b_1).add(powerPu.c_2).multiply(baseKva1P);
+		Complex currentA = currentPu.a_0.multiply(baseCurrentA);
+		Complex currentB = currentPu.b_1.multiply(baseCurrentA);
+		Complex currentC = currentPu.c_2.multiply(baseCurrentA);
+		double currentAbsSum = currentA.abs() + currentB.abs() + currentC.abs();
+		double currentAbsMax = Math.max(currentA.abs(), Math.max(currentB.abs(), currentC.abs()));
+		builder.append("interpss,")
+				.append(csv(name.toLowerCase())).append(",")
+				.append(csv(bus.toLowerCase())).append(",")
+				.append(csv(loadClass)).append(",")
+				.append(csv(code)).append(",")
+				.append(csv(connection)).append(",")
+				.append(csv(phase)).append(",")
+				.append(String.format("%.12g", nominalKv)).append(",")
+				.append(String.format("%.12g", vminpu)).append(",")
+				.append(String.format("%.12g", vmaxpu)).append(",")
+				.append(String.format("%.12g", totalPower.getReal())).append(",")
+				.append(String.format("%.12g", totalPower.getImaginary())).append(",")
+				.append(String.format("%.12g", currentAbsSum)).append(",")
+				.append(String.format("%.12g", currentAbsMax)).append(",")
+				.append(csv(formatComplex(currentA) + ";" + formatComplex(currentB) + ";" + formatComplex(currentC))).append(",")
+				.append(csv(formatComplex(powerPu.a_0.multiply(baseKva1P)) + ";"
+						+ formatComplex(powerPu.b_1.multiply(baseKva1P)) + ";"
+						+ formatComplex(powerPu.c_2.multiply(baseKva1P)))).append("\n");
+	}
+
+	private static String csv(String value) {
+		if(value.indexOf(',') < 0 && value.indexOf('"') < 0 && value.indexOf('\n') < 0) {
+			return value;
+		}
+		return "\"" + value.replace("\"", "\"\"") + "\"";
 	}
 
 	private static void printSourcePathVoltageErrors(DStabNetwork3Phase distNet, List<VoltageReference> references,
