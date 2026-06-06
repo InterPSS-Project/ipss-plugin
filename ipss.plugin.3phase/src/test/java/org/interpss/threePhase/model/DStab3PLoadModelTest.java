@@ -4,10 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.basic.dstab.DStab1PLoad;
 import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 import org.interpss.threePhase.basic.dstab.impl.DStab1PLoadImpl;
 import org.interpss.threePhase.basic.dstab.impl.DStab3PLoadImpl;
+import org.interpss.threePhase.dataParser.opendss.OpenDSSDataParser;
+import org.interpss.threePhase.dataParser.opendss.OpenDSSLoadParser;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.threephase.LoadConnectionType;
@@ -127,5 +130,76 @@ public class DStab3PLoadModelTest {
 		double expectedCurrent = new Complex(expectedP, expectedQ).abs() / 0.95;
 
 		assertEquals(expectedCurrent, current.a_0.abs(), 1.0e-12);
+	}
+
+	@Test
+	public void openDssModel3KeepsPConstantAndScalesQAsImpedance() {
+		DStab1PLoad load = new DStab1PLoadImpl();
+		load.setCode(AclfLoadCode.CONST_P);
+		load.setLoadCP(new Complex(10.0, 5.0));
+		load.setOpenDssLoadModel(3, 1.0, 2.0, null);
+
+		Complex scaledLoad = load.getLoad(0.90);
+
+		assertEquals(10.0, scaledLoad.getReal(), 1.0e-12);
+		assertEquals(5.0 * 0.90 * 0.90, scaledLoad.getImaginary(), 1.0e-12);
+	}
+
+	@Test
+	public void openDssModel6KeepsPAndQFixedInsideVoltageBand() {
+		DStab1PLoad load = new DStab1PLoadImpl();
+		load.setCode(AclfLoadCode.CONST_P);
+		load.setLoadCP(new Complex(10.0, 5.0));
+		load.setOpenDssLoadModel(6, 1.0, 2.0, null);
+
+		Complex scaledLoad = load.getLoad(0.90);
+
+		assertEquals(10.0, scaledLoad.getReal(), 1.0e-12);
+		assertEquals(5.0, scaledLoad.getImaginary(), 1.0e-12);
+	}
+
+	@Test
+	public void openDssModel7KeepsPConstantAndUsesFixedReactiveImpedance() {
+		DStab1PLoad load = new DStab1PLoadImpl();
+		load.setCode(AclfLoadCode.CONST_P);
+		load.setLoadCP(new Complex(10.0, 5.0));
+		load.setOpenDssLoadModel(7, 1.0, 2.0, null);
+
+		Complex scaledLoad = load.getLoad(0.90);
+
+		assertEquals(10.0, scaledLoad.getReal(), 1.0e-12);
+		assertEquals(5.0 * 0.90 * 0.90, scaledLoad.getImaginary(), 1.0e-12);
+	}
+
+	@Test
+	public void openDssModel8UsesZipvCoefficientsAndCutoff() {
+		DStab1PLoad load = new DStab1PLoadImpl();
+		load.setCode(AclfLoadCode.CONST_P);
+		load.setLoadCP(new Complex(10.0, 5.0));
+		double[] zipv = {0.2, 0.3, 0.5, 0.1, 0.2, 0.7, 0.70};
+		load.setOpenDssLoadModel(8, 1.0, 2.0, zipv);
+
+		Complex scaledLoad = load.getLoad(0.90);
+		double expectedPScale = 0.2 * 0.90 * 0.90 + 0.3 * 0.90 + 0.5;
+		double expectedQScale = 0.1 * 0.90 * 0.90 + 0.2 * 0.90 + 0.7;
+
+		assertEquals(10.0 * expectedPScale, scaledLoad.getReal(), 1.0e-12);
+		assertEquals(5.0 * expectedQScale, scaledLoad.getImaginary(), 1.0e-12);
+		assertEquals(0.0, load.getLoad(0.60).abs(), 1.0e-12);
+	}
+
+	@Test
+	public void parserAcceptsModel8ZipvArrayWithSpaces() throws Exception {
+		OpenDSSDataParser parser = new OpenDSSDataParser();
+		OpenDSSLoadParser loadParser = new OpenDSSLoadParser(parser);
+		loadParser.parseLoadData("new load.zip bus1=zipbus.1 phases=1 conn=wye model=8 kv=2.4 kw=10 kvar=5 "
+				+ "zipv=(0.2, 0.3, 0.5, 0.1, 0.2, 0.7, 0.70)");
+
+		DStab3PBus bus = parser.getDistNetwork().getBus("zipbus");
+		DStab1PLoad load = bus.getSinglePhaseLoadList().get(0);
+
+		assertEquals(8, load.getOpenDssLoadModel());
+		assertEquals(7, load.getOpenDssZipv().length);
+		assertEquals(0.70, load.getOpenDssZipv()[6], 1.0e-12);
 	}
 }

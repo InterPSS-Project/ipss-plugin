@@ -83,8 +83,9 @@ public class OpenDSSLoadParser {
 			Double vminpu = null;
 			Double vmaxpu = null;
 			boolean kwSpecified = false;
+			double[] zipv = null;
 
-			String[] loadStrAry = loadStr.toLowerCase().trim().replaceAll("\\s*=\\s*", "=").split("\\s+");
+			String[] loadStrAry = splitDssTokens(loadStr.toLowerCase().trim().replaceAll("\\s*=\\s*", "="));
 
 			for (String element : loadStrAry) {
 				if(element.startsWith("Load.")||element.startsWith("load.")){
@@ -138,6 +139,9 @@ public class OpenDSSLoadParser {
 				}
 				else if(element.startsWith("cvrvars=")){
 					cvrVars = parseDssDouble(element.substring(8));
+				}
+				else if(element.startsWith("zipv=")){
+					zipv = parseDssDoubleArray(element.substring(5));
 				}
 
 
@@ -218,12 +222,28 @@ public class OpenDSSLoadParser {
 			else if(modelType==2){
 				setLoadPower(load, phaseNum, phase1, phase2, loadPQ, AclfLoadCode.CONST_Z);
 			}
+			else if(modelType==3){
+				setLoadPower(load, phaseNum, phase1, phase2, loadPQ, AclfLoadCode.CONST_P);
+				load.setOpenDssLoadModel(modelType, cvrWatts, cvrVars, zipv);
+			}
 			else if(modelType==4){
 				setLoadPower(load, phaseNum, phase1, phase2, loadPQ, AclfLoadCode.CONST_P);
-				load.setOpenDssModel4(true, cvrWatts, cvrVars);
+				load.setOpenDssLoadModel(modelType, cvrWatts, cvrVars, zipv);
 			}
 			else if(modelType==5){
 				setLoadPower(load, phaseNum, phase1, phase2, loadPQ, AclfLoadCode.CONST_I);
+			}
+			else if(modelType==6 || modelType==7){
+				setLoadPower(load, phaseNum, phase1, phase2, loadPQ, AclfLoadCode.CONST_P);
+				load.setOpenDssLoadModel(modelType, cvrWatts, cvrVars, zipv);
+			}
+			else if(modelType==8){
+				if(zipv == null || zipv.length < 7) {
+					no_error = false;
+					throw new Error("OpenDSS load model=8 requires 7 ZIPV coefficients! # "+loadStr);
+				}
+				setLoadPower(load, phaseNum, phase1, phase2, loadPQ, AclfLoadCode.CONST_P);
+				load.setOpenDssLoadModel(modelType, cvrWatts, cvrVars, zipv);
 			}
 			else{
 				no_error = false;
@@ -315,7 +335,7 @@ public class OpenDSSLoadParser {
 				bus.getThreePhaseLoadList().add((DStab3PLoad) load);
 			}
 			registerParsedLoad(loadId, load, phaseNum, phase1, phase2, modelType,
-					transformerKva, powerfactor, cvrWatts, cvrVars);
+					transformerKva, powerfactor, cvrWatts, cvrVars, zipv);
 
 			//TODO The following setting does NOT mean all the loads are constP type, it is a known limitation with bus level loadcode setting
 			bus.setLoadCode(AclfLoadCode.CONST_P);
@@ -353,18 +373,21 @@ public class OpenDSSLoadParser {
 						: parsedLoad.modelType == 5 ? AclfLoadCode.CONST_I : AclfLoadCode.CONST_P;
 				setLoadPower(parsedLoad.load, parsedLoad.phaseNum, parsedLoad.phase1, parsedLoad.phase2,
 						new Complex(loadP, loadQ), code);
-				if(parsedLoad.modelType == 4) {
-					parsedLoad.load.setOpenDssModel4(true, parsedLoad.cvrWatts, parsedLoad.cvrVars);
+				if(parsedLoad.modelType == 3 || parsedLoad.modelType == 4 || parsedLoad.modelType == 6
+						|| parsedLoad.modelType == 7 || parsedLoad.modelType == 8) {
+					parsedLoad.load.setOpenDssLoadModel(parsedLoad.modelType, parsedLoad.cvrWatts,
+							parsedLoad.cvrVars, parsedLoad.zipv);
 				}
 			}
 			return true;
 		}
 
 		private void registerParsedLoad(String loadId, DStab1PLoad load, int phaseNum, String phase1, String phase2,
-				int modelType, double transformerKva, double powerFactor, double cvrWatts, double cvrVars) {
+				int modelType, double transformerKva, double powerFactor, double cvrWatts, double cvrVars,
+				double[] zipv) {
 			this.parsedLoadsById.computeIfAbsent(loadId.toLowerCase(), ignored -> new ArrayList<>())
 					.add(new ParsedLoad(load, phaseNum, phase1, phase2, modelType,
-							transformerKva, powerFactor, cvrWatts, cvrVars));
+							transformerKva, powerFactor, cvrWatts, cvrVars, zipv));
 		}
 
 		private void setLoadPower(DStab1PLoad load, int phaseNum, String phase1, String phase2,
@@ -392,6 +415,51 @@ public class OpenDSSLoadParser {
 			return Double.valueOf(normalized);
 		}
 
+		private static String[] splitDssTokens(String text) {
+			List<String> tokens = new ArrayList<>();
+			StringBuilder token = new StringBuilder();
+			int bracketDepth = 0;
+			for(int i = 0; i < text.length(); i++) {
+				char ch = text.charAt(i);
+				if(ch == '(' || ch == '[') {
+					bracketDepth++;
+				}
+				else if(ch == ')' || ch == ']') {
+					bracketDepth = Math.max(0, bracketDepth - 1);
+				}
+				if(Character.isWhitespace(ch) && bracketDepth == 0) {
+					if(token.length() > 0) {
+						tokens.add(token.toString());
+						token.setLength(0);
+					}
+				}
+				else {
+					token.append(ch);
+				}
+			}
+			if(token.length() > 0) {
+				tokens.add(token.toString());
+			}
+			return tokens.toArray(new String[0]);
+		}
+
+		private static double[] parseDssDoubleArray(String value) {
+			String normalized = value.trim();
+			if((normalized.startsWith("(") && normalized.endsWith(")"))
+					|| (normalized.startsWith("[") && normalized.endsWith("]"))) {
+				normalized = normalized.substring(1, normalized.length() - 1).trim();
+			}
+			if(normalized.isEmpty()) {
+				return new double[0];
+			}
+			String[] parts = normalized.split("[,\\s]+");
+			double[] values = new double[parts.length];
+			for(int i = 0; i < parts.length; i++) {
+				values[i] = parseDssDouble(parts[i]);
+			}
+			return values;
+		}
+
 		private static final class ParsedLoad {
 			private final DStab1PLoad load;
 			private final int phaseNum;
@@ -402,9 +470,11 @@ public class OpenDSSLoadParser {
 			private final double powerFactor;
 			private final double cvrWatts;
 			private final double cvrVars;
+			private final double[] zipv;
 
 			private ParsedLoad(DStab1PLoad load, int phaseNum, String phase1, String phase2,
-					int modelType, double transformerKva, double powerFactor, double cvrWatts, double cvrVars) {
+					int modelType, double transformerKva, double powerFactor, double cvrWatts, double cvrVars,
+					double[] zipv) {
 				this.load = load;
 				this.phaseNum = phaseNum;
 				this.phase1 = phase1;
@@ -414,6 +484,7 @@ public class OpenDSSLoadParser {
 				this.powerFactor = powerFactor;
 				this.cvrWatts = cvrWatts;
 				this.cvrVars = cvrVars;
+				this.zipv = zipv == null ? null : zipv.clone();
 			}
 		}
 
