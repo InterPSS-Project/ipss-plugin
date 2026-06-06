@@ -47,27 +47,39 @@ public class DStab1PLoadImpl extends DStabLoadImpl implements DStab1PLoad {
 	@Override
 	public Complex getLoad(double vmag) {
 		if (this.code == AclfLoadCode.CONST_P){
-			if(vmag>this.Vminpu) {
-				return this.loadCP;
-			} else {
-				return this.loadCP.multiply(vmag*vmag);
-			}
+			return loadAtVoltage(this.loadCP, Complex.ZERO, Complex.ZERO, vmag);
 		}
 		else if (this.code == AclfLoadCode.CONST_I) {
-			if(vmag>this.Vminpu) {
-				return this.loadCI.multiply(vmag);
-			} else {
-				return this.loadCI.multiply(vmag*vmag);
-			}
+			return loadAtVoltage(Complex.ZERO, this.loadCI, Complex.ZERO, vmag);
 		} else if (this.code == AclfLoadCode.CONST_Z) {
-			return this.loadCZ.multiply(vmag*vmag);
+			return loadAtVoltage(Complex.ZERO, Complex.ZERO, this.loadCZ, vmag);
 		} else {
-			if(vmag>this.Vminpu) {
-				return this.loadCP.add(this.loadCI.multiply(vmag)).add(loadCZ.multiply(vmag*vmag));
-			} else {
-				return (this.loadCP.add(this.loadCI).add(loadCZ)).multiply(vmag*vmag);
-			}
+			return loadAtVoltage(this.loadCP, this.loadCI, this.loadCZ, vmag);
 		}
+	}
+
+	protected Complex loadAtVoltage(Complex constP, Complex constI, Complex constZ, double vmag) {
+		if (vmag < this.Vminpu) {
+			return loadAtTransitionVoltage(constP, constI, constZ, this.Vminpu)
+					.multiply(matchedImpedanceScale(vmag, this.Vminpu));
+		}
+		if (vmag > this.Vmaxpu) {
+			return loadAtTransitionVoltage(constP, constI, constZ, this.Vmaxpu)
+					.multiply(matchedImpedanceScale(vmag, this.Vmaxpu));
+		}
+		return loadAtTransitionVoltage(constP, constI, constZ, vmag);
+	}
+
+	private Complex loadAtTransitionVoltage(Complex constP, Complex constI, Complex constZ, double vmag) {
+		return constP.add(constI.multiply(vmag)).add(constZ.multiply(vmag * vmag));
+	}
+
+	private double matchedImpedanceScale(double vmag, double transitionVoltage) {
+		if (transitionVoltage <= 0.0) {
+			return vmag * vmag;
+		}
+		double ratio = vmag / transitionVoltage;
+		return ratio * ratio;
 	}
 
 	@Override
