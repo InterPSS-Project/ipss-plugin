@@ -26,6 +26,7 @@ public class OpenDSSTransformerParser {
 
     private OpenDSSDataParser dataParser = null;
 	private final Map<String, double[]> transformerTaps = new HashMap<>();
+	private final Map<String, XfmrCodeData> xfmrCodes = new HashMap<>();
 
 	public OpenDSSTransformerParser(OpenDSSDataParser parser){
 		this.dataParser = parser;
@@ -228,6 +229,44 @@ public class OpenDSSTransformerParser {
 		return true;
 	}
 
+	public boolean parseXfmrCodeData(String xfrCodeStr) {
+		XfmrCodeData code = new XfmrCodeData();
+		String codeName = "";
+		for(String element : splitOutsideLists(xfrCodeStr.trim().toLowerCase())) {
+			if(element.contains("xfmrcode.")) {
+				codeName = element.substring(element.indexOf("xfmrcode.") + 9);
+			}
+			else if(element.contains("phases=")) {
+				code.phaseNum = Integer.valueOf(element.substring(7));
+			}
+			else if(element.contains("windings=")) {
+				code.windingNum = Integer.valueOf(element.substring(9));
+			}
+			else if(element.contains("kvs=")) {
+				code.kvs = doubleValues(listValues(element));
+			}
+			else if(element.contains("kvas=")) {
+				code.kvas = doubleValues(listValues(element));
+			}
+			else if(element.contains("%rs=")) {
+				code.rPercents = doubleValues(listValues(element));
+			}
+			else if(element.contains("xhl=")) {
+				code.xhl = Double.valueOf(element.substring(4));
+			}
+			else if(element.contains("xht=")) {
+				code.xht = Double.valueOf(element.substring(4));
+			}
+			else if(element.contains("xlt=")) {
+				code.xlt = Double.valueOf(element.substring(4));
+			}
+		}
+		if(!codeName.equals("")) {
+			this.xfmrCodes.put(codeName, code);
+		}
+		return true;
+	}
+
 	public void mergeParallelSinglePhaseRegulatorBranches() throws InterpssException {
 		Map<String, List<DStab3PBranch>> branchGroups = new HashMap<>();
 		for(AclfBranch branch : new ArrayList<AclfBranch>(this.dataParser.getDistNetwork().getBranchList())) {
@@ -340,20 +379,29 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 		int phaseNum = 3;
 		int windingNum = 2;
 		double xhl = 0.0;
+		double xht = 0.0;
+		double xlt = 0.0;
 		double losspercent1 = 0,losspercent2;
 		double kva1 = 0, kva2 = 0;
 		double normKV1 = 0.0, normKV2 = 0.0;
+		double[] normKVs = new double[0];
+		double[] kvaRatings = new double[0];
+		double[] rPercents = new double[0];
+		String[] busTerminals = new String[0];
 		String xfrId = "";
 		String fromBusId = "", toBusId = "";
 		String fromConnection="", toConnection = "";
 		String referenceXfrName = "";
+		String xfrCodeName = "";
 		String phase1 = "", phase2 = "",phase3 = "";
 		boolean fromWyeGrounded = true, toWyeGrounded = true;
 		boolean phaseSpecified = false;
 		boolean xhlSpecified = false;
 		boolean lossSpecified = false;
 
-		String[] xfrStrAry  = normalizeInlineRpnDivisions(xfrStr.trim().toLowerCase()).split("\\s+(?![^\\[]*\\])");
+		String[] xfrStrAry  = splitOutsideLists(normalizeInlineRpnDivisions(xfrStr.trim().toLowerCase()));
+		int windingContext = 0;
+		boolean hasWindingSpecificResistance = false;
 
 
 		for (String element : xfrStrAry) {
@@ -367,15 +415,23 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 			else if(element.contains("windings=")){
 				windingNum = Integer.valueOf(element.substring(9));
 			}
+			else if(element.contains("wdg=")){
+				windingContext = Integer.valueOf(element.substring(4));
+			}
 			else if(element.contains("xhl=")){
 				xhl= Double.valueOf(element.substring(4));
 				xhlSpecified = true;
 			}
+			else if(element.contains("xht=")){
+				xht= Double.valueOf(element.substring(4));
+			}
+			else if(element.contains("xlt=")){
+				xlt= Double.valueOf(element.substring(4));
+			}
 
 			else if(element.contains("buses=")){
-				int startIdx =  element.indexOf("[")+1;
-				int endIdx =  element.indexOf("]");
-				String[] busIds = element.substring(startIdx,endIdx).trim().split("\\s+");
+				String[] busIds = listValues(element);
+				busTerminals = busIds;
 				TerminalBus fromTerminal = terminalBus(busIds[0]);
 				fromBusId = fromTerminal.busId;
 				fromWyeGrounded = fromTerminal.wyeGrounded;
@@ -421,29 +477,37 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 
 			}
 			else if(element.contains("conns=")){
-				int startIdx =  element.indexOf("[")+1;
-				int endIdx =  element.indexOf("]");
-				String[] connTypes = element.substring(startIdx,endIdx).trim().split("\\s+");
+				String[] connTypes = listValues(element);
 				fromConnection = connTypes[0];
 				toConnection = connTypes[1];
 			}
 			else if(element.contains("kvs=")){
-				int startIdx =  element.indexOf("[")+1;
-				int endIdx =  element.indexOf("]");
-				String[] kvs = element.substring(startIdx,endIdx).trim().split("\\s+");
+				String[] kvs = listValues(element);
+				normKVs = doubleValues(kvs);
 				normKV1 = Double.valueOf(kvs[0]);
 				normKV2 = Double.valueOf(kvs[1]);
 			}
 			else if(element.contains("kvas=")){
-				int startIdx =  element.indexOf("[")+1;
-				int endIdx =  element.indexOf("]");
-				String[] kvas = element.substring(startIdx,endIdx).trim().split("\\s+");
+				String[] kvas = listValues(element);
+				kvaRatings = doubleValues(kvas);
 				kva1 = Double.valueOf(kvas[0]);
 				kva2 = Double.valueOf(kvas[1]);
 
 			}
+			else if(element.contains("%rs=")){
+				rPercents = doubleValues(listValues(element));
+				lossSpecified = true;
+			}
 			else if(element.contains("%r=")){
-				losspercent1= Double.valueOf(element.substring(3));
+				if(windingContext > 0) {
+					if(!hasWindingSpecificResistance) {
+						losspercent1 = 0.0;
+					}
+					losspercent1 = losspercent1 + Double.valueOf(element.substring(3));
+					hasWindingSpecificResistance = true;
+				} else {
+					losspercent1= Double.valueOf(element.substring(3));
+				}
 				lossSpecified = true;
 			}
 			else if (element.contains("%loadloss=")){
@@ -453,8 +517,61 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 			else if (element.contains("like=")){
 				referenceXfrName= element.substring(5);
 			}
+			else if (element.contains("xfmrcode=")){
+				xfrCodeName= element.substring(9);
+			}
 
 
+		}
+
+		XfmrCodeData code = this.xfmrCodes.get(xfrCodeName);
+		if(code != null) {
+			if(!phaseSpecified) {
+				phaseNum = code.phaseNum;
+			}
+			if(windingNum == 2) {
+				windingNum = code.windingNum;
+			}
+			if(normKV1 == 0.0 && code.kvs.length > 0) {
+				normKV1 = code.kvs[0];
+			}
+			if(normKV2 == 0.0 && code.kvs.length > 1) {
+				normKV2 = code.kvs[1];
+			}
+			if(kva1 == 0.0 && code.kvas.length > 0) {
+				kva1 = code.kvas[0];
+			}
+			if(kva2 == 0.0 && code.kvas.length > 1) {
+				kva2 = code.kvas[1];
+			}
+			if(!lossSpecified && code.rPercents.length > 1) {
+				losspercent1 = code.rPercents[0] + code.rPercents[1];
+				lossSpecified = true;
+			}
+			if(rPercents.length == 0) {
+				rPercents = code.rPercents;
+			}
+			if(!xhlSpecified && code.xhl != 0.0) {
+				xhl = code.xhl;
+				xhlSpecified = true;
+			}
+			if(xht == 0.0) {
+				xht = code.xht;
+			}
+			if(xlt == 0.0) {
+				xlt = code.xlt;
+			}
+			if(normKVs.length == 0) {
+				normKVs = code.kvs;
+			}
+			if(kvaRatings.length == 0) {
+				kvaRatings = code.kvas;
+			}
+		}
+		if(isCenterTappedServiceTransformer(phaseNum, windingNum, busTerminals,
+				normKVs, kvaRatings, rPercents, xhl, xht, xlt)) {
+			return createCenterTappedServiceTransformer(xfrId, busTerminals,
+					normKVs, kvaRatings, rPercents, xhl, xht, xlt);
 		}
 
 		fromBusId =this.dataParser.getBusIdPrefix()+fromBusId;
@@ -620,6 +737,184 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 		return no_error;
 	}
 
+	private boolean isCenterTappedServiceTransformer(int phaseNum, int windingNum, String[] busTerminals,
+			double[] kvs, double[] kvas, double[] rPercents, double xhl, double xht, double xlt) {
+		if(phaseNum != 1 || windingNum != 3 || busTerminals.length < 3
+				|| kvs.length < 3 || kvas.length < 1 || rPercents.length < 3
+				|| xhl == 0.0 || xht == 0.0 || xlt == 0.0) {
+			return false;
+		}
+		TerminalBus primary = terminalBus(busTerminals[0]);
+		TerminalBus secondary1 = terminalBus(busTerminals[1]);
+		TerminalBus secondary2 = terminalBus(busTerminals[2]);
+		return primary.nodes.length == 1
+				&& secondary1.busId.equals(secondary2.busId)
+				&& secondaryPolarity(secondary1) != 0
+				&& secondaryPolarity(secondary2) != 0
+				&& secondaryPolarity(secondary1) == -secondaryPolarity(secondary2);
+	}
+
+	private boolean createCenterTappedServiceTransformer(String xfrId, String[] busTerminals,
+			double[] kvs, double[] kvas, double[] rPercents, double xhl, double xht, double xlt)
+			throws InterpssException {
+		TerminalBus primary = terminalBus(busTerminals[0]);
+		TerminalBus secondary1 = terminalBus(busTerminals[1]);
+		TerminalBus secondary2 = terminalBus(busTerminals[2]);
+		String fromBusId = this.dataParser.getBusIdPrefix() + primary.busId;
+		String toBusId = this.dataParser.getBusIdPrefix() + secondary1.busId;
+		if(this.dataParser.getDistNetwork().getBus(fromBusId)==null) {
+			ThreePhaseObjectFactory.create3PDStabBus(fromBusId, this.dataParser.getDistNetwork());
+		}
+		if(this.dataParser.getDistNetwork().getBus(toBusId)==null) {
+			ThreePhaseObjectFactory.create3PDStabBus(toBusId, this.dataParser.getDistNetwork());
+		}
+
+		DStab3PBranch xfrBranch = ThreePhaseObjectFactory.create3PBranch(fromBusId, toBusId, xfrId,
+				this.dataParser.getDistNetwork());
+		xfrBranch.setName(this.dataParser.getBusIdPrefix()+xfrId);
+		xfrBranch.setBranchCode(AclfBranchCode.XFORMER);
+		xfrBranch.setPhaseCode(phaseCode(primary.nodes[0]));
+		xfrBranch.setFromTurnRatio(kvs[0]*1000.0);
+		xfrBranch.setToTurnRatio(kvs[1]*1000.0);
+		xfrBranch.setXfrRatedKVA(kvas[0]);
+		xfrBranch.setZ(transformerSeriesImpedanceOhm(kvs[0], kvs[1], kvas[0], kvas[1],
+				rPercents[0] + rPercents[1], xhl));
+
+		Complex[][] windingY = centerTappedWindingAdmittance(kvs, kvas[0], rPercents, xhl, xht, xlt);
+		Complex3x3 yff = new Complex3x3();
+		Complex3x3 yft = new Complex3x3();
+		Complex3x3 ytf = new Complex3x3();
+		Complex3x3 ytt = new Complex3x3();
+		TerminalRef[] refs = {
+				new TerminalRef(true, phaseIndex(primary.nodes[0]), 1),
+				new TerminalRef(false, phaseIndex(nonGroundNode(secondary1)), secondaryPolarity(secondary1)),
+				new TerminalRef(false, phaseIndex(nonGroundNode(secondary2)), secondaryPolarity(secondary2))
+		};
+		for(int row = 0; row < 3; row++) {
+			for(int col = 0; col < 3; col++) {
+				Complex value = windingY[row][col].multiply(refs[row].polarity * refs[col].polarity);
+				addToBlock(refs[row], refs[col], value, yff, yft, ytf, ytt);
+			}
+		}
+		xfrBranch.setExplicitYabc(yff, yft, ytf, ytt);
+
+		AcscXformerAdapter xfr0 = acscXfrAptr.apply(xfrBranch);
+		xfr0.setFromGrounding(BusGroundCode.SOLID_GROUNDED,
+				XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
+		xfr0.setToGrounding(BusGroundCode.SOLID_GROUNDED,
+				XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
+		return true;
+	}
+
+	private static Complex[][] centerTappedWindingAdmittance(double[] kvs, double kvaBase,
+			double[] rPercents, double xhl, double xht, double xlt) {
+		Complex z12 = new Complex((rPercents[0] + rPercents[1])/100.0, xhl/100.0);
+		Complex z13 = new Complex((rPercents[0] + rPercents[2])/100.0, xht/100.0);
+		Complex z23 = new Complex((rPercents[1] + rPercents[2])/100.0, xlt/100.0);
+		Complex z1 = z12.add(z13).subtract(z23).multiply(0.5);
+		Complex z2 = z12.add(z23).subtract(z13).multiply(0.5);
+		Complex z3 = z13.add(z23).subtract(z12).multiply(0.5);
+		Complex[] y = {
+				Complex.ONE.divide(z1),
+				Complex.ONE.divide(z2),
+				Complex.ONE.divide(z3)
+		};
+		Complex ysum = y[0].add(y[1]).add(y[2]);
+		Complex[][] ypu = new Complex[3][3];
+		double mvaBase = kvaBase/1000.0;
+		for(int i = 0; i < 3; i++) {
+			for(int j = 0; j < 3; j++) {
+				Complex value = y[i].multiply(y[j]).divide(ysum).multiply(-1.0);
+				if(i == j) {
+					value = y[i].add(value);
+				}
+				ypu[i][j] = value.multiply(mvaBase/(kvs[i]*kvs[j]));
+			}
+		}
+		return ypu;
+	}
+
+	private static int secondaryPolarity(TerminalBus terminal) {
+		if(terminal.nodes.length != 2) {
+			return 0;
+		}
+		if("0".equals(terminal.nodes[1]) && !"0".equals(terminal.nodes[0])) {
+			return 1;
+		}
+		if("0".equals(terminal.nodes[0]) && !"0".equals(terminal.nodes[1])) {
+			return -1;
+		}
+		return 0;
+	}
+
+	private static String nonGroundNode(TerminalBus terminal) {
+		for(String node : terminal.nodes) {
+			if(!"0".equals(node)) {
+				return node;
+			}
+		}
+		throw new IllegalArgumentException("No non-ground node for " + terminal.busId);
+	}
+
+	private static PhaseCode phaseCode(String node) {
+		if("1".equals(node)) {
+			return PhaseCode.A;
+		}
+		if("2".equals(node)) {
+			return PhaseCode.B;
+		}
+		if("3".equals(node)) {
+			return PhaseCode.C;
+		}
+		throw new Error("Transformer connection phase currently must be either 1, 2 or 3. phase=" + node);
+	}
+
+	private static int phaseIndex(String node) {
+		return Integer.valueOf(node) - 1;
+	}
+
+	private static void addToBlock(TerminalRef row, TerminalRef col, Complex value,
+			Complex3x3 yff, Complex3x3 yft, Complex3x3 ytf, Complex3x3 ytt) {
+		Complex3x3 block = row.fromBus ? (col.fromBus ? yff : yft) : (col.fromBus ? ytf : ytt);
+		setPhaseValue(block, row.phase, col.phase, getPhaseValue(block, row.phase, col.phase).add(value));
+	}
+
+	private static Complex getPhaseValue(Complex3x3 matrix, int row, int col) {
+		if(row == 0 && col == 0) return matrix.aa;
+		if(row == 0 && col == 1) return matrix.ab;
+		if(row == 0 && col == 2) return matrix.ac;
+		if(row == 1 && col == 0) return matrix.ba;
+		if(row == 1 && col == 1) return matrix.bb;
+		if(row == 1 && col == 2) return matrix.bc;
+		if(row == 2 && col == 0) return matrix.ca;
+		if(row == 2 && col == 1) return matrix.cb;
+		return matrix.cc;
+	}
+
+	private static void setPhaseValue(Complex3x3 matrix, int row, int col, Complex value) {
+		if(row == 0 && col == 0) matrix.aa = value;
+		else if(row == 0 && col == 1) matrix.ab = value;
+		else if(row == 0 && col == 2) matrix.ac = value;
+		else if(row == 1 && col == 0) matrix.ba = value;
+		else if(row == 1 && col == 1) matrix.bb = value;
+		else if(row == 1 && col == 2) matrix.bc = value;
+		else if(row == 2 && col == 0) matrix.ca = value;
+		else if(row == 2 && col == 1) matrix.cb = value;
+		else matrix.cc = value;
+	}
+
+	private static final class TerminalRef {
+		private final boolean fromBus;
+		private final int phase;
+		private final int polarity;
+
+		private TerminalRef(boolean fromBus, int phase, int polarity) {
+			this.fromBus = fromBus;
+			this.phase = phase;
+			this.polarity = polarity;
+		}
+	}
+
 	private static String normalizeInlineRpnDivisions(String value) {
 		Pattern pattern = Pattern.compile("\\(([-+0-9.Ee]+)\\s+([-+0-9.Ee]+)\\s+/\\)");
 		Matcher matcher = pattern.matcher(value);
@@ -669,6 +964,64 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 		return new TerminalBus(parts[0], grounded, nodes);
 	}
 
+	private static String[] listValues(String token) {
+		int startIdx = token.indexOf("[");
+		int endIdx = token.lastIndexOf("]");
+		if(startIdx < 0 || endIdx < 0) {
+			startIdx = token.indexOf("(");
+			endIdx = token.lastIndexOf(")");
+		}
+		if(startIdx < 0 || endIdx <= startIdx) {
+			return new String[0];
+		}
+		return token.substring(startIdx + 1, endIdx)
+				.trim()
+				.replace(",", " ")
+				.split("\\s+");
+	}
+
+	private static double[] doubleValues(String[] values) {
+		double[] doubles = new double[values.length];
+		for(int i = 0; i < values.length; i++) {
+			doubles[i] = Double.valueOf(values[i]);
+		}
+		return doubles;
+	}
+
+	private static String[] splitOutsideLists(String value) {
+		List<String> tokens = new ArrayList<>();
+		StringBuilder current = new StringBuilder();
+		int bracketDepth = 0;
+		int parenDepth = 0;
+		for (int i = 0; i < value.length(); i++) {
+			char ch = value.charAt(i);
+			if (Character.isWhitespace(ch) && bracketDepth == 0 && parenDepth == 0) {
+				if (current.length() > 0) {
+					tokens.add(current.toString());
+					current.setLength(0);
+				}
+				continue;
+			}
+			if (ch == '[') {
+				bracketDepth++;
+			}
+			else if (ch == ']' && bracketDepth > 0) {
+				bracketDepth--;
+			}
+			else if (ch == '(') {
+				parenDepth++;
+			}
+			else if (ch == ')' && parenDepth > 0) {
+				parenDepth--;
+			}
+			current.append(ch);
+		}
+		if (current.length() > 0) {
+			tokens.add(current.toString());
+		}
+		return tokens.toArray(new String[0]);
+	}
+
 	private static class TerminalBus {
 		private final String busId;
 		private final boolean wyeGrounded;
@@ -679,5 +1032,16 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 			this.wyeGrounded = wyeGrounded;
 			this.nodes = nodes;
 		}
+	}
+
+	private static class XfmrCodeData {
+		private int phaseNum = 3;
+		private int windingNum = 2;
+		private double[] kvs = new double[0];
+		private double[] kvas = new double[0];
+		private double[] rPercents = new double[0];
+		private double xhl = 0.0;
+		private double xht = 0.0;
+		private double xlt = 0.0;
 	}
 }
