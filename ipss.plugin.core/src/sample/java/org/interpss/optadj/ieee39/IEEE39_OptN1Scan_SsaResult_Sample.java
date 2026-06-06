@@ -48,11 +48,13 @@ public class IEEE39_OptN1Scan_SsaResult_Sample {
 				contList.add(cont);
 			});
 	
-		SsaResultContainer ssaResult = new AclfNetSsaHelper(dclfAlgo).contingencyScan(contList, 100.0);
+		SsaResultContainer ssaResult = new AclfNetSsaHelper(dclfAlgo).contingencyScan(contList, 90.0);
 		System.out.println("Total number of branches over limit before OptAdj: " + ssaResult.getCaOverLimitInfo().size());
+
+		OptAdjResultContainer optAdjResult = new OptAdjResultContainer(ssaResult, 100.0);
 		
-		Map<String, OptAdjResultContainer.GenAdjustResult> results = new AclfNetContigencyOptimizer().optimize(dclfAlgo, ssaResult, 100.0);
-		results.forEach((genName, result) -> {
+		new AclfNetContigencyOptimizer().optimize(dclfAlgo, optAdjResult, 100.0);
+		optAdjResult.getOPtAdjResults().forEach((genName, result) -> {
 			System.out.println("GenAdjustResult: " + genName + ", " + result.toString());
 		});
 
@@ -69,7 +71,7 @@ public class IEEE39_OptN1Scan_SsaResult_Sample {
 						//		" postContFlow: " + resultRec.getPostFlowMW() +
 						//		" loading: " + resultRec.calLoadingPercent() + "%");
 						double loading = resultRec.calLoadingPercent();
-						if (loading > 100.0) {
+						if (loading >= optAdjResult.getOptAdjThreshold()) {
 							cntAfter.increment();
 							// add the over limit branch CA result rec to the SSA result container
 							DclfOutageBranch outageBranch = ((DclfBranchOutage)resultRec.contingency).getOutageEquip();
