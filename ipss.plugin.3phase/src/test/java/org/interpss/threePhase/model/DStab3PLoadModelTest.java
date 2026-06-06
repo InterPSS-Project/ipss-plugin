@@ -80,4 +80,52 @@ public class DStab3PLoadModelTest {
 		double expectedLoad = (0.80 / 0.88) * (0.80 / 0.88);
 		assertEquals(expectedLoad / 0.80, current.a_0.abs(), 1.0e-12);
 	}
+
+	@Test
+	public void openDssModel4ScalesWattsAndVarsIndependently() {
+		DStab1PLoad load = new DStab1PLoadImpl();
+		load.setCode(AclfLoadCode.CONST_P);
+		load.setLoadCP(new Complex(10.0, 5.0));
+		load.setOpenDssModel4(true, 0.8, 3.0);
+
+		Complex scaledLoad = load.getLoad(0.95);
+
+		assertEquals(10.0 * Math.pow(0.95, 0.8), scaledLoad.getReal(), 1.0e-12);
+		assertEquals(5.0 * Math.pow(0.95, 3.0), scaledLoad.getImaginary(), 1.0e-12);
+	}
+
+	@Test
+	public void openDssModel4UsesMatchedImpedanceBelowVmin() {
+		DStab1PLoad load = new DStab1PLoadImpl();
+		load.setCode(AclfLoadCode.CONST_P);
+		load.setLoadCP(new Complex(10.0, 5.0));
+		load.setOpenDssModel4(true, 0.8, 3.0);
+		load.setVminpu(0.88);
+
+		Complex lowVoltageLoad = load.getLoad(0.80);
+		double fallbackScale = (0.80 / 0.88) * (0.80 / 0.88);
+
+		assertEquals(10.0 * Math.pow(0.88, 0.8) * fallbackScale,
+				lowVoltageLoad.getReal(), 1.0e-12);
+		assertEquals(5.0 * Math.pow(0.88, 3.0) * fallbackScale,
+				lowVoltageLoad.getImaginary(), 1.0e-12);
+	}
+
+	@Test
+	public void threePhaseOpenDssModel4WyeCurrentUsesPhaseVoltage() {
+		DStab3PLoadImpl load = new DStab3PLoadImpl();
+		load.setCode(AclfLoadCode.CONST_P);
+		load.setLoadConnectionType(LoadConnectionType.THREE_PHASE_WYE);
+		load.setOpenDssModel4(true, 0.8, 3.0);
+		load.set3PhaseLoad(new Complex3x1(new Complex(9.0, 3.0),
+				Complex.ZERO, Complex.ZERO));
+
+		Complex3x1 current = load.getEquivCurrInj(new Complex3x1(
+				new Complex(0.95, 0.0), Complex.ZERO, Complex.ZERO));
+		double expectedP = 9.0 * Math.pow(0.95, 0.8);
+		double expectedQ = 3.0 * Math.pow(0.95, 3.0);
+		double expectedCurrent = new Complex(expectedP, expectedQ).abs() / 0.95;
+
+		assertEquals(expectedCurrent, current.a_0.abs(), 1.0e-12);
+	}
 }

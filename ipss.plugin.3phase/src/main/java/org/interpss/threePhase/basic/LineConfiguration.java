@@ -15,6 +15,9 @@ public class LineConfiguration {
 
 	//TODO units
 	private String lengthUnit = "";
+	private int neutralConductor = -1;
+	private boolean kronReductionEnabled = false;
+	private int kronReductionCount = 0;
 
 	private Complex3x3 zMtx = null;
 
@@ -61,6 +64,31 @@ public class LineConfiguration {
 
 	public void setLengthUnit(String lengthUnit) {
 		this.lengthUnit = lengthUnit == null ? "" : lengthUnit;
+	}
+
+	public int getNeutralConductor() {
+		return neutralConductor;
+	}
+
+	public void setNeutralConductor(int neutralConductor) {
+		this.neutralConductor = neutralConductor;
+	}
+
+	public boolean isKronReductionEnabled() {
+		return kronReductionEnabled;
+	}
+
+	public void setKronReductionEnabled(boolean kronReductionEnabled) {
+		this.kronReductionEnabled = kronReductionEnabled;
+	}
+
+	public int getKronReductionCount() {
+		return kronReductionCount;
+	}
+
+	public void addKronReduction() {
+		this.kronReductionEnabled = true;
+		this.kronReductionCount++;
 	}
 
 	public Complex3x3 getZ3x3Matrix() {
