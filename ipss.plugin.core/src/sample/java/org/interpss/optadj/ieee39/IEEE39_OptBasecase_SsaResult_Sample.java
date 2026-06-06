@@ -9,9 +9,8 @@ import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 import java.util.Map;
 
 import org.interpss.plugin.optadj.algo.lf.AclfNetLoadFlowOptimizer;
-import org.interpss.plugin.optadj.algo.lf.AclfNetLoadFlowOptimizer.GenAdjustResult;
 import org.interpss.plugin.optadj.algo.util.AclfNetSsaHelper;
-import org.interpss.plugin.optadj.result.SsaBranchOverLimitInfo;
+import org.interpss.plugin.optadj.result.OptAdjResultContainer;
 import org.interpss.plugin.optadj.result.SsaResultContainer;
 
 public class IEEE39_OptBasecase_SsaResult_Sample {
@@ -25,10 +24,10 @@ public class IEEE39_OptBasecase_SsaResult_Sample {
 				CacheType.SenNotCached, true);
 		dclfAlgo.calculateDclf();
 
-		SsaResultContainer ssaResult = new AclfNetSsaHelper(dclfAlgo).baseCaseScan(100.0);
+		SsaResultContainer ssaResult = new AclfNetSsaHelper(dclfAlgo).baseCaseScan(50.0);
 		
 		// perform basecase loaing limit optimization	
-		Map<String, GenAdjustResult> results = new AclfNetLoadFlowOptimizer().optimize(dclfAlgo, ssaResult, 100.0);
+		Map<String, OptAdjResultContainer.GenAdjustResult> results = new AclfNetLoadFlowOptimizer().optimize(dclfAlgo, ssaResult, 100.0);
 		results.forEach((genName, result) -> {
 			System.out.println("GenAdjustResult: " + genName + ", " + result.toString());
 		});
@@ -42,7 +41,7 @@ public class IEEE39_OptBasecase_SsaResult_Sample {
 			.forEach(dclfBranch -> {
 				double flowMw = dclfBranch.getDclfFlow() * baseMVA;
 				double loading = Math.abs(flowMw / dclfBranch.getBranch().getRatingMva1())*100;
-				if (loading > ssaResult.getBaseLoadingThreshold()) {
+				if (loading > 100.0) {
 					System.out.printf("Over Limit Branch: %s  %.2f rating: %.2f loading: %.2f%n",
 							dclfBranch.getId(),
 							flowMw,
