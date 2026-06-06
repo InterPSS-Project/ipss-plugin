@@ -99,7 +99,8 @@ public class IEEE39_OptN1Scan_SsaResult_Test extends CorePluginTestSetup {
 		assertEquals(overLimitBefore, ssaResult.getCaOverLimitInfo().size(),
 				"SSA result should capture all N-1 over-limit violations");
 
-		Map<String, OptAdjResultContainer.GenAdjustResult> adjustResults = new AclfNetContigencyOptimizer().optimize(dclfAlgo, ssaResult,
+		OptAdjResultContainer optAdjResult = new OptAdjResultContainer(ssaResult, LOADING_LIMIT_PCT);
+		Map<String, OptAdjResultContainer.GenAdjustResult> adjustResults = new AclfNetContigencyOptimizer().optimize(dclfAlgo, optAdjResult,
 				LOADING_LIMIT_PCT);
 		assertTrue(adjustResults.size() > 0, "Optimizer should dispatch at least one generator");
 
