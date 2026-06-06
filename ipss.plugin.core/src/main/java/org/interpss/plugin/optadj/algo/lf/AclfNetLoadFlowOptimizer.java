@@ -38,8 +38,14 @@ public class AclfNetLoadFlowOptimizer {
 	final static double SEN_THRESHOLD = 0.02;
 	final static double GEN_DISPATCH_THRESHOLD = 1.0;
 
-	public Map<String, OptAdjResultContainer.GenAdjustResult> optimize(ContingencyAnalysisAlgorithm dclfAlgo, SsaResultContainer result,
-			double threshold) {
+	/**
+	 * Optimize the generator dispatch by adjusting the generator output power to minimize the branch loading.
+	 * @param dclfAlgo ContingencyAnalysisAlgorithm object, the DCLF algorithm object.
+	 * @param result OptAdjResultContainer object, if null, all active generators are control candidates, otherwise, the control generators are the ones that are associatd with the over limit branches in the SSA result
+	 * @param threshold The loading limit in percent (e.g. 100.0 for 100% of rating).
+	 * @return Map<String, OptAdjResultContainer.GenAdjustResult> keyed by generator name.
+	 */
+	public Map<String, OptAdjResultContainer.GenAdjustResult> optimize(ContingencyAnalysisAlgorithm dclfAlgo, OptAdjResultContainer result, double threshold) {
 		AclfNetwork net = (AclfNetwork) dclfAlgo.getNetwork();
 
 		AclfNetSensHelper helper = new AclfNetSensHelper(net);
@@ -54,9 +60,11 @@ public class AclfNetLoadFlowOptimizer {
 		
 		Map<Integer, AclfGen> controlGenMap = null;
 		if (result == null) {
+			// if result is null, all active generators are control candidates
 			controlGenMap = arrangeIndex(net.getAclfGenNameLookupTable().values().stream().filter(gen -> gen.isActive())
 					.collect(Collectors.toSet()));
 		} else {
+			// if result is not null, the control generators are the ones that are associatd with the over limit branches in the SSA result
 			controlGenMap = arrangeIndex(buildControlGenSet(net, senMatrix, result));
 		}
 		
@@ -68,7 +76,11 @@ public class AclfNetLoadFlowOptimizer {
 
 		opt.optimize();
 
-		return updatedDclfAlgo(dclfAlgo, controlGenMap, opt);
+		Map<String, OptAdjResultContainer.GenAdjustResult> optResults = updatedDclfAlgo(dclfAlgo, controlGenMap, opt);
+		if (result != null) {
+			result.setOptAdjResults(optResults);
+		}
+		return optResults;
 	}
 
 	private Map<Integer, AclfGen> arrangeIndex(Set<AclfGen> controlGenSet) {

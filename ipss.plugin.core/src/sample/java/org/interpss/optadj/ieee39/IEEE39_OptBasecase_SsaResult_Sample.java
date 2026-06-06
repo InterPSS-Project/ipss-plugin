@@ -25,10 +25,11 @@ public class IEEE39_OptBasecase_SsaResult_Sample {
 		dclfAlgo.calculateDclf();
 
 		SsaResultContainer ssaResult = new AclfNetSsaHelper(dclfAlgo).baseCaseScan(50.0);
+		OptAdjResultContainer optAdjResult = new OptAdjResultContainer(ssaResult, 100.0);
 		
 		// perform basecase loaing limit optimization	
-		Map<String, OptAdjResultContainer.GenAdjustResult> results = new AclfNetLoadFlowOptimizer().optimize(dclfAlgo, ssaResult, 100.0);
-		results.forEach((genName, result) -> {
+		new AclfNetLoadFlowOptimizer().optimize(dclfAlgo, optAdjResult, 100.0);
+		optAdjResult.getOPtAdjResults().forEach((genName, result) -> {
 			System.out.println("GenAdjustResult: " + genName + ", " + result.toString());
 		});
 		
@@ -41,7 +42,7 @@ public class IEEE39_OptBasecase_SsaResult_Sample {
 			.forEach(dclfBranch -> {
 				double flowMw = dclfBranch.getDclfFlow() * baseMVA;
 				double loading = Math.abs(flowMw / dclfBranch.getBranch().getRatingMva1())*100;
-				if (loading > 100.0) {
+				if (loading >= optAdjResult.getOptAdjThreshold()) {
 					System.out.printf("Over Limit Branch: %s  %.2f rating: %.2f loading: %.2f%n",
 							dclfBranch.getId(),
 							flowMw,
