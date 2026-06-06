@@ -1,0 +1,25 @@
+Clear
+New Circuit.OpenDSSLoadModelMini
+~ basekv=12.47 pu=0.90 phases=3 bus1=sourcebus mvasc3=200000000 mvasc1=200000000
+
+New Line.Model1 bus1=sourcebus.1 bus2=model1.1 phases=1 length=1 r1=0.08 x1=0.04 r0=0.08 x0=0.04 units=mi
+New Line.Model2 bus1=sourcebus.1 bus2=model2.1 phases=1 length=1 r1=0.08 x1=0.04 r0=0.08 x0=0.04 units=mi
+New Line.Model3 bus1=sourcebus.1 bus2=model3.1 phases=1 length=1 r1=0.08 x1=0.04 r0=0.08 x0=0.04 units=mi
+New Line.Model4 bus1=sourcebus.1 bus2=model4.1 phases=1 length=1 r1=0.08 x1=0.04 r0=0.08 x0=0.04 units=mi
+New Line.Model5 bus1=sourcebus.1 bus2=model5.1 phases=1 length=1 r1=0.08 x1=0.04 r0=0.08 x0=0.04 units=mi
+New Line.Model6 bus1=sourcebus.1 bus2=model6.1 phases=1 length=1 r1=0.08 x1=0.04 r0=0.08 x0=0.04 units=mi
+New Line.Model7 bus1=sourcebus.1 bus2=model7.1 phases=1 length=1 r1=0.08 x1=0.04 r0=0.08 x0=0.04 units=mi
+New Line.Model8 bus1=sourcebus.1 bus2=model8.1 phases=1 length=1 r1=0.08 x1=0.04 r0=0.08 x0=0.04 units=mi
+
+New Load.Model1 phases=1 bus1=model1.1 conn=wye kv=7.2 kw=400 kvar=160 model=1 vminpu=0.70
+New Load.Model2 phases=1 bus1=model2.1 conn=wye kv=7.2 kw=400 kvar=160 model=2 vminpu=0.70
+New Load.Model3 phases=1 bus1=model3.1 conn=wye kv=7.2 kw=400 kvar=160 model=3 vminpu=0.70
+New Load.Model4 phases=1 bus1=model4.1 conn=wye kv=7.2 kw=400 kvar=160 model=4 CVRwatts=0.8 CVRvars=3.0 vminpu=0.70
+New Load.Model5 phases=1 bus1=model5.1 conn=wye kv=7.2 kw=400 kvar=160 model=5 vminpu=0.70
+New Load.Model6 phases=1 bus1=model6.1 conn=wye kv=7.2 kw=400 kvar=160 model=6 vminpu=0.70
+New Load.Model7 phases=1 bus1=model7.1 conn=wye kv=7.2 kw=400 kvar=160 model=7 vminpu=0.70
+New Load.Model8 phases=1 bus1=model8.1 conn=wye kv=7.2 kw=400 kvar=160 model=8 zipv=(0.20, 0.30, 0.50, 0.10, 0.20, 0.70, 0.50)
+
+Set voltagebases=[12.47]
+Calcvoltagebases
+Set controlmode=off

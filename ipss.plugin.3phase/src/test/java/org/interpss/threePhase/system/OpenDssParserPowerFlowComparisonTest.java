@@ -1634,6 +1634,16 @@ public class OpenDssParserPowerFlowComparisonTest {
 				"Center-tapped single-phase delta load mini case failed");
 	}
 
+	@Test
+	public void openDssLoadModelsMiniCaseMatchesDssPythonReference() throws IOException {
+		ComparisonResult result = assertMatchesDssPythonReference(
+				"testData/feeder/OpenDSSLoadModelMini",
+				"Master.dss",
+				"opendss-reference/opendss-load-model-mini-dss-python-voltage-reference.csv",
+				2.0e-3);
+		System.out.println(result.summary("OpenDSS load model mini DSS-Python"));
+	}
+
 	private static void assertCenterTappedMiniCaseConverges(String feederFolder, String referenceResource,
 			String comparisonLabel, String failureMessage) throws IOException {
 		OpenDSSDataParser parser = new OpenDSSDataParser();
