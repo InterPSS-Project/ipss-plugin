@@ -58,7 +58,7 @@ public class OpenDSSLineParser {
 		boolean enabled = true;
 
 
-		String[] lineStrAry = lineStr.toLowerCase().split("\\s+");
+		String[] lineStrAry = normalizePropertyEquals(lineStr.toLowerCase()).split("\\s+");
 
 		for(int i = 0;i<lineStrAry.length;i++){
 			if(lineStrAry[i].contains("line.")){
@@ -191,7 +191,11 @@ public class OpenDSSLineParser {
 		if(!fromBusPhases.equals(toBusPhases)){
 			throw new Error("different phase arrangements on both terminals not support yet, from: "+fromBusPhases+ ", to: "+toBusPhases);
 		}
-		if(phaseNum==3){
+		if(config != null && config.getNphases() == 1 && phaseNum > 1) {
+			zabc = multiPhaseDiagonalFromSinglePhase(zabc.aa, fromBusPhases);
+			yshuntabc = multiPhaseDiagonalFromSinglePhase(yshuntabc.aa, fromBusPhases);
+		}
+		else if(phaseNum==3){
 			// no change is needed
 		}
 		else if(phaseNum==2){
@@ -279,6 +283,13 @@ public class OpenDSSLineParser {
 			}
 		}
 		else if(phaseNum==1){
+			if(config != null && config.isKronReductionEnabled() && config.getNeutralConductor() > 0
+					&& config.getNphases() > 1) {
+				zabc = singlePhaseServiceLoopMatrix(zabc, config.getNeutralConductor(),
+						config.getKronReductionCount(), fromBusPhases);
+				yshuntabc = singlePhaseMatrix(yshuntabc, Integer.valueOf(fromBusPhases));
+			}
+			else
 			if(fromBusPhases.equals("1")){
 				zabc = singlePhaseMatrix(zabc, 1);
 				yshuntabc = singlePhaseMatrix(yshuntabc, 1);
@@ -345,6 +356,10 @@ public class OpenDSSLineParser {
 
 	}
 
+	private static String normalizePropertyEquals(String value) {
+		return value.replaceAll("\\s*=\\s*", "=");
+	}
+
 	private static Complex3x3 capacitanceNfToSiemens(Complex3x3 capacitanceNf, double lineLength) {
 		return capacitanceNf.multiply(2.0 * Math.PI * 60.0 * 1.0e-9 * lineLength);
 	}
@@ -405,6 +420,96 @@ public class OpenDSSLineParser {
 		}
 		else if(phase == 3) {
 			matrix.cc = phaseValue;
+		}
+		return matrix;
+	}
+
+	private static Complex3x3 singlePhaseServiceLoopMatrix(Complex3x3 source, int neutralConductor,
+			int kronReductionCount, String busPhase) {
+		Complex[][] reduced = toArray(source, 3);
+		for(int i = 0; i < kronReductionCount && reduced.length > 1; i++) {
+			int neutral = Math.min(neutralConductor - 1, reduced.length - 1);
+			reduced = kronReduce(reduced, neutral);
+		}
+		Complex loopImpedance = reduced[0][0];
+		Complex3x3 loopMatrix = new Complex3x3();
+		int systemPhase = Integer.valueOf(busPhase);
+		if(systemPhase == 1) {
+			loopMatrix.aa = loopImpedance;
+		}
+		else if(systemPhase == 2) {
+			loopMatrix.bb = loopImpedance;
+		}
+		else if(systemPhase == 3) {
+			loopMatrix.cc = loopImpedance;
+		}
+		else {
+			throw new Error("phase arrangement not support yet : " + busPhase);
+		}
+		return loopMatrix;
+	}
+
+	private static Complex[][] kronReduce(Complex[][] source, int neutral) {
+		int n = source.length;
+		Complex[][] reduced = new Complex[n - 1][n - 1];
+		Complex neutralSelfInv = new Complex(1.0).divide(source[neutral][neutral]);
+		int outRow = 0;
+		for(int row = 0; row < n; row++) {
+			if(row == neutral) {
+				continue;
+			}
+			int outCol = 0;
+			for(int col = 0; col < n; col++) {
+				if(col == neutral) {
+					continue;
+				}
+				reduced[outRow][outCol] = source[row][col]
+						.subtract(source[row][neutral].multiply(neutralSelfInv).multiply(source[neutral][col]));
+				outCol++;
+			}
+			outRow++;
+		}
+		return reduced;
+	}
+
+	private static Complex[][] toArray(Complex3x3 source, int dimension) {
+		Complex[][] values = new Complex[dimension][dimension];
+		for(int row = 0; row < dimension; row++) {
+			for(int col = 0; col < dimension; col++) {
+				values[row][col] = matrixValue(source, row, col);
+			}
+		}
+		return values;
+	}
+
+	private static Complex matrixValue(Complex3x3 matrix, int row, int column) {
+		if(row == 0 && column == 0) return matrix.aa;
+		if(row == 0 && column == 1) return matrix.ab;
+		if(row == 0 && column == 2) return matrix.ac;
+		if(row == 1 && column == 0) return matrix.ba;
+		if(row == 1 && column == 1) return matrix.bb;
+		if(row == 1 && column == 2) return matrix.bc;
+		if(row == 2 && column == 0) return matrix.ca;
+		if(row == 2 && column == 1) return matrix.cb;
+		if(row == 2 && column == 2) return matrix.cc;
+		throw new Error("matrix index out of range");
+	}
+
+	private static Complex3x3 multiPhaseDiagonalFromSinglePhase(Complex phaseValue, String busPhases) {
+		Complex3x3 matrix = new Complex3x3();
+		for(String phase : busPhases.split("\\.")) {
+			if("1".equals(phase)) {
+				matrix.aa = phaseValue;
+			}
+			else if("2".equals(phase)) {
+				matrix.bb = phaseValue;
+			}
+			else if("3".equals(phase)) {
+				matrix.cc = phaseValue;
+			}
+			else {
+				throw new Error("phase arrangement not support yet : " + busPhases);
+			}
 		}
 		return matrix;
 	}

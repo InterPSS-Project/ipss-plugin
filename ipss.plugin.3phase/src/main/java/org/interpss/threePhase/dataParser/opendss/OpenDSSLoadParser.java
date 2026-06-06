@@ -9,6 +9,11 @@ import org.interpss.threePhase.basic.dstab.impl.DStab1PLoadImpl;
 import org.interpss.threePhase.basic.dstab.impl.DStab3PLoadImpl;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.threephase.LoadConnectionType;
 import com.interpss.core.aclf.AclfLoadCode;
@@ -39,6 +44,7 @@ public class OpenDSSLoadParser {
 		! as three 1-phase loads.
 	 */
 	    private OpenDSSDataParser dataParser = null;
+	    private final Map<String, List<ParsedLoad>> parsedLoadsById = new HashMap<>();
 
 		public OpenDSSLoadParser(OpenDSSDataParser parser){
 			this.dataParser = parser;
@@ -68,11 +74,17 @@ public class OpenDSSLoadParser {
 			int modelType = 1; // constant power load by default
 			double nominalKV = 0;
 			double loadP = 0.0, loadQ  = 0.0;
+			double loadKva = 0.0;
 			double powerfactor = 0.0;
+			double transformerKva = 0.0;
+			double allocationFactor = 1.0;
+			double cvrWatts = 1.0;
+			double cvrVars = 2.0;
 			Double vminpu = null;
 			Double vmaxpu = null;
+			boolean kwSpecified = false;
 
-			String[] loadStrAry = loadStr.toLowerCase().trim().split("\\s+");
+			String[] loadStrAry = loadStr.toLowerCase().trim().replaceAll("\\s*=\\s*", "=").split("\\s+");
 
 			for (String element : loadStrAry) {
 				if(element.startsWith("Load.")||element.startsWith("load.")){
@@ -80,6 +92,9 @@ public class OpenDSSLoadParser {
 				}
 				else if(element.startsWith("Bus1=")||element.startsWith("bus1=")){
 					loadId_phases =element.substring(5);
+				}
+				else if(element.startsWith("Bus=")||element.startsWith("bus=")){
+					loadId_phases =element.substring(4);
 				}
 				else if(element.startsWith("Phases=")||element.startsWith("phases=")){
 					phaseNum = Integer.valueOf(element.substring(7));
@@ -91,22 +106,38 @@ public class OpenDSSLoadParser {
 					 modelType =Integer.valueOf(element.substring(6));
 				}
 				else if(element.startsWith("kW=")||element.startsWith("kw=")){
-					 loadP=Double.valueOf(element.substring(3));
+					 loadP=parseDssDouble(element.substring(3));
+					 kwSpecified = true;
 				}
 				else if(element.startsWith("kVar=")||element.startsWith("kvar=")){
-					 loadQ=Double.valueOf(element.substring(5));
+					 loadQ=parseDssDouble(element.substring(5));
+				}
+				else if(element.startsWith("kva=")){
+					 loadKva=parseDssDouble(element.substring(4));
 				}
 				else if(element.startsWith("PF=")||element.startsWith("pf=")){
-					 powerfactor=Double.valueOf(element.substring(3));
+					 powerfactor=parseDssDouble(element.substring(3));
+				}
+				else if(element.startsWith("xfkva=")){
+					transformerKva = parseDssDouble(element.substring(6));
+				}
+				else if(element.startsWith("allocationfactor=")){
+					allocationFactor = parseDssDouble(element.substring(17));
 				}
 				else if(element.startsWith("kv=")){
-					nominalKV = Double.valueOf(element.substring(3));
+					nominalKV = parseDssDouble(element.substring(3));
 				}
 				else if(element.startsWith("vminpu=")){
-					vminpu = Double.valueOf(element.substring(7));
+					vminpu = parseDssDouble(element.substring(7));
 				}
 				else if(element.startsWith("vmaxpu=")){
-					vmaxpu = Double.valueOf(element.substring(7));
+					vmaxpu = parseDssDouble(element.substring(7));
+				}
+				else if(element.startsWith("cvrwatts=")){
+					cvrWatts = parseDssDouble(element.substring(9));
+				}
+				else if(element.startsWith("cvrvars=")){
+					cvrVars = parseDssDouble(element.substring(8));
 				}
 
 
@@ -133,11 +164,26 @@ public class OpenDSSLoadParser {
 				}
 			}
 
+			if(loadP == 0.0 && loadKva > 0.0 && powerfactor != 0.0) {
+				loadP = loadKva * Math.abs(powerfactor);
+			}
 			if(powerfactor!=0.0 && loadQ==0.0){
-				loadQ = loadP*Math.tan(Math.acos(powerfactor));
+				if((loadP == 0.0 || (kwSpecified && Math.abs(loadP) <= 1.0e-3)) && transformerKva > 0.0) {
+					loadP = transformerKva * allocationFactor * Math.abs(powerfactor);
+				}
+				else if(loadP == 0.0 && !kwSpecified) {
+					loadP = 10.0;
+				}
+				loadQ = loadP*Math.tan(Math.acos(Math.abs(powerfactor)));
+				if(powerfactor < 0.0) {
+					loadQ = -loadQ;
+				}
 			}
 
 			Complex loadPQ = new Complex(loadP,loadQ);
+			if(connectionType.equals("")) {
+				connectionType = "wye";
+			}
 
 			//get the bus object
 			busName =this.dataParser.getBusIdPrefix()+busName;
@@ -167,36 +213,17 @@ public class OpenDSSLoadParser {
 			//load model type
 			if(modelType==1){
 				//TODO extend AclfLoadCode instead of introducing a new load model type
-				load.setCode(AclfLoadCode.CONST_P);
-
-				if(phaseNum==3) {
-					((DStab3PLoad)load).set3PhaseLoad(new Complex3x1(loadPQ.divide(3),loadPQ.divide(3),loadPQ.divide(3)));
-				} else if(phaseNum==2) {
-					((DStab3PLoad)load).set3PhaseLoad(twoPhaseLoad(loadPQ, phase1, phase2));
-				} else {
-					load.setLoadCP(loadPQ);
-				}
+				setLoadPower(load, phaseNum, phase1, phase2, loadPQ, AclfLoadCode.CONST_P);
 			}
 			else if(modelType==2){
-				load.setCode(AclfLoadCode.CONST_Z);
-
-				if(phaseNum==3) {
-					((DStab3PLoad)load).set3PhaseLoad(new Complex3x1(loadPQ.divide(3),loadPQ.divide(3),loadPQ.divide(3)));
-				} else if(phaseNum==2) {
-					((DStab3PLoad)load).set3PhaseLoad(twoPhaseLoad(loadPQ, phase1, phase2));
-				} else {
-					load.setLoadCZ(loadPQ);
-				}
+				setLoadPower(load, phaseNum, phase1, phase2, loadPQ, AclfLoadCode.CONST_Z);
+			}
+			else if(modelType==4){
+				setLoadPower(load, phaseNum, phase1, phase2, loadPQ, AclfLoadCode.CONST_P);
+				load.setOpenDssModel4(true, cvrWatts, cvrVars);
 			}
 			else if(modelType==5){
-				load.setCode(AclfLoadCode.CONST_I);
-				if(phaseNum==3) {
-					((DStab3PLoad)load).set3PhaseLoad(new Complex3x1(loadPQ.divide(3),loadPQ.divide(3),loadPQ.divide(3)));
-				} else if(phaseNum==2) {
-					((DStab3PLoad)load).set3PhaseLoad(twoPhaseLoad(loadPQ, phase1, phase2));
-				} else {
-					load.setLoadCI(loadPQ);
-				}
+				setLoadPower(load, phaseNum, phase1, phase2, loadPQ, AclfLoadCode.CONST_I);
 			}
 			else{
 				no_error = false;
@@ -287,12 +314,107 @@ public class OpenDSSLoadParser {
 			} else if(phaseNum==3 || phaseNum==2) {
 				bus.getThreePhaseLoadList().add((DStab3PLoad) load);
 			}
+			registerParsedLoad(loadId, load, phaseNum, phase1, phase2, modelType,
+					transformerKva, powerfactor, cvrWatts, cvrVars);
 
 			//TODO The following setting does NOT mean all the loads are constP type, it is a known limitation with bus level loadcode setting
 			bus.setLoadCode(AclfLoadCode.CONST_P);
 
 			return no_error;
 
+		}
+
+		public boolean parseLoadPropertyData(String propertyStr) {
+			String normalized = propertyStr.trim().toLowerCase().replaceAll("\\s*=\\s*", "=");
+			if(!normalized.startsWith("load.") || !normalized.contains(".allocationfactor=")) {
+				return true;
+			}
+			int loadStart = "load.".length();
+			int propertyStart = normalized.indexOf(".allocationfactor=");
+			if(propertyStart <= loadStart) {
+				return true;
+			}
+			String loadId = normalized.substring(loadStart, propertyStart);
+			double allocationFactor = parseDssDouble(normalized.substring(propertyStart + ".allocationfactor=".length()));
+			List<ParsedLoad> loads = this.parsedLoadsById.get(loadId);
+			if(loads == null) {
+				return true;
+			}
+			for(ParsedLoad parsedLoad : loads) {
+				if(parsedLoad.transformerKva <= 0.0 || parsedLoad.powerFactor == 0.0) {
+					continue;
+				}
+				double loadP = parsedLoad.transformerKva * allocationFactor * Math.abs(parsedLoad.powerFactor);
+				double loadQ = loadP*Math.tan(Math.acos(Math.abs(parsedLoad.powerFactor)));
+				if(parsedLoad.powerFactor < 0.0) {
+					loadQ = -loadQ;
+				}
+				AclfLoadCode code = parsedLoad.modelType == 2 ? AclfLoadCode.CONST_Z
+						: parsedLoad.modelType == 5 ? AclfLoadCode.CONST_I : AclfLoadCode.CONST_P;
+				setLoadPower(parsedLoad.load, parsedLoad.phaseNum, parsedLoad.phase1, parsedLoad.phase2,
+						new Complex(loadP, loadQ), code);
+				if(parsedLoad.modelType == 4) {
+					parsedLoad.load.setOpenDssModel4(true, parsedLoad.cvrWatts, parsedLoad.cvrVars);
+				}
+			}
+			return true;
+		}
+
+		private void registerParsedLoad(String loadId, DStab1PLoad load, int phaseNum, String phase1, String phase2,
+				int modelType, double transformerKva, double powerFactor, double cvrWatts, double cvrVars) {
+			this.parsedLoadsById.computeIfAbsent(loadId.toLowerCase(), ignored -> new ArrayList<>())
+					.add(new ParsedLoad(load, phaseNum, phase1, phase2, modelType,
+							transformerKva, powerFactor, cvrWatts, cvrVars));
+		}
+
+		private void setLoadPower(DStab1PLoad load, int phaseNum, String phase1, String phase2,
+				Complex loadPQ, AclfLoadCode code) {
+			load.setCode(code);
+			if(phaseNum==3) {
+				((DStab3PLoad)load).set3PhaseLoad(new Complex3x1(loadPQ.divide(3),loadPQ.divide(3),loadPQ.divide(3)));
+			} else if(phaseNum==2) {
+				((DStab3PLoad)load).set3PhaseLoad(twoPhaseLoad(loadPQ, phase1, phase2));
+			} else if(code == AclfLoadCode.CONST_Z) {
+				load.setLoadCZ(loadPQ);
+			} else if(code == AclfLoadCode.CONST_I) {
+				load.setLoadCI(loadPQ);
+			} else {
+				load.setLoadCP(loadPQ);
+			}
+		}
+
+		private static double parseDssDouble(String value) {
+			String normalized = value.trim();
+			if((normalized.startsWith("(") && normalized.endsWith(")"))
+					|| (normalized.startsWith("[") && normalized.endsWith("]"))) {
+				normalized = normalized.substring(1, normalized.length() - 1).trim();
+			}
+			return Double.valueOf(normalized);
+		}
+
+		private static final class ParsedLoad {
+			private final DStab1PLoad load;
+			private final int phaseNum;
+			private final String phase1;
+			private final String phase2;
+			private final int modelType;
+			private final double transformerKva;
+			private final double powerFactor;
+			private final double cvrWatts;
+			private final double cvrVars;
+
+			private ParsedLoad(DStab1PLoad load, int phaseNum, String phase1, String phase2,
+					int modelType, double transformerKva, double powerFactor, double cvrWatts, double cvrVars) {
+				this.load = load;
+				this.phaseNum = phaseNum;
+				this.phase1 = phase1;
+				this.phase2 = phase2;
+				this.modelType = modelType;
+				this.transformerKva = transformerKva;
+				this.powerFactor = powerFactor;
+				this.cvrWatts = cvrWatts;
+				this.cvrVars = cvrVars;
+			}
 		}
 
 		private Complex3x1 twoPhaseLoad(Complex totalLoad, String phase1, String phase2) {
