@@ -141,6 +141,77 @@
 - [ ] Decide full-secondary versus primary-only DistOPF extraction mode.
 - [ ] Verify 9500 primary-only and full-secondary import modes separately.
 
+## Phase 10: DSS-Python Mismatch Pinpointing
+
+- [x] Export solver-independent DSS-Python references for bus voltages, element
+  currents, element powers, and element Yprim from the same compiled DSS files.
+- [x] Add InterPSS post-solve KCL residual diagnostics ranked by bus/phase.
+- [x] Run fixed-point tolerance sensitivity at `1e-4`, `1e-6`, and `1e-8`;
+  classify residual mismatch as convergence-limited or modeling-limited.
+- [x] Compare DSS-Python and InterPSS element currents by source-to-worst-bus
+  path and rank the first sharp current/drop mismatch.
+- [ ] Add model toggles for loads, capacitors, line shunts, fixed regulator
+  taps, regulator controls, and center-tap/triplex transformers.
+- [x] Compare parsed load models against OpenDSS `model`, `conn`, `kV`,
+  `Vminpu`, and `Vmaxpu`, especially below-voltage fallback behavior.
+- [x] Compare device Y blocks by category: lines, switches, regulators,
+  center-tap/load transformers, and capacitors.
+- [x] Implement and validate closer OpenDSS low-voltage load fallback behavior
+  for `model=1` loads below `Vminpu`, especially two-phase 120/240 V secondary
+  loads.
+- [ ] Document the identified mismatch source with a minimal DSS-Python-backed
+  regression case.
+
+Current finding:
+
+- OpenDSS documentation says `Vminpu` is the minimum per-unit voltage for which
+  the selected load model applies; below it, the load transitions to a constant
+  impedance model matched at the transition voltage. OpenDSS also documents the
+  low-voltage convergence modification and `Vlowpu` transition behavior, and
+  clarifies that 2-phase and 3-phase element voltage ratings are line-line by
+  convention.
+- The IEEE8500 controls-off fixed-point mismatch is modeling-limited, not
+  tolerance-limited. Tightening fixed-point tolerance from `1e-4` to `1e-8`
+  leaves the worst voltage-magnitude error essentially unchanged at about
+  `0.0083 pu`.
+- DSS-Python `Yprim` comparisons match for the high-side transformer and the
+  `ln6504018-1` line near the largest branch-drop discrepancy, and DSS regulator
+  taps are `1.0` with controls disabled. These are carrying the downstream
+  mismatch rather than causing it.
+- Capacitors materially affect the absolute voltage profile, but disabling all
+  capacitors in both tools still leaves the downstream secondary mismatch.
+- DSS-Python-backed mini cases show that the current InterPSS `model=1`
+  below-`Vminpu` matched-impedance fallback is already close for center-tap
+  120/240 V services at about `0.816 pu`: the two-phase and split single-phase
+  low-voltage mini cases both compare within `0.0006 pu`. This rules out the
+  basic OpenDSS `Vminpu` fallback formula as the primary IEEE8500 mismatch
+  source for the observed low-voltage region.
+- The strongest remaining source is cumulative device/model behavior not yet
+  isolated by the mini cases. The next diagnostic should aggregate DSS-Python
+  and InterPSS load powers/currents by load type and feeder region, then compare
+  the largest downstream current differences against capacitor and triplex/
+  service-transformer contributions.
+- Follow-up diagnostics pinpoint the dominant remaining IEEE8500 mismatch to
+  center-tap service transformers. DSS-Python-vs-InterPSS branch aggregation
+  shows InterPSS has about `49 kW` and `122 kvar` less aggregate service
+  transformer loss across `1177` matched service transformers, while lines,
+  triplex lines, capacitors, and terminal loads are much smaller contributors.
+  The service transformer XfmrCode definitions include `%noloadloss=.2` and
+  `%imag=0.5`; the current center-tap explicit-Y builder parses `%Rs`, `Xhl`,
+  `Xht`, and `Xlt`, but does not carry `%noloadloss` or `%imag` into a
+  magnetizing/no-load shunt. The magnitude matches the aggregate loss gap, so
+  the next implementation fix is to parse these XfmrCode fields and add the
+  equivalent no-load admittance to the primary side of the center-tap explicit
+  Y block, then rerun IEEE8500 fixed-point comparison.
+- Implemented the center-tap no-load branch fix by parsing `%imag` and
+  `%noloadloss` from `XfmrCode`/inline transformer data and adding `G-jB` to the
+  center-tap primary self-admittance. IEEE8500 controls-off fixed-point max
+  voltage error dropped from about `0.0083 pu` to `0.0044 pu`. Service
+  transformer aggregate loss mismatch dropped from about `-49 kW, -122 kvar` to
+  about `+0.2 kW, -9.4 kvar`. Remaining branch mismatch is now dominated by
+  upstream/main-feeder line and substation transformer differences rather than
+  secondary service transformers.
+
 ## Immediate Implementation Slice
 
 - [x] Implement `OpenDSSUnitConverter`.
