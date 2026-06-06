@@ -32,6 +32,10 @@ public class Dstab3PBranchImpl extends DStabBranchImpl implements DStab3PBranch 
 	private Complex3x3 phaseXfrFromBusVabc2ToBusVabcMatrix = null;
 	private Complex3x3 phaseXfrToBusVabc2FromBusVabcMatrix = null;
 	private Complex3x3 phaseXfrIabc2VabcMatrix = null;
+	private Complex3x3 explicitYffabc = null;
+	private Complex3x3 explicitYftabc = null;
+	private Complex3x3 explicitYtfabc = null;
+	private Complex3x3 explicitYttabc = null;
 
 	private static final double z0_to_z1_ratio = 2.5;
 
@@ -268,6 +272,9 @@ public class Dstab3PBranchImpl extends DStabBranchImpl implements DStab3PBranch 
 
 	@Override
 	public Complex3x3 getYffabc() {
+		if(hasExplicitYabc()) {
+			return this.explicitYffabc;
+		}
 		Complex3x3 yff = null;
 		if(hasPhaseTurnRatio()){
 			yff= phaseTransformerYffabc();
@@ -292,6 +299,9 @@ public class Dstab3PBranchImpl extends DStabBranchImpl implements DStab3PBranch 
 
 	@Override
 	public Complex3x3 getYttabc() {
+		if(hasExplicitYabc()) {
+			return this.explicitYttabc;
+		}
 		Complex3x3 ytt = null;
 		if(hasPhaseTurnRatio()){
 			ytt= phaseTransformerYttabc();
@@ -315,6 +325,9 @@ public class Dstab3PBranchImpl extends DStabBranchImpl implements DStab3PBranch 
 
 	@Override
 	public Complex3x3 getYftabc() {
+		if(hasExplicitYabc()) {
+			return this.explicitYftabc;
+		}
 		Complex3x3 yft = null;
 		if(hasPhaseTurnRatio()){
 			yft= phaseTransformerYftabc();
@@ -334,6 +347,9 @@ public class Dstab3PBranchImpl extends DStabBranchImpl implements DStab3PBranch 
 
 	@Override
 	public Complex3x3 getYtfabc() {
+		if(hasExplicitYabc()) {
+			return this.explicitYtfabc;
+		}
 		Complex3x3 ytf = null;
 		if(hasPhaseTurnRatio()){
 			ytf= phaseTransformerYtfabc();
@@ -506,6 +522,21 @@ public class Dstab3PBranchImpl extends DStabBranchImpl implements DStab3PBranch 
 	@Override
 	public boolean hasPhaseTurnRatio() {
 		return this.fromTurnRatioABC != null && this.toTurnRatioABC != null;
+	}
+
+	@Override
+	public void setExplicitYabc(Complex3x3 yff, Complex3x3 yft, Complex3x3 ytf, Complex3x3 ytt) {
+		this.explicitYffabc = yff;
+		this.explicitYftabc = yft;
+		this.explicitYtfabc = ytf;
+		this.explicitYttabc = ytt;
+		invalidateMatrixCache();
+	}
+
+	@Override
+	public boolean hasExplicitYabc() {
+		return this.explicitYffabc != null && this.explicitYftabc != null
+				&& this.explicitYtfabc != null && this.explicitYttabc != null;
 	}
 
 	private void invalidateMatrixCache() {
