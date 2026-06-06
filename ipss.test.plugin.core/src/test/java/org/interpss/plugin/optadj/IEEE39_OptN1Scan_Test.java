@@ -10,7 +10,7 @@ import java.util.Map;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.AtomicCounter;
 import org.interpss.plugin.optadj.algo.lf.AclfNetContigencyOptimizer;
-import org.interpss.plugin.optadj.algo.lf.AclfNetLoadFlowOptimizer.GenAdjustResult;
+import org.interpss.plugin.optadj.result.OptAdjResultContainer;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.algo.parallel.ContingencyAnalysisMonad;
@@ -76,20 +76,20 @@ public class IEEE39_OptN1Scan_Test extends CorePluginTestSetup {
 		assertTrue(overLimitBefore > 0,
 				"Precondition: N-1 scan should find overloaded post-contingency branches");
 
-		Map<String, GenAdjustResult> adjustResults = new AclfNetContigencyOptimizer().optimize(dclfAlgo, null,
+		Map<String, OptAdjResultContainer.GenAdjustResult> adjustResults = new AclfNetContigencyOptimizer().optimize(dclfAlgo, null,
 				LOADING_LIMIT_PCT);
 
 		assertTrue(adjustResults.size() >= 6 && adjustResults.size() <= 10,
 				"Multiple generators should receive material dispatch adjustment");
 		//adjustResults.values().forEach(result -> assertTrue(Math.abs(result.dP()) > 1.0,
 		//		"Dispatch above threshold for " + result.genName()));
-		double netDispatchMw = adjustResults.values().stream().mapToDouble(GenAdjustResult::adjP).sum();
+		double netDispatchMw = adjustResults.values().stream().mapToDouble(OptAdjResultContainer.GenAdjustResult::adjP).sum();
 		assertEquals(0.0, netDispatchMw, DISPATCH_TOLERANCE_MW, "Net generator dispatch should balance");
 
 		double increaseMw = adjustResults.values().stream().filter(r -> r.adjP() > 0.0)
-				.mapToDouble(GenAdjustResult::adjP).sum();
+				.mapToDouble(OptAdjResultContainer.GenAdjustResult::adjP).sum();
 		double decreaseMw = adjustResults.values().stream().filter(r -> r.adjP() < 0.0)
-				.mapToDouble(GenAdjustResult::adjP).sum();
+				.mapToDouble(OptAdjResultContainer.GenAdjustResult::adjP).sum();
 
 		// Regression anchors (IEEE39_OptN1Scan_Sample): ~362 MW redispatch, split across gens may vary.
 		assertTrue(increaseMw > 350.0 && increaseMw < 375.0, "Total generation increase (~362 MW)");
