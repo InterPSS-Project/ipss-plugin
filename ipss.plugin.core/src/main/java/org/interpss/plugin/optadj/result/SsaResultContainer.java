@@ -51,4 +51,15 @@ public class SsaResultContainer extends BaseJSONBean{
 	public void setCaOverLimitInfo(List<SsaBranchOverLimitInfo> caOverLimitInfo) {
 		this.caOverLimitInfo = caOverLimitInfo;
 	}
+
+	public void printBaseOverLimitInfo() {
+		baseOverLimitInfo.stream().forEach(info -> {
+			double loading = Math.abs(info.getBaseFlowMW() / info.getLimitMW()) * 100;
+			System.out.printf("Over Limit Branch: %s  %.2f rating: %.2f loading: %.2f%n",
+					info.getOverLimitBranchId(),
+					info.getBaseFlowMW(),
+					info.getLimitMW(),
+					loading);
+		});
+	}
 }
