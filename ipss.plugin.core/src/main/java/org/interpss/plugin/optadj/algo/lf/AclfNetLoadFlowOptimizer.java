@@ -16,6 +16,7 @@ import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
+import com.interpss.core.algo.dclf.adapter.DclfAlgoBus;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoGen;
 
 import org.interpss.plugin.optadj.optimizer.GenStateOptimizer;
@@ -129,9 +130,11 @@ public class AclfNetLoadFlowOptimizer {
 			double dP = opt.getDGenP(i);
 			if (Math.abs(dP) > GEN_DISPATCH_THRESHOLD) {
 				AclfGen gen = genMap.get(i);
-				DclfAlgoGen dclfGen = dclfAlgo.getDclfAlgoBus(gen.getParentBus().getId()).getGen(gen.getName()).get();
+				DclfAlgoBus dclfBus = dclfAlgo.getDclfAlgoBus(gen.getParentBus().getId());
+				// Please note: we use gen Id to get the DclfAlgoGen object.
+				DclfAlgoGen dclfGen = dclfBus.getGen(gen.getId()).get();
 				results.put(gen.getName(), new OptAdjResultContainer.GenAdjustResult(dclfGen.getGenP()*baseMva, dP, gen.getPGenLimit().multiply(baseMva)));
-				dclfGen.setAdjust(dP / 100);
+				dclfGen.setAdjust(dP * 0.01);
 				//System.out.println(gen.getName() + ", dP:" + dP + ", genP:" + dclfGen.getGenP() + ", genLimit: " + gen.getPGenLimit());
 			}
 		}
