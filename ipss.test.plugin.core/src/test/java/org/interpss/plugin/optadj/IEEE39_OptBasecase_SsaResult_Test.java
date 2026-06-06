@@ -7,7 +7,7 @@ import java.util.Map;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.plugin.optadj.algo.lf.AclfNetLoadFlowOptimizer;
-import org.interpss.plugin.optadj.algo.lf.AclfNetLoadFlowOptimizer.GenAdjustResult;
+import org.interpss.plugin.optadj.result.OptAdjResultContainer;
 import org.interpss.plugin.optadj.result.SsaBranchOverLimitInfo;
 import org.interpss.plugin.optadj.result.SsaResultContainer;
 import org.junit.jupiter.api.Test;
@@ -95,7 +95,7 @@ public class IEEE39_OptBasecase_SsaResult_Test extends CorePluginTestSetup {
 		assertEquals(overLimitBefore, ssaResult.getBaseOverLimitInfo().size(),
 				"SSA result should capture all base over-limit branches");
 
-		Map<String, GenAdjustResult> adjustResults = new AclfNetLoadFlowOptimizer().optimize(dclfAlgo, ssaResult,
+		Map<String, OptAdjResultContainer.GenAdjustResult> adjustResults = new AclfNetLoadFlowOptimizer().optimize(dclfAlgo, ssaResult,
 				LOADING_LIMIT_PCT);
 		assertTrue(adjustResults.size() > 0, "Optimizer should dispatch at least one generator");
 
