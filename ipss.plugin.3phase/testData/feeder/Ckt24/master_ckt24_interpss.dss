@@ -1,0 +1,42 @@
+Clear
+
+New Circuit.ckt24 bus1=SourceBus pu=1.05  basekV=230 R1=0.63 X1=6.72 R0=4.07 X0=15.55
+
+Redirect  Wiredata_ckt24.dss
+Redirect  Linegeometry_ckt24.dss
+Redirect  LineCodes_ckt24.dss
+Redirect  TriplexLineCodes_ckt24.dss
+Redirect  Substation_ckt24.dss
+
+! Loadshapes for yearly simulations (normalized)
+! InterPSS diagnostic: skipped loadshape definition for static constant-power comparison
+! InterPSS diagnostic: skipped loadshape definition for static constant-power comparison
+! InterPSS diagnostic: skipped loadshape definition for static constant-power comparison
+! InterPSS diagnostic: skipped loadshape definition for static constant-power comparison
+! InterPSS diagnostic: skipped loadshape definition for static constant-power comparison
+
+Redirect  lines_ckt24_interpss.dss
+Redirect  Capacitors_ckt24.dss
+Redirect  stepxfmrs_ckt24.dss
+Redirect  transformers_ckt24.dss
+Redirect  sec_serv_ckt24.dss
+
+! Loads (allocated by XF kVA)
+Redirect  Allocated_Loads_ckt24_interpss.dss
+Redirect Other_Load_ckt24_interpss.dss
+! set the initial allocation factors based on previousload allocations
+! InterPSS diagnostic: allocation factors baked into *_interpss load files
+
+! Let OpenDSS define the voltage bases
+Set voltagebases=[230,34.5,13.2,0.48,0.415,0.208]   ! Allowable voltage bases for this problem
+Calcvoltagebases
+
+! Define the monitors
+! InterPSS diagnostic: monitors skipped for power-flow comparison
+
+! optional energy meter. this was used to allocate the loads
+! New energymeter.Feeder element=line.fdr_05410 term=1 option=R action=C PhaseVolt=yes peakcurrent=(466,469,452)
+
+! now that we have buses defined, define the bus coordinates so we can draw pictures
+Buscoords buscoords_ckt24.dss
+
