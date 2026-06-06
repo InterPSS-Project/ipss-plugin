@@ -18,6 +18,9 @@ public class DStab1PLoadImpl extends DStabLoadImpl implements DStab1PLoad {
 	double nominalKV = 0;
 	double Vminpu = 0.85; // pu
 	double Vmaxpu = 1.1; // pu
+	private boolean openDssModel4 = false;
+	private double cvrWatts = 1.0;
+	private double cvrVars = 2.0;
 
 	PhaseCode  ph = PhaseCode.A;  //connected phase(s)
 
@@ -46,6 +49,9 @@ public class DStab1PLoadImpl extends DStabLoadImpl implements DStab1PLoad {
 
 	@Override
 	public Complex getLoad(double vmag) {
+		if(this.openDssModel4) {
+			return cvrLoadAtVoltage(this.loadCP, vmag);
+		}
 		if (this.code == AclfLoadCode.CONST_P){
 			return loadAtVoltage(this.loadCP, Complex.ZERO, Complex.ZERO, vmag);
 		}
@@ -72,6 +78,23 @@ public class DStab1PLoadImpl extends DStabLoadImpl implements DStab1PLoad {
 
 	private Complex loadAtTransitionVoltage(Complex constP, Complex constI, Complex constZ, double vmag) {
 		return constP.add(constI.multiply(vmag)).add(constZ.multiply(vmag * vmag));
+	}
+
+	protected Complex cvrLoadAtVoltage(Complex nominalLoad, double vmag) {
+		if (vmag < this.Vminpu) {
+			return cvrLoadAtTransitionVoltage(nominalLoad, this.Vminpu)
+					.multiply(matchedImpedanceScale(vmag, this.Vminpu));
+		}
+		if (vmag > this.Vmaxpu) {
+			return cvrLoadAtTransitionVoltage(nominalLoad, this.Vmaxpu)
+					.multiply(matchedImpedanceScale(vmag, this.Vmaxpu));
+		}
+		return cvrLoadAtTransitionVoltage(nominalLoad, vmag);
+	}
+
+	private Complex cvrLoadAtTransitionVoltage(Complex nominalLoad, double vmag) {
+		return new Complex(nominalLoad.getReal() * Math.pow(vmag, this.cvrWatts),
+				nominalLoad.getImaginary() * Math.pow(vmag, this.cvrVars));
 	}
 
 	private double matchedImpedanceScale(double vmag, double transitionVoltage) {
@@ -228,6 +251,28 @@ public class DStab1PLoadImpl extends DStabLoadImpl implements DStab1PLoad {
 	public double getVmaxpu() {
 
 		return this.Vmaxpu;
+	}
+
+	@Override
+	public void setOpenDssModel4(boolean enabled, double cvrWatts, double cvrVars) {
+		this.openDssModel4 = enabled;
+		this.cvrWatts = cvrWatts;
+		this.cvrVars = cvrVars;
+	}
+
+	@Override
+	public boolean isOpenDssModel4() {
+		return this.openDssModel4;
+	}
+
+	@Override
+	public double getCvrWatts() {
+		return this.cvrWatts;
+	}
+
+	@Override
+	public double getCvrVars() {
+		return this.cvrVars;
 	}
 
 }
