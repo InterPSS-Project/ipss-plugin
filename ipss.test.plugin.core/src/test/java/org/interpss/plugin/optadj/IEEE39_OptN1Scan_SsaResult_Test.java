@@ -10,8 +10,8 @@ import java.util.Map;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.AtomicCounter;
 import org.interpss.plugin.optadj.algo.lf.AclfNetContigencyOptimizer;
+import org.interpss.plugin.optadj.algo.util.AclfNetSsaHelper;
 import org.interpss.plugin.optadj.result.OptAdjResultContainer;
-import org.interpss.plugin.optadj.result.SsaBranchOverLimitInfo;
 import org.interpss.plugin.optadj.result.SsaResultContainer;
 import org.junit.jupiter.api.Test;
 
@@ -27,11 +27,13 @@ import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 
 /**
  * Regression test for {@code IEEE39_OptN1Scan_SsaResult_Sample}: N-1 DCLF scan with SSA
- * over-limit info, then {@link AclfNetContigencyOptimizer} at 100% contingency loading limit.
+ * over-limit info via {@link AclfNetSsaHelper}, then {@link AclfNetContigencyOptimizer}
+ * at 100% contingency loading limit.
  */
 public class IEEE39_OptN1Scan_SsaResult_Test extends CorePluginTestSetup {
 
-	private static final double LOADING_LIMIT_PCT = 100.0;
+	private static final double SSA_SCAN_THRESHOLD_PCT = 90.0;
+	private static final double OPT_ADJ_THRESHOLD_PCT = 100.0;
 
 	private static List<DclfBranchOutage> buildBranchOutageContingencies(
 			AclfNetwork net, ContingencyAnalysisAlgorithm dclfAlgo) {
@@ -49,31 +51,18 @@ public class IEEE39_OptN1Scan_SsaResult_Test extends CorePluginTestSetup {
 		return contList;
 	}
 
-	private static SsaResultContainer buildCaOverLimitSsaResult(ContingencyAnalysisAlgorithm dclfAlgo,
+	private static int countN1OverLimitViolations(ContingencyAnalysisAlgorithm dclfAlgo,
 			List<DclfBranchOutage> contList) {
-		SsaResultContainer ssaResult = new SsaResultContainer();
-		ssaResult.setCaLoadingThreshold(LOADING_LIMIT_PCT);
-
-		contList.parallelStream().forEach(contingency -> {
-			ContingencyAnalysisMonad.of(dclfAlgo, contingency).ca(resultRec -> {
-				double loading = resultRec.calLoadingPercent();
-				if (loading > LOADING_LIMIT_PCT) {
-					DclfOutageBranch outageBranch = ((DclfBranchOutage) resultRec.contingency).getOutageEquip();
-					ssaResult.getCaOverLimitInfo().add(new SsaBranchOverLimitInfo(
-							outageBranch.getBranch().getId(), resultRec.aclfBranch.getId(),
-							resultRec.aclfBranch.getRatingMvaB(), resultRec.preFlowMW, resultRec.getPostFlowMW()));
-				}
-			});
-		});
-		return ssaResult;
+		return countN1OverLimitViolations(dclfAlgo, contList, OPT_ADJ_THRESHOLD_PCT, true);
 	}
 
 	private static int countN1OverLimitViolations(ContingencyAnalysisAlgorithm dclfAlgo,
-			List<DclfBranchOutage> contList) {
+			List<DclfBranchOutage> contList, double loadingPctThreshold, boolean strictGreaterThan) {
 		AtomicCounter cnt = new AtomicCounter();
 		contList.parallelStream().forEach(contingency -> {
 			ContingencyAnalysisMonad.of(dclfAlgo, contingency).ca(resultRec -> {
-				if (resultRec.calLoadingPercent() > LOADING_LIMIT_PCT) {
+				double loading = resultRec.calLoadingPercent();
+				if (strictGreaterThan ? loading > loadingPctThreshold : loading >= loadingPctThreshold) {
 					cnt.increment();
 				}
 			});
@@ -92,21 +81,22 @@ public class IEEE39_OptN1Scan_SsaResult_Test extends CorePluginTestSetup {
 		List<DclfBranchOutage> contList = buildBranchOutageContingencies(net, dclfAlgo);
 		assertTrue(contList.size() > 0, "N-1 contingency list should not be empty");
 
-		SsaResultContainer ssaResult = buildCaOverLimitSsaResult(dclfAlgo, contList);
+		SsaResultContainer ssaResult = new AclfNetSsaHelper(dclfAlgo).contingencyScan(contList, SSA_SCAN_THRESHOLD_PCT);
 		int overLimitBefore = countN1OverLimitViolations(dclfAlgo, contList);
 		assertTrue(overLimitBefore > 0,
 				"Precondition: N-1 scan should find overloaded post-contingency branches");
-		assertEquals(overLimitBefore, ssaResult.getCaOverLimitInfo().size(),
-				"SSA result should capture all N-1 over-limit violations");
+		assertTrue(ssaResult.getCaOverLimitInfo().size() > overLimitBefore,
+				"SSA scan at 90% should capture more violations than the 100% overload count");
 
-		OptAdjResultContainer optAdjResult = new OptAdjResultContainer(ssaResult, LOADING_LIMIT_PCT);
-		Map<String, OptAdjResultContainer.GenAdjustResult> adjustResults = new AclfNetContigencyOptimizer().optimize(dclfAlgo, optAdjResult,
-				LOADING_LIMIT_PCT);
+		OptAdjResultContainer optAdjResult = new OptAdjResultContainer(ssaResult, OPT_ADJ_THRESHOLD_PCT);
+		Map<String, OptAdjResultContainer.GenAdjustResult> adjustResults = new AclfNetContigencyOptimizer().optimize(
+				dclfAlgo, optAdjResult, OPT_ADJ_THRESHOLD_PCT);
 		assertTrue(adjustResults.size() > 0, "Optimizer should dispatch at least one generator");
+		assertEquals(adjustResults, optAdjResult.getOPtAdjResults());
 
 		dclfAlgo.calculateDclf();
 
-		int overLimitAfter = countN1OverLimitViolations(dclfAlgo, contList);
+		int overLimitAfter = countN1OverLimitViolations(dclfAlgo, contList, OPT_ADJ_THRESHOLD_PCT, false);
 
 		assertTrue(overLimitAfter < overLimitBefore,
 				"Contingency optimizer should reduce N-1 overload violations");
