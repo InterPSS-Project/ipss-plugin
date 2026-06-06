@@ -21,6 +21,7 @@ import com.interpss.core.algo.dclf.adapter.DclfAlgoGen;
 import org.interpss.plugin.optadj.optimizer.GenStateOptimizer;
 import org.interpss.plugin.optadj.optimizer.bean.GenConstrainData;
 import org.interpss.plugin.optadj.optimizer.bean.SectionConstrainData;
+import org.interpss.plugin.optadj.result.OptAdjResultContainer;
 import org.interpss.plugin.optadj.result.SsaResultContainer;
 
 /**
@@ -37,33 +38,25 @@ public class AclfNetLoadFlowOptimizer {
 	final static double SEN_THRESHOLD = 0.02;
 	final static double GEN_DISPATCH_THRESHOLD = 1.0;
 
-	/** 
-	 * Generator dispatch adjustment applied to the DCLF model (MW and per-unit). 
-	 */
-	public record GenAdjustResult(double genP, double adjP, LimitType genLimit) {
-		public String toString() {
-			return String.format("genP: %.2f, asjP: %.2f, tolP: %.2f, genLimit: %s", genP, adjP, genP+adjP, genLimit);
-		}
-	}
-
-	public Map<String, GenAdjustResult> optimize(ContingencyAnalysisAlgorithm dclfAlgo, SsaResultContainer result,
+	public Map<String, OptAdjResultContainer.GenAdjustResult> optimize(ContingencyAnalysisAlgorithm dclfAlgo, SsaResultContainer result,
 			double threshold) {
 		AclfNetwork net = (AclfNetwork) dclfAlgo.getNetwork();
 
 		AclfNetSensHelper helper = new AclfNetSensHelper(net);
 		float[][] senMatrix = helper.calSen();
+
+		if (net.getAclfBranchNameLookupTable() == null) {
+			net.createAclfBranchNameLookupTable(true);
+		}
+		if (net.getAclfGenNameLookupTable() == null) {
+			net.createAclfGenNameLookupTable(true);
+		}
 		
 		Map<Integer, AclfGen> controlGenMap = null;
 		if (result == null) {
 			controlGenMap = arrangeIndex(net.getAclfGenNameLookupTable().values().stream().filter(gen -> gen.isActive())
 					.collect(Collectors.toSet()));
 		} else {
-			if (net.getAclfBranchNameLookupTable() == null) {
-				net.createAclfBranchNameLookupTable(true);
-			}
-			if (net.getAclfGenNameLookupTable() == null) {
-				net.createAclfGenNameLookupTable(true);
-			}
 			controlGenMap = arrangeIndex(buildControlGenSet(net, senMatrix, result));
 		}
 		
@@ -117,15 +110,15 @@ public class AclfNetLoadFlowOptimizer {
 		});
 	}
 
-	protected Map<String, GenAdjustResult> updatedDclfAlgo(ContingencyAnalysisAlgorithm dclfAlgo, Map<Integer, AclfGen> genMap, GenStateOptimizer opt) {
-		Map<String, GenAdjustResult> results = new HashMap<>();
+	protected Map<String, OptAdjResultContainer.GenAdjustResult> updatedDclfAlgo(ContingencyAnalysisAlgorithm dclfAlgo, Map<Integer, AclfGen> genMap, GenStateOptimizer opt) {
+		Map<String, OptAdjResultContainer.GenAdjustResult> results = new HashMap<>();
 		double baseMva = dclfAlgo.getNetwork().getBaseMva();
 		for (int i = 0; i < genMap.size(); i++) {
 			double dP = opt.getDGenP(i);
 			if (Math.abs(dP) > GEN_DISPATCH_THRESHOLD) {
 				AclfGen gen = genMap.get(i);
 				DclfAlgoGen dclfGen = dclfAlgo.getDclfAlgoBus(gen.getParentBus().getId()).getGen(gen.getName()).get();
-				results.put(gen.getName(), new GenAdjustResult(dclfGen.getGenP()*baseMva, dP, gen.getPGenLimit().multiply(baseMva)));
+				results.put(gen.getName(), new OptAdjResultContainer.GenAdjustResult(dclfGen.getGenP()*baseMva, dP, gen.getPGenLimit().multiply(baseMva)));
 				dclfGen.setAdjust(dP / 100);
 				//System.out.println(gen.getName() + ", dP:" + dP + ", genP:" + dclfGen.getGenP() + ", genLimit: " + gen.getPGenLimit());
 			}

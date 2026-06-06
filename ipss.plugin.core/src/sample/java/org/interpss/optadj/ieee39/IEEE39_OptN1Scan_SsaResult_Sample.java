@@ -17,8 +17,8 @@ import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 
 import org.interpss.plugin.optadj.algo.lf.AclfNetContigencyOptimizer;
-import org.interpss.plugin.optadj.algo.lf.AclfNetLoadFlowOptimizer.GenAdjustResult;
 import org.interpss.plugin.optadj.algo.util.AclfNetSsaHelper;
+import org.interpss.plugin.optadj.result.OptAdjResultContainer;
 import org.interpss.plugin.optadj.result.SsaResultContainer;
 
 public class IEEE39_OptN1Scan_SsaResult_Sample {
@@ -51,7 +51,7 @@ public class IEEE39_OptN1Scan_SsaResult_Sample {
 		SsaResultContainer ssaResult = new AclfNetSsaHelper(dclfAlgo).contingencyScan(contList, 100.0);
 		System.out.println("Total number of branches over limit before OptAdj: " + ssaResult.getCaOverLimitInfo().size());
 		
-		Map<String, GenAdjustResult> results = new AclfNetContigencyOptimizer().optimize(dclfAlgo, ssaResult, 100.0);
+		Map<String, OptAdjResultContainer.GenAdjustResult> results = new AclfNetContigencyOptimizer().optimize(dclfAlgo, ssaResult, 100.0);
 		results.forEach((genName, result) -> {
 			System.out.println("GenAdjustResult: " + genName + ", " + result.toString());
 		});
