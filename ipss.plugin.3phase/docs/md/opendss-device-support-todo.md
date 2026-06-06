@@ -82,6 +82,9 @@
   and `xhl` consistently.
   - [x] Convert multiline `wdg=` transformer `%r` and `xhl` from OpenDSS
     percent-on-kVA values to ohms before InterPSS PU conversion.
+  - [x] Parse one-line two-winding transformer `%rs=(r1,r2,...)` arrays into
+    series resistance; Ckt24 step transformers depend on adding the first two
+    winding values.
 - [x] Support single-phase regulator transformer parsing and fixed-point PF.
   - [x] Normalize single-phase regulator thermal limits on the one-phase PU base
     used by OpenDSS-imported single-phase loads.
@@ -106,6 +109,13 @@
 - [x] Support balanced three-phase delta load current injection.
 - [ ] Support one-phase delta loads connected line-to-line.
 - [ ] Map OpenDSS model 4 and ZIP inputs to documented PF approximations.
+  - [x] Parse Ckt7 `model=4` loads and apply OpenDSS CVR behavior:
+    `P=P0*V^CVRwatts`, `Q=Q0*V^CVRvars`, with defaults `1` and `2`.
+  - [ ] Add ZIP/model-8 behavior.
+- [x] Parse `Load.<id>.AllocationFactor=...` updates and apply them to
+  `xfkVA`/power-factor loads before PU conversion.
+- [x] Parse OpenDSS load `bus=`, parenthesized `kVA=(...)`, and default wye
+  connection syntax used by EPRI Ckt7.
 - [x] Parse and retain `vminpu` and `vmaxpu` where relevant.
   - [x] Preserve load continuation lines beginning with `~` before parsing.
 - [ ] Parse `CapControl` and keep capacitors fixed by default.
@@ -159,7 +169,7 @@
 - [x] Implement and validate closer OpenDSS low-voltage load fallback behavior
   for `model=1` loads below `Vminpu`, especially two-phase 120/240 V secondary
   loads.
-- [ ] Document the identified mismatch source with a minimal DSS-Python-backed
+- [x] Document the identified mismatch source with a minimal DSS-Python-backed
   regression case.
 
 Current finding:
@@ -211,6 +221,27 @@ Current finding:
   about `+0.2 kW, -9.4 kvar`. Remaining branch mismatch is now dominated by
   upstream/main-feeder line and substation transformer differences rather than
   secondary service transformers.
+- Ckt24 device-level QA added several reusable parser lessons. Continuation
+  lines can place `cmatrix=[...] units=kft` together, so parser properties must
+  be extracted independently. Repeated `Neutral=... Kron=yes` declarations are
+  meaningful and should be applied sequentially, not collapsed. Missing `kW`
+  with `xfkVA=0` and `pf` can still mean the OpenDSS default `10 kW`, not zero.
+- The final Ckt24 residual was a transformer modeling gap, not a downstream
+  lateral issue. The source-path voltage diagnostic showed a phase-B `dV` jump
+  across `Transformer.step_05410_G2101CD0200`; branch power comparison then
+  showed InterPSS had zero real transformer loss while DSS-Python had about
+  `6.58 kW`. The root cause was parsing `%rs=(0.4725,0.4725)` without adding
+  the winding resistances to series R. After the fix, Ckt24 max voltage error
+  dropped from about `0.017935 pu` to about `0.004969 pu`.
+- The next Ckt24 depth plot showed a remaining depth-0 mismatch at `sourcebus`.
+  The root cause was the OpenDSS circuit `Vsource` Thevenin impedance:
+  `New Circuit.ckt24 ... R1=0.63 X1=6.72 R0=4.07 X0=15.55`. DSS-Python reports
+  the named `bus1` terminal after this impedance, while InterPSS had pinned
+  `sourcebus` directly as the ideal swing bus. The parser now creates an
+  internal ideal swing bus and connects it to `sourcebus` with a
+  sequence-to-phase source branch. This reduced the Ckt24 depth-0 mismatch to
+  about `1e-4 pu` and the max voltage error to about `0.002934 pu`; the
+  remaining visible jump is now across or immediately after `SubXFMR`.
 
 ## Immediate Implementation Slice
 
