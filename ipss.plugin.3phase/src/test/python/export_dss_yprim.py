@@ -139,6 +139,23 @@ def print_bus_voltages(records: list[dict[str, Any]]) -> None:
         print(f"  {record['bus']}: {values}")
 
 
+def print_voltage_csv(records: list[dict[str, Any]], case_name: str, output: Path | None = None) -> None:
+    context = output.open("w", newline="") if output else nullcontext(sys.stdout)
+    with context as stream:
+        writer = csv.writer(stream, lineterminator="\n")
+        writer.writerow(["case", "bus", "phase", "vmag_pu", "angle_deg"])
+        for record in records:
+            bus_name = record["bus"].lower()
+            for item in record["pu_vmag_angle"]:
+                writer.writerow([
+                    case_name,
+                    bus_name,
+                    item["node"],
+                    f"{item['vmag']:.12g}",
+                    f"{item['angle_deg']:.12g}",
+                ])
+
+
 def active_element_record(circuit: Any, class_name: str, name: str) -> dict[str, Any]:
     element = circuit.ActiveCktElement
     return {
@@ -298,6 +315,8 @@ def main() -> None:
     )
     parser.add_argument("--solve", action="store_true", help="Run Solve before exporting")
     parser.add_argument("--voltages", action="store_true", help="Export all bus voltage magnitudes/angles")
+    parser.add_argument("--voltage-csv", action="store_true", help="Emit all bus voltage magnitudes/angles as CSV")
+    parser.add_argument("--case-name", default="dss", help="Case name used in CSV exports")
     parser.add_argument("--loads-csv", action="store_true", help="Emit solved load terminal powers/currents as CSV")
     parser.add_argument("--class-csv", nargs="*", help="Emit solved element terminal powers/currents for DSS classes")
     parser.add_argument("--output", help="Optional output path for CSV exports")
@@ -313,6 +332,12 @@ def main() -> None:
         dss.DSS.Text.Command = "solve"
 
     circuit = dss.DSS.ActiveCircuit
+    if args.voltage_csv:
+        output = Path(args.output) if args.output else None
+        if output:
+            output.parent.mkdir(parents=True, exist_ok=True)
+        print_voltage_csv(bus_voltage_records(circuit), args.case_name, output)
+        return
     if args.loads_csv:
         output = Path(args.output) if args.output else None
         if output:
