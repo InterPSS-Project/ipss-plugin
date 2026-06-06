@@ -10,20 +10,33 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.ArrayDeque;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
+import org.interpss.numeric.datatype.Complex3x3;
+import org.interpss.threePhase.basic.dstab.DStab1PLoad;
 import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
+import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 import org.interpss.threePhase.dataParser.opendss.OpenDSSDataParser;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.powerflow.DistributionPFMethod;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.acsc.PhaseCode;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.net.Branch;
 
 
@@ -37,7 +50,8 @@ public class OpenDssParserPowerFlowComparisonTest {
 				"testData/feeder/IEEE13",
 				"IEEE13Nodeckt.dss",
 				"opendss-reference/ieee13-dss-python-voltage-reference.csv",
-				VOLTAGE_MAG_TOLERANCE_PU);
+				VOLTAGE_MAG_TOLERANCE_PU,
+				OpenDssTapProfile.IEEE13_SOLVED);
 		System.out.println(result.summary("IEEE13"));
 	}
 
@@ -52,6 +66,974 @@ public class OpenDssParserPowerFlowComparisonTest {
 	}
 
 	@Test
+	public void ieee8500ParserPowerFlowMatchesDssPythonReference() throws IOException {
+		ComparisonResult result = assertMatchesDssPythonReference(
+				"testData/feeder/IEEE8500",
+				"Master-InterPSS.dss",
+				"opendss-reference/ieee8500-controls-off-dss-python-voltage-reference.csv",
+				8.0e-2,
+				false,
+				DistributionPFMethod.Fixed_Point,
+				false);
+		System.out.println(result.summary("IEEE8500"));
+	}
+
+	@Test
+	@Disabled("FBS diagnostic only: IEEE8500 active comparison uses fixed-point")
+	public void ieee8500PowerFlowConvergesWithRegControlsDisabled() throws IOException {
+		assertIeee8500PowerFlowConvergesWithRegControlsDisabled(DistributionPFMethod.Forward_Backword_Sweep);
+	}
+
+	@Test
+	public void ieee8500FixedPointConvergesWithRegControlsDisabled() throws IOException {
+		assertIeee8500PowerFlowConvergesWithRegControlsDisabled(DistributionPFMethod.Fixed_Point);
+	}
+
+	@Test
+	public void ieee8500YMatrixComponentAudit() throws IOException {
+		OpenDSSDataParser parser = new OpenDSSDataParser();
+		parser.setRegControlEnabled(false);
+		assertTrue(parser.parseFeederData("testData/feeder/IEEE8500", "Master-InterPSS.dss"));
+		assertTrue(parser.calcVoltageBases());
+		assertTrue(parser.convertActualValuesToPU(1.0));
+
+		DStabNetwork3Phase distNet = parser.getDistNetwork();
+		List<List<Integer>> graph = phaseConnectivityGraph(distNet);
+		List<ComponentAudit> audits = phaseComponentAudits(distNet, graph);
+		audits.sort(Comparator
+				.comparing(ComponentAudit::hasSwing)
+				.thenComparing(ComponentAudit::hasLoad).reversed()
+				.thenComparingDouble(ComponentAudit::minDiagAbs));
+
+		long explicitXfrCount = 0;
+		long xfrCount = 0;
+		for(Object branchObj : distNet.getBranchList()) {
+			DStab3PBranch branch = (DStab3PBranch) branchObj;
+			if(branch.isActive() && branch.isXfr()) {
+				xfrCount++;
+				if(branch.hasExplicitYabc()) {
+					explicitXfrCount++;
+				}
+			}
+		}
+		long loadedFloating = audits.stream()
+				.filter(audit -> !audit.hasSwing && audit.hasLoad())
+				.count();
+		long floating = audits.stream()
+				.filter(audit -> !audit.hasSwing)
+				.count();
+		long weakDiag = audits.stream()
+				.filter(audit -> audit.minDiagAbs < 1.0e-10)
+				.count();
+
+		System.out.println("IEEE8500 Y audit: buses=" + distNet.getNoBus()
+				+ ", branches=" + distNet.getNoBranch()
+				+ ", active transformers=" + xfrCount
+				+ ", explicitY transformers=" + explicitXfrCount
+				+ ", phase components=" + audits.size()
+				+ ", floating components=" + floating
+				+ ", loaded floating components=" + loadedFloating
+				+ ", weak-diag components=" + weakDiag);
+
+		System.out.println("IEEE8500 Y audit loaded/floating components:");
+		audits.stream()
+				.filter(audit -> !audit.hasSwing && audit.hasLoad())
+				.limit(20)
+				.forEach(audit -> System.out.println("  " + audit.summary(distNet)));
+
+		System.out.println("IEEE8500 Y audit weakest diagonal components:");
+		audits.stream()
+				.sorted(Comparator.comparingDouble(ComponentAudit::minDiagAbs))
+				.limit(20)
+				.forEach(audit -> System.out.println("  " + audit.summary(distNet)));
+
+		System.out.println("IEEE8500 Y audit explicit center-tap transformer samples:");
+		int printedExplicitXfr = 0;
+		for(Object branchObj : distNet.getBranchList()) {
+			DStab3PBranch branch = (DStab3PBranch) branchObj;
+			if(branch.isActive() && branch.hasExplicitYabc()) {
+				System.out.println("  " + branch.getName()
+						+ " " + branch.getFromBus().getId() + "->" + branch.getToBus().getId()
+						+ " phase=" + branch.getPhaseCode()
+						+ " fromBaseV=" + branch.getFromBus().getBaseVoltage()
+						+ " toBaseV=" + branch.getToBus().getBaseVoltage()
+						+ " yff=" + branch.getYffabc().absMax()
+						+ " yft=" + branch.getYftabc().absMax()
+						+ " ytt=" + branch.getYttabc().absMax());
+				if(++printedExplicitXfr >= 20) {
+					break;
+				}
+			}
+		}
+
+		System.out.println("IEEE8500 Y audit largest branch admittances:");
+		List<DStab3PBranch> branchesByAdmittance = new ArrayList<>();
+		for(Object branchObj : distNet.getBranchList()) {
+			DStab3PBranch branch = (DStab3PBranch) branchObj;
+			if(branch.isActive()) {
+				branchesByAdmittance.add(branch);
+			}
+		}
+		branchesByAdmittance.sort(Comparator.comparingDouble(OpenDssParserPowerFlowComparisonTest::branchMaxYAbs).reversed());
+		branchesByAdmittance.stream().limit(20)
+				.forEach(branch -> System.out.println("  " + branch.getName()
+						+ " " + branch.getFromBus().getId() + "->" + branch.getToBus().getId()
+						+ " phase=" + branch.getPhaseCode()
+						+ " line=" + branch.isLine()
+						+ " xfr=" + branch.isXfr()
+						+ " explicit=" + branch.hasExplicitYabc()
+						+ " zAbs=" + branch.getZabc().absMax()
+						+ " yff=" + branch.getYffabc().absMax()
+						+ " yft=" + branch.getYftabc().absMax()
+						+ " ytf=" + branch.getYtfabc().absMax()
+						+ " ytt=" + branch.getYttabc().absMax()
+						+ " fromBaseV=" + branch.getFromBus().getBaseVoltage()
+						+ " toBaseV=" + branch.getToBus().getBaseVoltage()));
+	}
+
+	@Test
+	@Disabled("Diagnostic only: prints IEEE8500 floating phase components for Y-matrix investigation")
+	public void ieee8500YMatrixSingularityDiagnostic() throws IOException {
+		OpenDSSDataParser parser = new OpenDSSDataParser();
+		parser.setRegControlEnabled(false);
+		assertTrue(parser.parseFeederData("testData/feeder/IEEE8500", "Master-InterPSS.dss"));
+		assertTrue(parser.calcVoltageBases());
+		assertTrue(parser.convertActualValuesToPU(1.0));
+
+		DStabNetwork3Phase distNet = parser.getDistNetwork();
+		int nodeCount = distNet.getNoBus() * 3;
+		List<List<Integer>> graph = new ArrayList<>(nodeCount);
+		for(int i = 0; i < nodeCount; i++) {
+			graph.add(new ArrayList<>());
+		}
+
+		for(Branch branch : distNet.getBranchList()) {
+			if(!branch.isActive()) {
+				continue;
+			}
+			DStab3PBranch branch3p = (DStab3PBranch) branch;
+			int from = branch.getFromBus().getSortNumber();
+			int to = branch.getToBus().getSortNumber();
+			addPhaseEdges(graph, from, to, branch3p.getYftabc());
+			addPhaseEdges(graph, to, from, branch3p.getYtfabc());
+		}
+
+		boolean[] seen = new boolean[nodeCount];
+		int printed = 0;
+		for(BaseAclfBus<?, ?> bus : distNet.getBusList()) {
+			if(!bus.isActive()) {
+				continue;
+			}
+			for(int phase = 0; phase < 3; phase++) {
+				int start = bus.getSortNumber() * 3 + phase;
+				if(seen[start] || graph.get(start).isEmpty()) {
+					continue;
+				}
+				ArrayDeque<Integer> queue = new ArrayDeque<>();
+				List<Integer> component = new ArrayList<>();
+				boolean hasSwing = false;
+				seen[start] = true;
+				queue.add(start);
+				while(!queue.isEmpty()) {
+					int node = queue.remove();
+					component.add(node);
+					BaseAclfBus<?, ?> nodeBus = busBySortNumber(distNet, node / 3);
+					hasSwing = hasSwing || nodeBus.isSwing();
+					for(int next : graph.get(node)) {
+						if(!seen[next]) {
+							seen[next] = true;
+							queue.add(next);
+						}
+					}
+				}
+				if(!hasSwing) {
+					if(printed++ < 20) {
+						System.out.println("Floating phase component size=" + component.size()
+								+ ", sample=" + phaseComponentSample(distNet, component, 12));
+					}
+				}
+			}
+		}
+		System.out.println("Floating phase component count=" + printed);
+	}
+
+	@Test
+	@Disabled("Diagnostic only: reduces IEEE8500 around m1009763 service-transformer subtrees")
+	public void ieee8500ReducedPathToFirstInvalidFixedPointBus() throws IOException {
+		OpenDSSDataParser parser = new OpenDSSDataParser();
+		parser.setRegControlEnabled(false);
+		assertTrue(parser.parseFeederData("testData/feeder/IEEE8500", "Master-InterPSS.dss"));
+		assertTrue(parser.calcVoltageBases());
+		assertTrue(parser.convertActualValuesToPU(1.0));
+
+		DStabNetwork3Phase distNet = parser.getDistNetwork();
+		String targetBusId = "m1009763";
+		List<Branch> path = sourceToTargetPath(distNet, targetBusId);
+		System.out.println("IEEE8500 source-to-" + targetBusId + " branch count=" + path.size());
+		for(Branch branch : path) {
+			DStab3PBranch branch3p = (DStab3PBranch) branch;
+			System.out.println("  " + branch.getFromBus().getId() + " -> " + branch.getToBus().getId()
+					+ " id=" + branch.getId()
+					+ " name=" + branch.getName()
+					+ " phase=" + branch3p.getPhaseCode()
+					+ " type=" + (branch3p.isXfr() ? "xfr" : "line")
+					+ " yftAbs=" + branch3p.getYftabc().absMax()
+					+ " ytfAbs=" + branch3p.getYtfabc().absMax());
+		}
+
+		Set<String> retainedBranchIds = new HashSet<>();
+		Set<String> retainedBusIds = new HashSet<>();
+		for(Branch branch : path) {
+			retainedBranchIds.add(branch.getId());
+			retainedBusIds.add(branch.getFromBus().getId());
+			retainedBusIds.add(branch.getToBus().getId());
+		}
+		List<Branch> targetIncidentBranches = offPathBranchesAtBus(distNet, targetBusId, retainedBranchIds);
+		Map<String, RetainedNetwork> targetSubtrees = new HashMap<>();
+		for(Branch branch : targetIncidentBranches) {
+			targetSubtrees.put(branch.getId(), collectSubtreeBehindBranch(distNet, branch, targetBusId, retainedBusIds));
+		}
+		retainOnly(distNet, retainedBranchIds, retainedBusIds);
+		runReducedCase(distNet, "source-to-" + targetBusId + " trunk");
+		for(Branch branch : targetIncidentBranches) {
+			Set<String> oneBranchIds = new HashSet<>(retainedBranchIds);
+			Set<String> oneBusIds = new HashSet<>(retainedBusIds);
+			oneBranchIds.add(branch.getId());
+			oneBusIds.add(branch.getFromBus().getId());
+			oneBusIds.add(branch.getToBus().getId());
+			retainOnly(distNet, oneBranchIds, oneBusIds);
+			runReducedCase(distNet, "trunk + branch " + branch.getName() + " "
+					+ branch.getFromBus().getId() + "->" + branch.getToBus().getId());
+		}
+		for(Branch branch : targetIncidentBranches) {
+			RetainedNetwork subtree = targetSubtrees.get(branch.getId());
+			printRetainedBranches(distNet, subtree);
+			Set<String> subtreeBranchIds = new HashSet<>(retainedBranchIds);
+			Set<String> subtreeBusIds = new HashSet<>(retainedBusIds);
+			subtreeBranchIds.addAll(subtree.branchIds);
+			subtreeBusIds.addAll(subtree.busIds);
+			retainOnly(distNet, subtreeBranchIds, subtreeBusIds);
+			runReducedCase(distNet, "trunk + subtree " + branch.getName()
+					+ " branches=" + subtree.branchIds.size() + " buses=" + subtree.busIds.size());
+		}
+	}
+
+	@Test
+	@Disabled("Diagnostic only: disables parsed IEEE8500 capacitor loads to isolate convergence residuals")
+	public void ieee8500PowerFlowCapacitorSensitivityDiagnostic() throws IOException {
+		for(DistributionPFMethod method : new DistributionPFMethod[] {
+				DistributionPFMethod.Fixed_Point,
+				DistributionPFMethod.Forward_Backword_Sweep}) {
+			OpenDSSDataParser parser = new OpenDSSDataParser();
+			parser.setRegControlEnabled(false);
+			assertTrue(parser.parseFeederData("testData/feeder/IEEE8500", "Master-InterPSS.dss"));
+			assertTrue(parser.calcVoltageBases());
+			assertTrue(parser.convertActualValuesToPU(1.0));
+
+			int disabledCaps = deactivateParsedCapacitors(parser.getDistNetwork());
+			DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(parser.getDistNetwork());
+			powerFlow.setPFMethod(method);
+			powerFlow.setInitBusVoltageEnabled(true);
+			powerFlow.setMaxIteration(1000);
+			powerFlow.setTolerance(1.0e-4);
+			boolean converged = powerFlow.powerflow();
+			System.out.println("IEEE8500 " + method + " with parsed capacitors disabled: converged="
+					+ converged + ", iterations=" + powerFlow.getIterationCount()
+					+ ", disabledCaps=" + disabledCaps);
+			if(!converged) {
+				printIeee8500FailureDiagnostics(parser.getDistNetwork(), method, powerFlow.getIterationCount());
+			}
+		}
+	}
+
+	@Test
+	@Disabled("Diagnostic only: traces largest IEEE8500 controls-off DSS-Python mismatch region")
+	public void ieee8500LargestMismatchRegionDiagnostic() throws IOException {
+		OpenDSSDataParser parser = new OpenDSSDataParser();
+		parser.setRegControlEnabled(false);
+		assertTrue(parser.parseFeederData("testData/feeder/IEEE8500", "Master-InterPSS.dss"));
+		assertTrue(parser.calcVoltageBases());
+		assertTrue(parser.convertActualValuesToPU(1.0));
+
+		DStabNetwork3Phase distNet = parser.getDistNetwork();
+		DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(distNet);
+		powerFlow.setPFMethod(DistributionPFMethod.Fixed_Point);
+		powerFlow.setInitBusVoltageEnabled(true);
+		powerFlow.setMaxIteration(1000);
+		powerFlow.setTolerance(1.0e-4);
+		assertTrue(powerFlow.powerflow(), "Power flow failed, iterations=" + powerFlow.getIterationCount());
+
+		List<VoltageReference> references = readReferences(
+				"opendss-reference/ieee8500-controls-off-dss-python-voltage-reference.csv");
+		printTopVoltageMismatches(distNet, references, 12);
+		printLocalVoltageComparison(distNet, references,
+				List.of("l3101194", "l2862616", "x2862616c", "sx2862616c"));
+		printSourcePathVoltageErrors(distNet, references, "sx2862616c", 3, 2.0e-3);
+		printSourcePathVoltageDropErrors(distNet, references, "sx2862616c", 3, 2.0e-4);
+		printSourcePath(distNet, "sx2862616c");
+		printIncidentBranches(distNet, "sourcebus");
+		printIncidentBranches(distNet, "hvmv_sub_hsb");
+		printIncidentBranches(distNet, "regxfmr_hvmv_sub_lsb");
+		printIncidentBranches(distNet, "m3032977");
+		printIncidentBranches(distNet, "m1166366");
+		printIncidentBranches(distNet, "m1166368");
+		printIncidentBranches(distNet, "l2973833");
+		printIncidentBranches(distNet, "l2862616");
+		printIncidentBranches(distNet, "x2862616c");
+		printIncidentBranches(distNet, "sx2862616c");
+		printPhysicalBranchDiagnostic(distNet, "hvmv_sub");
+		printPhysicalBranchDiagnostic(distNet, "ln6504018-1");
+	}
+
+	@Test
+	@Disabled("Diagnostic only: prints IEEE8500 downstream path branch currents for DSS-Python comparison")
+	public void ieee8500DownstreamBranchCurrentPathDiagnostic() throws IOException {
+		OpenDSSDataParser parser = new OpenDSSDataParser();
+		parser.setRegControlEnabled(false);
+		assertTrue(parser.parseFeederData("testData/feeder/IEEE8500", "Master-InterPSS.dss"));
+		assertTrue(parser.calcVoltageBases());
+		assertTrue(parser.convertActualValuesToPU(1.0));
+
+		DStabNetwork3Phase distNet = parser.getDistNetwork();
+		DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(distNet);
+		powerFlow.setPFMethod(DistributionPFMethod.Fixed_Point);
+		powerFlow.setInitBusVoltageEnabled(true);
+		powerFlow.setMaxIteration(1000);
+		powerFlow.setTolerance(1.0e-4);
+		assertTrue(powerFlow.powerflow(), "Power flow failed, iterations=" + powerFlow.getIterationCount());
+
+		printPhasePathBranchCurrents(distNet, "hvmv_sub_hsb", "m1166366", 3);
+		printPhasePathBranchCurrents(distNet, "m1166366", "l2862616", 3);
+		printThreePhaseCurrentBalance(distNet, "hvmv_sub_hsb");
+		printThreePhaseCurrentBalance(distNet, "regxfmr_hvmv_sub_lsb");
+		printThreePhaseCurrentBalance(distNet, "_hvmv_sub_lsb");
+		printThreePhaseCurrentBalance(distNet, "hvmv_sub_48332");
+		printThreePhaseCurrentBalance(distNet, "q16483");
+		printThreePhaseCurrentBalance(distNet, "q16483_cap");
+		printThreePhaseCurrentBalance(distNet, "q16642");
+		printThreePhaseCurrentBalance(distNet, "q16642_cap");
+	}
+
+	@Test
+	@Disabled("Diagnostic only: isolates IEEE13 fixed-point invalid-voltage source near bus 675")
+	public void ieee13FixedPointInvalidVoltageDiagnostic() throws IOException {
+		for(String scenario : List.of("base", "no-cap-675", "no-line-shunts", "no-cap-675-no-line-shunts")) {
+			OpenDSSDataParser parser = new OpenDSSDataParser();
+			assertTrue(parser.parseFeederData("testData/feeder/IEEE13", "IEEE13Nodeckt.dss"));
+			assertTrue(parser.calcVoltageBases());
+			assertTrue(parser.convertActualValuesToPU(1.0));
+			DStabNetwork3Phase distNet = parser.getDistNetwork();
+			if(scenario.contains("no-cap-675")) {
+				DStab3PBus bus675 = distNet.getBus("675");
+				assertNotNull(bus675, "Missing IEEE13 bus 675");
+				bus675.getThreePhaseLoadList().removeIf(load -> "cap1".equals(load.getId()));
+			}
+			if(scenario.contains("no-line-shunts")) {
+				for(Object branchObj : distNet.getBranchList()) {
+					DStab3PBranch branch = (DStab3PBranch) branchObj;
+					if(branch.isLine()) {
+						branch.setFromShuntYabc(null);
+						branch.setToShuntYabc(null);
+					}
+				}
+			}
+			DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(distNet);
+			powerFlow.setPFMethod(DistributionPFMethod.Fixed_Point);
+			powerFlow.setInitBusVoltageEnabled(true);
+			powerFlow.setMaxIteration(50);
+			powerFlow.setTolerance(1.0e-4);
+			boolean converged = powerFlow.powerflow();
+			System.out.println("IEEE13 fixed-point diagnostic " + scenario + ": converged=" + converged
+					+ ", iterations=" + powerFlow.getIterationCount());
+			printIncidentBranches(distNet, "675");
+			printIncidentBranches(distNet, "692");
+			printIncidentBranches(distNet, "671");
+		}
+	}
+
+	@Test
+	@Disabled("Diagnostic only: prints InterPSS device Y blocks for DSS-Python Yprim comparison")
+	public void ieee8500InterpssDeviceYprimDiagnostic() throws IOException {
+		OpenDSSDataParser parser = new OpenDSSDataParser();
+		parser.setRegControlEnabled(false);
+		assertTrue(parser.parseFeederData("testData/feeder/IEEE8500", "Master-InterPSS.dss"));
+		assertTrue(parser.calcVoltageBases());
+		assertTrue(parser.convertActualValuesToPU(1.0));
+
+		for(String branchName : new String[] {
+				"hvmv_sub_hsb",
+				"hvmv_sub",
+				"feeder_rega",
+				"feeder_regb",
+				"feeder_regc",
+				"ln6290228-5",
+				"ln5653480-1",
+				"t5338976b",
+				"t227944551c"}) {
+			DStab3PBranch branch = parser.getBranchByName(branchName);
+			assertNotNull(branch, "Missing branch for InterPSS Y diagnostic: " + branchName);
+			printInterpssBranchY(branch);
+		}
+		printInterpssBusCapacitorLoads(parser.getDistNetwork(), "r42246");
+	}
+
+	private static void printRetainedBranches(DStabNetwork3Phase distNet, RetainedNetwork retained) {
+		for(Branch branch : distNet.getBranchList()) {
+			if(retained.branchIds.contains(branch.getId())) {
+				DStab3PBranch branch3p = (DStab3PBranch) branch;
+				System.out.println("  subtree branch " + branch.getFromBus().getId() + " -> "
+						+ branch.getToBus().getId() + " name=" + branch.getName()
+						+ " phase=" + branch3p.getPhaseCode()
+						+ " type=" + (branch3p.isXfr() ? "xfr" : "line")
+						+ " explicitY=" + branch3p.hasExplicitYabc()
+						+ " yffAbs=" + branch3p.getYffabc().absMax()
+						+ " yftAbs=" + branch3p.getYftabc().absMax()
+						+ " yttAbs=" + branch3p.getYttabc().absMax());
+			}
+		}
+	}
+
+	private static List<Branch> offPathBranchesAtBus(DStabNetwork3Phase distNet, String busId, Set<String> pathBranchIds) {
+		BaseAclfBus<?, ?> bus = distNet.getBus(busId);
+		if(bus == null) {
+			throw new IllegalArgumentException("Bus not found: " + busId);
+		}
+		List<Branch> branches = new ArrayList<>();
+		for(Branch branch : bus.getBranchIterable()) {
+			if(branch.isActive() && !pathBranchIds.contains(branch.getId())) {
+				DStab3PBranch branch3p = (DStab3PBranch) branch;
+				System.out.println("IEEE8500 off-path branch at " + busId + ": "
+						+ branch.getFromBus().getId() + " -> " + branch.getToBus().getId()
+						+ " name=" + branch.getName()
+						+ " phase=" + branch3p.getPhaseCode()
+						+ " type=" + (branch3p.isXfr() ? "xfr" : "line")
+						+ " yftAbs=" + branch3p.getYftabc().absMax()
+						+ " ytfAbs=" + branch3p.getYtfabc().absMax());
+				branches.add(branch);
+			}
+		}
+		return branches;
+	}
+
+	private static RetainedNetwork collectSubtreeBehindBranch(
+			DStabNetwork3Phase distNet,
+			Branch rootBranch,
+			String rootBusId,
+			Set<String> pathBusIds) {
+		RetainedNetwork retained = new RetainedNetwork();
+		retained.branchIds.add(rootBranch.getId());
+		retained.busIds.add(rootBranch.getFromBus().getId());
+		retained.busIds.add(rootBranch.getToBus().getId());
+
+		BaseAclfBus<?, ?> rootBus = distNet.getBus(rootBusId);
+		BaseAclfBus<?, ?> startBus = (BaseAclfBus<?, ?>) rootBranch.getOppositeBus(rootBus);
+		ArrayDeque<BaseAclfBus<?, ?>> queue = new ArrayDeque<>();
+		Set<String> seen = new HashSet<>();
+		queue.add(startBus);
+		seen.add(rootBusId);
+		seen.add(startBus.getId());
+		while(!queue.isEmpty()) {
+			BaseAclfBus<?, ?> bus = queue.remove();
+			retained.busIds.add(bus.getId());
+			for(Branch branch : bus.getBranchIterable()) {
+				if(!branch.isActive()) {
+					continue;
+				}
+				BaseAclfBus<?, ?> next = (BaseAclfBus<?, ?>) branch.getOppositeBus(bus);
+				if(pathBusIds.contains(next.getId())) {
+					continue;
+				}
+				retained.branchIds.add(branch.getId());
+				retained.busIds.add(next.getId());
+				if(seen.add(next.getId())) {
+					queue.add(next);
+				}
+			}
+		}
+		return retained;
+	}
+
+	private static final class RetainedNetwork {
+		private final Set<String> branchIds = new HashSet<>();
+		private final Set<String> busIds = new HashSet<>();
+	}
+
+	private static void addPhaseEdges(List<List<Integer>> graph, int fromSort, int toSort, Complex3x3 y) {
+		Complex[][] values = {
+				{y.aa, y.ab, y.ac},
+				{y.ba, y.bb, y.bc},
+				{y.ca, y.cb, y.cc}
+		};
+		for(int fromPhase = 0; fromPhase < 3; fromPhase++) {
+			for(int toPhase = 0; toPhase < 3; toPhase++) {
+				if(values[fromPhase][toPhase] != null && values[fromPhase][toPhase].abs() > 1.0e-12) {
+					int fromNode = fromSort * 3 + fromPhase;
+					int toNode = toSort * 3 + toPhase;
+					graph.get(fromNode).add(toNode);
+					graph.get(toNode).add(fromNode);
+				}
+			}
+		}
+	}
+
+	private static List<List<Integer>> phaseConnectivityGraph(DStabNetwork3Phase distNet) {
+		int nodeCount = distNet.getNoBus() * 3;
+		List<List<Integer>> graph = new ArrayList<>(nodeCount);
+		for(int i = 0; i < nodeCount; i++) {
+			graph.add(new ArrayList<>());
+		}
+		for(Object branchObj : distNet.getBranchList()) {
+			Branch branch = (Branch) branchObj;
+			if(branch.isActive()) {
+				DStab3PBranch branch3p = (DStab3PBranch) branch;
+				int from = branch.getFromBus().getSortNumber();
+				int to = branch.getToBus().getSortNumber();
+				addPhaseEdges(graph, from, to, branch3p.getYftabc());
+				addPhaseEdges(graph, to, from, branch3p.getYtfabc());
+			}
+		}
+		return graph;
+	}
+
+	private static List<ComponentAudit> phaseComponentAudits(DStabNetwork3Phase distNet, List<List<Integer>> graph) {
+		boolean[] seen = new boolean[graph.size()];
+		List<ComponentAudit> audits = new ArrayList<>();
+		for(BaseAclfBus<?, ?> bus : distNet.getBusList()) {
+			if(!bus.isActive()) {
+				continue;
+			}
+			for(int phase = 0; phase < 3; phase++) {
+				int start = bus.getSortNumber() * 3 + phase;
+				if(seen[start] || graph.get(start).isEmpty()) {
+					continue;
+				}
+				ArrayDeque<Integer> queue = new ArrayDeque<>();
+				List<Integer> component = new ArrayList<>();
+				seen[start] = true;
+				queue.add(start);
+				while(!queue.isEmpty()) {
+					int node = queue.remove();
+					component.add(node);
+					for(int next : graph.get(node)) {
+						if(!seen[next]) {
+							seen[next] = true;
+							queue.add(next);
+						}
+					}
+				}
+				audits.add(componentAudit(distNet, component));
+			}
+		}
+		return audits;
+	}
+
+	private static ComponentAudit componentAudit(DStabNetwork3Phase distNet, List<Integer> component) {
+		Set<String> busIds = new HashSet<>();
+		Set<Integer> nodeSet = new HashSet<>(component);
+		boolean hasSwing = false;
+		int loadBusCount = 0;
+		int singlePhaseLoadCount = 0;
+		int threePhaseLoadCount = 0;
+		double minDiagAbs = Double.POSITIVE_INFINITY;
+		String minDiagLabel = "";
+		for(int node : component) {
+			DStab3PBus bus = (DStab3PBus) busBySortNumber(distNet, node / 3);
+			busIds.add(bus.getId());
+			hasSwing = hasSwing || bus.isSwing();
+			if(hasAnyLoad(bus)) {
+				loadBusCount++;
+				singlePhaseLoadCount += bus.getSinglePhaseLoadList().size();
+				threePhaseLoadCount += bus.getThreePhaseLoadList().size();
+			}
+			double diagAbs = phaseDiagonalAbs(bus.getYiiAbcForPowerflow(), node % 3);
+			if(diagAbs < minDiagAbs) {
+				minDiagAbs = diagAbs;
+				minDiagLabel = bus.getId() + "." + phaseLabel(node % 3);
+			}
+		}
+
+		int branchCount = 0;
+		int lineCount = 0;
+		int xfrCount = 0;
+		int explicitXfrCount = 0;
+		int triplexLikeCount = 0;
+		double maxOffDiagAbs = 0.0;
+		String branchSamples = "";
+		for(Object branchObj : distNet.getBranchList()) {
+			DStab3PBranch branch = (DStab3PBranch) branchObj;
+			if(!branch.isActive() || !branchTouchesComponent(branch, nodeSet)) {
+				continue;
+			}
+			branchCount++;
+			if(branch.isLine()) {
+				lineCount++;
+			}
+			if(branch.isXfr()) {
+				xfrCount++;
+			}
+			if(branch.hasExplicitYabc()) {
+				explicitXfrCount++;
+			}
+			if(isTriplexLike(branch)) {
+				triplexLikeCount++;
+			}
+			maxOffDiagAbs = Math.max(maxOffDiagAbs, branch.getYftabc().absMax());
+			maxOffDiagAbs = Math.max(maxOffDiagAbs, branch.getYtfabc().absMax());
+			if(branchSamples.length() < 320) {
+				if(branchSamples.length() > 0) {
+					branchSamples += "; ";
+				}
+				branchSamples += branch.getName() + "(" + branch.getFromBus().getId()
+						+ "->" + branch.getToBus().getId()
+						+ ",phase=" + branch.getPhaseCode()
+						+ ",xfr=" + branch.isXfr()
+						+ ",explicit=" + branch.hasExplicitYabc() + ")";
+			}
+		}
+
+		return new ComponentAudit(component, busIds, hasSwing, loadBusCount,
+				singlePhaseLoadCount, threePhaseLoadCount, minDiagAbs, minDiagLabel,
+				branchCount, lineCount, xfrCount, explicitXfrCount, triplexLikeCount,
+				maxOffDiagAbs, branchSamples);
+	}
+
+	private static boolean branchTouchesComponent(DStab3PBranch branch, Set<Integer> nodeSet) {
+		int from = branch.getFromBus().getSortNumber();
+		int to = branch.getToBus().getSortNumber();
+		return blockTouchesComponent(branch.getYftabc(), from, to, nodeSet)
+				|| blockTouchesComponent(branch.getYtfabc(), to, from, nodeSet);
+	}
+
+	private static boolean blockTouchesComponent(Complex3x3 y, int fromSort, int toSort, Set<Integer> nodeSet) {
+		for(int fromPhase = 0; fromPhase < 3; fromPhase++) {
+			for(int toPhase = 0; toPhase < 3; toPhase++) {
+				Complex value = getPhaseValue(y, fromPhase, toPhase);
+				if(value != null && value.abs() > 1.0e-12
+						&& (nodeSet.contains(fromSort * 3 + fromPhase)
+								|| nodeSet.contains(toSort * 3 + toPhase))) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	private static boolean hasAnyLoad(DStab3PBus bus) {
+		return !bus.getSinglePhaseLoadList().isEmpty() || !bus.getThreePhaseLoadList().isEmpty();
+	}
+
+	private static double branchMaxYAbs(DStab3PBranch branch) {
+		return Math.max(
+				Math.max(branch.getYffabc().absMax(), branch.getYftabc().absMax()),
+				Math.max(branch.getYtfabc().absMax(), branch.getYttabc().absMax()));
+	}
+
+	private static double phaseDiagonalAbs(Complex3x3 y, int phase) {
+		return getPhaseValue(y, phase, phase).abs();
+	}
+
+	private static Complex getPhaseValue(Complex3x3 matrix, int row, int col) {
+		if(row == 0 && col == 0) return matrix.aa;
+		if(row == 0 && col == 1) return matrix.ab;
+		if(row == 0 && col == 2) return matrix.ac;
+		if(row == 1 && col == 0) return matrix.ba;
+		if(row == 1 && col == 1) return matrix.bb;
+		if(row == 1 && col == 2) return matrix.bc;
+		if(row == 2 && col == 0) return matrix.ca;
+		if(row == 2 && col == 1) return matrix.cb;
+		return matrix.cc;
+	}
+
+	private static boolean isTriplexLike(DStab3PBranch branch) {
+		String name = branch.getName() == null ? "" : branch.getName().toLowerCase();
+		String from = branch.getFromBus().getId().toLowerCase();
+		String to = branch.getToBus().getId().toLowerCase();
+		return name.contains("triplex") || from.startsWith("x") || to.startsWith("x")
+				|| branch.getPhaseCode() == PhaseCode.AB;
+	}
+
+	private static String phaseLabel(int phase) {
+		return phase == 0 ? "A" : phase == 1 ? "B" : "C";
+	}
+
+	private static final class ComponentAudit {
+		private final List<Integer> component;
+		private final Set<String> busIds;
+		private final boolean hasSwing;
+		private final int loadBusCount;
+		private final int singlePhaseLoadCount;
+		private final int threePhaseLoadCount;
+		private final double minDiagAbs;
+		private final String minDiagLabel;
+		private final int branchCount;
+		private final int lineCount;
+		private final int xfrCount;
+		private final int explicitXfrCount;
+		private final int triplexLikeCount;
+		private final double maxOffDiagAbs;
+		private final String branchSamples;
+
+		private ComponentAudit(List<Integer> component, Set<String> busIds, boolean hasSwing,
+				int loadBusCount, int singlePhaseLoadCount, int threePhaseLoadCount,
+				double minDiagAbs, String minDiagLabel, int branchCount, int lineCount,
+				int xfrCount, int explicitXfrCount, int triplexLikeCount, double maxOffDiagAbs,
+				String branchSamples) {
+			this.component = component;
+			this.busIds = busIds;
+			this.hasSwing = hasSwing;
+			this.loadBusCount = loadBusCount;
+			this.singlePhaseLoadCount = singlePhaseLoadCount;
+			this.threePhaseLoadCount = threePhaseLoadCount;
+			this.minDiagAbs = minDiagAbs;
+			this.minDiagLabel = minDiagLabel;
+			this.branchCount = branchCount;
+			this.lineCount = lineCount;
+			this.xfrCount = xfrCount;
+			this.explicitXfrCount = explicitXfrCount;
+			this.triplexLikeCount = triplexLikeCount;
+			this.maxOffDiagAbs = maxOffDiagAbs;
+			this.branchSamples = branchSamples;
+		}
+
+		private boolean hasSwing() {
+			return this.hasSwing;
+		}
+
+		private boolean hasLoad() {
+			return this.loadBusCount > 0;
+		}
+
+		private double minDiagAbs() {
+			return this.minDiagAbs;
+		}
+
+		private String summary(DStabNetwork3Phase distNet) {
+			return "nodes=" + this.component.size()
+					+ ", buses=" + this.busIds.size()
+					+ ", swing=" + this.hasSwing
+					+ ", loadBuses=" + this.loadBusCount
+					+ ", loads1p=" + this.singlePhaseLoadCount
+					+ ", loads3p=" + this.threePhaseLoadCount
+					+ ", branches=" + this.branchCount
+					+ ", lines=" + this.lineCount
+					+ ", xfr=" + this.xfrCount
+					+ ", explicitXfr=" + this.explicitXfrCount
+					+ ", triplexLike=" + this.triplexLikeCount
+					+ ", minDiag=" + this.minDiagAbs + "@" + this.minDiagLabel
+					+ ", maxOffDiag=" + this.maxOffDiagAbs
+					+ ", sampleNodes=[" + phaseComponentSample(distNet, this.component, 10)
+					+ "], sampleBranches=[" + this.branchSamples + "]";
+		}
+	}
+
+	private static BaseAclfBus<?, ?> busBySortNumber(DStabNetwork3Phase distNet, int sortNumber) {
+		for(BaseAclfBus<?, ?> bus : distNet.getBusList()) {
+			if(bus.getSortNumber() == sortNumber) {
+				return bus;
+			}
+		}
+		throw new IllegalArgumentException("No bus for sort number " + sortNumber);
+	}
+
+	private static String phaseComponentSample(DStabNetwork3Phase distNet, List<Integer> component, int limit) {
+		String[] phases = {"A", "B", "C"};
+		StringBuilder sb = new StringBuilder();
+		for(int i = 0; i < component.size() && i < limit; i++) {
+			if(i > 0) {
+				sb.append(", ");
+			}
+			int node = component.get(i);
+			sb.append(busBySortNumber(distNet, node / 3).getId()).append('.').append(phases[node % 3]);
+		}
+		return sb.toString();
+	}
+
+	private static List<Branch> sourceToTargetPath(DStabNetwork3Phase distNet, String targetBusId) {
+		BaseAclfBus<?, ?> sourceBus = null;
+		for(BaseAclfBus<?, ?> bus : distNet.getBusList()) {
+			if(bus.isSwing()) {
+				sourceBus = bus;
+				break;
+			}
+		}
+		if(sourceBus == null) {
+			throw new IllegalStateException("No swing bus in IEEE8500 network");
+		}
+		BaseAclfBus<?, ?> targetBus = distNet.getBus(targetBusId);
+		if(targetBus == null) {
+			throw new IllegalArgumentException("Target bus not found: " + targetBusId);
+		}
+
+		ArrayDeque<BaseAclfBus<?, ?>> queue = new ArrayDeque<>();
+		Set<String> seen = new HashSet<>();
+		Map<String, Branch> parentBranch = new HashMap<>();
+		queue.add(sourceBus);
+		seen.add(sourceBus.getId());
+		while(!queue.isEmpty()) {
+			BaseAclfBus<?, ?> bus = queue.remove();
+			if(bus.getId().equals(targetBusId)) {
+				break;
+			}
+			for(Branch branch : bus.getBranchIterable()) {
+				if(!branch.isActive()) {
+					continue;
+				}
+				BaseAclfBus<?, ?> next = (BaseAclfBus<?, ?>) branch.getOppositeBus(bus);
+				if(seen.add(next.getId())) {
+					parentBranch.put(next.getId(), branch);
+					queue.add(next);
+				}
+			}
+		}
+		if(!parentBranch.containsKey(targetBusId)) {
+			throw new IllegalStateException("No path to " + targetBusId);
+		}
+		List<Branch> path = new ArrayList<>();
+		String current = targetBusId;
+		while(!current.equals(sourceBus.getId())) {
+			Branch branch = parentBranch.get(current);
+			path.add(branch);
+			current = branch.getFromBus().getId().equals(current)
+					? branch.getToBus().getId()
+					: branch.getFromBus().getId();
+		}
+		Collections.reverse(path);
+		return path;
+	}
+
+	private static void retainOnly(DStabNetwork3Phase distNet, Set<String> branchIds, Set<String> busIds) {
+		for(Branch branch : distNet.getBranchList()) {
+			branch.setStatus(branchIds.contains(branch.getId()));
+		}
+		for(BaseAclfBus<?, ?> bus : distNet.getBusList()) {
+			bus.setStatus(busIds.contains(bus.getId()));
+		}
+	}
+
+	private static void runReducedCase(DStabNetwork3Phase distNet, String label) {
+		DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(distNet);
+		powerFlow.setPFMethod(DistributionPFMethod.Fixed_Point);
+		powerFlow.setInitBusVoltageEnabled(true);
+		powerFlow.setMaxIteration(20);
+		powerFlow.setTolerance(1.0e-4);
+		boolean converged = powerFlow.powerflow();
+		System.out.println("IEEE8500 reduced " + label + ": fixed-point converged="
+				+ converged + ", iterations=" + powerFlow.getIterationCount());
+	}
+
+	private static void assertIeee8500PowerFlowConvergesWithRegControlsDisabled(DistributionPFMethod method)
+			throws IOException {
+		OpenDSSDataParser parser = new OpenDSSDataParser();
+		parser.setRegControlEnabled(false);
+		assertTrue(parser.parseFeederData("testData/feeder/IEEE8500", "Master-InterPSS.dss"));
+		assertTrue(parser.calcVoltageBases());
+		assertTrue(parser.convertActualValuesToPU(1.0));
+
+		DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(parser.getDistNetwork());
+		powerFlow.setPFMethod(method);
+		powerFlow.setInitBusVoltageEnabled(true);
+		powerFlow.setMaxIteration(1000);
+		powerFlow.setTolerance(1.0e-4);
+		boolean converged = powerFlow.powerflow();
+		if(!converged) {
+			printIeee8500FailureDiagnostics(parser.getDistNetwork(), method, powerFlow.getIterationCount());
+		}
+		assertTrue(converged, method + " power flow failed with regulator controls disabled, iterations="
+				+ powerFlow.getIterationCount());
+		if(method == DistributionPFMethod.Fixed_Point) {
+			assertTrue(!powerFlow.isFixedPointFallbackUsed(),
+					"Fixed-point power flow fell back to another method, iterations=" + powerFlow.getIterationCount());
+		}
+	}
+
+	private static void printIeee8500FailureDiagnostics(DStabNetwork3Phase distNet, DistributionPFMethod method,
+			int iterationCount) {
+		CurrentMismatch calculatedMismatch = maxCurrentMismatch(distNet);
+		System.out.println(calculatedMismatch.summary("IEEE8500 " + method + " calculated-branch-current final"));
+		if(method == DistributionPFMethod.Forward_Backword_Sweep) {
+			CurrentMismatch storedMismatch = maxStoredSweepCurrentMismatch(distNet);
+			System.out.println(storedMismatch.summary("IEEE8500 " + method + " stored-sweep-current final"));
+		}
+		VoltageRange voltageRange = voltageRange(distNet);
+		System.out.println(voltageRange.summary("IEEE8500 " + method + " final voltage"));
+		printTopCurrentMismatchBuses(distNet, "IEEE8500 " + method + " final", 8);
+		System.out.println("IEEE8500 " + method + " final diagnostics complete, iterations=" + iterationCount);
+	}
+
+	private static int deactivateParsedCapacitors(DStabNetwork3Phase distNet) {
+		int count = 0;
+		for(Object busObj : distNet.getBusList()) {
+			DStab3PBus bus = (DStab3PBus) busObj;
+			for(DStab3PLoad load : bus.getThreePhaseLoadList()) {
+				if(isParsedCapacitor(load)) {
+					load.setStatus(false);
+					count++;
+				}
+			}
+		}
+		return count;
+	}
+
+	private static boolean isParsedCapacitor(DStab3PLoad load) {
+		Complex3x1 value = load.getInit3PhaseLoad();
+		return load.getCode() == AclfLoadCode.CONST_Z
+				&& isCapacitorPhase(value.a_0)
+				&& isCapacitorPhase(value.b_1)
+				&& isCapacitorPhase(value.c_2)
+				&& (value.a_0.abs() > 0.0 || value.b_1.abs() > 0.0 || value.c_2.abs() > 0.0);
+	}
+
+	private static boolean isCapacitorPhase(Complex value) {
+		return Math.abs(value.getReal()) < 1.0e-10 && value.getImaginary() <= 1.0e-10;
+	}
+
+	private static void printInterpssBranchY(DStab3PBranch branch) {
+		System.out.println("InterPSS branch Y diagnostic: name=" + branch.getName()
+				+ " id=" + branch.getId()
+				+ " " + branch.getFromBus().getId() + "->" + branch.getToBus().getId()
+				+ " phase=" + branch.getPhaseCode()
+				+ " line=" + branch.isLine()
+				+ " xfr=" + branch.isXfr()
+				+ " explicit=" + branch.hasExplicitYabc());
+		printMatrix("  Yff", branch.getYffabc());
+		printMatrix("  Yft", branch.getYftabc());
+		printMatrix("  Ytf", branch.getYtfabc());
+		printMatrix("  Ytt", branch.getYttabc());
+	}
+
+	private static void printInterpssBusCapacitorLoads(DStabNetwork3Phase distNet, String busId) {
+		DStab3PBus bus = distNet.getBus(busId);
+		assertNotNull(bus, "Missing bus for capacitor Y diagnostic: " + busId);
+		for(DStab3PLoad load : bus.getThreePhaseLoadList()) {
+			if(isParsedCapacitor(load)) {
+				System.out.println("InterPSS capacitor-as-load diagnostic: bus=" + busId
+						+ " load=" + load.getId()
+						+ " code=" + load.getCode()
+						+ " conn=" + load.getLoadConnectionType()
+						+ " nominalKV=" + load.getNominalKV()
+						+ " initLoadPu=" + phaseValues(load.getInit3PhaseLoad()));
+			}
+		}
+	}
+
+	private static void printMatrix(String label, Complex3x3 matrix) {
+		System.out.println(label);
+		System.out.println("    " + formatComplex(getPhaseValue(matrix, 0, 0))
+				+ "  " + formatComplex(getPhaseValue(matrix, 0, 1))
+				+ "  " + formatComplex(getPhaseValue(matrix, 0, 2)));
+		System.out.println("    " + formatComplex(getPhaseValue(matrix, 1, 0))
+				+ "  " + formatComplex(getPhaseValue(matrix, 1, 1))
+				+ "  " + formatComplex(getPhaseValue(matrix, 1, 2)));
+		System.out.println("    " + formatComplex(getPhaseValue(matrix, 2, 0))
+				+ "  " + formatComplex(getPhaseValue(matrix, 2, 1))
+				+ "  " + formatComplex(getPhaseValue(matrix, 2, 2)));
+	}
+
+	private static String formatComplex(Complex value) {
+		return String.format("%.9g%+.9gj", value.getReal(), value.getImaginary());
+	}
+
+	@Test
 	public void ieee123PowerFlowMatchesDssPythonReferenceWithSolvedRegulatorTaps() throws IOException {
 		ComparisonResult result = assertMatchesDssPythonReference(
 				"testData/feeder/IEEE123",
@@ -60,6 +1042,102 @@ public class OpenDssParserPowerFlowComparisonTest {
 				5.0e-2,
 				true);
 		System.out.println(result.summary("IEEE123 DSS-Python taps"));
+	}
+
+	@Test
+	public void centerTappedServiceTransformerMiniCaseConverges() throws IOException {
+		OpenDSSDataParser parser = new OpenDSSDataParser();
+		assertTrue(parser.parseFeederData("testData/feeder/CenterTapMini", "Master.dss"));
+		assertTrue(parser.calcVoltageBases());
+		assertTrue(parser.convertActualValuesToPU(1.0));
+
+		DStabNetwork3Phase distNet = parser.getDistNetwork();
+		DStab3PBranch transformer = parser.getBranchByName("service");
+		assertTrue(transformer.hasExplicitYabc(), "Center-tapped transformer should use explicit Y blocks");
+		assertEquals(208.0, distNet.getBus("secondary").getBaseVoltage(), 2.0);
+
+		DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(distNet);
+		powerFlow.setPFMethod(DistributionPFMethod.Fixed_Point);
+		powerFlow.setInitBusVoltageEnabled(true);
+		powerFlow.setMaxIteration(50);
+		powerFlow.setTolerance(1.0e-6);
+		assertTrue(powerFlow.powerflow(), "Center-tapped mini case failed, iterations="
+				+ powerFlow.getIterationCount());
+
+		Complex3x1 vabc = distNet.getBus("loadbus").get3PhaseVotlages();
+		assertEquals(1.0, vabc.a_0.abs(), 0.08);
+		assertEquals(1.0, vabc.b_1.abs(), 0.08);
+		assertEquals(1.0, splitPhaseLineVoltagePu(vabc), 0.08);
+		assertTrue(vabc.c_2.abs() < 1.0e-3);
+
+		ComparisonResult result = compareVoltages(distNet,
+				readReferences("opendss-reference/centertap-mini-dss-python-voltage-reference.csv"));
+		assertMiniDssPythonComparison(result, "CenterTapMini DSS-Python");
+	}
+
+	@Test
+	public void centerTappedTwoPhaseWyeLoadMiniCaseConverges() throws IOException {
+		assertCenterTappedMiniCaseConverges("testData/feeder/CenterTapMiniTwoPhaseLoad",
+				"opendss-reference/centertap-mini-two-phase-load-dss-python-voltage-reference.csv",
+				"CenterTapMiniTwoPhaseLoad DSS-Python",
+				"Center-tapped two-phase wye load mini case failed");
+	}
+
+	@Test
+	public void centerTappedTwoPhaseConstZLoadMiniCaseConverges() throws IOException {
+		assertCenterTappedMiniCaseConverges("testData/feeder/CenterTapMiniConstZLoad",
+				"opendss-reference/centertap-mini-const-z-load-dss-python-voltage-reference.csv",
+				"CenterTapMiniConstZLoad DSS-Python",
+				"Center-tapped two-phase const-Z load mini case failed");
+	}
+
+	@Test
+	public void centerTappedSinglePhaseDeltaLoadMiniCaseConverges() throws IOException {
+		assertCenterTappedMiniCaseConverges("testData/feeder/CenterTapMiniDeltaLoad",
+				"opendss-reference/centertap-mini-delta-load-dss-python-voltage-reference.csv",
+				"CenterTapMiniDeltaLoad DSS-Python",
+				"Center-tapped single-phase delta load mini case failed");
+	}
+
+	private static void assertCenterTappedMiniCaseConverges(String feederFolder, String referenceResource,
+			String comparisonLabel, String failureMessage) throws IOException {
+		OpenDSSDataParser parser = new OpenDSSDataParser();
+		assertTrue(parser.parseFeederData(feederFolder, "Master.dss"));
+		assertTrue(parser.calcVoltageBases());
+		assertTrue(parser.convertActualValuesToPU(1.0));
+
+		DStabNetwork3Phase distNet = parser.getDistNetwork();
+		DStab3PBranch transformer = parser.getBranchByName("service");
+		assertTrue(transformer.hasExplicitYabc(), "Center-tapped transformer should use explicit Y blocks");
+		assertEquals(208.0, distNet.getBus("secondary").getBaseVoltage(), 2.0);
+
+		DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(distNet);
+		powerFlow.setPFMethod(DistributionPFMethod.Fixed_Point);
+		powerFlow.setInitBusVoltageEnabled(true);
+		powerFlow.setMaxIteration(50);
+		powerFlow.setTolerance(1.0e-6);
+		assertTrue(powerFlow.powerflow(), failureMessage + ", iterations=" + powerFlow.getIterationCount());
+
+		Complex3x1 vabc = distNet.getBus("loadbus").get3PhaseVotlages();
+		assertEquals(1.0, vabc.a_0.abs(), 0.08);
+		assertEquals(1.0, vabc.b_1.abs(), 0.08);
+		assertEquals(1.0, splitPhaseLineVoltagePu(vabc), 0.08);
+		assertTrue(vabc.c_2.abs() < 1.0e-3);
+
+		ComparisonResult result = compareVoltages(distNet, readReferences(referenceResource));
+		assertMiniDssPythonComparison(result, comparisonLabel);
+	}
+
+	private static double splitPhaseLineVoltagePu(Complex3x1 vabc) {
+		return vabc.a_0.subtract(vabc.b_1).abs()/2.0;
+	}
+
+	private static void assertMiniDssPythonComparison(ComparisonResult result, String label) {
+		System.out.println(result.summary(label));
+		assertTrue(result.maxMagError < 2.0e-3,
+				label + " max voltage magnitude error " + result.maxMagError + " at " + result.maxMagLabel);
+		assertTrue(result.maxAngleError < VOLTAGE_ANGLE_TOLERANCE_DEG,
+				label + " max voltage angle error " + result.maxAngleError + " deg at " + result.maxAngleLabel);
 	}
 
 	@Test
@@ -126,23 +1204,69 @@ public class OpenDssParserPowerFlowComparisonTest {
 	private static ComparisonResult assertMatchesDssPythonReference(String feederFolder, String masterFile, String referenceResource,
 			double voltageMagTolerancePu, boolean applySolvedIeee123RegulatorTaps)
 			throws IOException {
+		return assertMatchesDssPythonReference(feederFolder, masterFile, referenceResource, voltageMagTolerancePu,
+				applySolvedIeee123RegulatorTaps ? OpenDssTapProfile.IEEE123_DSS_PYTHON : OpenDssTapProfile.NONE);
+	}
+
+	private static ComparisonResult assertMatchesDssPythonReference(String feederFolder, String masterFile, String referenceResource,
+			double voltageMagTolerancePu, OpenDssTapProfile tapProfile)
+			throws IOException {
+		return assertMatchesDssPythonReference(feederFolder, masterFile, referenceResource, voltageMagTolerancePu,
+				tapProfile, DistributionPFMethod.Fixed_Point);
+	}
+
+	private static ComparisonResult assertMatchesDssPythonReference(String feederFolder, String masterFile, String referenceResource,
+			double voltageMagTolerancePu, boolean applySolvedIeee123RegulatorTaps, DistributionPFMethod method)
+			throws IOException {
+		return assertMatchesDssPythonReference(feederFolder, masterFile, referenceResource, voltageMagTolerancePu,
+				applySolvedIeee123RegulatorTaps ? OpenDssTapProfile.IEEE123_DSS_PYTHON : OpenDssTapProfile.NONE,
+				method, true);
+	}
+
+	private static ComparisonResult assertMatchesDssPythonReference(String feederFolder, String masterFile, String referenceResource,
+			double voltageMagTolerancePu, boolean applySolvedIeee123RegulatorTaps, DistributionPFMethod method,
+			boolean regControlEnabled)
+			throws IOException {
+		return assertMatchesDssPythonReference(feederFolder, masterFile, referenceResource, voltageMagTolerancePu,
+				applySolvedIeee123RegulatorTaps ? OpenDssTapProfile.IEEE123_DSS_PYTHON : OpenDssTapProfile.NONE,
+				method, regControlEnabled);
+	}
+
+	private static ComparisonResult assertMatchesDssPythonReference(String feederFolder, String masterFile, String referenceResource,
+			double voltageMagTolerancePu, OpenDssTapProfile tapProfile, DistributionPFMethod method)
+			throws IOException {
+		return assertMatchesDssPythonReference(feederFolder, masterFile, referenceResource, voltageMagTolerancePu,
+				tapProfile, method, true);
+	}
+
+	private static ComparisonResult assertMatchesDssPythonReference(String feederFolder, String masterFile, String referenceResource,
+			double voltageMagTolerancePu, OpenDssTapProfile tapProfile, DistributionPFMethod method,
+			boolean regControlEnabled)
+			throws IOException {
 		OpenDSSDataParser parser = new OpenDSSDataParser();
+		parser.setRegControlEnabled(regControlEnabled);
 		assertTrue(parser.parseFeederData(feederFolder, masterFile));
 		assertTrue(parser.calcVoltageBases());
 		assertTrue(parser.convertActualValuesToPU(1.0));
 
 		DStabNetwork3Phase distNet = parser.getDistNetwork();
-		if(applySolvedIeee123RegulatorTaps) {
+		if(tapProfile == OpenDssTapProfile.IEEE123_DSS_PYTHON) {
 			applySolvedIeee123RegulatorTaps(parser);
 		}
+		else if(tapProfile == OpenDssTapProfile.IEEE13_SOLVED) {
+			applySolvedIeee13RegulatorTaps(parser);
+		}
 		DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(distNet);
-		powerFlow.setPFMethod(DistributionPFMethod.Forward_Backword_Sweep);
+		powerFlow.setPFMethod(method);
 		powerFlow.setInitBusVoltageEnabled(true);
-		powerFlow.setMaxIteration(200);
+		powerFlow.setMaxIteration(feederFolder.contains("8500") ? 1000 : 200);
 		powerFlow.setTolerance(1.0e-4);
-		assertTrue(powerFlow.powerflow());
+		assertTrue(powerFlow.powerflow(), "Power flow failed, iterations=" + powerFlow.getIterationCount());
 
-		ComparisonResult result = compareVoltages(distNet, readReferences(referenceResource));
+		List<VoltageReference> references = readReferences(referenceResource);
+		ComparisonResult result = tapProfile == OpenDssTapProfile.IEEE13_SOLVED
+				? compareVoltages(distNet, references, "650", 1)
+				: compareVoltages(distNet, references);
 		assertTrue(result.maxMagError < voltageMagTolerancePu,
 				"Max voltage magnitude error " + result.maxMagError + " at " + result.maxMagLabel);
 		assertTrue(result.maxAngleError < VOLTAGE_ANGLE_TOLERANCE_DEG,
@@ -169,17 +1293,25 @@ public class OpenDssParserPowerFlowComparisonTest {
 	}
 
 	private static ComparisonResult compareVoltages(DStabNetwork3Phase distNet, List<VoltageReference> references) {
+		return compareVoltages(distNet, references, null, 0);
+	}
+
+	private static ComparisonResult compareVoltages(DStabNetwork3Phase distNet, List<VoltageReference> references,
+			String angleReferenceBus, int angleReferencePhase) {
 		double maxMagError = 0.0;
 		double maxAngleError = 0.0;
 		String maxMagLabel = "";
 		String maxAngleLabel = "";
+		double angleOffsetDeg = angleReferenceBus == null ? 0.0
+				: referenceAngleOffsetDeg(distNet, references, angleReferenceBus, angleReferencePhase);
 
 		for (VoltageReference reference : references) {
 			DStab3PBus bus = distNet.getBus(reference.bus);
 			assertNotNull(bus, "Missing parsed bus: " + reference.bus);
 			Complex voltage = phaseVoltage(bus.get3PhaseVotlages(), reference.phase);
 			double magError = Math.abs(voltage.abs() - reference.vmagPu);
-			double angleError = Math.abs(wrappedAngleDeg(Math.toDegrees(voltage.getArgument()) - reference.angleDeg));
+			double angleError = Math.abs(wrappedAngleDeg(
+					Math.toDegrees(voltage.getArgument()) + angleOffsetDeg - reference.angleDeg));
 			if (magError > maxMagError) {
 				maxMagError = magError;
 				maxMagLabel = reference.label();
@@ -192,6 +1324,411 @@ public class OpenDssParserPowerFlowComparisonTest {
 		return new ComparisonResult(maxMagError, maxMagLabel, maxAngleError, maxAngleLabel);
 	}
 
+	private static double referenceAngleOffsetDeg(DStabNetwork3Phase distNet, List<VoltageReference> references,
+			String busId, int phase) {
+		VoltageReference reference = references.stream()
+				.filter(ref -> ref.bus.equals(busId) && ref.phase == phase)
+				.findFirst()
+				.orElseThrow(() -> new IllegalArgumentException("Missing angle reference: " + busId + "." + phase));
+		DStab3PBus bus = distNet.getBus(busId);
+		assertNotNull(bus, "Missing parsed angle-reference bus: " + busId);
+		return wrappedAngleDeg(reference.angleDeg
+				- Math.toDegrees(phaseVoltage(bus.get3PhaseVotlages(), phase).getArgument()));
+	}
+
+	private static void printTopVoltageMismatches(DStabNetwork3Phase distNet, List<VoltageReference> references, int limit) {
+		List<VoltageMismatch> mismatches = new ArrayList<>();
+		for(VoltageReference reference : references) {
+			DStab3PBus bus = distNet.getBus(reference.bus);
+			if(bus == null) {
+				continue;
+			}
+			Complex voltage = phaseVoltage(bus.get3PhaseVotlages(), reference.phase);
+			mismatches.add(new VoltageMismatch(reference, voltage.abs(),
+					Math.toDegrees(voltage.getArgument())));
+		}
+		mismatches.sort(Comparator.comparingDouble(VoltageMismatch::magError).reversed());
+		System.out.println("IEEE8500 controls-off top voltage magnitude mismatches:");
+		for(int i = 0; i < Math.min(limit, mismatches.size()); i++) {
+			System.out.println("  #" + (i + 1) + " " + mismatches.get(i).summary());
+		}
+	}
+
+	private static void printLocalVoltageComparison(DStabNetwork3Phase distNet, List<VoltageReference> references,
+			List<String> busIds) {
+		Map<String, VoltageReference> byBusPhase = new HashMap<>();
+		for(VoltageReference reference : references) {
+			byBusPhase.put(reference.bus + "." + reference.phase, reference);
+		}
+		System.out.println("IEEE8500 local voltage comparison:");
+		for(String busId : busIds) {
+			DStab3PBus bus = distNet.getBus(busId);
+			assertNotNull(bus, "Missing local bus: " + busId);
+			for(int phase = 1; phase <= 3; phase++) {
+				VoltageReference reference = byBusPhase.get(busId + "." + phase);
+				if(reference == null) {
+					continue;
+				}
+				Complex voltage = phaseVoltage(bus.get3PhaseVotlages(), phase);
+				double angleDeg = Math.toDegrees(voltage.getArgument());
+				System.out.printf("  %s.%d InterPSS |V|=%.9f angle=%.6f DSS |V|=%.9f angle=%.6f dV=%.9f dAng=%.6f%n",
+						busId, phase, voltage.abs(), angleDeg, reference.vmagPu, reference.angleDeg,
+						voltage.abs() - reference.vmagPu, wrappedAngleDeg(angleDeg - reference.angleDeg));
+			}
+		}
+	}
+
+	private static void printSourcePath(DStabNetwork3Phase distNet, String targetBusId) {
+		List<Branch> path = sourceToTargetPath(distNet, targetBusId);
+		System.out.println("IEEE8500 source-to-" + targetBusId + " path branch count=" + path.size());
+		for(Branch branch : path) {
+			DStab3PBranch branch3p = (DStab3PBranch) branch;
+			DStab3PBus from = (DStab3PBus) branch.getFromBus();
+			DStab3PBus to = (DStab3PBus) branch.getToBus();
+			System.out.println("  " + from.getId() + " -> " + to.getId()
+					+ " id=" + branch.getId()
+					+ " name=" + branch.getName()
+					+ " phase=" + branch3p.getPhaseCode()
+					+ " type=" + (branch3p.isXfr() ? "xfr" : "line")
+					+ " Vfrom=" + phaseMagnitudes(from.get3PhaseVotlages())
+					+ " Vto=" + phaseMagnitudes(to.get3PhaseVotlages())
+					+ " yftAbs=" + branch3p.getYftabc().absMax()
+					+ " ytfAbs=" + branch3p.getYtfabc().absMax());
+		}
+	}
+
+	private static void printSourcePathVoltageErrors(DStabNetwork3Phase distNet, List<VoltageReference> references,
+			String targetBusId, int phase, double thresholdPu) {
+		Map<String, VoltageReference> byBusPhase = new HashMap<>();
+		for(VoltageReference reference : references) {
+			byBusPhase.put(reference.bus + "." + reference.phase, reference);
+		}
+		List<Branch> path = sourceToTargetPath(distNet, targetBusId);
+		List<String> busIds = new ArrayList<>();
+		if(!path.isEmpty()) {
+			busIds.add(path.get(0).getFromBus().getId());
+		}
+		for(Branch branch : path) {
+			busIds.add(branch.getToBus().getId());
+		}
+		double previousError = Double.NaN;
+		System.out.println("IEEE8500 source-to-" + targetBusId + " phase-" + phase
+				+ " voltage error path points above " + thresholdPu + " pu:");
+		for(String busId : busIds) {
+			VoltageReference reference = byBusPhase.get(busId + "." + phase);
+			DStab3PBus bus = distNet.getBus(busId);
+			if(reference == null || bus == null) {
+				continue;
+			}
+			Complex voltage = phaseVoltage(bus.get3PhaseVotlages(), phase);
+			double error = voltage.abs() - reference.vmagPu;
+			double errorStep = Double.isNaN(previousError) ? 0.0 : error - previousError;
+			previousError = error;
+			if(Math.abs(error) >= thresholdPu || Math.abs(errorStep) >= 5.0e-4) {
+				System.out.printf("  %s.%d InterPSS=%.9f DSS=%.9f dV=%.9f dVstep=%.9f%n",
+						busId, phase, voltage.abs(), reference.vmagPu, error, errorStep);
+			}
+		}
+	}
+
+	private static void printSourcePathVoltageDropErrors(DStabNetwork3Phase distNet, List<VoltageReference> references,
+			String targetBusId, int phase, double thresholdPu) {
+		Map<String, VoltageReference> byBusPhase = new HashMap<>();
+		for(VoltageReference reference : references) {
+			byBusPhase.put(reference.bus + "." + reference.phase, reference);
+		}
+		List<Branch> path = sourceToTargetPath(distNet, targetBusId);
+		String upstreamBusId = path.isEmpty() ? null : path.get(0).getFromBus().getId();
+		System.out.println("IEEE8500 source-to-" + targetBusId + " phase-" + phase
+				+ " complex voltage-drop differences above " + thresholdPu + " pu:");
+		for(Branch branch : path) {
+			if(upstreamBusId == null) {
+				break;
+			}
+			BaseAclfBus<?, ?> upstreamBus = (BaseAclfBus<?, ?>) (branch.getFromBus().getId().equals(upstreamBusId)
+					? branch.getFromBus() : branch.getToBus());
+			BaseAclfBus<?, ?> downstreamBus = (BaseAclfBus<?, ?>) (branch.getFromBus().getId().equals(upstreamBusId)
+					? branch.getToBus() : branch.getFromBus());
+			VoltageReference upstreamRef = byBusPhase.get(upstreamBus.getId() + "." + phase);
+			VoltageReference downstreamRef = byBusPhase.get(downstreamBus.getId() + "." + phase);
+			if(upstreamRef != null && downstreamRef != null) {
+				Complex interpssDrop = phaseVoltage(((DStab3PBus) upstreamBus).get3PhaseVotlages(), phase)
+						.subtract(phaseVoltage(((DStab3PBus) downstreamBus).get3PhaseVotlages(), phase));
+				Complex dssDrop = upstreamRef.phasor().subtract(downstreamRef.phasor());
+				Complex dropDiff = interpssDrop.subtract(dssDrop);
+				if(dropDiff.abs() >= thresholdPu) {
+					System.out.printf("  %s -> %s name=%s type=%s dDrop=%s |dDrop|=%.9f IPSSdrop=%s DSSdrop=%s%n",
+							upstreamBus.getId(), downstreamBus.getId(), branch.getName(),
+							((DStab3PBranch) branch).isXfr() ? "xfr" : "line",
+							complexSummary(dropDiff), dropDiff.abs(),
+							complexSummary(interpssDrop), complexSummary(dssDrop));
+				}
+			}
+			upstreamBusId = downstreamBus.getId();
+		}
+	}
+
+	private static void printIncidentBranches(DStabNetwork3Phase distNet, String busId) {
+		DStab3PBus bus = distNet.getBus(busId);
+		assertNotNull(bus, "Missing incident-branch bus: " + busId);
+		System.out.println("IEEE8500 incident branches at " + busId + ":");
+		for(Branch branch : bus.getBranchIterable()) {
+			if(!branch.isActive()) {
+				continue;
+			}
+			DStab3PBranch branch3p = (DStab3PBranch) branch;
+			System.out.println("  " + branch.getFromBus().getId() + " -> " + branch.getToBus().getId()
+					+ " id=" + branch.getId()
+					+ " name=" + branch.getName()
+					+ " phase=" + branch3p.getPhaseCode()
+					+ " type=" + (branch3p.isXfr() ? "xfr" : "line")
+					+ " yff=" + branch3p.getYffabc().absMax()
+					+ " yft=" + branch3p.getYftabc().absMax()
+					+ " ytf=" + branch3p.getYtfabc().absMax()
+					+ " ytt=" + branch3p.getYttabc().absMax()
+					+ " Ifrom=" + phaseValues(branch3p.calc3PhaseCurrentFrom2To())
+					+ " Ito=" + phaseValues(branch3p.calc3PhaseCurrentTo2From()));
+		}
+		System.out.println("  loadInjection=" + phaseValues(bus.calc3PhEquivCurInj()));
+		System.out.println("  voltage=" + phaseMagnitudes(bus.get3PhaseVotlages()));
+	}
+
+	private static void printPhysicalBranchDiagnostic(DStabNetwork3Phase distNet, String branchName) {
+		DStab3PBranch branch = findBranchByName(distNet, branchName);
+		assertNotNull(branch, "Missing physical branch diagnostic target: " + branchName);
+		DStab3PBus fromBus = (DStab3PBus) branch.getFromBus();
+		DStab3PBus toBus = (DStab3PBus) branch.getToBus();
+		double baseVa = distNet.getBaseKva() * 1000.0;
+		double fromVbase = fromBus.getBaseVoltage();
+		double toVbase = toBus.getBaseVoltage();
+		double fromIbase = baseVa / (Math.sqrt(3.0) * fromVbase);
+		double toIbase = baseVa / (Math.sqrt(3.0) * toVbase);
+
+		System.out.println("IEEE8500 physical branch diagnostic: " + branchName
+				+ " id=" + branch.getId()
+				+ " name=" + branch.getName()
+				+ " type=" + (branch.isXfr() ? "xfr" : "line")
+				+ " from=" + fromBus.getId() + " baseVll=" + fromVbase
+				+ " to=" + toBus.getId() + " baseVll=" + toVbase
+				+ " fromIbase=" + fromIbase
+				+ " toIbase=" + toIbase);
+		System.out.println("  fromVphys=" + physicalVoltageValues(fromBus.get3PhaseVotlages(), fromVbase));
+		System.out.println("  toVphys=" + physicalVoltageValues(toBus.get3PhaseVotlages(), toVbase));
+		System.out.println("  fromIphys=" + physicalCurrentValues(branch.calc3PhaseCurrentFrom2To(), fromIbase));
+		System.out.println("  toIphys=" + physicalCurrentValues(branch.calc3PhaseCurrentTo2From(), toIbase));
+		printPhysicalYBlock("  Yff phys", branch.getYffabc(), baseVa, fromVbase, fromVbase);
+		printPhysicalYBlock("  Yft phys", branch.getYftabc(), baseVa, fromVbase, toVbase);
+		printPhysicalYBlock("  Ytf phys", branch.getYtfabc(), baseVa, toVbase, fromVbase);
+		printPhysicalYBlock("  Ytt phys", branch.getYttabc(), baseVa, toVbase, toVbase);
+	}
+
+	private static String physicalVoltageValues(Complex3x1 value, double baseVoltageLl) {
+		double phaseBase = baseVoltageLl / Math.sqrt(3.0);
+		return phaseValues(value.multiply(phaseBase));
+	}
+
+	private static String physicalCurrentValues(Complex3x1 value, double currentBase) {
+		return phaseValues(value.multiply(currentBase));
+	}
+
+	private static void printPhysicalYBlock(String label, Complex3x3 ypu, double baseVa,
+			double currentSideVbaseLl, double voltageSideVbaseLl) {
+		double scale = baseVa / (currentSideVbaseLl * voltageSideVbaseLl);
+		printMatrix(label, ypu.multiply(scale));
+	}
+
+	private static void printSourcePathBranchCurrents(DStabNetwork3Phase distNet, String targetBusId,
+			String startBusId) {
+		List<Branch> path = sourceToTargetPath(distNet, targetBusId);
+		double baseVa = distNet.getBaseKva() * 1000.0;
+		String upstreamBusId = path.isEmpty() ? null : path.get(0).getFromBus().getId();
+		boolean printing = startBusId == null;
+		System.out.println("IEEE8500 InterPSS downstream path currents to " + targetBusId
+				+ " starting at " + startBusId);
+		System.out.println("seq,element,type,fromBus,toBus,phase,fromIA,fromIB,fromIC,toIA,toIB,toIC");
+		int seq = 0;
+		for(Branch branch : path) {
+			if(upstreamBusId == null) {
+				break;
+			}
+			DStab3PBus upstreamBus = (DStab3PBus) (branch.getFromBus().getId().equals(upstreamBusId)
+					? branch.getFromBus() : branch.getToBus());
+			DStab3PBus downstreamBus = (DStab3PBus) (branch.getFromBus().getId().equals(upstreamBusId)
+					? branch.getToBus() : branch.getFromBus());
+			if(startBusId != null && upstreamBus.getId().equals(startBusId)) {
+				printing = true;
+			}
+			if(printing) {
+				DStab3PBranch branch3p = (DStab3PBranch) branch;
+				double fromIbase = baseVa / (Math.sqrt(3.0) * upstreamBus.getBaseVoltage());
+				double toIbase = baseVa / (Math.sqrt(3.0) * downstreamBus.getBaseVoltage());
+				Complex3x1 fromCurrent = branch.getFromBus().getId().equals(upstreamBus.getId())
+						? branch3p.calc3PhaseCurrentFrom2To()
+						: branch3p.calc3PhaseCurrentTo2From();
+				Complex3x1 toCurrent = branch.getFromBus().getId().equals(upstreamBus.getId())
+						? branch3p.calc3PhaseCurrentTo2From()
+						: branch3p.calc3PhaseCurrentFrom2To();
+				System.out.println(csv(seq, branch.getName(), branch3p.isXfr() ? "Transformer" : "Line",
+						upstreamBus.getId(), downstreamBus.getId(), branch3p.getPhaseCode(),
+						fromCurrent.multiply(fromIbase), toCurrent.multiply(toIbase)));
+			}
+			upstreamBusId = downstreamBus.getId();
+			seq++;
+		}
+	}
+
+	private static void printPhasePathBranchCurrents(DStabNetwork3Phase distNet, String startBusId,
+			String targetBusId, int phase) {
+		List<Branch> path = phasePath(distNet, startBusId, targetBusId, phase);
+		double baseVa = distNet.getBaseKva() * 1000.0;
+		String upstreamBusId = startBusId;
+		System.out.println("IEEE8500 InterPSS phase-" + phase + " path currents from " + startBusId
+				+ " to " + targetBusId);
+		System.out.println("seq,element,type,fromBus,toBus,phase,fromIA,fromIB,fromIC,toIA,toIB,toIC");
+		int seq = 0;
+		for(Branch branch : path) {
+			DStab3PBus upstreamBus = (DStab3PBus) (branch.getFromBus().getId().equals(upstreamBusId)
+					? branch.getFromBus() : branch.getToBus());
+			DStab3PBus downstreamBus = (DStab3PBus) (branch.getFromBus().getId().equals(upstreamBusId)
+					? branch.getToBus() : branch.getFromBus());
+			DStab3PBranch branch3p = (DStab3PBranch) branch;
+			double fromIbase = baseVa / (Math.sqrt(3.0) * upstreamBus.getBaseVoltage());
+			double toIbase = baseVa / (Math.sqrt(3.0) * downstreamBus.getBaseVoltage());
+			Complex3x1 fromCurrent = branch.getFromBus().getId().equals(upstreamBus.getId())
+					? branch3p.calc3PhaseCurrentFrom2To()
+					: branch3p.calc3PhaseCurrentTo2From();
+			Complex3x1 toCurrent = branch.getFromBus().getId().equals(upstreamBus.getId())
+					? branch3p.calc3PhaseCurrentTo2From()
+					: branch3p.calc3PhaseCurrentFrom2To();
+			System.out.println(csv(seq, branch.getName(), branch3p.isXfr() ? "Transformer" : "Line",
+					upstreamBus.getId(), downstreamBus.getId(), branch3p.getPhaseCode(),
+					fromCurrent.multiply(fromIbase), toCurrent.multiply(toIbase)));
+			upstreamBusId = downstreamBus.getId();
+			seq++;
+		}
+	}
+
+	private static void printThreePhaseCurrentBalance(DStabNetwork3Phase distNet, String busId) {
+		DStab3PBus bus = distNet.getBus(busId);
+		assertNotNull(bus, "Missing current-balance bus: " + busId);
+		double baseVa = distNet.getBaseKva() * 1000.0;
+		double currentBase = baseVa / (Math.sqrt(3.0) * bus.getBaseVoltage());
+		Complex3x1 branchCurrent = new Complex3x1();
+		System.out.println("IEEE8500 3-phase current balance at " + busId
+				+ " baseVll=" + bus.getBaseVoltage()
+				+ " Ibase=" + currentBase
+				+ " Vpu=" + phaseValues(bus.get3PhaseVotlages())
+				+ " Vphys=" + physicalVoltageValues(bus.get3PhaseVotlages(), bus.getBaseVoltage()));
+		for(Branch branchObj : bus.getBranchIterable()) {
+			if(!branchObj.isActive()) {
+				continue;
+			}
+			DStab3PBranch branch = (DStab3PBranch) branchObj;
+			boolean fromSide = branch.getFromBus().getId().equals(busId);
+			Complex3x1 current = fromSide
+					? branch.calc3PhaseCurrentFrom2To()
+					: branch.calc3PhaseCurrentTo2From();
+			branchCurrent = branchCurrent.add(current);
+			System.out.println("  branch " + (fromSide ? "from" : "to")
+					+ " " + branch.getFromBus().getId() + " -> " + branch.getToBus().getId()
+					+ " name=" + branch.getName()
+					+ " phase=" + branch.getPhaseCode()
+					+ " Ipu=" + phaseValues(current)
+					+ " Iphys=" + physicalCurrentValues(current, currentBase));
+		}
+		Complex3x1 injection = bus.calc3PhEquivCurInj();
+		Complex3x1 residual = branchCurrent.subtract(injection);
+		System.out.println("  branchSumIpu=" + phaseValues(branchCurrent)
+				+ " branchSumIphys=" + physicalCurrentValues(branchCurrent, currentBase));
+		System.out.println("  injectionIpu=" + phaseValues(injection)
+				+ " injectionIphys=" + physicalCurrentValues(injection, currentBase));
+		System.out.println("  residualIpu=" + phaseValues(residual)
+				+ " residualIphys=" + physicalCurrentValues(residual, currentBase));
+		for(DStab3PLoad load : bus.getThreePhaseLoadList()) {
+			System.out.println("  load " + load.getId()
+					+ " code=" + load.getCode()
+					+ " phase=" + load.getPhaseCode()
+					+ " conn=" + load.getLoadConnectionType()
+					+ " nominalKV=" + load.getNominalKV()
+					+ " initLoadPu=" + phaseValues(load.getInit3PhaseLoad()));
+		}
+	}
+
+	private static List<Branch> phasePath(DStabNetwork3Phase distNet, String startBusId, String targetBusId,
+			int phase) {
+		ArrayDeque<String> queue = new ArrayDeque<>();
+		Map<String, Branch> previousBranch = new HashMap<>();
+		Map<String, String> previousBus = new HashMap<>();
+		Set<String> visited = new HashSet<>();
+		queue.add(startBusId);
+		visited.add(startBusId);
+		while(!queue.isEmpty() && !visited.contains(targetBusId)) {
+			String busId = queue.removeFirst();
+			DStab3PBus bus = distNet.getBus(busId);
+			if(bus == null) {
+				continue;
+			}
+			for(Branch branchObj : bus.getBranchIterable()) {
+				if(!branchObj.isActive()) {
+					continue;
+				}
+				DStab3PBranch branch = (DStab3PBranch) branchObj;
+				if(!branchHasPhase(branch, phase)) {
+					continue;
+				}
+				String otherBusId = branch.getFromBus().getId().equals(busId)
+						? branch.getToBus().getId() : branch.getFromBus().getId();
+				if(visited.add(otherBusId)) {
+					previousBranch.put(otherBusId, branchObj);
+					previousBus.put(otherBusId, busId);
+					queue.add(otherBusId);
+				}
+			}
+		}
+		assertTrue(visited.contains(targetBusId),
+				"No phase-" + phase + " path found from " + startBusId + " to " + targetBusId);
+		List<Branch> path = new ArrayList<>();
+		String cursor = targetBusId;
+		while(!cursor.equals(startBusId)) {
+			path.add(previousBranch.get(cursor));
+			cursor = previousBus.get(cursor);
+		}
+		Collections.reverse(path);
+		return path;
+	}
+
+	private static boolean branchHasPhase(DStab3PBranch branch, int phase) {
+		PhaseCode code = branch.getPhaseCode();
+		if(code == PhaseCode.ABC) {
+			return true;
+		}
+		if(phase == 1) {
+			return code == PhaseCode.A || code == PhaseCode.AB || code == PhaseCode.AC;
+		}
+		if(phase == 2) {
+			return code == PhaseCode.B || code == PhaseCode.AB || code == PhaseCode.BC;
+		}
+		if(phase == 3) {
+			return code == PhaseCode.C || code == PhaseCode.AC || code == PhaseCode.BC;
+		}
+		return false;
+	}
+
+	private static String csv(int seq, String elementName, String type, String fromBus, String toBus,
+			PhaseCode phaseCode, Complex3x1 fromCurrent, Complex3x1 toCurrent) {
+		return seq + "," + elementName + "," + type + "," + fromBus + "," + toBus + "," + phaseCode
+				+ "," + complexCsv(fromCurrent.a_0)
+				+ "," + complexCsv(fromCurrent.b_1)
+				+ "," + complexCsv(fromCurrent.c_2)
+				+ "," + complexCsv(toCurrent.a_0)
+				+ "," + complexCsv(toCurrent.b_1)
+				+ "," + complexCsv(toCurrent.c_2);
+	}
+
+	private static String complexCsv(Complex value) {
+		return String.format("%.9f%+.9fj", value.getReal(), value.getImaginary());
+	}
+
 	private static void applySolvedIeee123RegulatorTaps(OpenDSSDataParser parser) {
 		setToTap(parser, "reg1a", 1.0375);
 		setToTap(parser, "reg2a", 1.0);
@@ -202,11 +1739,23 @@ public class OpenDssParserPowerFlowComparisonTest {
 		setToTap(parser, "reg4c", 1.0375);
 	}
 
+	private static void applySolvedIeee13RegulatorTaps(OpenDSSDataParser parser) {
+		setToTap(parser, "reg1", 1.0625);
+		setToTap(parser, "reg2", 1.0500);
+		setToTap(parser, "reg3", 1.06875);
+	}
+
 	private static void setToTap(OpenDSSDataParser parser, String branchName, double tap) {
 		DStab3PBranch branch = parser.getBranchByName(branchName);
 		assertNotNull(branch, "Missing regulator branch: " + branchName);
 		branch.setToTurnRatio(tap);
 		assertEquals(tap, branch.getToTurnRatio(), 1.0e-10, "Regulator tap was not applied: " + branchName);
+	}
+
+	private enum OpenDssTapProfile {
+		NONE,
+		IEEE13_SOLVED,
+		IEEE123_DSS_PYTHON
 	}
 
 	private static List<VoltageReference> readReferences(String resourcePath) throws IOException {
@@ -286,6 +1835,66 @@ public class OpenDssParserPowerFlowComparisonTest {
 			}
 		}
 		return new CurrentMismatch(maxAbs, label);
+	}
+
+	private static void printTopCurrentMismatchBuses(DStabNetwork3Phase distNet, String label, int count) {
+		List<CurrentMismatchRecord> records = new ArrayList<>();
+		for(Object busObj : distNet.getBusList()) {
+			DStab3PBus bus = (DStab3PBus) busObj;
+			if(!bus.isActive() || bus.isSwing()) {
+				continue;
+			}
+
+			Complex3x1 branchCurrent = new Complex3x1();
+			for(Branch branchObj : bus.getBranchIterable()) {
+				if(!branchObj.isActive()) {
+					continue;
+				}
+				DStab3PBranch branch = (DStab3PBranch) branchObj;
+				if(branch.getFromBus().getId().equals(bus.getId())) {
+					branchCurrent = branchCurrent.add(branch.calc3PhaseCurrentFrom2To());
+				}
+				else {
+					branchCurrent = branchCurrent.add(branch.calc3PhaseCurrentTo2From());
+				}
+			}
+
+			Complex3x1 injection = bus.calc3PhEquivCurInj();
+			Complex3x1 residual = branchCurrent.subtract(injection);
+			records.add(new CurrentMismatchRecord(bus.getId(), residual, branchCurrent, injection,
+					bus.get3PhaseVotlages()));
+		}
+		records.sort(Comparator.comparingDouble(CurrentMismatchRecord::maxAbs).reversed());
+		int printed = Math.min(count, records.size());
+		for(int i = 0; i < printed; i++) {
+			System.out.println(records.get(i).summary(label, i + 1));
+		}
+	}
+
+	private static VoltageRange voltageRange(DStabNetwork3Phase distNet) {
+		double min = Double.POSITIVE_INFINITY;
+		double max = 0.0;
+		String minLabel = "";
+		String maxLabel = "";
+		for(Object busObj : distNet.getBusList()) {
+			DStab3PBus bus = (DStab3PBus) busObj;
+			if(!bus.isActive()) {
+				continue;
+			}
+			Complex3x1 voltage = bus.get3PhaseVotlages();
+			for(int phase = 0; phase < 3; phase++) {
+				double abs = phaseVoltage(voltage, phase + 1).abs();
+				if(abs < min && abs > 1.0e-9) {
+					min = abs;
+					minLabel = bus.getId() + "." + phaseLabel(phase);
+				}
+				if(abs > max) {
+					max = abs;
+					maxLabel = bus.getId() + "." + phaseLabel(phase);
+				}
+			}
+		}
+		return new VoltageRange(min, minLabel, max, maxLabel);
 	}
 
 	private static CurrentMismatch maxStoredSweepCurrentMismatch(DStabNetwork3Phase distNet) {
@@ -409,6 +2018,10 @@ public class OpenDssParserPowerFlowComparisonTest {
 				value.c_2.getReal(), value.c_2.getImaginary());
 	}
 
+	private static String complexSummary(Complex value) {
+		return String.format("%.9f%+.9fi", value.getReal(), value.getImaginary());
+	}
+
 	private static final class VoltageReference {
 		private final String caseName;
 		private final String bus;
@@ -426,6 +2039,37 @@ public class OpenDssParserPowerFlowComparisonTest {
 
 		private String label() {
 			return caseName + ":" + bus + "." + phase;
+		}
+
+		private Complex phasor() {
+			double angleRad = Math.toRadians(this.angleDeg);
+			return new Complex(this.vmagPu * Math.cos(angleRad), this.vmagPu * Math.sin(angleRad));
+		}
+	}
+
+	private static final class VoltageMismatch {
+		private final VoltageReference reference;
+		private final double interpssMag;
+		private final double interpssAngleDeg;
+
+		private VoltageMismatch(VoltageReference reference, double interpssMag, double interpssAngleDeg) {
+			this.reference = reference;
+			this.interpssMag = interpssMag;
+			this.interpssAngleDeg = interpssAngleDeg;
+		}
+
+		private double magError() {
+			return Math.abs(this.interpssMag - this.reference.vmagPu);
+		}
+
+		private double angleError() {
+			return Math.abs(wrappedAngleDeg(this.interpssAngleDeg - this.reference.angleDeg));
+		}
+
+		private String summary() {
+			return String.format("%s InterPSS |V|=%.9f DSS |V|=%.9f dV=%.9f dAng=%.6f",
+					this.reference.label(), this.interpssMag, this.reference.vmagPu,
+					this.interpssMag - this.reference.vmagPu, angleError());
 		}
 	}
 
@@ -460,6 +2104,53 @@ public class OpenDssParserPowerFlowComparisonTest {
 		private String summary(String caseName) {
 			return String.format("%s current mismatch: max %.9g pu at %s",
 					caseName, this.maxAbs, this.label);
+		}
+	}
+
+	private static final class CurrentMismatchRecord {
+		private final String busId;
+		private final Complex3x1 residual;
+		private final Complex3x1 branchCurrent;
+		private final Complex3x1 injection;
+		private final Complex3x1 voltage;
+
+		private CurrentMismatchRecord(String busId, Complex3x1 residual, Complex3x1 branchCurrent,
+				Complex3x1 injection, Complex3x1 voltage) {
+			this.busId = busId;
+			this.residual = residual;
+			this.branchCurrent = branchCurrent;
+			this.injection = injection;
+			this.voltage = voltage;
+		}
+
+		private double maxAbs() {
+			return this.residual.absMax();
+		}
+
+		private String summary(String label, int rank) {
+			return String.format(
+					"%s current mismatch #%d bus=%s max=%.9g residual=%s branchCurrent=%s injection=%s voltageMag=%s",
+					label, rank, this.busId, maxAbs(), phaseValues(this.residual),
+					phaseValues(this.branchCurrent), phaseValues(this.injection), phaseMagnitudes(this.voltage));
+		}
+	}
+
+	private static final class VoltageRange {
+		private final double min;
+		private final String minLabel;
+		private final double max;
+		private final String maxLabel;
+
+		private VoltageRange(double min, String minLabel, double max, String maxLabel) {
+			this.min = min;
+			this.minLabel = minLabel;
+			this.max = max;
+			this.maxLabel = maxLabel;
+		}
+
+		private String summary(String label) {
+			return String.format("%s range: min %.9g pu at %s, max %.9g pu at %s",
+					label, this.min, this.minLabel, this.max, this.maxLabel);
 		}
 	}
 }
