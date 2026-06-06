@@ -9,7 +9,7 @@ import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 import java.util.Map;
 
 import org.interpss.plugin.optadj.algo.lf.AclfNetLoadFlowOptimizer;
-import org.interpss.plugin.optadj.algo.lf.AclfNetLoadFlowOptimizer.GenAdjustResult;
+import org.interpss.plugin.optadj.result.OptAdjResultContainer;
 
 public class IEEE39_OptBasecase_Sample {
 
@@ -38,7 +38,7 @@ public class IEEE39_OptBasecase_Sample {
 			});
 
 		// perform basecase loaing limit optimization	
-		Map<String, GenAdjustResult> results = new AclfNetLoadFlowOptimizer().optimize(dclfAlgo, null, 100.0);
+		Map<String, OptAdjResultContainer.GenAdjustResult> results = new AclfNetLoadFlowOptimizer().optimize(dclfAlgo, null, 100.0);
 		results.forEach((genName, result) -> {
 			System.out.println("GenAdjustResult: " + genName + ", " + result.toString());
 		});
