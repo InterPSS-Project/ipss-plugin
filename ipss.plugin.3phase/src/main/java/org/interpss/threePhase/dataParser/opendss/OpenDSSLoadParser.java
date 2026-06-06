@@ -147,7 +147,7 @@ public class OpenDSSLoadParser {
 			}
 
 			DStab1PLoad load= null;
-			if(phaseNum==3) {
+			if(phaseNum==3 || phaseNum==2) {
 				load= new DStab3PLoadImpl();
 			} else {
 				load= new DStab1PLoadImpl();
@@ -171,6 +171,8 @@ public class OpenDSSLoadParser {
 
 				if(phaseNum==3) {
 					((DStab3PLoad)load).set3PhaseLoad(new Complex3x1(loadPQ.divide(3),loadPQ.divide(3),loadPQ.divide(3)));
+				} else if(phaseNum==2) {
+					((DStab3PLoad)load).set3PhaseLoad(twoPhaseLoad(loadPQ, phase1, phase2));
 				} else {
 					load.setLoadCP(loadPQ);
 				}
@@ -180,6 +182,8 @@ public class OpenDSSLoadParser {
 
 				if(phaseNum==3) {
 					((DStab3PLoad)load).set3PhaseLoad(new Complex3x1(loadPQ.divide(3),loadPQ.divide(3),loadPQ.divide(3)));
+				} else if(phaseNum==2) {
+					((DStab3PLoad)load).set3PhaseLoad(twoPhaseLoad(loadPQ, phase1, phase2));
 				} else {
 					load.setLoadCZ(loadPQ);
 				}
@@ -188,6 +192,8 @@ public class OpenDSSLoadParser {
 				load.setCode(AclfLoadCode.CONST_I);
 				if(phaseNum==3) {
 					((DStab3PLoad)load).set3PhaseLoad(new Complex3x1(loadPQ.divide(3),loadPQ.divide(3),loadPQ.divide(3)));
+				} else if(phaseNum==2) {
+					((DStab3PLoad)load).set3PhaseLoad(twoPhaseLoad(loadPQ, phase1, phase2));
 				} else {
 					load.setLoadCI(loadPQ);
 				}
@@ -211,9 +217,16 @@ public class OpenDSSLoadParser {
 				}
 			}
 			else if(phaseNum==2){
-				no_error = false;
-			    throw new Error("Load connection type for two phases is not supported yet! # "+connectionType);
-
+				if(connectionType.equalsIgnoreCase("wye")){
+					load.setLoadConnectionType(LoadConnectionType.THREE_PHASE_WYE);
+				}
+				else if(connectionType.equalsIgnoreCase("delta")){
+					load.setLoadConnectionType(LoadConnectionType.THREE_PHASE_DELTA);
+				}
+				else{
+					no_error = false;
+					throw new Error("Load connection type for two phases is not supported yet! # "+connectionType);
+				}
 			}
 			else if(phaseNum==1){
 				if(connectionType.equalsIgnoreCase("wye")){
@@ -239,7 +252,7 @@ public class OpenDSSLoadParser {
 
 			if(phaseNum==3) {
 				load.setPhaseCode(PhaseCode.ABC);
-			} else if(phaseNum==1){
+			} else if(phaseNum==2 || phaseNum==1){
 				if(phase2.equals("")){
 					if(phase1.equals("1")){
 						load.setPhaseCode(PhaseCode.A);
@@ -271,7 +284,7 @@ public class OpenDSSLoadParser {
 
 			if(phaseNum==1) {
 				bus.getSinglePhaseLoadList().add(load);
-			} else if(phaseNum==3) {
+			} else if(phaseNum==3 || phaseNum==2) {
 				bus.getThreePhaseLoadList().add((DStab3PLoad) load);
 			}
 
@@ -280,5 +293,20 @@ public class OpenDSSLoadParser {
 
 			return no_error;
 
+		}
+
+		private Complex3x1 twoPhaseLoad(Complex totalLoad, String phase1, String phase2) {
+			Complex phaseLoad = totalLoad.divide(2.0);
+			Complex zero = new Complex(0.0, 0.0);
+			if((phase1.equals("1") && phase2.equals("2")) || (phase1.equals("2") && phase2.equals("1"))) {
+				return new Complex3x1(phaseLoad, phaseLoad, zero);
+			}
+			if((phase1.equals("1") && phase2.equals("3")) || (phase1.equals("3") && phase2.equals("1"))) {
+				return new Complex3x1(phaseLoad, zero, phaseLoad);
+			}
+			if((phase1.equals("2") && phase2.equals("3")) || (phase1.equals("3") && phase2.equals("2"))) {
+				return new Complex3x1(zero, phaseLoad, phaseLoad);
+			}
+			throw new Error("Connection phases not supported yet!  phase1, 2 = "+ phase1+","+ phase2);
 		}
 }

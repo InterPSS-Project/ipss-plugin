@@ -1,6 +1,7 @@
 package org.interpss.threePhase.powerflow.impl;
 
 import java.util.ArrayList;
+import java.util.ArrayDeque;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,6 +57,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	private boolean isAllPowerFlowConverged = false;
 	private boolean fixedPointFallbackUsed = false;
 	private double transformerAntiFloatAdmittance = 1.0E-6;
+	private double maxFixedPointVoltageAbs = 10.0;
 	private Hashtable<Integer, Complex3x1> swingBusVoltageBoundaryCurrent = new Hashtable<>();
 
 	private static final Logger log = LoggerFactory.getLogger(DistributionPowerFlowAlgorithmImpl.class);
@@ -467,9 +469,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			applySwingBusVoltageBoundary(yMatrix);
 			yMatrix.factorization(Constants.Matrix_LU_Tolerance);
 		} catch (IpssNumericException e) {
-			log.warn("Fixed-point power-flow Y-matrix factorization failed; falling back to forward/backward sweep", e);
-			this.fixedPointFallbackUsed = true;
-			return FBSPowerflow();
+			log.warn("Fixed-point power-flow Y-matrix factorization failed", e);
+			return false;
 		}
 
 		this.pfFlag = false;
@@ -485,15 +486,13 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				setSwingBusVoltageRhs(yMatrix);
 				yMatrix.solveEqn();
 			} catch (IpssNumericException e) {
-				log.warn("Fixed-point power-flow equation solve failed; falling back to forward/backward sweep", e);
-				this.fixedPointFallbackUsed = true;
-				return FBSPowerflow();
+				log.warn("Fixed-point power-flow equation solve failed", e);
+				return false;
 			}
 
 			if(!updateSolvedBusVoltages(yMatrix)) {
-				log.warn("Fixed-point power-flow equation solve produced invalid bus voltages; falling back to forward/backward sweep");
-				this.fixedPointFallbackUsed = true;
-				return FBSPowerflow();
+				log.warn("Fixed-point power-flow equation solve produced invalid bus voltages");
+				return false;
 			}
 
 			double maxVoltageMismatch = calcMaxVoltageMismatch();
@@ -508,9 +507,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 		if(!this.pfFlag) {
 			log.warn("Fixed-point power-flow did not converge within " + this.maxIteration
-					+ " iterations; falling back to forward/backward sweep");
-			this.fixedPointFallbackUsed = true;
-			return FBSPowerflow();
+					+ " iterations");
+			return false;
 		}
 
 		return this.pfFlag;
@@ -547,8 +545,137 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				addTransformerAntiFloatAdmittance(yMatrix, branch);
 			}
 		}
+		addFloatingPhaseComponentAntiFloatAdmittance(yMatrix, distNet);
+		addNonSwingBusAntiFloatAdmittance(yMatrix, distNet);
 
 		return yMatrix;
+	}
+
+	private void addNonSwingBusAntiFloatAdmittance(ISparseEqnComplexMatrix3x3 yMatrix, BaseAclfNetwork distNet) {
+		Complex3x3 antiFloatYii = Complex3x3.createUnitMatrix()
+				.multiply(new Complex(this.transformerAntiFloatAdmittance, 0.0));
+		for(BaseAclfBus bus: (List<BaseAclfBus>) distNet.getBusList()) {
+			if(bus.isActive() && !bus.isSwing()) {
+				yMatrix.addToA(antiFloatYii, bus.getSortNumber(), bus.getSortNumber());
+			}
+		}
+	}
+
+	private void addFloatingPhaseComponentAntiFloatAdmittance(ISparseEqnComplexMatrix3x3 yMatrix,
+			BaseAclfNetwork distNet) {
+		int nodeCount = distNet.getNoBus() * 3;
+		List<List<Integer>> graph = new ArrayList<>(nodeCount);
+		for(int i = 0; i < nodeCount; i++) {
+			graph.add(new ArrayList<>());
+		}
+
+		for(AclfBranch branch: (List<AclfBranch>) distNet.getBranchList()) {
+			if(branch.isActive()) {
+				IBranch3Phase branch3P = threePhaseBranch(branch);
+				int from = branch.getFromBus().getSortNumber();
+				int to = branch.getToBus().getSortNumber();
+				addPhaseConnectivity(graph, from, to, branch3P.getYftabc());
+				addPhaseConnectivity(graph, to, from, branch3P.getYtfabc());
+			}
+		}
+
+		boolean[] seen = new boolean[nodeCount];
+		int adjustedComponentCount = 0;
+		int adjustedNodeCount = 0;
+		for(BaseAclfBus bus: (List<BaseAclfBus>) distNet.getBusList()) {
+			if(!bus.isActive()) {
+				continue;
+			}
+			for(int phase = 0; phase < 3; phase++) {
+				int start = bus.getSortNumber() * 3 + phase;
+				if(seen[start] || graph.get(start).isEmpty()) {
+					continue;
+				}
+				List<Integer> component = collectPhaseComponent(graph, seen, start);
+				if(!containsSwingBusPhase(component, distNet)) {
+					adjustedComponentCount++;
+					adjustedNodeCount += component.size();
+					for(int node : component) {
+						addPhaseAntiFloatAdmittance(yMatrix, node / 3, node % 3);
+					}
+				}
+			}
+		}
+		if(adjustedComponentCount > 0) {
+			log.info("Added anti-floating admittance to " + adjustedNodeCount
+					+ " phase nodes in " + adjustedComponentCount
+					+ " phase components not connected to a swing bus");
+		}
+	}
+
+	private void addPhaseConnectivity(List<List<Integer>> graph, int fromSort, int toSort, Complex3x3 y) {
+		Complex[][] values = {
+				{y.aa, y.ab, y.ac},
+				{y.ba, y.bb, y.bc},
+				{y.ca, y.cb, y.cc}
+		};
+		for(int fromPhase = 0; fromPhase < 3; fromPhase++) {
+			for(int toPhase = 0; toPhase < 3; toPhase++) {
+				if(values[fromPhase][toPhase] != null && values[fromPhase][toPhase].abs() > 1.0e-12) {
+					int fromNode = fromSort * 3 + fromPhase;
+					int toNode = toSort * 3 + toPhase;
+					graph.get(fromNode).add(toNode);
+					graph.get(toNode).add(fromNode);
+				}
+			}
+		}
+	}
+
+	private List<Integer> collectPhaseComponent(List<List<Integer>> graph, boolean[] seen, int start) {
+		ArrayDeque<Integer> queue = new ArrayDeque<>();
+		List<Integer> component = new ArrayList<>();
+		seen[start] = true;
+		queue.add(start);
+		while(!queue.isEmpty()) {
+			int node = queue.remove();
+			component.add(node);
+			for(int next : graph.get(node)) {
+				if(!seen[next]) {
+					seen[next] = true;
+					queue.add(next);
+				}
+			}
+		}
+		return component;
+	}
+
+	private boolean containsSwingBusPhase(List<Integer> component, BaseAclfNetwork distNet) {
+		for(int node : component) {
+			BaseAclfBus bus = busBySortNumber(distNet, node / 3);
+			if(bus.isSwing()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private BaseAclfBus busBySortNumber(BaseAclfNetwork distNet, int sortNumber) {
+		for(BaseAclfBus bus: (List<BaseAclfBus>) distNet.getBusList()) {
+			if(bus.getSortNumber() == sortNumber) {
+				return bus;
+			}
+		}
+		throw new IllegalArgumentException("No bus for sort number " + sortNumber);
+	}
+
+	private void addPhaseAntiFloatAdmittance(ISparseEqnComplexMatrix3x3 yMatrix, int busSortNumber, int phase) {
+		Complex3x3 y = new Complex3x3();
+		Complex antiFloat = new Complex(this.transformerAntiFloatAdmittance, 0.0);
+		if(phase == 0) {
+			y.aa = antiFloat;
+		}
+		else if(phase == 1) {
+			y.bb = antiFloat;
+		}
+		else {
+			y.cc = antiFloat;
+		}
+		yMatrix.addToA(y, busSortNumber, busSortNumber);
 	}
 
 	private void addTransformerAntiFloatAdmittance(ISparseEqnComplexMatrix3x3 yMatrix, AclfBranch branch) {
@@ -609,7 +736,17 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			if(bus.isActive() && !bus.isSwing()) {
 				IBus3Phase bus3P = threePhaseBus(bus);
 				Complex3x1 curInj = bus3P.calc3PhEquivCurInj();
+				if(!isFinite(curInj.a_0) || !isFinite(curInj.b_1) || !isFinite(curInj.c_2)) {
+					log.warn("Invalid fixed-point current injection at bus " + bus.getId()
+							+ ", sortNumber=" + bus.getSortNumber() + ", iabc=" + curInj
+							+ ", vabc=" + bus3P.get3PhaseVotlages());
+				}
 				Complex3x1 boundaryCurrent = this.swingBusVoltageBoundaryCurrent.get(bus.getSortNumber());
+				if(boundaryCurrent != null
+						&& (!isFinite(boundaryCurrent.a_0) || !isFinite(boundaryCurrent.b_1) || !isFinite(boundaryCurrent.c_2))) {
+					log.warn("Invalid fixed-point swing-boundary current at bus " + bus.getId()
+							+ ", sortNumber=" + bus.getSortNumber() + ", iabc=" + boundaryCurrent);
+				}
 				yMatrix.setBi(boundaryCurrent == null ? curInj : curInj.subtract(boundaryCurrent), bus.getSortNumber());
 			}
 		}
@@ -630,15 +767,22 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				IBus3Phase bus3P = threePhaseBus(bus);
 				Complex3x1 vabc = yMatrix.getX(bus.getSortNumber());
 
-				if(!vabc.a_0.isNaN() && !vabc.b_1.isNaN() && !vabc.c_2.isNaN()){
+				if(isValidFixedPointVoltage(vabc)){
 					bus3P.set3PhaseVotlages(vabc);
 					bus.setVoltage(vabc.to012().b_1);
 				} else {
+					log.warn("Fixed-point solve produced invalid voltage at bus " + bus.getId()
+							+ ", sortNumber=" + bus.getSortNumber() + ", vabc=" + vabc);
 					return false;
 				}
 			}
 		}
 		return true;
+	}
+
+	private boolean isValidFixedPointVoltage(Complex3x1 vabc) {
+		return isFinite(vabc.a_0) && isFinite(vabc.b_1) && isFinite(vabc.c_2)
+				&& vabc.absMax() <= this.maxFixedPointVoltageAbs;
 	}
 
 	private void saveBusVoltages() {
@@ -892,8 +1036,16 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 											turnRatioTransformerCurrentVoltageDrop(upStreamBranch, upStreamBranch.getCurrentAbcAtToSide()));
 								}
 								else {
-									vabc =	xfr3p.getLVBusVabc2HVBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).add(
-											xfr3p.getLVBusIabc2HVBusVabcMatrix().multiply(upStreamBranch.getCurrentAbcAtToSide()));
+									try {
+										vabc =	xfr3p.getLVBusVabc2HVBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).add(
+												xfr3p.getLVBusIabc2HVBusVabcMatrix().multiply(upStreamBranch.getCurrentAbcAtToSide()));
+									} catch (NullPointerException e) {
+										throw new Error("Transformer FBS matrix failed for branch "
+												+ upStreamBranch.getId() + ", name=" + upStreamBranch.getName()
+												+ ", from=" + upStreamBranch.getFromBus().getId()
+												+ ", to=" + upStreamBranch.getToBus().getId()
+												+ ", phase=" + upStreamBranch.getPhaseCode(), e);
+									}
 								}
 
 	                            //calculate the current injection at the upstream end
@@ -1339,6 +1491,11 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	@Override
 	public int getIterationCount() {
 		return this.iterationCount;
+	}
+
+	@Override
+	public boolean isFixedPointFallbackUsed() {
+		return this.fixedPointFallbackUsed;
 	}
 
 	@Override
