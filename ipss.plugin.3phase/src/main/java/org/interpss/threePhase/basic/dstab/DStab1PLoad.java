@@ -92,6 +92,16 @@ public interface DStab1PLoad extends ILoad1Phase, DStabLoad {
 
 	public boolean isOpenDssModel4();
 
+	/**
+	 * Configure the OpenDSS voltage-dependent load model code. Supported codes are
+	 * 3, 4, 6, 7, and 8. Model 8 uses the ZIPV coefficients from OpenDSS.
+	 */
+	public void setOpenDssLoadModel(int modelType, double cvrWatts, double cvrVars, double[] zipv);
+
+	public int getOpenDssLoadModel();
+
+	public double[] getOpenDssZipv();
+
 	public double getCvrWatts();
 
 	public double getCvrVars();

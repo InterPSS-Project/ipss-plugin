@@ -164,6 +164,9 @@
   taps, regulator controls, and center-tap/triplex transformers.
 - [x] Compare parsed load models against OpenDSS `model`, `conn`, `kV`,
   `Vminpu`, and `Vmaxpu`, especially below-voltage fallback behavior.
+- [x] Implement mini-test coverage for OpenDSS static load voltage-response
+  models `3`, `6`, `7`, and `8`/`ZIPV`, including ZIPV cutoff behavior and
+  parser handling of bracketed coefficient arrays.
 - [x] Compare device Y blocks by category: lines, switches, regulators,
   center-tap/load transformers, and capacitors.
 - [x] Implement and validate closer OpenDSS low-voltage load fallback behavior
