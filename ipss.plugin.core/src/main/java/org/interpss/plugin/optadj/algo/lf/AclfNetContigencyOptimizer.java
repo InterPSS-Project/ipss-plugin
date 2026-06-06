@@ -29,8 +29,6 @@ import org.interpss.plugin.optadj.optimizer.bean.SectionConstrainData;
  */
 public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
 
-	List<String> outageNameList;
-
 	@Override
 	protected void buildSectionConstrain(ContingencyAnalysisAlgorithm dclfAlgo, float[][] senMatrix,
 			Map<Integer, AclfGen> controlGenMap, GenStateOptimizer opt, double threshold) {

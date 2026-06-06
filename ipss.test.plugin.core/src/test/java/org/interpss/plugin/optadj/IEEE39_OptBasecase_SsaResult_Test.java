@@ -95,7 +95,8 @@ public class IEEE39_OptBasecase_SsaResult_Test extends CorePluginTestSetup {
 		assertEquals(overLimitBefore, ssaResult.getBaseOverLimitInfo().size(),
 				"SSA result should capture all base over-limit branches");
 
-		Map<String, OptAdjResultContainer.GenAdjustResult> adjustResults = new AclfNetLoadFlowOptimizer().optimize(dclfAlgo, ssaResult,
+		OptAdjResultContainer optAdjResult = new OptAdjResultContainer(ssaResult, LOADING_LIMIT_PCT);
+		Map<String, OptAdjResultContainer.GenAdjustResult> adjustResults = new AclfNetLoadFlowOptimizer().optimize(dclfAlgo, optAdjResult,
 				LOADING_LIMIT_PCT);
 		assertTrue(adjustResults.size() > 0, "Optimizer should dispatch at least one generator");
 

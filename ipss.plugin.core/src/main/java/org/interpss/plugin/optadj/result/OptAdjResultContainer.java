@@ -1,10 +1,15 @@
 package org.interpss.plugin.optadj.result;
 
+import java.util.Map;
+
 import org.interpss.numeric.datatype.LimitType;
 /** 
 
 */
 public class OptAdjResultContainer extends SsaResultContainer {	
+	private double optAdjThreshold;
+
+	private Map<String, GenAdjustResult> optAdjResults;
 
 	/** 
 	 * Generator dispatch adjustment applied to the DCLF model (MW and per-unit). 
@@ -15,7 +20,28 @@ public class OptAdjResultContainer extends SsaResultContainer {
 		}
 	}
 	
-	public OptAdjResultContainer() {
+	public OptAdjResultContainer(double optAdjThreshold) {
 		super();
+		this.optAdjThreshold = optAdjThreshold;
+	}
+
+	public OptAdjResultContainer(SsaResultContainer ssaResult, double optAdjThreshold) {
+		this(optAdjThreshold);
+		this.setBaseLoadingThreshold(ssaResult.getBaseLoadingThreshold());
+		this.setCaLoadingThreshold(ssaResult.getCaLoadingThreshold());
+		this.setBaseOverLimitInfo(ssaResult.getBaseOverLimitInfo());
+		this.setCaOverLimitInfo(ssaResult.getCaOverLimitInfo());
+	}
+
+	public double getOptAdjThreshold() {
+		return optAdjThreshold;
+	}
+
+	public Map<String, GenAdjustResult> getOPtAdjResults() {
+		return optAdjResults;
+	}
+
+	public void setOptAdjResults(Map<String, GenAdjustResult> results) {
+		this.optAdjResults = results;
 	}
 }
