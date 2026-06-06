@@ -233,30 +233,39 @@ public class OpenDSSLineGeometryParser {
 	}
 
 	private static int getIntValue(String[] tokens, String key, int defaultValue) {
-		for (String token : tokens) {
-			if (token.toLowerCase().startsWith(key)) {
-				return Integer.valueOf(token.substring(token.indexOf("=") + 1));
-			}
-		}
-		return defaultValue;
+		String value = getTokenValue(tokens, key);
+		return value == null ? defaultValue : Integer.valueOf(value);
 	}
 
 	private static double getDoubleValue(String[] tokens, String key, double defaultValue) {
-		for (String token : tokens) {
-			if (token.toLowerCase().startsWith(key)) {
-				return Double.valueOf(token.substring(token.indexOf("=") + 1));
-			}
-		}
-		return defaultValue;
+		String value = getTokenValue(tokens, key);
+		return value == null ? defaultValue : Double.valueOf(value);
 	}
 
 	private static String getStringValue(String[] tokens, String key, String defaultValue) {
-		for (String token : tokens) {
-			if (token.toLowerCase().startsWith(key)) {
+		String value = getTokenValue(tokens, key);
+		return value == null ? defaultValue : value;
+	}
+
+	private static String getTokenValue(String[] tokens, String key) {
+		String normalizedKey = key.toLowerCase().replace("=", "");
+		for (int i = 0; i < tokens.length; i++) {
+			String token = tokens[i].trim();
+			String lowerToken = token.toLowerCase();
+			if (lowerToken.startsWith(normalizedKey + "=")) {
 				return token.substring(token.indexOf("=") + 1);
 			}
+			if (lowerToken.equals(normalizedKey) && i + 1 < tokens.length) {
+				String next = tokens[i + 1].trim();
+				if (next.startsWith("=")) {
+					return next.substring(1);
+				}
+			}
+			if (lowerToken.equals(normalizedKey) && i + 2 < tokens.length && tokens[i + 1].trim().equals("=")) {
+				return tokens[i + 2].trim();
+			}
 		}
-		return defaultValue;
+		return null;
 	}
 
 	private static final class ConductorPosition {

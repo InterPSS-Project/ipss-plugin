@@ -73,6 +73,7 @@ public class OpenDSSLineCodeParser {
 	        			lineConfig.setId(lineCodeId);
 	        			lineConfig.setNphases(nphases);
 	        			lineConfig.setLengthUnit(getStringValue(lineData, "units=", ""));
+	        			applySequenceParameters(lineConfig, lineData, nphases);
 	        			this.dataParser.getLineConfigTable().put(lineCodeId, lineConfig);
 
 
@@ -82,14 +83,14 @@ public class OpenDSSLineCodeParser {
 	        		 * rmatrix Resistance matrix, lower triangle, ohms per unit length.
 	        		 */
 
-	        		else if(lowerStr.contains("rmatrix")){
-	        			parseLowerTriangleMatrix(str, rMatrixData);
+	        		if(lowerStr.contains("rmatrix")){
+	        			parseLowerTriangleMatrix(str, "rmatrix", rMatrixData);
 	        		}
 	        		/*
 	        		 * xmatrix: Reactance matrix, lower triangle, ohms per unit length.
 	        		 */
-                    else if(lowerStr.contains("xmatrix")){
-	        			parseLowerTriangleMatrix(str, xMatrixData);
+                    if(lowerStr.contains("xmatrix")){
+	        			parseLowerTriangleMatrix(str, "xmatrix", xMatrixData);
 	        			lineConfig.setZ3x3Matrix(toComplex3x3(nphases, rMatrixData, xMatrixData));
 
 	        		}
@@ -99,15 +100,18 @@ public class OpenDSSLineCodeParser {
 	        		 * Nodal Capacitance matrix, lower triangle, nf per unit length.Order of the matrix is the number of phases. May be used to specify the shunt capacitance of any line configuration
 	        		 */
 
-                    else if(lowerStr.contains("cmatrix")){
-	        			parseLowerTriangleMatrix(str, cMatrixData);
+                    if(lowerStr.contains("cmatrix")){
+	        			parseLowerTriangleMatrix(str, "cmatrix", cMatrixData);
 	        			lineConfig.setShuntY3x3Matrix(toImaginary3x3(nphases, cMatrixData));
 
 	        		}
-                    else if(lowerStr.contains("units")){
+                    if(lowerStr.contains("units")){
                     	if(lineConfig != null) {
                     		lineConfig.setLengthUnit(getStringValue(str.split("\\s+"), "units=", lineConfig.getLengthUnit()));
                     	}
+                    }
+                    if(lineConfig != null && (lowerStr.contains("neutral=") || lowerStr.contains("kron="))) {
+                    	applyNeutralKronMetadata(lineConfig, str.split("\\s+"));
                     }
 
 
@@ -157,30 +161,34 @@ public class OpenDSSLineCodeParser {
 					lineConfig = new LineConfiguration();
 					lineConfig.setId(lineCodeId);
 					lineConfig.setNphases(nphases);
+					applySequenceParameters(lineConfig, lineData, nphases);
 					this.dataParser.getLineConfigTable().put(lineCodeId, lineConfig);
 				}
-				else if (lowerStr.contains("rmatrix")) {
-					parseLowerTriangleMatrix(str, rMatrixData);
+				if (lowerStr.contains("rmatrix")) {
+					parseLowerTriangleMatrix(str, "rmatrix", rMatrixData);
 				}
-				else if (lowerStr.contains("xmatrix")) {
-					parseLowerTriangleMatrix(str, xMatrixData);
+				if (lowerStr.contains("xmatrix")) {
+					parseLowerTriangleMatrix(str, "xmatrix", xMatrixData);
 					if (lineConfig == null) {
 						throw new Error("line code xmatrix is defined before linecode header: " + str);
 					}
 					lineConfig.setZ3x3Matrix(toComplex3x3(nphases, rMatrixData, xMatrixData));
 				}
-				else if (lowerStr.contains("cmatrix")) {
-					parseLowerTriangleMatrix(str, cMatrixData);
+				if (lowerStr.contains("cmatrix")) {
+					parseLowerTriangleMatrix(str, "cmatrix", cMatrixData);
 					if (lineConfig == null) {
 						throw new Error("line code cmatrix is defined before linecode header: " + str);
 					}
 					lineConfig.setShuntY3x3Matrix(toImaginary3x3(nphases, cMatrixData));
 				}
-				else if (lowerStr.contains("units=")) {
+				if (lowerStr.contains("units=")) {
 					if (lineConfig == null) {
 						throw new Error("line code units are defined before linecode header: " + str);
 					}
 					lineConfig.setLengthUnit(getStringValue(str.split("\\s+"), "units=", ""));
+				}
+				if (lineConfig != null && (lowerStr.contains("neutral=") || lowerStr.contains("kron="))) {
+					applyNeutralKronMetadata(lineConfig, str.split("\\s+"));
 				}
 			}
 			return true;
@@ -216,33 +224,150 @@ public class OpenDSSLineCodeParser {
 		return defaultValue;
 	}
 
-	private static void parseLowerTriangleMatrix(String str, double[] matrixData) {
-		int startIdx = str.indexOf("[");
-		int lastIdx = str.indexOf("]");
-		if (startIdx < 0) {
-			startIdx = str.indexOf("(");
-			if (startIdx < 0) {
-				throw new Error("line code format error: " + str);
+	private static double getDoubleValue(String[] tokens, String key, double defaultValue) {
+		for (String token : tokens) {
+			String lowerToken = token.toLowerCase();
+			if (lowerToken.startsWith(key)) {
+				return Double.valueOf(token.substring(token.indexOf("=") + 1));
 			}
-			lastIdx = str.indexOf(")");
+		}
+		return defaultValue;
+	}
+
+	private static void applyNeutralKronMetadata(LineConfiguration lineConfig, String[] tokens) {
+		for (String token : tokens) {
+			String lowerToken = token.toLowerCase();
+			if (lowerToken.startsWith("neutral=")) {
+				lineConfig.setNeutralConductor(Integer.valueOf(token.substring(token.indexOf("=") + 1)));
+			}
+			else if (lowerToken.startsWith("kron=")) {
+				if(isTrueValue(token.substring(token.indexOf("=") + 1))) {
+					lineConfig.addKronReduction();
+				}
+				else {
+					lineConfig.setKronReductionEnabled(false);
+				}
+			}
+		}
+	}
+
+	private static boolean isTrueValue(String value) {
+		String normalized = value.trim().toLowerCase();
+		return "yes".equals(normalized) || "true".equals(normalized) || "1".equals(normalized);
+	}
+
+	private static void applySequenceParameters(LineConfiguration lineConfig, String[] tokens, int nphases) {
+		double r1 = getDoubleValue(tokens, "r1=", Double.NaN);
+		double x1 = getDoubleValue(tokens, "x1=", Double.NaN);
+		if (Double.isNaN(r1) && Double.isNaN(x1)) {
+			return;
+		}
+		double r0 = getDoubleValue(tokens, "r0=", Double.isNaN(r1) ? 0.0 : r1);
+		double x0 = getDoubleValue(tokens, "x0=", Double.isNaN(x1) ? 0.0 : x1);
+		Complex z1 = new Complex(Double.isNaN(r1) ? 0.0 : r1, Double.isNaN(x1) ? 0.0 : x1);
+		Complex z0 = new Complex(r0, x0);
+		if (nphases == 1) {
+			Complex3x3 zMatrix = new Complex3x3();
+			zMatrix.aa = z1;
+			lineConfig.setZ3x3Matrix(zMatrix);
+		}
+		else {
+			lineConfig.setZ3x3Matrix(new Complex3x3(z1, z1, z0).ToAbc());
 		}
 
-		String dataStr = str.substring(startIdx + 1, lastIdx).trim();
+		double c1 = getDoubleValue(tokens, "c1=", 0.0);
+		double c0 = getDoubleValue(tokens, "c0=", c1);
+		if (c1 != 0.0 || c0 != 0.0) {
+			if (nphases == 1) {
+				Complex3x3 cMatrix = new Complex3x3();
+				cMatrix.aa = new Complex(0.0, c1);
+				lineConfig.setShuntY3x3Matrix(cMatrix);
+			}
+			else {
+				lineConfig.setShuntY3x3Matrix(new Complex3x3(
+						new Complex(0.0, c1), new Complex(0.0, c1), new Complex(0.0, c0)).ToAbc());
+			}
+		}
+	}
+
+	private static void parseLowerTriangleMatrix(String str, String key, double[] matrixData) {
+		String dataStr = matrixDataString(str, key);
+		if (dataStr == null || dataStr.equals("")) {
+			throw new Error("line code format error: " + str);
+		}
+		dataStr = dataStr.trim();
+		if ((dataStr.startsWith("[") && dataStr.endsWith("]"))
+				|| (dataStr.startsWith("(") && dataStr.endsWith(")"))) {
+			dataStr = dataStr.substring(1, dataStr.length() - 1).trim();
+		}
+		double[] values = new double[9];
 		int idx = 0;
 		if (dataStr.contains("|")) {
 			String[] sections = dataStr.split("\\|");
 			for (String section : sections) {
-				String[] values = section.trim().split("\\s+");
-				for (String value : values) {
+				String[] sectionValues = section.trim().split("\\s+");
+				for (String value : sectionValues) {
 					if (!value.equals("")) {
-						matrixData[idx++] = Double.valueOf(value);
+						values[idx++] = Double.valueOf(value);
 					}
 				}
 			}
 		}
 		else {
-			matrixData[0] = Double.valueOf(dataStr);
+			for(String value : dataStr.trim().split("\\s+")) {
+				if(!value.equals("")) {
+					values[idx++] = Double.valueOf(value);
+				}
+			}
 		}
+		if (idx == 9) {
+			matrixData[0] = values[0];
+			matrixData[1] = values[1];
+			matrixData[2] = values[4];
+			matrixData[3] = values[2];
+			matrixData[4] = values[5];
+			matrixData[5] = values[8];
+			return;
+		}
+		if (idx > matrixData.length) {
+			throw new Error("line code matrix has unsupported value count " + idx + ": " + str);
+		}
+		for (int i = 0; i < idx; i++) {
+			matrixData[i] = values[i];
+		}
+	}
+
+	private static String matrixDataString(String str, String key) {
+		String lower = str.toLowerCase();
+		if(!lower.contains(key)) {
+			return null;
+		}
+		int keyIdx = lower.indexOf(key);
+		int eqIdx = lower.indexOf("=", keyIdx);
+		if(eqIdx < 0) {
+			return null;
+		}
+		int valueStart = eqIdx + 1;
+		while(valueStart < str.length() && Character.isWhitespace(str.charAt(valueStart))) {
+			valueStart++;
+		}
+		if(valueStart >= str.length()) {
+			return null;
+		}
+		char first = str.charAt(valueStart);
+		if(first == '[' || first == '(') {
+			char end = first == '[' ? ']' : ')';
+			int endIdx = str.indexOf(end, valueStart + 1);
+			if(endIdx < 0) {
+				throw new Error("line code format error: " + str);
+			}
+			return str.substring(valueStart, endIdx + 1);
+		}
+		int valueEnd = valueStart;
+		while(valueEnd < str.length() && !Character.isWhitespace(str.charAt(valueEnd))) {
+			valueEnd++;
+		}
+		return str.substring(valueStart, valueEnd);
 	}
 
 	private static Complex3x3 toComplex3x3(int nphases, double[] rMatrixData, double[] xMatrixData) throws Exception {

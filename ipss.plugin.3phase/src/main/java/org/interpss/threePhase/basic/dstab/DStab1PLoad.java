@@ -83,4 +83,17 @@ public interface DStab1PLoad extends ILoad1Phase, DStabLoad {
 
 	public double getVmaxpu();
 
+	/**
+	 * Enable OpenDSS model=4 CVR behavior for this load. The active and reactive
+	 * powers are scaled independently as P=P0*V^cvrWatts and Q=Q0*V^cvrVars
+	 * inside the Vmin/Vmax band.
+	 */
+	public void setOpenDssModel4(boolean enabled, double cvrWatts, double cvrVars);
+
+	public boolean isOpenDssModel4();
+
+	public double getCvrWatts();
+
+	public double getCvrVars();
+
 }
