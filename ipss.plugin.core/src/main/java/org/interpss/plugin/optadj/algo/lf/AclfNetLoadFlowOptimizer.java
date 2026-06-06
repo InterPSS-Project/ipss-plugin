@@ -61,6 +61,9 @@ public class AclfNetLoadFlowOptimizer {
 			if (net.getAclfBranchNameLookupTable() == null) {
 				net.createAclfBranchNameLookupTable(true);
 			}
+			if (net.getAclfGenNameLookupTable() == null) {
+				net.createAclfGenNameLookupTable(true);
+			}
 			controlGenMap = arrangeIndex(buildControlGenSet(net, senMatrix, result));
 		}
 		
