@@ -484,16 +484,52 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 				}
 
 			}
+			else if(element.contains("bus=")){
+				TerminalBus terminal = terminalBus(element.substring(4));
+				if(windingContext == 1) {
+					fromBusId = terminal.busId;
+					fromWyeGrounded = terminal.wyeGrounded;
+					if(terminal.nodes.length>0){
+						phase1 = terminal.nodes[0];
+					}
+					if(terminal.nodes.length>1){
+						phase2 = terminal.nodes[1];
+					}
+					if(terminal.nodes.length>2){
+						phase3 = terminal.nodes[2];
+					}
+				}
+				else if(windingContext == 2) {
+					toBusId = terminal.busId;
+					toWyeGrounded = terminal.wyeGrounded;
+				}
+			}
 			else if(element.contains("conns=")){
 				String[] connTypes = listValues(element);
 				fromConnection = connTypes[0];
 				toConnection = connTypes[1];
+			}
+			else if(element.contains("conn=")){
+				if(windingContext == 1) {
+					fromConnection = element.substring(5);
+				}
+				else if(windingContext == 2) {
+					toConnection = element.substring(5);
+				}
 			}
 			else if(element.contains("kvs=")){
 				String[] kvs = listValues(element);
 				normKVs = doubleValues(kvs);
 				normKV1 = Double.valueOf(kvs[0]);
 				normKV2 = Double.valueOf(kvs[1]);
+			}
+			else if(element.contains("kv=")){
+				if(windingContext == 1) {
+					normKV1 = Double.valueOf(element.substring(3));
+				}
+				else if(windingContext == 2) {
+					normKV2 = Double.valueOf(element.substring(3));
+				}
 			}
 			else if(element.contains("kvas=")){
 				String[] kvas = listValues(element);
@@ -502,8 +538,19 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 				kva2 = Double.valueOf(kvas[1]);
 
 			}
+			else if(element.contains("kva=")){
+				if(windingContext == 1) {
+					kva1 = Double.valueOf(element.substring(4));
+				}
+				else if(windingContext == 2) {
+					kva2 = Double.valueOf(element.substring(4));
+				}
+			}
 			else if(element.contains("%rs=")){
 				rPercents = doubleValues(listValues(element));
+				if(rPercents.length > 1) {
+					losspercent1 = rPercents[0] + rPercents[1];
+				}
 				lossSpecified = true;
 			}
 			else if(element.contains("%imag=")){

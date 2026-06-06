@@ -279,6 +279,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 		 this.isAllPowerFlowConverged = true;
 		 BaseAclfNetwork<? extends BaseAclfBus<? extends AclfGen, ? extends AclfLoad>, ? extends AclfBranch> distNet = aclfNetwork();
+		 deactivateBusesOnlyInFloatingPhaseComponents(distNet);
 
 		//step-1. check if there is any island in the system
 		 AclfNetHelper helper = new AclfNetHelper(distNet);
@@ -324,6 +325,75 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		}
 
 		return this.isAllPowerFlowConverged;
+	}
+
+	private void deactivateBusesOnlyInFloatingPhaseComponents(BaseAclfNetwork distNet) {
+		int nodeCount = distNet.getNoBus() * 3;
+		List<List<Integer>> graph = new ArrayList<>(nodeCount);
+		for(int i = 0; i < nodeCount; i++) {
+			graph.add(new ArrayList<>());
+		}
+
+		for(AclfBranch branch: (List<AclfBranch>) distNet.getBranchList()) {
+			if(branch.isActive()) {
+				IBranch3Phase branch3P = threePhaseBranch(branch);
+				int from = branch.getFromBus().getSortNumber();
+				int to = branch.getToBus().getSortNumber();
+				addPhaseConnectivity(graph, from, to, branch3P.getYftabc());
+				addPhaseConnectivity(graph, to, from, branch3P.getYtfabc());
+			}
+		}
+
+		boolean[] floatingNode = new boolean[nodeCount];
+		boolean[] connectedNode = new boolean[nodeCount];
+		boolean[] seen = new boolean[nodeCount];
+		for(BaseAclfBus bus: (List<BaseAclfBus>) distNet.getBusList()) {
+			if(!bus.isActive()) {
+				continue;
+			}
+			for(int phase = 0; phase < 3; phase++) {
+				int start = bus.getSortNumber() * 3 + phase;
+				if(seen[start] || graph.get(start).isEmpty()) {
+					continue;
+				}
+				List<Integer> component = collectPhaseComponent(graph, seen, start);
+				boolean hasSwing = containsSwingBusPhase(component, distNet);
+				for(int node : component) {
+					connectedNode[node] = true;
+					floatingNode[node] = !hasSwing;
+				}
+			}
+		}
+
+		int inactiveBusCount = 0;
+		int inactiveBranchCount = 0;
+		for(BaseAclfBus bus: (List<BaseAclfBus>) distNet.getBusList()) {
+			if(!bus.isActive() || bus.isSwing()) {
+				continue;
+			}
+			boolean hasConnectedPhase = false;
+			boolean hasSwingConnectedPhase = false;
+			for(int phase = 0; phase < 3; phase++) {
+				int node = bus.getSortNumber() * 3 + phase;
+				hasConnectedPhase = hasConnectedPhase || connectedNode[node];
+				hasSwingConnectedPhase = hasSwingConnectedPhase || (connectedNode[node] && !floatingNode[node]);
+			}
+			if(hasConnectedPhase && !hasSwingConnectedPhase) {
+				bus.setStatus(false);
+				inactiveBusCount++;
+			}
+		}
+		for(AclfBranch branch: (List<AclfBranch>) distNet.getBranchList()) {
+			if(branch.isActive()
+					&& (!branch.getFromBus().isActive() || !branch.getToBus().isActive())) {
+				branch.setStatus(false);
+				inactiveBranchCount++;
+			}
+		}
+		if(inactiveBusCount > 0 || inactiveBranchCount > 0) {
+			log.info("Turned off buses only connected to floating phase components before power flow: buses="
+					+ inactiveBusCount + ", branches=" + inactiveBranchCount);
+		}
 	}
 
 	private List<BaseAclfNetwork> createSubNetworkList(BaseAclfNetwork parentNetwork, List<String> list){
