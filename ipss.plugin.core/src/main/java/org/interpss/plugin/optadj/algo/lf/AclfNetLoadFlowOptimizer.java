@@ -122,7 +122,7 @@ public class AclfNetLoadFlowOptimizer {
 			if (Math.abs(dP) > GEN_DISPATCH_THRESHOLD) {
 				AclfGen gen = genMap.get(i);
 				DclfAlgoGen dclfGen = dclfAlgo.getDclfAlgoBus(gen.getParentBus().getId()).getGen(gen.getName()).get();
-				results.put(gen.getName(), new GenAdjustResult(dclfGen.getGenP()*baseMva, dP, gen.getPGenLimit()));
+				results.put(gen.getName(), new GenAdjustResult(dclfGen.getGenP()*baseMva, dP, gen.getPGenLimit().multiply(baseMva)));
 				dclfGen.setAdjust(dP / 100);
 				//System.out.println(gen.getName() + ", dP:" + dP + ", genP:" + dclfGen.getGenP() + ", genLimit: " + gen.getPGenLimit());
 			}
