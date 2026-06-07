@@ -16,6 +16,8 @@ import com.interpss.core.threephase.IBranch3Phase;
 import com.interpss.core.threephase.Static3PBranch;
 
 public class OpenDSSLineParser {
+	private static final double MIN_CONFIG_SERIES_ZABC_ABS = 1.0E-6;
+	private static final double MIN_RAW_SERIES_ZABC_ABS = 1.0E-4;
 
     private OpenDSSDataParser dataParser = null;
 
@@ -355,9 +357,8 @@ public class OpenDSSLineParser {
 			lineLength = 1.0;
 		}
 		Complex3x3 lineZabc = zabc.multiply(lineLength);
-		if(lineConfigIdx < 0 && lineZabc.absMax() < 1.0E-4) {
-			lineZabc = lineZabc.multiply(1.0E-4 / lineZabc.absMax());
-		}
+		double minSeriesZabcAbs = lineConfigIdx < 0 ? MIN_RAW_SERIES_ZABC_ABS : MIN_CONFIG_SERIES_ZABC_ABS;
+		lineZabc = applyMinimumSeriesImpedance(lineZabc, fromBusPhases, minSeriesZabcAbs);
 		line3Phase.setZabc(lineZabc);
 
 		if(line3Phase.getZabc().absMax()<1.0E-7){
@@ -371,6 +372,32 @@ public class OpenDSSLineParser {
 
 		return no_error;
 
+	}
+
+	private static Complex3x3 applyMinimumSeriesImpedance(Complex3x3 zabc, String busPhases, double minSeriesZabcAbs) {
+		double absMax = zabc.absMax();
+		if(absMax >= minSeriesZabcAbs) {
+			return zabc;
+		}
+		if(absMax > 0.0) {
+			return zabc.multiply(minSeriesZabcAbs / absMax);
+		}
+		Complex3x3 floor = new Complex3x3();
+		for(String phase : busPhases.split("\\.")) {
+			if("1".equals(phase)) {
+				floor.aa = new Complex(minSeriesZabcAbs, 0.0);
+			}
+			else if("2".equals(phase)) {
+				floor.bb = new Complex(minSeriesZabcAbs, 0.0);
+			}
+			else if("3".equals(phase)) {
+				floor.cc = new Complex(minSeriesZabcAbs, 0.0);
+			}
+			else {
+				throw new Error("phase arrangement not support yet : " + busPhases);
+			}
+		}
+		return floor;
 	}
 
 	private static String normalizePropertyEquals(String value) {
