@@ -62,4 +62,14 @@ public class SsaResultContainer extends BaseJSONBean{
 					loading);
 		});
 	}
+
+	public void printCaOverLimitInfo() {
+		caOverLimitInfo.stream().forEach(info -> {
+			double postFlowMW = info.getBaseFlowMW() + info.getShftedFlowMW();
+			double loading = Math.abs(postFlowMW / info.getLimitMW()) * 100;
+            System.out.println(String.format("OverLimit Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f",
+                  info.getOverLimitBranchId(), info.getOutageBranchId(),
+                  postFlowMW, info.getLimitMW(), loading));
+		});
+	}
 }
