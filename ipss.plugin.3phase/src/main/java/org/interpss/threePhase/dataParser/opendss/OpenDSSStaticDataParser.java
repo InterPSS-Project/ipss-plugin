@@ -1,6 +1,5 @@
 package org.interpss.threePhase.dataParser.opendss;
 
-import org.ieee.odm.common.ODMLogger;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
@@ -36,22 +35,12 @@ public class OpenDSSStaticDataParser extends OpenDSSDataParser {
 
 	@Override
 	public boolean initNetwork() {
-		boolean noError = true;
-		try {
-			this.xfrParser.mergeParallelSinglePhaseRegulatorBranches();
-		} catch (Exception e) {
-			ODMLogger.getLogger().severe("Failed to merge parallel single-phase transformer regulators: " + e.toString());
-			noError = false;
-		}
-		if(noError && this.isRegControlEnabled()) {
-			this.regulatorParser.applyFixedRegControlRatios();
-		}
-		return noError;
+		return calcVoltageBases();
 	}
 
 	@Override
 	public boolean calcVoltageBases() {
-		return initNetwork();
+		return super.calcVoltageBases();
 	}
 
 }
