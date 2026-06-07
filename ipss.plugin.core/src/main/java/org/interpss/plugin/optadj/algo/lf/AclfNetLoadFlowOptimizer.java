@@ -47,7 +47,9 @@ public class AclfNetLoadFlowOptimizer {
 	 * @return Map<String, OptAdjResultContainer.GenAdjustResult> keyed by generator name.
 	 */
 	public Map<String, OptAdjResultContainer.GenAdjustResult> optimize(ContingencyAnalysisAlgorithm dclfAlgo, OptAdjResultContainer result, double threshold) {
-		result.setOptAdjThreshold(threshold);
+		if (result != null) {
+			result.setOptAdjThreshold(threshold);
+		}
 
 		AclfNetwork net = (AclfNetwork) dclfAlgo.getNetwork();
 
