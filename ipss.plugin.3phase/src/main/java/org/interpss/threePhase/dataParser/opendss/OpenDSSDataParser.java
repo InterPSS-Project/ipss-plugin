@@ -80,7 +80,7 @@ public class OpenDSSDataParser {
 	protected OpenDSSLoadShapeParser loadShapeParser = null;
 	protected OpenDSSTemperatureShapeParser temperatureShapeParser = null;
 	private boolean regControlEnabled = true;
-	private double minLineSeriesImpedancePu = 1.0E-9;
+	private double minLineSeriesImpedancePu = 1.0E-7;
 
 
 	boolean debug = false;
