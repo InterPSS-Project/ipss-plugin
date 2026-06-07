@@ -14,6 +14,8 @@ import org.interpss.threePhase.basic.dstab.DStab3PGen;
 import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSGeneratorModel;
 import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSProfileBinding;
 import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSProfileType;
+import org.interpss.threePhase.qsts.InverterCapabilityData;
+import org.interpss.threePhase.qsts.QstsControlCurve;
 import org.interpss.threePhase.qsts.QstsDeviceStatus;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
@@ -48,10 +50,8 @@ public class OpenDSSPVSystemParser {
 		String connection = stripDssValue(firstPresent(properties, "conn", "connection"));
 		double kva = parseDouble(properties.get("kva"), 0.0);
 		double pmpp = parseDouble(properties.get("pmpp"), 0.0);
-		double irradiance = parseDouble(properties.get("irradiance"), 1.0);
-		double kw = parseDouble(properties.get("kw"), pmpp > 0.0 ? pmpp * irradiance : kva);
+		double irradiance = parseDouble(firstPresent(properties, "irradiance", "irrad"), 1.0);
 		double powerFactor = parseDouble(properties.get("pf"), 0.0);
-		double kvar = parseKvar(properties, kw, kva);
 		double pctPmpp = parseDouble(properties.get("%pmpp"), parseDouble(properties.get("pctpmpp"), 100.0));
 		double temperature = parseDouble(properties.get("temperature"), 25.0);
 		double pctCutIn = parseDouble(properties.get("%cutin"), parseDouble(properties.get("pctcutin"), 0.0));
@@ -66,7 +66,12 @@ public class OpenDSSPVSystemParser {
 		String daily = stripDssValue(properties.get("daily"));
 		String yearly = stripDssValue(properties.get("yearly"));
 		String duty = stripDssValue(properties.get("duty"));
+		String tdaily = stripDssValue(firstPresent(properties, "tdaily", "temperaturedaily"));
 		String status = stripDssValue(properties.get("status"));
+		double availableActivePowerKw = availableActivePowerKw(pmpp, irradiance, pctPmpp, temperature,
+				kva, efficiencyCurve, pvsTCurve);
+		double kw = parseDouble(properties.get("kw"), availableActivePowerKw > 0.0 ? availableActivePowerKw : kva);
+		double kvar = parseKvar(properties, kw, kva);
 
 		IPhaseGen generator;
 		Complex genPu = new Complex(kw / dataParser.getNetworkBaseKva(),
@@ -101,6 +106,8 @@ public class OpenDSSPVSystemParser {
 		}
 
 		dataParser.getTimeSeriesData().getGeneratorStateStore().register(generator);
+		dataParser.getTimeSeriesData().getInverterAdapterStore().register(generator)
+				.setCapabilityData(inverterCapabilityData(kva, availableActivePowerKw, pctCutIn, pctCutOut));
 		OpenDSSProfileBinding binding = dataParser.getTimeSeriesData().getOrCreateGeneratorBinding(id);
 		binding.setShapeId(OpenDSSProfileType.DAILY, daily);
 		binding.setShapeId(OpenDSSProfileType.YEARLY, yearly);
@@ -110,8 +117,38 @@ public class OpenDSSPVSystemParser {
 				kw, kvar, kva, nominalKV, connection, powerFactor, pmpp, irradiance, pctPmpp, temperature,
 				pctCutIn, pctCutOut, efficiencyCurve, pvsTCurve, pctPmppCurve, kvarLimitCurve, "",
 				0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-				daily, yearly, duty, sourceFile, sourceLine));
+				daily, yearly, duty, tdaily, sourceFile, sourceLine));
 		return true;
+	}
+
+	private InverterCapabilityData inverterCapabilityData(double kva, double availableActivePowerKw,
+			double pctCutIn, double pctCutOut) {
+		double qLimit = Double.NaN;
+		if(kva > 0.0 && Double.isFinite(availableActivePowerKw)) {
+			qLimit = Math.sqrt(Math.max(0.0, kva * kva - availableActivePowerKw * availableActivePowerKw));
+		}
+		return new InverterCapabilityData(kva, availableActivePowerKw,
+				Double.isFinite(qLimit) ? -qLimit : Double.NaN,
+				qLimit, kva * pctCutIn / 100.0, kva * pctCutOut / 100.0, true);
+	}
+
+	private double availableActivePowerKw(double pmpp, double irradiance, double pctPmpp,
+			double temperature, double kva, String efficiencyCurve, String pvsTCurve) {
+		if(pmpp <= 0.0) {
+			return Double.NaN;
+		}
+		double panelPowerKw = pmpp * irradiance * pctPmpp / 100.0
+				* curveValue(pvsTCurve, temperature, 1.0);
+		double puPower = kva > 0.0 ? panelPowerKw / kva : panelPowerKw / pmpp;
+		return panelPowerKw * curveValue(efficiencyCurve, puPower, 1.0);
+	}
+
+	private double curveValue(String curveId, double x, double defaultValue) {
+		if(curveId == null || curveId.trim().isEmpty()) {
+			return defaultValue;
+		}
+		QstsControlCurve curve = dataParser.getTimeSeriesData().getControlCurve(curveId);
+		return curve == null ? defaultValue : curve.evaluate(x);
 	}
 
 	private static double parseKvar(Map<String, String> properties, double kw, double kva) {

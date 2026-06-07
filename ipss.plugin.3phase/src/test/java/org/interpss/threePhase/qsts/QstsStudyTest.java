@@ -15,6 +15,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.threePhase.powerflow.DistributionPFMethod;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.powerflow.control.CapacitorControlData;
+import org.interpss.threePhase.powerflow.control.InverterControlData;
 import org.interpss.threePhase.powerflow.control.RegulatorControlData;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.jupiter.api.Test;
@@ -122,6 +123,114 @@ public class QstsStudyTest {
 				.noneMatch(bus -> bus.getClass().getName().contains(".dstab.")));
 		assertTrue(network.getBranchList().stream()
 				.noneMatch(branch -> branch.getClass().getName().contains(".dstab.")));
+	}
+
+	@Test
+	void delayedCapacitorControlOperationCountIsCapturedPerQstsStep() throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+		Static3PBus loadBus = network.getBus("load");
+		Static3PLoad capacitor = Static3PhaseFactory.eINSTANCE.createStatic3PLoad();
+		capacitor.setId("cap1");
+		capacitor.setCode(AclfLoadCode.CONST_Z);
+		capacitor.set3PhaseLoad(new Complex3x1(new Complex(0.0, -0.01),
+				new Complex(0.0, -0.01), new Complex(0.0, -0.01)));
+		loadBus.getContributeLoadList().add(capacitor);
+		CapacitorControlData control = new CapacitorControlData("capctrl1", "cap1", "", 1,
+				CapacitorControlData.ControlType.VOLTAGE, 100.0, 200.0, 1.0, 1.0,
+				false, 0.0, 0.0, 0.0, 1800.0, null, null);
+
+		QstsResult result = QstsStudy.from(network, schedule(3))
+				.setPowerFlowAlgorithm(new FakePowerFlowAlgorithm())
+				.setCapacitorControls(List.of(control))
+				.setControlMode(QstsControlMode.TIME)
+				.setMaxControlIterations(1)
+				.setNumberOfSteps(3)
+				.setStepSizeHours(1.0)
+				.run();
+
+		assertTrue(result.isConverged());
+		assertEquals(0, result.getStep(0).getActionCount());
+		assertEquals(1, result.getStep(1).getActionCount());
+		assertEquals(0, result.getStep(2).getActionCount());
+		assertEquals(0, result.getStep(0).getCapacitorStates().get(0).getOperationCount());
+		assertEquals(1, result.getStep(1).getCapacitorStates().get(0).getOperationCount());
+		assertEquals(1, result.getStep(2).getCapacitorStates().get(0).getOperationCount());
+		assertTrue(result.getStep(0).getCapacitorStates().get(0).isClosed());
+		assertFalse(result.getStep(1).getCapacitorStates().get(0).isClosed());
+		assertEquals(-0.03, result.getStep(0).getCapacitorStates().get(0).getTotalReactivePowerPu(), 1.0e-12);
+		assertEquals(0.0, result.getStep(1).getCapacitorStates().get(0).getTotalReactivePowerPu(), 1.0e-12);
+	}
+
+	@Test
+	void inverterControlSetpointIsAppliedAfterQstsPowerFlowThroughStaticPhaseGen() throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+		InverterControlData control = new InverterControlData("inv1", "pv1",
+				InverterControlData.ControlMode.VOLTVAR, "", 40000.0,
+				-5000.0, 5000.0, 0.0, Double.NaN, 6000.0, Double.NaN, true);
+
+		QstsResult result = QstsStudy.from(network, schedule(1))
+				.setPowerFlowAlgorithm(new FakePowerFlowAlgorithm())
+				.setInverterControls(List.of(control))
+				.setControlMode(QstsControlMode.STATIC)
+				.setMaxControlIterations(1)
+				.run();
+
+		QstsInverterControlSample sample = result.getStep(0).getInverterControls().get(0);
+		assertTrue(sample.isApplied());
+		assertTrue(sample.isLimited());
+		assertEquals(5000.0, sample.getReactivePowerKvar(), 1.0e-12);
+		assertEquals(0.05, power(result.getStep(0).getGeneratorPowers(), "pv1", "A")
+				.getQ() + power(result.getStep(0).getGeneratorPowers(), "pv1", "B").getQ()
+				+ power(result.getStep(0).getGeneratorPowers(), "pv1", "C").getQ(), 1.0e-12);
+		assertFalse(network.getBus("load").getPhaseGenList().get(0).getClass().getName().contains(".dstab."));
+	}
+
+	@Test
+	void inverterControlUsesAdapterStoreInsteadOfExtendingPhaseGen() throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+		CountingInverterAdapter adapter = new CountingInverterAdapter(network.getBus("load").getPhaseGenList().get(0));
+		QstsInverterAdapterStore store = new QstsInverterAdapterStore();
+		store.register(adapter);
+		InverterControlData control = new InverterControlData("inv1", "pv1",
+				InverterControlData.ControlMode.WATTVAR, "", 40000.0,
+				-5000.0, 5000.0, 0.0, Double.NaN, 4000.0, Double.NaN, true);
+
+		QstsResult result = QstsStudy.from(network, schedule(1))
+				.setPowerFlowAlgorithm(new FakePowerFlowAlgorithm())
+				.setInverterAdapterStore(store)
+				.setInverterControls(List.of(control))
+				.setControlMode(QstsControlMode.STATIC)
+				.setMaxControlIterations(1)
+				.run();
+
+		assertEquals(1, adapter.applyCount);
+		assertTrue(result.getStep(0).getInverterControls().get(0).isApplied());
+		assertEquals(4000.0, result.getStep(0).getInverterControls().get(0).getReactivePowerKvar(), 1.0e-12);
+		assertTrue(adapter.getGenerator() instanceof IPhaseGen);
+	}
+
+	@Test
+	void inverterAdapterUsesSolvedBusVoltageToResolveVoltVarCurve() throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+		InverterGenAdapter adapter = new InverterGenAdapter(network.getBus("load").getPhaseGenList().get(0))
+				.addCurve(new QstsControlCurve("vv1", new double[] {0.95, 1.05},
+						new double[] {2000.0, -2000.0}));
+		QstsInverterAdapterStore store = new QstsInverterAdapterStore();
+		store.register(adapter);
+		InverterControlData control = new InverterControlData("inv1", "pv1",
+				InverterControlData.ControlMode.VOLTVAR, "vv1", 40000.0,
+				-5000.0, 5000.0, 0.0, true);
+
+		QstsResult result = QstsStudy.from(network, schedule(1))
+				.setPowerFlowAlgorithm(new FakePowerFlowAlgorithm())
+				.setInverterAdapterStore(store)
+				.setInverterControls(List.of(control))
+				.setControlMode(QstsControlMode.STATIC)
+				.setMaxControlIterations(1)
+				.run();
+
+		assertTrue(result.getStep(0).getInverterControls().get(0).isApplied());
+		assertEquals(0.0, result.getStep(0).getInverterControls().get(0).getReactivePowerKvar(), 1.0e-12);
 	}
 
 	private static QstsDevicePowerSample power(List<QstsDevicePowerSample> samples, String deviceId, String phase) {
@@ -302,6 +411,21 @@ public class QstsStudyTest {
 		@Override
 		public boolean isInitBusVoltageEnabled() {
 			return true;
+		}
+	}
+
+	private static class CountingInverterAdapter extends InverterGenAdapter {
+		private int applyCount;
+
+		private CountingInverterAdapter(IPhaseGen generator) {
+			super(generator);
+		}
+
+		@Override
+		public org.interpss.threePhase.powerflow.control.InverterControlModel.InverterControlResult apply(
+				InverterControlData control, QstsStepContext context, double networkBaseKva) {
+			applyCount++;
+			return super.apply(control, context, networkBaseKva);
 		}
 	}
 }

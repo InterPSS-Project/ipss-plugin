@@ -46,6 +46,25 @@ public class CapacitorBankControl {
 		return changed;
 	}
 
+	public void applyConfiguredStates(INetwork3Phase network, List<CapacitorControlData> controls) {
+		if(controls == null || controls.isEmpty()) {
+			return;
+		}
+		BaseAclfNetwork<?, ?> aclfNetwork = aclfNetwork(network);
+		for(CapacitorControlData control : controls) {
+			IPhaseLoad capacitor = findCapacitorLoad(aclfNetwork, control.getCapacitorId());
+			if(capacitor != null) {
+				applyState(capacitor, control.isClosed());
+			}
+		}
+	}
+
+	public Complex3x1 capacitorPower(INetwork3Phase network, String capacitorId) {
+		BaseAclfNetwork<?, ?> aclfNetwork = aclfNetwork(network);
+		IPhaseLoad capacitor = findCapacitorLoad(aclfNetwork, capacitorId);
+		return capacitor == null ? zero() : copy(capacitor.getInit3PhaseLoad());
+	}
+
 	public int scheduleDelayed(INetwork3Phase network, List<CapacitorControlData> controls,
 			QstsControlQueue queue, double currentTimeSeconds) {
 		if(controls == null || controls.isEmpty() || queue == null) {
@@ -161,7 +180,7 @@ public class CapacitorBankControl {
 		applyState(capacitor, closed);
 	}
 
-	private String controlActionKey(CapacitorControlData control) {
+	public String controlActionKey(CapacitorControlData control) {
 		return "capacitor:" + (control.getCapacitorId() == null ? control.getId() : control.getCapacitorId());
 	}
 

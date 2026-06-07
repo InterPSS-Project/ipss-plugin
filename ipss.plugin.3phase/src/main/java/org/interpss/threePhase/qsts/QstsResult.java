@@ -48,4 +48,20 @@ public class QstsResult {
 		}
 		return Collections.unmodifiableList(samples);
 	}
+
+	public List<QstsCapacitorStateSample> getCapacitorStates() {
+		List<QstsCapacitorStateSample> samples = new ArrayList<>();
+		for(QstsStepResult step : stepResults) {
+			samples.addAll(step.getCapacitorStates());
+		}
+		return Collections.unmodifiableList(samples);
+	}
+
+	public List<QstsInverterControlSample> getInverterControls() {
+		List<QstsInverterControlSample> samples = new ArrayList<>();
+		for(QstsStepResult step : stepResults) {
+			samples.addAll(step.getInverterControls());
+		}
+		return Collections.unmodifiableList(samples);
+	}
 }

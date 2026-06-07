@@ -8,6 +8,10 @@ import org.interpss.threePhase.dataParser.opendss.OpenDSSDataParser;
 import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSGeneratorModel;
 import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSProfileBinding;
 import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSProfileType;
+import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSTemperatureShape;
+import org.interpss.threePhase.qsts.InverterCapabilityData;
+import org.interpss.threePhase.qsts.InverterGenAdapter;
+import org.interpss.threePhase.qsts.QstsControlCurve;
 import org.interpss.threePhase.qsts.QstsDeviceStatus;
 import org.interpss.threePhase.qsts.QstsProfileBinding;
 import org.interpss.threePhase.qsts.QstsScheduleData;
@@ -37,7 +41,7 @@ public class OpenDssPVSystemMetadataTest {
 		assertEquals(1, bus.getPhaseGenList().size());
 		IPhaseGen generator = bus.getPhaseGenList().get(0);
 		assertEquals("pv1", generator.getId());
-		assertEquals(400.0 / baseKva, generator.getPower3Phase(UnitType.PU)
+		assertEquals(380.0 / baseKva, generator.getPower3Phase(UnitType.PU)
 				.a_0.add(generator.getPower3Phase(UnitType.PU).b_1)
 				.add(generator.getPower3Phase(UnitType.PU).c_2).getReal(), 1.0e-12);
 		assertEquals(50.0 / baseKva, generator.getPower3Phase(UnitType.PU)
@@ -54,7 +58,7 @@ public class OpenDssPVSystemMetadataTest {
 		assertNotNull(model);
 		assertEquals("pvsystem", model.getDeviceClass());
 		assertEquals("bus1", model.getBusId());
-		assertEquals(400.0, model.getKw(), 1.0e-12);
+		assertEquals(380.0, model.getKw(), 1.0e-12);
 		assertEquals(50.0, model.getKvar(), 1.0e-12);
 		assertEquals(12.47, model.getNominalKV(), 1.0e-12);
 		assertEquals("wye", model.getConnection());
@@ -123,5 +127,57 @@ public class OpenDssPVSystemMetadataTest {
 		assertEquals(15.0 / parser.getStaticNetwork().getBaseKva(),
 				generator.getPower3Phase(UnitType.PU).b_1.getImaginary(), 1.0e-12);
 		assertEquals(1, parser.getTimeSeriesData().getGeneratorStateStore().size());
+	}
+
+	@Test
+	void parsesOfficialOpenDssPVSystemExampleCurvesForInverterCapability() {
+		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
+		double baseKva = parser.getStaticNetwork().getBaseKva();
+
+		assertTrue(parser.getXYCurveParser().parseXYCurve(
+				"New XYCurve.MyPvsT npts=4 xarray=[0 25 75 100] yarray=[1.2 1.0 0.8 0.6]"));
+		assertTrue(parser.getXYCurveParser().parseXYCurve(
+				"New XYCurve.MyEff npts=4 xarray=[.1 .2 .4 1.0] yarray=[.86 .9 .93 .97]"));
+		assertTrue(parser.getLoadShapeParser().parseLoadShape(
+				"New Loadshape.MyIrrad npts=24 interval=1 mult=[0 0 0 0 0 0 .1 .2 .3 .5 .8 .9 1.0 1.0 .99 .9 .7 .4 .1 0 0 0 0 0]",
+				"", "Examples6.html", 35));
+		assertTrue(parser.getTemperatureShapeParser().parseTemperatureShape(
+				"New Tshape.MyTemp npts=24 interval=1 temp=[25, 25, 25, 25, 25, 25, 25, 25, 35, 40, 45, 50 60 60 55 40 35 30 25 25 25 25 25 25]",
+				"Examples6.html", 39));
+		assertTrue(parser.getPVSystemParser().parsePVSystemData(
+				"New PVSystem.PV phases=3 bus1=PVbus kV=12.47 kVA=500 irrad=0.8 Pmpp=500 "
+						+ "temperature=25 PF=1 effcurve=Myeff P-TCurve=MyPvsT Daily=MyIrrad TDaily=MyTemp",
+				"Examples6.html", 48));
+
+		QstsControlCurve pvsTCurve = parser.getTimeSeriesData().getControlCurve("mypvst");
+		assertNotNull(pvsTCurve);
+		assertEquals(1.0, pvsTCurve.evaluate(25.0), 1.0e-12);
+		QstsControlCurve efficiencyCurve = parser.getTimeSeriesData().getControlCurve("myeff");
+		assertNotNull(efficiencyCurve);
+		assertEquals(0.9566666666666667, efficiencyCurve.evaluate(0.8), 1.0e-12);
+		OpenDSSTemperatureShape temperatureShape = parser.getTimeSeriesData().getTemperatureShape("mytemp");
+		assertNotNull(temperatureShape);
+		assertEquals(24, temperatureShape.getPointCount());
+		assertEquals(60.0, temperatureShape.getTemperature()[12], 1.0e-12);
+
+		OpenDSSGeneratorModel model = parser.getTimeSeriesData().getGeneratorModel("pv");
+		assertNotNull(model);
+		assertEquals("myirrad", model.getDailyShapeId());
+		assertEquals("mytemp", model.getDailyTemperatureShapeId());
+		assertEquals("myeff", model.getEfficiencyCurveId());
+		assertEquals("mypvst", model.getPvsTCurveId());
+		assertEquals(382.6666666666667, model.getKw(), 1.0e-9);
+
+		IPhaseGen generator = parser.getStaticNetwork().getBus("pvbus").getPhaseGenList().get(0);
+		assertEquals(382.6666666666667 / baseKva, generator.getPower3Phase(UnitType.PU)
+				.a_0.add(generator.getPower3Phase(UnitType.PU).b_1)
+				.add(generator.getPower3Phase(UnitType.PU).c_2).getReal(), 1.0e-12);
+		InverterGenAdapter adapter = parser.getTimeSeriesData().getInverterAdapterStore().get("pv");
+		assertNotNull(adapter);
+		InverterCapabilityData capability = adapter.getCapabilityData();
+		assertEquals(500.0, capability.getRatedKva(), 1.0e-12);
+		assertEquals(382.6666666666667, capability.getAvailableActivePowerKw(), 1.0e-9);
+		assertEquals(0.0, capability.getCutInPowerKw(), 1.0e-12);
+		assertTrue(capability.getMaxReactivePowerKvar() > 300.0);
 	}
 }
