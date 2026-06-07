@@ -35,7 +35,7 @@ public class GenStateOptimizer {
     List<SectionConstrainData> secConstrainDataList = new ArrayList<SectionConstrainData>();
     
     
-    public static double senSecLimit = 0.1;
+    public static double senSecLimit = 0.02;
     public static double senGenLimit = 0.02;
     int genSize;
     
