@@ -30,6 +30,7 @@ import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 import org.interpss.threePhase.dataParser.opendss.OpenDSSDataParser;
+import org.interpss.threePhase.dataParser.opendss.OpenDSSStaticDataParser;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.powerflow.DistributionPFMethod;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
@@ -42,8 +43,16 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.aclf.AclfLoadCode;
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.acsc.PhaseCode;
 import com.interpss.core.aclf.BaseAclfBus;
+import com.interpss.core.aclf.BaseAclfNetwork;
+import com.interpss.core.threephase.IBus3Phase;
+import com.interpss.core.threephase.IBranch3Phase;
+import com.interpss.core.threephase.IPhaseLoad;
+import com.interpss.core.threephase.Static3PBus;
+import com.interpss.core.threephase.Static3PBranch;
+import com.interpss.core.threephase.Static3PNetwork;
 import com.interpss.core.net.Branch;
 
 
@@ -75,7 +84,7 @@ public class OpenDssParserPowerFlowComparisonTest {
 
 	@Test
 	public void ieee123RegulatorTapControlImprovesDssPythonReferenceMismatch() throws IOException {
-		OpenDSSDataParser parser = new OpenDSSDataParser();
+		OpenDSSStaticDataParser parser = OpenDSSDataParser.forStaticNetwork();
 		assertTrue(parser.parseFeederData("testData/feeder/IEEE123", "IEEE123Master.dss"));
 		assertTrue(parser.getRegulatorParser().getRegControlCount() >= 7,
 				"IEEE123 RegControl records should be parsed");
@@ -84,7 +93,7 @@ public class OpenDssParserPowerFlowComparisonTest {
 		List<RegulatorControlData> controls = parser.getRegulatorControls();
 		assertTrue(controls.size() >= 7, "IEEE123 regulator controls should be available to power flow");
 
-		DStabNetwork3Phase distNet = parser.getDistNetwork();
+		Static3PNetwork distNet = parser.getStaticNetwork();
 		DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(distNet);
 		powerFlow.setPFMethod(DistributionPFMethod.Fixed_Point);
 		powerFlow.setInitBusVoltageEnabled(true);
@@ -214,13 +223,13 @@ public class OpenDssParserPowerFlowComparisonTest {
 
 	@Test
 	public void ieee8500YMatrixComponentAudit() throws IOException {
-		OpenDSSDataParser parser = new OpenDSSDataParser();
+		OpenDSSStaticDataParser parser = OpenDSSDataParser.forStaticNetwork();
 		parser.setRegControlEnabled(false);
 		assertTrue(parser.parseFeederData("testData/feeder/IEEE8500", "Master-InterPSS.dss"));
 		assertTrue(parser.calcVoltageBases());
 		assertTrue(parser.convertActualValuesToPU(1.0));
 
-		printYMatrixComponentAudit("IEEE8500", parser.getDistNetwork());
+		printStaticYMatrixComponentAudit("IEEE8500", parser.getStaticNetwork());
 	}
 
 	@Test
@@ -268,13 +277,10 @@ public class OpenDssParserPowerFlowComparisonTest {
 
 	@Test
 	public void ckt24ParserTurnsOffSwingDisconnectedIslands() throws IOException {
-		OpenDSSDataParser parser = new OpenDSSDataParser();
-		parser.setRegControlEnabled(false);
-		assertTrue(parser.parseFeederData("testData/feeder/Ckt24", "master_ckt24_interpss.dss"));
-		assertTrue(parser.calcVoltageBases());
-		assertTrue(parser.convertActualValuesToPU(1.0));
+		OpenDSSStaticDataParser parser = parseStaticOpenDss(
+				"testData/feeder/Ckt24", "master_ckt24_interpss.dss", false);
 
-		DStabNetwork3Phase distNet = parser.getDistNetwork();
+		Static3PNetwork distNet = parser.getStaticNetwork();
 		assertEquals(0, distNet.getBusList().stream()
 				.filter(bus -> bus.isActive() && bus.getBaseVoltage() <= 0.0)
 				.count(), "Active Ckt24 buses must have source-derived voltage bases");
@@ -286,13 +292,10 @@ public class OpenDssParserPowerFlowComparisonTest {
 
 	@Test
 	public void ckt24BusbarLineUsesMinimumPuImpedance() throws IOException {
-		OpenDSSDataParser parser = new OpenDSSDataParser();
-		parser.setRegControlEnabled(false);
-		assertTrue(parser.parseFeederData("testData/feeder/Ckt24", "master_ckt24_interpss.dss"));
-		assertTrue(parser.calcVoltageBases());
-		assertTrue(parser.convertActualValuesToPU(1.0));
+		OpenDSSStaticDataParser parser = parseStaticOpenDss(
+				"testData/feeder/Ckt24", "master_ckt24_interpss.dss", false);
 
-		DStab3PBranch busbar = findBranchByName(parser.getDistNetwork(), "fdr_05410");
+		Static3PBranch busbar = findStaticBranchByName(parser.getStaticNetwork(), "fdr_05410");
 		assertNotNull(busbar, "Missing Ckt24 busbar branch");
 		assertTrue(busbar.getZabc().absMax() >= 1.0e-9,
 				"Ckt24 busbar line should respect the small per-unit impedance floor");
@@ -302,13 +305,10 @@ public class OpenDssParserPowerFlowComparisonTest {
 
 	@Test
 	public void ckt24MultiPhaseLineCanUseSinglePhaseLineCode() throws IOException {
-		OpenDSSDataParser parser = new OpenDSSDataParser();
-		parser.setRegControlEnabled(false);
-		assertTrue(parser.parseFeederData("testData/feeder/Ckt24", "master_ckt24_interpss.dss"));
-		assertTrue(parser.calcVoltageBases());
-		assertTrue(parser.convertActualValuesToPU(1.0));
+		OpenDSSStaticDataParser parser = parseStaticOpenDss(
+				"testData/feeder/Ckt24", "master_ckt24_interpss.dss", false);
 
-		DStab3PBranch branch = findBranchByName(parser.getDistNetwork(), "05410_93062ug");
+		Static3PBranch branch = findStaticBranchByName(parser.getStaticNetwork(), "05410_93062ug");
 		assertNotNull(branch, "Missing Ckt24 multi-phase line with one-phase linecode");
 		assertTrue(getPhaseValue(branch.getZabc(), 0, 0).abs() > 1.0e-8,
 				"phase A should be populated");
@@ -320,16 +320,13 @@ public class OpenDssParserPowerFlowComparisonTest {
 
 	@Test
 	public void ckt24TriplexServiceLineMatchesDssKronReducedImpedance() throws IOException {
-		OpenDSSDataParser parser = new OpenDSSDataParser();
-		parser.setRegControlEnabled(false);
-		assertTrue(parser.parseFeederData("testData/feeder/Ckt24", "master_ckt24_interpss.dss"));
-		assertTrue(parser.calcVoltageBases());
-		assertTrue(parser.convertActualValuesToPU(1.0));
+		OpenDSSStaticDataParser parser = parseStaticOpenDss(
+				"testData/feeder/Ckt24", "master_ckt24_interpss.dss", false);
 
-		DStab3PBranch branch = findBranchByName(parser.getDistNetwork(), "g2100nj7400_n300463_sec_1");
+		Static3PBranch branch = findStaticBranchByName(parser.getStaticNetwork(), "g2100nj7400_n300463_sec_1");
 		assertNotNull(branch, "Missing Ckt24 triplex service branch");
-		double baseVoltage = ((DStab3PBus) branch.getToBus()).getBaseVoltage();
-		double zBase = baseVoltage * baseVoltage / (parser.getDistNetwork().getBaseKva() * 1000.0);
+		double baseVoltage = branch.getToBus().getBaseVoltage();
+		double zBase = baseVoltage * baseVoltage / (parser.getStaticNetwork().getBaseKva() * 1000.0);
 		Complex actualOhm = branch.getZabc().aa.multiply(zBase);
 		assertEquals(0.20348571067718263 * 0.150, actualOhm.getReal(), 1.0e-9,
 				"Ckt24 2/0_2/0 service-line R should match DSS Kron-reduced linecode");
@@ -339,13 +336,13 @@ public class OpenDssParserPowerFlowComparisonTest {
 
 	@Test
 	public void ckt24LoadWithoutKwUsesOpenDssDefaultKw() throws IOException {
-		OpenDSSDataParser parser = new OpenDSSDataParser();
+		OpenDSSStaticDataParser parser = OpenDSSDataParser.forStaticNetwork();
 		parser.setRegControlEnabled(false);
 		assertTrue(parser.parseFeederData("testData/feeder/Ckt24", "master_ckt24_interpss.dss"));
 
-		DStab3PBus bus = parser.getDistNetwork().getBus("g2102aa7100_n284314_sec_1");
+		Static3PBus bus = parser.getStaticNetwork().getBus("g2102aa7100_n284314_sec_1");
 		assertNotNull(bus, "Missing Ckt24 load-default bus");
-		DStab1PLoad load = bus.getSinglePhaseLoadList().stream()
+		IPhaseLoad load = bus.getPhaseLoadList().stream()
 				.filter(candidate -> "440273200".equals(candidate.getId()))
 				.findFirst()
 				.orElseThrow(() -> new AssertionError("Missing Ckt24 OpenDSS default-kW load"));
@@ -357,13 +354,10 @@ public class OpenDssParserPowerFlowComparisonTest {
 
 	@Test
 	public void ckt24StepTransformerParsesPercentRsAsSeriesResistance() throws IOException {
-		OpenDSSDataParser parser = new OpenDSSDataParser();
-		parser.setRegControlEnabled(false);
-		assertTrue(parser.parseFeederData("testData/feeder/Ckt24", "master_ckt24_interpss.dss"));
-		assertTrue(parser.calcVoltageBases());
-		assertTrue(parser.convertActualValuesToPU(1.0));
+		OpenDSSStaticDataParser parser = parseStaticOpenDss(
+				"testData/feeder/Ckt24", "master_ckt24_interpss.dss", false);
 
-		DStab3PBranch transformer = findBranchByName(parser.getDistNetwork(), "step_05410_g2101cd0200");
+		Static3PBranch transformer = findStaticBranchByName(parser.getStaticNetwork(), "step_05410_g2101cd0200");
 		assertNotNull(transformer, "Missing Ckt24 step transformer with %rs data");
 		Complex zPhaseB = transformer.getZabc().bb;
 		assertEquals(0.00946080416900833, zPhaseB.getReal(), 1.0e-12,
@@ -374,21 +368,18 @@ public class OpenDssParserPowerFlowComparisonTest {
 
 	@Test
 	public void ckt24CircuitSourceImpedanceCreatesTheveninBranch() throws IOException {
-		OpenDSSDataParser parser = new OpenDSSDataParser();
-		parser.setRegControlEnabled(false);
-		assertTrue(parser.parseFeederData("testData/feeder/Ckt24", "master_ckt24_interpss.dss"));
-		assertTrue(parser.calcVoltageBases());
-		assertTrue(parser.convertActualValuesToPU(1.0));
+		OpenDSSStaticDataParser parser = parseStaticOpenDss(
+				"testData/feeder/Ckt24", "master_ckt24_interpss.dss", false);
 
-		DStabNetwork3Phase distNet = parser.getDistNetwork();
-		DStab3PBus idealSourceBus = distNet.getBus("sourcebus_vsource");
-		DStab3PBus sourceBus = distNet.getBus("sourcebus");
+		Static3PNetwork distNet = parser.getStaticNetwork();
+		Static3PBus idealSourceBus = distNet.getBus("sourcebus_vsource");
+		Static3PBus sourceBus = distNet.getBus("sourcebus");
 		assertNotNull(idealSourceBus, "Circuit source impedance should create an internal ideal source bus");
 		assertNotNull(sourceBus, "Ckt24 source bus should remain the DSS-reported terminal bus");
 		assertTrue(idealSourceBus.isSwing(), "Internal ideal source bus should be the swing bus");
 		assertTrue(!sourceBus.isSwing(), "DSS sourcebus should be downstream of the Vsource impedance");
 
-		DStab3PBranch sourceBranch = findBranchByName(distNet, "vsource_sourcebus");
+		Static3PBranch sourceBranch = findStaticBranchByName(distNet, "vsource_sourcebus");
 		assertNotNull(sourceBranch, "Missing parsed Ckt24 Vsource Thevenin branch");
 		double zBase = 230.0 * 230.0;
 		assertEquals(1.7766666666666666 / zBase, sourceBranch.getZabc().aa.getReal(), 1.0e-12,
@@ -450,7 +441,58 @@ public class OpenDssParserPowerFlowComparisonTest {
 						+ " ytf=" + branch.getYtfabc().absMax()
 						+ " ytt=" + branch.getYttabc().absMax()
 						+ " fromBaseV=" + branch.getFromBus().getBaseVoltage()
+				+ " toBaseV=" + branch.getToBus().getBaseVoltage()));
+	}
+
+	private static void printStaticYMatrixComponentAudit(String label, Static3PNetwork distNet) {
+		System.out.println(label + " static Y audit: buses=" + distNet.getNoBus()
+				+ ", branches=" + distNet.getNoBranch());
+		try {
+			distNet.formYMatrixABCForPowerflow();
+		} catch(Exception e) {
+			throw new IllegalStateException("Failed to form static Y matrix for " + label, e);
+		}
+		System.out.println(label + " static Y audit largest branch admittances:");
+		List<Static3PBranch> activeBranches = new ArrayList<>();
+		for(Static3PBranch branch : distNet.getBranchList()) {
+			if(branch.isActive()) {
+				activeBranches.add(branch);
+			}
+		}
+		activeBranches.stream()
+				.sorted(Comparator.comparingDouble(
+						(Static3PBranch branch) -> branchMaxYAbs((IBranch3Phase) branch)).reversed())
+				.limit(20)
+				.forEach(branch -> System.out.println("  " + branch.getName()
+						+ " " + branch.getFromBus().getId() + "->" + branch.getToBus().getId()
+						+ " phase=" + branch.getPhaseCode()
+						+ " line=" + branch.isLine()
+						+ " xfr=" + branch.isXfr()
+						+ " explicit=" + branch.hasExplicitYabc()
+						+ " zAbs=" + branch.getZabc().absMax()
+						+ " yff=" + branch.getYffabc().absMax()
+						+ " yft=" + branch.getYftabc().absMax()
+						+ " ytf=" + branch.getYtfabc().absMax()
+						+ " ytt=" + branch.getYttabc().absMax()
+						+ " fromBaseV=" + branch.getFromBus().getBaseVoltage()
 						+ " toBaseV=" + branch.getToBus().getBaseVoltage()));
+	}
+
+	private static double branchMaxYAbs(IBranch3Phase branch) {
+		return Math.max(
+				Math.max(branch.getYffabc().absMax(), branch.getYftabc().absMax()),
+				Math.max(branch.getYtfabc().absMax(), branch.getYttabc().absMax()));
+	}
+
+	private static Static3PBranch findStaticBranchByName(Static3PNetwork distNet, String branchName) {
+		for(Static3PBranch branch : distNet.getBranchList()) {
+			String id = branch.getId().toLowerCase();
+			String name = branch.getName() == null ? "" : branch.getName().toLowerCase();
+			if(id.equals(branchName) || id.endsWith(":" + branchName) || name.equals(branchName)) {
+				return branch;
+			}
+		}
+		return null;
 	}
 
 	@Test
@@ -1474,20 +1516,21 @@ public class OpenDssParserPowerFlowComparisonTest {
 
 	private static void assertIeee8500PowerFlowConvergesWithRegControlsDisabled(DistributionPFMethod method)
 			throws IOException {
-		OpenDSSDataParser parser = new OpenDSSDataParser();
+		OpenDSSStaticDataParser parser = OpenDSSDataParser.forStaticNetwork();
 		parser.setRegControlEnabled(false);
 		assertTrue(parser.parseFeederData("testData/feeder/IEEE8500", "Master-InterPSS.dss"));
 		assertTrue(parser.calcVoltageBases());
 		assertTrue(parser.convertActualValuesToPU(1.0));
 
-		DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(parser.getDistNetwork());
+		Static3PNetwork distNet = parser.getStaticNetwork();
+		DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(distNet);
 		powerFlow.setPFMethod(method);
 		powerFlow.setInitBusVoltageEnabled(true);
 		powerFlow.setMaxIteration(1000);
 		powerFlow.setTolerance(1.0e-4);
 		boolean converged = powerFlow.powerflow();
 		if(!converged) {
-			printIeee8500FailureDiagnostics(parser.getDistNetwork(), method, powerFlow.getIterationCount());
+			printStaticYMatrixComponentAudit("IEEE8500 " + method, distNet);
 		}
 		assertTrue(converged, method + " power flow failed with regulator controls disabled, iterations="
 				+ powerFlow.getIterationCount());
@@ -1850,24 +1893,18 @@ public class OpenDssParserPowerFlowComparisonTest {
 			double voltageMagTolerancePu, OpenDssTapProfile tapProfile, DistributionPFMethod method,
 			boolean regControlEnabled)
 			throws IOException {
-		OpenDSSDataParser parser = new OpenDSSDataParser();
-		parser.setRegControlEnabled(regControlEnabled);
-		assertTrue(parser.parseFeederData(feederFolder, masterFile));
-		assertTrue(parser.calcVoltageBases());
-		assertTrue(parser.convertActualValuesToPU(1.0));
+		OpenDSSStaticDataParser parser = parseStaticOpenDss(feederFolder, masterFile, regControlEnabled);
 
-		DStabNetwork3Phase distNet = parser.getDistNetwork();
-		if(tapProfile == OpenDssTapProfile.IEEE123_DSS_PYTHON) {
-			applySolvedIeee123RegulatorTaps(parser);
-		}
-		else if(tapProfile == OpenDssTapProfile.IEEE13_SOLVED) {
-			applySolvedIeee13RegulatorTaps(parser);
-		}
+		Static3PNetwork distNet = parser.getStaticNetwork();
 		DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(distNet);
 		powerFlow.setPFMethod(method);
 		powerFlow.setInitBusVoltageEnabled(true);
 		powerFlow.setMaxIteration(feederFolder.contains("8500") ? 1000 : 200);
 		powerFlow.setTolerance(1.0e-4);
+		if(tapProfile != OpenDssTapProfile.NONE) {
+			powerFlow.setRegulatorControls(parser.getRegulatorControls());
+			powerFlow.setRegulatorControlEnabled(true);
+		}
 		assertTrue(powerFlow.powerflow(), "Power flow failed, iterations=" + powerFlow.getIterationCount());
 
 		List<VoltageReference> references = readReferences(referenceResource);
@@ -1879,6 +1916,16 @@ public class OpenDssParserPowerFlowComparisonTest {
 		assertTrue(result.maxAngleError < VOLTAGE_ANGLE_TOLERANCE_DEG,
 				"Max voltage angle error " + result.maxAngleError + " deg at " + result.maxAngleLabel);
 		return result;
+	}
+
+	private static OpenDSSStaticDataParser parseStaticOpenDss(String feederFolder, String masterFile,
+			boolean regControlEnabled) {
+		OpenDSSStaticDataParser parser = OpenDSSDataParser.forStaticNetwork();
+		parser.setRegControlEnabled(regControlEnabled);
+		assertTrue(parser.parseFeederData(feederFolder, masterFile));
+		assertTrue(parser.calcVoltageBases());
+		assertTrue(parser.convertActualValuesToPU(1.0));
+		return parser;
 	}
 
 	private static DStabNetwork3Phase solveIeee123WithSolvedRegulatorTaps(DistributionPFMethod method, double tolerance)
@@ -1916,11 +1963,11 @@ public class OpenDssParserPowerFlowComparisonTest {
 		return distNet;
 	}
 
-	private static ComparisonResult compareVoltages(DStabNetwork3Phase distNet, List<VoltageReference> references) {
+	private static ComparisonResult compareVoltages(BaseAclfNetwork<?, ?> distNet, List<VoltageReference> references) {
 		return OpenDssDataQaUtils.compareVoltages(distNet, references);
 	}
 
-	private static ComparisonResult compareVoltages(DStabNetwork3Phase distNet, List<VoltageReference> references,
+	private static ComparisonResult compareVoltages(BaseAclfNetwork<?, ?> distNet, List<VoltageReference> references,
 			String angleReferenceBus, int angleReferencePhase) {
 		return OpenDssDataQaUtils.compareVoltages(distNet, references, angleReferenceBus, angleReferencePhase);
 	}
@@ -2582,10 +2629,78 @@ public class OpenDssParserPowerFlowComparisonTest {
 	}
 
 	private static void setToTap(OpenDSSDataParser parser, String branchName, double tap) {
-		DStab3PBranch branch = parser.getBranchByName(branchName);
+		AclfBranch branch = parser.getThreePhaseBranchByName(branchName);
 		assertNotNull(branch, "Missing regulator branch: " + branchName);
-		branch.setToTurnRatio(tap);
-		assertEquals(tap, branch.getToTurnRatio(), 1.0e-10, "Regulator tap was not applied: " + branchName);
+		AclfBranch tapBranch = activeRegulatorTapBranch(parser, branch);
+		if(tapBranch instanceof IBranch3Phase && ((IBranch3Phase) tapBranch).hasPhaseTurnRatio()) {
+			IBranch3Phase branch3P = (IBranch3Phase) tapBranch;
+			double[] ratios = branch3P.getToTurnRatioABC();
+			PhaseCode requestedPhase = branch instanceof IBranch3Phase
+					? ((IBranch3Phase) branch).getPhaseCode()
+					: branch3P.getPhaseCode();
+			setPhaseTap(ratios, requestedPhase, tap);
+			branch3P.setToTurnRatioABC(ratios[0], ratios[1], ratios[2]);
+			assertPhaseTap(branch3P.getToTurnRatioABC(), requestedPhase, tap, branchName);
+		}
+		else {
+			tapBranch.setToTurnRatio(tap);
+			assertEquals(tap, tapBranch.getToTurnRatio(), 1.0e-10, "Regulator tap was not applied: " + branchName);
+		}
+	}
+
+	private static AclfBranch activeRegulatorTapBranch(OpenDSSDataParser parser, AclfBranch branch) {
+		if(branch.isActive()) {
+			return branch;
+		}
+		if(!(branch instanceof IBranch3Phase)) {
+			return branch;
+		}
+		List<? extends AclfBranch> branches = parser.isStaticNetworkMode()
+				? parser.getStaticNetwork().getBranchList()
+				: parser.getDistNetwork().getBranchList();
+		for(AclfBranch candidate : branches) {
+			if(candidate.isActive()
+					&& candidate instanceof IBranch3Phase
+					&& ((IBranch3Phase) candidate).hasPhaseTurnRatio()
+					&& candidate.getFromBus().getId().equals(branch.getFromBus().getId())
+					&& candidate.getToBus().getId().equals(branch.getToBus().getId())) {
+				return candidate;
+			}
+		}
+		return branch;
+	}
+
+	private static void setPhaseTap(double[] ratios, PhaseCode phaseCode, double tap) {
+		for(int phase = 1; phase <= 3; phase++) {
+			if(phaseCodeIncludes(phaseCode, phase)) {
+				ratios[phase - 1] = tap;
+			}
+		}
+	}
+
+	private static void assertPhaseTap(double[] ratios, PhaseCode phaseCode, double tap, String branchName) {
+		for(int phase = 1; phase <= 3; phase++) {
+			if(phaseCodeIncludes(phaseCode, phase)) {
+				assertEquals(tap, ratios[phase - 1], 1.0e-10,
+						"Regulator tap was not applied: " + branchName + " phase " + phase);
+			}
+		}
+	}
+
+	private static boolean phaseCodeIncludes(PhaseCode code, int phase) {
+		if(code == PhaseCode.ABC) {
+			return true;
+		}
+		if(phase == 1) {
+			return code == PhaseCode.A || code == PhaseCode.AB || code == PhaseCode.AC;
+		}
+		if(phase == 2) {
+			return code == PhaseCode.B || code == PhaseCode.AB || code == PhaseCode.BC;
+		}
+		if(phase == 3) {
+			return code == PhaseCode.C || code == PhaseCode.AC || code == PhaseCode.BC;
+		}
+		return false;
 	}
 
 	private enum OpenDssTapProfile {
