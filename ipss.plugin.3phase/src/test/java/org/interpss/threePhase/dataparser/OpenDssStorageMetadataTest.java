@@ -4,14 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.dataParser.opendss.OpenDSSDataParser;
 import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSGeneratorModel;
 import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSProfileBinding;
 import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSProfileType;
 import org.junit.jupiter.api.Test;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import com.interpss.core.threephase.IGen3Phase;
 import com.interpss.core.threephase.IPhaseGen;
 import com.interpss.core.threephase.Static3PBus;
 
@@ -19,8 +17,8 @@ public class OpenDssStorageMetadataTest {
 
 	@Test
 	void parsesDischargingStorageAsPositiveGeneratorInjection() {
-		OpenDSSDataParser parser = new OpenDSSDataParser();
-		double baseKva = parser.getDistNetwork().getBaseKva();
+		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
+		double baseKva = parser.getStaticNetwork().getBaseKva();
 
 		assertTrue(parser.getStorageParser().parseStorageData(
 				"New Storage.batt1 bus1=bus1.1.2.3 phases=3 conn=wye kv=12.47 kva=500 kwrated=400 kw=250 kvar=40 "
@@ -28,9 +26,9 @@ public class OpenDssStorageMetadataTest {
 						+ "%effcharge=95 %effdischarge=92 daily=battday",
 				"Master.dss", 30));
 
-		DStab3PBus bus = parser.getDistNetwork().getBus("bus1");
+		Static3PBus bus = parser.getStaticNetwork().getBus("bus1");
 		assertNotNull(bus);
-		IGen3Phase generator = bus.getContributeGenList().get(0);
+		IPhaseGen generator = bus.getPhaseGenList().get(0);
 		assertEquals(250.0 / baseKva, generator.getPower3Phase(UnitType.PU)
 				.a_0.add(generator.getPower3Phase(UnitType.PU).b_1)
 				.add(generator.getPower3Phase(UnitType.PU).c_2).getReal(), 1.0e-12);
@@ -58,14 +56,14 @@ public class OpenDssStorageMetadataTest {
 
 	@Test
 	void parsesChargingStorageAsNegativeGeneratorInjection() {
-		OpenDSSDataParser parser = new OpenDSSDataParser();
-		double baseKva = parser.getDistNetwork().getBaseKva();
+		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
+		double baseKva = parser.getStaticNetwork().getBaseKva();
 
 		assertTrue(parser.getStorageParser().parseStorageData(
 				"New Storage.batt1 bus1=bus1.1.2.3 phases=3 kva=500 kw=150 state=charging %charge=25",
 				"Master.dss", 31));
 
-		IGen3Phase generator = parser.getDistNetwork().getBus("bus1").getContributeGenList().get(0);
+		IPhaseGen generator = parser.getStaticNetwork().getBus("bus1").getPhaseGenList().get(0);
 		assertEquals(-150.0 / baseKva, generator.getPower3Phase(UnitType.PU)
 				.a_0.add(generator.getPower3Phase(UnitType.PU).b_1)
 				.add(generator.getPower3Phase(UnitType.PU).c_2).getReal(), 1.0e-12);
@@ -76,18 +74,18 @@ public class OpenDssStorageMetadataTest {
 
 	@Test
 	void parsesSinglePhaseStorageOntoSelectedPhasePower() {
-		OpenDSSDataParser parser = new OpenDSSDataParser();
+		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
 
 		assertTrue(parser.getStorageParser().parseStorageData(
 				"New Storage.batt1 bus1=bus1.3 phases=1 kva=100 kw=30 kvar=6 state=discharging",
 				"Master.dss", 32));
 
-		IGen3Phase generator = parser.getDistNetwork().getBus("bus1").getContributeGenList().get(0);
+		IPhaseGen generator = parser.getStaticNetwork().getBus("bus1").getPhaseGenList().get(0);
 		assertEquals(0.0, generator.getPower3Phase(UnitType.PU).a_0.abs(), 1.0e-12);
 		assertEquals(0.0, generator.getPower3Phase(UnitType.PU).b_1.abs(), 1.0e-12);
-		assertEquals(30.0 / parser.getDistNetwork().getBaseKva(),
+		assertEquals(30.0 / parser.getStaticNetwork().getBaseKva(),
 				generator.getPower3Phase(UnitType.PU).c_2.getReal(), 1.0e-12);
-		assertEquals(6.0 / parser.getDistNetwork().getBaseKva(),
+		assertEquals(6.0 / parser.getStaticNetwork().getBaseKva(),
 				generator.getPower3Phase(UnitType.PU).c_2.getImaginary(), 1.0e-12);
 	}
 
