@@ -1090,6 +1090,10 @@ Create or update:
 - [x] `OpenDSSInvControlParser`
   - Adapter for OpenDSS `InvControl`.
   - Parse only the modes we can verify with static generator models.
+  - Converts OpenDSS per-unit curve semantics at the adapter boundary:
+    `VOLTVAR` and `WATTVAR` reactive-power ordinates scale by inverter kvar
+    base, `VOLTWATT` active-power ordinates scale by available/rated kW, and
+    `WATTPF` watt abscissas scale by active-power base.
 - [x] `InverterControlModel`
   - Static PF setpoint updates for:
     - [x] `VOLTVAR`
@@ -1137,7 +1141,15 @@ Verification:
   - Keeps the OpenDSS PV details in parser/adapter metadata; QSTS control logic
     continues to operate through generic `IPhaseGen`, `InverterGenAdapter`, and
     `InverterCapabilityData`.
-- [ ] DSS-Python mini cases for `VOLTVAR`, `VOLTWATT`, `WATTPF`, and `WATTVAR`.
+- [x] DSS-Python mini cases for `VOLTVAR`, `VOLTWATT`, `WATTPF`, and `WATTVAR`.
+  - `OpenDSSInvControlMini` stores compact PVSystem-based feeders for each
+    mode.
+  - `invcontrol-mini-dss-python-generator-reference.csv` compares terminal
+    generator P/Q before bus voltages.
+  - QSTS now iterates PF/control after inverter setpoint changes. The WATTPF
+    and WATTVAR direct setpoints match tightly; VOLTVAR/VOLTWATT still use
+    looser tolerances while OpenDSS PV terminal-control details are
+    investigated beyond the generic loop.
 - [x] Compare generator terminal P/Q before bus voltages for PVSystem.
   - `OpenDSSPVSystemMini` uses the official EPRI PVSystem example curves and
     a DSS-Python reference CSV for generator injection P/Q.
@@ -1151,6 +1163,15 @@ Verification:
     example with `MyPvsT`, `MyEff`, `MyIrrad`, and `MyTemp`.
   - Full QSTS acceptance still needs checked-in DSS-Python terminal P/Q
     references with inverter control enabled.
+- [x] Integrate inverter control into the QSTS control iteration loop.
+  - After each PF solve, evaluate inverter controls against solved terminal
+    voltages and watt output.
+  - If any inverter P/Q/PF setpoint changes beyond tolerance, re-run PF until
+    setpoints and network state stabilize or `maxControlIterations` is reached.
+  - Preserve controls-off and one-shot behavior for tests that intentionally
+    disable static controls.
+  - Remaining VOLTVAR/VOLTWATT tolerance reflects OpenDSS PV terminal-control
+    semantics, not the absence of QSTS PF/control re-solve.
 
 Exit criteria:
 

@@ -54,11 +54,12 @@ public class OpenDssInvControlMetadataTest {
 	void parsesXYCurveAndAppliesItToExistingPvSystemAdapter() {
 		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
 		parser.getPVSystemParser().parsePVSystemData(
-				"New PVSystem.pv1 bus1=bus1.1.2.3 phases=3 kva=600 pmpp=500 irradiance=1 kvar=0",
+				"New PVSystem.pv1 bus1=bus1.1.2.3 phases=3 kva=600 pmpp=500 irradiance=1 kvar=0 "
+						+ "kvarMax=200 kvarMaxAbs=200",
 				"Master.dss", 10);
 
 		assertTrue(parser.getXYCurveParser().parseXYCurve(
-				"New XYCurve.vv1 npts=3 xarray=(0.95 1.00 1.05) yarray=(100 0 -100)"));
+				"New XYCurve.vv1 npts=3 xarray=(0.95 1.00 1.05) yarray=(0.5 0 -0.5)"));
 		assertTrue(parser.getInvControlParser().parseInvControlData(
 				"New InvControl.inv1 DERList=(PVSystem.pv1) mode=VOLTVAR vvc_curve1=vv1"));
 
@@ -83,7 +84,7 @@ public class OpenDssInvControlMetadataTest {
 	void curveParsedBeforePvSystemIsAppliedWhenAdapterRegistersLater() {
 		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
 		assertTrue(parser.getXYCurveParser().parseXYCurve(
-				"New XYCurve.vw1 npts=2 xarray=(0.98 1.08) yarray=(500 200)"));
+				"New XYCurve.vw1 npts=2 xarray=(0.98 1.08) yarray=(1.0 0.4)"));
 		parser.getPVSystemParser().parsePVSystemData(
 				"New PVSystem.pv1 bus1=bus1.1.2.3 phases=3 kva=600 pmpp=500 irradiance=1 kvar=0",
 				"Master.dss", 11);

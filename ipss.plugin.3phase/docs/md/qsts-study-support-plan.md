@@ -692,8 +692,17 @@ Verification:
     values for static QSTS control without extending `IPhaseGen`.
 - [x] Parse OpenDSS `XYCurve` records into generic `QstsControlCurve` data for
   inverter control modes.
+  - The OpenDSS adapter scales InvControl per-unit curves into generic
+    engineering-unit curves before `InverterGenAdapter` evaluates them.
 - [x] Apply P/Q injections per step with consistent sign conventions for
   scheduled generic generator/PV/storage metadata.
+- [x] Add DSS-Python-backed InvControl mini references for `VOLTVAR`,
+  `VOLTWATT`, `WATTPF`, and `WATTVAR`.
+  - These compare PVSystem terminal P/Q before bus voltages.
+  - VOLTVAR/VOLTWATT still use wider tolerances while OpenDSS PV terminal
+    control details are investigated beyond the generic QSTS control loop.
+- [x] Add QSTS inverter PF/control iteration so inverter setpoint changes can
+  trigger another PF solve within `maxControlIterations`.
 - [ ] Add PV duty-curve QSTS mini case using IEEE8500-style data and checked-in
   DSS-Python terminal P/Q references.
 

@@ -199,9 +199,10 @@ public class QstsStudy {
 			}
 			int actionCount = processQueuedActions(delayedCapacitorControls, hour * 3600.0);
 			algorithm.setInitBusVoltageEnabled(i == 0 ? initializeFirstStepVoltages : false);
-			boolean converged = algorithm.powerflow();
-			List<QstsInverterControlSample> inverterControlSamples = converged && controlsEnabled
-					? applyInverterControls(context) : Collections.emptyList();
+			PowerFlowControlResult controlResult = runPowerFlowControlLoop(algorithm, context,
+					controlsEnabled);
+			boolean converged = controlResult.converged;
+			List<QstsInverterControlSample> inverterControlSamples = controlResult.inverterControlSamples;
 			if(converged && delayedCapacitorControls) {
 				qstsCapacitorControl.scheduleDelayed(network, capacitorControls, controlQueue,
 						hour * 3600.0);
@@ -320,8 +321,28 @@ public class QstsStudy {
 		return samples;
 	}
 
-	private List<QstsInverterControlSample> applyInverterControls(QstsStepContext context) {
+	private PowerFlowControlResult runPowerFlowControlLoop(DistributionPowerFlowAlgorithm algorithm,
+			QstsStepContext context, boolean controlsEnabled) {
+		List<QstsInverterControlSample> inverterControlSamples = Collections.emptyList();
+		boolean converged = false;
+		for(int controlIteration = 0; controlIteration < Math.max(1, maxControlIterations); controlIteration++) {
+			converged = algorithm.powerflow();
+			algorithm.setInitBusVoltageEnabled(false);
+			if(!converged || !controlsEnabled || inverterControls.isEmpty()) {
+				return new PowerFlowControlResult(converged, inverterControlSamples);
+			}
+			InverterControlPassResult inverterResult = applyInverterControls(context);
+			inverterControlSamples = inverterResult.samples;
+			if(!inverterResult.changed) {
+				return new PowerFlowControlResult(true, inverterControlSamples);
+			}
+		}
+		return new PowerFlowControlResult(converged, inverterControlSamples);
+	}
+
+	private InverterControlPassResult applyInverterControls(QstsStepContext context) {
 		List<QstsInverterControlSample> samples = new ArrayList<>();
+		boolean changed = false;
 		for(InverterControlData control : inverterControls) {
 			InverterGenAdapter adapter = inverterAdapterStore.get(control.getGeneratorId());
 			if(adapter == null) {
@@ -332,12 +353,22 @@ public class QstsStudy {
 			if(bus != null) {
 				adapter.setTerminalVoltage(bus.get3PhaseVotlages());
 			}
+			Complex before = totalPower(adapter.getGenerator());
 			InverterControlResult result = adapter.apply(control, context, aclfNetwork().getBaseKva());
+			Complex after = totalPower(adapter.getGenerator());
+			changed = changed || powerChanged(before, after);
 			samples.add(inverterSample(context, control, result.isApplied(), result.getActivePowerKw(),
 					result.getReactivePowerKvar(), result.isLimited(),
 					result.isApplied() ? "" : "missing_setpoint"));
 		}
-		return samples;
+		return new InverterControlPassResult(samples, changed);
+	}
+
+	private boolean powerChanged(Complex before, Complex after) {
+		double baseKva = aclfNetwork().getBaseKva();
+		double threshold = Math.max(1.0e-6, Math.abs(tolerance) * baseKva);
+		return Math.abs(after.getReal() - before.getReal()) * baseKva > threshold
+				|| Math.abs(after.getImaginary() - before.getImaginary()) * baseKva > threshold;
 	}
 
 	private void registerMissingInverterAdapters() {
@@ -424,6 +455,17 @@ public class QstsStudy {
 		return a.add(b);
 	}
 
+	private static Complex totalPower(IPhaseGen generator) {
+		if(generator == null) {
+			return Complex.ZERO;
+		}
+		Complex3x1 power = generator.getPower3Phase(UnitType.PU);
+		if(power == null) {
+			return Complex.ZERO;
+		}
+		return add(add(power.a_0, power.b_1), power.c_2);
+	}
+
 	private static boolean matches(String actual, String expected) {
 		return actual != null && expected != null && actual.equalsIgnoreCase(expected);
 	}
@@ -433,5 +475,26 @@ public class QstsStudy {
 			return (BaseAclfNetwork<?, ?>) network;
 		}
 		throw new IllegalArgumentException("QSTS power flow requires an INetwork3Phase that also extends BaseAclfNetwork");
+	}
+
+	private static class PowerFlowControlResult {
+		private final boolean converged;
+		private final List<QstsInverterControlSample> inverterControlSamples;
+
+		private PowerFlowControlResult(boolean converged,
+				List<QstsInverterControlSample> inverterControlSamples) {
+			this.converged = converged;
+			this.inverterControlSamples = inverterControlSamples;
+		}
+	}
+
+	private static class InverterControlPassResult {
+		private final List<QstsInverterControlSample> samples;
+		private final boolean changed;
+
+		private InverterControlPassResult(List<QstsInverterControlSample> samples, boolean changed) {
+			this.samples = samples;
+			this.changed = changed;
+		}
 	}
 }
