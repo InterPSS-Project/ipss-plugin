@@ -22,8 +22,10 @@ import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 
+import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.acsc.PhaseCode;
+import com.interpss.core.threephase.IBus3Phase;
 import com.interpss.core.net.Branch;
 
 public final class OpenDssDataQaUtils {
@@ -66,6 +68,16 @@ public final class OpenDssDataQaUtils {
 
 	public static ComparisonResult compareVoltages(DStabNetwork3Phase distNet,
 			List<VoltageReference> references, String angleReferenceBus, int angleReferencePhase) {
+		return compareVoltages((BaseAclfNetwork<?, ?>) distNet, references, angleReferenceBus, angleReferencePhase);
+	}
+
+	public static ComparisonResult compareVoltages(BaseAclfNetwork<?, ?> distNet,
+			List<VoltageReference> references) {
+		return compareVoltages(distNet, references, null, 0);
+	}
+
+	public static ComparisonResult compareVoltages(BaseAclfNetwork<?, ?> distNet,
+			List<VoltageReference> references, String angleReferenceBus, int angleReferencePhase) {
 		double maxMagError = 0.0;
 		double maxAngleError = 0.0;
 		String maxMagLabel = "";
@@ -74,11 +86,14 @@ public final class OpenDssDataQaUtils {
 				: referenceAngleOffsetDeg(distNet, references, angleReferenceBus, angleReferencePhase);
 
 		for(VoltageReference reference : references) {
-			DStab3PBus bus = distNet.getBus(reference.bus);
+			BaseAclfBus<?, ?> bus = distNet.getBus(reference.bus);
 			if(bus == null) {
 				throw new IllegalArgumentException("Missing parsed bus: " + reference.bus);
 			}
-			Complex voltage = phaseVoltage(bus.get3PhaseVotlages(), reference.phase);
+			if(!(bus instanceof IBus3Phase)) {
+				throw new IllegalArgumentException("Parsed bus is not three-phase: " + reference.bus);
+			}
+			Complex voltage = phaseVoltage(((IBus3Phase) bus).get3PhaseVotlages(), reference.phase);
 			double magError = Math.abs(voltage.abs() - reference.vmagPu);
 			double angleError = Math.abs(wrappedAngleDeg(
 					Math.toDegrees(voltage.getArgument()) + angleOffsetDeg - reference.angleDeg));
@@ -328,16 +343,24 @@ public final class OpenDssDataQaUtils {
 
 	private static double referenceAngleOffsetDeg(DStabNetwork3Phase distNet,
 			List<VoltageReference> references, String busId, int phase) {
+		return referenceAngleOffsetDeg((BaseAclfNetwork<?, ?>) distNet, references, busId, phase);
+	}
+
+	private static double referenceAngleOffsetDeg(BaseAclfNetwork<?, ?> distNet,
+			List<VoltageReference> references, String busId, int phase) {
 		VoltageReference reference = references.stream()
 				.filter(ref -> ref.bus.equals(busId) && ref.phase == phase)
 				.findFirst()
 				.orElseThrow(() -> new IllegalArgumentException("Missing angle reference: " + busId + "." + phase));
-		DStab3PBus bus = distNet.getBus(busId);
+		BaseAclfBus<?, ?> bus = distNet.getBus(busId);
 		if(bus == null) {
 			throw new IllegalArgumentException("Missing parsed angle-reference bus: " + busId);
 		}
+		if(!(bus instanceof IBus3Phase)) {
+			throw new IllegalArgumentException("Parsed angle-reference bus is not three-phase: " + busId);
+		}
 		return wrappedAngleDeg(reference.angleDeg
-				- Math.toDegrees(phaseVoltage(bus.get3PhaseVotlages(), phase).getArgument()));
+				- Math.toDegrees(phaseVoltage(((IBus3Phase) bus).get3PhaseVotlages(), phase).getArgument()));
 	}
 
 	private static List<List<Integer>> phaseConnectivityGraph(DStabNetwork3Phase distNet) {
