@@ -16,6 +16,7 @@ import org.ieee.odm.common.IFileReader;
 import org.ieee.odm.common.ODMException;
 import org.ieee.odm.common.ODMLogger;
 import org.ieee.odm.common.ODMTextFileReader;
+import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.threePhase.basic.LineConfiguration;
@@ -45,6 +46,7 @@ import com.interpss.core.net.NetworkType;
 import com.interpss.core.threephase.IBranch3Phase;
 import com.interpss.core.threephase.IBus3Phase;
 import com.interpss.core.threephase.IPhaseLoad;
+import com.interpss.core.threephase.LoadConnectionType;
 import com.interpss.core.threephase.Static3PBus;
 import com.interpss.core.threephase.Static3PBranch;
 import com.interpss.core.threephase.Static3PLoad;
@@ -552,7 +554,7 @@ public class OpenDSSDataParser {
 					 prefixedSourceBusId, "vsource", this.staticNet);
 			 sourceBranch.setName(this.busIdPrefix + "vsource_" + sourceBusId);
 			 sourceBranch.setBranchCode(AclfBranchCode.LINE);
-			 sourceBranch.setPhaseCode(PhaseCode.ABC);
+			 ((IBranch3Phase) sourceBranch).setPhaseCode(PhaseCode.ABC);
 			 sourceBranch.setZabc(sourceSequenceImpedanceToZabc(z1, z0));
 		 }
 		 else {
@@ -824,10 +826,12 @@ public class OpenDSSDataParser {
 		return false;
 	}
 
-	 Queue<DStab3PBus> onceVisitedBuses = new  LinkedList<>();
+	 BaseAclfNetwork activeNet = activeAclfNetwork();
+	 Queue<BaseAclfBus> onceVisitedBuses = new  LinkedList<>();
 
 		// find the source bus, which is the swing bus for radial feeders;
-		for(DStab3PBus b: distNet.getBusList()){
+		for(Object busObj: activeNet.getBusList()){
+				BaseAclfBus b = (BaseAclfBus) busObj;
 				if(b.isActive() && b.isSwing()){
 					onceVisitedBuses.add(b);
 					b.setIntFlag(1);
@@ -839,13 +843,14 @@ public class OpenDSSDataParser {
 		}
 
 		//make sure all internal branches are unvisited
-		for(AclfBranch bra:distNet.getBranchList()){
+		for(Object branchObj: activeNet.getBranchList()){
+			AclfBranch bra = (AclfBranch) branchObj;
 			bra.setBooleanFlag(false);
 		}
 
 		// perform BFS and set the bus sortNumber
 		BFS(onceVisitedBuses);
-		deactivateUnvisitedIslands();
+		deactivateUnvisitedIslands(activeNet);
 		if(this.regControlEnabled) {
 			this.regulatorParser.applyFixedRegControlRatios();
 		}
@@ -856,11 +861,11 @@ public class OpenDSSDataParser {
      }
 
 
-    private void BFS (Queue<DStab3PBus> onceVisitedBuses){
+    private void BFS (Queue<BaseAclfBus> onceVisitedBuses){
 	int orderNumber = 0;
 		//Retrieves and removes the head of this queue, or returns null if this queue is empty.
 	    while(!onceVisitedBuses.isEmpty()){
-		DStab3PBus  startingBus = onceVisitedBuses.poll();
+		BaseAclfBus  startingBus = onceVisitedBuses.poll();
 			startingBus.setSortNumber(orderNumber++);
 			startingBus.setBooleanFlag(true);
 			startingBus.setIntFlag(2);
@@ -877,7 +882,7 @@ public class OpenDSSDataParser {
 								//for first time visited buses
 								if(findBus.getIntFlag()==0){
 									findBus.setIntFlag(1);
-									onceVisitedBuses.add((DStab3PBus) findBus);
+									onceVisitedBuses.add((BaseAclfBus) findBus);
 
 									//update the L-L basekV
 									if(aclfBra.isLine()){
@@ -901,16 +906,18 @@ public class OpenDSSDataParser {
 	      }
 	}
 
-	private void deactivateUnvisitedIslands() {
+	private void deactivateUnvisitedIslands(BaseAclfNetwork activeNet) {
 	int inactiveBusCount = 0;
 	int inactiveBranchCount = 0;
-		for(DStab3PBus bus: distNet.getBusList()) {
+		for(Object busObj: activeNet.getBusList()) {
+			BaseAclfBus bus = (BaseAclfBus) busObj;
 			if(bus.isActive() && bus.getIntFlag() != 2) {
 				bus.setStatus(false);
 				inactiveBusCount++;
 			}
 		}
-		for(AclfBranch branch: distNet.getBranchList()) {
+		for(Object branchObj: activeNet.getBranchList()) {
+			AclfBranch branch = (AclfBranch) branchObj;
 			if(branch.isActive()
 					&& (!branch.getFromBus().isActive() || !branch.getToBus().isActive())) {
 				branch.setStatus(false);
@@ -977,6 +984,9 @@ public class OpenDSSDataParser {
 				  bra.getFromBus().getBaseVoltage():bra.getToBus().getBaseVoltage();
 		  zBase = vBase*vBase*1.0E-6/mvabase;
 		  ((AcscBranch) bra).setZ(bra.getAdjustedZ().divide(zBase));
+		  if(bra3Phase.getZabc() != null) {
+			  bra3Phase.setZabc(bra3Phase.getZabc().multiply(1.0/zBase));
+		  }
 
 		  // convert the turn ratios
 		  double vllfactor = 1.0;
@@ -1081,7 +1091,7 @@ public class OpenDSSDataParser {
 	     if(isStaticNetworkMode()) {
 		 for(Static3PBus bus : getStaticNetwork().getBusList()) {
 			 for(Static3PLoad load : bus.getContributeLoadList()) {
-				 convertPhaseLoadToPU(bus, load, baseKVA3P);
+				 convertPhaseLoadToPU(bus, load, baseKVA1P);
 			 }
 		 }
 		 return no_error;
@@ -1089,10 +1099,23 @@ public class OpenDSSDataParser {
 
          for(Object busObj: activeNet.getBusList()){
 	 BaseAclfBus bus = (BaseAclfBus) busObj;
-	 IBus3Phase bus3P = (IBus3Phase) bus;
-	 for(IPhaseLoad load : bus3P.getPhaseLoadList()){
-		 double loadBaseKva = load instanceof DStab1PLoad ? baseKVA1P : baseKVA3P;
-		 convertPhaseLoadToPU(bus, load, loadBaseKva);
+	 if(bus instanceof DStab3PBus) {
+		 DStab3PBus bus3P = (DStab3PBus) bus;
+		 for(DStab1PLoad load : bus3P.getSinglePhaseLoadList()) {
+			 convertPhaseLoadToPU(bus, load, baseKVA1P);
+		 }
+		 for(DStab3PLoad load : bus3P.getThreePhaseLoadList()) {
+			 convertPhaseLoadToPU(bus, load, baseKVA1P);
+		 }
+	 }
+	 else {
+		 IBus3Phase bus3P = (IBus3Phase) bus;
+		 for(IPhaseLoad load : bus3P.getPhaseLoadList()){
+			 double loadBaseKva = load instanceof DStab1PLoad && !(load instanceof DStab3PLoad)
+					 ? baseKVA1P
+					 : baseKVA3P;
+			 convertPhaseLoadToPU(bus, load, loadBaseKva);
+		 }
 	 }
          }
 
@@ -1105,9 +1128,60 @@ public class OpenDSSDataParser {
 	 load.setLoadCP(load.getLoadCP().divide(loadBaseKva));
 	 load.setLoadCI(load.getLoadCI().divide(loadBaseKva));
 	 load.setLoadCZ(load.getLoadCZ().divide(loadBaseKva));
+	 if(load instanceof DStab1PLoad && !(load instanceof DStab3PLoad)) {
+		 return;
+	 }
+	 if(load instanceof Static3PLoad && isSinglePhase(load.getPhaseCode())) {
+		 load.set3PhaseLoad(singlePhaseLoadVector(activeLoadPower(load).multiply(voltageScale), load.getPhaseCode()));
+		 return;
+	 }
+	 if(load instanceof Static3PLoad && load.getLoadConnectionType() == LoadConnectionType.SINGLE_PHASE_DELTA) {
+		 load.set3PhaseLoad(singlePhaseDeltaLoadVector(activeLoadPower(load).multiply(voltageScale),
+				 load.getPhaseCode()));
+		 load.setLoadConnectionType(LoadConnectionType.THREE_PHASE_DELTA);
+		 return;
+	 }
 	 if(load.getInit3PhaseLoad() != null) {
 		 load.set3PhaseLoad(load.getInit3PhaseLoad().multiply(voltageScale/loadBaseKva));
 	 }
+     }
+
+     private static boolean isSinglePhase(PhaseCode phaseCode) {
+	 return phaseCode == PhaseCode.A || phaseCode == PhaseCode.B || phaseCode == PhaseCode.C;
+     }
+
+     private static Complex activeLoadPower(IPhaseLoad load) {
+	 if(load.getCode() == AclfLoadCode.CONST_Z) {
+		 return load.getLoadCZ();
+	 }
+	 if(load.getCode() == AclfLoadCode.CONST_I) {
+		 return load.getLoadCI();
+	 }
+	 return load.getLoadCP();
+     }
+
+     private static Complex3x1 singlePhaseLoadVector(Complex power, PhaseCode phaseCode) {
+	 Complex zero = new Complex(0.0);
+	 Complex value = power == null ? zero : power;
+	 if(phaseCode == PhaseCode.B) {
+		 return new Complex3x1(zero, value, zero);
+	 }
+	 if(phaseCode == PhaseCode.C) {
+		 return new Complex3x1(zero, zero, value);
+	 }
+	 return new Complex3x1(value, zero, zero);
+     }
+
+     private static Complex3x1 singlePhaseDeltaLoadVector(Complex power, PhaseCode phaseCode) {
+	 Complex zero = new Complex(0.0);
+	 Complex value = power == null ? zero : power;
+	 if(phaseCode == PhaseCode.BC) {
+		 return new Complex3x1(zero, value, zero);
+	 }
+	 if(phaseCode == PhaseCode.AC) {
+		 return new Complex3x1(zero, zero, value);
+	 }
+	 return new Complex3x1(value, zero, zero);
      }
 
      private double threePhaseConstZVoltageScale(BaseAclfBus bus3P, IPhaseLoad load3P) {
@@ -1211,19 +1285,43 @@ public class OpenDSSDataParser {
 	 }
 	 fromBusId = this.busIdPrefix + fromBusId;
 	 toBusId = this.busIdPrefix + toBusId;
-	 if(this.distNet.getBus(fromBusId) == null) {
-		 ThreePhaseObjectFactory.create3PDStabBus(fromBusId, this.distNet);
+	 AclfBranch reactor;
+	 IBranch3Phase reactor3P;
+	 if(isStaticNetworkMode()) {
+		 this.getOrCreateStaticBus(fromBusId);
+		 this.getOrCreateStaticBus(toBusId);
+		 Static3PBranch staticReactor = ThreePhaseObjectFactory.createStatic3PBranch(fromBusId, toBusId,
+				 reactorName.equals("") ? "1" : reactorName, this.staticNet);
+		 reactor = staticReactor;
+		 reactor3P = staticReactor;
 	 }
-	 if(this.distNet.getBus(toBusId) == null) {
-		 ThreePhaseObjectFactory.create3PDStabBus(toBusId, this.distNet);
+	 else {
+		 if(this.distNet.getBus(fromBusId) == null) {
+			 ThreePhaseObjectFactory.create3PDStabBus(fromBusId, this.distNet);
+		 }
+		 if(this.distNet.getBus(toBusId) == null) {
+			 ThreePhaseObjectFactory.create3PDStabBus(toBusId, this.distNet);
+		 }
+		 DStab3PBranch dynamicReactor = ThreePhaseObjectFactory.create3PBranch(fromBusId, toBusId,
+				 reactorName.equals("") ? "1" : reactorName, this.distNet);
+		 reactor = dynamicReactor;
+		 reactor3P = dynamicReactor;
 	 }
-	 DStab3PBranch reactor = ThreePhaseObjectFactory.create3PBranch(fromBusId, toBusId,
-			 reactorName.equals("") ? "1" : reactorName, this.distNet);
 	 reactor.setName(this.busIdPrefix + reactorName);
 	 reactor.setBranchCode(AclfBranchCode.LINE);
-	 reactor.setPhaseCode(phaseNum == 1 ? PhaseCode.A : PhaseCode.ABC);
+	 reactor3P.setPhaseCode(phaseNum == 1 ? PhaseCode.A : PhaseCode.ABC);
 	 Complex z = new Complex(r, x);
+	 Complex zero = new Complex(0.0);
 	 Complex3x3 zabc = new Complex3x3();
+	 zabc.aa = zero;
+	 zabc.ab = zero;
+	 zabc.ac = zero;
+	 zabc.ba = zero;
+	 zabc.bb = zero;
+	 zabc.bc = zero;
+	 zabc.ca = zero;
+	 zabc.cb = zero;
+	 zabc.cc = zero;
 	 zabc.aa = z;
 	 if(phaseNum > 1) {
 		 zabc.bb = z;
@@ -1231,7 +1329,7 @@ public class OpenDSSDataParser {
 	 if(phaseNum > 2) {
 		 zabc.cc = z;
 	 }
-	 reactor.setZabc(zabc);
+	 reactor3P.setZabc(zabc);
 	 return true;
      }
 
