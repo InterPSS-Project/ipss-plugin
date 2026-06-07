@@ -84,7 +84,7 @@ public class IEEE39_OptBasecase_SsaResult_Test extends CorePluginTestSetup {
 		Map<String, OptAdjResultContainer.GenAdjustResult> adjustResults = new AclfNetLoadFlowOptimizer().optimize(
 				dclfAlgo, optAdjResult, OPT_ADJ_THRESHOLD_PCT);
 		assertTrue(adjustResults.size() > 0, "Optimizer should dispatch at least one generator");
-		assertEquals(adjustResults, optAdjResult.getOPtAdjResults());
+		assertEquals(adjustResults, optAdjResult.getOptAdjResults());
 
 		dclfAlgo.calculateDclf(DclfMethod.INC_LOSS);
 

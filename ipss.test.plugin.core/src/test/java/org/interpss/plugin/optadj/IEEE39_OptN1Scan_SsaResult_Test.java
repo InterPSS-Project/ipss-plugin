@@ -92,7 +92,7 @@ public class IEEE39_OptN1Scan_SsaResult_Test extends CorePluginTestSetup {
 		Map<String, OptAdjResultContainer.GenAdjustResult> adjustResults = new AclfNetContigencyOptimizer().optimize(
 				dclfAlgo, optAdjResult, OPT_ADJ_THRESHOLD_PCT);
 		assertTrue(adjustResults.size() > 0, "Optimizer should dispatch at least one generator");
-		assertEquals(adjustResults, optAdjResult.getOPtAdjResults());
+		assertEquals(adjustResults, optAdjResult.getOptAdjResults());
 
 		dclfAlgo.calculateDclf();
 
