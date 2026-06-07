@@ -8,6 +8,7 @@ import org.apache.commons.math3.optim.linear.Relationship;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.DclfAlgoObjectFactory;
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
@@ -17,6 +18,7 @@ import com.interpss.core.contingency.dclf.DclfOutageBranch;
 
 import org.interpss.plugin.optadj.optimizer.GenStateOptimizer;
 import org.interpss.plugin.optadj.optimizer.bean.SectionConstrainData;
+import org.interpss.plugin.optadj.result.SsaResultContainer;
 
 /**
  * 
@@ -28,6 +30,48 @@ import org.interpss.plugin.optadj.optimizer.bean.SectionConstrainData;
  * 
  */
 public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
+
+	@Override
+	protected void buildSsaSectionConstrain(ContingencyAnalysisAlgorithm dclfAlgo, float[][] senMatrix,
+			Map<Integer, AclfGen> controlGenMap, GenStateOptimizer opt, double threshold,
+			SsaResultContainer result) {
+		super.buildSsaSectionConstrain(dclfAlgo, senMatrix, controlGenMap, opt, threshold, result);
+		if (result.getCaOverLimitInfo().isEmpty()) {
+			return;
+		}
+		AclfNetwork net = (AclfNetwork) dclfAlgo.getNetwork();
+		double baseMva = net.getBaseMva();
+		result.getCaOverLimitInfo().forEach(info -> {
+			AclfBranch monBranch = net.getAclfBranchNameLookupTable().get(info.getOverLimitBranchId());
+			AclfBranch outBranch = net.getAclfBranchNameLookupTable().get(info.getOutageBranchId());
+			if (monBranch == null || outBranch == null) {
+				return;
+			}
+			int branchNo = (int) (monBranch.getNumber() - 1);
+			int outBranchNo = (int) (outBranch.getNumber() - 1);
+			double[] genSenArray = new double[controlGenMap.size()];
+			DclfAlgoBranch outDclfBranch = dclfAlgo.getDclfAlgoBranch(outBranch.getId());
+			try {
+				DclfOutageBranch caOutBranch = DclfAlgoObjectFactory.createCaOutageBranch(outDclfBranch,
+						ContingencyBranchOutageType.OPEN);
+				double[] lodf = dclfAlgo.lineOutageDFactors(caOutBranch);
+				double postFlowPu = info.getShftedFlowMW() / baseMva;
+				controlGenMap.forEach((no, gen) -> {
+					int busNo = (int) (gen.getParentBus().getNumber() - 1);
+					float sen = (float) (senMatrix[busNo][branchNo]
+							+ lodf[monBranch.getSortNumber()] * senMatrix[busNo][outBranchNo]);
+					genSenArray[no] = postFlowPu > 0 ? sen : -sen;
+				});
+				if (Arrays.stream(genSenArray).anyMatch(sen -> Math.abs(sen) > SEN_THRESHOLD)) {
+					double limit = info.getLimitMW() * threshold / 100;
+					double postFlowMw = Math.abs(info.getShftedFlowMW());
+					opt.adConstraint(new SectionConstrainData(postFlowMw, Relationship.LEQ, limit, genSenArray));
+				}
+			} catch (InterpssException e) {
+				e.printStackTrace();
+			}
+		});
+	}
 
 	@Override
 	protected void buildSectionConstrain(ContingencyAnalysisAlgorithm dclfAlgo, float[][] senMatrix,
