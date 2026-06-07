@@ -49,6 +49,7 @@ public class QstsStudyTest {
 		assertTrue(result.isConverged());
 		assertEquals(3, result.getStepResults().size());
 		assertEquals(3, powerFlow.solveCount);
+		assertTrue(powerFlow.fixedPointYMatrixCacheEnabled);
 
 		QstsStepResult step0 = result.getStep(0);
 		assertEquals(3, result.getStep(0).getLoadPowers().stream()
@@ -321,6 +322,7 @@ public class QstsStudyTest {
 		private int maxIteration = 100;
 		private double tolerance = 1.0e-6;
 		private DistributionPFMethod method = DistributionPFMethod.Fixed_Point;
+		private boolean fixedPointYMatrixCacheEnabled;
 
 		@Override
 		public INetwork3Phase getNetwork() {
@@ -427,6 +429,20 @@ public class QstsStudyTest {
 		@Override
 		public boolean isFixedPointFallbackUsed() {
 			return false;
+		}
+
+		@Override
+		public void setFixedPointYMatrixCacheEnabled(boolean enabled) {
+			this.fixedPointYMatrixCacheEnabled = enabled;
+		}
+
+		@Override
+		public boolean isFixedPointYMatrixCacheEnabled() {
+			return fixedPointYMatrixCacheEnabled;
+		}
+
+		@Override
+		public void clearFixedPointYMatrixCache() {
 		}
 
 		@Override
