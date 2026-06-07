@@ -35,3 +35,12 @@ discharging/idling behavior.
 OpenDSS PVSystem example. It validates PVSystem terminal P/Q for the explicit
 initial irradiance/temperature state and the first daily irradiance/temperature
 update before any voltage comparison is used.
+
+`invcontrol-mini-dss-python-generator-reference.csv` is generated from
+`testData/feeder/OpenDSSInvControlMini/*.dss` after running DSS-Python commands
+equivalent to `Clear`, `compile`, `Set voltagebases=[12.47]`,
+`CalcVoltageBases`, `Set controlmode=static maxcontroliter=50`, and `Solve`.
+It validates imported OpenDSS InvControl curve scaling for VOLTVAR, VOLTWATT,
+WATTPF, and WATTVAR against PVSystem terminal P/Q. The VOLTVAR and VOLTWATT
+mini cases use a 1.04 pu source and non-flat voltage curves so voltage selects
+the absorbing-var and active-power-curtailment regions of the controls.
