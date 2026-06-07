@@ -71,6 +71,10 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	private boolean capacitorControlEnabled = false;
 	private int maxCapacitorControlIterations = 20;
 	private final CapacitorBankControl capacitorBankControl = new CapacitorBankControl();
+	private boolean fixedPointYMatrixCacheEnabled = false;
+	private ISparseEqnComplexMatrix3x3 fixedPointYMatrixCache = null;
+	private BaseAclfNetwork<?, ?> fixedPointYMatrixCacheNetwork = null;
+	private String fixedPointYMatrixCacheSignature = null;
 
 	private static final Logger log = LoggerFactory.getLogger(DistributionPowerFlowAlgorithmImpl.class);
 
@@ -591,9 +595,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		BaseAclfNetwork<? extends BaseAclfBus<? extends AclfGen, ? extends AclfLoad>, ? extends AclfBranch> distNet = aclfNetwork();
 
 		try {
-			yMatrix = formYMatrixABCForPowerflow(distNet);
-			applySwingBusVoltageBoundary(yMatrix);
-			yMatrix.factorization(Constants.Matrix_LU_Tolerance);
+			yMatrix = fixedPointYMatrix(distNet);
 		} catch (IpssNumericException e) {
 			log.warn("Fixed-point power-flow Y-matrix factorization failed", e);
 			return false;
@@ -638,6 +640,42 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		}
 
 		return this.pfFlag;
+	}
+
+	private ISparseEqnComplexMatrix3x3 fixedPointYMatrix(
+			BaseAclfNetwork<? extends BaseAclfBus<? extends AclfGen, ? extends AclfLoad>, ? extends AclfBranch> distNet)
+			throws IpssNumericException {
+		String signature = fixedPointYMatrixSignature(distNet);
+		if(this.fixedPointYMatrixCacheEnabled
+				&& this.fixedPointYMatrixCache != null
+				&& this.fixedPointYMatrixCacheNetwork == distNet
+				&& signature.equals(this.fixedPointYMatrixCacheSignature)) {
+			return this.fixedPointYMatrixCache;
+		}
+
+		ISparseEqnComplexMatrix3x3 yMatrix = formYMatrixABCForPowerflow(distNet);
+		applySwingBusVoltageBoundary(yMatrix);
+		yMatrix.factorization(Constants.Matrix_LU_Tolerance);
+
+		if(this.fixedPointYMatrixCacheEnabled) {
+			this.fixedPointYMatrixCache = yMatrix;
+			this.fixedPointYMatrixCacheNetwork = distNet;
+			this.fixedPointYMatrixCacheSignature = signature;
+		}
+		return yMatrix;
+	}
+
+	private String fixedPointYMatrixSignature(BaseAclfNetwork<?, ?> distNet) {
+		StringBuilder builder = new StringBuilder();
+		builder.append(System.identityHashCode(distNet)).append('|')
+				.append(distNet.getNoBus()).append('|');
+		for(BaseAclfBus<?, ?> bus : (List<BaseAclfBus<?, ?>>) distNet.getBusList()) {
+			if(bus.isActive() && bus.isSwing()) {
+				builder.append(bus.getId()).append(':').append(bus.getSortNumber()).append(':')
+						.append(threePhaseBus(bus).get3PhaseVotlages()).append(';');
+			}
+		}
+		return builder.toString();
 	}
 
 	private ISparseEqnComplexMatrix3x3 formYMatrixABCForPowerflow(BaseAclfNetwork distNet) throws IpssNumericException {
@@ -1669,6 +1707,26 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	}
 
 	@Override
+	public void setFixedPointYMatrixCacheEnabled(boolean enabled) {
+		if(this.fixedPointYMatrixCacheEnabled != enabled) {
+			clearFixedPointYMatrixCache();
+		}
+		this.fixedPointYMatrixCacheEnabled = enabled;
+	}
+
+	@Override
+	public boolean isFixedPointYMatrixCacheEnabled() {
+		return this.fixedPointYMatrixCacheEnabled;
+	}
+
+	@Override
+	public void clearFixedPointYMatrixCache() {
+		this.fixedPointYMatrixCache = null;
+		this.fixedPointYMatrixCacheNetwork = null;
+		this.fixedPointYMatrixCacheSignature = null;
+	}
+
+	@Override
 	public INetwork3Phase getNetwork() {
 
 		return this.distNet;
@@ -1676,11 +1734,17 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 	@Override
 	public void setNetwork(INetwork3Phase net) {
+		if(this.distNet != net) {
+			clearFixedPointYMatrixCache();
+		}
 		this.distNet = net;
 
 	}
 
 	public void setNetwork(BaseAclfNetwork<?, ?> net) {
+		if(this.distNet != net) {
+			clearFixedPointYMatrixCache();
+		}
 		this.distNet = (INetwork3Phase) net;
 	}
 
