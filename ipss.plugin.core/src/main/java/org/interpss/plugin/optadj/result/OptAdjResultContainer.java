@@ -41,7 +41,7 @@ public class OptAdjResultContainer extends SsaResultContainer {
 		this.optAdjThreshold = optAdjThreshold;
 	}
 
-	public Map<String, GenAdjustResult> getOPtAdjResults() {
+	public Map<String, GenAdjustResult> getOptAdjResults() {
 		return optAdjResults;
 	}
 
