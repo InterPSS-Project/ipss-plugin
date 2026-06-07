@@ -75,7 +75,11 @@ public class AclfNetLoadFlowOptimizer {
 		
 		GenStateOptimizer opt = new GenStateOptimizer();
 		
-		buildSectionConstrain(dclfAlgo, senMatrix, controlGenMap, opt, threshold);
+		if (result != null) {
+			buildSsaSectionConstrain(dclfAlgo, senMatrix, controlGenMap, opt, threshold, result);
+		}
+		else
+			buildSectionConstrain(dclfAlgo, senMatrix, controlGenMap, opt, threshold);
 
 		buildGenConstrain(controlGenMap, opt, net);
 
@@ -115,6 +119,9 @@ public class AclfNetLoadFlowOptimizer {
 
 	private void processGenSet(AclfNetwork net, float[][] senMatrix, Set<AclfGen> genSet, String branchName) {
 		AclfBranch branch = net.getAclfBranchNameLookupTable().get(branchName);
+		if (branch == null) {
+			return;
+		}
 		int branchNo = (int) (branch.getNumber() - 1);
 		net.getAclfGenNameLookupTable().forEach((name, gen) -> {
 			if (gen.isActive()) {
@@ -143,6 +150,33 @@ public class AclfNetLoadFlowOptimizer {
 			}
 		}
 		return results;
+	}
+
+	protected void buildSsaSectionConstrain(ContingencyAnalysisAlgorithm dclfAlgo, float[][] senMatrix,
+			Map<Integer, AclfGen> controlGenMap, GenStateOptimizer opt, double threshold,
+			SsaResultContainer result) {
+		if (result.getBaseOverLimitInfo().isEmpty()) {
+			return;
+		}
+		AclfNetwork net = (AclfNetwork) dclfAlgo.getNetwork();
+		result.getBaseOverLimitInfo().forEach(info -> {
+			AclfBranch branch = net.getAclfBranchNameLookupTable().get(info.getOverLimitBranchId());
+			if (branch == null) {
+				return;
+			}
+			int branchNo = (int) (branch.getNumber() - 1);
+			double[] genSenArray = new double[controlGenMap.size()];
+			double flowMw = Math.abs(info.getBaseFlowMW());
+			controlGenMap.forEach((no, gen) -> {
+				int busNo = (int) (gen.getParentBus().getNumber() - 1);
+				float sen = senMatrix[busNo][branchNo];
+				genSenArray[no] = info.getBaseFlowMW() > 0 ? sen : -sen;
+			});
+			if (Arrays.stream(genSenArray).anyMatch(sen -> Math.abs(sen) > SEN_THRESHOLD)) {
+				double limit = info.getLimitMW() * threshold / 100;
+				opt.adConstraint(new SectionConstrainData(flowMw, Relationship.LEQ, limit, genSenArray));
+			}
+		});
 	}
 
 	protected void buildSectionConstrain(ContingencyAnalysisAlgorithm dclfAlgo, float[][] senMatrix,
