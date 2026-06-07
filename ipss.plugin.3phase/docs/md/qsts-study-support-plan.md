@@ -255,10 +255,11 @@ coefficients. Plain load multipliers, DER injections modeled as current/power
 injections, and source voltage magnitude/angle updates should update the
 right-hand side or nonlinear injection evaluation, not rebuild `Ybus`.
 
-For control-enabled QSTS, the fast path should add an explicit
-admittance-delta compensation layer before falling back to matrix rebuilds. A
-control action that changes a shunt or tap state can be represented as an
-equivalent terminal current:
+For control-enabled QSTS, the fast path depends on whether the control action
+changes only injections or changes the network admittance matrix. Shunt
+capacitor/reactor switching can use an explicit admittance-delta compensation
+layer before falling back to matrix rebuilds. A supported shunt control action
+can be represented as an equivalent terminal current:
 
 ```text
 Icomp(V, state) = DeltaY(state, baseState) * Vterminal
@@ -274,10 +275,43 @@ Ybase * Vnext = Iload(V) + Igen(V) + IcontrolComp(V, controlState)
 
 This is exact for supported devices only if `DeltaY` is computed from the same
 device admittance model used to assemble `Ybus`. It is the preferred first
-performance path for capacitor/reactor switching, and a guarded fast path for
-regulator tap changes. Unsupported topology changes, switch open/close actions,
-or control deltas that fail an accuracy/convergence guard should invalidate the
-factorization and use the normal rebuild/refactor path.
+performance path for capacitor/reactor switching. Regulator tap changes are not
+the default RHS-compensation path because near-zero-impedance regulator models
+make the terminal compensation current numerically stiff. The default regulator
+QSTS method is:
+
+- keep the same sparse structure and reuse the symbolic factorization;
+- update affected regulator branch matrix entries in place with
+  `Ynew - Yold` for the `Yff/Yft/Ytf/Ytt` blocks;
+- rerun numeric LU after each tap-changing admittance update;
+- rebuild when the regulator touches the swing-bus boundary, because the
+  swing-boundary transform has moved `Yns * Vs` out of the matrix and into the
+  RHS, so both matrix and RHS boundary terms change.
+
+Direct regulator RHS compensation remains available only as a guarded
+diagnostic/experimental path. Under-relaxation was tested with
+`ipss.qsts.regulatorCompensationDamping`; virtual series-resistance padding was
+tested with `ipss.qsts.regulatorCompensationSeriesRPadPu`. The corrected
+padding experiment adds the padded regulator admittance to the cached base
+`Ybus` and compensates from the padded base back to the physical tap-state
+admittance. On IEEE123, `0.01` through `1.0E-5` pu per-phase padding caused
+repeated guarded fallback; `1.0E-6` pu avoided repeated fallback but effectively
+behaved like the unpadded damped-compensation path. The timing comparison on
+the same IEEE123 three-step regulator QSTS case was:
+
+- full rebuild: `96 ms`;
+- symbolic reuse with new matrix: `32 ms`;
+- symbolic reuse with in-place matrix value update: `20 ms`;
+- direct compensation with `1.0E-6` pu virtual padding: `124 ms`.
+
+The padded direct-compensation path performs fewer numeric factorizations, but
+it needs many more fixed-point iterations and still uses one guarded fallback.
+Therefore symbolic reuse plus in-place numeric matrix value update is the QSTS
+default for regulator tap controls.
+
+Unsupported topology changes, switch open/close actions, or control deltas that
+fail an accuracy/convergence guard should invalidate the factorization and use
+the normal rebuild/refactor path.
 
 Recommended objects:
 
@@ -294,8 +328,10 @@ Recommended objects:
   - Shunt capacitor/reactor on/off compensation using per-phase shunt
     admittance deltas.
 - `QstsRegulatorTapCompensationModel`
-  - Transformer/regulator tap compensation using terminal admittance deltas,
-    with a comparison mode against full `Ybus` rebuild before enabling broadly.
+  - Experimental transformer/regulator tap compensation using terminal
+    admittance deltas, with a comparison mode against full `Ybus` rebuild.
+  - Not the default regulator QSTS path; default regulator acceleration is
+    symbolic factorization reuse plus in-place sparse-matrix value updates.
 
 The first implementation can use session cloning at window boundaries for
 safety. Later optimization should replace deep clone costs with a lighter
@@ -540,6 +576,11 @@ Completed or established:
   capacitor controls are implemented for the static PF path with DSS-Python
   mini-case coverage; inverter and storage controls remain staged after their
   static model foundations.
+- Regulator performance foundation:
+  regulator tap QSTS uses symbolic factorization reuse and in-place sparse
+  matrix value updates as the default method. Direct RHS compensation,
+  under-relaxation, and virtual impedance padding have been tested and kept as
+  guarded diagnostics rather than the default solver path.
 - Verification:
   QSTS focused suite passes; full OpenDSS parser/PF comparison suite has passed
   with IEEE123, IEEE8500, Ckt7, Ckt24, IEEE13, and mini-case coverage recorded
