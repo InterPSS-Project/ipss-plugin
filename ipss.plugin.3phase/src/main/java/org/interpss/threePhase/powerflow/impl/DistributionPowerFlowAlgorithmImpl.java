@@ -667,6 +667,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			double maxVoltageMismatch = calcMaxVoltageMismatch();
 			if(i > 0 && maxVoltageMismatch <= this.getTolerance()) {
 				System.out.println("\n\nDistribution fixed-point power flow converged, iterations = "+i+"\n");
+				syncPositiveSequenceBusVoltages();
 				updateBranchCurrentsFromSolvedVoltages();
 				calcSwingBusGenPower();
 				this.pfFlag = true;
@@ -1332,7 +1333,6 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 				if(isValidFixedPointVoltage(vabc)){
 					bus3P.set3PhaseVotlages(vabc);
-					bus.setVoltage(positiveSequenceVoltage(bus3P, vabc));
 				} else {
 					log.warn("Fixed-point solve produced invalid voltage at bus " + bus.getId()
 							+ ", sortNumber=" + bus.getSortNumber() + ", vabc=" + vabc);
@@ -1343,11 +1343,20 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		return true;
 	}
 
-	private Complex positiveSequenceVoltage(IBus3Phase bus3P, Complex3x1 vabc) {
+	private void syncPositiveSequenceBusVoltages() {
+		for(BaseAclfBus bus: aclfNetwork().getBusList()) {
+			if(bus.isActive() && !bus.isSwing()) {
+				IBus3Phase bus3P = threePhaseBus(bus);
+				bus.setVoltage(positiveSequenceVoltage(bus3P));
+			}
+		}
+	}
+
+	private Complex positiveSequenceVoltage(IBus3Phase bus3P) {
 		if(bus3P instanceof DStab3PBus dstabBus) {
 			return dstabBus.getThreeSeqVoltage().b_1;
 		}
-		return vabc.to012().b_1;
+		return bus3P.get3PhaseVotlages().to012().b_1;
 	}
 
 	private boolean isValidFixedPointVoltage(Complex3x1 vabc) {
