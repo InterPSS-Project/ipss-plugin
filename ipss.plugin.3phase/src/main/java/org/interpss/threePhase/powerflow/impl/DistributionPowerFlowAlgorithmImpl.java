@@ -29,6 +29,7 @@ import org.interpss.threePhase.powerflow.control.CapacitorControlData;
 import org.interpss.threePhase.powerflow.control.RegulatorControlData;
 import org.interpss.threePhase.powerflow.control.RegulatorTapControl;
 import org.interpss.threePhase.powerflow.DistributionPFMethod;
+import org.interpss.threePhase.powerflow.DistributionPostSolveOutputMode;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
@@ -64,6 +65,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	private INetwork3Phase distNet = null;
 
 	private DistributionPFMethod pfMethod = DistributionPFMethod.Fixed_Point;
+	private DistributionPostSolveOutputMode postSolveOutputMode = DistributionPostSolveOutputMode.FULL_BRANCH_CURRENTS;
 
 	private double tol = 1.0E-6;
 	private int    maxIteration = 20;
@@ -748,15 +750,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			FIXED_POINT_PROFILE.addMismatch(FIXED_POINT_PROFILE.elapsed(start));
 			if(i > 0 && maxVoltageMismatch <= this.getTolerance()) {
 				log.debug("Distribution fixed-point power flow converged, iterations={}", i);
-				start = FIXED_POINT_PROFILE.start();
-				syncPositiveSequenceBusVoltages();
-				FIXED_POINT_PROFILE.addSequenceSync(FIXED_POINT_PROFILE.elapsed(start));
-				start = FIXED_POINT_PROFILE.start();
-				updateBranchCurrentsFromSolvedVoltages();
-				FIXED_POINT_PROFILE.addBranchCurrent(FIXED_POINT_PROFILE.elapsed(start));
-				start = FIXED_POINT_PROFILE.start();
-				calcSwingBusGenPower();
-				FIXED_POINT_PROFILE.addSwingPower(FIXED_POINT_PROFILE.elapsed(start));
+				updateFixedPointPostSolveOutputs();
 				this.pfFlag = true;
 				FIXED_POINT_PROFILE.addConvergedAttempt();
 				break;
@@ -778,6 +772,30 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				&& this.regulatorControlEnabled
 				&& !this.regulatorControls.isEmpty()
 				&& !this.fixedPointRegulatorBaseAdmittance.isEmpty();
+	}
+
+	private void updateFixedPointPostSolveOutputs() {
+		long start = FIXED_POINT_PROFILE.start();
+		syncPositiveSequenceBusVoltages();
+		FIXED_POINT_PROFILE.addSequenceSync(FIXED_POINT_PROFILE.elapsed(start));
+
+		if(this.postSolveOutputMode == DistributionPostSolveOutputMode.VOLTAGE_ONLY) {
+			return;
+		}
+
+		if(this.postSolveOutputMode == DistributionPostSolveOutputMode.FULL_BRANCH_CURRENTS) {
+			start = FIXED_POINT_PROFILE.start();
+			updateBranchCurrentsFromSolvedVoltages();
+			FIXED_POINT_PROFILE.addBranchCurrent(FIXED_POINT_PROFILE.elapsed(start));
+			start = FIXED_POINT_PROFILE.start();
+			calcSwingBusGenPower();
+			FIXED_POINT_PROFILE.addSwingPower(FIXED_POINT_PROFILE.elapsed(start));
+			return;
+		}
+
+		start = FIXED_POINT_PROFILE.start();
+		calcSwingBusGenPowerFromSolvedVoltages();
+		FIXED_POINT_PROFILE.addSwingPower(FIXED_POINT_PROFILE.elapsed(start));
 	}
 
 	private ISparseEqnComplexMatrix3x3 fixedPointYMatrix(
@@ -2409,6 +2427,46 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		}
 	}
 
+	private void calcSwingBusGenPowerFromSolvedVoltages() {
+		for(BaseAclfBus<? extends AclfGen, ? extends AclfLoad> bus: aclfNetwork().getBusList()){
+			if(bus.isActive() && bus.isSwing()){
+				IBus3Phase bus3p = threePhaseBus(bus);
+				Complex3x1 sumOfBranchCurrents = bus3p.calcLoad3PhEquivCurInj().multiply(-1);
+				Complex3x1 swingVoltage = bus3p.get3PhaseVotlages();
+
+				for (Branch bra: bus.getBranchIterable()){
+					if(bra.isActive()){
+						IBranch3Phase bra3P = sweepBranch(bra);
+						if(bra.getFromBus().getId().equals(bus.getId())){
+							Complex3x1 toVoltage = threePhaseBus((BaseAclfBus<?, ?>) bra.getToBus())
+									.get3PhaseVotlages();
+							sumOfBranchCurrents = sumOfBranchCurrents.add(
+									finiteCurrentOrZero(bra3P.getYffabc().multiply(swingVoltage)
+											.add(bra3P.getYftabc().multiply(toVoltage))));
+						}
+						else{
+							Complex3x1 fromVoltage = threePhaseBus((BaseAclfBus<?, ?>) bra.getFromBus())
+									.get3PhaseVotlages();
+							sumOfBranchCurrents = sumOfBranchCurrents.add(
+									finiteCurrentOrZero(bra3P.getYttabc().multiply(swingVoltage)
+											.add(bra3P.getYtfabc().multiply(fromVoltage))).multiply(-1.0));
+						}
+					}
+			    }
+
+				Complex3x1 seqCurrent = sumOfBranchCurrents.to012();
+				log.debug("Source node 3 sequence current into network: {}", seqCurrent);
+
+				Complex posGenPQ = bus3p.get3PhaseVotlages().to012().b_1.multiply(seqCurrent.b_1.conjugate());
+				if(bus.getContributeGenList().size()>0){
+				   bus.getContributeGenList().get(0).setGen(posGenPQ);
+				   log.debug("Source node positive sequence power into network: {}", posGenPQ);
+
+				}
+			}
+		}
+	}
+
 
 
 	@Override
@@ -2420,6 +2478,17 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	@Override
 	public void setPFMethod(DistributionPFMethod method) {
 		this.pfMethod = method;
+	}
+
+	@Override
+	public DistributionPostSolveOutputMode getPostSolveOutputMode() {
+		return this.postSolveOutputMode;
+	}
+
+	@Override
+	public void setPostSolveOutputMode(DistributionPostSolveOutputMode mode) {
+		this.postSolveOutputMode = mode == null
+				? DistributionPostSolveOutputMode.FULL_BRANCH_CURRENTS : mode;
 	}
 
 	@Override
