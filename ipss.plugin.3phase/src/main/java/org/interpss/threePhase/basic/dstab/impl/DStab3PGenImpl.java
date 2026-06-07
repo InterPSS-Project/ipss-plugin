@@ -119,8 +119,16 @@ public class DStab3PGenImpl extends DStabGenImpl implements DStab3PGen {
 				e.printStackTrace();
 			}
 		}
+		if(this.puPowerAbc != null) {
+			this.setGen(add(add(this.puPowerAbc.a_0, this.puPowerAbc.b_1), this.puPowerAbc.c_2));
+		}
 
+	}
 
+	private static Complex add(Complex left, Complex right) {
+		Complex a = left == null ? Complex.ZERO : left;
+		Complex b = right == null ? Complex.ZERO : right;
+		return a.add(b);
 	}
 
 

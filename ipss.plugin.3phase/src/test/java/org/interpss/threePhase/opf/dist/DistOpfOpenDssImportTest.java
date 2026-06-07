@@ -1,6 +1,7 @@
 package org.interpss.threePhase.opf.dist;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
@@ -32,7 +33,8 @@ public class DistOpfOpenDssImportTest {
 		DStabNetwork3Phase distNet = parser.getDistNetwork();
 		DistOpfModelData data = new DistOpfModelDataExtractor().extract(distNet);
 
-		assertEquals("150", data.getSwingBusId());
+		assertEquals("150_vsource", data.getSwingBusId());
+		assertNotNull(distNet.getBus("150"), "OpenDSS source terminal bus should remain in the imported feeder");
 		assertTrue(data.getBuses().size() > 100);
 		assertTrue(data.getBranches().size() > 100);
 		assertEquals(data.getBuses().size() - 1, data.getBranches().size());

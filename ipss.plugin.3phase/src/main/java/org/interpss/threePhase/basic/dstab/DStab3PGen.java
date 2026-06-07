@@ -6,10 +6,11 @@ import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.core.threephase.IGen3Phase;
+import com.interpss.core.threephase.IDynamicPhaseGen;
 import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.GeneratorType;
 
-public interface DStab3PGen extends IGen3Phase, DStabGen {
+public interface DStab3PGen extends IGen3Phase, IDynamicPhaseGen, DStabGen {
 
 	/**
 	 * directly set the generator 3x3 impedance matrix on machine MVA base
