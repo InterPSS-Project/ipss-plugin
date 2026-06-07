@@ -183,6 +183,8 @@ public class QstsStudy {
 		registerMissingInverterAdapters();
 		boolean controlsEnabled = controlMode != QstsControlMode.OFF && maxControlIterations > 0;
 		boolean delayedCapacitorControls = usesDelayedControlQueue();
+		algorithm.setFixedPointYMatrixCacheEnabled(!controlsEnabled
+				&& pfMethod == DistributionPFMethod.Fixed_Point);
 		algorithm.setRegulatorControlEnabled(controlsEnabled && !regulatorControls.isEmpty());
 		algorithm.setCapacitorControlEnabled(controlsEnabled && !delayedCapacitorControls
 				&& !capacitorControls.isEmpty());
