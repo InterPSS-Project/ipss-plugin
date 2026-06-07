@@ -52,6 +52,7 @@ import com.interpss.core.acsc.XFormerConnectCode;
 import com.interpss.core.funcImpl.AclfNetHelper;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
+import com.interpss.core.sparse.PrimitiveComplex3x3Equation;
 import com.interpss.core.sparse.SparseEqnObjectFactory;
 
 public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlowAlgorithm{
@@ -644,22 +645,33 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 		this.pfFlag = false;
 		this.iterationCount = -1;
+		PrimitiveComplex3x3Equation primitiveMatrix = yMatrix instanceof PrimitiveComplex3x3Equation
+				? (PrimitiveComplex3x3Equation) yMatrix : null;
 
 		for (int i = 0; i < this.maxIteration; i++) {
 			this.iterationCount = i;
 			saveBusVoltages();
 
 			try {
-				yMatrix.setB2Zero();
-				setPowerflowCurrentInjections(yMatrix);
-				setSwingBusVoltageRhs(yMatrix);
-				yMatrix.solveEqn();
+				if(primitiveMatrix != null) {
+					primitiveMatrix.clearPrimitiveRhs();
+					setPowerflowCurrentInjections(primitiveMatrix);
+					setSwingBusVoltageRhs(primitiveMatrix);
+					primitiveMatrix.solvePrimitiveRhs(true);
+				} else {
+					yMatrix.setB2Zero();
+					setPowerflowCurrentInjections(yMatrix);
+					setSwingBusVoltageRhs(yMatrix);
+					yMatrix.solveEqn();
+				}
 			} catch (IpssNumericException e) {
 				log.warn("Fixed-point power-flow equation solve failed", e);
 				return false;
 			}
 
-			if(!updateSolvedBusVoltages(yMatrix)) {
+			if(!(primitiveMatrix == null
+					? updateSolvedBusVoltages(yMatrix)
+					: updateSolvedBusVoltages(primitiveMatrix))) {
 				log.warn("Fixed-point power-flow equation solve produced invalid bus voltages");
 				return false;
 			}
@@ -1148,6 +1160,33 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		}
 	}
 
+	private void setPowerflowCurrentInjections(PrimitiveComplex3x3Equation yMatrix) {
+		Hashtable<Integer, Complex3x1> regulatorTapCompensation = regulatorTapCompensationCurrents();
+		for(BaseAclfBus bus: aclfNetwork().getBusList()) {
+			if(bus.isActive() && !bus.isSwing()) {
+				IBus3Phase bus3P = threePhaseBus(bus);
+				Complex3x1 curInj = bus3P.calc3PhEquivCurInj();
+				if(!isFinite(curInj.a_0) || !isFinite(curInj.b_1) || !isFinite(curInj.c_2)) {
+					log.warn("Invalid fixed-point current injection at bus " + bus.getId()
+							+ ", sortNumber=" + bus.getSortNumber() + ", iabc=" + curInj
+							+ ", vabc=" + bus3P.get3PhaseVotlages());
+				}
+				Complex3x1 boundaryCurrent = this.swingBusVoltageBoundaryCurrent.get(bus.getSortNumber());
+				Complex3x1 tapCompensation = regulatorTapCompensation.get(bus.getSortNumber());
+				if(boundaryCurrent != null
+						&& (!isFinite(boundaryCurrent.a_0) || !isFinite(boundaryCurrent.b_1) || !isFinite(boundaryCurrent.c_2))) {
+					log.warn("Invalid fixed-point swing-boundary current at bus " + bus.getId()
+							+ ", sortNumber=" + bus.getSortNumber() + ", iabc=" + boundaryCurrent);
+				}
+				Complex3x1 rhs = boundaryCurrent == null ? curInj : curInj.subtract(boundaryCurrent);
+				if(tapCompensation != null) {
+					rhs = rhs.subtract(tapCompensation);
+				}
+				yMatrix.setPrimitiveRhs3x1(bus.getSortNumber(), rhs);
+			}
+		}
+	}
+
 	private Hashtable<Integer, Complex3x1> regulatorTapCompensationCurrents() {
 		Hashtable<Integer, Complex3x1> compensationByBus = new Hashtable<>();
 		if(!this.fixedPointYMatrixCacheEnabled || !this.regulatorControlEnabled
@@ -1325,11 +1364,38 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		}
 	}
 
+	private void setSwingBusVoltageRhs(PrimitiveComplex3x3Equation yMatrix) {
+		for(BaseAclfBus bus: aclfNetwork().getBusList()) {
+			if(bus.isActive() && bus.isSwing()) {
+				IBus3Phase bus3P = threePhaseBus(bus);
+				yMatrix.setPrimitiveRhs3x1(bus.getSortNumber(), bus3P.get3PhaseVotlages());
+			}
+		}
+	}
+
 	private boolean updateSolvedBusVoltages(ISparseEqnComplexMatrix3x3 yMatrix) {
 		for(BaseAclfBus bus: aclfNetwork().getBusList()) {
 			if(bus.isActive() && !bus.isSwing()) {
 				IBus3Phase bus3P = threePhaseBus(bus);
 				Complex3x1 vabc = yMatrix.getX(bus.getSortNumber());
+
+				if(isValidFixedPointVoltage(vabc)){
+					bus3P.set3PhaseVotlages(vabc);
+				} else {
+					log.warn("Fixed-point solve produced invalid voltage at bus " + bus.getId()
+							+ ", sortNumber=" + bus.getSortNumber() + ", vabc=" + vabc);
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	private boolean updateSolvedBusVoltages(PrimitiveComplex3x3Equation yMatrix) {
+		for(BaseAclfBus bus: aclfNetwork().getBusList()) {
+			if(bus.isActive() && !bus.isSwing()) {
+				IBus3Phase bus3P = threePhaseBus(bus);
+				Complex3x1 vabc = yMatrix.getPrimitiveSolved3x1(bus.getSortNumber());
 
 				if(isValidFixedPointVoltage(vabc)){
 					bus3P.set3PhaseVotlages(vabc);
