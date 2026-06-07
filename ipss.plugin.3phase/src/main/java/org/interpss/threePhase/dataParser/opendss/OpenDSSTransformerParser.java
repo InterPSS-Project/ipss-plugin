@@ -9,7 +9,6 @@ import java.util.Map;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.datatype.Complex3x3;
-import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,9 +17,11 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.acsc.BusGroundCode;
+import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.PhaseCode;
 import com.interpss.core.acsc.XFormerConnectCode;
 import com.interpss.core.acsc.adpter.AcscXformerAdapter;
+import com.interpss.core.threephase.IBranch3Phase;
 
 public class OpenDSSTransformerParser {
 
@@ -130,18 +131,9 @@ public class OpenDSSTransformerParser {
 			}
 		}
 
-		if(this.dataParser.getDistNetwork().getBus(fromBusId)==null) {
-			ThreePhaseObjectFactory.create3PDStabBus(fromBusId, this.dataParser.getDistNetwork());
-		}
-
-		if(this.dataParser.getDistNetwork().getBus(toBusId)==null) {
-			ThreePhaseObjectFactory.create3PDStabBus(toBusId, this.dataParser.getDistNetwork());
-		}
-
-
 		// create a transformer object
-		DStab3PBranch xfrBranch = ThreePhaseObjectFactory.create3PBranch(fromBusId, toBusId, xfrId,
-				this.dataParser.getDistNetwork());
+		AcscBranch xfrBranch = createTransformerBranch(fromBusId, toBusId, xfrId);
+		IBranch3Phase xfr3P = (IBranch3Phase) xfrBranch;
 		xfrBranch.setName(xfrId);
 		xfrBranch.setBranchCode(AclfBranchCode.XFORMER);
 
@@ -149,15 +141,15 @@ public class OpenDSSTransformerParser {
 		xfrBranch.setFromTurnRatio(nominalKV1*1000.0);
 		xfrBranch.setToTurnRatio(nominalKV2*1000.0);
 		if(phaseNum ==3){
-			xfrBranch.setPhaseCode(PhaseCode.ABC);
+			xfr3P.setPhaseCode(PhaseCode.ABC);
 		}
 		else if(phaseNum ==1){
 			if(phase1.equals("1")) {
-				xfrBranch.setPhaseCode(PhaseCode.A);
+				xfr3P.setPhaseCode(PhaseCode.A);
 			} else if(phase1.equals("2")) {
-				xfrBranch.setPhaseCode(PhaseCode.B);
+				xfr3P.setPhaseCode(PhaseCode.B);
 			} else if(phase1.equals("3")) {
-				xfrBranch.setPhaseCode(PhaseCode.C);
+				xfr3P.setPhaseCode(PhaseCode.C);
 			} else{
 				throw new Error("Transformer connection phase currently must be either 1, 2 or 3.  xfr #" +xfrId);
 			}
@@ -169,7 +161,7 @@ public class OpenDSSTransformerParser {
 		xfrBranch.setZ(transformerSeriesImpedanceOhm(nominalKV1, nominalKV2, kva1, kva2,
 				losspercent1 + losspercent2, xhl));
 
-		xfrBranch.setXfrRatedKVA(kva1);
+		xfr3P.setXfrRatedKVA(kva1);
 
 		//TODO to add the phase info to the Branch3Phase
 
@@ -274,28 +266,28 @@ public class OpenDSSTransformerParser {
 	}
 
 	public void mergeParallelSinglePhaseRegulatorBranches() throws InterpssException {
-		Map<String, List<DStab3PBranch>> branchGroups = new HashMap<>();
-		for(AclfBranch branch : new ArrayList<AclfBranch>(this.dataParser.getDistNetwork().getBranchList())) {
-			if(branch.isActive() && branch.isXfr() && branch instanceof DStab3PBranch) {
-				DStab3PBranch branch3P = (DStab3PBranch) branch;
+		Map<String, List<AclfBranch>> branchGroups = new HashMap<>();
+		for(AclfBranch branch : new ArrayList<AclfBranch>(currentBranchList())) {
+			if(branch.isActive() && branch.isXfr() && branch instanceof IBranch3Phase) {
+				IBranch3Phase branch3P = (IBranch3Phase) branch;
 				if(branch3P.getPhaseCode() != PhaseCode.ABC) {
 					String key = branch.getFromBus().getId() + "->" + branch.getToBus().getId();
-					branchGroups.computeIfAbsent(key, ignored -> new ArrayList<>()).add(branch3P);
+					branchGroups.computeIfAbsent(key, ignored -> new ArrayList<>()).add(branch);
 				}
 			}
 		}
-		for(List<DStab3PBranch> group : branchGroups.values()) {
+		for(List<AclfBranch> group : branchGroups.values()) {
 			mergeCompleteSinglePhaseBank(group);
 		}
 	}
 
-	private void mergeCompleteSinglePhaseBank(List<DStab3PBranch> group) throws InterpssException {
+	private void mergeCompleteSinglePhaseBank(List<AclfBranch> group) throws InterpssException {
 		if(group.size() != 3) {
 			return;
 		}
-		DStab3PBranch phaseA = branchForPhase(group, PhaseCode.A);
-		DStab3PBranch phaseB = branchForPhase(group, PhaseCode.B);
-		DStab3PBranch phaseC = branchForPhase(group, PhaseCode.C);
+		AclfBranch phaseA = branchForPhase(group, PhaseCode.A);
+		AclfBranch phaseB = branchForPhase(group, PhaseCode.B);
+		AclfBranch phaseC = branchForPhase(group, PhaseCode.C);
 		if(phaseA == null || phaseB == null || phaseC == null) {
 			return;
 		}
@@ -308,42 +300,44 @@ public class OpenDSSTransformerParser {
 
 		String fromBusId = phaseA.getFromBus().getId();
 		String toBusId = phaseA.getToBus().getId();
-		DStab3PBranch merged = ThreePhaseObjectFactory.create3PBranch(fromBusId, toBusId,
-				phaseA.getName() + "_abc", this.dataParser.getDistNetwork());
+		AcscBranch merged = createTransformerBranch(fromBusId, toBusId, phaseA.getName() + "_abc");
+		IBranch3Phase merged3P = (IBranch3Phase) merged;
 		merged.setName(phaseA.getName() + "_abc");
 		merged.setBranchCode(AclfBranchCode.XFORMER);
-		merged.setPhaseCode(PhaseCode.ABC);
+		merged3P.setPhaseCode(PhaseCode.ABC);
 		merged.setFromTurnRatio(phaseA.getFromTurnRatio());
 		merged.setToTurnRatio(phaseA.getToTurnRatio());
-		merged.setFromTurnRatioABC(tappedTurnRatio(phaseA, true), tappedTurnRatio(phaseB, true), tappedTurnRatio(phaseC, true));
-		merged.setToTurnRatioABC(tappedTurnRatio(phaseA, false), tappedTurnRatio(phaseB, false), tappedTurnRatio(phaseC, false));
-		merged.setZabc(diagonalZabc(phaseA, phaseB, phaseC));
-		merged.setXfrRatedKVA(phaseA.getXfrRatedKVA() + phaseB.getXfrRatedKVA() + phaseC.getXfrRatedKVA());
+		merged3P.setFromTurnRatioABC(tappedTurnRatio(phaseA, true), tappedTurnRatio(phaseB, true), tappedTurnRatio(phaseC, true));
+		merged3P.setToTurnRatioABC(tappedTurnRatio(phaseA, false), tappedTurnRatio(phaseB, false), tappedTurnRatio(phaseC, false));
+		merged3P.setZabc(diagonalZabc(phaseA, phaseB, phaseC));
+		merged3P.setXfrRatedKVA(branch3P(phaseA).getXfrRatedKVA()
+				+ branch3P(phaseB).getXfrRatedKVA()
+				+ branch3P(phaseC).getXfrRatedKVA());
 
-		AcscXformerAdapter sourceGrounding = acscXfrAptr.apply(phaseA);
+		AcscXformerAdapter sourceGrounding = acscXfrAptr.apply((AcscBranch) phaseA);
 		AcscXformerAdapter mergedGrounding = acscXfrAptr.apply(merged);
 		mergedGrounding.setFromGrounding(sourceGrounding.getFromGrounding().getGroundCode(),
 				sourceGrounding.getFromGrounding().getXfrConnectCode(), new Complex(0.0,0.0), UnitType.PU);
 		mergedGrounding.setToGrounding(sourceGrounding.getToGrounding().getGroundCode(),
 				sourceGrounding.getToGrounding().getXfrConnectCode(), new Complex(0.0,0.0), UnitType.PU);
 
-		for(DStab3PBranch branch : group) {
+		for(AclfBranch branch : group) {
 			branch.setStatus(false);
 		}
 	}
 
-	private DStab3PBranch branchForPhase(List<DStab3PBranch> branches, PhaseCode phaseCode) {
-		for(DStab3PBranch branch : branches) {
-			if(branch.getPhaseCode() == phaseCode) {
+	private AclfBranch branchForPhase(List<AclfBranch> branches, PhaseCode phaseCode) {
+		for(AclfBranch branch : branches) {
+			if(branch3P(branch).getPhaseCode() == phaseCode) {
 				return branch;
 			}
 		}
 		return null;
 	}
 
-	private boolean sameGroundedWyeConnection(DStab3PBranch reference, DStab3PBranch branch) {
-		AcscXformerAdapter ref = acscXfrAptr.apply(reference);
-		AcscXformerAdapter other = acscXfrAptr.apply(branch);
+	private boolean sameGroundedWyeConnection(AclfBranch reference, AclfBranch branch) {
+		AcscXformerAdapter ref = acscXfrAptr.apply((AcscBranch) reference);
+		AcscXformerAdapter other = acscXfrAptr.apply((AcscBranch) branch);
 		return ref.getFromGrounding().getXfrConnectCode() == XFormerConnectCode.WYE
 				&& ref.getToGrounding().getXfrConnectCode() == XFormerConnectCode.WYE
 				&& other.getFromGrounding().getXfrConnectCode() == XFormerConnectCode.WYE
@@ -352,7 +346,7 @@ public class OpenDSSTransformerParser {
 				&& ref.getToGrounding().getGroundCode() == other.getToGrounding().getGroundCode();
 	}
 
-	private Complex3x3 diagonalZabc(DStab3PBranch phaseA, DStab3PBranch phaseB, DStab3PBranch phaseC) {
+	private Complex3x3 diagonalZabc(AclfBranch phaseA, AclfBranch phaseB, AclfBranch phaseC) {
 		Complex3x3 zabc = new Complex3x3();
 		zabc.aa = phaseA.getAdjustedZ();
 		zabc.bb = phaseB.getAdjustedZ();
@@ -360,13 +354,13 @@ public class OpenDSSTransformerParser {
 		return zabc;
 	}
 
-	private double tappedTurnRatio(DStab3PBranch branch, boolean fromSide) {
+	private double tappedTurnRatio(AclfBranch branch, boolean fromSide) {
 		double[] taps = this.transformerTaps.get(branch.getName());
 		double tap = taps == null ? 1.0 : taps[fromSide ? 0 : 1];
 		return (fromSide ? branch.getFromTurnRatio() : branch.getToTurnRatio()) * tap;
 	}
 
-	private boolean hasExplicitTap(DStab3PBranch branch) {
+	private boolean hasExplicitTap(AclfBranch branch) {
 		return this.transformerTaps.containsKey(branch.getName());
 	}
 
@@ -644,32 +638,23 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 		fromBusId =this.dataParser.getBusIdPrefix()+fromBusId;
 		toBusId =this.dataParser.getBusIdPrefix()+toBusId;
 
-		if(this.dataParser.getDistNetwork().getBus(fromBusId)==null) {
-			ThreePhaseObjectFactory.create3PDStabBus(fromBusId, this.dataParser.getDistNetwork());
-		}
-
-		if(this.dataParser.getDistNetwork().getBus(toBusId)==null) {
-			ThreePhaseObjectFactory.create3PDStabBus(toBusId, this.dataParser.getDistNetwork());
-		}
-
-
 		// create a transformer object
-		DStab3PBranch xfrBranch = ThreePhaseObjectFactory.create3PBranch(fromBusId, toBusId, xfrId,
-				this.dataParser.getDistNetwork());
+		AcscBranch xfrBranch = createTransformerBranch(fromBusId, toBusId, xfrId);
+		IBranch3Phase xfr3P = (IBranch3Phase) xfrBranch;
 
 		// since InterPSS uses fromBus->toBus(cirId) as the unique branchId, here the original Id is set as the name.
 		xfrBranch.setName(this.dataParser.getBusIdPrefix()+xfrId);
 		xfrBranch.setBranchCode(AclfBranchCode.XFORMER);
 
-		DStab3PBranch likeBranch = null;
+		AclfBranch likeBranch = null;
 
 		if(!referenceXfrName.equals("")){
-			likeBranch= this.dataParser.getBranchByName(referenceXfrName);
+			likeBranch= this.dataParser.getThreePhaseBranchByName(referenceXfrName);
 		}
 
 		if(likeBranch!=null){
 			if(!phaseSpecified){
-				phaseNum = phaseCount(likeBranch.getPhaseCode());
+				phaseNum = phaseCount(branch3P(likeBranch).getPhaseCode());
 			}
 			if(normKV1==0.0){
 				normKV1 = likeBranch.getFromTurnRatio()/1000.0;
@@ -678,12 +663,12 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 				normKV2 = likeBranch.getToTurnRatio()/1000.0;
 			}
 			if(kva1==0.0){
-				kva1 = likeBranch.getXfrRatedKVA();
+				kva1 = branch3P(likeBranch).getXfrRatedKVA();
 			}
 			if(kva2==0.0){
-				kva2 = likeBranch.getXfrRatedKVA();
+				kva2 = branch3P(likeBranch).getXfrRatedKVA();
 			}
-			AcscXformerAdapter likexfr = acscXfrAptr.apply(likeBranch);
+			AcscXformerAdapter likexfr = acscXfrAptr.apply((AcscBranch) likeBranch);
 
 			if(fromConnection.equals("")){
 				if(likexfr.getFromGrounding().getXfrConnectCode() == XFormerConnectCode.DELTA ||
@@ -717,15 +702,15 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 		//phase info
 
 		if(phaseNum ==3){
-			xfrBranch.setPhaseCode(PhaseCode.ABC);
+			xfr3P.setPhaseCode(PhaseCode.ABC);
 		}
 		else if(phaseNum ==1){
 			if(phase1.equals("1")) {
-				xfrBranch.setPhaseCode(PhaseCode.A);
+				xfr3P.setPhaseCode(PhaseCode.A);
 			} else if(phase1.equals("2")) {
-				xfrBranch.setPhaseCode(PhaseCode.B);
+				xfr3P.setPhaseCode(PhaseCode.B);
 			} else if(phase1.equals("3")) {
-				xfrBranch.setPhaseCode(PhaseCode.C);
+				xfr3P.setPhaseCode(PhaseCode.C);
 			} else{
 				throw new Error("Transformer connection phase currently must be either 1, 2 or 3.  xfr #" +xfrId);
 			}
@@ -750,7 +735,7 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 		}
 		xfrBranch.setZ(seriesZ);
 
-		xfrBranch.setXfrRatedKVA(kva1);
+		xfr3P.setXfrRatedKVA(kva1);
 
 
 	    AcscXformerAdapter xfr0 = acscXfrAptr.apply(xfrBranch);
@@ -830,21 +815,15 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 		TerminalBus secondary2 = terminalBus(busTerminals[2]);
 		String fromBusId = this.dataParser.getBusIdPrefix() + primary.busId;
 		String toBusId = this.dataParser.getBusIdPrefix() + secondary1.busId;
-		if(this.dataParser.getDistNetwork().getBus(fromBusId)==null) {
-			ThreePhaseObjectFactory.create3PDStabBus(fromBusId, this.dataParser.getDistNetwork());
-		}
-		if(this.dataParser.getDistNetwork().getBus(toBusId)==null) {
-			ThreePhaseObjectFactory.create3PDStabBus(toBusId, this.dataParser.getDistNetwork());
-		}
 
-		DStab3PBranch xfrBranch = ThreePhaseObjectFactory.create3PBranch(fromBusId, toBusId, xfrId,
-				this.dataParser.getDistNetwork());
+		AcscBranch xfrBranch = createTransformerBranch(fromBusId, toBusId, xfrId);
+		IBranch3Phase xfr3P = (IBranch3Phase) xfrBranch;
 		xfrBranch.setName(this.dataParser.getBusIdPrefix()+xfrId);
 		xfrBranch.setBranchCode(AclfBranchCode.XFORMER);
-		xfrBranch.setPhaseCode(phaseCode(primary.nodes[0]));
+		xfr3P.setPhaseCode(phaseCode(primary.nodes[0]));
 		xfrBranch.setFromTurnRatio(kvs[0]*1000.0);
 		xfrBranch.setToTurnRatio(kvs[1]*1000.0);
-		xfrBranch.setXfrRatedKVA(kvas[0]);
+		xfr3P.setXfrRatedKVA(kvas[0]);
 		xfrBranch.setZ(transformerSeriesImpedanceOhm(kvs[0], kvs[1], kvas[0], kvas[1],
 				rPercents[0] + rPercents[1], xhl));
 
@@ -866,7 +845,7 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 		}
 		addPrimaryNoLoadAdmittance(yff, phaseIndex(primary.nodes[0]),
 				noLoadAdmittance(kvs[0], kvas[0], imagPercent, noLoadLossPercent));
-		xfrBranch.setExplicitYabc(yff, yft, ytf, ytt);
+		xfr3P.setExplicitYabc(yff, yft, ytf, ytt);
 
 		AcscXformerAdapter xfr0 = acscXfrAptr.apply(xfrBranch);
 		xfr0.setFromGrounding(BusGroundCode.SOLID_GROUNDED,
@@ -1029,6 +1008,34 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 
 	private static int phaseCount(PhaseCode phaseCode) {
 		return phaseCode == PhaseCode.ABC ? 3 : 1;
+	}
+
+	private List<? extends AclfBranch> currentBranchList() {
+		return this.dataParser.isStaticNetworkMode()
+				? this.dataParser.getStaticNetwork().getBranchList()
+				: this.dataParser.getDistNetwork().getBranchList();
+	}
+
+	private AcscBranch createTransformerBranch(String fromBusId, String toBusId, String cirId)
+			throws InterpssException {
+		if(this.dataParser.isStaticNetworkMode()) {
+			this.dataParser.getOrCreateStaticBus(fromBusId);
+			this.dataParser.getOrCreateStaticBus(toBusId);
+			return ThreePhaseObjectFactory.createStatic3PBranch(fromBusId, toBusId, cirId,
+					this.dataParser.getStaticNetwork());
+		}
+		if(this.dataParser.getDistNetwork().getBus(fromBusId)==null) {
+			ThreePhaseObjectFactory.create3PDStabBus(fromBusId, this.dataParser.getDistNetwork());
+		}
+		if(this.dataParser.getDistNetwork().getBus(toBusId)==null) {
+			ThreePhaseObjectFactory.create3PDStabBus(toBusId, this.dataParser.getDistNetwork());
+		}
+		return ThreePhaseObjectFactory.create3PBranch(fromBusId, toBusId, cirId,
+				this.dataParser.getDistNetwork());
+	}
+
+	private static IBranch3Phase branch3P(AclfBranch branch) {
+		return (IBranch3Phase) branch;
 	}
 
 
