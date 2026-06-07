@@ -1370,6 +1370,18 @@ public class OpenDSSDataParser {
 	 return null;
      }
 
+     public AclfBranch getThreePhaseBranchByName(String branchName){
+	 List<? extends AclfBranch> branches = this.isStaticNetworkMode()
+			 ? this.getStaticNetwork().getBranchList()
+			 : this.getDistNetwork().getBranchList();
+	 for(AclfBranch branch: branches){
+		 if(branch.getName().equals(branchName)){
+			 return branch;
+		 }
+	 }
+	 return null;
+     }
+
 	public String getBusIdPrefix() {
 		return busIdPrefix;
 	}
