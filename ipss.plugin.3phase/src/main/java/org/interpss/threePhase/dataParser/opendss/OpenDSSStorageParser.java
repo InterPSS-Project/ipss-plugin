@@ -101,6 +101,12 @@ public class OpenDSSStorageParser {
 		}
 
 		dataParser.getTimeSeriesData().getGeneratorStateStore().register(generator);
+		double initialStoredKwh = kwhStored > 0.0 ? kwhStored : kwhRated * pctStored / 100.0;
+		double reserveKwh = kwhRated * pctReserve / 100.0;
+		double storageKwRated = kwRated > 0.0 ? kwRated : Math.abs(signedKw);
+		dataParser.getTimeSeriesData().getStorageStateStore().register(generator,
+				dataParser.getNetworkBaseKva(), storageKwRated, kwhRated, initialStoredKwh,
+				reserveKwh, pctEffCharge, pctEffDischarge);
 		OpenDSSProfileBinding binding = dataParser.getTimeSeriesData().getOrCreateGeneratorBinding(id);
 		binding.setShapeId(OpenDSSProfileType.DAILY, daily);
 		binding.setShapeId(OpenDSSProfileType.YEARLY, yearly);

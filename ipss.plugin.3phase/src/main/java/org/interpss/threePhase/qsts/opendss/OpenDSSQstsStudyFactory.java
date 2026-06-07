@@ -33,7 +33,8 @@ public final class OpenDSSQstsStudyFactory {
 			return QstsStudy.from(network, null);
 		}
 		QstsStateApplier applier = new QstsStateApplier(timeSeriesData.toQstsScheduleData(),
-				timeSeriesData.getLoadStateStore(), timeSeriesData.getGeneratorStateStore());
+				timeSeriesData.getLoadStateStore(), timeSeriesData.getGeneratorStateStore(),
+				timeSeriesData.getStorageStateStore());
 		QstsStateApplier.registerNetworkDevices(network, applier.getLoadStateStore(),
 				applier.getGeneratorStateStore());
 		return QstsStudy.from(network, timeSeriesData.toQstsScheduleData()).setStateApplier(applier);
