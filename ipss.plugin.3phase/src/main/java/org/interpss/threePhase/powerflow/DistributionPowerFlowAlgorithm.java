@@ -61,6 +61,13 @@ public interface DistributionPowerFlowAlgorithm {
 
 	public void setPFMethod(DistributionPFMethod method);
 
+	public default DistributionPostSolveOutputMode getPostSolveOutputMode() {
+		return DistributionPostSolveOutputMode.FULL_BRANCH_CURRENTS;
+	}
+
+	public default void setPostSolveOutputMode(DistributionPostSolveOutputMode mode) {
+	}
+
 	public void setTolerance(double tolerance);
 
 	public double getTolerance();

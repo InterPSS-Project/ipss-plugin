@@ -11,6 +11,7 @@ import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.threePhase.powerflow.control.CapacitorBankControl;
 import org.interpss.threePhase.powerflow.DistributionPFMethod;
+import org.interpss.threePhase.powerflow.DistributionPostSolveOutputMode;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.powerflow.control.CapacitorControlData;
 import org.interpss.threePhase.powerflow.control.InverterControlData;
@@ -42,6 +43,7 @@ public class QstsStudy {
 	private QstsControlMode controlMode;
 	private int maxControlIterations;
 	private DistributionPFMethod pfMethod = DistributionPFMethod.Fixed_Point;
+	private DistributionPostSolveOutputMode postSolveOutputMode = DistributionPostSolveOutputMode.VOLTAGE_AND_SWING_POWER;
 	private int maxPowerFlowIterations = 100;
 	private double tolerance = 1.0e-6;
 	private boolean initializeFirstStepVoltages = true;
@@ -163,6 +165,12 @@ public class QstsStudy {
 		return this;
 	}
 
+	public QstsStudy setPostSolveOutputMode(DistributionPostSolveOutputMode postSolveOutputMode) {
+		this.postSolveOutputMode = postSolveOutputMode == null
+				? DistributionPostSolveOutputMode.VOLTAGE_AND_SWING_POWER : postSolveOutputMode;
+		return this;
+	}
+
 	public QstsStudy setMaxPowerFlowIterations(int maxPowerFlowIterations) {
 		this.maxPowerFlowIterations = Math.max(1, maxPowerFlowIterations);
 		return this;
@@ -184,6 +192,7 @@ public class QstsStudy {
 				: powerFlowAlgorithm;
 		algorithm.setNetwork(network);
 		algorithm.setPFMethod(pfMethod);
+		algorithm.setPostSolveOutputMode(postSolveOutputMode);
 		algorithm.setMaxIteration(maxPowerFlowIterations);
 		algorithm.setTolerance(tolerance);
 		algorithm.setRegulatorControls(regulatorControls);
