@@ -56,6 +56,8 @@ public class OpenDSSPVSystemParser {
 		double temperature = parseDouble(properties.get("temperature"), 25.0);
 		double pctCutIn = parseDouble(properties.get("%cutin"), parseDouble(properties.get("pctcutin"), 0.0));
 		double pctCutOut = parseDouble(properties.get("%cutout"), parseDouble(properties.get("pctcutout"), 0.0));
+		double kvarMax = parseDouble(properties.get("kvarmax"), Double.NaN);
+		double kvarMaxAbs = parseDouble(properties.get("kvarmaxabs"), Double.NaN);
 		String efficiencyCurve = stripDssValue(firstPresent(properties, "effcurve", "efficiencycurve"));
 		String pvsTCurve = stripDssValue(properties.get("p-tcurve"));
 		if(pvsTCurve.isEmpty()) {
@@ -107,7 +109,8 @@ public class OpenDSSPVSystemParser {
 
 		dataParser.getTimeSeriesData().getGeneratorStateStore().register(generator);
 		dataParser.getTimeSeriesData().getInverterAdapterStore().register(generator)
-				.setCapabilityData(inverterCapabilityData(kva, availableActivePowerKw, pctCutIn, pctCutOut));
+				.setCapabilityData(inverterCapabilityData(kva, availableActivePowerKw, pctCutIn, pctCutOut,
+						kvarMax, kvarMaxAbs));
 		OpenDSSProfileBinding binding = dataParser.getTimeSeriesData().getOrCreateGeneratorBinding(id);
 		binding.setShapeId(OpenDSSProfileType.DAILY, daily);
 		binding.setShapeId(OpenDSSProfileType.YEARLY, yearly);
@@ -122,14 +125,21 @@ public class OpenDSSPVSystemParser {
 	}
 
 	private InverterCapabilityData inverterCapabilityData(double kva, double availableActivePowerKw,
-			double pctCutIn, double pctCutOut) {
+			double pctCutIn, double pctCutOut, double kvarMax, double kvarMaxAbs) {
+		double maxQ = kvarMax;
+		double minQ = Double.isFinite(kvarMaxAbs) ? -kvarMaxAbs : Double.NaN;
 		double qLimit = Double.NaN;
 		if(kva > 0.0 && Double.isFinite(availableActivePowerKw)) {
 			qLimit = Math.sqrt(Math.max(0.0, kva * kva - availableActivePowerKw * availableActivePowerKw));
 		}
+		if(!Double.isFinite(maxQ)) {
+			maxQ = qLimit;
+		}
+		if(!Double.isFinite(minQ)) {
+			minQ = Double.isFinite(qLimit) ? -qLimit : Double.NaN;
+		}
 		return new InverterCapabilityData(kva, availableActivePowerKw,
-				Double.isFinite(qLimit) ? -qLimit : Double.NaN,
-				qLimit, kva * pctCutIn / 100.0, kva * pctCutOut / 100.0, true);
+				minQ, maxQ, kva * pctCutIn / 100.0, kva * pctCutOut / 100.0, true);
 	}
 
 	private double availableActivePowerKw(double pmpp, double irradiance, double pctPmpp,

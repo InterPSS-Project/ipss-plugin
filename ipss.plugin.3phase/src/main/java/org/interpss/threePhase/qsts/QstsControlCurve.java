@@ -20,6 +20,14 @@ public class QstsControlCurve {
 		return id;
 	}
 
+	public double[] getX() {
+		return Arrays.copyOf(x, x.length);
+	}
+
+	public double[] getY() {
+		return Arrays.copyOf(y, y.length);
+	}
+
 	public double evaluate(double value) {
 		if(value <= x[0]) {
 			return y[0];
