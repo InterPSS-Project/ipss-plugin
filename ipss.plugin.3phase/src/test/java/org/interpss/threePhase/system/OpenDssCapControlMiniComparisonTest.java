@@ -65,6 +65,50 @@ public class OpenDssCapControlMiniComparisonTest {
 		}
 	}
 
+	@Test
+	void capacitorControlYMatrixCacheMatchesFullRebuildForCurrentInjectionCompensation() {
+		assertCacheMatchesFullRebuild("HighVoltageOpen.dss");
+		assertCacheMatchesFullRebuild("LowVoltageClosed.dss");
+	}
+
+	private static void assertCacheMatchesFullRebuild(String masterFile) {
+		SolvedCapacitorCase fullRebuild = solveCapacitorCase(masterFile, false);
+		SolvedCapacitorCase cached = solveCapacitorCase(masterFile, true);
+
+		assertEquals(fullRebuild.closed, cached.closed, "Capacitor state mismatch for " + masterFile);
+		assertEquals(fullRebuild.totalQKvar, cached.totalQKvar, 1.0e-6,
+				"Capacitor kvar mismatch for " + masterFile);
+		assertEquals(fullRebuild.capBusVoltageMaxPu, cached.capBusVoltageMaxPu, 1.0e-10,
+				"Capacitor bus voltage mismatch for " + masterFile);
+	}
+
+	private static SolvedCapacitorCase solveCapacitorCase(String masterFile, boolean cacheEnabled) {
+		OpenDSSStaticDataParser parser = OpenDSSDataParser.forStaticNetwork();
+		assertTrue(parser.parseFeederData(FEEDER_FOLDER, masterFile));
+		assertTrue(parser.calcVoltageBases());
+		assertTrue(parser.convertActualValuesToPU(1.0));
+
+		Static3PNetwork network = parser.getStaticNetwork();
+		DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(network);
+		powerFlow.setPFMethod(DistributionPFMethod.Fixed_Point);
+		powerFlow.setInitBusVoltageEnabled(true);
+		powerFlow.setMaxIteration(100);
+		powerFlow.setTolerance(1.0e-8);
+		powerFlow.setCapacitorControls(parser.getCapacitorControls());
+		powerFlow.setCapacitorControlEnabled(true);
+		powerFlow.setFixedPointYMatrixCacheEnabled(cacheEnabled);
+		assertTrue(powerFlow.powerflow(), "Power flow failed for " + masterFile
+				+ " cacheEnabled=" + cacheEnabled);
+
+		CapacitorDevice capacitor = findCapacitor(network, "cap1");
+		assertNotNull(capacitor, "Missing capacitor cap1");
+		Complex3x1 solvedPower = capacitor.load.get3PhaseLoad(capacitor.bus.get3PhaseVotlages());
+		double totalQKvar = total(solvedPower).getImaginary() * network.getBaseKva() / 3.0;
+		boolean closed = Math.abs(totalQKvar) > 1.0;
+		return new SolvedCapacitorCase(closed, totalQKvar,
+				capacitor.bus.get3PhaseVotlages().absMax());
+	}
+
 	private static CapacitorDevice findCapacitor(Static3PNetwork network, String capacitorId) {
 		for(Static3PBus bus : network.getBusList()) {
 			for(IPhaseLoad load : bus.getPhaseLoadList()) {
@@ -127,6 +171,18 @@ public class OpenDssCapControlMiniComparisonTest {
 		private CapacitorDevice(Static3PBus bus, IPhaseLoad load) {
 			this.bus = bus;
 			this.load = load;
+		}
+	}
+
+	private static class SolvedCapacitorCase {
+		private final boolean closed;
+		private final double totalQKvar;
+		private final double capBusVoltageMaxPu;
+
+		private SolvedCapacitorCase(boolean closed, double totalQKvar, double capBusVoltageMaxPu) {
+			this.closed = closed;
+			this.totalQKvar = totalQKvar;
+			this.capBusVoltageMaxPu = capBusVoltageMaxPu;
 		}
 	}
 }
