@@ -1,6 +1,7 @@
 package org.interpss.threePhase.qsts.opendss;
 
 import org.interpss.threePhase.dataParser.opendss.OpenDSSDataParser;
+import org.interpss.threePhase.dataParser.opendss.OpenDSSStaticDataParser;
 import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSTimeSeriesData;
 import org.interpss.threePhase.qsts.QstsStateApplier;
 import org.interpss.threePhase.qsts.QstsStudy;
@@ -16,11 +17,15 @@ public final class OpenDSSQstsStudyFactory {
 			throw new IllegalArgumentException("OpenDSS QSTS study requires a parser");
 		}
 		if(!parser.isStaticNetworkMode()) {
-			throw new IllegalArgumentException("OpenDSS QSTS studies require OpenDSSDataParser.forStaticNetwork()");
+			throw new IllegalArgumentException("OpenDSS QSTS studies require OpenDSSStaticDataParser");
 		}
 		return from(parser.getStaticNetwork(), parser.getTimeSeriesData())
 				.setRegulatorControls(parser.getRegulatorControls())
 				.setCapacitorControls(parser.getCapacitorControls());
+	}
+
+	public static QstsStudy from(OpenDSSStaticDataParser parser) {
+		return from((OpenDSSDataParser) parser);
 	}
 
 	public static QstsStudy from(INetwork3Phase network, OpenDSSTimeSeriesData timeSeriesData) {
