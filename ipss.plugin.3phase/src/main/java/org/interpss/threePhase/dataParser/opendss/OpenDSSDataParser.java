@@ -35,12 +35,19 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
+import com.interpss.core.aclf.BaseAclfBus;
+import com.interpss.core.aclf.BaseAclfNetwork;
+import com.interpss.core.acsc.AcscBranch;
 import com.interpss.core.acsc.PhaseCode;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 import com.interpss.core.net.NetworkType;
+import com.interpss.core.threephase.IBranch3Phase;
+import com.interpss.core.threephase.IBus3Phase;
+import com.interpss.core.threephase.IPhaseLoad;
 import com.interpss.core.threephase.Static3PBus;
 import com.interpss.core.threephase.Static3PBranch;
+import com.interpss.core.threephase.Static3PLoad;
 import com.interpss.core.threephase.Static3PNetwork;
 import com.interpss.dstab.DStabBranch;
 
@@ -170,6 +177,11 @@ public class OpenDSSDataParser {
 
 	public double getNetworkBaseMva() {
 		return isStaticNetworkMode() ? getStaticNetwork().getBaseMva() : getDistNetwork().getBaseMva();
+	}
+
+	@SuppressWarnings("rawtypes")
+	private BaseAclfNetwork activeAclfNetwork() {
+		return isStaticNetworkMode() ? getStaticNetwork() : getDistNetwork();
 	}
 
 	public DStabNetwork3Phase getDistNetwork(){
@@ -917,12 +929,12 @@ public class OpenDSSDataParser {
 		 if(mvaBase>20){
 			 ODMLogger.getLogger().warning("The input mvaBase is beyond the normal range of [5, 20] MVA, input mvabase = "+mvaBase);
 		 }
-		 this.getDistNetwork().setBaseKva(mvaBase*1000.0);
+		 activeAclfNetwork().setBaseKva(mvaBase*1000.0);
 	 }
 	 else{
 		 ODMLogger.getLogger().severe("The input mvabase <= 0. mvabase = 1.0 MVA will be used");
 		 mvaBase = 1.0;
-		 this.getDistNetwork().setBaseKva(mvaBase*1000.0);
+		 activeAclfNetwork().setBaseKva(mvaBase*1000.0);
 	 }
 
 	 boolean no_error = convertBranchZYMatrixToPU()&&convertLoadCapacitorToPU();
@@ -933,23 +945,25 @@ public class OpenDSSDataParser {
      private boolean convertBranchZYMatrixToPU(){
           boolean no_error = true;
 
-          double mvabase = this.getDistNetwork().getBaseMva();
+          BaseAclfNetwork activeNet = activeAclfNetwork();
+          double mvabase = activeNet.getBaseMva();
           double vBase = 0.0, zBase = 0.0;
-          for(DStabBranch bra: this.getDistNetwork().getBranchList()){
-	  DStab3PBranch bra3Phase = (DStab3PBranch) bra;
-	  if(!bra3Phase.isActive()) {
+          for(Object branchObj: activeNet.getBranchList()){
+	  AclfBranch bra = (AclfBranch) branchObj;
+	  IBranch3Phase bra3Phase = (IBranch3Phase) bra;
+	  if(!bra.isActive()) {
 		  continue;
 	  }
 
 	  if(bra3Phase.hasExplicitYabc()) {
-		  convertExplicitBranchYToPU(bra3Phase, mvabase);
+		  convertExplicitBranchYToPU(bra, bra3Phase, mvabase);
 	  }
-	  else if(bra3Phase.isLine()){
+	  else if(bra.isLine()){
 		  vBase = bra.getFromBus().getBaseVoltage();
 		  zBase = vBase*vBase*1.0E-6/mvabase;
 
 		  bra3Phase.setZabc(bra3Phase.getZabc().multiply(1.0/zBase));
-		  enforceMinimumLineSeriesImpedancePu(bra3Phase);
+		  enforceMinimumLineSeriesImpedancePu(bra, bra3Phase);
 		  if(bra3Phase.getFromShuntYabc() != null) {
 			  bra3Phase.setFromShuntYabc(bra3Phase.getFromShuntYabc().multiply(zBase));
 		  }
@@ -957,21 +971,21 @@ public class OpenDSSDataParser {
 			  bra3Phase.setToShuntYabc(bra3Phase.getToShuntYabc().multiply(zBase));
 		  }
 	  }
-	  else if(bra3Phase.isXfr() || bra3Phase.isPSXfr()){
+	  else if(bra.isXfr() || bra.isPSXfr()){
 		  // convert the Z to high voltage side
-		  vBase = bra3Phase.getFromBus().getBaseVoltage()>=bra3Phase.getToBus().getBaseVoltage()?
-				  bra3Phase.getFromBus().getBaseVoltage():bra3Phase.getToBus().getBaseVoltage();
+		  vBase = bra.getFromBus().getBaseVoltage()>=bra.getToBus().getBaseVoltage()?
+				  bra.getFromBus().getBaseVoltage():bra.getToBus().getBaseVoltage();
 		  zBase = vBase*vBase*1.0E-6/mvabase;
-		  bra3Phase.setZ(bra3Phase.getAdjustedZ().divide(zBase));
+		  ((AcscBranch) bra).setZ(bra.getAdjustedZ().divide(zBase));
 
 		  // convert the turn ratios
 		  double vllfactor = 1.0;
 		  if(bra3Phase.getPhaseCode()!=PhaseCode.ABC){
 			  vllfactor = Math.sqrt(3);
 		  }
-		  bra3Phase.setFromTurnRatio(bra3Phase.getFromTurnRatio()*vllfactor /bra3Phase.getFromBus().getBaseVoltage());
-		  bra3Phase.setToTurnRatio(bra3Phase.getToTurnRatio()*vllfactor/bra3Phase.getToBus().getBaseVoltage());
-		  convertPhaseTurnRatiosToPU(bra3Phase, vllfactor);
+		  bra.setFromTurnRatio(bra.getFromTurnRatio()*vllfactor /bra.getFromBus().getBaseVoltage());
+		  bra.setToTurnRatio(bra.getToTurnRatio()*vllfactor/bra.getToBus().getBaseVoltage());
+		  convertPhaseTurnRatiosToPU(bra, bra3Phase, vllfactor);
 	  }
 	  else{
 		  ODMLogger.getLogger().severe("Sepcial branch type is not supported, branchId = "+bra.getId());
@@ -982,17 +996,17 @@ public class OpenDSSDataParser {
 	  return no_error;
      }
 
-     private void enforceMinimumLineSeriesImpedancePu(DStab3PBranch branch) {
-	 Complex3x3 zabc = branch.getZabc();
+     private void enforceMinimumLineSeriesImpedancePu(AclfBranch branch, IBranch3Phase branch3P) {
+	 Complex3x3 zabc = branch3P.getZabc();
 	 double zAbsMax = zabc.absMax();
 	 if(this.minLineSeriesImpedancePu <= 0.0 || zAbsMax >= this.minLineSeriesImpedancePu) {
 		 return;
 	 }
 	 if(zAbsMax > 0.0) {
-		 branch.setZabc(zabc.multiply(this.minLineSeriesImpedancePu / zAbsMax));
+		 branch3P.setZabc(zabc.multiply(this.minLineSeriesImpedancePu / zAbsMax));
 	 }
 	 else {
-		 branch.setZabc(activePhaseDiagonalImpedance(branch.getPhaseCode(),
+		 branch3P.setZabc(activePhaseDiagonalImpedance(branch3P.getPhaseCode(),
 				 new Complex(this.minLineSeriesImpedancePu, 0.0)));
 	 }
 	 if(this.debug) {
@@ -1030,28 +1044,28 @@ public class OpenDSSDataParser {
 	 return zabc;
      }
 
-     private void convertExplicitBranchYToPU(DStab3PBranch branch, double mvabase) {
+     private void convertExplicitBranchYToPU(AclfBranch branch, IBranch3Phase branch3P, double mvabase) {
 	 double fromBaseKV = branch.getFromBus().getBaseVoltage()*1.0E-3;
 	 double toBaseKV = branch.getToBus().getBaseVoltage()*1.0E-3;
-	 branch.setExplicitYabc(
-			 branch.getYffabc().multiply(fromBaseKV*fromBaseKV/mvabase),
-			 branch.getYftabc().multiply(fromBaseKV*toBaseKV/mvabase),
-			 branch.getYtfabc().multiply(toBaseKV*fromBaseKV/mvabase),
-			 branch.getYttabc().multiply(toBaseKV*toBaseKV/mvabase));
+	 branch3P.setExplicitYabc(
+			 branch3P.getYffabc().multiply(fromBaseKV*fromBaseKV/mvabase),
+			 branch3P.getYftabc().multiply(fromBaseKV*toBaseKV/mvabase),
+			 branch3P.getYtfabc().multiply(toBaseKV*fromBaseKV/mvabase),
+			 branch3P.getYttabc().multiply(toBaseKV*toBaseKV/mvabase));
 
 	 branch.setFromTurnRatio(branch.getFromTurnRatio()/branch.getFromBus().getBaseVoltage());
 	 branch.setToTurnRatio(branch.getToTurnRatio()/branch.getToBus().getBaseVoltage());
      }
 
-     private void convertPhaseTurnRatiosToPU(DStab3PBranch bra3Phase, double vllfactor) {
+     private void convertPhaseTurnRatiosToPU(AclfBranch branch, IBranch3Phase bra3Phase, double vllfactor) {
 	 if(!bra3Phase.hasPhaseTurnRatio()) {
 		 return;
 	 }
 	 double[] fromRatios = bra3Phase.getFromTurnRatioABC();
 	 double[] toRatios = bra3Phase.getToTurnRatioABC();
 	 for(int i = 0; i < 3; i++) {
-		 fromRatios[i] = fromRatios[i] * vllfactor / bra3Phase.getFromBus().getBaseVoltage();
-		 toRatios[i] = toRatios[i] * vllfactor / bra3Phase.getToBus().getBaseVoltage();
+		 fromRatios[i] = fromRatios[i] * vllfactor / branch.getFromBus().getBaseVoltage();
+		 toRatios[i] = toRatios[i] * vllfactor / branch.getToBus().getBaseVoltage();
 	 }
 	 bra3Phase.setFromTurnRatioABC(fromRatios[0], fromRatios[1], fromRatios[2]);
 	 bra3Phase.setToTurnRatioABC(toRatios[0], toRatios[1], toRatios[2]);
@@ -1060,28 +1074,25 @@ public class OpenDSSDataParser {
      private boolean convertLoadCapacitorToPU(){
          boolean no_error = true;
 
-	     double baseKVA3P = this.getDistNetwork().getBaseKva();
+	     BaseAclfNetwork activeNet = activeAclfNetwork();
+	     double baseKVA3P = activeNet.getBaseKva();
 	     double baseKVA1P = baseKVA3P/3.0;
 
-         for(DStab3PBus bus3P: this.getDistNetwork().getBusList()){
-	 if(!bus3P.isActive()) {
-		 continue;
-	 }
-
-	 if(bus3P.getSinglePhaseLoadList().size()>0){
-		 for(DStab1PLoad load:bus3P.getSinglePhaseLoadList()){
-			 DStab1PLoad ld1P = load;
-			 ld1P.setLoadCP(ld1P.getLoadCP().divide(baseKVA1P));
-			 ld1P.setLoadCI(ld1P.getLoadCI().divide(baseKVA1P));
-			 ld1P.setLoadCZ(ld1P.getLoadCZ().divide(baseKVA1P));
+	     if(isStaticNetworkMode()) {
+		 for(Static3PBus bus : getStaticNetwork().getBusList()) {
+			 for(Static3PLoad load : bus.getContributeLoadList()) {
+				 convertPhaseLoadToPU(bus, load, baseKVA3P);
+			 }
 		 }
-	 }
+		 return no_error;
+	     }
 
-	 if(bus3P.getThreePhaseLoadList().size()>0){
-		 for(DStab3PLoad load3P:bus3P.getThreePhaseLoadList()){
-			 double voltageScale = threePhaseConstZVoltageScale(bus3P, load3P);
-			 load3P.set3PhaseLoad(load3P.getInit3PhaseLoad().multiply(voltageScale/baseKVA1P));
-		 }
+         for(Object busObj: activeNet.getBusList()){
+	 BaseAclfBus bus = (BaseAclfBus) busObj;
+	 IBus3Phase bus3P = (IBus3Phase) bus;
+	 for(IPhaseLoad load : bus3P.getPhaseLoadList()){
+		 double loadBaseKva = load instanceof DStab1PLoad ? baseKVA1P : baseKVA3P;
+		 convertPhaseLoadToPU(bus, load, loadBaseKva);
 	 }
          }
 
@@ -1089,7 +1100,17 @@ public class OpenDSSDataParser {
 	  return no_error;
     }
 
-     private double threePhaseConstZVoltageScale(DStab3PBus bus3P, DStab3PLoad load3P) {
+     private void convertPhaseLoadToPU(BaseAclfBus bus, IPhaseLoad load, double loadBaseKva) {
+	 double voltageScale = threePhaseConstZVoltageScale(bus, load);
+	 load.setLoadCP(load.getLoadCP().divide(loadBaseKva));
+	 load.setLoadCI(load.getLoadCI().divide(loadBaseKva));
+	 load.setLoadCZ(load.getLoadCZ().divide(loadBaseKva));
+	 if(load.getInit3PhaseLoad() != null) {
+		 load.set3PhaseLoad(load.getInit3PhaseLoad().multiply(voltageScale/loadBaseKva));
+	 }
+     }
+
+     private double threePhaseConstZVoltageScale(BaseAclfBus bus3P, IPhaseLoad load3P) {
 	 if(load3P.getCode() != AclfLoadCode.CONST_Z || load3P.getNominalKV() <= 0.0) {
 		 return 1.0;
 	 }
