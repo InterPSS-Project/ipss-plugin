@@ -2,6 +2,7 @@ package org.interpss.threePhase.powerflow.impl;
 
 import java.util.ArrayList;
 import java.util.ArrayDeque;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,7 +15,10 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.sparse.ISparseEqnComplexMatrix3x3;
 import org.interpss.threePhase.basic.dstab.DStab3PBranch;
-import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
+import org.interpss.threePhase.powerflow.control.CapacitorBankControl;
+import org.interpss.threePhase.powerflow.control.CapacitorControlData;
+import org.interpss.threePhase.powerflow.control.RegulatorControlData;
+import org.interpss.threePhase.powerflow.control.RegulatorTapControl;
 import org.interpss.threePhase.powerflow.DistributionPFMethod;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
@@ -27,6 +31,7 @@ import com.interpss.core.threephase.IBranch3Phase;
 import com.interpss.core.threephase.IBus3Phase;
 import com.interpss.core.threephase.INetwork3Phase;
 import com.interpss.core.threephase.Static3PXformer;
+import com.interpss.core.threephase.Static3PhaseFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfLoad;
@@ -59,6 +64,14 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	private double transformerAntiFloatAdmittance = 1.0E-6;
 	private double maxFixedPointVoltageAbs = 10.0;
 	private Hashtable<Integer, Complex3x1> swingBusVoltageBoundaryCurrent = new Hashtable<>();
+	private List<RegulatorControlData> regulatorControls = Collections.emptyList();
+	private boolean regulatorControlEnabled = false;
+	private int maxRegulatorControlIterations = 20;
+	private final RegulatorTapControl regulatorTapControl = new RegulatorTapControl();
+	private List<CapacitorControlData> capacitorControls = Collections.emptyList();
+	private boolean capacitorControlEnabled = false;
+	private int maxCapacitorControlIterations = 20;
+	private final CapacitorBankControl capacitorBankControl = new CapacitorBankControl();
 
 	private static final Logger log = LoggerFactory.getLogger(DistributionPowerFlowAlgorithmImpl.class);
 
@@ -95,11 +108,26 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		throw new UnsupportedOperationException("The branch object is not a three-phase type: " + branch.getId());
 	}
 
-	private DStab3PBranch sweepBranch(Branch branch) {
-		if(branch instanceof DStab3PBranch) {
-			return (DStab3PBranch) branch;
+	private IBranch3Phase sweepBranch(Branch branch) {
+		if(branch instanceof IBranch3Phase) {
+			return (IBranch3Phase) branch;
 		}
-		throw new UnsupportedOperationException("Forward/backward sweep requires DStab3PBranch branch operations: " + branch.getId());
+		throw new UnsupportedOperationException("Forward/backward sweep requires IBranch3Phase branch operations: " + branch.getId());
+	}
+
+	private AcscBranch acscBranch(IBranch3Phase branch) {
+		if(branch instanceof AcscBranch) {
+			return (AcscBranch) branch;
+		}
+		throw new UnsupportedOperationException("Three-phase branch must also be an AcscBranch for power flow");
+	}
+
+	private boolean branchIsLine(IBranch3Phase branch) {
+		return acscBranch(branch).isLine();
+	}
+
+	private boolean branchIsXfr(IBranch3Phase branch) {
+		return acscBranch(branch).isXfr();
 	}
 
 	private Complex3x1 currentOrZero(Complex3x1 current) {
@@ -119,13 +147,13 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				&& Double.isFinite(value.getImaginary());
 	}
 
-	private Complex3x1 turnRatioTransformerCurrentVoltageDrop(DStab3PBranch branch, Complex3x1 current) {
+	private Complex3x1 turnRatioTransformerCurrentVoltageDrop(IBranch3Phase branch, Complex3x1 current) {
 		double[] fromRatios = transformerFromTurnRatios(branch);
 		double[] toRatios = transformerToTurnRatios(branch);
 		return turnRatioTransformerCurrentVoltageDrop(branch, current, fromRatios, toRatios);
 	}
 
-	private Complex3x1 turnRatioTransformerCurrentVoltageDrop(DStab3PBranch branch, Complex3x1 branchCurrent,
+	private Complex3x1 turnRatioTransformerCurrentVoltageDrop(IBranch3Phase branch, Complex3x1 branchCurrent,
 			double[] fromRatios, double[] toRatios) {
 		Complex3x1 current = currentOrZero(branchCurrent);
 		Complex3x3 zabc = branch.getZabc();
@@ -136,11 +164,11 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		return voltageDrop;
 	}
 
-	private Complex3x3 turnRatioFromBusVabc2ToBusVabcMatrix(DStab3PBranch branch) {
+	private Complex3x3 turnRatioFromBusVabc2ToBusVabcMatrix(IBranch3Phase branch) {
 		return ratioMatrix(transformerToTurnRatios(branch), transformerFromTurnRatios(branch));
 	}
 
-	private Complex3x3 turnRatioToBusVabc2FromBusVabcMatrix(DStab3PBranch branch) {
+	private Complex3x3 turnRatioToBusVabc2FromBusVabcMatrix(IBranch3Phase branch) {
 		return ratioMatrix(transformerFromTurnRatios(branch), transformerToTurnRatios(branch));
 	}
 
@@ -152,26 +180,26 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		return matrix;
 	}
 
-	private double[] transformerFromTurnRatios(DStab3PBranch branch) {
+	private double[] transformerFromTurnRatios(IBranch3Phase branch) {
 		if(branch.hasPhaseTurnRatio()) {
 			return branch.getFromTurnRatioABC();
 		}
-		return new double[] {branch.getFromTurnRatio(), branch.getFromTurnRatio(), branch.getFromTurnRatio()};
+		return new double[] {acscBranch(branch).getFromTurnRatio(), acscBranch(branch).getFromTurnRatio(), acscBranch(branch).getFromTurnRatio()};
 	}
 
-	private double[] transformerToTurnRatios(DStab3PBranch branch) {
+	private double[] transformerToTurnRatios(IBranch3Phase branch) {
 		if(branch.hasPhaseTurnRatio()) {
 			return branch.getToTurnRatioABC();
 		}
-		return new double[] {branch.getToTurnRatio(), branch.getToTurnRatio(), branch.getToTurnRatio()};
+		return new double[] {acscBranch(branch).getToTurnRatio(), acscBranch(branch).getToTurnRatio(), acscBranch(branch).getToTurnRatio()};
 	}
 
-	private boolean usesRegulatorTurnRatioFbsModel(DStab3PBranch branch) {
-		return branch.isXfr()
+	private boolean usesRegulatorTurnRatioFbsModel(IBranch3Phase branch) {
+		return branchIsXfr(branch)
 				&& isRegulatorBranch(branch)
 				&& (branch.hasPhaseTurnRatio()
-						|| Math.abs(branch.getFromTurnRatio() - 1.0) > 1.0E-10
-						|| Math.abs(branch.getToTurnRatio() - 1.0) > 1.0E-10);
+						|| Math.abs(acscBranch(branch).getFromTurnRatio() - 1.0) > 1.0E-10
+						|| Math.abs(acscBranch(branch).getToTurnRatio() - 1.0) > 1.0E-10);
 	}
 
 	@Override
@@ -276,6 +304,35 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 	@Override
 	public boolean powerflow() {
+		boolean useRegulatorControls = this.regulatorControlEnabled && !this.regulatorControls.isEmpty();
+		boolean useCapacitorControls = this.capacitorControlEnabled && !this.capacitorControls.isEmpty();
+		if(!useRegulatorControls && !useCapacitorControls) {
+			return powerflowWithoutRegulatorControls();
+		}
+
+		boolean converged = false;
+		int maxControlIterations = Math.max(this.maxRegulatorControlIterations, this.maxCapacitorControlIterations);
+		for(int controlIteration = 0; controlIteration <= maxControlIterations; controlIteration++) {
+			converged = powerflowWithoutRegulatorControls();
+			if(!converged) {
+				return false;
+			}
+			boolean changed = false;
+			if(useCapacitorControls) {
+				changed = this.capacitorBankControl.apply(this.distNet, this.capacitorControls);
+			}
+			if(useRegulatorControls) {
+				changed = this.regulatorTapControl.apply(this.distNet, this.regulatorControls) || changed;
+			}
+			if(!changed) {
+				return true;
+			}
+		}
+		log.error("Distribution controls did not settle within {} outer iterations", maxControlIterations);
+		return this.isAllPowerFlowConverged = false;
+	}
+
+	private boolean powerflowWithoutRegulatorControls() {
 
 		 this.isAllPowerFlowConverged = true;
 		 BaseAclfNetwork<? extends BaseAclfBus<? extends AclfGen, ? extends AclfLoad>, ? extends AclfBranch> distNet = aclfNetwork();
@@ -419,10 +476,10 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				// searching a new subnetwork. Thus, a new subnetwork object needs to be created first.
 				BaseAclfNetwork subNet = null;
 
-				if(parentNetwork instanceof DStabNetwork3Phase) {
-					subNet = ThreePhaseObjectFactory.create3PhaseDStabNetwork();
+				if(parentNetwork instanceof INetwork3Phase) {
+					subNet = Static3PhaseFactory.eINSTANCE.createStatic3PNetwork();
 				} else {
-					throw new UnsupportedOperationException("The network should be either  DStabNetwork3Phase or DStabilityNetwork type!");
+					throw new UnsupportedOperationException("The network should be a three-phase BaseAclfNetwork type");
 				}
 				subNet.setId("SubNet-"+(subNetIdx+1));
 
@@ -883,9 +940,16 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	private void updateBranchCurrentsFromSolvedVoltages() {
 		for(AclfBranch branch: aclfNetwork().getBranchList()) {
 			if(branch.isActive()) {
-				DStab3PBranch branch3P = sweepBranch(branch);
-				branch3P.setCurrentAbcAtFromSide(branch3P.calc3PhaseCurrentFrom2To());
-				branch3P.setCurrentAbcAtToSide(branch3P.calc3PhaseCurrentTo2From());
+				IBranch3Phase branch3P = sweepBranch(branch);
+				Complex3x1 vabcF = threePhaseBus((BaseAclfBus<?, ?>) branch.getFromBus()).get3PhaseVotlages();
+				Complex3x1 vabcT = threePhaseBus((BaseAclfBus<?, ?>) branch.getToBus()).get3PhaseVotlages();
+				if(branch3P instanceof DStab3PBranch) {
+					DStab3PBranch dstabBranch = (DStab3PBranch) branch3P;
+					dstabBranch.setCurrentAbcAtFromSide(branch3P.getYffabc().multiply(vabcF)
+							.add(branch3P.getYftabc().multiply(vabcT)));
+					dstabBranch.setCurrentAbcAtToSide(branch3P.getYttabc().multiply(vabcT)
+							.add(branch3P.getYtfabc().multiply(vabcF)));
+				}
 			}
 		}
 	}
@@ -951,9 +1015,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 					String upStreamBranchId = "";
 					String upStreamBusId="";
 					int unvisitedBranchNum = 0;
-					List<DStab3PBranch> unvisitedBranches = new ArrayList<>();
+					List<IBranch3Phase> unvisitedBranches = new ArrayList<>();
 					for (Branch bra: bus.getBranchIterable()){
-						DStab3PBranch bra3P = sweepBranch(bra);
+						IBranch3Phase bra3P = sweepBranch(bra);
 						// all visited branches are on the downstream side, and there should be only one upstream branch
 						if(bra.isActive() && bra.getIntFlag() ==1){
 
@@ -1000,7 +1064,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 						}
 
 						// add the branch current flows to obtain the current injections
-						DStab3PBranch upStreamBranch = sweepBranch(distNet.getBranch(upStreamBranchId));
+						IBranch3Phase upStreamBranch = sweepBranch(distNet.getBranch(upStreamBranchId));
 
 						BaseAclfBus upStreamBus = null;
 
@@ -1017,12 +1081,12 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 						 */
 
 						// update the upstream branch current and the upstream bus voltage
-						if(upStreamBranch != null && upStreamBranch.getFromBus().getId().equals(bus.getId())){
+						if(upStreamBranch != null && acscBranch(upStreamBranch).getFromBus().getId().equals(bus.getId())){
 
 							//calculate and set the upstream branch current
 							upStreamBranch.setCurrentAbcAtFromSide(busSelfEquivCurInj3Ph.subtract( sumOfBranchCurrents));
 
-							upStreamBus = (BaseAclfBus) upStreamBranch.getToBus();
+							upStreamBus = (BaseAclfBus) acscBranch(upStreamBranch).getToBus();
 
 							//calculate the voltages at the upstream end
 							//NOTE: For, current flowing through the branch, the direction from bus -> to bus  is regarded as positive;
@@ -1031,7 +1095,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 
 							// line
-							if(upStreamBranch.isLine()){
+							if(branchIsLine(upStreamBranch)){
 								vabc = upStreamBranch.getToBusVabc2FromBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).add(
 										upStreamBranch.getToBusIabc2FromBusVabcMatrix().multiply(upStreamBranch.getCurrentAbcAtFromSide().multiply(-1)));
 
@@ -1043,7 +1107,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 							}
 
 							// transformer
-							else if (upStreamBranch.isXfr()){
+							else if (branchIsXfr(upStreamBranch)){
 								Static3PXformer xfr3p = upStreamBranch.to3PXformer();
 								if(usesRegulatorTurnRatioFbsModel(upStreamBranch)) {
 									vabc = turnRatioFromBusVabc2ToBusVabcMatrix(upStreamBranch).multiply(bus3P.get3PhaseVotlages()).subtract(
@@ -1079,14 +1143,14 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 						else{
 							upStreamBranch.setCurrentAbcAtToSide(sumOfBranchCurrents.subtract(busSelfEquivCurInj3Ph));
 
-	                        upStreamBus = (BaseAclfBus) upStreamBranch.getFromBus();
+	                        upStreamBus = (BaseAclfBus) acscBranch(upStreamBranch).getFromBus();
 
 	                        //calculate the bus voltage at the upstream end
 							Complex3x1 vabc = null;
 							Complex3x1 iabc = null;
 
 							// line
-							if(upStreamBranch.isLine()){
+							if(branchIsLine(upStreamBranch)){
 								vabc =	upStreamBranch.getToBusVabc2FromBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).add(
 										upStreamBranch.getToBusIabc2FromBusVabcMatrix().multiply(upStreamBranch.getCurrentAbcAtToSide()));
 
@@ -1098,7 +1162,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 							}
 
 							// transformer
-							else if (upStreamBranch.isXfr()){
+							else if (branchIsXfr(upStreamBranch)){
 								Static3PXformer xfr3p = upStreamBranch.to3PXformer();
 
 								if(usesRegulatorTurnRatioFbsModel(upStreamBranch)) {
@@ -1111,9 +1175,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 												xfr3p.getLVBusIabc2HVBusVabcMatrix().multiply(upStreamBranch.getCurrentAbcAtToSide()));
 									} catch (NullPointerException e) {
 										throw new Error("Transformer FBS matrix failed for branch "
-												+ upStreamBranch.getId() + ", name=" + upStreamBranch.getName()
-												+ ", from=" + upStreamBranch.getFromBus().getId()
-												+ ", to=" + upStreamBranch.getToBus().getId()
+												+ acscBranch(upStreamBranch).getId() + ", name=" + acscBranch(upStreamBranch).getName()
+												+ ", from=" + acscBranch(upStreamBranch).getFromBus().getId()
+												+ ", to=" + acscBranch(upStreamBranch).getToBus().getId()
 												+ ", phase=" + upStreamBranch.getPhaseCode(), e);
 									}
 								}
@@ -1173,7 +1237,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 					for(Branch bra:bus.getBranchIterable()){
 
 						if(bra.isActive()){
-							DStab3PBranch bra3Phase = sweepBranch(bra);
+							IBranch3Phase bra3Phase = sweepBranch(bra);
 
 							BaseAclfBus downStreamBus = (BaseAclfBus) bra.getOppositeBus(bus);
 							if(bus.getSortNumber() >= downStreamBus.getSortNumber()) {
@@ -1192,12 +1256,12 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 									 //calculate the bus voltage at the downstream end
 									//  the current flow definition is align with the up/downstream definition
 									//  which is the same as the definition in Dr.Kersting's book
-									if(bra3Phase.isLine()){
+									if(branchIsLine(bra3Phase)){
 
 									   vabc =  bra3Phase.getFromBusVabc2ToBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).subtract(
 											bra3Phase.getToBusIabc2ToBusVabcMatrix().multiply(currentOrZero(bra3Phase.getCurrentAbcAtToSide())));
 									}
-									else if (bra3Phase.isXfr()){
+									else if (branchIsXfr(bra3Phase)){
 										Static3PXformer xfr3p = bra3Phase.to3PXformer();
 										if(usesRegulatorTurnRatioFbsModel(bra3Phase)) {
 											vabc =  turnRatioFromBusVabc2ToBusVabcMatrix(bra3Phase).multiply(bus3P.get3PhaseVotlages()).subtract(
@@ -1221,11 +1285,11 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 									//   the subtract() operation has been changed to add() in the following calculation
 									//   also the current is measured at the downstream side, which is the fromside
 
-									if(bra3Phase.isLine()){
+									if(branchIsLine(bra3Phase)){
 										vabc =  bra3Phase.getFromBusVabc2ToBusVabcMatrix().multiply(bus3P.get3PhaseVotlages()).add(
 												bra3Phase.getToBusIabc2ToBusVabcMatrix().multiply(currentOrZero(bra3Phase.getCurrentAbcAtFromSide())));
 									}
-									else if (bra3Phase.isXfr()){
+									else if (branchIsXfr(bra3Phase)){
 										Static3PXformer xfr3p = bra3Phase.to3PXformer();
 
 										if(usesRegulatorTurnRatioFbsModel(bra3Phase)) {
@@ -1291,8 +1355,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 	}
 
-	private boolean isPartialPhaseRegulatorTransformer(DStab3PBranch branch) {
-		return branch.isXfr()
+	private boolean isPartialPhaseRegulatorTransformer(IBranch3Phase branch) {
+		return branchIsXfr(branch)
 				&& branch.getPhaseCode() != null
 				&& branch.getPhaseCode() != PhaseCode.ABC
 				&& isRegulatorBranch(branch);
@@ -1300,24 +1364,24 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 	private boolean processParallelPartialRegulatorBackward(BaseAclfBus bus, IBus3Phase bus3P,
 			Complex3x1 busSelfEquivCurInj3Ph, Complex3x1 sumOfBranchCurrents,
-			List<DStab3PBranch> unvisitedBranches, Hashtable<String, Integer> backwardUpdatedPhaseMask) {
+			List<IBranch3Phase> unvisitedBranches, Hashtable<String, Integer> backwardUpdatedPhaseMask) {
 		if(unvisitedBranches.size() <= 1) {
 			return false;
 		}
 
-		DStab3PBranch firstBranch = unvisitedBranches.get(0);
+		IBranch3Phase firstBranch = unvisitedBranches.get(0);
 		if(!isPartialPhaseRegulatorTransformer(firstBranch)) {
 			return false;
 		}
 
-		boolean busIsFromSide = firstBranch.getFromBus().getId().equals(bus.getId());
-		BaseAclfBus upStreamBus = (BaseAclfBus) (busIsFromSide ? firstBranch.getToBus() : firstBranch.getFromBus());
-		for(DStab3PBranch branch : unvisitedBranches) {
+		boolean busIsFromSide = acscBranch(firstBranch).getFromBus().getId().equals(bus.getId());
+		BaseAclfBus upStreamBus = (BaseAclfBus) (busIsFromSide ? acscBranch(firstBranch).getToBus() : acscBranch(firstBranch).getFromBus());
+		for(IBranch3Phase branch : unvisitedBranches) {
 			if(!isPartialPhaseRegulatorTransformer(branch)) {
 				return false;
 			}
-			boolean sameSide = busIsFromSide == branch.getFromBus().getId().equals(bus.getId());
-			BaseAclfBus branchUpstreamBus = (BaseAclfBus) (busIsFromSide ? branch.getToBus() : branch.getFromBus());
+			boolean sameSide = busIsFromSide == acscBranch(branch).getFromBus().getId().equals(bus.getId());
+			BaseAclfBus branchUpstreamBus = (BaseAclfBus) (busIsFromSide ? acscBranch(branch).getToBus() : acscBranch(branch).getFromBus());
 			if(!sameSide || !branchUpstreamBus.getId().equals(upStreamBus.getId())) {
 				return false;
 			}
@@ -1327,7 +1391,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				? busSelfEquivCurInj3Ph.subtract(sumOfBranchCurrents)
 				: sumOfBranchCurrents.subtract(busSelfEquivCurInj3Ph);
 
-		for(DStab3PBranch branch : unvisitedBranches) {
+		for(IBranch3Phase branch : unvisitedBranches) {
 			int phaseMask = branchPhaseMask(branch);
 			Complex3x1 branchCurrentAtBus = phaseMaskedValue(totalCurrentAtBus, phaseMask);
 			Complex3x1 upstreamVoltage;
@@ -1376,13 +1440,13 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		return true;
 	}
 
-	private boolean isPartialPhaseLine(DStab3PBranch branch) {
-		return branch.isLine()
+	private boolean isPartialPhaseLine(IBranch3Phase branch) {
+		return branchIsLine(branch)
 				&& branch.getPhaseCode() != null
 				&& branch.getPhaseCode() != PhaseCode.ABC;
 	}
 
-	private void mergeUpstreamPartialBranchVoltage(BaseAclfBus upStreamBus, DStab3PBranch upStreamBranch,
+	private void mergeUpstreamPartialBranchVoltage(BaseAclfBus upStreamBus, IBranch3Phase upStreamBranch,
 			Complex3x1 branchVoltage, Hashtable<String, Integer> backwardUpdatedPhaseMask) {
 		IBus3Phase upStreamBus3P = threePhaseBus(upStreamBus);
 		int phaseMask = branchPhaseMask(upStreamBranch);
@@ -1408,18 +1472,18 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		}
 	}
 
-	private boolean isRegulatorBranch(DStab3PBranch branch) {
-		String id = branch.getId() == null ? "" : branch.getId().toLowerCase();
-		String name = branch.getName() == null ? "" : branch.getName().toLowerCase();
-		String fromBusId = branch.getFromBus() == null ? "" : branch.getFromBus().getId().toLowerCase();
-		String toBusId = branch.getToBus() == null ? "" : branch.getToBus().getId().toLowerCase();
+	private boolean isRegulatorBranch(IBranch3Phase branch) {
+		String id = acscBranch(branch).getId() == null ? "" : acscBranch(branch).getId().toLowerCase();
+		String name = acscBranch(branch).getName() == null ? "" : acscBranch(branch).getName().toLowerCase();
+		String fromBusId = acscBranch(branch).getFromBus() == null ? "" : acscBranch(branch).getFromBus().getId().toLowerCase();
+		String toBusId = acscBranch(branch).getToBus() == null ? "" : acscBranch(branch).getToBus().getId().toLowerCase();
 		return id.contains("reg")
 				|| name.contains("reg")
 				|| fromBusId.endsWith("r")
 				|| toBusId.endsWith("r");
 	}
 
-	private int branchPhaseMask(DStab3PBranch branch) {
+	private int branchPhaseMask(IBranch3Phase branch) {
 		PhaseCode phaseCode = branch.getPhaseCode();
 		String phase = phaseCode == null ? "ABC" : phaseCode.toString();
 		if("ABC".equals(phase)) {
@@ -1491,7 +1555,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 				for (Branch bra: bus.getBranchIterable()){
 					if(bra.isActive()){
-						DStab3PBranch bra3P = sweepBranch(bra);
+						IBranch3Phase bra3P = sweepBranch(bra);
 						// all visited branches are on the downstream side, and there should be only one upstream branch
 
 
@@ -1561,6 +1625,46 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	@Override
 	public int getIterationCount() {
 		return this.iterationCount;
+	}
+
+	@Override
+	public void setRegulatorControls(List<RegulatorControlData> controls) {
+		this.regulatorControls = controls == null ? Collections.emptyList() : controls;
+	}
+
+	@Override
+	public List<RegulatorControlData> getRegulatorControls() {
+		return this.regulatorControls;
+	}
+
+	@Override
+	public void setRegulatorControlEnabled(boolean enabled) {
+		this.regulatorControlEnabled = enabled;
+	}
+
+	@Override
+	public boolean isRegulatorControlEnabled() {
+		return this.regulatorControlEnabled;
+	}
+
+	@Override
+	public void setCapacitorControls(List<CapacitorControlData> controls) {
+		this.capacitorControls = controls == null ? Collections.emptyList() : controls;
+	}
+
+	@Override
+	public List<CapacitorControlData> getCapacitorControls() {
+		return this.capacitorControls;
+	}
+
+	@Override
+	public void setCapacitorControlEnabled(boolean enabled) {
+		this.capacitorControlEnabled = enabled;
+	}
+
+	@Override
+	public boolean isCapacitorControlEnabled() {
+		return this.capacitorControlEnabled;
 	}
 
 	@Override
