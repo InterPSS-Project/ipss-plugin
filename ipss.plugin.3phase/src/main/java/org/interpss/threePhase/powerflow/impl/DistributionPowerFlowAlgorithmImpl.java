@@ -22,6 +22,7 @@ import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.sparse.ISparseEqnComplexMatrix3x3;
+import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.powerflow.control.CapacitorBankControl;
 import org.interpss.threePhase.powerflow.control.CapacitorControlData;
 import org.interpss.threePhase.powerflow.control.RegulatorControlData;
@@ -1331,7 +1332,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 				if(isValidFixedPointVoltage(vabc)){
 					bus3P.set3PhaseVotlages(vabc);
-					bus.setVoltage(vabc.to012().b_1);
+					bus.setVoltage(positiveSequenceVoltage(bus3P, vabc));
 				} else {
 					log.warn("Fixed-point solve produced invalid voltage at bus " + bus.getId()
 							+ ", sortNumber=" + bus.getSortNumber() + ", vabc=" + vabc);
@@ -1340,6 +1341,13 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			}
 		}
 		return true;
+	}
+
+	private Complex positiveSequenceVoltage(IBus3Phase bus3P, Complex3x1 vabc) {
+		if(bus3P instanceof DStab3PBus dstabBus) {
+			return dstabBus.getThreeSeqVoltage().b_1;
+		}
+		return vabc.to012().b_1;
 	}
 
 	private boolean isValidFixedPointVoltage(Complex3x1 vabc) {
