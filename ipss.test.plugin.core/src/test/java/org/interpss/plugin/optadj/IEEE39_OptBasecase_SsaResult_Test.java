@@ -80,7 +80,7 @@ public class IEEE39_OptBasecase_SsaResult_Test extends CorePluginTestSetup {
 		assertTrue(ssaResult.getBaseOverLimitInfo().size() > overLimitBefore,
 				"SSA scan at 50% should capture more branches than the 100% overload count");
 
-		OptAdjResultContainer optAdjResult = new OptAdjResultContainer(ssaResult, OPT_ADJ_THRESHOLD_PCT);
+		OptAdjResultContainer optAdjResult = new OptAdjResultContainer(ssaResult);
 		Map<String, OptAdjResultContainer.GenAdjustResult> adjustResults = new AclfNetLoadFlowOptimizer().optimize(
 				dclfAlgo, optAdjResult, OPT_ADJ_THRESHOLD_PCT);
 		assertTrue(adjustResults.size() > 0, "Optimizer should dispatch at least one generator");
