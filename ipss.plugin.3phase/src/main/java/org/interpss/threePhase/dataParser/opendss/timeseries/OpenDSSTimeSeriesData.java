@@ -12,6 +12,7 @@ import org.interpss.threePhase.qsts.QstsProfileBinding;
 import org.interpss.threePhase.qsts.QstsScheduleData;
 import org.interpss.threePhase.qsts.QstsGeneratorStateStore;
 import org.interpss.threePhase.qsts.QstsLoadStateStore;
+import org.interpss.threePhase.qsts.QstsStorageStateStore;
 import org.interpss.threePhase.powerflow.control.InverterControlData;
 
 public class OpenDSSTimeSeriesData {
@@ -24,6 +25,7 @@ public class OpenDSSTimeSeriesData {
 	private final OpenDSSGlobalTimeSeriesOptions globalOptions = new OpenDSSGlobalTimeSeriesOptions();
 	private final QstsLoadStateStore loadStateStore = new QstsLoadStateStore();
 	private final QstsGeneratorStateStore generatorStateStore = new QstsGeneratorStateStore();
+	private final QstsStorageStateStore storageStateStore = new QstsStorageStateStore();
 
 	public OpenDSSShapeRegistry getShapeRegistry() {
 		return shapeRegistry;
@@ -100,6 +102,10 @@ public class OpenDSSTimeSeriesData {
 
 	public QstsGeneratorStateStore getGeneratorStateStore() {
 		return generatorStateStore;
+	}
+
+	public QstsStorageStateStore getStorageStateStore() {
+		return storageStateStore;
 	}
 
 	public QstsScheduleData toQstsScheduleData() {

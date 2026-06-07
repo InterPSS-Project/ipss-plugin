@@ -32,4 +32,20 @@ public class QstsResult {
 		}
 		return Collections.unmodifiableList(samples);
 	}
+
+	public List<QstsDevicePowerSample> getLoadPowers() {
+		List<QstsDevicePowerSample> samples = new ArrayList<>();
+		for(QstsStepResult step : stepResults) {
+			samples.addAll(step.getLoadPowers());
+		}
+		return Collections.unmodifiableList(samples);
+	}
+
+	public List<QstsDevicePowerSample> getGeneratorPowers() {
+		List<QstsDevicePowerSample> samples = new ArrayList<>();
+		for(QstsStepResult step : stepResults) {
+			samples.addAll(step.getGeneratorPowers());
+		}
+		return Collections.unmodifiableList(samples);
+	}
 }

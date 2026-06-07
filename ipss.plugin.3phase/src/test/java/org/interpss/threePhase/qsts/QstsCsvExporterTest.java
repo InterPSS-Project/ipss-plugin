@@ -37,4 +37,38 @@ public class QstsCsvExporterTest {
 		assertEquals(2, lines.length);
 		assertEquals("2,0.500000000000,\"cap,1\",true,-0.0180000000000,-600.000000000,1", lines[1]);
 	}
+
+	@Test
+	void generatorPowerCsvUsesSampledStaticPhaseGenChannel() {
+		QstsStepContext context = new QstsStepContext(1, 1, 0.25, QstsMode.DAILY,
+				0.25, 1.0, QstsControlMode.OFF);
+		QstsStepResult step = new QstsStepResult(context, true, 2, Double.NaN, null, 0,
+				null, null, List.of(new QstsDevicePowerSample(1, 0.25,
+						"generator", "pv,1", "A", 0.12, -0.03)));
+
+		String csv = new QstsCsvExporter().exportGeneratorPowers(new QstsResult(List.of(step)));
+
+		String[] lines = csv.split("\\n");
+		assertEquals("step,hour,device_class,device,phase,p_pu,q_pu", lines[0]);
+		assertEquals(2, lines.length);
+		assertEquals("1,0.250000000000,generator,\"pv,1\",A,0.120000000000,-0.0300000000000",
+				lines[1]);
+	}
+
+	@Test
+	void loadPowerCsvUsesSampledStaticPhaseLoadChannel() {
+		QstsStepContext context = new QstsStepContext(2, 2, 0.5, QstsMode.DAILY,
+				0.25, 1.0, QstsControlMode.OFF);
+		QstsStepResult step = new QstsStepResult(context, true, 2, Double.NaN, null, 0,
+				null, List.of(new QstsDevicePowerSample(2, 0.5,
+						"load", "load1", "B", 0.05, 0.02)), null);
+
+		String csv = new QstsCsvExporter().exportLoadPowers(new QstsResult(List.of(step)));
+
+		String[] lines = csv.split("\\n");
+		assertEquals("step,hour,device_class,device,phase,p_pu,q_pu", lines[0]);
+		assertEquals(2, lines.length);
+		assertEquals("2,0.500000000000,load,load1,B,0.0500000000000,0.0200000000000",
+				lines[1]);
+	}
 }

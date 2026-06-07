@@ -417,6 +417,13 @@ Inverter and storage controls are layered on top of these static generator
 states. They should update generator setpoints and energy state through generic
 QSTS state appliers, not through dynamic simulation models.
 
+Scheduled storage dispatch now uses a storage-specific sidecar state keyed by
+`IPhaseGen`. `QstsStateApplier` restores base static generator state, skips
+storage devices in the generic generator multiplier path, and applies
+energy-limited charge/discharge dispatch with state-of-charge carryover between
+steps. OpenDSS `StorageController` behavior remains an adapter/controller layer
+to add after mini-case reference behavior is defined.
+
 ### Source and Global Options
 
 Parse and store relevant `Set` / `Solve` options:
