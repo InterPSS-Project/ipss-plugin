@@ -25,7 +25,8 @@ public class IEEE39_OptBasecase_SsaResult_Sample {
 		dclfAlgo.calculateDclf();
 
 		SsaResultContainer ssaResult = new AclfNetSsaHelper(dclfAlgo).baseCaseScan(50.0);
-		OptAdjResultContainer optAdjResult = new OptAdjResultContainer(ssaResult, 100.0);
+
+		OptAdjResultContainer optAdjResult = new OptAdjResultContainer(ssaResult);
 		
 		// perform basecase loaing limit optimization	
 		new AclfNetLoadFlowOptimizer().optimize(dclfAlgo, optAdjResult, 100.0);

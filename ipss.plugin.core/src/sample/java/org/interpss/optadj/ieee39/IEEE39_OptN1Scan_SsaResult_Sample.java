@@ -51,7 +51,7 @@ public class IEEE39_OptN1Scan_SsaResult_Sample {
 		SsaResultContainer ssaResult = new AclfNetSsaHelper(dclfAlgo).contingencyScan(contList, 90.0);
 		System.out.println("Total number of branches over limit before OptAdj: " + ssaResult.getCaOverLimitInfo().size());
 
-		OptAdjResultContainer optAdjResult = new OptAdjResultContainer(ssaResult, 100.0);
+		OptAdjResultContainer optAdjResult = new OptAdjResultContainer(ssaResult);
 		
 		new AclfNetContigencyOptimizer().optimize(dclfAlgo, optAdjResult, 100.0);
 		optAdjResult.getOPtAdjResults().forEach((genName, result) -> {
