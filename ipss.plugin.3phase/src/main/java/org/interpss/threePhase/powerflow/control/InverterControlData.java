@@ -16,11 +16,22 @@ public class InverterControlData {
 	private final double minReactivePowerKvar;
 	private final double maxReactivePowerKvar;
 	private final double minPowerFactor;
+	private final double targetActivePowerKw;
+	private final double targetReactivePowerKvar;
+	private final double targetPowerFactor;
 	private final boolean enabled;
 
 	public InverterControlData(String id, String generatorId, ControlMode controlMode, String curveId,
 			double ratedKva, double minReactivePowerKvar, double maxReactivePowerKvar,
 			double minPowerFactor, boolean enabled) {
+		this(id, generatorId, controlMode, curveId, ratedKva, minReactivePowerKvar,
+				maxReactivePowerKvar, minPowerFactor, Double.NaN, Double.NaN, Double.NaN, enabled);
+	}
+
+	public InverterControlData(String id, String generatorId, ControlMode controlMode, String curveId,
+			double ratedKva, double minReactivePowerKvar, double maxReactivePowerKvar,
+			double minPowerFactor, double targetActivePowerKw, double targetReactivePowerKvar,
+			double targetPowerFactor, boolean enabled) {
 		this.id = id;
 		this.generatorId = generatorId;
 		this.controlMode = controlMode == null ? ControlMode.VOLTVAR : controlMode;
@@ -29,6 +40,9 @@ public class InverterControlData {
 		this.minReactivePowerKvar = minReactivePowerKvar;
 		this.maxReactivePowerKvar = maxReactivePowerKvar;
 		this.minPowerFactor = minPowerFactor;
+		this.targetActivePowerKw = targetActivePowerKw;
+		this.targetReactivePowerKvar = targetReactivePowerKvar;
+		this.targetPowerFactor = targetPowerFactor;
 		this.enabled = enabled;
 	}
 
@@ -62,6 +76,18 @@ public class InverterControlData {
 
 	public double getMinPowerFactor() {
 		return minPowerFactor;
+	}
+
+	public double getTargetActivePowerKw() {
+		return targetActivePowerKw;
+	}
+
+	public double getTargetReactivePowerKvar() {
+		return targetReactivePowerKvar;
+	}
+
+	public double getTargetPowerFactor() {
+		return targetPowerFactor;
 	}
 
 	public boolean isEnabled() {

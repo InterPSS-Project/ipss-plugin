@@ -198,7 +198,7 @@ public class InverterControlModel {
 			this.limited = limited;
 		}
 
-		private static InverterControlResult notApplied() {
+		public static InverterControlResult notApplied() {
 			return new InverterControlResult(false, 0.0, false);
 		}
 

@@ -34,6 +34,7 @@ public class OpenDSSGeneratorModel {
 	private final String dailyShapeId;
 	private final String yearlyShapeId;
 	private final String dutyShapeId;
+	private final String dailyTemperatureShapeId;
 	private final String sourceFile;
 	private final int sourceLine;
 
@@ -42,7 +43,7 @@ public class OpenDSSGeneratorModel {
 			String sourceFile, int sourceLine) {
 		this(id, deviceClass, busId, phases, kw, kvar, kva, 0.0, "", 0.0, pmpp, irradiance, 100.0, 25.0,
 				0.0, 0.0, "", "", "", "", "", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-				dailyShapeId, yearlyShapeId, dutyShapeId, sourceFile, sourceLine);
+				dailyShapeId, yearlyShapeId, dutyShapeId, "", sourceFile, sourceLine);
 	}
 
 	public OpenDSSGeneratorModel(String id, String deviceClass, String busId, int phases, double kw, double kvar,
@@ -52,6 +53,21 @@ public class OpenDSSGeneratorModel {
 			double kwRated, double kwhRated, double kwhStored, double pctStored, double pctReserve, double pctCharge,
 			double pctDischarge, double pctEffCharge, double pctEffDischarge, String dailyShapeId,
 			String yearlyShapeId, String dutyShapeId, String sourceFile, int sourceLine) {
+		this(id, deviceClass, busId, phases, kw, kvar, kva, nominalKV, connection, powerFactor, pmpp, irradiance,
+				pctPmpp, temperature, pctCutIn, pctCutOut, efficiencyCurveId, pvsTCurveId, pctPmppCurveId,
+				kvarLimitCurveId, storageState, kwRated, kwhRated, kwhStored, pctStored, pctReserve, pctCharge,
+				pctDischarge, pctEffCharge, pctEffDischarge, dailyShapeId, yearlyShapeId, dutyShapeId, "",
+				sourceFile, sourceLine);
+	}
+
+	public OpenDSSGeneratorModel(String id, String deviceClass, String busId, int phases, double kw, double kvar,
+			double kva, double nominalKV, String connection, double powerFactor, double pmpp, double irradiance,
+			double pctPmpp, double temperature, double pctCutIn, double pctCutOut, String efficiencyCurveId,
+			String pvsTCurveId, String pctPmppCurveId, String kvarLimitCurveId, String storageState,
+			double kwRated, double kwhRated, double kwhStored, double pctStored, double pctReserve, double pctCharge,
+			double pctDischarge, double pctEffCharge, double pctEffDischarge, String dailyShapeId,
+			String yearlyShapeId, String dutyShapeId, String dailyTemperatureShapeId, String sourceFile,
+			int sourceLine) {
 		this.id = id;
 		this.deviceClass = deviceClass;
 		this.busId = busId;
@@ -85,6 +101,7 @@ public class OpenDSSGeneratorModel {
 		this.dailyShapeId = dailyShapeId;
 		this.yearlyShapeId = yearlyShapeId;
 		this.dutyShapeId = dutyShapeId;
+		this.dailyTemperatureShapeId = dailyTemperatureShapeId == null ? "" : dailyTemperatureShapeId;
 		this.sourceFile = sourceFile;
 		this.sourceLine = sourceLine;
 	}
@@ -219,6 +236,10 @@ public class OpenDSSGeneratorModel {
 
 	public String getDutyShapeId() {
 		return dutyShapeId;
+	}
+
+	public String getDailyTemperatureShapeId() {
+		return dailyTemperatureShapeId;
 	}
 
 	public String getSourceFile() {

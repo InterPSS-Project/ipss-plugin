@@ -678,10 +678,24 @@ Verification:
 
 ### TS8: DER and Storage Extension
 
-- [ ] Parse and bind `Generator`, `PVSystem`, and `Storage` shape references
+- [x] Parse and bind `Generator`, `PVSystem`, and `Storage` shape references
   after basic load time-series support is stable.
-- [ ] Apply P/Q injections per step with consistent sign conventions.
-- [ ] Add PV duty-curve mini case using IEEE8500-style data.
+  - `Generator` support includes the concrete IEEE8500 PV pattern in
+    `P174_Run_360kW_PV.DSS`: `Generator.G1`, `LoadShape.PVCurve`, and
+    `generator.g1.duty=PVcurve`.
+  - `PVSystem` and `Storage` continue to use static `IPhaseGen` metadata and
+    the inverter adapter sidecar, not DStab dynamic DER classes.
+- [x] Add official OpenDSS `PVSystem` example metadata coverage.
+  - Parses `MyPvsT` and `MyEff` `XYCurve` data, `MyIrrad` `LoadShape`, and
+    `MyTemp` `TShape`/`TDaily`.
+  - Uses these parser-side details to populate generic inverter capability
+    values for static QSTS control without extending `IPhaseGen`.
+- [x] Parse OpenDSS `XYCurve` records into generic `QstsControlCurve` data for
+  inverter control modes.
+- [x] Apply P/Q injections per step with consistent sign conventions for
+  scheduled generic generator/PV/storage metadata.
+- [ ] Add PV duty-curve QSTS mini case using IEEE8500-style data and checked-in
+  DSS-Python terminal P/Q references.
 
 Verification:
 

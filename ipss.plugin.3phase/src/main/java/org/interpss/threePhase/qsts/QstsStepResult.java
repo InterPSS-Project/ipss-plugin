@@ -17,11 +17,30 @@ public class QstsStepResult {
 	private final List<QstsBusVoltageSample> busVoltages;
 	private final List<QstsDevicePowerSample> loadPowers;
 	private final List<QstsDevicePowerSample> generatorPowers;
+	private final List<QstsCapacitorStateSample> capacitorStates;
+	private final List<QstsInverterControlSample> inverterControls;
 
 	public QstsStepResult(QstsStepContext context, boolean converged, int iterationCount,
 			double maxMismatch, String failureReason, int actionCount,
 			List<QstsBusVoltageSample> busVoltages, List<QstsDevicePowerSample> loadPowers,
 			List<QstsDevicePowerSample> generatorPowers) {
+		this(context, converged, iterationCount, maxMismatch, failureReason, actionCount,
+				busVoltages, loadPowers, generatorPowers, null);
+	}
+
+	public QstsStepResult(QstsStepContext context, boolean converged, int iterationCount,
+			double maxMismatch, String failureReason, int actionCount,
+			List<QstsBusVoltageSample> busVoltages, List<QstsDevicePowerSample> loadPowers,
+			List<QstsDevicePowerSample> generatorPowers, List<QstsCapacitorStateSample> capacitorStates) {
+		this(context, converged, iterationCount, maxMismatch, failureReason, actionCount,
+				busVoltages, loadPowers, generatorPowers, capacitorStates, null);
+	}
+
+	public QstsStepResult(QstsStepContext context, boolean converged, int iterationCount,
+			double maxMismatch, String failureReason, int actionCount,
+			List<QstsBusVoltageSample> busVoltages, List<QstsDevicePowerSample> loadPowers,
+			List<QstsDevicePowerSample> generatorPowers, List<QstsCapacitorStateSample> capacitorStates,
+			List<QstsInverterControlSample> inverterControls) {
 		this.stepIndex = context.getStepIndex();
 		this.hour = context.getHour();
 		this.mode = context.getMode();
@@ -34,6 +53,8 @@ public class QstsStepResult {
 		this.busVoltages = copy(busVoltages);
 		this.loadPowers = copy(loadPowers);
 		this.generatorPowers = copy(generatorPowers);
+		this.capacitorStates = copy(capacitorStates);
+		this.inverterControls = copy(inverterControls);
 	}
 
 	public int getStepIndex() {
@@ -82,6 +103,14 @@ public class QstsStepResult {
 
 	public List<QstsDevicePowerSample> getGeneratorPowers() {
 		return generatorPowers;
+	}
+
+	public List<QstsCapacitorStateSample> getCapacitorStates() {
+		return capacitorStates;
+	}
+
+	public List<QstsInverterControlSample> getInverterControls() {
+		return inverterControls;
 	}
 
 	private static <T> List<T> copy(List<T> values) {

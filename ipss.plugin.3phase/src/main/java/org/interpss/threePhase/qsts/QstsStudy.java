@@ -9,10 +9,15 @@ import java.util.Map;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Unit.UnitType;
+import org.interpss.threePhase.powerflow.control.CapacitorBankControl;
 import org.interpss.threePhase.powerflow.DistributionPFMethod;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.powerflow.control.CapacitorControlData;
+import org.interpss.threePhase.powerflow.control.InverterControlData;
+import org.interpss.threePhase.powerflow.control.InverterControlModel.InverterControlResult;
 import org.interpss.threePhase.powerflow.control.RegulatorControlData;
+import org.interpss.threePhase.qsts.control.QstsControlAction;
+import org.interpss.threePhase.qsts.control.QstsControlQueue;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
 import com.interpss.core.aclf.BaseAclfNetwork;
@@ -41,6 +46,11 @@ public class QstsStudy {
 	private boolean initializeFirstStepVoltages = true;
 	private List<RegulatorControlData> regulatorControls = Collections.emptyList();
 	private List<CapacitorControlData> capacitorControls = Collections.emptyList();
+	private List<InverterControlData> inverterControls = Collections.emptyList();
+	private QstsInverterAdapterStore inverterAdapterStore = new QstsInverterAdapterStore();
+	private final CapacitorBankControl qstsCapacitorControl = new CapacitorBankControl();
+	private final QstsControlQueue controlQueue = new QstsControlQueue();
+	private final Map<String, Integer> operationCountByControlKey = new java.util.LinkedHashMap<>();
 
 	private QstsStudy(INetwork3Phase network, QstsScheduleData scheduleData) {
 		if(network == null) {
@@ -86,6 +96,17 @@ public class QstsStudy {
 
 	public QstsStudy setCapacitorControls(List<CapacitorControlData> capacitorControls) {
 		this.capacitorControls = capacitorControls == null ? Collections.emptyList() : capacitorControls;
+		return this;
+	}
+
+	public QstsStudy setInverterControls(List<InverterControlData> inverterControls) {
+		this.inverterControls = inverterControls == null ? Collections.emptyList() : inverterControls;
+		return this;
+	}
+
+	public QstsStudy setInverterAdapterStore(QstsInverterAdapterStore inverterAdapterStore) {
+		this.inverterAdapterStore = inverterAdapterStore == null
+				? new QstsInverterAdapterStore() : inverterAdapterStore;
 		return this;
 	}
 
@@ -159,9 +180,12 @@ public class QstsStudy {
 		algorithm.setTolerance(tolerance);
 		algorithm.setRegulatorControls(regulatorControls);
 		algorithm.setCapacitorControls(capacitorControls);
+		registerMissingInverterAdapters();
 		boolean controlsEnabled = controlMode != QstsControlMode.OFF && maxControlIterations > 0;
+		boolean delayedCapacitorControls = usesDelayedControlQueue();
 		algorithm.setRegulatorControlEnabled(controlsEnabled && !regulatorControls.isEmpty());
-		algorithm.setCapacitorControlEnabled(controlsEnabled && !capacitorControls.isEmpty());
+		algorithm.setCapacitorControlEnabled(controlsEnabled && !delayedCapacitorControls
+				&& !capacitorControls.isEmpty());
 
 		List<QstsStepResult> steps = new ArrayList<>();
 		for(int i = 0; i < numberOfSteps; i++) {
@@ -170,14 +194,25 @@ public class QstsStudy {
 			QstsStepContext context = new QstsStepContext(i, scheduleIndex, hour, mode,
 					stepSizeHours, loadMultiplier, controlMode);
 			stateApplier.apply(context);
+			if(delayedCapacitorControls) {
+				qstsCapacitorControl.applyConfiguredStates(network, capacitorControls);
+			}
+			int actionCount = processQueuedActions(delayedCapacitorControls, hour * 3600.0);
 			algorithm.setInitBusVoltageEnabled(i == 0 ? initializeFirstStepVoltages : false);
 			boolean converged = algorithm.powerflow();
+			List<QstsInverterControlSample> inverterControlSamples = converged && controlsEnabled
+					? applyInverterControls(context) : Collections.emptyList();
+			if(converged && delayedCapacitorControls) {
+				qstsCapacitorControl.scheduleDelayed(network, capacitorControls, controlQueue,
+						hour * 3600.0);
+			}
 			String failureReason = converged ? null
 					: "Distribution power flow did not converge at step " + i
 							+ " mode=" + mode + " hour=" + hour;
 			steps.add(new QstsStepResult(context, converged, algorithm.getIterationCount(),
-					Double.NaN, failureReason, 0, sampleBusVoltages(context),
-					sampleLoadPowers(context), sampleGeneratorPowers(context)));
+					Double.NaN, failureReason, actionCount, sampleBusVoltages(context),
+					sampleLoadPowers(context), sampleGeneratorPowers(context),
+					sampleCapacitorStates(context), inverterControlSamples));
 			if(!converged) {
 				break;
 			}
@@ -191,6 +226,23 @@ public class QstsStudy {
 
 	public int getMaxControlIterations() {
 		return maxControlIterations;
+	}
+
+	private boolean usesDelayedControlQueue() {
+		return controlMode == QstsControlMode.TIME || controlMode == QstsControlMode.EVENT;
+	}
+
+	private int processQueuedActions(boolean enabled, double timeSeconds) {
+		if(!enabled) {
+			return 0;
+		}
+		return controlQueue.processUntil(timeSeconds, this::recordAppliedControlAction);
+	}
+
+	private void recordAppliedControlAction(QstsControlAction action) {
+		String key = action.getKey();
+		operationCountByControlKey.put(key, Integer.valueOf(
+				operationCountByControlKey.getOrDefault(key, Integer.valueOf(0)).intValue() + 1));
 	}
 
 	private List<QstsBusVoltageSample> sampleBusVoltages(QstsStepContext context) {
@@ -254,6 +306,96 @@ public class QstsStudy {
 		return samples;
 	}
 
+	private List<QstsCapacitorStateSample> sampleCapacitorStates(QstsStepContext context) {
+		List<QstsCapacitorStateSample> samples = new ArrayList<>();
+		for(CapacitorControlData control : capacitorControls) {
+			Complex3x1 power = qstsCapacitorControl.capacitorPower(network, control.getCapacitorId());
+			Complex total = add(add(power.a_0, power.b_1), power.c_2);
+			String key = qstsCapacitorControl.controlActionKey(control);
+			int operationCount = operationCountByControlKey.getOrDefault(key, Integer.valueOf(0)).intValue();
+			samples.add(new QstsCapacitorStateSample(context.getStepIndex(), context.getHour(),
+					control.getCapacitorId(), control.isClosed(), total.getImaginary(),
+					total.getImaginary() * aclfNetwork().getBaseKva(), operationCount));
+		}
+		return samples;
+	}
+
+	private List<QstsInverterControlSample> applyInverterControls(QstsStepContext context) {
+		List<QstsInverterControlSample> samples = new ArrayList<>();
+		for(InverterControlData control : inverterControls) {
+			InverterGenAdapter adapter = inverterAdapterStore.get(control.getGeneratorId());
+			if(adapter == null) {
+				samples.add(inverterSample(context, control, false, 0.0, 0.0, false, "missing_generator"));
+				continue;
+			}
+			IBus3Phase bus = findGeneratorBus(adapter.getGenerator());
+			if(bus != null) {
+				adapter.setTerminalVoltage(bus.get3PhaseVotlages());
+			}
+			InverterControlResult result = adapter.apply(control, context, aclfNetwork().getBaseKva());
+			samples.add(inverterSample(context, control, result.isApplied(), result.getActivePowerKw(),
+					result.getReactivePowerKvar(), result.isLimited(),
+					result.isApplied() ? "" : "missing_setpoint"));
+		}
+		return samples;
+	}
+
+	private void registerMissingInverterAdapters() {
+		for(InverterControlData control : inverterControls) {
+			if(inverterAdapterStore.get(control.getGeneratorId()) != null) {
+				continue;
+			}
+			IPhaseGen generator = findGenerator(control.getGeneratorId());
+			if(generator != null) {
+				inverterAdapterStore.register(generator);
+			}
+		}
+	}
+
+	private QstsInverterControlSample inverterSample(QstsStepContext context, InverterControlData control,
+			boolean applied, double activePowerKw, double reactivePowerKvar, boolean limited, String reason) {
+		return new QstsInverterControlSample(context.getStepIndex(), context.getHour(),
+				control.getId(), control.getGeneratorId(), control.getControlMode().name(),
+				applied, activePowerKw, reactivePowerKvar, limited, reason);
+	}
+
+	public IPhaseGen findGenerator(String generatorId) {
+		for(IBus3Phase bus : network.getThreePhaseBusList()) {
+			for(IPhaseGen generator : bus.getPhaseGenList()) {
+				if(matches(generator.getId(), generatorId)) {
+					return generator;
+				}
+			}
+			if(bus instanceof BaseAclfBus) {
+				for(Object generatorObject : ((BaseAclfBus<?, ?>) bus).getContributeGenList()) {
+					if(generatorObject instanceof IPhaseGen
+							&& matches(((IPhaseGen) generatorObject).getId(), generatorId)) {
+						return (IPhaseGen) generatorObject;
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+	private IBus3Phase findGeneratorBus(IPhaseGen targetGenerator) {
+		for(IBus3Phase bus : network.getThreePhaseBusList()) {
+			for(IPhaseGen generator : bus.getPhaseGenList()) {
+				if(generator == targetGenerator) {
+					return bus;
+				}
+			}
+			if(bus instanceof BaseAclfBus) {
+				for(Object generatorObject : ((BaseAclfBus<?, ?>) bus).getContributeGenList()) {
+					if(generatorObject == targetGenerator) {
+						return bus;
+					}
+				}
+			}
+		}
+		return null;
+	}
+
 	private static void addGeneratorSample(List<QstsDevicePowerSample> samples, QstsStepContext context,
 			IPhaseGen generator) {
 		Complex3x1 power = generator.getPower3Phase(UnitType.PU);
@@ -274,6 +416,16 @@ public class QstsStudy {
 		samples.add(new QstsDevicePowerSample(context.getStepIndex(), context.getHour(), deviceClass,
 				deviceId, phase, power == null ? Double.NaN : power.getReal(),
 				power == null ? Double.NaN : power.getImaginary()));
+	}
+
+	private static Complex add(Complex left, Complex right) {
+		Complex a = left == null ? Complex.ZERO : left;
+		Complex b = right == null ? Complex.ZERO : right;
+		return a.add(b);
+	}
+
+	private static boolean matches(String actual, String expected) {
+		return actual != null && expected != null && actual.equalsIgnoreCase(expected);
 	}
 
 	private BaseAclfNetwork<?, ?> aclfNetwork() {

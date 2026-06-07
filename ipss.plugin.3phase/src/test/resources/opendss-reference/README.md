@@ -22,3 +22,16 @@ models 1 through 8 against a stiff, 0.90 pu source DSS-Python reference.
 `testData/feeder/OpenDSSCapControlMini/*.dss` and validates capacitor control
 final state and terminal kvar before using voltage comparison as an acceptance
 signal.
+
+`storage-mini-dss-python-storage-reference.csv` is generated from
+`testData/feeder/OpenDSSStorageMini/Master.dss` and validates scheduled storage
+discharge/charge terminal P/Q before using voltage comparison. The charging
+step uses `kWhStored=500`, `state=charging`, and `%charge=100`; setting `kw`
+after `state=charging` causes DSS-Python/OpenDSS to return the device to
+discharging/idling behavior.
+
+`pvsystem-mini-dss-python-generator-reference.csv` is generated from
+`testData/feeder/OpenDSSPVSystemMini/Master.dss`, based on the official EPRI
+OpenDSS PVSystem example. It validates PVSystem terminal P/Q for the explicit
+initial irradiance/temperature state and the first daily irradiance/temperature
+update before any voltage comparison is used.
