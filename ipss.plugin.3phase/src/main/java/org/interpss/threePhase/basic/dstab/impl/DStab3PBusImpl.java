@@ -35,6 +35,7 @@ import com.interpss.dstab.impl.BaseDStabBusImpl;
 public class DStab3PBusImpl extends BaseDStabBusImpl<DStab3PGen,DStab3PLoad> implements DStab3PBus {
 
 	private Complex3x1 Vabc = null;
+	private boolean threeSeqVoltageValid = false;
 	private Complex3x1 initVabc = null;
 	private Complex3x3 shuntYabc = null;
 	Complex3x3 yiiAbc = new Complex3x3();
@@ -71,24 +72,27 @@ public class DStab3PBusImpl extends BaseDStabBusImpl<DStab3PGen,DStab3PLoad> imp
 	public void set3PhaseVotlages(Complex3x1 vabc) {
 		this.Vabc = vabc;
 		super.setThreeSeqVoltage(Complex3x1.abc_to_z12(Vabc));
+		this.threeSeqVoltageValid = true;
 
 	}
 
 	@Override
 	public Complex3x1 getThreeSeqVoltage() {
-		  if(this.threeSeqVoltage.abs() ==0.0){
-		    if(this.Vabc!=null) {
+		if(!this.threeSeqVoltageValid){
+			if(this.Vabc!=null) {
 				this.threeSeqVoltage = Complex3x1.abc_to_z12(this.Vabc);
 			} else {
 				this.threeSeqVoltage.b_1 = this.getVoltage();
 			}
-		  }
-		   return this.threeSeqVoltage;
+			this.threeSeqVoltageValid = true;
+		}
+		return this.threeSeqVoltage;
 	}
 
 	@Override
 	public void setThreeSeqVoltage(Complex3x1 v120) {
 		super.setThreeSeqVoltage(v120);
+		this.threeSeqVoltageValid = true;
 		this.Vabc =Complex3x1.z12_to_abc(v120);  // all voltages are saved in three-phase, in order to make sure data consistency
 	}
 
