@@ -14,7 +14,6 @@ import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.sparse.ISparseEqnComplexMatrix3x3;
-import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.powerflow.control.CapacitorBankControl;
 import org.interpss.threePhase.powerflow.control.CapacitorControlData;
 import org.interpss.threePhase.powerflow.control.RegulatorControlData;
@@ -943,13 +942,10 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				IBranch3Phase branch3P = sweepBranch(branch);
 				Complex3x1 vabcF = threePhaseBus((BaseAclfBus<?, ?>) branch.getFromBus()).get3PhaseVotlages();
 				Complex3x1 vabcT = threePhaseBus((BaseAclfBus<?, ?>) branch.getToBus()).get3PhaseVotlages();
-				if(branch3P instanceof DStab3PBranch) {
-					DStab3PBranch dstabBranch = (DStab3PBranch) branch3P;
-					dstabBranch.setCurrentAbcAtFromSide(branch3P.getYffabc().multiply(vabcF)
-							.add(branch3P.getYftabc().multiply(vabcT)));
-					dstabBranch.setCurrentAbcAtToSide(branch3P.getYttabc().multiply(vabcT)
-							.add(branch3P.getYtfabc().multiply(vabcF)));
-				}
+				branch3P.setCurrentAbcAtFromSide(branch3P.getYffabc().multiply(vabcF)
+						.add(branch3P.getYftabc().multiply(vabcT)));
+				branch3P.setCurrentAbcAtToSide(branch3P.getYttabc().multiply(vabcT)
+						.add(branch3P.getYtfabc().multiply(vabcF)));
 			}
 		}
 	}
