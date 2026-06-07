@@ -1,0 +1,12 @@
+Clear
+New Circuit.CapControlCurrentCtPhaseA basekv=12.47 pu=1.02 phases=3 bus1=source
+New Line.feeder bus1=source.1.2.3 bus2=capbus.1.2.3 phases=3 r1=0.5 x1=1.0 r0=0.5 x0=1.0 length=1 units=kft
+New Load.loadA bus1=capbus.1 phases=1 conn=wye kv=7.2 kw=3000 kvar=1200 model=1
+New Load.loadB bus1=capbus.2 phases=1 conn=wye kv=7.2 kw=100 kvar=30 model=1
+New Load.loadC bus1=capbus.3 phases=1 conn=wye kv=7.2 kw=100 kvar=30 model=1
+New Capacitor.cap1 bus1=capbus.1.2.3 phases=3 conn=wye kv=12.47 kvar=600
+New CapControl.capctrl capacitor=cap1 element=Line.feeder terminal=2 type=current ctratio=1 ctphase=1 onsetting=9999 offsetting=200 delay=0 delayoff=0
+Set mode=snapshot controlmode=static maxcontroliter=20
+Set voltagebases=[12.47]
+CalcVoltageBases
+Solve

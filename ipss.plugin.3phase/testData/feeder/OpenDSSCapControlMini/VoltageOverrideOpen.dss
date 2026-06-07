@@ -1,0 +1,10 @@
+Clear
+New Circuit.CapControlVoltOverride basekv=12.47 pu=1.00 phases=3 bus1=source
+New Line.feeder bus1=source.1.2.3 bus2=capbus.1.2.3 phases=3 r1=0.01 x1=0.02 r0=0.03 x0=0.06 length=1 units=kft
+New Load.load1 bus1=capbus.1.2.3 phases=3 conn=wye kv=12.47 kw=900 kvar=300 model=1
+New Capacitor.cap1 bus1=capbus.1.2.3 phases=3 conn=wye kv=12.47 kvar=600
+New CapControl.capctrl capacitor=cap1 element=Line.feeder terminal=2 type=kvar ptratio=1 ctratio=1 onsetting=9999 offsetting=-9999 VoltOverride=Y Vmin=7000 Vmax=7100 delay=0 delayoff=0
+Set mode=snapshot controlmode=static maxcontroliter=20
+Set voltagebases=[12.47]
+CalcVoltageBases
+Solve

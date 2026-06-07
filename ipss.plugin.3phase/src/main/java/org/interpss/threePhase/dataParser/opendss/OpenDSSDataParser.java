@@ -23,7 +23,12 @@ import org.interpss.threePhase.basic.dstab.DStab1PLoad;
 import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.basic.dstab.DStab3PLoad;
+import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSLoadShapeParser;
+import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSTimeSeriesData;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
+import org.interpss.threePhase.powerflow.control.CapacitorControlData;
+import org.interpss.threePhase.powerflow.control.InverterControlData;
+import org.interpss.threePhase.powerflow.control.RegulatorControlData;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
 import com.interpss.core.aclf.AclfBranch;
@@ -34,6 +39,9 @@ import com.interpss.core.acsc.PhaseCode;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 import com.interpss.core.net.NetworkType;
+import com.interpss.core.threephase.Static3PBus;
+import com.interpss.core.threephase.Static3PBranch;
+import com.interpss.core.threephase.Static3PNetwork;
 import com.interpss.dstab.DStabBranch;
 
 public class OpenDSSDataParser {
@@ -44,23 +52,43 @@ public class OpenDSSDataParser {
 	protected Hashtable<String,OpenDSSWireData> wireDataTable = null;
 
 	protected DStabNetwork3Phase distNet = null;
+	protected Static3PNetwork staticNet = null;
 	protected OpenDSSLineCodeParser lineCodeParser = null;
 	protected OpenDSSLineParser lineParser = null;
 	protected OpenDSSLoadParser loadParser = null;
+	protected OpenDSSPVSystemParser pvSystemParser = null;
+	protected OpenDSSStorageParser storageParser = null;
+	protected OpenDSSInvControlParser invControlParser = null;
 	protected OpenDSSTransformerParser xfrParser = null;
 	protected OpenDSSCapacitorParser capParser = null;
 	protected OpenDSSRegulatorParser regulatorParser = null;
 	protected OpenDSSWireDataParser wireDataParser = null;
 	protected OpenDSSLineGeometryParser lineGeometryParser = null;
+	protected OpenDSSTimeSeriesData timeSeriesData = null;
+	protected OpenDSSLoadShapeParser loadShapeParser = null;
 	private boolean regControlEnabled = true;
 	private double minLineSeriesImpedancePu = 1.0E-9;
+	private final boolean staticNetworkMode;
 
 
 	boolean debug = false;
 
     public OpenDSSDataParser(){
+	this(false);
+    }
+
+	public static OpenDSSDataParser forStaticNetwork() {
+		return new OpenDSSDataParser(true);
+	}
+
+	private OpenDSSDataParser(boolean staticNetworkMode){
+	this.staticNetworkMode = staticNetworkMode;
 	//create and initialize the distribution network model
-	if(this.distNet == null){
+	if(staticNetworkMode) {
+		this.staticNet = ThreePhaseObjectFactory.createStatic3PhaseNetwork();
+		this.staticNet.setNetworkType(NetworkType.DISTRIBUTION);
+	}
+	else if(this.distNet == null){
 			 this.distNet = ThreePhaseObjectFactory.create3PhaseDStabNetwork();
 			 this.distNet.setNetworkType(NetworkType.DISTRIBUTION);
 		}
@@ -68,12 +96,17 @@ public class OpenDSSDataParser {
 	this.lineCodeParser = new  OpenDSSLineCodeParser (this);
 	this.lineParser = new  OpenDSSLineParser (this);
 	this.loadParser = new  OpenDSSLoadParser (this);
+	this.pvSystemParser = new OpenDSSPVSystemParser(this);
+	this.storageParser = new OpenDSSStorageParser(this);
+	this.invControlParser = new OpenDSSInvControlParser(this);
 	this.capParser =  new  OpenDSSCapacitorParser (this);
 	this.xfrParser =  new  OpenDSSTransformerParser (this);
 	//TODO tentatively, treat regulator as a fixed tap transformer
 	this.regulatorParser = new  OpenDSSRegulatorParser(this);
 	this.wireDataParser = new OpenDSSWireDataParser(this);
 	this.lineGeometryParser = new OpenDSSLineGeometryParser(this);
+	this.timeSeriesData = new OpenDSSTimeSeriesData();
+	this.loadShapeParser = new OpenDSSLoadShapeParser(this.timeSeriesData);
     }
 
     public void setDebugMode(boolean enableDebug){
@@ -109,6 +142,34 @@ public class OpenDSSDataParser {
 
 	}
 
+	public boolean isStaticNetworkMode() {
+		return this.staticNetworkMode;
+	}
+
+	public Static3PNetwork getStaticNetwork() {
+		if(this.staticNet == null) {
+			this.staticNet = ThreePhaseObjectFactory.createStatic3PhaseNetwork();
+			this.staticNet.setNetworkType(NetworkType.DISTRIBUTION);
+		}
+		return this.staticNet;
+	}
+
+	public Static3PBus getOrCreateStaticBus(String busId) {
+		Static3PBus bus = getStaticNetwork().getBus(busId);
+		if(bus == null) {
+			bus = ThreePhaseObjectFactory.createStatic3PBus(busId, getStaticNetwork());
+		}
+		return bus;
+	}
+
+	public double getNetworkBaseKva() {
+		return isStaticNetworkMode() ? getStaticNetwork().getBaseKva() : getDistNetwork().getBaseKva();
+	}
+
+	public double getNetworkBaseMva() {
+		return isStaticNetworkMode() ? getStaticNetwork().getBaseMva() : getDistNetwork().getBaseMva();
+	}
+
 	public DStabNetwork3Phase getDistNetwork(){
 		if(this.distNet == null){
 			 this.distNet = ThreePhaseObjectFactory.create3PhaseDStabNetwork();
@@ -131,6 +192,26 @@ public class OpenDSSDataParser {
 		return loadParser;
 	}
 
+	public OpenDSSPVSystemParser getPVSystemParser() {
+		return pvSystemParser;
+	}
+
+	public OpenDSSStorageParser getStorageParser() {
+		return storageParser;
+	}
+
+	public OpenDSSInvControlParser getInvControlParser() {
+		return invControlParser;
+	}
+
+	public OpenDSSTimeSeriesData getTimeSeriesData() {
+		return timeSeriesData;
+	}
+
+	public OpenDSSLoadShapeParser getLoadShapeParser() {
+		return loadShapeParser;
+	}
+
 	public OpenDSSTransformerParser getXfrParser() {
 		return xfrParser;
 	}
@@ -141,6 +222,18 @@ public class OpenDSSDataParser {
 
 	public OpenDSSRegulatorParser getRegulatorParser() {
 		return regulatorParser;
+	}
+
+	public List<RegulatorControlData> getRegulatorControls() {
+		return this.regulatorParser.toRegulatorControlData();
+	}
+
+	public List<CapacitorControlData> getCapacitorControls() {
+		return this.capParser.toCapacitorControlData();
+	}
+
+	public List<InverterControlData> getInverterControls() {
+		return this.timeSeriesData.getInverterControls();
 	}
 
 	public OpenDSSWireDataParser getWireDataParser() {
@@ -232,6 +325,21 @@ public class OpenDSSDataParser {
 					else if(tempAry[1].contains("WireData.") ||tempAry[1].contains("wiredata.")){
 						no_error = no_error && this.wireDataParser.parseWireData(str);
 					}
+					else if(str.toLowerCase().contains("regcontrol.")){
+						if(this.regControlEnabled) {
+							this.regulatorParser.parseRegControlData(str);
+						}
+					}
+					else if(str.toLowerCase().contains("capcontrol.")){
+						this.capParser.parseCapControlData(str);
+					}
+					else if(str.toLowerCase().contains("invcontrol.")){
+						LogicalLine invControlLine = collectLogicalContinuationLine(str, reader);
+						lineCnt = lineCnt + invControlLine.consumedLineCount;
+						nextLine = invControlLine.nextLine;
+						useLastLineString = nextLine != null;
+						no_error = no_error && this.invControlParser.parseInvControlData(invControlLine.logicalLine);
+					}
 					else if(tempAry[1].contains("LineGeometry.") ||tempAry[1].contains("linegeometry.")){
 						List<String> geometryLines = new ArrayList<>();
 						geometryLines.add(str);
@@ -271,11 +379,8 @@ public class OpenDSSDataParser {
 						lineCnt = lineCnt + loadShapeLine.consumedLineCount;
 						nextLine = loadShapeLine.nextLine;
 						useLastLineString = nextLine != null;
-					}
-                                else if(tempAry[1].contains("RegControl.") ||tempAry[1].contains("regcontrol.")){
-						if(this.regControlEnabled) {
-							this.regulatorParser.parseRegControlData(str);
-						}
+						no_error = no_error && this.loadShapeParser.parseLoadShape(loadShapeLine.logicalLine,
+								folderPath, feederFile, lineCnt);
 					}
 					else if(tempAry[1].contains("Load.") ||tempAry[1].contains("load.")){
 						String loadStr = str;
@@ -299,6 +404,22 @@ public class OpenDSSDataParser {
 						}
 						this.loadParser.parseLoadData(loadStr);
 					}
+					else if(tempAry[1].contains("PVSystem.") ||tempAry[1].contains("pvsystem.")){
+						LogicalLine pvSystemLine = collectLogicalContinuationLine(str, reader);
+						lineCnt = lineCnt + pvSystemLine.consumedLineCount;
+						nextLine = pvSystemLine.nextLine;
+						useLastLineString = nextLine != null;
+						no_error = no_error && this.pvSystemParser.parsePVSystemData(pvSystemLine.logicalLine,
+								feederFile, lineCnt);
+					}
+					else if(tempAry[1].contains("Storage.") ||tempAry[1].contains("storage.")){
+						LogicalLine storageLine = collectLogicalContinuationLine(str, reader);
+						lineCnt = lineCnt + storageLine.consumedLineCount;
+						nextLine = storageLine.nextLine;
+						useLastLineString = nextLine != null;
+						no_error = no_error && this.storageParser.parseStorageData(storageLine.logicalLine,
+								feederFile, lineCnt);
+					}
                                 else if(tempAry[1].contains("Capacitor.") ||tempAry[1].contains("capacitor.")){
 						this.capParser.parseCapDataString(str);
 					}
@@ -320,7 +441,7 @@ public class OpenDSSDataParser {
 				else if(str.toLowerCase().startsWith("transformer.") && str.toLowerCase().contains(".taps=")){
 					no_error = no_error && this.xfrParser.parseTransformerTapData(str);
 				}
-				else if(str.toLowerCase().startsWith("load.") && str.toLowerCase().contains(".allocationfactor")){
+				else if(isSupportedLoadPropertyLine(str)){
 					no_error = no_error && this.loadParser.parseLoadPropertyData(str);
 				}
 				else{
@@ -361,7 +482,12 @@ public class OpenDSSDataParser {
 		 String lowerToken = token.toLowerCase();
 		 if(lowerToken.contains("circuit.")) {
 			 String circuitId = token.substring(token.indexOf(".") + 1);
-			 this.getDistNetwork().setId(circuitId);
+			 if(isStaticNetworkMode()) {
+				 this.getStaticNetwork().setId(circuitId);
+			 }
+			 else {
+				 this.getDistNetwork().setId(circuitId);
+			 }
 		 }
 		 else if(lowerToken.startsWith("bus1=")) {
 			 sourceBusId = token.substring(token.indexOf("=") + 1).toLowerCase();
@@ -392,6 +518,31 @@ public class OpenDSSDataParser {
 
 	 String prefixedSourceBusId = this.busIdPrefix + sourceBusId;
 	 String idealSourceBusId = prefixedSourceBusId + "_vsource";
+	 if(isStaticNetworkMode()) {
+		 Static3PBus sourceBus = getOrCreateStaticBus(prefixedSourceBusId);
+		 sourceBus.setBaseVoltage(basekv, UnitType.kV);
+		 Complex z1 = new Complex(r1, x1);
+		 Complex z0 = new Complex(r0, x0);
+		 if(z1.abs() > 0.0 || z0.abs() > 0.0) {
+			 Static3PBus idealSourceBus = getOrCreateStaticBus(idealSourceBusId);
+			 idealSourceBus.setGenCode(AclfGenCode.SWING);
+			 idealSourceBus.setBaseVoltage(basekv, UnitType.kV);
+			 idealSourceBus.setVoltageMag(voltPu);
+
+			 sourceBus.setGenCode(AclfGenCode.NON_GEN);
+			 Static3PBranch sourceBranch = ThreePhaseObjectFactory.createStatic3PBranch(idealSourceBusId,
+					 prefixedSourceBusId, "vsource", this.staticNet);
+			 sourceBranch.setName(this.busIdPrefix + "vsource_" + sourceBusId);
+			 sourceBranch.setBranchCode(AclfBranchCode.LINE);
+			 sourceBranch.setPhaseCode(PhaseCode.ABC);
+			 sourceBranch.setZabc(sourceSequenceImpedanceToZabc(z1, z0));
+		 }
+		 else {
+			 sourceBus.setGenCode(AclfGenCode.SWING);
+			 sourceBus.setVoltageMag(voltPu);
+		 }
+		 return;
+	 }
 	 DStab3PBus sourceBus = this.distNet.getBus(prefixedSourceBusId);
 	 if(sourceBus == null) {
 		 sourceBus = ThreePhaseObjectFactory.create3PDStabBus(prefixedSourceBusId, distNet);
@@ -506,6 +657,21 @@ public class OpenDSSDataParser {
 					else if(tempAry[1].contains("WireData.") ||tempAry[1].contains("wiredata.")){
 						no_error = no_error && this.wireDataParser.parseWireData(str);
 					}
+					else if(str.toLowerCase().contains("regcontrol.")){
+						if(this.regControlEnabled) {
+							this.regulatorParser.parseRegControlData(str);
+						}
+					}
+					else if(str.toLowerCase().contains("capcontrol.")){
+						this.capParser.parseCapControlData(str);
+					}
+					else if(str.toLowerCase().contains("invcontrol.")){
+						LogicalLine invControlLine = collectLogicalContinuationLine(str, reader);
+						lineCnt = lineCnt + invControlLine.consumedLineCount;
+						nextLine = invControlLine.nextLine;
+						useLastLineString = nextLine != null;
+						no_error = no_error && this.invControlParser.parseInvControlData(invControlLine.logicalLine);
+					}
 					else if(tempAry[1].contains("LineGeometry.") ||tempAry[1].contains("linegeometry.")){
 						List<String> geometryLines = new ArrayList<>();
 						geometryLines.add(str);
@@ -545,11 +711,8 @@ public class OpenDSSDataParser {
 						lineCnt = lineCnt + loadShapeLine.consumedLineCount;
 						nextLine = loadShapeLine.nextLine;
 						useLastLineString = nextLine != null;
-					}
-					else if(tempAry[1].contains("RegControl.") ||tempAry[1].contains("regcontrol.")){
-						if(this.regControlEnabled) {
-							this.regulatorParser.parseRegControlData(str);
-						}
+						no_error = no_error && this.loadShapeParser.parseLoadShape(loadShapeLine.logicalLine,
+								folderPath, fileName, lineCnt);
 					}
 					else if(tempAry[1].contains("Load.") ||tempAry[1].contains("load.")){
 						String loadStr = str;
@@ -573,6 +736,22 @@ public class OpenDSSDataParser {
 						}
 						this.loadParser.parseLoadData(loadStr);
 					}
+					else if(tempAry[1].contains("PVSystem.") ||tempAry[1].contains("pvsystem.")){
+						LogicalLine pvSystemLine = collectLogicalContinuationLine(str, reader);
+						lineCnt = lineCnt + pvSystemLine.consumedLineCount;
+						nextLine = pvSystemLine.nextLine;
+						useLastLineString = nextLine != null;
+						no_error = no_error && this.pvSystemParser.parsePVSystemData(pvSystemLine.logicalLine,
+								fileName, lineCnt);
+					}
+					else if(tempAry[1].contains("Storage.") ||tempAry[1].contains("storage.")){
+						LogicalLine storageLine = collectLogicalContinuationLine(str, reader);
+						lineCnt = lineCnt + storageLine.consumedLineCount;
+						nextLine = storageLine.nextLine;
+						useLastLineString = nextLine != null;
+						no_error = no_error && this.storageParser.parseStorageData(storageLine.logicalLine,
+								fileName, lineCnt);
+					}
                                 else if(tempAry[1].contains("Capacitor.") ||tempAry[1].contains("capacitor.")){
 						this.capParser.parseCapDataString(str);
 					}
@@ -587,7 +766,7 @@ public class OpenDSSDataParser {
 				else if(str.toLowerCase().startsWith("transformer.") && str.toLowerCase().contains(".taps=")){
 					no_error = no_error && this.xfrParser.parseTransformerTapData(str);
 				}
-				else if(str.toLowerCase().startsWith("load.") && str.toLowerCase().contains(".allocationfactor")){
+				else if(isSupportedLoadPropertyLine(str)){
 					no_error = no_error && this.loadParser.parseLoadPropertyData(str);
 				}
 				else{
@@ -1119,6 +1298,16 @@ public class OpenDSSDataParser {
 		 this.nextLine = nextLine;
 		 this.consumedLineCount = consumedLineCount;
 	 }
+     }
+
+     private static boolean isSupportedLoadPropertyLine(String str) {
+	 String lower = str.toLowerCase().replaceAll("\\s*=\\s*", "=");
+	 return lower.startsWith("load.")
+			 && (lower.contains(".allocationfactor=")
+					 || lower.contains(".daily=")
+					 || lower.contains(".yearly=")
+					 || lower.contains(".duty=")
+					 || lower.contains(".status="));
      }
 
      private String[] getNextDataInputString(IFileReader reader) throws ODMException{

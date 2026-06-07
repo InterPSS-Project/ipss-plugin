@@ -1,6 +1,10 @@
 package org.interpss.threePhase.powerflow;
 
+import java.util.List;
+
 import com.interpss.core.threephase.INetwork3Phase;
+import org.interpss.threePhase.powerflow.control.CapacitorControlData;
+import org.interpss.threePhase.powerflow.control.RegulatorControlData;
 
 
 public interface DistributionPowerFlowAlgorithm {
@@ -36,6 +40,22 @@ public interface DistributionPowerFlowAlgorithm {
 	 * @return  true if power flow converges, false if not converge.
 	 */
 	public boolean powerflow();
+
+	public void setRegulatorControls(List<RegulatorControlData> controls);
+
+	public List<RegulatorControlData> getRegulatorControls();
+
+	public void setRegulatorControlEnabled(boolean enabled);
+
+	public boolean isRegulatorControlEnabled();
+
+	public void setCapacitorControls(List<CapacitorControlData> controls);
+
+	public List<CapacitorControlData> getCapacitorControls();
+
+	public void setCapacitorControlEnabled(boolean enabled);
+
+	public boolean isCapacitorControlEnabled();
 
 	public DistributionPFMethod getPFMethod();
 

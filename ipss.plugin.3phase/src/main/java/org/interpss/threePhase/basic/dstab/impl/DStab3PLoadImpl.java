@@ -151,6 +151,15 @@ public class DStab3PLoadImpl extends DStab1PLoadImpl implements DStab3PLoad {
 	public void set3PhaseLoad(Complex3x1 threePhaseLoad) {
 
 		 ph3Load = threePhaseLoad;
+		 if(ph3Load != null) {
+			 this.setLoadCP(add(add(ph3Load.a_0, ph3Load.b_1), ph3Load.c_2));
+		 }
+	}
+
+	private static Complex add(Complex left, Complex right) {
+		Complex a = left == null ? Complex.ZERO : left;
+		Complex b = right == null ? Complex.ZERO : right;
+		return a.add(b);
 	}
 
 	@Override

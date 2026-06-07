@@ -9,8 +9,11 @@ import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.acsc.PhaseCode;
+import com.interpss.core.threephase.IBranch3Phase;
+import com.interpss.core.threephase.Static3PBranch;
 
 public class OpenDSSLineParser {
 
@@ -39,7 +42,7 @@ public class OpenDSSLineParser {
 		String  fromBusStr = "";
 		String  toBusStr = "";
 
-		DStabNetwork3Phase distNet = this.dataParser.getDistNetwork();
+		DStabNetwork3Phase distNet = this.dataParser.isStaticNetworkMode() ? null : this.dataParser.getDistNetwork();
 
 		DStab3PBus fromBus = null, toBus = null;
 
@@ -313,21 +316,35 @@ public class OpenDSSLineParser {
 		fromBusId =this.dataParser.getBusIdPrefix()+fromBusId;
 		toBusId =this.dataParser.getBusIdPrefix()+toBusId;
 
-		if(distNet.getBus(fromBusId)==null) {
-			fromBus = ThreePhaseObjectFactory.create3PDStabBus(fromBusId, distNet);
+		IBranch3Phase line3Phase = null;
+		AclfBranch line = null;
+		if(this.dataParser.isStaticNetworkMode()) {
+			this.dataParser.getOrCreateStaticBus(fromBusId);
+			this.dataParser.getOrCreateStaticBus(toBusId);
+			Static3PBranch staticLine = ThreePhaseObjectFactory.createStatic3PBranch(fromBusId, toBusId, "1",
+					this.dataParser.getStaticNetwork());
+			line3Phase = staticLine;
+			line = staticLine;
 		}
+		else {
+			if(distNet.getBus(fromBusId)==null) {
+				fromBus = ThreePhaseObjectFactory.create3PDStabBus(fromBusId, distNet);
+			}
 
-		if(distNet.getBus(toBusId)==null) {
-			toBus = ThreePhaseObjectFactory.create3PDStabBus(toBusId, distNet);
+			if(distNet.getBus(toBusId)==null) {
+				toBus = ThreePhaseObjectFactory.create3PDStabBus(toBusId, distNet);
+			}
+
+			DStab3PBranch dynamicLine = ThreePhaseObjectFactory.create3PBranch(fromBusId, toBusId, "1", distNet);
+			line3Phase = dynamicLine;
+			line = dynamicLine;
 		}
-
-		DStab3PBranch line = ThreePhaseObjectFactory.create3PBranch(fromBusId, toBusId, "1", distNet);
 
 		line.setName(this.dataParser.getBusIdPrefix()+lineName);
 
 
 		line.setBranchCode(AclfBranchCode.LINE);
-		line.setPhaseCode(phaseCode(fromBusPhases));
+		line3Phase.setPhaseCode(phaseCode(fromBusPhases));
 		line.setStatus(enabled);
 		// the format of Zmatrix need to be consistent with the number of phases and the phases in use.
 
@@ -341,15 +358,15 @@ public class OpenDSSLineParser {
 		if(lineConfigIdx < 0 && lineZabc.absMax() < 1.0E-4) {
 			lineZabc = lineZabc.multiply(1.0E-4 / lineZabc.absMax());
 		}
-		line.setZabc(lineZabc);
+		line3Phase.setZabc(lineZabc);
 
-		if(line.getZabc().absMax()<1.0E-7){
+		if(line3Phase.getZabc().absMax()<1.0E-7){
 			throw new Error("Line Zabc.absMax() is less than 1.0E-7. LineID, Name = "+line.getId()+", "+line.getName());
 		}
 
 		if(yshuntabc != null && yshuntabc.absMax() > 0.0) {
-			line.setFromShuntYabc(yshuntabc.multiply(0.5));
-			line.setToShuntYabc(yshuntabc.multiply(0.5));
+			line3Phase.setFromShuntYabc(yshuntabc.multiply(0.5));
+			line3Phase.setToShuntYabc(yshuntabc.multiply(0.5));
 		}
 
 		return no_error;

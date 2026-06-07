@@ -3,16 +3,28 @@ package org.interpss.threePhase.basic.dstab;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 
+import com.interpss.core.threephase.IDynamicPhaseLoad;
+import com.interpss.core.threephase.IPhaseLoad;
 import com.interpss.core.threephase.ILoad1Phase;
 import com.interpss.core.threephase.LoadConnectionType;
 import com.interpss.core.acsc.PhaseCode;
 import com.interpss.dstab.DStabLoad;
 
-public interface DStab1PLoad extends ILoad1Phase, DStabLoad {
+public interface DStab1PLoad extends ILoad1Phase, IDynamicPhaseLoad, DStabLoad {
 
 	public void setPhaseCode (PhaseCode phCode);
 
 	public PhaseCode getPhaseCode ();
+
+	@Override
+	default Complex3x1 getInit3PhaseLoad() {
+		return IPhaseLoad.distribute(getLoadCP(), getPhaseCode());
+	}
+
+	@Override
+	default void set3PhaseLoad(Complex3x1 threePhaseLoad) {
+		setLoadCP(IPhaseLoad.total(threePhaseLoad));
+	}
 
 	/**
 	 * The Norton equivalent admittance. Used in power flow and short circuit analysis.

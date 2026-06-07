@@ -15,10 +15,12 @@ import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.impl.DStabNetwork3phaseImpl;
 import org.interpss.threePhase.dynamic.model.DStabGen3PhaseAdapter;
 import org.interpss.threePhase.dynamic.model.impl.DStabGen3PhaseAdapterImpl;
-import org.interpss.threePhase.opf.dist.DistOpfAlgorithm;
-import org.interpss.threePhase.opf.dist.impl.DistOpfAlgorithmImpl;
-import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
-import org.interpss.threePhase.powerflow.impl.DistributionPowerFlowAlgorithmImpl;
+import org.interpss.threePhase.opf.dist.DistOpfAlgorithm;
+import org.interpss.threePhase.opf.dist.impl.DistOpfAlgorithmImpl;
+import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
+import org.interpss.threePhase.powerflow.impl.DistributionPowerFlowAlgorithmImpl;
+import org.interpss.threePhase.qsts.QstsScheduleData;
+import org.interpss.threePhase.qsts.QstsStudy;
 
 import com.interpss.common.datatype.Constants;
 import com.interpss.common.exp.InterpssException;
@@ -28,12 +30,51 @@ import com.interpss.core.aclf.netAdj.NetAdjustFactory;
 import com.interpss.core.acsc.AcscFactory;
 import com.interpss.core.acsc.BusScCode;
 import com.interpss.core.acsc.BusScGrounding;
-import com.interpss.core.threephase.INetwork3Phase;
-import com.interpss.core.net.OriginalDataFormat;
-import com.interpss.dstab.DStabObjectFactory;
-import com.interpss.dstab.StaticLoadModel;
+import com.interpss.core.threephase.INetwork3Phase;
+import com.interpss.core.threephase.Static3PBus;
+import com.interpss.core.threephase.Static3PBranch;
+import com.interpss.core.threephase.Static3PGen;
+import com.interpss.core.threephase.Static3PLoad;
+import com.interpss.core.threephase.Static3PNetwork;
+import com.interpss.core.threephase.Static3PhaseFactory;
+import com.interpss.core.net.OriginalDataFormat;
+import com.interpss.dstab.DStabObjectFactory;
+import com.interpss.dstab.StaticLoadModel;
 
 public class ThreePhaseObjectFactory {
+
+	public static Static3PNetwork createStatic3PhaseNetwork() {
+		Static3PNetwork net = Static3PhaseFactory.eINSTANCE.createStatic3PNetwork();
+		net.setId("undefined");
+		net.setOriginalDataFormat(OriginalDataFormat.IPSS_API);
+		return net;
+	}
+
+	public static Static3PBus createStatic3PBus(String busId, Static3PNetwork net) {
+		Static3PBus bus = Static3PhaseFactory.eINSTANCE.createStatic3PBus();
+		bus.setId(busId);
+		net.addBus(bus);
+		return bus;
+	}
+
+	public static Static3PGen createStatic3PGenerator(String genId) {
+		Static3PGen gen = Static3PhaseFactory.eINSTANCE.createStatic3PGen();
+		gen.setId(genId);
+		return gen;
+	}
+
+	public static Static3PLoad createStatic3PLoad(String loadId) {
+		Static3PLoad load = Static3PhaseFactory.eINSTANCE.createStatic3PLoad();
+		load.setId(loadId);
+		return load;
+	}
+
+	public static Static3PBranch createStatic3PBranch(String fromBusId, String toBusId, String cirId,
+			Static3PNetwork net) throws InterpssException {
+		Static3PBranch branch = Static3PhaseFactory.eINSTANCE.createStatic3PBranch();
+		net.addBranch(branch, fromBusId, toBusId, cirId);
+		return branch;
+	}
 
 	public static  DStabNetwork3Phase create3PhaseDStabNetwork() {
 	       DStabNetwork3Phase net = new DStabNetwork3phaseImpl();
@@ -135,8 +176,12 @@ public class ThreePhaseObjectFactory {
 		return new DistributionPowerFlowAlgorithmImpl((INetwork3Phase) net);
 	}
 
-	public static DistOpfAlgorithm createDistOpfAlgorithm(INetwork3Phase net){
-		return new DistOpfAlgorithmImpl(net);
-	}
-
-}
+	public static DistOpfAlgorithm createDistOpfAlgorithm(INetwork3Phase net){
+		return new DistOpfAlgorithmImpl(net);
+	}
+
+	public static QstsStudy createQstsStudy(INetwork3Phase net, QstsScheduleData scheduleData){
+		return QstsStudy.from(net, scheduleData);
+	}
+
+}

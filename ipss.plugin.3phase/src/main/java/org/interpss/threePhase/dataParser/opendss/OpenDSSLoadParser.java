@@ -5,8 +5,11 @@ import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.threePhase.basic.dstab.DStab1PLoad;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.basic.dstab.DStab3PLoad;
+import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSProfileBinding;
+import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSProfileType;
 import org.interpss.threePhase.basic.dstab.impl.DStab1PLoadImpl;
 import org.interpss.threePhase.basic.dstab.impl.DStab3PLoadImpl;
+import org.interpss.threePhase.qsts.QstsDeviceStatus;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
 import java.util.ArrayList;
@@ -18,6 +21,11 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.threephase.LoadConnectionType;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.acsc.PhaseCode;
+import com.interpss.core.threephase.ILoad1Phase;
+import com.interpss.core.threephase.ILoad3Phase;
+import com.interpss.core.threephase.IPhaseLoad;
+import com.interpss.core.threephase.Static3PBus;
+import com.interpss.core.threephase.Static3PLoad;
 
 public class OpenDSSLoadParser {
 
@@ -84,6 +92,10 @@ public class OpenDSSLoadParser {
 			Double vmaxpu = null;
 			boolean kwSpecified = false;
 			double[] zipv = null;
+			String dailyShapeId = "";
+			String yearlyShapeId = "";
+			String dutyShapeId = "";
+			String status = "";
 
 			String[] loadStrAry = splitDssTokens(loadStr.toLowerCase().trim().replaceAll("\\s*=\\s*", "="));
 
@@ -143,6 +155,18 @@ public class OpenDSSLoadParser {
 				else if(element.startsWith("zipv=")){
 					zipv = parseDssDoubleArray(element.substring(5));
 				}
+				else if(element.startsWith("daily=")){
+					dailyShapeId = stripDssValue(element.substring(6));
+				}
+				else if(element.startsWith("yearly=")){
+					yearlyShapeId = stripDssValue(element.substring(7));
+				}
+				else if(element.startsWith("duty=")){
+					dutyShapeId = stripDssValue(element.substring(5));
+				}
+				else if(element.startsWith("status=")){
+					status = stripDssValue(element.substring(7));
+				}
 
 
 			}
@@ -191,27 +215,29 @@ public class OpenDSSLoadParser {
 
 			//get the bus object
 			busName =this.dataParser.getBusIdPrefix()+busName;
-			DStab3PBus bus =  this.dataParser.getDistNetwork().getBus(busName);
-			if(bus == null) {
-				bus = ThreePhaseObjectFactory.create3PDStabBus(busName, this.dataParser.getDistNetwork());
+			DStab3PBus bus = null;
+			Static3PBus staticBus = null;
+			if(this.dataParser.isStaticNetworkMode()) {
+				staticBus = this.dataParser.getOrCreateStaticBus(busName);
+			}
+			else {
+				bus =  this.dataParser.getDistNetwork().getBus(busName);
+				if(bus == null) {
+					bus = ThreePhaseObjectFactory.create3PDStabBus(busName, this.dataParser.getDistNetwork());
+				}
 			}
 
-			DStab1PLoad load= null;
-			if(phaseNum==3 || phaseNum==2) {
-				load= new DStab3PLoadImpl();
-			} else {
-				load= new DStab1PLoadImpl();
-			}
+			IPhaseLoad load = this.dataParser.isStaticNetworkMode()
+					? ThreePhaseObjectFactory.createStatic3PLoad(loadId)
+					: createDynamicLoad(loadId, phaseNum);
 
-			//load ID
-			load.setId(loadId);
 			// rated KV
 			load.setNominalKV(nominalKV);
 			if (vminpu != null) {
-				load.setVminpu(vminpu.doubleValue());
+				setVminpu(load, vminpu.doubleValue());
 			}
 			if (vmaxpu != null) {
-				load.setVmaxpu(vmaxpu.doubleValue());
+				setVmaxpu(load, vmaxpu.doubleValue());
 			}
 
 			//load model type
@@ -224,18 +250,18 @@ public class OpenDSSLoadParser {
 			}
 			else if(modelType==3){
 				setLoadPower(load, phaseNum, phase1, phase2, loadPQ, AclfLoadCode.CONST_P);
-				load.setOpenDssLoadModel(modelType, cvrWatts, cvrVars, zipv);
+				setOpenDssLoadModel(load, modelType, cvrWatts, cvrVars, zipv);
 			}
 			else if(modelType==4){
 				setLoadPower(load, phaseNum, phase1, phase2, loadPQ, AclfLoadCode.CONST_P);
-				load.setOpenDssLoadModel(modelType, cvrWatts, cvrVars, zipv);
+				setOpenDssLoadModel(load, modelType, cvrWatts, cvrVars, zipv);
 			}
 			else if(modelType==5){
 				setLoadPower(load, phaseNum, phase1, phase2, loadPQ, AclfLoadCode.CONST_I);
 			}
 			else if(modelType==6 || modelType==7){
 				setLoadPower(load, phaseNum, phase1, phase2, loadPQ, AclfLoadCode.CONST_P);
-				load.setOpenDssLoadModel(modelType, cvrWatts, cvrVars, zipv);
+				setOpenDssLoadModel(load, modelType, cvrWatts, cvrVars, zipv);
 			}
 			else if(modelType==8){
 				if(zipv == null || zipv.length < 7) {
@@ -243,7 +269,7 @@ public class OpenDSSLoadParser {
 					throw new Error("OpenDSS load model=8 requires 7 ZIPV coefficients! # "+loadStr);
 				}
 				setLoadPower(load, phaseNum, phase1, phase2, loadPQ, AclfLoadCode.CONST_P);
-				load.setOpenDssLoadModel(modelType, cvrWatts, cvrVars, zipv);
+				setOpenDssLoadModel(load, modelType, cvrWatts, cvrVars, zipv);
 			}
 			else{
 				no_error = false;
@@ -329,16 +355,26 @@ public class OpenDSSLoadParser {
 				}
 			}
 
-			if(phaseNum==1) {
-				bus.getSinglePhaseLoadList().add(load);
+			if(this.dataParser.isStaticNetworkMode()) {
+				staticBus.getContributeLoadList().add((Static3PLoad) load);
+			}
+			else if(phaseNum==1) {
+				bus.getSinglePhaseLoadList().add((DStab1PLoad) load);
 			} else if(phaseNum==3 || phaseNum==2) {
 				bus.getThreePhaseLoadList().add((DStab3PLoad) load);
 			}
 			registerParsedLoad(loadId, load, phaseNum, phase1, phase2, modelType,
 					transformerKva, powerfactor, cvrWatts, cvrVars, zipv);
+			this.dataParser.getTimeSeriesData().getLoadStateStore().register(load);
+			registerProfileBinding(loadId, dailyShapeId, yearlyShapeId, dutyShapeId, status);
 
 			//TODO The following setting does NOT mean all the loads are constP type, it is a known limitation with bus level loadcode setting
-			bus.setLoadCode(AclfLoadCode.CONST_P);
+			if(this.dataParser.isStaticNetworkMode()) {
+				staticBus.setLoadCode(AclfLoadCode.CONST_P);
+			}
+			else {
+				bus.setLoadCode(AclfLoadCode.CONST_P);
+			}
 
 			return no_error;
 
@@ -346,16 +382,41 @@ public class OpenDSSLoadParser {
 
 		public boolean parseLoadPropertyData(String propertyStr) {
 			String normalized = propertyStr.trim().toLowerCase().replaceAll("\\s*=\\s*", "=");
-			if(!normalized.startsWith("load.") || !normalized.contains(".allocationfactor=")) {
+			if(!normalized.startsWith("load.")) {
 				return true;
 			}
 			int loadStart = "load.".length();
-			int propertyStart = normalized.indexOf(".allocationfactor=");
-			if(propertyStart <= loadStart) {
+			int propertyStart = normalized.indexOf('.', loadStart);
+			if(propertyStart <= loadStart || !normalized.contains("=")) {
 				return true;
 			}
 			String loadId = normalized.substring(loadStart, propertyStart);
-			double allocationFactor = parseDssDouble(normalized.substring(propertyStart + ".allocationfactor=".length()));
+			String propertyName = normalized.substring(propertyStart + 1, normalized.indexOf('=', propertyStart));
+			String propertyValue = stripDssValue(normalized.substring(normalized.indexOf('=', propertyStart) + 1));
+			if(propertyName.equals("daily")) {
+				this.dataParser.getTimeSeriesData().getOrCreateLoadBinding(loadId)
+						.setShapeId(OpenDSSProfileType.DAILY, propertyValue);
+				return true;
+			}
+			if(propertyName.equals("yearly")) {
+				this.dataParser.getTimeSeriesData().getOrCreateLoadBinding(loadId)
+						.setShapeId(OpenDSSProfileType.YEARLY, propertyValue);
+				return true;
+			}
+			if(propertyName.equals("duty")) {
+				this.dataParser.getTimeSeriesData().getOrCreateLoadBinding(loadId)
+						.setShapeId(OpenDSSProfileType.DUTY, propertyValue);
+				return true;
+			}
+			if(propertyName.equals("status")) {
+				this.dataParser.getTimeSeriesData().getOrCreateLoadBinding(loadId)
+						.setStatus(parseStatus(propertyValue));
+				return true;
+			}
+			if(!propertyName.equals("allocationfactor")) {
+				return true;
+			}
+			double allocationFactor = parseDssDouble(propertyValue);
 			List<ParsedLoad> loads = this.parsedLoadsById.get(loadId);
 			if(loads == null) {
 				return true;
@@ -375,14 +436,46 @@ public class OpenDSSLoadParser {
 						new Complex(loadP, loadQ), code);
 				if(parsedLoad.modelType == 3 || parsedLoad.modelType == 4 || parsedLoad.modelType == 6
 						|| parsedLoad.modelType == 7 || parsedLoad.modelType == 8) {
-					parsedLoad.load.setOpenDssLoadModel(parsedLoad.modelType, parsedLoad.cvrWatts,
+					setOpenDssLoadModel(parsedLoad.load, parsedLoad.modelType, parsedLoad.cvrWatts,
 							parsedLoad.cvrVars, parsedLoad.zipv);
 				}
 			}
 			return true;
 		}
 
-		private void registerParsedLoad(String loadId, DStab1PLoad load, int phaseNum, String phase1, String phase2,
+		private void registerProfileBinding(String loadId, String dailyShapeId, String yearlyShapeId,
+				String dutyShapeId, String status) {
+			if((dailyShapeId == null || dailyShapeId.isEmpty())
+					&& (yearlyShapeId == null || yearlyShapeId.isEmpty())
+					&& (dutyShapeId == null || dutyShapeId.isEmpty())
+					&& (status == null || status.isEmpty())) {
+				return;
+			}
+			OpenDSSProfileBinding binding = this.dataParser.getTimeSeriesData().getOrCreateLoadBinding(loadId);
+			binding.setShapeId(OpenDSSProfileType.DAILY, dailyShapeId);
+			binding.setShapeId(OpenDSSProfileType.YEARLY, yearlyShapeId);
+			binding.setShapeId(OpenDSSProfileType.DUTY, dutyShapeId);
+			binding.setStatus(parseStatus(status));
+		}
+
+		private static QstsDeviceStatus parseStatus(String status) {
+			if(status == null || status.trim().isEmpty()) {
+				return QstsDeviceStatus.DEFAULT;
+			}
+			String normalized = stripDssValue(status).toLowerCase();
+			if(normalized.equals("fixed")) {
+				return QstsDeviceStatus.FIXED;
+			}
+			if(normalized.equals("variable")) {
+				return QstsDeviceStatus.VARIABLE;
+			}
+			if(normalized.equals("exempt")) {
+				return QstsDeviceStatus.EXEMPT;
+			}
+			return QstsDeviceStatus.DEFAULT;
+		}
+
+		private void registerParsedLoad(String loadId, IPhaseLoad load, int phaseNum, String phase1, String phase2,
 				int modelType, double transformerKva, double powerFactor, double cvrWatts, double cvrVars,
 				double[] zipv) {
 			this.parsedLoadsById.computeIfAbsent(loadId.toLowerCase(), ignored -> new ArrayList<>())
@@ -390,13 +483,13 @@ public class OpenDSSLoadParser {
 							transformerKva, powerFactor, cvrWatts, cvrVars, zipv));
 		}
 
-		private void setLoadPower(DStab1PLoad load, int phaseNum, String phase1, String phase2,
+		private void setLoadPower(IPhaseLoad load, int phaseNum, String phase1, String phase2,
 				Complex loadPQ, AclfLoadCode code) {
 			load.setCode(code);
 			if(phaseNum==3) {
-				((DStab3PLoad)load).set3PhaseLoad(new Complex3x1(loadPQ.divide(3),loadPQ.divide(3),loadPQ.divide(3)));
+				load.set3PhaseLoad(new Complex3x1(loadPQ.divide(3),loadPQ.divide(3),loadPQ.divide(3)));
 			} else if(phaseNum==2) {
-				((DStab3PLoad)load).set3PhaseLoad(twoPhaseLoad(loadPQ, phase1, phase2));
+				load.set3PhaseLoad(twoPhaseLoad(loadPQ, phase1, phase2));
 			} else if(code == AclfLoadCode.CONST_Z) {
 				load.setLoadCZ(loadPQ);
 			} else if(code == AclfLoadCode.CONST_I) {
@@ -406,8 +499,42 @@ public class OpenDSSLoadParser {
 			}
 		}
 
+		private static IPhaseLoad createDynamicLoad(String loadId, int phaseNum) {
+			DStab1PLoad load = phaseNum == 3 || phaseNum == 2 ? new DStab3PLoadImpl() : new DStab1PLoadImpl();
+			load.setId(loadId);
+			return load;
+		}
+
+		private static void setVminpu(IPhaseLoad load, double vminpu) {
+			if(load instanceof ILoad3Phase) {
+				((ILoad3Phase) load).setVminpu(vminpu);
+			}
+			else if(load instanceof ILoad1Phase) {
+				((ILoad1Phase) load).setVminpu(vminpu);
+			}
+		}
+
+		private static void setVmaxpu(IPhaseLoad load, double vmaxpu) {
+			if(load instanceof ILoad3Phase) {
+				((ILoad3Phase) load).setVmaxpu(vmaxpu);
+			}
+			else if(load instanceof ILoad1Phase) {
+				((ILoad1Phase) load).setVmaxpu(vmaxpu);
+			}
+		}
+
+		private static void setOpenDssLoadModel(IPhaseLoad load, int modelType, double cvrWatts,
+				double cvrVars, double[] zipv) {
+			if(load instanceof ILoad3Phase) {
+				((ILoad3Phase) load).setOpenDssLoadModel(modelType, cvrWatts, cvrVars, zipv);
+			}
+			else if(load instanceof ILoad1Phase) {
+				((ILoad1Phase) load).setOpenDssLoadModel(modelType, cvrWatts, cvrVars, zipv);
+			}
+		}
+
 		private static double parseDssDouble(String value) {
-			String normalized = value.trim();
+			String normalized = stripDssValue(value);
 			if((normalized.startsWith("(") && normalized.endsWith(")"))
 					|| (normalized.startsWith("[") && normalized.endsWith("]"))) {
 				normalized = normalized.substring(1, normalized.length() - 1).trim();
@@ -444,7 +571,7 @@ public class OpenDSSLoadParser {
 		}
 
 		private static double[] parseDssDoubleArray(String value) {
-			String normalized = value.trim();
+			String normalized = stripDssValue(value);
 			if((normalized.startsWith("(") && normalized.endsWith(")"))
 					|| (normalized.startsWith("[") && normalized.endsWith("]"))) {
 				normalized = normalized.substring(1, normalized.length() - 1).trim();
@@ -460,8 +587,20 @@ public class OpenDSSLoadParser {
 			return values;
 		}
 
+		private static String stripDssValue(String value) {
+			String normalized = value == null ? "" : value.trim();
+			while(normalized.endsWith(",")) {
+				normalized = normalized.substring(0, normalized.length() - 1).trim();
+			}
+			if((normalized.startsWith("\"") && normalized.endsWith("\""))
+					|| (normalized.startsWith("'") && normalized.endsWith("'"))) {
+				normalized = normalized.substring(1, normalized.length() - 1);
+			}
+			return normalized;
+		}
+
 		private static final class ParsedLoad {
-			private final DStab1PLoad load;
+			private final IPhaseLoad load;
 			private final int phaseNum;
 			private final String phase1;
 			private final String phase2;
@@ -472,7 +611,7 @@ public class OpenDSSLoadParser {
 			private final double cvrVars;
 			private final double[] zipv;
 
-			private ParsedLoad(DStab1PLoad load, int phaseNum, String phase1, String phase2,
+			private ParsedLoad(IPhaseLoad load, int phaseNum, String phase1, String phase2,
 					int modelType, double transformerKva, double powerFactor, double cvrWatts, double cvrVars,
 					double[] zipv) {
 				this.load = load;
