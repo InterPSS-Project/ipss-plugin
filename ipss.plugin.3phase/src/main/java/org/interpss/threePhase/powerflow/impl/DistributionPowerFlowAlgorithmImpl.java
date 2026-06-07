@@ -51,7 +51,7 @@ import com.interpss.core.acsc.XFormerConnectCode;
 import com.interpss.core.funcImpl.AclfNetHelper;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
-import com.interpss.core.sparse.impl.csj.CSJSparseEqnComplexMatrix3x3Impl;
+import com.interpss.core.sparse.SparseEqnObjectFactory;
 
 public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlowAlgorithm{
 
@@ -902,7 +902,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	}
 
 	private ISparseEqnComplexMatrix3x3 formYMatrixABCForPowerflow(BaseAclfNetwork distNet) throws IpssNumericException {
-		ISparseEqnComplexMatrix3x3 yMatrix = new CSJSparseEqnComplexMatrix3x3Impl(distNet.getNoBus());
+		ISparseEqnComplexMatrix3x3 yMatrix =
+				new SparseEqnObjectFactory().createSparseEqnComplex3x3(distNet.getNoBus());
 
 		for(BaseAclfBus bus: (List<BaseAclfBus>) distNet.getBusList()) {
 			if(bus.isActive()) {

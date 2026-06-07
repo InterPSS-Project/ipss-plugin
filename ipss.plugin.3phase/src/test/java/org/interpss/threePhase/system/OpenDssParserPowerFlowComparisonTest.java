@@ -54,6 +54,7 @@ import com.interpss.core.threephase.Static3PBus;
 import com.interpss.core.threephase.Static3PBranch;
 import com.interpss.core.threephase.Static3PNetwork;
 import com.interpss.core.net.Branch;
+import com.interpss.core.sparse.solver.SparseEqnSolverProvider;
 
 
 public class OpenDssParserPowerFlowComparisonTest {
@@ -744,6 +745,7 @@ public class OpenDssParserPowerFlowComparisonTest {
 	@Test
 	@Disabled("Diagnostic only: exports Ckt24 voltage mismatch versus source depth")
 	public void ckt24VoltageDepthExportDiagnostic() throws IOException {
+		System.out.println(SparseEqnSolverProvider.configureFromSystemProperties().message());
 		List<VoltageReference> references = readReferences(
 				"opendss-reference/ckt24-controls-off-dss-python-voltage-reference.csv");
 		OpenDSSDataParser parser = new OpenDSSDataParser();
