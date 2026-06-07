@@ -101,6 +101,7 @@ public class OpenDSSStorageParser {
 		}
 
 		dataParser.getTimeSeriesData().getGeneratorStateStore().register(generator);
+		dataParser.getTimeSeriesData().getInverterAdapterStore().register(generator);
 		double initialStoredKwh = kwhStored > 0.0 ? kwhStored : kwhRated * pctStored / 100.0;
 		double reserveKwh = kwhRated * pctReserve / 100.0;
 		double storageKwRated = kwRated > 0.0 ? kwRated : Math.abs(signedKw);

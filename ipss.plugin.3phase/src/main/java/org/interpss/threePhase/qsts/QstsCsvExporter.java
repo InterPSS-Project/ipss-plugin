@@ -62,6 +62,35 @@ public class QstsCsvExporter {
 		return builder.toString();
 	}
 
+	public String exportCapacitorStates(QstsResult result) {
+		return exportCapacitorStates(result == null ? null : result.getCapacitorStates());
+	}
+
+	public String exportInverterControls(Iterable<QstsInverterControlSample> samples) {
+		StringBuilder builder = new StringBuilder(
+				"step,hour,control,generator,mode,applied,p_kw,q_kvar,limited,reason\n");
+		if(samples == null) {
+			return builder.toString();
+		}
+		for(QstsInverterControlSample sample : samples) {
+			builder.append(sample.getStepIndex()).append(',')
+					.append(format(sample.getHour())).append(',')
+					.append(escape(sample.getControlId())).append(',')
+					.append(escape(sample.getGeneratorId())).append(',')
+					.append(escape(sample.getMode())).append(',')
+					.append(sample.isApplied()).append(',')
+					.append(format(sample.getActivePowerKw())).append(',')
+					.append(format(sample.getReactivePowerKvar())).append(',')
+					.append(sample.isLimited()).append(',')
+					.append(escape(sample.getReason())).append('\n');
+		}
+		return builder.toString();
+	}
+
+	public String exportInverterControls(QstsResult result) {
+		return exportInverterControls(result == null ? null : result.getInverterControls());
+	}
+
 	private static String format(double value) {
 		if(!Double.isFinite(value)) {
 			return "";
