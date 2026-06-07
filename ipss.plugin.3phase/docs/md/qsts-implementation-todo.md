@@ -665,15 +665,31 @@ Create:
 
 - [ ] `QstsFeederSmokeTest`
   - Generic smoke-test base/helper for imported feeders.
-- [ ] `OpenDSSQstsFeederSmokeTest`
+- [x] `OpenDSSQstsFeederSmokeTest`
   - OpenDSS adapter/reference implementation of the smoke tests.
-  - Ckt7 first 24 yearly/daily steps, controls off.
-  - Ckt24 first 24 steps, controls off.
-  - Optional 168-step Ckt24 run disabled or tagged until runtime is acceptable.
-- [ ] `OpenDSSQstsComparisonSummary`
-  - Worst voltage error by step/phase.
-  - Worst load P/Q error by step/load.
-  - Convergence and iteration summary.
+  - IEEE13 24-step daily scheduled-profile regression is already covered by
+    `OpenDssIeee13DailyQstsProfileTest`.
+  - [x] Ckt7 first 24 yearly steps, controls off, as the first large feeder with
+    real OpenDSS load-shape bindings.
+  - [x] IEEE123 first 24 repeated-state steps, controls off, to protect topology
+    and static-QSTS integration while regulator/capacitor controls remain under
+    staged implementation.
+  - [x] Ckt24 first 24 repeated-state steps, controls off, using the InterPSS static
+    fixture until a supported annual/scheduled fixture is added. The near-zero
+    OpenDSS busbar branch `subxfmr_lsb->05410(1)` is protected by the parser
+    line-impedance floor so static fixed-point setup no longer sees zero Yii
+    diagonal elements.
+  - [x] IEEE8500 short repeated-state window, controls off, enabled as a runtime
+    sentinel before promoting to a full 24-step smoke.
+  - Optional 168-step Ckt7/Ckt24 run disabled or tagged until runtime is
+    acceptable.
+- [x] `OpenDSSQstsComparisonSummary`
+  - Convergence, step count, runtime, voltage sample count, and iteration
+    summary for smoke runs.
+  - Worst voltage error by step/phase once a DSS-Python reference window is
+    checked in.
+  - Worst load P/Q error by step/load once a DSS-Python reference window is
+    checked in.
 
 Update:
 
@@ -690,7 +706,25 @@ Relationship with existing code:
 
 Verification:
 
-- [ ] Controls-off selected feeder window converges every step.
+- [x] Controls-off selected feeder window converges every step for IEEE123,
+  Ckt7, Ckt24, and IEEE8500 short-window coverage.
+- [x] Every recorded voltage sample is finite and the maximum magnitude remains
+  below a broad smoke ceiling. Do not assert tight feeder tolerances until a
+  DSS-Python reference window is available.
+- [x] Smoke output reports iteration counts and runtime for larger feeders so
+  later performance slices can compare factorization reuse, monthly partitioning,
+  and parallel execution.
+  - Initial enabled QSTS smoke evidence:
+    Ckt7 yearly 24 steps converged with max iteration count 5 and max voltage
+    1.05 pu; IEEE8500 repeated-state 6 steps converged with max iteration count
+    15 and max voltage 1.05 pu; IEEE123 repeated-state 24 steps converged with
+    max iteration count 3 and max voltage 1.0 pu; Ckt24 repeated-state 24 steps
+    converged with max iteration count 6 and max voltage 1.05 pu.
+  - Static DSS-Python comparison gate also passed for IEEE123, IEEE8500, and
+    Ckt7 after adding the smoke tests.
+- [ ] DSS-Python reference windows are added in this order: Ckt7 first 24 yearly
+  steps, Ckt24 scheduled window, IEEE8500 selected window, then control-enabled
+  windows.
 - [ ] Worst errors are stable across repeated runs.
 - [ ] Any hard assertion uses a tolerance justified by mini-case and static
   feeder residual evidence.
