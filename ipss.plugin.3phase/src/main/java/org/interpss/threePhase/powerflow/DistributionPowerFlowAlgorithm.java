@@ -73,6 +73,12 @@ public interface DistributionPowerFlowAlgorithm {
 
 	public boolean isFixedPointFallbackUsed();
 
+	public void setFixedPointYMatrixCacheEnabled(boolean enabled);
+
+	public boolean isFixedPointYMatrixCacheEnabled();
+
+	public void clearFixedPointYMatrixCache();
+
 	public void  setInitBusVoltageEnabled(boolean enableInitBus3PhaseVolts);
 
 	public boolean isInitBusVoltageEnabled();
