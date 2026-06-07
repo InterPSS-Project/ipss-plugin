@@ -9,6 +9,7 @@ import java.util.Locale;
 
 import org.interpss.threePhase.dataParser.opendss.OpenDSSDataParser;
 import org.interpss.threePhase.dataParser.opendss.OpenDSSStaticDataParser;
+import org.interpss.threePhase.powerflow.DistributionPostSolveOutputMode;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.qsts.QstsControlMode;
 import org.interpss.threePhase.qsts.QstsMode;
@@ -79,6 +80,7 @@ public class QstsLargeFeederPerformanceBenchmark {
 				.setStepSizeHours(1.0)
 				.setControlMode(QstsControlMode.OFF)
 				.setMaxControlIterations(0)
+				.setPostSolveOutputMode(DistributionPostSolveOutputMode.VOLTAGE_ONLY)
 				.setMaxPowerFlowIterations(1000)
 				.setTolerance(1.0e-4)
 				.run();
