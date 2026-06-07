@@ -21,7 +21,8 @@ public final class OpenDSSQstsStudyFactory {
 		}
 		return from(parser.getStaticNetwork(), parser.getTimeSeriesData())
 				.setRegulatorControls(parser.getRegulatorControls())
-				.setCapacitorControls(parser.getCapacitorControls());
+				.setCapacitorControls(parser.getCapacitorControls())
+				.setInverterControls(parser.getInverterControls());
 	}
 
 	public static QstsStudy from(OpenDSSStaticDataParser parser) {
@@ -37,6 +38,7 @@ public final class OpenDSSQstsStudyFactory {
 				timeSeriesData.getStorageStateStore());
 		QstsStateApplier.registerNetworkDevices(network, applier.getLoadStateStore(),
 				applier.getGeneratorStateStore());
-		return QstsStudy.from(network, timeSeriesData.toQstsScheduleData()).setStateApplier(applier);
+		return QstsStudy.from(network, timeSeriesData.toQstsScheduleData()).setStateApplier(applier)
+				.setInverterAdapterStore(timeSeriesData.getInverterAdapterStore());
 	}
 }

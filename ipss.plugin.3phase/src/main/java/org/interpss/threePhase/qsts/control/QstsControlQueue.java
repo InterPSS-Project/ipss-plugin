@@ -3,6 +3,7 @@ package org.interpss.threePhase.qsts.control;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.function.Consumer;
 
 public class QstsControlQueue {
 	private final PriorityQueue<QueuedAction> actions = new PriorityQueue<QueuedAction>();
@@ -23,6 +24,10 @@ public class QstsControlQueue {
 	}
 
 	public int processUntil(double timeSeconds) {
+		return processUntil(timeSeconds, null);
+	}
+
+	public int processUntil(double timeSeconds, Consumer<QstsControlAction> appliedActionConsumer) {
 		int applied = 0;
 		while(!actions.isEmpty() && actions.peek().action.getExecuteTimeSeconds() <= timeSeconds) {
 			QueuedAction queued = actions.poll();
@@ -33,6 +38,9 @@ public class QstsControlQueue {
 			latestSequenceByKey.remove(queued.action.getKey());
 			if(queued.action.apply()) {
 				applied++;
+				if(appliedActionConsumer != null) {
+					appliedActionConsumer.accept(queued.action);
+				}
 			}
 		}
 		return applied;
