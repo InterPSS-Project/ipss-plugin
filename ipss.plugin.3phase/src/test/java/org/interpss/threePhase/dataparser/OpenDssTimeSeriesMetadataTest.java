@@ -2,6 +2,7 @@ package org.interpss.threePhase.dataparser;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -16,6 +17,7 @@ import org.interpss.threePhase.qsts.QstsScheduleData;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.acsc.PhaseCode;
 import com.interpss.core.threephase.IPhaseLoad;
@@ -135,6 +137,31 @@ public class OpenDssTimeSeriesMetadataTest {
 		assertEquals(PhaseCode.ABC, branch.getPhaseCode());
 		assertTrue(branch.isActive());
 		assertTrue(branch.getZabc().absMax() > 0.0);
+	}
+
+	@Test
+	void staticParserCreatesTransformerAndRegControlWithoutDynamicNetwork() throws InterpssException {
+		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
+
+		parser.getXfrParser().parseTransformerDataOneLine(
+				"New Transformer.reg1 phases=3 windings=2 buses=[source.1.2.3 load.1.2.3] "
+				+ "conns=[wye wye] kvs=[12.47 12.47] kvas=[500 500] xhl=1 %loadloss=0.1");
+		parser.getRegulatorParser().parseRegControlData(
+				"New RegControl.creg1 transformer=reg1 winding=2 vreg=120 band=2 ptratio=60");
+		parser.getRegulatorParser().applyFixedRegControlRatios();
+
+		assertFalse(parser.hasDistNetwork());
+		assertNotNull(parser.getStaticNetwork().getBus("source"));
+		assertNotNull(parser.getStaticNetwork().getBus("load"));
+		assertEquals(1, parser.getStaticNetwork().getBranchList().size());
+		Static3PBranch branch = parser.getStaticNetwork().getBranchList().get(0);
+		assertEquals("reg1", branch.getName());
+		assertEquals(AclfBranchCode.XFORMER, branch.getBranchCode());
+		assertEquals(PhaseCode.ABC, branch.getPhaseCode());
+		assertEquals(120.0 * 60.0 * Math.sqrt(3.0), branch.getToTurnRatio(), 1.0e-12);
+		assertEquals(1, parser.getRegulatorControls().size());
+		assertEquals("reg1", parser.getRegulatorControls().get(0).getBranchName());
+		assertFalse(parser.hasDistNetwork());
 	}
 
 	@Test
