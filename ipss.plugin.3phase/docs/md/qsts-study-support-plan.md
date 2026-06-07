@@ -255,6 +255,48 @@ coefficients. Plain load multipliers, DER injections modeled as current/power
 injections, and source voltage magnitude/angle updates should update the
 right-hand side or nonlinear injection evaluation, not rebuild `Ybus`.
 
+For control-enabled QSTS, the fast path should add an explicit
+admittance-delta compensation layer before falling back to matrix rebuilds. A
+control action that changes a shunt or tap state can be represented as an
+equivalent terminal current:
+
+```text
+Icomp(V, state) = DeltaY(state, baseState) * Vterminal
+```
+
+The fixed base `Ybus` and factorization are then kept constant while the
+control delta is evaluated on the right-hand side during the fixed-point
+iteration:
+
+```text
+Ybase * Vnext = Iload(V) + Igen(V) + IcontrolComp(V, controlState)
+```
+
+This is exact for supported devices only if `DeltaY` is computed from the same
+device admittance model used to assemble `Ybus`. It is the preferred first
+performance path for capacitor/reactor switching, and a guarded fast path for
+regulator tap changes. Unsupported topology changes, switch open/close actions,
+or control deltas that fail an accuracy/convergence guard should invalidate the
+factorization and use the normal rebuild/refactor path.
+
+Recommended objects:
+
+- `QstsControlCompensationModel`
+  - Computes equivalent current injections for a control state relative to the
+    base admittance state.
+- `QstsAdmittanceDelta`
+  - Device-local delta admittance contribution, including bus terminals,
+    phases, and current-injection evaluation.
+- `QstsCompensationPolicy`
+  - Declares which device/control types may use compensation, voltage-error
+    tolerance, convergence fallback rules, and when to force a rebuild.
+- `QstsCapacitorCompensationModel`
+  - Shunt capacitor/reactor on/off compensation using per-phase shunt
+    admittance deltas.
+- `QstsRegulatorTapCompensationModel`
+  - Transformer/regulator tap compensation using terminal admittance deltas,
+    with a comparison mode against full `Ybus` rebuild before enabling broadly.
+
 The first implementation can use session cloning at window boundaries for
 safety. Later optimization should replace deep clone costs with a lighter
 snapshot/session builder that copies only mutable values and reuses immutable
@@ -373,6 +415,12 @@ Per time step, the study loop should support:
 6. Re-solve until the control queue is empty, `maxcontrol` is reached, or a
    non-convergence condition is reported.
 7. Save final device states and result channels for the step.
+
+When factorization reuse is enabled, steps 4 and 5 should first try the
+compensation-current path for supported controls. The result should record
+whether each control action used compensation or forced a `Ybus` rebuild, so
+performance reports can separate pure RHS updates, compensated controls, and
+full matrix refactors.
 
 ### Load State Application
 
