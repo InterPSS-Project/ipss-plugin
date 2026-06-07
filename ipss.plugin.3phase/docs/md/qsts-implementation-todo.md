@@ -928,7 +928,7 @@ Create:
 - [x] `QstsGeneratorBaseState`
   - Base P/Q, sign convention, phase mapping, and generator model fields.
 - [x] `QstsGeneratorStateApplier`
-  - Applies `Generator`, `PVSystem`, and `Storage` scheduled injections.
+  - Applies `Generator` and `PVSystem` scheduled injections.
   - Implemented as the generator path inside generic `QstsStateApplier`, using
     `IPhaseGen` base states rather than dynamic DER models.
 - [x] `QstsGeneratorStateStore`
@@ -942,7 +942,9 @@ Update:
 - [x] OpenDSS `Storage` parser.
 - [ ] OpenDSS `Generator` parser.
 - [x] `OpenDSSTimeSeriesData` to store generator bindings.
-- [ ] `QstsCsvExporter` to export generator terminal powers.
+- [x] `QstsCsvExporter` to export generator terminal powers.
+  - Uses `QstsResult.getGeneratorPowers()` sampled from `IPhaseGen` by
+    `QstsStudy`; no DStab generator casts are required.
 
 Relationship with existing code:
 
@@ -963,7 +965,11 @@ Verification:
 - [x] PV duty-curve mini case with QSTS runner.
   - Covered by `OpenDSSQstsAdapterTest`, which verifies an OpenDSS PVSystem daily
     curve drives static `IPhaseGen` injections through the generic applier.
-- [ ] Storage charge/discharge mini case with QSTS runner.
+- [x] Generator terminal-power CSV exporter test.
+- [x] Storage charge/discharge mini case with QSTS runner.
+  - Covered by `QstsStorageBaseStateTest`, which verifies sequential
+    charge/discharge carryover through `QstsStateApplier` and static
+    `IPhaseGen` injections.
 - [ ] Per-step terminal powers match DSS-Python before bus voltage assertions.
 
 ## Slide 12b: Control Implementation Sequence
@@ -1054,21 +1060,24 @@ Create or update:
   - Rated kVA, available P, Q limits, PF limit, voltage curve ids, cut-in/out
     flags, and per-phase capability.
   - Enough fields to evaluate inverter controls without dynamic models.
-  - Temporarily adapts legacy `IGen1Phase` and `IGen3Phase` objects until
-    static network APIs expose `IPhaseGen` directly.
+  - Uses `IPhaseGen` directly; legacy `IGen1Phase` and `IGen3Phase` objects are
+    compatibility surfaces only.
 - [x] `InverterControlData`
   - Generic data for active control modes and curve references.
   - Must not depend on OpenDSS syntax.
 - [x] `OpenDSSInvControlParser`
   - Adapter for OpenDSS `InvControl`.
   - Parse only the modes we can verify with static generator models.
-- [ ] `InverterControlModel`
+- [x] `InverterControlModel`
   - Static PF setpoint updates for:
-    - [ ] `VOLTVAR`
-    - [ ] `VOLTWATT`
-    - [ ] `WATTPF`
-    - [ ] `WATTVAR`
+    - [x] `VOLTVAR`
+    - [x] `VOLTWATT`
+    - [x] `WATTPF`
+    - [x] `WATTVAR`
   - [x] Enforce kVA capability and generator sign convention.
+  - This slice implements generic setpoint application primitives on
+    `IPhaseGen`; OpenDSS curve evaluation and QSTS control-loop invocation
+    remain separate adapter/integration work.
 - [ ] QSTS state/result integration
   - Apply inverter P/Q setpoint updates after each PF solve.
   - Export inverter control mode, P/Q setpoint, limit status, and operation
@@ -1077,6 +1086,8 @@ Create or update:
 Verification:
 
 - [x] Unit tests for capability limiting and sign convention.
+- [x] Unit tests for `VOLTVAR`, `VOLTWATT`, `WATTPF`, and `WATTVAR` static
+  setpoint primitives on one-, two-, and three-phase `IPhaseGen` objects.
 - [x] Unit tests for OpenDSS `InvControl` metadata mapping into generic
   `InverterControlData`.
 - [ ] DSS-Python mini cases for `VOLTVAR`, `VOLTWATT`, `WATTPF`, and `WATTVAR`.
@@ -1091,8 +1102,8 @@ Exit criteria:
 
 ### Slice 12b-3: Storage Control Foundation
 
-Status: deferred. Storage control should wait until the static storage model can
-represent energy state, not just scheduled generator P/Q.
+Status: active foundation complete for scheduled dispatch. Storage controller
+behavior remains deferred until reference behavior and mini cases are defined.
 
 Create or update:
 
@@ -1101,10 +1112,15 @@ Create or update:
     efficiency, state, and dispatch mode.
 - [x] `QstsStorageBaseState`
   - Base energy and dispatch state separate from normal generator P/Q state.
-- [ ] Storage state applier
+- [x] `QstsStorageStateStore`
+  - Sidecar store keyed by static `IPhaseGen`, so storage can be detected
+    without DStab classes or dynamic DER models.
+- [x] Storage state applier
   - Per-step energy integration and charge/discharge clipping.
   - [x] Generator injection update using the same static `IPhaseGen` path.
-  - [ ] Wire scheduled storage dispatch through `QstsStateApplier`.
+  - [x] Wire scheduled storage dispatch through `QstsStateApplier`.
+  - Skips storage devices in the generic generator multiplier path and applies
+    energy-limited dispatch with deterministic state carryover.
 - [ ] `StorageControlData`
   - Generic controller configuration for storage dispatch.
 - [ ] OpenDSS `StorageController` adapter
@@ -1114,6 +1130,7 @@ Verification:
 
 - [x] Unit tests for energy integration, reserve limits, efficiency, and
   charge/discharge sign convention.
+- [x] Unit test for scheduled storage dispatch through `QstsStateApplier`.
 - [ ] DSS-Python mini cases for scheduled charge/discharge without controller.
 - [ ] DSS-Python mini cases for `StorageController` only after the static model
   and parser support are complete.

@@ -15,15 +15,22 @@ public class QstsStateApplier {
 	private final QstsScheduleData scheduleData;
 	private final QstsLoadStateStore loadStateStore;
 	private final QstsGeneratorStateStore generatorStateStore;
+	private final QstsStorageStateStore storageStateStore;
 	private final Map<String, QstsProfileBinding> bindingsByKey = new LinkedHashMap<>();
 
 	public QstsStateApplier(QstsScheduleData scheduleData, QstsLoadStateStore loadStateStore,
 			QstsGeneratorStateStore generatorStateStore) {
+		this(scheduleData, loadStateStore, generatorStateStore, null);
+	}
+
+	public QstsStateApplier(QstsScheduleData scheduleData, QstsLoadStateStore loadStateStore,
+			QstsGeneratorStateStore generatorStateStore, QstsStorageStateStore storageStateStore) {
 		this.scheduleData = scheduleData == null
 				? new QstsScheduleData(new QstsProfileRegistry(), null, null)
 				: scheduleData;
 		this.loadStateStore = loadStateStore == null ? new QstsLoadStateStore() : loadStateStore;
 		this.generatorStateStore = generatorStateStore == null ? new QstsGeneratorStateStore() : generatorStateStore;
+		this.storageStateStore = storageStateStore == null ? new QstsStorageStateStore() : storageStateStore;
 		for(QstsProfileBinding binding : this.scheduleData.getProfileBindings()) {
 			bindingsByKey.put(key(binding.getDeviceClass(), binding.getDeviceId()), binding);
 		}
@@ -84,6 +91,7 @@ public class QstsStateApplier {
 		generatorStateStore.restoreAll();
 		applyLoads(context);
 		applyGenerators(context);
+		applyStorage(context);
 	}
 
 	public QstsLoadStateStore getLoadStateStore() {
@@ -92,6 +100,10 @@ public class QstsStateApplier {
 
 	public QstsGeneratorStateStore getGeneratorStateStore() {
 		return generatorStateStore;
+	}
+
+	public QstsStorageStateStore getStorageStateStore() {
+		return storageStateStore;
 	}
 
 	private void applyLoads(QstsStepContext context) {
@@ -105,10 +117,23 @@ public class QstsStateApplier {
 
 	private void applyGenerators(QstsStepContext context) {
 		for(QstsGeneratorBaseState state : generatorStateStore.states()) {
+			if(storageStateStore.contains(state.getGenerator())) {
+				continue;
+			}
 			QstsProfileBinding binding = generatorBindingFor(state.getGeneratorId());
 			QstsLoadMultiplier multiplier = new QstsLoadMultiplierResolver(scheduleData.getProfileRegistry())
 					.resolve(binding, context.getMode(), context.getScheduleIndex(), 1.0);
 			state.applyMultiplier(multiplier.getPMultiplier(), multiplier.getQMultiplier());
+		}
+	}
+
+	private void applyStorage(QstsStepContext context) {
+		for(QstsStorageBaseState state : storageStateStore.states()) {
+			QstsProfileBinding binding = storageBindingFor(state.getStorageId());
+			QstsLoadMultiplier multiplier = new QstsLoadMultiplierResolver(scheduleData.getProfileRegistry())
+					.resolve(binding, context.getMode(), context.getScheduleIndex(), 1.0);
+			state.applyScheduledMultiplier(multiplier.getPMultiplier(),
+					multiplier.getQMultiplier(), context.getStepSizeHours());
 		}
 	}
 
@@ -119,6 +144,14 @@ public class QstsStateApplier {
 		}
 		if(binding == null) {
 			binding = bindingFor("storage", deviceId);
+		}
+		return binding;
+	}
+
+	private QstsProfileBinding storageBindingFor(String deviceId) {
+		QstsProfileBinding binding = bindingFor("storage", deviceId);
+		if(binding == null) {
+			binding = bindingFor("generator", deviceId);
 		}
 		return binding;
 	}
