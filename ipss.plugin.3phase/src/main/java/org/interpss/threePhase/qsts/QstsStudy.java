@@ -151,7 +151,7 @@ public class QstsStudy {
 
 	public QstsResult run() {
 		DistributionPowerFlowAlgorithm algorithm = powerFlowAlgorithm == null
-				? ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(aclfNetwork())
+				? ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(network)
 				: powerFlowAlgorithm;
 		algorithm.setNetwork(network);
 		algorithm.setPFMethod(pfMethod);

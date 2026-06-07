@@ -158,8 +158,8 @@ public class OpenDSSTransformerParser {
 //		xfrBranch.getFromAclfBus().setBaseVoltage(normKV1, UnitType.kV);
 //		xfrBranch.getToAclfBus().setBaseVoltage(normKV2, UnitType.kV);
 
-		xfrBranch.setZ(transformerSeriesImpedanceOhm(nominalKV1, nominalKV2, kva1, kva2,
-				losspercent1 + losspercent2, xhl));
+		setTransformerSeriesImpedance(xfrBranch, xfr3P, transformerSeriesImpedanceOhm(nominalKV1,
+				nominalKV2, kva1, kva2, losspercent1 + losspercent2, xhl));
 
 		xfr3P.setXfrRatedKVA(kva1);
 
@@ -351,6 +351,39 @@ public class OpenDSSTransformerParser {
 		zabc.aa = phaseA.getAdjustedZ();
 		zabc.bb = phaseB.getAdjustedZ();
 		zabc.cc = phaseC.getAdjustedZ();
+		return zabc;
+	}
+
+	private static void setTransformerSeriesImpedance(AcscBranch branch, IBranch3Phase branch3P,
+			Complex seriesZ) {
+		branch.setZ(seriesZ);
+		branch3P.setZabc(diagonalZabc(branch3P.getPhaseCode(), seriesZ));
+	}
+
+	private static Complex3x3 diagonalZabc(PhaseCode phaseCode, Complex impedance) {
+		Complex zero = new Complex(0.0);
+		Complex3x3 zabc = new Complex3x3();
+		zabc.aa = zero;
+		zabc.ab = zero;
+		zabc.ac = zero;
+		zabc.ba = zero;
+		zabc.bb = zero;
+		zabc.bc = zero;
+		zabc.ca = zero;
+		zabc.cb = zero;
+		zabc.cc = zero;
+		if(phaseCode == PhaseCode.A || phaseCode == PhaseCode.AB
+				|| phaseCode == PhaseCode.AC || phaseCode == PhaseCode.ABC) {
+			zabc.aa = impedance;
+		}
+		if(phaseCode == PhaseCode.B || phaseCode == PhaseCode.AB
+				|| phaseCode == PhaseCode.BC || phaseCode == PhaseCode.ABC) {
+			zabc.bb = impedance;
+		}
+		if(phaseCode == PhaseCode.C || phaseCode == PhaseCode.AC
+				|| phaseCode == PhaseCode.BC || phaseCode == PhaseCode.ABC) {
+			zabc.cc = impedance;
+		}
 		return zabc;
 	}
 
@@ -733,7 +766,7 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 				seriesZ = new Complex(seriesZ.getReal(), likeZ.getImaginary());
 			}
 		}
-		xfrBranch.setZ(seriesZ);
+		setTransformerSeriesImpedance(xfrBranch, xfr3P, seriesZ);
 
 		xfr3P.setXfrRatedKVA(kva1);
 
@@ -824,8 +857,8 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 		xfrBranch.setFromTurnRatio(kvs[0]*1000.0);
 		xfrBranch.setToTurnRatio(kvs[1]*1000.0);
 		xfr3P.setXfrRatedKVA(kvas[0]);
-		xfrBranch.setZ(transformerSeriesImpedanceOhm(kvs[0], kvs[1], kvas[0], kvas[1],
-				rPercents[0] + rPercents[1], xhl));
+		setTransformerSeriesImpedance(xfrBranch, xfr3P, transformerSeriesImpedanceOhm(kvs[0], kvs[1],
+				kvas[0], kvas[1], rPercents[0] + rPercents[1], xhl));
 
 		Complex[][] windingY = centerTappedWindingAdmittance(kvs, kvas[0], rPercents, xhl, xht, xlt);
 		Complex3x3 yff = new Complex3x3();
