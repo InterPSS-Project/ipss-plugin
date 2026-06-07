@@ -10,11 +10,13 @@ import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
+import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.threePhase.powerflow.DistributionPFMethod;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.powerflow.control.CapacitorControlData;
 import org.interpss.threePhase.powerflow.control.RegulatorControlData;
+import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -25,6 +27,7 @@ import com.interpss.core.threephase.IPhaseGen;
 import com.interpss.core.threephase.IPhaseLoad;
 import com.interpss.core.threephase.INetwork3Phase;
 import com.interpss.core.threephase.Static3PBus;
+import com.interpss.core.threephase.Static3PBranch;
 import com.interpss.core.threephase.Static3PGen;
 import com.interpss.core.threephase.Static3PLoad;
 import com.interpss.core.threephase.Static3PNetwork;
@@ -92,10 +95,33 @@ public class QstsStudyTest {
 		IPhaseLoad load = bus.getPhaseLoadList().get(0);
 		IPhaseGen generator = bus.getPhaseGenList().get(0);
 
+		assertFalse(network.getClass().getName().contains(".dstab."));
+		assertFalse(bus.getClass().getName().contains(".dstab."));
+		assertFalse(load.getClass().getName().contains(".dstab."));
+		assertFalse(generator.getClass().getName().contains(".dstab."));
 		assertEquals("load1", load.getId());
 		assertEquals("pv1", generator.getId());
 		assertEquals(0.1, load.getInit3PhaseLoad().a_0.getReal(), 1.0e-12);
 		assertEquals(0.1, generator.getPower3Phase(UnitType.PU).a_0.getReal(), 1.0e-12);
+	}
+
+	@Test
+	void qstsDefaultPowerFlowRunsOnStaticNetworkWithoutDStabModels() throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+
+		QstsResult result = QstsStudy.from(network, schedule(1))
+				.setNumberOfSteps(1)
+				.setMaxPowerFlowIterations(50)
+				.setTolerance(1.0e-6)
+				.run();
+
+		assertTrue(result.isConverged(), result.getStep(0).getFailureReason());
+		assertEquals(1, result.getStepResults().size());
+		assertFalse(network.getClass().getName().contains(".dstab."));
+		assertTrue(network.getBusList().stream()
+				.noneMatch(bus -> bus.getClass().getName().contains(".dstab.")));
+		assertTrue(network.getBranchList().stream()
+				.noneMatch(branch -> branch.getClass().getName().contains(".dstab.")));
 	}
 
 	private static QstsDevicePowerSample power(List<QstsDevicePowerSample> samples, String deviceId, String phase) {
@@ -148,6 +174,9 @@ public class QstsStudyTest {
 		generator.setPower3Phase(new Complex3x1(new Complex(0.1, 0.0),
 				new Complex(0.1, 0.0), new Complex(0.1, 0.0)), UnitType.PU);
 		loadBus.getContributeGenList().add(generator);
+
+		Static3PBranch branch = ThreePhaseObjectFactory.createStatic3PBranch("source", "load", "1", network);
+		branch.setZabc(Complex3x3.createUnitMatrix().multiply(new Complex(0.01, 0.04)));
 		return network;
 	}
 

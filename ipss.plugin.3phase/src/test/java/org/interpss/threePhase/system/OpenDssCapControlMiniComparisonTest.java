@@ -14,15 +14,17 @@ import java.util.List;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
-import org.interpss.threePhase.basic.dstab.DStab3PBus;
-import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 import org.interpss.threePhase.dataParser.opendss.OpenDSSDataParser;
-import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
+import org.interpss.threePhase.dataParser.opendss.OpenDSSStaticDataParser;
 import org.interpss.threePhase.powerflow.DistributionPFMethod;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.powerflow.control.CapacitorControlData;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.jupiter.api.Test;
+
+import com.interpss.core.threephase.IPhaseLoad;
+import com.interpss.core.threephase.Static3PBus;
+import com.interpss.core.threephase.Static3PNetwork;
 
 public class OpenDssCapControlMiniComparisonTest {
 	private static final String FEEDER_FOLDER = "testData/feeder/OpenDSSCapControlMini";
@@ -33,14 +35,14 @@ public class OpenDssCapControlMiniComparisonTest {
 	@Test
 	void capacitorControlStatesAndTerminalKvarMatchDssPythonMiniCases() throws IOException {
 		for(CapacitorReference reference : readReferences()) {
-			OpenDSSDataParser parser = new OpenDSSDataParser();
+			OpenDSSStaticDataParser parser = OpenDSSDataParser.forStaticNetwork();
 			assertTrue(parser.parseFeederData(FEEDER_FOLDER, reference.masterFile));
 			assertTrue(parser.calcVoltageBases());
 			assertTrue(parser.convertActualValuesToPU(1.0));
 			List<CapacitorControlData> controls = parser.getCapacitorControls();
 			assertEquals(1, controls.size(), reference.caseId);
 
-			DStabNetwork3Phase network = parser.getDistNetwork();
+			Static3PNetwork network = parser.getStaticNetwork();
 			DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(network);
 			powerFlow.setPFMethod(DistributionPFMethod.Fixed_Point);
 			powerFlow.setInitBusVoltageEnabled(true);
@@ -63,9 +65,9 @@ public class OpenDssCapControlMiniComparisonTest {
 		}
 	}
 
-	private static CapacitorDevice findCapacitor(DStabNetwork3Phase network, String capacitorId) {
-		for(DStab3PBus bus : network.getBusList()) {
-			for(DStab3PLoad load : bus.getThreePhaseLoadList()) {
+	private static CapacitorDevice findCapacitor(Static3PNetwork network, String capacitorId) {
+		for(Static3PBus bus : network.getBusList()) {
+			for(IPhaseLoad load : bus.getPhaseLoadList()) {
 				if(load.getId().equalsIgnoreCase(capacitorId)) {
 					return new CapacitorDevice(bus, load);
 				}
@@ -119,10 +121,10 @@ public class OpenDssCapControlMiniComparisonTest {
 	}
 
 	private static class CapacitorDevice {
-		private final DStab3PBus bus;
-		private final DStab3PLoad load;
+		private final Static3PBus bus;
+		private final IPhaseLoad load;
 
-		private CapacitorDevice(DStab3PBus bus, DStab3PLoad load) {
+		private CapacitorDevice(Static3PBus bus, IPhaseLoad load) {
 			this.bus = bus;
 			this.load = load;
 		}

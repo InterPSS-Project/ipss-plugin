@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.dataParser.opendss.OpenDSSDataParser;
 import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSGeneratorModel;
 import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSProfileBinding;
@@ -16,7 +15,6 @@ import org.junit.jupiter.api.Test;
 
 import com.interpss.core.aclf.AclfGenCode;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import com.interpss.core.threephase.IGen3Phase;
 import com.interpss.core.threephase.IPhaseGen;
 import com.interpss.core.threephase.Static3PBus;
 
@@ -24,8 +22,8 @@ public class OpenDssPVSystemMetadataTest {
 
 	@Test
 	void parsesPVSystemIntoGeneratorAndStaticMetadata() {
-		OpenDSSDataParser parser = new OpenDSSDataParser();
-		double baseKva = parser.getDistNetwork().getBaseKva();
+		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
+		double baseKva = parser.getStaticNetwork().getBaseKva();
 
 		assertTrue(parser.getPVSystemParser().parsePVSystemData(
 				"New PVSystem.pv1 bus1=bus1.1.2.3 phases=3 conn=wye kv=12.47 kva=600 pmpp=500 irradiance=0.8 kvar=50 "
@@ -33,11 +31,11 @@ public class OpenDssPVSystemMetadataTest {
 						+ "kvarlimitcurve=qmax daily=pvday status=variable",
 				"Master.dss", 20));
 
-		DStab3PBus bus = parser.getDistNetwork().getBus("bus1");
+		Static3PBus bus = parser.getStaticNetwork().getBus("bus1");
 		assertNotNull(bus);
 		assertEquals(AclfGenCode.GEN_PQ, bus.getGenCode());
-		assertEquals(1, bus.getContributeGenList().size());
-		IGen3Phase generator = bus.getContributeGenList().get(0);
+		assertEquals(1, bus.getPhaseGenList().size());
+		IPhaseGen generator = bus.getPhaseGenList().get(0);
 		assertEquals("pv1", generator.getId());
 		assertEquals(400.0 / baseKva, generator.getPower3Phase(UnitType.PU)
 				.a_0.add(generator.getPower3Phase(UnitType.PU).b_1)
@@ -74,7 +72,7 @@ public class OpenDssPVSystemMetadataTest {
 
 	@Test
 	void convertsPVSystemBindingToGenericQstsSchedule() {
-		OpenDSSDataParser parser = new OpenDSSDataParser();
+		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
 		parser.getPVSystemParser().parsePVSystemData(
 				"New PVSystem.pv1 bus1=bus1.1.2.3 phases=3 kva=600 kw=500 pf=1 yearly=pvyear",
 				"Master.dss", 21);
@@ -90,17 +88,17 @@ public class OpenDssPVSystemMetadataTest {
 
 	@Test
 	void parsesSinglePhasePVSystemOntoSelectedPhasePower() {
-		OpenDSSDataParser parser = new OpenDSSDataParser();
+		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
 
 		assertTrue(parser.getPVSystemParser().parsePVSystemData(
 				"New PVSystem.pv1 bus1=bus1.2 phases=1 kva=100 kw=60 kvar=15",
 				"Master.dss", 22));
 
-		IGen3Phase generator = parser.getDistNetwork().getBus("bus1").getContributeGenList().get(0);
+		IPhaseGen generator = parser.getStaticNetwork().getBus("bus1").getPhaseGenList().get(0);
 		assertEquals(0.0, generator.getPower3Phase(UnitType.PU).a_0.abs(), 1.0e-12);
-		assertEquals(60.0 / parser.getDistNetwork().getBaseKva(),
+		assertEquals(60.0 / parser.getStaticNetwork().getBaseKva(),
 				generator.getPower3Phase(UnitType.PU).b_1.getReal(), 1.0e-12);
-		assertEquals(15.0 / parser.getDistNetwork().getBaseKva(),
+		assertEquals(15.0 / parser.getStaticNetwork().getBaseKva(),
 				generator.getPower3Phase(UnitType.PU).b_1.getImaginary(), 1.0e-12);
 		assertEquals(0.0, generator.getPower3Phase(UnitType.PU).c_2.abs(), 1.0e-12);
 	}
