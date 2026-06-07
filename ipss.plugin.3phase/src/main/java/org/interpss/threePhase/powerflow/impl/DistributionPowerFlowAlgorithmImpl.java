@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.atomic.LongAdder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,7 +38,10 @@ import org.slf4j.LoggerFactory;
 
 import com.interpss.core.threephase.IBranch3Phase;
 import com.interpss.core.threephase.IBus3Phase;
+import com.interpss.core.threephase.IPhaseGen;
+import com.interpss.core.threephase.IPhaseLoad;
 import com.interpss.core.threephase.INetwork3Phase;
+import com.interpss.core.threephase.Static3PLoad;
 import com.interpss.core.threephase.Static3PXformer;
 import com.interpss.core.threephase.Static3PhaseFactory;
 import com.interpss.core.aclf.AclfBranch;
@@ -100,6 +104,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	private Hashtable<Integer, Complex3x1> regulatorTapCompensationState = new Hashtable<>();
 
 	private static final Logger log = LoggerFactory.getLogger(DistributionPowerFlowAlgorithmImpl.class);
+	private static final FixedPointLoopProfile FIXED_POINT_PROFILE = new FixedPointLoopProfile();
 
 
 	public DistributionPowerFlowAlgorithmImpl(){
@@ -171,6 +176,43 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		return value != null
 				&& Double.isFinite(value.getReal())
 				&& Double.isFinite(value.getImaginary());
+	}
+
+	private boolean isFinite(double[] value) {
+		return value != null
+				&& Double.isFinite(value[0])
+				&& Double.isFinite(value[1])
+				&& Double.isFinite(value[2])
+				&& Double.isFinite(value[3])
+				&& Double.isFinite(value[4])
+				&& Double.isFinite(value[5]);
+	}
+
+	private double real(Complex value) {
+		return value == null ? 0.0 : value.getReal();
+	}
+
+	private double imaginary(Complex value) {
+		return value == null ? 0.0 : value.getImaginary();
+	}
+
+	private double rhsReal(Complex current, double boundary, Complex tapCompensation) {
+		return real(current) - boundary - real(tapCompensation);
+	}
+
+	private double rhsImaginary(Complex current, double boundary, Complex tapCompensation) {
+		return imaginary(current) - boundary - imaginary(tapCompensation);
+	}
+
+	private String format3x1(double[] value) {
+		return "["
+				+ formatComplex(value[0], value[1]) + ", "
+				+ formatComplex(value[2], value[3]) + ", "
+				+ formatComplex(value[4], value[5]) + "]";
+	}
+
+	private String formatComplex(double real, double imaginary) {
+		return String.format(Locale.US, "%.12g+j%.12g", real, imaginary);
 	}
 
 	private Complex3x1 turnRatioTransformerCurrentVoltageDrop(IBranch3Phase branch, Complex3x1 current) {
@@ -588,9 +630,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 		        pfFlag = fixedPointPowerflow();
 		        if(pfFlag && !this.fixedPointFallbackUsed) {
-		        	log.info("The distribution network fixed-point power flow is converged.");
+		        	log.debug("The distribution network fixed-point power flow is converged.");
 		        } else if(pfFlag) {
-		        	log.info("The distribution network power flow is converged.");
+		        	log.debug("The distribution network power flow is converged.");
 		        }
 
 			 }
@@ -598,7 +640,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 		        pfFlag =  FBSPowerflow();
 		        if(pfFlag) {
-		        	log.info("The distribution network power flow is converged.");
+		        	log.debug("The distribution network power flow is converged.");
 		        }
 			 }
 		else{
@@ -637,7 +679,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		BaseAclfNetwork<? extends BaseAclfBus<? extends AclfGen, ? extends AclfLoad>, ? extends AclfBranch> distNet = aclfNetwork();
 
 		try {
+			long start = FIXED_POINT_PROFILE.start();
 			yMatrix = fixedPointYMatrix(distNet);
+			FIXED_POINT_PROFILE.addMatrix(FIXED_POINT_PROFILE.elapsed(start));
 		} catch (IpssNumericException e) {
 			log.warn("Fixed-point power-flow Y-matrix factorization failed", e);
 			return false;
@@ -647,42 +691,74 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		this.iterationCount = -1;
 		PrimitiveComplex3x3Equation primitiveMatrix = yMatrix instanceof PrimitiveComplex3x3Equation
 				? (PrimitiveComplex3x3Equation) yMatrix : null;
+		FixedPointBusCache busCache = FixedPointBusCache.from(distNet, this.swingBusVoltageBoundaryCurrent);
+		FIXED_POINT_PROFILE.addAttempt();
 
 		for (int i = 0; i < this.maxIteration; i++) {
 			this.iterationCount = i;
-			saveBusVoltages();
+			FIXED_POINT_PROFILE.addIteration();
+			long start = FIXED_POINT_PROFILE.start();
+			saveBusVoltages(busCache);
+			FIXED_POINT_PROFILE.addSaveVoltages(FIXED_POINT_PROFILE.elapsed(start));
 
 			try {
 				if(primitiveMatrix != null) {
+					start = FIXED_POINT_PROFILE.start();
 					primitiveMatrix.clearPrimitiveRhs();
-					setPowerflowCurrentInjections(primitiveMatrix);
-					setSwingBusVoltageRhs(primitiveMatrix);
+					FIXED_POINT_PROFILE.addRhsClear(FIXED_POINT_PROFILE.elapsed(start));
+					start = FIXED_POINT_PROFILE.start();
+					setPowerflowCurrentInjections(primitiveMatrix, busCache);
+					FIXED_POINT_PROFILE.addCurrentInjection(FIXED_POINT_PROFILE.elapsed(start));
+					start = FIXED_POINT_PROFILE.start();
+					setSwingBusVoltageRhs(primitiveMatrix, busCache);
+					FIXED_POINT_PROFILE.addSwingRhs(FIXED_POINT_PROFILE.elapsed(start));
+					start = FIXED_POINT_PROFILE.start();
 					primitiveMatrix.solvePrimitiveRhs(true);
+					FIXED_POINT_PROFILE.addSolve(FIXED_POINT_PROFILE.elapsed(start));
 				} else {
+					start = FIXED_POINT_PROFILE.start();
 					yMatrix.setB2Zero();
-					setPowerflowCurrentInjections(yMatrix);
-					setSwingBusVoltageRhs(yMatrix);
+					FIXED_POINT_PROFILE.addRhsClear(FIXED_POINT_PROFILE.elapsed(start));
+					start = FIXED_POINT_PROFILE.start();
+					setPowerflowCurrentInjections(yMatrix, busCache);
+					FIXED_POINT_PROFILE.addCurrentInjection(FIXED_POINT_PROFILE.elapsed(start));
+					start = FIXED_POINT_PROFILE.start();
+					setSwingBusVoltageRhs(yMatrix, busCache);
+					FIXED_POINT_PROFILE.addSwingRhs(FIXED_POINT_PROFILE.elapsed(start));
+					start = FIXED_POINT_PROFILE.start();
 					yMatrix.solveEqn();
+					FIXED_POINT_PROFILE.addSolve(FIXED_POINT_PROFILE.elapsed(start));
 				}
 			} catch (IpssNumericException e) {
 				log.warn("Fixed-point power-flow equation solve failed", e);
 				return false;
 			}
 
+			start = FIXED_POINT_PROFILE.start();
 			if(!(primitiveMatrix == null
-					? updateSolvedBusVoltages(yMatrix)
-					: updateSolvedBusVoltages(primitiveMatrix))) {
+					? updateSolvedBusVoltages(yMatrix, busCache)
+					: updateSolvedBusVoltages(primitiveMatrix, busCache))) {
 				log.warn("Fixed-point power-flow equation solve produced invalid bus voltages");
 				return false;
 			}
+			FIXED_POINT_PROFILE.addVoltageUpdate(FIXED_POINT_PROFILE.elapsed(start));
 
-			double maxVoltageMismatch = calcMaxVoltageMismatch();
+			start = FIXED_POINT_PROFILE.start();
+			double maxVoltageMismatch = calcMaxVoltageMismatch(busCache);
+			FIXED_POINT_PROFILE.addMismatch(FIXED_POINT_PROFILE.elapsed(start));
 			if(i > 0 && maxVoltageMismatch <= this.getTolerance()) {
-				System.out.println("\n\nDistribution fixed-point power flow converged, iterations = "+i+"\n");
+				log.debug("Distribution fixed-point power flow converged, iterations={}", i);
+				start = FIXED_POINT_PROFILE.start();
 				syncPositiveSequenceBusVoltages();
+				FIXED_POINT_PROFILE.addSequenceSync(FIXED_POINT_PROFILE.elapsed(start));
+				start = FIXED_POINT_PROFILE.start();
 				updateBranchCurrentsFromSolvedVoltages();
+				FIXED_POINT_PROFILE.addBranchCurrent(FIXED_POINT_PROFILE.elapsed(start));
+				start = FIXED_POINT_PROFILE.start();
 				calcSwingBusGenPower();
+				FIXED_POINT_PROFILE.addSwingPower(FIXED_POINT_PROFILE.elapsed(start));
 				this.pfFlag = true;
+				FIXED_POINT_PROFILE.addConvergedAttempt();
 				break;
 			}
 		}
@@ -693,6 +769,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			return false;
 		}
 
+		FIXED_POINT_PROFILE.printSummary();
 		return this.pfFlag;
 	}
 
@@ -1133,68 +1210,134 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		}
 	}
 
-	private void setPowerflowCurrentInjections(ISparseEqnComplexMatrix3x3 yMatrix) {
-		Hashtable<Integer, Complex3x1> regulatorTapCompensation = regulatorTapCompensationCurrents();
-		for(BaseAclfBus bus: aclfNetwork().getBusList()) {
-			if(bus.isActive() && !bus.isSwing()) {
-				IBus3Phase bus3P = threePhaseBus(bus);
-				Complex3x1 curInj = bus3P.calc3PhEquivCurInj();
+	private void setPowerflowCurrentInjections(ISparseEqnComplexMatrix3x3 yMatrix, FixedPointBusCache busCache) {
+		long start = FIXED_POINT_PROFILE.start();
+		Map<Integer, Complex3x1> regulatorTapCompensation = regulatorTapCompensationCurrents();
+		boolean hasTapCompensation = !regulatorTapCompensation.isEmpty();
+		FIXED_POINT_PROFILE.addCurrentInjectionRegulator(FIXED_POINT_PROFILE.elapsed(start));
+		for(FixedPointBus bus : busCache.nonSwingBuses) {
+				IBus3Phase bus3P = bus.bus3P;
+				FIXED_POINT_PROFILE.addCurrentInjectionBus();
+				start = FIXED_POINT_PROFILE.start();
+				Complex3x1 curInj = calc3PhEquivCurInjProfiled(bus3P);
+				FIXED_POINT_PROFILE.addCurrentInjectionCalc(FIXED_POINT_PROFILE.elapsed(start));
+				long rhsStart = FIXED_POINT_PROFILE.start();
+				start = FIXED_POINT_PROFILE.start();
 				if(!isFinite(curInj.a_0) || !isFinite(curInj.b_1) || !isFinite(curInj.c_2)) {
-					log.warn("Invalid fixed-point current injection at bus " + bus.getId()
-							+ ", sortNumber=" + bus.getSortNumber() + ", iabc=" + curInj
+					log.warn("Invalid fixed-point current injection at bus " + bus.id
+							+ ", sortNumber=" + bus.sortNumber + ", iabc=" + curInj
 							+ ", vabc=" + bus3P.get3PhaseVotlages());
 				}
-				Complex3x1 boundaryCurrent = this.swingBusVoltageBoundaryCurrent.get(bus.getSortNumber());
-				Complex3x1 tapCompensation = regulatorTapCompensation.get(bus.getSortNumber());
+				FIXED_POINT_PROFILE.addCurrentRhsFinite(FIXED_POINT_PROFILE.elapsed(start));
+				start = FIXED_POINT_PROFILE.start();
+				Complex3x1 boundaryCurrent = bus.boundaryCurrent;
+				Complex3x1 tapCompensation = hasTapCompensation
+						? regulatorTapCompensation.get(bus.sortNumber) : null;
+				FIXED_POINT_PROFILE.addCurrentRhsLookup(FIXED_POINT_PROFILE.elapsed(start));
+				start = FIXED_POINT_PROFILE.start();
 				if(boundaryCurrent != null
 						&& (!isFinite(boundaryCurrent.a_0) || !isFinite(boundaryCurrent.b_1) || !isFinite(boundaryCurrent.c_2))) {
-					log.warn("Invalid fixed-point swing-boundary current at bus " + bus.getId()
-							+ ", sortNumber=" + bus.getSortNumber() + ", iabc=" + boundaryCurrent);
+					log.warn("Invalid fixed-point swing-boundary current at bus " + bus.id
+							+ ", sortNumber=" + bus.sortNumber + ", iabc=" + boundaryCurrent);
 				}
-				Complex3x1 rhs = boundaryCurrent == null ? curInj : curInj.subtract(boundaryCurrent);
-				if(tapCompensation != null) {
-					rhs = rhs.subtract(tapCompensation);
+				FIXED_POINT_PROFILE.addCurrentRhsBoundaryFinite(FIXED_POINT_PROFILE.elapsed(start));
+				start = FIXED_POINT_PROFILE.start();
+				Complex3x1 rhs;
+				if(boundaryCurrent == null && tapCompensation == null) {
+					rhs = curInj;
 				}
-				yMatrix.setBi(rhs, bus.getSortNumber());
-			}
+				else {
+					rhs = new Complex3x1(
+							new Complex(rhsReal(curInj.a_0, bus.boundaryAReal, tapCompensation == null ? null : tapCompensation.a_0),
+									rhsImaginary(curInj.a_0, bus.boundaryAImaginary, tapCompensation == null ? null : tapCompensation.a_0)),
+							new Complex(rhsReal(curInj.b_1, bus.boundaryBReal, tapCompensation == null ? null : tapCompensation.b_1),
+									rhsImaginary(curInj.b_1, bus.boundaryBImaginary, tapCompensation == null ? null : tapCompensation.b_1)),
+							new Complex(rhsReal(curInj.c_2, bus.boundaryCReal, tapCompensation == null ? null : tapCompensation.c_2),
+									rhsImaginary(curInj.c_2, bus.boundaryCImaginary, tapCompensation == null ? null : tapCompensation.c_2)));
+				}
+				FIXED_POINT_PROFILE.addCurrentRhsCompose(FIXED_POINT_PROFILE.elapsed(start));
+				start = FIXED_POINT_PROFILE.start();
+				yMatrix.setBi(rhs, bus.sortNumber);
+				FIXED_POINT_PROFILE.addCurrentRhsWrite(FIXED_POINT_PROFILE.elapsed(start));
+				FIXED_POINT_PROFILE.addCurrentInjectionRhs(FIXED_POINT_PROFILE.elapsed(rhsStart));
 		}
 	}
 
-	private void setPowerflowCurrentInjections(PrimitiveComplex3x3Equation yMatrix) {
-		Hashtable<Integer, Complex3x1> regulatorTapCompensation = regulatorTapCompensationCurrents();
-		for(BaseAclfBus bus: aclfNetwork().getBusList()) {
-			if(bus.isActive() && !bus.isSwing()) {
-				IBus3Phase bus3P = threePhaseBus(bus);
-				Complex3x1 curInj = bus3P.calc3PhEquivCurInj();
-				if(!isFinite(curInj.a_0) || !isFinite(curInj.b_1) || !isFinite(curInj.c_2)) {
-					log.warn("Invalid fixed-point current injection at bus " + bus.getId()
-							+ ", sortNumber=" + bus.getSortNumber() + ", iabc=" + curInj
+	private void setPowerflowCurrentInjections(PrimitiveComplex3x3Equation yMatrix, FixedPointBusCache busCache) {
+		long start = FIXED_POINT_PROFILE.start();
+		Map<Integer, Complex3x1> regulatorTapCompensation = regulatorTapCompensationCurrents();
+		boolean hasTapCompensation = !regulatorTapCompensation.isEmpty();
+		FIXED_POINT_PROFILE.addCurrentInjectionRegulator(FIXED_POINT_PROFILE.elapsed(start));
+		for(FixedPointBus bus : busCache.nonSwingBuses) {
+				IBus3Phase bus3P = bus.bus3P;
+				FIXED_POINT_PROFILE.addCurrentInjectionBus();
+				start = FIXED_POINT_PROFILE.start();
+				double[] curInj = calc3PhEquivCurInjPrimitiveProfiled(bus);
+				FIXED_POINT_PROFILE.addCurrentInjectionCalc(FIXED_POINT_PROFILE.elapsed(start));
+				long rhsStart = FIXED_POINT_PROFILE.start();
+				start = FIXED_POINT_PROFILE.start();
+				if(!isFinite(curInj)) {
+					log.warn("Invalid fixed-point current injection at bus " + bus.id
+							+ ", sortNumber=" + bus.sortNumber + ", iabc=" + format3x1(curInj)
 							+ ", vabc=" + bus3P.get3PhaseVotlages());
 				}
-				Complex3x1 boundaryCurrent = this.swingBusVoltageBoundaryCurrent.get(bus.getSortNumber());
-				Complex3x1 tapCompensation = regulatorTapCompensation.get(bus.getSortNumber());
+				FIXED_POINT_PROFILE.addCurrentRhsFinite(FIXED_POINT_PROFILE.elapsed(start));
+				start = FIXED_POINT_PROFILE.start();
+				Complex3x1 boundaryCurrent = bus.boundaryCurrent;
+				Complex3x1 tapCompensation = hasTapCompensation
+						? regulatorTapCompensation.get(bus.sortNumber) : null;
+				FIXED_POINT_PROFILE.addCurrentRhsLookup(FIXED_POINT_PROFILE.elapsed(start));
+				start = FIXED_POINT_PROFILE.start();
 				if(boundaryCurrent != null
 						&& (!isFinite(boundaryCurrent.a_0) || !isFinite(boundaryCurrent.b_1) || !isFinite(boundaryCurrent.c_2))) {
-					log.warn("Invalid fixed-point swing-boundary current at bus " + bus.getId()
-							+ ", sortNumber=" + bus.getSortNumber() + ", iabc=" + boundaryCurrent);
+					log.warn("Invalid fixed-point swing-boundary current at bus " + bus.id
+							+ ", sortNumber=" + bus.sortNumber + ", iabc=" + boundaryCurrent);
 				}
-				Complex3x1 rhs = boundaryCurrent == null ? curInj : curInj.subtract(boundaryCurrent);
-				if(tapCompensation != null) {
-					rhs = rhs.subtract(tapCompensation);
+				FIXED_POINT_PROFILE.addCurrentRhsBoundaryFinite(FIXED_POINT_PROFILE.elapsed(start));
+				if(boundaryCurrent == null && tapCompensation == null) {
+					start = FIXED_POINT_PROFILE.start();
+					FIXED_POINT_PROFILE.addCurrentRhsCompose(FIXED_POINT_PROFILE.elapsed(start));
+					start = FIXED_POINT_PROFILE.start();
+					yMatrix.setPrimitiveRhs3x1(bus.sortNumber,
+							curInj[0], curInj[1],
+							curInj[2], curInj[3],
+							curInj[4], curInj[5]);
+					FIXED_POINT_PROFILE.addCurrentRhsWrite(FIXED_POINT_PROFILE.elapsed(start));
 				}
-				yMatrix.setPrimitiveRhs3x1(bus.getSortNumber(), rhs);
-			}
+				else {
+					start = FIXED_POINT_PROFILE.start();
+					double aReal = curInj[0] - bus.boundaryAReal
+							- real(tapCompensation == null ? null : tapCompensation.a_0);
+					double aImaginary = curInj[1] - bus.boundaryAImaginary
+							- imaginary(tapCompensation == null ? null : tapCompensation.a_0);
+					double bReal = curInj[2] - bus.boundaryBReal
+							- real(tapCompensation == null ? null : tapCompensation.b_1);
+					double bImaginary = curInj[3] - bus.boundaryBImaginary
+							- imaginary(tapCompensation == null ? null : tapCompensation.b_1);
+					double cReal = curInj[4] - bus.boundaryCReal
+							- real(tapCompensation == null ? null : tapCompensation.c_2);
+					double cImaginary = curInj[5] - bus.boundaryCImaginary
+							- imaginary(tapCompensation == null ? null : tapCompensation.c_2);
+					FIXED_POINT_PROFILE.addCurrentRhsCompose(FIXED_POINT_PROFILE.elapsed(start));
+					start = FIXED_POINT_PROFILE.start();
+					yMatrix.setPrimitiveRhs3x1(bus.sortNumber,
+							aReal, aImaginary,
+							bReal, bImaginary,
+							cReal, cImaginary);
+					FIXED_POINT_PROFILE.addCurrentRhsWrite(FIXED_POINT_PROFILE.elapsed(start));
+				}
+				FIXED_POINT_PROFILE.addCurrentInjectionRhs(FIXED_POINT_PROFILE.elapsed(rhsStart));
 		}
 	}
 
-	private Hashtable<Integer, Complex3x1> regulatorTapCompensationCurrents() {
-		Hashtable<Integer, Complex3x1> compensationByBus = new Hashtable<>();
+	private Map<Integer, Complex3x1> regulatorTapCompensationCurrents() {
 		if(!this.fixedPointYMatrixCacheEnabled || !this.regulatorControlEnabled
 				|| this.regulatorControls.isEmpty()
 				|| this.fixedPointRegulatorBaseAdmittance.isEmpty()) {
 			this.regulatorTapCompensationState.clear();
-			return compensationByBus;
+			return Collections.emptyMap();
 		}
+		Hashtable<Integer, Complex3x1> compensationByBus = new Hashtable<>();
 		for(RegulatorBranchAdmittance base : this.fixedPointRegulatorBaseAdmittance.values()) {
 			IBranch3Phase branch = base.branch;
 			AclfBranch aclfBranch = (AclfBranch) branch;
@@ -1221,6 +1364,116 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		compensationByBus = dampRegulatorTapCompensation(compensationByBus);
 		this.regulatorCompensationDiagnosticEval++;
 		return compensationByBus;
+	}
+
+	private Complex3x1 calc3PhEquivCurInjProfiled(IBus3Phase bus3P) {
+		if(!FIXED_POINT_PROFILE.enabled()) {
+			return bus3P.calc3PhEquivCurInj();
+		}
+		long start = FIXED_POINT_PROFILE.start();
+		Complex3x1 current = new Complex3x1();
+		FIXED_POINT_PROFILE.addCurrentCalcInit(FIXED_POINT_PROFILE.elapsed(start));
+
+		start = FIXED_POINT_PROFILE.start();
+		Complex3x1 voltage = bus3P.get3PhaseVotlages();
+		FIXED_POINT_PROFILE.addCurrentCalcVoltage(FIXED_POINT_PROFILE.elapsed(start));
+
+		start = FIXED_POINT_PROFILE.start();
+		List<? extends IPhaseLoad> loads = bus3P.getPhaseLoadList();
+		FIXED_POINT_PROFILE.addCurrentCalcLoadList(FIXED_POINT_PROFILE.elapsed(start));
+		for(IPhaseLoad load : loads) {
+			FIXED_POINT_PROFILE.addCurrentCalcLoad();
+			start = FIXED_POINT_PROFILE.start();
+			Complex3x1 loadCurrent = load.getEquivCurrInj(voltage);
+			FIXED_POINT_PROFILE.addCurrentCalcLoadCurrent(FIXED_POINT_PROFILE.elapsed(start));
+			start = FIXED_POINT_PROFILE.start();
+			current = current.add(loadCurrent);
+			FIXED_POINT_PROFILE.addCurrentCalcLoadAdd(FIXED_POINT_PROFILE.elapsed(start));
+		}
+
+		start = FIXED_POINT_PROFILE.start();
+		List<? extends IPhaseGen> generators = bus3P.getPhaseGenList();
+		FIXED_POINT_PROFILE.addCurrentCalcGenList(FIXED_POINT_PROFILE.elapsed(start));
+		for(IPhaseGen gen : generators) {
+			FIXED_POINT_PROFILE.addCurrentCalcGen();
+			start = FIXED_POINT_PROFILE.start();
+			Complex3x1 power = gen.getPower3Phase(UnitType.PU);
+			FIXED_POINT_PROFILE.addCurrentCalcGenPower(FIXED_POINT_PROFILE.elapsed(start));
+			if(power != null) {
+				start = FIXED_POINT_PROFILE.start();
+				Complex3x1 genCurrent = power.divide(voltage).conjugate();
+				FIXED_POINT_PROFILE.addCurrentCalcGenCurrent(FIXED_POINT_PROFILE.elapsed(start));
+				start = FIXED_POINT_PROFILE.start();
+				current = current.add(genCurrent);
+				FIXED_POINT_PROFILE.addCurrentCalcGenAdd(FIXED_POINT_PROFILE.elapsed(start));
+			}
+		}
+		return current;
+	}
+
+	private double[] calc3PhEquivCurInjPrimitiveProfiled(FixedPointBus bus) {
+		IBus3Phase bus3P = bus.bus3P;
+		double[] current = bus.currentInjectionValues;
+		current[0] = 0.0;
+		current[1] = 0.0;
+		current[2] = 0.0;
+		current[3] = 0.0;
+		current[4] = 0.0;
+		current[5] = 0.0;
+
+		long start = FIXED_POINT_PROFILE.start();
+		Complex3x1 voltage = bus3P.get3PhaseVotlages();
+		FIXED_POINT_PROFILE.addCurrentCalcVoltage(FIXED_POINT_PROFILE.elapsed(start));
+
+		start = FIXED_POINT_PROFILE.start();
+		List<? extends IPhaseLoad> loads = bus3P.getPhaseLoadList();
+		FIXED_POINT_PROFILE.addCurrentCalcLoadList(FIXED_POINT_PROFILE.elapsed(start));
+		for(IPhaseLoad load : loads) {
+			FIXED_POINT_PROFILE.addCurrentCalcLoad();
+			start = FIXED_POINT_PROFILE.start();
+			if(load instanceof Static3PLoad staticLoad) {
+				staticLoad.addEquivCurrInj(voltage, current);
+				FIXED_POINT_PROFILE.addCurrentCalcLoadCurrent(FIXED_POINT_PROFILE.elapsed(start));
+			}
+			else {
+				Complex3x1 loadCurrent = load.getEquivCurrInj(voltage);
+				FIXED_POINT_PROFILE.addCurrentCalcLoadCurrent(FIXED_POINT_PROFILE.elapsed(start));
+				start = FIXED_POINT_PROFILE.start();
+				addCurrent(current, loadCurrent);
+				FIXED_POINT_PROFILE.addCurrentCalcLoadAdd(FIXED_POINT_PROFILE.elapsed(start));
+			}
+		}
+
+		start = FIXED_POINT_PROFILE.start();
+		List<? extends IPhaseGen> generators = bus3P.getPhaseGenList();
+		FIXED_POINT_PROFILE.addCurrentCalcGenList(FIXED_POINT_PROFILE.elapsed(start));
+		for(IPhaseGen gen : generators) {
+			FIXED_POINT_PROFILE.addCurrentCalcGen();
+			start = FIXED_POINT_PROFILE.start();
+			Complex3x1 power = gen.getPower3Phase(UnitType.PU);
+			FIXED_POINT_PROFILE.addCurrentCalcGenPower(FIXED_POINT_PROFILE.elapsed(start));
+			if(power != null) {
+				start = FIXED_POINT_PROFILE.start();
+				Complex3x1 genCurrent = power.divide(voltage).conjugate();
+				FIXED_POINT_PROFILE.addCurrentCalcGenCurrent(FIXED_POINT_PROFILE.elapsed(start));
+				start = FIXED_POINT_PROFILE.start();
+				addCurrent(current, genCurrent);
+				FIXED_POINT_PROFILE.addCurrentCalcGenAdd(FIXED_POINT_PROFILE.elapsed(start));
+			}
+		}
+		return current;
+	}
+
+	private void addCurrent(double[] current, Complex3x1 value) {
+		if(value == null) {
+			return;
+		}
+		current[0] += real(value.a_0);
+		current[1] += imaginary(value.a_0);
+		current[2] += real(value.b_1);
+		current[3] += imaginary(value.b_1);
+		current[4] += real(value.c_2);
+		current[5] += imaginary(value.c_2);
 	}
 
 	private Hashtable<Integer, Complex3x1> dampRegulatorTapCompensation(
@@ -1355,58 +1608,66 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		return String.format(Locale.US, "%.12g+j%.12g", value.getReal(), value.getImaginary());
 	}
 
-	private void setSwingBusVoltageRhs(ISparseEqnComplexMatrix3x3 yMatrix) {
-		for(BaseAclfBus bus: aclfNetwork().getBusList()) {
-			if(bus.isActive() && bus.isSwing()) {
-				IBus3Phase bus3P = threePhaseBus(bus);
-				yMatrix.setBi(bus3P.get3PhaseVotlages(), bus.getSortNumber());
-			}
+	private void setSwingBusVoltageRhs(ISparseEqnComplexMatrix3x3 yMatrix, FixedPointBusCache busCache) {
+		for(FixedPointBus bus : busCache.swingBuses) {
+			yMatrix.setBi(bus.bus3P.get3PhaseVotlages(), bus.sortNumber);
 		}
 	}
 
-	private void setSwingBusVoltageRhs(PrimitiveComplex3x3Equation yMatrix) {
-		for(BaseAclfBus bus: aclfNetwork().getBusList()) {
-			if(bus.isActive() && bus.isSwing()) {
-				IBus3Phase bus3P = threePhaseBus(bus);
-				yMatrix.setPrimitiveRhs3x1(bus.getSortNumber(), bus3P.get3PhaseVotlages());
-			}
+	private void setSwingBusVoltageRhs(PrimitiveComplex3x3Equation yMatrix, FixedPointBusCache busCache) {
+		for(FixedPointBus bus : busCache.swingBuses) {
+			Complex3x1 vabc = bus.bus3P.get3PhaseVotlages();
+			yMatrix.setPrimitiveRhs3x1(bus.sortNumber,
+					real(vabc.a_0), imaginary(vabc.a_0),
+					real(vabc.b_1), imaginary(vabc.b_1),
+					real(vabc.c_2), imaginary(vabc.c_2));
 		}
 	}
 
-	private boolean updateSolvedBusVoltages(ISparseEqnComplexMatrix3x3 yMatrix) {
-		for(BaseAclfBus bus: aclfNetwork().getBusList()) {
-			if(bus.isActive() && !bus.isSwing()) {
-				IBus3Phase bus3P = threePhaseBus(bus);
-				Complex3x1 vabc = yMatrix.getX(bus.getSortNumber());
+	private boolean updateSolvedBusVoltages(ISparseEqnComplexMatrix3x3 yMatrix, FixedPointBusCache busCache) {
+		for(FixedPointBus bus : busCache.nonSwingBuses) {
+				Complex3x1 vabc = yMatrix.getX(bus.sortNumber);
 
 				if(isValidFixedPointVoltage(vabc)){
-					bus3P.set3PhaseVotlages(vabc);
+					updateFixedPointVoltage(bus.bus3P, vabc);
 				} else {
-					log.warn("Fixed-point solve produced invalid voltage at bus " + bus.getId()
-							+ ", sortNumber=" + bus.getSortNumber() + ", vabc=" + vabc);
+					log.warn("Fixed-point solve produced invalid voltage at bus " + bus.id
+							+ ", sortNumber=" + bus.sortNumber + ", vabc=" + vabc);
 					return false;
 				}
-			}
 		}
 		return true;
 	}
 
-	private boolean updateSolvedBusVoltages(PrimitiveComplex3x3Equation yMatrix) {
-		for(BaseAclfBus bus: aclfNetwork().getBusList()) {
-			if(bus.isActive() && !bus.isSwing()) {
-				IBus3Phase bus3P = threePhaseBus(bus);
-				Complex3x1 vabc = yMatrix.getPrimitiveSolved3x1(bus.getSortNumber());
+	private boolean updateSolvedBusVoltages(PrimitiveComplex3x3Equation yMatrix, FixedPointBusCache busCache) {
+		for(FixedPointBus bus : busCache.nonSwingBuses) {
+				Complex3x1 vabc = yMatrix.getPrimitiveSolved3x1(
+						bus.sortNumber, bus.bus3P.get3PhaseVotlages());
 
 				if(isValidFixedPointVoltage(vabc)){
-					bus3P.set3PhaseVotlages(vabc);
+					updateFixedPointVoltage(bus.bus3P, vabc);
 				} else {
-					log.warn("Fixed-point solve produced invalid voltage at bus " + bus.getId()
-							+ ", sortNumber=" + bus.getSortNumber() + ", vabc=" + vabc);
+					log.warn("Fixed-point solve produced invalid voltage at bus " + bus.id
+							+ ", sortNumber=" + bus.sortNumber + ", vabc=" + vabc);
 					return false;
 				}
-			}
 		}
 		return true;
+	}
+
+	private void updateFixedPointVoltage(IBus3Phase bus3P, Complex3x1 vabc) {
+		if(bus3P instanceof DStab3PBus) {
+			bus3P.set3PhaseVotlages(vabc);
+			return;
+		}
+		Complex3x1 existing = bus3P.get3PhaseVotlages();
+		if(existing == null) {
+			bus3P.set3PhaseVotlages(vabc);
+			return;
+		}
+		existing.a_0 = vabc.a_0;
+		existing.b_1 = vabc.b_1;
+		existing.c_2 = vabc.c_2;
 	}
 
 	private void syncPositiveSequenceBusVoltages() {
@@ -1430,6 +1691,12 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				&& vabc.absMax() <= this.maxFixedPointVoltageAbs;
 	}
 
+	private void saveBusVoltages(FixedPointBusCache busCache) {
+		for(FixedPointBus bus : busCache.activeBuses) {
+			bus.saveVoltageSnapshot();
+		}
+	}
+
 	private void saveBusVoltages() {
 		for(BaseAclfBus bus: aclfNetwork().getBusList()) {
 			if(bus.isActive()) {
@@ -1439,17 +1706,11 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		}
 	}
 
-	private double calcMaxVoltageMismatch() {
+	private double calcMaxVoltageMismatch(FixedPointBusCache busCache) {
 		double maxMis = 0.0;
 
-		for(BaseAclfBus bus: aclfNetwork().getBusList()) {
-			if(bus.isActive()) {
-				IBus3Phase bus3P = threePhaseBus(bus);
-				Complex3x1 oldVolt = this.busVoltTable.get(bus.getId());
-				if(oldVolt != null) {
-					maxMis = Math.max(maxMis, bus3P.get3PhaseVotlages().subtract(oldVolt).absMax());
-				}
-			}
+		for(FixedPointBus bus : busCache.activeBuses) {
+			maxMis = Math.max(maxMis, bus.voltageMismatch());
 		}
 
 		return maxMis;
@@ -1855,7 +2116,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			}
 
 			if(i > 0 && this.pfFlag) {
-				System.out.println("\n\nDistribution power flow converged, iterations = "+i+"\n");
+				log.debug("Distribution power flow converged, iterations={}", i);
 				calcSwingBusGenPower();
 				break;
 			}
@@ -2135,12 +2396,13 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 			    }
 
-				System.out.println("Source node 3 sequence current into network: "+sumOfBranchCurrents.to012());
+				Complex3x1 seqCurrent = sumOfBranchCurrents.to012();
+				log.debug("Source node 3 sequence current into network: {}", seqCurrent);
 
-				Complex posGenPQ = bus3p.get3PhaseVotlages().to012().b_1.multiply(sumOfBranchCurrents.to012().b_1.conjugate());
+				Complex posGenPQ = bus3p.get3PhaseVotlages().to012().b_1.multiply(seqCurrent.b_1.conjugate());
 				if(bus.getContributeGenList().size()>0){
 				   bus.getContributeGenList().get(0).setGen(posGenPQ);
-				   System.out.println("Source node positive sequence power into network: "+posGenPQ.toString());
+				   log.debug("Source node positive sequence power into network: {}", posGenPQ);
 
 				}
 			}
@@ -2316,6 +2578,398 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	public boolean isInitBusVoltageEnabled() {
 
 		return this.initBusVoltagesEnabled;
+	}
+
+	private static class FixedPointBusCache {
+		private final List<FixedPointBus> activeBuses;
+		private final List<FixedPointBus> nonSwingBuses;
+		private final List<FixedPointBus> swingBuses;
+
+		private FixedPointBusCache(List<FixedPointBus> activeBuses,
+				List<FixedPointBus> nonSwingBuses,
+				List<FixedPointBus> swingBuses) {
+			this.activeBuses = activeBuses;
+			this.nonSwingBuses = nonSwingBuses;
+			this.swingBuses = swingBuses;
+		}
+
+		static FixedPointBusCache from(BaseAclfNetwork<?, ?> network,
+				Map<Integer, Complex3x1> boundaryCurrentBySortNumber) {
+			List<FixedPointBus> activeBuses = new ArrayList<>();
+			List<FixedPointBus> nonSwingBuses = new ArrayList<>();
+			List<FixedPointBus> swingBuses = new ArrayList<>();
+			for(BaseAclfBus<?, ?> bus : (List<BaseAclfBus<?, ?>>) network.getBusList()) {
+				if(!bus.isActive()) {
+					continue;
+				}
+				FixedPointBus fixedPointBus = new FixedPointBus(bus,
+						boundaryCurrentBySortNumber.get(bus.getSortNumber()));
+				activeBuses.add(fixedPointBus);
+				if(bus.isSwing()) {
+					swingBuses.add(fixedPointBus);
+				}
+				else {
+					nonSwingBuses.add(fixedPointBus);
+				}
+			}
+			return new FixedPointBusCache(
+					Collections.unmodifiableList(activeBuses),
+					Collections.unmodifiableList(nonSwingBuses),
+					Collections.unmodifiableList(swingBuses));
+		}
+	}
+
+	private static class FixedPointBus {
+		private final String id;
+		private final int sortNumber;
+		private final IBus3Phase bus3P;
+		private final Complex3x1 boundaryCurrent;
+		private final double boundaryAReal;
+		private final double boundaryAImaginary;
+		private final double boundaryBReal;
+		private final double boundaryBImaginary;
+		private final double boundaryCReal;
+		private final double boundaryCImaginary;
+		private final double[] currentInjectionValues = new double[6];
+		private double oldAReal;
+		private double oldAImaginary;
+		private double oldBReal;
+		private double oldBImaginary;
+		private double oldCReal;
+		private double oldCImaginary;
+
+		private FixedPointBus(BaseAclfBus<?, ?> bus, Complex3x1 boundaryCurrent) {
+			this.id = bus.getId();
+			this.sortNumber = bus.getSortNumber();
+			this.bus3P = (IBus3Phase) bus;
+			this.boundaryCurrent = boundaryCurrent;
+			this.boundaryAReal = realValue(boundaryCurrent == null ? null : boundaryCurrent.a_0);
+			this.boundaryAImaginary = imaginaryValue(boundaryCurrent == null ? null : boundaryCurrent.a_0);
+			this.boundaryBReal = realValue(boundaryCurrent == null ? null : boundaryCurrent.b_1);
+			this.boundaryBImaginary = imaginaryValue(boundaryCurrent == null ? null : boundaryCurrent.b_1);
+			this.boundaryCReal = realValue(boundaryCurrent == null ? null : boundaryCurrent.c_2);
+			this.boundaryCImaginary = imaginaryValue(boundaryCurrent == null ? null : boundaryCurrent.c_2);
+		}
+
+		private void saveVoltageSnapshot() {
+			Complex3x1 voltage = this.bus3P.get3PhaseVotlages();
+			this.oldAReal = realValue(voltage == null ? null : voltage.a_0);
+			this.oldAImaginary = imaginaryValue(voltage == null ? null : voltage.a_0);
+			this.oldBReal = realValue(voltage == null ? null : voltage.b_1);
+			this.oldBImaginary = imaginaryValue(voltage == null ? null : voltage.b_1);
+			this.oldCReal = realValue(voltage == null ? null : voltage.c_2);
+			this.oldCImaginary = imaginaryValue(voltage == null ? null : voltage.c_2);
+		}
+
+		private double voltageMismatch() {
+			Complex3x1 voltage = this.bus3P.get3PhaseVotlages();
+			if(voltage == null) {
+				return 0.0;
+			}
+			return Math.max(
+					phaseMismatch(voltage.a_0, this.oldAReal, this.oldAImaginary),
+					Math.max(
+							phaseMismatch(voltage.b_1, this.oldBReal, this.oldBImaginary),
+							phaseMismatch(voltage.c_2, this.oldCReal, this.oldCImaginary)));
+		}
+
+		private static double phaseMismatch(Complex value, double oldReal, double oldImaginary) {
+			double realDiff = realValue(value) - oldReal;
+			double imaginaryDiff = imaginaryValue(value) - oldImaginary;
+			return Math.hypot(realDiff, imaginaryDiff);
+		}
+
+		private static double realValue(Complex value) {
+			return value == null ? 0.0 : value.getReal();
+		}
+
+		private static double imaginaryValue(Complex value) {
+			return value == null ? 0.0 : value.getImaginary();
+		}
+	}
+
+	private static class FixedPointLoopProfile {
+		private static final String PROFILE_PROPERTY = "ipss.fixedpoint.profile";
+		private static final boolean ENABLED = Boolean.getBoolean(PROFILE_PROPERTY);
+
+		private final LongAdder attempts = new LongAdder();
+		private final LongAdder convergedAttempts = new LongAdder();
+		private final LongAdder iterations = new LongAdder();
+		private final LongAdder matrixNanos = new LongAdder();
+		private final LongAdder saveVoltagesNanos = new LongAdder();
+		private final LongAdder rhsClearNanos = new LongAdder();
+		private final LongAdder currentInjectionNanos = new LongAdder();
+		private final LongAdder currentInjectionRegulatorNanos = new LongAdder();
+		private final LongAdder currentInjectionCalcNanos = new LongAdder();
+		private final LongAdder currentInjectionRhsNanos = new LongAdder();
+		private final LongAdder currentInjectionBuses = new LongAdder();
+		private final LongAdder currentCalcInitNanos = new LongAdder();
+		private final LongAdder currentCalcVoltageNanos = new LongAdder();
+		private final LongAdder currentCalcLoadListNanos = new LongAdder();
+		private final LongAdder currentCalcLoadCurrentNanos = new LongAdder();
+		private final LongAdder currentCalcLoadAddNanos = new LongAdder();
+		private final LongAdder currentCalcLoads = new LongAdder();
+		private final LongAdder currentCalcGenListNanos = new LongAdder();
+		private final LongAdder currentCalcGenPowerNanos = new LongAdder();
+		private final LongAdder currentCalcGenCurrentNanos = new LongAdder();
+		private final LongAdder currentCalcGenAddNanos = new LongAdder();
+		private final LongAdder currentCalcGens = new LongAdder();
+		private final LongAdder currentRhsFiniteNanos = new LongAdder();
+		private final LongAdder currentRhsLookupNanos = new LongAdder();
+		private final LongAdder currentRhsBoundaryFiniteNanos = new LongAdder();
+		private final LongAdder currentRhsComposeNanos = new LongAdder();
+		private final LongAdder currentRhsWriteNanos = new LongAdder();
+		private final LongAdder swingRhsNanos = new LongAdder();
+		private final LongAdder solveNanos = new LongAdder();
+		private final LongAdder voltageUpdateNanos = new LongAdder();
+		private final LongAdder mismatchNanos = new LongAdder();
+		private final LongAdder sequenceSyncNanos = new LongAdder();
+		private final LongAdder branchCurrentNanos = new LongAdder();
+		private final LongAdder swingPowerNanos = new LongAdder();
+
+		boolean enabled() {
+			return ENABLED;
+		}
+
+		long start() {
+			return ENABLED ? System.nanoTime() : 0L;
+		}
+
+		long elapsed(long start) {
+			return ENABLED ? System.nanoTime() - start : 0L;
+		}
+
+		void addAttempt() {
+			if(ENABLED) attempts.increment();
+		}
+
+		void addConvergedAttempt() {
+			if(ENABLED) convergedAttempts.increment();
+		}
+
+		void addIteration() {
+			if(ENABLED) iterations.increment();
+		}
+
+		void addMatrix(long nanos) {
+			if(ENABLED) matrixNanos.add(nanos);
+		}
+
+		void addSaveVoltages(long nanos) {
+			if(ENABLED) saveVoltagesNanos.add(nanos);
+		}
+
+		void addRhsClear(long nanos) {
+			if(ENABLED) rhsClearNanos.add(nanos);
+		}
+
+		void addCurrentInjection(long nanos) {
+			if(ENABLED) currentInjectionNanos.add(nanos);
+		}
+
+		void addCurrentInjectionRegulator(long nanos) {
+			if(ENABLED) currentInjectionRegulatorNanos.add(nanos);
+		}
+
+		void addCurrentInjectionCalc(long nanos) {
+			if(ENABLED) currentInjectionCalcNanos.add(nanos);
+		}
+
+		void addCurrentInjectionRhs(long nanos) {
+			if(ENABLED) currentInjectionRhsNanos.add(nanos);
+		}
+
+		void addCurrentInjectionBus() {
+			if(ENABLED) currentInjectionBuses.increment();
+		}
+
+		void addCurrentCalcInit(long nanos) {
+			if(ENABLED) currentCalcInitNanos.add(nanos);
+		}
+
+		void addCurrentCalcVoltage(long nanos) {
+			if(ENABLED) currentCalcVoltageNanos.add(nanos);
+		}
+
+		void addCurrentCalcLoadList(long nanos) {
+			if(ENABLED) currentCalcLoadListNanos.add(nanos);
+		}
+
+		void addCurrentCalcLoadCurrent(long nanos) {
+			if(ENABLED) currentCalcLoadCurrentNanos.add(nanos);
+		}
+
+		void addCurrentCalcLoadAdd(long nanos) {
+			if(ENABLED) currentCalcLoadAddNanos.add(nanos);
+		}
+
+		void addCurrentCalcLoad() {
+			if(ENABLED) currentCalcLoads.increment();
+		}
+
+		void addCurrentCalcGenList(long nanos) {
+			if(ENABLED) currentCalcGenListNanos.add(nanos);
+		}
+
+		void addCurrentCalcGenPower(long nanos) {
+			if(ENABLED) currentCalcGenPowerNanos.add(nanos);
+		}
+
+		void addCurrentCalcGenCurrent(long nanos) {
+			if(ENABLED) currentCalcGenCurrentNanos.add(nanos);
+		}
+
+		void addCurrentCalcGenAdd(long nanos) {
+			if(ENABLED) currentCalcGenAddNanos.add(nanos);
+		}
+
+		void addCurrentCalcGen() {
+			if(ENABLED) currentCalcGens.increment();
+		}
+
+		void addCurrentRhsFinite(long nanos) {
+			if(ENABLED) currentRhsFiniteNanos.add(nanos);
+		}
+
+		void addCurrentRhsLookup(long nanos) {
+			if(ENABLED) currentRhsLookupNanos.add(nanos);
+		}
+
+		void addCurrentRhsBoundaryFinite(long nanos) {
+			if(ENABLED) currentRhsBoundaryFiniteNanos.add(nanos);
+		}
+
+		void addCurrentRhsCompose(long nanos) {
+			if(ENABLED) currentRhsComposeNanos.add(nanos);
+		}
+
+		void addCurrentRhsWrite(long nanos) {
+			if(ENABLED) currentRhsWriteNanos.add(nanos);
+		}
+
+		void addSwingRhs(long nanos) {
+			if(ENABLED) swingRhsNanos.add(nanos);
+		}
+
+		void addSolve(long nanos) {
+			if(ENABLED) solveNanos.add(nanos);
+		}
+
+		void addVoltageUpdate(long nanos) {
+			if(ENABLED) voltageUpdateNanos.add(nanos);
+		}
+
+		void addMismatch(long nanos) {
+			if(ENABLED) mismatchNanos.add(nanos);
+		}
+
+		void addSequenceSync(long nanos) {
+			if(ENABLED) sequenceSyncNanos.add(nanos);
+		}
+
+		void addBranchCurrent(long nanos) {
+			if(ENABLED) branchCurrentNanos.add(nanos);
+		}
+
+		void addSwingPower(long nanos) {
+			if(ENABLED) swingPowerNanos.add(nanos);
+		}
+
+		void printSummary() {
+			if(ENABLED) {
+				System.out.println(summary());
+			}
+		}
+
+		private String summary() {
+			long iterationCount = Math.max(1L, iterations.sum());
+			long injectionBusCount = Math.max(1L, currentInjectionBuses.sum());
+			long loadCount = Math.max(1L, currentCalcLoads.sum());
+			long genCount = Math.max(1L, currentCalcGens.sum());
+			return "\nFixed-point PF profile"
+					+ "\n  attempts=" + attempts.sum()
+					+ ", converged_attempts=" + convergedAttempts.sum()
+					+ ", iterations=" + iterations.sum()
+					+ "\n  matrix_ms=" + ms(matrixNanos)
+					+ "\n  save_voltages_ms=" + ms(saveVoltagesNanos)
+					+ ", rhs_clear_ms=" + ms(rhsClearNanos)
+					+ ", current_injection_ms=" + ms(currentInjectionNanos)
+					+ ", swing_rhs_ms=" + ms(swingRhsNanos)
+					+ "\n  current_injection_breakdown_ms regulator=" + ms(currentInjectionRegulatorNanos)
+					+ ", calc=" + ms(currentInjectionCalcNanos)
+					+ ", rhs=" + ms(currentInjectionRhsNanos)
+					+ ", buses=" + currentInjectionBuses.sum()
+					+ "\n  current_calc_deep_ms init=" + ms(currentCalcInitNanos)
+					+ ", voltage=" + ms(currentCalcVoltageNanos)
+					+ ", load_list=" + ms(currentCalcLoadListNanos)
+					+ ", load_current=" + ms(currentCalcLoadCurrentNanos)
+					+ ", load_add=" + ms(currentCalcLoadAddNanos)
+					+ ", loads=" + currentCalcLoads.sum()
+					+ ", gen_list=" + ms(currentCalcGenListNanos)
+					+ ", gen_power=" + ms(currentCalcGenPowerNanos)
+					+ ", gen_current=" + ms(currentCalcGenCurrentNanos)
+					+ ", gen_add=" + ms(currentCalcGenAddNanos)
+					+ ", gens=" + currentCalcGens.sum()
+					+ "\n  current_rhs_deep_ms finite=" + ms(currentRhsFiniteNanos)
+					+ ", lookup=" + ms(currentRhsLookupNanos)
+					+ ", boundary_finite=" + ms(currentRhsBoundaryFiniteNanos)
+					+ ", compose=" + ms(currentRhsComposeNanos)
+					+ ", write=" + ms(currentRhsWriteNanos)
+					+ "\n  solve_ms=" + ms(solveNanos)
+					+ ", voltage_update_ms=" + ms(voltageUpdateNanos)
+					+ ", mismatch_ms=" + ms(mismatchNanos)
+					+ "\n  sequence_sync_ms=" + ms(sequenceSyncNanos)
+					+ ", branch_current_ms=" + ms(branchCurrentNanos)
+					+ ", swing_power_ms=" + ms(swingPowerNanos)
+					+ "\n  per_iteration_ms save_voltages=" + msPerIteration(saveVoltagesNanos, iterationCount)
+					+ ", rhs_clear=" + msPerIteration(rhsClearNanos, iterationCount)
+					+ ", current_injection=" + msPerIteration(currentInjectionNanos, iterationCount)
+					+ ", swing_rhs=" + msPerIteration(swingRhsNanos, iterationCount)
+					+ ", solve=" + msPerIteration(solveNanos, iterationCount)
+					+ ", voltage_update=" + msPerIteration(voltageUpdateNanos, iterationCount)
+					+ ", mismatch=" + msPerIteration(mismatchNanos, iterationCount)
+					+ "\n  current_injection_per_iteration_ms regulator="
+					+ msPerIteration(currentInjectionRegulatorNanos, iterationCount)
+					+ ", calc=" + msPerIteration(currentInjectionCalcNanos, iterationCount)
+					+ ", rhs=" + msPerIteration(currentInjectionRhsNanos, iterationCount)
+					+ "\n  current_calc_deep_per_iteration_ms init="
+					+ msPerIteration(currentCalcInitNanos, iterationCount)
+					+ ", voltage=" + msPerIteration(currentCalcVoltageNanos, iterationCount)
+					+ ", load_list=" + msPerIteration(currentCalcLoadListNanos, iterationCount)
+					+ ", load_current=" + msPerIteration(currentCalcLoadCurrentNanos, iterationCount)
+					+ ", load_add=" + msPerIteration(currentCalcLoadAddNanos, iterationCount)
+					+ ", gen_list=" + msPerIteration(currentCalcGenListNanos, iterationCount)
+					+ ", gen_power=" + msPerIteration(currentCalcGenPowerNanos, iterationCount)
+					+ ", gen_current=" + msPerIteration(currentCalcGenCurrentNanos, iterationCount)
+					+ ", gen_add=" + msPerIteration(currentCalcGenAddNanos, iterationCount)
+					+ "\n  current_rhs_deep_per_iteration_ms finite="
+					+ msPerIteration(currentRhsFiniteNanos, iterationCount)
+					+ ", lookup=" + msPerIteration(currentRhsLookupNanos, iterationCount)
+					+ ", boundary_finite=" + msPerIteration(currentRhsBoundaryFiniteNanos, iterationCount)
+					+ ", compose=" + msPerIteration(currentRhsComposeNanos, iterationCount)
+					+ ", write=" + msPerIteration(currentRhsWriteNanos, iterationCount)
+					+ "\n  current_injection_per_bus_us calc="
+					+ usPerBus(currentInjectionCalcNanos, injectionBusCount)
+					+ ", rhs=" + usPerBus(currentInjectionRhsNanos, injectionBusCount)
+					+ "\n  current_calc_per_device_us load_current="
+					+ usPerBus(currentCalcLoadCurrentNanos, loadCount)
+					+ ", load_add=" + usPerBus(currentCalcLoadAddNanos, loadCount)
+					+ ", gen_power=" + usPerBus(currentCalcGenPowerNanos, genCount)
+					+ ", gen_current=" + usPerBus(currentCalcGenCurrentNanos, genCount)
+					+ ", gen_add=" + usPerBus(currentCalcGenAddNanos, genCount);
+		}
+
+		private String ms(LongAdder nanos) {
+			return String.format(Locale.US, "%.3f", nanos.sum() / 1_000_000.0);
+		}
+
+		private String msPerIteration(LongAdder nanos, long iterationCount) {
+			return String.format(Locale.US, "%.6f", nanos.sum() / 1_000_000.0 / iterationCount);
+		}
+
+		private String usPerBus(LongAdder nanos, long busCount) {
+			return String.format(Locale.US, "%.6f", nanos.sum() / 1_000.0 / busCount);
+		}
 	}
 
 	private class RegulatorBranchAdmittance {
