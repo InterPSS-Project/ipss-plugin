@@ -46,9 +46,9 @@ public class AclfNetLoadFlowOptimizer {
 	 * @param threshold The loading limit in percent (e.g. 100.0 for 100% of rating).
 	 * @return Map<String, OptAdjResultContainer.GenAdjustResult> keyed by generator name.
 	 */
-	public Map<String, OptAdjResultContainer.GenAdjustResult> optimize(ContingencyAnalysisAlgorithm dclfAlgo, OptAdjResultContainer result, double threshold) {
-		if (result != null) {
-			result.setOptAdjThreshold(threshold);
+	public Map<String, OptAdjResultContainer.GenAdjustResult> optimize(ContingencyAnalysisAlgorithm dclfAlgo, OptAdjResultContainer ssaResult, double threshold) {
+		if (ssaResult != null) {
+			ssaResult.setOptAdjThreshold(threshold);
 		}
 
 		AclfNetwork net = (AclfNetwork) dclfAlgo.getNetwork();
@@ -64,19 +64,19 @@ public class AclfNetLoadFlowOptimizer {
 		}
 		
 		Map<Integer, AclfGen> controlGenMap = null;
-		if (result == null) {
+		if (ssaResult == null) {
 			// if result is null, all active generators are control candidates
 			controlGenMap = arrangeIndex(net.getAclfGenNameLookupTable().values().stream().filter(gen -> gen.isActive())
 					.collect(Collectors.toSet()));
 		} else {
 			// if result is not null, the control generators are the ones that are associatd with the over limit branches in the SSA result
-			controlGenMap = arrangeIndex(buildControlGenSet(net, senMatrix, result));
+			controlGenMap = arrangeIndex(buildControlGenSet(net, senMatrix, ssaResult));
 		}
 		
 		GenStateOptimizer opt = new GenStateOptimizer();
 		
-		if (result != null) {
-			buildSsaSectionConstrain(dclfAlgo, senMatrix, controlGenMap, opt, threshold, result);
+		if (ssaResult != null) {
+			buildSsaSectionConstrain(dclfAlgo, senMatrix, controlGenMap, opt, threshold, ssaResult);
 		}
 		else
 			buildSectionConstrain(dclfAlgo, senMatrix, controlGenMap, opt, threshold);
@@ -86,8 +86,8 @@ public class AclfNetLoadFlowOptimizer {
 		opt.optimize();
 
 		Map<String, OptAdjResultContainer.GenAdjustResult> optResults = updatedDclfAlgo(dclfAlgo, controlGenMap, opt);
-		if (result != null) {
-			result.setOptAdjResults(optResults);
+		if (ssaResult != null) {
+			ssaResult.setOptAdjResults(optResults);
 		}
 		return optResults;
 	}
@@ -201,7 +201,12 @@ public class AclfNetLoadFlowOptimizer {
 		if (!hasSignificantSensitivity(genSenArray)) {
 			return;
 		}
-		double limit = ratingMw * threshold / 100;
+		addSectionConstraintUnchecked(opt, flowMw, ratingMw, threshold, genSenArray);
+	}
+
+	protected void addSectionConstraintUnchecked(GenStateOptimizer opt, double flowMw, double ratingMw,
+			double threshold, double[] genSenArray) {
+		double limit = ratingMw * threshold * 0.01;
 		opt.adConstraint(new SectionConstrainData(flowMw, Relationship.LEQ, limit, genSenArray));
 	}
 
