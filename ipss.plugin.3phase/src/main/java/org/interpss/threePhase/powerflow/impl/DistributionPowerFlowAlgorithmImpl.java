@@ -4,9 +4,17 @@ import java.util.ArrayList;
 import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Queue;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.io.IOException;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
@@ -60,6 +68,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	private boolean initBusVoltagesEnabled = true;
 	private boolean isAllPowerFlowConverged = false;
 	private boolean fixedPointFallbackUsed = false;
+	private int fixedPointFallbackCount = 0;
 	private double transformerAntiFloatAdmittance = 1.0E-6;
 	private double maxFixedPointVoltageAbs = 10.0;
 	private Hashtable<Integer, Complex3x1> swingBusVoltageBoundaryCurrent = new Hashtable<>();
@@ -75,6 +84,18 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	private ISparseEqnComplexMatrix3x3 fixedPointYMatrixCache = null;
 	private BaseAclfNetwork<?, ?> fixedPointYMatrixCacheNetwork = null;
 	private String fixedPointYMatrixCacheSignature = null;
+	private ISparseEqnComplexMatrix3x3 fixedPointYMatrixValueUpdateCache = null;
+	private BaseAclfNetwork<?, ?> fixedPointYMatrixValueUpdateCacheNetwork = null;
+	private String fixedPointYMatrixSymbolSignature = null;
+	private Object fixedPointYMatrixSymbolTable = null;
+	private int fixedPointYMatrixSymbolicFactorizationCount = 0;
+	private int fixedPointYMatrixNumericFactorizationCount = 0;
+	private int fixedPointYMatrixValueUpdateCount = 0;
+	private Map<String, RegulatorBranchAdmittance> fixedPointRegulatorBaseAdmittance = Collections.emptyMap();
+	private Map<String, RegulatorBranchAdmittance> fixedPointRegulatorValueUpdateAdmittance = Collections.emptyMap();
+	private boolean regulatorCompensationDiagnosticHeaderWritten = false;
+	private int regulatorCompensationDiagnosticEval = 0;
+	private Hashtable<Integer, Complex3x1> regulatorTapCompensationState = new Hashtable<>();
 
 	private static final Logger log = LoggerFactory.getLogger(DistributionPowerFlowAlgorithmImpl.class);
 
@@ -589,9 +610,28 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	}
 
 	private boolean fixedPointPowerflow() {
-
-		ISparseEqnComplexMatrix3x3 yMatrix = null;
 		this.fixedPointFallbackUsed = false;
+		boolean solved = fixedPointPowerflowAttempt();
+		if(!solved && shouldRetryFixedPointWithoutCache()) {
+			log.warn("Retrying fixed-point power flow with fresh Y-matrix after cached regulator compensation failure");
+			boolean cacheEnabled = this.fixedPointYMatrixCacheEnabled;
+			clearFixedPointYMatrixCache();
+			this.fixedPointYMatrixCacheEnabled = false;
+			this.fixedPointFallbackUsed = true;
+			this.fixedPointFallbackCount++;
+			try {
+				solved = fixedPointPowerflowAttempt();
+			}
+			finally {
+				this.fixedPointYMatrixCacheEnabled = cacheEnabled;
+				clearFixedPointYMatrixCache();
+			}
+		}
+		return solved;
+	}
+
+	private boolean fixedPointPowerflowAttempt() {
+		ISparseEqnComplexMatrix3x3 yMatrix = null;
 		BaseAclfNetwork<? extends BaseAclfBus<? extends AclfGen, ? extends AclfLoad>, ? extends AclfBranch> distNet = aclfNetwork();
 
 		try {
@@ -642,10 +682,18 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		return this.pfFlag;
 	}
 
+	private boolean shouldRetryFixedPointWithoutCache() {
+		return this.fixedPointYMatrixCacheEnabled
+				&& this.regulatorControlEnabled
+				&& !this.regulatorControls.isEmpty()
+				&& !this.fixedPointRegulatorBaseAdmittance.isEmpty();
+	}
+
 	private ISparseEqnComplexMatrix3x3 fixedPointYMatrix(
 			BaseAclfNetwork<? extends BaseAclfBus<? extends AclfGen, ? extends AclfLoad>, ? extends AclfBranch> distNet)
 			throws IpssNumericException {
 		String signature = fixedPointYMatrixSignature(distNet);
+		String symbolSignature = fixedPointYMatrixSymbolSignature(distNet);
 		if(this.fixedPointYMatrixCacheEnabled
 				&& this.fixedPointYMatrixCache != null
 				&& this.fixedPointYMatrixCacheNetwork == distNet
@@ -653,16 +701,165 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			return this.fixedPointYMatrixCache;
 		}
 
-		ISparseEqnComplexMatrix3x3 yMatrix = formYMatrixABCForPowerflow(distNet);
-		applySwingBusVoltageBoundary(yMatrix);
-		yMatrix.factorization(Constants.Matrix_LU_Tolerance);
+		boolean reuseSymbolTable = fixedPointSymbolReuseEnabled()
+				&& this.fixedPointYMatrixSymbolTable != null
+				&& symbolSignature.equals(this.fixedPointYMatrixSymbolSignature);
+		ISparseEqnComplexMatrix3x3 yMatrix = null;
+		boolean updatedExistingValues = false;
+		if(!this.fixedPointYMatrixCacheEnabled
+				&& fixedPointValueUpdateEnabled()
+				&& reuseSymbolTable
+				&& canUpdateFixedPointYMatrixValues(distNet, symbolSignature)) {
+			yMatrix = this.fixedPointYMatrixValueUpdateCache;
+			updatedExistingValues = updateFixedPointYMatrixRegulatorValues(yMatrix, distNet);
+		}
+		if(yMatrix == null) {
+			yMatrix = formYMatrixABCForPowerflow(distNet);
+			applyRegulatorSeriesPaddingToFixedPointYMatrix(yMatrix, distNet);
+			applySwingBusVoltageBoundary(yMatrix);
+		}
+		if(reuseSymbolTable) {
+			yMatrix.getSparseEqnComplex().setSymbolTable(this.fixedPointYMatrixSymbolTable);
+		}
+		yMatrix.factorization(!reuseSymbolTable, Constants.Matrix_LU_Tolerance);
+		this.fixedPointYMatrixNumericFactorizationCount++;
+		if(updatedExistingValues) {
+			this.fixedPointYMatrixValueUpdateCount++;
+		}
+		if(!reuseSymbolTable) {
+			this.fixedPointYMatrixSymbolicFactorizationCount++;
+			this.fixedPointYMatrixSymbolTable = yMatrix.getSparseEqnComplex().getSymbolTable();
+			this.fixedPointYMatrixSymbolSignature = symbolSignature;
+		}
 
 		if(this.fixedPointYMatrixCacheEnabled) {
 			this.fixedPointYMatrixCache = yMatrix;
 			this.fixedPointYMatrixCacheNetwork = distNet;
 			this.fixedPointYMatrixCacheSignature = signature;
+			this.fixedPointRegulatorBaseAdmittance = regulatorBranchAdmittance(distNet,
+					regulatorTapCompensationSeriesResistancePaddingPu() > 0.0);
+		}
+		else {
+			this.fixedPointYMatrixValueUpdateCache = yMatrix;
+			this.fixedPointYMatrixValueUpdateCacheNetwork = distNet;
+			this.fixedPointRegulatorValueUpdateAdmittance = regulatorBranchAdmittance(distNet);
 		}
 		return yMatrix;
+	}
+
+	private void applyRegulatorSeriesPaddingToFixedPointYMatrix(ISparseEqnComplexMatrix3x3 yMatrix,
+			BaseAclfNetwork<?, ?> distNet) {
+		if(!this.fixedPointYMatrixCacheEnabled
+				|| !this.regulatorControlEnabled
+				|| this.regulatorControls.isEmpty()
+				|| regulatorTapCompensationSeriesResistancePaddingPu() <= 0.0) {
+			return;
+		}
+		for(RegulatorControlData control : this.regulatorControls) {
+			IBranch3Phase branch = findRegulatorBranch(distNet, control.getBranchName());
+			if(branch == null) {
+				continue;
+			}
+			AclfBranch aclfBranch = (AclfBranch) branch;
+			RegulatorBranchAdmittance padded = new RegulatorBranchAdmittance(branch,
+					aclfBranch.getFromBus().getSortNumber(), aclfBranch.getToBus().getSortNumber(), true);
+			yMatrix.addToA(padded.yff.subtract(branch.getYffabc()),
+					padded.fromSortNumber, padded.fromSortNumber);
+			yMatrix.addToA(padded.yft.subtract(branch.getYftabc()),
+					padded.fromSortNumber, padded.toSortNumber);
+			yMatrix.addToA(padded.ytf.subtract(branch.getYtfabc()),
+					padded.toSortNumber, padded.fromSortNumber);
+			yMatrix.addToA(padded.ytt.subtract(branch.getYttabc()),
+					padded.toSortNumber, padded.toSortNumber);
+		}
+	}
+
+	private boolean fixedPointSymbolReuseEnabled() {
+		return !Boolean.getBoolean("ipss.qsts.disableFixedPointSymbolReuse");
+	}
+
+	private boolean fixedPointValueUpdateEnabled() {
+		return !Boolean.getBoolean("ipss.qsts.disableFixedPointValueUpdate");
+	}
+
+	private boolean canUpdateFixedPointYMatrixValues(BaseAclfNetwork<?, ?> distNet, String symbolSignature) {
+		if(this.fixedPointYMatrixValueUpdateCache == null
+				|| this.fixedPointYMatrixValueUpdateCacheNetwork != distNet
+				|| !symbolSignature.equals(this.fixedPointYMatrixSymbolSignature)
+				|| this.fixedPointRegulatorValueUpdateAdmittance.isEmpty()) {
+			return false;
+		}
+		for(RegulatorBranchAdmittance base : this.fixedPointRegulatorValueUpdateAdmittance.values()) {
+			AclfBranch branch = (AclfBranch) base.branch;
+			if(((BaseAclfBus<?, ?>) branch.getFromBus()).isSwing()
+					|| ((BaseAclfBus<?, ?>) branch.getToBus()).isSwing()) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private boolean updateFixedPointYMatrixRegulatorValues(ISparseEqnComplexMatrix3x3 yMatrix,
+			BaseAclfNetwork<?, ?> distNet) {
+		Map<String, RegulatorBranchAdmittance> updatedAdmittance = new LinkedHashMap<>();
+		boolean changed = false;
+		for(RegulatorBranchAdmittance previous : this.fixedPointRegulatorValueUpdateAdmittance.values()) {
+			IBranch3Phase branch = previous.branch;
+			AclfBranch aclfBranch = (AclfBranch) branch;
+			if(!aclfBranch.isActive()) {
+				continue;
+			}
+			Complex3x3 deltaYff = branch.getYffabc().subtract(previous.yff);
+			Complex3x3 deltaYft = branch.getYftabc().subtract(previous.yft);
+			Complex3x3 deltaYtf = branch.getYtfabc().subtract(previous.ytf);
+			Complex3x3 deltaYtt = branch.getYttabc().subtract(previous.ytt);
+			if(deltaYff.absMax() > 0.0 || deltaYft.absMax() > 0.0
+					|| deltaYtf.absMax() > 0.0 || deltaYtt.absMax() > 0.0) {
+				yMatrix.addToA(deltaYff, previous.fromSortNumber, previous.fromSortNumber);
+				yMatrix.addToA(deltaYft, previous.fromSortNumber, previous.toSortNumber);
+				yMatrix.addToA(deltaYtf, previous.toSortNumber, previous.fromSortNumber);
+				yMatrix.addToA(deltaYtt, previous.toSortNumber, previous.toSortNumber);
+				changed = true;
+			}
+			updatedAdmittance.put(aclfBranch.getId(), new RegulatorBranchAdmittance(branch,
+					aclfBranch.getFromBus().getSortNumber(), aclfBranch.getToBus().getSortNumber()));
+		}
+		this.fixedPointRegulatorValueUpdateAdmittance = updatedAdmittance.isEmpty()
+				? Collections.emptyMap() : Collections.unmodifiableMap(updatedAdmittance);
+		return changed;
+	}
+
+	private Map<String, RegulatorBranchAdmittance> regulatorBranchAdmittance(BaseAclfNetwork<?, ?> distNet) {
+		return regulatorBranchAdmittance(distNet, false);
+	}
+
+	private Map<String, RegulatorBranchAdmittance> regulatorBranchAdmittance(BaseAclfNetwork<?, ?> distNet,
+			boolean padded) {
+		if(!this.regulatorControlEnabled || this.regulatorControls.isEmpty()) {
+			return Collections.emptyMap();
+		}
+		Map<String, RegulatorBranchAdmittance> admittanceByBranchId = new LinkedHashMap<>();
+		for(RegulatorControlData control : this.regulatorControls) {
+			IBranch3Phase branch = findRegulatorBranch(distNet, control.getBranchName());
+			if(branch == null) {
+				continue;
+			}
+			AclfBranch aclfBranch = (AclfBranch) branch;
+			admittanceByBranchId.put(aclfBranch.getId(), new RegulatorBranchAdmittance(branch,
+					aclfBranch.getFromBus().getSortNumber(), aclfBranch.getToBus().getSortNumber(), padded));
+		}
+		return admittanceByBranchId.isEmpty() ? Collections.emptyMap()
+				: Collections.unmodifiableMap(admittanceByBranchId);
+	}
+
+	private IBranch3Phase findRegulatorBranch(BaseAclfNetwork<?, ?> network, String branchName) {
+		for(AclfBranch branch : (List<AclfBranch>) network.getBranchList()) {
+			if(branch.isActive() && branch instanceof IBranch3Phase
+					&& (branch.getName().equals(branchName) || branch.getId().equals(branchName))) {
+				return (IBranch3Phase) branch;
+			}
+		}
+		return null;
 	}
 
 	private String fixedPointYMatrixSignature(BaseAclfNetwork<?, ?> distNet) {
@@ -673,6 +870,32 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			if(bus.isActive() && bus.isSwing()) {
 				builder.append(bus.getId()).append(':').append(bus.getSortNumber()).append(':')
 						.append(threePhaseBus(bus).get3PhaseVotlages()).append(';');
+			}
+		}
+		return builder.toString();
+	}
+
+	private String fixedPointYMatrixSymbolSignature(BaseAclfNetwork<?, ?> distNet) {
+		StringBuilder builder = new StringBuilder();
+		builder.append(System.identityHashCode(distNet)).append('|')
+				.append(distNet.getNoBus()).append('|');
+		for(BaseAclfBus<?, ?> bus : (List<BaseAclfBus<?, ?>>) distNet.getBusList()) {
+			if(bus.isActive()) {
+				builder.append("B:")
+						.append(bus.getSortNumber()).append(':')
+						.append(bus.isSwing()).append(';');
+			}
+		}
+		for(AclfBranch branch : (List<AclfBranch>) distNet.getBranchList()) {
+			if(branch.isActive()) {
+				IBranch3Phase branch3P = threePhaseBranch(branch);
+				builder.append("R:")
+						.append(branch.getId()).append(':')
+						.append(branch.getFromBus().getSortNumber()).append("->")
+						.append(branch.getToBus().getSortNumber()).append(':')
+						.append(branch3P.getPhaseCode()).append(':')
+						.append(branch.isXfr()).append(':')
+						.append(branch.isLine()).append(';');
 			}
 		}
 		return builder.toString();
@@ -896,6 +1119,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	}
 
 	private void setPowerflowCurrentInjections(ISparseEqnComplexMatrix3x3 yMatrix) {
+		Hashtable<Integer, Complex3x1> regulatorTapCompensation = regulatorTapCompensationCurrents();
 		for(BaseAclfBus bus: aclfNetwork().getBusList()) {
 			if(bus.isActive() && !bus.isSwing()) {
 				IBus3Phase bus3P = threePhaseBus(bus);
@@ -906,14 +1130,187 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 							+ ", vabc=" + bus3P.get3PhaseVotlages());
 				}
 				Complex3x1 boundaryCurrent = this.swingBusVoltageBoundaryCurrent.get(bus.getSortNumber());
+				Complex3x1 tapCompensation = regulatorTapCompensation.get(bus.getSortNumber());
 				if(boundaryCurrent != null
 						&& (!isFinite(boundaryCurrent.a_0) || !isFinite(boundaryCurrent.b_1) || !isFinite(boundaryCurrent.c_2))) {
 					log.warn("Invalid fixed-point swing-boundary current at bus " + bus.getId()
 							+ ", sortNumber=" + bus.getSortNumber() + ", iabc=" + boundaryCurrent);
 				}
-				yMatrix.setBi(boundaryCurrent == null ? curInj : curInj.subtract(boundaryCurrent), bus.getSortNumber());
+				Complex3x1 rhs = boundaryCurrent == null ? curInj : curInj.subtract(boundaryCurrent);
+				if(tapCompensation != null) {
+					rhs = rhs.subtract(tapCompensation);
+				}
+				yMatrix.setBi(rhs, bus.getSortNumber());
 			}
 		}
+	}
+
+	private Hashtable<Integer, Complex3x1> regulatorTapCompensationCurrents() {
+		Hashtable<Integer, Complex3x1> compensationByBus = new Hashtable<>();
+		if(!this.fixedPointYMatrixCacheEnabled || !this.regulatorControlEnabled
+				|| this.regulatorControls.isEmpty()
+				|| this.fixedPointRegulatorBaseAdmittance.isEmpty()) {
+			this.regulatorTapCompensationState.clear();
+			return compensationByBus;
+		}
+		for(RegulatorBranchAdmittance base : this.fixedPointRegulatorBaseAdmittance.values()) {
+			IBranch3Phase branch = base.branch;
+			AclfBranch aclfBranch = (AclfBranch) branch;
+			if(!aclfBranch.isActive()) {
+				continue;
+			}
+			Complex3x1 fromVoltage = phaseMaskedValue(
+					threePhaseBus((BaseAclfBus<?, ?>) aclfBranch.getFromBus()).get3PhaseVotlages(),
+					base.phaseMask);
+			Complex3x1 toVoltage = phaseMaskedValue(
+					threePhaseBus((BaseAclfBus<?, ?>) aclfBranch.getToBus()).get3PhaseVotlages(),
+					base.phaseMask);
+			Complex3x1 fromDeltaCurrent = branch.getYffabc().subtract(base.yff).multiply(fromVoltage)
+					.add(branch.getYftabc().subtract(base.yft).multiply(toVoltage));
+			Complex3x1 toDeltaCurrent = branch.getYtfabc().subtract(base.ytf).multiply(fromVoltage)
+					.add(branch.getYttabc().subtract(base.ytt).multiply(toVoltage));
+			writeRegulatorCompensationDiagnostic(base, branch, fromVoltage, toVoltage,
+					fromDeltaCurrent, toDeltaCurrent);
+			addCompensationCurrent(compensationByBus, base.fromSortNumber,
+					phaseMaskedValue(fromDeltaCurrent, base.phaseMask));
+			addCompensationCurrent(compensationByBus, base.toSortNumber,
+					phaseMaskedValue(toDeltaCurrent, base.phaseMask));
+		}
+		compensationByBus = dampRegulatorTapCompensation(compensationByBus);
+		this.regulatorCompensationDiagnosticEval++;
+		return compensationByBus;
+	}
+
+	private Hashtable<Integer, Complex3x1> dampRegulatorTapCompensation(
+			Hashtable<Integer, Complex3x1> calculatedByBus) {
+		double gamma = regulatorTapCompensationDampingFactor();
+		if(gamma >= 1.0) {
+			this.regulatorTapCompensationState = calculatedByBus;
+			return calculatedByBus;
+		}
+		Hashtable<Integer, Complex3x1> dampedByBus = new Hashtable<>();
+		for(Integer sortNumber : calculatedByBus.keySet()) {
+			Complex3x1 calculated = calculatedByBus.get(sortNumber);
+			Complex3x1 previous = this.regulatorTapCompensationState.get(sortNumber);
+			Complex3x1 damped = previous == null ? calculated.multiply(gamma)
+					: previous.add(calculated.subtract(previous).multiply(gamma));
+			dampedByBus.put(sortNumber, damped);
+		}
+		this.regulatorTapCompensationState = dampedByBus;
+		return dampedByBus;
+	}
+
+	private double regulatorTapCompensationDampingFactor() {
+		String configured = System.getProperty("ipss.qsts.regulatorCompensationDamping");
+		if(configured == null || configured.isBlank()) {
+			return 0.25;
+		}
+		try {
+			double gamma = Double.parseDouble(configured);
+			if(Double.isFinite(gamma) && gamma > 0.0) {
+				return Math.min(1.0, gamma);
+			}
+		}
+		catch(NumberFormatException e) {
+			log.warn("Ignoring invalid regulator compensation damping factor: " + configured);
+		}
+		return 0.25;
+	}
+
+	private double regulatorTapCompensationSeriesResistancePaddingPu() {
+		String configured = System.getProperty("ipss.qsts.regulatorCompensationSeriesRPadPu");
+		if(configured == null || configured.isBlank()) {
+			return 0.0;
+		}
+		try {
+			double rPad = Double.parseDouble(configured);
+			if(Double.isFinite(rPad) && rPad > 0.0) {
+				return rPad;
+			}
+		}
+		catch(NumberFormatException e) {
+			log.warn("Ignoring invalid regulator compensation series resistance padding: " + configured);
+		}
+		return 0.0;
+	}
+
+	static Complex3x1 dampCompensationCurrentForTesting(Complex3x1 previous,
+			Complex3x1 calculated, double gamma) {
+		return previous == null ? calculated.multiply(gamma)
+				: previous.add(calculated.subtract(previous).multiply(gamma));
+	}
+
+	private void addCompensationCurrent(Hashtable<Integer, Complex3x1> compensationByBus,
+			int sortNumber, Complex3x1 current) {
+		Complex3x1 existing = compensationByBus.get(sortNumber);
+		compensationByBus.put(sortNumber, existing == null ? current : existing.add(current));
+	}
+
+	private void writeRegulatorCompensationDiagnostic(RegulatorBranchAdmittance base,
+			IBranch3Phase branch, Complex3x1 fromVoltage, Complex3x1 toVoltage,
+			Complex3x1 fromDeltaCurrent, Complex3x1 toDeltaCurrent) {
+		String csvPath = System.getProperty("ipss.qsts.regulatorCompensationCsv");
+		if(csvPath == null || csvPath.isBlank()) {
+			return;
+		}
+		AclfBranch aclfBranch = (AclfBranch) branch;
+		double[] fromRatios = transformerFromTurnRatios(branch);
+		double[] toRatios = transformerToTurnRatios(branch);
+		double deltaYAbsMax = Math.max(
+				Math.max(branch.getYffabc().subtract(base.yff).absMax(),
+						branch.getYftabc().subtract(base.yft).absMax()),
+				Math.max(branch.getYtfabc().subtract(base.ytf).absMax(),
+						branch.getYttabc().subtract(base.ytt).absMax()));
+		StringBuilder builder = new StringBuilder();
+		if(!this.regulatorCompensationDiagnosticHeaderWritten) {
+			builder.append("eval,branch,phase,from_bus,to_bus,from_ratio_a,from_ratio_b,from_ratio_c,")
+					.append("to_ratio_a,to_ratio_b,to_ratio_c,delta_y_abs_max,")
+					.append("from_v_abs_max,to_v_abs_max,from_icomp_abs_max,to_icomp_abs_max,")
+					.append("from_icomp_a,from_icomp_b,from_icomp_c,to_icomp_a,to_icomp_b,to_icomp_c\n");
+			this.regulatorCompensationDiagnosticHeaderWritten = true;
+		}
+		builder.append(String.format(Locale.US,
+				"%d,%s,%s,%s,%s,%.12g,%.12g,%.12g,%.12g,%.12g,%.12g,%.12g,%.12g,%.12g,%.12g,%.12g,%s,%s,%s,%s,%s,%s%n",
+				this.regulatorCompensationDiagnosticEval,
+				aclfBranch.getId(),
+				branch.getPhaseCode(),
+				aclfBranch.getFromBus().getId(),
+				aclfBranch.getToBus().getId(),
+				fromRatios[0], fromRatios[1], fromRatios[2],
+				toRatios[0], toRatios[1], toRatios[2],
+				deltaYAbsMax,
+				complex3x1AbsMax(fromVoltage),
+				complex3x1AbsMax(toVoltage),
+				complex3x1AbsMax(fromDeltaCurrent),
+				complex3x1AbsMax(toDeltaCurrent),
+				formatComplex(fromDeltaCurrent.a_0),
+				formatComplex(fromDeltaCurrent.b_1),
+				formatComplex(fromDeltaCurrent.c_2),
+				formatComplex(toDeltaCurrent.a_0),
+				formatComplex(toDeltaCurrent.b_1),
+				formatComplex(toDeltaCurrent.c_2)));
+		try {
+			Files.writeString(Path.of(csvPath), builder.toString(), StandardCharsets.UTF_8,
+					StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+		}
+		catch(IOException e) {
+			log.warn("Failed to write regulator compensation diagnostic CSV " + csvPath, e);
+		}
+	}
+
+	private double complex3x1AbsMax(Complex3x1 value) {
+		return Math.max(Math.max(complexAbs(value.a_0), complexAbs(value.b_1)), complexAbs(value.c_2));
+	}
+
+	private double complexAbs(Complex value) {
+		return value == null ? 0.0 : value.abs();
+	}
+
+	private String formatComplex(Complex value) {
+		if(value == null) {
+			return "0+j0";
+		}
+		return String.format(Locale.US, "%.12g+j%.12g", value.getReal(), value.getImaginary());
 	}
 
 	private void setSwingBusVoltageRhs(ISparseEqnComplexMatrix3x3 yMatrix) {
@@ -1558,6 +1955,53 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		return masked;
 	}
 
+	private Complex3x3 copyComplex3x3(Complex3x3 source) {
+		Complex3x3 copy = new Complex3x3();
+		copy.aa = source.aa;
+		copy.ab = source.ab;
+		copy.ac = source.ac;
+		copy.ba = source.ba;
+		copy.bb = source.bb;
+		copy.bc = source.bc;
+		copy.ca = source.ca;
+		copy.cb = source.cb;
+		copy.cc = source.cc;
+		return copy;
+	}
+
+	private Complex3x3 paddedRegulatorAdmittance(IBranch3Phase branch, Complex3x3 source) {
+		double rPad = regulatorTapCompensationSeriesResistancePaddingPu();
+		if(rPad <= 0.0) {
+			return copyComplex3x3(source);
+		}
+		Complex3x3 zabc = branch.getZabc();
+		Complex scaleA = seriesPaddingScale(zabc.aa, rPad);
+		Complex scaleB = seriesPaddingScale(zabc.bb, rPad);
+		Complex scaleC = seriesPaddingScale(zabc.cc, rPad);
+		Complex3x3 padded = new Complex3x3();
+		padded.aa = source.aa.multiply(scaleA);
+		padded.ab = source.ab.multiply(scaleA);
+		padded.ac = source.ac.multiply(scaleA);
+		padded.ba = source.ba.multiply(scaleB);
+		padded.bb = source.bb.multiply(scaleB);
+		padded.bc = source.bc.multiply(scaleB);
+		padded.ca = source.ca.multiply(scaleC);
+		padded.cb = source.cb.multiply(scaleC);
+		padded.cc = source.cc.multiply(scaleC);
+		return padded;
+	}
+
+	private Complex seriesPaddingScale(Complex zPhase, double rPad) {
+		if(zPhase == null || zPhase.abs() <= 0.0) {
+			return Complex.ZERO;
+		}
+		Complex padded = zPhase.add(new Complex(rPad, 0.0));
+		if(padded.abs() <= 0.0) {
+			return Complex.ZERO;
+		}
+		return zPhase.divide(padded);
+	}
+
 	private Complex3x1 mergeBranchPhaseVoltage(Complex3x1 existingVoltage, Complex3x1 branchVoltage,
 			int branchPhaseMask, boolean mergeWithExisting) {
 		Complex zero = new Complex(0.0, 0.0);
@@ -1707,6 +2151,11 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	}
 
 	@Override
+	public int getFixedPointFallbackCount() {
+		return this.fixedPointFallbackCount;
+	}
+
+	@Override
 	public void setFixedPointYMatrixCacheEnabled(boolean enabled) {
 		if(this.fixedPointYMatrixCacheEnabled != enabled) {
 			clearFixedPointYMatrixCache();
@@ -1724,6 +2173,31 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		this.fixedPointYMatrixCache = null;
 		this.fixedPointYMatrixCacheNetwork = null;
 		this.fixedPointYMatrixCacheSignature = null;
+		this.fixedPointYMatrixValueUpdateCache = null;
+		this.fixedPointYMatrixValueUpdateCacheNetwork = null;
+		this.fixedPointRegulatorBaseAdmittance = Collections.emptyMap();
+		this.fixedPointRegulatorValueUpdateAdmittance = Collections.emptyMap();
+		this.regulatorTapCompensationState.clear();
+	}
+
+	private void clearFixedPointYMatrixSymbolCache() {
+		this.fixedPointYMatrixSymbolSignature = null;
+		this.fixedPointYMatrixSymbolTable = null;
+	}
+
+	@Override
+	public int getFixedPointYMatrixSymbolicFactorizationCount() {
+		return this.fixedPointYMatrixSymbolicFactorizationCount;
+	}
+
+	@Override
+	public int getFixedPointYMatrixNumericFactorizationCount() {
+		return this.fixedPointYMatrixNumericFactorizationCount;
+	}
+
+	@Override
+	public int getFixedPointYMatrixValueUpdateCount() {
+		return this.fixedPointYMatrixValueUpdateCount;
 	}
 
 	@Override
@@ -1760,5 +2234,35 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		return this.initBusVoltagesEnabled;
 	}
 
+	private class RegulatorBranchAdmittance {
+		private final IBranch3Phase branch;
+		private final int fromSortNumber;
+		private final int toSortNumber;
+		private final int phaseMask;
+		private final Complex3x3 yff;
+		private final Complex3x3 yft;
+		private final Complex3x3 ytf;
+		private final Complex3x3 ytt;
+
+		private RegulatorBranchAdmittance(IBranch3Phase branch, int fromSortNumber, int toSortNumber) {
+			this(branch, fromSortNumber, toSortNumber, false);
+		}
+
+		private RegulatorBranchAdmittance(IBranch3Phase branch, int fromSortNumber, int toSortNumber,
+				boolean padded) {
+			this.branch = branch;
+			this.fromSortNumber = fromSortNumber;
+			this.toSortNumber = toSortNumber;
+			this.phaseMask = branchPhaseMask(branch);
+			this.yff = padded ? paddedRegulatorAdmittance(branch, branch.getYffabc())
+					: copyComplex3x3(branch.getYffabc());
+			this.yft = padded ? paddedRegulatorAdmittance(branch, branch.getYftabc())
+					: copyComplex3x3(branch.getYftabc());
+			this.ytf = padded ? paddedRegulatorAdmittance(branch, branch.getYtfabc())
+					: copyComplex3x3(branch.getYtfabc());
+			this.ytt = padded ? paddedRegulatorAdmittance(branch, branch.getYttabc())
+					: copyComplex3x3(branch.getYttabc());
+		}
+	}
 
 }

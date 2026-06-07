@@ -23,8 +23,8 @@ import org.junit.jupiter.api.Test;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
+import com.interpss.core.acsc.PhaseCode;
 import com.interpss.core.threephase.IBus3Phase;
-import com.interpss.core.threephase.IPhaseGen;
 import com.interpss.core.threephase.IPhaseLoad;
 import com.interpss.core.threephase.INetwork3Phase;
 import com.interpss.core.threephase.Static3PBus;
@@ -95,7 +95,7 @@ public class QstsStudyTest {
 		IBus3Phase bus = network.getBus("load");
 
 		IPhaseLoad load = bus.getPhaseLoadList().get(0);
-		IPhaseGen generator = bus.getPhaseGenList().get(0);
+		com.interpss.core.threephase.IPhaseGen generator = bus.getPhaseGenList().get(0);
 
 		assertFalse(network.getClass().getName().contains(".dstab."));
 		assertFalse(bus.getClass().getName().contains(".dstab."));
@@ -163,6 +163,51 @@ public class QstsStudyTest {
 	}
 
 	@Test
+	void capacitorControlsUseFixedPointYMatrixCacheThroughCurrentInjectionCompensation() throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+		Static3PBus loadBus = network.getBus("load");
+		Static3PLoad capacitor = Static3PhaseFactory.eINSTANCE.createStatic3PLoad();
+		capacitor.setId("cap1");
+		capacitor.setCode(AclfLoadCode.CONST_Z);
+		capacitor.set3PhaseLoad(new Complex3x1(new Complex(0.0, -0.01),
+				new Complex(0.0, -0.01), new Complex(0.0, -0.01)));
+		loadBus.getContributeLoadList().add(capacitor);
+		CapacitorControlData control = new CapacitorControlData("capctrl1", "cap1", "", 1,
+				CapacitorControlData.ControlType.VOLTAGE, 100.0, 200.0, 1.0, 1.0,
+				false, 0.0, 0.0, 0.0, 0.0, null, null);
+		FakePowerFlowAlgorithm powerFlow = new FakePowerFlowAlgorithm();
+
+		QstsResult result = QstsStudy.from(network, schedule(1))
+				.setPowerFlowAlgorithm(powerFlow)
+				.setCapacitorControls(List.of(control))
+				.setControlMode(QstsControlMode.STATIC)
+				.setMaxControlIterations(1)
+				.run();
+
+		assertTrue(result.isConverged());
+		assertTrue(powerFlow.fixedPointYMatrixCacheEnabled);
+	}
+
+	@Test
+	void regulatorControlsDisableFixedPointYMatrixCacheForSymbolicRebuild()
+			throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+		RegulatorControlData control = new RegulatorControlData("reg1", "regBranch", 2,
+				PhaseCode.A, 1.0, 0.01, 0.00625, -16, 16);
+		FakePowerFlowAlgorithm powerFlow = new FakePowerFlowAlgorithm();
+
+		QstsResult result = QstsStudy.from(network, schedule(1))
+				.setPowerFlowAlgorithm(powerFlow)
+				.setRegulatorControls(List.of(control))
+				.setControlMode(QstsControlMode.STATIC)
+				.setMaxControlIterations(1)
+				.run();
+
+		assertTrue(result.isConverged());
+		assertFalse(powerFlow.fixedPointYMatrixCacheEnabled);
+	}
+
+	@Test
 	void inverterControlSetpointIsAppliedAfterQstsPowerFlowThroughStaticPhaseGen() throws InterpssException {
 		Static3PNetwork network = twoBusNetwork();
 		InverterControlData control = new InverterControlData("inv1", "pv1",
@@ -207,7 +252,7 @@ public class QstsStudyTest {
 		assertEquals(1, adapter.applyCount);
 		assertTrue(result.getStep(0).getInverterControls().get(0).isApplied());
 		assertEquals(4000.0, result.getStep(0).getInverterControls().get(0).getReactivePowerKvar(), 1.0e-12);
-		assertTrue(adapter.getGenerator() instanceof IPhaseGen);
+		assertTrue(adapter.getGenerator() instanceof com.interpss.core.threephase.IPhaseGen);
 	}
 
 	@Test
@@ -458,7 +503,7 @@ public class QstsStudyTest {
 	private static class CountingInverterAdapter extends InverterGenAdapter {
 		private int applyCount;
 
-		private CountingInverterAdapter(IPhaseGen generator) {
+		private CountingInverterAdapter(com.interpss.core.threephase.IPhaseGen generator) {
 			super(generator);
 		}
 
