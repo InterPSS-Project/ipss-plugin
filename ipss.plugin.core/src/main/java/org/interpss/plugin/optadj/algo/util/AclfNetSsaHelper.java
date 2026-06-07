@@ -95,9 +95,9 @@ public class AclfNetSsaHelper {
                   ssaResult.getCaOverLimitInfo().add(new SsaBranchOverLimitInfo(
                         outageBranch.getBranch().getId(), monitoredBranch.getId(), 
                         monitoredBranch.getRatingMvaB(), resultRec.preFlowMW, resultRec.getPostFlowMW()));
-                  System.out.println(String.format("OverLimit Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f",
-                       monitoredBranch.getId(), outageBranch.getBranch().getId(),
-                        resultRec.getPostFlowMW(), monitoredBranch.getRatingMvaB(), loading));
+                  //System.out.println(String.format("OverLimit Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f",
+                  //     monitoredBranch.getId(), outageBranch.getBranch().getId(),
+                  //      resultRec.getPostFlowMW(), monitoredBranch.getRatingMvaB(), loading));
                }
             });
       });
