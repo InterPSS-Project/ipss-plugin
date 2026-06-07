@@ -29,7 +29,7 @@ public class Texas2K_OptBasecase_SsaResult_Sample {
 		ssaResult.printBaseOverLimitInfo();
 		
 		// perform basecase loaing limit optimization	
-		OptAdjResultContainer optAdjResult = new OptAdjResultContainer(ssaResult, 90.0);
+		OptAdjResultContainer optAdjResult = new OptAdjResultContainer(ssaResult);
 		new AclfNetLoadFlowOptimizer().optimize(dclfAlgo, optAdjResult, loadingThreshold);
 		optAdjResult.getOPtAdjResults().forEach((genName, result) -> {
 			System.out.println("GenAdjustResult: " + genName + ", " + result.toString());
