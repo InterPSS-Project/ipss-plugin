@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 public class OpenDssInvControlMetadataTest {
 	@Test
 	void parsesInvControlIntoGenericInverterControlData() {
-		OpenDSSDataParser parser = new OpenDSSDataParser();
+		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
 
 		assertTrue(parser.getInvControlParser().parseInvControlData(
 				"New InvControl.inv1 DERList=(PVSystem.pv1) mode=VOLTVAR vvc_curve1=vv1 "
@@ -31,7 +31,7 @@ public class OpenDssInvControlMetadataTest {
 
 	@Test
 	void parsesVoltWattCurveReference() {
-		OpenDSSDataParser parser = new OpenDSSDataParser();
+		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
 
 		assertTrue(parser.getInvControlParser().parseInvControlData(
 				"New InvControl.inv2 DERList=[Storage.batt1] mode=VOLTWATT voltwatt_curve=vw1"));
