@@ -28,7 +28,7 @@ public class DistOpfPowerFlowValidation {
 		}
 		BaseAclfNetwork<? extends BaseAclfBus<? extends AclfGen, ? extends AclfLoad>, ? extends AclfBranch> aclfNet = aclfNetwork(net);
 		result.applySetpointsToNetwork(net);
-		DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(aclfNet);
+		DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(net);
 		powerFlow.setTolerance(options.getPowerFlowTolerance());
 		powerFlow.setMaxIteration(options.getMaxPowerFlowIterations());
 		boolean converged = powerFlow.powerflow();

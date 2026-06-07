@@ -170,14 +170,21 @@ public class ThreePhaseObjectFactory {
 		return branch;
 	}
 
-	public static DistributionPowerFlowAlgorithm createDistPowerFlowAlgorithm(BaseAclfNetwork net){
-		if (!(net instanceof INetwork3Phase)) {
-			throw new IllegalArgumentException("Network must implement INetwork3Phase: "
-					+ (net == null ? "null" : net.getClass().getName()));
-		}
-		return new DistributionPowerFlowAlgorithmImpl((INetwork3Phase) net);
-	}
-
+	public static DistributionPowerFlowAlgorithm createDistPowerFlowAlgorithm(INetwork3Phase net){
+		if (net == null) {
+			throw new IllegalArgumentException("Network must implement INetwork3Phase: null");
+		}
+		return new DistributionPowerFlowAlgorithmImpl(net);
+	}
+
+	public static DistributionPowerFlowAlgorithm createDistPowerFlowAlgorithm(Object net){
+		if (!(net instanceof INetwork3Phase)) {
+			throw new IllegalArgumentException("Network must implement INetwork3Phase: "
+					+ (net == null ? "null" : net.getClass().getName()));
+		}
+		return createDistPowerFlowAlgorithm((INetwork3Phase) net);
+	}
+
 	public static DistOpfAlgorithm createDistOpfAlgorithm(INetwork3Phase net){
 		return new DistOpfAlgorithmImpl(net);
 	}
