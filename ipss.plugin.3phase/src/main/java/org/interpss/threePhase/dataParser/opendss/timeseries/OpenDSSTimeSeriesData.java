@@ -14,7 +14,9 @@ import org.interpss.threePhase.qsts.QstsProfileRegistry;
 import org.interpss.threePhase.qsts.QstsScheduleData;
 import org.interpss.threePhase.qsts.QstsGeneratorStateStore;
 import org.interpss.threePhase.qsts.QstsControlCurve;
+import org.interpss.threePhase.qsts.QstsGeneratorBaseState;
 import org.interpss.threePhase.qsts.QstsInverterAdapterStore;
+import org.interpss.threePhase.qsts.QstsLoadBaseState;
 import org.interpss.threePhase.qsts.QstsLoadStateStore;
 import org.interpss.threePhase.qsts.QstsStorageStateStore;
 import org.interpss.threePhase.powerflow.control.InverterControlData;
@@ -130,6 +132,15 @@ public class OpenDSSTimeSeriesData {
 
 	public QstsInverterAdapterStore getInverterAdapterStore() {
 		return inverterAdapterStore;
+	}
+
+	public void refreshNetworkBaseStates() {
+		for(QstsLoadBaseState state : loadStateStore.states()) {
+			state.refreshFromLoad();
+		}
+		for(QstsGeneratorBaseState state : generatorStateStore.states()) {
+			state.refreshFromGenerator();
+		}
 	}
 
 	public void addControlCurve(QstsControlCurve curve) {
