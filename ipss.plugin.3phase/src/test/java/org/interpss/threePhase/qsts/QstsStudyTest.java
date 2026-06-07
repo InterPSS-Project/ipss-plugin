@@ -210,6 +210,31 @@ public class QstsStudyTest {
 	}
 
 	@Test
+	void changedInverterSetpointTriggersPowerFlowControlIteration() throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+		FakePowerFlowAlgorithm powerFlow = new FakePowerFlowAlgorithm();
+		CountingInverterAdapter adapter = new CountingInverterAdapter(network.getBus("load").getPhaseGenList().get(0));
+		QstsInverterAdapterStore store = new QstsInverterAdapterStore();
+		store.register(adapter);
+		InverterControlData control = new InverterControlData("inv1", "pv1",
+				InverterControlData.ControlMode.WATTVAR, "", 40000.0,
+				-5000.0, 5000.0, 0.0, Double.NaN, 4000.0, Double.NaN, true);
+
+		QstsResult result = QstsStudy.from(network, schedule(1))
+				.setPowerFlowAlgorithm(powerFlow)
+				.setInverterAdapterStore(store)
+				.setInverterControls(List.of(control))
+				.setControlMode(QstsControlMode.STATIC)
+				.setMaxControlIterations(3)
+				.run();
+
+		assertTrue(result.isConverged());
+		assertEquals(2, powerFlow.solveCount);
+		assertEquals(2, adapter.applyCount);
+		assertEquals(4000.0, result.getStep(0).getInverterControls().get(0).getReactivePowerKvar(), 1.0e-12);
+	}
+
+	@Test
 	void inverterAdapterUsesSolvedBusVoltageToResolveVoltVarCurve() throws InterpssException {
 		Static3PNetwork network = twoBusNetwork();
 		InverterGenAdapter adapter = new InverterGenAdapter(network.getBus("load").getPhaseGenList().get(0))
