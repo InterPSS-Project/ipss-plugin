@@ -1,4 +1,4 @@
-package org.interpss.plugin.optadj;
+package org.interpss.plugin.optadj.texas2K;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;

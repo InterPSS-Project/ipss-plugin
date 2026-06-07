@@ -1,4 +1,4 @@
-package org.interpss.plugin.optadj;
+package org.interpss.plugin.optadj.ieee39;
 
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
