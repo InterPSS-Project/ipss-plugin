@@ -1,4 +1,4 @@
-# QSTS Study Support Plan with OpenDSS Adapter
+# QSTS Study Support Plan
 
 Detailed class-level work packages and verification gates are tracked in
 `qsts-implementation-todo.md`.
@@ -28,14 +28,19 @@ The OpenDSS parser and fixed-point power flow now have strong static-PF coverage
   with formula tests and a DSS-Python-backed low-voltage mini feeder.
 - Ckt7, Ckt24, IEEE8500, IEEE123, and several mini cases have comparison or QA
   fixtures.
-- `LoadShape` objects are currently ignored for static PF to avoid unsupported
-  parser noise.
+- `LoadShape` and OpenDSS time-series metadata are stored as sidecar adapter
+  data and converted into generic `QstsScheduleData`.
 - Load definitions already expose time-series hooks in real feeders, especially
   `daily=...`, `yearly=...`, `duty=...`, `status=variable`, `xfkVA`, and
   `AllocationFactor`.
-- Existing power-flow algorithms can be reused as the per-step solver, but there
-  is not yet a scheduler, parsed profile model, per-step state application, or
-  time-series result object.
+- The generic QSTS scheduler, parsed profile model, per-step state application,
+  result object, and CSV exporter are in place for the current v1 path.
+- Static QSTS and static PF now use the existing `Static3PNetwork` and generic
+  phase-device contracts. They must not require DStab bus, branch, load, or
+  generator objects.
+- The OpenDSS static parser can materialize full-feeder topology into the
+  existing static network model: source branch, lines, capacitors, transformers,
+  regulators, reactors, loads, PV, and storage.
 
 ## Scope
 
@@ -71,6 +76,10 @@ The OpenDSS parser and fixed-point power flow now have strong static-PF coverage
 - Do not mutate original nameplate values destructively; store base values and
   derive per-step effective values.
 - Treat the fixed-point solver as a reusable per-step engine.
+- Treat `IPhaseLoad` and `IPhaseGen` as the static PF/QSTS device contracts for
+  one-, two-, and three-phase devices.
+- Keep DStab classes on the dynamic-study side. Dynamic phase devices may
+  implement the common interfaces, but QSTS must not depend on DStab types.
 - Make DSS-Python the reference for time-series semantics, as with the device QA
   process.
 - Prefer small mini-cases before broad feeders.
@@ -78,6 +87,47 @@ The OpenDSS parser and fixed-point power flow now have strong static-PF coverage
   profile issues.
 - Treat OpenDSS and DSS-Extensions/DSS-Python as behavioral references for
   control sequencing, deadbands, delays, phase selection, and tap/state limits.
+
+## Architecture Snapshot
+
+The current architecture has four explicit boundaries:
+
+1. Static model boundary
+   - `Static3PNetwork`, `Static3PBus`, `Static3PBranch`, `Static3PLoad`, and
+     `Static3PGen` are the default steady-state model for QSTS and static PF.
+   - `IBus3Phase` and `IBranch3Phase` provide the network/branch contract used
+     by the fixed-point solver.
+   - `IPhaseLoad` and `IPhaseGen` provide phase-vector load/generator access.
+     `IPhaseLoad` includes both `getId()` and `setId(String)` so parser,
+     factory, and base-state code can work through the generic boundary.
+
+2. Dynamic model boundary
+   - `org.interpss.threePhase.dynamic` and
+     `org.interpss.threePhase.basic.dstab` remain dynamic-facing packages.
+   - DStab load/generator classes can implement `IDynamicPhaseLoad` and
+     `IDynamicPhaseGen`, but static QSTS/PF code should not cast to those
+     classes.
+
+3. Adapter boundary
+   - `org.interpss.threePhase.dataParser.opendss` parses DSS syntax and stores
+     OpenDSS-specific metadata.
+   - Static parser mode materializes devices into `Static3PNetwork` and
+     registers generic phase loads/generators plus sidecar schedule/control
+     metadata.
+   - OpenDSS behavior remains adapter-level behavior; generic QSTS classes do
+     not parse DSS syntax.
+
+4. Solver/control boundary
+   - `QstsStudy` owns the time-step loop, schedule state, warm-start behavior,
+     and result sampling.
+   - `DistributionPowerFlowAlgorithmImpl` solves one network state at a time.
+   - Control models evaluate solved state and schedule/apply device actions;
+     they should not be embedded in parser code or in base static PF import.
+
+This shape also supports the rapid-QSTS path: the base case, prepared schedule,
+state deltas, factorization cache, and solver strategy can be reused by exact
+PF, event-driven, sensitivity, and reduced-order methods without changing the
+OpenDSS adapter.
 
 ## Proposed Architecture
 
@@ -326,9 +376,10 @@ Per time step, the study loop should support:
 
 ### Load State Application
 
-Add generic QSTS load sidecar state first. QSTS should use `ILoad1Phase` and
-`ILoad3Phase` steady-state contracts; DStab load classes may implement those
-contracts, but QSTS core must not depend on DStab types. Each load should keep:
+Generic QSTS load sidecar state is based on `IPhaseLoad`. Single-, two-, and
+three-phase loads are represented as ABC phase vectors with inactive phases set
+to zero. Legacy `ILoad1Phase` and `ILoad3Phase` remain compatibility surfaces,
+but QSTS core must not depend on DStab load types. Each load should keep:
 
 - Base CP/CI/CZ or base three-phase load.
 - Parsed OpenDSS model code and voltage-response parameters.
@@ -346,6 +397,25 @@ Per-step effective load:
 - For `mult`, apply the same multiplier to P and Q.
 - Preserve OpenDSS voltage-response model behavior after the scheduled nominal
   P/Q is updated.
+
+### Generator, PV, and Storage State Application
+
+Static QSTS models PV, storage, and other steady-state DERs as generators through
+`IPhaseGen`. OpenDSS `PVSystem` and `Storage` details are preserved as adapter
+metadata that drives static P/Q setpoints and storage energy-state updates.
+Dynamic PV/DER model classes are not used in QSTS.
+
+The static DER path should keep:
+
+- Base per-phase P/Q injection and sign convention.
+- Rated kVA, available P, Q limits, PF limits, and cut-in/out flags.
+- PV irradiance/shape bindings and curve ids as adapter metadata.
+- Storage kW/kVA/kWh ratings, state of charge, reserve, efficiencies, and
+  charge/discharge limits.
+
+Inverter and storage controls are layered on top of these static generator
+states. They should update generator setpoints and energy state through generic
+QSTS state appliers, not through dynamic simulation models.
 
 ### Source and Global Options
 
@@ -393,6 +463,44 @@ this document or `opendss-feeder-benchmark-findings.md`.
     `SwtControl`, or another controller.
 - [ ] Create a source-note table mapping each OpenDSS source behavior to the
   intended InterPSS adaptation.
+
+## Implementation Progress Summary
+
+Completed or established:
+
+- Generic QSTS model and runner:
+  `QstsStudy`, `QstsStepContext`, `QstsStateApplier`, `QstsResult`,
+  `QstsStepResult`, schedule/profile objects, and CSV export.
+- OpenDSS adapter metadata:
+  `OpenDSSTimeSeriesData`, `OpenDSSLoadShape`, profile bindings, global options,
+  PV/storage metadata, CapControl metadata, and InvControl metadata.
+- Static phase-device boundary:
+  `IPhaseLoad`, `IPhaseGen`, static/dynamic specializations, static bus phase
+  views, and removal of plugin-local static adapters.
+- Static full-feeder import path:
+  existing `Static3PNetwork` is used for static parser mode; source, lines,
+  transformers, regulators, capacitors, reactors, loads, PV, and storage are
+  materialized without DStab objects.
+- Control foundation:
+  capacitor controls are implemented for the static PF path with DSS-Python
+  mini-case coverage; inverter and storage controls remain staged after their
+  static model foundations.
+- Verification:
+  QSTS focused suite passes; full OpenDSS parser/PF comparison suite has passed
+  with IEEE123, IEEE8500, Ckt7, Ckt24, IEEE13, and mini-case coverage recorded
+  in `qsts-implementation-todo.md`.
+
+Next high-value slices:
+
+1. Add the QSTS DSS-Python reference harness for multi-step load/PV/storage
+   cases so time-series semantics are tested step by step.
+2. Finish delayed control-queue operation-count parity for capacitor controls.
+3. Implement inverter control setpoint modes on top of the static `IPhaseGen`
+   capability model.
+4. Wire scheduled storage dispatch through `QstsStateApplier`, including energy
+   carryover between steps.
+5. Begin `QstsBaseCase`, `QstsPreparedSchedule`, and factorization-cache work
+   only after the exact QSTS reference path has stable mini-case coverage.
 
 ## Milestones
 
