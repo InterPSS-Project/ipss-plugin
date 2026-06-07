@@ -68,27 +68,25 @@ public class OpenDSSDataParser {
 	protected OpenDSSLoadShapeParser loadShapeParser = null;
 	private boolean regControlEnabled = true;
 	private double minLineSeriesImpedancePu = 1.0E-9;
-	private final boolean staticNetworkMode;
 
 
 	boolean debug = false;
 
     public OpenDSSDataParser(){
-	this(false);
+	this(true);
     }
 
-	public static OpenDSSDataParser forStaticNetwork() {
-		return new OpenDSSDataParser(true);
+	public static OpenDSSStaticDataParser forStaticNetwork() {
+		return new OpenDSSStaticDataParser();
 	}
 
-	private OpenDSSDataParser(boolean staticNetworkMode){
-	this.staticNetworkMode = staticNetworkMode;
-	//create and initialize the distribution network model
-	if(staticNetworkMode) {
-		this.staticNet = ThreePhaseObjectFactory.createStatic3PhaseNetwork();
-		this.staticNet.setNetworkType(NetworkType.DISTRIBUTION);
+	public static OpenDSSDynamicDataParser forDynamicNetwork() {
+		return new OpenDSSDynamicDataParser();
 	}
-	else if(this.distNet == null){
+
+	protected OpenDSSDataParser(boolean initializeDynamicNetwork){
+	//create and initialize the distribution network model
+	if(initializeDynamicNetwork && this.distNet == null){
 			 this.distNet = ThreePhaseObjectFactory.create3PhaseDStabNetwork();
 			 this.distNet.setNetworkType(NetworkType.DISTRIBUTION);
 		}
@@ -143,7 +141,7 @@ public class OpenDSSDataParser {
 	}
 
 	public boolean isStaticNetworkMode() {
-		return this.staticNetworkMode;
+		return false;
 	}
 
 	public Static3PNetwork getStaticNetwork() {
@@ -250,6 +248,10 @@ public class OpenDSSDataParser {
 
 	public void setRegControlEnabled(boolean regControlEnabled) {
 		this.regControlEnabled = regControlEnabled;
+	}
+
+	public boolean isRegControlEnabled() {
+		return this.regControlEnabled;
 	}
 
 	public boolean parseFeederData(String folderPath,String feederFile){
