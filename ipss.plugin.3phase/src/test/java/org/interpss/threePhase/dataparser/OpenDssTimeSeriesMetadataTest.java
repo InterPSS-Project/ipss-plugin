@@ -3,10 +3,14 @@ package org.interpss.threePhase.dataparser;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.interpss.threePhase.dataParser.opendss.OpenDSSDataParser;
+import org.interpss.threePhase.dataParser.opendss.OpenDSSDynamicDataParser;
+import org.interpss.threePhase.dataParser.opendss.OpenDSSStaticDataParser;
 import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSLoadShape;
 import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSProfileBinding;
 import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSProfileType;
@@ -25,6 +29,19 @@ import com.interpss.core.threephase.Static3PBus;
 import com.interpss.core.threephase.Static3PBranch;
 
 public class OpenDssTimeSeriesMetadataTest {
+
+	@Test
+	void parserFactoriesExposeSeparateStaticAndDynamicTypes() {
+		OpenDSSStaticDataParser staticParser = OpenDSSDataParser.forStaticNetwork();
+		OpenDSSDynamicDataParser dynamicParser = OpenDSSDataParser.forDynamicNetwork();
+
+		assertTrue(staticParser.isStaticNetworkMode());
+		assertFalse(dynamicParser.isStaticNetworkMode());
+		assertInstanceOf(OpenDSSStaticDataParser.class, staticParser);
+		assertInstanceOf(OpenDSSDynamicDataParser.class, dynamicParser);
+		assertThrows(UnsupportedOperationException.class, () -> staticParser.getDistNetwork());
+		assertNotNull(dynamicParser.getDistNetwork());
+	}
 
 	@Test
 	void parsesInlineLoadShapeMultipliers() {
