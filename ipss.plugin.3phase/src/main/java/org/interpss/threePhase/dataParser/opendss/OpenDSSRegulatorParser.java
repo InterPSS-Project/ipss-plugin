@@ -6,11 +6,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.powerflow.control.RegulatorControlData;
 import org.interpss.threePhase.powerflow.control.RegulatorControlData.PhaseSelection;
 
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.acsc.PhaseCode;
+import com.interpss.core.threephase.IBranch3Phase;
 
 public class OpenDSSRegulatorParser {
 
@@ -213,12 +214,12 @@ public class OpenDSSRegulatorParser {
 
 	public void applyFixedRegControlRatios() {
 		for (OpenDssRegControlData control : regControls) {
-			DStab3PBranch transformer = findTransformer(control.transformerName);
+			AclfBranch transformer = findTransformer(control.transformerName);
 			if (transformer == null) {
 				continue;
 			}
 			double controlledWindingVoltage = control.vreg * control.ptratio;
-			if (transformer.getPhaseCode() == PhaseCode.ABC) {
+			if (((IBranch3Phase) transformer).getPhaseCode() == PhaseCode.ABC) {
 				controlledWindingVoltage *= Math.sqrt(3.0);
 			}
 			if (control.winding == 1) {
@@ -240,11 +241,12 @@ public class OpenDSSRegulatorParser {
 		}
 		List<RegulatorControlData> controls = new ArrayList<>();
 		for(OpenDssRegControlData control : this.regControls) {
-			DStab3PBranch transformer = findTransformer(control.transformerName);
+			AclfBranch transformer = findTransformer(control.transformerName);
 			if(transformer == null) {
 				continue;
 			}
-			PhaseCode controlPhaseCode = control.ptPhaseCode == null ? transformer.getPhaseCode() : control.ptPhaseCode;
+			PhaseCode transformerPhaseCode = ((IBranch3Phase) transformer).getPhaseCode();
+			PhaseCode controlPhaseCode = control.ptPhaseCode == null ? transformerPhaseCode : control.ptPhaseCode;
 			RegulatorControlData data = new RegulatorControlData(
 					control.id.length() == 0 ? control.transformerName : control.id,
 					transformer.getName(),
@@ -270,19 +272,19 @@ public class OpenDSSRegulatorParser {
 		return controls;
 	}
 
-	private DStab3PBranch findTransformer(String transformerName) {
-		DStab3PBranch transformer = dataParser.getBranchByName(dataParser.getBusIdPrefix() + transformerName);
+	private AclfBranch findTransformer(String transformerName) {
+		AclfBranch transformer = dataParser.getThreePhaseBranchByName(dataParser.getBusIdPrefix() + transformerName);
 		if (transformer == null) {
-			transformer = dataParser.getBranchByName(transformerName);
+			transformer = dataParser.getThreePhaseBranchByName(transformerName);
 		}
 		return transformer;
 	}
 
-	private double transformerControlBaseLnVoltage(DStab3PBranch transformer, int winding) {
+	private double transformerControlBaseLnVoltage(AclfBranch transformer, int winding) {
 		double baseVoltage = winding == 1
 				? transformer.getFromBus().getBaseVoltage()
 				: transformer.getToBus().getBaseVoltage();
-		return transformer.getPhaseCode() == PhaseCode.ABC
+		return ((IBranch3Phase) transformer).getPhaseCode() == PhaseCode.ABC
 				? baseVoltage / Math.sqrt(3.0)
 				: baseVoltage;
 	}
