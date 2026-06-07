@@ -48,6 +48,7 @@ public class Texas2K_OptN1Scan_SsaResult_Sample {
 												.map(record -> record.getBranchId()).collect(Collectors.toSet());
 		double loadingThreshold = 100.0;
 		SsaResultContainer ssaResult = new AclfNetSsaHelper(dclfAlgo).contingencyScan(dclfContList, monitoredBranchIds, loadingThreshold);
+		ssaResult.printCaOverLimitInfo();
 		System.out.println("Total number of branches over limit before OptAdj: " + ssaResult.getCaOverLimitInfo().size());
 		
 		OptAdjResultContainer optAdjResult = new OptAdjResultContainer(ssaResult);
@@ -65,7 +66,7 @@ public class Texas2K_OptN1Scan_SsaResult_Sample {
 				ContingencyAnalysisMonad.of(dclfAlgo, contingency)
 					.ca(resultRec -> {
 						double loading = resultRec.calLoadingPercent();
-						if (loading > loadingThreshold) {
+						if (loading > loadingThreshold && monitoredBranchIds.contains(resultRec.aclfBranch.getId())) {
 							cntAfter.increment();
 							// add the over limit branch CA result rec to the SSA result container
 							DclfOutageBranch outageBranch = ((DclfBranchOutage)resultRec.contingency).getOutageEquip();
