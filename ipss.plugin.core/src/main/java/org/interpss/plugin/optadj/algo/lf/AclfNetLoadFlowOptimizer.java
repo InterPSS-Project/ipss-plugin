@@ -154,50 +154,62 @@ public class AclfNetLoadFlowOptimizer {
 
 	protected void buildSsaSectionConstrain(ContingencyAnalysisAlgorithm dclfAlgo, float[][] senMatrix,
 			Map<Integer, AclfGen> controlGenMap, GenStateOptimizer opt, double threshold,
-			SsaResultContainer result) {
-		if (result.getBaseOverLimitInfo().isEmpty()) {
+			SsaResultContainer ssaResult) {
+		if (ssaResult.getBaseOverLimitInfo().isEmpty()) {
 			return;
 		}
 		AclfNetwork net = (AclfNetwork) dclfAlgo.getNetwork();
-		result.getBaseOverLimitInfo().forEach(info -> {
+		ssaResult.getBaseOverLimitInfo().forEach(info -> {
 			AclfBranch branch = net.getAclfBranchNameLookupTable().get(info.getOverLimitBranchId());
 			if (branch == null) {
 				return;
 			}
 			int branchNo = (int) (branch.getNumber() - 1);
-			double[] genSenArray = new double[controlGenMap.size()];
-			double flowMw = Math.abs(info.getBaseFlowMW());
-			controlGenMap.forEach((no, gen) -> {
-				int busNo = (int) (gen.getParentBus().getNumber() - 1);
-				float sen = senMatrix[busNo][branchNo];
-				genSenArray[no] = info.getBaseFlowMW() > 0 ? sen : -sen;
-			});
-			if (Arrays.stream(genSenArray).anyMatch(sen -> Math.abs(sen) > SEN_THRESHOLD)) {
-				double limit = info.getLimitMW() * threshold / 100;
-				opt.adConstraint(new SectionConstrainData(flowMw, Relationship.LEQ, limit, genSenArray));
-			}
+			addBranchSectionConstraint(senMatrix, controlGenMap, opt, branchNo, info.getBaseFlowMW() > 0,
+					Math.abs(info.getBaseFlowMW()), info.getLimitMW(), threshold);
 		});
 	}
 
 	protected void buildSectionConstrain(ContingencyAnalysisAlgorithm dclfAlgo, float[][] senMatrix,
 			Map<Integer, AclfGen> controlGenMap, GenStateOptimizer opt, double threshold) {
 		AclfNetwork net = (AclfNetwork) dclfAlgo.getNetwork();
-		net.getBranchList().stream().filter(branch -> branch.isActive()).forEach(branch -> {
+		net.getBranchList().stream().filter(AclfBranch::isActive).forEach(branch -> {
 			int branchNo = (int) (branch.getNumber() - 1);
-			double[] genSenArray = new double[controlGenMap.size()];
 			DclfAlgoBranch dclfBranch = dclfAlgo.getDclfAlgoBranch(branch.getId());
-
-			controlGenMap.forEach((no, gen) -> {
-				int busNo = (int) (gen.getParentBus().getNumber() - 1);
-				float sen = senMatrix[busNo][branchNo];
-				genSenArray[no] = dclfBranch.getDclfFlow() > 0 ? sen : -sen;
-			});
-			if (Arrays.stream(genSenArray).anyMatch(sen -> Math.abs(sen) > SEN_THRESHOLD)) {
-				double limit = dclfBranch.getBranch().getRatingMvaA() * threshold / 100;
-				double flowMw = Math.abs(dclfBranch.getDclfFlow() * 100);
-				opt.adConstraint(new SectionConstrainData(flowMw, Relationship.LEQ, limit, genSenArray));
-			}
+			addBranchSectionConstraint(senMatrix, controlGenMap, opt, branchNo, dclfBranch.getDclfFlow() > 0,
+					Math.abs(dclfBranch.getDclfFlow() * 100), dclfBranch.getBranch().getRatingMvaA(), threshold);
 		});
+	}
+
+	protected double[] buildGenSenArray(float[][] senMatrix, Map<Integer, AclfGen> controlGenMap, int branchNo,
+			boolean flowPositive) {
+		double[] genSenArray = new double[controlGenMap.size()];
+		controlGenMap.forEach((no, gen) -> {
+			int busNo = (int) (gen.getParentBus().getNumber() - 1);
+			float sen = senMatrix[busNo][branchNo];
+			genSenArray[no] = flowPositive ? sen : -sen;
+		});
+		return genSenArray;
+	}
+
+	protected boolean hasSignificantSensitivity(double[] genSenArray) {
+		return Arrays.stream(genSenArray).anyMatch(sen -> Math.abs(sen) > SEN_THRESHOLD);
+	}
+
+	protected void addSectionConstraint(GenStateOptimizer opt, double flowMw, double ratingMw, double threshold,
+			double[] genSenArray) {
+		if (!hasSignificantSensitivity(genSenArray)) {
+			return;
+		}
+		double limit = ratingMw * threshold / 100;
+		opt.adConstraint(new SectionConstrainData(flowMw, Relationship.LEQ, limit, genSenArray));
+	}
+
+	protected void addBranchSectionConstraint(float[][] senMatrix, Map<Integer, AclfGen> controlGenMap,
+			GenStateOptimizer opt, int branchNo, boolean flowPositive, double flowMw, double ratingMw,
+			double threshold) {
+		double[] genSenArray = buildGenSenArray(senMatrix, controlGenMap, branchNo, flowPositive);
+		addSectionConstraint(opt, flowMw, ratingMw, threshold, genSenArray);
 	}
 
 	protected void buildGenConstrain(Map<Integer, AclfGen> genMap, GenStateOptimizer opt, AclfNetwork net) {
