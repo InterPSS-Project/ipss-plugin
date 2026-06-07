@@ -1,0 +1,275 @@
+package org.interpss.threePhase.qsts;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.math3.complex.Complex;
+import org.interpss.numeric.datatype.Complex3x1;
+import org.interpss.numeric.datatype.Unit.UnitType;
+import org.interpss.threePhase.powerflow.DistributionPFMethod;
+import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
+import org.interpss.threePhase.powerflow.control.CapacitorControlData;
+import org.interpss.threePhase.powerflow.control.RegulatorControlData;
+import org.junit.jupiter.api.Test;
+
+import com.interpss.common.exp.InterpssException;
+import com.interpss.core.aclf.AclfGenCode;
+import com.interpss.core.aclf.AclfLoadCode;
+import com.interpss.core.threephase.IBus3Phase;
+import com.interpss.core.threephase.IPhaseGen;
+import com.interpss.core.threephase.IPhaseLoad;
+import com.interpss.core.threephase.INetwork3Phase;
+import com.interpss.core.threephase.Static3PBus;
+import com.interpss.core.threephase.Static3PGen;
+import com.interpss.core.threephase.Static3PLoad;
+import com.interpss.core.threephase.Static3PNetwork;
+import com.interpss.core.threephase.Static3PhaseFactory;
+
+public class QstsStudyTest {
+	@Test
+	void runnerAppliesLoadAndGeneratorSchedulesSequentially() throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+		QstsScheduleData schedule = schedule(3);
+		FakePowerFlowAlgorithm powerFlow = new FakePowerFlowAlgorithm();
+
+		QstsResult result = QstsStudy.from(network, schedule)
+				.setPowerFlowAlgorithm(powerFlow)
+				.setNumberOfSteps(3)
+				.run();
+
+		assertTrue(result.isConverged());
+		assertEquals(3, result.getStepResults().size());
+		assertEquals(3, powerFlow.solveCount);
+
+		QstsStepResult step0 = result.getStep(0);
+		assertEquals(0.05, power(step0.getLoadPowers(), "load1", "A").getP(), 1.0e-12);
+		assertEquals(0.01, power(step0.getLoadPowers(), "load1", "A").getQ(), 1.0e-12);
+		assertEquals(0.03, power(step0.getGeneratorPowers(), "pv1", "A").getP(), 1.0e-12);
+
+		QstsStepResult step2 = result.getStep(2);
+		assertEquals(0.15, power(step2.getLoadPowers(), "load1", "A").getP(), 1.0e-12);
+		assertEquals(0.03, power(step2.getLoadPowers(), "load1", "A").getQ(), 1.0e-12);
+		assertEquals(0.0, power(step2.getGeneratorPowers(), "pv1", "A").getP(), 1.0e-12);
+		assertNull(step2.getFailureReason());
+	}
+
+	@Test
+	void failedStepIncludesStepModeHourAndReason() throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+		FakePowerFlowAlgorithm powerFlow = new FakePowerFlowAlgorithm();
+		powerFlow.failOnSolve = 2;
+
+		QstsResult result = QstsStudy.from(network, schedule(4))
+				.setPowerFlowAlgorithm(powerFlow)
+				.setNumberOfSteps(4)
+				.setStepSizeHours(0.25)
+				.run();
+
+		assertFalse(result.isConverged());
+		assertEquals(2, result.getStepResults().size());
+		QstsStepResult failed = result.getStep(1);
+		assertFalse(failed.isConverged());
+		assertEquals(QstsMode.DAILY, failed.getMode());
+		assertEquals(0.25, failed.getHour(), 1.0e-12);
+		assertTrue(failed.getFailureReason().contains("step 1"));
+		assertTrue(failed.getFailureReason().contains("DAILY"));
+		assertTrue(failed.getFailureReason().contains("0.25"));
+	}
+
+	@Test
+	void staticBusExposesPhaseDeviceViewsWithoutDStabCasts() throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+		IBus3Phase bus = network.getBus("load");
+
+		IPhaseLoad load = bus.getPhaseLoadList().get(0);
+		IPhaseGen generator = bus.getPhaseGenList().get(0);
+
+		assertEquals("load1", load.getId());
+		assertEquals("pv1", generator.getId());
+		assertEquals(0.1, load.getInit3PhaseLoad().a_0.getReal(), 1.0e-12);
+		assertEquals(0.1, generator.getPower3Phase(UnitType.PU).a_0.getReal(), 1.0e-12);
+	}
+
+	private static QstsDevicePowerSample power(List<QstsDevicePowerSample> samples, String deviceId, String phase) {
+		return samples.stream()
+				.filter(sample -> sample.getDeviceId().equals(deviceId) && sample.getPhase().equals(phase))
+				.findFirst()
+				.orElseThrow();
+	}
+
+	private static QstsScheduleData schedule(int steps) {
+		QstsProfileRegistry registry = new QstsProfileRegistry();
+		registry.add(new QstsProfile("load_day", null, new double[] {0.5, 1.0, 1.5, 2.0},
+				null, null));
+		registry.add(new QstsProfile("pv_day", null, new double[] {0.3, 0.8, 0.0, 0.2},
+				null, null));
+		return new QstsScheduleData(registry, List.of(
+				new QstsProfileBinding("load", "load1", Map.of("daily", "load_day"),
+						QstsDeviceStatus.VARIABLE),
+				new QstsProfileBinding("generator", "pv1", Map.of("daily", "pv_day"),
+						QstsDeviceStatus.VARIABLE)),
+				new QstsGlobalOptions("daily", steps, 1.0, 1.0, "off", 0, 0.0));
+	}
+
+	private static Static3PNetwork twoBusNetwork() throws InterpssException {
+		Static3PNetwork network = Static3PhaseFactory.eINSTANCE.createStatic3PNetwork();
+		network.setBaseKva(100000.0);
+		Static3PBus source = Static3PhaseFactory.eINSTANCE.createStatic3PBus();
+		source.setId("source");
+		network.addBus(source);
+		source.setBaseVoltage(12470.0);
+		source.setGenCode(AclfGenCode.SWING);
+		Static3PBus loadBus = Static3PhaseFactory.eINSTANCE.createStatic3PBus();
+		loadBus.setId("load");
+		network.addBus(loadBus);
+		loadBus.setBaseVoltage(12470.0);
+		loadBus.setGenCode(AclfGenCode.GEN_PQ);
+
+		Static3PLoad load = Static3PhaseFactory.eINSTANCE.createStatic3PLoad();
+		load.setId("load1");
+		load.setCode(AclfLoadCode.CONST_P);
+		load.set3PhaseLoad(new Complex3x1(new Complex(0.1, 0.02),
+				new Complex(0.1, 0.02), new Complex(0.1, 0.02)));
+		loadBus.getContributeLoadList().add(load);
+
+		Static3PGen generator = Static3PhaseFactory.eINSTANCE.createStatic3PGen();
+		generator.setId("pv1");
+		generator.setCode(AclfGenCode.GEN_PQ);
+		generator.setMvaBase(100.0);
+		generator.setGen(new Complex(0.1, 0.0));
+		generator.setPower3Phase(new Complex3x1(new Complex(0.1, 0.0),
+				new Complex(0.1, 0.0), new Complex(0.1, 0.0)), UnitType.PU);
+		loadBus.getContributeGenList().add(generator);
+		return network;
+	}
+
+	private static class FakePowerFlowAlgorithm implements DistributionPowerFlowAlgorithm {
+		private INetwork3Phase network;
+		private int solveCount;
+		private int failOnSolve = -1;
+		private int maxIteration = 100;
+		private double tolerance = 1.0e-6;
+		private DistributionPFMethod method = DistributionPFMethod.Fixed_Point;
+
+		@Override
+		public INetwork3Phase getNetwork() {
+			return network;
+		}
+
+		@Override
+		public void setNetwork(INetwork3Phase net) {
+			this.network = net;
+		}
+
+		@Override
+		public boolean orderDistributionBuses(boolean radialOnly) {
+			return true;
+		}
+
+		@Override
+		public boolean initBusVoltages() {
+			return true;
+		}
+
+		@Override
+		public boolean powerflow() {
+			solveCount++;
+			for(IBus3Phase bus : network.getThreePhaseBusList()) {
+				bus.set3PhaseVotlages(new Complex3x1(new Complex(1.0, 0.0),
+						new Complex(-0.5, -0.8660254037844386),
+						new Complex(-0.5, 0.8660254037844386)));
+			}
+			return solveCount != failOnSolve;
+		}
+
+		@Override
+		public void setRegulatorControls(List<RegulatorControlData> controls) {
+		}
+
+		@Override
+		public List<RegulatorControlData> getRegulatorControls() {
+			return List.of();
+		}
+
+		@Override
+		public void setRegulatorControlEnabled(boolean enabled) {
+		}
+
+		@Override
+		public boolean isRegulatorControlEnabled() {
+			return false;
+		}
+
+		@Override
+		public void setCapacitorControls(List<CapacitorControlData> controls) {
+		}
+
+		@Override
+		public List<CapacitorControlData> getCapacitorControls() {
+			return List.of();
+		}
+
+		@Override
+		public void setCapacitorControlEnabled(boolean enabled) {
+		}
+
+		@Override
+		public boolean isCapacitorControlEnabled() {
+			return false;
+		}
+
+		@Override
+		public DistributionPFMethod getPFMethod() {
+			return method;
+		}
+
+		@Override
+		public void setPFMethod(DistributionPFMethod method) {
+			this.method = method;
+		}
+
+		@Override
+		public void setTolerance(double tolerance) {
+			this.tolerance = tolerance;
+		}
+
+		@Override
+		public double getTolerance() {
+			return tolerance;
+		}
+
+		@Override
+		public void setMaxIteration(int maxIterNum) {
+			this.maxIteration = maxIterNum;
+		}
+
+		@Override
+		public int getMaxIteration() {
+			return maxIteration;
+		}
+
+		@Override
+		public int getIterationCount() {
+			return 3;
+		}
+
+		@Override
+		public boolean isFixedPointFallbackUsed() {
+			return false;
+		}
+
+		@Override
+		public void setInitBusVoltageEnabled(boolean enableInitBus3PhaseVolts) {
+		}
+
+		@Override
+		public boolean isInitBusVoltageEnabled() {
+			return true;
+		}
+	}
+}
