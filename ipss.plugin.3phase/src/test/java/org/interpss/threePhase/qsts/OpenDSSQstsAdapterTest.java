@@ -2,10 +2,12 @@ package org.interpss.threePhase.qsts;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.threePhase.dataParser.opendss.OpenDSSDataParser;
+import org.interpss.threePhase.dataParser.opendss.OpenDSSStaticDataParser;
 import org.interpss.threePhase.qsts.opendss.OpenDSSQstsStudyFactory;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +17,7 @@ import com.interpss.core.threephase.Static3PBus;
 public class OpenDSSQstsAdapterTest {
 	@Test
 	void factoryUsesStaticNetworkAndKeepsOpenDssMetadataAtAdapterBoundary() {
-		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
+		OpenDSSStaticDataParser parser = OpenDSSDataParser.forStaticNetwork();
 		parser.getStaticNetwork().setBaseKva(100000.0);
 		parser.getLoadShapeParser().parseLoadShape("New LoadShape.pvday npts=2 mult=(0.25 0.75)",
 				".", "Master.dss", 1);
@@ -33,6 +35,7 @@ public class OpenDSSQstsAdapterTest {
 		study.getStateApplier().apply(context);
 
 		assertFalse(parser.hasDistNetwork());
+		assertThrows(UnsupportedOperationException.class, () -> parser.getDistNetwork());
 		Static3PBus bus = parser.getStaticNetwork().getBus("bus1");
 		IPhaseGen generator = bus.getPhaseGenList().get(0);
 		Complex3x1 power = generator.getPower3Phase(UnitType.PU);
