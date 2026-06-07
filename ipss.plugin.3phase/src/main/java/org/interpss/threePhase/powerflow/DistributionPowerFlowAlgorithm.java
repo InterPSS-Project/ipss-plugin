@@ -73,11 +73,27 @@ public interface DistributionPowerFlowAlgorithm {
 
 	public boolean isFixedPointFallbackUsed();
 
+	public default int getFixedPointFallbackCount() {
+		return 0;
+	}
+
 	public void setFixedPointYMatrixCacheEnabled(boolean enabled);
 
 	public boolean isFixedPointYMatrixCacheEnabled();
 
 	public void clearFixedPointYMatrixCache();
+
+	public default int getFixedPointYMatrixSymbolicFactorizationCount() {
+		return 0;
+	}
+
+	public default int getFixedPointYMatrixNumericFactorizationCount() {
+		return 0;
+	}
+
+	public default int getFixedPointYMatrixValueUpdateCount() {
+		return 0;
+	}
 
 	public void  setInitBusVoltageEnabled(boolean enableInitBus3PhaseVolts);
 

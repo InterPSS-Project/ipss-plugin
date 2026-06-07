@@ -11,21 +11,20 @@ import org.interpss.threePhase.powerflow.control.InverterControlData;
 import org.interpss.threePhase.powerflow.control.InverterControlModel;
 import org.interpss.threePhase.powerflow.control.InverterControlModel.InverterControlResult;
 
-import com.interpss.core.threephase.IPhaseGen;
-
 public class InverterGenAdapter {
-	private final IPhaseGen generator;
+	private final com.interpss.core.threephase.IPhaseGen generator;
 	private final InverterControlModel controlModel;
 	private final Map<String, QstsControlCurve> curvesById = new LinkedHashMap<>();
 	private InverterCapabilityData capabilityData = InverterCapabilityData.none();
 	private double terminalVoltagePu = Double.NaN;
 	private boolean cutInState = true;
 
-	public InverterGenAdapter(IPhaseGen generator) {
+	public InverterGenAdapter(com.interpss.core.threephase.IPhaseGen generator) {
 		this(generator, new InverterControlModel());
 	}
 
-	public InverterGenAdapter(IPhaseGen generator, InverterControlModel controlModel) {
+	public InverterGenAdapter(com.interpss.core.threephase.IPhaseGen generator,
+			InverterControlModel controlModel) {
 		if(generator == null) {
 			throw new IllegalArgumentException("Inverter adapter requires IPhaseGen");
 		}
@@ -33,7 +32,7 @@ public class InverterGenAdapter {
 		this.controlModel = controlModel == null ? new InverterControlModel() : controlModel;
 	}
 
-	public IPhaseGen getGenerator() {
+	public com.interpss.core.threephase.IPhaseGen getGenerator() {
 		return generator;
 	}
 

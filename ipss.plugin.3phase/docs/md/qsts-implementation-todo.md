@@ -480,6 +480,49 @@ Create:
   - Enables compensation only for supported device/control types.
   - Defines convergence, voltage-error, delta-size, and fallback-to-rebuild
     rules.
+  - First slice implemented as `QstsControlCompensationPolicy`: fixed-point
+    numeric `Ybus` cache reuse is allowed for capacitor and inverter controls
+    because they enter the current-injection/RHS path. Regulator tap controls
+    now prefer numeric `Ybus` rebuild with cached symbolic factorization because
+    tap changes alter transformer/regulator admittance while preserving the
+    sparse structure.
+  - Regulator numeric rebuild now reuses the same sparse matrix object where
+    possible: downstream regulator tap changes apply `Ynew - Yold` deltas to
+    the existing `Yff/Yft/Ytf/Ytt` matrix blocks and then rerun numeric LU with
+    the cached symbolic table. If a regulator touches the swing bus boundary,
+    the implementation conservatively rebuilds the matrix because the
+    swing-boundary RHS transformation also changes.
+  - Direct regulator admittance-delta current compensation remains a diagnostic
+    and optional policy path, but the default QSTS regulator path avoids it for
+    stiff near-zero-impedance regulators where the compensation RHS can become
+    numerically large.
+  - Optional direct regulator compensation now supports under-relaxation via
+    `ipss.qsts.regulatorCompensationDamping` with default `0.25`. IEEE123 still
+    needs the guarded fallback once and later compensated solves require high
+    fixed-point iteration counts, so damping is retained as an experiment rather
+    than promoted to the default tap-control path.
+  - Virtual series-resistance padding for direct regulator compensation was
+    also tested with `ipss.qsts.regulatorCompensationSeriesRPadPu`. The
+    corrected experiment adds the padded regulator admittance to the cached base
+    `Ybus` and compensates the RHS from that padded base back to the physical
+    tap-state admittance. This preserves the fresh-`Ybus` solution when the
+    fallback guard is used, but IEEE123 showed that practical padding values
+    from `0.01` down to `1.0E-5` pu per phase caused repeated fallback
+    (`fallbackCount=8`, `numericFactors=16`). A very small `1.0E-6` pu padding
+    behaved like the unpadded damped-compensation path (`fallbackCount=1`,
+    `numericFactors=3`) with max voltage magnitude error about `6.0E-8` pu
+    versus fresh rebuild. However, the IEEE123 timing comparison showed that
+    this direct compensation path is slower than rebuild/update methods because
+    its fixed-point iteration count is much higher:
+    - full rebuild: `96 ms`, `symbolicFactors=8`, `numericFactors=8`;
+    - symbolic reuse with new matrix: `32 ms`, `symbolicFactors=1`,
+      `numericFactors=8`;
+    - symbolic reuse with in-place value update: `20 ms`, `symbolicFactors=1`,
+      `numericFactors=8`, `valueUpdates=5`;
+    - direct compensation with `1.0E-6` pu virtual padding: `124 ms`,
+      `symbolicFactors=1`, `numericFactors=3`, `fallbackCount=1`.
+    Conclusion: padding is retained only as diagnostic instrumentation and is
+    not the default regulator acceleration method.
 - [ ] `QstsCapacitorCompensationModel`
   - First supported compensation model.
   - Represents capacitor/reactor on/off changes as shunt current injections
@@ -541,7 +584,17 @@ Performance rules:
 - [ ] Reuse `Ybus` and its factorization across batches when only load/source/
   injection values change.
 - [ ] Prefer compensation-current RHS updates for supported capacitor/reactor
-  and regulator-tap controls, with explicit fallback to matrix rebuild.
+  controls, with explicit fallback to matrix rebuild.
+- [x] Use symbolic factorization reuse plus in-place sparse-matrix value updates
+  as the default regulator-tap QSTS acceleration method:
+  - tap changes preserve the sparse structure, so the symbolic table is reused;
+  - downstream regulator tap changes update only affected `Yff/Yft/Ytf/Ytt`
+    matrix blocks in place and rerun numeric LU;
+  - regulators touching the swing-bus boundary rebuild/reapply the
+    swing-boundary transformation because the moved `Yns * Vs` RHS term changes;
+  - direct regulator RHS compensation, damping, and virtual impedance padding
+    remain comparison/diagnostic paths until they meet convergence and accuracy
+    gates without fallback.
 - [ ] Track factorization invalidation explicitly:
   - topology switching;
   - branch impedance changes;
@@ -577,9 +630,25 @@ Verification:
   - tap changes either use validated compensation or invalidate only when the
     implemented tap model changes `Ybus`.
 - [ ] Add compensation accuracy tests:
-  - capacitor/reactor compensation matches full `Ybus` rebuild on a mini feeder;
-  - regulator tap compensation matches full `Ybus` rebuild on a regulator mini
-    feeder before it is enabled for broad feeders;
+  - [x] capacitor compensation matches full `Ybus` rebuild on OpenDSS
+    cap-control mini feeders;
+  - [x] capacitor compensation matches full `Ybus` rebuild on the larger Ckt24
+    feeder with static voltage controls attached to existing capacitor banks;
+  - [x] regulator tap symbolic-factorization reuse matches full numeric `Ybus`
+    rebuild on the IEEE 13 daily QSTS regulator-control case;
+  - [x] IEEE123 per-phase regulator QSTS policy matches full numeric `Ybus`
+    rebuild while reusing symbolic factorization for repeated tap solves;
+  - [x] IEEE13 and IEEE123 regulator tests assert in-place sparse-matrix value
+    updates are used for downstream regulator tap changes;
+  - [x] direct regulator compensation includes a damping recurrence test and an
+    IEEE123 guarded-fallback smoke test;
+  - [x] virtual series-resistance padding experiment is documented and covered
+    by IEEE123 sweep output; it is accurate only with the fallback guard and is
+    not selected as the default QSTS regulator path;
+  - [x] larger feeder smoke coverage passes after in-place sparse-matrix updates:
+    IEEE123, Ckt7, Ckt24, Ckt24 capacitor comparison, IEEE123 regulator
+    symbolic update, IEEE123 damped-regulator compensation guard, and IEEE8500
+    controls-off smoke cases.
   - unsupported control actions force rebuild/refactor and report the reason.
 
 ## Slide 7: DSS-Python Reference Harness
