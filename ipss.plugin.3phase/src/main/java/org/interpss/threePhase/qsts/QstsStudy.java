@@ -207,8 +207,19 @@ public class QstsStudy {
 	private List<QstsDevicePowerSample> sampleLoadPowers(QstsStepContext context) {
 		List<QstsDevicePowerSample> samples = new ArrayList<>();
 		for(IBus3Phase bus : network.getThreePhaseBusList()) {
+			Map<Object, Boolean> sampled = new IdentityHashMap<>();
 			for(IPhaseLoad load : bus.getPhaseLoadList()) {
 				addLoadSample(samples, context, load);
+				sampled.put(load, Boolean.TRUE);
+			}
+			if(bus instanceof BaseAclfBus) {
+				for(Object loadObject : ((BaseAclfBus<?, ?>) bus).getContributeLoadList()) {
+					if(sampled.containsKey(loadObject)
+							|| !(loadObject instanceof IPhaseLoad)) {
+						continue;
+					}
+					addLoadSample(samples, context, (IPhaseLoad) loadObject);
+				}
 			}
 		}
 		return samples;
