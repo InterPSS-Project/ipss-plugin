@@ -1016,6 +1016,9 @@ public class OpenDSSDataParser {
 	 }
 
 	 boolean no_error = convertBranchZYMatrixToPU()&&convertLoadCapacitorToPU();
+	 if(no_error) {
+		 timeSeriesData.refreshNetworkBaseStates();
+	 }
 
 	 return no_error;
      }
