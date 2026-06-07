@@ -47,6 +47,9 @@ public class QstsStudyTest {
 		assertEquals(3, powerFlow.solveCount);
 
 		QstsStepResult step0 = result.getStep(0);
+		assertEquals(3, result.getStep(0).getLoadPowers().stream()
+				.filter(sample -> sample.getDeviceId().equals("load1"))
+				.count());
 		assertEquals(0.05, power(step0.getLoadPowers(), "load1", "A").getP(), 1.0e-12);
 		assertEquals(0.01, power(step0.getLoadPowers(), "load1", "A").getQ(), 1.0e-12);
 		assertEquals(0.03, power(step0.getGeneratorPowers(), "pv1", "A").getP(), 1.0e-12);
