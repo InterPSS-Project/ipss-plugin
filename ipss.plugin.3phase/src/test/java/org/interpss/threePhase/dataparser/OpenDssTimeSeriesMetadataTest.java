@@ -45,7 +45,7 @@ public class OpenDssTimeSeriesMetadataTest {
 
 	@Test
 	void parsesInlineLoadShapeMultipliers() {
-		OpenDSSDataParser parser = new OpenDSSDataParser();
+		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
 
 		assertTrue(parser.getLoadShapeParser().parseLoadShape(
 				"New LoadShape.daily npts=3 interval=1 mult=(0.5 1.0 1.5)",
@@ -61,7 +61,7 @@ public class OpenDssTimeSeriesMetadataTest {
 
 	@Test
 	void parsesIndependentPAndQMultipliers() {
-		OpenDSSDataParser parser = new OpenDSSDataParser();
+		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
 
 		assertTrue(parser.getLoadShapeParser().parseLoadShape(
 				"New LoadShape.pq npts=2 sinterval=900 hour=(0 0.25) pmult=(0.8 1.1) qmult=(0.7 1.2)",
@@ -77,7 +77,7 @@ public class OpenDssTimeSeriesMetadataTest {
 
 	@Test
 	void parsesCsvLoadShape() {
-		OpenDSSDataParser parser = new OpenDSSDataParser();
+		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
 
 		assertTrue(parser.getLoadShapeParser().parseLoadShape(
 				"New LoadShape.csv npts=2 csvfile=qsts/loadshape-pq.txt",
@@ -92,7 +92,7 @@ public class OpenDssTimeSeriesMetadataTest {
 
 	@Test
 	void recordsLoadShapeDiagnosticsWithoutFailingStaticImport() {
-		OpenDSSDataParser parser = new OpenDSSDataParser();
+		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
 
 		assertTrue(parser.getLoadShapeParser().parseLoadShape(
 				"New LoadShape.bad npts=4 interval=1 mult=(1.0 1.1)",
@@ -105,7 +105,7 @@ public class OpenDssTimeSeriesMetadataTest {
 
 	@Test
 	void capturesLoadProfileBindingsWithoutChangingStaticLoad() throws InterpssException {
-		OpenDSSDataParser parser = new OpenDSSDataParser();
+		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
 
 		parser.getLoadParser().parseLoadData(
 				"New Load.load1 bus1=bus1.1.2.3 phases=3 conn=wye model=1 kv=12.47 kw=90 kvar=30 daily=daily status=variable");
@@ -114,8 +114,8 @@ public class OpenDssTimeSeriesMetadataTest {
 		assertNotNull(binding);
 		assertEquals("daily", binding.getShapeId(OpenDSSProfileType.DAILY));
 		assertEquals(QstsDeviceStatus.VARIABLE, binding.getStatus());
-		assertEquals(1, parser.getDistNetwork().getBus("bus1").getThreePhaseLoadList().size());
-		assertEquals(30.0, parser.getDistNetwork().getBus("bus1").getThreePhaseLoadList().get(0)
+		assertEquals(1, parser.getStaticNetwork().getBus("bus1").getPhaseLoadList().size());
+		assertEquals(30.0, parser.getStaticNetwork().getBus("bus1").getPhaseLoadList().get(0)
 				.getInit3PhaseLoad().a_0.getReal(), 1.0e-12);
 	}
 
@@ -228,12 +228,12 @@ public class OpenDssTimeSeriesMetadataTest {
 		assertTrue(feeder.getZabc().absMax() > 0.0);
 		Static3PBus capBus = parser.getStaticNetwork().getBus("capbus");
 		assertEquals(2, capBus.getPhaseLoadList().size());
-		assertEquals(0.03, capBus.getPhaseLoadList().get(0).getInit3PhaseLoad().a_0.getReal(), 1.0e-12);
+		assertEquals(0.09, capBus.getPhaseLoadList().get(0).getInit3PhaseLoad().a_0.getReal(), 1.0e-12);
 	}
 
 	@Test
 	void convertsOpenDssMetadataToGenericQstsSchedule() throws InterpssException {
-		OpenDSSDataParser parser = new OpenDSSDataParser();
+		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
 		parser.getLoadShapeParser().parseLoadShape(
 				"New LoadShape.daily npts=2 minterval=30 mult=(0.5 1.5)",
 				"testData/feeder", "Master.dss", 14);

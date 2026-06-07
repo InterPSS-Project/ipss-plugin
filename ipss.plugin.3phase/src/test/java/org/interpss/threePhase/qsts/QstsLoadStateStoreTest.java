@@ -140,7 +140,7 @@ public class QstsLoadStateStoreTest {
 
 	@Test
 	void openDssParserRegistersLoadBaseState() throws InterpssException {
-		OpenDSSDataParser parser = new OpenDSSDataParser();
+		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
 		parser.getLoadParser().parseLoadData(
 				"New Load.load1 bus1=bus1.1.2.3 phases=3 conn=wye model=1 kv=12.47 kw=90 kvar=30 daily=daily");
 
@@ -151,7 +151,7 @@ public class QstsLoadStateStoreTest {
 	}
 
 	private static class TestLoad1Phase extends MinimalEObjectImpl.Container implements ILoad1Phase {
-		private final String id;
+		private String id;
 		private AclfLoadCode code = AclfLoadCode.CONST_P;
 		private Complex loadCP = Complex.ZERO;
 		private Complex loadCI = Complex.ZERO;
@@ -167,6 +167,11 @@ public class QstsLoadStateStoreTest {
 		@Override
 		public String getId() {
 			return id;
+		}
+
+		@Override
+		public void setId(String id) {
+			this.id = id;
 		}
 
 		@Override
@@ -246,7 +251,7 @@ public class QstsLoadStateStoreTest {
 	}
 
 	private static class TestPhaseLoad implements IPhaseLoad {
-		private final String id;
+		private String id;
 		private PhaseCode phaseCode;
 		private AclfLoadCode code = AclfLoadCode.CONST_P;
 		private LoadConnectionType connectionType = LoadConnectionType.THREE_PHASE_WYE;
@@ -262,6 +267,11 @@ public class QstsLoadStateStoreTest {
 		@Override
 		public String getId() {
 			return id;
+		}
+
+		@Override
+		public void setId(String id) {
+			this.id = id;
 		}
 
 		@Override

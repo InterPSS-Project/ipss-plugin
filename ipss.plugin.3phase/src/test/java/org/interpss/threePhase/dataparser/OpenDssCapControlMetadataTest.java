@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 public class OpenDssCapControlMetadataTest {
 	@Test
 	void parsesOpenDssVoltageCapControlMetadata() {
-		OpenDSSDataParser parser = new OpenDSSDataParser();
+		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
 
 		parser.getCapacitorParser().parseCapControlData(
 				"New capcontrol.CP-NR-613 capacitor=CP-NR-613 element=Line.175007 "
@@ -33,7 +33,7 @@ public class OpenDssCapControlMetadataTest {
 
 	@Test
 	void parsesOpenDssKvarCapControlMetadataWithVoltageOverride() {
-		OpenDSSDataParser parser = new OpenDSSDataParser();
+		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
 
 		parser.getCapacitorParser().parseCapControlData(
 				"New CapControl.CAPBank2A_Ctrl Capacitor=CAPBank2A element=line.CAP_1A terminal=1 "

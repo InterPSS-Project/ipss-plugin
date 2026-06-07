@@ -1,4 +1,4 @@
-# QSTS Implementation To-Do with OpenDSS Adapter
+# QSTS Implementation To-Do
 
 This to-do list expands `qsts-study-support-plan.md` into
 implementation slices. Each slice is intended to be small enough to land with
@@ -32,25 +32,30 @@ Existing classes to build around:
 - `org.interpss.threePhase.dataParser.opendss.OpenDSSDataParser`
   - Owns feeder file traversal, redirects, object dispatch, source bus creation,
     and parser instances.
-  - Already consumes `LoadShape` logical lines but intentionally does not parse
-    or store them.
+  - Parses `LoadShape` logical lines into sidecar OpenDSS time-series metadata.
   - Should expose a new read-only time-series metadata object, but should not run
     studies.
+  - Static parser mode builds on the existing `Static3PNetwork`; QSTS must not
+    use DStab network classes for static studies.
 - `org.interpss.threePhase.dataParser.opendss.OpenDSSLoadParser`
-  - Creates `DStab1PLoad` and `DStab3PLoad` instances.
+  - Creates static phase loads in static parser mode and dynamic-compatible
+    loads only for dynamic parser mode.
   - Already keeps `ParsedLoad` sidecar data for allocation-factor updates.
-  - Should be extended to capture base load values and profile bindings.
+  - Captures base load values and profile bindings for QSTS through
+    `IPhaseLoad` and sidecar schedule metadata.
 - `org.interpss.threePhase.dataParser.opendss.OpenDSSRegulatorParser`
-  - Currently maps regulator data into fixed transformer tap behavior.
-  - Should later emit QSTS control metadata without changing static import
-    behavior.
+  - Maps regulator data into transformer/regulator branch state and emits
+    QSTS control metadata without changing static import behavior when controls
+    are off.
 - `org.interpss.threePhase.dataParser.opendss.OpenDSSCapacitorParser`
   - Creates static capacitor representation.
-  - Should later emit capacitor state/control metadata for QSTS.
+  - Emits capacitor state/control metadata for QSTS.
 - `org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm`
   and `org.interpss.threePhase.powerflow.impl.DistributionPowerFlowAlgorithmImpl`
   - Existing per-step solver.
   - Should remain a solver, not a scheduler.
+  - Static PF Y-matrix construction uses generic three-phase bus/branch
+    contracts and must not require DStab-only load or generator classes.
 - `org.interpss.threePhase.util.ThreePhaseObjectFactory`
   - Existing construction helper for three-phase network objects and algorithms.
   - Add factory helpers only if the codebase already uses factory entry points
@@ -61,6 +66,8 @@ New packages should be narrow:
 - `org.interpss.threePhase.qsts`
   - Generic study runner, step context, state applier, result model, schedules,
     device state abstractions, and CSV exporter.
+  - Depends on `INetwork3Phase`, `IBus3Phase`, `IBranch3Phase`, `IPhaseLoad`,
+    and `IPhaseGen`; no DStab imports in generic QSTS classes.
 - `org.interpss.threePhase.qsts.control`
   - Generic control queue, control action, and control loop abstractions.
 - `org.interpss.threePhase.dataParser.opendss.timeseries`
@@ -69,6 +76,19 @@ New packages should be narrow:
 - `org.interpss.threePhase.qsts.opendss`
   - Optional adapter package if conversion from OpenDSS metadata to generic QSTS
     schedules grows beyond simple factory methods.
+
+Architecture status:
+
+- Static/QSTS/PF uses the existing `Static3PNetwork`; do not create a parallel
+  static network model.
+- `IPhaseLoad` and `IPhaseGen` are the shared phase-vector device contracts for
+  single-, two-, and three-phase devices.
+- `IPhaseLoad` exposes both `getId()` and `setId(String)` so parser/factory
+  code can stay on the generic phase-load boundary.
+- `IStaticPhaseLoad`/`IStaticPhaseGen` specialize static devices;
+  `IDynamicPhaseLoad`/`IDynamicPhaseGen` specialize dynamic devices.
+- OpenDSS-specific metadata is adapter sidecar data. The QSTS engine consumes
+  generic schedules, base states, controls, and phase-device interfaces.
 
 ## Slide 1: Scope Lock and Reference Notes
 
@@ -1155,11 +1175,16 @@ Migration to do:
   capacitor devices.
   - Static parser mode now creates source buses, source impedance branches,
     ordinary lines, and capacitor shunt loads on the existing `Static3PNetwork`.
-- [ ] Complete remaining full-feeder static parser topology migration for
+- [x] Complete remaining full-feeder static parser topology migration for
   transformer and regulator branch/control objects.
-  - Legacy full-feeder parser mode still builds `DStabNetwork3Phase`; do not
-    solve this by adding static views to DStab buses. Continue migrating
-    topology devices into the existing static network model directly.
+  - Static parser mode now creates transformer and regulator branches directly
+    on the existing `Static3PNetwork`, with phase-domain `Zabc` kept aligned
+    with the generic branch series impedance.
+  - Static parser mode also supports reactor branches and source-voltage-base
+    propagation without relying on DStab bus lists.
+  - Static load conversion now handles per-phase base conversion plus
+    single-phase wye and delta load vectors through the static phase-load
+    contract.
 - [x] Introduce factory helpers for static phase loads/generators if the static
   EMF factory cannot directly create the required phase-device types.
 - [x] Remove QSTS dependence on `StaticPhaseLoadAdapter` and
@@ -1170,13 +1195,22 @@ Migration to do:
 - [x] Sweep QSTS, control, and CSV exporter code for legacy `ILoad1Phase`,
   `ILoad3Phase`, `IGen1Phase`, and `IGen3Phase` usage; keep those only in
   adapter/parser compatibility code.
-- [ ] Ensure static PF Y-matrix construction never needs DStab-only generator or
+- [x] Ensure static PF Y-matrix construction never needs DStab-only generator or
   load classes.
-- [ ] Document which packages are static-facing versus dynamic-facing:
+- [x] Document which packages are static-facing versus dynamic-facing:
   - static/QSTS/PF: `IPhaseLoad`, `IPhaseGen`, `IStaticPhaseLoad`,
     `IStaticPhaseGen`;
   - dynamic: `IDynamicPhaseLoad`, `IDynamicPhaseGen`, DStab models;
   - parser adapters: OpenDSS metadata to generic static phase-device contracts.
+  - `org.interpss.threePhase.qsts` and `org.interpss.threePhase.powerflow`
+    are static-facing and should take `INetwork3Phase`, `IBus3Phase`,
+    `IBranch3Phase`, `IPhaseLoad`, and `IPhaseGen`.
+  - `org.interpss.threePhase.dynamic` and `org.interpss.threePhase.basic.dstab`
+    remain dynamic-facing; DStab classes can implement dynamic phase-device
+    specializations but are not QSTS/PF requirements.
+  - `org.interpss.threePhase.dataParser.opendss` is an adapter boundary: it may
+    preserve OpenDSS metadata, but static parser mode must materialize devices
+    onto `Static3PNetwork` and generic phase-device interfaces.
 
 Relationship with existing code:
 
@@ -1199,10 +1233,14 @@ Verification:
   static network and reachable through `IPhaseGen`/`IPhaseLoad` static views.
 - [x] Parser mini test proves OpenDSS circuit source, line, load, capacitor, and
   cap-control metadata can be parsed into `Static3PNetwork` without DStab buses.
-- [ ] Static PF regression proves IEEE123, IEEE8500, Ckt7, and Ckt24 still
+- [x] Static PF regression proves IEEE123, IEEE8500, Ckt7, and Ckt24 still
   converge after static boundary migration.
 - [x] QSTS regression proves no generic QSTS class imports DStab generator/load
   classes.
+- [x] QSTS default PF regression proves a static network can run through the
+  real fixed-point solver without DStab bus, branch, load, or generator objects.
+  - `mvn -pl ipss.plugin.3phase clean test -Dtest="QstsStudyTest" -Dsurefire.failIfNoSpecifiedTests=false`
+    passed: 4 tests, 0 failures, 0 errors.
 
 ## Cross-Slice Verification Checklist
 
@@ -1230,9 +1268,25 @@ mvn -pl ipss.plugin.3phase test
 Verification evidence to capture in PRs or development notes:
 
 - [ ] Classes created/updated in the slice.
-- [ ] Static PF regression command and result.
-- [ ] Mini DSS-Python comparison command and worst-error summary.
-- [ ] Any feeder smoke command and convergence/error summary.
+- [x] Static PF regression command and result.
+  - `mvn -pl ipss.plugin.3phase clean test -Dtest="OpenDssParserPowerFlowComparisonTest" -Dsurefire.failIfNoSpecifiedTests=false`
+    passed: 49 tests, 0 failures, 0 errors, 24 skipped.
+  - Representative DSS-Python voltage comparisons:
+    IEEE123 max `|V|` error `0.000150 pu`, max angle error `0.000953 deg`;
+    IEEE13 max `|V|` error `0.001067 pu`, max angle error `0.009514 deg`;
+    IEEE8500 max `|V|` error `0.004407 pu`, max angle error `0.219505 deg`;
+    Ckt7 max `|V|` error `0.004709 pu`, max angle error `0.169313 deg`.
+- [x] Mini DSS-Python comparison command and worst-error summary.
+  - `mvn -pl ipss.plugin.3phase clean test -Dtest="OpenDssCapControlMiniComparisonTest" -Dsurefire.failIfNoSpecifiedTests=false`
+    passed: 1 test, 0 failures; cap-control state and kvar comparisons match
+    the DSS-Python reference cases.
+  - The parser comparison suite also includes the load-model mini case:
+    max `|V|` error `0.000060 pu`, max angle error `0.000019 deg`.
+- [x] Any feeder smoke command and convergence/error summary.
+  - `mvn -pl ipss.plugin.3phase clean test -Dtest="OpenDssParserPowerFlowComparisonTest#ieee8500YMatrixComponentAudit" -Dsurefire.failIfNoSpecifiedTests=false`
+    passed and forms the static IEEE8500 Y-matrix component audit.
+  - Ckt24 static parser group passed with source, busbar, line-code, triplex,
+    transformer, and Thevenin-source checks.
 - [ ] Known unsupported OpenDSS behavior and current diagnostic output.
 
 ## Recommended First Pull Request Boundary
