@@ -1640,13 +1640,12 @@ public class OpenDssParserPowerFlowComparisonTest {
 
 	@Test
 	public void centerTappedServiceTransformerMiniCaseConverges() throws IOException {
-		OpenDSSDataParser parser = new OpenDSSDataParser();
-		assertTrue(parser.parseFeederData("testData/feeder/CenterTapMini", "Master.dss"));
-		assertTrue(parser.calcVoltageBases());
-		assertTrue(parser.convertActualValuesToPU(1.0));
+		OpenDSSStaticDataParser parser = parseStaticOpenDss("testData/feeder/CenterTapMini", "Master.dss",
+				true);
 
-		DStabNetwork3Phase distNet = parser.getDistNetwork();
-		DStab3PBranch transformer = parser.getBranchByName("service");
+		Static3PNetwork distNet = parser.getStaticNetwork();
+		Static3PBranch transformer = findStaticBranchByName(distNet, "service");
+		assertNotNull(transformer, "Missing center-tapped service transformer");
 		assertTrue(transformer.hasExplicitYabc(), "Center-tapped transformer should use explicit Y blocks");
 		assertEquals(208.0, distNet.getBus("secondary").getBaseVoltage(), 2.0);
 
@@ -1721,13 +1720,11 @@ public class OpenDssParserPowerFlowComparisonTest {
 
 	private static void assertCenterTappedMiniCaseConverges(String feederFolder, String referenceResource,
 			String comparisonLabel, String failureMessage) throws IOException {
-		OpenDSSDataParser parser = new OpenDSSDataParser();
-		assertTrue(parser.parseFeederData(feederFolder, "Master.dss"));
-		assertTrue(parser.calcVoltageBases());
-		assertTrue(parser.convertActualValuesToPU(1.0));
+		OpenDSSStaticDataParser parser = parseStaticOpenDss(feederFolder, "Master.dss", true);
 
-		DStabNetwork3Phase distNet = parser.getDistNetwork();
-		DStab3PBranch transformer = parser.getBranchByName("service");
+		Static3PNetwork distNet = parser.getStaticNetwork();
+		Static3PBranch transformer = findStaticBranchByName(distNet, "service");
+		assertNotNull(transformer, "Missing center-tapped service transformer");
 		assertTrue(transformer.hasExplicitYabc(), "Center-tapped transformer should use explicit Y blocks");
 		assertEquals(208.0, distNet.getBus("secondary").getBaseVoltage(), 2.0);
 
@@ -1750,13 +1747,11 @@ public class OpenDssParserPowerFlowComparisonTest {
 
 	private static void assertCenterTappedLowVoltageMiniCaseConverges(String feederFolder, String referenceResource,
 			String comparisonLabel, String failureMessage) throws IOException {
-		OpenDSSDataParser parser = new OpenDSSDataParser();
-		assertTrue(parser.parseFeederData(feederFolder, "Master.dss"));
-		assertTrue(parser.calcVoltageBases());
-		assertTrue(parser.convertActualValuesToPU(1.0));
+		OpenDSSStaticDataParser parser = parseStaticOpenDss(feederFolder, "Master.dss", true);
 
-		DStabNetwork3Phase distNet = parser.getDistNetwork();
-		DStab3PBranch transformer = parser.getBranchByName("service");
+		Static3PNetwork distNet = parser.getStaticNetwork();
+		Static3PBranch transformer = findStaticBranchByName(distNet, "service");
+		assertNotNull(transformer, "Missing center-tapped service transformer");
 		assertTrue(transformer.hasExplicitYabc(), "Center-tapped transformer should use explicit Y blocks");
 		assertEquals(208.0, distNet.getBus("secondary").getBaseVoltage(), 2.0);
 
