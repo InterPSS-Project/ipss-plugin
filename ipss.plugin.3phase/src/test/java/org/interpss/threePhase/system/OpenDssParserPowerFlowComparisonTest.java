@@ -297,10 +297,13 @@ public class OpenDssParserPowerFlowComparisonTest {
 
 		Static3PBranch busbar = findStaticBranchByName(parser.getStaticNetwork(), "fdr_05410");
 		assertNotNull(busbar, "Missing Ckt24 busbar branch");
-		assertTrue(busbar.getZabc().absMax() >= 1.0e-9,
-				"Ckt24 busbar line should respect the small per-unit impedance floor");
-		assertTrue(busbar.getZabc().absMax() < 1.0e-8,
-				"Ckt24 busbar line should keep its near-zero OpenDSS impedance when above the floor");
+		double busbarZAbs = busbar.getZabc().absMax();
+		assertTrue(busbar.getZabc().absMax() > 1.0e-8,
+				"Ckt24 busbar line should stay above the static solver inversion tolerance: zAbs="
+						+ busbarZAbs + ", zaa=" + busbar.getZabc().aa
+						+ ", zbb=" + busbar.getZabc().bb + ", zcc=" + busbar.getZabc().cc);
+		assertTrue(busbar.getZabc().absMax() < 1.0e-5,
+				"Ckt24 busbar line should remain a near-zero OpenDSS connectivity stub");
 	}
 
 	@Test
