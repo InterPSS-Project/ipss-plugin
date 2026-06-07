@@ -25,8 +25,8 @@ public class OptAdjResultContainer extends SsaResultContainer {
 		this.optAdjThreshold = optAdjThreshold;
 	}
 
-	public OptAdjResultContainer(SsaResultContainer ssaResult, double optAdjThreshold) {
-		this(optAdjThreshold);
+	public OptAdjResultContainer(SsaResultContainer ssaResult) {
+		this(100.0	);
 		this.setBaseLoadingThreshold(ssaResult.getBaseLoadingThreshold());
 		this.setCaLoadingThreshold(ssaResult.getCaLoadingThreshold());
 		this.setBaseOverLimitInfo(ssaResult.getBaseOverLimitInfo());
@@ -35,6 +35,10 @@ public class OptAdjResultContainer extends SsaResultContainer {
 
 	public double getOptAdjThreshold() {
 		return optAdjThreshold;
+	}
+
+	public void setOptAdjThreshold(double optAdjThreshold) {
+		this.optAdjThreshold = optAdjThreshold;
 	}
 
 	public Map<String, GenAdjustResult> getOPtAdjResults() {
