@@ -15,7 +15,10 @@ public final class OpenDSSQstsStudyFactory {
 		if(parser == null) {
 			throw new IllegalArgumentException("OpenDSS QSTS study requires a parser");
 		}
-		return from(parser.getDistNetwork(), parser.getTimeSeriesData())
+		if(!parser.isStaticNetworkMode()) {
+			throw new IllegalArgumentException("OpenDSS QSTS studies require OpenDSSDataParser.forStaticNetwork()");
+		}
+		return from(parser.getStaticNetwork(), parser.getTimeSeriesData())
 				.setRegulatorControls(parser.getRegulatorControls())
 				.setCapacitorControls(parser.getCapacitorControls());
 	}
