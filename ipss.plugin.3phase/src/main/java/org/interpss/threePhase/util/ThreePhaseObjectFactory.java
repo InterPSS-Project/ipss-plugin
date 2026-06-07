@@ -53,6 +53,7 @@ public class ThreePhaseObjectFactory {
 	public static Static3PBus createStatic3PBus(String busId, Static3PNetwork net) {
 		Static3PBus bus = Static3PhaseFactory.eINSTANCE.createStatic3PBus();
 		bus.setId(busId);
+		bus.setStatus(true);
 		net.addBus(bus);
 		return bus;
 	}
@@ -72,6 +73,7 @@ public class ThreePhaseObjectFactory {
 	public static Static3PBranch createStatic3PBranch(String fromBusId, String toBusId, String cirId,
 			Static3PNetwork net) throws InterpssException {
 		Static3PBranch branch = Static3PhaseFactory.eINSTANCE.createStatic3PBranch();
+		branch.setStatus(true);
 		net.addBranch(branch, fromBusId, toBusId, cirId);
 		return branch;
 	}

@@ -216,6 +216,22 @@ public class OpenDssTimeSeriesMetadataTest {
 	}
 
 	@Test
+	void staticParserConvertsTopologyAndLoadsToPuWithoutDynamicNetwork() {
+		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
+		parser.parseFeederData("testData/feeder/OpenDSSCapControlMini", "HighVoltageOpen.dss");
+
+		assertTrue(parser.convertActualValuesToPU(10.0));
+
+		assertFalse(parser.hasDistNetwork());
+		assertEquals(10000.0, parser.getStaticNetwork().getBaseKva(), 1.0e-12);
+		Static3PBranch feeder = parser.getStaticNetwork().getBranchList().get(0);
+		assertTrue(feeder.getZabc().absMax() > 0.0);
+		Static3PBus capBus = parser.getStaticNetwork().getBus("capbus");
+		assertEquals(2, capBus.getPhaseLoadList().size());
+		assertEquals(0.03, capBus.getPhaseLoadList().get(0).getInit3PhaseLoad().a_0.getReal(), 1.0e-12);
+	}
+
+	@Test
 	void convertsOpenDssMetadataToGenericQstsSchedule() throws InterpssException {
 		OpenDSSDataParser parser = new OpenDSSDataParser();
 		parser.getLoadShapeParser().parseLoadShape(

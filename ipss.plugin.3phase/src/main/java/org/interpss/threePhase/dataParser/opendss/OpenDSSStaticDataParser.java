@@ -54,13 +54,4 @@ public class OpenDSSStaticDataParser extends OpenDSSDataParser {
 		return initNetwork();
 	}
 
-	@Override
-	public boolean convertActualValuesToPU(double mvaBase) {
-		if(mvaBase > 0.0) {
-			this.getStaticNetwork().setBaseKva(mvaBase * 1000.0);
-			return true;
-		}
-		ODMLogger.getLogger().severe("The input mvabase <= 0. Static OpenDSS parser base is unchanged");
-		return false;
-	}
 }
