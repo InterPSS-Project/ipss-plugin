@@ -468,6 +468,27 @@ Create:
     right-hand-side updates.
   - Supports fast per-step PF iterations when only injections/load multipliers
     change.
+- [ ] `QstsControlCompensationModel`
+  - Generic compensation hook that contributes equivalent terminal current
+    injections for control-state deltas while keeping the base `Ybus`
+    factorization reusable.
+  - Uses `Icomp(V, state) = DeltaY(state, baseState) * Vterminal`.
+- [ ] `QstsAdmittanceDelta`
+  - Device-local admittance-delta value object with affected terminals, phases,
+    base state, proposed state, and current-injection evaluation.
+- [ ] `QstsCompensationPolicy`
+  - Enables compensation only for supported device/control types.
+  - Defines convergence, voltage-error, delta-size, and fallback-to-rebuild
+    rules.
+- [ ] `QstsCapacitorCompensationModel`
+  - First supported compensation model.
+  - Represents capacitor/reactor on/off changes as shunt current injections
+    instead of rebuilding `Ybus`.
+- [ ] `QstsRegulatorTapCompensationModel`
+  - Guarded second compensation model.
+  - Computes terminal current injection from transformer/regulator tap
+    admittance deltas.
+  - Must run in comparison mode against full `Ybus` rebuild before broad use.
 - [ ] `QstsStudyWindow`
   - Window definition: start step, number of steps, initial state policy, and
     output target.
@@ -488,6 +509,10 @@ Update:
   - Reuse `QstsYBusFactorizationCache` for all batches whose `Ybus` is unchanged.
   - Rebuild numeric factorization only when an admittance-changing delta is
     applied.
+  - For supported control actions, apply equivalent compensation currents before
+    invalidating the factorization.
+  - Record per-step solve path: factorization reused, compensation used, or
+    `Ybus` rebuilt/refactored.
 - [ ] `QstsResult`
   - Support chunked or streaming result collection so yearly studies do not keep
     every bus/phase object in memory.
@@ -515,6 +540,8 @@ Performance rules:
   unchanged.
 - [ ] Reuse `Ybus` and its factorization across batches when only load/source/
   injection values change.
+- [ ] Prefer compensation-current RHS updates for supported capacitor/reactor
+  and regulator-tap controls, with explicit fallback to matrix rebuild.
 - [ ] Track factorization invalidation explicitly:
   - topology switching;
   - branch impedance changes;
@@ -545,8 +572,15 @@ Verification:
 - [ ] Add a factorization-cache test:
   - load multiplier changes reuse the same factorization;
   - DER/source injection changes reuse the same factorization;
-  - capacitor/reactor admittance changes invalidate the factorization;
-  - tap changes invalidate only when the implemented tap model changes `Ybus`.
+  - capacitor/reactor admittance changes either use compensation or invalidate
+    the factorization according to `QstsCompensationPolicy`;
+  - tap changes either use validated compensation or invalidate only when the
+    implemented tap model changes `Ybus`.
+- [ ] Add compensation accuracy tests:
+  - capacitor/reactor compensation matches full `Ybus` rebuild on a mini feeder;
+  - regulator tap compensation matches full `Ybus` rebuild on a regulator mini
+    feeder before it is enabled for broad feeders;
+  - unsupported control actions force rebuild/refactor and report the reason.
 
 ## Slide 7: DSS-Python Reference Harness
 
@@ -679,6 +713,18 @@ Create:
     OpenDSS busbar branch `subxfmr_lsb->05410(1)` is protected by the parser
     line-impedance floor so static fixed-point setup no longer sees zero Yii
     diagonal elements.
+  - [ ] Ckt24 low-load scheduled yearly window, controls off first, then
+    control-enabled after compensation support is available:
+    - profile files in `testData/feeder/Ckt24`:
+      `LS_PhaseA.txt`, `LS_PhaseB.txt`, `LS_PhaseC.txt`,
+      `LS_ThreePhase.txt`, and `Other_Bus_Load.txt`;
+    - individual allocated-load shapes reach their minimum near hour 6540,
+      while `Other_Bus_Load` reaches its minimum near hour 6987;
+    - selected low-variation windows from the existing profiles:
+      24-hour window `startIndex=6601` / OpenDSS `hour=6602`, and
+      168-hour window `startIndex=6573` / OpenDSS `hour=6574`;
+    - use these windows to exercise larger voltage movement than the repeated
+      state smoke while staying within the real Ckt24 loadshape data.
   - [x] IEEE8500 short repeated-state window, controls off, enabled as a runtime
     sentinel before promoting to a full 24-step smoke.
   - Optional 168-step Ckt7/Ckt24 run disabled or tagged until runtime is
@@ -723,8 +769,8 @@ Verification:
   - Static DSS-Python comparison gate also passed for IEEE123, IEEE8500, and
     Ckt7 after adding the smoke tests.
 - [ ] DSS-Python reference windows are added in this order: Ckt7 first 24 yearly
-  steps, Ckt24 scheduled window, IEEE8500 selected window, then control-enabled
-  windows.
+  steps, Ckt24 low-load scheduled window, IEEE8500 selected window, then
+  control-enabled windows.
 - [ ] Worst errors are stable across repeated runs.
 - [ ] Any hard assertion uses a tolerance justified by mini-case and static
   feeder residual evidence.
