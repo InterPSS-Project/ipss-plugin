@@ -39,6 +39,9 @@ public class OpenDSSLoadShapeParser {
 			double[] qMult = null;
 			double[] hour = parseArray(properties.get("hour"));
 			String csvFile = firstPresent(properties, "csvfile", "file");
+			if(csvFile == null || csvFile.isEmpty()) {
+				csvFile = fileReference(firstPresent(properties, "pmult", "mult"));
+			}
 			if(csvFile != null) {
 				CsvShape csvShape = readCsvShape(folderPath, csvFile, sourceFile, sourceLine, diagnostics);
 				if(csvShape != null) {
@@ -53,7 +56,7 @@ public class OpenDSSLoadShapeParser {
 			if(qMult == null) {
 				qMult = parseArray(properties.get("qmult"));
 			}
-			if(qMult.length == 0) {
+			if(qMult == null || qMult.length == 0) {
 				qMult = pMult.clone();
 			}
 			validateShape(shapeId, npts, hour, pMult, qMult, diagnostics, sourceFile, sourceLine);
@@ -138,7 +141,7 @@ public class OpenDSSLoadShapeParser {
 		if(properties.containsKey("minterval")) {
 			return parseDouble(properties.get("minterval"), 0.0) / 60.0;
 		}
-		return parseDouble(properties.get("interval"), 1.0);
+		return parseNumericExpression(properties.get("interval"), 1.0);
 	}
 
 	private static int parseInteger(String value, int defaultValue) {
@@ -153,6 +156,41 @@ public class OpenDSSLoadShapeParser {
 			return defaultValue;
 		}
 		return Double.valueOf(stripTrailingComma(value.trim()));
+	}
+
+	private static double parseNumericExpression(String value, double defaultValue) {
+		if(value == null || value.trim().isEmpty()) {
+			return defaultValue;
+		}
+		String normalized = unquote(value);
+		if((normalized.startsWith("(") && normalized.endsWith(")"))
+				|| (normalized.startsWith("[") && normalized.endsWith("]"))) {
+			normalized = normalized.substring(1, normalized.length() - 1).trim();
+		}
+		String[] parts = normalized.split("[,\\s]+");
+		if(parts.length == 3 && "/".equals(parts[2])) {
+			return parseDouble(parts[0], defaultValue) / parseDouble(parts[1], 1.0);
+		}
+		if(parts.length == 3 && "*".equals(parts[2])) {
+			return parseDouble(parts[0], defaultValue) * parseDouble(parts[1], 1.0);
+		}
+		return parseDouble(normalized, defaultValue);
+	}
+
+	private static String fileReference(String value) {
+		if(value == null || value.trim().isEmpty()) {
+			return null;
+		}
+		String normalized = unquote(value);
+		if((normalized.startsWith("(") && normalized.endsWith(")"))
+				|| (normalized.startsWith("[") && normalized.endsWith("]"))) {
+			normalized = normalized.substring(1, normalized.length() - 1).trim();
+		}
+		String lower = normalized.toLowerCase(Locale.ROOT);
+		if(!lower.startsWith("file=")) {
+			return null;
+		}
+		return unquote(normalized.substring("file=".length()));
 	}
 
 	private static double[] parseArray(String value) {
