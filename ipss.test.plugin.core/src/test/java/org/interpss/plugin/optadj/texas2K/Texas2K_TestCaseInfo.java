@@ -1,4 +1,4 @@
-package org.interpss.plugin.optadj;
+package org.interpss.plugin.optadj.texas2K;
 
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 
