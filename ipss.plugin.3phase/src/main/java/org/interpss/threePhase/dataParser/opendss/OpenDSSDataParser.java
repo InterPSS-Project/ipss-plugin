@@ -25,6 +25,7 @@ import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSLoadShapeParser;
+import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSTemperatureShapeParser;
 import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSTimeSeriesData;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.powerflow.control.CapacitorControlData;
@@ -65,9 +66,11 @@ public class OpenDSSDataParser {
 	protected OpenDSSLineCodeParser lineCodeParser = null;
 	protected OpenDSSLineParser lineParser = null;
 	protected OpenDSSLoadParser loadParser = null;
+	protected OpenDSSGeneratorParser generatorParser = null;
 	protected OpenDSSPVSystemParser pvSystemParser = null;
 	protected OpenDSSStorageParser storageParser = null;
 	protected OpenDSSInvControlParser invControlParser = null;
+	protected OpenDSSXYCurveParser xyCurveParser = null;
 	protected OpenDSSTransformerParser xfrParser = null;
 	protected OpenDSSCapacitorParser capParser = null;
 	protected OpenDSSRegulatorParser regulatorParser = null;
@@ -75,6 +78,7 @@ public class OpenDSSDataParser {
 	protected OpenDSSLineGeometryParser lineGeometryParser = null;
 	protected OpenDSSTimeSeriesData timeSeriesData = null;
 	protected OpenDSSLoadShapeParser loadShapeParser = null;
+	protected OpenDSSTemperatureShapeParser temperatureShapeParser = null;
 	private boolean regControlEnabled = true;
 	private double minLineSeriesImpedancePu = 1.0E-9;
 
@@ -103,9 +107,11 @@ public class OpenDSSDataParser {
 	this.lineCodeParser = new  OpenDSSLineCodeParser (this);
 	this.lineParser = new  OpenDSSLineParser (this);
 	this.loadParser = new  OpenDSSLoadParser (this);
+	this.generatorParser = new OpenDSSGeneratorParser(this);
 	this.pvSystemParser = new OpenDSSPVSystemParser(this);
 	this.storageParser = new OpenDSSStorageParser(this);
 	this.invControlParser = new OpenDSSInvControlParser(this);
+	this.xyCurveParser = new OpenDSSXYCurveParser(this);
 	this.capParser =  new  OpenDSSCapacitorParser (this);
 	this.xfrParser =  new  OpenDSSTransformerParser (this);
 	//TODO tentatively, treat regulator as a fixed tap transformer
@@ -114,6 +120,7 @@ public class OpenDSSDataParser {
 	this.lineGeometryParser = new OpenDSSLineGeometryParser(this);
 	this.timeSeriesData = new OpenDSSTimeSeriesData();
 	this.loadShapeParser = new OpenDSSLoadShapeParser(this.timeSeriesData);
+	this.temperatureShapeParser = new OpenDSSTemperatureShapeParser(this.timeSeriesData);
     }
 
     public void setDebugMode(boolean enableDebug){
@@ -208,6 +215,10 @@ public class OpenDSSDataParser {
 		return loadParser;
 	}
 
+	public OpenDSSGeneratorParser getGeneratorParser() {
+		return generatorParser;
+	}
+
 	public OpenDSSPVSystemParser getPVSystemParser() {
 		return pvSystemParser;
 	}
@@ -220,12 +231,20 @@ public class OpenDSSDataParser {
 		return invControlParser;
 	}
 
+	public OpenDSSXYCurveParser getXYCurveParser() {
+		return xyCurveParser;
+	}
+
 	public OpenDSSTimeSeriesData getTimeSeriesData() {
 		return timeSeriesData;
 	}
 
 	public OpenDSSLoadShapeParser getLoadShapeParser() {
 		return loadShapeParser;
+	}
+
+	public OpenDSSTemperatureShapeParser getTemperatureShapeParser() {
+		return temperatureShapeParser;
 	}
 
 	public OpenDSSTransformerParser getXfrParser() {
@@ -402,6 +421,21 @@ public class OpenDSSDataParser {
 						no_error = no_error && this.loadShapeParser.parseLoadShape(loadShapeLine.logicalLine,
 								folderPath, feederFile, lineCnt);
 					}
+					else if(tempAry[1].contains("TShape.") ||tempAry[1].contains("tshape.")){
+						LogicalLine temperatureShapeLine = collectLogicalContinuationLine(str, reader);
+						lineCnt = lineCnt + temperatureShapeLine.consumedLineCount;
+						nextLine = temperatureShapeLine.nextLine;
+						useLastLineString = nextLine != null;
+						no_error = no_error && this.temperatureShapeParser.parseTemperatureShape(
+								temperatureShapeLine.logicalLine, feederFile, lineCnt);
+					}
+					else if(tempAry[1].contains("XYCurve.") ||tempAry[1].contains("xycurve.")){
+						LogicalLine xyCurveLine = collectLogicalContinuationLine(str, reader);
+						lineCnt = lineCnt + xyCurveLine.consumedLineCount;
+						nextLine = xyCurveLine.nextLine;
+						useLastLineString = nextLine != null;
+						no_error = no_error && this.xyCurveParser.parseXYCurve(xyCurveLine.logicalLine);
+					}
 					else if(tempAry[1].contains("Load.") ||tempAry[1].contains("load.")){
 						String loadStr = str;
 						String[] nextStrAry = getNextDataInputString(reader);
@@ -423,6 +457,14 @@ public class OpenDSSDataParser {
 							}
 						}
 						this.loadParser.parseLoadData(loadStr);
+					}
+					else if(tempAry[1].contains("Generator.") ||tempAry[1].contains("generator.")){
+						LogicalLine generatorLine = collectLogicalContinuationLine(str, reader);
+						lineCnt = lineCnt + generatorLine.consumedLineCount;
+						nextLine = generatorLine.nextLine;
+						useLastLineString = nextLine != null;
+						no_error = no_error && this.generatorParser.parseGeneratorData(generatorLine.logicalLine,
+								feederFile, lineCnt);
 					}
 					else if(tempAry[1].contains("PVSystem.") ||tempAry[1].contains("pvsystem.")){
 						LogicalLine pvSystemLine = collectLogicalContinuationLine(str, reader);
@@ -460,6 +502,9 @@ public class OpenDSSDataParser {
 				}
 				else if(str.toLowerCase().startsWith("transformer.") && str.toLowerCase().contains(".taps=")){
 					no_error = no_error && this.xfrParser.parseTransformerTapData(str);
+				}
+				else if(isSupportedGeneratorPropertyLine(str)){
+					no_error = no_error && this.generatorParser.parseGeneratorPropertyData(str);
 				}
 				else if(isSupportedLoadPropertyLine(str)){
 					no_error = no_error && this.loadParser.parseLoadPropertyData(str);
@@ -734,6 +779,21 @@ public class OpenDSSDataParser {
 						no_error = no_error && this.loadShapeParser.parseLoadShape(loadShapeLine.logicalLine,
 								folderPath, fileName, lineCnt);
 					}
+					else if(tempAry[1].contains("TShape.") ||tempAry[1].contains("tshape.")){
+						LogicalLine temperatureShapeLine = collectLogicalContinuationLine(str, reader);
+						lineCnt = lineCnt + temperatureShapeLine.consumedLineCount;
+						nextLine = temperatureShapeLine.nextLine;
+						useLastLineString = nextLine != null;
+						no_error = no_error && this.temperatureShapeParser.parseTemperatureShape(
+								temperatureShapeLine.logicalLine, fileName, lineCnt);
+					}
+					else if(tempAry[1].contains("XYCurve.") ||tempAry[1].contains("xycurve.")){
+						LogicalLine xyCurveLine = collectLogicalContinuationLine(str, reader);
+						lineCnt = lineCnt + xyCurveLine.consumedLineCount;
+						nextLine = xyCurveLine.nextLine;
+						useLastLineString = nextLine != null;
+						no_error = no_error && this.xyCurveParser.parseXYCurve(xyCurveLine.logicalLine);
+					}
 					else if(tempAry[1].contains("Load.") ||tempAry[1].contains("load.")){
 						String loadStr = str;
 						String[] nextStrAry = getNextDataInputString(reader);
@@ -755,6 +815,14 @@ public class OpenDSSDataParser {
 							}
 						}
 						this.loadParser.parseLoadData(loadStr);
+					}
+					else if(tempAry[1].contains("Generator.") ||tempAry[1].contains("generator.")){
+						LogicalLine generatorLine = collectLogicalContinuationLine(str, reader);
+						lineCnt = lineCnt + generatorLine.consumedLineCount;
+						nextLine = generatorLine.nextLine;
+						useLastLineString = nextLine != null;
+						no_error = no_error && this.generatorParser.parseGeneratorData(generatorLine.logicalLine,
+								fileName, lineCnt);
 					}
 					else if(tempAry[1].contains("PVSystem.") ||tempAry[1].contains("pvsystem.")){
 						LogicalLine pvSystemLine = collectLogicalContinuationLine(str, reader);
@@ -785,6 +853,9 @@ public class OpenDSSDataParser {
 				}
 				else if(str.toLowerCase().startsWith("transformer.") && str.toLowerCase().contains(".taps=")){
 					no_error = no_error && this.xfrParser.parseTransformerTapData(str);
+				}
+				else if(isSupportedGeneratorPropertyLine(str)){
+					no_error = no_error && this.generatorParser.parseGeneratorPropertyData(str);
 				}
 				else if(isSupportedLoadPropertyLine(str)){
 					no_error = no_error && this.loadParser.parseLoadPropertyData(str);
@@ -1433,6 +1504,14 @@ public class OpenDSSDataParser {
 					 || lower.contains(".yearly=")
 					 || lower.contains(".duty=")
 					 || lower.contains(".status="));
+     }
+
+     private static boolean isSupportedGeneratorPropertyLine(String str) {
+	 String lower = str.toLowerCase().replaceAll("\\s*=\\s*", "=");
+	 return lower.startsWith("generator.")
+			 && (lower.contains(".daily=")
+					 || lower.contains(".yearly=")
+					 || lower.contains(".duty="));
      }
 
      private String[] getNextDataInputString(IFileReader reader) throws ODMException{
