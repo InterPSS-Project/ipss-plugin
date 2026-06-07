@@ -19,6 +19,31 @@ public class QstsCsvExporter {
 		return builder.toString();
 	}
 
+	public String exportLoadPowers(QstsResult result) {
+		return exportDevicePowers(result == null ? null : result.getLoadPowers());
+	}
+
+	public String exportGeneratorPowers(QstsResult result) {
+		return exportDevicePowers(result == null ? null : result.getGeneratorPowers());
+	}
+
+	public String exportDevicePowers(Iterable<QstsDevicePowerSample> samples) {
+		StringBuilder builder = new StringBuilder("step,hour,device_class,device,phase,p_pu,q_pu\n");
+		if(samples == null) {
+			return builder.toString();
+		}
+		for(QstsDevicePowerSample sample : samples) {
+			builder.append(sample.getStepIndex()).append(',')
+					.append(format(sample.getHour())).append(',')
+					.append(escape(sample.getDeviceClass())).append(',')
+					.append(escape(sample.getDeviceId())).append(',')
+					.append(sample.getPhase()).append(',')
+					.append(format(sample.getP())).append(',')
+					.append(format(sample.getQ())).append('\n');
+		}
+		return builder.toString();
+	}
+
 	public String exportCapacitorStates(Iterable<QstsCapacitorStateSample> states) {
 		StringBuilder builder = new StringBuilder(
 				"step,hour,capacitor,closed,total_q_pu,total_q_kvar,operation_count\n");

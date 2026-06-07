@@ -10,6 +10,8 @@ import com.interpss.core.threephase.IPhaseGen;
 public class QstsStorageBaseState {
 	private final IPhaseGen generator;
 	private final double baseKva;
+	private final double baseKw;
+	private final double baseKvar;
 	private final double kwRated;
 	private final double kwhRated;
 	private final double reserveKwh;
@@ -31,9 +33,20 @@ public class QstsStorageBaseState {
 		this.chargeEfficiency = normalizeEfficiency(chargeEfficiency);
 		this.dischargeEfficiency = normalizeEfficiency(dischargeEfficiency);
 		this.storedKwh = Math.max(this.reserveKwh, Math.min(this.kwhRated, storedKwh));
+		Complex total = total(generator.getPower3Phase(UnitType.PU));
+		this.baseKw = total.getReal() * baseKva;
+		this.baseKvar = total.getImaginary() * baseKva;
 	}
 
 	public double applyScheduledPower(double requestedKw, double stepHours) {
+		return applyScheduledPower(requestedKw, currentKvar(), stepHours);
+	}
+
+	public double applyScheduledMultiplier(double pMultiplier, double qMultiplier, double stepHours) {
+		return applyScheduledPower(baseKw * pMultiplier, baseKvar * qMultiplier, stepHours);
+	}
+
+	public double applyScheduledPower(double requestedKw, double requestedKvar, double stepHours) {
 		double hours = stepHours > 0.0 ? stepHours : 1.0;
 		double limitedKw = Math.max(-kwRated, Math.min(kwRated, requestedKw));
 		if(limitedKw > 0.0) {
@@ -47,18 +60,34 @@ public class QstsStorageBaseState {
 			limitedKw = -Math.min(Math.abs(limitedKw), chargeKwLimit);
 			storedKwh += Math.abs(limitedKw) * hours * chargeEfficiency;
 		}
-		setGeneratorRealPower(limitedKw);
+		setGeneratorPower(limitedKw, requestedKvar);
 		return limitedKw;
+	}
+
+	public IPhaseGen getGenerator() {
+		return generator;
+	}
+
+	public String getStorageId() {
+		return generator.getId();
+	}
+
+	public double getBaseKw() {
+		return baseKw;
 	}
 
 	public double getStoredKwh() {
 		return storedKwh;
 	}
 
-	private void setGeneratorRealPower(double kw) {
+	private double currentKvar() {
 		Complex3x1 power = generator.getPower3Phase(UnitType.PU);
-		Complex total = total(power);
-		double qPu = total.getImaginary();
+		return total(power).getImaginary() * baseKva;
+	}
+
+	private void setGeneratorPower(double kw, double kvar) {
+		Complex3x1 power = generator.getPower3Phase(UnitType.PU);
+		double qPu = baseKva == 0.0 ? 0.0 : kvar / baseKva;
 		double pPu = baseKva == 0.0 ? 0.0 : kw / baseKva;
 		int phaseCount = activePhaseCount(generator.getPhaseCode(), power);
 		double phaseP = phaseCount == 0 ? 0.0 : pPu / phaseCount;
