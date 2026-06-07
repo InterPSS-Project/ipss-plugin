@@ -1,0 +1,12 @@
+redirect IEEE13Nodeckt.dss
+
+New LoadShape.MyProfile npts=24 interval=1 mult=(0.80 0.80 0.80 0.80 0.80 0.80 0.80 0.82 0.84 0.86 0.88 0.90 0.92 0.94 0.96 0.98 1.00 0.98 0.96 0.94 0.92 0.90 0.86 0.82)
+
+Load.671.daily=MyProfile
+Load.671.status=variable
+Load.675a.daily=MyProfile
+Load.675a.status=variable
+Load.675b.daily=MyProfile
+Load.675b.status=variable
+Load.675c.daily=MyProfile
+Load.675c.status=variable
