@@ -90,6 +90,105 @@ public class InverterControlModelTest {
 		assertEquals(0.0, generator.getPower3Phase(UnitType.PU).c_2.getImaginary(), 1.0e-12);
 	}
 
+	@Test
+	void voltWattSetpointUpdatesStaticPhaseGenActivePowerAndPreservesQ() {
+		Static3PGen generator = Static3PhaseFactory.eINSTANCE.createStatic3PGen();
+		generator.setId("pv1");
+		generator.setMvaBase(1.0);
+		generator.setPower3Phase(new Complex3x1(new Complex(0.08 / 3.0, 0.015 / 3.0),
+				new Complex(0.08 / 3.0, 0.015 / 3.0), new Complex(0.08 / 3.0, 0.015 / 3.0)),
+				UnitType.PU);
+		InverterControlData control = new InverterControlData("inv1", "pv1", ControlMode.VOLTWATT,
+				"vw1", 100.0, Double.NaN, Double.NaN, 0.0, true);
+
+		InverterControlResult result = new InverterControlModel()
+				.applyActivePowerSetpoint(generator, 1000.0, control, 50.0);
+
+		assertTrue(result.isApplied());
+		assertEquals(50.0, result.getActivePowerKw(), 1.0e-12);
+		Complex total = generator.getPower3Phase(UnitType.PU).a_0
+				.add(generator.getPower3Phase(UnitType.PU).b_1)
+				.add(generator.getPower3Phase(UnitType.PU).c_2);
+		assertEquals(0.05, total.getReal(), 1.0e-12);
+		assertEquals(0.015, total.getImaginary(), 1.0e-12);
+	}
+
+	@Test
+	void voltWattSetpointIsLimitedByStaticKvaCapability() {
+		Static3PGen generator = Static3PhaseFactory.eINSTANCE.createStatic3PGen();
+		generator.setId("pv1");
+		generator.setMvaBase(1.0);
+		generator.setPower3Phase(new Complex3x1(new Complex(0.02 / 3.0, 0.08 / 3.0),
+				new Complex(0.02 / 3.0, 0.08 / 3.0), new Complex(0.02 / 3.0, 0.08 / 3.0)),
+				UnitType.PU);
+		InverterControlData control = new InverterControlData("inv1", "pv1", ControlMode.VOLTWATT,
+				"vw1", 100.0, Double.NaN, Double.NaN, 0.0, true);
+
+		InverterControlResult result = new InverterControlModel()
+				.applyActivePowerSetpoint(generator, 1000.0, control, 90.0);
+
+		assertTrue(result.isLimited());
+		assertEquals(60.0, result.getActivePowerKw(), 1.0e-12);
+		assertEquals(0.06, generator.getPower3Phase(UnitType.PU)
+				.a_0.add(generator.getPower3Phase(UnitType.PU).b_1)
+				.add(generator.getPower3Phase(UnitType.PU).c_2).getReal(), 1.0e-12);
+	}
+
+	@Test
+	void wattPfSetpointUsesStaticGeneratorSignConventionAndMinimumPf() {
+		Static3PGen generator = Static3PhaseFactory.eINSTANCE.createStatic3PGen();
+		generator.setId("pv1");
+		generator.setMvaBase(1.0);
+		generator.setPower3Phase(new Complex3x1(new Complex(0.08 / 3.0, 0.0),
+				new Complex(0.08 / 3.0, 0.0), new Complex(0.08 / 3.0, 0.0)), UnitType.PU);
+		InverterControlData control = new InverterControlData("inv1", "pv1", ControlMode.WATTPF,
+				"wpf1", 100.0, Double.NaN, Double.NaN, 0.9, true);
+
+		InverterControlResult result = new InverterControlModel()
+				.applyPowerFactorSetpoint(generator, 1000.0, control, 0.8);
+
+		assertTrue(result.isApplied());
+		double expectedQ = 80.0 * Math.tan(Math.acos(0.9));
+		assertEquals(expectedQ, result.getReactivePowerKvar(), 1.0e-12);
+		assertEquals(expectedQ / 1000.0, generator.getPower3Phase(UnitType.PU)
+				.a_0.add(generator.getPower3Phase(UnitType.PU).b_1)
+				.add(generator.getPower3Phase(UnitType.PU).c_2).getImaginary(), 1.0e-12);
+	}
+
+	@Test
+	void wattPfSetpointSupportsNegativeReactivePowerTarget() {
+		TestPhaseGen generator = new TestPhaseGen("pv-ab", PhaseCode.AB,
+				new Complex3x1(new Complex(0.04, 0.0), new Complex(0.04, 0.0), Complex.ZERO));
+		InverterControlData control = new InverterControlData("inv1", "pv-ab", ControlMode.WATTPF,
+				"wpf1", 100.0, Double.NaN, Double.NaN, 0.0, true);
+
+		InverterControlResult result = new InverterControlModel()
+				.applyPowerFactorSetpoint(generator, 1000.0, control, -0.8);
+
+		assertTrue(result.isApplied());
+		assertEquals(-60.0, result.getReactivePowerKvar(), 1.0e-12);
+		assertEquals(-0.03, generator.getPower3Phase(UnitType.PU).a_0.getImaginary(), 1.0e-12);
+		assertEquals(-0.03, generator.getPower3Phase(UnitType.PU).b_1.getImaginary(), 1.0e-12);
+		assertEquals(0.0, generator.getPower3Phase(UnitType.PU).c_2.getImaginary(), 1.0e-12);
+	}
+
+	@Test
+	void wattVarSetpointUsesStaticPhaseGeneratorReactivePath() {
+		TestPhaseGen generator = new TestPhaseGen("pv-ab", PhaseCode.AB,
+				new Complex3x1(new Complex(0.04, 0.0), new Complex(0.04, 0.0), Complex.ZERO));
+		InverterControlData control = new InverterControlData("inv1", "pv-ab", ControlMode.WATTVAR,
+				"wv1", 100.0, -25.0, 25.0, 0.0, true);
+
+		InverterControlResult result = new InverterControlModel()
+				.applyWattVarSetpoint(generator, 1000.0, control, 30.0);
+
+		assertTrue(result.isLimited());
+		assertEquals(25.0, result.getReactivePowerKvar(), 1.0e-12);
+		assertEquals(0.0125, generator.getPower3Phase(UnitType.PU).a_0.getImaginary(), 1.0e-12);
+		assertEquals(0.0125, generator.getPower3Phase(UnitType.PU).b_1.getImaginary(), 1.0e-12);
+		assertEquals(0.0, generator.getPower3Phase(UnitType.PU).c_2.getImaginary(), 1.0e-12);
+	}
+
 	private static class TestPhaseGen implements IPhaseGen {
 		private final String id;
 		private final PhaseCode phaseCode;
