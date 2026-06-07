@@ -5,20 +5,18 @@ import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.core.acsc.PhaseCode;
-import com.interpss.core.threephase.IPhaseGen;
-
 public class InverterControlModel {
-	public InverterControlResult applyVoltVarSetpoint(IPhaseGen generator, double baseKva,
+	public InverterControlResult applyVoltVarSetpoint(com.interpss.core.threephase.IPhaseGen generator, double baseKva,
 			InverterControlData control, double targetReactivePowerKvar) {
 		return applyReactivePowerSetpoint(generator, baseKva, control, targetReactivePowerKvar);
 	}
 
-	public InverterControlResult applyWattVarSetpoint(IPhaseGen generator, double baseKva,
+	public InverterControlResult applyWattVarSetpoint(com.interpss.core.threephase.IPhaseGen generator, double baseKva,
 			InverterControlData control, double targetReactivePowerKvar) {
 		return applyReactivePowerSetpoint(generator, baseKva, control, targetReactivePowerKvar);
 	}
 
-	public InverterControlResult applyReactivePowerSetpoint(IPhaseGen generator, double baseKva,
+	public InverterControlResult applyReactivePowerSetpoint(com.interpss.core.threephase.IPhaseGen generator, double baseKva,
 			InverterControlData control, double targetReactivePowerKvar) {
 		if(generator == null || control == null || !control.isEnabled()) {
 			return InverterControlResult.notApplied();
@@ -34,7 +32,7 @@ public class InverterControlModel {
 				Math.abs(limitedQKvar - targetReactivePowerKvar) > 1.0e-9);
 	}
 
-	public InverterControlResult applyActivePowerSetpoint(IPhaseGen generator, double baseKva,
+	public InverterControlResult applyActivePowerSetpoint(com.interpss.core.threephase.IPhaseGen generator, double baseKva,
 			InverterControlData control, double targetActivePowerKw) {
 		if(generator == null || control == null || !control.isEnabled()) {
 			return InverterControlResult.notApplied();
@@ -50,7 +48,7 @@ public class InverterControlModel {
 				Math.abs(limitedPKw - targetActivePowerKw) > 1.0e-9);
 	}
 
-	public InverterControlResult applyPowerFactorSetpoint(IPhaseGen generator, double baseKva,
+	public InverterControlResult applyPowerFactorSetpoint(com.interpss.core.threephase.IPhaseGen generator, double baseKva,
 			InverterControlData control, double targetPowerFactor) {
 		if(generator == null || control == null || !control.isEnabled()) {
 			return InverterControlResult.notApplied();
