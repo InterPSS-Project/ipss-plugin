@@ -71,8 +71,7 @@ public class DStab3PBusImpl extends BaseDStabBusImpl<DStab3PGen,DStab3PLoad> imp
 	@Override
 	public void set3PhaseVotlages(Complex3x1 vabc) {
 		this.Vabc = vabc;
-		super.setThreeSeqVoltage(Complex3x1.abc_to_z12(Vabc));
-		this.threeSeqVoltageValid = true;
+		this.threeSeqVoltageValid = false;
 
 	}
 
