@@ -54,6 +54,7 @@ import com.interpss.core.threephase.Static3PBus;
 import com.interpss.core.threephase.Static3PBranch;
 import com.interpss.core.threephase.Static3PNetwork;
 import com.interpss.core.net.Branch;
+import com.interpss.core.sparse.solver.klusolvex.KlusolveXPerformanceCounters;
 import com.interpss.core.sparse.solver.SparseEqnSolverProvider;
 
 
@@ -769,6 +770,9 @@ public class OpenDssParserPowerFlowComparisonTest {
 		ComparisonResult result = compareVoltages(distNet, references);
 		System.out.println("Wrote Ckt24 voltage-depth export, iterations=" + powerFlow.getIterationCount()
 				+ ", " + result.summary("Ckt24") + ": " + output.toAbsolutePath());
+		if(KlusolveXPerformanceCounters.isEnabled()) {
+			System.out.println(KlusolveXPerformanceCounters.summary());
+		}
 	}
 
 	@Test
