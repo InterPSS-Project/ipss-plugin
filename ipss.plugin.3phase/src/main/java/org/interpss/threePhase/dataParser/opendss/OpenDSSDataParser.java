@@ -154,6 +154,10 @@ public class OpenDSSDataParser {
 		return this.staticNet;
 	}
 
+	public boolean hasDistNetwork() {
+		return this.distNet != null;
+	}
+
 	public Static3PBus getOrCreateStaticBus(String busId) {
 		Static3PBus bus = getStaticNetwork().getBus(busId);
 		if(bus == null) {
