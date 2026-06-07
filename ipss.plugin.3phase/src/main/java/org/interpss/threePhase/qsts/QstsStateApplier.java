@@ -87,8 +87,6 @@ public class QstsStateApplier {
 	}
 
 	public void apply(QstsStepContext context) {
-		loadStateStore.restoreAll();
-		generatorStateStore.restoreAll();
 		applyLoads(context);
 		applyGenerators(context);
 		applyStorage(context);
@@ -109,6 +107,9 @@ public class QstsStateApplier {
 	private void applyLoads(QstsStepContext context) {
 		for(QstsLoadBaseState state : loadStateStore.states()) {
 			QstsProfileBinding binding = bindingFor("load", state.getLoadId());
+			if(binding == null && unity(context.getLoadMultiplier())) {
+				continue;
+			}
 			QstsLoadMultiplier multiplier = new QstsLoadMultiplierResolver(scheduleData.getProfileRegistry())
 					.resolve(binding, context.getMode(), context.getScheduleIndex(), context.getLoadMultiplier());
 			state.applyMultiplier(multiplier.getPMultiplier(), multiplier.getQMultiplier());
@@ -121,6 +122,9 @@ public class QstsStateApplier {
 				continue;
 			}
 			QstsProfileBinding binding = generatorBindingFor(state.getGeneratorId());
+			if(binding == null) {
+				continue;
+			}
 			QstsLoadMultiplier multiplier = new QstsLoadMultiplierResolver(scheduleData.getProfileRegistry())
 					.resolve(binding, context.getMode(), context.getScheduleIndex(), 1.0);
 			state.applyMultiplier(multiplier.getPMultiplier(), multiplier.getQMultiplier());
@@ -130,6 +134,9 @@ public class QstsStateApplier {
 	private void applyStorage(QstsStepContext context) {
 		for(QstsStorageBaseState state : storageStateStore.states()) {
 			QstsProfileBinding binding = storageBindingFor(state.getStorageId());
+			if(binding == null) {
+				continue;
+			}
 			QstsLoadMultiplier multiplier = new QstsLoadMultiplierResolver(scheduleData.getProfileRegistry())
 					.resolve(binding, context.getMode(), context.getScheduleIndex(), 1.0);
 			state.applyScheduledMultiplier(multiplier.getPMultiplier(),
@@ -166,5 +173,9 @@ public class QstsStateApplier {
 
 	private static String normalize(String value) {
 		return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
+	}
+
+	private static boolean unity(double value) {
+		return !Double.isFinite(value) || Math.abs(value - 1.0) <= 1.0e-12;
 	}
 }
