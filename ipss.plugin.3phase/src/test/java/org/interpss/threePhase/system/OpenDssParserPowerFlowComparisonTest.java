@@ -36,6 +36,7 @@ import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.qa.OpenDssDataQaUtils;
 import org.interpss.threePhase.qa.OpenDssDataQaUtils.ComparisonResult;
 import org.interpss.threePhase.qa.OpenDssDataQaUtils.VoltageReference;
+import org.interpss.threePhase.powerflow.control.RegulatorControlData;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -67,8 +68,39 @@ public class OpenDssParserPowerFlowComparisonTest {
 				"testData/feeder/IEEE123",
 				"IEEE123Master.dss",
 				"opendss-reference/ieee123-dss-python-voltage-reference.csv",
-				8.0e-2);
+				2.0e-3,
+				OpenDssTapProfile.IEEE123_DSS_PYTHON);
 		System.out.println(result.summary("IEEE123"));
+	}
+
+	@Test
+	public void ieee123RegulatorTapControlImprovesDssPythonReferenceMismatch() throws IOException {
+		OpenDSSDataParser parser = new OpenDSSDataParser();
+		assertTrue(parser.parseFeederData("testData/feeder/IEEE123", "IEEE123Master.dss"));
+		assertTrue(parser.getRegulatorParser().getRegControlCount() >= 7,
+				"IEEE123 RegControl records should be parsed");
+		assertTrue(parser.calcVoltageBases());
+		assertTrue(parser.convertActualValuesToPU(1.0));
+		List<RegulatorControlData> controls = parser.getRegulatorControls();
+		assertTrue(controls.size() >= 7, "IEEE123 regulator controls should be available to power flow");
+
+		DStabNetwork3Phase distNet = parser.getDistNetwork();
+		DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(distNet);
+		powerFlow.setPFMethod(DistributionPFMethod.Fixed_Point);
+		powerFlow.setInitBusVoltageEnabled(true);
+		powerFlow.setMaxIteration(200);
+		powerFlow.setTolerance(1.0e-4);
+		powerFlow.setRegulatorControls(controls);
+		powerFlow.setRegulatorControlEnabled(true);
+		assertTrue(powerFlow.powerflow(), "Power flow with regulator tap controls failed, iterations="
+				+ powerFlow.getIterationCount());
+		List<VoltageReference> references = readReferences("opendss-reference/ieee123-dss-python-voltage-reference.csv");
+		ComparisonResult result = compareVoltages(distNet, references);
+		System.out.println(result.summary("IEEE123 regulator control"));
+		assertTrue(result.maxMagError < 5.0e-2,
+				"Max voltage magnitude error " + result.maxMagError + " at " + result.maxMagLabel);
+		assertTrue(result.maxAngleError < VOLTAGE_ANGLE_TOLERANCE_DEG,
+				"Max voltage angle error " + result.maxAngleError + " deg at " + result.maxAngleLabel);
 	}
 
 	@Test

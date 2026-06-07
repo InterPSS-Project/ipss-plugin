@@ -17,3 +17,8 @@ branches as one radial upstream path for power-flow comparison.
 `opendss-load-model-mini-dss-python-voltage-reference.csv` is generated from
 `testData/feeder/OpenDSSLoadModelMini/Master.dss` and validates OpenDSS load
 models 1 through 8 against a stiff, 0.90 pu source DSS-Python reference.
+
+`capcontrol-mini-dss-python-capacitor-reference.csv` is generated from
+`testData/feeder/OpenDSSCapControlMini/*.dss` and validates capacitor control
+final state and terminal kvar before using voltage comparison as an acceptance
+signal.
