@@ -8,8 +8,12 @@ import java.util.Map;
 
 import org.interpss.threePhase.powerflow.control.InverterControlData;
 import org.interpss.threePhase.powerflow.control.InverterControlData.ControlMode;
+import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSGeneratorModel;
 import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSParserDiagnostic;
 import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSParserDiagnostic.Severity;
+import org.interpss.threePhase.qsts.InverterGenAdapter;
+import org.interpss.threePhase.qsts.InverterCapabilityData;
+import org.interpss.threePhase.qsts.QstsControlCurve;
 
 public class OpenDSSInvControlParser {
 	private final OpenDSSDataParser dataParser;
@@ -37,9 +41,92 @@ public class OpenDSSInvControlParser {
 					"InvControl " + id + " missing DERList; control metadata ignored", null, -1));
 			return true;
 		}
+		String effectiveCurveId = transformCurve(id, generatorId, curveId, mode, minQ, maxQ);
 		dataParser.getTimeSeriesData().addInverterControl(new InverterControlData(id, generatorId,
-				mode, curveId, ratedKva, minQ, maxQ, minPf, true));
+				mode, effectiveCurveId, ratedKva, minQ, maxQ, minPf, true));
 		return true;
+	}
+
+	private String transformCurve(String controlId, String generatorId, String curveId, ControlMode mode,
+			double minQ, double maxQ) {
+		QstsControlCurve curve = dataParser.getTimeSeriesData().getControlCurve(curveId);
+		if(curve == null) {
+			return curveId;
+		}
+		OpenDSSGeneratorModel model = dataParser.getTimeSeriesData().getGeneratorModel(generatorId);
+		if(model == null) {
+			return curveId;
+		}
+		double[] x = curve.getX();
+		double[] y = curve.getY();
+		if(mode == ControlMode.WATTPF) {
+			scale(x, activePowerBaseKw(model));
+		}
+		else if(mode == ControlMode.WATTVAR) {
+			scale(x, activePowerBaseKw(model));
+			scale(y, reactivePowerBaseKvar(generatorId, model, minQ, maxQ));
+		}
+		else if(mode == ControlMode.VOLTWATT) {
+			scale(y, activePowerBaseKw(model));
+		}
+		else {
+			scale(y, reactivePowerBaseKvar(generatorId, model, minQ, maxQ));
+		}
+		String transformedId = controlId + "_" + curveId + "_" + mode.name().toLowerCase(Locale.ROOT);
+		dataParser.getTimeSeriesData().addControlCurve(new QstsControlCurve(transformedId, x, y));
+		return transformedId;
+	}
+
+	private double activePowerBaseKw(OpenDSSGeneratorModel model) {
+		if(model.getPmpp() > 0.0) {
+			return model.getPmpp();
+		}
+		if(model.getKwRated() > 0.0) {
+			return model.getKwRated();
+		}
+		return Math.abs(model.getKw());
+	}
+
+	private double reactivePowerBaseKvar(String generatorId, OpenDSSGeneratorModel model, double minQ, double maxQ) {
+		double propertyBase = maxFiniteAbs(minQ, maxQ);
+		if(Double.isFinite(propertyBase) && propertyBase > 0.0) {
+			return propertyBase;
+		}
+		InverterGenAdapter adapter = dataParser.getTimeSeriesData().getInverterAdapterStore().get(generatorId);
+		if(adapter != null) {
+			InverterCapabilityData capability = adapter.getCapabilityData();
+			double capabilityBase = maxFiniteAbs(capability.getMinReactivePowerKvar(),
+					capability.getMaxReactivePowerKvar());
+			if(Double.isFinite(capabilityBase) && capabilityBase > 0.0) {
+				return capabilityBase;
+			}
+		}
+		if(model.getKva() > 0.0) {
+			double p = Math.abs(model.getKw());
+			return Math.sqrt(Math.max(0.0, model.getKva() * model.getKva() - p * p));
+		}
+		return 1.0;
+	}
+
+	private static double maxFiniteAbs(double first, double second) {
+		double max = Double.NaN;
+		if(Double.isFinite(first)) {
+			max = Math.abs(first);
+		}
+		if(Double.isFinite(second)) {
+			double value = Math.abs(second);
+			max = Double.isFinite(max) ? Math.max(max, value) : value;
+		}
+		return max;
+	}
+
+	private static void scale(double[] values, double base) {
+		if(!Double.isFinite(base) || base == 0.0) {
+			return;
+		}
+		for(int i = 0; i < values.length; i++) {
+			values[i] *= base;
+		}
 	}
 
 	private static ControlMode parseMode(String value) {
