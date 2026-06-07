@@ -14,7 +14,6 @@ import org.interpss.threePhase.basic.dstab.DStab3PGen;
 import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSGeneratorModel;
 import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSProfileBinding;
 import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSProfileType;
-import org.interpss.threePhase.qsts.QstsDeviceStatus;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
 import com.interpss.core.aclf.AclfGenCode;
@@ -24,17 +23,18 @@ import com.interpss.core.threephase.Static3PBus;
 import com.interpss.core.threephase.Static3PGen;
 import com.interpss.dstab.GeneratorType;
 
-public class OpenDSSStorageParser {
+public class OpenDSSGeneratorParser {
 	private final OpenDSSDataParser dataParser;
 
-	public OpenDSSStorageParser(OpenDSSDataParser dataParser) {
+	public OpenDSSGeneratorParser(OpenDSSDataParser dataParser) {
 		this.dataParser = dataParser;
 	}
 
-	public boolean parseStorageData(String storageStr, String sourceFile, int sourceLine) {
-		String[] tokens = splitDssTokens(storageStr.toLowerCase(Locale.ROOT).trim().replaceAll("\\s*=\\s*", "="));
+	public boolean parseGeneratorData(String generatorStr, String sourceFile, int sourceLine) {
+		String[] tokens = splitDssTokens(stripComment(generatorStr).toLowerCase(Locale.ROOT).trim()
+				.replaceAll("\\s*=\\s*", "="));
 		Map<String, String> properties = propertyMap(tokens);
-		String id = deviceId(tokens, "storage");
+		String id = deviceId(tokens, "generator");
 		if(id == null || id.isEmpty()) {
 			return true;
 		}
@@ -47,29 +47,15 @@ public class OpenDSSStorageParser {
 		double nominalKV = parseDouble(properties.get("kv"), 0.0);
 		String connection = stripDssValue(firstPresent(properties, "conn", "connection"));
 		double kva = parseDouble(properties.get("kva"), 0.0);
-		double kwRated = parseDouble(properties.get("kwrated"), parseDouble(properties.get("kw"), 0.0));
-		double kw = parseDouble(properties.get("kw"), kwRated);
-		double kvar = parseKvar(properties, kw, kva);
+		double kw = parseDouble(properties.get("kw"), kva);
 		double powerFactor = parseDouble(properties.get("pf"), 0.0);
-		String storageState = stripDssValue(properties.get("state")).toLowerCase(Locale.ROOT);
-		double signedKw = storageState.equals("charging") ? -Math.abs(kw)
-				: storageState.equals("idling") ? 0.0 : kw;
-		double kwhRated = parseDouble(properties.get("kwhrated"), 0.0);
-		double kwhStored = parseDouble(properties.get("kwhstored"), 0.0);
-		double pctStored = parseDouble(properties.get("%stored"), parseDouble(properties.get("pctstored"), 0.0));
-		double pctReserve = parseDouble(properties.get("%reserve"), parseDouble(properties.get("pctreserve"), 0.0));
-		double pctCharge = parseDouble(properties.get("%charge"), parseDouble(properties.get("pctcharge"), 0.0));
-		double pctDischarge = parseDouble(properties.get("%discharge"), parseDouble(properties.get("pctdischarge"), 0.0));
-		double pctEffCharge = parseDouble(properties.get("%effcharge"), parseDouble(properties.get("pcteffcharge"), 0.0));
-		double pctEffDischarge = parseDouble(properties.get("%effdischarge"),
-				parseDouble(properties.get("pcteffdischarge"), 0.0));
+		double kvar = parseKvar(properties, kw, kva);
 		String daily = stripDssValue(properties.get("daily"));
 		String yearly = stripDssValue(properties.get("yearly"));
 		String duty = stripDssValue(properties.get("duty"));
-		String status = stripDssValue(properties.get("status"));
 
 		IPhaseGen generator;
-		Complex genPu = new Complex(signedKw / dataParser.getNetworkBaseKva(),
+		Complex genPu = new Complex(kw / dataParser.getNetworkBaseKva(),
 				kvar / dataParser.getNetworkBaseKva());
 		if(dataParser.isStaticNetworkMode()) {
 			Static3PBus bus = dataParser.getOrCreateStaticBus(busId);
@@ -101,22 +87,43 @@ public class OpenDSSStorageParser {
 		}
 
 		dataParser.getTimeSeriesData().getGeneratorStateStore().register(generator);
-		dataParser.getTimeSeriesData().getInverterAdapterStore().register(generator);
-		double initialStoredKwh = kwhStored > 0.0 ? kwhStored : kwhRated * pctStored / 100.0;
-		double reserveKwh = kwhRated * pctReserve / 100.0;
-		double storageKwRated = kwRated > 0.0 ? kwRated : Math.abs(signedKw);
-		dataParser.getTimeSeriesData().getStorageStateStore().register(generator,
-				dataParser.getNetworkBaseKva(), storageKwRated, kwhRated, initialStoredKwh,
-				reserveKwh, pctEffCharge, pctEffDischarge);
 		OpenDSSProfileBinding binding = dataParser.getTimeSeriesData().getOrCreateGeneratorBinding(id);
 		binding.setShapeId(OpenDSSProfileType.DAILY, daily);
 		binding.setShapeId(OpenDSSProfileType.YEARLY, yearly);
 		binding.setShapeId(OpenDSSProfileType.DUTY, duty);
-		binding.setStatus(parseStatus(status));
-		dataParser.getTimeSeriesData().addGeneratorModel(new OpenDSSGeneratorModel(id, "storage", busId, phases,
-				signedKw, kvar, kva, nominalKV, connection, powerFactor, 0.0, 1.0, 100.0, 25.0,
-				0.0, 0.0, "", "", "", "", storageState, kwRated, kwhRated, kwhStored, pctStored, pctReserve,
-				pctCharge, pctDischarge, pctEffCharge, pctEffDischarge, daily, yearly, duty, sourceFile, sourceLine));
+		dataParser.getTimeSeriesData().addGeneratorModel(new OpenDSSGeneratorModel(id, "generator", busId, phases,
+				kw, kvar, kva, nominalKV, connection, powerFactor, 0.0, 1.0, 100.0, 25.0,
+				0.0, 0.0, "", "", "", "", "", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+				daily, yearly, duty, sourceFile, sourceLine));
+		return true;
+	}
+
+	public boolean parseGeneratorPropertyData(String propertyLine) {
+		String normalized = stripDssValue(stripComment(propertyLine)).trim();
+		int dot = normalized.indexOf('.');
+		int eq = normalized.indexOf('=');
+		if(dot < 0 || eq < 0 || eq <= dot) {
+			return true;
+		}
+		String afterClass = normalized.substring(dot + 1);
+		int propertyDot = afterClass.indexOf('.');
+		int propertyEq = afterClass.indexOf('=');
+		if(propertyDot < 0 || propertyEq < 0 || propertyEq <= propertyDot) {
+			return true;
+		}
+		String id = afterClass.substring(0, propertyDot);
+		String property = afterClass.substring(propertyDot + 1, propertyEq).trim().toLowerCase(Locale.ROOT);
+		String value = stripDssValue(normalized.substring(eq + 1));
+		OpenDSSProfileBinding binding = dataParser.getTimeSeriesData().getOrCreateGeneratorBinding(id);
+		if(property.equals("daily")) {
+			binding.setShapeId(OpenDSSProfileType.DAILY, value);
+		}
+		else if(property.equals("yearly")) {
+			binding.setShapeId(OpenDSSProfileType.YEARLY, value);
+		}
+		else if(property.equals("duty")) {
+			binding.setShapeId(OpenDSSProfileType.DUTY, value);
+		}
 		return true;
 	}
 
@@ -133,23 +140,6 @@ public class OpenDSSStorageParser {
 			return Math.sqrt(Math.max(0.0, kva * kva - kw * kw));
 		}
 		return 0.0;
-	}
-
-	private static QstsDeviceStatus parseStatus(String status) {
-		if(status == null || status.trim().isEmpty()) {
-			return QstsDeviceStatus.DEFAULT;
-		}
-		String normalized = stripDssValue(status).toLowerCase(Locale.ROOT);
-		if(normalized.equals("fixed")) {
-			return QstsDeviceStatus.FIXED;
-		}
-		if(normalized.equals("variable")) {
-			return QstsDeviceStatus.VARIABLE;
-		}
-		if(normalized.equals("exempt")) {
-			return QstsDeviceStatus.EXEMPT;
-		}
-		return QstsDeviceStatus.DEFAULT;
 	}
 
 	private static String deviceId(String[] tokens, String deviceClass) {
@@ -238,6 +228,11 @@ public class OpenDSSStorageParser {
 			normalized = normalized.substring(1, normalized.length() - 1);
 		}
 		return normalized;
+	}
+
+	private static String stripComment(String text) {
+		int index = text == null ? -1 : text.indexOf('!');
+		return index >= 0 ? text.substring(0, index) : text == null ? "" : text;
 	}
 
 	private static String[] splitDssTokens(String text) {

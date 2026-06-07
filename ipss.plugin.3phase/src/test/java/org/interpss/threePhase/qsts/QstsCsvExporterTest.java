@@ -39,6 +39,38 @@ public class QstsCsvExporterTest {
 	}
 
 	@Test
+	void capacitorStateCsvCanExportQstsResultSamples() {
+		QstsStepContext context = new QstsStepContext(0, 0,
+				0.0, QstsMode.DAILY, 0.25, 1.0, QstsControlMode.TIME);
+		QstsResult result = new QstsResult(List.of(new QstsStepResult(context,
+				true, 1, 0.0, null, 1, List.of(), List.of(), List.of(),
+				List.of(new QstsCapacitorStateSample(0, 0.0,
+						"cap1", false, 0.0, 0.0, 1)))));
+
+		String csv = new QstsCsvExporter().exportCapacitorStates(result);
+
+		String[] lines = csv.trim().split("\\R");
+		assertEquals("step,hour,capacitor,closed,total_q_pu,total_q_kvar,operation_count", lines[0]);
+		assertEquals("0,0.00000000000,cap1,false,0.00000000000,0.00000000000,1", lines[1]);
+	}
+
+	@Test
+	void inverterControlCsvCanExportQstsResultSamples() {
+		QstsStepContext context = new QstsStepContext(0, 0,
+				0.0, QstsMode.DAILY, 0.25, 1.0, QstsControlMode.STATIC);
+		QstsResult result = new QstsResult(List.of(new QstsStepResult(context,
+				true, 1, 0.0, null, 0, List.of(), List.of(), List.of(),
+				List.of(), List.of(new QstsInverterControlSample(0, 0.0, "inv1",
+						"pv1", "VOLTVAR", true, 0.0, 500.0, false, "")))));
+
+		String csv = new QstsCsvExporter().exportInverterControls(result);
+
+		String[] lines = csv.trim().split("\\R");
+		assertEquals("step,hour,control,generator,mode,applied,p_kw,q_kvar,limited,reason", lines[0]);
+		assertEquals("0,0.00000000000,inv1,pv1,VOLTVAR,true,0.00000000000,500.000000000,false,", lines[1]);
+	}
+
+	@Test
 	void generatorPowerCsvUsesSampledStaticPhaseGenChannel() {
 		QstsStepContext context = new QstsStepContext(1, 1, 0.25, QstsMode.DAILY,
 				0.25, 1.0, QstsControlMode.OFF);

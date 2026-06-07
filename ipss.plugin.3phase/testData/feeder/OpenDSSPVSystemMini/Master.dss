@@ -1,0 +1,9 @@
+Clear
+New Circuit.OpenDSSPVSystemMini basekv=12.47 pu=1.00 phases=3 bus1=source
+New XYCurve.MyPvsT npts=4 xarray=[0 25 75 100] yarray=[1.2 1.0 0.8 0.6]
+New XYCurve.MyEff npts=4 xarray=[.1 .2 .4 1.0] yarray=[.86 .9 .93 .97]
+New Loadshape.MyIrrad npts=2 interval=1 mult=[0.8 1.0]
+New Tshape.MyTemp npts=2 interval=1 temp=[25 75]
+New Line.feeder bus1=source.1.2.3 bus2=pvbus.1.2.3 phases=3 r1=0.01 x1=0.02 r0=0.03 x0=0.06 length=1 units=kft
+New Load.load1 bus1=pvbus.1.2.3 phases=3 conn=wye kv=12.47 kw=900 kvar=300 model=1
+New PVSystem.PV phases=3 bus1=pvbus kV=12.47 kVA=500 irrad=0.8 Pmpp=500 temperature=25 PF=1 effcurve=MyEff P-TCurve=MyPvsT Daily=MyIrrad TDaily=MyTemp

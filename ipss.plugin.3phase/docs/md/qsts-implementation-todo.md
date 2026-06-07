@@ -1016,11 +1016,14 @@ Create or update:
   - Track closed/open state, terminal kvar, and operation count.
 - [x] `QstsCsvExporter`
   - Export per-step capacitor state, kvar, and operation count.
+  - Supports exporting capacitor state samples directly from `QstsResult`.
 
 Verification:
 
 - [x] Unit test static voltage ON/OFF switching on a three-phase capacitor.
 - [x] Unit test delayed capacitor queue scheduling and cancellation.
+- [x] Unit test QSTS delayed capacitor queue operation count and per-step
+  capacitor state export.
 - [x] Unit test generic control queue replacement/cancellation.
 - [x] Unit test capacitor state CSV export.
 - [x] Unit test OpenDSS voltage and kvar/voltage-override metadata parsing.
@@ -1039,6 +1042,9 @@ Verification:
   selection beyond PTPhase min/max.
 - [x] DSS-Python mini case: voltage override.
 - [ ] DSS-Python mini case: delayed control-queue operation count.
+  - Java QSTS queue timing, state carryover, operation count, and CSV result
+    export are covered; a DSS-Python delayed-operation reference fixture still
+    needs to be generated.
 
 Exit criteria:
 
@@ -1065,6 +1071,22 @@ Create or update:
 - [x] `InverterControlData`
   - Generic data for active control modes and curve references.
   - Must not depend on OpenDSS syntax.
+- [x] `InverterGenAdapter` or equivalent static inverter adapter
+  - Keeps `IPhaseGen` as the basic phase-generator contract.
+  - Wraps an `IPhaseGen` plus PV/storage/generator metadata needed to determine
+    inverter power injection.
+  - [x] Calls `InverterControlModel` only after it has resolved a generic target
+    P/Q/PF setpoint.
+  - [x] Terminal voltage interpretation and generic curve-to-setpoint
+    evaluation for `VOLTVAR`, `VOLTWATT`, `WATTPF`, and `WATTVAR`.
+  - [x] Own richer capability lookup, available P, Q limits, and cut-in/out
+    state from PV/storage/generator metadata.
+- [x] `QstsInverterAdapterStore`
+  - Sidecar registry keyed by `IPhaseGen` or generator id.
+  - Lets QSTS find inverter-capable static generators without adding inverter
+    methods to `IPhaseGen`.
+  - OpenDSS adapter can populate this store from `PVSystem`, `Storage`, and
+    `InvControl` metadata; non-OpenDSS adapters can provide their own metadata.
 - [x] `OpenDSSInvControlParser`
   - Adapter for OpenDSS `InvControl`.
   - Parse only the modes we can verify with static generator models.
@@ -1078,10 +1100,13 @@ Create or update:
   - This slice implements generic setpoint application primitives on
     `IPhaseGen`; OpenDSS curve evaluation and QSTS control-loop invocation
     remain separate adapter/integration work.
-- [ ] QSTS state/result integration
-  - Apply inverter P/Q setpoint updates after each PF solve.
+- [x] QSTS state/result integration
+  - Apply resolved inverter P/Q/PF setpoint updates after each PF solve.
   - Export inverter control mode, P/Q setpoint, limit status, and operation
     reason.
+  - Current implementation is a direct generic bridge over `IPhaseGen` and
+    resolved setpoints. It should be migrated behind `InverterGenAdapter`
+    before OpenDSS curve behavior or richer inverter-specific logic is added.
 
 Verification:
 
@@ -1090,9 +1115,42 @@ Verification:
   setpoint primitives on one-, two-, and three-phase `IPhaseGen` objects.
 - [x] Unit tests for OpenDSS `InvControl` metadata mapping into generic
   `InverterControlData`.
+- [x] Unit test QSTS applies resolved inverter setpoints through static
+  `IPhaseGen` and exports control samples.
+- [x] Unit tests for inverter adapter/store dispatch without extending
+  `IPhaseGen`.
+- [x] Unit tests for inverter adapter terminal-voltage and watt-driven
+  curve-to-setpoint evaluation.
+- [x] Unit tests for inverter adapter capability resolution from static
+  PV/storage/generator metadata.
+- [x] Concrete OpenDSS `XYCurve` parser path
+  - Stores `XYCurve` data as generic `QstsControlCurve` records, independent
+    of OpenDSS after parsing.
+  - Applies curves to already-registered and later-registered
+    `InverterGenAdapter` instances, so file order does not matter for
+    `InvControl` curve references.
+- [x] Official OpenDSS `PVSystem` example metadata coverage
+  - Parses PV `P-TCurve`, efficiency `XYCurve`, irradiance `LoadShape`, and
+    temperature `TShape`/`TDaily` metadata from the EPRI PVSystem example.
+  - Computes static adapter available active power from `Pmpp`, irradiance,
+    `%Pmpp`, P-T curve, and efficiency curve when `kw` is not explicitly set.
+  - Keeps the OpenDSS PV details in parser/adapter metadata; QSTS control logic
+    continues to operate through generic `IPhaseGen`, `InverterGenAdapter`, and
+    `InverterCapabilityData`.
 - [ ] DSS-Python mini cases for `VOLTVAR`, `VOLTWATT`, `WATTPF`, and `WATTVAR`.
-- [ ] Compare generator terminal P/Q before bus voltages.
+- [x] Compare generator terminal P/Q before bus voltages for PVSystem.
+  - `OpenDSSPVSystemMini` uses the official EPRI PVSystem example curves and
+    a DSS-Python reference CSV for generator injection P/Q.
+  - The reference preserves OpenDSS terminal-power sign conversion by comparing
+    against positive generator injection in QSTS.
 - [ ] QSTS PV duty-curve case with inverter controls enabled.
+  - Parser-side coverage now includes the concrete IEEE8500
+    `P174_Run_360kW_PV.DSS` pattern:
+    `Generator.G1` plus `LoadShape.PVCurve` plus `generator.g1.duty=PVcurve`.
+  - Parser/adapter-side coverage also includes the official OpenDSS `PVSystem`
+    example with `MyPvsT`, `MyEff`, `MyIrrad`, and `MyTemp`.
+  - Full QSTS acceptance still needs checked-in DSS-Python terminal P/Q
+    references with inverter control enabled.
 
 Exit criteria:
 
@@ -1121,7 +1179,7 @@ Create or update:
   - [x] Wire scheduled storage dispatch through `QstsStateApplier`.
   - Skips storage devices in the generic generator multiplier path and applies
     energy-limited dispatch with deterministic state carryover.
-- [ ] `StorageControlData`
+- [x] `StorageControlData`
   - Generic controller configuration for storage dispatch.
 - [ ] OpenDSS `StorageController` adapter
   - Parse after reference behavior is inspected and mini cases are defined.
@@ -1131,10 +1189,13 @@ Verification:
 - [x] Unit tests for energy integration, reserve limits, efficiency, and
   charge/discharge sign convention.
 - [x] Unit test for scheduled storage dispatch through `QstsStateApplier`.
-- [ ] DSS-Python mini cases for scheduled charge/discharge without controller.
+- [x] Unit tests for generic storage-control configuration normalization.
+- [x] DSS-Python mini cases for scheduled charge/discharge without controller.
 - [ ] DSS-Python mini cases for `StorageController` only after the static model
   and parser support are complete.
-- [ ] Compare storage state of charge and terminal P/Q before bus voltages.
+- [x] Compare storage terminal P/Q before bus voltages.
+- [ ] Add DSS-Python state-of-charge reference rows if future controller tests
+  need SOC parity beyond the existing Java energy-state unit tests.
 
 Exit criteria:
 
