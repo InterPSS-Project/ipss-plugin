@@ -30,7 +30,7 @@ public class IEEE39_OptBasecase_SsaResult_Sample {
 		
 		// perform basecase loaing limit optimization	
 		new AclfNetLoadFlowOptimizer().optimize(dclfAlgo, optAdjResult, 100.0);
-		optAdjResult.getOPtAdjResults().forEach((genName, result) -> {
+		optAdjResult.getOptAdjResults().forEach((genName, result) -> {
 			System.out.println("GenAdjustResult: " + genName + ", " + result.toString());
 		});
 		
