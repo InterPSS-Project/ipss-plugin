@@ -256,8 +256,8 @@ Create:
     ZIPV coefficients, nominal kV, and binding ids.
 - [x] `QstsLoadStateStore`
   - Maps `IPhaseLoad` static load contracts to base state.
-  - Temporarily adapts legacy `ILoad1Phase` and `ILoad3Phase` objects until
-    static network APIs expose `IPhaseLoad` directly.
+  - Keeps legacy `ILoad1Phase` and `ILoad3Phase` adaptation only at parser,
+    test, or dynamic compatibility boundaries.
   - Provides restore/apply APIs.
 - [x] `QstsLoadMultiplierResolver`
   - Resolves active profile by generic study mode.
@@ -282,8 +282,8 @@ Update:
 Relationship with existing code:
 
 - QSTS depends on `IPhaseLoad`, not DStab load classes. Legacy
-  `ILoad1Phase`/`ILoad3Phase` objects are adapted at the static network
-  boundary until the parser and bus APIs expose `IPhaseLoad` directly.
+  `ILoad1Phase`/`ILoad3Phase` objects are compatibility surfaces for parser,
+  test, or dynamic-side code and should not be required by static QSTS.
 - Base-state preservation is a sidecar first. Static phase load/generator
   interfaces expose the steady-state setters needed by both static and dynamic
   implementations.
@@ -362,8 +362,8 @@ Relationship with existing code:
   QSTS schedules.
 - Generic QSTS code depends on `INetwork3Phase`, `IBus3Phase`, `IPhaseLoad`,
   and `IPhaseGen`; it must not depend on DStab classes. Legacy
-  `ILoad1Phase`/`ILoad3Phase`/`IGen3Phase` access is adapter-only while the
-  static network boundary is migrated.
+  `ILoad1Phase`/`ILoad3Phase`/`IGen3Phase` access is adapter, test, or
+  dynamic-side compatibility only.
 - Warm start should reuse final bus voltages from the previous step by leaving
   solved voltages on the network, unless the solver initialization path forces
   a reset.
@@ -387,7 +387,9 @@ Verification:
 mvn -pl ipss.plugin.3phase test -Dtest="QstsStudyTest,QstsCsvExporterTest,OpenDSSQstsAdapterTest"
 ```
 
-Result on 2026-06-06: 4 tests run, 0 failures.
+Result on 2026-06-06: focused QSTS suite
+`mvn -pl ipss.plugin.3phase clean test -Dtest="*Qsts*,*OpenDSS*Qsts*" -Dsurefire.failIfNoSpecifiedTests=false`
+passed with 21 tests, 0 failures, 0 errors.
 
 ## Slide 6: Control Queue Skeleton
 
@@ -945,10 +947,10 @@ Update:
 Relationship with existing code:
 
 - Scheduled PV/DER injections are represented through `IPhaseGen` generator
-  objects in static studies. Legacy `IGen3Phase` parser/network objects are
-  adapted only until the static network boundary is migrated. OpenDSS
-  PV/storage configuration remains adapter metadata that drives static P/Q
-  injections.
+  objects in static studies. Legacy `IGen1Phase`/`IGen3Phase` objects are
+  compatibility surfaces for parser, test, or dynamic-side code and should not
+  be required by static QSTS. OpenDSS PV/storage configuration remains adapter
+  metadata that drives static P/Q injections.
 - Generator injections must use the same sign convention as existing InterPSS
   generator objects.
 - Do not mix DER QSTS behavior into DistOPF schedule classes; QSTS is a
@@ -1149,6 +1151,8 @@ Create or update:
   - Common phase-vector load contract for 1P, 2P, and 3P devices, including
     load model code, connection, nominal kV, and CP/CI/CZ access where
     applicable.
+  - Includes `getId()` and `setId(String)` so parser, factory, and QSTS code can
+    stay on the generic phase-load boundary.
 - [x] `IStaticPhaseLoad`
   - Static PF/QSTS load specialization.
 - [x] `IDynamicPhaseLoad`
@@ -1267,7 +1271,18 @@ mvn -pl ipss.plugin.3phase test
 
 Verification evidence to capture in PRs or development notes:
 
-- [ ] Classes created/updated in the slice.
+- [x] Classes created/updated in the slice.
+  - Core phase-device interfaces: `IPhaseLoad`, `IPhaseGen`,
+    `IStaticPhaseLoad`, `IStaticPhaseGen`, `IDynamicPhaseLoad`,
+    `IDynamicPhaseGen`, `IAclfPhaseLoad`, `IAclfPhaseGen`.
+  - Static network/device model: existing `Static3PNetwork`, `Static3PBus`,
+    `Static3PBranch`, `Static3PLoad`, `Static3PGen`.
+  - Generic QSTS: `QstsStudy`, `QstsStateApplier`, state stores, profile and
+    schedule model, CSV exporter, generator/storage base-state objects.
+  - Controls: capacitor control data/model, control queue hooks, inverter and
+    storage metadata/control foundations.
+  - Adapter boundary: OpenDSS time-series, loadshape, PV/storage, CapControl,
+    InvControl, static parser topology updates, and DSS-Python QA helpers.
 - [x] Static PF regression command and result.
   - `mvn -pl ipss.plugin.3phase clean test -Dtest="OpenDssParserPowerFlowComparisonTest" -Dsurefire.failIfNoSpecifiedTests=false`
     passed: 49 tests, 0 failures, 0 errors, 24 skipped.
