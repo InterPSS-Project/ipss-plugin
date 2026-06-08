@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -57,8 +58,11 @@ import com.interpss.core.acsc.XFormerConnectCode;
 import com.interpss.core.funcImpl.AclfNetHelper;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
+import com.interpss.core.sparse.ComplexSEqnElem;
+import com.interpss.core.sparse.ComplexSEqnRow;
 import com.interpss.core.sparse.PrimitiveComplex3x3Equation;
 import com.interpss.core.sparse.SparseEqnObjectFactory;
+import com.interpss.core.sparse.impl.AbstractSparseEqnComplexMatrix3x3Impl;
 
 public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlowAlgorithm{
 
@@ -1241,11 +1245,98 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	}
 
 	private void applySwingBusVoltageBoundary(ISparseEqnComplexMatrix3x3 yMatrix) {
-		Complex3x3 zero = new Complex3x3();
-		Complex3x3 unit = Complex3x3.createUnitMatrix();
 		this.swingBusVoltageBoundaryCurrent.clear();
 		BaseAclfNetwork<? extends BaseAclfBus<? extends AclfGen, ? extends AclfLoad>, ? extends AclfBranch> distNet = aclfNetwork();
+		if(!(yMatrix instanceof AbstractSparseEqnComplexMatrix3x3Impl<?>)) {
+			applySwingBusVoltageBoundaryBySetA(yMatrix, distNet);
+			return;
+		}
 
+		AbstractSparseEqnComplexMatrix3x3Impl<?> sparseMatrix =
+				(AbstractSparseEqnComplexMatrix3x3Impl<?>) yMatrix;
+		for(BaseAclfBus bus: distNet.getBusList()) {
+			if(bus.isActive() && bus.isSwing()) {
+				IBus3Phase swingBus = threePhaseBus(bus);
+				int swingSortNumber = bus.getSortNumber();
+				int swingScalarStart = swingSortNumber * 3;
+				Complex3x1 swingVoltage = swingBus.get3PhaseVotlages();
+				for(int rowBus = 0; rowBus < distNet.getNoBus(); rowBus++) {
+					if(rowBus != swingSortNumber) {
+						Complex3x1 compensation = removeSwingColumnEntries(
+								sparseMatrix, rowBus, swingScalarStart, swingVoltage);
+						if(compensation != null) {
+							Complex3x1 existing = this.swingBusVoltageBoundaryCurrent.get(rowBus);
+							this.swingBusVoltageBoundaryCurrent.put(rowBus,
+									existing == null ? compensation : existing.add(compensation));
+						}
+					}
+				}
+				for(int phase = 0; phase < 3; phase++) {
+					ComplexSEqnRow swingRow = sparseMatrix.getElem(swingScalarStart + phase);
+					swingRow.aijList.clear();
+					swingRow.aii = new Complex(1.0, 0.0);
+				}
+			}
+		}
+	}
+
+	private Complex3x1 removeSwingColumnEntries(AbstractSparseEqnComplexMatrix3x3Impl<?> yMatrix,
+			int rowBus, int swingScalarStart, Complex3x1 swingVoltage) {
+		double aReal = 0.0;
+		double aImaginary = 0.0;
+		double bReal = 0.0;
+		double bImaginary = 0.0;
+		double cReal = 0.0;
+		double cImaginary = 0.0;
+		boolean found = false;
+		for(int rowPhase = 0; rowPhase < 3; rowPhase++) {
+			ComplexSEqnRow row = yMatrix.getElem(rowBus * 3 + rowPhase);
+			Iterator<ComplexSEqnElem> iterator = row.aijList.iterator();
+			while(iterator.hasNext()) {
+				ComplexSEqnElem elem = iterator.next();
+				int swingPhase = elem.j - swingScalarStart;
+				if(swingPhase >= 0 && swingPhase < 3) {
+					Complex product = elem.aij.multiply(phaseVoltage(swingVoltage, swingPhase));
+					if(rowPhase == 0) {
+						aReal += product.getReal();
+						aImaginary += product.getImaginary();
+					}
+					else if(rowPhase == 1) {
+						bReal += product.getReal();
+						bImaginary += product.getImaginary();
+					}
+					else {
+						cReal += product.getReal();
+						cImaginary += product.getImaginary();
+					}
+					found = true;
+					iterator.remove();
+				}
+			}
+		}
+		if(!found) {
+			return null;
+		}
+		return new Complex3x1(
+				new Complex(aReal, aImaginary),
+				new Complex(bReal, bImaginary),
+				new Complex(cReal, cImaginary));
+	}
+
+	private Complex phaseVoltage(Complex3x1 voltage, int phase) {
+		if(phase == 0) {
+			return voltage.a_0;
+		}
+		if(phase == 1) {
+			return voltage.b_1;
+		}
+		return voltage.c_2;
+	}
+
+	private void applySwingBusVoltageBoundaryBySetA(ISparseEqnComplexMatrix3x3 yMatrix,
+			BaseAclfNetwork<? extends BaseAclfBus<? extends AclfGen, ? extends AclfLoad>, ? extends AclfBranch> distNet) {
+		Complex3x3 zero = new Complex3x3();
+		Complex3x3 unit = Complex3x3.createUnitMatrix();
 		for(BaseAclfBus bus: distNet.getBusList()) {
 			if(bus.isActive() && bus.isSwing()) {
 				IBus3Phase swingBus = threePhaseBus(bus);
