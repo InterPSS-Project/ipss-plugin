@@ -163,7 +163,7 @@ public class QstsStudyTest {
 	}
 
 	@Test
-	void capacitorControlsUseFixedPointYMatrixCacheThroughCurrentInjectionCompensation() throws InterpssException {
+	void capacitorControlsDisableFixedPointYMatrixCache() throws InterpssException {
 		Static3PNetwork network = twoBusNetwork();
 		Static3PBus loadBus = network.getBus("load");
 		Static3PLoad capacitor = Static3PhaseFactory.eINSTANCE.createStatic3PLoad();
@@ -185,7 +185,7 @@ public class QstsStudyTest {
 				.run();
 
 		assertTrue(result.isConverged());
-		assertTrue(powerFlow.fixedPointYMatrixCacheEnabled);
+		assertFalse(powerFlow.fixedPointYMatrixCacheEnabled);
 	}
 
 	@Test

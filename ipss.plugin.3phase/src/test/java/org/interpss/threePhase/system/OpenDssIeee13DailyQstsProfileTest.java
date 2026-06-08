@@ -20,7 +20,6 @@ import org.interpss.threePhase.qsts.QstsMode;
 import org.interpss.threePhase.qsts.QstsResult;
 import org.interpss.threePhase.qsts.QstsStepContext;
 import org.interpss.threePhase.qsts.QstsStudy;
-import org.interpss.threePhase.qsts.control.QstsControlCompensationPolicy;
 import org.interpss.threePhase.qsts.opendss.OpenDSSQstsStudyFactory;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.jupiter.api.Test;
@@ -99,9 +98,8 @@ public class OpenDssIeee13DailyQstsProfileTest {
 
 	@Test
 	void regulatorTapSymbolicFactorizationMatchesBruteForceRegulatorRebuildForIeee13DailyMode() {
-		SolvedQstsCase bruteForce = solveIeee13ControlCase(
-				new QstsControlCompensationPolicy(true, true, false));
-		SolvedQstsCase symbolicReuse = solveIeee13ControlCase(new QstsControlCompensationPolicy());
+		SolvedQstsCase bruteForce = solveIeee13ControlCase(true, true);
+		SolvedQstsCase symbolicReuse = solveIeee13ControlCase(false, false);
 
 		assertTrue(bruteForce.result.isConverged());
 		assertTrue(symbolicReuse.result.isConverged());
@@ -128,26 +126,45 @@ public class OpenDssIeee13DailyQstsProfileTest {
 				tapsByControlId(symbolicReuse.regulatorControls));
 	}
 
-	private static SolvedQstsCase solveIeee13ControlCase(QstsControlCompensationPolicy policy) {
-		OpenDSSStaticDataParser parser = OpenDSSDataParser.forStaticNetwork();
-		assertTrue(parser.parseFeederData(FEEDER_FOLDER, "IEEE13DailyQstsProfile.dss"));
-		assertTrue(parser.calcVoltageBases());
-		assertTrue(parser.convertActualValuesToPU(1.0));
+	private static SolvedQstsCase solveIeee13ControlCase(boolean disableSymbolReuse,
+			boolean disableValueUpdate) {
+		String originalDisableSymbolReuse = System.getProperty("ipss.qsts.disableFixedPointSymbolReuse");
+		String originalDisableValueUpdate = System.getProperty("ipss.qsts.disableFixedPointValueUpdate");
+		try {
+			System.setProperty("ipss.qsts.disableFixedPointSymbolReuse", Boolean.toString(disableSymbolReuse));
+			System.setProperty("ipss.qsts.disableFixedPointValueUpdate", Boolean.toString(disableValueUpdate));
+			OpenDSSStaticDataParser parser = OpenDSSDataParser.forStaticNetwork();
+			assertTrue(parser.parseFeederData(FEEDER_FOLDER, "IEEE13DailyQstsProfile.dss"));
+			assertTrue(parser.calcVoltageBases());
+			assertTrue(parser.convertActualValuesToPU(1.0));
 
-		DistributionPowerFlowAlgorithm algorithm = ThreePhaseObjectFactory
-				.createDistPowerFlowAlgorithm(parser.getStaticNetwork());
-		QstsResult result = OpenDSSQstsStudyFactory.from(parser)
-				.setPowerFlowAlgorithm(algorithm)
-				.setControlCompensationPolicy(policy)
-				.setMode(QstsMode.DAILY)
-				.setNumberOfSteps(6)
-				.setStepSizeHours(1.0)
-				.setControlMode(QstsControlMode.STATIC)
-				.setMaxControlIterations(12)
-				.setMaxPowerFlowIterations(200)
-				.setTolerance(1.0e-8)
-				.run();
-		return new SolvedQstsCase(result, parser.getRegulatorControls(), algorithm);
+			DistributionPowerFlowAlgorithm algorithm = ThreePhaseObjectFactory
+					.createDistPowerFlowAlgorithm(parser.getStaticNetwork());
+			QstsResult result = OpenDSSQstsStudyFactory.from(parser)
+					.setPowerFlowAlgorithm(algorithm)
+					.setMode(QstsMode.DAILY)
+					.setNumberOfSteps(6)
+					.setStepSizeHours(1.0)
+					.setControlMode(QstsControlMode.STATIC)
+					.setMaxControlIterations(12)
+					.setMaxPowerFlowIterations(200)
+					.setTolerance(1.0e-8)
+					.run();
+			return new SolvedQstsCase(result, parser.getRegulatorControls(), algorithm);
+		}
+		finally {
+			restoreProperty("ipss.qsts.disableFixedPointSymbolReuse", originalDisableSymbolReuse);
+			restoreProperty("ipss.qsts.disableFixedPointValueUpdate", originalDisableValueUpdate);
+		}
+	}
+
+	private static void restoreProperty(String key, String value) {
+		if(value == null) {
+			System.clearProperty(key);
+		}
+		else {
+			System.setProperty(key, value);
+		}
 	}
 
 	private static Map<String, QstsBusVoltageSample> busVoltagesByKey(QstsResult result) {
