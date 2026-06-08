@@ -484,6 +484,38 @@ INTERPSS_QSTS_PERF_AGG feeder=Ckt24 runs=3 avgMsPerStep=5.616489
 medianMsPerStep=5.486653 minMsPerStep=5.481519
 ```
 
+### CSJ Primitive RHS/Result Fast Path
+
+Date: 2026-06-07
+
+The same fixed-point primitive RHS/result path was added to the CSJ 3x3 sparse
+equation implementation by backing `PrimitiveComplex3x3Equation` with reusable
+CSJ `DZcsa` vectors. This lets the fixed-point loop avoid generic sparse-row
+`Complex` RHS/result storage for CSJ, matching the KLUSolveX fast-path contract
+while still using the CSJ LU kernel.
+
+Before the CSJ primitive path, the sequential Ckt24 240-step benchmark was:
+
+```text
+INTERPSS_QSTS_PERF_AGG feeder=Ckt24 runs=3 avgMsPerStep=6.986907
+medianMsPerStep=6.955985 minMsPerStep=6.748051
+```
+
+After the CSJ primitive path:
+
+```text
+INTERPSS_QSTS_PERF_AGG feeder=Ckt24 runs=3 avgMsPerStep=5.541432
+medianMsPerStep=5.394819 minMsPerStep=5.310749
+```
+
+The profiled one-step CSJ run also showed lower per-iteration solve/RHS cost:
+
+```text
+per_iteration_ms rhs_clear=0.089336, current_injection=2.941688,
+  swing_rhs=0.002179, solve=1.394390, voltage_update=1.005937
+current_rhs_deep_per_iteration_ms compose=0.102320, write=0.213631
+```
+
 ## Approval Gates
 
 Do not move to the larger primitive solver/PF API until these are approved:
