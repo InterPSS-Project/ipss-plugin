@@ -258,25 +258,29 @@ Success criteria:
 
 ## To-Do List
 
-- [ ] Add `Primitive3PhasePowerFlowState` with voltage, previous-voltage, RHS,
-      solved-voltage, active-sort, and swing-sort arrays.
-- [ ] Initialize primitive voltage arrays from the current bus voltage objects.
-- [ ] Add a controlled sync path from primitive voltage arrays back to bus
+- [x] Add `Primitive3PhasePowerFlowState` with voltage and previous-voltage
+      arrays for the compatible fixed-point primitive path.
+- [ ] Extend `Primitive3PhasePowerFlowState` with RHS, solved-voltage,
+      active-sort, and swing-sort arrays.
+- [x] Initialize primitive voltage arrays from the current bus voltage objects.
+- [x] Add a controlled sync path from primitive voltage arrays back to bus
       objects.
-- [ ] Move fixed-point voltage update and mismatch checks to primitive arrays.
+- [x] Move fixed-point voltage update and mismatch checks to primitive arrays
+      for `PrimitiveComplex3x3ArrayEquation` solvers when the device mix is
+      static-load compatible.
 - [ ] Add fixed-point profile buckets for primitive voltage update, mismatch,
       and sync.
-- [ ] Add a primitive solved-result array API for KLUSolveX.
-- [ ] Add a reusable primitive solved-result array bridge for CSJ.
-- [ ] Keep the existing `Complex3x1` primitive solver API as a compatibility
+- [x] Add a primitive solved-result array API for KLUSolveX.
+- [x] Add a primitive solved-result array bridge for CSJ.
+- [x] Keep the existing `Complex3x1` primitive solver API as a compatibility
       fallback.
 - [ ] Build primitive load-injection descriptors for `Static3PLoad`.
-- [ ] Make descriptor current calculations use only primitive real/imaginary
-      math.
+- [x] Add a primitive static-load current overload using primitive voltage
+      storage for the compatible path.
 - [ ] Add sampled validation comparing descriptor currents with existing
       `calc3PhEquivCurInj()` results.
-- [ ] Change the fixed-point hot loop to iterate active injection descriptors
-      instead of all non-swing buses when the primitive path is available.
+- [x] Change the fixed-point hot loop to iterate active current-injection buses
+      instead of all non-swing buses when tap compensation is not active.
 - [ ] Add primitive generator-injection descriptors for static generators.
 - [ ] Isolate and profile fallback current injection for unsupported devices.
 - [ ] Add descriptor dirty flags for topology, load, generator, and mutable
@@ -287,9 +291,10 @@ Success criteria:
       descriptor-style RHS additions.
 - [ ] Add lazy sync methods for bus voltages, positive-sequence voltages, branch
       currents, and QSTS result sampling.
-- [ ] Verify Ckt24 240-step QSTS with KLUSolveX and CSJ.
+- [ ] Verify Ckt24 240-step QSTS with KLUSolveX.
+- [x] Verify Ckt24 240-step QSTS with CSJ.
 - [ ] Verify existing OpenDSS parser/PF comparison tests.
-- [ ] Document before/after profile results in the optimization history.
+- [x] Document before/after profile results in the optimization history.
 
 ## Recommended First Slice
 
@@ -298,3 +303,77 @@ load/generator descriptors. This keeps the behavior surface small and should
 directly reduce `voltage_update_ms` and result-copy overhead. After that is
 stable, move `Static3PLoad` injection into descriptors, which is the likely
 largest remaining PF-loop win.
+
+## Implementation Notes and Measurements
+
+### 2026-06-07 Primitive Array and Voltage-State Slice
+
+Implemented:
+
+- `PrimitiveComplex3x3ArrayEquation` exposes solved values as
+  `[a.re, a.im, b.re, b.im, c.re, c.im]` per bus sort.
+- KLUSolveX exposes its existing interleaved result buffer.
+- CSJ exposes the interleaved `DZcsa.x` solved array directly.
+- Fixed-point PF can keep compatible static-load cases in primitive voltage
+  arrays during iterations and sync bus voltage objects after convergence.
+- `Static3PLoad` has a primitive voltage overload for current injection.
+- The PF loop skips no-injection non-swing buses when regulator tap
+  compensation is not active.
+
+Validation:
+
+- `mvn -pl ipss.core_EMF -DskipTests clean install`
+- `mvn -pl ipss.plugin.3phase -Dtest=QstsLargeFeederPerformanceBenchmark -Dqsts.perf.case=ckt24 -Dqsts.perf.warmupSteps=0 -Dqsts.perf.steps=1 -Dqsts.perf.repeats=1 -Dipss.sparse.solver=csj -Dipss.fixedpoint.profile=true -Dsurefire.failIfNoSpecifiedTests=false clean test`
+- `mvn -pl ipss.plugin.3phase -Dtest=QstsLargeFeederPerformanceBenchmark -Dqsts.perf.case=ckt24 -Dqsts.perf.warmupSteps=24 -Dqsts.perf.steps=240 -Dqsts.perf.repeats=3 -Dipss.sparse.solver=csj -Dsurefire.failIfNoSpecifiedTests=false test`
+
+Profile result after primitive voltage state, static-load primitive overload,
+and no-injection bus skip:
+
+```text
+attempts=2, converged_attempts=2, iterations=14
+save_voltages_ms=0.149
+current_injection_ms=30.516
+current_injection_breakdown_ms regulator=0.021, calc=10.025, rhs=15.416, buses=52108
+current_calc_deep_ms voltage=0.000, load_current=4.267, loads=52094
+solve_ms=26.700
+voltage_update_ms=8.012
+per_iteration_ms save_voltages=0.010637
+per_iteration_ms current_injection=2.179711
+per_iteration_ms solve=1.907170
+per_iteration_ms voltage_update=0.572298
+current_injection_per_iteration_ms calc=0.716097, rhs=1.101164
+current_calc_deep_per_iteration_ms load_current=0.304761
+```
+
+Compared with the prior profiled CSJ path, this reduces the main PF-loop object
+work:
+
+- `save_voltages`: about `0.25 ms/iter` to `0.01 ms/iter`.
+- `current_injection`: about `2.5 ms/iter` to `2.18 ms/iter`.
+- `voltage_update`: about `0.79 ms/iter` to `0.57 ms/iter`.
+- `load_current`: about `0.38 ms/iter` to `0.30 ms/iter`.
+
+The CSJ 240-step end-to-end benchmark remains noisy and is not yet a clear
+aggregate win:
+
+```text
+Before this slice, best recent CSJ run:
+INTERPSS_QSTS_PERF_AGG feeder=Ckt24 runs=3 avgMsPerStep=5.609116 medianMsPerStep=5.470859 minMsPerStep=5.412824
+
+After this slice, repeated CSJ runs:
+INTERPSS_QSTS_PERF_AGG feeder=Ckt24 runs=3 avgMsPerStep=5.855288 medianMsPerStep=5.712991 minMsPerStep=5.649939
+INTERPSS_QSTS_PERF_AGG feeder=Ckt24 runs=3 avgMsPerStep=6.226260 medianMsPerStep=6.173749 minMsPerStep=6.003376
+```
+
+KLUSolveX could not be benchmarked in this shell because the native library was
+not loadable without `ipss.klusolvex.library.path` or
+`ipss.klusolvex.library.name`.
+
+Next highest-value work:
+
+- Convert RHS composition/write to a true primitive RHS backing array and flush
+  by row or array into the solver.
+- Replace the current bus-loop static-load fast path with cached load
+  descriptors so the loop iterates loads directly.
+- Add sampled current validation before expanding primitive descriptors beyond
+  `Static3PLoad`.
