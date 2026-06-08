@@ -75,12 +75,13 @@ public class AclfNetLoadFlowOptimizer {
 		
 		GenStateOptimizer opt = new GenStateOptimizer();
 		
-		if (ssaResult != null) {
+		if (ssaResult == null) {
+			buildSectionConstrain(dclfAlgo, senMatrix, controlGenMap, opt, threshold);
+		}
+		else {
 			buildSsaSectionConstrain(dclfAlgo, senMatrix, controlGenMap, opt, threshold, ssaResult);
 		}
-		else
-			buildSectionConstrain(dclfAlgo, senMatrix, controlGenMap, opt, threshold);
-
+	
 		buildGenConstrain(controlGenMap, opt, net);
 
 		opt.optimize();
