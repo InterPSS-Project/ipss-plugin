@@ -392,6 +392,45 @@ RHS/result path that bypasses the generic sparse equation `Complex` row storage
 for fixed-point PF, then writes directly into primitive bus voltage state after
 the Stage 3 bus cache is approved.
 
+### Ckt24 Swing-Boundary Matrix Profiling Update
+
+Date: 2026-06-07
+
+The fixed-point matrix breakdown showed that the dominant matrix setup cost was
+not admittance calculation. It was `applySwingBusVoltageBoundary(...)`, which
+previously cleared the swing-bus row and column through generic 3x3
+`setA(zero, ...)` calls. In the core sparse row implementation, setting a
+missing scalar entry creates a new sparse entry, so the old boundary step could
+scan rows and add explicit zero entries while trying to remove swing-bus
+couplings.
+
+Before sparse-aware boundary removal:
+
+```text
+matrix_ms=353.187
+matrix_breakdown_ms signature=4.967, bus_cache=2.722, assembly=21.881,
+  regulator_padding=0.002, swing_boundary=274.741,
+  symbol_reuse=0.000, factorization_call=51.549
+```
+
+After removing only existing scalar entries touching the swing column and
+clearing the swing scalar rows directly:
+
+```text
+matrix_ms=100.805
+matrix_breakdown_ms signature=5.245, bus_cache=2.453, assembly=21.603,
+  regulator_padding=0.001, swing_boundary=2.024,
+  symbol_reuse=0.000, factorization_call=71.894
+```
+
+The Ckt24 240-step KLUSolveX benchmark with voltage-only post solve and no
+result sampling improved from the prior `6.855913 ms/step` average to:
+
+```text
+INTERPSS_QSTS_PERF_AGG feeder=Ckt24 runs=3 avgMsPerStep=5.616489
+medianMsPerStep=5.486653 minMsPerStep=5.481519
+```
+
 ## Approval Gates
 
 Do not move to the larger primitive solver/PF API until these are approved:
