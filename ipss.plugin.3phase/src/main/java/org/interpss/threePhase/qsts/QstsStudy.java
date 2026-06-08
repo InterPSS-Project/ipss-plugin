@@ -18,7 +18,6 @@ import org.interpss.threePhase.powerflow.control.InverterControlData;
 import org.interpss.threePhase.powerflow.control.InverterControlModel.InverterControlResult;
 import org.interpss.threePhase.powerflow.control.RegulatorControlData;
 import org.interpss.threePhase.qsts.control.QstsControlAction;
-import org.interpss.threePhase.qsts.control.QstsControlCompensationPolicy;
 import org.interpss.threePhase.qsts.control.QstsControlQueue;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
@@ -52,7 +51,6 @@ public class QstsStudy {
 	private List<CapacitorControlData> capacitorControls = Collections.emptyList();
 	private List<InverterControlData> inverterControls = Collections.emptyList();
 	private QstsInverterAdapterStore inverterAdapterStore = new QstsInverterAdapterStore();
-	private QstsControlCompensationPolicy controlCompensationPolicy = new QstsControlCompensationPolicy();
 	private final CapacitorBankControl qstsCapacitorControl = new CapacitorBankControl();
 	private final QstsControlQueue controlQueue = new QstsControlQueue();
 	private final Map<String, Integer> operationCountByControlKey = new java.util.LinkedHashMap<>();
@@ -112,12 +110,6 @@ public class QstsStudy {
 	public QstsStudy setInverterAdapterStore(QstsInverterAdapterStore inverterAdapterStore) {
 		this.inverterAdapterStore = inverterAdapterStore == null
 				? new QstsInverterAdapterStore() : inverterAdapterStore;
-		return this;
-	}
-
-	public QstsStudy setControlCompensationPolicy(QstsControlCompensationPolicy controlCompensationPolicy) {
-		this.controlCompensationPolicy = controlCompensationPolicy == null
-				? new QstsControlCompensationPolicy() : controlCompensationPolicy;
 		return this;
 	}
 
@@ -207,8 +199,8 @@ public class QstsStudy {
 		registerMissingInverterAdapters();
 		boolean controlsEnabled = controlMode != QstsControlMode.OFF && maxControlIterations > 0;
 		boolean delayedCapacitorControls = usesDelayedControlQueue();
-		algorithm.setFixedPointYMatrixCacheEnabled(controlCompensationPolicy.canReuseFixedPointYMatrix(
-				pfMethod, controlsEnabled, regulatorControls, capacitorControls, inverterControls));
+		algorithm.setFixedPointYMatrixCacheEnabled(pfMethod == DistributionPFMethod.Fixed_Point
+				&& !controlsEnabled);
 		algorithm.setRegulatorControlEnabled(controlsEnabled && !regulatorControls.isEmpty());
 		algorithm.setCapacitorControlEnabled(controlsEnabled && !delayedCapacitorControls
 				&& !capacitorControls.isEmpty());
