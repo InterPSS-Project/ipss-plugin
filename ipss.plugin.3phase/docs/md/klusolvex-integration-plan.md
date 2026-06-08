@@ -66,18 +66,17 @@ Three-phase distribution users:
 
 ## Architecture
 
-### 1. Core Native Solver Module
+### 1. Plugin Native Solver Module
 
-Add a small native-backed solver package in core, keeping it isolated from
-distribution-specific code:
+Add a small native-backed solver package in `ipss.plugin.core`, keeping it
+isolated from `core_EMF` and distribution-specific code:
 
 ```text
-com.interpss.core.sparse.impl.klusolvex
-  KlusolveXNativeLibrary
+org.interpss.core.sparse.impl.klusolvex
+  KlusolveXLibrary
   KlusolveXSparseSet
   KlusolveXSparseEqnComplexImpl
   KlusolveXSparseEqnComplexMatrix3x3Impl
-  KlusolveXSolverOptions
   KlusolveXAvailability
 ```
 
@@ -103,18 +102,18 @@ Native access choice:
 - Fallback: JNI only if JNA/FFM introduces unacceptable overhead or packaging
   issues.
 
-Do not make KLUSolveX a compile-time dependency of all InterPSS users. The Java
-classes can exist in core, but native loading should happen only after explicit
-solver selection.
+Do not make KLUSolveX a compile-time dependency of all InterPSS users. The
+native adapter classes live in `ipss.plugin.core`, and native loading should
+happen only after explicit plugin-level solver selection.
 
 ### 2. Solver Selection Boundary
 
 Add a single configuration entrypoint, for example:
 
 ```java
-SparseEqnSolverProvider.useDefault();
-SparseEqnSolverProvider.useKlusolveX();
-SparseEqnSolverProvider.useKlusolveXIfAvailable();
+IpssCorePlugin.configureSparseSolverFromSystemProperties();
+IpssCorePlugin.useKlusolveX();
+IpssCorePlugin.useKlusolveXIfAvailable();
 ```
 
 Internally this should set the existing `SparseEqnObjectFactory` creators.
