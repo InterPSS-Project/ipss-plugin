@@ -3020,13 +3020,18 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 		private double voltageMismatch(double[] solved, int offset) {
 			return Math.max(
-					Math.hypot(solved[offset] - this.previousVoltage[offset],
-							solved[offset + 1] - this.previousVoltage[offset + 1]),
+					phaseMagnitudeMismatch(solved[offset], solved[offset + 1],
+							this.previousVoltage[offset], this.previousVoltage[offset + 1]),
 					Math.max(
-							Math.hypot(solved[offset + 2] - this.previousVoltage[offset + 2],
-									solved[offset + 3] - this.previousVoltage[offset + 3]),
-							Math.hypot(solved[offset + 4] - this.previousVoltage[offset + 4],
-									solved[offset + 5] - this.previousVoltage[offset + 5])));
+							phaseMagnitudeMismatch(solved[offset + 2], solved[offset + 3],
+									this.previousVoltage[offset + 2], this.previousVoltage[offset + 3]),
+							phaseMagnitudeMismatch(solved[offset + 4], solved[offset + 5],
+									this.previousVoltage[offset + 4], this.previousVoltage[offset + 5])));
+		}
+
+		private static double phaseMagnitudeMismatch(double real, double imaginary,
+				double oldReal, double oldImaginary) {
+			return Math.abs(Math.hypot(real, imaginary) - Math.hypot(oldReal, oldImaginary));
 		}
 
 		private void copySolvedVoltage(double[] solved, int offset) {
@@ -3151,13 +3156,11 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		}
 
 		private static double phaseMismatch(Complex value, double oldReal, double oldImaginary) {
-			double realDiff = realValue(value) - oldReal;
-			double imaginaryDiff = imaginaryValue(value) - oldImaginary;
-			return Math.hypot(realDiff, imaginaryDiff);
+			return phaseMismatch(realValue(value), imaginaryValue(value), oldReal, oldImaginary);
 		}
 
 		private static double phaseMismatch(double real, double imaginary, double oldReal, double oldImaginary) {
-			return Math.hypot(real - oldReal, imaginary - oldImaginary);
+			return Math.abs(Math.hypot(real, imaginary) - Math.hypot(oldReal, oldImaginary));
 		}
 
 		private static boolean finiteValue(Complex value) {
