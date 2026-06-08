@@ -2,6 +2,10 @@ package org.interpss.optadj.ei;
 
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.ejml.data.DMatrixSparseCSC;
 import org.interpss.plugin.optadj.algo.util.AclfNetSensSparseHelper;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
@@ -29,6 +33,23 @@ public class EInterCon_Sample_Info {
 
 		AclfNetSensSparseHelper helper = new AclfNetSensSparseHelper(aclfNet);
 
-		helper.calSen();
+		aclfNet.createAclfGenNameLookupTable(true);
+
+		Set<String> busSet = new HashSet<>();
+		// add all active gen buses to the bus set
+		aclfNet.getAclfGenNameLookupTable().values().stream().filter(gen -> gen.isActive()).forEach(gen -> {
+			busSet.add(gen.getParentBus().getId());
+		});
+		System.out.println("Number of active gen buses: " + busSet.size());
+
+		Set<String> branchSet = new HashSet<>();
+		// add first 200 active branch buses to the branch set
+		aclfNet.getBranchList().stream().filter(branch -> branch.isActive()).limit(200).forEach(branch -> {
+			branchSet.add(branch.getId());
+		});
+
+		// count the number of non-zero elements in the sparse matrix
+		DMatrixSparseCSC sen = helper.calSenSortNumber(busSet, branchSet);
+		System.out.println("Number of non-zero elements in the sparse matrix: " + sen.nz_length);
 	}
 }
