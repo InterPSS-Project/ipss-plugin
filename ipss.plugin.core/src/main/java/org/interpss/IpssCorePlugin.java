@@ -33,6 +33,13 @@ import org.ieee.odm.common.ODMLogger;
 import com.interpss.common.CoreCommonFactory;
 import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.sparse.SparseEqnObjectFactory;
+import com.interpss.core.sparse.solver.SparseEqnSolverFactory;
+import com.interpss.core.sparse.solver.SparseEqnSolverProvider;
+
+import org.interpss.core.sparse.impl.klusolvex.KlusolveXSparseEqnComplexImpl;
+import org.interpss.core.sparse.impl.klusolvex.KlusolveXSparseEqnComplexMatrix3x3Impl;
+import org.interpss.core.sparse.solver.KlusolveXAvailability;
   
 /**
  * Core plugin runtime configuration functioin
@@ -42,6 +49,16 @@ import com.interpss.common.util.IpssLogger;
  */
 @Deprecated
 public class IpssCorePlugin {
+	public enum SparseSolverType {
+		CSJ,
+		JAVA_KLU,
+		KLUSOLVEX,
+		KLUSOLVEX_AUTO
+	}
+
+	public record Selection(SparseSolverType requested, SparseSolverType active, String message) {
+	}
+
 	/**
 	 * Core plugin Sptring ctx file path
 	 */
@@ -83,4 +100,48 @@ public class IpssCorePlugin {
 		ipssLogger.setLevel(level);
 		ODMLogger.getLogger().setLevel(level);
 	}	
+
+	public static Selection configureSparseSolverFromSystemProperties() {
+		String solver = System.getProperty(SparseEqnSolverProvider.SOLVER_PROPERTY, "csj").trim().toLowerCase();
+		switch(solver) {
+		case "java-klu":
+		case "java_klu":
+		case "klu":
+			SparseEqnSolverProvider.Selection javaKlu = SparseEqnSolverProvider.useJavaKlu();
+			return new Selection(SparseSolverType.JAVA_KLU, SparseSolverType.JAVA_KLU, javaKlu.message());
+		case "klusolvex":
+			return useKlusolveX();
+		case "auto":
+		case "klusolvex-auto":
+		case "klusolvex_auto":
+			return useKlusolveXIfAvailable();
+		case "csj":
+		default:
+			SparseEqnSolverProvider.Selection csj = SparseEqnSolverProvider.useCSJ();
+			return new Selection(SparseSolverType.CSJ, SparseSolverType.CSJ, csj.message());
+		}
+	}
+
+	public static Selection useKlusolveXIfAvailable() {
+		if(KlusolveXAvailability.isNativeLibraryLoadable()) {
+			return useKlusolveX();
+		}
+		SparseEqnSolverProvider.useCSJ();
+		return new Selection(SparseSolverType.KLUSOLVEX_AUTO, SparseSolverType.CSJ,
+				KlusolveXAvailability.unavailableReason() + "; falling back to CSJ");
+	}
+
+	public static Selection useKlusolveX() {
+		if(!KlusolveXAvailability.isNativeLibraryLoadable()) {
+			throw new IllegalStateException(KlusolveXAvailability.unavailableReason());
+		}
+		SparseEqnObjectFactory.setDoubleEqnCreator(null);
+		SparseEqnObjectFactory.setMatrix2x2EqnCreator(null);
+		SparseEqnObjectFactory.setComplexEqnCreator(KlusolveXSparseEqnComplexImpl::new);
+		SparseEqnObjectFactory.setComplextMatrix3x3EqnCreator(KlusolveXSparseEqnComplexMatrix3x3Impl::new);
+		SparseEqnSolverFactory.setDoubleSolverCreator(null);
+		SparseEqnSolverFactory.setComplexSolverCreator(null);
+		return new Selection(SparseSolverType.KLUSOLVEX, SparseSolverType.KLUSOLVEX,
+				"Using KLUSolveX for complex sparse equations; real equations use CSJ");
+	}
 }
