@@ -44,6 +44,7 @@ public class QstsStudy {
 	private int maxControlIterations;
 	private DistributionPFMethod pfMethod = DistributionPFMethod.Fixed_Point;
 	private DistributionPostSolveOutputMode postSolveOutputMode = DistributionPostSolveOutputMode.VOLTAGE_AND_SWING_POWER;
+	private QstsResultSamplingMode resultSamplingMode = QstsResultSamplingMode.FULL;
 	private int maxPowerFlowIterations = 100;
 	private double tolerance = 1.0e-6;
 	private boolean initializeFirstStepVoltages = true;
@@ -171,6 +172,12 @@ public class QstsStudy {
 		return this;
 	}
 
+	public QstsStudy setResultSamplingMode(QstsResultSamplingMode resultSamplingMode) {
+		this.resultSamplingMode = resultSamplingMode == null
+				? QstsResultSamplingMode.FULL : resultSamplingMode;
+		return this;
+	}
+
 	public QstsStudy setMaxPowerFlowIterations(int maxPowerFlowIterations) {
 		this.maxPowerFlowIterations = Math.max(1, maxPowerFlowIterations);
 		return this;
@@ -229,15 +236,27 @@ public class QstsStudy {
 			String failureReason = converged ? null
 					: "Distribution power flow did not converge at step " + i
 							+ " mode=" + mode + " hour=" + hour;
-			steps.add(new QstsStepResult(context, converged, algorithm.getIterationCount(),
-					Double.NaN, failureReason, actionCount, sampleBusVoltages(context),
-					sampleLoadPowers(context), sampleGeneratorPowers(context),
-					sampleCapacitorStates(context), inverterControlSamples));
+			steps.add(createStepResult(context, converged, algorithm.getIterationCount(),
+					failureReason, actionCount, inverterControlSamples));
 			if(!converged) {
 				break;
 			}
 		}
 		return new QstsResult(steps);
+	}
+
+	private QstsStepResult createStepResult(QstsStepContext context, boolean converged,
+			int iterationCount, String failureReason, int actionCount,
+			List<QstsInverterControlSample> inverterControlSamples) {
+		if(resultSamplingMode == QstsResultSamplingMode.NONE) {
+			return new QstsStepResult(context, converged, iterationCount, Double.NaN,
+					failureReason, actionCount, Collections.emptyList(), Collections.emptyList(),
+					Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+		}
+		return new QstsStepResult(context, converged, iterationCount, Double.NaN,
+				failureReason, actionCount, sampleBusVoltages(context), sampleLoadPowers(context),
+				sampleGeneratorPowers(context), sampleCapacitorStates(context),
+				inverterControlSamples);
 	}
 
 	public QstsStateApplier getStateApplier() {
