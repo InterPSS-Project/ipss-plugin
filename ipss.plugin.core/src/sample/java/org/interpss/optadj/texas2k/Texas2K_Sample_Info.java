@@ -2,6 +2,8 @@ package org.interpss.optadj.texas2k;
 
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 
+import org.ejml.data.DMatrixSparseCSC;
+import org.interpss.plugin.optadj.algo.util.AclfNetSensHelper;
 import org.interpss.plugin.optadj.algo.util.AclfNetSensSparseHelper;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
@@ -27,8 +29,14 @@ public class Texas2K_Sample_Info {
 		// load the test data V33
 		AclfNetwork aclfNet = loadNetwork();
 
-		AclfNetSensSparseHelper helper = new AclfNetSensSparseHelper(aclfNet);
+		AclfNetSensHelper helper = new AclfNetSensHelper(aclfNet);
 
-		helper.calSen();
+		float[][] sen = helper.calSen();
+		System.out.println("Number of non-zero elements in the dense matrix: " + sen.length * sen[0].length);
+
+		AclfNetSensSparseHelper helperSparse = new AclfNetSensSparseHelper(aclfNet);
+
+		DMatrixSparseCSC senSparse = helperSparse.calSen();
+		System.out.println("Number of non-zero elements in the sparse matrix: " + senSparse.nz_length);
 	}
 }
