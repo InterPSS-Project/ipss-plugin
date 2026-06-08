@@ -184,6 +184,17 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				&& Double.isFinite(value[5]);
 	}
 
+	private boolean isFinite(double[] value, int offset) {
+		return value != null
+				&& value.length >= offset + 6
+				&& Double.isFinite(value[offset])
+				&& Double.isFinite(value[offset + 1])
+				&& Double.isFinite(value[offset + 2])
+				&& Double.isFinite(value[offset + 3])
+				&& Double.isFinite(value[offset + 4])
+				&& Double.isFinite(value[offset + 5]);
+	}
+
 	private boolean isFinite(double real, double imaginary) {
 		return Double.isFinite(real) && Double.isFinite(imaginary);
 	}
@@ -1376,6 +1387,10 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		}
 		double[] primitiveRhs = yMatrix instanceof PrimitiveComplex3x3ArrayEquation arrayMatrix
 				? arrayMatrix.primitiveRhsInterleaved() : null;
+		if(primitiveRhs != null && primitiveState != null) {
+			setPowerflowCurrentInjectionsDirectProfiled(primitiveRhs, busCache, primitiveState);
+			return;
+		}
 		for(FixedPointBus bus : busCache.currentInjectionBuses) {
 				IBus3Phase bus3P = bus.bus3P;
 				FIXED_POINT_PROFILE.addCurrentInjectionBus();
@@ -1451,6 +1466,10 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			PrimitiveFixedPointState primitiveState) {
 		double[] primitiveRhs = yMatrix instanceof PrimitiveComplex3x3ArrayEquation arrayMatrix
 				? arrayMatrix.primitiveRhsInterleaved() : null;
+		if(primitiveRhs != null && primitiveState != null) {
+			setPowerflowCurrentInjectionsDirectFast(primitiveRhs, busCache, primitiveState);
+			return;
+		}
 		for(FixedPointBus bus : busCache.currentInjectionBuses) {
 			double[] curInj = primitiveState == null
 					? calc3PhEquivCurInjPrimitiveFast(bus)
@@ -1498,6 +1517,88 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 							curInj[5] - bus.boundaryCImaginary);
 				}
 			}
+		}
+	}
+
+	private void setPowerflowCurrentInjectionsDirectProfiled(double[] primitiveRhs, FixedPointBusCache busCache,
+			PrimitiveFixedPointState primitiveState) {
+		for(FixedPointBus bus : busCache.currentInjectionBuses) {
+			FIXED_POINT_PROFILE.addCurrentInjectionBus();
+			int offset = 6 * bus.sortNumber;
+			long start = FIXED_POINT_PROFILE.start();
+			addStaticLoadCurrentToRhsProfiled(bus, primitiveState.voltage, offset, primitiveRhs);
+			FIXED_POINT_PROFILE.addCurrentInjectionCalc(FIXED_POINT_PROFILE.elapsed(start));
+
+			long rhsStart = FIXED_POINT_PROFILE.start();
+			start = FIXED_POINT_PROFILE.start();
+			if(!isFinite(primitiveRhs, offset)) {
+				log.warn("Invalid fixed-point current injection at bus " + bus.id
+						+ ", sortNumber=" + bus.sortNumber + ", iabc=" + format3x1(primitiveRhs, offset)
+						+ ", vabc=" + format3x1(primitiveState.voltage, offset));
+			}
+			FIXED_POINT_PROFILE.addCurrentRhsFinite(FIXED_POINT_PROFILE.elapsed(start));
+
+			start = FIXED_POINT_PROFILE.start();
+			Complex3x1 boundaryCurrent = bus.boundaryCurrent;
+			FIXED_POINT_PROFILE.addCurrentRhsLookup(FIXED_POINT_PROFILE.elapsed(start));
+			start = FIXED_POINT_PROFILE.start();
+			if(!bus.boundaryCurrentFinite) {
+				log.warn("Invalid fixed-point swing-boundary current at bus " + bus.id
+						+ ", sortNumber=" + bus.sortNumber + ", iabc=" + boundaryCurrent);
+			}
+			FIXED_POINT_PROFILE.addCurrentRhsBoundaryFinite(FIXED_POINT_PROFILE.elapsed(start));
+
+			start = FIXED_POINT_PROFILE.start();
+			if(boundaryCurrent != null) {
+				primitiveRhs[offset] -= bus.boundaryAReal;
+				primitiveRhs[offset + 1] -= bus.boundaryAImaginary;
+				primitiveRhs[offset + 2] -= bus.boundaryBReal;
+				primitiveRhs[offset + 3] -= bus.boundaryBImaginary;
+				primitiveRhs[offset + 4] -= bus.boundaryCReal;
+				primitiveRhs[offset + 5] -= bus.boundaryCImaginary;
+			}
+			FIXED_POINT_PROFILE.addCurrentRhsCompose(FIXED_POINT_PROFILE.elapsed(start));
+			FIXED_POINT_PROFILE.addCurrentInjectionRhs(FIXED_POINT_PROFILE.elapsed(rhsStart));
+		}
+	}
+
+	private void setPowerflowCurrentInjectionsDirectFast(double[] primitiveRhs, FixedPointBusCache busCache,
+			PrimitiveFixedPointState primitiveState) {
+		for(FixedPointBus bus : busCache.currentInjectionBuses) {
+			int offset = 6 * bus.sortNumber;
+			for(IPhaseLoad load : bus.phaseLoads) {
+				((Static3PLoad) load).addEquivCurrInj(primitiveState.voltage, offset, primitiveRhs, offset);
+			}
+			if(!isFinite(primitiveRhs, offset)) {
+				log.warn("Invalid fixed-point current injection at bus " + bus.id
+						+ ", sortNumber=" + bus.sortNumber + ", iabc=" + format3x1(primitiveRhs, offset)
+						+ ", vabc=" + format3x1(primitiveState.voltage, offset));
+			}
+			if(!bus.boundaryCurrentFinite) {
+				log.warn("Invalid fixed-point swing-boundary current at bus " + bus.id
+						+ ", sortNumber=" + bus.sortNumber + ", iabc=" + bus.boundaryCurrent);
+			}
+			if(bus.boundaryCurrent != null) {
+				primitiveRhs[offset] -= bus.boundaryAReal;
+				primitiveRhs[offset + 1] -= bus.boundaryAImaginary;
+				primitiveRhs[offset + 2] -= bus.boundaryBReal;
+				primitiveRhs[offset + 3] -= bus.boundaryBImaginary;
+				primitiveRhs[offset + 4] -= bus.boundaryCReal;
+				primitiveRhs[offset + 5] -= bus.boundaryCImaginary;
+			}
+		}
+	}
+
+	private void addStaticLoadCurrentToRhsProfiled(FixedPointBus bus, double[] voltage,
+			int offset, double[] primitiveRhs) {
+		long start = FIXED_POINT_PROFILE.start();
+		List<? extends IPhaseLoad> loads = bus.phaseLoads;
+		FIXED_POINT_PROFILE.addCurrentCalcLoadList(FIXED_POINT_PROFILE.elapsed(start));
+		for(IPhaseLoad load : loads) {
+			FIXED_POINT_PROFILE.addCurrentCalcLoad();
+			start = FIXED_POINT_PROFILE.start();
+			((Static3PLoad) load).addEquivCurrInj(voltage, offset, primitiveRhs, offset);
+			FIXED_POINT_PROFILE.addCurrentCalcLoadCurrent(FIXED_POINT_PROFILE.elapsed(start));
 		}
 	}
 
