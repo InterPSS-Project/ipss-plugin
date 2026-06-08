@@ -735,7 +735,7 @@ public class OpenDssParserPowerFlowComparisonTest {
 					"ieee8500-voltage-depth-tol-" + toleranceLabel(tolerance) + ".csv");
 			Files.createDirectories(output.getParent());
 			Files.writeString(output, voltageDepthCsv(distNet, references), StandardCharsets.UTF_8);
-			ComparisonResult result = compareVoltages(distNet, references);
+			ComparisonResult result = compareVoltages(distNet, activeReferences(distNet, references));
 			System.out.println("Wrote IEEE8500 voltage-depth export tolerance=" + tolerance
 					+ ", iterations=" + powerFlow.getIterationCount()
 					+ ", " + result.summary("IEEE8500")
@@ -772,6 +772,36 @@ public class OpenDssParserPowerFlowComparisonTest {
 				+ ", " + result.summary("Ckt24") + ": " + output.toAbsolutePath());
 		if(KlusolveXPerformanceCounters.isEnabled()) {
 			System.out.println(KlusolveXPerformanceCounters.summary());
+		}
+	}
+
+	@Test
+	@Disabled("Diagnostic only: compares Ckt24 voltage mismatch across fixed-point tolerances")
+	public void ckt24ToleranceSensitivityDiagnostic() throws IOException {
+		System.out.println(SparseEqnSolverProvider.configureFromSystemProperties().message());
+		List<VoltageReference> references = readReferences(
+				"opendss-reference/ckt24-controls-off-dss-python-voltage-reference.csv");
+
+		for(double tolerance : List.of(1.0e-6, 1.0e-4, 1.0e-3)) {
+			OpenDSSStaticDataParser parser = OpenDSSDataParser.forStaticNetwork();
+			parser.setRegControlEnabled(false);
+			assertTrue(parser.parseFeederData("testData/feeder/Ckt24", "master_ckt24_interpss.dss"));
+			assertTrue(parser.calcVoltageBases());
+			assertTrue(parser.convertActualValuesToPU(1.0));
+
+			Static3PNetwork distNet = parser.getStaticNetwork();
+			DistributionPowerFlowAlgorithm powerFlow = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(distNet);
+			powerFlow.setPFMethod(DistributionPFMethod.Fixed_Point);
+			powerFlow.setInitBusVoltageEnabled(true);
+			powerFlow.setMaxIteration(1000);
+			powerFlow.setTolerance(tolerance);
+			assertTrue(powerFlow.powerflow(), "Ckt24 fixed-point failed at tolerance=" + tolerance
+					+ ", iterations=" + powerFlow.getIterationCount());
+
+			ComparisonResult result = compareVoltages(distNet, activeReferences(distNet, references));
+			System.out.println("Ckt24 tolerance=" + tolerance
+					+ ", iterations=" + powerFlow.getIterationCount()
+					+ ", " + result.summary("Ckt24"));
 		}
 	}
 
@@ -2133,6 +2163,16 @@ public class OpenDssParserPowerFlowComparisonTest {
 
 	private static List<VoltageReference> activeReferences(DStabNetwork3Phase distNet, List<VoltageReference> references) {
 		return OpenDssDataQaUtils.activeReferences(distNet, references);
+	}
+
+	private static List<VoltageReference> activeReferences(BaseAclfNetwork<?, ?> distNet,
+			List<VoltageReference> references) {
+		return references.stream()
+				.filter(reference -> {
+					BaseAclfBus<?, ?> bus = distNet.getBus(reference.bus);
+					return bus != null && bus.isActive();
+				})
+				.toList();
 	}
 
 	private static String interpssLoadCsv(DStabNetwork3Phase distNet) {
