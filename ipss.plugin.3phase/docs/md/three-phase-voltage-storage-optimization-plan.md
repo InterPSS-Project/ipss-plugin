@@ -454,6 +454,7 @@ Important unit note: the benchmark prints milliseconds per QSTS step
 | Result sampling mode | Add `QstsResultSamplingMode.NONE` for benchmark/time-series runs that do not need every step stored | Avoided creating and retaining per-step result objects when only convergence/performance is being measured | Included in the `6.855913 ms/step` run |
 | Matrix assembly profiling | Add fixed-point matrix setup breakdown | Exposed that the large remaining one-time cost was not admittance calculation; it was swing-bus boundary application | `swing_boundary=274.741 ms` before the fix |
 | Sparse-aware swing boundary | Remove only existing scalar sparse entries touching the swing column and clear swing rows directly | Avoided generic `setA(zero, ...)` calls that scan rows and can create explicit zero sparse entries | `swing_boundary=2.024 ms`; current Ckt24 aggregate `5.616489 ms/step` |
+| CSJ primitive RHS/result path | Make `CSJSparseEqnComplexMatrix3x3Impl` implement the same primitive RHS/result contract as KLUSolveX | Avoided generic sparse-row `Complex` RHS/result storage for CSJ fixed-point solves | CSJ Ckt24 aggregate improved from `6.986907 ms/step` to `5.541432 ms/step` |
 
 The largest architectural lesson is that each win came from separating required
 power-flow state from optional reporting state. QSTS voltage-only runs do not
