@@ -34,6 +34,7 @@ public class QstsStateApplier {
 		for(QstsProfileBinding binding : this.scheduleData.getProfileBindings()) {
 			bindingsByKey.put(key(binding.getDeviceClass(), binding.getDeviceId()), binding);
 		}
+		initializeLoadNortonReferences();
 	}
 
 	public static QstsStateApplier fromNetwork(INetwork3Phase network, QstsScheduleData scheduleData) {
@@ -102,6 +103,12 @@ public class QstsStateApplier {
 
 	public QstsStorageStateStore getStorageStateStore() {
 		return storageStateStore;
+	}
+
+	public void initializeLoadNortonReferences() {
+		for(QstsLoadBaseState state : loadStateStore.states()) {
+			state.applyFixedPointNortonMultiplier(1.0, 1.0);
+		}
 	}
 
 	private void applyLoads(QstsStepContext context) {

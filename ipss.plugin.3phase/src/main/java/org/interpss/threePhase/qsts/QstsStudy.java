@@ -198,6 +198,7 @@ public class QstsStudy {
 		algorithm.setTolerance(tolerance);
 		algorithm.setRegulatorControls(regulatorControls);
 		algorithm.setCapacitorControls(capacitorControls);
+		stateApplier.initializeLoadNortonReferences();
 		registerMissingInverterAdapters();
 		boolean controlsEnabled = controlMode != QstsControlMode.OFF && maxControlIterations > 0;
 		boolean delayedCapacitorControls = usesDelayedControlQueue();
