@@ -14,6 +14,7 @@ import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.qsts.QstsControlMode;
 import org.interpss.threePhase.qsts.QstsMode;
 import org.interpss.threePhase.qsts.QstsResult;
+import org.interpss.threePhase.qsts.QstsResultSamplingMode;
 import org.interpss.threePhase.qsts.QstsStepResult;
 import org.interpss.threePhase.qsts.opendss.OpenDSSQstsStudyFactory;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
@@ -81,6 +82,7 @@ public class QstsLargeFeederPerformanceBenchmark {
 				.setControlMode(QstsControlMode.OFF)
 				.setMaxControlIterations(0)
 				.setPostSolveOutputMode(DistributionPostSolveOutputMode.VOLTAGE_ONLY)
+				.setResultSamplingMode(QstsResultSamplingMode.NONE)
 				.setMaxPowerFlowIterations(1000)
 				.setTolerance(1.0e-4)
 				.run();
