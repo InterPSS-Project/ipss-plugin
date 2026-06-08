@@ -79,6 +79,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	private boolean isAllPowerFlowConverged = false;
 	private double transformerAntiFloatAdmittance = 1.0E-6;
 	private double maxFixedPointVoltageAbs = 10.0;
+	private final double fixedPointLoadNortonAdmittanceFactor =
+			Double.parseDouble(System.getProperty("ipss.distpf.loadNortonAdmittanceFactor", "1.0"));
 	private Hashtable<Integer, Complex3x1> swingBusVoltageBoundaryCurrent = new Hashtable<>();
 	private List<RegulatorControlData> regulatorControls = Collections.emptyList();
 	private boolean regulatorControlEnabled = false;
@@ -980,6 +982,11 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 						.append(threePhaseBus(bus).get3PhaseVotlages()).append(';');
 			}
 		}
+		if(fixedPointLoadNortonAdmittanceFactor() != 0.0) {
+			builder.append("loadNortonFactor:")
+					.append(fixedPointLoadNortonAdmittanceFactor())
+					.append(';');
+		}
 		return builder.toString();
 	}
 
@@ -1020,6 +1027,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				int i = bus.getSortNumber();
 				start = FIXED_POINT_PROFILE.start();
 				Complex3x3 yii = threePhaseBus(bus).getYiiAbcForPowerflow();
+				yii = yii.add(fixedPointLoadNortonYabc(bus));
 				FIXED_POINT_PROFILE.addMatrixBusAdmittance(FIXED_POINT_PROFILE.elapsed(start));
 
 				if(!bus.isSwing()) {
@@ -1061,6 +1069,27 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		FIXED_POINT_PROFILE.addMatrixAntiFloat(FIXED_POINT_PROFILE.elapsed(start));
 
 		return yMatrix;
+	}
+
+	private Complex3x3 fixedPointLoadNortonYabc(BaseAclfBus<?, ?> bus) {
+		double factor = fixedPointLoadNortonAdmittanceFactor();
+		if(factor == 0.0) {
+			return new Complex3x3();
+		}
+		Complex3x3 loadY = new Complex3x3();
+		for(Object load : bus.getContributeLoadList()) {
+			if(load instanceof Static3PLoad staticLoad) {
+				Complex3x3 y = staticLoad.getFixedPointNortonYabc();
+				if(y != null) {
+					loadY = loadY.add(y);
+				}
+			}
+		}
+		return factor == 1.0 ? loadY : loadY.multiply(factor);
+	}
+
+	private double fixedPointLoadNortonAdmittanceFactor() {
+		return this.fixedPointLoadNortonAdmittanceFactor;
 	}
 
 	private void addNonSwingBusAntiFloatAdmittance(ISparseEqnComplexMatrix3x3 yMatrix, BaseAclfNetwork distNet) {
@@ -1571,6 +1600,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			for(IPhaseLoad load : bus.phaseLoads) {
 				((Static3PLoad) load).addEquivCurrInj(primitiveState.voltage, offset, primitiveRhs, offset);
 			}
+			addFixedPointLoadNortonCompensation(bus, primitiveState.voltage, offset, primitiveRhs, offset);
 			for(Static3PGen gen : bus.staticGenerators) {
 				gen.addEquivCurrInj(primitiveState.voltage, offset, primitiveRhs, offset);
 			}
@@ -1605,6 +1635,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			((Static3PLoad) load).addEquivCurrInj(voltage, offset, primitiveRhs, offset);
 			FIXED_POINT_PROFILE.addCurrentCalcLoadCurrent(FIXED_POINT_PROFILE.elapsed(start));
 		}
+		addFixedPointLoadNortonCompensation(bus, voltage, offset, primitiveRhs, offset);
 
 		if(bus.staticGenerators.length > 0) {
 			start = FIXED_POINT_PROFILE.start();
@@ -1656,6 +1687,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			current = current.add(loadCurrent);
 			FIXED_POINT_PROFILE.addCurrentCalcLoadAdd(FIXED_POINT_PROFILE.elapsed(start));
 		}
+		current = current.add(fixedPointLoadNortonCompensation(bus, voltage));
 
 		start = FIXED_POINT_PROFILE.start();
 		List<? extends IPhaseGen> generators = bus.phaseGenerators;
@@ -1708,6 +1740,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				FIXED_POINT_PROFILE.addCurrentCalcLoadAdd(FIXED_POINT_PROFILE.elapsed(start));
 			}
 		}
+		addFixedPointLoadNortonCompensation(bus, voltage, current);
 
 		start = FIXED_POINT_PROFILE.start();
 		List<? extends IPhaseGen> generators = bus.phaseGenerators;
@@ -1747,6 +1780,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				addCurrent(current, load.getEquivCurrInj(voltage));
 			}
 		}
+		addFixedPointLoadNortonCompensation(bus, voltage, current);
 
 		for(IPhaseGen gen : bus.phaseGenerators) {
 			Complex3x1 power = gen.getPower3Phase(UnitType.PU);
@@ -1776,6 +1810,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			((Static3PLoad) load).addEquivCurrInj(voltage, voltageOffset, current);
 			FIXED_POINT_PROFILE.addCurrentCalcLoadCurrent(FIXED_POINT_PROFILE.elapsed(start));
 		}
+		addFixedPointLoadNortonCompensation(bus, voltage, voltageOffset, current, 0);
 
 		if(bus.staticGenerators.length > 0) {
 			start = FIXED_POINT_PROFILE.start();
@@ -1803,10 +1838,69 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		for(IPhaseLoad load : bus.phaseLoads) {
 			((Static3PLoad) load).addEquivCurrInj(voltage, voltageOffset, current);
 		}
+		addFixedPointLoadNortonCompensation(bus, voltage, voltageOffset, current, 0);
 		for(Static3PGen gen : bus.staticGenerators) {
 			gen.addEquivCurrInj(voltage, voltageOffset, current, 0);
 		}
 		return current;
+	}
+
+	private Complex3x1 fixedPointLoadNortonCompensation(FixedPointBus bus, Complex3x1 voltage) {
+		double[] current = bus.currentInjectionValues;
+		current[0] = 0.0;
+		current[1] = 0.0;
+		current[2] = 0.0;
+		current[3] = 0.0;
+		current[4] = 0.0;
+		current[5] = 0.0;
+		double[] v = {
+				real(voltage == null ? null : voltage.a_0),
+				imaginary(voltage == null ? null : voltage.a_0),
+				real(voltage == null ? null : voltage.b_1),
+				imaginary(voltage == null ? null : voltage.b_1),
+				real(voltage == null ? null : voltage.c_2),
+				imaginary(voltage == null ? null : voltage.c_2)
+		};
+		addFixedPointLoadNortonCompensation(bus, v, 0, current, 0);
+		return new Complex3x1(new Complex(current[0], current[1]),
+				new Complex(current[2], current[3]), new Complex(current[4], current[5]));
+	}
+
+	private void addFixedPointLoadNortonCompensation(FixedPointBus bus, double[] voltage,
+			int voltageOffset, double[] current, int currentOffset) {
+		double factor = fixedPointLoadNortonAdmittanceFactor();
+		if(factor == 0.0) {
+			return;
+		}
+		for(IPhaseLoad load : bus.phaseLoads) {
+			if(load instanceof Static3PLoad staticLoad) {
+				if(factor == 1.0) {
+					staticLoad.addFixedPointNortonCompensation(voltage, voltageOffset, current, currentOffset);
+				}
+				else {
+					double[] compensation = new double[6];
+					staticLoad.addFixedPointNortonCompensation(voltage, voltageOffset, compensation, 0);
+					current[currentOffset] += compensation[0] * factor;
+					current[currentOffset + 1] += compensation[1] * factor;
+					current[currentOffset + 2] += compensation[2] * factor;
+					current[currentOffset + 3] += compensation[3] * factor;
+					current[currentOffset + 4] += compensation[4] * factor;
+					current[currentOffset + 5] += compensation[5] * factor;
+				}
+			}
+		}
+	}
+
+	private void addFixedPointLoadNortonCompensation(FixedPointBus bus, Complex3x1 voltage, double[] current) {
+		double[] v = {
+				real(voltage == null ? null : voltage.a_0),
+				imaginary(voltage == null ? null : voltage.a_0),
+				real(voltage == null ? null : voltage.b_1),
+				imaginary(voltage == null ? null : voltage.b_1),
+				real(voltage == null ? null : voltage.c_2),
+				imaginary(voltage == null ? null : voltage.c_2)
+		};
+		addFixedPointLoadNortonCompensation(bus, v, 0, current, 0);
 	}
 
 	private void addCurrent(double[] current, Complex3x1 value) {
