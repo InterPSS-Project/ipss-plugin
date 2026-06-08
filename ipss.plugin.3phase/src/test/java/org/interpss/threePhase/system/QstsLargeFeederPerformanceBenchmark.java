@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
+import org.interpss.IpssCorePlugin;
 import org.interpss.threePhase.dataParser.opendss.OpenDSSDataParser;
 import org.interpss.threePhase.dataParser.opendss.OpenDSSStaticDataParser;
 import org.interpss.threePhase.powerflow.DistributionPostSolveOutputMode;
@@ -19,8 +20,6 @@ import org.interpss.threePhase.qsts.QstsStepResult;
 import org.interpss.threePhase.qsts.opendss.OpenDSSQstsStudyFactory;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.jupiter.api.Test;
-
-import com.interpss.core.sparse.solver.SparseEqnSolverProvider;
 
 /**
  * Manual benchmark for larger QSTS feeders. The class intentionally does not end
@@ -38,7 +37,7 @@ public class QstsLargeFeederPerformanceBenchmark {
 		int measureSteps = Integer.getInteger("qsts.perf.steps", 240);
 		int repeats = Integer.getInteger("qsts.perf.repeats", 3);
 		String caseSelector = System.getProperty("qsts.perf.case", "all");
-		System.out.println(SparseEqnSolverProvider.configureFromSystemProperties().message());
+		System.out.println(IpssCorePlugin.configureSparseSolverFromSystemProperties().message());
 
 		List<FeederCase> feeders = selectedFeeders(caseSelector);
 		System.out.println("INTERPSS_QSTS_PERF_CONFIG cases=" + caseSelector
