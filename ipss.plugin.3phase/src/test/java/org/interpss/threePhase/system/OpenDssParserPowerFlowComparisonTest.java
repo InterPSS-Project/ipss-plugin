@@ -54,8 +54,8 @@ import com.interpss.core.threephase.Static3PBus;
 import com.interpss.core.threephase.Static3PBranch;
 import com.interpss.core.threephase.Static3PNetwork;
 import com.interpss.core.net.Branch;
-import com.interpss.core.sparse.solver.klusolvex.KlusolveXPerformanceCounters;
-import com.interpss.core.sparse.solver.SparseEqnSolverProvider;
+import org.interpss.IpssCorePlugin;
+import org.interpss.core.sparse.solver.klusolvex.KlusolveXPerformanceCounters;
 
 
 public class OpenDssParserPowerFlowComparisonTest {
@@ -746,7 +746,7 @@ public class OpenDssParserPowerFlowComparisonTest {
 	@Test
 	@Disabled("Diagnostic only: exports Ckt24 voltage mismatch versus source depth")
 	public void ckt24VoltageDepthExportDiagnostic() throws IOException {
-		System.out.println(SparseEqnSolverProvider.configureFromSystemProperties().message());
+		System.out.println(IpssCorePlugin.configureSparseSolverFromSystemProperties().message());
 		List<VoltageReference> references = readReferences(
 				"opendss-reference/ckt24-controls-off-dss-python-voltage-reference.csv");
 		OpenDSSDataParser parser = new OpenDSSDataParser();
@@ -778,7 +778,7 @@ public class OpenDssParserPowerFlowComparisonTest {
 	@Test
 	@Disabled("Diagnostic only: compares Ckt24 voltage mismatch across fixed-point tolerances")
 	public void ckt24ToleranceSensitivityDiagnostic() throws IOException {
-		System.out.println(SparseEqnSolverProvider.configureFromSystemProperties().message());
+		System.out.println(IpssCorePlugin.configureSparseSolverFromSystemProperties().message());
 		List<VoltageReference> references = readReferences(
 				"opendss-reference/ckt24-controls-off-dss-python-voltage-reference.csv");
 
