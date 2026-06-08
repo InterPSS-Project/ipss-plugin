@@ -102,6 +102,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	private int fixedPointYMatrixNumericFactorizationCount = 0;
 	private int fixedPointYMatrixValueUpdateCount = 0;
 	private Map<String, RegulatorBranchAdmittance> fixedPointRegulatorValueUpdateAdmittance = Collections.emptyMap();
+	private String fixedPointFloatingAntiFloatSignature = null;
+	private FloatingPhaseAntiFloatPlan fixedPointFloatingAntiFloatPlan = null;
 
 	private static final Logger log = LoggerFactory.getLogger(DistributionPowerFlowAlgorithmImpl.class);
 	private static final FixedPointLoopProfile FIXED_POINT_PROFILE = new FixedPointLoopProfile();
@@ -432,7 +434,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 		 this.isAllPowerFlowConverged = true;
 		 BaseAclfNetwork<? extends BaseAclfBus<? extends AclfGen, ? extends AclfLoad>, ? extends AclfBranch> distNet = aclfNetwork();
-		 deactivateBusesOnlyInFloatingPhaseComponents(distNet);
+		 if(!disableFloatingComponentDeactivation()) {
+			 deactivateBusesOnlyInFloatingPhaseComponents(distNet);
+		 }
 
 		//step-1. check if there is any island in the system
 		 AclfNetHelper helper = new AclfNetHelper(distNet);
@@ -500,6 +504,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		boolean[] floatingNode = new boolean[nodeCount];
 		boolean[] connectedNode = new boolean[nodeCount];
 		boolean[] seen = new boolean[nodeCount];
+		BaseAclfBus[] busesBySortNumber = busesBySortNumber(distNet);
 		for(BaseAclfBus bus: (List<BaseAclfBus>) distNet.getBusList()) {
 			if(!bus.isActive()) {
 				continue;
@@ -510,7 +515,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 					continue;
 				}
 				List<Integer> component = collectPhaseComponent(graph, seen, start);
-				boolean hasSwing = containsSwingBusPhase(component, distNet);
+				boolean hasSwing = containsSwingBusPhase(component, busesBySortNumber);
 				for(int node : component) {
 					connectedNode[node] = true;
 					floatingNode[node] = !hasSwing;
@@ -840,7 +845,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		}
 		if(yMatrix == null) {
 			start = FIXED_POINT_PROFILE.start();
-			yMatrix = formYMatrixABCForPowerflow(distNet);
+			yMatrix = formYMatrixABCForPowerflow(distNet, symbolSignature);
 			FIXED_POINT_PROFILE.addMatrixAssembly(FIXED_POINT_PROFILE.elapsed(start));
 			start = FIXED_POINT_PROFILE.start();
 			applySwingBusVoltageBoundary(yMatrix);
@@ -1016,7 +1021,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		return builder.toString();
 	}
 
-	private ISparseEqnComplexMatrix3x3 formYMatrixABCForPowerflow(BaseAclfNetwork distNet) throws IpssNumericException {
+	private ISparseEqnComplexMatrix3x3 formYMatrixABCForPowerflow(BaseAclfNetwork distNet,
+			String symbolSignature) throws IpssNumericException {
 		long start = FIXED_POINT_PROFILE.start();
 		ISparseEqnComplexMatrix3x3 yMatrix =
 				new SparseEqnObjectFactory().createSparseEqnComplex3x3(distNet.getNoBus());
@@ -1030,7 +1036,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				yii = yii.add(fixedPointLoadNortonYabc(bus));
 				FIXED_POINT_PROFILE.addMatrixBusAdmittance(FIXED_POINT_PROFILE.elapsed(start));
 
-				if(!bus.isSwing()) {
+				if(!bus.isSwing() && !disableZeroDiagonalFill()) {
 					// replace zero diagonal entries with 1.0 to avoid singularity
 					// for partial-phase buses (e.g., 1-ph or 2-ph connections)
 					double yiiMinTolerance = 1.0E-8;
@@ -1064,8 +1070,12 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			}
 		}
 		start = FIXED_POINT_PROFILE.start();
-		addFloatingPhaseComponentAntiFloatAdmittance(yMatrix, distNet);
-		addNonSwingBusAntiFloatAdmittance(yMatrix, distNet);
+		if(enableFloatingComponentAntiFloat()) {
+			addFloatingPhaseComponentAntiFloatAdmittance(yMatrix, distNet, symbolSignature);
+		}
+		if(enableNonSwingBusAntiFloat()) {
+			addNonSwingBusAntiFloatAdmittance(yMatrix, distNet);
+		}
 		FIXED_POINT_PROFILE.addMatrixAntiFloat(FIXED_POINT_PROFILE.elapsed(start));
 
 		return yMatrix;
@@ -1103,8 +1113,21 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	}
 
 	private void addFloatingPhaseComponentAntiFloatAdmittance(ISparseEqnComplexMatrix3x3 yMatrix,
-			BaseAclfNetwork distNet) {
+			BaseAclfNetwork distNet, String symbolSignature) {
+		FloatingPhaseAntiFloatPlan plan = floatingPhaseAntiFloatPlan(distNet, symbolSignature);
+		for(PhaseNode node : plan.nodes) {
+			addPhaseAntiFloatAdmittance(yMatrix, node.busSortNumber, node.phase);
+		}
+	}
+
+	private FloatingPhaseAntiFloatPlan floatingPhaseAntiFloatPlan(BaseAclfNetwork distNet, String symbolSignature) {
+		if(this.fixedPointFloatingAntiFloatPlan != null
+				&& symbolSignature.equals(this.fixedPointFloatingAntiFloatSignature)) {
+			return this.fixedPointFloatingAntiFloatPlan;
+		}
+
 		int nodeCount = distNet.getNoBus() * 3;
+		BaseAclfBus[] busesBySortNumber = busesBySortNumber(distNet);
 		List<List<Integer>> graph = new ArrayList<>(nodeCount);
 		for(int i = 0; i < nodeCount; i++) {
 			graph.add(new ArrayList<>());
@@ -1123,6 +1146,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		boolean[] seen = new boolean[nodeCount];
 		int adjustedComponentCount = 0;
 		int adjustedNodeCount = 0;
+		List<PhaseNode> antiFloatNodes = new ArrayList<>();
 		for(BaseAclfBus bus: (List<BaseAclfBus>) distNet.getBusList()) {
 			if(!bus.isActive()) {
 				continue;
@@ -1133,11 +1157,11 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 					continue;
 				}
 				List<Integer> component = collectPhaseComponent(graph, seen, start);
-				if(!containsSwingBusPhase(component, distNet)) {
+				if(!containsSwingBusPhase(component, busesBySortNumber)) {
 					adjustedComponentCount++;
 					adjustedNodeCount += component.size();
 					for(int node : component) {
-						addPhaseAntiFloatAdmittance(yMatrix, node / 3, node % 3);
+						antiFloatNodes.add(new PhaseNode(node / 3, node % 3));
 					}
 				}
 			}
@@ -1147,6 +1171,21 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 					+ " phase nodes in " + adjustedComponentCount
 					+ " phase components not connected to a swing bus");
 		}
+		FloatingPhaseAntiFloatPlan plan = new FloatingPhaseAntiFloatPlan(antiFloatNodes);
+		this.fixedPointFloatingAntiFloatSignature = symbolSignature;
+		this.fixedPointFloatingAntiFloatPlan = plan;
+		return plan;
+	}
+
+	private BaseAclfBus[] busesBySortNumber(BaseAclfNetwork distNet) {
+		BaseAclfBus[] buses = new BaseAclfBus[distNet.getNoBus()];
+		for(BaseAclfBus bus: (List<BaseAclfBus>) distNet.getBusList()) {
+			int sortNumber = bus.getSortNumber();
+			if(sortNumber >= 0 && sortNumber < buses.length) {
+				buses[sortNumber] = bus;
+			}
+		}
+		return buses;
 	}
 
 	private void addPhaseConnectivity(List<List<Integer>> graph, int fromSort, int toSort, Complex3x3 y) {
@@ -1185,23 +1224,16 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		return component;
 	}
 
-	private boolean containsSwingBusPhase(List<Integer> component, BaseAclfNetwork distNet) {
+	private boolean containsSwingBusPhase(List<Integer> component, BaseAclfBus[] busesBySortNumber) {
 		for(int node : component) {
-			BaseAclfBus bus = busBySortNumber(distNet, node / 3);
-			if(bus.isSwing()) {
+			int sortNumber = node / 3;
+			BaseAclfBus bus = sortNumber >= 0 && sortNumber < busesBySortNumber.length
+					? busesBySortNumber[sortNumber] : null;
+			if(bus != null && bus.isSwing()) {
 				return true;
 			}
 		}
 		return false;
-	}
-
-	private BaseAclfBus busBySortNumber(BaseAclfNetwork distNet, int sortNumber) {
-		for(BaseAclfBus bus: (List<BaseAclfBus>) distNet.getBusList()) {
-			if(bus.getSortNumber() == sortNumber) {
-				return bus;
-			}
-		}
-		throw new IllegalArgumentException("No bus for sort number " + sortNumber);
 	}
 
 	private void addPhaseAntiFloatAdmittance(ISparseEqnComplexMatrix3x3 yMatrix, int busSortNumber, int phase) {
@@ -1220,6 +1252,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	}
 
 	private void addTransformerAntiFloatAdmittance(ISparseEqnComplexMatrix3x3 yMatrix, AclfBranch branch) {
+		if(disableTransformerAntiFloat()) {
+			return;
+		}
 		if(!branch.isXfr() || !(branch instanceof AcscBranch)) {
 			return;
 		}
@@ -1245,6 +1280,28 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		return connectCode == XFormerConnectCode.DELTA
 				|| connectCode == XFormerConnectCode.DELTA11
 				|| (connectCode == XFormerConnectCode.WYE && groundCode == BusGroundCode.UNGROUNDED);
+	}
+
+	private boolean disableZeroDiagonalFill() {
+		return Boolean.getBoolean("ipss.distpf.disableZeroDiagonalFill");
+	}
+
+	private boolean disableTransformerAntiFloat() {
+		return Boolean.getBoolean("ipss.distpf.disableTransformerAntiFloat");
+	}
+
+	private boolean enableFloatingComponentAntiFloat() {
+		return Boolean.getBoolean("ipss.distpf.enableFloatingComponentAntiFloat")
+				&& !Boolean.getBoolean("ipss.distpf.disableFloatingComponentAntiFloat");
+	}
+
+	private boolean enableNonSwingBusAntiFloat() {
+		return Boolean.getBoolean("ipss.distpf.enableNonSwingBusAntiFloat")
+				&& !Boolean.getBoolean("ipss.distpf.disableNonSwingBusAntiFloat");
+	}
+
+	private boolean disableFloatingComponentDeactivation() {
+		return Boolean.getBoolean("ipss.distpf.disableFloatingComponentDeactivation");
 	}
 
 	private void applySwingBusVoltageBoundary(ISparseEqnComplexMatrix3x3 yMatrix) {
@@ -3064,6 +3121,24 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 					Collections.unmodifiableList(nonSwingBuses),
 					Collections.unmodifiableList(currentInjectionBuses),
 					Collections.unmodifiableList(swingBuses));
+		}
+	}
+
+	private static class FloatingPhaseAntiFloatPlan {
+		private final List<PhaseNode> nodes;
+
+		private FloatingPhaseAntiFloatPlan(List<PhaseNode> nodes) {
+			this.nodes = List.copyOf(nodes);
+		}
+	}
+
+	private static class PhaseNode {
+		private final int busSortNumber;
+		private final int phase;
+
+		private PhaseNode(int busSortNumber, int phase) {
+			this.busSortNumber = busSortNumber;
+			this.phase = phase;
 		}
 	}
 

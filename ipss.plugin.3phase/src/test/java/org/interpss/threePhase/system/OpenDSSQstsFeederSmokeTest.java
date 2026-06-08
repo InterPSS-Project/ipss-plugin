@@ -61,6 +61,45 @@ public class OpenDSSQstsFeederSmokeTest {
 	}
 
 	@Test
+	void fixedPointDefaultAntiFloatPathConvergesOnOpenDssSmokeFeeders() {
+		String oldDisableZeroDiagonalFill = System.getProperty("ipss.distpf.disableZeroDiagonalFill");
+		String oldDisableTransformerAntiFloat = System.getProperty("ipss.distpf.disableTransformerAntiFloat");
+		String oldDisableFloatingComponentDeactivation =
+				System.getProperty("ipss.distpf.disableFloatingComponentDeactivation");
+		String oldEnableFloatingComponentAntiFloat =
+				System.getProperty("ipss.distpf.enableFloatingComponentAntiFloat");
+		String oldEnableNonSwingBusAntiFloat =
+				System.getProperty("ipss.distpf.enableNonSwingBusAntiFloat");
+		String oldDisableFloatingComponentAntiFloat =
+				System.getProperty("ipss.distpf.disableFloatingComponentAntiFloat");
+		String oldDisableNonSwingBusAntiFloat =
+				System.getProperty("ipss.distpf.disableNonSwingBusAntiFloat");
+		try {
+			System.clearProperty("ipss.distpf.disableZeroDiagonalFill");
+			System.clearProperty("ipss.distpf.disableTransformerAntiFloat");
+			System.clearProperty("ipss.distpf.disableFloatingComponentDeactivation");
+			System.clearProperty("ipss.distpf.enableFloatingComponentAntiFloat");
+			System.clearProperty("ipss.distpf.enableNonSwingBusAntiFloat");
+			System.clearProperty("ipss.distpf.disableFloatingComponentAntiFloat");
+			System.clearProperty("ipss.distpf.disableNonSwingBusAntiFloat");
+
+			for(FeederSmokeCase feeder : defaultAntiFloatSmokeFeeders()) {
+				assertSmokeSummary(runSmoke(feeder));
+			}
+		}
+		finally {
+			restoreProperty("ipss.distpf.disableZeroDiagonalFill", oldDisableZeroDiagonalFill);
+			restoreProperty("ipss.distpf.disableTransformerAntiFloat", oldDisableTransformerAntiFloat);
+			restoreProperty("ipss.distpf.disableFloatingComponentDeactivation",
+					oldDisableFloatingComponentDeactivation);
+			restoreProperty("ipss.distpf.enableFloatingComponentAntiFloat", oldEnableFloatingComponentAntiFloat);
+			restoreProperty("ipss.distpf.enableNonSwingBusAntiFloat", oldEnableNonSwingBusAntiFloat);
+			restoreProperty("ipss.distpf.disableFloatingComponentAntiFloat", oldDisableFloatingComponentAntiFloat);
+			restoreProperty("ipss.distpf.disableNonSwingBusAntiFloat", oldDisableNonSwingBusAntiFloat);
+		}
+	}
+
+	@Test
 	void ckt24CapacitorControlRebuildsYMatrixOnLargeFeeder() {
 		SolvedQstsCase solved = solveCkt24CapacitorControlCase();
 
@@ -228,6 +267,18 @@ public class OpenDSSQstsFeederSmokeTest {
 			taps.put(control.getId(), control.getTapPosition());
 		}
 		return taps;
+	}
+
+	private static List<FeederSmokeCase> defaultAntiFloatSmokeFeeders() {
+		return List.of(
+				new FeederSmokeCase("IEEE123", "testData/feeder/IEEE123",
+						"IEEE123Master.dss", QstsMode.DAILY, FULL_DAY_STEPS),
+				new FeederSmokeCase("Ckt7", "testData/feeder/Ckt7",
+						"Master_ckt7.dss", QstsMode.YEARLY, FULL_DAY_STEPS),
+				new FeederSmokeCase("Ckt24", "testData/feeder/Ckt24",
+						"master_ckt24_interpss.dss", QstsMode.DAILY, FULL_DAY_STEPS),
+				new FeederSmokeCase("IEEE8500", "testData/feeder/IEEE8500",
+						"Master-InterPSS.dss", QstsMode.DAILY, SHORT_LARGE_FEEDER_STEPS));
 	}
 
 	private static void assertSmokeSummary(QstsSmokeSummary summary) {
