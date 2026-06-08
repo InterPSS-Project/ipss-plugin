@@ -68,6 +68,9 @@ public interface DistributionPowerFlowAlgorithm {
 	public default void setPostSolveOutputMode(DistributionPostSolveOutputMode mode) {
 	}
 
+	public default void syncPositiveSequenceVoltages() {
+	}
+
 	public void setTolerance(double tolerance);
 
 	public double getTolerance();
