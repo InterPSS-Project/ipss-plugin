@@ -107,7 +107,6 @@ public class AclfNetSensSparseHelper {
 								double value = -b1ft * dAng;
 								if (Math.abs(value) > BUS_SEN_THRESHOLD) {
 									triplets.add(new Triplet(bus.getSortNumber(), branch.getSortNumber(), value));
-									
 								}
 							}
 						}
