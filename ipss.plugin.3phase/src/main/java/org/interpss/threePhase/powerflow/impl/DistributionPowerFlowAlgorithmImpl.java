@@ -737,16 +737,17 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			}
 
 			start = FIXED_POINT_PROFILE.start();
-			if(!(primitiveMatrix == null
-					? updateSolvedBusVoltages(yMatrix, busCache)
-					: updateSolvedBusVoltages(primitiveMatrix, busCache))) {
+			VoltageUpdateResult voltageUpdate = primitiveMatrix == null
+					? updateSolvedBusVoltagesAndMismatch(yMatrix, busCache)
+					: updateSolvedBusVoltagesAndMismatch(primitiveMatrix, busCache);
+			if(!voltageUpdate.valid) {
 				log.warn("Fixed-point power-flow equation solve produced invalid bus voltages");
 				return false;
 			}
 			FIXED_POINT_PROFILE.addVoltageUpdate(FIXED_POINT_PROFILE.elapsed(start));
 
 			start = FIXED_POINT_PROFILE.start();
-			double maxVoltageMismatch = calcMaxVoltageMismatch(busCache);
+			double maxVoltageMismatch = maxSwingVoltageMismatch(busCache, voltageUpdate.maxMismatch);
 			FIXED_POINT_PROFILE.addMismatch(FIXED_POINT_PROFILE.elapsed(start));
 			if(i > 0 && maxVoltageMismatch <= this.getTolerance()) {
 				log.debug("Distribution fixed-point power flow converged, iterations={}", i);
@@ -1236,7 +1237,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				IBus3Phase bus3P = bus.bus3P;
 				FIXED_POINT_PROFILE.addCurrentInjectionBus();
 				start = FIXED_POINT_PROFILE.start();
-				Complex3x1 curInj = calc3PhEquivCurInjProfiled(bus3P);
+				Complex3x1 curInj = calc3PhEquivCurInjProfiled(bus);
 				FIXED_POINT_PROFILE.addCurrentInjectionCalc(FIXED_POINT_PROFILE.elapsed(start));
 				long rhsStart = FIXED_POINT_PROFILE.start();
 				start = FIXED_POINT_PROFILE.start();
@@ -1252,8 +1253,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 						? regulatorTapCompensation.get(bus.sortNumber) : null;
 				FIXED_POINT_PROFILE.addCurrentRhsLookup(FIXED_POINT_PROFILE.elapsed(start));
 				start = FIXED_POINT_PROFILE.start();
-				if(boundaryCurrent != null
-						&& (!isFinite(boundaryCurrent.a_0) || !isFinite(boundaryCurrent.b_1) || !isFinite(boundaryCurrent.c_2))) {
+				if(!bus.boundaryCurrentFinite) {
 					log.warn("Invalid fixed-point swing-boundary current at bus " + bus.id
 							+ ", sortNumber=" + bus.sortNumber + ", iabc=" + boundaryCurrent);
 				}
@@ -1305,8 +1305,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 						? regulatorTapCompensation.get(bus.sortNumber) : null;
 				FIXED_POINT_PROFILE.addCurrentRhsLookup(FIXED_POINT_PROFILE.elapsed(start));
 				start = FIXED_POINT_PROFILE.start();
-				if(boundaryCurrent != null
-						&& (!isFinite(boundaryCurrent.a_0) || !isFinite(boundaryCurrent.b_1) || !isFinite(boundaryCurrent.c_2))) {
+				if(!bus.boundaryCurrentFinite) {
 					log.warn("Invalid fixed-point swing-boundary current at bus " + bus.id
 							+ ", sortNumber=" + bus.sortNumber + ", iabc=" + boundaryCurrent);
 				}
@@ -1383,7 +1382,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		return compensationByBus;
 	}
 
-	private Complex3x1 calc3PhEquivCurInjProfiled(IBus3Phase bus3P) {
+	private Complex3x1 calc3PhEquivCurInjProfiled(FixedPointBus bus) {
+		IBus3Phase bus3P = bus.bus3P;
 		if(!FIXED_POINT_PROFILE.enabled()) {
 			return bus3P.calc3PhEquivCurInj();
 		}
@@ -1396,7 +1396,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		FIXED_POINT_PROFILE.addCurrentCalcVoltage(FIXED_POINT_PROFILE.elapsed(start));
 
 		start = FIXED_POINT_PROFILE.start();
-		List<? extends IPhaseLoad> loads = bus3P.getPhaseLoadList();
+		List<? extends IPhaseLoad> loads = bus.phaseLoads;
 		FIXED_POINT_PROFILE.addCurrentCalcLoadList(FIXED_POINT_PROFILE.elapsed(start));
 		for(IPhaseLoad load : loads) {
 			FIXED_POINT_PROFILE.addCurrentCalcLoad();
@@ -1409,7 +1409,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		}
 
 		start = FIXED_POINT_PROFILE.start();
-		List<? extends IPhaseGen> generators = bus3P.getPhaseGenList();
+		List<? extends IPhaseGen> generators = bus.phaseGenerators;
 		FIXED_POINT_PROFILE.addCurrentCalcGenList(FIXED_POINT_PROFILE.elapsed(start));
 		for(IPhaseGen gen : generators) {
 			FIXED_POINT_PROFILE.addCurrentCalcGen();
@@ -1429,7 +1429,6 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	}
 
 	private double[] calc3PhEquivCurInjPrimitiveProfiled(FixedPointBus bus) {
-		IBus3Phase bus3P = bus.bus3P;
 		double[] current = bus.currentInjectionValues;
 		current[0] = 0.0;
 		current[1] = 0.0;
@@ -1439,11 +1438,11 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		current[5] = 0.0;
 
 		long start = FIXED_POINT_PROFILE.start();
-		Complex3x1 voltage = bus3P.get3PhaseVotlages();
+		Complex3x1 voltage = bus.bus3P.get3PhaseVotlages();
 		FIXED_POINT_PROFILE.addCurrentCalcVoltage(FIXED_POINT_PROFILE.elapsed(start));
 
 		start = FIXED_POINT_PROFILE.start();
-		List<? extends IPhaseLoad> loads = bus3P.getPhaseLoadList();
+		List<? extends IPhaseLoad> loads = bus.phaseLoads;
 		FIXED_POINT_PROFILE.addCurrentCalcLoadList(FIXED_POINT_PROFILE.elapsed(start));
 		for(IPhaseLoad load : loads) {
 			FIXED_POINT_PROFILE.addCurrentCalcLoad();
@@ -1462,7 +1461,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		}
 
 		start = FIXED_POINT_PROFILE.start();
-		List<? extends IPhaseGen> generators = bus3P.getPhaseGenList();
+		List<? extends IPhaseGen> generators = bus.phaseGenerators;
 		FIXED_POINT_PROFILE.addCurrentCalcGenList(FIXED_POINT_PROFILE.elapsed(start));
 		for(IPhaseGen gen : generators) {
 			FIXED_POINT_PROFILE.addCurrentCalcGen();
@@ -1641,35 +1640,41 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		}
 	}
 
-	private boolean updateSolvedBusVoltages(ISparseEqnComplexMatrix3x3 yMatrix, FixedPointBusCache busCache) {
+	private VoltageUpdateResult updateSolvedBusVoltagesAndMismatch(ISparseEqnComplexMatrix3x3 yMatrix,
+			FixedPointBusCache busCache) {
+		double maxMismatch = 0.0;
 		for(FixedPointBus bus : busCache.nonSwingBuses) {
 				Complex3x1 vabc = yMatrix.getX(bus.sortNumber);
 
 				if(isValidFixedPointVoltage(vabc)){
 					updateFixedPointVoltage(bus.bus3P, vabc);
+					maxMismatch = Math.max(maxMismatch, bus.voltageMismatch(vabc));
 				} else {
 					log.warn("Fixed-point solve produced invalid voltage at bus " + bus.id
 							+ ", sortNumber=" + bus.sortNumber + ", vabc=" + vabc);
-					return false;
+					return VoltageUpdateResult.invalid();
 				}
 		}
-		return true;
+		return VoltageUpdateResult.valid(maxMismatch);
 	}
 
-	private boolean updateSolvedBusVoltages(PrimitiveComplex3x3Equation yMatrix, FixedPointBusCache busCache) {
+	private VoltageUpdateResult updateSolvedBusVoltagesAndMismatch(PrimitiveComplex3x3Equation yMatrix,
+			FixedPointBusCache busCache) {
+		double maxMismatch = 0.0;
 		for(FixedPointBus bus : busCache.nonSwingBuses) {
 				Complex3x1 vabc = yMatrix.getPrimitiveSolved3x1(
 						bus.sortNumber, bus.bus3P.get3PhaseVotlages());
 
 				if(isValidFixedPointVoltage(vabc)){
 					updateFixedPointVoltage(bus.bus3P, vabc);
+					maxMismatch = Math.max(maxMismatch, bus.voltageMismatch(vabc));
 				} else {
 					log.warn("Fixed-point solve produced invalid voltage at bus " + bus.id
 							+ ", sortNumber=" + bus.sortNumber + ", vabc=" + vabc);
-					return false;
+					return VoltageUpdateResult.invalid();
 				}
 		}
-		return true;
+		return VoltageUpdateResult.valid(maxMismatch);
 	}
 
 	private void updateFixedPointVoltage(IBus3Phase bus3P, Complex3x1 vabc) {
@@ -1724,10 +1729,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		}
 	}
 
-	private double calcMaxVoltageMismatch(FixedPointBusCache busCache) {
-		double maxMis = 0.0;
+	private double maxSwingVoltageMismatch(FixedPointBusCache busCache, double maxMis) {
 
-		for(FixedPointBus bus : busCache.activeBuses) {
+		for(FixedPointBus bus : busCache.swingBuses) {
 			maxMis = Math.max(maxMis, bus.voltageMismatch());
 		}
 
@@ -2688,11 +2692,32 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		}
 	}
 
+	private static class VoltageUpdateResult {
+		private final boolean valid;
+		private final double maxMismatch;
+
+		private VoltageUpdateResult(boolean valid, double maxMismatch) {
+			this.valid = valid;
+			this.maxMismatch = maxMismatch;
+		}
+
+		private static VoltageUpdateResult valid(double maxMismatch) {
+			return new VoltageUpdateResult(true, maxMismatch);
+		}
+
+		private static VoltageUpdateResult invalid() {
+			return new VoltageUpdateResult(false, Double.NaN);
+		}
+	}
+
 	private static class FixedPointBus {
 		private final String id;
 		private final int sortNumber;
 		private final IBus3Phase bus3P;
+		private final List<? extends IPhaseLoad> phaseLoads;
+		private final List<? extends IPhaseGen> phaseGenerators;
 		private final Complex3x1 boundaryCurrent;
+		private final boolean boundaryCurrentFinite;
 		private final double boundaryAReal;
 		private final double boundaryAImaginary;
 		private final double boundaryBReal;
@@ -2711,7 +2736,12 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			this.id = bus.getId();
 			this.sortNumber = bus.getSortNumber();
 			this.bus3P = (IBus3Phase) bus;
+			this.phaseLoads = this.bus3P.getPhaseLoadList();
+			this.phaseGenerators = this.bus3P.getPhaseGenList();
 			this.boundaryCurrent = boundaryCurrent;
+			this.boundaryCurrentFinite = boundaryCurrent == null
+					|| (finiteValue(boundaryCurrent.a_0) && finiteValue(boundaryCurrent.b_1)
+							&& finiteValue(boundaryCurrent.c_2));
 			this.boundaryAReal = realValue(boundaryCurrent == null ? null : boundaryCurrent.a_0);
 			this.boundaryAImaginary = imaginaryValue(boundaryCurrent == null ? null : boundaryCurrent.a_0);
 			this.boundaryBReal = realValue(boundaryCurrent == null ? null : boundaryCurrent.b_1);
@@ -2735,6 +2765,13 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			if(voltage == null) {
 				return 0.0;
 			}
+			return voltageMismatch(voltage);
+		}
+
+		private double voltageMismatch(Complex3x1 voltage) {
+			if(voltage == null) {
+				return 0.0;
+			}
 			return Math.max(
 					phaseMismatch(voltage.a_0, this.oldAReal, this.oldAImaginary),
 					Math.max(
@@ -2746,6 +2783,11 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			double realDiff = realValue(value) - oldReal;
 			double imaginaryDiff = imaginaryValue(value) - oldImaginary;
 			return Math.hypot(realDiff, imaginaryDiff);
+		}
+
+		private static boolean finiteValue(Complex value) {
+			return value == null
+					|| (Double.isFinite(value.getReal()) && Double.isFinite(value.getImaginary()));
 		}
 
 		private static double realValue(Complex value) {
