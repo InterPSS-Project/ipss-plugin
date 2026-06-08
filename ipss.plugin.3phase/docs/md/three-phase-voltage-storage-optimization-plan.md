@@ -431,6 +431,59 @@ INTERPSS_QSTS_PERF_AGG feeder=Ckt24 runs=3 avgMsPerStep=5.616489
 medianMsPerStep=5.486653 minMsPerStep=5.481519
 ```
 
+## Ckt24 QSTS Optimization History
+
+Date: 2026-06-07
+
+This section summarizes how the Ckt24 repeated-state QSTS benchmark moved from
+more than `20 ms/step` to the current `5.616489 ms/step` average. The benchmark
+target is the InterPSS fixed-point three-phase PF loop using KLUSolveX, controls
+off, voltage-only post solve, and no QSTS result sampling.
+
+Important unit note: the benchmark prints milliseconds per QSTS step
+(`msPerStep` and `avgMsPerStep`), not microseconds.
+
+| Step | Main change | What it removed from the hot path | Observed Ckt24 result |
+| --- | --- | --- | --- |
+| Baseline | Add repeatable `QstsLargeFeederPerformanceBenchmark` for Ckt24 and IEEE8500 | No optimization yet; provided stable `msPerStep`, factorization count, value-update count, and fallback count | More than `20 ms/step` in the initial Ckt24 repeated-state run |
+| Primitive KLUSolveX RHS/result path | Use KLUSolveX primitive RHS/result APIs from the fixed-point loop | Avoided packing through generic equation `Complex` objects for RHS/result transfer | Solver-side native solve became small; later profile showed `native_solve_ms=1.179` across the Ckt24 PF diagnostic |
+| Fixed-point bus cache and RHS composition cleanup | Cache active/non-swing bus references, sort numbers, and boundary-current values | Avoided repeated `getBusList()` scans, active/swing checks, casts, and helper-heavy scalar calls in each PF iteration | RHS write/compose became sub-millisecond per iteration in later profiles |
+| Post-solve output modes | Add `VOLTAGE_ONLY`, `VOLTAGE_AND_SWING_POWER`, and `FULL_BRANCH_CURRENTS` | Skipped branch-current updates when the QSTS study only needs bus voltages | `9.104384 ms/step` after branch-current work was removed from the QSTS hot path |
+| Lazy positive-sequence sync | Sync base-bus positive-sequence voltage only when a caller needs it | Removed repeated abc-to-sequence conversion from voltage-only QSTS steps | `8.632956 ms/step` |
+| Voltage/current loop streamlining | Combine voltage update and mismatch checks, reduce fixed-point object churn, and tighten current-injection/RHS loops | Reduced per-iteration `Complex3x1` and `Complex` object allocation around update, mismatch, current injection, and RHS write | `6.855913 ms/step` |
+| Result sampling mode | Add `QstsResultSamplingMode.NONE` for benchmark/time-series runs that do not need every step stored | Avoided creating and retaining per-step result objects when only convergence/performance is being measured | Included in the `6.855913 ms/step` run |
+| Matrix assembly profiling | Add fixed-point matrix setup breakdown | Exposed that the large remaining one-time cost was not admittance calculation; it was swing-bus boundary application | `swing_boundary=274.741 ms` before the fix |
+| Sparse-aware swing boundary | Remove only existing scalar sparse entries touching the swing column and clear swing rows directly | Avoided generic `setA(zero, ...)` calls that scan rows and can create explicit zero sparse entries | `swing_boundary=2.024 ms`; current Ckt24 aggregate `5.616489 ms/step` |
+
+The largest architectural lesson is that each win came from separating required
+power-flow state from optional reporting state. QSTS voltage-only runs do not
+need post-convergence branch currents, immediate positive-sequence/polar state,
+or full per-step result materialization. Once those were out of the loop, the
+remaining high-cost item was matrix setup, where profiling showed an
+implementation issue in sparse boundary handling rather than a solver issue.
+
+Current benchmark command:
+
+```bash
+mvn -pl ipss.plugin.3phase \
+  -Dtest=QstsLargeFeederPerformanceBenchmark \
+  -Dqsts.perf.case=ckt24 \
+  -Dqsts.perf.warmupSteps=24 \
+  -Dqsts.perf.steps=240 \
+  -Dqsts.perf.repeats=3 \
+  -Dipss.sparse.solver=klusolvex \
+  -Dipss.klusolvex.library.path=/Users/ipssdev/github/klusolve/build/libklusolvex.dylib \
+  -Dsurefire.failIfNoSpecifiedTests=false \
+  test
+```
+
+Current result:
+
+```text
+INTERPSS_QSTS_PERF_AGG feeder=Ckt24 runs=3 avgMsPerStep=5.616489
+medianMsPerStep=5.486653 minMsPerStep=5.481519
+```
+
 ## Approval Gates
 
 Do not move to the larger primitive solver/PF API until these are approved:
