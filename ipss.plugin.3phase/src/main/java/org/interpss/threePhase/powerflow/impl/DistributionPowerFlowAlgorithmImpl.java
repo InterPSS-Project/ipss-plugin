@@ -693,7 +693,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		this.iterationCount = -1;
 		PrimitiveComplex3x3Equation primitiveMatrix = yMatrix instanceof PrimitiveComplex3x3Equation
 				? (PrimitiveComplex3x3Equation) yMatrix : null;
+		long busCacheStart = FIXED_POINT_PROFILE.start();
 		FixedPointBusCache busCache = FixedPointBusCache.from(distNet, this.swingBusVoltageBoundaryCurrent);
+		FIXED_POINT_PROFILE.addMatrixBusCache(FIXED_POINT_PROFILE.elapsed(busCacheStart));
 		FIXED_POINT_PROFILE.addAttempt();
 
 		for (int i = 0; i < this.maxIteration; i++) {
@@ -801,8 +803,10 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	private ISparseEqnComplexMatrix3x3 fixedPointYMatrix(
 			BaseAclfNetwork<? extends BaseAclfBus<? extends AclfGen, ? extends AclfLoad>, ? extends AclfBranch> distNet)
 			throws IpssNumericException {
+		long start = FIXED_POINT_PROFILE.start();
 		String signature = fixedPointYMatrixSignature(distNet);
 		String symbolSignature = fixedPointYMatrixSymbolSignature(distNet);
+		FIXED_POINT_PROFILE.addMatrixSignature(FIXED_POINT_PROFILE.elapsed(start));
 		if(this.fixedPointYMatrixCacheEnabled
 				&& this.fixedPointYMatrixCache != null
 				&& this.fixedPointYMatrixCacheNetwork == distNet
@@ -823,14 +827,31 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			updatedExistingValues = updateFixedPointYMatrixRegulatorValues(yMatrix, distNet);
 		}
 		if(yMatrix == null) {
+			start = FIXED_POINT_PROFILE.start();
 			yMatrix = formYMatrixABCForPowerflow(distNet);
+			FIXED_POINT_PROFILE.addMatrixAssembly(FIXED_POINT_PROFILE.elapsed(start));
+			start = FIXED_POINT_PROFILE.start();
 			applyRegulatorSeriesPaddingToFixedPointYMatrix(yMatrix, distNet);
+			FIXED_POINT_PROFILE.addMatrixRegulatorPadding(FIXED_POINT_PROFILE.elapsed(start));
+			start = FIXED_POINT_PROFILE.start();
 			applySwingBusVoltageBoundary(yMatrix);
+			FIXED_POINT_PROFILE.addMatrixSwingBoundary(FIXED_POINT_PROFILE.elapsed(start));
 		}
 		if(reuseSymbolTable) {
+			start = FIXED_POINT_PROFILE.start();
 			yMatrix.getSparseEqnComplex().setSymbolTable(this.fixedPointYMatrixSymbolTable);
+			FIXED_POINT_PROFILE.addMatrixSymbolTableReuse(FIXED_POINT_PROFILE.elapsed(start));
 		}
+		start = FIXED_POINT_PROFILE.start();
 		yMatrix.factorization(!reuseSymbolTable, Constants.Matrix_LU_Tolerance);
+		long factorizationNanos = FIXED_POINT_PROFILE.elapsed(start);
+		FIXED_POINT_PROFILE.addMatrixFactorization(factorizationNanos);
+		if(reuseSymbolTable) {
+			FIXED_POINT_PROFILE.addMatrixNumericFactorization(factorizationNanos);
+		}
+		else {
+			FIXED_POINT_PROFILE.addMatrixSymbolicFactorization(factorizationNanos);
+		}
 		this.fixedPointYMatrixNumericFactorizationCount++;
 		if(updatedExistingValues) {
 			this.fixedPointYMatrixValueUpdateCount++;
@@ -1011,13 +1032,17 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	}
 
 	private ISparseEqnComplexMatrix3x3 formYMatrixABCForPowerflow(BaseAclfNetwork distNet) throws IpssNumericException {
+		long start = FIXED_POINT_PROFILE.start();
 		ISparseEqnComplexMatrix3x3 yMatrix =
 				new SparseEqnObjectFactory().createSparseEqnComplex3x3(distNet.getNoBus());
+		FIXED_POINT_PROFILE.addMatrixSparseCreate(FIXED_POINT_PROFILE.elapsed(start));
 
 		for(BaseAclfBus bus: (List<BaseAclfBus>) distNet.getBusList()) {
 			if(bus.isActive()) {
 				int i = bus.getSortNumber();
+				start = FIXED_POINT_PROFILE.start();
 				Complex3x3 yii = threePhaseBus(bus).getYiiAbcForPowerflow();
+				FIXED_POINT_PROFILE.addMatrixBusAdmittance(FIXED_POINT_PROFILE.elapsed(start));
 
 				if(!bus.isSwing()) {
 					// replace zero diagonal entries with 1.0 to avoid singularity
@@ -1028,7 +1053,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 					if(yii.cc.abs() < yiiMinTolerance) yii.cc = new Complex(1.0, 0);
 				}
 
+				start = FIXED_POINT_PROFILE.start();
 				yMatrix.setA(yii, i, i);
+				FIXED_POINT_PROFILE.addMatrixSparseInsertion(FIXED_POINT_PROFILE.elapsed(start));
 			}
 		}
 
@@ -1037,13 +1064,23 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				IBranch3Phase branch3P = threePhaseBranch(branch);
 				int i = branch.getFromBus().getSortNumber();
 				int j = branch.getToBus().getSortNumber();
-				yMatrix.addToA(branch3P.getYftabc(), i, j);
-				yMatrix.addToA(branch3P.getYtfabc(), j, i);
+				start = FIXED_POINT_PROFILE.start();
+				Complex3x3 yft = branch3P.getYftabc();
+				Complex3x3 ytf = branch3P.getYtfabc();
+				FIXED_POINT_PROFILE.addMatrixBranchAdmittance(FIXED_POINT_PROFILE.elapsed(start));
+				start = FIXED_POINT_PROFILE.start();
+				yMatrix.addToA(yft, i, j);
+				yMatrix.addToA(ytf, j, i);
+				FIXED_POINT_PROFILE.addMatrixSparseInsertion(FIXED_POINT_PROFILE.elapsed(start));
+				start = FIXED_POINT_PROFILE.start();
 				addTransformerAntiFloatAdmittance(yMatrix, branch);
+				FIXED_POINT_PROFILE.addMatrixAntiFloat(FIXED_POINT_PROFILE.elapsed(start));
 			}
 		}
+		start = FIXED_POINT_PROFILE.start();
 		addFloatingPhaseComponentAntiFloatAdmittance(yMatrix, distNet);
 		addNonSwingBusAntiFloatAdmittance(yMatrix, distNet);
+		FIXED_POINT_PROFILE.addMatrixAntiFloat(FIXED_POINT_PROFILE.elapsed(start));
 
 		return yMatrix;
 	}
@@ -2807,6 +2844,20 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		private final LongAdder convergedAttempts = new LongAdder();
 		private final LongAdder iterations = new LongAdder();
 		private final LongAdder matrixNanos = new LongAdder();
+		private final LongAdder matrixSignatureNanos = new LongAdder();
+		private final LongAdder matrixBusCacheNanos = new LongAdder();
+		private final LongAdder matrixAssemblyNanos = new LongAdder();
+		private final LongAdder matrixSparseCreateNanos = new LongAdder();
+		private final LongAdder matrixBusAdmittanceNanos = new LongAdder();
+		private final LongAdder matrixBranchAdmittanceNanos = new LongAdder();
+		private final LongAdder matrixSparseInsertionNanos = new LongAdder();
+		private final LongAdder matrixAntiFloatNanos = new LongAdder();
+		private final LongAdder matrixRegulatorPaddingNanos = new LongAdder();
+		private final LongAdder matrixSwingBoundaryNanos = new LongAdder();
+		private final LongAdder matrixSymbolTableReuseNanos = new LongAdder();
+		private final LongAdder matrixFactorizationNanos = new LongAdder();
+		private final LongAdder matrixSymbolicFactorizationNanos = new LongAdder();
+		private final LongAdder matrixNumericFactorizationNanos = new LongAdder();
 		private final LongAdder saveVoltagesNanos = new LongAdder();
 		private final LongAdder rhsClearNanos = new LongAdder();
 		private final LongAdder currentInjectionNanos = new LongAdder();
@@ -2864,6 +2915,62 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 		void addMatrix(long nanos) {
 			if(ENABLED) matrixNanos.add(nanos);
+		}
+
+		void addMatrixSignature(long nanos) {
+			if(ENABLED) matrixSignatureNanos.add(nanos);
+		}
+
+		void addMatrixBusCache(long nanos) {
+			if(ENABLED) matrixBusCacheNanos.add(nanos);
+		}
+
+		void addMatrixAssembly(long nanos) {
+			if(ENABLED) matrixAssemblyNanos.add(nanos);
+		}
+
+		void addMatrixSparseCreate(long nanos) {
+			if(ENABLED) matrixSparseCreateNanos.add(nanos);
+		}
+
+		void addMatrixBusAdmittance(long nanos) {
+			if(ENABLED) matrixBusAdmittanceNanos.add(nanos);
+		}
+
+		void addMatrixBranchAdmittance(long nanos) {
+			if(ENABLED) matrixBranchAdmittanceNanos.add(nanos);
+		}
+
+		void addMatrixSparseInsertion(long nanos) {
+			if(ENABLED) matrixSparseInsertionNanos.add(nanos);
+		}
+
+		void addMatrixAntiFloat(long nanos) {
+			if(ENABLED) matrixAntiFloatNanos.add(nanos);
+		}
+
+		void addMatrixRegulatorPadding(long nanos) {
+			if(ENABLED) matrixRegulatorPaddingNanos.add(nanos);
+		}
+
+		void addMatrixSwingBoundary(long nanos) {
+			if(ENABLED) matrixSwingBoundaryNanos.add(nanos);
+		}
+
+		void addMatrixSymbolTableReuse(long nanos) {
+			if(ENABLED) matrixSymbolTableReuseNanos.add(nanos);
+		}
+
+		void addMatrixFactorization(long nanos) {
+			if(ENABLED) matrixFactorizationNanos.add(nanos);
+		}
+
+		void addMatrixSymbolicFactorization(long nanos) {
+			if(ENABLED) matrixSymbolicFactorizationNanos.add(nanos);
+		}
+
+		void addMatrixNumericFactorization(long nanos) {
+			if(ENABLED) matrixNumericFactorizationNanos.add(nanos);
 		}
 
 		void addSaveVoltages(long nanos) {
@@ -3002,6 +3109,20 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 					+ ", converged_attempts=" + convergedAttempts.sum()
 					+ ", iterations=" + iterations.sum()
 					+ "\n  matrix_ms=" + ms(matrixNanos)
+					+ "\n  matrix_breakdown_ms signature=" + ms(matrixSignatureNanos)
+					+ ", bus_cache=" + ms(matrixBusCacheNanos)
+					+ ", assembly=" + ms(matrixAssemblyNanos)
+					+ ", regulator_padding=" + ms(matrixRegulatorPaddingNanos)
+					+ ", swing_boundary=" + ms(matrixSwingBoundaryNanos)
+					+ ", symbol_reuse=" + ms(matrixSymbolTableReuseNanos)
+					+ ", factorization_call=" + ms(matrixFactorizationNanos)
+					+ "\n  matrix_assembly_deep_ms sparse_create=" + ms(matrixSparseCreateNanos)
+					+ ", bus_admittance=" + ms(matrixBusAdmittanceNanos)
+					+ ", branch_admittance=" + ms(matrixBranchAdmittanceNanos)
+					+ ", sparse_insertion=" + ms(matrixSparseInsertionNanos)
+					+ ", anti_float=" + ms(matrixAntiFloatNanos)
+					+ "\n  matrix_factorization_call_ms symbolic_or_new_pattern=" + ms(matrixSymbolicFactorizationNanos)
+					+ ", numeric_reuse_pattern=" + ms(matrixNumericFactorizationNanos)
 					+ "\n  save_voltages_ms=" + ms(saveVoltagesNanos)
 					+ ", rhs_clear_ms=" + ms(rhsClearNanos)
 					+ ", current_injection_ms=" + ms(currentInjectionNanos)
