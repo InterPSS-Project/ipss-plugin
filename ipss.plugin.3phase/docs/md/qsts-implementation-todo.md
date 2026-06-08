@@ -468,70 +468,24 @@ Create:
     right-hand-side updates.
   - Supports fast per-step PF iterations when only injections/load multipliers
     change.
-- [ ] `QstsControlCompensationModel`
-  - Generic compensation hook that contributes equivalent terminal current
-    injections for control-state deltas while keeping the base `Ybus`
-    factorization reusable.
-  - Uses `Icomp(V, state) = DeltaY(state, baseState) * Vterminal`.
-- [ ] `QstsAdmittanceDelta`
-  - Device-local admittance-delta value object with affected terminals, phases,
-    base state, proposed state, and current-injection evaluation.
-- [ ] `QstsCompensationPolicy`
-  - Enables compensation only for supported device/control types.
-  - Defines convergence, voltage-error, delta-size, and fallback-to-rebuild
-    rules.
-  - First slice implemented as `QstsControlCompensationPolicy`: fixed-point
-    numeric `Ybus` cache reuse is allowed for capacitor and inverter controls
-    because they enter the current-injection/RHS path. Regulator tap controls
-    now prefer numeric `Ybus` rebuild with cached symbolic factorization because
-    tap changes alter transformer/regulator admittance while preserving the
-    sparse structure.
+- [x] Remove compensation-current acceleration from the plugin
+  - Deleted the `QstsControlCompensationPolicy` path and the regulator tap
+    compensation/KCL/damping tests.
+  - QSTS now enables the fixed-point `Ybus` cache only when controls are off.
+  - Controls that change admittance, including capacitor switching and
+    regulator tap changes, must update or rebuild the matrix rather than being
+    approximated as fictitious terminal current injections.
+  - Historical direct-compensation experiments were slower and less robust on
+    IEEE123 than symbolic reuse plus in-place sparse-matrix value update:
+    full rebuild `96 ms`, symbolic reuse with new matrix `32 ms`, in-place
+    value update `20 ms`, direct compensation with `1.0E-6` pu virtual padding
+    `124 ms`.
   - Regulator numeric rebuild now reuses the same sparse matrix object where
     possible: downstream regulator tap changes apply `Ynew - Yold` deltas to
     the existing `Yff/Yft/Ytf/Ytt` matrix blocks and then rerun numeric LU with
     the cached symbolic table. If a regulator touches the swing bus boundary,
     the implementation conservatively rebuilds the matrix because the
     swing-boundary RHS transformation also changes.
-  - Direct regulator admittance-delta current compensation remains a diagnostic
-    and optional policy path, but the default QSTS regulator path avoids it for
-    stiff near-zero-impedance regulators where the compensation RHS can become
-    numerically large.
-  - Optional direct regulator compensation now supports under-relaxation via
-    `ipss.qsts.regulatorCompensationDamping` with default `0.25`. IEEE123 still
-    needs the guarded fallback once and later compensated solves require high
-    fixed-point iteration counts, so damping is retained as an experiment rather
-    than promoted to the default tap-control path.
-  - Virtual series-resistance padding for direct regulator compensation was
-    also tested with `ipss.qsts.regulatorCompensationSeriesRPadPu`. The
-    corrected experiment adds the padded regulator admittance to the cached base
-    `Ybus` and compensates the RHS from that padded base back to the physical
-    tap-state admittance. This preserves the fresh-`Ybus` solution when the
-    fallback guard is used, but IEEE123 showed that practical padding values
-    from `0.01` down to `1.0E-5` pu per phase caused repeated fallback
-    (`fallbackCount=8`, `numericFactors=16`). A very small `1.0E-6` pu padding
-    behaved like the unpadded damped-compensation path (`fallbackCount=1`,
-    `numericFactors=3`) with max voltage magnitude error about `6.0E-8` pu
-    versus fresh rebuild. However, the IEEE123 timing comparison showed that
-    this direct compensation path is slower than rebuild/update methods because
-    its fixed-point iteration count is much higher:
-    - full rebuild: `96 ms`, `symbolicFactors=8`, `numericFactors=8`;
-    - symbolic reuse with new matrix: `32 ms`, `symbolicFactors=1`,
-      `numericFactors=8`;
-    - symbolic reuse with in-place value update: `20 ms`, `symbolicFactors=1`,
-      `numericFactors=8`, `valueUpdates=5`;
-    - direct compensation with `1.0E-6` pu virtual padding: `124 ms`,
-      `symbolicFactors=1`, `numericFactors=3`, `fallbackCount=1`.
-    Conclusion: padding is retained only as diagnostic instrumentation and is
-    not the default regulator acceleration method.
-- [ ] `QstsCapacitorCompensationModel`
-  - First supported compensation model.
-  - Represents capacitor/reactor on/off changes as shunt current injections
-    instead of rebuilding `Ybus`.
-- [ ] `QstsRegulatorTapCompensationModel`
-  - Guarded second compensation model.
-  - Computes terminal current injection from transformer/regulator tap
-    admittance deltas.
-  - Must run in comparison mode against full `Ybus` rebuild before broad use.
 - [ ] `QstsStudyWindow`
   - Window definition: start step, number of steps, initial state policy, and
     output target.
@@ -552,9 +506,9 @@ Update:
   - Reuse `QstsYBusFactorizationCache` for all batches whose `Ybus` is unchanged.
   - Rebuild numeric factorization only when an admittance-changing delta is
     applied.
-  - For supported control actions, apply equivalent compensation currents before
-    invalidating the factorization.
-  - Record per-step solve path: factorization reused, compensation used, or
+  - For controls that change admittance, update affected sparse-matrix values
+    in place when the sparsity pattern is unchanged; otherwise rebuild.
+  - Record per-step solve path: factorization reused, matrix values updated, or
     `Ybus` rebuilt/refactored.
 - [ ] `QstsResult`
   - Support chunked or streaming result collection so yearly studies do not keep
@@ -583,8 +537,9 @@ Performance rules:
   unchanged.
 - [ ] Reuse `Ybus` and its factorization across batches when only load/source/
   injection values change.
-- [ ] Prefer compensation-current RHS updates for supported capacitor/reactor
-  controls, with explicit fallback to matrix rebuild.
+- [ ] For capacitor/reactor controls, treat switching as an admittance-changing
+  event and invalidate/update the matrix instead of using RHS current
+  compensation.
 - [x] Use symbolic factorization reuse plus in-place sparse-matrix value updates
   as the default regulator-tap QSTS acceleration method:
   - tap changes preserve the sparse structure, so the symbolic table is reused;
@@ -593,8 +548,7 @@ Performance rules:
   - regulators touching the swing-bus boundary rebuild/reapply the
     swing-boundary transformation because the moved `Yns * Vs` RHS term changes;
   - direct regulator RHS compensation, damping, and virtual impedance padding
-    remain comparison/diagnostic paths until they meet convergence and accuracy
-    gates without fallback.
+    were removed from the plugin after the IEEE123 experiments.
 - [ ] Track factorization invalidation explicitly:
   - topology switching;
   - branch impedance changes;
@@ -625,30 +579,25 @@ Verification:
 - [ ] Add a factorization-cache test:
   - load multiplier changes reuse the same factorization;
   - DER/source injection changes reuse the same factorization;
-  - capacitor/reactor admittance changes either use compensation or invalidate
-    the factorization according to `QstsCompensationPolicy`;
-  - tap changes either use validated compensation or invalidate only when the
-    implemented tap model changes `Ybus`.
-- [ ] Add compensation accuracy tests:
-  - [x] capacitor compensation matches full `Ybus` rebuild on OpenDSS
+  - capacitor/reactor admittance changes invalidate or update the matrix;
+  - tap changes reuse symbolic factorization and update matrix values in place
+    when the sparsity pattern is unchanged.
+- [ ] Add matrix update accuracy tests:
+  - [x] capacitor control states and terminal kvar match DSS-Python on OpenDSS
     cap-control mini feeders;
-  - [x] capacitor compensation matches full `Ybus` rebuild on the larger Ckt24
-    feeder with static voltage controls attached to existing capacitor banks;
+  - [x] Ckt24 capacitor-control QSTS converges with controls enabled and does
+    not use the fixed `Ybus` cache;
   - [x] regulator tap symbolic-factorization reuse matches full numeric `Ybus`
     rebuild on the IEEE 13 daily QSTS regulator-control case;
   - [x] IEEE123 per-phase regulator QSTS policy matches full numeric `Ybus`
     rebuild while reusing symbolic factorization for repeated tap solves;
   - [x] IEEE13 and IEEE123 regulator tests assert in-place sparse-matrix value
     updates are used for downstream regulator tap changes;
-  - [x] direct regulator compensation includes a damping recurrence test and an
-    IEEE123 guarded-fallback smoke test;
-  - [x] virtual series-resistance padding experiment is documented and covered
-    by IEEE123 sweep output; it is accurate only with the fallback guard and is
-    not selected as the default QSTS regulator path;
+  - [x] direct regulator compensation, damping, and virtual series-resistance
+    padding experiment results are documented as removed paths;
   - [x] larger feeder smoke coverage passes after in-place sparse-matrix updates:
     IEEE123, Ckt7, Ckt24, Ckt24 capacitor comparison, IEEE123 regulator
-    symbolic update, IEEE123 damped-regulator compensation guard, and IEEE8500
-    controls-off smoke cases.
+    symbolic update, and IEEE8500 controls-off smoke cases.
   - unsupported control actions force rebuild/refactor and report the reason.
 
 ## Slide 7: DSS-Python Reference Harness
@@ -783,7 +732,7 @@ Create:
     line-impedance floor so static fixed-point setup no longer sees zero Yii
     diagonal elements.
   - [ ] Ckt24 low-load scheduled yearly window, controls off first, then
-    control-enabled after compensation support is available:
+    control-enabled with matrix update/rebuild controls:
     - profile files in `testData/feeder/Ckt24`:
       `LS_PhaseA.txt`, `LS_PhaseB.txt`, `LS_PhaseC.txt`,
       `LS_ThreePhase.txt`, and `Other_Bus_Load.txt`;
