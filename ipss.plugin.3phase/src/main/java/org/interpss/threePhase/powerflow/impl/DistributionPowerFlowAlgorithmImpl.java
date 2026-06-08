@@ -70,6 +70,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 	private double tol = 1.0E-6;
 	private int    maxIteration = 20;
+	private int    minIteration = Math.max(1, Integer.getInteger("ipss.distpf.minIterations", 2).intValue());
 	private int    iterationCount = -1;
 	private boolean radialNetworkOnly = true;
 	private boolean pfFlag =false;
@@ -706,7 +707,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		FIXED_POINT_PROFILE.addAttempt();
 
 		for (int i = 0; i < this.maxIteration; i++) {
-			this.iterationCount = i;
+			this.iterationCount = i + 1;
 			FIXED_POINT_PROFILE.addIteration();
 			long start = FIXED_POINT_PROFILE.start();
 			if(primitiveState == null) {
@@ -764,8 +765,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			start = FIXED_POINT_PROFILE.start();
 			double maxVoltageMismatch = maxSwingVoltageMismatch(busCache, voltageUpdate.maxMismatch);
 			FIXED_POINT_PROFILE.addMismatch(FIXED_POINT_PROFILE.elapsed(start));
-			if(i > 0 && maxVoltageMismatch <= this.getTolerance()) {
-				log.debug("Distribution fixed-point power flow converged, iterations={}", i);
+			if(this.iterationCount >= this.minIteration && maxVoltageMismatch <= this.getTolerance()) {
+				log.debug("Distribution fixed-point power flow converged, iterations={}", this.iterationCount);
 				if(primitiveState != null) {
 					primitiveState.syncBusVoltages(busCache.activeBuses);
 				}
@@ -2073,7 +2074,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		BaseAclfNetwork<? extends BaseAclfBus<? extends AclfGen, ? extends AclfLoad>, ? extends AclfBranch> distNet = aclfNetwork();
 
 		for (int i=0;i<this.maxIteration;i++){
-			this.iterationCount = i;
+			this.iterationCount = i + 1;
 
 			for (Branch bra: distNet.getBranchList()){
 				bra.setIntFlag(0);
@@ -2444,8 +2445,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				 }
 			}
 
-			if(i > 0 && this.pfFlag) {
-				log.debug("Distribution power flow converged, iterations={}", i);
+			if(this.iterationCount >= this.minIteration && this.pfFlag) {
+				log.debug("Distribution power flow converged, iterations={}", this.iterationCount);
 				calcSwingBusGenPower();
 				break;
 			}
