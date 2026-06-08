@@ -775,15 +775,14 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	}
 
 	private void updateFixedPointPostSolveOutputs() {
-		long start = FIXED_POINT_PROFILE.start();
-		syncPositiveSequenceBusVoltages();
-		FIXED_POINT_PROFILE.addSequenceSync(FIXED_POINT_PROFILE.elapsed(start));
-
 		if(this.postSolveOutputMode == DistributionPostSolveOutputMode.VOLTAGE_ONLY) {
 			return;
 		}
 
 		if(this.postSolveOutputMode == DistributionPostSolveOutputMode.FULL_BRANCH_CURRENTS) {
+			long start = FIXED_POINT_PROFILE.start();
+			syncPositiveSequenceVoltages();
+			FIXED_POINT_PROFILE.addSequenceSync(FIXED_POINT_PROFILE.elapsed(start));
 			start = FIXED_POINT_PROFILE.start();
 			updateBranchCurrentsFromSolvedVoltages();
 			FIXED_POINT_PROFILE.addBranchCurrent(FIXED_POINT_PROFILE.elapsed(start));
@@ -793,7 +792,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			return;
 		}
 
-		start = FIXED_POINT_PROFILE.start();
+		long start = FIXED_POINT_PROFILE.start();
 		calcSwingBusGenPowerFromSolvedVoltages();
 		FIXED_POINT_PROFILE.addSwingPower(FIXED_POINT_PROFILE.elapsed(start));
 	}
@@ -1688,7 +1687,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		existing.c_2 = vabc.c_2;
 	}
 
-	private void syncPositiveSequenceBusVoltages() {
+	@Override
+	public void syncPositiveSequenceVoltages() {
 		for(BaseAclfBus bus: aclfNetwork().getBusList()) {
 			if(bus.isActive() && !bus.isSwing()) {
 				IBus3Phase bus3P = threePhaseBus(bus);
