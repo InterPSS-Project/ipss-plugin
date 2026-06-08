@@ -38,6 +38,7 @@ import com.interpss.core.threephase.IBus3Phase;
 import com.interpss.core.threephase.IPhaseGen;
 import com.interpss.core.threephase.IPhaseLoad;
 import com.interpss.core.threephase.INetwork3Phase;
+import com.interpss.core.threephase.Static3PGen;
 import com.interpss.core.threephase.Static3PLoad;
 import com.interpss.core.threephase.Static3PXformer;
 import com.interpss.core.threephase.Static3PhaseFactory;
@@ -1526,7 +1527,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			FIXED_POINT_PROFILE.addCurrentInjectionBus();
 			int offset = 6 * bus.sortNumber;
 			long start = FIXED_POINT_PROFILE.start();
-			addStaticLoadCurrentToRhsProfiled(bus, primitiveState.voltage, offset, primitiveRhs);
+			addStaticCurrentToRhsProfiled(bus, primitiveState.voltage, offset, primitiveRhs);
 			FIXED_POINT_PROFILE.addCurrentInjectionCalc(FIXED_POINT_PROFILE.elapsed(start));
 
 			long rhsStart = FIXED_POINT_PROFILE.start();
@@ -1569,6 +1570,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			for(IPhaseLoad load : bus.phaseLoads) {
 				((Static3PLoad) load).addEquivCurrInj(primitiveState.voltage, offset, primitiveRhs, offset);
 			}
+			for(Static3PGen gen : bus.staticGenerators) {
+				gen.addEquivCurrInj(primitiveState.voltage, offset, primitiveRhs, offset);
+			}
 			if(!isFinite(primitiveRhs, offset)) {
 				log.warn("Invalid fixed-point current injection at bus " + bus.id
 						+ ", sortNumber=" + bus.sortNumber + ", iabc=" + format3x1(primitiveRhs, offset)
@@ -1589,7 +1593,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		}
 	}
 
-	private void addStaticLoadCurrentToRhsProfiled(FixedPointBus bus, double[] voltage,
+	private void addStaticCurrentToRhsProfiled(FixedPointBus bus, double[] voltage,
 			int offset, double[] primitiveRhs) {
 		long start = FIXED_POINT_PROFILE.start();
 		List<? extends IPhaseLoad> loads = bus.phaseLoads;
@@ -1599,6 +1603,17 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			start = FIXED_POINT_PROFILE.start();
 			((Static3PLoad) load).addEquivCurrInj(voltage, offset, primitiveRhs, offset);
 			FIXED_POINT_PROFILE.addCurrentCalcLoadCurrent(FIXED_POINT_PROFILE.elapsed(start));
+		}
+
+		if(bus.staticGenerators.length > 0) {
+			start = FIXED_POINT_PROFILE.start();
+			FIXED_POINT_PROFILE.addCurrentCalcGenList(FIXED_POINT_PROFILE.elapsed(start));
+			for(Static3PGen gen : bus.staticGenerators) {
+				FIXED_POINT_PROFILE.addCurrentCalcGen();
+				start = FIXED_POINT_PROFILE.start();
+				gen.addEquivCurrInj(voltage, offset, primitiveRhs, offset);
+				FIXED_POINT_PROFILE.addCurrentCalcGenCurrent(FIXED_POINT_PROFILE.elapsed(start));
+			}
 		}
 	}
 
@@ -1761,6 +1776,17 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			FIXED_POINT_PROFILE.addCurrentCalcLoadCurrent(FIXED_POINT_PROFILE.elapsed(start));
 		}
 
+		if(bus.staticGenerators.length > 0) {
+			start = FIXED_POINT_PROFILE.start();
+			FIXED_POINT_PROFILE.addCurrentCalcGenList(FIXED_POINT_PROFILE.elapsed(start));
+			for(Static3PGen gen : bus.staticGenerators) {
+				FIXED_POINT_PROFILE.addCurrentCalcGen();
+				start = FIXED_POINT_PROFILE.start();
+				gen.addEquivCurrInj(voltage, voltageOffset, current, 0);
+				FIXED_POINT_PROFILE.addCurrentCalcGenCurrent(FIXED_POINT_PROFILE.elapsed(start));
+			}
+		}
+
 		return current;
 	}
 
@@ -1775,6 +1801,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		int voltageOffset = 6 * bus.sortNumber;
 		for(IPhaseLoad load : bus.phaseLoads) {
 			((Static3PLoad) load).addEquivCurrInj(voltage, voltageOffset, current);
+		}
+		for(Static3PGen gen : bus.staticGenerators) {
+			gen.addEquivCurrInj(voltage, voltageOffset, current, 0);
 		}
 		return current;
 	}
@@ -1995,7 +2024,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			}
 		}
 		for(FixedPointBus bus : busCache.currentInjectionBuses) {
-			if(!bus.phaseGenerators.isEmpty()) {
+			if(bus.staticGenerators == null) {
 				return false;
 			}
 			for(IPhaseLoad load : bus.phaseLoads) {
@@ -3042,6 +3071,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		private final IBus3Phase bus3P;
 		private final List<? extends IPhaseLoad> phaseLoads;
 		private final List<? extends IPhaseGen> phaseGenerators;
+		private final Static3PGen[] staticGenerators;
 		private final Complex3x1 boundaryCurrent;
 		private final boolean boundaryCurrentFinite;
 		private final double boundaryAReal;
@@ -3064,6 +3094,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			this.bus3P = (IBus3Phase) bus;
 			this.phaseLoads = this.bus3P.getPhaseLoadList();
 			this.phaseGenerators = this.bus3P.getPhaseGenList();
+			this.staticGenerators = staticGeneratorArray(this.phaseGenerators);
 			this.boundaryCurrent = boundaryCurrent;
 			this.boundaryCurrentFinite = boundaryCurrent == null
 					|| (finiteValue(boundaryCurrent.a_0) && finiteValue(boundaryCurrent.b_1)
@@ -3140,6 +3171,21 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 		private static double imaginaryValue(Complex value) {
 			return value == null ? 0.0 : value.getImaginary();
+		}
+
+		private static Static3PGen[] staticGeneratorArray(List<? extends IPhaseGen> generators) {
+			if(generators.isEmpty()) {
+				return new Static3PGen[0];
+			}
+			Static3PGen[] values = new Static3PGen[generators.size()];
+			for(int i = 0; i < generators.size(); i++) {
+				IPhaseGen generator = generators.get(i);
+				if(!(generator instanceof Static3PGen staticGenerator)) {
+					return null;
+				}
+				values[i] = staticGenerator;
+			}
+			return values;
 		}
 	}
 
