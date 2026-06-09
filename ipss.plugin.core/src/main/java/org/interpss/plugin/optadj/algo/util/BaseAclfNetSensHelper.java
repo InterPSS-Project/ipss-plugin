@@ -1,6 +1,6 @@
 package org.interpss.plugin.optadj.algo.util;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -92,7 +92,7 @@ public abstract class BaseAclfNetSensHelper {
 	 * @return the map of index to control element
 	 */
 	public static <T> Map<Integer, T> arrangeIndex(Set<T> controlElemSet,int point) {
-		Map<Integer, T> genMap = new HashMap<>();
+		Map<Integer, T> genMap = new LinkedHashMap<>();
 		int index = point;
 		for (T gen : controlElemSet) {
 			genMap.put(index++, gen);
