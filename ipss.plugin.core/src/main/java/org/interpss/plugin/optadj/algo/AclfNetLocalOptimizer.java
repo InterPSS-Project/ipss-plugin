@@ -175,7 +175,7 @@ public class AclfNetLocalOptimizer extends BaseAclfNetOptimizer {
         
         Set<String> candidateBusIds = allCandidates.stream()
             .map(AclfBus::getId)
-            .collect(Collectors.toCollection(HashSet::new));
+            .collect(Collectors.toCollection(LinkedHashSet::new));
         
         Sen2DMatrix gfsMatrix = helper.calGFS(candidateBusIds, heavyLoadedBranchIdSet);
         
@@ -200,14 +200,14 @@ public class AclfNetLocalOptimizer extends BaseAclfNetOptimizer {
         return network.getBusList().stream()
             .filter(bus -> bus.isActive() && bus.isGen())
             .map(bus -> (AclfBus) bus)
-            .collect(Collectors.toCollection(HashSet::new));
+            .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     /**
      * Collect load-only buses at terminals of heavily loaded branches as load control candidates.
      */
     private Set<AclfBus> collectLoadCandidateBuses() {
-        Set<AclfBus> loadCandidateBuses = new HashSet<>();
+        Set<AclfBus> loadCandidateBuses = new LinkedHashSet<>();
         for (String branchId : heavyLoadedBranchIdSet) {
             AclfBranch branch = network.getBranch(branchId);
             if (branch == null) {
@@ -251,7 +251,7 @@ public class AclfNetLocalOptimizer extends BaseAclfNetOptimizer {
      * Identify overloaded branches in the network.
      */
     protected void identifyOverlimitBranches(double threshold) {
-        heavyLoadedBranchIdSet = new HashSet<>();
+        heavyLoadedBranchIdSet = new LinkedHashSet<>();
         
         for (DclfAlgoBranch dclfBranch : dclfAlgo.getDclfAlgoBranchList()) {
             if (!isNonSwingBranch(dclfBranch)) continue;
@@ -286,7 +286,7 @@ public class AclfNetLocalOptimizer extends BaseAclfNetOptimizer {
     private Sen2DMatrix calculateGFSMatrix(Set<AclfBus> controlBusSet) {
         Set<String> controlBusIds = controlBusSet.stream()
             .map(AclfBus::getId)
-            .collect(Collectors.toCollection(HashSet::new));
+            .collect(Collectors.toCollection(LinkedHashSet::new));
         
         return helper.calGFS(controlBusIds);
     }
