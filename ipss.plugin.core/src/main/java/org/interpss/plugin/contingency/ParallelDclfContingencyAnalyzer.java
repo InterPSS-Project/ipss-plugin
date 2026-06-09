@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.interpss.numeric.NumericConstant;
 
 import com.interpss.algo.parallel.BranchCAResultRec;
 import com.interpss.common.exp.InterpssException;
@@ -27,13 +28,18 @@ import com.interpss.core.algo.dclf.DclfContingencySolutionMethod;
 import com.interpss.core.algo.dclf.DclfContingencyWoodburySolver;
 import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
+import com.interpss.core.algo.dclf.solver.IDclfSolver;
+import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 import com.interpss.core.contingency.BaseContingency;
 import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfMonitoringBranch;
 import com.interpss.core.contingency.dclf.DclfMultiOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
+import com.interpss.core.sparse.impl.klu.KLUSparseEqnDoubleImpl;
 import com.interpss.core.net.ref.impl.NetworkRefImpl;
+
+import org.interpss.numeric.sparse.ISparseEqnDouble;
 
 public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork>{
     //create logger
@@ -41,6 +47,11 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
 	private static final int DEFAULT_WOODBURY_MONITOR_BATCH_SIZE = 5120;
 	private static final String WOODBURY_MONITOR_BATCH_SIZE_PROPERTY =
 			"interpss.dclf.woodbury.monitorBatchSize";
+	private static final String KLU_ENDPOINT_RHS_BATCH_SIZE_PROPERTY =
+			"interpss.dclf.klu.endpointRhsBatchSize";
+	private static final int DEFAULT_KLU_ENDPOINT_RHS_BATCH_SIZE = 64;
+	private static final int DEFAULT_KLU_ENDPOINT_RHS_BATCH_MIN_CONTINGENCIES = 1000;
+	private static final double LODF_THRESHOLD = 2.0;
 
     /**
 	 * Constructor
@@ -125,7 +136,7 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
 			throw new IllegalArgumentException("solutionMethod cannot be null");
 		}
 
-	    ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(aclfNet);
+	    ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(aclfNet, CacheType.SenCached, true);
 		dclfAlgo.setSolutionMethod(solutionMethod);
 	    DclfMethod method = dclfInclLoss? DclfMethod.INC_LOSS : DclfMethod.STD;
 	    dclfAlgo.calculateDclf(method);
@@ -267,7 +278,19 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
 			Set<String> monitoredBranchIds,
 			double overloadThreshold,
 			int parallelismLevel) {
+		int kluEndpointRhsBatchSize = kluEndpointRhsBatchSize(dclfAlgo, contingencyList.size());
+		if (kluEndpointRhsBatchSize > 2) {
+			return performOpenBranchOutageKluBatchedFastAnalysis(
+					dclfAlgo,
+					contingencyList,
+					monitoredBranchIds,
+					overloadThreshold,
+					parallelismLevel,
+					kluEndpointRhsBatchSize);
+		}
+
 	    ConcurrentLinkedQueue<BranchCAResultRec> caResultRecords = new ConcurrentLinkedQueue<>();
+	    MonitorScanData monitorData = monitorScanData(dclfAlgo, monitoredBranchIds);
 	    
 	    executeParallel(
 	        contingencyList.stream(),
@@ -275,7 +298,7 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
 				analyzeOpenBranchOutageFast(
 						dclfAlgo,
 						(DclfBranchOutage) contingency,
-						monitoredBranchIds,
+						monitorData,
 						overloadThreshold,
 						caResultRecords);
 	        },
@@ -285,6 +308,57 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
 	    log.info("Dclf contingency analysis completed. Found {} violations out of {} contingencies",
 	            caResultRecords.size(), contingencyList.size());
 	    
+	    return caResultRecords;
+	}
+
+	private static int kluEndpointRhsBatchSize(
+			ContingencyAnalysisAlgorithm dclfAlgo,
+			int contingencyCount) {
+		try {
+			if (!(dclfAlgo.getB1Matrix() instanceof KLUSparseEqnDoubleImpl)) {
+				return 0;
+			}
+		} catch (InterpssException e) {
+			return 0;
+		}
+		int defaultBatchSize = contingencyCount >= DEFAULT_KLU_ENDPOINT_RHS_BATCH_MIN_CONTINGENCIES
+				? DEFAULT_KLU_ENDPOINT_RHS_BATCH_SIZE : 2;
+		int batchSize = Integer.getInteger(KLU_ENDPOINT_RHS_BATCH_SIZE_PROPERTY, defaultBatchSize);
+		return Math.max(2, batchSize);
+	}
+
+	private static ConcurrentLinkedQueue<BranchCAResultRec> performOpenBranchOutageKluBatchedFastAnalysis(
+			ContingencyAnalysisAlgorithm dclfAlgo,
+			List<? extends BaseContingency<DclfMonitoringBranch>> contingencyList,
+			Set<String> monitoredBranchIds,
+			double overloadThreshold,
+			int parallelismLevel,
+			int endpointRhsBatchSize) {
+	    ConcurrentLinkedQueue<BranchCAResultRec> caResultRecords = new ConcurrentLinkedQueue<>();
+	    MonitorScanData monitorData = monitorScanData(dclfAlgo, monitoredBranchIds);
+	    int contingencyBatchSize = Math.max(1, endpointRhsBatchSize / 2);
+	    int batchCount = (contingencyList.size() + contingencyBatchSize - 1) / contingencyBatchSize;
+
+	    executeParallel(
+	        java.util.stream.IntStream.range(0, batchCount).boxed(),
+	        batchIndex -> {
+				int from = batchIndex * contingencyBatchSize;
+				int to = Math.min(contingencyList.size(), from + contingencyBatchSize);
+				analyzeOpenBranchOutageBatchFast(
+						dclfAlgo,
+						contingencyList,
+						from,
+						to,
+						monitorData,
+						overloadThreshold,
+						caResultRecords);
+	        },
+	        parallelismLevel
+	    );
+
+	    log.info("Dclf KLU endpoint RHS batching completed. Found {} violations out of {} contingencies, RHS batch size {}",
+	            caResultRecords.size(), contingencyList.size(), endpointRhsBatchSize);
+
 	    return caResultRecords;
 	}
 
@@ -348,15 +422,14 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
 	private static void analyzeOpenBranchOutageFast(
 			ContingencyAnalysisAlgorithm dclfAlgo,
 			DclfBranchOutage contingency,
-			Set<String> monitoredBranchIds,
+			MonitorScanData monitorData,
 			double overloadThreshold,
 			ConcurrentLinkedQueue<BranchCAResultRec> caResultRecords) {
 		try {
 			/*
 			 * Standard N-1 open outages use the same Sherman-Morrison/LODF vector
-			 * kernel for both solution-method names. Avoid ContingencyAnalysisAlgorithm.ca()
-			 * here because it mutates every DclfAlgoBranch and copies monitoring state;
-			 * this analyzer only needs streamed BranchCAResultRec records.
+			 * formula for both solution-method names. Avoid materializing the full
+			 * branch LODF vector when the caller supplied a smaller monitor set.
 			 */
 			DclfOutageBranch outageBranch = contingency.getOutageEquip();
 			if (outageBranch == null || outageBranch.getOutageType() != ContingencyBranchOutageType.OPEN) {
@@ -367,35 +440,284 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
 
 			double baseMva = dclfAlgo.getAclfNet().getBaseMva();
 			double outagePreFlowMw = outageBranch.getDclfFlow() * baseMva;
-			double[] lodfAry = dclfAlgo.lineOutageDFactors(outageBranch);
+			AclfBranch outageAclfBranch = outageBranch.getBranch();
+			String fromBusId = outageAclfBranch.getFromAclfBus().getId();
+			String toBusId = outageAclfBranch.getToAclfBus().getId();
+			SensitivityPair sensitivity = sensitivityPair(dclfAlgo, outageAclfBranch, fromBusId, toBusId);
+			double outagePtdf = transferPtdf(outageAclfBranch, sensitivity);
 
-			for (DclfAlgoBranch dclfBranch : dclfAlgo.getDclfAlgoBranchList()) {
-				if (!dclfBranch.isActive()) {
-					continue;
-				}
-
-				AclfBranch aclfBranch = dclfBranch.getBranch();
-				if (monitoredBranchIds != null && !monitoredBranchIds.contains(aclfBranch.getId())) {
-					continue;
-				}
-
-				double shiftedFlowMw = outagePreFlowMw * lodfAry[aclfBranch.getSortNumber()];
+			for (int monitorIndex = 0; monitorIndex < monitorData.count; monitorIndex++) {
+				double lodf = monitoredLodf(outageAclfBranch, outagePtdf,
+						sensitivity, monitorData, monitorIndex);
+				double shiftedFlowMw = outagePreFlowMw * lodf;
 				if (Math.abs(shiftedFlowMw) <= BranchCAResultRec.ContingencyShiftThreshold) {
+					continue;
+				}
+				if (!isOverload(monitorData.preFlowMw[monitorIndex], shiftedFlowMw,
+						monitorData.ratingMvaB[monitorIndex], overloadThreshold)) {
 					continue;
 				}
 
 				BranchCAResultRec result =
 						new BranchCAResultRec(
 								contingency,
-								aclfBranch,
-								dclfBranch.getDclfFlow() * baseMva,
+								monitorData.branches[monitorIndex],
+								monitorData.preFlowMw[monitorIndex],
 								shiftedFlowMw);
-				if (result.calLoadingPercent() >= overloadThreshold) {
+				caResultRecords.add(result);
+			}
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private static void analyzeOpenBranchOutageBatchFast(
+			ContingencyAnalysisAlgorithm dclfAlgo,
+			List<? extends BaseContingency<DclfMonitoringBranch>> contingencyList,
+			int fromContingencyIndex,
+			int toContingencyIndex,
+			MonitorScanData monitorData,
+			double overloadThreshold,
+			ConcurrentLinkedQueue<BranchCAResultRec> caResultRecords) {
+		try {
+			ISparseEqnDouble b1 = dclfAlgo.getB1Matrix();
+			KLUSparseEqnDoubleImpl kluB1 = (KLUSparseEqnDoubleImpl) b1;
+			int n = b1.getDimension();
+			int outageCount = toContingencyIndex - fromContingencyIndex;
+			int[] rhsIndexes = new int[2 * outageCount];
+			AclfBranch[] outageBranches = new AclfBranch[outageCount];
+			double[] outagePreFlowsMw = new double[outageCount];
+			int[] fromOffsets = new int[outageCount];
+			int[] toOffsets = new int[outageCount];
+			double baseMva = dclfAlgo.getAclfNet().getBaseMva();
+
+			for (int i = 0; i < outageCount; i++) {
+				DclfBranchOutage contingency =
+						(DclfBranchOutage) contingencyList.get(fromContingencyIndex + i);
+				DclfOutageBranch outageBranch = contingency.getOutageEquip();
+				if (outageBranch == null || outageBranch.getOutageType() != ContingencyBranchOutageType.OPEN) {
+					throw new UnsupportedOperationException(
+							"ParallelDclfContingencyAnalyzer fast path supports OPEN branch outages only: "
+									+ contingency.getId());
+				}
+
+				AclfBranch outageAclfBranch = outageBranch.getBranch();
+				outageBranches[i] = outageAclfBranch;
+				outagePreFlowsMw[i] = outageBranch.getDclfFlow() * baseMva;
+
+				int rhsFromCol = 2 * i;
+				int rhsToCol = rhsFromCol + 1;
+				if (outageAclfBranch.getFromAclfBus().isRefBus()) {
+					rhsIndexes[rhsFromCol] = -1;
+					fromOffsets[i] = -1;
+				} else {
+					rhsIndexes[rhsFromCol] = outageAclfBranch.getFromBus().getSortNumber();
+					fromOffsets[i] = rhsFromCol * n;
+				}
+				if (outageAclfBranch.getToAclfBus().isRefBus()) {
+					rhsIndexes[rhsToCol] = -1;
+					toOffsets[i] = -1;
+				} else {
+					rhsIndexes[rhsToCol] = outageAclfBranch.getToBus().getSortNumber();
+					toOffsets[i] = rhsToCol * n;
+				}
+			}
+
+			double[] panel = kluB1.solveUnitRhsBatch(rhsIndexes);
+			for (int i = 0; i < outageCount; i++) {
+				DclfBranchOutage contingency =
+						(DclfBranchOutage) contingencyList.get(fromContingencyIndex + i);
+				AclfBranch outageAclfBranch = outageBranches[i];
+				SensitivityPair sensitivity =
+						new SensitivityPair(panel, fromOffsets[i], panel, toOffsets[i]);
+				double outagePtdf = transferPtdf(outageAclfBranch, sensitivity);
+
+				for (int monitorIndex = 0; monitorIndex < monitorData.count; monitorIndex++) {
+					double lodf = monitoredLodf(outageAclfBranch, outagePtdf,
+							sensitivity, monitorData, monitorIndex);
+					double shiftedFlowMw = outagePreFlowsMw[i] * lodf;
+					if (Math.abs(shiftedFlowMw) <= BranchCAResultRec.ContingencyShiftThreshold) {
+						continue;
+					}
+					if (!isOverload(monitorData.preFlowMw[monitorIndex], shiftedFlowMw,
+							monitorData.ratingMvaB[monitorIndex], overloadThreshold)) {
+						continue;
+					}
+
+					BranchCAResultRec result =
+							new BranchCAResultRec(
+									contingency,
+									monitorData.branches[monitorIndex],
+									monitorData.preFlowMw[monitorIndex],
+									shiftedFlowMw);
 					caResultRecords.add(result);
 				}
 			}
 		} catch (Exception e) {
 			throw new RuntimeException(e);
+		}
+	}
+
+	private static double monitoredLodf(
+			AclfBranch outageAclfBranch,
+			double outagePtdf,
+			SensitivityPair sensitivity,
+			MonitorScanData monitorData,
+			int monitorIndex)
+			throws InterpssException {
+		if (outageAclfBranch == monitorData.branches[monitorIndex]
+				|| outageAclfBranch.getId().equals(monitorData.branchIds[monitorIndex])) {
+			return -1.0;
+		}
+
+		double transferPtdf = transferPtdf(monitorData, monitorIndex, sensitivity);
+		if (Math.abs(Math.abs(outagePtdf) - 1.0) < NumericConstant.SmallDoubleNumber) {
+			return transferPtdf;
+		}
+		if (Math.abs(outagePtdf) < LODF_THRESHOLD) {
+			return transferPtdf / (1.0 - outagePtdf);
+		}
+
+		log.error("Line outage dist factor calculation error, ptdf out of range: {}", outagePtdf);
+		return 0.0;
+	}
+
+	private static boolean isOverload(
+			double preFlowMw,
+			double shiftedFlowMw,
+			double ratingMvaB,
+			double overloadThreshold) {
+		if (ratingMvaB <= 0.0) {
+			return 0.0 >= overloadThreshold;
+		}
+		return 100.0 * Math.abs(preFlowMw + shiftedFlowMw) / ratingMvaB >= overloadThreshold;
+	}
+
+	private static double transferPtdf(
+			AclfBranch branch,
+			SensitivityPair sensitivity) {
+		if (!branch.isActive()) {
+			return 0.0;
+		}
+		int from = branch.getFromBus().getSortNumber();
+		int to = branch.getToBus().getSortNumber();
+		double angleDrop =
+				sensitivity.from(from) - sensitivity.from(to)
+				- sensitivity.to(from) + sensitivity.to(to);
+		return -(1.0 / branch.getAdjustedZ().getImaginary()) * angleDrop;
+	}
+
+	private static double transferPtdf(
+			MonitorScanData monitorData,
+			int monitorIndex,
+			SensitivityPair sensitivity) {
+		double angleDrop =
+				sensitivity.from(monitorData.fromSortNumbers[monitorIndex])
+				- sensitivity.from(monitorData.toSortNumbers[monitorIndex])
+				- sensitivity.to(monitorData.fromSortNumbers[monitorIndex])
+				+ sensitivity.to(monitorData.toSortNumbers[monitorIndex]);
+		return monitorData.negativeInvX[monitorIndex] * angleDrop;
+	}
+
+	private static SensitivityPair sensitivityPair(
+			ContingencyAnalysisAlgorithm dclfAlgo,
+			AclfBranch outageAclfBranch,
+			String fromBusId,
+			String toBusId)
+			throws Exception {
+		ISparseEqnDouble b1 = dclfAlgo.getB1Matrix();
+		if (b1 instanceof KLUSparseEqnDoubleImpl) {
+			int fromIndex = outageAclfBranch.getFromAclfBus().isRefBus()
+					? -1 : outageAclfBranch.getFromBus().getSortNumber();
+			int toIndex = outageAclfBranch.getToAclfBus().isRefBus()
+					? -1 : outageAclfBranch.getToBus().getSortNumber();
+			double[] pair = ((KLUSparseEqnDoubleImpl) b1).solveUnitRhsPair(fromIndex, toIndex);
+			return new SensitivityPair(pair, 0, pair, b1.getDimension());
+		}
+
+		IDclfSolver dclfSolver = dclfAlgo.getDclfSolver();
+		return new SensitivityPair(
+				dclfSolver.getSenPAngle(fromBusId), 0,
+				dclfSolver.getSenPAngle(toBusId), 0);
+	}
+
+	private static MonitorScanData monitorScanData(
+			ContingencyAnalysisAlgorithm dclfAlgo,
+			Set<String> monitoredBranchIds) {
+		List<DclfAlgoBranch> branches = new ArrayList<>();
+		for (DclfAlgoBranch dclfBranch : dclfAlgo.getDclfAlgoBranchList()) {
+			AclfBranch branch = dclfBranch.getBranch();
+			if (branch != null
+					&& dclfBranch.isActive()
+					&& (monitoredBranchIds == null || monitoredBranchIds.contains(branch.getId()))) {
+				branches.add(dclfBranch);
+			}
+		}
+		return new MonitorScanData(branches, dclfAlgo.getAclfNet().getBaseMva());
+	}
+
+	private static final class MonitorScanData {
+		private final int count;
+		private final AclfBranch[] branches;
+		private final String[] branchIds;
+		private final int[] fromSortNumbers;
+		private final int[] toSortNumbers;
+		private final double[] negativeInvX;
+		private final double[] preFlowMw;
+		private final double[] ratingMvaB;
+
+		private MonitorScanData(List<DclfAlgoBranch> monitorBranches, double baseMva) {
+			this.count = monitorBranches.size();
+			this.branches = new AclfBranch[count];
+			this.branchIds = new String[count];
+			this.fromSortNumbers = new int[count];
+			this.toSortNumbers = new int[count];
+			this.negativeInvX = new double[count];
+			this.preFlowMw = new double[count];
+			this.ratingMvaB = new double[count];
+			for (int i = 0; i < count; i++) {
+				DclfAlgoBranch dclfBranch = monitorBranches.get(i);
+				AclfBranch branch = dclfBranch.getBranch();
+				this.branches[i] = branch;
+				this.branchIds[i] = branch.getId();
+				this.fromSortNumbers[i] = branch.getFromBus().getSortNumber();
+				this.toSortNumbers[i] = branch.getToBus().getSortNumber();
+				this.negativeInvX[i] = -(1.0 / branch.getAdjustedZ().getImaginary());
+				this.preFlowMw[i] = dclfBranch.getDclfFlow() * baseMva;
+				this.ratingMvaB[i] = branch.getRatingMvaB();
+			}
+		}
+	}
+
+	private static final class SensitivityPair {
+		private final double[] fromSensitivity;
+		private final int fromOffset;
+		private final double[] toSensitivity;
+		private final int toOffset;
+
+		private SensitivityPair(
+				double[] fromSensitivity,
+				int fromOffset,
+				double[] toSensitivity,
+				int toOffset) {
+			this.fromSensitivity = fromSensitivity;
+			this.fromOffset = fromOffset;
+			this.toSensitivity = toSensitivity;
+			this.toOffset = toOffset;
+		}
+
+		private double from(int index) {
+			if (fromOffset < 0) {
+				return 0.0;
+			}
+			return fromSensitivity[fromOffset + index];
+		}
+
+		private double to(int index) {
+			if (toOffset < 0) {
+				return 0.0;
+			}
+			return toSensitivity[toOffset + index];
 		}
 	}
 
