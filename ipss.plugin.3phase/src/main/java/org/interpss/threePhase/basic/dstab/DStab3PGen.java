@@ -5,12 +5,12 @@ import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
-import com.interpss.core.threephase.IGen3Phase;
 import com.interpss.core.threephase.IDynamicPhaseGen;
+import com.interpss.core.threephase.AclfGen3Phase;
 import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.GeneratorType;
 
-public interface DStab3PGen extends IGen3Phase, IDynamicPhaseGen, DStabGen {
+public interface DStab3PGen extends AclfGen3Phase, IDynamicPhaseGen, DStabGen {
 
 	/**
 	 * directly set the generator 3x3 impedance matrix on machine MVA base

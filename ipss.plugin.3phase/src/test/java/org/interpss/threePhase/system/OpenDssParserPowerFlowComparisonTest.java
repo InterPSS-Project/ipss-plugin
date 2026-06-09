@@ -49,7 +49,7 @@ import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.threephase.IBus3Phase;
 import com.interpss.core.threephase.IBranch3Phase;
-import com.interpss.core.threephase.IPhaseLoad;
+import com.interpss.core.threephase.AclfLoad3Phase;
 import com.interpss.core.threephase.Static3PBus;
 import com.interpss.core.threephase.Static3PBranch;
 import com.interpss.core.threephase.Static3PNetwork;
@@ -347,7 +347,7 @@ public class OpenDssParserPowerFlowComparisonTest {
 
 		Static3PBus bus = parser.getStaticNetwork().getBus("g2102aa7100_n284314_sec_1");
 		assertNotNull(bus, "Missing Ckt24 load-default bus");
-		IPhaseLoad load = bus.getPhaseLoadList().stream()
+		AclfLoad3Phase load = bus.getPhaseLoadList().stream()
 				.filter(candidate -> "440273200".equals(candidate.getId()))
 				.findFirst()
 				.orElseThrow(() -> new AssertionError("Missing Ckt24 OpenDSS default-kW load"));

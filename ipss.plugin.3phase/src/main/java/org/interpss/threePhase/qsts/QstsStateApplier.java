@@ -7,8 +7,8 @@ import java.util.Map;
 
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.threephase.IBus3Phase;
-import com.interpss.core.threephase.IPhaseGen;
-import com.interpss.core.threephase.IPhaseLoad;
+import com.interpss.core.threephase.AclfGen3Phase;
+import com.interpss.core.threephase.AclfLoad3Phase;
 import com.interpss.core.threephase.INetwork3Phase;
 
 public class QstsStateApplier {
@@ -52,13 +52,13 @@ public class QstsStateApplier {
 		for(IBus3Phase bus : network.getThreePhaseBusList()) {
 			Map<Object, Boolean> registered = new IdentityHashMap<>();
 			if(loadStore != null) {
-				for(IPhaseLoad load : bus.getPhaseLoadList()) {
+				for(AclfLoad3Phase load : bus.getPhaseLoadList()) {
 					loadStore.register(load);
 					registered.put(load, Boolean.TRUE);
 				}
 			}
 			if(generatorStore != null) {
-				for(IPhaseGen generator : bus.getPhaseGenList()) {
+				for(AclfGen3Phase generator : bus.getPhaseGenList()) {
 					generatorStore.register(generator);
 					registered.put(generator, Boolean.TRUE);
 				}
@@ -70,7 +70,7 @@ public class QstsStateApplier {
 						if(registered.containsKey(load)) {
 							continue;
 						}
-						if(load instanceof IPhaseLoad) {
+						if(load instanceof AclfLoad3Phase) {
 							loadStore.register(load);
 						}
 					}
@@ -78,7 +78,7 @@ public class QstsStateApplier {
 				if(generatorStore != null) {
 					for(Object generator : aclfBus.getContributeGenList()) {
 					if(!registered.containsKey(generator)
-							&& generator instanceof IPhaseGen) {
+							&& generator instanceof AclfGen3Phase) {
 						generatorStore.register(generator);
 					}
 					}

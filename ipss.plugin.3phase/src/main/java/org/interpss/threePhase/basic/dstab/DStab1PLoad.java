@@ -4,13 +4,12 @@ import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 
 import com.interpss.core.threephase.IDynamicPhaseLoad;
-import com.interpss.core.threephase.IPhaseLoad;
-import com.interpss.core.threephase.ILoad1Phase;
+import com.interpss.core.threephase.AclfLoad3Phase;
 import com.interpss.core.threephase.LoadConnectionType;
 import com.interpss.core.acsc.PhaseCode;
 import com.interpss.dstab.DStabLoad;
 
-public interface DStab1PLoad extends ILoad1Phase, IDynamicPhaseLoad, DStabLoad {
+public interface DStab1PLoad extends AclfLoad3Phase, IDynamicPhaseLoad, DStabLoad {
 
 	public void setPhaseCode (PhaseCode phCode);
 
@@ -18,12 +17,12 @@ public interface DStab1PLoad extends ILoad1Phase, IDynamicPhaseLoad, DStabLoad {
 
 	@Override
 	default Complex3x1 getInit3PhaseLoad() {
-		return IPhaseLoad.distribute(getLoadCP(), getPhaseCode());
+		return AclfLoad3Phase.distribute(getLoadCP(), getPhaseCode());
 	}
 
 	@Override
 	default void set3PhaseLoad(Complex3x1 threePhaseLoad) {
-		setLoadCP(IPhaseLoad.total(threePhaseLoad));
+		setLoadCP(AclfLoad3Phase.total(threePhaseLoad));
 	}
 
 	/**

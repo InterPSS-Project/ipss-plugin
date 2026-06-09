@@ -24,7 +24,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.acsc.PhaseCode;
-import com.interpss.core.threephase.IPhaseLoad;
+import com.interpss.core.threephase.AclfLoad3Phase;
 import com.interpss.core.threephase.Static3PBus;
 import com.interpss.core.threephase.Static3PBranch;
 
@@ -130,7 +130,7 @@ public class OpenDssTimeSeriesMetadataTest {
 		Static3PBus bus = parser.getStaticNetwork().getBus("bus1");
 		assertNotNull(bus);
 		assertEquals(1, bus.getPhaseLoadList().size());
-		IPhaseLoad load = bus.getPhaseLoadList().get(0);
+		AclfLoad3Phase load = bus.getPhaseLoadList().get(0);
 		assertEquals("load1", load.getId());
 		assertEquals(45.0, load.getInit3PhaseLoad().a_0.getReal(), 1.0e-12);
 		assertEquals(45.0, load.getInit3PhaseLoad().b_1.getReal(), 1.0e-12);
@@ -191,7 +191,7 @@ public class OpenDssTimeSeriesMetadataTest {
 		Static3PBus bus = parser.getStaticNetwork().getBus("bus1");
 		assertNotNull(bus);
 		assertEquals(1, bus.getPhaseLoadList().size());
-		IPhaseLoad load = bus.getPhaseLoadList().get(0);
+		AclfLoad3Phase load = bus.getPhaseLoadList().get(0);
 		assertEquals("cap1", load.getId());
 		assertEquals(0.0, load.getInit3PhaseLoad().a_0.abs(), 1.0e-12);
 		assertEquals(-50.0, load.getInit3PhaseLoad().b_1.getImaginary(), 1.0e-12);

@@ -24,7 +24,7 @@ import org.interpss.threePhase.qsts.opendss.OpenDSSQstsStudyFactory;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.jupiter.api.Test;
 
-import com.interpss.core.threephase.IPhaseLoad;
+import com.interpss.core.threephase.AclfLoad3Phase;
 
 public class OpenDssIeee13DailyQstsProfileTest {
 	private static final String FEEDER_FOLDER = "testData/feeder/IEEE13";
@@ -194,7 +194,7 @@ public class OpenDssIeee13DailyQstsProfileTest {
 	private static Complex loadPower(QstsStudy study, String loadId) {
 		for(var state : study.getStateApplier().getLoadStateStore().states()) {
 			if(state.getLoadId().equalsIgnoreCase(loadId)) {
-				Complex3x1 power = ((IPhaseLoad) state.getLoad()).getInit3PhaseLoad();
+				Complex3x1 power = ((AclfLoad3Phase) state.getLoad()).getInit3PhaseLoad();
 				return add(add(power.a_0, power.b_1), power.c_2);
 			}
 		}
