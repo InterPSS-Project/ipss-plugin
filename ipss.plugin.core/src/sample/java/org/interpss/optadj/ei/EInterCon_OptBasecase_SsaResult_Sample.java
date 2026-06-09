@@ -20,13 +20,13 @@ public class EInterCon_OptBasecase_SsaResult_Sample {
 		dclfAlgo.calculateDclf(DclfMethod.INC_LOSS);
 		//System.out.println(DclfOutFunc.dclfResults(dclfAlgo, false));
 		
-		double loadingThreshold = 100.0;
+		double loadingThreshold = 90.0;
 		SsaResultContainer ssaResult = new AclfNetSsaHelper(dclfAlgo).baseCaseScan(loadingThreshold);   
 		ssaResult.printBaseOverLimitInfo();
 		
 		// perform basecase loaing limit optimization	
 		OptAdjResultContainer optAdjResult = new OptAdjResultContainer(ssaResult);
-		new AclfNetLoadFlowOptimizer(true).optimize(dclfAlgo, optAdjResult, loadingThreshold);
+		new AclfNetLoadFlowOptimizer(true).optimize(dclfAlgo, optAdjResult, 100.0);
 		optAdjResult.getOptAdjResults().forEach((genName, result) -> {
 			System.out.println("GenAdjustResult: " + genName + ", " + result.toString());
 		});
@@ -35,18 +35,8 @@ public class EInterCon_OptBasecase_SsaResult_Sample {
 		dclfAlgo.calculateDclf(DclfMethod.INC_LOSS);	
 
 		// check the branch loading after optimization
-		double baseMVA = dclfAlgo.getNetwork().getBaseMva();
-		dclfAlgo.getDclfAlgoBranchList().stream() 
-			.forEach(dclfBranch -> {
-				double flowMw = dclfBranch.getDclfFlow() * baseMVA;
-				double loading = Math.abs(flowMw / dclfBranch.getBranch().getRatingMvaA())*100;
-				if (loading >= optAdjResult.getOptAdjThreshold()) {
-					System.out.printf("Over Limit Branch: %s  %.2f rating: %.2f loading: %.2f%n",
-							dclfBranch.getId(),
-							flowMw,
-							dclfBranch.getBranch().getRatingMvaA(),
-							loading);
-				}
-			});
+		SsaResultContainer ssaResultAfter = new AclfNetSsaHelper(dclfAlgo)
+				.baseCaseScan(optAdjResult.getOptAdjThreshold());
+		ssaResultAfter.printBaseOverLimitInfo();
 	}
 }
