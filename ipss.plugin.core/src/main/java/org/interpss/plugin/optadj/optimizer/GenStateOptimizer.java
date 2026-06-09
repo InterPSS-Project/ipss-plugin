@@ -77,6 +77,10 @@ public class GenStateOptimizer {
     public boolean optimize() {
         // Preprocessing phase
         preprocess();
+
+        if (genSize == 0) {
+            return true;
+        }
         
         // Build unified optimization model
         buildOptimizationModel();
@@ -181,6 +185,15 @@ public class GenStateOptimizer {
      * Build generator clusters
      */
     private void buildGeneratorClusters() {
+        if (genSize == 0) {
+            generatorClusters = new GeneratorClustering.ClusteringResult();
+            generatorClusters.clusters = new ArrayList<>();
+            generatorClusters.genToClusterMap = new HashMap<>();
+            generatorClusters.originalGenCount = 0;
+            generatorClusters.clusteredGenCount = 0;
+            return;
+        }
+
         // Prepare sensitivity matrix
         int numSections = mergeResult.mergedSections.size();
         double[][] sensitivities = new double[genSize][numSections];
