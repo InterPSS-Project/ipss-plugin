@@ -37,7 +37,7 @@ public class IEEE39_Sample_Data {
 		net.getBranchList().stream() 
 			.forEach(branch -> {
 				AclfBranch aclfBranch = (AclfBranch) branch;
-				aclfBranch.setName(aclfBranch.getId());
+				//aclfBranch.setName(aclfBranch.getId());
 				// Mva1 is used for basecase loading limit
 				aclfBranch.setRatingMva1(600.0);
 			});

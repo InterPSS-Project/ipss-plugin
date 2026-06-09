@@ -18,9 +18,9 @@ public class Texas2K_Sample_Info {
 				.load()
 				.getImportedObj();	
 
-		aclfNet.getBranchList().stream().forEach(branch -> {
-				branch.setName(branch.getId());
-			});
+		//aclfNet.getBranchList().stream().forEach(branch -> {
+				//branch.setName(branch.getId());
+		//	});
 
 		return aclfNet;
 	}
