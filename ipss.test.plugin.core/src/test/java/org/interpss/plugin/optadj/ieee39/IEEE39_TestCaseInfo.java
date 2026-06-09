@@ -14,7 +14,7 @@ public class IEEE39_TestCaseInfo extends CorePluginTestSetup {
 	private static final String IEEE39_IEEE = TEST_ROOT + "testData/adpter/ieee_format/ieee39.ieee";
 	private static final double BRANCH_RATING_MVA = 600.0;
 
-	static AclfNetwork createTestCaseNetwork() throws Exception {
+	public static AclfNetwork createTestCaseNetwork() throws Exception {
 		AclfNetwork net = CorePluginFactory.getFileAdapter(FileFormat.IEEECDF)
 				.load(IEEE39_IEEE)
 				.getAclfNet();
