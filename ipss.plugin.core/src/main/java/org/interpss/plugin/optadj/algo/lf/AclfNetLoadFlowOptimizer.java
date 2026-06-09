@@ -1,8 +1,13 @@
 package org.interpss.plugin.optadj.algo.lf;
 
+import java.util.Set;
+
 import org.ejml.data.DMatrixSparseCSC;
 import org.interpss.plugin.optadj.algo.util.AclfNetSensHelper;
 import org.interpss.plugin.optadj.algo.util.AclfNetSensSparseHelper;
+import org.interpss.plugin.optadj.result.SsaResultContainer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.interpss.core.aclf.AclfNetwork;
 
@@ -11,6 +16,8 @@ import com.interpss.core.aclf.AclfNetwork;
  * 
  */
 public class AclfNetLoadFlowOptimizer extends BaseAclfNetLoadFlowOptimizer{
+	private static Logger log = LoggerFactory.getLogger(AclfNetLoadFlowOptimizer.class);
+	
 	private boolean sparseMatrix = false;
 
 	private float[][] senMatrix = null;
@@ -36,10 +43,17 @@ public class AclfNetLoadFlowOptimizer extends BaseAclfNetLoadFlowOptimizer{
 	}
 
 	@Override
-	protected void createSenMatrix(AclfNetwork net) {
+	protected void createSenMatrix(AclfNetwork net, SsaResultContainer ssaResult) {
 		if (sparseMatrix) {
 			AclfNetSensSparseHelper helper = new AclfNetSensSparseHelper(net);
-			senSparseMatrix = helper.calSen();
+			if (ssaResult != null) {
+				Set<String> busSet = buildGenParentBusSet(net);
+				Set<String> branchSet = buildSsaBranchSet(ssaResult);
+				log.info("Sparse sen matrix busSet: " + busSet.size());
+				log.info("Sparse sen matrix branchSet: " + branchSet.size());
+				senSparseMatrix = helper.calSenSortNumber(busSet, branchSet);
+			} else
+				senSparseMatrix = helper.calSen();
 		} else {
 			AclfNetSensHelper helper = new AclfNetSensHelper(net);
 			senMatrix = helper.calSen();
