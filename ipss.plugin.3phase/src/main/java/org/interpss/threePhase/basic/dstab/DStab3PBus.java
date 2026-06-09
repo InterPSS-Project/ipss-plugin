@@ -8,6 +8,8 @@ import org.interpss.threePhase.dynamic.model.DynLoadModel1Phase;
 import org.interpss.threePhase.dynamic.model.DynLoadModel3Phase;
 
 import com.interpss.core.threephase.IBus3Phase;
+import com.interpss.core.threephase.AclfGen3Phase;
+import com.interpss.core.threephase.AclfLoad3Phase;
 import com.interpss.dstab.BaseDStabBus;
 
 public interface DStab3PBus extends IBus3Phase, BaseDStabBus<DStab3PGen,DStab3PLoad> {
@@ -33,6 +35,16 @@ public interface DStab3PBus extends IBus3Phase, BaseDStabBus<DStab3PGen,DStab3PL
     public List<DStab3PLoad> getThreePhaseLoadList();
 
     public List<DStab3PGen> getThreePhaseGenList();
+
+    @Override
+    public default List<? extends AclfLoad3Phase> getPhaseLoadList() {
+        return getThreePhaseLoadList();
+    }
+
+    @Override
+    public default List<? extends AclfGen3Phase> getPhaseGenList() {
+        return getThreePhaseGenList();
+    }
 
     public Complex3x1  calc3PhEquivCurInj();
 
