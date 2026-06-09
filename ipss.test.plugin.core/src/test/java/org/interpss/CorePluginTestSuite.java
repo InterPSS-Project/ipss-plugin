@@ -61,7 +61,9 @@ import org.interpss.plugin.optadj.ieee39.IEEE39_OptN1Scan_SsaResult_Sparse_Test;
 import org.interpss.plugin.optadj.ieee39.IEEE39_OptN1Scan_SsaResult_Test;
 import org.interpss.plugin.optadj.ieee39.IEEE39_OptN1Scan_Test;
 import org.interpss.plugin.optadj.ieee39.IEEE39_OptSection_Test;
+import org.interpss.plugin.optadj.texas2K.Texas2K_OptBasecase_SsaResult_Sparse_Test;
 import org.interpss.plugin.optadj.texas2K.Texas2K_OptBasecase_SsaResult_Test;
+import org.interpss.plugin.optadj.texas2K.Texas2K_OptN1Scan_SsaResult_Sparse_Test;
 import org.interpss.plugin.optadj.texas2K.Texas2K_OptN1Scan_SsaResult_Test;
 import org.interpss.core.dclf.edclf.IEEE118_EDclf_Test;
 import org.interpss.core.dclf.edclf.IEEE14_EDclf_Test;
@@ -170,7 +172,9 @@ import org.junit.platform.suite.api.Suite;
 	IEEE39_OptN1Scan_SsaResult_Sparse_Test.class,
 	IEEE39_OptSection_Test.class,
 	Texas2K_OptBasecase_SsaResult_Test.class,
+	Texas2K_OptBasecase_SsaResult_Sparse_Test.class,
 	Texas2K_OptN1Scan_SsaResult_Test.class,
+	Texas2K_OptN1Scan_SsaResult_Sparse_Test.class,
 	
 	// small Z branch
 	///SampleSwitchBreakerModelTest.class,
