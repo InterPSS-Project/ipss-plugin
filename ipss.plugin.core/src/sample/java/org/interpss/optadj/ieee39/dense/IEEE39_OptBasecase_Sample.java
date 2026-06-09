@@ -52,7 +52,7 @@ public class IEEE39_OptBasecase_Sample {
 			.forEach(dclfBranch -> {
 				double flowMw = dclfBranch.getDclfFlow() * baseMVA;
 				double loading = Math.abs(flowMw / dclfBranch.getBranch().getRatingMva1())*100;
-				if (loading > 100) {
+				if (loading > 90) {
 					System.out.printf("Over Limit Branch: %s  %.2f rating: %.2f loading: %.2f%n",
 							dclfBranch.getId(),
 							flowMw,
