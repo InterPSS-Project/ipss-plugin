@@ -205,7 +205,7 @@ public class IEEE39_OptSection_Sample {
 	        // 4. If goal not reached, continue optimization
 	        System.out.println("\nRunning section optimization...");
 	        SectionOptimizer optimizer = new SectionOptimizer(net, sections);
-	        Map<String, Double> adjustmentResult = optimizer.optmize();
+	        Map<String, Double> adjustmentResult = optimizer.optimize();
 	        
 	        // 5. Apply optimization results
 	        optimizer.updateNet(adjustmentResult);
