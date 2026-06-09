@@ -1,0 +1,9 @@
+case,bus,phase,vmag_pu,angle_deg
+centertap-mini-low-voltage-single-phase-loads,sourcebus,1,0.820000142313,-0.000006320663
+centertap-mini-low-voltage-single-phase-loads,sourcebus,2,0.819998619307,-120.000184528111
+centertap-mini-low-voltage-single-phase-loads,sourcebus,3,0.819999923485,119.999991480342
+centertap-mini-low-voltage-single-phase-loads,primary,2,0.819998594868,-120.000185583968
+centertap-mini-low-voltage-single-phase-loads,secondary,1,0.815988753848,-120.201636520616
+centertap-mini-low-voltage-single-phase-loads,secondary,2,0.815988751082,59.798363813017
+centertap-mini-low-voltage-single-phase-loads,loadbus,1,0.815979813644,-120.202012673788
+centertap-mini-low-voltage-single-phase-loads,loadbus,2,0.815979810878,59.797987659845

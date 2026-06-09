@@ -1,0 +1,12 @@
+case,bus,phase,vmag_pu,angle_deg
+opendss-load-model-mini,sourcebus,1,0.899999968865,-2.73148692952e-06
+opendss-load-model-mini,sourcebus,2,0.89999999988,-120.000000067
+opendss-load-model-mini,sourcebus,3,0.900000001237,120.000000037
+opendss-load-model-mini,model1,1,0.899176187852,-0.00438915388755
+opendss-load-model-mini,model2,1,0.899333915596,-0.00355238962741
+opendss-load-model-mini,model3,1,0.899202506315,-0.0077376512011
+opendss-load-model-mini,model4,1,0.89926967325,-0.00737919867377
+opendss-load-model-mini,model5,1,0.89925930226,-0.0039482222111
+opendss-load-model-mini,model6,1,0.899176187852,-0.00438915388755
+opendss-load-model-mini,model7,1,0.899202506315,-0.0077376512011
+opendss-load-model-mini,model8,1,0.899288664694,-0.00356689158097

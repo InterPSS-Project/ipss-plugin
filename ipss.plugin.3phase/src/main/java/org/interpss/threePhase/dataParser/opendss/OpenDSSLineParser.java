@@ -9,9 +9,15 @@ import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
+import com.interpss.core.acsc.PhaseCode;
+import com.interpss.core.threephase.IBranch3Phase;
+import com.interpss.core.threephase.Static3PBranch;
 
 public class OpenDSSLineParser {
+	private static final double MIN_CONFIG_SERIES_ZABC_ABS = 1.0E-6;
+	private static final double MIN_RAW_SERIES_ZABC_ABS = 1.0E-4;
 
     private OpenDSSDataParser dataParser = null;
 
@@ -38,7 +44,7 @@ public class OpenDSSLineParser {
 		String  fromBusStr = "";
 		String  toBusStr = "";
 
-		DStabNetwork3Phase distNet = this.dataParser.getDistNetwork();
+		DStabNetwork3Phase distNet = this.dataParser.isStaticNetworkMode() ? null : this.dataParser.getDistNetwork();
 
 		DStab3PBus fromBus = null, toBus = null;
 
@@ -53,9 +59,11 @@ public class OpenDSSLineParser {
 			(11) c0 Zero sequence capacitance, nf per unit length.
 		 */
 		double r1= 0,r0 = 0, x1 = 0, x0 = 0, c1 = 0, c0 = 0;
+		boolean phaseSpecified = false;
+		boolean enabled = true;
 
 
-		String[] lineStrAry = lineStr.toLowerCase().split("\\s+");
+		String[] lineStrAry = normalizePropertyEquals(lineStr.toLowerCase()).split("\\s+");
 
 		for(int i = 0;i<lineStrAry.length;i++){
 			if(lineStrAry[i].contains("line.")){
@@ -64,6 +72,7 @@ public class OpenDSSLineParser {
 			else if(lineStrAry[i].contains("phases=")){
 				phaseIdx = i;
 				phaseNum  = Integer.valueOf(lineStrAry[i].substring(7));
+				phaseSpecified = true;
 			}
 
 			else if(lineStrAry[i].contains("bus1=")){
@@ -88,6 +97,14 @@ public class OpenDSSLineParser {
 			}
 			else if(lineStrAry[i].contains("r1=")){
 				r1 = Double.valueOf(lineStrAry[i].substring(3));
+				if(i + 3 < lineStrAry.length
+						&& isNumeric(lineStrAry[i + 1])
+						&& isNumeric(lineStrAry[i + 2])
+						&& isNumeric(lineStrAry[i + 3])) {
+					x1 = Double.valueOf(lineStrAry[i + 1]);
+					r0 = Double.valueOf(lineStrAry[i + 2]);
+					x0 = Double.valueOf(lineStrAry[i + 3]);
+				}
 			}
 			else if(lineStrAry[i].contains("r0=")){
 				r0 = Double.valueOf(lineStrAry[i].substring(3));
@@ -103,6 +120,9 @@ public class OpenDSSLineParser {
 			}
 			else if(lineStrAry[i].contains("c0=")){
 				c0 = Double.valueOf(lineStrAry[i].substring(3));
+			}
+			else if(lineStrAry[i].contains("enabled=")){
+				enabled = isEnabled(lineStrAry[i].substring(8));
 			}
 
 
@@ -129,6 +149,9 @@ public class OpenDSSLineParser {
 			toBusId = toBusStr;
 
 		}
+		if(!phaseSpecified && !fromBusPhases.equals("1.2.3")) {
+			phaseNum = fromBusPhases.split("\\.").length;
+		}
 
 		Complex3x3 zabc = null;
 		Complex3x3 yshuntabc = new Complex3x3();
@@ -136,12 +159,15 @@ public class OpenDSSLineParser {
 
 		if(lineConfigIdx> 0){ // line parameters defined by line code or geometry
 
-			String configId = lineCodeId.equals("") ? geometryId : lineCodeId;
+			String configId = (lineCodeId.equals("") ? geometryId : lineCodeId).toLowerCase();
 			config = this.dataParser.getLineConfigTable().get(configId);
 
 			if(config!=null){
-				zabc = config.getZ3x3Matrix();
+				zabc = copyComplex3x3(config.getZ3x3Matrix());
 				lineLength = lineLength * OpenDSSUnitConverter.lengthFactor(units, config.getLengthUnit());
+				if(config.getShuntY3x3Matrix() != null) {
+					yshuntabc = capacitanceNfToSiemens(config.getShuntY3x3Matrix(), lineLength);
+				}
 			}
 			else{
 				throw new Error("LineConfiguration definition not found, id:"+configId);
@@ -155,6 +181,11 @@ public class OpenDSSLineParser {
 
 				// input as three sequence data and then converted it three-phase
 				zabc = new Complex3x3(z1,z1,z0).ToAbc();
+				if(c1 != 0.0 || c0 != 0.0) {
+					Complex3x3 cabc = new Complex3x3(new Complex(0.0, c1),
+							new Complex(0.0, c1), new Complex(0.0, c0)).ToAbc();
+					yshuntabc = capacitanceNfToSiemens(cabc, lineLength);
+				}
 			}
 			else{
 				throw new Error("Error in Line Z, Y parameter raw data: "+lineStr);
@@ -165,7 +196,11 @@ public class OpenDSSLineParser {
 		if(!fromBusPhases.equals(toBusPhases)){
 			throw new Error("different phase arrangements on both terminals not support yet, from: "+fromBusPhases+ ", to: "+toBusPhases);
 		}
-		if(phaseNum==3){
+		if(config != null && config.getNphases() == 1 && phaseNum > 1) {
+			zabc = multiPhaseDiagonalFromSinglePhase(zabc.aa, fromBusPhases);
+			yshuntabc = multiPhaseDiagonalFromSinglePhase(yshuntabc.aa, fromBusPhases);
+		}
+		else if(phaseNum==3){
 			// no change is needed
 		}
 		else if(phaseNum==2){
@@ -253,35 +288,24 @@ public class OpenDSSLineParser {
 			}
 		}
 		else if(phaseNum==1){
-
-
+			if(config != null && config.isKronReductionEnabled() && config.getNeutralConductor() > 0
+					&& config.getNphases() > 1) {
+				zabc = singlePhaseServiceLoopMatrix(zabc, config.getNeutralConductor(),
+						config.getKronReductionCount(), fromBusPhases);
+				yshuntabc = singlePhaseMatrix(yshuntabc, Integer.valueOf(fromBusPhases));
+			}
+			else
 			if(fromBusPhases.equals("1")){
-				// by default, phase = "1", no change is needed
+				zabc = singlePhaseMatrix(zabc, 1);
+				yshuntabc = singlePhaseMatrix(yshuntabc, 1);
 			}
 			else if(fromBusPhases.equals("2")){
-				if(zabc.aa.abs()<1.0E-8 && zabc.bb.abs()>1.0E-5){
-					zabc.aa = new Complex(0.0);
-					zabc.cc = new Complex(0.0);
-					// no change to zabc.cc is needed
-				}
-				else{
-					zabc.bb = zabc.aa;
-					zabc.aa = new Complex(0.0);
-					zabc.cc = new Complex(0.0);
-				}
+				zabc = singlePhaseMatrix(zabc, 2);
+				yshuntabc = singlePhaseMatrix(yshuntabc, 2);
 			}
 			else if(fromBusPhases.equals("3")){
-				Complex diag = null;
-				if(zabc.aa.abs()<1.0E-8 && zabc.cc.abs()>1.0E-5){
-					zabc.aa = new Complex(0.0);
-					zabc.bb = new Complex(0.0);
-					// no change to zabc.cc is needed
-				}
-				else{
-					zabc.cc = zabc.aa;
-					zabc.aa = new Complex(0.0);
-					zabc.bb = new Complex(0.0);
-				}
+				zabc = singlePhaseMatrix(zabc, 3);
+				yshuntabc = singlePhaseMatrix(yshuntabc, 3);
 			}
 			else{
 				throw new Error("phase arrangement not support yet : "+lineStr);
@@ -294,20 +318,36 @@ public class OpenDSSLineParser {
 		fromBusId =this.dataParser.getBusIdPrefix()+fromBusId;
 		toBusId =this.dataParser.getBusIdPrefix()+toBusId;
 
-		if(distNet.getBus(fromBusId)==null) {
-			fromBus = ThreePhaseObjectFactory.create3PDStabBus(fromBusId, distNet);
+		IBranch3Phase line3Phase = null;
+		AclfBranch line = null;
+		if(this.dataParser.isStaticNetworkMode()) {
+			this.dataParser.getOrCreateStaticBus(fromBusId);
+			this.dataParser.getOrCreateStaticBus(toBusId);
+			Static3PBranch staticLine = ThreePhaseObjectFactory.createStatic3PBranch(fromBusId, toBusId, "1",
+					this.dataParser.getStaticNetwork());
+			line3Phase = staticLine;
+			line = staticLine;
 		}
+		else {
+			if(distNet.getBus(fromBusId)==null) {
+				fromBus = ThreePhaseObjectFactory.create3PDStabBus(fromBusId, distNet);
+			}
 
-		if(distNet.getBus(toBusId)==null) {
-			toBus = ThreePhaseObjectFactory.create3PDStabBus(toBusId, distNet);
+			if(distNet.getBus(toBusId)==null) {
+				toBus = ThreePhaseObjectFactory.create3PDStabBus(toBusId, distNet);
+			}
+
+			DStab3PBranch dynamicLine = ThreePhaseObjectFactory.create3PBranch(fromBusId, toBusId, "1", distNet);
+			line3Phase = dynamicLine;
+			line = dynamicLine;
 		}
-
-		DStab3PBranch line = ThreePhaseObjectFactory.create3PBranch(fromBusId, toBusId, "1", distNet);
 
 		line.setName(this.dataParser.getBusIdPrefix()+lineName);
 
 
 		line.setBranchCode(AclfBranchCode.LINE);
+		line3Phase.setPhaseCode(phaseCode(fromBusPhases));
+		line.setStatus(enabled);
 		// the format of Zmatrix need to be consistent with the number of phases and the phases in use.
 
 
@@ -316,18 +356,222 @@ public class OpenDSSLineParser {
 		if(lineLength == 0.0 && lineConfigIdx < 0) {
 			lineLength = 1.0;
 		}
-		line.setZabc(zabc.multiply(lineLength));
+		Complex3x3 lineZabc = zabc.multiply(lineLength);
+		double minSeriesZabcAbs = lineConfigIdx < 0 ? MIN_RAW_SERIES_ZABC_ABS : MIN_CONFIG_SERIES_ZABC_ABS;
+		lineZabc = applyMinimumSeriesImpedance(lineZabc, fromBusPhases, minSeriesZabcAbs);
+		line3Phase.setZabc(lineZabc);
 
-		if(line.getZabc().absMax()<1.0E-7){
+		if(line3Phase.getZabc().absMax()<1.0E-7){
 			throw new Error("Line Zabc.absMax() is less than 1.0E-7. LineID, Name = "+line.getId()+", "+line.getName());
 		}
 
-		//TODO ShuntY is not considered for this initial implementation
-		//line.setFromShuntYabc(yshuntabc.multiply(0.5));
-		//line.setToShuntYabc(yshuntabc.multiply(0.5));
+		if(yshuntabc != null && yshuntabc.absMax() > 0.0) {
+			line3Phase.setFromShuntYabc(yshuntabc.multiply(0.5));
+			line3Phase.setToShuntYabc(yshuntabc.multiply(0.5));
+		}
 
 		return no_error;
 
+	}
+
+	private static Complex3x3 applyMinimumSeriesImpedance(Complex3x3 zabc, String busPhases, double minSeriesZabcAbs) {
+		double absMax = zabc.absMax();
+		if(absMax >= minSeriesZabcAbs) {
+			return zabc;
+		}
+		if(absMax > 0.0) {
+			return zabc.multiply(minSeriesZabcAbs / absMax);
+		}
+		Complex3x3 floor = new Complex3x3();
+		for(String phase : busPhases.split("\\.")) {
+			if("1".equals(phase)) {
+				floor.aa = new Complex(minSeriesZabcAbs, 0.0);
+			}
+			else if("2".equals(phase)) {
+				floor.bb = new Complex(minSeriesZabcAbs, 0.0);
+			}
+			else if("3".equals(phase)) {
+				floor.cc = new Complex(minSeriesZabcAbs, 0.0);
+			}
+			else {
+				throw new Error("phase arrangement not support yet : " + busPhases);
+			}
+		}
+		return floor;
+	}
+
+	private static String normalizePropertyEquals(String value) {
+		return value.replaceAll("\\s*=\\s*", "=");
+	}
+
+	private static Complex3x3 capacitanceNfToSiemens(Complex3x3 capacitanceNf, double lineLength) {
+		return capacitanceNf.multiply(2.0 * Math.PI * 60.0 * 1.0e-9 * lineLength);
+	}
+
+	private static PhaseCode phaseCode(String busPhases) {
+		if("1".equals(busPhases)) {
+			return PhaseCode.A;
+		}
+		if("2".equals(busPhases)) {
+			return PhaseCode.B;
+		}
+		if("3".equals(busPhases)) {
+			return PhaseCode.C;
+		}
+		if("1.2".equals(busPhases) || "2.1".equals(busPhases)) {
+			return PhaseCode.AB;
+		}
+		if("1.3".equals(busPhases) || "3.1".equals(busPhases)) {
+			return PhaseCode.AC;
+		}
+		if("2.3".equals(busPhases) || "3.2".equals(busPhases)) {
+			return PhaseCode.BC;
+		}
+		if("1.2.3".equals(busPhases)) {
+			return PhaseCode.ABC;
+		}
+		throw new Error("phase arrangement not support yet : "+busPhases);
+	}
+
+	private static Complex3x3 copyComplex3x3(Complex3x3 source) {
+		Complex3x3 copy = new Complex3x3();
+		copy.aa = source.aa;
+		copy.ab = source.ab;
+		copy.ac = source.ac;
+		copy.ba = source.ba;
+		copy.bb = source.bb;
+		copy.bc = source.bc;
+		copy.ca = source.ca;
+		copy.cb = source.cb;
+		copy.cc = source.cc;
+		return copy;
+	}
+
+	private static Complex3x3 singlePhaseMatrix(Complex3x3 source, int phase) {
+		Complex3x3 matrix = new Complex3x3();
+		Complex phaseValue = source.aa;
+		if(phase == 2 && source.aa.abs() < 1.0E-8 && source.bb.abs() > 1.0E-8) {
+			phaseValue = source.bb;
+		}
+		else if(phase == 3 && source.aa.abs() < 1.0E-8 && source.cc.abs() > 1.0E-8) {
+			phaseValue = source.cc;
+		}
+		if(phase == 1) {
+			matrix.aa = phaseValue;
+		}
+		else if(phase == 2) {
+			matrix.bb = phaseValue;
+		}
+		else if(phase == 3) {
+			matrix.cc = phaseValue;
+		}
+		return matrix;
+	}
+
+	private static Complex3x3 singlePhaseServiceLoopMatrix(Complex3x3 source, int neutralConductor,
+			int kronReductionCount, String busPhase) {
+		Complex[][] reduced = toArray(source, 3);
+		for(int i = 0; i < kronReductionCount && reduced.length > 1; i++) {
+			int neutral = Math.min(neutralConductor - 1, reduced.length - 1);
+			reduced = kronReduce(reduced, neutral);
+		}
+		Complex loopImpedance = reduced[0][0];
+		Complex3x3 loopMatrix = new Complex3x3();
+		int systemPhase = Integer.valueOf(busPhase);
+		if(systemPhase == 1) {
+			loopMatrix.aa = loopImpedance;
+		}
+		else if(systemPhase == 2) {
+			loopMatrix.bb = loopImpedance;
+		}
+		else if(systemPhase == 3) {
+			loopMatrix.cc = loopImpedance;
+		}
+		else {
+			throw new Error("phase arrangement not support yet : " + busPhase);
+		}
+		return loopMatrix;
+	}
+
+	private static Complex[][] kronReduce(Complex[][] source, int neutral) {
+		int n = source.length;
+		Complex[][] reduced = new Complex[n - 1][n - 1];
+		Complex neutralSelfInv = new Complex(1.0).divide(source[neutral][neutral]);
+		int outRow = 0;
+		for(int row = 0; row < n; row++) {
+			if(row == neutral) {
+				continue;
+			}
+			int outCol = 0;
+			for(int col = 0; col < n; col++) {
+				if(col == neutral) {
+					continue;
+				}
+				reduced[outRow][outCol] = source[row][col]
+						.subtract(source[row][neutral].multiply(neutralSelfInv).multiply(source[neutral][col]));
+				outCol++;
+			}
+			outRow++;
+		}
+		return reduced;
+	}
+
+	private static Complex[][] toArray(Complex3x3 source, int dimension) {
+		Complex[][] values = new Complex[dimension][dimension];
+		for(int row = 0; row < dimension; row++) {
+			for(int col = 0; col < dimension; col++) {
+				values[row][col] = matrixValue(source, row, col);
+			}
+		}
+		return values;
+	}
+
+	private static Complex matrixValue(Complex3x3 matrix, int row, int column) {
+		if(row == 0 && column == 0) return matrix.aa;
+		if(row == 0 && column == 1) return matrix.ab;
+		if(row == 0 && column == 2) return matrix.ac;
+		if(row == 1 && column == 0) return matrix.ba;
+		if(row == 1 && column == 1) return matrix.bb;
+		if(row == 1 && column == 2) return matrix.bc;
+		if(row == 2 && column == 0) return matrix.ca;
+		if(row == 2 && column == 1) return matrix.cb;
+		if(row == 2 && column == 2) return matrix.cc;
+		throw new Error("matrix index out of range");
+	}
+
+	private static Complex3x3 multiPhaseDiagonalFromSinglePhase(Complex phaseValue, String busPhases) {
+		Complex3x3 matrix = new Complex3x3();
+		for(String phase : busPhases.split("\\.")) {
+			if("1".equals(phase)) {
+				matrix.aa = phaseValue;
+			}
+			else if("2".equals(phase)) {
+				matrix.bb = phaseValue;
+			}
+			else if("3".equals(phase)) {
+				matrix.cc = phaseValue;
+			}
+			else {
+				throw new Error("phase arrangement not support yet : " + busPhases);
+			}
+		}
+		return matrix;
+	}
+
+	private static boolean isNumeric(String token) {
+		try {
+			Double.valueOf(token);
+			return true;
+		} catch (NumberFormatException e) {
+			return false;
+		}
+	}
+
+	private static boolean isEnabled(String value) {
+		String normalized = value.trim();
+		return !("false".equals(normalized)
+				|| "no".equals(normalized)
+				|| "0".equals(normalized));
 	}
 
 //	private boolean parseLineDataWithLineCode(String lineStr) throws InterpssException{
