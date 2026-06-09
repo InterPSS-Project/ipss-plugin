@@ -92,10 +92,24 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	private ISparseEqnComplexMatrix3x3 fixedPointYMatrixCache = null;
 	private BaseAclfNetwork<?, ?> fixedPointYMatrixCacheNetwork = null;
 	private String fixedPointYMatrixCacheSignature = null;
+	private BaseAclfNetwork<?, ?> fixedPointYMatrixSignatureNetwork = null;
+	private List<BaseAclfBus<?, ?>> fixedPointYMatrixSignatureSwingBuses = Collections.emptyList();
 	private ISparseEqnComplexMatrix3x3 fixedPointYMatrixValueUpdateCache = null;
 	private BaseAclfNetwork<?, ?> fixedPointYMatrixValueUpdateCacheNetwork = null;
+	private FixedPointBusCache fixedPointBusCache = null;
+	private BaseAclfNetwork<?, ?> fixedPointBusCacheNetwork = null;
+	private int fixedPointBusCacheBoundaryVersion = -1;
+	private int swingBusVoltageBoundaryCurrentVersion = 0;
+	private PrimitiveFixedPointState fixedPointPrimitiveStateCache = null;
+	private int fixedPointPrimitiveStateCacheBusCount = -1;
 	private String fixedPointYMatrixSymbolSignature = null;
 	private Object fixedPointYMatrixSymbolTable = null;
+	private BaseAclfNetwork<?, ?> floatingComponentDeactivationNetwork = null;
+	private String floatingComponentDeactivationSignature = null;
+	private BaseAclfNetwork<?, ?> fixedPointNoIslandNetwork = null;
+	private boolean fixedPointNoIslandVerified = false;
+	private BaseAclfNetwork<?, ?> fixedPointOrderedNetwork = null;
+	private boolean fixedPointOrderingVerified = false;
 	private int fixedPointYMatrixSymbolicFactorizationCount = 0;
 	private int fixedPointYMatrixNumericFactorizationCount = 0;
 	private int fixedPointYMatrixValueUpdateCount = 0;
@@ -434,11 +448,24 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		 BaseAclfNetwork<? extends BaseAclfBus<? extends AclfGen, ? extends AclfLoad>, ? extends AclfBranch> distNet = aclfNetwork();
 		 if(!disableFloatingComponentDeactivation()) {
 			 deactivateBusesOnlyInFloatingPhaseComponents(distNet);
-		 }
+		}
 
 		//step-1. check if there is any island in the system
-		 AclfNetHelper helper = new AclfNetHelper(distNet);
-		 List<String> islandBusList = helper.calIslandBuses();
+		 AclfNetHelper helper = null;
+		 List<String> islandBusList;
+		 if(this.fixedPointYMatrixCacheEnabled
+				 && this.fixedPointNoIslandVerified
+				 && this.fixedPointNoIslandNetwork == distNet) {
+			 islandBusList = Collections.emptyList();
+		 }
+		 else {
+			 helper = new AclfNetHelper(distNet);
+			 islandBusList = helper.calIslandBuses();
+			 if(this.fixedPointYMatrixCacheEnabled && islandBusList.isEmpty()) {
+				 this.fixedPointNoIslandNetwork = distNet;
+				 this.fixedPointNoIslandVerified = true;
+			 }
+		 }
 
 		 // turn off single islanded bus
 		 for(String busId: islandBusList) {
@@ -483,6 +510,16 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	}
 
 	private void deactivateBusesOnlyInFloatingPhaseComponents(BaseAclfNetwork distNet) {
+		if(this.fixedPointYMatrixCacheEnabled
+				&& this.floatingComponentDeactivationNetwork == distNet
+				&& this.floatingComponentDeactivationSignature != null) {
+			return;
+		}
+		String preSignature = fixedPointYMatrixSymbolSignature(distNet);
+		if(this.floatingComponentDeactivationNetwork == distNet
+				&& preSignature.equals(this.floatingComponentDeactivationSignature)) {
+			return;
+		}
 		int nodeCount = distNet.getNoBus() * 3;
 		List<List<Integer>> graph = new ArrayList<>(nodeCount);
 		for(int i = 0; i < nodeCount; i++) {
@@ -550,6 +587,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			log.info("Turned off buses only connected to floating phase components before power flow: buses="
 					+ inactiveBusCount + ", branches=" + inactiveBranchCount);
 		}
+		this.floatingComponentDeactivationNetwork = distNet;
+		this.floatingComponentDeactivationSignature = inactiveBusCount == 0 && inactiveBranchCount == 0
+				? preSignature : fixedPointYMatrixSymbolSignature(distNet);
 	}
 
 	private List<BaseAclfNetwork> createSubNetworkList(BaseAclfNetwork parentNetwork, List<String> list){
@@ -633,7 +673,18 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	private boolean powerflow_singleNet(BaseAclfNetwork distNet) {
 		this.setNetwork(distNet);
 		//step-1 order the network
-		 pfFlag = orderDistributionBuses(radialNetworkOnly);
+		 if(this.fixedPointYMatrixCacheEnabled
+				 && this.fixedPointOrderingVerified
+				 && this.fixedPointOrderedNetwork == distNet) {
+			 pfFlag = true;
+		 }
+		 else {
+			 pfFlag = orderDistributionBuses(radialNetworkOnly);
+			 if(this.fixedPointYMatrixCacheEnabled && pfFlag) {
+				 this.fixedPointOrderedNetwork = distNet;
+				 this.fixedPointOrderingVerified = true;
+			 }
+		 }
 
 
 		//step-2 initialize bus voltage
@@ -704,11 +755,11 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		PrimitiveComplex3x3Equation primitiveMatrix = yMatrix instanceof PrimitiveComplex3x3Equation
 				? (PrimitiveComplex3x3Equation) yMatrix : null;
 		long busCacheStart = FIXED_POINT_PROFILE.start();
-		FixedPointBusCache busCache = FixedPointBusCache.from(distNet, this.swingBusVoltageBoundaryCurrent);
+		FixedPointBusCache busCache = fixedPointBusCache(distNet);
 		FIXED_POINT_PROFILE.addMatrixBusCache(FIXED_POINT_PROFILE.elapsed(busCacheStart));
 		PrimitiveFixedPointState primitiveState = primitiveMatrix instanceof PrimitiveComplex3x3ArrayEquation
 				&& primitiveVoltageStateEligible(busCache)
-						? PrimitiveFixedPointState.from(busCache, distNet.getNoBus()) : null;
+						? fixedPointPrimitiveState(busCache, distNet.getNoBus()) : null;
 		FIXED_POINT_PROFILE.addAttempt();
 
 		for (int i = 0; i < this.maxIteration; i++) {
@@ -792,6 +843,38 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		return this.pfFlag;
 	}
 
+	private FixedPointBusCache fixedPointBusCache(
+			BaseAclfNetwork<? extends BaseAclfBus<? extends AclfGen, ? extends AclfLoad>, ? extends AclfBranch> distNet) {
+		if(this.fixedPointYMatrixCacheEnabled
+				&& this.fixedPointBusCache != null
+				&& this.fixedPointBusCacheNetwork == distNet
+				&& this.fixedPointBusCacheBoundaryVersion == this.swingBusVoltageBoundaryCurrentVersion) {
+			return this.fixedPointBusCache;
+		}
+		FixedPointBusCache busCache = FixedPointBusCache.from(distNet, this.swingBusVoltageBoundaryCurrent);
+		if(this.fixedPointYMatrixCacheEnabled) {
+			this.fixedPointBusCache = busCache;
+			this.fixedPointBusCacheNetwork = distNet;
+			this.fixedPointBusCacheBoundaryVersion = this.swingBusVoltageBoundaryCurrentVersion;
+		}
+		return busCache;
+	}
+
+	private PrimitiveFixedPointState fixedPointPrimitiveState(FixedPointBusCache busCache, int busCount) {
+		if(this.fixedPointYMatrixCacheEnabled
+				&& this.fixedPointPrimitiveStateCache != null
+				&& this.fixedPointPrimitiveStateCacheBusCount == busCount) {
+			this.fixedPointPrimitiveStateCache.resetFrom(busCache);
+			return this.fixedPointPrimitiveStateCache;
+		}
+		PrimitiveFixedPointState state = PrimitiveFixedPointState.from(busCache, busCount);
+		if(this.fixedPointYMatrixCacheEnabled) {
+			this.fixedPointPrimitiveStateCache = state;
+			this.fixedPointPrimitiveStateCacheBusCount = busCount;
+		}
+		return state;
+	}
+
 	private void updateFixedPointPostSolveOutputs() {
 		if(this.postSolveOutputMode == DistributionPostSolveOutputMode.VOLTAGE_ONLY) {
 			return;
@@ -820,7 +903,6 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			throws IpssNumericException {
 		long start = FIXED_POINT_PROFILE.start();
 		String signature = fixedPointYMatrixSignature(distNet);
-		String symbolSignature = fixedPointYMatrixSymbolSignature(distNet);
 		FIXED_POINT_PROFILE.addMatrixSignature(FIXED_POINT_PROFILE.elapsed(start));
 		if(this.fixedPointYMatrixCacheEnabled
 				&& this.fixedPointYMatrixCache != null
@@ -829,6 +911,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			return this.fixedPointYMatrixCache;
 		}
 
+		start = FIXED_POINT_PROFILE.start();
+		String symbolSignature = fixedPointYMatrixSymbolSignature(distNet);
+		FIXED_POINT_PROFILE.addMatrixSignature(FIXED_POINT_PROFILE.elapsed(start));
 		boolean reuseSymbolTable = fixedPointSymbolReuseEnabled()
 				&& this.fixedPointYMatrixSymbolTable != null
 				&& symbolSignature.equals(this.fixedPointYMatrixSymbolSignature);
@@ -979,11 +1064,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		StringBuilder builder = new StringBuilder();
 		builder.append(System.identityHashCode(distNet)).append('|')
 				.append(distNet.getNoBus()).append('|');
-		for(BaseAclfBus<?, ?> bus : (List<BaseAclfBus<?, ?>>) distNet.getBusList()) {
-			if(bus.isActive() && bus.isSwing()) {
-				builder.append(bus.getId()).append(':').append(bus.getSortNumber()).append(':')
-						.append(threePhaseBus(bus).get3PhaseVotlages()).append(';');
-			}
+		for(BaseAclfBus<?, ?> bus : fixedPointYMatrixSignatureSwingBuses(distNet)) {
+			builder.append(bus.getId()).append(':').append(bus.getSortNumber()).append(':')
+					.append(threePhaseBus(bus).get3PhaseVotlages()).append(';');
 		}
 		if(fixedPointLoadNortonAdmittanceFactor() != 0.0) {
 			builder.append("loadNortonFactor:")
@@ -991,6 +1074,25 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 					.append(';');
 		}
 		return builder.toString();
+	}
+
+	private List<BaseAclfBus<?, ?>> fixedPointYMatrixSignatureSwingBuses(BaseAclfNetwork<?, ?> distNet) {
+		if(this.fixedPointYMatrixCacheEnabled
+				&& this.fixedPointYMatrixSignatureNetwork == distNet
+				&& this.fixedPointYMatrixSignatureSwingBuses != null) {
+			return this.fixedPointYMatrixSignatureSwingBuses;
+		}
+		List<BaseAclfBus<?, ?>> swingBuses = new ArrayList<>();
+		for(BaseAclfBus<?, ?> bus : (List<BaseAclfBus<?, ?>>) distNet.getBusList()) {
+			if(bus.isActive() && bus.isSwing()) {
+				swingBuses.add(bus);
+			}
+		}
+		if(this.fixedPointYMatrixCacheEnabled) {
+			this.fixedPointYMatrixSignatureNetwork = distNet;
+			this.fixedPointYMatrixSignatureSwingBuses = Collections.unmodifiableList(swingBuses);
+		}
+		return swingBuses;
 	}
 
 	private String fixedPointYMatrixSymbolSignature(BaseAclfNetwork<?, ?> distNet) {
@@ -1304,6 +1406,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 	private void applySwingBusVoltageBoundary(ISparseEqnComplexMatrix3x3 yMatrix) {
 		this.swingBusVoltageBoundaryCurrent.clear();
+		this.swingBusVoltageBoundaryCurrentVersion++;
 		BaseAclfNetwork<? extends BaseAclfBus<? extends AclfGen, ? extends AclfLoad>, ? extends AclfBranch> distNet = aclfNetwork();
 		if(!(yMatrix instanceof AbstractSparseEqnComplexMatrix3x3Impl<?>)) {
 			applySwingBusVoltageBoundaryBySetA(yMatrix, distNet);
@@ -1610,7 +1713,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			PrimitiveFixedPointState primitiveState) {
 		for(FixedPointBus bus : busCache.currentInjectionBuses) {
 			FIXED_POINT_PROFILE.addCurrentInjectionBus();
-			int offset = 6 * bus.sortNumber;
+			int offset = bus.primitiveOffset;
 			long start = FIXED_POINT_PROFILE.start();
 			addStaticCurrentToRhsProfiled(bus, primitiveState.voltage, offset, primitiveRhs);
 			FIXED_POINT_PROFILE.addCurrentInjectionCalc(FIXED_POINT_PROFILE.elapsed(start));
@@ -1651,7 +1754,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	private void setPowerflowCurrentInjectionsDirectFast(double[] primitiveRhs, FixedPointBusCache busCache,
 			PrimitiveFixedPointState primitiveState) {
 		for(FixedPointBus bus : busCache.currentInjectionBuses) {
-			int offset = 6 * bus.sortNumber;
+			int offset = bus.primitiveOffset;
 			for(AclfLoad3Phase load : bus.phaseLoads) {
 				load.addEquivCurrInj(primitiveState.voltage, offset, primitiveRhs, offset);
 			}
@@ -1840,7 +1943,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		current[3] = 0.0;
 		current[4] = 0.0;
 		current[5] = 0.0;
-		int voltageOffset = 6 * bus.sortNumber;
+		int voltageOffset = bus.primitiveOffset;
 
 		long start = FIXED_POINT_PROFILE.start();
 		List<? extends AclfLoad3Phase> loads = bus.phaseLoads;
@@ -1875,7 +1978,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		current[3] = 0.0;
 		current[4] = 0.0;
 		current[5] = 0.0;
-		int voltageOffset = 6 * bus.sortNumber;
+		int voltageOffset = bus.primitiveOffset;
 		for(AclfLoad3Phase load : bus.phaseLoads) {
 			load.addEquivCurrInj(voltage, voltageOffset, current);
 		}
@@ -2040,7 +2143,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		double[] solved = yMatrix.primitiveSolvedInterleaved();
 		double maxMismatch = 0.0;
 		for(FixedPointBus bus : busCache.nonSwingBuses) {
-			int offset = 6 * bus.sortNumber;
+			int offset = bus.primitiveOffset;
 			if(!isValidFixedPointVoltage(solved, offset)) {
 				log.warn("Fixed-point solve produced invalid voltage at bus " + bus.id
 						+ ", sortNumber=" + bus.sortNumber + ", vabc=" + format3x1(solved, offset));
@@ -2056,14 +2159,20 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			FixedPointBusCache busCache, PrimitiveFixedPointState primitiveState) {
 		double[] solved = yMatrix.primitiveSolvedInterleaved();
 		double maxMismatch = 0.0;
+		boolean aboveTolerance = false;
+		double tolerance = this.getTolerance();
 		for(FixedPointBus bus : busCache.nonSwingBuses) {
-			int offset = 6 * bus.sortNumber;
+			int offset = bus.primitiveOffset;
 			if(!isValidFixedPointVoltage(solved, offset)) {
 				log.warn("Fixed-point solve produced invalid voltage at bus " + bus.id
 						+ ", sortNumber=" + bus.sortNumber + ", vabc=" + format3x1(solved, offset));
 				return VoltageUpdateResult.invalid();
 			}
-			maxMismatch = Math.max(maxMismatch, primitiveState.voltageMismatch(solved, offset));
+			if(!aboveTolerance) {
+				double mismatch = primitiveState.voltageMismatch(solved, offset);
+				maxMismatch = Math.max(maxMismatch, mismatch);
+				aboveTolerance = mismatch > tolerance;
+			}
 			primitiveState.copySolvedVoltage(solved, offset);
 		}
 		return VoltageUpdateResult.valid(maxMismatch);
@@ -2152,17 +2261,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		if(this.regulatorControlEnabled && !this.regulatorControls.isEmpty()) {
 			return false;
 		}
-		for(FixedPointBus bus : busCache.activeBuses) {
-			if(bus.bus3P instanceof DStab3PBus) {
-				return false;
-			}
-		}
-		for(FixedPointBus bus : busCache.currentInjectionBuses) {
-			if(bus.primitiveGenerators == null) {
-				return false;
-			}
-		}
-		return true;
+		return busCache.primitiveVoltageStateEligible;
 	}
 
 	private double maxSwingVoltageMismatch(FixedPointBusCache busCache, double maxMis) {
@@ -2995,8 +3094,21 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		this.fixedPointYMatrixCache = null;
 		this.fixedPointYMatrixCacheNetwork = null;
 		this.fixedPointYMatrixCacheSignature = null;
+		this.fixedPointYMatrixSignatureNetwork = null;
+		this.fixedPointYMatrixSignatureSwingBuses = Collections.emptyList();
 		this.fixedPointYMatrixValueUpdateCache = null;
 		this.fixedPointYMatrixValueUpdateCacheNetwork = null;
+		this.fixedPointBusCache = null;
+		this.fixedPointBusCacheNetwork = null;
+		this.fixedPointBusCacheBoundaryVersion = -1;
+		this.fixedPointPrimitiveStateCache = null;
+		this.fixedPointPrimitiveStateCacheBusCount = -1;
+		this.floatingComponentDeactivationNetwork = null;
+		this.floatingComponentDeactivationSignature = null;
+		this.fixedPointNoIslandNetwork = null;
+		this.fixedPointNoIslandVerified = false;
+		this.fixedPointOrderedNetwork = null;
+		this.fixedPointOrderingVerified = false;
 		this.fixedPointRegulatorValueUpdateAdmittance = Collections.emptyMap();
 	}
 
@@ -3059,15 +3171,18 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		private final List<FixedPointBus> nonSwingBuses;
 		private final List<FixedPointBus> currentInjectionBuses;
 		private final List<FixedPointBus> swingBuses;
+		private final boolean primitiveVoltageStateEligible;
 
 		private FixedPointBusCache(List<FixedPointBus> activeBuses,
 				List<FixedPointBus> nonSwingBuses,
 				List<FixedPointBus> currentInjectionBuses,
-				List<FixedPointBus> swingBuses) {
+				List<FixedPointBus> swingBuses,
+				boolean primitiveVoltageStateEligible) {
 			this.activeBuses = activeBuses;
 			this.nonSwingBuses = nonSwingBuses;
 			this.currentInjectionBuses = currentInjectionBuses;
 			this.swingBuses = swingBuses;
+			this.primitiveVoltageStateEligible = primitiveVoltageStateEligible;
 		}
 
 		static FixedPointBusCache from(BaseAclfNetwork<?, ?> network,
@@ -3076,6 +3191,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			List<FixedPointBus> nonSwingBuses = new ArrayList<>();
 			List<FixedPointBus> currentInjectionBuses = new ArrayList<>();
 			List<FixedPointBus> swingBuses = new ArrayList<>();
+			boolean primitiveVoltageStateEligible = true;
 			for(BaseAclfBus<?, ?> bus : (List<BaseAclfBus<?, ?>>) network.getBusList()) {
 				if(!bus.isActive()) {
 					continue;
@@ -3083,6 +3199,10 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				FixedPointBus fixedPointBus = new FixedPointBus(bus,
 						boundaryCurrentBySortNumber.get(bus.getSortNumber()));
 				activeBuses.add(fixedPointBus);
+				if(fixedPointBus.bus3P instanceof DStab3PBus
+						|| fixedPointBus.primitiveGenerators == null) {
+					primitiveVoltageStateEligible = false;
+				}
 				if(bus.isSwing()) {
 					swingBuses.add(fixedPointBus);
 				}
@@ -3097,7 +3217,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 					Collections.unmodifiableList(activeBuses),
 					Collections.unmodifiableList(nonSwingBuses),
 					Collections.unmodifiableList(currentInjectionBuses),
-					Collections.unmodifiableList(swingBuses));
+					Collections.unmodifiableList(swingBuses),
+					primitiveVoltageStateEligible);
 		}
 	}
 
@@ -3148,17 +3269,21 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 		private static PrimitiveFixedPointState from(FixedPointBusCache busCache, int busCount) {
 			PrimitiveFixedPointState state = new PrimitiveFixedPointState(new double[6 * busCount]);
+			state.resetFrom(busCache);
+			return state;
+		}
+
+		private void resetFrom(FixedPointBusCache busCache) {
 			for(FixedPointBus bus : busCache.activeBuses) {
 				Complex3x1 vabc = bus.bus3P.get3PhaseVotlages();
-				int offset = 6 * bus.sortNumber;
-				state.voltage[offset] = realValue(vabc == null ? null : vabc.a_0);
-				state.voltage[offset + 1] = imaginaryValue(vabc == null ? null : vabc.a_0);
-				state.voltage[offset + 2] = realValue(vabc == null ? null : vabc.b_1);
-				state.voltage[offset + 3] = imaginaryValue(vabc == null ? null : vabc.b_1);
-				state.voltage[offset + 4] = realValue(vabc == null ? null : vabc.c_2);
-				state.voltage[offset + 5] = imaginaryValue(vabc == null ? null : vabc.c_2);
+				int offset = bus.primitiveOffset;
+				this.voltage[offset] = realValue(vabc == null ? null : vabc.a_0);
+				this.voltage[offset + 1] = imaginaryValue(vabc == null ? null : vabc.a_0);
+				this.voltage[offset + 2] = realValue(vabc == null ? null : vabc.b_1);
+				this.voltage[offset + 3] = imaginaryValue(vabc == null ? null : vabc.b_1);
+				this.voltage[offset + 4] = realValue(vabc == null ? null : vabc.c_2);
+				this.voltage[offset + 5] = imaginaryValue(vabc == null ? null : vabc.c_2);
 			}
-			return state;
 		}
 
 		private void saveVoltageSnapshot() {
@@ -3192,7 +3317,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 		private void syncBusVoltages(List<FixedPointBus> buses) {
 			for(FixedPointBus bus : buses) {
-				int offset = 6 * bus.sortNumber;
+				int offset = bus.primitiveOffset;
 				Complex3x1 existing = bus.bus3P.get3PhaseVotlages();
 				if(existing == null) {
 					bus.bus3P.set3PhaseVotlages(new Complex3x1(
@@ -3220,6 +3345,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	private static class FixedPointBus {
 		private final String id;
 		private final int sortNumber;
+		private final int primitiveOffset;
 		private final IBus3Phase bus3P;
 		private final List<? extends AclfLoad3Phase> phaseLoads;
 		private final List<? extends AclfGen3Phase> phaseGenerators;
@@ -3243,6 +3369,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		private FixedPointBus(BaseAclfBus<?, ?> bus, Complex3x1 boundaryCurrent) {
 			this.id = bus.getId();
 			this.sortNumber = bus.getSortNumber();
+			this.primitiveOffset = 6 * this.sortNumber;
 			this.bus3P = (IBus3Phase) bus;
 			this.phaseLoads = this.bus3P.getPhaseLoadList();
 			this.phaseGenerators = this.bus3P.getPhaseGenList();
