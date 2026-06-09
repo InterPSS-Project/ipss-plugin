@@ -107,6 +107,16 @@ public abstract class BaseAclfNetLoadFlowOptimizer {
 		return (int) (branch.getNumber() - 1);
 	}
 
+	protected AclfBranch resolveBranch(AclfNetwork net, String branchKey) {
+		if (net.getAclfBranchNameLookupTable() != null) {
+			AclfBranch branch = net.getAclfBranchNameLookupTable().get(branchKey);
+			if (branch != null) {
+				return branch;
+			}
+		}
+		return net.getBranch(branchKey);
+	}
+
 	private Map<Integer, AclfGen> arrangeIndex(Set<AclfGen> controlGenSet) {
 		Map<Integer, AclfGen> genMap = new HashMap<Integer, AclfGen>();
 		int index = 0;
@@ -132,7 +142,7 @@ public abstract class BaseAclfNetLoadFlowOptimizer {
 	}
 
 	private void processGenSet(AclfNetwork net, Set<AclfGen> genSet, String branchName) {
-		AclfBranch branch = net.getAclfBranchNameLookupTable().get(branchName);
+		AclfBranch branch = resolveBranch(net, branchName);
 		if (branch == null) {
 			return;
 		}
@@ -174,7 +184,7 @@ public abstract class BaseAclfNetLoadFlowOptimizer {
 		}
 		AclfNetwork net = (AclfNetwork) dclfAlgo.getNetwork();
 		ssaResult.getBaseOverLimitInfo().forEach(info -> {
-			AclfBranch branch = net.getAclfBranchNameLookupTable().get(info.getOverLimitBranchId());
+			AclfBranch branch = resolveBranch(net, info.getOverLimitBranchId());
 			if (branch == null) {
 				return;
 			}
