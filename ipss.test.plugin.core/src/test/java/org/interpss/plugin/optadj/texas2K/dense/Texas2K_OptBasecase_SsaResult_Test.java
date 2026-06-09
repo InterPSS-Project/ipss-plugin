@@ -1,7 +1,8 @@
-package org.interpss.plugin.optadj.texas2K;
+package org.interpss.plugin.optadj.texas2K.dense;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.util.Map;
 
@@ -10,6 +11,9 @@ import org.interpss.plugin.optadj.algo.lf.AclfNetLoadFlowOptimizer;
 import org.interpss.plugin.optadj.algo.util.AclfNetSsaHelper;
 import org.interpss.plugin.optadj.result.OptAdjResultContainer;
 import org.interpss.plugin.optadj.result.SsaResultContainer;
+import org.interpss.plugin.optadj.texas2K.Texas2K_TestCaseInfo;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.DclfAlgoObjectFactory;
@@ -20,11 +24,11 @@ import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 
 /**
- * Regression test for {@code Texas2K_OptBasecase_SsaResult_Sparse_Sample}: DCLF basecase with
- * SSA over-limit info via {@link AclfNetSsaHelper}, then sparse {@link AclfNetLoadFlowOptimizer}
+ * Regression test for {@code Texas2K_OptBasecase_SsaResult_Sample}: DCLF basecase with
+ * SSA over-limit info via {@link AclfNetSsaHelper}, then {@link AclfNetLoadFlowOptimizer}
  * at 90% loading limit.
  */
-public class Texas2K_OptBasecase_SsaResult_Sparse_Test extends CorePluginTestSetup {
+public class Texas2K_OptBasecase_SsaResult_Test extends CorePluginTestSetup {
 	private static final double SSA_SCAN_THRESHOLD_PCT = 90.0;
 	private static final double OPT_ADJ_THRESHOLD_PCT = 90.0;
 
@@ -81,7 +85,7 @@ public class Texas2K_OptBasecase_SsaResult_Sparse_Test extends CorePluginTestSet
 				"SSA scan at 90% should capture at least the overloaded branch set");
 
 		OptAdjResultContainer optAdjResult = new OptAdjResultContainer(ssaResult);
-		Map<String, OptAdjResultContainer.GenAdjustResult> adjustResults = new AclfNetLoadFlowOptimizer(true).optimize(
+		Map<String, OptAdjResultContainer.GenAdjustResult> adjustResults = new AclfNetLoadFlowOptimizer().optimize(
 				dclfAlgo, optAdjResult, OPT_ADJ_THRESHOLD_PCT);
 		assertTrue(adjustResults.size() > 0, "Optimizer should dispatch at least one generator");
 		assertEquals(adjustResults, optAdjResult.getOptAdjResults());
@@ -94,7 +98,7 @@ public class Texas2K_OptBasecase_SsaResult_Sparse_Test extends CorePluginTestSet
 		assertTrue(maxLoadingAfter < maxLoadingBefore,
 				"Peak branch loading should decrease after optimization");
 
-		// Regression anchors (Texas2K_OptBasecase_SsaResult_Sparse_Sample, 90% limit, RatingMvaA).
+		// Regression anchors (Texas2K_OptBasecase_SsaResult_Sample, 90% limit, RatingMvaA).
 		assertEquals(11, overLimitBefore, "Overloaded branch count before optimization");
 		assertTrue(overLimitAfter >= 10 && overLimitAfter <= 11,
 				"Overloaded branch count after optimization");

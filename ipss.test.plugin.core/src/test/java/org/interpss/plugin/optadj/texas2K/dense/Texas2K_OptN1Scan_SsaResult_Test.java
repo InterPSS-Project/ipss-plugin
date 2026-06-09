@@ -1,4 +1,4 @@
-package org.interpss.plugin.optadj.texas2K;
+package org.interpss.plugin.optadj.texas2K.dense;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -14,6 +14,7 @@ import org.interpss.plugin.optadj.algo.lf.AclfNetContigencyOptimizer;
 import org.interpss.plugin.optadj.algo.util.AclfNetSsaHelper;
 import org.interpss.plugin.optadj.result.OptAdjResultContainer;
 import org.interpss.plugin.optadj.result.SsaResultContainer;
+import org.interpss.plugin.optadj.texas2K.Texas2K_TestCaseInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
