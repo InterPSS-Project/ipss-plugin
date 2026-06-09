@@ -31,9 +31,9 @@ import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.acsc.PhaseCode;
 import com.interpss.core.threephase.IBranch3Phase;
 import com.interpss.core.threephase.IBus3Phase;
-import com.interpss.core.threephase.IGen3Phase;
-import com.interpss.core.threephase.ILoad3Phase;
 import com.interpss.core.threephase.INetwork3Phase;
+import com.interpss.core.threephase.AclfGen3Phase;
+import com.interpss.core.threephase.AclfLoad3Phase;
 
 public class DistOpfModelDataExtractor {
 
@@ -111,7 +111,7 @@ public class DistOpfModelDataExtractor {
 	private static FixedLoadAndCapacitor fixedLoadAndCapacitor(BaseAclfBus<?, ?> bus, IBus3Phase bus3P) {
 		Complex3x1 totalLoad = safeLoad(bus, bus3P);
 		Complex3x1 capacitorQ = new Complex3x1();
-		for (ILoad3Phase threePhaseLoad : bus3P.getThreePhaseLoadList()) {
+		for (AclfLoad3Phase threePhaseLoad : bus3P.getPhaseLoadList()) {
 			if (isFixedCapacitor(threePhaseLoad)) {
 				Complex3x1 capLoad = threePhaseLoad.getInit3PhaseLoad();
 				capacitorQ = capacitorQ.add(capacitorInjection(capLoad));
@@ -131,7 +131,7 @@ public class DistOpfModelDataExtractor {
 
 	private static Complex3x1 safeLoad(BaseAclfBus<?, ?> bus, IBus3Phase bus3P) {
 		Complex3x1 load = new Complex3x1();
-		for (ILoad3Phase threePhaseLoad : bus3P.getThreePhaseLoadList()) {
+		for (AclfLoad3Phase threePhaseLoad : bus3P.getPhaseLoadList()) {
 			if (threePhaseLoad.getInit3PhaseLoad() != null) {
 				load = load.add(threePhaseLoad.getInit3PhaseLoad());
 			}
@@ -180,7 +180,7 @@ public class DistOpfModelDataExtractor {
 		}
 	}
 
-	private static boolean isFixedCapacitor(ILoad3Phase load) {
+	private static boolean isFixedCapacitor(AclfLoad3Phase load) {
 		Complex3x1 value = load.getInit3PhaseLoad();
 		return load.getCode() == AclfLoadCode.CONST_Z
 				&& value != null
@@ -211,8 +211,8 @@ public class DistOpfModelDataExtractor {
 
 	private static List<DistOpfDerData> extractDers(BaseAclfBus<?, ?> bus, IBus3Phase bus3P, double baseMva) {
 		List<DistOpfDerData> ders = new ArrayList<DistOpfDerData>();
-		Set<IGen3Phase> seen = new HashSet<IGen3Phase>();
-		for (IGen3Phase gen : bus3P.getThreePhaseGenList()) {
+		Set<AclfGen3Phase> seen = new HashSet<AclfGen3Phase>();
+		for (AclfGen3Phase gen : bus3P.getPhaseGenList()) {
 			addDer(bus, gen, seen, ders, baseMva);
 		}
 		if (bus instanceof DStab3PBus) {
@@ -223,7 +223,7 @@ public class DistOpfModelDataExtractor {
 		return ders;
 	}
 
-	private static void addDer(BaseAclfBus<?, ?> bus, IGen3Phase gen, Set<IGen3Phase> seen,
+	private static void addDer(BaseAclfBus<?, ?> bus, AclfGen3Phase gen, Set<AclfGen3Phase> seen,
 			List<DistOpfDerData> ders, double baseMva) {
 		if (gen == null || seen.contains(gen)) {
 			return;
@@ -247,7 +247,7 @@ public class DistOpfModelDataExtractor {
 				apparentPowerLimitPu(gen, baseMva, power)));
 	}
 
-	private static Double apparentPowerLimitPu(IGen3Phase gen, double baseMva, Complex3x1 power) {
+	private static Double apparentPowerLimitPu(AclfGen3Phase gen, double baseMva, Complex3x1 power) {
 		double baseLimit = maxApparentPower(power);
 		if (baseMva > 0.0 && gen.getMvaBase() > 0.0) {
 			baseLimit = Math.max(baseLimit, gen.getMvaBase() / baseMva / 3.0);
