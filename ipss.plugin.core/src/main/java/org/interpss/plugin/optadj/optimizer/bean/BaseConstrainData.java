@@ -6,25 +6,29 @@ import org.apache.commons.math3.optim.linear.Relationship;
 
 * @author  Donghao.F 
 
-* @date 2024��5��27�� ����5:23:23 
+* @date 2024 May 27 17:23:23 
 
 * 
 
 */
 public class BaseConstrainData {
 	
-	private double value;
+	double value;
 
-	private Relationship relationship;
+	Relationship relationship;
 	
-	private double limit;
+	double limit;
 	
 
 	public BaseConstrainData(double value, Relationship relationship, double limit) {
 		super();
 		this.value = value;
 		this.relationship = relationship;
+		if (Math.abs(value - limit) < 0.001) {
+			limit = value;
+		}
 		this.limit = limit;
+		
 	}
 
 	public double getLimit() {
@@ -49,6 +53,11 @@ public class BaseConstrainData {
 
 	public void setRelationship(Relationship relationship) {
 		this.relationship = relationship;
+	}
+	
+	@Override
+	public String toString() {
+		return this.value+relationship.toString()+this.limit ;
 	}
 
 	
