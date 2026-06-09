@@ -168,8 +168,8 @@ public class TestOpenDSSDataParser {
 
 		  LineConfiguration lc7 = parser.getLineConfigTable().get("7");
 		  assertTrue(line2phase.getZabc().aa.subtract(lc7.getZ3x3Matrix().aa.multiply(length)).abs()<1.0E-9);
-		  assertTrue(line2phase.getZabc().ac.subtract(lc7.getZ3x3Matrix().ac.multiply(length)).abs()<1.0E-9);
-		  assertTrue(line2phase.getZabc().cc.subtract(lc7.getZ3x3Matrix().cc.multiply(length)).abs()<1.0E-9);
+		  assertTrue(line2phase.getZabc().ac.subtract(lc7.getZ3x3Matrix().ab.multiply(length)).abs()<1.0E-9);
+		  assertTrue(line2phase.getZabc().cc.subtract(lc7.getZ3x3Matrix().bb.multiply(length)).abs()<1.0E-9);
 		  assertTrue(line2phase.getZabc().ab.abs()<1.0E-9);
 		  assertTrue(line2phase.getZabc().ba.abs()<1.0E-9);
 
@@ -178,7 +178,7 @@ public class TestOpenDSSDataParser {
 		  LineConfiguration lc11 = parser.getLineConfigTable().get("11");
 		  length = 0.225;
 
-		  assertTrue(line1phase.getZabc().cc.subtract(lc11.getZ3x3Matrix().cc.multiply(length)).abs()<1.0E-9);
+		  assertTrue(line1phase.getZabc().cc.subtract(lc11.getZ3x3Matrix().aa.multiply(length)).abs()<1.0E-9);
 		  assertTrue(line1phase.getZabc().bb.abs()<1.0E-9);
 		  assertTrue(line1phase.getZabc().aa.abs()<1.0E-9);
 		  assertTrue(line1phase.getZabc().ab.abs()<1.0E-9);
@@ -339,8 +339,8 @@ public class TestOpenDSSDataParser {
 
 		  LineConfiguration lc7 = parser.getLineConfigTable().get("7");
 		  assertTrue(line2phase.getZabc().aa.subtract(lc7.getZ3x3Matrix().aa.multiply(length).multiply(1.0/zbase)).abs()<1.0E-9);
-		  assertTrue(line2phase.getZabc().ac.subtract(lc7.getZ3x3Matrix().ac.multiply(length).multiply(1.0/zbase)).abs()<1.0E-9);
-		  assertTrue(line2phase.getZabc().cc.subtract(lc7.getZ3x3Matrix().cc.multiply(length).multiply(1.0/zbase)).abs()<1.0E-9);
+		  assertTrue(line2phase.getZabc().ac.subtract(lc7.getZ3x3Matrix().ab.multiply(length).multiply(1.0/zbase)).abs()<1.0E-9);
+		  assertTrue(line2phase.getZabc().cc.subtract(lc7.getZ3x3Matrix().bb.multiply(length).multiply(1.0/zbase)).abs()<1.0E-9);
 		  assertTrue(line2phase.getZabc().ab.abs()<1.0E-9);
 		  assertTrue(line2phase.getZabc().ba.abs()<1.0E-9);
 
@@ -349,7 +349,7 @@ public class TestOpenDSSDataParser {
 		  LineConfiguration lc11 = parser.getLineConfigTable().get("11");
 		  length = 0.225;
 
-		  assertTrue(line1phase.getZabc().cc.subtract(lc11.getZ3x3Matrix().cc.multiply(length).multiply(1.0/zbase)).abs()<1.0E-9);
+		  assertTrue(line1phase.getZabc().cc.subtract(lc11.getZ3x3Matrix().aa.multiply(length).multiply(1.0/zbase)).abs()<1.0E-9);
 		  assertTrue(line1phase.getZabc().bb.abs()<1.0E-9);
 		  assertTrue(line1phase.getZabc().aa.abs()<1.0E-9);
 		  assertTrue(line1phase.getZabc().ab.abs()<1.0E-9);

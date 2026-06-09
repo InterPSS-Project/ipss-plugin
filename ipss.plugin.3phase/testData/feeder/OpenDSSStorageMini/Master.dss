@@ -1,0 +1,6 @@
+Clear
+New Circuit.OpenDSSStorageMini basekv=12.47 pu=1.00 phases=3 bus1=source
+New LoadShape.battday npts=2 interval=1 mult=(1.0 -1.0) qmult=(1.0 0.5)
+New Line.feeder bus1=source.1.2.3 bus2=storagebus.1.2.3 phases=3 r1=0.01 x1=0.02 r0=0.03 x0=0.06 length=1 units=kft
+New Load.load1 bus1=storagebus.1.2.3 phases=3 conn=wye kv=12.47 kw=900 kvar=300 model=1
+New Storage.batt1 bus1=storagebus.1.2.3 phases=3 conn=wye kv=12.47 kva=600 kwrated=500 kw=500 kvar=60 state=discharging kWhRated=1000 kWhStored=1000 %Reserve=0 %EffCharge=100 %EffDischarge=100 daily=battday

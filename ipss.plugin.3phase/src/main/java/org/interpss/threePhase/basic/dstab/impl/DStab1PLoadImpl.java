@@ -18,6 +18,10 @@ public class DStab1PLoadImpl extends DStabLoadImpl implements DStab1PLoad {
 	double nominalKV = 0;
 	double Vminpu = 0.85; // pu
 	double Vmaxpu = 1.1; // pu
+	private int openDssLoadModel = 0;
+	private double cvrWatts = 1.0;
+	private double cvrVars = 2.0;
+	private double[] zipv = null;
 
 	PhaseCode  ph = PhaseCode.A;  //connected phase(s)
 
@@ -46,28 +50,108 @@ public class DStab1PLoadImpl extends DStabLoadImpl implements DStab1PLoad {
 
 	@Override
 	public Complex getLoad(double vmag) {
+		if(isOpenDssVoltageModel()) {
+			return openDssLoadAtVoltage(this.loadCP, vmag);
+		}
 		if (this.code == AclfLoadCode.CONST_P){
-			if(vmag>this.Vminpu) {
-				return this.loadCP;
-			} else {
-				return this.loadCP.multiply(vmag*vmag);
-			}
+			return loadAtVoltage(this.loadCP, Complex.ZERO, Complex.ZERO, vmag);
 		}
 		else if (this.code == AclfLoadCode.CONST_I) {
-			if(vmag>this.Vminpu) {
-				return this.loadCI.multiply(vmag);
-			} else {
-				return this.loadCI.multiply(vmag*vmag);
-			}
+			return loadAtVoltage(Complex.ZERO, this.loadCI, Complex.ZERO, vmag);
 		} else if (this.code == AclfLoadCode.CONST_Z) {
-			return this.loadCZ.multiply(vmag*vmag);
+			return loadAtVoltage(Complex.ZERO, Complex.ZERO, this.loadCZ, vmag);
 		} else {
-			if(vmag>this.Vminpu) {
-				return this.loadCP.add(this.loadCI.multiply(vmag)).add(loadCZ.multiply(vmag*vmag));
-			} else {
-				return (this.loadCP.add(this.loadCI).add(loadCZ)).multiply(vmag*vmag);
-			}
+			return loadAtVoltage(this.loadCP, this.loadCI, this.loadCZ, vmag);
 		}
+	}
+
+	protected Complex loadAtVoltage(Complex constP, Complex constI, Complex constZ, double vmag) {
+		if (vmag < this.Vminpu) {
+			return loadAtTransitionVoltage(constP, constI, constZ, this.Vminpu)
+					.multiply(matchedImpedanceScale(vmag, this.Vminpu));
+		}
+		if (vmag > this.Vmaxpu) {
+			return loadAtTransitionVoltage(constP, constI, constZ, this.Vmaxpu)
+					.multiply(matchedImpedanceScale(vmag, this.Vmaxpu));
+		}
+		return loadAtTransitionVoltage(constP, constI, constZ, vmag);
+	}
+
+	private Complex loadAtTransitionVoltage(Complex constP, Complex constI, Complex constZ, double vmag) {
+		return constP.add(constI.multiply(vmag)).add(constZ.multiply(vmag * vmag));
+	}
+
+	protected Complex cvrLoadAtVoltage(Complex nominalLoad, double vmag) {
+		if (vmag < this.Vminpu) {
+			return cvrLoadAtTransitionVoltage(nominalLoad, this.Vminpu)
+					.multiply(matchedImpedanceScale(vmag, this.Vminpu));
+		}
+		if (vmag > this.Vmaxpu) {
+			return cvrLoadAtTransitionVoltage(nominalLoad, this.Vmaxpu)
+					.multiply(matchedImpedanceScale(vmag, this.Vmaxpu));
+		}
+		return cvrLoadAtTransitionVoltage(nominalLoad, vmag);
+	}
+
+	private Complex cvrLoadAtTransitionVoltage(Complex nominalLoad, double vmag) {
+		return new Complex(nominalLoad.getReal() * Math.pow(vmag, this.cvrWatts),
+				nominalLoad.getImaginary() * Math.pow(vmag, this.cvrVars));
+	}
+
+	protected boolean isOpenDssVoltageModel() {
+		return this.openDssLoadModel == 3 || this.openDssLoadModel == 4
+				|| this.openDssLoadModel == 6 || this.openDssLoadModel == 7
+				|| this.openDssLoadModel == 8;
+	}
+
+	protected Complex openDssLoadAtVoltage(Complex nominalLoad, double vmag) {
+		if(this.openDssLoadModel == 8) {
+			return zipvLoadAtVoltage(nominalLoad, vmag);
+		}
+		if (vmag < this.Vminpu) {
+			return openDssLoadAtTransitionVoltage(nominalLoad, this.Vminpu)
+					.multiply(matchedImpedanceScale(vmag, this.Vminpu));
+		}
+		if (vmag > this.Vmaxpu) {
+			return openDssLoadAtTransitionVoltage(nominalLoad, this.Vmaxpu)
+					.multiply(matchedImpedanceScale(vmag, this.Vmaxpu));
+		}
+		return openDssLoadAtTransitionVoltage(nominalLoad, vmag);
+	}
+
+	private Complex openDssLoadAtTransitionVoltage(Complex nominalLoad, double vmag) {
+		switch(this.openDssLoadModel) {
+		case 3:
+		case 7:
+			return new Complex(nominalLoad.getReal(),
+					nominalLoad.getImaginary() * vmag * vmag);
+		case 4:
+			return cvrLoadAtTransitionVoltage(nominalLoad, vmag);
+		case 6:
+			return nominalLoad;
+		default:
+			return nominalLoad;
+		}
+	}
+
+	private Complex zipvLoadAtVoltage(Complex nominalLoad, double vmag) {
+		if(this.zipv == null || this.zipv.length < 7) {
+			return nominalLoad;
+		}
+		if(vmag < this.zipv[6]) {
+			return Complex.ZERO;
+		}
+		double pScale = this.zipv[0] * vmag * vmag + this.zipv[1] * vmag + this.zipv[2];
+		double qScale = this.zipv[3] * vmag * vmag + this.zipv[4] * vmag + this.zipv[5];
+		return new Complex(nominalLoad.getReal() * pScale, nominalLoad.getImaginary() * qScale);
+	}
+
+	private double matchedImpedanceScale(double vmag, double transitionVoltage) {
+		if (transitionVoltage <= 0.0) {
+			return vmag * vmag;
+		}
+		double ratio = vmag / transitionVoltage;
+		return ratio * ratio;
 	}
 
 	@Override
@@ -216,6 +300,50 @@ public class DStab1PLoadImpl extends DStabLoadImpl implements DStab1PLoad {
 	public double getVmaxpu() {
 
 		return this.Vmaxpu;
+	}
+
+	@Override
+	public void setOpenDssModel4(boolean enabled, double cvrWatts, double cvrVars) {
+		if(enabled) {
+			setOpenDssLoadModel(4, cvrWatts, cvrVars, null);
+		}
+		else {
+			this.openDssLoadModel = 0;
+			this.zipv = null;
+		}
+	}
+
+	@Override
+	public boolean isOpenDssModel4() {
+		return this.openDssLoadModel == 4;
+	}
+
+	@Override
+	public void setOpenDssLoadModel(int modelType, double cvrWatts, double cvrVars, double[] zipv) {
+		this.openDssLoadModel = modelType;
+		this.cvrWatts = cvrWatts;
+		this.cvrVars = cvrVars;
+		this.zipv = zipv == null ? null : zipv.clone();
+	}
+
+	@Override
+	public int getOpenDssLoadModel() {
+		return this.openDssLoadModel;
+	}
+
+	@Override
+	public double[] getOpenDssZipv() {
+		return this.zipv == null ? null : this.zipv.clone();
+	}
+
+	@Override
+	public double getCvrWatts() {
+		return this.cvrWatts;
+	}
+
+	@Override
+	public double getCvrVars() {
+		return this.cvrVars;
 	}
 
 }

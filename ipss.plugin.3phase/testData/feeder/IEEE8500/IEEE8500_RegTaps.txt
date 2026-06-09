@@ -1,0 +1,17 @@
+
+CONTROLLED TRANSFORMER TAP SETTINGS
+
+Name    RegControl        Tap      Min       Max     Step      Position      Winding      Direction       CogenMode
+
+feeder_rega  feeder_rega   1.01250  0.90000  1.10000  0.00625     2      2      Forward      False
+feeder_regb  feeder_regb   1.01250  0.90000  1.10000  0.00625     2      2      Forward      False
+feeder_regc  feeder_regc   1.00625  0.90000  1.10000  0.00625     1      2      Forward      False
+vreg2_a      vreg2_a       1.06250  0.90000  1.10000  0.00625     10      2      Forward      False
+vreg2_b      vreg2_b       1.03750  0.90000  1.10000  0.00625     6      2      Forward      False
+vreg2_c      vreg2_c       1.01250  0.90000  1.10000  0.00625     2      2      Forward      False
+vreg3_a      vreg3_a       1.10000  0.90000  1.10000  0.00625     16      2      Forward      False
+vreg3_b      vreg3_b       1.06250  0.90000  1.10000  0.00625     10      2      Forward      False
+vreg3_c      vreg3_c       1.00625  0.90000  1.10000  0.00625     1      2      Forward      False
+vreg4_a      vreg4_a       1.07500  0.90000  1.10000  0.00625     12      2      Forward      False
+vreg4_b      vreg4_b       1.07500  0.90000  1.10000  0.00625     12      2      Forward      False
+vreg4_c      vreg4_c       1.03125  0.90000  1.10000  0.00625     5      2      Forward      False
