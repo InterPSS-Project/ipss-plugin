@@ -24,8 +24,8 @@ import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.threephase.IBus3Phase;
-import com.interpss.core.threephase.IPhaseGen;
-import com.interpss.core.threephase.IPhaseLoad;
+import com.interpss.core.threephase.AclfGen3Phase;
+import com.interpss.core.threephase.AclfLoad3Phase;
 import com.interpss.core.threephase.INetwork3Phase;
 
 public class QstsStudy {
@@ -323,17 +323,17 @@ public class QstsStudy {
 		List<QstsDevicePowerSample> samples = new ArrayList<>();
 		for(IBus3Phase bus : network.getThreePhaseBusList()) {
 			Map<Object, Boolean> sampled = new IdentityHashMap<>();
-			for(IPhaseLoad load : bus.getPhaseLoadList()) {
+			for(AclfLoad3Phase load : bus.getPhaseLoadList()) {
 				addLoadSample(samples, context, load);
 				sampled.put(load, Boolean.TRUE);
 			}
 			if(bus instanceof BaseAclfBus) {
 				for(Object loadObject : ((BaseAclfBus<?, ?>) bus).getContributeLoadList()) {
 					if(sampled.containsKey(loadObject)
-							|| !(loadObject instanceof IPhaseLoad)) {
+							|| !(loadObject instanceof AclfLoad3Phase)) {
 						continue;
 					}
-					addLoadSample(samples, context, (IPhaseLoad) loadObject);
+					addLoadSample(samples, context, (AclfLoad3Phase) loadObject);
 				}
 			}
 		}
@@ -341,7 +341,7 @@ public class QstsStudy {
 	}
 
 	private static void addLoadSample(List<QstsDevicePowerSample> samples, QstsStepContext context,
-			IPhaseLoad load) {
+			AclfLoad3Phase load) {
 		Complex3x1 power = load.getInit3PhaseLoad();
 		addPower(samples, context, "load", load.getId(), "A", power == null ? null : power.a_0);
 		addPower(samples, context, "load", load.getId(), "B", power == null ? null : power.b_1);
@@ -352,17 +352,17 @@ public class QstsStudy {
 		List<QstsDevicePowerSample> samples = new ArrayList<>();
 		for(IBus3Phase bus : network.getThreePhaseBusList()) {
 			Map<Object, Boolean> sampled = new IdentityHashMap<>();
-			for(IPhaseGen generator : bus.getPhaseGenList()) {
+			for(AclfGen3Phase generator : bus.getPhaseGenList()) {
 				addGeneratorSample(samples, context, generator);
 				sampled.put(generator, Boolean.TRUE);
 			}
 			if(bus instanceof BaseAclfBus) {
 				for(Object generatorObject : ((BaseAclfBus<?, ?>) bus).getContributeGenList()) {
 					if(sampled.containsKey(generatorObject)
-							|| !(generatorObject instanceof IPhaseGen)) {
+							|| !(generatorObject instanceof AclfGen3Phase)) {
 						continue;
 					}
-					addGeneratorSample(samples, context, (IPhaseGen) generatorObject);
+					addGeneratorSample(samples, context, (AclfGen3Phase) generatorObject);
 				}
 			}
 		}
@@ -444,7 +444,7 @@ public class QstsStudy {
 			if(inverterAdapterStore.get(control.getGeneratorId()) != null) {
 				continue;
 			}
-			IPhaseGen generator = findGenerator(control.getGeneratorId());
+			AclfGen3Phase generator = findGenerator(control.getGeneratorId());
 			if(generator != null) {
 				inverterAdapterStore.register(generator);
 			}
@@ -458,18 +458,18 @@ public class QstsStudy {
 				applied, activePowerKw, reactivePowerKvar, limited, reason);
 	}
 
-	public IPhaseGen findGenerator(String generatorId) {
+	public AclfGen3Phase findGenerator(String generatorId) {
 		for(IBus3Phase bus : network.getThreePhaseBusList()) {
-			for(IPhaseGen generator : bus.getPhaseGenList()) {
+			for(AclfGen3Phase generator : bus.getPhaseGenList()) {
 				if(matches(generator.getId(), generatorId)) {
 					return generator;
 				}
 			}
 			if(bus instanceof BaseAclfBus) {
 				for(Object generatorObject : ((BaseAclfBus<?, ?>) bus).getContributeGenList()) {
-					if(generatorObject instanceof IPhaseGen
-							&& matches(((IPhaseGen) generatorObject).getId(), generatorId)) {
-						return (IPhaseGen) generatorObject;
+					if(generatorObject instanceof AclfGen3Phase
+							&& matches(((AclfGen3Phase) generatorObject).getId(), generatorId)) {
+						return (AclfGen3Phase) generatorObject;
 					}
 				}
 			}
@@ -477,9 +477,9 @@ public class QstsStudy {
 		return null;
 	}
 
-	private IBus3Phase findGeneratorBus(IPhaseGen targetGenerator) {
+	private IBus3Phase findGeneratorBus(AclfGen3Phase targetGenerator) {
 		for(IBus3Phase bus : network.getThreePhaseBusList()) {
-			for(IPhaseGen generator : bus.getPhaseGenList()) {
+			for(AclfGen3Phase generator : bus.getPhaseGenList()) {
 				if(generator == targetGenerator) {
 					return bus;
 				}
@@ -496,7 +496,7 @@ public class QstsStudy {
 	}
 
 	private static void addGeneratorSample(List<QstsDevicePowerSample> samples, QstsStepContext context,
-			IPhaseGen generator) {
+			AclfGen3Phase generator) {
 		Complex3x1 power = generator.getPower3Phase(UnitType.PU);
 		addPower(samples, context, "generator", generator.getId(), "A", power == null ? null : power.a_0);
 		addPower(samples, context, "generator", generator.getId(), "B", power == null ? null : power.b_1);
@@ -523,7 +523,7 @@ public class QstsStudy {
 		return a.add(b);
 	}
 
-	private static Complex totalPower(IPhaseGen generator) {
+	private static Complex totalPower(AclfGen3Phase generator) {
 		if(generator == null) {
 			return Complex.ZERO;
 		}

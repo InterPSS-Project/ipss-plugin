@@ -25,7 +25,7 @@ import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.acsc.PhaseCode;
 import com.interpss.core.threephase.IBus3Phase;
-import com.interpss.core.threephase.IPhaseLoad;
+import com.interpss.core.threephase.AclfLoad3Phase;
 import com.interpss.core.threephase.INetwork3Phase;
 import com.interpss.core.threephase.Static3PBus;
 import com.interpss.core.threephase.Static3PBranch;
@@ -94,8 +94,8 @@ public class QstsStudyTest {
 		Static3PNetwork network = twoBusNetwork();
 		IBus3Phase bus = network.getBus("load");
 
-		IPhaseLoad load = bus.getPhaseLoadList().get(0);
-		com.interpss.core.threephase.IPhaseGen generator = bus.getPhaseGenList().get(0);
+		AclfLoad3Phase load = bus.getPhaseLoadList().get(0);
+		com.interpss.core.threephase.AclfGen3Phase generator = bus.getPhaseGenList().get(0);
 
 		assertFalse(network.getClass().getName().contains(".dstab."));
 		assertFalse(bus.getClass().getName().contains(".dstab."));
@@ -252,7 +252,7 @@ public class QstsStudyTest {
 		assertEquals(1, adapter.applyCount);
 		assertTrue(result.getStep(0).getInverterControls().get(0).isApplied());
 		assertEquals(4000.0, result.getStep(0).getInverterControls().get(0).getReactivePowerKvar(), 1.0e-12);
-		assertTrue(adapter.getGenerator() instanceof com.interpss.core.threephase.IPhaseGen);
+		assertTrue(adapter.getGenerator() instanceof com.interpss.core.threephase.AclfGen3Phase);
 	}
 
 	@Test
@@ -503,7 +503,7 @@ public class QstsStudyTest {
 	private static class CountingInverterAdapter extends InverterGenAdapter {
 		private int applyCount;
 
-		private CountingInverterAdapter(com.interpss.core.threephase.IPhaseGen generator) {
+		private CountingInverterAdapter(com.interpss.core.threephase.AclfGen3Phase generator) {
 			super(generator);
 		}
 
