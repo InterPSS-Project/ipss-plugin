@@ -164,7 +164,7 @@ public class IEEE39_OptSection_Test extends CorePluginTestSetup {
 			}
 
 			SectionOptimizer optimizer = new SectionOptimizer(net, sections);
-			Map<String, Double> adjustmentResult = optimizer.optmize();
+			Map<String, Double> adjustmentResult = optimizer.optimize();
 			optimizer.updateNet(adjustmentResult);
 
 			algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);

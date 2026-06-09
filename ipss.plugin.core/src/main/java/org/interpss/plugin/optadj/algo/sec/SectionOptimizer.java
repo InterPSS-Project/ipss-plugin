@@ -60,7 +60,7 @@ public class SectionOptimizer {
 	 * 
 	 * @return optimized generator and section constraint adjustments
 	 */
-	public Map<String, Double> optmize() {
+	public Map<String, Double> optimize() {
 		
 		generatorMap = net.getAclfGenNameLookupTable().entrySet().stream()
 				.filter(entry -> genPre.test(entry.getValue()))
