@@ -29,31 +29,31 @@ import org.interpss.plugin.optadj.result.SsaResultContainer;
 public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
 
 	@Override
-	protected void buildSsaSectionConstrain(ContingencyAnalysisAlgorithm dclfAlgo, float[][] senMatrix,
+	protected void buildSsaSectionConstrain(ContingencyAnalysisAlgorithm dclfAlgo, 
 			Map<Integer, AclfGen> controlGenMap, GenStateOptimizer opt, double threshold,
 			SsaResultContainer ssaResult) {
-		super.buildSsaSectionConstrain(dclfAlgo, senMatrix, controlGenMap, opt, threshold, ssaResult);
+		super.buildSsaSectionConstrain(dclfAlgo, controlGenMap, opt, threshold, ssaResult);
 		if (ssaResult.getCaOverLimitInfo().isEmpty()) {
 			return;
 		}
 		AclfNetwork net = (AclfNetwork) dclfAlgo.getNetwork();
 		double baseMva = net.getBaseMva();
-		ssaResult.getCaOverLimitInfo().forEach(info -> addSsaSectionConstraint(dclfAlgo, senMatrix,
+		ssaResult.getCaOverLimitInfo().forEach(info -> addSsaSectionConstraint(dclfAlgo,
 				controlGenMap, opt, threshold, net, baseMva, info));
 	}
 
 	@Override
-	protected void buildSectionConstrain(ContingencyAnalysisAlgorithm dclfAlgo, float[][] senMatrix,
+	protected void buildSectionConstrain(ContingencyAnalysisAlgorithm dclfAlgo, 
 			Map<Integer, AclfGen> controlGenMap, GenStateOptimizer opt, double threshold) {
-		super.buildSectionConstrain(dclfAlgo, senMatrix, controlGenMap, opt, threshold);
+		super.buildSectionConstrain(dclfAlgo, controlGenMap, opt, threshold);
 		AclfNetwork net = (AclfNetwork) dclfAlgo.getNetwork();
 		net.getBranchList().stream()
 						.filter(AclfBranch::isActive)
 						.forEach(outBranch -> addSectionConstraints(
-									dclfAlgo, senMatrix, controlGenMap, opt, threshold, net, outBranch));
+									dclfAlgo, controlGenMap, opt, threshold, net, outBranch));
 	}
 
-	private void addSsaSectionConstraint(ContingencyAnalysisAlgorithm dclfAlgo, float[][] senMatrix,
+	private void addSsaSectionConstraint(ContingencyAnalysisAlgorithm dclfAlgo,
 			Map<Integer, AclfGen> controlGenMap, GenStateOptimizer opt, double threshold, AclfNetwork net,
 			double baseMva, SsaBranchOverLimitInfo info) {
 		AclfBranch monBranch = net.getAclfBranchNameLookupTable().get(info.getOverLimitBranchId());
@@ -67,7 +67,7 @@ public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
 		try {
 			double[] lodf = computeLodf(dclfAlgo, outDclfBranch);
 			double postFlowPu = info.getShftedFlowMW() / baseMva;
-			double[] genSenArray = buildContingencyGenSenArray(senMatrix, controlGenMap, monBranchNo, outBranchNo,
+			double[] genSenArray = buildContingencyGenSenArray(controlGenMap, monBranchNo, outBranchNo,
 					lodf[monBranch.getSortNumber()], postFlowPu > 0);
 			addSectionConstraint(opt, Math.abs(info.getShftedFlowMW()), info.getLimitMW(), threshold, genSenArray);
 		} catch (InterpssException e) {
@@ -75,11 +75,11 @@ public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
 		}
 	}
 
-	private void addSectionConstraints(ContingencyAnalysisAlgorithm dclfAlgo, float[][] senMatrix,
+	private void addSectionConstraints(ContingencyAnalysisAlgorithm dclfAlgo,
 			Map<Integer, AclfGen> controlGenMap, GenStateOptimizer opt, double threshold, AclfNetwork net,
 			AclfBranch outBranch) {
 		int outBranchNo = (int) (outBranch.getNumber() - 1);
-		double[] genSenArray = buildOutageGenSenArray(senMatrix, controlGenMap, outBranchNo);
+		double[] genSenArray = buildOutageGenSenArray(controlGenMap, outBranchNo);
 		if (!hasSignificantSensitivity(genSenArray)) {
 			return;
 		}
@@ -87,14 +87,14 @@ public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
 		try {
 			double[] lodf = computeLodf(dclfAlgo, outDclfBranch);
 			net.getBranchList().stream().filter(AclfBranch::isActive)
-					.forEach(monBranch -> addMonitoredPostContingencyConstraint(dclfAlgo, senMatrix, controlGenMap,
+					.forEach(monBranch -> addMonitoredPostContingencyConstraint(dclfAlgo, controlGenMap,
 							opt, threshold, outBranchNo, outDclfBranch, lodf, genSenArray, monBranch));
 		} catch (InterpssException e) {
 			e.printStackTrace();
 		}
 	}
 
-	private void addMonitoredPostContingencyConstraint(ContingencyAnalysisAlgorithm dclfAlgo, float[][] senMatrix,
+	private void addMonitoredPostContingencyConstraint(ContingencyAnalysisAlgorithm dclfAlgo, 
 			Map<Integer, AclfGen> controlGenMap, GenStateOptimizer opt, double threshold, int outBranchNo,
 			DclfAlgoBranch outDclfBranch, double[] lodf, double[] genSenArray, AclfBranch monBranch) {
 		double lodfFactor = lodf[monBranch.getSortNumber()];
@@ -104,7 +104,7 @@ public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
 		int monBranchNo = (int) (monBranch.getNumber() - 1);
 		DclfAlgoBranch dclfBranch = dclfAlgo.getDclfAlgoBranch(monBranch.getId());
 		double postFlow = dclfBranch.getDclfFlow() + lodfFactor * outDclfBranch.getDclfFlow();
-		fillContingencyGenSenArray(genSenArray, senMatrix, controlGenMap, monBranchNo, outBranchNo, lodfFactor,
+		fillContingencyGenSenArray(genSenArray, controlGenMap, monBranchNo, outBranchNo, lodfFactor,
 				postFlow > 0);
 		addSectionConstraintUnchecked(opt, Math.abs(postFlow * 100), dclfBranch.getBranch().getRatingMvaB(), threshold,
 				genSenArray);
@@ -117,30 +117,30 @@ public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
 		return dclfAlgo.lineOutageDFactors(caOutBranch);
 	}
 
-	private double[] buildOutageGenSenArray(float[][] senMatrix, Map<Integer, AclfGen> controlGenMap,
+	private double[] buildOutageGenSenArray(Map<Integer, AclfGen> controlGenMap,
 			int outBranchNo) {
 		double[] genSenArray = new double[controlGenMap.size()];
 		controlGenMap.forEach((no, gen) -> {
 			int busNo = (int) (gen.getParentBus().getNumber() - 1);
-			genSenArray[no] = senMatrix[busNo][outBranchNo];
+			genSenArray[no] = getSen(busNo, outBranchNo);
 		});
 		return genSenArray;
 	}
 
-	private double[] buildContingencyGenSenArray(float[][] senMatrix, Map<Integer, AclfGen> controlGenMap,
+	private double[] buildContingencyGenSenArray(Map<Integer, AclfGen> controlGenMap,
 			int monBranchNo, int outBranchNo, double lodfFactor, boolean flowPositive) {
 		double[] genSenArray = new double[controlGenMap.size()];
-		fillContingencyGenSenArray(genSenArray, senMatrix, controlGenMap, monBranchNo, outBranchNo, lodfFactor,
+		fillContingencyGenSenArray(genSenArray, controlGenMap, monBranchNo, outBranchNo, lodfFactor,
 				flowPositive);
 		return genSenArray;
 	}
 
-	private void fillContingencyGenSenArray(double[] genSenArray, float[][] senMatrix,
+	private void fillContingencyGenSenArray(double[] genSenArray,
 			Map<Integer, AclfGen> controlGenMap, int monBranchNo, int outBranchNo, double lodfFactor,
 			boolean flowPositive) {
 		controlGenMap.forEach((no, gen) -> {
 			int busNo = (int) (gen.getParentBus().getNumber() - 1);
-			float sen = (float) (senMatrix[busNo][monBranchNo] + lodfFactor * senMatrix[busNo][outBranchNo]);
+			float sen = (float) (getSen(busNo, monBranchNo) + lodfFactor * getSen(busNo, outBranchNo));
 			genSenArray[no] = flowPositive ? sen : -sen;
 		});
 	}
