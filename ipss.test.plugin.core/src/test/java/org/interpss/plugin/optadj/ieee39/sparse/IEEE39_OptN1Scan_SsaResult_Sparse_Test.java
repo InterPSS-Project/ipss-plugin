@@ -1,4 +1,4 @@
-package org.interpss.plugin.optadj.ieee39;
+package org.interpss.plugin.optadj.ieee39.sparse;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -11,6 +11,7 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.AtomicCounter;
 import org.interpss.plugin.optadj.algo.lf.AclfNetContigencyOptimizer;
 import org.interpss.plugin.optadj.algo.util.AclfNetSsaHelper;
+import org.interpss.plugin.optadj.ieee39.IEEE39_TestCaseInfo;
 import org.interpss.plugin.optadj.result.OptAdjResultContainer;
 import org.interpss.plugin.optadj.result.SsaResultContainer;
 import org.junit.jupiter.api.Test;

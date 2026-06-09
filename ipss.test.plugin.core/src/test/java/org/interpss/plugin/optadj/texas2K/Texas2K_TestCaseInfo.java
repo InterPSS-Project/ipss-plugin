@@ -28,7 +28,7 @@ public class Texas2K_TestCaseInfo extends CorePluginTestSetup {
 	private static final String MONITORED_JSON = TEST_ROOT
 			+ "testData/psse/v36/Texas2k/2k_monitored_branches.json";
 
-	static AclfNetwork createTestCaseNetwork() throws Exception {
+	public static AclfNetwork createTestCaseNetwork() throws Exception {
 		AclfNetwork net = IpssAdapter.importAclfNet(TEXAS2K_RAW)
 				.setFormat(PSSE)
 				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_36)
@@ -39,13 +39,13 @@ public class Texas2K_TestCaseInfo extends CorePluginTestSetup {
 		return net;
 	}
 
-	static List<DclfBranchOutage> createContingencyList(ContingencyAnalysisAlgorithm dclfAlgo) throws Exception {
+	public static List<DclfBranchOutage> createContingencyList(ContingencyAnalysisAlgorithm dclfAlgo) throws Exception {
 		List<BranchContingencyRecord> contingencies = ContingencyFileUtil
 				.importContingenciesFromJson(new File(CONTINGENCY_JSON));
 		return new DclfContingencyHelper(dclfAlgo).createDclfContList(contingencies);
 	}
 
-	static Set<String> createMonitoredBranchIds() throws Exception {
+	public static Set<String> createMonitoredBranchIds() throws Exception {
 		List<MonitoredBranchRecord> monitoredBranches = ContingencyFileUtil
 				.importMonitoredBranchRecordsFromJson(new File(MONITORED_JSON));
 		return monitoredBranches.stream()
