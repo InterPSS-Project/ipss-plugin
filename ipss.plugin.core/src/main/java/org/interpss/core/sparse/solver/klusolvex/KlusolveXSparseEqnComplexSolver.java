@@ -78,10 +78,12 @@ public class KlusolveXSparseEqnComplexSolver extends BaseSparseEqnSolver {
 		long start = KlusolveXPerformanceCounters.start();
 		fillCurrentB(this.rhsInterleaved);
 		long rhsCollectNanos = elapsed(start);
-		start = KlusolveXPerformanceCounters.start();
-		this.sparseSet.writeComplexMemory(this.rhsMemory, this.rhsInterleaved);
-		long rhsNativeWriteNanos = elapsed(start);
-		KlusolveXSparseSet.NativeSolveResult result = this.sparseSet.solveNative(this.rhsMemory, this.resultMemory);
+			start = KlusolveXPerformanceCounters.start();
+			this.sparseSet.writeComplexMemory(this.rhsMemory, this.rhsInterleaved);
+			long rhsNativeWriteNanos = elapsed(start);
+			KlusolveXMatrixMarketExporter.exportSnapshot(this.eqn.getDimension(),
+					this.sparseSet.matrixPattern(), this.rhsInterleaved, "solveEqn");
+			KlusolveXSparseSet.NativeSolveResult result = this.sparseSet.solveNative(this.rhsMemory, this.resultMemory);
 		start = KlusolveXPerformanceCounters.start();
 		result.x.read(0L, this.resultInterleaved, 0, this.resultInterleaved.length);
 		long resultUnpackNanos = elapsed(start);
@@ -113,7 +115,10 @@ public class KlusolveXSparseEqnComplexSolver extends BaseSparseEqnSolver {
 		if(!this.factored) {
 			factorization(false, 1.0e-10);
 		}
-		double[] solved = this.sparseSet.solve(toInterleaved(b));
+			double[] rhs = toInterleaved(b);
+			KlusolveXMatrixMarketExporter.exportSnapshot(this.eqn.getDimension(),
+					this.sparseSet.matrixPattern(), rhs, "solveComplexEqn");
+			double[] solved = this.sparseSet.solve(rhs);
 		long start = KlusolveXPerformanceCounters.start();
 		Complex[] x = new Complex[this.eqn.getDimension()];
 		for(int i = 0; i < x.length; i++) {
@@ -166,10 +171,12 @@ public class KlusolveXSparseEqnComplexSolver extends BaseSparseEqnSolver {
 			factorization(buildSymbolTable, 1.0e-10);
 		}
 		ensureSolveBuffers();
-		long start = KlusolveXPerformanceCounters.start();
-		this.sparseSet.writeComplexMemory(this.rhsMemory, this.rhsInterleaved);
-		long rhsNativeWriteNanos = elapsed(start);
-		KlusolveXSparseSet.NativeSolveResult result = this.sparseSet.solveNative(this.rhsMemory, this.resultMemory);
+			long start = KlusolveXPerformanceCounters.start();
+			this.sparseSet.writeComplexMemory(this.rhsMemory, this.rhsInterleaved);
+			long rhsNativeWriteNanos = elapsed(start);
+			KlusolveXMatrixMarketExporter.exportSnapshot(this.eqn.getDimension(),
+					this.sparseSet.matrixPattern(), this.rhsInterleaved, "solvePrimitiveRhs");
+			KlusolveXSparseSet.NativeSolveResult result = this.sparseSet.solveNative(this.rhsMemory, this.resultMemory);
 		start = KlusolveXPerformanceCounters.start();
 		result.x.read(0L, this.resultInterleaved, 0, this.resultInterleaved.length);
 		long resultUnpackNanos = elapsed(start);
