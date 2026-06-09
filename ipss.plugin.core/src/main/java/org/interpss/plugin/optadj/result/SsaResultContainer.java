@@ -53,23 +53,31 @@ public class SsaResultContainer extends BaseJSONBean{
 	}
 
 	public void printBaseOverLimitInfo() {
-		baseOverLimitInfo.stream().forEach(info -> {
-			double loading = Math.abs(info.getBaseFlowMW() / info.getLimitMW()) * 100;
-			System.out.printf("Over Limit Branch: %s  %.2f rating: %.2f loading: %.2f%n",
-					info.getOverLimitBranchId(),
-					info.getBaseFlowMW(),
-					info.getLimitMW(),
-					loading);
-		});
+		baseOverLimitInfo.forEach(info -> System.out.printf(
+				"Over Limit Branch: %s  %.2f rating: %.2f loading: %.2f%n",
+				info.getOverLimitBranchId(),
+				info.getBaseFlowMW(),
+				info.getLimitMW(),
+				info.getLoadingPercent()));
+		printOverLimitSummary(baseOverLimitInfo);
 	}
 
 	public void printCaOverLimitInfo() {
-		caOverLimitInfo.stream().forEach(info -> {
+		caOverLimitInfo.forEach(info -> {
 			double postFlowMW = info.getBaseFlowMW() + info.getShftedFlowMW();
-			double loading = Math.abs(postFlowMW / info.getLimitMW()) * 100;
-            System.out.println(String.format("OverLimit Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f",
-                  info.getOverLimitBranchId(), info.getOutageBranchId(),
-                  postFlowMW, info.getLimitMW(), loading));
+			System.out.printf("OverLimit Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f%n",
+					info.getOverLimitBranchId(), info.getOutageBranchId(),
+					postFlowMW, info.getLimitMW(), info.getLoadingPercent());
 		});
+		printOverLimitSummary(caOverLimitInfo);
+	}
+
+	private void printOverLimitSummary(List<SsaBranchOverLimitInfo> overLimitInfo) {
+		double maxLoading = overLimitInfo.stream()
+				.mapToDouble(SsaBranchOverLimitInfo::getLoadingPercent)
+				.max()
+				.orElse(0.0);
+		System.out.printf("Total branches over limit: %d, max loading: %.2f%%%n",
+				overLimitInfo.size(), maxLoading);
 	}
 }
