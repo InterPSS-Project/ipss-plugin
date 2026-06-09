@@ -58,9 +58,10 @@ public abstract class BaseAclfNetLoadFlowOptimizer {
 
 		createSenMatrix(net);
 
-		if (net.getAclfBranchNameLookupTable() == null) {
-			net.createAclfBranchNameLookupTable(true);
-		}
+		// we use branch id to get the branch object. So we don't need to create the branch name lookup table.
+		//if (net.getAclfBranchNameLookupTable() == null) {
+		//	net.createAclfBranchNameLookupTable(true);
+		//}
 		if (net.getAclfGenNameLookupTable() == null) {
 			net.createAclfGenNameLookupTable(true);
 		}
