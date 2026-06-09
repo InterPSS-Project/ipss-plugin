@@ -6,11 +6,11 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfGen;
-import com.interpss.core.threephase.IPhaseGen;
+import com.interpss.core.threephase.AclfGen3Phase;
 
 public class QstsGeneratorBaseState {
 	private final Object generator;
-	private final IPhaseGen phaseGenerator;
+	private final AclfGen3Phase phaseGenerator;
 	private Complex gen;
 	private Complex3x1 phasePower;
 	private AclfGenCode code;
@@ -20,11 +20,11 @@ public class QstsGeneratorBaseState {
 		if(generator == null) {
 			throw new IllegalArgumentException("QSTS generator base state requires a generator");
 		}
-		if(!(generator instanceof IPhaseGen)) {
-			throw new IllegalArgumentException("QSTS generator base state requires IPhaseGen");
+		if(!(generator instanceof AclfGen3Phase)) {
+			throw new IllegalArgumentException("QSTS generator base state requires AclfGen3Phase");
 		}
 		this.generator = generator;
-		this.phaseGenerator = (IPhaseGen) generator;
+		this.phaseGenerator = (AclfGen3Phase) generator;
 		refreshFromGenerator();
 	}
 
@@ -69,7 +69,7 @@ public class QstsGeneratorBaseState {
 	}
 
 	public Complex getOnePhasePower() {
-		return copy(IPhaseGen.phaseValue(phasePower, phaseGenerator.getPhaseCode()));
+		return copy(AclfGen3Phase.phaseValue(phasePower, phaseGenerator.getPhaseCode()));
 	}
 
 	private static Complex scale(Complex value, double pMultiplier, double qMultiplier) {

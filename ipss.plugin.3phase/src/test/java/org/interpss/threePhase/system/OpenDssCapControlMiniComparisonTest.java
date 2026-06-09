@@ -22,7 +22,7 @@ import org.interpss.threePhase.powerflow.control.CapacitorControlData;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.jupiter.api.Test;
 
-import com.interpss.core.threephase.IPhaseLoad;
+import com.interpss.core.threephase.AclfLoad3Phase;
 import com.interpss.core.threephase.Static3PBus;
 import com.interpss.core.threephase.Static3PNetwork;
 
@@ -67,7 +67,7 @@ public class OpenDssCapControlMiniComparisonTest {
 
 	private static CapacitorDevice findCapacitor(Static3PNetwork network, String capacitorId) {
 		for(Static3PBus bus : network.getBusList()) {
-			for(IPhaseLoad load : bus.getPhaseLoadList()) {
+			for(AclfLoad3Phase load : bus.getPhaseLoadList()) {
 				if(load.getId().equalsIgnoreCase(capacitorId)) {
 					return new CapacitorDevice(bus, load);
 				}
@@ -122,9 +122,9 @@ public class OpenDssCapControlMiniComparisonTest {
 
 	private static class CapacitorDevice {
 		private final Static3PBus bus;
-		private final IPhaseLoad load;
+		private final AclfLoad3Phase load;
 
-		private CapacitorDevice(Static3PBus bus, IPhaseLoad load) {
+		private CapacitorDevice(Static3PBus bus, AclfLoad3Phase load) {
 			this.bus = bus;
 			this.load = load;
 		}

@@ -5,10 +5,10 @@ import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.core.acsc.PhaseCode;
-import com.interpss.core.threephase.IPhaseGen;
+import com.interpss.core.threephase.AclfGen3Phase;
 
 public class QstsStorageBaseState {
-	private final IPhaseGen generator;
+	private final AclfGen3Phase generator;
 	private final double baseKva;
 	private final double baseKw;
 	private final double baseKvar;
@@ -19,7 +19,7 @@ public class QstsStorageBaseState {
 	private final double dischargeEfficiency;
 	private double storedKwh;
 
-	public QstsStorageBaseState(IPhaseGen generator, double baseKva, double kwRated,
+	public QstsStorageBaseState(AclfGen3Phase generator, double baseKva, double kwRated,
 			double kwhRated, double storedKwh, double reserveKwh,
 			double chargeEfficiency, double dischargeEfficiency) {
 		if(generator == null) {
@@ -64,7 +64,7 @@ public class QstsStorageBaseState {
 		return limitedKw;
 	}
 
-	public IPhaseGen getGenerator() {
+	public AclfGen3Phase getGenerator() {
 		return generator;
 	}
 

@@ -14,7 +14,7 @@ import org.interpss.threePhase.qsts.QstsMode;
 import org.interpss.threePhase.qsts.QstsStepContext;
 import org.junit.jupiter.api.Test;
 
-import com.interpss.core.threephase.IPhaseGen;
+import com.interpss.core.threephase.AclfGen3Phase;
 
 public class OpenDssInvControlMetadataTest {
 	@Test
@@ -72,7 +72,7 @@ public class OpenDssInvControlMetadataTest {
 
 		assertTrue(result.isApplied());
 		assertEquals(50.0, result.getReactivePowerKvar(), 1.0e-12);
-		IPhaseGen generator = parser.getStaticNetwork().getBus("bus1").getPhaseGenList().get(0);
+		AclfGen3Phase generator = parser.getStaticNetwork().getBus("bus1").getPhaseGenList().get(0);
 		assertEquals(50.0 / parser.getStaticNetwork().getBaseKva(),
 				generator.getPower3Phase(UnitType.PU).a_0
 						.add(generator.getPower3Phase(UnitType.PU).b_1)

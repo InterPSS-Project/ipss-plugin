@@ -12,27 +12,27 @@ import org.interpss.threePhase.powerflow.control.InverterControlModel;
 import org.interpss.threePhase.powerflow.control.InverterControlModel.InverterControlResult;
 
 public class InverterGenAdapter {
-	private final com.interpss.core.threephase.IPhaseGen generator;
+	private final com.interpss.core.threephase.AclfGen3Phase generator;
 	private final InverterControlModel controlModel;
 	private final Map<String, QstsControlCurve> curvesById = new LinkedHashMap<>();
 	private InverterCapabilityData capabilityData = InverterCapabilityData.none();
 	private double terminalVoltagePu = Double.NaN;
 	private boolean cutInState = true;
 
-	public InverterGenAdapter(com.interpss.core.threephase.IPhaseGen generator) {
+	public InverterGenAdapter(com.interpss.core.threephase.AclfGen3Phase generator) {
 		this(generator, new InverterControlModel());
 	}
 
-	public InverterGenAdapter(com.interpss.core.threephase.IPhaseGen generator,
+	public InverterGenAdapter(com.interpss.core.threephase.AclfGen3Phase generator,
 			InverterControlModel controlModel) {
 		if(generator == null) {
-			throw new IllegalArgumentException("Inverter adapter requires IPhaseGen");
+			throw new IllegalArgumentException("Inverter adapter requires AclfGen3Phase");
 		}
 		this.generator = generator;
 		this.controlModel = controlModel == null ? new InverterControlModel() : controlModel;
 	}
 
-	public com.interpss.core.threephase.IPhaseGen getGenerator() {
+	public com.interpss.core.threephase.AclfGen3Phase getGenerator() {
 		return generator;
 	}
 
