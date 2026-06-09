@@ -1,4 +1,4 @@
-package org.interpss.plugin.optadj.ieee39;
+package org.interpss.plugin.optadj.ieee39.sparse;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.plugin.optadj.algo.bean.PowerSystemSection;
 import org.interpss.plugin.optadj.algo.sec.SectionOptimizer;
+import org.interpss.plugin.optadj.ieee39.IEEE39_TestCaseInfo;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
