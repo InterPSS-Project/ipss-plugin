@@ -69,8 +69,8 @@ public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
 		if (monBranch == null || outBranch == null) {
 			return;
 		}
-		int monBranchNo = (int) (monBranch.getNumber() - 1);
-		int outBranchNo = (int) (outBranch.getNumber() - 1);
+		int monBranchNo = getBranchSenIndex(monBranch);
+		int outBranchNo = getBranchSenIndex(outBranch);
 		DclfAlgoBranch outDclfBranch = dclfAlgo.getDclfAlgoBranch(outBranch.getId());
 		try {
 			double[] lodf = computeLodf(dclfAlgo, outDclfBranch);
@@ -86,7 +86,7 @@ public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
 	private void addSectionConstraints(ContingencyAnalysisAlgorithm dclfAlgo,
 			Map<Integer, AclfGen> controlGenMap, GenStateOptimizer opt, double threshold, AclfNetwork net,
 			AclfBranch outBranch) {
-		int outBranchNo = (int) (outBranch.getNumber() - 1);
+		int outBranchNo = getBranchSenIndex(outBranch);
 		double[] genSenArray = buildOutageGenSenArray(controlGenMap, outBranchNo);
 		if (!hasSignificantSensitivity(genSenArray)) {
 			return;
@@ -109,7 +109,7 @@ public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
 		if (!hasSignificantLodfImpact(genSenArray, lodfFactor)) {
 			return;
 		}
-		int monBranchNo = (int) (monBranch.getNumber() - 1);
+		int monBranchNo = getBranchSenIndex(monBranch);
 		DclfAlgoBranch dclfBranch = dclfAlgo.getDclfAlgoBranch(monBranch.getId());
 		double postFlow = dclfBranch.getDclfFlow() + lodfFactor * outDclfBranch.getDclfFlow();
 		fillContingencyGenSenArray(genSenArray, controlGenMap, monBranchNo, outBranchNo, lodfFactor,
@@ -129,7 +129,7 @@ public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
 			int outBranchNo) {
 		double[] genSenArray = new double[controlGenMap.size()];
 		controlGenMap.forEach((no, gen) -> {
-			int busNo = (int) (gen.getParentBus().getNumber() - 1);
+			int busNo = getBusSenIndex(gen.getParentBus());
 			genSenArray[no] = getSen(busNo, outBranchNo);
 		});
 		return genSenArray;
@@ -147,7 +147,7 @@ public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
 			Map<Integer, AclfGen> controlGenMap, int monBranchNo, int outBranchNo, double lodfFactor,
 			boolean flowPositive) {
 		controlGenMap.forEach((no, gen) -> {
-			int busNo = (int) (gen.getParentBus().getNumber() - 1);
+			int busNo = getBusSenIndex(gen.getParentBus());
 			float sen = (float) (getSen(busNo, monBranchNo) + lodfFactor * getSen(busNo, outBranchNo));
 			genSenArray[no] = flowPositive ? sen : -sen;
 		});

@@ -26,6 +26,16 @@ public class AclfNetLoadFlowOptimizer extends BaseAclfNetLoadFlowOptimizer{
 	}
 
 	@Override
+	protected int getBusSenIndex(com.interpss.core.aclf.BaseAclfBus<?, ?> bus) {
+		return sparseMatrix ? bus.getSortNumber() : super.getBusSenIndex(bus);
+	}
+
+	@Override
+	protected int getBranchSenIndex(com.interpss.core.aclf.AclfBranch branch) {
+		return sparseMatrix ? branch.getSortNumber() : super.getBranchSenIndex(branch);
+	}
+
+	@Override
 	protected void createSenMatrix(AclfNetwork net) {
 		if (sparseMatrix) {
 			AclfNetSensSparseHelper helper = new AclfNetSensSparseHelper(net);
