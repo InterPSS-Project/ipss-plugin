@@ -1,5 +1,6 @@
 package org.interpss.plugin.optadj.algo.util;
 
+import com.interpss.algo.parallel.BranchCAResultRec;
 import com.interpss.algo.parallel.ContingencyAnalysisMonad;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
@@ -86,18 +87,21 @@ public class AclfNetSsaHelper {
       contList.parallelStream().forEach(contingency -> {
          ContingencyAnalysisMonad.of(dclfAlgo, contingency)
             .ca(resultRec -> {
-               double loading = resultRec.calLoadingPercent();
-               AclfBranch monitoredBranch = resultRec.aclfBranch;
-               if (loading > ssaResult.getCaLoadingThreshold() && 
-                        (monitoredBranchIds.isEmpty() || monitoredBranchIds.contains(monitoredBranch.getId()))) {
-                  // add the over limit branch CA result rec to the SSA result container
-                  DclfOutageBranch outageBranch = ((DclfBranchOutage)resultRec.contingency).getOutageEquip();
-                  ssaResult.getCaOverLimitInfo().add(new SsaBranchOverLimitInfo(
-                        outageBranch.getBranch().getId(), monitoredBranch.getId(), 
-                        monitoredBranch.getRatingMvaB(), resultRec.preFlowMW, resultRec.shiftedFlowMW));
-                  //System.out.println(String.format("OverLimit Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f",
-                  //     monitoredBranch.getId(), outageBranch.getBranch().getId(),
-                  //      resultRec.getPostFlowMW(), monitoredBranch.getRatingMvaB(), loading));
+               if (Math.abs(resultRec.shiftedFlowMW) > BranchCAResultRec.ContingencyShiftThreshold) {
+                  // skip the contingency if the shifted flow is less than the shift threshold
+                  double loading = resultRec.calLoadingPercent();
+                  AclfBranch monitoredBranch = resultRec.aclfBranch;
+                  if (loading > ssaResult.getCaLoadingThreshold() && 
+                           (monitoredBranchIds.isEmpty() || monitoredBranchIds.contains(monitoredBranch.getId()))) {
+                     // add the over limit branch CA result rec to the SSA result container
+                     DclfOutageBranch outageBranch = ((DclfBranchOutage)resultRec.contingency).getOutageEquip();
+                     ssaResult.getCaOverLimitInfo().add(new SsaBranchOverLimitInfo(
+                           outageBranch.getBranch().getId(), monitoredBranch.getId(), 
+                           monitoredBranch.getRatingMvaB(), resultRec.preFlowMW, resultRec.shiftedFlowMW));
+                     //System.out.println(String.format("OverLimit Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f",
+                     //     monitoredBranch.getId(), outageBranch.getBranch().getId(),
+                     //      resultRec.getPostFlowMW(), monitoredBranch.getRatingMvaB(), loading));
+                  }
                }
             });
       });
