@@ -5,13 +5,13 @@ import org.interpss.numeric.datatype.Complex3x1;
 
 import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfLoadCode;
-import com.interpss.core.threephase.IPhaseLoad;
+import com.interpss.core.threephase.AclfLoad3Phase;
 import com.interpss.core.threephase.LoadConnectionType;
 import com.interpss.core.threephase.Static3PLoad;
 
 public class QstsLoadBaseState {
 	private final Object load;
-	private final IPhaseLoad phaseLoad;
+	private final AclfLoad3Phase phaseLoad;
 	private AclfLoadCode code;
 	private LoadConnectionType connectionType;
 	private double nominalKV;
@@ -24,11 +24,11 @@ public class QstsLoadBaseState {
 		if(load == null) {
 			throw new IllegalArgumentException("QSTS load base state requires a load");
 		}
-		if(!(load instanceof IPhaseLoad)) {
-			throw new IllegalArgumentException("QSTS load base state requires IPhaseLoad");
+		if(!(load instanceof AclfLoad3Phase)) {
+			throw new IllegalArgumentException("QSTS load base state requires AclfLoad3Phase");
 		}
 		this.load = load;
-		this.phaseLoad = (IPhaseLoad) load;
+		this.phaseLoad = (AclfLoad3Phase) load;
 		refreshFromLoad();
 	}
 
