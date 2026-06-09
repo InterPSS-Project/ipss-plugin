@@ -5,6 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.IpssCorePlugin.SparseSolverType;
@@ -17,6 +21,7 @@ import org.interpss.numeric.sparse.ISparseEqnComplexMatrix3x3;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.interpss.core.sparse.SparseEqnObjectFactory;
 import com.interpss.core.sparse.solver.SparseEqnSolverProvider;
@@ -28,6 +33,29 @@ public class KlusolveXSparseEqnSolverProviderTest {
 	public void resetSolverProvider() {
 		SparseEqnSolverProvider.useCSJ();
 		System.clearProperty(SparseEqnSolverProvider.SOLVER_PROPERTY);
+		System.clearProperty(KlusolveXMatrixMarketExporter.EXPORT_DIR_PROPERTY);
+		System.clearProperty(KlusolveXMatrixMarketExporter.EXPORT_PREFIX_PROPERTY);
+	}
+
+	@Test
+	public void matrixMarketExporterWritesJkluReplayFiles(@TempDir Path tempDir) throws Exception {
+		System.setProperty(KlusolveXMatrixMarketExporter.EXPORT_DIR_PROPERTY, tempDir.toString());
+		System.setProperty(KlusolveXMatrixMarketExporter.EXPORT_PREFIX_PROPERTY, "jklu-bench");
+
+		KlusolveXMatrixMarketExporter.exportSnapshot(2,
+				List.of(
+						new KlusolveXMatrixEntry(0, 0, 4.0, 0.5),
+						new KlusolveXMatrixEntry(0, 1, 0.5, -1.0),
+						new KlusolveXMatrixEntry(1, 1, 5.0, -0.25)),
+				new double[] {1.0, 2.0, -0.5, 1.0},
+				"test");
+
+		Path matrix = tempDir.resolve("jklu-bench-test-000001-matrix.mtx");
+		Path rhs = tempDir.resolve("jklu-bench-test-000001-rhs.mtx");
+		assertTrue(Files.exists(matrix));
+		assertTrue(Files.exists(rhs));
+		assertTrue(Files.readString(matrix).contains("%%MatrixMarket matrix coordinate complex general"));
+		assertTrue(Files.readString(rhs).contains("%%MatrixMarket matrix array complex general"));
 	}
 
 	@Test
