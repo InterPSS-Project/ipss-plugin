@@ -7,7 +7,6 @@ import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.threephase.AclfLoad3Phase;
 import com.interpss.core.threephase.LoadConnectionType;
-import com.interpss.core.threephase.Static3PLoad;
 
 public class QstsLoadBaseState {
 	private final Object load;
@@ -94,8 +93,8 @@ public class QstsLoadBaseState {
 	}
 
 	public void applyFixedPointNortonMultiplier(double pMultiplier, double qMultiplier) {
-		if(phaseLoad instanceof Static3PLoad staticLoad && threePhaseLoad != null) {
-			staticLoad.setFixedPointNortonLoad(scale(threePhaseLoad, pMultiplier, qMultiplier));
+		if(threePhaseLoad != null) {
+			phaseLoad.setFixedPointNortonLoad(scale(threePhaseLoad, pMultiplier, qMultiplier));
 		}
 	}
 
