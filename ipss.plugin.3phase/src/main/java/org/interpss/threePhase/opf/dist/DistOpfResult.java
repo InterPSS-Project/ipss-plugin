@@ -17,8 +17,8 @@ import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.threephase.IBus3Phase;
-import com.interpss.core.threephase.IGen3Phase;
 import com.interpss.core.threephase.INetwork3Phase;
+import com.interpss.core.threephase.AclfGen3Phase;
 
 public class DistOpfResult {
 
@@ -333,12 +333,12 @@ public class DistOpfResult {
 	public void applySetpointsToNetwork(INetwork3Phase net) {
 		for (BaseAclfBus<? extends AclfGen, ? extends AclfLoad> bus : aclfNetwork(net).getBusList()) {
 			IBus3Phase bus3P = threePhaseBus(bus);
-			for (IGen3Phase gen : bus3P.getThreePhaseGenList()) {
+			for (AclfGen3Phase gen : bus3P.getPhaseGenList()) {
 				applySetpoint(gen);
 			}
 			for (AclfGen gen : bus.getContributeGenList()) {
-				if (gen instanceof IGen3Phase) {
-					applySetpoint((IGen3Phase) gen);
+				if (gen instanceof AclfGen3Phase) {
+					applySetpoint((AclfGen3Phase) gen);
 				}
 			}
 		}
@@ -364,7 +364,7 @@ public class DistOpfResult {
 		return id + "." + phase;
 	}
 
-	private void applySetpoint(IGen3Phase gen) {
+	private void applySetpoint(AclfGen3Phase gen) {
 		if (gen == null || gen.getId() == null || !hasDerSetpoint(gen.getId())) {
 			return;
 		}
