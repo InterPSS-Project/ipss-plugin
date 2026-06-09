@@ -11,7 +11,7 @@ import org.interpss.threePhase.dataParser.opendss.OpenDSSStaticDataParser;
 import org.interpss.threePhase.qsts.opendss.OpenDSSQstsStudyFactory;
 import org.junit.jupiter.api.Test;
 
-import com.interpss.core.threephase.IPhaseGen;
+import com.interpss.core.threephase.AclfGen3Phase;
 import com.interpss.core.threephase.Static3PBus;
 
 public class OpenDSSQstsAdapterTest {
@@ -37,7 +37,7 @@ public class OpenDSSQstsAdapterTest {
 		assertFalse(parser.hasDistNetwork());
 		assertThrows(UnsupportedOperationException.class, () -> parser.getDistNetwork());
 		Static3PBus bus = parser.getStaticNetwork().getBus("bus1");
-		IPhaseGen generator = bus.getPhaseGenList().get(0);
+		AclfGen3Phase generator = bus.getPhaseGenList().get(0);
 		Complex3x1 power = generator.getPower3Phase(UnitType.PU);
 		assertEquals(0.75 * 60.0 / parser.getStaticNetwork().getBaseKva() / 3.0,
 				power.a_0.getReal(), 1.0e-12);

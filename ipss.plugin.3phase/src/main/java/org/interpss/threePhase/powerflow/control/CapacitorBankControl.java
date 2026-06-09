@@ -19,10 +19,10 @@ import com.interpss.core.net.Branch;
 import com.interpss.core.threephase.IBranch3Phase;
 import com.interpss.core.threephase.IBus3Phase;
 import com.interpss.core.threephase.INetwork3Phase;
-import com.interpss.core.threephase.IPhaseLoad;
+import com.interpss.core.threephase.AclfLoad3Phase;
 
 public class CapacitorBankControl {
-	private final Map<IPhaseLoad, Complex3x1> baseLoadByCapacitor = new IdentityHashMap<IPhaseLoad, Complex3x1>();
+	private final Map<AclfLoad3Phase, Complex3x1> baseLoadByCapacitor = new IdentityHashMap<AclfLoad3Phase, Complex3x1>();
 
 	public boolean apply(INetwork3Phase network, List<CapacitorControlData> controls) {
 		if(controls == null || controls.isEmpty()) {
@@ -31,7 +31,7 @@ public class CapacitorBankControl {
 		BaseAclfNetwork<?, ?> aclfNetwork = aclfNetwork(network);
 		boolean changed = false;
 		for(CapacitorControlData control : controls) {
-			IPhaseLoad capacitor = findCapacitorLoad(aclfNetwork, control.getCapacitorId());
+			AclfLoad3Phase capacitor = findCapacitorLoad(aclfNetwork, control.getCapacitorId());
 			if(capacitor == null) {
 				continue;
 			}
@@ -52,7 +52,7 @@ public class CapacitorBankControl {
 		}
 		BaseAclfNetwork<?, ?> aclfNetwork = aclfNetwork(network);
 		for(CapacitorControlData control : controls) {
-			IPhaseLoad capacitor = findCapacitorLoad(aclfNetwork, control.getCapacitorId());
+			AclfLoad3Phase capacitor = findCapacitorLoad(aclfNetwork, control.getCapacitorId());
 			if(capacitor != null) {
 				applyState(capacitor, control.isClosed());
 			}
@@ -61,7 +61,7 @@ public class CapacitorBankControl {
 
 	public Complex3x1 capacitorPower(INetwork3Phase network, String capacitorId) {
 		BaseAclfNetwork<?, ?> aclfNetwork = aclfNetwork(network);
-		IPhaseLoad capacitor = findCapacitorLoad(aclfNetwork, capacitorId);
+		AclfLoad3Phase capacitor = findCapacitorLoad(aclfNetwork, capacitorId);
 		return capacitor == null ? zero() : copy(capacitor.getInit3PhaseLoad());
 	}
 
@@ -73,7 +73,7 @@ public class CapacitorBankControl {
 		BaseAclfNetwork<?, ?> aclfNetwork = aclfNetwork(network);
 		int scheduled = 0;
 		for(CapacitorControlData control : controls) {
-			IPhaseLoad capacitor = findCapacitorLoad(aclfNetwork, control.getCapacitorId());
+			AclfLoad3Phase capacitor = findCapacitorLoad(aclfNetwork, control.getCapacitorId());
 			if(capacitor == null) {
 				continue;
 			}
@@ -135,7 +135,7 @@ public class CapacitorBankControl {
 	}
 
 	private CapacitorMeasurement measure(BaseAclfNetwork<?, ?> network, CapacitorControlData control,
-			IPhaseLoad capacitor) {
+			AclfLoad3Phase capacitor) {
 		IBranch3Phase branch = control.hasMonitoredElement()
 				? findBranch(network, control.getMonitoredElementName()) : null;
 		BaseAclfBus<?, ?> bus = branch == null ? parentBus(network, capacitor) : terminalBus(branch, control.getTerminal());
@@ -166,7 +166,7 @@ public class CapacitorBankControl {
 		return new CapacitorMeasurement(Double.NaN, localVoltage);
 	}
 
-	private void applyState(IPhaseLoad capacitor, boolean closed) {
+	private void applyState(AclfLoad3Phase capacitor, boolean closed) {
 		Complex3x1 baseLoad = baseLoadByCapacitor.get(capacitor);
 		if(baseLoad == null) {
 			baseLoad = initialLoad(capacitor);
@@ -175,7 +175,7 @@ public class CapacitorBankControl {
 		capacitor.set3PhaseLoad(closed ? copy(baseLoad) : zero());
 	}
 
-	private void setClosedState(CapacitorControlData control, IPhaseLoad capacitor, boolean closed) {
+	private void setClosedState(CapacitorControlData control, AclfLoad3Phase capacitor, boolean closed) {
 		control.setClosed(closed);
 		applyState(capacitor, closed);
 	}
@@ -184,30 +184,30 @@ public class CapacitorBankControl {
 		return "capacitor:" + (control.getCapacitorId() == null ? control.getId() : control.getCapacitorId());
 	}
 
-	private Complex3x1 initialLoad(IPhaseLoad capacitor) {
+	private Complex3x1 initialLoad(AclfLoad3Phase capacitor) {
 		Complex3x1 load = capacitor.getInit3PhaseLoad();
 		return load == null ? zero() : copy(load);
 	}
 
-	private IPhaseLoad findCapacitorLoad(BaseAclfNetwork<?, ?> network, String capacitorId) {
+	private AclfLoad3Phase findCapacitorLoad(BaseAclfNetwork<?, ?> network, String capacitorId) {
 		for(BaseAclfBus<?, ?> bus : (List<BaseAclfBus<?, ?>>) network.getBusList()) {
 			if(bus instanceof IBus3Phase) {
-				for(IPhaseLoad load : ((IBus3Phase) bus).getPhaseLoadList()) {
+				for(AclfLoad3Phase load : ((IBus3Phase) bus).getPhaseLoadList()) {
 					if(matches(load.getId(), capacitorId)) {
 						return load;
 					}
 				}
 			}
 			for(Object load : bus.getContributeLoadList()) {
-				if(load instanceof IPhaseLoad && matches(((IPhaseLoad) load).getId(), capacitorId)) {
-					return (IPhaseLoad) load;
+				if(load instanceof AclfLoad3Phase && matches(((AclfLoad3Phase) load).getId(), capacitorId)) {
+					return (AclfLoad3Phase) load;
 				}
 			}
 		}
 		return null;
 	}
 
-	private BaseAclfBus<?, ?> parentBus(BaseAclfNetwork<?, ?> network, IPhaseLoad capacitor) {
+	private BaseAclfBus<?, ?> parentBus(BaseAclfNetwork<?, ?> network, AclfLoad3Phase capacitor) {
 		for(BaseAclfBus<?, ?> bus : (List<BaseAclfBus<?, ?>>) network.getBusList()) {
 			if(bus instanceof IBus3Phase && ((IBus3Phase) bus).getPhaseLoadList().contains(capacitor)) {
 				return bus;
@@ -401,11 +401,11 @@ public class CapacitorBankControl {
 		private final String key;
 		private final double executeTimeSeconds;
 		private final CapacitorControlData control;
-		private final IPhaseLoad capacitor;
+		private final AclfLoad3Phase capacitor;
 		private final boolean closed;
 
 		private CapacitorSwitchAction(String key, double executeTimeSeconds,
-				CapacitorControlData control, IPhaseLoad capacitor, boolean closed) {
+				CapacitorControlData control, AclfLoad3Phase capacitor, boolean closed) {
 			this.key = key;
 			this.executeTimeSeconds = executeTimeSeconds;
 			this.control = control;

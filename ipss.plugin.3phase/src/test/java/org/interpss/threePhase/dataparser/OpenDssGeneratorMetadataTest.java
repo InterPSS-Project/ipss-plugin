@@ -20,7 +20,7 @@ import org.interpss.threePhase.qsts.QstsScheduleData;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.aclf.AclfGenCode;
-import com.interpss.core.threephase.IPhaseGen;
+import com.interpss.core.threephase.AclfGen3Phase;
 import com.interpss.core.threephase.Static3PBus;
 
 public class OpenDssGeneratorMetadataTest {
@@ -37,7 +37,7 @@ public class OpenDssGeneratorMetadataTest {
 		Static3PBus bus = parser.getStaticNetwork().getBus("m1026866");
 		assertNotNull(bus);
 		assertEquals(AclfGenCode.GEN_PQ, bus.getGenCode());
-		IPhaseGen generator = bus.getPhaseGenList().get(0);
+		AclfGen3Phase generator = bus.getPhaseGenList().get(0);
 		assertEquals("g1", generator.getId());
 		assertEquals(360.0 / baseKva, generator.getPower3Phase(UnitType.PU)
 				.a_0.add(generator.getPower3Phase(UnitType.PU).b_1)

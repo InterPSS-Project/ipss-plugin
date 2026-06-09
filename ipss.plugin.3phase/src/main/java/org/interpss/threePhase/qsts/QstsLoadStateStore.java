@@ -5,14 +5,14 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-import com.interpss.core.threephase.IPhaseLoad;
+import com.interpss.core.threephase.AclfLoad3Phase;
 
 public class QstsLoadStateStore {
 	private final Map<Object, QstsLoadBaseState> statesByLoad = new IdentityHashMap<>();
 
 	public QstsLoadBaseState register(Object load) {
-		if(!(load instanceof IPhaseLoad)) {
-			throw new IllegalArgumentException("QSTS load state store requires IPhaseLoad");
+		if(!(load instanceof AclfLoad3Phase)) {
+			throw new IllegalArgumentException("QSTS load state store requires AclfLoad3Phase");
 		}
 		return statesByLoad.computeIfAbsent(load, QstsLoadBaseState::new);
 	}
