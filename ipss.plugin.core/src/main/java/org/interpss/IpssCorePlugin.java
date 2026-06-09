@@ -102,7 +102,7 @@ public class IpssCorePlugin {
 	}	
 
 	public static Selection configureSparseSolverFromSystemProperties() {
-		String solver = System.getProperty(SparseEqnSolverProvider.SOLVER_PROPERTY, "csj").trim().toLowerCase();
+		String solver = System.getProperty(SparseEqnSolverProvider.SOLVER_PROPERTY, "java-klu").trim().toLowerCase();
 		switch(solver) {
 		case "java-klu":
 		case "java_klu":
