@@ -1,6 +1,8 @@
-package org.interpss.optadj.texas2k;
+package org.interpss.optadj.texas2k.dense;
 
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
+
+import org.interpss.optadj.texas2k.Texas2K_Sample_Info;
 import org.interpss.plugin.optadj.algo.lf.AclfNetLoadFlowOptimizer;
 import org.interpss.plugin.optadj.algo.util.AclfNetSsaHelper;
 import org.interpss.plugin.optadj.result.OptAdjResultContainer;

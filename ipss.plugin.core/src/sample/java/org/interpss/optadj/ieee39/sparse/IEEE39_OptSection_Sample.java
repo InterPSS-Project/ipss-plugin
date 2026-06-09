@@ -1,4 +1,4 @@
-package org.interpss.optadj.ieee39;
+package org.interpss.optadj.ieee39.sparse;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,6 +11,7 @@ import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
+import org.interpss.optadj.ieee39.IEEE39_Sample_Data;
 import org.interpss.plugin.optadj.algo.bean.PowerSystemSection;
 import org.interpss.plugin.optadj.algo.sec.SectionOptimizer;
 
