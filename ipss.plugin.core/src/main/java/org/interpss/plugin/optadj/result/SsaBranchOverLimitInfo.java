@@ -68,4 +68,8 @@ public class SsaBranchOverLimitInfo extends BaseJSONBean{
 	public double getShftedFlowMW() {
 		return shftedFlowMW;
 	}
+
+	public double getLoadingPercent() {
+		return loadingPercent;
+	}
 }
