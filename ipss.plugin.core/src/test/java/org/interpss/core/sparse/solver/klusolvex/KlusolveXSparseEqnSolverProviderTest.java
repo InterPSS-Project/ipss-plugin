@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import com.interpss.core.sparse.SparseEqnObjectFactory;
+import com.interpss.core.sparse.impl.klu.JKLUSparseEqnComplexMatrix3x3Impl;
 import com.interpss.core.sparse.solver.SparseEqnSolverProvider;
 
 import org.interpss.core.sparse.solver.KlusolveXAvailability;
@@ -56,6 +57,15 @@ public class KlusolveXSparseEqnSolverProviderTest {
 		assertTrue(Files.exists(rhs));
 		assertTrue(Files.readString(matrix).contains("%%MatrixMarket matrix coordinate complex general"));
 		assertTrue(Files.readString(rhs).contains("%%MatrixMarket matrix array complex general"));
+	}
+
+	@Test
+	public void defaultSelectionUsesJavaKluComplex3x3() {
+		IpssCorePlugin.Selection selection = IpssCorePlugin.configureSparseSolverFromSystemProperties();
+
+		assertEquals(SparseSolverType.JAVA_KLU, selection.active());
+		assertInstanceOf(JKLUSparseEqnComplexMatrix3x3Impl.class,
+				new SparseEqnObjectFactory().createSparseEqnComplex3x3(2));
 	}
 
 	@Test
