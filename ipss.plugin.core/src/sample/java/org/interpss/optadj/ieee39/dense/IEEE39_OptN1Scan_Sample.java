@@ -1,10 +1,11 @@
-package org.interpss.optadj.ieee39;
+package org.interpss.optadj.ieee39.dense;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.interpss.numeric.datatype.AtomicCounter;
+import org.interpss.optadj.ieee39.IEEE39_Sample_Data;
 
 import com.interpss.algo.parallel.ContingencyAnalysisMonad;
 import com.interpss.core.DclfAlgoObjectFactory;
