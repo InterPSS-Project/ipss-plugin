@@ -38,7 +38,6 @@ import com.interpss.core.threephase.IBus3Phase;
 import com.interpss.core.threephase.AclfGen3Phase;
 import com.interpss.core.threephase.AclfLoad3Phase;
 import com.interpss.core.threephase.INetwork3Phase;
-import com.interpss.core.threephase.Static3PGen;
 import com.interpss.core.threephase.Static3PXformer;
 import com.interpss.core.threephase.Static3PhaseFactory;
 import com.interpss.core.aclf.AclfBranch;
@@ -1657,7 +1656,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				load.addEquivCurrInj(primitiveState.voltage, offset, primitiveRhs, offset);
 			}
 			addFixedPointLoadNortonCompensation(bus, primitiveState.voltage, offset, primitiveRhs, offset);
-			for(Static3PGen gen : bus.staticGenerators) {
+			for(AclfGen3Phase gen : bus.primitiveGenerators) {
 				gen.addEquivCurrInj(primitiveState.voltage, offset, primitiveRhs, offset);
 			}
 			if(!isFinite(primitiveRhs, offset)) {
@@ -1693,10 +1692,10 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		}
 		addFixedPointLoadNortonCompensation(bus, voltage, offset, primitiveRhs, offset);
 
-		if(bus.staticGenerators.length > 0) {
+		if(bus.primitiveGenerators.length > 0) {
 			start = FIXED_POINT_PROFILE.start();
 			FIXED_POINT_PROFILE.addCurrentCalcGenList(FIXED_POINT_PROFILE.elapsed(start));
-			for(Static3PGen gen : bus.staticGenerators) {
+			for(AclfGen3Phase gen : bus.primitiveGenerators) {
 				FIXED_POINT_PROFILE.addCurrentCalcGen();
 				start = FIXED_POINT_PROFILE.start();
 				gen.addEquivCurrInj(voltage, offset, primitiveRhs, offset);
@@ -1854,10 +1853,10 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		}
 		addFixedPointLoadNortonCompensation(bus, voltage, voltageOffset, current, 0);
 
-		if(bus.staticGenerators.length > 0) {
+		if(bus.primitiveGenerators.length > 0) {
 			start = FIXED_POINT_PROFILE.start();
 			FIXED_POINT_PROFILE.addCurrentCalcGenList(FIXED_POINT_PROFILE.elapsed(start));
-			for(Static3PGen gen : bus.staticGenerators) {
+			for(AclfGen3Phase gen : bus.primitiveGenerators) {
 				FIXED_POINT_PROFILE.addCurrentCalcGen();
 				start = FIXED_POINT_PROFILE.start();
 				gen.addEquivCurrInj(voltage, voltageOffset, current, 0);
@@ -1881,7 +1880,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			load.addEquivCurrInj(voltage, voltageOffset, current);
 		}
 		addFixedPointLoadNortonCompensation(bus, voltage, voltageOffset, current, 0);
-		for(Static3PGen gen : bus.staticGenerators) {
+		for(AclfGen3Phase gen : bus.primitiveGenerators) {
 			gen.addEquivCurrInj(voltage, voltageOffset, current, 0);
 		}
 		return current;
@@ -2159,7 +2158,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			}
 		}
 		for(FixedPointBus bus : busCache.currentInjectionBuses) {
-			if(bus.staticGenerators == null) {
+			if(bus.primitiveGenerators == null) {
 				return false;
 			}
 		}
@@ -3224,7 +3223,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		private final IBus3Phase bus3P;
 		private final List<? extends AclfLoad3Phase> phaseLoads;
 		private final List<? extends AclfGen3Phase> phaseGenerators;
-		private final Static3PGen[] staticGenerators;
+		private final AclfGen3Phase[] primitiveGenerators;
 		private final Complex3x1 boundaryCurrent;
 		private final boolean boundaryCurrentFinite;
 		private final double boundaryAReal;
@@ -3247,7 +3246,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			this.bus3P = (IBus3Phase) bus;
 			this.phaseLoads = this.bus3P.getPhaseLoadList();
 			this.phaseGenerators = this.bus3P.getPhaseGenList();
-			this.staticGenerators = staticGeneratorArray(this.phaseGenerators);
+			this.primitiveGenerators = primitiveGeneratorArray(this.phaseGenerators);
 			this.boundaryCurrent = boundaryCurrent;
 			this.boundaryCurrentFinite = boundaryCurrent == null
 					|| (finiteValue(boundaryCurrent.a_0) && finiteValue(boundaryCurrent.b_1)
@@ -3324,17 +3323,13 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			return value == null ? 0.0 : value.getImaginary();
 		}
 
-		private static Static3PGen[] staticGeneratorArray(List<? extends AclfGen3Phase> generators) {
+		private static AclfGen3Phase[] primitiveGeneratorArray(List<? extends AclfGen3Phase> generators) {
 			if(generators.isEmpty()) {
-				return new Static3PGen[0];
+				return new AclfGen3Phase[0];
 			}
-			Static3PGen[] values = new Static3PGen[generators.size()];
+			AclfGen3Phase[] values = new AclfGen3Phase[generators.size()];
 			for(int i = 0; i < generators.size(); i++) {
-				AclfGen3Phase generator = generators.get(i);
-				if(!(generator instanceof Static3PGen staticGenerator)) {
-					return null;
-				}
-				values[i] = staticGenerator;
+				values[i] = generators.get(i);
 			}
 			return values;
 		}
