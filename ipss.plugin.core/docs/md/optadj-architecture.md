@@ -314,6 +314,5 @@ mvn -pl ipss.test.plugin.core test -Dtest=IEEE39_OptBasecase_Test
 - **No runtime configuration layer** — the former `OptAdjConfigureInfo` / per-unit override API has been removed; bounds come directly from `AclfGen.getPGenLimit()`.
 - **No centralized feasibility diagnostics** — `isAllControl()` and section slack inspection are the primary infeasibility signals.
 - **Contingency optimizer scans all branch outages** — no outage pre-screening beyond the optional SSA control-set filter.
-- **Section optimizer typo** — public method is named `optmize()` (missing "i").
 
 These are good candidates for the next iteration of architecture hardening.
