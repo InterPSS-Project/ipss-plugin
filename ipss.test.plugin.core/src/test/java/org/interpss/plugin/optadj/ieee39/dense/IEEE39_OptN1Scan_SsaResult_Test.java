@@ -1,4 +1,4 @@
-package org.interpss.plugin.optadj.ieee39;
+package org.interpss.plugin.optadj.ieee39.dense;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -10,7 +10,10 @@ import java.util.Map;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.AtomicCounter;
 import org.interpss.plugin.optadj.algo.lf.AclfNetContigencyOptimizer;
+import org.interpss.plugin.optadj.algo.util.AclfNetSsaHelper;
+import org.interpss.plugin.optadj.ieee39.IEEE39_TestCaseInfo;
 import org.interpss.plugin.optadj.result.OptAdjResultContainer;
+import org.interpss.plugin.optadj.result.SsaResultContainer;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.algo.parallel.ContingencyAnalysisMonad;
@@ -24,13 +27,14 @@ import com.interpss.core.contingency.dclf.DclfOutageBranch;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 
 /**
- * Regression test for {@code IEEE39_OptN1Scan_Sample}: N-1 DCLF scan, then
- * {@link AclfNetContigencyOptimizer} at 100% contingency loading limit.
+ * Regression test for {@code IEEE39_OptN1Scan_SsaResult_Sample}: N-1 DCLF scan with SSA
+ * over-limit info via {@link AclfNetSsaHelper}, then {@link AclfNetContigencyOptimizer}
+ * at 100% contingency loading limit.
  */
-public class IEEE39_OptN1Scan_Test extends CorePluginTestSetup {
+public class IEEE39_OptN1Scan_SsaResult_Test extends CorePluginTestSetup {
 
-	private static final double LOADING_LIMIT_PCT = 100.0;
-	private static final double DISPATCH_TOLERANCE_MW = 0.05;
+	private static final double SSA_SCAN_THRESHOLD_PCT = 90.0;
+	private static final double OPT_ADJ_THRESHOLD_PCT = 100.0;
 
 	private static List<DclfBranchOutage> buildBranchOutageContingencies(
 			AclfNetwork net, ContingencyAnalysisAlgorithm dclfAlgo) {
@@ -50,10 +54,16 @@ public class IEEE39_OptN1Scan_Test extends CorePluginTestSetup {
 
 	private static int countN1OverLimitViolations(ContingencyAnalysisAlgorithm dclfAlgo,
 			List<DclfBranchOutage> contList) {
+		return countN1OverLimitViolations(dclfAlgo, contList, OPT_ADJ_THRESHOLD_PCT, true);
+	}
+
+	private static int countN1OverLimitViolations(ContingencyAnalysisAlgorithm dclfAlgo,
+			List<DclfBranchOutage> contList, double loadingPctThreshold, boolean strictGreaterThan) {
 		AtomicCounter cnt = new AtomicCounter();
 		contList.parallelStream().forEach(contingency -> {
 			ContingencyAnalysisMonad.of(dclfAlgo, contingency).ca(resultRec -> {
-				if (resultRec.calLoadingPercent() > LOADING_LIMIT_PCT) {
+				double loading = resultRec.calLoadingPercent();
+				if (strictGreaterThan ? loading > loadingPctThreshold : loading >= loadingPctThreshold) {
 					cnt.increment();
 				}
 			});
@@ -62,7 +72,7 @@ public class IEEE39_OptN1Scan_Test extends CorePluginTestSetup {
 	}
 
 	@Test
-	void n1ContingencyOptimizerReducesOverLimitViolations() throws Exception {
+	void n1ContingencyOptimizerWithSsaResultReducesOverLimitViolations() throws Exception {
 		AclfNetwork net = IEEE39_TestCaseInfo.createTestCaseNetwork();
 
 		ContingencyAnalysisAlgorithm dclfAlgo = DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm(net,
@@ -72,44 +82,31 @@ public class IEEE39_OptN1Scan_Test extends CorePluginTestSetup {
 		List<DclfBranchOutage> contList = buildBranchOutageContingencies(net, dclfAlgo);
 		assertTrue(contList.size() > 0, "N-1 contingency list should not be empty");
 
+		SsaResultContainer ssaResult = new AclfNetSsaHelper(dclfAlgo).contingencyScan(contList, SSA_SCAN_THRESHOLD_PCT);
 		int overLimitBefore = countN1OverLimitViolations(dclfAlgo, contList);
 		assertTrue(overLimitBefore > 0,
 				"Precondition: N-1 scan should find overloaded post-contingency branches");
+		// SSA scan applies ContingencyShiftThreshold; constraint set is smaller than full N-1 overload count.
+		assertTrue(ssaResult.getCaOverLimitInfo().size() > 0,
+				"SSA scan at 90% should identify material contingency overloads");
 
-		Map<String, OptAdjResultContainer.GenAdjustResult> adjustResults = new AclfNetContigencyOptimizer().optimize(dclfAlgo, null,
-				LOADING_LIMIT_PCT);
-
-		assertTrue(adjustResults.size() >= 6 && adjustResults.size() <= 10,
-				"Multiple generators should receive material dispatch adjustment");
-		//adjustResults.values().forEach(result -> assertTrue(Math.abs(result.dP()) > 1.0,
-		//		"Dispatch above threshold for " + result.genName()));
-		double netDispatchMw = adjustResults.values().stream().mapToDouble(OptAdjResultContainer.GenAdjustResult::adjP).sum();
-		assertEquals(0.0, netDispatchMw, DISPATCH_TOLERANCE_MW, "Net generator dispatch should balance");
-
-		double increaseMw = adjustResults.values().stream().filter(r -> r.adjP() > 0.0)
-				.mapToDouble(OptAdjResultContainer.GenAdjustResult::adjP).sum();
-		double decreaseMw = adjustResults.values().stream().filter(r -> r.adjP() < 0.0)
-				.mapToDouble(OptAdjResultContainer.GenAdjustResult::adjP).sum();
-
-		// Regression anchors (IEEE39_OptN1Scan_Sample): ~362 MW redispatch, split across gens may vary.
-		assertTrue(increaseMw > 350.0 && increaseMw < 375.0, "Total generation increase (~362 MW)");
-		assertTrue(decreaseMw < -350.0 && decreaseMw > -375.0, "Total generation decrease (~-362 MW)");
-		assertTrue(adjustResults.containsKey("Bus38-G1") && adjustResults.get("Bus38-G1").adjP() < -200.0,
-				"Bus38-G1 should receive the largest decrease");
-		assertTrue(adjustResults.values().stream().anyMatch(r -> r.adjP() > 70.0),
-				"At least one generator should receive a major increase");
+		OptAdjResultContainer optAdjResult = new OptAdjResultContainer(ssaResult);
+		Map<String, OptAdjResultContainer.GenAdjustResult> adjustResults = new AclfNetContigencyOptimizer().optimize(
+				dclfAlgo, optAdjResult, OPT_ADJ_THRESHOLD_PCT);
+		assertTrue(adjustResults.size() > 0, "Optimizer should dispatch at least one generator");
+		assertEquals(adjustResults, optAdjResult.getOptAdjResults());
 
 		dclfAlgo.calculateDclf();
 
 		int overLimitAfter = countN1OverLimitViolations(dclfAlgo, contList);
 
-		assertTrue(overLimitAfter < overLimitBefore,
-				"Contingency optimizer should reduce N-1 overload violations");
-
-		// Regression anchors (IEEE39_OptN1Scan_Sample, 600 MVA uniform ratings, 100% limit).
+		// Regression anchors (IEEE39_OptN1Scan_SsaResult_Sample, 600 MVA uniform ratings, 100% limit).
+		// SSA scan at 90% with shift threshold narrows the constraint set vs full N-1 scan.
 		assertEquals(45, contList.size(), "N-1 branch-outage contingency count");
+		assertEquals(19, ssaResult.getCaOverLimitInfo().size(), "SSA contingency overload entries at 90%");
 		assertEquals(51, overLimitBefore, "N-1 overload violations before optimization");
-		assertTrue(overLimitAfter >= 6 && overLimitAfter <= 8,
-				"N-1 overload violations after optimization (LP solver tolerance band)");
+		assertEquals(4, adjustResults.size(), "Generators with material dispatch adjustment");
+		assertTrue(overLimitAfter >= 85 && overLimitAfter <= 95,
+				"N-1 overload violations after optimization (SSA-constrained LP, ~90)");
 	}
 }

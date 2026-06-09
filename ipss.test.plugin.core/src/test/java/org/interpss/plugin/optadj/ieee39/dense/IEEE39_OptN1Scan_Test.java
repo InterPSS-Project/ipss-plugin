@@ -1,4 +1,4 @@
-package org.interpss.plugin.optadj.ieee39;
+package org.interpss.plugin.optadj.ieee39.dense;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -10,6 +10,7 @@ import java.util.Map;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.AtomicCounter;
 import org.interpss.plugin.optadj.algo.lf.AclfNetContigencyOptimizer;
+import org.interpss.plugin.optadj.ieee39.IEEE39_TestCaseInfo;
 import org.interpss.plugin.optadj.result.OptAdjResultContainer;
 import org.junit.jupiter.api.Test;
 
@@ -24,10 +25,10 @@ import com.interpss.core.contingency.dclf.DclfOutageBranch;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 
 /**
- * Regression test for {@code IEEE39_OptN1Scan_Sparse_Sample}: N-1 DCLF scan, then
- * sparse {@link AclfNetContigencyOptimizer} at 100% contingency loading limit.
+ * Regression test for {@code IEEE39_OptN1Scan_Sample}: N-1 DCLF scan, then
+ * {@link AclfNetContigencyOptimizer} at 100% contingency loading limit.
  */
-public class IEEE39_OptN1Scan_Sparse_Test extends CorePluginTestSetup {
+public class IEEE39_OptN1Scan_Test extends CorePluginTestSetup {
 
 	private static final double LOADING_LIMIT_PCT = 100.0;
 	private static final double DISPATCH_TOLERANCE_MW = 0.05;
@@ -76,11 +77,13 @@ public class IEEE39_OptN1Scan_Sparse_Test extends CorePluginTestSetup {
 		assertTrue(overLimitBefore > 0,
 				"Precondition: N-1 scan should find overloaded post-contingency branches");
 
-		Map<String, OptAdjResultContainer.GenAdjustResult> adjustResults = new AclfNetContigencyOptimizer(true).optimize(dclfAlgo, null,
+		Map<String, OptAdjResultContainer.GenAdjustResult> adjustResults = new AclfNetContigencyOptimizer().optimize(dclfAlgo, null,
 				LOADING_LIMIT_PCT);
 
 		assertTrue(adjustResults.size() >= 6 && adjustResults.size() <= 10,
 				"Multiple generators should receive material dispatch adjustment");
+		//adjustResults.values().forEach(result -> assertTrue(Math.abs(result.dP()) > 1.0,
+		//		"Dispatch above threshold for " + result.genName()));
 		double netDispatchMw = adjustResults.values().stream().mapToDouble(OptAdjResultContainer.GenAdjustResult::adjP).sum();
 		assertEquals(0.0, netDispatchMw, DISPATCH_TOLERANCE_MW, "Net generator dispatch should balance");
 
@@ -89,7 +92,7 @@ public class IEEE39_OptN1Scan_Sparse_Test extends CorePluginTestSetup {
 		double decreaseMw = adjustResults.values().stream().filter(r -> r.adjP() < 0.0)
 				.mapToDouble(OptAdjResultContainer.GenAdjustResult::adjP).sum();
 
-		// Regression anchors (IEEE39_OptN1Scan_Sparse_Sample): ~362 MW redispatch, split across gens may vary.
+		// Regression anchors (IEEE39_OptN1Scan_Sample): ~362 MW redispatch, split across gens may vary.
 		assertTrue(increaseMw > 350.0 && increaseMw < 375.0, "Total generation increase (~362 MW)");
 		assertTrue(decreaseMw < -350.0 && decreaseMw > -375.0, "Total generation decrease (~-362 MW)");
 		assertTrue(adjustResults.containsKey("Bus38-G1") && adjustResults.get("Bus38-G1").adjP() < -200.0,
@@ -104,7 +107,7 @@ public class IEEE39_OptN1Scan_Sparse_Test extends CorePluginTestSetup {
 		assertTrue(overLimitAfter < overLimitBefore,
 				"Contingency optimizer should reduce N-1 overload violations");
 
-		// Regression anchors (IEEE39_OptN1Scan_Sparse_Sample, 600 MVA uniform ratings, 100% limit).
+		// Regression anchors (IEEE39_OptN1Scan_Sample, 600 MVA uniform ratings, 100% limit).
 		assertEquals(45, contList.size(), "N-1 branch-outage contingency count");
 		assertEquals(51, overLimitBefore, "N-1 overload violations before optimization");
 		assertTrue(overLimitAfter >= 6 && overLimitAfter <= 8,
