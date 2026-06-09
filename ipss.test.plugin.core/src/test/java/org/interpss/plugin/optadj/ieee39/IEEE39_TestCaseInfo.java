@@ -38,7 +38,7 @@ public class IEEE39_TestCaseInfo extends CorePluginTestSetup {
 
 		net.getBranchList().forEach(branch -> {
 			AclfBranch aclfBranch = (AclfBranch) branch;
-			aclfBranch.setName(aclfBranch.getId());
+			//aclfBranch.setName(aclfBranch.getId());
 			aclfBranch.setRatingMva1(BRANCH_RATING_MVA);
 		});
 
