@@ -325,6 +325,7 @@ public abstract class BaseAclfBean2AclfNetMapper<
 					AclfBus vcBus = aclfNet.getBus(tcb.controlledBusId);				
 					tap.setVcBusOnFromSide(branch.isFromBus(vcBus));
 					tap.setControlOnFromSide(tcb.controlOnFromSide);
+					tap.setMeteredOnFromSide(tcb.measuredOnFromSide);
 					tap.setTurnRatioLimit(new LimitType(tcb.maxTap, tcb.minTap));
 					tap.setTapSteps(tcb.steps);
 					tap.setTapStepSize(tcb.stepSize);
