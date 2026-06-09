@@ -56,8 +56,6 @@ public abstract class BaseAclfNetLoadFlowOptimizer {
 
 		AclfNetwork net = (AclfNetwork) dclfAlgo.getNetwork();
 
-		createSenMatrix(net);
-
 		// we use branch id to get the branch object. So we don't need to create the branch name lookup table.
 		//if (net.getAclfBranchNameLookupTable() == null) {
 		//	net.createAclfBranchNameLookupTable(true);
@@ -65,6 +63,8 @@ public abstract class BaseAclfNetLoadFlowOptimizer {
 		if (net.getAclfGenNameLookupTable() == null) {
 			net.createAclfGenNameLookupTable(true);
 		}
+
+		createSenMatrix(net, ssaResult);
 		
 		Map<Integer, AclfGen> controlGenMap = null;
 		if (ssaResult == null) {
@@ -96,7 +96,7 @@ public abstract class BaseAclfNetLoadFlowOptimizer {
 		return optResults;
 	}
 
-	abstract void createSenMatrix(AclfNetwork net);
+	abstract void createSenMatrix(AclfNetwork net, SsaResultContainer ssaResult);
 
 	abstract float getSen(int busNo, int branchNo);
 
@@ -128,6 +128,23 @@ public abstract class BaseAclfNetLoadFlowOptimizer {
 //			System.out.print(gen.getName()+",");
 		}
 		return genMap;
+	}
+
+	protected Set<String> buildGenParentBusSet(AclfNetwork net) {
+		return net.getAclfGenNameLookupTable().values().stream()
+				.filter(AclfGen::isActive)
+				.map(gen -> gen.getParentBus().getId())
+				.collect(Collectors.toSet());
+	}
+
+	protected Set<String> buildSsaBranchSet(SsaResultContainer ssaResult) {
+		Set<String> branchSet = new LinkedHashSet<>();
+		ssaResult.getBaseOverLimitInfo().forEach(info -> branchSet.add(info.getOverLimitBranchId()));
+		ssaResult.getCaOverLimitInfo().forEach(info -> {
+			branchSet.add(info.getOverLimitBranchId());
+			branchSet.add(info.getOutageBranchId());
+		});
+		return branchSet;
 	}
 
 	protected Set<AclfGen> buildControlGenSet(AclfNetwork net, SsaResultContainer result) {
