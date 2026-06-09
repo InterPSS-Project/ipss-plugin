@@ -17,7 +17,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.acsc.PhaseCode;
-import com.interpss.core.threephase.IPhaseLoad;
+import com.interpss.core.threephase.AclfLoad3Phase;
 import com.interpss.core.threephase.Static3PBus;
 import com.interpss.core.threephase.Static3PLoad;
 import com.interpss.core.threephase.Static3PNetwork;
@@ -37,7 +37,7 @@ public class CapacitorBankControlTest {
 		Static3PLoad capacitor = Static3PhaseFactory.eINSTANCE.createStatic3PLoad();
 		capacitor.setId("cap1");
 		capacitor.setCode(AclfLoadCode.CONST_Z);
-		((IPhaseLoad) capacitor).set3PhaseLoad(new Complex3x1(new Complex(0.0, -0.01),
+		((AclfLoad3Phase) capacitor).set3PhaseLoad(new Complex3x1(new Complex(0.0, -0.01),
 				new Complex(0.0, -0.01), new Complex(0.0, -0.01)));
 		bus.getContributeLoadList().add(capacitor);
 
@@ -70,7 +70,7 @@ public class CapacitorBankControlTest {
 		Static3PLoad capacitor = Static3PhaseFactory.eINSTANCE.createStatic3PLoad();
 		capacitor.setId("cap1");
 		capacitor.setCode(AclfLoadCode.CONST_Z);
-		((IPhaseLoad) capacitor).set3PhaseLoad(new Complex3x1(new Complex(0.0, -0.01),
+		((AclfLoad3Phase) capacitor).set3PhaseLoad(new Complex3x1(new Complex(0.0, -0.01),
 				new Complex(0.0, -0.01), new Complex(0.0, -0.01)));
 		bus.getContributeLoadList().add(capacitor);
 

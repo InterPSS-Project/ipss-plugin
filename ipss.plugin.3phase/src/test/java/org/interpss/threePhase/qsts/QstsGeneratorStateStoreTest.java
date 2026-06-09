@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.acsc.PhaseCode;
-import com.interpss.core.threephase.Static1Gen;
+import com.interpss.core.threephase.AclfGen3Phase;
 import com.interpss.core.threephase.Static3PGen;
 import com.interpss.core.threephase.Static3PhaseFactory;
 
@@ -59,7 +59,8 @@ public class QstsGeneratorStateStoreTest {
 
 	@Test
 	void onePhaseGeneratorBaseStateScalesAndRestoresPhasePower() {
-		Static1Gen generator = new Static1Gen("pv1", PhaseCode.B, new Complex(0.2, 0.05));
+		TestPhaseGen generator = new TestPhaseGen("pv1", PhaseCode.B,
+				new Complex3x1(Complex.ZERO, new Complex(0.2, 0.05), Complex.ZERO));
 		QstsGeneratorStateStore store = new QstsGeneratorStateStore();
 		QstsGeneratorBaseState state = store.register(generator);
 
@@ -73,5 +74,42 @@ public class QstsGeneratorStateStoreTest {
 
 		assertEquals(0.2, generator.getPower1Phase(PhaseCode.B, UnitType.PU).getReal(), 1.0e-12);
 		assertEquals(0.05, generator.getPower1Phase(PhaseCode.B, UnitType.PU).getImaginary(), 1.0e-12);
+	}
+
+	private static class TestPhaseGen implements AclfGen3Phase {
+		private final String id;
+		private final PhaseCode phaseCode;
+		private Complex3x1 power;
+
+		TestPhaseGen(String id, PhaseCode phaseCode, Complex3x1 power) {
+			this.id = id;
+			this.phaseCode = phaseCode;
+			this.power = power;
+		}
+
+		@Override
+		public String getId() {
+			return id;
+		}
+
+		@Override
+		public double getMvaBase() {
+			return 1.0;
+		}
+
+		@Override
+		public PhaseCode getPhaseCode() {
+			return phaseCode;
+		}
+
+		@Override
+		public Complex3x1 getPower3Phase(UnitType unit) {
+			return power;
+		}
+
+		@Override
+		public void setPower3Phase(Complex3x1 power, UnitType unit) {
+			this.power = power;
+		}
 	}
 }

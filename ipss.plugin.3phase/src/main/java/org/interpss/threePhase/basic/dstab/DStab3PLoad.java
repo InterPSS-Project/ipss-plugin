@@ -4,13 +4,13 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 
-import com.interpss.core.threephase.ILoad3Phase;
 import com.interpss.core.threephase.IDynamicPhaseLoad;
+import com.interpss.core.threephase.AclfLoad3Phase;
 import com.interpss.core.threephase.LoadConnectionType;
 import com.interpss.core.acsc.PhaseCode;
 import com.interpss.dstab.DStabLoad;
 
-public interface DStab3PLoad extends ILoad3Phase, IDynamicPhaseLoad, DStabLoad {
+public interface DStab3PLoad extends AclfLoad3Phase, IDynamicPhaseLoad, DStabLoad {
 
 	public void setPhaseCode (PhaseCode phCode);
 

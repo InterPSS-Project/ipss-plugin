@@ -21,9 +21,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.threephase.LoadConnectionType;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.acsc.PhaseCode;
-import com.interpss.core.threephase.ILoad1Phase;
-import com.interpss.core.threephase.ILoad3Phase;
-import com.interpss.core.threephase.IPhaseLoad;
+import com.interpss.core.threephase.AclfLoad3Phase;
 import com.interpss.core.threephase.Static3PBus;
 import com.interpss.core.threephase.Static3PLoad;
 
@@ -227,7 +225,7 @@ public class OpenDSSLoadParser {
 				}
 			}
 
-			IPhaseLoad load = this.dataParser.isStaticNetworkMode()
+			AclfLoad3Phase load = this.dataParser.isStaticNetworkMode()
 					? ThreePhaseObjectFactory.createStatic3PLoad(loadId)
 					: createDynamicLoad(loadId, phaseNum);
 
@@ -475,7 +473,7 @@ public class OpenDSSLoadParser {
 			return QstsDeviceStatus.DEFAULT;
 		}
 
-		private void registerParsedLoad(String loadId, IPhaseLoad load, int phaseNum, String phase1, String phase2,
+		private void registerParsedLoad(String loadId, AclfLoad3Phase load, int phaseNum, String phase1, String phase2,
 				int modelType, double transformerKva, double powerFactor, double cvrWatts, double cvrVars,
 				double[] zipv) {
 			this.parsedLoadsById.computeIfAbsent(loadId.toLowerCase(), ignored -> new ArrayList<>())
@@ -483,7 +481,7 @@ public class OpenDSSLoadParser {
 							transformerKva, powerFactor, cvrWatts, cvrVars, zipv));
 		}
 
-		private void setLoadPower(IPhaseLoad load, int phaseNum, String phase1, String phase2,
+		private void setLoadPower(AclfLoad3Phase load, int phaseNum, String phase1, String phase2,
 				Complex loadPQ, AclfLoadCode code) {
 			load.setCode(code);
 			if(phaseNum==3) {
@@ -499,38 +497,23 @@ public class OpenDSSLoadParser {
 			}
 		}
 
-		private static IPhaseLoad createDynamicLoad(String loadId, int phaseNum) {
+		private static AclfLoad3Phase createDynamicLoad(String loadId, int phaseNum) {
 			DStab1PLoad load = phaseNum == 3 || phaseNum == 2 ? new DStab3PLoadImpl() : new DStab1PLoadImpl();
 			load.setId(loadId);
 			return load;
 		}
 
-		private static void setVminpu(IPhaseLoad load, double vminpu) {
-			if(load instanceof ILoad3Phase) {
-				((ILoad3Phase) load).setVminpu(vminpu);
-			}
-			else if(load instanceof ILoad1Phase) {
-				((ILoad1Phase) load).setVminpu(vminpu);
-			}
+		private static void setVminpu(AclfLoad3Phase load, double vminpu) {
+			load.setVminpu(vminpu);
 		}
 
-		private static void setVmaxpu(IPhaseLoad load, double vmaxpu) {
-			if(load instanceof ILoad3Phase) {
-				((ILoad3Phase) load).setVmaxpu(vmaxpu);
-			}
-			else if(load instanceof ILoad1Phase) {
-				((ILoad1Phase) load).setVmaxpu(vmaxpu);
-			}
+		private static void setVmaxpu(AclfLoad3Phase load, double vmaxpu) {
+			load.setVmaxpu(vmaxpu);
 		}
 
-		private static void setOpenDssLoadModel(IPhaseLoad load, int modelType, double cvrWatts,
+		private static void setOpenDssLoadModel(AclfLoad3Phase load, int modelType, double cvrWatts,
 				double cvrVars, double[] zipv) {
-			if(load instanceof ILoad3Phase) {
-				((ILoad3Phase) load).setOpenDssLoadModel(modelType, cvrWatts, cvrVars, zipv);
-			}
-			else if(load instanceof ILoad1Phase) {
-				((ILoad1Phase) load).setOpenDssLoadModel(modelType, cvrWatts, cvrVars, zipv);
-			}
+			load.setOpenDssLoadModel(modelType, cvrWatts, cvrVars, zipv);
 		}
 
 		private static double parseDssDouble(String value) {
@@ -600,7 +583,7 @@ public class OpenDSSLoadParser {
 		}
 
 		private static final class ParsedLoad {
-			private final IPhaseLoad load;
+			private final AclfLoad3Phase load;
 			private final int phaseNum;
 			private final String phase1;
 			private final String phase2;
@@ -611,7 +594,7 @@ public class OpenDSSLoadParser {
 			private final double cvrVars;
 			private final double[] zipv;
 
-			private ParsedLoad(IPhaseLoad load, int phaseNum, String phase1, String phase2,
+			private ParsedLoad(AclfLoad3Phase load, int phaseNum, String phase1, String phase2,
 					int modelType, double transformerKva, double powerFactor, double cvrWatts, double cvrVars,
 					double[] zipv) {
 				this.load = load;
