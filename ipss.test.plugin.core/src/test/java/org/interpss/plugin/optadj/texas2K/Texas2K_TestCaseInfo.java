@@ -35,7 +35,7 @@ public class Texas2K_TestCaseInfo extends CorePluginTestSetup {
 				.load()
 				.getImportedObj();
 
-		net.getBranchList().forEach(branch -> branch.setName(branch.getId()));
+		//net.getBranchList().forEach(branch -> branch.setName(branch.getId()));
 		return net;
 	}
 
