@@ -10,7 +10,7 @@ import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSProfileBindi
 import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSProfileType;
 import org.junit.jupiter.api.Test;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import com.interpss.core.threephase.IPhaseGen;
+import com.interpss.core.threephase.AclfGen3Phase;
 import com.interpss.core.threephase.Static3PBus;
 
 public class OpenDssStorageMetadataTest {
@@ -28,7 +28,7 @@ public class OpenDssStorageMetadataTest {
 
 		Static3PBus bus = parser.getStaticNetwork().getBus("bus1");
 		assertNotNull(bus);
-		IPhaseGen generator = bus.getPhaseGenList().get(0);
+		AclfGen3Phase generator = bus.getPhaseGenList().get(0);
 		assertEquals(250.0 / baseKva, generator.getPower3Phase(UnitType.PU)
 				.a_0.add(generator.getPower3Phase(UnitType.PU).b_1)
 				.add(generator.getPower3Phase(UnitType.PU).c_2).getReal(), 1.0e-12);
@@ -63,7 +63,7 @@ public class OpenDssStorageMetadataTest {
 				"New Storage.batt1 bus1=bus1.1.2.3 phases=3 kva=500 kw=150 state=charging %charge=25",
 				"Master.dss", 31));
 
-		IPhaseGen generator = parser.getStaticNetwork().getBus("bus1").getPhaseGenList().get(0);
+		AclfGen3Phase generator = parser.getStaticNetwork().getBus("bus1").getPhaseGenList().get(0);
 		assertEquals(-150.0 / baseKva, generator.getPower3Phase(UnitType.PU)
 				.a_0.add(generator.getPower3Phase(UnitType.PU).b_1)
 				.add(generator.getPower3Phase(UnitType.PU).c_2).getReal(), 1.0e-12);
@@ -80,7 +80,7 @@ public class OpenDssStorageMetadataTest {
 				"New Storage.batt1 bus1=bus1.3 phases=1 kva=100 kw=30 kvar=6 state=discharging",
 				"Master.dss", 32));
 
-		IPhaseGen generator = parser.getStaticNetwork().getBus("bus1").getPhaseGenList().get(0);
+		AclfGen3Phase generator = parser.getStaticNetwork().getBus("bus1").getPhaseGenList().get(0);
 		assertEquals(0.0, generator.getPower3Phase(UnitType.PU).a_0.abs(), 1.0e-12);
 		assertEquals(0.0, generator.getPower3Phase(UnitType.PU).b_1.abs(), 1.0e-12);
 		assertEquals(30.0 / parser.getStaticNetwork().getBaseKva(),
@@ -101,7 +101,7 @@ public class OpenDssStorageMetadataTest {
 		Static3PBus bus = parser.getStaticNetwork().getBus("bus1");
 		assertNotNull(bus);
 		assertEquals(1, bus.getPhaseGenList().size());
-		IPhaseGen generator = bus.getPhaseGenList().get(0);
+		AclfGen3Phase generator = bus.getPhaseGenList().get(0);
 		assertEquals("batt1", generator.getId());
 		assertEquals(0.0, generator.getPower3Phase(UnitType.PU).a_0.abs(), 1.0e-12);
 		assertEquals(0.0, generator.getPower3Phase(UnitType.PU).b_1.abs(), 1.0e-12);

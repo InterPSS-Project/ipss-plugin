@@ -12,8 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import com.interpss.core.threephase.Static3PGen;
 import com.interpss.core.threephase.Static3PhaseFactory;
-import com.interpss.core.threephase.IPhaseGen;
-import com.interpss.core.threephase.Static1Gen;
+import com.interpss.core.threephase.AclfGen3Phase;
 import com.interpss.core.acsc.PhaseCode;
 
 public class InverterControlModelTest {
@@ -60,7 +59,8 @@ public class InverterControlModelTest {
 
 	@Test
 	void onePhaseReactiveSetpointUsesSinglePhaseCapabilityAndSignConvention() {
-		Static1Gen generator = new Static1Gen("pv1", PhaseCode.C, new Complex(0.08, 0.0));
+		TestPhaseGen generator = new TestPhaseGen("pv1", PhaseCode.C,
+				new Complex3x1(Complex.ZERO, Complex.ZERO, new Complex(0.08, 0.0)));
 		InverterControlData control = new InverterControlData("inv1", "pv1", ControlMode.VOLTVAR,
 				"vv1", 100.0, Double.NaN, Double.NaN, 0.0, true);
 
@@ -189,7 +189,7 @@ public class InverterControlModelTest {
 		assertEquals(0.0, generator.getPower3Phase(UnitType.PU).c_2.getImaginary(), 1.0e-12);
 	}
 
-	private static class TestPhaseGen implements IPhaseGen {
+	private static class TestPhaseGen implements AclfGen3Phase {
 		private final String id;
 		private final PhaseCode phaseCode;
 		private Complex3x1 power;

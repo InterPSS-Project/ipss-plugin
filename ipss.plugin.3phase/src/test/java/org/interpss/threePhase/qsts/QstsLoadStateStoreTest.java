@@ -14,8 +14,8 @@ import org.junit.jupiter.api.Test;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.acsc.PhaseCode;
-import com.interpss.core.threephase.ILoad1Phase;
-import com.interpss.core.threephase.IPhaseLoad;
+import com.interpss.core.threephase.AclfLoad3Phase;
+import com.interpss.core.threephase.AclfLoad3Phase;
 import com.interpss.core.threephase.LoadConnectionType;
 import com.interpss.core.threephase.Static3PLoad;
 import com.interpss.core.threephase.Static3PhaseFactory;
@@ -150,7 +150,7 @@ public class QstsLoadStateStoreTest {
 		assertEquals(30.0, state.getThreePhaseLoad().a_0.getReal(), 1.0e-12);
 	}
 
-	private static class TestLoad1Phase extends MinimalEObjectImpl.Container implements ILoad1Phase {
+	private static class TestLoad1Phase extends MinimalEObjectImpl.Container implements AclfLoad3Phase {
 		private String id;
 		private AclfLoadCode code = AclfLoadCode.CONST_P;
 		private Complex loadCP = Complex.ZERO;
@@ -209,7 +209,6 @@ public class QstsLoadStateStoreTest {
 			return loadCZ;
 		}
 
-		@Override
 		public Complex getLoad(double vmag) {
 			return loadCP.add(loadCI.multiply(vmag)).add(loadCZ.multiply(vmag * vmag));
 		}
@@ -248,9 +247,19 @@ public class QstsLoadStateStoreTest {
 		public void setNominalKV(double ratedkV) {
 			this.nominalKV = ratedkV;
 		}
+
+		@Override
+		public Complex3x1 getInit3PhaseLoad() {
+			return AclfLoad3Phase.distribute(loadCP, phaseCode);
+		}
+
+		@Override
+		public void set3PhaseLoad(Complex3x1 threePhaseLoad) {
+			this.loadCP = AclfLoad3Phase.total(threePhaseLoad);
+		}
 	}
 
-	private static class TestPhaseLoad implements IPhaseLoad {
+	private static class TestPhaseLoad implements AclfLoad3Phase {
 		private String id;
 		private PhaseCode phaseCode;
 		private AclfLoadCode code = AclfLoadCode.CONST_P;
@@ -331,7 +340,7 @@ public class QstsLoadStateStoreTest {
 
 		@Override
 		public void setLoadCP(Complex load) {
-			this.load = IPhaseLoad.distribute(load, phaseCode);
+			this.load = AclfLoad3Phase.distribute(load, phaseCode);
 		}
 
 		@Override

@@ -46,7 +46,7 @@ import com.interpss.core.net.Bus;
 import com.interpss.core.net.NetworkType;
 import com.interpss.core.threephase.IBranch3Phase;
 import com.interpss.core.threephase.IBus3Phase;
-import com.interpss.core.threephase.IPhaseLoad;
+import com.interpss.core.threephase.AclfLoad3Phase;
 import com.interpss.core.threephase.LoadConnectionType;
 import com.interpss.core.threephase.Static3PBus;
 import com.interpss.core.threephase.Static3PBranch;
@@ -1184,7 +1184,7 @@ public class OpenDSSDataParser {
 	 }
 	 else {
 		 IBus3Phase bus3P = (IBus3Phase) bus;
-		 for(IPhaseLoad load : bus3P.getPhaseLoadList()){
+		 for(AclfLoad3Phase load : bus3P.getPhaseLoadList()){
 			 double loadBaseKva = load instanceof DStab1PLoad && !(load instanceof DStab3PLoad)
 					 ? baseKVA1P
 					 : baseKVA3P;
@@ -1197,7 +1197,7 @@ public class OpenDSSDataParser {
 	  return no_error;
     }
 
-     private void convertPhaseLoadToPU(BaseAclfBus bus, IPhaseLoad load, double loadBaseKva) {
+     private void convertPhaseLoadToPU(BaseAclfBus bus, AclfLoad3Phase load, double loadBaseKva) {
 	 double voltageScale = threePhaseConstZVoltageScale(bus, load);
 	 load.setLoadCP(load.getLoadCP().divide(loadBaseKva));
 	 load.setLoadCI(load.getLoadCI().divide(loadBaseKva));
@@ -1224,7 +1224,7 @@ public class OpenDSSDataParser {
 	 return phaseCode == PhaseCode.A || phaseCode == PhaseCode.B || phaseCode == PhaseCode.C;
      }
 
-     private static Complex activeLoadPower(IPhaseLoad load) {
+     private static Complex activeLoadPower(AclfLoad3Phase load) {
 	 if(load.getCode() == AclfLoadCode.CONST_Z) {
 		 return load.getLoadCZ();
 	 }
@@ -1258,7 +1258,7 @@ public class OpenDSSDataParser {
 	 return new Complex3x1(value, zero, zero);
      }
 
-     private double threePhaseConstZVoltageScale(BaseAclfBus bus3P, IPhaseLoad load3P) {
+     private double threePhaseConstZVoltageScale(BaseAclfBus bus3P, AclfLoad3Phase load3P) {
 	 if(load3P.getCode() != AclfLoadCode.CONST_Z || load3P.getNominalKV() <= 0.0) {
 		 return 1.0;
 	 }

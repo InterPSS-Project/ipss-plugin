@@ -19,7 +19,7 @@ import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.acsc.PhaseCode;
-import com.interpss.core.threephase.IPhaseGen;
+import com.interpss.core.threephase.AclfGen3Phase;
 import com.interpss.core.threephase.Static3PBus;
 import com.interpss.core.threephase.Static3PGen;
 import com.interpss.dstab.GeneratorType;
@@ -68,7 +68,7 @@ public class OpenDSSStorageParser {
 		String duty = stripDssValue(properties.get("duty"));
 		String status = stripDssValue(properties.get("status"));
 
-		IPhaseGen generator;
+		AclfGen3Phase generator;
 		Complex genPu = new Complex(signedKw / dataParser.getNetworkBaseKva(),
 				kvar / dataParser.getNetworkBaseKva());
 		if(dataParser.isStaticNetworkMode()) {

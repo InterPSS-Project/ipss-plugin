@@ -35,8 +35,8 @@ import org.slf4j.LoggerFactory;
 
 import com.interpss.core.threephase.IBranch3Phase;
 import com.interpss.core.threephase.IBus3Phase;
-import com.interpss.core.threephase.IPhaseGen;
-import com.interpss.core.threephase.IPhaseLoad;
+import com.interpss.core.threephase.AclfGen3Phase;
+import com.interpss.core.threephase.AclfLoad3Phase;
 import com.interpss.core.threephase.INetwork3Phase;
 import com.interpss.core.threephase.Static3PGen;
 import com.interpss.core.threephase.Static3PLoad;
@@ -1654,7 +1654,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			PrimitiveFixedPointState primitiveState) {
 		for(FixedPointBus bus : busCache.currentInjectionBuses) {
 			int offset = 6 * bus.sortNumber;
-			for(IPhaseLoad load : bus.phaseLoads) {
+			for(AclfLoad3Phase load : bus.phaseLoads) {
 				((Static3PLoad) load).addEquivCurrInj(primitiveState.voltage, offset, primitiveRhs, offset);
 			}
 			addFixedPointLoadNortonCompensation(bus, primitiveState.voltage, offset, primitiveRhs, offset);
@@ -1684,9 +1684,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	private void addStaticCurrentToRhsProfiled(FixedPointBus bus, double[] voltage,
 			int offset, double[] primitiveRhs) {
 		long start = FIXED_POINT_PROFILE.start();
-		List<? extends IPhaseLoad> loads = bus.phaseLoads;
+		List<? extends AclfLoad3Phase> loads = bus.phaseLoads;
 		FIXED_POINT_PROFILE.addCurrentCalcLoadList(FIXED_POINT_PROFILE.elapsed(start));
-		for(IPhaseLoad load : loads) {
+		for(AclfLoad3Phase load : loads) {
 			FIXED_POINT_PROFILE.addCurrentCalcLoad();
 			start = FIXED_POINT_PROFILE.start();
 			((Static3PLoad) load).addEquivCurrInj(voltage, offset, primitiveRhs, offset);
@@ -1733,9 +1733,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		FIXED_POINT_PROFILE.addCurrentCalcVoltage(FIXED_POINT_PROFILE.elapsed(start));
 
 		start = FIXED_POINT_PROFILE.start();
-		List<? extends IPhaseLoad> loads = bus.phaseLoads;
+		List<? extends AclfLoad3Phase> loads = bus.phaseLoads;
 		FIXED_POINT_PROFILE.addCurrentCalcLoadList(FIXED_POINT_PROFILE.elapsed(start));
-		for(IPhaseLoad load : loads) {
+		for(AclfLoad3Phase load : loads) {
 			FIXED_POINT_PROFILE.addCurrentCalcLoad();
 			start = FIXED_POINT_PROFILE.start();
 			Complex3x1 loadCurrent = load.getEquivCurrInj(voltage);
@@ -1747,9 +1747,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		current = current.add(fixedPointLoadNortonCompensation(bus, voltage));
 
 		start = FIXED_POINT_PROFILE.start();
-		List<? extends IPhaseGen> generators = bus.phaseGenerators;
+		List<? extends AclfGen3Phase> generators = bus.phaseGenerators;
 		FIXED_POINT_PROFILE.addCurrentCalcGenList(FIXED_POINT_PROFILE.elapsed(start));
-		for(IPhaseGen gen : generators) {
+		for(AclfGen3Phase gen : generators) {
 			FIXED_POINT_PROFILE.addCurrentCalcGen();
 			start = FIXED_POINT_PROFILE.start();
 			Complex3x1 power = gen.getPower3Phase(UnitType.PU);
@@ -1780,9 +1780,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		FIXED_POINT_PROFILE.addCurrentCalcVoltage(FIXED_POINT_PROFILE.elapsed(start));
 
 		start = FIXED_POINT_PROFILE.start();
-		List<? extends IPhaseLoad> loads = bus.phaseLoads;
+		List<? extends AclfLoad3Phase> loads = bus.phaseLoads;
 		FIXED_POINT_PROFILE.addCurrentCalcLoadList(FIXED_POINT_PROFILE.elapsed(start));
-		for(IPhaseLoad load : loads) {
+		for(AclfLoad3Phase load : loads) {
 			FIXED_POINT_PROFILE.addCurrentCalcLoad();
 			start = FIXED_POINT_PROFILE.start();
 			if(load instanceof Static3PLoad staticLoad) {
@@ -1800,9 +1800,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		addFixedPointLoadNortonCompensation(bus, voltage, current);
 
 		start = FIXED_POINT_PROFILE.start();
-		List<? extends IPhaseGen> generators = bus.phaseGenerators;
+		List<? extends AclfGen3Phase> generators = bus.phaseGenerators;
 		FIXED_POINT_PROFILE.addCurrentCalcGenList(FIXED_POINT_PROFILE.elapsed(start));
-		for(IPhaseGen gen : generators) {
+		for(AclfGen3Phase gen : generators) {
 			FIXED_POINT_PROFILE.addCurrentCalcGen();
 			start = FIXED_POINT_PROFILE.start();
 			Complex3x1 power = gen.getPower3Phase(UnitType.PU);
@@ -1829,7 +1829,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		current[5] = 0.0;
 
 		Complex3x1 voltage = bus.bus3P.get3PhaseVotlages();
-		for(IPhaseLoad load : bus.phaseLoads) {
+		for(AclfLoad3Phase load : bus.phaseLoads) {
 			if(load instanceof Static3PLoad staticLoad) {
 				staticLoad.addEquivCurrInj(voltage, current);
 			}
@@ -1839,7 +1839,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		}
 		addFixedPointLoadNortonCompensation(bus, voltage, current);
 
-		for(IPhaseGen gen : bus.phaseGenerators) {
+		for(AclfGen3Phase gen : bus.phaseGenerators) {
 			Complex3x1 power = gen.getPower3Phase(UnitType.PU);
 			if(power != null) {
 				addCurrent(current, power.divide(voltage).conjugate());
@@ -1859,9 +1859,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		int voltageOffset = 6 * bus.sortNumber;
 
 		long start = FIXED_POINT_PROFILE.start();
-		List<? extends IPhaseLoad> loads = bus.phaseLoads;
+		List<? extends AclfLoad3Phase> loads = bus.phaseLoads;
 		FIXED_POINT_PROFILE.addCurrentCalcLoadList(FIXED_POINT_PROFILE.elapsed(start));
-		for(IPhaseLoad load : loads) {
+		for(AclfLoad3Phase load : loads) {
 			FIXED_POINT_PROFILE.addCurrentCalcLoad();
 			start = FIXED_POINT_PROFILE.start();
 			((Static3PLoad) load).addEquivCurrInj(voltage, voltageOffset, current);
@@ -1892,7 +1892,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		current[4] = 0.0;
 		current[5] = 0.0;
 		int voltageOffset = 6 * bus.sortNumber;
-		for(IPhaseLoad load : bus.phaseLoads) {
+		for(AclfLoad3Phase load : bus.phaseLoads) {
 			((Static3PLoad) load).addEquivCurrInj(voltage, voltageOffset, current);
 		}
 		addFixedPointLoadNortonCompensation(bus, voltage, voltageOffset, current, 0);
@@ -1929,7 +1929,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		if(factor == 0.0) {
 			return;
 		}
-		for(IPhaseLoad load : bus.phaseLoads) {
+		for(AclfLoad3Phase load : bus.phaseLoads) {
 			if(load instanceof Static3PLoad staticLoad) {
 				if(factor == 1.0) {
 					staticLoad.addFixedPointNortonCompensation(voltage, voltageOffset, current, currentOffset);
@@ -2179,7 +2179,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			if(bus.staticGenerators == null) {
 				return false;
 			}
-			for(IPhaseLoad load : bus.phaseLoads) {
+			for(AclfLoad3Phase load : bus.phaseLoads) {
 				if(!(load instanceof Static3PLoad)) {
 					return false;
 				}
@@ -3244,8 +3244,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		private final String id;
 		private final int sortNumber;
 		private final IBus3Phase bus3P;
-		private final List<? extends IPhaseLoad> phaseLoads;
-		private final List<? extends IPhaseGen> phaseGenerators;
+		private final List<? extends AclfLoad3Phase> phaseLoads;
+		private final List<? extends AclfGen3Phase> phaseGenerators;
 		private final Static3PGen[] staticGenerators;
 		private final Complex3x1 boundaryCurrent;
 		private final boolean boundaryCurrentFinite;
@@ -3346,13 +3346,13 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			return value == null ? 0.0 : value.getImaginary();
 		}
 
-		private static Static3PGen[] staticGeneratorArray(List<? extends IPhaseGen> generators) {
+		private static Static3PGen[] staticGeneratorArray(List<? extends AclfGen3Phase> generators) {
 			if(generators.isEmpty()) {
 				return new Static3PGen[0];
 			}
 			Static3PGen[] values = new Static3PGen[generators.size()];
 			for(int i = 0; i < generators.size(); i++) {
-				IPhaseGen generator = generators.get(i);
+				AclfGen3Phase generator = generators.get(i);
 				if(!(generator instanceof Static3PGen staticGenerator)) {
 					return null;
 				}

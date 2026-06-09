@@ -20,7 +20,7 @@ import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import com.interpss.core.threephase.LoadConnectionType;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.acsc.PhaseCode;
-import com.interpss.core.threephase.IPhaseLoad;
+import com.interpss.core.threephase.AclfLoad3Phase;
 import com.interpss.core.threephase.Static3PBus;
 import com.interpss.core.threephase.Static3PLoad;
 
@@ -102,7 +102,7 @@ public class OpenDSSCapacitorParser {
 
 		// tentatively modeled by constant Z Type of loads
 
-		IPhaseLoad load = this.dataParser.isStaticNetworkMode()
+		AclfLoad3Phase load = this.dataParser.isStaticNetworkMode()
 				? ThreePhaseObjectFactory.createStatic3PLoad(capId)
 				: createDynamicCapacitorLoad(capId);
 

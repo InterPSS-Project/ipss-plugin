@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 
 import com.interpss.core.aclf.AclfGenCode;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import com.interpss.core.threephase.IPhaseGen;
+import com.interpss.core.threephase.AclfGen3Phase;
 import com.interpss.core.threephase.Static3PBus;
 
 public class OpenDssPVSystemMetadataTest {
@@ -39,7 +39,7 @@ public class OpenDssPVSystemMetadataTest {
 		assertNotNull(bus);
 		assertEquals(AclfGenCode.GEN_PQ, bus.getGenCode());
 		assertEquals(1, bus.getPhaseGenList().size());
-		IPhaseGen generator = bus.getPhaseGenList().get(0);
+		AclfGen3Phase generator = bus.getPhaseGenList().get(0);
 		assertEquals("pv1", generator.getId());
 		assertEquals(380.0 / baseKva, generator.getPower3Phase(UnitType.PU)
 				.a_0.add(generator.getPower3Phase(UnitType.PU).b_1)
@@ -98,7 +98,7 @@ public class OpenDssPVSystemMetadataTest {
 				"New PVSystem.pv1 bus1=bus1.2 phases=1 kva=100 kw=60 kvar=15",
 				"Master.dss", 22));
 
-		IPhaseGen generator = parser.getStaticNetwork().getBus("bus1").getPhaseGenList().get(0);
+		AclfGen3Phase generator = parser.getStaticNetwork().getBus("bus1").getPhaseGenList().get(0);
 		assertEquals(0.0, generator.getPower3Phase(UnitType.PU).a_0.abs(), 1.0e-12);
 		assertEquals(60.0 / parser.getStaticNetwork().getBaseKva(),
 				generator.getPower3Phase(UnitType.PU).b_1.getReal(), 1.0e-12);
@@ -119,7 +119,7 @@ public class OpenDssPVSystemMetadataTest {
 		Static3PBus bus = parser.getStaticNetwork().getBus("bus1");
 		assertNotNull(bus);
 		assertEquals(1, bus.getPhaseGenList().size());
-		IPhaseGen generator = bus.getPhaseGenList().get(0);
+		AclfGen3Phase generator = bus.getPhaseGenList().get(0);
 		assertEquals("pv1", generator.getId());
 		assertEquals(0.0, generator.getPower3Phase(UnitType.PU).a_0.abs(), 1.0e-12);
 		assertEquals(60.0 / parser.getStaticNetwork().getBaseKva(),
@@ -168,7 +168,7 @@ public class OpenDssPVSystemMetadataTest {
 		assertEquals("mypvst", model.getPvsTCurveId());
 		assertEquals(382.6666666666667, model.getKw(), 1.0e-9);
 
-		IPhaseGen generator = parser.getStaticNetwork().getBus("pvbus").getPhaseGenList().get(0);
+		AclfGen3Phase generator = parser.getStaticNetwork().getBus("pvbus").getPhaseGenList().get(0);
 		assertEquals(382.6666666666667 / baseKva, generator.getPower3Phase(UnitType.PU)
 				.a_0.add(generator.getPower3Phase(UnitType.PU).b_1)
 				.add(generator.getPower3Phase(UnitType.PU).c_2).getReal(), 1.0e-12);

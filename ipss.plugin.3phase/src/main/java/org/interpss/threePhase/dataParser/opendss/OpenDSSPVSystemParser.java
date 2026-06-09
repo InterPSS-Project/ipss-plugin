@@ -21,7 +21,7 @@ import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.acsc.PhaseCode;
-import com.interpss.core.threephase.IPhaseGen;
+import com.interpss.core.threephase.AclfGen3Phase;
 import com.interpss.core.threephase.Static3PBus;
 import com.interpss.core.threephase.Static3PGen;
 import com.interpss.dstab.GeneratorType;
@@ -75,7 +75,7 @@ public class OpenDSSPVSystemParser {
 		double kw = parseDouble(properties.get("kw"), availableActivePowerKw > 0.0 ? availableActivePowerKw : kva);
 		double kvar = parseKvar(properties, kw, kva);
 
-		IPhaseGen generator;
+		AclfGen3Phase generator;
 		Complex genPu = new Complex(kw / dataParser.getNetworkBaseKva(),
 				kvar / dataParser.getNetworkBaseKva());
 		if(dataParser.isStaticNetworkMode()) {

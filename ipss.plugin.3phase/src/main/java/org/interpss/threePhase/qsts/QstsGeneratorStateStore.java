@@ -5,14 +5,14 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-import com.interpss.core.threephase.IPhaseGen;
+import com.interpss.core.threephase.AclfGen3Phase;
 
 public class QstsGeneratorStateStore {
 	private final Map<Object, QstsGeneratorBaseState> statesByGenerator = new IdentityHashMap<>();
 
 	public QstsGeneratorBaseState register(Object generator) {
-		if(!(generator instanceof IPhaseGen)) {
-			throw new IllegalArgumentException("QSTS generator state store requires IPhaseGen");
+		if(!(generator instanceof AclfGen3Phase)) {
+			throw new IllegalArgumentException("QSTS generator state store requires AclfGen3Phase");
 		}
 		return statesByGenerator.computeIfAbsent(generator, QstsGeneratorBaseState::new);
 	}

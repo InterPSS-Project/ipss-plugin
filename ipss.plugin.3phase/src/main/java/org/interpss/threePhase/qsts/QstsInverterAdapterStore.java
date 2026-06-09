@@ -6,13 +6,13 @@ import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import com.interpss.core.threephase.IPhaseGen;
+import com.interpss.core.threephase.AclfGen3Phase;
 
 public class QstsInverterAdapterStore {
 	private final Map<String, InverterGenAdapter> adaptersByGeneratorId = new LinkedHashMap<>();
 	private final Map<String, QstsControlCurve> curvesById = new LinkedHashMap<>();
 
-	public InverterGenAdapter register(IPhaseGen generator) {
+	public InverterGenAdapter register(AclfGen3Phase generator) {
 		return register(new InverterGenAdapter(generator));
 	}
 
