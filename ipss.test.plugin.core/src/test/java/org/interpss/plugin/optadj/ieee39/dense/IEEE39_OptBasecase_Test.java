@@ -1,4 +1,4 @@
-package org.interpss.plugin.optadj.ieee39;
+package org.interpss.plugin.optadj.ieee39.dense;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.plugin.optadj.algo.lf.AclfNetLoadFlowOptimizer;
+import org.interpss.plugin.optadj.ieee39.IEEE39_TestCaseInfo;
 import org.interpss.plugin.optadj.result.OptAdjResultContainer;
 import org.junit.jupiter.api.Test;
 
@@ -18,10 +19,11 @@ import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 
 /**
- * Regression test for {@code IEEE39_OptBasecase_Sparse_Sample}: DCLF basecase with
- * uniform branch ratings, then sparse {@link AclfNetLoadFlowOptimizer} at 100% loading limit.
+ * Regression test for {@code IEEE39_OptBasecase_Sample}: DCLF basecase with
+ * uniform
+ * branch ratings, then {@link AclfNetLoadFlowOptimizer} at 100% loading limit.
  */
-public class IEEE39_OptBasecase_Sparse_Test extends CorePluginTestSetup {
+public class IEEE39_OptBasecase_Test extends CorePluginTestSetup {
 	private static final double LOADING_LIMIT_PCT = 100.0;
 	private static final double DISPATCH_TOLERANCE_MW = 0.05;
 
@@ -68,7 +70,7 @@ public class IEEE39_OptBasecase_Sparse_Test extends CorePluginTestSetup {
 		assertTrue(overLimitBefore > 0,
 				"Precondition: IEEE-39 case with 600 MVA ratings should have overloaded branches");
 
-		Map<String, OptAdjResultContainer.GenAdjustResult> adjustResults = new AclfNetLoadFlowOptimizer(true).optimize(
+		Map<String, OptAdjResultContainer.GenAdjustResult> adjustResults = new AclfNetLoadFlowOptimizer().optimize(
 				dclfAlgo, null,
 				LOADING_LIMIT_PCT);
 
@@ -82,7 +84,7 @@ public class IEEE39_OptBasecase_Sparse_Test extends CorePluginTestSetup {
 		double decreaseMw = adjustResults.values().stream().filter(r -> r.adjP() < 0.0)
 				.mapToDouble(OptAdjResultContainer.GenAdjustResult::adjP).sum();
 
-		// Regression anchors (IEEE39_OptBasecase_Sparse_Sample): ~362 MW redispatch, split
+		// Regression anchors (IEEE39_OptBasecase_Sample): ~362 MW redispatch, split
 		// across gens may vary.
 		assertTrue(increaseMw > 350.0 && increaseMw < 375.0, "Total generation increase (~362 MW)");
 		assertTrue(decreaseMw < -350.0 && decreaseMw > -375.0, "Total generation decrease (~-362 MW)");
@@ -101,7 +103,7 @@ public class IEEE39_OptBasecase_Sparse_Test extends CorePluginTestSetup {
 		assertTrue(maxLoadingAfter < maxLoadingBefore,
 				"Peak branch loading should decrease after optimization");
 
-		// Regression anchors (IEEE39_OptBasecase_Sparse_Sample, 600 MVA uniform ratings, 100%
+		// Regression anchors (IEEE39_OptBasecase_Sample, 600 MVA uniform ratings, 100%
 		// limit).
 		assertEquals(5, overLimitBefore, "Overloaded branch count before optimization");
 		assertTrue(overLimitAfter >= 0 && overLimitAfter <= 2,
