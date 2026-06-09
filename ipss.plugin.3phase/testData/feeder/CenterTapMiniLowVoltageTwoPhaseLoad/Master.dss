@@ -1,0 +1,14 @@
+Clear
+New Circuit.CenterTapMiniLowVoltageTwoPhaseLoad
+~ basekv=12.47 pu=0.82 phases=3 bus1=sourcebus
+
+New Line.Primary bus1=sourcebus.2 bus2=primary.2 length=1 r1=0.001 x1=0.001 r0=0.001 x0=0.001
+
+New XfmrCode.CT10 phases=1 windings=3 kvs=[7.2 0.12 0.12] kVAs=[10 10 10] %Rs=[0.6 1.2 1.2] Xhl=2.04 Xht=2.04 Xlt=1.36
+New Transformer.Service XfmrCode=CT10 buses=[primary.2 secondary.1.0 secondary.0.2]
+
+New Line.ServiceDrop bus1=secondary.1.2 bus2=loadbus.1.2 length=1 r1=0.0001 x1=0.0001 r0=0.0001 x0=0.0001
+New Load.LoadAB phases=2 bus1=loadbus.1.2 kv=0.208 model=1 conn=wye kw=2.0 pf=0.97 Vminpu=0.88
+
+Set voltagebases=[12.47, 0.208]
+Calcvoltagebases
