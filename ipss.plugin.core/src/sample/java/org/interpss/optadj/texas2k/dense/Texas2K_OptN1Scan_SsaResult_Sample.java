@@ -1,4 +1,4 @@
-package org.interpss.optadj.texas2k;
+package org.interpss.optadj.texas2k.dense;
 
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
 import java.io.File;
@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.interpss.numeric.datatype.AtomicCounter;
+import org.interpss.optadj.texas2k.Texas2K_Sample_Info;
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
 import org.interpss.plugin.contingency.definition.MonitoredBranchRecord;
 import org.interpss.plugin.contingency.util.ContingencyFileUtil;
