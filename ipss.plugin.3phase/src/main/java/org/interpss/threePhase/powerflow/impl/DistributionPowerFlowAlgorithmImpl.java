@@ -39,7 +39,6 @@ import com.interpss.core.threephase.AclfGen3Phase;
 import com.interpss.core.threephase.AclfLoad3Phase;
 import com.interpss.core.threephase.INetwork3Phase;
 import com.interpss.core.threephase.Static3PGen;
-import com.interpss.core.threephase.Static3PLoad;
 import com.interpss.core.threephase.Static3PXformer;
 import com.interpss.core.threephase.Static3PhaseFactory;
 import com.interpss.core.aclf.AclfBranch;
@@ -1088,8 +1087,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		}
 		Complex3x3 loadY = new Complex3x3();
 		for(Object load : bus.getContributeLoadList()) {
-			if(load instanceof Static3PLoad staticLoad) {
-				Complex3x3 y = staticLoad.getFixedPointNortonYabc();
+			if(load instanceof AclfLoad3Phase phaseLoad) {
+				Complex3x3 y = phaseLoad.getFixedPointNortonYabc();
 				if(y != null) {
 					loadY = loadY.add(y);
 				}
@@ -1655,7 +1654,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		for(FixedPointBus bus : busCache.currentInjectionBuses) {
 			int offset = 6 * bus.sortNumber;
 			for(AclfLoad3Phase load : bus.phaseLoads) {
-				((Static3PLoad) load).addEquivCurrInj(primitiveState.voltage, offset, primitiveRhs, offset);
+				load.addEquivCurrInj(primitiveState.voltage, offset, primitiveRhs, offset);
 			}
 			addFixedPointLoadNortonCompensation(bus, primitiveState.voltage, offset, primitiveRhs, offset);
 			for(Static3PGen gen : bus.staticGenerators) {
@@ -1689,7 +1688,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		for(AclfLoad3Phase load : loads) {
 			FIXED_POINT_PROFILE.addCurrentCalcLoad();
 			start = FIXED_POINT_PROFILE.start();
-			((Static3PLoad) load).addEquivCurrInj(voltage, offset, primitiveRhs, offset);
+			load.addEquivCurrInj(voltage, offset, primitiveRhs, offset);
 			FIXED_POINT_PROFILE.addCurrentCalcLoadCurrent(FIXED_POINT_PROFILE.elapsed(start));
 		}
 		addFixedPointLoadNortonCompensation(bus, voltage, offset, primitiveRhs, offset);
@@ -1785,17 +1784,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		for(AclfLoad3Phase load : loads) {
 			FIXED_POINT_PROFILE.addCurrentCalcLoad();
 			start = FIXED_POINT_PROFILE.start();
-			if(load instanceof Static3PLoad staticLoad) {
-				staticLoad.addEquivCurrInj(voltage, current);
-				FIXED_POINT_PROFILE.addCurrentCalcLoadCurrent(FIXED_POINT_PROFILE.elapsed(start));
-			}
-			else {
-				Complex3x1 loadCurrent = load.getEquivCurrInj(voltage);
-				FIXED_POINT_PROFILE.addCurrentCalcLoadCurrent(FIXED_POINT_PROFILE.elapsed(start));
-				start = FIXED_POINT_PROFILE.start();
-				addCurrent(current, loadCurrent);
-				FIXED_POINT_PROFILE.addCurrentCalcLoadAdd(FIXED_POINT_PROFILE.elapsed(start));
-			}
+			load.addEquivCurrInj(voltage, current);
+			FIXED_POINT_PROFILE.addCurrentCalcLoadCurrent(FIXED_POINT_PROFILE.elapsed(start));
 		}
 		addFixedPointLoadNortonCompensation(bus, voltage, current);
 
@@ -1830,12 +1820,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 		Complex3x1 voltage = bus.bus3P.get3PhaseVotlages();
 		for(AclfLoad3Phase load : bus.phaseLoads) {
-			if(load instanceof Static3PLoad staticLoad) {
-				staticLoad.addEquivCurrInj(voltage, current);
-			}
-			else {
-				addCurrent(current, load.getEquivCurrInj(voltage));
-			}
+			load.addEquivCurrInj(voltage, current);
 		}
 		addFixedPointLoadNortonCompensation(bus, voltage, current);
 
@@ -1864,7 +1849,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		for(AclfLoad3Phase load : loads) {
 			FIXED_POINT_PROFILE.addCurrentCalcLoad();
 			start = FIXED_POINT_PROFILE.start();
-			((Static3PLoad) load).addEquivCurrInj(voltage, voltageOffset, current);
+			load.addEquivCurrInj(voltage, voltageOffset, current);
 			FIXED_POINT_PROFILE.addCurrentCalcLoadCurrent(FIXED_POINT_PROFILE.elapsed(start));
 		}
 		addFixedPointLoadNortonCompensation(bus, voltage, voltageOffset, current, 0);
@@ -1893,7 +1878,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		current[5] = 0.0;
 		int voltageOffset = 6 * bus.sortNumber;
 		for(AclfLoad3Phase load : bus.phaseLoads) {
-			((Static3PLoad) load).addEquivCurrInj(voltage, voltageOffset, current);
+			load.addEquivCurrInj(voltage, voltageOffset, current);
 		}
 		addFixedPointLoadNortonCompensation(bus, voltage, voltageOffset, current, 0);
 		for(Static3PGen gen : bus.staticGenerators) {
@@ -1930,20 +1915,18 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			return;
 		}
 		for(AclfLoad3Phase load : bus.phaseLoads) {
-			if(load instanceof Static3PLoad staticLoad) {
-				if(factor == 1.0) {
-					staticLoad.addFixedPointNortonCompensation(voltage, voltageOffset, current, currentOffset);
-				}
-				else {
-					double[] compensation = new double[6];
-					staticLoad.addFixedPointNortonCompensation(voltage, voltageOffset, compensation, 0);
-					current[currentOffset] += compensation[0] * factor;
-					current[currentOffset + 1] += compensation[1] * factor;
-					current[currentOffset + 2] += compensation[2] * factor;
-					current[currentOffset + 3] += compensation[3] * factor;
-					current[currentOffset + 4] += compensation[4] * factor;
-					current[currentOffset + 5] += compensation[5] * factor;
-				}
+			if(factor == 1.0) {
+				load.addFixedPointNortonCompensation(voltage, voltageOffset, current, currentOffset);
+			}
+			else {
+				double[] compensation = new double[6];
+				load.addFixedPointNortonCompensation(voltage, voltageOffset, compensation, 0);
+				current[currentOffset] += compensation[0] * factor;
+				current[currentOffset + 1] += compensation[1] * factor;
+				current[currentOffset + 2] += compensation[2] * factor;
+				current[currentOffset + 3] += compensation[3] * factor;
+				current[currentOffset + 4] += compensation[4] * factor;
+				current[currentOffset + 5] += compensation[5] * factor;
 			}
 		}
 	}
@@ -2178,11 +2161,6 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		for(FixedPointBus bus : busCache.currentInjectionBuses) {
 			if(bus.staticGenerators == null) {
 				return false;
-			}
-			for(AclfLoad3Phase load : bus.phaseLoads) {
-				if(!(load instanceof Static3PLoad)) {
-					return false;
-				}
 			}
 		}
 		return true;
