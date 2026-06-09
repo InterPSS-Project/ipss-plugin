@@ -14,6 +14,7 @@ import org.interpss.plugin.optadj.algo.util.AclfNetSensHelper;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBus;
@@ -98,6 +99,14 @@ public abstract class BaseAclfNetLoadFlowOptimizer {
 
 	abstract float getSen(int busNo, int branchNo);
 
+	protected int getBusSenIndex(BaseAclfBus<?, ?> bus) {
+		return (int) (bus.getNumber() - 1);
+	}
+
+	protected int getBranchSenIndex(AclfBranch branch) {
+		return (int) (branch.getNumber() - 1);
+	}
+
 	private Map<Integer, AclfGen> arrangeIndex(Set<AclfGen> controlGenSet) {
 		Map<Integer, AclfGen> genMap = new HashMap<Integer, AclfGen>();
 		int index = 0;
@@ -127,10 +136,10 @@ public abstract class BaseAclfNetLoadFlowOptimizer {
 		if (branch == null) {
 			return;
 		}
-		int branchNo = (int) (branch.getNumber() - 1);
+		int branchNo = getBranchSenIndex(branch);
 		net.getAclfGenNameLookupTable().forEach((name, gen) -> {
 			if (gen.isActive()) {
-				int busNo = (int) (gen.getParentBus().getNumber() - 1);
+				int busNo = getBusSenIndex(gen.getParentBus());
 				float sen = getSen(busNo, branchNo);
 				if (Math.abs(sen) > SEN_THRESHOLD) {
 					genSet.add(gen);
@@ -169,7 +178,7 @@ public abstract class BaseAclfNetLoadFlowOptimizer {
 			if (branch == null) {
 				return;
 			}
-			int branchNo = (int) (branch.getNumber() - 1);
+			int branchNo = getBranchSenIndex(branch);
 			addBranchSectionConstraint(controlGenMap, opt, branchNo, info.getBaseFlowMW() > 0,
 					Math.abs(info.getBaseFlowMW()), info.getLimitMW(), threshold);
 		});
@@ -179,7 +188,7 @@ public abstract class BaseAclfNetLoadFlowOptimizer {
 			Map<Integer, AclfGen> controlGenMap, GenStateOptimizer opt, double threshold) {
 		AclfNetwork net = (AclfNetwork) dclfAlgo.getNetwork();
 		net.getBranchList().stream().filter(AclfBranch::isActive).forEach(branch -> {
-			int branchNo = (int) (branch.getNumber() - 1);
+			int branchNo = getBranchSenIndex(branch);
 			DclfAlgoBranch dclfBranch = dclfAlgo.getDclfAlgoBranch(branch.getId());
 			addBranchSectionConstraint(controlGenMap, opt, branchNo, dclfBranch.getDclfFlow() > 0,
 					Math.abs(dclfBranch.getDclfFlow() * 100), dclfBranch.getBranch().getRatingMvaA(), threshold);
@@ -190,7 +199,7 @@ public abstract class BaseAclfNetLoadFlowOptimizer {
 			boolean flowPositive) {
 		double[] genSenArray = new double[controlGenMap.size()];
 		controlGenMap.forEach((no, gen) -> {
-			int busNo = (int) (gen.getParentBus().getNumber() - 1);
+			int busNo = getBusSenIndex(gen.getParentBus());
 			float sen = getSen(busNo, branchNo);
 			genSenArray[no] = flowPositive ? sen : -sen;
 		});
