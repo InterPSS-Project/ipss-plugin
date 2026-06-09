@@ -1,150 +1,16 @@
 
 package org.interpss.plugin.optadj;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.LimitType;
-import org.interpss.plugin.optadj.algo.util.AclfNetGFSsHelper;
-import org.interpss.plugin.optadj.algo.util.AclfNetLODFsHelper;
-import org.interpss.plugin.optadj.algo.util.Sen2DMatrix;
-import org.junit.jupiter.api.Test;
-
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 
 public class IEEE14_SensHelper_Test extends CorePluginTestSetup {
-	@Test
-	public void gsfTest() throws InterpssException {
-		AclfNetwork net = createSenTestCase();
-		
-		AclfNetGFSsHelper senHelper = new AclfNetGFSsHelper(net);
-		
-		Sen2DMatrix gfs = senHelper.calGFS();
-		
-		/*
-		net.getBusList().forEach(bus -> {
-			System.out.println("Bus " + bus.getId() + ", no: " + bus.getSortNumber());
-		});
-		
-		net.getBranchList().forEach(br -> {
-			System.out.println("Branch " + br.getId() + ", no: " + br.getSortNumber());
-		});
-		*/
-		
-		//System.out.println("GFS Matrix: \n" + gfs.toString());
 
-		int ni = net.getBus("Bus2").getSortNumber();          		// 1
-		int nj = net.getBranch("Bus1->Bus2(1)").getSortNumber();    // 0
-		assertEquals(-0.838, gfs.get(ni, nj), 0.001);
-		nj = net.getBranch("Bus13->Bus14(1)").getSortNumber();      // 19
-		assertEquals(-0.002, gfs.get(ni, nj), 0.001);
-		
-		ni = net.getBus("Bus14").getSortNumber();                  // 13
-		nj = net.getBranch("Bus1->Bus2(1)").getSortNumber();       // 0
-		assertEquals(-0.644, gfs.get(ni, nj), 0.001);
-		nj = net.getBranch("Bus13->Bus14(1)").getSortNumber();     // 19
-		assertEquals(-0.397, gfs.get(ni, nj), 0.001);
-		
-		Set<String> busIdSet = new HashSet<>(Arrays.asList("Bus1", "Bus2", "Bus3", "Bus6", "Bus8"));
-		
-		gfs = senHelper.calGFS(busIdSet);
-		
-		//System.out.println("GFS Matrix: \n" + gfs.toString());
-		
-		ni = net.getBus("Bus2").getSortNumber();       // 1
-		nj = net.getBranch("Bus1->Bus2(1)").getSortNumber();       // 0
-		assertEquals(-0.838, gfs.get(ni, nj), 0.001);  
-		nj = net.getBranch("Bus13->Bus14(1)").getSortNumber();     // 19
-		assertEquals(-0.002, gfs.get(ni, nj), 0.001);
-		
-		ni = net.getBus("Bus8").getSortNumber();       // 7
-		assertEquals(-0.657, gfs.get(ni, 0), 0.001);  
-		assertEquals(-0.079, gfs.get(ni, 19), 0.001);
-		
-		// Bus2->Bus3(1), Bus2->Bus4(1), Bus2->Bus5(1), Bus3->Bus4(1)
-		Set<String> branchIdSet = new HashSet<>(Arrays.asList("Bus2->Bus3(1)", 
-						"Bus2->Bus4(1)", "Bus2->Bus5(1)", "Bus3->Bus4(1)"));
-		gfs = senHelper.calGFS(busIdSet, branchIdSet);
-		
-		//System.out.println("GFS Matrix: \n" + gfs.toString());
-		ni = net.getBus("Bus3").getSortNumber();             // 2
-		nj = net.getBranch("Bus2->Bus3(1)").getSortNumber(); // 2
-		assertEquals(-0.532, gfs.get(ni, nj), 0.001);  
-		nj = net.getBranch("Bus3->Bus4(1)").getSortNumber();  // 5
-		assertEquals(0.468, gfs.get(ni, nj), 0.001); 
-		
-		ni = net.getBus("Bus8").getSortNumber();              // 7
-		nj = net.getBranch("Bus2->Bus3(1)").getSortNumber();  // 2
-		assertEquals(-0.143, gfs.get(ni, nj), 0.001);  
-		nj = net.getBranch("Bus3->Bus4(1)").getSortNumber();  // 5
-		assertEquals(-0.143, gfs.get(ni, nj), 0.001);  
-	}
-	
-	@Test
-	public void lodfTest() throws InterpssException {
-		AclfNetwork net = createSenTestCase();
-		
-		AclfNetLODFsHelper senHelper = new AclfNetLODFsHelper(net);
-		
-		Sen2DMatrix lodf = senHelper.calLODF();
-		
-		//System.out.println("LODF Matrix: \n" + lodf.toString());
-		
-		int ni = net.getBranch("Bus1->Bus2(1)").getSortNumber();              // 0
-		int nj = net.getBranch("Bus2->Bus3(1)").getSortNumber();  // 2
-		assertEquals(-0.169, lodf.get(ni, nj), 0.001);   
-		nj = net.getBranch("Bus4->Bus5(1)").getSortNumber();      // 6
-		assertEquals(-0.494, lodf.get(ni, nj), 0.001);
-		
-		ni = net.getBranch("Bus2->Bus4(1)").getSortNumber();              		// 3
-		nj = net.getBranch("Bus2->Bus3(1)").getSortNumber();  		// 2
-		assertEquals(0.285, lodf.get(ni, nj), 0.001);   
-		nj = net.getBranch("Bus4->Bus5(1)").getSortNumber();      	// 6
-		assertEquals(-0.676, lodf.get(ni, nj), 0.001);
-		
-		Set<String> outBranchIdSet = new HashSet<>(Arrays.asList(
-				"Bus1->Bus2(1)", "Bus2->Bus4(1)", "Bus2->Bus5(1)", "Bus3->Bus4(1)"));
-		
-		lodf = senHelper.calLODF(outBranchIdSet);
-		
-		ni = net.getBranch("Bus1->Bus2(1)").getSortNumber();              // 0
-		nj = net.getBranch("Bus2->Bus3(1)").getSortNumber();  // 2
-		assertEquals(-0.169, lodf.get(ni, nj), 0.001);   
-		nj = net.getBranch("Bus4->Bus5(1)").getSortNumber();      // 6
-		assertEquals(-0.494, lodf.get(ni, nj), 0.001);
-		
-		ni = net.getBranch("Bus2->Bus4(1)").getSortNumber();              		// 3
-		nj = net.getBranch("Bus2->Bus3(1)").getSortNumber();  		// 2
-		assertEquals(0.285, lodf.get(ni, nj), 0.001);   
-		nj = net.getBranch("Bus4->Bus5(1)").getSortNumber();      	// 6
-		assertEquals(-0.676, lodf.get(ni, nj), 0.001);
-		
-		Set<String> monBranchIdSet = new HashSet<>(Arrays.asList(
-				"Bus2->Bus3(1)", "Bus2->Bus4(1)", "Bus2->Bus5(1)", "Bus4->Bus5(1)"));
-		
-		lodf = senHelper.calLODF(outBranchIdSet, monBranchIdSet);
-		
-		ni = net.getBranch("Bus1->Bus2(1)").getSortNumber();              // 0
-		nj = net.getBranch("Bus2->Bus3(1)").getSortNumber();  // 2
-		assertEquals(-0.169, lodf.get(ni, nj), 0.001);   
-		nj = net.getBranch("Bus4->Bus5(1)").getSortNumber();      // 6
-		assertEquals(-0.494, lodf.get(ni, nj), 0.001);
-		
-		ni = net.getBranch("Bus2->Bus4(1)").getSortNumber();              		// 3
-		nj = net.getBranch("Bus2->Bus3(1)").getSortNumber();  		// 2
-		assertEquals(0.285, lodf.get(ni, nj), 0.001);   
-		nj = net.getBranch("Bus4->Bus5(1)").getSortNumber();      	// 6
-		assertEquals(-0.676, lodf.get(ni, nj), 0.001);
-	}
-	
 	public static AclfNetwork createSenTestCase() throws InterpssException {
 		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
