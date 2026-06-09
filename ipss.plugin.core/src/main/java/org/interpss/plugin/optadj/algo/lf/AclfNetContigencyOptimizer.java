@@ -64,8 +64,8 @@ public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
 	private void addSsaSectionConstraint(ContingencyAnalysisAlgorithm dclfAlgo,
 			Map<Integer, AclfGen> controlGenMap, GenStateOptimizer opt, double threshold, AclfNetwork net,
 			double baseMva, SsaBranchOverLimitInfo info) {
-		AclfBranch monBranch = resolveBranch(net, info.getOverLimitBranchId());
-		AclfBranch outBranch = resolveBranch(net, info.getOutageBranchId());
+		AclfBranch monBranch = net.getBranch(info.getOverLimitBranchId());
+		AclfBranch outBranch = net.getBranch(info.getOutageBranchId());
 		if (monBranch == null || outBranch == null) {
 			return;
 		}

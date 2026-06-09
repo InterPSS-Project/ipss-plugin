@@ -107,6 +107,7 @@ public abstract class BaseAclfNetLoadFlowOptimizer {
 		return (int) (branch.getNumber() - 1);
 	}
 
+	/* Please note: this method is not used anymore, since we use branch id to get the branch object.
 	protected AclfBranch resolveBranch(AclfNetwork net, String branchKey) {
 		if (net.getAclfBranchNameLookupTable() != null) {
 			AclfBranch branch = net.getAclfBranchNameLookupTable().get(branchKey);
@@ -116,6 +117,7 @@ public abstract class BaseAclfNetLoadFlowOptimizer {
 		}
 		return net.getBranch(branchKey);
 	}
+	*/
 
 	private Map<Integer, AclfGen> arrangeIndex(Set<AclfGen> controlGenSet) {
 		Map<Integer, AclfGen> genMap = new HashMap<Integer, AclfGen>();
@@ -141,8 +143,8 @@ public abstract class BaseAclfNetLoadFlowOptimizer {
 		return genSet;
 	}
 
-	private void processGenSet(AclfNetwork net, Set<AclfGen> genSet, String branchName) {
-		AclfBranch branch = resolveBranch(net, branchName);
+	private void processGenSet(AclfNetwork net, Set<AclfGen> genSet, String branchId) {
+		AclfBranch branch = net.getBranch(branchId);
 		if (branch == null) {
 			return;
 		}
@@ -184,7 +186,7 @@ public abstract class BaseAclfNetLoadFlowOptimizer {
 		}
 		AclfNetwork net = (AclfNetwork) dclfAlgo.getNetwork();
 		ssaResult.getBaseOverLimitInfo().forEach(info -> {
-			AclfBranch branch = resolveBranch(net, info.getOverLimitBranchId());
+			AclfBranch branch = net.getBranch(info.getOverLimitBranchId());
 			if (branch == null) {
 				return;
 			}
