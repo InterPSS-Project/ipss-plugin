@@ -52,6 +52,19 @@ import org.interpss.core.ca.aclf.IEEE14_AclfN1Scan_Test;
 import org.interpss.core.contingency.parser.ConFileParser_Test;
 import org.interpss.core.contingency.parser.ConToIpssMapper_Test;
 import org.interpss.core.dclf.IEEE14_Dclf_Test;
+import org.interpss.plugin.optadj.ieee39.dense.IEEE39_OptBasecase_SsaResult_Test;
+import org.interpss.plugin.optadj.ieee39.dense.IEEE39_OptBasecase_Test;
+import org.interpss.plugin.optadj.ieee39.dense.IEEE39_OptN1Scan_SsaResult_Test;
+import org.interpss.plugin.optadj.ieee39.dense.IEEE39_OptN1Scan_Test;
+import org.interpss.plugin.optadj.ieee39.sparse.IEEE39_OptBasecase_Sparse_Test;
+import org.interpss.plugin.optadj.ieee39.sparse.IEEE39_OptBasecase_SsaResult_Sparse_Test;
+import org.interpss.plugin.optadj.ieee39.sparse.IEEE39_OptN1Scan_Sparse_Test;
+import org.interpss.plugin.optadj.ieee39.sparse.IEEE39_OptN1Scan_SsaResult_Sparse_Test;
+import org.interpss.plugin.optadj.ieee39.sparse.IEEE39_OptSection_Test;
+import org.interpss.plugin.optadj.texas2K.dense.Texas2K_OptBasecase_SsaResult_Test;
+import org.interpss.plugin.optadj.texas2K.dense.Texas2K_OptN1Scan_SsaResult_Test;
+import org.interpss.plugin.optadj.texas2K.sparse.Texas2K_OptBasecase_SsaResult_Sparse_Test;
+import org.interpss.plugin.optadj.texas2K.sparse.Texas2K_OptN1Scan_SsaResult_Sparse_Test;
 import org.interpss.core.dclf.edclf.IEEE118_EDclf_Test;
 import org.interpss.core.dclf.edclf.IEEE14_EDclf_Test;
 import org.interpss.core.dclf.edclf.IEEE39_EDclf_Test;
@@ -80,13 +93,6 @@ import org.interpss.dep.plugin.beanModel.AclfBeanMapperTest;
 import org.interpss.plugin.exchange.AclfResultExchagneIeee14Test;
 import org.interpss.plugin.exchange.ContingencyExchagneIeee14Test;
 import org.interpss.plugin.lfGCtrl.SwitchedShuntGControlTest;
-import org.interpss.plugin.optadj.IEEE14_SensHelper_Test;
-import org.interpss.plugin.optadj.globalOpt.IEEE14_OptAdj_BasecaseSSAResult_Test;
-import org.interpss.plugin.optadj.globalOpt.IEEE14_OptAdj_Basecase_Test;
-import org.interpss.plugin.optadj.globalOpt.IEEE14_OptAdj_N1ScanSSAResult_Test;
-import org.interpss.plugin.optadj.globalOpt.IEEE14_OptAdj_N1Scan_Test;
-import org.interpss.plugin.optadj.localOpt.ei.EI_OptAdjGenOnly_Dclf_Test;
-import org.interpss.plugin.optadj.localOpt.ei.EI_OptAdjGenLoad_Dclf_Test;
 import org.interpss.plugin.piecewise.Acsc5BusTestSubAreaNet;
 import org.interpss.plugin.piecewise.IEEE14TestAclfSubAreaBuild;
 import org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild;
@@ -154,16 +160,21 @@ import org.junit.platform.suite.api.Suite;
 	IEEE14_EDclf_Test.class,
 	IEEE39_EDclf_Test.class,
 	IEEE118_EDclf_Test.class,
-	
+
 	// Optimization adjustment
-	IEEE14_SensHelper_Test.class,
-	IEEE14_OptAdj_Basecase_Test.class,
-	IEEE14_OptAdj_N1Scan_Test.class,
-	IEEE14_OptAdj_BasecaseSSAResult_Test.class,
-	IEEE14_OptAdj_N1ScanSSAResult_Test.class,
-	
-	EI_OptAdjGenOnly_Dclf_Test.class,
-	EI_OptAdjGenLoad_Dclf_Test.class,
+	IEEE39_OptBasecase_Test.class,
+	IEEE39_OptBasecase_Sparse_Test.class,
+	IEEE39_OptBasecase_SsaResult_Test.class,
+	IEEE39_OptBasecase_SsaResult_Sparse_Test.class,
+	IEEE39_OptN1Scan_Test.class,
+	IEEE39_OptN1Scan_Sparse_Test.class,
+	IEEE39_OptN1Scan_SsaResult_Test.class,
+	IEEE39_OptN1Scan_SsaResult_Sparse_Test.class,
+	IEEE39_OptSection_Test.class,
+	Texas2K_OptBasecase_SsaResult_Test.class,
+	Texas2K_OptBasecase_SsaResult_Sparse_Test.class,
+	Texas2K_OptN1Scan_SsaResult_Test.class,
+	Texas2K_OptN1Scan_SsaResult_Sparse_Test.class,
 	
 	// small Z branch
 	///SampleSwitchBreakerModelTest.class,

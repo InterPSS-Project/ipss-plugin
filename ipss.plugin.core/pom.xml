@@ -100,6 +100,13 @@
             <version>51.2.0</version>
         </dependency>
 
+        <!-- Sparse sensitivity matrices (org.ejml.data.DMatrixSparseCSC in optadj) -->
+        <dependency>
+            <groupId>org.ejml</groupId>
+            <artifactId>ejml-dsparse</artifactId>
+            <version>0.44.0</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/com.datumbox/lpsolve -->
         <dependency>
             <groupId>com.datumbox</groupId>
