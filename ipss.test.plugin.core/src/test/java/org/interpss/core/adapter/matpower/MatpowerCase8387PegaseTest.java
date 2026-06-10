@@ -47,7 +47,7 @@ public class MatpowerCase8387PegaseTest extends CorePluginTestSetup {
 		algo.getLfAdjAlgo().getVoltAdjConfig().setHvdcTapControl(true);
 
 		NrMethodConfig config = algo.getNrMethodConfig();
-		config.setNonDivergent(true);
+		algo.setNonDivergent(true);
 		config.setOptAlgo(NrOptimizeAlgoType.BINARY_SEARCH);
 		algo.getLfCalculator().getNrSolver().reConfigSolver(config);
 
@@ -77,8 +77,8 @@ public class MatpowerCase8387PegaseTest extends CorePluginTestSetup {
 		algo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
 		algo.setLfMethod(AclfMethodType.PQ);
 		algo.setInitBusVoltage(false);
-		algo.getNrMethodConfig().setNonDivergent(true);
-		algo.getNrMethodConfig().setVariableUpdateLimit(false);
+		algo.setNonDivergent(true);
+		algo.setVariableUpdateLimit(false);
 		algo.setMaxIterations(50);
 		algo.setTolerance(0.001);
 
