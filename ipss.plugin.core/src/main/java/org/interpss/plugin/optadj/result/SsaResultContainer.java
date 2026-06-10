@@ -65,6 +65,10 @@ public class SsaResultContainer extends BaseJSONBean{
 		printOverLimitSummary(baseOverLimitInfo);
 	}
 
+	/**
+	 * Print the base over limit info after optimization with the before optimization over limit info comparison.
+	 * @param beforeOptOverLimitInfo The list of base over limit info before optimization.
+	 */
 	public void printBaseOverLimitInfo(List<SsaBranchOverLimitInfo> beforeOptOverLimitInfo) {
 		Map<String, SsaBranchOverLimitInfo> beforeOptOverLimitInfoMap = beforeOptOverLimitInfo.stream()
 			.collect(Collectors.toMap(SsaBranchOverLimitInfo::getOverLimitBranchId, Function.identity()));
