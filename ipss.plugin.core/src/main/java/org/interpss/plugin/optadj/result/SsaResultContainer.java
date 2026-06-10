@@ -12,6 +12,48 @@ import org.interpss.datatype.base.BaseJSONBean;
 
 */
 public class SsaResultContainer extends BaseJSONBean {	
+	public static record OverLimitRec(SsaBranchOverLimitInfo baseOverLimtInfo, boolean hasOptInfo, SsaBranchOverLimitInfo optOverLimitInfo) {
+		public OverLimitRec(SsaBranchOverLimitInfo baseOverLimtInfo, boolean hasOptInfo, SsaBranchOverLimitInfo optOverLimitInfo) {
+			this.baseOverLimtInfo = baseOverLimtInfo;
+			this.hasOptInfo = hasOptInfo;
+			this.optOverLimitInfo = optOverLimitInfo;
+		}
+
+		public OverLimitRec(SsaBranchOverLimitInfo baseOverLimtInfo) {
+			this(baseOverLimtInfo, false, null);
+		}
+
+		public String toString(boolean baseInfo) {
+			if (hasOptInfo) {
+				if (!baseInfo) {
+					return String.format("OverLimit Branch: %s outage: %s afterOpt: %.2f rating: %.2f loading: %.2f; beforeOpt: %.2f loading: %.2f%n",
+						optOverLimitInfo.getOverLimitBranchId(), optOverLimitInfo.getOutageBranchId(),
+						optOverLimitInfo.getBaseFlowMW()+optOverLimitInfo.getShftedFlowMW(), optOverLimitInfo.getLimitMW(), optOverLimitInfo.getLoadingPercent(),
+						baseOverLimtInfo.getBaseFlowMW()+baseOverLimtInfo.getShftedFlowMW(), baseOverLimtInfo.getLoadingPercent());
+				}
+				else {
+					return String.format("Over Limit Branch: %s  afterOpt: %.2f rating: %.2f loading: %.2f; beforeOpt: %.2f loading: %.2f%%%n",
+						optOverLimitInfo.getOverLimitBranchId(), optOverLimitInfo.getBaseFlowMW(),
+						optOverLimitInfo.getLimitMW(), optOverLimitInfo.getLoadingPercent(),
+						baseOverLimtInfo.getBaseFlowMW(), baseOverLimtInfo.getLoadingPercent());
+				}
+			}
+			else {
+				if (!baseInfo) {
+					return String.format("OverLimit Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f%n",
+								baseOverLimtInfo.getOverLimitBranchId(), baseOverLimtInfo.getOutageBranchId(),
+								baseOverLimtInfo.getBaseFlowMW()+baseOverLimtInfo.getShftedFlowMW(), 
+								baseOverLimtInfo.getLimitMW(), baseOverLimtInfo.getLoadingPercent());
+				}
+				else {
+					return String.format("Over Limit Branch: %s  %.2f rating: %.2f loading: %.2f%n",
+								baseOverLimtInfo.getOverLimitBranchId(), 
+								baseOverLimtInfo.getBaseFlowMW(), baseOverLimtInfo.getLimitMW(), baseOverLimtInfo.getLoadingPercent());
+				}
+			}
+		}
+	}
+
 	private double baseLoadingThreshold;
 	protected List<SsaBranchOverLimitInfo> baseOverLimitInfo;
 	
@@ -55,49 +97,6 @@ public class SsaResultContainer extends BaseJSONBean {
 	//public void setCaOverLimitInfo(List<SsaBranchOverLimitInfo> caOverLimitInfo) {
 	//	this.caOverLimitInfo = caOverLimitInfo;
 	//}
-
-	public static record OverLimitRec(SsaBranchOverLimitInfo baseOverLimtInfo, boolean hasOptInfo, SsaBranchOverLimitInfo optOverLimitInfo) {
-		public OverLimitRec(SsaBranchOverLimitInfo baseOverLimtInfo, boolean hasOptInfo, SsaBranchOverLimitInfo optOverLimitInfo) {
-			this.baseOverLimtInfo = baseOverLimtInfo;
-			this.hasOptInfo = hasOptInfo;
-			this.optOverLimitInfo = optOverLimitInfo;
-		}
-
-		public OverLimitRec(SsaBranchOverLimitInfo baseOverLimtInfo) {
-			this(baseOverLimtInfo, false, null);
-		}
-
-		public String toString(boolean baseInfo) {
-			if (hasOptInfo) {
-				if (!baseInfo) {
-					return String.format("OverLimit Branch: %s outage: %s afterOpt: %.2f rating: %.2f loading: %.2f; beforeOpt: %.2f loading: %.2f%n",
-						optOverLimitInfo.getOverLimitBranchId(), optOverLimitInfo.getOutageBranchId(),
-						optOverLimitInfo.getBaseFlowMW()+optOverLimitInfo.getShftedFlowMW(), optOverLimitInfo.getLimitMW(), optOverLimitInfo.getLoadingPercent(),
-						baseOverLimtInfo.getBaseFlowMW()+baseOverLimtInfo.getShftedFlowMW(), baseOverLimtInfo.getLoadingPercent());
-				}
-				else {
-					return String.format("Over Limit Branch: %s  afterOpt: %.2f rating: %.2f loading: %.2f; beforeOpt: %.2f loading: %.2f%%%n",
-						optOverLimitInfo.getOverLimitBranchId(), optOverLimitInfo.getBaseFlowMW(),
-						optOverLimitInfo.getLimitMW(), optOverLimitInfo.getLoadingPercent(),
-						baseOverLimtInfo.getBaseFlowMW(), baseOverLimtInfo.getLoadingPercent());
-				}
-			}
-			else {
-				if (!baseInfo) {
-					return String.format("OverLimit Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f%n",
-								baseOverLimtInfo.getOverLimitBranchId(), baseOverLimtInfo.getOutageBranchId(),
-								baseOverLimtInfo.getBaseFlowMW()+baseOverLimtInfo.getShftedFlowMW(), 
-								baseOverLimtInfo.getLimitMW(), baseOverLimtInfo.getLoadingPercent());
-				}
-				else {
-					return String.format("Over Limit Branch: %s  %.2f rating: %.2f loading: %.2f%n",
-								baseOverLimtInfo.getOverLimitBranchId(), 
-								baseOverLimtInfo.getBaseFlowMW(), baseOverLimtInfo.getLimitMW(), baseOverLimtInfo.getLoadingPercent());
-				}
-			}
-		}
-	}
-
 
 	public void printBaseOverLimitInfo() {
 		baseOverLimitInfo.forEach(info -> System.out.print(new OverLimitRec(info).toString(true)));
