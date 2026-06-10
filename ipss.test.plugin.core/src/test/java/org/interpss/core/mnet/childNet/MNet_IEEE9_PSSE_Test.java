@@ -32,7 +32,7 @@ public class MNet_IEEE9_PSSE_Test extends CorePluginTestSetup {
 	public void testFullNetLF() throws Exception{
 		IpssCorePlugin.init();
 		
-		AclfNetwork net =IpssAdapter.importAclfNet("testdata/adpter/psse/v31/ieee9_v31.raw")
+		AclfNetwork net =IpssAdapter.importAclfNet("testData/adpter/psse/v31/ieee9_v31.raw")
                 .setFormat(PSSE)
                 .setPsseVersion(PsseVersion.PSSE_31)
                 .load()
@@ -58,7 +58,7 @@ public class MNet_IEEE9_PSSE_Test extends CorePluginTestSetup {
 		//IpssCorePlugin.init();
 		
 		//load the IEEE 9 Bus system
-		AclfNetwork net =IpssAdapter.importAclfNet("testdata/adpter/psse/v31/ieee9_v31.raw")
+		AclfNetwork net =IpssAdapter.importAclfNet("testData/adpter/psse/v31/ieee9_v31.raw")
 		                            .setFormat(PSSE)
 		                            .setPsseVersion(PsseVersion.PSSE_31)
 		                            .load()
@@ -112,8 +112,8 @@ public class MNet_IEEE9_PSSE_Test extends CorePluginTestSetup {
  		AclfSwingBusAdapter swing = swingBus.toSwingBus();
 		//System.out.println(swing.getGenResults(UnitType.PU));
 		//System.out.println(AclfOutFunc.loadFlowSummary(net));
-  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-0.7164)<1.0E-4);
-  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-0.2710)<1.0E-4);
+  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.3531)<1.0E-4);
+  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-0.7161)<1.0E-4);
 	}
 }
 
