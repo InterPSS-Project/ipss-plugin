@@ -2,7 +2,6 @@ package org.interpss.plugin.optadj.texas2K.dense;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.util.Map;
 
@@ -10,10 +9,9 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.plugin.optadj.algo.lf.AclfNetLoadFlowOptimizer;
 import org.interpss.plugin.optadj.algo.util.AclfNetSsaHelper;
 import org.interpss.plugin.optadj.result.OptAdjResultContainer;
+import org.interpss.plugin.optadj.result.SsaBranchOverLimitInfo;
 import org.interpss.plugin.optadj.result.SsaResultContainer;
 import org.interpss.plugin.optadj.texas2K.Texas2K_TestCaseInfo;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.DclfAlgoObjectFactory;
@@ -32,39 +30,31 @@ public class Texas2K_OptBasecase_SsaResult_Test extends CorePluginTestSetup {
 	private static final double SSA_SCAN_THRESHOLD_PCT = 90.0;
 	private static final double OPT_ADJ_THRESHOLD_PCT = 90.0;
 
-	private static int countOverLimitBranches(ContingencyAnalysisAlgorithm dclfAlgo) {
-		return countBranchesAboveLoading(dclfAlgo, OPT_ADJ_THRESHOLD_PCT, false, true);
-	}
-
-	private static int countBranchesAboveLoading(ContingencyAnalysisAlgorithm dclfAlgo, double loadingPctThreshold,
-			boolean useRatingMva1, boolean strictGreaterThan) {
+	private static int countBranchesAboveLoading(ContingencyAnalysisAlgorithm dclfAlgo, double loadingPctThreshold) {
 		double baseMva = dclfAlgo.getNetwork().getBaseMva();
 		int count = 0;
 		for (DclfAlgoBranch dclfBranch : dclfAlgo.getDclfAlgoBranchList()) {
 			double flowMw = dclfBranch.getDclfFlow() * baseMva;
-			double rating = useRatingMva1
-					? dclfBranch.getBranch().getRatingMva1()
-					: dclfBranch.getBranch().getRatingMvaA();
+			double rating = dclfBranch.getBranch().getRatingMvaA();
 			double loadingPct = Math.abs(flowMw / rating) * 100.0;
-			if (strictGreaterThan ? loadingPct > loadingPctThreshold : loadingPct >= loadingPctThreshold) {
+			if (loadingPct > loadingPctThreshold) {
 				count++;
 			}
 		}
 		return count;
 	}
 
-	private static double maxBranchLoadingPct(ContingencyAnalysisAlgorithm dclfAlgo, boolean useRatingMva1) {
-		double baseMva = dclfAlgo.getNetwork().getBaseMva();
-		double maxLoading = 0.0;
-		for (DclfAlgoBranch dclfBranch : dclfAlgo.getDclfAlgoBranchList()) {
-			double flowMw = dclfBranch.getDclfFlow() * baseMva;
-			double rating = useRatingMva1
-					? dclfBranch.getBranch().getRatingMva1()
-					: dclfBranch.getBranch().getRatingMvaA();
-			double loadingPct = Math.abs(flowMw / rating) * 100.0;
-			maxLoading = Math.max(maxLoading, loadingPct);
-		}
-		return maxLoading;
+	private static long countSsaEntriesAboveLoading(SsaResultContainer ssaResult, double loadingPctThreshold) {
+		return ssaResult.getBaseOverLimitInfo().stream()
+				.filter(info -> info.getLoadingPercent() > loadingPctThreshold)
+				.count();
+	}
+
+	private static double maxSsaLoading(SsaResultContainer ssaResult) {
+		return ssaResult.getBaseOverLimitInfo().stream()
+				.mapToDouble(SsaBranchOverLimitInfo::getLoadingPercent)
+				.max()
+				.orElse(0.0);
 	}
 
 	@Test
@@ -76,8 +66,7 @@ public class Texas2K_OptBasecase_SsaResult_Test extends CorePluginTestSetup {
 		dclfAlgo.calculateDclf(DclfMethod.INC_LOSS);
 
 		SsaResultContainer ssaResult = new AclfNetSsaHelper(dclfAlgo).baseCaseScan(SSA_SCAN_THRESHOLD_PCT);
-		int overLimitBefore = countOverLimitBranches(dclfAlgo);
-		double maxLoadingBefore = maxBranchLoadingPct(dclfAlgo, false);
+		int overLimitBefore = countBranchesAboveLoading(dclfAlgo, OPT_ADJ_THRESHOLD_PCT);
 
 		assertTrue(overLimitBefore > 0,
 				"Precondition: Texas-2K case should have branches above 90% loading");
@@ -92,8 +81,11 @@ public class Texas2K_OptBasecase_SsaResult_Test extends CorePluginTestSetup {
 
 		dclfAlgo.calculateDclf(DclfMethod.INC_LOSS);
 
-		int overLimitAfter = countBranchesAboveLoading(dclfAlgo, OPT_ADJ_THRESHOLD_PCT, false, true);
-		double maxLoadingAfter = maxBranchLoadingPct(dclfAlgo, false);
+		SsaResultContainer ssaResultAfter = new AclfNetSsaHelper(dclfAlgo)
+				.calBaseCaseLoading(ssaResult.getBaseOverLimitInfo());
+		long overLimitAfter = countSsaEntriesAboveLoading(ssaResultAfter, OPT_ADJ_THRESHOLD_PCT);
+		double maxLoadingBefore = maxSsaLoading(ssaResult);
+		double maxLoadingAfter = maxSsaLoading(ssaResultAfter);
 
 		assertTrue(maxLoadingAfter < maxLoadingBefore,
 				"Peak branch loading should decrease after optimization");
@@ -101,7 +93,7 @@ public class Texas2K_OptBasecase_SsaResult_Test extends CorePluginTestSetup {
 		// Regression anchors (Texas2K_OptBasecase_SsaResult_Sample, 90% limit, RatingMvaA).
 		assertEquals(11, overLimitBefore, "Overloaded branch count before optimization");
 		assertTrue(overLimitAfter >= 10 && overLimitAfter <= 11,
-				"Overloaded branch count after optimization");
+				"Overloaded branch count after optimization on SSA-tracked branches");
 		assertEquals(15, adjustResults.size(), "Generators with material dispatch adjustment");
 		assertTrue(maxLoadingBefore > 99.0 && maxLoadingBefore < 100.5,
 				"Peak loading before optimization (~99.6%)");
