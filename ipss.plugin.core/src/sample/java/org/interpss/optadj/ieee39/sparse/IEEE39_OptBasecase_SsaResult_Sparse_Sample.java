@@ -26,7 +26,7 @@ public class IEEE39_OptBasecase_SsaResult_Sparse_Sample {
 		dclfAlgo.calculateDclf();
 
 		SsaResultContainer ssaResult = new AclfNetSsaHelper(dclfAlgo).baseCaseScan(50.0);
-		ssaResult.printBaseOverLimitInfo();
+		//ssaResult.printBaseOverLimitInfo();
 
 		OptAdjResultContainer optAdjResult = new OptAdjResultContainer(ssaResult);
 		
