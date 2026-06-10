@@ -47,7 +47,7 @@ public class SwitchShuntBean<TExt extends BaseJSONUtilBean> extends BaseJSONBean
 
 		String str = "ID: " + this.id + " SwitchShuntBean.";
 		
-		if (!this.remoteBusId.equals(bean.remoteBusId)) {
+		if (!java.util.Objects.equals(this.remoteBusId, bean.remoteBusId)) {
 			logCompareMsg(str + "remoteBusNumber is not equal, " + this.remoteBusId + ", " + bean.remoteBusId); eql = 1; }
 
 		if (!NumericUtil.equals(this.vmax, bean.vmax, PU_ERR)) {
