@@ -35,8 +35,7 @@ public class EInterCon_OptBasecase_SsaResult_Sample {
 		dclfAlgo.calculateDclf(DclfMethod.INC_LOSS);	
 
 		// check the branch loading after optimization
-		SsaResultContainer ssaResultAfter = new AclfNetSsaHelper(dclfAlgo)
-				.baseCaseScan(optAdjResult.getOptAdjThreshold());
-		ssaResultAfter.printBaseOverLimitInfo();
+		SsaResultContainer ssaResultAfter = new AclfNetSsaHelper(dclfAlgo).calBaseCaseLoading(ssaResult.getBaseOverLimitInfo());	
+		ssaResultAfter.printBaseOverLimitInfo(ssaResult.getBaseOverLimitInfo());
 	}
 }
