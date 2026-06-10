@@ -4,6 +4,7 @@ import com.interpss.algo.parallel.BranchCAResultRec;
 import com.interpss.algo.parallel.ContingencyAnalysisMonad;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
+import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
 
@@ -61,6 +62,24 @@ public class AclfNetSsaHelper {
 					}
 			});
          return ssaResult;
+   }
+
+     /**
+    * calculate the base case loading for the given base over limit info and return the SSA result container.
+    * @param baseOverLimitInfo The list of base over limit info.
+    * @return The SSA result container.
+    */
+   public SsaResultContainer calBaseCaseLoading(List<SsaBranchOverLimitInfo> baseOverLimitInfo) {
+      SsaResultContainer ssaResult = new SsaResultContainer();
+				
+      double baseMVA = dclfAlgo.getNetwork().getBaseMva();
+      baseOverLimitInfo.forEach(info -> {
+         DclfAlgoBranch dclfBranch = dclfAlgo.getDclfAlgoBranch(info.getOverLimitBranchId());
+         double flowMw = dclfBranch.getDclfFlow() * baseMVA;
+         ssaResult.getBaseOverLimitInfo().add(new SsaBranchOverLimitInfo(dclfBranch.getId(), dclfBranch.getBranch().getRatingMvaA(), flowMw));
+      });
+
+      return ssaResult;
    }
 
    /**
