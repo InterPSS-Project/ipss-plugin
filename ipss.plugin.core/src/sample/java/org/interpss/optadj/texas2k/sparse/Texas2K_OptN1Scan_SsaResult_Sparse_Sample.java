@@ -49,7 +49,7 @@ public class Texas2K_OptN1Scan_SsaResult_Sparse_Sample {
 												.map(record -> record.getBranchId()).collect(Collectors.toSet());
 		double loadingThreshold = 100.0;
 		SsaResultContainer ssaResult = new AclfNetSsaHelper(dclfAlgo).contingencyScan(dclfContList, monitoredBranchIds, loadingThreshold);
-		ssaResult.printCaOverLimitInfo();
+		//ssaResult.printCaOverLimitInfo();
 		System.out.println("Total number of branches over limit before OptAdj: " + ssaResult.getCaOverLimitInfo().size());
 		
 		OptAdjResultContainer optAdjResult = new OptAdjResultContainer(ssaResult);
@@ -58,8 +58,9 @@ public class Texas2K_OptN1Scan_SsaResult_Sparse_Sample {
 			System.out.println("GenAdjustResult: " + genName + ", " + result.toString());
 		});
 
-		dclfAlgo.calculateDclf();
+		dclfAlgo.calculateDclf(DclfMethod.INC_LOSS);
 	
+		/* 
 		AtomicCounter cntAfter = new AtomicCounter();
 		// perform N-1 outage scan
 		dclfContList.parallelStream()
@@ -78,5 +79,10 @@ public class Texas2K_OptN1Scan_SsaResult_Sparse_Sample {
 					});
 			});
 		System.out.println("Total number of branches over limit after OptAdj: " + cntAfter.getCount());
+		*/
+		
+		SsaResultContainer ssaResultAfter = new AclfNetSsaHelper(dclfAlgo).contingencyScan(dclfContList, ssaResult.getCaOverLimitInfo());	
+		System.out.println("Total number of branches over limit after OptAdj: " + ssaResultAfter.getCaOverLimitInfo().size());
+		ssaResultAfter.printCaOverLimitInfo(ssaResult.getCaOverLimitInfo());
 	}
 }

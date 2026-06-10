@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.interpss.numeric.datatype.AtomicCounter;
 import org.interpss.optadj.texas2k.Texas2K_Sample_Info;
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
 import org.interpss.plugin.contingency.definition.MonitoredBranchRecord;
@@ -16,13 +15,11 @@ import org.interpss.plugin.optadj.algo.lf.AclfNetContigencyOptimizer;
 import org.interpss.plugin.optadj.algo.util.AclfNetSsaHelper;
 import org.interpss.plugin.optadj.result.OptAdjResultContainer;
 import org.interpss.plugin.optadj.result.SsaResultContainer;
-import com.interpss.algo.parallel.ContingencyAnalysisMonad;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 import com.interpss.core.contingency.dclf.DclfBranchOutage;
-import com.interpss.core.contingency.dclf.DclfOutageBranch;
 
 public class Texas2K_OptN1Scan_SsaResult_Sample {
     public static void main(String args[]) throws Exception {
@@ -49,7 +46,7 @@ public class Texas2K_OptN1Scan_SsaResult_Sample {
 												.map(record -> record.getBranchId()).collect(Collectors.toSet());
 		double loadingThreshold = 100.0;
 		SsaResultContainer ssaResult = new AclfNetSsaHelper(dclfAlgo).contingencyScan(dclfContList, monitoredBranchIds, loadingThreshold);
-		ssaResult.printCaOverLimitInfo();
+		//ssaResult.printCaOverLimitInfo();
 		System.out.println("Total number of branches over limit before OptAdj: " + ssaResult.getCaOverLimitInfo().size());
 		
 		OptAdjResultContainer optAdjResult = new OptAdjResultContainer(ssaResult);
@@ -58,8 +55,9 @@ public class Texas2K_OptN1Scan_SsaResult_Sample {
 			System.out.println("GenAdjustResult: " + genName + ", " + result.toString());
 		});
 
-		dclfAlgo.calculateDclf();
+		dclfAlgo.calculateDclf(DclfMethod.INC_LOSS);
 	
+		/* 
 		AtomicCounter cntAfter = new AtomicCounter();
 		// perform N-1 outage scan
 		dclfContList.parallelStream()
@@ -78,5 +76,10 @@ public class Texas2K_OptN1Scan_SsaResult_Sample {
 					});
 			});
 		System.out.println("Total number of branches over limit after OptAdj: " + cntAfter.getCount());
+		*/
+
+		SsaResultContainer ssaResultAfter = new AclfNetSsaHelper(dclfAlgo).contingencyScan(dclfContList, ssaResult.getCaOverLimitInfo());	
+		System.out.println("Total number of branches over limit after OptAdj: " + ssaResultAfter.getCaOverLimitInfo().size());
+		ssaResultAfter.printCaOverLimitInfo(ssaResult.getCaOverLimitInfo());
 	}
 }
