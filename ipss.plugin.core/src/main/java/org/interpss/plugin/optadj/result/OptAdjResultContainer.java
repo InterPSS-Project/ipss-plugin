@@ -29,8 +29,8 @@ public class OptAdjResultContainer extends SsaResultContainer {
 		this(100.0	);
 		this.setBaseLoadingThreshold(ssaResult.getBaseLoadingThreshold());
 		this.setCaLoadingThreshold(ssaResult.getCaLoadingThreshold());
-		this.setBaseOverLimitInfo(ssaResult.getBaseOverLimitInfo());
-		this.setCaOverLimitInfo(ssaResult.getCaOverLimitInfo());
+		this.baseOverLimitInfo = ssaResult.getBaseOverLimitInfo();
+		this.caOverLimitInfo = ssaResult.getCaOverLimitInfo();
 	}
 
 	public double getOptAdjThreshold() {

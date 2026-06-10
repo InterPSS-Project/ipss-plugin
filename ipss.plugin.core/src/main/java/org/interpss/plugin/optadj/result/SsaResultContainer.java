@@ -12,10 +12,10 @@ import org.interpss.datatype.base.BaseJSONBean;
 */
 public class SsaResultContainer extends BaseJSONBean{	
 	private double baseLoadingThreshold;
-	private List<SsaBranchOverLimitInfo> baseOverLimitInfo;
+	protected List<SsaBranchOverLimitInfo> baseOverLimitInfo;
 	
 	private double caLoadingThreshold;
-	private List<SsaBranchOverLimitInfo> caOverLimitInfo;
+	protected List<SsaBranchOverLimitInfo> caOverLimitInfo;
 	
 	public SsaResultContainer() {
 		super();
@@ -43,17 +43,17 @@ public class SsaResultContainer extends BaseJSONBean{
 		return baseOverLimitInfo;
 	}
 
-	public void setBaseOverLimitInfo(List<SsaBranchOverLimitInfo> baseOverLimitInfo) {
-		this.baseOverLimitInfo = baseOverLimitInfo;
-	}
+	//public void setBaseOverLimitInfo(List<SsaBranchOverLimitInfo> baseOverLimitInfo) {
+	//	this.baseOverLimitInfo = baseOverLimitInfo;
+	//}
 
 	public List<SsaBranchOverLimitInfo> getCaOverLimitInfo() {
 		return caOverLimitInfo;
 	}
 
-	public void setCaOverLimitInfo(List<SsaBranchOverLimitInfo> caOverLimitInfo) {
-		this.caOverLimitInfo = caOverLimitInfo;
-	}
+	//public void setCaOverLimitInfo(List<SsaBranchOverLimitInfo> caOverLimitInfo) {
+	//	this.caOverLimitInfo = caOverLimitInfo;
+	//}
 
 	public void printBaseOverLimitInfo() {
 		baseOverLimitInfo.forEach(info -> System.out.printf(
