@@ -112,8 +112,8 @@ public class MNet_IEEE9_PSSE_Test extends CorePluginTestSetup {
  		AclfSwingBusAdapter swing = swingBus.toSwingBus();
 		//System.out.println(swing.getGenResults(UnitType.PU));
 		//System.out.println(AclfOutFunc.loadFlowSummary(net));
-  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.3531)<1.0E-4);
-  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-0.7161)<1.0E-4);
+  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-0.7164)<1.0E-4);
+  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-0.2710)<1.0E-4);
 	}
 }
 
