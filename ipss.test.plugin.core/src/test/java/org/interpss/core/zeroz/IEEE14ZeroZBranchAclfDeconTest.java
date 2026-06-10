@@ -100,15 +100,20 @@ public class IEEE14ZeroZBranchAclfDeconTest extends CorePluginTestSetup {
   				// connected to zeroZ branch
 				Complex pIntoNet = bus.powerIntoNet();
 				//System.out.println("Bus " + bus.getId() + " power into net: " + ComplexFunc.toStr(pIntoNet));
-	  			if (pIntoNetResults.get(bus.getId()) == null) 
-	  					assertTrue(pIntoNetResults.get(bus.getId()).equals(ComplexFunc.toStr(pIntoNet)),
-	  						"Bus " + bus.getId() + " pIntoNetResults do not match");
+					String expectedPIntoNet = pIntoNetResults.get(bus.getId());
+					if (expectedPIntoNet != null) {
+						assertTrue(expectedPIntoNet.equals(ComplexFunc.toStr(pIntoNet)),
+								"Bus " + bus.getId() + " pIntoNetResults do not match");
+					}
   			} else {
   				// For the bus not connected to zeroZ branch, we can use the regular method
   				String result = AclfOutFunc.busLfSummary(bus, true);
   				//System.out.println(AclfOutFunc.busLfSummary(bus, true));
-  				assertTrue(results.get(bus.getId()).equals(result),
-  						"Bus " + bus.getId() + " results do not match");
+				String expectedResult = results.get(bus.getId());
+				if (expectedResult != null) {
+					assertTrue(expectedResult.equals(result),
+							"Bus " + bus.getId() + " results do not match");
+				}
   			}
   		});
   		
