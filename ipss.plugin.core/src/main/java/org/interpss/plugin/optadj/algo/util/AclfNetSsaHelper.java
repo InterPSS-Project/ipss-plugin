@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.interpss.plugin.optadj.result.SsaBranchOverLimitInfo;
 import org.interpss.plugin.optadj.result.SsaResultContainer;
@@ -91,6 +92,41 @@ public class AclfNetSsaHelper {
    public SsaResultContainer contingencyScan(List<DclfBranchOutage> contList, double loadingThreshold) {
       return contingencyScan(contList, Collections.emptySet(), loadingThreshold);
    }
+
+      /**
+    * Scan the contingency loading and return the SSA result container.
+    * @param contList The list of contingency branches.
+    * @param loadingThreshold The loading threshold.
+    * @return The SSA result container.
+    */
+      public SsaResultContainer contingencyScan(List<DclfBranchOutage> contList, List<SsaBranchOverLimitInfo> caOverLimitInfo) {
+         Set<String> contin_monitoredBranchIds = caOverLimitInfo.stream()
+            .map(info -> info.getOutageBranchId() + "_" + info.getOverLimitBranchId())
+            .collect(Collectors.toSet());
+            
+         SsaResultContainer ssaResult = new SsaResultContainer();
+         
+         contList.parallelStream().forEach(contingency -> {
+            ContingencyAnalysisMonad.of(dclfAlgo, contingency)
+               .ca(resultRec -> {
+                  if (Math.abs(resultRec.shiftedFlowMW) > BranchCAResultRec.ContingencyShiftThreshold) {
+                     DclfOutageBranch outageBranch = ((DclfBranchOutage)resultRec.contingency).getOutageEquip();
+                     AclfBranch monitoredBranch = resultRec.aclfBranch;
+                     if (contin_monitoredBranchIds.contains(outageBranch.getBranch().getId() + "_" + monitoredBranch.getId())) {
+                        // add the over limit branch CA result rec to the SSA result container
+                        ssaResult.getCaOverLimitInfo().add(new SsaBranchOverLimitInfo(
+                              outageBranch.getBranch().getId(), monitoredBranch.getId(), 
+                              monitoredBranch.getRatingMvaB(), resultRec.preFlowMW, resultRec.shiftedFlowMW));
+                        //System.out.println(String.format("OverLimit Branch: %s outage: %s postFlow: %.2f rating: %.2f loading: %.2f",
+                        //     monitoredBranch.getId(), outageBranch.getBranch().getId(),
+                        //      resultRec.getPostFlowMW(), monitoredBranch.getRatingMvaB(), loading));
+                     }
+                  }
+               });
+         });
+   
+         return ssaResult;
+      }
 
    /**
     * Scan the contingency loading and return the SSA result container.
