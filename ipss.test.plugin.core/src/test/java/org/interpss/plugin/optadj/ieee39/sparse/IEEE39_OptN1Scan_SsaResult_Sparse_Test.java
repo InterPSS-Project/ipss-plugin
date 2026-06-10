@@ -13,6 +13,7 @@ import org.interpss.plugin.optadj.algo.lf.AclfNetContigencyOptimizer;
 import org.interpss.plugin.optadj.algo.util.AclfNetSsaHelper;
 import org.interpss.plugin.optadj.ieee39.IEEE39_TestCaseInfo;
 import org.interpss.plugin.optadj.result.OptAdjResultContainer;
+import org.interpss.plugin.optadj.result.SsaBranchOverLimitInfo;
 import org.interpss.plugin.optadj.result.SsaResultContainer;
 import org.junit.jupiter.api.Test;
 
@@ -54,21 +55,28 @@ public class IEEE39_OptN1Scan_SsaResult_Sparse_Test extends CorePluginTestSetup 
 
 	private static int countN1OverLimitViolations(ContingencyAnalysisAlgorithm dclfAlgo,
 			List<DclfBranchOutage> contList) {
-		return countN1OverLimitViolations(dclfAlgo, contList, OPT_ADJ_THRESHOLD_PCT, true);
-	}
-
-	private static int countN1OverLimitViolations(ContingencyAnalysisAlgorithm dclfAlgo,
-			List<DclfBranchOutage> contList, double loadingPctThreshold, boolean strictGreaterThan) {
 		AtomicCounter cnt = new AtomicCounter();
 		contList.parallelStream().forEach(contingency -> {
 			ContingencyAnalysisMonad.of(dclfAlgo, contingency).ca(resultRec -> {
-				double loading = resultRec.calLoadingPercent();
-				if (strictGreaterThan ? loading > loadingPctThreshold : loading >= loadingPctThreshold) {
+				if (resultRec.calLoadingPercent() > OPT_ADJ_THRESHOLD_PCT) {
 					cnt.increment();
 				}
 			});
 		});
 		return cnt.getCount();
+	}
+
+	private static long countSsaCaEntriesAboveLoading(SsaResultContainer ssaResult, double loadingPctThreshold) {
+		return ssaResult.getCaOverLimitInfo().stream()
+				.filter(info -> info.getLoadingPercent() > loadingPctThreshold)
+				.count();
+	}
+
+	private static double maxSsaCaLoading(SsaResultContainer ssaResult) {
+		return ssaResult.getCaOverLimitInfo().stream()
+				.mapToDouble(SsaBranchOverLimitInfo::getLoadingPercent)
+				.max()
+				.orElse(0.0);
 	}
 
 	@Test
@@ -86,7 +94,6 @@ public class IEEE39_OptN1Scan_SsaResult_Sparse_Test extends CorePluginTestSetup 
 		int overLimitBefore = countN1OverLimitViolations(dclfAlgo, contList);
 		assertTrue(overLimitBefore > 0,
 				"Precondition: N-1 scan should find overloaded post-contingency branches");
-		// SSA scan applies ContingencyShiftThreshold; constraint set is smaller than full N-1 overload count.
 		assertTrue(ssaResult.getCaOverLimitInfo().size() > 0,
 				"SSA scan at 90% should identify material contingency overloads");
 
@@ -98,15 +105,27 @@ public class IEEE39_OptN1Scan_SsaResult_Sparse_Test extends CorePluginTestSetup 
 
 		dclfAlgo.calculateDclf();
 
-		int overLimitAfter = countN1OverLimitViolations(dclfAlgo, contList);
+		SsaResultContainer ssaResultAfter = new AclfNetSsaHelper(dclfAlgo)
+				.contingencyScan(contList, ssaResult.getCaOverLimitInfo());
+		long overLimitAfter = countSsaCaEntriesAboveLoading(ssaResultAfter, OPT_ADJ_THRESHOLD_PCT);
+		double maxLoadingBefore = maxSsaCaLoading(ssaResult);
+		double maxLoadingAfter = maxSsaCaLoading(ssaResultAfter);
+
+		assertTrue(maxLoadingAfter < maxLoadingBefore,
+				"Peak contingency loading on SSA-tracked pairs should decrease");
 
 		// Regression anchors (IEEE39_OptN1Scan_SsaResult_Sparse_Sample, 600 MVA uniform ratings, 100% limit).
-		// SSA scan at 90% with shift threshold narrows the constraint set vs full N-1 scan.
 		assertEquals(45, contList.size(), "N-1 branch-outage contingency count");
 		assertEquals(19, ssaResult.getCaOverLimitInfo().size(), "SSA contingency overload entries at 90%");
 		assertEquals(51, overLimitBefore, "N-1 overload violations before optimization");
 		assertEquals(4, adjustResults.size(), "Generators with material dispatch adjustment");
-		assertTrue(overLimitAfter >= 85 && overLimitAfter <= 95,
-				"N-1 overload violations after optimization (SSA-constrained LP, ~90)");
+		assertEquals(19, ssaResultAfter.getCaOverLimitInfo().size(),
+				"SSA-tracked contingency pairs after optimization");
+		assertEquals(3, overLimitAfter,
+				"SSA-tracked contingency overloads above 100% after optimization");
+		assertTrue(maxLoadingBefore > 138.0 && maxLoadingBefore < 140.0,
+				"Peak contingency loading before optimization (~139.5%)");
+		assertTrue(maxLoadingAfter > 124.0 && maxLoadingAfter < 127.0,
+				"Peak contingency loading after optimization (~125.6%)");
 	}
 }

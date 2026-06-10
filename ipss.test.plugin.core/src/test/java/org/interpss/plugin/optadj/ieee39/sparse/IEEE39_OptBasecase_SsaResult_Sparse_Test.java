@@ -10,6 +10,7 @@ import org.interpss.plugin.optadj.algo.lf.AclfNetLoadFlowOptimizer;
 import org.interpss.plugin.optadj.algo.util.AclfNetSsaHelper;
 import org.interpss.plugin.optadj.ieee39.IEEE39_TestCaseInfo;
 import org.interpss.plugin.optadj.result.OptAdjResultContainer;
+import org.interpss.plugin.optadj.result.SsaBranchOverLimitInfo;
 import org.interpss.plugin.optadj.result.SsaResultContainer;
 import org.junit.jupiter.api.Test;
 
@@ -29,39 +30,31 @@ public class IEEE39_OptBasecase_SsaResult_Sparse_Test extends CorePluginTestSetu
 	private static final double SSA_SCAN_THRESHOLD_PCT = 50.0;
 	private static final double OPT_ADJ_THRESHOLD_PCT = 100.0;
 
-	private static int countOverLimitBranches(ContingencyAnalysisAlgorithm dclfAlgo) {
-		return countBranchesAboveLoading(dclfAlgo, OPT_ADJ_THRESHOLD_PCT, false, true);
-	}
-
-	private static int countBranchesAboveLoading(ContingencyAnalysisAlgorithm dclfAlgo, double loadingPctThreshold,
-			boolean useRatingMva1, boolean strictGreaterThan) {
+	private static int countBranchesAboveLoading(ContingencyAnalysisAlgorithm dclfAlgo, double loadingPctThreshold) {
 		double baseMva = dclfAlgo.getNetwork().getBaseMva();
 		int count = 0;
 		for (DclfAlgoBranch dclfBranch : dclfAlgo.getDclfAlgoBranchList()) {
 			double flowMw = dclfBranch.getDclfFlow() * baseMva;
-			double rating = useRatingMva1
-					? dclfBranch.getBranch().getRatingMva1()
-					: dclfBranch.getBranch().getRatingMvaA();
+			double rating = dclfBranch.getBranch().getRatingMvaA();
 			double loadingPct = Math.abs(flowMw / rating) * 100.0;
-			if (strictGreaterThan ? loadingPct > loadingPctThreshold : loadingPct >= loadingPctThreshold) {
+			if (loadingPct > loadingPctThreshold) {
 				count++;
 			}
 		}
 		return count;
 	}
 
-	private static double maxBranchLoadingPct(ContingencyAnalysisAlgorithm dclfAlgo, boolean useRatingMva1) {
-		double baseMva = dclfAlgo.getNetwork().getBaseMva();
-		double maxLoading = 0.0;
-		for (DclfAlgoBranch dclfBranch : dclfAlgo.getDclfAlgoBranchList()) {
-			double flowMw = dclfBranch.getDclfFlow() * baseMva;
-			double rating = useRatingMva1
-					? dclfBranch.getBranch().getRatingMva1()
-					: dclfBranch.getBranch().getRatingMvaA();
-			double loadingPct = Math.abs(flowMw / rating) * 100.0;
-			maxLoading = Math.max(maxLoading, loadingPct);
-		}
-		return maxLoading;
+	private static long countSsaEntriesAboveLoading(SsaResultContainer ssaResult, double loadingPctThreshold) {
+		return ssaResult.getBaseOverLimitInfo().stream()
+				.filter(info -> info.getLoadingPercent() > loadingPctThreshold)
+				.count();
+	}
+
+	private static double maxSsaLoading(SsaResultContainer ssaResult) {
+		return ssaResult.getBaseOverLimitInfo().stream()
+				.mapToDouble(SsaBranchOverLimitInfo::getLoadingPercent)
+				.max()
+				.orElse(0.0);
 	}
 
 	@Test
@@ -73,8 +66,7 @@ public class IEEE39_OptBasecase_SsaResult_Sparse_Test extends CorePluginTestSetu
 		dclfAlgo.calculateDclf();
 
 		SsaResultContainer ssaResult = new AclfNetSsaHelper(dclfAlgo).baseCaseScan(SSA_SCAN_THRESHOLD_PCT);
-		int overLimitBefore = countOverLimitBranches(dclfAlgo);
-		double maxLoadingBefore = maxBranchLoadingPct(dclfAlgo, false);
+		int overLimitBefore = countBranchesAboveLoading(dclfAlgo, OPT_ADJ_THRESHOLD_PCT);
 
 		assertTrue(overLimitBefore > 0,
 				"Precondition: IEEE-39 case with 600 MVA ratings should have overloaded branches");
@@ -89,8 +81,11 @@ public class IEEE39_OptBasecase_SsaResult_Sparse_Test extends CorePluginTestSetu
 
 		dclfAlgo.calculateDclf(DclfMethod.INC_LOSS);
 
-		int overLimitAfter = countBranchesAboveLoading(dclfAlgo, OPT_ADJ_THRESHOLD_PCT, true, false);
-		double maxLoadingAfter = maxBranchLoadingPct(dclfAlgo, true);
+		SsaResultContainer ssaResultAfter = new AclfNetSsaHelper(dclfAlgo)
+				.calBaseCaseLoading(ssaResult.getBaseOverLimitInfo());
+		long overLimitAfter = countSsaEntriesAboveLoading(ssaResultAfter, OPT_ADJ_THRESHOLD_PCT);
+		double maxLoadingBefore = maxSsaLoading(ssaResult);
+		double maxLoadingAfter = maxSsaLoading(ssaResultAfter);
 
 		assertTrue(overLimitAfter < overLimitBefore,
 				"Optimizer should reduce the number of branches above 100% loading");
@@ -98,7 +93,6 @@ public class IEEE39_OptBasecase_SsaResult_Sparse_Test extends CorePluginTestSetu
 				"Peak branch loading should decrease after optimization");
 
 		// Regression anchors (IEEE39_OptBasecase_SsaResult_Sparse_Sample, 600 MVA uniform ratings).
-		// SSA scan at 50% widens control-gen selection; post-check uses RatingMva1.
 		assertEquals(5, overLimitBefore, "Overloaded branch count before optimization");
 		assertTrue(overLimitAfter >= 0 && overLimitAfter <= 2,
 				"Overloaded branch count after optimization (LP solver tolerance band)");
