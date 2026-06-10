@@ -188,20 +188,19 @@ public class AclfRunConfigRec extends BaseJSONBean {
         	algo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(this.applyPowerAdjust);
         	algo.getLfAdjAlgo().getPowerAdjConfig().setPsXfrPControl(this.psXfrPControl);
         	
-	        // NR Config tab inputs
-	        if (this.lfMethod == AclfMethodType.NR) {
-	    	  	nrConfig.setNonDivergent(this.nonDivergent);
-	    	  	if (this.nonDivergent) {
-	        	  	nrConfig.setOptAlgo(this.optAlgo); 
-	        	  	nrConfig.setVariableUpdateLimit(this.variableUpdateLimit);
-	        	  	nrConfig.setDeltaVAngLimit(this.deltaVAngLimit);
-	        	  	nrConfig.setDeltaVMagLimit(this.deltaVMagLimit);
-	        	  	nrConfig.setStopNoSolutionFound(this.stopNoSolutionFound);
-	        	  	nrConfig.setMinScaleFactor(this.minScaleFactor);
-	        	  	// re-configure the Nr solver with the updated config
-	        	  	algo.getLfCalculator().getNrSolver().reConfigSolver(nrConfig);
-	    	  	}
-	        }
+			// Load-flow non-divergent inputs apply to both NR and PQ.
+			algo.setNonDivergent(this.nonDivergent);
+			if (this.nonDivergent) {
+				if (this.lfMethod == AclfMethodType.NR)
+					nrConfig.setOptAlgo(this.optAlgo);
+				algo.setVariableUpdateLimit(this.variableUpdateLimit);
+				algo.setDeltaVAngLimit(this.deltaVAngLimit);
+				algo.setDeltaVMagLimit(this.deltaVMagLimit);
+				algo.setStopNoSolutionFound(this.stopNoSolutionFound);
+				algo.setMinScaleFactor(this.minScaleFactor);
+				if (this.lfMethod == AclfMethodType.NR)
+					algo.getLfCalculator().getNrSolver().reConfigSolver(nrConfig);
+			}
 
         	// Adj/Ctrl Setting tab inputs to be processed
         	algo.getLfAdjAlgo().getLimitCtrlConfig().setStartPoint(this.limitCtrlStartPoint);
