@@ -11,7 +11,7 @@ import org.interpss.datatype.base.BaseJSONBean;
 /** 
 
 */
-public class SsaResultContainer extends BaseJSONBean{	
+public class SsaResultContainer extends BaseJSONBean {	
 	private double baseLoadingThreshold;
 	protected List<SsaBranchOverLimitInfo> baseOverLimitInfo;
 	
@@ -56,14 +56,14 @@ public class SsaResultContainer extends BaseJSONBean{
 	//	this.caOverLimitInfo = caOverLimitInfo;
 	//}
 
-	public static record OverLimitInfo(SsaBranchOverLimitInfo baseOverLimtInfo, boolean hasOptInfo, SsaBranchOverLimitInfo optOverLimitInfo) {
-		public OverLimitInfo(SsaBranchOverLimitInfo baseOverLimtInfo, boolean hasOptInfo, SsaBranchOverLimitInfo optOverLimitInfo) {
+	public static record OverLimitRec(SsaBranchOverLimitInfo baseOverLimtInfo, boolean hasOptInfo, SsaBranchOverLimitInfo optOverLimitInfo) {
+		public OverLimitRec(SsaBranchOverLimitInfo baseOverLimtInfo, boolean hasOptInfo, SsaBranchOverLimitInfo optOverLimitInfo) {
 			this.baseOverLimtInfo = baseOverLimtInfo;
 			this.hasOptInfo = hasOptInfo;
 			this.optOverLimitInfo = optOverLimitInfo;
 		}
 
-		public OverLimitInfo(SsaBranchOverLimitInfo baseOverLimtInfo) {
+		public OverLimitRec(SsaBranchOverLimitInfo baseOverLimtInfo) {
 			this(baseOverLimtInfo, false, null);
 		}
 
@@ -100,7 +100,7 @@ public class SsaResultContainer extends BaseJSONBean{
 
 
 	public void printBaseOverLimitInfo() {
-		baseOverLimitInfo.forEach(info -> System.out.print(new OverLimitInfo(info).toString(true)));
+		baseOverLimitInfo.forEach(info -> System.out.print(new OverLimitRec(info).toString(true)));
 		printOverLimitSummary(baseOverLimitInfo);
 	}
 
@@ -113,14 +113,14 @@ public class SsaResultContainer extends BaseJSONBean{
 			.collect(Collectors.toMap(SsaBranchOverLimitInfo::getOverLimitBranchId, Function.identity()));
 		baseOverLimitInfo.forEach(afterOptInfo -> {
 				SsaBranchOverLimitInfo beforeOptInfo = beforeOptOverLimitInfoMap.get(afterOptInfo.getOverLimitBranchId());
-				System.out.print(new OverLimitInfo(beforeOptInfo, true, afterOptInfo).toString(true));
+				System.out.print(new OverLimitRec(beforeOptInfo, true, afterOptInfo).toString(true));
 			});
 		printOverLimitSummary(baseOverLimitInfo);
 	}
 
 	public void printCaOverLimitInfo() {
 		caOverLimitInfo.forEach(info -> {
-			System.out.print(new OverLimitInfo(info).toString(false));
+			System.out.print(new OverLimitRec(info).toString(false));
 		});
 		printOverLimitSummary(caOverLimitInfo);
 	}
@@ -135,7 +135,7 @@ public class SsaResultContainer extends BaseJSONBean{
 			String key = afterOptInfo.getOutageBranchId() + "_" + afterOptInfo.getOverLimitBranchId();
 			if (beforeOptOverLimitInfoMap.containsKey(key)) {
 				SsaBranchOverLimitInfo beforeOptInfo = beforeOptOverLimitInfoMap.get(key);
-				System.out.print(new OverLimitInfo(beforeOptInfo, true, afterOptInfo).toString(true));
+				System.out.print(new OverLimitRec(beforeOptInfo, true, afterOptInfo).toString(true));
 			}
 		});
 		printOverLimitSummary(caOverLimitInfo);
