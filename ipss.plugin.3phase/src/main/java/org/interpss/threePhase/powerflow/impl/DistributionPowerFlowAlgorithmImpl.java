@@ -2275,13 +2275,14 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		double tolerance = this.getTolerance();
 		for(FixedPointBus bus : busCache.nonSwingBuses) {
 			int offset = bus.primitiveOffset;
-			if(!isValidFixedPointVoltage(solved, offset, bus)) {
+			double mismatch = primitiveState.validSolvedMagnitudeMismatch(solved, offset, bus,
+					this.maxFixedPointVoltageAbs);
+			if(Double.isNaN(mismatch)) {
 				log.warn("Fixed-point solve produced invalid voltage at bus " + bus.id
 						+ ", sortNumber=" + bus.sortNumber + ", vabc=" + format3x1(solved, offset));
 				return VoltageUpdateResult.invalid();
 			}
 			if(!aboveTolerance) {
-				double mismatch = primitiveState.savedMagnitudeMismatch(solved, offset, bus);
 				maxMismatch = Math.max(maxMismatch, mismatch);
 				aboveTolerance = mismatch > tolerance;
 			}
@@ -3539,21 +3540,43 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			}
 		}
 
-		private double savedMagnitudeMismatch(double[] solved, int offset, FixedPointBus bus) {
+		private double validSolvedMagnitudeMismatch(double[] solved, int offset, FixedPointBus bus,
+				double maxVoltageAbs) {
 			int magnitudeOffset = 3 * bus.sortNumber;
-			double aMismatch = bus.phaseActive(0)
-					? Math.abs(Math.hypot(solved[offset], solved[offset + 1])
-							- this.savedMagnitude[magnitudeOffset])
-					: 0.0;
-			double bMismatch = bus.phaseActive(1)
-					? Math.abs(Math.hypot(solved[offset + 2], solved[offset + 3])
-							- this.savedMagnitude[magnitudeOffset + 1])
-					: 0.0;
-			double cMismatch = bus.phaseActive(2)
-					? Math.abs(Math.hypot(solved[offset + 4], solved[offset + 5])
-							- this.savedMagnitude[magnitudeOffset + 2])
-					: 0.0;
-			return Math.max(aMismatch, Math.max(bMismatch, cMismatch));
+			double maxMismatch = 0.0;
+			if(bus.phaseActive(0)) {
+				double magnitude = validMagnitude(solved[offset], solved[offset + 1], maxVoltageAbs);
+				if(Double.isNaN(magnitude)) {
+					return Double.NaN;
+				}
+				maxMismatch = Math.max(maxMismatch,
+						Math.abs(magnitude - this.savedMagnitude[magnitudeOffset]));
+			}
+			if(bus.phaseActive(1)) {
+				double magnitude = validMagnitude(solved[offset + 2], solved[offset + 3], maxVoltageAbs);
+				if(Double.isNaN(magnitude)) {
+					return Double.NaN;
+				}
+				maxMismatch = Math.max(maxMismatch,
+						Math.abs(magnitude - this.savedMagnitude[magnitudeOffset + 1]));
+			}
+			if(bus.phaseActive(2)) {
+				double magnitude = validMagnitude(solved[offset + 4], solved[offset + 5], maxVoltageAbs);
+				if(Double.isNaN(magnitude)) {
+					return Double.NaN;
+				}
+				maxMismatch = Math.max(maxMismatch,
+						Math.abs(magnitude - this.savedMagnitude[magnitudeOffset + 2]));
+			}
+			return maxMismatch;
+		}
+
+		private static double validMagnitude(double real, double imaginary, double maxVoltageAbs) {
+			if(!Double.isFinite(real) || !Double.isFinite(imaginary)) {
+				return Double.NaN;
+			}
+			double magnitude = Math.hypot(real, imaginary);
+			return magnitude <= maxVoltageAbs ? magnitude : Double.NaN;
 		}
 
 		private void useSolvedVoltage(double[] solved) {
