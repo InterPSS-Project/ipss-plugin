@@ -157,15 +157,16 @@ public class OpenDssTimeSeriesMetadataTest {
 	}
 
 	@Test
-	void staticParserCreatesTransformerAndRegControlWithoutDynamicNetwork() throws InterpssException {
+	void staticParserCreatesTransformerAndRegControlWithoutFixedTapShim() throws InterpssException {
 		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
 
 		parser.getXfrParser().parseTransformerDataOneLine(
 				"New Transformer.reg1 phases=3 windings=2 buses=[source.1.2.3 load.1.2.3] "
 				+ "conns=[wye wye] kvs=[12.47 12.47] kvas=[500 500] xhl=1 %loadloss=0.1");
+		Static3PBranch parsedTransformer = parser.getStaticNetwork().getBranchList().get(0);
+		double declaredToTurnRatio = parsedTransformer.getToTurnRatio();
 		parser.getRegulatorParser().parseRegControlData(
 				"New RegControl.creg1 transformer=reg1 winding=2 vreg=120 band=2 ptratio=60");
-		parser.getRegulatorParser().applyFixedRegControlRatios();
 
 		assertFalse(parser.hasDistNetwork());
 		assertNotNull(parser.getStaticNetwork().getBus("source"));
@@ -175,7 +176,7 @@ public class OpenDssTimeSeriesMetadataTest {
 		assertEquals("reg1", branch.getName());
 		assertEquals(AclfBranchCode.XFORMER, branch.getBranchCode());
 		assertEquals(PhaseCode.ABC, branch.getPhaseCode());
-		assertEquals(120.0 * 60.0 * Math.sqrt(3.0), branch.getToTurnRatio(), 1.0e-12);
+		assertEquals(declaredToTurnRatio, branch.getToTurnRatio(), 1.0e-12);
 		assertEquals(1, parser.getRegulatorControls().size());
 		assertEquals("reg1", parser.getRegulatorControls().get(0).getBranchName());
 		assertFalse(parser.hasDistNetwork());
